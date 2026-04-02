@@ -110,8 +110,8 @@ Source (preuves) :
 | `/set-password` | public | `SetPassword` | `src/pages/SetPassword.tsx` (import direct) |
 | `/reset-password` | public | `SetPassword` | `src/pages/SetPassword.tsx` (import direct) |
 | `/` | privé | `Home` | `src/pages/Home.tsx` (import direct) |
-| `/audit` | privé + lazy | `AuditWizard` | `src/features/audit/AuditWizard.tsx` (exporté via `src/features/audit/index.ts`) |
-| `/strategy` | privé + lazy | `StrategyPage` | `src/pages/StrategyPage.tsx` (lazy) |
+| `/audit` | privé + lazy | `AuditWizard` | `src/features/audit/AuditWizard.tsx` (exporté via `src/features/audit/index.ts`) — workflow actif hors `/sim/*`, avec draft de session et export PPTX |
+| `/strategy` | privé + lazy | `StrategyPage` | `src/pages/StrategyPage.tsx` (lazy) — workflow actif dépendant d'un draft d'audit, encore incomplet côté produit |
 | `/sim/placement` | privé + lazy | `Placement` | `src/features/placement/PlacementPage.tsx` (exporté via `src/features/placement/index.ts`) |
 | `/sim/credit` | privé + lazy | `Credit` | `src/features/credit/Credit.tsx` (exporté via `src/features/credit/index.ts`) |
 | `/sim/succession` | privé + lazy | `SuccessionSimulator` | `src/features/succession/SuccessionSimulator.tsx` (exporté via `src/features/succession/index.ts`) |
@@ -524,7 +524,7 @@ Les hypotheses finales sont centralisees dans `buildSuccessionAssumptions()` pui
 
 La matrice de maturite et la trajectoire de refonte sont suivies dans [SUCCESSION_MODEL_MATURITY.md](SUCCESSION_MODEL_MATURITY.md).
 Toute PR qui etend les regimes matrimoniaux, la liquidation civile ou les masses patrimoniales doit mettre a jour cette matrice en meme temps que le code.
-La note de validation finale et la liste des hypotheses exportees sont suivies dans [SUCCESSION_FINAL_VALIDATION.md](SUCCESSION_FINAL_VALIDATION.md).
+La validation finale de la trajectoire `PR-31` a `PR-33` est désormais intégrée dans la matrice de maturité : gate repo `npm run check`, vérification des tests succession critiques, et contrôle manuel des exports `Hypothèses` côté UI, PPTX et XLSX.
 
 ---
 

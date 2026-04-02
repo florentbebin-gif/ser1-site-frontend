@@ -1,641 +1,61 @@
-import type { DmtgSettings } from '../../engine/civil';
-import type { LienParente } from '../../engine/succession';
-import {
-  DEFAULT_SUCCESSION_TESTAMENT_CONFIG,
-  type FamilyMember,
-  type SuccessionAssetPocket,
-  type SuccessionAssetDetailEntry,
-  type SuccessionCivilContext,
-  type SuccessionDevolutionContext,
-  type SuccessionDonationEntry,
-  type SuccessionEnfant,
-  type SuccessionGroupementFoncierEntry,
-  type SuccessionLiquidationContext,
-  type SuccessionPatrimonialContext,
-  type SuccessionTestamentConfig,
-} from './successionDraft';
-import type { SuccessionFiscalSnapshot } from './successionFiscalContext';
-import {
-  buildSuccessionDescendantRecipients,
-  countEffectiveDescendantBranches,
-  countEffectiveDescendantBranchesForDeceased,
-  type SuccessionDeceasedSide,
-} from './successionEnfants';
-import {
-  cloneSuccessionTestamentConfig,
-  computeTestamentDistribution,
-} from './successionTestament';
+import { countEffectiveDescendantBranches } from './successionEnfants';
 import {
   computeFirstEstate,
   computeSocieteAcquetsDistribution,
   computeStep1Split,
 } from './successionChainageEstateSplit';
 import {
-  buildDetailedDescendantHeirs,
-  computeTransmissionForHeirs,
-  mergeDetailedHeirs,
-  type DetailedChainHeir,
-} from './successionChainage.heirs';
-import { applySuccessionDonationRecallToHeirs } from './successionDonationRecall';
-import {
   addSuccessionEstateTaxableBases,
   applyResidencePrincipaleAbatementToEstateBasis,
-  assignBeneficiaryTaxableBasis,
   buildSuccessionEstateTaxableBasis,
   subtractSuccessionEstateTaxableBases,
   scaleSuccessionEstateTaxableBasis,
-  type SuccessionAssetTransmissionBasis,
-  createEmptyPocketScales,
-  type SuccessionEstatePocketScales,
-  type SuccessionEstateTaxableBasis,
 } from './successionTransmissionBasis';
-import { getSuccessionSharedPocketForContext } from './successionPatrimonialModel';
 import {
   buildSuccessionPreciputCandidates,
   buildSuccessionTargetedPreciputTaxableBasis,
   getSuccessionPreciputEligiblePocket,
   resolveSuccessionPreciputApplication,
-  type SuccessionResolvedPreciputSelection,
 } from './successionPreciput';
 import {
   computeSuccessionParticipationAcquetsSummary,
-  type SuccessionParticipationAcquetsSummary,
 } from './successionParticipationAcquets';
+import {
+  asAmount,
+  asChildrenCount,
+  buildEmptyAnalysis,
+  buildFirstEstatePocketScales,
+  buildSurvivorPocketScales,
+  buildTargetedPreciputSelectionsSummary,
+  computeStepTransmission,
+  countSideParents,
+  createEmptyEstateTaxableBasis,
+  getLabelForSide,
+  getOtherSide,
+  getStepEligibilityWarnings,
+  hasRepresentationOnAnySide,
+} from './successionChainage.helpers';
 import type {
-  SuccessionAffectedLiabilitySummary,
-  SuccessionInterMassClaimsSummary,
-} from './successionInterMassClaims';
+  SuccessionChainageAnalysis,
+  SuccessionChainageInput,
+} from './successionChainage.types';
 
-export type SuccessionChainOrder = 'epoux1' | 'epoux2';
-export type SuccessionChainRegime = 'communaute_legale' | 'separation_biens' | 'communaute_universelle';
+export type {
+  SuccessionChainAffectedLiabilitySummary,
+  SuccessionChainBeneficiary,
+  SuccessionChainInterMassClaimSummary,
+  SuccessionChainOrder,
+  SuccessionChainPreciputSelectionSummary,
+  SuccessionChainPreciputSummary,
+  SuccessionChainRegime,
+  SuccessionChainSocieteAcquetsSummary,
+  SuccessionChainStep,
+  SuccessionChainageAnalysis,
+} from './successionChainage.types';
 
-export interface SuccessionChainStep {
-  actifTransmis: number;
-  partConjoint: number;
-  partEnfants: number;
-  droitsConjoint: number;
-  droitsEnfants: number;
-  beneficiaries: SuccessionChainBeneficiary[];
-}
-
-export interface SuccessionChainSocieteAcquetsSummary {
-  configured: boolean;
-  totalValue: number;
-  firstEstateContribution: number;
-  survivorShare: number;
-  preciputAmount: number;
-  survivorAttributionAmount: number;
-  liquidationMode: SuccessionPatrimonialContext['societeAcquets']['liquidationMode'];
-  deceasedQuotePct: number;
-  survivorQuotePct: number;
-  attributionIntegrale: boolean;
-}
-
-export interface SuccessionChainPreciputSelectionSummary {
-  id: string;
-  sourceType: 'asset' | 'groupement_foncier';
-  sourceId: string;
-  label: string;
-  pocket: SuccessionAssetPocket;
-  requestedAmount: number;
-  appliedAmount: number;
-}
-
-export interface SuccessionChainPreciputSummary {
-  mode: 'global' | 'cible' | 'none';
-  pocket: SuccessionAssetPocket | null;
-  requestedAmount: number;
-  appliedAmount: number;
-  usesGlobalFallback: boolean;
-  selections: SuccessionChainPreciputSelectionSummary[];
-}
-
-export interface SuccessionChainInterMassClaimSummary {
-  configured: boolean;
-  totalRequestedAmount: number;
-  totalAppliedAmount: number;
-  claims: Array<{
-    id: string;
-    kind: 'recompense' | 'creance';
-    label?: string;
-    fromPocket: SuccessionAssetPocket;
-    toPocket: SuccessionAssetPocket;
-    requestedAmount: number;
-    appliedAmount: number;
-  }>;
-}
-
-export interface SuccessionChainAffectedLiabilitySummary {
-  totalAmount: number;
-  byPocket: Array<{
-    pocket: SuccessionAssetPocket;
-    amount: number;
-  }>;
-}
-
-export interface SuccessionChainBeneficiary {
-  id: string;
-  label: string;
-  lien: LienParente;
-  brut: number;
-  droits: number;
-  net: number;
-  exonerated?: boolean;
-}
-
-export interface SuccessionChainageAnalysis {
-  applicable: boolean;
-  order: SuccessionChainOrder;
-  firstDecedeLabel: string;
-  secondDecedeLabel: string;
-  step1: SuccessionChainStep | null;
-  step2: SuccessionChainStep | null;
-  societeAcquets: SuccessionChainSocieteAcquetsSummary | null;
-  participationAcquets: SuccessionParticipationAcquetsSummary | null;
-  preciput: SuccessionChainPreciputSummary | null;
-  interMassClaims: SuccessionChainInterMassClaimSummary | null;
-  affectedLiabilities: SuccessionChainAffectedLiabilitySummary | null;
-  totalDroits: number;
-  warnings: string[];
-}
-
-interface SuccessionChainageInput {
-  civil: SuccessionCivilContext;
-  liquidation: SuccessionLiquidationContext;
-  regimeUsed: SuccessionChainRegime | null;
-  order: SuccessionChainOrder;
-  dmtgSettings: DmtgSettings;
-  survivorEconomicInflows?: Record<'epoux1' | 'epoux2', number>;
-  attributionBiensCommunsPct?: number;
-  patrimonial?: Partial<Pick<
-    SuccessionPatrimonialContext,
-    | 'attributionIntegrale'
-    | 'donationEntreEpouxActive'
-    | 'donationEntreEpouxOption'
-    | 'stipulationContraireCU'
-    | 'preciputMode'
-    | 'preciputSelections'
-    | 'preciputMontant'
-    | 'participationAcquets'
-    | 'societeAcquets'
-    | 'interMassClaims'
-  >>;
-  societeAcquetsNetValue?: number;
-  assetEntries?: SuccessionAssetDetailEntry[];
-  groupementFoncierEntries?: SuccessionGroupementFoncierEntry[];
-  transmissionBasis?: SuccessionAssetTransmissionBasis;
-  interMassClaimsSummary?: SuccessionInterMassClaimsSummary | null;
-  affectedLiabilitySummary?: SuccessionAffectedLiabilitySummary | null;
-  abattementResidencePrincipale?: boolean;
-  forfaitMobilierMode?: SuccessionPatrimonialContext['forfaitMobilierMode'];
-  forfaitMobilierPct?: number;
-  forfaitMobilierMontant?: number;
-  enfantsContext?: SuccessionEnfant[];
-  familyMembers?: FamilyMember[];
-  devolution?: Pick<SuccessionDevolutionContext, 'testamentsBySide'>;
-  referenceDate?: Date;
-  donations?: SuccessionDonationEntry[];
-  donationSettings?: SuccessionFiscalSnapshot['donation'];
-}
-
-interface SuccessionChainStepComputation {
-  transmission: { droits: number; beneficiaries: SuccessionChainBeneficiary[] };
-  partConjoint: number;
-  partAutresBeneficiaires: number;
-  carryOverToStep2: number;
-  warnings: string[];
-}
-
-function asAmount(value: unknown): number {
-  const num = Number(value);
-  if (!Number.isFinite(num)) return 0;
-  return Math.max(0, num);
-}
-
-function asChildrenCount(value: unknown): number {
-  const num = Number(value);
-  if (!Number.isFinite(num)) return 0;
-  return Math.max(0, Math.floor(num));
-}
-
-function hasRepresentationOnAnySide(
-  enfantsContext: SuccessionEnfant[],
-  familyMembers: FamilyMember[],
-): boolean {
-  return buildSuccessionDescendantRecipients(enfantsContext, familyMembers).some((recipient) => recipient.lien === 'petit_enfant');
-}
-
-function getOtherSide(order: SuccessionChainOrder): SuccessionDeceasedSide {
-  return order === 'epoux1' ? 'epoux2' : 'epoux1';
-}
-
-function getLabelForSide(side: SuccessionDeceasedSide): string {
-  return side === 'epoux1' ? 'Epoux 1' : 'Epoux 2';
-}
-
-function buildTargetedPreciputSelectionsSummary(
-  targetedSelections: SuccessionResolvedPreciputSelection[],
-  requestedAmount: number,
-  appliedAmount: number,
-): SuccessionChainPreciputSelectionSummary[] {
-  if (requestedAmount <= 0 || appliedAmount <= 0) {
-    return targetedSelections.map((selection) => ({
-      id: selection.selection.id,
-      sourceType: selection.selection.sourceType,
-      sourceId: selection.selection.sourceId,
-      label: selection.candidate.label,
-      pocket: selection.candidate.pocket,
-      requestedAmount: selection.amount,
-      appliedAmount: 0,
-    }));
-  }
-
-  const ratio = Math.min(1, Math.max(0, appliedAmount / requestedAmount));
-  return targetedSelections.map((selection) => ({
-    id: selection.selection.id,
-    sourceType: selection.selection.sourceType,
-    sourceId: selection.selection.sourceId,
-    label: selection.candidate.label,
-    pocket: selection.candidate.pocket,
-    requestedAmount: selection.amount,
-    appliedAmount: selection.amount * ratio,
-  }));
-}
-
-function buildFirstEstatePocketScales(
-  civil: SuccessionCivilContext,
-  regimeUsed: SuccessionChainRegime,
-  order: SuccessionChainOrder,
-  attributionBiensCommunsPct: number,
-  societeAcquetsScale = 0,
-  preserveQualifiedSeparatePocketsInUniversalCommunity = false,
-): SuccessionEstatePocketScales {
-  const scales = createEmptyPocketScales();
-  const sharedPocket = getSuccessionSharedPocketForContext({
-    situationMatrimoniale: civil.situationMatrimoniale,
-    regimeMatrimonial: civil.regimeMatrimonial,
-    pacsConvention: civil.pacsConvention,
-  });
-
-  if (regimeUsed === 'communaute_universelle') {
-    if (preserveQualifiedSeparatePocketsInUniversalCommunity) {
-      scales[order] = 1;
-    } else {
-      scales.epoux1 = 1;
-      scales.epoux2 = 1;
-    }
-    if (sharedPocket) scales[sharedPocket] = 1;
-    return scales;
-  }
-
-  if (regimeUsed === 'separation_biens') {
-    scales[order] = 1;
-    if (sharedPocket === 'societe_acquets' && societeAcquetsScale > 0) {
-      scales.societe_acquets = Math.min(1, Math.max(0, societeAcquetsScale));
-    }
-    return scales;
-  }
-
-  const pctDefunt = (100 - Math.min(100, Math.max(0, attributionBiensCommunsPct))) / 100;
-  scales[order] = 1;
-  if (sharedPocket) scales[sharedPocket] = pctDefunt;
-  return scales;
-}
-
-function buildSurvivorPocketScales(
-  civil: SuccessionCivilContext,
-  regimeUsed: SuccessionChainRegime,
-  order: SuccessionChainOrder,
-  attributionBiensCommunsPct: number,
-  societeAcquetsScale = 0,
-  preserveQualifiedSeparatePocketsInUniversalCommunity = false,
-): SuccessionEstatePocketScales {
-  const scales = createEmptyPocketScales();
-  const survivor = getOtherSide(order);
-  const sharedPocket = getSuccessionSharedPocketForContext({
-    situationMatrimoniale: civil.situationMatrimoniale,
-    regimeMatrimonial: civil.regimeMatrimonial,
-    pacsConvention: civil.pacsConvention,
-  });
-
-  if (regimeUsed === 'communaute_universelle') {
-    if (preserveQualifiedSeparatePocketsInUniversalCommunity) {
-      scales[survivor] = 1;
-    }
-    return scales;
-  }
-
-  if (regimeUsed === 'separation_biens') {
-    scales[survivor] = 1;
-    if (sharedPocket === 'societe_acquets' && societeAcquetsScale > 0) {
-      scales.societe_acquets = Math.min(1, Math.max(0, 1 - societeAcquetsScale));
-    }
-    return scales;
-  }
-
-  const pctSurvivant = Math.min(100, Math.max(0, attributionBiensCommunsPct)) / 100;
-  scales[survivor] = 1;
-  if (sharedPocket) scales[sharedPocket] = pctSurvivant;
-  return scales;
-}
-
-function getStepWarnings(
-  stepLabel: string,
-  enfantsContext: SuccessionEnfant[],
-  familyMembers: FamilyMember[],
-  deceased: SuccessionDeceasedSide,
-  hasAllocatedBeneficiaries = false,
-): string[] {
-  if (hasAllocatedBeneficiaries) return [];
-  const branchCount = countEffectiveDescendantBranchesForDeceased(enfantsContext, familyMembers, deceased);
-  if (branchCount > 0) return [];
-  const allRecipients = buildSuccessionDescendantRecipients(enfantsContext, familyMembers);
-  if (allRecipients.length === 0) return [];
-  return [`${stepLabel}: aucun descendant du defunt de cette etape n'est eligible dans la branche retenue.`];
-}
-
-function buildEmptyAnalysis(order: SuccessionChainOrder, warning: string): SuccessionChainageAnalysis {
-  return {
-    applicable: false,
-    order,
-    firstDecedeLabel: order === 'epoux1' ? 'Epoux 1' : 'Epoux 2',
-    secondDecedeLabel: order === 'epoux1' ? 'Epoux 2' : 'Epoux 1',
-    step1: null,
-    step2: null,
-    societeAcquets: null,
-    participationAcquets: null,
-    preciput: null,
-    interMassClaims: null,
-    affectedLiabilities: null,
-    totalDroits: 0,
-    warnings: [warning],
-  };
-}
-
-function createEmptyEstateTaxableBasis(): SuccessionEstateTaxableBasis {
-  return {
-    ordinaryNetBeforeForfait: 0,
-    groupementEntries: [],
-    residencePrincipaleValeur: 0,
-  };
-}
-
-function getInactiveTestamentConfig(): SuccessionTestamentConfig {
-  return cloneSuccessionTestamentConfig(DEFAULT_SUCCESSION_TESTAMENT_CONFIG);
-}
-
-function prefixStepWarnings(stepLabel: string, stepWarnings: string[]): string[] {
-  return stepWarnings.map((warning) => `${stepLabel}: ${warning}`);
-}
-
-function getStepTestamentConfig(
+export function buildSuccessionChainageAnalysis(
   input: SuccessionChainageInput,
-  deceased: SuccessionDeceasedSide,
-  deadCounterpart: SuccessionDeceasedSide | null,
-): { testament: SuccessionTestamentConfig; warnings: string[] } {
-  const testamentBase = input.devolution?.testamentsBySide[deceased] ?? getInactiveTestamentConfig();
-  const testament = cloneSuccessionTestamentConfig(testamentBase);
-  const warnings: string[] = [];
-
-  if (!deadCounterpart) {
-    return { testament, warnings };
-  }
-
-  const blockedPrincipalRef = `principal:${deadCounterpart}` as const;
-  if (testament.dispositionType === 'legs_particulier') {
-    const initialLength = testament.particularLegacies.length;
-    testament.particularLegacies = testament.particularLegacies.filter(
-      (entry) => entry.beneficiaryRef !== blockedPrincipalRef,
-    );
-    if (testament.particularLegacies.length < initialLength) {
-      warnings.push('Legs particulier en faveur du conjoint ou partenaire deja decede ignore au second deces.');
-    }
-    return { testament, warnings };
-  }
-
-  if (testament.beneficiaryRef === blockedPrincipalRef) {
-    testament.beneficiaryRef = null;
-    warnings.push('Beneficiaire testamentaire conjoint ou partenaire deja decede ignore au second deces.');
-  }
-
-  return { testament, warnings };
-}
-
-function buildLegalPartnerHeirs(
-  civil: SuccessionCivilContext,
-  amount: number,
-): DetailedChainHeir[] {
-  if (civil.situationMatrimoniale !== 'marie' || amount <= 0) return [];
-  return [{
-    id: 'conjoint',
-    label: 'Conjoint survivant',
-    lien: 'conjoint',
-    partSuccession: amount,
-    exonerated: true,
-  }];
-}
-
-function buildParentHeirs(
-  familyMembers: FamilyMember[],
-  deceased: SuccessionDeceasedSide,
-  amount: number,
-): DetailedChainHeir[] {
-  if (amount <= 0) return [];
-  const parents = familyMembers.filter(
-    (m) => m.type === 'parent' && (!m.branch || m.branch === deceased),
-  );
-  const count = Math.max(1, parents.length);
-  const amountEach = amount / count;
-  return Array.from({ length: count }, (_, i) => ({
-    id: parents[i]?.id ?? `parent-${deceased}-${i + 1}`,
-    label: `Parent ${i + 1}`,
-    lien: 'parent' as const,
-    partSuccession: amountEach,
-    exonerated: false,
-  }));
-}
-
-function computeStepTransmission(
-  input: SuccessionChainageInput,
-  estateAmount: number,
-  estateTaxableBasis: SuccessionEstateTaxableBasis,
-  deceased: SuccessionDeceasedSide,
-  legalPartnerAmount: number,
-  redistributableAmount: number,
-  deadCounterpart: SuccessionDeceasedSide | null,
-  stepLabel: string,
-  parentsAmount = 0,
-): SuccessionChainStepComputation {
-  const legalPartnerHeirs = buildLegalPartnerHeirs(input.civil, legalPartnerAmount);
-  const parentHeirs = buildParentHeirs(input.familyMembers ?? [], deceased, parentsAmount);
-  const { testament, warnings: configWarnings } = getStepTestamentConfig(input, deceased, deadCounterpart);
-  const testamentDistribution = computeTestamentDistribution({
-    situation: input.civil.situationMatrimoniale,
-    side: deceased,
-    testament,
-    masseReference: estateAmount,
-    enfants: input.enfantsContext ?? [],
-    familyMembers: input.familyMembers ?? [],
-    maxAvailableAmount: redistributableAmount,
-  });
-  const testamentHeirs: DetailedChainHeir[] = (testamentDistribution?.beneficiaries ?? []).map((beneficiary) => ({
-    id: beneficiary.id,
-    label: beneficiary.label,
-    lien: beneficiary.lien,
-    partSuccession: beneficiary.partSuccession,
-    exonerated: beneficiary.exonerated,
-  }));
-
-  // BUG 11 fix: for legs_universel / legs_titre_universel targeting the conjoint,
-  // apply max(legal, testament) instead of cumulating both.
-  // legs_particulier remains cumulative (specific assets on top of legal share).
-  const isUniversalDisposition = testamentDistribution?.dispositionType === 'legs_universel'
-    || testamentDistribution?.dispositionType === 'legs_titre_universel';
-  const testamentConjointAmount = isUniversalDisposition
-    ? testamentHeirs.filter((h) => h.id === 'conjoint').reduce((sum, h) => sum + h.partSuccession, 0)
-    : 0;
-  let effectiveRedistributableAmount = redistributableAmount;
-  if (isUniversalDisposition && testamentConjointAmount > 0 && legalPartnerAmount > 0) {
-    const effectiveConjointPart = Math.max(legalPartnerAmount, testamentConjointAmount);
-    const legalPartnerHeirsAdjusted = legalPartnerHeirs.map((h) =>
-      h.id === 'conjoint' ? { ...h, partSuccession: effectiveConjointPart } : h,
-    );
-    const filteredTestamentHeirs = testamentHeirs.filter((h) => h.id !== 'conjoint');
-    const testamentDistributedNonConjoint = filteredTestamentHeirs.reduce((sum, h) => sum + h.partSuccession, 0);
-    effectiveRedistributableAmount = Math.max(0, estateAmount - effectiveConjointPart - testamentDistributedNonConjoint);
-    const descendantsResidualAmountAdj = Math.max(0, effectiveRedistributableAmount);
-    const detailedDescendantHeirsAdj = buildDetailedDescendantHeirs(
-      descendantsResidualAmountAdj,
-      deceased,
-      countEffectiveDescendantBranchesForDeceased(
-        input.enfantsContext ?? [],
-        input.familyMembers ?? [],
-        deceased,
-      ),
-      input.dmtgSettings,
-      input.enfantsContext ?? [],
-      input.familyMembers ?? [],
-    );
-    const detailedHeirs = mergeDetailedHeirs([
-      ...legalPartnerHeirsAdjusted,
-      ...parentHeirs,
-      ...filteredTestamentHeirs,
-      ...detailedDescendantHeirsAdj,
-    ]);
-    const detailedHeirsWithTaxableBasis = input.transmissionBasis
-      ? assignBeneficiaryTaxableBasis(detailedHeirs, estateTaxableBasis, {
-        forfaitMobilierMode: input.forfaitMobilierMode ?? 'off',
-        forfaitMobilierPct: input.forfaitMobilierPct ?? 0,
-        forfaitMobilierMontant: input.forfaitMobilierMontant ?? 0,
-      })
-      : detailedHeirs;
-    const detailedHeirsWithDonationRecall = applySuccessionDonationRecallToHeirs({
-      heirs: detailedHeirsWithTaxableBasis,
-      donations: input.donations,
-      simulatedDeceased: deceased,
-      donationSettings: input.donationSettings,
-      dmtgSettings: input.dmtgSettings,
-      referenceDate: input.referenceDate,
-    });
-    const { droits, beneficiaries } = computeTransmissionForHeirs(
-      estateAmount,
-      detailedHeirsWithDonationRecall,
-      input.dmtgSettings,
-    );
-    const partAutresBeneficiaires = beneficiaries
-      .filter((b) => b.lien !== 'conjoint')
-      .reduce((sum, b) => sum + b.brut, 0);
-    const survivingCounterpartRef = `principal:${getOtherSide(deceased)}` as const;
-    const testamentCarryOver = (testamentDistribution?.beneficiaries ?? [])
-      .filter((b) => b.beneficiaryRef === survivingCounterpartRef)
-      .reduce((sum, b) => sum + b.partSuccession, 0);
-    const effectiveCarryOver = isUniversalDisposition
-      ? Math.max(legalPartnerAmount, testamentCarryOver)
-      : testamentCarryOver;
-    return {
-      transmission: { droits, beneficiaries },
-      partConjoint: effectiveConjointPart,
-      partAutresBeneficiaires,
-      carryOverToStep2: effectiveCarryOver,
-      warnings: [
-        ...prefixStepWarnings(stepLabel, configWarnings),
-        ...prefixStepWarnings(stepLabel, testamentDistribution?.warnings ?? []),
-      ],
-    };
-  }
-
-  const descendantsResidualAmount = Math.max(
-    0,
-    redistributableAmount - (testamentDistribution?.distributedAmount ?? 0),
-  );
-  const detailedDescendantHeirs = buildDetailedDescendantHeirs(
-    descendantsResidualAmount,
-    deceased,
-    countEffectiveDescendantBranchesForDeceased(
-      input.enfantsContext ?? [],
-      input.familyMembers ?? [],
-      deceased,
-    ),
-    input.dmtgSettings,
-    input.enfantsContext ?? [],
-    input.familyMembers ?? [],
-  );
-  const detailedHeirs = mergeDetailedHeirs([
-    ...legalPartnerHeirs,
-    ...parentHeirs,
-    ...testamentHeirs,
-    ...detailedDescendantHeirs,
-  ]);
-  const detailedHeirsWithTaxableBasis = input.transmissionBasis
-    ? assignBeneficiaryTaxableBasis(detailedHeirs, estateTaxableBasis, {
-      forfaitMobilierMode: input.forfaitMobilierMode ?? 'off',
-      forfaitMobilierPct: input.forfaitMobilierPct ?? 0,
-      forfaitMobilierMontant: input.forfaitMobilierMontant ?? 0,
-    })
-    : detailedHeirs;
-  const detailedHeirsWithDonationRecall = applySuccessionDonationRecallToHeirs({
-    heirs: detailedHeirsWithTaxableBasis,
-    donations: input.donations,
-    simulatedDeceased: deceased,
-    donationSettings: input.donationSettings,
-    dmtgSettings: input.dmtgSettings,
-    referenceDate: input.referenceDate,
-  });
-  const transmission = computeTransmissionForHeirs(
-    estateAmount,
-    detailedHeirsWithDonationRecall,
-    input.dmtgSettings,
-  );
-  const partConjoint = transmission.beneficiaries
-    .filter((beneficiary) => beneficiary.lien === 'conjoint')
-    .reduce((sum, beneficiary) => sum + beneficiary.brut, 0);
-  const partAutresBeneficiaires = transmission.beneficiaries
-    .filter((beneficiary) => beneficiary.lien !== 'conjoint')
-    .reduce((sum, beneficiary) => sum + beneficiary.brut, 0);
-  const survivingCounterpartRef = `principal:${getOtherSide(deceased)}` as const;
-  const testamentCarryOver = (testamentDistribution?.beneficiaries ?? [])
-    .filter((beneficiary) => beneficiary.beneficiaryRef === survivingCounterpartRef)
-    .reduce((sum, beneficiary) => sum + beneficiary.partSuccession, 0);
-
-  return {
-    transmission,
-    partConjoint,
-    partAutresBeneficiaires,
-    carryOverToStep2: testamentCarryOver,
-    warnings: [
-      ...prefixStepWarnings(stepLabel, configWarnings),
-      ...prefixStepWarnings(stepLabel, testamentDistribution?.warnings ?? []),
-    ],
-  };
-}
-
-function countSideParents(familyMembers: FamilyMember[], deceased: SuccessionDeceasedSide): number {
-  return familyMembers.filter(
-    (m) => m.type === 'parent' && (!m.branch || m.branch === deceased),
-  ).length;
-}
-
-export function buildSuccessionChainageAnalysis(input: SuccessionChainageInput): SuccessionChainageAnalysis {
+): SuccessionChainageAnalysis {
   const enfantsContext = input.enfantsContext ?? [];
   const familyMembers = input.familyMembers ?? [];
   const nbEnfants = Math.max(
@@ -648,7 +68,10 @@ export function buildSuccessionChainageAnalysis(input: SuccessionChainageInput):
     + asAmount(input.liquidation.actifCommun);
 
   if (!input.regimeUsed) {
-    return buildEmptyAnalysis(input.order, 'Chainage disponible pour couples maries ou pacses avec regime de liquidation.');
+    return buildEmptyAnalysis(
+      input.order,
+      'Chainage disponible pour couples maries ou pacses avec regime de liquidation.',
+    );
   }
 
   const attributionPctBase = input.attributionBiensCommunsPct ?? 50;
@@ -696,9 +119,7 @@ export function buildSuccessionChainageAnalysis(input: SuccessionChainageInput):
       ...(input.patrimonial ?? {}),
       preciputMontant: resolvedPreciput.requestedAmount,
     };
-  const societeAcquetsDistribution = (
-    isSocieteAcquetsRegime
-  )
+  const societeAcquetsDistribution = isSocieteAcquetsRegime
     ? computeSocieteAcquetsDistribution(
       input.order,
       input.societeAcquetsNetValue ?? 0,
@@ -764,10 +185,14 @@ export function buildSuccessionChainageAnalysis(input: SuccessionChainageInput):
   );
 
   if (attributionPct !== 50 && input.regimeUsed === 'communaute_legale') {
-    warnings.push(`Attribution des biens communs au survivant: ${attributionPct} % applique au partage communautaire.`);
+    warnings.push(
+      `Attribution des biens communs au survivant: ${attributionPct} % applique au partage communautaire.`,
+    );
   }
   if (nbEnfants <= 0) {
-    warnings.push('Aucun enfant declare: la chronologie reste indicative hors beneficiaires testamentaires explicitement saisis.');
+    warnings.push(
+      'Aucun enfant declare: la chronologie reste indicative hors beneficiaires testamentaires explicitement saisis.',
+    );
   }
   if (
     input.civil.situationMatrimoniale === 'pacse'
@@ -777,7 +202,9 @@ export function buildSuccessionChainageAnalysis(input: SuccessionChainageInput):
     warnings.push('PACS: absence de vocation successorale legale automatique sans testament.');
   }
   if (hasRepresentationOnAnySide(enfantsContext, familyMembers)) {
-    warnings.push('Chainage: representation successorale simplifiee prise en compte pour les petits-enfants declares.');
+    warnings.push(
+      'Chainage: representation successorale simplifiee prise en compte pour les petits-enfants declares.',
+    );
   }
   if (input.patrimonial?.preciputMode === 'cible' && resolvedPreciput.mode === 'cible') {
     warnings.push(
@@ -813,12 +240,18 @@ export function buildSuccessionChainageAnalysis(input: SuccessionChainageInput):
     );
   }
   if (preserveQualifiedSeparatePocketsInUniversalCommunity) {
-    warnings.push("Communaute universelle: les biens qualifies 'propre par nature' et rattaches a un epoux sont exclus de la masse commune simplifiee.");
+    warnings.push(
+      "Communaute universelle: les biens qualifies 'propre par nature' et rattaches a un epoux sont exclus de la masse commune simplifiee.",
+    );
   }
   if (input.civil.regimeMatrimonial === 'communaute_meubles_acquets') {
-    warnings.push('Communaute de meubles et acquets: la qualification meuble / immeuble des actifs detailles ajuste la masse simplifiee avant chainage.');
+    warnings.push(
+      'Communaute de meubles et acquets: la qualification meuble / immeuble des actifs detailles ajuste la masse simplifiee avant chainage.',
+    );
   }
-  warnings.push('Module de chainage simplifie: liquidation notariale fine et options civiles avancees non modelisees.');
+  warnings.push(
+    'Module de chainage simplifie: liquidation notariale fine et options civiles avancees non modelisees.',
+  );
 
   const nbParentsStep1 = countSideParents(familyMembers, input.order);
   const step1Split = computeStep1Split(
@@ -840,7 +273,7 @@ export function buildSuccessionChainageAnalysis(input: SuccessionChainageInput):
   const targetedPreciputAppliedAmount = resolvedPreciput.mode === 'cible'
     ? effectivePreciputApplied
     : 0;
-  const preciputSummary: SuccessionChainPreciputSummary | null = (
+  const preciputSummary = (
     resolvedPreciput.mode === 'none'
     && effectivePreciputApplied <= 0
   )
@@ -883,7 +316,10 @@ export function buildSuccessionChainageAnalysis(input: SuccessionChainageInput):
               targetedPreciputAppliedBasis,
             )
         )
-        : scaleSuccessionEstateTaxableBasis(firstEstateTaxableBasis, step1TaxableEstate / firstEstateBasisDenominator)
+        : scaleSuccessionEstateTaxableBasis(
+          firstEstateTaxableBasis,
+          step1TaxableEstate / firstEstateBasisDenominator,
+        )
     )
     : createEmptyEstateTaxableBasis();
   const step1TransmissionTaxableBasis = applyResidencePrincipaleAbatementToEstateBasis(
@@ -902,7 +338,7 @@ export function buildSuccessionChainageAnalysis(input: SuccessionChainageInput):
     step1Split.parentsPart,
   );
   warnings.push(...step1Details.warnings);
-  warnings.push(...getStepWarnings(
+  warnings.push(...getStepEligibilityWarnings(
     `Etape 1 (${getLabelForSide(input.order)})`,
     enfantsContext,
     familyMembers,
@@ -929,7 +365,10 @@ export function buildSuccessionChainageAnalysis(input: SuccessionChainageInput):
       targetedPreciputAppliedBasis,
     )
     : firstEstateBasisDenominator > 0
-      ? scaleSuccessionEstateTaxableBasis(firstEstateTaxableBasis, step2CarryOverAmount / firstEstateBasisDenominator)
+      ? scaleSuccessionEstateTaxableBasis(
+        firstEstateTaxableBasis,
+        step2CarryOverAmount / firstEstateBasisDenominator,
+      )
       : createEmptyEstateTaxableBasis();
   const survivorEconomicInflowsTaxableBasis = {
     ordinaryNetBeforeForfait: survivorEconomicInflows,
@@ -955,7 +394,7 @@ export function buildSuccessionChainageAnalysis(input: SuccessionChainageInput):
     step2ParentsPart,
   );
   warnings.push(...step2Details.warnings);
-  warnings.push(...getStepWarnings(
+  warnings.push(...getStepEligibilityWarnings(
     `Etape 2 (${getLabelForSide(otherSide)})`,
     enfantsContext,
     familyMembers,
@@ -963,10 +402,14 @@ export function buildSuccessionChainageAnalysis(input: SuccessionChainageInput):
     step2Details.transmission.beneficiaries.length > 0,
   ));
   if (survivorEconomicInflows > 0) {
-    warnings.push(`Etape 2 (${getLabelForSide(otherSide)}): capitaux assurances nets recycles depuis l'etape 1 = ${Math.round(survivorEconomicInflows).toLocaleString('fr-FR')} EUR.`);
+    warnings.push(
+      `Etape 2 (${getLabelForSide(otherSide)}): capitaux assurances nets recycles depuis l'etape 1 = ${Math.round(survivorEconomicInflows).toLocaleString('fr-FR')} EUR.`,
+    );
   }
   if (input.abattementResidencePrincipale && input.transmissionBasis?.residencePrincipaleEntry) {
-    warnings.push(`Etape 1 (${getLabelForSide(input.order)}): abattement residence principale 20 % applique a l'assiette fiscale de cette etape uniquement.`);
+    warnings.push(
+      `Etape 1 (${getLabelForSide(input.order)}): abattement residence principale 20 % applique a l'assiette fiscale de cette etape uniquement.`,
+    );
   }
 
   return {

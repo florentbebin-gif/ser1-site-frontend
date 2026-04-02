@@ -24,7 +24,7 @@ test.describe('Smoke Tests - Surfaces stables', () => {
     await page.goto(ROUTES.ir);
     await expect(page.locator('body')).not.toContainText('Application error');
     await expect(page.getByTestId('ir-page')).toBeVisible();
-    await expect(page.getByTestId('ir-title')).toContainText("Simulateur d'imp\u00f4t sur le revenu");
+    await expect(page.getByTestId('ir-title')).toContainText("Simulateur d'impôt sur le revenu");
     await expect(page.getByTestId('ir-mode-btn')).toContainText('Mode expert');
   });
 
@@ -46,9 +46,16 @@ test.describe('Smoke Tests - Surfaces stables', () => {
     await page.goto(ROUTES.settings);
     await expect(page.locator('.settings-page')).toBeVisible();
     await expect(page.getByRole('button', { name: 'Généraux' })).toBeVisible();
-    await page.getByRole('button', { name: 'Impôts' }).click();
+    await page.getByRole('button', { name: 'Impôts', exact: true }).click();
     await expect(page).toHaveURL(/\/settings\/impots$/);
-    await expect(page.getByRole('button', { name: 'Impôts' })).toHaveClass(/is-active/);
+    await expect(page.getByRole('button', { name: 'Impôts', exact: true })).toHaveClass(/is-active/);
+  });
+
+  test('Strategy charge sans draft et affiche son fallback minimal', async ({ page }) => {
+    await page.goto(ROUTES.strategy);
+    await expect(page.locator('body')).not.toContainText('Application error');
+    await expect(page.getByRole('heading', { name: 'Aucun audit en cours' })).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Demarrer un audit' })).toBeVisible();
   });
 
   test('Une route upcoming reste accessible en mode minimal', async ({ page }) => {

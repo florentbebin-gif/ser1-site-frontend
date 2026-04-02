@@ -3,7 +3,6 @@
  */
 
 /** Navigation routes to test */
-// TODO: Add E2E coverage for /strategy route (currently defined but untested)
 export const ROUTES = {
   home: '/',
   login: '/login',

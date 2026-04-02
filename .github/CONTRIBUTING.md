@@ -24,7 +24,7 @@ powershell -ExecutionPolicy Bypass -File .\scripts\pre-merge-check.ps1
 
 # 3. Analyses optionnelles
 npm run check:circular  # Détection dépendances circulaires
-npm run check:unused    # Rapport dépendances inutilisées
+npm run check:unused    # Rapport dépendances inutilisées (avec ignore des faux positifs connus)
 npm run analyze         # Visualisation bundle
 npm run test:e2e        # Tests E2E Playwright
 
