@@ -1,46 +1,27 @@
 /**
- * PerPotentielSimulator - Wizard shell for "Controle du potentiel ER".
- *
- * The engine and state flow stay unchanged. This component only reorganizes the
- * visual shell to match the SER1 simulator baseline and the Excel journey cues.
+ * PerPotentielSimulator - Wizard shell for "Contrôle du potentiel ER".
  */
 
 import React from 'react';
+import type { PerHistoricalBasis } from '../../../../engine/per';
 import { ExportMenu } from '../../../../components/ExportMenu';
 import { useFiscalContext } from '../../../../hooks/useFiscalContext';
 import { useTheme } from '../../../../settings/ThemeProvider';
 import '../../../../components/simulator/SimulatorShell.css';
 import '../../../../styles/premium-shared.css';
-import { usePerPotentiel } from '../../hooks/usePerPotentiel';
+import { usePerPotentiel, type WizardStep } from '../../hooks/usePerPotentiel';
 import { usePerPotentielExportHandlers } from '../../hooks/usePerPotentielExportHandlers';
+import { getPerWorkflowYears } from '../../utils/perWorkflowYears';
 import ModeStep from './steps/ModeStep';
 import AvisIrStep from './steps/AvisIrStep';
 import SituationFiscaleStep from './steps/SituationFiscaleStep';
 import SynthesePotentielStep from './steps/SynthesePotentielStep';
 import '../../Per.css';
 
-const STEP_META = [
-  {
-    id: 1 as const,
-    shortLabel: 'Mode',
-    title: 'Choix du parcours',
-  },
-  {
-    id: 2 as const,
-    shortLabel: 'Avis IR',
-    title: "Lecture de l'avis",
-  },
-  {
-    id: 3 as const,
-    shortLabel: 'Revenus',
-    title: 'Situation fiscale et versements',
-  },
-  {
-    id: 4 as const,
-    shortLabel: 'Synthèse',
-    title: 'Restitution déclarative',
-  },
-] as const;
+type StepMeta = {
+  shortLabel: string;
+  title: string;
+};
 
 const fmtCurrency = (value: number): string =>
   new Intl.NumberFormat('fr-FR', {
@@ -52,23 +33,91 @@ const fmtCurrency = (value: number): string =>
 const fmtPercent = (value: number): string =>
   `${(value <= 1 ? value * 100 : value).toFixed(1)} %`;
 
+function getDocumentBasisLabel(
+  mode: 'versement-n' | 'declaration-n1' | null,
+  basis: PerHistoricalBasis | null,
+  years: ReturnType<typeof getPerWorkflowYears>,
+): string {
+  if (mode === 'declaration-n1') {
+    return `Avis IR ${years.previousTaxYear} (revenus ${years.previousIncomeYear})`;
+  }
+
+  if (basis === 'current-avis') {
+    return `Avis IR ${years.currentTaxYear} (revenus ${years.currentIncomeYear})`;
+  }
+
+  if (basis === 'previous-avis-plus-n1') {
+    return `Avis IR ${years.previousTaxYear} (revenus ${years.previousIncomeYear}) + reconstitution ${years.currentIncomeYear}`;
+  }
+
+  return 'À définir';
+}
+
+function getStepMeta(
+  stepId: WizardStep,
+  mode: 'versement-n' | 'declaration-n1' | null,
+  basis: PerHistoricalBasis | null,
+  years: ReturnType<typeof getPerWorkflowYears>,
+): StepMeta {
+  switch (stepId) {
+    case 1:
+      return { shortLabel: 'Mode', title: 'Choix du parcours' };
+    case 2:
+      return {
+        shortLabel: 'Avis IR',
+        title: `Lecture de l’avis IR ${mode === 'declaration-n1' || basis === 'previous-avis-plus-n1'
+          ? years.previousTaxYear
+          : years.currentTaxYear}`,
+      };
+    case 3:
+      if (mode === 'declaration-n1') {
+        return {
+          shortLabel: 'Déclaration',
+          title: `Revenus ${years.currentIncomeYear} et versements à déclarer`,
+        };
+      }
+      if (basis === 'current-avis') {
+        return {
+          shortLabel: 'Versements N',
+          title: `Versements ${years.currentTaxYear} et estimation optionnelle`,
+        };
+      }
+      return {
+        shortLabel: `Revenus ${years.currentIncomeYear}`,
+        title: `Reconstitution des revenus ${years.currentIncomeYear}`,
+      };
+    case 4:
+      return {
+        shortLabel: `Estimation ${years.currentTaxYear}`,
+        title: `Estimation des revenus ${years.currentTaxYear}`,
+      };
+    case 5:
+    default:
+      return { shortLabel: 'Synthèse', title: 'Synthèse déclarative' };
+  }
+}
+
 export default function PerPotentielSimulator(): React.ReactElement {
   const { fiscalContext, loading, error } = useFiscalContext({ strict: true });
   const { pptxColors, cabinetLogo, logoPlacement } = useTheme();
-  const currentYear = new Date().getFullYear();
+  const years = getPerWorkflowYears(fiscalContext);
 
   const {
     state,
     result,
+    baseResult,
+    visibleSteps,
     setMode,
-    setAvisIrConnu,
+    setHistoricalBasis,
+    setNeedsCurrentYearEstimate,
     updateAvisIr,
     updateSituation,
     updateDeclarant,
     setVersementEnvisage,
+    nextStep,
     prevStep,
     goToStep,
-    showAvisStep,
+    canGoNext,
     isCouple,
   } = usePerPotentiel(fiscalContext);
 
@@ -100,30 +149,34 @@ export default function PerPotentielSimulator(): React.ReactElement {
     );
   }
 
-  const visibleSteps: readonly (1 | 2 | 3 | 4)[] = showAvisStep
-    ? [1, 2, 3, 4]
-    : [1, 3, 4];
+  const activeStep = getStepMeta(state.step, state.mode, state.historicalBasis, years);
   const stepIndex = visibleSteps.indexOf(state.step);
   const totalSteps = visibleSteps.length;
-  const activeStep = STEP_META[state.step - 1];
-  const currentPass = fiscalContext.passHistoryByYear[currentYear] ?? null;
-
+  const currentPass = fiscalContext.passHistoryByYear[years.currentTaxYear] ?? null;
   const exportOptions = [
-    { label: 'Excel', onClick: exportExcel, disabled: !result || state.step !== 4 },
-    { label: 'PowerPoint', onClick: exportPowerPoint, disabled: !result || state.step !== 4 },
+    { label: 'Excel', onClick: exportExcel, disabled: !result || state.step !== 5 },
+    { label: 'PowerPoint', onClick: exportPowerPoint, disabled: !result || state.step !== 5 },
   ];
 
   const pathLabel = state.mode === 'declaration-n1'
     ? 'Déclaration 2042 N-1'
-    : 'Contrôle avant versement N';
-  const documentLabel = state.mode === 'versement-n'
-    ? (state.avisIrConnu ? `Avis IR ${currentYear}` : 'Estimation depuis les revenus')
-    : `Déclaration des revenus ${currentYear - 1}`;
+    : state.mode === 'versement-n'
+      ? 'Contrôle avant versement N'
+      : 'À définir';
+  const documentLabel = getDocumentBasisLabel(state.mode, state.historicalBasis, years);
+  const projectionLabel = state.mode === 'versement-n'
+    ? (state.needsCurrentYearEstimate ? `Oui, revenus ${years.currentTaxYear}` : 'Non')
+    : 'Non';
   const foyerLabel = isCouple
     ? 'Couple marié ou pacsé'
     : state.isole
       ? 'Parent isolé'
       : 'Personne seule';
+  const hasPrev = stepIndex > 0;
+  const hasNext = stepIndex >= 0 && stepIndex < visibleSteps.length - 1;
+  const avisBasis = state.mode === 'declaration-n1'
+    ? 'previous-avis-plus-n1'
+    : state.historicalBasis ?? 'previous-avis-plus-n1';
 
   return (
     <div className="sim-page per-potentiel-page">
@@ -140,10 +193,10 @@ export default function PerPotentielSimulator(): React.ReactElement {
       </div>
 
       <nav className="per-potentiel-tabs" aria-label="Étapes du parcours">
-        {visibleSteps.map((stepId, index) => {
-          const meta = STEP_META[stepId - 1];
+        {visibleSteps.map((stepId) => {
+          const meta = getStepMeta(stepId, state.mode, state.historicalBasis, years);
           const isCurrent = state.step === stepId;
-          const isDone = stepIndex > index;
+          const isDone = stepIndex > visibleSteps.indexOf(stepId);
           return (
             <button
               key={stepId}
@@ -177,37 +230,112 @@ export default function PerPotentielSimulator(): React.ReactElement {
               {state.step === 1 && (
                 <ModeStep
                   mode={state.mode}
-                  avisIrConnu={state.avisIrConnu}
+                  historicalBasis={state.historicalBasis}
+                  needsCurrentYearEstimate={state.needsCurrentYearEstimate}
+                  years={years}
                   onSelectMode={setMode}
-                  onSetAvisIrConnu={setAvisIrConnu}
+                  onSelectHistoricalBasis={setHistoricalBasis}
+                  onSetNeedsCurrentYearEstimate={setNeedsCurrentYearEstimate}
                 />
               )}
 
-              {state.step === 2 && showAvisStep && (
+              {state.step === 2 && (
                 <AvisIrStep
                   avisIr={state.avisIr}
                   avisIr2={state.avisIr2}
                   isCouple={isCouple}
+                  basis={avisBasis}
+                  years={years}
                   onUpdate={updateAvisIr}
                 />
               )}
 
-              {state.step === 3 && (
+              {state.step === 3 && state.mode === 'declaration-n1' && (
                 <SituationFiscaleStep
+                  variant="revenus-n1"
+                  title={`Déclaration des revenus ${years.currentIncomeYear}`}
+                  hint={`Renseignez les revenus et versements exacts de ${years.currentIncomeYear}. Cette étape sert à fiabiliser la déclaration 2042 et le plafond restant après déclaration.`}
+                  badge={`Revenus ${years.currentIncomeYear} exacts — montants définitifs pour la déclaration 2042`}
+                  yearLabel={`${years.currentIncomeYear}`}
+                  showFoyerCard
                   situationFamiliale={state.situationFamiliale}
                   nombreParts={state.nombreParts}
                   isole={state.isole}
                   isCouple={isCouple}
                   mutualisationConjoints={state.mutualisationConjoints}
-                  declarant1={state.declarant1}
-                  declarant2={state.declarant2}
+                  declarant1={state.revenusN1Declarant1}
+                  declarant2={state.revenusN1Declarant2}
+                  result={baseResult}
+                  onUpdateSituation={updateSituation}
+                  onUpdateDeclarant={(decl, patch) => updateDeclarant('revenus-n1', decl, patch)}
+                />
+              )}
+
+              {state.step === 3 && state.mode === 'versement-n' && state.historicalBasis === 'previous-avis-plus-n1' && (
+                <SituationFiscaleStep
+                  variant="revenus-n1"
+                  title={`Reconstitution des revenus ${years.currentIncomeYear}`}
+                  hint={`L’avis IR ${years.previousTaxYear} donne le point de départ. Cette étape reconstitue les revenus ${years.currentIncomeYear} nécessaires au recalcul du plafond 163 quatervicies.`}
+                  badge={`Revenus ${years.currentIncomeYear} — utilisés pour recalculer le plafond 163 quatervicies`}
+                  yearLabel={`${years.currentIncomeYear}`}
+                  showFoyerCard
+                  situationFamiliale={state.situationFamiliale}
+                  nombreParts={state.nombreParts}
+                  isole={state.isole}
+                  isCouple={isCouple}
+                  mutualisationConjoints={state.mutualisationConjoints}
+                  declarant1={state.revenusN1Declarant1}
+                  declarant2={state.revenusN1Declarant2}
+                  result={baseResult}
+                  onUpdateSituation={updateSituation}
+                  onUpdateDeclarant={(decl, patch) => updateDeclarant('revenus-n1', decl, patch)}
+                />
+              )}
+
+              {state.step === 3 && state.mode === 'versement-n' && state.historicalBasis === 'current-avis' && (
+                <SituationFiscaleStep
+                  variant="versements-n"
+                  title={`Versements ${years.currentTaxYear} et estimation optionnelle`}
+                  hint={`L’avis IR ${years.currentTaxYear} donne déjà le plafond 163 quatervicies. Renseignez ici les versements ${years.currentTaxYear} et, si besoin, les revenus pour affiner le gain fiscal.`}
+                  badge={`Année ${years.currentTaxYear} — versements connus, revenus facultatifs pour affiner la fiscalité`}
+                  yearLabel={`${years.currentTaxYear}`}
+                  showFoyerCard
+                  incomeCardsOptional
+                  situationFamiliale={state.situationFamiliale}
+                  nombreParts={state.nombreParts}
+                  isole={state.isole}
+                  isCouple={isCouple}
+                  mutualisationConjoints={state.mutualisationConjoints}
+                  declarant1={state.projectionNDeclarant1}
+                  declarant2={state.projectionNDeclarant2}
                   result={result}
                   onUpdateSituation={updateSituation}
-                  onUpdateDeclarant={updateDeclarant}
+                  onUpdateDeclarant={(decl, patch) => updateDeclarant('projection-n', decl, patch)}
                 />
               )}
 
               {state.step === 4 && (
+                <SituationFiscaleStep
+                  variant="projection-n"
+                  title={`Estimation des revenus ${years.currentTaxYear}`}
+                  hint={`Projetez les revenus et versements ${years.currentTaxYear} si vous devez intégrer Madelin, abondement PERCO, PEROB ou art. 83 dans le contrôle du potentiel.`}
+                  badge={`Revenus ${years.currentTaxYear} estimés — plafonds Madelin, PERCO et art. 83 calculés sur l’année en cours`}
+                  yearLabel={`${years.currentTaxYear}`}
+                  showFoyerCard={false}
+                  situationFamiliale={state.situationFamiliale}
+                  nombreParts={state.nombreParts}
+                  isole={state.isole}
+                  isCouple={isCouple}
+                  mutualisationConjoints={state.mutualisationConjoints}
+                  declarant1={state.projectionNDeclarant1}
+                  declarant2={state.projectionNDeclarant2}
+                  result={result}
+                  onUpdateSituation={updateSituation}
+                  onUpdateDeclarant={(decl, patch) => updateDeclarant('projection-n', decl, patch)}
+                />
+              )}
+
+              {state.step === 5 && (
                 <SynthesePotentielStep
                   result={result}
                   isCouple={isCouple}
@@ -218,11 +346,21 @@ export default function PerPotentielSimulator(): React.ReactElement {
               )}
             </div>
 
-            {state.step > 1 && (
+            {(hasPrev || hasNext) && (
               <div className="per-potentiel-stage-footer">
-                <button type="button" className="premium-btn" onClick={prevStep}>
-                  Retour
-                </button>
+                {hasPrev ? (
+                  <button type="button" className="premium-btn" onClick={prevStep}>
+                    Retour
+                  </button>
+                ) : (
+                  <span />
+                )}
+
+                {hasNext && (
+                  <button type="button" className="premium-btn premium-btn-primary" onClick={nextStep} disabled={!canGoNext}>
+                    {visibleSteps[stepIndex + 1] === 5 ? 'Voir la synthèse' : 'Continuer'}
+                  </button>
+                )}
               </div>
             )}
           </div>
@@ -237,8 +375,12 @@ export default function PerPotentielSimulator(): React.ReactElement {
                 <span className="per-potentiel-context-value">{pathLabel}</span>
               </div>
               <div className="per-potentiel-context-item">
-                <span className="per-potentiel-context-label">Source</span>
+                <span className="per-potentiel-context-label">Base documentaire</span>
                 <span className="per-potentiel-context-value">{documentLabel}</span>
+              </div>
+              <div className="per-potentiel-context-item">
+                <span className="per-potentiel-context-label">Projection {years.currentTaxYear}</span>
+                <span className="per-potentiel-context-value">{projectionLabel}</span>
               </div>
               <div className="per-potentiel-context-item">
                 <span className="per-potentiel-context-label">Foyer</span>
@@ -254,7 +396,7 @@ export default function PerPotentielSimulator(): React.ReactElement {
           <div className="premium-card per-potentiel-context-card per-potentiel-context-card--accent">
             <div className="per-potentiel-context-title-row">
               <p className="premium-section-title">Repère fiscal</p>
-              <span className="per-potentiel-pass-chip">PASS {currentYear}</span>
+              <span className="per-potentiel-pass-chip">PASS {years.currentTaxYear}</span>
             </div>
             <div className="per-potentiel-pass-value">
               {currentPass ? fmtCurrency(currentPass) : 'Non disponible'}

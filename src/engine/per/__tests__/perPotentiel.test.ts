@@ -31,6 +31,7 @@ function makeDeclarant(overrides: Partial<DeclarantRevenus> = {}): DeclarantReve
 function makeInput(overrides: Partial<PerPotentielInput> = {}): PerPotentielInput {
   return {
     mode: 'versement-n',
+    historicalBasis: 'previous-avis-plus-n1',
     anneeRef: 2025,
     situationFiscale: {
       situationFamiliale: 'celibataire',
@@ -71,6 +72,7 @@ describe('computePlafond163QBrut', () => {
   it('uses spouse plafond for simulation only when mutualisation is enabled', () => {
     const baseInput = {
       mode: 'versement-n' as const,
+      historicalBasis: 'previous-avis-plus-n1' as const,
       anneeRef: 2025,
       situationFiscale: {
         situationFamiliale: 'marie' as const,

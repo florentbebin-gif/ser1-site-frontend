@@ -41,10 +41,14 @@ export interface SituationFiscaleInput {
   declarant2?: DeclarantRevenus;
 }
 
+export type PerHistoricalBasis = 'previous-avis-plus-n1' | 'current-avis';
+
 export interface PerPotentielInput {
   mode: 'versement-n' | 'declaration-n1';
+  historicalBasis: PerHistoricalBasis;
   anneeRef: number;
   situationFiscale: SituationFiscaleInput;
+  projectionFiscale?: SituationFiscaleInput;
   avisIr?: AvisIrPlafonds;
   avisIr2?: AvisIrPlafonds;
   versementEnvisage?: number;

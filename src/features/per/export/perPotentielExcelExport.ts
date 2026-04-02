@@ -4,7 +4,8 @@ import type { XlsxCell, XlsxSheet } from '../../../utils/export/xlsxBuilder';
 
 export interface PerPotentielExcelState {
   mode: 'versement-n' | 'declaration-n1' | null;
-  avisIrConnu: boolean;
+  historicalBasis: 'previous-avis-plus-n1' | 'current-avis' | null;
+  needsCurrentYearEstimate: boolean;
   situationFamiliale: 'celibataire' | 'marie';
   nombreParts: number;
   isole: boolean;
@@ -27,6 +28,14 @@ function modeLabel(mode: PerPotentielExcelState['mode']): string {
 
 function yesNo(value: boolean): string {
   return value ? 'Oui' : 'Non';
+}
+
+function historicalBasisLabel(
+  basis: PerPotentielExcelState['historicalBasis'],
+): string {
+  if (basis === 'current-avis') return 'Avis IR courant déjà disponible';
+  if (basis === 'previous-avis-plus-n1') return 'Avis IR précédent + reconstitution N-1';
+  return 'Non défini';
 }
 
 function pushPlafondRows(
@@ -68,7 +77,8 @@ function buildSyntheseSheet(
     [h('Champ'), h('Valeur')],
     [sec('Parcours'), sec('')],
     [txt('Mode'), txt(modeLabel(state.mode))],
-    [txt('Avis IR disponible'), txt(yesNo(state.avisIrConnu))],
+    [txt('Base documentaire'), txt(historicalBasisLabel(state.historicalBasis))],
+    [txt('Projection N nécessaire'), txt(yesNo(state.needsCurrentYearEstimate))],
     [txt('Situation familiale'), txt(state.situationFamiliale === 'marie' ? 'Marie / Pacse' : 'Celibataire / Veuf / Divorce')],
     [txt('Nombre de parts'), ctr(state.nombreParts)],
     [txt('Parent isole'), txt(yesNo(state.isole))],
@@ -166,6 +176,8 @@ function buildHypothesesSheet(state: PerPotentielExcelState): XlsxSheet {
     [txt('Estimation IR deleguee au moteur IR du repo pour les parts, la decote, le quotient familial et la CEHR.'), txt('src/engine/ir/compute.ts')],
     [txt('Le parcours reprend la pedagogie du classeur 2025 tout en gardant le moteur fiscal du repo comme arbitre.'), txt('Parite workbook documentee')],
     [txt(`Mode exporte : ${modeLabel(state.mode)}.`), txt('Contexte de simulation')],
+    [txt(`Base documentaire : ${historicalBasisLabel(state.historicalBasis)}.`), txt('Parcours PER')],
+    [txt(`Projection N active : ${yesNo(state.needsCurrentYearEstimate)}.`), txt('Parcours PER')],
     [sec('Avertissement'), sec('')],
     [txt('Document etabli a titre indicatif pour un rendez-vous de conseil.'), txt('')],
     [txt('Les montants doivent etre confrontes aux justificatifs et a la declaration fiscale finale.'), txt('')],

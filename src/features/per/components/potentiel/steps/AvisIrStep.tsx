@@ -3,24 +3,29 @@
  */
 
 import React from 'react';
-import type { AvisIrPlafonds } from '../../../../../engine/per';
+import type { AvisIrPlafonds, PerHistoricalBasis } from '../../../../../engine/per';
+import { getAvisReferenceYears, type PerWorkflowYears } from '../../../utils/perWorkflowYears';
 
 interface AvisIrStepProps {
   avisIr: AvisIrPlafonds | null;
   avisIr2: AvisIrPlafonds | null;
   isCouple: boolean;
+  basis: PerHistoricalBasis;
+  years: PerWorkflowYears;
   onUpdate: (_patch: Partial<AvisIrPlafonds>, _decl?: 1 | 2) => void;
 }
-
-const currentYear = new Date().getFullYear();
 
 function AvisFieldsCard({
   label,
   avis,
+  incomeYear,
+  carryForwardYears,
   onChange,
 }: {
   label: string;
   avis: AvisIrPlafonds | null;
+  incomeYear: number;
+  carryForwardYears: [number, number, number];
   onChange: (_patch: Partial<AvisIrPlafonds>) => void;
 }): React.ReactElement {
   const values = avis ?? {
@@ -28,14 +33,14 @@ function AvisFieldsCard({
     nonUtiliseAnnee2: 0,
     nonUtiliseAnnee3: 0,
     plafondCalcule: 0,
-    anneeRef: currentYear - 1,
+    anneeRef: incomeYear,
   };
 
   const rows = [
-    { label: `Plafond non utilise ${currentYear - 4}`, key: 'nonUtiliseAnnee1' as const },
-    { label: `Plafond non utilise ${currentYear - 3}`, key: 'nonUtiliseAnnee2' as const },
-    { label: `Plafond non utilise ${currentYear - 2}`, key: 'nonUtiliseAnnee3' as const },
-    { label: `Plafond calcule sur revenus ${currentYear - 1}`, key: 'plafondCalcule' as const },
+    { label: `Plafond non utilisé ${carryForwardYears[0]}`, key: 'nonUtiliseAnnee1' as const },
+    { label: `Plafond non utilisé ${carryForwardYears[1]}`, key: 'nonUtiliseAnnee2' as const },
+    { label: `Plafond non utilisé ${carryForwardYears[2]}`, key: 'nonUtiliseAnnee3' as const },
+    { label: `Plafond calculé sur revenus ${incomeYear}`, key: 'plafondCalcule' as const },
   ];
 
   return (
@@ -55,7 +60,7 @@ function AvisFieldsCard({
               className="premium-input per-avis-row-input"
               value={values[row.key] || ''}
               placeholder="0"
-              onChange={(event) => onChange({ [row.key]: Number(event.target.value) || 0 })}
+              onChange={(event) => onChange({ [row.key]: Number(event.target.value) || 0, anneeRef: incomeYear })}
             />
           </label>
         ))}
@@ -68,26 +73,29 @@ export default function AvisIrStep({
   avisIr,
   avisIr2,
   isCouple,
+  basis,
+  years,
   onUpdate,
 }: AvisIrStepProps): React.ReactElement {
+  const avisContext = getAvisReferenceYears(years, basis);
+
   return (
     <div className="per-step per-step--avis">
       <div className="per-step-copy">
-        <p className="per-step-eyebrow">Document source</p>
-        <h3 className="per-step-title">Lecture de l avis d impot</h3>
+        <h3 className="per-step-title">Lecture de l’avis IR {avisContext.taxYear}</h3>
         <p className="per-step-hint">
-          Reprenez uniquement la rubrique "Plafond epargne retraite". L objectif est de recuperer
-          les reports utilisables et le plafond calcule sur les revenus {currentYear - 1}.
+          Reprenez uniquement la rubrique « Plafond épargne retraite ». L’objectif est de récupérer
+          les reports utilisables et le plafond calculé sur les revenus {avisContext.incomeYear}.
         </p>
       </div>
 
       <div className="per-avis-layout">
         <div className="premium-card-compact per-avis-guide-card">
-          <p className="premium-section-title">Ce qu il faut relever</p>
+          <p className="premium-section-title">Ce qu’il faut relever</p>
           <ol className="per-avis-checklist">
-            <li>Les trois annees de plafond non utilise.</li>
-            <li>Le plafond calcule sur les revenus {currentYear - 1}.</li>
-            <li>Les montants declarant par declarant si le foyer est un couple.</li>
+            <li>Les trois années de plafond non utilisé.</li>
+            <li>Le plafond calculé sur les revenus {avisContext.incomeYear}.</li>
+            <li>Les montants déclarant par déclarant si le foyer est un couple.</li>
           </ol>
         </div>
 
@@ -95,25 +103,29 @@ export default function AvisIrStep({
           <div className="per-avis-preview">
             <div className="per-avis-preview-header">
               <div>
-                <p className="premium-section-title">Reperage visuel</p>
-                <h4 className="per-avis-preview-title">Avis d impot {currentYear}</h4>
+                <p className="premium-section-title">Repérage visuel</p>
+                <h4 className="per-avis-preview-title">Avis d’impôt {avisContext.taxYear}</h4>
               </div>
-              <span className="per-avis-preview-chip">Revenus {currentYear - 1}</span>
+              <span className="per-avis-preview-chip">Revenus {avisContext.incomeYear}</span>
             </div>
 
             <div className="per-avis-preview-sheet">
-              <div className="per-avis-preview-line per-avis-preview-line--muted">Direction generale des finances publiques</div>
-              <div className="per-avis-preview-line per-avis-preview-line--muted">Avis etabli en {currentYear}</div>
+              <div className="per-avis-preview-line per-avis-preview-line--muted">
+                Direction générale des finances publiques
+              </div>
+              <div className="per-avis-preview-line per-avis-preview-line--muted">
+                Avis établi en {avisContext.taxYear}
+              </div>
               <div className="per-avis-preview-focus">
-                <span className="per-avis-preview-focus-label">Rubrique a lire</span>
-                <strong>PLAFOND EPARGNE RETRAITE</strong>
+                <span className="per-avis-preview-focus-label">Rubrique à lire</span>
+                <strong>PLAFOND ÉPARGNE RETRAITE</strong>
               </div>
               <div className="per-avis-preview-grid">
                 <div>Plafond total</div>
-                <div>Plafond non utilise N-3</div>
-                <div>Plafond non utilise N-2</div>
-                <div>Plafond non utilise N-1</div>
-                <div>Plafond calcule sur revenus {currentYear - 1}</div>
+                <div>Plafond non utilisé {avisContext.carryForwardYears[0]}</div>
+                <div>Plafond non utilisé {avisContext.carryForwardYears[1]}</div>
+                <div>Plafond non utilisé {avisContext.carryForwardYears[2]}</div>
+                <div>Plafond calculé sur revenus {avisContext.incomeYear}</div>
               </div>
             </div>
           </div>
@@ -122,15 +134,19 @@ export default function AvisIrStep({
 
       <div className={`per-avis-form-grid ${isCouple ? 'is-couple' : ''}`}>
         <AvisFieldsCard
-          label="Declarant 1"
+          label="Déclarant 1"
           avis={avisIr}
+          incomeYear={avisContext.incomeYear}
+          carryForwardYears={avisContext.carryForwardYears}
           onChange={(patch) => onUpdate(patch, 1)}
         />
 
         {isCouple && (
           <AvisFieldsCard
-            label="Declarant 2"
+            label="Déclarant 2"
             avis={avisIr2}
+            incomeYear={avisContext.incomeYear}
+            carryForwardYears={avisContext.carryForwardYears}
             onChange={(patch) => onUpdate(patch, 2)}
           />
         )}
