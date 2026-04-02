@@ -408,6 +408,7 @@ Objectif : fonctionner en cabinet (plusieurs profils) + livrables a l'image du c
 
 # P6 - Analyse patrimoniale premium + livrables
 Objectif : rendre l'audit "vraiment livrable", standardise, et reutilisable.
+Etat runtime actuel : `/audit` reste actif et alimente `strategy`; l'export PPTX transite desormais par `src/features/audit/exportAudit.ts` pour isoler le legacy.
 
 ## PR-P6-01 - Audit patrimonial (PPTX) : structure stable + donnees minimales
 - Plan de slides fixe

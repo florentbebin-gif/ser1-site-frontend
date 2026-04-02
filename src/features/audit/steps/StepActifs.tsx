@@ -12,7 +12,8 @@ export default function StepActifs({ dossier, updateDossier }: StepProps) {
       </div>
 
       <button
-        className="chip"
+        type="button"
+        className="premium-btn"
         onClick={() => updateDossier({
           actifs: [...actifs, {
             id: crypto.randomUUID(),
@@ -70,6 +71,7 @@ export default function StepActifs({ dossier, updateDossier }: StepProps) {
             </select>
           </div>
           <button
+            type="button"
             className="chip chip-small chip-danger"
             onClick={() => {
               updateDossier({ actifs: actifs.filter((_, i) => i !== idx) });

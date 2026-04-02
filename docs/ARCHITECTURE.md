@@ -110,7 +110,7 @@ Source (preuves) :
 | `/set-password` | public | `SetPassword` | `src/pages/SetPassword.tsx` (import direct) |
 | `/reset-password` | public | `SetPassword` | `src/pages/SetPassword.tsx` (import direct) |
 | `/` | privé | `Home` | `src/pages/Home.tsx` (import direct) |
-| `/audit` | privé + lazy | `AuditWizard` | `src/features/audit/AuditWizard.tsx` (exporté via `src/features/audit/index.ts`) — workflow actif hors `/sim/*`, avec draft de session et export PPTX |
+| `/audit` | privé + lazy | `AuditWizard` | `src/features/audit/AuditWizard.tsx` (exporté via `src/features/audit/index.ts`) — workflow actif hors `/sim/*`, avec draft de session, `ExportMenu` partagé et export PPTX isolé dans `src/features/audit/exportAudit.ts` |
 | `/strategy` | privé + lazy | `StrategyPage` | `src/pages/StrategyPage.tsx` (lazy) — workflow actif dépendant d'un draft d'audit, encore incomplet côté produit |
 | `/sim/placement` | privé + lazy | `Placement` | `src/features/placement/PlacementPage.tsx` (exporté via `src/features/placement/index.ts`) |
 | `/sim/credit` | privé + lazy | `Credit` | `src/features/credit/Credit.tsx` (exporté via `src/features/credit/index.ts`) |
@@ -247,6 +247,7 @@ Invariants (à ne pas casser) :
 - Design system : `src/pptx/designSystem/serenity.ts`.
 - Slides : `src/pptx/slides/`.
 - **Règles de conception et checklist de création** : `docs/GOUVERNANCE.md` § Gouvernance PPTX.
+- Cas legacy encore actifs : `src/features/audit/exportAudit.ts` adapte `src/pptx/auditPptx.ts` derrière la feature ; le composant UI n'importe plus directement le générateur legacy.
 
 Assets statiques (images) :
 - Chapitres PPTX : `public/pptx/chapters/ch-01.png` .. `ch-09.png` (bibliothèque).

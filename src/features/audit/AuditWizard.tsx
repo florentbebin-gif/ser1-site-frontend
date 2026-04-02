@@ -2,7 +2,9 @@
  * AuditWizard - Wizard multi-étapes pour l'audit patrimonial
  */
 
-import React, { useState, useEffect, useCallback, useRef, useContext } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { ExportMenu } from '../../components/ExportMenu';
+import type { ExportOption } from '../../components/export/exportTypes';
 import type { DossierAudit } from './types';
 import { createEmptyDossier } from './types';
 import {
@@ -13,10 +15,9 @@ import {
   clearDraftFromSession,
   setupBeforeUnloadWarning,
 } from './storage';
-import { generateAuditPptx } from '../../pptx/auditPptx';
+import { exportAuditPptx } from './exportAudit';
 import { useTheme } from '../../settings/ThemeProvider';
 import { onResetEvent } from '../../utils/reset';
-import { SessionGuardContext } from '../../session/sessionGuardContext';
 import StepActifs from './steps/StepActifs';
 import StepCivil from './steps/StepCivil';
 import StepFamille from './steps/StepFamille';
@@ -43,7 +44,6 @@ type StepId = typeof STEPS[number]['id'];
 
 export default function AuditWizard(): React.ReactElement {
   const { colors } = useTheme();
-  const { canExport } = useContext(SessionGuardContext);
   const [dossier, setDossier] = useState<DossierAudit>(() => {
     const draft = loadDraftFromSession();
     return draft || createEmptyDossier();
@@ -51,9 +51,7 @@ export default function AuditWizard(): React.ReactElement {
   const [currentStep, setCurrentStep] = useState<StepId>('famille');
   const [hasChanges, setHasChanges] = useState(false);
   const [isExportingPptx, setIsExportingPptx] = useState(false);
-  const [exportMenuOpen, setExportMenuOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const exportRef = useRef<HTMLDivElement>(null);
 
   // Sauvegarde automatique en session
   useEffect(() => {
@@ -109,16 +107,6 @@ export default function AuditWizard(): React.ReactElement {
     return () => window.removeEventListener(LOAD_EVENT, handler);
   }, []);
 
-  // Fermeture menu export au clic extérieur
-  useEffect(() => {
-    const handler = (e: MouseEvent) => {
-      if (!exportRef.current) return;
-      if (!exportRef.current.contains(e.target as Node)) setExportMenuOpen(false);
-    };
-    document.addEventListener('click', handler);
-    return () => document.removeEventListener('click', handler);
-  }, []);
-
   const updateDossier = useCallback((updates: Partial<DossierAudit>) => {
     setDossier(prev => ({
       ...prev,
@@ -131,7 +119,7 @@ export default function AuditWizard(): React.ReactElement {
   const handleExportPptx = async () => {
     try {
       setIsExportingPptx(true);
-      await generateAuditPptx({ dossier, colors });
+      await exportAuditPptx({ dossier, colors });
     } catch (error) {
       console.error('Erreur export PPTX:', error);
       alert('Erreur lors de l\'export PPTX');
@@ -163,124 +151,118 @@ export default function AuditWizard(): React.ReactElement {
   const currentStepIndex = STEPS.findIndex(s => s.id === currentStep);
   const canGoNext = currentStepIndex < STEPS.length - 1;
   const canGoPrev = currentStepIndex > 0;
+  const exportOptions: ExportOption[] = [
+    {
+      label: 'PowerPoint (.pptx)',
+      onClick: handleExportPptx,
+      disabled: isExportingPptx,
+    },
+  ];
 
   return (
-    <div className="audit-wizard">
-      {/* Header sobre */}
-      <div className="audit-header">
-        <h1>Audit Patrimonial</h1>
-        
-        {/* Menu export harmonisé (style /sim/ir) */}
-        <div ref={exportRef} className="export-menu-container">
-          <button
-            type="button"
-            className="chip"
-            aria-haspopup="menu"
-            aria-expanded={exportMenuOpen}
-            onClick={() => setExportMenuOpen(v => !v)}
-            disabled={!canExport}
-            title={!canExport ? 'Session expirée — export indisponible' : undefined}
-          >
-            Exporter ▾
-          </button>
-          {exportMenuOpen && (
-            <div role="menu" className="export-dropdown">
-              <button
-                type="button"
-                role="menuitem"
-                className="export-dropdown-item"
-                onClick={() => {
-                  setExportMenuOpen(false);
-                  handleExportPptx();
-                }}
-                disabled={isExportingPptx}
-              >
-                {isExportingPptx ? 'Export en cours...' : 'PowerPoint (.pptx)'}
-              </button>
-            </div>
-          )}
+    <div className="audit-wizard premium-page">
+      <header className="audit-header premium-header">
+        <div className="audit-header-copy">
+          <p className="premium-section-title">Workflow privé P6</p>
+          <h1 className="premium-title">Audit patrimonial</h1>
+          <p className="premium-subtitle audit-subtitle">
+            Dossier guidé, persistant en session, exportable et utilisé comme point d’entrée de la stratégie.
+          </p>
         </div>
-      </div>
-
-      {/* Input file caché pour l'import via Topbar */}
-      <input
-        ref={fileInputRef}
-        type="file"
-        accept=".json"
-        onChange={handleImport}
-        style={{ display: 'none' }}
-      />
-
-      {/* Indicateur de changements non sauvegardés */}
-      {hasChanges && (
-        <div className="unsaved-warning">
-          ⚠️ Modifications non exportées
-        </div>
-      )}
-
-      {/* Barre de progression sobre */}
-      <div className="progress-bar-container">
-        <div className="progress-bar">
-          <div 
-            className="progress-bar-fill" 
-            style={{ width: `${((currentStepIndex + 1) / STEPS.length) * 100}%` }}
+        <div className="audit-header-actions">
+          <ExportMenu
+            options={exportOptions}
+            loading={isExportingPptx}
+            loadingLabel="Export PPTX..."
           />
         </div>
-        <span className="progress-text">Étape {currentStepIndex + 1} sur {STEPS.length}</span>
-      </div>
+      </header>
 
-      {/* Navigation étapes sobre */}
-      <div className="steps-nav">
-        {STEPS.map((step, index) => (
+      <div className="audit-shell">
+        {/* Input file caché pour l'import via Topbar */}
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept=".json"
+          onChange={handleImport}
+          style={{ display: 'none' }}
+        />
+
+        {/* Indicateur de changements non sauvegardés */}
+        {hasChanges && (
+          <div className="unsaved-warning" role="status">
+            <span aria-hidden="true">⚠️</span>
+            <span>Modifications non exportées</span>
+          </div>
+        )}
+
+        {/* Barre de progression sobre */}
+        <div className="progress-bar-container">
+          <div className="progress-bar">
+            <div
+              className="progress-bar-fill"
+              style={{ width: `${((currentStepIndex + 1) / STEPS.length) * 100}%` }}
+            />
+          </div>
+          <span className="progress-text">Étape {currentStepIndex + 1} sur {STEPS.length}</span>
+        </div>
+
+        {/* Navigation étapes sobre */}
+        <div className="steps-nav" aria-label="Étapes de l'audit">
+          {STEPS.map((step, index) => (
+            <button
+              key={step.id}
+              type="button"
+              className={`step-pill ${currentStep === step.id ? 'active' : ''} ${index < currentStepIndex ? 'completed' : ''}`}
+              onClick={() => setCurrentStep(step.id)}
+            >
+              <span className="step-num">{step.num}</span>
+              <span className="step-label">{step.label}</span>
+            </button>
+          ))}
+        </div>
+
+        {/* Contenu étape */}
+        <div className="step-content premium-card">
+          {currentStep === 'famille' && (
+            <StepFamille dossier={dossier} updateDossier={updateDossier} />
+          )}
+          {currentStep === 'civil' && (
+            <StepCivil dossier={dossier} updateDossier={updateDossier} />
+          )}
+          {currentStep === 'actifs' && (
+            <StepActifs dossier={dossier} updateDossier={updateDossier} />
+          )}
+          {currentStep === 'passif' && (
+            <StepPassif dossier={dossier} updateDossier={updateDossier} />
+          )}
+          {currentStep === 'fiscalite' && (
+            <StepFiscalite dossier={dossier} updateDossier={updateDossier} />
+          )}
+          {currentStep === 'objectifs' && (
+            <StepObjectifs dossier={dossier} updateDossier={updateDossier} />
+          )}
+        </div>
+
+        {/* Navigation bas */}
+        <div className="step-navigation">
           <button
-            key={step.id}
-            className={`step-pill ${currentStep === step.id ? 'active' : ''} ${index < currentStepIndex ? 'completed' : ''}`}
-            onClick={() => setCurrentStep(step.id)}
+            type="button"
+            className="premium-btn"
+            onClick={() => setCurrentStep(STEPS[currentStepIndex - 1].id)}
+            disabled={!canGoPrev}
           >
-            <span className="step-num">{step.num}</span>
-            <span className="step-label">{step.label}</span>
+            Précédent
           </button>
-        ))}
-      </div>
-
-      {/* Contenu étape */}
-      <div className="step-content">
-        {currentStep === 'famille' && (
-          <StepFamille dossier={dossier} updateDossier={updateDossier} />
-        )}
-        {currentStep === 'civil' && (
-          <StepCivil dossier={dossier} updateDossier={updateDossier} />
-        )}
-        {currentStep === 'actifs' && (
-          <StepActifs dossier={dossier} updateDossier={updateDossier} />
-        )}
-        {currentStep === 'passif' && (
-          <StepPassif dossier={dossier} updateDossier={updateDossier} />
-        )}
-        {currentStep === 'fiscalite' && (
-          <StepFiscalite dossier={dossier} updateDossier={updateDossier} />
-        )}
-        {currentStep === 'objectifs' && (
-          <StepObjectifs dossier={dossier} updateDossier={updateDossier} />
-        )}
-      </div>
-
-      {/* Navigation bas */}
-      <div className="step-navigation">
-        <button 
-          className="chip chip-secondary" 
-          onClick={() => setCurrentStep(STEPS[currentStepIndex - 1].id)}
-          disabled={!canGoPrev}
-        >
-          Précédent
-        </button>
-        <button 
-          className="chip chip-primary" 
-          onClick={() => setCurrentStep(STEPS[currentStepIndex + 1].id)}
-          disabled={!canGoNext}
-        >
-          Suivant
-        </button>
+          <button
+            type="button"
+            className="premium-btn premium-btn-primary"
+            onClick={() => setCurrentStep(STEPS[currentStepIndex + 1].id)}
+            disabled={!canGoNext}
+          >
+            Suivant
+          </button>
+        </div>
       </div>
     </div>
   );
