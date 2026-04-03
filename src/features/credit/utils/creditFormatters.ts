@@ -1,7 +1,5 @@
 /**
- * creditFormatters.ts - Formatters et utilitaires pour le simulateur de crédit
- * 
- * Extrait depuis l'ancienne implementation monolithique du simulateur Credit et centralise ici.
+ * Utilitaires de formatage pour le simulateur de crédit.
  */
 
 import { toNumber } from '../../../utils/number';
@@ -12,7 +10,9 @@ import { toNumber } from '../../../utils/number';
 
 export const fmt0 = (n: number | string | null | undefined): string =>
   (Math.round(Number(n) || 0)).toLocaleString('fr-FR');
+
 export const euro0 = (n: number | string | null | undefined): string => `${fmt0(n)} €`;
+
 export const toNum = (v: string | number | null | undefined): number => toNumber(v, 0);
 
 // ============================================================================
@@ -35,10 +35,6 @@ export function addMonths(ym: string, k: number): string {
 export function labelMonthFR(ym: string): string {
   const [y, m] = ym.split('-').map(Number);
   return `${String(m).padStart(2, '0')}/${y}`;
-}
-
-export function labelYear(ym: string): string {
-  return ym.split('-')[0];
 }
 
 export function monthsDiff(a: string, b: string): number {
@@ -64,19 +60,11 @@ export function parseTaux(raw: string | number): number {
 }
 
 // ============================================================================
-// CAPITAL/DURÉE
+// CAPITAL
 // ============================================================================
 
 export function parseCapital(value: string | number): number {
   return toNum(String(value).replace(/\D/g, '').slice(0, 8));
-}
-
-export function parseDuree(value: string | number): number {
-  return Math.max(1, toNum(String(value).replace(/\D/g, '').slice(0, 3)));
-}
-
-export function parseQuotite(raw: string | number): number {
-  return Math.min(100, Math.max(0, toNum(raw)));
 }
 
 // ============================================================================

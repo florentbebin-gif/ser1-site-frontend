@@ -85,8 +85,3 @@ export function applyThemeToCss(theme: ThemeConfig): void {
 /**
  * Réinitialise le thème par défaut
  */
-export function resetTheme(): ThemeConfig {
-  saveTheme(DEFAULT_THEME);
-  applyThemeToCss(DEFAULT_THEME);
-  return DEFAULT_THEME;
-}

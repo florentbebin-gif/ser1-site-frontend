@@ -179,19 +179,3 @@ export function ThemeProvider({ children }: ThemeProviderProps): React.ReactElem
     </ThemeContext.Provider>
   );
 }
-
-export function useThemeForPptx(): Record<string, string> {
-  const { pptxColors } = useTheme();
-  return {
-    c1: pptxColors.c1.replace('#', ''),
-    c2: pptxColors.c2.replace('#', ''),
-    c3: pptxColors.c3.replace('#', ''),
-    c4: pptxColors.c4.replace('#', ''),
-    c5: pptxColors.c5.replace('#', ''),
-    c6: pptxColors.c6.replace('#', ''),
-    c7: pptxColors.c7.replace('#', ''),
-    c8: pptxColors.c8.replace('#', ''),
-    c9: pptxColors.c9.replace('#', ''),
-    c10: pptxColors.c10.replace('#', ''),
-  };
-}
