@@ -336,7 +336,7 @@ export default function SuccessionSimulator() {
   if (settingsLoading) {
     return (
       <div className="sim-page sc-page" data-testid="succession-page">
-        <div className="premium-header sim-header sim-header--stacked sc-header">
+        <div className="premium-header sim-header sim-header--stacked">
           <h1 className="premium-title">Simulateur succession</h1>
           <p className="premium-subtitle">Estimez les droits de mutation à titre gratuit.</p>
         </div>
@@ -349,7 +349,7 @@ export default function SuccessionSimulator() {
 
   return (
     <div className="sim-page sc-page" data-testid="succession-page">
-      <div className="premium-header sim-header sim-header--stacked sc-header">
+      <div className="premium-header sim-header sim-header--stacked">
         <h1 className="premium-title">Simulateur succession</h1>
         <div className="sc-header__subtitle-row">
           <p className="premium-subtitle">

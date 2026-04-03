@@ -685,19 +685,6 @@
 
 /* .cv2-mode-chip--expert supprimé : style expert = identique au chip standard (discret) */
 
-/* ----------------------------------------
-   HEADER CRÉDIT — border-bottom C6
-   ---------------------------------------- */
-.cv2-header--credit {
-  border-bottom-color: var(--color-c6);
-  border-bottom-width: 3px;
-  padding-bottom: 8px;
-  margin-bottom: 16px;
-  flex-direction: column;
-  align-items: stretch;        /* subtitle-row pleine largeur */
-  gap: 6px;
-}
-
 /* Ligne 2 : sous-titre (flex:1) + mode chip + Exporter (alignés droite) */
 .cv2-header__subtitle-row {
   display: flex;

@@ -179,7 +179,7 @@ export default function PerPotentielSimulator(): React.ReactElement {
 
   return (
     <div className="sim-page per-potentiel-page">
-      <div className="premium-header sim-header sim-header--stacked per-potentiel-header">
+      <div className="premium-header sim-header sim-header--stacked">
         <div className="per-potentiel-header-copy">
           <h1 className="premium-title">Contrôle du potentiel épargne retraite</h1>
           <p className="premium-subtitle">

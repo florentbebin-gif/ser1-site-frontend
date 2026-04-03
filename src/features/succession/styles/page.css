@@ -1,15 +1,5 @@
 /* Succession Simulator — baseline /sim/* (PR1) */
 
-.sc-header {
-  border-bottom-color: var(--color-c6);
-  border-bottom-width: 3px;
-  padding-bottom: 8px;
-  margin-bottom: 16px;
-  flex-direction: column;
-  align-items: stretch;
-  gap: 6px;
-}
-
 .sc-header__subtitle-row {
   display: flex;
   justify-content: space-between;

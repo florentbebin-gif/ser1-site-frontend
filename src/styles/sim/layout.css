@@ -11,13 +11,15 @@
   align-items: flex-start;
   justify-content: space-between;
   gap: 24px;
-  margin-bottom: 32px;
-  padding-bottom: 16px;
-  border-bottom: 2px solid var(--color-c8);
+  margin-bottom: 16px;
+  padding-bottom: 8px;
+  border-bottom: 3px solid var(--color-c6);
 }
 
 .sim-header--stacked {
   flex-direction: column;
+  align-items: stretch;
+  gap: 6px;
 }
 
 .sim-header__actions {

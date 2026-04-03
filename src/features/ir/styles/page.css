@@ -1,18 +1,5 @@
 /* src/features/ir/components/IrSimulator.css */
 
-.ir-header {
-  /* Layout colonne : titre → ligne sous-titre + actions (pattern premium-header) */
-  flex-direction: column;
-  align-items: stretch;
-  gap: 6px;
-  /* Espacements alignés baseline /sim/* */
-  margin-bottom: 16px;
-  padding-bottom: 8px;
-  /* Barre normée : 3px C6 — même pattern que /sim/credit (GOUVERNANCE.md §2) */
-  border-bottom-width: 3px;
-  border-bottom-color: var(--color-c6);
-}
-
 /* Ligne sous-titre + actions (ExportMenu à droite) */
 .ir-header__subtitle-row {
   display: flex;

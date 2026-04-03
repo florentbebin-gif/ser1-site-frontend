@@ -54,7 +54,7 @@ export function PlacementLiquidationSection({
             <td>Stratégie de retraits</td>
             <td colSpan={2}>
               <select
-                className={`pl-select${!isExpert ? ' is-forced' : ''}`}
+                className={`pl-select sim-field__control${!isExpert ? ' is-forced' : ''}`}
                 value={isExpert ? state.liquidation.mode : 'epuiser'}
                 onChange={(event) => setLiquidation({ mode: event.target.value })}
                 disabled={!isExpert}

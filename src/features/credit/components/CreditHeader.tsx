@@ -16,7 +16,7 @@ export function CreditHeader({
   onToggleMode,
 }: CreditHeaderProps) {
   return (
-    <div className="premium-header sim-header sim-header--stacked cv2-header--credit" data-testid="credit-header">
+    <div className="premium-header sim-header sim-header--stacked" data-testid="credit-header">
       <h1 className="premium-title" data-testid="credit-title">
         Simulateur de crédit
       </h1>

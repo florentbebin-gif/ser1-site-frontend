@@ -244,13 +244,6 @@
   padding-top: 24px;
 }
 
-.per-potentiel-header {
-  margin-bottom: 16px;
-  padding-bottom: 12px;
-  border-bottom-color: var(--color-c6);
-  border-bottom-width: 3px;
-}
-
 .per-potentiel-header-copy {
   min-width: 0;
 }
@@ -608,36 +601,6 @@
 }
 
 /* -- Inputs /sim/* pattern ------------------------------------------------- */
-
-.per-input,
-.per-select {
-  width: 100%;
-  height: 32px;
-  box-sizing: border-box;
-  padding: 4px 6px;
-  border: none;
-  border-bottom: 1px solid transparent;
-  border-radius: 4px;
-  background: var(--sim-input-bg, color-mix(in srgb, var(--color-c8) 18%, #FFFFFF));
-  font-family: inherit;
-  font-size: 13px;
-  color: var(--color-c10);
-  text-align: right;
-  transition: border-color 0.2s;
-  outline: none;
-}
-
-.per-input:hover,
-.per-select:hover {
-  border-bottom-color: var(--color-c8);
-}
-
-.per-input:focus,
-.per-input:focus-visible,
-.per-select:focus,
-.per-select:focus-visible {
-  border-bottom-color: var(--color-c2);
-}
 
 /* -- Mode step ------------------------------------------------------------ */
 
