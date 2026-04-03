@@ -41,7 +41,6 @@ import type {
   CreditSynthesis,
 } from './types';
 import './components/CreditV2.css';
-import '../../styles/premium-shared.css';
 import '../../components/simulator/SimulatorShell.css';
 
 // ============================================================================

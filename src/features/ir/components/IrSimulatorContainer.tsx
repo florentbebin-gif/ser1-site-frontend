@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
 import '../../../components/simulator/SimulatorShell.css';
-import '../../../styles/premium-shared.css';
 import './IrSimulator.css';
 import { onResetEvent, storageKeyFor } from '../../../utils/reset';
 import { toNumber } from '../../../utils/number';

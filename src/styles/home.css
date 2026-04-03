@@ -1,4 +1,4 @@
-/* Shared card + section styles (used in SettingsShell, StrategyBuilder) */
+/* Shared card + section styles (currently used by SettingsShell only) */
 .section-card {
   background: #FFFFFF;
   border: 1px solid var(--color-c8);

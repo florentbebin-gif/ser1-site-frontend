@@ -8,7 +8,6 @@ import { ExportMenu } from '../../../../components/ExportMenu';
 import { useFiscalContext } from '../../../../hooks/useFiscalContext';
 import { useTheme } from '../../../../settings/ThemeProvider';
 import '../../../../components/simulator/SimulatorShell.css';
-import '../../../../styles/premium-shared.css';
 import { usePerPotentiel, type WizardStep } from '../../hooks/usePerPotentiel';
 import { usePerPotentielExportHandlers } from '../../hooks/usePerPotentielExportHandlers';
 import { getPerWorkflowYears } from '../../utils/perWorkflowYears';

@@ -61,7 +61,6 @@ import {
   SuccessionPageGrid,
 } from './components/SuccessionPageSections';
 import '../../components/simulator/SimulatorShell.css';
-import '../../styles/premium-shared.css';
 import './Succession.css';
 
 const STORE_KEY = storageKeyFor('succession');
