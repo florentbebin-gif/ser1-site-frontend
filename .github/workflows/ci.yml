@@ -23,7 +23,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: "Guard: forbid committed env files"
         shell: bash
@@ -55,10 +55,15 @@ jobs:
           fi
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
-          node-version: '22'
+          node-version: '22.22.1'
           cache: 'npm'
+
+      - name: Pin npm version
+        run: |
+          npm install -g npm@10.9.8
+          npm --version
 
       - name: Setup Deno
         uses: denoland/setup-deno@v2
