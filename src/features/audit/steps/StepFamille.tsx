@@ -4,12 +4,12 @@ export default function StepFamille({ dossier, updateDossier }: StepProps) {
   const { situationFamiliale } = dossier;
 
   return (
-    <div className="step-form">
+    <div className="audit-step-form">
       <h2>Situation familiale</h2>
 
-      <div className="form-section">
+      <div className="audit-form-section">
         <h3>Monsieur</h3>
-        <div className="form-row">
+        <div className="audit-form-row">
           <label>Prénom</label>
           <input
             type="text"
@@ -23,7 +23,7 @@ export default function StepFamille({ dossier, updateDossier }: StepProps) {
             placeholder="Prénom"
           />
         </div>
-        <div className="form-row">
+        <div className="audit-form-row">
           <label>Nom</label>
           <input
             type="text"
@@ -37,7 +37,7 @@ export default function StepFamille({ dossier, updateDossier }: StepProps) {
             placeholder="Nom"
           />
         </div>
-        <div className="form-row">
+        <div className="audit-form-row">
           <label>Date de naissance</label>
           <input
             type="date"
@@ -52,9 +52,9 @@ export default function StepFamille({ dossier, updateDossier }: StepProps) {
         </div>
       </div>
 
-      <div className="form-section">
+      <div className="audit-form-section">
         <h3>Situation</h3>
-        <div className="form-row">
+        <div className="audit-form-row">
           <label>Situation matrimoniale</label>
           <select
             value={situationFamiliale.situationMatrimoniale}
@@ -75,9 +75,9 @@ export default function StepFamille({ dossier, updateDossier }: StepProps) {
         </div>
 
         {['marie', 'pacse', 'concubinage'].includes(situationFamiliale.situationMatrimoniale) && (
-          <div className="form-section">
+          <div className="audit-form-section">
             <h3>Madame / Partenaire</h3>
-            <div className="form-row">
+            <div className="audit-form-row">
               <label>Prénom</label>
               <input
                 type="text"
@@ -94,7 +94,7 @@ export default function StepFamille({ dossier, updateDossier }: StepProps) {
                 placeholder="Prénom"
               />
             </div>
-            <div className="form-row">
+            <div className="audit-form-row">
               <label>Nom</label>
               <input
                 type="text"
@@ -111,7 +111,7 @@ export default function StepFamille({ dossier, updateDossier }: StepProps) {
                 placeholder="Nom"
               />
             </div>
-            <div className="form-row">
+            <div className="audit-form-row">
               <label>Date de naissance</label>
               <input
                 type="date"
@@ -130,7 +130,7 @@ export default function StepFamille({ dossier, updateDossier }: StepProps) {
           </div>
         )}
 
-        <div className="form-row">
+        <div className="audit-form-row">
           <label>Nombre d'enfants</label>
           <input
             type="number"

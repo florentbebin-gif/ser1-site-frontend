@@ -4,12 +4,12 @@ export default function StepFiscalite({ dossier, updateDossier }: StepProps) {
   const { situationFiscale } = dossier;
 
   return (
-    <div className="step-form">
+    <div className="audit-step-form">
       <h2>Fiscalité</h2>
 
-      <div className="form-section">
+      <div className="audit-form-section">
         <h3>Impôt sur le revenu</h3>
-        <div className="form-row">
+        <div className="audit-form-row">
           <label>Année de référence</label>
           <input
             type="number"
@@ -22,7 +22,7 @@ export default function StepFiscalite({ dossier, updateDossier }: StepProps) {
             })}
           />
         </div>
-        <div className="form-row">
+        <div className="audit-form-row">
           <label>Revenu fiscal de référence (€)</label>
           <input
             type="number"
@@ -35,7 +35,7 @@ export default function StepFiscalite({ dossier, updateDossier }: StepProps) {
             })}
           />
         </div>
-        <div className="form-row">
+        <div className="audit-form-row">
           <label>Nombre de parts</label>
           <input
             type="number"
@@ -50,7 +50,7 @@ export default function StepFiscalite({ dossier, updateDossier }: StepProps) {
             })}
           />
         </div>
-        <div className="form-row">
+        <div className="audit-form-row">
           <label>Impôt sur le revenu (€)</label>
           <input
             type="number"
@@ -63,7 +63,7 @@ export default function StepFiscalite({ dossier, updateDossier }: StepProps) {
             })}
           />
         </div>
-        <div className="form-row">
+        <div className="audit-form-row">
           <label>TMI (%)</label>
           <select
             value={situationFiscale.tmi}
@@ -83,9 +83,9 @@ export default function StepFiscalite({ dossier, updateDossier }: StepProps) {
         </div>
       </div>
 
-      <div className="form-section">
+      <div className="audit-form-section">
         <h3>Autres impôts</h3>
-        <div className="form-row">
+        <div className="audit-form-row">
           <label>IFI (€)</label>
           <input
             type="number"

@@ -24,7 +24,7 @@ import StepFamille from './steps/StepFamille';
 import StepFiscalite from './steps/StepFiscalite';
 import StepObjectifs from './steps/StepObjectifs';
 import StepPassif from './steps/StepPassif';
-import './AuditWizard.css';
+import './styles/index.css';
 
 // Événements globaux pour Save/Load depuis la Topbar
 const SAVE_EVENT = 'ser1:save';
@@ -185,45 +185,45 @@ export default function AuditWizard(): React.ReactElement {
           type="file"
           accept=".json"
           onChange={handleImport}
-          style={{ display: 'none' }}
+          className="audit-hidden-input"
         />
 
         {/* Indicateur de changements non sauvegardés */}
         {hasChanges && (
-          <div className="unsaved-warning" role="status">
+          <div className="audit-unsaved-warning" role="status">
             <span aria-hidden="true">⚠️</span>
             <span>Modifications non exportées</span>
           </div>
         )}
 
         {/* Barre de progression sobre */}
-        <div className="progress-bar-container">
-          <div className="progress-bar">
+        <div className="audit-progress">
+          <div className="audit-progress__bar">
             <div
-              className="progress-bar-fill"
+              className="audit-progress__fill"
               style={{ width: `${((currentStepIndex + 1) / STEPS.length) * 100}%` }}
             />
           </div>
-          <span className="progress-text">Étape {currentStepIndex + 1} sur {STEPS.length}</span>
+          <span className="audit-progress__text">Étape {currentStepIndex + 1} sur {STEPS.length}</span>
         </div>
 
         {/* Navigation étapes sobre */}
-        <div className="steps-nav" aria-label="Étapes de l'audit">
+        <div className="audit-steps-nav" aria-label="Étapes de l'audit">
           {STEPS.map((step, index) => (
             <button
               key={step.id}
               type="button"
-              className={`step-pill ${currentStep === step.id ? 'active' : ''} ${index < currentStepIndex ? 'completed' : ''}`}
+              className={`audit-step-pill ${currentStep === step.id ? 'active' : ''} ${index < currentStepIndex ? 'completed' : ''}`}
               onClick={() => setCurrentStep(step.id)}
             >
-              <span className="step-num">{step.num}</span>
-              <span className="step-label">{step.label}</span>
+              <span className="audit-step-num">{step.num}</span>
+              <span className="audit-step-label">{step.label}</span>
             </button>
           ))}
         </div>
 
         {/* Contenu étape */}
-        <div className="step-content premium-card">
+        <div className="audit-step-content premium-card">
           {currentStep === 'famille' && (
             <StepFamille dossier={dossier} updateDossier={updateDossier} />
           )}
@@ -245,7 +245,7 @@ export default function AuditWizard(): React.ReactElement {
         </div>
 
         {/* Navigation bas */}
-        <div className="step-navigation">
+        <div className="audit-step-navigation">
           <button
             type="button"
             className="premium-btn"

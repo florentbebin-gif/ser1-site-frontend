@@ -1,5 +1,20 @@
 /* Feedback globaux liés au shell applicatif. */
 
+:root {
+  --status-success-bg: var(--color-c3);
+  --status-success-border: var(--color-c2);
+  --status-success-text: var(--color-c1);
+  --status-error-bg: var(--color-c6);
+  --status-error-border: var(--color-c8);
+  --status-error-text: var(--color-c5);
+  --status-warning-bg: var(--color-warning-bg);
+  --status-warning-border: var(--color-warning-border);
+  --status-warning-text: var(--color-warning-text);
+  --status-info-bg: var(--color-c4);
+  --status-info-border: var(--color-c3);
+  --status-info-text: var(--color-c5);
+}
+
 .ser1-notification {
   position: fixed;
   top: 20px;
@@ -16,21 +31,21 @@
 }
 
 .ser1-notification--success {
-  background: var(--color-c3);
-  color: var(--color-c1);
-  border: 1px solid var(--color-c2);
+  background: var(--status-success-bg);
+  color: var(--status-success-text);
+  border: 1px solid var(--status-success-border);
 }
 
 .ser1-notification--error {
-  background: var(--color-c6);
-  color: var(--color-c5);
-  border: 1px solid var(--color-c8);
+  background: var(--status-error-bg);
+  color: var(--status-error-text);
+  border: 1px solid var(--status-error-border);
 }
 
 .ser1-notification--info {
-  background: var(--color-c4);
-  color: var(--color-c5);
-  border: 1px solid var(--color-c3);
+  background: var(--status-info-bg);
+  color: var(--status-info-text);
+  border: 1px solid var(--status-info-border);
 }
 
 @keyframes ser1-notification-in {
