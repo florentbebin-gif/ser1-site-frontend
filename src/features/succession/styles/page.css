@@ -307,10 +307,14 @@
 }
 
 .sc-checkbox-label--mini {
+  display: inline-flex;
+  align-items: center;
   font-size: 7px;
   gap: 2px;
   color: var(--color-c9);
   opacity: 0.45;
+  cursor: pointer;
+  white-space: nowrap;
 }
 
 .sc-checkbox-label--mini input[type="checkbox"] {
@@ -319,15 +323,6 @@
   accent-color: var(--color-c2);
 }
 
-.sc-checkbox-label {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 12px;
-  color: var(--color-c9);
-  cursor: pointer;
-  white-space: nowrap;
-}
 
 /* ── Bouton "Ajouter un membre" & panneau ────────────────────────────────── */
 .sc-children-actions {

@@ -105,7 +105,6 @@
 
 .settings-radio-option input[type="radio"] {
   appearance: none;
-  -webkit-appearance: none;
   margin: 0;
   width: 18px;
   height: 18px;

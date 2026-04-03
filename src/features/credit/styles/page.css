@@ -7,7 +7,7 @@
 /* ----------------------------------------
    PAGE LAYOUT
    ---------------------------------------- */
-/* .cv2-page supprimé → remplacé par .sim-page (SimulatorShell.css) */
+/* .cv2-page supprimé → remplacé par .sim-page (socle partagé /sim) */
 
 .cv2-grid {
   margin-bottom: 32px;
@@ -32,7 +32,7 @@
    HEADER
    ---------------------------------------- */
 /* .cv2-header* supprimés → remplacés par .premium-header / .premium-title /
-   .premium-subtitle / .sim-header__actions (SimulatorShell.css + premium-shared.css) */
+   .premium-subtitle / .sim-header__actions (src/styles/sim + premium-shared.css) */
 
 /* ----------------------------------------
    PILL TOGGLE (Mensuel/Annuel)
@@ -215,7 +215,7 @@
    CARDS
    ---------------------------------------- */
 /* .cv2-card supprimé → remplacé par .premium-card (premium-shared.css)
-   .cv2-card__title supprimé → remplacé par .sim-section-title (SimulatorShell.css) */
+   .cv2-card__title supprimé → remplacé par .sim-section-title (socle partagé /sim) */
 
 /* Espacement entre cards adjacentes (spécifique Crédit) */
 .premium-card + .premium-card {
@@ -296,7 +296,7 @@
 }
 
 /* Supprime le border-bottom du titre "Options de lissage" — remplacé par le divider dégradé.
-   Spécificité double-classe pour surpasser .sim-section-title de SimulatorShell.css (chargé après) */
+   Spécificité double-classe pour surpasser .sim-section-title du socle partagé /sim (chargé après) */
 .cv2-lissage-card .cv2-lissage-title {
   border-bottom: none;
   padding-bottom: 0;
@@ -903,7 +903,7 @@
    RESPONSIVE
    ---------------------------------------- */
 @media (max-width: 900px) {
-  /* .cv2-page et .cv2-header → gérés par sim-page (SimulatorShell.css)
+  /* .cv2-page et .cv2-header → gérés par sim-page (socle partagé /sim)
      et premium-header (premium-shared.css) */
 
   /* point 4 — ne pas étirer en mobile (sticky déjà retiré) */

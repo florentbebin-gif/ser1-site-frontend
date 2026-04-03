@@ -34,6 +34,9 @@ Repères (domain-first) :
 - `src/engine/` : calculs métier purs (zéro React).
 - `src/features/` : features UI (state, composants, handlers export).
 - `src/pages/` : shells légers (Home, Login, SettingsShell) + `pages/settings/*` (sous-pages settings).
+- `src/styles/app/` : chrome applicatif global (topbar, chips, états shell).
+- `src/styles/sim/` : baseline CSS partagée des simulateurs `/sim/*`.
+- `src/pages/settings/styles/` : domaine CSS partagé/settings.
 - `src/settings/` : thème, presets, ThemeProvider.
 - `src/pptx/` : pipeline PPTX (design system + slides + export).
 - `supabase/` : edge functions + migrations.
@@ -214,7 +217,7 @@ Source normative : section **"Norme des pages `/sim/*` (baseline `/sim/credit`)"
 
 Implémentation de référence :
 - Orchestrateur : `src/features/credit/Credit.tsx`
-- Styles de page simulateur : `src/components/simulator/SimulatorShell.css`
+- Styles de page simulateur : `src/styles/sim/index.css`
 - Styles premium partagés : `src/styles/premium-shared.css`
 - Styles spécifiques crédit : `src/features/credit/components/CreditV2.css`
 - Inputs/select/toggle : `src/features/credit/components/CreditInputs.tsx` + `CreditInputs.css`
