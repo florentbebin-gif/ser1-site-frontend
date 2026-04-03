@@ -7,6 +7,7 @@ import { ThemeProvider, DEFAULT_COLORS, type ThemeColors } from './settings/Them
 import { AuthProvider } from './auth'
 import AppErrorFallback from './components/AppErrorFallback'
 import './styles/index.css'
+import './styles/app/index.css'
 import './styles/premium-shared.css'
 
 const THEME_CACHE_KEY_PREFIX = 'ser1_theme_cache_'

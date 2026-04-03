@@ -6,6 +6,9 @@ import {
   getVisibleSettingsRoutes,
   type SettingsRouteEntry,
 } from '../routes/settingsRoutes';
+import '../styles/home.css';
+import '../styles/settings.css';
+import '../styles/premium-components.css';
 
 export default function SettingsShell(): React.ReactElement {
   const { isAdmin } = useUserRole();
