@@ -4,7 +4,6 @@
 
 import { euro0 } from '../utils/creditFormatters';
 import type { CreditPeriodsTableProps } from '../types';
-import './CreditV2.css';
 
 export function CreditPeriodsTable({
   synthesePeriodes,

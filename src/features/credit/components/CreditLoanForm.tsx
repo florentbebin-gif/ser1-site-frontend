@@ -14,7 +14,6 @@ import type {
   CreditLoanFormProps,
   CreditType,
 } from '../types';
-import './CreditV2.css';
 
 export function CreditLoanForm({
   pretNum,

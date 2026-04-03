@@ -5,9 +5,9 @@ export default function StepPassif({ dossier, updateDossier }: StepProps) {
   const totalPassif = passif.emprunts.reduce((sum, emprunt) => sum + emprunt.capitalRestantDu, 0);
 
   return (
-    <div className="step-form">
+    <div className="audit-step-form">
       <h2>Passif</h2>
-      <div className="summary-bar">
+      <div className="audit-summary-bar">
         Total emprunts CRD : <strong>{totalPassif.toLocaleString('fr-FR')} €</strong>
       </div>
 
@@ -35,8 +35,8 @@ export default function StepPassif({ dossier, updateDossier }: StepProps) {
       </button>
 
       {passif.emprunts.map((emprunt, idx) => (
-        <div key={emprunt.id} className="form-card">
-          <div className="form-row">
+        <div key={emprunt.id} className="audit-form-card">
+          <div className="audit-form-row">
             <label>Libellé</label>
             <input
               type="text"
@@ -49,7 +49,7 @@ export default function StepPassif({ dossier, updateDossier }: StepProps) {
               placeholder="Ex: Crédit résidence principale"
             />
           </div>
-          <div className="form-row">
+          <div className="audit-form-row">
             <label>Capital restant dû (€)</label>
             <input
               type="number"
@@ -61,7 +61,7 @@ export default function StepPassif({ dossier, updateDossier }: StepProps) {
               }}
             />
           </div>
-          <div className="form-row">
+          <div className="audit-form-row">
             <label>Mensualité (€)</label>
             <input
               type="number"
@@ -73,7 +73,7 @@ export default function StepPassif({ dossier, updateDossier }: StepProps) {
               }}
             />
           </div>
-          <div className="form-row">
+          <div className="audit-form-row">
             <label>Date de fin</label>
             <input
               type="date"
@@ -87,7 +87,7 @@ export default function StepPassif({ dossier, updateDossier }: StepProps) {
           </div>
           <button
             type="button"
-            className="chip chip-small chip-danger"
+            className="chip audit-chip-small audit-chip-danger"
             onClick={() => {
               updateDossier({
                 passif: {

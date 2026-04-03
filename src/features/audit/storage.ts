@@ -100,10 +100,6 @@ export function clearDraftFromSession(): void {
 /**
  * Vérifie si des données non sauvegardées existent
  */
-export function hasUnsavedData(): boolean {
-  return sessionStorage.getItem(SESSION_STORAGE_KEY) !== null;
-}
-
 /**
  * Hook pour l'alerte avant de quitter
  */

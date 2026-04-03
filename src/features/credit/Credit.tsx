@@ -40,9 +40,8 @@ import type {
   CreditState,
   CreditSynthesis,
 } from './types';
-import './components/CreditV2.css';
-import '../../styles/premium-shared.css';
-import '../../components/simulator/SimulatorShell.css';
+import './styles/index.css';
+import '@/styles/sim/index.css';
 
 // ============================================================================
 // HELPERS
@@ -370,7 +369,7 @@ export default function CreditV2() {
         onChangeViewMode={(viewMode) => setGlobal({ viewMode })}
       />
 
-      <div className={`cv2-grid${!isExpert ? ' cv2-grid--simple' : ''}`}>
+      <div className={`cv2-grid sim-grid${!isExpert ? ' cv2-grid--simple' : ''}`}>
         <CreditLoanInputPanel
           activeTab={activeTab}
           activeLoan={activeLoan}

@@ -1,0 +1,132 @@
+﻿/* ----------------------------------------
+   LOAN FORM
+   ---------------------------------------- */
+.cv2-loan-form__grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px 20px;
+}
+
+.cv2-loan-form__grid--3 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px 20px;
+}
+
+.cv2-loan-card__header {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.cv2-loan-card__title {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--color-c1);
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.cv2-loan-card__icon {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+  color: inherit;
+}
+
+.cv2-loan-card__subtitle {
+  margin: 0;
+  font-size: 12px;
+  color: var(--color-c9);
+  line-height: 1.45;
+}
+
+.cv2-loan-card__divider {
+  margin: 14px 0 18px;
+}
+
+/* Variante compacte : moins de marge, pour la card lissage */
+.cv2-loan-card__divider--tight {
+  margin: 0 0 14px;
+}
+
+.cv2-loan-form__section {
+  grid-column: 1 / -1;
+  margin-top: 8px;
+  padding-top: 16px;
+  border-top: 1px solid var(--color-c8);
+}
+
+/* Quand prÃ©cÃ©dÃ© d'un cv2-loan-card__divider : pas de double barre */
+.cv2-loan-form__section--no-border {
+  border-top: none;
+  padding-top: 0;
+  margin-top: 0;
+}
+
+/* Supprime le border-bottom du titre "Options de lissage" â€” remplacÃ© par le divider dÃ©gradÃ©.
+   SpÃ©cificitÃ© double-classe pour surpasser .sim-section-title du socle partagÃ© /sim (chargÃ© aprÃ¨s) */
+.cv2-lissage-card .cv2-lissage-title {
+  border-bottom: none;
+  padding-bottom: 0;
+  margin-bottom: 14px; /* aligne l'espacement avec cv2-summary__title */
+}
+
+.cv2-loan-form__section-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-c1);
+  margin-bottom: 12px;
+  letter-spacing: 0.2px;
+}
+
+/* ----------------------------------------
+   BUTTONS
+   ---------------------------------------- */
+/* ----------------------------------------
+   LISSAGE PANEL
+   ---------------------------------------- */
+.cv2-lissage {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.cv2-lissage__hint {
+  font-size: 12px;
+  color: var(--color-c9);
+  margin-top: 8px;
+  font-style: italic;
+}
+
+.cv2-lissage__pills {
+  display: flex;
+  gap: 8px;
+}
+
+.cv2-lissage__pill {
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--color-c8);
+  background: #FFFFFF;
+  color: var(--color-c10);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.cv2-lissage__pill:hover:not(.is-active) {
+  background: var(--color-c7);
+  border-color: var(--color-c3);
+}
+
+.cv2-lissage__pill.is-active {
+  background: var(--color-c2);
+  border-color: var(--color-c2);
+  color: #FFFFFF;
+}
+

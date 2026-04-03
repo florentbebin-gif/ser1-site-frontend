@@ -6,6 +6,7 @@ import {
   getVisibleSettingsRoutes,
   type SettingsRouteEntry,
 } from '../routes/settingsRoutes';
+import './settings/styles/index.css';
 
 export default function SettingsShell(): React.ReactElement {
   const { isAdmin } = useUserRole();
@@ -85,8 +86,8 @@ export default function SettingsShell(): React.ReactElement {
 
   return (
     <div className="settings-page">
-      <div className="section-card">
-        <div className="section-title">Parametres</div>
+      <div className="settings-shell__card">
+        <div className="settings-shell__title">Parametres</div>
 
         <nav className="settings-tab-nav" aria-label="Parametres">
           <button
@@ -139,7 +140,7 @@ export default function SettingsShell(): React.ReactElement {
           />
         </nav>
 
-        <div style={{ marginTop: 16 }}>
+        <div className="settings-tab-content">
           <ActiveComponent />
         </div>
       </div>

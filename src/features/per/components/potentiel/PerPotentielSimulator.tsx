@@ -7,8 +7,7 @@ import type { PerHistoricalBasis } from '../../../../engine/per';
 import { ExportMenu } from '../../../../components/ExportMenu';
 import { useFiscalContext } from '../../../../hooks/useFiscalContext';
 import { useTheme } from '../../../../settings/ThemeProvider';
-import '../../../../components/simulator/SimulatorShell.css';
-import '../../../../styles/premium-shared.css';
+import '@/styles/sim/index.css';
 import { usePerPotentiel, type WizardStep } from '../../hooks/usePerPotentiel';
 import { usePerPotentielExportHandlers } from '../../hooks/usePerPotentielExportHandlers';
 import { getPerWorkflowYears } from '../../utils/perWorkflowYears';
@@ -16,7 +15,7 @@ import ModeStep from './steps/ModeStep';
 import AvisIrStep from './steps/AvisIrStep';
 import SituationFiscaleStep from './steps/SituationFiscaleStep';
 import SynthesePotentielStep from './steps/SynthesePotentielStep';
-import '../../Per.css';
+import '../../styles/index.css';
 
 type StepMeta = {
   shortLabel: string;
@@ -180,7 +179,7 @@ export default function PerPotentielSimulator(): React.ReactElement {
 
   return (
     <div className="sim-page per-potentiel-page">
-      <div className="premium-header per-potentiel-header">
+      <div className="premium-header sim-header sim-header--stacked">
         <div className="per-potentiel-header-copy">
           <h1 className="premium-title">Contrôle du potentiel épargne retraite</h1>
           <p className="premium-subtitle">

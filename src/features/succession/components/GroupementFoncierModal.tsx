@@ -13,7 +13,6 @@ import type {
 } from '../successionDraft';
 import { ScNumericInput } from './ScNumericInput';
 import { ScSelect } from './ScSelect';
-import '../Succession.css';
 
 const SEUIL_EXONERATION = 600_000;
 

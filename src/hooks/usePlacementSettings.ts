@@ -171,30 +171,4 @@ export function usePlacementSettings(): UsePlacementSettingsResult {
  * @param {Array} bareme - Barème IR
  * @returns {number} TMI en décimal (ex: 0.30 pour 30%)
  */
-export function calculTMI(
-  revenuImposable: number,
-  parts: number = 1,
-  bareme?: Array<{ to: number | null; rate: number }> | null,
-): number {
-  let effectiveBareme = bareme;
-  if (!effectiveBareme || !effectiveBareme.length) {
-    effectiveBareme = DEFAULT_TAX_SETTINGS.incomeTax.scaleCurrent;
-  }
-  if (!effectiveBareme || !effectiveBareme.length) {
-    return 0.30; // ultime filet
-  }
-
-  const quotient = revenuImposable / parts;
-  let tmi = 0;
-
-  for (const tranche of effectiveBareme) {
-    if (tranche.to === null || quotient <= tranche.to) {
-      tmi = tranche.rate / 100;
-      break;
-    }
-  }
-
-  return tmi;
-}
-
 export default usePlacementSettings;

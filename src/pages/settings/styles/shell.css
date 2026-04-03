@@ -1,0 +1,136 @@
+.settings-page {
+  max-width: 900px;
+  margin: 40px auto;
+  padding: 0 20px;
+}
+
+.settings-shell__card {
+  max-width: 1050px;
+  background: #FFFFFF;
+  border: 1px solid var(--color-c8);
+  border-radius: var(--radius);
+  padding: 28px;
+  box-shadow: 0 4px 14px var(--color-c9);
+}
+
+.settings-shell__card section {
+  margin-top: 18px;
+  padding-top: 6px;
+  border-top: 1px solid var(--color-c8);
+}
+
+.settings-shell__title {
+  font-size: 26px;
+  margin-bottom: 20px;
+  position: relative;
+  padding-bottom: 12px;
+}
+
+.settings-shell__title::after {
+  content: '';
+  display: block;
+  height: 4px;
+  background: var(--color-c6);
+  border-radius: 3px;
+  margin-top: 8px;
+}
+
+.settings-tab-nav {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  margin-top: 16px;
+  margin-bottom: 20px;
+  border-bottom: 1px solid var(--color-c8);
+  position: relative;
+  overflow: hidden;
+}
+
+.settings-tab-scroll {
+  flex: 1;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.settings-tab-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+.settings-tab-list {
+  display: flex;
+  gap: 2px;
+}
+
+.settings-tab {
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  padding: 12px 24px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--color-c9);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  letter-spacing: 0.3px;
+}
+
+.settings-tab:hover {
+  color: var(--color-c2);
+  background-color: var(--color-c7);
+}
+
+.settings-tab.is-active {
+  color: var(--color-c1);
+  font-weight: 600;
+  border-bottom-color: var(--color-c2);
+}
+
+.settings-tab:focus-visible {
+  outline: 2px solid var(--color-c2);
+  outline-offset: 2px;
+}
+
+.settings-tab-scroll-btn {
+  background: transparent;
+  border: none;
+  padding: 12px 8px;
+  font-size: 12px;
+  line-height: 1;
+  color: var(--color-c9);
+  cursor: pointer;
+  transition: color 0.2s ease, opacity 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.settings-tab-scroll-btn:hover:not(:disabled) {
+  color: var(--color-c2);
+}
+
+.settings-tab-scroll-btn:disabled {
+  color: var(--color-c8);
+  cursor: default;
+  opacity: 0.4;
+}
+
+.settings-tab-scroll-btn:focus-visible {
+  outline: 2px solid var(--color-c2);
+  outline-offset: 2px;
+}
+
+.settings-tab-scroll-btn--left::before {
+  content: '\25C2';
+}
+
+.settings-tab-scroll-btn--right::before {
+  content: '\25B8';
+}
+
+.settings-tab-content {
+  margin-top: 16px;
+}

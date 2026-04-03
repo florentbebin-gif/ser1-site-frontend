@@ -1,0 +1,247 @@
+﻿.vcm__select,
+.vcm__mini-input {
+  width: 100%;
+  box-sizing: border-box;
+  border: none;
+  border-bottom: 1px solid transparent;
+  border-radius: 4px;
+  background: var(--sim-input-bg, color-mix(in srgb, var(--color-c8) 18%, #FFFFFF));
+  color: var(--color-c10);
+  font-family: inherit;
+  font-size: 13px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.vcm__select {
+  height: 32px;
+  padding: 0 10px;
+}
+
+.vcm__mini-input {
+  height: 32px;
+  padding: 4px 6px;
+  text-align: right;
+}
+
+.vcm__select:hover,
+.vcm__mini-input:hover {
+  border-bottom-color: var(--color-c8);
+}
+
+.vcm__select:focus-visible,
+.vcm__mini-input:focus-visible,
+.pl-alloc-input:focus-visible {
+  border-bottom-color: var(--color-c2);
+}
+
+.vcm__per-options {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 14px;
+  padding: 14px;
+}
+
+.vcm__per-option {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--color-c8);
+}
+
+.vcm__per-option > .vcm__hint {
+  flex-basis: 100%;
+  margin-left: 28px;
+  margin-top: 0;
+}
+
+.vcm__per-option:last-child {
+  border-bottom: none;
+}
+
+.vcm__checkbox {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--color-c1);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.vcm__checkbox input {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--color-c2);
+}
+
+.vcm__hint {
+  margin-top: 6px;
+  color: var(--color-c9);
+  font-size: 11px;
+  font-style: italic;
+}
+
+.vcm__hint--spaced {
+  margin-bottom: 12px;
+}
+
+.vcm__empty {
+  padding: 24px;
+  text-align: center;
+  color: var(--color-c9);
+}
+
+.vcm__empty p {
+  margin: 0 0 12px;
+}
+
+.vcm__add-btn {
+  padding: 8px 16px;
+  border: 1px dashed var(--color-c2);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--color-c2);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s, border-style 0.2s;
+}
+
+.vcm__add-btn:hover {
+  border-style: solid;
+  background: color-mix(in srgb, var(--color-c4) 35%, #FFFFFF);
+}
+
+.vcm__add-btn--secondary {
+  border-style: solid;
+  border-color: var(--color-c8);
+  color: var(--color-c9);
+}
+
+.vcm__add-btn--secondary:hover {
+  border-color: var(--color-c5);
+  background: var(--color-c7);
+  color: var(--color-c1);
+}
+
+.vcm__add-btn--large {
+  padding: 12px 24px;
+}
+
+.vcm__ponctuels {
+  overflow: hidden;
+  --sim-input-bg: #FFFFFF;
+}
+
+.vcm__ponctuel-headers,
+.vcm__ponctuel-row {
+  display: grid;
+  grid-template-columns: 80px 148px 136px minmax(304px, 1fr) 32px;
+  gap: 10px;
+  align-items: center;
+}
+
+.vcm__ponctuels--scpi .vcm__ponctuel-headers,
+.vcm__ponctuels--scpi .vcm__ponctuel-row {
+  grid-template-columns: 80px 148px minmax(320px, 1fr) 32px;
+}
+
+.vcm__ponctuel-headers {
+  padding: 10px 14px;
+  background: color-mix(in srgb, var(--color-c7) 78%, #FFFFFF);
+  color: var(--color-c9);
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.vcm__ponctuel-row {
+  padding: 12px 14px;
+  border-top: 1px solid var(--color-c8);
+}
+
+.vcm__ponctuel-cell {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+}
+
+.vcm__ponctuel-cell--alloc {
+  justify-content: stretch;
+  min-width: 0;
+}
+
+.vcm__ponctuel-cell .pl-field,
+.vcm__ponctuel-cell .pl-input,
+.vcm__ponctuel-cell .vcm__mini-input-wrap {
+  width: 100%;
+  min-width: 0;
+}
+
+.vcm__ponctuel-cell .pl-input__field--inline {
+  width: 100%;
+}
+
+.vcm__ponctuel-cell--alloc .pl-alloc-slider {
+  width: 100%;
+}
+
+.vcm__ponctuel-header--center {
+  text-align: center;
+}
+
+.vcm__alloc-fixed {
+  color: var(--color-c9);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.vcm__remove-btn {
+  width: 28px;
+  height: 28px;
+  border: 1px solid var(--color-c8);
+  background: #FFFFFF;
+  color: var(--color-c9);
+}
+
+.vcm__footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  padding: 18px 24px;
+  border-top: 1px solid var(--color-c8);
+}
+
+.vcm__btn {
+  padding: 10px 22px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s, color 0.2s, transform 0.2s;
+}
+
+.vcm__btn--secondary {
+  border: 1px solid var(--color-c8);
+  background: transparent;
+  color: var(--color-c9);
+}
+
+.vcm__btn--secondary:hover {
+  background: var(--color-c7);
+}
+
+.vcm__btn--primary {
+  border: none;
+  background: linear-gradient(135deg, var(--color-c2), var(--color-c1));
+  color: #FFFFFF;
+}
+
+.vcm__btn--primary:hover {
+  transform: translateY(-1px);
+}
+

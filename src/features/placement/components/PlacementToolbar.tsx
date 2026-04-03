@@ -39,7 +39,7 @@ export function PlacementToolbar({
 }: PlacementToolbarProps) {
   return (
     <>
-      <div className="premium-header sim-header pl-header">
+      <div className="premium-header sim-header sim-header--stacked">
         <h1 className="premium-title">Comparer deux placements</h1>
 
         <div className="pl-header__subtitle-row">

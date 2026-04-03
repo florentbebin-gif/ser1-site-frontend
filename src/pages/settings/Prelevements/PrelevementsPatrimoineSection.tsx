@@ -51,7 +51,7 @@ export default function PrelevementsPatrimoineSection({
         aria-controls="prelev-panel-patrimoine"
         onClick={() => setOpenSection(isOpen ? null : 'patrimoine')}
       >
-        <span className="settings-premium-title" style={{ margin: 0 }}>
+        <span className="settings-premium-title settings-premium-title--flush">
           Prélèvements sociaux - patrimoine et capital
         </span>
         <span className="fisc-acc-chevron">

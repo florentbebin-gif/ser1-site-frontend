@@ -100,7 +100,7 @@ export function IrSidebarSection({
   hasSituation,
 }: IrSidebarSectionProps) {
   return (
-    <div className="ir-right">
+    <div className="ir-right sim-grid__col">
       <div className="ir-controls-sticky">
         <div className="ir-field">
           <label>Barème</label>
@@ -237,7 +237,7 @@ export function IrSidebarSection({
               <span>{euro0(result.psDividends || 0)}</span>
             </div>
           )}
-          <div className="ir-card-divider ir-card-divider--tight sim-divider sim-divider--tight" />
+          <div className="ir-card-divider sim-divider sim-divider--tight" />
           <div className="ir-summary-total-hero">
             <div>
               <div className="ir-summary-total-hero__label">Imposition totale</div>

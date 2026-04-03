@@ -30,7 +30,7 @@ export default function RegimesSection({
         aria-expanded={isOpen}
         onClick={() => setOpenSection(isOpen ? null : 'regimes')}
       >
-        <span className="settings-premium-title" style={{ margin: 0 }}>
+        <span className="settings-premium-title settings-premium-title--flush">
           Regimes matrimoniaux & PACS
         </span>
         <span className="fisc-acc-chevron">

@@ -10,8 +10,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useUserRole } from '@/auth/useUserRole';
 import { UserInfoBanner } from '@/components/UserInfoBanner';
-import './SettingsShared.css';
-import './BaseContrat.css';
+import './styles/base-contrat.css';
 import { CATALOG } from '@/domain/base-contrat/catalog';
 import type { CatalogProduct } from '@/domain/base-contrat/catalog';
 import { isProductClosed } from '@/domain/base-contrat/overrides';

@@ -65,6 +65,8 @@ Optionnels :
 ```bash
 npm run test:e2e
 npm run test:e2e:ui
+npm run lint:css
+npm run check:css-structure
 npm run check:circular
 npm run check:unused  # depcheck avec ignore explicite de supabase et dependency-cruiser
 ```
@@ -74,6 +76,10 @@ npm run check:unused  # depcheck avec ignore explicite de supabase et dependency
 - Routing : `src/routes/appRoutes.ts` (APP_ROUTES) + `src/routes/settingsRoutes.ts` (settings) + rendu dans `src/App.tsx`
 - Auth : `src/auth/`
 - Theme : `src/settings/ThemeProvider.tsx`, `src/settings/presets.ts`
+- Styles globaux : `src/styles/index.css`, `src/styles/app/`, `src/styles/premium-shared.css`
+- Styles `/sim/*` : `src/styles/sim/` + `src/features/*/styles/`
+- Styles settings : `src/pages/settings/styles/`
+- Styles audit : `src/features/audit/styles/`
 - Engine (metier pur) : `src/engine/`
 - Features (UI) : `src/features/`
 - Exports : `src/pptx/`, `src/utils/export/xlsxBuilder.ts`, `src/utils/export/exportFingerprint.ts`

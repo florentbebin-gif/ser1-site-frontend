@@ -69,7 +69,7 @@ export function PlacementTransmissionSection({
                   const isSingleOption = state.client.situation === 'single';
                   return (
                     <select
-                      className={`pl-select${isSingleOption ? ' is-forced' : ''}`}
+                      className={`pl-select sim-field__control${isSingleOption ? ' is-forced' : ''}`}
                       disabled={isSingleOption}
                       value={state.transmission.beneficiaryType || 'enfants'}
                       onChange={(event) => {
@@ -113,7 +113,7 @@ export function PlacementTransmissionSection({
               <td>Tranche DMTG estimée</td>
               <td colSpan={2}>
                 <select
-                  className="pl-select"
+                  className="pl-select sim-field__control"
                   value={state.transmission.dmtgTaux ?? ''}
                   onChange={(event) => {
                     const nextValue = parseFloat(event.target.value);

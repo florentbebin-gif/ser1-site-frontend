@@ -1,0 +1,91 @@
+/* Chrome applicatif global : topbar, breadcrumb, actions header. */
+
+.topbar {
+  background: var(--color-c1);
+  color: var(--color-c7);
+  padding: 12px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
+}
+
+.brandbar {
+  font-size: 18px;
+  display: flex;
+  align-items: center;
+}
+
+.brand-name {
+  font-weight: 700;
+  color: var(--color-c7);
+}
+
+.breadcrumb-separator {
+  font-weight: 400;
+  color: var(--color-c7);
+  margin: 0 4px;
+  opacity: 0.7;
+}
+
+.breadcrumb-context {
+  font-weight: 400;
+  color: var(--color-c7);
+  font-size: 17px;
+}
+
+.top-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.topbar .icon {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}
+
+.topbar .icon--save {
+  width: 24px;
+  height: 24px;
+  flex-basis: 24px;
+}
+
+/* Source de vérité des chips contextuelles de header. */
+.topbar .chip,
+.top-actions .chip,
+.pl-header-actions .chip,
+.credit-header-actions .chip {
+  background: rgba(255, 255, 255, 0.60);
+  border-radius: 8px;
+}
+
+.topbar .chip:hover:not(:disabled),
+.top-actions .chip:hover:not(:disabled),
+.pl-header-actions .chip:hover:not(:disabled),
+.credit-header-actions .chip:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.75);
+}
+
+.topbar .chip:active:not(:disabled),
+.top-actions .chip:active:not(:disabled),
+.pl-header-actions .chip:active:not(:disabled),
+.credit-header-actions .chip:active:not(:disabled) {
+  background: rgba(255, 255, 255, 0.85);
+}
+
+.topbar .chip:focus-visible,
+.top-actions .chip:focus-visible,
+.pl-header-actions .chip:focus-visible,
+.credit-header-actions .chip:focus-visible {
+  outline: 2px solid var(--color-c2);
+  outline-offset: 2px;
+}
+
+.topbar .chip:disabled,
+.top-actions .chip:disabled,
+.pl-header-actions .chip:disabled,
+.credit-header-actions .chip:disabled {
+  background: rgba(255, 255, 255, 0.40);
+  opacity: 0.6;
+}

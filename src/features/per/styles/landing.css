@@ -1,0 +1,240 @@
+﻿/* PER - Local styles */
+
+/* -- Landing hub ---------------------------------------------------------- */
+
+.per-home {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 48px 24px 64px;
+}
+
+.per-home-hero {
+  text-align: center;
+}
+
+.per-home-kicker {
+  margin: 0 0 8px;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--color-c9);
+}
+
+.per-home-title {
+  margin: 0 0 12px;
+  font-size: 18px;
+  font-weight: 600;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  color: var(--color-c3);
+}
+
+.per-home-subtitle {
+  max-width: 620px;
+  margin: 0 auto 28px;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--color-c9);
+}
+
+.per-home-focus-card {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  gap: 18px;
+  padding: 24px 28px;
+  border: 1px solid var(--color-c8);
+  border-radius: 12px;
+  background: #FFFFFF;
+  color: var(--color-c1);
+  text-align: left;
+  cursor: pointer;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+  transition: box-shadow 0.2s, border-color 0.2s, transform 0.2s;
+}
+
+.per-home-focus-card:hover {
+  border-color: var(--color-c3);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  transform: translateY(-2px);
+}
+
+.per-home-focus-icon {
+  display: flex;
+  width: 56px;
+  height: 56px;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  background: var(--color-c7);
+  color: var(--color-c2);
+}
+
+.per-home-focus-copy {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.per-home-focus-badge {
+  display: inline-flex;
+  width: fit-content;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: var(--color-c4);
+  color: var(--color-c1);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+}
+
+.per-home-focus-title {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--color-c1);
+}
+
+.per-home-focus-desc {
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--color-c9);
+}
+
+.per-home-focus-chevron {
+  color: var(--color-c9);
+  opacity: 0.6;
+  transition: opacity 0.2s, transform 0.2s;
+}
+
+.per-home-focus-card:hover .per-home-focus-chevron {
+  opacity: 1;
+  transform: translateX(3px);
+}
+
+.per-home-divider {
+  width: 100%;
+  max-width: 200px;
+  height: 2px;
+  margin: 40px auto;
+  background: linear-gradient(90deg, transparent, var(--color-c8), transparent);
+}
+
+.per-home-secondary {
+  text-align: center;
+}
+
+.per-home-secondary-title {
+  margin: 0 0 12px;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 2px;
+  color: var(--color-c9);
+  text-transform: uppercase;
+}
+
+.per-home-secondary-card {
+  background: #FFFFFF;
+  border: 1px solid var(--color-c8);
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
+}
+
+.per-home-secondary-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+.per-home-tile {
+  display: block;
+  width: 100%;
+  padding: 12px 14px;
+  font: inherit;
+  border: 1px solid var(--color-c8);
+  border-radius: 10px;
+  background: var(--color-c7);
+  color: var(--color-c1);
+  text-align: left;
+  cursor: pointer;
+  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.03);
+  transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
+}
+
+.per-home-tile:hover {
+  border-color: var(--color-c3);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  transform: translateY(-1px);
+}
+
+.per-home-tile-content {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.per-home-tile-icon {
+  display: flex;
+  width: 34px;
+  height: 34px;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  background: #FFFFFF;
+  color: var(--color-c2);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+}
+
+.per-home-tile-copy {
+  flex: 1;
+  min-width: 0;
+}
+
+.per-home-tile-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 4px;
+}
+
+.per-home-tile-title {
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--color-c1);
+}
+
+.per-home-tile-badge {
+  flex-shrink: 0;
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--color-c9);
+  text-transform: uppercase;
+  letter-spacing: 0.7px;
+}
+
+.per-home-tile-desc {
+  margin: 0;
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--color-c9);
+}
+
+.per-home-tile-chevron {
+  color: var(--color-c9);
+  opacity: 0.5;
+  transition: opacity 0.2s, transform 0.2s;
+}
+
+.per-home-tile:hover .per-home-tile-chevron {
+  opacity: 1;
+  transform: translateX(2px);
+}
+

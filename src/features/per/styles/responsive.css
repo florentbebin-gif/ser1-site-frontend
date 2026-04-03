@@ -1,0 +1,142 @@
+﻿@media (max-width: 1120px) {
+  .per-potentiel-context {
+    position: static;
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 16px;
+  }
+}
+
+@media (max-width: 900px) {
+  .per-potentiel-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .per-potentiel-context {
+    position: static;
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .per-avis-layout,
+  .per-situation-top,
+  .per-summary-top,
+  .per-summary-columns,
+  .per-summary-breakdown-grid.is-couple,
+  .per-declarants-grid.is-couple {
+    grid-template-columns: 1fr;
+  }
+
+  .per-avis-form-grid.is-couple {
+    grid-template-columns: 1fr;
+  }
+
+  .per-situation-foyer-grid,
+  .per-income-grid,
+  .per-situation-kpis,
+  .per-summary-hero-grid,
+  .per-summary-stat-grid,
+  .per-summary-simulation-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .per-potentiel-stage {
+    min-height: 0;
+  }
+}
+
+@media (max-width: 600px) {
+  .per-home {
+    padding: 32px 16px 48px;
+  }
+
+  .per-home-focus-card {
+    padding: 20px 22px;
+  }
+
+  .per-home-focus-title {
+    font-size: 18px;
+  }
+
+  .per-home-secondary-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .per-home-tile-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .per-mode-doc-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .per-avis-row {
+    grid-template-columns: 1fr;
+  }
+
+  .per-contribution-table,
+  .per-contribution-table.is-couple {
+    grid-template-columns: 1fr;
+  }
+
+  .per-contribution-table-head:not(.per-contribution-table-head--label) {
+    display: none;
+  }
+
+  .per-contribution-table-cell {
+    display: grid;
+    gap: 6px;
+    justify-content: flex-start;
+    padding-top: 0;
+  }
+
+  .per-contribution-mobile-label {
+    display: inline-flex;
+  }
+
+  .per-contribution-table-label {
+    padding-bottom: 8px;
+    border-bottom: none;
+  }
+
+  .per-summary-hero-head,
+  .per-summary-card-head,
+  .per-summary-simulation-head {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .per-potentiel-header {
+    margin-bottom: 18px;
+  }
+
+  .per-potentiel-stage-header,
+  .per-potentiel-stage-footer {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .per-potentiel-stage-title {
+    font-size: 20px;
+  }
+
+  .per-summary-primary-value {
+    font-size: 28px;
+  }
+
+  .per-potentiel-stage-badge {
+    width: fit-content;
+  }
+
+  .per-potentiel-stage-actions {
+    width: 100%;
+  }
+
+  .per-potentiel-stage-actions .premium-btn,
+  .per-potentiel-stage-footer > .premium-btn {
+    width: 100%;
+    justify-content: center;
+  }
+}

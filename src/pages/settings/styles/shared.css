@@ -1,0 +1,23 @@
+.settings-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.settings-stack--offset {
+  margin-top: 16px;
+}
+
+.settings-stack--spacious {
+  margin-top: 24px;
+}
+
+.settings-page-loading {
+  margin-top: 24px;
+  color: var(--color-c9);
+}
+
+.settings-inline-note {
+  font-size: 13px;
+  color: var(--color-c9);
+}

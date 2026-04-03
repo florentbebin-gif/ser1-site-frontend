@@ -12,6 +12,7 @@ Toute personne qui touche : CSS/UI, thème, Settings, pages `/sim/*`.
 
 ## Sommaire
 - [Règles UI premium](#règles-ui-premium)
+- [Propriété des styles](#propriété-des-styles)
 - [Norme des pages `/sim/*` (baseline `/sim/credit`)](#norme-des-pages-sim-baseline-simcredit)
   - [§16 Anatomie complète et patterns prouvés](#16-anatomie-complète-dune-page-sim--patterns-prouvés)
   - [§17 Diagnostic /sim/per/potentiel](#17-diagnostic-simper-potentiel--écarts-et-cibles)
@@ -71,10 +72,34 @@ Principes : épuré, lisible, respirant.
 
 ---
 
+## Propriété des styles
+Le repo reste en CSS global classique, mais la propriété des styles est désormais stricte.
+
+### Domaines autorisés
+- `src/styles/index.css` : tokens, reset, variables racines, rien d’autre.
+- `src/styles/app/*` : chrome applicatif global (`topbar`, breadcrumbs, chips, états shell).
+- `src/styles/premium-shared.css` : primitives premium transverses chargées une seule fois dans `src/main.tsx`.
+- `src/styles/sim/*` : baseline partagée `/sim/*`.
+- `src/pages/settings/styles/*` : styles partagés et page-specific du domaine settings.
+- `src/features/<feature>/styles/*` : styles locaux d’une feature. Pour l’audit : `src/features/audit/styles/*`.
+
+### Règles
+- Un style n’est promu vers le partagé que s’il est prouvé sur plusieurs surfaces runtime ou imposé par cette gouvernance.
+- Une feature ne doit jamais importer le CSS d’une autre feature.
+- Les entrées simulateur importent `@/styles/sim/index.css` puis leur bundle local `./styles/index.css`.
+- `premium-shared.css` ne doit plus être importé par les features runtime.
+- Les styles inline sont réservés aux valeurs réellement dynamiques (dimensions, couleurs calculées, géométrie runtime).
+
+### Garde-fous
+- `npm run lint:css` : lint syntaxique CSS.
+- `npm run check:css-structure` : vérifie les contrats d’import et l’absence de retour vers les anciens points d’entrée CSS.
+
+---
+
 ## Norme des pages `/sim/*` (baseline `/sim/credit`)
 ### Source de vérité & périmètre
 - Baseline obligatoire : `src/features/credit/Credit.tsx` + `src/features/credit/components/CreditV2.css`.
-- Layout partagé : `src/components/simulator/SimulatorShell.css`.
+- Layout partagé : `src/styles/sim/index.css`.
 - Styles premium partagés : `src/styles/premium-shared.css`.
 - Inputs/select/toggle : `src/features/credit/components/CreditInputs.tsx` + `CreditInputs.css`.
 - Cette norme s'applique aux futures pages `/sim/*` sauf exception explicitée en PR.
@@ -405,7 +430,7 @@ Règles icônes :
 - Si une valeur n'est pas définie dans les sources CSS/JS citées ci-dessus: documenter explicitement `Non défini actuellement`.
 
 ### 14) Comment étendre sans casser la norme
-1. Partir de `SimulatorShell.css` + `premium-shared.css`.
+1. Partir de `src/styles/sim/index.css` + `premium-shared.css`.
 2. Créer un CSS feature local (ex: `FeatureX.css`) avec préfixe propre.
 3. Garder les tokens C1..C10; ne pas créer de palette parallèle.
 4. Ajouter les variantes (tabs, hero, accordéon) par composition de classes avant surcharge.
@@ -471,7 +496,7 @@ Cette section comble les trous des §1-§15. Elle ne les duplique pas. Chaque r�
 ```
 
 **Statut** : baseline partagée.
-**Preuves** : `SimulatorShell.css:7`, `CreditV2.css:12`, `IrSimulator.css:45`, `PlacementSimulator.css:91`, `Succession.css:40`.
+**Preuves** : `src/styles/sim/layout.css`, `CreditV2.css:12`, `IrSimulator.css:45`, `PlacementSimulator.css:91`, `Succession.css:40`.
 
 #### 16b) Grilles intra-carte
 
@@ -748,7 +773,7 @@ Cette section complete la norme existante. Elle fixe le contrat minimal avant d'
 - Si le mode simplifie masque des champs qui influencent le calcul, ces champs doivent etre neutralises dans le calcul, pas seulement caches visuellement.
 
 #### Recommande
-- Partir de `SimulatorShell.css` et `premium-shared.css` avant toute surcharge locale.
+- Partir de `src/styles/sim/index.css` et `premium-shared.css` avant toute surcharge locale.
 - Garder un nombre limite de variantes UI ; documenter toute exception dans cette gouvernance.
 
 #### Interdit
@@ -799,7 +824,7 @@ Cette section complete la norme existante. Elle fixe le contrat minimal avant d'
 ## Références code
 - Tokens & defaults : `src/settings/theme.ts`, `src/styles/index.css`
 - ThemeProvider V5 : `src/settings/ThemeProvider.tsx`, `src/settings/presets.ts`, `src/settings/theme/types.ts`
-- UI premium shared : `src/components/simulator/SimulatorShell.css`, `src/styles/premium-shared.css`
+- UI premium shared : `src/styles/sim/index.css`, `src/styles/premium-shared.css`
 - Baseline `/sim/credit` : `src/features/credit/Credit.tsx`, `src/features/credit/components/CreditV2.css`
 - Inputs simulateur : `src/features/credit/components/CreditInputs.tsx`, `src/features/credit/components/CreditInputs.css`
 - Contrat exports PPTX/XLSX : `docs/GOUVERNANCE_EXPORTS.md`

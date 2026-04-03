@@ -233,7 +233,7 @@ export default function SynthesePotentielStep({
                 <input
                   type="number"
                   min={0}
-                  className="per-input"
+                  className="per-input sim-field__control"
                   value={versementEnvisage || ''}
                   placeholder="0"
                   onChange={(event) => onSetVersement(Number(event.target.value) || 0)}

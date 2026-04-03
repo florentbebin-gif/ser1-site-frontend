@@ -70,7 +70,7 @@ function NumberField({
       <input
         type="number"
         min={min}
-        className="per-input"
+        className="per-input sim-field__control"
         value={value || ''}
         placeholder="0"
         onChange={(event) => onChange(Number(event.target.value) || 0)}
@@ -183,7 +183,7 @@ export default function SituationFiscaleStep({
               <label className="per-field">
                 <span>Situation familiale</span>
                 <select
-                  className="per-select"
+                  className="per-select sim-field__control"
                   value={situationFamiliale}
                   onChange={(event) => {
                     onUpdateSituation({
@@ -295,7 +295,7 @@ export default function SituationFiscaleStep({
                 <input
                   type="number"
                   min={0}
-                  className="per-input"
+                  className="per-input sim-field__control"
                   value={declarant1[row.key] || ''}
                   placeholder="0"
                   onChange={(event) => onUpdateDeclarant(1, { [row.key]: Number(event.target.value) || 0 })}
@@ -307,7 +307,7 @@ export default function SituationFiscaleStep({
                   <input
                     type="number"
                     min={0}
-                    className="per-input"
+                    className="per-input sim-field__control"
                     value={declarant2[row.key] || ''}
                     placeholder="0"
                     onChange={(event) => onUpdateDeclarant(2, { [row.key]: Number(event.target.value) || 0 })}

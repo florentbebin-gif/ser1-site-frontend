@@ -1,0 +1,145 @@
+﻿.pl-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.pl-field label {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--color-c9);
+}
+
+.pl-input {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+}
+
+.pl-input__field,
+.pl-select:disabled,
+.pl-select.is-forced {
+  background: var(--color-c7);
+  color: var(--color-c9);
+  cursor: not-allowed;
+  pointer-events: none;
+  opacity: 1;
+}
+
+.pl-input__field--inline {
+  width: 70px;
+}
+
+.pl-input__unit {
+  min-width: 18px;
+  margin-left: 6px;
+  font-size: 13px;
+  color: var(--color-c9);
+}
+
+.pl-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.pl-toggle__switch {
+  position: relative;
+  width: 44px;
+  height: 24px;
+  border: none;
+  border-radius: 12px;
+  background: var(--color-c8);
+  cursor: pointer;
+  padding: 0;
+  transition: background 0.2s ease, box-shadow 0.2s ease;
+}
+
+.pl-toggle__switch:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-c4) 65%, #FFFFFF);
+}
+
+.pl-toggle__switch.is-active {
+  background: var(--color-c4);
+}
+
+.pl-toggle__knob {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #FFFFFF;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  transition: transform 0.2s ease;
+  pointer-events: none;
+}
+
+.pl-toggle__switch.is-active .pl-toggle__knob {
+  transform: translateX(20px);
+}
+
+.pl-toggle__label {
+  font-size: 13px;
+  color: var(--color-c10);
+}
+
+.pl-muted {
+  font-size: 12px;
+  color: var(--color-c9);
+}
+
+.pl-detail-cumul {
+  margin-top: 2px;
+  font-size: 11px;
+  font-style: italic;
+  color: var(--color-c9);
+}
+
+.pl-btn {
+  border: 1px solid var(--color-c8);
+  border-radius: 8px;
+  background: var(--color-c7);
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.pl-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.pl-btn--config {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  padding: 10px 14px;
+  border-color: var(--color-c5);
+  transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s, background 0.2s;
+}
+
+.pl-btn--config:hover {
+  background: var(--color-c6);
+  border-color: var(--color-c4);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+  transform: translateY(-1px);
+}
+
+.pl-btn__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-c2);
+}
+
+.pl-btn__summary {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--color-c1);
+}
+

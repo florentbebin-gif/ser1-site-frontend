@@ -80,7 +80,7 @@ export function IrIncomeSection({
       <div className="ir-income-card__header sim-card__header sim-card__header--bleed">
         <div className="ir-income-card__header-row">
           <div className="ir-income-card__title sim-card__title sim-card__title-row">
-            <div className="ir-section-icon-wrapper ir-section-icon-wrapper--card sim-card__icon">
+            <div className="ir-section-icon-wrapper sim-card__icon">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                 <rect x="3" y="3" width="18" height="18" rx="2" />
                 <line x1="3" y1="9" x2="21" y2="9" />

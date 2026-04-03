@@ -35,7 +35,7 @@ export default function ScDonationsCard({
     <div className="premium-card sc-card sc-card--guide sim-card--guide">
       <header className="sc-card__header sim-card__header sim-card__header--bleed">
         <div className="sc-card__title-row sim-card__title sim-card__title-row">
-          <div className="sc-section-icon-wrapper sim-card__icon">
+          <div className="sim-card__icon">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
               <polyline points="20 12 20 22 4 22 4 12" />
               <rect x="2" y="7" width="20" height="5" />

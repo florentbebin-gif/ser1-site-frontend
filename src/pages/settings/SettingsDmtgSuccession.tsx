@@ -1,8 +1,8 @@
 import { useEffect, useState, useMemo } from 'react';
 import { supabase } from '@/supabaseClient';
 import { useUserRole } from '@/auth/useUserRole';
-import './SettingsShared.css';
-import './SettingsImpots.css';
+import './styles/impots.css';
+import './styles/dmtg.css';
 import { invalidate, broadcastInvalidation } from '@/utils/cache/fiscalSettingsCache';
 import { UserInfoBanner } from '@/components/UserInfoBanner';
 
@@ -266,15 +266,7 @@ export default function SettingsDmtgSuccession() {
   const avDeces = fiscalitySettings.assuranceVie?.deces || DEFAULT_FISCALITY_SETTINGS.assuranceVie.deces;
 
   return (
-    <div
-      style={{
-        fontSize: 15,
-        marginTop: 16,
-        display: 'flex',
-        flexDirection: 'column',
-        gap: 24,
-      }}
-    >
+    <div className="settings-stack settings-stack--offset">
       <UserInfoBanner />
 
       <div className="fisc-accordion">
@@ -286,9 +278,9 @@ export default function SettingsDmtgSuccession() {
           setOpenSection={setOpenSection}
         />
         {openSection === 'dmtg' && Object.keys(dmtgErrors).length > 0 && (
-          <div style={{ padding: '0 16px 8px', fontSize: 13 }}>
+          <div className="settings-dmtg-inline-errors">
             {Object.entries(dmtgErrors).map(([key, msg]) => (
-              <div key={key} style={{ color: 'var(--color-error-text)', marginBottom: 2 }}>
+              <div key={key} className="settings-dmtg-inline-error">
                 {key} : {msg}
               </div>
             ))}

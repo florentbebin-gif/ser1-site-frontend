@@ -1,0 +1,81 @@
+﻿/* src/features/ir/components/IrSimulator.css */
+
+/* Ligne sous-titre + actions (ExportMenu Ã  droite) */
+.ir-header__subtitle-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.ir-header__subtitle-row .premium-subtitle {
+  flex: 1;
+  min-width: 0;
+}
+
+.ir-grid {
+  min-width: 0;
+}
+
+.ir-left {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.ir-right {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-self: stretch;
+}
+
+/* ContrÃ´les (BarÃ¨me + RÃ©sidence) â€” dÃ©filent avec la page */
+.ir-controls-sticky {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px 12px;
+  align-items: end;
+}
+
+/* Cartes rÃ©sultats (TMI + rÃ©sumÃ©) â€” restÃ©es figÃ©es au scroll */
+.ir-results-sticky {
+  position: sticky;
+  top: 80px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+@media (max-width: 900px) {
+  .ir-grid {
+    grid-template-columns: 1fr;
+  }
+
+  /* SynthÃ¨se (colonne droite) au-dessus du formulaire sur mobile */
+  .ir-grid > .ir-right {
+    order: -1;
+  }
+
+  .ir-guide-card__grid {
+    grid-template-columns: 1fr;
+  }
+
+  .ir-income-card__header-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .ir-income-filters {
+    justify-content: flex-start;
+  }
+
+  .ir-controls-sticky {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .ir-results-sticky {
+    position: static;
+  }
+}
+

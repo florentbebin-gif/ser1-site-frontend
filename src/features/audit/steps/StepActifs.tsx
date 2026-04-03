@@ -5,9 +5,9 @@ export default function StepActifs({ dossier, updateDossier }: StepProps) {
   const totalActifs = actifs.reduce((sum, actif) => sum + actif.valeur, 0);
 
   return (
-    <div className="step-form">
+    <div className="audit-step-form">
       <h2>Actifs</h2>
-      <div className="summary-bar">
+      <div className="audit-summary-bar">
         Total actifs : <strong>{totalActifs.toLocaleString('fr-FR')} €</strong>
       </div>
 
@@ -28,8 +28,8 @@ export default function StepActifs({ dossier, updateDossier }: StepProps) {
       </button>
 
       {actifs.map((actif, idx) => (
-        <div key={actif.id} className="form-card">
-          <div className="form-row">
+        <div key={actif.id} className="audit-form-card">
+          <div className="audit-form-row">
             <label>Libellé</label>
             <input
               type="text"
@@ -42,7 +42,7 @@ export default function StepActifs({ dossier, updateDossier }: StepProps) {
               placeholder="Ex: Résidence principale"
             />
           </div>
-          <div className="form-row">
+          <div className="audit-form-row">
             <label>Valeur (€)</label>
             <input
               type="number"
@@ -54,7 +54,7 @@ export default function StepActifs({ dossier, updateDossier }: StepProps) {
               }}
             />
           </div>
-          <div className="form-row">
+          <div className="audit-form-row">
             <label>Propriétaire</label>
             <select
               value={actif.proprietaire}
@@ -72,7 +72,7 @@ export default function StepActifs({ dossier, updateDossier }: StepProps) {
           </div>
           <button
             type="button"
-            className="chip chip-small chip-danger"
+            className="chip audit-chip-small audit-chip-danger"
             onClick={() => {
               updateDossier({ actifs: actifs.filter((_, i) => i !== idx) });
             }}

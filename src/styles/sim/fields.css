@@ -1,0 +1,167 @@
+/* Champs partagés /sim/* */
+
+.sim-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.sim-field__label {
+  display: block;
+  margin-bottom: 4px;
+  color: var(--color-c9);
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.sim-field__row {
+  display: flex;
+  align-items: center;
+}
+
+.sim-field__control,
+.sim-field__select-trigger {
+  height: 32px;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 4px 6px;
+  border: none;
+  border-bottom: 1px solid transparent;
+  border-radius: 4px;
+  background-color: var(--sim-input-bg, var(--sim-input-bg-default));
+  color: var(--color-c10);
+  font-family: inherit;
+  font-size: 13px;
+  text-align: right;
+  transition: border-color 0.2s, background-color 0.15s;
+  outline: none;
+}
+
+.sim-field__control::placeholder {
+  color: var(--color-c9);
+  opacity: 1;
+}
+
+.sim-field__control:hover,
+.sim-field__select-trigger:hover {
+  border-bottom-color: var(--color-c8);
+}
+
+.sim-field__control:focus-visible,
+.sim-field__select-trigger:focus-visible {
+  border-bottom-color: var(--color-c2);
+}
+
+.sim-field__control:disabled,
+.sim-field__select-trigger:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.sim-field__control--left {
+  text-align: left;
+}
+
+.sim-field__control--error,
+.sim-field__select-trigger--error {
+  border-bottom-color: var(--color-c1);
+}
+
+.sim-field__control--guide {
+  background-color: color-mix(in srgb, var(--color-c1) 8%, #FFFFFF);
+}
+
+.sim-field__unit {
+  min-width: 24px;
+  margin-left: 6px;
+  color: var(--color-c9);
+  font-size: 13px;
+}
+
+.sim-field__hint {
+  margin-top: 2px;
+  color: var(--color-c9);
+  font-size: 11px;
+  font-style: italic;
+}
+
+.sim-field__error {
+  margin-top: 2px;
+  color: var(--color-c1);
+  font-size: 11px;
+}
+
+.sim-select-wrapper {
+  position: relative;
+}
+
+.sim-field__select-trigger {
+  padding-right: 28px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  position: relative;
+}
+
+.sim-field__select-value {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-align: right;
+}
+
+.sim-field__select-arrow {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--color-c9);
+  pointer-events: none;
+  transition: transform 0.18s ease;
+}
+
+.sim-select-wrapper.is-open .sim-field__select-arrow {
+  transform: translateY(-50%) rotate(180deg);
+}
+
+.sim-field__dropdown {
+  position: absolute;
+  top: calc(100% + 4px);
+  right: 0;
+  left: 0;
+  z-index: 200;
+  margin: 0;
+  padding: 4px 0;
+  list-style: none;
+  overflow: hidden;
+  background: #FFFFFF;
+  border: 1px solid var(--color-c8);
+  border-radius: 10px;
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.12), 0 1px 4px rgba(0, 0, 0, 0.06);
+}
+
+.sim-field__option {
+  padding: 10px 14px;
+  color: var(--color-c10);
+  font-size: 13px;
+  text-align: right;
+  cursor: pointer;
+  transition: background-color 0.12s;
+}
+
+.sim-field__option:hover {
+  background-color: color-mix(in srgb, var(--color-c3) 25%, transparent);
+}
+
+.sim-field__option.is-selected {
+  font-weight: 600;
+}
+
+.sim-field__control.is-forced,
+.sim-field__select-trigger.is-forced {
+  background: var(--color-c7);
+  color: var(--color-c9);
+  cursor: not-allowed;
+  pointer-events: none;
+}

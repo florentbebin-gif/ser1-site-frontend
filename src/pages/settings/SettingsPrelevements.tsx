@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { supabase } from '@/supabaseClient';
 import { useUserRole } from '@/auth/useUserRole';
-import './SettingsShared.css';
 import { invalidate, broadcastInvalidation } from '@/utils/cache/fiscalSettingsCache';
 import { UserInfoBanner } from '@/components/UserInfoBanner';
 import { createFieldUpdater } from '@/components/settings/settingsHelpers';
@@ -241,27 +240,19 @@ export default function SettingsPrelevements() {
   const { patrimony, retirement, retirementThresholds } = settings;
 
   return (
-    <div style={{ marginTop: 16 }}>
+    <div className="settings-stack settings-stack--offset">
       <UserInfoBanner />
 
       {error && (
-        <div className="settings-feedback-message settings-feedback-message--error" style={{ marginTop: 12 }}>
+        <div className="settings-feedback-message settings-feedback-message--error">
           {error}
         </div>
       )}
 
       {loading ? (
-        <div style={{ marginTop: 24 }}>Chargement des paramètres…</div>
+        <div className="settings-page-loading">Chargement des paramètres…</div>
       ) : (
-        <div
-          style={{
-            fontSize: 15,
-            marginTop: 24,
-            display: 'flex',
-            flexDirection: 'column',
-            gap: 24,
-          }}
-        >
+        <div className="settings-stack">
           <div className="fisc-accordion">
             <PassHistoryAccordion
               isOpen={openSection === 'pass'}

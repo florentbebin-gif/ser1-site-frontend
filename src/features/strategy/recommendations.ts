@@ -7,7 +7,7 @@
  */
 
 import type { DossierAudit, ObjectifClient } from '../audit/types';
-import type { Recommandation, ProduitType } from './types';
+import type { Recommandation } from './types';
 
 /**
  * Génère les recommandations pour un dossier audit
@@ -174,12 +174,3 @@ export function filterRecommendationsByObjectif(
   return recommandations.filter(r => r.objectifsCibles.includes(objectif));
 }
 
-/**
- * Filtre les recommandations par produit
- */
-export function filterRecommendationsByProduit(
-  recommandations: Recommandation[],
-  produit: ProduitType
-): Recommandation[] {
-  return recommandations.filter(r => r.produitsAssocies.includes(produit));
-}

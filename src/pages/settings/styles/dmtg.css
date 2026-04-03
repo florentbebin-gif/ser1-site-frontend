@@ -1,0 +1,9 @@
+.settings-dmtg-inline-errors {
+  padding: 0 16px 8px;
+  font-size: 13px;
+}
+
+.settings-dmtg-inline-error {
+  color: var(--color-error-text);
+  margin-bottom: 2px;
+}

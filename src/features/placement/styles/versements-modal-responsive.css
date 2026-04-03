@@ -1,0 +1,24 @@
+﻿@media (max-width: 560px) {
+  .vcm-overlay {
+    padding: 12px;
+  }
+
+  .vcm__body {
+    padding: 16px;
+  }
+
+  .vcm__row,
+  .vcm__row--4cols {
+    grid-template-columns: 1fr;
+  }
+
+  .vcm__ponctuel-headers,
+  .vcm__ponctuel-row {
+    grid-template-columns: 56px 104px 104px minmax(168px, 1fr) 28px;
+  }
+
+  .vcm__ponctuels--scpi .vcm__ponctuel-headers,
+  .vcm__ponctuels--scpi .vcm__ponctuel-row {
+    grid-template-columns: 56px 104px minmax(180px, 1fr) 28px;
+  }
+}

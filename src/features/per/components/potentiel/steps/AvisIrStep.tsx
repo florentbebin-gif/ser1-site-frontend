@@ -57,7 +57,7 @@ function AvisFieldsCard({
             <input
               type="number"
               min={0}
-              className="per-input per-avis-row-input"
+              className="per-input sim-field__control per-avis-row-input"
               value={values[row.key] || ''}
               placeholder="0"
               onChange={(event) => onChange({ [row.key]: Number(event.target.value) || 0, anneeRef: incomeYear })}

@@ -144,8 +144,8 @@ export function SuccessionPageGrid({
       </div>
 
       {shouldRenderComputationSections && (
-        <div className="sc-grid">
-          <div className="sc-left">
+        <div className="sc-grid sim-grid">
+          <div className="sc-left sim-grid__col">
             <ScAssetsPassifsCard
               isExpert={isExpert}
               isMarried={derived.isMarried}
@@ -199,7 +199,7 @@ export function SuccessionPageGrid({
             )}
           </div>
 
-          <div className="sc-right">
+          <div className="sc-right sim-grid__col sim-grid__col--sticky">
             <ScSuccessionSummaryPanel
               displayUsesChainage={derived.displayUsesChainage}
               derivedTotalDroits={derived.derivedTotalDroits}

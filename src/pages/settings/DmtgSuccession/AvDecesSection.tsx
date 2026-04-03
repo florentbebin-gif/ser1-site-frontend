@@ -54,7 +54,7 @@ export default function AvDecesSection({
         aria-expanded={isOpen}
         onClick={() => setOpenSection(isOpen ? null : 'avDeces')}
       >
-        <span className="settings-premium-title" style={{ margin: 0 }}>
+        <span className="settings-premium-title settings-premium-title--flush">
           Assurance-vie deces (990 I / 757 B)
         </span>
         <span className="fisc-acc-chevron">

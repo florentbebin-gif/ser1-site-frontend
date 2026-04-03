@@ -30,7 +30,7 @@ export default function AvantagesMatrimoniauxSection({
         aria-expanded={isOpen}
         onClick={() => setOpenSection(isOpen ? null : 'avantagesMatrimoniaux')}
       >
-        <span className="settings-premium-title" style={{ margin: 0 }}>
+        <span className="settings-premium-title settings-premium-title--flush">
           Avantages matrimoniaux
         </span>
         <span className="fisc-acc-chevron">

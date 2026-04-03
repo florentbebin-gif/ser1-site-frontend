@@ -44,7 +44,7 @@ export default function PrelevementsSeuilsSection({
         aria-controls="prelev-panel-seuils"
         onClick={() => setOpenSection(isOpen ? null : 'seuils')}
       >
-        <span className="settings-premium-title" style={{ margin: 0 }}>
+        <span className="settings-premium-title settings-premium-title--flush">
           Seuils de revenus pour la CSG, la CRDS et la CASA (RFR)
         </span>
         <span className="fisc-acc-chevron">

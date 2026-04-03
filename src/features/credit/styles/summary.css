@@ -1,0 +1,169 @@
+﻿/* ----------------------------------------
+   SUMMARY CARD (sticky droite)
+   ---------------------------------------- */
+/* Wrapper sticky colonne droite â€” solidarise summary + total-mensu */
+.cv2-right-col {
+  gap: 12px;
+}
+
+.cv2-summary {
+  background: #FFFFFF;
+  border: 1px solid var(--color-c8);
+  border-radius: 12px;
+  padding: 20px 24px;
+  /* Lift premium : ombre plus douce mais plus large */
+  box-shadow: 0 6px 28px rgba(0, 0, 0, 0.07);
+  /* Gradient header trÃ¨s subtil sur les 20% supÃ©rieurs */
+}
+
+/* Titre avec icÃ´ne â€” wrapper */
+.cv2-summary__title-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.cv2-summary__title {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--color-c9);
+  margin-bottom: 14px;
+}
+
+/* Quand le titre est dans un title-row, sa marge est portÃ©e par le wrapper */
+.cv2-summary__title-row .cv2-summary__title {
+  margin-bottom: 0;
+}
+
+/* Donut SVG */
+.cv2-donut {
+  flex-shrink: 0;
+}
+
+/* KPI zone â€” montant Ã  gauche, donut Ã  droite */
+.cv2-summary__kpi-zone {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 4px 0 14px;
+}
+
+.cv2-summary__kpi-label-small {
+  font-size: 11px;
+  font-weight: 500;
+  color: color-mix(in srgb, var(--color-c9) 60%, var(--color-c10));
+  margin-bottom: 6px;
+}
+
+.cv2-summary__kpi-main-value {
+  font-size: 30px;
+  font-weight: 700;
+  color: var(--color-c1);
+  font-variant-numeric: tabular-nums;
+  line-height: 1.1;
+}
+
+.cv2-summary__kpi-assurance {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--color-c9);
+  margin-top: 5px;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Badge "Hors assurance" (simplifiÃ© uniquement) */
+.cv2-summary__badge {
+  display: inline-block;
+  margin-top: 8px;
+  padding: 3px 9px;
+  border-radius: 999px;
+  border: 1px solid var(--color-c8);
+  background: var(--color-c7);
+  font-size: 11px;
+  color: var(--color-c9);
+}
+
+/* SÃ©parateur entre KPI et lignes de coÃ»t â€” gradient symÃ©trique (style settings) */
+.cv2-summary__divider {
+  margin: 4px 0 8px;
+}
+
+/* Lignes de coÃ»t */
+.cv2-summary__rows {
+  display: flex;
+  flex-direction: column;
+}
+
+.cv2-summary__row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 10px 0;
+  border-bottom: none;
+}
+
+.cv2-summary__row--total {
+  border-bottom: none;
+  padding-top: 12px;
+}
+
+.cv2-summary__row-label {
+  font-size: 13px;
+  color: var(--color-c9);
+}
+
+.cv2-summary__row-value {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-c10);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Total : C1 (niveau d'emphase maximal) â€” anciennement C2 */
+.cv2-summary__row-value--highlight {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--color-c1);
+}
+
+/* ----------------------------------------
+   GUIDAGE VISUEL ONBOARDING â€” permanent
+   ---------------------------------------- */
+/* LisÃ¨rÃ© C3 Ã  gauche + gradient C1 trÃ¨s subtil sur le header */
+.cv2-summary__lissage-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 4px 0 0;
+  margin-top: 4px;
+}
+
+.cv2-summary__lissage-info .cv2-summary__row {
+  border-bottom: none;
+  padding: 0;
+}
+
+/* ----------------------------------------
+   BLOC MENSUALITÃ‰ TOTALE (multi-prÃªts, sous CreditSummaryCard)
+   ---------------------------------------- */
+.cv2-total-mensu {
+  margin-top: 12px;
+  padding: 20px 24px;
+  border-radius: 12px;
+  background: #FFFFFF;
+  border: 1px solid var(--color-c8);
+  box-shadow: 0 6px 28px rgba(0, 0, 0, 0.07);
+}
+
+.cv2-total-mensu__value {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--color-c1);
+  font-variant-numeric: tabular-nums;
+  line-height: 1.15;
+  margin: 4px 0;
+}
+

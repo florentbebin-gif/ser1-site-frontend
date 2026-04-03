@@ -153,29 +153,19 @@ export default function CabinetEditModal({
 
   return (
     <div className="report-modal-overlay">
-      <div className="report-modal" style={{ maxWidth: 500 }}>
+      <div className="report-modal report-modal--sm">
         <div className="report-modal-header">
           <h3>{cabinet ? 'Modifier le cabinet' : 'Nouveau cabinet'}</h3>
           <button className="report-modal-close" onClick={onClose} type="button">X</button>
         </div>
         <div className="report-modal-content">
           {error && (
-            <div
-              style={{
-                padding: '12px',
-                background: 'var(--color-error-bg)',
-                border: '1px solid var(--color-error-border)',
-                color: 'var(--color-error-text)',
-                borderRadius: 6,
-                marginBottom: 16,
-                fontSize: 14,
-              }}
-            >
+            <div className="settings-feedback-panel settings-feedback-panel--error settings-modal-message">
               {error}
             </div>
           )}
-          <div style={{ marginBottom: 16 }}>
-            <label style={{ display: 'block', marginBottom: 6, fontWeight: 600, fontSize: 14 }}>
+          <div className="settings-modal-field">
+            <label className="settings-modal-label">
               Nom du cabinet *
             </label>
             <input
@@ -185,17 +175,11 @@ export default function CabinetEditModal({
                 setForm((prev) => ({ ...prev, name: e.target.value }));
               }}
               placeholder="Ex: Cabinet Dupont"
-              style={{
-                width: '100%',
-                padding: '10px 12px',
-                border: '1px solid var(--color-c8)',
-                borderRadius: 6,
-                fontSize: 14,
-              }}
+              className="settings-modal-control"
             />
           </div>
-          <div style={{ marginBottom: 16 }}>
-            <label style={{ display: 'block', marginBottom: 6, fontWeight: 600, fontSize: 14 }}>
+          <div className="settings-modal-field">
+            <label className="settings-modal-label">
               Theme par defaut
             </label>
             <select
@@ -203,13 +187,7 @@ export default function CabinetEditModal({
               onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
                 setForm((prev) => ({ ...prev, default_theme_id: e.target.value }));
               }}
-              style={{
-                width: '100%',
-                padding: '10px 12px',
-                border: '1px solid var(--color-c8)',
-                borderRadius: 6,
-                fontSize: 14,
-              }}
+              className="settings-modal-control"
             >
               <option value="">-- Aucun theme --</option>
               {themes.map((theme) => (
@@ -217,20 +195,19 @@ export default function CabinetEditModal({
               ))}
             </select>
           </div>
-          <div style={{ marginBottom: 16 }}>
-            <label style={{ display: 'block', marginBottom: 6, fontWeight: 600, fontSize: 14 }}>
+          <div className="settings-modal-field">
+            <label className="settings-modal-label">
               Logo du cabinet
             </label>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
+            <div className="settings-modal-file-row">
               <button
                 type="button"
                 onClick={() => inputRef.current?.click()}
                 className="chip"
-                style={{ padding: '8px 16px', fontWeight: 500 }}
               >
                 Choisir une image...
               </button>
-              <span style={{ fontSize: 13, color: 'var(--color-c9)' }}>
+              <span className="settings-modal-hint">
                 {logoFile ? logoFile.name : logoPreview ? 'Logo selectionne' : 'Aucun fichier'}
               </span>
               <input
@@ -242,17 +219,11 @@ export default function CabinetEditModal({
               />
             </div>
             {logoPreview && (
-              <div style={{ marginTop: 12, display: 'flex', alignItems: 'center', gap: 12 }}>
+              <div className="settings-modal-preview">
                 <img
                   src={logoPreview}
                   alt="Apercu logo"
-                  style={{
-                    maxWidth: 150,
-                    maxHeight: 80,
-                    objectFit: 'contain',
-                    borderRadius: 4,
-                    border: '1px solid var(--color-c8)',
-                  }}
+                  className="settings-modal-preview-image"
                 />
                 <button
                   type="button"
@@ -264,7 +235,6 @@ export default function CabinetEditModal({
                   className="icon-btn danger"
                   title="Supprimer le logo"
                   aria-label="Supprimer le logo"
-                  style={{ width: 32, height: 32 }}
                 >
                   <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <polyline points="3 6 5 6 21 6" />
@@ -274,14 +244,14 @@ export default function CabinetEditModal({
               </div>
             )}
             {logoUploading && (
-              <p style={{ fontSize: 13, color: 'var(--color-c9)', marginTop: 8 }}>Upload en cours...</p>
+              <p className="settings-modal-hint settings-modal-hint--compact">Upload en cours...</p>
             )}
           </div>
-          <div style={{ marginBottom: 16 }}>
-            <label style={{ display: 'block', marginBottom: 6, fontWeight: 600, fontSize: 14 }}>
+          <div className="settings-modal-field">
+            <label className="settings-modal-label">
               Position du logo
             </label>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 }}>
+            <div className="settings-modal-grid-3">
               {LOGO_PLACEMENT_OPTIONS.map((position) => (
                 <button
                   key={position.key}
@@ -289,22 +259,13 @@ export default function CabinetEditModal({
                   onClick={() => {
                     setForm((prev) => ({ ...prev, logo_placement: position.key }));
                   }}
-                  style={{
-                    padding: '8px 12px',
-                    fontSize: 12,
-                    border: `2px solid ${form.logo_placement === position.key ? 'var(--color-c4)' : 'var(--color-c8)'}`,
-                    borderRadius: 6,
-                    background: form.logo_placement === position.key ? 'var(--color-c4)' : 'transparent',
-                    cursor: 'pointer',
-                    textAlign: 'center',
-                    color: form.logo_placement === position.key ? 'var(--color-c1)' : 'var(--color-c10)',
-                  }}
+                  className={`settings-modal-placement-button${form.logo_placement === position.key ? ' is-active' : ''}`}
                 >
                   {position.label}
                 </button>
               ))}
             </div>
-            <p style={{ fontSize: 12, color: 'var(--color-c9)', marginTop: 8 }}>
+            <p className="settings-modal-hint settings-modal-hint--compact">
               Le logo ne sera jamais positionne sur la zone titre de la slide.
             </p>
           </div>
@@ -317,7 +278,6 @@ export default function CabinetEditModal({
               void handleSaveCabinet();
             }}
             disabled={saving || logoUploading}
-            style={{ opacity: saving ? 0.6 : 1 }}
             type="button"
           >
             {saving ? 'Enregistrement...' : 'Enregistrer'}

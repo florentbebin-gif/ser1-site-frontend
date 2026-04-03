@@ -5,13 +5,13 @@ export default function StepCivil({ dossier, updateDossier }: StepProps) {
   const isMarie = situationFamiliale.situationMatrimoniale === 'marie';
 
   return (
-    <div className="step-form">
+    <div className="audit-step-form">
       <h2>Situation civile</h2>
 
       {isMarie && (
-        <div className="form-section">
+        <div className="audit-form-section">
           <h3>Régime matrimonial</h3>
-          <div className="form-row">
+          <div className="audit-form-row">
             <label>Régime</label>
             <select
               value={situationCivile.regimeMatrimonial || ''}
@@ -31,7 +31,7 @@ export default function StepCivil({ dossier, updateDossier }: StepProps) {
               <option value="separation_biens_societe_acquets">Séparation de biens avec société d'acquêts</option>
             </select>
           </div>
-          <div className="form-row">
+          <div className="audit-form-row">
             <label>
               <input
                 type="checkbox"
@@ -46,9 +46,9 @@ export default function StepCivil({ dossier, updateDossier }: StepProps) {
         </div>
       )}
 
-      <div className="form-section">
+      <div className="audit-form-section">
         <h3>Donations antérieures</h3>
-        <p className="form-hint">Les donations réalisées au cours des 15 dernières années.</p>
+        <p className="audit-form-hint">Les donations réalisées au cours des 15 dernières années.</p>
         <button
           type="button"
           className="premium-btn"
@@ -68,8 +68,8 @@ export default function StepCivil({ dossier, updateDossier }: StepProps) {
           + Ajouter une donation
         </button>
         {situationCivile.donations.map((donation, idx) => (
-          <div key={donation.id} className="form-card">
-            <div className="form-row">
+          <div key={donation.id} className="audit-form-card">
+            <div className="audit-form-row">
               <label>Montant</label>
               <input
                 type="number"
@@ -81,7 +81,7 @@ export default function StepCivil({ dossier, updateDossier }: StepProps) {
                 }}
               />
             </div>
-            <div className="form-row">
+            <div className="audit-form-row">
               <label>Bénéficiaire</label>
               <input
                 type="text"
