@@ -1,7 +1,4 @@
-/* ========================================
-   MODALES PARTAGEES /sim/*
-   Overlay, panel scrollable et slots header/body/footer
-   ======================================== */
+/* Modales partagées /sim/* */
 
 .sim-modal-overlay {
   position: fixed;

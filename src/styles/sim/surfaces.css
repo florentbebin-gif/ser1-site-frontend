@@ -1,7 +1,4 @@
-/* ========================================
-   SURFACES PARTAGEES /sim/*
-   Pattern commun des cartes guide, synthese et separateurs
-   ======================================== */
+/* Surfaces partagées /sim/* */
 
 .sim-card--guide {
   border-left: 3px solid var(--color-c3);
@@ -40,6 +37,16 @@
   border-radius: 7px;
   background: var(--color-c4);
   color: var(--color-c2);
+}
+
+.sim-card__icon--sm {
+  width: 22px;
+  height: 22px;
+}
+
+.sim-card__icon--lg {
+  width: 28px;
+  height: 28px;
 }
 
 .sim-card__title {

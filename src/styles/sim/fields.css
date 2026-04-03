@@ -1,7 +1,4 @@
-/* ========================================
-   CHAMPS PARTAGES /sim/*
-   Pattern off-white + border-bottom + suffixes
-   ======================================== */
+/* Champs partagés /sim/* */
 
 .sim-field {
   display: flex;
@@ -31,7 +28,7 @@
   border: none;
   border-bottom: 1px solid transparent;
   border-radius: 4px;
-  background-color: var(--sim-input-bg, color-mix(in srgb, var(--color-c8) 18%, #FFFFFF));
+  background-color: var(--sim-input-bg, var(--sim-input-bg-default));
   color: var(--color-c10);
   font-family: inherit;
   font-size: 13px;

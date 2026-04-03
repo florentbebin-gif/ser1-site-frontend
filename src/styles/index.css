@@ -37,6 +37,7 @@
   --color-warning-text: var(--color-c10);
 
   --radius: 12px;
+  --sim-input-bg-default: color-mix(in srgb, var(--color-c8) 18%, #FFFFFF);
 
   /* Ombres - seuls rgba autorisés */
   --shadow-sm: 0 1px 3px rgba(0,0,0,0.05);

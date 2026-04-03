@@ -41,7 +41,7 @@ import type {
   CreditSynthesis,
 } from './types';
 import './components/CreditV2.css';
-import '../../components/simulator/SimulatorShell.css';
+import '@/styles/sim/index.css';
 
 // ============================================================================
 // HELPERS

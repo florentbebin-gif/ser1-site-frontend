@@ -1,12 +1,4 @@
-@import '../../styles/sim-surfaces.css';
-@import '../../styles/sim-fields.css';
-@import '../../styles/sim-modals.css';
-
-/* ========================================
-   SimulatorShell — Layout partagé simulateurs
-   Classes : .sim-page, .sim-header, .sim-section-title
-   Utilisable par Credit, Placement, IR, Succession, PER
-   ======================================== */
+/* Layout partagé des simulateurs. */
 
 .sim-page {
   max-width: 1200px;
@@ -24,6 +16,10 @@
   border-bottom: 2px solid var(--color-c8);
 }
 
+.sim-header--stacked {
+  flex-direction: column;
+}
+
 .sim-header__actions {
   display: flex;
   align-items: center;
@@ -31,7 +27,6 @@
   flex-shrink: 0;
 }
 
-/* Section title à l'intérieur d'une card (14px, gras, C1) */
 .sim-section-title {
   font-size: 14px;
   font-weight: 600;

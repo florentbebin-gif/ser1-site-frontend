@@ -17,7 +17,7 @@
 
 import { useState } from 'react';
 import { useUserMode, type UserMode } from '@/settings/userMode';
-import '@/components/simulator/SimulatorShell.css';
+import '@/styles/sim/index.css';
 import './PlacementSimulator.css';
 import { VersementConfigModal } from './VersementConfigModal';
 import { renderEpargneRow } from '../utils/tableHelpers';
