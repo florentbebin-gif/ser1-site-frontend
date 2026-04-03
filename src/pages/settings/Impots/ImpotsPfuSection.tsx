@@ -61,7 +61,7 @@ export default function ImpotsPfuSection({
         aria-controls="impots-panel-pfu"
         onClick={() => setOpenSection(isOpen ? null : 'pfu')}
       >
-        <span className="settings-premium-title" style={{ margin: 0 }}>
+        <span className="settings-premium-title settings-premium-title--flush">
           PFU
         </span>
         <span className="fisc-acc-chevron">

@@ -115,7 +115,7 @@ export default function PassHistoryAccordion({
         aria-controls="prelev-panel-pass"
         onClick={onToggle}
       >
-        <span className="settings-premium-title" style={{ margin: 0 }}>
+        <span className="settings-premium-title settings-premium-title--flush">
           Historique du PASS (8 valeurs)
         </span>
         <span className="fisc-acc-chevron">{isOpen ? 'v' : '>'}</span>
@@ -129,7 +129,7 @@ export default function PassHistoryAccordion({
           aria-labelledby="prelev-header-pass"
         >
           {loading ? (
-            <p style={{ fontSize: 13, color: 'var(--color-c9)' }}>Chargement...</p>
+            <p className="settings-inline-note">Chargement...</p>
           ) : (
             <>
               <table className="settings-table">
@@ -165,31 +165,13 @@ export default function PassHistoryAccordion({
                     void handleSave();
                   }}
                   disabled={saving}
-                  style={{ marginTop: 12 }}
                 >
                   {saving ? 'Enregistrement...' : 'Enregistrer le PASS'}
                 </button>
               )}
 
               {message && (
-                <div
-                  style={{
-                    fontSize: 14,
-                    marginTop: 8,
-                    padding: '10px 14px',
-                    background: message.includes('Erreur')
-                      ? 'var(--color-error-bg)'
-                      : 'var(--color-success-bg)',
-                    border: message.includes('Erreur')
-                      ? '1px solid var(--color-error-border)'
-                      : '1px solid var(--color-success-border)',
-                    borderRadius: 6,
-                    color: message.includes('Erreur')
-                      ? 'var(--color-error-text)'
-                      : 'var(--color-success-text)',
-                    fontWeight: 500,
-                  }}
-                >
+                <div className={`settings-feedback-message settings-feedback-message--compact ${message.includes('Erreur') ? 'settings-feedback-message--error' : 'settings-feedback-message--success'}`}>
                   {message}
                 </div>
               )}

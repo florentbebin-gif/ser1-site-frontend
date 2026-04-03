@@ -50,60 +50,37 @@ export default function UserInviteModal({
 
   return (
     <div className="report-modal-overlay">
-      <div className="report-modal" style={{ maxWidth: 500 }}>
+      <div className="report-modal report-modal--sm">
         <div className="report-modal-header">
           <h3>Nouvel utilisateur</h3>
           <button className="report-modal-close" onClick={onClose} type="button">X</button>
         </div>
         <div className="report-modal-content">
           {error && (
-            <div
-              style={{
-                padding: '12px',
-                background: 'var(--color-error-bg)',
-                border: '1px solid var(--color-error-border)',
-                color: 'var(--color-error-text)',
-                borderRadius: 6,
-                marginBottom: 16,
-                fontSize: 14,
-              }}
-            >
+            <div className="settings-feedback-panel settings-feedback-panel--error settings-modal-message">
               {error}
             </div>
           )}
-          <div style={{ marginBottom: 16 }}>
-            <label style={{ display: 'block', marginBottom: 6, fontWeight: 600, fontSize: 14 }}>Email *</label>
+          <div className="settings-modal-field">
+            <label className="settings-modal-label">Email *</label>
             <input
               type="email"
               value={email}
               onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEmail(e.target.value)}
               placeholder="utilisateur@exemple.com"
               disabled={submitting}
-              style={{
-                width: '100%',
-                padding: '10px 12px',
-                border: '1px solid var(--color-c8)',
-                borderRadius: 6,
-                fontSize: 14,
-              }}
+              className="settings-modal-control"
             />
           </div>
-          <div style={{ marginBottom: 16 }}>
-            <label style={{ display: 'block', marginBottom: 6, fontWeight: 600, fontSize: 14 }}>
+          <div className="settings-modal-field">
+            <label className="settings-modal-label">
               Cabinet (optionnel)
             </label>
             <select
               value={cabinetId}
               onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setCabinetId(e.target.value)}
               disabled={submitting || cabinetsLoading}
-              style={{
-                width: '100%',
-                padding: '10px 12px',
-                border: '1px solid var(--color-c8)',
-                borderRadius: 6,
-                fontSize: 14,
-                cursor: 'pointer',
-              }}
+              className="settings-modal-control"
             >
               <option value="">-- Aucun cabinet --</option>
               {cabinetOptions.map((cabinet) => (
@@ -122,7 +99,6 @@ export default function UserInviteModal({
               void handleInviteUser();
             }}
             disabled={submitting}
-            style={{ opacity: submitting ? 0.6 : 1 }}
             type="button"
           >
             {submitting ? 'Envoi...' : 'Inviter'}

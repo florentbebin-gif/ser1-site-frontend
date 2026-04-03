@@ -40,7 +40,7 @@ export default function ImpotsBaremeSection({
         aria-controls="impots-panel-bareme"
         onClick={() => setOpenSection(isOpen ? null : 'bareme')}
       >
-        <span className="settings-premium-title" style={{ margin: 0 }}>
+        <span className="settings-premium-title settings-premium-title--flush">
           {"Bar\u00e8me de l\u2019imp\u00f4t sur le revenu"}
         </span>
         <span className="fisc-acc-chevron">

@@ -98,42 +98,24 @@ export default function ThemeEditModal({
 
   return (
     <div className="report-modal-overlay">
-      <div className="report-modal" style={{ maxWidth: 600 }}>
+      <div className="report-modal report-modal--md">
         <div className="report-modal-header">
           <h3>{theme ? 'Modifier le theme' : 'Nouveau theme'}</h3>
           <button className="report-modal-close" onClick={onClose} type="button">X</button>
         </div>
         <div className="report-modal-content">
           {error && (
-            <div
-              style={{
-                padding: '12px',
-                background: 'var(--color-error-bg)',
-                border: '1px solid var(--color-error-border)',
-                color: 'var(--color-error-text)',
-                borderRadius: 6,
-                marginBottom: 16,
-                fontSize: 14,
-              }}
-            >
+            <div className="settings-feedback-panel settings-feedback-panel--error settings-modal-message">
               {error}
             </div>
           )}
           {theme?.is_system && (
-            <div
-              style={{
-                padding: 12,
-                marginBottom: 16,
-                background: 'var(--color-c3)',
-                borderRadius: 6,
-                fontSize: 13,
-              }}
-            >
+            <div className="settings-feedback-panel settings-feedback-panel--info settings-modal-message">
               Theme systeme : modifiable mais non supprimable.
             </div>
           )}
-          <div style={{ marginBottom: 16 }}>
-            <label style={{ display: 'block', marginBottom: 6, fontWeight: 600, fontSize: 14 }}>
+          <div className="settings-modal-field">
+            <label className="settings-modal-label">
               Nom du theme *
             </label>
             <input
@@ -143,17 +125,11 @@ export default function ThemeEditModal({
                 setForm((prev) => ({ ...prev, name: e.target.value }));
               }}
               placeholder="Ex: Bleu patrimonial"
-              style={{
-                width: '100%',
-                padding: '10px 12px',
-                border: '1px solid var(--color-c8)',
-                borderRadius: 6,
-                fontSize: 14,
-              }}
+              className="settings-modal-control"
             />
           </div>
-          <div style={{ marginBottom: 16 }}>
-            <label style={{ display: 'block', marginBottom: 6, fontWeight: 600, fontSize: 14 }}>
+          <div className="settings-modal-field">
+            <label className="settings-modal-label">
               Palette (10 couleurs)
             </label>
             <p className="theme-palette-help">Survolez C1 a C10 pour voir la norme d'usage.</p>
@@ -178,7 +154,7 @@ export default function ThemeEditModal({
                       onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                         handleThemePaletteChange(key, e.target.value);
                       }}
-                      style={{ width: 40, height: 32, border: 'none', cursor: 'pointer' }}
+                      className="settings-modal-color-picker"
                     />
                     <input
                       type="text"
@@ -186,16 +162,7 @@ export default function ThemeEditModal({
                       onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                         handleThemePaletteChange(key, e.target.value);
                       }}
-                      style={{
-                        width: '100%',
-                        padding: '4px',
-                        border: '1px solid var(--color-c8)',
-                        borderRadius: 4,
-                        fontSize: 10,
-                        fontFamily: 'monospace',
-                        textAlign: 'center',
-                        marginTop: 4,
-                      }}
+                      className="settings-modal-token-input"
                     />
                   </div>
                 );
@@ -211,7 +178,6 @@ export default function ThemeEditModal({
               void handleSaveTheme();
             }}
             disabled={saving}
-            style={{ opacity: saving ? 0.6 : 1 }}
             type="button"
           >
             {saving ? 'Enregistrement...' : 'Enregistrer'}

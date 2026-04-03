@@ -75,7 +75,7 @@ export default function PrelevementsRetraitesSection({
         aria-controls="prelev-panel-retraites"
         onClick={() => setOpenSection(isOpen ? null : 'retraites')}
       >
-        <span className="settings-premium-title" style={{ margin: 0 }}>
+        <span className="settings-premium-title settings-premium-title--flush">
           Prélèvements sociaux - pensions de retraite
         </span>
         <span className="fisc-acc-chevron">

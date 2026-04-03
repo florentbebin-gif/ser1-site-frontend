@@ -33,7 +33,7 @@ export default function ReserveCivilSection({
         aria-expanded={isOpen}
         onClick={() => setOpenSection(isOpen ? null : 'reserve')}
       >
-        <span className="settings-premium-title" style={{ margin: 0 }}>
+        <span className="settings-premium-title settings-premium-title--flush">
           Reserve hereditaire & droits du conjoint
         </span>
         <span className="fisc-acc-chevron">

@@ -1,0 +1,76 @@
+/* Bandeau utilisateur */
+.tax-user-banner {
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: var(--color-c7);
+  border: 1px solid var(--color-c8);
+  font-size: 13px;
+}
+
+.settings-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.settings-stack--offset {
+  margin-top: 16px;
+}
+
+.settings-stack--spacious {
+  margin-top: 24px;
+}
+
+.settings-page-note {
+  font-size: 15px;
+  margin-top: 16px;
+}
+
+.settings-page-loading {
+  margin-top: 24px;
+  color: var(--color-c9);
+}
+
+.settings-empty-copy {
+  color: var(--color-c9);
+  font-size: 14px;
+}
+
+.settings-inline-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.settings-inline-row--wrap {
+  flex-wrap: wrap;
+}
+
+.settings-inline-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.settings-inline-actions--end {
+  justify-content: flex-end;
+}
+
+.settings-inline-note {
+  font-size: 13px;
+  color: var(--color-c9);
+}
+
+.settings-inline-note--compact {
+  font-size: 12px;
+}
+
+.settings-inline-error-list {
+  padding: 0 16px 8px;
+  font-size: 13px;
+}
+
+.settings-inline-error {
+  color: var(--color-error-text);
+  margin-bottom: 2px;
+}

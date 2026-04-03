@@ -31,7 +31,7 @@ export default function LiberalitesSection({
         aria-expanded={isOpen}
         onClick={() => setOpenSection(isOpen ? null : 'liberalites')}
       >
-        <span className="settings-premium-title" style={{ margin: 0 }}>
+        <span className="settings-premium-title settings-premium-title--flush">
           Liberalites
         </span>
         <span className="fisc-acc-chevron">

@@ -17,7 +17,7 @@ import { useAdminCabinets } from './hooks/useAdminCabinets';
 import { useAdminReports } from './hooks/useAdminReports';
 import { useAdminThemes } from './hooks/useAdminThemes';
 import { useAdminUsers } from './hooks/useAdminUsers';
-import './SettingsComptes.css';
+import './styles/comptes.css';
 
 export default function SettingsComptes() {
   const { isAdmin, isLoading: authLoading } = useUserRole();
@@ -57,7 +57,7 @@ export default function SettingsComptes() {
 
   if (!isAdmin) {
     return (
-      <div style={{ marginTop: 16 }}>
+      <div className="settings-comptes__state">
         <p>Vous n'avez pas les droits administrateurs pour acceder a cette page.</p>
       </div>
     );
@@ -65,7 +65,7 @@ export default function SettingsComptes() {
 
   if (authLoading) {
     return (
-      <div style={{ marginTop: 16 }}>
+      <div className="settings-comptes__state">
         <p>Chargement de l'authentification...</p>
       </div>
     );
@@ -77,10 +77,10 @@ export default function SettingsComptes() {
   }));
 
   return (
-    <div className="settings-comptes" style={{ marginTop: 16 }}>
+    <div className="settings-comptes">
       <UserInfoBanner />
 
-      {error && <div className="alert error">{error}</div>}
+      {error && <div className="settings-feedback-message settings-feedback-message--error">{error}</div>}
 
       {usersHook.loading ? (
         <p>Chargement...</p>

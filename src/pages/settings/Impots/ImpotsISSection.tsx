@@ -47,7 +47,7 @@ export default function ImpotsISSection({
         aria-controls="impots-panel-is"
         onClick={() => setOpenSection(isOpen ? null : 'is')}
       >
-        <span className="settings-premium-title" style={{ margin: 0 }}>
+        <span className="settings-premium-title settings-premium-title--flush">
           Impot sur les societes
         </span>
         <span className="fisc-acc-chevron">

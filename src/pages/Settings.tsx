@@ -248,21 +248,13 @@ export default function Settings() {
   return (
     <>
       {/* Contenu onglet Généraux */}
-      <div
-          style={{
-            fontSize: 16,
-            marginTop: 24,
-            display: 'flex',
-            flexDirection: 'column',
-            gap: 24,
-          }}
-        >
+      <div className="settings-stack settings-stack--spacious">
           {/* Infos utilisateur */}
           <UserInfoBanner />
 
           {/* Personnalisation avancée du thème */}
           <section className="settings-premium-card">
-            <header className="settings-premium-header" style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
+            <header className="settings-premium-header settings-premium-header--row">
               <div className="settings-action-icon">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                   <circle cx="13.5" cy="6.5" r="2.5"/>
@@ -316,13 +308,8 @@ export default function Settings() {
                 </label>
               </div>
               {themeMode !== 'cabinet' && (
-                <div style={{ marginTop: 20 }}>
-                  <div className="settings-theme-cards" style={{
-                    display: 'grid',
-                    gridTemplateColumns: 'repeat(auto-fill, minmax(100px, 1fr))',
-                    gap: '20px',
-                    marginTop: '12px',
-                  }}>
+                <div className="settings-premium-section">
+                  <div className="settings-theme-cards">
                     {/* V5: Tile "Mon thème" visible dès que myPalette existe */}
                     {myPalette && (
                       <div
@@ -365,7 +352,7 @@ export default function Settings() {
 
                   {/* V5: Bouton "Enregistrer" uniquement en mode 'my' */}
                   {themeMode === 'my' && (
-                    <div style={{ marginTop: 20, display: 'flex', justifyContent: 'flex-end', gap: 12 }}>
+                    <div className="settings-premium-actions settings-premium-actions--end">
                       <button
                         type="button"
                         className="settings-action-btn"
@@ -383,15 +370,7 @@ export default function Settings() {
 
             {saveMessage && (
               <div className="settings-premium-section">
-                <div style={{
-                  padding: '12px 16px',
-                  background: saveMessage.includes('Erreur') ? 'var(--color-error-bg)' : 'var(--color-success-bg)',
-                  border: saveMessage.includes('Erreur') ? '1px solid var(--color-error-border)' : '1px solid var(--color-success-border)',
-                  borderRadius: 8,
-                  color: saveMessage.includes('Erreur') ? 'var(--color-error-text)' : 'var(--color-success-text)',
-                  fontWeight: 500,
-                  fontSize: 14
-                }}>
+                <div className={`settings-feedback-panel ${saveMessage.includes('Erreur') ? 'settings-feedback-panel--error' : 'settings-feedback-panel--success'}`}>
                   {saveMessage}
                 </div>
               </div>
@@ -401,13 +380,13 @@ export default function Settings() {
             {themeMode === 'my' && (
               <div className="settings-premium-section">
                 <h3 className="settings-section-title">Couleurs de l'interface</h3>
-                <p style={{ fontSize: 12, color: 'var(--color-c9)', margin: '0 0 12px 0', lineHeight: 1.4 }}>
+                <p className="settings-premium-note">
                   Modifiez la couleur principale (C1) pour adapter automatiquement toute la palette.
                   Les autres couleurs se calculent intelligemment à partir de celle-ci.
                 </p>
 
                 {/* Always show color1 */}
-                <div className="settings-colors-grid" style={{ marginBottom: 12 }}>
+                <div className="settings-colors-grid">
                   <div className="settings-color-row">
                     <div className="settings-color-info">
                       <span className="settings-color-desc">{COLOR_FIELDS[0].description}</span>
@@ -427,19 +406,7 @@ export default function Settings() {
                 <button
                   type="button"
                   onClick={() => setShowAdvancedColors(!showAdvancedColors)}
-                  style={{
-                    padding: '6px 12px',
-                    border: '1px solid var(--color-c8)',
-                    borderRadius: '4px',
-                    backgroundColor: 'var(--color-c7)',
-                    color: 'var(--color-c10)',
-                    cursor: 'pointer',
-                    fontSize: '12px',
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '6px',
-                    marginBottom: showAdvancedColors ? 12 : 0
-                  }}
+                  className="settings-premium-toggle"
                 >
                   <svg
                     width="12"

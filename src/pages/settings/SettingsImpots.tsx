@@ -1,8 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { supabase } from '@/supabaseClient';
 import { useUserRole } from '@/auth/useUserRole';
-import './SettingsShared.css';
-import './SettingsImpots.css';
+import './styles/impots.css';
 import { invalidate, broadcastInvalidation } from '@/utils/cache/fiscalSettingsCache';
 import { UserInfoBanner } from '@/components/UserInfoBanner';
 import { createFieldUpdater } from '@/components/settings/settingsHelpers';
@@ -264,15 +263,7 @@ export default function SettingsImpots() {
   const { incomeTax, pfu, cehr, cdhr, corporateTax } = settings;
 
   return (
-    <div
-      style={{
-        fontSize: 15,
-        marginTop: 16,
-        display: 'flex',
-        flexDirection: 'column',
-        gap: 24,
-      }}
-    >
+    <div className="settings-stack settings-stack--offset">
       <UserInfoBanner />
 
       <div className="fisc-accordion">

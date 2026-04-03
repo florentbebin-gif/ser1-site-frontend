@@ -88,7 +88,7 @@ export default function ImpotsDmtgSection({
         aria-controls="impots-panel-dmtg"
         onClick={() => setOpenSection(isOpen ? null : 'dmtg')}
       >
-        <span className="settings-premium-title" style={{ margin: 0 }}>
+        <span className="settings-premium-title settings-premium-title--flush">
           Droits de Mutation a Titre Gratuit (DMTG)
         </span>
         <span className="fisc-acc-chevron">

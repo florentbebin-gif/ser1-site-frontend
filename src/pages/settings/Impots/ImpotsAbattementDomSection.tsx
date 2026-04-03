@@ -66,7 +66,7 @@ export default function ImpotsAbattementDomSection({
         aria-controls="impots-panel-dom"
         onClick={() => setOpenSection(isOpen ? null : 'dom')}
       >
-        <span className="settings-premium-title" style={{ margin: 0 }}>
+        <span className="settings-premium-title settings-premium-title--flush">
           Abattement DOM sur l'IR (bareme)
         </span>
         <span className="fisc-acc-chevron">
