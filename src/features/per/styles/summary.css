@@ -1,0 +1,234 @@
+﻿.per-summary-top {
+  display: grid;
+  grid-template-columns: minmax(0, 1.3fr) minmax(260px, 0.7fr);
+  gap: 16px;
+  align-items: start;
+}
+
+.per-summary-hero {
+  box-sizing: border-box;
+}
+
+.per-summary-hero-head,
+.per-summary-card-head,
+.per-summary-simulation-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.per-summary-hero-title,
+.per-summary-simulation-title,
+.per-summary-card-title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--color-c1);
+}
+
+.per-summary-hero-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 5px 10px;
+  border-radius: 999px;
+  background: var(--color-c7);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  color: var(--color-c9);
+}
+
+.per-summary-hero-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr);
+  gap: 16px;
+  margin-top: 18px;
+}
+
+.per-summary-primary-metric {
+  padding: 18px;
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--color-c4) 40%, #FFFFFF);
+}
+
+.per-summary-primary-label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  color: var(--color-c9);
+}
+
+.per-summary-primary-value {
+  display: block;
+  font-size: 34px;
+  font-weight: 700;
+  color: var(--color-c1);
+}
+
+.per-summary-primary-note {
+  margin: 10px 0 0;
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--color-c9);
+}
+
+.per-summary-stat-grid,
+.per-summary-simulation-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.per-summary-stat {
+  padding: 14px;
+  border-radius: 10px;
+  background: var(--color-c7);
+}
+
+.per-summary-stat-label {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  color: var(--color-c9);
+}
+
+.per-summary-stat-value {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--color-c1);
+}
+
+.per-summary-simulation {
+  border-left: 3px solid var(--color-c5);
+}
+
+.per-summary-simulation-head {
+  margin-bottom: 14px;
+}
+
+.per-summary-simulation-input {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 14px;
+}
+
+.per-summary-simulation-label {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  color: var(--color-c9);
+}
+
+.per-summary-simulation-hint {
+  margin: 0;
+  font-size: 12px;
+  color: var(--color-c9);
+  line-height: 1.55;
+}
+
+.per-summary-side-stack {
+  display: grid;
+  gap: 16px;
+}
+
+.per-summary-section-card {
+  box-sizing: border-box;
+}
+
+.per-summary-table {
+  background: transparent;
+}
+
+.per-summary-case-label {
+  font-weight: 600;
+  color: var(--color-c1);
+}
+
+.per-summary-breakdown-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 14px;
+}
+
+.per-summary-breakdown-grid.is-couple {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.per-summary-breakdown-card {
+  border-left: 3px solid var(--color-c6);
+}
+
+.per-summary-breakdown-list {
+  display: grid;
+  gap: 10px;
+}
+
+.per-summary-breakdown-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 13px;
+  color: var(--color-c10);
+}
+
+.per-summary-breakdown-row strong {
+  color: var(--color-c1);
+}
+
+.per-summary-breakdown-row--total {
+  margin-top: 4px;
+  padding-top: 12px;
+  border-top: 1px solid var(--color-c8);
+  font-weight: 600;
+}
+
+.per-summary-breakdown-row--highlight {
+  padding: 12px 14px;
+  border-radius: 10px;
+  background: var(--color-c7);
+  font-weight: 600;
+}
+
+.per-summary-breakdown-row--highlight.is-alert {
+  border-left: 3px solid var(--color-c1);
+}
+
+.per-section-label {
+  margin: 1rem 0 0.5rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--color-c9);
+}
+
+.per-card-subtitle {
+  margin-bottom: 0.75rem;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--color-c10);
+}
+
+.per-frais-reels {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  align-items: center;
+  margin-top: 0.5rem;
+}
+
+.per-plafond-block {
+  margin-bottom: 1rem;
+}
+

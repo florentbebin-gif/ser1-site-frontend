@@ -1,0 +1,164 @@
+﻿@media (max-width: 1200px) {
+  .sc-donation-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .sc-field--span-2 {
+    grid-column: auto;
+  }
+
+  .sc-donation-toggle-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+
+@media (max-width: 980px) {
+  .sc-dispositions-modal__body {
+    grid-template-columns: 1fr;
+  }
+
+  .sc-dispositions-modal__section--testament {
+    padding-left: 0;
+    border-left: none;
+    border-top: 1px solid color-mix(in srgb, var(--color-c8) 72%, #FFFFFF);
+    padding-top: 18px;
+  }
+
+  .sc-testament-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .sc-testament-legacy-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 900px) {
+  .sc-top-row {
+    grid-template-columns: 1fr;
+  }
+
+  .sc-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .sc-right {
+    position: static;
+    order: -1;
+  }
+
+  .sc-hero-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .sc-synth-kpis {
+    grid-template-columns: 1fr;
+  }
+
+  .sc-heir-row {
+    grid-template-columns: 1fr;
+  }
+
+  .sc-donation-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .sc-assurance-vie-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .sc-civil-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .sc-civil-grid__top-row,
+  .sc-civil-grid__top-row--triple {
+    grid-template-columns: 1fr;
+  }
+
+  .sc-balance-grid__row {
+    grid-template-columns: 1fr;
+  }
+
+  .sc-asset-row {
+    grid-template-columns: 1fr;
+  }
+
+  .sc-context-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .sc-child-row {
+    grid-template-columns: auto 1fr;
+  }
+
+  .sc-child-select {
+    grid-column: 1 / -1;
+  }
+
+  .sc-checkbox-label {
+    grid-column: 1 / -1;
+  }
+
+  .sc-child-remove-btn {
+    grid-column: 1 / -1;
+    justify-content: flex-start;
+  }
+
+  .sc-remove-btn {
+    width: 100%;
+  }
+
+  .sc-preciput-item__header,
+  .sc-preciput-item__grid {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .sc-header__subtitle-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .sc-primary-actions,
+  .sc-inline-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .sc-asset-section__header,
+  .sc-assurance-vie-summary__header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .sc-asset-section__actions {
+    flex-direction: row;
+  }
+}
+
+.sc-clause-custom {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.sc-clause-custom-row {
+  display: grid;
+  grid-template-columns: 1fr 60px 20px;
+  align-items: center;
+  gap: 6px;
+}
+
+.sc-clause-custom-row__label {
+  font-size: 13px;
+  color: var(--color-c1);
+}
+
+.sc-clause-custom-row__unit {
+  font-size: 13px;
+  color: var(--color-c3);
+}

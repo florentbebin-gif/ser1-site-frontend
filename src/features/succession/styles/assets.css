@@ -1,0 +1,423 @@
+﻿.sc-assets-sections {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.sc-asset-section {
+  border: 1px solid var(--color-c8);
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--color-c7) 70%, #FFFFFF);
+  padding: 12px;
+  --sim-input-bg: #FFFFFF;
+}
+
+.sc-asset-section__header,
+.sc-assurance-vie-summary__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.sc-asset-section__title {
+  margin: 0;
+  font-size: 13px;
+  color: var(--color-c1);
+}
+
+.sc-assets-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.sc-asset-row-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.sc-assurance-vie-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.sc-asset-row {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) auto;
+  gap: 10px;
+  align-items: end;
+}
+
+.sc-asset-row--three-cols {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.sc-row-actions {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.sc-open-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  background: transparent;
+  border: 1px solid var(--color-c8);
+  border-radius: 4px;
+  cursor: pointer;
+  color: var(--color-c6);
+  flex-shrink: 0;
+}
+
+.sc-open-btn:hover {
+  background: var(--color-c8);
+  color: var(--color-c1);
+}
+
+.sc-asset-row__suboption {
+  padding-left: 2px;
+}
+
+.sc-asset-row__suboption--info {
+  font-size: 11px;
+  color: var(--color-c9);
+  padding: 2px 0 0 4px;
+}
+
+
+.sc-asset-row__value {
+  display: block;
+  padding: 6px 8px;
+  font-size: 13px;
+  color: var(--color-c1);
+}
+
+.sc-asset-section__actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.sc-assets-summary,
+.sc-assurance-vie-summary {
+  margin-top: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.sc-assurance-vie-contract {
+  border: 1px solid color-mix(in srgb, var(--color-c8) 88%, #FFFFFF);
+  border-radius: 12px;
+  background: #FFFFFF;
+  padding: 10px 12px;
+  overflow: hidden;
+  box-shadow: 0 1px 0 color-mix(in srgb, var(--color-c8) 55%, transparent);
+}
+
+.sc-assurance-vie-contract__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid color-mix(in srgb, var(--color-c8) 72%, #FFFFFF);
+}
+
+.sc-assurance-vie-contract__heading {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.sc-assurance-vie-contract__subtitle {
+  font-size: 11px;
+  color: color-mix(in srgb, var(--color-c9) 78%, var(--color-c10));
+}
+
+.sc-assurance-vie-contract__section {
+  margin-top: 10px;
+}
+
+.sc-assurance-vie-contract__section-title {
+  margin: 0 0 8px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--color-c9) 72%, var(--color-c10));
+}
+
+.sc-assurance-vie-contract__hint {
+  margin-top: 8px;
+}
+
+.sc-assurance-vie-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px 10px;
+}
+
+.sc-assurance-vie-grid--stack {
+  grid-template-columns: 1fr;
+}
+
+.sc-member-modal--wide {
+  max-width: 720px;
+}
+
+.sc-dispositions-modal {
+  max-width: 1200px;
+  min-height: 560px;
+  max-height: calc(100vh - 40px);
+  display: flex;
+  flex-direction: column;
+}
+
+.sc-dispositions-modal__body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 18px;
+  align-items: start;
+  overflow-y: auto;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.sc-dispositions-modal__section {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 0;
+}
+
+.sc-dispositions-modal__section--testament {
+  padding-left: 18px;
+  border-left: 1px solid color-mix(in srgb, var(--color-c8) 72%, #FFFFFF);
+}
+
+.sc-dispositions-modal__section-header {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.sc-dispositions-modal__section-title {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-c1);
+}
+
+.sc-testament-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.sc-testament-grid--single {
+  grid-template-columns: 1fr;
+}
+
+.sc-testament-card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+  padding: 14px;
+  border: 1px solid color-mix(in srgb, var(--color-c8) 78%, #FFFFFF);
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--color-c7) 42%, #FFFFFF);
+  --sim-input-bg: #FFFFFF;
+}
+
+.sc-testament-card__header {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.sc-testament-card__title {
+  margin: 0;
+  font-size: 13px;
+  color: var(--color-c1);
+}
+
+.sc-testament-card__eyebrow {
+  font-size: 11px;
+  color: var(--color-c9);
+}
+
+.sc-testament-select .sc-select__trigger {
+  justify-content: flex-start;
+  text-align: left;
+}
+
+.sc-testament-select .sc-select__label,
+.sc-testament-select .sc-select__option,
+.sc-testament-select .sc-select__option-label,
+.sc-testament-select .sc-select__option-description {
+  text-align: left;
+}
+
+.sc-testament-legacy-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.sc-testament-legacy-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
+  grid-template-rows: auto auto;
+  gap: 6px 8px;
+  align-items: end;
+}
+
+.sc-testament-legacy-row > .sc-select {
+  grid-column: 1 / -1;
+}
+
+.sc-assurance-vie-modal__body {
+  gap: 12px;
+}
+
+.sc-field--timeline-select {
+  gap: 6px;
+}
+
+.sc-assurance-vie-select .sc-select__trigger {
+  justify-content: flex-start;
+  text-align: left;
+}
+
+.sc-assurance-vie-select .sc-select__label,
+.sc-assurance-vie-select .sc-select__option {
+  text-align: left;
+}
+
+.sc-inline-actions--compact {
+  margin-top: 6px;
+}
+
+.sc-assurance-vie-modal-summary {
+  margin-top: 4px;
+  padding-top: 10px;
+  border-top: 1px solid color-mix(in srgb, var(--color-c8) 72%, #FFFFFF);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.sc-clause-custom--modal {
+  margin-top: 2px;
+  padding: 8px 10px;
+  border: 1px solid color-mix(in srgb, var(--color-c8) 72%, #FFFFFF);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--color-c7) 30%, #FFFFFF);
+}
+
+.sc-heir-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr auto;
+  gap: 10px;
+  align-items: end;
+}
+
+.sc-remove-btn {
+  width: 22px;
+  height: 22px;
+  border: none;
+  border-radius: 4px;
+  background: none;
+  color: var(--color-c9);
+  cursor: pointer;
+  font-size: 11px;
+  line-height: 1;
+  opacity: 0.6;
+  flex-shrink: 0;
+}
+
+.sc-remove-btn--quiet {
+  width: 20px;
+  height: 20px;
+  border-radius: 999px;
+  opacity: 0.5;
+  font-size: 0;
+  background: color-mix(in srgb, var(--color-c7) 46%, #FFFFFF);
+  border: 1px solid color-mix(in srgb, var(--color-c8) 70%, #FFFFFF);
+}
+
+.sc-remove-btn--quiet::before {
+  content: "+";
+  display: block;
+  font-size: 14px;
+  line-height: 1;
+  font-weight: 500;
+  color: currentColor;
+  transform: rotate(45deg);
+}
+
+.sc-remove-btn:hover {
+  color: var(--color-c2);
+  opacity: 1;
+}
+
+.sc-remove-btn:focus-visible {
+  outline: 2px solid var(--color-c2);
+  outline-offset: 2px;
+}
+
+.sc-inline-actions,
+.sc-primary-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.sc-dispositions-trigger {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.sc-dispositions-trigger .sc-child-add-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.sc-btn {
+  padding: 8px 14px;
+  border-radius: 6px;
+  font-size: 13px;
+}
+
+
+.sc-btn--primary {
+  background: var(--color-c2);
+  border-color: var(--color-c2);
+  color: #FFFFFF;
+}
+
+.sc-btn--primary:hover:not(:disabled) {
+  background: var(--color-c1);
+  border-color: var(--color-c1);
+}
+
+.sc-btn--secondary {
+  background: var(--color-c7);
+  border-color: var(--color-c8);
+  color: var(--color-c1);
+}
+

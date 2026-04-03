@@ -1,0 +1,386 @@
+﻿/* Succession Simulator â€” baseline /sim/* (PR1) */
+
+.sc-header__subtitle-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.sc-header__subtitle-row .premium-subtitle {
+  flex: 1;
+  min-width: 0;
+}
+
+.sc-session-msg {
+  margin: 0 0 12px;
+  color: var(--color-c6);
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.sc-top-row {
+  display: grid;
+  grid-template-columns: 1.85fr 1fr;
+  gap: 24px;
+  align-items: stretch;
+  margin-bottom: 24px;
+}
+
+.sc-grid {
+  margin-bottom: 24px;
+}
+
+.sc-left {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.sc-right {
+  gap: 14px;
+}
+
+.sc-card--guide {
+  border-left: 3px solid var(--color-c3);
+}
+
+/* Titre avec icÃ´ne */
+.sc-card__title-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Titre hero avec icÃ´ne */
+.sc-summary-title-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 0;
+}
+
+/* DÃ©gradÃ© header cartes gauche guide â€” alignÃ© sur la hero card SynthÃ¨se */
+.sc-card--guide .sc-card__header {
+  background: linear-gradient(
+    to bottom,
+    color-mix(in srgb, var(--color-c4) 18%, transparent) 0%,
+    transparent 65%
+  );
+  border-radius: 10px 10px 0 0;
+  margin: -20px -24px 0;
+  padding: 20px 24px 10px;
+  margin-bottom: 0;
+}
+
+/* Filiation : mÃªme espace titreâ†’sÃ©parateur que les cartes hero droite */
+.sc-filiation-card .sc-card__header {
+  padding-bottom: 0;
+}
+
+.sc-card__header {
+  margin-bottom: 6px;
+}
+
+.sc-card__title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--color-c1);
+  margin: 0;
+}
+
+.sc-filiation-deceased-mark {
+  color: var(--color-c9);
+  font-weight: 600;
+}
+
+.sc-card__subtitle {
+  font-size: 12px;
+  color: var(--color-c9);
+  margin: 4px 0 0;
+}
+
+.sc-card__subtitle--inline {
+  margin-top: 2px;
+}
+
+.sc-card__divider {
+  height: 2px;
+  max-width: 200px;
+  background: linear-gradient(90deg, transparent, var(--color-c8), transparent);
+  margin: 12px 0 14px;
+}
+
+.sc-card__divider--tight {
+  margin: 8px 0 10px;
+}
+
+.sc-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.sc-field label {
+  color: var(--color-c9);
+  font-size: 12px;
+}
+
+.sc-select {
+  position: relative;
+}
+
+.sc-civil-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.sc-civil-grid__top-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+  gap: 10px;
+  align-items: end;
+}
+
+.sc-civil-grid__top-row--triple {
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr) minmax(0, 0.9fr);
+}
+
+.sc-balance-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.sc-balance-grid__row {
+  display: grid;
+  grid-template-columns: 88px repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  align-items: end;
+}
+
+.sc-balance-grid__label {
+  display: flex;
+  align-items: center;
+  height: 32px;
+  color: var(--color-c1);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.sc-context-grid {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr;
+  gap: 16px;
+  align-items: start;
+}
+
+.sc-children-zone {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.sc-children-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.sc-child-row {
+  display: grid;
+  grid-template-columns: auto minmax(170px, 1fr) auto auto;
+  gap: 8px;
+  align-items: center;
+}
+
+.sc-child-row__label {
+  font-size: 12px;
+  color: var(--color-c9);
+  min-width: 24px;
+}
+
+.sc-child-row--deceased {
+  opacity: 0.72;
+}
+
+.sc-child-row--deceased .sc-child-row__label,
+.sc-child-row--deceased .sc-select__label {
+  text-decoration: line-through;
+}
+
+.sc-child-name {
+  width: 100%;
+  height: 32px;
+  box-sizing: border-box;
+  padding: 4px 6px;
+  border: none;
+  border-bottom: 1px solid transparent;
+  border-radius: 4px;
+  background-color: var(--sim-input-bg, color-mix(in srgb, var(--color-c8) 18%, #FFFFFF));
+  color: var(--color-c10);
+  font-size: 13px;
+  text-align: left;
+  transition: border-color 0.2s;
+  outline: none;
+}
+
+.sc-child-name:hover {
+  border-bottom-color: var(--color-c8);
+}
+
+.sc-child-name:focus-visible {
+  border-bottom-color: var(--color-c2);
+}
+
+.sc-child-select .sc-select__label,
+.sc-child-select .sc-select__option {
+  text-align: left;
+}
+
+.sc-child-add-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: none;
+  border: none;
+  padding: 4px 0;
+  font-size: 10px;
+  color: var(--color-c2);
+  cursor: pointer;
+  font-family: inherit;
+  transition: color 0.15s;
+  margin-top: 2px;
+}
+
+.sc-child-add-btn:hover {
+  color: var(--color-c1);
+}
+
+.sc-child-add-btn:focus-visible {
+  outline: 2px solid var(--color-c2);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+.sc-child-remove-btn {
+  background: none;
+  border: none;
+  padding: 2px;
+  cursor: pointer;
+  color: var(--color-c9);
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  transition: color 0.15s;
+  border-radius: 3px;
+}
+
+.sc-child-remove-btn:hover {
+  color: var(--color-c1);
+}
+
+.sc-child-remove-btn:focus-visible {
+  outline: 2px solid var(--color-c2);
+  outline-offset: 2px;
+}
+
+.sc-checkbox {
+  accent-color: var(--color-c2);
+  cursor: pointer;
+}
+
+.sc-checkbox-label--mini {
+  display: inline-flex;
+  align-items: center;
+  font-size: 7px;
+  gap: 2px;
+  color: var(--color-c9);
+  opacity: 0.45;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.sc-checkbox-label--mini input[type="checkbox"] {
+  width: 8px;
+  height: 8px;
+  accent-color: var(--color-c2);
+}
+
+
+/* â”€â”€ Bouton "Ajouter un membre" & panneau â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+.sc-children-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+
+.sc-member-add-icon-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 1px solid var(--color-c8);
+  background: none;
+  color: var(--color-c2);
+  font-size: 18px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+
+.sc-member-add-icon-btn:hover {
+  background: var(--color-c4);
+  border-color: var(--color-c2);
+  color: var(--color-c1);
+}
+
+.sc-member-add-icon-btn:focus-visible {
+  outline: 2px solid var(--color-c2);
+  outline-offset: 2px;
+}
+
+.sc-members-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.sc-member-chip {
+  display: grid;
+  grid-template-columns: auto minmax(170px, 1fr) auto;
+  gap: 8px;
+  align-items: center;
+}
+
+.sc-member-chip__icon {
+  font-size: 11px;
+  color: var(--color-c9);
+  min-width: 24px;
+  text-align: center;
+}
+
+.sc-member-chip__label {
+  height: 32px;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  padding: 4px 6px;
+  border: none;
+  border-bottom: 1px solid transparent;
+  border-radius: 4px;
+  background-color: var(--sim-input-bg, color-mix(in srgb, var(--color-c8) 18%, #FFFFFF));
+  font-size: 13px;
+  color: var(--color-c10);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* â”€â”€ Modal "Ajouter un membre" â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
