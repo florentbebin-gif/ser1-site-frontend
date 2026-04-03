@@ -64,10 +64,6 @@
     flex: none;
   }
 
-  .cv2-mode-row {
-    margin: 8px 0 12px;
-  }
-
   .cv2-controls-row {
     grid-template-columns: 1fr;
     gap: 12px;

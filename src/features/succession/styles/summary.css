@@ -283,28 +283,6 @@
   font-variant-numeric: tabular-nums;
 }
 
-.sc-summary-link {
-  align-self: flex-start;
-  margin-top: 2px;
-  padding: 0;
-  border: none;
-  background: none;
-  color: var(--color-c2);
-  font-size: 12px;
-  text-decoration: underline;
-  cursor: pointer;
-}
-
-.sc-summary-link:hover {
-  color: var(--color-c1);
-}
-
-.sc-summary-link:focus-visible {
-  outline: 2px solid var(--color-c2);
-  outline-offset: 2px;
-  border-radius: 2px;
-}
-
 .sc-hint {
   margin: 10px 0 0;
   font-size: 12px;
@@ -347,78 +325,6 @@
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 12px;
   margin-top: 10px;
-}
-
-.sc-predeces-table {
-  margin-top: 12px;
-}
-
-.sc-warning-list {
-  margin: 12px 0 0;
-  padding-left: 18px;
-}
-
-.sc-warning-list li {
-  font-size: 12px;
-  color: var(--color-c9);
-  line-height: 1.5;
-}
-
-.sc-warning-list--compact {
-  margin-top: 8px;
-}
-
-.sc-detail-card {
-  margin-bottom: 24px;
-}
-
-.sc-detail-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.sc-detail-title {
-  margin: 0;
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--color-c1);
-}
-
-.sc-detail-toggle {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 12px;
-  border: 1px solid var(--color-c8);
-  border-radius: 6px;
-  background: var(--color-c7);
-  color: var(--color-c9);
-  font-size: 12px;
-  cursor: pointer;
-  transition: color 0.2s, border-color 0.2s;
-}
-
-.sc-detail-toggle:hover {
-  color: var(--color-c2);
-  border-color: var(--color-c2);
-}
-
-.sc-detail-toggle:focus-visible {
-  outline: 2px solid var(--color-c2);
-  outline-offset: 2px;
-}
-
-.sc-chevron {
-  transition: transform 0.2s;
-}
-
-.sc-chevron.is-open {
-  transform: rotate(180deg);
-}
-
-.sc-detail-table {
-  margin-top: 12px;
 }
 
 .sc-hypotheses {

@@ -153,14 +153,6 @@
   text-align: center;
 }
 
-.pl-cell--muted {
-  opacity: 0.55;
-}
-
-.pl-cell--soft {
-  opacity: 0.85;
-}
-
 .pl-hint {
   margin-top: 8px;
   font-size: 12px;

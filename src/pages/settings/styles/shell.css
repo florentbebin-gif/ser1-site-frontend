@@ -131,37 +131,6 @@
   content: '\25B8';
 }
 
-.settings-tab-chevron {
-  display: none;
-}
-
 .settings-tab-content {
   margin-top: 16px;
-}
-
-.settings-nav {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-top: 16px;
-}
-
-.settings-pill {
-  border-radius: 999px;
-  background: #FFFFFF;
-  border: 1px solid transparent;
-  padding: 6px 14px;
-  font-size: 14px;
-  cursor: pointer;
-  box-shadow: 0 1px 3px var(--color-c9);
-  transition: background 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
-}
-
-.settings-pill:hover {
-  border-color: var(--color-c3);
-}
-
-.settings-pill.is-active {
-  background: var(--color-c4);
-  border-color: var(--color-c3);
 }

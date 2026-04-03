@@ -82,29 +82,9 @@
   letter-spacing: 0.2px;
 }
 
-.cv2-loan-form__footer {
-  grid-column: 1 / -1;
-  margin-top: 16px;
-  text-align: right;
-}
-
 /* ----------------------------------------
    BUTTONS
    ---------------------------------------- */
-/* .cv2-btn remplacÃ© par .premium-btn (premium-shared.css) ;
-   seul .cv2-btn--danger subsiste pour la couleur "danger" (C1) */
-
-.cv2-btn--danger {
-  color: var(--color-c1);
-  border-color: var(--color-c1);
-  background: #FFFFFF;
-}
-
-.cv2-btn--danger:hover:not(:disabled) {
-  background: var(--color-c7);
-  border-color: var(--color-c1);
-}
-
 /* ----------------------------------------
    LISSAGE PANEL
    ---------------------------------------- */
@@ -120,11 +100,6 @@
   color: var(--color-c9);
   margin-top: 8px;
   font-style: italic;
-}
-
-.cv2-lissage__hint--info {
-  color: var(--color-c3);
-  font-style: normal;
 }
 
 .cv2-lissage__pills {

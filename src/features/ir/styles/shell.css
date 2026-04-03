@@ -13,22 +13,6 @@
   min-width: 0;
 }
 
-.ir-export-menu {
-  position: absolute;
-  right: 0;
-  margin-top: 6px;
-  min-width: 180px;
-  background: var(--color-c7);
-  border: 1px solid var(--color-c8);
-  border-radius: 8px;
-  box-shadow: var(--shadow-md);
-  padding: 6px;
-  z-index: 20;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
 .ir-grid {
   min-width: 0;
 }
@@ -63,14 +47,6 @@
   gap: 12px;
 }
 
-/* Champs du bandeau haut */
-.ir-top-row {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 16px;
-  margin-bottom: 12px;
-}
-
 @media (max-width: 900px) {
   .ir-grid {
     grid-template-columns: 1fr;
@@ -79,10 +55,6 @@
   /* SynthÃ¨se (colonne droite) au-dessus du formulaire sur mobile */
   .ir-grid > .ir-right {
     order: -1;
-  }
-
-  .ir-top-row {
-    grid-template-columns: 1fr;
   }
 
   .ir-guide-card__grid {
