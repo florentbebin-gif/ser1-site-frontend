@@ -129,7 +129,7 @@ export function IrSidebarSection({
 
       {hasSituation && (
       <div className="ir-results-sticky">
-      <div className="ir-tmi-card premium-card" data-testid="ir-results-card">
+      <div className="ir-tmi-card premium-card sim-summary-card" data-testid="ir-results-card">
         <div className="ir-tmi-header" data-testid="ir-results-header">
           <div className="ir-section-icon-wrapper">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -140,7 +140,7 @@ export function IrSidebarSection({
           </div>
           Estimation IR
         </div>
-        <div className="ir-card-divider" />
+        <div className="ir-card-divider sim-divider" />
 
         <div className="ir-tmi-bar" data-testid="ir-tmi-bar">
           {tmiScale.map((br, idx) => {
@@ -175,7 +175,7 @@ export function IrSidebarSection({
       </div>
 
       {result && showSummaryCard && (
-        <div className="ir-summary-card premium-card" data-testid="ir-summary-card">
+        <div className="ir-summary-card premium-card sim-summary-card sim-summary-card--secondary" data-testid="ir-summary-card">
           {isExpert && (
             <div className="ir-summary-row">
               <span>Revenu imposable du foyer</span>
@@ -237,7 +237,7 @@ export function IrSidebarSection({
               <span>{euro0(result.psDividends || 0)}</span>
             </div>
           )}
-          <div className="ir-card-divider ir-card-divider--tight" />
+          <div className="ir-card-divider ir-card-divider--tight sim-divider sim-divider--tight" />
           <div className="ir-summary-total-hero">
             <div>
               <div className="ir-summary-total-hero__label">Imposition totale</div>

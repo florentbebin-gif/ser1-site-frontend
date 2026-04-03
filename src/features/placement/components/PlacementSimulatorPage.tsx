@@ -103,7 +103,7 @@ export default function PlacementSimulatorPage() {
         onToggleMode={toggleMode}
       />
 
-      <div className="pl-ir-grid">
+      <div className="pl-ir-grid sim-grid">
         <PlacementInputsPanel
           state={state}
           isExpert={isExpert}

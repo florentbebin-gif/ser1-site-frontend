@@ -40,7 +40,7 @@ export function PlacementResultsPanel({
 
   return (
     <div className="pl-ir-right">
-      <div className="premium-card pl-synthesis-card" data-testid="placement-results-card">
+      <div className="premium-card pl-synthesis-card sim-summary-card sim-summary-card--secondary" data-testid="placement-results-card">
         <div className="pl-synthesis-title-row">
           <div className="pl-section-icon-wrapper">
             <BarChartIcon />
@@ -64,7 +64,7 @@ export function PlacementResultsPanel({
               ageAuDeces={state.transmission.ageAuDeces}
             />
 
-            <div className="pl-card-divider" />
+            <div className="pl-card-divider sim-divider" />
 
             {(() => {
               const totalGains1 = produit1.totaux.revenusNetsLiquidation + produit1.totaux.capitalTransmisNet;

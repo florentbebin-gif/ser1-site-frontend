@@ -1,4 +1,5 @@
 import type { ChangeEvent, ChangeEventHandler, CSSProperties } from 'react';
+import { SimFieldShell } from '@/components/ui/sim';
 
 const ZERO_PLACEHOLDER = '0';
 
@@ -27,9 +28,9 @@ export function IrAmountInput({
   className,
 }: IrAmountInputProps) {
   return (
-    <div
+    <SimFieldShell
       className={`ir-table-input${className ? ` ${className}` : ''}`}
-      style={style}
+      rowClassName="ir-table-input__row"
     >
       <input
         type="text"
@@ -39,8 +40,10 @@ export function IrAmountInput({
         value={value}
         onChange={onChange}
         readOnly={readOnly}
+        style={style}
+        className="sim-field__control"
       />
-      <span className="ir-table-input__unit" aria-hidden="true">€</span>
-    </div>
+      <span className="ir-table-input__unit sim-field__unit" aria-hidden="true">€</span>
+    </SimFieldShell>
   );
 }

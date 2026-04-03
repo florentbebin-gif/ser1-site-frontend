@@ -8,7 +8,8 @@ Stack : React 18 + Vite 5 + TypeScript + Supabase (Auth/DB/Storage/Edge Function
 Sources de verite (uniquement) :
 - `docs/ROADMAP.md`
 - `docs/METIER.md`
-- `docs/GOUVERNANCE.md`
+- `docs/GOUVERNANCE.md` — contrat UI web, baseline `/sim/*`, theming
+- `docs/GOUVERNANCE_EXPORTS.md` — contrat PPTX / Excel
 - `docs/ARCHITECTURE.md`
 - `docs/RUNBOOK.md`
 - `.github/CONTRIBUTING.md` — conventions code, workflow git, PR checklist

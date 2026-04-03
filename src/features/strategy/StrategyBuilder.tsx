@@ -2,7 +2,10 @@
  * StrategyBuilder - Interface de construction de stratégie
  */
 
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useId, useState, useEffect } from 'react';
+import { ExportMenu } from '../../components/ExportMenu';
+import type { ExportOption } from '../../components/export/exportTypes';
+import { SimFieldShell, SimModalShell } from '../../components/ui/sim';
 import type { DossierAudit } from '../audit/types';
 import type { Strategie, ProduitConfig, ProduitType, Recommandation } from './types';
 import { createEmptyStrategie, PRODUIT_LABELS } from './types';
@@ -10,17 +13,66 @@ import { generateRecommendations } from './recommendations';
 import { calculateBaselineProjection, calculateStrategyProjection, compareScenarios } from './calculations';
 import { useFiscalContext } from '../../hooks/useFiscalContext';
 import type { ComparaisonScenarios } from './types';
-import { generateStrategyPptx } from '../../pptx/strategyPptx';
+import { exportStrategyPptx } from './exportStrategy';
 import { onResetEvent } from '../../utils/reset';
-import { SessionGuardContext } from '../../session/sessionGuardContext';
 import './StrategyBuilder.css';
 
 interface StrategyBuilderProps {
   dossier: DossierAudit;
 }
 
+interface StrategyNumericFieldProps {
+  label: string;
+  value: number | undefined;
+  unit?: string;
+  step?: number | string;
+  fallbackValue: number;
+  integer?: boolean;
+  onChange: (value: number) => void;
+}
+
+function parseStrategyNumericValue(rawValue: string, fallbackValue: number, integer = false): number {
+  const parsedValue = integer
+    ? Number.parseInt(rawValue, 10)
+    : Number.parseFloat(rawValue);
+
+  return Number.isFinite(parsedValue) ? parsedValue : fallbackValue;
+}
+
+function StrategyNumericField({
+  label,
+  value,
+  unit,
+  step,
+  fallbackValue,
+  integer = false,
+  onChange,
+}: StrategyNumericFieldProps): React.ReactElement {
+  const controlId = useId();
+
+  return (
+    <SimFieldShell
+      label={label}
+      controlId={controlId}
+      className="strategy-field"
+      rowClassName="strategy-field__row"
+    >
+      <input
+        id={controlId}
+        type="number"
+        inputMode={integer ? 'numeric' : 'decimal'}
+        min="0"
+        step={step}
+        value={value ?? fallbackValue}
+        className="strategy-field__control sim-field__control"
+        onChange={(event) => onChange(parseStrategyNumericValue(event.target.value, fallbackValue, integer))}
+      />
+      {unit ? <span className="strategy-field__unit sim-field__unit">{unit}</span> : null}
+    </SimFieldShell>
+  );
+}
+
 export default function StrategyBuilder({ dossier }: StrategyBuilderProps): React.ReactElement {
-  const { canExport } = useContext(SessionGuardContext);
   const { fiscalContext } = useFiscalContext();
   const [strategie, setStrategie] = useState<Strategie>(() => createEmptyStrategie(dossier.id));
   const [recommandations, setRecommandations] = useState<Recommandation[]>([]);
@@ -94,7 +146,7 @@ export default function StrategyBuilder({ dossier }: StrategyBuilderProps): Reac
     if (!comparaison) return;
     try {
       setIsExportingPptx(true);
-      await generateStrategyPptx({ dossier, strategie, comparaison });
+      await exportStrategyPptx({ dossier, strategie, comparaison });
     } catch (error) {
       console.error('Erreur export PPTX:', error);
       alert('Erreur lors de l\'export PPTX');
@@ -103,35 +155,52 @@ export default function StrategyBuilder({ dossier }: StrategyBuilderProps): Reac
     }
   };
 
+  const exportOptions: ExportOption[] = [
+    {
+      label: 'PowerPoint (.pptx)',
+      onClick: handleExportPptx,
+      disabled: isExportingPptx || !comparaison,
+      tooltip: !comparaison ? 'Ajoutez au moins un produit avant d’exporter.' : undefined,
+    },
+  ];
+
   return (
-    <div className="strategy-builder">
+    <div className="strategy-builder premium-page" data-testid="strategy-page">
       {/* Header avec titre et actions */}
-      <div className="strategy-header">
-        <div>
-          <h1>Stratégie Patrimoniale</h1>
+      <header className="strategy-header premium-header">
+        <div className="strategy-header-copy">
+          <p className="premium-section-title">Workflow privé P7</p>
+          <h1 className="premium-title">Stratégie patrimoniale</h1>
+          <p className="premium-subtitle strategy-subtitle">
+            Recommandations et scénarios construits à partir du dossier d&apos;audit courant.
+          </p>
           <div className="client-info">
             Client : {dossier.situationFamiliale.mr.prenom} {dossier.situationFamiliale.mr.nom}
           </div>
         </div>
-        <button 
-          className="chip" 
-          onClick={handleExportPptx}
-          disabled={isExportingPptx || !comparaison || !canExport}
-          title={!canExport ? 'Session expirée — export indisponible' : 'Exporter la stratégie en PowerPoint'}
-        >
-          {isExportingPptx ? '⏳ Export...' : '📊 Exporter PPTX'}
-        </button>
-      </div>
+        <div className="strategy-header-actions">
+          <ExportMenu
+            options={exportOptions}
+            loading={isExportingPptx}
+            loadingLabel="Export PPTX..."
+          />
+        </div>
+      </header>
 
       {/* Recommandations */}
-      <div className="section-card">
-        <h2>Recommandations</h2>
+      <section className="strategy-section premium-card">
+        <div className="strategy-section-heading">
+          <div>
+            <p className="premium-section-title">Pistes</p>
+            <h2>Recommandations</h2>
+          </div>
+        </div>
         {recommandations.length === 0 && (
           <p className="empty-state">Aucune recommandation générée. Vérifiez les objectifs du client.</p>
         )}
         <div className="recommandations-list">
           {recommandations.map(reco => (
-            <div key={reco.id} className={`reco-card priority-${reco.priorite}`}>
+            <article key={reco.id} className={`reco-card premium-card-compact priority-${reco.priorite}`}>
               <div className="reco-header">
                 <h3>{reco.titre}</h3>
                 <span className={`badge badge-${reco.priorite}`}>{reco.priorite}</span>
@@ -151,92 +220,90 @@ export default function StrategyBuilder({ dossier }: StrategyBuilderProps): Reac
                   </div>
                 )}
               </div>
-            </div>
+            </article>
           ))}
         </div>
-      </div>
+      </section>
 
       {/* Builder produits */}
-      <div className="section-card">
-        <div className="section-header">
-          <h2>Produits sélectionnés</h2>
-          <button className="chip" onClick={() => setShowAddProduit(true)}>
+      <section className="strategy-section premium-card">
+        <div className="strategy-section-heading">
+          <div>
+            <p className="premium-section-title">Scénario cible</p>
+            <h2>Produits sélectionnés</h2>
+          </div>
+          <button type="button" className="premium-btn" onClick={() => setShowAddProduit(true)}>
             + Ajouter un produit
           </button>
         </div>
 
         {strategie.produitsSelectionnes.length === 0 && (
-          <p className="empty-state">Aucun produit sélectionné. Cliquez sur "Ajouter un produit" pour commencer.</p>
+          <p className="empty-state">Aucun produit sélectionné. Cliquez sur « Ajouter un produit » pour commencer.</p>
         )}
 
         <div className="produits-list">
           {strategie.produitsSelectionnes.map(produit => (
-            <div key={produit.id} className="produit-card">
+            <article key={produit.id} className="produit-card premium-card-compact">
               <div className="produit-header">
                 <h3>{produit.libelle}</h3>
-                <button 
+                <button
+                  type="button"
                   className="btn-remove"
                   onClick={() => handleRemoveProduit(produit.id)}
-                  title="Supprimer"
+                  title="Supprimer ce produit"
                 >
                   ×
                 </button>
               </div>
               <div className="produit-form">
-                <div className="form-row">
-                  <label>Montant initial (€)</label>
-                  <input
-                    type="number"
-                    value={produit.montantInitial || 0}
-                    onChange={(e) => handleUpdateProduit(produit.id, { 
-                      montantInitial: parseFloat(e.target.value) || 0 
-                    })}
-                  />
-                </div>
-                <div className="form-row">
-                  <label>Versements mensuels (€)</label>
-                  <input
-                    type="number"
-                    value={produit.versementsProgrammes || 0}
-                    onChange={(e) => handleUpdateProduit(produit.id, { 
-                      versementsProgrammes: parseFloat(e.target.value) || 0 
-                    })}
-                  />
-                </div>
-                <div className="form-row">
-                  <label>Durée (années)</label>
-                  <input
-                    type="number"
-                    value={produit.dureeAnnees || 10}
-                    onChange={(e) => handleUpdateProduit(produit.id, { 
-                      dureeAnnees: parseInt(e.target.value) || 10 
-                    })}
-                  />
-                </div>
-                <div className="form-row">
-                  <label>Rendement estimé (%)</label>
-                  <input
-                    type="number"
-                    step="0.1"
-                    value={produit.tauxRendementEstime || 3}
-                    onChange={(e) => handleUpdateProduit(produit.id, { 
-                      tauxRendementEstime: parseFloat(e.target.value) || 3 
-                    })}
-                  />
-                </div>
+                <StrategyNumericField
+                  label="Montant initial"
+                  value={produit.montantInitial}
+                  unit="€"
+                  fallbackValue={0}
+                  onChange={(montantInitial) => handleUpdateProduit(produit.id, { montantInitial })}
+                />
+                <StrategyNumericField
+                  label="Versements mensuels"
+                  value={produit.versementsProgrammes}
+                  unit="€"
+                  fallbackValue={0}
+                  onChange={(versementsProgrammes) => handleUpdateProduit(produit.id, { versementsProgrammes })}
+                />
+                <StrategyNumericField
+                  label="Durée"
+                  value={produit.dureeAnnees}
+                  unit="ans"
+                  fallbackValue={10}
+                  integer
+                  onChange={(dureeAnnees) => handleUpdateProduit(produit.id, { dureeAnnees })}
+                />
+                <StrategyNumericField
+                  label="Rendement estimé"
+                  value={produit.tauxRendementEstime}
+                  unit="%"
+                  step="0.1"
+                  fallbackValue={3}
+                  onChange={(tauxRendementEstime) => handleUpdateProduit(produit.id, { tauxRendementEstime })}
+                />
               </div>
-            </div>
+            </article>
           ))}
         </div>
-      </div>
+      </section>
 
       {/* Comparaison scénarios */}
       {comparaison && (
-        <div className="section-card">
-          <h2>Comparaison des scénarios</h2>
-          
+        <section className="strategy-section premium-card">
+          <div className="strategy-section-heading">
+            <div>
+              <p className="premium-section-title">Comparatif</p>
+              <h2>Comparaison des scénarios</h2>
+            </div>
+          </div>
+
           <div className="scenarios-grid">
-            <div className="scenario-card">
+            <div className="scenario-card premium-card-compact">
               <h3>Situation actuelle</h3>
               <div className="scenario-metric">
                 <span className="metric-label">Patrimoine dans 10 ans</span>
@@ -252,7 +319,7 @@ export default function StrategyBuilder({ dossier }: StrategyBuilderProps): Reac
               </div>
             </div>
 
-            <div className="scenario-card scenario-strategy">
+            <div className="scenario-card premium-card-compact scenario-strategy">
               <h3>Avec stratégie CGP</h3>
               <div className="scenario-metric">
                 <span className="metric-label">Patrimoine dans 10 ans</span>
@@ -269,7 +336,7 @@ export default function StrategyBuilder({ dossier }: StrategyBuilderProps): Reac
             </div>
           </div>
 
-          <div className="ecarts-summary">
+          <div className="ecarts-summary premium-card-compact">
             <h3>Gains de la stratégie</h3>
             <div className="ecart-item">
               <span>Gain patrimonial :</span>
@@ -286,30 +353,40 @@ export default function StrategyBuilder({ dossier }: StrategyBuilderProps): Reac
               </strong>
             </div>
           </div>
-        </div>
+        </section>
       )}
 
       {/* Modal ajout produit */}
       {showAddProduit && (
-        <div className="modal-overlay">
-          <div className="modal-content">
-            <h3>Ajouter un produit</h3>
-            <div className="produits-grid">
-              {(Object.keys(PRODUIT_LABELS) as ProduitType[]).map(type => (
-                <button
-                  key={type}
-                  className="produit-option"
-                  onClick={() => handleAddProduit(type)}
-                >
-                  {PRODUIT_LABELS[type]}
-                </button>
-              ))}
-            </div>
-            <button className="chip" onClick={() => setShowAddProduit(false)}>
+        <SimModalShell
+          title="Ajouter un produit"
+          subtitle="Complétez d’abord le dossier d’audit, puis sélectionnez les produits à projeter."
+          modalClassName="strategy-modal"
+          bodyClassName="strategy-modal__body"
+          footerClassName="strategy-modal__footer"
+          onClose={() => setShowAddProduit(false)}
+          footer={(
+            <button type="button" className="premium-btn" onClick={() => setShowAddProduit(false)}>
               Annuler
             </button>
+          )}
+        >
+          <div className="strategy-modal__copy">
+            <p className="premium-section-title">Catalogue MVP</p>
           </div>
-        </div>
+          <div className="produits-grid">
+            {(Object.keys(PRODUIT_LABELS) as ProduitType[]).map(type => (
+              <button
+                key={type}
+                type="button"
+                className="produit-option"
+                onClick={() => handleAddProduit(type)}
+              >
+                {PRODUIT_LABELS[type]}
+              </button>
+            ))}
+          </div>
+        </SimModalShell>
       )}
     </div>
   );

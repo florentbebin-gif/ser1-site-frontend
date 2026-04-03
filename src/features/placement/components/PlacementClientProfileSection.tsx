@@ -35,18 +35,18 @@ export function PlacementClientProfileSection({
   setClient,
 }: PlacementClientProfileSectionProps) {
   return (
-    <div className="premium-card premium-card--guide pl-client-card">
-      <div className="pl-client-card__header">
-        <div className="pl-client-card__title">
-          <div className="pl-section-icon-wrapper">
+    <div className="premium-card premium-card--guide sim-card--guide pl-client-card">
+      <div className="pl-client-card__header sim-card__header sim-card__header--bleed">
+        <div className="pl-client-card__title sim-card__title sim-card__title-row">
+          <div className="pl-section-icon-wrapper sim-card__icon">
             <UsersIcon />
           </div>
           <span>Profil client</span>
         </div>
-        <p className="pl-card-subtitle">Paramètres communs aux deux placements</p>
+        <p className="pl-card-subtitle sim-card__subtitle">Paramètres communs aux deux placements</p>
       </div>
 
-      <div className="pl-card-divider" />
+      <div className="pl-card-divider sim-divider" />
 
       <div className="pl-topgrid premium-grid-4">
         <InputNumber

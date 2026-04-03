@@ -110,8 +110,8 @@ Source (preuves) :
 | `/set-password` | public | `SetPassword` | `src/pages/SetPassword.tsx` (import direct) |
 | `/reset-password` | public | `SetPassword` | `src/pages/SetPassword.tsx` (import direct) |
 | `/` | privé | `Home` | `src/pages/Home.tsx` (import direct) |
-| `/audit` | privé + lazy | `AuditWizard` | `src/features/audit/AuditWizard.tsx` (exporté via `src/features/audit/index.ts`) — workflow actif hors `/sim/*`, avec draft de session et export PPTX |
-| `/strategy` | privé + lazy | `StrategyPage` | `src/pages/StrategyPage.tsx` (lazy) — workflow actif dépendant d'un draft d'audit, encore incomplet côté produit |
+| `/audit` | privé + lazy | `AuditWizard` | `src/features/audit/AuditWizard.tsx` (exporté via `src/features/audit/index.ts`) — workflow actif hors `/sim/*`, avec draft de session, `ExportMenu` partagé et export PPTX isolé dans `src/features/audit/exportAudit.ts` |
+| `/strategy` | privé + lazy | `StrategyPage` | `src/pages/StrategyPage.tsx` (lazy) — workflow actif dépendant d'un draft d'audit, avec `SimFieldShell` pour la saisie produit et export PPTX isolé dans `src/features/strategy/exportStrategy.ts` |
 | `/sim/placement` | privé + lazy | `Placement` | `src/features/placement/PlacementPage.tsx` (exporté via `src/features/placement/index.ts`) |
 | `/sim/credit` | privé + lazy | `Credit` | `src/features/credit/Credit.tsx` (exporté via `src/features/credit/index.ts`) |
 | `/sim/succession` | privé + lazy | `SuccessionSimulator` | `src/features/succession/SuccessionSimulator.tsx` (exporté via `src/features/succession/index.ts`) |
@@ -246,7 +246,8 @@ Invariants (à ne pas casser) :
 - Orchestrateur : `src/pptx/export/exportStudyDeck.ts`.
 - Design system : `src/pptx/designSystem/serenity.ts`.
 - Slides : `src/pptx/slides/`.
-- **Règles de conception et checklist de création** : `docs/GOUVERNANCE.md` § Gouvernance PPTX.
+- **Règles de conception et checklist de création** : `docs/GOUVERNANCE_EXPORTS.md`.
+- Cas legacy encore actifs : `src/features/audit/exportAudit.ts` adapte `src/pptx/auditPptx.ts` et `src/features/strategy/exportStrategy.ts` adapte `src/pptx/strategyPptx.ts` derrière les features ; les composants UI n'importent plus directement ces générateurs legacy.
 
 Assets statiques (images) :
 - Chapitres PPTX : `public/pptx/chapters/ch-01.png` .. `ch-09.png` (bibliothèque).
@@ -652,5 +653,6 @@ Cette section fixe comment ajouter une page, une route ou une feature sans creer
 
 ## Références
 - Gouvernance UI/couleurs/thème : `docs/GOUVERNANCE.md`
+- Gouvernance exports PPTX/XLSX : `docs/GOUVERNANCE_EXPORTS.md`
 - Runbook debug + edge + migrations : `docs/RUNBOOK.md`
 - Trajectoire produit : `docs/ROADMAP.md`

@@ -76,11 +76,11 @@ export function IrIncomeSection({
   }
 
   return (
-    <div className="ir-table-wrapper premium-card premium-card--guide">
-      <div className="ir-income-card__header">
+    <div className="ir-table-wrapper premium-card premium-card--guide sim-card--guide">
+      <div className="ir-income-card__header sim-card__header sim-card__header--bleed">
         <div className="ir-income-card__header-row">
-          <div className="ir-income-card__title">
-            <div className="ir-section-icon-wrapper ir-section-icon-wrapper--card">
+          <div className="ir-income-card__title sim-card__title sim-card__title-row">
+            <div className="ir-section-icon-wrapper ir-section-icon-wrapper--card sim-card__icon">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                 <rect x="3" y="3" width="18" height="18" rx="2" />
                 <line x1="3" y1="9" x2="21" y2="9" />
@@ -122,7 +122,7 @@ export function IrIncomeSection({
         </div>
         <p className="ir-income-card__subtitle">Renseignez vos sources de revenus par catégorie pour affiner le calcul</p>
       </div>
-      <div className="ir-card-divider" />
+      <div className="ir-card-divider sim-divider" />
       <table className={`ir-table ${status === 'single' ? 'ir-table-single' : ''}`} aria-label="Revenus imposables">
         <colgroup>
           <col style={{ width: '40%' }} />

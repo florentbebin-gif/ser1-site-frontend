@@ -1,3 +1,7 @@
+@import '../../styles/sim-surfaces.css';
+@import '../../styles/sim-fields.css';
+@import '../../styles/sim-modals.css';
+
 /* ========================================
    SimulatorShell — Layout partagé simulateurs
    Classes : .sim-page, .sim-header, .sim-section-title

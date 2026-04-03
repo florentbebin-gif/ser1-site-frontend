@@ -3,6 +3,7 @@
  */
 
 import React, { useEffect, useState } from 'react';
+import { SimFieldShell } from '@/components/ui/sim';
 import { fmt } from '../utils/formatters';
 
 function formatPctInput(value: number | null | undefined): string {
@@ -35,22 +36,19 @@ interface InputEuroProps extends BaseInputProps {
 
 export function InputEuro({ value, onChange, label, disabled }: InputEuroProps) {
   return (
-    <div className="pl-field">
-      {label && <label>{label}</label>}
-      <div className="pl-input">
-        <input
-          type="text"
-          className="pl-input__field"
-          value={fmt(value)}
-          onChange={(event) => {
-            const clean = event.target.value.replace(/\D/g, '').slice(0, 9);
-            onChange(clean === '' ? 0 : Number(clean));
-          }}
-          disabled={disabled}
-        />
-        <span className="pl-input__unit">€</span>
-      </div>
-    </div>
+    <SimFieldShell label={label} className="pl-field" rowClassName="pl-input">
+      <input
+        type="text"
+        className="pl-input__field sim-field__control"
+        value={fmt(value)}
+        onChange={(event) => {
+          const clean = event.target.value.replace(/\D/g, '').slice(0, 9);
+          onChange(clean === '' ? 0 : Number(clean));
+        }}
+        disabled={disabled}
+      />
+      <span className="pl-input__unit sim-field__unit">€</span>
+    </SimFieldShell>
   );
 }
 
@@ -83,22 +81,19 @@ export function InputPct({ value, onChange, label, disabled }: InputPctProps) {
   };
 
   return (
-    <div className="pl-field">
-      {label && <label>{label}</label>}
-      <div className="pl-input">
-        <input
-          type="text"
-          inputMode="decimal"
-          className="pl-input__field"
-          value={local}
-          onChange={handleChange}
-          onFocus={() => setIsFocused(true)}
-          onBlur={handleBlur}
-          disabled={disabled}
-        />
-        <span className="pl-input__unit">%</span>
-      </div>
-    </div>
+    <SimFieldShell label={label} className="pl-field" rowClassName="pl-input">
+      <input
+        type="text"
+        inputMode="decimal"
+        className="pl-input__field sim-field__control"
+        value={local}
+        onChange={handleChange}
+        onFocus={() => setIsFocused(true)}
+        onBlur={handleBlur}
+        disabled={disabled}
+      />
+      <span className="pl-input__unit sim-field__unit">%</span>
+    </SimFieldShell>
   );
 }
 
@@ -149,7 +144,7 @@ export function InputNumber({
     <input
       type="text"
       inputMode="numeric"
-      className={`pl-input__field${inline ? ' pl-input__field--inline' : ''}`}
+      className={`pl-input__field sim-field__control${inline ? ' pl-input__field--inline' : ''}`}
       value={localValue}
       onChange={handleChange}
       onBlur={handleBlur}
@@ -158,21 +153,18 @@ export function InputNumber({
 
   if (inline) {
     return (
-      <div className="pl-input">
+      <div className="pl-input sim-field__row">
         {inputEl}
-        {unit && <span className="pl-input__unit">{unit}</span>}
+        {unit && <span className="pl-input__unit sim-field__unit">{unit}</span>}
       </div>
     );
   }
 
   return (
-    <div className="pl-field">
-      {label && <label>{label}</label>}
-      <div className="pl-input">
-        {inputEl}
-        {unit && <span className="pl-input__unit">{unit}</span>}
-      </div>
-    </div>
+    <SimFieldShell label={label} className="pl-field" rowClassName="pl-input">
+      {inputEl}
+      {unit && <span className="pl-input__unit sim-field__unit">{unit}</span>}
+    </SimFieldShell>
   );
 }
 
@@ -190,16 +182,15 @@ interface SelectProps {
 
 export function Select({ value, onChange, options, label }: SelectProps) {
   return (
-    <div className="pl-field">
-      {label && <label>{label}</label>}
-      <select className="pl-select" value={value} onChange={(event) => onChange(event.target.value)}>
+    <SimFieldShell label={label} className="pl-field">
+      <select className="pl-select sim-field__control" value={value} onChange={(event) => onChange(event.target.value)}>
         {options.map((option) => (
           <option key={option.value} value={option.value}>
             {option.label}
           </option>
         ))}
       </select>
-    </div>
+    </SimFieldShell>
   );
 }
 

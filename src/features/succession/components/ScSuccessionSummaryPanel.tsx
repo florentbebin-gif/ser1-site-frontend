@@ -149,9 +149,9 @@ export default function ScSuccessionSummaryPanel({
     : Math.max(0, derivedMasseTransmise - derivedTotalDroits);
 
   return (
-    <div className="premium-card sc-summary-card sc-hero-card sc-hero-card--secondary">
+    <div className="premium-card sc-summary-card sim-summary-card sim-summary-card--secondary sc-hero-card sc-hero-card--secondary">
       <div className="sc-summary-title-row">
-        <div className="sc-section-icon-wrapper">
+        <div className="sc-section-icon-wrapper sim-card__icon">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
             <path d="M21.21 15.89A10 10 0 1 1 8 2.83" />
             <path d="M22 12A10 10 0 0 0 12 2v10z" />
@@ -159,7 +159,7 @@ export default function ScSuccessionSummaryPanel({
         </div>
         <h2 className="sc-summary-title">Synthèse successorale</h2>
       </div>
-      <div className="sc-card__divider sc-card__divider--tight" />
+      <div className="sc-card__divider sc-card__divider--tight sim-divider sim-divider--tight" />
       <div className="sc-synth-hero">
         <div className="sc-synth-hero__left">
           <div className="sc-synth-hero__label">Coût de transmission estimé</div>

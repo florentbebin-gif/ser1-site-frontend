@@ -50,7 +50,8 @@ export default function StepCivil({ dossier, updateDossier }: StepProps) {
         <h3>Donations antérieures</h3>
         <p className="form-hint">Les donations réalisées au cours des 15 dernières années.</p>
         <button
-          className="chip"
+          type="button"
+          className="premium-btn"
           onClick={() => updateDossier({
             situationCivile: {
               ...situationCivile,

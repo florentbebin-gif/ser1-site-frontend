@@ -47,6 +47,9 @@ git push origin feature/nom-clair
 - **Logique métier** → `src/engine/` uniquement
 - **UI / State** → `src/pages/` ou `src/features/`
 - **Pas de calcul fiscal dans les composants React**
+- **Docs de référence** :
+  - UI / `/sim/*` / thème → `docs/GOUVERNANCE.md`
+  - PPTX / Excel → `docs/GOUVERNANCE_EXPORTS.md`
 - **Imports** :
   - **`@/`** pour les imports cross-module / cross-feature (ex: `@/utils/`, `@/components/`)
   - **Chemins relatifs** (`./`, `../`) OK pour les imports locaux (même dossier ou sous-dossier)

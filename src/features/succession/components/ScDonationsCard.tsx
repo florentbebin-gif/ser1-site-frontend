@@ -32,10 +32,10 @@ export default function ScDonationsCard({
   onRemoveDonationEntry,
 }: ScDonationsCardProps) {
   return (
-    <div className="premium-card sc-card sc-card--guide">
-      <header className="sc-card__header">
-        <div className="sc-card__title-row">
-          <div className="sc-section-icon-wrapper">
+    <div className="premium-card sc-card sc-card--guide sim-card--guide">
+      <header className="sc-card__header sim-card__header sim-card__header--bleed">
+        <div className="sc-card__title-row sim-card__title sim-card__title-row">
+          <div className="sc-section-icon-wrapper sim-card__icon">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
               <polyline points="20 12 20 22 4 22 4 12" />
               <rect x="2" y="7" width="20" height="5" />
@@ -47,7 +47,7 @@ export default function ScDonationsCard({
           <h2 className="sc-card__title">Donations</h2>
         </div>
       </header>
-      <div className="sc-card__divider sc-card__divider--tight" />
+      <div className="sc-card__divider sc-card__divider--tight sim-divider sim-divider--tight" />
       {donationsContext.length > 0 ? (
         <div className="sc-donations-list">
           {donationsContext.map((entry, idx) => {

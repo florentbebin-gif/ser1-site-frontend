@@ -1,4 +1,5 @@
 import type { Dispatch, SetStateAction } from 'react';
+import { SimModalShell } from '@/components/ui/sim';
 import type { FamilyBranch, FamilyMemberType, SuccessionEnfant } from '../successionDraft';
 import { getEnfantParentLabel } from '../successionEnfants';
 import {
@@ -26,64 +27,19 @@ export default function AddFamilyMemberModal({
   onValidate,
 }: AddFamilyMemberModalProps) {
   return (
-    <div
-      className="sc-member-modal-overlay"
-      onClick={() => {}}
-    >
-      <div className="sc-member-modal sc-member-modal--family">
-        <div className="sc-member-modal__header">
-          <h3 className="sc-member-modal__title">Ajouter un membre</h3>
-          <button
-            type="button"
-            className="sc-member-modal__close"
-            onClick={onClose}
-            aria-label="Fermer"
-          >
-            ✕
-          </button>
-        </div>
-        <div className="sc-member-modal__body">
-          <div className="sc-field">
-            <label>Type de membre</label>
-            <ScSelect
-              value={form.type}
-              onChange={(value) => setForm((prev) => ({
-                ...prev,
-                type: value as FamilyMemberType,
-                branch: '',
-                parentEnfantId: '',
-              }))}
-              options={[{ value: '', label: 'Choisir…', disabled: true }, ...MEMBER_TYPE_OPTIONS]}
-            />
-          </div>
-          {MEMBER_TYPE_NEEDS_BRANCH.includes(form.type as FamilyMemberType) && (
-            <div className="sc-field">
-              <label>Branche familiale</label>
-              <ScSelect
-                value={form.branch}
-                onChange={(value) => setForm((prev) => ({ ...prev, branch: value as FamilyBranch }))}
-                options={[{ value: '', label: 'Choisir…', disabled: true }, ...branchOptions]}
-              />
-            </div>
-          )}
-          {form.type === 'petit_enfant' && (
-            <div className="sc-field">
-              <label>Enfant parent</label>
-              <ScSelect
-                value={form.parentEnfantId}
-                onChange={(value) => setForm((prev) => ({ ...prev, parentEnfantId: value }))}
-                options={[
-                  { value: '', label: 'Choisir…', disabled: true },
-                  ...enfantsContext.map((enfant, index) => ({
-                    value: enfant.id,
-                    label: getEnfantParentLabel(enfant, index),
-                  })),
-                ]}
-              />
-            </div>
-          )}
-        </div>
-        <div className="sc-member-modal__footer">
+    <SimModalShell
+      title="Ajouter un membre"
+      onClose={onClose}
+      closeLabel="Fermer"
+      overlayClassName="sc-member-modal-overlay"
+      modalClassName="sc-member-modal sc-member-modal--family"
+      headerClassName="sc-member-modal__header"
+      titleClassName="sc-member-modal__title"
+      bodyClassName="sc-member-modal__body"
+      footerClassName="sc-member-modal__footer"
+      closeClassName="sc-member-modal__close"
+      footer={(
+        <>
           <button
             type="button"
             className="sc-member-modal__btn sc-member-modal__btn--secondary"
@@ -103,8 +59,48 @@ export default function AddFamilyMemberModal({
           >
             Ajouter
           </button>
-        </div>
+        </>
+      )}
+    >
+      <div className="sc-field">
+        <label>Type de membre</label>
+        <ScSelect
+          value={form.type}
+          onChange={(value) => setForm((prev) => ({
+            ...prev,
+            type: value as FamilyMemberType,
+            branch: '',
+            parentEnfantId: '',
+          }))}
+          options={[{ value: '', label: 'Choisir…', disabled: true }, ...MEMBER_TYPE_OPTIONS]}
+        />
       </div>
-    </div>
+      {MEMBER_TYPE_NEEDS_BRANCH.includes(form.type as FamilyMemberType) && (
+        <div className="sc-field">
+          <label>Branche familiale</label>
+          <ScSelect
+            value={form.branch}
+            onChange={(value) => setForm((prev) => ({ ...prev, branch: value as FamilyBranch }))}
+            options={[{ value: '', label: 'Choisir…', disabled: true }, ...branchOptions]}
+          />
+        </div>
+      )}
+      {form.type === 'petit_enfant' && (
+        <div className="sc-field">
+          <label>Enfant parent</label>
+          <ScSelect
+            value={form.parentEnfantId}
+            onChange={(value) => setForm((prev) => ({ ...prev, parentEnfantId: value }))}
+            options={[
+              { value: '', label: 'Choisir…', disabled: true },
+              ...enfantsContext.map((enfant, index) => ({
+                value: enfant.id,
+                label: getEnfantParentLabel(enfant, index),
+              })),
+            ]}
+          />
+        </div>
+      )}
+    </SimModalShell>
   );
 }

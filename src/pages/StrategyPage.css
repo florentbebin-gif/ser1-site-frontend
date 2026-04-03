@@ -1,0 +1,21 @@
+.strategy-empty-page {
+  display: flex;
+  justify-content: center;
+}
+
+.strategy-empty-card {
+  width: min(100%, 680px);
+  margin-top: 56px;
+  text-align: center;
+}
+
+.strategy-empty-subtitle {
+  max-width: 520px;
+  margin: 12px auto 0;
+}
+
+.strategy-empty-link {
+  margin-top: 24px;
+  text-decoration: none;
+  justify-content: center;
+}

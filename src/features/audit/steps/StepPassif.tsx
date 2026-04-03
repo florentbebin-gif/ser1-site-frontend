@@ -12,7 +12,8 @@ export default function StepPassif({ dossier, updateDossier }: StepProps) {
       </div>
 
       <button
-        className="chip"
+        type="button"
+        className="premium-btn"
         onClick={() => updateDossier({
           passif: {
             ...passif,
@@ -85,6 +86,7 @@ export default function StepPassif({ dossier, updateDossier }: StepProps) {
             />
           </div>
           <button
+            type="button"
             className="chip chip-small chip-danger"
             onClick={() => {
               updateDossier({

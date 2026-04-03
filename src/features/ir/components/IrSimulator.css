@@ -171,10 +171,6 @@
 }
 
 /* Carte guidage (hero saisie) — liseré gauche C3 (GOUVERNANCE.md §3 + §8) */
-.premium-card--guide {
-  border-left: 3px solid var(--color-c3);
-}
-
 /* Tableau de saisie — fond/border/radius/padding viennent de .premium-card (JSX) */
 .ir-table-wrapper {
   overflow: hidden;
@@ -264,6 +260,11 @@
 .ir-table-input {
   display: flex;
   align-items: center;
+  gap: 0;
+  width: 100%;
+}
+
+.ir-table-input__row {
   width: 100%;
 }
 
@@ -288,9 +289,6 @@
 
 /* Séparateur estompé dans les cartes de synthèse (GOUVERNANCE.md §4) */
 .ir-card-divider {
-  height: 2px;
-  max-width: 200px;
-  background: linear-gradient(90deg, transparent, var(--color-c8), transparent);
   margin: 14px 0 18px;
 }
 
@@ -302,12 +300,6 @@
 /* Liseré gauche C3 — carte de synthèse principale (GOUVERNANCE.md §3) */
 .ir-tmi-card {
   font-size: 13px;
-  border-left: 3px solid var(--color-c3);
-  background-image: linear-gradient(
-    to bottom,
-    color-mix(in srgb, var(--color-c4) 18%, transparent) 0%,
-    transparent 20%
-  );
 }
 
 .ir-tmi-header {
@@ -380,7 +372,6 @@
   display: flex;
   flex-direction: column;
   gap: 4px;
-  border-left: 3px solid var(--color-c5);
 }
 
 .ir-summary-row {
@@ -910,29 +901,7 @@
 }
 
 /* Fond dégradé sur le header de la carte Revenus (même patron que Credit) */
-.premium-card--guide .ir-income-card__header {
-  background: linear-gradient(
-    135deg,
-    color-mix(in srgb, var(--color-c1) 5%, transparent) 0%,
-    transparent 65%
-  );
-  border-radius: 10px 10px 0 0;
-  margin: -20px -24px 0;
-  padding: 20px 24px 0;
-}
-
 /* Dégradé header carte Situation familiale — même patron que Revenus */
-.premium-card--guide .ir-situation-card__header {
-  background: linear-gradient(
-    135deg,
-    color-mix(in srgb, var(--color-c1) 5%, transparent) 0%,
-    transparent 65%
-  );
-  border-radius: 10px 10px 0 0;
-  margin: -20px -24px 0;
-  padding: 20px 24px 0;
-}
-
 .ir-situation-card__title {
   display: flex;
   align-items: center;

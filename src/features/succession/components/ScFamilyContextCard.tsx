@@ -54,10 +54,10 @@ export default function ScFamilyContextCard({
   onRemoveFamilyMember,
 }: ScFamilyContextCardProps) {
   return (
-    <div className="premium-card sc-card sc-card--guide">
-      <header className="sc-card__header">
-        <div className="sc-card__title-row">
-          <div className="sc-section-icon-wrapper">
+    <div className="premium-card sc-card sc-card--guide sim-card--guide">
+      <header className="sc-card__header sim-card__header sim-card__header--bleed">
+        <div className="sc-card__title-row sim-card__title sim-card__title-row">
+          <div className="sc-section-icon-wrapper sim-card__icon">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
               <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
               <circle cx="9" cy="7" r="4" />
@@ -68,7 +68,7 @@ export default function ScFamilyContextCard({
           <h2 className="sc-card__title">Contexte familial</h2>
         </div>
       </header>
-      <div className="sc-card__divider" />
+      <div className="sc-card__divider sim-divider" />
       <div className="sc-context-grid">
         <div className="sc-civil-grid">
           <div className={`sc-civil-grid__top-row${showSecondBirthDate ? ' sc-civil-grid__top-row--triple' : ''}`}>

@@ -30,14 +30,16 @@ Expliquer ce que SER1 couvre aujourd'hui, ce qui est deja exploitable, et les li
 ### Workflows actifs hors simulateurs
 | Surface | Statut | Role metier principal |
 |---|---|---|
-| `/audit` | actif, non finalise | Constituer un dossier patrimonial guide, persiste en session, exportable, et servant d'entree a `strategy` |
-| `/strategy` | actif, incomplet cote produit | Produire des recommandations et projections a partir du draft audit courant, sans etre encore traite comme un simulateur `/sim/*` stabilise |
+| `/audit` | actif, workflow prive P6 | Constituer un dossier patrimonial guide, persiste en session, exportable, et servant d'entree a `strategy` |
+| `/strategy` | actif, workflow prive P7 | Produire des recommandations et projections a partir du draft audit courant, sans etre encore traite comme un simulateur `/sim/*` stabilise |
 
 ### Regle de lecture
 - Ce doc decrit uniquement le perimetre implemente.
 - Si un sujet est encore en page "upcoming", il n'est pas traite comme une feature metier stable.
 - Les taux, baremes et abattements modifiables vivent dans les settings et sont consommes par les simulateurs via le dossier fiscal unifie.
 - Les workflows `/audit` et `/strategy` sont actifs en runtime, mais ils restent des surfaces de travail guidees distinctes des simulateurs metier stabilises.
+- `/audit` porte la trajectoire P6 : dossier guide, export PPTX isole dans la feature via `src/features/audit/exportAudit.ts`, et reutilisation attendue par la suite dans `strategy`.
+- `/strategy` porte la trajectoire P7 : recommandations et scenarios a partir du draft audit courant, avec export PPTX isole dans `src/features/strategy/exportStrategy.ts`.
 
 ## 1) IR
 
@@ -395,5 +397,6 @@ En mode simplifié, seuls Montant, Durée et Taux annuel sont affichés.
 | Ce que le produit calcule et ses limites | `docs/METIER.md` |
 | Structure des routes, features et pages | `docs/ARCHITECTURE.md` |
 | Contrat UI, baseline `/sim/*`, theming | `docs/GOUVERNANCE.md` |
+| Contrat PPTX/XLSX et wrappers d’export | `docs/GOUVERNANCE_EXPORTS.md` |
 | Exploitation, Supabase, debug, procedures | `docs/RUNBOOK.md` |
 | Priorites et reste a faire | `docs/ROADMAP.md` |
