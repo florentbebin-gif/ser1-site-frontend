@@ -41,7 +41,7 @@ export function IrFormSection({
       <div className="ir-table-wrapper premium-card premium-card--guide sim-card--guide">
         <div className="ir-situation-card__header sim-card__header sim-card__header--bleed">
           <div className="ir-situation-card__title sim-card__title sim-card__title-row">
-            <div className="ir-section-icon-wrapper ir-section-icon-wrapper--card sim-card__icon">
+            <div className="ir-section-icon-wrapper sim-card__icon">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                 <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
                 <circle cx="9" cy="7" r="4" />

@@ -38,7 +38,7 @@ export function CreditLoanInputPanel({
         <div className="cv2-loan-card">
           <header className="cv2-loan-card__header sim-card__header sim-card__header--bleed">
             <h2 className="cv2-loan-card__title sim-card__title sim-card__title-row">
-              <span className="cv2-loan-card__icon-wrapper sim-card__icon sim-card__icon--lg">
+              <span className="sim-card__icon sim-card__icon--lg">
                 <svg
                   className="cv2-loan-card__icon"
                   viewBox="0 0 24 24"

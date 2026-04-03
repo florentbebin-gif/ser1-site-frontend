@@ -38,7 +38,7 @@ export function PlacementClientProfileSection({
     <div className="premium-card premium-card--guide sim-card--guide pl-client-card">
       <div className="pl-client-card__header sim-card__header sim-card__header--bleed">
         <div className="pl-client-card__title sim-card__title sim-card__title-row">
-          <div className="pl-section-icon-wrapper sim-card__icon">
+          <div className="sim-card__icon">
             <UsersIcon />
           </div>
           <span>Profil client</span>
@@ -46,7 +46,7 @@ export function PlacementClientProfileSection({
         <p className="pl-card-subtitle sim-card__subtitle">Paramètres communs aux deux placements</p>
       </div>
 
-      <div className="pl-card-divider sim-divider" />
+      <div className="sim-divider" />
 
       <div className="pl-topgrid premium-grid-4">
         <InputNumber

@@ -39,7 +39,7 @@ export function CreditSummarySidebar({
       {calc.hasPretsAdditionnels && (
         <div className="cv2-total-mensu sim-summary-card sim-summary-card--secondary">
           <div className="cv2-summary__title-row">
-            <div className="cv2-section-icon-wrapper sim-card__icon sim-card__icon--sm">
+            <div className="sim-card__icon sim-card__icon--sm">
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                 <polygon points="12 2 2 7 12 12 22 7 12 2" />
                 <polyline points="2 17 12 22 22 17" />

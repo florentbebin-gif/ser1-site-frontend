@@ -253,11 +253,6 @@
   gap: 7px;
 }
 
-/* point 2 PR2 — icône "paramètres du prêt" avec fond coloré (style Settings) */
-.cv2-loan-card__icon-wrapper {
-  color: var(--color-c2);
-}
-
 .cv2-loan-card__icon {
   width: 14px;
   height: 14px;
@@ -408,11 +403,6 @@
   align-items: center;
   gap: 8px;
   margin-bottom: 14px;
-}
-
-/* Icon wrapper cartes synthèse crédit (22×22, C4 bg, C2 stroke) */
-.cv2-section-icon-wrapper {
-  color: var(--color-c2);
 }
 
 .cv2-summary__title {

@@ -289,9 +289,6 @@
   margin: 14px 0 18px;
 }
 
-.ir-card-divider--tight {
-  margin: 8px 0 10px;
-}
 
 /* Carte TMI — fond/border/radius/padding/shadow viennent de .premium-card (JSX) */
 /* Liseré gauche C3 — carte de synthèse principale (GOUVERNANCE.md §3) */
@@ -927,13 +924,6 @@
   border-radius: 6px;
   color: var(--color-c2);
   flex-shrink: 0;
-}
-
-/* Override taille pour le header de la carte */
-.ir-section-icon-wrapper--card {
-  width: 26px;
-  height: 26px;
-  border-radius: 7px;
 }
 
 /* Lignes séparateurs entre sections */

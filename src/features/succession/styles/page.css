@@ -55,11 +55,6 @@
   border-left: 3px solid var(--color-c3);
 }
 
-/* Icon wrapper — même spec que IR (26×26, C4 bg, C2 stroke) */
-.sc-section-icon-wrapper {
-  color: var(--color-c2);
-}
-
 /* Titre avec icône */
 .sc-card__title-row {
   display: flex;

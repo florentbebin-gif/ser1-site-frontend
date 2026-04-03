@@ -415,7 +415,7 @@ export function FiliationOrgchart({
     <div className="premium-card sc-card sc-card--guide sim-card--guide sc-filiation-card">
       <header className="sc-card__header sim-card__header sim-card__header--bleed">
         <div className="sc-card__title-row sim-card__title sim-card__title-row">
-          <div className="sc-section-icon-wrapper sim-card__icon">
+          <div className="sim-card__icon">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
               <circle cx="18" cy="5" r="3" />
               <circle cx="6" cy="12" r="3" />

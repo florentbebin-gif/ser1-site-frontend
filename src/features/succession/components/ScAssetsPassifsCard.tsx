@@ -124,7 +124,7 @@ export default function ScAssetsPassifsCard({
     <div className="premium-card sc-card sc-card--guide sim-card--guide">
       <header className="sc-card__header sim-card__header sim-card__header--bleed">
         <div className="sc-card__title-row sim-card__title sim-card__title-row">
-          <div className="sc-section-icon-wrapper sim-card__icon">
+          <div className="sim-card__icon">
             <svg
               width="14"
               height="14"
