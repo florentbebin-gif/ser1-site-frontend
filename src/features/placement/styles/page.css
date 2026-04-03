@@ -89,10 +89,7 @@
 }
 
 .pl-ir-grid {
-  display: grid;
-  grid-template-columns: minmax(0, 1.85fr) minmax(0, 1fr);
-  gap: 24px;
-  align-items: start;
+  min-width: 0;
 }
 
 .pl-ir-left,
@@ -107,8 +104,6 @@
 }
 
 .pl-ir-right {
-  position: sticky;
-  top: 80px;
   min-width: 0;
 }
 
@@ -136,14 +131,6 @@
 }
 
 .pl-section-icon-wrapper {
-  width: 26px;
-  height: 26px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  border-radius: 7px;
-  background: var(--color-c4);
   color: var(--color-c2);
 }
 

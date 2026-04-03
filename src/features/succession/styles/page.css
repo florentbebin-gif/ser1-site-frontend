@@ -38,10 +38,6 @@
 }
 
 .sc-grid {
-  display: grid;
-  grid-template-columns: 1.85fr 1fr;
-  gap: 24px;
-  align-items: start;
   margin-bottom: 24px;
 }
 
@@ -52,10 +48,6 @@
 }
 
 .sc-right {
-  position: sticky;
-  top: 80px;
-  display: flex;
-  flex-direction: column;
   gap: 14px;
 }
 
@@ -65,15 +57,7 @@
 
 /* Icon wrapper — même spec que IR (26×26, C4 bg, C2 stroke) */
 .sc-section-icon-wrapper {
-  width: 26px;
-  height: 26px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  background: var(--color-c4);
-  border-radius: 7px;
   color: var(--color-c2);
-  flex-shrink: 0;
 }
 
 /* Titre avec icône */

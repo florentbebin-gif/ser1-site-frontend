@@ -3,7 +3,6 @@
  */
 
 import type { CreditLoanTabsProps } from '../types';
-import './CreditV2.css';
 
 export function CreditLoanTabs({
   activeTab,

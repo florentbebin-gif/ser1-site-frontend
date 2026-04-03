@@ -43,10 +43,7 @@
 }
 
 .ir-grid {
-  display: grid;
-  grid-template-columns: 1.85fr 1fr;
-  gap: 24px;
-  align-items: start;
+  min-width: 0;
 }
 
 .ir-left {

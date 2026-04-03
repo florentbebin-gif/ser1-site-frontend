@@ -10,11 +10,7 @@
 /* .cv2-page supprimé → remplacé par .sim-page (SimulatorShell.css) */
 
 .cv2-grid {
-  display: grid;
-  grid-template-columns: 1.85fr 1fr;
-  gap: 24px;
   margin-bottom: 32px;
-  align-items: start;
 }
 
 /* point 4 — simplifié : synthèse droite même hauteur que paramètres */
@@ -259,15 +255,7 @@
 
 /* point 2 PR2 — icône "paramètres du prêt" avec fond coloré (style Settings) */
 .cv2-loan-card__icon-wrapper {
-  width: 28px;
-  height: 28px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  background: var(--color-c4);
-  border-radius: 8px;
   color: var(--color-c2);
-  flex-shrink: 0;
 }
 
 .cv2-loan-card__icon {
@@ -401,8 +389,7 @@
    ---------------------------------------- */
 /* Wrapper sticky colonne droite — solidarise summary + total-mensu */
 .cv2-right-col {
-  position: sticky;
-  top: 80px;
+  gap: 12px;
 }
 
 .cv2-summary {
@@ -425,15 +412,7 @@
 
 /* Icon wrapper cartes synthèse crédit (22×22, C4 bg, C2 stroke) */
 .cv2-section-icon-wrapper {
-  width: 22px;
-  height: 22px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  background: var(--color-c4);
-  border-radius: 6px;
   color: var(--color-c2);
-  flex-shrink: 0;
 }
 
 .cv2-summary__title {

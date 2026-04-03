@@ -33,12 +33,12 @@ export function CreditLoanInputPanel({
   formatTauxRaw,
 }: CreditLoanInputPanelProps) {
   return (
-    <div>
+    <div className="sim-grid__col">
       <div className="premium-card premium-card--guide sim-card--guide">
         <div className="cv2-loan-card">
           <header className="cv2-loan-card__header sim-card__header sim-card__header--bleed">
             <h2 className="cv2-loan-card__title sim-card__title sim-card__title-row">
-              <span className="cv2-loan-card__icon-wrapper sim-card__icon">
+              <span className="cv2-loan-card__icon-wrapper sim-card__icon sim-card__icon--lg">
                 <svg
                   className="cv2-loan-card__icon"
                   viewBox="0 0 24 24"

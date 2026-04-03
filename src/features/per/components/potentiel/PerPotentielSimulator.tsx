@@ -15,7 +15,7 @@ import ModeStep from './steps/ModeStep';
 import AvisIrStep from './steps/AvisIrStep';
 import SituationFiscaleStep from './steps/SituationFiscaleStep';
 import SynthesePotentielStep from './steps/SynthesePotentielStep';
-import '../../Per.css';
+import '../../styles/index.css';
 
 type StepMeta = {
   shortLabel: string;
@@ -179,7 +179,7 @@ export default function PerPotentielSimulator(): React.ReactElement {
 
   return (
     <div className="sim-page per-potentiel-page">
-      <div className="premium-header per-potentiel-header">
+      <div className="premium-header sim-header sim-header--stacked per-potentiel-header">
         <div className="per-potentiel-header-copy">
           <h1 className="premium-title">Contrôle du potentiel épargne retraite</h1>
           <p className="premium-subtitle">

@@ -9,7 +9,7 @@
 
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import './Per.css';
+import './styles/index.css';
 
 interface SimCard {
   id: string;

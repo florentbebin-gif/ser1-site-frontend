@@ -8,7 +8,6 @@ import type {
   CreditScheduleRow,
   CreditScheduleTableProps,
 } from '../types';
-import './CreditV2.css';
 
 interface AnnualScheduleRow {
   year: string;

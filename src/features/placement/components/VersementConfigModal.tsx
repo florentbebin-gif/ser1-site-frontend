@@ -21,7 +21,6 @@ import {
   VersementInitialSection,
   VersementPonctuelsSection,
 } from './VersementConfigModalSections';
-import './VersementConfigModal.css';
 
 interface VersementConfigModalProps {
   envelope: string;

@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import '@/styles/sim/index.css';
-import './IrSimulator.css';
+import '../styles/index.css';
 import { onResetEvent, storageKeyFor } from '../../../utils/reset';
 import { toNumber } from '../../../utils/number';
 import { computeIrResult as computeIrResultEngine } from '../../../engine/ir/compute';
@@ -357,7 +357,7 @@ export default function IrSimulatorContainer() {
   if (settingsLoading) {
     return (
       <div className="sim-page" data-testid="ir-page">
-        <div className="ir-header premium-header sim-header" data-testid="ir-header">
+        <div className="ir-header premium-header sim-header sim-header--stacked" data-testid="ir-header">
           <h1 className="premium-title" data-testid="ir-title">
             Simulateur d&apos;imp&ocirc;t sur le revenu
           </h1>
@@ -374,7 +374,7 @@ export default function IrSimulatorContainer() {
 
   return (
     <div className="sim-page" data-testid="ir-page">
-      <div className="ir-header premium-header sim-header" data-testid="ir-header">
+      <div className="ir-header premium-header sim-header sim-header--stacked" data-testid="ir-header">
         <h1 className="premium-title" data-testid="ir-title">
             Simulateur d&apos;imp&ocirc;t sur le revenu
         </h1>

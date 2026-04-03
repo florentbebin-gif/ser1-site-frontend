@@ -39,10 +39,10 @@ export function PlacementResultsPanel({
   const { produit1, produit2 } = results || { produit1: null, produit2: null };
 
   return (
-    <div className="pl-ir-right">
+    <div className="pl-ir-right sim-grid__col sim-grid__col--sticky">
       <div className="premium-card pl-synthesis-card sim-summary-card sim-summary-card--secondary" data-testid="placement-results-card">
         <div className="pl-synthesis-title-row">
-          <div className="pl-section-icon-wrapper">
+          <div className="pl-section-icon-wrapper sim-card__icon">
             <BarChartIcon />
           </div>
           <h3 className="pl-summary-title">Synthèse comparative</h3>

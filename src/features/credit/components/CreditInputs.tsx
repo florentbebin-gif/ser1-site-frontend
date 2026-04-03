@@ -14,7 +14,6 @@ import type {
   SelectProps,
   ToggleProps,
 } from '../types';
-import './CreditInputs.css';
 
 export function InputEuro({
   label,
