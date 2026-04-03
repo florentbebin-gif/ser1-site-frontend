@@ -1,0 +1,261 @@
+﻿/* AccordÃ©on "HypothÃ¨ses et limites" â€” miroir .cv2-hypotheses (GOUVERNANCE.md Â§9) */
+.ir-hypotheses {
+  margin-top: 32px;
+  padding: 16px 24px;
+  background: var(--color-c7);
+  border: 1px solid var(--color-c8);
+  border-radius: 12px;
+}
+
+.ir-hypotheses__toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  gap: 8px;
+}
+
+.ir-hypotheses__title {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-c9);
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+}
+
+.ir-hypotheses__chevron {
+  color: var(--color-c9);
+  flex-shrink: 0;
+  transition: transform 0.2s;
+}
+
+.ir-hypotheses__chevron.is-open {
+  transform: rotate(180deg);
+}
+
+.ir-hypotheses ul {
+  margin: 12px 0 0;
+  padding: 0 0 0 16px;
+}
+
+.ir-hypotheses li {
+  font-size: 12px;
+  color: var(--color-c9);
+  line-height: 1.6;
+}
+
+/* AccordÃ©on "DÃ©tail du calcul" â€” pattern Ã‰chÃ©ancier (GOUVERNANCE.md Â§9) */
+/* Card pleine largeur, visible uniquement si rÃ©sultat calculÃ© */
+.ir-detail-card {
+  margin-top: 8px;
+}
+
+.ir-detail-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.ir-detail-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-c1);
+  margin: 0;
+}
+
+/* Toggle "Afficher / Masquer" â€” miroir cv2-schedule__toggle */
+.ir-detail-toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border: 1px solid var(--color-c8);
+  border-radius: 6px;
+  background: var(--color-c7);
+  color: var(--color-c9);
+  font-size: 12px;
+  cursor: pointer;
+  transition: color 0.2s, border-color 0.2s;
+}
+
+.ir-detail-toggle:hover {
+  color: var(--color-c2);
+  border-color: var(--color-c2);
+}
+
+.ir-detail-toggle:focus-visible {
+  outline: 2px solid var(--color-c2);
+  outline-offset: 2px;
+}
+
+.ir-detail-chevron {
+  transition: transform 0.2s;
+}
+
+.ir-detail-chevron.is-open {
+  transform: rotate(180deg);
+}
+
+/* Selects du tableau + enfants â€” pattern /sim/* (GOUVERNANCE.md Â§5) */
+.ir-table select,
+.ir-child-select {
+  height: 32px;
+  box-sizing: border-box;
+  padding: 4px 6px;
+  border: none;
+  border-bottom: 1px solid transparent;
+  border-radius: 4px;
+  background-color: var(--sim-input-bg, color-mix(in srgb, var(--color-c8) 18%, #FFFFFF));
+  font-family: inherit;
+  font-size: 13px;
+  color: var(--color-c10);
+  text-align: right;
+  transition: border-color 0.2s;
+  outline: none;
+  cursor: pointer;
+}
+
+.ir-table select:hover,
+.ir-child-select:hover {
+  border-bottom-color: var(--color-c8);
+}
+
+.ir-table select:focus-visible,
+.ir-child-select:focus-visible {
+  border-bottom-color: var(--color-c2);
+}
+/* Guide card 2 colonnes : situation familiale (g) + enfants (d) â€” Step 3 */
+.ir-guide-card__grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  align-items: start;
+}
+
+/* Zone gestion enfants â€” Step 3 */
+.ir-children-zone {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.ir-children-zone__label {
+  font-size: 12px;
+  color: var(--color-c9);
+}
+
+.ir-children-list {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 5px 8px;
+}
+
+.ir-child-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+}
+
+.ir-child-row__label {
+  font-size: 12px;
+  color: var(--color-c9);
+  white-space: nowrap;
+  min-width: 24px;
+}
+
+.ir-child-add-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: none;
+  border: none;
+  padding: 4px 0;
+  font-size: 12px;
+  color: var(--color-c2);
+  cursor: pointer;
+  font-family: inherit;
+  transition: color 0.15s;
+  margin-top: 2px;
+}
+
+.ir-child-add-btn:hover {
+  color: var(--color-c1);
+}
+
+.ir-child-add-btn:focus-visible {
+  outline: 2px solid var(--color-c2);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+.ir-child-remove-btn {
+  background: none;
+  border: none;
+  padding: 2px;
+  cursor: pointer;
+  color: var(--color-c9);
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  transition: color 0.15s;
+  border-radius: 3px;
+}
+
+.ir-child-remove-btn:hover {
+  color: var(--color-c1);
+}
+
+.ir-child-remove-btn:focus-visible {
+  outline: 2px solid var(--color-c2);
+  outline-offset: 2px;
+}
+
+/* Checkbox "Parent isolÃ©" â€” accent vert C2 (GOUVERNANCE.md Â§5) */
+.ir-checkbox {
+  accent-color: var(--color-c2);
+  cursor: pointer;
+}
+
+.ir-checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--color-c9);
+  cursor: pointer;
+  margin-top: 6px;
+}
+
+/* Stepper de parts dans la carte synthÃ¨se (â–¼ valeur â–²) */
+.ir-parts-stepper {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.ir-parts-btn {
+  background: none;
+  border: none;
+  padding: 0 1px;
+  cursor: pointer;
+  font-size: 9px;
+  line-height: 1;
+  color: var(--color-c9);
+  transition: color 0.15s;
+}
+
+.ir-parts-btn:hover {
+  color: var(--color-c2);
+}
+
+.ir-parts-btn:focus-visible {
+  outline: 2px solid var(--color-c2);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+

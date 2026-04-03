@@ -1,0 +1,143 @@
+﻿.pl-ir-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.pl-ir-table thead {
+  background: transparent;
+}
+
+.pl-ir-table th {
+  padding: 10px;
+  border-bottom: 2px solid var(--color-c8);
+  color: var(--color-c9);
+  text-align: center;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.pl-ir-table td {
+  padding: 10px;
+  border-bottom: 1px solid var(--color-c8);
+  color: var(--color-c10);
+  vertical-align: middle;
+}
+
+.pl-ir-table td:first-child {
+  font-weight: 500;
+}
+
+.pl-table td,
+.pl-table th {
+  vertical-align: middle;
+}
+
+.pl-detail-table-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.pl-detail-table th,
+.pl-detail-table td {
+  white-space: nowrap;
+}
+
+.pl-detail-table th:first-child,
+.pl-detail-table td:first-child {
+  text-align: left;
+}
+
+.pl-detail-table th:not(:first-child),
+.pl-detail-table td:not(:first-child) {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.pl-colhead {
+  min-width: 220px;
+}
+
+.pl-colbadge-wrapper {
+  display: flex;
+  justify-content: center;
+}
+
+.pl-collabel {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 120px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--color-c8);
+  background: var(--color-c7);
+  font-size: 12px;
+  font-weight: 600;
+  text-align: center;
+}
+
+.pl-collabel--product1 {
+  border-color: var(--color-c2);
+  background: var(--color-c2);
+  color: #FFFFFF;
+}
+
+.pl-collabel--product2 {
+  border-color: var(--color-c4);
+  background: var(--color-c4);
+  color: var(--color-c1);
+}
+
+.pl-envelope-pill-wrapper {
+  position: relative;
+  display: inline-block;
+}
+
+.pl-collabel[aria-haspopup] {
+  cursor: pointer;
+  gap: 4px;
+}
+
+.pl-collabel[aria-haspopup]:hover {
+  filter: brightness(0.92);
+}
+
+.pl-envelope-menu {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 50;
+  background: white;
+  border: 1px solid var(--color-c8);
+  border-radius: 8px;
+  min-width: 180px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+  overflow: hidden;
+}
+
+.pl-envelope-menu__option {
+  display: block;
+  width: 100%;
+  padding: 8px 14px;
+  text-align: left;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--color-c1);
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.pl-envelope-menu__option:hover {
+  background: var(--color-c7);
+}
+
+.pl-envelope-menu__option.is-selected {
+  font-weight: 700;
+  color: var(--color-c2);
+}
+

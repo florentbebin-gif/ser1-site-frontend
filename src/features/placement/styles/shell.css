@@ -1,0 +1,145 @@
+﻿.pl-page {
+  min-width: 0;
+}
+
+.pl-ir-header {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-bottom: 8px;
+  border-bottom: 3px solid var(--color-c6);
+}
+
+.pl-ir-title {
+  font-size: 22px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  color: var(--color-c1);
+}
+
+.pl-header__subtitle-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.pl-header__actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.pl-phase-nav {
+  position: relative;
+  display: flex;
+  gap: 4px;
+  margin: 8px 0 16px;
+}
+
+.pl-phase-nav::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--color-c8), transparent 85%);
+}
+
+.pl-phase-tab {
+  position: relative;
+  z-index: 1;
+  padding: 12px 20px;
+  border: none;
+  border-bottom: 2px solid transparent;
+  background: transparent;
+  color: var(--color-c9);
+  font-size: 14px;
+  font-weight: 400;
+  letter-spacing: 0;
+  cursor: pointer;
+  transition: color 0.2s, background 0.2s, border-color 0.2s;
+}
+
+.pl-phase-tab:hover {
+  color: var(--color-c2);
+  background: var(--color-c7);
+}
+
+.pl-phase-tab:focus-visible {
+  outline: none;
+  border-bottom-color: var(--color-c2);
+}
+
+.pl-phase-tab.is-active {
+  color: var(--color-c1);
+  font-weight: 600;
+  border-bottom-color: var(--color-c3);
+}
+
+.pl-ir-grid {
+  min-width: 0;
+}
+
+.pl-ir-left,
+.pl-ir-right {
+  display: flex;
+  flex-direction: column;
+}
+
+.pl-ir-left {
+  gap: 20px;
+  min-width: 0;
+}
+
+.pl-ir-right {
+  min-width: 0;
+}
+
+.pl-topgrid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px 16px;
+}
+
+.pl-client-card {
+  overflow: visible;
+}
+
+.pl-client-card__title,
+.pl-synthesis-title-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.pl-client-card__title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--color-c1);
+}
+
+.pl-card-title,
+.pl-summary-title {
+  margin: 0 0 16px;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--color-c1);
+}
+
+.pl-summary-title {
+  margin-bottom: 0;
+}
+
+.pl-card-title--spaced {
+  margin-top: 24px;
+}
+
+.pl-card-subtitle {
+  margin: 4px 0 12px;
+  font-size: 12px;
+  color: var(--color-c9);
+}
+

@@ -1,0 +1,165 @@
+﻿.ir-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 13px;
+}
+
+.ir-field label {
+  color: var(--color-c9);
+}
+
+/* Inputs et selects du bandeau haut â€” pattern /sim/* (GOUVERNANCE.md Â§5) */
+.ir-field select,
+.ir-field input[type='number'],
+.ir-field input[type='text'] {
+  width: 100%;
+  height: 32px;
+  box-sizing: border-box;
+  padding: 4px 6px;
+  border: none;
+  border-bottom: 1px solid transparent;
+  border-radius: 4px;
+  background-color: var(--sim-input-bg, color-mix(in srgb, var(--color-c8) 18%, #FFFFFF));
+  font-family: inherit;
+  font-size: 13px;
+  color: var(--color-c10);
+  text-align: right;
+  transition: border-color 0.2s;
+  outline: none;
+}
+
+.ir-field select {
+  cursor: pointer;
+}
+
+.ir-field select:hover,
+.ir-field input[type='number']:hover,
+.ir-field input[type='text']:hover {
+  border-bottom-color: var(--color-c8);
+}
+
+.ir-field select:focus-visible,
+.ir-field input[type='number']:focus-visible,
+.ir-field input[type='text']:focus-visible {
+  border-bottom-color: var(--color-c2);
+}
+
+/* Carte guidage (hero saisie) â€” liserÃ© gauche C3 (GOUVERNANCE.md Â§3 + Â§8) */
+/* Tableau de saisie â€” fond/border/radius/padding viennent de .premium-card (JSX) */
+.ir-table-wrapper {
+  overflow: hidden;
+}
+
+/* Guide card : ne pas clipper les dropdowns â€” Step 1 (GOUVERNANCE.md Â§5) */
+.ir-table-wrapper.premium-card--guide {
+  overflow: visible;
+}
+
+.ir-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.ir-table thead {
+  background: transparent;
+}
+
+.ir-table th,
+.ir-table td {
+  padding: 6px 8px;
+}
+
+.ir-table th {
+  text-align: center;
+  font-weight: 600;
+  color: var(--color-c1);
+}
+
+.ir-table td:first-child {
+  font-weight: 500;
+}
+
+/* Inputs du tableau de saisie â€” pattern /sim/* (GOUVERNANCE.md Â§5) */
+.ir-table input[type='number'],
+.ir-table input[type='text'] {
+  width: 100%;
+  height: 32px;
+  box-sizing: border-box;
+  padding: 4px 6px;
+  border: none;
+  border-bottom: 1px solid transparent;
+  border-radius: 4px;
+  text-align: right;
+  background-color: var(--sim-input-bg, color-mix(in srgb, var(--color-c8) 18%, #FFFFFF));
+  font-family: inherit;
+  font-size: 13px;
+  color: var(--color-c10);
+  transition: border-color 0.2s;
+  outline: none;
+}
+
+.ir-table input[type='number']::placeholder,
+.ir-table input[type='text']::placeholder,
+.ir-field input[type='number']::placeholder,
+.ir-field input[type='text']::placeholder {
+  color: var(--color-c9);
+  opacity: 1;
+}
+
+.ir-table input[type='number']:hover,
+.ir-table input[type='text']:hover {
+  border-bottom-color: var(--color-c8);
+}
+
+.ir-table input[type='number']:focus-visible,
+.ir-table input[type='text']:focus-visible {
+  border-bottom-color: var(--color-c2);
+}
+
+.ir-row-title td {
+  background: transparent;
+  font-weight: 600;
+}
+
+.ir-row-title td:first-child {
+  color: var(--color-c9);
+}
+
+.ir-inline-field-row {
+  display: flex;
+  gap: 4px;
+}
+
+.ir-table-input {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  width: 100%;
+}
+
+.ir-table-input__row {
+  width: 100%;
+}
+
+.ir-table-input input[type='text'],
+.ir-table-input input[type='number'] {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.ir-table-input__unit {
+  min-width: 14px;
+  margin-left: 6px;
+  color: var(--color-c9);
+  font-size: 13px;
+  line-height: 1;
+  text-align: right;
+}
+
+.ir-table-input--readonly input[type='text'] {
+  background: #FFFFFF;
+}
+
+/* SÃ©parateur estompÃ© dans les cartes de synthÃ¨se (GOUVERNANCE.md Â§4) */

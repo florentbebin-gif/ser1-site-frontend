@@ -1,0 +1,128 @@
+﻿/* ----------------------------------------
+   SKELETON LOADING
+   ---------------------------------------- */
+@keyframes cv2-shimmer {
+  0% { background-position: -400px 0; }
+  100% { background-position: 400px 0; }
+}
+
+.cv2-skeleton {
+  border-radius: 6px;
+  background: linear-gradient(
+    90deg,
+    var(--color-c7) 25%,
+    var(--color-c8) 50%,
+    var(--color-c7) 75%
+  );
+  background-size: 800px 100%;
+  animation: cv2-shimmer 1.4s infinite linear;
+}
+
+.cv2-skeleton--title {
+  height: 24px;
+  width: 260px;
+  margin-bottom: 8px;
+}
+
+.cv2-skeleton--subtitle {
+  height: 14px;
+  width: 320px;
+  margin-bottom: 32px;
+}
+
+.cv2-skeleton-grid {
+  display: grid;
+  grid-template-columns: 1.85fr 1fr;
+  gap: 24px;
+}
+
+.cv2-skeleton--card {
+  height: 320px;
+}
+
+.cv2-skeleton--card-sm {
+  height: 220px;
+}
+
+/* ----------------------------------------
+   RESPONSIVE
+   ---------------------------------------- */
+@media (max-width: 900px) {
+  /* .cv2-page et .cv2-header â†’ gÃ©rÃ©s par sim-page (socle partagÃ© /sim)
+     et premium-header (premium-shared.css) */
+
+  /* point 4 â€” ne pas Ã©tirer en mobile (sticky dÃ©jÃ  retirÃ©) */
+  .cv2-grid--simple {
+    align-items: start;
+  }
+
+  .cv2-grid--simple .cv2-right-col {
+    display: block;
+  }
+
+  .cv2-grid--simple .cv2-right-col .cv2-summary {
+    flex: none;
+  }
+
+  .cv2-mode-row {
+    margin: 8px 0 12px;
+  }
+
+  .cv2-controls-row {
+    grid-template-columns: 1fr;
+    gap: 12px;
+    align-items: stretch;
+  }
+
+  .cv2-controls-row__right {
+    justify-content: flex-start;
+  }
+
+  .cv2-grid {
+    grid-template-columns: 1fr;
+  }
+
+  /* Summary au-dessus du formulaire sur mobile */
+  .cv2-grid > div:last-child {
+    order: -1;
+  }
+
+  /* Le wrapper sticky devient statique sur mobile */
+  .cv2-right-col {
+    position: static;
+  }
+
+  .cv2-loan-form__grid {
+    grid-template-columns: 1fr;
+  }
+
+  .cv2-loan-form__grid--3 {
+    grid-template-columns: 1fr;
+  }
+
+  .cv2-skeleton-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 600px) {
+  /* .premium-title override pour mobile CrÃ©dit */
+  .premium-title {
+    font-size: 18px;
+  }
+
+  .cv2-tabs__tab {
+    padding: 10px 14px;
+    font-size: 13px;
+  }
+
+  /* Donut rÃ©duit sur mobile */
+  .cv2-donut {
+    width: 48px;
+    height: 48px;
+  }
+
+  .cv2-summary__kpi-main-value {
+    font-size: 24px;
+  }
+}

@@ -1,0 +1,282 @@
+﻿/* ----------------------------------------
+   TABLES (Premium â€” sans bordures vert.)
+   ---------------------------------------- */
+.cv2-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.cv2-table__th {
+  padding: 12px 10px;
+  text-align: left;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  color: var(--color-c9);
+  background: var(--color-c7);
+  border-bottom: 2px solid var(--color-c8);
+}
+
+.cv2-table__th--right {
+  text-align: right;
+}
+
+.cv2-table__row {
+  border-bottom: 1px solid var(--color-c8);
+  transition: background-color 0.15s;
+}
+
+.cv2-table__row:hover {
+  background-color: var(--color-c7);
+}
+
+.cv2-table__td {
+  padding: 10px;
+  color: var(--color-c10);
+  vertical-align: middle;
+  font-variant-numeric: tabular-nums;
+}
+
+.cv2-table__td--right {
+  text-align: right;
+}
+
+.cv2-table__td--bold {
+  font-weight: 600;
+}
+
+/* ----------------------------------------
+   SCHEDULE (Ã‰chÃ©ancier wrapper)
+   ---------------------------------------- */
+.cv2-schedule,
+.cv2-periods {
+  background: #FFFFFF;
+  border: 1px solid var(--color-c8);
+  border-radius: 12px;
+  padding: 20px 24px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
+  margin-bottom: 24px;
+}
+
+.cv2-schedule__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.cv2-schedule__title,
+.cv2-periods__title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-c1);
+  margin: 0 0 16px 0;
+}
+
+.cv2-schedule__title {
+  margin: 0;
+}
+
+.cv2-schedule__toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border: 1px solid var(--color-c8);
+  border-radius: 6px;
+  background: var(--color-c7);
+  color: var(--color-c9);
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.cv2-schedule__toggle:hover {
+  color: var(--color-c2);
+  border-color: var(--color-c2);
+}
+
+.cv2-schedule__chevron {
+  transition: transform 0.2s;
+}
+
+.cv2-schedule__chevron.is-open {
+  transform: rotate(180deg);
+}
+
+.cv2-schedule__scroll,
+.cv2-periods__scroll {
+  overflow-x: auto;
+}
+
+/* ----------------------------------------
+   MODE CHIP (header)
+   ---------------------------------------- */
+.cv2-mode-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--color-c8);
+  background: var(--color-c7);
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--color-c9);
+  text-decoration: none;
+  transition: border-color 0.2s, color 0.2s;
+}
+
+.cv2-mode-chip:hover {
+  border-color: var(--color-c3);
+  color: var(--color-c1);
+}
+
+/* .cv2-mode-chip--expert supprimÃ© : style expert = identique au chip standard (discret) */
+
+/* Ligne 2 : sous-titre (flex:1) + mode chip + Exporter (alignÃ©s droite) */
+.cv2-header__subtitle-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.cv2-header__subtitle-row .premium-subtitle {
+  flex: 1;
+  min-width: 0;
+}
+
+/* point 3 â€” padding-top rÃ©duit pour la page CrÃ©dit uniquement */
+.sim-page.cv2-page {
+  padding-top: 20px;
+}
+
+/* ----------------------------------------
+   CONTROLS ROW (toggle + tabs entre header et grid)
+   ---------------------------------------- */
+.cv2-controls-row {
+  display: grid;
+  grid-template-columns: 1.85fr 1fr;
+  gap: 24px;
+  align-items: end;
+  margin-bottom: 10px; /* point 3 & 7 â€” blocs remontent */
+}
+
+.cv2-controls-row__left {
+  min-width: 0;
+}
+
+.cv2-controls-row__right {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.cv2-mode-row {
+  margin: 6px 0 8px; /* point 3 â€” chip remonte */
+}
+
+/* ----------------------------------------
+   LIEN DISCRET AJOUT PRÃŠT (mode simplifiÃ©)
+   ---------------------------------------- */
+.cv2-loan-add-link {
+  margin-top: 12px;
+  text-align: center;
+}
+
+.cv2-loan-add-link__btn {
+  background: none;
+  border: none;
+  font-size: 13px;
+  color: var(--color-c9);
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 4px;
+  transition: color 0.2s;
+}
+
+.cv2-loan-add-link__btn:hover {
+  color: var(--color-c2);
+}
+
+/* ----------------------------------------
+   HYPOTHÃˆSES
+   ---------------------------------------- */
+.cv2-hypotheses {
+  margin-top: 32px;
+  padding: 16px 24px;
+  background: var(--color-c7);
+  border: 1px solid var(--color-c8);
+  border-radius: 12px;
+}
+
+.cv2-hypotheses__toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  gap: 8px;
+}
+
+.cv2-hypotheses__title {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-c9);
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+}
+
+.cv2-hypotheses__chevron {
+  color: var(--color-c9);
+  flex-shrink: 0;
+  transition: transform 0.2s;
+}
+
+.cv2-hypotheses__chevron.is-open {
+  transform: rotate(180deg);
+}
+
+.cv2-hypotheses ul {
+  margin: 12px 0 0;
+  padding: 0 0 0 16px;
+}
+
+.cv2-hypotheses li {
+  font-size: 12px;
+  color: var(--color-c9);
+  line-height: 1.6;
+}
+
+/* ----------------------------------------
+   FOCUS-VISIBLE (accessibilitÃ© clavier)
+   ---------------------------------------- */
+.cv2-tabs__tab:focus-visible {
+  outline: 2px solid var(--color-c2);
+  outline-offset: 2px;
+}
+
+.cv2-pill-toggle__btn:focus-visible {
+  outline: 2px solid var(--color-c2);
+  outline-offset: -2px;
+}
+
+.cv2-btn:focus-visible {
+  outline: 2px solid var(--color-c2);
+  outline-offset: 2px;
+}
+
+.cv2-lissage__pill:focus-visible {
+  outline: 2px solid var(--color-c2);
+  outline-offset: 2px;
+}
+
+.cv2-schedule__toggle:focus-visible {
+  outline: 2px solid var(--color-c2);
+  outline-offset: 2px;
+}
+
