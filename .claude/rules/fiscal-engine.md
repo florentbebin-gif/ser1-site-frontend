@@ -26,5 +26,5 @@ globs:
 - `scripts/check-no-hardcoded-fiscal-values.mjs` — CI guardrail
 
 ## Testing
-- Golden reference tests exist for IR and succession. Any fiscal logic change must not break golden values.
+- Des golden tests existent pour IR et succession (valeurs de référence dans les skills). Toute modification de logique fiscale doit les laisser passer.
 - Run `npm run check:fiscal-hardcode` after any change to verify.

@@ -2,16 +2,17 @@
 
 `AGENTS.md` est la source unique pour les règles agent de ce dépôt.
 
-À lire avant toute action :
+## À lire systématiquement
 - `AGENTS.md`
-- `.github/CONTRIBUTING.md`
-- `docs/ARCHITECTURE.md`
-- `docs/METIER.md`
-- `docs/GOUVERNANCE.md`
 
-Ce fichier ne duplique volontairement aucune règle repo.
+## À lire selon le contexte de la tâche
+- **UI / thème / couleurs** → `docs/GOUVERNANCE.md`
+- **Métier / simulateurs / règles fiscales** → `docs/METIER.md`
+- **Structure / refactor / archi** → `docs/ARCHITECTURE.md`
+- **Exports / PPTX / Excel** → `docs/GOUVERNANCE_EXPORTS.md`
+- **Workflow git / PR / conventions humains** → `.github/CONTRIBUTING.md`
 
-Ressources spécifiques Claude Code :
-- `.claude/rules/`
-- `.claude/commands/`
-- `.claude/skills/`
+## Ressources spécifiques Claude Code (auto-chargées)
+Les fichiers `.claude/rules/` sont injectés automatiquement — inutile de les relire.
+- `.claude/commands/` — commandes invocables
+- `.claude/skills/` — skills invocables
