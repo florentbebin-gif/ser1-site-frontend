@@ -285,10 +285,15 @@ Le repo reste en CSS global classique, mais la propriété des styles est désor
 #### Patron canonique (validé sur `/sim/credit` et `/sim/ir`)
 - Classe obligatoire : `premium-card premium-card--guide`.
 - Liseré gauche : `border-left: 3px solid C3`.
-- Header avec fond dégradé subtil (pas le texte) :
+- Header avec fond dégradé subtil du haut vers le bas — classe partagée **obligatoire** : `sim-card__header--bleed` (définie dans `src/styles/sim/surfaces.css`) :
   ```css
-  .premium-card--guide .{feature}-card__header {
-    background: linear-gradient(135deg, color-mix(in srgb, C1 5%, transparent) 0%, transparent 65%);
+  /* Référence canonique — ne pas recréer feature par feature */
+  .sim-card__header--bleed {
+    background: linear-gradient(
+      to bottom,
+      color-mix(in srgb, var(--color-c4) 18%, transparent) 0%,
+      transparent 65%
+    );
     border-radius: 10px 10px 0 0;
     margin: -20px -24px 0;
     padding: 20px 24px 0;
@@ -308,8 +313,9 @@ Le repo reste en CSS global classique, mais la propriété des styles est désor
 ##### Cartes d'entrée gauche (guide)
 - Classes : `premium-card premium-card--guide` (ou `sc-card--guide` selon feature).
 - Liseré gauche : `border-left: 3px solid C3`.
-- Header dégradé diagonal : `linear-gradient(135deg, C1 5%→transparent 65%)`.
+- Header dégradé **du haut vers le bas** via la classe partagée `sim-card__header--bleed` : `linear-gradient(to bottom, C4 18%→transparent 65%)`.
   Marges négatives pour étendre aux bords : `margin: -20px -24px 0; padding: 20px 24px 0`.
+  **Ne jamais recréer ce style feature par feature** — toujours ajouter `sim-card__header--bleed` à l'élément header.
 - Icône **obligatoire** dans le header : 26×26 px, fond C4, stroke C2, SVG inline (`aria-hidden="true"`).
 - Structure : icône + titre (flex, `gap: 8px`) + sous-titre facultatif (12px/C9) + séparateur dégradé.
 

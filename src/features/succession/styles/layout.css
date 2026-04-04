@@ -60,16 +60,9 @@
   margin-bottom: 0;
 }
 
-/* DÃ©gradÃ© header cartes gauche guide â€” alignÃ© sur la hero card SynthÃ¨se */
+/* Espacement spécifique succession : padding-bas 10px (vs 0 par défaut) */
 .sc-card--guide .sc-card__header {
-  background: linear-gradient(
-    to bottom,
-    color-mix(in srgb, var(--color-c4) 18%, transparent) 0%,
-    transparent 65%
-  );
-  border-radius: 10px 10px 0 0;
-  margin: -20px -24px 0;
-  padding: 20px 24px 10px;
+  padding-bottom: 10px;
   margin-bottom: 0;
 }
 
