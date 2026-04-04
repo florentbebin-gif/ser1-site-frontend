@@ -31,10 +31,10 @@ export function useAdminThemes(onError: (msg: string) => void) {
 
   const handleDeleteTheme = async (theme: ThemeRecord) => {
     if (theme.is_system) {
-      onError('Les themes systeme ne peuvent pas etre supprimes.');
+      onError('Les thèmes système ne peuvent pas être supprimés.');
       return;
     }
-    if (!confirm(`Supprimer le theme "${theme.name}" ?`)) return;
+    if (!confirm(`Supprimer le thème "${theme.name}" ?`)) return;
     try {
       setThemesLoading(true);
       onError('');

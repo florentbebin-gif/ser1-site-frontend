@@ -11,21 +11,21 @@ interface IssueReport {
 }
 
 const REPORT_PAGE_OPTIONS = [
-  { value: '', label: 'Selectionner une page...' },
+  { value: '', label: 'Sélectionner une page...' },
   { value: 'ir', label: 'Simulateur IR' },
-  { value: 'credit', label: 'Simulateur Credit' },
+  { value: 'credit', label: 'Simulateur Crédit' },
   { value: 'placement', label: 'Simulateur Placement' },
   { value: 'audit', label: 'Audit Patrimonial' },
-  { value: 'strategy', label: 'Strategie' },
-  { value: 'settings', label: 'Parametres' },
+  { value: 'strategy', label: 'Stratégie' },
+  { value: 'settings', label: 'Paramètres' },
   { value: 'other', label: 'Autre' },
 ];
 
 const REPORT_STATUS_LABELS: Record<string, string> = {
   new: 'Nouveau',
   in_progress: 'En cours',
-  resolved: 'Resolue',
-  closed: 'Ferme',
+  resolved: 'Résolu',
+  closed: 'Fermé',
 };
 
 const getPageLabel = (value: string): string => {
@@ -62,7 +62,7 @@ export default function SignalementsBlock(): React.ReactElement {
       } = await supabase.auth.getUser();
       if (userError) throw userError;
       if (!user) {
-        setLoadError('Vous devez etre connecte pour voir vos signalements.');
+        setLoadError('Vous devez être connecté pour voir vos signalements.');
         return;
       }
 
@@ -96,7 +96,7 @@ export default function SignalementsBlock(): React.ReactElement {
     e.preventDefault();
 
     if (!title.trim() || !page) {
-      setSubmitError('Veuillez remplir le titre et selectionner une page.');
+      setSubmitError('Veuillez remplir le titre et sélectionner une page.');
       return;
     }
 
@@ -111,7 +111,7 @@ export default function SignalementsBlock(): React.ReactElement {
       } = await supabase.auth.getUser();
       if (userError) throw userError;
       if (!user) {
-        setSubmitError('Vous devez etre connecte pour soumettre un signalement.');
+        setSubmitError('Vous devez être connecté pour soumettre un signalement.');
         return;
       }
 
@@ -142,8 +142,8 @@ export default function SignalementsBlock(): React.ReactElement {
       window.setTimeout(() => setSubmitSuccess(false), 5000);
     } catch (error) {
       console.error('[SignalementsBlock] Submit error:', error);
-      const message = error instanceof Error ? error.message : 'Veuillez reessayer.';
-      setSubmitError(`Erreur lors de l'envoi: ${message}`);
+      const message = error instanceof Error ? error.message : 'Veuillez réessayer.';
+      setSubmitError(`Erreur lors de l’envoi : ${message}`);
     } finally {
       setSubmitting(false);
     }
@@ -162,15 +162,15 @@ export default function SignalementsBlock(): React.ReactElement {
   return (
     <div className="signalements-block">
       <div className="signalements-section">
-        <h4 className="signalements-section-title">Signaler un probleme</h4>
+        <h4 className="signalements-section-title">Signaler un problème</h4>
         <p className="signalements-intro">
-          Vous avez rencontre un bug ou souhaitez suggerer une amelioration ?
-          Decrivez le probleme ci-dessous.
+          Vous avez rencontré un bug ou souhaitez suggérer une amélioration ?
+          Décrivez le problème ci-dessous.
         </p>
 
         <form onSubmit={handleSubmit} className="signalement-form">
           <div className="form-group">
-            <label htmlFor="report-page">Page concernee *</label>
+            <label htmlFor="report-page">Page concernée *</label>
             <select
               id="report-page"
               value={page}
@@ -193,7 +193,7 @@ export default function SignalementsBlock(): React.ReactElement {
               type="text"
               value={title}
               onChange={(e: React.ChangeEvent<HTMLInputElement>) => setTitle(e.target.value)}
-              placeholder="Resumez le probleme en quelques mots"
+              placeholder="Résumez le problème en quelques mots"
               disabled={submitting}
               maxLength={200}
               required
@@ -206,14 +206,14 @@ export default function SignalementsBlock(): React.ReactElement {
               id="report-description"
               value={description}
               onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setDescription(e.target.value)}
-              placeholder="Decrivez le probleme en detail : etapes, comportement attendu et observe..."
+              placeholder="Décrivez le problème en détail : étapes, comportement attendu et observé..."
               disabled={submitting}
               rows={4}
             />
           </div>
 
           {submitError && <div className="alert alert-error">{submitError}</div>}
-          {submitSuccess && <div className="alert alert-success">Signalement envoye avec succes !</div>}
+          {submitSuccess && <div className="alert alert-success">Signalement envoyé avec succès !</div>}
 
           <button type="submit" disabled={submitting} className="btn-submit">
             {submitting ? 'Envoi...' : 'Envoyer le signalement'}
@@ -222,7 +222,7 @@ export default function SignalementsBlock(): React.ReactElement {
       </div>
 
       <div className="signalements-section">
-        <h4 className="signalements-section-title">Mes signalements recents</h4>
+        <h4 className="signalements-section-title">Mes signalements récents</h4>
 
         {loadingReports ? (
           <p className="signalements-loading">Chargement...</p>

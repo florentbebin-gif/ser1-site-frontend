@@ -32,7 +32,7 @@ export default function LiberalitesSection({
         onClick={() => setOpenSection(isOpen ? null : 'liberalites')}
       >
         <span className="settings-premium-title settings-premium-title--flush">
-          Liberalites
+          Libéralités
         </span>
         <span className="fisc-acc-chevron">
           {isOpen ? 'v' : '>'}
@@ -42,8 +42,8 @@ export default function LiberalitesSection({
       {isOpen && (
         <div className="fisc-acc-body">
           <p style={{ fontSize: 13, color: 'var(--color-c9)', marginBottom: 16 }}>
-            Referentiel patrimonial pour qualifier les liberalites utiles a la simulation.
-            Les elements ci-dessous sont informatifs et n'ajoutent pas de calcul automatique a ce stade.
+            Référentiel patrimonial pour qualifier les libéralités utiles à la simulation.
+            Les éléments ci-dessous sont informatifs et n’ajoutent pas de calcul automatique à ce stade.
           </p>
 
           {liberalites.map((item) => (
@@ -55,7 +55,7 @@ export default function LiberalitesSection({
                 {item.family}
               </div>
               <p style={{ fontSize: 13, color: 'var(--color-c9)', margin: '0 0 6px 0' }}>
-                <strong style={{ color: 'var(--color-c1)' }}>Definition :</strong> {item.definition}
+                <strong style={{ color: 'var(--color-c1)' }}>Définition :</strong> {item.definition}
               </p>
               <p style={{ fontSize: 13, color: 'var(--color-c9)', margin: '0 0 6px 0' }}>
                 <strong style={{ color: 'var(--color-c1)' }}>Impact patrimonial :</strong> {item.impact}
@@ -67,7 +67,7 @@ export default function LiberalitesSection({
                 </ul>
               </div>
               <p style={{ fontSize: 12, color: 'var(--color-c9)', margin: 0 }}>
-                References : {item.legalRefs}
+                Références : {item.legalRefs}
               </p>
             </div>
           ))}

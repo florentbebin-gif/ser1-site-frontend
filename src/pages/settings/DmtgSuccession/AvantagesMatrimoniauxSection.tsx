@@ -41,8 +41,8 @@ export default function AvantagesMatrimoniauxSection({
       {isOpen && (
         <div className="fisc-acc-body">
           <p style={{ fontSize: 13, color: 'var(--color-c9)', marginBottom: 16 }}>
-            Clauses de contrat de mariage influencant la liquidation civile avant calcul des droits de succession.
-            Ces elements doivent etre qualifies avant tout calcul DMTG.
+            Clauses de contrat de mariage influençant la liquidation civile avant calcul des droits de succession.
+            Ces éléments doivent être qualifiés avant tout calcul DMTG.
           </p>
 
           {avantages.map((item) => (
@@ -51,7 +51,7 @@ export default function AvantagesMatrimoniauxSection({
                 {item.label}
               </div>
               <p style={{ fontSize: 13, color: 'var(--color-c9)', margin: '0 0 6px 0' }}>
-                <strong style={{ color: 'var(--color-c1)' }}>Definition :</strong> {item.definition}
+                <strong style={{ color: 'var(--color-c1)' }}>Définition :</strong> {item.definition}
               </p>
               <p style={{ fontSize: 13, color: 'var(--color-c9)', margin: '0 0 6px 0' }}>
                 <strong style={{ color: 'var(--color-c1)' }}>Impact patrimonial :</strong> {item.impact}
@@ -63,7 +63,7 @@ export default function AvantagesMatrimoniauxSection({
                 </ul>
               </div>
               <p style={{ fontSize: 12, color: 'var(--color-c9)', margin: 0 }}>
-                References : {item.legalRefs}
+                Références : {item.legalRefs}
               </p>
             </div>
           ))}
@@ -74,16 +74,16 @@ export default function AvantagesMatrimoniauxSection({
             </div>
             <ul style={{ margin: 0, paddingLeft: 18, color: 'var(--color-c9)', fontSize: 13 }}>
               <li style={{ marginBottom: 4 }}>
-                Les avantages matrimoniaux ne sont en principe pas qualifies de donations.
-                References : C. civ. art. 1516, 1525, 1527.
+                Les avantages matrimoniaux ne sont en principe pas qualifiés de donations.
+                Références : C. civ. art. 1516, 1525, 1527.
               </li>
               <li style={{ marginBottom: 4 }}>
-                En presence d'enfants non communs, l'excedent au-dela de la quotite entre epoux peut etre reduit.
-                References : C. civ. art. 1527 et 1094-1.
+                En présence d’enfants non communs, l’excédent au-delà de la quotité entre époux peut être réduit.
+                Références : C. civ. art. 1527 et 1094-1.
               </li>
               <li>
-                En cas de divorce, les avantages a effet differe sont revoques de plein droit sauf volonte contraire.
-                Reference : C. civ. art. 265 (version en vigueur depuis le 2 juin 2024).
+                En cas de divorce, les avantages à effet différé sont révoqués de plein droit sauf volonté contraire.
+                Référence : C. civ. art. 265 (version en vigueur depuis le 2 juin 2024).
               </li>
             </ul>
           </div>

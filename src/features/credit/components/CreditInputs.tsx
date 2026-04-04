@@ -207,7 +207,7 @@ export function Select<TValue extends string | number>({
   };
 
   return (
-    <SimFieldShell label={label} hint={hint} error={error} testId={testId} className="ci-field">
+    <SimFieldShell label={label} hint={hint} error={error} testId={testId} className="ci-field" rowClassName="ci-field-row">
       <div ref={containerRef} className={`ci-select-wrapper sim-select-wrapper${isOpen ? ' is-open' : ''}`}>
         <button
           type="button"

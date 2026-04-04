@@ -8,8 +8,8 @@ interface UpcomingSimulatorPageProps {
 }
 
 export default function UpcomingSimulatorPage({
-  title = 'Simulateur a venir',
-  subtitle = 'Ce simulateur sera bientot disponible.',
+  title = 'Simulateur à venir',
+  subtitle = 'Ce simulateur sera bientôt disponible.',
 }: UpcomingSimulatorPageProps): React.ReactElement {
   return (
     <div className="upcoming-page" data-testid="upcoming-simulator-page">
@@ -20,7 +20,7 @@ export default function UpcomingSimulatorPage({
 
         <div className="upcoming-actions">
           <Link to="/" className="upcoming-btn upcoming-btn--primary">
-            Retour a l'accueil
+            Retour à l’accueil
           </Link>
         </div>
       </div>

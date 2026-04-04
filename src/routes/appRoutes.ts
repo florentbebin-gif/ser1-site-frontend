@@ -206,7 +206,7 @@ export const APP_ROUTES: AppRouteEntry[] = [
     contextLabel: 'Épargne salariale',
     topbar: SIM_TOPBAR,
     props: {
-      title: 'Epargne salariale',
+      title: 'Épargne salariale',
       subtitle: 'Ce simulateur premium sera bientôt disponible.',
     },
   },

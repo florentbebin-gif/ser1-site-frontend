@@ -103,6 +103,10 @@ git push origin feature/nom-clair
   import { Input } from '../components/Input';
   ```
 
+### Chaînes UI
+- Toute chaîne UI visible modifiée dans une PR doit être relue en français correct.
+- Utiliser les accents et les apostrophes typographiques sur les textes affichés à l’utilisateur.
+
 ## PR Checklist
 
 - [ ] `npm run check` passe (tous les checks)
@@ -116,3 +120,4 @@ git push origin feature/nom-clair
 - [ ] Imports `@/` utilisés pour cross-module
 - [ ] Pas d'import CSS croisé entre pages
 - [ ] Appels admin via `adminClient`, pas `invokeAdmin` directement
+- [ ] Relire les textes UI touchés : orthographe, accents, apostrophes typographiques

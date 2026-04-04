@@ -31,7 +31,7 @@ export default function RegimesSection({
         onClick={() => setOpenSection(isOpen ? null : 'regimes')}
       >
         <span className="settings-premium-title settings-premium-title--flush">
-          Regimes matrimoniaux & PACS
+          Régimes matrimoniaux & PACS
         </span>
         <span className="fisc-acc-chevron">
           {isOpen ? 'v' : '>'}
@@ -41,8 +41,8 @@ export default function RegimesSection({
       {isOpen && (
         <div className="fisc-acc-body">
           <p style={{ fontSize: 13, color: 'var(--color-c9)', marginBottom: 16 }}>
-            Referentiel civil utilise par la simulation successorale (lecture seule).
-            Les situations familiales et les regimes matrimoniaux sont distingues.
+            Référentiel civil utilisé par la simulation successorale (lecture seule).
+            Les situations familiales et les régimes matrimoniaux sont distingués.
           </p>
 
           <div className="income-tax-block" style={{ marginBottom: 12 }}>
@@ -88,7 +88,7 @@ export default function RegimesSection({
                     whiteSpace: 'nowrap',
                   }}
                 >
-                  {regime.category === 'communautaire' ? 'Communautaire' : 'Separatiste'}
+                  {regime.category === 'communautaire' ? 'Communautaire' : 'Séparatiste'}
                 </span>
               </div>
               <p style={{ fontSize: 13, color: 'var(--color-c9)', margin: '0 0 8px 0' }}>
@@ -116,8 +116,8 @@ export default function RegimesSection({
               PACS
             </div>
             <p style={{ fontSize: 13, color: 'var(--color-c9)', margin: 0 }}>
-              Par defaut : separation de biens. Option : indivision des acquets.
-              Le partenaire pacse est exonere de droits de succession (loi TEPA 2007).
+              Par défaut : séparation de biens. Option : indivision des acquêts.
+              Le partenaire pacsé est exonéré de droits de succession (loi TEPA 2007).
             </p>
           </div>
         </div>

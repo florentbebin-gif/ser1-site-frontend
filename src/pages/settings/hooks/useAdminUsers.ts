@@ -76,7 +76,7 @@ export function useAdminUsers(onError: (msg: string) => void) {
       setActionLoading(true);
       onError('');
       await adminClient.resetPassword({ userId, email });
-      alert('Email de reinitialisation envoye');
+      alert('E-mail de réinitialisation envoyé');
     } catch (err) {
       onError(err instanceof Error ? err.message : 'Erreur inconnue.');
     } finally {
