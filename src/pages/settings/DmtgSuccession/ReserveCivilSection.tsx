@@ -34,7 +34,7 @@ export default function ReserveCivilSection({
         onClick={() => setOpenSection(isOpen ? null : 'reserve')}
       >
         <span className="settings-premium-title settings-premium-title--flush">
-          Reserve hereditaire & droits du conjoint
+          Réserve héréditaire & droits du conjoint
         </span>
         <span className="fisc-acc-chevron">
           {isOpen ? 'v' : '>'}
@@ -44,19 +44,19 @@ export default function ReserveCivilSection({
       {isOpen && (
         <div className="fisc-acc-body">
           <p style={{ fontSize: 13, color: 'var(--color-c9)', marginBottom: 16 }}>
-            Regles du Code civil - lecture seule (non parametrable).
+            Règles du Code civil - lecture seule (non paramétrable).
           </p>
 
           <div className="income-tax-block" style={{ marginBottom: 16 }}>
             <div className="income-tax-block-title" style={{ color: 'var(--color-c1)', fontWeight: 600, fontSize: 15 }}>
-              Reserve hereditaire (art. 913 C. civ.)
+              Réserve héréditaire (art. 913 C. civ.)
             </div>
             <table className="settings-table" style={{ marginTop: 8 }}>
               <thead>
                 <tr>
                   <th style={{ textAlign: 'left' }}>Enfants</th>
-                  <th>Reserve</th>
-                  <th>Quotite disponible</th>
+                  <th>Réserve</th>
+                  <th>Quotité disponible</th>
                 </tr>
               </thead>
               <tbody>
@@ -92,7 +92,7 @@ export default function ReserveCivilSection({
               </tbody>
             </table>
             <p style={{ fontSize: 12, color: 'var(--color-c9)', margin: '8px 0 0 0' }}>
-              Le conjoint survivant est exonere de droits de succession (loi TEPA 2007).
+              Le conjoint survivant est exonéré de droits de succession (loi TEPA 2007).
             </p>
           </div>
         </div>

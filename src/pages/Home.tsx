@@ -29,13 +29,13 @@ export default function Home(): React.ReactElement {
     <div className="home-layout" data-testid="home-layout">
       <aside className="status-card" data-testid="home-status-card">
         <div className="status-row">
-          <span className="status-label">Dossier charge</span>
+          <span className="status-label">Dossier chargé</span>
           <span className="status-value status-value--filename" data-testid="home-loaded-filename">
             {loadedFilename || '-'}
           </span>
         </div>
         <div className="status-disclaimer" data-testid="home-status-disclaimer">
-          Les donnees seront effacees a la fermeture du navigateur ou de l'onglet.
+          Les données seront effacées à la fermeture du navigateur ou de l’onglet.
         </div>
       </aside>
 
@@ -45,15 +45,15 @@ export default function Home(): React.ReactElement {
 
       <main className="home-main" data-testid="home-main">
         <section className="home-hero" data-testid="home-hero-section">
-          <h1 className="hero-title" data-testid="home-hero-title">AUDIT & STRATEGIE</h1>
+          <h1 className="hero-title" data-testid="home-hero-title">AUDIT & STRATÉGIE</h1>
           <p className="hero-subtitle" data-testid="home-hero-subtitle">
-            Analyser la situation patrimoniale, puis la projeter et definir une nouvelle strategie adaptee.
+            Analyser la situation patrimoniale, puis la projeter et définir une nouvelle stratégie adaptée.
           </p>
           <Link to="/audit" className="hero-tile" data-testid="home-audit-link">
             <div className="hero-tile-content">
               <div className="hero-tile-icon"><IconStrategy /></div>
               <div className="hero-tile-text">
-                <span className="hero-tile-label">Nouvelle Strategie</span>
+                <span className="hero-tile-label">Nouvelle stratégie</span>
               </div>
               <div className="hero-tile-chevron"><IconChevron /></div>
             </div>
@@ -66,14 +66,14 @@ export default function Home(): React.ReactElement {
           <h2 className="tools-title" data-testid="home-tools-title">SIMULATEURS</h2>
           <div className="tools-card">
             <div className="tools-grid" data-testid="home-tools-grid">
-              <ToolTile to="/sim/placement" icon={<IconChart />} title="Epargne" testId="home-tool-epargne" />
-              <ToolTile to="/sim/ir" icon={<IconCalc />} title="Impot sur le revenu" testId="home-tool-ir" />
-              <ToolTile to="/sim/per" icon={<IconGauge />} title="Epargne retraite" testId="home-tool-epargne-retraite" />
+              <ToolTile to="/sim/placement" icon={<IconChart />} title="Épargne" testId="home-tool-epargne" />
+              <ToolTile to="/sim/ir" icon={<IconCalc />} title="Impôt sur le revenu" testId="home-tool-ir" />
+              <ToolTile to="/sim/per" icon={<IconGauge />} title="Épargne retraite" testId="home-tool-epargne-retraite" />
               <ToolTile to="/sim/succession" icon={<IconTransfer />} title="Droits de succession" testId="home-tool-droits-succession" />
-              <ToolTile to="/sim/epargne-salariale" icon={<IconWallet />} title="Epargne salariale" testId="home-tool-epargne-salariale" />
-              <ToolTile to="/sim/credit" icon={<IconPercent />} title="Credit" testId="home-tool-credit" />
-              <ToolTile to="/sim/tresorerie-societe" icon={<IconBuilding />} title="Tresorerie societe" testId="home-tool-tresorerie-societe" />
-              <ToolTile to="/sim/prevoyance" icon={<IconShield />} title="Prevoyance" testId="home-tool-prevoyance" />
+              <ToolTile to="/sim/epargne-salariale" icon={<IconWallet />} title="Épargne salariale" testId="home-tool-epargne-salariale" />
+              <ToolTile to="/sim/credit" icon={<IconPercent />} title="Crédit" testId="home-tool-credit" />
+              <ToolTile to="/sim/tresorerie-societe" icon={<IconBuilding />} title="Trésorerie société" testId="home-tool-tresorerie-societe" />
+              <ToolTile to="/sim/prevoyance" icon={<IconShield />} title="Prévoyance" testId="home-tool-prevoyance" />
             </div>
           </div>
         </section>

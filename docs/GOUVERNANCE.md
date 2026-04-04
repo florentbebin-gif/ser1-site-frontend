@@ -36,6 +36,7 @@ Principes : épuré, lisible, respirant.
 - Titres : *Sentence case*, poids 500–600.
 - Texte secondaire/labels : `var(--color-c9)`.
 - Messages utilisateur : **français**.
+- Les textes affichés à l’utilisateur doivent inclure les accents et les apostrophes typographiques.
 
 ### Inputs (règle critique)
 - Pattern standard (forms génériques) : fond `#FFFFFF`, border `1px solid var(--color-c8)`.

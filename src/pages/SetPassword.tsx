@@ -19,7 +19,7 @@ export default function SetPassword(): React.ReactElement {
   useEffect(() => {
     if (accessToken && refreshToken) return;
 
-    setError('Lien de reinitialisation invalide ou expire');
+    setError('Lien de réinitialisation invalide ou expiré');
     const timeoutId = window.setTimeout(() => {
       navigate('/forgot-password');
     }, 3000);
@@ -33,7 +33,7 @@ export default function SetPassword(): React.ReactElement {
     e.preventDefault();
 
     if (!accessToken || !refreshToken) {
-      setError('Lien de reinitialisation invalide ou expire');
+      setError('Lien de réinitialisation invalide ou expiré');
       return;
     }
 
@@ -43,7 +43,7 @@ export default function SetPassword(): React.ReactElement {
     }
 
     if (password.length < 6) {
-      setError('Le mot de passe doit contenir au moins 6 caracteres');
+      setError('Le mot de passe doit contenir au moins 6 caractères');
       return;
     }
 
@@ -57,7 +57,7 @@ export default function SetPassword(): React.ReactElement {
       });
 
       if (sessionError) {
-        setError('Session expiree. Veuillez demander un nouveau lien de reinitialisation.');
+        setError('Session expirée. Veuillez demander un nouveau lien de réinitialisation.');
         window.setTimeout(() => {
           navigate('/forgot-password');
         }, 3000);
@@ -77,7 +77,7 @@ export default function SetPassword(): React.ReactElement {
         }, 3000);
       }
     } catch {
-      setError('Erreur inattendue. Veuillez reessayer.');
+      setError('Erreur inattendue. Veuillez réessayer.');
     } finally {
       setLoading(false);
     }
@@ -91,13 +91,13 @@ export default function SetPassword(): React.ReactElement {
         <div className="login-grid">
           <div className="login-title">
             <h1 className="login-brand">SER1</h1>
-            <div className="login-sub">Simulateur epargne retraite</div>
+            <div className="login-sub">Simulateur épargne retraite</div>
           </div>
           <div className="login-card">
-            <h2 className="card-title">Mot de passe defini !</h2>
+            <h2 className="card-title">Mot de passe défini !</h2>
             <p style={{ margin: '12px 0', textAlign: 'center' }}>
-              Votre mot de passe a ete defini avec succes.<br />
-              Vous allez etre redirige vers la page de connexion...
+              Votre mot de passe a été défini avec succès.<br />
+              Vous allez être redirigé vers la page de connexion...
             </p>
           </div>
         </div>
@@ -114,11 +114,11 @@ export default function SetPassword(): React.ReactElement {
       <div className="login-grid">
         <div className="login-title">
           <h1 className="login-brand">SER1</h1>
-          <div className="login-sub">Simulateur epargne retraite</div>
+          <div className="login-sub">Simulateur épargne retraite</div>
         </div>
         <div className="login-card">
           <h2 className="card-title">
-            {isRecoveryMode ? 'Reinitialiser votre mot de passe' : 'Definir votre mot de passe'}
+            {isRecoveryMode ? 'Réinitialiser votre mot de passe' : 'Définir votre mot de passe'}
           </h2>
 
           {error && (
@@ -126,7 +126,7 @@ export default function SetPassword(): React.ReactElement {
               {error}
               {error.includes('expire') || error.includes('invalide') ? (
                 <div style={{ fontSize: '0.9em', marginTop: '8px' }}>
-                  Redirection automatique vers la page de mot de passe oublie...
+                  Redirection automatique vers la page de mot de passe oublié...
                 </div>
               ) : null}
             </div>
@@ -162,7 +162,7 @@ export default function SetPassword(): React.ReactElement {
               onClick={() => navigate('/forgot-password')}
               type="button"
             >
-              Renvoyer un email de reinitialisation
+              Renvoyer un e-mail de réinitialisation
             </button>
           </div>
         </div>

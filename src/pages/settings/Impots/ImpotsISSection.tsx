@@ -48,7 +48,7 @@ export default function ImpotsISSection({
         onClick={() => setOpenSection(isOpen ? null : 'is')}
       >
         <span className="settings-premium-title settings-premium-title--flush">
-          Impot sur les societes
+          Impôt sur les sociétés
         </span>
         <span className="fisc-acc-chevron">
           {isOpen ? 'v' : '>'}
@@ -63,7 +63,7 @@ export default function ImpotsISSection({
           aria-labelledby="impots-header-is"
         >
           <div className="tax-two-cols">
-            <SettingsYearColumn yearLabel={incomeTax.currentYearLabel || 'Annee N'}>
+            <SettingsYearColumn yearLabel={incomeTax.currentYearLabel || 'Année N'}>
               <SettingsFieldRow
                 label="Taux normal IS"
                 path={['corporateTax', 'current', 'normalRate']}
@@ -74,7 +74,7 @@ export default function ImpotsISSection({
                 disabled={!isAdmin}
               />
               <SettingsFieldRow
-                label="Taux reduit IS"
+                label="Taux réduit IS"
                 path={['corporateTax', 'current', 'reducedRate']}
                 value={corporateTax.current.reducedRate}
                 onChange={updateField}
@@ -83,7 +83,7 @@ export default function ImpotsISSection({
                 disabled={!isAdmin}
               />
               <SettingsFieldRow
-                label="Seuil de benefice au taux reduit"
+                label="Seuil de bénéfice au taux réduit"
                 path={['corporateTax', 'current', 'reducedThreshold']}
                 value={corporateTax.current.reducedThreshold}
                 onChange={updateField}
@@ -93,7 +93,7 @@ export default function ImpotsISSection({
             </SettingsYearColumn>
 
             <SettingsYearColumn
-              yearLabel={incomeTax.previousYearLabel || 'Annee N-1'}
+              yearLabel={incomeTax.previousYearLabel || 'Année N-1'}
               isRight
             >
               <SettingsFieldRow
@@ -106,7 +106,7 @@ export default function ImpotsISSection({
                 disabled={!isAdmin}
               />
               <SettingsFieldRow
-                label="Taux reduit IS"
+                label="Taux réduit IS"
                 path={['corporateTax', 'previous', 'reducedRate']}
                 value={corporateTax.previous.reducedRate}
                 onChange={updateField}
@@ -115,7 +115,7 @@ export default function ImpotsISSection({
                 disabled={!isAdmin}
               />
               <SettingsFieldRow
-                label="Seuil de benefice au taux reduit"
+                label="Seuil de bénéfice au taux réduit"
                 path={['corporateTax', 'previous', 'reducedThreshold']}
                 value={corporateTax.previous.reducedThreshold}
                 onChange={updateField}

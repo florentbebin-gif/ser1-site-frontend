@@ -109,7 +109,7 @@ export function SettingsCabinetsSection({
   return (
     <SettingsSectionCard
       title={`Cabinets (${cabinets.length})`}
-      subtitle="Gestion des cabinets et de leur theme associe."
+      subtitle="Gestion des cabinets et de leur thème associé."
       icon={<CabinetsIcon />}
       actions={(
         <button className="chip" onClick={onCreateCabinet} disabled={cabinetsLoading} style={chipStyle} type="button">
@@ -120,7 +120,7 @@ export function SettingsCabinetsSection({
       {cabinetsLoading ? (
         <p>Chargement des cabinets...</p>
       ) : cabinets.length === 0 ? (
-        <p style={emptyTextStyle}>Aucun cabinet cree.</p>
+        <p style={emptyTextStyle}>Aucun cabinet créé.</p>
       ) : (
         <div className="admin-cards-grid">
           {cabinets.map((cabinet) => (
@@ -128,7 +128,7 @@ export function SettingsCabinetsSection({
               <div className="admin-card-compact__info">
                 <div className="admin-card-compact__name">{cabinet.name}</div>
                 <div className="admin-card-compact__meta">
-                  {cabinet.themes?.name || 'Aucun theme'}
+                  {cabinet.themes?.name || 'Aucun thème'}
                 </div>
               </div>
               <div className="admin-card-compact__actions" style={{ alignItems: 'center' }}>
@@ -178,20 +178,20 @@ export function SettingsThemesSection({
 }: SettingsThemesSectionProps): React.ReactElement {
   return (
     <SettingsSectionCard
-      title={`Themes globaux (${themes.length})`}
-      subtitle="Palettes de couleurs appliquees aux cabinets."
+      title={`Thèmes globaux (${themes.length})`}
+      subtitle="Palettes de couleurs appliquées aux cabinets."
       icon={<ThemesIcon />}
       actions={(
         <button className="chip" onClick={onCreateTheme} disabled={themesLoading} style={chipStyle} type="button">
-          + Nouveau theme
+          + Nouveau thème
         </button>
       )}
       style={{ marginTop: 20 }}
     >
       {themesLoading ? (
-        <p>Chargement des themes...</p>
+        <p>Chargement des thèmes...</p>
       ) : themes.length === 0 ? (
-        <p style={emptyTextStyle}>Aucun theme cree.</p>
+        <p style={emptyTextStyle}>Aucun thème créé.</p>
       ) : (
         <div className="admin-cards-grid">
           {themes.map((theme) => (
@@ -219,7 +219,7 @@ export function SettingsThemesSection({
                   className="icon-btn"
                   onClick={() => onEditTheme(theme)}
                   title="Modifier"
-                  aria-label="Modifier le theme"
+                  aria-label="Modifier le thème"
                   style={actionButtonStyle}
                   type="button"
                 >
@@ -230,7 +230,7 @@ export function SettingsThemesSection({
                     className="icon-btn danger"
                     onClick={() => onDeleteTheme(theme)}
                     title="Supprimer"
-                    aria-label="Supprimer le theme"
+                    aria-label="Supprimer le thème"
                     style={actionButtonStyle}
                     type="button"
                   >
@@ -272,7 +272,7 @@ export function SettingsUsersSection({
   return (
     <SettingsSectionCard
       title={`Utilisateurs (${users.length})`}
-      subtitle="Comptes, roles et affectation aux cabinets."
+      subtitle="Comptes, rôles et affectation aux cabinets."
       icon={<UsersIcon />}
       actions={(
         <>
@@ -283,8 +283,8 @@ export function SettingsUsersSection({
             className="icon-btn"
             onClick={onRefresh}
             disabled={actionLoading}
-            title="Rafraichir la liste"
-            aria-label="Rafraichir"
+            title="Rafraîchir la liste"
+            aria-label="Rafraîchir"
             style={{ width: 36, height: 36 }}
             type="button"
           >
@@ -299,10 +299,10 @@ export function SettingsUsersSection({
           <thead>
             <tr>
               <th>Email</th>
-              <th>Role</th>
+              <th>Rôle</th>
               <th>Cabinet</th>
-              <th>Cree le</th>
-              <th>Derniere connexion</th>
+              <th>Créé le</th>
+              <th>Dernière connexion</th>
               <th className="col-signalements">Signale-<br />ments</th>
               <th>Actions</th>
             </tr>
@@ -360,11 +360,11 @@ export function SettingsUsersSection({
                   <div className="actionsContainer">
                     <button
                       onClick={() => onResetPassword(user.id, user.email)}
-                      title="Envoyer un email de reinitialisation"
-                      aria-label="Envoyer un email de reinitialisation"
+                      title="Envoyer un e-mail de réinitialisation"
+                      aria-label="Envoyer un e-mail de réinitialisation"
                       type="button"
                     >
-                      Reinit.
+                      Réinit.
                     </button>
                     {user.role !== 'admin' && (
                       <button

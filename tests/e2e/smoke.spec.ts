@@ -6,7 +6,7 @@ import { createEmptyDossier } from '../../src/features/audit/types';
 /**
  * Smoke tests minimaux pour les surfaces stables.
  * Ils valident l'ouverture des pages critiques sans figer
- * les parcours metier complets.
+ * les parcours métier complets.
  */
 
 test.describe('Smoke Tests - Surfaces stables', () => {
@@ -34,6 +34,50 @@ test.describe('Smoke Tests - Surfaces stables', () => {
     await expect(page.locator('body')).not.toContainText('Application error');
     await expect(page.getByTestId('credit-page')).toBeVisible();
     await expect(page.getByTestId('credit-title')).toContainText('Simulateur de crédit');
+  });
+
+  test('Credit aligne les champs expert et conserve l’espacement entre les grilles', async ({ page }) => {
+    await page.goto(ROUTES.credit);
+    await expect(page.locator('body')).not.toContainText('Application error');
+
+    await page.getByRole('button', { name: 'Activer le mode expert' }).click();
+
+    const form = page.getByTestId('credit-form-pret0');
+    await expect(form).toBeVisible();
+    await expect(page.getByTestId('credit-pret0-taux')).toBeVisible();
+    await expect(page.getByTestId('credit-pret0-type')).toBeVisible();
+    await expect(page.getByTestId('credit-pret0-start')).toBeVisible();
+    await expect(page.getByTestId('credit-pret0-assurmode')).toBeVisible();
+
+    const firstGrid = form.locator('.cv2-loan-form__grid').first();
+    const expertGrid = form.locator('.cv2-loan-form__grid--stack-gap').first();
+    const firstGridBox = await firstGrid.boundingBox();
+    const expertGridBox = await expertGrid.boundingBox();
+
+    expect(firstGridBox).not.toBeNull();
+    expect(expertGridBox).not.toBeNull();
+
+    const verticalGap = expertGridBox!.y - (firstGridBox!.y + firstGridBox!.height);
+    expect(verticalGap).toBeGreaterThanOrEqual(16);
+
+    const startControl = page.getByTestId('credit-pret0-start').locator('.sim-field__control');
+    const typeControl = page.getByTestId('credit-pret0-type').locator('.sim-field__select-trigger');
+    const modeControl = page.getByTestId('credit-pret0-assurmode').locator('.sim-field__select-trigger');
+
+    await expect(startControl).toBeVisible();
+    await expect(typeControl).toBeVisible();
+    await expect(modeControl).toBeVisible();
+
+    const startBox = await startControl.boundingBox();
+    const typeBox = await typeControl.boundingBox();
+    const modeBox = await modeControl.boundingBox();
+
+    expect(startBox).not.toBeNull();
+    expect(typeBox).not.toBeNull();
+    expect(modeBox).not.toBeNull();
+
+    expect(Math.abs(startBox!.width - typeBox!.width)).toBeLessThanOrEqual(2);
+    expect(Math.abs(startBox!.width - modeBox!.width)).toBeLessThanOrEqual(2);
   });
 
   test('Succession charge avec sa structure minimale', async ({ page }) => {
@@ -78,6 +122,6 @@ test.describe('Smoke Tests - Surfaces stables', () => {
   test('Une route upcoming reste accessible en mode minimal', async ({ page }) => {
     await page.goto(ROUTES.epargneSalariale);
     await expect(page.getByTestId('upcoming-simulator-page')).toBeVisible();
-    await expect(page.getByRole('heading', { name: 'Epargne salariale' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Épargne salariale' })).toBeVisible();
   });
 });

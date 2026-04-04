@@ -343,7 +343,7 @@ export default function BaseContrat() {
                   className="fisc-acc-header base-contrat-family__header"
                   onClick={() => setOpenFamilyId(isFamilyOpen ? null : famille)}
                 >
-                  <span className="base-contrat-family__title">{famille}</span>
+                  <span className="settings-premium-title settings-premium-title--flush base-contrat-family__title">{famille}</span>
                   <span className="base-contrat-family__badges">
                     <span className="base-contrat-badge">{formatOpenCount(openInFamily)}</span>
                     {closedInFamily > 0 && (

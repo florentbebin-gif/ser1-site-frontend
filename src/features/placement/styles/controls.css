@@ -17,7 +17,7 @@
   min-width: 0;
 }
 
-.pl-input__field,
+.pl-input__field:disabled,
 .pl-select:disabled,
 .pl-select.is-forced {
   background: var(--color-c7);

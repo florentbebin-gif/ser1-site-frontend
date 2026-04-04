@@ -86,15 +86,15 @@ export default function ImpotsCehrSection({
         >
           <p style={{ fontSize: 13, color: 'var(--color-c9)' }}>
             Contribution exceptionnelle sur les hauts revenus (CEHR) et
-            contribution differentielle (CDHR).
+            contribution différentielle (CDHR).
           </p>
 
           <div className="tax-two-cols">
             {periods.map((period) => {
               const yearLabel =
                 period === 'current'
-                  ? incomeTax.currentYearLabel || 'Annee N'
-                  : incomeTax.previousYearLabel || 'Annee N-1';
+                  ? incomeTax.currentYearLabel || 'Année N'
+                  : incomeTax.previousYearLabel || 'Année N-1';
               const cehrData = cehr[period];
               const cdhrData = cdhr[period];
 
@@ -108,7 +108,7 @@ export default function ImpotsCehrSection({
                   {cehrData.single.map((row, idx) => (
                     <SettingsFieldRow
                       key={`cehr-single-${period}-${idx}`}
-                      label={`De ${numberOrEmpty(row.from)} EUR a ${
+                      label={`De ${numberOrEmpty(row.from)} EUR à ${
                         row.to == null ? 'plus' : `${row.to} EUR`
                       }`}
                       path={['cehr', period, 'single', String(idx), 'rate']}
@@ -124,7 +124,7 @@ export default function ImpotsCehrSection({
                   {cehrData.couple.map((row, idx) => (
                     <SettingsFieldRow
                       key={`cehr-couple-${period}-${idx}`}
-                      label={`De ${numberOrEmpty(row.from)} EUR a ${
+                      label={`De ${numberOrEmpty(row.from)} EUR à ${
                         row.to == null ? 'plus' : `${row.to} EUR`
                       }`}
                       path={['cehr', period, 'couple', String(idx), 'rate']}

@@ -114,7 +114,7 @@ export default function SettingsReportsModal({
                 <button className="report-back-btn" onClick={onBackToList} type="button">
                   {'<-'} Retour
                 </button>
-                <h3>Detail du signalement</h3>
+                <h3>Détail du signalement</h3>
               </div>
               <button className="report-modal-close" onClick={onClose} type="button">X</button>
             </div>
@@ -163,7 +163,7 @@ export default function SettingsReportsModal({
               <button className="danger" onClick={() => onDeleteReport(selectedReport.id)} type="button">
                 Supprimer
               </button>
-              <button onClick={onBackToList} type="button">Retour a la liste</button>
+              <button onClick={onBackToList} type="button">Retour à la liste</button>
             </div>
           </>
         )}

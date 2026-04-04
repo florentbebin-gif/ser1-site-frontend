@@ -48,7 +48,7 @@ export default function DonationSection({
       {isOpen && (
         <div className="fisc-acc-body">
           <p style={{ fontSize: 13, color: 'var(--color-c9)', marginBottom: 16 }}>
-            Parametres de donation entre vifs et rappel fiscal (CGI art. 784).
+            Paramètres de donation entre vifs et rappel fiscal (CGI art. 784).
           </p>
 
           <div className="income-tax-block" style={{ marginBottom: 16 }}>
@@ -60,7 +60,7 @@ export default function DonationSection({
             </div>
             <div style={{ paddingLeft: 8 }}>
               <div className="settings-field-row">
-                <label>Duree du rappel fiscal</label>
+                <label>Durée du rappel fiscal</label>
                 <input
                   type="number"
                   value={numberOrEmpty(donation.rappelFiscalAnnees)}
@@ -82,11 +82,11 @@ export default function DonationSection({
               className="income-tax-block-title"
               style={{ color: 'var(--color-c1)', fontWeight: 600, fontSize: 15 }}
             >
-              Don familial de sommes d'argent (art. 790 G)
+              Don familial de sommes d’argent (art. 790 G)
             </div>
             <div style={{ paddingLeft: 8 }}>
               <div className="settings-field-row" style={{ marginBottom: 8 }}>
-                <label>Montant exonere</label>
+                <label>Montant exonéré</label>
                 <input
                   type="number"
                   value={numberOrEmpty(donation.donFamilial790G.montant)}

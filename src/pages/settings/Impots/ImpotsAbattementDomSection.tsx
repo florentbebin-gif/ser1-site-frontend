@@ -44,7 +44,7 @@ export default function ImpotsAbattementDomSection({
 }: ImpotsAbattementDomSectionProps): React.ReactElement {
   const isOpen = openSection === 'dom';
   const domZones: DomZone[] = [
-    { _key: 'gmr', zone: 'Guadeloupe / Martinique / Reunion', zoneKey: 'gmr' },
+    { _key: 'gmr', zone: 'Guadeloupe / Martinique / Réunion', zoneKey: 'gmr' },
     { _key: 'guyane', zone: 'Guyane / Mayotte', zoneKey: 'guyane' },
   ];
 
@@ -67,7 +67,7 @@ export default function ImpotsAbattementDomSection({
         onClick={() => setOpenSection(isOpen ? null : 'dom')}
       >
         <span className="settings-premium-title settings-premium-title--flush">
-          Abattement DOM sur l'IR (bareme)
+          Abattement DOM sur l’IR (barème)
         </span>
         <span className="fisc-acc-chevron">
           {isOpen ? 'v' : '>'}
@@ -82,8 +82,8 @@ export default function ImpotsAbattementDomSection({
           aria-labelledby="impots-header-dom"
         >
           <p style={{ fontSize: 13, color: 'var(--color-c9)', marginBottom: 8 }}>
-            Applique sur l'impot issu du bareme <strong>apres plafonnement du quotient familial</strong> et
-            <strong> avant</strong> decote + reductions/credits.
+            Appliqué sur l’impôt issu du barème <strong>après plafonnement du quotient familial</strong> et
+            <strong> avant</strong> décote + réductions/crédits.
           </p>
 
           <div className="income-tax-columns">
@@ -91,8 +91,8 @@ export default function ImpotsAbattementDomSection({
               <div className="income-tax-col" key={period}>
                 <div style={{ fontWeight: 700, marginBottom: 8 }}>
                   {period === 'current'
-                    ? incomeTax.currentYearLabel || 'Annee N'
-                    : incomeTax.previousYearLabel || 'Annee N-1'}
+                    ? incomeTax.currentYearLabel || 'Année N'
+                    : incomeTax.previousYearLabel || 'Année N-1'}
                 </div>
                 <SettingsTable
                   columns={domCols}

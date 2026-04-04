@@ -87,13 +87,13 @@ export default function SettingsShell(): React.ReactElement {
   return (
     <div className="settings-page">
       <div className="settings-shell__card">
-        <div className="settings-shell__title">Parametres</div>
+        <div className="settings-shell__title">Paramètres</div>
 
-        <nav className="settings-tab-nav" aria-label="Parametres">
+        <nav className="settings-tab-nav" aria-label="Paramètres">
           <button
             type="button"
             className="settings-tab-scroll-btn settings-tab-scroll-btn--left"
-            aria-label="Faire defiler les onglets a gauche"
+            aria-label="Faire défiler les onglets à gauche"
             disabled={!canScrollLeft}
             onClick={() => scroll('left')}
           />
@@ -134,7 +134,7 @@ export default function SettingsShell(): React.ReactElement {
           <button
             type="button"
             className="settings-tab-scroll-btn settings-tab-scroll-btn--right"
-            aria-label="Faire defiler les onglets a droite"
+            aria-label="Faire défiler les onglets à droite"
             disabled={!canScrollRight}
             onClick={() => scroll('right')}
           />

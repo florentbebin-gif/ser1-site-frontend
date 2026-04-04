@@ -13,6 +13,10 @@
   gap: 16px 20px;
 }
 
+.cv2-loan-form__grid--stack-gap {
+  margin-top: 18px;
+}
+
 .cv2-loan-card__header {
   display: flex;
   flex-direction: column;

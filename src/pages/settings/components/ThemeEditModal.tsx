@@ -62,7 +62,7 @@ export default function ThemeEditModal({
 
   const handleSaveTheme = async (): Promise<void> => {
     if (!form.name.trim()) {
-      setError('Le nom du theme est requis.');
+      setError('Le nom du thème est requis.');
       return;
     }
 
@@ -90,7 +90,7 @@ export default function ThemeEditModal({
       onSuccess();
       onClose();
     } catch (error) {
-      setError(error instanceof Error ? error.message : "Erreur lors de l'enregistrement du theme.");
+      setError(error instanceof Error ? error.message : "Erreur lors de l'enregistrement du thème.");
     } finally {
       setSaving(false);
     }
@@ -100,7 +100,7 @@ export default function ThemeEditModal({
     <div className="report-modal-overlay">
       <div className="report-modal report-modal--md">
         <div className="report-modal-header">
-          <h3>{theme ? 'Modifier le theme' : 'Nouveau theme'}</h3>
+          <h3>{theme ? 'Modifier le thème' : 'Nouveau thème'}</h3>
           <button className="report-modal-close" onClick={onClose} type="button">X</button>
         </div>
         <div className="report-modal-content">
@@ -111,12 +111,12 @@ export default function ThemeEditModal({
           )}
           {theme?.is_system && (
             <div className="settings-feedback-panel settings-feedback-panel--info settings-modal-message">
-              Theme systeme : modifiable mais non supprimable.
+              Thème système : modifiable mais non supprimable.
             </div>
           )}
           <div className="settings-modal-field">
             <label className="settings-modal-label">
-              Nom du theme *
+              Nom du thème *
             </label>
             <input
               type="text"
@@ -132,7 +132,7 @@ export default function ThemeEditModal({
             <label className="settings-modal-label">
               Palette (10 couleurs)
             </label>
-            <p className="theme-palette-help">Survolez C1 a C10 pour voir la norme d'usage.</p>
+            <p className="theme-palette-help">Survolez C1 à C10 pour voir la norme d’usage.</p>
             <div className="theme-palette-grid">
               {colorFields.map(({ key, token, help }) => {
                 const tooltipId = `theme-color-help-${key}`;

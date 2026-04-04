@@ -55,7 +55,7 @@ export default function AvDecesSection({
         onClick={() => setOpenSection(isOpen ? null : 'avDeces')}
       >
         <span className="settings-premium-title settings-premium-title--flush">
-          Assurance-vie deces (990 I / 757 B)
+          Assurance-vie décès (990 I / 757 B)
         </span>
         <span className="fisc-acc-chevron">
           {isOpen ? 'v' : '>'}
@@ -65,7 +65,7 @@ export default function AvDecesSection({
       {isOpen && (
         <div className="fisc-acc-body">
           <p style={{ fontSize: 13, color: 'var(--color-c9)', marginBottom: 16 }}>
-            Fiscalite des capitaux deces transmis via l'assurance-vie.
+            Fiscalité des capitaux décès transmis via l’assurance-vie.
           </p>
 
           <div className="income-tax-block" style={{ marginBottom: 16 }}>
@@ -73,11 +73,11 @@ export default function AvDecesSection({
               className="income-tax-block-title"
               style={{ color: 'var(--color-c1)', fontWeight: 600, fontSize: 15 }}
             >
-              Parametres generaux
+              Paramètres généraux
             </div>
             <div style={{ paddingLeft: 8 }}>
               <div className="settings-field-row" style={{ marginBottom: 8 }}>
-                <label>Age pivot primes (avant/apres)</label>
+                <label>Âge pivot primes (avant/après)</label>
                 <input
                   type="number"
                   value={numberOrEmpty(avDeces.agePivotPrimes)}
@@ -110,12 +110,12 @@ export default function AvDecesSection({
               className="income-tax-block-title"
               style={{ color: 'var(--color-c1)', fontWeight: 600, fontSize: 15 }}
             >
-              Primes versees apres le 13/10/1998 - avant {avDeces.agePivotPrimes || 70}{' '}
+              Primes versées après le 13/10/1998 - avant {avDeces.agePivotPrimes || 70}{' '}
               ans (art. 990 I)
             </div>
             <div style={{ paddingLeft: 8 }}>
               <div className="settings-field-row" style={{ marginBottom: 8 }}>
-                <label>Abattement par beneficiaire</label>
+                <label>Abattement par bénéficiaire</label>
                 <input
                   type="number"
                   value={numberOrEmpty(
@@ -145,11 +145,11 @@ export default function AvDecesSection({
 
               <div style={{ marginTop: 12 }}>
                 <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 4 }}>
-                  Bareme par beneficiaire
+                  Barème par bénéficiaire
                 </div>
                 <SettingsTable
                   columns={[
-                    { key: 'upTo', header: "Jusqu'a (EUR cumule)" },
+                    { key: 'upTo', header: 'Jusqu’à (EUR cumulés)' },
                     {
                       key: 'ratePercent',
                       header: 'Taux %',
@@ -205,11 +205,11 @@ export default function AvDecesSection({
               className="income-tax-block-title"
               style={{ color: 'var(--color-c1)', fontWeight: 600, fontSize: 15 }}
             >
-              Primes versees apres {avDeces.agePivotPrimes || 70} ans (art. 757 B)
+              Primes versées après {avDeces.agePivotPrimes || 70} ans (art. 757 B)
             </div>
             <div style={{ paddingLeft: 8 }}>
               <div className="settings-field-row" style={{ marginBottom: 8 }}>
-                <label>Abattement global (tous beneficiaires)</label>
+                <label>Abattement global (tous bénéficiaires)</label>
                 <input
                   type="number"
                   value={numberOrEmpty(avDeces.apres70ans.globalAllowance)}
@@ -235,7 +235,7 @@ export default function AvDecesSection({
                 </div>
               )}
               <p style={{ fontSize: 12, color: 'var(--color-c9)', margin: '4px 0 0 0' }}>
-                Au-dela : taxation aux DMTG (bareme succession).
+                Au-delà : taxation aux DMTG (barème succession).
               </p>
             </div>
           </div>

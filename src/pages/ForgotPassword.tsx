@@ -24,14 +24,14 @@ export default function ForgotPassword(): React.ReactElement {
         <div className="login-grid">
           <div className="login-title">
             <h1 className="login-brand">SER1</h1>
-            <div className="login-sub">Simulateur epargne retraite</div>
+            <div className="login-sub">Simulateur épargne retraite</div>
           </div>
           <div className="login-card">
-            <h2 className="card-title">Email envoye</h2>
+            <h2 className="card-title">E-mail envoyé</h2>
             <p style={{ margin: '12px 0' }}>
-              Si cette adresse existe, un lien vient d'etre envoye a <strong>{email}</strong>.
+              Si cette adresse existe, un lien vient d’être envoyé à <strong>{email}</strong>.
             </p>
-            <Link to="/login" className="btn">Retour a la connexion</Link>
+            <Link to="/login" className="btn">Retour à la connexion</Link>
           </div>
         </div>
       </div>
@@ -45,10 +45,10 @@ export default function ForgotPassword(): React.ReactElement {
       <div className="login-grid">
         <div className="login-title">
           <h1 className="login-brand">SER1</h1>
-          <div className="login-sub">Simulateur epargne retraite</div>
+          <div className="login-sub">Simulateur épargne retraite</div>
         </div>
         <div className="login-card">
-          <h2 className="card-title">Mot de passe oublie</h2>
+          <h2 className="card-title">Mot de passe oublié</h2>
           <form onSubmit={handleSend} className="form-grid">
             <label>Adresse e-mail</label>
             <input

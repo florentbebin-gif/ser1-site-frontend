@@ -14,7 +14,7 @@ interface PassHistoryAccordionProps {
 }
 
 /**
- * Historique du PASS charge depuis public.pass_history.
+ * Historique du PASS chargé depuis public.pass_history.
  */
 export default function PassHistoryAccordion({
   isOpen,
@@ -95,7 +95,7 @@ export default function PassHistoryAccordion({
         console.error(error);
         setMessage("Erreur lors de l'enregistrement du PASS.");
       } else {
-        setMessage('Historique du PASS enregistre.');
+        setMessage('Historique du PASS enregistré.');
       }
     } catch (error) {
       console.error(error);
@@ -135,7 +135,7 @@ export default function PassHistoryAccordion({
               <table className="settings-table">
                 <thead>
                   <tr>
-                    <th>Annee</th>
+                    <th>Année</th>
                     <th className="taux-col">PASS (EUR)</th>
                   </tr>
                 </thead>
@@ -147,7 +147,7 @@ export default function PassHistoryAccordion({
                         <input
                           type="number"
                           value={numberOrEmpty(row.pass_amount)}
-                          placeholder="A renseigner"
+                          placeholder="À renseigner"
                           onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleChange(idx, e.target.value)}
                           disabled={!isAdmin}
                         />

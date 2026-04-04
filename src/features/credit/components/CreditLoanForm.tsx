@@ -54,7 +54,7 @@ export function CreditLoanForm({
 
       {/* Taux + Type + Date — 3 colonnes en expert, taux seul en simplifié */}
       {isExpert ? (
-        <div className="cv2-loan-form__grid--3">
+        <div className="cv2-loan-form__grid--3 cv2-loan-form__grid--stack-gap">
           <InputPct
             label="Taux annuel (crédit)"
             rawValue={raw?.taux || formatTauxRaw(pretData.taux)}

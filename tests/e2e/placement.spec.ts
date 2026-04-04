@@ -28,6 +28,39 @@ test.describe('Placement - smoke and key interactions', () => {
     await expect(page.getByTestId('placement-row-liquidation-bareme-ir')).toBeVisible();
   });
 
+  test("permet de saisir les champs numériques et conserve les contrôles forcés", async ({ page }) => {
+    await page.goto(ROUTES.placement);
+
+    const ageField = page
+      .locator('.pl-client-card .pl-field')
+      .filter({ hasText: 'Âge actuel' })
+      .locator('input');
+
+    await ageField.click();
+    await expect(ageField).toBeFocused();
+    await ageField.fill('45');
+    await ageField.press('Tab');
+    await expect(ageField).toHaveValue('45');
+
+    await page.getByRole('tab', { name: 'Liquidation' }).click();
+
+    const liquidationCard = page.locator('.premium-card').filter({ hasText: 'Phase de liquidation' });
+    const durationField = liquidationCard
+      .locator('tr')
+      .filter({ hasText: 'Durée de liquidation' })
+      .locator('input');
+    const strategySelect = liquidationCard.locator('select').first();
+
+    await durationField.click();
+    await expect(durationField).toBeFocused();
+    await durationField.fill('12');
+    await durationField.press('Tab');
+    await expect(durationField).toHaveValue('12');
+
+    await expect(strategySelect).toBeDisabled();
+    await expect(strategySelect).toHaveValue('epuiser');
+  });
+
   test('ouvre et ferme la modale de versements', async ({ page }) => {
     await page.goto(ROUTES.placement);
 

@@ -186,7 +186,7 @@ export function VersementInitialSection({
             {/* Stratégie — masquée pour SCPI en mode simplifié */}
             {(isExpert || !isSCPI) && (
               <div className="vcm__field">
-                <label className="vcm__label">Strategie</label>
+                <label className="vcm__label">Stratégie</label>
 
                 <select
                   className="vcm__select"

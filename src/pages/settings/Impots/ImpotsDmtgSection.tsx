@@ -63,18 +63,18 @@ export default function ImpotsDmtgSection({
     },
     {
       key: 'frereSoeur',
-      title: 'Freres et soeurs',
-      labelAbattement: 'Abattement frere/soeur',
+      title: 'Frères et sœurs',
+      labelAbattement: 'Abattement frère/sœur',
     },
     {
       key: 'neveuNiece',
-      title: 'Neveux et nieces',
-      labelAbattement: 'Abattement neveu/niece',
+      title: 'Neveux et nièces',
+      labelAbattement: 'Abattement neveu/nièce',
     },
     {
       key: 'autre',
       title: 'Autres (non-parents)',
-      labelAbattement: 'Abattement par defaut',
+      labelAbattement: 'Abattement par défaut',
     },
   ];
 
@@ -89,7 +89,7 @@ export default function ImpotsDmtgSection({
         onClick={() => setOpenSection(isOpen ? null : 'dmtg')}
       >
         <span className="settings-premium-title settings-premium-title--flush">
-          Droits de Mutation a Titre Gratuit (DMTG)
+          Droits de mutation à titre gratuit (DMTG)
         </span>
         <span className="fisc-acc-chevron">
           {isOpen ? 'v' : '>'}
@@ -104,8 +104,8 @@ export default function ImpotsDmtgSection({
           aria-labelledby="impots-header-dmtg"
         >
           <p style={{ fontSize: 13, color: 'var(--color-c9)', marginBottom: 16 }}>
-            Baremes applicables aux successions et donations selon le lien de
-            parente. Utilises par le simulateur de placement pour la phase de
+            Barèmes applicables aux successions et donations selon le lien de
+            parenté. Utilisés par le simulateur de placement pour la phase de
             transmission.
           </p>
 
@@ -150,7 +150,7 @@ export default function ImpotsDmtgSection({
                   <SettingsTable
                     columns={[
                       { key: 'from', header: 'De (EUR)' },
-                      { key: 'to', header: 'A (EUR)' },
+                      { key: 'to', header: 'À (EUR)' },
                       {
                         key: 'rate',
                         header: 'Taux %',
