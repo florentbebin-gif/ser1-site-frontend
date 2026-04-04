@@ -205,7 +205,6 @@ export function SuccessionPageGrid({
               derivedTotalDroits={derived.derivedTotalDroits}
               synthDonutTransmis={derived.synthDonutTransmis}
               derivedMasseTransmise={derived.derivedMasseTransmise}
-              transmissionRows={derived.transmissionRows}
               synthHypothese={derived.synthHypothese}
               isPacsed={derived.isPacsed}
               chainageAnalysis={{
@@ -284,8 +283,7 @@ export function SuccessionPageGrid({
               avFiscalByAssure={derived.avFiscalAnalysis.byAssure}
               perFiscalByAssure={derived.perFiscalAnalysis.byAssure}
               prevoyanceFiscalByAssure={derived.prevoyanceFiscalAnalysis.byAssure}
-              insurance990ILines={derived.insurance990ILines}
-              insurance757BLines={derived.insurance757BLines}
+              unifiedBlocks={derived.unifiedBlocks}
               directDisplay={{
                 simulatedDeceased: derived.directDisplayAnalysis.simulatedDeceased,
                 result: derived.directDisplayAnalysis.result

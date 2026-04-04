@@ -3,30 +3,8 @@ import {
   getSuccessionInterMassClaimKindLabel,
   getSuccessionPocketLabel,
 } from '../successionInterMassClaims';
+import type { UnifiedBeneficiaryBlock } from '../useSuccessionOutcomeDerivedValues.helpers';
 import ScDonut from './ScDonut';
-
-interface TransmissionRow {
-  id: string;
-  label: string;
-  brut: number;
-  droits: number;
-  net: number;
-  exonerated?: boolean;
-  step1Brut?: number;
-  step1Droits?: number;
-  step2Brut?: number;
-  step2Droits?: number;
-}
-
-interface InsuranceBeneficiaryLine {
-  id: string;
-  label: string;
-  capitalTransmis: number;
-  baseFiscale: number;
-  sourceKind: 'av' | 'per' | 'prevoyance';
-  totalDroits: number;
-  netTransmis: number;
-}
 
 function formatPartyLabel(value: 'epoux1' | 'epoux2'): string {
   return value === 'epoux1' ? 'Epoux 1' : 'Epoux 2';
@@ -37,7 +15,6 @@ interface ScSuccessionSummaryPanelProps {
   derivedTotalDroits: number;
   synthDonutTransmis: number;
   derivedMasseTransmise: number;
-  transmissionRows: TransmissionRow[];
   synthHypothese: string | null;
   isPacsed: boolean;
   chainageAnalysis: {
@@ -102,8 +79,7 @@ interface ScSuccessionSummaryPanelProps {
   avFiscalByAssure: Record<'epoux1' | 'epoux2', { totalDroits: number }>;
   perFiscalByAssure: Record<'epoux1' | 'epoux2', { totalDroits: number }>;
   prevoyanceFiscalByAssure: Record<'epoux1' | 'epoux2', { totalDroits: number }>;
-  insurance990ILines: InsuranceBeneficiaryLine[];
-  insurance757BLines: InsuranceBeneficiaryLine[];
+  unifiedBlocks: UnifiedBeneficiaryBlock[];
   directDisplay: {
     simulatedDeceased: 'epoux1' | 'epoux2';
     result: { totalDroits: number } | null;
@@ -115,15 +91,13 @@ export default function ScSuccessionSummaryPanel({
   derivedTotalDroits,
   synthDonutTransmis,
   derivedMasseTransmise,
-  transmissionRows,
   synthHypothese,
   isPacsed,
   chainageAnalysis,
   avFiscalByAssure,
   perFiscalByAssure,
   prevoyanceFiscalByAssure,
-  insurance990ILines,
-  insurance757BLines,
+  unifiedBlocks,
   directDisplay,
 }: ScSuccessionSummaryPanelProps) {
   const societeAcquets = chainageAnalysis.societeAcquets;
@@ -131,7 +105,6 @@ export default function ScSuccessionSummaryPanel({
   const interMassClaims = chainageAnalysis.interMassClaims;
   const affectedLiabilities = chainageAnalysis.affectedLiabilities;
   const preciput = chainageAnalysis.preciput;
-  const showInsuranceBaseColumn = insurance757BLines.length > 0;
   const firstCost = displayUsesChainage
     ? (chainageAnalysis.step1?.droitsEnfants ?? 0)
       + avFiscalByAssure[chainageAnalysis.order].totalDroits
@@ -147,6 +120,13 @@ export default function ScSuccessionSummaryPanel({
       + perFiscalByAssure[chainageAnalysis.order === 'epoux1' ? 'epoux2' : 'epoux1'].totalDroits
       + prevoyanceFiscalByAssure[chainageAnalysis.order === 'epoux1' ? 'epoux2' : 'epoux1'].totalDroits
     : Math.max(0, derivedMasseTransmise - derivedTotalDroits);
+
+  const step1TotalTransmis = displayUsesChainage
+    ? unifiedBlocks.reduce((s, b) => s + (b.step1TransmissionNette ?? 0), 0)
+    : 0;
+  const step2TotalTransmis = displayUsesChainage
+    ? unifiedBlocks.reduce((s, b) => s + (b.step2TransmissionNette ?? 0), 0)
+    : 0;
 
   return (
     <div className="premium-card sc-summary-card sim-summary-card sim-summary-card--secondary sc-hero-card sc-hero-card--secondary">
@@ -178,12 +158,12 @@ export default function ScSuccessionSummaryPanel({
       <div className="sc-card__divider sc-card__divider--tight" />
       <div className="sc-synth-kpis">
         <div className="sc-synth-kpi">
-          <span className="sc-synth-kpi__label">{displayUsesChainage ? 'Cumul transmis sur 2 deces' : 'Patrimoine transmis'}</span>
-          <strong className="sc-synth-kpi__value">{fmt(synthDonutTransmis)}</strong>
+          <span className="sc-synth-kpi__label">{displayUsesChainage ? 'Cumul transmis au 1er décès' : 'Patrimoine transmis'}</span>
+          <strong className="sc-synth-kpi__value">{fmt(displayUsesChainage ? step1TotalTransmis : synthDonutTransmis)}</strong>
         </div>
         <div className="sc-synth-kpi">
-          <span className="sc-synth-kpi__label">Coût cumulé</span>
-          <strong className="sc-synth-kpi__value">{fmt(derivedTotalDroits)}</strong>
+          <span className="sc-synth-kpi__label">{displayUsesChainage ? 'Cumul transmis au 2ème décès' : 'Coût cumulé'}</span>
+          <strong className="sc-synth-kpi__value">{fmt(displayUsesChainage ? step2TotalTransmis : derivedTotalDroits)}</strong>
         </div>
         <div className="sc-synth-kpi">
           <span className="sc-synth-kpi__label">{displayUsesChainage ? 'Coût 1er décès' : 'Coût décès simulé'}</span>
@@ -343,73 +323,51 @@ export default function ScSuccessionSummaryPanel({
           ))}
         </>
       )}
-      {(transmissionRows.length > 0 || insurance757BLines.length > 0) && (
+      {unifiedBlocks.length > 0 && (
         <>
           <div className="sc-card__divider sc-card__divider--tight" />
           <div className="sc-synth-section-title">Transmission par bénéficiaire</div>
-          <div className="sc-transmission-grid">
-            <div className="sc-transmission-grid__head">
+          <div className={`sc-unified-grid${displayUsesChainage ? ' sc-unified-grid--chainage' : ''}`}>
+            <div className="sc-unified-grid__head">
               <span />
               {displayUsesChainage && <span>1er décès</span>}
               {displayUsesChainage && <span>2e décès</span>}
-              <span>{displayUsesChainage ? 'Total 2 décès' : 'Reçoit (brut)'}</span>
-              {showInsuranceBaseColumn && <span>Base fiscale</span>}
-              <span>Droits</span>
-              <span>Net estimé</span>
+              <span>Total</span>
             </div>
-            {transmissionRows.map((row) => (
-              <div
-                key={row.id}
-                className={`sc-transmission-row${row.exonerated ? ' sc-transmission-row--exo' : ''}${row.id === 'assurance-vie' ? ' sc-transmission-row--av' : ''}`}
-              >
-                <span>{row.label}</span>
-                {displayUsesChainage && <span>{fmt(row.step1Brut ?? 0)}</span>}
-                {displayUsesChainage && <span>{fmt(row.step2Brut ?? 0)}</span>}
-                <span>{fmt(row.brut)}</span>
-                {showInsuranceBaseColumn && <span />}
-                <span>{row.exonerated ? 'Exonéré' : fmt(row.droits)}</span>
-                <span>{fmt(row.net)}</span>
-              </div>
-            ))}
-            {insurance757BLines.map((line) => (
-              <div key={`757b-${line.id}`} className="sc-transmission-row sc-transmission-row--av">
-                <span>{line.label} (art. 757 B)</span>
-                {displayUsesChainage && <span />}
-                {displayUsesChainage && <span />}
-                <span>{fmt(line.capitalTransmis)}</span>
-                {showInsuranceBaseColumn && <span>{fmt(line.baseFiscale)}</span>}
-                <span>{fmt(line.totalDroits)}</span>
-                <span>{fmt(line.netTransmis)}</span>
+            {unifiedBlocks.map((block) => (
+              <div key={block.id} className="sc-unified-block">
+                <div className="sc-unified-row--name">
+                  <span>{block.label}</span>
+                  {displayUsesChainage && <span>{fmt(block.step1Brut ?? 0)}</span>}
+                  {displayUsesChainage && <span>{block.isConjoint ? '—' : fmt(block.step2Brut ?? 0)}</span>}
+                  <span>{fmt(block.brut)}</span>
+                </div>
+                {block.capitauxDecesNets > 0 && (
+                  <div className="sc-unified-row--sub">
+                    <span>Capitaux décès nets</span>
+                    {displayUsesChainage && <span>{fmt(block.step1CapitauxDecesNets ?? 0)}</span>}
+                    {displayUsesChainage && <span>{block.isConjoint ? '—' : fmt(block.step2CapitauxDecesNets ?? 0)}</span>}
+                    <span>{fmt(block.capitauxDecesNets)}</span>
+                  </div>
+                )}
+                <div className="sc-unified-row--sub">
+                  <span>Droits</span>
+                  {displayUsesChainage && <span>{block.exonerated ? 'Exonéré' : fmt(block.step1Droits ?? 0)}</span>}
+                  {displayUsesChainage && <span>{block.isConjoint ? '—' : fmt(block.step2Droits ?? 0)}</span>}
+                  <span>{block.exonerated ? 'Exonéré' : fmt(block.droits)}</span>
+                </div>
+                <div className="sc-unified-row--net">
+                  <span>Transmission nette</span>
+                  {displayUsesChainage && <span>{fmt(block.step1TransmissionNette ?? 0)}</span>}
+                  {displayUsesChainage && <span>{block.isConjoint ? '—' : fmt(block.step2TransmissionNette ?? 0)}</span>}
+                  <span>{fmt(block.transmissionNette)}</span>
+                </div>
               </div>
             ))}
           </div>
         </>
       )}
-      {insurance990ILines.length > 0 && (
-        <>
-          <div className="sc-card__divider sc-card__divider--tight" />
-          <div className="sc-synth-section-title">Assurances hors succession — art. 990 I</div>
-          <div className="sc-transmission-grid">
-            <div className="sc-transmission-grid__head">
-              <span />
-              <span>Reçoit (brut)</span>
-              <span>Base fiscale</span>
-              <span>Droits</span>
-              <span>Net estimé</span>
-            </div>
-            {insurance990ILines.map((line) => (
-              <div key={line.id} className="sc-transmission-row sc-transmission-row--av">
-                <span>{line.label}</span>
-                <span>{fmt(line.capitalTransmis)}</span>
-                <span>{fmt(line.baseFiscale)}</span>
-                <span>{fmt(line.totalDroits)}</span>
-                <span>{fmt(line.netTransmis)}</span>
-              </div>
-            ))}
-          </div>
-        </>
-      )}
-      {(synthHypothese || transmissionRows.length > 0 || insurance757BLines.length > 0) && (
+      {(synthHypothese || unifiedBlocks.length > 0) && (
         <>
           <div className="sc-card__divider sc-card__divider--tight" />
           <div className="sc-summary-notes">

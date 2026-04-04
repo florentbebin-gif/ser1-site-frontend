@@ -28,6 +28,7 @@ import type { SuccessionAssetTransmissionBasis } from './successionTransmissionB
 import { buildSuccessionAssumptions } from './successionAssumptions';
 import {
   buildSuccessionSynthHypothese,
+  buildUnifiedBeneficiaryBlocks,
   mergeInsuranceBeneficiaryLines,
 } from './useSuccessionOutcomeDerivedValues.helpers';
 import { buildSuccessionChainageExportPayload } from './useSuccessionOutcomeExportPayload';
@@ -337,6 +338,55 @@ export function useSuccessionOutcomeDerivedValues({
   const insurance990ILines = insuranceMerged.lines990I;
   const insurance757BLines = insuranceMerged.lines757B;
 
+  const insuranceByStep = useMemo(() => {
+    const empty = { lines990I: [] as ReturnType<typeof mergeInsuranceBeneficiaryLines>['lines990I'], lines757B: [] as ReturnType<typeof mergeInsuranceBeneficiaryLines>['lines757B'] };
+    if (!shouldRenderSuccessionComputationSections) return { step1: empty, step2: empty };
+    if (displayUsesChainage) {
+      const oppositeOrder = chainageAnalysis.order === 'epoux1' ? 'epoux2' : 'epoux1';
+      return {
+        step1: mergeInsuranceBeneficiaryLines(
+          avFiscalAnalysis.byAssure[chainageAnalysis.order].lines,
+          perFiscalAnalysis.byAssure[chainageAnalysis.order].lines,
+          prevoyanceFiscalAnalysis.byAssure[chainageAnalysis.order].lines,
+        ),
+        step2: mergeInsuranceBeneficiaryLines(
+          avFiscalAnalysis.byAssure[oppositeOrder].lines,
+          perFiscalAnalysis.byAssure[oppositeOrder].lines,
+          prevoyanceFiscalAnalysis.byAssure[oppositeOrder].lines,
+        ),
+      };
+    }
+    const assured = directDisplayAnalysis.simulatedDeceased;
+    return {
+      step1: mergeInsuranceBeneficiaryLines(
+        avFiscalAnalysis.byAssure[assured].lines,
+        perFiscalAnalysis.byAssure[assured].lines,
+        prevoyanceFiscalAnalysis.byAssure[assured].lines,
+      ),
+      step2: empty,
+    };
+  }, [
+    shouldRenderSuccessionComputationSections,
+    displayUsesChainage,
+    chainageAnalysis.order,
+    avFiscalAnalysis.byAssure,
+    perFiscalAnalysis.byAssure,
+    prevoyanceFiscalAnalysis.byAssure,
+    directDisplayAnalysis.simulatedDeceased,
+  ]);
+
+  const unifiedBlocks = useMemo(
+    () => buildUnifiedBeneficiaryBlocks({
+      transmissionRows,
+      insurance990IStep1: insuranceByStep.step1.lines990I,
+      insurance757BStep1: insuranceByStep.step1.lines757B,
+      insurance990IStep2: insuranceByStep.step2.lines990I,
+      insurance757BStep2: insuranceByStep.step2.lines757B,
+      displayUsesChainage,
+    }),
+    [transmissionRows, insuranceByStep, displayUsesChainage],
+  );
+
   const chainageExportPayload = useMemo(
     () => buildSuccessionChainageExportPayload({
       displayUsesChainage,
@@ -454,6 +504,7 @@ export function useSuccessionOutcomeDerivedValues({
     transmissionRows,
     insurance990ILines,
     insurance757BLines,
+    unifiedBlocks,
     chainageExportPayload,
     totalActifsLiquidation,
     canExportSimplified,
