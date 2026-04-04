@@ -15,11 +15,19 @@ Supabase (tax_settings, ps_settings, fiscality_settings)
 Jamais hardcoder de valeurs fiscales (17.2, 100000, 15932, 12.8, 30).
 Jamais lire Supabase directement depuis un composant React.
 
-#### Pour aller plus loin
-- Conventions code & workflow : `.github/CONTRIBUTING.md`
+#### Règles techniques détaillées (`.claude/rules/`)
+Auto-chargées par Claude Code — à lire manuellement pour les autres agents :
+- `base.md` — environnement & langue
+- `component-structure.md` — structure composants React
+- `fiscal-engine.md` — moteur fiscal (interdits + patterns requis)
+- `supabase-patterns.md` — patterns Supabase & auth
+
+#### Pour aller plus loin (lire selon le contexte — voir CLAUDE.md)
 - Architecture détaillée : `docs/ARCHITECTURE.md`
 - Règles métier fiscales : `docs/METIER.md`
 - UI / thème / couleurs : `docs/GOUVERNANCE.md`
+- Exports / PPTX / Excel : `docs/GOUVERNANCE_EXPORTS.md`
+- Conventions humains / workflow git : `.github/CONTRIBUTING.md`
 
 ---
 
@@ -28,8 +36,9 @@ Jamais lire Supabase directement depuis un composant React.
 Ces règles s'appliquent à tout LLM ou agent travaillant dans ce dépôt.
 
 ### 0. Environnement & langue
-- **Terminal** : PowerShell sur Windows. Ne jamais utiliser des commandes macOS/Linux incompatibles (`open`, `pbcopy`, `which`, chemins `/usr/...`). Utiliser les équivalents PowerShell (`Start-Process`, `Get-Command`, etc.).
-- **Langue** : toujours rédiger en français, avec les accents (é, è, à, ç…), les apostrophes typographiques et une orthographe soignée. Si une faute est détectée dans un fichier modifié, la corriger.
+- **Terminal** : Windows/PowerShell. Pas de commandes macOS/Linux (`open`, `pbcopy`, `which`, chemins `/usr/...`). Utiliser les équivalents PowerShell (`Start-Process`, `Get-Command`, etc.).
+- **Langue** : toujours rédiger en français, accents et apostrophes inclus. Corriger les fautes détectées dans les fichiers modifiés.
+> Claude Code : ces règles sont aussi dans `.claude/rules/base.md` (auto-chargé).
 
 ### 1. Proof first
 - Never claim `unused`, `dead code`, `safe to delete`, `not referenced`, `RLS OK`, or `theme OK` without concrete proof.
