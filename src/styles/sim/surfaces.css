@@ -12,8 +12,8 @@
 
 .sim-card__header--bleed {
   background: linear-gradient(
-    135deg,
-    color-mix(in srgb, var(--color-c1) 5%, transparent) 0%,
+    to bottom,
+    color-mix(in srgb, var(--color-c4) 18%, transparent) 0%,
     transparent 65%
   );
   border-radius: 10px 10px 0 0;
