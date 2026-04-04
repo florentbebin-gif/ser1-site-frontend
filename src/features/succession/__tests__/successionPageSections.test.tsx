@@ -36,7 +36,7 @@ function buildProps(
       derivedTotalDroits: 0,
       synthDonutTransmis: 0,
       derivedMasseTransmise: 0,
-      transmissionRows: [],
+      unifiedBlocks: [],
       synthHypothese: null,
       chainageAnalysis: {
         order: 'epoux1',
@@ -55,8 +55,6 @@ function buildProps(
       prevoyanceFiscalAnalysis: {
         byAssure: { epoux1: { totalDroits: 0, lines: [] }, epoux2: { totalDroits: 0, lines: [] } },
       },
-      insurance990ILines: [],
-      insurance757BLines: [],
       directDisplayAnalysis: {
         simulatedDeceased: 'epoux1',
         result: null,

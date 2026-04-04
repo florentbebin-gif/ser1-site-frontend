@@ -385,3 +385,86 @@
   color: var(--color-c9);
 }
 
+/* Tableau unifié par bénéficiaire */
+.sc-unified-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.sc-unified-grid__head {
+  display: grid;
+  grid-template-columns: 1fr 90px;
+  gap: 8px;
+  font-size: 9px;
+  font-weight: 600;
+  color: color-mix(in srgb, var(--color-c9) 55%, transparent);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding-bottom: 6px;
+  text-align: right;
+}
+
+.sc-unified-grid--chainage .sc-unified-grid__head {
+  grid-template-columns: 1fr repeat(3, 90px);
+}
+
+.sc-unified-grid__head span:first-child {
+  text-align: left;
+}
+
+.sc-unified-block {
+  border-top: 1px solid color-mix(in srgb, var(--color-c8) 40%, transparent);
+  padding: 6px 0;
+}
+
+.sc-unified-row--name,
+.sc-unified-row--sub,
+.sc-unified-row--net {
+  display: grid;
+  grid-template-columns: 1fr 90px;
+  gap: 8px;
+  font-size: 11px;
+  padding: 2px 0;
+  text-align: right;
+}
+
+.sc-unified-grid--chainage .sc-unified-row--name,
+.sc-unified-grid--chainage .sc-unified-row--sub,
+.sc-unified-grid--chainage .sc-unified-row--net {
+  grid-template-columns: 1fr repeat(3, 90px);
+}
+
+.sc-unified-row--name span:first-child,
+.sc-unified-row--sub span:first-child,
+.sc-unified-row--net span:first-child {
+  text-align: left;
+}
+
+.sc-unified-row--name {
+  font-weight: 600;
+  color: var(--color-c2);
+}
+
+.sc-unified-row--sub {
+  color: color-mix(in srgb, var(--color-c9) 70%, transparent);
+  font-size: 10px;
+}
+
+.sc-unified-row--sub span:first-child {
+  padding-left: 10px;
+}
+
+.sc-unified-row--net {
+  font-weight: 600;
+  font-size: 10px;
+  color: color-mix(in srgb, var(--color-c9) 70%, transparent);
+  border-top: 1px dashed color-mix(in srgb, var(--color-c8) 35%, transparent);
+  padding-top: 4px;
+  margin-top: 2px;
+}
+
+.sc-unified-row--net span:first-child {
+  padding-left: 10px;
+}
+
