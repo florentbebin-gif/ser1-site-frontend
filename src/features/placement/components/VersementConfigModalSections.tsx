@@ -424,6 +424,7 @@ export function VersementPonctuelsSection({
                       onUpdatePonctuel(index, 'montant', clean === '' ? 0 : Number(clean));
                     }}
                     className="vcm__mini-input"
+                    aria-label="Montant"
                   />
                   <span className="vcm__mini-unit">€</span>
                 </div>
@@ -438,6 +439,7 @@ export function VersementPonctuelsSection({
                       value={(ponctuel.fraisEntree * 100).toFixed(1)}
                       onChange={(event) => onUpdatePonctuel(index, 'fraisEntree', Number(event.target.value) / 100)}
                       className="vcm__mini-input"
+                      aria-label="Frais d'entrée (%)"
                     />
                     <span className="vcm__mini-unit">%</span>
                   </div>
