@@ -293,7 +293,7 @@ export function IrIncomeSection({
               </tr>
               <tr className="ir-row-title">
                 <td>Abattement 10&nbsp;% pensions (foyer)</td>
-                <td colSpan={2} style={{ textAlign: 'center' }}>
+                <td colSpan={2} className="ir-td--center">
                   {euro0(abat10PensionsFoyer)}
                 </td>
               </tr>

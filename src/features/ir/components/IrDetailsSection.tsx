@@ -54,43 +54,43 @@ export function IrDetailsSection({ result, euro0, fmtPct, pfuRateIR }: IrDetails
         <tbody>
           <tr>
             <td>Base imposable du foyer</td>
-            <td style={{ textAlign: 'right' }}>{euro0(result.taxableIncome)}</td>
+            <td className="ir-td--right">{euro0(result.taxableIncome)}</td>
           </tr>
           <tr>
             <td>Impôt avant quotient familial</td>
-            <td style={{ textAlign: 'right' }}>{euro0(result.irBeforeQfBase || 0)}</td>
+            <td className="ir-td--right">{euro0(result.irBeforeQfBase || 0)}</td>
           </tr>
           <tr>
             <td>Quotient familial</td>
-            <td style={{ textAlign: 'right' }}>{euro0(result.qfAdvantage || 0)}</td>
+            <td className="ir-td--right">{euro0(result.qfAdvantage || 0)}</td>
           </tr>
           <tr>
             <td>Impôt après quotient familial</td>
-            <td style={{ textAlign: 'right' }}>{euro0(result.irAfterQf || 0)}</td>
+            <td className="ir-td--right">{euro0(result.irAfterQf || 0)}</td>
           </tr>
           {(result.domAbatementAmount || 0) > 0 && (
             <tr>
               <td>Abattement DOM</td>
-              <td style={{ textAlign: 'right' }}>- {euro0(result.domAbatementAmount || 0)}</td>
+              <td className="ir-td--right">- {euro0(result.domAbatementAmount || 0)}</td>
             </tr>
           )}
           <tr>
             <td>Impôt après abattement DOM</td>
-            <td style={{ textAlign: 'right' }}>
+            <td className="ir-td--right">
               {euro0(Math.max(0, (result.irAfterQf || 0) - (result.domAbatementAmount || 0)))}
             </td>
           </tr>
           <tr>
             <td>Réductions et crédits d&apos;impôt</td>
-            <td style={{ textAlign: 'right' }}>{euro0(result.creditsTotal || 0)}</td>
+            <td className="ir-td--right">{euro0(result.creditsTotal || 0)}</td>
           </tr>
           <tr>
             <td>Décote</td>
-            <td style={{ textAlign: 'right' }}>{euro0(result.decote || 0)}</td>
+            <td className="ir-td--right">{euro0(result.decote || 0)}</td>
           </tr>
           <tr>
             <td>Impôt après réductions, crédits d&apos;impôt et décote</td>
-            <td style={{ textAlign: 'right' }}>{euro0(result.irNet || 0)}</td>
+            <td className="ir-td--right">{euro0(result.irNet || 0)}</td>
           </tr>
         </tbody>
       </table>
@@ -127,57 +127,57 @@ export function IrDetailsSection({ result, euro0, fmtPct, pfuRateIR }: IrDetails
           <tbody>
             <tr>
               <td>Assiette (RFR)</td>
-              <td style={{ textAlign: 'right' }}>{euro0(result.cdhrDetails.assiette)}</td>
+              <td className="ir-td--right">{euro0(result.cdhrDetails.assiette)}</td>
             </tr>
 
             <tr>
               <td>Terme A (avant décote) : {result.cdhrDetails.minRatePercent}% × assiette</td>
-              <td style={{ textAlign: 'right' }}>{euro0(result.cdhrDetails.termA_beforeDecote)}</td>
+              <td className="ir-td--right">{euro0(result.cdhrDetails.termA_beforeDecote)}</td>
             </tr>
 
             <tr>
               <td>Décote CDHR appliquée</td>
-              <td style={{ textAlign: 'right' }}>{euro0(result.cdhrDetails.decoteApplied)}</td>
+              <td className="ir-td--right">{euro0(result.cdhrDetails.decoteApplied)}</td>
             </tr>
 
             <tr>
               <td><strong>Terme A (après décote)</strong></td>
-              <td style={{ textAlign: 'right' }}><strong>{euro0(result.cdhrDetails.termA_afterDecote)}</strong></td>
+              <td className="ir-td--right"><strong>{euro0(result.cdhrDetails.termA_afterDecote)}</strong></td>
             </tr>
 
             <tr>
               <td>Terme B : IR retenu</td>
-              <td style={{ textAlign: 'right' }}>{euro0(result.cdhrDetails.irRetenu)}</td>
+              <td className="ir-td--right">{euro0(result.cdhrDetails.irRetenu)}</td>
             </tr>
 
             <tr>
               <td>+ PFU {fmtPct(pfuRateIR)}% (part IR)</td>
-              <td style={{ textAlign: 'right' }}>{euro0(result.cdhrDetails.pfuIr)}</td>
+              <td className="ir-td--right">{euro0(result.cdhrDetails.pfuIr)}</td>
             </tr>
 
             <tr>
               <td>+ CEHR</td>
-              <td style={{ textAlign: 'right' }}>{euro0(result.cdhrDetails.cehr)}</td>
+              <td className="ir-td--right">{euro0(result.cdhrDetails.cehr)}</td>
             </tr>
 
             <tr>
               <td>+ Majorations (couple + charges) — charges : {result.cdhrDetails.personsAChargeCount}</td>
-              <td style={{ textAlign: 'right' }}>{euro0(result.cdhrDetails.majorations)}</td>
+              <td className="ir-td--right">{euro0(result.cdhrDetails.majorations)}</td>
             </tr>
 
             <tr>
-              <td style={{ paddingLeft: 18, opacity: 0.85 }}>• Majoration couple</td>
-              <td style={{ textAlign: 'right', opacity: 0.85 }}>{euro0(result.cdhrDetails.majCouple)}</td>
+              <td className="ir-td--detail">• Majoration couple</td>
+              <td className="ir-td--detail-right">{euro0(result.cdhrDetails.majCouple)}</td>
             </tr>
 
             <tr>
-              <td style={{ paddingLeft: 18, opacity: 0.85 }}>• Majoration personnes à charge</td>
-              <td style={{ textAlign: 'right', opacity: 0.85 }}>{euro0(result.cdhrDetails.majCharges)}</td>
+              <td className="ir-td--detail">• Majoration personnes à charge</td>
+              <td className="ir-td--detail-right">{euro0(result.cdhrDetails.majCharges)}</td>
             </tr>
 
             <tr>
               <td><strong>CDHR = max(0, Terme A (après décote) − Terme B)</strong></td>
-              <td style={{ textAlign: 'right' }}><strong>{euro0(result.cdhr || 0)}</strong></td>
+              <td className="ir-td--right"><strong>{euro0(result.cdhr || 0)}</strong></td>
             </tr>
           </tbody>
         </table>

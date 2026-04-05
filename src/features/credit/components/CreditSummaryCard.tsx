@@ -26,7 +26,7 @@ export function SummaryDonut({
         width="68"
         height="68"
         viewBox="0 0 68 68"
-        className="cv2-donut"
+        className="cv-donut"
         aria-hidden="true"
       >
         <circle
@@ -49,7 +49,7 @@ export function SummaryDonut({
       width="68"
       height="68"
       viewBox="0 0 68 68"
-      className="cv2-donut"
+      className="cv-donut"
       aria-hidden="true"
       style={{ transform: 'rotate(-90deg)' }}
     >
@@ -110,8 +110,8 @@ export function CreditSummaryCard({
   const assLabel = isAnnual ? '/an' : '/mois';
 
   return (
-    <aside className="cv2-summary sim-summary-card" data-testid="credit-summary-card">
-      <div className="cv2-summary__title-row">
+    <aside className="cv-summary sim-summary-card" data-testid="credit-summary-card">
+      <div className="cv-summary__title-row">
         <div className="sim-card__icon sim-card__icon--sm">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
             <line x1="12" y1="20" x2="12" y2="10" />
@@ -119,51 +119,51 @@ export function CreditSummaryCard({
             <line x1="6" y1="20" x2="6" y2="16" />
           </svg>
         </div>
-        <div className="cv2-summary__title">{loanLabel || 'Synthèse du prêt'}</div>
+        <div className="cv-summary__title">{loanLabel || 'Synthèse du prêt'}</div>
       </div>
 
-      <div className="cv2-loan-card__divider sim-divider" />
+      <div className="cv-loan-card__divider sim-divider" />
 
-      <div className="cv2-summary__kpi-zone">
+      <div className="cv-summary__kpi-zone">
         <div>
-          <div className="cv2-summary__kpi-label-small">{kpiLabel}</div>
+          <div className="cv-summary__kpi-label-small">{kpiLabel}</div>
           <div
-            className="cv2-summary__kpi-main-value"
+            className="cv-summary__kpi-main-value"
             data-testid="credit-mensu-totale-avec-ass"
           >
             {euro0(mensualiteTotaleM1 * factor)}
           </div>
           {isExpert && primeAssMensuelle > 0 && (
-            <div className="cv2-summary__kpi-assurance">
+            <div className="cv-summary__kpi-assurance">
               + {euro0(primeAssMensuelle * factor)} {assLabel} ass.
             </div>
           )}
           {!isExpert && (
-            <div className="cv2-summary__badge">Hors assurance</div>
+            <div className="cv-summary__badge">Hors assurance</div>
           )}
         </div>
         <SummaryDonut capital={capitalEmprunte} interets={totalInterets} />
       </div>
 
-      <div className="cv2-summary__divider sim-divider sim-divider--tight" />
+      <div className="cv-summary__divider sim-divider sim-divider--tight" />
 
-      <div className="cv2-summary__rows">
+      <div className="cv-summary__rows">
         {isExpert && (
-          <div className="cv2-summary__row">
-            <span className="cv2-summary__row-label">Coût total des intérêts</span>
-            <span className="cv2-summary__row-value">{euro0(totalInterets)}</span>
+          <div className="cv-summary__row">
+            <span className="cv-summary__row-label">Coût total des intérêts</span>
+            <span className="cv-summary__row-value">{euro0(totalInterets)}</span>
           </div>
         )}
         {isExpert && (
-          <div className="cv2-summary__row">
-            <span className="cv2-summary__row-label">Coût total assurance</span>
-            <span className="cv2-summary__row-value">{euro0(totalAssurance)}</span>
+          <div className="cv-summary__row">
+            <span className="cv-summary__row-label">Coût total assurance</span>
+            <span className="cv-summary__row-value">{euro0(totalAssurance)}</span>
           </div>
         )}
-        <div className="cv2-summary__row cv2-summary__row--total">
-          <span className="cv2-summary__row-label">Coût total du crédit</span>
+        <div className="cv-summary__row cv-summary__row--total">
+          <span className="cv-summary__row-label">Coût total du crédit</span>
           <span
-            className="cv2-summary__row-value cv2-summary__row-value--highlight"
+            className="cv-summary__row-value cv-summary__row-value--highlight"
             data-testid="credit-cout-total-value"
           >
             {euro0(coutTotalCredit)}
@@ -173,24 +173,24 @@ export function CreditSummaryCard({
 
       {lisserPret1 && (diffDureesMois !== 0 || lissageCoutDelta !== 0) && (
         <>
-          <div className="cv2-loan-card__divider cv2-loan-card__divider--tight sim-divider sim-divider--tight" />
-          <div className="cv2-summary__lissage-info">
+          <div className="cv-loan-card__divider cv-loan-card__divider--tight sim-divider sim-divider--tight" />
+          <div className="cv-summary__lissage-info">
             {diffDureesMois !== 0 && (
-              <div className="cv2-summary__row">
-                <span className="cv2-summary__row-label">
+              <div className="cv-summary__row">
+                <span className="cv-summary__row-label">
                   {diffDureesMois > 0 ? 'Durée allongée' : 'Durée réduite'}
                 </span>
-                <span className="cv2-summary__row-value">
+                <span className="cv-summary__row-value">
                   {diffDureesMois > 0 ? '+' : ''}{diffDureesMois} mois
                 </span>
               </div>
             )}
             {lissageCoutDelta !== 0 && (
-              <div className="cv2-summary__row">
-                <span className="cv2-summary__row-label">
+              <div className="cv-summary__row">
+                <span className="cv-summary__row-label">
                   {lissageCoutDelta > 0 ? 'Coût supplémentaire' : 'Économie du lissage'}
                 </span>
-                <span className="cv2-summary__row-value">
+                <span className="cv-summary__row-value">
                   {euro0(Math.abs(lissageCoutDelta))}
                 </span>
               </div>

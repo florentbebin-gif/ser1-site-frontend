@@ -378,7 +378,7 @@ export default function IrSimulatorContainer() {
         <h1 className="premium-title" data-testid="ir-title">
             Simulateur d&apos;imp&ocirc;t sur le revenu
         </h1>
-        <div className="ir-header__subtitle-row">
+        <div className="ir-header__subtitle-row sim-header__subtitle-row">
           <p className="premium-subtitle">
             Estimez votre imp&ocirc;t sur le revenu et vos pr&eacute;l&egrave;vements sociaux.
           </p>

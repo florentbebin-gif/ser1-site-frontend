@@ -321,15 +321,15 @@ export default function CreditV2() {
   // -------------------------------------------------------------------------
   if (!hydrated) {
     return (
-      <div className="sim-page cv2-skeleton-page" data-testid="credit-loading">
-        <div className="cv2-skeleton cv2-skeleton--title" />
-        <div className="cv2-skeleton cv2-skeleton--subtitle" />
-        <div className="cv2-skeleton-grid">
+      <div className="sim-page cv-skeleton-page" data-testid="credit-loading">
+        <div className="cv-skeleton cv-skeleton--title" />
+        <div className="cv-skeleton cv-skeleton--subtitle" />
+        <div className="cv-skeleton-grid">
           <div>
-            <div className="cv2-skeleton cv2-skeleton--card" />
+            <div className="cv-skeleton cv-skeleton--card" />
           </div>
           <div>
-            <div className="cv2-skeleton cv2-skeleton--card-sm" />
+            <div className="cv-skeleton cv-skeleton--card-sm" />
           </div>
         </div>
       </div>
@@ -346,7 +346,7 @@ export default function CreditV2() {
   const activeLoan = pretLookup[activeTab] || pretLookup[0];
 
   return (
-    <div className="sim-page cv2-page" data-testid="credit-page">
+    <div className="sim-page cv-page" data-testid="credit-page">
       {/* HEADER (sans toggle — déplacé dans la ligne de contrôles) */}
       <CreditHeader
         exportOptions={exportOptions}
@@ -369,7 +369,7 @@ export default function CreditV2() {
         onChangeViewMode={(viewMode) => setGlobal({ viewMode })}
       />
 
-      <div className={`cv2-grid sim-grid${!isExpert ? ' cv2-grid--simple' : ''}`}>
+      <div className={`cv-grid sim-grid${!isExpert ? ' cv-grid--simple' : ''}`}>
         <CreditLoanInputPanel
           activeTab={activeTab}
           activeLoan={activeLoan}

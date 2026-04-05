@@ -112,21 +112,6 @@
   text-transform: uppercase;
 }
 
-.badge-haute {
-  background: color-mix(in srgb, var(--color-c1) 16%, #FFFFFF);
-  color: var(--color-c1);
-}
-
-.badge-moyenne {
-  background: color-mix(in srgb, var(--color-c2) 18%, #FFFFFF);
-  color: var(--color-c1);
-}
-
-.badge-basse {
-  background: color-mix(in srgb, var(--color-c3) 24%, #FFFFFF);
-  color: var(--color-c1);
-}
-
 .reco-card p {
   margin: 8px 0;
   font-size: 14px;

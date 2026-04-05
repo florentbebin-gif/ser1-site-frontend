@@ -22,8 +22,8 @@ export function CreditLoanTabs({
   ];
 
   return (
-    <nav className="cv2-tabs" aria-label="Navigation prêts" data-testid="credit-tabs">
-      <div className="cv2-tabs__list">
+    <nav className="cv-tabs" aria-label="Navigation prêts" data-testid="credit-tabs">
+      <div className="cv-tabs__list">
         {tabs.map((tab) => {
           if (tab.idx === 2 && !hasPret2) return null;
           if (!isExpert && tab.idx === 2) return null;
@@ -33,11 +33,11 @@ export function CreditLoanTabs({
           const showRemove = tab.available && tab.idx > 0 && isExpert;
 
           return (
-            <div key={tab.idx} className="cv2-tabs__tab-wrapper">
+            <div key={tab.idx} className="cv-tabs__tab-wrapper">
               <button
                 type="button"
                 className={[
-                  'cv2-tabs__tab',
+                  'cv-tabs__tab',
                   isActive && 'is-active',
                   tab.addable && 'is-addable',
                   !tab.available && !tab.addable && 'is-disabled',
@@ -54,12 +54,12 @@ export function CreditLoanTabs({
                 data-testid={`credit-tab-${tab.idx}`}
               >
                 {tab.label}
-                {tab.addable && <span className="cv2-tabs__add-badge" aria-hidden="true">+</span>}
+                {tab.addable && <span className="cv-tabs__add-badge" aria-hidden="true">+</span>}
               </button>
               {showRemove && (
                 <button
                   type="button"
-                  className="cv2-tabs__tab-remove"
+                  className="cv-tabs__tab-remove"
                   aria-label={`Supprimer ${tab.label}`}
                   data-testid={`credit-tab-remove-${tab.idx}`}
                   onClick={() => {

@@ -24,6 +24,7 @@ import StepFamille from './steps/StepFamille';
 import StepFiscalite from './steps/StepFiscalite';
 import StepObjectifs from './steps/StepObjectifs';
 import StepPassif from './steps/StepPassif';
+import '@/styles/sim/index.css';
 import './styles/index.css';
 
 // Événements globaux pour Save/Load depuis la Topbar

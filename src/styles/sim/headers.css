@@ -1,0 +1,13 @@
+/* Ligne sous-titre + actions — pattern commun à tous les simulateurs */
+
+.sim-header__subtitle-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.sim-header__subtitle-row .premium-subtitle {
+  flex: 1;
+  min-width: 0;
+}

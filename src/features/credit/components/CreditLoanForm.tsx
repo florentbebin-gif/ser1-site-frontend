@@ -31,9 +31,9 @@ export function CreditLoanForm({
   const raw = rawValues;
 
   return (
-    <div className="cv2-loan-form" data-testid={`credit-form-pret${pretNum}`}>
+    <div className="cv-loan-form" data-testid={`credit-form-pret${pretNum}`}>
       {/* Montant + Durée — toujours visibles */}
-      <div className="cv2-loan-form__grid">
+      <div className="cv-loan-form__grid">
         <InputEuro
           label="Montant emprunté"
           value={pretData.capital}
@@ -54,7 +54,7 @@ export function CreditLoanForm({
 
       {/* Taux + Type + Date — 3 colonnes en expert, taux seul en simplifié */}
       {isExpert ? (
-        <div className="cv2-loan-form__grid--3 cv2-loan-form__grid--stack-gap">
+        <div className="cv-loan-form__grid--3 cv-loan-form__grid--stack-gap">
           <InputPct
             label="Taux annuel (crédit)"
             rawValue={raw?.taux || formatTauxRaw(pretData.taux)}
@@ -89,10 +89,10 @@ export function CreditLoanForm({
 
       {isExpert && (
         <>
-          <div className="cv2-loan-card__divider" />
-          <div className="cv2-loan-form__section cv2-loan-form__section--no-border" data-testid={pretNum === 0 ? 'credit-assurance-section' : undefined}>
-            <div className="cv2-loan-form__section-title">Assurance emprunteur</div>
-            <div className="cv2-loan-form__grid--3">
+          <div className="cv-loan-card__divider" />
+          <div className="cv-loan-form__section cv-loan-form__section--no-border" data-testid={pretNum === 0 ? 'credit-assurance-section' : undefined}>
+            <div className="cv-loan-form__section-title">Assurance emprunteur</div>
+            <div className="cv-loan-form__grid--3">
               <Select<CreditAssurMode>
                 label="Mode de calcul"
                 value={pretData.assurMode || globalAssurMode}

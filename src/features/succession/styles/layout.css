@@ -1,16 +1,6 @@
 ﻿/* Succession Simulator â€” baseline /sim/* (PR1) */
 
-.sc-header__subtitle-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 12px;
-}
-
-.sc-header__subtitle-row .premium-subtitle {
-  flex: 1;
-  min-width: 0;
-}
+/* Ligne sous-titre + actions — base dans .sim-header__subtitle-row (sim/headers.css) */
 
 .sc-session-msg {
   margin: 0 0 12px;

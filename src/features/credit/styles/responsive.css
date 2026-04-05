@@ -1,12 +1,12 @@
 ﻿/* ----------------------------------------
    SKELETON LOADING
    ---------------------------------------- */
-@keyframes cv2-shimmer {
+@keyframes cv-shimmer {
   0% { background-position: -400px 0; }
   100% { background-position: 400px 0; }
 }
 
-.cv2-skeleton {
+.cv-skeleton {
   border-radius: 6px;
   background: linear-gradient(
     90deg,
@@ -15,32 +15,32 @@
     var(--color-c7) 75%
   );
   background-size: 800px 100%;
-  animation: cv2-shimmer 1.4s infinite linear;
+  animation: cv-shimmer 1.4s infinite linear;
 }
 
-.cv2-skeleton--title {
+.cv-skeleton--title {
   height: 24px;
   width: 260px;
   margin-bottom: 8px;
 }
 
-.cv2-skeleton--subtitle {
+.cv-skeleton--subtitle {
   height: 14px;
   width: 320px;
   margin-bottom: 32px;
 }
 
-.cv2-skeleton-grid {
+.cv-skeleton-grid {
   display: grid;
   grid-template-columns: 1.85fr 1fr;
   gap: 24px;
 }
 
-.cv2-skeleton--card {
+.cv-skeleton--card {
   height: 320px;
 }
 
-.cv2-skeleton--card-sm {
+.cv-skeleton--card-sm {
   height: 220px;
 }
 
@@ -48,55 +48,55 @@
    RESPONSIVE
    ---------------------------------------- */
 @media (max-width: 900px) {
-  /* .cv2-page et .cv2-header â†’ gÃ©rÃ©s par sim-page (socle partagÃ© /sim)
+  /* .cv-page et .cv-header â†’ gÃ©rÃ©s par sim-page (socle partagÃ© /sim)
      et premium-header (premium-shared.css) */
 
   /* point 4 â€” ne pas Ã©tirer en mobile (sticky dÃ©jÃ  retirÃ©) */
-  .cv2-grid--simple {
+  .cv-grid--simple {
     align-items: start;
   }
 
-  .cv2-grid--simple .cv2-right-col {
+  .cv-grid--simple .cv-right-col {
     display: block;
   }
 
-  .cv2-grid--simple .cv2-right-col .cv2-summary {
+  .cv-grid--simple .cv-right-col .cv-summary {
     flex: none;
   }
 
-  .cv2-controls-row {
+  .cv-controls-row {
     grid-template-columns: 1fr;
     gap: 12px;
     align-items: stretch;
   }
 
-  .cv2-controls-row__right {
+  .cv-controls-row__right {
     justify-content: flex-start;
   }
 
-  .cv2-grid {
+  .cv-grid {
     grid-template-columns: 1fr;
   }
 
   /* Summary au-dessus du formulaire sur mobile */
-  .cv2-grid > div:last-child {
+  .cv-grid > div:last-child {
     order: -1;
   }
 
   /* Le wrapper sticky devient statique sur mobile */
-  .cv2-right-col {
+  .cv-right-col {
     position: static;
   }
 
-  .cv2-loan-form__grid {
+  .cv-loan-form__grid {
     grid-template-columns: 1fr;
   }
 
-  .cv2-loan-form__grid--3 {
+  .cv-loan-form__grid--3 {
     grid-template-columns: 1fr;
   }
 
-  .cv2-skeleton-grid {
+  .cv-skeleton-grid {
     grid-template-columns: 1fr;
   }
 }
@@ -107,18 +107,18 @@
     font-size: 18px;
   }
 
-  .cv2-tabs__tab {
+  .cv-tabs__tab {
     padding: 10px 14px;
     font-size: 13px;
   }
 
   /* Donut rÃ©duit sur mobile */
-  .cv2-donut {
+  .cv-donut {
     width: 48px;
     height: 48px;
   }
 
-  .cv2-summary__kpi-main-value {
+  .cv-summary__kpi-main-value {
     font-size: 24px;
   }
 }

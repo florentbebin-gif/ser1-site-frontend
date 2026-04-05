@@ -43,18 +43,18 @@ export default function ReserveCivilSection({
 
       {isOpen && (
         <div className="fisc-acc-body">
-          <p style={{ fontSize: 13, color: 'var(--color-c9)', marginBottom: 16 }}>
+          <p className="dmtg-intro">
             Règles du Code civil - lecture seule (non paramétrable).
           </p>
 
-          <div className="income-tax-block" style={{ marginBottom: 16 }}>
-            <div className="income-tax-block-title" style={{ color: 'var(--color-c1)', fontWeight: 600, fontSize: 15 }}>
+          <div className="income-tax-block dmtg-block--mb16">
+            <div className="dmtg-block-title">
               Réserve héréditaire (art. 913 C. civ.)
             </div>
-            <table className="settings-table" style={{ marginTop: 8 }}>
+            <table className="settings-table dmtg-table--mt8">
               <thead>
                 <tr>
-                  <th style={{ textAlign: 'left' }}>Enfants</th>
+                  <th className="dmtg-col-left">Enfants</th>
                   <th>Réserve</th>
                   <th>Quotité disponible</th>
                 </tr>
@@ -62,7 +62,7 @@ export default function ReserveCivilSection({
               <tbody>
                 {reserveRows.map((row) => (
                   <tr key={row.enfants}>
-                    <td style={{ textAlign: 'left' }}>{row.enfants}</td>
+                    <td className="dmtg-col-left">{row.enfants}</td>
                     <td>{row.reserve}</td>
                     <td>{row.quotiteDisponible}</td>
                   </tr>
@@ -72,26 +72,26 @@ export default function ReserveCivilSection({
           </div>
 
           <div className="income-tax-block">
-            <div className="income-tax-block-title" style={{ color: 'var(--color-c1)', fontWeight: 600, fontSize: 15 }}>
+            <div className="dmtg-block-title">
               Droits du conjoint survivant (art. 757 et s. C. civ.)
             </div>
-            <table className="settings-table" style={{ marginTop: 8 }}>
+            <table className="settings-table dmtg-table--mt8">
               <thead>
                 <tr>
-                  <th style={{ textAlign: 'left' }}>Situation</th>
-                  <th style={{ textAlign: 'left' }}>Droits</th>
+                  <th className="dmtg-col-left">Situation</th>
+                  <th className="dmtg-col-left">Droits</th>
                 </tr>
               </thead>
               <tbody>
                 {droitsConjointRows.map((row) => (
                   <tr key={row.situation}>
-                    <td style={{ textAlign: 'left' }}>{row.situation}</td>
-                    <td style={{ textAlign: 'left' }}>{row.droits}</td>
+                    <td className="dmtg-col-left">{row.situation}</td>
+                    <td className="dmtg-col-left">{row.droits}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
-            <p style={{ fontSize: 12, color: 'var(--color-c9)', margin: '8px 0 0 0' }}>
+            <p className="dmtg-note--mt8">
               Le conjoint survivant est exonéré de droits de succession (loi TEPA 2007).
             </p>
           </div>

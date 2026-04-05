@@ -1,4 +1,5 @@
 import React from 'react';
+import './AppErrorFallback.css';
 
 interface AppErrorFallbackProps {
   error?: unknown;
@@ -11,87 +12,40 @@ export default function AppErrorFallback({
 }: AppErrorFallbackProps): React.ReactElement {
   const isConfigError = type === 'config';
   const errorMessage = error ? String(error) : null;
-  
+
   return (
-    <div style={{
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-      justifyContent: 'center',
-      height: '100vh',
-      backgroundColor: 'var(--color-c7)', // Fond page C7
-      fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
-      color: 'var(--color-c1)', // Texte principal C1
-      textAlign: 'center',
-      padding: '20px'
-    }}>
-      <div style={{
-        backgroundColor: '#FFFFFF',
-        padding: '40px',
-        borderRadius: '12px',
-        boxShadow: '0 4px 6px rgba(0, 0, 0, 0.05)',
-        maxWidth: '500px',
-        width: '100%'
-      }}>
-        <div style={{ fontSize: '48px', marginBottom: '24px' }}>
+    <div className="app-error-page">
+      <div className="app-error-card">
+        <div className="app-error-icon">
           {isConfigError ? '🔧' : '⚠️'}
         </div>
-        
-        <h1 style={{ 
-          fontSize: '24px', 
-          fontWeight: '600', 
-          marginBottom: '16px',
-          color: 'var(--color-c1)'
-        }}>
+
+        <h1 className="app-error-title">
           {isConfigError ? 'Configuration Requise' : 'Application Indisponible'}
         </h1>
-        
-        <p style={{ 
-          fontSize: '16px', 
-          lineHeight: '1.5', 
-          color: 'var(--color-c9)', // Texte secondaire C9
-          marginBottom: '24px'
-        }}>
-          {isConfigError 
+
+        <p className="app-error-message">
+          {isConfigError
             ? "L'application ne peut pas démarrer car la configuration technique est incomplète (Supabase URL/Key manquants)."
             : "Une erreur critique empêche le chargement de l'application."
           }
         </p>
 
         {errorMessage && (
-          <pre style={{
-            backgroundColor: 'var(--color-c7)', // Fond code C7
-            padding: '12px',
-            borderRadius: '6px',
-            fontSize: '12px',
-            color: 'var(--color-c1)', // Danger/erreur = C1 selon gouvernance
-            overflowX: 'auto',
-            marginBottom: '24px',
-            textAlign: 'left'
-          }}>
+          <pre className="app-error-details">
             {errorMessage}
           </pre>
         )}
 
-        <button 
+        <button
           onClick={() => window.location.reload()}
-          style={{
-            backgroundColor: 'var(--color-c2)', // CTA C2
-            color: '#FFFFFF',
-            border: 'none',
-            padding: '10px 20px',
-            borderRadius: '999px',
-            fontSize: '14px',
-            fontWeight: '500',
-            cursor: 'pointer',
-            transition: 'opacity 0.2s'
-          }}
+          className="app-error-retry"
         >
           Réessayer
         </button>
       </div>
-      
-      <div style={{ marginTop: '32px', fontSize: '12px', color: 'var(--color-c9)' }}>
+
+      <div className="app-error-footer">
         SER1 &bull; Gestion Privée
       </div>
     </div>

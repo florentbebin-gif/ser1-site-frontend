@@ -22,7 +22,7 @@ export function CreditSummarySidebar({
   calc,
 }: CreditSummarySidebarProps) {
   return (
-    <div className="cv2-right-col sim-grid__col sim-grid__col--sticky">
+    <div className="cv-right-col sim-grid__col sim-grid__col--sticky">
       <CreditSummaryCard
         synthese={activeSynthese}
         isAnnual={isAnnual}
@@ -37,8 +37,8 @@ export function CreditSummarySidebar({
       />
 
       {calc.hasPretsAdditionnels && (
-        <div className="cv2-total-mensu sim-summary-card sim-summary-card--secondary">
-          <div className="cv2-summary__title-row">
+        <div className="cv-total-mensu sim-summary-card sim-summary-card--secondary">
+          <div className="cv-summary__title-row">
             <div className="sim-card__icon sim-card__icon--sm">
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                 <polygon points="12 2 2 7 12 12 22 7 12 2" />
@@ -46,20 +46,20 @@ export function CreditSummarySidebar({
                 <polyline points="2 12 12 17 22 12" />
               </svg>
             </div>
-            <div className="cv2-summary__title">Synthèse des prêts</div>
+            <div className="cv-summary__title">Synthèse des prêts</div>
           </div>
-          <div className="cv2-loan-card__divider cv2-loan-card__divider--tight sim-divider sim-divider--tight" />
+          <div className="cv-loan-card__divider cv-loan-card__divider--tight sim-divider sim-divider--tight" />
 
-          <div className="cv2-summary__kpi-zone">
+          <div className="cv-summary__kpi-zone">
             <div>
-              <div className="cv2-summary__kpi-label-small">
+              <div className="cv-summary__kpi-label-small">
                 {isAnnual ? 'Annuité totale hors ass.' : 'Mensualité totale hors ass.'}
               </div>
-              <div className="cv2-total-mensu__value">
+              <div className="cv-total-mensu__value">
                 {euro0(calc.synthese.mensualiteTotaleM1 * (isAnnual ? 12 : 1))}
               </div>
               {isExpert && calc.synthese.primeAssMensuelle > 0 && (
-                <div className="cv2-summary__kpi-assurance">
+                <div className="cv-summary__kpi-assurance">
                   + {euro0(calc.synthese.primeAssMensuelle * (isAnnual ? 12 : 1))} {isAnnual ? '/an' : '/mois'} ass.
                 </div>
               )}
@@ -71,10 +71,10 @@ export function CreditSummarySidebar({
             />
           </div>
 
-          <div className="cv2-summary__divider sim-divider sim-divider--tight" />
-          <div className="cv2-summary__row cv2-summary__row--total">
-            <span className="cv2-summary__row-label">Coût total des crédits</span>
-            <span className="cv2-summary__row-value cv2-summary__row-value--highlight">
+          <div className="cv-summary__divider sim-divider sim-divider--tight" />
+          <div className="cv-summary__row cv-summary__row--total">
+            <span className="cv-summary__row-label">Coût total des crédits</span>
+            <span className="cv-summary__row-value cv-summary__row-value--highlight">
               {euro0(calc.synthese.coutTotalCredit)}
             </span>
           </div>

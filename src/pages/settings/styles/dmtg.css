@@ -7,3 +7,143 @@
   color: var(--color-error-text);
   margin-bottom: 2px;
 }
+
+/* === Sections accordéon DMTG / Succession === */
+
+/* Paragraphe d'introduction */
+.dmtg-intro {
+  font-size: 13px;
+  color: var(--color-c9);
+  margin-bottom: 16px;
+}
+
+/* Titre de bloc (15px / C1, remplace income-tax-block-title 13px/C10 pour DMTG) */
+.dmtg-block-title {
+  color: var(--color-c1);
+  font-weight: 600;
+  font-size: 15px;
+  margin-bottom: 8px;
+}
+.dmtg-block-title--flex {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* Badge catégorie (régimes matrimoniaux) */
+.dmtg-badge {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 10px;
+  color: var(--color-c1);
+  white-space: nowrap;
+}
+.dmtg-badge--communautaire { background-color: var(--color-c4); }
+.dmtg-badge--separatiste   { background-color: var(--color-c6); }
+
+/* Espacement des blocs income-tax-block */
+.dmtg-block--mb12 { margin-bottom: 12px; }
+.dmtg-block--mb16 { margin-bottom: 16px; }
+.dmtg-block--mt4  { margin-top: 4px; }
+
+/* Indentation intérieure */
+.dmtg-indent { padding-left: 8px; }
+
+/* Ligne de champ avec marge basse */
+.dmtg-field-row--mb8 { margin-bottom: 8px; }
+
+/* Messages d'erreur de champ */
+.dmtg-field-error {
+  color: var(--color-error-text);
+  font-size: 12px;
+  margin-left: 8px;
+}
+.dmtg-field-error--mt2 {
+  color: var(--color-error-text);
+  font-size: 12px;
+  margin-top: 2px;
+}
+
+/* Tableau avec décalage haut */
+.dmtg-table--mt8 { margin-top: 8px; }
+
+/* Colonne alignée à gauche */
+.dmtg-col-left { text-align: left; }
+
+/* Grille 2 colonnes (avantages / limites des régimes) */
+.dmtg-grid-2col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  font-size: 13px;
+}
+
+/* Listes compactes */
+.dmtg-list {
+  margin: 4px 0 0;
+  padding-left: 18px;
+}
+.dmtg-list--vigilances {
+  margin: 0;
+  padding-left: 18px;
+  color: var(--color-c9);
+  font-size: 13px;
+}
+.dmtg-list-item--mb4 { margin-bottom: 4px; }
+
+/* Textes secondaires 13px */
+.dmtg-desc {
+  font-size: 13px;
+  color: var(--color-c9);
+  margin: 0 0 8px 0;
+}
+.dmtg-desc--mb6 {
+  font-size: 13px;
+  color: var(--color-c9);
+  margin: 0 0 6px 0;
+}
+.dmtg-desc--flush {
+  font-size: 13px;
+  color: var(--color-c9);
+  margin: 0;
+}
+
+/* Textes secondaires 12px */
+.dmtg-note--mt4 {
+  font-size: 12px;
+  color: var(--color-c9);
+  margin: 4px 0 0 0;
+}
+.dmtg-note--mt8 {
+  font-size: 12px;
+  color: var(--color-c9);
+  margin: 8px 0 0 0;
+}
+.dmtg-note--flush {
+  font-size: 12px;
+  color: var(--color-c9);
+  margin: 0;
+}
+
+/* Libellé famille (libéralités) */
+.dmtg-family-label {
+  font-size: 12px;
+  color: var(--color-c9);
+  margin-bottom: 6px;
+}
+
+/* Éléments forts dans les descriptions */
+.dmtg-strong            { color: var(--color-c1); }
+.dmtg-strong--secondary { color: var(--color-c9); }
+
+/* Sous-titre de sous-section (barème, etc.) */
+.dmtg-subsection-title {
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+.dmtg-subsection--mt12 { margin-top: 12px; }
+
+/* Input conditions (largeur fixe) */
+.dmtg-input-conditions { width: 280px; }

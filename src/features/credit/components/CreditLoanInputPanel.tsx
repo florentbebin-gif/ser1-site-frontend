@@ -35,12 +35,12 @@ export function CreditLoanInputPanel({
   return (
     <div className="sim-grid__col">
       <div className="premium-card premium-card--guide sim-card--guide">
-        <div className="cv2-loan-card">
-          <header className="cv2-loan-card__header sim-card__header sim-card__header--bleed">
-            <h2 className="cv2-loan-card__title sim-card__title sim-card__title-row">
+        <div className="cv-loan-card">
+          <header className="cv-loan-card__header sim-card__header sim-card__header--bleed">
+            <h2 className="cv-loan-card__title sim-card__title sim-card__title-row">
               <span className="sim-card__icon sim-card__icon--lg">
                 <svg
-                  className="cv2-loan-card__icon"
+                  className="cv-loan-card__icon"
                   viewBox="0 0 24 24"
                   fill="none"
                   stroke="currentColor"
@@ -59,12 +59,12 @@ export function CreditLoanInputPanel({
               </span>
               Paramètres du prêt
             </h2>
-            <p className="cv2-loan-card__subtitle sim-card__subtitle">
+            <p className="cv-loan-card__subtitle sim-card__subtitle">
               Renseignez les données du financement pour estimer mensualités et coût global.
             </p>
           </header>
-          <div className="cv2-loan-card__divider sim-divider" />
-          <div className="cv2-loan-card__body">
+          <div className="cv-loan-card__divider sim-divider" />
+          <div className="cv-loan-card__body">
             <CreditLoanForm
               pretNum={activeTab}
               pretData={activeLoan.data}
@@ -81,10 +81,10 @@ export function CreditLoanInputPanel({
       </div>
 
       {calc.hasPretsAdditionnels && (
-        <div className="premium-card cv2-lissage-card">
-          <div className="sim-section-title cv2-lissage-title">Options de lissage</div>
-          <div className="cv2-loan-card__divider cv2-loan-card__divider--tight sim-divider sim-divider--tight" />
-          <div className="cv2-lissage">
+        <div className="premium-card cv-lissage-card">
+          <div className="sim-section-title cv-lissage-title">Options de lissage</div>
+          <div className="cv-loan-card__divider cv-loan-card__divider--tight sim-divider sim-divider--tight" />
+          <div className="cv-lissage">
             <Toggle
               checked={state.lisserPret1}
               onChange={(value) => setGlobal({ lisserPret1: value })}
@@ -92,15 +92,15 @@ export function CreditLoanInputPanel({
               disabled={calc.pret1IsInfine}
             />
             {state.lisserPret1 && (
-              <div className="cv2-lissage__pills">
+              <div className="cv-lissage__pills">
                 <button
-                  className={`cv2-lissage__pill ${state.lissageMode === 'mensu' ? 'is-active' : ''}`}
+                  className={`cv-lissage__pill ${state.lissageMode === 'mensu' ? 'is-active' : ''}`}
                   onClick={() => setGlobal({ lissageMode: 'mensu' })}
                 >
                   Mensualité constante
                 </button>
                 <button
-                  className={`cv2-lissage__pill ${state.lissageMode === 'duree' ? 'is-active' : ''}`}
+                  className={`cv-lissage__pill ${state.lissageMode === 'duree' ? 'is-active' : ''}`}
                   onClick={() => setGlobal({ lissageMode: 'duree' })}
                 >
                   Durée constante
@@ -109,12 +109,12 @@ export function CreditLoanInputPanel({
             )}
           </div>
           {calc.pret1IsInfine && (
-            <p className="cv2-lissage__hint">
+            <p className="cv-lissage__hint">
               Le lissage est indisponible pour un prêt 1 en In fine.
             </p>
           )}
           {state.lisserPret1 && calc.autresIsInfine.some(Boolean) && (
-            <p className="cv2-lissage__hint">
+            <p className="cv-lissage__hint">
               Un prêt in fine comporte une échéance finale de capital : elle n&apos;est pas lissable et reste visible dans l&apos;échéancier.
             </p>
           )}

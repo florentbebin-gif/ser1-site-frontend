@@ -1,17 +1,7 @@
 ﻿/* src/features/ir/components/IrSimulator.css */
 
 /* Ligne sous-titre + actions (ExportMenu Ã  droite) */
-.ir-header__subtitle-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 12px;
-}
-
-.ir-header__subtitle-row .premium-subtitle {
-  flex: 1;
-  min-width: 0;
-}
+/* Ligne sous-titre + actions — base dans .sim-header__subtitle-row (sim/headers.css) */
 
 .ir-grid {
   min-width: 0;

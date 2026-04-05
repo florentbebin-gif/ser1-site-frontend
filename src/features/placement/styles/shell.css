@@ -17,12 +17,7 @@
   color: var(--color-c1);
 }
 
-.pl-header__subtitle-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-}
+/* Ligne sous-titre + actions — base dans .sim-header__subtitle-row (sim/headers.css) */
 
 .pl-header__actions {
   display: flex;
