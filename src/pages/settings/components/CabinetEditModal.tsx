@@ -179,10 +179,11 @@ export default function CabinetEditModal({
             />
           </div>
           <div className="settings-modal-field">
-            <label className="settings-modal-label">
+            <label className="settings-modal-label" htmlFor="cabinet-theme-select">
               Theme par defaut
             </label>
             <select
+              id="cabinet-theme-select"
               value={form.default_theme_id}
               onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
                 setForm((prev) => ({ ...prev, default_theme_id: e.target.value }));
@@ -215,7 +216,8 @@ export default function CabinetEditModal({
                 type="file"
                 accept="image/png,image/jpeg"
                 onChange={handleLogoFileChange}
-                style={{ display: 'none' }}
+                className="settings-modal-file-input--hidden"
+                aria-label="Logo du cabinet"
               />
             </div>
             {logoPreview && (

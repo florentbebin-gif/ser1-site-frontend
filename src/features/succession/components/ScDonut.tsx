@@ -28,7 +28,6 @@ export default function ScDonut({
       viewBox="0 0 68 68"
       className="sc-synth-donut"
       aria-hidden="true"
-      style={{ transform: 'rotate(-90deg)' }}
     >
       <circle cx={34} cy={34} r={SC_DONUT_R} fill="none" stroke="var(--color-c8)" strokeWidth="9" />
       <circle

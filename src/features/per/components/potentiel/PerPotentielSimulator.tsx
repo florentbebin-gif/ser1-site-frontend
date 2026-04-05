@@ -139,7 +139,7 @@ export default function PerPotentielSimulator(): React.ReactElement {
   if (loading) {
     return (
       <div className="sim-page per-potentiel-page">
-        <p style={{ color: 'var(--color-c9)', textAlign: 'center', padding: '3rem' }}>
+        <p className="per-potentiel-loading">
           Chargement des paramètres fiscaux...
         </p>
       </div>
@@ -149,7 +149,7 @@ export default function PerPotentielSimulator(): React.ReactElement {
   if (error) {
     return (
       <div className="sim-page per-potentiel-page">
-        <p style={{ color: 'var(--color-c1)', textAlign: 'center', padding: '3rem' }}>
+        <p className="per-potentiel-error">
           Erreur : {error}
         </p>
       </div>
@@ -199,7 +199,7 @@ export default function PerPotentielSimulator(): React.ReactElement {
         </div>
       </div>
 
-      <nav className="per-potentiel-tabs" aria-label="Étapes du parcours">
+      <nav className="per-potentiel-tabs" aria-label="Étapes du parcours" role="tablist">
         {visibleSteps.map((stepId) => {
           const meta = getStepMeta(stepId, state.mode, state.historicalBasis, years);
           const isCurrent = state.step === stepId;

@@ -47,6 +47,7 @@ export function InputEuro({ value, onChange, label, disabled }: InputEuroProps) 
           onChange(clean === '' ? 0 : Number(clean));
         }}
         disabled={disabled}
+        title={label}
       />
       <span className="pl-input__unit sim-field__unit">€</span>
     </SimFieldShell>
@@ -92,6 +93,7 @@ export function InputPct({ value, onChange, label, disabled }: InputPctProps) {
         onFocus={() => setIsFocused(true)}
         onBlur={handleBlur}
         disabled={disabled}
+        title={label}
       />
       <span className="pl-input__unit sim-field__unit">%</span>
     </SimFieldShell>
@@ -149,6 +151,7 @@ export function InputNumber({
       value={localValue}
       onChange={handleChange}
       onBlur={handleBlur}
+      title={label}
     />
   );
 

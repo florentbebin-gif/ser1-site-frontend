@@ -99,7 +99,7 @@ export function SimSelect({
         </svg>
       </button>
       {open && (
-        <ul role="listbox" className="sim-field__dropdown">
+        <ul role="listbox" aria-label="Options" className="sim-field__dropdown">
           {options.map((o) => (
             <li
               key={o.value}

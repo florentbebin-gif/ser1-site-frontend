@@ -38,8 +38,9 @@ export default function StepFamille({ dossier, updateDossier }: StepProps) {
           />
         </div>
         <div className="audit-form-row">
-          <label>Date de naissance</label>
+          <label htmlFor="mr-date-naissance">Date de naissance</label>
           <input
+            id="mr-date-naissance"
             type="date"
             value={situationFamiliale.mr.dateNaissance}
             onChange={(e) => updateDossier({
@@ -55,8 +56,9 @@ export default function StepFamille({ dossier, updateDossier }: StepProps) {
       <div className="audit-form-section">
         <h3>Situation</h3>
         <div className="audit-form-row">
-          <label>Situation matrimoniale</label>
+          <label htmlFor="situation-matrimoniale">Situation matrimoniale</label>
           <select
+            id="situation-matrimoniale"
             value={situationFamiliale.situationMatrimoniale}
             onChange={(e) => updateDossier({
               situationFamiliale: {
@@ -112,8 +114,9 @@ export default function StepFamille({ dossier, updateDossier }: StepProps) {
               />
             </div>
             <div className="audit-form-row">
-              <label>Date de naissance</label>
+              <label htmlFor="mme-date-naissance">Date de naissance</label>
               <input
+                id="mme-date-naissance"
                 type="date"
                 value={situationFamiliale.mme?.dateNaissance || ''}
                 onChange={(e) => updateDossier({
@@ -131,8 +134,9 @@ export default function StepFamille({ dossier, updateDossier }: StepProps) {
         )}
 
         <div className="audit-form-row">
-          <label>Nombre d'enfants</label>
+          <label htmlFor="nombre-enfants">Nombre d'enfants</label>
           <input
+            id="nombre-enfants"
             type="number"
             min="0"
             value={situationFamiliale.enfants.length}

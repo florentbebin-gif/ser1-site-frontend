@@ -2,6 +2,8 @@
   position: fixed;
   inset: 0;
   background: rgba(0, 0, 0, 0.45);
+  /* stylelint-disable-next-line property-no-vendor-prefix */
+  -webkit-backdrop-filter: blur(3px);
   backdrop-filter: blur(3px);
   display: flex;
   align-items: center;

@@ -95,6 +95,7 @@
 
 .sc-synth-donut {
   flex-shrink: 0;
+  transform: rotate(-90deg);
 }
 
 .sc-summary-title {

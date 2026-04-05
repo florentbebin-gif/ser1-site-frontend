@@ -307,6 +307,10 @@
   flex-wrap: wrap;
 }
 
+.settings-modal-file-input--hidden {
+  display: none;
+}
+
 .settings-modal-hint {
   font-size: 13px;
   color: var(--color-c9);

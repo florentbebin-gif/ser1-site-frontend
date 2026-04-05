@@ -73,10 +73,11 @@ export default function UserInviteModal({
             />
           </div>
           <div className="settings-modal-field">
-            <label className="settings-modal-label">
+            <label className="settings-modal-label" htmlFor="invite-cabinet-select">
               Cabinet (optionnel)
             </label>
             <select
+              id="invite-cabinet-select"
               value={cabinetId}
               onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setCabinetId(e.target.value)}
               disabled={submitting || cabinetsLoading}

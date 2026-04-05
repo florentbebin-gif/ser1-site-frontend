@@ -87,9 +87,6 @@ function RefreshIcon(): React.ReactElement {
   );
 }
 
-const actionButtonStyle = { width: 28, height: 28 };
-const chipStyle = { padding: '8px 16px', fontWeight: 600 };
-const emptyTextStyle = { color: 'var(--color-c9)', fontSize: 14 };
 
 interface SettingsCabinetsSectionProps {
   cabinets: CabinetSummary[];
@@ -112,7 +109,7 @@ export function SettingsCabinetsSection({
       subtitle="Gestion des cabinets et de leur thème associé."
       icon={<CabinetsIcon />}
       actions={(
-        <button className="chip" onClick={onCreateCabinet} disabled={cabinetsLoading} style={chipStyle} type="button">
+        <button className="chip admin-section-chip" onClick={onCreateCabinet} disabled={cabinetsLoading} type="button">
           + Nouveau cabinet
         </button>
       )}
@@ -120,7 +117,7 @@ export function SettingsCabinetsSection({
       {cabinetsLoading ? (
         <p>Chargement des cabinets...</p>
       ) : cabinets.length === 0 ? (
-        <p style={emptyTextStyle}>Aucun cabinet créé.</p>
+        <p className="admin-section-empty">Aucun cabinet créé.</p>
       ) : (
         <div className="admin-cards-grid">
           {cabinets.map((cabinet) => (
@@ -131,23 +128,21 @@ export function SettingsCabinetsSection({
                   {cabinet.themes?.name || 'Aucun thème'}
                 </div>
               </div>
-              <div className="admin-card-compact__actions" style={{ alignItems: 'center' }}>
+              <div className="admin-card-compact__actions">
                 <button
-                  className="icon-btn"
+                  className="icon-btn admin-card-compact__action-btn--sm"
                   onClick={() => onEditCabinet(cabinet)}
                   title="Modifier"
                   aria-label="Modifier le cabinet"
-                  style={actionButtonStyle}
                   type="button"
                 >
                   <EditIcon />
                 </button>
                 <button
-                  className="icon-btn danger"
+                  className="icon-btn danger admin-card-compact__action-btn--sm"
                   onClick={() => onDeleteCabinet(cabinet)}
                   title="Supprimer"
                   aria-label="Supprimer le cabinet"
-                  style={actionButtonStyle}
                   type="button"
                 >
                   <DeleteIcon />
@@ -177,27 +172,27 @@ export function SettingsThemesSection({
   onDeleteTheme,
 }: SettingsThemesSectionProps): React.ReactElement {
   return (
+    <div className="settings-section-card--mt">
     <SettingsSectionCard
       title={`Thèmes globaux (${themes.length})`}
       subtitle="Palettes de couleurs appliquées aux cabinets."
       icon={<ThemesIcon />}
       actions={(
-        <button className="chip" onClick={onCreateTheme} disabled={themesLoading} style={chipStyle} type="button">
+        <button className="chip admin-section-chip" onClick={onCreateTheme} disabled={themesLoading} type="button">
           + Nouveau thème
         </button>
       )}
-      style={{ marginTop: 20 }}
     >
       {themesLoading ? (
         <p>Chargement des thèmes...</p>
       ) : themes.length === 0 ? (
-        <p style={emptyTextStyle}>Aucun thème créé.</p>
+        <p className="admin-section-empty">Aucun thème créé.</p>
       ) : (
         <div className="admin-cards-grid">
           {themes.map((theme) => (
             <div key={theme.id} className="admin-card-compact">
               <div className="admin-card-compact__info">
-                <div className="admin-card-compact__name" style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                <div className="admin-card-compact__name admin-card-compact__name--flex">
                   {theme.name}
                 </div>
                 <div className="admin-card-compact__palette">
@@ -211,27 +206,25 @@ export function SettingsThemesSection({
                   ))}
                 </div>
               </div>
-              <div className="admin-card-compact__actions" style={{ alignItems: 'center' }}>
+              <div className="admin-card-compact__actions">
                 {theme.is_system && (
-                  <span className="theme-badge-sys" style={{ marginRight: 4 }}>SYS</span>
+                  <span className="theme-badge-sys theme-badge-sys--mr">SYS</span>
                 )}
                 <button
-                  className="icon-btn"
+                  className="icon-btn admin-card-compact__action-btn--sm"
                   onClick={() => onEditTheme(theme)}
                   title="Modifier"
                   aria-label="Modifier le thème"
-                  style={actionButtonStyle}
                   type="button"
                 >
                   <EditIcon />
                 </button>
                 {!theme.is_system && (
                   <button
-                    className="icon-btn danger"
+                    className="icon-btn danger admin-card-compact__action-btn--sm"
                     onClick={() => onDeleteTheme(theme)}
                     title="Supprimer"
                     aria-label="Supprimer le thème"
-                    style={actionButtonStyle}
                     type="button"
                   >
                     <DeleteIcon />
@@ -243,6 +236,7 @@ export function SettingsThemesSection({
         </div>
       )}
     </SettingsSectionCard>
+    </div>
   );
 }
 
@@ -270,29 +264,28 @@ export function SettingsUsersSection({
   onDeleteUser,
 }: SettingsUsersSectionProps): React.ReactElement {
   return (
+    <div className="settings-section-card--mt">
     <SettingsSectionCard
       title={`Utilisateurs (${users.length})`}
       subtitle="Comptes, rôles et affectation aux cabinets."
       icon={<UsersIcon />}
       actions={(
         <>
-          <button className="chip" onClick={onCreateUser} disabled={actionLoading} style={chipStyle} type="button">
+          <button className="chip admin-section-chip" onClick={onCreateUser} disabled={actionLoading} type="button">
             + Nouvel utilisateur
           </button>
           <button
-            className="icon-btn"
+            className="icon-btn admin-refresh-btn"
             onClick={onRefresh}
             disabled={actionLoading}
             title="Rafraîchir la liste"
             aria-label="Rafraîchir"
-            style={{ width: 36, height: 36 }}
             type="button"
           >
             <RefreshIcon />
           </button>
         </>
       )}
-      style={{ marginTop: 20 }}
     >
       <div className="users-table">
         <table>
@@ -323,14 +316,7 @@ export function SettingsUsersSection({
                       onAssignUserCabinet(user.id, event.target.value);
                     }}
                     disabled={actionLoading}
-                    style={{
-                      padding: '6px 10px',
-                      border: '1px solid var(--color-c8)',
-                      borderRadius: 4,
-                      fontSize: 12,
-                      cursor: 'pointer',
-                      minWidth: 120,
-                    }}
+                    aria-label="Assigner un cabinet"
                   >
                     <option value="">- Aucun -</option>
                     {cabinets.map((cabinet) => (
@@ -385,5 +371,6 @@ export function SettingsUsersSection({
         </table>
       </div>
     </SettingsSectionCard>
+    </div>
   );
 }
