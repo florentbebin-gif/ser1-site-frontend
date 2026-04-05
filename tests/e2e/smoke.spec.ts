@@ -49,8 +49,8 @@ test.describe('Smoke Tests - Surfaces stables', () => {
     await expect(page.getByTestId('credit-pret0-start')).toBeVisible();
     await expect(page.getByTestId('credit-pret0-assurmode')).toBeVisible();
 
-    const firstGrid = form.locator('.cv2-loan-form__grid').first();
-    const expertGrid = form.locator('.cv2-loan-form__grid--stack-gap').first();
+    const firstGrid = form.locator('.cv-loan-form__grid').first();
+    const expertGrid = form.locator('.cv-loan-form__grid--stack-gap').first();
     const firstGridBox = await firstGrid.boundingBox();
     const expertGridBox = await expertGrid.boundingBox();
 
