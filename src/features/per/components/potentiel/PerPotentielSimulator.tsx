@@ -150,7 +150,6 @@ export default function PerPotentielSimulator(): React.ReactElement {
 
   const activeStep = getStepMeta(state.step, state.mode, state.historicalBasis, years);
   const stepIndex = visibleSteps.indexOf(state.step);
-  const totalSteps = visibleSteps.length;
   const currentPass = fiscalContext.passHistoryByYear[years.currentTaxYear] ?? null;
   const exportOptions = [
     { label: 'Excel', onClick: exportExcel, disabled: !result || state.step !== 5 },
@@ -215,14 +214,11 @@ export default function PerPotentielSimulator(): React.ReactElement {
         })}
       </nav>
 
-      <div className="per-potentiel-layout">
-        <main className="per-potentiel-main">
+      <div className="sim-grid">
+        <main className="sim-grid__col">
           <div className="premium-card premium-card--guide per-potentiel-stage">
-            <div className="per-potentiel-stage-header">
+            <div className="per-potentiel-stage-header sim-card__header--bleed">
               <h2 className="per-potentiel-stage-title">{activeStep.title}</h2>
-              <div className="per-potentiel-stage-badge">
-                {stepIndex + 1} / {totalSteps}
-              </div>
             </div>
 
             <div className="per-potentiel-stage-body">
@@ -353,9 +349,19 @@ export default function PerPotentielSimulator(): React.ReactElement {
           </div>
         </main>
 
-        <aside className="per-potentiel-context">
-          <div className="premium-card-compact per-potentiel-context-card">
-            <p className="premium-section-title">Dossier</p>
+        {state.mode !== null && (
+        <aside className="per-potentiel-context sim-grid__col sim-grid__col--sticky">
+          <div className="premium-card per-potentiel-context-card sim-summary-card">
+            <div className="sim-card__title-row">
+              <div className="sim-card__icon">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                  <polyline points="14 2 14 8 20 8" />
+                </svg>
+              </div>
+              <h3 className="sim-card__title">Dossier</h3>
+            </div>
+            <div className="sim-divider" />
             <div className="per-potentiel-context-list">
               <div className="per-potentiel-context-item">
                 <span className="per-potentiel-context-label">Parcours</span>
@@ -387,8 +393,18 @@ export default function PerPotentielSimulator(): React.ReactElement {
           </div>
 
           {result && (
-            <div className="premium-card-compact per-potentiel-context-card per-potentiel-context-card--accent">
-              <p className="premium-section-title">Aperçu en direct</p>
+            <div className="premium-card per-potentiel-context-card sim-summary-card sim-summary-card--secondary">
+              <div className="sim-card__title-row">
+                <div className="sim-card__icon">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <line x1="12" y1="20" x2="12" y2="10" />
+                    <line x1="18" y1="20" x2="18" y2="4" />
+                    <line x1="6" y1="20" x2="6" y2="16" />
+                  </svg>
+                </div>
+                <h3 className="sim-card__title">Aperçu en direct</h3>
+              </div>
+              <div className="sim-divider sim-divider--tight" />
               <div className="per-potentiel-mini-kpis">
                 <div className="per-potentiel-mini-kpi">
                   <span className="per-potentiel-mini-kpi-label">TMI</span>
@@ -420,6 +436,7 @@ export default function PerPotentielSimulator(): React.ReactElement {
             </div>
           )}
         </aside>
+        )}
       </div>
     </div>
   );
