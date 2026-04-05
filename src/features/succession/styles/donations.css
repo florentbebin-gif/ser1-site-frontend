@@ -106,25 +106,23 @@
 .sc-input-month:hover { border-bottom-color: var(--color-c8); }
 .sc-input-month:focus-visible { border-bottom-color: var(--color-c2); }
 
-.sc-donation-select .sc-select__trigger {
+.sc-donation-select .sim-field__select-trigger {
   justify-content: flex-start;
   text-align: left;
 }
 
-.sc-donation-select .sc-select__label,
-.sc-donation-select .sc-select__option {
+.sc-donation-select .sim-field__select-value,
+.sc-donation-select .sim-field__option {
   text-align: left;
 }
 
-.sc-asset-select .sc-select__trigger {
+.sc-asset-select .sim-field__select-trigger {
   justify-content: flex-start;
   text-align: left;
 }
 
-.sc-asset-select .sc-select__label,
-.sc-asset-select .sc-select__option,
-.sc-asset-select .sc-select__option-label,
-.sc-asset-select .sc-select__option-description {
+.sc-asset-select .sim-field__select-value,
+.sc-asset-select .sim-field__option {
   text-align: left;
 }
 

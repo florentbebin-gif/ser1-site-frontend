@@ -1,5 +1,4 @@
-﻿.vcm__select,
-.vcm__mini-input {
+﻿.vcm__mini-input {
   width: 100%;
   box-sizing: border-box;
   border: none;
@@ -11,25 +10,15 @@
   font-size: 13px;
   outline: none;
   transition: border-color 0.2s;
-}
-
-.vcm__select {
-  height: 32px;
-  padding: 0 10px;
-}
-
-.vcm__mini-input {
   height: 32px;
   padding: 4px 6px;
   text-align: right;
 }
 
-.vcm__select:hover,
 .vcm__mini-input:hover {
   border-bottom-color: var(--color-c8);
 }
 
-.vcm__select:focus-visible,
 .vcm__mini-input:focus-visible,
 .pl-alloc-input:focus-visible {
   border-bottom-color: var(--color-c2);

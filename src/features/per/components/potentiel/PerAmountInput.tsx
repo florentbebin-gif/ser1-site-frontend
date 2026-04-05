@@ -1,4 +1,5 @@
 import React, { useState, useCallback } from 'react';
+import { formatIntegerInput } from '@/utils/formatNumber';
 
 interface PerAmountInputProps {
   value: number;
@@ -9,8 +10,6 @@ interface PerAmountInputProps {
   className?: string;
 }
 
-const fmtDisplay = (v: number): string =>
-  v === 0 ? '' : v.toLocaleString('fr-FR');
 
 const parseInput = (raw: string): number => {
   const cleaned = raw.replace(/\s/g, '').replace(',', '.');
@@ -49,7 +48,7 @@ export function PerAmountInput({
     onChange(Math.max(min, parsed));
   }, [min, onChange]);
 
-  const displayValue = isFocused ? (raw ?? '') : fmtDisplay(value);
+  const displayValue = isFocused ? (raw ?? '') : formatIntegerInput(value);
 
   const input = (
     <input

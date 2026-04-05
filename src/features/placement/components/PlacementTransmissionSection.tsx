@@ -8,6 +8,7 @@ import type {
 } from '../utils/normalizers';
 import { BENEFICIARY_OPTIONS } from '../utils/normalizers';
 import { InputNumber } from './inputs';
+import { SimSelect } from '@/components/ui/sim';
 
 interface PlacementTransmissionSectionProps {
   state: PlacementSimulatorState;
@@ -68,27 +69,20 @@ export function PlacementTransmissionSection({
                 {(() => {
                   const isSingleOption = state.client.situation === 'single';
                   return (
-                    <select
-                      className={`pl-select sim-field__control${isSingleOption ? ' is-forced' : ''}`}
-                      disabled={isSingleOption}
+                    <SimSelect
                       value={state.transmission.beneficiaryType || 'enfants'}
-                      onChange={(event) => {
-                        const value = event.target.value;
-                        if (value === 'conjoint') {
-                          setTransmission({ beneficiaryType: value, nbBeneficiaires: 1 });
+                      onChange={(v) => {
+                        if (v === 'conjoint') {
+                          setTransmission({ beneficiaryType: v, nbBeneficiaires: 1 });
                           return;
                         }
-                        setTransmission({ beneficiaryType: value });
+                        setTransmission({ beneficiaryType: v });
                       }}
-                    >
-                      {BENEFICIARY_OPTIONS
+                      forced={isSingleOption}
+                      options={BENEFICIARY_OPTIONS
                         .filter((option) => option.value !== 'conjoint' || !isSingleOption)
-                        .map((option) => (
-                          <option key={option.value} value={option.value}>
-                            {option.label}
-                          </option>
-                        ))}
-                    </select>
+                        .map((option) => ({ value: option.value, label: option.label }))}
+                    />
                   );
                 })()}
               </td>
@@ -112,21 +106,18 @@ export function PlacementTransmissionSection({
             <tr>
               <td>Tranche DMTG estimée</td>
               <td colSpan={2}>
-                <select
-                  className="pl-select sim-field__control"
-                  value={state.transmission.dmtgTaux ?? ''}
-                  onChange={(event) => {
-                    const nextValue = parseFloat(event.target.value);
+                <SimSelect
+                  value={String(state.transmission.dmtgTaux ?? '')}
+                  onChange={(v) => {
+                    const nextValue = parseFloat(v);
                     if (Number.isNaN(nextValue)) return;
                     setTransmission({ dmtgTaux: nextValue });
                   }}
-                >
-                  {dmtgSelectOptions.map((option) => (
-                    <option key={option.key || option.value} value={option.value}>
-                      {option.label}
-                    </option>
-                  ))}
-                </select>
+                  options={dmtgSelectOptions.map((option) => ({
+                    value: String(option.value),
+                    label: option.label,
+                  }))}
+                />
               </td>
             </tr>
 

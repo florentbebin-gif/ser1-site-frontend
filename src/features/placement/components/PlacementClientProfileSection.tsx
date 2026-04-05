@@ -59,15 +59,15 @@ export function PlacementClientProfileSection({
         />
         <Select
           label="TMI actuel"
-          value={client.tmiEpargne}
+          value={String(client.tmiEpargne ?? '')}
           onChange={(value) => setClient({ tmiEpargne: parseFloat(value) })}
-          options={tmiOptions}
+          options={tmiOptions.map((o) => ({ value: String(o.value), label: o.label }))}
         />
         <Select
           label="TMI retraite"
-          value={client.tmiRetraite}
+          value={String(client.tmiRetraite ?? '')}
           onChange={(value) => setClient({ tmiRetraite: parseFloat(value) })}
-          options={tmiOptions}
+          options={tmiOptions.map((o) => ({ value: String(o.value), label: o.label }))}
         />
         <Select
           label="Situation"

@@ -3,13 +3,13 @@
  */
 
 import { toNumber } from '../../../utils/number';
+import { formatInteger } from '@/utils/formatNumber';
 
 // ============================================================================
 // FORMATTERS NOMBRES
 // ============================================================================
 
-export const fmt0 = (n: number | string | null | undefined): string =>
-  (Math.round(Number(n) || 0)).toLocaleString('fr-FR');
+export const fmt0 = formatInteger;
 
 export const euro0 = (n: number | string | null | undefined): string => `${fmt0(n)} €`;
 
