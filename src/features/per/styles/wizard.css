@@ -55,119 +55,27 @@
   color: var(--color-c5);
 }
 
-.per-potentiel-layout {
-  display: grid;
-  grid-template-columns: minmax(0, 1.85fr) minmax(280px, 1fr);
-  gap: 24px;
-  align-items: start;
+.per-potentiel-tab.is-done::before {
+  content: '';
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  margin-right: 4px;
+  vertical-align: -1px;
+  background: var(--color-c5);
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='20 6 9 17 4 12'/%3E%3C/svg%3E");
+  mask-size: contain;
+  mask-repeat: no-repeat;
 }
 
-.per-potentiel-rail,
 .per-potentiel-context {
-  position: sticky;
-  top: 80px;
   display: flex;
   flex-direction: column;
   gap: 16px;
 }
 
-.per-potentiel-rail-card,
 .per-potentiel-context-card {
   box-sizing: border-box;
-}
-
-.per-potentiel-rail-list {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.per-potentiel-rail-item {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  width: 100%;
-  padding: 10px 12px;
-  border: 1px solid var(--color-c8);
-  border-radius: 10px;
-  background: #FFFFFF;
-  text-align: left;
-  cursor: pointer;
-  transition: border-color 0.2s, background-color 0.2s, transform 0.2s;
-}
-
-.per-potentiel-rail-item:hover:not(:disabled) {
-  border-color: var(--color-c3);
-  background: var(--color-c7);
-  transform: translateX(2px);
-}
-
-.per-potentiel-rail-item:disabled {
-  cursor: default;
-  opacity: 0.7;
-}
-
-.per-potentiel-rail-item.is-active {
-  border-color: var(--color-c2);
-  background: color-mix(in srgb, var(--color-c4) 50%, #FFFFFF);
-}
-
-.per-potentiel-rail-item.is-done {
-  border-color: color-mix(in srgb, var(--color-c5) 45%, var(--color-c8));
-}
-
-.per-potentiel-rail-index {
-  display: inline-flex;
-  width: 30px;
-  height: 30px;
-  flex-shrink: 0;
-  align-items: center;
-  justify-content: center;
-  border-radius: 999px;
-  background: var(--color-c7);
-  font-size: 12px;
-  font-weight: 500;
-  color: var(--color-c9);
-}
-
-.per-potentiel-rail-item.is-active .per-potentiel-rail-index {
-  background: var(--color-c2);
-  color: #FFFFFF;
-}
-
-.per-potentiel-rail-copy {
-  display: flex;
-  min-width: 0;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.per-potentiel-rail-label {
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.8px;
-  text-transform: uppercase;
-  color: var(--color-c9);
-}
-
-.per-potentiel-rail-desc {
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--color-c1);
-}
-
-.per-potentiel-rail-note {
-  border-left: 3px solid var(--color-c6);
-}
-
-.per-potentiel-note-list {
-  margin: 0;
-  padding-left: 18px;
-  display: grid;
-  gap: 8px;
-  font-size: 12px;
-  line-height: 1.55;
-  color: var(--color-c9);
 }
 
 .per-potentiel-stage {
@@ -360,5 +268,98 @@
   color: var(--color-c9);
 }
 
-/* -- Inputs /sim/* pattern ------------------------------------------------- */
+/* -- Sidebar hero (step 5) ------------------------------------------------ */
 
+.per-sidebar-hero {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.per-sidebar-hero__label {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  color: var(--color-c9);
+  margin-bottom: 6px;
+}
+
+.per-sidebar-hero__value {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--color-c1);
+  font-variant-numeric: tabular-nums;
+}
+
+.per-sidebar-hero svg {
+  transform: rotate(-90deg);
+  flex-shrink: 0;
+}
+
+.per-sidebar-simulation {
+  display: grid;
+  gap: 12px;
+}
+
+.per-sidebar-simulation__hint {
+  margin: 0;
+  font-size: 12px;
+  color: var(--color-c9);
+  line-height: 1.55;
+}
+
+/* -- Hypothèses ------------------------------------------------------------ */
+
+.per-hypotheses {
+  margin-top: 24px;
+  border: 1px solid var(--color-c8);
+  border-radius: 12px;
+  background: var(--color-c7);
+  overflow: hidden;
+}
+
+.per-hypotheses__toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 12px 16px;
+  border: none;
+  background: transparent;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--color-c9);
+  cursor: pointer;
+  transition: color 0.15s;
+}
+
+.per-hypotheses__toggle:hover {
+  color: var(--color-c2);
+}
+
+.per-hypotheses__title {
+  font-weight: 500;
+}
+
+.per-hypotheses__chevron {
+  transition: transform 0.2s;
+}
+
+.per-hypotheses__chevron.is-open {
+  transform: rotate(180deg);
+}
+
+.per-hypotheses__list {
+  margin: 0;
+  padding: 0 16px 14px 32px;
+  font-size: 12px;
+  line-height: 1.65;
+  color: var(--color-c9);
+  display: grid;
+  gap: 6px;
+}
+
+/* -- Inputs /sim/* pattern ------------------------------------------------- */

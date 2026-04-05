@@ -611,29 +611,33 @@ Règles communes : `font-family: inherit`, hover → C2 texte ou fond C7 selon v
 
 Cette section documente les divergences de `/sim/per/potentiel` par rapport à la baseline commune. Tout patch doit les corriger ; une PR conservant ces divergences doit les justifier explicitement.
 
+> **Note** : l'ancien `Per.css` a été refactorisé en `wizard.css`, `steps.css`, `summary.css`, `legacy.css` et `responsive.css` sous `src/features/per/styles/`. Les preuves ci-dessous sont mises à jour vers les fichiers actuels.
+
 #### Anti-patterns observés
 
-| # | Anti-pattern | Preuve code | Baseline attendue (§) |
-|---|-------------|-------------|----------------------|
-| 1 | Grille `1.7fr / 0.95fr` | `Per.css:307` | `1.85fr / 1fr` (§1) |
-| 2 | `sticky top: 88px` | `Per.css:315` | `top: 80px` (§1) |
-| 3 | Inputs `className="premium-input"` (fond blanc, border pleine) | `SituationFiscaleStep.tsx:76`, `SynthesePotentielStep.tsx:236` | fond `color-mix(C8 18%, #FFFFFF)`, border-bottom only (§5) |
-| 4 | Tabs : baseline pleine `background: var(--color-c8)` | `Per.css:272` | `linear-gradient(90deg, C8, transparent 85%)` (§7, §16a) |
-| 5 | Simulation de versement dans la carte hero **gauche** | `SynthesePotentielStep.tsx:224-269` | Les calculs vivants vont dans la colonne droite (§16a, §16c) |
-| 6 | Breakdown plafonds dupliqué (sidebar + section basse) | `SynthesePotentielStep.tsx:272` + `SynthesePotentielStep.tsx:329` | Un seul emplacement, colonne droite (§16c) |
-| 7 | Texte introductif long dans chaque étape (`per-step-copy` avec titre + hint paragraphe) | `SynthesePotentielStep.tsx:172-177`, `ModeStep.tsx` | Sous-titre 12px/C9 court, pas de paragraphe explicatif (§2) |
-| 8 | 3 cartes dans la sidebar context | `PerPotentielSimulator.tsx:369-439` | Max 2 cartes synthèse sticky : hero + secondaire (§8, §16a) |
-| 9 | `max-width: 720px` sur l'en-tête limitant la respiration | `Per.css:255` | Pas de max-width sur le header (§2) |
+| # | Anti-pattern | Preuve code | Baseline attendue (§) | Statut |
+|---|-------------|-------------|----------------------|--------|
+| 1 | Grille `1.7fr / 0.95fr` | ~~`Per.css:307`~~ → `wizard.css:60` | `1.85fr / 1fr` (§1) | ✅ Corrigé — maintenant `sim-grid` (`surfaces.css:90`) |
+| 2 | `sticky top: 88px` | ~~`Per.css:315`~~ → `wizard.css:68` | `top: 80px` (§1) | ✅ Corrigé — `sim-grid__col--sticky` (`surfaces.css:103`) |
+| 3 | Inputs `className="premium-input"` | ~~`SituationFiscaleStep.tsx:76`~~ | fond off-white, border-bottom only (§5) | ✅ Corrigé — inputs utilisent `per-input sim-field__control` (conforme §5) |
+| 4 | Tabs baseline pleine `background: C8` | ~~`Per.css:272`~~ → `wizard.css:25` | `linear-gradient(90deg, C8, transparent 85%)` (§7, §16a) | ✅ Corrigé — gradient estompé en place |
+| 5 | Simulation de versement dans hero **gauche** | `SynthesePotentielStep.tsx:223-268` | Colonne droite (§16a, §16c) | ⚠️ Actif — à déplacer dans la sidebar |
+| 6 | Breakdown plafonds dupliqué | `SynthesePotentielStep.tsx:272` + `:314` | Un seul emplacement (§16c) | ⚠️ À rationaliser |
+| 7 | Texte introductif long `per-step-copy` | `ModeStep.tsx` constante `MODES.desc` | Sous-titre 12px/C9 court (§2) | ⚠️ Actif — descriptions compactées mais toujours présentes |
+| 8 | Sidebar context avec données vides | `PerPotentielSimulator.tsx:353-446` | Sidebar conditionnelle (§16a) | ✅ Corrigé — sidebar conditionnée à `state.mode !== null` |
+| 9 | `max-width: 720px` sur header | ~~`Per.css:255`~~ | Pas de max-width (§2) | ✅ Corrigé — non présent dans le code actuel |
+| 10 | Pas de `sim-card__header--bleed` sur hero card | `PerPotentielSimulator.tsx:221` | Classe obligatoire (§8) | ✅ Corrigé — ajouté sur le stage header |
+| 11 | `<input type="number">` brut pour montants € | `SituationFiscaleStep.tsx:71`, `AvisIrStep.tsx:58` | Composant formaté `InputEuro` (§ Séparateur milliers) | ⚠️ Actif — à migrer vers composant local `PerAmountInput` |
+| 12 | Pas de ModeToggle | `PerPotentielSimulator.tsx` | `useUserMode` + override local (§6, ARCH) | ✅ Corrigé — ModeToggle ajouté |
+| 13 | Pas de section Hypothèses | — | Section collapsible (§9) | ✅ Corrigé — `PerHypotheses.tsx` ajouté |
+| 14 | Pas de donut chart dans la sidebar | — | Donut 68×68 dans hero sidebar (§16c) | ⚠️ Actif — à ajouter lors du déplacement hero en sidebar |
 
-#### Cibles de refonte (lot UI)
+#### Cibles de refonte restantes
 
-1. **Inputs** : remplacer `className="premium-input"` par des classes préfixées `per-*` avec fond off-white + border-bottom (aligner avec IR, Crédit, Placement, Succession).
-2. **Grille** : passer à `1.85fr / 1fr` et `sticky top: 80px`.
-3. **Simulation de versement** : déplacer hors de la carte hero gauche vers une carte de synthèse dans la colonne droite.
-4. **Breakdown plafonds** : supprimer la duplication, conserver uniquement la sidebar droite.
-5. **Texte introductif** : réduire chaque `per-step-copy` à un sous-titre court ou le supprimer.
-6. **Sidebar context** : fusionner en 2 cartes max (synthèse principale + aperçu live).
-7. **Tabs** : aligner la baseline sur le gradient estompé des autres simulateurs.
+1. **Simulation de versement** : déplacer hors de la carte hero gauche vers la sidebar droite (avec donut).
+2. **Breakdown plafonds** : rationaliser, un seul emplacement.
+3. **Inputs montants €** : migrer les `<input type="number">` vers un composant formaté `PerAmountInput` (pas d'import cross-feature).
+4. **Donut** : réutiliser `ScDonut.tsx` pour le ratio plafond utilisé / disponible restant.
 
 ---
 
