@@ -240,7 +240,7 @@ export function Select<TValue extends string | number>({
         </button>
 
         {isOpen && (
-          <ul role="listbox" className="sim-field__dropdown">
+          <ul role="listbox" aria-label="Options" className="sim-field__dropdown">
             {options.map((option) => (
               <li
                 key={String(option.value)}
@@ -278,6 +278,7 @@ export function Toggle({
         onClick={() => onChange(!checked)}
         className={`ci-toggle__switch${checked ? ' is-active' : ''}`}
         aria-checked={checked}
+        aria-label={label ?? 'Activer/désactiver'}
         role="switch"
       >
         <span className="ci-toggle__knob" />
