@@ -351,7 +351,7 @@ export default function SuccessionSimulator() {
     <div className="sim-page sc-page" data-testid="succession-page">
       <div className="premium-header sim-header sim-header--stacked">
         <h1 className="premium-title">Simulateur succession</h1>
-        <div className="sc-header__subtitle-row">
+        <div className="sc-header__subtitle-row sim-header__subtitle-row">
           <p className="premium-subtitle">
             Estimez les impacts civils d&apos;une succession à partir du contexte familial, du patrimoine et des dispositions saisies.
           </p>

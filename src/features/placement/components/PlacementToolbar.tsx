@@ -42,7 +42,7 @@ export function PlacementToolbar({
       <div className="premium-header sim-header sim-header--stacked">
         <h1 className="premium-title">Comparer deux placements</h1>
 
-        <div className="pl-header__subtitle-row">
+        <div className="pl-header__subtitle-row sim-header__subtitle-row">
           <p className="premium-subtitle">Épargne → Liquidation → Transmission</p>
 
           <div className="pl-header__actions pl-header-actions">
