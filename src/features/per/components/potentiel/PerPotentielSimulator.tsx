@@ -2,10 +2,12 @@
  * PerPotentielSimulator - Wizard shell for "Contrôle du potentiel ER".
  */
 
-import React from 'react';
+import React, { useState } from 'react';
 import type { PerHistoricalBasis } from '../../../../engine/per';
 import { ExportMenu } from '../../../../components/ExportMenu';
+import { ModeToggle } from '../../../../components/ModeToggle';
 import { useFiscalContext } from '../../../../hooks/useFiscalContext';
+import { useUserMode, type UserMode } from '../../../../settings/userMode';
 import { useTheme } from '../../../../settings/ThemeProvider';
 import '@/styles/sim/index.css';
 import { usePerPotentiel, type WizardStep } from '../../hooks/usePerPotentiel';
@@ -15,6 +17,7 @@ import ModeStep from './steps/ModeStep';
 import AvisIrStep from './steps/AvisIrStep';
 import SituationFiscaleStep from './steps/SituationFiscaleStep';
 import SynthesePotentielStep from './steps/SynthesePotentielStep';
+import { PerHypotheses } from './PerHypotheses';
 import '../../styles/index.css';
 
 type StepMeta = {
@@ -99,6 +102,10 @@ function getStepMeta(
 export default function PerPotentielSimulator(): React.ReactElement {
   const { fiscalContext, loading, error } = useFiscalContext({ strict: true });
   const { pptxColors, cabinetLogo, logoPlacement } = useTheme();
+  const { mode } = useUserMode();
+  const [localMode, setLocalMode] = useState<UserMode | null>(null);
+  const isExpert = (localMode ?? mode) === 'expert';
+  const toggleMode = () => setLocalMode(isExpert ? 'simplifie' : 'expert');
   const years = getPerWorkflowYears(fiscalContext);
 
   const {
@@ -186,6 +193,7 @@ export default function PerPotentielSimulator(): React.ReactElement {
           </p>
         </div>
         <div className="sim-header__actions">
+          <ModeToggle value={isExpert} onChange={toggleMode} />
           <ExportMenu options={exportOptions} loading={exportLoading} />
         </div>
       </div>
@@ -438,6 +446,8 @@ export default function PerPotentielSimulator(): React.ReactElement {
         </aside>
         )}
       </div>
+
+      <PerHypotheses />
     </div>
   );
 }
