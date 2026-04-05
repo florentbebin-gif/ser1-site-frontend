@@ -41,17 +41,3 @@
   line-height: 1.55;
 }
 
-.per-warning--info {
-  background: color-mix(in srgb, var(--color-c4) 30%, #FFFFFF);
-  color: var(--color-c1);
-}
-
-.per-warning--warning {
-  background: color-mix(in srgb, var(--color-c6) 20%, #FFFFFF);
-  color: #996600;
-}
-
-.per-warning--error {
-  background: color-mix(in srgb, var(--color-c1) 8%, #FFFFFF);
-  color: var(--color-c1);
-}
