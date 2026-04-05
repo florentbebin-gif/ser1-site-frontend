@@ -93,6 +93,7 @@
 
 .sim-select-wrapper {
   position: relative;
+  width: 100%;
 }
 
 .sim-field__select-trigger {
