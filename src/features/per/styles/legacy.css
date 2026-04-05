@@ -1,39 +1,5 @@
 ﻿/* Legacy shared rules still used by the PER wizard */
 
-.per-page {
-  max-width: 900px;
-  margin: 0 auto;
-  padding: 2rem 1.5rem;
-}
-
-.per-page h1 {
-  margin-bottom: 1.5rem;
-  font-size: 1.5rem;
-  font-weight: 600;
-  color: var(--color-c10);
-}
-
-.per-card {
-  padding: 1.5rem;
-  margin-bottom: 1.5rem;
-  border: 1px solid var(--color-c8);
-  border-radius: 12px;
-  background: #FFFFFF;
-}
-
-.per-card h2 {
-  margin-bottom: 1rem;
-  font-size: 1.1rem;
-  font-weight: 600;
-  color: var(--color-c10);
-}
-
-.per-fields {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 1rem;
-}
-
 .per-field {
   display: flex;
   flex-direction: column;
@@ -57,97 +23,6 @@
   background: #FFFFFF;
   font-size: 0.9rem;
   color: var(--color-c10);
-}
-
-.per-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.75rem;
-  margin-top: 0.5rem;
-}
-
-.per-btn {
-  padding: 0.55rem 1.2rem;
-  border: none;
-  border-radius: 8px;
-  font-size: 0.85rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: opacity 0.15s;
-}
-
-.per-btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.per-btn--primary {
-  background: var(--color-c1);
-  color: #FFFFFF;
-}
-
-.per-btn--secondary {
-  border: 1px solid var(--color-c8);
-  background: var(--color-c7);
-  color: var(--color-c10);
-}
-
-.per-btn--accent {
-  background: var(--color-c6);
-  color: #FFFFFF;
-}
-
-.per-kpis {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-  gap: 1rem;
-  margin-bottom: 1.5rem;
-}
-
-.per-kpi {
-  padding: 1rem;
-  border-radius: 10px;
-  background: var(--color-c7);
-  text-align: center;
-}
-
-.per-kpi-label {
-  margin-bottom: 0.35rem;
-  font-size: 0.8rem;
-  font-weight: 500;
-  color: var(--color-c9);
-}
-
-.per-kpi-value {
-  font-size: 1.3rem;
-  font-weight: 600;
-  color: var(--color-c10);
-}
-
-.per-sortie-table {
-  width: 100%;
-  margin-bottom: 1rem;
-  border-collapse: collapse;
-  font-size: 0.85rem;
-}
-
-.per-sortie-table th {
-  padding: 0.5rem 0.75rem;
-  background: var(--color-c1);
-  color: #FFFFFF;
-  text-align: left;
-  font-weight: 500;
-}
-
-.per-sortie-table td {
-  padding: 0.45rem 0.75rem;
-  border-bottom: 1px solid var(--color-c8);
-  color: var(--color-c10);
-}
-
-.per-sortie-table td.text-right,
-.per-sortie-table th.text-right {
-  text-align: right;
 }
 
 .per-warnings {
@@ -180,17 +55,3 @@
   background: color-mix(in srgb, var(--color-c1) 8%, #FFFFFF);
   color: var(--color-c1);
 }
-
-.per-export-bar {
-  display: flex;
-  gap: 0.75rem;
-  margin-top: 1rem;
-}
-
-.per-session-msg {
-  margin-top: 0.5rem;
-  font-size: 0.8rem;
-  font-weight: 500;
-  color: var(--color-c6);
-}
-
