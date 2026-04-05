@@ -40,44 +40,44 @@ export default function AvantagesMatrimoniauxSection({
 
       {isOpen && (
         <div className="fisc-acc-body">
-          <p style={{ fontSize: 13, color: 'var(--color-c9)', marginBottom: 16 }}>
+          <p className="dmtg-intro">
             Clauses de contrat de mariage influençant la liquidation civile avant calcul des droits de succession.
             Ces éléments doivent être qualifiés avant tout calcul DMTG.
           </p>
 
           {avantages.map((item) => (
-            <div key={item.id} className="income-tax-block" style={{ marginBottom: 12 }}>
-              <div className="income-tax-block-title" style={{ color: 'var(--color-c1)', fontWeight: 600, fontSize: 15 }}>
+            <div key={item.id} className="income-tax-block dmtg-block--mb12">
+              <div className="dmtg-block-title">
                 {item.label}
               </div>
-              <p style={{ fontSize: 13, color: 'var(--color-c9)', margin: '0 0 6px 0' }}>
-                <strong style={{ color: 'var(--color-c1)' }}>Définition :</strong> {item.definition}
+              <p className="dmtg-desc--mb6">
+                <strong className="dmtg-strong">Définition :</strong> {item.definition}
               </p>
-              <p style={{ fontSize: 13, color: 'var(--color-c9)', margin: '0 0 6px 0' }}>
-                <strong style={{ color: 'var(--color-c1)' }}>Impact patrimonial :</strong> {item.impact}
+              <p className="dmtg-desc--mb6">
+                <strong className="dmtg-strong">Impact patrimonial :</strong> {item.impact}
               </p>
-              <div style={{ fontSize: 13, color: 'var(--color-c9)', marginBottom: 6 }}>
-                <strong style={{ color: 'var(--color-c1)' }}>Champs minimaux :</strong>
-                <ul style={{ margin: '4px 0 0', paddingLeft: 18 }}>
+              <div className="dmtg-desc--mb6">
+                <strong className="dmtg-strong">Champs minimaux :</strong>
+                <ul className="dmtg-list">
                   {item.minimumFields.map((field) => <li key={field}>{field}</li>)}
                 </ul>
               </div>
-              <p style={{ fontSize: 12, color: 'var(--color-c9)', margin: 0 }}>
+              <p className="dmtg-note--flush">
                 Références : {item.legalRefs}
               </p>
             </div>
           ))}
 
-          <div className="income-tax-block" style={{ marginTop: 4 }}>
-            <div className="income-tax-block-title" style={{ color: 'var(--color-c1)', fontWeight: 600, fontSize: 15 }}>
+          <div className="income-tax-block dmtg-block--mt4">
+            <div className="dmtg-block-title">
               Vigilances juridiques
             </div>
-            <ul style={{ margin: 0, paddingLeft: 18, color: 'var(--color-c9)', fontSize: 13 }}>
-              <li style={{ marginBottom: 4 }}>
+            <ul className="dmtg-list--vigilances">
+              <li className="dmtg-list-item--mb4">
                 Les avantages matrimoniaux ne sont en principe pas qualifiés de donations.
                 Références : C. civ. art. 1516, 1525, 1527.
               </li>
-              <li style={{ marginBottom: 4 }}>
+              <li className="dmtg-list-item--mb4">
                 En présence d’enfants non communs, l’excédent au-delà de la quotité entre époux peut être réduit.
                 Références : C. civ. art. 1527 et 1094-1.
               </li>

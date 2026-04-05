@@ -47,18 +47,15 @@ export default function DonationSection({
 
       {isOpen && (
         <div className="fisc-acc-body">
-          <p style={{ fontSize: 13, color: 'var(--color-c9)', marginBottom: 16 }}>
+          <p className="dmtg-intro">
             Paramètres de donation entre vifs et rappel fiscal (CGI art. 784).
           </p>
 
-          <div className="income-tax-block" style={{ marginBottom: 16 }}>
-            <div
-              className="income-tax-block-title"
-              style={{ color: 'var(--color-c1)', fontWeight: 600, fontSize: 15 }}
-            >
+          <div className="income-tax-block dmtg-block--mb16">
+            <div className="dmtg-block-title">
               Rappel fiscal
             </div>
-            <div style={{ paddingLeft: 8 }}>
+            <div className="dmtg-indent">
               <div className="settings-field-row">
                 <label>Durée du rappel fiscal</label>
                 <input
@@ -77,15 +74,12 @@ export default function DonationSection({
             </div>
           </div>
 
-          <div className="income-tax-block" style={{ marginBottom: 16 }}>
-            <div
-              className="income-tax-block-title"
-              style={{ color: 'var(--color-c1)', fontWeight: 600, fontSize: 15 }}
-            >
+          <div className="income-tax-block dmtg-block--mb16">
+            <div className="dmtg-block-title">
               Don familial de sommes d’argent (art. 790 G)
             </div>
-            <div style={{ paddingLeft: 8 }}>
-              <div className="settings-field-row" style={{ marginBottom: 8 }}>
+            <div className="dmtg-indent">
+              <div className="settings-field-row dmtg-field-row--mb8">
                 <label>Montant exonéré</label>
                 <input
                   type="number"
@@ -104,7 +98,7 @@ export default function DonationSection({
                 <label>Conditions</label>
                 <input
                   type="text"
-                  style={{ width: 280 }}
+                  className="dmtg-input-conditions"
                   value={donation.donFamilial790G.conditions}
                   onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
                     updateDonation(['donFamilial790G', 'conditions'], event.target.value)
@@ -117,13 +111,10 @@ export default function DonationSection({
           </div>
 
           <div className="income-tax-block">
-            <div
-              className="income-tax-block-title"
-              style={{ color: 'var(--color-c1)', fontWeight: 600, fontSize: 15 }}
-            >
+            <div className="dmtg-block-title">
               Don manuel
             </div>
-            <div style={{ paddingLeft: 8 }}>
+            <div className="dmtg-indent">
               <div className="settings-field-row">
                 <label>Renouvellement abattement tous les</label>
                 <input

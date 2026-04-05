@@ -64,19 +64,16 @@ export default function AvDecesSection({
 
       {isOpen && (
         <div className="fisc-acc-body">
-          <p style={{ fontSize: 13, color: 'var(--color-c9)', marginBottom: 16 }}>
+          <p className="dmtg-intro">
             Fiscalité des capitaux décès transmis via l’assurance-vie.
           </p>
 
-          <div className="income-tax-block" style={{ marginBottom: 16 }}>
-            <div
-              className="income-tax-block-title"
-              style={{ color: 'var(--color-c1)', fontWeight: 600, fontSize: 15 }}
-            >
+          <div className="income-tax-block dmtg-block--mb16">
+            <div className="dmtg-block-title">
               Paramètres généraux
             </div>
-            <div style={{ paddingLeft: 8 }}>
-              <div className="settings-field-row" style={{ marginBottom: 8 }}>
+            <div className="dmtg-indent">
+              <div className="settings-field-row dmtg-field-row--mb8">
                 <label>Âge pivot primes (avant/après)</label>
                 <input
                   type="number"
@@ -92,29 +89,20 @@ export default function AvDecesSection({
                 <span>ans</span>
               </div>
               {errors.agePivotPrimes && (
-                <div
-                  style={{
-                    color: 'var(--color-error-text)',
-                    fontSize: 12,
-                    marginLeft: 8,
-                  }}
-                >
+                <div className="dmtg-field-error">
                   {errors.agePivotPrimes}
                 </div>
               )}
             </div>
           </div>
 
-          <div className="income-tax-block" style={{ marginBottom: 16 }}>
-            <div
-              className="income-tax-block-title"
-              style={{ color: 'var(--color-c1)', fontWeight: 600, fontSize: 15 }}
-            >
+          <div className="income-tax-block dmtg-block--mb16">
+            <div className="dmtg-block-title">
               Primes versées après le 13/10/1998 - avant {avDeces.agePivotPrimes || 70}{' '}
               ans (art. 990 I)
             </div>
-            <div style={{ paddingLeft: 8 }}>
-              <div className="settings-field-row" style={{ marginBottom: 8 }}>
+            <div className="dmtg-indent">
+              <div className="settings-field-row dmtg-field-row--mb8">
                 <label>Abattement par bénéficiaire</label>
                 <input
                   type="number"
@@ -132,19 +120,13 @@ export default function AvDecesSection({
                 <span>EUR</span>
               </div>
               {errors['primesApres1998.allowancePerBeneficiary'] && (
-                <div
-                  style={{
-                    color: 'var(--color-error-text)',
-                    fontSize: 12,
-                    marginLeft: 8,
-                  }}
-                >
+                <div className="dmtg-field-error">
                   {errors['primesApres1998.allowancePerBeneficiary']}
                 </div>
               )}
 
-              <div style={{ marginTop: 12 }}>
-                <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 4 }}>
+              <div className="dmtg-subsection--mt12">
+                <div className="dmtg-subsection-title">
                   Barème par bénéficiaire
                 </div>
                 <SettingsTable
@@ -185,14 +167,7 @@ export default function AvDecesSection({
                       typeof msg === 'string'
                   )
                   .map(([key, msg]) => (
-                    <div
-                      key={key}
-                      style={{
-                        color: 'var(--color-error-text)',
-                        fontSize: 12,
-                        marginTop: 2,
-                      }}
-                    >
+                    <div key={key} className="dmtg-field-error--mt2">
                       {msg}
                     </div>
                   ))}
@@ -201,14 +176,11 @@ export default function AvDecesSection({
           </div>
 
           <div className="income-tax-block">
-            <div
-              className="income-tax-block-title"
-              style={{ color: 'var(--color-c1)', fontWeight: 600, fontSize: 15 }}
-            >
+            <div className="dmtg-block-title">
               Primes versées après {avDeces.agePivotPrimes || 70} ans (art. 757 B)
             </div>
-            <div style={{ paddingLeft: 8 }}>
-              <div className="settings-field-row" style={{ marginBottom: 8 }}>
+            <div className="dmtg-indent">
+              <div className="settings-field-row dmtg-field-row--mb8">
                 <label>Abattement global (tous bénéficiaires)</label>
                 <input
                   type="number"
@@ -224,17 +196,11 @@ export default function AvDecesSection({
                 <span>EUR</span>
               </div>
               {errors['apres70ans.globalAllowance'] && (
-                <div
-                  style={{
-                    color: 'var(--color-error-text)',
-                    fontSize: 12,
-                    marginLeft: 8,
-                  }}
-                >
+                <div className="dmtg-field-error">
                   {errors['apres70ans.globalAllowance']}
                 </div>
               )}
-              <p style={{ fontSize: 12, color: 'var(--color-c9)', margin: '4px 0 0 0' }}>
+              <p className="dmtg-note--mt4">
                 Au-delà : taxation aux DMTG (barème succession).
               </p>
             </div>

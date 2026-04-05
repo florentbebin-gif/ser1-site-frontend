@@ -1,0 +1,71 @@
+/* Écran d'erreur applicative (config manquante ou erreur critique au démarrage) */
+
+.app-error-page {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  background-color: var(--color-c7);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  color: var(--color-c1);
+  text-align: center;
+  padding: 20px;
+}
+
+.app-error-card {
+  background-color: #FFFFFF; /* exception fond carte — gouvernance §index.css */
+  padding: 40px;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  max-width: 500px;
+  width: 100%;
+}
+
+.app-error-icon {
+  font-size: 48px;
+  margin-bottom: 24px;
+}
+
+.app-error-title {
+  font-size: 24px;
+  font-weight: 600;
+  margin-bottom: 16px;
+  color: var(--color-c1);
+}
+
+.app-error-message {
+  font-size: 16px;
+  line-height: 1.5;
+  color: var(--color-c9);
+  margin-bottom: 24px;
+}
+
+.app-error-details {
+  background-color: var(--color-c7);
+  padding: 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  color: var(--color-c1);
+  overflow-x: auto;
+  margin-bottom: 24px;
+  text-align: left;
+}
+
+.app-error-retry {
+  background-color: var(--color-c2);
+  color: #FFFFFF; /* exception bouton CTA — gouvernance §index.css */
+  border: none;
+  padding: 10px 20px;
+  border-radius: 999px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.app-error-footer {
+  margin-top: 32px;
+  font-size: 12px;
+  color: var(--color-c9);
+}

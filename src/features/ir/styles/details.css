@@ -259,3 +259,9 @@
   border-radius: 2px;
 }
 
+/* Utilitaires cellules tableau de détail */
+.ir-td--right        { text-align: right; }
+.ir-td--center       { text-align: center; }
+.ir-td--detail       { padding-left: 18px; opacity: 0.85; }
+.ir-td--detail-right { text-align: right; opacity: 0.85; }
+

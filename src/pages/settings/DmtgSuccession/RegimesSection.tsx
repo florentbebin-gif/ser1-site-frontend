@@ -40,29 +40,29 @@ export default function RegimesSection({
 
       {isOpen && (
         <div className="fisc-acc-body">
-          <p style={{ fontSize: 13, color: 'var(--color-c9)', marginBottom: 16 }}>
+          <p className="dmtg-intro">
             Référentiel civil utilisé par la simulation successorale (lecture seule).
             Les situations familiales et les régimes matrimoniaux sont distingués.
           </p>
 
-          <div className="income-tax-block" style={{ marginBottom: 12 }}>
-            <div className="income-tax-block-title" style={{ color: 'var(--color-c1)', fontWeight: 600, fontSize: 15 }}>
+          <div className="income-tax-block dmtg-block--mb12">
+            <div className="dmtg-block-title">
               Situations familiales
             </div>
-            <table className="settings-table" style={{ marginTop: 8 }}>
+            <table className="settings-table dmtg-table--mt8">
               <thead>
                 <tr>
-                  <th style={{ textAlign: 'left' }}>Situation</th>
-                  <th style={{ textAlign: 'left' }}>Cadre juridique</th>
-                  <th style={{ textAlign: 'left' }}>Incidence successorale</th>
+                  <th className="dmtg-col-left">Situation</th>
+                  <th className="dmtg-col-left">Cadre juridique</th>
+                  <th className="dmtg-col-left">Incidence successorale</th>
                 </tr>
               </thead>
               <tbody>
                 {situationsFamiliales.map((situation) => (
                   <tr key={situation.id}>
-                    <td style={{ textAlign: 'left' }}>{situation.label}</td>
-                    <td style={{ textAlign: 'left' }}>{situation.cadre}</td>
-                    <td style={{ textAlign: 'left' }}>{situation.incidence}</td>
+                    <td className="dmtg-col-left">{situation.label}</td>
+                    <td className="dmtg-col-left">{situation.cadre}</td>
+                    <td className="dmtg-col-left">{situation.incidence}</td>
                   </tr>
                 ))}
               </tbody>
@@ -72,38 +72,27 @@ export default function RegimesSection({
           {regimes.map((regime) => (
             <div
               key={regime.id}
-              className="income-tax-block"
-              style={{ marginBottom: 12 }}
+              className="income-tax-block dmtg-block--mb12"
             >
-              <div className="income-tax-block-title" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', color: 'var(--color-c1)', fontWeight: 600, fontSize: 15 }}>
+              <div className="dmtg-block-title dmtg-block-title--flex">
                 <span>{regime.label}</span>
-                <span
-                  style={{
-                    fontSize: 11,
-                    fontWeight: 600,
-                    padding: '2px 8px',
-                    borderRadius: 10,
-                    backgroundColor: regime.category === 'communautaire' ? 'var(--color-c4)' : 'var(--color-c6)',
-                    color: 'var(--color-c1)',
-                    whiteSpace: 'nowrap',
-                  }}
-                >
+                <span className={`dmtg-badge ${regime.category === 'communautaire' ? 'dmtg-badge--communautaire' : 'dmtg-badge--separatiste'}`}>
                   {regime.category === 'communautaire' ? 'Communautaire' : 'Séparatiste'}
                 </span>
               </div>
-              <p style={{ fontSize: 13, color: 'var(--color-c9)', margin: '0 0 8px 0' }}>
+              <p className="dmtg-desc">
                 {regime.description}
               </p>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, fontSize: 13 }}>
+              <div className="dmtg-grid-2col">
                 <div>
-                  <strong style={{ color: 'var(--color-c1)' }}>Avantages</strong>
-                  <ul style={{ margin: '4px 0 0', paddingLeft: 18 }}>
+                  <strong className="dmtg-strong">Avantages</strong>
+                  <ul className="dmtg-list">
                     {regime.avantages.map((item, index) => <li key={index}>{item}</li>)}
                   </ul>
                 </div>
                 <div>
-                  <strong style={{ color: 'var(--color-c9)' }}>Limites</strong>
-                  <ul style={{ margin: '4px 0 0', paddingLeft: 18 }}>
+                  <strong className="dmtg-strong--secondary">Limites</strong>
+                  <ul className="dmtg-list">
                     {regime.limites.map((item, index) => <li key={index}>{item}</li>)}
                   </ul>
                 </div>
@@ -111,11 +100,11 @@ export default function RegimesSection({
             </div>
           ))}
 
-          <div className="income-tax-block" style={{ marginTop: 4 }}>
-            <div className="income-tax-block-title" style={{ color: 'var(--color-c1)', fontWeight: 600, fontSize: 15 }}>
+          <div className="income-tax-block dmtg-block--mt4">
+            <div className="dmtg-block-title">
               PACS
             </div>
-            <p style={{ fontSize: 13, color: 'var(--color-c9)', margin: 0 }}>
+            <p className="dmtg-desc--flush">
               Par défaut : séparation de biens. Option : indivision des acquêts.
               Le partenaire pacsé est exonéré de droits de succession (loi TEPA 2007).
             </p>
