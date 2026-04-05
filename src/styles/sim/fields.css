@@ -132,17 +132,25 @@
   left: 0;
   z-index: 200;
   margin: 0;
-  padding: 4px 0;
+  padding: 4px;
   list-style: none;
-  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  max-height: 240px;
+  overflow-y: auto;
   background: #FFFFFF;
   border: 1px solid var(--color-c8);
-  border-radius: 10px;
-  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.12), 0 1px 4px rgba(0, 0, 0, 0.06);
+  border-radius: 8px;
+  box-shadow: var(--shadow-md);
 }
 
 .sim-field__option {
-  padding: 10px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 6px 8px;
+  border-radius: 4px;
   color: var(--color-c10);
   font-size: 13px;
   text-align: right;
@@ -151,11 +159,45 @@
 }
 
 .sim-field__option:hover {
-  background-color: color-mix(in srgb, var(--color-c3) 25%, transparent);
+  background-color: color-mix(in srgb, var(--color-c3) 15%, #FFFFFF);
 }
 
 .sim-field__option.is-selected {
   font-weight: 600;
+  color: var(--color-c1);
+}
+
+.sim-field__select-trigger.is-open {
+  border-bottom-color: var(--color-c2);
+}
+
+.sim-field__select-value--placeholder {
+  color: var(--color-c9);
+  font-style: italic;
+}
+
+.sim-field__option-description {
+  display: block;
+  font-size: 11px;
+  color: var(--color-c9);
+  line-height: 1.35;
+}
+
+.sim-field__option.is-disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.sim-select-wrapper--left .sim-field__select-trigger {
+  text-align: left;
+}
+
+.sim-select-wrapper--left .sim-field__select-value {
+  text-align: left;
+}
+
+.sim-select-wrapper--left .sim-field__option {
+  text-align: left;
 }
 
 .sim-field__control.is-forced,

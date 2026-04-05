@@ -22,7 +22,7 @@ describe('placement inputs', () => {
     expect(html).toContain('sim-field__unit');
   });
 
-  it('renders native selects inside the shared shell', () => {
+  it('renders SimSelect inside the shared shell', () => {
     const html = renderToStaticMarkup(
       <Select
         label="Situation"
@@ -36,6 +36,7 @@ describe('placement inputs', () => {
     );
 
     expect(html).toContain('sim-field');
-    expect(html).toContain('pl-select sim-field__control');
+    expect(html).toContain('sim-field__select-trigger');
+    expect(html).toContain('sim-field__select-value');
   });
 });

@@ -3,7 +3,8 @@
  */
 
 import React, { useEffect, useState } from 'react';
-import { SimFieldShell } from '@/components/ui/sim';
+import { SimFieldShell, SimSelect } from '@/components/ui/sim';
+import type { SimSelectOption } from '@/components/ui/sim';
 import { fmt } from '../utils/formatters';
 
 function formatPctInput(value: number | null | undefined): string {
@@ -168,13 +169,10 @@ export function InputNumber({
   );
 }
 
-export interface PlacementSelectOption {
-  value: string | number;
-  label: string;
-}
+export type PlacementSelectOption = SimSelectOption;
 
 interface SelectProps {
-  value: string | number;
+  value: string;
   onChange: (_value: string) => void;
   options: PlacementSelectOption[];
   label?: string;
@@ -183,13 +181,7 @@ interface SelectProps {
 export function Select({ value, onChange, options, label }: SelectProps) {
   return (
     <SimFieldShell label={label} className="pl-field">
-      <select className="pl-select sim-field__control" value={value} onChange={(event) => onChange(event.target.value)}>
-        {options.map((option) => (
-          <option key={option.value} value={option.value}>
-            {option.label}
-          </option>
-        ))}
-      </select>
+      <SimSelect value={value} onChange={onChange} options={options} />
     </SimFieldShell>
   );
 }

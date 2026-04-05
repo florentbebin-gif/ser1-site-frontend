@@ -43,7 +43,7 @@ export function InputEuro({
         onChange={handleChange}
         data-testid={dataTestId || testId}
         aria-invalid={!!error}
-        className={`ci-input sim-field__control${error ? ' ci-input--error sim-field__control--error' : ''}${highlight ? ' ci-input--guide sim-field__control--guide' : ''}`}
+        className={`sim-field__control${error ? ' sim-field__control--error' : ''}${highlight ? ' sim-field__control--guide' : ''}`}
         onBlur={onBlur}
       />
       <span className="ci-unit sim-field__unit">€</span>
@@ -92,7 +92,7 @@ export function InputPct({
         onFocus={() => setFocused(true)}
         onBlur={handleBlur}
         aria-invalid={!!error}
-        className={`ci-input sim-field__control${error ? ' ci-input--error sim-field__control--error' : ''}${highlight ? ' ci-input--guide sim-field__control--guide' : ''}`}
+        className={`sim-field__control${error ? ' sim-field__control--error' : ''}${highlight ? ' sim-field__control--guide' : ''}`}
       />
       <span className="ci-unit sim-field__unit">%</span>
     </SimFieldShell>
@@ -128,7 +128,7 @@ export function InputNumber({
         value={String(value || 0)}
         onChange={handleChange}
         aria-invalid={!!error}
-        className={`ci-input sim-field__control${error ? ' ci-input--error sim-field__control--error' : ''}${highlight ? ' ci-input--guide sim-field__control--guide' : ''}`}
+        className={`sim-field__control${error ? ' sim-field__control--error' : ''}${highlight ? ' sim-field__control--guide' : ''}`}
         onBlur={onBlur}
       />
       {unit && <span className="ci-unit sim-field__unit">{unit}</span>}
@@ -153,7 +153,7 @@ export function InputMonth({
         value={value}
         onChange={(event) => onChange(event.target.value)}
         aria-invalid={!!error}
-        className={`ci-input ci-input--left sim-field__control sim-field__control--left${error ? ' ci-input--error sim-field__control--error' : ''}`}
+        className={`sim-field__control sim-field__control--left${error ? ' sim-field__control--error' : ''}`}
       />
     </SimFieldShell>
   );
@@ -208,7 +208,7 @@ export function Select<TValue extends string | number>({
 
   return (
     <SimFieldShell label={label} hint={hint} error={error} testId={testId} className="ci-field" rowClassName="ci-field-row">
-      <div ref={containerRef} className={`ci-select-wrapper sim-select-wrapper${isOpen ? ' is-open' : ''}`}>
+      <div ref={containerRef} className={`sim-select-wrapper${isOpen ? ' is-open' : ''}`}>
         <button
           type="button"
           disabled={disabled}
@@ -217,13 +217,13 @@ export function Select<TValue extends string | number>({
           aria-haspopup="listbox"
           aria-expanded={isOpen}
           aria-invalid={!!error}
-          className={`ci-select-trigger sim-field__select-trigger${error ? ' ci-select-trigger--error sim-field__control--error' : ''}`}
+          className={`sim-field__select-trigger${isOpen ? ' is-open' : ''}${error ? ' sim-field__control--error' : ''}`}
         >
-          <span className="ci-select-trigger__value sim-field__select-value">
+          <span className="sim-field__select-value">
             {selectedOption?.label ?? ''}
           </span>
           <svg
-            className="ci-select-trigger__arrow sim-field__select-arrow"
+            className="sim-field__select-arrow"
             width="10"
             height="6"
             viewBox="0 0 10 6"
@@ -240,13 +240,13 @@ export function Select<TValue extends string | number>({
         </button>
 
         {isOpen && (
-          <ul role="listbox" className="ci-select-dropdown sim-field__dropdown">
+          <ul role="listbox" className="sim-field__dropdown">
             {options.map((option) => (
               <li
                 key={String(option.value)}
                 role="option"
                 aria-selected={option.value === value}
-                className={`ci-select-option sim-field__option${option.value === value ? ' is-selected' : ''}`}
+                className={`sim-field__option${option.value === value ? ' is-selected' : ''}`}
                 onMouseDown={(event) => {
                   event.preventDefault();
                   onChange(option.value);

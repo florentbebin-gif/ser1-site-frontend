@@ -258,15 +258,13 @@
   color: var(--color-c9);
 }
 
-.sc-testament-select .sc-select__trigger {
+.sc-testament-select .sim-field__select-trigger {
   justify-content: flex-start;
   text-align: left;
 }
 
-.sc-testament-select .sc-select__label,
-.sc-testament-select .sc-select__option,
-.sc-testament-select .sc-select__option-label,
-.sc-testament-select .sc-select__option-description {
+.sc-testament-select .sim-field__select-value,
+.sc-testament-select .sim-field__option {
   text-align: left;
 }
 
@@ -284,7 +282,7 @@
   align-items: end;
 }
 
-.sc-testament-legacy-row > .sc-select {
+.sc-testament-legacy-row > .sim-select-wrapper {
   grid-column: 1 / -1;
 }
 
@@ -296,13 +294,13 @@
   gap: 6px;
 }
 
-.sc-assurance-vie-select .sc-select__trigger {
+.sc-assurance-vie-select .sim-field__select-trigger {
   justify-content: flex-start;
   text-align: left;
 }
 
-.sc-assurance-vie-select .sc-select__label,
-.sc-assurance-vie-select .sc-select__option {
+.sc-assurance-vie-select .sim-field__select-value,
+.sc-assurance-vie-select .sim-field__option {
   text-align: left;
 }
 

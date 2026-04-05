@@ -2,6 +2,8 @@
  * Placement formatters.
  */
 
+import { formatInteger } from '@/utils/formatNumber';
+
 type NumericLike = number | string | null | undefined;
 
 export interface PsDisplayData {
@@ -12,7 +14,7 @@ export interface PsDisplayData {
   note?: string | null;
 }
 
-export const fmt = (n: NumericLike): string => Math.round(Number(n)).toLocaleString('fr-FR');
+export const fmt = formatInteger;
 
 export const euro = (n: NumericLike): string => `${fmt(n)} €`;
 

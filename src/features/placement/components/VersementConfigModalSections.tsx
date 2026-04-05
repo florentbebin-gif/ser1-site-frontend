@@ -8,6 +8,7 @@ import {
   type VersementOption,
   type VersementPonctuel,
 } from '@/engine/placement/versementConfig';
+import { SimSelect } from '@/components/ui/sim';
 import { fmt } from '../utils/formatters';
 import { InputEuro, InputNumber, InputPct } from './inputs';
 import { AllocationSlider } from './tables';
@@ -88,17 +89,17 @@ export function VersementInitialSection({
             <>
               <div className="vcm__field vcm__field--compact">
                 <label className="vcm__label">Déductibilité</label>
-                <select
-                  className="vcm__select vcm__select--small"
+                <SimSelect
                   value={deductionInitiale.mode}
-                  onChange={(e) => onUpdateDeductionInitiale({
-                    mode: e.target.value as 'tmi' | 'montant',
-                    montant: e.target.value === 'tmi' ? 0 : deductionInitiale.montant,
+                  onChange={(v) => onUpdateDeductionInitiale({
+                    mode: v as 'tmi' | 'montant',
+                    montant: v === 'tmi' ? 0 : deductionInitiale.montant,
                   })}
-                >
-                  <option value="tmi">Déduction TMI</option>
-                  <option value="montant">Montant fixe</option>
-                </select>
+                  options={[
+                    { value: 'tmi', label: 'Déduction TMI' },
+                    { value: 'montant', label: 'Montant fixe' },
+                  ]}
+                />
               </div>
               {deductionInitiale.mode === 'montant' && (
                 <InputEuro
@@ -188,35 +189,34 @@ export function VersementInitialSection({
               <div className="vcm__field">
                 <label className="vcm__label">Stratégie</label>
 
-                <select
-                  className="vcm__select"
+                <SimSelect
                   value={distribution.strategie}
-                  onChange={(event) => onUpdateDistribution('strategie', event.target.value)}
-                >
-                  {!isSCPI ? <option value="stocker">Stocker les distributions à 0%</option> : null}
-                  {(isSCPI || isCTO) ? (
-                    <option value="apprehender">Appréhender les distributions chaque année</option>
-                  ) : null}
-                  <option value="reinvestir_capi">
-                    {isSCPI
-                      ? 'Réinvestir les distributions nettes de fiscalité chaque année'
-                      : 'Réinvestir les distributions chaque année vers la capitalisation'}
-                  </option>
-                </select>
+                  onChange={(v) => onUpdateDistribution('strategie', v)}
+                  options={[
+                    ...(!isSCPI ? [{ value: 'stocker', label: 'Stocker les distributions à 0%' }] : []),
+                    ...((isSCPI || isCTO) ? [{ value: 'apprehender', label: 'Appréhender les distributions chaque année' }] : []),
+                    {
+                      value: 'reinvestir_capi',
+                      label: isSCPI
+                        ? 'Réinvestir les distributions nettes de fiscalité chaque année'
+                        : 'Réinvestir les distributions chaque année vers la capitalisation',
+                    },
+                  ]}
+                />
               </div>
             )}
 
             {!isSCPI && distribution.dureeProduit ? (
               <div className="vcm__field">
                 <label className="vcm__label">Au terme du produit, réinvestir vers</label>
-                <select
-                  className="vcm__select"
+                <SimSelect
                   value={distribution.reinvestirVersAuTerme}
-                  onChange={(event) => onUpdateDistribution('reinvestirVersAuTerme', event.target.value)}
-                >
-                  <option value="capitalisation">Capitalisation</option>
-                  <option value="distribution">Distribution</option>
-                </select>
+                  onChange={(v) => onUpdateDistribution('reinvestirVersAuTerme', v)}
+                  options={[
+                    { value: 'capitalisation', label: 'Capitalisation' },
+                    { value: 'distribution', label: 'Distribution' },
+                  ]}
+                />
               </div>
             ) : null}
           </div>

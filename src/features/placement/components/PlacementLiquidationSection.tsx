@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import type { CompareResult } from '@/engine/placement/types';
 import { InputEuro, InputNumber, Toggle } from './inputs';
+import { SimSelect } from '@/components/ui/sim';
 import type {
   PlacementLiquidationState,
   PlacementSimulatorState,
@@ -53,16 +54,18 @@ export function PlacementLiquidationSection({
           <tr>
             <td>Stratégie de retraits</td>
             <td colSpan={2}>
-              <select
-                className={`pl-select sim-field__control${!isExpert ? ' is-forced' : ''}`}
+              <SimSelect
                 value={isExpert ? state.liquidation.mode : 'epuiser'}
-                onChange={(event) => setLiquidation({ mode: event.target.value })}
-                disabled={!isExpert}
-              >
-                <option value="epuiser">Épuiser sur N années</option>
-                {isExpert && <option value="mensualite">Mensualité cible</option>}
-                {isExpert && <option value="unique">Retrait unique</option>}
-              </select>
+                onChange={(v) => setLiquidation({ mode: v })}
+                forced={!isExpert}
+                options={[
+                  { value: 'epuiser', label: 'Épuiser sur N années' },
+                  ...(isExpert ? [
+                    { value: 'mensualite', label: 'Mensualité cible' },
+                    { value: 'unique', label: 'Retrait unique' },
+                  ] : []),
+                ]}
+              />
             </td>
           </tr>
 

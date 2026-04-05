@@ -1,11 +1,7 @@
 import React, { useState, useCallback, useEffect } from 'react';
+import { formatIntegerInput } from '@/utils/formatNumber';
 
-const fmtThousands = (n: number | string): string => {
-  const num = typeof n === 'string' ? Number(n) : n;
-  if (!num && num !== 0) return '';
-  if (num === 0) return '';
-  return Math.round(num).toLocaleString('fr-FR');
-};
+const fmtThousands = formatIntegerInput;
 
 const parseClean = (raw: string): number => {
   const cleaned = raw.replace(/[^\d-]/g, '');
