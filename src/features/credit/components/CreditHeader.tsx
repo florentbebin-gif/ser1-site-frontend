@@ -20,7 +20,7 @@ export function CreditHeader({
       <h1 className="premium-title" data-testid="credit-title">
         Simulateur de crédit
       </h1>
-      <div className="cv2-header__subtitle-row">
+      <div className="cv-header__subtitle-row">
         <p className="premium-subtitle">
           Simulez les mensualités et le coût global du financement.
         </p>

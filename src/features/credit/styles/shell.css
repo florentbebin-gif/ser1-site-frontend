@@ -7,23 +7,23 @@
 /* ----------------------------------------
    PAGE LAYOUT
    ---------------------------------------- */
-/* .cv2-page supprimÃ© â†’ remplacÃ© par .sim-page (socle partagÃ© /sim) */
+/* .cv-page supprimÃ© â†’ remplacÃ© par .sim-page (socle partagÃ© /sim) */
 
-.cv2-grid {
+.cv-grid {
   margin-bottom: 32px;
 }
 
 /* point 4 â€” simplifiÃ© : synthÃ¨se droite mÃªme hauteur que paramÃ¨tres */
-.cv2-grid--simple {
+.cv-grid--simple {
   align-items: stretch;
 }
 
-.cv2-grid--simple .cv2-right-col {
+.cv-grid--simple .cv-right-col {
   display: flex;
   flex-direction: column;
 }
 
-.cv2-grid--simple .cv2-right-col .cv2-summary {
+.cv-grid--simple .cv-right-col .cv-summary {
   flex: 1;
   box-sizing: border-box;
 }
@@ -31,13 +31,13 @@
 /* ----------------------------------------
    HEADER
    ---------------------------------------- */
-/* .cv2-header* supprimÃ©s â†’ remplacÃ©s par .premium-header / .premium-title /
+/* .cv-header* supprimÃ©s â†’ remplacÃ©s par .premium-header / .premium-title /
    .premium-subtitle / .sim-header__actions (src/styles/sim + premium-shared.css) */
 
 /* ----------------------------------------
    PILL TOGGLE (Mensuel/Annuel)
    ---------------------------------------- */
-.cv2-pill-toggle {
+.cv-pill-toggle {
   display: flex;
   gap: 0;
   border: 1px solid var(--color-c8);
@@ -45,7 +45,7 @@
   overflow: hidden;
 }
 
-.cv2-pill-toggle__btn {
+.cv-pill-toggle__btn {
   padding: 8px 18px;
   font-size: 13px;
   font-weight: 500;
@@ -56,16 +56,16 @@
   transition: all 0.2s;
 }
 
-.cv2-pill-toggle__btn:first-child {
+.cv-pill-toggle__btn:first-child {
   border-right: 1px solid var(--color-c8);
 }
 
-.cv2-pill-toggle__btn:hover:not(.is-active) {
+.cv-pill-toggle__btn:hover:not(.is-active) {
   background: var(--color-c7);
   color: var(--color-c10);
 }
 
-.cv2-pill-toggle__btn.is-active {
+.cv-pill-toggle__btn.is-active {
   background: var(--color-c2);
   color: #FFFFFF;
   font-weight: 600;
@@ -74,18 +74,18 @@
 /* ----------------------------------------
    TABS (PrÃªt 1 / PrÃªt 2 / PrÃªt 3)
    ---------------------------------------- */
-.cv2-tabs {
+.cv-tabs {
   margin-bottom: 20px;
 }
 
-.cv2-tabs__list {
+.cv-tabs__list {
   display: flex;
   gap: 2px;
   position: relative;
   padding-bottom: 2px;
 }
 
-.cv2-tabs__list::after {
+.cv-tabs__list::after {
   content: "";
   position: absolute;
   left: 0;
@@ -100,7 +100,7 @@
   );
 }
 
-.cv2-tabs__tab {
+.cv-tabs__tab {
   padding: 12px 20px;
   background: transparent;
   border: none;
@@ -115,36 +115,36 @@
   gap: 6px;
 }
 
-.cv2-tabs__tab:hover:not(.is-disabled) {
+.cv-tabs__tab:hover:not(.is-disabled) {
   color: var(--color-c2);
   background-color: var(--color-c7);
 }
 
-.cv2-tabs__tab.is-active {
+.cv-tabs__tab.is-active {
   color: var(--color-c1);
   font-weight: 600;
   border-bottom-color: var(--color-c3); /* point 8 â€” indicateur actif C3 */
 }
 
-.cv2-tabs__tab.is-active:focus-visible {
+.cv-tabs__tab.is-active:focus-visible {
   outline: 2px solid var(--color-c2);
   outline-offset: 2px;
 }
 
-.cv2-tabs__tab.is-addable {
+.cv-tabs__tab.is-addable {
   color: var(--color-c9);
 }
 
-.cv2-tabs__tab.is-addable:hover {
+.cv-tabs__tab.is-addable:hover {
   color: var(--color-c2);
 }
 
-.cv2-tabs__tab.is-disabled {
+.cv-tabs__tab.is-disabled {
   color: var(--color-c8);
   cursor: default;
 }
 
-.cv2-tabs__add-badge {
+.cv-tabs__add-badge {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -159,13 +159,13 @@
   transition: background 0.2s, color 0.2s;
 }
 
-.cv2-tabs__tab.is-addable:hover .cv2-tabs__add-badge {
+.cv-tabs__tab.is-addable:hover .cv-tabs__add-badge {
   background: var(--color-c2);
   color: #FFFFFF;
 }
 
 /* point 9 â€” wrapper tab + bouton Ã— (sibling HTML valide) */
-.cv2-tabs__tab-wrapper {
+.cv-tabs__tab-wrapper {
   display: inline-flex;
   align-items: center;
   position: relative;
@@ -173,7 +173,7 @@
   margin-bottom: -2px; /* chevauche la ligne C8 du ::after */
 }
 
-.cv2-tabs__tab-remove {
+.cv-tabs__tab-remove {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -195,17 +195,17 @@
   z-index: 1;
 }
 
-.cv2-tabs__tab-wrapper:hover .cv2-tabs__tab-remove,
-.cv2-tabs__tab-wrapper:focus-within .cv2-tabs__tab-remove {
+.cv-tabs__tab-wrapper:hover .cv-tabs__tab-remove,
+.cv-tabs__tab-wrapper:focus-within .cv-tabs__tab-remove {
   opacity: 1;
 }
 
-.cv2-tabs__tab-remove:hover {
+.cv-tabs__tab-remove:hover {
   background: var(--color-c8);
   color: var(--color-c1);
 }
 
-.cv2-tabs__tab-remove:focus-visible {
+.cv-tabs__tab-remove:focus-visible {
   outline: 2px solid var(--color-c2);
   outline-offset: 1px;
   opacity: 1;
@@ -214,8 +214,8 @@
 /* ----------------------------------------
    CARDS
    ---------------------------------------- */
-/* .cv2-card supprimÃ© â†’ remplacÃ© par .premium-card (premium-shared.css)
-   .cv2-card__title supprimÃ© â†’ remplacÃ© par .sim-section-title (socle partagÃ© /sim) */
+/* .cv-card supprimÃ© â†’ remplacÃ© par .premium-card (premium-shared.css)
+   .cv-card__title supprimÃ© â†’ remplacÃ© par .sim-section-title (socle partagÃ© /sim) */
 
 /* Espacement entre cards adjacentes (spÃ©cifique CrÃ©dit) */
 .premium-card + .premium-card {

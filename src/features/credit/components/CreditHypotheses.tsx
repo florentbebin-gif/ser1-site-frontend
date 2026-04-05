@@ -8,15 +8,15 @@ export function CreditHypotheses({
   onToggle,
 }: CreditHypothesesProps) {
   return (
-    <div className="cv2-hypotheses">
+    <div className="cv-hypotheses">
       <button
         type="button"
-        className="cv2-hypotheses__toggle"
+        className="cv-hypotheses__toggle"
         onClick={onToggle}
         aria-expanded={hypothesesOpen}
         data-testid="credit-hypotheses-toggle"
       >
-        <span className="cv2-hypotheses__title">Hypothèses et limites</span>
+        <span className="cv-hypotheses__title">Hypothèses et limites</span>
         <svg
           width="12"
           height="12"
@@ -26,7 +26,7 @@ export function CreditHypotheses({
           strokeWidth="2"
           strokeLinecap="round"
           strokeLinejoin="round"
-          className={`cv2-hypotheses__chevron${hypothesesOpen ? ' is-open' : ''}`}
+          className={`cv-hypotheses__chevron${hypothesesOpen ? ' is-open' : ''}`}
           aria-hidden="true"
         >
           <polyline points="6 9 12 15 18 9" />
