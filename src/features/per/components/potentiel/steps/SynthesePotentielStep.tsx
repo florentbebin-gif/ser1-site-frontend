@@ -8,9 +8,6 @@ import type { PerPotentielResult, PlafondDetail, PlafondMadelinDetail } from '..
 interface SynthesePotentielStepProps {
   result: PerPotentielResult | null;
   isCouple: boolean;
-  modeVersement: boolean;
-  versementEnvisage: number;
-  onSetVersement: (_value: number) => void;
 }
 
 const fmtCurrency = (value: number): string =>
@@ -19,9 +16,6 @@ const fmtCurrency = (value: number): string =>
     currency: 'EUR',
     maximumFractionDigits: 0,
   }).format(value);
-
-const fmtPercent = (value: number): string =>
-  `${(value <= 1 ? value * 100 : value).toFixed(1)} %`;
 
 function PlafondBreakdownCard({
   label,
@@ -108,9 +102,6 @@ function MadelinCard({
 export default function SynthesePotentielStep({
   result,
   isCouple,
-  modeVersement,
-  versementEnvisage,
-  onSetVersement,
 }: SynthesePotentielStepProps): React.ReactElement {
   if (!result) {
     return (
@@ -123,19 +114,13 @@ export default function SynthesePotentielStep({
   }
 
   const {
-    situationFiscale,
     plafond163Q,
     plafondMadelin,
     estTNS,
     declaration2042,
-    simulation,
     warnings,
   } = result;
 
-  const totalDisponible =
-    plafond163Q.declarant1.disponibleRestant + (plafond163Q.declarant2?.disponibleRestant ?? 0);
-  const totalDisponibleAvantVersement =
-    plafond163Q.declarant1.totalDisponible + (plafond163Q.declarant2?.totalDisponible ?? 0);
   const declarationRows = [
     {
       label: 'PER 163 quatervicies',
@@ -169,104 +154,11 @@ export default function SynthesePotentielStep({
 
   return (
     <div className="per-step per-step--summary">
-      <div className="per-summary-top">
-        <div className="premium-card premium-card--guide per-summary-hero">
-          <div className="per-summary-hero-head">
-            <div>
-              <p className="premium-section-title">Résultat principal</p>
-              <h4 className="per-summary-hero-title">
-                {modeVersement ? "Montant encore déductible aujourd'hui" : 'Plafond restant après déclaration'}
-              </h4>
-            </div>
-            <span className="per-summary-hero-chip">
-              {modeVersement ? 'Versement N' : 'Déclaration N-1'}
-            </span>
-          </div>
-
-          <div className="per-summary-hero-grid">
-            <div className="per-summary-primary-metric">
-              <span className="per-summary-primary-label">Disponible total</span>
-              <strong className="per-summary-primary-value">{fmtCurrency(totalDisponible)}</strong>
-              <p className="per-summary-primary-note">
-                Base avant simulation : {fmtCurrency(totalDisponibleAvantVersement)}
-                {isCouple && declaration2042.case6QR ? ' — mutualisation active (6QR)' : ''}
-              </p>
-            </div>
-
-            <div className="per-summary-stat-grid">
-              <div className="per-summary-stat">
-                <span className="per-summary-stat-label">TMI</span>
-                <strong className="per-summary-stat-value">{fmtPercent(situationFiscale.tmi)}</strong>
-              </div>
-              <div className="per-summary-stat">
-                <span className="per-summary-stat-label">IR estimé</span>
-                <strong className="per-summary-stat-value">{fmtCurrency(situationFiscale.irEstime)}</strong>
-              </div>
-              <div className="per-summary-stat">
-                <span className="per-summary-stat-label">Marge TMI</span>
-                <strong className="per-summary-stat-value">{fmtCurrency(situationFiscale.montantDansLaTMI)}</strong>
-              </div>
-              <div className="per-summary-stat">
-                <span className="per-summary-stat-label">CEHR</span>
-                <strong className="per-summary-stat-value">{fmtCurrency(situationFiscale.cehr)}</strong>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="per-summary-side-stack">
-          <PlafondBreakdownCard label="Déclarant 1" detail={plafond163Q.declarant1} />
-          {isCouple && plafond163Q.declarant2 && (
-            <PlafondBreakdownCard label="Déclarant 2" detail={plafond163Q.declarant2} />
-          )}
-
-          {modeVersement && (
-            <div className="premium-card per-summary-simulation">
-              <div className="per-summary-simulation-head">
-                <div>
-                  <p className="premium-section-title">Simulation de versement</p>
-                  <h5 className="per-summary-simulation-title">Gain fiscal projeté</h5>
-                </div>
-              </div>
-              <label className="per-summary-simulation-input">
-                <span className="per-summary-simulation-label">Versement envisagé</span>
-                <input
-                  type="number"
-                  min={0}
-                  className="per-input sim-field__control"
-                  value={versementEnvisage || ''}
-                  placeholder="0"
-                  onChange={(event) => onSetVersement(Number(event.target.value) || 0)}
-                />
-              </label>
-
-              {simulation ? (
-                <div className="per-summary-simulation-grid">
-                  <div className="per-summary-stat">
-                    <span className="per-summary-stat-label">Versement déductible</span>
-                    <strong className="per-summary-stat-value">{fmtCurrency(simulation.versementDeductible)}</strong>
-                  </div>
-                  <div className="per-summary-stat">
-                    <span className="per-summary-stat-label">Économie IR</span>
-                    <strong className="per-summary-stat-value">{fmtCurrency(simulation.economieIRAnnuelle)}</strong>
-                  </div>
-                  <div className="per-summary-stat">
-                    <span className="per-summary-stat-label">Coût net</span>
-                    <strong className="per-summary-stat-value">{fmtCurrency(simulation.coutNetApresFiscalite)}</strong>
-                  </div>
-                  <div className="per-summary-stat">
-                    <span className="per-summary-stat-label">Plafond restant</span>
-                    <strong className="per-summary-stat-value">{fmtCurrency(simulation.plafondRestantApres)}</strong>
-                  </div>
-                </div>
-              ) : (
-                <p className="per-summary-simulation-hint">
-                  Saisissez un versement pour voir l&apos;économie d&apos;impôt.
-                </p>
-              )}
-            </div>
-          )}
-        </div>
+      <div className={`per-summary-breakdown-grid ${isCouple && plafond163Q.declarant2 ? 'is-couple' : ''}`}>
+        <PlafondBreakdownCard label="Déclarant 1" detail={plafond163Q.declarant1} />
+        {isCouple && plafond163Q.declarant2 && (
+          <PlafondBreakdownCard label="Déclarant 2" detail={plafond163Q.declarant2} />
+        )}
       </div>
 
       <div className="premium-card per-summary-section-card">

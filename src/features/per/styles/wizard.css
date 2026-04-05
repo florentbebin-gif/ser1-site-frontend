@@ -363,6 +363,48 @@
   color: var(--color-c9);
 }
 
+/* -- Sidebar hero (step 5) ------------------------------------------------ */
+
+.per-sidebar-hero {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.per-sidebar-hero__label {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  color: var(--color-c9);
+  margin-bottom: 6px;
+}
+
+.per-sidebar-hero__value {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--color-c1);
+  font-variant-numeric: tabular-nums;
+}
+
+.per-sidebar-hero svg {
+  transform: rotate(-90deg);
+  flex-shrink: 0;
+}
+
+.per-sidebar-simulation {
+  display: grid;
+  gap: 12px;
+}
+
+.per-sidebar-simulation__hint {
+  margin: 0;
+  font-size: 12px;
+  color: var(--color-c9);
+  line-height: 1.55;
+}
+
 /* -- Hypothèses ------------------------------------------------------------ */
 
 .per-hypotheses {

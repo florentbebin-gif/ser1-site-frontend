@@ -18,6 +18,7 @@ import AvisIrStep from './steps/AvisIrStep';
 import SituationFiscaleStep from './steps/SituationFiscaleStep';
 import SynthesePotentielStep from './steps/SynthesePotentielStep';
 import { PerHypotheses } from './PerHypotheses';
+import { PerSynthesisSidebar } from './PerSynthesisSidebar';
 import '../../styles/index.css';
 
 type StepMeta = {
@@ -330,9 +331,6 @@ export default function PerPotentielSimulator(): React.ReactElement {
                 <SynthesePotentielStep
                   result={result}
                   isCouple={isCouple}
-                  modeVersement={state.mode === 'versement-n'}
-                  versementEnvisage={state.versementEnvisage}
-                  onSetVersement={setVersementEnvisage}
                 />
               )}
             </div>
@@ -400,7 +398,7 @@ export default function PerPotentielSimulator(): React.ReactElement {
             </div>
           </div>
 
-          {result && (
+          {result && state.step !== 5 && (
             <div className="premium-card per-potentiel-context-card sim-summary-card sim-summary-card--secondary">
               <div className="sim-card__title-row">
                 <div className="sim-card__icon">
@@ -442,6 +440,15 @@ export default function PerPotentielSimulator(): React.ReactElement {
                 )}
               </div>
             </div>
+          )}
+
+          {result && state.step === 5 && (
+            <PerSynthesisSidebar
+              result={result}
+              modeVersement={state.mode === 'versement-n'}
+              versementEnvisage={state.versementEnvisage}
+              onSetVersement={setVersementEnvisage}
+            />
           )}
         </aside>
         )}
