@@ -7,34 +7,34 @@
  */
 
 import { useMemo } from 'react';
-import type { SuccessionFiscalSnapshot } from './successionFiscalContext';
+import type { SuccessionFiscalSnapshot } from '../successionFiscalContext';
 import {
   countEffectiveDescendantBranches,
   countLivingEnfants,
   countLivingNonCommuns,
   getEnfantRattachementOptions,
-} from './successionEnfants';
-import { buildSuccessionAvFiscalAnalysis } from './successionAvFiscal';
+} from '../successionEnfants';
+import { buildSuccessionAvFiscalAnalysis } from '../successionAvFiscal';
 import {
   coordinateSuccessionInsuranceAllowances,
-} from './successionDeathInsuranceAllowances';
-import { buildSuccessionSurvivorEconomicInflows } from './successionInsuranceInflows';
-import { buildSuccessionPerFiscalAnalysis } from './successionPerFiscal';
+} from '../successionDeathInsuranceAllowances';
+import { buildSuccessionSurvivorEconomicInflows } from '../successionInsuranceInflows';
+import { buildSuccessionPerFiscalAnalysis } from '../successionPerFiscal';
 import {
   buildSuccessionPrevoyanceFiscalAnalysis,
-} from './successionPrevoyanceFiscal';
-import { buildSuccessionPatrimonialAnalysis } from './successionPatrimonial';
-import { buildSuccessionPredecesAnalysis } from './successionPredeces';
+} from '../successionPrevoyanceFiscal';
+import { buildSuccessionPatrimonialAnalysis } from '../successionPatrimonial';
+import { buildSuccessionPredecesAnalysis } from '../successionPredeces';
 import {
   buildSuccessionChainageAnalysis,
   type SuccessionChainOrder,
-} from './successionChainage';
-import { computeSuccessionDirectEstateBasis } from './successionDisplay';
-import { buildSuccessionDevolutionAnalysis } from './successionDevolution';
+} from '../successionChainage';
+import { computeSuccessionDirectEstateBasis } from '../successionDisplay';
+import { buildSuccessionDevolutionAnalysis } from '../successionDevolution';
 import {
   getDonationEffectiveAmount,
   getTestamentParticularLegaciesTotal,
-} from './successionSimulator.helpers';
+} from '../successionSimulator.helpers';
 import type {
   SuccessionAssetDetailEntry,
   SuccessionAssuranceVieEntry,
@@ -44,13 +44,13 @@ import type {
   SuccessionGroupementFoncierEntry,
   SuccessionPerEntry,
   SuccessionPrevoyanceDecesEntry,
-} from './successionDraft';
+} from '../successionDraft';
 import type {
   DEFAULT_SUCCESSION_CIVIL_CONTEXT,
   DEFAULT_SUCCESSION_DEVOLUTION_CONTEXT,
   DEFAULT_SUCCESSION_LIQUIDATION_CONTEXT,
   DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT,
-} from './successionDraft';
+} from '../successionDraft';
 import { useSuccessionOutcomeDerivedValues } from './useSuccessionOutcomeDerivedValues';
 import {
   buildEstateAllowanceUsageBySide,

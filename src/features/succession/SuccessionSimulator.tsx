@@ -12,7 +12,7 @@
  */
 
 import { useContext, useEffect, useMemo, useState } from 'react';
-import { useSuccessionCalc } from './useSuccessionCalc';
+import { useSuccessionCalc } from './hooks/useSuccessionCalc';
 import { useTheme } from '../../settings/ThemeProvider';
 import { useUserMode } from '../../settings/userMode';
 import { SessionGuardContext } from '../../session/sessionGuardContext';
@@ -45,16 +45,16 @@ import {
 } from './successionDraft';
 import { buildSuccessionFiscalSnapshot } from './successionFiscalContext';
 import { type SuccessionChainOrder } from './successionChainage';
-import { useSuccessionSyncEffects } from './useSuccessionSyncEffects';
+import { useSuccessionSyncEffects } from './hooks/useSuccessionSyncEffects';
 import {
   buildInitialDispositionsDraft,
   EMPTY_ADD_FAMILY_MEMBER_FORM,
   type AddFamilyMemberFormState,
   type DispositionsDraftState,
 } from './successionSimulator.helpers';
-import { useSuccessionDerivedValues } from './useSuccessionDerivedValues';
-import { useSuccessionExportHandlers } from './useSuccessionExportHandlers';
-import { useSuccessionSimulatorHandlers } from './useSuccessionSimulatorHandlers';
+import { useSuccessionDerivedValues } from './hooks/useSuccessionDerivedValues';
+import { useSuccessionExportHandlers } from './hooks/useSuccessionExportHandlers';
+import { useSuccessionSimulatorHandlers } from './hooks/useSuccessionSimulatorHandlers';
 import {
   SuccessionHypotheses,
   SuccessionModals,

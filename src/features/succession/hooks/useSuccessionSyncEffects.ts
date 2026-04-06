@@ -21,10 +21,10 @@ import type {
   SuccessionPerEntry,
   SuccessionPrevoyanceDecesEntry,
   FamilyMember,
-} from './successionDraft';
-import type { RegimeMatrimonial } from '../../engine/civil';
-import { normalizeResidencePrincipaleAssetEntries } from './successionAssetValuation';
-import { resolveSuccessionAssetLocation } from './successionPatrimonialModel';
+} from '../successionDraft';
+import type { RegimeMatrimonial } from '../../../engine/civil';
+import { normalizeResidencePrincipaleAssetEntries } from '../successionAssetValuation';
+import { resolveSuccessionAssetLocation } from '../successionPatrimonialModel';
 
 interface SelectOption<TValue extends string = string> {
   value: TValue;

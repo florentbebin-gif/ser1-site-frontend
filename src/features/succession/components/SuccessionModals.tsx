@@ -4,7 +4,7 @@ import AssuranceVieModal from './AssuranceVieModal';
 import DispositionsModal from './DispositionsModal';
 import PerModal from './PerModal';
 import PrevoyanceModal from './PrevoyanceModal';
-import type { useSuccessionDerivedValues } from '../useSuccessionDerivedValues';
+import type { useSuccessionDerivedValues } from '../hooks/useSuccessionDerivedValues';
 import type {
   FamilyMember,
   SituationMatrimoniale,

@@ -6,10 +6,10 @@
  */
 
 import { useState, useCallback } from 'react';
-import { exportSuccessionPptx, type ThemeColorsForExport } from '../../pptx/exports/successionExport';
-import { exportAndDownloadSuccessionXlsx } from './successionXlsx';
-import type { LienParente } from '../../engine/succession';
-import type { LogoPlacement } from '../../pptx/theme/types';
+import { exportSuccessionPptx, type ThemeColorsForExport } from '../../../pptx/exports/successionExport';
+import { exportAndDownloadSuccessionXlsx } from '../successionXlsx';
+import type { LienParente } from '../../../engine/succession';
+import type { LogoPlacement } from '../../../pptx/theme/types';
 
 interface UseSuccessionExportHandlersInput {
   canExport: boolean;

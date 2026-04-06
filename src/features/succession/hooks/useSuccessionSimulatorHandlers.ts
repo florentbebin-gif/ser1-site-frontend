@@ -22,15 +22,15 @@ import {
   type SuccessionGroupementFoncierEntry,
   type SuccessionPerEntry,
   type SuccessionPrevoyanceDecesEntry,
-} from './successionDraft';
-import type { buildTestamentBeneficiaryOptions } from './successionTestament';
+} from '../successionDraft';
+import type { buildTestamentBeneficiaryOptions } from '../successionTestament';
 import {
   EMPTY_ADD_FAMILY_MEMBER_FORM,
   buildInitialDispositionsDraft,
   type AddFamilyMemberFormState,
   type DispositionsDraftState,
-} from './successionSimulator.helpers';
-import type { SuccessionChainOrder } from './successionChainage';
+} from '../successionSimulator.helpers';
+import type { SuccessionChainOrder } from '../successionChainage';
 import { useSuccessionAssetHandlers } from './useSuccessionAssetHandlers';
 import { useSuccessionContractModalHandlers } from './useSuccessionContractModalHandlers';
 import { useSuccessionDispositionsHandlers } from './useSuccessionDispositionsHandlers';

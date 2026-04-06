@@ -4,7 +4,7 @@ import type {
   SuccessionAssuranceVieEntry,
   SuccessionPerEntry,
   SuccessionPrevoyanceDecesEntry,
-} from './successionDraft';
+} from '../successionDraft';
 
 interface UseContractModalHandlersArgs<T extends { id: string }> {
   entries: T[];

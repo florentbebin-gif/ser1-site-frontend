@@ -25,7 +25,7 @@ import { PlacementToolbar } from './PlacementToolbar';
 import { PlacementInputsPanel } from './PlacementInputsPanel';
 import { PlacementHypotheses } from './PlacementHypotheses';
 import { PlacementResultsPanel } from './PlacementResultsPanel';
-import { usePlacementSimulatorController } from './usePlacementSimulatorController';
+import { usePlacementSimulatorController } from '../hooks/usePlacementSimulatorController';
 
 export default function PlacementSimulatorPage() {
   const { mode } = useUserMode();

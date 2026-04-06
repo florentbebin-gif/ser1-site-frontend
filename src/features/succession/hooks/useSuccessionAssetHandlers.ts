@@ -1,6 +1,6 @@
 import { useCallback } from 'react';
 import type { Dispatch, SetStateAction } from 'react';
-import type { RegimeMatrimonial } from '../../engine/civil';
+import type { RegimeMatrimonial } from '../../../engine/civil';
 import type {
   PacsConvention,
   SituationMatrimoniale,
@@ -12,12 +12,12 @@ import type {
   SuccessionGroupementFoncierEntry,
   SuccessionPerEntry,
   SuccessionPrevoyanceDecesEntry,
-} from './successionDraft';
+} from '../successionDraft';
 import {
   ASSET_SUBCATEGORY_OPTIONS,
   RESIDENCE_PRINCIPALE_SUBCATEGORY,
   RESIDENCE_SECONDAIRE_SUBCATEGORY,
-} from './successionSimulator.constants';
+} from '../successionSimulator.constants';
 import {
   buildAggregateAssetEntries,
   buildAssuranceVieFromAsset,
@@ -25,12 +25,12 @@ import {
   buildPerFromAsset,
   buildPrevoyanceFromAsset,
   createAssetId,
-} from './successionSimulator.helpers';
+} from '../successionSimulator.helpers';
 import {
   getSuccessionLegacyOwnerFromPocket,
   resolveSuccessionAssetLocation,
   type SuccessionLegacyAssetOwner,
-} from './successionPatrimonialModel';
+} from '../successionPatrimonialModel';
 
 interface UseSuccessionAssetHandlersArgs {
   civilSituation: SituationMatrimoniale;

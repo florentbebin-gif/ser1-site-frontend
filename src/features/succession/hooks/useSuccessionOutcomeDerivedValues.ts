@@ -1,20 +1,20 @@
 import { useMemo } from 'react';
-import type { buildSuccessionAvFiscalAnalysis } from './successionAvFiscal';
-import type { buildSuccessionChainageAnalysis } from './successionChainage';
-import type { buildSuccessionDevolutionAnalysis } from './successionDevolution';
+import type { buildSuccessionAvFiscalAnalysis } from '../successionAvFiscal';
+import type { buildSuccessionChainageAnalysis } from '../successionChainage';
+import type { buildSuccessionDevolutionAnalysis } from '../successionDevolution';
 import {
   buildSuccessionChainTransmissionRows,
   buildSuccessionDirectDisplayAnalysis,
   type computeSuccessionDirectEstateBasis,
-} from './successionDisplay';
-import type { buildSuccessionPatrimonialAnalysis } from './successionPatrimonial';
-import type { buildSuccessionPerFiscalAnalysis } from './successionPerFiscal';
+} from '../successionDisplay';
+import type { buildSuccessionPatrimonialAnalysis } from '../successionPatrimonial';
+import type { buildSuccessionPerFiscalAnalysis } from '../successionPerFiscal';
 import type {
   buildSuccessionPrevoyanceFiscalAnalysis,
-} from './successionPrevoyanceFiscal';
-import type { buildSuccessionPredecesAnalysis } from './successionPredeces';
-import type { SuccessionChainOrder } from './successionChainage';
-import type { SuccessionFiscalSnapshot } from './successionFiscalContext';
+} from '../successionPrevoyanceFiscal';
+import type { buildSuccessionPredecesAnalysis } from '../successionPredeces';
+import type { SuccessionChainOrder } from '../successionChainage';
+import type { SuccessionFiscalSnapshot } from '../successionFiscalContext';
 import type {
   DEFAULT_SUCCESSION_CIVIL_CONTEXT,
   DEFAULT_SUCCESSION_DEVOLUTION_CONTEXT,
@@ -23,9 +23,9 @@ import type {
   FamilyMember,
   SuccessionDonationEntry,
   SuccessionEnfant,
-} from './successionDraft';
-import type { SuccessionAssetTransmissionBasis } from './successionTransmissionBasis';
-import { buildSuccessionAssumptions } from './successionAssumptions';
+} from '../successionDraft';
+import type { SuccessionAssetTransmissionBasis } from '../successionTransmissionBasis';
+import { buildSuccessionAssumptions } from '../successionAssumptions';
 import {
   buildSuccessionSynthHypothese,
   buildUnifiedBeneficiaryBlocks,

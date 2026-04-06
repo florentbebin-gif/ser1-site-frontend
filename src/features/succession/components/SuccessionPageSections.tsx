@@ -5,7 +5,7 @@ import ScDonationsCard from './ScDonationsCard';
 import ScFamilyContextCard from './ScFamilyContextCard';
 import ScSuccessionSummaryPanel from './ScSuccessionSummaryPanel';
 import { FiliationOrgchart } from './FiliationOrgchart';
-import type { useSuccessionDerivedValues } from '../useSuccessionDerivedValues';
+import type { useSuccessionDerivedValues } from '../hooks/useSuccessionDerivedValues';
 import type {
   SituationMatrimoniale,
   SuccessionAssetCategory,

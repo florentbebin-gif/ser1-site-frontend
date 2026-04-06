@@ -1,9 +1,9 @@
-import type { buildSuccessionAvFiscalAnalysis } from './successionAvFiscal';
-import type { buildSuccessionChainageAnalysis } from './successionChainage';
-import type { buildSuccessionPerFiscalAnalysis } from './successionPerFiscal';
+import type { buildSuccessionAvFiscalAnalysis } from '../successionAvFiscal';
+import type { buildSuccessionChainageAnalysis } from '../successionChainage';
+import type { buildSuccessionPerFiscalAnalysis } from '../successionPerFiscal';
 import type {
   buildSuccessionPrevoyanceFiscalAnalysis,
-} from './successionPrevoyanceFiscal';
+} from '../successionPrevoyanceFiscal';
 
 type SuccessionSide = 'epoux1' | 'epoux2';
 type ChainageAnalysis = ReturnType<typeof buildSuccessionChainageAnalysis>;
