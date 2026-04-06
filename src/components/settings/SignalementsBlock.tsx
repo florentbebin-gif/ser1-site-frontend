@@ -1,14 +1,6 @@
-import React, { useEffect, useState } from 'react';
-import { supabase } from '../../supabaseClient';
+import React, { useState } from 'react';
+import { useSignalements } from './hooks/useSignalements';
 import './SignalementsBlock.css';
-
-interface IssueReport {
-  id: string;
-  title: string;
-  page: string;
-  status: string;
-  created_at: string;
-}
 
 const REPORT_PAGE_OPTIONS = [
   { value: '', label: 'Sélectionner une page...' },
@@ -39,113 +31,27 @@ export default function SignalementsBlock(): React.ReactElement {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [page, setPage] = useState('');
-  const [submitting, setSubmitting] = useState(false);
-  const [submitSuccess, setSubmitSuccess] = useState(false);
-  const [submitError, setSubmitError] = useState('');
 
-  const [reports, setReports] = useState<IssueReport[]>([]);
-  const [loadingReports, setLoadingReports] = useState(true);
-  const [loadError, setLoadError] = useState('');
-
-  useEffect(() => {
-    void loadMyReports();
-  }, []);
-
-  const loadMyReports = async (): Promise<void> => {
-    try {
-      setLoadingReports(true);
-      setLoadError('');
-
-      const {
-        data: { user },
-        error: userError,
-      } = await supabase.auth.getUser();
-      if (userError) throw userError;
-      if (!user) {
-        setLoadError('Vous devez être connecté pour voir vos signalements.');
-        return;
-      }
-
-      const { data, error: fetchError } = await supabase
-        .from('issue_reports')
-        .select('id, title, page, status, created_at')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false })
-        .limit(10);
-
-      if (fetchError) throw fetchError;
-
-      const normalizedReports: IssueReport[] = (data ?? []).map((report) => ({
-        id: String(report.id),
-        title: String(report.title || ''),
-        page: String(report.page || ''),
-        status: String(report.status || ''),
-        created_at: String(report.created_at || ''),
-      }));
-
-      setReports(normalizedReports);
-    } catch (error) {
-      console.error('[SignalementsBlock] Error loading reports:', error);
-      setLoadError('Erreur lors du chargement des signalements.');
-    } finally {
-      setLoadingReports(false);
-    }
-  };
+  const {
+    reports,
+    loadingReports,
+    loadError,
+    submitting,
+    submitSuccess,
+    submitError,
+    submitReport,
+  } = useSignalements();
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>): Promise<void> => {
     e.preventDefault();
 
-    if (!title.trim() || !page) {
-      setSubmitError('Veuillez remplir le titre et sélectionner une page.');
-      return;
-    }
+    if (!title.trim() || !page) return;
 
-    setSubmitting(true);
-    setSubmitError('');
-    setSubmitSuccess(false);
-
-    try {
-      const {
-        data: { user },
-        error: userError,
-      } = await supabase.auth.getUser();
-      if (userError) throw userError;
-      if (!user) {
-        setSubmitError('Vous devez être connecté pour soumettre un signalement.');
-        return;
-      }
-
-      const meta = {
-        userAgent: navigator.userAgent,
-        url: window.location.href,
-        timestamp: new Date().toISOString(),
-        screenSize: `${window.innerWidth}x${window.innerHeight}`,
-      };
-
-      const { error: insertError } = await supabase.from('issue_reports').insert({
-        user_id: user.id,
-        title: title.trim(),
-        description: description.trim() || null,
-        page,
-        meta,
-        status: 'new',
-      });
-
-      if (insertError) throw insertError;
-
-      setSubmitSuccess(true);
+    const success = await submitReport({ title: title.trim(), description: description.trim(), page });
+    if (success) {
       setTitle('');
       setDescription('');
       setPage('');
-      void loadMyReports();
-
-      window.setTimeout(() => setSubmitSuccess(false), 5000);
-    } catch (error) {
-      console.error('[SignalementsBlock] Submit error:', error);
-      const message = error instanceof Error ? error.message : 'Veuillez réessayer.';
-      setSubmitError(`Erreur lors de l’envoi : ${message}`);
-    } finally {
-      setSubmitting(false);
     }
   };
 
