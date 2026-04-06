@@ -1,3 +1,4 @@
+# Usage: powershell -File tools/scripts/verify-runtime-saas.ps1 — Vérification runtime SaaS (tables, RLS, edge functions, thème).
 param(
   [string]$SupabaseUrl = $env:SUPABASE_URL,
   [string]$SupabaseAnonKey = $env:SUPABASE_ANON_KEY,

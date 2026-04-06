@@ -3,7 +3,7 @@ import {
   getSuccessionInterMassClaimKindLabel,
   getSuccessionPocketLabel,
 } from '../successionInterMassClaims';
-import type { UnifiedBeneficiaryBlock } from '../useSuccessionOutcomeDerivedValues.helpers';
+import type { UnifiedBeneficiaryBlock } from '../hooks/useSuccessionOutcomeDerivedValues.helpers';
 import ScDonut from './ScDonut';
 
 function formatPartyLabel(value: 'epoux1' | 'epoux2'): string {

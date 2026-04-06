@@ -1,6 +1,6 @@
-import type { RegimeMatrimonial } from '../../engine/civil';
-import { DONATION_ENTRE_EPOUX_OPTIONS } from './successionSimulator.constants';
-import { getUsufruitValuationFromBirthDate } from './successionUsufruit';
+import type { RegimeMatrimonial } from '../../../engine/civil';
+import { DONATION_ENTRE_EPOUX_OPTIONS } from '../successionSimulator.constants';
+import { getUsufruitValuationFromBirthDate } from '../successionUsufruit';
 
 export type InsuranceSourceKind = 'av' | 'per' | 'prevoyance';
 

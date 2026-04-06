@@ -391,6 +391,50 @@ En mode simplifié, seuls Montant, Durée et Taux annuel sont affichés.
 - SER1 ne remplace ni un logiciel de declaration fiscale, ni un logiciel notarial, ni un moteur bancaire de souscription.
 - La valeur actuelle du produit est : comparer, expliquer, illustrer et fiabiliser des scenarios de conseil patrimonial.
 
+## Catalogue patrimonial — règles métier
+
+> Migré depuis `docs/GOUVERNANCE.md` — ces règles sont métier, pas UI.
+
+### Contexte & trajectoire
+Le client du CGP est une **personne physique** qui souhaite des conseils sur son patrimoine personnel (PP) ou l'entreprise qu'il détient (PM). Chaque produit du catalogue doit être qualifié selon ce prisme.
+
+### Règle de regroupement des produits (3 phases fiscales)
+On peut regrouper des produits **uniquement** si les 3 phases fiscales sont identiques :
+1. **Constitution** — taxation des revenus (intérêts, dividendes, loyers…)
+2. **Sortie / Rachat** — fiscalité de la cession ou du rachat
+3. **Décès / Transmission** — fiscalité successorale (DMTG, exonérations…)
+
+> Exemple : on ne regroupe PAS les GFA/GFV et les GFF car l'exonération DMTG relève d'articles différents (art. 793 bis vs art. 793 1° 3° CGI).
+
+### Taxonomie des familles (grandeFamille)
+| Famille | Contenu | Type |
+|---------|---------|------|
+| Épargne Assurance | AV, contrat de capitalisation | Wrappers (épargne) |
+| Assurance prévoyance | Prévoyance décès, ITT/invalidité, dépendance, emprunteur, obsèques, homme-clé | Protections |
+| Épargne bancaire | Livrets, PEL, CEL, CAT, CSL, PEAC, CTO, PEA, PEA-PME | Wrappers (comptes/enveloppes) |
+| Valeurs mobilières | Actions, FCPR, FCPI, FIP, OPCI, parts sociales, titres participatifs, BSA/DPS | Actifs détenus en direct |
+| Immobilier direct | RP, RS, locatif nu, LMNP, LMP, garages, terrains | Actifs |
+| Immobilier indirect | SCPI, GFA/GFV, GFF | Actifs (pierre-papier) |
+| Non coté/PE | Actions non cotées, crowdfunding, obligations non cotées, SOFICA, IR-PME | Actifs |
+| Créances/Droits | Compte courant associé, prêt entre particuliers, usufruit/nue-propriété | Actifs |
+| Dispositifs fiscaux immobilier | Pinel, Malraux, MH, Scellier, Denormandie… | Overlays fiscaux |
+| Retraite & épargne salariale | PER, PEE, PERCOL, PERCO, Art. 83/39, Madelin, PERP | Wrappers |
+| Autres | Métaux précieux, crypto-actifs, tontine | Actifs divers |
+
+### Règles de holdability (PP / PM)
+- **Résidence secondaire** : PP-only.
+- **LMNP / LMP** : PP-only.
+- **Épargne réglementée** (Livret A, LDDS, LEP, Livret Jeune, PEL, CEL) : PP-only.
+- **PEA / PEA-PME / PERIN** : PP-only.
+- **Obligations** (OAT, corporate, convertibles) : retirées du catalogue (détention uniquement via CTO/PEA).
+- Les produits PP+PM sont **splittés** en deux lignes dans le catalogue V5.
+
+### Produits non directement souscriptibles (exclus du catalogue)
+- OPC / OPCVM / SICAV / FCP / ETF → sous-jacents de CTO/PEA, pas de souscription directe.
+- FCPE → sous-jacent de PEE/PERCOL.
+
+---
+
 ## Repartition des sources de verite
 | Sujet | Doc de reference |
 |---|---|

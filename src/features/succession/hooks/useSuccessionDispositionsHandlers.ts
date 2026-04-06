@@ -6,12 +6,12 @@ import type {
   SuccessionBeneficiaryRef,
   SuccessionPrimarySide,
   SuccessionTestamentConfig,
-} from './successionDraft';
-import type { buildTestamentBeneficiaryOptions } from './successionTestament';
+} from '../successionDraft';
+import type { buildTestamentBeneficiaryOptions } from '../successionTestament';
 import {
   cloneSuccessionTestamentsBySide,
   createSuccessionParticularLegacyEntry,
-} from './successionTestament';
+} from '../successionTestament';
 import {
   cloneAscendantsSurvivantsBySide,
   cloneSuccessionInterMassClaims,
@@ -20,7 +20,7 @@ import {
   cloneSuccessionSocieteAcquetsConfig,
   updateDraftTestament,
   type DispositionsDraftState,
-} from './successionSimulator.helpers';
+} from '../successionSimulator.helpers';
 
 interface UseSuccessionDispositionsHandlersArgs {
   testamentBeneficiaryOptionsBySide: Record<

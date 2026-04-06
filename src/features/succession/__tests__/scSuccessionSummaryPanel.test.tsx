@@ -1,7 +1,7 @@
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
 import ScSuccessionSummaryPanel from '../components/ScSuccessionSummaryPanel';
-import { mergeInsuranceBeneficiaryLines, type UnifiedBeneficiaryBlock } from '../useSuccessionOutcomeDerivedValues.helpers';
+import { mergeInsuranceBeneficiaryLines, type UnifiedBeneficiaryBlock } from '../hooks/useSuccessionOutcomeDerivedValues.helpers';
 
 const baseChainageAnalysis = {
   order: 'epoux1' as const,

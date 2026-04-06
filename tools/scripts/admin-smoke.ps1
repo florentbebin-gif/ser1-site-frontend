@@ -1,3 +1,4 @@
+# Usage: powershell -File tools/scripts/admin-smoke.ps1 [-Action <action>] [-StatusOnly] — Smoke test ponctuel de l'Edge Function admin (ping, status).
 param (
     [string]$Action = "ping_public",
     [switch]$StatusOnly
@@ -36,7 +37,7 @@ $rid = [guid]::NewGuid().ToString()
 $body = '{}' # keep body empty; action is passed via query string
 $uri = "$($env:SUPABASE_URL)/functions/v1/admin?action=$Action"
 
-$headers = @{ 
+$headers = @{
     "x-request-id" = $rid
     "Content-Type" = "application/json"
     "apikey" = $env:SUPABASE_ANON_KEY

@@ -12,12 +12,12 @@ import {
   type SuccessionResult,
   type LienParente,
   type HeritiersInput,
-} from '../../engine/succession';
-import type { DmtgSettings } from '../../engine/civil';
-import type { CalcResult } from '../../engine/types';
-import type { PersistedSuccessionForm } from './successionDraft.types';
+} from '../../../engine/succession';
+import type { DmtgSettings } from '../../../engine/civil';
+import type { CalcResult } from '../../../engine/types';
+import type { PersistedSuccessionForm } from '../successionDraft.types';
 
-export type { PersistedSuccessionForm } from './successionDraft.types';
+export type { PersistedSuccessionForm } from '../successionDraft.types';
 
 export interface HeritierRow {
   id: string;

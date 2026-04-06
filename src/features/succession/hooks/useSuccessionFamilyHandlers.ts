@@ -9,7 +9,7 @@ import {
   type SuccessionDonationEntry,
   type SuccessionEnfant,
   type DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT,
-} from './successionDraft';
+} from '../successionDraft';
 import {
   EMPTY_ADD_FAMILY_MEMBER_FORM,
   applySuccessionDonationFieldUpdate,
@@ -18,9 +18,9 @@ import {
   createMemberId,
   isCoupleSituation,
   type AddFamilyMemberFormState,
-} from './successionSimulator.helpers';
-import { MEMBER_TYPE_NEEDS_BRANCH } from './successionSimulator.constants';
-import type { SuccessionChainOrder } from './successionChainage';
+} from '../successionSimulator.helpers';
+import { MEMBER_TYPE_NEEDS_BRANCH } from '../successionSimulator.constants';
+import type { SuccessionChainOrder } from '../successionChainage';
 
 interface UseSuccessionFamilyHandlersArgs {
   enfantRattachementOptions: { value: 'commun' | 'epoux1' | 'epoux2'; label: string }[];

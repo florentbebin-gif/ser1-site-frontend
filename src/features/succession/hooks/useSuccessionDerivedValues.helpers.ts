@@ -1,25 +1,25 @@
-import type { SuccessionChainageAnalysis } from './successionChainage';
+import type { SuccessionChainageAnalysis } from '../successionChainage';
 import {
   extractEstateAllowanceUsage,
   type EstateAllowanceUsage,
-} from './successionDeathInsuranceAllowances';
-import type { SuccessionFiscalSnapshot } from './successionFiscalContext';
+} from '../successionDeathInsuranceAllowances';
+import type { SuccessionFiscalSnapshot } from '../successionFiscalContext';
 import {
   isSuccessionSocieteAcquetsRegime,
   type FamilyMember,
   type SuccessionCivilContext,
   type SuccessionEnfant,
   type SuccessionPrevoyanceDecesEntry,
-} from './successionDraft';
+} from '../successionDraft';
 import {
   getSuccessionPrevoyanceRegimeInfo,
   type SuccessionPrevoyanceRegimeInfo,
-} from './successionPrevoyanceFiscal';
+} from '../successionPrevoyanceFiscal';
 import {
   hasComputableSuccessionFiliation,
   hasRequiredBirthDatesForSituation,
   isCoupleSituation,
-} from './successionSimulator.helpers';
+} from '../successionSimulator.helpers';
 
 export interface SuccessionSituationFlags {
   isMarried: boolean;

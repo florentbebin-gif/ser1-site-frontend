@@ -28,3 +28,4 @@ globs:
 ## Testing
 - Des golden tests existent pour IR et succession (valeurs de référence dans les skills). Toute modification de logique fiscale doit les laisser passer.
 - Run `npm run check:fiscal-hardcode` after any change to verify.
+- Tout nouveau fichier `src/engine/**/*.ts` doit être accompagné d'un test unitaire dans `__tests__/*.test.ts` (au moins 3 cas : nominal, bord, erreur).

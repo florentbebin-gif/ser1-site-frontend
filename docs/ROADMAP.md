@@ -453,6 +453,29 @@ Objectif : eviter que `catalog.ts` devienne bloquant si le cabinet veut personna
 
 ---
 
+## Dette UI — /sim/per/potentiel
+
+> Migré depuis `docs/GOUVERNANCE.md` §17 (note de travail, pas une règle permanente).
+
+### Anti-patterns restants (non corrigés)
+
+| # | Anti-pattern | Preuve code | Baseline attendue |
+|---|-------------|-------------|-------------------|
+| 5 | Simulation de versement dans hero **gauche** | `SynthesePotentielStep.tsx:223-268` | Colonne droite (§16a, §16c) |
+| 6 | Breakdown plafonds dupliqué | `SynthesePotentielStep.tsx:272` + `:314` | Un seul emplacement (§16c) |
+| 7 | Texte introductif long `per-step-copy` | `ModeStep.tsx` constante `MODES.desc` | Sous-titre 12px/C9 court (§2) |
+| 11 | `<input type="number">` brut pour montants € | `SituationFiscaleStep.tsx:71`, `AvisIrStep.tsx:58` | Composant formaté `PerAmountInput` |
+| 14 | Pas de donut chart dans la sidebar | — | Donut 68×68 dans hero sidebar (§16c) |
+
+### Cibles de refonte
+
+1. Déplacer la simulation de versement vers la sidebar droite (avec donut).
+2. Rationaliser le breakdown plafonds (un seul emplacement).
+3. Migrer les `<input type="number">` vers un composant formaté `PerAmountInput`.
+4. Réutiliser `ScDonut.tsx` pour le ratio plafond utilisé / disponible restant.
+
+---
+
 ## References (pour travailler vite)
 - Features (simulateurs) : `src/features/{ir,placement,succession,per,credit,strategy,audit}`
 - Engine (calculs purs) : `src/engine/**`

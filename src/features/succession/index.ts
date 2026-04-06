@@ -3,5 +3,5 @@
  */
 
 export { default as SuccessionSimulator } from './SuccessionSimulator';
-export { useSuccessionCalc } from './useSuccessionCalc';
+export { useSuccessionCalc } from './hooks/useSuccessionCalc';
 export { exportAndDownloadSuccessionXlsx } from './successionXlsx';

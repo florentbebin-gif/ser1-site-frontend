@@ -16,7 +16,7 @@
 
 import { supabase } from '../../supabaseClient';
 import { migrateV1toV2 } from './fiscalitySettingsMigrator';
-import type { FiscalitySettingsV2 } from '../../types/fiscalitySettings';
+import type { FiscalitySettingsV2 } from './fiscalitySettings';
 import {
   DEFAULT_TAX_SETTINGS,
   DEFAULT_PS_SETTINGS,

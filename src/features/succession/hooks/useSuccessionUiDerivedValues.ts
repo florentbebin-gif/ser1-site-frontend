@@ -1,26 +1,26 @@
 import { useMemo } from 'react';
 import {
   countEffectiveDescendantBranchesForDeceased,
-} from './successionEnfants';
-import { canOpenDispositions } from './successionDispositions';
-import { buildTestamentBeneficiaryOptions } from './successionTestament';
+} from '../successionEnfants';
+import { canOpenDispositions } from '../successionDispositions';
+import { buildTestamentBeneficiaryOptions } from '../successionTestament';
 import {
   ASSET_CATEGORY_OPTIONS,
   BRANCH_OPTIONS,
   TESTAMENT_SIDES,
-} from './successionSimulator.constants';
-import { computeSuccessionAssetValuation } from './successionAssetValuation';
+} from '../successionSimulator.constants';
+import { computeSuccessionAssetValuation } from '../successionAssetValuation';
 import {
   buildSuccessionAssetOwnerOptions,
   buildSuccessionAssetPocketOptions,
   type SuccessionLegacyAssetOwner,
   type SuccessionAssetPocket,
-} from './successionDraft';
+} from '../successionDraft';
 import {
   buildPrevoyanceClauseOptions,
   getBirthDateLabels,
   isCoupleSituation,
-} from './successionSimulator.helpers';
+} from '../successionSimulator.helpers';
 import type {
   SuccessionAssetDetailEntry,
   SuccessionPersonParty,
@@ -32,11 +32,11 @@ import type {
   SuccessionPerEntry,
   SuccessionPrevoyanceDecesEntry,
   SuccessionPrimarySide,
-} from './successionDraft';
+} from '../successionDraft';
 import type {
   DEFAULT_SUCCESSION_CIVIL_CONTEXT,
   DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT,
-} from './successionDraft';
+} from '../successionDraft';
 
 interface UseSuccessionUiDerivedValuesInput {
   civilContext: typeof DEFAULT_SUCCESSION_CIVIL_CONTEXT;
