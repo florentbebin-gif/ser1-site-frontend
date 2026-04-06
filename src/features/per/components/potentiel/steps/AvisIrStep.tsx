@@ -9,7 +9,6 @@ import { getAvisReferenceYears, type PerWorkflowYears } from '../../../utils/per
 interface AvisIrStepProps {
   avisIr: AvisIrPlafonds | null;
   avisIr2: AvisIrPlafonds | null;
-  isCouple: boolean;
   basis: PerHistoricalBasis;
   years: PerWorkflowYears;
   onUpdate: (_patch: Partial<AvisIrPlafonds>, _decl?: 1 | 2) => void;
@@ -45,10 +44,11 @@ function AvisFieldsCard({
 
   return (
     <div className="premium-card per-avis-form-card">
-      <div className="per-avis-form-header">
+      <div className="per-avis-form-header sim-card__header--bleed">
         <p className="premium-section-title">Saisie</p>
         <h4 className="per-avis-form-title">{label}</h4>
       </div>
+      <div className="sim-divider" />
 
       <div className="per-avis-row-list">
         {rows.map((row) => (
@@ -72,59 +72,16 @@ function AvisFieldsCard({
 export default function AvisIrStep({
   avisIr,
   avisIr2,
-  isCouple,
   basis,
   years,
   onUpdate,
 }: AvisIrStepProps): React.ReactElement {
   const avisContext = getAvisReferenceYears(years, basis);
+  const totalPlafond = (avisIr?.plafondCalcule ?? 0) + (avisIr2?.plafondCalcule ?? 0);
 
   return (
     <div className="per-step per-step--avis">
-      <div className="per-avis-layout">
-        <div className="premium-card-compact per-avis-guide-card">
-          <p className="premium-section-title">Ce qu'il faut relever</p>
-          <ol className="per-avis-checklist">
-            <li>Les trois années de plafond non utilisé.</li>
-            <li>Le plafond calculé sur les revenus {avisContext.incomeYear}.</li>
-            <li>Les montants déclarant par déclarant si le foyer est un couple.</li>
-          </ol>
-        </div>
-
-        <div className="premium-card per-avis-preview-card">
-          <div className="per-avis-preview">
-            <div className="per-avis-preview-header">
-              <div>
-                <p className="premium-section-title">Repérage visuel</p>
-                <h4 className="per-avis-preview-title">Avis d'impôt {avisContext.taxYear}</h4>
-              </div>
-              <span className="per-avis-preview-chip">Revenus {avisContext.incomeYear}</span>
-            </div>
-
-            <div className="per-avis-preview-sheet">
-              <div className="per-avis-preview-line per-avis-preview-line--muted">
-                Direction générale des finances publiques
-              </div>
-              <div className="per-avis-preview-line per-avis-preview-line--muted">
-                Avis établi en {avisContext.taxYear}
-              </div>
-              <div className="per-avis-preview-focus">
-                <span className="per-avis-preview-focus-label">Rubrique à lire</span>
-                <strong>PLAFOND ÉPARGNE RETRAITE</strong>
-              </div>
-              <div className="per-avis-preview-grid">
-                <div>Plafond total</div>
-                <div>Plafond non utilisé {avisContext.carryForwardYears[0]}</div>
-                <div>Plafond non utilisé {avisContext.carryForwardYears[1]}</div>
-                <div>Plafond non utilisé {avisContext.carryForwardYears[2]}</div>
-                <div>Plafond calculé sur revenus {avisContext.incomeYear}</div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div className={`per-avis-form-grid ${isCouple ? 'is-couple' : ''}`}>
+      <div className={`per-avis-form-grid per-avis-form-grid--always-two`}>
         <AvisFieldsCard
           label="Déclarant 1"
           avis={avisIr}
@@ -133,15 +90,22 @@ export default function AvisIrStep({
           onChange={(patch) => onUpdate(patch, 1)}
         />
 
-        {isCouple && (
-          <AvisFieldsCard
-            label="Déclarant 2"
-            avis={avisIr2}
-            incomeYear={avisContext.incomeYear}
-            carryForwardYears={avisContext.carryForwardYears}
-            onChange={(patch) => onUpdate(patch, 2)}
-          />
-        )}
+        <AvisFieldsCard
+          label="Déclarant 2"
+          avis={avisIr2}
+          incomeYear={avisContext.incomeYear}
+          carryForwardYears={avisContext.carryForwardYears}
+          onChange={(patch) => onUpdate(patch, 2)}
+        />
+      </div>
+
+      <div className="per-avis-total-row">
+        <span className="per-avis-total-label">
+          Plafond pour les cotisations versées en {years.currentTaxYear}
+        </span>
+        <span className="per-avis-total-value">
+          {totalPlafond.toLocaleString('fr-FR')} €
+        </span>
       </div>
     </div>
   );
