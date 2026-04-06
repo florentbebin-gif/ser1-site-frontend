@@ -607,37 +607,7 @@ Règles communes : `font-family: inherit`, hover → C2 texte ou fond C7 selon v
 
 ---
 
-### 17) Diagnostic /sim/per/potentiel — Écarts et cibles
-
-Cette section documente les divergences de `/sim/per/potentiel` par rapport à la baseline commune. Tout patch doit les corriger ; une PR conservant ces divergences doit les justifier explicitement.
-
-> **Note** : l'ancien `Per.css` a été refactorisé en `wizard.css`, `steps.css`, `summary.css`, `legacy.css` et `responsive.css` sous `src/features/per/styles/`. Les preuves ci-dessous sont mises à jour vers les fichiers actuels.
-
-#### Anti-patterns observés
-
-| # | Anti-pattern | Preuve code | Baseline attendue (§) | Statut |
-|---|-------------|-------------|----------------------|--------|
-| 1 | Grille `1.7fr / 0.95fr` | ~~`Per.css:307`~~ → `wizard.css:60` | `1.85fr / 1fr` (§1) | ✅ Corrigé — maintenant `sim-grid` (`surfaces.css:90`) |
-| 2 | `sticky top: 88px` | ~~`Per.css:315`~~ → `wizard.css:68` | `top: 80px` (§1) | ✅ Corrigé — `sim-grid__col--sticky` (`surfaces.css:103`) |
-| 3 | Inputs `className="premium-input"` | ~~`SituationFiscaleStep.tsx:76`~~ | fond off-white, border-bottom only (§5) | ✅ Corrigé — inputs utilisent `per-input sim-field__control` (conforme §5) |
-| 4 | Tabs baseline pleine `background: C8` | ~~`Per.css:272`~~ → `wizard.css:25` | `linear-gradient(90deg, C8, transparent 85%)` (§7, §16a) | ✅ Corrigé — gradient estompé en place |
-| 5 | Simulation de versement dans hero **gauche** | `SynthesePotentielStep.tsx:223-268` | Colonne droite (§16a, §16c) | ⚠️ Actif — à déplacer dans la sidebar |
-| 6 | Breakdown plafonds dupliqué | `SynthesePotentielStep.tsx:272` + `:314` | Un seul emplacement (§16c) | ⚠️ À rationaliser |
-| 7 | Texte introductif long `per-step-copy` | `ModeStep.tsx` constante `MODES.desc` | Sous-titre 12px/C9 court (§2) | ⚠️ Actif — descriptions compactées mais toujours présentes |
-| 8 | Sidebar context avec données vides | `PerPotentielSimulator.tsx:353-446` | Sidebar conditionnelle (§16a) | ✅ Corrigé — sidebar conditionnée à `state.mode !== null` |
-| 9 | `max-width: 720px` sur header | ~~`Per.css:255`~~ | Pas de max-width (§2) | ✅ Corrigé — non présent dans le code actuel |
-| 10 | Pas de `sim-card__header--bleed` sur hero card | `PerPotentielSimulator.tsx:221` | Classe obligatoire (§8) | ✅ Corrigé — ajouté sur le stage header |
-| 11 | `<input type="number">` brut pour montants € | `SituationFiscaleStep.tsx:71`, `AvisIrStep.tsx:58` | Composant formaté `InputEuro` (§ Séparateur milliers) | ⚠️ Actif — à migrer vers composant local `PerAmountInput` |
-| 12 | Pas de ModeToggle | `PerPotentielSimulator.tsx` | `useUserMode` + override local (§6, ARCH) | ✅ Corrigé — ModeToggle ajouté |
-| 13 | Pas de section Hypothèses | — | Section collapsible (§9) | ✅ Corrigé — `PerHypotheses.tsx` ajouté |
-| 14 | Pas de donut chart dans la sidebar | — | Donut 68×68 dans hero sidebar (§16c) | ⚠️ Actif — à ajouter lors du déplacement hero en sidebar |
-
-#### Cibles de refonte restantes
-
-1. **Simulation de versement** : déplacer hors de la carte hero gauche vers la sidebar droite (avec donut).
-2. **Breakdown plafonds** : rationaliser, un seul emplacement.
-3. **Inputs montants €** : migrer les `<input type="number">` vers un composant formaté `PerAmountInput` (pas d'import cross-feature).
-4. **Donut** : réutiliser `ScDonut.tsx` pour le ratio plafond utilisé / disponible restant.
+> §17 Diagnostic `/sim/per/potentiel` — migré vers `docs/ROADMAP.md` § Dette UI (note de travail, pas une règle permanente).
 
 ---
 
@@ -691,129 +661,15 @@ Le theming doit rester **déterministe** et persistant en DB.
 
 ---
 
-## Sécurité & observabilité (règles)
-
-### Autorisation
-- Interdit : utiliser `user_metadata` pour des décisions d'autorisation.
-- Autorisé : `app_metadata.role` uniquement (frontend + edge + RLS).
-- **Source unique** : `app_metadata.role` est la seule source de vérité pour le rôle auth. `user_metadata.role` ne doit jamais être écrit ni lu pour une décision d'autorisation. `profiles.role` est un miroir SQL maintenu par le backend (nécessaire pour `is_admin(uid)` en RLS), pas une source à consommer directement côté frontend.
-
-### Bypass E2E (`__SER1_E2E`) — limites et conditions d'activation
-
-Le flag `window.__SER1_E2E = true` permet aux tests Playwright de contourner l'auth Supabase (mock d'un rôle admin fictif). Ce mécanisme est **strictement borné** :
-
-- **Inactif en prod par défaut** : le bypass ne s'active que si `import.meta.env.DEV === true` **OU** `import.meta.env.VITE_E2E === 'true'`.
-- **`VITE_E2E=true`** doit être explicitement défini dans le workflow CI E2E (`.github/workflows/e2e.yml`). Il n'est jamais présent dans le build prod.
-- **Jamais côté backend** : `__SER1_E2E` est purement frontend. Il ne bypass aucune garde Edge Function ni aucune RLS.
-- **Usage autorisé** : smoke tests Playwright uniquement (test de rendu, navigation). Interdit pour simuler des droits admin réels ou tester des flows qui font des appels `/api/admin`.
-
-### Logs
-- Zéro PII (email, nom, montants, RFR, patrimoine, etc.).
-- Zéro métriques métier (compteurs de simulations, montants calculés, types produits utilisés).
-- En prod : `console.log/debug/info/trace` interdits (ESLint).
+> Sécurité & observabilité — migré vers `docs/ARCHITECTURE.md` § Sécurité & observabilité (ces règles relèvent de l'architecture).
 
 ---
 
-## Catalogue patrimonial — règles métier
-
-### Contexte & trajectoire
-Le client du CGP est une **personne physique** qui souhaite des conseils sur :
-- son patrimoine personnel (PP),
-- ou l'entreprise qu'il détient (PM).
-
-L'application vise à devenir un SaaS de gestion de patrimoine pour CGP, permettant simulations et analyse patrimoniale. Chaque produit du catalogue doit être qualifié selon ce prisme.
-
-### Règle de regroupement des produits (3 phases fiscales)
-On peut regrouper des produits **uniquement** si les 3 phases fiscales sont identiques :
-1. **Constitution** — taxation des revenus (intérêts, dividendes, loyers…)
-2. **Sortie / Rachat** — fiscalité de la cession ou du rachat
-3. **Décès / Transmission** — fiscalité successorale (DMTG, exonérations…)
-
-Ces 3 phases correspondent dans les blocs produit aux clés `constitution`, `sortie`, `deces`.
-
-> Exemple : on ne regroupe PAS les GFA/GFV et les GFF car l'exonération DMTG relève d'articles différents (art. 793 bis vs art. 793 1° 3° CGI).
-
-### Taxonomie des familles (grandeFamille)
-| Famille | Contenu | Type |
-|---------|---------|------|
-| Épargne Assurance | AV, contrat de capitalisation | Wrappers (épargne) |
-| Assurance prévoyance | Prévoyance décès, ITT/invalidité, dépendance, emprunteur, obsèques, homme-clé | Protections |
-| Épargne bancaire | Livrets, PEL, CEL, CAT, CSL, PEAC, CTO, PEA, PEA-PME | Wrappers (comptes/enveloppes) |
-| Valeurs mobilières | Actions, FCPR, FCPI, FIP, OPCI, parts sociales, titres participatifs, BSA/DPS | Actifs détenus en direct |
-| Immobilier direct | RP, RS, locatif nu, LMNP, LMP, garages, terrains | Actifs |
-| Immobilier indirect | SCPI, GFA/GFV, GFF | Actifs (pierre-papier) |
-| Non coté/PE | Actions non cotées, crowdfunding, obligations non cotées, SOFICA, IR-PME | Actifs |
-| Créances/Droits | Compte courant associé, prêt entre particuliers, usufruit/nue-propriété | Actifs |
-| Dispositifs fiscaux immobilier | Pinel, Malraux, MH, Scellier, Denormandie… | Overlays fiscaux |
-| Retraite & épargne salariale | PER, PEE, PERCOL, PERCO, Art. 83/39, Madelin, PERP | Wrappers |
-| Autres | Métaux précieux, crypto-actifs, tontine | Actifs divers |
-
-### Règles de holdability (PP / PM)
-- **Résidence secondaire** : PP-only (une PM qui détient un immeuble = locatif, pas « résidence »).
-- **LMNP / LMP** : PP-only (statut personne physique ; exceptions société à l’IR non gérées).
-- **Épargne réglementée** (Livret A, LDDS, LEP, Livret Jeune, PEL, CEL) : PP-only.
-- **PEA / PEA-PME / PERIN** : PP-only.
-- **Obligations** (OAT, corporate, convertibles) : retirées du catalogue (détention uniquement via CTO/PEA).
-- Les produits PP+PM sont **splittés** en deux lignes (PP et PM) dans le catalogue V5.
-
-### Produits non directement souscriptibles (exclus du catalogue)
-- OPC / OPCVM / SICAV / FCP / ETF → sous-jacents de CTO/PEA, pas de souscription directe.
-- FCPE → sous-jacent de PEE/PERCOL.
-
-### Problèmes identifiés (page BaseContrat)
-- **Rulesets vides** : les blocs fiscaux (Constitution/Sortie/Décès) sont des squelettes vides pour la majorité des produits. Les templates existent mais ne sont pas encore assignés par produit.
-- **Pas de confirmation avant sync** : le bouton « Synchroniser » écrase sans confirmation. Ajouter un dialog de confirmation.
-- **Produits personnalisés perdus après sync** : `syncProductsWithSeed` ne garde que les produits du seed. Les produits ajoutés manuellement par l'admin sont supprimés.
-- **Migration label (Entreprise) → (PM)** : les données DB existantes avec le suffixe « (Entreprise) » ne sont pas encore retouchées par la migration V5 (les labels seront mis à jour au prochain sync).
+> Catalogue patrimonial — règles métier : migré vers `docs/METIER.md` § Catalogue patrimonial (ces règles sont métier, pas UI).
 
 ---
 
-## Regles de creation des nouvelles pages
-
-Cette section complete la norme existante. Elle fixe le contrat minimal avant d'ajouter une nouvelle page ou un nouveau simulateur.
-
-### Nouvelles pages /sim/*
-
-#### Obligatoire
-- Reutiliser la norme `/sim/*` de ce document ; `/sim/credit` reste la baseline par defaut.
-- Toute nouvelle page `/sim/*` doit avoir :
-  - un header premium
-  - une zone actions coherente (mode, export, actions de page)
-  - une grille ou un layout explicitement documente si elle deroge a la baseline
-  - un comportement de mode compatible avec Home (`ui_settings.mode`)
-- Si le mode simplifie masque des champs qui influencent le calcul, ces champs doivent etre neutralises dans le calcul, pas seulement caches visuellement.
-
-#### Recommande
-- Partir de `src/styles/sim/index.css` et `premium-shared.css` avant toute surcharge locale.
-- Garder un nombre limite de variantes UI ; documenter toute exception dans cette gouvernance.
-
-#### Interdit
-- Creer une page `/sim/*` avec un style structurel autonome sans justification documentee.
-- Dupliquer des patterns existants de credit ou ir dans un nouveau CSS si la composition suffit.
-
-### Pages simulateur non finalisees
-
-#### Regle
-- Tant qu'un simulateur n'a pas de contrat UI et metier stable, preferer `UpcomingSimulatorPage` a une page incomplete exposee comme definitive.
-- Une route "upcoming" doit rester explicite dans l'UX et dans les tests smoke.
-
-### Nouvelles pages /settings/*
-
-#### Obligatoire
-- Une page settings s'inscrit dans le shell existant `SettingsShell` ; pas de navigation parallele.
-- La route doit etre declaree dans `src/routes/settingsRoutes.ts`.
-- La page doit respecter les tokens, la langue francaise, les blocs premium et la discipline SVG inline.
-- Si une page est reservee aux admins, la restriction UI ne remplace jamais l'enforcement backend/RLS.
-
-#### Interdit
-- Ajouter une page settings avec son propre systeme d'onglets ou sa propre logique de navigation globale.
-- Ajouter des couleurs, espacements ou composants one-off non alignes avec le reste des settings sans justification produit.
-
-### Checklist avant ajout d'une page
-- Le besoin produit est formule.
-- Le point d'entree (route, shell, topbar, reset, mode) est defini.
-- Le lieu du calcul est clair (engine vs simple UI).
-- La doc pivot pertinente est mise a jour : `ARCHITECTURE.md` pour la structure, `GOUVERNANCE.md` pour le contrat UI web, `GOUVERNANCE_EXPORTS.md` si la PR touche un export.
+> Règles de création des nouvelles pages : migré et fusionné dans `docs/ARCHITECTURE.md` § Conventions de création (évite le doublon).
 
 ---
 
