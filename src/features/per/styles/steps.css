@@ -1,5 +1,33 @@
 ﻿/* -- Mode step ------------------------------------------------------------ */
 
+.per-mode-step-header {
+  /* header standalone sans card parent */
+  margin-bottom: 0;
+}
+
+.per-mode-toggle-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.per-mode-toggle-hint {
+  font-size: 12px;
+  color: var(--color-c9);
+  margin-top: 6px;
+  line-height: 1.5;
+}
+
+.per-mode-docs-header {
+  /* sim-card__header--bleed gère le dégradé via la classe parente */
+}
+
+.per-mode-docs-subtitle {
+  font-size: 12px;
+  color: var(--color-c9);
+  margin-top: 4px;
+}
+
 .per-mode-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
@@ -53,8 +81,8 @@
 
 .per-mode-card-desc {
   margin: 0;
-  font-size: 13px;
-  line-height: 1.65;
+  font-size: 11px;
+  line-height: 1.5;
   color: var(--color-c9);
 }
 
@@ -62,9 +90,6 @@
   box-sizing: border-box;
 }
 
-.per-mode-support-card--accent {
-  border-left: 3px solid var(--color-c3);
-}
 
 .per-mode-panel-stack {
   display: grid;
@@ -103,7 +128,7 @@
   padding: 12px 14px;
   border: 1px solid var(--color-c8);
   border-radius: 10px;
-  background: var(--color-c7);
+  background: #FFFFFF;
   text-align: left;
   cursor: pointer;
   transition: border-color 0.2s, background-color 0.2s, transform 0.2s;
@@ -159,106 +184,6 @@
   background: var(--color-c7);
 }
 
-.per-avis-layout {
-  display: grid;
-  grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
-  gap: 16px;
-}
-
-.per-avis-guide-card {
-  border-left: 3px solid var(--color-c6);
-}
-
-.per-avis-checklist {
-  margin: 0;
-  padding-left: 20px;
-  display: grid;
-  gap: 10px;
-  font-size: 13px;
-  line-height: 1.6;
-  color: var(--color-c9);
-}
-
-.per-avis-preview-card {
-  box-sizing: border-box;
-}
-
-.per-avis-preview {
-  display: grid;
-  gap: 16px;
-}
-
-.per-avis-preview-header {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 12px;
-}
-
-.per-avis-preview-title {
-  margin: 0;
-  font-size: 18px;
-  font-weight: 600;
-  color: var(--color-c1);
-}
-
-.per-avis-preview-chip {
-  display: inline-flex;
-  align-items: center;
-  padding: 5px 10px;
-  border-radius: 999px;
-  background: var(--color-c7);
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.8px;
-  text-transform: uppercase;
-  color: var(--color-c9);
-}
-
-.per-avis-preview-sheet {
-  display: grid;
-  gap: 10px;
-  padding: 18px;
-  border: 1px solid var(--color-c8);
-  border-radius: 12px;
-  background: color-mix(in srgb, var(--color-c7) 70%, #FFFFFF);
-}
-
-.per-avis-preview-line {
-  font-size: 12px;
-  color: var(--color-c1);
-}
-
-.per-avis-preview-line--muted {
-  color: var(--color-c9);
-}
-
-.per-avis-preview-focus {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  padding: 14px;
-  border-radius: 10px;
-  background: #FFFFFF;
-  border-left: 3px solid var(--color-c3);
-  color: var(--color-c1);
-}
-
-.per-avis-preview-focus-label {
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.8px;
-  text-transform: uppercase;
-  color: var(--color-c9);
-}
-
-.per-avis-preview-grid {
-  display: grid;
-  gap: 8px;
-  font-size: 12px;
-  line-height: 1.55;
-  color: var(--color-c9);
-}
 
 .per-avis-form-grid {
   display: grid;
@@ -266,7 +191,7 @@
   gap: 16px;
 }
 
-.per-avis-form-grid.is-couple {
+.per-avis-form-grid--always-two {
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
@@ -275,7 +200,28 @@
 }
 
 .per-avis-form-header {
-  margin-bottom: 16px;
+  margin-bottom: 0;
+}
+
+/* Ligne totale plafond */
+.per-avis-total-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 0;
+  border-top: 1px solid var(--color-c8);
+  margin-top: 4px;
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--color-c1);
+}
+
+.per-avis-total-label {
+  color: var(--color-c1);
+}
+
+.per-avis-total-value {
+  font-variant-numeric: tabular-nums;
 }
 
 .per-avis-form-title {

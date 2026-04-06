@@ -2,7 +2,7 @@
  * PerPotentielSimulator - Wizard shell for "Contrôle du potentiel ER".
  */
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import type { PerHistoricalBasis } from '../../../../engine/per';
 import { ExportMenu } from '../../../../components/ExportMenu';
 import { ModeToggle } from '../../../../components/ModeToggle';
@@ -10,6 +10,7 @@ import { useFiscalContext } from '../../../../hooks/useFiscalContext';
 import { useUserMode, type UserMode } from '../../../../settings/userMode';
 import { useTheme } from '../../../../settings/ThemeProvider';
 import '@/styles/sim/index.css';
+import { onResetEvent } from '../../../../utils/reset';
 import { usePerPotentiel, type WizardStep } from '../../hooks/usePerPotentiel';
 import { usePerPotentielExportHandlers } from '../../hooks/usePerPotentielExportHandlers';
 import { getPerWorkflowYears } from '../../utils/perWorkflowYears';
@@ -36,25 +37,6 @@ const fmtCurrency = (value: number): string =>
 const fmtPercent = (value: number): string =>
   `${(value <= 1 ? value * 100 : value).toFixed(1)} %`;
 
-function getDocumentBasisLabel(
-  mode: 'versement-n' | 'declaration-n1' | null,
-  basis: PerHistoricalBasis | null,
-  years: ReturnType<typeof getPerWorkflowYears>,
-): string {
-  if (mode === 'declaration-n1') {
-    return `Avis IR ${years.previousTaxYear} (revenus ${years.previousIncomeYear})`;
-  }
-
-  if (basis === 'current-avis') {
-    return `Avis IR ${years.currentTaxYear} (revenus ${years.currentIncomeYear})`;
-  }
-
-  if (basis === 'previous-avis-plus-n1') {
-    return `Avis IR ${years.previousTaxYear} (revenus ${years.previousIncomeYear}) + reconstitution ${years.currentIncomeYear}`;
-  }
-
-  return 'À définir';
-}
 
 function getStepMeta(
   stepId: WizardStep,
@@ -121,12 +103,18 @@ export default function PerPotentielSimulator(): React.ReactElement {
     updateSituation,
     updateDeclarant,
     setVersementEnvisage,
-    nextStep,
-    prevStep,
     goToStep,
-    canGoNext,
+    reset,
     isCouple,
   } = usePerPotentiel(fiscalContext);
+
+  useEffect(() => {
+    const off = onResetEvent(({ simId }: { simId?: string }) => {
+      if (simId && simId !== 'per-potentiel') return;
+      reset();
+    });
+    return off;
+  }, [reset]);
 
   const { exportExcel, exportPowerPoint, exportLoading } = usePerPotentielExportHandlers({
     state,
@@ -158,28 +146,37 @@ export default function PerPotentielSimulator(): React.ReactElement {
 
   const activeStep = getStepMeta(state.step, state.mode, state.historicalBasis, years);
   const stepIndex = visibleSteps.indexOf(state.step);
-  const currentPass = fiscalContext.passHistoryByYear[years.currentTaxYear] ?? null;
   const exportOptions = [
     { label: 'Excel', onClick: exportExcel, disabled: !result || state.step !== 5 },
     { label: 'PowerPoint', onClick: exportPowerPoint, disabled: !result || state.step !== 5 },
   ];
 
-  const pathLabel = state.mode === 'declaration-n1'
-    ? 'Déclaration 2042 N-1'
-    : state.mode === 'versement-n'
-      ? 'Contrôle avant versement N'
-      : 'À définir';
-  const documentLabel = getDocumentBasisLabel(state.mode, state.historicalBasis, years);
-  const projectionLabel = state.mode === 'versement-n'
-    ? (state.needsCurrentYearEstimate ? `Oui, revenus ${years.currentTaxYear}` : 'Non')
-    : 'Non';
-  const foyerLabel = isCouple
-    ? 'Couple marié ou pacsé'
-    : state.isole
-      ? 'Parent isolé'
-      : 'Personne seule';
-  const hasPrev = stepIndex > 0;
-  const hasNext = stepIndex >= 0 && stepIndex < visibleSteps.length - 1;
+  // Pills parcours dans la sidebar
+  type Pill = { label: string; on: boolean };
+  function buildPills(): Pill[] {
+    if (state.mode === 'declaration-n1') {
+      return [
+        { label: `Avis IR ${years.previousTaxYear}`, on: true },
+        { label: `Déclaration ${years.previousTaxYear}`, on: true },
+      ];
+    }
+    if (state.mode === 'versement-n') {
+      if (state.historicalBasis === 'current-avis') {
+        return [
+          { label: `Avis IR ${years.currentTaxYear}`, on: true },
+          { label: `Projection ${years.currentTaxYear}`, on: state.needsCurrentYearEstimate },
+        ];
+      }
+      return [
+        { label: `Avis IR ${years.previousTaxYear}`, on: true },
+        { label: `Reconstitution ${years.currentIncomeYear}`, on: true },
+        { label: `Projection ${years.currentTaxYear}`, on: state.needsCurrentYearEstimate },
+      ];
+    }
+    return [];
+  }
+  const parcoursPills = buildPills();
+
   const avisBasis = state.mode === 'declaration-n1'
     ? 'previous-avis-plus-n1'
     : state.historicalBasis ?? 'previous-avis-plus-n1';
@@ -187,15 +184,15 @@ export default function PerPotentielSimulator(): React.ReactElement {
   return (
     <div className="sim-page per-potentiel-page">
       <div className="premium-header sim-header sim-header--stacked">
-        <div className="per-potentiel-header-copy">
-          <h1 className="premium-title">Contrôle du potentiel épargne retraite</h1>
+        <h1 className="premium-title">Contrôle du potentiel épargne retraite</h1>
+        <div className="sim-header__subtitle-row">
           <p className="premium-subtitle">
             Mode, document fiscal, situation du foyer et restitution déclarative.
           </p>
-        </div>
-        <div className="sim-header__actions">
-          <ModeToggle value={isExpert} onChange={toggleMode} />
-          <ExportMenu options={exportOptions} loading={exportLoading} />
+          <div className="sim-header__actions">
+            <ModeToggle value={isExpert} onChange={toggleMode} />
+            <ExportMenu options={exportOptions} loading={exportLoading} />
+          </div>
         </div>
       </div>
 
@@ -225,29 +222,27 @@ export default function PerPotentielSimulator(): React.ReactElement {
 
       <div className="sim-grid">
         <main className="sim-grid__col">
+          {state.step === 1 ? (
+            <ModeStep
+              mode={state.mode}
+              historicalBasis={state.historicalBasis}
+              needsCurrentYearEstimate={state.needsCurrentYearEstimate}
+              years={years}
+              onSelectMode={setMode}
+              onSelectHistoricalBasis={setHistoricalBasis}
+              onSetNeedsCurrentYearEstimate={setNeedsCurrentYearEstimate}
+            />
+          ) : (
           <div className="premium-card premium-card--guide per-potentiel-stage">
             <div className="per-potentiel-stage-header sim-card__header--bleed">
               <h2 className="per-potentiel-stage-title">{activeStep.title}</h2>
             </div>
 
             <div className="per-potentiel-stage-body">
-              {state.step === 1 && (
-                <ModeStep
-                  mode={state.mode}
-                  historicalBasis={state.historicalBasis}
-                  needsCurrentYearEstimate={state.needsCurrentYearEstimate}
-                  years={years}
-                  onSelectMode={setMode}
-                  onSelectHistoricalBasis={setHistoricalBasis}
-                  onSetNeedsCurrentYearEstimate={setNeedsCurrentYearEstimate}
-                />
-              )}
-
               {state.step === 2 && (
                 <AvisIrStep
                   avisIr={state.avisIr}
                   avisIr2={state.avisIr2}
-                  isCouple={isCouple}
                   basis={avisBasis}
                   years={years}
                   onUpdate={updateAvisIr}
@@ -335,24 +330,8 @@ export default function PerPotentielSimulator(): React.ReactElement {
               )}
             </div>
 
-            {(hasPrev || hasNext) && (
-              <div className="per-potentiel-stage-footer">
-                {hasPrev ? (
-                  <button type="button" className="premium-btn" onClick={prevStep}>
-                    Retour
-                  </button>
-                ) : (
-                  <span />
-                )}
-
-                {hasNext && (
-                  <button type="button" className="premium-btn premium-btn-primary" onClick={nextStep} disabled={!canGoNext}>
-                    {visibleSteps[stepIndex + 1] === 5 ? 'Voir la synthèse' : 'Continuer'}
-                  </button>
-                )}
-              </div>
-            )}
           </div>
+          )}
         </main>
 
         {state.mode !== null && (
@@ -365,36 +344,25 @@ export default function PerPotentielSimulator(): React.ReactElement {
                   <polyline points="14 2 14 8 20 8" />
                 </svg>
               </div>
-              <h3 className="sim-card__title">Dossier</h3>
+              <h3 className="sim-card__title">Potentiel</h3>
             </div>
             <div className="sim-divider" />
             <div className="per-potentiel-context-list">
-              <div className="per-potentiel-context-item">
-                <span className="per-potentiel-context-label">Parcours</span>
-                <span className="per-potentiel-context-value">{pathLabel}</span>
-              </div>
-              <div className="per-potentiel-context-item">
-                <span className="per-potentiel-context-label">Base documentaire</span>
-                <span className="per-potentiel-context-value">{documentLabel}</span>
-              </div>
-              <div className="per-potentiel-context-item">
-                <span className="per-potentiel-context-label">Projection {years.currentTaxYear}</span>
-                <span className="per-potentiel-context-value">{projectionLabel}</span>
-              </div>
-              <div className="per-potentiel-context-item">
-                <span className="per-potentiel-context-label">Foyer</span>
-                <span className="per-potentiel-context-value">{foyerLabel}</span>
-              </div>
-              <div className="per-potentiel-context-item">
-                <span className="per-potentiel-context-label">Parts</span>
-                <span className="per-potentiel-context-value">{state.nombreParts}</span>
-              </div>
-              <div className="per-potentiel-context-item">
-                <span className="per-potentiel-context-label">PASS {years.currentTaxYear}</span>
-                <span className="per-potentiel-context-value">
-                  {currentPass ? fmtCurrency(currentPass) : '—'}
-                </span>
-              </div>
+              {parcoursPills.length > 0 && (
+                <div className="per-potentiel-context-item">
+                  <span className="per-potentiel-context-label per-potentiel-context-label--small">Parcours</span>
+                  <div className="per-potentiel-pills">
+                    {parcoursPills.map((pill) => (
+                      <span
+                        key={pill.label}
+                        className={`per-potentiel-pill${pill.on ? ' is-on' : ''}`}
+                      >
+                        {pill.label}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 

@@ -17,21 +17,6 @@ interface ModeStepProps {
   onSetNeedsCurrentYearEstimate: (_value: boolean) => void;
 }
 
-const MODES: { id: PerMode; title: string; desc: string; marker: string }[] = [
-  {
-    id: 'versement-n',
-    title: 'Contrôle du potentiel avant versement',
-    desc: 'Je veux vérifier si un versement PER cette année reste déductible et quel gain fiscal il peut générer.',
-    marker: 'Versement N',
-  },
-  {
-    id: 'declaration-n1',
-    title: 'Contrôle de la déclaration 2042',
-    desc: "J'ai déjà versé et je veux fiabiliser les cases de déclaration et la lecture du potentiel restant.",
-    marker: 'Déclaration N-1',
-  },
-];
-
 export default function ModeStep({
   mode,
   historicalBasis,
@@ -41,12 +26,38 @@ export default function ModeStep({
   onSelectHistoricalBasis,
   onSetNeedsCurrentYearEstimate,
 }: ModeStepProps): React.ReactElement {
-  const showVersementChoices = mode === 'versement-n';
+  const modes: { id: PerMode; title: string; desc: string; marker: string }[] = [
+    {
+      id: 'versement-n',
+      title: 'Contrôle du potentiel avant versement',
+      desc: 'Vérifiez si un versement PER reste déductible et quel gain fiscal il peut générer',
+      marker: 'Versement N',
+    },
+    {
+      id: 'declaration-n1',
+      title: 'Reporter dans la déclaration 2042',
+      desc: `Visualisez comment reporter des versements ${years.previousTaxYear} dans la déclaration ${years.currentTaxYear} (sur les revenus ${years.previousIncomeYear})`,
+      marker: 'Déclaration N-1',
+    },
+  ];
 
   return (
     <div className="per-step per-step--mode">
+      <div className="premium-card sim-card--guide per-mode-step-card">
+        <div className="per-mode-step-header sim-card__header--bleed">
+          <div className="sim-card__title-row">
+            <div className="sim-card__icon">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
+              </svg>
+            </div>
+            <h3 className="sim-card__title">Choix du parcours</h3>
+          </div>
+        </div>
+        <div className="sim-divider" />
+
       <div className="per-mode-grid">
-        {MODES.map((item) => (
+        {modes.map((item) => (
           <button
             key={item.id}
             type="button"
@@ -59,91 +70,103 @@ export default function ModeStep({
           </button>
         ))}
       </div>
-
-      <div className="premium-card per-mode-support-card per-mode-support-card--accent">
-        <p className="premium-section-title">Documents disponibles</p>
-
-        {showVersementChoices ? (
-          <div className="per-mode-panel-stack">
-            <div className="per-mode-panel-block">
-              <h4 className="per-mode-panel-title">Base documentaire de départ</h4>
-              <p className="per-mode-panel-text">
-                Choisissez l&apos;avis d&apos;impôt disponible. Le parcours ajoutera ensuite les écrans
-                nécessaires pour reconstituer les revenus utiles au calcul.
-              </p>
-              <div className="per-mode-doc-grid">
-                <button
-                  type="button"
-                  className={`per-mode-doc-card ${historicalBasis === 'previous-avis-plus-n1' ? 'is-selected' : ''}`}
-                  onClick={() => onSelectHistoricalBasis('previous-avis-plus-n1')}
-                >
-                  <span className="per-mode-doc-title">
-                    Avis IR {years.previousTaxYear} disponible
-                  </span>
-                  <span className="per-mode-doc-desc">
-                    Avis sur les revenus {years.previousIncomeYear}. Le simulateur reconstituera
-                    ensuite les revenus {years.currentIncomeYear} pour recalculer le plafond 163
-                    quatervicies.
-                  </span>
-                </button>
-
-                <button
-                  type="button"
-                  className={`per-mode-doc-card ${historicalBasis === 'current-avis' ? 'is-selected' : ''}`}
-                  onClick={() => onSelectHistoricalBasis('current-avis')}
-                >
-                  <span className="per-mode-doc-title">
-                    Avis IR {years.currentTaxYear} disponible
-                  </span>
-                  <span className="per-mode-doc-desc">
-                    Avis sur les revenus {years.currentIncomeYear}. Le plafond épargne retraite est
-                    déjà visible sur l&apos;avis ; vous pouvez passer directement aux versements de l&apos;année.
-                  </span>
-                </button>
-              </div>
-            </div>
-
-            <div className="per-mode-panel-block">
-              <h4 className="per-mode-panel-title">Faut-il projeter l'année en cours ?</h4>
-              <p className="per-mode-panel-text">
-                Activez l&apos;estimation {years.currentTaxYear} si vous devez intégrer des revenus ou
-                versements de l&apos;année en cours pour Madelin, PERCO, PEROB ou art. 83.
-              </p>
-              <div className="per-mode-doc-grid">
-                <button
-                  type="button"
-                  className={`per-mode-doc-card ${!needsCurrentYearEstimate ? 'is-selected' : ''}`}
-                  onClick={() => onSetNeedsCurrentYearEstimate(false)}
-                >
-                  <span className="per-mode-doc-title">Pas d'estimation {years.currentTaxYear}</span>
-                  <span className="per-mode-doc-desc">
-                    Je m'appuie sur les données déjà arrêtées et je ne projette pas de revenus
-                    complémentaires pour l'année en cours.
-                  </span>
-                </button>
-
-                <button
-                  type="button"
-                  className={`per-mode-doc-card ${needsCurrentYearEstimate ? 'is-selected' : ''}`}
-                  onClick={() => onSetNeedsCurrentYearEstimate(true)}
-                >
-                  <span className="per-mode-doc-title">Estimation {years.currentTaxYear} nécessaire</span>
-                  <span className="per-mode-doc-desc">
-                    Je dois projeter les revenus et versements {years.currentTaxYear} pour affiner les
-                    plafonds Madelin, PERCO, PEROB ou art. 83.
-                  </span>
-                </button>
-              </div>
-            </div>
-          </div>
-        ) : (
-          <div className="per-mode-declaration-note">
-            <strong>Point de départ retenu :</strong> avis IR {years.previousTaxYear} sur les revenus{' '}
-            {years.previousIncomeYear}, puis collecte des revenus {years.currentIncomeYear} exacts et
-            des versements réalisés en {years.currentIncomeYear}. L'étape Avis IR reste incluse.
-          </div>
-        )}
       </div>
+
+      {mode !== null && (
+        <div className="premium-card sim-card--guide per-mode-support-card">
+          <div className="per-mode-docs-header sim-card__header--bleed">
+            <div className="sim-card__title-row">
+              <div className="sim-card__icon">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                  <polyline points="14 2 14 8 20 8" />
+                </svg>
+              </div>
+              <h3 className="sim-card__title">Documents nécessaires</h3>
+            </div>
+            <p className="per-mode-docs-subtitle">Base documentaire de départ</p>
+          </div>
+          <div className="sim-divider" />
+
+          {mode === 'versement-n' ? (
+            <div className="per-mode-panel-stack">
+              <div className="per-mode-panel-block">
+                <div className="per-mode-doc-grid">
+                  <button
+                    type="button"
+                    className={`per-mode-doc-card ${historicalBasis === 'previous-avis-plus-n1' ? 'is-selected' : ''}`}
+                    onClick={() => onSelectHistoricalBasis('previous-avis-plus-n1')}
+                  >
+                    <span className="per-mode-doc-title">
+                      Avis IR {years.previousTaxYear} disponible
+                    </span>
+                    <span className="per-mode-doc-desc">
+                      Avis sur les revenus {years.previousIncomeYear}. Le simulateur reconstituera
+                      ensuite les revenus {years.currentIncomeYear} pour recalculer le plafond 163
+                      quatervicies.
+                    </span>
+                  </button>
+
+                  <button
+                    type="button"
+                    className={`per-mode-doc-card ${historicalBasis === 'current-avis' ? 'is-selected' : ''}`}
+                    onClick={() => onSelectHistoricalBasis('current-avis')}
+                  >
+                    <span className="per-mode-doc-title">
+                      Avis IR {years.currentTaxYear} disponible
+                    </span>
+                    <span className="per-mode-doc-desc">
+                      Avis sur les revenus {years.currentIncomeYear}. Le plafond épargne retraite est
+                      déjà visible sur l&apos;avis ; vous pouvez passer directement aux versements de l&apos;année.
+                    </span>
+                  </button>
+                </div>
+              </div>
+
+              <div className="per-mode-panel-block">
+                <div className="per-mode-toggle-row">
+                  <h4 className="per-mode-panel-title">Faut-il projeter l&apos;année en cours ?</h4>
+                  <button
+                    type="button"
+                    className={`mode-toggle-pill${needsCurrentYearEstimate ? ' mode-toggle-pill--active' : ''}`}
+                    onClick={() => onSetNeedsCurrentYearEstimate(!needsCurrentYearEstimate)}
+                    aria-pressed={needsCurrentYearEstimate}
+                    aria-label={`Activer l'estimation ${years.currentTaxYear}`}
+                  >
+                    <span className="mode-toggle-pill__knob" />
+                  </button>
+                </div>
+                {needsCurrentYearEstimate && (
+                  <p className="per-mode-toggle-hint">
+                    Activez l&apos;estimation {years.currentTaxYear} si vous devez intégrer des revenus ou
+                    versements de l&apos;année en cours pour Madelin, PERCO, PEROB ou art. 83. Il vous faudra
+                    estimer les revenus et les versements {years.currentTaxYear}.
+                  </p>
+                )}
+              </div>
+            </div>
+          ) : (
+            <div className="per-mode-doc-grid">
+              <div className="per-mode-doc-card is-selected">
+                <span className="per-mode-doc-title">
+                  Avis IR {years.previousTaxYear} disponible
+                </span>
+                <span className="per-mode-doc-desc">
+                  Avis sur les revenus {years.previousIncomeYear}.
+                </span>
+              </div>
+              <div className="per-mode-doc-card is-selected">
+                <span className="per-mode-doc-title">
+                  Déclaration {years.previousTaxYear}
+                </span>
+                <span className="per-mode-doc-desc">
+                  Ensemble des revenus et versements épargne retraite {years.currentIncomeYear}.
+                </span>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }
