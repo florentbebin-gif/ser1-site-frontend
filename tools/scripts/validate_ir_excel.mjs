@@ -1,3 +1,4 @@
+// Usage: node tools/scripts/validate_ir_excel.mjs — Validation ponctuelle des exports Excel IR contre des cas de référence.
 import fs from 'fs';
 import path from 'path';
 

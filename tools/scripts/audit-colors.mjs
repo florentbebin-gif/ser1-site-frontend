@@ -1,12 +1,13 @@
 #!/usr/bin/env node
+// Usage: node tools/scripts/audit-colors.mjs — Audit ponctuel des couleurs hardcodées dans le repo (complément de check:css-colors).
 /**
  * Script d'audit des couleurs SER1
- * 
+ *
  * Analyse le codebase pour détecter:
  * - Les couleurs hardcodées non autorisées
  * - Les usages des tokens C1-C10
  * - La couverture des composants tokenisés
- * 
+ *
  * Usage: node tools/scripts/audit-colors.mjs
  */
 
@@ -31,10 +32,10 @@ const ALLOWED_COLORS = ['#ffffff', '#fff', '#996600', '#ffffff80'];
  */
 function isAllowedColor(color) {
   const normalized = color.toLowerCase().replace(/#/g, '');
-  const normalizedHex = normalized.length === 3 
+  const normalizedHex = normalized.length === 3
     ? normalized.split('').map(c => c + c).join('')
     : normalized;
-  return ALLOWED_COLORS.includes('#' + normalizedHex) || 
+  return ALLOWED_COLORS.includes('#' + normalizedHex) ||
          ALLOWED_COLORS.includes('#' + normalized);
 }
 
@@ -112,13 +113,13 @@ function analyzeFile(filepath) {
  */
 function generateReport(results) {
   const validResults = results.filter(r => r !== null);
-  
+
   const totalFiles = validResults.length;
   const filesWithHardcodes = validResults.filter(r => r.hardcodedColors.length > 0);
   const filesUsingTokens = validResults.filter(r => r.tokensUsed.length > 0);
   const filesUsingUI = validResults.filter(r => r.uiComponents);
 
-  const allHardcodes = filesWithHardcodes.flatMap(r => 
+  const allHardcodes = filesWithHardcodes.flatMap(r =>
     r.hardcodedColors.map(h => ({ ...h, file: r.path }))
   );
 
@@ -130,7 +131,7 @@ function generateReport(results) {
   console.log('\n' + '='.repeat(70));
   console.log('📊 RAPPORT D\'AUDIT COULEURS SER1');
   console.log('='.repeat(70));
-  
+
   console.log('\n📁 Vue d\'ensemble:');
   console.log(`   Fichiers analysés: ${totalFiles}`);
   console.log(`   Fichiers avec hardcodes: ${filesWithHardcodes.length}`);
@@ -140,7 +141,7 @@ function generateReport(results) {
   if (allHardcodes.length > 0) {
     console.log('\n⚠️  Couleurs hardcodées détectées:');
     console.log(`   Total: ${allHardcodes.length} occurrences`);
-    
+
     console.log('\n   Top couleurs hardcodées:');
     Object.entries(colorFrequency)
       .sort(([,a], [,b]) => b - a)

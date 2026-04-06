@@ -1,3 +1,4 @@
+// Usage: node scripts/scan-unicode.mjs — Détecte les caractères Unicode non-ASCII suspects dans les fichiers source.
 import fs from 'fs';
 import path from 'path';
 

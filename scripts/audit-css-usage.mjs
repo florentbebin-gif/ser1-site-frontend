@@ -1,3 +1,4 @@
+// Usage: node scripts/audit-css-usage.mjs — Audit ponctuel des fichiers CSS et de leur consommation dans le repo.
 /**
  * Audit CSS usage for repo-owned styles.
  *
