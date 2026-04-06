@@ -24,4 +24,5 @@
 
 - `.claude/rules-library/fiscal-engine.md` — moteur fiscal → si la tâche touche calculs IR/succession/PS/PFU
 - `.claude/rules-library/supabase-patterns.md` — patterns Supabase → si la tâche touche auth/RLS/migrations/admin
+- `.claude/rules-library/reporting.md` — snapshot IO et schéma → si la tâche touche `src/reporting/`
 - `.claude/skills-library/` — skills exports et qualité → voir `AGENTS.md` pour les déclencheurs

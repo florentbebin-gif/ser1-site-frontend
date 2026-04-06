@@ -15,7 +15,9 @@ globs:
 
 ## Settings writes
 - After any settings write (tax_settings, ps_settings, fiscality_settings): invalidate cache and broadcast.
-- Pattern: write → `fiscalSettingsCache.invalidate()` → broadcast to other tabs.
+- Pattern: write → `fiscalSettingsCache.invalidate(kind)` → `broadcastInvalidation(kind)`.
+- Les pages `src/pages/settings/` (SettingsImpots, SettingsPrelevements, SettingsDmtgSuccession) lisent les tables fiscales **directement** via `supabase.from(...)` au montage — pas via `fiscalSettingsCache`. C'est intentionnel : l'éditeur admin a besoin de la valeur fraîche exacte, pas d'un cache potentiellement stale. Le cache sert aux **consommateurs** (simulateurs via `useFiscalContext`).
+- Après chaque write admin : `invalidate(kind)` + `broadcastInvalidation(kind)` sont **obligatoires** (déjà en place sur les 3 pages).
 
 ## Auth and RLS
 - Authorization decisions: always `app_metadata`, never `user_metadata`.

@@ -4,6 +4,7 @@ globs:
   - src/features/**/*.tsx
   - src/pages/**/*.tsx
   - src/components/**/*.tsx
+  - src/engine/**/*.ts
 ---
 
 # Component Structure Rules

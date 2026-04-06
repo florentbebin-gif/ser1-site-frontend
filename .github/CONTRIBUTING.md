@@ -79,6 +79,10 @@ git push origin feature/nom-clair
 - `console.log/info/debug` : **interdit** sauf derrière flag `DEBUG_*`
 - En prod : aucun log sensible (pas de données utilisateur)
 
+### Scripts
+- Tout script dans `scripts/` ou `tools/scripts/` doit être soit référencé dans `package.json`, soit documenté avec un commentaire `// Usage: <description>` en tête de fichier.
+- Un script non référencé et non documenté est considéré orphelin et candidat à la suppression.
+
 ### CSS Governance
 - **Interdiction** : Un fichier CSS d'une page ou d'une feature ne doit jamais importer le CSS d'une autre page/feature
 - **Pattern correct** : 
