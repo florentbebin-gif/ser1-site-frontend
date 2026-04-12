@@ -3,6 +3,7 @@
  */
 
 import React from 'react';
+import { SimSelect } from '@/components/ui/sim/SimSelect';
 import type { DeclarantRevenus } from '../../../../../engine/per';
 import type { PerChildDraft } from '../../../utils/perParts';
 import { PerAmountInput } from '../PerAmountInput';
@@ -75,14 +76,15 @@ export default function SituationFiscaleStep({
     label: string;
     note: string;
     key: ContributionFieldKey;
+    tnsOnly?: boolean;
   }[] = [
     { label: 'PER 163 quatervicies', note: variant === 'revenus-n1' ? '2042 : 6NS / 6NT' : 'année en cours', key: 'cotisationsPer163Q' },
     { label: 'PERP et assimilés', note: variant === 'revenus-n1' ? '2042 : 6RS / 6RT' : 'année en cours', key: 'cotisationsPerp' },
     { label: 'Art. 83 employeur + salarié', note: variant === 'revenus-n1' ? '2042 : 6QS / 6QT' : 'année en cours', key: 'cotisationsArt83' },
-    { label: 'PER 154 bis', note: variant === 'revenus-n1' ? '2042 : 6OS / 6OT' : 'année en cours', key: 'cotisationsMadelin154bis' },
-    { label: 'Madelin retraite', note: 'contrat retraite, distinct du PER 154 bis', key: 'cotisationsMadelinRetraite' },
+    { label: 'PER 154 bis', note: variant === 'revenus-n1' ? '2042 : 6OS / 6OT' : 'année en cours', key: 'cotisationsMadelin154bis', tnsOnly: true },
+    { label: 'Madelin retraite', note: 'contrat retraite, distinct du PER 154 bis', key: 'cotisationsMadelinRetraite', tnsOnly: true },
     { label: 'Abondement PERCO', note: 'employeur, réduit le plafond 163Q', key: 'abondementPerco' },
-    { label: 'Prévoyance Madelin', note: 'part non retraite', key: 'cotisationsPrevo' },
+    { label: 'Prévoyance Madelin', note: 'part non retraite', key: 'cotisationsPrevo', tnsOnly: true },
   ];
 
   return (
@@ -97,22 +99,23 @@ export default function SituationFiscaleStep({
           <div className="per-situation-foyer-grid">
             <div className="per-field premium-field" data-testid="per-situation-field">
               <label>Situation familiale</label>
-              <select
-                className="per-select sim-field__control"
+              <SimSelect
                 value={situationFamiliale}
-                onChange={(event) => {
+                onChange={(value) => {
                   onUpdateSituation({
-                    situationFamiliale: event.target.value as 'celibataire' | 'marie',
+                    situationFamiliale: value as 'celibataire' | 'marie',
                   });
                 }}
-              >
-                <option value="celibataire">Célibataire / Veuf / Divorcé</option>
-                <option value="marie">Marié / Pacsé</option>
-              </select>
+                options={[
+                  { value: 'celibataire', label: 'Célibataire / Veuf / Divorcé' },
+                  { value: 'marie', label: 'Marié / Pacsé' },
+                ]}
+              />
               {situationFamiliale === 'celibataire' && (
-                <label className="per-toggle-label per-toggle-label--inline">
+                <label className="per-checkbox-label">
                   <input
                     type="checkbox"
+                    className="per-checkbox"
                     checked={isole}
                     onChange={(event) => onUpdateSituation({ isole: event.target.checked })}
                   />
@@ -138,14 +141,15 @@ export default function SituationFiscaleStep({
                   {children.map((child, index) => (
                     <div key={child.id} className="per-child-row">
                       <span className="per-child-row__label">E{index + 1}</span>
-                      <select
-                        className="per-select sim-field__control per-child-row__select"
+                      <SimSelect
                         value={child.mode}
-                        onChange={(event) => onUpdateChildMode(child.id, event.target.value as PerChildDraft['mode'])}
-                      >
-                        <option value="charge">À charge</option>
-                        <option value="shared">Garde alternée</option>
-                      </select>
+                        onChange={(value) => onUpdateChildMode(child.id, value as PerChildDraft['mode'])}
+                        options={[
+                          { value: 'charge', label: 'À charge' },
+                          { value: 'shared', label: 'Garde alternée' },
+                        ]}
+                        className="per-child-row__select"
+                      />
                       <button
                         type="button"
                         className="per-child-remove-btn"
@@ -184,23 +188,12 @@ export default function SituationFiscaleStep({
           icon="versements"
         />
 
-        {isCouple && (
-          <label className="per-toggle-label per-toggle-label--panel per-contribution-toggle">
-            <input
-              type="checkbox"
-              checked={mutualisationConjoints}
-              onChange={(event) => onUpdateSituation({ mutualisationConjoints: event.target.checked })}
-            />
-            <span>Mutualisation des plafonds (case 6QR)</span>
-          </label>
-        )}
-
         <div className={`per-contribution-table ${isCouple ? 'is-couple' : ''}`}>
           <div className="per-contribution-table-head per-contribution-table-head--label">Catégorie</div>
           <div className="per-contribution-table-head">Déclarant 1</div>
           {isCouple && <div className="per-contribution-table-head">Déclarant 2</div>}
 
-          {contributionRows.map((row) => (
+          {contributionRows.filter(row => !row.tnsOnly || incomeFilters.tns).map((row) => (
             <React.Fragment key={row.key}>
               <div className="per-contribution-table-label">
                 <span>{row.label}</span>
@@ -229,6 +222,17 @@ export default function SituationFiscaleStep({
             </React.Fragment>
           ))}
         </div>
+
+        {isCouple && (
+          <label className="per-toggle-label per-toggle-label--panel per-contribution-toggle">
+            <input
+              type="checkbox"
+              checked={mutualisationConjoints}
+              onChange={(event) => onUpdateSituation({ mutualisationConjoints: event.target.checked })}
+            />
+            <span>Mutualisation des plafonds (case 6QR)</span>
+          </label>
+        )}
       </div>
     </div>
   );

@@ -89,6 +89,10 @@
     grid-template-columns: 1fr;
   }
 
+  .per-children-list {
+    grid-template-columns: 1fr;
+  }
+
   .per-avis-matrix {
     gap: 12px;
   }

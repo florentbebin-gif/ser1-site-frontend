@@ -1,4 +1,6 @@
 import React from 'react';
+import { SimFieldShell } from '@/components/ui/sim';
+import { SimSelect } from '@/components/ui/sim/SimSelect';
 import { computeAbattement10 } from '../../../../../engine/ir/abattement10';
 import type { DeclarantRevenus } from '../../../../../engine/per';
 import { formatInteger } from '../../../../../utils/formatNumber';
@@ -99,13 +101,38 @@ function ReadonlyAmountInput({
   ariaLabel: string;
 }): React.ReactElement {
   return (
-    <input
-      type="text"
-      readOnly
-      aria-label={ariaLabel}
-      value={formatReadonlyAmount(value)}
-      className="per-input sim-field__control per-income-table-input per-income-table-input--readonly"
-    />
+    <SimFieldShell className="per-table-input" rowClassName="per-table-input__row">
+      <input
+        type="text"
+        readOnly
+        aria-label={ariaLabel}
+        value={formatReadonlyAmount(value)}
+        className="sim-field__control per-table-input__control per-table-input__control--readonly"
+      />
+      <span className="per-table-input__unit sim-field__unit" aria-hidden="true">€</span>
+    </SimFieldShell>
+  );
+}
+
+function PerTableAmountInput({
+  value,
+  ariaLabel,
+  onChange,
+}: {
+  value: number;
+  ariaLabel: string;
+  onChange: (_value: number) => void;
+}): React.ReactElement {
+  return (
+    <SimFieldShell className="per-table-input" rowClassName="per-table-input__row">
+      <PerAmountInput
+        value={value}
+        ariaLabel={ariaLabel}
+        className="per-table-input__control"
+        onChange={onChange}
+      />
+      <span className="per-table-input__unit sim-field__unit" aria-hidden="true">€</span>
+    </SimFieldShell>
   );
 }
 
@@ -213,18 +240,16 @@ export function PerIncomeTable({
             <tr>
               <td>Traitements et salaires</td>
               <td data-column-label="Déclarant 1">
-                <PerAmountInput
+                <PerTableAmountInput
                   value={declarant1.salaires}
                   ariaLabel="Traitements et salaires déclarant 1"
-                  className="per-income-table-input"
                   onChange={(value) => onUpdateDeclarant(1, { salaires: value })}
                 />
               </td>
               <td data-column-label="Déclarant 2">
-                <PerAmountInput
+                <PerTableAmountInput
                   value={declarant2.salaires}
                   ariaLabel="Traitements et salaires déclarant 2"
-                  className="per-income-table-input"
                   onChange={(value) => onUpdateDeclarant(2, { salaires: value })}
                 />
               </td>
@@ -233,18 +258,16 @@ export function PerIncomeTable({
               <tr>
                 <td>Revenus des associés / gérants</td>
                 <td data-column-label="Déclarant 1">
-                  <PerAmountInput
+                  <PerTableAmountInput
                     value={declarant1.art62}
                     ariaLabel="Revenus des associés ou gérants déclarant 1"
-                    className="per-income-table-input"
                     onChange={(value) => onUpdateDeclarant(1, { art62: value })}
                   />
                 </td>
                 <td data-column-label="Déclarant 2">
-                  <PerAmountInput
+                  <PerTableAmountInput
                     value={declarant2.art62}
                     ariaLabel="Revenus des associés ou gérants déclarant 2"
-                    className="per-income-table-input"
                     onChange={(value) => onUpdateDeclarant(2, { art62: value })}
                   />
                 </td>
@@ -254,19 +277,19 @@ export function PerIncomeTable({
               <td>Frais réels ou abattement 10 %</td>
               <td data-column-label="Déclarant 1">
                 <div className="per-income-real-cell">
-                  <select
-                    className="per-select sim-field__control per-income-real-select"
+                  <SimSelect
                     value={declarant1.fraisReels ? 'reels' : 'abat10'}
-                    onChange={(event) => onUpdateDeclarant(1, { fraisReels: event.target.value === 'reels' })}
-                  >
-                    <option value="reels">FR</option>
-                    <option value="abat10">10%</option>
-                  </select>
+                    onChange={(value) => onUpdateDeclarant(1, { fraisReels: value === 'reels' })}
+                    options={[
+                      { value: 'reels', label: 'FR' },
+                      { value: 'abat10', label: '10%' },
+                    ]}
+                    className="per-income-real-select"
+                  />
                   {declarant1.fraisReels ? (
-                    <PerAmountInput
+                    <PerTableAmountInput
                       value={declarant1.fraisReelsMontant}
                       ariaLabel="Montant des frais réels déclarant 1"
-                      className="per-income-table-input"
                       onChange={(value) => onUpdateDeclarant(1, { fraisReelsMontant: value })}
                     />
                   ) : (
@@ -279,19 +302,19 @@ export function PerIncomeTable({
               </td>
               <td data-column-label="Déclarant 2">
                 <div className="per-income-real-cell">
-                  <select
-                    className="per-select sim-field__control per-income-real-select"
+                  <SimSelect
                     value={declarant2.fraisReels ? 'reels' : 'abat10'}
-                    onChange={(event) => onUpdateDeclarant(2, { fraisReels: event.target.value === 'reels' })}
-                  >
-                    <option value="reels">FR</option>
-                    <option value="abat10">10%</option>
-                  </select>
+                    onChange={(value) => onUpdateDeclarant(2, { fraisReels: value === 'reels' })}
+                    options={[
+                      { value: 'reels', label: 'FR' },
+                      { value: 'abat10', label: '10%' },
+                    ]}
+                    className="per-income-real-select"
+                  />
                   {declarant2.fraisReels ? (
-                    <PerAmountInput
+                    <PerTableAmountInput
                       value={declarant2.fraisReelsMontant}
                       ariaLabel="Montant des frais réels déclarant 2"
-                      className="per-income-table-input"
                       onChange={(value) => onUpdateDeclarant(2, { fraisReelsMontant: value })}
                     />
                   ) : (
@@ -308,18 +331,16 @@ export function PerIncomeTable({
               <tr>
                 <td>BIC / BNC / BA imposables</td>
                 <td data-column-label="Déclarant 1">
-                  <PerAmountInput
+                  <PerTableAmountInput
                     value={declarant1.bic}
                     ariaLabel="BIC BNC BA imposables déclarant 1"
-                    className="per-income-table-input"
                     onChange={(value) => onUpdateDeclarant(1, { bic: value })}
                   />
                 </td>
                 <td data-column-label="Déclarant 2">
-                  <PerAmountInput
+                  <PerTableAmountInput
                     value={declarant2.bic}
                     ariaLabel="BIC BNC BA imposables déclarant 2"
-                    className="per-income-table-input"
                     onChange={(value) => onUpdateDeclarant(2, { bic: value })}
                   />
                 </td>
@@ -328,18 +349,16 @@ export function PerIncomeTable({
             <tr>
               <td>Autres revenus imposables</td>
               <td data-column-label="Déclarant 1">
-                <PerAmountInput
+                <PerTableAmountInput
                   value={declarant1.autresRevenus}
                   ariaLabel="Autres revenus imposables déclarant 1"
-                  className="per-income-table-input"
                   onChange={(value) => onUpdateDeclarant(1, { autresRevenus: value })}
                 />
               </td>
               <td data-column-label="Déclarant 2">
-                <PerAmountInput
+                <PerTableAmountInput
                   value={declarant2.autresRevenus}
                   ariaLabel="Autres revenus imposables déclarant 2"
-                  className="per-income-table-input"
                   onChange={(value) => onUpdateDeclarant(2, { autresRevenus: value })}
                 />
               </td>
@@ -351,18 +370,16 @@ export function PerIncomeTable({
                 <tr>
                   <td>Pensions, retraites et rentes</td>
                   <td data-column-label="Déclarant 1">
-                    <PerAmountInput
+                    <PerTableAmountInput
                       value={declarant1.retraites}
                       ariaLabel="Pensions retraites et rentes déclarant 1"
-                      className="per-income-table-input"
                       onChange={(value) => onUpdateDeclarant(1, { retraites: value })}
                     />
                   </td>
                   <td data-column-label="Déclarant 2">
-                    <PerAmountInput
+                    <PerTableAmountInput
                       value={declarant2.retraites}
                       ariaLabel="Pensions retraites et rentes déclarant 2"
-                      className="per-income-table-input"
                       onChange={(value) => onUpdateDeclarant(2, { retraites: value })}
                     />
                   </td>
@@ -382,18 +399,16 @@ export function PerIncomeTable({
               <tr>
                 <td>Revenus fonciers nets</td>
                 <td data-column-label="Déclarant 1">
-                  <PerAmountInput
+                  <PerTableAmountInput
                     value={declarant1.fonciersNets}
                     ariaLabel="Revenus fonciers nets déclarant 1"
-                    className="per-income-table-input"
                     onChange={(value) => onUpdateDeclarant(1, { fonciersNets: value })}
                   />
                 </td>
                 <td data-column-label="Déclarant 2">
-                  <PerAmountInput
+                  <PerTableAmountInput
                     value={declarant2.fonciersNets}
                     ariaLabel="Revenus fonciers nets déclarant 2"
-                    className="per-income-table-input"
                     onChange={(value) => onUpdateDeclarant(2, { fonciersNets: value })}
                   />
                 </td>

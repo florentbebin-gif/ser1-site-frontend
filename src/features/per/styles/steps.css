@@ -304,14 +304,38 @@
   box-sizing: border-box;
 }
 
+.per-situation-card.premium-card--guide,
+.per-income-table-card.premium-card--guide {
+  overflow: visible;
+}
+
+.per-situation-card .sim-divider,
+.per-income-table-card .sim-divider {
+  margin: 14px 0 18px;
+}
+
+.per-situation-card .sim-card__icon,
+.per-income-table-card .sim-card__icon {
+  width: 22px;
+  height: 22px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-c4);
+  border-radius: 6px;
+  color: var(--color-c2);
+  flex-shrink: 0;
+}
+
 .per-section-header {
   display: grid;
-  gap: 10px;
+  gap: 6px;
+  margin-bottom: 10px;
 }
 
 .per-section-header-row {
   display: flex;
-  align-items: flex-start;
+  align-items: stretch;
   justify-content: space-between;
   gap: 12px;
 }
@@ -323,8 +347,9 @@
 }
 
 .per-section-title-block {
-  display: grid;
-  gap: 2px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .per-section-title-block .premium-section-title {
@@ -333,85 +358,103 @@
 
 .per-section-title-block .sim-card__title {
   margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--color-c1);
 }
 
 .per-section-subtitle {
   margin: 0;
   font-size: 12px;
-  line-height: 1.6;
+  line-height: 1.45;
   color: var(--color-c9);
 }
 
 .per-situation-foyer-grid {
   display: grid;
-  grid-template-columns: minmax(280px, 0.95fr) minmax(0, 1.05fr);
+  grid-template-columns: 1fr 1fr;
   gap: 16px;
   align-items: start;
 }
 
+.per-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 13px;
+}
+
+.per-field label {
+  color: var(--color-c9);
+}
+
 .per-children-zone {
-  display: grid;
-  gap: 12px;
-}
-
-.per-child-add-btn,
-.per-child-remove-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  border: 1px solid var(--color-c8);
-  border-radius: 10px;
-  background: #FFFFFF;
-  color: var(--color-c1);
-  cursor: pointer;
-  transition: border-color 0.2s, transform 0.2s;
-}
-
-.per-child-add-btn {
-  padding: 10px 12px;
-  font-size: 12px;
-  font-weight: 600;
-  justify-self: flex-start;
-}
-
-.per-child-remove-btn {
-  width: 38px;
-  height: 38px;
-  padding: 0;
-}
-
-.per-child-add-btn:hover,
-.per-child-remove-btn:hover {
-  border-color: var(--color-c3);
-  transform: translateY(-1px);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
 }
 
 .per-children-list {
   display: grid;
-  gap: 10px;
+  grid-template-columns: 1fr 1fr;
+  gap: 5px 8px;
+}
+
+.per-child-add-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 0;
+  border: none;
+  background: none;
+  font-size: 12px;
+  color: var(--color-c2);
+  cursor: pointer;
+  font-family: inherit;
+  transition: color 0.15s;
+  justify-self: flex-start;
+}
+
+.per-child-remove-btn {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  padding: 2px;
+  border: none;
+  border-radius: 3px;
+  background: none;
+  color: var(--color-c9);
+  cursor: pointer;
+  transition: color 0.15s;
+}
+
+.per-child-add-btn:hover,
+.per-child-remove-btn:hover {
+  color: var(--color-c1);
+}
+
+.per-child-add-btn:focus-visible,
+.per-child-remove-btn:focus-visible {
+  outline: 2px solid var(--color-c2);
+  outline-offset: 2px;
 }
 
 .per-child-row {
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto;
-  gap: 10px;
+  display: flex;
   align-items: center;
-  padding: 10px 12px;
-  border: 1px solid var(--color-c8);
-  border-radius: 10px;
-  background: var(--color-c7);
+  gap: 6px;
+  font-size: 13px;
 }
 
 .per-child-row__label {
-  min-width: 28px;
   font-size: 12px;
-  font-weight: 700;
   color: var(--color-c9);
+  white-space: nowrap;
+  min-width: 24px;
 }
 
 .per-child-row__select {
-  width: 100%;
+  flex: 1;
 }
 
 .per-income-table-wrap {
@@ -461,27 +504,25 @@
 .per-income-table {
   width: 100%;
   border-collapse: collapse;
-  table-layout: fixed;
+  font-size: 13px;
+}
+
+.per-income-table thead {
+  background: transparent;
 }
 
 .per-income-table th,
 .per-income-table td {
-  padding: 12px 14px;
-  border-bottom: 1px solid var(--color-c8);
-  vertical-align: top;
+  padding: 6px 8px;
 }
 
 .per-income-table thead th {
-  background: var(--color-c7);
-  font-size: 11px;
   font-weight: 600;
-  letter-spacing: 0.8px;
-  text-transform: uppercase;
-  color: var(--color-c9);
+  color: var(--color-c1);
 }
 
 .per-income-table thead th:first-child {
-  text-align: left;
+  text-align: center;
 }
 
 .per-income-table thead th:not(:first-child) {
@@ -490,6 +531,7 @@
 
 .per-income-table tbody td:first-child {
   color: var(--color-c10);
+  font-weight: 500;
 }
 
 .per-income-table--single th:nth-child(3),
@@ -509,15 +551,16 @@
 }
 
 .per-income-table-row-title td {
-  background: color-mix(in srgb, var(--color-c7) 65%, #FFFFFF);
-}
-
-.per-income-table-row-title td:first-child {
+  background: transparent;
   font-weight: 600;
 }
 
+.per-income-table-row-title td:first-child {
+  color: var(--color-c9);
+}
+
 .per-income-table-value-cell {
-  padding: 12px 14px;
+  padding: 6px 8px;
   font-size: 13px;
   font-weight: 600;
   color: var(--color-c1);
@@ -534,23 +577,63 @@
   font-variant-numeric: tabular-nums;
 }
 
-.per-income-table-input--readonly {
-  background: var(--color-c7);
+.per-table-input {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  width: 100%;
 }
 
-.per-income-real-cell {
-  display: grid;
-  grid-template-columns: minmax(82px, 92px) minmax(0, 1fr);
-  gap: 10px;
-  align-items: start;
+.per-table-input__row {
+  width: 100%;
 }
 
-.per-income-real-select {
+.per-table-input input[type='text'],
+.per-table-input input[type='number'] {
+  flex: 1 1 auto;
   min-width: 0;
 }
 
+.per-table-input__unit {
+  min-width: 14px;
+  margin-left: 6px;
+  color: var(--color-c9);
+  font-size: 13px;
+  line-height: 1;
+  text-align: right;
+}
+
+.per-table-input__control--readonly,
+.per-income-table-input--readonly {
+  background: #FFFFFF;
+}
+
+.per-income-real-cell {
+  display: flex;
+  gap: 4px;
+}
+
+.per-income-real-select {
+  flex: 1;
+}
+
 .per-contribution-toggle {
-  margin-bottom: 14px;
+  margin-top: 14px;
+}
+
+.per-checkbox {
+  accent-color: var(--color-c2);
+  cursor: pointer;
+}
+
+.per-checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 6px;
+  font-size: 12px;
+  color: var(--color-c9);
+  cursor: pointer;
 }
 
 .per-contribution-table {
@@ -587,6 +670,8 @@
   display: flex;
   flex-direction: column;
   gap: 4px;
+  font-size: 13px;
+  font-weight: 500;
   color: var(--color-c10);
 }
 
