@@ -96,6 +96,7 @@ describe('SituationFiscaleStep', () => {
       <SituationFiscaleStep
         showFoyerCard={false}
         {...baseProps}
+        incomeFilters={{ tns: true, pension: false, foncier: false }}
       />,
     );
 
