@@ -309,6 +309,19 @@
   gap: 10px;
 }
 
+.per-section-header-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.per-section-header-actions {
+  display: inline-flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
 .per-section-title-block {
   display: grid;
   gap: 2px;
@@ -331,53 +344,14 @@
 
 .per-situation-foyer-grid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 14px;
+  grid-template-columns: minmax(280px, 0.95fr) minmax(0, 1.05fr);
+  gap: 16px;
   align-items: start;
-}
-
-.per-parts-summary {
-  display: grid;
-  gap: 6px;
-  padding: 12px 14px;
-  border: 1px solid var(--color-c8);
-  border-radius: 10px;
-  background: var(--color-c7);
-}
-
-.per-parts-summary__label {
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.8px;
-  text-transform: uppercase;
-  color: var(--color-c9);
-}
-
-.per-parts-summary__value {
-  font-size: 22px;
-  font-weight: 700;
-  color: var(--color-c1);
-  font-variant-numeric: tabular-nums;
 }
 
 .per-children-zone {
   display: grid;
   gap: 12px;
-  margin-top: 16px;
-}
-
-.per-children-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-}
-
-.per-children-title {
-  margin: 0;
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--color-c1);
 }
 
 .per-child-add-btn,
@@ -398,6 +372,7 @@
   padding: 10px 12px;
   font-size: 12px;
   font-weight: 600;
+  justify-self: flex-start;
 }
 
 .per-child-remove-btn {
@@ -439,15 +414,48 @@
   width: 100%;
 }
 
-.per-situation-note {
-  margin: 0;
-  font-size: 13px;
-  line-height: 1.6;
-  color: var(--color-c9);
-}
-
 .per-income-table-wrap {
   width: 100%;
+}
+
+.per-income-filters {
+  display: inline-flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 6px;
+}
+
+.per-income-filter-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 28px;
+  padding: 4px 10px;
+  border: 1px solid var(--color-c8);
+  border-radius: 999px;
+  background: var(--color-c7);
+  color: var(--color-c9);
+  font-size: 12px;
+  line-height: 1;
+  font-weight: 500;
+  cursor: pointer;
+  transition: border-color 0.2s, color 0.2s, background-color 0.2s;
+}
+
+.per-income-filter-btn:hover {
+  border-color: var(--color-c3);
+  color: var(--color-c1);
+}
+
+.per-income-filter-btn.is-active {
+  background: color-mix(in srgb, var(--color-c3) 22%, #FFFFFF);
+  border-color: color-mix(in srgb, var(--color-c3) 55%, var(--color-c8));
+  color: var(--color-c1);
+}
+
+.per-income-filter-btn:focus-visible {
+  outline: 2px solid var(--color-c2);
+  outline-offset: 1px;
 }
 
 .per-income-table {
@@ -484,6 +492,22 @@
   color: var(--color-c10);
 }
 
+.per-income-table--single th:nth-child(3),
+.per-income-table--single td:nth-child(3) {
+  display: none;
+}
+
+.per-divider-row td {
+  padding: 0;
+  border-bottom: none;
+}
+
+.per-divider-row__inner {
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--color-c8), transparent);
+  margin: 4px 8px;
+}
+
 .per-income-table-row-title td {
   background: color-mix(in srgb, var(--color-c7) 65%, #FFFFFF);
 }
@@ -492,10 +516,26 @@
   font-weight: 600;
 }
 
+.per-income-table-value-cell {
+  padding: 12px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-c1);
+  font-variant-numeric: tabular-nums;
+}
+
+.per-income-table-value-cell--center {
+  text-align: center;
+}
+
 .per-income-table-input,
 .per-contribution-input {
   text-align: right;
   font-variant-numeric: tabular-nums;
+}
+
+.per-income-table-input--readonly {
+  background: var(--color-c7);
 }
 
 .per-income-real-cell {
@@ -509,16 +549,8 @@
   min-width: 0;
 }
 
-.per-income-readonly {
-  display: flex;
-  min-height: 42px;
-  align-items: center;
-  padding: 0 12px;
-  border: 1px solid var(--color-c8);
-  border-radius: 10px;
-  background: var(--color-c7);
-  font-size: 12px;
-  color: var(--color-c9);
+.per-contribution-toggle {
+  margin-bottom: 14px;
 }
 
 .per-contribution-table {

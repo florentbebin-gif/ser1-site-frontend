@@ -38,6 +38,16 @@
     grid-template-columns: 1fr;
   }
 
+  .per-section-header-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .per-section-header-actions,
+  .per-income-filters {
+    justify-content: flex-start;
+  }
+
   .per-avis-matrix-head-row,
   .per-avis-matrix-row {
     grid-template-columns: minmax(0, 1.45fr) 28px repeat(2, minmax(0, 0.82fr));
@@ -63,6 +73,10 @@
   }
 
   .per-home-secondary-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .per-potentiel-mini-kpis-row {
     grid-template-columns: 1fr;
   }
 
@@ -122,11 +136,6 @@
     font-size: 16px;
   }
 
-  .per-children-header {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
   .per-income-table,
   .per-income-table thead,
   .per-income-table tbody,
@@ -162,6 +171,10 @@
     font-weight: 600;
   }
 
+  .per-divider-row {
+    display: none;
+  }
+
   .per-income-table td[data-column-label] {
     display: grid;
     gap: 6px;
@@ -174,6 +187,14 @@
     letter-spacing: 0.8px;
     text-transform: uppercase;
     color: var(--color-c9);
+  }
+
+  .per-income-table-value-cell {
+    padding-top: 4px;
+  }
+
+  .per-income-table--single td:nth-child(3) {
+    display: none;
   }
 
   .per-contribution-table,

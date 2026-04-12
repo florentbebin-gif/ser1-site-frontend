@@ -144,7 +144,6 @@ function makeHookReturn(step: number) {
         },
       }
       : null,
-    baseResult: null,
     visibleSteps: [1, 2, 3, 5],
     setMode: vi.fn(),
     setHistoricalBasis: vi.fn(),
@@ -188,6 +187,16 @@ describe('PerPotentielSimulator', () => {
     expect(html).toContain('Potentiel 163 quatervicies');
     expect(html).toContain(fmtCurrency(11000));
     expect(html).toContain(fmtCurrency(7000));
+  });
+
+  it('shows nombre de parts next to the TMI in the live preview', () => {
+    mockUsePerPotentiel.mockReturnValue(makeHookReturn(3));
+
+    const html = renderToStaticMarkup(<PerPotentielSimulator />);
+
+    expect(html).toContain('Nombre de parts');
+    expect(html).toContain('1');
+    expect(html).toContain('TMI');
   });
 
   it('hides the avis totals once the simulator reaches step 4', () => {

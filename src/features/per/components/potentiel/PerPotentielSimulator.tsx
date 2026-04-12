@@ -18,6 +18,7 @@ import ModeStep from './steps/ModeStep';
 import AvisIrStep from './steps/AvisIrStep';
 import SituationFiscaleStep from './steps/SituationFiscaleStep';
 import SynthesePotentielStep from './steps/SynthesePotentielStep';
+import type { PerAbattementConfig, PerIncomeFilters } from './steps/PerIncomeTable';
 import { PerHypotheses } from './PerHypotheses';
 import { PerSynthesisSidebar } from './PerSynthesisSidebar';
 import '../../styles/index.css';
@@ -49,6 +50,12 @@ const sumAvisIrPlafonds = (
   + (avis?.nonUtiliseAnnee2 ?? 0)
   + (avis?.nonUtiliseAnnee3 ?? 0)
   + (avis?.plafondCalcule ?? 0);
+
+const DEFAULT_INCOME_FILTERS: PerIncomeFilters = {
+  tns: false,
+  pension: false,
+  foncier: false,
+};
 
 
 function getStepMeta(
@@ -100,6 +107,7 @@ export default function PerPotentielSimulator(): React.ReactElement {
   const { pptxColors, cabinetLogo, logoPlacement } = useTheme();
   const { mode } = useUserMode();
   const [localMode, setLocalMode] = useState<UserMode | null>(null);
+  const [incomeFilters, setIncomeFilters] = useState<PerIncomeFilters>(DEFAULT_INCOME_FILTERS);
   const isExpert = (localMode ?? mode) === 'expert';
   const toggleMode = () => setLocalMode(isExpert ? 'simplifie' : 'expert');
   const years = getPerWorkflowYears(fiscalContext);
@@ -126,6 +134,7 @@ export default function PerPotentielSimulator(): React.ReactElement {
   useEffect(() => {
     const off = onResetEvent(({ simId }: { simId?: string }) => {
       if (simId && simId !== 'per-potentiel') return;
+      setIncomeFilters(DEFAULT_INCOME_FILTERS);
       reset();
     });
     return off;
@@ -193,10 +202,21 @@ export default function PerPotentielSimulator(): React.ReactElement {
   const parcoursPills = buildPills();
   const totalAvisIrD1 = sumAvisIrPlafonds(state.avisIr);
   const totalAvisIrD2 = sumAvisIrPlafonds(state.avisIr2);
+  const abat10CfgRoot = fiscalContext._raw_tax?.incomeTax?.abat10 ?? {};
+  const abat10SalCfgPrevious: PerAbattementConfig = abat10CfgRoot.previous ?? {};
+  const abat10SalCfgCurrent: PerAbattementConfig = abat10CfgRoot.current ?? {};
+  const abat10RetCfgPrevious: PerAbattementConfig = abat10CfgRoot.retireesPrevious ?? {};
+  const abat10RetCfgCurrent: PerAbattementConfig = abat10CfgRoot.retireesCurrent ?? {};
 
   const avisBasis = state.mode === 'declaration-n1'
     ? 'previous-avis-plus-n1'
     : state.historicalBasis ?? 'previous-avis-plus-n1';
+  const toggleIncomeFilter = (key: keyof PerIncomeFilters): void => {
+    setIncomeFilters((prev) => ({
+      ...prev,
+      [key]: prev[key] !== true,
+    }));
+  };
 
   return (
     <div className="sim-page per-potentiel-page">
@@ -283,17 +303,20 @@ export default function PerPotentielSimulator(): React.ReactElement {
                   yearLabel={`${years.currentIncomeYear}`}
                   showFoyerCard
                   situationFamiliale={state.situationFamiliale}
-                  nombreParts={state.nombreParts}
                   isole={state.isole}
                   children={state.children}
                   isCouple={isCouple}
                   mutualisationConjoints={state.mutualisationConjoints}
                   declarant1={state.revenusN1Declarant1}
                   declarant2={state.revenusN1Declarant2}
+                  incomeFilters={incomeFilters}
+                  abat10SalCfg={abat10SalCfgPrevious}
+                  abat10RetCfg={abat10RetCfgPrevious}
                   onUpdateSituation={updateSituation}
                   onAddChild={addChild}
                   onUpdateChildMode={updateChildMode}
                   onRemoveChild={removeChild}
+                  onToggleIncomeFilter={toggleIncomeFilter}
                   onUpdateDeclarant={(decl, patch) => updateDeclarant('revenus-n1', decl, patch)}
                 />
               )}
@@ -304,17 +327,20 @@ export default function PerPotentielSimulator(): React.ReactElement {
                   yearLabel={`${years.currentIncomeYear}`}
                   showFoyerCard
                   situationFamiliale={state.situationFamiliale}
-                  nombreParts={state.nombreParts}
                   isole={state.isole}
                   children={state.children}
                   isCouple={isCouple}
                   mutualisationConjoints={state.mutualisationConjoints}
                   declarant1={state.revenusN1Declarant1}
                   declarant2={state.revenusN1Declarant2}
+                  incomeFilters={incomeFilters}
+                  abat10SalCfg={abat10SalCfgPrevious}
+                  abat10RetCfg={abat10RetCfgPrevious}
                   onUpdateSituation={updateSituation}
                   onAddChild={addChild}
                   onUpdateChildMode={updateChildMode}
                   onRemoveChild={removeChild}
+                  onToggleIncomeFilter={toggleIncomeFilter}
                   onUpdateDeclarant={(decl, patch) => updateDeclarant('revenus-n1', decl, patch)}
                 />
               )}
@@ -324,19 +350,21 @@ export default function PerPotentielSimulator(): React.ReactElement {
                   variant="versements-n"
                   yearLabel={`${years.currentTaxYear}`}
                   showFoyerCard
-                  incomeCardsOptional
                   situationFamiliale={state.situationFamiliale}
-                  nombreParts={state.nombreParts}
                   isole={state.isole}
                   children={state.children}
                   isCouple={isCouple}
                   mutualisationConjoints={state.mutualisationConjoints}
                   declarant1={state.projectionNDeclarant1}
                   declarant2={state.projectionNDeclarant2}
+                  incomeFilters={incomeFilters}
+                  abat10SalCfg={abat10SalCfgCurrent}
+                  abat10RetCfg={abat10RetCfgCurrent}
                   onUpdateSituation={updateSituation}
                   onAddChild={addChild}
                   onUpdateChildMode={updateChildMode}
                   onRemoveChild={removeChild}
+                  onToggleIncomeFilter={toggleIncomeFilter}
                   onUpdateDeclarant={(decl, patch) => updateDeclarant('projection-n', decl, patch)}
                 />
               )}
@@ -347,17 +375,20 @@ export default function PerPotentielSimulator(): React.ReactElement {
                   yearLabel={`${years.currentTaxYear}`}
                   showFoyerCard={false}
                   situationFamiliale={state.situationFamiliale}
-                  nombreParts={state.nombreParts}
                   isole={state.isole}
                   children={state.children}
                   isCouple={isCouple}
                   mutualisationConjoints={state.mutualisationConjoints}
                   declarant1={state.projectionNDeclarant1}
                   declarant2={state.projectionNDeclarant2}
+                  incomeFilters={incomeFilters}
+                  abat10SalCfg={abat10SalCfgCurrent}
+                  abat10RetCfg={abat10RetCfgCurrent}
                   onUpdateSituation={updateSituation}
                   onAddChild={addChild}
                   onUpdateChildMode={updateChildMode}
                   onRemoveChild={removeChild}
+                  onToggleIncomeFilter={toggleIncomeFilter}
                   onUpdateDeclarant={(decl, patch) => updateDeclarant('projection-n', decl, patch)}
                 />
               )}
@@ -441,11 +472,19 @@ export default function PerPotentielSimulator(): React.ReactElement {
               </div>
               <div className="sim-divider sim-divider--tight" />
               <div className="per-potentiel-mini-kpis">
-                <div className="per-potentiel-mini-kpi">
-                  <span className="per-potentiel-mini-kpi-label">TMI</span>
-                  <strong className="per-potentiel-mini-kpi-value">
-                    {fmtPercent(result.situationFiscale.tmi)}
-                  </strong>
+                <div className="per-potentiel-mini-kpis-row">
+                  <div className="per-potentiel-mini-kpi">
+                    <span className="per-potentiel-mini-kpi-label">TMI</span>
+                    <strong className="per-potentiel-mini-kpi-value">
+                      {fmtPercent(result.situationFiscale.tmi)}
+                    </strong>
+                  </div>
+                  <div className="per-potentiel-mini-kpi">
+                    <span className="per-potentiel-mini-kpi-label">Nombre de parts</span>
+                    <strong className="per-potentiel-mini-kpi-value">
+                      {state.nombreParts.toLocaleString('fr-FR')}
+                    </strong>
+                  </div>
                 </div>
                 <div className="per-potentiel-mini-kpi">
                   <span className="per-potentiel-mini-kpi-label">IR estimé</span>

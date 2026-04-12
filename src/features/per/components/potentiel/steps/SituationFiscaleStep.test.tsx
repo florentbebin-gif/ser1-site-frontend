@@ -20,55 +20,82 @@ const baseDeclarant = {
   cotisationsPrevo: 0,
 };
 
+const baseProps = {
+  variant: 'revenus-n1' as const,
+  yearLabel: '2025',
+  situationFamiliale: 'celibataire' as const,
+  isole: true,
+  children: [{ id: 1, mode: 'charge' as const }],
+  isCouple: false,
+  mutualisationConjoints: false,
+  declarant1: baseDeclarant,
+  declarant2: baseDeclarant,
+  incomeFilters: { tns: false, pension: false, foncier: false },
+  abat10SalCfg: { plafond: 14522, plancher: 495 },
+  abat10RetCfg: { plafond: 4399, plancher: 450 },
+  onUpdateSituation: vi.fn(),
+  onAddChild: vi.fn(),
+  onUpdateChildMode: vi.fn(),
+  onRemoveChild: vi.fn(),
+  onToggleIncomeFilter: vi.fn(),
+  onUpdateDeclarant: vi.fn(),
+};
+
 describe('SituationFiscaleStep', () => {
-  it('renders foyer, revenus and versements in order without local fiscal preview', () => {
+  it('renders foyer, revenus and versements in order without number of parts in the foyer', () => {
     const html = renderToStaticMarkup(
       <SituationFiscaleStep
-        variant="revenus-n1"
-        yearLabel="2025"
         showFoyerCard
-        situationFamiliale="celibataire"
-        nombreParts={1.5}
-        isole
-        children={[{ id: 1, mode: 'charge' }]}
-        isCouple={false}
-        mutualisationConjoints={false}
-        declarant1={baseDeclarant}
-        declarant2={baseDeclarant}
-        onUpdateSituation={vi.fn()}
-        onAddChild={vi.fn()}
-        onUpdateChildMode={vi.fn()}
-        onRemoveChild={vi.fn()}
-        onUpdateDeclarant={vi.fn()}
+        {...baseProps}
       />,
     );
 
-    expect(html).not.toContain('Aperçu fiscal');
+    expect(html).not.toContain('Nombre de parts calculÃ©');
+    expect(html).not.toContain('AperÃ§u fiscal');
     expect(html.indexOf('Situation familiale')).toBeLessThan(html.indexOf('Revenus imposables'));
-    expect(html.indexOf('Revenus imposables')).toBeLessThan(html.indexOf('Montants 2025 par déclarant'));
-    expect(html).toContain('Nombre de parts calculé');
+    expect(html.indexOf('Revenus imposables')).toBeLessThan(html.indexOf('Versements retraite'));
     expect(html).toContain('Ajouter un enfant');
+    expect(html).not.toContain('Mutualisation des plafonds (case 6QR)');
+  });
+
+  it('renders mutualisation des plafonds inside the versements block for couples', () => {
+    const html = renderToStaticMarkup(
+      <SituationFiscaleStep
+        showFoyerCard
+        {...baseProps}
+        situationFamiliale="marie"
+        isCouple
+      />,
+    );
+
+    expect(html).toContain('Mutualisation des plafonds (case 6QR)');
+    expect(html.indexOf('Versements retraite')).toBeLessThan(html.indexOf('Mutualisation des plafonds (case 6QR)'));
+  });
+
+  it('renders the conditional revenu rows from the IR-like filters', () => {
+    const html = renderToStaticMarkup(
+      <SituationFiscaleStep
+        showFoyerCard={false}
+        {...baseProps}
+        incomeFilters={{ tns: true, pension: true, foncier: true }}
+      />,
+    );
+
+    expect(html).toContain('TNS');
+    expect(html).toContain('Pension');
+    expect(html).toContain('Foncier');
+    expect(html).toContain('Revenus des associés / gérants');
+    expect(html).toContain('BIC / BNC / BA imposables');
+    expect(html).toContain('Pensions, retraites et rentes');
+    expect(html).toContain('Abattement 10 % pensions (foyer)');
+    expect(html).toContain('Revenus fonciers nets');
   });
 
   it('uses the updated contribution notes without adding unsupported 2042 boxes', () => {
     const html = renderToStaticMarkup(
       <SituationFiscaleStep
-        variant="revenus-n1"
-        yearLabel="2025"
         showFoyerCard={false}
-        situationFamiliale="celibataire"
-        nombreParts={1}
-        isole={false}
-        children={[]}
-        isCouple={false}
-        mutualisationConjoints={false}
-        declarant1={baseDeclarant}
-        declarant2={baseDeclarant}
-        onUpdateSituation={vi.fn()}
-        onAddChild={vi.fn()}
-        onUpdateChildMode={vi.fn()}
-        onRemoveChild={vi.fn()}
-        onUpdateDeclarant={vi.fn()}
+        {...baseProps}
       />,
     );
 

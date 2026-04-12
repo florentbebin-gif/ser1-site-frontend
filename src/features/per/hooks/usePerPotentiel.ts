@@ -183,7 +183,6 @@ function buildVisibleSteps(
 export interface UsePerPotentielReturn {
   state: PerPotentielState;
   result: PerPotentielResult | null;
-  baseResult: PerPotentielResult | null;
   visibleSteps: WizardStep[];
   setMode: (_mode: PerMode) => void;
   setHistoricalBasis: (_basis: PerHistoricalBasis) => void;
@@ -382,23 +381,6 @@ export function usePerPotentiel(fiscalContext: FiscalContext): UsePerPotentielRe
     };
   }, [state, years.currentTaxYear, isCouple, fiscalContext]);
 
-  const baseResult = useMemo((): PerPotentielResult | null => {
-    if (state.step < 3) {
-      return null;
-    }
-
-    const input = buildInput(false);
-    if (!input) {
-      return null;
-    }
-
-    try {
-      return calculatePerPotentiel(input);
-    } catch {
-      return null;
-    }
-  }, [state.step, buildInput]);
-
   const result = useMemo((): PerPotentielResult | null => {
     if (state.step < 3) {
       return null;
@@ -421,7 +403,6 @@ export function usePerPotentiel(fiscalContext: FiscalContext): UsePerPotentielRe
   return {
     state,
     result,
-    baseResult,
     visibleSteps,
     setMode,
     setHistoricalBasis,
