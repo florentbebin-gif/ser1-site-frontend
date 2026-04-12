@@ -20,20 +20,21 @@
   }
 
   .per-avis-layout,
-  .per-situation-top,
   .per-summary-top,
   .per-summary-columns,
-  .per-summary-breakdown-grid.is-couple,
-  .per-declarants-grid.is-couple {
+  .per-summary-breakdown-grid.is-couple {
     grid-template-columns: 1fr;
   }
 
   .per-situation-foyer-grid,
-  .per-income-grid,
-  .per-situation-kpis,
   .per-summary-hero-grid,
   .per-summary-stat-grid,
   .per-summary-simulation-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .per-child-row,
+  .per-income-real-cell {
     grid-template-columns: 1fr;
   }
 
@@ -119,6 +120,60 @@
 
   .per-avis-matrix-total {
     font-size: 16px;
+  }
+
+  .per-children-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .per-income-table,
+  .per-income-table thead,
+  .per-income-table tbody,
+  .per-income-table tr,
+  .per-income-table th,
+  .per-income-table td {
+    display: block;
+  }
+
+  .per-income-table thead {
+    display: none;
+  }
+
+  .per-income-table tr {
+    padding: 12px 14px;
+    border: 1px solid var(--color-c8);
+    border-radius: 10px;
+    background: #FFFFFF;
+  }
+
+  .per-income-table tbody {
+    display: grid;
+    gap: 12px;
+  }
+
+  .per-income-table td {
+    padding: 0;
+    border-bottom: none;
+  }
+
+  .per-income-table td:first-child {
+    padding-bottom: 8px;
+    font-weight: 600;
+  }
+
+  .per-income-table td[data-column-label] {
+    display: grid;
+    gap: 6px;
+  }
+
+  .per-income-table td[data-column-label]::before {
+    content: attr(data-column-label);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    color: var(--color-c9);
   }
 
   .per-contribution-table,

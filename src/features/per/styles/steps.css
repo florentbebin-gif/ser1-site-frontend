@@ -293,35 +293,40 @@
   margin-top: 2px;
 }
 
-.per-situation-top {
+.per-step--situation {
   display: grid;
-  grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr);
   gap: 16px;
 }
 
-.per-situation-top--single {
-  grid-template-columns: 1fr;
-}
-
-.per-situation-card {
+.per-situation-card,
+.per-income-table-card,
+.per-contribution-card {
   box-sizing: border-box;
 }
 
-.per-situation-card--accent {
-  border-left: 3px solid var(--color-c3);
+.per-section-header {
+  display: grid;
+  gap: 10px;
 }
 
-.per-situation-card-header,
-.per-income-card-header {
-  margin-bottom: 16px;
+.per-section-title-block {
+  display: grid;
+  gap: 2px;
 }
 
-.per-situation-card-title,
-.per-income-card-title {
+.per-section-title-block .premium-section-title {
   margin: 0;
-  font-size: 18px;
-  font-weight: 600;
-  color: var(--color-c1);
+}
+
+.per-section-title-block .sim-card__title {
+  margin: 0;
+}
+
+.per-section-subtitle {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--color-c9);
 }
 
 .per-situation-foyer-grid {
@@ -331,21 +336,16 @@
   align-items: start;
 }
 
-.per-situation-kpis {
+.per-parts-summary {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px;
-}
-
-.per-situation-kpi {
-  padding: 14px;
+  gap: 6px;
+  padding: 12px 14px;
+  border: 1px solid var(--color-c8);
   border-radius: 10px;
   background: var(--color-c7);
 }
 
-.per-situation-kpi-label {
-  display: block;
-  margin-bottom: 6px;
+.per-parts-summary__label {
   font-size: 11px;
   font-weight: 600;
   letter-spacing: 0.8px;
@@ -353,10 +353,90 @@
   color: var(--color-c9);
 }
 
-.per-situation-kpi-value {
-  font-size: 20px;
+.per-parts-summary__value {
+  font-size: 22px;
   font-weight: 700;
   color: var(--color-c1);
+  font-variant-numeric: tabular-nums;
+}
+
+.per-children-zone {
+  display: grid;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.per-children-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.per-children-title {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-c1);
+}
+
+.per-child-add-btn,
+.per-child-remove-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 1px solid var(--color-c8);
+  border-radius: 10px;
+  background: #FFFFFF;
+  color: var(--color-c1);
+  cursor: pointer;
+  transition: border-color 0.2s, transform 0.2s;
+}
+
+.per-child-add-btn {
+  padding: 10px 12px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.per-child-remove-btn {
+  width: 38px;
+  height: 38px;
+  padding: 0;
+}
+
+.per-child-add-btn:hover,
+.per-child-remove-btn:hover {
+  border-color: var(--color-c3);
+  transform: translateY(-1px);
+}
+
+.per-children-list {
+  display: grid;
+  gap: 10px;
+}
+
+.per-child-row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: center;
+  padding: 10px 12px;
+  border: 1px solid var(--color-c8);
+  border-radius: 10px;
+  background: var(--color-c7);
+}
+
+.per-child-row__label {
+  min-width: 28px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--color-c9);
+}
+
+.per-child-row__select {
+  width: 100%;
 }
 
 .per-situation-note {
@@ -366,13 +446,79 @@
   color: var(--color-c9);
 }
 
-.per-situation-income-copy {
-  display: grid;
-  gap: 6px;
+.per-income-table-wrap {
+  width: 100%;
 }
 
-.per-contribution-card {
-  box-sizing: border-box;
+.per-income-table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+.per-income-table th,
+.per-income-table td {
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--color-c8);
+  vertical-align: top;
+}
+
+.per-income-table thead th {
+  background: var(--color-c7);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  color: var(--color-c9);
+}
+
+.per-income-table thead th:first-child {
+  text-align: left;
+}
+
+.per-income-table thead th:not(:first-child) {
+  text-align: center;
+}
+
+.per-income-table tbody td:first-child {
+  color: var(--color-c10);
+}
+
+.per-income-table-row-title td {
+  background: color-mix(in srgb, var(--color-c7) 65%, #FFFFFF);
+}
+
+.per-income-table-row-title td:first-child {
+  font-weight: 600;
+}
+
+.per-income-table-input,
+.per-contribution-input {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.per-income-real-cell {
+  display: grid;
+  grid-template-columns: minmax(82px, 92px) minmax(0, 1fr);
+  gap: 10px;
+  align-items: start;
+}
+
+.per-income-real-select {
+  min-width: 0;
+}
+
+.per-income-readonly {
+  display: flex;
+  min-height: 42px;
+  align-items: center;
+  padding: 0 12px;
+  border: 1px solid var(--color-c8);
+  border-radius: 10px;
+  background: var(--color-c7);
+  font-size: 12px;
+  color: var(--color-c9);
 }
 
 .per-contribution-table {
@@ -430,35 +576,5 @@
   letter-spacing: 0.8px;
   text-transform: uppercase;
   color: var(--color-c9);
-}
-
-.per-declarants-grid {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 16px;
-}
-
-.per-declarants-grid.is-couple {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-}
-
-.per-income-card {
-  box-sizing: border-box;
-}
-
-.per-income-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 14px;
-}
-
-.per-income-toggle-row {
-  display: grid;
-  gap: 14px;
-  margin-top: 18px;
-}
-
-.per-income-toggle-field {
-  max-width: 280px;
 }
 

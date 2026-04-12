@@ -107,7 +107,6 @@ export default function PerPotentielSimulator(): React.ReactElement {
   const {
     state,
     result,
-    baseResult,
     visibleSteps,
     setMode,
     setHistoricalBasis,
@@ -115,6 +114,9 @@ export default function PerPotentielSimulator(): React.ReactElement {
     updateAvisIr,
     updateSituation,
     updateDeclarant,
+    addChild,
+    updateChildMode,
+    removeChild,
     setVersementEnvisage,
     goToStep,
     reset,
@@ -283,12 +285,15 @@ export default function PerPotentielSimulator(): React.ReactElement {
                   situationFamiliale={state.situationFamiliale}
                   nombreParts={state.nombreParts}
                   isole={state.isole}
+                  children={state.children}
                   isCouple={isCouple}
                   mutualisationConjoints={state.mutualisationConjoints}
                   declarant1={state.revenusN1Declarant1}
                   declarant2={state.revenusN1Declarant2}
-                  result={baseResult}
                   onUpdateSituation={updateSituation}
+                  onAddChild={addChild}
+                  onUpdateChildMode={updateChildMode}
+                  onRemoveChild={removeChild}
                   onUpdateDeclarant={(decl, patch) => updateDeclarant('revenus-n1', decl, patch)}
                 />
               )}
@@ -301,12 +306,15 @@ export default function PerPotentielSimulator(): React.ReactElement {
                   situationFamiliale={state.situationFamiliale}
                   nombreParts={state.nombreParts}
                   isole={state.isole}
+                  children={state.children}
                   isCouple={isCouple}
                   mutualisationConjoints={state.mutualisationConjoints}
                   declarant1={state.revenusN1Declarant1}
                   declarant2={state.revenusN1Declarant2}
-                  result={baseResult}
                   onUpdateSituation={updateSituation}
+                  onAddChild={addChild}
+                  onUpdateChildMode={updateChildMode}
+                  onRemoveChild={removeChild}
                   onUpdateDeclarant={(decl, patch) => updateDeclarant('revenus-n1', decl, patch)}
                 />
               )}
@@ -320,12 +328,15 @@ export default function PerPotentielSimulator(): React.ReactElement {
                   situationFamiliale={state.situationFamiliale}
                   nombreParts={state.nombreParts}
                   isole={state.isole}
+                  children={state.children}
                   isCouple={isCouple}
                   mutualisationConjoints={state.mutualisationConjoints}
                   declarant1={state.projectionNDeclarant1}
                   declarant2={state.projectionNDeclarant2}
-                  result={result}
                   onUpdateSituation={updateSituation}
+                  onAddChild={addChild}
+                  onUpdateChildMode={updateChildMode}
+                  onRemoveChild={removeChild}
                   onUpdateDeclarant={(decl, patch) => updateDeclarant('projection-n', decl, patch)}
                 />
               )}
@@ -338,12 +349,15 @@ export default function PerPotentielSimulator(): React.ReactElement {
                   situationFamiliale={state.situationFamiliale}
                   nombreParts={state.nombreParts}
                   isole={state.isole}
+                  children={state.children}
                   isCouple={isCouple}
                   mutualisationConjoints={state.mutualisationConjoints}
                   declarant1={state.projectionNDeclarant1}
                   declarant2={state.projectionNDeclarant2}
-                  result={result}
                   onUpdateSituation={updateSituation}
+                  onAddChild={addChild}
+                  onUpdateChildMode={updateChildMode}
+                  onRemoveChild={removeChild}
                   onUpdateDeclarant={(decl, patch) => updateDeclarant('projection-n', decl, patch)}
                 />
               )}
@@ -389,7 +403,7 @@ export default function PerPotentielSimulator(): React.ReactElement {
                   </div>
                 </div>
               )}
-              {state.step === 2 && (
+              {(state.step === 2 || state.step === 3) && (
                 <div className="per-avis-sidebar-kpis per-potentiel-context-item">
                   <span className="per-potentiel-context-label per-potentiel-context-label--small">
                     Potentiel 163 quatervicies

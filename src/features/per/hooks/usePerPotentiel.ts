@@ -16,8 +16,9 @@ import type {
 } from '../../../engine/per';
 import type { FiscalContext } from '../../../hooks/useFiscalContext';
 import { getAvisReferenceYears, getPerWorkflowYears } from '../utils/perWorkflowYears';
+import { derivePerNombreParts, type PerChildDraft } from '../utils/perParts';
 
-const SESSION_KEY = 'ser1:sim:per:potentiel:v2';
+const SESSION_KEY = 'ser1:sim:per:potentiel:v3';
 
 export type PerMode = 'versement-n' | 'declaration-n1';
 export type WizardStep = 1 | 2 | 3 | 4 | 5;
@@ -33,6 +34,7 @@ export interface PerPotentielState {
   situationFamiliale: 'celibataire' | 'marie';
   nombreParts: number;
   isole: boolean;
+  children: PerChildDraft[];
   revenusN1Declarant1: DeclarantRevenus;
   revenusN1Declarant2: DeclarantRevenus;
   projectionNDeclarant1: DeclarantRevenus;
@@ -59,8 +61,44 @@ const EMPTY_DECLARANT: DeclarantRevenus = {
   cotisationsPrevo: 0,
 };
 
-function makeDefaultState(): PerPotentielState {
+function normalizeChildren(children: PerChildDraft[] | null | undefined): PerChildDraft[] {
+  return Array.isArray(children)
+    ? children
+      .filter((child): child is PerChildDraft => Boolean(child) && (child.mode === 'charge' || child.mode === 'shared'))
+      .map((child, index) => ({
+        id: Number.isFinite(child.id) ? child.id : index + 1,
+        mode: child.mode,
+      }))
+    : [];
+}
+
+function normalizeState(state: PerPotentielState): PerPotentielState {
+  const situationFamiliale = state.situationFamiliale;
+  const children = normalizeChildren(state.children);
+  const isole = situationFamiliale === 'marie' ? false : state.isole;
+  const mutualisationConjoints = situationFamiliale === 'marie'
+    ? state.mutualisationConjoints
+    : false;
+
   return {
+    ...state,
+    isole,
+    children,
+    mutualisationConjoints,
+    nombreParts: derivePerNombreParts({
+      situationFamiliale,
+      isole,
+      children,
+    }),
+  };
+}
+
+function getNextChildId(children: PerChildDraft[]): number {
+  return children.reduce((maxId, child) => Math.max(maxId, child.id), 0) + 1;
+}
+
+function makeDefaultState(): PerPotentielState {
+  return normalizeState({
     step: 1,
     mode: null,
     historicalBasis: null,
@@ -70,13 +108,14 @@ function makeDefaultState(): PerPotentielState {
     situationFamiliale: 'celibataire',
     nombreParts: 1,
     isole: false,
+    children: [],
     revenusN1Declarant1: { ...EMPTY_DECLARANT },
     revenusN1Declarant2: { ...EMPTY_DECLARANT },
     projectionNDeclarant1: { ...EMPTY_DECLARANT },
     projectionNDeclarant2: { ...EMPTY_DECLARANT },
     versementEnvisage: 0,
     mutualisationConjoints: false,
-  };
+  });
 }
 
 function loadSession(): PerPotentielState | null {
@@ -87,14 +126,15 @@ function loadSession(): PerPotentielState | null {
     if (!parsed || typeof parsed !== 'object' || !('historicalBasis' in parsed)) {
       return null;
     }
-    return {
+    return normalizeState({
       ...makeDefaultState(),
       ...parsed,
       revenusN1Declarant1: { ...EMPTY_DECLARANT, ...parsed.revenusN1Declarant1 },
       revenusN1Declarant2: { ...EMPTY_DECLARANT, ...parsed.revenusN1Declarant2 },
       projectionNDeclarant1: { ...EMPTY_DECLARANT, ...parsed.projectionNDeclarant1 },
       projectionNDeclarant2: { ...EMPTY_DECLARANT, ...parsed.projectionNDeclarant2 },
-    };
+      children: normalizeChildren(parsed.children),
+    });
   } catch {
     return null;
   }
@@ -149,8 +189,11 @@ export interface UsePerPotentielReturn {
   setHistoricalBasis: (_basis: PerHistoricalBasis) => void;
   setNeedsCurrentYearEstimate: (_value: boolean) => void;
   updateAvisIr: (_patch: Partial<AvisIrPlafonds>, _decl?: 1 | 2) => void;
-  updateSituation: (_patch: Partial<Pick<PerPotentielState, 'situationFamiliale' | 'nombreParts' | 'isole' | 'mutualisationConjoints'>>) => void;
+  updateSituation: (_patch: Partial<Pick<PerPotentielState, 'situationFamiliale' | 'isole' | 'mutualisationConjoints'>>) => void;
   updateDeclarant: (_scope: PerDeclarantScope, _decl: 1 | 2, _patch: Partial<DeclarantRevenus>) => void;
+  addChild: () => void;
+  updateChildMode: (_childId: number, _mode: PerChildDraft['mode']) => void;
+  removeChild: (_childId: number) => void;
   setVersementEnvisage: (_v: number) => void;
   nextStep: () => void;
   prevStep: () => void;
@@ -169,8 +212,9 @@ export function usePerPotentiel(fiscalContext: FiscalContext): UsePerPotentielRe
   );
 
   const persist = useCallback((next: PerPotentielState) => {
-    setState(next);
-    saveSession(next);
+    const normalized = normalizeState(next);
+    setState(normalized);
+    saveSession(normalized);
   }, []);
 
   const setMode = useCallback((mode: PerMode) => {
@@ -220,7 +264,7 @@ export function usePerPotentiel(fiscalContext: FiscalContext): UsePerPotentielRe
     persist({ ...state, [key]: { ...current, ...patch, anneeRef: current.anneeRef || avisContext.incomeYear } });
   }, [state, persist, years]);
 
-  const updateSituation = useCallback((patch: Partial<Pick<PerPotentielState, 'situationFamiliale' | 'nombreParts' | 'isole' | 'mutualisationConjoints'>>) => {
+  const updateSituation = useCallback((patch: Partial<Pick<PerPotentielState, 'situationFamiliale' | 'isole' | 'mutualisationConjoints'>>) => {
     persist({ ...state, ...patch });
   }, [state, persist]);
 
@@ -229,6 +273,32 @@ export function usePerPotentiel(fiscalContext: FiscalContext): UsePerPotentielRe
       ? (decl === 1 ? 'revenusN1Declarant1' : 'revenusN1Declarant2')
       : (decl === 1 ? 'projectionNDeclarant1' : 'projectionNDeclarant2');
     persist({ ...state, [key]: { ...state[key], ...patch } });
+  }, [state, persist]);
+
+  const addChild = useCallback(() => {
+    const nextChild: PerChildDraft = {
+      id: getNextChildId(state.children),
+      mode: 'charge',
+    };
+    persist({ ...state, children: [...state.children, nextChild] });
+  }, [state, persist]);
+
+  const updateChildMode = useCallback((childId: number, mode: PerChildDraft['mode']) => {
+    persist({
+      ...state,
+      children: state.children.map((child) => (
+        child.id === childId
+          ? { ...child, mode }
+          : child
+      )),
+    });
+  }, [state, persist]);
+
+  const removeChild = useCallback((childId: number) => {
+    persist({
+      ...state,
+      children: state.children.filter((child) => child.id !== childId),
+    });
   }, [state, persist]);
 
   const setVersementEnvisage = useCallback((v: number) => {
@@ -359,6 +429,9 @@ export function usePerPotentiel(fiscalContext: FiscalContext): UsePerPotentielRe
     updateAvisIr,
     updateSituation,
     updateDeclarant,
+    addChild,
+    updateChildMode,
+    removeChild,
     setVersementEnvisage,
     nextStep,
     prevStep,
