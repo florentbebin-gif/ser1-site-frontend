@@ -56,20 +56,20 @@ export default function ModeStep({
         </div>
         <div className="sim-divider" />
 
-      <div className="per-mode-grid">
-        {modes.map((item) => (
-          <button
-            key={item.id}
-            type="button"
-            className={`per-mode-card ${mode === item.id ? 'per-mode-card--selected' : ''}`}
-            onClick={() => onSelectMode(item.id)}
-          >
-            <span className="per-mode-card-marker">{item.marker}</span>
-            <h4 className="per-mode-card-title">{item.title}</h4>
-            <p className="per-mode-card-desc">{item.desc}</p>
-          </button>
-        ))}
-      </div>
+        <div className="per-mode-grid">
+          {modes.map((item) => (
+            <button
+              key={item.id}
+              type="button"
+              className={`per-mode-card ${mode === item.id ? 'per-mode-card--selected' : ''}`}
+              onClick={() => onSelectMode(item.id)}
+            >
+              <span className="per-mode-card-marker">{item.marker}</span>
+              <h4 className="per-mode-card-title">{item.title}</h4>
+              <p className="per-mode-card-desc">{item.desc}</p>
+            </button>
+          ))}
+        </div>
       </div>
 
       {mode !== null && (
@@ -138,9 +138,9 @@ export default function ModeStep({
                 </div>
                 {needsCurrentYearEstimate && (
                   <p className="per-mode-toggle-hint">
-                    Activez l&apos;estimation {years.currentTaxYear} si vous devez intégrer des revenus ou
-                    versements de l&apos;année en cours pour Madelin, PERCO, PEROB ou art. 83. Il vous faudra
-                    estimer les revenus et les versements {years.currentTaxYear}.
+                    L&apos;estimation {years.currentTaxYear} est activée. Vous renseignerez les revenus
+                    et versements de l&apos;année en cours (Madelin, PERCO, PEROB, art. 83) à l&apos;étape
+                    suivante.
                   </p>
                 )}
               </div>

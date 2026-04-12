@@ -3,7 +3,16 @@
  */
 
 import React from 'react';
-import type { DeclarantRevenus, PerPotentielResult } from '../../../../../engine/per';
+import { SimSelect } from '@/components/ui/sim/SimSelect';
+import type { DeclarantRevenus } from '../../../../../engine/per';
+import type { PerChildDraft } from '../../../utils/perParts';
+import { PerAmountInput } from '../PerAmountInput';
+import {
+  PerIncomeTable,
+  SectionHeader,
+  type PerAbattementConfig,
+  type PerIncomeFilters,
+} from './PerIncomeTable';
 
 export type FiscalStepVariant = 'revenus-n1' | 'projection-n' | 'versements-n';
 
@@ -11,38 +20,27 @@ interface SituationFiscaleStepProps {
   variant: FiscalStepVariant;
   yearLabel: string;
   showFoyerCard: boolean;
-  incomeCardsOptional?: boolean;
   situationFamiliale: 'celibataire' | 'marie';
-  nombreParts: number;
   isole: boolean;
+  children: PerChildDraft[];
   isCouple: boolean;
   mutualisationConjoints: boolean;
   declarant1: DeclarantRevenus;
   declarant2: DeclarantRevenus;
-  result: PerPotentielResult | null;
+  incomeFilters: PerIncomeFilters;
+  abat10SalCfg: PerAbattementConfig;
+  abat10RetCfg: PerAbattementConfig;
   onUpdateSituation: (_patch: Partial<{
     situationFamiliale: 'celibataire' | 'marie';
-    nombreParts: number;
     isole: boolean;
     mutualisationConjoints: boolean;
   }>) => void;
+  onAddChild: () => void;
+  onUpdateChildMode: (_id: number, _mode: PerChildDraft['mode']) => void;
+  onRemoveChild: (_id: number) => void;
+  onToggleIncomeFilter: (_key: keyof PerIncomeFilters) => void;
   onUpdateDeclarant: (_decl: 1 | 2, _patch: Partial<DeclarantRevenus>) => void;
 }
-
-const fmtCurrency = (value: number): string =>
-  new Intl.NumberFormat('fr-FR', {
-    style: 'currency',
-    currency: 'EUR',
-    maximumFractionDigits: 0,
-  }).format(value);
-
-type IncomeFieldKey =
-  | 'salaires'
-  | 'art62'
-  | 'bic'
-  | 'retraites'
-  | 'fonciersNets'
-  | 'autresRevenus';
 
 type ContributionFieldKey =
   | 'cotisationsPer163Q'
@@ -53,238 +51,149 @@ type ContributionFieldKey =
   | 'abondementPerco'
   | 'cotisationsPrevo';
 
-function NumberField({
-  label,
-  value,
-  onChange,
-  min = 0,
-}: {
-  label: string;
-  value: number;
-  onChange: (_value: number) => void;
-  min?: number;
-}): React.ReactElement {
-  return (
-    <label className="per-field">
-      <span>{label}</span>
-      <input
-        type="number"
-        min={min}
-        className="per-input sim-field__control"
-        value={value || ''}
-        placeholder="0"
-        onChange={(event) => onChange(Number(event.target.value) || 0)}
-      />
-    </label>
-  );
-}
-
-function IncomeCard({
-  label,
-  declarant,
-  onChange,
-}: {
-  label: string;
-  declarant: DeclarantRevenus;
-  onChange: (_patch: Partial<DeclarantRevenus>) => void;
-}): React.ReactElement {
-  const fields: { label: string; key: IncomeFieldKey }[] = [
-    { label: 'Traitements et salaires', key: 'salaires' },
-    { label: 'Revenus art. 62', key: 'art62' },
-    { label: 'BIC / BNC / BA', key: 'bic' },
-    { label: 'Pensions et retraites', key: 'retraites' },
-    { label: 'Revenus fonciers nets', key: 'fonciersNets' },
-    { label: 'Autres revenus', key: 'autresRevenus' },
-  ];
-
-  return (
-    <div className="premium-card per-income-card">
-      <div className="per-income-card-header">
-        <p className="premium-section-title">Déclarant</p>
-        <h4 className="per-income-card-title">{label}</h4>
-      </div>
-
-      <div className="per-income-grid">
-        {fields.map((field) => (
-          <NumberField
-            key={field.key}
-            label={field.label}
-            value={declarant[field.key]}
-            onChange={(value) => onChange({ [field.key]: value })}
-          />
-        ))}
-      </div>
-
-      <div className="per-income-toggle-row">
-        <label className="per-toggle-label per-toggle-label--inline">
-          <input
-            type="checkbox"
-            checked={declarant.fraisReels}
-            onChange={(event) => onChange({ fraisReels: event.target.checked })}
-          />
-          <span>Frais réels</span>
-        </label>
-
-        {declarant.fraisReels && (
-          <div className="per-income-toggle-field">
-            <NumberField
-              label="Montant des frais réels"
-              value={declarant.fraisReelsMontant}
-              onChange={(value) => onChange({ fraisReelsMontant: value })}
-            />
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
-
 export default function SituationFiscaleStep({
   variant,
   yearLabel,
   showFoyerCard,
-  incomeCardsOptional = false,
   situationFamiliale,
-  nombreParts,
   isole,
+  children,
   isCouple,
   mutualisationConjoints,
   declarant1,
   declarant2,
-  result,
+  incomeFilters,
+  abat10SalCfg,
+  abat10RetCfg,
   onUpdateSituation,
+  onAddChild,
+  onUpdateChildMode,
+  onRemoveChild,
+  onToggleIncomeFilter,
   onUpdateDeclarant,
 }: SituationFiscaleStepProps): React.ReactElement {
   const contributionRows: {
     label: string;
     note: string;
     key: ContributionFieldKey;
+    tnsOnly?: boolean;
   }[] = [
     { label: 'PER 163 quatervicies', note: variant === 'revenus-n1' ? '2042 : 6NS / 6NT' : 'année en cours', key: 'cotisationsPer163Q' },
     { label: 'PERP et assimilés', note: variant === 'revenus-n1' ? '2042 : 6RS / 6RT' : 'année en cours', key: 'cotisationsPerp' },
     { label: 'Art. 83 employeur + salarié', note: variant === 'revenus-n1' ? '2042 : 6QS / 6QT' : 'année en cours', key: 'cotisationsArt83' },
-    { label: 'PER 154 bis', note: variant === 'revenus-n1' ? '2042 : 6OS / 6OT' : 'année en cours', key: 'cotisationsMadelin154bis' },
-    { label: 'Madelin retraite', note: 'hors 154 bis', key: 'cotisationsMadelinRetraite' },
-    { label: 'Abondement PERCO', note: 'employeur', key: 'abondementPerco' },
-    { label: 'Prévoyance Madelin', note: 'part non retraite', key: 'cotisationsPrevo' },
+    { label: 'PER 154 bis', note: variant === 'revenus-n1' ? '2042 : 6OS / 6OT' : 'année en cours', key: 'cotisationsMadelin154bis', tnsOnly: true },
+    { label: 'Madelin retraite', note: 'contrat retraite, distinct du PER 154 bis', key: 'cotisationsMadelinRetraite', tnsOnly: true },
+    { label: 'Abondement PERCO', note: 'employeur, réduit le plafond 163Q', key: 'abondementPerco' },
+    { label: 'Prévoyance Madelin', note: 'part non retraite', key: 'cotisationsPrevo', tnsOnly: true },
   ];
 
   return (
     <div className="per-step per-step--situation">
-      <div className={`per-situation-top ${showFoyerCard ? '' : 'per-situation-top--single'}`}>
-        {showFoyerCard && (
-          <div className="premium-card per-situation-card">
-            <div className="per-situation-card-header">
-              <p className="premium-section-title">Foyer</p>
-              <h4 className="per-situation-card-title">Situation familiale</h4>
-            </div>
+      {showFoyerCard && (
+        <div className="premium-card premium-card--guide sim-card--guide per-situation-card">
+          <SectionHeader
+            title="Situation familiale"
+            icon="foyer"
+          />
 
-            <div className="per-situation-foyer-grid">
-              <label className="per-field">
-                <span>Situation familiale</span>
-                <select
-                  className="per-select sim-field__control"
-                  value={situationFamiliale}
-                  onChange={(event) => {
-                    onUpdateSituation({
-                      situationFamiliale: event.target.value as 'celibataire' | 'marie',
-                    });
-                  }}
-                >
-                  <option value="marie">Marié / Pacsé</option>
-                  <option value="celibataire">Célibataire / Veuf / Divorcé</option>
-                </select>
-              </label>
-
-              <NumberField
-                label="Nombre de parts"
-                value={nombreParts}
-                min={1}
-                onChange={(value) => onUpdateSituation({ nombreParts: Math.max(1, value) })}
+          <div className="per-situation-foyer-grid">
+            <div className="per-field premium-field" data-testid="per-situation-field">
+              <label>Situation familiale</label>
+              <SimSelect
+                value={situationFamiliale}
+                onChange={(value) => {
+                  onUpdateSituation({
+                    situationFamiliale: value as 'celibataire' | 'marie',
+                  });
+                }}
+                options={[
+                  { value: 'celibataire', label: 'Célibataire / Veuf / Divorcé' },
+                  { value: 'marie', label: 'Marié / Pacsé' },
+                ]}
               />
-
               {situationFamiliale === 'celibataire' && (
-                <label className="per-toggle-label per-toggle-label--panel">
+                <label className="per-checkbox-label">
                   <input
                     type="checkbox"
+                    className="per-checkbox"
                     checked={isole}
                     onChange={(event) => onUpdateSituation({ isole: event.target.checked })}
                   />
                   <span>Parent isolé</span>
                 </label>
               )}
-
-              {isCouple && (
-                <label className="per-toggle-label per-toggle-label--panel">
-                  <input
-                    type="checkbox"
-                    checked={mutualisationConjoints}
-                    onChange={(event) => onUpdateSituation({ mutualisationConjoints: event.target.checked })}
-                  />
-                  <span>Mutualisation des plafonds (case 6QR)</span>
-                </label>
-              )}
             </div>
-          </div>
-        )}
 
-        <div className="premium-card per-situation-card per-situation-card--accent">
-          <div className="per-situation-card-header">
-            <p className="premium-section-title">Aperçu fiscal</p>
-            <h4 className="per-situation-card-title">Estimation mise à jour en direct</h4>
-          </div>
-
-          {result ? (
-            <div className="per-situation-kpis">
-              <div className="per-situation-kpi">
-                <span className="per-situation-kpi-label">TMI</span>
-                <strong className="per-situation-kpi-value">
-                  {(result.situationFiscale.tmi <= 1
-                    ? result.situationFiscale.tmi * 100
-                    : result.situationFiscale.tmi).toFixed(1)} %
-                </strong>
-              </div>
-              <div className="per-situation-kpi">
-                <span className="per-situation-kpi-label">IR estimé</span>
-                <strong className="per-situation-kpi-value">
-                  {fmtCurrency(result.situationFiscale.irEstime)}
-                </strong>
-              </div>
-              <div className="per-situation-kpi">
-                <span className="per-situation-kpi-label">Revenu imposable D1</span>
-                <strong className="per-situation-kpi-value">
-                  {fmtCurrency(result.situationFiscale.revenuImposableD1)}
-                </strong>
-              </div>
-              {isCouple && (
-                <div className="per-situation-kpi">
-                  <span className="per-situation-kpi-label">Revenu imposable D2</span>
-                  <strong className="per-situation-kpi-value">
-                    {fmtCurrency(result.situationFiscale.revenuImposableD2)}
-                  </strong>
+            <div className="per-children-zone">
+              <button
+                type="button"
+                className="per-child-add-btn"
+                onClick={onAddChild}
+              >
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <line x1="12" y1="5" x2="12" y2="19" />
+                  <line x1="5" y1="12" x2="19" y2="12" />
+                </svg>
+                Ajouter un enfant
+              </button>
+              {children.length > 0 && (
+                <div className="per-children-list">
+                  {children.map((child, index) => (
+                    <div key={child.id} className="per-child-row">
+                      <span className="per-child-row__label">E{index + 1}</span>
+                      <SimSelect
+                        value={child.mode}
+                        onChange={(value) => onUpdateChildMode(child.id, value as PerChildDraft['mode'])}
+                        options={[
+                          { value: 'charge', label: 'À charge' },
+                          { value: 'shared', label: 'Garde alternée' },
+                        ]}
+                        className="per-child-row__select"
+                      />
+                      <button
+                        type="button"
+                        className="per-child-remove-btn"
+                        onClick={() => onRemoveChild(child.id)}
+                        aria-label={`Supprimer enfant ${index + 1}`}
+                      >
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                          <line x1="18" y1="6" x2="6" y2="18" />
+                          <line x1="6" y1="6" x2="18" y2="18" />
+                        </svg>
+                      </button>
+                    </div>
+                  ))}
                 </div>
               )}
             </div>
-          ) : (
-            <p className="per-situation-note">
-              Le moteur fiscal se met à jour dès que les revenus et versements sont saisis.
-            </p>
-          )}
+          </div>
         </div>
-      </div>
+      )}
 
-      <div className="premium-card per-contribution-card">
-        <div className="per-situation-card-header">
-          <p className="premium-section-title">Versements retraite</p>
-          <h4 className="per-situation-card-title">Montants {yearLabel} par déclarant</h4>
-        </div>
+      <PerIncomeTable
+        isCouple={isCouple}
+        declarant1={declarant1}
+        declarant2={declarant2}
+        incomeFilters={incomeFilters}
+        abat10SalCfg={abat10SalCfg}
+        abat10RetCfg={abat10RetCfg}
+        onToggleIncomeFilter={onToggleIncomeFilter}
+        onUpdateDeclarant={onUpdateDeclarant}
+      />
+
+      <div className="premium-card premium-card--guide sim-card--guide per-contribution-card">
+        <SectionHeader
+          title="Versements retraite"
+          subtitle={`Renseignez les montants ${yearLabel} par déclarant pour chaque enveloppe de retraite.`}
+          icon="versements"
+        />
 
         <div className={`per-contribution-table ${isCouple ? 'is-couple' : ''}`}>
           <div className="per-contribution-table-head per-contribution-table-head--label">Catégorie</div>
           <div className="per-contribution-table-head">Déclarant 1</div>
           {isCouple && <div className="per-contribution-table-head">Déclarant 2</div>}
 
-          {contributionRows.map((row) => (
+          {contributionRows.filter(row => !row.tnsOnly || incomeFilters.tns).map((row) => (
             <React.Fragment key={row.key}>
               <div className="per-contribution-table-label">
                 <span>{row.label}</span>
@@ -292,55 +201,37 @@ export default function SituationFiscaleStep({
               </div>
               <div className="per-contribution-table-cell">
                 <span className="per-contribution-mobile-label">Déclarant 1</span>
-                <input
-                  type="number"
-                  min={0}
-                  className="per-input sim-field__control"
-                  value={declarant1[row.key] || ''}
-                  placeholder="0"
-                  onChange={(event) => onUpdateDeclarant(1, { [row.key]: Number(event.target.value) || 0 })}
+                <PerAmountInput
+                  value={declarant1[row.key]}
+                  ariaLabel={`${row.label} déclarant 1`}
+                  className="per-contribution-input"
+                  onChange={(value) => onUpdateDeclarant(1, { [row.key]: value })}
                 />
               </div>
               {isCouple && (
                 <div className="per-contribution-table-cell">
                   <span className="per-contribution-mobile-label">Déclarant 2</span>
-                  <input
-                    type="number"
-                    min={0}
-                    className="per-input sim-field__control"
-                    value={declarant2[row.key] || ''}
-                    placeholder="0"
-                    onChange={(event) => onUpdateDeclarant(2, { [row.key]: Number(event.target.value) || 0 })}
+                  <PerAmountInput
+                    value={declarant2[row.key]}
+                    ariaLabel={`${row.label} déclarant 2`}
+                    className="per-contribution-input"
+                    onChange={(value) => onUpdateDeclarant(2, { [row.key]: value })}
                   />
                 </div>
               )}
             </React.Fragment>
           ))}
         </div>
-      </div>
-
-      <div className="per-situation-income-copy">
-        <p className="premium-section-title">Revenus</p>
-        <p className="per-situation-note">
-          {incomeCardsOptional
-            ? `Les revenus ${yearLabel} sont facultatifs sur cet écran. Renseignez-les si vous souhaitez affiner la fiscalité liée au versement.`
-            : `Renseignez les revenus ${yearLabel} pour reconstruire le calcul fiscal et les plafonds associés.`}
-        </p>
-      </div>
-
-      <div className={`per-declarants-grid ${isCouple ? 'is-couple' : ''}`}>
-        <IncomeCard
-          label="Déclarant 1"
-          declarant={declarant1}
-          onChange={(patch) => onUpdateDeclarant(1, patch)}
-        />
 
         {isCouple && (
-          <IncomeCard
-            label="Déclarant 2"
-            declarant={declarant2}
-            onChange={(patch) => onUpdateDeclarant(2, patch)}
-          />
+          <label className="per-toggle-label per-toggle-label--panel per-contribution-toggle">
+            <input
+              type="checkbox"
+              checked={mutualisationConjoints}
+              onChange={(event) => onUpdateSituation({ mutualisationConjoints: event.target.checked })}
+            />
+            <span>Mutualisation des plafonds (case 6QR)</span>
+          </label>
         )}
       </div>
     </div>

@@ -18,6 +18,7 @@ import ModeStep from './steps/ModeStep';
 import AvisIrStep from './steps/AvisIrStep';
 import SituationFiscaleStep from './steps/SituationFiscaleStep';
 import SynthesePotentielStep from './steps/SynthesePotentielStep';
+import type { PerAbattementConfig, PerIncomeFilters } from './steps/PerIncomeTable';
 import { PerHypotheses } from './PerHypotheses';
 import { PerSynthesisSidebar } from './PerSynthesisSidebar';
 import '../../styles/index.css';
@@ -36,6 +37,25 @@ const fmtCurrency = (value: number): string =>
 
 const fmtPercent = (value: number): string =>
   `${(value <= 1 ? value * 100 : value).toFixed(1)} %`;
+
+const sumAvisIrPlafonds = (
+  avis: {
+    nonUtiliseAnnee1?: number;
+    nonUtiliseAnnee2?: number;
+    nonUtiliseAnnee3?: number;
+    plafondCalcule?: number;
+  } | null,
+): number =>
+  (avis?.nonUtiliseAnnee1 ?? 0)
+  + (avis?.nonUtiliseAnnee2 ?? 0)
+  + (avis?.nonUtiliseAnnee3 ?? 0)
+  + (avis?.plafondCalcule ?? 0);
+
+const DEFAULT_INCOME_FILTERS: PerIncomeFilters = {
+  tns: false,
+  pension: false,
+  foncier: false,
+};
 
 
 function getStepMeta(
@@ -87,6 +107,7 @@ export default function PerPotentielSimulator(): React.ReactElement {
   const { pptxColors, cabinetLogo, logoPlacement } = useTheme();
   const { mode } = useUserMode();
   const [localMode, setLocalMode] = useState<UserMode | null>(null);
+  const [incomeFilters, setIncomeFilters] = useState<PerIncomeFilters>(DEFAULT_INCOME_FILTERS);
   const isExpert = (localMode ?? mode) === 'expert';
   const toggleMode = () => setLocalMode(isExpert ? 'simplifie' : 'expert');
   const years = getPerWorkflowYears(fiscalContext);
@@ -94,7 +115,6 @@ export default function PerPotentielSimulator(): React.ReactElement {
   const {
     state,
     result,
-    baseResult,
     visibleSteps,
     setMode,
     setHistoricalBasis,
@@ -102,6 +122,9 @@ export default function PerPotentielSimulator(): React.ReactElement {
     updateAvisIr,
     updateSituation,
     updateDeclarant,
+    addChild,
+    updateChildMode,
+    removeChild,
     setVersementEnvisage,
     goToStep,
     reset,
@@ -111,6 +134,7 @@ export default function PerPotentielSimulator(): React.ReactElement {
   useEffect(() => {
     const off = onResetEvent(({ simId }: { simId?: string }) => {
       if (simId && simId !== 'per-potentiel') return;
+      setIncomeFilters(DEFAULT_INCOME_FILTERS);
       reset();
     });
     return off;
@@ -176,10 +200,23 @@ export default function PerPotentielSimulator(): React.ReactElement {
     return [];
   }
   const parcoursPills = buildPills();
+  const totalAvisIrD1 = sumAvisIrPlafonds(state.avisIr);
+  const totalAvisIrD2 = sumAvisIrPlafonds(state.avisIr2);
+  const abat10CfgRoot = fiscalContext._raw_tax?.incomeTax?.abat10 ?? {};
+  const abat10SalCfgPrevious: PerAbattementConfig = abat10CfgRoot.previous ?? {};
+  const abat10SalCfgCurrent: PerAbattementConfig = abat10CfgRoot.current ?? {};
+  const abat10RetCfgPrevious: PerAbattementConfig = abat10CfgRoot.retireesPrevious ?? {};
+  const abat10RetCfgCurrent: PerAbattementConfig = abat10CfgRoot.retireesCurrent ?? {};
 
   const avisBasis = state.mode === 'declaration-n1'
     ? 'previous-avis-plus-n1'
     : state.historicalBasis ?? 'previous-avis-plus-n1';
+  const toggleIncomeFilter = (key: keyof PerIncomeFilters): void => {
+    setIncomeFilters((prev) => ({
+      ...prev,
+      [key]: prev[key] !== true,
+    }));
+  };
 
   return (
     <div className="sim-page per-potentiel-page">
@@ -234,9 +271,18 @@ export default function PerPotentielSimulator(): React.ReactElement {
             />
           ) : (
           <div className="premium-card premium-card--guide per-potentiel-stage">
-            <div className="per-potentiel-stage-header sim-card__header--bleed">
-              <h2 className="per-potentiel-stage-title">{activeStep.title}</h2>
+            <div className="per-potentiel-stage-header sim-card__header sim-card__header--bleed">
+              <div className="sim-card__title-row">
+                <div className="sim-card__icon">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                    <polyline points="14 2 14 8 20 8" />
+                  </svg>
+                </div>
+                <h2 className="sim-card__title">{activeStep.title}</h2>
+              </div>
             </div>
+            <div className="sim-divider per-potentiel-stage-divider" />
 
             <div className="per-potentiel-stage-body">
               {state.step === 2 && (
@@ -245,6 +291,8 @@ export default function PerPotentielSimulator(): React.ReactElement {
                   avisIr2={state.avisIr2}
                   basis={avisBasis}
                   years={years}
+                  totalDeclarant1={totalAvisIrD1}
+                  totalDeclarant2={totalAvisIrD2}
                   onUpdate={updateAvisIr}
                 />
               )}
@@ -255,14 +303,20 @@ export default function PerPotentielSimulator(): React.ReactElement {
                   yearLabel={`${years.currentIncomeYear}`}
                   showFoyerCard
                   situationFamiliale={state.situationFamiliale}
-                  nombreParts={state.nombreParts}
                   isole={state.isole}
+                  children={state.children}
                   isCouple={isCouple}
                   mutualisationConjoints={state.mutualisationConjoints}
                   declarant1={state.revenusN1Declarant1}
                   declarant2={state.revenusN1Declarant2}
-                  result={baseResult}
+                  incomeFilters={incomeFilters}
+                  abat10SalCfg={abat10SalCfgPrevious}
+                  abat10RetCfg={abat10RetCfgPrevious}
                   onUpdateSituation={updateSituation}
+                  onAddChild={addChild}
+                  onUpdateChildMode={updateChildMode}
+                  onRemoveChild={removeChild}
+                  onToggleIncomeFilter={toggleIncomeFilter}
                   onUpdateDeclarant={(decl, patch) => updateDeclarant('revenus-n1', decl, patch)}
                 />
               )}
@@ -273,14 +327,20 @@ export default function PerPotentielSimulator(): React.ReactElement {
                   yearLabel={`${years.currentIncomeYear}`}
                   showFoyerCard
                   situationFamiliale={state.situationFamiliale}
-                  nombreParts={state.nombreParts}
                   isole={state.isole}
+                  children={state.children}
                   isCouple={isCouple}
                   mutualisationConjoints={state.mutualisationConjoints}
                   declarant1={state.revenusN1Declarant1}
                   declarant2={state.revenusN1Declarant2}
-                  result={baseResult}
+                  incomeFilters={incomeFilters}
+                  abat10SalCfg={abat10SalCfgPrevious}
+                  abat10RetCfg={abat10RetCfgPrevious}
                   onUpdateSituation={updateSituation}
+                  onAddChild={addChild}
+                  onUpdateChildMode={updateChildMode}
+                  onRemoveChild={removeChild}
+                  onToggleIncomeFilter={toggleIncomeFilter}
                   onUpdateDeclarant={(decl, patch) => updateDeclarant('revenus-n1', decl, patch)}
                 />
               )}
@@ -290,16 +350,21 @@ export default function PerPotentielSimulator(): React.ReactElement {
                   variant="versements-n"
                   yearLabel={`${years.currentTaxYear}`}
                   showFoyerCard
-                  incomeCardsOptional
                   situationFamiliale={state.situationFamiliale}
-                  nombreParts={state.nombreParts}
                   isole={state.isole}
+                  children={state.children}
                   isCouple={isCouple}
                   mutualisationConjoints={state.mutualisationConjoints}
                   declarant1={state.projectionNDeclarant1}
                   declarant2={state.projectionNDeclarant2}
-                  result={result}
+                  incomeFilters={incomeFilters}
+                  abat10SalCfg={abat10SalCfgCurrent}
+                  abat10RetCfg={abat10RetCfgCurrent}
                   onUpdateSituation={updateSituation}
+                  onAddChild={addChild}
+                  onUpdateChildMode={updateChildMode}
+                  onRemoveChild={removeChild}
+                  onToggleIncomeFilter={toggleIncomeFilter}
                   onUpdateDeclarant={(decl, patch) => updateDeclarant('projection-n', decl, patch)}
                 />
               )}
@@ -310,14 +375,20 @@ export default function PerPotentielSimulator(): React.ReactElement {
                   yearLabel={`${years.currentTaxYear}`}
                   showFoyerCard={false}
                   situationFamiliale={state.situationFamiliale}
-                  nombreParts={state.nombreParts}
                   isole={state.isole}
+                  children={state.children}
                   isCouple={isCouple}
                   mutualisationConjoints={state.mutualisationConjoints}
                   declarant1={state.projectionNDeclarant1}
                   declarant2={state.projectionNDeclarant2}
-                  result={result}
+                  incomeFilters={incomeFilters}
+                  abat10SalCfg={abat10SalCfgCurrent}
+                  abat10RetCfg={abat10RetCfgCurrent}
                   onUpdateSituation={updateSituation}
+                  onAddChild={addChild}
+                  onUpdateChildMode={updateChildMode}
+                  onRemoveChild={removeChild}
+                  onToggleIncomeFilter={toggleIncomeFilter}
                   onUpdateDeclarant={(decl, patch) => updateDeclarant('projection-n', decl, patch)}
                 />
               )}
@@ -363,6 +434,27 @@ export default function PerPotentielSimulator(): React.ReactElement {
                   </div>
                 </div>
               )}
+              {(state.step === 2 || state.step === 3) && (
+                <div className="per-avis-sidebar-kpis per-potentiel-context-item">
+                  <span className="per-potentiel-context-label per-potentiel-context-label--small">
+                    Potentiel 163 quatervicies
+                  </span>
+                  <div className="per-potentiel-mini-kpis">
+                    <div className="per-potentiel-mini-kpi">
+                      <span className="per-potentiel-mini-kpi-label">Déclarant 1</span>
+                      <strong className="per-potentiel-mini-kpi-value">
+                        {fmtCurrency(totalAvisIrD1)}
+                      </strong>
+                    </div>
+                    <div className="per-potentiel-mini-kpi">
+                      <span className="per-potentiel-mini-kpi-label">Déclarant 2</span>
+                      <strong className="per-potentiel-mini-kpi-value">
+                        {fmtCurrency(totalAvisIrD2)}
+                      </strong>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 
@@ -380,11 +472,19 @@ export default function PerPotentielSimulator(): React.ReactElement {
               </div>
               <div className="sim-divider sim-divider--tight" />
               <div className="per-potentiel-mini-kpis">
-                <div className="per-potentiel-mini-kpi">
-                  <span className="per-potentiel-mini-kpi-label">TMI</span>
-                  <strong className="per-potentiel-mini-kpi-value">
-                    {fmtPercent(result.situationFiscale.tmi)}
-                  </strong>
+                <div className="per-potentiel-mini-kpis-row">
+                  <div className="per-potentiel-mini-kpi">
+                    <span className="per-potentiel-mini-kpi-label">TMI</span>
+                    <strong className="per-potentiel-mini-kpi-value">
+                      {fmtPercent(result.situationFiscale.tmi)}
+                    </strong>
+                  </div>
+                  <div className="per-potentiel-mini-kpi">
+                    <span className="per-potentiel-mini-kpi-label">Nombre de parts</span>
+                    <strong className="per-potentiel-mini-kpi-value">
+                      {state.nombreParts.toLocaleString('fr-FR')}
+                    </strong>
+                  </div>
                 </div>
                 <div className="per-potentiel-mini-kpi">
                   <span className="per-potentiel-mini-kpi-label">IR estimé</span>

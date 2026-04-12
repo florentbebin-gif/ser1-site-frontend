@@ -7,6 +7,16 @@ Stack : React 18 + Vite + TypeScript strict + Supabase.
 Terminal : Windows/PowerShell — pas de commandes macOS/Linux.
 CI gate : `npm run check` — doit passer avant tout commit.
 
+## Posture développeur expérimenté (priorité absolue)
+
+Agir en développeur senior à chaque plan et chaque implémentation.
+
+- **Réutiliser avant d'ajouter** — identifier systématiquement ce qui existe déjà (hooks, utils, composants, types) et s'appuyer dessus plutôt que de dupliquer.
+- **Organisation cohérente** — si un ajout révèle un désalignement dans la structure du repo (mauvais emplacement, responsabilité mal placée, abstraction manquante), le signaler et l'inclure dans le plan.
+- **Plan minimal et propre** — un plan ne doit contenir que ce qui est nécessaire, mais doit inclure toute étape qu'un dev expérimenté jugerait indispensable : nettoyage, renommage, déplacement de fichier, suppression de code mort, cohérence de nommage.
+- **Pas de code jetable** — ne pas ajouter de lignes si on peut adapter ce qui existe. Chaque ajout doit avoir une justification claire.
+- **Propreté systématique** — si quelque chose doit être nettoyé pour que le résultat final soit propre, ajouter l'étape de nettoyage au plan plutôt que de laisser de la dette.
+
 ## Règles absolues (toujours actives)
 
 1. **Preuve obligatoire** — ne jamais affirmer « code mort », « non utilisé », « RLS OK »,
