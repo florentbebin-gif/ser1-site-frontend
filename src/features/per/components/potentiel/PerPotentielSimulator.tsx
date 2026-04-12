@@ -37,6 +37,19 @@ const fmtCurrency = (value: number): string =>
 const fmtPercent = (value: number): string =>
   `${(value <= 1 ? value * 100 : value).toFixed(1)} %`;
 
+const sumAvisIrPlafonds = (
+  avis: {
+    nonUtiliseAnnee1?: number;
+    nonUtiliseAnnee2?: number;
+    nonUtiliseAnnee3?: number;
+    plafondCalcule?: number;
+  } | null,
+): number =>
+  (avis?.nonUtiliseAnnee1 ?? 0)
+  + (avis?.nonUtiliseAnnee2 ?? 0)
+  + (avis?.nonUtiliseAnnee3 ?? 0)
+  + (avis?.plafondCalcule ?? 0);
+
 
 function getStepMeta(
   stepId: WizardStep,
@@ -176,6 +189,8 @@ export default function PerPotentielSimulator(): React.ReactElement {
     return [];
   }
   const parcoursPills = buildPills();
+  const totalAvisIrD1 = sumAvisIrPlafonds(state.avisIr);
+  const totalAvisIrD2 = sumAvisIrPlafonds(state.avisIr2);
 
   const avisBasis = state.mode === 'declaration-n1'
     ? 'previous-avis-plus-n1'
@@ -234,9 +249,18 @@ export default function PerPotentielSimulator(): React.ReactElement {
             />
           ) : (
           <div className="premium-card premium-card--guide per-potentiel-stage">
-            <div className="per-potentiel-stage-header sim-card__header--bleed">
-              <h2 className="per-potentiel-stage-title">{activeStep.title}</h2>
+            <div className="per-potentiel-stage-header sim-card__header sim-card__header--bleed">
+              <div className="sim-card__title-row">
+                <div className="sim-card__icon">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                    <polyline points="14 2 14 8 20 8" />
+                  </svg>
+                </div>
+                <h2 className="sim-card__title">{activeStep.title}</h2>
+              </div>
             </div>
+            <div className="sim-divider per-potentiel-stage-divider" />
 
             <div className="per-potentiel-stage-body">
               {state.step === 2 && (
@@ -245,6 +269,8 @@ export default function PerPotentielSimulator(): React.ReactElement {
                   avisIr2={state.avisIr2}
                   basis={avisBasis}
                   years={years}
+                  totalDeclarant1={totalAvisIrD1}
+                  totalDeclarant2={totalAvisIrD2}
                   onUpdate={updateAvisIr}
                 />
               )}
@@ -360,6 +386,27 @@ export default function PerPotentielSimulator(): React.ReactElement {
                         {pill.label}
                       </span>
                     ))}
+                  </div>
+                </div>
+              )}
+              {state.step === 2 && (
+                <div className="per-avis-sidebar-kpis per-potentiel-context-item">
+                  <span className="per-potentiel-context-label per-potentiel-context-label--small">
+                    Potentiel 163 quatervicies
+                  </span>
+                  <div className="per-potentiel-mini-kpis">
+                    <div className="per-potentiel-mini-kpi">
+                      <span className="per-potentiel-mini-kpi-label">Déclarant 1</span>
+                      <strong className="per-potentiel-mini-kpi-value">
+                        {fmtCurrency(totalAvisIrD1)}
+                      </strong>
+                    </div>
+                    <div className="per-potentiel-mini-kpi">
+                      <span className="per-potentiel-mini-kpi-label">Déclarant 2</span>
+                      <strong className="per-potentiel-mini-kpi-value">
+                        {fmtCurrency(totalAvisIrD2)}
+                      </strong>
+                    </div>
                   </div>
                 </div>
               )}

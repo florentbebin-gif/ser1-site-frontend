@@ -4,6 +4,7 @@ import { formatIntegerInput } from '@/utils/formatNumber';
 interface PerAmountInputProps {
   value: number;
   onChange: (_value: number) => void;
+  ariaLabel?: string;
   label?: string;
   placeholder?: string;
   min?: number;
@@ -20,6 +21,7 @@ const parseInput = (raw: string): number => {
 export function PerAmountInput({
   value,
   onChange,
+  ariaLabel,
   label,
   placeholder = '0',
   min = 0,
@@ -56,6 +58,7 @@ export function PerAmountInput({
       inputMode="numeric"
       className={`per-input sim-field__control ${className}`.trim()}
       value={displayValue}
+      aria-label={ariaLabel}
       placeholder={placeholder}
       onFocus={handleFocus}
       onBlur={handleBlur}

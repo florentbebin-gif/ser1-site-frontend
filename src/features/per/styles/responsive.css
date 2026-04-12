@@ -28,10 +28,6 @@
     grid-template-columns: 1fr;
   }
 
-  .per-avis-form-grid.is-couple {
-    grid-template-columns: 1fr;
-  }
-
   .per-situation-foyer-grid,
   .per-income-grid,
   .per-situation-kpis,
@@ -39,6 +35,12 @@
   .per-summary-stat-grid,
   .per-summary-simulation-grid {
     grid-template-columns: 1fr;
+  }
+
+  .per-avis-matrix-head-row,
+  .per-avis-matrix-row {
+    grid-template-columns: minmax(0, 1.45fr) 28px repeat(2, minmax(0, 0.82fr));
+    gap: 10px;
   }
 
   .per-potentiel-stage {
@@ -72,8 +74,51 @@
     grid-template-columns: 1fr;
   }
 
-  .per-avis-row {
+  .per-avis-matrix {
+    gap: 12px;
+  }
+
+  .per-avis-matrix-head-row {
+    display: none;
+  }
+
+  .per-avis-matrix-row {
     grid-template-columns: 1fr;
+    gap: 8px;
+    padding: 12px 14px;
+    border: 1px solid var(--color-c8);
+    border-radius: 10px;
+    background: var(--color-c7);
+  }
+
+  .per-avis-matrix-row--total {
+    background: color-mix(in srgb, var(--color-c4) 35%, #FFFFFF);
+  }
+
+  .per-avis-matrix-operator {
+    display: none;
+  }
+
+  .per-avis-matrix-cell,
+  .per-avis-matrix-total {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    align-items: center;
+    gap: 10px;
+  }
+
+  .per-avis-matrix-cell::before,
+  .per-avis-matrix-total::before {
+    content: attr(data-column-label);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    color: var(--color-c9);
+  }
+
+  .per-avis-matrix-total {
+    font-size: 16px;
   }
 
   .per-contribution-table,
@@ -112,14 +157,9 @@
     margin-bottom: 18px;
   }
 
-  .per-potentiel-stage-header,
   .per-potentiel-stage-footer {
     flex-direction: column;
     align-items: stretch;
-  }
-
-  .per-potentiel-stage-title {
-    font-size: 20px;
   }
 
   .per-summary-primary-value {

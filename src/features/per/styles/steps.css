@@ -185,73 +185,112 @@
 }
 
 
-.per-avis-form-grid {
+.per-avis-intro {
   display: grid;
-  grid-template-columns: 1fr;
-  gap: 16px;
+  gap: 6px;
+  margin-bottom: 18px;
 }
 
-.per-avis-form-grid--always-two {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-}
-
-.per-avis-form-card {
-  box-sizing: border-box;
-}
-
-.per-avis-form-header {
-  margin-bottom: 0;
-}
-
-/* Ligne totale plafond */
-.per-avis-total-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 12px 0;
-  border-top: 1px solid var(--color-c8);
-  margin-top: 4px;
-  font-weight: 600;
-  font-size: 14px;
-  color: var(--color-c1);
-}
-
-.per-avis-total-label {
-  color: var(--color-c1);
-}
-
-.per-avis-total-value {
-  font-variant-numeric: tabular-nums;
-}
-
-.per-avis-form-title {
+.per-avis-copy {
+  max-width: 760px;
   margin: 0;
-  font-size: 18px;
-  font-weight: 600;
-  color: var(--color-c1);
+  font-size: 12px;
+  line-height: 1.55;
+  color: var(--color-c9);
 }
 
-.per-avis-row-list {
+.per-avis-matrix {
   display: grid;
+  gap: 10px;
+}
+
+.per-avis-matrix-head-row,
+.per-avis-matrix-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1.7fr) 32px repeat(2, minmax(0, 0.78fr));
   gap: 12px;
-}
-
-.per-avis-row {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 170px;
-  gap: 16px;
   align-items: center;
 }
 
-.per-avis-row-label {
+.per-avis-matrix-head-row {
+  padding: 0 0 8px;
+  border-bottom: 1px solid var(--color-c8);
+}
+
+.per-avis-matrix-head {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  color: var(--color-c9);
+}
+
+.per-avis-matrix-head--label {
+  color: var(--color-c9);
+}
+
+.per-avis-matrix-head:not(.per-avis-matrix-head--label) {
+  justify-content: center;
+  text-align: center;
+}
+
+.per-avis-matrix-head--operator {
+  justify-content: center;
+}
+
+.per-avis-matrix-row {
+  padding: 10px 0;
+  border-bottom: 1px solid var(--color-c8);
+}
+
+.per-avis-matrix-row--total {
+  padding-top: 14px;
+  border-bottom: none;
+}
+
+.per-avis-matrix-label {
   font-size: 13px;
   line-height: 1.5;
   color: var(--color-c10);
 }
 
-.per-avis-row-input {
+.per-avis-matrix-label--total {
+  font-weight: 600;
+  color: var(--color-c1);
+}
+
+.per-avis-matrix-operator {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--color-c5);
+}
+
+.per-avis-matrix-operator--total {
+  color: var(--color-c1);
+}
+
+.per-avis-matrix-cell {
+  min-width: 0;
+}
+
+.per-avis-matrix-input {
   width: 100%;
   box-sizing: border-box;
+}
+
+.per-avis-matrix-total {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--color-c1);
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.per-avis-sidebar-kpis {
+  margin-top: 2px;
 }
 
 .per-situation-top {
