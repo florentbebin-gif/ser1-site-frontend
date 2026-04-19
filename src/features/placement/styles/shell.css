@@ -2,35 +2,11 @@
   min-width: 0;
 }
 
-.pl-ir-header {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  padding-bottom: 8px;
-  border-bottom: 3px solid var(--color-c6);
-}
-
-.pl-ir-title {
-  font-size: 22px;
-  font-weight: 600;
-  letter-spacing: 0.5px;
-  color: var(--color-c1);
-}
-
-/* Ligne sous-titre + actions — base dans .sim-header__subtitle-row (sim/headers.css) */
-
-.pl-header__actions {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  flex-wrap: wrap;
-}
-
 .pl-phase-nav {
   position: relative;
   display: flex;
   gap: 4px;
-  margin: 8px 0 16px;
+  min-width: 0;
 }
 
 .pl-phase-nav::after {
@@ -74,10 +50,6 @@
   border-bottom-color: var(--color-c3);
 }
 
-.pl-ir-grid {
-  min-width: 0;
-}
-
 .pl-ir-left,
 .pl-ir-right {
   display: flex;
@@ -91,6 +63,14 @@
 
 .pl-ir-right {
   min-width: 0;
+}
+
+.pl-ir-right--placeholder {
+  visibility: hidden;
+}
+
+.pl-ir-right__spacer {
+  min-height: 1px;
 }
 
 .pl-topgrid {
