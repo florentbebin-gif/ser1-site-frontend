@@ -5,8 +5,8 @@
  * Les dossiers sont sauvegardés localement (fichier JSON).
  */
 
-import type { DossierAudit } from './types';
-import { createTrackedObjectURL } from '../../utils/export/createTrackedObjectURL';
+import type { DossierAudit } from '../types';
+import { createTrackedObjectURL } from '../../../utils/export/createTrackedObjectURL';
 
 const SESSION_STORAGE_KEY = 'ser1_audit_draft';
 

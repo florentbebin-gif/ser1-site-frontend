@@ -1,4 +1,4 @@
-import { generateStrategyPptx } from '../../pptx/strategyPptx';
+import { generateStrategyPptx } from '../../../pptx/strategyPptx';
 
 export type ExportStrategyPptxOptions = Parameters<typeof generateStrategyPptx>[0];
 

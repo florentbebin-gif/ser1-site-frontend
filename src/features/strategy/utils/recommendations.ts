@@ -6,8 +6,8 @@
  * - Les métriques de l'audit (TMI, IFI, patrimoine, etc.)
  */
 
-import type { DossierAudit, ObjectifClient } from '../audit/types';
-import type { Recommandation } from './types';
+import type { DossierAudit, ObjectifClient } from '../../audit/types';
+import type { Recommandation } from '../types';
 
 /**
  * Génère les recommandations pour un dossier audit

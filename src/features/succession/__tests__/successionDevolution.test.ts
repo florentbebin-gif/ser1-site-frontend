@@ -1,45 +1,6 @@
 ﻿import { describe, expect, it } from 'vitest';
-import type {
-  SuccessionCivilContext,
-  SuccessionDevolutionContext,
-  SuccessionDevolutionContextInput,
-} from '../successionDraft';
-import { DEFAULT_SUCCESSION_DEVOLUTION_CONTEXT } from '../successionDraft';
 import { buildSuccessionDevolutionAnalysis } from '../successionDevolution';
-
-function makeCivil(overrides: Partial<SuccessionCivilContext>): SuccessionCivilContext {
-  return {
-    situationMatrimoniale: 'marie',
-    regimeMatrimonial: 'communaute_legale',
-    pacsConvention: 'separation',
-    ...overrides,
-  };
-}
-
-function makeDevolution(overrides: SuccessionDevolutionContextInput): SuccessionDevolutionContext {
-  return {
-    ...DEFAULT_SUCCESSION_DEVOLUTION_CONTEXT,
-    ...overrides,
-    testamentsBySide: {
-      ...DEFAULT_SUCCESSION_DEVOLUTION_CONTEXT.testamentsBySide,
-      ...overrides.testamentsBySide,
-      epoux1: {
-        ...DEFAULT_SUCCESSION_DEVOLUTION_CONTEXT.testamentsBySide.epoux1,
-        ...overrides.testamentsBySide?.epoux1,
-        particularLegacies: overrides.testamentsBySide?.epoux1?.particularLegacies ?? [],
-      },
-      epoux2: {
-        ...DEFAULT_SUCCESSION_DEVOLUTION_CONTEXT.testamentsBySide.epoux2,
-        ...overrides.testamentsBySide?.epoux2,
-        particularLegacies: overrides.testamentsBySide?.epoux2?.particularLegacies ?? [],
-      },
-    },
-    ascendantsSurvivantsBySide: {
-      ...DEFAULT_SUCCESSION_DEVOLUTION_CONTEXT.ascendantsSurvivantsBySide,
-      ...overrides.ascendantsSurvivantsBySide,
-    },
-  };
-}
+import { makeCivilMarie as makeCivil, makeDevolution } from './fixtures';
 
 describe('buildSuccessionDevolutionAnalysis', () => {
   it('gère conjoint + enfants communs avec hypothèse moteur 1/4 PP', () => {

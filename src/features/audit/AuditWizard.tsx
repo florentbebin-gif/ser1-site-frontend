@@ -14,16 +14,16 @@ import {
   loadDraftFromSession,
   clearDraftFromSession,
   setupBeforeUnloadWarning,
-} from './storage';
-import { exportAuditPptx } from './exportAudit';
+} from './utils/storage';
+import { exportAuditPptx } from './export/exportAudit';
 import { useTheme } from '../../settings/ThemeProvider';
 import { onResetEvent } from '../../utils/reset';
-import StepActifs from './steps/StepActifs';
-import StepCivil from './steps/StepCivil';
-import StepFamille from './steps/StepFamille';
-import StepFiscalite from './steps/StepFiscalite';
-import StepObjectifs from './steps/StepObjectifs';
-import StepPassif from './steps/StepPassif';
+import StepActifs from './components/steps/StepActifs';
+import StepCivil from './components/steps/StepCivil';
+import StepFamille from './components/steps/StepFamille';
+import StepFiscalite from './components/steps/StepFiscalite';
+import StepObjectifs from './components/steps/StepObjectifs';
+import StepPassif from './components/steps/StepPassif';
 import '@/styles/sim/index.css';
 import './styles/index.css';
 

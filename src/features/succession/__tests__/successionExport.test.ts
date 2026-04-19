@@ -10,7 +10,7 @@ import { describe, expect, it } from 'vitest';
 import { calculateSuccession } from '../../../engine/succession';
 import { buildSuccessionStudyDeck } from '../../../pptx/presets/successionDeckBuilder';
 import { DEFAULT_COLORS } from '../../../settings/theme';
-import { exportSuccessionXlsx } from '../successionXlsx';
+import { exportSuccessionXlsx } from '../export/successionXlsx';
 
 const THEME_COLORS = DEFAULT_COLORS;
 

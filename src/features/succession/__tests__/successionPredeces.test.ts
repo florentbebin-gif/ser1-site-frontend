@@ -1,16 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { DEFAULT_DMTG } from '../../../engine/civil';
-import type { SuccessionCivilContext } from '../successionDraft';
 import { buildSuccessionPredecesAnalysis } from '../successionPredeces';
-
-function makeCivil(overrides: Partial<SuccessionCivilContext>): SuccessionCivilContext {
-  return {
-    situationMatrimoniale: 'marie',
-    regimeMatrimonial: 'communaute_legale',
-    pacsConvention: 'separation',
-    ...overrides,
-  };
-}
+import { makeCivilMarie as makeCivil } from './fixtures';
 
 describe('buildSuccessionPredecesAnalysis', () => {
   it('approxime participation aux acquets en separation de biens avec warning', () => {

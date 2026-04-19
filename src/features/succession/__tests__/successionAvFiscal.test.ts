@@ -1,16 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { buildSuccessionAvFiscalAnalysis } from '../successionAvFiscal';
 import { buildSuccessionFiscalSnapshot } from '../successionFiscalContext';
-import type { SuccessionAssuranceVieEntry, SuccessionCivilContext } from '../successionDraft';
-
-function makeCivil(overrides: Partial<SuccessionCivilContext> = {}): SuccessionCivilContext {
-  return {
-    situationMatrimoniale: 'marie',
-    regimeMatrimonial: 'communaute_legale',
-    pacsConvention: 'separation',
-    ...overrides,
-  };
-}
+import type { SuccessionAssuranceVieEntry } from '../successionDraft';
+import { makeCivilMarie as makeCivil } from './fixtures';
 
 function makeEntry(overrides: Partial<SuccessionAssuranceVieEntry> = {}): SuccessionAssuranceVieEntry {
   return {

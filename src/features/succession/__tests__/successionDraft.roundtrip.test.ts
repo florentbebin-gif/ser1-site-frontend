@@ -1,36 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import {
   buildSuccessionDraftPayload,
-  DEFAULT_SUCCESSION_DEVOLUTION_CONTEXT,
   DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT,
   parseSuccessionDraftPayload,
-  type SuccessionDevolutionContextInput,
 } from '../successionDraft';
-
-function makeDevolution(overrides: SuccessionDevolutionContextInput) {
-  return {
-    ...DEFAULT_SUCCESSION_DEVOLUTION_CONTEXT,
-    ...overrides,
-    testamentsBySide: {
-      ...DEFAULT_SUCCESSION_DEVOLUTION_CONTEXT.testamentsBySide,
-      ...overrides.testamentsBySide,
-      epoux1: {
-        ...DEFAULT_SUCCESSION_DEVOLUTION_CONTEXT.testamentsBySide.epoux1,
-        ...overrides.testamentsBySide?.epoux1,
-        particularLegacies: overrides.testamentsBySide?.epoux1?.particularLegacies ?? [],
-      },
-      epoux2: {
-        ...DEFAULT_SUCCESSION_DEVOLUTION_CONTEXT.testamentsBySide.epoux2,
-        ...overrides.testamentsBySide?.epoux2,
-        particularLegacies: overrides.testamentsBySide?.epoux2?.particularLegacies ?? [],
-      },
-    },
-    ascendantsSurvivantsBySide: {
-      ...DEFAULT_SUCCESSION_DEVOLUTION_CONTEXT.ascendantsSurvivantsBySide,
-      ...overrides.ascendantsSurvivantsBySide,
-    },
-  };
-}
+import { makeDevolution } from './fixtures';
 
 describe('successionDraft roundtrip', () => {
   it('serialise et parse un draft valide', () => {

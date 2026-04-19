@@ -6,16 +6,14 @@ import type {
   SuccessionCivilContext,
   SuccessionPrevoyanceDecesEntry,
 } from '../successionDraft';
+import { makeCivilMarie } from './fixtures';
 
-function makeCivil(overrides: Partial<SuccessionCivilContext> = {}): SuccessionCivilContext {
-  return {
-    situationMatrimoniale: 'marie',
-    regimeMatrimonial: 'communaute_legale',
-    pacsConvention: 'separation',
+function makeCivilWithDates(overrides: Partial<SuccessionCivilContext> = {}): SuccessionCivilContext {
+  return makeCivilMarie({
     dateNaissanceEpoux1: '1970-01-01',
     dateNaissanceEpoux2: '1972-01-01',
     ...overrides,
-  };
+  });
 }
 
 function makeEntry(overrides: Partial<SuccessionPrevoyanceDecesEntry> = {}): SuccessionPrevoyanceDecesEntry {
@@ -35,7 +33,7 @@ describe('buildSuccessionPrevoyanceFiscalAnalysis', () => {
     const snapshot = buildSuccessionFiscalSnapshot(null);
     const analysis = buildSuccessionPrevoyanceFiscalAnalysis(
       [makeEntry()],
-      makeCivil({
+      makeCivilWithDates({
         dateNaissanceEpoux1: '1940-01-01',
       }),
       [{ id: 'E1', rattachement: 'commun' }],
@@ -60,7 +58,7 @@ describe('buildSuccessionPrevoyanceFiscalAnalysis', () => {
         dernierePrime: 300000,
         clauseBeneficiaire: 'CUSTOM:E1:100',
       })],
-      makeCivil({
+      makeCivilWithDates({
         situationMatrimoniale: 'celibataire',
         regimeMatrimonial: null,
       }),
@@ -93,7 +91,7 @@ describe('buildSuccessionPrevoyanceFiscalAnalysis', () => {
 
     const before70Analysis = buildSuccessionPrevoyanceFiscalAnalysis(
       [entry],
-      makeCivil({
+      makeCivilWithDates({
         situationMatrimoniale: 'celibataire',
         regimeMatrimonial: null,
         dateNaissanceEpoux1: '1960-06-01',
@@ -105,7 +103,7 @@ describe('buildSuccessionPrevoyanceFiscalAnalysis', () => {
     );
     const after70Analysis = buildSuccessionPrevoyanceFiscalAnalysis(
       [entry],
-      makeCivil({
+      makeCivilWithDates({
         situationMatrimoniale: 'celibataire',
         regimeMatrimonial: null,
         dateNaissanceEpoux1: '1960-06-01',
@@ -135,7 +133,7 @@ describe('buildSuccessionPrevoyanceFiscalAnalysis', () => {
         dernierePrime: 0,
         clauseBeneficiaire: 'CUSTOM:E1:100',
       })],
-      makeCivil({
+      makeCivilWithDates({
         situationMatrimoniale: 'celibataire',
         regimeMatrimonial: null,
       }),
@@ -155,7 +153,7 @@ describe('buildSuccessionPrevoyanceFiscalAnalysis', () => {
     const snapshot = buildSuccessionFiscalSnapshot(null);
     const analysis = buildSuccessionPrevoyanceFiscalAnalysis(
       [makeEntry()],
-      makeCivil(),
+      makeCivilWithDates(),
       [{ id: 'E1', rattachement: 'commun' }],
       [],
       snapshot,
@@ -177,7 +175,7 @@ describe('buildSuccessionPrevoyanceFiscalAnalysis', () => {
       [makeEntry({
         clauseBeneficiaire: 'CUSTOM:fam-1:100',
       })],
-      makeCivil({
+      makeCivilWithDates({
         situationMatrimoniale: 'celibataire',
         regimeMatrimonial: null,
       }),

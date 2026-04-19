@@ -19,32 +19,24 @@
 
 import { describe, expect, it } from 'vitest';
 import { DEFAULT_DMTG } from '../../../engine/civil';
-import type { SuccessionCivilContext, SuccessionLiquidationContext } from '../successionDraft';
+import type { SuccessionLiquidationContext } from '../successionDraft';
 import { buildSuccessionChainageAnalysis } from '../successionChainage';
 import { computeFirstEstate } from '../successionChainageEstateSplit';
 import { buildSuccessionPredecesAnalysis } from '../successionPredeces';
+import { makeCivilMarie as makeCivil, makeLiquidation as makeLiquidationBase } from './fixtures';
 
 // ─── Factories ───────────────────────────────────────────────────────────────
 
-function makeCivil(overrides: Partial<SuccessionCivilContext> = {}): SuccessionCivilContext {
-  return {
-    situationMatrimoniale: 'marie',
-    regimeMatrimonial: 'communaute_legale',
-    pacsConvention: 'separation',
-    ...overrides,
-  };
-}
-
-function makeLiquidation(
+function makeLiquidationWithAssets(
   overrides: Partial<SuccessionLiquidationContext> = {},
 ): SuccessionLiquidationContext {
-  return {
+  return makeLiquidationBase({
     actifEpoux1: 300_000,
     actifEpoux2: 200_000,
     actifCommun: 400_000,
     nbEnfants: 2,
     ...overrides,
-  };
+  });
 }
 
 function makeEnfants(n: number, rattachement: 'commun' | 'epoux1' | 'epoux2' = 'commun') {
@@ -59,7 +51,7 @@ describe('Infrastructure régimes matrimoniaux', () => {
     it('communaute_legale : mapping direct, regimeUsed correct, pas de warning', () => {
       const analysis = buildSuccessionPredecesAnalysis(
         makeCivil({ regimeMatrimonial: 'communaute_legale' }),
-        makeLiquidation(),
+        makeLiquidationWithAssets(),
         DEFAULT_DMTG,
       );
       expect(analysis.applicable).toBe(true);
@@ -71,7 +63,7 @@ describe('Infrastructure régimes matrimoniaux', () => {
     it('communaute_universelle : mapping direct, regimeUsed correct, pas de warning d\'approximation', () => {
       const analysis = buildSuccessionPredecesAnalysis(
         makeCivil({ regimeMatrimonial: 'communaute_universelle' }),
-        makeLiquidation(),
+        makeLiquidationWithAssets(),
         DEFAULT_DMTG,
       );
       expect(analysis.applicable).toBe(true);
@@ -85,7 +77,7 @@ describe('Infrastructure régimes matrimoniaux', () => {
     it('separation_biens : mapping direct, regimeUsed correct, pas de warning', () => {
       const analysis = buildSuccessionPredecesAnalysis(
         makeCivil({ regimeMatrimonial: 'separation_biens' }),
-        makeLiquidation({ actifCommun: 0 }),
+        makeLiquidationWithAssets({ actifCommun: 0 }),
         DEFAULT_DMTG,
       );
       expect(analysis.applicable).toBe(true);
@@ -97,7 +89,7 @@ describe('Infrastructure régimes matrimoniaux', () => {
     it('participation_acquets : approximé en separation_biens avec warning créance', () => {
       const analysis = buildSuccessionPredecesAnalysis(
         makeCivil({ regimeMatrimonial: 'participation_acquets' }),
-        makeLiquidation({ actifCommun: 0 }),
+        makeLiquidationWithAssets({ actifCommun: 0 }),
         DEFAULT_DMTG,
       );
       expect(analysis.applicable).toBe(true);
@@ -110,7 +102,7 @@ describe('Infrastructure régimes matrimoniaux', () => {
     it('communaute_meubles_acquets : approximé en communaute_legale avec warning historique', () => {
       const analysis = buildSuccessionPredecesAnalysis(
         makeCivil({ regimeMatrimonial: 'communaute_meubles_acquets' }),
-        makeLiquidation(),
+        makeLiquidationWithAssets(),
         DEFAULT_DMTG,
       );
       expect(analysis.applicable).toBe(true);
@@ -123,7 +115,7 @@ describe('Infrastructure régimes matrimoniaux', () => {
     it("separation_biens_societe_acquets : mappe vers separation_biens + warning societe d'acquets", () => {
       const analysis = buildSuccessionPredecesAnalysis(
         makeCivil({ regimeMatrimonial: 'separation_biens_societe_acquets' }),
-        makeLiquidation({ actifCommun: 0 }),
+        makeLiquidationWithAssets({ actifCommun: 0 }),
         DEFAULT_DMTG,
       );
       expect(analysis.applicable).toBe(true);
@@ -135,7 +127,7 @@ describe('Infrastructure régimes matrimoniaux', () => {
   // ─── Section 2 : Calcul de masse successorale ──────────────────────────────
 
   describe('2 — Masse successorale (computeFirstEstate)', () => {
-    const liq = makeLiquidation();
+    const liq = makeLiquidationWithAssets();
     // actifEpoux1=300k, actifEpoux2=200k, actifCommun=400k, nbEnfants=2
 
     // Communauté légale — art. 1400+ CC
@@ -203,7 +195,7 @@ describe('Infrastructure régimes matrimoniaux', () => {
 
     it('separation_biens : actifs nuls retournent 0', () => {
       expect(
-        computeFirstEstate('separation_biens', 'epoux1', makeLiquidation({ actifEpoux1: 0, actifCommun: 0 })),
+        computeFirstEstate('separation_biens', 'epoux1', makeLiquidationWithAssets({ actifEpoux1: 0, actifCommun: 0 })),
       ).toBe(0);
     });
   });
@@ -215,7 +207,7 @@ describe('Infrastructure régimes matrimoniaux', () => {
     it('communaute_legale : actifTransmis = actifDécédé + 50 % actifCommun', () => {
       const analysis = buildSuccessionChainageAnalysis({
         civil: makeCivil({ regimeMatrimonial: 'communaute_legale' }),
-        liquidation: makeLiquidation(),
+        liquidation: makeLiquidationWithAssets(),
         regimeUsed: 'communaute_legale',
         order: 'epoux1',
         dmtgSettings: DEFAULT_DMTG,
@@ -231,7 +223,7 @@ describe('Infrastructure régimes matrimoniaux', () => {
     it('communaute_legale : ordre inverse (ep2 décédé) — actifTransmis cohérent', () => {
       const analysis = buildSuccessionChainageAnalysis({
         civil: makeCivil({ regimeMatrimonial: 'communaute_legale' }),
-        liquidation: makeLiquidation(),
+        liquidation: makeLiquidationWithAssets(),
         regimeUsed: 'communaute_legale',
         order: 'epoux2',
         dmtgSettings: DEFAULT_DMTG,
@@ -246,7 +238,7 @@ describe('Infrastructure régimes matrimoniaux', () => {
     it('communaute_universelle + attribution intégrale : tout au survivant, 0 au step 1', () => {
       const analysis = buildSuccessionChainageAnalysis({
         civil: makeCivil({ regimeMatrimonial: 'communaute_universelle' }),
-        liquidation: makeLiquidation(),
+        liquidation: makeLiquidationWithAssets(),
         regimeUsed: 'communaute_universelle',
         order: 'epoux1',
         dmtgSettings: DEFAULT_DMTG,
@@ -271,7 +263,7 @@ describe('Infrastructure régimes matrimoniaux', () => {
     it('communaute_universelle sans attribution intégrale : droits calculés au step 1 (50 % par défaut)', () => {
       const analysis = buildSuccessionChainageAnalysis({
         civil: makeCivil({ regimeMatrimonial: 'communaute_universelle' }),
-        liquidation: makeLiquidation(),
+        liquidation: makeLiquidationWithAssets(),
         regimeUsed: 'communaute_universelle',
         order: 'epoux1',
         dmtgSettings: DEFAULT_DMTG,
@@ -293,7 +285,7 @@ describe('Infrastructure régimes matrimoniaux', () => {
     it('separation_biens : actifTransmis = uniquement actif propre du défunt', () => {
       const analysis = buildSuccessionChainageAnalysis({
         civil: makeCivil({ regimeMatrimonial: 'separation_biens' }),
-        liquidation: makeLiquidation({ actifCommun: 0 }),
+        liquidation: makeLiquidationWithAssets({ actifCommun: 0 }),
         regimeUsed: 'separation_biens',
         order: 'epoux1',
         dmtgSettings: DEFAULT_DMTG,
@@ -306,7 +298,7 @@ describe('Infrastructure régimes matrimoniaux', () => {
     // T-4 : Participation aux acquêts — approximée en SB
     it('participation_acquets (approx SB) : résultat chainage identique à SB pur', () => {
       const commonInput = {
-        liquidation: makeLiquidation({ actifCommun: 0 }),
+        liquidation: makeLiquidationWithAssets({ actifCommun: 0 }),
         order: 'epoux1' as const,
         dmtgSettings: DEFAULT_DMTG,
         enfantsContext: makeEnfants(2),
@@ -330,7 +322,7 @@ describe('Infrastructure régimes matrimoniaux', () => {
     // T-5 : Communauté de meubles et acquêts — approximée en CL
     it('communaute_meubles_acquets (approx CL) : résultat chainage identique à CL', () => {
       const commonInput = {
-        liquidation: makeLiquidation(),
+        liquidation: makeLiquidationWithAssets(),
         order: 'epoux1' as const,
         dmtgSettings: DEFAULT_DMTG,
         enfantsContext: makeEnfants(2),
@@ -361,7 +353,7 @@ describe('Infrastructure régimes matrimoniaux', () => {
       (regimeMatrimonial, regimeUsed) => {
         const analysis = buildSuccessionChainageAnalysis({
           civil: makeCivil({ regimeMatrimonial }),
-          liquidation: makeLiquidation({ actifCommun: regimeUsed === 'separation_biens' ? 0 : 400_000 }),
+          liquidation: makeLiquidationWithAssets({ actifCommun: regimeUsed === 'separation_biens' ? 0 : 400_000 }),
           regimeUsed,
           order: 'epoux1',
           dmtgSettings: DEFAULT_DMTG,

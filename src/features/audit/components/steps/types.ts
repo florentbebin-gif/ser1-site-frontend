@@ -1,4 +1,4 @@
-import type { DossierAudit } from '../types';
+import type { DossierAudit } from '../../types';
 
 export interface StepProps {
   dossier: DossierAudit;

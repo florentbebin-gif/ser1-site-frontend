@@ -1,5 +1,5 @@
-import type { ObjectifClient } from '../types';
-import { OBJECTIFS_CLIENT_LABELS } from '../types';
+import type { ObjectifClient } from '../../types';
+import { OBJECTIFS_CLIENT_LABELS } from '../../types';
 import type { StepProps } from './types';
 
 export default function StepObjectifs({ dossier, updateDossier }: StepProps) {

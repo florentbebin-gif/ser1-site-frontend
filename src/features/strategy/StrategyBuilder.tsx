@@ -9,13 +9,13 @@ import { SimFieldShell, SimModalShell } from '../../components/ui/sim';
 import type { DossierAudit } from '../audit/types';
 import type { Strategie, ProduitConfig, ProduitType, Recommandation } from './types';
 import { createEmptyStrategie, PRODUIT_LABELS } from './types';
-import { generateRecommendations } from './recommendations';
-import { calculateBaselineProjection, calculateStrategyProjection, compareScenarios } from './calculations';
+import { generateRecommendations } from './utils/recommendations';
+import { calculateBaselineProjection, calculateStrategyProjection, compareScenarios } from './utils/calculations';
 import { useFiscalContext } from '../../hooks/useFiscalContext';
 import type { ComparaisonScenarios } from './types';
-import { exportStrategyPptx } from './exportStrategy';
+import { exportStrategyPptx } from './export/exportStrategy';
 import { onResetEvent } from '../../utils/reset';
-import './StrategyBuilder.css';
+import './styles/StrategyBuilder.css';
 
 interface StrategyBuilderProps {
   dossier: DossierAudit;
