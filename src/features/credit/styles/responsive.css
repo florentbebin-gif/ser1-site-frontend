@@ -51,6 +51,10 @@
   /* .cv-page et .cv-header â†’ gÃ©rÃ©s par sim-page (socle partagÃ© /sim)
      et premium-header (premium-shared.css) */
 
+  .cv-right-col--placeholder {
+    display: none;
+  }
+
   .cv-right-col--simple .cv-summary {
     flex: none;
   }

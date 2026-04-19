@@ -342,6 +342,7 @@ export default function CreditV2() {
   }
 
   const isAnnual = state.viewMode === 'annuel';
+  const showSummary = calc.synthese.capitalEmprunte > 0;
 
   const pretLookup: PretLookupEntry[] = [
     { data: state.pret1, raw: rawValues.pret1, set: setPret1 },
@@ -392,8 +393,11 @@ export default function CreditV2() {
         />
       </SimPageShell.Main>
 
-      {calc.synthese.capitalEmprunte > 0 && (
-        <SimPageShell.Side className={`cv-right-col${!isExpert ? ' cv-right-col--simple' : ''}`}>
+      <SimPageShell.Side
+        className={`cv-right-col${!isExpert ? ' cv-right-col--simple' : ''}${!showSummary ? ' cv-right-col--placeholder' : ''}`}
+        sticky={showSummary}
+      >
+        {showSummary ? (
           <CreditSummarySidebar
             activeSynthese={activeSynthese}
             isAnnual={isAnnual}
@@ -403,10 +407,12 @@ export default function CreditV2() {
             lissageCoutDelta={lissageCoutDelta}
             calc={calc}
           />
-        </SimPageShell.Side>
-      )}
+        ) : (
+          <div className="cv-right-col__spacer" aria-hidden="true" />
+        )}
+      </SimPageShell.Side>
 
-      {calc.synthese.capitalEmprunte > 0 && (
+      {showSummary && (
         <SimPageShell.Section>
           <CreditSchedulePanels
             calc={calc}
