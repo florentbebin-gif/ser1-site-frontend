@@ -1,4 +1,4 @@
-import { generateAuditPptx } from '../../pptx/auditPptx';
+import { generateAuditPptx } from '../../../pptx/auditPptx';
 
 export type ExportAuditPptxOptions = Parameters<typeof generateAuditPptx>[0];
 

@@ -7,7 +7,7 @@
 
 import { useState, useCallback } from 'react';
 import { exportSuccessionPptx, type ThemeColorsForExport } from '../../../pptx/exports/successionExport';
-import { exportAndDownloadSuccessionXlsx } from '../successionXlsx';
+import { exportAndDownloadSuccessionXlsx } from '../export/successionXlsx';
 import type { LienParente } from '../../../engine/succession';
 import type { LogoPlacement } from '../../../pptx/theme/types';
 

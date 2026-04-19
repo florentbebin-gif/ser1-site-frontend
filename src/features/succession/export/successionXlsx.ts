@@ -5,13 +5,13 @@
  * Utilise xlsxBuilder pour generer un fichier OOXML natif.
  */
 
-import { buildXlsxBlob, downloadXlsx, validateXlsxBlob } from '../../utils/export/xlsxBuilder';
-import type { XlsxSheet, XlsxCell } from '../../utils/export/xlsxBuilder';
-import type { SuccessionResult, HeritierResult, LienParente } from '../../engine/succession';
+import { buildXlsxBlob, downloadXlsx, validateXlsxBlob } from '../../../utils/export/xlsxBuilder';
+import type { XlsxSheet, XlsxCell } from '../../../utils/export/xlsxBuilder';
+import type { SuccessionResult, HeritierResult, LienParente } from '../../../engine/succession';
 import {
   getSuccessionInterMassClaimKindLabel,
   getSuccessionPocketLabel,
-} from './successionInterMassClaims';
+} from '../successionInterMassClaims';
 
 const LIEN_LABELS: Record<LienParente, string> = {
   conjoint: 'Conjoint survivant',

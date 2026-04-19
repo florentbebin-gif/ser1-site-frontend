@@ -14,16 +14,14 @@ import type {
   SuccessionCivilContext,
   SuccessionPrevoyanceDecesEntry,
 } from '../successionDraft';
+import { makeCivil as makeCivilBase } from './fixtures';
 
-function makeCivil(overrides: Partial<SuccessionCivilContext> = {}): SuccessionCivilContext {
-  return {
-    situationMatrimoniale: 'celibataire',
-    regimeMatrimonial: null,
-    pacsConvention: 'separation',
+function makeCivilWithDates(overrides: Partial<SuccessionCivilContext> = {}): SuccessionCivilContext {
+  return makeCivilBase({
     dateNaissanceEpoux1: '1970-01-01',
     dateNaissanceEpoux2: '1972-01-01',
     ...overrides,
-  };
+  });
 }
 
 function makeAssuranceVieEntry(
@@ -58,7 +56,7 @@ function makePrevoyanceEntry(
 describe('coordinateSuccessionInsuranceAllowances', () => {
   it('shares the 990 I allowance between assurance-vie and prevoyance before 70 for the same beneficiary', () => {
     const snapshot = buildSuccessionFiscalSnapshot(null);
-    const civil = makeCivil();
+    const civil = makeCivilWithDates();
     const enfants = [{ id: 'E1', rattachement: 'epoux1' as const }];
     const avFiscalAnalysis = buildSuccessionAvFiscalAnalysis(
       [makeAssuranceVieEntry()],
@@ -102,7 +100,7 @@ describe('coordinateSuccessionInsuranceAllowances', () => {
 
   it('shares the 757 B allowance between assurance-vie and prevoyance after 70 for the same beneficiary', () => {
     const snapshot = buildSuccessionFiscalSnapshot(null);
-    const civil = makeCivil({ dateNaissanceEpoux1: '1940-01-01' });
+    const civil = makeCivilWithDates({ dateNaissanceEpoux1: '1940-01-01' });
     const familyMembers: FamilyMember[] = [
       { id: 'fam-1', type: 'tierce_personne', branch: 'epoux1' },
     ];
@@ -158,7 +156,7 @@ describe('coordinateSuccessionInsuranceAllowances', () => {
 
   it('BUG-6/13/14: uses residual abattement from succession for 757B instead of re-applying full 100k', () => {
     const snapshot = buildSuccessionFiscalSnapshot(null);
-    const civil = makeCivil({ dateNaissanceEpoux1: '1940-01-01' });
+    const civil = makeCivilWithDates({ dateNaissanceEpoux1: '1940-01-01' });
     const enfants = [
       { id: 'E1', rattachement: 'epoux1' as const },
       { id: 'E2', rattachement: 'epoux1' as const },
@@ -212,7 +210,7 @@ describe('coordinateSuccessionInsuranceAllowances', () => {
 
   it('BUG-6/13/14: partial residual abattement correctly applied', () => {
     const snapshot = buildSuccessionFiscalSnapshot(null);
-    const civil = makeCivil({ dateNaissanceEpoux1: '1940-01-01' });
+    const civil = makeCivilWithDates({ dateNaissanceEpoux1: '1940-01-01' });
     const enfants = [{ id: 'E1', rattachement: 'epoux1' as const }];
 
     const perFiscalAnalysis = buildSuccessionPerFiscalAnalysis(
@@ -262,7 +260,7 @@ describe('coordinateSuccessionInsuranceAllowances', () => {
 
   it('BUG-7a: demembered AV prorates 990I allowance in coordination', () => {
     const snapshot = buildSuccessionFiscalSnapshot(null);
-    const civil = makeCivil({
+    const civil = makeCivilWithDates({
       situationMatrimoniale: 'marie',
       regimeMatrimonial: 'communaute_legale',
     });

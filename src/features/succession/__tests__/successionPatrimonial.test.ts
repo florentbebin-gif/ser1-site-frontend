@@ -1,20 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import {
   DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT,
-  type SuccessionCivilContext,
   type SuccessionPatrimonialContext,
 } from '../successionDraft';
 import { buildSuccessionFiscalSnapshot } from '../successionFiscalContext';
 import { buildSuccessionPatrimonialAnalysis } from '../successionPatrimonial';
-
-function makeCivil(overrides: Partial<SuccessionCivilContext>): SuccessionCivilContext {
-  return {
-    situationMatrimoniale: 'marie',
-    regimeMatrimonial: 'communaute_legale',
-    pacsConvention: 'separation',
-    ...overrides,
-  };
-}
+import { makeCivilMarie as makeCivil } from './fixtures';
 
 function makePatrimonial(overrides: Partial<SuccessionPatrimonialContext>): SuccessionPatrimonialContext {
   return {

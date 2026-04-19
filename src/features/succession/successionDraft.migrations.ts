@@ -1,3 +1,9 @@
+/**
+ * Migrations de compatibilité rétroactive pour les drafts succession v1 → v27.
+ * Ces fonctions reconstruisent les structures modernes (enfants, donations, actifs,
+ * testament) à partir des anciens schémas agrégés. Version courante : v27.
+ */
+
 import { DEFAULT_SUCCESSION_TESTAMENT_CONFIG } from './successionDraft.defaults';
 import { getSuccessionAssetPocketFromOwner } from './successionPatrimonialModel';
 import {

@@ -1,51 +1,30 @@
-import type {
-  SuccessionCivilContext,
-  SuccessionDevolutionContextInput,
-  SuccessionLiquidationContext,
-} from '../successionDraft';
-import { DEFAULT_SUCCESSION_DEVOLUTION_CONTEXT } from '../successionDraft';
+import type { SuccessionLiquidationContext } from '../successionDraft';
+import { makeCivilMarie, makeDevolution, makeLiquidation as makeLiquidationBase } from './fixtures';
 
-export function makeCivil(overrides: Partial<SuccessionCivilContext>): SuccessionCivilContext {
-  return {
-    situationMatrimoniale: 'marie',
-    regimeMatrimonial: 'communaute_legale',
-    pacsConvention: 'separation',
-    ...overrides,
-  };
-}
+/**
+ * Les tests chainage travaillent tous avec un couple marié en communauté légale
+ * comme cas de base. `makeCivil` est ré-exporté depuis `makeCivilMarie` de
+ * `./fixtures`, sans logique supplémentaire.
+ */
+export { makeCivilMarie as makeCivil, makeDevolution };
 
-export function makeLiquidation(
-  overrides: Partial<SuccessionLiquidationContext>,
-): SuccessionLiquidationContext {
-  return {
+/**
+ * Variante chainage de `makeLiquidation` : patrimoine concret pour que
+ * les scénarios aient un cas de base non trivial à démontrer (actifs non
+ * nuls + deux enfants).
+ */
+const liquidationChainage = (
+  overrides: Partial<SuccessionLiquidationContext> = {},
+): SuccessionLiquidationContext =>
+  makeLiquidationBase({
     actifEpoux1: 400000,
     actifEpoux2: 200000,
     actifCommun: 300000,
     nbEnfants: 2,
     ...overrides,
-  };
-}
+  });
 
-export function makeDevolution(overrides: SuccessionDevolutionContextInput = {}) {
-  return {
-    ...DEFAULT_SUCCESSION_DEVOLUTION_CONTEXT,
-    ...overrides,
-    testamentsBySide: {
-      ...DEFAULT_SUCCESSION_DEVOLUTION_CONTEXT.testamentsBySide,
-      ...overrides.testamentsBySide,
-      epoux1: {
-        ...DEFAULT_SUCCESSION_DEVOLUTION_CONTEXT.testamentsBySide.epoux1,
-        ...overrides.testamentsBySide?.epoux1,
-        particularLegacies: overrides.testamentsBySide?.epoux1?.particularLegacies ?? [],
-      },
-      epoux2: {
-        ...DEFAULT_SUCCESSION_DEVOLUTION_CONTEXT.testamentsBySide.epoux2,
-        ...overrides.testamentsBySide?.epoux2,
-        particularLegacies: overrides.testamentsBySide?.epoux2?.particularLegacies ?? [],
-      },
-    },
-  };
-}
+export { liquidationChainage as makeLiquidation };
 
 export const DONATION_SETTINGS = {
   rappelFiscalAnnees: 15,

@@ -8,7 +8,7 @@ import {
   parseSuccessionDraftPayload,
 } from '../successionDraft';
 
-describe('successionDraft legacy migrations', () => {
+describe('successionDraft migrations', () => {
   it('migre un draft v15 vers le testament par personne en v16', () => {
     const raw = JSON.stringify({
       version: 15,

@@ -3,7 +3,7 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { generateRecommendations, filterRecommendationsByObjectif } from '../recommendations';
+import { generateRecommendations, filterRecommendationsByObjectif } from '../utils/recommendations';
 import type { DossierAudit } from '../../audit/types';
 import { createEmptyDossier } from '../../audit/types';
 

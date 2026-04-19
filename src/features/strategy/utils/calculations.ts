@@ -6,11 +6,11 @@
  * - Stratégie : avec les produits sélectionnés
  */
 
-import type { DossierAudit } from '../audit/types';
-import type { ProduitConfig, Projection, Scenario, ComparaisonScenarios } from './types';
-import { computeProgressiveTax } from '../../engine/ir/progressiveTax';
-import { DEFAULT_TAX_SETTINGS } from '../../constants/settingsDefaults';
-import type { FiscalContext } from '../../hooks/useFiscalContext';
+import type { DossierAudit } from '../../audit/types';
+import type { ProduitConfig, Projection, Scenario, ComparaisonScenarios } from '../types';
+import { computeProgressiveTax } from '../../../engine/ir/progressiveTax';
+import { DEFAULT_TAX_SETTINGS } from '../../../constants/settingsDefaults';
+import type { FiscalContext } from '../../../hooks/useFiscalContext';
 
 const HORIZON_ANNEES = 10; // Projection sur 10 ans par défaut
 

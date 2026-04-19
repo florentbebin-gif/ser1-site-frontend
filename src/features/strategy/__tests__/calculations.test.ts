@@ -3,7 +3,7 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { calculateBaselineProjection, calculateStrategyProjection, compareScenarios } from '../calculations';
+import { calculateBaselineProjection, calculateStrategyProjection, compareScenarios } from '../utils/calculations';
 import type { DossierAudit } from '../../audit/types';
 import { createEmptyDossier } from '../../audit/types';
 import type { ProduitConfig } from '../types';

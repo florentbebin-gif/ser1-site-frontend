@@ -380,12 +380,42 @@
 .per-field {
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  font-size: 13px;
+  gap: 0.45rem;
 }
 
-.per-field label {
+.per-field label,
+.per-field > span {
+  font-size: 0.85rem;
+  font-weight: 500;
   color: var(--color-c9);
+}
+
+.per-field input,
+.per-field select {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 0.6rem 0.75rem;
+  border: 1px solid var(--color-c8);
+  border-radius: 6px;
+  background: #FFFFFF;
+  font-size: 0.9rem;
+  color: var(--color-c10);
+}
+
+.per-warnings {
+  margin-top: 0.75rem;
+}
+
+.per-warnings--stack {
+  display: grid;
+  gap: 10px;
+}
+
+.per-warning {
+  padding: 0.8rem 0.9rem;
+  border-radius: 10px;
+  font-size: 0.82rem;
+  line-height: 1.55;
 }
 
 .per-children-zone {

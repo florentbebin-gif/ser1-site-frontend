@@ -31,7 +31,7 @@ import {
   deriveLegacyEnfants,
   getLegacyTestamentConfig,
   isSupportedSuccessionDraftVersion,
-} from './successionDraft.legacy';
+} from './successionDraft.migrations';
 import {
   parseAssetEntries,
   parseAssuranceVieEntries,
