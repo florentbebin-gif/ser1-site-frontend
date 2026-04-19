@@ -100,7 +100,7 @@ export function IrSidebarSection({
   hasSituation,
 }: IrSidebarSectionProps) {
   return (
-    <div className="ir-right sim-grid__col">
+    <div className="ir-right">
       <div className="ir-controls-sticky">
         <div className="ir-field">
           <label>Barème</label>
