@@ -1,4 +1,4 @@
-import { Children, isValidElement, type ReactElement, type ReactNode } from 'react';
+import { Children, Fragment, isValidElement, type ReactElement, type ReactNode } from 'react';
 
 type SimPageShellSlotName = 'main' | 'side' | 'section';
 
@@ -81,7 +81,7 @@ function collectSlots(children: ReactNode): {
   let side: SimPageShellSideProps | null = null;
   const sections: SimPageShellSectionSlot[] = [];
 
-  Children.forEach(children, (child) => {
+  const visitChild = (child: ReactNode) => {
     if (isSlotElement<SimPageShellSharedSlotProps>(child, 'main')) {
       main = child.props;
       return;
@@ -97,8 +97,15 @@ function collectSlots(children: ReactNode): {
         ...child.props,
         key: child.key,
       });
+      return;
     }
-  });
+
+    if (isValidElement<{ children?: ReactNode }>(child) && child.type === Fragment) {
+      Children.forEach(child.props.children, visitChild);
+    }
+  };
+
+  Children.forEach(children, visitChild);
 
   return { main, side, sections };
 }

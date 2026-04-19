@@ -79,6 +79,27 @@ describe('SimPageShell', () => {
     expect(html).not.toContain('sim-grid__col--sticky');
   });
 
+  it('collects main and side slots nested in a fragment', () => {
+    const html = renderToStaticMarkup(
+      <SimPageShell title="Fragment">
+        <>
+          <SimPageShell.Main>
+            <div>Principal</div>
+          </SimPageShell.Main>
+          <SimPageShell.Side>
+            <div>Lateral</div>
+          </SimPageShell.Side>
+        </>
+      </SimPageShell>,
+    );
+
+    expect(html).toContain('Principal');
+    expect(html).toContain('Lateral');
+    expect(html).toContain('class="sim-grid"');
+    expect(html).toContain('sim-grid__col--main');
+    expect(html).toContain('sim-grid__col--side');
+  });
+
   it('renders the default loading state and hides page content', () => {
     const html = renderToStaticMarkup(
       <SimPageShell title="Chargement" loading statusTestId="status">
