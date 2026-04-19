@@ -111,49 +111,16 @@
   overflow-x: auto;
 }
 
-/* Ligne 2 : sous-titre (flex:1) + mode chip + Exporter (alignÃ©s droite) */
-.cv-header__subtitle-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 12px;
-}
-
-.cv-header__subtitle-row .premium-subtitle {
-  flex: 1;
-  min-width: 0;
-}
-
 /* point 3 â€” padding-top rÃ©duit pour la page CrÃ©dit uniquement */
 .sim-page.cv-page {
   padding-top: 20px;
 }
 
 /* ----------------------------------------
-   CONTROLS ROW (toggle + tabs entre header et grid)
-   ---------------------------------------- */
-.cv-controls-row {
-  display: grid;
-  grid-template-columns: 1.85fr 1fr;
-  gap: 24px;
-  align-items: end;
-  margin-bottom: 10px; /* point 3 & 7 â€” blocs remontent */
-}
-
-.cv-controls-row__left {
-  min-width: 0;
-}
-
-.cv-controls-row__right {
-  display: flex;
-  justify-content: flex-end;
-}
-
-/* ----------------------------------------
    HYPOTHÃˆSES
    ---------------------------------------- */
 .cv-hypotheses {
-  margin-top: 32px;
+  margin-top: 0;
   padding: 16px 24px;
   background: var(--color-c7);
   border: 1px solid var(--color-c8);

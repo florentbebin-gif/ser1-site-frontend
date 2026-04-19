@@ -11,8 +11,11 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import type { Dispatch, SetStateAction } from 'react';
 import { onResetEvent, storageKeyFor } from '../../utils/reset';
+import { ExportMenu } from '../../components/ExportMenu';
+import { ModeToggle } from '../../components/ModeToggle';
 import { useTheme } from '../../settings/ThemeProvider';
 import { useUserMode } from '../../settings/userMode';
+import { SimPageShell } from '@/components/ui/sim';
 import {
   createInitialCreditState,
   normalizeLoadedState,
@@ -23,7 +26,6 @@ import {
 } from './utils/creditNormalizers';
 import { useCreditCalculations } from './hooks/useCreditCalculations';
 import { useCreditExports } from './hooks/useCreditExports';
-import { CreditHeader } from './components/CreditHeader';
 import { CreditControlsRow } from './components/CreditControlsRow';
 import { CreditHypotheses } from './components/CreditHypotheses';
 import { CreditLoanInputPanel } from './components/CreditLoanInputPanel';
@@ -321,18 +323,21 @@ export default function CreditV2() {
   // -------------------------------------------------------------------------
   if (!hydrated) {
     return (
-      <div className="sim-page cv-skeleton-page" data-testid="credit-loading">
-        <div className="cv-skeleton cv-skeleton--title" />
-        <div className="cv-skeleton cv-skeleton--subtitle" />
-        <div className="cv-skeleton-grid">
-          <div>
+      <SimPageShell
+        title="Simulateur de crédit"
+        subtitle="Simulez les mensualités et le coût global du financement."
+        pageClassName="cv-page"
+        pageTestId="credit-page"
+        titleTestId="credit-title"
+        statusTestId="credit-loading"
+        loading
+        loadingContent={(
+          <div className="cv-skeleton-grid">
             <div className="cv-skeleton cv-skeleton--card" />
-          </div>
-          <div>
             <div className="cv-skeleton cv-skeleton--card-sm" />
           </div>
-        </div>
-      </div>
+        )}
+      />
     );
   }
 
@@ -346,30 +351,36 @@ export default function CreditV2() {
   const activeLoan = pretLookup[activeTab] || pretLookup[0];
 
   return (
-    <div className="sim-page cv-page" data-testid="credit-page">
-      {/* HEADER (sans toggle — déplacé dans la ligne de contrôles) */}
-      <CreditHeader
-        exportOptions={exportOptions}
-        exportLoading={exportLoading}
-        isExpert={isExpert}
-        onToggleMode={toggleMode}
-      />
-
-      <CreditControlsRow
-        activeTab={activeTab}
-        onChangeTab={setActiveTab}
-        hasPret2={!!state.pret2}
-        hasPret3={!!state.pret3}
-        onAddPret2={addPret2}
-        onAddPret3={addPret3}
-        onRemovePret2={removePret2}
-        onRemovePret3={removePret3}
-        isExpert={isExpert}
-        viewMode={state.viewMode}
-        onChangeViewMode={(viewMode) => setGlobal({ viewMode })}
-      />
-
-      <div className={`cv-grid sim-grid${!isExpert ? ' cv-grid--simple' : ''}`}>
+    <SimPageShell
+      title="Simulateur de crédit"
+      subtitle="Simulez les mensualités et le coût global du financement."
+      pageClassName="cv-page"
+      pageTestId="credit-page"
+      titleTestId="credit-title"
+      mobileSideFirst
+      actions={(
+        <>
+          <ModeToggle value={isExpert} onChange={toggleMode} />
+          <ExportMenu options={exportOptions} loading={exportLoading} />
+        </>
+      )}
+      controls={(
+        <CreditControlsRow
+          activeTab={activeTab}
+          onChangeTab={setActiveTab}
+          hasPret2={!!state.pret2}
+          hasPret3={!!state.pret3}
+          onAddPret2={addPret2}
+          onAddPret3={addPret3}
+          onRemovePret2={removePret2}
+          onRemovePret3={removePret3}
+          isExpert={isExpert}
+          viewMode={state.viewMode}
+          onChangeViewMode={(viewMode) => setGlobal({ viewMode })}
+        />
+      )}
+    >
+      <SimPageShell.Main>
         <CreditLoanInputPanel
           activeTab={activeTab}
           activeLoan={activeLoan}
@@ -379,8 +390,10 @@ export default function CreditV2() {
           setGlobal={setGlobal}
           formatTauxRaw={formatTauxRaw}
         />
+      </SimPageShell.Main>
 
-        {calc.synthese.capitalEmprunte > 0 && (
+      {calc.synthese.capitalEmprunte > 0 && (
+        <SimPageShell.Side className={`cv-right-col${!isExpert ? ' cv-right-col--simple' : ''}`}>
           <CreditSummarySidebar
             activeSynthese={activeSynthese}
             isAnnual={isAnnual}
@@ -390,22 +403,26 @@ export default function CreditV2() {
             lissageCoutDelta={lissageCoutDelta}
             calc={calc}
           />
-        )}
-      </div>
-
-      {calc.synthese.capitalEmprunte > 0 && (
-      <CreditSchedulePanels
-        calc={calc}
-        startYM={state.startYM}
-        isAnnual={isAnnual}
-        isExpert={isExpert}
-      />
+        </SimPageShell.Side>
       )}
 
-      <CreditHypotheses
-        hypothesesOpen={hypothesesOpen}
-        onToggle={() => setHypothesesOpen((open) => !open)}
-      />
-    </div>
+      {calc.synthese.capitalEmprunte > 0 && (
+        <SimPageShell.Section>
+          <CreditSchedulePanels
+            calc={calc}
+            startYM={state.startYM}
+            isAnnual={isAnnual}
+            isExpert={isExpert}
+          />
+        </SimPageShell.Section>
+      )}
+
+      <SimPageShell.Section>
+        <CreditHypotheses
+          hypothesesOpen={hypothesesOpen}
+          onToggle={() => setHypothesesOpen((open) => !open)}
+        />
+      </SimPageShell.Section>
+    </SimPageShell>
   );
 }

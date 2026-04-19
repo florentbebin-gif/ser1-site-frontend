@@ -20,8 +20,8 @@ export function CreditControlsRow({
   onChangeViewMode,
 }: CreditControlsRowProps) {
   return (
-    <div className="cv-controls-row">
-      <div className="cv-controls-row__left">
+    <>
+      <div className="sim-controls-row__main">
         <CreditLoanTabs
           activeTab={activeTab}
           onChangeTab={onChangeTab}
@@ -34,7 +34,7 @@ export function CreditControlsRow({
           isExpert={isExpert}
         />
       </div>
-      <div className="cv-controls-row__right">
+      <div className="sim-controls-row__side">
         <div className="cv-pill-toggle" data-testid="credit-view-toggle">
           <button
             className={`cv-pill-toggle__btn ${viewMode === 'mensuel' ? 'is-active' : ''}`}
@@ -52,6 +52,6 @@ export function CreditControlsRow({
           </button>
         </div>
       </div>
-    </div>
+    </>
   );
 }
