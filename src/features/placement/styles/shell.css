@@ -2,6 +2,16 @@
   min-width: 0;
 }
 
+.pl-page .sim-header {
+  padding-bottom: 0;
+  border-bottom: none;
+}
+
+.pl-page .sim-header__subtitle-row {
+  padding-bottom: 8px;
+  border-bottom: 3px solid var(--color-c6);
+}
+
 .pl-phase-nav {
   position: relative;
   display: flex;
