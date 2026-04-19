@@ -19,6 +19,7 @@ import { SessionGuardContext } from '../../session/sessionGuardContext';
 import { useFiscalContext } from '../../hooks/useFiscalContext';
 import { ExportMenu } from '../../components/ExportMenu';
 import { ModeToggle } from '../../components/ModeToggle';
+import { SimPageShell } from '@/components/ui/sim';
 import { onResetEvent, storageKeyFor } from '../../utils/reset';
 import {
   buildSuccessionDraftPayload,
@@ -56,9 +57,11 @@ import { useSuccessionDerivedValues } from './hooks/useSuccessionDerivedValues';
 import { useSuccessionExportHandlers } from './hooks/useSuccessionExportHandlers';
 import { useSuccessionSimulatorHandlers } from './hooks/useSuccessionSimulatorHandlers';
 import {
+  SuccessionFamilyOverview,
   SuccessionHypotheses,
   SuccessionModals,
-  SuccessionPageGrid,
+  SuccessionPageContent,
+  SuccessionPageSidebar,
 } from './components/SuccessionPageSections';
 import '@/styles/sim/index.css';
 import './styles/index.css';
@@ -331,105 +334,128 @@ export default function SuccessionSimulator() {
     setActifNet(derived.displayActifNetSuccession);
   }, [derived.displayActifNetSuccession, setActifNet]);
 
+  const successionPageSectionsProps = {
+    derived,
+    isExpert,
+    civilContext,
+    enfantsContext,
+    familyMembers,
+    assuranceVieEntries,
+    perEntries,
+    donationsContext,
+    chainOrder,
+    onToggleChainOrder: () => setChainOrder((prev) => (prev === 'epoux2' ? 'epoux1' : 'epoux2')),
+    onSituationChange: handleSituationChange,
+    setCivilContext,
+    onOpenDispositions: openDispositionsModal,
+    onAddEnfant: addEnfant,
+    onToggleAddMemberPanel: () => setShowAddMemberPanel((prev) => !prev),
+    onUpdateEnfantRattachement: updateEnfantRattachement,
+    onToggleEnfantDeceased: toggleEnfantDeceased,
+    onRemoveEnfant: removeEnfant,
+    onRemoveFamilyMember: removeFamilyMember,
+    onAddAssetEntry: addAssetEntry,
+    onUpdateAssetEntry: updateAssetEntry,
+    onRemoveAssetEntry: removeAssetEntry,
+    onOpenAssuranceVieModal: openAssuranceVieModal,
+    onRemoveAssuranceVieEntry: removeAssuranceVieEntry,
+    onOpenPerModal: openPerModal,
+    onRemovePerEntry: removePerEntry,
+    onOpenPrevoyanceModal: openPrevoyanceModal,
+    onRemovePrevoyanceDecesEntry: removePrevoyanceDecesEntry,
+    groupementFoncierEntries,
+    onUpdateGroupementFoncierEntry: (id: string, field: string, value: string | number) => setGroupementFoncierEntries((prev) => prev.map((entry) => {
+      if (entry.id !== id) return entry;
+      if (field === 'pocket') {
+        const location = resolveSuccessionAssetLocation({
+          pocket: value,
+          situationMatrimoniale: civilContext.situationMatrimoniale,
+          regimeMatrimonial: civilContext.regimeMatrimonial,
+          pacsConvention: civilContext.pacsConvention,
+        });
+        return location ? { ...entry, pocket: location.pocket } : entry;
+      }
+      return { ...entry, [field]: value };
+    })),
+    onRemoveGroupementFoncierEntry: (id: string) => setGroupementFoncierEntries((prev) => prev.filter((entry) => entry.id !== id)),
+    prevoyanceDecesEntries,
+    onSetSimplifiedBalanceField: setSimplifiedBalanceField,
+    onAddDonationEntry: addDonationEntry,
+    onUpdateDonationEntry: updateDonationEntry,
+    onRemoveDonationEntry: removeDonationEntry,
+    forfaitMobilierMode: patrimonialContext.forfaitMobilierMode,
+    forfaitMobilierPct: patrimonialContext.forfaitMobilierPct,
+    forfaitMobilierMontant: patrimonialContext.forfaitMobilierMontant,
+    abattementResidencePrincipale: patrimonialContext.abattementResidencePrincipale,
+    decesDansXAns: patrimonialContext.decesDansXAns,
+    onUpdatePatrimonialField: (field: string, value: unknown) => setPatrimonialContext((prev) => ({ ...prev, [field]: value })),
+  };
+
   // ── Rendu ──────────────────────────────────────────────────────────────────
 
   if (settingsLoading) {
     return (
-      <div className="sim-page sc-page" data-testid="succession-page">
-        <div className="premium-header sim-header sim-header--stacked">
-          <h1 className="premium-title">Simulateur succession</h1>
-          <p className="premium-subtitle">Estimez les droits de mutation à titre gratuit.</p>
-        </div>
-        <div className="sc-settings-loading" data-testid="succession-settings-loading">
-          Chargement des paramètres fiscaux…
-        </div>
-      </div>
+      <SimPageShell
+        title="Simulateur succession"
+        subtitle="Estimez les impacts civils d'une succession à partir du contexte familial, du patrimoine et des dispositions saisies."
+        pageClassName="sc-page"
+        pageTestId="succession-page"
+        statusTestId="succession-settings-loading"
+        loading
+        loadingContent={(
+          <div className="sc-settings-loading">
+            Chargement des paramètres fiscaux…
+          </div>
+        )}
+      />
     );
   }
 
   return (
-    <div className="sim-page sc-page" data-testid="succession-page">
-      <div className="premium-header sim-header sim-header--stacked">
-        <h1 className="premium-title">Simulateur succession</h1>
-        <div className="sc-header__subtitle-row sim-header__subtitle-row">
-          <p className="premium-subtitle">
-            Estimez les impacts civils d&apos;une succession à partir du contexte familial, du patrimoine et des dispositions saisies.
-          </p>
-          <div className="sim-header__actions">
+    <>
+      <SimPageShell
+        title="Simulateur succession"
+        subtitle="Estimez les impacts civils d'une succession à partir du contexte familial, du patrimoine et des dispositions saisies."
+        pageClassName="sc-page"
+        pageTestId="succession-page"
+        mobileSideFirst
+        actions={(
+          <>
             <ModeToggle value={isExpert} onChange={() => setLocalMode(isExpert ? 'simplifie' : 'expert')} />
             <ExportMenu options={exportOptions} loading={exportLoading} />
+          </>
+        )}
+        notice={(
+          <div className="sc-page-notice">
+            {sessionExpired && (
+              <p className="sc-session-msg">
+                Session expirée — reconnectez-vous pour exporter.
+              </p>
+            )}
+            <SuccessionFamilyOverview {...successionPageSectionsProps} />
           </div>
-        </div>
-      </div>
+        )}
+      >
+        {derived.shouldRenderSuccessionComputationSections && (
+          <>
+            <SimPageShell.Main className="sc-left">
+              <SuccessionPageContent {...successionPageSectionsProps} />
+            </SimPageShell.Main>
 
-      {sessionExpired && (
-        <p className="sc-session-msg">
-          Session expirée — reconnectez-vous pour exporter.
-        </p>
-      )}
+            <SimPageShell.Side className="sc-right">
+              <SuccessionPageSidebar {...successionPageSectionsProps} />
+            </SimPageShell.Side>
+          </>
+        )}
 
-      <SuccessionPageGrid
-        derived={derived}
-        isExpert={isExpert}
-        civilContext={civilContext}
-        enfantsContext={enfantsContext}
-        familyMembers={familyMembers}
-        assuranceVieEntries={assuranceVieEntries}
-        perEntries={perEntries}
-        donationsContext={donationsContext}
-        chainOrder={chainOrder}
-        onToggleChainOrder={() => setChainOrder((prev) => (prev === 'epoux2' ? 'epoux1' : 'epoux2'))}
-        onSituationChange={handleSituationChange}
-        setCivilContext={setCivilContext}
-        onOpenDispositions={openDispositionsModal}
-        onAddEnfant={addEnfant}
-        onToggleAddMemberPanel={() => setShowAddMemberPanel((prev) => !prev)}
-        onUpdateEnfantRattachement={updateEnfantRattachement}
-        onToggleEnfantDeceased={toggleEnfantDeceased}
-        onRemoveEnfant={removeEnfant}
-        onRemoveFamilyMember={removeFamilyMember}
-        onAddAssetEntry={addAssetEntry}
-        onUpdateAssetEntry={updateAssetEntry}
-        onRemoveAssetEntry={removeAssetEntry}
-        onOpenAssuranceVieModal={openAssuranceVieModal}
-        onRemoveAssuranceVieEntry={removeAssuranceVieEntry}
-        onOpenPerModal={openPerModal}
-        onRemovePerEntry={removePerEntry}
-        onOpenPrevoyanceModal={openPrevoyanceModal}
-        onRemovePrevoyanceDecesEntry={removePrevoyanceDecesEntry}
-        groupementFoncierEntries={groupementFoncierEntries}
-        onUpdateGroupementFoncierEntry={(id, field, value) => setGroupementFoncierEntries((prev) => prev.map((entry) => {
-          if (entry.id !== id) return entry;
-          if (field === 'pocket') {
-            const location = resolveSuccessionAssetLocation({
-              pocket: value,
-              situationMatrimoniale: civilContext.situationMatrimoniale,
-              regimeMatrimonial: civilContext.regimeMatrimonial,
-              pacsConvention: civilContext.pacsConvention,
-            });
-            return location ? { ...entry, pocket: location.pocket } : entry;
-          }
-          return { ...entry, [field]: value };
-        }))}
-        onRemoveGroupementFoncierEntry={(id) => setGroupementFoncierEntries((prev) => prev.filter((e) => e.id !== id))}
-        prevoyanceDecesEntries={prevoyanceDecesEntries}
-        onSetSimplifiedBalanceField={setSimplifiedBalanceField}
-        onAddDonationEntry={addDonationEntry}
-        onUpdateDonationEntry={updateDonationEntry}
-        onRemoveDonationEntry={removeDonationEntry}
-        forfaitMobilierMode={patrimonialContext.forfaitMobilierMode}
-        forfaitMobilierPct={patrimonialContext.forfaitMobilierPct}
-        forfaitMobilierMontant={patrimonialContext.forfaitMobilierMontant}
-        abattementResidencePrincipale={patrimonialContext.abattementResidencePrincipale}
-        decesDansXAns={patrimonialContext.decesDansXAns}
-        onUpdatePatrimonialField={(field, value) => setPatrimonialContext((prev) => ({ ...prev, [field]: value }))}
-      />
-
-      <SuccessionHypotheses
-        hypothesesOpen={hypothesesOpen}
-        assumptions={derived.assumptions}
-        onToggle={() => setHypothesesOpen((value) => !value)}
-      />
+        <SimPageShell.Section>
+          <SuccessionHypotheses
+            hypothesesOpen={hypothesesOpen}
+            assumptions={derived.assumptions}
+            onToggle={() => setHypothesesOpen((value) => !value)}
+          />
+        </SimPageShell.Section>
+      </SimPageShell>
 
       <SuccessionModals
         derived={derived}
@@ -469,7 +495,6 @@ export default function SuccessionSimulator() {
         onCloseAddMemberPanel={() => setShowAddMemberPanel(false)}
         onValidateAddMember={addFamilyMember}
       />
-
-    </div>
+    </>
   );
 }

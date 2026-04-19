@@ -23,7 +23,7 @@ import type { DEFAULT_SUCCESSION_CIVIL_CONTEXT } from '../successionDraft';
 
 type SuccessionDerivedValues = ReturnType<typeof useSuccessionDerivedValues>;
 
-interface SuccessionPageGridProps {
+interface SuccessionPageContentProps {
   derived: SuccessionDerivedValues;
   isExpert: boolean;
   civilContext: typeof DEFAULT_SUCCESSION_CIVIL_CONTEXT;
@@ -68,17 +68,11 @@ interface SuccessionPageGridProps {
   onUpdatePatrimonialField: <K extends string>(_field: K, _value: unknown) => void;
 }
 
-export function SuccessionPageGrid({
-  derived,
-  isExpert,
+export function SuccessionFamilyOverview({
   civilContext,
+  derived,
   enfantsContext,
   familyMembers,
-  assuranceVieEntries,
-  perEntries,
-  donationsContext,
-  chainOrder,
-  onToggleChainOrder,
   onSituationChange,
   setCivilContext,
   onOpenDispositions,
@@ -88,6 +82,43 @@ export function SuccessionPageGrid({
   onToggleEnfantDeceased,
   onRemoveEnfant,
   onRemoveFamilyMember,
+}: SuccessionPageContentProps) {
+  return (
+    <div className="sc-family-overview">
+      <ScFamilyContextCard
+        civilContext={civilContext}
+        birthDateLabels={derived.birthDateLabels}
+        showSecondBirthDate={derived.showSecondBirthDate}
+        canOpenDispositionsModal={derived.canOpenDispositionsModal}
+        enfantRattachementOptions={derived.enfantRattachementOptions}
+        enfantsContext={enfantsContext}
+        familyMembers={familyMembers}
+        onSituationChange={onSituationChange}
+        setCivilContext={setCivilContext}
+        onOpenDispositions={onOpenDispositions}
+        onAddEnfant={onAddEnfant}
+        onToggleAddMemberPanel={onToggleAddMemberPanel}
+        onUpdateEnfantRattachement={onUpdateEnfantRattachement}
+        onToggleEnfantDeceased={onToggleEnfantDeceased}
+        onRemoveEnfant={onRemoveEnfant}
+        onRemoveFamilyMember={onRemoveFamilyMember}
+      />
+
+      <FiliationOrgchart
+        civilContext={civilContext}
+        enfantsContext={enfantsContext}
+        familyMembers={familyMembers}
+      />
+    </div>
+  );
+}
+
+export function SuccessionPageContent({
+  derived,
+  isExpert,
+  assuranceVieEntries,
+  perEntries,
+  donationsContext,
   onAddAssetEntry,
   onUpdateAssetEntry,
   onRemoveAssetEntry,
@@ -109,290 +140,277 @@ export function SuccessionPageGrid({
   forfaitMobilierPct,
   forfaitMobilierMontant,
   abattementResidencePrincipale,
-  decesDansXAns,
   onUpdatePatrimonialField,
-}: SuccessionPageGridProps) {
+}: SuccessionPageContentProps) {
   const shouldRenderComputationSections = derived.shouldRenderSuccessionComputationSections;
+
+  if (!shouldRenderComputationSections) {
+    return null;
+  }
 
   return (
     <>
-      <div className="sc-top-row">
-        <ScFamilyContextCard
-          civilContext={civilContext}
-          birthDateLabels={derived.birthDateLabels}
-          showSecondBirthDate={derived.showSecondBirthDate}
-          canOpenDispositionsModal={derived.canOpenDispositionsModal}
-          enfantRattachementOptions={derived.enfantRattachementOptions}
-          enfantsContext={enfantsContext}
-          familyMembers={familyMembers}
-          onSituationChange={onSituationChange}
-          setCivilContext={setCivilContext}
-          onOpenDispositions={onOpenDispositions}
-          onAddEnfant={onAddEnfant}
-          onToggleAddMemberPanel={onToggleAddMemberPanel}
-          onUpdateEnfantRattachement={onUpdateEnfantRattachement}
-          onToggleEnfantDeceased={onToggleEnfantDeceased}
-          onRemoveEnfant={onRemoveEnfant}
-          onRemoveFamilyMember={onRemoveFamilyMember}
+      <ScAssetsPassifsCard
+        isExpert={isExpert}
+        isMarried={derived.isMarried}
+        isPacsed={derived.isPacsed}
+        isConcubinage={derived.isConcubinage}
+        isCommunauteUniverselleRegime={derived.isCommunauteUniverselleRegime}
+        isCommunauteMeublesAcquetsRegime={derived.isCommunauteMeublesAcquetsRegime}
+        assetEntriesByCategory={derived.assetEntriesByCategory}
+        assetOwnerOptions={derived.assetOwnerOptions}
+        assetPocketOptions={derived.assetPocketOptions}
+        assetBreakdown={derived.assetBreakdown}
+        assetNetTotals={derived.assetNetTotals}
+        forfaitMobilierComputed={derived.forfaitMobilierComputed}
+        residencePrincipaleEntryId={derived.residencePrincipaleEntryId}
+        hasBeneficiaryLevelGfAdjustment={derived.hasBeneficiaryLevelGfAdjustment}
+        assuranceVieEntries={assuranceVieEntries}
+        perEntries={perEntries}
+        assuranceViePartyOptions={derived.assuranceViePartyOptions}
+        onAddAssetEntry={onAddAssetEntry}
+        onUpdateAssetEntry={onUpdateAssetEntry}
+        onRemoveAssetEntry={onRemoveAssetEntry}
+        onOpenAssuranceVieModal={onOpenAssuranceVieModal}
+        onRemoveAssuranceVieEntry={onRemoveAssuranceVieEntry}
+        onOpenPerModal={onOpenPerModal}
+        onRemovePerEntry={onRemovePerEntry}
+        groupementFoncierEntries={groupementFoncierEntries}
+        onUpdateGroupementFoncierEntry={onUpdateGroupementFoncierEntry}
+        onRemoveGroupementFoncierEntry={onRemoveGroupementFoncierEntry}
+        prevoyanceDecesEntries={prevoyanceDecesEntries}
+        onOpenPrevoyanceModal={onOpenPrevoyanceModal}
+        onRemovePrevoyanceDecesEntry={onRemovePrevoyanceDecesEntry}
+        onSetSimplifiedBalanceField={onSetSimplifiedBalanceField}
+        forfaitMobilierMode={forfaitMobilierMode}
+        forfaitMobilierPct={forfaitMobilierPct}
+        forfaitMobilierMontant={forfaitMobilierMontant}
+        abattementResidencePrincipale={abattementResidencePrincipale}
+        stipulationContraireCU={derived.stipulationContraireCU}
+        onUpdatePatrimonialField={onUpdatePatrimonialField}
+      />
+
+      {isExpert && (
+        <ScDonationsCard
+          donationsContext={donationsContext}
+          donationTotals={derived.donationTotals}
+          donateurOptions={derived.donateurOptions}
+          donatairesOptions={derived.donatairesOptions}
+          onAddDonationEntry={onAddDonationEntry}
+          onUpdateDonationEntry={onUpdateDonationEntry}
+          onRemoveDonationEntry={onRemoveDonationEntry}
         />
-
-        <FiliationOrgchart
-          civilContext={civilContext}
-          enfantsContext={enfantsContext}
-          familyMembers={familyMembers}
-        />
-      </div>
-
-      {shouldRenderComputationSections && (
-        <div className="sc-grid sim-grid">
-          <div className="sc-left sim-grid__col">
-            <ScAssetsPassifsCard
-              isExpert={isExpert}
-              isMarried={derived.isMarried}
-              isPacsed={derived.isPacsed}
-              isConcubinage={derived.isConcubinage}
-              isCommunauteUniverselleRegime={derived.isCommunauteUniverselleRegime}
-              isCommunauteMeublesAcquetsRegime={derived.isCommunauteMeublesAcquetsRegime}
-              assetEntriesByCategory={derived.assetEntriesByCategory}
-              assetOwnerOptions={derived.assetOwnerOptions}
-              assetPocketOptions={derived.assetPocketOptions}
-              assetBreakdown={derived.assetBreakdown}
-              assetNetTotals={derived.assetNetTotals}
-              forfaitMobilierComputed={derived.forfaitMobilierComputed}
-              residencePrincipaleEntryId={derived.residencePrincipaleEntryId}
-              hasBeneficiaryLevelGfAdjustment={derived.hasBeneficiaryLevelGfAdjustment}
-              assuranceVieEntries={assuranceVieEntries}
-              perEntries={perEntries}
-              assuranceViePartyOptions={derived.assuranceViePartyOptions}
-              onAddAssetEntry={onAddAssetEntry}
-              onUpdateAssetEntry={onUpdateAssetEntry}
-              onRemoveAssetEntry={onRemoveAssetEntry}
-              onOpenAssuranceVieModal={onOpenAssuranceVieModal}
-              onRemoveAssuranceVieEntry={onRemoveAssuranceVieEntry}
-              onOpenPerModal={onOpenPerModal}
-              onRemovePerEntry={onRemovePerEntry}
-              groupementFoncierEntries={groupementFoncierEntries}
-              onUpdateGroupementFoncierEntry={onUpdateGroupementFoncierEntry}
-              onRemoveGroupementFoncierEntry={onRemoveGroupementFoncierEntry}
-              prevoyanceDecesEntries={prevoyanceDecesEntries}
-              onOpenPrevoyanceModal={onOpenPrevoyanceModal}
-              onRemovePrevoyanceDecesEntry={onRemovePrevoyanceDecesEntry}
-              onSetSimplifiedBalanceField={onSetSimplifiedBalanceField}
-              forfaitMobilierMode={forfaitMobilierMode}
-              forfaitMobilierPct={forfaitMobilierPct}
-              forfaitMobilierMontant={forfaitMobilierMontant}
-              abattementResidencePrincipale={abattementResidencePrincipale}
-              stipulationContraireCU={derived.stipulationContraireCU}
-              onUpdatePatrimonialField={onUpdatePatrimonialField}
-            />
-
-            {isExpert && (
-              <ScDonationsCard
-                donationsContext={donationsContext}
-                donationTotals={derived.donationTotals}
-                donateurOptions={derived.donateurOptions}
-                donatairesOptions={derived.donatairesOptions}
-                onAddDonationEntry={onAddDonationEntry}
-                onUpdateDonationEntry={onUpdateDonationEntry}
-                onRemoveDonationEntry={onRemoveDonationEntry}
-              />
-            )}
-          </div>
-
-          <div className="sc-right sim-grid__col sim-grid__col--sticky">
-            <ScSuccessionSummaryPanel
-              displayUsesChainage={derived.displayUsesChainage}
-              derivedTotalDroits={derived.derivedTotalDroits}
-              synthDonutTransmis={derived.synthDonutTransmis}
-              derivedMasseTransmise={derived.derivedMasseTransmise}
-              synthHypothese={derived.synthHypothese}
-              isPacsed={derived.isPacsed}
-              chainageAnalysis={{
-                order: derived.chainageAnalysis.order,
-                societeAcquets: derived.chainageAnalysis.societeAcquets
-                  ? {
-                    totalValue: derived.chainageAnalysis.societeAcquets.totalValue,
-                    firstEstateContribution: derived.chainageAnalysis.societeAcquets.firstEstateContribution,
-                    survivorShare: derived.chainageAnalysis.societeAcquets.survivorShare,
-                    preciputAmount: derived.chainageAnalysis.societeAcquets.preciputAmount,
-                    survivorAttributionAmount: derived.chainageAnalysis.societeAcquets.survivorAttributionAmount,
-                    liquidationMode: derived.chainageAnalysis.societeAcquets.liquidationMode,
-                    deceasedQuotePct: derived.chainageAnalysis.societeAcquets.deceasedQuotePct,
-                    survivorQuotePct: derived.chainageAnalysis.societeAcquets.survivorQuotePct,
-                    attributionIntegrale: derived.chainageAnalysis.societeAcquets.attributionIntegrale,
-                  }
-                  : null,
-                participationAcquets: derived.chainageAnalysis.participationAcquets
-                  ? {
-                    active: derived.chainageAnalysis.participationAcquets.active,
-                    patrimoineOriginaireEpoux1: derived.chainageAnalysis.participationAcquets.patrimoineOriginaireEpoux1,
-                    patrimoineOriginaireEpoux2: derived.chainageAnalysis.participationAcquets.patrimoineOriginaireEpoux2,
-                    patrimoineFinalEpoux1: derived.chainageAnalysis.participationAcquets.patrimoineFinalEpoux1,
-                    patrimoineFinalEpoux2: derived.chainageAnalysis.participationAcquets.patrimoineFinalEpoux2,
-                    acquetsEpoux1: derived.chainageAnalysis.participationAcquets.acquetsEpoux1,
-                    acquetsEpoux2: derived.chainageAnalysis.participationAcquets.acquetsEpoux2,
-                    creditor: derived.chainageAnalysis.participationAcquets.creditor,
-                    debtor: derived.chainageAnalysis.participationAcquets.debtor,
-                    quoteAppliedPct: derived.chainageAnalysis.participationAcquets.quoteAppliedPct,
-                    creanceAmount: derived.chainageAnalysis.participationAcquets.creanceAmount,
-                    firstEstateAdjustment: derived.chainageAnalysis.participationAcquets.firstEstateAdjustment,
-                  }
-                  : null,
-                interMassClaims: derived.chainageAnalysis.interMassClaims
-                  ? {
-                    totalRequestedAmount: derived.chainageAnalysis.interMassClaims.totalRequestedAmount,
-                    totalAppliedAmount: derived.chainageAnalysis.interMassClaims.totalAppliedAmount,
-                    claims: derived.chainageAnalysis.interMassClaims.claims.map((claim) => ({
-                      id: claim.id,
-                      kind: claim.kind,
-                      label: claim.label,
-                      fromPocket: claim.fromPocket,
-                      toPocket: claim.toPocket,
-                      appliedAmount: claim.appliedAmount,
-                    })),
-                  }
-                  : null,
-                affectedLiabilities: derived.chainageAnalysis.affectedLiabilities
-                  ? {
-                    totalAmount: derived.chainageAnalysis.affectedLiabilities.totalAmount,
-                    byPocket: derived.chainageAnalysis.affectedLiabilities.byPocket.map((entry) => ({
-                      pocket: entry.pocket,
-                      amount: entry.amount,
-                    })),
-                  }
-                  : null,
-                preciput: derived.chainageAnalysis.preciput
-                  ? {
-                    mode: derived.chainageAnalysis.preciput.mode,
-                    appliedAmount: derived.chainageAnalysis.preciput.appliedAmount,
-                    usesGlobalFallback: derived.chainageAnalysis.preciput.usesGlobalFallback,
-                    selections: derived.chainageAnalysis.preciput.selections.map((selection) => ({
-                      id: selection.id,
-                      label: selection.label,
-                      appliedAmount: selection.appliedAmount,
-                    })),
-                  }
-                  : null,
-                step1: derived.chainageAnalysis.step1
-                  ? { droitsEnfants: derived.chainageAnalysis.step1.droitsEnfants }
-                  : null,
-                step2: derived.chainageAnalysis.step2
-                  ? { droitsEnfants: derived.chainageAnalysis.step2.droitsEnfants }
-                  : null,
-              }}
-              avFiscalByAssure={derived.avFiscalAnalysis.byAssure}
-              perFiscalByAssure={derived.perFiscalAnalysis.byAssure}
-              prevoyanceFiscalByAssure={derived.prevoyanceFiscalAnalysis.byAssure}
-              unifiedBlocks={derived.unifiedBlocks}
-              directDisplay={{
-                simulatedDeceased: derived.directDisplayAnalysis.simulatedDeceased,
-                result: derived.directDisplayAnalysis.result
-                  ? { totalDroits: derived.directDisplayAnalysis.result.totalDroits }
-                  : null,
-              }}
-            />
-
-            <ScDeathTimelinePanel
-              chainOrder={chainOrder}
-              onToggleOrder={onToggleChainOrder}
-              showOrderToggle={derived.isMarried || derived.isPacsed || derived.isConcubinage}
-              displayUsesChainage={derived.displayUsesChainage}
-              derivedMasseTransmise={derived.derivedMasseTransmise}
-              derivedTotalDroits={derived.derivedTotalDroits}
-              isPacsed={derived.isPacsed}
-              showDeathHorizonControl={isExpert}
-              decesDansXAns={decesDansXAns}
-              onChangeDecesDansXAns={(value) => onUpdatePatrimonialField('decesDansXAns', value)}
-              chainageAnalysis={{
-                order: derived.chainageAnalysis.order,
-                firstDecedeLabel: derived.chainageAnalysis.firstDecedeLabel,
-                secondDecedeLabel: derived.chainageAnalysis.secondDecedeLabel,
-                societeAcquets: derived.chainageAnalysis.societeAcquets
-                  ? {
-                    totalValue: derived.chainageAnalysis.societeAcquets.totalValue,
-                    firstEstateContribution: derived.chainageAnalysis.societeAcquets.firstEstateContribution,
-                    survivorShare: derived.chainageAnalysis.societeAcquets.survivorShare,
-                    preciputAmount: derived.chainageAnalysis.societeAcquets.preciputAmount,
-                    survivorAttributionAmount: derived.chainageAnalysis.societeAcquets.survivorAttributionAmount,
-                    liquidationMode: derived.chainageAnalysis.societeAcquets.liquidationMode,
-                    deceasedQuotePct: derived.chainageAnalysis.societeAcquets.deceasedQuotePct,
-                    survivorQuotePct: derived.chainageAnalysis.societeAcquets.survivorQuotePct,
-                    attributionIntegrale: derived.chainageAnalysis.societeAcquets.attributionIntegrale,
-                  }
-                  : null,
-                participationAcquets: derived.chainageAnalysis.participationAcquets
-                  ? {
-                    active: derived.chainageAnalysis.participationAcquets.active,
-                    creditor: derived.chainageAnalysis.participationAcquets.creditor,
-                    debtor: derived.chainageAnalysis.participationAcquets.debtor,
-                    quoteAppliedPct: derived.chainageAnalysis.participationAcquets.quoteAppliedPct,
-                    creanceAmount: derived.chainageAnalysis.participationAcquets.creanceAmount,
-                    firstEstateAdjustment: derived.chainageAnalysis.participationAcquets.firstEstateAdjustment,
-                  }
-                  : null,
-                interMassClaims: derived.chainageAnalysis.interMassClaims
-                  ? {
-                    totalAppliedAmount: derived.chainageAnalysis.interMassClaims.totalAppliedAmount,
-                    claims: derived.chainageAnalysis.interMassClaims.claims.map((claim) => ({
-                      id: claim.id,
-                      kind: claim.kind,
-                      label: claim.label,
-                      fromPocket: claim.fromPocket,
-                      toPocket: claim.toPocket,
-                      appliedAmount: claim.appliedAmount,
-                    })),
-                  }
-                  : null,
-                affectedLiabilities: derived.chainageAnalysis.affectedLiabilities
-                  ? {
-                    totalAmount: derived.chainageAnalysis.affectedLiabilities.totalAmount,
-                    byPocket: derived.chainageAnalysis.affectedLiabilities.byPocket.map((entry) => ({
-                      pocket: entry.pocket,
-                      amount: entry.amount,
-                    })),
-                  }
-                  : null,
-                preciput: derived.chainageAnalysis.preciput
-                  ? {
-                    mode: derived.chainageAnalysis.preciput.mode,
-                    appliedAmount: derived.chainageAnalysis.preciput.appliedAmount,
-                    usesGlobalFallback: derived.chainageAnalysis.preciput.usesGlobalFallback,
-                    selections: derived.chainageAnalysis.preciput.selections.map((selection) => ({
-                      id: selection.id,
-                      label: selection.label,
-                      appliedAmount: selection.appliedAmount,
-                    })),
-                  }
-                  : null,
-                step1: derived.chainageAnalysis.step1
-                  ? {
-                    actifTransmis: derived.chainageAnalysis.step1.actifTransmis,
-                    droitsEnfants: derived.chainageAnalysis.step1.droitsEnfants,
-                  }
-                  : null,
-                step2: derived.chainageAnalysis.step2
-                  ? {
-                    actifTransmis: derived.chainageAnalysis.step2.actifTransmis,
-                    droitsEnfants: derived.chainageAnalysis.step2.droitsEnfants,
-                  }
-                  : null,
-              }}
-              assuranceVieByAssure={derived.assuranceVieByAssure}
-              avFiscalByAssure={derived.avFiscalAnalysis.byAssure}
-              perByAssure={derived.perByAssure}
-              perFiscalByAssure={derived.perFiscalAnalysis.byAssure}
-              prevoyanceByAssure={derived.prevoyanceByAssure}
-              prevoyanceFiscalByAssure={derived.prevoyanceFiscalAnalysis.byAssure}
-              directDisplay={{
-                simulatedDeceased: derived.directDisplayAnalysis.simulatedDeceased,
-                result: derived.directDisplayAnalysis.result
-                  ? { totalDroits: derived.directDisplayAnalysis.result.totalDroits }
-                  : null,
-              }}
-            />
-          </div>
-        </div>
       )}
+    </>
+  );
+}
+
+export function SuccessionPageSidebar({
+  derived,
+  isExpert,
+  chainOrder,
+  onToggleChainOrder,
+  decesDansXAns,
+  onUpdatePatrimonialField,
+}: SuccessionPageContentProps) {
+  const shouldRenderComputationSections = derived.shouldRenderSuccessionComputationSections;
+
+  if (!shouldRenderComputationSections) {
+    return null;
+  }
+
+  return (
+    <>
+      <ScSuccessionSummaryPanel
+        displayUsesChainage={derived.displayUsesChainage}
+        derivedTotalDroits={derived.derivedTotalDroits}
+        synthDonutTransmis={derived.synthDonutTransmis}
+        derivedMasseTransmise={derived.derivedMasseTransmise}
+        synthHypothese={derived.synthHypothese}
+        isPacsed={derived.isPacsed}
+        chainageAnalysis={{
+          order: derived.chainageAnalysis.order,
+          societeAcquets: derived.chainageAnalysis.societeAcquets
+            ? {
+              totalValue: derived.chainageAnalysis.societeAcquets.totalValue,
+              firstEstateContribution: derived.chainageAnalysis.societeAcquets.firstEstateContribution,
+              survivorShare: derived.chainageAnalysis.societeAcquets.survivorShare,
+              preciputAmount: derived.chainageAnalysis.societeAcquets.preciputAmount,
+              survivorAttributionAmount: derived.chainageAnalysis.societeAcquets.survivorAttributionAmount,
+              liquidationMode: derived.chainageAnalysis.societeAcquets.liquidationMode,
+              deceasedQuotePct: derived.chainageAnalysis.societeAcquets.deceasedQuotePct,
+              survivorQuotePct: derived.chainageAnalysis.societeAcquets.survivorQuotePct,
+              attributionIntegrale: derived.chainageAnalysis.societeAcquets.attributionIntegrale,
+            }
+            : null,
+          participationAcquets: derived.chainageAnalysis.participationAcquets
+            ? {
+              active: derived.chainageAnalysis.participationAcquets.active,
+              patrimoineOriginaireEpoux1: derived.chainageAnalysis.participationAcquets.patrimoineOriginaireEpoux1,
+              patrimoineOriginaireEpoux2: derived.chainageAnalysis.participationAcquets.patrimoineOriginaireEpoux2,
+              patrimoineFinalEpoux1: derived.chainageAnalysis.participationAcquets.patrimoineFinalEpoux1,
+              patrimoineFinalEpoux2: derived.chainageAnalysis.participationAcquets.patrimoineFinalEpoux2,
+              acquetsEpoux1: derived.chainageAnalysis.participationAcquets.acquetsEpoux1,
+              acquetsEpoux2: derived.chainageAnalysis.participationAcquets.acquetsEpoux2,
+              creditor: derived.chainageAnalysis.participationAcquets.creditor,
+              debtor: derived.chainageAnalysis.participationAcquets.debtor,
+              quoteAppliedPct: derived.chainageAnalysis.participationAcquets.quoteAppliedPct,
+              creanceAmount: derived.chainageAnalysis.participationAcquets.creanceAmount,
+              firstEstateAdjustment: derived.chainageAnalysis.participationAcquets.firstEstateAdjustment,
+            }
+            : null,
+          interMassClaims: derived.chainageAnalysis.interMassClaims
+            ? {
+              totalRequestedAmount: derived.chainageAnalysis.interMassClaims.totalRequestedAmount,
+              totalAppliedAmount: derived.chainageAnalysis.interMassClaims.totalAppliedAmount,
+              claims: derived.chainageAnalysis.interMassClaims.claims.map((claim) => ({
+                id: claim.id,
+                kind: claim.kind,
+                label: claim.label,
+                fromPocket: claim.fromPocket,
+                toPocket: claim.toPocket,
+                appliedAmount: claim.appliedAmount,
+              })),
+            }
+            : null,
+          affectedLiabilities: derived.chainageAnalysis.affectedLiabilities
+            ? {
+              totalAmount: derived.chainageAnalysis.affectedLiabilities.totalAmount,
+              byPocket: derived.chainageAnalysis.affectedLiabilities.byPocket.map((entry) => ({
+                pocket: entry.pocket,
+                amount: entry.amount,
+              })),
+            }
+            : null,
+          preciput: derived.chainageAnalysis.preciput
+            ? {
+              mode: derived.chainageAnalysis.preciput.mode,
+              appliedAmount: derived.chainageAnalysis.preciput.appliedAmount,
+              usesGlobalFallback: derived.chainageAnalysis.preciput.usesGlobalFallback,
+              selections: derived.chainageAnalysis.preciput.selections.map((selection) => ({
+                id: selection.id,
+                label: selection.label,
+                appliedAmount: selection.appliedAmount,
+              })),
+            }
+            : null,
+          step1: derived.chainageAnalysis.step1
+            ? { droitsEnfants: derived.chainageAnalysis.step1.droitsEnfants }
+            : null,
+          step2: derived.chainageAnalysis.step2
+            ? { droitsEnfants: derived.chainageAnalysis.step2.droitsEnfants }
+            : null,
+        }}
+        avFiscalByAssure={derived.avFiscalAnalysis.byAssure}
+        perFiscalByAssure={derived.perFiscalAnalysis.byAssure}
+        prevoyanceFiscalByAssure={derived.prevoyanceFiscalAnalysis.byAssure}
+        unifiedBlocks={derived.unifiedBlocks}
+        directDisplay={{
+          simulatedDeceased: derived.directDisplayAnalysis.simulatedDeceased,
+          result: derived.directDisplayAnalysis.result
+            ? { totalDroits: derived.directDisplayAnalysis.result.totalDroits }
+            : null,
+        }}
+      />
+
+      <ScDeathTimelinePanel
+        chainOrder={chainOrder}
+        onToggleOrder={onToggleChainOrder}
+        showOrderToggle={derived.isMarried || derived.isPacsed || derived.isConcubinage}
+        displayUsesChainage={derived.displayUsesChainage}
+        derivedMasseTransmise={derived.derivedMasseTransmise}
+        derivedTotalDroits={derived.derivedTotalDroits}
+        isPacsed={derived.isPacsed}
+        showDeathHorizonControl={isExpert}
+        decesDansXAns={decesDansXAns}
+        onChangeDecesDansXAns={(value) => onUpdatePatrimonialField('decesDansXAns', value)}
+        chainageAnalysis={{
+          order: derived.chainageAnalysis.order,
+          firstDecedeLabel: derived.chainageAnalysis.firstDecedeLabel,
+          secondDecedeLabel: derived.chainageAnalysis.secondDecedeLabel,
+          societeAcquets: derived.chainageAnalysis.societeAcquets
+            ? {
+              totalValue: derived.chainageAnalysis.societeAcquets.totalValue,
+              firstEstateContribution: derived.chainageAnalysis.societeAcquets.firstEstateContribution,
+              survivorShare: derived.chainageAnalysis.societeAcquets.survivorShare,
+              preciputAmount: derived.chainageAnalysis.societeAcquets.preciputAmount,
+              survivorAttributionAmount: derived.chainageAnalysis.societeAcquets.survivorAttributionAmount,
+              liquidationMode: derived.chainageAnalysis.societeAcquets.liquidationMode,
+              deceasedQuotePct: derived.chainageAnalysis.societeAcquets.deceasedQuotePct,
+              survivorQuotePct: derived.chainageAnalysis.societeAcquets.survivorQuotePct,
+              attributionIntegrale: derived.chainageAnalysis.societeAcquets.attributionIntegrale,
+            }
+            : null,
+          participationAcquets: derived.chainageAnalysis.participationAcquets
+            ? {
+              active: derived.chainageAnalysis.participationAcquets.active,
+              creditor: derived.chainageAnalysis.participationAcquets.creditor,
+              debtor: derived.chainageAnalysis.participationAcquets.debtor,
+              quoteAppliedPct: derived.chainageAnalysis.participationAcquets.quoteAppliedPct,
+              creanceAmount: derived.chainageAnalysis.participationAcquets.creanceAmount,
+              firstEstateAdjustment: derived.chainageAnalysis.participationAcquets.firstEstateAdjustment,
+            }
+            : null,
+          interMassClaims: derived.chainageAnalysis.interMassClaims
+            ? {
+              totalAppliedAmount: derived.chainageAnalysis.interMassClaims.totalAppliedAmount,
+              claims: derived.chainageAnalysis.interMassClaims.claims.map((claim) => ({
+                id: claim.id,
+                kind: claim.kind,
+                label: claim.label,
+                fromPocket: claim.fromPocket,
+                toPocket: claim.toPocket,
+                appliedAmount: claim.appliedAmount,
+              })),
+            }
+            : null,
+          affectedLiabilities: derived.chainageAnalysis.affectedLiabilities
+            ? {
+              totalAmount: derived.chainageAnalysis.affectedLiabilities.totalAmount,
+              byPocket: derived.chainageAnalysis.affectedLiabilities.byPocket.map((entry) => ({
+                pocket: entry.pocket,
+                amount: entry.amount,
+              })),
+            }
+            : null,
+          preciput: derived.chainageAnalysis.preciput
+            ? {
+              mode: derived.chainageAnalysis.preciput.mode,
+              appliedAmount: derived.chainageAnalysis.preciput.appliedAmount,
+              usesGlobalFallback: derived.chainageAnalysis.preciput.usesGlobalFallback,
+              selections: derived.chainageAnalysis.preciput.selections.map((selection) => ({
+                id: selection.id,
+                label: selection.label,
+                appliedAmount: selection.appliedAmount,
+              })),
+            }
+            : null,
+          step1: derived.chainageAnalysis.step1
+            ? {
+              actifTransmis: derived.chainageAnalysis.step1.actifTransmis,
+              droitsEnfants: derived.chainageAnalysis.step1.droitsEnfants,
+            }
+            : null,
+          step2: derived.chainageAnalysis.step2
+            ? {
+              actifTransmis: derived.chainageAnalysis.step2.actifTransmis,
+              droitsEnfants: derived.chainageAnalysis.step2.droitsEnfants,
+            }
+            : null,
+        }}
+        assuranceVieByAssure={derived.assuranceVieByAssure}
+        avFiscalByAssure={derived.avFiscalAnalysis.byAssure}
+        perByAssure={derived.perByAssure}
+        perFiscalByAssure={derived.perFiscalAnalysis.byAssure}
+        prevoyanceByAssure={derived.prevoyanceByAssure}
+        prevoyanceFiscalByAssure={derived.prevoyanceFiscalAnalysis.byAssure}
+        directDisplay={{
+          simulatedDeceased: derived.directDisplayAnalysis.simulatedDeceased,
+          result: derived.directDisplayAnalysis.result
+            ? { totalDroits: derived.directDisplayAnalysis.result.totalDroits }
+            : null,
+        }}
+      />
     </>
   );
 }

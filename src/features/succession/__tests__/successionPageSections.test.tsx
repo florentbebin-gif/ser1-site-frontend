@@ -1,11 +1,15 @@
 import type { ComponentProps } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
-import { SuccessionPageGrid } from '../components/SuccessionPageSections';
+import {
+  SuccessionFamilyOverview,
+  SuccessionPageContent,
+  SuccessionPageSidebar,
+} from '../components/SuccessionPageSections';
 
 function buildProps(
   shouldRenderSuccessionComputationSections: boolean,
-): ComponentProps<typeof SuccessionPageGrid> {
+): ComponentProps<typeof SuccessionPageContent> {
   return {
     derived: {
       shouldRenderSuccessionComputationSections,
@@ -62,7 +66,7 @@ function buildProps(
       assuranceVieByAssure: { epoux1: 0, epoux2: 0 },
       perByAssure: { epoux1: 0, epoux2: 0 },
       prevoyanceByAssure: { epoux1: 0, epoux2: 0 },
-    } as unknown as ComponentProps<typeof SuccessionPageGrid>['derived'],
+    } as unknown as ComponentProps<typeof SuccessionPageContent>['derived'],
     isExpert: true,
     civilContext: {
       situationMatrimoniale: 'celibataire',
@@ -112,22 +116,40 @@ function buildProps(
   };
 }
 
-describe('SuccessionPageGrid', () => {
+describe('SuccessionPageSections', () => {
   it('masks computation sections when the scenario is not calculable', () => {
-    const markup = renderToStaticMarkup(<SuccessionPageGrid {...buildProps(false)} />);
+    const props = buildProps(false);
+    const markup = renderToStaticMarkup(
+      <>
+        <SuccessionFamilyOverview {...props} />
+        <SuccessionPageContent {...props} />
+        <SuccessionPageSidebar {...props} />
+      </>,
+    );
 
+    expect(markup).toContain('Contexte familial');
     expect(markup).not.toContain('Actifs / Passifs');
     expect(markup).not.toContain('Donations');
     expect(markup).not.toContain('Synthèse successorale');
     expect(markup).not.toContain('Chronologie des deces');
+    expect(markup).not.toContain('sim-grid__col');
   });
 
   it('renders computation sections when the scenario is calculable', () => {
-    const markup = renderToStaticMarkup(<SuccessionPageGrid {...buildProps(true)} />);
+    const props = buildProps(true);
+    const markup = renderToStaticMarkup(
+      <>
+        <SuccessionFamilyOverview {...props} />
+        <SuccessionPageContent {...props} />
+        <SuccessionPageSidebar {...props} />
+      </>,
+    );
 
+    expect(markup).toContain('Contexte familial');
     expect(markup).toContain('Actifs / Passifs');
     expect(markup).toContain('Donations');
     expect(markup).toContain('Synthèse successorale');
     expect(markup).toContain('Chronologie des deces');
+    expect(markup).not.toContain('sim-grid__col');
   });
 });

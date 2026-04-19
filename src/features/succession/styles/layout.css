@@ -3,22 +3,24 @@
 /* Ligne sous-titre + actions — base dans .sim-header__subtitle-row (sim/headers.css) */
 
 .sc-session-msg {
-  margin: 0 0 12px;
+  margin: 0;
   color: var(--color-c6);
   font-size: 12px;
   font-weight: 500;
 }
 
-.sc-top-row {
+.sc-page-notice {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.sc-family-overview {
   display: grid;
   grid-template-columns: 1.85fr 1fr;
   gap: 24px;
   align-items: stretch;
-  margin-bottom: 24px;
-}
-
-.sc-grid {
-  margin-bottom: 24px;
+  margin-bottom: 8px;
 }
 
 .sc-left {
