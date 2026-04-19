@@ -35,17 +35,8 @@
 }
 
 @media (max-width: 900px) {
-  .sc-top-row {
+  .sc-family-overview {
     grid-template-columns: 1fr;
-  }
-
-  .sc-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .sc-right {
-    position: static;
-    order: -1;
   }
 
   .sc-hero-header {
@@ -115,11 +106,6 @@
   .sc-preciput-item__grid {
     display: grid;
     grid-template-columns: 1fr;
-  }
-
-  .sc-header__subtitle-row {
-    flex-direction: column;
-    align-items: stretch;
   }
 
   .sc-primary-actions,

@@ -153,13 +153,6 @@ export interface CreditExportHookParams {
 export type CreditExportOption = ExportOption;
 export type CreditPptxData = CreditData;
 
-export interface CreditHeaderProps {
-  exportOptions: ExportOption[];
-  exportLoading: boolean;
-  isExpert: boolean;
-  onToggleMode: () => void;
-}
-
 export interface CreditLoanTabsProps {
   activeTab: number;
   onChangeTab: (_tabIndex: number) => void;

@@ -11,3 +11,11 @@
   flex: 1;
   min-width: 0;
 }
+
+.sim-header__nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+  min-width: 0;
+}

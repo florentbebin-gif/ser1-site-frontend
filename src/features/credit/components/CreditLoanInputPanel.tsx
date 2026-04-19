@@ -33,7 +33,7 @@ export function CreditLoanInputPanel({
   formatTauxRaw,
 }: CreditLoanInputPanelProps) {
   return (
-    <div className="sim-grid__col">
+    <>
       <div className="premium-card premium-card--guide sim-card--guide">
         <div className="cv-loan-card">
           <header className="cv-loan-card__header sim-card__header sim-card__header--bleed">
@@ -120,6 +120,6 @@ export function CreditLoanInputPanel({
           )}
         </div>
       )}
-    </div>
+    </>
   );
 }

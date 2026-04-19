@@ -9,25 +9,6 @@
    ---------------------------------------- */
 /* .cv-page supprimÃ© â†’ remplacÃ© par .sim-page (socle partagÃ© /sim) */
 
-.cv-grid {
-  margin-bottom: 32px;
-}
-
-/* point 4 â€” simplifiÃ© : synthÃ¨se droite mÃªme hauteur que paramÃ¨tres */
-.cv-grid--simple {
-  align-items: stretch;
-}
-
-.cv-grid--simple .cv-right-col {
-  display: flex;
-  flex-direction: column;
-}
-
-.cv-grid--simple .cv-right-col .cv-summary {
-  flex: 1;
-  box-sizing: border-box;
-}
-
 /* ----------------------------------------
    HEADER
    ---------------------------------------- */

@@ -51,41 +51,12 @@
   /* .cv-page et .cv-header â†’ gÃ©rÃ©s par sim-page (socle partagÃ© /sim)
      et premium-header (premium-shared.css) */
 
-  /* point 4 â€” ne pas Ã©tirer en mobile (sticky dÃ©jÃ  retirÃ©) */
-  .cv-grid--simple {
-    align-items: start;
+  .cv-right-col--placeholder {
+    display: none;
   }
 
-  .cv-grid--simple .cv-right-col {
-    display: block;
-  }
-
-  .cv-grid--simple .cv-right-col .cv-summary {
+  .cv-right-col--simple .cv-summary {
     flex: none;
-  }
-
-  .cv-controls-row {
-    grid-template-columns: 1fr;
-    gap: 12px;
-    align-items: stretch;
-  }
-
-  .cv-controls-row__right {
-    justify-content: flex-start;
-  }
-
-  .cv-grid {
-    grid-template-columns: 1fr;
-  }
-
-  /* Summary au-dessus du formulaire sur mobile */
-  .cv-grid > div:last-child {
-    order: -1;
-  }
-
-  /* Le wrapper sticky devient statique sur mobile */
-  .cv-right-col {
-    position: static;
   }
 
   .cv-loan-form__grid {
@@ -102,11 +73,6 @@
 }
 
 @media (max-width: 600px) {
-  /* .premium-title override pour mobile CrÃ©dit */
-  .premium-title {
-    font-size: 18px;
-  }
-
   .cv-tabs__tab {
     padding: 10px 14px;
     font-size: 13px;

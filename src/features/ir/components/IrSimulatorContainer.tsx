@@ -10,6 +10,7 @@ import { useTheme } from '../../../settings/ThemeProvider';
 import { useUserMode, type UserMode } from '../../../settings/userMode';
 import { ExportMenu } from '../../../components/ExportMenu';
 import { ModeToggle } from '../../../components/ModeToggle';
+import { SimPageShell } from '@/components/ui/sim';
 import {
   computeAbattement10,
   computeEffectiveParts,
@@ -356,46 +357,45 @@ export default function IrSimulatorContainer() {
 
   if (settingsLoading) {
     return (
-      <div className="sim-page" data-testid="ir-page">
-        <div className="premium-header sim-header sim-header--stacked" data-testid="ir-header">
-          <h1 className="premium-title" data-testid="ir-title">
-            Simulateur d&apos;imp&ocirc;t sur le revenu
-          </h1>
-          <p className="premium-subtitle">
-            Estimez votre imp&ocirc;t sur le revenu et vos pr&eacute;l&egrave;vements sociaux.
-          </p>
-        </div>
-        <div className="ir-settings-loading" data-testid="ir-settings-loading">
-          Chargement des param&egrave;tres fiscaux&hellip;
-        </div>
-      </div>
+      <SimPageShell
+        title="Simulateur d&apos;imp&ocirc;t sur le revenu"
+        subtitle="Estimez votre imp&ocirc;t sur le revenu et vos pr&eacute;l&egrave;vements sociaux."
+        pageTestId="ir-page"
+        headerTestId="ir-header"
+        titleTestId="ir-title"
+        statusTestId="ir-settings-loading"
+        loading
+        loadingContent={(
+          <div className="ir-settings-loading">
+            Chargement des param&egrave;tres fiscaux&hellip;
+          </div>
+        )}
+      />
     );
   }
 
   return (
-    <div className="sim-page" data-testid="ir-page">
-      <div className="premium-header sim-header sim-header--stacked" data-testid="ir-header">
-        <h1 className="premium-title" data-testid="ir-title">
-            Simulateur d&apos;imp&ocirc;t sur le revenu
-        </h1>
-        <div className="ir-header__subtitle-row sim-header__subtitle-row">
-          <p className="premium-subtitle">
-            Estimez votre imp&ocirc;t sur le revenu et vos pr&eacute;l&egrave;vements sociaux.
-          </p>
-          <div className="sim-header__actions">
-            <ModeToggle value={isExpert} onChange={() => toggleMode()} testId="ir-mode-btn" />
-            <ExportMenu
-              options={[
-                { label: 'Excel', onClick: exportExcel },
-                { label: 'PowerPoint', onClick: exportPowerPoint },
-              ]}
-              loading={exportLoading}
-            />
-          </div>
-        </div>
-      </div>
-
-      <div className="ir-grid sim-grid" data-testid="ir-grid">
+    <SimPageShell
+      title="Simulateur d&apos;imp&ocirc;t sur le revenu"
+      subtitle="Estimez votre imp&ocirc;t sur le revenu et vos pr&eacute;l&egrave;vements sociaux."
+      pageTestId="ir-page"
+      headerTestId="ir-header"
+      titleTestId="ir-title"
+      mobileSideFirst
+      actions={(
+        <>
+          <ModeToggle value={isExpert} onChange={() => toggleMode()} testId="ir-mode-btn" />
+          <ExportMenu
+            options={[
+              { label: 'Excel', onClick: exportExcel },
+              { label: 'PowerPoint', onClick: exportPowerPoint },
+            ]}
+            loading={exportLoading}
+          />
+        </>
+      )}
+    >
+      <SimPageShell.Main>
         <IrFormSection
           status={status}
           setStatus={setStatus}
@@ -430,7 +430,9 @@ export default function IrSimulatorContainer() {
           incomeFilters={incomeFilters}
           setIncomeFilters={setIncomeFilters}
         />
+      </SimPageShell.Main>
 
+      <SimPageShell.Side sticky={false}>
         <IrSidebarSection
           yearKey={yearKey}
           setYearKey={setYearKey}
@@ -447,48 +449,52 @@ export default function IrSimulatorContainer() {
           showSummaryCard={showSummaryCard}
           hasSituation={status !== null}
         />
-      </div>
+      </SimPageShell.Side>
 
-      {result && (
-        <div className="ir-detail-card premium-card" data-testid="ir-detail-accordion">
-          <div className="ir-detail-header">
-            <h3 className="ir-detail-title">D&eacute;tail du calcul</h3>
-            <button
-              type="button"
-              className="ir-detail-toggle"
-              aria-expanded={showDetails}
-              onClick={() => setShowDetails((value) => !value)}
-              data-testid="ir-detail-toggle"
-            >
-              {showDetails ? 'Masquer' : 'Afficher'}
-              <svg
-                width="12"
-                height="12"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className={`ir-detail-chevron${showDetails ? ' is-open' : ''}`}
-                aria-hidden="true"
-              >
-                <polyline points="6 9 12 15 18 9" />
-              </svg>
-            </button>
-          </div>
-          {showDetails && (
-            <IrDetailsSection
-              result={result}
-              euro0={euro0}
-              fmtPct={fmtPct}
-              pfuRateIR={pfuRateIR}
-            />
+      <SimPageShell.Section>
+        <>
+          {result && (
+            <div className="ir-detail-card premium-card" data-testid="ir-detail-accordion">
+              <div className="ir-detail-header">
+                <h3 className="ir-detail-title">D&eacute;tail du calcul</h3>
+                <button
+                  type="button"
+                  className="ir-detail-toggle"
+                  aria-expanded={showDetails}
+                  onClick={() => setShowDetails((value) => !value)}
+                  data-testid="ir-detail-toggle"
+                >
+                  {showDetails ? 'Masquer' : 'Afficher'}
+                  <svg
+                    width="12"
+                    height="12"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className={`ir-detail-chevron${showDetails ? ' is-open' : ''}`}
+                    aria-hidden="true"
+                  >
+                    <polyline points="6 9 12 15 18 9" />
+                  </svg>
+                </button>
+              </div>
+              {showDetails && (
+                <IrDetailsSection
+                  result={result}
+                  euro0={euro0}
+                  fmtPct={fmtPct}
+                  pfuRateIR={pfuRateIR}
+                />
+              )}
+            </div>
           )}
-        </div>
-      )}
 
-      <IrDisclaimer isIsolated={isIsolated} />
-    </div>
+          <IrDisclaimer isIsolated={isIsolated} />
+        </>
+      </SimPageShell.Section>
+    </SimPageShell>
   );
 }

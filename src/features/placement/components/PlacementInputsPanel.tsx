@@ -99,7 +99,7 @@ export function PlacementInputsPanel({
   const dmtgConsumptionPercentProduit2 = Math.min(100, Math.round(dmtgConsumptionRatioProduit2 * 100));
 
   return (
-    <div className="pl-ir-left sim-grid__col">
+    <>
       <PlacementClientProfileSection
         client={state.client}
         tmiOptions={tmiOptions}
@@ -150,7 +150,7 @@ export function PlacementInputsPanel({
           psSettings={psSettings}
         />
       )}
-    </div>
+    </>
   );
 }
 

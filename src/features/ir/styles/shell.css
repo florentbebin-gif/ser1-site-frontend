@@ -3,10 +3,6 @@
 /* Ligne sous-titre + actions (ExportMenu Ã  droite) */
 /* Ligne sous-titre + actions — base dans .sim-header__subtitle-row (sim/headers.css) */
 
-.ir-grid {
-  min-width: 0;
-}
-
 .ir-left {
   display: flex;
   flex-direction: column;
@@ -38,15 +34,6 @@
 }
 
 @media (max-width: 900px) {
-  .ir-grid {
-    grid-template-columns: 1fr;
-  }
-
-  /* SynthÃ¨se (colonne droite) au-dessus du formulaire sur mobile */
-  .ir-grid > .ir-right {
-    order: -1;
-  }
-
   .ir-guide-card__grid {
     grid-template-columns: 1fr;
   }

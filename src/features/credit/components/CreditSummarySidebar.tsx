@@ -22,7 +22,7 @@ export function CreditSummarySidebar({
   calc,
 }: CreditSummarySidebarProps) {
   return (
-    <div className="cv-right-col sim-grid__col sim-grid__col--sticky">
+    <>
       <CreditSummaryCard
         synthese={activeSynthese}
         isAnnual={isAnnual}
@@ -80,6 +80,6 @@ export function CreditSummarySidebar({
           </div>
         </div>
       )}
-    </div>
+    </>
   );
 }

@@ -16,12 +16,15 @@
  */
 
 import { useState } from 'react';
+import { ExportMenu } from '@/components/ExportMenu';
+import { ModeToggle } from '@/components/ModeToggle';
+import { SimPageShell } from '@/components/ui/sim';
 import { useUserMode, type UserMode } from '@/settings/userMode';
 import '@/styles/sim/index.css';
 import '../styles/index.css';
 import { VersementConfigModal } from './VersementConfigModal';
 import { renderEpargneRow } from '../utils/tableHelpers';
-import { PlacementToolbar } from './PlacementToolbar';
+import { PlacementPhaseNav } from './PlacementPhaseNav';
 import { PlacementInputsPanel } from './PlacementInputsPanel';
 import { PlacementHypotheses } from './PlacementHypotheses';
 import { PlacementResultsPanel } from './PlacementResultsPanel';
@@ -78,67 +81,96 @@ export default function PlacementSimulatorPage() {
     exportLoading,
   } = uiFlags;
 
+  const exportOptions = [
+    { label: 'Excel', onClick: exportExcel, disabled: !results?.produit1 },
+    { label: 'PowerPoint', onClick: exportPptx, disabled: !results?.produit1 },
+  ];
+  const showResults = state.client.ageActuel !== null;
+
   if (error) {
     return (
-      <div className="sim-page pl-page" data-testid="placement-page">
-        <div className="pl-ir-header">
-          <div className="pl-ir-title">Erreur</div>
-          <div className="pl-error">{error}</div>
-        </div>
-      </div>
+      <SimPageShell
+        title="Comparer deux placements"
+        subtitle="Épargne → Liquidation → Transmission"
+        pageClassName="pl-page"
+        pageTestId="placement-page"
+        titleTestId="placement-title"
+        mobileSideFirst
+        actions={(
+          <>
+            <ModeToggle value={isExpert} onChange={toggleMode} testId="placement-mode-btn" />
+            <ExportMenu options={exportOptions} loading={exportLoading} />
+          </>
+        )}
+        nav={<PlacementPhaseNav step={state.step} onStepChange={setStep} />}
+        error={error}
+      />
     );
   }
 
   return (
-    <div className="sim-page pl-page" data-testid="placement-page">
-      <PlacementToolbar
-        exportLoading={exportLoading}
-        onExportExcel={exportExcel}
-        canExportExcel={Boolean(results?.produit1)}
-        onExportPptx={exportPptx}
-        canExportPptx={Boolean(results?.produit1)}
-        step={state.step}
-        onStepChange={setStep}
-        isExpert={isExpert}
-        onToggleMode={toggleMode}
-      />
-
-      <div className="pl-ir-grid sim-grid">
-        <PlacementInputsPanel
-          state={state}
-          isExpert={isExpert}
-          tmiOptions={tmiOptions}
-          setClient={setClient}
-          setProduct={setProduct}
-          setLiquidation={setLiquidation}
-          setTransmission={setTransmission}
-          updateProductOption={updateProductOption}
-          setModalOpen={(productIndex) => setModalOpen(productIndex)}
-          showAllColumns={showAllColumns}
-          setShowAllColumns={(value) => setShowAllColumns(value)}
-          produit1={produit1}
-          produit2={produit2}
-          detailRows1={detailRows1}
-          detailRows2={detailRows2}
-          columnsProduit1={columnsProduit1}
-          columnsProduit2={columnsProduit2}
-          renderEpargneRow={renderEpargneRow}
-          dmtgSelectOptions={dmtgSelectOptions}
-          selectedDmtgTrancheWidth={selectedDmtgTrancheWidth}
-          psSettings={psSettings}
-        />
-
-        {state.client.ageActuel !== null && (
-          <PlacementResultsPanel
-            loading={loading}
-            hydrated={hydrated}
-            results={results}
-            state={state}
-          />
+    <>
+      <SimPageShell
+        title="Comparer deux placements"
+        subtitle="Épargne → Liquidation → Transmission"
+        pageClassName="pl-page"
+        pageTestId="placement-page"
+        titleTestId="placement-title"
+        mobileSideFirst
+        actions={(
+          <>
+            <ModeToggle value={isExpert} onChange={toggleMode} testId="placement-mode-btn" />
+            <ExportMenu options={exportOptions} loading={exportLoading} />
+          </>
         )}
-      </div>
+        nav={<PlacementPhaseNav step={state.step} onStepChange={setStep} />}
+      >
+        <SimPageShell.Main className="pl-ir-left">
+          <PlacementInputsPanel
+            state={state}
+            isExpert={isExpert}
+            tmiOptions={tmiOptions}
+            setClient={setClient}
+            setProduct={setProduct}
+            setLiquidation={setLiquidation}
+            setTransmission={setTransmission}
+            updateProductOption={updateProductOption}
+            setModalOpen={(productIndex) => setModalOpen(productIndex)}
+            showAllColumns={showAllColumns}
+            setShowAllColumns={(value) => setShowAllColumns(value)}
+            produit1={produit1}
+            produit2={produit2}
+            detailRows1={detailRows1}
+            detailRows2={detailRows2}
+            columnsProduit1={columnsProduit1}
+            columnsProduit2={columnsProduit2}
+            renderEpargneRow={renderEpargneRow}
+            dmtgSelectOptions={dmtgSelectOptions}
+            selectedDmtgTrancheWidth={selectedDmtgTrancheWidth}
+            psSettings={psSettings}
+          />
+        </SimPageShell.Main>
 
-      <PlacementHypotheses />
+        <SimPageShell.Side
+          className={`pl-ir-right${!showResults ? ' pl-ir-right--placeholder' : ''}`}
+          sticky={showResults}
+        >
+          {showResults ? (
+            <PlacementResultsPanel
+              loading={loading}
+              hydrated={hydrated}
+              results={results}
+              state={state}
+            />
+          ) : (
+            <div className="pl-ir-right__spacer" aria-hidden="true" />
+          )}
+        </SimPageShell.Side>
+
+        <SimPageShell.Section>
+          <PlacementHypotheses />
+        </SimPageShell.Section>
+      </SimPageShell>
 
       {modalOpen !== null && (
         <VersementConfigModal
@@ -157,6 +189,6 @@ export default function PlacementSimulatorPage() {
           onClose={() => setModalOpen(null)}
         />
       )}
-    </div>
+    </>
   );
 }

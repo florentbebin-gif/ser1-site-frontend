@@ -34,6 +34,19 @@ test.describe('Smoke Tests - Surfaces stables', () => {
     await expect(page.locator('body')).not.toContainText('Application error');
     await expect(page.getByTestId('credit-page')).toBeVisible();
     await expect(page.getByTestId('credit-title')).toContainText('Simulateur de crédit');
+
+    const form = page.getByTestId('credit-form-pret0');
+    await expect(form).toBeVisible();
+
+    const formBoxBeforeSummary = await form.boundingBox();
+    expect(formBoxBeforeSummary).not.toBeNull();
+
+    await page.getByTestId('credit-capital-input').fill('200000');
+    await expect(page.getByTestId('credit-summary-card')).toBeVisible();
+
+    const formBoxAfterSummary = await form.boundingBox();
+    expect(formBoxAfterSummary).not.toBeNull();
+    expect(Math.abs(formBoxBeforeSummary!.width - formBoxAfterSummary!.width)).toBeLessThanOrEqual(2);
   });
 
   test('Credit aligne les champs expert et conserve l’espacement entre les grilles', async ({ page }) => {

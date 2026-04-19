@@ -101,6 +101,7 @@ Le repo reste en CSS global classique, mais la propriété des styles est désor
 ### Source de vérité & périmètre
 - Baseline obligatoire : `src/features/credit/Credit.tsx` + `src/features/credit/components/CreditV2.css`.
 - Layout partagé : `src/styles/sim/index.css`.
+- Implémentation page-level de référence : `src/components/ui/sim/SimPageShell.tsx`.
 - Styles premium partagés : `src/styles/premium-shared.css`.
 - Inputs/select/toggle : `src/features/credit/components/CreditInputs.tsx` + `CreditInputs.css`.
 - Cette norme s'applique aux futures pages `/sim/*` sauf exception explicitée en PR.
@@ -116,6 +117,7 @@ Le repo reste en CSS global classique, mais la propriété des styles est désor
   2. Ligne de contrôles
   3. Grille gauche/droite
   4. Blocs de détail (tables, accordéons, hypothèses)
+- Le rendu de cette structure doit désormais passer par `SimPageShell`, sauf exception documentée en PR.
 
 #### Recommandé
 - Colonne droite sticky pour les blocs de synthèse (`position: sticky; top: 80px`) sur desktop.
