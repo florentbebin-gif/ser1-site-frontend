@@ -1,1 +1,13 @@
-/* États partagés /sim/* — réservé aux patterns communs futurs. */
+/* États partagés /sim/* */
+
+.sim-state-card {
+  display: flex;
+  align-items: center;
+  min-height: 96px;
+  font-size: 13px;
+  color: var(--color-c9);
+}
+
+.sim-state-card--error {
+  color: var(--color-c1);
+}
