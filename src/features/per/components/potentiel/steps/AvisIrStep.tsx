@@ -77,7 +77,6 @@ export default function AvisIrStep({
   return (
     <div className="per-step per-step--avis">
       <div className="per-avis-intro">
-        <p className="premium-section-title">Avis d&apos;impôt</p>
         <p className="per-avis-copy">
           Renseignez les montants relevés sur l&apos;avis IR {avisContext.taxYear}. Le potentiel
           163 quatervicies correspond à l&apos;addition des trois reports non utilisés et du plafond
@@ -124,7 +123,7 @@ export default function AvisIrStep({
 
         <div className="per-avis-matrix-row per-avis-matrix-row--total" role="row">
           <div className="per-avis-matrix-label per-avis-matrix-label--total" role="rowheader">
-            Potentiel 163 quatervicies pour les cotisations versées en {avisContext.taxYear}
+            Plafond pour les cotisations versées en {avisContext.taxYear}
           </div>
           <div className="per-avis-matrix-operator per-avis-matrix-operator--total" aria-hidden="true">
             =

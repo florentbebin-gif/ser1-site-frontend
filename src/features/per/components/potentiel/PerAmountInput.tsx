@@ -9,6 +9,7 @@ interface PerAmountInputProps {
   placeholder?: string;
   min?: number;
   className?: string;
+  disabled?: boolean;
 }
 
 
@@ -26,6 +27,7 @@ export function PerAmountInput({
   placeholder = '0',
   min = 0,
   className = '',
+  disabled = false,
 }: PerAmountInputProps) {
   const [raw, setRaw] = useState<string | null>(null);
   const isFocused = raw !== null;
@@ -60,6 +62,7 @@ export function PerAmountInput({
       value={displayValue}
       aria-label={ariaLabel}
       placeholder={placeholder}
+      disabled={disabled}
       onFocus={handleFocus}
       onBlur={handleBlur}
       onChange={handleChange}

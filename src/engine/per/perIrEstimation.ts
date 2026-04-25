@@ -8,14 +8,14 @@
 import { computeIrResult } from '../ir/compute';
 import { computeAbattement10 } from '../ir/adjustments';
 import type { DEFAULT_TAX_SETTINGS, DEFAULT_PS_SETTINGS } from '../../constants/settingsDefaults';
-import type { SituationFiscaleInput, SituationFiscaleResult } from './types';
+import type { PerYearKey, SituationFiscaleInput, SituationFiscaleResult } from './types';
 
 export interface IrEstimationParams {
   situationFiscale: SituationFiscaleInput;
   deductionsPer: number;
   taxSettings: typeof DEFAULT_TAX_SETTINGS;
   psSettings: typeof DEFAULT_PS_SETTINGS;
-  yearKey?: string;
+  yearKey?: PerYearKey;
 }
 
 /**

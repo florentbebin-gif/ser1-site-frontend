@@ -12,6 +12,7 @@ export interface SimSelectProps {
   onChange: (_value: string) => void;
   options: SimSelectOption[];
   placeholder?: string;
+  ariaLabel?: string;
   align?: 'right' | 'left';
   forced?: boolean;
   disabled?: boolean;
@@ -25,6 +26,7 @@ export function SimSelect({
   onChange,
   options,
   placeholder,
+  ariaLabel,
   align = 'right',
   forced = false,
   disabled = false,
@@ -77,6 +79,7 @@ export function SimSelect({
         onClick={() => { if (!forced) setOpen((v) => !v); }}
         aria-haspopup="listbox"
         aria-expanded={open}
+        aria-label={ariaLabel}
         data-testid={testId}
       >
         <span className={`sim-field__select-value${!selected && placeholder ? ' sim-field__select-value--placeholder' : ''}`}>

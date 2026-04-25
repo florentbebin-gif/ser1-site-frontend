@@ -81,18 +81,21 @@ vi.mock('./PerHypotheses', () => ({
   PerHypotheses: () => <div>Hypothèses</div>,
 }));
 
+vi.mock('./PerPotentielContextSidebar', () => ({
+  PerPotentielContextSidebar: ({
+    totalAvisIrD1,
+    totalAvisIrD2,
+  }: {
+    totalAvisIrD1: number;
+    totalAvisIrD2: number;
+  }) => <div>Sidebar contexte {totalAvisIrD1} / {totalAvisIrD2}</div>,
+}));
+
 vi.mock('./PerSynthesisSidebar', () => ({
   PerSynthesisSidebar: () => <div>Sidebar finale</div>,
 }));
 
 import PerPotentielSimulator from './PerPotentielSimulator';
-
-const fmtCurrency = (value: number): string =>
-  new Intl.NumberFormat('fr-FR', {
-    style: 'currency',
-    currency: 'EUR',
-    maximumFractionDigits: 0,
-  }).format(value);
 
 function makeHookState(step: number) {
   return {
@@ -118,10 +121,10 @@ function makeHookState(step: number) {
     nombreParts: 1,
     isole: false,
     children: [],
-    revenusN1Declarant1: {},
-    revenusN1Declarant2: {},
-    projectionNDeclarant1: {},
-    projectionNDeclarant2: {},
+    revenusN1Declarant1: { statutTns: false },
+    revenusN1Declarant2: { statutTns: false },
+    projectionNDeclarant1: { statutTns: false },
+    projectionNDeclarant2: { statutTns: false },
     versementEnvisage: 0,
     mutualisationConjoints: false,
   };
@@ -137,10 +140,33 @@ function makeHookReturn(step: number) {
           irEstime: 1000,
           revenuImposableD1: 20000,
           revenuImposableD2: 0,
+          revenuFiscalRef: 20000,
+          decote: 0,
+          cehr: 0,
+          montantDansLaTMI: 1000,
         },
         plafond163Q: {
-          declarant1: { disponibleRestant: 6000 },
+          declarant1: { disponibleRestant: 6000, totalDisponible: 11000 },
           declarant2: undefined,
+        },
+        deductionFlow163Q: {
+          declarant1: { disponibleRestant: 6000, plafondDisponible: 11000 },
+        },
+        declaration2042: {
+          case6NS: 1000,
+          case6RS: 0,
+          case6QS: 0,
+          case6OS: 0,
+          case6QR: false,
+        },
+        projectionAvisSuivant: {
+          declarant1: {
+            nonUtiliseN2: 2000,
+            nonUtiliseN1: 3000,
+            nonUtiliseN: 1000,
+            plafondCalculeN: 4000,
+            plafondTotal: 10000,
+          },
         },
       }
       : null,
@@ -174,9 +200,7 @@ describe('PerPotentielSimulator', () => {
     const html = renderToStaticMarkup(<PerPotentielSimulator />);
 
     expect(html).toContain('Avis step 11000 / 7000');
-    expect(html).toContain('Potentiel 163 quatervicies');
-    expect(html).toContain(fmtCurrency(11000));
-    expect(html).toContain(fmtCurrency(7000));
+    expect(html).toContain('Sidebar contexte 11000 / 7000');
   });
 
   it('keeps the avis totals visible in the right sidebar on step 3', () => {
@@ -184,19 +208,15 @@ describe('PerPotentielSimulator', () => {
 
     const html = renderToStaticMarkup(<PerPotentielSimulator />);
 
-    expect(html).toContain('Potentiel 163 quatervicies');
-    expect(html).toContain(fmtCurrency(11000));
-    expect(html).toContain(fmtCurrency(7000));
+    expect(html).toContain('Sidebar contexte 11000 / 7000');
   });
 
-  it('shows nombre de parts next to the TMI in the live preview', () => {
+  it('keeps the context sidebar active on step 3', () => {
     mockUsePerPotentiel.mockReturnValue(makeHookReturn(3));
 
     const html = renderToStaticMarkup(<PerPotentielSimulator />);
 
-    expect(html).toContain('Nombre de parts');
-    expect(html).toContain('1');
-    expect(html).toContain('TMI');
+    expect(html).toContain('Sidebar contexte 11000 / 7000');
   });
 
   it('hides the avis totals once the simulator reaches step 4', () => {
@@ -212,7 +232,7 @@ describe('PerPotentielSimulator', () => {
 
     const html = renderToStaticMarkup(<PerPotentielSimulator />);
 
-    expect(html).not.toContain('Potentiel 163 quatervicies');
+    expect(html).toContain('Sidebar contexte 11000 / 7000');
   });
 
   it('uses the shared title row pattern for stage headers', () => {

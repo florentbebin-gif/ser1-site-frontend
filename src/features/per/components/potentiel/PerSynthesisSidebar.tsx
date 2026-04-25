@@ -25,10 +25,10 @@ export function PerSynthesisSidebar({
   versementEnvisage,
   onSetVersement,
 }: PerSynthesisSidebarProps): React.ReactElement {
-  const totalDispo = result.plafond163Q.declarant1.disponibleRestant
-    + (result.plafond163Q.declarant2?.disponibleRestant ?? 0);
-  const totalPlafond = result.plafond163Q.declarant1.totalDisponible
-    + (result.plafond163Q.declarant2?.totalDisponible ?? 0);
+  const totalDispo = result.deductionFlow163Q.declarant1.disponibleRestant
+    + (result.deductionFlow163Q.declarant2?.disponibleRestant ?? 0);
+  const totalPlafond = result.deductionFlow163Q.declarant1.plafondDisponible
+    + (result.deductionFlow163Q.declarant2?.plafondDisponible ?? 0);
   const used = totalPlafond - totalDispo;
   const donutTotal = used + totalDispo;
   const donutR = 27;

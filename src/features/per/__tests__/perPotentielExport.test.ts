@@ -10,6 +10,7 @@ const THEME_COLORS = DEFAULT_COLORS;
 
 function makeDeclarant(overrides: Record<string, number | boolean> = {}) {
   return {
+    statutTns: false,
     salaires: 0,
     fraisReels: false,
     fraisReelsMontant: 0,
@@ -78,7 +79,7 @@ describe('PER Potentiel PPTX Export', () => {
     ).toBe(true);
     expect(
       spec.slides.some(
-        (slide) => slide.type === 'content' && 'title' in slide && slide.title === 'Impact du versement',
+        (slide) => slide.type === 'content' && 'title' in slide && slide.title === 'Projection du prochain avis IR',
       ),
     ).toBe(true);
   });

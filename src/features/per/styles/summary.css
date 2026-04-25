@@ -168,6 +168,19 @@
   border-left: 3px solid var(--color-c6);
 }
 
+.per-madelin-modal {
+  width: min(960px, calc(100vw - 32px));
+}
+
+.per-madelin-modal__body {
+  display: grid;
+  gap: 16px;
+}
+
+.per-madelin-modal-card {
+  height: 100%;
+}
+
 .per-summary-breakdown-list {
   display: grid;
   gap: 10px;
