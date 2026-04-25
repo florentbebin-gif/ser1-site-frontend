@@ -71,8 +71,8 @@ function getStepMeta(
       }
       if (basis === 'current-avis') {
         return {
-          shortLabel: 'Versements N',
-          title: `Versements ${years.currentTaxYear} et estimation optionnelle`,
+          shortLabel: 'Versement N',
+          title: `Versements ${years.currentTaxYear}`,
         };
       }
       return {
@@ -81,8 +81,8 @@ function getStepMeta(
       };
     case 4:
       return {
-        shortLabel: `Estimation ${years.currentTaxYear}`,
-        title: `Estimation des revenus ${years.currentTaxYear}`,
+        shortLabel: 'Versement N',
+        title: `Versements ${years.currentTaxYear}`,
       };
     case 5:
     default:
@@ -198,9 +198,11 @@ export default function PerPotentielSimulator(): React.ReactElement {
   const usesProjectionFoyer = state.mode === 'versement-n' && (
     state.historicalBasis === 'current-avis'
       ? state.step >= 3
-      : state.needsCurrentYearEstimate && state.step >= 4
+      : state.step >= 4
   );
-  const activeIsCouple = usesProjectionFoyer ? projectionIsCouple : revenusIsCouple;
+  const activeIsCouple = usesProjectionFoyer
+    ? projectionIsCouple || (!state.needsCurrentYearEstimate && Boolean(state.avisIr2))
+    : revenusIsCouple;
   const abat10CfgRoot = fiscalContext._raw_tax?.incomeTax?.abat10 ?? {};
   const abat10SalCfgCurrent: PerAbattementConfig = abat10CfgRoot.current ?? {};
   const abat10RetCfgCurrent: PerAbattementConfig = abat10CfgRoot.retireesCurrent ?? {};
@@ -209,9 +211,16 @@ export default function PerPotentielSimulator(): React.ReactElement {
       state.mode === 'declaration-n1'
       || (state.mode === 'versement-n' && state.historicalBasis === 'previous-avis-plus-n1')
     );
+  const isVersementNStep = state.mode === 'versement-n' && (
+    (state.historicalBasis === 'current-avis' && state.step === 3)
+    || (state.historicalBasis === 'previous-avis-plus-n1' && state.step === 4)
+  );
+  const showProjectionDetailInputs = state.needsCurrentYearEstimate;
   const fiscalPreviewTitle = isRevenusStep
     ? `Synthèse déclaration IR ${years.currentTaxYear}`
-    : `Estimation fiscale ${years.currentTaxYear}`;
+    : (isVersementNStep && !showProjectionDetailInputs
+      ? `Contrôle versement ${years.currentTaxYear}`
+      : `Projection IR ${years.currentTaxYear + 1}`);
   const projectionPreviewTitle = 'Plafonds projetés';
 
   const avisBasis = state.mode === 'declaration-n1'
@@ -308,6 +317,7 @@ export default function PerPotentielSimulator(): React.ReactElement {
                   variant="revenus-n1"
                   yearLabel={`${years.currentIncomeYear}`}
                   showFoyerCard
+                  showIncomeCard
                   situationFamiliale={state.situationFamiliale}
                   isole={state.isole}
                   children={state.children}
@@ -334,6 +344,7 @@ export default function PerPotentielSimulator(): React.ReactElement {
                   variant="revenus-n1"
                   yearLabel={`${years.currentIncomeYear}`}
                   showFoyerCard
+                  showIncomeCard
                   situationFamiliale={state.situationFamiliale}
                   isole={state.isole}
                   children={state.children}
@@ -359,7 +370,8 @@ export default function PerPotentielSimulator(): React.ReactElement {
                 <SituationFiscaleStep
                   variant="versements-n"
                   yearLabel={`${years.currentTaxYear}`}
-                  showFoyerCard
+                  showFoyerCard={showProjectionDetailInputs}
+                  showIncomeCard={showProjectionDetailInputs}
                   situationFamiliale={state.projectionSituationFamiliale}
                   isole={state.projectionIsole}
                   children={state.projectionChildren}
@@ -381,11 +393,12 @@ export default function PerPotentielSimulator(): React.ReactElement {
                 />
               )}
 
-              {state.step === 4 && (
+              {state.step === 4 && state.mode === 'versement-n' && state.historicalBasis === 'previous-avis-plus-n1' && (
                 <SituationFiscaleStep
-                  variant="projection-n"
+                  variant="versements-n"
                   yearLabel={`${years.currentTaxYear}`}
-                  showFoyerCard
+                  showFoyerCard={showProjectionDetailInputs}
+                  showIncomeCard={showProjectionDetailInputs}
                   situationFamiliale={state.projectionSituationFamiliale}
                   isole={state.projectionIsole}
                   children={state.projectionChildren}

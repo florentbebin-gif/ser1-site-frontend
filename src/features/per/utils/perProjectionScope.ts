@@ -14,7 +14,6 @@ export function shouldUseProjectionForCalculation({
   step,
   mode,
   historicalBasis,
-  needsCurrentYearEstimate,
 }: PerProjectionScopeParams): boolean {
   if (mode !== 'versement-n' || historicalBasis === null) {
     return false;
@@ -24,5 +23,5 @@ export function shouldUseProjectionForCalculation({
     return step >= 3;
   }
 
-  return needsCurrentYearEstimate && step >= 4;
+  return step >= 4;
 }

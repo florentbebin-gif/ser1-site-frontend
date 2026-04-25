@@ -5,6 +5,7 @@ import type { LogoPlacement } from '../../../pptx/theme/types';
 import { exportPerPotentielExcel, type PerPotentielExcelState } from '../export/perPotentielExcelExport';
 
 type ProjectionAwarePerState = PerPotentielExcelState & Partial<{
+  step: number;
   projectionSituationFamiliale: 'celibataire' | 'marie';
   projectionNombreParts: number;
   projectionIsole: boolean;
@@ -22,7 +23,8 @@ interface UsePerPotentielExportHandlersParams {
 function usesProjectionResult(state: ProjectionAwarePerState): boolean {
   return state.mode === 'versement-n' && (
     state.historicalBasis === 'current-avis' ||
-    state.needsCurrentYearEstimate
+    state.needsCurrentYearEstimate ||
+    (state.historicalBasis === 'previous-avis-plus-n1' && state.step === 4)
   );
 }
 

@@ -11,12 +11,12 @@ describe('shouldUseProjectionForCalculation', () => {
     })).toBe(false);
   });
 
-  it('bascule sur la projection à partir de la step 4 quand l’estimation N est activée', () => {
+  it('bascule sur les versements N à partir de la step 4 après reconstitution 2025', () => {
     expect(shouldUseProjectionForCalculation({
       step: 4,
       mode: 'versement-n',
       historicalBasis: 'previous-avis-plus-n1',
-      needsCurrentYearEstimate: true,
+      needsCurrentYearEstimate: false,
     })).toBe(true);
   });
 

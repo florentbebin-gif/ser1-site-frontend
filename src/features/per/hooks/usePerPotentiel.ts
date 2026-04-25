@@ -80,7 +80,7 @@ const EMPTY_DECLARANT: DeclarantRevenus = {
 };
 
 function normalizeState(state: PerPotentielState): PerPotentielState {
-  const visibleSteps = buildVisibleSteps(state.mode, state.needsCurrentYearEstimate);
+  const visibleSteps = buildVisibleSteps(state.mode, state.historicalBasis, state.needsCurrentYearEstimate);
   const fallbackStep = visibleSteps[visibleSteps.length - 1] ?? 1;
   const step = visibleSteps.includes(state.step) ? state.step : fallbackStep;
   const foyer = normalizePerFoyer({
@@ -175,6 +175,7 @@ function saveSession(state: PerPotentielState): void {
 function buildSituationInput(
   state: PerPotentielState,
   scope: PerDeclarantScope,
+  forceCouple = false,
 ): PerPotentielInput['situationFiscale'] {
   const declarant1 = scope === 'revenus-n1' ? state.revenusN1Declarant1 : state.projectionNDeclarant1;
   const declarant2 = scope === 'revenus-n1' ? state.revenusN1Declarant2 : state.projectionNDeclarant2;
@@ -187,7 +188,7 @@ function buildSituationInput(
   const isole = scope === 'revenus-n1'
     ? state.isole
     : state.projectionIsole;
-  const isCouple = situationFamiliale === 'marie';
+  const isCouple = situationFamiliale === 'marie' || forceCouple;
 
   return {
     situationFamiliale,
@@ -229,8 +230,8 @@ export function usePerPotentiel(fiscalContext: FiscalContext): UsePerPotentielRe
   const [state, setState] = useState<PerPotentielState>(() => loadSession() ?? makeDefaultState());
   const years = useMemo(() => getPerWorkflowYears(fiscalContext), [fiscalContext]);
   const visibleSteps = useMemo(
-    () => buildVisibleSteps(state.mode, state.needsCurrentYearEstimate),
-    [state.mode, state.needsCurrentYearEstimate],
+    () => buildVisibleSteps(state.mode, state.historicalBasis, state.needsCurrentYearEstimate),
+    [state.mode, state.historicalBasis, state.needsCurrentYearEstimate],
   );
 
   const persist = useCallback((next: PerPotentielState) => {
@@ -446,6 +447,10 @@ export function usePerPotentiel(fiscalContext: FiscalContext): UsePerPotentielRe
       return null;
     }
 
+    const forceProjectionCouple = useProjection
+      && !state.needsCurrentYearEstimate
+      && Boolean(avisOverride?.avisIr2 ?? state.avisIr2);
+
     return {
       mode: state.mode,
       historicalBasis,
@@ -458,7 +463,7 @@ export function usePerPotentiel(fiscalContext: FiscalContext): UsePerPotentielRe
       }),
       situationFiscale: buildSituationInput(state, 'revenus-n1'),
       projectionFiscale: useProjection
-        ? buildSituationInput(state, 'projection-n')
+        ? buildSituationInput(state, 'projection-n', forceProjectionCouple)
         : undefined,
       avisIr: avisOverride?.avisIr ?? state.avisIr ?? undefined,
       avisIr2: avisOverride?.avisIr2 ?? state.avisIr2 ?? undefined,

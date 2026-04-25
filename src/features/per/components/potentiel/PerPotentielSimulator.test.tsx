@@ -72,11 +72,17 @@ vi.mock('./steps/AvisIrStep', () => ({
 vi.mock('./steps/SituationFiscaleStep', () => ({
   default: ({
     showFoyerCard,
+    showIncomeCard,
     situationFamiliale,
   }: {
     showFoyerCard: boolean;
+    showIncomeCard: boolean;
     situationFamiliale: 'celibataire' | 'marie';
-  }) => <div>Situation step {showFoyerCard ? 'foyer visible' : 'foyer masqué'} {situationFamiliale}</div>,
+  }) => (
+    <div>
+      Situation step {showFoyerCard ? 'foyer visible' : 'foyer masqué'} {showIncomeCard ? 'revenus visibles' : 'revenus masqués'} {situationFamiliale}
+    </div>
+  ),
 }));
 
 vi.mock('./steps/SynthesePotentielStep', () => ({
@@ -182,7 +188,7 @@ function makeHookReturn(step: number) {
         },
       }
       : null,
-    visibleSteps: [1, 2, 3],
+    visibleSteps: [1, 2, 3, 4],
     setMode: vi.fn(),
     setHistoricalBasis: vi.fn(),
     setNeedsCurrentYearEstimate: vi.fn(),
@@ -244,7 +250,7 @@ describe('PerPotentielSimulator', () => {
         historicalBasis: 'current-avis',
         needsCurrentYearEstimate: true,
       },
-      visibleSteps: [1, 2, 3, 4],
+      visibleSteps: [1, 2, 3],
     });
 
     const html = renderToStaticMarkup(<PerPotentielSimulator />);
@@ -252,7 +258,7 @@ describe('PerPotentielSimulator', () => {
     expect(html).toContain('Sidebar contexte 11000 / 7000');
   });
 
-  it('affiche une situation familiale distincte sur l’estimation 2026', () => {
+  it('affiche les revenus sur Versement N quand la projection est activée', () => {
     mockUsePerPotentiel.mockReturnValue({
       ...makeHookReturn(4),
       state: {
@@ -269,7 +275,40 @@ describe('PerPotentielSimulator', () => {
 
     const html = renderToStaticMarkup(<PerPotentielSimulator />);
 
-    expect(html).toContain('Situation step foyer visible marie');
+    expect(html).toContain('Situation step foyer visible revenus visibles marie');
+  });
+
+  it('affiche un Versement N simplifié avec avis IR 2026 sans projection', () => {
+    mockUsePerPotentiel.mockReturnValue({
+      ...makeHookReturn(3),
+      state: {
+        ...makeHookState(3),
+        historicalBasis: 'current-avis',
+        needsCurrentYearEstimate: false,
+      },
+      visibleSteps: [1, 2, 3],
+    });
+
+    const html = renderToStaticMarkup(<PerPotentielSimulator />);
+
+    expect(html).toContain('Versement N');
+    expect(html).toContain('Situation step foyer masqué revenus masqués celibataire');
+  });
+
+  it('masque les revenus sur Versement N quand la projection est inactive', () => {
+    mockUsePerPotentiel.mockReturnValue({
+      ...makeHookReturn(4),
+      state: {
+        ...makeHookState(4),
+        needsCurrentYearEstimate: false,
+        projectionSituationFamiliale: 'marie',
+      },
+      visibleSteps: [1, 2, 3, 4],
+    });
+
+    const html = renderToStaticMarkup(<PerPotentielSimulator />);
+
+    expect(html).toContain('Situation step foyer masqué revenus masqués marie');
   });
 
   it('renomme la tab déclaration en Revenus 2025 et masque la synthèse', () => {

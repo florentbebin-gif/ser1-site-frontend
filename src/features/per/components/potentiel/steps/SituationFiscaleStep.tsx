@@ -22,6 +22,7 @@ interface SituationFiscaleStepProps {
   variant: FiscalStepVariant;
   yearLabel: string;
   showFoyerCard: boolean;
+  showIncomeCard: boolean;
   situationFamiliale: 'celibataire' | 'marie';
   isole: boolean;
   children: PerChildDraft[];
@@ -62,6 +63,7 @@ export default function SituationFiscaleStep({
   variant,
   yearLabel,
   showFoyerCard,
+  showIncomeCard,
   situationFamiliale,
   isole,
   children,
@@ -182,17 +184,19 @@ export default function SituationFiscaleStep({
         </div>
       )}
 
-      <PerIncomeTable
-        isCouple={isCouple}
-        declarant1={declarant1}
-        declarant2={declarant2}
-        incomeFilters={incomeFilters}
-        abat10SalCfg={abat10SalCfg}
-        abat10RetCfg={abat10RetCfg}
-        onToggleIncomeFilter={onToggleIncomeFilter}
-        onUpdateDeclarant={onUpdateDeclarant}
-        onUpdateDeclarants={onUpdateDeclarants}
-      />
+      {showIncomeCard && (
+        <PerIncomeTable
+          isCouple={isCouple}
+          declarant1={declarant1}
+          declarant2={declarant2}
+          incomeFilters={incomeFilters}
+          abat10SalCfg={abat10SalCfg}
+          abat10RetCfg={abat10RetCfg}
+          onToggleIncomeFilter={onToggleIncomeFilter}
+          onUpdateDeclarant={onUpdateDeclarant}
+          onUpdateDeclarants={onUpdateDeclarants}
+        />
+      )}
 
       <div className="premium-card premium-card--guide sim-card--guide per-contribution-card">
         <SectionHeader

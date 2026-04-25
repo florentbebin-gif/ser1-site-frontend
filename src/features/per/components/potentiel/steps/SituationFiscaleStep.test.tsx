@@ -25,6 +25,7 @@ const baseDeclarant = {
 const baseProps = {
   variant: 'revenus-n1' as const,
   yearLabel: '2025',
+  showIncomeCard: true,
   situationFamiliale: 'celibataire' as const,
   isole: true,
   children: [{ id: 1, mode: 'charge' as const }],
@@ -97,6 +98,20 @@ describe('SituationFiscaleStep', () => {
     expect(html).toContain('Pensions, retraites et rentes');
     expect(html).toContain('Abattement 10 % pensions (foyer)');
     expect(html).toContain('Revenus fonciers nets');
+  });
+
+  it('peut masquer les revenus imposables sans masquer les versements retraite', () => {
+    const html = renderToStaticMarkup(
+      <SituationFiscaleStep
+        showFoyerCard={false}
+        {...baseProps}
+        showIncomeCard={false}
+      />,
+    );
+
+    expect(html).not.toContain('Revenus imposables');
+    expect(html).toContain('Versements retraite');
+    expect(html).toContain('PER 163 quatervicies');
   });
 
   it('uses the updated contribution notes and info button', () => {
