@@ -143,12 +143,9 @@ export function buildCover(
     valign: 'middle',
   });
   
-  // Advisor info: 2 lines, font size 12, aligned RIGHT
-  // Line 1: "Conseiller en gestion de patrimoine"
-  // Line 2: "Bureau de [location]"
-  const advisorLine1 = 'Conseiller en gestion de patrimoine';
-  const advisorLine2 = 'Bureau de ';
-  const advisorText = `${advisorLine1}\n${advisorLine2}`;
+  // Advisor info: uses the explicit right meta when provided, otherwise keeps
+  // the historical default used by existing exports.
+  const advisorText = spec.rightMeta || ctx.coverRightMeta || 'Conseiller en gestion de patrimoine\nBureau de ';
   
   addTextBox(slide, advisorText, COORDS_COVER.metaRight, {
     fontSize: 12,

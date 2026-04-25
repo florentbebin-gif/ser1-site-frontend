@@ -2,7 +2,10 @@ import { useCallback, useState } from 'react';
 import type { PerPotentielResult } from '../../../engine/per';
 import type { ThemeColors } from '../../../settings/theme';
 import type { LogoPlacement } from '../../../pptx/theme/types';
+import type { FiscalContext } from '../../../hooks/useFiscalContext';
 import { exportPerPotentielExcel, type PerPotentielExcelState } from '../export/perPotentielExcelExport';
+import { getPerWorkflowYears } from '../utils/perWorkflowYears';
+import { shouldUseProjectionForCalculation, type PerProjectionScopeStep } from '../utils/perProjectionScope';
 
 type ProjectionAwarePerState = PerPotentielExcelState & Partial<{
   step: number;
@@ -18,14 +21,16 @@ interface UsePerPotentielExportHandlersParams {
   pptxColors: ThemeColors;
   cabinetLogo?: string;
   logoPlacement?: LogoPlacement;
+  fiscalContext: FiscalContext;
 }
 
 function usesProjectionResult(state: ProjectionAwarePerState): boolean {
-  return state.mode === 'versement-n' && (
-    state.historicalBasis === 'current-avis' ||
-    state.needsCurrentYearEstimate ||
-    (state.historicalBasis === 'previous-avis-plus-n1' && state.step === 4)
-  );
+  return shouldUseProjectionForCalculation({
+    step: (state.step ?? 5) as PerProjectionScopeStep,
+    mode: state.mode ?? null,
+    historicalBasis: state.historicalBasis,
+    needsCurrentYearEstimate: state.needsCurrentYearEstimate,
+  });
 }
 
 function getExportState(state: ProjectionAwarePerState): PerPotentielExcelState {
@@ -42,12 +47,25 @@ function getExportState(state: ProjectionAwarePerState): PerPotentielExcelState 
   };
 }
 
+function resolvePassReference(passHistory: Record<number, number>, anneeRef: number): number {
+  const direct = passHistory[anneeRef];
+  if (direct != null) return direct;
+
+  const fallbackYear = Object.keys(passHistory)
+    .map(Number)
+    .filter((year) => Number.isFinite(year) && year <= anneeRef)
+    .sort((left, right) => right - left)[0];
+
+  return fallbackYear != null ? passHistory[fallbackYear] ?? 0 : 0;
+}
+
 export function usePerPotentielExportHandlers({
   state,
   result,
   pptxColors,
   cabinetLogo,
   logoPlacement,
+  fiscalContext,
 }: UsePerPotentielExportHandlersParams) {
   const [exportLoading, setExportLoading] = useState(false);
 
@@ -62,7 +80,7 @@ export function usePerPotentielExportHandlers({
         message: err.message,
         stack: err.stack,
       });
-      alert('Impossible de generer le fichier Excel.');
+      alert('Impossible de générer le fichier Excel.');
     } finally {
       setExportLoading(false);
     }
@@ -70,7 +88,7 @@ export function usePerPotentielExportHandlers({
 
   const exportPowerPoint = useCallback(async () => {
     if (!result || !state.mode) {
-      alert('Les resultats ne sont pas disponibles.');
+      alert('Les résultats ne sont pas disponibles.');
       return;
     }
 
@@ -78,6 +96,10 @@ export function usePerPotentielExportHandlers({
     try {
       const { exportPerPotentielPptx } = await import('../../../pptx/exports/perExport');
       const exportState = getExportState(state);
+      const years = getPerWorkflowYears(fiscalContext);
+      const exportUsesProjection = usesProjectionResult(state);
+      const anneeRef = exportUsesProjection ? years.currentTaxYear : years.currentIncomeYear;
+      const usesPreviousScale = anneeRef === years.previousIncomeYear;
       const dateStr = new Date().toISOString().split('T')[0].replace(/-/g, '');
       await exportPerPotentielPptx(
         {
@@ -90,6 +112,10 @@ export function usePerPotentielExportHandlers({
           mutualisationConjoints: exportState.mutualisationConjoints,
           versementEnvisage: state.versementEnvisage,
           result,
+          anneeRef,
+          passReference: resolvePassReference(fiscalContext.passHistoryByYear, anneeRef),
+          irScale: usesPreviousScale ? fiscalContext.irScalePrevious : fiscalContext.irScaleCurrent,
+          irScaleLabel: usesPreviousScale ? fiscalContext.irPreviousYearLabel : fiscalContext.irCurrentYearLabel,
         },
         pptxColors,
         {
@@ -105,11 +131,11 @@ export function usePerPotentielExportHandlers({
         message: err.message,
         stack: err.stack,
       });
-      alert('Impossible de generer le fichier PowerPoint.');
+      alert('Impossible de générer le fichier PowerPoint.');
     } finally {
       setExportLoading(false);
     }
-  }, [state, result, pptxColors, cabinetLogo, logoPlacement]);
+  }, [state, result, pptxColors, cabinetLogo, logoPlacement, fiscalContext]);
 
   return { exportExcel, exportPowerPoint, exportLoading };
 }

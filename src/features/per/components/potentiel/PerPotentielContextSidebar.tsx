@@ -6,6 +6,7 @@ interface PerPotentielContextSidebarProps {
   step: WizardStep;
   isCouple: boolean;
   showRevenusPreview: boolean;
+  showAdjustedPotentiel: boolean;
   fiscalPreviewTitle: string;
   projectionPreviewTitle: string;
   parcoursPills: Array<{ label: string; on: boolean }>;
@@ -123,6 +124,7 @@ export function PerPotentielContextSidebar({
   step,
   isCouple,
   showRevenusPreview,
+  showAdjustedPotentiel,
   fiscalPreviewTitle,
   projectionPreviewTitle,
   parcoursPills,
@@ -130,15 +132,15 @@ export function PerPotentielContextSidebar({
   totalAvisIrD2,
   result,
 }: PerPotentielContextSidebarProps): React.ReactElement {
-  const showPotentielAvis = step <= 3;
+  const showPotentielAvis = step <= 3 || showAdjustedPotentiel;
   const showLivePreview = Boolean(result && step !== 5);
-  const potentielD1 = showRevenusPreview && result
+  const potentielD1 = showAdjustedPotentiel && result
     ? result.deductionFlow163Q.declarant1.disponibleRestant
     : totalAvisIrD1;
-  const potentielD2 = showRevenusPreview && result
+  const potentielD2 = showAdjustedPotentiel && result
     ? result.deductionFlow163Q.declarant2?.disponibleRestant ?? totalAvisIrD2
     : totalAvisIrD2;
-  const potentielLabel = showRevenusPreview
+  const potentielLabel = showAdjustedPotentiel
     ? '163 quatervicies disponible après saisie'
     : "163 quatervicies issu de l'avis IR";
   const potentielItems = [

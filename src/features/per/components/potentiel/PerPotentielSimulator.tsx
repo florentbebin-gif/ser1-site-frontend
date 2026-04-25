@@ -137,6 +137,7 @@ export default function PerPotentielSimulator(): React.ReactElement {
     pptxColors,
     cabinetLogo,
     logoPlacement,
+    fiscalContext,
   });
 
   if (loading) {
@@ -432,6 +433,7 @@ export default function PerPotentielSimulator(): React.ReactElement {
             step={state.step}
             isCouple={activeIsCouple}
             showRevenusPreview={isRevenusStep}
+            showAdjustedPotentiel={isRevenusStep || isVersementNStep}
             fiscalPreviewTitle={fiscalPreviewTitle}
             projectionPreviewTitle={projectionPreviewTitle}
             parcoursPills={parcoursPills}

@@ -23,6 +23,9 @@ import type {
   PlacementDetailSlideSpec,
   PlacementHypothesesSlideSpec,
   PlacementProjectionSlideSpec,
+  PerFiscalSnapshotSlideSpec,
+  PerPlafond3ColSlideSpec,
+  PerProjectionTableSlideSpec,
 } from '../theme/types';
 import { SLIDE_SIZE } from '../designSystem/serenity';
 import { getPptxThemeFromUiSettings } from '../theme/getPptxThemeFromUiSettings';
@@ -41,6 +44,9 @@ import { buildPlacementSynthesis } from '../slides/buildPlacementSynthesis';
 import { buildPlacementDetail } from '../slides/buildPlacementDetail';
 import { buildPlacementHypotheses } from '../slides/buildPlacementHypotheses';
 import { buildPlacementProjection } from '../slides/buildPlacementProjection';
+import { buildPerFiscalSnapshot } from '../slides/buildPerFiscalSnapshot';
+import { buildPerPlafond3Col } from '../slides/buildPerPlafond3Col';
+import { buildPerProjectionTable } from '../slides/buildPerProjectionTable';
 import { injectThemeColors } from '../theme/themeBuilder';
 import { defineSlideMasters } from '../template/loadBaseTemplate';
 import { createTrackedObjectURL } from '../../utils/export/createTrackedObjectURL';
@@ -362,6 +368,15 @@ export async function exportStudyDeck(
     } else if (slideSpec.type === 'placement-projection') {
       // Placement Projection slide — paginated year-by-year table
       buildPlacementProjection(pptx, slideSpec as PlacementProjectionSlideSpec, ctx, slideIndex);
+    } else if (slideSpec.type === 'per-fiscal-snapshot') {
+      // PER — situation fiscale avec échelle TMI
+      buildPerFiscalSnapshot(pptx, slideSpec as PerFiscalSnapshotSlideSpec, ctx, slideIndex);
+    } else if (slideSpec.type === 'per-plafond-3col') {
+      // PER — plafonds en trois colonnes
+      buildPerPlafond3Col(pptx, slideSpec as PerPlafond3ColSlideSpec, ctx, slideIndex);
+    } else if (slideSpec.type === 'per-projection-table') {
+      // PER — déclaration 2042 et prochain avis IR
+      buildPerProjectionTable(pptx, slideSpec as PerProjectionTableSlideSpec, ctx, slideIndex);
     }
     
     slideIndex++;
