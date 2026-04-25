@@ -27,7 +27,7 @@ function MadelinDetailCard({
     return null;
   }
 
-  const showHint = detail.assietteVersement <= 0 && detail.cotisationsVersees <= 0;
+  const hasBaseTns = detail.assietteVersement > 0 || detail.assietteReport > 0;
 
   const rows = [
     ['Assiette de versement', detail.assietteVersement],
@@ -53,18 +53,18 @@ function MadelinDetailCard({
       </div>
 
       <div className="per-summary-breakdown-list">
-        {showHint && (
+        {!hasBaseTns ? (
           <div className="per-summary-breakdown-row per-summary-breakdown-row--muted">
             <span>Aucune base TNS saisie</span>
-            <strong>0 €</strong>
           </div>
+        ) : (
+          rows.map(([rowLabel, value]) => (
+            <div key={rowLabel} className="per-summary-breakdown-row">
+              <span>{rowLabel}</span>
+              <strong>{fmtCurrency(Number(value))}</strong>
+            </div>
+          ))
         )}
-        {rows.map(([rowLabel, value]) => (
-          <div key={rowLabel} className="per-summary-breakdown-row">
-            <span>{rowLabel}</span>
-            <strong>{fmtCurrency(Number(value))}</strong>
-          </div>
-        ))}
       </div>
     </div>
   );

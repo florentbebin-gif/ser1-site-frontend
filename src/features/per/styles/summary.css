@@ -199,6 +199,12 @@
   color: var(--color-c1);
 }
 
+.per-summary-breakdown-row--muted {
+  justify-content: flex-start;
+  color: var(--color-c9);
+  font-size: 12px;
+}
+
 .per-summary-breakdown-row--total {
   margin-top: 4px;
   padding-top: 12px;

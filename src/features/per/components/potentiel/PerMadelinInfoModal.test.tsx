@@ -23,7 +23,7 @@ const zeroDetail = {
 };
 
 describe('PerMadelinInfoModal', () => {
-  it('affiche les lignes de détail même avec une base TNS non saisie', () => {
+  it('affiche uniquement le message d’absence de base TNS quand aucun revenu TNS n’est saisi', () => {
     const html = renderToStaticMarkup(
       <PerMadelinInfoModal
         declarant1={zeroDetail}
@@ -33,7 +33,8 @@ describe('PerMadelinInfoModal', () => {
     );
 
     expect(html).toContain('Aucune base TNS saisie');
-    expect(html).toContain('Assiette de versement');
-    expect(html).toContain('Enveloppe 10 % commune');
+    expect(html).not.toContain('Assiette de versement');
+    expect(html).not.toContain('Enveloppe 10 % commune');
+    expect(html).not.toContain('0 €');
   });
 });

@@ -17,11 +17,9 @@ import { getPerWorkflowYears } from '../../utils/perWorkflowYears';
 import ModeStep from './steps/ModeStep';
 import AvisIrStep from './steps/AvisIrStep';
 import SituationFiscaleStep from './steps/SituationFiscaleStep';
-import SynthesePotentielStep from './steps/SynthesePotentielStep';
 import type { PerAbattementConfig, PerIncomeFilters } from './steps/PerIncomeTable';
 import { PerHypotheses } from './PerHypotheses';
 import { PerPotentielContextSidebar } from './PerPotentielContextSidebar';
-import { PerSynthesisSidebar } from './PerSynthesisSidebar';
 import '../../styles/index.css';
 
 type StepMeta = {
@@ -67,7 +65,7 @@ function getStepMeta(
     case 3:
       if (mode === 'declaration-n1') {
         return {
-          shortLabel: 'Déclaration',
+          shortLabel: `Revenus ${years.currentIncomeYear}`,
           title: `Revenus ${years.currentIncomeYear} et versements à déclarer`,
         };
       }
@@ -111,14 +109,17 @@ export default function PerPotentielSimulator(): React.ReactElement {
     setNeedsCurrentYearEstimate,
     updateAvisIr,
     updateSituation,
+    updateProjectionSituation,
     updateDeclarant,
+    updateDeclarants,
     addChild,
+    addProjectionChild,
     updateChildMode,
+    updateProjectionChildMode,
     removeChild,
-    setVersementEnvisage,
+    removeProjectionChild,
     goToStep,
     reset,
-    isCouple,
   } = usePerPotentiel(fiscalContext);
 
   useEffect(() => {
@@ -161,8 +162,8 @@ export default function PerPotentielSimulator(): React.ReactElement {
   const activeStep = getStepMeta(state.step, state.mode, state.historicalBasis, years);
   const stepIndex = visibleSteps.indexOf(state.step);
   const exportOptions = [
-    { label: 'Excel', onClick: exportExcel, disabled: !result || state.step !== 5 },
-    { label: 'PowerPoint', onClick: exportPowerPoint, disabled: !result || state.step !== 5 },
+    { label: 'Excel', onClick: exportExcel, disabled: !result },
+    { label: 'PowerPoint', onClick: exportPowerPoint, disabled: !result },
   ];
 
   // Pills parcours dans la sidebar
@@ -192,6 +193,14 @@ export default function PerPotentielSimulator(): React.ReactElement {
   const parcoursPills = buildPills();
   const totalAvisIrD1 = sumAvisIrPlafonds(state.avisIr);
   const totalAvisIrD2 = sumAvisIrPlafonds(state.avisIr2);
+  const revenusIsCouple = state.situationFamiliale === 'marie';
+  const projectionIsCouple = state.projectionSituationFamiliale === 'marie';
+  const usesProjectionFoyer = state.mode === 'versement-n' && (
+    state.historicalBasis === 'current-avis'
+      ? state.step >= 3
+      : state.needsCurrentYearEstimate && state.step >= 4
+  );
+  const activeIsCouple = usesProjectionFoyer ? projectionIsCouple : revenusIsCouple;
   const abat10CfgRoot = fiscalContext._raw_tax?.incomeTax?.abat10 ?? {};
   const abat10SalCfgCurrent: PerAbattementConfig = abat10CfgRoot.current ?? {};
   const abat10RetCfgCurrent: PerAbattementConfig = abat10CfgRoot.retireesCurrent ?? {};
@@ -200,6 +209,10 @@ export default function PerPotentielSimulator(): React.ReactElement {
       state.mode === 'declaration-n1'
       || (state.mode === 'versement-n' && state.historicalBasis === 'previous-avis-plus-n1')
     );
+  const fiscalPreviewTitle = isRevenusStep
+    ? `Synthèse déclaration IR ${years.currentTaxYear}`
+    : `Estimation fiscale ${years.currentTaxYear}`;
+  const projectionPreviewTitle = 'Plafonds projetés';
 
   const avisBasis = state.mode === 'declaration-n1'
     ? 'previous-avis-plus-n1'
@@ -298,7 +311,7 @@ export default function PerPotentielSimulator(): React.ReactElement {
                   situationFamiliale={state.situationFamiliale}
                   isole={state.isole}
                   children={state.children}
-                  isCouple={isCouple}
+                  isCouple={revenusIsCouple}
                   mutualisationConjoints={state.mutualisationConjoints}
                   declarant1={state.revenusN1Declarant1}
                   declarant2={state.revenusN1Declarant2}
@@ -312,6 +325,7 @@ export default function PerPotentielSimulator(): React.ReactElement {
                   onRemoveChild={removeChild}
                   onToggleIncomeFilter={toggleIncomeFilter}
                   onUpdateDeclarant={(decl, patch) => updateDeclarant('revenus-n1', decl, patch)}
+                  onUpdateDeclarants={(patches) => updateDeclarants('revenus-n1', patches)}
                 />
               )}
 
@@ -323,7 +337,7 @@ export default function PerPotentielSimulator(): React.ReactElement {
                   situationFamiliale={state.situationFamiliale}
                   isole={state.isole}
                   children={state.children}
-                  isCouple={isCouple}
+                  isCouple={revenusIsCouple}
                   mutualisationConjoints={state.mutualisationConjoints}
                   declarant1={state.revenusN1Declarant1}
                   declarant2={state.revenusN1Declarant2}
@@ -337,6 +351,7 @@ export default function PerPotentielSimulator(): React.ReactElement {
                   onRemoveChild={removeChild}
                   onToggleIncomeFilter={toggleIncomeFilter}
                   onUpdateDeclarant={(decl, patch) => updateDeclarant('revenus-n1', decl, patch)}
+                  onUpdateDeclarants={(patches) => updateDeclarants('revenus-n1', patches)}
                 />
               )}
 
@@ -345,23 +360,24 @@ export default function PerPotentielSimulator(): React.ReactElement {
                   variant="versements-n"
                   yearLabel={`${years.currentTaxYear}`}
                   showFoyerCard
-                  situationFamiliale={state.situationFamiliale}
-                  isole={state.isole}
-                  children={state.children}
-                  isCouple={isCouple}
-                  mutualisationConjoints={state.mutualisationConjoints}
+                  situationFamiliale={state.projectionSituationFamiliale}
+                  isole={state.projectionIsole}
+                  children={state.projectionChildren}
+                  isCouple={projectionIsCouple}
+                  mutualisationConjoints={state.projectionMutualisationConjoints}
                   declarant1={state.projectionNDeclarant1}
                   declarant2={state.projectionNDeclarant2}
                   plafondMadelin={result?.plafondMadelin}
                   incomeFilters={incomeFilters}
                   abat10SalCfg={abat10SalCfgCurrent}
                   abat10RetCfg={abat10RetCfgCurrent}
-                  onUpdateSituation={updateSituation}
-                  onAddChild={addChild}
-                  onUpdateChildMode={updateChildMode}
-                  onRemoveChild={removeChild}
+                  onUpdateSituation={updateProjectionSituation}
+                  onAddChild={addProjectionChild}
+                  onUpdateChildMode={updateProjectionChildMode}
+                  onRemoveChild={removeProjectionChild}
                   onToggleIncomeFilter={toggleIncomeFilter}
                   onUpdateDeclarant={(decl, patch) => updateDeclarant('projection-n', decl, patch)}
+                  onUpdateDeclarants={(patches) => updateDeclarants('projection-n', patches)}
                 />
               )}
 
@@ -369,33 +385,28 @@ export default function PerPotentielSimulator(): React.ReactElement {
                 <SituationFiscaleStep
                   variant="projection-n"
                   yearLabel={`${years.currentTaxYear}`}
-                  showFoyerCard={false}
-                  situationFamiliale={state.situationFamiliale}
-                  isole={state.isole}
-                  children={state.children}
-                  isCouple={isCouple}
-                  mutualisationConjoints={state.mutualisationConjoints}
+                  showFoyerCard
+                  situationFamiliale={state.projectionSituationFamiliale}
+                  isole={state.projectionIsole}
+                  children={state.projectionChildren}
+                  isCouple={projectionIsCouple}
+                  mutualisationConjoints={state.projectionMutualisationConjoints}
                   declarant1={state.projectionNDeclarant1}
                   declarant2={state.projectionNDeclarant2}
                   plafondMadelin={result?.plafondMadelin}
                   incomeFilters={incomeFilters}
                   abat10SalCfg={abat10SalCfgCurrent}
                   abat10RetCfg={abat10RetCfgCurrent}
-                  onUpdateSituation={updateSituation}
-                  onAddChild={addChild}
-                  onUpdateChildMode={updateChildMode}
-                  onRemoveChild={removeChild}
+                  onUpdateSituation={updateProjectionSituation}
+                  onAddChild={addProjectionChild}
+                  onUpdateChildMode={updateProjectionChildMode}
+                  onRemoveChild={removeProjectionChild}
                   onToggleIncomeFilter={toggleIncomeFilter}
                   onUpdateDeclarant={(decl, patch) => updateDeclarant('projection-n', decl, patch)}
+                  onUpdateDeclarants={(patches) => updateDeclarants('projection-n', patches)}
                 />
               )}
 
-              {state.step === 5 && (
-                <SynthesePotentielStep
-                  result={result}
-                  isCouple={isCouple}
-                />
-              )}
             </div>
 
           </div>
@@ -404,26 +415,17 @@ export default function PerPotentielSimulator(): React.ReactElement {
 
         {state.mode !== null && (
         <aside className="per-potentiel-context sim-grid__col sim-grid__col--sticky">
-          {state.step !== 5 && (
-            <PerPotentielContextSidebar
-              step={state.step}
-              isCouple={isCouple}
-              showRevenusPreview={isRevenusStep}
-              parcoursPills={parcoursPills}
-              totalAvisIrD1={totalAvisIrD1}
-              totalAvisIrD2={totalAvisIrD2}
-              result={result}
-            />
-          )}
-
-          {result && state.step === 5 && (
-            <PerSynthesisSidebar
-              result={result}
-              modeVersement={state.mode === 'versement-n'}
-              versementEnvisage={state.versementEnvisage}
-              onSetVersement={setVersementEnvisage}
-            />
-          )}
+          <PerPotentielContextSidebar
+            step={state.step}
+            isCouple={activeIsCouple}
+            showRevenusPreview={isRevenusStep}
+            fiscalPreviewTitle={fiscalPreviewTitle}
+            projectionPreviewTitle={projectionPreviewTitle}
+            parcoursPills={parcoursPills}
+            totalAvisIrD1={totalAvisIrD1}
+            totalAvisIrD2={totalAvisIrD2}
+            result={result}
+          />
         </aside>
         )}
       </div>

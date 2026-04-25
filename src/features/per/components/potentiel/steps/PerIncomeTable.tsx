@@ -4,6 +4,7 @@ import { SimSelect } from '@/components/ui/sim/SimSelect';
 import { computeAbattement10 } from '../../../../../engine/ir/abattement10';
 import type { DeclarantRevenus } from '../../../../../engine/per';
 import { formatInteger } from '../../../../../utils/formatNumber';
+import type { PerDeclarantPatch } from '../../../hooks/usePerPotentiel';
 import { PerAmountInput } from '../PerAmountInput';
 
 export type PerIncomeFilters = {
@@ -153,6 +154,24 @@ function buildTnsTogglePatch(enabled: boolean): Partial<DeclarantRevenus> {
   };
 }
 
+export function buildTnsFoyerTogglePatches({
+  isCouple,
+  declarant1,
+  declarant2,
+}: {
+  isCouple: boolean;
+  declarant1: DeclarantRevenus;
+  declarant2: DeclarantRevenus;
+}): PerDeclarantPatch[] {
+  const isActive = declarant1.statutTns || (isCouple && declarant2.statutTns);
+  const patch = buildTnsTogglePatch(!isActive);
+
+  return [
+    { decl: 1 as const, patch },
+    ...(isCouple ? [{ decl: 2 as const, patch }] : []),
+  ];
+}
+
 function DividerRow({ isCouple }: { isCouple: boolean }): React.ReactElement {
   return (
     <tr className="per-divider-row">
@@ -172,6 +191,7 @@ export function PerIncomeTable({
   abat10RetCfg,
   onToggleIncomeFilter,
   onUpdateDeclarant,
+  onUpdateDeclarants,
 }: {
   isCouple: boolean;
   declarant1: DeclarantRevenus;
@@ -181,10 +201,14 @@ export function PerIncomeTable({
   abat10RetCfg: PerAbattementConfig;
   onToggleIncomeFilter: (_key: keyof PerIncomeFilters) => void;
   onUpdateDeclarant: (_decl: 1 | 2, _patch: Partial<DeclarantRevenus>) => void;
+  onUpdateDeclarants: (_patches: PerDeclarantPatch[]) => void;
 }): React.ReactElement {
-  const showTnsRows = declarant1.statutTns || declarant2.statutTns;
+  const showTnsRows = declarant1.statutTns || (isCouple && declarant2.statutTns);
   const showPensionRows = incomeFilters.pension === true;
   const showFoncierRow = incomeFilters.foncier === true;
+  const toggleTns = () => {
+    onUpdateDeclarants(buildTnsFoyerTogglePatches({ isCouple, declarant1, declarant2 }));
+  };
 
   const abat10SalD1 = computeAbattement10(
     (declarant1.salaires || 0) + (declarant1.art62 || 0),
@@ -209,24 +233,13 @@ export function PerIncomeTable({
           <div className="per-income-filters" role="group" aria-label="Filtres des lignes de revenus imposables">
             <button
               type="button"
-              className={`per-income-filter-btn${declarant1.statutTns ? ' is-active' : ''}`}
-              onClick={() => onUpdateDeclarant(1, buildTnsTogglePatch(!declarant1.statutTns))}
-              aria-pressed={declarant1.statutTns}
-              data-testid="per-toggle-tns-d1"
+              className={`per-income-filter-btn${showTnsRows ? ' is-active' : ''}`}
+              onClick={toggleTns}
+              aria-pressed={showTnsRows}
+              data-testid="per-toggle-tns"
             >
-              D1 TNS
+              TNS
             </button>
-            {isCouple && (
-              <button
-                type="button"
-                className={`per-income-filter-btn${declarant2.statutTns ? ' is-active' : ''}`}
-                onClick={() => onUpdateDeclarant(2, buildTnsTogglePatch(!declarant2.statutTns))}
-                aria-pressed={declarant2.statutTns}
-                data-testid="per-toggle-tns-d2"
-              >
-                D2 TNS
-              </button>
-            )}
             <button
               type="button"
               className={`per-income-filter-btn${showPensionRows ? ' is-active' : ''}`}

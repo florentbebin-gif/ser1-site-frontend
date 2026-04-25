@@ -12,7 +12,7 @@ const years: PerWorkflowYears = {
 };
 
 describe('resolvePerCalculationYear', () => {
-  it('utilise le barème IR 2025 pour la tab Revenus 2025', () => {
+  it('utilise le barème courant 2026 sur la tab Revenus 2025', () => {
     expect(resolvePerCalculationYear({
       step: 3,
       mode: 'versement-n',
@@ -21,11 +21,11 @@ describe('resolvePerCalculationYear', () => {
       years,
     })).toEqual({
       anneeRef: 2025,
-      yearKey: 'previous',
+      yearKey: 'current',
     });
   });
 
-  it('utilise le barème courant pour la projection 2026', () => {
+  it('utilise le même barème courant pour la projection 2026 avec le PASS 2026', () => {
     expect(resolvePerCalculationYear({
       step: 4,
       mode: 'versement-n',

@@ -70,7 +70,13 @@ vi.mock('./steps/AvisIrStep', () => ({
 }));
 
 vi.mock('./steps/SituationFiscaleStep', () => ({
-  default: () => <div>Situation step</div>,
+  default: ({
+    showFoyerCard,
+    situationFamiliale,
+  }: {
+    showFoyerCard: boolean;
+    situationFamiliale: 'celibataire' | 'marie';
+  }) => <div>Situation step {showFoyerCard ? 'foyer visible' : 'foyer masqué'} {situationFamiliale}</div>,
 }));
 
 vi.mock('./steps/SynthesePotentielStep', () => ({
@@ -121,6 +127,12 @@ function makeHookState(step: number) {
     nombreParts: 1,
     isole: false,
     children: [],
+    projectionSituationFamiliale: 'celibataire',
+    projectionNombreParts: 1,
+    projectionIsole: false,
+    projectionChildren: [],
+    projectionMutualisationConjoints: false,
+    projectionFoyerEdited: false,
     revenusN1Declarant1: { statutTns: false },
     revenusN1Declarant2: { statutTns: false },
     projectionNDeclarant1: { statutTns: false },
@@ -170,16 +182,21 @@ function makeHookReturn(step: number) {
         },
       }
       : null,
-    visibleSteps: [1, 2, 3, 5],
+    visibleSteps: [1, 2, 3],
     setMode: vi.fn(),
     setHistoricalBasis: vi.fn(),
     setNeedsCurrentYearEstimate: vi.fn(),
     updateAvisIr: vi.fn(),
     updateSituation: vi.fn(),
+    updateProjectionSituation: vi.fn(),
     updateDeclarant: vi.fn(),
+    updateDeclarants: vi.fn(),
     addChild: vi.fn(),
+    addProjectionChild: vi.fn(),
     updateChildMode: vi.fn(),
+    updateProjectionChildMode: vi.fn(),
     removeChild: vi.fn(),
+    removeProjectionChild: vi.fn(),
     setVersementEnvisage: vi.fn(),
     nextStep: vi.fn(),
     prevStep: vi.fn(),
@@ -227,12 +244,49 @@ describe('PerPotentielSimulator', () => {
         historicalBasis: 'current-avis',
         needsCurrentYearEstimate: true,
       },
-      visibleSteps: [1, 2, 3, 4, 5],
+      visibleSteps: [1, 2, 3, 4],
     });
 
     const html = renderToStaticMarkup(<PerPotentielSimulator />);
 
     expect(html).toContain('Sidebar contexte 11000 / 7000');
+  });
+
+  it('affiche une situation familiale distincte sur l’estimation 2026', () => {
+    mockUsePerPotentiel.mockReturnValue({
+      ...makeHookReturn(4),
+      state: {
+        ...makeHookState(4),
+        needsCurrentYearEstimate: true,
+        projectionSituationFamiliale: 'marie',
+        projectionNombreParts: 2,
+        projectionIsole: false,
+        projectionMutualisationConjoints: true,
+        projectionFoyerEdited: true,
+      },
+      visibleSteps: [1, 2, 3, 4],
+    });
+
+    const html = renderToStaticMarkup(<PerPotentielSimulator />);
+
+    expect(html).toContain('Situation step foyer visible marie');
+  });
+
+  it('renomme la tab déclaration en Revenus 2025 et masque la synthèse', () => {
+    mockUsePerPotentiel.mockReturnValue({
+      ...makeHookReturn(3),
+      state: {
+        ...makeHookState(3),
+        mode: 'declaration-n1',
+      },
+      visibleSteps: [1, 2, 3],
+    });
+
+    const html = renderToStaticMarkup(<PerPotentielSimulator />);
+
+    expect(html).toContain('Revenus 2025');
+    expect(html).not.toContain('>Déclaration<');
+    expect(html).not.toContain('Synthèse');
   });
 
   it('uses the shared title row pattern for stage headers', () => {

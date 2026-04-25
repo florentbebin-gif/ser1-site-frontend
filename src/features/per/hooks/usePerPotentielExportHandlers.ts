@@ -4,12 +4,40 @@ import type { ThemeColors } from '../../../settings/theme';
 import type { LogoPlacement } from '../../../pptx/theme/types';
 import { exportPerPotentielExcel, type PerPotentielExcelState } from '../export/perPotentielExcelExport';
 
+type ProjectionAwarePerState = PerPotentielExcelState & Partial<{
+  projectionSituationFamiliale: 'celibataire' | 'marie';
+  projectionNombreParts: number;
+  projectionIsole: boolean;
+  projectionMutualisationConjoints: boolean;
+}>;
+
 interface UsePerPotentielExportHandlersParams {
-  state: PerPotentielExcelState;
+  state: ProjectionAwarePerState;
   result: PerPotentielResult | null;
   pptxColors: ThemeColors;
   cabinetLogo?: string;
   logoPlacement?: LogoPlacement;
+}
+
+function usesProjectionResult(state: ProjectionAwarePerState): boolean {
+  return state.mode === 'versement-n' && (
+    state.historicalBasis === 'current-avis' ||
+    state.needsCurrentYearEstimate
+  );
+}
+
+function getExportState(state: ProjectionAwarePerState): PerPotentielExcelState {
+  if (!usesProjectionResult(state)) {
+    return state;
+  }
+
+  return {
+    ...state,
+    situationFamiliale: state.projectionSituationFamiliale ?? state.situationFamiliale,
+    nombreParts: state.projectionNombreParts ?? state.nombreParts,
+    isole: state.projectionIsole ?? state.isole,
+    mutualisationConjoints: state.projectionMutualisationConjoints ?? state.mutualisationConjoints,
+  };
 }
 
 export function usePerPotentielExportHandlers({
@@ -24,7 +52,7 @@ export function usePerPotentielExportHandlers({
   const exportExcel = useCallback(async () => {
     setExportLoading(true);
     try {
-      await exportPerPotentielExcel(state, result, pptxColors.c1, pptxColors.c7);
+      await exportPerPotentielExcel(getExportState(state), result, pptxColors.c1, pptxColors.c7);
     } catch (errorExport) {
       const err = errorExport instanceof Error ? errorExport : new Error(String(errorExport));
       console.error('[PerPotentielExcel] Export failed', {
@@ -47,16 +75,17 @@ export function usePerPotentielExportHandlers({
     setExportLoading(true);
     try {
       const { exportPerPotentielPptx } = await import('../../../pptx/exports/perExport');
+      const exportState = getExportState(state);
       const dateStr = new Date().toISOString().split('T')[0].replace(/-/g, '');
       await exportPerPotentielPptx(
         {
           mode: state.mode,
           historicalBasis: state.historicalBasis,
           needsCurrentYearEstimate: state.needsCurrentYearEstimate,
-          situationFamiliale: state.situationFamiliale,
-          nombreParts: state.nombreParts,
-          isole: state.isole,
-          mutualisationConjoints: state.mutualisationConjoints,
+          situationFamiliale: exportState.situationFamiliale,
+          nombreParts: exportState.nombreParts,
+          isole: exportState.isole,
+          mutualisationConjoints: exportState.mutualisationConjoints,
           versementEnvisage: state.versementEnvisage,
           result,
         },
