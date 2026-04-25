@@ -139,8 +139,8 @@ export default function ModeStep({
                 {needsCurrentYearEstimate && (
                   <p className="per-mode-toggle-hint">
                     L&apos;estimation {years.currentTaxYear} est activée. Vous renseignerez les revenus
-                    et versements de l&apos;année en cours (Madelin, PERCO, PEROB, art. 83) à l&apos;étape
-                    suivante.
+                    et versements de l&apos;année en cours (Madelin, PERCO, PEROB, art. 83) dans la tab
+                    Versement N.
                   </p>
                 )}
               </div>
