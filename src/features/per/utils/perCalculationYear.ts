@@ -18,7 +18,7 @@ export interface PerCalculationYear {
 }
 
 function resolveYearKey(anneeRef: number, years: PerWorkflowYears): PerYearKey {
-  if (anneeRef === years.previousTaxYear) {
+  if (anneeRef === years.previousIncomeYear) {
     return 'previous';
   }
 

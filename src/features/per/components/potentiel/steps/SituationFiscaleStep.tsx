@@ -5,6 +5,7 @@
 import React, { useState } from 'react';
 import { SimSelect } from '@/components/ui/sim/SimSelect';
 import type { DeclarantRevenus, PlafondMadelinDetail } from '../../../../../engine/per';
+import type { PerDeclarantPatch } from '../../../hooks/usePerPotentiel';
 import type { PerChildDraft } from '../../../utils/perParts';
 import { PerAmountInput } from '../PerAmountInput';
 import { PerMadelinInfoModal } from '../PerMadelinInfoModal';
@@ -45,6 +46,7 @@ interface SituationFiscaleStepProps {
   onRemoveChild: (_id: number) => void;
   onToggleIncomeFilter: (_key: keyof PerIncomeFilters) => void;
   onUpdateDeclarant: (_decl: 1 | 2, _patch: Partial<DeclarantRevenus>) => void;
+  onUpdateDeclarants: (_patches: PerDeclarantPatch[]) => void;
 }
 
 type ContributionFieldKey =
@@ -77,6 +79,7 @@ export default function SituationFiscaleStep({
   onRemoveChild,
   onToggleIncomeFilter,
   onUpdateDeclarant,
+  onUpdateDeclarants,
 }: SituationFiscaleStepProps): React.ReactElement {
   const [showMadelinInfo, setShowMadelinInfo] = useState(false);
   const showTnsContributionRows = declarant1.statutTns || declarant2.statutTns;
@@ -188,6 +191,7 @@ export default function SituationFiscaleStep({
         abat10RetCfg={abat10RetCfg}
         onToggleIncomeFilter={onToggleIncomeFilter}
         onUpdateDeclarant={onUpdateDeclarant}
+        onUpdateDeclarants={onUpdateDeclarants}
       />
 
       <div className="premium-card premium-card--guide sim-card--guide per-contribution-card">

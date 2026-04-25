@@ -82,7 +82,7 @@ const result: PerPotentielResult = {
       reste15Versement: 0,
       reste15Report: 0,
       reste10: 0,
-      disponibleRestant: 0,
+      disponibleRestant: 999,
       surplusAReintegrer: 0,
       depassement: false,
     },
@@ -101,7 +101,7 @@ const result: PerPotentielResult = {
       reste15Versement: 0,
       reste15Report: 0,
       reste10: 0,
-      disponibleRestant: 0,
+      disponibleRestant: 888,
       surplusAReintegrer: 0,
       depassement: false,
     },
@@ -144,6 +144,8 @@ describe('PerPotentielContextSidebar', () => {
         step={3}
         isCouple
         showRevenusPreview
+        fiscalPreviewTitle="Synthèse déclaration IR 2026"
+        projectionPreviewTitle="Plafonds projetés"
         parcoursPills={[{ label: 'Avis IR 2025', on: true }]}
         totalAvisIrD1={11111}
         totalAvisIrD2={7777}
@@ -161,15 +163,25 @@ describe('PerPotentielContextSidebar', () => {
     expect(html).toContain('6NT');
     expect(html).toContain('Déclarant 1');
     expect(html).toContain('Déclarant 2');
-    expect((html.match(/Aperçu en direct/g) ?? []).length).toBe(1);
+    expect(html).toContain('Enveloppes Madelin N');
+    expect(html).toContain(fmtCurrency(999));
+    expect(html).toContain(fmtCurrency(888));
+    expect(html).not.toContain('D1 15 %');
+    expect(html).not.toContain('D1 10 %');
+    expect(html).not.toContain('D2 15 %');
+    expect(html).not.toContain('D2 10 %');
+    expect(html).toContain('Synthèse déclaration IR 2026');
+    expect(html).not.toContain('Aperçu en direct');
   });
 
-  it('keeps the split live preview outside the revenus step', () => {
+  it('keeps the split preview outside the revenus step with contextual titles', () => {
     const html = renderToStaticMarkup(
       <PerPotentielContextSidebar
         step={3}
         isCouple
         showRevenusPreview={false}
+        fiscalPreviewTitle="Estimation fiscale 2026"
+        projectionPreviewTitle="Plafonds projetés"
         parcoursPills={[{ label: 'Avis IR 2025', on: true }]}
         totalAvisIrD1={11111}
         totalAvisIrD2={7777}
@@ -177,7 +189,9 @@ describe('PerPotentielContextSidebar', () => {
       />,
     );
 
-    expect((html.match(/Aperçu en direct/g) ?? []).length).toBe(2);
+    expect(html).toContain('Estimation fiscale 2026');
+    expect(html).toContain('Plafonds projetés');
+    expect(html).not.toContain('Aperçu en direct');
     expect(html).toContain(fmtCurrency(11111));
   });
 });

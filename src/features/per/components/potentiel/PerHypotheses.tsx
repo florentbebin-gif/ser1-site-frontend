@@ -7,6 +7,7 @@ const PER_ASSUMPTIONS: string[] = [
   'Les versements obligatoires employeur (art. 83 / PERO / PEROB) viennent en déduction du plafond 163 quatervicies.',
   'La mutualisation des plafonds entre conjoints (case 6QR) suppose une imposition commune.',
   'Les revenus projetés pour l\'année en cours sont estimatifs et ne remplacent pas la déclaration définitive.',
+  'L’estimation 2026 utilise le dernier barème IR disponible dans Settings > Impôts (barème 2026 sur revenus 2025) ; elle devra être actualisée lorsque le barème suivant sera connu.',
   'Date limite de versement déductible : 31 décembre de l\'année fiscale en cours.',
 ];
 

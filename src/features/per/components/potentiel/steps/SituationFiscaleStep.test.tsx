@@ -1,6 +1,7 @@
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it, vi } from 'vitest';
 import SituationFiscaleStep from './SituationFiscaleStep';
+import { buildTnsFoyerTogglePatches } from './PerIncomeTable';
 
 const baseDeclarant = {
   statutTns: false,
@@ -41,6 +42,7 @@ const baseProps = {
   onRemoveChild: vi.fn(),
   onToggleIncomeFilter: vi.fn(),
   onUpdateDeclarant: vi.fn(),
+  onUpdateDeclarants: vi.fn(),
 };
 
 describe('SituationFiscaleStep', () => {
@@ -85,7 +87,9 @@ describe('SituationFiscaleStep', () => {
       />,
     );
 
-    expect(html).toContain('D1 TNS');
+    expect(html).toContain('TNS');
+    expect(html).not.toContain('D1 TNS');
+    expect(html).not.toContain('D2 TNS');
     expect(html).toContain('Pension');
     expect(html).toContain('Foncier');
     expect(html).toContain('Revenus des associés / gérants');
@@ -108,5 +112,45 @@ describe('SituationFiscaleStep', () => {
     expect(html).toContain('contribue à 6QS / 6QT');
     expect(html).toContain('nécessaire pour le calcul de l');
     expect(html).toContain('Afficher le détail des enveloppes Madelin 154 bis');
+  });
+
+  it('builds a global TNS toggle patch for the whole foyer', () => {
+    expect(buildTnsFoyerTogglePatches({
+      isCouple: true,
+      declarant1: baseDeclarant,
+      declarant2: baseDeclarant,
+    })).toEqual([
+      { decl: 1, patch: { statutTns: true } },
+      { decl: 2, patch: { statutTns: true } },
+    ]);
+
+    expect(buildTnsFoyerTogglePatches({
+      isCouple: true,
+      declarant1: { ...baseDeclarant, statutTns: false },
+      declarant2: { ...baseDeclarant, statutTns: true, bic: 50_000 },
+    })).toEqual([
+      {
+        decl: 1,
+        patch: {
+          statutTns: false,
+          art62: 0,
+          bic: 0,
+          cotisationsMadelin154bis: 0,
+          cotisationsMadelinRetraite: 0,
+          cotisationsPrevo: 0,
+        },
+      },
+      {
+        decl: 2,
+        patch: {
+          statutTns: false,
+          art62: 0,
+          bic: 0,
+          cotisationsMadelin154bis: 0,
+          cotisationsMadelinRetraite: 0,
+          cotisationsPrevo: 0,
+        },
+      },
+    ]);
   });
 });

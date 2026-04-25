@@ -239,7 +239,7 @@
 .per-potentiel-mini-kpis-row {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px;
+  gap: 8px;
 }
 
 .per-potentiel-mini-kpi {
@@ -274,6 +274,111 @@
   font-weight: 600;
 }
 
+.per-potentiel-declarant-pair {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(118px, 1fr));
+  gap: 10px;
+}
+
+.per-potentiel-declarant-metric {
+  padding: 11px 12px;
+  border-radius: 10px;
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--color-c4) 32%, #FFFFFF), #FFFFFF 78%);
+}
+
+.per-potentiel-declarant-metric__label {
+  display: block;
+  margin-bottom: 5px;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--color-c9) 78%, var(--color-c10));
+}
+
+.per-potentiel-declarant-metric__value {
+  display: block;
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1.1;
+  color: var(--color-c1);
+  font-variant-numeric: tabular-nums;
+}
+
+.per-potentiel-declarant-pair--compact .per-potentiel-declarant-metric {
+  padding: 9px 11px;
+  background: color-mix(in srgb, var(--color-c7) 82%, #FFFFFF);
+}
+
+.per-potentiel-declarant-pair--compact .per-potentiel-declarant-metric__value {
+  font-size: 17px;
+  font-weight: 600;
+}
+
+.per-potentiel-secondary-metric {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 3px;
+  min-width: 0;
+  padding: 7px 9px;
+  border-radius: 9px;
+  background: color-mix(in srgb, var(--color-c7) 78%, #FFFFFF);
+}
+
+.per-potentiel-secondary-metric__label {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-c9);
+}
+
+.per-potentiel-secondary-metric__value {
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.1;
+  color: var(--color-c1);
+  font-variant-numeric: tabular-nums;
+}
+
+.per-potentiel-compact-metrics {
+  display: grid;
+  gap: 5px;
+  margin: 0;
+}
+
+.per-potentiel-compact-metric {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  min-width: 0;
+}
+
+.per-potentiel-compact-metric dt,
+.per-potentiel-compact-metric dd {
+  margin: 0;
+}
+
+.per-potentiel-compact-metric dt {
+  min-width: 0;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--color-c9);
+}
+
+.per-potentiel-compact-metric dd {
+  flex-shrink: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-c1);
+  font-variant-numeric: tabular-nums;
+}
+
 .per-potentiel-context-section {
   display: grid;
   gap: 12px;
@@ -286,7 +391,7 @@
 
 .per-potentiel-preview-columns {
   display: grid;
-  gap: 16px;
+  gap: 14px;
 }
 
 .per-potentiel-preview-columns.is-couple {
@@ -295,12 +400,12 @@
 
 .per-potentiel-preview-column {
   display: grid;
-  gap: 10px;
+  gap: 8px;
 }
 
 .per-potentiel-preview-columns.is-couple .per-potentiel-preview-column + .per-potentiel-preview-column {
-  padding-left: 16px;
-  border-left: 1px solid var(--color-c8);
+  padding-left: 14px;
+  border-left: 1px solid color-mix(in srgb, var(--color-c8) 60%, transparent);
 }
 
 .per-potentiel-preview-column__title {

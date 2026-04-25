@@ -274,4 +274,60 @@ describe('calculatePerPotentiel', () => {
 
     expect(result.projectionAvisSuivant.declarant1.plafondCalculeN).toBe(4710);
   });
+
+  it('utilise le PASS 2026 en estimation 2026', () => {
+    const result = calculatePerPotentiel(makeInput({
+      mode: 'versement-n',
+      historicalBasis: 'previous-avis-plus-n1',
+      anneeRef: 2026,
+      yearKey: 'current',
+      situationFiscale: {
+        situationFamiliale: 'celibataire',
+        nombreParts: 1,
+        isole: false,
+        declarant1: makeDeclarant(),
+      },
+      projectionFiscale: {
+        situationFamiliale: 'celibataire',
+        nombreParts: 1,
+        isole: false,
+        declarant1: makeDeclarant(),
+      },
+      avisIr: makeAvis({ nonUtiliseAnnee1: 0, nonUtiliseAnnee2: 0, nonUtiliseAnnee3: 0, plafondCalcule: 0 }),
+      passHistory: {
+        2025: 47100,
+        2026: 48060,
+      },
+    }));
+
+    expect(result.projectionAvisSuivant.declarant1.plafondCalculeN).toBe(4806);
+  });
+
+  it('utilise le barème courant même quand les revenus saisis sont ceux de 2025', () => {
+    const taxSettings = {
+      ...DEFAULT_TAX_SETTINGS,
+      incomeTax: {
+        ...DEFAULT_TAX_SETTINGS.incomeTax,
+        scaleCurrent: [{ from: 0, to: null, rate: 0, deduction: 0 }],
+        scalePrevious: [{ from: 0, to: null, rate: 45, deduction: 0 }],
+      },
+    };
+    const input = makeInput({
+      anneeRef: 2025,
+      situationFiscale: {
+        situationFamiliale: 'celibataire',
+        nombreParts: 1,
+        isole: false,
+        declarant1: makeDeclarant({ salaires: 120000 }),
+      },
+      avisIr: makeAvis({ nonUtiliseAnnee1: 0, nonUtiliseAnnee2: 0, nonUtiliseAnnee3: 0, plafondCalcule: 0 }),
+      taxSettings,
+    });
+
+    const currentScaleResult = calculatePerPotentiel({ ...input, yearKey: 'current' });
+    const previousScaleResult = calculatePerPotentiel({ ...input, yearKey: 'previous' });
+
+    expect(currentScaleResult.situationFiscale.irEstime).toBe(0);
+    expect(previousScaleResult.situationFiscale.irEstime).toBeGreaterThan(0);
+  });
 });
