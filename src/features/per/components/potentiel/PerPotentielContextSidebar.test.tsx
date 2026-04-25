@@ -144,6 +144,7 @@ describe('PerPotentielContextSidebar', () => {
         step={3}
         isCouple
         showRevenusPreview
+        showAdjustedPotentiel
         fiscalPreviewTitle="Synthèse déclaration IR 2026"
         projectionPreviewTitle="Plafonds projetés"
         parcoursPills={[{ label: 'Avis IR 2025', on: true }]}
@@ -180,6 +181,7 @@ describe('PerPotentielContextSidebar', () => {
         step={3}
         isCouple
         showRevenusPreview={false}
+        showAdjustedPotentiel={false}
         fiscalPreviewTitle="Estimation fiscale 2026"
         projectionPreviewTitle="Plafonds projetés"
         parcoursPills={[{ label: 'Avis IR 2025', on: true }]}
@@ -193,5 +195,28 @@ describe('PerPotentielContextSidebar', () => {
     expect(html).toContain('Plafonds projetés');
     expect(html).not.toContain('Aperçu en direct');
     expect(html).toContain(fmtCurrency(11111));
+  });
+
+  it('uses the remaining 163 quatervicies on the Versement N step', () => {
+    const html = renderToStaticMarkup(
+      <PerPotentielContextSidebar
+        step={4}
+        isCouple
+        showRevenusPreview={false}
+        showAdjustedPotentiel
+        fiscalPreviewTitle="Contrôle versement 2026"
+        projectionPreviewTitle="Plafonds projetés"
+        parcoursPills={[{ label: 'Avis IR 2025', on: true }]}
+        totalAvisIrD1={11111}
+        totalAvisIrD2={7777}
+        result={result}
+      />,
+    );
+
+    expect(html).toContain('163 quatervicies disponible après saisie');
+    expect(html).toContain(fmtCurrency(6543));
+    expect(html).toContain(fmtCurrency(3210));
+    expect(html).not.toContain(fmtCurrency(11111));
+    expect(html).not.toContain("163 quatervicies issu de l'avis IR");
   });
 });

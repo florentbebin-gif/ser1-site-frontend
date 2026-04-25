@@ -65,23 +65,21 @@ describe('PER Potentiel PPTX Export', () => {
       {
         ...state,
         result,
+        anneeRef: 2025,
+        passReference: DEFAULT_PASS_HISTORY[2025] ?? 0,
+        irScale: DEFAULT_TAX_SETTINGS.incomeTax.scaleCurrent,
+        irScaleLabel: DEFAULT_TAX_SETTINGS.incomeTax.currentYearLabel,
       },
       THEME_COLORS,
     );
 
     expect(spec.cover.type).toBe('cover');
-    expect(spec.cover.title).toContain('PER');
+    expect(spec.cover.title).toBe('Étude — Potentiel épargne retraite');
     expect(spec.slides.some((slide) => slide.type === 'chapter')).toBe(true);
-    expect(
-      spec.slides.some(
-        (slide) => slide.type === 'content' && 'title' in slide && slide.title === 'Cases 2042 simulees',
-      ),
-    ).toBe(true);
-    expect(
-      spec.slides.some(
-        (slide) => slide.type === 'content' && 'title' in slide && slide.title === 'Projection du prochain avis IR',
-      ),
-    ).toBe(true);
+    expect(spec.slides.some((slide) => slide.type === 'per-fiscal-snapshot')).toBe(true);
+    expect(spec.slides.some((slide) => slide.type === 'per-plafond-3col')).toBe(true);
+    expect(spec.slides.some((slide) => slide.type === 'per-projection-table')).toBe(true);
+    expect(spec.slides.some((slide) => slide.type === 'content')).toBe(false);
   });
 });
 

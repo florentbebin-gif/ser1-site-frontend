@@ -1,0 +1,182 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`snapshots/per: PPTX deck spec > produit la nouvelle structure visuelle hors TNS 1`] = `
+{
+  "cover": {
+    "leftMeta": "<DATE>",
+    "logoPlacement": undefined,
+    "logoUrl": undefined,
+    "rightMeta": "Conseiller en gestion de patrimoine",
+    "subtitle": "Contrôle du potentiel épargne retraite",
+    "title": "Étude — Potentiel épargne retraite",
+    "type": "cover",
+  },
+  "end": {
+    "legalText": "Document établi à titre strictement indicatif et dépourvu de valeur contractuelle. Il a été élaboré sur la base des dispositions légales et réglementaires en vigueur à la date de sa remise, lesquelles sont susceptibles d'évoluer.
+
+Les informations qu'il contient sont strictement confidentielles et destinées exclusivement aux personnes expressément autorisées.
+
+Toute reproduction, représentation, diffusion ou rediffusion, totale ou partielle, sur quelque support ou par quelque procédé que ce soit, ainsi que toute vente, revente, retransmission ou mise à disposition de tiers, est strictement encadrée. Le non-respect de ces dispositions est susceptible de constituer une contrefaçon engageant la responsabilité civile et pénale de son auteur, conformément aux articles L335-1 à L335-10 du Code de la propriété intellectuelle.",
+    "type": "end",
+  },
+  "slides": [
+    {
+      "body": "Vous partez de l'avis IR précédent, reconstituez les revenus et versements de l'année, puis estimez le potentiel disponible pour arbitrer un versement.",
+      "chapterImageIndex": 4,
+      "subtitle": "Contrôle du potentiel épargne retraite — Avis IR précédent et reconstitution",
+      "title": "Objectifs & contexte",
+      "type": "chapter",
+    },
+    {
+      "activeThreshold": 29316,
+      "brackets": [
+        {
+          "label": "0 %",
+          "rate": 0,
+          "threshold": 0,
+        },
+        {
+          "label": "11 %",
+          "rate": 11,
+          "threshold": 11498,
+        },
+        {
+          "label": "30 %",
+          "rate": 30,
+          "threshold": 29316,
+        },
+        {
+          "label": "41 %",
+          "rate": 41,
+          "threshold": 83824,
+        },
+        {
+          "label": "45 %",
+          "rate": 45,
+          "threshold": 180295,
+        },
+      ],
+      "irEstime": 20620.14,
+      "montantDansLaTMI": 53346,
+      "partsNb": 2,
+      "revenuImposableFoyer": 127000,
+      "subtitle": "2025 (revenus 2024)",
+      "title": "Estimation de la situation fiscale",
+      "tmiRate": 0.3,
+      "type": "per-fiscal-snapshot",
+    },
+    {
+      "columns": [
+        {
+          "heading": "Disponible après mutualisation",
+          "iconName": "bank",
+          "values": {
+            "declarant1": 0,
+            "declarant2": 0,
+          },
+        },
+        {
+          "heading": "Versements retenus pour l’IR",
+          "iconName": "pen",
+          "values": {
+            "declarant1": 0,
+            "declarant2": 0,
+          },
+        },
+        {
+          "heading": "Disponible restant",
+          "iconName": "gauge",
+          "values": {
+            "declarant1": 0,
+            "declarant2": 0,
+          },
+        },
+      ],
+      "intro": "Le potentiel personnel correspond au plafond 163 quatervicies, calculé sur les revenus professionnels et les reliquats reportables. Pour l'année de référence, le PASS retenu est 47 100 €.",
+      "isCouple": true,
+      "note": "Mutualisation des plafonds activée : les disponibles du conjoint peuvent absorber un dépassement.",
+      "subtitle": "Disponible, versements retenus et solde",
+      "title": "Plafonds épargne retraite 163Q pour 2025",
+      "type": "per-plafond-3col",
+      "variant": "163q",
+    },
+    {
+      "avisRows": [
+        {
+          "declarant1": 0,
+          "declarant2": 0,
+          "label": "Reliquat N-2",
+        },
+        {
+          "declarant1": 0,
+          "declarant2": 0,
+          "label": "Reliquat N-1",
+        },
+        {
+          "declarant1": 0,
+          "declarant2": 0,
+          "label": "Reliquat N",
+        },
+        {
+          "declarant1": 7650,
+          "declarant2": 4710,
+          "label": "Plafond calculé",
+        },
+        {
+          "declarant1": 7650,
+          "declarant2": 4710,
+          "label": "Total projeté",
+        },
+      ],
+      "declarationRows": [
+        {
+          "declarant1": 4000,
+          "declarant2": 0,
+          "label": "6NS / 6NT — PER 163 quatervicies",
+        },
+        {
+          "declarant1": 0,
+          "declarant2": 1200,
+          "label": "6RS / 6RT — PERP et assimilés",
+        },
+        {
+          "declarant1": 0,
+          "declarant2": 0,
+          "label": "6OS / 6OT — PER 154 bis",
+        },
+        {
+          "declarant1": 0,
+          "declarant2": 0,
+          "label": "6QS / 6QT — Madelin, PERCO, Art. 83",
+        },
+        {
+          "declarant1": true,
+          "label": "6QR — Mutualisation conjoint",
+        },
+      ],
+      "isCouple": true,
+      "simulationRows": [
+        {
+          "label": "Versement envisagé",
+          "value": 9000,
+        },
+        {
+          "label": "Versement déductible retenu",
+          "value": 0,
+        },
+        {
+          "label": "Économie d'IR estimée",
+          "value": 0,
+        },
+        {
+          "label": "Coût net après fiscalité",
+          "value": 9000,
+        },
+      ],
+      "subtitle": "Synthèse des reports et reliquats projetés",
+      "title": "Déclaration 2042 et prochain avis d'impôt",
+      "type": "per-projection-table",
+    },
+  ],
+}
+`;
