@@ -10,11 +10,38 @@ import type {
   PerPotentielResult,
   PerWarning,
   SimulationVersement,
+  SituationFiscaleInput,
 } from './types';
-import { computePlafond163Q } from './plafond163Q';
-import { computePlafondMadelin, isTNS } from './plafondMadelin';
+import { computeDeclaration2042 } from './perDeclarationFlow';
+import { computePerDeductionFlow } from './perDeductionFlow';
+import {
+  computePlafond163Q,
+  computeProjectedPlafond163Q,
+} from './plafond163Q';
+import { computePlafondMadelin, createEmptyMadelinDetail, isTNS } from './plafondMadelin';
+import { computeProjectionAvis } from './perProjectionAvis';
 import { estimerSituationFiscale } from './perIrEstimation';
-import type { DEFAULT_TAX_SETTINGS, DEFAULT_PS_SETTINGS } from '../../constants/settingsDefaults';
+import type { DEFAULT_PS_SETTINGS, DEFAULT_TAX_SETTINGS } from '../../constants/settingsDefaults';
+
+function addMadelinReintegration(
+  situation: SituationFiscaleInput,
+  surplusD1: number,
+  surplusD2: number,
+): SituationFiscaleInput {
+  return {
+    ...situation,
+    declarant1: {
+      ...situation.declarant1,
+      bic: Math.max(0, (situation.declarant1.bic || 0) + surplusD1),
+    },
+    declarant2: situation.declarant2
+      ? {
+        ...situation.declarant2,
+        bic: Math.max(0, (situation.declarant2.bic || 0) + surplusD2),
+      }
+      : undefined,
+  };
+}
 
 /**
  * Calcule le potentiel épargne retraite complet.
@@ -24,6 +51,7 @@ export function calculatePerPotentiel(input: PerPotentielInput): PerPotentielRes
   const {
     mode,
     anneeRef,
+    yearKey = 'current',
     situationFiscale,
     projectionFiscale,
     avisIr,
@@ -40,90 +68,138 @@ export function calculatePerPotentiel(input: PerPotentielInput): PerPotentielRes
 
   const tax = taxSettings as typeof DEFAULT_TAX_SETTINGS;
   const ps = psSettings as typeof DEFAULT_PS_SETTINGS;
+  const abat10CfgRoot = tax?.incomeTax?.abat10 ?? {};
+  const abat10SalCfg = yearKey === 'current'
+    ? abat10CfgRoot.current ?? {}
+    : abat10CfgRoot.previous ?? {};
+  const abat10RetCfg = yearKey === 'current'
+    ? abat10CfgRoot.retireesCurrent ?? {}
+    : abat10CfgRoot.retireesPrevious ?? {};
 
-  const abat10Cfg = tax?.incomeTax?.abat10?.current;
-  const plafondAbat10 = abat10Cfg?.plafond ?? 14426;
-  const plancherAbat10 = abat10Cfg?.plancher ?? 504;
-
-  const { declarant1, declarant2 } = situationFiscale;
   const activeSituation = projectionFiscale ?? situationFiscale;
   const activeDeclarant1 = activeSituation.declarant1;
   const activeDeclarant2 = activeSituation.declarant2;
-  const declarationSource = mode === 'declaration-n1' ? situationFiscale : activeSituation;
 
-  const plafond163QD1 = computePlafond163Q(
-    { revenuSource: declarant1, cotisationSource: activeDeclarant1, pass, avisIr },
-    plafondAbat10, plancherAbat10, warnings,
-  );
+  const plafond163QD1 = computePlafond163Q({
+    cotisationSource: activeDeclarant1,
+    avisIr,
+    pass,
+    abat10SalCfg,
+    abat10RetCfg,
+  }, warnings);
 
-  let plafond163QD2;
-  if (declarant2) {
-    plafond163QD2 = computePlafond163Q(
-      { revenuSource: declarant2, cotisationSource: activeDeclarant2, pass, avisIr: avisIr2 },
-      plafondAbat10, plancherAbat10, warnings,
-    );
-  }
+  const plafond163QD2 = activeDeclarant2
+    ? computePlafond163Q({
+      cotisationSource: activeDeclarant2,
+      avisIr: avisIr2,
+      pass,
+      abat10SalCfg,
+      abat10RetCfg,
+    }, warnings)
+    : undefined;
 
-  const estTNSD1 = isTNS(activeDeclarant1);
-  const estTNSD2 = activeDeclarant2 ? isTNS(activeDeclarant2) : false;
-  const estTNS = estTNSD1 || estTNSD2;
+  const mad1 = computePlafondMadelin({
+    declarant: activeDeclarant1,
+    pass,
+    abat10SalCfg,
+  }, warnings);
+  const mad2 = activeDeclarant2
+    ? computePlafondMadelin({
+      declarant: activeDeclarant2,
+      pass,
+      abat10SalCfg,
+    }, warnings)
+    : null;
 
-  let plafondMadelin;
-  if (estTNS) {
-    const mad1 = computePlafondMadelin({ declarant: activeDeclarant1, pass }, warnings);
-    const mad2 = activeDeclarant2
-      ? computePlafondMadelin({ declarant: activeDeclarant2, pass }, warnings)
-      : undefined;
-
-    if (mad1 || mad2) {
-      plafondMadelin = {
-        declarant1: mad1!,
-        declarant2: mad2 ?? undefined,
-      };
+  const estTNS = Boolean(isTNS(activeDeclarant1) || (activeDeclarant2 && isTNS(activeDeclarant2)));
+  const plafondMadelin = estTNS
+    ? {
+      declarant1: mad1 ?? createEmptyMadelinDetail(),
+      declarant2: mad2 ?? undefined,
     }
-  }
+    : undefined;
 
-  const totalCotisationsDeductiblesD1 =
-    activeDeclarant1.cotisationsPer163Q +
-    activeDeclarant1.cotisationsPerp +
-    activeDeclarant1.cotisationsMadelin154bis +
-    activeDeclarant1.cotisationsMadelinRetraite;
-
-  const totalCotisationsDeductiblesD2 = activeDeclarant2
-    ? activeDeclarant2.cotisationsPer163Q +
-      activeDeclarant2.cotisationsPerp +
-      activeDeclarant2.cotisationsMadelin154bis +
-      activeDeclarant2.cotisationsMadelinRetraite
-      : 0;
-
-  const totalDeductionsPer = totalCotisationsDeductiblesD1 + totalCotisationsDeductiblesD2;
-
-  const situationFiscaleResult = estimerSituationFiscale({
-    situationFiscale: activeSituation,
-    deductionsPer: totalDeductionsPer,
-    taxSettings: tax,
-    psSettings: ps,
+  const declaration2042 = computeDeclaration2042({
+    declarant1: activeDeclarant1,
+    declarant2: activeDeclarant2,
+    madelin1: mad1,
+    madelin2: mad2,
+    mutualisationConjoints,
   });
 
-  const declaration2042 = {
-    case6NS: declarationSource.declarant1.cotisationsPer163Q,
-    case6NT: declarationSource.declarant2 ? declarationSource.declarant2.cotisationsPer163Q : undefined,
-    case6RS: declarationSource.declarant1.cotisationsPerp,
-    case6RT: declarationSource.declarant2 ? declarationSource.declarant2.cotisationsPerp : undefined,
-    case6QS: declarationSource.declarant1.cotisationsArt83,
-    case6QT: declarationSource.declarant2 ? declarationSource.declarant2.cotisationsArt83 : undefined,
-    case6OS: declarationSource.declarant1.cotisationsMadelin154bis,
-    case6OT: declarationSource.declarant2 ? declarationSource.declarant2.cotisationsMadelin154bis : undefined,
-    case6QR: Boolean(declarationSource.declarant2 && mutualisationConjoints),
-  };
+  const deductionFlow163Q = computePerDeductionFlow({
+    declarant1: activeDeclarant1,
+    declarant2: activeDeclarant2,
+    plafond1: plafond163QD1,
+    plafond2: plafond163QD2,
+    mutualisationConjoints,
+  });
+
+  if (deductionFlow163Q.declarant1.cotisationsNonDeductibles > 0) {
+    warnings.push({
+      code: 'PER_163Q_IR_NON_DEDUCTIBLE_D1',
+      message: `Une fraction des versements 163 quatervicies / PERP du déclarant 1 (${deductionFlow163Q.declarant1.cotisationsNonDeductibles.toLocaleString('fr-FR')} €) n'est pas retenue pour l'IR courant.`,
+      severity: 'warning',
+    });
+  }
+  if ((deductionFlow163Q.declarant2?.cotisationsNonDeductibles ?? 0) > 0) {
+    warnings.push({
+      code: 'PER_163Q_IR_NON_DEDUCTIBLE_D2',
+      message: `Une fraction des versements 163 quatervicies / PERP du déclarant 2 (${deductionFlow163Q.declarant2!.cotisationsNonDeductibles.toLocaleString('fr-FR')} €) n'est pas retenue pour l'IR courant.`,
+      severity: 'warning',
+    });
+  }
+
+  const adjustedSituation = addMadelinReintegration(
+    activeSituation,
+    mad1?.surplusAReintegrer ?? 0,
+    mad2?.surplusAReintegrer ?? 0,
+  );
+
+  const situationFiscaleResult = estimerSituationFiscale({
+    situationFiscale: adjustedSituation,
+    deductionsPer: deductionFlow163Q.totalDeductionsIr,
+    taxSettings: tax,
+    psSettings: ps,
+    yearKey,
+  });
+
+  const projectedPlafondD1 = computeProjectedPlafond163Q({
+    revenuSource: adjustedSituation.declarant1,
+    cotisationSource: activeDeclarant1,
+    avisIr,
+    reduction2042: declaration2042.case6QS + declaration2042.case6OS,
+    pass,
+    abat10SalCfg,
+    abat10RetCfg,
+  });
+
+  const projectedPlafondD2 = adjustedSituation.declarant2
+    ? computeProjectedPlafond163Q({
+      revenuSource: adjustedSituation.declarant2,
+      cotisationSource: activeDeclarant2!,
+      avisIr: avisIr2,
+      reduction2042: (declaration2042.case6QT ?? 0) + (declaration2042.case6OT ?? 0),
+      pass,
+      abat10SalCfg,
+      abat10RetCfg,
+    })
+    : undefined;
+
+  const projectionAvisSuivant = computeProjectionAvis({
+    avisIr,
+    avisIr2,
+    deductionFlow: deductionFlow163Q,
+    projectedPlafondD1,
+    projectedPlafondD2,
+  });
 
   let simulation: SimulationVersement | undefined;
   if (mode === 'versement-n' && versementEnvisage != null && versementEnvisage > 0) {
-    const plafondDispoD1 = plafond163QD1.disponibleRestant;
-    const plafondDispoD2 =
-      declarationSource.declarant2 && mutualisationConjoints
-        ? plafond163QD2?.disponibleRestant ?? 0
-        : 0;
+    const plafondDispoD1 = deductionFlow163Q.declarant1.disponibleRestant;
+    const plafondDispoD2 = mutualisationConjoints
+      ? deductionFlow163Q.declarant2?.disponibleRestant ?? 0
+      : 0;
     const totalDispo = plafondDispoD1 + plafondDispoD2;
     const versementDeductible = Math.min(versementEnvisage, totalDispo);
     const economie = Math.round(versementDeductible * situationFiscaleResult.tmi);
@@ -139,10 +215,12 @@ export function calculatePerPotentiel(input: PerPotentielInput): PerPotentielRes
 
   return {
     situationFiscale: situationFiscaleResult,
-      plafond163Q: { declarant1: plafond163QD1, declarant2: plafond163QD2 },
+    plafond163Q: { declarant1: plafond163QD1, declarant2: plafond163QD2 },
+    deductionFlow163Q,
     plafondMadelin,
     estTNS,
     declaration2042,
+    projectionAvisSuivant,
     simulation,
     warnings,
   };

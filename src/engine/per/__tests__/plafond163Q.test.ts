@@ -1,10 +1,19 @@
 import { describe, expect, it } from 'vitest';
-import { computeRevenuImposable, computePlafond163QBrut, computeReductions163Q } from '../plafond163Q';
+import {
+  computeRevenuActiviteProfessionnelle,
+  computePlafond163QBrut,
+  computeProjectedPlafond163Q,
+  computeReductions163Q,
+  computeRevenuImposable,
+} from '../plafond163Q';
 import type { DeclarantRevenus } from '../types';
 
 const PASS = 46368;
+const ABAT_SAL = { plafond: 14171, plancher: 495 };
+const ABAT_RET = { plafond: 4321, plancher: 442 };
 
 const EMPTY_DECLARANT: DeclarantRevenus = {
+  statutTns: false,
   salaires: 0,
   art62: 0,
   bic: 0,
@@ -23,52 +32,85 @@ const EMPTY_DECLARANT: DeclarantRevenus = {
 };
 
 describe('computeRevenuImposable', () => {
-  it('applique l\'abattement 10 % sur les salaires', () => {
+  it('applique l’abattement 10 % sur les salaires', () => {
     const d = { ...EMPTY_DECLARANT, salaires: 50000 };
-    const result = computeRevenuImposable(d, 14171, 495);
-    // 50000 * 0.1 = 5000 → abattement = 5000 (entre plancher et plafond)
-    expect(result).toBe(45000);
+    expect(computeRevenuImposable(d, ABAT_SAL, ABAT_RET)).toBe(45000);
   });
 
   it('applique les frais réels si activés', () => {
     const d = { ...EMPTY_DECLARANT, salaires: 50000, fraisReels: true, fraisReelsMontant: 8000 };
-    const result = computeRevenuImposable(d, 14171, 495);
-    expect(result).toBe(42000);
+    expect(computeRevenuImposable(d, ABAT_SAL, ABAT_RET)).toBe(42000);
   });
 
-  it('retourne 0 si aucun revenu', () => {
-    const result = computeRevenuImposable(EMPTY_DECLARANT, 14171, 495);
-    expect(result).toBe(0);
+  it('utilise la configuration retraites injectée', () => {
+    const d = { ...EMPTY_DECLARANT, retraites: 50000 };
+    expect(computeRevenuImposable(d, ABAT_SAL, ABAT_RET)).toBe(45679);
   });
 });
 
 describe('computePlafond163QBrut', () => {
-  it('applique le plafond minimum (10 % de 1 PASS) pour les petits revenus', () => {
-    const result = computePlafond163QBrut(10000, PASS);
-    // 10000 * 0.1 = 1000 < 10% PASS = 4637 → minimum appliqué
-    expect(result).toBe(Math.round(PASS * 0.1));
+  it('applique le plancher PASS pour les petits revenus', () => {
+    expect(computePlafond163QBrut(10000, PASS)).toBe(Math.round(PASS * 0.1));
   });
 
   it('calcule 10 % du revenu pour un revenu intermédiaire', () => {
-    const result = computePlafond163QBrut(80000, PASS);
-    expect(result).toBe(Math.round(80000 * 0.1));
+    expect(computePlafond163QBrut(80000, PASS)).toBe(8000);
   });
 
-  it('applique le plafond maximum (10 % de 8 PASS) pour les hauts revenus', () => {
-    const result = computePlafond163QBrut(500000, PASS);
-    expect(result).toBe(Math.round(8 * PASS * 0.1));
+  it('applique le plafond de 8 PASS pour les hauts revenus', () => {
+    expect(computePlafond163QBrut(500000, PASS)).toBe(Math.round(8 * PASS * 0.1));
   });
 });
 
 describe('computeReductions163Q', () => {
-  it('retourne 0 si aucune cotisation', () => {
-    const result = computeReductions163Q(EMPTY_DECLARANT, PASS);
-    expect(result).toBe(0);
+  it('borne la réduction au plafond brut', () => {
+    expect(computeReductions163Q(5000, 8000)).toBe(5000);
+  });
+});
+
+describe('computeProjectedPlafond163Q', () => {
+  it('déduit bien les flux 2042 du prochain plafond calculé', () => {
+    const projected = computeProjectedPlafond163Q({
+      revenuSource: { ...EMPTY_DECLARANT, salaires: 90000 },
+      cotisationSource: EMPTY_DECLARANT,
+      pass: PASS,
+      reduction2042: 3500,
+      abat10SalCfg: ABAT_SAL,
+      abat10RetCfg: ABAT_RET,
+    });
+
+    expect(projected).toBe(4600);
   });
 
-  it('inclut les cotisations art83 dans les réductions', () => {
-    const d = { ...EMPTY_DECLARANT, cotisationsArt83: 3000 };
-    const result = computeReductions163Q(d, PASS);
-    expect(result).toBeGreaterThanOrEqual(3000);
+  it('ignore les pensions, le foncier et les autres revenus dans la base projetée', () => {
+    const baseSource = { ...EMPTY_DECLARANT, salaires: 50000, art62: 10000, bic: 5000 };
+    const withNonProfessionalIncome = {
+      ...baseSource,
+      retraites: 60000,
+      fonciersNets: 15000,
+      autresRevenus: 7000,
+    };
+
+    expect(computeRevenuActiviteProfessionnelle(baseSource, ABAT_SAL)).toBe(59000);
+    expect(computeRevenuActiviteProfessionnelle(withNonProfessionalIncome, ABAT_SAL)).toBe(59000);
+
+    const projectedBase = computeProjectedPlafond163Q({
+      revenuSource: baseSource,
+      cotisationSource: EMPTY_DECLARANT,
+      pass: PASS,
+      reduction2042: 0,
+      abat10SalCfg: ABAT_SAL,
+      abat10RetCfg: ABAT_RET,
+    });
+    const projectedWithNonProfessionalIncome = computeProjectedPlafond163Q({
+      revenuSource: withNonProfessionalIncome,
+      cotisationSource: EMPTY_DECLARANT,
+      pass: PASS,
+      reduction2042: 0,
+      abat10SalCfg: ABAT_SAL,
+      abat10RetCfg: ABAT_RET,
+    });
+
+    expect(projectedWithNonProfessionalIncome).toBe(projectedBase);
   });
 });

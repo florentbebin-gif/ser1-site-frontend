@@ -115,12 +115,14 @@ function buildSituationBody(data: PerDeckData): string {
 function buildPlafond163QBody(data: PerDeckData): string {
   const d1 = data.result.plafond163Q.declarant1;
   const d2 = data.result.plafond163Q.declarant2;
+  const flow1 = data.result.deductionFlow163Q.declarant1;
+  const flow2 = data.result.deductionFlow163Q.declarant2;
   const lines = [
-    `- Declarant 1 : plafond calcule ${euro(d1.plafondCalculeN)}, reports ${euro(d1.nonUtiliseN3)} / ${euro(d1.nonUtiliseN2)} / ${euro(d1.nonUtiliseN1)}, disponible restant ${euro(d1.disponibleRestant)}.`,
+    `- Declarant 1 : potentiel issu de l'avis ${euro(d1.totalDisponible)}, cotisations retenues ${euro(flow1.cotisationsRetenuesIr)}, disponible restant ${euro(flow1.disponibleRestant)}.`,
   ];
 
-  if (d2) {
-    lines.push(`- Declarant 2 : plafond calcule ${euro(d2.plafondCalculeN)}, reports ${euro(d2.nonUtiliseN3)} / ${euro(d2.nonUtiliseN2)} / ${euro(d2.nonUtiliseN1)}, disponible restant ${euro(d2.disponibleRestant)}.`);
+  if (d2 && flow2) {
+    lines.push(`- Declarant 2 : potentiel issu de l'avis ${euro(d2.totalDisponible)}, cotisations retenues ${euro(flow2.cotisationsRetenuesIr)}, disponible restant ${euro(flow2.disponibleRestant)}.`);
     lines.push(`- Mutualisation des plafonds (6QR) : ${yesNo(data.mutualisationConjoints)}.`);
   }
 
@@ -139,11 +141,11 @@ function buildMadelinBody(data: PerDeckData): string {
   }
 
   const lines = [
-    `- Declarant 1 : assiette ${euro(d1.assiette)}, enveloppe 15 % ${euro(d1.enveloppe15)}, enveloppe 10 % ${euro(d1.enveloppe10)}, disponible restant ${euro(d1.disponibleRestant)}.`,
+    `- Declarant 1 : assiette de versement ${euro(d1.assietteVersement)}, enveloppe 15 % ${euro(d1.enveloppe15Versement)}, enveloppe 10 % ${euro(d1.enveloppe10)}, reintegration ${euro(d1.surplusAReintegrer)}.`,
   ];
 
   if (d2) {
-    lines.push(`- Declarant 2 : assiette ${euro(d2.assiette)}, enveloppe 15 % ${euro(d2.enveloppe15)}, enveloppe 10 % ${euro(d2.enveloppe10)}, disponible restant ${euro(d2.disponibleRestant)}.`);
+    lines.push(`- Declarant 2 : assiette de versement ${euro(d2.assietteVersement)}, enveloppe 15 % ${euro(d2.enveloppe15Versement)}, enveloppe 10 % ${euro(d2.enveloppe10)}, reintegration ${euro(d2.surplusAReintegrer)}.`);
   }
 
   return lines.join('\n');
@@ -154,7 +156,7 @@ function buildDeclarationBody(data: PerDeckData): string {
   const lines = [
     `- 6NS : ${euro(boxes.case6NS)}.`,
     `- 6RS : ${euro(boxes.case6RS)}.`,
-    `- 6QS : ${euro(boxes.case6QS)}.`,
+    `- 6QS : ${euro(boxes.case6QS)} (flux Art. 83 / PERCO / Madelin retraite).`,
     `- 6OS : ${euro(boxes.case6OS)}.`,
   ];
 
@@ -172,6 +174,20 @@ function buildDeclarationBody(data: PerDeckData): string {
   }
 
   lines.push(`- 6QR : ${yesNo(boxes.case6QR)}.`);
+  return lines.join('\n');
+}
+
+function buildProjectionBody(data: PerDeckData): string {
+  const d1 = data.result.projectionAvisSuivant.declarant1;
+  const d2 = data.result.projectionAvisSuivant.declarant2;
+  const lines = [
+    `- Declarant 1 : reliquats ${euro(d1.nonUtiliseN2)} / ${euro(d1.nonUtiliseN1)} / ${euro(d1.nonUtiliseN)}, plafond calcule ${euro(d1.plafondCalculeN)}, total ${euro(d1.plafondTotal)}.`,
+  ];
+
+  if (d2) {
+    lines.push(`- Declarant 2 : reliquats ${euro(d2.nonUtiliseN2)} / ${euro(d2.nonUtiliseN1)} / ${euro(d2.nonUtiliseN)}, plafond calcule ${euro(d2.plafondCalculeN)}, total ${euro(d2.plafondTotal)}.`);
+  }
+
   return lines.join('\n');
 }
 
@@ -245,6 +261,12 @@ export function buildPerStudyDeck(
     title: 'Cases 2042 simulees',
     subtitle: 'Versements et mutualisation',
     body: buildDeclarationBody(data),
+  });
+  slides.push({
+    type: 'content',
+    title: 'Projection du prochain avis IR',
+    subtitle: 'Reliquats et plafond calculé',
+    body: buildProjectionBody(data),
   });
 
   if (data.mode === 'versement-n' && data.result.simulation) {

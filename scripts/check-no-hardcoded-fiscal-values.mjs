@@ -57,6 +57,22 @@ const FORBIDDEN_VALUES = [
     label: 'PASS 2025',
     pattern: /\b47100\b/,
   },
+  {
+    label: 'abattement retraites current plafond',
+    pattern: /\b4399\b/,
+  },
+  {
+    label: 'abattement retraites current plancher',
+    pattern: /\b450\b/,
+  },
+  {
+    label: 'abattement retraites previous plafond',
+    pattern: /\b4321\b/,
+  },
+  {
+    label: 'abattement retraites previous plancher',
+    pattern: /\b442\b/,
+  },
 ];
 
 // ─── Répertoires à scanner (relatifs à ROOT) ──────────────────────────────────

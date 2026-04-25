@@ -7,7 +7,6 @@ import { formatInteger } from '../../../../../utils/formatNumber';
 import { PerAmountInput } from '../PerAmountInput';
 
 export type PerIncomeFilters = {
-  tns: boolean;
   pension: boolean;
   foncier: boolean;
 };
@@ -118,10 +117,12 @@ function PerTableAmountInput({
   value,
   ariaLabel,
   onChange,
+  disabled = false,
 }: {
   value: number;
   ariaLabel: string;
   onChange: (_value: number) => void;
+  disabled?: boolean;
 }): React.ReactElement {
   return (
     <SimFieldShell className="per-table-input" rowClassName="per-table-input__row">
@@ -129,11 +130,27 @@ function PerTableAmountInput({
         value={value}
         ariaLabel={ariaLabel}
         className="per-table-input__control"
+        disabled={disabled}
         onChange={onChange}
       />
       <span className="per-table-input__unit sim-field__unit" aria-hidden="true">€</span>
     </SimFieldShell>
   );
+}
+
+function buildTnsTogglePatch(enabled: boolean): Partial<DeclarantRevenus> {
+  if (enabled) {
+    return { statutTns: true };
+  }
+
+  return {
+    statutTns: false,
+    art62: 0,
+    bic: 0,
+    cotisationsMadelin154bis: 0,
+    cotisationsMadelinRetraite: 0,
+    cotisationsPrevo: 0,
+  };
 }
 
 function DividerRow({ isCouple }: { isCouple: boolean }): React.ReactElement {
@@ -165,7 +182,7 @@ export function PerIncomeTable({
   onToggleIncomeFilter: (_key: keyof PerIncomeFilters) => void;
   onUpdateDeclarant: (_decl: 1 | 2, _patch: Partial<DeclarantRevenus>) => void;
 }): React.ReactElement {
-  const showTnsRows = incomeFilters.tns === true;
+  const showTnsRows = declarant1.statutTns || declarant2.statutTns;
   const showPensionRows = incomeFilters.pension === true;
   const showFoncierRow = incomeFilters.foncier === true;
 
@@ -192,13 +209,24 @@ export function PerIncomeTable({
           <div className="per-income-filters" role="group" aria-label="Filtres des lignes de revenus imposables">
             <button
               type="button"
-              className={`per-income-filter-btn${showTnsRows ? ' is-active' : ''}`}
-              onClick={() => onToggleIncomeFilter('tns')}
-              aria-pressed={showTnsRows}
-              data-testid="per-filter-tns"
+              className={`per-income-filter-btn${declarant1.statutTns ? ' is-active' : ''}`}
+              onClick={() => onUpdateDeclarant(1, buildTnsTogglePatch(!declarant1.statutTns))}
+              aria-pressed={declarant1.statutTns}
+              data-testid="per-toggle-tns-d1"
             >
-              TNS
+              D1 TNS
             </button>
+            {isCouple && (
+              <button
+                type="button"
+                className={`per-income-filter-btn${declarant2.statutTns ? ' is-active' : ''}`}
+                onClick={() => onUpdateDeclarant(2, buildTnsTogglePatch(!declarant2.statutTns))}
+                aria-pressed={declarant2.statutTns}
+                data-testid="per-toggle-tns-d2"
+              >
+                D2 TNS
+              </button>
+            )}
             <button
               type="button"
               className={`per-income-filter-btn${showPensionRows ? ' is-active' : ''}`}
@@ -261,6 +289,7 @@ export function PerIncomeTable({
                   <PerTableAmountInput
                     value={declarant1.art62}
                     ariaLabel="Revenus des associés ou gérants déclarant 1"
+                    disabled={!declarant1.statutTns}
                     onChange={(value) => onUpdateDeclarant(1, { art62: value })}
                   />
                 </td>
@@ -268,6 +297,7 @@ export function PerIncomeTable({
                   <PerTableAmountInput
                     value={declarant2.art62}
                     ariaLabel="Revenus des associés ou gérants déclarant 2"
+                    disabled={!declarant2.statutTns}
                     onChange={(value) => onUpdateDeclarant(2, { art62: value })}
                   />
                 </td>
@@ -334,6 +364,7 @@ export function PerIncomeTable({
                   <PerTableAmountInput
                     value={declarant1.bic}
                     ariaLabel="BIC BNC BA imposables déclarant 1"
+                    disabled={!declarant1.statutTns}
                     onChange={(value) => onUpdateDeclarant(1, { bic: value })}
                   />
                 </td>
@@ -341,6 +372,7 @@ export function PerIncomeTable({
                   <PerTableAmountInput
                     value={declarant2.bic}
                     ariaLabel="BIC BNC BA imposables déclarant 2"
+                    disabled={!declarant2.statutTns}
                     onChange={(value) => onUpdateDeclarant(2, { bic: value })}
                   />
                 </td>

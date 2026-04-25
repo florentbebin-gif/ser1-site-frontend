@@ -20,6 +20,7 @@ import SituationFiscaleStep from './steps/SituationFiscaleStep';
 import SynthesePotentielStep from './steps/SynthesePotentielStep';
 import type { PerAbattementConfig, PerIncomeFilters } from './steps/PerIncomeTable';
 import { PerHypotheses } from './PerHypotheses';
+import { PerPotentielContextSidebar } from './PerPotentielContextSidebar';
 import { PerSynthesisSidebar } from './PerSynthesisSidebar';
 import '../../styles/index.css';
 
@@ -27,16 +28,6 @@ type StepMeta = {
   shortLabel: string;
   title: string;
 };
-
-const fmtCurrency = (value: number): string =>
-  new Intl.NumberFormat('fr-FR', {
-    style: 'currency',
-    currency: 'EUR',
-    maximumFractionDigits: 0,
-  }).format(value);
-
-const fmtPercent = (value: number): string =>
-  `${(value <= 1 ? value * 100 : value).toFixed(1)} %`;
 
 const sumAvisIrPlafonds = (
   avis: {
@@ -52,7 +43,6 @@ const sumAvisIrPlafonds = (
   + (avis?.plafondCalcule ?? 0);
 
 const DEFAULT_INCOME_FILTERS: PerIncomeFilters = {
-  tns: false,
   pension: false,
   foncier: false,
 };
@@ -203,10 +193,13 @@ export default function PerPotentielSimulator(): React.ReactElement {
   const totalAvisIrD1 = sumAvisIrPlafonds(state.avisIr);
   const totalAvisIrD2 = sumAvisIrPlafonds(state.avisIr2);
   const abat10CfgRoot = fiscalContext._raw_tax?.incomeTax?.abat10 ?? {};
-  const abat10SalCfgPrevious: PerAbattementConfig = abat10CfgRoot.previous ?? {};
   const abat10SalCfgCurrent: PerAbattementConfig = abat10CfgRoot.current ?? {};
-  const abat10RetCfgPrevious: PerAbattementConfig = abat10CfgRoot.retireesPrevious ?? {};
   const abat10RetCfgCurrent: PerAbattementConfig = abat10CfgRoot.retireesCurrent ?? {};
+  const isRevenusStep = state.step === 3
+    && (
+      state.mode === 'declaration-n1'
+      || (state.mode === 'versement-n' && state.historicalBasis === 'previous-avis-plus-n1')
+    );
 
   const avisBasis = state.mode === 'declaration-n1'
     ? 'previous-avis-plus-n1'
@@ -310,8 +303,9 @@ export default function PerPotentielSimulator(): React.ReactElement {
                   declarant1={state.revenusN1Declarant1}
                   declarant2={state.revenusN1Declarant2}
                   incomeFilters={incomeFilters}
-                  abat10SalCfg={abat10SalCfgPrevious}
-                  abat10RetCfg={abat10RetCfgPrevious}
+                  plafondMadelin={result?.plafondMadelin}
+                  abat10SalCfg={abat10SalCfgCurrent}
+                  abat10RetCfg={abat10RetCfgCurrent}
                   onUpdateSituation={updateSituation}
                   onAddChild={addChild}
                   onUpdateChildMode={updateChildMode}
@@ -334,8 +328,9 @@ export default function PerPotentielSimulator(): React.ReactElement {
                   declarant1={state.revenusN1Declarant1}
                   declarant2={state.revenusN1Declarant2}
                   incomeFilters={incomeFilters}
-                  abat10SalCfg={abat10SalCfgPrevious}
-                  abat10RetCfg={abat10RetCfgPrevious}
+                  plafondMadelin={result?.plafondMadelin}
+                  abat10SalCfg={abat10SalCfgCurrent}
+                  abat10RetCfg={abat10RetCfgCurrent}
                   onUpdateSituation={updateSituation}
                   onAddChild={addChild}
                   onUpdateChildMode={updateChildMode}
@@ -357,6 +352,7 @@ export default function PerPotentielSimulator(): React.ReactElement {
                   mutualisationConjoints={state.mutualisationConjoints}
                   declarant1={state.projectionNDeclarant1}
                   declarant2={state.projectionNDeclarant2}
+                  plafondMadelin={result?.plafondMadelin}
                   incomeFilters={incomeFilters}
                   abat10SalCfg={abat10SalCfgCurrent}
                   abat10RetCfg={abat10RetCfgCurrent}
@@ -381,6 +377,7 @@ export default function PerPotentielSimulator(): React.ReactElement {
                   mutualisationConjoints={state.mutualisationConjoints}
                   declarant1={state.projectionNDeclarant1}
                   declarant2={state.projectionNDeclarant2}
+                  plafondMadelin={result?.plafondMadelin}
                   incomeFilters={incomeFilters}
                   abat10SalCfg={abat10SalCfgCurrent}
                   abat10RetCfg={abat10RetCfgCurrent}
@@ -407,107 +404,16 @@ export default function PerPotentielSimulator(): React.ReactElement {
 
         {state.mode !== null && (
         <aside className="per-potentiel-context sim-grid__col sim-grid__col--sticky">
-          <div className="premium-card per-potentiel-context-card sim-summary-card">
-            <div className="sim-card__title-row">
-              <div className="sim-card__icon">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                  <polyline points="14 2 14 8 20 8" />
-                </svg>
-              </div>
-              <h3 className="sim-card__title">Potentiel</h3>
-            </div>
-            <div className="sim-divider" />
-            <div className="per-potentiel-context-list">
-              {parcoursPills.length > 0 && (
-                <div className="per-potentiel-context-item">
-                  <span className="per-potentiel-context-label per-potentiel-context-label--small">Parcours</span>
-                  <div className="per-potentiel-pills">
-                    {parcoursPills.map((pill) => (
-                      <span
-                        key={pill.label}
-                        className={`per-potentiel-pill${pill.on ? ' is-on' : ''}`}
-                      >
-                        {pill.label}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              )}
-              {(state.step === 2 || state.step === 3) && (
-                <div className="per-avis-sidebar-kpis per-potentiel-context-item">
-                  <span className="per-potentiel-context-label per-potentiel-context-label--small">
-                    Potentiel 163 quatervicies
-                  </span>
-                  <div className="per-potentiel-mini-kpis">
-                    <div className="per-potentiel-mini-kpi">
-                      <span className="per-potentiel-mini-kpi-label">Déclarant 1</span>
-                      <strong className="per-potentiel-mini-kpi-value">
-                        {fmtCurrency(totalAvisIrD1)}
-                      </strong>
-                    </div>
-                    <div className="per-potentiel-mini-kpi">
-                      <span className="per-potentiel-mini-kpi-label">Déclarant 2</span>
-                      <strong className="per-potentiel-mini-kpi-value">
-                        {fmtCurrency(totalAvisIrD2)}
-                      </strong>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-
-          {result && state.step !== 5 && (
-            <div className="premium-card per-potentiel-context-card sim-summary-card sim-summary-card--secondary">
-              <div className="sim-card__title-row">
-                <div className="sim-card__icon">
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                    <line x1="12" y1="20" x2="12" y2="10" />
-                    <line x1="18" y1="20" x2="18" y2="4" />
-                    <line x1="6" y1="20" x2="6" y2="16" />
-                  </svg>
-                </div>
-                <h3 className="sim-card__title">Aperçu en direct</h3>
-              </div>
-              <div className="sim-divider sim-divider--tight" />
-              <div className="per-potentiel-mini-kpis">
-                <div className="per-potentiel-mini-kpis-row">
-                  <div className="per-potentiel-mini-kpi">
-                    <span className="per-potentiel-mini-kpi-label">TMI</span>
-                    <strong className="per-potentiel-mini-kpi-value">
-                      {fmtPercent(result.situationFiscale.tmi)}
-                    </strong>
-                  </div>
-                  <div className="per-potentiel-mini-kpi">
-                    <span className="per-potentiel-mini-kpi-label">Nombre de parts</span>
-                    <strong className="per-potentiel-mini-kpi-value">
-                      {state.nombreParts.toLocaleString('fr-FR')}
-                    </strong>
-                  </div>
-                </div>
-                <div className="per-potentiel-mini-kpi">
-                  <span className="per-potentiel-mini-kpi-label">IR estimé</span>
-                  <strong className="per-potentiel-mini-kpi-value">
-                    {fmtCurrency(result.situationFiscale.irEstime)}
-                  </strong>
-                </div>
-                <div className="per-potentiel-mini-kpi">
-                  <span className="per-potentiel-mini-kpi-label">Disponible D1</span>
-                  <strong className="per-potentiel-mini-kpi-value">
-                    {fmtCurrency(result.plafond163Q.declarant1.disponibleRestant)}
-                  </strong>
-                </div>
-                {isCouple && result.plafond163Q.declarant2 && (
-                  <div className="per-potentiel-mini-kpi">
-                    <span className="per-potentiel-mini-kpi-label">Disponible D2</span>
-                    <strong className="per-potentiel-mini-kpi-value">
-                      {fmtCurrency(result.plafond163Q.declarant2.disponibleRestant)}
-                    </strong>
-                  </div>
-                )}
-              </div>
-            </div>
+          {state.step !== 5 && (
+            <PerPotentielContextSidebar
+              step={state.step}
+              isCouple={isCouple}
+              showRevenusPreview={isRevenusStep}
+              parcoursPills={parcoursPills}
+              totalAvisIrD1={totalAvisIrD1}
+              totalAvisIrD2={totalAvisIrD2}
+              result={result}
+            />
           )}
 
           {result && state.step === 5 && (

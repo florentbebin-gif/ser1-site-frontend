@@ -48,7 +48,7 @@ describe('AvisIrStep', () => {
     expect(html).toContain('Rubrique');
     expect(html).toContain('Déclarant 1');
     expect(html).toContain('Déclarant 2');
-    expect(html).toContain('Potentiel 163 quatervicies pour les cotisations versées en 2025');
+    expect(html).toContain('Plafond pour les cotisations versées en 2025');
     expect(html).toContain(fmtCurrency(11000));
     expect(html).toContain(fmtCurrency(7000));
     expect(html).toContain('aria-label="Plafond non utilisé pour les revenus de 2022 - Déclarant 1"');

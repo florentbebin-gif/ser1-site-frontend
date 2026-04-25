@@ -29,7 +29,8 @@
   .per-situation-foyer-grid,
   .per-summary-hero-grid,
   .per-summary-stat-grid,
-  .per-summary-simulation-grid {
+  .per-summary-simulation-grid,
+  .per-potentiel-preview-columns.is-couple {
     grid-template-columns: 1fr;
   }
 
@@ -46,6 +47,13 @@
   .per-section-header-actions,
   .per-income-filters {
     justify-content: flex-start;
+  }
+
+  .per-potentiel-preview-columns.is-couple .per-potentiel-preview-column + .per-potentiel-preview-column {
+    padding-left: 0;
+    padding-top: 12px;
+    border-left: none;
+    border-top: 1px solid var(--color-c8);
   }
 
   .per-avis-matrix-head-row,

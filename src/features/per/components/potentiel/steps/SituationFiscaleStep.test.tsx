@@ -3,6 +3,7 @@ import { describe, expect, it, vi } from 'vitest';
 import SituationFiscaleStep from './SituationFiscaleStep';
 
 const baseDeclarant = {
+  statutTns: false,
   salaires: 45000,
   fraisReels: false,
   fraisReelsMontant: 0,
@@ -30,7 +31,8 @@ const baseProps = {
   mutualisationConjoints: false,
   declarant1: baseDeclarant,
   declarant2: baseDeclarant,
-  incomeFilters: { tns: false, pension: false, foncier: false },
+  plafondMadelin: undefined,
+  incomeFilters: { pension: false, foncier: false },
   abat10SalCfg: { plafond: 14522, plancher: 495 },
   abat10RetCfg: { plafond: 4399, plancher: 450 },
   onUpdateSituation: vi.fn(),
@@ -50,12 +52,13 @@ describe('SituationFiscaleStep', () => {
       />,
     );
 
-    expect(html).not.toContain('Nombre de parts calculÃ©');
-    expect(html).not.toContain('AperÃ§u fiscal');
+    expect(html).not.toContain('Nombre de parts calcul');
+    expect(html).not.toContain('Aperçu fiscal');
     expect(html.indexOf('Situation familiale')).toBeLessThan(html.indexOf('Revenus imposables'));
     expect(html.indexOf('Revenus imposables')).toBeLessThan(html.indexOf('Versements retraite'));
     expect(html).toContain('Ajouter un enfant');
     expect(html).not.toContain('Mutualisation des plafonds (case 6QR)');
+    expect(html).toContain('per-checkbox-label--isole');
   });
 
   it('renders mutualisation des plafonds inside the versements block for couples', () => {
@@ -72,16 +75,17 @@ describe('SituationFiscaleStep', () => {
     expect(html.indexOf('Versements retraite')).toBeLessThan(html.indexOf('Mutualisation des plafonds (case 6QR)'));
   });
 
-  it('renders the conditional revenu rows from the IR-like filters', () => {
+  it('renders the conditional revenu rows from the toggles and filters', () => {
     const html = renderToStaticMarkup(
       <SituationFiscaleStep
         showFoyerCard={false}
         {...baseProps}
-        incomeFilters={{ tns: true, pension: true, foncier: true }}
+        declarant1={{ ...baseDeclarant, statutTns: true }}
+        incomeFilters={{ pension: true, foncier: true }}
       />,
     );
 
-    expect(html).toContain('TNS');
+    expect(html).toContain('D1 TNS');
     expect(html).toContain('Pension');
     expect(html).toContain('Foncier');
     expect(html).toContain('Revenus des associés / gérants');
@@ -91,17 +95,18 @@ describe('SituationFiscaleStep', () => {
     expect(html).toContain('Revenus fonciers nets');
   });
 
-  it('uses the updated contribution notes without adding unsupported 2042 boxes', () => {
+  it('uses the updated contribution notes and info button', () => {
     const html = renderToStaticMarkup(
       <SituationFiscaleStep
         showFoyerCard={false}
         {...baseProps}
-        incomeFilters={{ tns: true, pension: false, foncier: false }}
+        declarant1={{ ...baseDeclarant, statutTns: true }}
       />,
     );
 
     expect(html).toContain('2042 : 6OS / 6OT');
-    expect(html).toContain('contrat retraite, distinct du PER 154 bis');
-    expect(html).toContain('employeur, réduit le plafond 163Q');
+    expect(html).toContain('contribue à 6QS / 6QT');
+    expect(html).toContain('nécessaire pour le calcul de l');
+    expect(html).toContain('Afficher le détail des enveloppes Madelin 154 bis');
   });
 });

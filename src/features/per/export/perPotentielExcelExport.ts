@@ -60,11 +60,16 @@ function pushMadelinRows(
   plafond: NonNullable<PerPotentielResult['plafondMadelin']>['declarant1'],
 ): void {
   rows.push([sec(label), sec('')]);
-  rows.push([txt('Assiette Madelin'), money(plafond.assiette)]);
-  rows.push([txt('Enveloppe 15%'), money(plafond.enveloppe15)]);
+  rows.push([txt('Assiette de versement'), money(plafond.assietteVersement)]);
+  rows.push([txt('Assiette de report 2042'), money(plafond.assietteReport)]);
+  rows.push([txt('Enveloppe 15% versement'), money(plafond.enveloppe15Versement)]);
+  rows.push([txt('Enveloppe 15% report'), money(plafond.enveloppe15Report)]);
   rows.push([txt('Enveloppe 10%'), money(plafond.enveloppe10)]);
-  rows.push([txt('Potentiel total'), money(plafond.potentielTotal)]);
   rows.push([txt('Cotisations versees'), money(plafond.cotisationsVersees)]);
+  rows.push([txt('Reste enveloppe 15% versement'), money(plafond.reste15Versement)]);
+  rows.push([txt('Reste enveloppe 15% report'), money(plafond.reste15Report)]);
+  rows.push([txt('Reste enveloppe 10%'), money(plafond.reste10)]);
+  rows.push([txt('Reintegration fiscale'), money(plafond.surplusAReintegrer)]);
   rows.push([txt('Disponible restant'), money(plafond.disponibleRestant)]);
   rows.push([txt('Depassement'), txt(yesNo(plafond.depassement))]);
 }
@@ -99,8 +104,12 @@ function buildSyntheseSheet(
   rows.push([txt('Marge dans la TMI'), money(result.situationFiscale.montantDansLaTMI)]);
 
   pushPlafondRows(rows, 'Plafond 163 quatervicies - Declarant 1', result.plafond163Q.declarant1);
+  rows.push([txt('Cotisations retenues IR - Declarant 1'), money(result.deductionFlow163Q.declarant1.cotisationsRetenuesIr)]);
+  rows.push([txt('Disponible restant après mutualisation - Declarant 1'), money(result.deductionFlow163Q.declarant1.disponibleRestant)]);
   if (result.plafond163Q.declarant2) {
     pushPlafondRows(rows, 'Plafond 163 quatervicies - Declarant 2', result.plafond163Q.declarant2);
+    rows.push([txt('Cotisations retenues IR - Declarant 2'), money(result.deductionFlow163Q.declarant2?.cotisationsRetenuesIr ?? 0)]);
+    rows.push([txt('Disponible restant après mutualisation - Declarant 2'), money(result.deductionFlow163Q.declarant2?.disponibleRestant ?? 0)]);
   }
 
   if (result.plafondMadelin?.declarant1) {
@@ -123,6 +132,20 @@ function buildSyntheseSheet(
     rows.push([txt('Simulation disponible'), txt('Non')]);
   }
 
+  rows.push([sec('Projection prochain avis IR'), sec('')]);
+  rows.push([txt('Declarant 1 - reliquat N-2'), money(result.projectionAvisSuivant.declarant1.nonUtiliseN2)]);
+  rows.push([txt('Declarant 1 - reliquat N-1'), money(result.projectionAvisSuivant.declarant1.nonUtiliseN1)]);
+  rows.push([txt('Declarant 1 - reliquat N'), money(result.projectionAvisSuivant.declarant1.nonUtiliseN)]);
+  rows.push([txt('Declarant 1 - plafond calcule'), money(result.projectionAvisSuivant.declarant1.plafondCalculeN)]);
+  rows.push([txt('Declarant 1 - total'), money(result.projectionAvisSuivant.declarant1.plafondTotal)]);
+  if (result.projectionAvisSuivant.declarant2) {
+    rows.push([txt('Declarant 2 - reliquat N-2'), money(result.projectionAvisSuivant.declarant2.nonUtiliseN2)]);
+    rows.push([txt('Declarant 2 - reliquat N-1'), money(result.projectionAvisSuivant.declarant2.nonUtiliseN1)]);
+    rows.push([txt('Declarant 2 - reliquat N'), money(result.projectionAvisSuivant.declarant2.nonUtiliseN)]);
+    rows.push([txt('Declarant 2 - plafond calcule'), money(result.projectionAvisSuivant.declarant2.plafondCalculeN)]);
+    rows.push([txt('Declarant 2 - total'), money(result.projectionAvisSuivant.declarant2.plafondTotal)]);
+  }
+
   if (result.warnings.length > 0) {
     rows.push([sec('Alertes'), sec('')]);
     result.warnings.forEach((warning, index) => {
@@ -142,7 +165,7 @@ function buildDeclarationSheet(result: PerPotentielResult): XlsxSheet {
     [h('Case'), h('Libelle'), h('Valeur')],
     [ctr('6NS'), txt('PER 163 quatervicies - Declarant 1'), money(result.declaration2042.case6NS)],
     [ctr('6RS'), txt('PERP et assimiles - Declarant 1'), money(result.declaration2042.case6RS)],
-    [ctr('6QS'), txt('Art. 83 - Declarant 1'), money(result.declaration2042.case6QS)],
+    [ctr('6QS'), txt('Art. 83 / PERCO / Madelin retraite - Declarant 1'), money(result.declaration2042.case6QS)],
     [ctr('6OS'), txt('PER 154 bis - Declarant 1'), money(result.declaration2042.case6OS)],
   ];
 
@@ -153,7 +176,7 @@ function buildDeclarationSheet(result: PerPotentielResult): XlsxSheet {
     rows.push([ctr('6RT'), txt('PERP et assimiles - Declarant 2'), money(result.declaration2042.case6RT)]);
   }
   if (typeof result.declaration2042.case6QT === 'number') {
-    rows.push([ctr('6QT'), txt('Art. 83 - Declarant 2'), money(result.declaration2042.case6QT)]);
+    rows.push([ctr('6QT'), txt('Art. 83 / PERCO / Madelin retraite - Declarant 2'), money(result.declaration2042.case6QT)]);
   }
   if (typeof result.declaration2042.case6OT === 'number') {
     rows.push([ctr('6OT'), txt('PER 154 bis - Declarant 2'), money(result.declaration2042.case6OT)]);

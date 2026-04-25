@@ -17,8 +17,10 @@ import type {
 import type { FiscalContext } from '../../../hooks/useFiscalContext';
 import { getAvisReferenceYears, getPerWorkflowYears } from '../utils/perWorkflowYears';
 import { derivePerNombreParts, type PerChildDraft } from '../utils/perParts';
+import { shouldUseProjectionForCalculation } from '../utils/perProjectionScope';
+import { resolvePerCalculationYear } from '../utils/perCalculationYear';
 
-const SESSION_KEY = 'ser1:sim:per:potentiel:v3';
+const SESSION_KEY = 'ser1:sim:per:potentiel:v4';
 
 export type PerMode = 'versement-n' | 'declaration-n1';
 export type WizardStep = 1 | 2 | 3 | 4 | 5;
@@ -44,6 +46,7 @@ export interface PerPotentielState {
 }
 
 const EMPTY_DECLARANT: DeclarantRevenus = {
+  statutTns: false,
   salaires: 0,
   fraisReels: false,
   fraisReelsMontant: 0,
@@ -366,7 +369,13 @@ export function usePerPotentiel(fiscalContext: FiscalContext): UsePerPotentielRe
     return {
       mode: state.mode,
       historicalBasis,
-      anneeRef: years.currentTaxYear,
+      ...resolvePerCalculationYear({
+        step: state.step,
+        mode: state.mode,
+        historicalBasis,
+        useProjection,
+        years,
+      }),
       situationFiscale: buildSituationInput(state, 'revenus-n1', isCouple),
       projectionFiscale: useProjection
         ? buildSituationInput(state, 'projection-n', isCouple)
@@ -379,15 +388,19 @@ export function usePerPotentiel(fiscalContext: FiscalContext): UsePerPotentielRe
       taxSettings: fiscalContext._raw_tax,
       psSettings: fiscalContext._raw_ps,
     };
-  }, [state, years.currentTaxYear, isCouple, fiscalContext]);
+  }, [state, years, isCouple, fiscalContext]);
 
   const result = useMemo((): PerPotentielResult | null => {
     if (state.step < 3) {
       return null;
     }
 
-    const shouldUseProjection = state.mode === 'versement-n'
-      && (state.historicalBasis === 'current-avis' || state.needsCurrentYearEstimate);
+    const shouldUseProjection = shouldUseProjectionForCalculation({
+      step: state.step,
+      mode: state.mode,
+      historicalBasis: state.historicalBasis,
+      needsCurrentYearEstimate: state.needsCurrentYearEstimate,
+    });
     const input = buildInput(shouldUseProjection);
     if (!input) {
       return null;
