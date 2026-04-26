@@ -84,9 +84,6 @@ function getStepMeta(
         shortLabel: 'Versement N',
         title: `Versements ${years.currentTaxYear}`,
       };
-    case 5:
-    default:
-      return { shortLabel: 'Synthèse', title: 'Synthèse déclarative' };
   }
 }
 

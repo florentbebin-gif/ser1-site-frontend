@@ -1,4 +1,4 @@
-import type { PerHistoricalBasis } from '../../../engine/per';
+import type { PerHistoricalBasis } from '@/engine/per';
 
 type PerSimplifiableState = {
   mode: 'versement-n' | 'declaration-n1' | null;

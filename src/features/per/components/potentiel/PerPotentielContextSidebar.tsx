@@ -133,7 +133,7 @@ export function PerPotentielContextSidebar({
   result,
 }: PerPotentielContextSidebarProps): React.ReactElement {
   const showPotentielAvis = step !== 1 && (step <= 3 || showAdjustedPotentiel);
-  const showLivePreview = Boolean(result && step !== 5);
+  const showLivePreview = Boolean(result);
   const potentielD1 = showAdjustedPotentiel && result
     ? result.deductionFlow163Q.declarant1.disponibleRestant
     : totalAvisIrD1;

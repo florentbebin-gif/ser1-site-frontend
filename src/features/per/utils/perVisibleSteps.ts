@@ -1,6 +1,6 @@
-import type { PerHistoricalBasis } from '../../../engine/per';
+import type { PerHistoricalBasis } from '@/engine/per';
 
-export type PerVisibleStep = 1 | 2 | 3 | 4 | 5;
+export type PerVisibleStep = 1 | 2 | 3 | 4;
 export type PerVisibleMode = 'versement-n' | 'declaration-n1' | null;
 
 export function buildVisibleSteps(

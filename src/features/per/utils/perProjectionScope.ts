@@ -1,7 +1,7 @@
-import type { PerHistoricalBasis } from '../../../engine/per';
+import type { PerHistoricalBasis } from '@/engine/per';
 
 export type PerProjectionScopeMode = 'versement-n' | 'declaration-n1' | null;
-export type PerProjectionScopeStep = 1 | 2 | 3 | 4 | 5;
+export type PerProjectionScopeStep = 1 | 2 | 3 | 4;
 
 interface PerProjectionScopeParams {
   step: PerProjectionScopeStep;
