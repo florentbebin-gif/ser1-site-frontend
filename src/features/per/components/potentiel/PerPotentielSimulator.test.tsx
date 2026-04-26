@@ -77,13 +77,17 @@ vi.mock('./steps/SituationFiscaleStep', () => ({
     showFoyerCard,
     showIncomeCard,
     situationFamiliale,
+    isCouple,
+    mutualisationConjoints,
   }: {
     showFoyerCard: boolean;
     showIncomeCard: boolean;
     situationFamiliale: 'celibataire' | 'marie';
+    isCouple: boolean;
+    mutualisationConjoints: boolean;
   }) => (
     <div>
-      Situation step {showFoyerCard ? 'foyer visible' : 'foyer masqué'} {showIncomeCard ? 'revenus visibles' : 'revenus masqués'} {situationFamiliale}
+      Situation step {showFoyerCard ? 'foyer visible' : 'foyer masqué'} {showIncomeCard ? 'revenus visibles' : 'revenus masqués'} {situationFamiliale} {isCouple ? 'couple' : 'solo'} {mutualisationConjoints ? '6QR oui' : '6QR non'}
     </div>
   ),
 }));
@@ -96,10 +100,12 @@ vi.mock('./PerPotentielContextSidebar', () => ({
   PerPotentielContextSidebar: ({
     totalAvisIrD1,
     totalAvisIrD2,
+    showProjectedPlafondCalcule,
   }: {
     totalAvisIrD1: number;
     totalAvisIrD2: number;
-  }) => <div>Sidebar contexte {totalAvisIrD1} / {totalAvisIrD2}</div>,
+    showProjectedPlafondCalcule: boolean;
+  }) => <div>Sidebar contexte {totalAvisIrD1} / {totalAvisIrD2} {showProjectedPlafondCalcule ? 'plafond connu' : 'plafond à déterminer'}</div>,
 }));
 
 import PerPotentielSimulator from './PerPotentielSimulator';
@@ -266,7 +272,7 @@ describe('PerPotentielSimulator', () => {
 
     const html = renderToStaticMarkup(<PerPotentielSimulator />);
 
-    expect(html).toContain('Situation step foyer visible revenus visibles marie');
+    expect(html).toContain('Situation step foyer visible revenus visibles marie couple 6QR oui');
   });
 
   it('affiche un Versement N simplifié avec avis IR 2026 sans projection', () => {
@@ -283,10 +289,11 @@ describe('PerPotentielSimulator', () => {
     const html = renderToStaticMarkup(<PerPotentielSimulator />);
 
     expect(html).toContain('Versement N');
-    expect(html).toContain('Situation step foyer masqué revenus masqués celibataire');
+    expect(html).toContain('Situation step foyer masqué revenus masqués celibataire couple 6QR non');
+    expect(html).toContain('plafond à déterminer');
   });
 
-  it('masque les revenus sur Versement N quand la projection est inactive', () => {
+  it('masque les revenus sur Versement N mais garde D2 quand un avis conjoint existe', () => {
     mockUsePerPotentiel.mockReturnValue({
       ...makeHookReturn(4),
       state: {
@@ -299,7 +306,25 @@ describe('PerPotentielSimulator', () => {
 
     const html = renderToStaticMarkup(<PerPotentielSimulator />);
 
-    expect(html).toContain('Situation step foyer masqué revenus masqués marie');
+    expect(html).toContain('Situation step foyer masqué revenus masqués marie couple 6QR non');
+    expect(html).toContain('plafond à déterminer');
+  });
+
+  it('reste en solo sur Versement N sans projection si aucun avis IR D2 significatif n’existe', () => {
+    mockUsePerPotentiel.mockReturnValue({
+      ...makeHookReturn(3),
+      state: {
+        ...makeHookState(3),
+        historicalBasis: 'current-avis',
+        needsCurrentYearEstimate: false,
+        avisIr2: null,
+      },
+      visibleSteps: [1, 2, 3],
+    });
+
+    const html = renderToStaticMarkup(<PerPotentielSimulator />);
+
+    expect(html).toContain('Situation step foyer masqué revenus masqués celibataire solo 6QR non');
   });
 
   it('renomme la tab déclaration en Revenus 2025 et masque la synthèse', () => {

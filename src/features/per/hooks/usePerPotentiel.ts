@@ -16,6 +16,7 @@ import type {
 } from '@/engine/per';
 import type { FiscalContext } from '@/hooks/useFiscalContext';
 import { getAvisReferenceYears, getPerWorkflowYears } from '../utils/perWorkflowYears';
+import { hasAvisIrDeclarant } from '../utils/perAvisIrPlafonds';
 import type { PerChildDraft } from '../utils/perParts';
 import { shouldUseProjectionForCalculation } from '../utils/perProjectionScope';
 import { resolvePerCalculationYear } from '../utils/perCalculationYear';
@@ -154,7 +155,19 @@ export function usePerPotentiel(
       plafondCalcule: 0,
       anneeRef: avisContext.incomeYear,
     };
-    persist({ ...state, [key]: { ...current, ...patch, anneeRef: current.anneeRef || avisContext.incomeYear } });
+    const couplePatch = decl === 2
+      ? {
+        situationFamiliale: 'marie' as const,
+        projectionSituationFamiliale: 'marie' as const,
+        projectionFoyerEdited: true,
+      }
+      : {};
+
+    persist({
+      ...state,
+      ...couplePatch,
+      [key]: { ...current, ...patch, anneeRef: current.anneeRef || avisContext.incomeYear },
+    });
   }, [state, persist, years]);
 
   const updateSituation = useCallback((patch: PerSituationPatch) => {
@@ -282,7 +295,7 @@ export function usePerPotentiel(
 
     const forceProjectionCouple = useProjection
       && !state.needsCurrentYearEstimate
-      && Boolean(avisOverride?.avisIr2 ?? state.avisIr2);
+      && hasAvisIrDeclarant(avisOverride?.avisIr2 ?? state.avisIr2);
 
     return {
       mode: state.mode,
