@@ -313,7 +313,11 @@ export type PerFiscalSnapshotSlideSpec = {
   activeThreshold: number | null;
   irEstime: number;
   revenuImposableFoyer: number;
+  revenuImposableD1: number;
+  revenuImposableD2: number;
+  isCouple: boolean;
   partsNb: number;
+  taxablePerPart: number;
   montantDansLaTMI: number;
   brackets: PerFiscalBracket[];
 };

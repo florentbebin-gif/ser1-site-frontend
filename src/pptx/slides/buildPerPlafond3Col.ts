@@ -14,12 +14,12 @@ import { MASTER_NAMES } from '../template/loadBaseTemplate';
 
 const GEO = {
   marginX: 0.92,
-  introY: 1.82,
+  introY: 2.42,
   panelX: 0.92,
-  panelY: 2.52,
+  panelY: 3.00,
   panelW: 11.5,
   panelH: 3.5,
-  noteY: 6.18,
+  noteY: 6.60,
 } as const;
 
 function euro(value: number): string {

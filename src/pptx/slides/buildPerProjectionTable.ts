@@ -13,11 +13,11 @@ import { MASTER_NAMES } from '../template/loadBaseTemplate';
 
 const GEO = {
   panelX: 2.16,
-  panelY: 1.82,
+  panelY: 2.42,
   panelW: 9.0,
-  panelH: 4.9,
-  rowH: 0.30,
-  sectionH: 0.32,
+  panelH: 4.45,
+  rowH: 0.26,
+  sectionH: 0.30,
 } as const;
 
 function euro(value: number): string {
