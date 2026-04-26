@@ -53,6 +53,14 @@
   transform: translateY(-1px);
 }
 
+.per-mode-card--locked,
+.per-mode-card--locked:hover {
+  cursor: default;
+  border-color: var(--color-c8);
+  box-shadow: none;
+  transform: none;
+}
+
 .per-mode-card--selected {
   border-color: var(--color-c2);
   background: color-mix(in srgb, var(--color-c4) 48%, #FFFFFF);
@@ -138,6 +146,15 @@
   border-color: var(--color-c3);
   background: #FFFFFF;
   transform: translateY(-1px);
+}
+
+.per-mode-doc-card--locked,
+.per-mode-doc-card--locked:hover {
+  cursor: default;
+  border-color: var(--color-c8);
+  background: #FFFFFF;
+  box-shadow: none;
+  transform: none;
 }
 
 .per-mode-doc-card.is-selected {

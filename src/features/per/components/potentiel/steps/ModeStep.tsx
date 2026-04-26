@@ -15,6 +15,7 @@ interface ModeStepProps {
   onSelectMode: (_mode: PerMode) => void;
   onSelectHistoricalBasis: (_basis: PerHistoricalBasis) => void;
   onSetNeedsCurrentYearEstimate: (_value: boolean) => void;
+  simplifiedMode?: boolean;
 }
 
 export default function ModeStep({
@@ -25,6 +26,7 @@ export default function ModeStep({
   onSelectMode,
   onSelectHistoricalBasis,
   onSetNeedsCurrentYearEstimate,
+  simplifiedMode = false,
 }: ModeStepProps): React.ReactElement {
   const modes: { id: PerMode; title: string; desc: string; marker: string }[] = [
     {
@@ -40,6 +42,77 @@ export default function ModeStep({
       marker: 'Déclaration N-1',
     },
   ];
+
+  if (simplifiedMode) {
+    return (
+      <div className="per-step per-step--mode">
+        <div className="premium-card sim-card--guide per-mode-step-card">
+          <div className="per-mode-step-header sim-card__header--bleed">
+            <div className="sim-card__title-row">
+              <div className="sim-card__icon">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
+                </svg>
+              </div>
+              <h3 className="sim-card__title">Parcours simplifié</h3>
+            </div>
+          </div>
+          <div className="sim-divider" />
+
+          <div className="per-mode-grid">
+            <div className="per-mode-card per-mode-card--selected per-mode-card--locked" aria-disabled="true">
+              <span className="per-mode-card-marker">Versement N</span>
+              <h4 className="per-mode-card-title">Contrôle du potentiel avant versement</h4>
+              <p className="per-mode-card-desc">
+                Parcours préselectionné à partir de l&apos;avis IR {years.currentTaxYear},
+                sans projection de l&apos;année en cours.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div className="premium-card sim-card--guide per-mode-support-card">
+          <div className="per-mode-docs-header sim-card__header--bleed">
+            <div className="sim-card__title-row">
+              <div className="sim-card__icon">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                  <polyline points="14 2 14 8 20 8" />
+                </svg>
+              </div>
+              <h3 className="sim-card__title">Documents nécessaires</h3>
+            </div>
+            <p className="per-mode-docs-subtitle">Base documentaire verrouillée en mode simplifié</p>
+          </div>
+          <div className="sim-divider" />
+
+          <div className="per-mode-panel-stack">
+            <div className="per-mode-panel-block">
+              <div className="per-mode-doc-grid">
+                <div className="per-mode-doc-card is-selected per-mode-doc-card--locked" aria-disabled="true">
+                  <span className="per-mode-doc-title">
+                    Avis IR {years.currentTaxYear} disponible
+                  </span>
+                  <span className="per-mode-doc-desc">
+                    Avis sur les revenus {years.currentIncomeYear}. Le plafond épargne retraite est
+                    repris directement depuis l&apos;avis.
+                  </span>
+                </div>
+
+                <div className="per-mode-doc-card per-mode-doc-card--locked" aria-disabled="true">
+                  <span className="per-mode-doc-title">Projection désactivée</span>
+                  <span className="per-mode-doc-desc">
+                    La vérification porte uniquement sur les versements de l&apos;année en cours.
+                    Passez en mode expert pour projeter l&apos;avis suivant.
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="per-step per-step--mode">

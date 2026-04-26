@@ -1,7 +1,10 @@
 import { renderToStaticMarkup } from 'react-dom/server';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-const mockUsePerPotentiel = vi.fn();
+const mockUsePerPotentiel = vi.hoisted(() => vi.fn());
+const mockUserModeState = vi.hoisted(() => ({
+  mode: 'expert' as 'expert' | 'simplifie',
+}));
 
 vi.mock('../../../../hooks/useFiscalContext', () => ({
   useFiscalContext: () => ({
@@ -27,7 +30,7 @@ vi.mock('../../../../settings/ThemeProvider', () => ({
 
 vi.mock('../../../../settings/userMode', () => ({
   useUserMode: () => ({
-    mode: 'expert',
+    mode: mockUserModeState.mode,
   }),
 }));
 
@@ -217,6 +220,7 @@ describe('PerPotentielSimulator', () => {
   beforeEach(() => {
     mockUsePerPotentiel.mockReset();
     mockUsePerPotentiel.mockReturnValue(makeHookReturn(2));
+    mockUserModeState.mode = 'expert';
   });
 
   it('passes declarant totals to the avis step and shows them in the right sidebar', () => {
@@ -334,5 +338,13 @@ describe('PerPotentielSimulator', () => {
     expect(html).toContain('per-potentiel-stage-header sim-card__header sim-card__header--bleed');
     expect(html).toContain('class="sim-card__title-row"');
     expect(html).toContain('Lecture de l&#x27;avis IR 2025');
+  });
+
+  it('force le preset simplifié côté hook quand le mode utilisateur est simplifié', () => {
+    mockUserModeState.mode = 'simplifie';
+
+    renderToStaticMarkup(<PerPotentielSimulator />);
+
+    expect(mockUsePerPotentiel).toHaveBeenCalledWith(expect.any(Object), { simplifiedMode: true });
   });
 });
