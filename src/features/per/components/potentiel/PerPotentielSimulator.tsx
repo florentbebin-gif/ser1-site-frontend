@@ -97,6 +97,7 @@ export default function PerPotentielSimulator(): React.ReactElement {
   const [localMode, setLocalMode] = useState<UserMode | null>(null);
   const [incomeFilters, setIncomeFilters] = useState<PerIncomeFilters>(DEFAULT_INCOME_FILTERS);
   const isExpert = (localMode ?? mode) === 'expert';
+  const isSimplified = !isExpert;
   const toggleMode = () => setLocalMode(isExpert ? 'simplifie' : 'expert');
   const years = getPerWorkflowYears(fiscalContext);
 
@@ -120,7 +121,7 @@ export default function PerPotentielSimulator(): React.ReactElement {
     removeProjectionChild,
     goToStep,
     reset,
-  } = usePerPotentiel(fiscalContext);
+  } = usePerPotentiel(fiscalContext, { simplifiedMode: isSimplified });
 
   useEffect(() => {
     const off = onResetEvent(({ simId }: { simId?: string }) => {
@@ -284,6 +285,7 @@ export default function PerPotentielSimulator(): React.ReactElement {
               onSelectMode={setMode}
               onSelectHistoricalBasis={setHistoricalBasis}
               onSetNeedsCurrentYearEstimate={setNeedsCurrentYearEstimate}
+              simplifiedMode={isSimplified}
             />
           ) : (
           <div className="premium-card premium-card--guide per-potentiel-stage">

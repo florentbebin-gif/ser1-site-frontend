@@ -5,7 +5,7 @@
  * Persistence via sessionStorage.
  */
 
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useEffect, useMemo } from 'react';
 import { calculatePerPotentiel } from '../../../engine/per';
 import type {
   PerPotentielInput,
@@ -22,6 +22,7 @@ import { resolvePerCalculationYear } from '../utils/perCalculationYear';
 import { projectionToAvisIrPlafonds } from '../utils/perSyntheticAvis';
 import { getNextPerChildId, normalizePerChildren, normalizePerFoyer } from '../utils/perFoyerState';
 import { buildVisibleSteps } from '../utils/perVisibleSteps';
+import { applyPerSimplifiedPreset, isPerSimplifiedPresetState } from '../utils/perSimplifiedMode';
 
 const SESSION_KEY = 'ser1:sim:per:potentiel:v4';
 
@@ -34,6 +35,9 @@ type PerSituationPatch = Partial<{
   isole: boolean;
   mutualisationConjoints: boolean;
 }>;
+interface PerPotentielStateOptions {
+  simplifiedMode?: boolean;
+}
 
 export interface PerPotentielState {
   step: WizardStep;
@@ -79,27 +83,32 @@ const EMPTY_DECLARANT: DeclarantRevenus = {
   cotisationsPrevo: 0,
 };
 
-function normalizeState(state: PerPotentielState): PerPotentielState {
-  const visibleSteps = buildVisibleSteps(state.mode, state.historicalBasis, state.needsCurrentYearEstimate);
+function normalizeState(state: PerPotentielState, options: PerPotentielStateOptions = {}): PerPotentielState {
+  const baseState = options.simplifiedMode ? applyPerSimplifiedPreset(state) : state;
+  const visibleSteps = buildVisibleSteps(
+    baseState.mode,
+    baseState.historicalBasis,
+    baseState.needsCurrentYearEstimate,
+  );
   const fallbackStep = visibleSteps[visibleSteps.length - 1] ?? 1;
-  const step = visibleSteps.includes(state.step) ? state.step : fallbackStep;
+  const step = visibleSteps.includes(baseState.step) ? baseState.step : fallbackStep;
   const foyer = normalizePerFoyer({
-    situationFamiliale: state.situationFamiliale,
-    isole: state.isole,
-    children: state.children,
-    mutualisationConjoints: state.mutualisationConjoints,
+    situationFamiliale: baseState.situationFamiliale,
+    isole: baseState.isole,
+    children: baseState.children,
+    mutualisationConjoints: baseState.mutualisationConjoints,
   });
-  const projectionFoyer = state.projectionFoyerEdited
+  const projectionFoyer = baseState.projectionFoyerEdited
     ? normalizePerFoyer({
-      situationFamiliale: state.projectionSituationFamiliale,
-      isole: state.projectionIsole,
-      children: state.projectionChildren,
-      mutualisationConjoints: state.projectionMutualisationConjoints,
+      situationFamiliale: baseState.projectionSituationFamiliale,
+      isole: baseState.projectionIsole,
+      children: baseState.projectionChildren,
+      mutualisationConjoints: baseState.projectionMutualisationConjoints,
     })
     : foyer;
 
   return {
-    ...state,
+    ...baseState,
     step,
     situationFamiliale: foyer.situationFamiliale,
     isole: foyer.isole,
@@ -114,7 +123,7 @@ function normalizeState(state: PerPotentielState): PerPotentielState {
   };
 }
 
-function makeDefaultState(): PerPotentielState {
+function makeDefaultState(options: PerPotentielStateOptions = {}): PerPotentielState {
   return normalizeState({
     step: 1,
     mode: null,
@@ -138,10 +147,10 @@ function makeDefaultState(): PerPotentielState {
     projectionNDeclarant2: { ...EMPTY_DECLARANT },
     versementEnvisage: 0,
     mutualisationConjoints: false,
-  });
+  }, options);
 }
 
-function loadSession(): PerPotentielState | null {
+function loadSession(options: PerPotentielStateOptions = {}): PerPotentielState | null {
   try {
     const raw = sessionStorage.getItem(SESSION_KEY);
     if (!raw) return null;
@@ -150,7 +159,7 @@ function loadSession(): PerPotentielState | null {
       return null;
     }
     return normalizeState({
-      ...makeDefaultState(),
+      ...makeDefaultState(options),
       ...parsed,
       revenusN1Declarant1: { ...EMPTY_DECLARANT, ...parsed.revenusN1Declarant1 },
       revenusN1Declarant2: { ...EMPTY_DECLARANT, ...parsed.revenusN1Declarant2 },
@@ -158,7 +167,7 @@ function loadSession(): PerPotentielState | null {
       projectionNDeclarant2: { ...EMPTY_DECLARANT, ...parsed.projectionNDeclarant2 },
       children: normalizePerChildren(parsed.children),
       projectionChildren: normalizePerChildren(parsed.projectionChildren),
-    });
+    }, options);
   } catch {
     return null;
   }
@@ -226,8 +235,18 @@ export interface UsePerPotentielReturn {
   isCouple: boolean;
 }
 
-export function usePerPotentiel(fiscalContext: FiscalContext): UsePerPotentielReturn {
-  const [state, setState] = useState<PerPotentielState>(() => loadSession() ?? makeDefaultState());
+export interface UsePerPotentielOptions {
+  simplifiedMode?: boolean;
+}
+
+export function usePerPotentiel(
+  fiscalContext: FiscalContext,
+  options: UsePerPotentielOptions = {},
+): UsePerPotentielReturn {
+  const simplifiedMode = options.simplifiedMode === true;
+  const [state, setState] = useState<PerPotentielState>(
+    () => loadSession({ simplifiedMode }) ?? makeDefaultState({ simplifiedMode }),
+  );
   const years = useMemo(() => getPerWorkflowYears(fiscalContext), [fiscalContext]);
   const visibleSteps = useMemo(
     () => buildVisibleSteps(state.mode, state.historicalBasis, state.needsCurrentYearEstimate),
@@ -235,10 +254,25 @@ export function usePerPotentiel(fiscalContext: FiscalContext): UsePerPotentielRe
   );
 
   const persist = useCallback((next: PerPotentielState) => {
-    const normalized = normalizeState(next);
+    const normalized = normalizeState(next, { simplifiedMode });
     setState(normalized);
     saveSession(normalized);
-  }, []);
+  }, [simplifiedMode]);
+
+  useEffect(() => {
+    if (!simplifiedMode) {
+      return;
+    }
+
+    setState((previous) => {
+      const normalized = normalizeState(previous, { simplifiedMode: true });
+      if (isPerSimplifiedPresetState(previous) && previous.step === normalized.step) {
+        return previous;
+      }
+      saveSession(normalized);
+      return normalized;
+    });
+  }, [simplifiedMode]);
 
   const setMode = useCallback((mode: PerMode) => {
     const nextBasis = mode === 'declaration-n1'
@@ -406,14 +440,14 @@ export function usePerPotentiel(fiscalContext: FiscalContext): UsePerPotentielRe
   }, [state, persist, visibleSteps]);
 
   const reset = useCallback(() => {
-    const fresh = makeDefaultState();
+    const fresh = makeDefaultState({ simplifiedMode });
     setState(fresh);
     try {
       sessionStorage.removeItem(SESSION_KEY);
     } catch {
       /* ignore */
     }
-  }, []);
+  }, [simplifiedMode]);
 
   const canGoNext = useMemo(() => {
     if (state.step !== 1) {
