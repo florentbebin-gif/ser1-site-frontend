@@ -88,10 +88,6 @@ vi.mock('./steps/SituationFiscaleStep', () => ({
   ),
 }));
 
-vi.mock('./steps/SynthesePotentielStep', () => ({
-  default: () => <div>Synthèse step</div>,
-}));
-
 vi.mock('./PerHypotheses', () => ({
   PerHypotheses: () => <div>Hypothèses</div>,
 }));
@@ -104,10 +100,6 @@ vi.mock('./PerPotentielContextSidebar', () => ({
     totalAvisIrD1: number;
     totalAvisIrD2: number;
   }) => <div>Sidebar contexte {totalAvisIrD1} / {totalAvisIrD2}</div>,
-}));
-
-vi.mock('./PerSynthesisSidebar', () => ({
-  PerSynthesisSidebar: () => <div>Sidebar finale</div>,
 }));
 
 import PerPotentielSimulator from './PerPotentielSimulator';
@@ -206,13 +198,8 @@ function makeHookReturn(step: number) {
     updateProjectionChildMode: vi.fn(),
     removeChild: vi.fn(),
     removeProjectionChild: vi.fn(),
-    setVersementEnvisage: vi.fn(),
-    nextStep: vi.fn(),
-    prevStep: vi.fn(),
     goToStep: vi.fn(),
     reset: vi.fn(),
-    canGoNext: true,
-    isCouple: false,
   };
 }
 

@@ -23,7 +23,7 @@
     "check": "npm run lint && npm run lint:css && npm run check:fiscal-hardcode && npm run check:css-colors && npm run check:theme-sync && npm run check:no-js && npm run check:css-structure && npm run check:arch && npm run check:circular && npm run typecheck && npm test && npm run build",
     "check:arch": "depcruise src --config .dependency-cruiser.cjs --output-type err",
     "check:circular": "npx madge --circular --ts-config tsconfig.json --extensions ts,tsx,js,jsx src/",
-    "check:unused": "npx depcheck --ignores=supabase,dependency-cruiser",
+    "check:unused": "npx depcheck --ignores=supabase,dependency-cruiser,stylelint-config-standard",
     "analyze": "npx vite-bundle-visualizer",
     "check:pre-merge": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/pre-merge-check.ps1",
     "icons:build": "node tools/scripts/normalize-business-icons.mjs",

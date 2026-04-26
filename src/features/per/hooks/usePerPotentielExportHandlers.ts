@@ -1,8 +1,8 @@
 import { useCallback, useState } from 'react';
-import type { PerPotentielResult } from '../../../engine/per';
-import type { ThemeColors } from '../../../settings/theme';
-import type { LogoPlacement } from '../../../pptx/theme/types';
-import type { FiscalContext } from '../../../hooks/useFiscalContext';
+import type { PerPotentielResult } from '@/engine/per';
+import type { FiscalContext } from '@/hooks/useFiscalContext';
+import type { LogoPlacement } from '@/pptx/theme/types';
+import type { ThemeColors } from '@/settings/theme';
 import { exportPerPotentielExcel, type PerPotentielExcelState } from '../export/perPotentielExcelExport';
 import { getPerWorkflowYears } from '../utils/perWorkflowYears';
 import { shouldUseProjectionForCalculation, type PerProjectionScopeStep } from '../utils/perProjectionScope';
@@ -26,7 +26,7 @@ interface UsePerPotentielExportHandlersParams {
 
 function usesProjectionResult(state: ProjectionAwarePerState): boolean {
   return shouldUseProjectionForCalculation({
-    step: (state.step ?? 5) as PerProjectionScopeStep,
+    step: (state.step ?? 4) as PerProjectionScopeStep,
     mode: state.mode ?? null,
     historicalBasis: state.historicalBasis,
     needsCurrentYearEstimate: state.needsCurrentYearEstimate,
@@ -94,7 +94,7 @@ export function usePerPotentielExportHandlers({
 
     setExportLoading(true);
     try {
-      const { exportPerPotentielPptx } = await import('../../../pptx/exports/perExport');
+      const { exportPerPotentielPptx } = await import('@/pptx/exports/perExport');
       const exportState = getExportState(state);
       const years = getPerWorkflowYears(fiscalContext);
       const exportUsesProjection = usesProjectionResult(state);

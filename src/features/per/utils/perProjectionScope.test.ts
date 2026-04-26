@@ -31,7 +31,7 @@ describe('shouldUseProjectionForCalculation', () => {
 
   it('n’utilise jamais la projection pour le parcours déclaration N-1', () => {
     expect(shouldUseProjectionForCalculation({
-      step: 5,
+      step: 4,
       mode: 'declaration-n1',
       historicalBasis: 'previous-avis-plus-n1',
       needsCurrentYearEstimate: false,
