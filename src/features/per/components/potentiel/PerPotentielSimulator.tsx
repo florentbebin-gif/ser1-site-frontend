@@ -13,6 +13,7 @@ import '@/styles/sim/index.css';
 import { onResetEvent } from '../../../../utils/reset';
 import { usePerPotentiel, type WizardStep } from '../../hooks/usePerPotentiel';
 import { usePerPotentielExportHandlers } from '../../hooks/usePerPotentielExportHandlers';
+import { hasAvisIrDeclarant, sumAvisIrPlafonds } from '../../utils/perAvisIrPlafonds';
 import { getPerWorkflowYears } from '../../utils/perWorkflowYears';
 import ModeStep from './steps/ModeStep';
 import AvisIrStep from './steps/AvisIrStep';
@@ -26,19 +27,6 @@ type StepMeta = {
   shortLabel: string;
   title: string;
 };
-
-const sumAvisIrPlafonds = (
-  avis: {
-    nonUtiliseAnnee1?: number;
-    nonUtiliseAnnee2?: number;
-    nonUtiliseAnnee3?: number;
-    plafondCalcule?: number;
-  } | null,
-): number =>
-  (avis?.nonUtiliseAnnee1 ?? 0)
-  + (avis?.nonUtiliseAnnee2 ?? 0)
-  + (avis?.nonUtiliseAnnee3 ?? 0)
-  + (avis?.plafondCalcule ?? 0);
 
 const DEFAULT_INCOME_FILTERS: PerIncomeFilters = {
   pension: false,
@@ -192,15 +180,17 @@ export default function PerPotentielSimulator(): React.ReactElement {
   const parcoursPills = buildPills();
   const totalAvisIrD1 = sumAvisIrPlafonds(state.avisIr);
   const totalAvisIrD2 = sumAvisIrPlafonds(state.avisIr2);
+  const hasAvisIrD2 = hasAvisIrDeclarant(state.avisIr2);
   const revenusIsCouple = state.situationFamiliale === 'marie';
   const projectionIsCouple = state.projectionSituationFamiliale === 'marie';
+  const versementNIsCouple = projectionIsCouple || (!state.needsCurrentYearEstimate && hasAvisIrD2);
   const usesProjectionFoyer = state.mode === 'versement-n' && (
     state.historicalBasis === 'current-avis'
       ? state.step >= 3
       : state.step >= 4
   );
   const activeIsCouple = usesProjectionFoyer
-    ? projectionIsCouple || (!state.needsCurrentYearEstimate && Boolean(state.avisIr2))
+    ? versementNIsCouple
     : revenusIsCouple;
   const abat10CfgRoot = fiscalContext._raw_tax?.incomeTax?.abat10 ?? {};
   const abat10SalCfgCurrent: PerAbattementConfig = abat10CfgRoot.current ?? {};
@@ -215,6 +205,7 @@ export default function PerPotentielSimulator(): React.ReactElement {
     || (state.historicalBasis === 'previous-avis-plus-n1' && state.step === 4)
   );
   const showProjectionDetailInputs = state.needsCurrentYearEstimate;
+  const showProjectedPlafondCalcule = isRevenusStep || showProjectionDetailInputs;
   const fiscalPreviewTitle = isRevenusStep
     ? `Synthèse déclaration IR ${years.currentTaxYear}`
     : (isVersementNStep && !showProjectionDetailInputs
@@ -375,7 +366,7 @@ export default function PerPotentielSimulator(): React.ReactElement {
                   situationFamiliale={state.projectionSituationFamiliale}
                   isole={state.projectionIsole}
                   children={state.projectionChildren}
-                  isCouple={projectionIsCouple}
+                  isCouple={versementNIsCouple}
                   mutualisationConjoints={state.projectionMutualisationConjoints}
                   declarant1={state.projectionNDeclarant1}
                   declarant2={state.projectionNDeclarant2}
@@ -402,7 +393,7 @@ export default function PerPotentielSimulator(): React.ReactElement {
                   situationFamiliale={state.projectionSituationFamiliale}
                   isole={state.projectionIsole}
                   children={state.projectionChildren}
-                  isCouple={projectionIsCouple}
+                  isCouple={versementNIsCouple}
                   mutualisationConjoints={state.projectionMutualisationConjoints}
                   declarant1={state.projectionNDeclarant1}
                   declarant2={state.projectionNDeclarant2}
@@ -435,6 +426,7 @@ export default function PerPotentielSimulator(): React.ReactElement {
             showAdjustedPotentiel={isRevenusStep || isVersementNStep}
             fiscalPreviewTitle={fiscalPreviewTitle}
             projectionPreviewTitle={projectionPreviewTitle}
+            showProjectedPlafondCalcule={showProjectedPlafondCalcule}
             parcoursPills={parcoursPills}
             totalAvisIrD1={totalAvisIrD1}
             totalAvisIrD2={totalAvisIrD2}

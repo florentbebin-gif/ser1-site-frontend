@@ -147,6 +147,7 @@ describe('PerPotentielContextSidebar', () => {
         showAdjustedPotentiel
         fiscalPreviewTitle="Synthèse déclaration IR 2026"
         projectionPreviewTitle="Plafonds projetés"
+        showProjectedPlafondCalcule
         parcoursPills={[{ label: 'Avis IR 2025', on: true }]}
         totalAvisIrD1={11111}
         totalAvisIrD2={7777}
@@ -184,6 +185,7 @@ describe('PerPotentielContextSidebar', () => {
         showAdjustedPotentiel={false}
         fiscalPreviewTitle="Estimation fiscale 2026"
         projectionPreviewTitle="Plafonds projetés"
+        showProjectedPlafondCalcule
         parcoursPills={[{ label: 'Avis IR 2025', on: true }]}
         totalAvisIrD1={11111}
         totalAvisIrD2={7777}
@@ -206,6 +208,7 @@ describe('PerPotentielContextSidebar', () => {
         showAdjustedPotentiel
         fiscalPreviewTitle="Contrôle versement 2026"
         projectionPreviewTitle="Plafonds projetés"
+        showProjectedPlafondCalcule
         parcoursPills={[{ label: 'Avis IR 2025', on: true }]}
         totalAvisIrD1={11111}
         totalAvisIrD2={7777}
@@ -218,5 +221,28 @@ describe('PerPotentielContextSidebar', () => {
     expect(html).toContain(fmtCurrency(3210));
     expect(html).not.toContain(fmtCurrency(11111));
     expect(html).not.toContain("163 quatervicies issu de l'avis IR");
+  });
+
+  it('masque le plafond calculé quand les revenus projetés ne sont pas renseignés', () => {
+    const html = renderToStaticMarkup(
+      <PerPotentielContextSidebar
+        step={3}
+        isCouple
+        showRevenusPreview={false}
+        showAdjustedPotentiel
+        fiscalPreviewTitle="Contrôle versement 2026"
+        projectionPreviewTitle="Plafonds projetés"
+        showProjectedPlafondCalcule={false}
+        parcoursPills={[{ label: 'Avis IR 2026', on: true }]}
+        totalAvisIrD1={11111}
+        totalAvisIrD2={7777}
+        result={result}
+      />,
+    );
+
+    expect(html).toContain('Plafond calculé');
+    expect(html).toContain('À déterminer');
+    expect(html).not.toContain(fmtCurrency(2400));
+    expect(html).not.toContain(fmtCurrency(1400));
   });
 });

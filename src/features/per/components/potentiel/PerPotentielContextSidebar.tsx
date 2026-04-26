@@ -9,6 +9,7 @@ interface PerPotentielContextSidebarProps {
   showAdjustedPotentiel: boolean;
   fiscalPreviewTitle: string;
   projectionPreviewTitle: string;
+  showProjectedPlafondCalcule: boolean;
   parcoursPills: Array<{ label: string; on: boolean }>;
   totalAvisIrD1: number;
   totalAvisIrD2: number;
@@ -127,6 +128,7 @@ export function PerPotentielContextSidebar({
   showAdjustedPotentiel,
   fiscalPreviewTitle,
   projectionPreviewTitle,
+  showProjectedPlafondCalcule,
   parcoursPills,
   totalAvisIrD1,
   totalAvisIrD2,
@@ -179,7 +181,12 @@ export function PerPotentielContextSidebar({
       { label: 'Reliquat N-2', value: fmtCurrency(result.projectionAvisSuivant.declarant1.nonUtiliseN2) },
       { label: 'Reliquat N-1', value: fmtCurrency(result.projectionAvisSuivant.declarant1.nonUtiliseN1) },
       { label: 'Reliquat N', value: fmtCurrency(result.projectionAvisSuivant.declarant1.nonUtiliseN) },
-      { label: 'Plafond calculé', value: fmtCurrency(result.projectionAvisSuivant.declarant1.plafondCalculeN) },
+      {
+        label: 'Plafond calculé',
+        value: showProjectedPlafondCalcule
+          ? fmtCurrency(result.projectionAvisSuivant.declarant1.plafondCalculeN)
+          : 'À déterminer',
+      },
       { label: 'Total', value: fmtCurrency(result.projectionAvisSuivant.declarant1.plafondTotal) },
     ]
     : [];
@@ -188,7 +195,12 @@ export function PerPotentielContextSidebar({
       { label: 'Reliquat N-2', value: fmtCurrency(result.projectionAvisSuivant.declarant2.nonUtiliseN2) },
       { label: 'Reliquat N-1', value: fmtCurrency(result.projectionAvisSuivant.declarant2.nonUtiliseN1) },
       { label: 'Reliquat N', value: fmtCurrency(result.projectionAvisSuivant.declarant2.nonUtiliseN) },
-      { label: 'Plafond calculé', value: fmtCurrency(result.projectionAvisSuivant.declarant2.plafondCalculeN) },
+      {
+        label: 'Plafond calculé',
+        value: showProjectedPlafondCalcule
+          ? fmtCurrency(result.projectionAvisSuivant.declarant2.plafondCalculeN)
+          : 'À déterminer',
+      },
       { label: 'Total', value: fmtCurrency(result.projectionAvisSuivant.declarant2.plafondTotal) },
     ]
     : [];
