@@ -125,6 +125,10 @@ function buildFiscalBrackets(data: PerDeckData): {
 function buildFiscalSnapshotSlide(data: PerDeckData): PerFiscalSnapshotSlideSpec {
   const { result } = data;
   const { brackets, activeThreshold } = buildFiscalBrackets(data);
+  const isCouple = data.situationFamiliale === 'marie';
+  const partsNb = data.nombreParts > 0 ? data.nombreParts : 1;
+  const taxableIncome = result.situationFiscale.revenuFiscalRef;
+  const taxablePerPart = taxableIncome / partsNb;
 
   return {
     type: 'per-fiscal-snapshot',
@@ -133,8 +137,12 @@ function buildFiscalSnapshotSlide(data: PerDeckData): PerFiscalSnapshotSlideSpec
     tmiRate: result.situationFiscale.tmi,
     activeThreshold,
     irEstime: result.situationFiscale.irEstime,
-    revenuImposableFoyer: result.situationFiscale.revenuFiscalRef,
+    revenuImposableFoyer: taxableIncome,
+    revenuImposableD1: result.situationFiscale.revenuImposableD1,
+    revenuImposableD2: result.situationFiscale.revenuImposableD2,
+    isCouple,
     partsNb: data.nombreParts,
+    taxablePerPart,
     montantDansLaTMI: result.situationFiscale.montantDansLaTMI,
     brackets,
   };
