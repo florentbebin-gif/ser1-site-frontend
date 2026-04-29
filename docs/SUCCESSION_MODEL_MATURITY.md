@@ -133,8 +133,11 @@ La `PR-33` boucle la validation finale avec export des hypotheses retenues par l
 | Communaute universelle | Code civil art. 1526 |
 | Separation de biens | Code civil art. 1536 |
 | Participation aux acquets | Code civil art. 1569 a 1581 |
+| Droits de mutation par deces | CGI art. 777 |
+| Exoneration conjoint / partenaire PACS | CGI art. 796-0 bis |
 | Representation successorale fiscale | CGI art. 779 |
 | Rappel fiscal donations | CGI art. 784 |
+| Assurance-vie primes apres 70 ans | CGI art. 757 B |
 | Usufruit / nue-propriete | CGI art. 669 |
 | GFA / GFV / GFF / GF | CGI art. 793 bis |
 
@@ -152,6 +155,7 @@ La `PR-33` boucle la validation finale avec export des hypotheses retenues par l
   - `src/features/succession/__tests__/scSuccessionSummaryPanel.test.tsx`
   - `src/features/succession/__tests__/scDeathTimelinePanel.test.tsx`
   - `src/features/succession/__tests__/successionExport.test.ts`
+  - `src/features/succession/__tests__/successionGoldenScenarios.test.ts`
 - surfaces a verifier manuellement :
   - UI succession : `+ Dispositions`, ajout d'une recompense ou creance entre masses, verification de la synthese et de la chronologie
   - exports : slide/onglet `Hypotheses` dans le PPTX et le XLSX succession
