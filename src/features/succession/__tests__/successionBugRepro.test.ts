@@ -185,8 +185,10 @@ describe('V3 â€” red tests (Lot 0) â€” will be converted to it() when 
     expect(conjointBenef?.brut).toBe(75000);
   });
 
-  // â”€â”€ BUG 3: PACS chainage engine works â€” bug is only in UI display filter â”€â”€
-  it('BUG-3: PACS chainage â€” engine produces applicable analysis with testament (bug is UI-only)', () => {
+  // BUG-3 corrige par PR-A : le moteur retourne applicable=false en PACS,
+  // conformement a docs/SUCCESSION_MODEL_MATURITY.md ligne 72
+  // ("PACS chainage 2 deces : Non modelise"). Le mode direct prend le relais.
+  it('BUG-3 corrige: PACS chainage avec testament au partenaire renvoie applicable=false', () => {
     const analysis = buildSuccessionChainageAnalysis({
       civil: makeCivil({
         situationMatrimoniale: 'pacse',
@@ -220,12 +222,10 @@ describe('V3 â€” red tests (Lot 0) â€” will be converted to it() when 
       familyMembers: [],
     });
 
-    expect(analysis.applicable).toBe(true);
-    // Partenaire pacsÃ© gets share via testament only (no legal heir)
-    // With legs_universel, QD = 1/3 (2 enfants) = 133333
-    // The testament carry-over should propagate to step 2
-    expect(analysis.step1).not.toBeNull();
-    expect(analysis.step2).not.toBeNull();
-    expect(analysis.step2!.actifTransmis).toBeGreaterThan(0);
+    expect(analysis.applicable).toBe(false);
+    expect(analysis.step1).toBeNull();
+    expect(analysis.step2).toBeNull();
+    expect(analysis.totalDroits).toBe(0);
+    expect(analysis.warnings.some((warning) => warning.includes('PACS'))).toBe(true);
   });
 });
