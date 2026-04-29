@@ -21,6 +21,7 @@ type ChainageAnalysis = ReturnType<typeof buildSuccessionChainageAnalysis>;
 
 interface ScenarioInput {
   displayUsesChainage: boolean;
+  hasSecondSubject: boolean;
   isPacsed?: boolean;
   directSimulatedDeceased: SuccessionSide;
   directSuccessionDroits: number;
@@ -94,6 +95,7 @@ function buildScenario(input: ScenarioInput) {
   const displayTotals = buildSuccessionDisplayTotals({
     shouldRenderSuccessionComputationSections: true,
     displayUsesChainage: input.displayUsesChainage,
+    hasSecondSubject: input.hasSecondSubject,
     chainageOrder: input.chainageOrder,
     chainageStep1Droits: input.chainageStep1Droits,
     chainageStep2Droits: input.chainageStep2Droits,
@@ -246,6 +248,7 @@ describe('invariants droits affiches succession', () => {
   it('aligne Synthese, Chronologie et export en mode direct concubinage avec deux assures', () => {
     const scenario = buildScenario({
       displayUsesChainage: false,
+      hasSecondSubject: true,
       directSimulatedDeceased: 'epoux1',
       directSuccessionDroits: 100,
       chainageOrder: 'epoux1',
@@ -257,13 +260,14 @@ describe('invariants droits affiches succession', () => {
     });
 
     expect(scenario.displayTotals.decesSimule.totalDroits).toBe(190);
-    expect(scenario.displayTotals.projectionAutreAssure.totalDroits).toBe(900);
+    expect(scenario.displayTotals.projectionAutreAssure?.totalDroits).toBe(900);
     expectInvariant(scenario, { summaryKpiLabel: 'Coût cumulé' });
   });
 
   it('aligne Synthese, Chronologie et export en mode direct PACS ordre inverse', () => {
     const scenario = buildScenario({
       displayUsesChainage: false,
+      hasSecondSubject: true,
       isPacsed: true,
       directSimulatedDeceased: 'epoux2',
       directSuccessionDroits: 80,
@@ -276,13 +280,14 @@ describe('invariants droits affiches succession', () => {
     });
 
     expect(scenario.displayTotals.decesSimule.totalDroits).toBe(200);
-    expect(scenario.displayTotals.projectionAutreAssure.totalDroits).toBe(6);
+    expect(scenario.displayTotals.projectionAutreAssure?.totalDroits).toBe(6);
     expectInvariant(scenario, { summaryKpiLabel: 'Coût cumulé' });
   });
 
   it('aligne Synthese, Chronologie et export en mode chainage marie', () => {
     const scenario = buildScenario({
       displayUsesChainage: true,
+      hasSecondSubject: true,
       directSimulatedDeceased: 'epoux1',
       directSuccessionDroits: 0,
       chainageOrder: 'epoux2',
@@ -301,6 +306,7 @@ describe('invariants droits affiches succession', () => {
   it('aligne Synthese, Chronologie et export quand aucun droit n est du', () => {
     const scenario = buildScenario({
       displayUsesChainage: false,
+      hasSecondSubject: true,
       directSimulatedDeceased: 'epoux1',
       directSuccessionDroits: 0,
       chainageOrder: 'epoux1',
@@ -312,5 +318,48 @@ describe('invariants droits affiches succession', () => {
     });
 
     expectInvariant(scenario, { summaryKpiLabel: 'Coût cumulé' });
+  });
+
+  it.each(['celibataire', 'divorce', 'veuf'] as const)(
+    'null la projection autre assuré pour %s et masque le bloc dans la Chronologie',
+    () => {
+    const scenario = buildScenario({
+      displayUsesChainage: false,
+      hasSecondSubject: false,
+      directSimulatedDeceased: 'epoux1',
+      directSuccessionDroits: 100,
+      chainageOrder: 'epoux1',
+      chainageStep1Droits: 0,
+      chainageStep2Droits: 0,
+      avDroits: { epoux1: 10, epoux2: 999 },
+      perDroits: { epoux1: 20, epoux2: 999 },
+      prevoyanceDroits: { epoux1: 30, epoux2: 999 },
+    });
+
+    expect(scenario.displayTotals.projectionAutreAssure).toBeNull();
+
+    const timelineMarkup = renderTimeline(scenario);
+    expect(timelineMarkup).not.toContain('Projection autre assuré');
+    expect(timelineMarkup).not.toContain('La succession patrimoniale future');
+    },
+  );
+
+  it('expose le bloc Projection autre assuré pour concubinage avec un assuré porteur de droits', () => {
+    const scenario = buildScenario({
+      displayUsesChainage: false,
+      hasSecondSubject: true,
+      directSimulatedDeceased: 'epoux1',
+      directSuccessionDroits: 0,
+      chainageOrder: 'epoux1',
+      chainageStep1Droits: 0,
+      chainageStep2Droits: 0,
+      avDroits: { epoux1: 0, epoux2: 200 },
+      perDroits: { epoux1: 0, epoux2: 0 },
+      prevoyanceDroits: { epoux1: 0, epoux2: 0 },
+    });
+
+    const timelineMarkup = renderTimeline(scenario);
+    expect(timelineMarkup).toContain('Projection autre assuré');
+    expect(timelineMarkup).toContain('La succession patrimoniale future');
   });
 });

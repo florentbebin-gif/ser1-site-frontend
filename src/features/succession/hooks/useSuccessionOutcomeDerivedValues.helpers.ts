@@ -1,6 +1,6 @@
 import type { RegimeMatrimonial } from '../../../engine/civil';
 import { DONATION_ENTRE_EPOUX_OPTIONS } from '../successionSimulator.constants';
-import type { SuccessionPrimarySide } from '../successionDraft.types';
+import type { SituationMatrimoniale, SuccessionPrimarySide } from '../successionDraft.types';
 import { getUsufruitValuationFromBirthDate } from '../successionUsufruit';
 
 export type InsuranceSourceKind = 'av' | 'per' | 'prevoyance';
@@ -61,7 +61,7 @@ export interface SuccessionDisplayProjectionTotals {
 export interface SuccessionDisplayTotals {
   decesSimule: SuccessionDisplayDeathTotals;
   secondDeces: SuccessionDisplayDeathTotals | null;
-  projectionAutreAssure: SuccessionDisplayProjectionTotals;
+  projectionAutreAssure: SuccessionDisplayProjectionTotals | null;
   droitsCumulesProjetes: number;
   droitsChronologie: number;
 }
@@ -79,6 +79,12 @@ interface ComputeCumulativeSuccessionTotalDroitsInput {
 interface BuildSuccessionDisplayTotalsInput {
   shouldRenderSuccessionComputationSections: boolean;
   displayUsesChainage: boolean;
+  /**
+   * `true` quand la situation civile comporte un second sujet patrimonial
+   * (marie / pacse / concubinage). Pour celibataire / divorce / veuf,
+   * la projection sur l'autre assure n'a pas de sens metier.
+   */
+  hasSecondSubject: boolean;
   chainageOrder: SuccessionPrimarySide;
   chainageStep1Droits: number;
   chainageStep2Droits: number;
@@ -88,6 +94,14 @@ interface BuildSuccessionDisplayTotalsInput {
   avFiscalAnalysis: FiscalDroitsAnalysisByAssure;
   perFiscalAnalysis: FiscalDroitsAnalysisByAssure;
   prevoyanceFiscalAnalysis: FiscalDroitsAnalysisByAssure;
+}
+
+export function hasSuccessionSecondSubject(situationMatrimoniale: SituationMatrimoniale): boolean {
+  return (
+    situationMatrimoniale === 'marie'
+    || situationMatrimoniale === 'pacse'
+    || situationMatrimoniale === 'concubinage'
+  );
 }
 
 export function computeCumulativeSuccessionTotalDroits({
@@ -161,6 +175,7 @@ const ZERO_DROITS_HORS_SUCCESSION: SuccessionDisplayDroitsHorsSuccession = {
 export function buildSuccessionDisplayTotals({
   shouldRenderSuccessionComputationSections,
   displayUsesChainage,
+  hasSecondSubject,
   chainageOrder,
   chainageStep1Droits,
   chainageStep2Droits,
@@ -189,17 +204,21 @@ export function buildSuccessionDisplayTotals({
       prevoyanceFiscalAnalysis,
     )
     : null;
-  const projectionDroitsHorsSuccession = buildDroitsHorsSuccession(
-    otherSide,
-    avFiscalAnalysis,
-    perFiscalAnalysis,
-    prevoyanceFiscalAnalysis,
-  );
-  const projectionAutreAssure = {
-    side: otherSide,
-    droitsHorsSuccession: projectionDroitsHorsSuccession,
-    totalDroits: projectionDroitsHorsSuccession.total,
-  };
+  const projectionAutreAssure: SuccessionDisplayProjectionTotals | null = !displayUsesChainage && hasSecondSubject
+    ? (() => {
+      const droitsHorsSuccession = buildDroitsHorsSuccession(
+        otherSide,
+        avFiscalAnalysis,
+        perFiscalAnalysis,
+        prevoyanceFiscalAnalysis,
+      );
+      return {
+        side: otherSide,
+        droitsHorsSuccession,
+        totalDroits: droitsHorsSuccession.total,
+      };
+    })()
+    : null;
   const droitsCumulesProjetes = computeCumulativeSuccessionTotalDroits({
     shouldRenderSuccessionComputationSections,
     displayUsesChainage,
@@ -219,11 +238,13 @@ export function buildSuccessionDisplayTotals({
         totalDroits: 0,
       },
       secondDeces: null,
-      projectionAutreAssure: {
-        ...projectionAutreAssure,
-        droitsHorsSuccession: ZERO_DROITS_HORS_SUCCESSION,
-        totalDroits: 0,
-      },
+      projectionAutreAssure: projectionAutreAssure
+        ? {
+          ...projectionAutreAssure,
+          droitsHorsSuccession: ZERO_DROITS_HORS_SUCCESSION,
+          totalDroits: 0,
+        }
+        : null,
       droitsCumulesProjetes: 0,
       droitsChronologie: 0,
     };

@@ -139,6 +139,7 @@ describe('ScSuccessionSummaryPanel', () => {
     const displayTotals = buildSuccessionDisplayTotals({
       shouldRenderSuccessionComputationSections: true,
       displayUsesChainage: false,
+      hasSecondSubject: true,
       chainageOrder: 'epoux1',
       chainageStep1Droits: 0,
       chainageStep2Droits: 0,
