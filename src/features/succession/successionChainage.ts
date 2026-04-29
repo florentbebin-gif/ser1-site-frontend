@@ -74,6 +74,13 @@ export function buildSuccessionChainageAnalysis(
     );
   }
 
+  if (input.civil.situationMatrimoniale === 'pacse') {
+    return buildEmptyAnalysis(
+      input.order,
+      'PACS: chainage 2 deces non modelise (cf. matrice de maturite). Bascule sur succession directe du defunt simule.',
+    );
+  }
+
   const attributionPctBase = input.attributionBiensCommunsPct ?? 50;
   const attributionPct = (
     input.civil.situationMatrimoniale === 'marie'
@@ -193,13 +200,6 @@ export function buildSuccessionChainageAnalysis(
     warnings.push(
       'Aucun enfant declare: la chronologie reste indicative hors beneficiaires testamentaires explicitement saisis.',
     );
-  }
-  if (
-    input.civil.situationMatrimoniale === 'pacse'
-    && !input.devolution?.testamentsBySide.epoux1.active
-    && !input.devolution?.testamentsBySide.epoux2.active
-  ) {
-    warnings.push('PACS: absence de vocation successorale legale automatique sans testament.');
   }
   if (hasRepresentationOnAnySide(enfantsContext, familyMembers)) {
     warnings.push(
