@@ -153,7 +153,7 @@ Le bouton `+ Dispositions` reste bloque tant qu'un contexte familial minimum n'e
 - donations detaillees dans le rappel fiscal: reprise DMTG beneficiary-by-beneficiary en succession directe et en chainage, a partir de la valeur a la donation quand elle est saisie
 - dates de naissance des personnes du couple / du defunt dans le contexte familial pour valoriser l'usufruit et la nue-propriete a la date du deces simule
 - materiel de guidage sur liberalites, avantages matrimoniaux et situations familiales dans les settings succession
-- devolution civile des ascendants (art. 757-1 / 757-2 CC pour les maries sans descendants) et des collateraux privilegies (art. 736-738-1 CC pour les celibataires/veufs/pacsés sans descendants)
+- devolution civile des ascendants (art. 757-1 / 757-2 CC pour les maries sans descendants) et des collateraux privilegies (art. 736-738 CC pour les celibataires/veufs/pacsés sans descendants)
 - ventilation assurance-vie sur contrats demembres avec calcul art. 669 CGI (usufruitier/nu-proprietaire) selon age de l'usufruitier
 - en clause assurance-vie demembree standard conjoint/enfants, l'abattement 990 I est prorate selon la quote-part economique usufruit / nue-propriete retenue par l'art. 669 CGI
 - PACS: absence de vocation successorale legale automatique du partenaire sans testament; avec testament, le partenaire peut etre integre a la synthese directe avec exoneration DMTG
