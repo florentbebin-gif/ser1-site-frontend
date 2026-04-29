@@ -30,6 +30,7 @@ import {
   buildSuccessionDisplayTotals,
   buildSuccessionSynthHypothese,
   buildUnifiedBeneficiaryBlocks,
+  hasSuccessionSecondSubject,
   mergeInsuranceBeneficiaryLines,
 } from './useSuccessionOutcomeDerivedValues.helpers';
 import { buildSuccessionChainageExportPayload } from './useSuccessionOutcomeExportPayload';
@@ -217,10 +218,13 @@ export function useSuccessionOutcomeDerivedValues({
 
   const derivedMasseTransmise = derivedMasseSuccessorale;
 
+  const hasSecondSubject = hasSuccessionSecondSubject(civilContext.situationMatrimoniale);
+
   const displayTotals = useMemo(
     () => buildSuccessionDisplayTotals({
       shouldRenderSuccessionComputationSections,
       displayUsesChainage,
+      hasSecondSubject,
       chainageOrder: chainageAnalysis.order,
       chainageStep1Droits: chainageAnalysis.step1?.droitsEnfants ?? 0,
       chainageStep2Droits: chainageAnalysis.step2?.droitsEnfants ?? 0,
@@ -234,6 +238,7 @@ export function useSuccessionOutcomeDerivedValues({
     [
       shouldRenderSuccessionComputationSections,
       displayUsesChainage,
+      hasSecondSubject,
       chainageAnalysis.order,
       chainageAnalysis.step1?.droitsEnfants,
       chainageAnalysis.step2?.droitsEnfants,

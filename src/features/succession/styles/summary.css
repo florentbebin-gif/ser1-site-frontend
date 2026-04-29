@@ -207,6 +207,14 @@
   text-align: right;
 }
 
+.sc-chrono-item__hint {
+  font-size: 11px;
+  color: var(--color-c9);
+  font-style: italic;
+  margin: 4px 0 8px;
+  line-height: 1.4;
+}
+
 .sc-chrono-total {
   margin-top: 10px;
   padding-top: 10px;

@@ -399,13 +399,16 @@ export default function ScDeathTimelinePanel({
               </div>
             )}
           </div>
-          {projectionAutreAssure.totalDroits > 0 && (
+          {projectionAutreAssure && projectionAutreAssure.totalDroits > 0 && (
             <div className="sc-chrono-item">
               <div className="sc-chrono-item__header">
                 <strong className="sc-chrono-item__title">Projection autre assuré</strong>
                 <span className="sc-chrono-item__meta">
                   {projectionAutreAssure.side === 'epoux1' ? 'Epoux 1' : 'Epoux 2'}
                 </span>
+              </div>
+              <div className="sc-chrono-item__hint">
+                Projection des droits hors succession du survivant. La succession patrimoniale future de cette personne n'est pas modélisée en mode direct.
               </div>
               {projectionAutreAssure.droitsHorsSuccession.assuranceVie > 0 && (
                 <div className="sc-summary-row">
