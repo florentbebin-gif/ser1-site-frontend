@@ -11,6 +11,7 @@ import {
   buildSuccessionDirectDisplayAnalysis,
   buildSuccessionChainTransmissionRows,
   computeSuccessionDirectEstateBasis,
+  type SuccessionDirectDisplayAnalysis,
 } from '../successionDisplay';
 import type { SuccessionAssetTransmissionBasis } from '../successionTransmissionBasis';
 import { makeCivil, makeDevolution, makeLiquidation } from './fixtures';
@@ -52,6 +53,14 @@ function buildDirectAnalysisFor(
     forfaitMobilierPct: 5,
     forfaitMobilierMontant: 0,
   });
+}
+
+function expectDirectDisplayMatchesResult(analysis: SuccessionDirectDisplayAnalysis) {
+  const displayedDroits = analysis.transmissionRows.reduce((sum, row) => sum + row.droits, 0);
+  const displayedBrut = analysis.transmissionRows.reduce((sum, row) => sum + row.brut, 0);
+
+  expect(displayedDroits).toBe(analysis.result?.totalDroits ?? 0);
+  expect(displayedBrut).toBe(analysis.heirs.reduce((sum, heir) => sum + heir.partSuccession, 0));
 }
 
 describe('succession validation matrix', () => {
@@ -139,6 +148,7 @@ describe('succession validation matrix', () => {
       'E2',
     ]);
     expect(analysis.heirs[0]).toMatchObject({ lien: 'conjoint', partSuccession: 100000 });
+    expectDirectDisplayMatchesResult(analysis);
   });
 
   it('marriage with common and separate child respects the deceased branch at step 1', () => {

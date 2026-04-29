@@ -1,7 +1,13 @@
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
 import ScSuccessionSummaryPanel from '../components/ScSuccessionSummaryPanel';
-import { mergeInsuranceBeneficiaryLines, type UnifiedBeneficiaryBlock } from '../hooks/useSuccessionOutcomeDerivedValues.helpers';
+import {
+  buildSuccessionDisplayTotals,
+  computeCumulativeSuccessionTotalDroits,
+  mergeInsuranceBeneficiaryLines,
+  type SuccessionDisplayTotals,
+  type UnifiedBeneficiaryBlock,
+} from '../hooks/useSuccessionOutcomeDerivedValues.helpers';
 
 const baseChainageAnalysis = {
   order: 'epoux1' as const,
@@ -14,11 +20,41 @@ const baseChainageAnalysis = {
   step2: null,
 };
 
-const baseFiscalByAssure = {
-  avFiscalByAssure: { epoux1: { totalDroits: 0 }, epoux2: { totalDroits: 0 } },
-  perFiscalByAssure: { epoux1: { totalDroits: 0 }, epoux2: { totalDroits: 0 } },
-  prevoyanceFiscalByAssure: { epoux1: { totalDroits: 0 }, epoux2: { totalDroits: 0 } },
-};
+function extractKpiValue(markup: string, label: string): string | undefined {
+  const matches = markup.matchAll(
+    /<span class="sc-synth-kpi__label">([^<]+)<\/span><strong class="sc-synth-kpi__value">([^<]+)<\/strong>/g,
+  );
+  for (const match of matches) {
+    if (match[1] === label) return match[2];
+  }
+  return undefined;
+}
+
+function makeDisplayTotals(totalDroits: number, decesSimuleTotal = totalDroits, secondDecesTotal: number | null = null): SuccessionDisplayTotals {
+  return {
+    decesSimule: {
+      side: 'epoux1',
+      droitsSuccession: decesSimuleTotal,
+      droitsHorsSuccession: { assuranceVie: 0, per: 0, prevoyance: 0, total: 0 },
+      totalDroits: decesSimuleTotal,
+    },
+    secondDeces: secondDecesTotal == null
+      ? null
+      : {
+        side: 'epoux2',
+        droitsSuccession: secondDecesTotal,
+        droitsHorsSuccession: { assuranceVie: 0, per: 0, prevoyance: 0, total: 0 },
+        totalDroits: secondDecesTotal,
+      },
+    projectionAutreAssure: {
+      side: 'epoux2',
+      droitsHorsSuccession: { assuranceVie: 0, per: 0, prevoyance: 0, total: 0 },
+      totalDroits: 0,
+    },
+    droitsCumulesProjetes: totalDroits,
+    droitsChronologie: totalDroits,
+  };
+}
 
 describe('ScSuccessionSummaryPanel', () => {
   it('affiche le tableau unifié avec capitaux décès nets pour un bénéficiaire avec 990I', () => {
@@ -36,17 +72,13 @@ describe('ScSuccessionSummaryPanel', () => {
       <ScSuccessionSummaryPanel
         displayUsesChainage={false}
         derivedTotalDroits={5000}
+        displayTotals={makeDisplayTotals(5000)}
         synthDonutTransmis={250000}
         derivedMasseTransmise={250000}
         synthHypothese={null}
         isPacsed={false}
         chainageAnalysis={baseChainageAnalysis}
-        {...baseFiscalByAssure}
         unifiedBlocks={unifiedBlocks}
-        directDisplay={{
-          simulatedDeceased: 'epoux1',
-          result: { totalDroits: 5000 },
-        }}
       />,
     );
 
@@ -74,23 +106,66 @@ describe('ScSuccessionSummaryPanel', () => {
       <ScSuccessionSummaryPanel
         displayUsesChainage={false}
         derivedTotalDroits={0}
+        displayTotals={makeDisplayTotals(0)}
         synthDonutTransmis={100000}
         derivedMasseTransmise={100000}
         synthHypothese={null}
         isPacsed={false}
         chainageAnalysis={baseChainageAnalysis}
-        {...baseFiscalByAssure}
         unifiedBlocks={unifiedBlocks}
-        directDisplay={{
-          simulatedDeceased: 'epoux1',
-          result: { totalDroits: 0 },
-        }}
       />,
     );
 
     expect(markup).toContain('Conjoint survivant');
     expect(markup).not.toContain('Capitaux décès nets');
     expect(markup).toContain('Exonéré');
+  });
+
+  it('distingue le coût cumulé du coût du décès simulé en mode direct', () => {
+    const fiscalByAssure = {
+      avFiscalByAssure: { epoux1: { totalDroits: 10 }, epoux2: { totalDroits: 100 } },
+      perFiscalByAssure: { epoux1: { totalDroits: 30 }, epoux2: { totalDroits: 300 } },
+      prevoyanceFiscalByAssure: { epoux1: { totalDroits: 50 }, epoux2: { totalDroits: 500 } },
+    };
+    const derivedTotalDroits = computeCumulativeSuccessionTotalDroits({
+      shouldRenderSuccessionComputationSections: true,
+      displayUsesChainage: false,
+      chainageTotalDroits: 0,
+      directTotalDroits: 100,
+      avFiscalAnalysis: { totalDroits: 110 },
+      perFiscalAnalysis: { totalDroits: 330 },
+      prevoyanceFiscalAnalysis: { totalDroits: 550 },
+    });
+    const displayTotals = buildSuccessionDisplayTotals({
+      shouldRenderSuccessionComputationSections: true,
+      displayUsesChainage: false,
+      chainageOrder: 'epoux1',
+      chainageStep1Droits: 0,
+      chainageStep2Droits: 0,
+      chainageTotalDroits: 0,
+      directSimulatedDeceased: 'epoux1',
+      directSuccessionDroits: 100,
+      avFiscalAnalysis: { totalDroits: 110, byAssure: fiscalByAssure.avFiscalByAssure },
+      perFiscalAnalysis: { totalDroits: 330, byAssure: fiscalByAssure.perFiscalByAssure },
+      prevoyanceFiscalAnalysis: { totalDroits: 550, byAssure: fiscalByAssure.prevoyanceFiscalByAssure },
+    });
+
+    const markup = renderToStaticMarkup(
+      <ScSuccessionSummaryPanel
+        displayUsesChainage={false}
+        derivedTotalDroits={derivedTotalDroits}
+        displayTotals={displayTotals}
+        synthDonutTransmis={1000}
+        derivedMasseTransmise={1000}
+        synthHypothese={null}
+        isPacsed={false}
+        chainageAnalysis={baseChainageAnalysis}
+        unifiedBlocks={[]}
+      />,
+    );
+
+    expect(extractKpiValue(markup, 'Coût décès simulé')).toBe('190\xa0€');
+    expect(extractKpiValue(markup, 'Coût cumulé')).toBe('1 090\xa0€');
   });
 
   it('affiche « — » pour le 2e décès du conjoint en mode chainage', () => {
@@ -136,6 +211,7 @@ describe('ScSuccessionSummaryPanel', () => {
       <ScSuccessionSummaryPanel
         displayUsesChainage
         derivedTotalDroits={26388}
+        displayTotals={makeDisplayTotals(26388, 8194, 18194)}
         synthDonutTransmis={700000}
         derivedMasseTransmise={0}
         synthHypothese={null}
@@ -145,12 +221,7 @@ describe('ScSuccessionSummaryPanel', () => {
           step1: { droitsEnfants: 8194 },
           step2: { droitsEnfants: 18194 },
         }}
-        {...baseFiscalByAssure}
         unifiedBlocks={unifiedBlocks}
-        directDisplay={{
-          simulatedDeceased: 'epoux1',
-          result: null,
-        }}
       />,
     );
 
@@ -174,6 +245,7 @@ describe('ScSuccessionSummaryPanel', () => {
       <ScSuccessionSummaryPanel
         displayUsesChainage
         derivedTotalDroits={20000}
+        displayTotals={makeDisplayTotals(20000, 10000, 10000)}
         synthDonutTransmis={700000}
         derivedMasseTransmise={0}
         synthHypothese={null}
@@ -206,12 +278,7 @@ describe('ScSuccessionSummaryPanel', () => {
           step1: { droitsEnfants: 10000 },
           step2: { droitsEnfants: 10000 },
         }}
-        {...baseFiscalByAssure}
         unifiedBlocks={[]}
-        directDisplay={{
-          simulatedDeceased: 'epoux1',
-          result: null,
-        }}
       />,
     );
 
@@ -225,6 +292,7 @@ describe('ScSuccessionSummaryPanel', () => {
       <ScSuccessionSummaryPanel
         displayUsesChainage
         derivedTotalDroits={22000}
+        displayTotals={makeDisplayTotals(22000, 12000, 10000)}
         synthDonutTransmis={650000}
         derivedMasseTransmise={0}
         synthHypothese={null}
@@ -252,12 +320,7 @@ describe('ScSuccessionSummaryPanel', () => {
           step1: { droitsEnfants: 12000 },
           step2: { droitsEnfants: 10000 },
         }}
-        {...baseFiscalByAssure}
         unifiedBlocks={[]}
-        directDisplay={{
-          simulatedDeceased: 'epoux1',
-          result: null,
-        }}
       />,
     );
 
@@ -271,6 +334,7 @@ describe('ScSuccessionSummaryPanel', () => {
       <ScSuccessionSummaryPanel
         displayUsesChainage
         derivedTotalDroits={15000}
+        displayTotals={makeDisplayTotals(15000, 7000, 8000)}
         synthDonutTransmis={500000}
         derivedMasseTransmise={0}
         synthHypothese={null}
@@ -300,12 +364,7 @@ describe('ScSuccessionSummaryPanel', () => {
           step1: { droitsEnfants: 7000 },
           step2: { droitsEnfants: 8000 },
         }}
-        {...baseFiscalByAssure}
         unifiedBlocks={[]}
-        directDisplay={{
-          simulatedDeceased: 'epoux1',
-          result: null,
-        }}
       />,
     );
 

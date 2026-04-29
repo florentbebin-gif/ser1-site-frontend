@@ -16,7 +16,7 @@ import { AppLayout } from './components/layout/AppLayout';
 import {
   SessionGuardContext,
   type SessionGuardContextValue,
-} from './session/sessionGuardContext';
+} from './auth';
 
 type NotificationType = 'info' | 'success' | 'error';
 

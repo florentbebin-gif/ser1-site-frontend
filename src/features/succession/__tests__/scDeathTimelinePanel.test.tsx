@@ -10,7 +10,6 @@ function buildProps() {
     showOrderToggle: true,
     displayUsesChainage: false,
     derivedMasseTransmise: 300000,
-    derivedTotalDroits: 20000,
     isPacsed: false,
     showDeathHorizonControl: true,
     decesDansXAns: 50 as const,
@@ -41,6 +40,22 @@ function buildProps() {
     prevoyanceFiscalByAssure: {
       epoux1: { totalDroits: 0 },
       epoux2: { totalDroits: 0 },
+    },
+    displayTotals: {
+      decesSimule: {
+        side: 'epoux1' as const,
+        droitsSuccession: 20000,
+        droitsHorsSuccession: { assuranceVie: 0, per: 0, prevoyance: 0, total: 0 },
+        totalDroits: 20000,
+      },
+      secondDeces: null,
+      projectionAutreAssure: {
+        side: 'epoux2' as const,
+        droitsHorsSuccession: { assuranceVie: 0, per: 0, prevoyance: 0, total: 0 },
+        totalDroits: 0,
+      },
+      droitsCumulesProjetes: 20000,
+      droitsChronologie: 20000,
     },
     directDisplay: {
       simulatedDeceased: 'epoux1' as const,
@@ -80,6 +95,51 @@ describe('ScDeathTimelinePanel', () => {
     );
 
     expect(markup).not.toContain('Ordre inverse');
+  });
+
+  it("affiche la projection autre assuré quand elle explique le coût cumulé direct", () => {
+    const markup = renderToStaticMarkup(
+      <ScDeathTimelinePanel
+        {...buildProps()}
+        avFiscalByAssure={{
+          epoux1: { totalDroits: 10 },
+          epoux2: { totalDroits: 100 },
+        }}
+        perFiscalByAssure={{
+          epoux1: { totalDroits: 30 },
+          epoux2: { totalDroits: 300 },
+        }}
+        prevoyanceFiscalByAssure={{
+          epoux1: { totalDroits: 50 },
+          epoux2: { totalDroits: 500 },
+        }}
+        displayTotals={{
+          decesSimule: {
+            side: 'epoux1',
+            droitsSuccession: 100,
+            droitsHorsSuccession: { assuranceVie: 10, per: 30, prevoyance: 50, total: 90 },
+            totalDroits: 190,
+          },
+          secondDeces: null,
+          projectionAutreAssure: {
+            side: 'epoux2',
+            droitsHorsSuccession: { assuranceVie: 100, per: 300, prevoyance: 500, total: 900 },
+            totalDroits: 900,
+          },
+          droitsCumulesProjetes: 1090,
+          droitsChronologie: 1090,
+        }}
+        directDisplay={{
+          simulatedDeceased: 'epoux1',
+          result: { totalDroits: 100 },
+        }}
+      />,
+    );
+
+    expect(markup).toContain('Projection autre assuré');
+    expect(markup).toContain('Droits assurance-vie');
+    expect(markup).toContain('Total cumule des droits');
+    expect(markup).toContain('1 090');
   });
 
   it("shows societe d'acquets details inside the chronology when chainage uses that pocket", () => {

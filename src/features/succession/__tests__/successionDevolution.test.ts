@@ -334,7 +334,7 @@ describe('buildSuccessionDevolutionAnalysis', () => {
     expect(analysis.lines[0].droits).toContain('art. 737 CC');
   });
 
-  it('célibataire sans descendants, un parent et deux frères — art. 738-1 CC (parent 1/4, frères 3/4)', () => {
+  it('célibataire sans descendants, un parent et deux frères — art. 738 CC (parent 1/4, frères 3/4)', () => {
     const analysis = buildSuccessionDevolutionAnalysis(
       makeCivil({ situationMatrimoniale: 'celibataire' as never }),
       0,
@@ -350,10 +350,10 @@ describe('buildSuccessionDevolutionAnalysis', () => {
 
     const parentLine = analysis.lines.find((l) => l.heritier === 'Ascendant survivant');
     expect(parentLine?.montantEstime).toBe(200000); // 1/4
-    expect(parentLine?.droits).toContain('art. 738-1 CC');
+    expect(parentLine?.droits).toContain('art. 738 CC');
     const freresLine = analysis.lines.find((l) => l.heritier === 'Frères et sœurs');
     expect(freresLine?.montantEstime).toBe(600000); // 3/4
-    expect(freresLine?.droits).toContain('art. 738-1 CC');
+    expect(freresLine?.droits).toContain('art. 738 CC');
     expect(freresLine?.droits).toContain('2 collatéraux privilégiés');
   });
 });

@@ -151,10 +151,10 @@ function addAscendantsCollaterauxLines(
   }
 
   const label = `${nbFreresSoeurs} ${nbFreresSoeurs > 1 ? 'collatéraux privilégiés' : 'collatéral privilégié'}`;
-  lines.push({ heritier: 'Ascendant survivant', droits: '1/4 (art. 738-1 CC)', montantEstime: masseReference * 0.25 });
+  lines.push({ heritier: 'Ascendant survivant', droits: '1/4 (art. 738 CC)', montantEstime: masseReference * 0.25 });
   lines.push({
     heritier: 'Frères et sœurs',
-    droits: `3/4 à parts égales — ${label} (art. 738-1 CC)`,
+    droits: `3/4 à parts égales — ${label} (art. 738 CC)`,
     montantEstime: masseReference * 0.75,
   });
 }

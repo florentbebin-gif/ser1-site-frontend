@@ -6,7 +6,7 @@
  */
 
 import React, { useState, useRef, useEffect, useContext } from 'react';
-import { SessionGuardContext } from '../session/sessionGuardContext';
+import { SessionGuardContext } from '../auth';
 import type { ExportOption } from './export/exportTypes';
 import './ExportMenu.css';
 

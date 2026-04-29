@@ -27,6 +27,7 @@ import type {
 import type { SuccessionAssetTransmissionBasis } from '../successionTransmissionBasis';
 import { buildSuccessionAssumptions } from '../successionAssumptions';
 import {
+  buildSuccessionDisplayTotals,
   buildSuccessionSynthHypothese,
   buildUnifiedBeneficiaryBlocks,
   mergeInsuranceBeneficiaryLines,
@@ -216,25 +217,35 @@ export function useSuccessionOutcomeDerivedValues({
 
   const derivedMasseTransmise = derivedMasseSuccessorale;
 
-  const derivedTotalDroits = useMemo(
-    () => (shouldRenderSuccessionComputationSections
-      ? ((displayUsesChainage
-        ? chainageAnalysis.totalDroits
-        : (directDisplayAnalysis.result?.totalDroits ?? 0))
-        + avFiscalAnalysis.totalDroits
-        + perFiscalAnalysis.totalDroits
-        + prevoyanceFiscalAnalysis.totalDroits)
-      : 0),
+  const displayTotals = useMemo(
+    () => buildSuccessionDisplayTotals({
+      shouldRenderSuccessionComputationSections,
+      displayUsesChainage,
+      chainageOrder: chainageAnalysis.order,
+      chainageStep1Droits: chainageAnalysis.step1?.droitsEnfants ?? 0,
+      chainageStep2Droits: chainageAnalysis.step2?.droitsEnfants ?? 0,
+      chainageTotalDroits: chainageAnalysis.totalDroits,
+      directSimulatedDeceased: directDisplayAnalysis.simulatedDeceased,
+      directSuccessionDroits: directDisplayAnalysis.result?.totalDroits ?? 0,
+      avFiscalAnalysis,
+      perFiscalAnalysis,
+      prevoyanceFiscalAnalysis,
+    }),
     [
       shouldRenderSuccessionComputationSections,
       displayUsesChainage,
+      chainageAnalysis.order,
+      chainageAnalysis.step1?.droitsEnfants,
+      chainageAnalysis.step2?.droitsEnfants,
       chainageAnalysis.totalDroits,
+      directDisplayAnalysis.simulatedDeceased,
       directDisplayAnalysis.result?.totalDroits,
-      avFiscalAnalysis.totalDroits,
-      perFiscalAnalysis.totalDroits,
-      prevoyanceFiscalAnalysis.totalDroits,
+      avFiscalAnalysis,
+      perFiscalAnalysis,
+      prevoyanceFiscalAnalysis,
     ],
   );
+  const derivedTotalDroits = displayTotals.droitsCumulesProjetes;
 
   const synthDonutTransmis = useMemo(() => {
     if (!shouldRenderSuccessionComputationSections) return 0;
@@ -498,6 +509,7 @@ export function useSuccessionOutcomeDerivedValues({
     derivedMasseSuccessorale,
     derivedCapitauxHorsSuccession,
     derivedMasseTransmise,
+    displayTotals,
     derivedTotalDroits,
     synthDonutTransmis,
     synthHypothese,

@@ -3,7 +3,10 @@ import {
   getSuccessionInterMassClaimKindLabel,
   getSuccessionPocketLabel,
 } from '../successionInterMassClaims';
-import type { UnifiedBeneficiaryBlock } from '../hooks/useSuccessionOutcomeDerivedValues.helpers';
+import type {
+  SuccessionDisplayTotals,
+  UnifiedBeneficiaryBlock,
+} from '../hooks/useSuccessionOutcomeDerivedValues.helpers';
 import ScDonut from './ScDonut';
 
 function formatPartyLabel(value: 'epoux1' | 'epoux2'): string {
@@ -13,6 +16,7 @@ function formatPartyLabel(value: 'epoux1' | 'epoux2'): string {
 interface ScSuccessionSummaryPanelProps {
   displayUsesChainage: boolean;
   derivedTotalDroits: number;
+  displayTotals: SuccessionDisplayTotals;
   synthDonutTransmis: number;
   derivedMasseTransmise: number;
   synthHypothese: string | null;
@@ -76,49 +80,28 @@ interface ScSuccessionSummaryPanelProps {
     step1: { droitsEnfants: number } | null;
     step2: { droitsEnfants: number } | null;
   };
-  avFiscalByAssure: Record<'epoux1' | 'epoux2', { totalDroits: number }>;
-  perFiscalByAssure: Record<'epoux1' | 'epoux2', { totalDroits: number }>;
-  prevoyanceFiscalByAssure: Record<'epoux1' | 'epoux2', { totalDroits: number }>;
   unifiedBlocks: UnifiedBeneficiaryBlock[];
-  directDisplay: {
-    simulatedDeceased: 'epoux1' | 'epoux2';
-    result: { totalDroits: number } | null;
-  };
 }
 
 export default function ScSuccessionSummaryPanel({
   displayUsesChainage,
   derivedTotalDroits,
+  displayTotals,
   synthDonutTransmis,
   derivedMasseTransmise,
   synthHypothese,
   isPacsed,
   chainageAnalysis,
-  avFiscalByAssure,
-  perFiscalByAssure,
-  prevoyanceFiscalByAssure,
   unifiedBlocks,
-  directDisplay,
 }: ScSuccessionSummaryPanelProps) {
   const societeAcquets = chainageAnalysis.societeAcquets;
   const participationAcquets = chainageAnalysis.participationAcquets;
   const interMassClaims = chainageAnalysis.interMassClaims;
   const affectedLiabilities = chainageAnalysis.affectedLiabilities;
   const preciput = chainageAnalysis.preciput;
-  const firstCost = displayUsesChainage
-    ? (chainageAnalysis.step1?.droitsEnfants ?? 0)
-      + avFiscalByAssure[chainageAnalysis.order].totalDroits
-      + perFiscalByAssure[chainageAnalysis.order].totalDroits
-      + prevoyanceFiscalByAssure[chainageAnalysis.order].totalDroits
-    : (directDisplay.result?.totalDroits ?? 0)
-      + avFiscalByAssure[directDisplay.simulatedDeceased].totalDroits
-      + perFiscalByAssure[directDisplay.simulatedDeceased].totalDroits
-      + prevoyanceFiscalByAssure[directDisplay.simulatedDeceased].totalDroits;
+  const firstCost = displayTotals.decesSimule.totalDroits;
   const secondValue = displayUsesChainage
-    ? (chainageAnalysis.step2?.droitsEnfants ?? 0)
-      + avFiscalByAssure[chainageAnalysis.order === 'epoux1' ? 'epoux2' : 'epoux1'].totalDroits
-      + perFiscalByAssure[chainageAnalysis.order === 'epoux1' ? 'epoux2' : 'epoux1'].totalDroits
-      + prevoyanceFiscalByAssure[chainageAnalysis.order === 'epoux1' ? 'epoux2' : 'epoux1'].totalDroits
+    ? (displayTotals.secondDeces?.totalDroits ?? 0)
     : Math.max(0, derivedMasseTransmise - derivedTotalDroits);
 
   const step1TotalTransmis = displayUsesChainage

@@ -9,3 +9,6 @@ export { PrivateRoute } from './PrivateRoute';
 export { AdminGate, useAdminAction } from './AdminGate';
 export { useAuth, AuthProvider } from './AuthProvider';
 export type { AuthState, AuthRole } from './AuthProvider';
+
+export { SessionGuardContext } from './sessionGuardContext';
+export type { SessionGuardContextValue } from './sessionGuardContext';
