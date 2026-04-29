@@ -38,6 +38,22 @@ function buildProps(
       donatairesOptions: [],
       displayUsesChainage: false,
       derivedTotalDroits: 0,
+      displayTotals: {
+        decesSimule: {
+          side: 'epoux1',
+          droitsSuccession: 0,
+          droitsHorsSuccession: { assuranceVie: 0, per: 0, prevoyance: 0, total: 0 },
+          totalDroits: 0,
+        },
+        secondDeces: null,
+        projectionAutreAssure: {
+          side: 'epoux2',
+          droitsHorsSuccession: { assuranceVie: 0, per: 0, prevoyance: 0, total: 0 },
+          totalDroits: 0,
+        },
+        droitsCumulesProjetes: 0,
+        droitsChronologie: 0,
+      },
       synthDonutTransmis: 0,
       derivedMasseTransmise: 0,
       unifiedBlocks: [],

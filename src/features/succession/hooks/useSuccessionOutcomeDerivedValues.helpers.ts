@@ -1,5 +1,6 @@
 import type { RegimeMatrimonial } from '../../../engine/civil';
 import { DONATION_ENTRE_EPOUX_OPTIONS } from '../successionSimulator.constants';
+import type { SuccessionPrimarySide } from '../successionDraft.types';
 import { getUsufruitValuationFromBirthDate } from '../successionUsufruit';
 
 export type InsuranceSourceKind = 'av' | 'per' | 'prevoyance';
@@ -26,6 +27,216 @@ type FiscalLine = {
   capitalTransmis?: number;
   sourceKind?: InsuranceSourceKind;
 };
+
+interface FiscalDroitsAnalysis {
+  totalDroits: number;
+}
+
+type FiscalDroitsByAssure = Record<SuccessionPrimarySide, { totalDroits: number }>;
+
+interface FiscalDroitsAnalysisByAssure extends FiscalDroitsAnalysis {
+  byAssure: FiscalDroitsByAssure;
+}
+
+export interface SuccessionDisplayDroitsHorsSuccession {
+  assuranceVie: number;
+  per: number;
+  prevoyance: number;
+  total: number;
+}
+
+export interface SuccessionDisplayDeathTotals {
+  side: SuccessionPrimarySide;
+  droitsSuccession: number;
+  droitsHorsSuccession: SuccessionDisplayDroitsHorsSuccession;
+  totalDroits: number;
+}
+
+export interface SuccessionDisplayProjectionTotals {
+  side: SuccessionPrimarySide;
+  droitsHorsSuccession: SuccessionDisplayDroitsHorsSuccession;
+  totalDroits: number;
+}
+
+export interface SuccessionDisplayTotals {
+  decesSimule: SuccessionDisplayDeathTotals;
+  secondDeces: SuccessionDisplayDeathTotals | null;
+  projectionAutreAssure: SuccessionDisplayProjectionTotals;
+  droitsCumulesProjetes: number;
+  droitsChronologie: number;
+}
+
+interface ComputeCumulativeSuccessionTotalDroitsInput {
+  shouldRenderSuccessionComputationSections: boolean;
+  displayUsesChainage: boolean;
+  chainageTotalDroits: number;
+  directTotalDroits: number;
+  avFiscalAnalysis: FiscalDroitsAnalysis;
+  perFiscalAnalysis: FiscalDroitsAnalysis;
+  prevoyanceFiscalAnalysis: FiscalDroitsAnalysis;
+}
+
+interface BuildSuccessionDisplayTotalsInput {
+  shouldRenderSuccessionComputationSections: boolean;
+  displayUsesChainage: boolean;
+  chainageOrder: SuccessionPrimarySide;
+  chainageStep1Droits: number;
+  chainageStep2Droits: number;
+  chainageTotalDroits: number;
+  directSimulatedDeceased: SuccessionPrimarySide;
+  directSuccessionDroits: number;
+  avFiscalAnalysis: FiscalDroitsAnalysisByAssure;
+  perFiscalAnalysis: FiscalDroitsAnalysisByAssure;
+  prevoyanceFiscalAnalysis: FiscalDroitsAnalysisByAssure;
+}
+
+export function computeCumulativeSuccessionTotalDroits({
+  shouldRenderSuccessionComputationSections,
+  displayUsesChainage,
+  chainageTotalDroits,
+  directTotalDroits,
+  avFiscalAnalysis,
+  perFiscalAnalysis,
+  prevoyanceFiscalAnalysis,
+}: ComputeCumulativeSuccessionTotalDroitsInput): number {
+  if (!shouldRenderSuccessionComputationSections) return 0;
+
+  const droitsSuccession = displayUsesChainage ? chainageTotalDroits : directTotalDroits;
+  const droitsHorsSuccession = avFiscalAnalysis.totalDroits
+    + perFiscalAnalysis.totalDroits
+    + prevoyanceFiscalAnalysis.totalDroits;
+
+  return droitsSuccession + droitsHorsSuccession;
+}
+
+function getOtherSide(side: SuccessionPrimarySide): SuccessionPrimarySide {
+  return side === 'epoux1' ? 'epoux2' : 'epoux1';
+}
+
+function buildDroitsHorsSuccession(
+  side: SuccessionPrimarySide,
+  avFiscalAnalysis: FiscalDroitsAnalysisByAssure,
+  perFiscalAnalysis: FiscalDroitsAnalysisByAssure,
+  prevoyanceFiscalAnalysis: FiscalDroitsAnalysisByAssure,
+): SuccessionDisplayDroitsHorsSuccession {
+  const assuranceVie = avFiscalAnalysis.byAssure[side].totalDroits;
+  const per = perFiscalAnalysis.byAssure[side].totalDroits;
+  const prevoyance = prevoyanceFiscalAnalysis.byAssure[side].totalDroits;
+  return {
+    assuranceVie,
+    per,
+    prevoyance,
+    total: assuranceVie + per + prevoyance,
+  };
+}
+
+function buildDeathTotals(
+  side: SuccessionPrimarySide,
+  droitsSuccession: number,
+  avFiscalAnalysis: FiscalDroitsAnalysisByAssure,
+  perFiscalAnalysis: FiscalDroitsAnalysisByAssure,
+  prevoyanceFiscalAnalysis: FiscalDroitsAnalysisByAssure,
+): SuccessionDisplayDeathTotals {
+  const droitsHorsSuccession = buildDroitsHorsSuccession(
+    side,
+    avFiscalAnalysis,
+    perFiscalAnalysis,
+    prevoyanceFiscalAnalysis,
+  );
+  return {
+    side,
+    droitsSuccession,
+    droitsHorsSuccession,
+    totalDroits: droitsSuccession + droitsHorsSuccession.total,
+  };
+}
+
+const ZERO_DROITS_HORS_SUCCESSION: SuccessionDisplayDroitsHorsSuccession = {
+  assuranceVie: 0,
+  per: 0,
+  prevoyance: 0,
+  total: 0,
+};
+
+export function buildSuccessionDisplayTotals({
+  shouldRenderSuccessionComputationSections,
+  displayUsesChainage,
+  chainageOrder,
+  chainageStep1Droits,
+  chainageStep2Droits,
+  chainageTotalDroits,
+  directSimulatedDeceased,
+  directSuccessionDroits,
+  avFiscalAnalysis,
+  perFiscalAnalysis,
+  prevoyanceFiscalAnalysis,
+}: BuildSuccessionDisplayTotalsInput): SuccessionDisplayTotals {
+  const firstSide = displayUsesChainage ? chainageOrder : directSimulatedDeceased;
+  const otherSide = getOtherSide(firstSide);
+  const decesSimule = buildDeathTotals(
+    firstSide,
+    displayUsesChainage ? chainageStep1Droits : directSuccessionDroits,
+    avFiscalAnalysis,
+    perFiscalAnalysis,
+    prevoyanceFiscalAnalysis,
+  );
+  const secondDeces = displayUsesChainage
+    ? buildDeathTotals(
+      otherSide,
+      chainageStep2Droits,
+      avFiscalAnalysis,
+      perFiscalAnalysis,
+      prevoyanceFiscalAnalysis,
+    )
+    : null;
+  const projectionDroitsHorsSuccession = buildDroitsHorsSuccession(
+    otherSide,
+    avFiscalAnalysis,
+    perFiscalAnalysis,
+    prevoyanceFiscalAnalysis,
+  );
+  const projectionAutreAssure = {
+    side: otherSide,
+    droitsHorsSuccession: projectionDroitsHorsSuccession,
+    totalDroits: projectionDroitsHorsSuccession.total,
+  };
+  const droitsCumulesProjetes = computeCumulativeSuccessionTotalDroits({
+    shouldRenderSuccessionComputationSections,
+    displayUsesChainage,
+    chainageTotalDroits,
+    directTotalDroits: directSuccessionDroits,
+    avFiscalAnalysis,
+    perFiscalAnalysis,
+    prevoyanceFiscalAnalysis,
+  });
+
+  if (!shouldRenderSuccessionComputationSections) {
+    return {
+      decesSimule: {
+        ...decesSimule,
+        droitsSuccession: 0,
+        droitsHorsSuccession: ZERO_DROITS_HORS_SUCCESSION,
+        totalDroits: 0,
+      },
+      secondDeces: null,
+      projectionAutreAssure: {
+        ...projectionAutreAssure,
+        droitsHorsSuccession: ZERO_DROITS_HORS_SUCCESSION,
+        totalDroits: 0,
+      },
+      droitsCumulesProjetes: 0,
+      droitsChronologie: 0,
+    };
+  }
+
+  return {
+    decesSimule,
+    secondDeces,
+    projectionAutreAssure,
+    droitsCumulesProjetes,
+    droitsChronologie: droitsCumulesProjetes,
+  };
+}
 
 function aggregateByBeneficiary(lines: Array<{ id: string; label: string; capitalTransmis: number; baseFiscale: number; sourceKind: InsuranceSourceKind; totalDroits: number }>): InsuranceBeneficiaryLine[] {
   const map = new Map<string, InsuranceBeneficiaryLine>();

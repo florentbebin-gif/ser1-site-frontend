@@ -1,4 +1,5 @@
 import type { SuccessionChainOrder } from '../successionChainage';
+import type { SuccessionDisplayTotals } from '../hooks/useSuccessionOutcomeDerivedValues.helpers';
 import {
   getSuccessionInterMassClaimKindLabel,
   getSuccessionPocketLabel,
@@ -13,7 +14,7 @@ interface ScDeathTimelinePanelProps {
   showOrderToggle: boolean;
   displayUsesChainage: boolean;
   derivedMasseTransmise: number;
-  derivedTotalDroits: number;
+  displayTotals: SuccessionDisplayTotals;
   isPacsed: boolean;
   showDeathHorizonControl: boolean;
   decesDansXAns: 0 | 5 | 10 | 15 | 20 | 25 | 30 | 35 | 40 | 45 | 50;
@@ -90,7 +91,7 @@ export default function ScDeathTimelinePanel({
   showOrderToggle,
   displayUsesChainage,
   derivedMasseTransmise,
-  derivedTotalDroits,
+  displayTotals,
   isPacsed,
   showDeathHorizonControl,
   decesDansXAns,
@@ -105,6 +106,7 @@ export default function ScDeathTimelinePanel({
   directDisplay,
 }: ScDeathTimelinePanelProps) {
   const secondAssure = chainageAnalysis.order === 'epoux1' ? 'epoux2' : 'epoux1';
+  const projectionAutreAssure = displayTotals.projectionAutreAssure;
   const societeAcquets = chainageAnalysis.societeAcquets;
   const participationAcquets = chainageAnalysis.participationAcquets;
   const interMassClaims = chainageAnalysis.interMassClaims;
@@ -320,7 +322,7 @@ export default function ScDeathTimelinePanel({
 
           <div className="sc-chrono-total">
             <span>Total cumule des droits</span>
-            <strong>{fmt(derivedTotalDroits)}</strong>
+            <strong>{fmt(displayTotals.droitsChronologie)}</strong>
           </div>
           {societeAcquets && societeAcquets.totalValue > 0 && (
             <div className="sc-chrono-total">
@@ -396,6 +398,38 @@ export default function ScDeathTimelinePanel({
                 <strong>{fmt(prevoyanceFiscalByAssure[directDisplay.simulatedDeceased].totalDroits)}</strong>
               </div>
             )}
+          </div>
+          {projectionAutreAssure.totalDroits > 0 && (
+            <div className="sc-chrono-item">
+              <div className="sc-chrono-item__header">
+                <strong className="sc-chrono-item__title">Projection autre assuré</strong>
+                <span className="sc-chrono-item__meta">
+                  {projectionAutreAssure.side === 'epoux1' ? 'Epoux 1' : 'Epoux 2'}
+                </span>
+              </div>
+              {projectionAutreAssure.droitsHorsSuccession.assuranceVie > 0 && (
+                <div className="sc-summary-row">
+                  <span>Droits assurance-vie</span>
+                  <strong>{fmt(projectionAutreAssure.droitsHorsSuccession.assuranceVie)}</strong>
+                </div>
+              )}
+              {projectionAutreAssure.droitsHorsSuccession.per > 0 && (
+                <div className="sc-summary-row">
+                  <span>Droits PER</span>
+                  <strong>{fmt(projectionAutreAssure.droitsHorsSuccession.per)}</strong>
+                </div>
+              )}
+              {projectionAutreAssure.droitsHorsSuccession.prevoyance > 0 && (
+                <div className="sc-summary-row">
+                  <span>Droits prévoyance</span>
+                  <strong>{fmt(projectionAutreAssure.droitsHorsSuccession.prevoyance)}</strong>
+                </div>
+              )}
+            </div>
+          )}
+          <div className="sc-chrono-total">
+            <span>Total cumule des droits</span>
+            <strong>{fmt(displayTotals.droitsChronologie)}</strong>
           </div>
         </div>
       )}

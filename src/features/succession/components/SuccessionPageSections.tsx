@@ -224,6 +224,7 @@ export function SuccessionPageSidebar({
       <ScSuccessionSummaryPanel
         displayUsesChainage={derived.displayUsesChainage}
         derivedTotalDroits={derived.derivedTotalDroits}
+        displayTotals={derived.displayTotals}
         synthDonutTransmis={derived.synthDonutTransmis}
         derivedMasseTransmise={derived.derivedMasseTransmise}
         synthHypothese={derived.synthHypothese}
@@ -301,16 +302,7 @@ export function SuccessionPageSidebar({
             ? { droitsEnfants: derived.chainageAnalysis.step2.droitsEnfants }
             : null,
         }}
-        avFiscalByAssure={derived.avFiscalAnalysis.byAssure}
-        perFiscalByAssure={derived.perFiscalAnalysis.byAssure}
-        prevoyanceFiscalByAssure={derived.prevoyanceFiscalAnalysis.byAssure}
         unifiedBlocks={derived.unifiedBlocks}
-        directDisplay={{
-          simulatedDeceased: derived.directDisplayAnalysis.simulatedDeceased,
-          result: derived.directDisplayAnalysis.result
-            ? { totalDroits: derived.directDisplayAnalysis.result.totalDroits }
-            : null,
-        }}
       />
 
       <ScDeathTimelinePanel
@@ -319,7 +311,7 @@ export function SuccessionPageSidebar({
         showOrderToggle={derived.isMarried || derived.isPacsed || derived.isConcubinage}
         displayUsesChainage={derived.displayUsesChainage}
         derivedMasseTransmise={derived.derivedMasseTransmise}
-        derivedTotalDroits={derived.derivedTotalDroits}
+        displayTotals={derived.displayTotals}
         isPacsed={derived.isPacsed}
         showDeathHorizonControl={isExpert}
         decesDansXAns={decesDansXAns}

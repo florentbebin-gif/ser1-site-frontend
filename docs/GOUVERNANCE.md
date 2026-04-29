@@ -676,11 +676,69 @@ Le theming doit rester **déterministe** et persistant en DB.
 ---
 
 ## Anti-patterns
-- Calcul métier fiscal dans React (doit aller dans `src/engine/`).
-- Import CSS cross-page (styles partagés → `src/styles/`).
-- Couleurs hardcodées hors exceptions.
-- Logs en prod via `console.log/debug/info/trace` (bloqué ESLint).
-- Autorisation basée sur `user_metadata`.
+
+Index canonique de ce qu'il ne faut **jamais** faire dans l'UI SER1. Pour le détail
+et la justification de chaque règle, suivre le lien vers la section concernée.
+
+### Architecture & styles
+- ❌ Calcul métier fiscal dans React → doit aller dans `src/engine/`.
+- ❌ Import CSS cross-feature → utiliser `src/styles/` pour les tokens partagés
+  (voir [§Propriété des styles](#propriété-des-styles)).
+- ❌ Importer `premium-shared.css` depuis une feature runtime
+  (voir [§Propriété des styles](#propriété-des-styles)).
+- ❌ Couleurs hex hardcodées hors exceptions
+  (voir [§Gouvernance couleurs](#gouvernance-couleurs-c1c10) — seules
+  `#FFFFFF`, `#996600`, `rgba(0,0,0,0.5)` sont autorisées).
+- ❌ Styles inline pour des valeurs **statiques** → inline réservé au dynamique
+  (dimensions, géométrie runtime, couleurs calculées).
+
+### Inputs & selects
+- ❌ `<input type="number" value={montant} />` pour un montant € → affiche
+  "1000000" au lieu de "1 000 000". Utiliser `InputEuro` / `IrAmountInput`
+  (voir [§Règles UI premium](#règles-ui-premium)).
+- ❌ `<select>` actif et cliquable quand une seule option est atteignable →
+  utiliser `disabled` + `is-forced` (voir [§Règles UI premium](#règles-ui-premium)).
+- ❌ Selects natifs navigateur bruts dans `/sim/*` → fond off-white +
+  `text-align: right` obligatoire (voir [§5 Inputs](#5-inputs-menus-déroulants-et-priorités-de-remplissage)).
+- ❌ Couleurs d'erreur hardcodées hors C1.
+- ❌ Unité (`€`, `%`, `mois`) dans le placeholder du champ → l'unité est en
+  suffixe visuel, le placeholder ne contient que la valeur (`0`, `0,00`).
+
+### Layout & cartes (`/sim/*`)
+- ❌ Troisième rail visuel persistant sur desktop
+  (voir [§1 Gabarit global](#1-gabarit-global-page-largeurs-colonnes-structure)).
+- ❌ Largeurs fixes en px pour les colonnes principales.
+- ❌ Actions Export / Mode placées sous la grille principale → header droite.
+- ❌ Réintroduire `useState(false)` isolé pour le mode → utiliser `useUserMode`
+  (voir [§6 Boutons Exporter](#6-boutons-exporter-et-mode-simplifiéexpert)).
+- ❌ Persister un override local de mode dans `ui_settings` depuis `/sim/*`.
+- ❌ Ombres fortes / opacités élevées hors pattern premium.
+- ❌ Recréer feature par feature le style `sim-card__header--bleed` → toujours
+  réutiliser la classe partagée (voir [§8 Cartes hero](#8-cartes-hero)).
+- ❌ Bordures verticales internes dans les tableaux de synthèse.
+- ❌ Doubler deux séparateurs consécutifs (dégradé + bordure solide).
+
+### Modales
+- ❌ `overflow: visible` sur le container modale sans `max-height` → la modale
+  dépasse la viewport (voir [§Règles UI premium](#règles-ui-premium)).
+- ❌ rgba autres que `rgba(0,0,0,0.5)` pour l'overlay.
+
+### Tableaux & accordéons
+- ❌ `overflow-x: auto` directement sur un `<table>` → scrollbar invisible,
+  utiliser `pl-table-top-scroll` + `pl-table-scroll-wrap`
+  (voir [§Scroll horizontal](#scroll-horizontal-dans-les-accordéons-règle-critique)).
+- ❌ Accordéon sans `aria-expanded`.
+
+### Onglets
+- ❌ Style "pill" pour `/sim/*` tant que la baseline est underline.
+- ❌ Suppression de l'onglet primaire.
+
+### Sécurité & observabilité
+- ❌ `console.log/debug/info/trace` en prod (bloqué ESLint).
+- ❌ Autorisation basée sur `user_metadata` Supabase.
+
+### Accessibilité
+- ❌ Supprimer `:focus-visible` sans alternative.
 
 ---
 

@@ -15,7 +15,7 @@ import { useContext, useEffect, useMemo, useState } from 'react';
 import { useSuccessionCalc } from './hooks/useSuccessionCalc';
 import { useTheme } from '../../settings/ThemeProvider';
 import { useUserMode } from '../../settings/userMode';
-import { SessionGuardContext } from '../../session/sessionGuardContext';
+import { SessionGuardContext } from '../../auth';
 import { useFiscalContext } from '../../hooks/useFiscalContext';
 import { ExportMenu } from '../../components/ExportMenu';
 import { ModeToggle } from '../../components/ModeToggle';
