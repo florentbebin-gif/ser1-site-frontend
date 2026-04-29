@@ -80,7 +80,7 @@ jobs:
           VITE_SUPABASE_ANON_KEY: placeholder-key-for-build
 
       - name: Run admin function tests (Deno)
-        run: deno test supabase/functions/admin/lib/auth_test.ts supabase/functions/admin/lib/loaders_test.ts supabase/functions/admin/cors_test.ts --allow-net --allow-env
+        run: deno test supabase/functions/admin/lib/auth_test.ts supabase/functions/admin/lib/loaders_test.ts supabase/functions/admin/cors_test.ts --allow-net --allow-env --deny-import=esm.sh:443,raw.esm.sh:443 --frozen=true
 
       - name: Check no console.* in production
         run: |
