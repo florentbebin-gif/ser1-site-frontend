@@ -15,6 +15,7 @@ import {
 } from './successionTestament';
 import {
   buildDetailedDescendantHeirs,
+  buildDetailedSiblingHeirs,
   computeTransmissionForHeirs,
   mergeDetailedHeirs,
   type DetailedChainHeir,
@@ -339,6 +340,11 @@ export function computeStepTransmission(
   const testamentConjointAmount = isUniversalDisposition
     ? testamentHeirs.filter((heir) => heir.id === 'conjoint').reduce((sum, heir) => sum + heir.partSuccession, 0)
     : 0;
+  const descendantBranchCount = countEffectiveDescendantBranchesForDeceased(
+    input.enfantsContext ?? [],
+    input.familyMembers ?? [],
+    deceased,
+  );
   let effectiveRedistributableAmount = redistributableAmount;
   if (isUniversalDisposition && testamentConjointAmount > 0 && legalPartnerAmount > 0) {
     const effectiveConjointPart = Math.max(legalPartnerAmount, testamentConjointAmount);
@@ -358,20 +364,20 @@ export function computeStepTransmission(
     const detailedDescendantHeirsAdj = buildDetailedDescendantHeirs(
       descendantsResidualAmountAdj,
       deceased,
-      countEffectiveDescendantBranchesForDeceased(
-        input.enfantsContext ?? [],
-        input.familyMembers ?? [],
-        deceased,
-      ),
+      descendantBranchCount,
       input.dmtgSettings,
       input.enfantsContext ?? [],
       input.familyMembers ?? [],
     );
+    const detailedSiblingHeirsAdj = descendantBranchCount === 0
+      ? buildDetailedSiblingHeirs(descendantsResidualAmountAdj, deceased, input.familyMembers ?? [])
+      : [];
     const detailedHeirs = mergeDetailedHeirs([
       ...legalPartnerHeirsAdjusted,
       ...parentHeirs,
       ...filteredTestamentHeirs,
       ...detailedDescendantHeirsAdj,
+      ...detailedSiblingHeirsAdj,
     ]);
     const detailedHeirsWithTaxableBasis = input.transmissionBasis
       ? assignBeneficiaryTaxableBasis(detailedHeirs, estateTaxableBasis, {
@@ -422,20 +428,20 @@ export function computeStepTransmission(
   const detailedDescendantHeirs = buildDetailedDescendantHeirs(
     descendantsResidualAmount,
     deceased,
-    countEffectiveDescendantBranchesForDeceased(
-      input.enfantsContext ?? [],
-      input.familyMembers ?? [],
-      deceased,
-    ),
+    descendantBranchCount,
     input.dmtgSettings,
     input.enfantsContext ?? [],
     input.familyMembers ?? [],
   );
+  const detailedSiblingHeirs = descendantBranchCount === 0
+    ? buildDetailedSiblingHeirs(descendantsResidualAmount, deceased, input.familyMembers ?? [])
+    : [];
   const detailedHeirs = mergeDetailedHeirs([
     ...legalPartnerHeirs,
     ...parentHeirs,
     ...testamentHeirs,
     ...detailedDescendantHeirs,
+    ...detailedSiblingHeirs,
   ]);
   const detailedHeirsWithTaxableBasis = input.transmissionBasis
     ? assignBeneficiaryTaxableBasis(detailedHeirs, estateTaxableBasis, {

@@ -156,7 +156,7 @@ Le bouton `+ Dispositions` reste bloque tant qu'un contexte familial minimum n'e
 - devolution civile des ascendants (art. 757-1 / 757-2 CC pour les maries sans descendants) et des collateraux privilegies (art. 736-738 CC pour les celibataires/veufs/pacsés sans descendants)
 - ventilation assurance-vie sur contrats demembres avec calcul art. 669 CGI (usufruitier/nu-proprietaire) selon age de l'usufruitier
 - en clause assurance-vie demembree standard conjoint/enfants, l'abattement 990 I est prorate selon la quote-part economique usufruit / nue-propriete retenue par l'art. 669 CGI
-- PACS: absence de vocation successorale legale automatique du partenaire sans testament; avec testament, le partenaire peut etre integre a la synthese directe avec exoneration DMTG
+- PACS: absence de vocation successorale legale automatique du partenaire sans testament; avec testament, le partenaire peut etre integre a la synthese directe et au chainage 2 deces avec exoneration DMTG sur la part leguee
 - union libre: les biens en indivision peuvent etre saisis; seule la quote-part du defunt est retenue dans la succession directe, avec hypothese 50/50 par defaut dans ce module
 - exports PPTX/XLSX de la chronologie avec restitution des beneficiaires reels par etape quand ils sont identifies
 - exports PPTX/XLSX des hypotheses et simplifications retenues par le simulateur succession
@@ -175,7 +175,7 @@ Le bouton `+ Dispositions` reste bloque tant qu'un contexte familial minimum n'e
 - la representation successorale des enfants decedes reste simplifiee et ne remplace pas une analyse notariale detaillee
 - en representation successorale, les petits-enfants se partagent desormais l'abattement de ligne directe de la branche representee dans les calculs successoraux directs et en chainage
 - le rappel fiscal des donations detaillees est reintegre dans les droits DMTG par beneficiaire, mais les droits deja acquittes restent une approximation robuste tant qu'ils ne sont pas saisis historiquement
-- la chronologie 2 deces n'est plus la source d'affichage principale hors mariage; pour PACS et autres situations, la synthese privilegie une lecture directe du deces simule
+- la chronologie 2 deces n'est plus la source d'affichage principale hors mariage; pour PACS, elle n'est activee que si un testament partenaire est actif, sinon la synthese privilegie une lecture directe du deces simule
 - la chronologie 2 deces reste sur un meme horizon deces simule pour les 2 etapes et ne modele pas un decalage calendaire distinct entre premier et second deces
 - en chronologie 2 deces mariee, les capitaux assurances nets effectivement recus par le conjoint survivant au 1er deces (assurance-vie, PER assurance, prevoyance deces) sont reintegres economiquement dans la masse du 2e deces; le module ne reconstitue pas pour autant une remployabilite notariale fine par actif
 - les exports PPTX et XLSX succession restituent les hypotheses actives et warnings du scenario dans la slide / l'onglet `Hypotheses`
@@ -244,8 +244,8 @@ La validation de `/sim/succession` repose sur une matrice de cas cibles, reliee 
 | Marie + testament (conjoint / enfant) | la chronologie 2 deces retient le testament du cote decede a chaque etape ; l'ordre inverse change le testament retenu et les beneficiaires exportes | Code civil art. 757 / 913 et s. | `successionChainage.test.ts`, `successionExport.test.ts`, `successionValidationMatrix.test.ts` |
 | Marie + communaute universelle + attribution integrale | le 1er deces transmet economiquement 100 % au conjoint survivant, sans droits descendants au 1er deces ; la taxation des descendants est reportee au 2e deces | Code civil / avantage matrimonial ; CGI art. 796-0 bis pour l'exoneration du conjoint | `successionChainage.test.ts` |
 | PACS sans testament | pas de vocation successorale legale automatique du partenaire, lecture directe du deces simule | Service-Public F1621 | `successionDevolution.test.ts`, `successionValidationMatrix.test.ts` |
-| PACS avec testament | le partenaire peut apparaitre dans la synthese directe, avec exoneration DMTG | Service-Public F1621 / F35794 | `successionDisplay.test.ts`, `successionValidationMatrix.test.ts` |
-| PACS avec ordre inverse | l'ordre inverse sert a choisir le partenaire simule comme defunt, sans activer le chainage 2 deces | Service-Public F1621 | `successionValidationMatrix.test.ts`, `scDeathTimelinePanel.test.tsx`, `tests/e2e/succession.spec.ts` |
+| PACS avec testament | le partenaire peut apparaitre dans la synthese directe et le chainage 2 deces, avec exoneration DMTG sur la part leguee | Service-Public F1621 / F35794 | `successionDisplay.test.ts`, `successionValidationMatrix.test.ts`, `successionChainage.pacsApplicability.test.ts` |
+| PACS avec ordre inverse | l'ordre inverse sert a choisir le partenaire simule comme defunt; le chainage reste conditionne a un testament partenaire actif | Service-Public F1621 | `successionValidationMatrix.test.ts`, `scDeathTimelinePanel.test.tsx`, `tests/e2e/succession.spec.ts`, `successionChainage.pacsApplicability.test.ts` |
 | Union libre + indivision | seule la quote-part du defunt sur l'indivision est retenue, hypothese 50/50 par defaut | Service-Public F904 | `successionDisplay.test.ts`, `successionValidationMatrix.test.ts` |
 | Enfant decede represente par petits-enfants | representation successorale simplifiee par branche | Code civil art. 751 et s. | `successionDevolution.test.ts`, `successionChainage.test.ts` |
 | Usufruit / nue-propriete du conjoint | valorisation selon art. 669 CGI si la date de naissance est renseignee | CGI art. 669 | `successionUsufruit.test.ts`, `successionDevolution.test.ts`, `successionChainage.test.ts` |
