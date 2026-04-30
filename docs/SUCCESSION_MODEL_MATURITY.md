@@ -156,6 +156,7 @@ La `PR-33` boucle la validation finale avec export des hypotheses retenues par l
   - `src/features/succession/__tests__/scDeathTimelinePanel.test.tsx`
   - `src/features/succession/__tests__/successionExport.test.ts`
   - `src/features/succession/__tests__/successionGoldenScenarios.test.ts`
+  - `src/features/succession/__tests__/successionHorizonMatrix.test.ts`
 - surfaces a verifier manuellement :
   - UI succession : `+ Dispositions`, ajout d'une recompense ou creance entre masses, verification de la synthese et de la chronologie
   - exports : slide/onglet `Hypotheses` dans le PPTX et le XLSX succession

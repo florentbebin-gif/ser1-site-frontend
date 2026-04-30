@@ -225,6 +225,7 @@ L'horizon `decesDansXAns` est converti en `simulatedDeathDate` dans `useSuccessi
 | Chaînage 2 décès | `simulatedDeathDate` | date du jour si horizon = 0 | OK |
 | Dévolution avec valorisation usufruit / nue-propriété | `simulatedDeathDate` | repli moteur si date de naissance manquante | OK |
 | Donation entre époux / option usufruit | `simulatedDeathDate` | warning si date de naissance manquante | OK |
+| Assurance-vie | montants saisis `versementsApres70` / `versementsAvant13101998` | pas de bascule automatique par âge au décès | OK |
 | PER assurance | âge de l'assuré à `simulatedDeathDate` | hypothèse avant 70 ans si date de naissance manquante | OK |
 | Donations et rappel fiscal | `simulatedDeathDate` | date du jour si référence absente | OK |
 | Prévoyance décès pure | âge du souscripteur à `simulatedDeathDate` | 990 I par défaut si la dernière prime n'est pas saisie | OK sous réserve de la donnée `dernierePrime` |
