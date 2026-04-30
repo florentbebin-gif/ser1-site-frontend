@@ -155,6 +155,7 @@ La `PR-33` boucle la validation finale avec export des hypotheses retenues par l
   - `src/features/succession/__tests__/scSuccessionSummaryPanel.test.tsx`
   - `src/features/succession/__tests__/scDeathTimelinePanel.test.tsx`
   - `src/features/succession/__tests__/successionExport.test.ts`
+  - `src/features/succession/__tests__/successionExportHypotheses.test.ts`
   - `src/features/succession/__tests__/successionGoldenScenarios.test.ts`
   - `src/features/succession/__tests__/successionHorizonMatrix.test.ts`
 - surfaces a verifier manuellement :

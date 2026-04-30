@@ -5,13 +5,14 @@
  * Utilise xlsxBuilder pour generer un fichier OOXML natif.
  */
 
-import { buildXlsxBlob, downloadXlsx, validateXlsxBlob } from '../../../utils/export/xlsxBuilder';
-import type { XlsxSheet, XlsxCell } from '../../../utils/export/xlsxBuilder';
-import type { SuccessionResult, HeritierResult, LienParente } from '../../../engine/succession';
+import { buildXlsxBlob, downloadXlsx, validateXlsxBlob } from '@/utils/export/xlsxBuilder';
+import type { XlsxSheet, XlsxCell } from '@/utils/export/xlsxBuilder';
+import type { SuccessionResult, HeritierResult, LienParente } from '@/engine/succession';
 import {
   getSuccessionInterMassClaimKindLabel,
   getSuccessionPocketLabel,
 } from '../successionInterMassClaims';
+import { buildSuccessionExportActiveHypotheses } from './successionExportHypotheses';
 
 const LIEN_LABELS: Record<LienParente, string> = {
   conjoint: 'Conjoint survivant',
@@ -221,9 +222,13 @@ function buildHypothesesSheet(_assumptions: string[] = []): XlsxSheet {
   return { name: 'Hypothèses', rows, columnWidths: [45, 30] };
 }
 
-function buildSuccessionHypothesesSheet(assumptions: string[] = []): XlsxSheet {
+function buildSuccessionHypothesesSheet(
+  assumptions: string[] = [],
+  chronologie?: SuccessionChronologieXlsxData,
+): XlsxSheet {
   const sheet = buildHypothesesSheet();
-  if (assumptions.length === 0) {
+  const activeHypotheses = buildSuccessionExportActiveHypotheses(assumptions, chronologie);
+  if (activeHypotheses.length === 0) {
     return sheet;
   }
 
@@ -233,7 +238,7 @@ function buildSuccessionHypothesesSheet(assumptions: string[] = []): XlsxSheet {
       ...sheet.rows,
       [],
       [sec('Hypotheses calculees'), sec('')],
-      ...assumptions.map((assumption) => [assumption, 'Module succession'] as Array<XlsxCell | string>),
+      ...activeHypotheses.map((assumption) => [assumption, 'Module succession'] as Array<XlsxCell | string>),
     ],
   };
 }
@@ -474,11 +479,11 @@ export async function exportSuccessionXlsx(
       buildResultsSheet(result),
       buildDetailsSheet(result.detailHeritiers),
       buildPredecesSheet(chronologie),
-      buildSuccessionHypothesesSheet(assumptions ?? []),
+      buildSuccessionHypothesesSheet(assumptions ?? [], chronologie),
     ]
     : [
       buildPredecesSheet(chronologie),
-      buildSuccessionHypothesesSheet(assumptions ?? []),
+      buildSuccessionHypothesesSheet(assumptions ?? [], chronologie),
     ];
 
   const blob = await buildXlsxBlob({
