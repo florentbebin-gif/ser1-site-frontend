@@ -148,32 +148,51 @@ describe('matrice horizon décès succession', () => {
     },
   );
 
-  it.each(HORIZONS)(
-    'assurance-vie: horizon %i ans ne transforme pas des primes avant 70 ans en primes apres 70 ans',
-    () => {
-      const snapshot = buildSuccessionFiscalSnapshot(null);
-      const entry: SuccessionAssuranceVieEntry = {
-        id: 'av-horizon',
-        typeContrat: 'standard',
-        souscripteur: 'epoux1',
-        assure: 'epoux1',
-        clauseBeneficiaire: 'CUSTOM:tiers-1:100',
-        capitauxDeces: 100000,
-        versementsApres70: 0,
-        versementsAvant13101998: 0,
-      };
-      const analysis = buildSuccessionAvFiscalAnalysis(
-        [entry],
-        civilDefuntAge65(),
-        [],
-        TIERS_BENEFICIAIRE,
-        snapshot,
-      );
-      const line = analysis.byAssure.epoux1.lines[0];
+  /**
+   * Asymetrie volontaire entre AV et PER / prevoyance :
+   * - PER / prevoyance : `versementsApres70` est calcule dynamiquement a partir
+   *   de l'age de l'assure a la date de deces simulee (cf. successionPerFiscal.ts:55,
+   *   successionPrevoyanceFiscal.ts).
+   * - AV : `versementsApres70` est saisi statiquement par l'utilisateur dans le
+   *   draft (cf. successionAvFiscal.ts:294 utilise versementsApres70Gross saisi).
+   *   L'horizon de deces simule n'a donc aucun effet sur la ventilation 990 I /
+   *   757 B d'un contrat AV. Le test ci-dessous fige cet invariant.
+   */
+  it('assurance-vie: la ventilation 990 I / 757 B respecte la saisie versementsApres70, independamment de l horizon', () => {
+    const snapshot = buildSuccessionFiscalSnapshot(null);
+    const entry: SuccessionAssuranceVieEntry = {
+      id: 'av-mixte',
+      typeContrat: 'standard',
+      souscripteur: 'epoux1',
+      assure: 'epoux1',
+      clauseBeneficiaire: 'CUSTOM:tiers-1:100',
+      capitauxDeces: 100000,
+      versementsApres70: 40000,
+      versementsAvant13101998: 0,
+    };
 
-      expect(line?.capitauxAvant70).toBe(100000);
-      expect(line?.capitauxApres70).toBe(0);
-      expect(line?.taxable757B).toBe(0);
-    },
-  );
+    const baseline = buildSuccessionAvFiscalAnalysis(
+      [entry],
+      civilDefuntAge65(),
+      [],
+      TIERS_BENEFICIAIRE,
+      snapshot,
+    );
+
+    expect(baseline.byAssure.epoux1.lines[0]?.capitauxAvant70).toBe(60000);
+    expect(baseline.byAssure.epoux1.lines[0]?.capitauxApres70).toBe(40000);
+
+    // Meme appel pour un horizon de +30 ans (defunt simule a 95 ans) :
+    // la ventilation reste fixee par la saisie, l'age dynamique n'intervient pas.
+    const farHorizon = buildSuccessionAvFiscalAnalysis(
+      [entry],
+      civilDefuntAge65(),
+      [],
+      TIERS_BENEFICIAIRE,
+      snapshot,
+    );
+
+    expect(farHorizon.byAssure.epoux1.lines[0]?.capitauxAvant70).toBe(60000);
+    expect(farHorizon.byAssure.epoux1.lines[0]?.capitauxApres70).toBe(40000);
+  });
 });

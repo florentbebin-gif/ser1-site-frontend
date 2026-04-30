@@ -228,6 +228,31 @@ export const SUCCESSION_NOTARIAL_REFERENCES: SuccessionNotarialReference[] = [
   },
 ];
 
+/**
+ * Golden notarial AV 757 B - tiers beneficiaire.
+ *
+ * Detail du calcul :
+ * - Primes versees apres 70 ans : 100 000 EUR (entry.versementsApres70).
+ * - Abattement specifique 757 B (CGI art. 757 B alinea 1) : 30 500 EUR global.
+ *   → Base fiscale 757 B : 100 000 - 30 500 = 69 500 EUR.
+ * - L'art. 757 B precise que ces sommes "donnent ouverture aux droits de
+ *   mutation par deces suivant le degre de parente entre le beneficiaire a
+ *   titre gratuit et l'assure".
+ * - Application des regles de droit commun (BOFiP BOI-ENR-DMTG-10-10-20-20
+ *   §260) : abattement personnel residuel art. 788 IV pour un beneficiaire
+ *   tiers sans autre abattement = 1 594 EUR.
+ *   → Base imposable apres abattement personnel : 69 500 - 1 594 = 67 906 EUR.
+ * - Bareme tiers art. 777 (60 % au-dela des seuils en ligne directe etendue
+ *   ou tiers) : 67 906 × 60 % = 40 743,60 EUR ≈ 40 744 EUR.
+ *
+ * Sources :
+ * - CGI art. 757 B : https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000047288569
+ * - CGI art. 777 (bareme tiers) : https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000030061736
+ * - CGI art. 788 IV (abattement personnel residuel) : applique en droit commun
+ * - BOFiP BOI-ENR-DMTG-10-10-20-20 §260 : coordination 757 B + abattements
+ *   personnels en droit commun.
+ * - Service-Public F35794 : taux 60 % beneficiaire tiers.
+ */
 export const ASSURANCE_VIE_757B_NOTARIAL_REFERENCE = {
   id: 'assurance-vie-757b-tiers-100k',
   title: 'Assurance-vie 757 B, bénéficiaire tiers, 100 kEUR de primes après 70 ans',
@@ -248,8 +273,8 @@ export const ASSURANCE_VIE_757B_NOTARIAL_REFERENCE = {
     capitauxAvant70: 0,
     capitauxApres70: 100000,
     baseFiscale757B: 100000,
-    taxable757B: 69500,
-    droits757B: 40744,
+    taxable757B: 69500, // 100 000 - 30 500 (abattement 757 B)
+    droits757B: 40744, // (69 500 - 1 594) × 60 %, cf. detail dans le commentaire
     droits990I: 0,
     totalDroits: 40744,
   },

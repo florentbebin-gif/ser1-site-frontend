@@ -74,15 +74,16 @@ Ce document sert de source de verite pour la trajectoire de montee en gamme du m
 | Donation entre epoux | Present avec replis | Simplification documentee |
 | Preciput global en montant | Present | Support robuste du perimetre actuel |
 | Preciput cible par bien | Selection UI, deduction moteur et restitution/export dedies presents sur `communaute` / `societe_acquets` | Simplification documentee |
-| Assurance-vie 990 I / 757 B | Present mais encore a fiabiliser sur certains cas | Support robuste avec regressions identifiees |
-| Representation petits-enfants | Presente mais incomplete fiscalement | Simplification documentee |
-| Rappel fiscal donations | Partiellement analytique | Approximation assumee |
+| Assurance-vie 990 I / 757 B | Coordination 757 B + abattement personnel residuel conforme a BOFiP BOI-ENR-DMTG-10-10-20-20 §260; pivot 70 ans dynamique pour PER / prevoyance, statique sur saisie pour AV | Support robuste |
+| Representation petits-enfants | Abattement de branche divise entre representants implemente; croisement avec quotite disponible speciale en reserve heritere mixte non modelise | Simplification documentee |
+| Rappel fiscal donations | Borne 15 ans analytique (PR-D matrice horizon); base de rappel reste une simplification (cf. donations valeur / montant) | Approximation assumee |
 | GFA / GFV / GFF / GF | Present avec seuils LF 2025 integres | Support robuste du perimetre actuel |
 | Recompenses / creances entre masses | Bloc de saisie, moteur simplifie, synthese, chronologie et exports presents | Simplification documentee |
 | Participation aux acquets (creance) | Bloc de configuration et creance simplifiee presents dans le chainage succession | Simplification documentee |
 | Propres par nature | Present sur les actifs detailles, avec effet simplifie en `communaute_universelle` si `stipulationContraireCU` est activee | Simplification documentee |
 | Qualif. meuble / immeuble pour CMA | Presente sur les actifs detailles, avec fallback sur la categorie si la saisie explicite est absente | Simplification documentee |
 | Passif juridiquement affecte | Restitution simplifiee a partir des passifs detailles rattaches a une masse | Simplification documentee |
+| Hypotheses exportees (PR-E) | Onglet `Hypotheses` XLSX et slide `Hypotheses retenues` PPTX consolident les hypotheses actives par scenario : applicabilite chainage, recompenses, participation aux acquets, preciput, passifs affectes, societe d'acquets | Support robuste |
 
 ## Cible d'architecture metier
 
@@ -121,6 +122,16 @@ La `PR-31` ajoute ensuite le modele simplifie de `recompenses / creances entre m
 La `PR-32` aligne enfin la documentation metier et d'architecture sur cet etat final de la trajectoire, avec distinction explicite entre support robuste, simplification documentee et approximation assumee.
 La `PR-33` boucle la validation finale avec export des hypotheses retenues par le simulateur dans l'UI, le PPTX et le XLSX, plus alignement documentaire de fin de trajectoire.
 
+### Extensions de fiabilisation post-PR-33
+
+Apres la trajectoire PR-11 a PR-33, cinq fiabilisations successives ont ete merguees pour stabiliser /sim/succession sans elargir le perimetre fonctionnel :
+
+- **PR-A** (#421) : `chainageAnalysis.applicable` retourne explicitement `false` en PACS (au lieu d'un drapeau toujours `true`), pour aligner le moteur sur la matrice de maturite.
+- **PR-B** (#422) : `projectionAutreAssure` rendu nullable via un gating `hasSecondSubject`, sous-titre UI explicitant que la succession patrimoniale future du survivant n'est pas modelisee en mode direct.
+- **PR-C** (#423) : corpus de references notariales sourcees URL (CGI 777 / 779 / 757 B / 784 / 796-0 bis, Service-Public F35794) figeant 8 scenarios de calcul direct.
+- **PR-D** (#425) : matrice d'horizon deces 0-30 ans pour le rappel fiscal (borne 15 ans CGI 784) et le pivot 70 ans dynamique pour PER / prevoyance.
+- **PR-E** (#426) : hypotheses exportees enrichies dans XLSX et PPTX avec semantique des dispositifs actifs par scenario.
+
 ## Sources juridiques de cadrage
 
 | Concept | Source officielle |
@@ -140,6 +151,17 @@ La `PR-33` boucle la validation finale avec export des hypotheses retenues par l
 | Assurance-vie primes apres 70 ans | CGI art. 757 B |
 | Usufruit / nue-propriete | CGI art. 669 |
 | GFA / GFV / GFF / GF | CGI art. 793 bis |
+
+## Semantique du Cout cumule en mode direct
+
+Le KPI "Cout cumule" (Synthese successorale + Chronologie des deces) agrege les droits du deces simule et la projection des droits hors succession (assurance-vie, PER, prevoyance) du second assure, lorsque le contexte civil comporte un second sujet patrimonial (mariage, PACS, concubinage). Cette projection est nullable pour celibataire, divorce et veuf (`projectionAutreAssure: null`).
+
+**Limitation explicite :** la succession patrimoniale future de la masse propre du second assure n'est PAS modelisee en mode direct. Seuls les droits hors succession de l'autre assure sont projetes. C'est une asymetrie volontaire avec le chainage marie qui, lui, calcule les deux successions step1 + step2 sur la base patrimoniale.
+
+Cette asymetrie est explicitee :
+
+- en UI : sous-titre dans le bloc "Projection autre assure" du panneau Chronologie ([ScDeathTimelinePanel.tsx](../src/features/succession/components/ScDeathTimelinePanel.tsx)).
+- en code : commentaire d'invariant dans [useSuccessionOutcomeDerivedValues.helpers.ts](../src/features/succession/hooks/useSuccessionOutcomeDerivedValues.helpers.ts) et test dedie [successionDisplayTotalsInvariant.test.tsx](../src/features/succession/__tests__/successionDisplayTotalsInvariant.test.tsx).
 
 ## Invariants pour les chantiers suivants
 - aucune approximation ne doit etre masquee
