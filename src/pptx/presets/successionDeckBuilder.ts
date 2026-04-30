@@ -12,6 +12,7 @@ import type {
   SuccessionSynthesisSlideSpec,
   LogoPlacement,
 } from '../theme/types';
+import { buildSuccessionExportActiveHypotheses } from '@/features/succession/export/successionExportHypotheses';
 import { isDebugEnabled } from '../../utils/debugFlags';
 import { pickChapterImage } from '../designSystem/serenity';
 
@@ -315,7 +316,10 @@ function buildChronologieBody(data?: SuccessionData['predecesChronologie']): str
   return lines.join('\n');
 }
 
-function buildAssumptionsBody(assumptions?: string[]): string {
+function buildAssumptionsBody(
+  assumptions?: string[],
+  chronologie?: SuccessionData['predecesChronologie'],
+): string {
   const fallback = [
     '- Bareme des droits de mutation a titre gratuit en vigueur (CGI Art. 777)',
     '- Abattement en ligne directe: 100 000 EUR par enfant (CGI Art. 779)',
@@ -324,8 +328,9 @@ function buildAssumptionsBody(assumptions?: string[]): string {
     "- Les montants sont arrondis a l'euro le plus proche",
   ];
 
-  const lines = assumptions && assumptions.length > 0
-    ? assumptions.map((assumption) => `- ${assumption}`)
+  const activeHypotheses = buildSuccessionExportActiveHypotheses(assumptions ?? [], chronologie);
+  const lines = activeHypotheses.length > 0
+    ? activeHypotheses.map((assumption) => `- ${assumption}`)
     : fallback;
 
   return lines.join('\n');
@@ -396,7 +401,7 @@ export function buildSuccessionStudyDeck(
 
   const lastSlide = slides[slides.length - 1];
   if (lastSlide?.type === 'content') {
-    lastSlide.body = buildAssumptionsBody(data.assumptions);
+    lastSlide.body = buildAssumptionsBody(data.assumptions, data.predecesChronologie);
   }
 
   return {
