@@ -75,10 +75,26 @@ export function buildSuccessionChainageAnalysis(
   }
 
   if (input.civil.situationMatrimoniale === 'pacse') {
-    return buildEmptyAnalysis(
-      input.order,
-      'PACS: chainage 2 deces non modelise (cf. matrice de maturite). Bascule sur succession directe du defunt simule.',
+    const testament = input.devolution?.testamentsBySide[input.order];
+    const partnerRef = `principal:${getOtherSide(input.order)}` as const;
+    const hasActivePartnerTestament = Boolean(
+      testament?.active
+      && (
+        testament.beneficiaryRef === partnerRef
+        || testament.particularLegacies.some((legacy) => legacy.beneficiaryRef === partnerRef && asAmount(legacy.amount) > 0)
+      ),
     );
+    if (!hasActivePartnerTestament) {
+      // Sans testament, le partenaire pacse n'a aucune vocation successorale
+      // legale (CGI art. 796-0 bis ne s'applique qu'au beneficiaire designe).
+      // Le step1 irait aux heritiers legaux du defunt et le step2 a la propre
+      // famille du partenaire : deux successions decorrelees. La succession
+      // directe du defunt simule est plus claire pour l'utilisateur.
+      return buildEmptyAnalysis(
+        input.order,
+        'PACS sans testament partenaire: pas de vocation successorale legale du partenaire, bascule sur succession directe du defunt simule.',
+      );
+    }
   }
 
   const attributionPctBase = input.attributionBiensCommunsPct ?? 50;

@@ -69,7 +69,7 @@ Ce document sert de source de verite pour la trajectoire de montee en gamme du m
 |---|---|---|
 | Predeces / chainage maries | Present | Support robuste |
 | PACS avec succession directe | Present | Support robuste du perimetre actuel |
-| PACS avec chainage 2 deces | Exclu par spec actuelle | Non modelise |
+| PACS avec chainage 2 deces | Active si testament partenaire actif (PR-G), partenaire pacse beneficie de l'exoneration CGI 796-0 bis sur la part leguee. Sans testament: bascule sur succession directe (`applicable: false`). | Support robuste du perimetre actuel |
 | Testament simple | Present | Support robuste du perimetre actuel |
 | Donation entre epoux | Present avec replis | Simplification documentee |
 | Preciput global en montant | Present | Support robuste du perimetre actuel |
@@ -124,13 +124,14 @@ La `PR-33` boucle la validation finale avec export des hypotheses retenues par l
 
 ### Extensions de fiabilisation post-PR-33
 
-Apres la trajectoire PR-11 a PR-33, cinq fiabilisations successives ont ete merguees pour stabiliser /sim/succession sans elargir le perimetre fonctionnel :
+Apres la trajectoire PR-11 a PR-33, six fiabilisations successives ont ete merguees pour stabiliser /sim/succession sans elargir le perimetre fonctionnel :
 
 - **PR-A** (#421) : `chainageAnalysis.applicable` retourne explicitement `false` en PACS (au lieu d'un drapeau toujours `true`), pour aligner le moteur sur la matrice de maturite.
 - **PR-B** (#422) : `projectionAutreAssure` rendu nullable via un gating `hasSecondSubject`, sous-titre UI explicitant que la succession patrimoniale future du survivant n'est pas modelisee en mode direct.
 - **PR-C** (#423) : corpus de references notariales sourcees URL (CGI 777 / 779 / 757 B / 784 / 796-0 bis, Service-Public F35794) figeant 8 scenarios de calcul direct.
 - **PR-D** (#425) : matrice d'horizon deces 0-30 ans pour le rappel fiscal (borne 15 ans CGI 784) et le pivot 70 ans dynamique pour PER / prevoyance.
 - **PR-E** (#426) : hypotheses exportees enrichies dans XLSX et PPTX avec semantique des dispositifs actifs par scenario.
+- **PR-G** : ouverture du chainage 2 deces en PACS *avec testament partenaire*. Le partenaire pacse beneficie de l'exoneration CGI 796-0 bis sur la part leguee, le step2 calcule la masse du partenaire (propre + carry-over) transmise a sa famille (branche `epoux2`). Sans testament, la bascule sur succession directe est conservee.
 
 ## Sources juridiques de cadrage
 

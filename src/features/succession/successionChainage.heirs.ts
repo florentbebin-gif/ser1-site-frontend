@@ -75,6 +75,26 @@ export function buildDetailedDescendantHeirs(
     })();
 }
 
+export function buildDetailedSiblingHeirs(
+  actifTransmis: number,
+  deceased: SuccessionDeceasedSide,
+  familyMembers: FamilyMember[] = [],
+): DetailedChainHeir[] {
+  if (actifTransmis <= 0) return [];
+  const siblings = familyMembers.filter(
+    (member) => member.type === 'frere_soeur' && (!member.branch || member.branch === deceased),
+  );
+  if (siblings.length <= 0) return [];
+
+  const partSuccession = actifTransmis / siblings.length;
+  return siblings.map((member, index) => ({
+    id: member.id,
+    label: `Frere / soeur ${index + 1}`,
+    lien: 'frere_soeur' as const,
+    partSuccession,
+  }));
+}
+
 export function mergeDetailedHeirs(heirs: DetailedChainHeir[]): DetailedChainHeir[] {
   const merged = new Map<string, DetailedChainHeir>();
   heirs.forEach((heir) => {

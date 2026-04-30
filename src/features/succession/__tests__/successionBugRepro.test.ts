@@ -185,10 +185,13 @@ describe('V3 â€” red tests (Lot 0) â€” will be converted to it() when 
     expect(conjointBenef?.brut).toBe(75000);
   });
 
-  // BUG-3 corrige par PR-A : le moteur retourne applicable=false en PACS,
-  // conformement a docs/SUCCESSION_MODEL_MATURITY.md ligne 72
-  // ("PACS chainage 2 deces : Non modelise"). Le mode direct prend le relais.
-  it('BUG-3 corrige: PACS chainage avec testament au partenaire renvoie applicable=false', () => {
+  // BUG-3 historique : evolution des deux PR successives.
+  // - PR-A (#421) : applicable=false pour tout PACS, par alignement avec la
+  //   matrice de maturite ("PACS chainage 2 deces : Non modelise").
+  // - PR-G : applicable=true pour PACS *avec testament*, le partenaire
+  //   pacse beneficiant de l'exoneration CGI 796-0 bis sur la part leguee.
+  //   Sans testament le mode direct reste retenu.
+  it('BUG-3: PACS avec testament au partenaire chaine et applique l exoneration', () => {
     const analysis = buildSuccessionChainageAnalysis({
       civil: makeCivil({
         situationMatrimoniale: 'pacse',
@@ -222,10 +225,14 @@ describe('V3 â€” red tests (Lot 0) â€” will be converted to it() when 
       familyMembers: [],
     });
 
-    expect(analysis.applicable).toBe(false);
-    expect(analysis.step1).toBeNull();
-    expect(analysis.step2).toBeNull();
-    expect(analysis.totalDroits).toBe(0);
-    expect(analysis.warnings.some((warning) => warning.includes('PACS'))).toBe(true);
+    expect(analysis.applicable).toBe(true);
+    expect(analysis.step1).not.toBeNull();
+    expect(analysis.step2).not.toBeNull();
+    const partnerBeneficiary = analysis.step1?.beneficiaries.find(
+      (beneficiary) => beneficiary.id === 'partenaire-pacse',
+    );
+    expect(partnerBeneficiary?.exonerated).toBe(true);
+    expect(partnerBeneficiary?.droits).toBe(0);
+    expect(analysis.step2!.actifTransmis).toBeGreaterThan(0);
   });
 });
