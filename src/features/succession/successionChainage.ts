@@ -374,7 +374,7 @@ export function buildSuccessionChainageAnalysis(
     ? addSuccessionEstateTaxableBases(
       step1TaxableEstate > 0
         ? scaleSuccessionEstateTaxableBasis(
-          step1TransmissionTaxableBasis,
+          step1TransmissionTaxableBasisBase,
           step2InheritedCarryOverAmount / step1TaxableEstate,
         )
         : createEmptyEstateTaxableBasis(),

@@ -182,6 +182,7 @@ export function applyResidencePrincipaleAbatementToEstateBasis(
 ): SuccessionEstateTaxableBasis {
   if (!shouldApply || basis.residencePrincipaleValeur <= 0) return basis;
 
+  // Invariant: cette valeur suit déjà les réductions de masse (préciput cible, passifs, etc.).
   return {
     ...basis,
     ordinaryNetBeforeForfait: Math.max(0, basis.ordinaryNetBeforeForfait - (basis.residencePrincipaleValeur * 0.2)),

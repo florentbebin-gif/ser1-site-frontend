@@ -31,9 +31,9 @@ import {
   buildSuccessionSynthHypothese,
   buildUnifiedBeneficiaryBlocks,
   hasSuccessionSecondSubject,
-  mergeInsuranceBeneficiaryLines,
 } from './useSuccessionOutcomeDerivedValues.helpers';
 import { buildSuccessionChainageExportPayload } from './useSuccessionOutcomeExportPayload';
+import { buildSuccessionOutcomeInsuranceLines } from './useSuccessionOutcomeInsuranceLines';
 
 interface UseSuccessionOutcomeDerivedValuesInput {
   civilContext: typeof DEFAULT_SUCCESSION_CIVIL_CONTEXT;
@@ -324,83 +324,36 @@ export function useSuccessionOutcomeDerivedValues({
     directDisplayAnalysis.transmissionRows,
   ]);
 
-  const insuranceMerged = useMemo(() => {
-    const empty = { lines990I: [] as ReturnType<typeof mergeInsuranceBeneficiaryLines>['lines990I'], lines757B: [] as ReturnType<typeof mergeInsuranceBeneficiaryLines>['lines757B'] };
-    if (!shouldRenderSuccessionComputationSections) return empty;
-    if (displayUsesChainage) {
-      return mergeInsuranceBeneficiaryLines(
-        avFiscalAnalysis.lines,
-        perFiscalAnalysis.lines,
-        prevoyanceFiscalAnalysis.lines,
-      );
-    }
-    const assured = directDisplayAnalysis.simulatedDeceased;
-    return mergeInsuranceBeneficiaryLines(
-      avFiscalAnalysis.byAssure[assured].lines,
-      perFiscalAnalysis.byAssure[assured].lines,
-      prevoyanceFiscalAnalysis.byAssure[assured].lines,
-    );
-  }, [
+  const insuranceLines = useMemo(() => buildSuccessionOutcomeInsuranceLines({
     shouldRenderSuccessionComputationSections,
     displayUsesChainage,
-    avFiscalAnalysis.lines,
-    avFiscalAnalysis.byAssure,
-    perFiscalAnalysis.lines,
-    perFiscalAnalysis.byAssure,
-    prevoyanceFiscalAnalysis.lines,
-    prevoyanceFiscalAnalysis.byAssure,
-    directDisplayAnalysis.simulatedDeceased,
-  ]);
-  const insurance990ILines = insuranceMerged.lines990I;
-  const insurance757BLines = insuranceMerged.lines757B;
-
-  const insuranceByStep = useMemo(() => {
-    const empty = { lines990I: [] as ReturnType<typeof mergeInsuranceBeneficiaryLines>['lines990I'], lines757B: [] as ReturnType<typeof mergeInsuranceBeneficiaryLines>['lines757B'] };
-    if (!shouldRenderSuccessionComputationSections) return { step1: empty, step2: empty };
-    if (displayUsesChainage) {
-      const oppositeOrder = chainageAnalysis.order === 'epoux1' ? 'epoux2' : 'epoux1';
-      return {
-        step1: mergeInsuranceBeneficiaryLines(
-          avFiscalAnalysis.byAssure[chainageAnalysis.order].lines,
-          perFiscalAnalysis.byAssure[chainageAnalysis.order].lines,
-          prevoyanceFiscalAnalysis.byAssure[chainageAnalysis.order].lines,
-        ),
-        step2: mergeInsuranceBeneficiaryLines(
-          avFiscalAnalysis.byAssure[oppositeOrder].lines,
-          perFiscalAnalysis.byAssure[oppositeOrder].lines,
-          prevoyanceFiscalAnalysis.byAssure[oppositeOrder].lines,
-        ),
-      };
-    }
-    const assured = directDisplayAnalysis.simulatedDeceased;
-    return {
-      step1: mergeInsuranceBeneficiaryLines(
-        avFiscalAnalysis.byAssure[assured].lines,
-        perFiscalAnalysis.byAssure[assured].lines,
-        prevoyanceFiscalAnalysis.byAssure[assured].lines,
-      ),
-      step2: empty,
-    };
-  }, [
+    chainageOrder: chainageAnalysis.order,
+    directSimulatedDeceased: directDisplayAnalysis.simulatedDeceased,
+    avFiscalAnalysis,
+    perFiscalAnalysis,
+    prevoyanceFiscalAnalysis,
+  }), [
     shouldRenderSuccessionComputationSections,
     displayUsesChainage,
     chainageAnalysis.order,
-    avFiscalAnalysis.byAssure,
-    perFiscalAnalysis.byAssure,
-    prevoyanceFiscalAnalysis.byAssure,
     directDisplayAnalysis.simulatedDeceased,
+    avFiscalAnalysis,
+    perFiscalAnalysis,
+    prevoyanceFiscalAnalysis,
   ]);
+  const insurance990ILines = insuranceLines.merged.lines990I;
+  const insurance757BLines = insuranceLines.merged.lines757B;
 
   const unifiedBlocks = useMemo(
     () => buildUnifiedBeneficiaryBlocks({
       transmissionRows,
-      insurance990IStep1: insuranceByStep.step1.lines990I,
-      insurance757BStep1: insuranceByStep.step1.lines757B,
-      insurance990IStep2: insuranceByStep.step2.lines990I,
-      insurance757BStep2: insuranceByStep.step2.lines757B,
+      insurance990IStep1: insuranceLines.byStep.step1.lines990I,
+      insurance757BStep1: insuranceLines.byStep.step1.lines757B,
+      insurance990IStep2: insuranceLines.byStep.step2.lines990I,
+      insurance757BStep2: insuranceLines.byStep.step2.lines757B,
       displayUsesChainage,
     }),
-    [transmissionRows, insuranceByStep, displayUsesChainage],
+    [transmissionRows, insuranceLines, displayUsesChainage],
   );
 
   const chainageExportPayload = useMemo(
