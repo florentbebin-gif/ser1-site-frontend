@@ -197,6 +197,43 @@ describe('buildSuccessionChainageAnalysis', () => {
     expect(analysis.step1?.beneficiaries.find((beneficiary) => beneficiary.id === 'PG2')?.droits).toBe(18194);
   });
 
+  it('répartit deux branches représentées avec des petits-enfants en cascade', () => {
+    const analysis = buildSuccessionChainageAnalysis({
+      civil: makeCivil({ regimeMatrimonial: 'separation_biens' }),
+      liquidation: makeLiquidation({ actifEpoux1: 900000, actifEpoux2: 0, actifCommun: 0, nbEnfants: 3 }),
+      regimeUsed: 'separation_biens',
+      order: 'epoux1',
+      dmtgSettings: DEFAULT_DMTG,
+      enfantsContext: [
+        { id: 'E1', rattachement: 'commun' },
+        { id: 'E2', rattachement: 'commun', deceased: true },
+        { id: 'E3', rattachement: 'commun', deceased: true },
+      ],
+      familyMembers: [
+        { id: 'PG1', type: 'petit_enfant', parentEnfantId: 'E2' },
+        { id: 'PG2', type: 'petit_enfant', parentEnfantId: 'E3' },
+        { id: 'PG3', type: 'petit_enfant', parentEnfantId: 'E3' },
+      ],
+    });
+
+    const beneficiaries = new Map(
+      analysis.step1?.beneficiaries.map((beneficiary) => [beneficiary.id, beneficiary]),
+    );
+
+    expect(analysis.step1?.beneficiaries.map((beneficiary) => beneficiary.id)).toEqual([
+      'conjoint',
+      'E1',
+      'PG1',
+      'PG2',
+      'PG3',
+    ]);
+    expect(beneficiaries.get('E1')).toMatchObject({ lien: 'enfant', brut: 225000, droits: 23194 });
+    expect(beneficiaries.get('PG1')).toMatchObject({ lien: 'petit_enfant', brut: 225000, droits: 23194 });
+    expect(beneficiaries.get('PG2')).toMatchObject({ lien: 'petit_enfant', brut: 112500, droits: 10694 });
+    expect(beneficiaries.get('PG3')).toMatchObject({ lien: 'petit_enfant', brut: 112500, droits: 10694 });
+    expect(analysis.warnings.some((warning) => warning.includes('representation successorale simplifiee'))).toBe(true);
+  });
+
   it('keeps only the deceased branch descendants at step 1', () => {
     const analysis = buildSuccessionChainageAnalysis({
       civil: makeCivil({ regimeMatrimonial: 'separation_biens' }),

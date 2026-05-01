@@ -2,12 +2,21 @@ import { describe, expect, it } from 'vitest';
 import { DEFAULT_DMTG } from '../../../engine/civil';
 import type { SuccessionDonationEntry } from '../successionDraft';
 import { buildSuccessionChainageAnalysis } from '../successionChainage';
+import { RESIDENCE_PRINCIPALE_SUBCATEGORY } from '../successionSimulator.constants';
 import {
   DONATION_SETTINGS,
   makeCivil,
   makeDevolution,
   makeLiquidation,
 } from './successionChainage.test.helpers';
+
+const DMTG_SANS_ABATTEMENT_LIGNE_DIRECTE = {
+  ...DEFAULT_DMTG,
+  ligneDirecte: {
+    ...DEFAULT_DMTG.ligneDirecte,
+    abattement: 0,
+  },
+};
 
 describe('buildSuccessionChainageAnalysis - patrimonial flows', () => {
   it('deducts preciput from step 1 estate and carries it to step 2', () => {
@@ -121,6 +130,92 @@ describe('buildSuccessionChainageAnalysis - patrimonial flows', () => {
         appliedAmount: 80000,
       }),
     ]);
+  });
+
+  it('applique l’abattement résidence principale après retrait du préciput cible', () => {
+    const transmissionBasis = {
+      ordinaryTaxableAssetsParPocket: {
+        epoux1: 0,
+        epoux2: 0,
+        communaute: 300000,
+        societe_acquets: 0,
+        indivision_pacse: 0,
+        indivision_concubinage: 0,
+        indivision_separatiste: 0,
+      },
+      passifsParPocket: {
+        epoux1: 0,
+        epoux2: 0,
+        communaute: 0,
+        societe_acquets: 0,
+        indivision_pacse: 0,
+        indivision_concubinage: 0,
+        indivision_separatiste: 0,
+      },
+      groupementFoncierEntries: [],
+      hasBeneficiaryLevelGfAdjustment: false,
+      residencePrincipaleEntry: {
+        pocket: 'communaute' as const,
+        valeurTotale: 300000,
+      },
+    };
+    const baseInput = {
+      civil: makeCivil({}),
+      liquidation: makeLiquidation({ actifEpoux1: 0, actifEpoux2: 0, actifCommun: 300000, nbEnfants: 2 }),
+      regimeUsed: 'communaute_legale' as const,
+      order: 'epoux1' as const,
+      dmtgSettings: DMTG_SANS_ABATTEMENT_LIGNE_DIRECTE,
+      enfantsContext: [
+        { id: 'E1', rattachement: 'commun' as const },
+        { id: 'E2', rattachement: 'commun' as const },
+      ],
+      familyMembers: [],
+      patrimonial: {
+        attributionIntegrale: false,
+        donationEntreEpouxActive: false,
+        donationEntreEpouxOption: 'pleine_propriete_quotite' as const,
+        preciputMode: 'cible' as const,
+        preciputMontant: 0,
+        preciputSelections: [{
+          id: 'prec-rp',
+          sourceType: 'asset' as const,
+          sourceId: 'asset-rp',
+          labelSnapshot: RESIDENCE_PRINCIPALE_SUBCATEGORY,
+          pocket: 'communaute' as const,
+          amount: 100000,
+          enabled: true,
+        }],
+      },
+      assetEntries: [{
+        id: 'asset-rp',
+        pocket: 'communaute' as const,
+        category: 'immobilier' as const,
+        subCategory: RESIDENCE_PRINCIPALE_SUBCATEGORY,
+        amount: 300000,
+        label: RESIDENCE_PRINCIPALE_SUBCATEGORY,
+      }],
+      groupementFoncierEntries: [],
+      transmissionBasis,
+    };
+
+    const withoutAbatement = buildSuccessionChainageAnalysis({
+      ...baseInput,
+      abattementResidencePrincipale: false,
+    });
+    const withAbatement = buildSuccessionChainageAnalysis({
+      ...baseInput,
+      abattementResidencePrincipale: true,
+    });
+
+    expect(withAbatement.preciput).toMatchObject({
+      mode: 'cible',
+      appliedAmount: 100000,
+    });
+    expect(withAbatement.step1?.actifTransmis).toBe(100000);
+    expect(withoutAbatement.step1?.droitsEnfants).toBe(3888);
+    expect(withAbatement.step1?.droitsEnfants).toBe(2482);
+    expect(withAbatement.step1?.droitsEnfants).toBeLessThan(withoutAbatement.step1?.droitsEnfants ?? 0);
+    expect(withAbatement.step2?.droitsEnfants).toBe(withoutAbatement.step2?.droitsEnfants);
   });
 
   it('falls back to the global preciput amount when targeted selections are no longer compatible', () => {
