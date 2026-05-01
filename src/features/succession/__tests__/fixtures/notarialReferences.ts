@@ -1,5 +1,6 @@
 import type { HeritiersInput, LienParente } from '../../../../engine/succession';
 import type {
+  FamilyMember,
   SuccessionAssuranceVieEntry,
   SuccessionCivilContext,
   SuccessionDonationEntry,
@@ -68,6 +69,11 @@ const SOURCES = {
   cgi757B: {
     label: 'CGI art. 757 B - primes assurance-vie versées après 70 ans',
     url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000047288569',
+    consultedAt: CONSULTED_AT,
+  },
+  cgi990I: {
+    label: 'CGI art. 990 I - capitaux assurance-vie versés avant 70 ans',
+    url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000033817392',
     consultedAt: CONSULTED_AT,
   },
   cgi7960Bis: {
@@ -280,3 +286,213 @@ export const ASSURANCE_VIE_757B_NOTARIAL_REFERENCE = {
   },
   expectedTotalDroits: 40744,
 };
+
+/**
+ * Corpus de references notariales pour l'assurance-vie (PR-F2).
+ *
+ * Chaque scenario fige le calcul du moteur SER1 contre des sources publiques
+ * (Legifrance + BOFiP + Service-Public). Les valeurs attendues sont detaillees
+ * dans le commentaire de chaque scenario.
+ *
+ * Les scenarios couvrent :
+ * - 990 I (versements avant 70 ans) avec abattement 152 500 EUR par beneficiaire
+ * - 757 B (versements apres 70 ans) avec abattement global 30 500 EUR + droit
+ *   commun (CGI 788 IV) pour le bareme final
+ * - exoneration CGI 796-0 bis pour le conjoint et le partenaire pacse
+ */
+export interface AssuranceVieNotarialReference {
+  id: string;
+  title: string;
+  sources: OfficialSource[];
+  entry: SuccessionAssuranceVieEntry;
+  civil?: Partial<SuccessionCivilContext>;
+  familyMembers?: FamilyMember[];
+  expectedLine: {
+    id: string;
+    lien: LienParente;
+    capitauxAvant70: number;
+    capitauxApres70: number;
+    baseFiscale990I?: number;
+    baseFiscale757B?: number;
+    taxable990I: number;
+    taxable757B: number;
+    droits990I: number;
+    droits757B: number;
+    totalDroits: number;
+  };
+  expectedTotalDroits: number;
+}
+
+export const ASSURANCE_VIE_NOTARIAL_REFERENCES: AssuranceVieNotarialReference[] = [
+  /**
+   * Scenario 1 - AV 100 kEUR tiers, 100 % de versements avant 70 ans.
+   *
+   * Detail du calcul :
+   * - capitauxDeces = 100 000, versementsApres70 = 0.
+   * - Tout est ventile sur le regime CGI 990 I.
+   * - Abattement 990 I = 152 500 EUR par beneficiaire (CGI art. 990 I al. 2).
+   * - Base taxable 990 I = max(0, 100 000 - 152 500) = 0.
+   * - Droits = 0 EUR (abattement non epuise).
+   *
+   * Ce golden fige l'invariant "AV 990 I sous le seuil d'abattement = 0 droit".
+   */
+  {
+    id: 'av-tiers-100k-pre-70',
+    title: 'AV 100 kEUR tiers, versements avant 70 ans (990 I, abattement non epuise)',
+    sources: [SOURCES.cgi990I, SOURCES.servicePublicDroits],
+    entry: {
+      id: 'av-pre70-tiers',
+      typeContrat: 'personnalisee',
+      souscripteur: 'epoux1',
+      assure: 'epoux1',
+      clauseBeneficiaire: 'CUSTOM:autre:100',
+      capitauxDeces: 100000,
+      versementsApres70: 0,
+      versementsAvant13101998: 0,
+    },
+    expectedLine: {
+      id: 'autre',
+      lien: 'autre',
+      capitauxAvant70: 100000,
+      capitauxApres70: 0,
+      taxable990I: 0,
+      taxable757B: 0,
+      droits990I: 0,
+      droits757B: 0,
+      totalDroits: 0,
+    },
+    expectedTotalDroits: 0,
+  },
+
+  /**
+   * Scenario 2 - AV 100 kEUR tiers, mix 60 kEUR avant 70 + 40 kEUR apres 70.
+   *
+   * Detail du calcul :
+   * - Tranche avant 70 : 60 000 → 990 I.
+   *   Abattement 152 500 → base 0 → droits 0.
+   * - Tranche apres 70 : 40 000 → 757 B.
+   *   Abattement 757 B = 30 500 → base 9 500.
+   *   Beneficiaire tiers (lien='autre') : abattement personnel CGI 788 IV =
+   *   1 594 EUR.
+   *   Base imposable finale : 9 500 - 1 594 = 7 906.
+   *   Bareme tiers CGI 777 = 60 %.
+   *   Droits 757 B : 7 906 × 60 % = 4 743,60 ≈ 4 744 EUR.
+   * - Total = 0 + 4 744 = 4 744 EUR.
+   *
+   * Ce golden fige le calcul mixte 990 I / 757 B sur un meme contrat.
+   */
+  {
+    id: 'av-tiers-100k-mix-60-40',
+    title: 'AV 100 kEUR tiers, 60 kEUR avant 70 + 40 kEUR apres 70',
+    sources: [SOURCES.cgi990I, SOURCES.cgi757B, SOURCES.cgi777, SOURCES.servicePublicDroits],
+    entry: {
+      id: 'av-mix-tiers',
+      typeContrat: 'personnalisee',
+      souscripteur: 'epoux1',
+      assure: 'epoux1',
+      clauseBeneficiaire: 'CUSTOM:autre:100',
+      capitauxDeces: 100000,
+      versementsApres70: 40000,
+      versementsAvant13101998: 0,
+    },
+    expectedLine: {
+      id: 'autre',
+      lien: 'autre',
+      capitauxAvant70: 60000,
+      capitauxApres70: 40000,
+      taxable990I: 0,
+      taxable757B: 9500,
+      droits990I: 0,
+      droits757B: 4744,
+      totalDroits: 4744,
+    },
+    expectedTotalDroits: 4744,
+  },
+
+  /**
+   * Scenario 3 - AV 100 kEUR frere/soeur, 100 % de versements apres 70 ans.
+   *
+   * Detail du calcul :
+   * - Tout est ventile sur 757 B.
+   * - Abattement 757 B = 30 500 → base 69 500.
+   * - Beneficiaire frere/soeur : abattement personnel CGI 779 IV = 15 932 EUR.
+   *   Base imposable finale : 69 500 - 15 932 = 53 568.
+   * - Bareme frere/soeur CGI 777 : 35 % jusqu'a 24 430, 45 % au-dela.
+   *   24 430 × 35 % = 8 550,5
+   *   (53 568 - 24 430) × 45 % = 29 138 × 45 % = 13 112,1
+   *   Total = 21 662,6 ≈ 21 663 EUR.
+   *
+   * Sources : CGI 757 B, CGI 779 IV (abattement 15 932), CGI 777 (bareme 35/45 %),
+   * Service-Public F35794 (taux frere/soeur).
+   */
+  {
+    id: 'av-frere-soeur-100k-post-70',
+    title: 'AV 100 kEUR frere/soeur, 100 kEUR de primes apres 70 ans',
+    sources: [SOURCES.cgi757B, SOURCES.cgi779, SOURCES.cgi777, SOURCES.servicePublicDroits],
+    entry: {
+      id: 'av-frere-soeur',
+      typeContrat: 'personnalisee',
+      souscripteur: 'epoux1',
+      assure: 'epoux1',
+      clauseBeneficiaire: 'CUSTOM:F1:100',
+      capitauxDeces: 100000,
+      versementsApres70: 100000,
+      versementsAvant13101998: 0,
+    },
+    familyMembers: [{ id: 'F1', type: 'frere_soeur', branch: 'epoux1' }],
+    expectedLine: {
+      id: 'F1',
+      lien: 'frere_soeur',
+      capitauxAvant70: 0,
+      capitauxApres70: 100000,
+      baseFiscale757B: 100000,
+      taxable990I: 0,
+      taxable757B: 69500,
+      droits990I: 0,
+      droits757B: 21663,
+      totalDroits: 21663,
+    },
+    expectedTotalDroits: 21663,
+  },
+
+  /**
+   * Scenario 4 - AV 100 kEUR conjoint, 100 % de versements apres 70 ans.
+   *
+   * Detail du calcul :
+   * - Tout est ventile sur 757 B.
+   * - Beneficiaire conjoint : exoneration totale CGI 796-0 bis (s'applique aux
+   *   sommes 757 B selon BOFiP BOI-ENR-DMTG-10-10-20-20 §380).
+   * - Droits = 0 EUR.
+   *
+   * Le contexte civil doit etre marie pour que la clause "conjoint" soit
+   * resolue avec exoneration (cf. successionAvFiscal.findMember).
+   */
+  {
+    id: 'av-conjoint-100k-post-70-exonere',
+    title: 'AV 100 kEUR conjoint, exoneration CGI 796-0 bis (conjoint marie)',
+    sources: [SOURCES.cgi757B, SOURCES.cgi7960Bis],
+    entry: {
+      id: 'av-conjoint',
+      typeContrat: 'personnalisee',
+      souscripteur: 'epoux1',
+      assure: 'epoux1',
+      clauseBeneficiaire: 'CUSTOM:conjoint:100',
+      capitauxDeces: 100000,
+      versementsApres70: 100000,
+      versementsAvant13101998: 0,
+    },
+    civil: { situationMatrimoniale: 'marie', regimeMatrimonial: 'communaute_legale' },
+    expectedLine: {
+      id: 'conjoint',
+      lien: 'conjoint',
+      capitauxAvant70: 0,
+      capitauxApres70: 100000,
+      taxable990I: 0,
+      taxable757B: 0,
+      droits990I: 0,
+      droits757B: 0,
+      totalDroits: 0,
+    },
+    expectedTotalDroits: 0,
+  },
+];
