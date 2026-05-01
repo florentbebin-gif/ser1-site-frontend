@@ -1,15 +1,23 @@
 /**
  * Succession Deck Builder (P1-02)
  *
- * Generates a StudyDeckSpec for succession simulation results.
- * Structure: Cover -> Chapter -> Synthesis -> Chronologie -> Chapter -> Content (hypotheses) -> End
+ * Génère un StudyDeckSpec pour les résultats de simulation succession.
+ * Structure : Cover → Chapitre → Synthèse → Chronologie → Chapitre → Hypothèses → End
  */
 
 import type {
   StudyDeckSpec,
   ChapterSlideSpec,
-  ContentSlideSpec,
+  SuccessionFamilyContextSlideSpec,
   SuccessionSynthesisSlideSpec,
+  SuccessionChronologySlideSpec,
+  SuccessionChronologyStepSummary,
+  SuccessionHypothesesSlideSpec,
+  SuccessionAnnexTableSlideSpec,
+  SuccessionAssetAnnexSlideSpec,
+  SuccessionAnnexBeneficiaryRow,
+  SuccessionAnnexStep,
+  SuccessionBeneficiarySummary,
   LogoPlacement,
 } from '../theme/types';
 import { buildSuccessionExportActiveHypotheses } from '@/features/succession/export/successionExportHypotheses';
@@ -23,6 +31,10 @@ interface SuccessionChronologieBeneficiary {
   brut: number;
   droits: number;
   net: number;
+  capitauxDecesNets?: number;
+  droitsAssuranceVie990I?: number;
+  droitsSuccession?: number;
+  transmissionNetteSuccession?: number;
   exonerated?: boolean;
 }
 
@@ -127,6 +139,9 @@ export interface SuccessionData {
     totalDroits: number;
     warnings?: string[];
   };
+  annexBeneficiarySteps?: SuccessionAnnexStep[];
+  assetAnnex?: Omit<SuccessionAssetAnnexSlideSpec, 'type' | 'title' | 'subtitle'>;
+  familyContext?: Omit<SuccessionFamilyContextSlideSpec, 'type' | 'title' | 'subtitle'>;
   assumptions?: string[];
   clientName?: string;
 }
@@ -156,8 +171,23 @@ Les informations qu'il contient sont strictement confidentielles et destinées e
 
 Toute reproduction, représentation, diffusion ou rediffusion, totale ou partielle, sur quelque support ou par quelque procédé que ce soit, ainsi que toute vente, revente, retransmission ou mise à disposition de tiers, est strictement encadrée. Le non-respect de ces dispositions est susceptible de constituer une contrefaçon engageant la responsabilité civile et pénale de son auteur, conformément aux articles L335-1 à L335-10 du Code de la propriété intellectuelle.`;
 
+const LIEN_LABELS: Record<string, string> = {
+  conjoint: 'Conjoint',
+  enfant: 'Enfant',
+  petit_enfant: 'Petit-enfant',
+  frere_soeur: 'Frère / Sœur',
+  neveu_niece: 'Neveu / Nièce',
+  autre: 'Autre',
+};
+
 const fmt = (v: number): string =>
   new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(v);
+
+const fmtPct = (v: number): string =>
+  new Intl.NumberFormat('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(v) + ' %';
+
+const compactCount = (value: number): string =>
+  new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 0 }).format(value);
 
 function orderLabel(order: 'epoux1' | 'epoux2'): string {
   return order === 'epoux1'
@@ -165,175 +195,230 @@ function orderLabel(order: 'epoux1' | 'epoux2'): string {
     : 'Époux 2 puis Époux 1';
 }
 
-function liquidationModeLabel(mode: 'quotes' | 'attribution_survivant'): string {
-  return mode === 'attribution_survivant'
-    ? 'attribution prealable au survivant'
-    : 'quotes contractuelles';
+function droitsHorsSuccession(step: SuccessionChronologieStep): number {
+  return (step.droitsAssuranceVie ?? 0) + (step.droitsPer ?? 0) + (step.droitsPrevoyance ?? 0);
 }
 
-function buildChronologieBeneficiaryLines(
-  stepLabel: string,
-  beneficiaries?: SuccessionChronologieBeneficiary[],
-): string[] {
-  if (!beneficiaries || beneficiaries.length === 0) return [];
-
-  const lines = [`• ${stepLabel} - Bénéficiaires réels:`];
-  beneficiaries.slice(0, 6).forEach((beneficiary) => {
-    lines.push(
-      `  - ${beneficiary.label}: ${fmt(beneficiary.brut)}${beneficiary.exonerated ? ' (exonéré)' : `, droits ${fmt(beneficiary.droits)}`}`,
-    );
-  });
-  if (beneficiaries.length > 6) {
-    lines.push(`  - ${beneficiaries.length - 6} autre(s) bénéficiaire(s) non affiché(s)`);
-  }
-
-  return lines;
+function buildBeneficiarySummaries(
+  beneficiaries: SuccessionChronologieBeneficiary[] | undefined,
+  limit = 4,
+): SuccessionBeneficiarySummary[] {
+  return (beneficiaries ?? []).slice(0, limit).map((beneficiary) => ({
+    label: beneficiary.label,
+    gross: fmt(beneficiary.brut),
+    tax: beneficiary.exonerated ? 'Exonéré' : fmt(beneficiary.droits),
+    net: fmt(beneficiary.net),
+    exonerated: beneficiary.exonerated,
+  }));
 }
 
-function buildChronologieBody(data?: SuccessionData['predecesChronologie']): string {
-  if (!data) {
-    return [
-      '- Chronologie non transmise dans cette exportation',
-      '- Utiliser la page simulateur pour consulter les droits des 2 etapes',
-    ].join('\n');
+function buildSynthesisSlide(data: SuccessionData): SuccessionSynthesisSlideSpec {
+  const beneficiaryCount =
+    data.heritiers.length ||
+    data.predecesChronologie?.step1?.beneficiaries?.length ||
+    0;
+
+  return {
+    type: 'succession-synthesis',
+    title: 'Synthèse de votre simulation',
+    subtitle: 'Principaux indicateurs successoraux',
+    heroLabel: 'Droits estimés',
+    heroValue: fmt(data.totalDroits),
+    heroCaption: data.predecesChronologie?.applicable
+      ? 'Total cumulé sur la chronologie simulée'
+      : 'Estimation sur la succession directe simulée',
+    kpis: [
+      { icon: 'money', label: 'Masse transmise', value: fmt(data.actifNetSuccession) },
+      { icon: 'balance', label: 'Droits cumulés', value: fmt(data.totalDroits) },
+      { icon: 'percent', label: 'Taux moyen', value: fmtPct(data.tauxMoyenGlobal) },
+      { icon: 'checklist', label: 'Bénéficiaires', value: compactCount(beneficiaryCount) },
+    ],
+  };
+}
+
+function buildFamilyContextSlide(
+  familyContext: SuccessionData['familyContext'],
+): SuccessionFamilyContextSlideSpec | null {
+  if (!familyContext) return null;
+  return {
+    type: 'succession-family-context',
+    title: 'Contexte familial et dispositions',
+    subtitle: 'Situation civile, régime matrimonial et filiation',
+    ...familyContext,
+  };
+}
+
+function buildChronologyStep(
+  title: string,
+  subtitle: string,
+  step: SuccessionChronologieStep,
+): SuccessionChronologyStepSummary {
+  const horsSuccession = droitsHorsSuccession(step);
+  return {
+    title,
+    subtitle,
+    masseTransmise: fmt(step.masseTotaleTransmise ?? step.actifTransmis),
+    partConjoint: fmt(step.partConjoint),
+    autresBeneficiaires: fmt(step.partEnfants),
+    droitsSuccession: fmt(step.droitsEnfants),
+    droitsHorsSuccession: horsSuccession > 0 ? fmt(horsSuccession) : undefined,
+    beneficiaries: buildBeneficiarySummaries(step.beneficiaries),
+  };
+}
+
+function buildDirectChronologyStep(data: SuccessionData): SuccessionChronologyStepSummary {
+  const partConjoint = data.heritiers
+    .filter((heir) => heir.lien === 'conjoint')
+    .reduce((sum, heir) => sum + heir.partBrute, 0);
+  const masseTransmise = data.heritiers.reduce((sum, heir) => sum + heir.partBrute, 0)
+    || data.actifNetSuccession;
+  const autresBeneficiaires = Math.max(0, masseTransmise - partConjoint);
+
+  return {
+    title: 'Succession directe',
+    subtitle: 'Transmission issue de la situation simulée',
+    masseTransmise: fmt(masseTransmise),
+    partConjoint: fmt(partConjoint),
+    autresBeneficiaires: fmt(autresBeneficiaires),
+    droitsSuccession: fmt(data.totalDroits),
+    beneficiaries: data.heritiers.slice(0, 4).map((heir) => ({
+      label: LIEN_LABELS[heir.lien] ?? heir.lien,
+      gross: fmt(heir.partBrute),
+      tax: heir.droits === 0 ? 'Exonéré' : fmt(heir.droits),
+      net: fmt(Math.max(0, heir.partBrute - heir.droits)),
+      exonerated: heir.droits === 0,
+    })),
+  };
+}
+
+function buildChronologySlide(data: SuccessionData): SuccessionChronologySlideSpec {
+  const chronologie = data.predecesChronologie;
+  if (!chronologie || !chronologie.applicable || !chronologie.step1 || !chronologie.step2) {
+    return {
+      type: 'succession-chronology',
+      title: 'Chronologie des décès',
+      subtitle: 'Succession directe simulée',
+      applicable: false,
+      orderLabel: chronologie ? orderLabel(chronologie.order) : 'Chronologie non transmise',
+      steps: [buildDirectChronologyStep(data)],
+      totalDroits: fmt(data.totalDroits),
+      notes: chronologie?.warnings?.slice(0, 4) ?? [
+        "La chronologie en deux décès n'est pas retenue pour cette situation.",
+      ],
+    };
   }
 
-  const lines: string[] = [
-    `- Ordre simule: ${orderLabel(data.order)}`,
-    `- Chronologie retenue comme source principale: ${data.applicable ? 'Oui' : 'Non'}`,
-  ];
+  return {
+    type: 'succession-chronology',
+    title: 'Chronologie des décès',
+    subtitle: 'Simulation du premier décès puis du second décès',
+    applicable: true,
+    orderLabel: orderLabel(chronologie.order),
+    steps: [
+      buildChronologyStep(`1er décès — ${chronologie.firstDecedeLabel}`, 'Transmission initiale', chronologie.step1),
+      buildChronologyStep(`2e décès — ${chronologie.secondDecedeLabel}`, 'Transmission finale', chronologie.step2),
+    ],
+    totalDroits: fmt(chronologie.totalDroits),
+    notes: chronologie.warnings?.slice(0, 4) ?? [],
+  };
+}
 
-  if (data.societeAcquets && data.societeAcquets.totalValue > 0) {
-    lines.push(
-      `- Societe d'acquets: valeur nette ${fmt(data.societeAcquets.totalValue)}, ` +
-      `part 1er deces ${fmt(data.societeAcquets.firstEstateContribution)}, ` +
-      `part survivant ${fmt(data.societeAcquets.survivorShare)}, ` +
-      `mode ${liquidationModeLabel(data.societeAcquets.liquidationMode)}, ` +
-      `quotes ${Math.round(data.societeAcquets.deceasedQuotePct)}% / ${Math.round(data.societeAcquets.survivorQuotePct)}%`,
-    );
-    if (data.societeAcquets.preciputAmount > 0) {
-      lines.push(`- Societe d'acquets: preciput preleve ${fmt(data.societeAcquets.preciputAmount)}`);
-    }
-    if (data.societeAcquets.survivorAttributionAmount > 0) {
-      lines.push(`- Societe d'acquets: attribution prealable ${fmt(data.societeAcquets.survivorAttributionAmount)}`);
-    }
-    if (data.societeAcquets.attributionIntegrale) {
-      lines.push("- Societe d'acquets: attribution integrale du reliquat au survivant.");
-    }
+function buildHypothesesSlide(
+  assumptions?: string[],
+  chronologie?: SuccessionData['predecesChronologie'],
+): SuccessionHypothesesSlideSpec {
+  const activeHypotheses = buildSuccessionExportActiveHypotheses(assumptions ?? [], chronologie);
+  return {
+    type: 'succession-hypotheses',
+    title: 'Hypothèses retenues',
+    subtitle: "Cadre de l'estimation",
+    items:
+      activeHypotheses.length > 0
+        ? activeHypotheses
+        : ["Aucune hypothèse spécifique n'a été ajoutée à cette simulation."],
+  };
+}
+
+function stepToBeneficiaryRows(
+  step: SuccessionChronologieStep,
+): SuccessionAnnexBeneficiaryRow[] {
+  return (step.beneficiaries ?? []).map((b) => ({
+    label: b.label,
+    capitauxDecesNets: b.capitauxDecesNets ?? 0,
+    droitsAssuranceVie990I: b.droitsAssuranceVie990I ?? 0,
+    droitsSuccession: b.droitsSuccession ?? b.droits,
+    transmissionNetteSuccession: b.transmissionNetteSuccession ?? b.net,
+    exonerated: b.exonerated,
+  }));
+}
+
+function totalRow(rows: SuccessionAnnexBeneficiaryRow[]): SuccessionAnnexBeneficiaryRow {
+  return {
+    label: 'Total',
+    capitauxDecesNets: rows.reduce((s, b) => s + b.capitauxDecesNets, 0),
+    droitsAssuranceVie990I: rows.reduce((s, b) => s + b.droitsAssuranceVie990I, 0),
+    droitsSuccession: rows.reduce((s, b) => s + b.droitsSuccession, 0),
+    transmissionNetteSuccession: rows.reduce((s, b) => s + b.transmissionNetteSuccession, 0),
+    isTotal: true,
+  };
+}
+
+function buildAnnexTableSlide(data: SuccessionData): SuccessionAnnexTableSlideSpec {
+  if (data.annexBeneficiarySteps && data.annexBeneficiarySteps.length > 0) {
+    return {
+      type: 'succession-annex-table',
+      title: 'Détail des droits par bénéficiaire',
+      subtitle: 'Répartition par décès et par bénéficiaire',
+      steps: data.annexBeneficiarySteps,
+    };
   }
 
-  if (data.preciput && (data.preciput.appliedAmount > 0 || data.preciput.selections.length > 0)) {
-    lines.push(
-      `- Preciput ${data.preciput.mode === 'cible' ? 'cible' : 'global'}: montant preleve ${fmt(data.preciput.appliedAmount)}`,
-    );
-    if (data.preciput.usesGlobalFallback) {
-      lines.push("- Preciput: mode de repli global actif faute de selection ciblee compatible.");
-    }
-    data.preciput.selections.forEach((selection) => {
-      lines.push(`- Preciput: ${selection.label} preleve pour ${fmt(selection.appliedAmount)}`);
+  const chronologie = data.predecesChronologie;
+  const steps: SuccessionAnnexStep[] = [];
+
+  if (chronologie?.applicable && chronologie.step1 && chronologie.step2) {
+    const s1 = stepToBeneficiaryRows(chronologie.step1);
+    steps.push({
+      title: `1er décès — ${chronologie.firstDecedeLabel}`,
+      beneficiaries: [...s1, totalRow(s1)],
+    });
+    const s2 = stepToBeneficiaryRows(chronologie.step2);
+    steps.push({
+      title: `2e décès — ${chronologie.secondDecedeLabel}`,
+      beneficiaries: [...s2, totalRow(s2)],
+    });
+  } else {
+    const rows: SuccessionAnnexBeneficiaryRow[] = data.heritiers.map((h) => ({
+      label: LIEN_LABELS[h.lien] ?? h.lien,
+      capitauxDecesNets: 0,
+      droitsAssuranceVie990I: 0,
+      droitsSuccession: h.droits,
+      transmissionNetteSuccession: Math.max(0, h.partBrute - h.droits),
+    }));
+    steps.push({
+      title: 'Succession directe simulée',
+      beneficiaries: [...rows, totalRow(rows)],
     });
   }
 
-  if (data.participationAcquets) {
-    if (!data.participationAcquets.active) {
-      lines.push("- Participation aux acquets: configuration inactive, calcul conserve en separation de biens.");
-    } else {
-      lines.push(
-        `- Participation aux acquets: patrimoines originaires ${fmt(data.participationAcquets.patrimoineOriginaireEpoux1)} / ${fmt(data.participationAcquets.patrimoineOriginaireEpoux2)}, ` +
-        `patrimoines finals ${fmt(data.participationAcquets.patrimoineFinalEpoux1)} / ${fmt(data.participationAcquets.patrimoineFinalEpoux2)}, ` +
-        `acquets nets ${fmt(data.participationAcquets.acquetsEpoux1)} / ${fmt(data.participationAcquets.acquetsEpoux2)}, ` +
-        `creance ${fmt(data.participationAcquets.creanceAmount)}`,
-      );
-      if (data.participationAcquets.creditor && data.participationAcquets.debtor) {
-        lines.push(
-          `- Participation aux acquets: ${data.participationAcquets.debtor} doit ${fmt(data.participationAcquets.creanceAmount)} a ${data.participationAcquets.creditor} (quote ${Math.round(data.participationAcquets.quoteAppliedPct)}%).`,
-        );
-      }
-    }
-  }
-
-  if (data.interMassClaims && data.interMassClaims.totalAppliedAmount > 0) {
-    lines.push(
-      `- Recompenses / creances entre masses: ${fmt(data.interMassClaims.totalAppliedAmount)} appliques sur ${data.interMassClaims.claims.filter((claim) => claim.appliedAmount > 0).length} ecriture(s).`,
-    );
-    data.interMassClaims.claims
-      .filter((claim) => claim.appliedAmount > 0)
-      .slice(0, 4)
-      .forEach((claim) => {
-        lines.push(
-          `- ${claim.label ?? claim.kind}: ${fmt(claim.appliedAmount)} de ${claim.fromPocket} vers ${claim.toPocket}.`,
-        );
-      });
-  }
-
-  if (data.affectedLiabilities && data.affectedLiabilities.totalAmount > 0) {
-    lines.push(`- Passif affecte: ${fmt(data.affectedLiabilities.totalAmount)} rattaches a une ou plusieurs masses.`);
-  }
-
-  if (data.applicable && data.step1 && data.step2) {
-    lines.push(
-      `- Étape 1 (${data.firstDecedeLabel}) - masse totale ${fmt(data.step1.masseTotaleTransmise ?? data.step1.actifTransmis)}, ` +
-      `dont assurance-vie ${fmt(data.step1.assuranceVieTransmise ?? 0)}, ` +
-      `dont PER assurance ${fmt(data.step1.perTransmis ?? 0)}, ` +
-      `dont prévoyance décès ${fmt(data.step1.prevoyanceTransmise ?? 0)}, ` +
-      `part conjoint/partenaire ${fmt(data.step1.partConjoint)}, autres bénéficiaires ${fmt(data.step1.partEnfants)}, droits succession ${fmt(data.step1.droitsEnfants)}` +
-      `${(data.step1.droitsAssuranceVie ?? 0) > 0 ? `, droits assurance-vie ${fmt(data.step1.droitsAssuranceVie ?? 0)}` : ''}` +
-      `${(data.step1.droitsPer ?? 0) > 0 ? `, droits PER ${fmt(data.step1.droitsPer ?? 0)}` : ''}` +
-      `${(data.step1.droitsPrevoyance ?? 0) > 0 ? `, droits prévoyance ${fmt(data.step1.droitsPrevoyance ?? 0)}` : ''}`,
-    );
-    lines.push(...buildChronologieBeneficiaryLines(`Étape 1 (${data.firstDecedeLabel})`, data.step1.beneficiaries));
-    lines.push(
-      `- Étape 2 (${data.secondDecedeLabel}) - masse totale ${fmt(data.step2.masseTotaleTransmise ?? data.step2.actifTransmis)}, ` +
-      `dont assurance-vie ${fmt(data.step2.assuranceVieTransmise ?? 0)}, ` +
-      `dont PER assurance ${fmt(data.step2.perTransmis ?? 0)}, ` +
-      `dont prévoyance décès ${fmt(data.step2.prevoyanceTransmise ?? 0)}, ` +
-      `part conjoint/partenaire ${fmt(data.step2.partConjoint)}, autres bénéficiaires ${fmt(data.step2.partEnfants)}, droits succession ${fmt(data.step2.droitsEnfants)}` +
-      `${(data.step2.droitsAssuranceVie ?? 0) > 0 ? `, droits assurance-vie ${fmt(data.step2.droitsAssuranceVie ?? 0)}` : ''}` +
-      `${(data.step2.droitsPer ?? 0) > 0 ? `, droits PER ${fmt(data.step2.droitsPer ?? 0)}` : ''}` +
-      `${(data.step2.droitsPrevoyance ?? 0) > 0 ? `, droits prévoyance ${fmt(data.step2.droitsPrevoyance ?? 0)}` : ''}`,
-    );
-    lines.push(...buildChronologieBeneficiaryLines(`Étape 2 (${data.secondDecedeLabel})`, data.step2.beneficiaries));
-    lines.push(`- Total cumulé des droits (2 décès): ${fmt(data.totalDroits)}`);
-    if (typeof data.assuranceVieTotale === 'number' && data.assuranceVieTotale > 0) {
-      lines.push(`- Capitaux assurance-vie saisis: ${fmt(data.assuranceVieTotale)}`);
-    }
-    if (typeof data.perTotale === 'number' && data.perTotale > 0) {
-      lines.push(`- Capitaux PER assurance saisis: ${fmt(data.perTotale)}`);
-    }
-    if (typeof data.prevoyanceTotale === 'number' && data.prevoyanceTotale > 0) {
-      lines.push(`- Capitaux prévoyance décès saisis: ${fmt(data.prevoyanceTotale)}`);
-    }
-  } else {
-    lines.push('- Chronologie 2 décès non retenue comme source principale pour la situation saisie');
-  }
-
-  if (data.warnings && data.warnings.length > 0) {
-    lines.push('');
-    lines.push('Avertissements:');
-    data.warnings.slice(0, 4).forEach((warning) => lines.push(`- ${warning}`));
-  }
-
-  return lines.join('\n');
+  return {
+    type: 'succession-annex-table',
+    title: 'Détail des droits par bénéficiaire',
+    subtitle: 'Répartition par décès et par bénéficiaire',
+    steps,
+  };
 }
 
-function buildAssumptionsBody(
-  assumptions?: string[],
-  chronologie?: SuccessionData['predecesChronologie'],
-): string {
-  const fallback = [
-    '- Bareme des droits de mutation a titre gratuit en vigueur (CGI Art. 777)',
-    '- Abattement en ligne directe: 100 000 EUR par enfant (CGI Art. 779)',
-    '- Exoneration totale du conjoint survivant (CGI Art. 796-0 bis)',
-    '- Estimation hors donations anterieures; assurance-vie et PER assurance ajoutes a la masse transmise affichee',
-    "- Les montants sont arrondis a l'euro le plus proche",
-  ];
-
-  const activeHypotheses = buildSuccessionExportActiveHypotheses(assumptions ?? [], chronologie);
-  const lines = activeHypotheses.length > 0
-    ? activeHypotheses.map((assumption) => `- ${assumption}`)
-    : fallback;
-
-  return lines.join('\n');
+function buildAssetAnnexSlide(
+  assetAnnex: SuccessionData['assetAnnex'],
+): SuccessionAssetAnnexSlideSpec | null {
+  if (!assetAnnex || assetAnnex.columns.length === 0 || assetAnnex.rows.length === 0) return null;
+  return {
+    type: 'succession-annex-assets',
+    title: 'Détail des actifs saisis',
+    subtitle: 'Répartition par personne et par masse patrimoniale',
+    ...assetAnnex,
+  };
 }
 
 export function buildSuccessionStudyDeck(
@@ -357,52 +442,47 @@ export function buildSuccessionStudyDeck(
     });
   }
 
-  const slides: Array<ChapterSlideSpec | SuccessionSynthesisSlideSpec | ContentSlideSpec> = [
+  const slides: Array<
+    | ChapterSlideSpec
+    | SuccessionFamilyContextSlideSpec
+    | SuccessionSynthesisSlideSpec
+    | SuccessionChronologySlideSpec
+    | SuccessionAnnexTableSlideSpec
+    | SuccessionAssetAnnexSlideSpec
+    | SuccessionHypothesesSlideSpec
+  > = [
+      {
+        type: 'chapter',
+        title: 'Objectifs et contexte',
+        subtitle: 'Estimation des droits de succession',
+        body: 'Vous souhaitez estimer les droits de mutation à titre gratuit applicables à votre situation patrimoniale.',
+        chapterImageIndex: pickChapterImage('succession', 0),
+      },
+    ];
+
+  const familyContextSlide = buildFamilyContextSlide(data.familyContext);
+  if (familyContextSlide) slides.push(familyContextSlide);
+
+  const assetAnnexSlide = buildAssetAnnexSlide(data.assetAnnex);
+
+  slides.push(
+    buildSynthesisSlide(data),
+    buildChronologySlide(data),
     {
       type: 'chapter',
-      title: 'Objectifs et contexte',
-      subtitle: 'Estimation des droits de succession',
-      body: 'Vous souhaitez estimer les droits de mutation à titre gratuit applicables à votre situation patrimoniale.',
-      chapterImageIndex: pickChapterImage('succession', 0),
-    },
-    {
-      type: 'succession-synthesis',
-      actifNetSuccession: data.actifNetSuccession,
-      totalDroits: data.totalDroits,
-      tauxMoyenGlobal: data.tauxMoyenGlobal,
-      heritiers: data.heritiers,
-    },
-    {
-      type: 'content',
-      title: 'Chronologie des décès',
-      subtitle: 'Simulation du 1er décès puis du 2e décès',
-      body: buildChronologieBody(data.predecesChronologie),
-    },
-    {
-      type: 'chapter',
-      title: 'Hypothèses et limites',
-      subtitle: 'Cadre de l\'estimation',
-      body: 'Les résultats ci-dessus reposent sur les hypothèses détaillées ci-après.',
+      title: 'Annexes',
+      subtitle: 'Informations complémentaires',
+      body: 'Retrouvez ci-après le détail des droits, les hypothèses retenues et la ventilation des actifs saisis.',
       chapterImageIndex: pickChapterImage('succession', 1),
     },
-    {
-      type: 'content',
-      title: 'Hypothèses retenues',
-      subtitle: 'Barème DMTG 2024',
-      body: [
-        '- Barème des droits de mutation à titre gratuit en vigueur (CGI Art. 777)',
-        '- Abattement en ligne directe : 100 000 EUR par enfant (CGI Art. 779)',
-        '- Exonération totale du conjoint survivant (CGI Art. 796-0 bis)',
-        '- Estimation hors donations antérieures ; assurance-vie et PER assurance ajoutés à la masse transmise affichée',
-        '- Les montants sont arrondis à l\'euro le plus proche',
-      ].join('\n'),
-    },
-  ];
+    buildAnnexTableSlide(data),
+  );
 
-  const lastSlide = slides[slides.length - 1];
-  if (lastSlide?.type === 'content') {
-    lastSlide.body = buildAssumptionsBody(data.assumptions, data.predecesChronologie);
+  if (assetAnnexSlide) {
+    slides.push(assetAnnexSlide);
   }
+
+  slides.push(buildHypothesesSlide(data.assumptions, data.predecesChronologie));
 
   return {
     cover: {

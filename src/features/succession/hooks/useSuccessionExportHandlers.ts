@@ -16,13 +16,18 @@ interface UseSuccessionExportHandlersInput {
   canExportSimplified: boolean;
   canExportCurrentMode: boolean;
   pptxColors: ThemeColorsForExport;
+
   cabinetLogo: string | undefined;
   logoPlacement: LogoPlacement | undefined;
   chainageExportPayload: Parameters<typeof exportSuccessionPptx>[0]['predecesChronologie'];
+  annexBeneficiarySteps: Parameters<typeof exportSuccessionPptx>[0]['annexBeneficiarySteps'];
+  familyContext: Parameters<typeof exportSuccessionPptx>[0]['familyContext'];
+  assetAnnex: Parameters<typeof exportSuccessionPptx>[0]['assetAnnex'];
   displayUsesChainage: boolean;
   directDisplayResult: { detailHeritiers?: unknown[]; totalDroits: number } | null | undefined;
   derivedMasseTransmise: number;
   synthDonutTransmis: number;
+
   derivedTotalDroits: number;
   exportHeirs: Array<{ lien: LienParente; partSuccession: number }>;
   assumptions: string[];
@@ -36,6 +41,9 @@ export function useSuccessionExportHandlers({
   cabinetLogo,
   logoPlacement,
   chainageExportPayload,
+  annexBeneficiarySteps,
+  familyContext,
+  assetAnnex,
   displayUsesChainage,
   directDisplayResult,
   derivedMasseTransmise,
@@ -61,6 +69,9 @@ export function useSuccessionExportHandlers({
               : 0,
             heritiers: displayUsesChainage ? [] : (directDisplayResult?.detailHeritiers ?? []) as Parameters<typeof exportSuccessionPptx>[0]['heritiers'],
             predecesChronologie: chainageExportPayload,
+            annexBeneficiarySteps,
+            familyContext,
+            assetAnnex,
             assumptions,
           },
           pptxColors,
@@ -77,6 +88,9 @@ export function useSuccessionExportHandlers({
     cabinetLogo,
     logoPlacement,
     chainageExportPayload,
+    annexBeneficiarySteps,
+    familyContext,
+    assetAnnex,
     displayUsesChainage,
     directDisplayResult,
     exportMasseTransmise,

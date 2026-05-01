@@ -1,0 +1,223 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`snapshots/succession: PPTX deck spec > buildSuccessionStudyDeck() garde la structure visuelle attendue 1`] = `
+{
+  "cover": {
+    "leftMeta": "<DATE>",
+    "logoPlacement": undefined,
+    "logoUrl": undefined,
+    "rightMeta": "NOM Prénom",
+    "subtitle": "NOM Prénom",
+    "title": "Simulation Succession",
+    "type": "cover",
+  },
+  "end": {
+    "legalText": "Document établi à titre strictement indicatif et dépourvu de valeur contractuelle. Il a été élaboré sur la base des dispositions légales et réglementaires en vigueur à la date de sa remise, lesquelles sont susceptibles d'évoluer.
+
+Les informations qu'il contient sont strictement confidentielles et destinées exclusivement aux personnes expressément autorisées.
+
+Toute reproduction, représentation, diffusion ou rediffusion, totale ou partielle, sur quelque support ou par quelque procédé que ce soit, ainsi que toute vente, revente, retransmission ou mise à disposition de tiers, est strictement encadrée. Le non-respect de ces dispositions est susceptible de constituer une contrefaçon engageant la responsabilité civile et pénale de son auteur, conformément aux articles L335-1 à L335-10 du Code de la propriété intellectuelle.",
+    "type": "end",
+  },
+  "slides": [
+    {
+      "body": "Vous souhaitez estimer les droits de mutation à titre gratuit applicables à votre situation patrimoniale.",
+      "chapterImageIndex": 2,
+      "subtitle": "Estimation des droits de succession",
+      "title": "Objectifs et contexte",
+      "type": "chapter",
+    },
+    {
+      "dispositions": [
+        "Aucune disposition particulière renseignée.",
+      ],
+      "filiation": {
+        "edges": [
+          {
+            "x1": 140,
+            "x2": 180,
+            "y1": 62,
+            "y2": 62,
+          },
+          {
+            "x1": 160,
+            "x2": 160,
+            "y1": 62,
+            "y2": 120,
+          },
+        ],
+        "groups": [
+          {
+            "h": 40,
+            "w": 104,
+            "x": 108,
+            "y": 108,
+          },
+        ],
+        "nodes": [
+          {
+            "id": "epoux1",
+            "kind": "epoux",
+            "label": "Époux 1",
+            "x": 60,
+            "y": 50,
+          },
+          {
+            "id": "epoux2",
+            "kind": "epoux",
+            "label": "Époux 2",
+            "x": 180,
+            "y": 50,
+          },
+          {
+            "id": "enfant-1",
+            "kind": "enfant_commun",
+            "label": "E1",
+            "x": 120,
+            "y": 120,
+          },
+        ],
+        "svgHeight": 180,
+        "svgWidth": 300,
+      },
+      "regimeLabel": "Communauté réduite aux acquêts (Légal depuis 1966)",
+      "situationLabel": "Marié(e)",
+      "subtitle": "Situation civile, régime matrimonial et filiation",
+      "title": "Contexte familial et dispositions",
+      "type": "succession-family-context",
+    },
+    {
+      "heroCaption": "Estimation sur la succession directe simulée",
+      "heroLabel": "Droits estimés",
+      "heroValue": "6 388 €",
+      "kpis": [
+        {
+          "icon": "money",
+          "label": "Masse transmise",
+          "value": "500 000 €",
+        },
+        {
+          "icon": "balance",
+          "label": "Droits cumulés",
+          "value": "6 388 €",
+        },
+        {
+          "icon": "percent",
+          "label": "Taux moyen",
+          "value": "1,28 %",
+        },
+        {
+          "icon": "checklist",
+          "label": "Bénéficiaires",
+          "value": "3",
+        },
+      ],
+      "subtitle": "Principaux indicateurs successoraux",
+      "title": "Synthèse de votre simulation",
+      "type": "succession-synthesis",
+    },
+    {
+      "applicable": false,
+      "notes": [
+        "Succession directe du défunt simulé.",
+      ],
+      "orderLabel": "Époux 1 puis Époux 2",
+      "steps": [
+        {
+          "autresBeneficiaires": "250 000 €",
+          "beneficiaries": [
+            {
+              "exonerated": true,
+              "gross": "250 000 €",
+              "label": "Conjoint",
+              "net": "250 000 €",
+              "tax": "Exonéré",
+            },
+            {
+              "exonerated": false,
+              "gross": "125 000 €",
+              "label": "Enfant",
+              "net": "121 806 €",
+              "tax": "3 194 €",
+            },
+            {
+              "exonerated": false,
+              "gross": "125 000 €",
+              "label": "Enfant",
+              "net": "121 806 €",
+              "tax": "3 194 €",
+            },
+          ],
+          "droitsSuccession": "6 388 €",
+          "masseTransmise": "500 000 €",
+          "partConjoint": "250 000 €",
+          "subtitle": "Transmission issue de la situation simulée",
+          "title": "Succession directe",
+        },
+      ],
+      "subtitle": "Succession directe simulée",
+      "title": "Chronologie des décès",
+      "totalDroits": "6 388 €",
+      "type": "succession-chronology",
+    },
+    {
+      "body": "Retrouvez ci-après le détail des droits, les hypothèses retenues et la ventilation des actifs saisis.",
+      "chapterImageIndex": 6,
+      "subtitle": "Informations complémentaires",
+      "title": "Annexes",
+      "type": "chapter",
+    },
+    {
+      "steps": [
+        {
+          "beneficiaries": [
+            {
+              "capitauxDecesNets": 0,
+              "droitsAssuranceVie990I": 0,
+              "droitsSuccession": 0,
+              "label": "Conjoint",
+              "transmissionNetteSuccession": 250000,
+            },
+            {
+              "capitauxDecesNets": 0,
+              "droitsAssuranceVie990I": 0,
+              "droitsSuccession": 3194,
+              "label": "Enfant",
+              "transmissionNetteSuccession": 121806,
+            },
+            {
+              "capitauxDecesNets": 0,
+              "droitsAssuranceVie990I": 0,
+              "droitsSuccession": 3194,
+              "label": "Enfant",
+              "transmissionNetteSuccession": 121806,
+            },
+            {
+              "capitauxDecesNets": 0,
+              "droitsAssuranceVie990I": 0,
+              "droitsSuccession": 6388,
+              "isTotal": true,
+              "label": "Total",
+              "transmissionNetteSuccession": 493612,
+            },
+          ],
+          "title": "Succession directe simulée",
+        },
+      ],
+      "subtitle": "Répartition par décès et par bénéficiaire",
+      "title": "Détail des droits par bénéficiaire",
+      "type": "succession-annex-table",
+    },
+    {
+      "items": [
+        "Simulation sans donations antérieures saisies.",
+        "Pour cette situation, la chronologie 2 décès n’est pas retenue comme source principale ; l’export restitue la succession directe affichée.",
+        "Succession directe du défunt simulé.",
+      ],
+      "subtitle": "Cadre de l'estimation",
+      "title": "Hypothèses retenues",
+      "type": "succession-hypotheses",
+    },
+  ],
+}
+`;

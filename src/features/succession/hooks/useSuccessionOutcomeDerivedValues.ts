@@ -9,9 +9,7 @@ import {
 } from '../successionDisplay';
 import type { buildSuccessionPatrimonialAnalysis } from '../successionPatrimonial';
 import type { buildSuccessionPerFiscalAnalysis } from '../successionPerFiscal';
-import type {
-  buildSuccessionPrevoyanceFiscalAnalysis,
-} from '../successionPrevoyanceFiscal';
+import type { buildSuccessionPrevoyanceFiscalAnalysis } from '../successionPrevoyanceFiscal';
 import type { buildSuccessionPredecesAnalysis } from '../successionPredeces';
 import type { SuccessionChainOrder } from '../successionChainage';
 import type { SuccessionFiscalSnapshot } from '../successionFiscalContext';
@@ -20,9 +18,14 @@ import type {
   DEFAULT_SUCCESSION_DEVOLUTION_CONTEXT,
   DEFAULT_SUCCESSION_LIQUIDATION_CONTEXT,
   DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT,
+  SuccessionAssetDetailEntry,
+  SuccessionAssuranceVieEntry,
   FamilyMember,
   SuccessionDonationEntry,
   SuccessionEnfant,
+  SuccessionGroupementFoncierEntry,
+  SuccessionPerEntry,
+  SuccessionPrevoyanceDecesEntry,
 } from '../successionDraft';
 import type { SuccessionAssetTransmissionBasis } from '../successionTransmissionBasis';
 import { buildSuccessionAssumptions } from '../successionAssumptions';
@@ -32,6 +35,11 @@ import {
   buildUnifiedBeneficiaryBlocks,
   hasSuccessionSecondSubject,
 } from './useSuccessionOutcomeDerivedValues.helpers';
+import {
+  buildSuccessionAnnexBeneficiarySteps,
+  buildSuccessionAssetAnnexExport,
+  buildSuccessionFamilyContextExport,
+} from './useSuccessionOutcomePptx.helpers';
 import { buildSuccessionChainageExportPayload } from './useSuccessionOutcomeExportPayload';
 import { buildSuccessionOutcomeInsuranceLines } from './useSuccessionOutcomeInsuranceLines';
 
@@ -40,6 +48,11 @@ interface UseSuccessionOutcomeDerivedValuesInput {
   liquidationContext: typeof DEFAULT_SUCCESSION_LIQUIDATION_CONTEXT;
   devolutionContext: typeof DEFAULT_SUCCESSION_DEVOLUTION_CONTEXT;
   patrimonialContext: typeof DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT;
+  assetEntries: SuccessionAssetDetailEntry[];
+  groupementFoncierEntries: SuccessionGroupementFoncierEntry[];
+  assuranceVieEntries: SuccessionAssuranceVieEntry[];
+  perEntries: SuccessionPerEntry[];
+  prevoyanceDecesEntries: SuccessionPrevoyanceDecesEntry[];
   fiscalSnapshot: SuccessionFiscalSnapshot;
   chainOrder: SuccessionChainOrder;
   canExport: boolean;
@@ -61,6 +74,8 @@ interface UseSuccessionOutcomeDerivedValuesInput {
   transmissionBasis: SuccessionAssetTransmissionBasis;
   abattementResidencePrincipale: boolean;
   donationsContext: SuccessionDonationEntry[];
+  assetPocketOptions: Array<{ value: string; label: string }>;
+  assuranceViePartyOptions: Array<{ value: 'epoux1' | 'epoux2'; label: string }>;
   assuranceVieByAssure: Record<'epoux1' | 'epoux2', number>;
   perByAssure: Record<'epoux1' | 'epoux2', number>;
   prevoyanceByAssure: Record<'epoux1' | 'epoux2', number>;
@@ -83,6 +98,11 @@ export function useSuccessionOutcomeDerivedValues({
   liquidationContext,
   devolutionContext,
   patrimonialContext,
+  assetEntries,
+  groupementFoncierEntries,
+  assuranceVieEntries,
+  perEntries,
+  prevoyanceDecesEntries,
   fiscalSnapshot,
   chainOrder,
   canExport,
@@ -104,6 +124,8 @@ export function useSuccessionOutcomeDerivedValues({
   transmissionBasis,
   abattementResidencePrincipale,
   donationsContext,
+  assetPocketOptions,
+  assuranceViePartyOptions,
   assuranceVieByAssure,
   perByAssure,
   prevoyanceByAssure,
@@ -356,6 +378,59 @@ export function useSuccessionOutcomeDerivedValues({
     [transmissionRows, insuranceLines, displayUsesChainage],
   );
 
+  const annexBeneficiarySteps = useMemo(
+    () => buildSuccessionAnnexBeneficiarySteps({
+      transmissionRows,
+      insurance990IStep1: insuranceLines.byStep.step1.lines990I,
+      insurance757BStep1: insuranceLines.byStep.step1.lines757B,
+      insurance990IStep2: insuranceLines.byStep.step2.lines990I,
+      insurance757BStep2: insuranceLines.byStep.step2.lines757B,
+      displayUsesChainage,
+      firstDecedeLabel: chainageAnalysis.firstDecedeLabel,
+      secondDecedeLabel: chainageAnalysis.secondDecedeLabel,
+    }),
+    [
+      transmissionRows,
+      insuranceLines,
+      displayUsesChainage,
+      chainageAnalysis.firstDecedeLabel,
+      chainageAnalysis.secondDecedeLabel,
+    ],
+  );
+
+  const familyContext = useMemo(
+    () => buildSuccessionFamilyContextExport({
+      civilContext,
+      devolutionContext,
+      patrimonialContext,
+      donationsContext,
+      enfantsContext,
+      familyMembers,
+    }),
+    [civilContext, devolutionContext, patrimonialContext, donationsContext, enfantsContext, familyMembers],
+  );
+
+  const assetAnnex = useMemo(
+    () => buildSuccessionAssetAnnexExport({
+      assetEntries,
+      groupementFoncierEntries,
+      assuranceVieEntries,
+      perEntries,
+      prevoyanceDecesEntries,
+      assetPocketOptions,
+      assuranceViePartyOptions,
+    }),
+    [
+      assetEntries,
+      groupementFoncierEntries,
+      assuranceVieEntries,
+      perEntries,
+      prevoyanceDecesEntries,
+      assetPocketOptions,
+      assuranceViePartyOptions,
+    ],
+  );
+
   const chainageExportPayload = useMemo(
     () => buildSuccessionChainageExportPayload({
       displayUsesChainage,
@@ -436,7 +511,7 @@ export function useSuccessionOutcomeDerivedValues({
     avFiscalAnalysis.warnings,
     perFiscalAnalysis.warnings,
     prevoyanceFiscalAnalysis.warnings,
-    ]);
+  ]);
   const assumptions = useMemo(() => buildSuccessionAssumptions({
     fiscalSnapshot,
     attentions,
@@ -475,6 +550,9 @@ export function useSuccessionOutcomeDerivedValues({
     insurance990ILines,
     insurance757BLines,
     unifiedBlocks,
+    annexBeneficiarySteps,
+    familyContext,
+    assetAnnex: assetAnnex ?? undefined,
     chainageExportPayload,
     totalActifsLiquidation,
     canExportSimplified,

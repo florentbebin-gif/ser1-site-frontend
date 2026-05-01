@@ -1,6 +1,6 @@
 /**
  * Study Deck Export Orchestrator
- * 
+ *
  * Main entry point for exporting PPTX presentations using the Serenity design system.
  * Frontend-only (browser), no Node backend required.
  */
@@ -18,7 +18,12 @@ import type {
   CreditLoanSynthesisSlideSpec,
   CreditAnnexeSlideSpec,
   CreditAmortizationSlideSpec,
+  SuccessionFamilyContextSlideSpec,
   SuccessionSynthesisSlideSpec,
+  SuccessionChronologySlideSpec,
+  SuccessionAnnexTableSlideSpec,
+  SuccessionAssetAnnexSlideSpec,
+  SuccessionHypothesesSlideSpec,
   PlacementSynthesisSlideSpec,
   PlacementDetailSlideSpec,
   PlacementHypothesesSlideSpec,
@@ -40,6 +45,11 @@ import { buildCreditLoanSynthesis } from '../slides/buildCreditLoanSynthesis';
 import { buildCreditAnnexe } from '../slides/buildCreditAnnexe';
 import { buildCreditAmortization } from '../slides/buildCreditAmortization';
 import { buildSuccessionSynthesis } from '../slides/buildSuccessionSynthesis';
+import { buildSuccessionFamilyContext } from '../slides/buildSuccessionFamilyContext';
+import { buildSuccessionChronology } from '../slides/buildSuccessionChronology';
+import { buildSuccessionAnnexTable } from '../slides/buildSuccessionAnnexTable';
+import { buildSuccessionAssetAnnex } from '../slides/buildSuccessionAssetAnnex';
+import { buildSuccessionHypotheses } from '../slides/buildSuccessionHypotheses';
 import { buildPlacementSynthesis } from '../slides/buildPlacementSynthesis';
 import { buildPlacementDetail } from '../slides/buildPlacementDetail';
 import { buildPlacementHypotheses } from '../slides/buildPlacementHypotheses';
@@ -59,7 +69,7 @@ import {
 /**
  * Default footer disclaimer (verbatim as specified)
  */
-const DEFAULT_DISCLAIMER = 
+const DEFAULT_DISCLAIMER =
   "Document non contractuel établi en fonction des dispositions fiscales ou sociales en vigueur à la date des présentes";
 
 const PPTX_KEY_FIELD_PATTERN = /title|subtitle|label|name|total|net|tmi|rate|capital|montant|tax|duree|mensualite|cout|actif|droits|versement|rente|parts|status|location|year|periode|index|count|value/i;
@@ -162,12 +172,12 @@ async function preloadAssets(
   chapterImages: Map<number, string>;
 }> {
   const chapterImages = new Map<number, string>();
-  
+
   // Load logo if specified
-  const logoDataUri = spec.cover.logoUrl 
+  const logoDataUri = spec.cover.logoUrl
     ? await loadLogoDataUriSafe(spec.cover.logoUrl)
     : undefined;
-  
+
   // Collect unique chapter image indices
   const chapterIndices = new Set<number>();
   for (const slide of spec.slides) {
@@ -175,7 +185,7 @@ async function preloadAssets(
       chapterIndices.add(slide.chapterImageIndex);
     }
   }
-  
+
   // Load chapter images in parallel
   const loadPromises = Array.from(chapterIndices).map(async (index) => {
     try {
@@ -185,15 +195,15 @@ async function preloadAssets(
       console.error(`[PPTX Export] Failed to load chapter image ${index}:`, error);
     }
   });
-  
+
   await Promise.all(loadPromises);
-  
+
   return { logoDataUri, chapterImages };
 }
 
 /**
  * Export a study deck to PPTX
- * 
+ *
  * @param spec - Study deck specification
  * @param uiSettings - UI theme settings (ThemeProvider format: c1..c10)
  * @param options - Export options
@@ -206,7 +216,7 @@ export async function exportStudyDeck(
 ): Promise<Blob> {
   // 1. Build theme from UI settings
   const theme = getPptxThemeFromUiSettings(uiSettings);
-  
+
   // 2. Build export context
   const ctx: ExportContext = {
     theme,
@@ -217,17 +227,17 @@ export async function exportStudyDeck(
     coverLeftMeta: options.coverLeftMeta,
     coverRightMeta: options.coverRightMeta,
   };
-  
+
   // 3. Pre-load assets
   const { logoDataUri, chapterImages } = await preloadAssets(spec);
-  
+
   // 4. Create presentation
   const pptx = new PptxGenJS();
   pptx.layout = SLIDE_SIZE.layout;
   pptx.title = spec.cover.title;
   pptx.author = 'SER1 - Serenity';
   pptx.company = 'Cabinet CGP';
-  
+
   // 4b. Define theme colors so user can use them in PowerPoint
   // This adds all 10 colors to the PPTX theme palette
   pptx.defineLayout({
@@ -235,11 +245,11 @@ export async function exportStudyDeck(
     width: 13.3333,
     height: 7.5,
   });
-  
+
   // Define slide masters (COVER, CHAPTER, CONTENT, END)
   // Masters provide backgrounds; builders add dynamic content
   defineSlideMasters(pptx, theme);
-  
+
   // Set theme fonts
   try {
     pptx.theme = {
@@ -250,26 +260,26 @@ export async function exportStudyDeck(
     // Theme definition is optional, continue if not supported
     console.warn('[PPTX Export] Theme colors not fully supported:', e);
   }
-  
+
   // 5. Build slides
   let slideIndex = 1;
-  
+
   // Cover slide (no slide number in footer typically, but we track index)
   buildCover(pptx, spec.cover, ctx, logoDataUri);
   slideIndex++;
-  
+
   // Content/Chapter slides
   for (const slideSpec of spec.slides) {
     if (slideSpec.type === 'chapter') {
       const chapterSpec = slideSpec as ChapterSlideSpec;
       const imageDataUri = chapterImages.get(chapterSpec.chapterImageIndex);
-      
+
       if (!imageDataUri) {
         console.warn(`[PPTX Export] Missing chapter image ${chapterSpec.chapterImageIndex}`);
         // Skip slide or use fallback
         continue;
       }
-      
+
       buildChapter(pptx, chapterSpec, ctx, imageDataUri, slideIndex);
     } else if (slideSpec.type === 'content') {
       buildContent(pptx, slideSpec as ContentSlideSpec, ctx, slideIndex);
@@ -353,9 +363,19 @@ export async function exportStudyDeck(
         pageIndex: amortSpec.pageIndex,
         totalPages: amortSpec.totalPages,
       }, ctx.theme, ctx, slideIndex);
+    } else if (slideSpec.type === 'succession-family-context') {
+      buildSuccessionFamilyContext(pptx, slideSpec as SuccessionFamilyContextSlideSpec, ctx, slideIndex);
     } else if (slideSpec.type === 'succession-synthesis') {
       // Succession Synthesis slide (P1-02)
       buildSuccessionSynthesis(pptx, slideSpec as SuccessionSynthesisSlideSpec, ctx, slideIndex);
+    } else if (slideSpec.type === 'succession-chronology') {
+      buildSuccessionChronology(pptx, slideSpec as SuccessionChronologySlideSpec, ctx, slideIndex);
+    } else if (slideSpec.type === 'succession-annex-table') {
+      buildSuccessionAnnexTable(pptx, slideSpec as SuccessionAnnexTableSlideSpec, ctx, slideIndex);
+    } else if (slideSpec.type === 'succession-annex-assets') {
+      buildSuccessionAssetAnnex(pptx, slideSpec as SuccessionAssetAnnexSlideSpec, ctx, slideIndex);
+    } else if (slideSpec.type === 'succession-hypotheses') {
+      buildSuccessionHypotheses(pptx, slideSpec as SuccessionHypothesesSlideSpec, ctx, slideIndex);
     } else if (slideSpec.type === 'placement-synthesis') {
       // Placement Synthesis slide — premium 2-panel comparison
       buildPlacementSynthesis(pptx, slideSpec as PlacementSynthesisSlideSpec, ctx, slideIndex);
@@ -378,27 +398,27 @@ export async function exportStudyDeck(
       // PER — déclaration 2042 et prochain avis IR
       buildPerProjectionTable(pptx, slideSpec as PerProjectionTableSlideSpec, ctx, slideIndex);
     }
-    
+
     slideIndex++;
   }
-  
+
   // End slide
   buildEnd(pptx, spec.end, ctx, slideIndex);
-  
+
   // 6. Write to blob (browser-compatible)
   const rawBlob = await pptx.write({ outputType: 'blob' }) as Blob;
-  
+
   // 7. Inject custom theme colors into the PPTX
   // This patches the ppt/theme/theme1.xml to include our 10 colors
   // so they appear in PowerPoint's theme color palette
   const blob = await injectThemeColors(rawBlob, uiSettings, 'Serenity');
-  
+
   return blob;
 }
 
 /**
  * Download a PPTX blob as a file
- * 
+ *
  * @param blob - PPTX blob
  * @param filename - Output filename (should end with .pptx)
  */
@@ -415,7 +435,7 @@ export function downloadPptx(blob: Blob, filename: string): void {
 
 /**
  * Export and immediately download a study deck
- * 
+ *
  * @param spec - Study deck specification
  * @param uiSettings - UI theme settings
  * @param filename - Output filename
