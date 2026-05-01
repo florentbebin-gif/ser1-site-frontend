@@ -139,14 +139,11 @@ describe('Succession export - hypothèses actives', () => {
       THEME_COLORS,
     );
 
-    const assumptionsSlide = spec.slides.find(
-      (slide) => slide.type === 'content' && 'title' in slide && slide.title === 'Hypothèses retenues',
-    );
+    const hypothesesSlide = spec.slides.find((slide) => slide.type === 'succession-hypotheses');
 
-    expect(assumptionsSlide).toBeDefined();
-    if (assumptionsSlide && 'body' in assumptionsSlide) {
-      expect(assumptionsSlide.body).toContain('Participation aux acquêts');
-      expect(assumptionsSlide.body).toContain('créance simplifiée');
+    expect(hypothesesSlide).toBeDefined();
+    if (hypothesesSlide?.type === 'succession-hypotheses') {
+      expect(hypothesesSlide.items.join(' ')).toContain('Participation aux acquêts');
     }
   });
 });

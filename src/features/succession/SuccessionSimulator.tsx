@@ -226,6 +226,9 @@ export default function SuccessionSimulator() {
     cabinetLogo,
     logoPlacement,
     chainageExportPayload: derived.chainageExportPayload,
+    annexBeneficiarySteps: derived.annexBeneficiarySteps,
+    familyContext: derived.familyContext,
+    assetAnnex: derived.assetAnnex,
     displayUsesChainage: derived.displayUsesChainage,
     directDisplayResult: derived.directDisplayAnalysis.result,
     derivedMasseTransmise: derived.derivedMasseTransmise,
@@ -326,7 +329,7 @@ export default function SuccessionSimulator() {
       if (simId && simId !== 'succession') return;
       handleReset();
     });
-    return off || (() => {});
+    return off || (() => { });
   }, [handleReset]);
 
   // Synchroniser actifNet dans le moteur de calcul

@@ -13,6 +13,7 @@ import { DEFAULT_COLORS } from '../../../settings/theme';
 import { exportSuccessionXlsx } from '../export/successionXlsx';
 
 const THEME_COLORS = DEFAULT_COLORS;
+type SuccessionStudyData = Parameters<typeof buildSuccessionStudyDeck>[0];
 
 describe('Succession PPTX Export', () => {
   it('builds a valid deck spec without crash', () => {
@@ -144,30 +145,45 @@ describe('Succession PPTX Export', () => {
 
     const synthSlide = spec.slides.find((slide) => slide.type === 'succession-synthesis');
     expect(synthSlide).toBeDefined();
-    const chronologySlide = spec.slides.find(
-      (slide) => slide.type === 'content' && 'title' in slide && slide.title === 'Chronologie des décès',
-    );
-    expect(chronologySlide).toBeDefined();
-    if (chronologySlide && 'body' in chronologySlide) {
-      expect(chronologySlide.body).toContain('Total cumulé des droits');
-      expect(chronologySlide.body).toContain('Bénéficiaires réels');
-      expect(chronologySlide.body).toContain('Conjoint survivant');
-      expect(chronologySlide.body).toContain('prévoyance décès');
-      expect(chronologySlide.body).toContain("Societe d'acquets");
-      expect(chronologySlide.body).toContain('Preciput');
-      expect(chronologySlide.body).toContain('Participation aux acquets');
-      expect(chronologySlide.body).toContain('Recompenses / creances entre masses');
-      expect(chronologySlide.body).toContain('Passif affecte');
-      expect(chronologySlide.body).not.toContain('Ordre inverse');
+    if (synthSlide?.type === 'succession-synthesis') {
+      expect(synthSlide.kpis).toHaveLength(4);
+      expect(synthSlide.heroValue).toContain('€');
+      expect('beneficiaries' in synthSlide).toBe(false);
     }
-    const assumptionsSlide = spec.slides.find(
-      (slide) => slide.type === 'content' && 'title' in slide && slide.title === 'HypothÃ¨ses retenues',
-    );
-    const resolvedAssumptionsSlide = assumptionsSlide ?? [...spec.slides].reverse().find((slide) => slide.type === 'content');
-    expect(resolvedAssumptionsSlide).toBeDefined();
-    if (resolvedAssumptionsSlide && 'body' in resolvedAssumptionsSlide) {
-      expect(resolvedAssumptionsSlide.body).toContain('recompenses entre masses');
-      expect(resolvedAssumptionsSlide.body).toContain('passif affecte');
+
+    const chronologySlide = spec.slides.find((slide) => slide.type === 'succession-chronology');
+    expect(chronologySlide).toBeDefined();
+    if (chronologySlide?.type === 'succession-chronology') {
+      expect(chronologySlide.totalDroits).toContain('54');
+      expect(chronologySlide.steps).toHaveLength(2);
+      expect(chronologySlide.steps[0].beneficiaries[0].label).toBe('Conjoint survivant');
+      expect(chronologySlide.steps[0].droitsHorsSuccession).toBeDefined();
+      expect(chronologySlide.notes.join(' ')).toContain('Module simplifié');
+    }
+
+    const annexSlide = spec.slides.find((slide) => slide.type === 'succession-annex-table');
+    expect(annexSlide).toBeDefined();
+    if (annexSlide?.type === 'succession-annex-table') {
+      // cas avec chronologie applicable : 2 étapes
+      expect(annexSlide.steps).toHaveLength(2);
+      expect(annexSlide.steps[0].title).toContain('1er décès');
+      expect(annexSlide.steps[1].title).toContain('2e décès');
+      // chaque étape a des bénéficiaires + une ligne total
+      const step1 = annexSlide.steps[0];
+      expect(step1.beneficiaries.length).toBeGreaterThanOrEqual(2);
+      expect(step1.beneficiaries.some((b) => b.isTotal)).toBe(true);
+      // premier bénéficiaire de l'étape 1 : Conjoint survivant exonéré
+      const conjoint = step1.beneficiaries.find((b) => b.label === 'Conjoint survivant');
+      expect(conjoint).toBeDefined();
+      expect(conjoint?.exonerated).toBe(true);
+      // valeurs numériques réelles (pas de zéros aberrants)
+      expect(step1.beneficiaries[0].transmissionNetteSuccession).toBeGreaterThan(0);
+    }
+
+    const hypothesesSlide = spec.slides.find((slide) => slide.type === 'succession-hypotheses');
+    expect(hypothesesSlide).toBeDefined();
+    if (hypothesesSlide?.type === 'succession-hypotheses') {
+      expect(hypothesesSlide.items.join(' ')).toContain('recompenses entre masses');
     }
   });
 
@@ -200,13 +216,163 @@ describe('Succession PPTX Export', () => {
       THEME_COLORS,
     );
 
-    const chronologySlide = spec.slides.find(
-      (slide) => slide.type === 'content' && 'title' in slide && slide.title === 'Chronologie des décès',
-    );
+    const chronologySlide = spec.slides.find((slide) => slide.type === 'succession-chronology');
     expect(chronologySlide).toBeDefined();
-    if (chronologySlide && 'body' in chronologySlide) {
-      expect(chronologySlide.body).toContain('Chronologie retenue comme source principale: Non');
-      expect(chronologySlide.body).toContain('Chronologie 2 décès non retenue comme source principale');
+    if (chronologySlide?.type === 'succession-chronology') {
+      expect(chronologySlide.applicable).toBe(false);
+      expect(chronologySlide.steps).toHaveLength(1);
+      expect(chronologySlide.steps[0].masseTransmise).not.toBe('—');
+      expect(chronologySlide.steps[0].autresBeneficiaires).not.toBe('—');
+      expect(chronologySlide.notes.join(' ')).toContain('Succession directe du défunt simulé.');
+    }
+
+    const annexSlide = spec.slides.find((slide) => slide.type === 'succession-annex-table');
+    expect(annexSlide).toBeDefined();
+    if (annexSlide?.type === 'succession-annex-table') {
+      // succession directe → 1 seule étape
+      expect(annexSlide.steps).toHaveLength(1);
+      expect(annexSlide.steps[0].title).toContain('Succession directe');
+      // pas d'étapes chronologie
+      expect(annexSlide.steps[0].title).not.toContain('1er décès');
+      // valeurs numériques réelles
+      const dataRows = annexSlide.steps[0].beneficiaries.filter((b) => !b.isTotal);
+      expect(dataRows.every((b) => b.transmissionNetteSuccession > 0)).toBe(true);
+    }
+  });
+
+  it('place la slide contexte familial avant la synthèse', () => {
+    const data: SuccessionStudyData & {
+      familyContext: {
+        situationLabel: string;
+        regimeLabel: string;
+        dispositions: string[];
+        filiation: {
+          nodes: Array<{ id: string; label: string; x: number; y: number; kind: string }>;
+          edges: Array<{ x1: number; y1: number; x2: number; y2: number }>;
+          groups: Array<{ x: number; y: number; w: number; h: number }>;
+          svgWidth: number;
+          svgHeight: number;
+        };
+      };
+    } = {
+      actifNetSuccession: 500000,
+      totalDroits: 16388,
+      tauxMoyenGlobal: 3.28,
+      heritiers: [],
+      familyContext: {
+        situationLabel: 'Marié(e)',
+        regimeLabel: 'Séparation de biens',
+        dispositions: ['Donation entre époux : Totalité en usufruit'],
+        filiation: {
+          nodes: [
+            { id: 'epoux1', label: 'Époux 1', x: 60, y: 50, kind: 'epoux' },
+            { id: 'epoux2', label: 'Époux 2', x: 180, y: 50, kind: 'epoux' },
+            { id: 'enfant-1', label: 'E1', x: 120, y: 120, kind: 'enfant_commun' },
+          ],
+          edges: [{ x1: 140, y1: 62, x2: 180, y2: 62 }],
+          groups: [{ x: 108, y: 108, w: 104, h: 40 }],
+          svgWidth: 300,
+          svgHeight: 180,
+        },
+      },
+    };
+
+    const spec = buildSuccessionStudyDeck(data, THEME_COLORS);
+    const slideTypes = spec.slides.map((slide) => slide.type);
+
+    expect(slideTypes).toEqual([
+      'chapter',
+      'succession-family-context',
+      'succession-synthesis',
+      'succession-chronology',
+      'chapter',
+      'succession-annex-table',
+      'succession-hypotheses',
+    ]);
+
+    const familySlide = spec.slides.find((slide) =>
+      (slide as { type?: string }).type === 'succession-family-context',
+    ) as {
+      situationLabel?: string;
+      regimeLabel?: string;
+      dispositions?: string[];
+      filiation?: { nodes: Array<{ label: string }> };
+    } | undefined;
+
+    expect(familySlide?.situationLabel).toBe('Marié(e)');
+    expect(familySlide?.regimeLabel).toContain('Séparation');
+    expect(familySlide?.dispositions?.join(' ')).toContain('Donation entre époux');
+    expect(familySlide?.filiation?.nodes.map((node) => node.label)).toContain('Époux 1');
+  });
+
+  it('allège la synthèse et prépare l’annexe enrichie par bénéficiaire', () => {
+    const data: SuccessionStudyData & {
+      annexBeneficiarySteps: Array<{
+        title: string;
+        beneficiaries: Array<{
+          label: string;
+          capitauxDecesNets: number;
+          droitsAssuranceVie990I: number;
+          droitsSuccession: number;
+          transmissionNetteSuccession: number;
+          isTotal?: boolean;
+        }>;
+      }>;
+    } = {
+      actifNetSuccession: 300000,
+      totalDroits: 30000,
+      tauxMoyenGlobal: 10,
+      heritiers: [
+        {
+          lien: 'enfant',
+          partBrute: 200000,
+          abattement: 100000,
+          baseImposable: 100000,
+          droits: 20000,
+          tauxMoyen: 10,
+        },
+      ],
+      annexBeneficiarySteps: [{
+        title: 'Succession directe simulée',
+        beneficiaries: [
+          {
+            label: 'Enfant 1',
+            capitauxDecesNets: 120000,
+            droitsAssuranceVie990I: 15000,
+            droitsSuccession: 25000,
+            transmissionNetteSuccession: 295000,
+          },
+          {
+            label: 'Total',
+            capitauxDecesNets: 120000,
+            droitsAssuranceVie990I: 15000,
+            droitsSuccession: 25000,
+            transmissionNetteSuccession: 295000,
+            isTotal: true,
+          },
+        ],
+      }],
+    };
+
+    const spec = buildSuccessionStudyDeck(data, THEME_COLORS);
+    const synthesisSlide = spec.slides.find((slide) => slide.type === 'succession-synthesis');
+    expect(synthesisSlide).toBeDefined();
+    if (synthesisSlide?.type === 'succession-synthesis') {
+      expect('beneficiaries' in synthesisSlide).toBe(false);
+      expect('beneficiariesNote' in synthesisSlide).toBe(false);
+    }
+
+    const annexSlide = spec.slides.find((slide) => slide.type === 'succession-annex-table');
+    expect(annexSlide).toBeDefined();
+    if (annexSlide?.type === 'succession-annex-table') {
+      const firstRow = annexSlide.steps[0].beneficiaries[0] as Record<string, unknown>;
+      expect(firstRow.capitauxDecesNets).toBe(120000);
+      expect(firstRow.droitsAssuranceVie990I).toBe(15000);
+      expect(firstRow.droitsSuccession).toBe(25000);
+      expect(firstRow.transmissionNetteSuccession).toBe(295000);
+      expect(firstRow).not.toHaveProperty('partBrute');
+      expect(firstRow).not.toHaveProperty('droits');
+      expect(firstRow).not.toHaveProperty('net');
     }
   });
 });

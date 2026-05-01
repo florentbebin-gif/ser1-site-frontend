@@ -1,6 +1,6 @@
 /**
  * PPTX Theme Types
- * 
+ *
  * Maps UI settings colors to PPTX theme roles
  */
 
@@ -22,44 +22,44 @@ export type UiThemeColors = {
 
 /**
  * PPTX Theme Roles
- * 
+ *
  * Maps semantic roles to actual colors.
  * All colors must come from UiThemeColors except white (#FFFFFF).
  */
 export type PptxThemeRoles = {
   // All 10 UI colors preserved
   colors: UiThemeColors;
-  
+
   // Constant white (only hardcoded color allowed)
   white: '#FFFFFF';
-  
+
   // Background main (cover, etc.) -> color1
   bgMain: string;
-  
+
   // Text on main background -> adaptive (white if dark, black if light)
   textOnMain: string;
-  
+
   // Text main (titles on light bg) -> color1
   textMain: string;
-  
+
   // Text body (content) -> color10
   textBody: string;
-  
+
   // Accent color (lines, decorations) -> color6
   accent: string;
-  
+
   // Panel background -> always white
   panelBg: '#FFFFFF';
-  
+
   // Panel border color -> color8 (softer)
   panelBorder: string;
-  
+
   // Shadow base color -> color1
   shadowBase: string;
-  
+
   // Footer text on light background -> color10
   footerOnLight: string;
-  
+
   // Footer accent (end slide) -> color6
   footerAccent: string;
 };
@@ -80,18 +80,18 @@ export type ExportContext = {
 /**
  * Business Icon Names (from existing library)
  */
-export type BusinessIconName = 
-  | 'money' 
-  | 'cheque' 
-  | 'bank' 
-  | 'calculator' 
+export type BusinessIconName =
+  | 'money'
+  | 'cheque'
+  | 'bank'
+  | 'calculator'
   | 'checklist'
-  | 'buildings' 
-  | 'gauge' 
-  | 'pen' 
-  | 'chart-down' 
+  | 'buildings'
+  | 'gauge'
+  | 'pen'
+  | 'chart-down'
   | 'chart-up'
-  | 'balance' 
+  | 'balance'
   | 'tower'
   | 'percent';
 
@@ -200,19 +200,146 @@ export type IrAnnexeSlideSpec = {
 /**
  * Succession Synthesis Slide Specification (P1-02)
  */
+export type SuccessionKpi = {
+  icon: BusinessIconName;
+  label: string;
+  value: string;
+  caption?: string;
+};
+
+export type SuccessionBeneficiarySummary = {
+  label: string;
+  gross: string;
+  tax: string;
+  net?: string;
+  exonerated?: boolean;
+};
+
 export type SuccessionSynthesisSlideSpec = {
   type: 'succession-synthesis';
-  actifNetSuccession: number;
-  totalDroits: number;
-  tauxMoyenGlobal: number;
-  heritiers: Array<{
-    lien: string;
-    partBrute: number;
-    abattement: number;
-    baseImposable: number;
-    droits: number;
-    tauxMoyen: number;
-  }>;
+  title: string;
+  subtitle: string;
+  heroLabel: string;
+  heroValue: string;
+  heroCaption?: string;
+  kpis: [SuccessionKpi, SuccessionKpi, SuccessionKpi, SuccessionKpi];
+};
+
+export type SuccessionFiliationNode = {
+  id: string;
+  label: string;
+  x: number;
+  y: number;
+  kind: string;
+  deceased?: boolean;
+};
+
+export type SuccessionFiliationEdge = {
+  x1: number;
+  y1: number;
+  x2: number;
+  y2: number;
+  dashed?: boolean;
+};
+
+export type SuccessionFiliationGroup = {
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+  label?: string;
+};
+
+export type SuccessionFiliationLayout = {
+  nodes: SuccessionFiliationNode[];
+  edges: SuccessionFiliationEdge[];
+  groups: SuccessionFiliationGroup[];
+  svgWidth: number;
+  svgHeight: number;
+};
+
+export type SuccessionFamilyContextSlideSpec = {
+  type: 'succession-family-context';
+  title: string;
+  subtitle: string;
+  situationLabel: string;
+  regimeLabel?: string;
+  pacsConventionLabel?: string;
+  dispositions: string[];
+  filiation: SuccessionFiliationLayout;
+};
+
+export type SuccessionChronologyStepSummary = {
+  title: string;
+  subtitle: string;
+  masseTransmise: string;
+  partConjoint: string;
+  autresBeneficiaires: string;
+  droitsSuccession: string;
+  droitsHorsSuccession?: string;
+  beneficiaries: SuccessionBeneficiarySummary[];
+};
+
+export type SuccessionChronologySlideSpec = {
+  type: 'succession-chronology';
+  title: string;
+  subtitle: string;
+  applicable: boolean;
+  orderLabel: string;
+  steps: SuccessionChronologyStepSummary[];
+  totalDroits: string;
+  notes: string[];
+};
+
+export type SuccessionHypothesesSlideSpec = {
+  type: 'succession-hypotheses';
+  title: string;
+  subtitle: string;
+  items: string[];
+};
+
+/**
+ * Succession Annexe Table Slide Specification
+ * Tableau multi-colonnes bénéficiaire × montants, groupé par étape de décès.
+ */
+export type SuccessionAnnexBeneficiaryRow = {
+  label: string;
+  capitauxDecesNets: number;
+  droitsAssuranceVie990I: number;
+  droitsSuccession: number;
+  transmissionNetteSuccession: number;
+  exonerated?: boolean;
+  isTotal?: boolean;
+};
+
+export type SuccessionAnnexStep = {
+  title: string;
+  beneficiaries: SuccessionAnnexBeneficiaryRow[];
+};
+
+export type SuccessionAnnexTableSlideSpec = {
+  type: 'succession-annex-table';
+  title: string;
+  subtitle: string;
+  steps: SuccessionAnnexStep[];
+};
+
+export type SuccessionAssetAnnexColumn = {
+  key: string;
+  label: string;
+};
+
+export type SuccessionAssetAnnexRow = {
+  label: string;
+  values: number[];
+};
+
+export type SuccessionAssetAnnexSlideSpec = {
+  type: 'succession-annex-assets';
+  title: string;
+  subtitle: string;
+  columns: SuccessionAssetAnnexColumn[];
+  rows: SuccessionAssetAnnexRow[];
 };
 
 /**
@@ -511,7 +638,7 @@ export type CreditAmortizationRow = {
 
 /**
  * Credit Amortization Slide Specification (paginated by YEAR COLUMNS)
- * 
+ *
  * Structure: Same row structure on every page, only year columns change
  * - allRows: ALL amortization rows from all loans
  * - yearsForPage: Years to display on THIS page (column headers)
@@ -532,16 +659,21 @@ export type CreditAmortizationSlideSpec = {
 export type StudyDeckSpec = {
   cover: CoverSlideSpec;
   slides: Array<
-    | ChapterSlideSpec 
-    | ContentSlideSpec 
-    | IrSynthesisSlideSpec 
+    | ChapterSlideSpec
+    | ContentSlideSpec
+    | IrSynthesisSlideSpec
     | IrAnnexeSlideSpec
     | CreditSynthesisSlideSpec
     | CreditGlobalSynthesisSlideSpec
     | CreditLoanSynthesisSlideSpec
     | CreditAnnexeSlideSpec
     | CreditAmortizationSlideSpec
+    | SuccessionFamilyContextSlideSpec
     | SuccessionSynthesisSlideSpec
+    | SuccessionChronologySlideSpec
+    | SuccessionAnnexTableSlideSpec
+    | SuccessionAssetAnnexSlideSpec
+    | SuccessionHypothesesSlideSpec
     | PlacementSynthesisSlideSpec
     | PlacementDetailSlideSpec
     | PlacementHypothesesSlideSpec
