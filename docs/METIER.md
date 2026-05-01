@@ -38,8 +38,8 @@ Expliquer ce que SER1 couvre aujourd'hui, ce qui est deja exploitable, et les li
 - Si un sujet est encore en page "upcoming", il n'est pas traite comme une feature metier stable.
 - Les taux, baremes et abattements modifiables vivent dans les settings et sont consommes par les simulateurs via le dossier fiscal unifie.
 - Les workflows `/audit` et `/strategy` sont actifs en runtime, mais ils restent des surfaces de travail guidees distinctes des simulateurs metier stabilises.
-- `/audit` porte la trajectoire P6 : dossier guide, export PPTX isole dans la feature via `src/features/audit/exportAudit.ts`, et reutilisation attendue par la suite dans `strategy`.
-- `/strategy` porte la trajectoire P7 : recommandations et scenarios a partir du draft audit courant, avec export PPTX isole dans `src/features/strategy/exportStrategy.ts`.
+- `/audit` porte la trajectoire P6 : dossier guide, export PPTX isolé dans la feature via `src/features/audit/export/exportAudit.ts`, et réutilisation attendue par la suite dans `strategy`.
+- `/strategy` porte la trajectoire P7 : recommandations et scénarios à partir du draft audit courant, avec export PPTX isolé dans `src/features/strategy/export/exportStrategy.ts`.
 
 ## 1) IR
 
@@ -183,20 +183,55 @@ Le bouton `+ Dispositions` reste bloque tant qu'un contexte familial minimum n'e
 - une partie de la valeur actuelle de la page succession est analytique et pedagogique, pas uniquement calculatoire
 - la chronologie 2 deces reste un module simplifie: elle reemploie le testament du cote du decede et le report economique vers le 2e deces, mais ne remplace pas une liquidation notariale exhaustive
 
-### Maturite du modele matrimonial et successoral
-La trajectoire de montee en gamme du simulateur succession est suivie dans [SUCCESSION_MODEL_MATURITY.md](SUCCESSION_MODEL_MATURITY.md).
+### Périmètre de fiabilité du modèle matrimonial et successoral
+Cette section est la source métier du périmètre de fiabilité succession. SER1 est un simulateur CGP d'aide à l'analyse patrimoniale : il sert au pré-diagnostic, à la comparaison de scénarios et à la discussion CGP / notaire, mais ne remplace pas une liquidation notariale exhaustive. BIG peut servir de comparaison secondaire, pas de source juridique unique.
 
-Regle de lecture :
-- `communaute_legale` est un support robuste du perimetre actuel; `separation_biens` l'est aussi, avec une poche manuelle `indivision_separatiste` disponible en saisie detaillee et ventilee via `quotePartEpoux1Pct`
-- `communaute_universelle` reste une simplification documentee, mais les biens detailles qualifies `propre_par_nature` peuvent maintenant rester hors masse commune si la `stipulationContraireCU` est activee
-- `communaute_meubles_acquets` reste simplifiee, mais les actifs detailles peuvent maintenant etre requalifies meuble / immeuble avant chainage
-- `participation_acquets` garde un audit predeces approxime, mais la succession peut maintenant calculer une creance simplifiee si le bloc dedie est active dans les dispositions
-- `separation_biens_societe_acquets` reste une lecture simplifiee dans l'audit predeces, mais la succession liquide maintenant la poche `societe_acquets` via un bloc dedie, un chainage simplifie et une restitution/export explicites
-- le preciput cible par bien est maintenant selectionnable dans la modal dispositions sur les biens `communaute` / `societe_acquets`, le chainage le deduit avant partage avec repli sur le montant global, et la synthese / chronologie / exports mentionnent explicitement les biens preleves
-- la saisie detaillee des actifs expose maintenant une qualification juridique (`legalNature`, `origin`, `meubleImmeubleLegal`) conservee dans le draft succession
-- la modal dispositions expose maintenant des `recompenses / creances entre masses`; le moteur les applique comme transferts simplifies entre `pocket`, avec warnings si l'actif disponible est insuffisant
-- les passifs detailles rattaches a une masse sont restitues comme `passif affecte` dans la liquidation simplifiee et minorent uniquement la masse concernee
-- la liste finale des hypotheses et simplifications retenues est derivee depuis le snapshot fiscal et les warnings, puis exportee dans l'UI, le PPTX et le XLSX succession
+Règle de lecture :
+- `Support robuste` : exploitable dans le périmètre SER1, avec tests et restitution UI/export cohérente.
+- `Simplification documentée` : choix volontaire, affiché ou exporté, mais incomplet par rapport à une liquidation notariale.
+- `Non modélisé` : sujet absent du moteur ou seulement signalé par warning.
+
+Supports robustes du périmètre actuel :
+
+| Sujet | Preuves principales |
+|---|---|
+| Succession directe avec enfants / conjoint / parents / fratrie | `successionDisplay.test.ts`, `successionValidationMatrix.test.ts`, `successionGoldenScenarios.test.ts` |
+| DMTG par lien de parenté et exonération conjoint / partenaire PACS | `src/engine/succession.ts`, `successionFiscalContext.test.ts`, CGI art. 777, 779, 796-0 bis |
+| PACS sans testament | `successionDevolution.test.ts`, `successionValidationMatrix.test.ts`, `successionChainage.pacsApplicability.test.ts` |
+| PACS avec testament partenaire | `successionDisplay.test.ts`, `successionValidationMatrix.test.ts`, `successionChainage.pacsApplicability.test.ts` |
+| Assurance-vie 990 I / 757 B, clauses simples | `successionGoldenScenarios.test.ts`, `successionDeathInsuranceAllowances.test.ts`, BOFiP BOI-ENR-DMTG-10-10-20-20 |
+| PER assurance / prévoyance décès, pivot 70 ans | `successionPerFiscal.test.ts`, `successionPrevoyanceFiscal.test.ts`, `successionHorizonMatrix.test.ts` |
+| Usufruit / nue-propriété art. 669 CGI, si dates renseignées | `successionUsufruit.test.ts`, `successionDevolution.test.ts` |
+| GFA / GFV / GFF / GF | `successionAssetValuation.test.ts`, `successionValidationMatrix.test.ts` |
+| Exports des hypothèses succession | `successionExport.test.ts`, `successionExportHypotheses.test.ts`, `scSuccessionSummaryPanel.test.tsx` |
+
+Simplifications documentées :
+- `communaute_legale` et `separation_biens` sont robustes dans le périmètre actuel ; `separation_biens` expose aussi une poche manuelle `indivision_separatiste` ventilée via `quotePartEpoux1Pct`.
+- `communaute_universelle`, `communaute_meubles_acquets`, `participation_acquets` et `separation_biens_societe_acquets` restent des lectures simplifiées, avec poches, créances, requalifications ou société d'acquêts restituées dans la synthèse/export quand le bloc dédié est saisi.
+- Le chaînage 2 décès marié / PACS testament calcule step1 + step2 avec report économique et bénéficiaires identifiés, sans liquidation notariale fine des masses, remplois ou calendriers distincts.
+- Le préciput ciblé par bien, les récompenses / créances entre masses et les passifs affectés sont appliqués comme transferts ou minorations bornés, avec restitution UI/export.
+- La résidence principale applique l'abattement de 20 % sur l'assiette fiscale de l'étape concernée ; l'utilisateur atteste les conditions et l'UI borne volontairement à une seule RP.
+- La représentation petits-enfants divise l'abattement de branche entre représentants, sans couvrir tous les croisements civils complexes avec réserve / quotité disponible.
+- Le rappel fiscal donations borne 15 ans ; la base historique est testée sur `valeurDonation ?? montant`, mais les droits déjà acquittés restent approximatifs faute de saisie historique exhaustive.
+- Les assurances-vie, PER et prévoyance démembrés ou non standards passent par un repli structuré avec warnings.
+
+Non modélisé :
+- liquidation notariale exhaustive des régimes matrimoniaux ;
+- rapport civil détaillé, réduction fine des libéralités et récompenses probatoires ;
+- historique complet des donations avec droits déjà acquittés par acte ;
+- remploi actif par actif entre premier et second décès ;
+- contrôle automatique des conditions juridiques d'occupation de la résidence principale ;
+- clauses testamentaires complexes ou litigieuses ;
+- vérification documentaire des actes, dates, preuves et qualités civiles.
+
+Invariants :
+- aucune approximation ne doit être masquée : elle doit apparaître dans les warnings, hypothèses, docs ou tests ;
+- les produits d'assurance (AV, PER assurance, prévoyance) ne doivent jamais être rattachés à une masse patrimoniale ;
+- les valeurs fiscales doivent passer par la chaîne fiscal settings, pas par des constantes métier en dur ;
+- toute extension succession doit ajouter ou mettre à jour un test rattaché à un cas juridique explicite ;
+- `docs/METIER.md` et `docs/ARCHITECTURE.md` doivent rester alignés.
+
+Validation attendue avant merge d'une modification succession : `npm run check`, tests succession si le moteur ou les sorties changent, golden tests si une règle fiscale ou une référence notariale est touchée, puis vérification de cohérence UI/XLSX/PPTX si la restitution change.
 
 ### UX — Saisie des actifs spécialisés via la sous-catégorie
 

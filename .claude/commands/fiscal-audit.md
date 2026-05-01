@@ -11,10 +11,10 @@ Audit fiscal value alignment across the codebase.
    - `rg "12\.8|12,8" src/ --glob "!__tests__" --glob "!settingsDefaults.ts" -n`
 
 3. **Hook wiring** — Verify all simulators use `useFiscalContext`:
-   - `src/features/ir/components/IrSimulatorContainer.jsx`
+   - `src/features/ir/components/IrSimulatorContainer.tsx`
    - `src/features/succession/SuccessionSimulator.tsx`
-   - `src/features/placement/components/usePlacementSimulatorController.js`
-   - `src/pages/StrategyPage.jsx`
+   - `src/features/placement/hooks/usePlacementSimulatorController.ts`
+   - `src/features/strategy/StrategyBuilder.tsx`
 
 4. **Single source** — Verify `src/constants/settingsDefaults.ts` is the only file defining fiscal default values.
 
