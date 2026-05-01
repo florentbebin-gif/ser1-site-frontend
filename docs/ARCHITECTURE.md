@@ -113,8 +113,8 @@ Source (preuves) :
 | `/set-password` | public | `SetPassword` | `src/pages/SetPassword.tsx` (import direct) |
 | `/reset-password` | public | `SetPassword` | `src/pages/SetPassword.tsx` (import direct) |
 | `/` | privé | `Home` | `src/pages/Home.tsx` (import direct) |
-| `/audit` | privé + lazy | `AuditWizard` | `src/features/audit/AuditWizard.tsx` (exporté via `src/features/audit/index.ts`) — workflow actif hors `/sim/*`, avec draft de session, `ExportMenu` partagé et export PPTX isolé dans `src/features/audit/exportAudit.ts` |
-| `/strategy` | privé + lazy | `StrategyPage` | `src/pages/StrategyPage.tsx` (lazy) — workflow actif dépendant d'un draft d'audit, avec `SimFieldShell` pour la saisie produit et export PPTX isolé dans `src/features/strategy/exportStrategy.ts` |
+| `/audit` | privé + lazy | `AuditWizard` | `src/features/audit/AuditWizard.tsx` (exporté via `src/features/audit/index.ts`) — workflow actif hors `/sim/*`, avec draft de session, `ExportMenu` partagé et export PPTX isolé dans `src/features/audit/export/exportAudit.ts` |
+| `/strategy` | privé + lazy | `StrategyPage` | `src/pages/StrategyPage.tsx` (lazy) — workflow actif dépendant d'un draft d'audit, avec `SimFieldShell` pour la saisie produit et export PPTX isolé dans `src/features/strategy/export/exportStrategy.ts` |
 | `/sim/placement` | privé + lazy | `Placement` | `src/features/placement/PlacementPage.tsx` (exporté via `src/features/placement/index.ts`) |
 | `/sim/credit` | privé + lazy | `Credit` | `src/features/credit/Credit.tsx` (exporté via `src/features/credit/index.ts`) |
 | `/sim/succession` | privé + lazy | `SuccessionSimulator` | `src/features/succession/SuccessionSimulator.tsx` (exporté via `src/features/succession/index.ts`) |
@@ -242,8 +242,8 @@ Implémentation de référence :
 - Orchestrateur : `src/features/credit/Credit.tsx`
 - Styles de page simulateur : `src/styles/sim/index.css`
 - Styles premium partagés : `src/styles/premium-shared.css`
-- Styles spécifiques crédit : `src/features/credit/components/CreditV2.css`
-- Inputs/select/toggle : `src/features/credit/components/CreditInputs.tsx` + `CreditInputs.css`
+- Styles spécifiques crédit : `src/features/credit/styles/index.css`
+- Inputs/select/toggle : `src/features/credit/components/CreditInputs.tsx` + `src/features/credit/styles/fields.css`
 - Pour toute nouvelle page `/sim/*`, appliquer la règle placeholder + unité de `docs/GOUVERNANCE.md` : placeholder numérique sans unité dans le champ, suffixe visuel hors champ, sauf si l'unité est déjà portée par un menu déroulant.
 - Les boutons optionnels de filtres/sous-sections doivent démarrer inactifs par défaut, puis activer explicitement les blocs associés.
 
@@ -273,7 +273,7 @@ Invariants (à ne pas casser) :
 - Design system : `src/pptx/designSystem/serenity.ts`.
 - Slides : `src/pptx/slides/`.
 - **Règles de conception et checklist de création** : `docs/GOUVERNANCE_EXPORTS.md`.
-- Cas legacy encore actifs : `src/features/audit/exportAudit.ts` adapte `src/pptx/auditPptx.ts` et `src/features/strategy/exportStrategy.ts` adapte `src/pptx/strategyPptx.ts` derrière les features ; les composants UI n'importent plus directement ces générateurs legacy.
+- Cas legacy encore actifs : `src/features/audit/export/exportAudit.ts` adapte `src/pptx/auditPptx.ts` et `src/features/strategy/export/exportStrategy.ts` adapte `src/pptx/strategyPptx.ts` derrière les features ; les composants UI n'importent plus directement ces générateurs legacy.
 
 Assets statiques (images) :
 - Chapitres PPTX : `public/pptx/chapters/ch-01.png` .. `ch-09.png` (bibliothèque).
@@ -515,7 +515,7 @@ L'admin sauvegarde → `invalidate(kind)` + `broadcastInvalidation(kind)` → é
 |-------|--------|-----------|
 | Réserve héréditaire (1/2, 2/3, 3/4 selon nbre d'enfants) | Art. 912-913 Code civil | Très stable |
 | Exonération conjoint survivant (succession) | Art. 796-0 bis CGI (loi TEPA 2007) | Stable |
-| Exonération partenaire PACS (succession) | Art. 796-0 ter CGI | Stable |
+| Exonération partenaire PACS (succession) | Art. 796-0 bis CGI | Stable |
 | Délai de rappel fiscal : 15 ans | Art. 784 CGI | Stable (était 10 ans avant 2012) |
 | Assurance-vie hors succession (primes < 70 ans) | Art. L132-12 Code assurances + 990 I CGI | Stable (principe) |
 | Représentation successorale (enfant prédécédé) | Art. 751 Code civil | Très stable |
@@ -526,10 +526,10 @@ L'admin sauvegarde → `invalidate(kind)` + `broadcastInvalidation(kind)` → é
 
 ---
 
-### Maturite du modele succession
+### Périmètre de fiabilité du modèle succession
 
-> Détail complet dans [SUCCESSION_MODEL_MATURITY.md](SUCCESSION_MODEL_MATURITY.md).
-> Toute PR qui étend les régimes matrimoniaux, la liquidation civile ou les masses patrimoniales doit mettre à jour cette matrice en même temps que le code.
+> Périmètre produit documenté dans [METIER.md](METIER.md), section "Périmètre de fiabilité du modèle matrimonial et successoral".
+> Toute PR qui étend les régimes matrimoniaux, la liquidation civile ou les masses patrimoniales doit mettre à jour cette matrice de périmètre en même temps que le code.
 
 ---
 

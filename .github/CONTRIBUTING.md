@@ -56,7 +56,7 @@ git push origin feature/nom-clair
 
 ### Sécurité
 - **Auth** : Ne JAMAIS utiliser `user_metadata` pour les décisions d'autorisation (rôles, permissions). Utiliser `app_metadata` uniquement.
-  - Voir [docs/GOUVERNANCE.md](docs/GOUVERNANCE.md)
+  - Voir [docs/GOUVERNANCE.md](../docs/GOUVERNANCE.md)
 - **Admin** : Toujours consommer les actions admin via `adminClient` (`src/settings/admin/adminClient.ts`), **jamais via `invokeAdmin` directement** depuis une page ou un composant.
   - `invokeAdmin` est un détail d'implémentation interne — les consommateurs doivent utiliser `adminClient`.
 - **`update_user_role`** : Action réservée au `owner` uniquement (`principal.accountKind === 'owner'`). Ne pas exposer de bouton de changement de rôle à un `dev_admin`.

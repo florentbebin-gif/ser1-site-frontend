@@ -1,6 +1,6 @@
 ---
 name: succession-review
-description: Audit complet du simulateur succession — auto-déclenché après toute modification dans src/features/succession/ ou src/engine/succession*. Vérifie le wiring fiscal, la cohérence avec la matrice de maturité, les golden tests et la taille des fichiers.
+description: Audit complet du simulateur succession — auto-déclenché après toute modification dans src/features/succession/ ou src/engine/succession*. Vérifie le wiring fiscal, la cohérence avec la matrice de périmètre, les golden tests et la taille des fichiers.
 ---
 
 # Succession Review
@@ -50,13 +50,13 @@ Lancer aussi le guard CI :
 npm run check:fiscal-hardcode
 ```
 
-### 3. Cohérence matrice de maturité
-Lire `docs/SUCCESSION_MODEL_MATURITY.md` et vérifier que les modifications introduites :
+### 3. Cohérence matrice de périmètre
+Lire `docs/METIER.md` section "Périmètre de fiabilité du modèle matrimonial et successoral" et vérifier que les modifications introduites :
 
 - Ne régressent pas un sujet classé **"Support robuste"** sans le signaler.
-- Si une **"Simplification documentée"** est étendue ou modifiée, mettre à jour la colonne "Etat repo actuel" et la colonne "Preuves" dans la matrice.
+- Si une **"Simplification documentée"** est étendue ou modifiée, mettre à jour la ligne concernée dans la matrice et les preuves associées.
 - Si une **"Approximation assumée"** est promue en niveau supérieur, documenter le changement de statut.
-- Si un sujet **"Non modelisé"** est implémenté, l'ajouter à la matrice avec son niveau.
+- Si un sujet **"Non modélisé"** est implémenté, l'ajouter à la matrice avec son niveau.
 
 Invariants à ne jamais violer (section "Invariants") :
 - Aucune approximation masquée.
@@ -108,7 +108,7 @@ Doit passer en totalité.
 Produire un résumé structuré :
 1. Wiring fiscal : OK / KO (avec preuves)
 2. Valeurs hardcodées : aucune / liste des violations
-3. Matrice de maturité : à jour / lignes à modifier (avec contenu proposé)
+3. Matrice de périmètre : à jour / lignes à modifier (avec contenu proposé)
 4. Exports : cohérents / divergences détectées
 5. Golden tests : passent / régressions (avec delta)
 6. Taille fichiers : liste avec statut

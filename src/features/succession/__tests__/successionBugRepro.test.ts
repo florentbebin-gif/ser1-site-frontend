@@ -185,13 +185,13 @@ describe('V3 â€” red tests (Lot 0) â€” will be converted to it() when 
     expect(conjointBenef?.brut).toBe(75000);
   });
 
-  // BUG-3 historique : evolution des deux PR successives.
-  // - PR-A (#421) : applicable=false pour tout PACS, par alignement avec la
-  //   matrice de maturite ("PACS chainage 2 deces : Non modelise").
+  // BUG-3 historique : évolution des deux PR successives.
+  // - PR-A (#421) : applicable=false pour tout PACS, puis PR-G limite ce repli
+  //   au PACS sans testament partenaire actif.
   // - PR-G : applicable=true pour PACS *avec testament*, le partenaire
-  //   pacse beneficiant de l'exoneration CGI 796-0 bis sur la part leguee.
+  //   pacsé bénéficiant de l'exonération CGI 796-0 bis sur la part léguée.
   //   Sans testament le mode direct reste retenu.
-  it('BUG-3: PACS avec testament au partenaire chaine et applique l exoneration', () => {
+  it('BUG-3: PACS avec testament au partenaire chaîne et applique l\'exonération', () => {
     const analysis = buildSuccessionChainageAnalysis({
       civil: makeCivil({
         situationMatrimoniale: 'pacse',

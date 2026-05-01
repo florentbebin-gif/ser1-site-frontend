@@ -63,19 +63,17 @@ Commande : `npm run check:fiscal-hardcode` (ou inclus dans `npm run check`).
 
 ---
 
-## Scripts versionnés hors gate CI
-Ces scripts sont conservés dans le repo car ils servent d'outillage opérateur ou de contrôle ponctuel. Ils ne font pas partie de `npm run check` et ne doivent pas être supprimés sans preuve d'inutilité.
+## Scripts versionnés
+Ces scripts sont conservés dans le repo car ils servent au gate CI, à l'outillage opérateur ou aux contrôles ponctuels. Ne pas les supprimer sans preuve d'inutilité.
 
-- `scripts/generate_settings_fiscaux_2026.py`
-  - génère `docs/settings-fiscaux-2026.xlsx`
-  - peut écrire un snapshot temporaire dans `.tmp/settings-live-snapshot.json`
-  - prérequis : `openpyxl` + accès Supabase
-- `scripts/check-overrides-fetch.mjs`
-  - interroge `base_contrat_overrides` via REST Supabase pour un contrôle ponctuel
-- `scripts/check-overrides.mjs`
-  - analyse en stdin le résultat brut des overrides et vérifie la symétrie `_pp/_pm`
-- `scripts/scan-unicode.mjs`
-  - scanne `src`, `tests` et `supabase` à la recherche de caractères invisibles ou bidi
+- `scripts/check-no-hardcoded-fiscal-values.mjs` : garde fiscal-hardcode incluse dans `npm run check`.
+- `scripts/check-no-hardcoded-css-theme-colors.mjs` : garde couleurs thème incluse dans `npm run check`.
+- `scripts/check-theme-sync.mjs` : vérifie l'alignement des tokens thème.
+- `scripts/check-css-structure.mjs` : vérifie les contrats d'import CSS.
+- `scripts/pre-merge-check.ps1` : gate local PowerShell avant merge.
+- `scripts/scan-unicode.mjs` : contrôle ponctuel des caractères invisibles ou bidi dans `src`, `tests` et `supabase`.
+- `scripts/audit-css-usage.mjs` : audit ponctuel de l'usage CSS.
+- `tools/scripts/*.ps1` et `tools/scripts/*.mjs` : outillage opérateur/admin/icônes et audits ponctuels.
 
 ---
 

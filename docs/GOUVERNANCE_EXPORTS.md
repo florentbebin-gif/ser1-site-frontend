@@ -34,8 +34,8 @@ Toute personne qui touche :
 - Le composant UI d’une feature n’importe jamais directement `exportStudyDeck`.
 - Le point d’entrée runtime doit être un wrapper feature-owned ou un wrapper dédié export.
 - Cas legacy encore actifs :
-  - `src/features/audit/exportAudit.ts` adapte `src/pptx/auditPptx.ts`
-  - `src/features/strategy/exportStrategy.ts` adapte `src/pptx/strategyPptx.ts`
+  - `src/features/audit/export/exportAudit.ts` adapte `src/pptx/auditPptx.ts`
+  - `src/features/strategy/export/exportStrategy.ts` adapte `src/pptx/strategyPptx.ts`
 - `src/pptx/auditPptx.ts` et `src/pptx/strategyPptx.ts` sont tolérés tant qu’ils restent isolés derrière la feature. Ils ne servent pas de baseline.
 
 ### Architecture cible Serenity
@@ -200,7 +200,7 @@ Après génération :
 ## Références code
 - Builder OOXML : `src/utils/export/xlsxBuilder.ts`
 - Fingerprint exports : `src/utils/export/exportFingerprint.ts`
-- Wrappers audit / strategy : `src/features/audit/exportAudit.ts`, `src/features/strategy/exportStrategy.ts`
+- Wrappers audit / strategy : `src/features/audit/export/exportAudit.ts`, `src/features/strategy/export/exportStrategy.ts`
 - Deck builders : `src/pptx/presets/**`
 - Slides : `src/pptx/slides/**`
 - Orchestrateur PPTX : `src/pptx/export/exportStudyDeck.ts`

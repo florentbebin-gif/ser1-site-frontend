@@ -86,11 +86,11 @@ Hook metier Placement desormais en TypeScript pour fermer le dernier pont metier
 - Hook desormais porte par `src/hooks/usePlacementSettings.ts`.
 - Retour du hook explicitement type : `fiscalParams`, `fiscalitySettings`, `psSettings`, `taxSettings`, `baremIR`, `tmiOptions`, `loading`, `error`.
 - Reutilisation de `src/engine/placement/types.ts` pour `FiscalParams`.
-- Consommateur `src/features/placement/components/usePlacementSimulatorController.ts` aligne sur le hook TS.
+- Consommateur `src/features/placement/hooks/usePlacementSimulatorController.ts` aligné sur le hook TS.
 
 ### Fichiers probables
 - `src/hooks/usePlacementSettings.ts`
-- `src/features/placement/components/usePlacementSimulatorController.ts`
+- `src/features/placement/hooks/usePlacementSimulatorController.ts`
 - `src/engine/placement/types.ts`
 
 ### Tests attendus
@@ -408,7 +408,7 @@ Objectif : fonctionner en cabinet (plusieurs profils) + livrables a l'image du c
 
 # P6 - Analyse patrimoniale premium + livrables
 Objectif : rendre l'audit "vraiment livrable", standardise, et reutilisable.
-Etat runtime actuel : `/audit` reste actif et alimente `strategy`; l'export PPTX transite desormais par `src/features/audit/exportAudit.ts` pour isoler le legacy.
+Etat runtime actuel : `/audit` reste actif et alimente `strategy`; l'export PPTX transite désormais par `src/features/audit/export/exportAudit.ts` pour isoler le legacy.
 
 ## PR-P6-01 - Audit patrimonial (PPTX) : structure stable + donnees minimales
 - Plan de slides fixe
@@ -427,7 +427,7 @@ Etat runtime actuel : `/audit` reste actif et alimente `strategy`; l'export PPTX
 
 # P7 - Strategie avancee + societe fine (si confirme)
 Objectif : recommandations structurees, y compris cas avec societes/holding.
-Etat runtime actuel : `/strategy` depend du draft `/audit` et l'export PPTX transite desormais par `src/features/strategy/exportStrategy.ts` pour isoler le legacy.
+Etat runtime actuel : `/strategy` dépend du draft `/audit` et l'export PPTX transite désormais par `src/features/strategy/export/exportStrategy.ts` pour isoler le legacy.
 
 ## PR-P7-01 - Moteur de scenarios (baseline vs recommandations)
 - Recommandations expliquees + hypotheses
