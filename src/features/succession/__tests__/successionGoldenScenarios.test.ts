@@ -10,6 +10,7 @@ import type { SuccessionTestamentDistributionBeneficiary } from '../successionTe
 import { makeCivil, makeDevolution } from './fixtures';
 import {
   ASSURANCE_VIE_757B_NOTARIAL_REFERENCE,
+  ASSURANCE_VIE_NOTARIAL_REFERENCES,
   SUCCESSION_NOTARIAL_REFERENCES,
 } from './fixtures/notarialReferences';
 
@@ -122,5 +123,34 @@ describe('références notariales succession', () => {
     const line = analysis.byAssure.epoux1.lines[0];
     expect(line).toMatchObject(ASSURANCE_VIE_757B_NOTARIAL_REFERENCE.expectedLine);
     expect(analysis.totalDroits).toBe(ASSURANCE_VIE_757B_NOTARIAL_REFERENCE.expectedTotalDroits);
+  });
+
+  it.each(ASSURANCE_VIE_NOTARIAL_REFERENCES)(
+    '$id - le moteur AV produit la ligne attendue',
+    (reference) => {
+      const analysis = buildSuccessionAvFiscalAnalysis(
+        [reference.entry],
+        makeCivil(reference.civil ?? { situationMatrimoniale: 'celibataire' }),
+        [],
+        reference.familyMembers ?? [],
+        buildSuccessionFiscalSnapshot(null),
+      );
+
+      const line = analysis.byAssure.epoux1.lines[0];
+      expect(line).toMatchObject(reference.expectedLine);
+      expect(analysis.totalDroits).toBe(reference.expectedTotalDroits);
+    },
+  );
+
+  it('le corpus AV inclut au moins quatre scenarios sources publiques', () => {
+    expect(ASSURANCE_VIE_NOTARIAL_REFERENCES.length).toBeGreaterThanOrEqual(4);
+    for (const reference of ASSURANCE_VIE_NOTARIAL_REFERENCES) {
+      expect(reference.sources.length).toBeGreaterThan(0);
+      expect(reference.sources.every((source) => (
+        source.url.includes('service-public.fr')
+        || source.url.includes('service-public.gouv.fr')
+        || source.url.includes('legifrance.gouv.fr')
+      ))).toBe(true);
+    }
   });
 });
