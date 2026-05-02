@@ -1,10 +1,234 @@
 import { describe, expect, it } from 'vitest';
+import { DEFAULT_DMTG } from '../../../engine/civil';
+import { buildSuccessionChainageAnalysis } from '../successionChainage';
 import {
   buildTestamentBeneficiaryOptions,
+  computeTestamentDistribution,
   getQuotiteDisponiblePctForSide,
   getReserveHintForSide,
   getTestamentCardTitle,
 } from '../successionTestament';
+import { makeCivil, makeDevolution, makeLiquidation } from './fixtures';
+
+describe('computeTestamentDistribution', () => {
+  const ENFANTS_2 = [
+    { id: 'E1', rattachement: 'commun' as const },
+    { id: 'E2', rattachement: 'commun' as const },
+  ];
+
+  it('legs_universel au conjoint : plafonné à la quotité disponible, conjoint exonéré', () => {
+    // 2 enfants → quotité dispo = 1/3 → plafond = 300 000 / 3 = 100 000
+    const result = computeTestamentDistribution({
+      situation: 'marie',
+      side: 'epoux1',
+      testament: {
+        active: true,
+        dispositionType: 'legs_universel',
+        beneficiaryRef: 'principal:epoux2',
+        quotePartPct: 100,
+        particularLegacies: [],
+      },
+      masseReference: 300_000,
+      enfants: ENFANTS_2,
+      familyMembers: [],
+    });
+
+    expect(result).not.toBeNull();
+    expect(result!.distributedAmount).toBeCloseTo(100_000, 0);
+    expect(result!.plafondTestament).toBeCloseTo(100_000, 0);
+    expect(result!.beneficiaries).toHaveLength(1);
+    expect(result!.beneficiaries[0].lien).toBe('conjoint');
+    expect(result!.beneficiaries[0].exonerated).toBe(true);
+    expect(result!.warnings.some((w) => w.includes('plafonnement'))).toBe(true);
+  });
+
+  it('legs_titre_universel (50 %) : plafonnement à la quotité disponible', () => {
+    // 2 enfants → quotité dispo = 1/3 = 200 000
+    // requestedAmount = 600 000 × 50 % = 300 000 → plafonnement à 200 000
+    const result = computeTestamentDistribution({
+      situation: 'marie',
+      side: 'epoux1',
+      testament: {
+        active: true,
+        dispositionType: 'legs_titre_universel',
+        beneficiaryRef: 'principal:epoux2',
+        quotePartPct: 50,
+        particularLegacies: [],
+      },
+      masseReference: 600_000,
+      enfants: ENFANTS_2,
+      familyMembers: [],
+    });
+
+    expect(result).not.toBeNull();
+    expect(result!.requestedAmount).toBeCloseTo(300_000, 0);
+    expect(result!.distributedAmount).toBeCloseTo(200_000, 0);
+    expect(result!.warnings.some((w) => w.includes('plafonnement'))).toBe(true);
+  });
+
+  it('legs_particulier multi-bénéficiaires sans dépassement : distribués intégralement', () => {
+    const result = computeTestamentDistribution({
+      situation: 'marie',
+      side: 'epoux1',
+      testament: {
+        active: true,
+        dispositionType: 'legs_particulier',
+        beneficiaryRef: null,
+        quotePartPct: 0,
+        particularLegacies: [
+          { id: 'L1', beneficiaryRef: 'enfant:E1', amount: 40_000 },
+          { id: 'L2', beneficiaryRef: 'enfant:E2', amount: 30_000 },
+        ],
+      },
+      masseReference: 600_000,
+      enfants: ENFANTS_2,
+      familyMembers: [],
+    });
+
+    expect(result).not.toBeNull();
+    expect(result!.distributedAmount).toBeCloseTo(70_000, 0);
+    expect(result!.beneficiaries).toHaveLength(2);
+    const partE1 = result!.beneficiaries.find((b) => b.id === 'E1')?.partSuccession ?? 0;
+    const partE2 = result!.beneficiaries.find((b) => b.id === 'E2')?.partSuccession ?? 0;
+    expect(partE1).toBeCloseTo(40_000, 0);
+    expect(partE2).toBeCloseTo(30_000, 0);
+  });
+
+  it('legs_particulier avec dépassement : ratio appliqué sur chaque legs', () => {
+    // 2 enfants → plafond = 600 000 / 3 = 200 000
+    // Legs total = 250 000 → ratio = 200 000 / 250 000 = 0.8
+    const result = computeTestamentDistribution({
+      situation: 'marie',
+      side: 'epoux1',
+      testament: {
+        active: true,
+        dispositionType: 'legs_particulier',
+        beneficiaryRef: null,
+        quotePartPct: 0,
+        particularLegacies: [
+          { id: 'L1', beneficiaryRef: 'enfant:E1', amount: 150_000 },
+          { id: 'L2', beneficiaryRef: 'enfant:E2', amount: 100_000 },
+        ],
+      },
+      masseReference: 600_000,
+      enfants: ENFANTS_2,
+      familyMembers: [],
+    });
+
+    expect(result).not.toBeNull();
+    expect(result!.distributedAmount).toBeCloseTo(200_000, 0);
+    const partE1 = result!.beneficiaries.find((b) => b.id === 'E1')?.partSuccession ?? 0;
+    const partE2 = result!.beneficiaries.find((b) => b.id === 'E2')?.partSuccession ?? 0;
+    expect(partE1).toBeCloseTo(120_000, 0); // 150 000 × 0.8
+    expect(partE2).toBeCloseTo(80_000, 0);  // 100 000 × 0.8
+    expect(result!.warnings.some((w) => w.includes('plafonnement'))).toBe(true);
+  });
+
+  it('legs_particulier avec bénéficiaire absent du contexte : warning généré', () => {
+    const result = computeTestamentDistribution({
+      situation: 'marie',
+      side: 'epoux1',
+      testament: {
+        active: true,
+        dispositionType: 'legs_particulier',
+        beneficiaryRef: null,
+        quotePartPct: 0,
+        particularLegacies: [
+          { id: 'L1', beneficiaryRef: null, amount: 50_000 },
+        ],
+      },
+      masseReference: 300_000,
+      enfants: ENFANTS_2,
+      familyMembers: [],
+    });
+
+    expect(result).not.toBeNull();
+    expect(result!.beneficiaries).toHaveLength(0);
+    expect(result!.warnings.some((w) => w.includes('sans beneficiaire'))).toBe(true);
+  });
+
+  it('testament actif sans type de disposition : distributedAmount = 0, warning', () => {
+    const result = computeTestamentDistribution({
+      situation: 'marie',
+      side: 'epoux1',
+      testament: {
+        active: true,
+        dispositionType: null,
+        beneficiaryRef: null,
+        quotePartPct: 0,
+        particularLegacies: [],
+      },
+      masseReference: 300_000,
+      enfants: ENFANTS_2,
+      familyMembers: [],
+    });
+
+    expect(result).not.toBeNull();
+    expect(result!.distributedAmount).toBe(0);
+    expect(result!.warnings.some((w) => w.includes('type de disposition'))).toBe(true);
+  });
+
+  it('PACS avec testament en faveur du partenaire : lien conjoint, exonéré', () => {
+    const result = computeTestamentDistribution({
+      situation: 'pacse',
+      side: 'epoux1',
+      testament: {
+        active: true,
+        dispositionType: 'legs_universel',
+        beneficiaryRef: 'principal:epoux2',
+        quotePartPct: 100,
+        particularLegacies: [],
+      },
+      masseReference: 400_000,
+      enfants: [],
+      familyMembers: [],
+    });
+
+    expect(result).not.toBeNull();
+    expect(result!.beneficiaries).toHaveLength(1);
+    expect(result!.beneficiaries[0].lien).toBe('conjoint');
+    expect(result!.beneficiaries[0].exonerated).toBe(true);
+    expect(result!.distributedAmount).toBeCloseTo(400_000, 0);
+  });
+});
+
+describe('computeTestamentDistribution → chainage end-to-end', () => {
+  it('legs_universel vers enfant : step1.beneficiaries contient le légataire', () => {
+    const enfants = [
+      { id: 'E1', rattachement: 'commun' as const },
+      { id: 'E2', rattachement: 'commun' as const },
+    ];
+    const analysis = buildSuccessionChainageAnalysis({
+      civil: makeCivil({ situationMatrimoniale: 'marie', regimeMatrimonial: 'communaute_legale' }),
+      liquidation: makeLiquidation({ actifEpoux1: 300_000, actifEpoux2: 200_000, actifCommun: 0, nbEnfants: 2 }),
+      regimeUsed: 'communaute_legale',
+      order: 'epoux1',
+      dmtgSettings: DEFAULT_DMTG,
+      enfantsContext: enfants,
+      familyMembers: [],
+      devolution: makeDevolution({
+        testamentsBySide: {
+          epoux1: {
+            active: true,
+            dispositionType: 'legs_universel',
+            beneficiaryRef: 'enfant:E1',
+            quotePartPct: 100,
+            particularLegacies: [],
+          },
+        },
+      }),
+    });
+
+    expect(analysis.applicable).toBe(true);
+    expect(analysis.step1?.actifTransmis).toBe(300_000);   // propres époux1, pas de commun
+    const conjoint = analysis.step1?.beneficiaries.find((b) => b.lien === 'conjoint');
+    expect(conjoint?.brut).toBe(75_000);                   // 300 000 × 1/4 (part légale sans DDV)
+    const e1 = analysis.step1?.beneficiaries.find((b) => b.id === 'E1');
+    expect(e1?.brut).toBe(162_500);                        // 100 000 (testament) + 62 500 (réserve)
+    const e2 = analysis.step1?.beneficiaries.find((b) => b.id === 'E2');
+    expect(e2?.brut).toBe(62_500);                         // 125 000 résiduel / 2 (réserve seule)
+  });
+});
 
 describe('successionTestament helpers', () => {
   it('construit les beneficiaires testamentaires avec reserve sur la branche concernee', () => {
