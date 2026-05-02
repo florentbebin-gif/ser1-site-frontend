@@ -26,7 +26,10 @@ import {
   buildSuccessionDescendantRecipientsForDeceased,
   countEffectiveDescendantBranchesForDeceased,
 } from './successionEnfants';
-import { applySuccessionDonationRecallToHeirs } from './successionDonationRecall';
+import {
+  applySuccessionDonationRecallToHeirs,
+  buildDonationRecallWarningMessages,
+} from './successionDonationRecall';
 import {
   applyResidencePrincipaleAbatementToEstateBasis,
   assignBeneficiaryTaxableBasis,
@@ -504,14 +507,20 @@ export function buildSuccessionDirectDisplayAnalysis(
       },
     )
     : detailedHeirs;
-  const detailedHeirsWithDonationRecall = applySuccessionDonationRecallToHeirs({
+  const donateurDateNaissance = simulatedDeceased === 'epoux1'
+    ? input.civil.dateNaissanceEpoux1
+    : input.civil.dateNaissanceEpoux2;
+  const donationRecallResult = applySuccessionDonationRecallToHeirs({
     heirs: detailedHeirsWithTaxableBasis,
     donations: input.donationsContext,
     simulatedDeceased,
     donationSettings: input.donationSettings,
     dmtgSettings: input.dmtgSettings,
     referenceDate: input.referenceDate,
+    donateurDateNaissance,
   });
+  const detailedHeirsWithDonationRecall = donationRecallResult.heirs;
+  warnings.push(...buildDonationRecallWarningMessages(donationRecallResult.warnings));
 
   const heirs = toHeritiersInput(detailedHeirsWithDonationRecall);
   const actifNetSuccession = heirs.reduce((sum, heir) => sum + heir.partSuccession, 0) || estateAmount;

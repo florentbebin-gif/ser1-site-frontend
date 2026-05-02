@@ -213,6 +213,9 @@ Simplifications documentées :
 - La résidence principale applique l'abattement de 20 % sur l'assiette fiscale de l'étape concernée ; l'utilisateur atteste les conditions et l'UI borne volontairement à une seule RP.
 - La représentation petits-enfants divise l'abattement de branche entre représentants, sans couvrir tous les croisements civils complexes avec réserve / quotité disponible.
 - Le rappel fiscal donations borne 15 ans ; la base historique est testée sur `valeurDonation ?? montant`, mais les droits déjà acquittés restent approximatifs faute de saisie historique exhaustive.
+- Donation en nue-propriété (CGI 669) : la valeur rappelable est calculée selon l'âge du donateur à la date de l'acte quand la date de naissance est renseignée ; sinon repli sur valeur pleine avec warning.
+- Don de somme d'argent exonéré 790 G : exonéré hors rappel fiscal (art. 784) dans la limite de 31 865 € par couple donateur/donataire, plafond appliqué globalement sur l'ensemble des dons 790 G vers le même donataire dans la fenêtre de rappel. Incompatible avec la réserve d'usufruit : si les deux toggles sont actifs sur une même entrée (données persistées), le 790 G est ignoré et un warning est remonté.
+- Donation-partage (CCV 1078) : prise en charge comme type de donation distinct. Impact fiscal DMTG intégré via le rappel fiscal par donataire (valeur au jour de l'acte). Non rapportable au partage civil (exclue de la masse civile de référence). Simplification documentée : modélisation par ligne / par donataire, sans acte unique, lots, soultes, acceptation collective, imputation fine sur la réserve ni réduction civile.
 - Les assurances-vie, PER et prévoyance démembrés ou non standards passent par un repli structuré avec warnings.
 
 Non modélisé :

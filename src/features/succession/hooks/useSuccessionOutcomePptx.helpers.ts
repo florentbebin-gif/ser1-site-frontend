@@ -150,7 +150,7 @@ function buildDonationSummary(donationsContext: SuccessionDonationEntry[]): stri
     totals.set(entry.type, current);
   }
 
-  const parts = (['rapportable', 'hors_part', 'legs_particulier'] as const)
+  const parts = (['rapportable', 'hors_part', 'donation_partage', 'legs_particulier'] as const)
     .map((type) => {
       const current = totals.get(type);
       if (!current) return null;
@@ -159,7 +159,9 @@ function buildDonationSummary(donationsContext: SuccessionDonationEntry[]): stri
         ? `${current.count} avance${current.count > 1 ? 's' : ''} de part successorale`
         : type === 'hors_part'
           ? `${current.count} donation${current.count > 1 ? 's' : ''} hors part`
-          : `${current.count} legs particulier${current.count > 1 ? 's' : ''}`;
+          : type === 'donation_partage'
+            ? `${current.count} donation${current.count > 1 ? 's' : ''}-partage`
+            : `${current.count} legs particulier${current.count > 1 ? 's' : ''}`;
 
       return current.total > 0 ? `${baseLabel} (${fmtCurrency(current.total)})` : baseLabel;
     })

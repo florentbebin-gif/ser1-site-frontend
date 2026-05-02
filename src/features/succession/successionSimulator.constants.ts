@@ -60,6 +60,7 @@ export const CHOIX_LEGAL_CONJOINT_OPTIONS = [
 export const DONATION_TYPE_OPTIONS: { value: SuccessionDonationEntryType; label: string }[] = [
   { value: 'rapportable', label: 'Avance de part successorale' },
   { value: 'hors_part', label: 'Hors part successorale' },
+  { value: 'donation_partage', label: 'Donation-partage (CCV 1078)' },
 ];
 
 export const ASSET_CATEGORY_OPTIONS: { value: SuccessionAssetCategory; label: string }[] = [

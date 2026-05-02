@@ -132,7 +132,7 @@ export function isEnfantRattachement(v: unknown): v is SuccessionEnfantRattachem
 }
 
 export function isDonationEntryType(v: unknown): v is SuccessionDonationEntryType {
-  return v === 'rapportable' || v === 'hors_part' || v === 'legs_particulier';
+  return v === 'rapportable' || v === 'hors_part' || v === 'legs_particulier' || v === 'donation_partage';
 }
 
 export function isAssetOwner(v: unknown): v is SuccessionLegacyAssetOwner {

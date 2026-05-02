@@ -23,9 +23,6 @@ const DONATION_SETTINGS = {
     montant: 31865,
     conditions: 'Donateur < 80 ans, donataire majeur',
   },
-  donManuel: {
-    abattementRenouvellement: 15,
-  },
 } as const;
 
 const TIERS_BENEFICIAIRE: FamilyMember[] = [
@@ -67,7 +64,7 @@ describe('matrice horizon décès succession', () => {
         donataire: 'enfant-1',
       };
 
-      const heirs = applySuccessionDonationRecallToHeirs({
+      const { heirs } = applySuccessionDonationRecallToHeirs({
         heirs: [{ id: 'enfant-1', lien: 'enfant' as const, partSuccession: 150000 }],
         donations: [donation],
         simulatedDeceased: 'epoux1',

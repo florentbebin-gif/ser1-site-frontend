@@ -15,11 +15,13 @@ export function buildSuccessionAssumptions({
   attentions,
   hasInterMassClaims,
   hasAffectedLiabilities,
+  hasDonationsPartage,
 }: {
   fiscalSnapshot: SuccessionFiscalSnapshot;
   attentions: string[];
   hasInterMassClaims: boolean;
   hasAffectedLiabilities: boolean;
+  hasDonationsPartage?: boolean;
 }): string[] {
   const staticAssumptions = [
     'Barèmes DMTG et abattements appliqués depuis les paramètres de l’application.',
@@ -43,6 +45,12 @@ export function buildSuccessionAssumptions({
   if (hasAffectedLiabilities) {
     staticAssumptions.push(
       'Les passifs détaillés rattachés à une poche sont traités comme passifs affectés dans la liquidation simplifiée et minoreront uniquement la masse concernée.',
+    );
+  }
+
+  if (hasDonationsPartage) {
+    staticAssumptions.push(
+      'Donation(s)-partage présente(s) : valeur gelée au jour de l’acte (CCV 1078), non rapportable au partage civil. Imputation fine sur la réserve non modélisée — simplification documentée.',
     );
   }
 

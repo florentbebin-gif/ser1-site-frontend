@@ -170,7 +170,7 @@ export interface SuccessionPatrimonialContext {
   decesDansXAns: 0 | 5 | 10 | 15 | 20 | 25 | 30 | 35 | 40 | 45 | 50;
 }
 
-export type SuccessionDonationEntryType = 'rapportable' | 'hors_part' | 'legs_particulier';
+export type SuccessionDonationEntryType = 'rapportable' | 'hors_part' | 'legs_particulier' | 'donation_partage';
 
 export interface SuccessionDonationEntry {
   id: string;

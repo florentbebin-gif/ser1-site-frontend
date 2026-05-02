@@ -7,9 +7,6 @@ interface DonationSettings {
     montant: number | null;
     conditions: string;
   };
-  donManuel: {
-    abattementRenouvellement: number | null;
-  };
 }
 
 interface DonationSectionProps {
@@ -74,9 +71,9 @@ export default function DonationSection({
             </div>
           </div>
 
-          <div className="income-tax-block dmtg-block--mb16">
+          <div className="income-tax-block">
             <div className="dmtg-block-title">
-              Don familial de sommes d’argent (art. 790 G)
+              Don familial de sommes d'argent (art. 790 G)
             </div>
             <div className="dmtg-indent">
               <div className="settings-field-row dmtg-field-row--mb8">
@@ -106,29 +103,6 @@ export default function DonationSection({
                   disabled={!isAdmin}
                 />
                 <span />
-              </div>
-            </div>
-          </div>
-
-          <div className="income-tax-block">
-            <div className="dmtg-block-title">
-              Don manuel
-            </div>
-            <div className="dmtg-indent">
-              <div className="settings-field-row">
-                <label>Renouvellement abattement tous les</label>
-                <input
-                  type="number"
-                  value={numberOrEmpty(donation.donManuel.abattementRenouvellement)}
-                  onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
-                    updateDonation(
-                      ['donManuel', 'abattementRenouvellement'],
-                      event.target.value === '' ? null : Number(event.target.value)
-                    )
-                  }
-                  disabled={!isAdmin}
-                />
-                <span>ans</span>
               </div>
             </div>
           </div>

@@ -89,9 +89,6 @@ export const SUCCESSION_DONATION_SETTINGS: SuccessionDonationSettings = {
     montant: 31865,
     conditions: 'Donateur < 80 ans, donataire majeur',
   },
-  donManuel: {
-    abattementRenouvellement: 15,
-  },
 };
 
 export const SUCCESSION_NOTARIAL_REFERENCES: SuccessionNotarialReference[] = [

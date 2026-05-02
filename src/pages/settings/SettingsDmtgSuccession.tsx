@@ -220,10 +220,13 @@ export default function SettingsDmtgSuccession() {
       const existingTaxData = (existingTaxRes.data?.data as Partial<TaxSettings> | null) ?? {};
       const existingFiscData = (existingFiscRes.data?.data as Partial<FiscalitySettings> | null) ?? {};
 
+      // Pruning : retirer les champs donation obsolètes persistés en DB (ex: donManuel).
+      const { donManuel: _donManuel, ...donationClean } = (taxSettings.donation ?? {}) as Record<string, unknown>;
+      void _donManuel;
       const taxPayload: Partial<TaxSettings> = {
         ...existingTaxData,
         dmtg: taxSettings.dmtg,
-        donation: taxSettings.donation,
+        donation: donationClean as TaxSettings['donation'],
       };
       const fiscalityPayload: Partial<FiscalitySettings> = {
         ...existingFiscData,

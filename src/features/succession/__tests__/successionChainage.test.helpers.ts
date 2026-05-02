@@ -32,7 +32,4 @@ export const DONATION_SETTINGS = {
     montant: 31865,
     conditions: 'Donateur < 80 ans, donataire majeur',
   },
-  donManuel: {
-    abattementRenouvellement: 15,
-  },
 } as const;

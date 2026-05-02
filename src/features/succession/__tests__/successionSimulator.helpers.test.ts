@@ -70,4 +70,43 @@ describe('successionSimulator.helpers', () => {
     expect(applySuccessionDonationFieldUpdate(initialEntry, 'donSommeArgentExonere', 1).donSommeArgentExonere).toBe(true);
     expect(applySuccessionDonationFieldUpdate(initialEntry, 'donataire', 42).donataire).toBe('42');
   });
+
+  it('activer donSommeArgentExonere désactive avecReserveUsufruit (exclusivité 790 G / NP)', () => {
+    const entryAvecNP = {
+      id: 'don-np',
+      type: 'rapportable' as const,
+      montant: 50000,
+      avecReserveUsufruit: true,
+    };
+
+    const result = applySuccessionDonationFieldUpdate(entryAvecNP, 'donSommeArgentExonere', true);
+    expect(result.donSommeArgentExonere).toBe(true);
+    expect(result.avecReserveUsufruit).toBe(false);
+  });
+
+  it('activer avecReserveUsufruit désactive donSommeArgentExonere (exclusivité NP / 790 G)', () => {
+    const entryAvec790G = {
+      id: 'don-790g',
+      type: 'rapportable' as const,
+      montant: 25000,
+      donSommeArgentExonere: true,
+    };
+
+    const result = applySuccessionDonationFieldUpdate(entryAvec790G, 'avecReserveUsufruit', true);
+    expect(result.avecReserveUsufruit).toBe(true);
+    expect(result.donSommeArgentExonere).toBe(false);
+  });
+
+  it('désactiver donSommeArgentExonere ne modifie pas avecReserveUsufruit', () => {
+    const entryAvecNP = {
+      id: 'don-np',
+      type: 'rapportable' as const,
+      montant: 50000,
+      avecReserveUsufruit: true,
+    };
+
+    const result = applySuccessionDonationFieldUpdate(entryAvecNP, 'donSommeArgentExonere', false);
+    expect(result.donSommeArgentExonere).toBe(false);
+    expect(result.avecReserveUsufruit).toBe(true);
+  });
 });

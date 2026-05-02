@@ -44,7 +44,6 @@ describe('buildSuccessionFiscalSnapshot', () => {
         donation: {
           rappelFiscalAnnees: 12,
           donFamilial790G: { montant: 50000, conditions: 'Condition custom' },
-          donManuel: { abattementRenouvellement: 10 },
         },
       } as FiscalContext['_raw_tax'],
       _raw_fiscality: {
@@ -70,7 +69,6 @@ describe('buildSuccessionFiscalSnapshot', () => {
     const snapshot = buildSuccessionFiscalSnapshot(fiscalContext);
     expect(snapshot.donation.rappelFiscalAnnees).toBe(12);
     expect(snapshot.donation.donFamilial790G.montant).toBe(50000);
-    expect(snapshot.donation.donManuel.abattementRenouvellement).toBe(10);
     expect(snapshot.avDeces.agePivotPrimes).toBe(68);
     expect(snapshot.avDeces.primesApres1998.allowancePerBeneficiary).toBe(200000);
     expect(snapshot.avDeces.primesApres1998.brackets).toEqual([{ upTo: 900000, ratePercent: 25 }]);
@@ -84,7 +82,6 @@ describe('buildSuccessionFiscalSnapshot', () => {
         donation: {
           rappelFiscalAnnees: -5,
           donFamilial790G: { montant: 'x' },
-          donManuel: {},
         },
       } as FiscalContext['_raw_tax'],
       _raw_fiscality: {
