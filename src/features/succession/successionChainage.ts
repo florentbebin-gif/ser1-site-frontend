@@ -281,6 +281,8 @@ export function buildSuccessionChainageAnalysis(
       : preciputPatrimonial,
     input.referenceDate,
     nbParentsStep1,
+    input.devolution?.choixLegalConjointSansDDV,
+    input.devolution?.nbEnfantsNonCommuns,
   );
   warnings.push(...step1Split.warnings);
   const step1TaxableEstate = firstEstate - step1Split.preciputDeducted;

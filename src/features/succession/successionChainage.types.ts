@@ -146,7 +146,7 @@ export interface SuccessionChainageInput {
   forfaitMobilierMontant?: number;
   enfantsContext?: SuccessionEnfant[];
   familyMembers?: FamilyMember[];
-  devolution?: Pick<SuccessionDevolutionContext, 'testamentsBySide'>;
+  devolution?: Pick<SuccessionDevolutionContext, 'testamentsBySide' | 'choixLegalConjointSansDDV' | 'nbEnfantsNonCommuns'>;
   referenceDate?: Date;
   donations?: SuccessionDonationEntry[];
   donationSettings?: SuccessionFiscalSnapshot['donation'];

@@ -228,6 +228,93 @@ describe('computeTestamentDistribution → chainage end-to-end', () => {
     const e2 = analysis.step1?.beneficiaries.find((b) => b.id === 'E2');
     expect(e2?.brut).toBe(62_500);                         // 125 000 résiduel / 2 (réserve seule)
   });
+
+  it('legs_titre_universel (chainage e2e) : plafonné à la quotité, bruts exacts', () => {
+    // CL, propres epoux1=300k, actifCommun=0, 2 enfants communs
+    // legs_titre_universel 50% vers E1 : requested=150k → plafonnement à quotité=100k
+    // conjoint 1/4 PP = 75k ; résidu réserve = 300k-75k-100k = 125k → 62.5k/enfant
+    // E1.brut = 100k (testament) + 62.5k (réserve) = 162.5k
+    // E2.brut = 62.5k (réserve seule)
+    const enfants = [
+      { id: 'E1', rattachement: 'commun' as const },
+      { id: 'E2', rattachement: 'commun' as const },
+    ];
+    const analysis = buildSuccessionChainageAnalysis({
+      civil: makeCivil({ situationMatrimoniale: 'marie', regimeMatrimonial: 'communaute_legale' }),
+      liquidation: makeLiquidation({ actifEpoux1: 300_000, actifEpoux2: 200_000, actifCommun: 0, nbEnfants: 2 }),
+      regimeUsed: 'communaute_legale',
+      order: 'epoux1',
+      dmtgSettings: DEFAULT_DMTG,
+      enfantsContext: enfants,
+      familyMembers: [],
+      devolution: makeDevolution({
+        testamentsBySide: {
+          epoux1: {
+            active: true,
+            dispositionType: 'legs_titre_universel',
+            beneficiaryRef: 'enfant:E1',
+            quotePartPct: 50,
+            particularLegacies: [],
+          },
+        },
+      }),
+    });
+
+    expect(analysis.applicable).toBe(true);
+    expect(analysis.step1?.actifTransmis).toBe(300_000);
+    const conjoint3 = analysis.step1?.beneficiaries.find((b) => b.lien === 'conjoint');
+    expect(conjoint3?.brut).toBe(75_000);                  // 1/4 PP légal
+    const e1t3 = analysis.step1?.beneficiaries.find((b) => b.id === 'E1');
+    expect(e1t3?.brut).toBe(162_500);                      // 100k testament (plafonné) + 62.5k réserve
+    const e2t3 = analysis.step1?.beneficiaries.find((b) => b.id === 'E2');
+    expect(e2t3?.brut).toBe(62_500);                       // réserve seule
+    expect(analysis.warnings.some((w) => w.includes('plafonnement'))).toBe(true);
+  });
+
+  it('legs_particulier multi-legataire (chainage e2e) : ratio appliqué, bruts exacts', () => {
+    // CL, propres epoux1=300k, actifCommun=0, 2 enfants communs
+    // legs E1=150k, E2=50k → total=200k > quotité=100k → ratio=0.5
+    // E1 testament = 75k, E2 testament = 25k
+    // conjoint 1/4 PP = 75k ; résidu réserve = 125k → 62.5k/enfant
+    // E1.brut = 75k + 62.5k = 137.5k ; E2.brut = 25k + 62.5k = 87.5k
+    const enfants = [
+      { id: 'E1', rattachement: 'commun' as const },
+      { id: 'E2', rattachement: 'commun' as const },
+    ];
+    const analysis = buildSuccessionChainageAnalysis({
+      civil: makeCivil({ situationMatrimoniale: 'marie', regimeMatrimonial: 'communaute_legale' }),
+      liquidation: makeLiquidation({ actifEpoux1: 300_000, actifEpoux2: 200_000, actifCommun: 0, nbEnfants: 2 }),
+      regimeUsed: 'communaute_legale',
+      order: 'epoux1',
+      dmtgSettings: DEFAULT_DMTG,
+      enfantsContext: enfants,
+      familyMembers: [],
+      devolution: makeDevolution({
+        testamentsBySide: {
+          epoux1: {
+            active: true,
+            dispositionType: 'legs_particulier',
+            beneficiaryRef: null,
+            quotePartPct: 0,
+            particularLegacies: [
+              { id: 'L1', beneficiaryRef: 'enfant:E1', amount: 150_000 },
+              { id: 'L2', beneficiaryRef: 'enfant:E2', amount: 50_000 },
+            ],
+          },
+        },
+      }),
+    });
+
+    expect(analysis.applicable).toBe(true);
+    expect(analysis.step1?.actifTransmis).toBe(300_000);
+    const conjoint4 = analysis.step1?.beneficiaries.find((b) => b.lien === 'conjoint');
+    expect(conjoint4?.brut).toBe(75_000);
+    const e1t4 = analysis.step1?.beneficiaries.find((b) => b.id === 'E1');
+    expect(e1t4?.brut).toBe(137_500);                      // 75k testament (ratio 0.5) + 62.5k réserve
+    const e2t4 = analysis.step1?.beneficiaries.find((b) => b.id === 'E2');
+    expect(e2t4?.brut).toBe(87_500);                       // 25k testament + 62.5k réserve
+    expect(analysis.warnings.some((w) => w.includes('plafonnement'))).toBe(true);
+  });
 });
 
 describe('successionTestament helpers', () => {

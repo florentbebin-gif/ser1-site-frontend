@@ -535,4 +535,51 @@ describe('computeSuccessionAssetValuation', () => {
       { pocket: 'communaute', amount: 15000 },
     ]);
   });
+
+  it('interMassClaims enabled=false : aucun ajustement applique sur assetNetTotals', () => {
+    // Une claim désactivée (enabled=false) ne doit pas modifier les masses nettes,
+    // même si fromPocket et toPocket sont différents et que les montants sont valides.
+    const result = computeSuccessionAssetValuation({
+      civilContext: marriedCivilContext,
+      patrimonialContext: {
+        interMassClaims: [
+          {
+            id: 'claim-disabled',
+            kind: 'recompense',
+            fromPocket: 'communaute',
+            toPocket: 'epoux1',
+            amount: 50_000,
+            enabled: false,
+          },
+          {
+            id: 'claim-creance-disabled',
+            kind: 'creance',
+            fromPocket: 'epoux1',
+            toPocket: 'epoux2',
+            amount: 30_000,
+            enabled: false,
+          },
+        ],
+      },
+      assetEntries: [
+        { id: 'a1', pocket: 'communaute', category: 'financier', subCategory: 'Titres', amount: 200_000 },
+        { id: 'a2', pocket: 'epoux1', category: 'financier', subCategory: 'Comptes', amount: 100_000 },
+        { id: 'a3', pocket: 'epoux2', category: 'financier', subCategory: 'Comptes', amount: 80_000 },
+      ],
+      groupementFoncierEntries: [],
+      forfaitMobilierMode: 'off',
+      forfaitMobilierPct: 5,
+      forfaitMobilierMontant: 0,
+      abattementResidencePrincipale: false,
+    });
+
+    expect(result.assetNetTotals.commun).toBe(200_000);
+    expect(result.assetNetTotals.epoux1).toBe(100_000);
+    expect(result.assetNetTotals.epoux2).toBe(80_000);
+    // Le moteur retourne un objet summary même quand toutes les claims sont disabled,
+    // mais aucun ajustement n'est appliqué (configured=false, totalAppliedAmount=0)
+    expect(result.interMassClaimsSummary?.configured).toBe(false);
+    expect(result.interMassClaimsSummary?.totalAppliedAmount).toBe(0);
+    expect(result.interMassClaimsSummary?.claims).toHaveLength(0);
+  });
 });
