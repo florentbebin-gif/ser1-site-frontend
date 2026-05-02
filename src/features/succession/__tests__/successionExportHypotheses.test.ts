@@ -2,7 +2,16 @@ import JSZip from 'jszip';
 import { describe, expect, it } from 'vitest';
 import { buildSuccessionStudyDeck } from '@/pptx/presets/successionDeckBuilder';
 import { DEFAULT_COLORS } from '@/settings/theme';
+import { DEFAULT_DMTG } from '../../../engine/civil';
+import { buildSuccessionAvFiscalAnalysis } from '../successionAvFiscal';
+import { buildSuccessionChainageAnalysis } from '../successionChainage';
+import { buildSuccessionFiscalSnapshot } from '../successionFiscalContext';
+import { buildSuccessionPerFiscalAnalysis } from '../successionPerFiscal';
+import { buildSuccessionPrevoyanceFiscalAnalysis } from '../successionPrevoyanceFiscal';
+import { buildSuccessionExportActiveHypotheses } from '../export/successionExportHypotheses';
 import { exportSuccessionXlsx } from '../export/successionXlsx';
+import { buildSuccessionChainageExportPayload } from '../hooks/useSuccessionOutcomeExportPayload';
+import { makeLiquidation } from './fixtures';
 
 const THEME_COLORS = DEFAULT_COLORS;
 
@@ -100,6 +109,86 @@ describe('Succession export - hypothèses actives', () => {
 
     expect(hypothesesText).toContain('récompenses et créances entre masses');
     expect(hypothesesText).toContain('passifs affectés');
+  });
+
+  it("restitue société d'acquêts dans les hypothèses actives", () => {
+    const items = buildSuccessionExportActiveHypotheses([], {
+      applicable: true,
+      societeAcquets: { configured: true, totalValue: 400000 },
+    });
+    expect(items.some((item) => item.includes("Société d’acquêts"))).toBe(true);
+  });
+
+  it('restitue le préciput cible dans les hypothèses actives', () => {
+    const items = buildSuccessionExportActiveHypotheses([], {
+      applicable: true,
+      preciput: { mode: 'cible', appliedAmount: 50000, usesGlobalFallback: false, selections: [] },
+    });
+    expect(items.some((item) => item.includes('préciput cible'))).toBe(true);
+  });
+
+  it("restitue société d'acquêts et préciput via buildSuccessionChainageExportPayload → exportSuccessionXlsx", async () => {
+    // 1. Construire le chainageAnalysis via le moteur réel (SA active + préciput global)
+    const civil = {
+      situationMatrimoniale: 'marie',
+      regimeMatrimonial: 'separation_biens_societe_acquets',
+      pacsConvention: 'separation',
+    } as const;
+    const liquidation = makeLiquidation({ actifEpoux1: 300_000, actifEpoux2: 200_000, actifCommun: 0, nbEnfants: 2 });
+    const chainageAnalysis = buildSuccessionChainageAnalysis({
+      civil,
+      liquidation,
+      regimeUsed: 'separation_biens',
+      order: 'epoux1',
+      dmtgSettings: DEFAULT_DMTG,
+      societeAcquetsNetValue: 400_000,
+      patrimonial: {
+        societeAcquets: { active: true, liquidationMode: 'quotes', quoteEpoux1Pct: 50, quoteEpoux2Pct: 50, attributionSurvivantPct: 0 },
+        preciputMode: 'global',
+        preciputMontant: 50_000,
+      },
+    });
+
+    // SA et préciput présents dans le chainageAnalysis
+    expect(chainageAnalysis.societeAcquets?.configured).toBe(true);
+    expect(chainageAnalysis.preciput?.appliedAmount).toBeGreaterThan(0);
+
+    // 2. Construire le payload via la couche export (bridge page → export)
+    const snapshot = buildSuccessionFiscalSnapshot(null);
+    const zeroFiscal = buildSuccessionAvFiscalAnalysis([], civil, [], [], snapshot);
+    const zeroPer = buildSuccessionPerFiscalAnalysis([], civil, [], [], snapshot, new Date());
+    const zeroPrevoyance = buildSuccessionPrevoyanceFiscalAnalysis([], civil, [], [], snapshot, new Date());
+    const payload = buildSuccessionChainageExportPayload({
+      displayUsesChainage: true,
+      chainageAnalysis,
+      assuranceVieByAssure: { epoux1: 0, epoux2: 0 },
+      perByAssure: { epoux1: 0, epoux2: 0 },
+      prevoyanceByAssure: { epoux1: 0, epoux2: 0 },
+      assuranceVieTotale: 0,
+      perTotale: 0,
+      prevoyanceTotale: 0,
+      avFiscalAnalysis: zeroFiscal,
+      perFiscalAnalysis: zeroPer,
+      prevoyanceFiscalAnalysis: zeroPrevoyance,
+      derivedTotalDroits: chainageAnalysis.totalDroits,
+      isPacsed: false,
+      directDisplayWarnings: [],
+    });
+
+    // 3. Export XLSX et vérification des hypothèses
+    const blob = await exportSuccessionXlsx(
+      { actifNetSuccession: 500_000, nbHeritiers: 0, heritiers: [] },
+      null,
+      THEME_COLORS.c1,
+      'Simulation-Succession',
+      payload,
+    );
+
+    const zip = await JSZip.loadAsync(await blob.arrayBuffer());
+    const hypothesesText = await readSheetSharedText(zip, 'xl/worksheets/sheet2.xml');
+
+    expect(hypothesesText).toContain('liquidation simplifiée de la poche');  // SA hypothesis
+    expect(hypothesesText).toContain('préciput');                             // préciput hypothesis
   });
 
   it('restitue la participation aux acquêts dans la slide Hypothèses PPTX', () => {

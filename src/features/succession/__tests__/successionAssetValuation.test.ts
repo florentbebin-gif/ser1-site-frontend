@@ -418,6 +418,102 @@ describe('computeSuccessionAssetValuation', () => {
     expect(result.assetNetTotals.epoux2).toBe(100000);
   });
 
+  it('créance époux1 → époux2 : assetNetTotals redistribués correctement', () => {
+    const result = computeSuccessionAssetValuation({
+      civilContext: marriedCivilContext,
+      patrimonialContext: {
+        interMassClaims: [
+          {
+            id: 'claim-1',
+            kind: 'creance',
+            fromPocket: 'epoux1',
+            toPocket: 'epoux2',
+            amount: 30_000,
+            enabled: true,
+          },
+        ],
+      },
+      assetEntries: [
+        { id: 'asset-1', pocket: 'epoux1', category: 'financier', subCategory: 'Titres', amount: 100_000 },
+        { id: 'asset-2', pocket: 'epoux2', category: 'financier', subCategory: 'Comptes', amount: 80_000 },
+      ],
+      groupementFoncierEntries: [],
+      forfaitMobilierMode: 'off',
+      forfaitMobilierPct: 5,
+      forfaitMobilierMontant: 0,
+      abattementResidencePrincipale: false,
+    });
+
+    expect(result.interMassClaimsSummary.totalAppliedAmount).toBe(30_000);
+    expect(result.assetNetTotals.epoux1).toBe(70_000);  // 100 000 - 30 000
+    expect(result.assetNetTotals.epoux2).toBe(110_000); // 80 000 + 30 000
+  });
+
+  it('récompense avec masse débitrice insuffisante : plafonnée et warning généré', () => {
+    // communauté ne dispose que de 40 000, récompense demandée = 100 000
+    const result = computeSuccessionAssetValuation({
+      civilContext: marriedCivilContext,
+      patrimonialContext: {
+        interMassClaims: [
+          {
+            id: 'claim-1',
+            kind: 'recompense',
+            fromPocket: 'communaute',
+            toPocket: 'epoux1',
+            amount: 100_000,
+            enabled: true,
+          },
+        ],
+      },
+      assetEntries: [
+        { id: 'asset-1', pocket: 'communaute', category: 'financier', subCategory: 'Comptes', amount: 40_000 },
+        { id: 'asset-2', pocket: 'epoux1', category: 'financier', subCategory: 'Titres', amount: 200_000 },
+      ],
+      groupementFoncierEntries: [],
+      forfaitMobilierMode: 'off',
+      forfaitMobilierPct: 5,
+      forfaitMobilierMontant: 0,
+      abattementResidencePrincipale: false,
+    });
+
+    const claim = result.interMassClaimsSummary.claims[0];
+    expect(claim.requestedAmount).toBe(100_000);
+    expect(claim.appliedAmount).toBe(40_000); // plafonné
+    expect(result.interMassClaimsSummary.warnings.some((w) => w.includes('plafonne'))).toBe(true);
+    expect(result.assetNetTotals.commun).toBe(0);
+    expect(result.assetNetTotals.epoux1).toBe(240_000); // 200 000 + 40 000
+  });
+
+  it('créance avec masse débitrice = masse créancière : ignorée, warning généré', () => {
+    const result = computeSuccessionAssetValuation({
+      civilContext: marriedCivilContext,
+      patrimonialContext: {
+        interMassClaims: [
+          {
+            id: 'claim-1',
+            kind: 'creance',
+            fromPocket: 'epoux1',
+            toPocket: 'epoux1',
+            amount: 50_000,
+            enabled: true,
+          },
+        ],
+      },
+      assetEntries: [
+        { id: 'asset-1', pocket: 'epoux1', category: 'financier', subCategory: 'Comptes', amount: 200_000 },
+      ],
+      groupementFoncierEntries: [],
+      forfaitMobilierMode: 'off',
+      forfaitMobilierPct: 5,
+      forfaitMobilierMontant: 0,
+      abattementResidencePrincipale: false,
+    });
+
+    expect(result.interMassClaimsSummary.claims[0].appliedAmount).toBe(0);
+    expect(result.interMassClaimsSummary.warnings.some((w) => w.includes('identiques'))).toBe(true);
+    expect(result.assetNetTotals.epoux1).toBe(200_000); // inchangé
+  });
+
   it('summarizes affected liabilities by pocket', () => {
     const result = computeSuccessionAssetValuation({
       civilContext: marriedCivilContext,
