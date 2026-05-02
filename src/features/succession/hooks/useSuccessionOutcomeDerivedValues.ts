@@ -517,11 +517,13 @@ export function useSuccessionOutcomeDerivedValues({
     attentions,
     hasInterMassClaims: (chainageAnalysis.interMassClaims?.totalAppliedAmount ?? 0) > 0,
     hasAffectedLiabilities: (chainageAnalysis.affectedLiabilities?.totalAmount ?? 0) > 0,
+    hasDonationsPartage: patrimonialAnalysis.donationsPartagees > 0,
   }), [
     fiscalSnapshot,
     attentions,
     chainageAnalysis.interMassClaims?.totalAppliedAmount,
     chainageAnalysis.affectedLiabilities?.totalAmount,
+    patrimonialAnalysis.donationsPartagees,
   ]);
 
   const exportHeirs = useMemo(

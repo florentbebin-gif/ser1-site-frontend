@@ -9,6 +9,7 @@ interface ScDonationsCardProps {
   donationTotals: {
     rapportable: number;
     horsPart: number;
+    partagees: number;
     legsParticuliers: number;
   };
   donateurOptions: { value: string; label: string }[];
@@ -176,6 +177,12 @@ export default function ScDonationsCard({
           <span>Donations hors part</span>
           <strong>{fmt(donationTotals.horsPart)}</strong>
         </div>
+        {donationTotals.partagees > 0 && (
+          <div className="sc-summary-row">
+            <span>Donations-partage</span>
+            <strong>{fmt(donationTotals.partagees)}</strong>
+          </div>
+        )}
         <div className="sc-summary-row">
           <span>Legs particuliers</span>
           <strong>{fmt(donationTotals.legsParticuliers)}</strong>

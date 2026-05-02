@@ -4,9 +4,6 @@ export const DEFAULT_DONATION = {
     montant: 31865,
     conditions: 'Donateur < 80 ans, donataire majeur',
   },
-  donManuel: {
-    abattementRenouvellement: 15,
-  },
 };
 
 export const RESERVE_HEREDITAIRE = [

@@ -14,6 +14,7 @@ export interface SuccessionPatrimonialAnalysis {
   quotiteDisponibleMontant: number;
   liberalitesImputeesMontant: number;
   depassementQuotiteMontant: number;
+  donationsPartagees: number;
   warnings: string[];
 }
 
@@ -92,6 +93,9 @@ export function buildSuccessionPatrimonialAnalysis(
     .reduce((sum, entry) => sum + getDonationCurrentValue(entry), 0);
   const computedLegacyLegsParticuliers = donations
     .filter((entry) => entry.type === 'legs_particulier')
+    .reduce((sum, entry) => sum + getDonationCurrentValue(entry), 0);
+  const computedDonationsPartagees = donations
+    .filter((entry) => entry.type === 'donation_partage')
     .reduce((sum, entry) => sum + getDonationCurrentValue(entry), 0);
   const testamentLegsParticuliers = options?.testament
     ? options.testament.particularLegacies.reduce((sum, entry) => sum + asAmount(entry.amount), 0)
@@ -218,6 +222,9 @@ export function buildSuccessionPatrimonialAnalysis(
     if (donSommeArgentExonereCount > 0) {
       warnings.push(`${donSommeArgentExonereCount} don(s) de somme d’argent exonéré(s): vérifier les conditions d’âge et de délai (CGI art. 790 G).`);
     }
+    if (computedDonationsPartagees > 0) {
+      warnings.push(`Donation(s)-partage présente(s) (valeur gelée CCV 1078, non rapportable au partage civil) — exclue(s) de la masse civile de référence. Imputation fine sur la réserve non modélisée.`);
+    }
 
     if (fiscalSnapshot) {
       const recentDonationsCount = donations.filter((entry) =>
@@ -243,6 +250,7 @@ export function buildSuccessionPatrimonialAnalysis(
     quotiteDisponibleMontant,
     liberalitesImputeesMontant,
     depassementQuotiteMontant,
+    donationsPartagees: computedDonationsPartagees,
     warnings,
   };
 }

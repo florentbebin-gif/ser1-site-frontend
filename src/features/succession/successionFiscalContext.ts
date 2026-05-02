@@ -9,9 +9,6 @@ export interface SuccessionDonationSettings {
     montant: number;
     conditions: string;
   };
-  donManuel: {
-    abattementRenouvellement: number;
-  };
 }
 
 export interface SuccessionAvDecesSettings {
@@ -40,9 +37,6 @@ interface LooseTaxSettings extends Record<string, unknown> {
       montant?: unknown;
       conditions?: unknown;
     };
-    donManuel?: {
-      abattementRenouvellement?: unknown;
-    };
   };
 }
 
@@ -67,9 +61,6 @@ const DEFAULT_DONATION: SuccessionDonationSettings = {
   donFamilial790G: {
     montant: 31865,
     conditions: 'Donateur < 80 ans, donataire majeur',
-  },
-  donManuel: {
-    abattementRenouvellement: 15,
   },
 };
 
@@ -120,12 +111,6 @@ export function buildSuccessionFiscalSnapshot(
         conditions: asStringOr(
           donationRaw?.donFamilial790G?.conditions,
           DEFAULT_DONATION.donFamilial790G.conditions,
-        ),
-      },
-      donManuel: {
-        abattementRenouvellement: asNumberOr(
-          donationRaw?.donManuel?.abattementRenouvellement,
-          DEFAULT_DONATION.donManuel.abattementRenouvellement,
         ),
       },
     },

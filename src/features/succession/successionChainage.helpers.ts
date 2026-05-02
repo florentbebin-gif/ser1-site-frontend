@@ -20,7 +20,10 @@ import {
   mergeDetailedHeirs,
   type DetailedChainHeir,
 } from './successionChainage.heirs';
-import { applySuccessionDonationRecallToHeirs } from './successionDonationRecall';
+import {
+  applySuccessionDonationRecallToHeirs,
+  buildDonationRecallWarningMessages,
+} from './successionDonationRecall';
 import {
   assignBeneficiaryTaxableBasis,
   createEmptyPocketScales,
@@ -386,17 +389,22 @@ export function computeStepTransmission(
         forfaitMobilierMontant: input.forfaitMobilierMontant ?? 0,
       })
       : detailedHeirs;
-    const detailedHeirsWithDonationRecall = applySuccessionDonationRecallToHeirs({
+    const donateurDateNaissanceEarly = deceased === 'epoux1'
+      ? input.civil.dateNaissanceEpoux1
+      : input.civil.dateNaissanceEpoux2;
+    const donationRecallResultEarly = applySuccessionDonationRecallToHeirs({
       heirs: detailedHeirsWithTaxableBasis,
       donations: input.donations,
       simulatedDeceased: deceased,
       donationSettings: input.donationSettings,
       dmtgSettings: input.dmtgSettings,
       referenceDate: input.referenceDate,
+      donateurDateNaissance: donateurDateNaissanceEarly,
     });
+    const donationRecallWarningsEarly = buildDonationRecallWarningMessages(donationRecallResultEarly.warnings);
     const { droits, beneficiaries } = computeTransmissionForHeirs(
       estateAmount,
-      detailedHeirsWithDonationRecall,
+      donationRecallResultEarly.heirs,
       input.dmtgSettings,
     );
     const partAutresBeneficiaires = beneficiaries
@@ -417,6 +425,7 @@ export function computeStepTransmission(
       warnings: [
         ...prefixStepWarnings(stepLabel, configWarnings),
         ...prefixStepWarnings(stepLabel, testamentDistribution?.warnings ?? []),
+        ...prefixStepWarnings(stepLabel, donationRecallWarningsEarly),
       ],
     };
   }
@@ -450,17 +459,22 @@ export function computeStepTransmission(
       forfaitMobilierMontant: input.forfaitMobilierMontant ?? 0,
     })
     : detailedHeirs;
-  const detailedHeirsWithDonationRecall = applySuccessionDonationRecallToHeirs({
+  const donateurDateNaissance = deceased === 'epoux1'
+    ? input.civil.dateNaissanceEpoux1
+    : input.civil.dateNaissanceEpoux2;
+  const donationRecallResult = applySuccessionDonationRecallToHeirs({
     heirs: detailedHeirsWithTaxableBasis,
     donations: input.donations,
     simulatedDeceased: deceased,
     donationSettings: input.donationSettings,
     dmtgSettings: input.dmtgSettings,
     referenceDate: input.referenceDate,
+    donateurDateNaissance,
   });
+  const donationRecallWarnings = buildDonationRecallWarningMessages(donationRecallResult.warnings);
   const transmission = computeTransmissionForHeirs(
     estateAmount,
-    detailedHeirsWithDonationRecall,
+    donationRecallResult.heirs,
     input.dmtgSettings,
   );
   const partConjoint = transmission.beneficiaries
@@ -482,6 +496,7 @@ export function computeStepTransmission(
     warnings: [
       ...prefixStepWarnings(stepLabel, configWarnings),
       ...prefixStepWarnings(stepLabel, testamentDistribution?.warnings ?? []),
+      ...prefixStepWarnings(stepLabel, donationRecallWarnings),
     ],
   };
 }

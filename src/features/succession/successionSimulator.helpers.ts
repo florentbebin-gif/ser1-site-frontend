@@ -378,8 +378,15 @@ export function applySuccessionDonationFieldUpdate(
   if (field === 'valeurActuelle') {
     return { ...entry, valeurActuelle: Math.max(0, Number(value) || 0) };
   }
-  if (field === 'donSommeArgentExonere' || field === 'avecReserveUsufruit') {
-    return { ...entry, [field]: Boolean(value) };
+  // 790 G (don de somme d'argent) et réserve d'usufruit sont mutuellement exclusifs :
+  // activer l'un désactive l'autre pour éviter une combinaison fiscalement incohérente.
+  if (field === 'donSommeArgentExonere') {
+    const enabled = Boolean(value);
+    return { ...entry, donSommeArgentExonere: enabled, ...(enabled ? { avecReserveUsufruit: false } : {}) };
+  }
+  if (field === 'avecReserveUsufruit') {
+    const enabled = Boolean(value);
+    return { ...entry, avecReserveUsufruit: enabled, ...(enabled ? { donSommeArgentExonere: false } : {}) };
   }
   return { ...entry, [field]: typeof value === 'string' ? value : String(value) };
 }
