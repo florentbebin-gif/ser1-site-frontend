@@ -5,6 +5,7 @@ import { computeStep1Split } from '../successionChainageEstateSplit';
 import {
   makeCivil,
   makeLiquidation,
+  makeDevolution,
 } from './successionChainage.test.helpers';
 
 describe('buildSuccessionChainageAnalysis - special regimes', () => {
@@ -423,4 +424,261 @@ describe('buildSuccessionChainageAnalysis - special regimes', () => {
       withAbatement.warnings.some((warning) => warning.includes('abattement residence principale 20 % applique')),
     ).toBe(true);
   });
+
+  it('DDV pleine_propriete_quotite actif (computeStep1Split) : conjointPart = quotite disponible', () => {
+    // 2 enfants → réserve 2/3, quotité dispo 1/3 = 600 000 / 3 = 200 000
+    const result = computeStep1Split(
+      makeCivil({ regimeMatrimonial: 'separation_biens' }),
+      'separation_biens',
+      600_000,
+      2,
+      'epoux1',
+      { donationEntreEpouxActive: true, donationEntreEpouxOption: 'pleine_propriete_quotite' },
+    );
+
+    expect(result.conjointPart).toBeCloseTo(200_000, 0);
+    expect(result.enfantsPart).toBeCloseTo(400_000, 0);
+    expect(result.carryOverToStep2).toBeCloseTo(200_000, 0);
+    expect(result.preciputDeducted).toBe(0);
+  });
+
+  it('DDV pleine_propriete_quotite actif (chainage e2e) : step1 plafonne a la quotite, step2 = survivorBase + carry PP', () => {
+    // SB, epoux1 décédé, estate=600k, 2 enfants
+    // step1 : conjointPart = 200k (quotité 1/3), enfantsPart = 400k (réserve 2/3)
+    // survivorBase = (600k+200k) - 600k = 200k ; step2 = 200k + 200k = 400k
+    const analysis = buildSuccessionChainageAnalysis({
+      civil: makeCivil({ regimeMatrimonial: 'separation_biens' }),
+      liquidation: makeLiquidation({ actifEpoux1: 600_000, actifEpoux2: 200_000, actifCommun: 0, nbEnfants: 2 }),
+      regimeUsed: 'separation_biens',
+      order: 'epoux1',
+      dmtgSettings: DEFAULT_DMTG,
+      enfantsContext: [{ id: 'E1', rattachement: 'commun' }, { id: 'E2', rattachement: 'commun' }],
+      familyMembers: [],
+      patrimonial: {
+        donationEntreEpouxActive: true,
+        donationEntreEpouxOption: 'pleine_propriete_quotite',
+        attributionIntegrale: false,
+        preciputMontant: 0,
+      },
+    });
+
+    expect(analysis.step1?.partConjoint).toBeCloseTo(200_000, 0);  // quotité 1/3 = 200k
+    expect(analysis.step1?.partEnfants).toBeCloseTo(400_000, 0);   // réserve 2/3 = 400k
+    expect(analysis.step2?.actifTransmis).toBe(400_000);           // survivorBase(200k) + carry PP(200k)
+  });
+
+  it('DDV mixte avec date de naissance (chainage e2e) : 1/4 PP + 3/4 usufruit CGI 669, carry = PP seule', () => {
+    // SB, epoux1 décédé, epoux2 né 1965-01-01, referenceDate 2026-01-01 → age=61
+    // BAREME_USUFRUIT_669 (successionUsufruit.ts:7) : 61 <= age < 71 → tauxUsufruit=0.4
+    // estate=300k ; 1/4 PP=75k, 3/4=225k × 0.4=90k (usufruit)
+    // conjointPart = 75k + 90k = 165k ; carryOverToStep2 = 75k (PP seule, usufruit non transmis)
+    // survivorBase = (300k+200k) - 300k = 200k ; step2 = 200k + 75k = 275k
+    const analysis = buildSuccessionChainageAnalysis({
+      civil: makeCivil({ regimeMatrimonial: 'separation_biens', dateNaissanceEpoux2: '1965-01-01' }),
+      liquidation: makeLiquidation({ actifEpoux1: 300_000, actifEpoux2: 200_000, actifCommun: 0, nbEnfants: 2 }),
+      regimeUsed: 'separation_biens',
+      order: 'epoux1',
+      dmtgSettings: DEFAULT_DMTG,
+      referenceDate: new Date('2026-01-01T00:00:00Z'),
+      enfantsContext: [{ id: 'E1', rattachement: 'commun' }, { id: 'E2', rattachement: 'commun' }],
+      familyMembers: [],
+      patrimonial: {
+        donationEntreEpouxActive: true,
+        donationEntreEpouxOption: 'mixte',
+        attributionIntegrale: false,
+        preciputMontant: 0,
+      },
+    });
+
+    expect(analysis.step1?.partConjoint).toBeCloseTo(165_000, 0);
+    expect(analysis.step1?.partEnfants).toBeCloseTo(135_000, 0);
+    expect(analysis.step2?.actifTransmis).toBeCloseTo(275_000, 0);
+    expect(analysis.warnings.some((w) => w.includes('mixte'))).toBe(true);
+    expect(analysis.warnings.some((w) => w.includes('669'))).toBe(true);
+  });
+
+  it('attributionBiensCommunsPct=80 (chainage e2e CL) : firstEstate reduit, step2 elargi', () => {
+    // CL, epoux1 décédé : propres epoux1=300k, actifCommun=400k, propres epoux2=200k
+    // attributionPct=80 → survivant prend 80% du commun
+    // firstEstate = 300k + 400k × (1-0.8) = 380k   (source: successionChainage.ts:164)
+    // survivorBase = 900k - 380k = 520k              (source: successionChainage.ts:186)
+    // carryOver = 380k × 1/4 = 95k (sans DDV, 2 enfants)
+    // step2 = survivorBase + carryOver = 615k
+    const analysis = buildSuccessionChainageAnalysis({
+      civil: makeCivil({ regimeMatrimonial: 'communaute_legale' }),
+      liquidation: makeLiquidation({ actifEpoux1: 300_000, actifEpoux2: 200_000, actifCommun: 400_000, nbEnfants: 2 }),
+      regimeUsed: 'communaute_legale',
+      order: 'epoux1',
+      dmtgSettings: DEFAULT_DMTG,
+      attributionBiensCommunsPct: 80,
+      enfantsContext: [{ id: 'E1', rattachement: 'commun' }, { id: 'E2', rattachement: 'commun' }],
+      familyMembers: [],
+    });
+
+    expect(analysis.step1?.actifTransmis).toBe(380_000);
+    expect(analysis.step1?.partConjoint).toBeCloseTo(95_000, 0);
+    expect(analysis.step2?.actifTransmis).toBe(615_000);
+  });
+
+  it("SA active + preciputMode cible sans selection : preciputMontant gouverne societeAcquets.preciputAmount (usesGlobalFallback)", () => {
+    // preciputMode:'cible' sans sélection active → usesGlobalFallback=true
+    // SA.preciputAmount = min(preciputMontant=60k, totalSA=400k) = 60k
+    // reliquat SA = 340k ; quotes 50/50 → firstEstateContribution = 170k
+    const analysis = buildSuccessionChainageAnalysis({
+      civil: makeCivil({ regimeMatrimonial: 'separation_biens_societe_acquets' }),
+      liquidation: makeLiquidation({ actifEpoux1: 300_000, actifEpoux2: 200_000, actifCommun: 400_000, nbEnfants: 2 }),
+      regimeUsed: 'separation_biens',
+      order: 'epoux1',
+      dmtgSettings: DEFAULT_DMTG,
+      societeAcquetsNetValue: 400_000,
+      enfantsContext: [{ id: 'E1', rattachement: 'commun' }, { id: 'E2', rattachement: 'commun' }],
+      familyMembers: [],
+      patrimonial: {
+        attributionIntegrale: false,
+        donationEntreEpouxActive: false,
+        donationEntreEpouxOption: 'usufruit_total',
+        preciputMode: 'cible',
+        preciputMontant: 60_000,
+        societeAcquets: {
+          active: true,
+          liquidationMode: 'quotes',
+          quoteEpoux1Pct: 50,
+          quoteEpoux2Pct: 50,
+          attributionSurvivantPct: 0,
+        },
+      },
+    });
+
+    expect(analysis.societeAcquets?.preciputAmount).toBe(60_000);
+    expect(analysis.societeAcquets?.firstEstateContribution).toBe(170_000);
+    expect(analysis.preciput?.usesGlobalFallback).toBe(true);
+    expect(analysis.warnings.some((w) => w.includes('preciput'))).toBe(true);
+  });
+
+  it("T9 [audit] SA préciput cible avec sélection active : usesGlobalFallback=false, preciputAmount=min(selection,asset)", () => {
+    // Scénario cible réel (G7) : sélection active sur asset SA-1 (150k) pour 80k.
+    // preciputPatrimonial.preciputMontant = resolvedPreciput.requestedAmount = 80k
+    // SA total = 400k ; preciput = 80k ; reliquat = 320k ; quotes 50/50 → firstEstateContribution = 160k
+    // step1.actifTransmis = propres époux1 (300k) + 160k = 460k
+    // Le warning fallback NE doit PAS apparaître.
+    const analysis = buildSuccessionChainageAnalysis({
+      civil: makeCivil({ regimeMatrimonial: 'separation_biens_societe_acquets' }),
+      liquidation: makeLiquidation({ actifEpoux1: 300_000, actifEpoux2: 200_000, actifCommun: 400_000, nbEnfants: 2 }),
+      regimeUsed: 'separation_biens',
+      order: 'epoux1',
+      dmtgSettings: DEFAULT_DMTG,
+      societeAcquetsNetValue: 400_000,
+      enfantsContext: [{ id: 'E1', rattachement: 'commun' }, { id: 'E2', rattachement: 'commun' }],
+      familyMembers: [],
+      assetEntries: [
+        { id: 'SA-1', pocket: 'societe_acquets', category: 'financier', subCategory: 'Compte épargne', amount: 150_000 },
+      ],
+      patrimonial: {
+        attributionIntegrale: false,
+        donationEntreEpouxActive: false,
+        donationEntreEpouxOption: 'usufruit_total',
+        preciputMode: 'cible',
+        preciputMontant: 0,
+        preciputSelections: [
+          { id: 'sel-1', sourceType: 'asset', sourceId: 'SA-1', labelSnapshot: 'SA-1', pocket: 'societe_acquets', amount: 80_000, enabled: true },
+        ],
+        societeAcquets: { active: true, liquidationMode: 'quotes', quoteEpoux1Pct: 50, quoteEpoux2Pct: 50, attributionSurvivantPct: 0 },
+      },
+    });
+
+    expect(analysis.preciput?.mode).toBe('cible');
+    expect(analysis.preciput?.usesGlobalFallback).toBe(false);
+    expect(analysis.preciput?.appliedAmount).toBe(80_000);
+    expect(analysis.societeAcquets?.preciputAmount).toBe(80_000);
+    expect(analysis.societeAcquets?.firstEstateContribution).toBe(160_000);
+    expect(analysis.step1?.actifTransmis).toBe(460_000);
+    // Warning cible présent, warning fallback absent
+    expect(analysis.warnings.some((w) => w.includes('Preciput cible:') && w.includes('80'))).toBe(true);
+    expect(analysis.warnings.some((w) => w.includes('repli sur le montant global'))).toBe(false);
+  });
+
+  it('T6a [audit] choixLegal usufruit + date fournie : usufruit CGI 669 appliqué, carryOver=0', () => {
+    // CL, époux1 décédé, firstEstate = 200k + 200k = 400k, survivorBase = 400k
+    // dateNaissanceEpoux2='1975-01-01', refDate='2026-01-01' → âge=51 → taux 0.5 (bracket <61)
+    // conjointPart = 400k × 0.5 = 200k ; enfantsPart = 200k ; carryOver = 0
+    // step2.actifTransmis = survivorBase(400k) + carryOver(0) = 400k
+    const analysis = buildSuccessionChainageAnalysis({
+      civil: makeCivil({ dateNaissanceEpoux2: '1975-01-01' }),
+      liquidation: makeLiquidation({ actifEpoux1: 200_000, actifEpoux2: 200_000, actifCommun: 400_000, nbEnfants: 2 }),
+      regimeUsed: 'communaute_legale',
+      order: 'epoux1',
+      dmtgSettings: DEFAULT_DMTG,
+      enfantsContext: [{ id: 'E1', rattachement: 'commun' }, { id: 'E2', rattachement: 'commun' }],
+      familyMembers: [],
+      devolution: makeDevolution({ choixLegalConjointSansDDV: 'usufruit', nbEnfantsNonCommuns: 0 }),
+      referenceDate: new Date('2026-01-01'),
+    });
+
+    expect(analysis.step1?.partConjoint).toBe(200_000);
+    expect(analysis.step1?.partEnfants).toBe(200_000);
+    expect(analysis.step2?.actifTransmis).toBe(400_000);
+    expect(analysis.warnings.some((w) => w.includes('Choix legal du conjoint') && w.includes('669'))).toBe(true);
+    // Pas de warning hypothèse moteur
+    expect(analysis.warnings.some((w) => w.includes('Hypothese simplifiee'))).toBe(false);
+  });
+
+  it('T6b [audit] choixLegal quart_pp : 1/4 PP explicite avec warning art. 757 CC', () => {
+    // CL, même scénario, choix explicite 1/4 PP
+    // conjointPart = 400k × 0.25 = 100k ; carryOver = 100k
+    // step2.actifTransmis = 400k + 100k = 500k
+    const analysis = buildSuccessionChainageAnalysis({
+      civil: makeCivil({ dateNaissanceEpoux2: '1975-01-01' }),
+      liquidation: makeLiquidation({ actifEpoux1: 200_000, actifEpoux2: 200_000, actifCommun: 400_000, nbEnfants: 2 }),
+      regimeUsed: 'communaute_legale',
+      order: 'epoux1',
+      dmtgSettings: DEFAULT_DMTG,
+      enfantsContext: [{ id: 'E1', rattachement: 'commun' }, { id: 'E2', rattachement: 'commun' }],
+      familyMembers: [],
+      devolution: makeDevolution({ choixLegalConjointSansDDV: 'quart_pp', nbEnfantsNonCommuns: 0 }),
+      referenceDate: new Date('2026-01-01'),
+    });
+
+    expect(analysis.step1?.partConjoint).toBe(100_000);
+    expect(analysis.step2?.actifTransmis).toBe(500_000);
+    expect(analysis.warnings.some((w) => w.includes('1/4 en pleine propriete retenu (art. 757 CC)'))).toBe(true);
+    expect(analysis.warnings.some((w) => w.includes('Hypothese simplifiee'))).toBe(false);
+  });
+
+  it('T6c [audit] choixLegal usufruit sans date de naissance : fallback 1/4 PP + warning date manquante', () => {
+    // Pas de dateNaissanceEpoux2 → valorisation CGI 669 impossible → repli 1/4 PP
+    const analysis = buildSuccessionChainageAnalysis({
+      civil: makeCivil(),
+      liquidation: makeLiquidation({ actifEpoux1: 200_000, actifEpoux2: 200_000, actifCommun: 400_000, nbEnfants: 2 }),
+      regimeUsed: 'communaute_legale',
+      order: 'epoux1',
+      dmtgSettings: DEFAULT_DMTG,
+      enfantsContext: [{ id: 'E1', rattachement: 'commun' }, { id: 'E2', rattachement: 'commun' }],
+      familyMembers: [],
+      devolution: makeDevolution({ choixLegalConjointSansDDV: 'usufruit', nbEnfantsNonCommuns: 0 }),
+      referenceDate: new Date('2026-01-01'),
+    });
+
+    expect(analysis.step1?.partConjoint).toBe(100_000);
+    expect(analysis.warnings.some((w) => w.includes('date de naissance') && w.includes('manquante'))).toBe(true);
+  });
+
+  it('T6d [audit] choixLegal usufruit + enfant non commun : usufruit ignoré, 1/4 PP forcé (art. 757 CC)', () => {
+    // Présence d'enfant non commun → usufruit legal inapplicable
+    const analysis = buildSuccessionChainageAnalysis({
+      civil: makeCivil({ dateNaissanceEpoux2: '1975-01-01' }),
+      liquidation: makeLiquidation({ actifEpoux1: 200_000, actifEpoux2: 200_000, actifCommun: 400_000, nbEnfants: 2 }),
+      regimeUsed: 'communaute_legale',
+      order: 'epoux1',
+      dmtgSettings: DEFAULT_DMTG,
+      enfantsContext: [{ id: 'E1', rattachement: 'commun' }, { id: 'E2', rattachement: 'commun' }],
+      familyMembers: [],
+      devolution: makeDevolution({ choixLegalConjointSansDDV: 'usufruit', nbEnfantsNonCommuns: 1 }),
+      referenceDate: new Date('2026-01-01'),
+    });
+
+    expect(analysis.step1?.partConjoint).toBe(100_000);
+    expect(analysis.warnings.some((w) => w.includes("enfant(s) non commun(s)"))).toBe(true);
+    expect(analysis.warnings.some((w) => w.includes('Choix legal du conjoint') && w.includes('669'))).toBe(false);
+  });
+
 });

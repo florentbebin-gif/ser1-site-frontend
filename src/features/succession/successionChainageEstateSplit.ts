@@ -1,4 +1,5 @@
 import type {
+  SuccessionChoixLegalConjointSansDDV,
   SuccessionCivilContext,
   SuccessionLiquidationContext,
   SuccessionPatrimonialContext,
@@ -212,6 +213,8 @@ export function computeStep1Split(
   patrimonial?: DonationEntreEpouxSelection,
   referenceDate = new Date(),
   nbParentsSurvivants = 0,
+  choixLegalConjointSansDDV?: SuccessionChoixLegalConjointSansDDV,
+  nbEnfantsNonCommuns?: number,
 ): SuccessionChainStep1Split {
   if (
     civil.situationMatrimoniale === 'marie'
@@ -285,9 +288,45 @@ export function computeStep1Split(
   };
 
   if (!patrimonial?.donationEntreEpouxActive) {
-    warnings.push(
-      'Hypothese simplifiee: part du conjoint au 1er deces fixee a 1/4 en pleine propriete.',
-    );
+    const hasEnfantsNonCommuns = (nbEnfantsNonCommuns ?? 0) > 0;
+    if (choixLegalConjointSansDDV === 'usufruit' && !hasEnfantsNonCommuns) {
+      const spouseBirthDate = getSurvivingSpouseBirthDate(civil, deceased);
+      if (!spouseBirthDate) {
+        warnings.push(
+          'Choix legal du conjoint en usufruit total: date de naissance du conjoint survivant manquante, repli moteur sur 1/4 en pleine propriete.',
+        );
+        return { ...fallback, preciputDeducted: preciput, warnings };
+      }
+      const valuation = getUsufruitValuationFromBirthDate(spouseBirthDate, estateAfterPreciput, referenceDate);
+      if (!valuation) {
+        warnings.push(
+          'Choix legal en usufruit total: valorisation art. 669 CGI impossible, repli moteur sur 1/4 en pleine propriete.',
+        );
+        return { ...fallback, preciputDeducted: preciput, warnings };
+      }
+      warnings.push(
+        `Choix legal du conjoint: usufruit total valorise selon l'art. 669 CGI (usufruitier ${valuation.age} ans, usufruit ${Math.round(valuation.tauxUsufruit * 100)}%).`,
+      );
+      return {
+        conjointPart: valuation.valeurUsufruit,
+        enfantsPart: valuation.valeurNuePropriete,
+        parentsPart: 0,
+        carryOverToStep2: 0,
+        preciputDeducted: preciput,
+        warnings,
+      };
+    }
+    if (choixLegalConjointSansDDV === 'usufruit' && hasEnfantsNonCommuns) {
+      warnings.push(
+        "Art. 757 CC: usufruit legal du conjoint non applicable en presence d'enfant(s) non commun(s), 1/4 en pleine propriete retenu.",
+      );
+    } else if (choixLegalConjointSansDDV === 'quart_pp') {
+      warnings.push('Choix legal du conjoint: 1/4 en pleine propriete retenu (art. 757 CC).');
+    } else {
+      warnings.push(
+        'Hypothese simplifiee: part du conjoint au 1er deces fixee a 1/4 en pleine propriete.',
+      );
+    }
     return { ...fallback, preciputDeducted: preciput, warnings };
   }
 

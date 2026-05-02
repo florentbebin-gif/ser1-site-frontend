@@ -235,4 +235,25 @@ describe('Succession export - hypothèses actives', () => {
       expect(hypothesesSlide.items.join(' ')).toContain('Participation aux acquêts');
     }
   });
+
+  it('warning CMA (successionChainage.ts:263) inclus dans les hypotheses exportees', () => {
+    // Non-régression : si le warning CMA est supprimé du moteur, ce test détecte la régression.
+    // Chaîne couverte : successionChainage.ts:263 → chainageAnalysis.warnings
+    //                 → buildSuccessionExportActiveHypotheses (successionExportHypotheses.ts:85)
+    const chainageAnalysis = buildSuccessionChainageAnalysis({
+      civil: { situationMatrimoniale: 'marie', regimeMatrimonial: 'communaute_meubles_acquets', pacsConvention: 'separation' },
+      liquidation: makeLiquidation({ actifEpoux1: 200_000, actifEpoux2: 150_000, actifCommun: 100_000, nbEnfants: 2 }),
+      regimeUsed: 'communaute_legale',  // CMA est calculé comme CL
+      order: 'epoux1',
+      dmtgSettings: DEFAULT_DMTG,
+    });
+
+    expect(chainageAnalysis.warnings.some((w) => w.includes('Communaute de meubles'))).toBe(true);
+
+    const items = buildSuccessionExportActiveHypotheses([], {
+      applicable: chainageAnalysis.applicable ?? true,
+      warnings: [...chainageAnalysis.warnings],
+    });
+    expect(items.some((h) => h.includes('Communaute de meubles'))).toBe(true);
+  });
 });
