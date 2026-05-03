@@ -124,6 +124,24 @@ describe('computePlafondMadelin', () => {
     expect(warnings.some((warning) => warning.code === 'PER_MADELIN_REINTEGRATION')).toBe(true);
   });
 
+  it('assietteReport non affectée par fraisReels = true (BOI-IR-BASE-20-50-20 §340)', () => {
+    const warnings: PerWarning[] = [];
+    const result = computePlafondMadelin({
+      declarant: {
+        ...EMPTY_DECLARANT,
+        statutTns: true,
+        art62: 60000,
+        bic: 20000,
+        fraisReels: true,
+        fraisReelsMontant: 8000,
+      },
+      pass: PASS,
+    }, warnings);
+
+    expect(result).not.toBeNull();
+    expect(result!.assietteReport).toBe(80000);
+  });
+
   it('calcule l’assiette report sur art.62 + bic sans abattement frais professionnels (BOI-IR-BASE-20-50-20 §340)', () => {
     const warnings: PerWarning[] = [];
     const result = computePlafondMadelin({
