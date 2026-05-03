@@ -5,16 +5,14 @@
  * - assiette de versement = BIC + art.62 + Madelin retraite + PER 154 bis + prévoyance
  * - enveloppe 15% de versement = 15% de l'assiette au-delà d'1 PASS, plafonnée à 8 PASS
  * - enveloppe 10% commune = partagée avec art. 83, PERCO/PERECO et dépassements Madelin
- * - enveloppe 15% de report 2042 = recalculée sur la base imposable TNS après frais pro
+ * - enveloppe 15% de report 2042 = recalculée sur la base imposable TNS brute (sans abattement frais professionnels, cf. BOI-IR-BASE-20-50-20 §340)
  */
 
-import { computeProfessionalDeduction, type PerAbattementConfigLike } from './plafond163Q';
 import type { DeclarantRevenus, PerWarning, PlafondMadelinDetail } from './types';
 
 export interface PlafondMadelinParams {
   declarant: DeclarantRevenus;
   pass: number;
-  abat10SalCfg: PerAbattementConfigLike;
 }
 
 export function createEmptyMadelinDetail(): PlafondMadelinDetail {
@@ -63,12 +61,8 @@ function computeEnvelope10(baseTns: number, assiette: number, pass: number): num
   return Math.round(clampAssiette(assiette, pass) * 0.1);
 }
 
-function computeAssietteReport(
-  declarant: DeclarantRevenus,
-  abat10SalCfg: PerAbattementConfigLike,
-): number {
-  const deductionProfessionnelle = computeProfessionalDeduction(declarant, abat10SalCfg);
-  return Math.max(0, (declarant.art62 || 0) + (declarant.bic || 0) - deductionProfessionnelle);
+function computeAssietteReport(declarant: DeclarantRevenus): number {
+  return Math.max(0, (declarant.art62 || 0) + (declarant.bic || 0));
 }
 
 function allocateSequentially(
@@ -122,7 +116,7 @@ export function computePlafondMadelin(
   params: PlafondMadelinParams,
   warnings: PerWarning[],
 ): PlafondMadelinDetail | null {
-  const { declarant, pass, abat10SalCfg } = params;
+  const { declarant, pass } = params;
   const baseTns = Math.max(0, (declarant.bic || 0) + (declarant.art62 || 0));
 
   if (!isTNS(declarant)) {
@@ -134,7 +128,7 @@ export function computePlafondMadelin(
   }
 
   const assietteVersement = computeAssietteMadelin(declarant);
-  const assietteReport = computeAssietteReport(declarant, abat10SalCfg);
+  const assietteReport = computeAssietteReport(declarant);
   const enveloppe15Versement = computeEnvelope15(assietteVersement, pass);
   const enveloppe15Report = computeEnvelope15(assietteReport, pass);
   const enveloppe10 = computeEnvelope10(baseTns, assietteVersement, pass);

@@ -3,7 +3,6 @@ import { computeAssietteMadelin, computePlafondMadelin, isTNS } from '../plafond
 import type { DeclarantRevenus, PerWarning } from '../types';
 
 const PASS = 46368;
-const ABAT_SAL = { plafond: 14171, plancher: 495 };
 
 const EMPTY_DECLARANT: DeclarantRevenus = {
   statutTns: false,
@@ -54,7 +53,6 @@ describe('computePlafondMadelin', () => {
     const result = computePlafondMadelin({
       declarant: { ...EMPTY_DECLARANT, salaires: 50000 },
       pass: PASS,
-      abat10SalCfg: ABAT_SAL,
     }, warnings);
     expect(result).toBeNull();
   });
@@ -64,7 +62,6 @@ describe('computePlafondMadelin', () => {
     const result = computePlafondMadelin({
       declarant: { ...EMPTY_DECLARANT, statutTns: true },
       pass: PASS,
-      abat10SalCfg: ABAT_SAL,
     }, warnings);
 
     expect(result).not.toBeNull();
@@ -78,7 +75,6 @@ describe('computePlafondMadelin', () => {
     const result = computePlafondMadelin({
       declarant: { ...EMPTY_DECLARANT, statutTns: true, bic: 30000 },
       pass: PASS,
-      abat10SalCfg: ABAT_SAL,
     }, warnings);
 
     expect(result).not.toBeNull();
@@ -100,7 +96,6 @@ describe('computePlafondMadelin', () => {
         cotisationsMadelin154bis: 5000,
       },
       pass: PASS,
-      abat10SalCfg: ABAT_SAL,
     }, warnings);
 
     expect(result).not.toBeNull();
@@ -121,7 +116,6 @@ describe('computePlafondMadelin', () => {
         cotisationsMadelin154bis: 5000,
       },
       pass: PASS,
-      abat10SalCfg: ABAT_SAL,
     }, warnings);
 
     expect(result).not.toBeNull();
@@ -130,7 +124,7 @@ describe('computePlafondMadelin', () => {
     expect(warnings.some((warning) => warning.code === 'PER_MADELIN_REINTEGRATION')).toBe(true);
   });
 
-  it('calcule l’assiette report sur art.62 + bic - frais professionnels', () => {
+  it('calcule l’assiette report sur art.62 + bic sans abattement frais professionnels (BOI-IR-BASE-20-50-20 §340)', () => {
     const warnings: PerWarning[] = [];
     const result = computePlafondMadelin({
       declarant: {
@@ -141,10 +135,9 @@ describe('computePlafondMadelin', () => {
         bic: 5000,
       },
       pass: PASS,
-      abat10SalCfg: ABAT_SAL,
     }, warnings);
 
     expect(result).not.toBeNull();
-    expect(result!.assietteReport).toBe(11000);
+    expect(result!.assietteReport).toBe(15000);
   });
 });

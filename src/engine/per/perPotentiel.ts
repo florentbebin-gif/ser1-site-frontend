@@ -101,13 +101,11 @@ export function calculatePerPotentiel(input: PerPotentielInput): PerPotentielRes
   const mad1 = computePlafondMadelin({
     declarant: activeDeclarant1,
     pass,
-    abat10SalCfg,
   }, warnings);
   const mad2 = activeDeclarant2
     ? computePlafondMadelin({
       declarant: activeDeclarant2,
       pass,
-      abat10SalCfg,
     }, warnings)
     : null;
 
