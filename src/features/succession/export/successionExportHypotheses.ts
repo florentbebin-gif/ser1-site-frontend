@@ -1,4 +1,4 @@
-export interface SuccessionExportChronologieHypothesesData {
+interface SuccessionExportChronologieHypothesesData {
   applicable?: boolean;
   warnings?: readonly string[];
   societeAcquets?: {

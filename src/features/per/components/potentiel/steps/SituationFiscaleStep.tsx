@@ -16,7 +16,7 @@ import {
   type PerIncomeFilters,
 } from './PerIncomeTable';
 
-export type FiscalStepVariant = 'revenus-n1' | 'projection-n' | 'versements-n';
+type FiscalStepVariant = 'revenus-n1' | 'projection-n' | 'versements-n';
 
 interface SituationFiscaleStepProps {
   variant: FiscalStepVariant;
