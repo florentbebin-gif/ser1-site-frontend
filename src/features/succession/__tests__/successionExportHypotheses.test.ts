@@ -11,7 +11,10 @@ import { buildSuccessionPrevoyanceFiscalAnalysis } from '../successionPrevoyance
 import { buildSuccessionExportActiveHypotheses } from '../export/successionExportHypotheses';
 import { exportSuccessionXlsx } from '../export/successionXlsx';
 import { buildSuccessionChainageExportPayload } from '../hooks/useSuccessionOutcomeExportPayload';
-import { makeLiquidation } from './fixtures';
+import { makeCivil, makeLiquidation } from './fixtures';
+import { buildSuccessionPatrimonialAnalysis } from '../successionPatrimonial';
+import { DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT } from '../successionDraft';
+import { buildSuccessionAssumptions } from '../successionAssumptions';
 
 const THEME_COLORS = DEFAULT_COLORS;
 
@@ -40,6 +43,17 @@ async function readSheetSharedText(zip: JSZip, sheetPath: string): Promise<strin
     ...sharedStringIds.map((index) => sharedStrings[index] ?? ''),
     ...inlineStrings,
   ].join('\n');
+}
+
+async function getSheetXmlByName(zip: JSZip, sheetName: string): Promise<string | null> {
+  const workbook = await zip.file('xl/workbook.xml')?.async('string') ?? '';
+  const idMatch = workbook.match(new RegExp(`<sheet[^>]+name="${sheetName}"[^>]+r:id="(rId\\d+)"`));
+  if (!idMatch) return null;
+  const rels = await zip.file('xl/_rels/workbook.xml.rels')?.async('string') ?? '';
+  const targetMatch = rels.match(new RegExp(`Id="${idMatch[1]}"[^>]+Target="([^"]+)"`));
+  if (!targetMatch) return null;
+  const target = targetMatch[1].replace(/^\/xl\//, '');
+  return await zip.file(`xl/${target}`)?.async('string') ?? null;
 }
 
 describe('Succession export - hypothèses actives', () => {
@@ -255,5 +269,52 @@ describe('Succession export - hypothèses actives', () => {
       warnings: [...chainageAnalysis.warnings],
     });
     expect(items.some((h) => h.includes('Communaute de meubles'))).toBe(true);
+  });
+
+  it('T3 — Donation-partage via chaîne complète → export hypothèses', async () => {
+    const patrimonialAnalysis = buildSuccessionPatrimonialAnalysis(
+      makeCivil({ situationMatrimoniale: 'marie' }),
+      500_000,
+      1,
+      DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT,
+      [{ id: 'd1', type: 'donation_partage', montant: 100_000, donataire: 'enfant-1', date: '2020-01', donateur: 'epoux1', donSommeArgentExonere: false }],
+    );
+
+    const assumptions = buildSuccessionAssumptions({
+      fiscalSnapshot: buildSuccessionFiscalSnapshot(null),
+      attentions: [],
+      hasInterMassClaims: false,
+      hasAffectedLiabilities: false,
+      hasDonationsPartage: patrimonialAnalysis.donationsPartagees > 0,
+    });
+
+    const hypotheses = buildSuccessionExportActiveHypotheses(assumptions, null);
+
+    expect(patrimonialAnalysis.donationsPartagees).toBe(100_000);
+    expect(hypotheses.some(h => h.includes('CCV 1078'))).toBe(true);
+
+    const blob = await exportSuccessionXlsx(
+      { actifNetSuccession: 500_000, nbHeritiers: 1, heritiers: [] },
+      null,
+      THEME_COLORS.c1,
+      'test',
+      {
+        applicable: false,
+        order: 'epoux1',
+        firstDecedeLabel: 'Époux 1',
+        secondDecedeLabel: 'Époux 2',
+        step1: null,
+        step2: null,
+        totalDroits: 0,
+        warnings: [],
+      },
+      undefined,
+      hypotheses
+    );
+
+    const zip = await JSZip.loadAsync(await blob.arrayBuffer());
+    const hypoXml = await getSheetXmlByName(zip, 'Hypothèses') ?? '';
+    const strXml = await zip.file('xl/sharedStrings.xml')?.async('string') ?? '';
+    expect(hypoXml + strXml).toContain('CCV 1078');
   });
 });
