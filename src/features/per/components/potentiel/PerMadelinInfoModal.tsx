@@ -30,8 +30,8 @@ function MadelinDetailCard({
   const hasBaseTns = detail.assietteVersement > 0 || detail.assietteReport > 0;
 
   const rows = [
-    ['Assiette de versement', detail.assietteVersement],
-    ['Assiette de report 2042', detail.assietteReport],
+    ['Assiette de versement (art. 41 DN bis)', detail.assietteVersement],
+    ['Assiette de report 2042 (§340)', detail.assietteReport],
     ['Enveloppe 15 % de versement', detail.enveloppe15Versement],
     ['Enveloppe 15 % de report 2042', detail.enveloppe15Report],
     ['Enveloppe 10 % commune', detail.enveloppe10],
@@ -79,7 +79,7 @@ export function PerMadelinInfoModal({
   return (
     <SimModalShell
       title="Détail du calcul Madelin 154 bis"
-      subtitle="Lecture des enveloppes 15 % et 10 % communes, telle qu'utilisée par le moteur PER."
+      subtitle="Deux assiettes distinctes : versement (art. 41 DN bis = BIC + art.62 + cotisations Madelin) pour les enveloppes de l’année ; report 2042 (BOI-IR-BASE-20-50-20 §340 = BIC + art.62 bruts, sans abattement) pour la fraction reportable."
       onClose={onClose}
       modalClassName="per-madelin-modal"
       bodyClassName="per-madelin-modal__body"
