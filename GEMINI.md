@@ -42,24 +42,14 @@ appliquer cette méthode à chaque requête :
 
 ## Règles et Skills automatiques (Gemini)
 
-Contrairement aux anciens systèmes, Gemini charge ces comportements de façon
-**automatique et permanente** selon le contexte (aucun appel manuel).
+Gemini charge et applique ces comportements de façon **automatique** en fonction de la demande de l'utilisateur ou des fichiers touchés :
 
-- **`base.md`** (`.gemini/skills/base.md`) : Terminal Windows PowerShell et
-  langue française stricte.
-- **`arch-check.md`** (`.gemini/skills/arch-check.md`) : Revue d'architecture
-  (limites taille, boundaries, imports).
-- **`clean-code.md`** (`.gemini/skills/clean-code.md`) : Propreté systématique
-  (zéro dette, zéro log prod).
-- **`fix-errors.md`** (`.gemini/skills/fix-errors.md`) : Débogage strict sans
-  rustines.
-- **`fiscal-engine.md`** (`.gemini/skills/fiscal-engine.md`) : Zéro hardcode
-  fiscal (17.2, PASS), fonctions pures.
-- **`supabase-patterns.md`** (`.gemini/skills/supabase-patterns.md`) :
-  Utilisation `adminClient`, rôles `app_metadata`, cache.
-- **`reporting.md`** (`.gemini/skills/reporting.md`) : Gestion des versions
-  snapshots (`.ser1`) et fingerprint.
-- **`succession-review.md`** (`.gemini/skills/succession-review.md`) : Respect
-  de la matrice de succession `METIER.md`.
-- **`exports.md`** (`.gemini/skills/exports.md`) : Utilisation de l'infra PPTX
-  Serenity et XLSX Builder.
+- **`base.md`** (`.gemini/skills/base.md`) : **Toujours actif**. Terminal Windows PowerShell et langue française stricte.
+- **`arch-check.md`** (`.gemini/skills/arch-check.md`) : **Avant une PR ou après ajout de fichiers dans `src/`**. Revue d'architecture (limites taille, boundaries, imports).
+- **`clean-code.md`** (`.gemini/skills/clean-code.md`) : **Après toute modification de code (feature, bug, refactor)**. Propreté systématique (zéro dette, zéro log prod, TODO trackés).
+- **`fix-errors.md`** (`.gemini/skills/fix-errors.md`) : **Quand `npm run check` échoue ou suite à une erreur CI**. Débogage strict et systématique dans l'ordre de dépendance.
+- **`fiscal-engine.md`** (`.gemini/skills/fiscal-engine.md`) : **Lors de touches à `src/engine/`, constantes ou hooks fiscaux**. Zéro hardcode fiscal (17.2, PASS), respect de la chaîne de données.
+- **`supabase-patterns.md`** (`.gemini/skills/supabase-patterns.md`) : **Lors de touches à `src/settings/`, `supabase/`, auth ou RLS**. Utilisation d'`adminClient`, rôles `app_metadata`, invalidation du cache.
+- **`reporting.md`** (`.gemini/skills/reporting.md`) : **Lors de modifications dans `src/reporting/` ou des snapshots**. Gestion des migrations de schémas (`.ser1`) et fingerprint.
+- **`succession-review.md`** (`.gemini/skills/succession-review.md`) : **Lors de modifications du simulateur succession (`src/features/succession/`)**. Respect de la matrice métier et golden tests.
+- **`exports.md`** (`.gemini/skills/exports.md`) : **Lors de tâches liées aux exports PowerPoint ou Excel**. Utilisation exclusive de l'infra PPTX Serenity et XLSX Builder en code versionné.
