@@ -4,6 +4,14 @@ import type {
   CreditShiftedScheduleRow,
   CreditType,
 } from '../types';
+import {
+  mensualiteAmortissable,
+  scheduleAmortissable as scheduleAmortissableEngine,
+  scheduleInFine as scheduleInFineEngine,
+} from '../../../engine/credit/loanSchedule';
+
+// Réexport pour les consommateurs existants
+export { mensualiteAmortissable };
 
 export interface ScheduleArgs {
   capital: number;
@@ -35,107 +43,12 @@ interface SmoothingDurationArgs extends SmoothingBaseArgs {
   totalConst: number;
 }
 
-export function mensualiteAmortissable(C: number, r: number, N: number): number {
-  if (N <= 0) return 0;
-  if (r === 0) return C / N;
-  return (C * r) / (1 - Math.pow(1 + r, -N));
+export function scheduleAmortissable(args: ScheduleArgs): ScheduleRowInput[] {
+  return scheduleAmortissableEngine(args);
 }
 
-export function scheduleAmortissable({
-  capital,
-  r,
-  rAss,
-  N,
-  assurMode,
-  mensuOverride,
-}: ScheduleArgs): ScheduleRowInput[] {
-  const rows: ScheduleRowInput[] = [];
-  let crd = Math.max(0, capital);
-  const mensuFixe = (typeof mensuOverride === 'number' && mensuOverride > 0)
-    ? mensuOverride
-    : mensualiteAmortissable(capital, r, N);
-
-  const assurFixe = assurMode === 'CI' ? capital * rAss : null;
-  const EPS = 1e-8;
-
-  for (let m = 1; m <= N; m += 1) {
-    if (crd <= EPS) break;
-
-    const crdStart = crd;
-    const interet = crdStart * r;
-    let mensu = mensuFixe;
-
-    const maxMensu = interet + crdStart;
-    if (mensu > maxMensu) mensu = maxMensu;
-    if (mensu < interet && r > 0) mensu = interet;
-
-    let amort = Math.max(0, mensu - interet);
-    if (amort > crdStart) amort = crdStart;
-
-    const crdEnd = Math.max(0, crdStart - amort);
-    const assur = assurMode === 'CI' ? assurFixe : crdStart * rAss;
-
-    rows.push({
-      mois: m,
-      interet,
-      assurance: assur || 0,
-      amort,
-      mensu,
-      mensuTotal: mensu + (assur || 0),
-      crd: crdEnd,
-    });
-    crd = crdEnd;
-  }
-  return rows;
-}
-
-export function scheduleInFine({
-  capital,
-  r,
-  rAss,
-  N,
-  assurMode,
-  mensuOverride,
-}: ScheduleArgs): ScheduleRowInput[] {
-  const rows: ScheduleRowInput[] = [];
-  let crd = Math.max(0, capital);
-  const assurFixe = assurMode === 'CI' ? capital * rAss : null;
-  const EPS = 1e-8;
-
-  for (let m = 1; m <= N; m += 1) {
-    if (crd <= EPS) break;
-
-    const crdStart = crd;
-    const interet = crdStart * r;
-    let mensu = (typeof mensuOverride === 'number' && mensuOverride > 0) ? mensuOverride : interet;
-
-    const maxMensu = interet + (m === N ? crdStart : 0);
-    if (mensu > maxMensu) mensu = maxMensu;
-    if (mensu < interet && r > 0) mensu = interet;
-
-    let amort = 0;
-    if (m === N) {
-      amort = crdStart;
-      mensu = interet + amort;
-    } else if (mensu > interet) {
-      amort = Math.min(crdStart, mensu - interet);
-    }
-
-    const crdEnd = Math.max(0, crdStart - amort);
-    const assur = assurMode === 'CI' ? assurFixe : crdStart * rAss;
-
-    rows.push({
-      mois: m,
-      interet,
-      assurance: assur || 0,
-      amort,
-      mensu,
-      mensuTotal: mensu + (assur || 0),
-      crd: crdEnd,
-    });
-    crd = crdEnd;
-  }
-  return rows;
+export function scheduleInFine(args: ScheduleArgs): ScheduleRowInput[] {
+  return scheduleInFineEngine(args);
 }
 
 export function scheduleLisseePret1({

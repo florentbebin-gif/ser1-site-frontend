@@ -76,6 +76,13 @@ export interface FiscalContext {
    */
   dmtgSettings: typeof DEFAULT_TAX_SETTINGS.dmtg;
 
+  // ── IS (Impôt sur les sociétés) ───────────────────────────────────────────
+  /**
+   * Paramètres IS normalisés — avec fallback sur DEFAULT_TAX_SETTINGS.
+   * Inclut motherDaughterQpfc pour le régime mère-fille.
+   */
+  corporateTax: typeof DEFAULT_TAX_SETTINGS.corporateTax;
+
   // ── PASS (historique plafond sécurité sociale) ──────────────────────────────
   /** Historique PASS par année (ex: { 2024: 46368, 2025: 47100 }) */
   passHistoryByYear: Record<number, number>;
@@ -153,6 +160,26 @@ function buildFiscalContext(
       frereSoeur: dmtg.frereSoeur ?? DEFAULT_TAX_SETTINGS.dmtg.frereSoeur,
       neveuNiece: dmtg.neveuNiece ?? DEFAULT_TAX_SETTINGS.dmtg.neveuNiece,
       autre: dmtg.autre ?? DEFAULT_TAX_SETTINGS.dmtg.autre,
+    },
+
+    // IS normalisé (avec fallback profond sur motherDaughterQpfc)
+    corporateTax: {
+      current: {
+        ...DEFAULT_TAX_SETTINGS.corporateTax.current,
+        ...tax?.corporateTax?.current,
+        motherDaughterQpfc: {
+          ...DEFAULT_TAX_SETTINGS.corporateTax.current.motherDaughterQpfc,
+          ...tax?.corporateTax?.current?.motherDaughterQpfc,
+        },
+      },
+      previous: {
+        ...DEFAULT_TAX_SETTINGS.corporateTax.previous,
+        ...tax?.corporateTax?.previous,
+        motherDaughterQpfc: {
+          ...DEFAULT_TAX_SETTINGS.corporateTax.previous.motherDaughterQpfc,
+          ...tax?.corporateTax?.previous?.motherDaughterQpfc,
+        },
+      },
     },
 
     // PASS

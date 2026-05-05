@@ -6,6 +6,7 @@
  */
 
 import type { DEFAULT_PS_SETTINGS, DEFAULT_TAX_SETTINGS } from '@/constants/settingsDefaults';
+import { validateQpfcRate } from './isValidators';
 
 interface ScaleBracket {
   from?: number | null;
@@ -303,6 +304,15 @@ export function validateImpotsSettings(
       const rateErr = validatePercent(corporateTax?.[period]?.[key]);
       if (rateErr) errors[`corporateTax.${period}.${key}`] = rateErr;
     }
+  }
+
+  // Quote-part frais et charges régime mère-fille (standard ≥ groupe, [0–100])
+  for (const period of yearPeriods) {
+    const qpfcErr = validateQpfcRate({
+      standard: corporateTax?.[period]?.motherDaughterQpfc?.standard,
+      group: corporateTax?.[period]?.motherDaughterQpfc?.group,
+    });
+    if (qpfcErr) errors[`corporateTax.${period}.motherDaughterQpfc`] = qpfcErr;
   }
 
   return errors;

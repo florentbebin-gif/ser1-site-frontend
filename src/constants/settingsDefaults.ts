@@ -113,11 +113,13 @@ export const DEFAULT_TAX_SETTINGS = {
       normalRate: 25,
       reducedRate: 15,
       reducedThreshold: 42500,
+      motherDaughterQpfc: { standard: 5, group: 1 },
     },
     previous: {
       normalRate: 25,
       reducedRate: 15,
       reducedThreshold: 42500,
+      motherDaughterQpfc: { standard: 5, group: 1 },
     },
   },
   dmtg: {
