@@ -4,6 +4,9 @@
  * Maps UI settings colors to PPTX theme roles
  */
 
+import type { TresorerieProjectionSlideSpec, TresorerieSchemaSlideSpec } from './tresorerieTypes';
+export type { TresorerieProjectionSlideSpec, TresorerieSchemaSlideSpec } from './tresorerieTypes';
+
 /**
  * UI Theme Colors from ThemeProvider (10 colors)
  */
@@ -681,6 +684,8 @@ export type StudyDeckSpec = {
     | PerFiscalSnapshotSlideSpec
     | PerPlafond3ColSlideSpec
     | PerProjectionTableSlideSpec
+    | TresorerieSchemaSlideSpec
+    | TresorerieProjectionSlideSpec
   >;
   end: EndSlideSpec;
 };

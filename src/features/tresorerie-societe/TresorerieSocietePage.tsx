@@ -9,9 +9,12 @@
 import '@/styles/sim/index.css';
 import './styles/index.css';
 
+import { ExportMenu } from '../../components/ExportMenu';
 import { SimPageShell } from '../../components/ui/sim/SimPageShell';
+import { useTheme } from '../../settings/ThemeProvider';
 import { useTresorerieState } from './hooks/useTresorerieState';
 import { useTresorerieCalculations } from './hooks/useTresorerieCalculations';
+import { useTresorerieExportHandlers } from './hooks/useTresorerieExportHandlers';
 import { TresoSocieteSection } from './components/TresoSocieteSection';
 import { TresoCCASection } from './components/TresoCCASection';
 import { TresoPlacementSection } from './components/TresoPlacementSection';
@@ -35,7 +38,27 @@ export default function TresorerieSocietePage() {
     setHolding,
   } = useTresorerieState();
 
+  const { colors: themeColors, pptxColors, cabinetLogo, logoPlacement } = useTheme();
   const { rows, kpis, loading, error } = useTresorerieCalculations(state.inputs);
+  const {
+    exportExcel,
+    exportPptx,
+    exportLoading,
+    exportDisabled,
+  } = useTresorerieExportHandlers({
+    rows,
+    kpis,
+    inputs: state.inputs,
+    themeColors,
+    pptxColors,
+    cabinetLogo,
+    logoPlacement,
+  });
+
+  const exportOptions = [
+    { label: 'PowerPoint', onClick: exportPptx, disabled: exportDisabled },
+    { label: 'Excel', onClick: exportExcel, disabled: exportDisabled },
+  ];
 
   // Garde anti-flash : ne pas rendre avant l'hydration sessionStorage
   if (!hydrated) return null;
@@ -47,6 +70,7 @@ export default function TresorerieSocietePage() {
       pageTestId="tresorerie-societe-page"
       loading={loading}
       error={error}
+      actions={<ExportMenu options={exportOptions} loading={exportLoading} />}
     >
       <SimPageShell.Main>
         {/* Bloc 1 — Société et foyer */}
