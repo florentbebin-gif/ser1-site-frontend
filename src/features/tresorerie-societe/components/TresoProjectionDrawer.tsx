@@ -8,6 +8,8 @@
  *   Résultat, CCA, Capitalisation, Crédits, Réserves, Revenus nets
  */
 
+import { useMemo, useState } from 'react';
+import { SimSelect } from '../../../components/ui/sim/SimSelect';
 import type { TresoProjectionRow } from '../../../engine/tresorerie/types';
 
 interface Props {
@@ -31,6 +33,14 @@ interface RowDef {
   italic?: boolean;
   warning?: (row: TresoProjectionRow) => boolean;
   format?: (row: TresoProjectionRow) => string;
+}
+
+function sourceLabel(source: string): string {
+  if (source === 'remuneration') return 'Rémunération';
+  if (source === 'cca') return 'Remboursement CCA';
+  if (source === 'dividendes') return 'Dividendes nets';
+  if (source === 'charges_sociales_tns') return 'Charges sociales TNS';
+  return source;
 }
 
 const RESUME_ROWS: RowDef[] = [
@@ -78,8 +88,54 @@ const DETAIL_ROWS: RowDef[] = [
 ];
 
 export function TresoProjectionDrawer({ rows, mode, onModeChange, ageActuel, ageRetraite, anneeCivileDebut }: Props) {
-  const activeRows = mode === 'resume' ? RESUME_ROWS : DETAIL_ROWS;
+  const [associateFilter, setAssociateFilter] = useState('all');
   const anneeCivile = anneeCivileDebut ?? new Date().getFullYear();
+
+  const associateOptions = useMemo(() => {
+    const associates = new Map<string, string>();
+    rows.forEach(row => {
+      row.revenusParAssocie.forEach(revenue => {
+        associates.set(revenue.associateId, revenue.label);
+      });
+    });
+    return [
+      { value: 'all', label: 'Tous les associés' },
+      ...Array.from(associates, ([value, label]) => ({ value, label })),
+    ];
+  }, [rows]);
+
+  const associateRows = useMemo<RowDef[]>(() => {
+    const keys = new Map<string, string>();
+    rows.forEach(row => {
+      row.revenusParAssocie.forEach(revenue => {
+        if (associateFilter !== 'all' && revenue.associateId !== associateFilter) return;
+        const key = associateFilter === 'all'
+          ? revenue.associateId
+          : `${revenue.associateId}:${revenue.source}`;
+        const label = associateFilter === 'all'
+          ? `Revenus nets — ${revenue.label}`
+          : `${sourceLabel(revenue.source)} — ${revenue.label}`;
+        keys.set(key, label);
+      });
+    });
+    return Array.from(keys, ([key, label]) => ({
+      key: `associe:${key}`,
+      label,
+      format: row => {
+        const total = row.revenusParAssocie
+          .filter(revenue => {
+            if (associateFilter === 'all') return revenue.associateId === key;
+            return `${revenue.associateId}:${revenue.source}` === key;
+          })
+          .reduce((sum, revenue) => sum + revenue.netRevenue, 0);
+        return total === 0 ? '—' : fmtE(total);
+      },
+    }));
+  }, [associateFilter, rows]);
+
+  const activeRows = mode === 'resume'
+    ? RESUME_ROWS
+    : [...DETAIL_ROWS, ...associateRows];
 
   if (rows.length === 0) {
     return (
@@ -109,6 +165,16 @@ export function TresoProjectionDrawer({ rows, mode, onModeChange, ageActuel, age
             Détail comptable
           </button>
         </div>
+        {mode === 'detail' && associateOptions.length > 1 && (
+          <div className="ts-drawer__associate-filter">
+            <SimSelect
+              value={associateFilter}
+              onChange={setAssociateFilter}
+              options={associateOptions}
+              ariaLabel="Filtrer les revenus par associé"
+            />
+          </div>
+        )}
       </div>
 
       {/* Tableau */}

@@ -123,7 +123,7 @@ Source (preuves) :
 | `/sim/per/transfert` | privé + lazy | `UpcomingSimulatorPage` | `src/pages/UpcomingSimulatorPage.tsx` (lazy, stub) |
 | `/sim/per/ouverture` | privé + lazy | `UpcomingSimulatorPage` | `src/pages/UpcomingSimulatorPage.tsx` (lazy, stub) |
 | `/sim/epargne-salariale` | privé + lazy | `UpcomingSimulatorPage` | `src/pages/UpcomingSimulatorPage.tsx` (lazy) |
-| `/sim/tresorerie-societe` | privé + lazy | `UpcomingSimulatorPage` | `src/pages/UpcomingSimulatorPage.tsx` (lazy) |
+| `/sim/tresorerie-societe` | privé + lazy | `TresorerieSocietePage` | `src/features/tresorerie-societe/TresorerieSocietePage.tsx` (lazy) |
 | `/sim/prevoyance` | privé + lazy | `UpcomingSimulatorPage` | `src/pages/UpcomingSimulatorPage.tsx` (lazy) |
 | `/sim/ir` | privé + lazy | `Ir` | `src/features/ir/IrPage.tsx` (exporté via `src/features/ir/index.ts`) |
 | `/settings/*` | privé + lazy | `SettingsShell` | `src/pages/SettingsShell.tsx` (lazy) |

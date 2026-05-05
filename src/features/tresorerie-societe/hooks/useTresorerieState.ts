@@ -9,18 +9,12 @@
 import { useCallback, useEffect, useState } from 'react';
 import { storageKeyFor, onResetEvent } from '../../../utils/reset';
 import type { TresoState, TresoPersistedState } from '../types';
-import type {
-  TresoInputs,
-  DistributionPocketInput,
-  CapitalisationPocketInput,
-  CreditIsPocketInput,
-  CreditIrPocketInput,
-  HoldingParticipationInput,
-} from '../../../engine/tresorerie/types';
+import type { TresoInputs, TresoInputsV2 } from '../../../engine/tresorerie/types';
+import { buildTresoInputsV2FromLegacy } from '../utils/tresorerieV2Migration';
 
 // ─── Valeurs par défaut ───────────────────────────────────────────────────────
 
-export const DEFAULT_TRESO_INPUTS: TresoInputs = {
+const DEFAULT_TRESO_INPUTS_LEGACY: TresoInputs = {
   typeCreation: 'newco',
   ageActuel: 50,
   ageRetraite: 65,
@@ -39,8 +33,11 @@ export const DEFAULT_TRESO_INPUTS: TresoInputs = {
   holding: undefined,
 };
 
+export const DEFAULT_TRESO_INPUTS_V2: TresoInputsV2 =
+  buildTresoInputsV2FromLegacy(DEFAULT_TRESO_INPUTS_LEGACY);
+
 const DEFAULT_STATE: TresoState = {
-  inputs: DEFAULT_TRESO_INPUTS,
+  inputsV2: DEFAULT_TRESO_INPUTS_V2,
   projectionVisible: false,
   projectionMode: 'resume',
 };
@@ -49,13 +46,15 @@ const STORE_KEY = storageKeyFor('tresorerie-societe');
 
 // ─── Normalisation chargement ─────────────────────────────────────────────────
 
-function normalizeLoaded(raw: TresoPersistedState): TresoState {
-  const inputs: TresoInputs = {
-    ...DEFAULT_TRESO_INPUTS,
+export function normalizeTresoreriePersistedState(raw: TresoPersistedState): TresoState {
+  const legacyInputs: TresoInputs = {
+    ...DEFAULT_TRESO_INPUTS_LEGACY,
     ...(raw.inputs ?? {}),
   };
+  const legacyWithEmbeddedV2 = raw.inputs as (TresoInputs & { v2?: TresoInputsV2 }) | undefined;
+  const inputsV2 = raw.inputsV2 ?? legacyWithEmbeddedV2?.v2 ?? buildTresoInputsV2FromLegacy(legacyInputs);
   return {
-    inputs,
+    inputsV2,
     projectionVisible: false,
     projectionMode: 'resume',
   };
@@ -68,20 +67,9 @@ export interface TresoStateResult {
   hydrated: boolean;
 
   // Handlers globaux
-  setInputs: (patch: Partial<TresoInputs>) => void;
+  setInputsV2: (nextInputs: TresoInputsV2) => void;
   setProjectionVisible: (v: boolean) => void;
   setProjectionMode: (v: 'resume' | 'detail') => void;
-
-  // Handlers poche distribution
-  setDistribution: (v: DistributionPocketInput | undefined) => void;
-  // Handlers poche capitalisation
-  setCapitalisation: (v: CapitalisationPocketInput | undefined) => void;
-  // Handlers crédit IS
-  setCreditIS: (v: CreditIsPocketInput | undefined) => void;
-  // Handlers crédit IR
-  setCreditIR: (v: CreditIrPocketInput | undefined) => void;
-  // Handlers holding
-  setHolding: (v: HoldingParticipationInput | undefined) => void;
 }
 
 export function useTresorerieState(): TresoStateResult {
@@ -94,7 +82,7 @@ export function useTresorerieState(): TresoStateResult {
       const raw = sessionStorage.getItem(STORE_KEY);
       if (raw) {
         const parsed = JSON.parse(raw) as TresoPersistedState;
-        setState(normalizeLoaded(parsed));
+        setState(normalizeTresoreriePersistedState(parsed));
       }
     } catch {
       // sessionStorage indisponible ou JSON invalide — on garde les defaults
@@ -106,12 +94,14 @@ export function useTresorerieState(): TresoStateResult {
   useEffect(() => {
     if (!hydrated) return;
     try {
-      const persisted: TresoPersistedState = { inputs: state.inputs };
+      const persisted: TresoPersistedState = {
+        inputsV2: state.inputsV2,
+      };
       sessionStorage.setItem(STORE_KEY, JSON.stringify(persisted));
     } catch {
       // sessionStorage plein ou indisponible
     }
-  }, [hydrated, state.inputs]);
+  }, [hydrated, state.inputsV2]);
 
   // ── Listener reset ────────────────────────────────────────────────────────
   useEffect(() => {
@@ -124,8 +114,8 @@ export function useTresorerieState(): TresoStateResult {
 
   // ── Handlers ─────────────────────────────────────────────────────────────
 
-  const setInputs = useCallback((patch: Partial<TresoInputs>) => {
-    setState(s => ({ ...s, inputs: { ...s.inputs, ...patch } }));
+  const setInputsV2 = useCallback((nextInputs: TresoInputsV2) => {
+    setState(s => ({ ...s, inputsV2: nextInputs }));
   }, []);
 
   const setProjectionVisible = useCallback((v: boolean) => {
@@ -136,36 +126,11 @@ export function useTresorerieState(): TresoStateResult {
     setState(s => ({ ...s, projectionMode: v }));
   }, []);
 
-  const setDistribution = useCallback((v: DistributionPocketInput | undefined) => {
-    setState(s => ({ ...s, inputs: { ...s.inputs, distribution: v } }));
-  }, []);
-
-  const setCapitalisation = useCallback((v: CapitalisationPocketInput | undefined) => {
-    setState(s => ({ ...s, inputs: { ...s.inputs, capitalisation: v } }));
-  }, []);
-
-  const setCreditIS = useCallback((v: CreditIsPocketInput | undefined) => {
-    setState(s => ({ ...s, inputs: { ...s.inputs, creditIS: v } }));
-  }, []);
-
-  const setCreditIR = useCallback((v: CreditIrPocketInput | undefined) => {
-    setState(s => ({ ...s, inputs: { ...s.inputs, creditIR: v } }));
-  }, []);
-
-  const setHolding = useCallback((v: HoldingParticipationInput | undefined) => {
-    setState(s => ({ ...s, inputs: { ...s.inputs, holding: v } }));
-  }, []);
-
   return {
     state,
     hydrated,
-    setInputs,
+    setInputsV2,
     setProjectionVisible,
     setProjectionMode,
-    setDistribution,
-    setCapitalisation,
-    setCreditIS,
-    setCreditIR,
-    setHolding,
   };
 }

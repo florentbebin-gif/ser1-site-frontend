@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { simulateTresorerie } from '../../../engine/tresorerie/simulateTresorerie';
-import type { TresoInputs, TresoFiscalParams } from '../../../engine/tresorerie/types';
+import { simulateTresorerieV2 } from '../../../engine/tresorerie/simulateTresorerieV2';
+import type { TresoFiscalParams, TresoInputsV2 } from '../../../engine/tresorerie/types';
 
 const PARAMS: TresoFiscalParams = {
   isNormalRate: 0.25,
@@ -15,29 +15,52 @@ const PARAMS: TresoFiscalParams = {
   irScale: [],
 };
 
-const BASE: TresoInputs = {
-  typeCreation: 'newco',
-  ageActuel: 50,
-  ageRetraite: 65,
-  besoinsRetraiteAnnuels: 0,
-  fraisStructureAnnuels: 3000,
-  ccaInitial: 0,
-  apportAnnuelCCA: 16600,
-  dureeActiveAns: 15,
-  tresorerieInitiale: 0,
-  reservesInitiales: 0,
-  anneeCivileDebut: 2025,
+const BASE: TresoInputsV2 = {
+  version: 2,
+  foyer: {
+    selectedAssociateId: 'associe-1',
+    currentAge: 50,
+    retirementAge: 65,
+    annualIncomeNeed: 0,
+    projectionStartYear: 2025,
+  },
+  company: {
+    creationType: 'newco',
+    legalForm: 'sas',
+    shareCapital: 1000,
+    sharePremium: 0,
+    reservesInitial: 0,
+    treasuryInitial: 0,
+    annualStructureCosts: 3000,
+    reducedCorporateTaxEligible: true,
+    associates: [{
+      id: 'associe-1',
+      label: 'Associé 1',
+      ownershipLots: [{ right: 'pleine_propriete', capitalPct: 100, economicRightsPct: 100 }],
+      roles: ['associe_sans_statut'],
+      ccaInitial: 0,
+      ccaAnnualContribution: 16600,
+      ccaContributionEndYear: 2039,
+      remunerationAnnualCost: 0,
+    }],
+    loans: [],
+    subsidiaries: [],
+  },
+  allocationMatrix: {
+    sweepThreshold: 0,
+    pockets: [],
+  },
 };
 
-describe('Trésorerie société IS — projection moteur et KPIs', () => {
+describe('Trésorerie société IS — projection moteur v2 et KPIs', () => {
   describe('structure de la projection', () => {
     it('produit exactement 40 lignes pour horizon=40', () => {
-      const rows = simulateTresorerie(BASE, PARAMS, 40);
+      const rows = simulateTresorerieV2(BASE, PARAMS, 40);
       expect(rows).toHaveLength(40);
     });
 
     it('la numérotation year commence à 1', () => {
-      const rows = simulateTresorerie(BASE, PARAMS, 5);
+      const rows = simulateTresorerieV2(BASE, PARAMS, 5);
       expect(rows[0].year).toBe(1);
       expect(rows[4].year).toBe(5);
     });
@@ -45,16 +68,15 @@ describe('Trésorerie société IS — projection moteur et KPIs', () => {
 
   describe('IS et résultat', () => {
     it('IS = 0 quand la base imposable est négative (charges > revenus)', () => {
-      // Sans revenus de placement, le résultat est -fraisStructure → IS = 0
-      const rows = simulateTresorerie(BASE, PARAMS, 1);
+      const rows = simulateTresorerieV2(BASE, PARAMS, 1);
       expect(rows[0].is).toBe(0);
       expect(rows[0].revenuDistrib).toBe(0);
     });
   });
 
   describe('CCA cumulé', () => {
-    it('augmente de apportAnnuelCCA chaque année en phase active', () => {
-      const rows = simulateTresorerie(BASE, PARAMS, 3);
+    it('augmente de ccaAnnualContribution chaque année en phase active', () => {
+      const rows = simulateTresorerieV2(BASE, PARAMS, 3);
       expect(rows[0].ccaCumule).toBe(16600);
       expect(rows[1].ccaCumule).toBe(33200);
       expect(rows[2].ccaCumule).toBe(49800);
@@ -63,47 +85,55 @@ describe('Trésorerie société IS — projection moteur et KPIs', () => {
 
   describe('Poche de capitalisation — IS latent', () => {
     it('isLatentCapi = 0 sans poche de capitalisation', () => {
-      const rows = simulateTresorerie(BASE, PARAMS, 5);
+      const rows = simulateTresorerieV2(BASE, PARAMS, 5);
       expect(rows.every(r => r.isLatentCapi === 0)).toBe(true);
     });
 
     it('isLatentCapi croît chaque année avec les gains (non décaissé)', () => {
-      const inputs: TresoInputs = {
+      const rows = simulateTresorerieV2({
         ...BASE,
-        capitalisation: {
-          montant: 200000,
-          rendementAnnuel: 0.04,
-          dureeAns: 20,
-          rachatAuTerme: false,
-          repetitionAuTerme: false,
+        company: {
+          ...BASE.company,
+          treasuryInitial: 200000,
         },
-      };
-      const rows = simulateTresorerie(inputs, PARAMS, 5);
+        allocationMatrix: {
+          sweepThreshold: 0,
+          pockets: [{
+            id: 'capitalisation-1',
+            kind: 'capitalisation',
+            durationYears: 20,
+            annualReturnRate: 0.04,
+            enjoymentDelayMonths: 0,
+            initialAllocationPct: 100,
+            annualAllocationPct: 0,
+            repeatAtTerm: false,
+            termDestination: 'treasury',
+          }],
+        },
+      }, PARAMS, 5);
+
       expect(rows[0].isLatentCapi).toBeGreaterThan(0);
       expect(rows[4].isLatentCapi).toBeGreaterThan(rows[0].isLatentCapi);
     });
   });
 
   describe('Alerte dividendes — cas warning', () => {
-    it('alerteDividendesSuperieursCapacite = false sans dividendes distribués', () => {
-      const rows = simulateTresorerie(BASE, PARAMS, 1);
+    it('alerteDividendesSuperieursCapacite = false sans revenus demandés', () => {
+      const rows = simulateTresorerieV2(BASE, PARAMS, 1);
       expect(rows[0].alerteDividendesSuperieursCapacite).toBe(false);
     });
 
-    it('alerte active quand creditIR génère des dividendes supérieurs à la capacité', () => {
-      const inputs: TresoInputs = {
+    it('alerte active quand le besoin de revenus dépasse la capacité distribuable', () => {
+      const rows = simulateTresorerieV2({
         ...BASE,
-        creditIR: {
-          actif: true,
-          capital: 500000,
-          taux: 0.035,
-          dureeMois: 120,
-          dateDebut: '2025-01',
+        foyer: {
+          ...BASE.foyer,
+          currentAge: 65,
+          retirementAge: 65,
+          annualIncomeNeed: 50000,
         },
-      };
-      const rows = simulateTresorerie(inputs, PARAMS, 1);
-      // 500k€ de crédit IR → annuité annuelle ≈ 59k€ bruts nécessaires
-      // Capacité distribuable ≈ 0 (pas de revenus, frais de structure)
+      }, PARAMS, 1);
+
       expect(rows[0].alerteDividendesSuperieursCapacite).toBe(true);
     });
   });

@@ -289,6 +289,7 @@ export function simulateTresorerie(
       revenusActifFinance,
       revenusNets,
       deltaBesoin,
+      revenusParAssocie: [],
       tresorerieDebut,
       tresorerieFin,
     });

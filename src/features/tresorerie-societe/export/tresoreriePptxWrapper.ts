@@ -6,23 +6,29 @@
  * Règle GOUVERNANCE_EXPORTS.md:62 :
  * - Aucun recalcul métier ici — on consomme TresoProjectionRow[] tel quel.
  * - Seuls les calculs dérivés de présentation (formatage, pagination) sont autorisés.
- * - Jamais "FCB" dans les slides client.
+ * - Aucun vocabulaire source interdit dans les slides client.
  */
 
 import type { LogoPlacement, StudyDeckSpec } from '@/pptx/theme/types';
-import type { TresoInputs, TresoProjectionRow } from '@/engine/tresorerie/types';
+import type { TresoInputsV2, TresoProjectionRow } from '@/engine/tresorerie/types';
 import { paginateTresoYears } from '@/pptx/slides/buildTresorerieProjection';
 import type { TresoKPIs } from '../hooks/useTresorerieCalculations';
 
 // ─── Libellés UI premium (jamais les labels Excel bruts) ───────────────────────
 
 const PROJECTION_ROWS_RESUME = [
-  { key: 'apportCCA' as const, label: "Apports en compte courant d'associé" },
-  { key: 'revenuDistrib' as const, label: 'Revenus — poche de distribution' },
-  { key: 'is' as const, label: 'Impôt sur les sociétés' },
-  { key: 'revenusNets' as const, label: 'Total revenus nets annuels' },
-  { key: 'deltaBesoin' as const, label: 'Écart annuel avec le besoin de revenus' },
-  { key: 'tresorerieFin' as const, label: "Trésorerie fin d'année" },
+  { label: "Apports en compte courant d'associé", values: (rows: TresoProjectionRow[]) => rows.map(r => r.apportCCA) },
+  { label: 'Capital placé — matrice distribution', values: (rows: TresoProjectionRow[]) => rows.map(r => r.capitalDistrib) },
+  { label: 'Revenus — poche de distribution', values: (rows: TresoProjectionRow[]) => rows.map(r => r.revenuDistrib) },
+  { label: 'Valeur — matrice capitalisation', values: (rows: TresoProjectionRow[]) => rows.map(r => r.valeurCapi) },
+  { label: 'Revenus des filiales', values: (rows: TresoProjectionRow[]) => rows.map(r => r.dividendesFiliales) },
+  { label: 'Charges sociales TNS estimées', values: (rows: TresoProjectionRow[]) => rows.map(r =>
+    r.revenusParAssocie.reduce((sum, revenu) => sum + revenu.tnsSocialCharges, 0),
+  ) },
+  { label: 'Impôt sur les sociétés', values: (rows: TresoProjectionRow[]) => rows.map(r => r.is) },
+  { label: 'Total revenus nets annuels', values: (rows: TresoProjectionRow[]) => rows.map(r => r.revenusNets) },
+  { label: 'Écart annuel avec le besoin de revenus', values: (rows: TresoProjectionRow[]) => rows.map(r => r.deltaBesoin) },
+  { label: "Trésorerie fin d'année", values: (rows: TresoProjectionRow[]) => rows.map(r => r.tresorerieFin) },
 ];
 
 // ─── Helpers ───────────────────────────────────────────────────────────────────
@@ -37,7 +43,7 @@ function fmtAns(n: number | null): string {
 export interface TresorerieDeckData {
   rows: TresoProjectionRow[];
   kpis: TresoKPIs;
-  inputs: TresoInputs;
+  inputs: TresoInputsV2;
   clientName?: string;
 }
 
@@ -49,7 +55,15 @@ export function buildTresorerieStudyDeck(
   const { rows, kpis, inputs } = data;
 
   const dateStr = new Date().toLocaleDateString('fr-FR', { year: 'numeric', month: 'long' });
-  const typeLabel = inputs.typeCreation === 'existante' ? 'Société existante' : 'Société à créer (NEWCO)';
+  const typeLabel = inputs.company.creationType === 'existante'
+    ? 'Société existante'
+    : 'Société à créer (NEWCO)';
+  const pockets = inputs.allocationMatrix.pockets;
+  const hasAllocationMatrix = pockets.length > 0;
+  const hasDistribution = pockets.some(pocket => pocket.kind === 'distribution');
+  const hasCapitalisation = pockets.some(pocket => pocket.kind === 'capitalisation');
+  const hasCreditIS = inputs.company.loans.length > 0;
+  const hasHolding = inputs.company.subsidiaries.length > 0;
 
   // ── Projection paginée ──────────────────────────────────────────────────────
   const totalYears = rows.length;
@@ -60,9 +74,9 @@ export function buildTresorerieStudyDeck(
     title: 'Projection comptable annuelle',
     subtitle: 'Trésorerie société IS — données issues de la simulation',
     yearsForPage,
-    rows: PROJECTION_ROWS_RESUME.map(({ key, label }) => ({
+    rows: PROJECTION_ROWS_RESUME.map(({ values, label }) => ({
       label,
-      values: rows.map(r => r[key] as number),
+      values: values(rows),
     })),
     pageIndex: pageIdx,
     totalPages: pages.length,
@@ -97,12 +111,13 @@ export function buildTresorerieStudyDeck(
         type: 'treso-schema',
         title: 'Schéma patrimonial — Société IS',
         subtitle: 'Constitution · Exploitation · Retraite & Transmission',
-        typeCreation: inputs.typeCreation,
-        hasHolding: !!inputs.holding?.actif,
-        hasDistribution: !!inputs.distribution,
-        hasCapitalisation: !!inputs.capitalisation,
-        hasCreditIR: !!(inputs.creditIR?.actif),
-        hasCreditIS: !!(inputs.creditIS?.actif),
+        typeCreation: inputs.company.creationType,
+        hasHolding,
+        hasDistribution,
+        hasCapitalisation,
+        hasAllocationMatrix,
+        hasCreditIR: false,
+        hasCreditIS,
         ccaTotalConstitue: kpis.ccaTotalConstitue,
         isTotalDecaisse: kpis.isTotalDecaisse,
         isLatentCapi: kpis.isLatentCapi,

@@ -6,11 +6,11 @@
  */
 
 import type { TresoKPIs } from '../hooks/useTresorerieCalculations';
-import type { TresoInputs } from '../../../engine/tresorerie/types';
+import type { TresoInputsV2 } from '../../../engine/tresorerie/types';
 
 interface Props {
   kpis: TresoKPIs;
-  inputs: TresoInputs;
+  inputs: TresoInputsV2;
 }
 
 function fmtEuro(n: number): string {
@@ -47,10 +47,8 @@ function KpiRow({ label, value, status, badge, note }: KpiRowProps) {
 }
 
 export function TresoKPISidebar({ kpis, inputs }: Props) {
-  const hasCapiValeurs = !!(
-    inputs.capitalisation?.valeurActuelle != null &&
-    inputs.capitalisation?.capitalInvestiHistorique != null
-  );
+  const hasCapitalisation = inputs.allocationMatrix.pockets.some(pocket => pocket.kind === 'capitalisation');
+  const hasCompanyDebtOrSubsidiary = !!(inputs.company.loans.length || inputs.company.subsidiaries.length);
   const hasAnneeRetraite = kpis.anneeRetraiteIndex !== null && kpis.anneeRetraiteIndex >= 0;
 
   return (
@@ -83,17 +81,12 @@ export function TresoKPISidebar({ kpis, inputs }: Props) {
           />
 
           {/* 3 — IS latent capitalisation (non décaissé) */}
-          {inputs.capitalisation ? (
+          {hasCapitalisation ? (
             <KpiRow
               label="IS latent capitalisation"
-              value={hasCapiValeurs
-                ? fmtEuro(kpis.isLatentCapi)
-                : fmtEuro(kpis.isLatentCapi)}
+              value={fmtEuro(kpis.isLatentCapi)}
               status="ready"
               badge="non décaissé"
-              note={!hasCapiValeurs && inputs.typeCreation === 'existante'
-                ? 'Renseignez la valeur actuelle et le capital investi pour affiner.'
-                : undefined}
             />
           ) : null}
 
@@ -135,11 +128,11 @@ export function TresoKPISidebar({ kpis, inputs }: Props) {
           />
 
           {/* 9 — Alerte dividendes > capacité */}
-          {kpis.alerteDividendesAn1 || inputs.creditIR?.actif || inputs.holding ? (
+          {kpis.alerteDividendesAn1 || hasCompanyDebtOrSubsidiary ? (
             <KpiRow
               label="Alerte dividendes"
               value={kpis.alerteDividendesAn1
-                ? '⚠ Dividendes > capacité distribuable'
+                ? 'Dividendes supérieurs à la capacité distribuable'
                 : 'Aucune alerte'}
               status={kpis.alerteDividendesAn1 ? 'warning' : 'ready'}
             />

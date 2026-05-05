@@ -1,7 +1,8 @@
 /**
  * types.ts — Types du moteur trésorerie société IS
  *
- * TresoInputs     : entrées du simulateur (structure + poches + crédits + holding)
+ * TresoInputs     : entrées legacy du simulateur (migration/compatibilité)
+ * TresoInputsV2   : source de vérité du runtime Trésorerie société
  * TresoFiscalParams : paramètres fiscaux typés construits par useTresorerieCalculations
  * TresoProjectionRow : ligne de la projection annuelle produite par simulateTresorerie
  *
@@ -40,6 +41,8 @@ export interface TresoFiscalParams {
   dividendesAbattement: number;
   /** Barème IR pour option future — V1 : non utilisé */
   irScale: IRBracket[];
+  /** Seuil social TNS sur dividendes (ex: 10 % de capital + primes + CCA) */
+  tnsDividendBasePct?: number;
 }
 
 // ─── Poches de placement ──────────────────────────────────────────────────────
@@ -104,7 +107,119 @@ export interface HoldingParticipationInput {
   datePremierDividende?: string;
 }
 
-// ─── Entrées globales du simulateur ───────────────────────────────────────────
+// ─── Modèle domaine v2 — société, foyer, allocation ──────────────────────────
+
+export type OwnershipRight = 'pleine_propriete' | 'usufruit' | 'nue_propriete';
+
+export interface FoyerInput {
+  selectedAssociateId: string;
+  currentAge: number;
+  retirementAge: number;
+  annualIncomeNeed: number;
+  projectionStartYear: number;
+}
+
+export interface OwnershipLotInput {
+  right: OwnershipRight;
+  capitalPct: number;
+  economicRightsPct: number;
+}
+
+export type AssociateRole =
+  | 'gerant_tns'
+  | 'cogerant_tns'
+  | 'pdg'
+  | 'dg'
+  | 'associe_sans_statut'
+  | 'salarie';
+
+export interface AssociateInput {
+  id: string;
+  label: string;
+  ownershipLots: OwnershipLotInput[];
+  roles: AssociateRole[];
+  ccaInitial: number;
+  ccaAnnualContribution: number;
+  ccaContributionEndYear?: number;
+  remunerationAnnualCost: number;
+  remunerationEndYear?: number;
+  socialChargesManualRate?: number;
+}
+
+export type FinancedAssetKind = 'scpi' | 'immobilier' | 'autre';
+
+export interface CompanyLoanInput {
+  id: string;
+  label: string;
+  principal: number;
+  annualRate: number;
+  durationMonths: number;
+  startDate: string;
+  existingLoan: boolean;
+  deductibleInterest: boolean;
+  financedAssetKind?: FinancedAssetKind;
+  financedAssetLabel?: string;
+  financedAssetReturnRate?: number;
+  enjoymentDelayMonths?: number;
+}
+
+export interface SubsidiaryInput {
+  id: string;
+  label: string;
+  holdingOwnershipPct: number;
+  annualServicesRevenue: number;
+  annualDividends: number;
+  motherDaughterEligible: boolean;
+  fiscalIntegrationEstimateEnabled: boolean;
+  estimatedFiscalResult?: number;
+  disposalYear?: number;
+  estimatedDisposalPrice?: number;
+  taxBasis?: number;
+}
+
+export type AllocationPocketKind = 'distribution' | 'capitalisation';
+export type AllocationTermDestination = 'treasury' | 'matrix' | 'same_pocket';
+
+export interface AllocationPocketInput {
+  id: string;
+  label?: string;
+  kind: AllocationPocketKind;
+  durationYears: number;
+  annualReturnRate: number;
+  enjoymentDelayMonths: number;
+  initialAllocationPct: number;
+  annualAllocationPct: number;
+  repeatAtTerm: boolean;
+  termDestination: AllocationTermDestination;
+}
+
+export interface AllocationMatrixInput {
+  sweepThreshold: number;
+  pockets: AllocationPocketInput[];
+}
+
+export interface CompanyInput {
+  creationType: 'newco' | 'existante';
+  legalForm: 'sas' | 'sc' | 'sarl' | 'autre';
+  shareCapital: number;
+  sharePremium: number;
+  reservesInitial: number;
+  treasuryInitial: number;
+  annualStructureCosts: number;
+  reducedCorporateTaxEligible: boolean;
+  associates: AssociateInput[];
+  loans: CompanyLoanInput[];
+  subsidiaries: SubsidiaryInput[];
+}
+
+export interface TresoInputsV2 {
+  version: 2;
+  foyer: FoyerInput;
+  company: CompanyInput;
+  allocationMatrix: AllocationMatrixInput;
+}
+
+// ─── Entrées legacy du simulateur (migration/compatibilité) ───────────────────
 
 export interface TresoInputs {
   // Société
@@ -135,9 +250,29 @@ export interface TresoInputs {
 
   // Holding
   holding?: HoldingParticipationInput;
+
 }
 
 // ─── Ligne de projection annuelle ────────────────────────────────────────────
+
+export type TresoAssociateRevenueSource =
+  | 'remuneration'
+  | 'cca'
+  | 'dividendes'
+  | 'charges_sociales_tns'
+  | 'fiscalite';
+
+export interface TresoAssociateRevenueRow {
+  associateId: string;
+  label: string;
+  source: TresoAssociateRevenueSource;
+  remuneration: number;
+  ccaRepaid: number;
+  grossDividends: number;
+  dividendTax: number;
+  tnsSocialCharges: number;
+  netRevenue: number;
+}
 
 export interface TresoProjectionRow {
   year: number;
@@ -196,6 +331,7 @@ export interface TresoProjectionRow {
   // Revenus nets associés
   revenusNets: number;
   deltaBesoin: number;
+  revenusParAssocie: TresoAssociateRevenueRow[];
 
   // Trésorerie
   tresorerieDebut: number;
