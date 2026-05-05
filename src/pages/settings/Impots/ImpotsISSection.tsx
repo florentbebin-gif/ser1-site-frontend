@@ -1,16 +1,23 @@
 import React from 'react';
 import SettingsYearColumn from '@/components/settings/SettingsYearColumn';
 import SettingsFieldRow from '@/components/settings/SettingsFieldRow';
+import { validateQpfcRate } from '../validators/isValidators';
 
 interface IncomeTaxLabels {
   currentYearLabel?: string;
   previousYearLabel?: string;
 }
 
+interface MotherDaughterQpfc {
+  standard: number | null;
+  group: number | null;
+}
+
 interface CorporateTaxPeriodSettings {
   normalRate: number | null;
   reducedRate: number | null;
   reducedThreshold: number | null;
+  motherDaughterQpfc?: MotherDaughterQpfc;
 }
 
 interface CorporateTaxSettings {
@@ -36,6 +43,15 @@ export default function ImpotsISSection({
   setOpenSection,
 }: ImpotsISSectionProps): React.ReactElement {
   const isOpen = openSection === 'is';
+
+  const qpfcCurrentError = validateQpfcRate({
+    standard: corporateTax.current.motherDaughterQpfc?.standard,
+    group: corporateTax.current.motherDaughterQpfc?.group,
+  });
+  const qpfcPreviousError = validateQpfcRate({
+    standard: corporateTax.previous.motherDaughterQpfc?.standard,
+    group: corporateTax.previous.motherDaughterQpfc?.group,
+  });
 
   return (
     <div className="fisc-acc-item">
@@ -90,6 +106,29 @@ export default function ImpotsISSection({
                 unit="EUR"
                 disabled={!isAdmin}
               />
+              <SettingsFieldRow
+                label="Quote-part frais (régime standard)"
+                path={['corporateTax', 'current', 'motherDaughterQpfc', 'standard']}
+                value={corporateTax.current.motherDaughterQpfc?.standard ?? null}
+                onChange={updateField}
+                step="0.1"
+                unit="%"
+                disabled={!isAdmin}
+              />
+              <SettingsFieldRow
+                label="Quote-part frais (groupe fiscal)"
+                path={['corporateTax', 'current', 'motherDaughterQpfc', 'group']}
+                value={corporateTax.current.motherDaughterQpfc?.group ?? null}
+                onChange={updateField}
+                step="0.1"
+                unit="%"
+                disabled={!isAdmin}
+              />
+              {qpfcCurrentError && (
+                <p style={{ color: 'var(--color-warning-text)', fontSize: 12, margin: '2px 0 4px' }}>
+                  {qpfcCurrentError}
+                </p>
+              )}
             </SettingsYearColumn>
 
             <SettingsYearColumn
@@ -122,6 +161,29 @@ export default function ImpotsISSection({
                 unit="EUR"
                 disabled={!isAdmin}
               />
+              <SettingsFieldRow
+                label="Quote-part frais (régime standard)"
+                path={['corporateTax', 'previous', 'motherDaughterQpfc', 'standard']}
+                value={corporateTax.previous.motherDaughterQpfc?.standard ?? null}
+                onChange={updateField}
+                step="0.1"
+                unit="%"
+                disabled={!isAdmin}
+              />
+              <SettingsFieldRow
+                label="Quote-part frais (groupe fiscal)"
+                path={['corporateTax', 'previous', 'motherDaughterQpfc', 'group']}
+                value={corporateTax.previous.motherDaughterQpfc?.group ?? null}
+                onChange={updateField}
+                step="0.1"
+                unit="%"
+                disabled={!isAdmin}
+              />
+              {qpfcPreviousError && (
+                <p style={{ color: 'var(--color-warning-text)', fontSize: 12, margin: '2px 0 4px' }}>
+                  {qpfcPreviousError}
+                </p>
+              )}
             </SettingsYearColumn>
           </div>
         </div>
