@@ -2,16 +2,16 @@
  * useTresorerieCalculations.ts — Pont fiscal + orchestration de la simulation
  *
  * Construit les TresoFiscalParams depuis useFiscalContext (chaîne fiscale standard),
- * appelle simulateTresorerie() via useMemo, et calcule les 9 KPIs de la sidebar.
+ * appelle simulateTresorerieV2() via useMemo, et calcule les 9 KPIs de la sidebar.
  *
  * Règle : zéro valeur fiscale hardcodée — tout transite par TresoFiscalParams.
  */
 
 import { useMemo } from 'react';
 import { useFiscalContext } from '../../../hooks/useFiscalContext';
-import { simulateTresorerie } from '../../../engine/tresorerie/simulateTresorerie';
+import { simulateTresorerieV2 } from '../../../engine/tresorerie/simulateTresorerieV2';
 import { DEFAULT_TAX_SETTINGS, DEFAULT_PS_SETTINGS } from '../../../constants/settingsDefaults';
-import type { TresoInputs, TresoFiscalParams, TresoProjectionRow } from '../../../engine/tresorerie/types';
+import type { TresoInputsV2, TresoFiscalParams, TresoProjectionRow } from '../../../engine/tresorerie/types';
 
 // ─── KPIs ─────────────────────────────────────────────────────────────────────
 
@@ -57,7 +57,7 @@ export interface TresoCalculationsResult {
 
 const HORIZON_ANS = 40;
 
-export function useTresorerieCalculations(inputs: TresoInputs): TresoCalculationsResult {
+export function useTresorerieCalculations(inputs: TresoInputsV2): TresoCalculationsResult {
   const { fiscalContext, loading, error } = useFiscalContext({ strict: false });
 
   // ── Construction des TresoFiscalParams depuis la chaîne fiscale ──────────
@@ -73,6 +73,8 @@ export function useTresorerieCalculations(inputs: TresoInputs): TresoCalculation
     const normalRate = (corpCurrent.normalRate ?? defaultsCorp.normalRate) / 100;
     const reducedRate = (corpCurrent.reducedRate ?? defaultsCorp.reducedRate) / 100;
     const reducedThreshold = corpCurrent.reducedThreshold ?? defaultsCorp.reducedThreshold;
+    const tnsDividendBasePct =
+      (corpCurrent.tnsDividendBasePct ?? defaultsCorp.tnsDividendBasePct) / 100;
 
     const qpfc = corpCurrent.motherDaughterQpfc ?? defaultsCorp.motherDaughterQpfc;
     const standardQpfc = (qpfc.standard ?? defaultsCorp.motherDaughterQpfc.standard) / 100;
@@ -92,6 +94,7 @@ export function useTresorerieCalculations(inputs: TresoInputs): TresoCalculation
       pfuTotal: pfuRateIR + psRate,
       dividendesAbattement: 0.40, // V1 non utilisé — taux légal, non paramétrable en settings V1
       irScale: fiscalContext.irScaleCurrent ?? DEFAULT_TAX_SETTINGS.incomeTax.scaleCurrent,
+      tnsDividendBasePct,
     };
   }, [fiscalContext]);
 
@@ -99,7 +102,7 @@ export function useTresorerieCalculations(inputs: TresoInputs): TresoCalculation
   const rows = useMemo<TresoProjectionRow[]>(() => {
     if (!fiscalParams) return [];
     try {
-      return simulateTresorerie(inputs, fiscalParams, HORIZON_ANS);
+      return simulateTresorerieV2(inputs, fiscalParams, HORIZON_ANS);
     } catch {
       return [];
     }
@@ -123,12 +126,13 @@ export function useTresorerieCalculations(inputs: TresoInputs): TresoCalculation
       };
     }
 
-    const dureeActive = inputs.dureeActiveAns;
-    const anneeRetraiteIndex = Math.min(inputs.ageRetraite - inputs.ageActuel, rows.length - 1);
+    const anneeRetraiteIndex = Math.min(
+      inputs.foyer.retirementAge - inputs.foyer.currentAge,
+      rows.length - 1,
+    );
 
-    // CCA total constitué = ccaCumule à la fin de la phase active
-    const lastActiveRow = rows[Math.min(dureeActive - 1, rows.length - 1)];
-    const ccaTotalConstitue = lastActiveRow?.ccaCumule ?? 0;
+    // CCA total constitué = plus haut niveau projeté du compte courant.
+    const ccaTotalConstitue = rows.reduce((max, row) => Math.max(max, row.ccaCumule), 0);
 
     // IS total décaissé = Σ is annuels
     const isTotalDecaisse = rows.reduce((acc, r) => acc + r.is, 0);
@@ -142,8 +146,8 @@ export function useTresorerieCalculations(inputs: TresoInputs): TresoCalculation
     const revenusNetsRetraite = retraiteRow?.revenusNets ?? 0;
 
     // Durée remboursement CCA
-    const dureeRemboursementCCA = inputs.besoinsRetraiteAnnuels > 0 && ccaTotalConstitue > 0
-      ? Math.ceil(ccaTotalConstitue / inputs.besoinsRetraiteAnnuels)
+    const dureeRemboursementCCA = inputs.foyer.annualIncomeNeed > 0 && ccaTotalConstitue > 0
+      ? Math.ceil(ccaTotalConstitue / inputs.foyer.annualIncomeNeed)
       : null;
 
     // Valeur nette société à la retraite

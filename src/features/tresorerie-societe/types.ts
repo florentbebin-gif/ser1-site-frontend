@@ -8,12 +8,17 @@
  * Les types moteur sont dans src/engine/tresorerie/types.ts.
  */
 
-import type { TresoInputs } from '../../engine/tresorerie/types';
+import type { TresoInputs, TresoInputsV2 } from '../../engine/tresorerie/types';
 
 export interface TresoState {
-  inputs: TresoInputs;
+  inputsV2: TresoInputsV2;
   projectionVisible: boolean;
   projectionMode: 'resume' | 'detail';
 }
 
-export type TresoPersistedState = Pick<TresoState, 'inputs'>;
+export interface TresoPersistedState {
+  /** Format runtime actuel. */
+  inputsV2?: TresoInputsV2;
+  /** Ancien format, lu uniquement pendant la migration au chargement. */
+  inputs?: TresoInputs;
+}

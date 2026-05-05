@@ -16,10 +16,9 @@ import { useTresorerieState } from './hooks/useTresorerieState';
 import { useTresorerieCalculations } from './hooks/useTresorerieCalculations';
 import { useTresorerieExportHandlers } from './hooks/useTresorerieExportHandlers';
 import { TresoSocieteSection } from './components/TresoSocieteSection';
-import { TresoCCASection } from './components/TresoCCASection';
+import { TresoFoyerSection } from './components/TresoFoyerSection';
 import { TresoPlacementSection } from './components/TresoPlacementSection';
-import { TresoCreditSection } from './components/TresoCreditSection';
-import { TresoHoldingSection } from './components/TresoHoldingSection';
+import { TresoFoyerInsights } from './components/TresoFoyerInsights';
 import { TresoKPISidebar } from './components/TresoKPISidebar';
 import { TresoProjectionDrawer } from './components/TresoProjectionDrawer';
 import { TresoHypotheses } from './components/TresoHypotheses';
@@ -28,18 +27,13 @@ export default function TresorerieSocietePage() {
   const {
     state,
     hydrated,
-    setInputs,
+    setInputsV2,
     setProjectionVisible,
     setProjectionMode,
-    setDistribution,
-    setCapitalisation,
-    setCreditIS,
-    setCreditIR,
-    setHolding,
   } = useTresorerieState();
 
   const { colors: themeColors, pptxColors, cabinetLogo, logoPlacement } = useTheme();
-  const { rows, kpis, loading, error } = useTresorerieCalculations(state.inputs);
+  const { rows, kpis, loading, error } = useTresorerieCalculations(state.inputsV2);
   const {
     exportExcel,
     exportPptx,
@@ -48,7 +42,7 @@ export default function TresorerieSocietePage() {
   } = useTresorerieExportHandlers({
     rows,
     kpis,
-    inputs: state.inputs,
+    inputs: state.inputsV2,
     themeColors,
     pptxColors,
     cabinetLogo,
@@ -73,28 +67,17 @@ export default function TresorerieSocietePage() {
       actions={<ExportMenu options={exportOptions} loading={exportLoading} />}
     >
       <SimPageShell.Main>
-        {/* Bloc 1 — Société et foyer */}
-        <TresoSocieteSection inputs={state.inputs} onChange={setInputs} />
+        {/* Bloc 1 — Société */}
+        <TresoSocieteSection inputs={state.inputsV2} onChange={setInputsV2} />
 
-        {/* Bloc 2 — CCA */}
-        <TresoCCASection inputs={state.inputs} onChange={setInputs} />
+        {/* Bloc 2 — Foyer */}
+        <TresoFoyerSection inputs={state.inputsV2} onChange={setInputsV2} />
 
         {/* Bloc 3 — Allocation société */}
         <TresoPlacementSection
-          inputs={state.inputs}
-          onDistribution={setDistribution}
-          onCapitalisation={setCapitalisation}
+          inputs={state.inputsV2}
+          onChange={setInputsV2}
         />
-
-        {/* Bloc 4 — Crédits */}
-        <TresoCreditSection
-          inputs={state.inputs}
-          onCreditIR={setCreditIR}
-          onCreditIS={setCreditIS}
-        />
-
-        {/* Bloc 5 — Holding */}
-        <TresoHoldingSection inputs={state.inputs} onHolding={setHolding} />
 
         {/* Bouton projection */}
         <div className="ts-projection-btn-row">
@@ -117,9 +100,9 @@ export default function TresorerieSocietePage() {
             rows={rows}
             mode={state.projectionMode}
             onModeChange={setProjectionMode}
-            ageActuel={state.inputs.ageActuel}
-            ageRetraite={state.inputs.ageRetraite}
-            anneeCivileDebut={state.inputs.anneeCivileDebut}
+            ageActuel={state.inputsV2.foyer.currentAge}
+            ageRetraite={state.inputsV2.foyer.retirementAge}
+            anneeCivileDebut={state.inputsV2.foyer.projectionStartYear}
           />
         )}
 
@@ -128,7 +111,8 @@ export default function TresorerieSocietePage() {
       </SimPageShell.Main>
 
       <SimPageShell.Side sticky>
-        <TresoKPISidebar kpis={kpis} inputs={state.inputs} />
+        <TresoFoyerInsights inputs={state.inputsV2} rows={rows} />
+        <TresoKPISidebar kpis={kpis} inputs={state.inputsV2} />
       </SimPageShell.Side>
     </SimPageShell>
   );

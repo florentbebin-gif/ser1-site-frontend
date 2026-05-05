@@ -1,36 +1,26 @@
 /**
- * TresoPlacementSection.tsx — Bloc « Allocation société »
- *
- * Deux poches activables indépendamment :
- * - Poche de revenus (distribution) : revenus bruts intégrés au résultat fiscal
- * - Poche de capitalisation : croissance sans IS annuel, IS à la sortie
+ * TresoPlacementSection.tsx — Matrice d’allocation de la trésorerie société.
  */
 
-import { useState } from 'react';
 import { SimFieldShell } from '../../../components/ui/sim/SimFieldShell';
 import { SimSelect } from '../../../components/ui/sim/SimSelect';
-import type {
-  DistributionPocketInput,
-  CapitalisationPocketInput,
-  TresoInputs,
-} from '../../../engine/tresorerie/types';
+import type { AllocationPocketInput, TresoInputsV2 } from '../../../engine/tresorerie/types';
+import { getAllocationPocketLabel } from '../utils/tresorerieV2Migration';
 
 interface Props {
-  inputs: TresoInputs;
-  onDistribution: (v: DistributionPocketInput | undefined) => void;
-  onCapitalisation: (v: CapitalisationPocketInput | undefined) => void;
+  inputs: TresoInputsV2;
+  onChange: (nextInputs: TresoInputsV2) => void;
 }
 
-const STRATEGIE_OPTIONS = [
-  { value: 'tresorerie', label: 'Conserver en trésorerie' },
-  { value: 'reinvestir', label: 'Réinvestir' },
-  { value: 'distribuer', label: 'Distribuer' },
+const KIND_OPTIONS = [
+  { value: 'distribution', label: 'Distribution' },
+  { value: 'capitalisation', label: 'Capitalisation' },
 ];
 
 const DESTINATION_OPTIONS = [
-  { value: 'tresorerie', label: 'Conserver en trésorerie' },
-  { value: 'capitalisation', label: 'Basculer en capitalisation' },
-  { value: 'nouvelle_distribution', label: 'Nouvelle souscription distribution' },
+  { value: 'treasury', label: 'Trésorerie' },
+  { value: 'matrix', label: 'Matrice' },
+  { value: 'same_pocket', label: 'Même poche' },
 ];
 
 function fmt(n: number): string {
@@ -42,252 +32,68 @@ function parseEuro(v: string): number {
   return clean === '' ? 0 : Math.min(Number(clean), 999_999_999);
 }
 
-function parsePct(v: string): number {
-  const clean = v.replace(',', '.').replace(/[^\d.]/g, '');
-  const n = parseFloat(clean);
-  return isNaN(n) ? 0 : Math.min(n / 100, 1);
-}
-
-function fmtPct(n: number): string {
-  return ((n || 0) * 100).toFixed(2).replace('.', ',');
-}
-
-function parseDuree(v: string): number {
+function parseNumber(v: string): number {
   const clean = v.replace(/\D/g, '');
   return clean === '' ? 0 : Number(clean);
 }
 
-// ─── Sous-composant poche distribution ───────────────────────────────────────
-
-function DistributionForm({
-  value,
-  onChange,
-  isExistante,
-}: {
-  value: DistributionPocketInput;
-  onChange: (v: DistributionPocketInput) => void;
-  isExistante: boolean;
-}) {
-  return (
-    <div className="ts-pocket-form">
-      <div className="ts-fields">
-
-        <SimFieldShell label="Capital investi" className="ts-field" rowClassName="ts-field__row">
-          <input type="text" inputMode="numeric" className="sim-field__control"
-            value={fmt(value.montant)}
-            onChange={e => onChange({ ...value, montant: parseEuro(e.target.value) })}
-          />
-          <span className="sim-field__unit ts-unit">€</span>
-        </SimFieldShell>
-
-        <SimFieldShell label="Rendement annuel distribué" className="ts-field" rowClassName="ts-field__row">
-          <input type="text" className="sim-field__control"
-            value={fmtPct(value.rendementDistribue)}
-            onChange={e => onChange({ ...value, rendementDistribue: parsePct(e.target.value) })}
-          />
-          <span className="sim-field__unit ts-unit">%</span>
-        </SimFieldShell>
-
-        <SimFieldShell label="Date de souscription" className="ts-field" rowClassName="ts-field__row">
-          <input type="month" className="sim-field__control ts-input-month"
-            value={value.dateSouscription ?? ''}
-            onChange={e => onChange({ ...value, dateSouscription: e.target.value })}
-          />
-        </SimFieldShell>
-
-        <SimFieldShell label="Délai de jouissance" className="ts-field" rowClassName="ts-field__row">
-          <input type="text" inputMode="numeric" className="sim-field__control"
-            value={value.delaiJouissanceMois ?? 0}
-            onChange={e => onChange({ ...value, delaiJouissanceMois: parseDuree(e.target.value) })}
-          />
-          <span className="sim-field__unit ts-unit">mois</span>
-        </SimFieldShell>
-
-        <SimFieldShell label="Durée du placement" className="ts-field" rowClassName="ts-field__row">
-          <input type="text" inputMode="numeric" className="sim-field__control"
-            value={value.dureeAns ?? ''}
-            onChange={e => onChange({ ...value, dureeAns: parseDuree(e.target.value) || undefined })}
-          />
-          <span className="sim-field__unit ts-unit">ans</span>
-        </SimFieldShell>
-
-        <SimFieldShell label="Stratégie revenus" className="ts-field" rowClassName="ts-field__row">
-          <SimSelect
-            value={value.strategieRevenus ?? 'tresorerie'}
-            onChange={v => onChange({ ...value, strategieRevenus: v as DistributionPocketInput['strategieRevenus'] })}
-            options={STRATEGIE_OPTIONS}
-            ariaLabel="Stratégie revenus"
-          />
-        </SimFieldShell>
-
-        <div className="ts-field ts-field--toggle">
-          <label className="ts-toggle-label">
-            <input type="checkbox"
-              checked={value.repetitionAuTerme ?? false}
-              onChange={e => onChange({ ...value, repetitionAuTerme: e.target.checked })}
-            />
-            Répéter le placement au terme
-          </label>
-        </div>
-
-        {value.repetitionAuTerme ? null : (
-          <SimFieldShell label="Destination au terme" className="ts-field" rowClassName="ts-field__row">
-            <SimSelect
-              value={value.destinationAuTerme ?? 'tresorerie'}
-              onChange={v => onChange({ ...value, destinationAuTerme: v as DistributionPocketInput['destinationAuTerme'] })}
-              options={DESTINATION_OPTIONS}
-              ariaLabel="Destination au terme"
-            />
-          </SimFieldShell>
-        )}
-
-        {isExistante && (
-          <SimFieldShell label="Taux de revalorisation" className="ts-field" rowClassName="ts-field__row">
-            <input type="text" className="sim-field__control"
-              value={fmtPct(value.tauxRevalorisation ?? 0)}
-              onChange={e => onChange({ ...value, tauxRevalorisation: parsePct(e.target.value) })}
-            />
-            <span className="sim-field__unit ts-unit">%</span>
-          </SimFieldShell>
-        )}
-
-      </div>
-    </div>
-  );
+function parsePct(v: string): number {
+  const clean = v.replace(',', '.').replace(/[^\d.]/g, '');
+  if (clean === '') return 0;
+  return Math.min(Number(clean), 100);
 }
 
-// ─── Sous-composant poche capitalisation ─────────────────────────────────────
-
-function CapitalisationForm({
-  value,
-  onChange,
-  isExistante,
-}: {
-  value: CapitalisationPocketInput;
-  onChange: (v: CapitalisationPocketInput) => void;
-  isExistante: boolean;
-}) {
-  return (
-    <div className="ts-pocket-form">
-      <div className="ts-fields">
-
-        <SimFieldShell label="Capital investi initial" className="ts-field" rowClassName="ts-field__row">
-          <input type="text" inputMode="numeric" className="sim-field__control"
-            value={fmt(value.montant)}
-            onChange={e => onChange({ ...value, montant: parseEuro(e.target.value) })}
-          />
-          <span className="sim-field__unit ts-unit">€</span>
-        </SimFieldShell>
-
-        <SimFieldShell label="Rendement annuel de capitalisation" className="ts-field" rowClassName="ts-field__row">
-          <input type="text" className="sim-field__control"
-            value={fmtPct(value.rendementAnnuel)}
-            onChange={e => onChange({ ...value, rendementAnnuel: parsePct(e.target.value) })}
-          />
-          <span className="sim-field__unit ts-unit">%</span>
-        </SimFieldShell>
-
-        <SimFieldShell label="Durée du placement" className="ts-field" rowClassName="ts-field__row">
-          <input type="text" inputMode="numeric" className="sim-field__control"
-            value={value.dureeAns ?? ''}
-            onChange={e => onChange({ ...value, dureeAns: parseDuree(e.target.value) || undefined })}
-          />
-          <span className="sim-field__unit ts-unit">ans</span>
-        </SimFieldShell>
-
-        <div className="ts-field ts-field--toggle">
-          <label className="ts-toggle-label">
-            <input type="checkbox"
-              checked={value.rachatAuTerme !== false}
-              onChange={e => onChange({ ...value, rachatAuTerme: e.target.checked })}
-            />
-            Rachat total au terme
-          </label>
-        </div>
-
-        <div className="ts-field ts-field--toggle">
-          <label className="ts-toggle-label">
-            <input type="checkbox"
-              checked={value.repetitionAuTerme ?? false}
-              onChange={e => onChange({ ...value, repetitionAuTerme: e.target.checked })}
-            />
-            Répéter le placement au terme
-          </label>
-        </div>
-
-        {isExistante && (
-          <>
-            <SimFieldShell label="Valeur actuelle du placement" className="ts-field" rowClassName="ts-field__row">
-              <input type="text" inputMode="numeric" className="sim-field__control"
-                value={fmt(value.valeurActuelle ?? 0)}
-                onChange={e => onChange({ ...value, valeurActuelle: parseEuro(e.target.value) })}
-              />
-              <span className="sim-field__unit ts-unit">€</span>
-            </SimFieldShell>
-            <SimFieldShell label="Capital investi historique" className="ts-field" rowClassName="ts-field__row"
-              hint="Requis pour calculer l'IS latent sur la plus-value"
-            >
-              <input type="text" inputMode="numeric" className="sim-field__control"
-                value={fmt(value.capitalInvestiHistorique ?? 0)}
-                onChange={e => onChange({ ...value, capitalInvestiHistorique: parseEuro(e.target.value) })}
-              />
-              <span className="sim-field__unit ts-unit">€</span>
-            </SimFieldShell>
-          </>
-        )}
-
-      </div>
-      <p className="ts-section__note">
-        Aucun IS annuel — IS payable uniquement à la sortie sur la plus-value nette.
-      </p>
-    </div>
-  );
+function fmtRate(rate: number): string {
+  return ((rate || 0) * 100).toFixed(2).replace('.', ',');
 }
 
-// ─── Composant principal ──────────────────────────────────────────────────────
+function parseRate(v: string): number {
+  return parsePct(v) / 100;
+}
 
-const DEFAULT_DISTRIBUTION: DistributionPocketInput = {
-  montant: 200000,
-  rendementDistribue: 0.05,
-  dateSouscription: `${new Date().getFullYear()}-01`,
-  delaiJouissanceMois: 0,
-  dureeAns: 20,
-  strategieRevenus: 'tresorerie',
-  repetitionAuTerme: false,
-};
+function buildDefaultPocket(index: number): AllocationPocketInput {
+  return {
+    id: `poche-${index + 1}`,
+    kind: index === 0 ? 'distribution' : 'capitalisation',
+    durationYears: index === 0 ? 5 : 8,
+    annualReturnRate: index === 0 ? 0.05 : 0.04,
+    enjoymentDelayMonths: 0,
+    initialAllocationPct: index === 0 ? 100 : 0,
+    annualAllocationPct: index === 0 ? 100 : 0,
+    repeatAtTerm: false,
+    termDestination: 'treasury',
+  };
+}
 
-const DEFAULT_CAPITALISATION: CapitalisationPocketInput = {
-  montant: 200000,
-  rendementAnnuel: 0.04,
-  dureeAns: 15,
-  rachatAuTerme: true,
-  repetitionAuTerme: false,
-};
+export function TresoPlacementSection({ inputs, onChange }: Props) {
+  const v2 = inputs;
 
-export function TresoPlacementSection({ inputs, onDistribution, onCapitalisation }: Props) {
-  const [distribOpen, setDistribOpen] = useState(!!inputs.distribution);
-  const [capiOpen, setCapiOpen] = useState(!!inputs.capitalisation);
-  const isExistante = inputs.typeCreation === 'existante';
+  const matrix = v2.allocationMatrix;
+  const pockets = matrix.pockets.slice(0, 5);
 
-  function toggleDistrib() {
-    if (distribOpen) {
-      onDistribution(undefined);
-      setDistribOpen(false);
-    } else {
-      onDistribution(inputs.distribution ?? DEFAULT_DISTRIBUTION);
-      setDistribOpen(true);
-    }
-  }
+  const patchV2 = (nextV2: TresoInputsV2) => {
+    onChange(nextV2);
+  };
 
-  function toggleCapi() {
-    if (capiOpen) {
-      onCapitalisation(undefined);
-      setCapiOpen(false);
-    } else {
-      onCapitalisation(inputs.capitalisation ?? DEFAULT_CAPITALISATION);
-      setCapiOpen(true);
-    }
-  }
+  const patchMatrix = (patch: Partial<TresoInputsV2['allocationMatrix']>) => {
+    patchV2({ ...v2, allocationMatrix: { ...matrix, ...patch } });
+  };
+
+  const updatePocket = (id: string, patch: Partial<AllocationPocketInput>) => {
+    patchMatrix({
+      pockets: pockets.map(pocket => {
+        if (pocket.id !== id) return pocket;
+        const nextPocket = { ...pocket, ...patch };
+        return {
+          ...nextPocket,
+          termDestination: nextPocket.repeatAtTerm ? 'same_pocket' : nextPocket.termDestination,
+        };
+      }),
+    });
+  };
+
+  const totalInitialPct = pockets.reduce((sum, pocket) => sum + pocket.initialAllocationPct, 0);
+  const totalAnnualPct = pockets.reduce((sum, pocket) => sum + pocket.annualAllocationPct, 0);
 
   return (
     <div className="premium-card ts-section">
@@ -298,70 +104,172 @@ export function TresoPlacementSection({ inputs, onDistribution, onCapitalisation
           </svg>
         </span>
         <div>
-          <h2 className="ts-section__title">Allocation société</h2>
-          <p className="ts-section__subtitle">Poches de placement internes à la société IS</p>
+          <h2 className="ts-section__title">Allocation trésorerie société</h2>
+          <p className="ts-section__subtitle">Matrice initiale et balayage annuel au-dessus du seuil</p>
         </div>
       </div>
       <div className="ts-section__divider" />
 
-      {/* Poche distribution */}
-      <div className="ts-pocket">
-        <button
-          type="button"
-          className={`ts-pocket__toggle${distribOpen ? ' is-open' : ''}`}
-          onClick={toggleDistrib}
-          aria-expanded={distribOpen}
-        >
-          <span className="ts-pocket__toggle-label">
-            {distribOpen ? '▼' : '▶'} Poche de revenus
-            {inputs.distribution && (
-              <span className="ts-pocket__badge">
-                {fmt(inputs.distribution.montant)} €
-              </span>
-            )}
-          </span>
-          {!distribOpen && (
-            <span className="ts-pocket__cta">+ Paramétrer</span>
-          )}
-        </button>
-
-        {distribOpen && inputs.distribution && (
-          <DistributionForm
-            value={inputs.distribution}
-            onChange={onDistribution}
-            isExistante={isExistante}
+      <div className="ts-fields">
+        <SimFieldShell label="Seuil de trésorerie conservée" className="ts-field" rowClassName="ts-field__row">
+          <input
+            type="text"
+            inputMode="numeric"
+            className="sim-field__control"
+            value={fmt(matrix.sweepThreshold)}
+            onChange={event => patchMatrix({ sweepThreshold: parseEuro(event.target.value) })}
           />
-        )}
+          <span className="sim-field__unit ts-unit">€</span>
+        </SimFieldShell>
       </div>
 
-      {/* Poche capitalisation */}
-      <div className="ts-pocket">
+      <div className="ts-matrix-flow" aria-label="Évolution de la matrice d’allocation">
+        {pockets.map(pocket => (
+          <div key={pocket.id} className="ts-matrix-flow__item">
+            <span>{getAllocationPocketLabel(pocket)}</span>
+            <i style={{ width: `${Math.max(4, pocket.annualAllocationPct)}%` }} />
+          </div>
+        ))}
+      </div>
+
+      <div className="ts-matrix-pockets">
+        {pockets.map((pocket, index) => (
+          <div key={pocket.id} className="ts-matrix-pocket">
+            <div className="ts-matrix-pocket__header">
+              <strong>{getAllocationPocketLabel(pocket)}</strong>
+              <span>{pocket.annualAllocationPct}% du balayage annuel</span>
+            </div>
+
+            <div className="ts-modal-grid">
+              <SimFieldShell label="Libellé" className="ts-field" rowClassName="ts-field__row">
+                <input
+                  type="text"
+                  className="sim-field__control ts-input-left"
+                  value={pocket.label ?? ''}
+                  placeholder={getAllocationPocketLabel(pocket)}
+                  onChange={event => updatePocket(pocket.id, { label: event.target.value })}
+                />
+              </SimFieldShell>
+
+              <SimFieldShell label="Type" className="ts-field" rowClassName="ts-field__row">
+                <SimSelect
+                  value={pocket.kind}
+                  onChange={value => updatePocket(pocket.id, {
+                    kind: value as AllocationPocketInput['kind'],
+                  })}
+                  options={KIND_OPTIONS}
+                  ariaLabel={`Type de poche ${index + 1}`}
+                />
+              </SimFieldShell>
+
+              <SimFieldShell label="Durée" className="ts-field" rowClassName="ts-field__row">
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  className="sim-field__control"
+                  value={pocket.durationYears || ''}
+                  onChange={event => updatePocket(pocket.id, {
+                    durationYears: parseNumber(event.target.value),
+                  })}
+                />
+                <span className="sim-field__unit ts-unit">ans</span>
+              </SimFieldShell>
+
+              <SimFieldShell label="Rendement annuel" className="ts-field" rowClassName="ts-field__row">
+                <input
+                  type="text"
+                  inputMode="decimal"
+                  className="sim-field__control"
+                  value={fmtRate(pocket.annualReturnRate)}
+                  onChange={event => updatePocket(pocket.id, {
+                    annualReturnRate: parseRate(event.target.value),
+                  })}
+                />
+                <span className="sim-field__unit ts-unit">%</span>
+              </SimFieldShell>
+
+              <SimFieldShell label="Délai de jouissance" className="ts-field" rowClassName="ts-field__row">
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  className="sim-field__control"
+                  value={pocket.enjoymentDelayMonths || ''}
+                  onChange={event => updatePocket(pocket.id, {
+                    enjoymentDelayMonths: parseNumber(event.target.value),
+                  })}
+                />
+                <span className="sim-field__unit ts-unit">mois</span>
+              </SimFieldShell>
+
+              <SimFieldShell label="Allocation initiale" className="ts-field" rowClassName="ts-field__row">
+                <input
+                  type="text"
+                  inputMode="decimal"
+                  className="sim-field__control"
+                  value={String(pocket.initialAllocationPct)}
+                  onChange={event => updatePocket(pocket.id, {
+                    initialAllocationPct: parsePct(event.target.value),
+                  })}
+                />
+                <span className="sim-field__unit ts-unit">%</span>
+              </SimFieldShell>
+
+              <SimFieldShell label="Allocation annuelle" className="ts-field" rowClassName="ts-field__row">
+                <input
+                  type="text"
+                  inputMode="decimal"
+                  className="sim-field__control"
+                  value={String(pocket.annualAllocationPct)}
+                  onChange={event => updatePocket(pocket.id, {
+                    annualAllocationPct: parsePct(event.target.value),
+                  })}
+                />
+                <span className="sim-field__unit ts-unit">%</span>
+              </SimFieldShell>
+
+              <label className="ts-toggle-label ts-modal-toggle">
+                <input
+                  type="checkbox"
+                  checked={pocket.repeatAtTerm}
+                  onChange={event => updatePocket(pocket.id, {
+                    repeatAtTerm: event.target.checked,
+                  })}
+                />
+                Répéter au terme
+              </label>
+
+              {!pocket.repeatAtTerm && (
+                <SimFieldShell label="Destination au terme" className="ts-field" rowClassName="ts-field__row">
+                  <SimSelect
+                    value={pocket.termDestination}
+                    onChange={value => updatePocket(pocket.id, {
+                      termDestination: value as AllocationPocketInput['termDestination'],
+                    })}
+                    options={DESTINATION_OPTIONS}
+                    ariaLabel={`Destination au terme ${index + 1}`}
+                  />
+                </SimFieldShell>
+              )}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <div className="ts-matrix-actions">
         <button
           type="button"
-          className={`ts-pocket__toggle${capiOpen ? ' is-open' : ''}`}
-          onClick={toggleCapi}
-          aria-expanded={capiOpen}
+          className="ts-text-btn"
+          disabled={pockets.length >= 5}
+          onClick={() => patchMatrix({ pockets: [...pockets, buildDefaultPocket(pockets.length)] })}
         >
-          <span className="ts-pocket__toggle-label">
-            {capiOpen ? '▼' : '▶'} Poche de capitalisation
-            {inputs.capitalisation && (
-              <span className="ts-pocket__badge">
-                {fmt(inputs.capitalisation.montant)} €
-              </span>
-            )}
-          </span>
-          {!capiOpen && (
-            <span className="ts-pocket__cta">+ Paramétrer</span>
-          )}
+          Ajouter une poche
         </button>
-
-        {capiOpen && inputs.capitalisation && (
-          <CapitalisationForm
-            value={inputs.capitalisation}
-            onChange={onCapitalisation}
-            isExistante={isExistante}
-          />
-        )}
+        <span className={totalInitialPct <= 100 ? '' : 'is-warning'}>
+          Total initial : {totalInitialPct} %
+        </span>
+        <span className={totalAnnualPct <= 100 ? '' : 'is-warning'}>
+          Total annuel : {totalAnnualPct} %
+        </span>
       </div>
     </div>
   );

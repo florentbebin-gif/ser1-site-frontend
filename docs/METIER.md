@@ -24,7 +24,7 @@ Expliquer ce que SER1 couvre aujourd'hui, ce qui est deja exploitable, et les li
 | `/sim/succession` | disponible | Estimer droits de succession et fournir des analyses civiles/patrimoniales guidees |
 | `/sim/per` | disponible | Hub PER avec controle du potentiel epargne retraite (potentiel actif, transfert et ouverture upcoming) |
 | `/sim/epargne-salariale` | upcoming | non documente metier ici tant que non stabilise |
-| `/sim/tresorerie-societe` | upcoming | non documente metier ici tant que non stabilise |
+| `/sim/tresorerie-societe` | disponible | Projeter une société IS patrimoniale, ses CCA, filiales, emprunts, allocations de trésorerie et revenus associés |
 | `/sim/prevoyance` | upcoming | non documente metier ici tant que non stabilise |
 
 ### Workflows actifs hors simulateurs
@@ -425,6 +425,33 @@ En mode simplifié, seuls Montant, Durée et Taux annuel sont affichés.
 - pas de scoring bancaire ni d'accord de financement
 - pas de TAEG reglementaire complet
 - pas de modelisation juridique detaillee des contrats d'assurance emprunteur
+
+## Trésorerie société
+
+Le simulateur `/sim/tresorerie-societe` projette une société soumise à l’IS dans un parcours guidé : Société, Foyer, Allocation trésorerie société, Projection.
+
+Source de vérité runtime : `TresoInputsV2`. L’ancien modèle `TresoInputs` est accepté uniquement pour migrer les anciennes sessions au chargement.
+
+### Périmètre calculé
+- Société à créer ou existante : capital social, réserves, trésorerie, frais annuels, associés et droits économiques.
+- CCA par associé : CCA initial, apports annuels, fin des apports et remboursement au créancier déclaré.
+- Associés : pleine propriété, usufruit, nue-propriété, qualités dirigeantes et rémunérations.
+- Emprunts société : emprunts multiples, intérêts, capital remboursé, actif financé, rendement et délai de jouissance.
+- Filiales : prestations annuelles, dividendes, régime mère-fille déclaratif, estimation d’intégration fiscale indépendante.
+- Revenus par associé : rémunération, CCA, dividendes nets, information charges sociales TNS.
+- Allocation : matrice de cinq poches maximum, seuil de balayage, lots datés, répétition au terme.
+
+### Conventions métier
+- L’intégration fiscale est une estimation déclarative agrégée, non une validation juridique.
+- Le taux réduit d’IS est appliqué seulement si l’option société l’autorise ; sinon toute la base IS passe au taux normal.
+- Les charges sociales TNS sur dividendes utilisent un taux manuel et sont payées par la société en N+1.
+- La matrice investit la trésorerie disponible en fin d’exercice ; aucun revenu n’est produit sur l’exercice écoulé.
+- Les exports consomment les lignes de projection sans recalcul métier.
+
+### Limites connues
+- Pas de mini-liasse fiscale, pas de contrôle juridique des régimes mère-fille ou intégration fiscale.
+- Plus-value sur titres modélisée comme une estimation prudente à partir du prix de cession et de la valeur fiscale saisie.
+- La réserve légale et les pactes/statuts ne sont pas modélisés dans cette version.
 
 ## Ce qui ne doit pas etre sur-vendu aujourd'hui
 - Les pages "upcoming" ne sont pas des simulateurs metier finalises.

@@ -5,7 +5,7 @@
  * Phase 2 — Exploitation : Placements (distribution/capitalisation/crédits/holding)
  * Phase 3 — Retraite : Remboursement CCA + revenus nets → associés
  *
- * Règle wording GOUVERNANCE_EXPORTS.md : jamais "FCB" dans les slides client.
+ * Règle wording GOUVERNANCE_EXPORTS.md : aucun vocabulaire source interdit dans les slides client.
  * Wording premium : "Trésorerie société", "Holding patrimoniale", "Société de capitalisation".
  */
 
@@ -93,6 +93,7 @@ export function buildTresorerieSchema(
       lines: [
         spec.hasDistribution ? 'Poche de revenus — produits distribués chaque année' : '',
         spec.hasCapitalisation ? 'Poche de capitalisation — IS payé uniquement à la sortie' : '',
+        spec.hasAllocationMatrix ? 'Matrice de trésorerie — balayage annuel au-dessus du seuil' : '',
         spec.hasCreditIS ? 'Crédit IS société — intérêts déductibles du résultat fiscal' : '',
         spec.hasHolding ? 'Holding patrimoniale — régime mère-fille (QPFC)' : '',
         'Impôt sur les sociétés sur le résultat fiscal',

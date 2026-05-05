@@ -116,6 +116,12 @@ Un deck Serenity suit toujours cette chaîne :
 | `src/pptx/export/exportStudyDeck.ts` | orchestrateur central |
 | `public/pptx/chapters/` | assets chapitres |
 
+### Spécificités Trésorerie société
+- Le wrapper runtime est `src/features/tresorerie-societe/export/tresoreriePptxWrapper.ts`.
+- Les slides dédiées sont typées par `TresorerieSchemaSlideSpec` et `TresorerieProjectionSlideSpec`.
+- Les slides client ne doivent jamais reprendre le vocabulaire issu des fichiers de travail externes ; employer “Trésorerie société”, “CCA”, “société IS” et “matrice de trésorerie”.
+- Le PPTX consomme exclusivement `TresoProjectionRow[]` et les KPI calculés par la feature.
+
 ---
 
 ## Gouvernance Excel
@@ -167,6 +173,7 @@ Les styles doivent rester dérivés du contrat du builder partagé. Les plus uti
 - Un export métier doit rendre des onglets nommés, stables et compréhensibles.
 - L’onglet `Hypothèses` est obligatoire dès qu’il existe des simplifications, warnings, fallback métier ou hypothèses d’export.
 - La largeur des colonnes doit être explicitée via `columnWidths` quand le rendu le nécessite.
+- Pour `/sim/tresorerie-societe`, l’ordre attendu est `Projection`, `Revenus associés`, `Hypothèses`.
 
 ### Validation post-génération
 Après génération :

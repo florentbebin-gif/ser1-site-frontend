@@ -16,7 +16,7 @@
 
 import { buildXlsxBlob, downloadXlsx, validateXlsxBlob } from '@/utils/export/xlsxBuilder';
 import type { XlsxCell, XlsxSheet } from '@/utils/export/xlsxBuilder';
-import type { TresoInputs, TresoProjectionRow } from '@/engine/tresorerie/types';
+import type { TresoInputsV2, TresoProjectionRow } from '@/engine/tresorerie/types';
 import type { TresoKPIs } from '../hooks/useTresorerieCalculations';
 
 // ─── Helpers de style ─────────────────────────────────────────────────────────
@@ -26,6 +26,15 @@ const sec = (t: string): XlsxCell => ({ v: t, style: 'sSection' });
 const txt = (t: string): XlsxCell => ({ v: t, style: 'sText' });
 const ctr = (t: string | number): XlsxCell => ({ v: t, style: 'sCenter' });
 const money = (v: number): XlsxCell => ({ v: Math.round(v), style: 'sMoney' });
+
+function sourceLabel(source: string): string {
+  if (source === 'remuneration') return 'Rémunération';
+  if (source === 'cca') return 'Remboursement CCA';
+  if (source === 'dividendes') return 'Dividendes';
+  if (source === 'charges_sociales_tns') return 'Charges sociales TNS';
+  if (source === 'fiscalite') return 'Fiscalité';
+  return source;
+}
 
 // ─── Libellés UI premium (jamais les labels Excel bruts) ─────────────────────
 
@@ -65,7 +74,7 @@ const RESUME_SERIES: ProjectionSerie[] = [
 function buildProjectionSheet(
   rows: TresoProjectionRow[],
   kpis: TresoKPIs,
-  inputs: TresoInputs,
+  inputs: TresoInputsV2,
 ): XlsxSheet {
   if (rows.length === 0) {
     return {
@@ -75,19 +84,34 @@ function buildProjectionSheet(
     };
   }
 
-  const anneeCivile = inputs.anneeCivileDebut ?? new Date().getFullYear();
+  const anneeCivile = inputs.foyer.projectionStartYear;
+  const ccaInitialTotal = inputs.company.associates.reduce((sum, associate) => sum + associate.ccaInitial, 0);
+  const ccaAnnualTotal = inputs.company.associates.reduce(
+    (sum, associate) => sum + associate.ccaAnnualContribution,
+    0,
+  );
+  const maxContributionEndYear = inputs.company.associates.reduce<number | undefined>(
+    (max, associate) => {
+      if (associate.ccaContributionEndYear == null) return max;
+      return max == null ? associate.ccaContributionEndYear : Math.max(max, associate.ccaContributionEndYear);
+    },
+    undefined,
+  );
+  const activeDurationLabel = maxContributionEndYear == null
+    ? 'Non bornée'
+    : `${Math.max(0, maxContributionEndYear - anneeCivile + 1)} ans`;
 
   // En-tête avec paramètres
   const paramRows: XlsxCell[][] = [
     [h('Paramètre'), h('Valeur')],
-    [txt('Type de société'), txt(inputs.typeCreation === 'existante' ? 'Société existante' : 'Société à créer (NEWCO)')],
-    [txt('Âge actuel'), ctr(inputs.ageActuel)],
-    [txt('Âge de retraite'), ctr(inputs.ageRetraite)],
-    [txt('Besoin annuel net à la retraite'), money(inputs.besoinsRetraiteAnnuels)],
-    [txt('Frais annuels de structure'), money(inputs.fraisStructureAnnuels)],
-    [txt('CCA initial'), money(inputs.ccaInitial)],
-    [txt('Apport annuel CCA'), money(inputs.apportAnnuelCCA)],
-    [txt('Durée phase active'), ctr(`${inputs.dureeActiveAns} ans`)],
+    [txt('Type de société'), txt(inputs.company.creationType === 'existante' ? 'Société existante' : 'Société à créer (NEWCO)')],
+    [txt('Âge actuel'), ctr(inputs.foyer.currentAge)],
+    [txt('Âge de retraite'), ctr(inputs.foyer.retirementAge)],
+    [txt('Besoin annuel net à la retraite'), money(inputs.foyer.annualIncomeNeed)],
+    [txt('Frais annuels de structure'), money(inputs.company.annualStructureCosts)],
+    [txt('CCA initial'), money(ccaInitialTotal)],
+    [txt('Apport annuel CCA'), money(ccaAnnualTotal)],
+    [txt('Durée phase active'), ctr(activeDurationLabel)],
     [sec(''), sec('')],
     [h('KPI'), h('Valeur')],
     [txt('CCA total constitué'), money(kpis.ccaTotalConstitue)],
@@ -124,6 +148,39 @@ function buildProjectionSheet(
   };
 }
 
+function buildAssociateRevenueSheet(rows: TresoProjectionRow[], inputs: TresoInputsV2): XlsxSheet {
+  if (rows.length === 0) {
+    return {
+      name: 'Revenus associés',
+      rows: [[h('Année'), h('Associé'), h('Source'), h('Revenu net')]],
+      columnWidths: [14, 24, 24, 16],
+    };
+  }
+
+  const anneeCivile = inputs.foyer.projectionStartYear;
+  const dataRows = rows.flatMap(row => {
+    const year = anneeCivile + row.year - 1;
+    if (row.revenusParAssocie.length === 0) {
+      return [[ctr(year), txt('—'), txt('Aucun revenu associé détaillé'), money(0)]];
+    }
+    return row.revenusParAssocie.map(revenue => [
+      ctr(year),
+      txt(revenue.label),
+      txt(sourceLabel(revenue.source)),
+      money(revenue.netRevenue),
+    ]);
+  });
+
+  return {
+    name: 'Revenus associés',
+    rows: [
+      [h('Année'), h('Associé'), h('Source'), h('Revenu net')],
+      ...dataRows,
+    ],
+    columnWidths: [14, 24, 24, 16],
+  };
+}
+
 // ─── Onglet Hypothèses ────────────────────────────────────────────────────────
 
 function buildHypothesesSheet(): XlsxSheet {
@@ -147,6 +204,13 @@ function buildHypothesesSheet(): XlsxSheet {
     [sec('Capitalisation'), sec('')],
     [txt('IS latent capitalisation : affiché pour information, non décaissé avant la sortie'), txt('Hypothèse de présentation')],
     [txt('IS effectif : déclenché uniquement au moment d\'un rachat'), txt('CGI Art. 219')],
+    [sec('Matrice de trésorerie'), sec('')],
+    [txt('Balayage en fin d’exercice uniquement, après IS, dettes, CCA, charges et dividendes'), txt('Convention SER1')],
+    [txt('Les lots investis en fin d’exercice ne produisent pas de revenus sur l’exercice écoulé'), txt('Convention SER1')],
+    [txt('Répétition au terme : réinvestissement dans la même poche, destination au terme ignorée'), txt('Convention SER1')],
+    [sec('TNS'), sec('')],
+    [txt('Seuil social V1 : capital social + primes + CCA TNS de début d’exercice'), txt('CSS L136-3 / R131-7')],
+    [txt('Le taux de charges sociales TNS reste une saisie manuelle'), txt('Hypothèse déclarative')],
     [sec('Délai de jouissance'), sec('')],
     [txt('Un mois est productif si son premier jour est ≥ dateDebutJouissance'), txt('Convention SER1')],
     [txt('Revenus proratisés selon les mois productifs de l\'année civile'), txt('Convention SER1')],
@@ -172,12 +236,13 @@ function buildHypothesesSheet(): XlsxSheet {
 export async function buildTresorerieXlsxBlob(
   rows: TresoProjectionRow[],
   kpis: TresoKPIs,
-  inputs: TresoInputs,
+  inputs: TresoInputsV2,
   headerFill?: string,
   sectionFill?: string,
 ): Promise<Blob> {
   const sheets: XlsxSheet[] = [
     buildProjectionSheet(rows, kpis, inputs),
+    buildAssociateRevenueSheet(rows, inputs),
     buildHypothesesSheet(),
   ];
 
@@ -193,7 +258,7 @@ export async function buildTresorerieXlsxBlob(
 export async function exportTresorerieExcel(
   rows: TresoProjectionRow[],
   kpis: TresoKPIs,
-  inputs: TresoInputs,
+  inputs: TresoInputsV2,
   headerFill?: string,
   sectionFill?: string,
 ): Promise<void> {

@@ -10,6 +10,7 @@ export type TresorerieSchemaSlideSpec = {
   hasHolding: boolean;
   hasDistribution: boolean;
   hasCapitalisation: boolean;
+  hasAllocationMatrix?: boolean;
   hasCreditIR: boolean;
   hasCreditIS: boolean;
   ccaTotalConstitue: number;

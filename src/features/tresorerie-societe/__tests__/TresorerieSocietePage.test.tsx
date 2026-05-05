@@ -37,20 +37,12 @@ vi.mock('../components/TresoSocieteSection', () => ({
   TresoSocieteSection: () => <div data-testid="societe-section" />,
 }));
 
-vi.mock('../components/TresoCCASection', () => ({
-  TresoCCASection: () => <div data-testid="cca-section" />,
+vi.mock('../components/TresoFoyerSection', () => ({
+  TresoFoyerSection: () => <div data-testid="foyer-section" />,
 }));
 
 vi.mock('../components/TresoPlacementSection', () => ({
   TresoPlacementSection: () => <div data-testid="placement-section" />,
-}));
-
-vi.mock('../components/TresoCreditSection', () => ({
-  TresoCreditSection: () => <div data-testid="credit-section" />,
-}));
-
-vi.mock('../components/TresoHoldingSection', () => ({
-  TresoHoldingSection: () => <div data-testid="holding-section" />,
 }));
 
 vi.mock('../components/TresoKPISidebar', () => ({
@@ -59,6 +51,10 @@ vi.mock('../components/TresoKPISidebar', () => ({
       {kpis.alerteDividendesAn1 && <span data-testid="kpi-alert">Alerte dividendes</span>}
     </div>
   ),
+}));
+
+vi.mock('../components/TresoFoyerInsights', () => ({
+  TresoFoyerInsights: () => <div data-testid="foyer-insights" />,
 }));
 
 vi.mock('../components/TresoProjectionDrawer', () => ({
@@ -107,41 +103,45 @@ vi.mock('../../../settings/ThemeProvider', () => ({
 
 // ─── Fixtures ─────────────────────────────────────────────────────────────────
 
-const DEFAULT_INPUTS = {
-  typeCreation: 'newco' as const,
-  ageActuel: 50,
-  ageRetraite: 65,
-  besoinsRetraiteAnnuels: 30000,
-  fraisStructureAnnuels: 3000,
-  ccaInitial: 0,
-  apportAnnuelCCA: 16600,
-  dureeActiveAns: 15,
-  tresorerieInitiale: 0,
-  reservesInitiales: 0,
-  anneeCivileDebut: 2025,
-  distribution: undefined,
-  capitalisation: undefined,
-  creditIS: undefined,
-  creditIR: undefined,
-  holding: undefined,
+const DEFAULT_INPUTS_V2 = {
+  version: 2 as const,
+  foyer: {
+    selectedAssociateId: 'associe-1',
+    currentAge: 50,
+    retirementAge: 65,
+    annualIncomeNeed: 30000,
+    projectionStartYear: 2025,
+  },
+  company: {
+    creationType: 'newco' as const,
+    legalForm: 'sas' as const,
+    shareCapital: 1000,
+    sharePremium: 0,
+    reservesInitial: 0,
+    treasuryInitial: 0,
+    annualStructureCosts: 3000,
+    reducedCorporateTaxEligible: true,
+    associates: [],
+    loans: [],
+    subsidiaries: [],
+  },
+  allocationMatrix: {
+    sweepThreshold: 50000,
+    pockets: [],
+  },
 };
 
 function makeStateReturn(overrides: Record<string, unknown> = {}) {
   return {
     state: {
-      inputs: DEFAULT_INPUTS,
+      inputsV2: DEFAULT_INPUTS_V2,
       projectionVisible: false,
       projectionMode: 'resume' as const,
     },
     hydrated: true,
-    setInputs: vi.fn(),
+    setInputsV2: vi.fn(),
     setProjectionVisible: vi.fn(),
     setProjectionMode: vi.fn(),
-    setDistribution: vi.fn(),
-    setCapitalisation: vi.fn(),
-    setCreditIS: vi.fn(),
-    setCreditIR: vi.fn(),
-    setHolding: vi.fn(),
     ...overrides,
   };
 }
@@ -200,13 +200,13 @@ describe('TresorerieSocietePage', () => {
     expect(html).toBe('');
   });
 
-  it('affiche toutes les sections de saisie', () => {
+  it('affiche le parcours guidé sans anciens blocs concurrents', () => {
     const html = renderToStaticMarkup(<TresorerieSocietePage />);
     expect(html).toContain('data-testid="societe-section"');
-    expect(html).toContain('data-testid="cca-section"');
+    expect(html).toContain('data-testid="foyer-section"');
     expect(html).toContain('data-testid="placement-section"');
-    expect(html).toContain('data-testid="credit-section"');
-    expect(html).toContain('data-testid="holding-section"');
+    expect(html).not.toContain('data-testid="credit-section"');
+    expect(html).not.toContain('data-testid="holding-section"');
   });
 
   it('affiche la sidebar KPI', () => {
@@ -230,6 +230,15 @@ describe('TresorerieSocietePage', () => {
     expect(html).toContain('PowerPoint');
   });
 
+  it('branche calculs et exports sur inputsV2, sans state legacy runtime', () => {
+    renderToStaticMarkup(<TresorerieSocietePage />);
+
+    expect(mockUseTresoCalc).toHaveBeenCalledWith(DEFAULT_INPUTS_V2);
+    expect(mockUseTresoExports).toHaveBeenCalledWith(expect.objectContaining({
+      inputs: DEFAULT_INPUTS_V2,
+    }));
+  });
+
   describe('drawer de projection', () => {
     it('est fermé par défaut (aria-expanded="false")', () => {
       const html = renderToStaticMarkup(<TresorerieSocietePage />);
@@ -240,7 +249,7 @@ describe('TresorerieSocietePage', () => {
     it('est visible quand projectionVisible=true', () => {
       mockUseTresoState.mockReturnValue(makeStateReturn({
         state: {
-          inputs: DEFAULT_INPUTS,
+          inputsV2: DEFAULT_INPUTS_V2,
           projectionVisible: true,
           projectionMode: 'resume' as const,
         },
