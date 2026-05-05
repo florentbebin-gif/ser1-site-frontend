@@ -39,28 +39,28 @@ export interface RouteMeta {
 
 export type AppRouteEntry =
   | {
-      kind: 'route';
-      access: 'public' | 'private';
-      path: string;
-      component: RouteComponent;
-      lazy?: boolean;
-      props?: Record<string, unknown>;
-      /**
-       * Exception minimale : Login (publique) déclenche une navigation après login.
-       * Le callback est injecté côté App.jsx (qui a accès à useNavigate()).
-       */
-      onLoginNavigateTo?: string;
-      /** Breadcrumb label displayed in the topbar */
-      contextLabel?: string;
-      /** Topbar behavior — buttons, reset actions */
-      topbar?: TopbarMeta;
-    }
+    kind: 'route';
+    access: 'public' | 'private';
+    path: string;
+    component: RouteComponent;
+    lazy?: boolean;
+    props?: Record<string, unknown>;
+    /**
+     * Exception minimale : Login (publique) déclenche une navigation après login.
+     * Le callback est injecté côté App.jsx (qui a accès à useNavigate()).
+     */
+    onLoginNavigateTo?: string;
+    /** Breadcrumb label displayed in the topbar */
+    contextLabel?: string;
+    /** Topbar behavior — buttons, reset actions */
+    topbar?: TopbarMeta;
+  }
   | {
-      kind: 'redirect';
-      path: string;
-      to: string;
-      replace?: boolean;
-    };
+    kind: 'redirect';
+    path: string;
+    to: string;
+    replace?: boolean;
+  };
 
 // ── Lazy-loaded modules ───────────────────────────────────────────────────────
 
@@ -73,6 +73,7 @@ const SuccessionSimulator = lazy(() => import('../features/succession/Succession
 const PerHome = lazy(() => import('../features/per/PerHome'));
 const PerPotentielSimulator = lazy(() => import('../features/per/components/potentiel/PerPotentielSimulator'));
 const UpcomingSimulatorPage = lazy(() => import('../pages/UpcomingSimulatorPage')) as unknown as LazyExoticComponent<ComponentType<RouteProps>>;
+const TresorerieSocietePage = lazy(() => import('../features/tresorerie-societe/TresorerieSocietePage'));
 const StrategyPage = lazy(() => import('../pages/StrategyPage'));
 const SettingsShell = lazy(() => import('../pages/SettingsShell'));
 
@@ -214,14 +215,10 @@ export const APP_ROUTES: AppRouteEntry[] = [
     kind: 'route',
     access: 'private',
     path: '/sim/tresorerie-societe',
-    component: UpcomingSimulatorPage,
+    component: TresorerieSocietePage as unknown as ComponentType<RouteProps>,
     lazy: true,
     contextLabel: 'Trésorerie société',
     topbar: SIM_TOPBAR,
-    props: {
-      title: 'Trésorerie société',
-      subtitle: 'Ce simulateur premium sera bientôt disponible.',
-    },
   },
   {
     kind: 'route',
