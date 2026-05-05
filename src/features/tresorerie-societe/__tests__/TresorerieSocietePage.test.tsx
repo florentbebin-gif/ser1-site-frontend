@@ -5,6 +5,19 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const mockUseTresoState = vi.hoisted(() => vi.fn());
 const mockUseTresoCalc = vi.hoisted(() => vi.fn());
+const mockUseTresoExports = vi.hoisted(() => vi.fn());
+const mockThemeColors = vi.hoisted(() => ({
+  c1: 'c1',
+  c2: 'c2',
+  c3: 'c3',
+  c4: 'c4',
+  c5: 'c5',
+  c6: 'c6',
+  c7: 'c7',
+  c8: 'c8',
+  c9: 'c9',
+  c10: 'c10',
+}));
 
 vi.mock('../hooks/useTresorerieState', () => ({
   useTresorerieState: (...args: unknown[]) => mockUseTresoState(...args),
@@ -12,6 +25,10 @@ vi.mock('../hooks/useTresorerieState', () => ({
 
 vi.mock('../hooks/useTresorerieCalculations', () => ({
   useTresorerieCalculations: (...args: unknown[]) => mockUseTresoCalc(...args),
+}));
+
+vi.mock('../hooks/useTresorerieExportHandlers', () => ({
+  useTresorerieExportHandlers: (...args: unknown[]) => mockUseTresoExports(...args),
 }));
 
 // ─── Mocks composants enfants ─────────────────────────────────────────────────
@@ -54,12 +71,38 @@ vi.mock('../components/TresoHypotheses', () => ({
 
 vi.mock('../../../components/ui/sim/SimPageShell', () => ({
   SimPageShell: Object.assign(
-    ({ children, pageTestId }: any) => <div data-testid={pageTestId}>{children}</div>,
+    ({ actions, children, pageTestId }: any) => (
+      <div data-testid={pageTestId}>
+        {actions ? <div data-testid="sim-header-actions">{actions}</div> : null}
+        {children}
+      </div>
+    ),
     {
       Main: ({ children }: any) => <div data-slot="main">{children}</div>,
       Side: ({ children }: any) => <div data-slot="side">{children}</div>,
     }
   ),
+}));
+
+vi.mock('../../../components/ExportMenu', () => ({
+  ExportMenu: ({ options, loading }: any) => (
+    <div data-testid="export-menu" data-loading={loading ? 'true' : 'false'}>
+      {options.map((option: any) => (
+        <button key={option.label} type="button" disabled={option.disabled}>
+          {option.label}
+        </button>
+      ))}
+    </div>
+  ),
+}));
+
+vi.mock('../../../settings/ThemeProvider', () => ({
+  useTheme: () => ({
+    colors: mockThemeColors,
+    pptxColors: mockThemeColors,
+    cabinetLogo: undefined,
+    logoPlacement: 'center-bottom',
+  }),
 }));
 
 // ─── Fixtures ─────────────────────────────────────────────────────────────────
@@ -136,8 +179,14 @@ describe('TresorerieSocietePage', () => {
   beforeEach(() => {
     mockUseTresoState.mockReset();
     mockUseTresoCalc.mockReset();
+    mockUseTresoExports.mockReset();
     mockUseTresoState.mockReturnValue(makeStateReturn());
     mockUseTresoCalc.mockReturnValue(makeCalcReturn());
+    mockUseTresoExports.mockReturnValue({
+      exportExcel: vi.fn(),
+      exportPptx: vi.fn(),
+      exportLoading: false,
+    });
   });
 
   it('se rend sans erreur quand hydrated=true', () => {
@@ -168,6 +217,17 @@ describe('TresorerieSocietePage', () => {
   it('affiche les hypothèses', () => {
     const html = renderToStaticMarkup(<TresorerieSocietePage />);
     expect(html).toContain('data-testid="hypotheses"');
+  });
+
+  it('branche les actions d’export Excel et PowerPoint dans le header', () => {
+    mockUseTresoCalc.mockReturnValue(makeCalcReturn({ hasRows: true }));
+
+    const html = renderToStaticMarkup(<TresorerieSocietePage />);
+
+    expect(html).toContain('data-testid="sim-header-actions"');
+    expect(html).toContain('data-testid="export-menu"');
+    expect(html).toContain('Excel');
+    expect(html).toContain('PowerPoint');
   });
 
   describe('drawer de projection', () => {

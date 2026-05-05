@@ -31,6 +31,8 @@ import type {
   PerFiscalSnapshotSlideSpec,
   PerPlafond3ColSlideSpec,
   PerProjectionTableSlideSpec,
+  TresorerieSchemaSlideSpec,
+  TresorerieProjectionSlideSpec,
 } from '../theme/types';
 import { SLIDE_SIZE } from '../designSystem/serenity';
 import { getPptxThemeFromUiSettings } from '../theme/getPptxThemeFromUiSettings';
@@ -57,6 +59,8 @@ import { buildPlacementProjection } from '../slides/buildPlacementProjection';
 import { buildPerFiscalSnapshot } from '../slides/buildPerFiscalSnapshot';
 import { buildPerPlafond3Col } from '../slides/buildPerPlafond3Col';
 import { buildPerProjectionTable } from '../slides/buildPerProjectionTable';
+import { buildTresorerieSchema } from '../slides/buildTresorerieSchema';
+import { buildTresorerieProjection } from '../slides/buildTresorerieProjection';
 import { injectThemeColors } from '../theme/themeBuilder';
 import { defineSlideMasters } from '../template/loadBaseTemplate';
 import { createTrackedObjectURL } from '../../utils/export/createTrackedObjectURL';
@@ -397,6 +401,12 @@ export async function exportStudyDeck(
     } else if (slideSpec.type === 'per-projection-table') {
       // PER — déclaration 2042 et prochain avis IR
       buildPerProjectionTable(pptx, slideSpec as PerProjectionTableSlideSpec, ctx, slideIndex);
+    } else if (slideSpec.type === 'treso-schema') {
+      // Trésorerie Société IS — schéma 3 phases + KPIs
+      buildTresorerieSchema(pptx, slideSpec as TresorerieSchemaSlideSpec, ctx, slideIndex);
+    } else if (slideSpec.type === 'treso-projection') {
+      // Trésorerie Société IS — tableau de projection paginé
+      buildTresorerieProjection(pptx, slideSpec as TresorerieProjectionSlideSpec, ctx, slideIndex);
     }
 
     slideIndex++;
