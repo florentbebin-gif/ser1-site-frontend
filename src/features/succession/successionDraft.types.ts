@@ -183,6 +183,35 @@ export interface SuccessionDonationEntry {
   valeurActuelle?: number;
   donSommeArgentExonere?: boolean;
   avecReserveUsufruit?: boolean;
+  usufruitSuccessif?: boolean;
+  usufruitSuccessifBeneficiaire?: SuccessionPrimarySide;
+  sourceDonationPartageActId?: string;
+}
+
+export interface SuccessionDonationPartageLot {
+  id: string;
+  enfantId: string;
+  valeur: number;
+  valeurActuelle?: number;
+  accepted: boolean;
+}
+
+export interface SuccessionDonationPartageSoulte {
+  id: string;
+  payeurEnfantId: string;
+  receveurEnfantId: string;
+  montant: number;
+}
+
+export interface SuccessionDonationPartageAct {
+  id: string;
+  date?: string;
+  donateur?: SuccessionPrimarySide;
+  avecReserveUsufruit: boolean;
+  usufruitSuccessif: boolean;
+  usufruitSuccessifBeneficiaire?: SuccessionPrimarySide;
+  lots: SuccessionDonationPartageLot[];
+  soultes: SuccessionDonationPartageSoulte[];
 }
 
 export type SuccessionAssetCategory =
@@ -282,6 +311,7 @@ export interface ParsedSuccessionDraftPayload {
   enfants: SuccessionEnfant[];
   familyMembers: FamilyMember[];
   donations: SuccessionDonationEntry[];
+  donationPartageActs: SuccessionDonationPartageAct[];
   assetEntries: SuccessionAssetDetailEntry[];
   assuranceVieEntries: SuccessionAssuranceVieEntry[];
   perEntries: SuccessionPerEntry[];
@@ -330,4 +360,8 @@ export interface SuccessionDraftPayloadV26 extends ParsedSuccessionDraftPayload 
 
 export interface SuccessionDraftPayloadV27 extends ParsedSuccessionDraftPayload {
   version: 27;
+}
+
+export interface SuccessionDraftPayloadV28 extends ParsedSuccessionDraftPayload {
+  version: 28;
 }

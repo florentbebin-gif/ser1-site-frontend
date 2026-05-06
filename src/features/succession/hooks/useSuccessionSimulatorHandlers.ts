@@ -5,6 +5,7 @@ import {
   DEFAULT_SUCCESSION_ASSURANCE_VIE,
   DEFAULT_SUCCESSION_CIVIL_CONTEXT,
   DEFAULT_SUCCESSION_DEVOLUTION_CONTEXT,
+  DEFAULT_SUCCESSION_DONATION_PARTAGE_ACTS,
   DEFAULT_SUCCESSION_DONATIONS,
   DEFAULT_SUCCESSION_ENFANTS_CONTEXT,
   DEFAULT_SUCCESSION_FAMILY_MEMBERS,
@@ -18,6 +19,7 @@ import {
   type SuccessionPersonParty,
   type SuccessionAssuranceVieEntry,
   type SuccessionDonationEntry,
+  type SuccessionDonationPartageAct,
   type SuccessionEnfant,
   type SuccessionGroupementFoncierEntry,
   type SuccessionPerEntry,
@@ -87,6 +89,9 @@ interface UseSuccessionSimulatorHandlersArgs {
   setAddMemberForm: Dispatch<SetStateAction<AddFamilyMemberFormState>>;
   setChainOrder: Dispatch<SetStateAction<SuccessionChainOrder>>;
   setHypothesesOpen: Dispatch<SetStateAction<boolean>>;
+  setDonationPartageActs: Dispatch<SetStateAction<SuccessionDonationPartageAct[]>>;
+  setShowDonationPartageModal: Dispatch<SetStateAction<boolean>>;
+  setDonationPartageDraft: Dispatch<SetStateAction<SuccessionDonationPartageAct | null>>;
 }
 
 export function useSuccessionSimulatorHandlers({
@@ -134,6 +139,9 @@ export function useSuccessionSimulatorHandlers({
   setAddMemberForm,
   setChainOrder,
   setHypothesesOpen,
+  setDonationPartageActs,
+  setShowDonationPartageModal,
+  setDonationPartageDraft,
 }: UseSuccessionSimulatorHandlersArgs) {
   const familyHandlers = useSuccessionFamilyHandlers({
     enfantRattachementOptions,
@@ -218,6 +226,9 @@ export function useSuccessionSimulatorHandlers({
     setPatrimonialContext(DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT);
     setDispositionsDraft(buildInitialDispositionsDraft());
     setDonationsContext(DEFAULT_SUCCESSION_DONATIONS);
+    setDonationPartageActs(DEFAULT_SUCCESSION_DONATION_PARTAGE_ACTS);
+    setShowDonationPartageModal(false);
+    setDonationPartageDraft(null);
     setEnfantsContext(DEFAULT_SUCCESSION_ENFANTS_CONTEXT);
     setFamilyMembers(DEFAULT_SUCCESSION_FAMILY_MEMBERS);
     setShowAddMemberPanel(false);
@@ -248,6 +259,8 @@ export function useSuccessionSimulatorHandlers({
     setDevolutionContext,
     setDispositionsDraft,
     setDonationsContext,
+    setDonationPartageActs,
+    setDonationPartageDraft,
     setEnfantsContext,
     setFamilyMembers,
     setHypothesesOpen,
@@ -256,6 +269,7 @@ export function useSuccessionSimulatorHandlers({
     setShowAddMemberPanel,
     setShowAssuranceVieModal,
     setShowDispositionsModal,
+    setShowDonationPartageModal,
     setShowPerModal,
     setShowPrevoyanceModal,
     storeKey,

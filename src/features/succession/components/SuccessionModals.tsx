@@ -1,6 +1,7 @@
 import { type Dispatch, type SetStateAction } from 'react';
 import AddFamilyMemberModal from './AddFamilyMemberModal';
 import AssuranceVieModal from './AssuranceVieModal';
+import DonationPartageModal from './DonationPartageModal';
 import DispositionsModal from './DispositionsModal';
 import PerModal from './PerModal';
 import PrevoyanceModal from './PrevoyanceModal';
@@ -11,6 +12,7 @@ import type {
   SuccessionAssetDetailEntry,
   SuccessionAssuranceVieEntry,
   SuccessionBeneficiaryRef,
+  SuccessionDonationPartageAct,
   SuccessionEnfant,
   SuccessionGroupementFoncierEntry,
   SuccessionPerEntry,
@@ -41,6 +43,8 @@ interface SuccessionModalsProps {
   perDraft: SuccessionPerEntry | null;
   showPrevoyanceModal: boolean;
   prevoyanceDraft: SuccessionPrevoyanceDecesEntry | null;
+  showDonationPartageModal: boolean;
+  donationPartageDraft: SuccessionDonationPartageAct | null;
   showAddMemberPanel: boolean;
   addMemberForm: AddFamilyMemberFormState;
   setAddMemberForm: Dispatch<SetStateAction<AddFamilyMemberFormState>>;
@@ -74,6 +78,10 @@ interface SuccessionModalsProps {
   onClosePrevoyance: () => void;
   onValidatePrevoyance: () => void;
   onUpdatePrevoyanceContract: (_field: keyof SuccessionPrevoyanceDecesEntry, _value: string | number) => void;
+  onCloseDonationPartage: () => void;
+  onValidateDonationPartage: () => void;
+  onUpdateDonationPartageDraft: Dispatch<SetStateAction<SuccessionDonationPartageAct | null>>;
+  onDeleteDonationPartage?: () => void;
   onCloseAddMemberPanel: () => void;
   onValidateAddMember: () => void;
 }
@@ -94,6 +102,8 @@ export function SuccessionModals({
   perDraft,
   showPrevoyanceModal,
   prevoyanceDraft,
+  showDonationPartageModal,
+  donationPartageDraft,
   showAddMemberPanel,
   addMemberForm,
   setAddMemberForm,
@@ -113,6 +123,10 @@ export function SuccessionModals({
   onClosePrevoyance,
   onValidatePrevoyance,
   onUpdatePrevoyanceContract,
+  onCloseDonationPartage,
+  onValidateDonationPartage,
+  onUpdateDonationPartageDraft,
+  onDeleteDonationPartage,
   onCloseAddMemberPanel,
   onValidateAddMember,
 }: SuccessionModalsProps) {
@@ -200,6 +214,18 @@ export function SuccessionModals({
           enfantsContext={enfantsContext}
           onClose={onCloseAddMemberPanel}
           onValidate={onValidateAddMember}
+        />
+      )}
+
+      {showDonationPartageModal && donationPartageDraft && (
+        <DonationPartageModal
+          draft={donationPartageDraft}
+          enfantsContext={enfantsContext}
+          situationMatrimoniale={civilSituation}
+          onChange={(draft) => onUpdateDonationPartageDraft(draft)}
+          onClose={onCloseDonationPartage}
+          onValidate={onValidateDonationPartage}
+          onDelete={onDeleteDonationPartage}
         />
       )}
     </>

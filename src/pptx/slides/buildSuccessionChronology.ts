@@ -29,7 +29,6 @@ const GEO = {
   singleX: 2.10,
   singleW: 9.10,
   totalY: 6.18,
-  notesY: 6.56,
 } as const;
 
 function drawStepCard(
@@ -137,19 +136,6 @@ export function buildSuccessionChronology(
     bold: true,
     align: 'center',
   });
-
-  if (spec.notes.length > 0) {
-    addTextFr(slide, spec.notes.slice(0, 2).join(' · '), {
-      x: 0.92,
-      y: GEO.notesY,
-      w: 11.5,
-      h: 0.26,
-      fontSize: 8.5,
-      color: roleColor(ctx.theme, 'textBody'),
-      italic: true,
-      align: 'center',
-    });
-  }
 
   addFooter(slide, ctx, slideIndex, 'onLight');
 }

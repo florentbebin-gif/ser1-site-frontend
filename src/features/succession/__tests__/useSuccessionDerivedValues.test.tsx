@@ -6,6 +6,7 @@ import {
   DEFAULT_SUCCESSION_ASSURANCE_VIE,
   DEFAULT_SUCCESSION_CIVIL_CONTEXT,
   DEFAULT_SUCCESSION_DEVOLUTION_CONTEXT,
+  DEFAULT_SUCCESSION_DONATION_PARTAGE_ACTS,
   DEFAULT_SUCCESSION_DONATIONS,
   DEFAULT_SUCCESSION_FAMILY_MEMBERS,
   DEFAULT_SUCCESSION_LIQUIDATION_CONTEXT,
@@ -61,6 +62,7 @@ describe('useSuccessionDerivedValues', () => {
         donationEntreEpouxActive: false,
       },
       donationsContext: DEFAULT_SUCCESSION_DONATIONS,
+      donationPartageActs: DEFAULT_SUCCESSION_DONATION_PARTAGE_ACTS,
       enfantsContext: [{ id: 'E1', rattachement: 'epoux1' }],
       familyMembers: DEFAULT_SUCCESSION_FAMILY_MEMBERS,
       fiscalSnapshot: buildSuccessionFiscalSnapshot(null),
@@ -115,6 +117,7 @@ describe('useSuccessionDerivedValues', () => {
           decesDansXAns: 0,
         },
         donationsContext: DEFAULT_SUCCESSION_DONATIONS,
+        donationPartageActs: DEFAULT_SUCCESSION_DONATION_PARTAGE_ACTS,
         enfantsContext: [
           { id: 'E1', rattachement: 'commun' },
           { id: 'E2', rattachement: 'commun' },
@@ -175,6 +178,7 @@ describe('useSuccessionDerivedValues', () => {
           decesDansXAns: 0,
         },
         donationsContext: DEFAULT_SUCCESSION_DONATIONS,
+        donationPartageActs: DEFAULT_SUCCESSION_DONATION_PARTAGE_ACTS,
         enfantsContext: [
           { id: 'E1', rattachement: 'commun' },
           { id: 'E2', rattachement: 'commun' },
@@ -223,6 +227,7 @@ describe('useSuccessionDerivedValues', () => {
           decesDansXAns: 0,
         },
         donationsContext: DEFAULT_SUCCESSION_DONATIONS,
+        donationPartageActs: DEFAULT_SUCCESSION_DONATION_PARTAGE_ACTS,
         enfantsContext: [
           { id: 'E1', rattachement: 'commun' },
           { id: 'E2', rattachement: 'commun' },
@@ -272,6 +277,7 @@ describe('useSuccessionDerivedValues', () => {
             donSommeArgentExonere: false,
           },
         ],
+        donationPartageActs: DEFAULT_SUCCESSION_DONATION_PARTAGE_ACTS,
         enfantsContext: [{ id: 'E1', rattachement: 'epoux1' }],
         familyMembers: DEFAULT_SUCCESSION_FAMILY_MEMBERS,
         fiscalSnapshot: buildSuccessionFiscalSnapshot(null),

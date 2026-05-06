@@ -1,4 +1,5 @@
-import type { SuccessionDonationEntry } from '../successionDraft';
+import type { SuccessionDonationEntry, SuccessionDonationPartageAct } from '../successionDraft';
+import { summarizeDonationPartageActs } from '../successionDonationPartage';
 import { DONATION_TYPE_OPTIONS } from '../successionSimulator.constants';
 import { fmt } from '../successionSimulator.helpers';
 import { ScNumericInput } from './ScNumericInput';
@@ -12,9 +13,14 @@ interface ScDonationsCardProps {
     partagees: number;
     legsParticuliers: number;
   };
+  donationPartageActs: SuccessionDonationPartageAct[];
   donateurOptions: { value: string; label: string }[];
   donatairesOptions: { value: string; label: string }[];
+  canUseUsufruitSuccessif: boolean;
   onAddDonationEntry: () => void;
+  onOpenDonationPartageAct: (_id: string) => void;
+  onOpenDonationPartageFromEntry: (_id: string) => void;
+  onRemoveDonationPartageAct: (_id: string) => void;
   onUpdateDonationEntry: (
     _id: string,
     _field: keyof SuccessionDonationEntry,
@@ -26,9 +32,14 @@ interface ScDonationsCardProps {
 export default function ScDonationsCard({
   donationsContext,
   donationTotals,
+  donationPartageActs,
   donateurOptions,
   donatairesOptions,
+  canUseUsufruitSuccessif,
   onAddDonationEntry,
+  onOpenDonationPartageAct,
+  onOpenDonationPartageFromEntry,
+  onRemoveDonationPartageAct,
   onUpdateDonationEntry,
   onRemoveDonationEntry,
 }: ScDonationsCardProps) {
@@ -49,6 +60,41 @@ export default function ScDonationsCard({
         </div>
       </header>
       <div className="sc-card__divider sc-card__divider--tight sim-divider sim-divider--tight" />
+      {donationPartageActs.length > 0 && (
+        <div className="sc-donations-list sc-donations-list--partage">
+          {donationPartageActs.map((act, idx) => (
+            <div key={act.id} className="sc-donation-card sc-donation-card--partage">
+              <div className="sc-donation-card__header">
+                <div className="sc-donation-card__heading">
+                  <strong className="sc-donation-card__title">Donation-partage {idx + 1}</strong>
+                  <span className="sc-donation-card__subtitle">
+                    {summarizeDonationPartageActs([act]) ?? 'Acte à compléter'}
+                  </span>
+                </div>
+                <div className="sc-donation-card__actions">
+                  <button
+                    type="button"
+                    className="sc-child-add-btn"
+                    onClick={() => onOpenDonationPartageAct(act.id)}
+                  >
+                    Modifier
+                  </button>
+                  <button
+                    type="button"
+                    className="sc-remove-btn sc-remove-btn--quiet"
+                    onClick={() => onRemoveDonationPartageAct(act.id)}
+                    title="Supprimer cette donation-partage"
+                    aria-label="Supprimer cette donation-partage"
+                  >
+                    ×
+                  </button>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
       {donationsContext.length > 0 ? (
         <div className="sc-donations-list">
           {donationsContext.map((entry, idx) => {
@@ -78,7 +124,13 @@ export default function ScDonationsCard({
                     <ScSelect
                       className="sc-donation-select"
                       value={entry.type}
-                      onChange={(value) => onUpdateDonationEntry(entry.id, 'type', value)}
+                      onChange={(value) => {
+                        if (value === 'donation_partage') {
+                          onOpenDonationPartageFromEntry(entry.id);
+                          return;
+                        }
+                        onUpdateDonationEntry(entry.id, 'type', value);
+                      }}
                       options={DONATION_TYPE_OPTIONS}
                     />
                     <p className="sc-hint sc-hint--compact">
@@ -130,23 +182,34 @@ export default function ScDonationsCard({
                     />
                   </div>
                   <div className="sc-field sc-field--span-2 sc-field--donation-toggles">
-                    <div className="sc-donation-toggle-row" role="group" aria-label="Options de donation">
-                      <button
-                        type="button"
-                        className={`sc-donation-toggle${entry.donSommeArgentExonere ? ' is-active' : ''}`}
-                        onClick={() => onUpdateDonationEntry(entry.id, 'donSommeArgentExonere', !(entry.donSommeArgentExonere ?? false))}
-                        aria-pressed={entry.donSommeArgentExonere ?? false}
-                      >
-                        Don de somme d&apos;argent exonéré
-                      </button>
-                      <button
-                        type="button"
-                        className={`sc-donation-toggle${entry.avecReserveUsufruit ? ' is-active' : ''}`}
-                        onClick={() => onUpdateDonationEntry(entry.id, 'avecReserveUsufruit', !(entry.avecReserveUsufruit ?? false))}
-                        aria-pressed={entry.avecReserveUsufruit ?? false}
-                      >
-                        Avec réserve d&apos;usufruit
-                      </button>
+                    <div className="sc-donation-checkbox-row" role="group" aria-label="Options de donation">
+                      <label className="sc-checkbox-label sc-checkbox-label--compact">
+                        <input
+                          type="checkbox"
+                          checked={entry.donSommeArgentExonere ?? false}
+                          disabled={entry.avecReserveUsufruit ?? false}
+                          onChange={(e) => onUpdateDonationEntry(entry.id, 'donSommeArgentExonere', e.target.checked)}
+                        />
+                        Don 790 G
+                      </label>
+                      <label className="sc-checkbox-label sc-checkbox-label--compact">
+                        <input
+                          type="checkbox"
+                          checked={entry.avecReserveUsufruit ?? false}
+                          disabled={entry.donSommeArgentExonere ?? false}
+                          onChange={(e) => onUpdateDonationEntry(entry.id, 'avecReserveUsufruit', e.target.checked)}
+                        />
+                        Réserve d&apos;usufruit
+                      </label>
+                      <label className="sc-checkbox-label sc-checkbox-label--compact">
+                        <input
+                          type="checkbox"
+                          checked={entry.usufruitSuccessif ?? false}
+                          disabled={!entry.avecReserveUsufruit || !canUseUsufruitSuccessif}
+                          onChange={(e) => onUpdateDonationEntry(entry.id, 'usufruitSuccessif', e.target.checked)}
+                        />
+                        Usufruit successif
+                      </label>
                     </div>
                   </div>
                 </div>

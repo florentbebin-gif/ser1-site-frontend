@@ -291,7 +291,6 @@ export type SuccessionChronologySlideSpec = {
   orderLabel: string;
   steps: SuccessionChronologyStepSummary[];
   totalDroits: string;
-  notes: string[];
 };
 
 export type SuccessionHypothesesSlideSpec = {
@@ -299,6 +298,10 @@ export type SuccessionHypothesesSlideSpec = {
   title: string;
   subtitle: string;
   items: string[];
+  groups?: Array<{
+    title: string;
+    items: string[];
+  }>;
 };
 
 /**

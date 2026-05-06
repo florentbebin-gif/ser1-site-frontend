@@ -128,6 +128,18 @@ export function createDonationId(): string {
   return `don-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 }
 
+export function createDonationPartageActId(): string {
+  return `dp-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+}
+
+export function createDonationPartageLotId(): string {
+  return `dpl-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+}
+
+export function createDonationPartageSoulteId(): string {
+  return `dps-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+}
+
 export function createAssetId(): string {
   return `asset-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 }
@@ -382,11 +394,47 @@ export function applySuccessionDonationFieldUpdate(
   // activer l'un désactive l'autre pour éviter une combinaison fiscalement incohérente.
   if (field === 'donSommeArgentExonere') {
     const enabled = Boolean(value);
-    return { ...entry, donSommeArgentExonere: enabled, ...(enabled ? { avecReserveUsufruit: false } : {}) };
+    return {
+      ...entry,
+      donSommeArgentExonere: enabled,
+      ...(enabled
+        ? {
+          avecReserveUsufruit: false,
+          usufruitSuccessif: false,
+          usufruitSuccessifBeneficiaire: undefined,
+        }
+        : {}),
+    };
   }
   if (field === 'avecReserveUsufruit') {
     const enabled = Boolean(value);
-    return { ...entry, avecReserveUsufruit: enabled, ...(enabled ? { donSommeArgentExonere: false } : {}) };
+    return {
+      ...entry,
+      avecReserveUsufruit: enabled,
+      ...(enabled
+        ? { donSommeArgentExonere: false }
+        : {
+          usufruitSuccessif: false,
+          usufruitSuccessifBeneficiaire: undefined,
+        }),
+    };
+  }
+  if (field === 'usufruitSuccessif') {
+    const enabled = Boolean(value);
+    const beneficiary = entry.donateur === 'epoux1'
+      ? 'epoux2'
+      : entry.donateur === 'epoux2'
+        ? 'epoux1'
+        : undefined;
+    return {
+      ...entry,
+      usufruitSuccessif: enabled && Boolean(entry.avecReserveUsufruit),
+      ...(enabled && beneficiary ? { usufruitSuccessifBeneficiaire: beneficiary } : {}),
+      ...(!enabled ? { usufruitSuccessifBeneficiaire: undefined } : {}),
+    };
+  }
+  if (field === 'usufruitSuccessifBeneficiaire') {
+    return { ...entry, usufruitSuccessifBeneficiaire: value as SuccessionDonationEntry['usufruitSuccessifBeneficiaire'] };
   }
   return { ...entry, [field]: typeof value === 'string' ? value : String(value) };
 }

@@ -17,6 +17,12 @@
   border-bottom: 1px solid color-mix(in srgb, var(--color-c8) 72%, #ffffff);
 }
 
+.sc-donation-card__actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
 .sc-donation-card__heading {
   display: flex;
   flex-direction: column;
@@ -54,6 +60,22 @@
   width: 16px;
   height: 16px;
   accent-color: var(--color-c2);
+}
+
+.sc-checkbox-label--compact {
+  gap: 6px;
+  font-size: 11px;
+  color: var(--color-c9);
+}
+
+.sc-checkbox-label--compact input[type="checkbox"] {
+  width: 14px;
+  height: 14px;
+}
+
+.sc-checkbox-label:has(input:disabled) {
+  opacity: 0.55;
+  cursor: not-allowed;
 }
 
 .sc-field--full {
@@ -127,6 +149,13 @@
   gap: 6px;
 }
 
+.sc-donation-checkbox-row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px 12px;
+}
+
 .sc-donation-toggle {
   display: inline-flex;
   align-items: center;
@@ -167,4 +196,90 @@
   gap: 6px;
   padding-top: 10px;
   border-top: 1px solid color-mix(in srgb, var(--color-c8) 72%, #ffffff);
+}
+
+.sc-donations-list--partage {
+  margin-bottom: 10px;
+}
+
+.sc-donation-card--partage {
+  background: color-mix(in srgb, var(--color-c3) 8%, #ffffff);
+}
+
+.sc-donation-partage-modal {
+  max-width: 980px;
+}
+
+.sc-donation-partage-modal__body {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.sc-donation-partage-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px 12px;
+}
+
+.sc-donation-partage-options {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 14px;
+}
+
+.sc-donation-partage-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-top: 10px;
+  border-top: 1px solid color-mix(in srgb, var(--color-c8) 72%, #ffffff);
+}
+
+.sc-donation-partage-section__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  font-size: 12px;
+  color: var(--color-c10);
+}
+
+.sc-donation-partage-lots,
+.sc-donation-partage-soultes {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.sc-donation-partage-lot-row {
+  display: grid;
+  grid-template-columns: minmax(150px, 1fr) minmax(0, 1fr) minmax(0, 1fr);
+  gap: 10px;
+  align-items: end;
+}
+
+.sc-donation-partage-soulte-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(110px, 0.7fr) auto;
+  gap: 8px;
+  align-items: end;
+}
+
+.sc-donation-partage-errors {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 8px 10px;
+  border: 1px solid color-mix(in srgb, var(--color-c6) 42%, #ffffff);
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--color-c6) 8%, #ffffff);
+  color: var(--color-c10);
+  font-size: 12px;
+}
+
+.sc-donation-partage-errors p {
+  margin: 0;
 }

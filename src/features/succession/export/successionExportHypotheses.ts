@@ -24,6 +24,11 @@ interface SuccessionExportChronologieHypothesesData {
   } | null;
 }
 
+export interface SuccessionExportHypothesesGroup {
+  title: string;
+  items: string[];
+}
+
 function uniqueStrings(values: readonly string[]): string[] {
   const seen = new Set<string>();
   return values.filter((value) => {
@@ -32,6 +37,74 @@ function uniqueStrings(values: readonly string[]): string[] {
     seen.add(normalized);
     return true;
   });
+}
+
+function includesAny(value: string, patterns: string[]): boolean {
+  const normalized = value.toLowerCase();
+  return patterns.some((pattern) => normalized.includes(pattern));
+}
+
+function groupTitleForItem(item: string): string {
+  if (includesAny(item, [
+    'ignoré',
+    'manquante',
+    'absence',
+    'non retenue',
+    'avertissement',
+    'warning',
+    'repli',
+  ])) {
+    return 'Points d’attention';
+  }
+
+  if (includesAny(item, [
+    'cgi',
+    'ccv',
+    'barème',
+    'barèmes',
+    'dmtg',
+    'abattement',
+    '990 i',
+    '757 b',
+    'usufruit',
+    'donation',
+  ])) {
+    return 'Hypothèses fiscales';
+  }
+
+  if (includesAny(item, [
+    'simplifi',
+    'non modélis',
+    'non exhaustive',
+    'indicatif',
+    'confirmer',
+    'horizon',
+    'dévolution',
+    'liquidation notariale',
+  ])) {
+    return 'Limites de l’étude';
+  }
+
+  return 'Cadre de calcul';
+}
+
+export function buildSuccessionExportHypothesesGroups(
+  items: readonly string[],
+): SuccessionExportHypothesesGroup[] {
+  const byTitle = new Map<string, string[]>();
+  for (const item of uniqueStrings(items)) {
+    const title = groupTitleForItem(item);
+    byTitle.set(title, [...(byTitle.get(title) ?? []), item]);
+  }
+
+  return [
+    'Points d’attention',
+    'Hypothèses fiscales',
+    'Limites de l’étude',
+    'Cadre de calcul',
+  ]
+    .map((title) => ({ title, items: byTitle.get(title) ?? [] }))
+    .filter((group) => group.items.length > 0);
 }
 
 export function buildSuccessionExportActiveHypotheses(

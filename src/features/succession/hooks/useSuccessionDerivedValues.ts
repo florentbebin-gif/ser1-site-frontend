@@ -1,11 +1,3 @@
-/**
- * useSuccessionDerivedValues — Valeurs dérivées du simulateur Succession.
- *
- * Extrait de SuccessionSimulator.tsx (PR-P1-07-03).
- * Pure computation : aucun effet de bord, aucun setState.
- * useFiscalContext({ strict: true }) reste dans SuccessionSimulator.
- */
-
 import { useMemo } from 'react';
 import type { SuccessionFiscalSnapshot } from '../successionFiscalContext';
 import {
@@ -14,15 +6,7 @@ import {
   countLivingNonCommuns,
   getEnfantRattachementOptions,
 } from '../successionEnfants';
-import { buildSuccessionAvFiscalAnalysis } from '../successionAvFiscal';
-import {
-  coordinateSuccessionInsuranceAllowances,
-} from '../successionDeathInsuranceAllowances';
-import { buildSuccessionSurvivorEconomicInflows } from '../successionInsuranceInflows';
-import { buildSuccessionPerFiscalAnalysis } from '../successionPerFiscal';
-import {
-  buildSuccessionPrevoyanceFiscalAnalysis,
-} from '../successionPrevoyanceFiscal';
+import { coordinateSuccessionInsuranceAllowances } from '../successionDeathInsuranceAllowances';
 import { buildSuccessionPatrimonialAnalysis } from '../successionPatrimonial';
 import { buildSuccessionPredecesAnalysis } from '../successionPredeces';
 import {
@@ -31,15 +15,13 @@ import {
 } from '../successionChainage';
 import { computeSuccessionDirectEstateBasis } from '../successionDisplay';
 import { buildSuccessionDevolutionAnalysis } from '../successionDevolution';
-import {
-  getDonationEffectiveAmount,
-  getTestamentParticularLegaciesTotal,
-} from '../successionSimulator.helpers';
+import { buildSuccessionUsufruitSuccessifAnalysis } from '../successionUsufruitSuccessif';
 import type {
   SuccessionAssetDetailEntry,
   SuccessionAssuranceVieEntry,
   FamilyMember,
   SuccessionDonationEntry,
+  SuccessionDonationPartageAct,
   SuccessionEnfant,
   SuccessionGroupementFoncierEntry,
   SuccessionPerEntry,
@@ -54,10 +36,11 @@ import type {
 import { useSuccessionOutcomeDerivedValues } from './useSuccessionOutcomeDerivedValues';
 import {
   buildEstateAllowanceUsageBySide,
-  buildSuccessionPrevoyanceRegimeByEntry,
   buildSuccessionSituationFlags,
 } from './useSuccessionDerivedValues.helpers';
+import { useSuccessionDonationDerivedValues } from './useSuccessionDonationDerivedValues';
 import { useSuccessionUiDerivedValues } from './useSuccessionUiDerivedValues';
+import { useSuccessionProtectionFiscalAnalyses } from './useSuccessionProtectionFiscalAnalyses';
 
 interface UseSuccessionDerivedValuesInput {
   civilContext: typeof DEFAULT_SUCCESSION_CIVIL_CONTEXT;
@@ -70,6 +53,7 @@ interface UseSuccessionDerivedValuesInput {
   devolutionContext: typeof DEFAULT_SUCCESSION_DEVOLUTION_CONTEXT;
   patrimonialContext: typeof DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT;
   donationsContext: SuccessionDonationEntry[];
+  donationPartageActs: SuccessionDonationPartageAct[];
   enfantsContext: SuccessionEnfant[];
   familyMembers: FamilyMember[];
   fiscalSnapshot: SuccessionFiscalSnapshot;
@@ -88,6 +72,7 @@ export function useSuccessionDerivedValues({
   devolutionContext,
   patrimonialContext,
   donationsContext,
+  donationPartageActs,
   enfantsContext,
   familyMembers,
   fiscalSnapshot,
@@ -109,18 +94,15 @@ export function useSuccessionDerivedValues({
     () => countLivingNonCommuns(enfantsContext),
     [enfantsContext],
   );
-  const donationTotals = useMemo(() => donationsContext.reduce((totals, entry) => {
-    const amount = getDonationEffectiveAmount(entry);
-    if (entry.type === 'rapportable') totals.rapportable += amount;
-    if (entry.type === 'hors_part') totals.horsPart += amount;
-    if (entry.type === 'donation_partage') totals.partagees += amount;
-    return totals;
-  }, {
-    rapportable: 0,
-    horsPart: 0,
-    partagees: 0,
-    legsParticuliers: getTestamentParticularLegaciesTotal(devolutionContext.testamentsBySide),
-  }), [donationsContext, devolutionContext.testamentsBySide]);
+  const {
+    donationPartageFiscalLines,
+    donationsFiscalContext,
+    donationTotals,
+  } = useSuccessionDonationDerivedValues({
+    donationsContext,
+    donationPartageActs,
+    devolutionContext,
+  });
 
   const enfantRattachementOptions = useMemo(
     () => getEnfantRattachementOptions(civilContext.situationMatrimoniale),
@@ -175,72 +157,22 @@ export function useSuccessionDerivedValues({
     [civilContext, liquidationContext, nbDescendantBranches, fiscalSnapshot.dmtgSettings, patrimonialContext.attributionBiensCommunsPct],
   );
 
-  const rawAvFiscalAnalysis = useMemo(
-    () => buildSuccessionAvFiscalAnalysis(
-      assuranceVieEntries,
-      civilContext,
-      enfantsContext,
-      familyMembers,
-      fiscalSnapshot,
-    ),
-    [assuranceVieEntries, civilContext, enfantsContext, familyMembers, fiscalSnapshot],
-  );
-
-  const rawPerFiscalAnalysis = useMemo(
-    () => buildSuccessionPerFiscalAnalysis(
-      perEntries,
-      civilContext,
-      enfantsContext,
-      familyMembers,
-      fiscalSnapshot,
-      simulatedDeathDate,
-    ),
-    [perEntries, civilContext, enfantsContext, familyMembers, fiscalSnapshot, simulatedDeathDate],
-  );
-
-  const rawPrevoyanceFiscalAnalysis = useMemo(
-    () => buildSuccessionPrevoyanceFiscalAnalysis(
-      prevoyanceDecesEntries,
-      civilContext,
-      enfantsContext,
-      familyMembers,
-      fiscalSnapshot,
-      simulatedDeathDate,
-    ),
-    [
-      prevoyanceDecesEntries,
-      civilContext,
-      enfantsContext,
-      familyMembers,
-      fiscalSnapshot,
-      simulatedDeathDate,
-    ],
-  );
-
-  const prevoyanceRegimeByEntry = useMemo(
-    () => buildSuccessionPrevoyanceRegimeByEntry(
-      prevoyanceDecesEntries,
-      civilContext,
-      simulatedDeathDate,
-      fiscalSnapshot.avDeces.agePivotPrimes,
-    ),
-    [
-      prevoyanceDecesEntries,
-      civilContext,
-      simulatedDeathDate,
-      fiscalSnapshot.avDeces.agePivotPrimes,
-    ],
-  );
-
-  // Phase 1: Raw survivor inflows (conjoint is exempt → identical with/without coordination)
-  const survivorEconomicInflows = useMemo(
-    () => buildSuccessionSurvivorEconomicInflows({
-      avFiscalAnalysis: rawAvFiscalAnalysis,
-      perFiscalAnalysis: rawPerFiscalAnalysis,
-      prevoyanceFiscalAnalysis: rawPrevoyanceFiscalAnalysis,
-    }),
-    [rawAvFiscalAnalysis, rawPerFiscalAnalysis, rawPrevoyanceFiscalAnalysis],
-  );
+  const {
+    rawAvFiscalAnalysis,
+    rawPerFiscalAnalysis,
+    rawPrevoyanceFiscalAnalysis,
+    prevoyanceRegimeByEntry,
+    survivorEconomicInflows,
+  } = useSuccessionProtectionFiscalAnalyses({
+    assuranceVieEntries,
+    perEntries,
+    prevoyanceDecesEntries,
+    civilContext,
+    enfantsContext,
+    familyMembers,
+    fiscalSnapshot,
+    simulatedDeathDate,
+  });
 
   // Phase 2: Chainage analysis (produces per-beneficiary abattement usage)
   const chainageAnalysis = useMemo(
@@ -278,7 +210,7 @@ export function useSuccessionDerivedValues({
       familyMembers,
       devolution: { ...devolutionContext, nbEnfantsNonCommuns },
       referenceDate: simulatedDeathDate,
-      donations: donationsContext,
+      donations: donationsFiscalContext,
       donationSettings: fiscalSnapshot.donation,
     }),
     [
@@ -315,7 +247,7 @@ export function useSuccessionDerivedValues({
       devolutionContext,
       nbEnfantsNonCommuns,
       simulatedDeathDate,
-      donationsContext,
+      donationsFiscalContext,
       fiscalSnapshot.donation,
     ],
   );
@@ -395,13 +327,30 @@ export function useSuccessionDerivedValues({
     ? chainOrder
     : directEstateBasis.simulatedDeceased;
 
+  const usufruitSuccessifAnalysis = useMemo(
+    () => buildSuccessionUsufruitSuccessifAnalysis({
+      civil: civilContext,
+      donations: donationsFiscalContext,
+      simulatedDeceased: patrimonialSimulatedDeceased,
+      referenceDate: simulatedDeathDate,
+      dmtgSettings: fiscalSnapshot.dmtgSettings,
+    }),
+    [
+      civilContext,
+      donationsFiscalContext,
+      patrimonialSimulatedDeceased,
+      simulatedDeathDate,
+      fiscalSnapshot.dmtgSettings,
+    ],
+  );
+
   const patrimonialAnalysis = useMemo(
     () => buildSuccessionPatrimonialAnalysis(
       civilContext,
       derivedActifNetSuccession,
       nbDescendantBranches,
       patrimonialContext,
-      donationsContext,
+      donationsFiscalContext,
       fiscalSnapshot,
       {
         simulatedDeceased: patrimonialSimulatedDeceased,
@@ -415,7 +364,7 @@ export function useSuccessionDerivedValues({
       derivedActifNetSuccession,
       nbDescendantBranches,
       patrimonialContext,
-      donationsContext,
+      donationsFiscalContext,
       fiscalSnapshot,
       patrimonialSimulatedDeceased,
       devolutionContext.testamentsBySide,
@@ -454,7 +403,9 @@ export function useSuccessionDerivedValues({
     directEstateBasis,
     transmissionBasis: uiDerived.transmissionBasis,
     abattementResidencePrincipale: patrimonialContext.abattementResidencePrincipale,
-    donationsContext,
+    donationsContext: donationsFiscalContext,
+    donationPartageActs,
+    usufruitSuccessifAnalysis,
     assetPocketOptions: uiDerived.assetPocketOptions,
     assuranceViePartyOptions: uiDerived.assuranceViePartyOptions,
     assuranceVieByAssure: uiDerived.assuranceVieByAssure,
@@ -477,6 +428,9 @@ export function useSuccessionDerivedValues({
     nbDescendantBranches,
     nbEnfantsNonCommuns,
     donationTotals,
+    donationPartageFiscalLines,
+    donationsFiscalContext,
+    usufruitSuccessifAnalysis,
     enfantRattachementOptions,
     branchOptions: uiDerived.branchOptions,
     predecesAnalysis,

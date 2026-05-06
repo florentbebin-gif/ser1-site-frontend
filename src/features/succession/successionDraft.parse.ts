@@ -36,7 +36,9 @@ import {
   parseAssetEntries,
   parseAssuranceVieEntries,
   parseDecesDansXAns,
+  parseDonationPartageActs,
   parseDonations,
+  extractLegacyDonationPartageActs,
   parseFamilyMembers,
   parseGroupementFoncierEntries,
   parseInterMassClaims,
@@ -241,12 +243,20 @@ export function parseSuccessionDraftPayload(raw: string): ParsedSuccessionDraftP
     const parsedDonations = version >= 9 && Array.isArray(payload.donations)
       ? parseDonations(payload.donations)
       : deriveLegacyDonations(patrimonial);
-    const { donations, particularLegaciesBySide } = collectLegacyParticularLegacies(
+    const { donations: donationsWithoutLegacies, particularLegaciesBySide } = collectLegacyParticularLegacies(
       parsedDonations,
       civil,
       enfants,
       familyMembers,
     );
+    const {
+      donations,
+      donationPartageActs: legacyDonationPartageActs,
+    } = extractLegacyDonationPartageActs(donationsWithoutLegacies);
+    const donationPartageActs = [
+      ...(version >= 28 ? parseDonationPartageActs(payload.donationPartageActs) : []),
+      ...legacyDonationPartageActs,
+    ];
 
     const devolution: SuccessionDevolutionContext = {
       ...devolutionBase,
@@ -291,6 +301,7 @@ export function parseSuccessionDraftPayload(raw: string): ParsedSuccessionDraftP
       enfants,
       familyMembers,
       donations,
+      donationPartageActs,
       assetEntries,
       assuranceVieEntries,
       perEntries,

@@ -166,7 +166,7 @@ describe('Succession PPTX Export', () => {
       expect(chronologySlide.steps).toHaveLength(2);
       expect(chronologySlide.steps[0].beneficiaries[0].label).toBe('Conjoint survivant');
       expect(chronologySlide.steps[0].droitsHorsSuccession).toBeDefined();
-      expect(chronologySlide.notes.join(' ')).toContain('Module simplifié');
+      expect('notes' in chronologySlide).toBe(false);
     }
 
     const annexSlide = spec.slides.find((slide) => slide.type === 'succession-annex-table');
@@ -192,6 +192,7 @@ describe('Succession PPTX Export', () => {
     expect(hypothesesSlide).toBeDefined();
     if (hypothesesSlide?.type === 'succession-hypotheses') {
       expect(hypothesesSlide.items.join(' ')).toContain('recompenses entre masses');
+      expect(hypothesesSlide.items.join(' ')).toContain('Module simplifié');
     }
   });
 
@@ -231,7 +232,13 @@ describe('Succession PPTX Export', () => {
       expect(chronologySlide.steps).toHaveLength(1);
       expect(chronologySlide.steps[0].masseTransmise).not.toBe('—');
       expect(chronologySlide.steps[0].autresBeneficiaires).not.toBe('—');
-      expect(chronologySlide.notes.join(' ')).toContain('Succession directe du défunt simulé.');
+      expect('notes' in chronologySlide).toBe(false);
+    }
+
+    const hypothesesSlide = spec.slides.find((slide) => slide.type === 'succession-hypotheses');
+    expect(hypothesesSlide).toBeDefined();
+    if (hypothesesSlide?.type === 'succession-hypotheses') {
+      expect(hypothesesSlide.items.join(' ')).toContain('Succession directe du défunt simulé.');
     }
 
     const annexSlide = spec.slides.find((slide) => slide.type === 'succession-annex-table');
@@ -664,7 +671,7 @@ describe('Succession Excel Export', () => {
       expect(conjointBenef?.exonerated).toBe(true);
       // Au moins un bénéficiaire non-exonéré a un montant brut non nul
       expect(chronologySlide.steps[0].beneficiaries.some((b) => !b.exonerated && b.gross !== '—')).toBe(true);
-      expect(chronologySlide.notes.some((n) => n.includes('simplifie'))).toBe(true);
+      expect('notes' in chronologySlide).toBe(false);
     }
 
     const hypothesesSlide = spec.slides.find((slide) => slide.type === 'succession-hypotheses');
@@ -672,6 +679,7 @@ describe('Succession Excel Export', () => {
     if (hypothesesSlide?.type === 'succession-hypotheses') {
       expect(hypothesesSlide.items.some((h) => h.toLowerCase().includes('acquets'))).toBe(true);
       expect(hypothesesSlide.items.some((h) => h.toLowerCase().includes('preciput'))).toBe(true);
+      expect(hypothesesSlide.items.some((h) => h.toLowerCase().includes('simplifie'))).toBe(true);
     }
   });
 

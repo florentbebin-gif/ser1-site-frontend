@@ -1,4 +1,5 @@
 import type { SuccessionFiscalSnapshot } from './successionFiscalContext';
+import type { SuccessionUsufruitSuccessifAnalysis } from './successionUsufruitSuccessif';
 
 function uniqueStrings(values: string[]): string[] {
   const seen = new Set<string>();
@@ -10,18 +11,56 @@ function uniqueStrings(values: string[]): string[] {
   });
 }
 
+function fmtCurrency(value: number): string {
+  return new Intl.NumberFormat('fr-FR', {
+    style: 'currency',
+    currency: 'EUR',
+    maximumFractionDigits: 0,
+  }).format(value);
+}
+
+function buildUsufruitSuccessifAssumptions(
+  analysis?: SuccessionUsufruitSuccessifAnalysis,
+): string[] {
+  if (!analysis || analysis.transmissions.length === 0) return [];
+
+  const totalUsufruit = analysis.transmissions.reduce(
+    (sum, transmission) => sum + transmission.valeurUsufruit,
+    0,
+  );
+  const totalDroits = analysis.transmissions.reduce(
+    (sum, transmission) => sum + transmission.droits,
+    0,
+  );
+  const transmissionLabel = analysis.transmissions.length === 1
+    ? '1 transmission'
+    : `${analysis.transmissions.length} transmissions`;
+  const reunionLabel = analysis.reunions1133.length === 1
+    ? '1 réunion'
+    : `${analysis.reunions1133.length} réunions`;
+
+  return [
+    `Usufruit successif actif : ${transmissionLabel}, valeur fiscale de l’usufruit ${fmtCurrency(totalUsufruit)}, droits conjoint/partenaire ${fmtCurrency(totalDroits)} (CGI 669, CGI 796-0 bis).`,
+    `Réunion CGI 1133 : ${reunionLabel} au nu-propriétaire sans droits nouveaux au second décès.`,
+  ];
+}
+
 export function buildSuccessionAssumptions({
   fiscalSnapshot,
   attentions,
   hasInterMassClaims,
   hasAffectedLiabilities,
   hasDonationsPartage,
+  hasUsufruitSuccessif,
+  usufruitSuccessifAnalysis,
 }: {
   fiscalSnapshot: SuccessionFiscalSnapshot;
   attentions: string[];
   hasInterMassClaims: boolean;
   hasAffectedLiabilities: boolean;
   hasDonationsPartage?: boolean;
+  hasUsufruitSuccessif?: boolean;
+  usufruitSuccessifAnalysis?: SuccessionUsufruitSuccessifAnalysis;
 }): string[] {
   const staticAssumptions = [
     'Barèmes DMTG et abattements appliqués depuis les paramètres de l’application.',
@@ -54,8 +93,15 @@ export function buildSuccessionAssumptions({
     );
   }
 
+  if (hasUsufruitSuccessif) {
+    staticAssumptions.push(
+      'Usufruit successif : valorisation de l’usufruit au décès simulé selon le barème CGI 669, exonération conjoint/partenaire PACS CGI 796-0 bis et réunion au nu-propriétaire sans droits nouveaux au second décès (CGI 1133).',
+    );
+  }
+
   return uniqueStrings([
     ...attentions,
+    ...buildUsufruitSuccessifAssumptions(usufruitSuccessifAnalysis),
     ...staticAssumptions,
   ]);
 }

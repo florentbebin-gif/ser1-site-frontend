@@ -1,6 +1,7 @@
 import JSZip from 'jszip';
 import { describe, expect, it } from 'vitest';
 import { buildSuccessionStudyDeck } from '@/pptx/presets/successionDeckBuilder';
+import { buildSuccessionHypothesesLayout } from '@/pptx/slides/buildSuccessionHypotheses';
 import { DEFAULT_COLORS } from '@/settings/theme';
 import { DEFAULT_DMTG } from '../../../engine/civil';
 import { buildSuccessionAvFiscalAnalysis } from '../successionAvFiscal';
@@ -8,9 +9,13 @@ import { buildSuccessionChainageAnalysis } from '../successionChainage';
 import { buildSuccessionFiscalSnapshot } from '../successionFiscalContext';
 import { buildSuccessionPerFiscalAnalysis } from '../successionPerFiscal';
 import { buildSuccessionPrevoyanceFiscalAnalysis } from '../successionPrevoyanceFiscal';
-import { buildSuccessionExportActiveHypotheses } from '../export/successionExportHypotheses';
+import {
+  buildSuccessionExportActiveHypotheses,
+  buildSuccessionExportHypothesesGroups,
+} from '../export/successionExportHypotheses';
 import { exportSuccessionXlsx } from '../export/successionXlsx';
 import { buildSuccessionChainageExportPayload } from '../hooks/useSuccessionOutcomeExportPayload';
+import { buildSuccessionFamilyContextExport } from '../hooks/useSuccessionOutcomePptx.helpers';
 import { makeCivil, makeLiquidation } from './fixtures';
 import { buildSuccessionPatrimonialAnalysis } from '../successionPatrimonial';
 import { DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT } from '../successionDraft';
@@ -286,12 +291,32 @@ describe('Succession export - hypothèses actives', () => {
       hasInterMassClaims: false,
       hasAffectedLiabilities: false,
       hasDonationsPartage: patrimonialAnalysis.donationsPartagees > 0,
+      hasUsufruitSuccessif: true,
+      usufruitSuccessifAnalysis: {
+        transmissions: [{
+          donationId: 'd-us',
+          beneficiaire: 'epoux2',
+          valeurBase: 200_000,
+          tauxUsufruit: 0.3,
+          valeurUsufruit: 60_000,
+          droits: 0,
+        }],
+        reunions1133: [{ donationId: 'd-us', droits: 0 }],
+        warnings: [],
+      },
     });
 
     const hypotheses = buildSuccessionExportActiveHypotheses(assumptions, null);
+    const groups = buildSuccessionExportHypothesesGroups(hypotheses);
 
     expect(patrimonialAnalysis.donationsPartagees).toBe(100_000);
     expect(hypotheses.some(h => h.includes('CCV 1078'))).toBe(true);
+    expect(hypotheses.some(h => h.includes('CGI 669'))).toBe(true);
+    expect(hypotheses.some(h => h.includes('CGI 1133'))).toBe(true);
+    expect(hypotheses.some(h => h.includes('CGI 796-0 bis'))).toBe(true);
+    expect(hypotheses.some(h => h.includes('60') && h.includes('000') && h.includes('droits'))).toBe(true);
+    expect(groups.map((group) => group.title)).toContain('Hypothèses fiscales');
+    expect(groups.map((group) => group.title)).toContain('Limites de l’étude');
 
     const blob = await exportSuccessionXlsx(
       { actifNetSuccession: 500_000, nbHeritiers: 1, heritiers: [] },
@@ -316,5 +341,123 @@ describe('Succession export - hypothèses actives', () => {
     const hypoXml = await getSheetXmlByName(zip, 'Hypothèses') ?? '';
     const strXml = await zip.file('xl/sharedStrings.xml')?.async('string') ?? '';
     expect(hypoXml + strXml).toContain('CCV 1078');
+    expect(hypoXml + strXml).toContain('CGI 1133');
+    expect(hypoXml + strXml).toContain('60');
+  });
+
+  it('résume les actes donation-partage et l’usufruit successif dans les dispositions PPTX', () => {
+    const familyContext = buildSuccessionFamilyContextExport({
+      civilContext: makeCivil({ situationMatrimoniale: 'marie' }),
+      devolutionContext: {
+        nbEnfantsNonCommuns: 0,
+        choixLegalConjointSansDDV: null,
+        testamentsBySide: {
+          epoux1: { active: false, dispositionType: null, beneficiaryRef: null, quotePartPct: 100, particularLegacies: [] },
+          epoux2: { active: false, dispositionType: null, beneficiaryRef: null, quotePartPct: 100, particularLegacies: [] },
+        },
+        ascendantsSurvivantsBySide: { epoux1: false, epoux2: false },
+      },
+      patrimonialContext: DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT,
+      donationsContext: [],
+      donationPartageActs: [{
+        id: 'dp-1',
+        date: '2020-06',
+        donateur: 'epoux1',
+        avecReserveUsufruit: true,
+        usufruitSuccessif: true,
+        usufruitSuccessifBeneficiaire: 'epoux2',
+        lots: [
+          { id: 'lot-1', enfantId: 'E1', valeur: 300_000, accepted: true },
+          { id: 'lot-2', enfantId: 'E2', valeur: 200_000, accepted: true },
+          { id: 'lot-3', enfantId: 'E3', valeur: 100_000, accepted: true },
+        ],
+        soultes: [
+          { id: 's1', payeurEnfantId: 'E1', receveurEnfantId: 'E3', montant: 100_000 },
+          { id: 's2', payeurEnfantId: 'E1', receveurEnfantId: 'E2', montant: 50_000 },
+        ],
+      }],
+      enfantsContext: [
+        { id: 'E1', rattachement: 'commun' },
+        { id: 'E2', rattachement: 'commun' },
+        { id: 'E3', rattachement: 'commun' },
+      ],
+      familyMembers: [],
+    });
+
+    expect(familyContext.dispositions).toContain(
+      'Donations antérieures : 1 donation-partage : 3 lots, 2 soultes pour 150 000 EUR',
+    );
+    expect(familyContext.dispositions).toContain(
+      'Usufruit successif au conjoint/partenaire sur 1 donation',
+    );
+  });
+
+  it('place le groupe d’hypothèses le plus dense à droite dans la slide PPTX', () => {
+    const layout = buildSuccessionHypothesesLayout([
+      { title: 'Points d’attention', items: ['Attention courte.'] },
+      { title: 'Hypothèses fiscales', items: [
+        'Barèmes DMTG et abattements appliqués depuis les paramètres de l’application.',
+        'Usufruit successif selon CGI 669, CGI 796-0 bis et CGI 1133.',
+        'Donation-partage : valeur gelée CCV 1078.',
+      ] },
+      { title: 'Limites de l’étude', items: ['Liquidation notariale exhaustive non modélisée.'] },
+      { title: 'Cadre de calcul', items: ['Succession directe simulée.'] },
+    ]);
+
+    const fiscal = layout.find((group) => group.title === 'Hypothèses fiscales');
+    const leftGroups = layout.filter((group) => group.title !== 'Hypothèses fiscales');
+
+    expect(fiscal?.emphasis).toBe('large');
+    expect(fiscal?.rect.h).toBeGreaterThan(leftGroups[0].rect.h);
+    expect(fiscal?.rect.x).toBeGreaterThan(leftGroups[0].rect.x);
+    expect(leftGroups).toHaveLength(3);
+    expect(leftGroups.every((group) => group.emphasis === 'compact')).toBe(true);
+  });
+
+  it('garde le plus gros volume de texte à droite même si ce n’est pas fiscal', () => {
+    const layout = buildSuccessionHypothesesLayout([
+      { title: 'Points d’attention', items: [
+        'Avertissement long sur la situation civile, la chronologie, les dates manquantes et les limites de projection.',
+        'Second avertissement long sur les données incohérentes détectées dans la simulation exportée.',
+      ] },
+      { title: 'Hypothèses fiscales', items: [
+        'Barème DMTG appliqué avec les abattements, les paramètres transmis au module fiscal et les règles de rappel disponibles.',
+      ] },
+      { title: 'Limites de l’étude', items: ['Limite courte.'] },
+      { title: 'Cadre de calcul', items: ['Cadre court.'] },
+    ]);
+
+    const largeGroup = layout.find((group) => group.emphasis === 'large');
+    const compactTitles = layout
+      .filter((group) => group.emphasis === 'compact')
+      .map((group) => group.title);
+
+    expect(largeGroup?.title).toBe('Points d’attention');
+    expect(compactTitles).toEqual(['Limites de l’étude', 'Cadre de calcul', 'Hypothèses fiscales']);
+  });
+
+  it('donne plus de hauteur au cadre gauche le plus chargé', () => {
+    const layout = buildSuccessionHypothesesLayout([
+      { title: 'Points d’attention', items: ['Attention courte.'] },
+      { title: 'Hypothèses fiscales', items: [
+        'Barème DMTG, donation-partage, usufruit successif, CGI 669, CGI 1133, CGI 796-0 bis, CCV 1078.',
+        'Valorisation fiscale des transmissions et rappels de donations avec les paramètres transmis au module.',
+        'Exonérations du conjoint ou partenaire PACS et réunion au nu-propriétaire sans droits nouveaux.',
+      ] },
+      { title: 'Limites de l’étude', items: [
+        'La lecture civile reste simplifiée et ne remplace pas une liquidation notariale exhaustive.',
+        'L’intégration chiffrée fine du rapport civil, de la réduction et de l’imputation sur la réserve n’est pas modélisée.',
+        'Le résultat est indicatif et doit être confirmé par une analyse patrimoniale et notariale.',
+      ] },
+      { title: 'Cadre de calcul', items: ['Cadre court.'] },
+    ]);
+
+    const limits = layout.find((group) => group.title === 'Limites de l’étude');
+    const attention = layout.find((group) => group.title === 'Points d’attention');
+    const cadre = layout.find((group) => group.title === 'Cadre de calcul');
+
+    expect(limits?.emphasis).toBe('compact');
+    expect(limits?.rect.h).toBeGreaterThan(attention?.rect.h ?? 0);
+    expect(limits?.rect.h).toBeGreaterThan(cadre?.rect.h ?? 0);
   });
 });

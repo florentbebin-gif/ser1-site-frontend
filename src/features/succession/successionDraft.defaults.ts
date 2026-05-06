@@ -5,6 +5,7 @@ import type {
   SuccessionCivilContext,
   SuccessionDevolutionContext,
   SuccessionDonationEntry,
+  SuccessionDonationPartageAct,
   SuccessionEnfant,
   SuccessionLiquidationContext,
   SuccessionPerEntry,
@@ -93,6 +94,7 @@ export const DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT: SuccessionPatrimonialContex
 
 export const DEFAULT_SUCCESSION_ENFANTS_CONTEXT: SuccessionEnfant[] = [];
 export const DEFAULT_SUCCESSION_DONATIONS: SuccessionDonationEntry[] = [];
+export const DEFAULT_SUCCESSION_DONATION_PARTAGE_ACTS: SuccessionDonationPartageAct[] = [];
 export const DEFAULT_SUCCESSION_ASSET_DETAILS: SuccessionAssetDetailEntry[] = [];
 export const DEFAULT_SUCCESSION_ASSURANCE_VIE: SuccessionAssuranceVieEntry[] = [];
 export const DEFAULT_SUCCESSION_PER: SuccessionPerEntry[] = [];
