@@ -148,7 +148,7 @@ describe('successionDraft roundtrip', () => {
       'epoux2',
     );
 
-    expect(payload.version).toBe(27);
+    expect(payload.version).toBe(28);
     expect(payload.assetEntries[0].pocket).toBe('epoux1');
     const parsed = parseSuccessionDraftPayload(JSON.stringify(payload));
     expect(parsed).not.toBeNull();
@@ -221,5 +221,66 @@ describe('successionDraft roundtrip', () => {
     expect(parsed?.enfants).toHaveLength(2);
     expect(parsed?.enfants[0]).toEqual({ id: 'E1', prenom: 'Alice', rattachement: 'commun' });
     expect(parsed?.enfants[1]).toEqual({ id: 'E2', prenom: 'Bastien', rattachement: 'epoux1', deceased: true });
+  });
+
+  it('migre une donation-partage v27 en acte v28 sans perdre la valeur gelée', () => {
+    const payloadV27 = buildSuccessionDraftPayload(
+      {
+        actifNetSuccession: 0,
+        heritiers: [{ lien: 'enfant', partSuccession: 0 }],
+      },
+      {
+        situationMatrimoniale: 'marie',
+        regimeMatrimonial: 'communaute_legale',
+        pacsConvention: 'separation',
+        dateNaissanceEpoux1: '1956-01-01',
+        dateNaissanceEpoux2: '1959-01-01',
+      },
+      {
+        actifEpoux1: 0,
+        actifEpoux2: 0,
+        actifCommun: 0,
+        nbEnfants: 1,
+      },
+      makeDevolution(),
+      DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT,
+      [{ id: 'E1', prenom: 'Alice', rattachement: 'commun' }],
+      [],
+      [{
+        id: 'legacy-dp',
+        type: 'donation_partage',
+        montant: 300000,
+        valeurDonation: 200000,
+        valeurActuelle: 300000,
+        date: '2020-06',
+        donateur: 'epoux1',
+        donataire: 'E1',
+      }],
+      [],
+      [],
+      [],
+      [],
+      [],
+      'epoux1',
+    );
+    const rawV27 = JSON.stringify({ ...payloadV27, version: 27, donationPartageActs: undefined });
+
+    const parsed = parseSuccessionDraftPayload(rawV27);
+
+    expect(parsed?.donations.some((donation) => donation.type === 'donation_partage')).toBe(false);
+    expect(parsed?.donationPartageActs).toHaveLength(1);
+    expect(parsed?.donationPartageActs[0]).toMatchObject({
+      id: 'act-legacy-dp',
+      date: '2020-06',
+      donateur: 'epoux1',
+      lots: [
+        expect.objectContaining({
+          enfantId: 'E1',
+          valeur: 200000,
+          valeurActuelle: 300000,
+          accepted: true,
+        }),
+      ],
+    });
   });
 });

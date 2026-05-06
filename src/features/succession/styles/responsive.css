@@ -11,6 +11,11 @@
     flex-direction: column;
     align-items: stretch;
   }
+
+  .sc-donation-partage-lot-row,
+  .sc-donation-partage-soulte-row {
+    grid-template-columns: 1fr;
+  }
 }
 
 @media (max-width: 980px) {
@@ -53,6 +58,14 @@
   }
 
   .sc-donation-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .sc-donation-checkbox-row {
+    justify-content: flex-start;
+  }
+
+  .sc-donation-partage-grid {
     grid-template-columns: 1fr;
   }
 

@@ -20,7 +20,10 @@ import type {
   SuccessionBeneficiarySummary,
   LogoPlacement,
 } from '../theme/types';
-import { buildSuccessionExportActiveHypotheses } from '@/features/succession/export/successionExportHypotheses';
+import {
+  buildSuccessionExportActiveHypotheses,
+  buildSuccessionExportHypothesesGroups,
+} from '@/features/succession/export/successionExportHypotheses';
 import { isDebugEnabled } from '../../utils/debugFlags';
 import { pickChapterImage } from '../designSystem/serenity';
 
@@ -302,9 +305,6 @@ function buildChronologySlide(data: SuccessionData): SuccessionChronologySlideSp
       orderLabel: chronologie ? orderLabel(chronologie.order) : 'Chronologie non transmise',
       steps: [buildDirectChronologyStep(data)],
       totalDroits: fmt(data.totalDroits),
-      notes: chronologie?.warnings?.slice(0, 4) ?? [
-        "La chronologie en deux décès n'est pas retenue pour cette situation.",
-      ],
     };
   }
 
@@ -319,7 +319,6 @@ function buildChronologySlide(data: SuccessionData): SuccessionChronologySlideSp
       buildChronologyStep(`2e décès — ${chronologie.secondDecedeLabel}`, 'Transmission finale', chronologie.step2),
     ],
     totalDroits: fmt(chronologie.totalDroits),
-    notes: chronologie.warnings?.slice(0, 4) ?? [],
   };
 }
 
@@ -336,6 +335,7 @@ function buildHypothesesSlide(
       activeHypotheses.length > 0
         ? activeHypotheses
         : ["Aucune hypothèse spécifique n'a été ajoutée à cette simulation."],
+    groups: buildSuccessionExportHypothesesGroups(activeHypotheses),
   };
 }
 

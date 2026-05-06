@@ -235,6 +235,11 @@
   margin-top: 2px;
 }
 
+.sc-child-add-btn--prominent {
+  font-size: 13px;
+  font-weight: 600;
+}
+
 .sc-child-add-btn:hover {
   color: var(--color-c1);
 }

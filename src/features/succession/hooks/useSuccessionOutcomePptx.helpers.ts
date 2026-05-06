@@ -18,6 +18,7 @@ import type {
   SuccessionCivilContext,
   SuccessionDevolutionContext,
   SuccessionDonationEntry,
+  SuccessionDonationPartageAct,
   SuccessionEnfant,
   SuccessionGroupementFoncierEntry,
   SuccessionPatrimonialContext,
@@ -25,6 +26,7 @@ import type {
   SuccessionPrevoyanceDecesEntry,
   SuccessionPrimarySide,
 } from '../successionDraft.types';
+import { summarizeDonationPartageActs } from '../successionDonationPartage';
 import type { InsuranceBeneficiaryLine } from './useSuccessionOutcomeDerivedValues.helpers';
 
 export interface SuccessionAnnexExportBeneficiaryRow {
@@ -136,10 +138,14 @@ function getDonationDisplayAmount(entry: SuccessionDonationEntry): number {
   return entry.valeurActuelle ?? entry.valeurDonation ?? entry.montant ?? 0;
 }
 
-function buildDonationSummary(donationsContext: SuccessionDonationEntry[]): string | null {
+function buildDonationSummary(
+  donationsContext: SuccessionDonationEntry[],
+  donationPartageActs: SuccessionDonationPartageAct[] = [],
+): string | null {
   const totals = new Map<SuccessionDonationEntry['type'], { count: number; total: number }>();
 
   for (const entry of donationsContext) {
+    if (entry.type === 'donation_partage' && entry.sourceDonationPartageActId) continue;
     const amount = getDonationDisplayAmount(entry);
     const hasMeaningfulData = amount > 0 || Boolean(entry.date || entry.donateur || entry.donataire);
     if (!hasMeaningfulData) continue;
@@ -150,7 +156,7 @@ function buildDonationSummary(donationsContext: SuccessionDonationEntry[]): stri
     totals.set(entry.type, current);
   }
 
-  const parts = (['rapportable', 'hors_part', 'donation_partage', 'legs_particulier'] as const)
+  const parts = (['rapportable', 'hors_part', 'legs_particulier'] as const)
     .map((type) => {
       const current = totals.get(type);
       if (!current) return null;
@@ -159,13 +165,13 @@ function buildDonationSummary(donationsContext: SuccessionDonationEntry[]): stri
         ? `${current.count} avance${current.count > 1 ? 's' : ''} de part successorale`
         : type === 'hors_part'
           ? `${current.count} donation${current.count > 1 ? 's' : ''} hors part`
-          : type === 'donation_partage'
-            ? `${current.count} donation${current.count > 1 ? 's' : ''}-partage`
-            : `${current.count} legs particulier${current.count > 1 ? 's' : ''}`;
+          : `${current.count} legs particulier${current.count > 1 ? 's' : ''}`;
 
       return current.total > 0 ? `${baseLabel} (${fmtCurrency(current.total)})` : baseLabel;
     })
     .filter((value): value is string => value !== null);
+  const donationPartageSummary = summarizeDonationPartageActs(donationPartageActs);
+  if (donationPartageSummary) parts.push(donationPartageSummary);
 
   return parts.length > 0 ? `Donations antérieures : ${parts.join(' ; ')}` : null;
 }
@@ -175,6 +181,7 @@ function buildDispositionSummaries(
   devolutionContext: SuccessionDevolutionContext,
   patrimonialContext: SuccessionPatrimonialContext,
   donationsContext: SuccessionDonationEntry[],
+  donationPartageActs: SuccessionDonationPartageAct[] = [],
 ): string[] {
   const dispositions: string[] = [];
   const conjointDetails: string[] = [];
@@ -227,9 +234,17 @@ function buildDispositionSummaries(
     dispositions.push(`Clauses matrimoniales : ${clauses.join(' ; ')}`);
   }
 
-  const donationSummary = buildDonationSummary(donationsContext);
+  const donationSummary = buildDonationSummary(donationsContext, donationPartageActs);
   if (donationSummary) {
     dispositions.push(donationSummary);
+  }
+
+  const usufruitSuccessifCount = [
+    ...donationsContext.filter((donation) => donation.avecReserveUsufruit && donation.usufruitSuccessif),
+    ...donationPartageActs.filter((act) => act.avecReserveUsufruit && act.usufruitSuccessif),
+  ].length;
+  if (usufruitSuccessifCount > 0) {
+    dispositions.push(`Usufruit successif au conjoint/partenaire sur ${usufruitSuccessifCount} donation${usufruitSuccessifCount > 1 ? 's' : ''}`);
   }
 
   return dispositions;
@@ -364,6 +379,7 @@ export function buildSuccessionFamilyContextExport({
   devolutionContext,
   patrimonialContext,
   donationsContext,
+  donationPartageActs,
   enfantsContext,
   familyMembers,
 }: {
@@ -371,6 +387,7 @@ export function buildSuccessionFamilyContextExport({
   devolutionContext: SuccessionDevolutionContext;
   patrimonialContext: SuccessionPatrimonialContext;
   donationsContext: SuccessionDonationEntry[];
+  donationPartageActs?: SuccessionDonationPartageAct[];
   enfantsContext: SuccessionEnfant[];
   familyMembers: FamilyMember[];
 }): SuccessionFamilyContextExport {
@@ -383,7 +400,13 @@ export function buildSuccessionFamilyContextExport({
     pacsConventionLabel: civilContext.situationMatrimoniale === 'pacse'
       ? optionLabel(PACS_CONVENTION_OPTIONS, civilContext.pacsConvention)
       : undefined,
-    dispositions: buildDispositionSummaries(civilContext, devolutionContext, patrimonialContext, donationsContext),
+    dispositions: buildDispositionSummaries(
+      civilContext,
+      devolutionContext,
+      patrimonialContext,
+      donationsContext,
+      donationPartageActs,
+    ),
     filiation: computeFiliationOrgchartLayout(civilContext, enfantsContext, familyMembers),
   };
 }

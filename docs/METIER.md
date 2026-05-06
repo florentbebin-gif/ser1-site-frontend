@@ -201,7 +201,7 @@ Supports robustes du périmètre actuel :
 | PACS avec testament partenaire | `successionDisplay.test.ts`, `successionValidationMatrix.test.ts`, `successionChainage.pacsApplicability.test.ts` |
 | Assurance-vie 990 I / 757 B, clauses simples | `successionGoldenScenarios.test.ts`, `successionDeathInsuranceAllowances.test.ts`, BOFiP BOI-ENR-DMTG-10-10-20-20 |
 | PER assurance / prévoyance décès, pivot 70 ans | `successionPerFiscal.test.ts`, `successionPrevoyanceFiscal.test.ts`, `successionHorizonMatrix.test.ts` |
-| Usufruit / nue-propriété art. 669 CGI, si dates renseignées | `successionUsufruit.test.ts`, `successionDevolution.test.ts` |
+| Usufruit / nue-propriété art. 669 CGI, si dates renseignées | `successionUsufruit.test.ts`, `successionUsufruitSuccessif.test.ts`, `successionDevolution.test.ts` |
 | GFA / GFV / GFF / GF | `successionAssetValuation.test.ts`, `successionValidationMatrix.test.ts` |
 | Exports des hypothèses succession | `successionExport.test.ts`, `successionExportHypotheses.test.ts`, `scSuccessionSummaryPanel.test.tsx` |
 
@@ -214,8 +214,9 @@ Simplifications documentées :
 - La représentation petits-enfants divise l'abattement de branche entre représentants, sans couvrir tous les croisements civils complexes avec réserve / quotité disponible.
 - Le rappel fiscal donations borne 15 ans ; la base historique est testée sur `valeurDonation ?? montant`, mais les droits déjà acquittés restent approximatifs faute de saisie historique exhaustive.
 - Donation en nue-propriété (CGI 669) : la valeur rappelable est calculée selon l'âge du donateur à la date de l'acte quand la date de naissance est renseignée ; sinon repli sur valeur pleine avec warning.
+- Usufruit successif : disponible seulement avec réserve d'usufruit et conjoint / partenaire PACS identifié. Le bénéficiaire est figé dans l'acte ; au décès simulé du donateur, l'usufruit est valorisé sur la valeur actuelle du bien selon l'âge du conjoint / partenaire (CGI 669), puis exonéré via le lien conjoint (CGI 796-0 bis). Au décès du second usufruitier, la réunion au nu-propriétaire est tracée à 0 droit (CGI 1133). Si le bénéficiaire n'est plus conjoint / partenaire ou si le donateur ne décède pas à l'étape simulée, l'option est ignorée avec warning.
 - Don de somme d'argent exonéré 790 G : exonéré hors rappel fiscal (art. 784) dans la limite de 31 865 € par couple donateur/donataire, plafond appliqué globalement sur l'ensemble des dons 790 G vers le même donataire dans la fenêtre de rappel. Incompatible avec la réserve d'usufruit : si les deux toggles sont actifs sur une même entrée (données persistées), le 790 G est ignoré et un warning est remonté.
-- Donation-partage (CCV 1078) : prise en charge comme type de donation distinct. Impact fiscal DMTG intégré via le rappel fiscal par donataire (valeur au jour de l'acte). Non rapportable au partage civil (exclue de la masse civile de référence). Simplification documentée : modélisation par ligne / par donataire, sans acte unique, lots, soultes, acceptation collective, imputation fine sur la réserve ni réduction civile.
+- Donation-partage (CCV 1078) : prise en charge comme acte dédié avec lots par enfant vivant et soultes entre copartagés. Le calcul fiscal dérive l'acte en lignes mono-donataire internes pour le rappel fiscal CGI 784, avec une base nette gelée par enfant (`lot + soultes reçues - soultes payées`). Non rapportable au partage civil. Limites v1 : réserve d'usufruit au niveau de l'acte et non lot par lot, pas de petits-enfants allotis par représentation, pas d'imputation fine sur la réserve ni de liquidation notariale exhaustive.
 - Les assurances-vie, PER et prévoyance démembrés ou non standards passent par un repli structuré avec warnings.
 
 Non modélisé :

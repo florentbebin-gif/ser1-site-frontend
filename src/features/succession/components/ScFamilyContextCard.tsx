@@ -161,7 +161,7 @@ export default function ScFamilyContextCard({
           <div className="sc-children-actions">
             <button
               type="button"
-              className="sc-child-add-btn"
+              className="sc-child-add-btn sc-child-add-btn--prominent"
               onClick={onAddEnfant}
             >
               + Ajouter un enfant

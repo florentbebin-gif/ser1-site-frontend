@@ -11,6 +11,7 @@ import type {
   SuccessionAssetCategory,
   SuccessionAssetDetailEntry,
   SuccessionDonationEntry,
+  SuccessionDonationPartageAct,
   FamilyMember,
   SuccessionAssuranceVieEntry,
   SuccessionEnfant,
@@ -32,6 +33,7 @@ interface SuccessionPageContentProps {
   assuranceVieEntries: SuccessionAssuranceVieEntry[];
   perEntries: SuccessionPerEntry[];
   donationsContext: SuccessionDonationEntry[];
+  donationPartageActs: SuccessionDonationPartageAct[];
   chainOrder: 'epoux1' | 'epoux2';
   onToggleChainOrder: () => void;
   onSituationChange: (_value: SituationMatrimoniale) => void;
@@ -58,6 +60,9 @@ interface SuccessionPageContentProps {
   prevoyanceDecesEntries: SuccessionPrevoyanceDecesEntry[];
   onSetSimplifiedBalanceField: (_type: 'actifs' | 'passifs', _owner: SuccessionLegacyAssetOwner, _value: number) => void;
   onAddDonationEntry: () => void;
+  onOpenDonationPartageAct: (_id: string) => void;
+  onOpenDonationPartageFromEntry: (_id: string) => void;
+  onRemoveDonationPartageAct: (_id: string) => void;
   onUpdateDonationEntry: (_entryId: string, _field: keyof SuccessionDonationEntry, _value: string | number | boolean) => void;
   onRemoveDonationEntry: (_entryId: string) => void;
   forfaitMobilierMode: 'off' | 'auto' | 'pct' | 'montant';
@@ -119,6 +124,7 @@ export function SuccessionPageContent({
   assuranceVieEntries,
   perEntries,
   donationsContext,
+  donationPartageActs,
   onAddAssetEntry,
   onUpdateAssetEntry,
   onRemoveAssetEntry,
@@ -134,6 +140,9 @@ export function SuccessionPageContent({
   prevoyanceDecesEntries,
   onSetSimplifiedBalanceField,
   onAddDonationEntry,
+  onOpenDonationPartageAct,
+  onOpenDonationPartageFromEntry,
+  onRemoveDonationPartageAct,
   onUpdateDonationEntry,
   onRemoveDonationEntry,
   forfaitMobilierMode,
@@ -194,9 +203,14 @@ export function SuccessionPageContent({
         <ScDonationsCard
           donationsContext={donationsContext}
           donationTotals={derived.donationTotals}
+          donationPartageActs={donationPartageActs}
           donateurOptions={derived.donateurOptions}
           donatairesOptions={derived.donatairesOptions}
+          canUseUsufruitSuccessif={derived.isMarried || derived.isPacsed}
           onAddDonationEntry={onAddDonationEntry}
+          onOpenDonationPartageAct={onOpenDonationPartageAct}
+          onOpenDonationPartageFromEntry={onOpenDonationPartageFromEntry}
+          onRemoveDonationPartageAct={onRemoveDonationPartageAct}
           onUpdateDonationEntry={onUpdateDonationEntry}
           onRemoveDonationEntry={onRemoveDonationEntry}
         />

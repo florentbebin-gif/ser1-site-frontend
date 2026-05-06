@@ -54,6 +54,7 @@ import {
   type DispositionsDraftState,
 } from './successionSimulator.helpers';
 import { useSuccessionDerivedValues } from './hooks/useSuccessionDerivedValues';
+import { useSuccessionDonationPartageHandlers } from './hooks/useSuccessionDonationPartageHandlers';
 import { useSuccessionExportHandlers } from './hooks/useSuccessionExportHandlers';
 import { useSuccessionSimulatorHandlers } from './hooks/useSuccessionSimulatorHandlers';
 import {
@@ -111,6 +112,24 @@ export default function SuccessionSimulator() {
   const [dispositionsDraft, setDispositionsDraft] = useState<DispositionsDraftState>(buildInitialDispositionsDraft);
   const [addMemberForm, setAddMemberForm] = useState<AddFamilyMemberFormState>(EMPTY_ADD_FAMILY_MEMBER_FORM);
   const [chainOrder, setChainOrder] = useState<SuccessionChainOrder>('epoux1');
+  const {
+    donationPartageActs,
+    setDonationPartageActs,
+    showDonationPartageModal,
+    setShowDonationPartageModal,
+    donationPartageDraft,
+    setDonationPartageDraft,
+    openDonationPartageAct,
+    openDonationPartageFromEntry,
+    closeDonationPartageModal,
+    validateDonationPartageModal,
+    removeDonationPartageAct,
+  } = useSuccessionDonationPartageHandlers({
+    donationsContext,
+    enfantsContext,
+    chainOrder,
+    setDonationsContext,
+  });
 
   // ── Valeurs dérivées (useMemo purs) ───────────────────────────────────────
   const derived = useSuccessionDerivedValues({
@@ -124,6 +143,7 @@ export default function SuccessionSimulator() {
     devolutionContext,
     patrimonialContext,
     donationsContext,
+    donationPartageActs,
     enfantsContext,
     familyMembers,
     fiscalSnapshot,
@@ -215,6 +235,9 @@ export default function SuccessionSimulator() {
     setAddMemberForm,
     setChainOrder,
     setHypothesesOpen,
+    setDonationPartageActs,
+    setShowDonationPartageModal,
+    setDonationPartageDraft,
   });
 
   // ── Handlers export ────────────────────────────────────────────────────────
@@ -279,6 +302,7 @@ export default function SuccessionSimulator() {
           setDevolutionContext(parsed.devolution);
           setPatrimonialContext(parsed.patrimonial);
           setDonationsContext(parsed.donations);
+          setDonationPartageActs(parsed.donationPartageActs);
           setEnfantsContext(parsed.enfants);
           setFamilyMembers(parsed.familyMembers);
           setChainOrder(parsed.ui.chainOrder);
@@ -288,7 +312,7 @@ export default function SuccessionSimulator() {
       // ignore
     }
     setHydrated(true);
-  }, [hydrateForm]);
+  }, [hydrateForm, setDonationPartageActs]);
 
   // Persistance sessionStorage à chaque changement
   useEffect(() => {
@@ -315,13 +339,14 @@ export default function SuccessionSimulator() {
             groupementFoncierEntries,
             prevoyanceDecesEntries,
             chainOrder,
+            donationPartageActs,
           ),
         ),
       );
     } catch {
       // ignore
     }
-  }, [hydrated, persistedForm, civilContext, liquidationContext, devolutionContext, patrimonialContext, derived.nbEnfantsNonCommuns, enfantsContext, familyMembers, donationsContext, assetEntries, assuranceVieEntries, perEntries, groupementFoncierEntries, prevoyanceDecesEntries, chainOrder]);
+  }, [hydrated, persistedForm, civilContext, liquidationContext, devolutionContext, patrimonialContext, derived.nbEnfantsNonCommuns, enfantsContext, familyMembers, donationsContext, donationPartageActs, assetEntries, assuranceVieEntries, perEntries, groupementFoncierEntries, prevoyanceDecesEntries, chainOrder]);
 
   // Écoute l'événement reset global
   useEffect(() => {
@@ -346,6 +371,7 @@ export default function SuccessionSimulator() {
     assuranceVieEntries,
     perEntries,
     donationsContext,
+    donationPartageActs,
     chainOrder,
     onToggleChainOrder: () => setChainOrder((prev) => (prev === 'epoux2' ? 'epoux1' : 'epoux2')),
     onSituationChange: handleSituationChange,
@@ -384,6 +410,9 @@ export default function SuccessionSimulator() {
     prevoyanceDecesEntries,
     onSetSimplifiedBalanceField: setSimplifiedBalanceField,
     onAddDonationEntry: addDonationEntry,
+    onOpenDonationPartageAct: openDonationPartageAct,
+    onOpenDonationPartageFromEntry: openDonationPartageFromEntry,
+    onRemoveDonationPartageAct: removeDonationPartageAct,
     onUpdateDonationEntry: updateDonationEntry,
     onRemoveDonationEntry: removeDonationEntry,
     forfaitMobilierMode: patrimonialContext.forfaitMobilierMode,
@@ -476,6 +505,8 @@ export default function SuccessionSimulator() {
         perDraft={perDraft}
         showPrevoyanceModal={showPrevoyanceModal}
         prevoyanceDraft={prevoyanceDraft}
+        showDonationPartageModal={showDonationPartageModal}
+        donationPartageDraft={donationPartageDraft}
         showAddMemberPanel={showAddMemberPanel}
         addMemberForm={addMemberForm}
         setAddMemberForm={setAddMemberForm}
@@ -495,6 +526,10 @@ export default function SuccessionSimulator() {
         onClosePrevoyance={closePrevoyanceModal}
         onValidatePrevoyance={validatePrevoyanceModal}
         onUpdatePrevoyanceContract={updatePrevoyanceDraft}
+        onCloseDonationPartage={closeDonationPartageModal}
+        onValidateDonationPartage={validateDonationPartageModal}
+        onUpdateDonationPartageDraft={setDonationPartageDraft}
+        onDeleteDonationPartage={donationPartageDraft ? () => removeDonationPartageAct(donationPartageDraft.id) : undefined}
         onCloseAddMemberPanel={() => setShowAddMemberPanel(false)}
         onValidateAddMember={addFamilyMember}
       />

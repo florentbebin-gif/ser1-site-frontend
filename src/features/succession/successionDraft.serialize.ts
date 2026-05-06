@@ -6,7 +6,8 @@ import type {
   SuccessionCivilContext,
   SuccessionDevolutionContext,
   SuccessionDonationEntry,
-  SuccessionDraftPayloadV27,
+  SuccessionDonationPartageAct,
+  SuccessionDraftPayloadV28,
   SuccessionEnfant,
   SuccessionGroupementFoncierEntry,
   SuccessionLiquidationContext,
@@ -32,7 +33,8 @@ export function buildSuccessionDraftPayload(
   groupementFoncierEntries: SuccessionGroupementFoncierEntry[] = [],
   prevoyanceDecesEntries: SuccessionPrevoyanceDecesEntry[] = [],
   chainOrder: SuccessionPrimarySide = 'epoux1',
-): SuccessionDraftPayloadV27 {
+  donationPartageActs: SuccessionDonationPartageAct[] = [],
+): SuccessionDraftPayloadV28 {
   const normalizedAssetEntries = assetEntries.map((entry) => {
     const location = resolveSuccessionAssetLocation({
       pocket: entry.pocket,
@@ -66,7 +68,7 @@ export function buildSuccessionDraftPayload(
   });
 
   return {
-    version: 27,
+    version: 28,
     form,
     civil,
     liquidation,
@@ -75,6 +77,7 @@ export function buildSuccessionDraftPayload(
     enfants,
     familyMembers,
     donations,
+    donationPartageActs,
     assetEntries: normalizedAssetEntries,
     assuranceVieEntries,
     perEntries,

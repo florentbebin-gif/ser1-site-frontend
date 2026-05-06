@@ -118,9 +118,6 @@ Toute reproduction, représentation, diffusion ou rediffusion, totale ou partiel
     },
     {
       "applicable": false,
-      "notes": [
-        "Succession directe du défunt simulé.",
-      ],
       "orderLabel": "Époux 1 puis Époux 2",
       "steps": [
         {
@@ -209,6 +206,21 @@ Toute reproduction, représentation, diffusion ou rediffusion, totale ou partiel
       "type": "succession-annex-table",
     },
     {
+      "groups": [
+        {
+          "items": [
+            "Simulation sans donations antérieures saisies.",
+          ],
+          "title": "Hypothèses fiscales",
+        },
+        {
+          "items": [
+            "Pour cette situation, la chronologie 2 décès n’est pas retenue comme source principale ; l’export restitue la succession directe affichée.",
+            "Succession directe du défunt simulé.",
+          ],
+          "title": "Cadre de calcul",
+        },
+      ],
       "items": [
         "Simulation sans donations antérieures saisies.",
         "Pour cette situation, la chronologie 2 décès n’est pas retenue comme source principale ; l’export restitue la succession directe affichée.",
