@@ -2,6 +2,7 @@ import { DEFAULT_FISCALITY_SETTINGS, DEFAULT_TAX_SETTINGS } from '../../constant
 import type { FiscalContext } from '../../hooks/useFiscalContext';
 
 type DmtgSettings = typeof DEFAULT_TAX_SETTINGS.dmtg;
+type DonationSettings = typeof DEFAULT_TAX_SETTINGS.donation;
 
 export interface SuccessionDonationSettings {
   rappelFiscalAnnees: number;
@@ -31,13 +32,7 @@ export interface SuccessionFiscalSnapshot {
 
 interface LooseTaxSettings extends Record<string, unknown> {
   dmtg?: DmtgSettings;
-  donation?: {
-    rappelFiscalAnnees?: unknown;
-    donFamilial790G?: {
-      montant?: unknown;
-      conditions?: unknown;
-    };
-  };
+  donation?: Partial<DonationSettings>;
 }
 
 interface LooseFiscalitySettings extends Record<string, unknown> {
@@ -56,13 +51,7 @@ interface LooseFiscalitySettings extends Record<string, unknown> {
   };
 }
 
-const DEFAULT_DONATION: SuccessionDonationSettings = {
-  rappelFiscalAnnees: 15,
-  donFamilial790G: {
-    montant: 31865,
-    conditions: 'Donateur < 80 ans, donataire majeur',
-  },
-};
+const DEFAULT_DONATION = DEFAULT_TAX_SETTINGS.donation;
 
 function asNumberOr(input: unknown, fallback: number): number {
   const numeric = Number(input);

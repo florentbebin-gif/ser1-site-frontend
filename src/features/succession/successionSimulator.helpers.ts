@@ -500,13 +500,6 @@ function getGenericFamilyMemberTypeLabel(type: FamilyMemberType): string {
   }
 }
 
-export function isSupportedStructuredClause(clause?: string): boolean {
-  return !clause
-    || clause === CLAUSE_CONJOINT_LABEL
-    || clause === CLAUSE_ENFANTS_LABEL
-    || clause.startsWith('CUSTOM:');
-}
-
 export function buildPrevoyanceClauseOptions(
   enfantsContext: SuccessionEnfant[],
   familyMembers: FamilyMember[],

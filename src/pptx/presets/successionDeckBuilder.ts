@@ -23,7 +23,7 @@ import type {
 import {
   buildSuccessionExportActiveHypotheses,
   buildSuccessionExportHypothesesGroups,
-} from '@/features/succession/export/successionExportHypotheses';
+} from '@/utils/export/successionExportHypotheses';
 import { isDebugEnabled } from '../../utils/debugFlags';
 import { pickChapterImage } from '../designSystem/serenity';
 

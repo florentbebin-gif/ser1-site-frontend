@@ -44,23 +44,17 @@ export interface UsePlacementSettingsResult {
   error: string | null;
 }
 
-const DEFAULT_TMI_OPTIONS = [
-  { value: 0, label: '0 %' },
-  { value: 0.11, label: '11 %' },
-  { value: 0.30, label: '30 %' },
-  { value: 0.41, label: '41 %' },
-  { value: 0.45, label: '45 %' },
-  { value: 0.50, label: '50 %' },
-] as PlacementTmiOption[];
+function buildTmiOptionsFromRates(rates: number[]): PlacementTmiOption[] {
+  return rates.map((rate) => ({
+    value: rate,
+    label: `${Math.round(rate * 100)} %`,
+  }));
+}
 
 function buildTmiOptionsFromBareme(bareme?: TaxScale | null): PlacementTmiOption[] {
   const effectiveBareme = Array.isArray(bareme) && bareme.length
     ? bareme
     : DEFAULT_TAX_SETTINGS.incomeTax.scaleCurrent;
-
-  if (!effectiveBareme || !effectiveBareme.length) {
-    return DEFAULT_TMI_OPTIONS;
-  }
 
   const uniqueRates = Array.from(
     new Set(
@@ -70,14 +64,7 @@ function buildTmiOptionsFromBareme(bareme?: TaxScale | null): PlacementTmiOption
     )
   ).sort((a, b) => a - b);
 
-  if (!uniqueRates.length) {
-    return DEFAULT_TMI_OPTIONS;
-  }
-
-  return uniqueRates.map((rate) => ({
-    value: rate,
-    label: `${Math.round(rate * 100)} %`,
-  }));
+  return buildTmiOptionsFromRates(uniqueRates);
 }
 
 /**
@@ -140,7 +127,10 @@ export function usePlacementSettings(): UsePlacementSettingsResult {
     const dmtgLD = dmtg.ligneDirecte || DEFAULT_TAX_SETTINGS.dmtg.ligneDirecte;
     return {
       ...params,
-      dmtgAbattementLigneDirecte: dmtgLD.abattement || dmtg.abattementLigneDirecte || 100000,
+      dmtgAbattementLigneDirecte:
+        dmtgLD.abattement ??
+        dmtg.abattementLigneDirecte ??
+        DEFAULT_TAX_SETTINGS.dmtg.ligneDirecte.abattement,
       dmtgScale: dmtgLD.scale || dmtg.scale || DEFAULT_TAX_SETTINGS.dmtg.ligneDirecte.scale,
     };
   }, [fiscalitySettings, psSettings, taxSettings]);

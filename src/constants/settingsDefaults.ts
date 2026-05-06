@@ -21,6 +21,7 @@ export const DEFAULT_TAX_SETTINGS = {
   incomeTax: {
     currentYearLabel: '2025 (revenus 2024)',
     previousYearLabel: '2024 (revenus 2023)',
+    defaultTmiEpargneRate: 30,
     scaleCurrent: [
       { from: 0, to: 11497, rate: 0, deduction: 0 },
       { from: 11498, to: 29315, rate: 11, deduction: 1264.78 },
@@ -108,6 +109,20 @@ export const DEFAULT_TAX_SETTINGS = {
     current: { minEffectiveRate: 20, thresholdSingle: 250000, thresholdCouple: 500000 },
     previous: { minEffectiveRate: 20, thresholdSingle: 250000, thresholdCouple: 500000 },
   },
+  ifi: {
+    current: {
+      threshold: 1300000,
+      residencePrincipaleAbattementRate: 30,
+      scale: [
+        { from: 0, to: 800000, rate: 0 },
+        { from: 800000, to: 1300000, rate: 0.5 },
+        { from: 1300000, to: 2570000, rate: 0.7 },
+        { from: 2570000, to: 5000000, rate: 1 },
+        { from: 5000000, to: 10000000, rate: 1.25 },
+        { from: 10000000, to: null, rate: 1.5 },
+      ],
+    },
+  },
   corporateTax: {
     current: {
       normalRate: 25,
@@ -155,6 +170,13 @@ export const DEFAULT_TAX_SETTINGS = {
       scale: [
         { from: 0, to: null, rate: 60 },
       ],
+    },
+  },
+  donation: {
+    rappelFiscalAnnees: 15,
+    donFamilial790G: {
+      montant: 31865,
+      conditions: 'Donateur < 80 ans, donataire majeur',
     },
   },
 };

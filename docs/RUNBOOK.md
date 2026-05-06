@@ -91,7 +91,7 @@ Le repo n’utilise pas `.env` :
 Variables attendues :
 
 ```bash
-VITE_SUPABASE_URL=https://<project>.supabase.co
+VITE_SUPABASE_URL=<supabase_project_url>
 VITE_SUPABASE_ANON_KEY=<anon_key>
 
 # Optionnel (Playwright E2E)
@@ -126,7 +126,7 @@ Référence code : `src/utils/debugFlags.ts`.
 ## Supabase local + migrations
 Source de vérité migrations : `supabase/migrations/`.
 
-Projet : **SER1-Simulator** — réf `xnpbxrqkzgimiugqtago` — Région : West EU (Paris).
+Projet : **SER1-Simulator** — réf configurée localement via Supabase CLI — Région : West EU (Paris).
 
 Parcours safe (si Supabase CLI configurée) :
 

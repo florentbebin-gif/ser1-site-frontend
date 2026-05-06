@@ -218,7 +218,7 @@ export const APP_ROUTES: AppRouteEntry[] = [
     component: TresorerieSocietePage as unknown as ComponentType<RouteProps>,
     lazy: true,
     contextLabel: 'Trésorerie société',
-    topbar: SIM_TOPBAR,
+    topbar: { ...SIM_TOPBAR, resetKey: 'tresorerie-societe' },
   },
   {
     kind: 'route',

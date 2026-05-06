@@ -39,7 +39,7 @@ Copier `.env.example` -> `.env.local` (local uniquement, gitignored).
 
 Minimum requis :
 ```bash
-VITE_SUPABASE_URL=https://<project>.supabase.co
+VITE_SUPABASE_URL=<supabase_project_url>
 VITE_SUPABASE_ANON_KEY=<anon_key>
 ```
 

@@ -12,7 +12,7 @@ import { buildSuccessionPrevoyanceFiscalAnalysis } from '../successionPrevoyance
 import {
   buildSuccessionExportActiveHypotheses,
   buildSuccessionExportHypothesesGroups,
-} from '../export/successionExportHypotheses';
+} from '@/utils/export/successionExportHypotheses';
 import { exportSuccessionXlsx } from '../export/successionXlsx';
 import { buildSuccessionChainageExportPayload } from '../hooks/useSuccessionOutcomeExportPayload';
 import { buildSuccessionFamilyContextExport } from '../hooks/useSuccessionOutcomePptx.helpers';
@@ -258,7 +258,7 @@ describe('Succession export - hypothèses actives', () => {
   it('warning CMA (successionChainage.ts:263) inclus dans les hypotheses exportees', () => {
     // Non-régression : si le warning CMA est supprimé du moteur, ce test détecte la régression.
     // Chaîne couverte : successionChainage.ts:263 → chainageAnalysis.warnings
-    //                 → buildSuccessionExportActiveHypotheses (successionExportHypotheses.ts:85)
+    //                 → buildSuccessionExportActiveHypotheses (src/utils/export/successionExportHypotheses.ts)
     const chainageAnalysis = buildSuccessionChainageAnalysis({
       civil: { situationMatrimoniale: 'marie', regimeMatrimonial: 'communaute_meubles_acquets', pacsConvention: 'separation' },
       liquidation: makeLiquidation({ actifEpoux1: 200_000, actifEpoux2: 150_000, actifCommun: 100_000, nbEnfants: 2 }),

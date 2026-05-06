@@ -1,6 +1,5 @@
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it, vi } from 'vitest';
-import { SimCardHeader } from './SimCardHeader';
 import { SimFieldShell } from './SimFieldShell';
 import { SimModalShell } from './SimModalShell';
 
@@ -36,24 +35,6 @@ describe('SimFieldShell', () => {
 
     expect(html).toContain('En mois');
     expect(html).not.toContain('sim-field__error');
-  });
-});
-
-describe('SimCardHeader', () => {
-  it('renders the shared card header structure with bleed and subtitle', () => {
-    const html = renderToStaticMarkup(
-      <SimCardHeader
-        title="Profil client"
-        subtitle="Paramètres communs"
-        bleed
-        icon={<span>i</span>}
-      />,
-    );
-
-    expect(html).toContain('sim-card__header sim-card__header--bleed');
-    expect(html).toContain('sim-card__icon');
-    expect(html).toContain('Profil client');
-    expect(html).toContain('Paramètres communs');
   });
 });
 

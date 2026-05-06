@@ -2,7 +2,6 @@ import type { RegimeMatrimonial } from '../../engine/civil';
 import type { LienParente } from '../../engine/succession';
 import type {
   SuccessionAssetPocket,
-  SuccessionLegacyAssetOwner,
   SuccessionPersonParty,
 } from './successionPatrimonialModel';
 import type {
@@ -133,10 +132,6 @@ export function isEnfantRattachement(v: unknown): v is SuccessionEnfantRattachem
 
 export function isDonationEntryType(v: unknown): v is SuccessionDonationEntryType {
   return v === 'rapportable' || v === 'hors_part' || v === 'legs_particulier' || v === 'donation_partage';
-}
-
-export function isAssetOwner(v: unknown): v is SuccessionLegacyAssetOwner {
-  return v === 'epoux1' || v === 'epoux2' || v === 'commun';
 }
 
 export function isAssetPocket(v: unknown): v is SuccessionAssetPocket {

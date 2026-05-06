@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { supabase } from '../../../supabaseClient';
+import { supabase } from '../../supabaseClient';
+import { broadcastInvalidation, invalidate } from '../../utils/cache/fiscalSettingsCache';
 
 export interface PassHistoryRow {
   year: number;
@@ -16,9 +17,8 @@ interface UsePassHistoryReturn {
 }
 
 /**
- * Hook encapsulant les appels Supabase pour l'historique du PASS.
- * Extrait de PassHistoryAccordion.tsx pour respecter la règle AGENTS.md §3
- * (pas d'import supabaseClient depuis src/components/).
+ * Hook settings pour l'historique du PASS.
+ * Les appels Supabase restent dans src/hooks, pas dans src/components.
  */
 export function usePassHistory(isAdmin: boolean): UsePassHistoryReturn {
   const [rows, setRows] = useState<PassHistoryRow[]>([]);
@@ -95,6 +95,8 @@ export function usePassHistory(isAdmin: boolean): UsePassHistoryReturn {
         console.error(error);
         setMessage("Erreur lors de l'enregistrement du PASS.");
       } else {
+        await invalidate('pass');
+        broadcastInvalidation('pass');
         setMessage('Historique du PASS enregistré.');
       }
     } catch (error) {

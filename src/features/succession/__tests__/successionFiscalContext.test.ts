@@ -84,7 +84,7 @@ describe('buildSuccessionFiscalSnapshot', () => {
           rappelFiscalAnnees: -5,
           donFamilial790G: { montant: 'x' },
         },
-      } as FiscalContext['_raw_tax'],
+      } as unknown as FiscalContext['_raw_tax'],
       _raw_fiscality: {
         ...DEFAULT_FISCALITY_SETTINGS,
         assuranceVie: {
@@ -101,7 +101,9 @@ describe('buildSuccessionFiscalSnapshot', () => {
 
     const snapshot = buildSuccessionFiscalSnapshot(fiscalContext);
     expect(snapshot.donation.rappelFiscalAnnees).toBe(0);
-    expect(snapshot.donation.donFamilial790G.montant).toBe(31865);
+    expect(snapshot.donation.donFamilial790G.montant).toBe(
+      DEFAULT_TAX_SETTINGS.donation.donFamilial790G.montant,
+    );
     expect(snapshot.avDeces.agePivotPrimes).toBe(DEFAULT_FISCALITY_SETTINGS.assuranceVie.deces.agePivotPrimes);
     expect(snapshot.avDeces.primesApres1998.brackets).toEqual(
       DEFAULT_FISCALITY_SETTINGS.assuranceVie.deces.primesApres1998.brackets,

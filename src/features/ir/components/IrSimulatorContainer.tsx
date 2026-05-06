@@ -5,7 +5,7 @@ import { onResetEvent, storageKeyFor } from '../../../utils/reset';
 import { toNumber } from '../../../utils/number';
 import { computeIrResult as computeIrResultEngine } from '../../../engine/ir/compute';
 import { useFiscalContext } from '../../../hooks/useFiscalContext';
-import { DEFAULT_PS_SETTINGS } from '../../../constants/settingsDefaults';
+import { DEFAULT_PS_SETTINGS, DEFAULT_TAX_SETTINGS } from '../../../constants/settingsDefaults';
 import { useTheme } from '../../../settings/ThemeProvider';
 import { useUserMode, type UserMode } from '../../../settings/userMode';
 import { ExportMenu } from '../../../components/ExportMenu';
@@ -325,7 +325,10 @@ export default function IrSimulatorContainer() {
       ? taxSettings?.incomeTax?.scaleCurrent || []
       : taxSettings?.incomeTax?.scalePrevious || [];
 
-  const pfuRateIR = toNum(taxSettings?.pfu?.[yearKey]?.rateIR, 12.8);
+  const pfuRateIR = toNum(
+    taxSettings?.pfu?.[yearKey]?.rateIR,
+    DEFAULT_TAX_SETTINGS.pfu[yearKey].rateIR,
+  );
   const psGeneralRate = toNum(
     psSettings?.patrimony?.[yearKey]?.generalRate,
     DEFAULT_PS_SETTINGS.patrimony.current.generalRate,

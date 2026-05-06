@@ -3,6 +3,7 @@
  */
 
 import type { EpargneRow } from '@/engine/placement/types';
+import { DEFAULT_TAX_SETTINGS } from '@/constants/settingsDefaults';
 import {
   DEFAULT_VERSEMENT_CONFIG,
   normalizeVersementConfig,
@@ -76,6 +77,7 @@ export type EpargneRowWithReinvest = EpargneRow & {
 };
 
 export const EPSILON = 1e-6;
+const DEFAULT_TMI_EPARGNE = DEFAULT_TAX_SETTINGS.incomeTax.defaultTmiEpargneRate / 100;
 
 export const DEFAULT_PRODUCT: PlacementProductDraft = {
   envelope: 'AV',
@@ -88,7 +90,7 @@ export const DEFAULT_PRODUCT: PlacementProductDraft = {
 
 export const DEFAULT_CLIENT: PlacementClient = {
   ageActuel: null,
-  tmiEpargne: 0.30,
+  tmiEpargne: DEFAULT_TMI_EPARGNE,
   tmiRetraite: 0.11,
   situation: 'single',
 };

@@ -128,7 +128,7 @@ function buildFiscalContext(
 
   // Normalisation DMTG : supporte les deux anciennes structures (legacy + nouvelle)
   const ligneDirecte = dmtg.ligneDirecte ?? {
-    abattement: dmtg.abattementLigneDirecte ?? 100000,
+    abattement: dmtg.abattementLigneDirecte ?? DEFAULT_TAX_SETTINGS.dmtg.ligneDirecte.abattement,
     scale: dmtg.scale ?? DEFAULT_TAX_SETTINGS.dmtg.ligneDirecte.scale,
   };
 

@@ -1,3 +1,4 @@
+import { DEFAULT_TAX_SETTINGS } from '../../constants/settingsDefaults';
 import type { CapitalBasesResult } from './types';
 
 interface CapitalBasesInput {
@@ -41,8 +42,14 @@ export function computePfuIr({ capitalBasePfu, yearKey, taxSettings }: PfuIrInpu
   const base = Number(capitalBasePfu) || 0;
   if (base <= 0) return 0;
 
-  const pfuCfg = taxSettings?.pfu && taxSettings.pfu[yearKey] ? taxSettings.pfu[yearKey] : null;
-  const pfuRateIR = pfuCfg ? Number(pfuCfg.rateIR) || 12.8 : 12.8;
+  const fallbackYearKey = yearKey in DEFAULT_TAX_SETTINGS.pfu
+    ? yearKey as keyof typeof DEFAULT_TAX_SETTINGS.pfu
+    : 'current';
+  const fallbackRateIR = DEFAULT_TAX_SETTINGS.pfu[fallbackYearKey].rateIR;
+  const pfuCfg = taxSettings?.pfu?.[yearKey] ?? null;
+  const pfuRateIR = Number.isFinite(Number(pfuCfg?.rateIR))
+    ? Number(pfuCfg?.rateIR)
+    : fallbackRateIR;
 
   return base * (pfuRateIR / 100);
 }
