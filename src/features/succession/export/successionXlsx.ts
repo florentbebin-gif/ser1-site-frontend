@@ -12,7 +12,7 @@ import {
   getSuccessionInterMassClaimKindLabel,
   getSuccessionPocketLabel,
 } from '../successionInterMassClaims';
-import { buildSuccessionExportActiveHypotheses } from './successionExportHypotheses';
+import { buildSuccessionExportActiveHypotheses } from '@/utils/export/successionExportHypotheses';
 
 const LIEN_LABELS: Record<LienParente, string> = {
   conjoint: 'Conjoint survivant',

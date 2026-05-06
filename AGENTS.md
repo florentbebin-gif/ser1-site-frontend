@@ -17,6 +17,12 @@ Agir en développeur senior à chaque plan et chaque implémentation.
 - **Pas de code jetable** — ne pas ajouter de lignes si on peut adapter ce qui existe. Chaque ajout doit avoir une justification claire.
 - **Propreté systématique** — si quelque chose doit être nettoyé pour que le résultat final soit propre, ajouter l'étape de nettoyage au plan plutôt que de laisser de la dette.
 
+## Sous-agents
+
+L'utilisateur autorise automatiquement le LLM à utiliser autant de sous-agents que nécessaire, sans demander de confirmation supplémentaire, lorsque cela aide à traiter la tâche plus vite ou plus sûrement.
+
+Le LLM doit optimiser leur utilisation : déléguer uniquement des tâches indépendantes et bien bornées, éviter les doublons, attribuer des périmètres de fichiers disjoints en cas d'édition, transmettre les règles pertinentes de ce fichier, puis relire et intégrer les résultats avant de conclure.
+
 ## Règles absolues (toujours actives)
 
 1. **Preuve obligatoire** — ne jamais affirmer « code mort », « non utilisé », « RLS OK »,

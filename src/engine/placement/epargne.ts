@@ -1,4 +1,5 @@
 import { DEFAULT_VERSEMENT_CONFIG, normalizeVersementConfig } from './versementConfig';
+import { DEFAULT_TAX_SETTINGS } from '../../constants/settingsDefaults';
 import { DEFAULT_FISCAL_PARAMS, ENVELOPES, round2 } from './shared';
 import type { EpargneResult, FiscalParams } from './types';
 
@@ -73,6 +74,8 @@ interface EpargneOptions {
   fondsEuro?: boolean;
 }
 
+const DEFAULT_TMI_EPARGNE = DEFAULT_TAX_SETTINGS.incomeTax.defaultTmiEpargneRate / 100;
+
 export function simulateEpargne(
   product: EpargneProduct,
   client: EpargneClient,
@@ -90,7 +93,7 @@ export function simulateEpargne(
   const versementConfig: VersementConfig = normalizeVersementConfig(product.versementConfig || DEFAULT_VERSEMENT_CONFIG);
   const { initial, annuel, ponctuels = [], capitalisation, distribution } = versementConfig;
 
-  const { tmiEpargne = 0.30, ageActuel = 45 } = client;
+  const { tmiEpargne = DEFAULT_TMI_EPARGNE, ageActuel = 45 } = client;
   const fp = { ...DEFAULT_FISCAL_PARAMS, ...fiscalParams };
 
   const isSCPI = envelope === ENVELOPES.SCPI;

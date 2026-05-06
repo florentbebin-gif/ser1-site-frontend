@@ -6,16 +6,17 @@
  */
 
 import { mkResult, mkRuleVersion, addValidationWarning } from './helpers';
+import { DEFAULT_TAX_SETTINGS } from '../constants/settingsDefaults';
 import type { CalcResult, Warning } from './types';
 
 // Barème IR 2024 (revenus 2023)
 export const BAREME_IR_2024 = [
-  { min: 0, max: 11_294, taux: 0 },
-  { min: 11_294, max: 28_797, taux: 11 },
-  { min: 28_797, max: 82_341, taux: 30 },
-  { min: 82_341, max: 177_106, taux: 41 },
-  { min: 177_106, max: Infinity, taux: 45 },
-];
+  ...DEFAULT_TAX_SETTINGS.incomeTax.scalePrevious.map((row) => ({
+    min: row.from,
+    max: row.to ?? Infinity,
+    taux: row.rate,
+  })),
+] as const;
 
 // Barème CEHR (Contribution Exceptionnelle sur les Hauts Revenus)
 export const BAREME_CEHR = {
@@ -32,18 +33,18 @@ export const BAREME_CEHR = {
 };
 
 // Seuil IFI 2024
-export const SEUIL_IFI = 1_300_000;
-export const ABATTEMENT_RESIDENCE_PRINCIPALE = 0.30; // 30%
+const DEFAULT_IFI_SETTINGS = DEFAULT_TAX_SETTINGS.ifi.current;
+export const SEUIL_IFI = DEFAULT_IFI_SETTINGS.threshold;
+export const ABATTEMENT_RESIDENCE_PRINCIPALE = DEFAULT_IFI_SETTINGS.residencePrincipaleAbattementRate / 100;
 
 // Barème IFI 2024
 export const BAREME_IFI = [
-  { min: 0, max: 800_000, taux: 0 },
-  { min: 800_000, max: 1_300_000, taux: 0.50 },
-  { min: 1_300_000, max: 2_570_000, taux: 0.70 },
-  { min: 2_570_000, max: 5_000_000, taux: 1.00 },
-  { min: 5_000_000, max: 10_000_000, taux: 1.25 },
-  { min: 10_000_000, max: Infinity, taux: 1.50 },
-];
+  ...DEFAULT_IFI_SETTINGS.scale.map((row) => ({
+    min: row.from,
+    max: row.to ?? Infinity,
+    taux: row.rate,
+  })),
+] as const;
 
 export interface IRInput {
   revenuNetImposable: number;

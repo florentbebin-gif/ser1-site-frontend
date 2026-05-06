@@ -30,13 +30,6 @@ export function computeGroupementFoncierExoneration(
   return { exonere, taxable: valeur - exonere };
 }
 
-export const GF_TYPE_OPTIONS: { value: GroupementFoncierType; label: string }[] = [
-  { value: 'GFA', label: 'GFA' },
-  { value: 'GFV', label: 'GFV' },
-  { value: 'GFF', label: 'GFF' },
-  { value: 'GF', label: 'GF' },
-];
-
 // Options UI regroupées (2 groupes correspondant aux 2 sous-catégories spéciales)
 export const GF_UI_OPTIONS: { value: 'GFA' | 'GFF'; label: string }[] = [
   { value: 'GFA', label: 'GFA/GFV' },

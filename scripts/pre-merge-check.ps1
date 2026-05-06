@@ -7,19 +7,21 @@ $ErrorActionPreference = 'Stop'
 $selfRepoPath = 'scripts/pre-merge-check.ps1'
 
 function Write-Result([string]$Key, [string]$Value) {
-  Write-Output ("{0}={1}" -f $Key, $Value)
+  Write-Host ("{0}={1}" -f $Key, $Value)
 }
 
 function Run-ScanSecrets() {
-  $scriptPath = Join-Path $PSScriptRoot 'scan-secrets.ps1'
+  $repoRoot = Split-Path -Parent $PSScriptRoot
+  $scriptPath = Join-Path $repoRoot 'tools/scripts/scan-secrets.ps1'
   if (-not (Test-Path $scriptPath)) {
     Write-Result 'PRE_MERGE_SCAN_SECRETS' 'FAIL(missing-script)'
     return $false
   }
 
   # Run directly (no pipeline) so exit code is reliable.
-  & powershell -NoProfile -ExecutionPolicy Bypass -File $scriptPath
+  $scanOutput = & powershell -NoProfile -ExecutionPolicy Bypass -File $scriptPath 2>&1
   $code = $LASTEXITCODE
+  $scanOutput | ForEach-Object { Write-Host $_ }
   if ($code -ne 0) {
     Write-Result 'PRE_MERGE_SCAN_SECRETS' ('FAIL(exit={0})' -f $code)
     return $false
@@ -58,7 +60,7 @@ function Get-FilesWithMatches([string]$Pattern) {
   foreach ($f in $tracked) {
     if ($f -eq $selfRepoPath) { continue }
     try {
-      $m = Select-String -Path $f -Pattern $Pattern -SimpleMatch -Quiet
+      $m = Select-String -Path $f -Pattern $Pattern -Quiet
       if ($m) { $hits += $f }
     } catch {
       # ignore binary/unreadable
@@ -71,7 +73,7 @@ function Check-Patterns() {
   $patterns = @(
     @{ Name = 'JWT_PREFIX'; Pattern = 'eyJhbGci' },
     @{ Name = 'AUTH_BEARER_EQUALS'; Pattern = 'Authorization = "Bearer' },
-    @{ Name = 'APIKEY_EQUALS'; Pattern = 'apikey =' },
+    @{ Name = 'APIKEY_EQUALS'; Pattern = 'apikey\s*=\s*["'']' },
     @{ Name = 'SUPABASE_JWT_SECRET'; Pattern = 'SUPABASE_JWT_SECRET' },
     @{ Name = 'SUPABASE_SERVICE_ROLE_KEY'; Pattern = 'SUPABASE_SERVICE_ROLE_KEY' },
     @{ Name = 'HARDCODED_PROBE'; Pattern = 'Ser1Probe' },
@@ -86,7 +88,7 @@ function Check-Patterns() {
     if ($files.Count -gt 0) {
       $ok = $false
       Write-Result ("PRE_MERGE_RG_{0}" -f $p.Name) ("FAIL(matches={0})" -f $files.Count)
-      $files | ForEach-Object { Write-Output ("- {0}" -f $_) }
+      $files | ForEach-Object { Write-Host ("- {0}" -f $_) }
     } else {
       Write-Result ("PRE_MERGE_RG_{0}" -f $p.Name) 'PASS'
     }
@@ -102,7 +104,7 @@ $trackedSql = Get-TrackedEvidenceSql
 if ($trackedSql.Count -gt 0) {
   $allOk = $false
   Write-Result 'PRE_MERGE_EVIDENCE_SQL_TRACKED' ("FAIL(count={0})" -f $trackedSql.Count)
-  $trackedSql | ForEach-Object { Write-Output ("- {0}" -f $_) }
+  $trackedSql | ForEach-Object { Write-Host ("- {0}" -f $_) }
 } else {
   Write-Result 'PRE_MERGE_EVIDENCE_SQL_TRACKED' 'PASS'
 }

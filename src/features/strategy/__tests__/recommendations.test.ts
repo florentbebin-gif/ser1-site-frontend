@@ -3,7 +3,7 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { generateRecommendations, filterRecommendationsByObjectif } from '../utils/recommendations';
+import { generateRecommendations } from '../utils/recommendations';
 import type { DossierAudit } from '../../audit/types';
 import { createEmptyDossier } from '../../audit/types';
 
@@ -132,16 +132,4 @@ describe('Recommendations Module', () => {
     });
   });
 
-  describe('filterRecommendationsByObjectif', () => {
-    it('filtre correctement par objectif', () => {
-      const dossier = createTestDossier({
-        objectifs: ['reduire_fiscalite', 'proteger_conjoint'],
-      });
-
-      const allRecos = generateRecommendations(dossier);
-      const filtered = filterRecommendationsByObjectif(allRecos, 'reduire_fiscalite');
-
-      expect(filtered.every(r => r.objectifsCibles.includes('reduire_fiscalite'))).toBe(true);
-    });
-  });
 });

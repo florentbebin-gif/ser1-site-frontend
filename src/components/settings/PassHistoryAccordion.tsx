@@ -1,5 +1,5 @@
 import React from 'react';
-import { usePassHistory } from './hooks/usePassHistory';
+import { usePassHistory } from '@/hooks/settings/usePassHistory';
 import { numberOrEmpty } from './settingsHelpers';
 
 interface PassHistoryAccordionProps {

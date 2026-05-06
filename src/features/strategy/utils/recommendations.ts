@@ -6,8 +6,12 @@
  * - Les métriques de l'audit (TMI, IFI, patrimoine, etc.)
  */
 
-import type { DossierAudit, ObjectifClient } from '../../audit/types';
+import type { DossierAudit } from '../../audit/types';
+import { DEFAULT_TAX_SETTINGS } from '../../../constants/settingsDefaults';
 import type { Recommandation } from '../types';
+
+const TMI_PER_RECOMMANDATION = DEFAULT_TAX_SETTINGS.incomeTax.defaultTmiEpargneRate;
+const ABATTEMENT_LIGNE_DIRECTE = DEFAULT_TAX_SETTINGS.dmtg.ligneDirecte.abattement;
 
 /**
  * Génère les recommandations pour un dossier audit
@@ -25,7 +29,7 @@ export function generateRecommendations(dossier: DossierAudit): Recommandation[]
 
   // === OBJECTIF : Réduire la fiscalité ===
   if (objectifs.includes('reduire_fiscalite')) {
-    if (tmi >= 30) {
+    if (tmi >= TMI_PER_RECOMMANDATION) {
       recommandations.push({
         id: 'reco-per-ir',
         titre: 'Optimiser l\'IR via un PER',
@@ -83,7 +87,7 @@ export function generateRecommendations(dossier: DossierAudit): Recommandation[]
   // === OBJECTIF : Préparer la transmission ===
   if (objectifs.includes('preparer_transmission')) {
     if (dossier.situationFamiliale.enfants.length > 0) {
-      const abattementTotal = dossier.situationFamiliale.enfants.length * 100_000;
+      const abattementTotal = dossier.situationFamiliale.enfants.length * ABATTEMENT_LIGNE_DIRECTE;
       if (patrimoineNet > abattementTotal * 1.5) {
         recommandations.push({
           id: 'reco-donations-graduees',
@@ -162,15 +166,5 @@ export function generateRecommendations(dossier: DossierAudit): Recommandation[]
     const priorityOrder = { haute: 0, moyenne: 1, basse: 2 };
     return priorityOrder[a.priorite] - priorityOrder[b.priorite];
   });
-}
-
-/**
- * Filtre les recommandations par objectif
- */
-export function filterRecommendationsByObjectif(
-  recommandations: Recommandation[],
-  objectif: ObjectifClient
-): Recommandation[] {
-  return recommandations.filter(r => r.objectifsCibles.includes(objectif));
 }
 

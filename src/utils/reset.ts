@@ -60,7 +60,16 @@ export function onResetEvent(handler: (detail: { simId: string }) => void): () =
  * Reset global de tous les simulateurs (ne touche pas aux settings)
  */
 export function triggerGlobalReset(): void {
-  const simulators = ['placement', 'credit', 'ir', 'audit', 'strategy'];
+  const simulators = [
+    'placement',
+    'credit',
+    'ir',
+    'audit',
+    'strategy',
+    'succession',
+    'per-potentiel',
+    'tresorerie-societe',
+  ];
   
   simulators.forEach(simId => {
     triggerPageReset(simId);

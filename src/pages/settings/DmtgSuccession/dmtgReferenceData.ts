@@ -1,10 +1,6 @@
-export const DEFAULT_DONATION = {
-  rappelFiscalAnnees: 15,
-  donFamilial790G: {
-    montant: 31865,
-    conditions: 'Donateur < 80 ans, donataire majeur',
-  },
-};
+import { DEFAULT_TAX_SETTINGS } from '@/constants/settingsDefaults';
+
+export const DEFAULT_DONATION = DEFAULT_TAX_SETTINGS.donation;
 
 export const RESERVE_HEREDITAIRE = [
   { enfants: 1, reserve: '1/2', quotiteDisponible: '1/2' },

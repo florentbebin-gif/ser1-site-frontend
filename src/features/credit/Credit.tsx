@@ -42,8 +42,8 @@ import type {
   CreditState,
   CreditSynthesis,
 } from './types';
-import './styles/index.css';
 import '@/styles/sim/index.css';
+import './styles/index.css';
 
 // ============================================================================
 // HELPERS

@@ -21,7 +21,7 @@
 
 const path = require('path');
 
-const FEATURES = ['audit', 'credit', 'ir', 'per', 'placement', 'strategy', 'succession'];
+const FEATURES = ['audit', 'credit', 'ir', 'per', 'placement', 'strategy', 'succession', 'tresorerie-societe'];
 
 /**
  * Génère les règles cross-feature pour une feature donnée.
@@ -85,12 +85,11 @@ module.exports = {
     ...FEATURES.map(crossFeatureRule),
 
     // ── 5. components/ : pas d'import direct de supabaseClient ─────────────────────────
-    // Les hooks dédiés dans components/settings/hooks/ sont autorisés (c'est le pattern cible).
     {
       name: 'no-supabase-from-components',
       severity: 'error',
       comment: 'src/components/ ne doit pas importer supabaseClient directement — utiliser un hook dédié dans hooks/ (AGENTS.md §3)',
-      from: { path: '^src/components/', pathNot: '^src/components/.*/hooks/' },
+      from: { path: '^src/components/' },
       to: { path: 'supabaseClient' },
     },
   ],

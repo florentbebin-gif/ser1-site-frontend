@@ -26,12 +26,24 @@ const FORBIDDEN_VALUES = [
     pattern: /\b17\.2\b/,
   },
   {
+    label: 'taux IR PFU',
+    pattern: /\b12\.8\b/,
+  },
+  {
+    label: 'TMI 30 %',
+    pattern: /\b0\.30\b|>=\s*30\b|value=["']30["']|(?:rate|taux):\s*30\b/,
+  },
+  {
     label: 'abattement enfant DMTG (ligne directe)',
-    pattern: /\b100000\b/,
+    pattern: /\b100_?000\b/,
   },
   {
     label: 'abattement frère/sœur DMTG',
     pattern: /\b15932\b/,
+  },
+  {
+    label: 'don familial 790 G',
+    pattern: /\b31_?865\b/,
   },
   {
     label: 'plafond déduction PER (10% PASS 2024)',
@@ -79,6 +91,8 @@ const FORBIDDEN_VALUES = [
 const SCAN_DIRS = [
   'src/engine',
   'src/features',
+  'src/hooks',
+  'src/pages/settings',
 ];
 
 // ─── Fichiers/répertoires autorisés (exclus du contrôle) ─────────────────────
@@ -129,6 +143,11 @@ function isAllowedPath(absPath) {
   if (ALLOWED_FILE_SUFFIXES.some((suf) => base.endsWith(suf))) return true;
 
   return false;
+}
+
+function stripInlineComment(line) {
+  const index = line.indexOf('//');
+  return index >= 0 ? line.slice(0, index) : line;
 }
 
 function walkDir(dir, results = []) {
@@ -183,7 +202,8 @@ for (const dir of SCAN_DIRS) {
           return;
         }
 
-        if (pattern.test(line)) {
+        const code = stripInlineComment(line);
+        if (pattern.test(code)) {
           const rel = relative(ROOT, file).replace(/\\/g, '/');
           violations.push({
             file: rel,

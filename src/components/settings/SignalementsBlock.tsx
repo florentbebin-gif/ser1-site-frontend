@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useSignalements } from './hooks/useSignalements';
+import { useSignalements } from '@/hooks/settings/useSignalements';
 import './SignalementsBlock.css';
 
 const REPORT_PAGE_OPTIONS = [

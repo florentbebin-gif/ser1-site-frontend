@@ -8,6 +8,8 @@
 Write-Host "[scan-secrets] Scanning for hardcoded secrets..." -ForegroundColor Cyan
 Write-Host ""
 
+$repoRoot = (Resolve-Path (Join-Path $PSScriptRoot '..\..')).Path
+
 $patterns = @(
     @{ Name = "Supabase project ref"; Pattern = 'xnpbxrqkzgimiugqtago' },
     @{ Name = "Supabase URL hardcoded"; Pattern = '\.supabase\.co(?!/functions)' },
@@ -17,8 +19,31 @@ $patterns = @(
     @{ Name = "Vercel deployment URL"; Pattern = 'ser1.*\.vercel\.app' }
 )
 
-$excludeDirs = @("node_modules", "dist", ".git", ".vercel", "supabase\.temp")
-$excludePattern = ($excludeDirs | ForEach-Object { "\\$_\\" }) -join "|"
+$excludePattern = '\\(node_modules|dist|\.git|\.vercel|supabase\\\.temp)\\'
+$allowedMatches = @{
+    "Vercel deployment URL" = @(
+        "supabase/functions/admin/cors.ts",
+        "supabase/functions/admin/cors_test.ts"
+    )
+}
+
+function Get-RepoRelativePath([string]$Path) {
+    $fullPath = (Resolve-Path -LiteralPath $Path).Path
+    if ($fullPath.StartsWith($repoRoot, [System.StringComparison]::OrdinalIgnoreCase)) {
+        $relative = $fullPath.Substring($repoRoot.Length).TrimStart('\', '/')
+        return $relative.Replace('\', '/')
+    }
+    return $fullPath.Replace('\', '/')
+}
+
+function Test-AllowedMatch([string]$PatternName, [string]$Path) {
+    if (-not $allowedMatches.ContainsKey($PatternName)) {
+        return $false
+    }
+
+    $relative = Get-RepoRelativePath $Path
+    return $allowedMatches[$PatternName] -contains $relative
+}
 
 $hasIssues = $false
 
@@ -27,7 +52,8 @@ foreach ($p in $patterns) {
     
     $matches = Get-ChildItem -Recurse -File -Include "*.ts","*.tsx","*.js","*.jsx","*.json","*.md","*.sql" |
         Where-Object { $_.FullName -notmatch $excludePattern } |
-        Select-String -Pattern $p.Pattern -AllMatches
+        Select-String -Pattern $p.Pattern -AllMatches |
+        Where-Object { -not (Test-AllowedMatch $p.Name $_.Path) }
     
     if ($matches) {
         $hasIssues = $true

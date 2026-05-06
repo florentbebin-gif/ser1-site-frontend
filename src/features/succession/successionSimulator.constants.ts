@@ -119,8 +119,6 @@ export const SPECIAL_ASSET_SUBCATEGORIES = [
   'Prévoyance décès',
 ] as const;
 
-export type SpecialAssetSubcategory = (typeof SPECIAL_ASSET_SUBCATEGORIES)[number];
-
 export const ASSURANCE_VIE_TYPE_OPTIONS: {
   value: SuccessionAssuranceVieContractType;
   label: string;

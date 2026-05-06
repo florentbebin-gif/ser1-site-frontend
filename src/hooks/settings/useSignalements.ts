@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { supabase } from '../../../supabaseClient';
+import { supabase } from '../../supabaseClient';
 
 export interface IssueReport {
   id: string;
@@ -27,9 +27,8 @@ interface UseSignalementsReturn {
 }
 
 /**
- * Hook encapsulant les appels Supabase pour les signalements utilisateur.
- * Extrait de SignalementsBlock.tsx pour respecter la règle AGENTS.md §3
- * (pas d'import supabaseClient depuis src/components/).
+ * Hook settings pour les signalements utilisateur.
+ * Les appels Supabase restent dans src/hooks, pas dans src/components.
  */
 export function useSignalements(): UseSignalementsReturn {
   const [reports, setReports] = useState<IssueReport[]>([]);
@@ -73,7 +72,7 @@ export function useSignalements(): UseSignalementsReturn {
 
       setReports(normalizedReports);
     } catch (error) {
-      console.error('[useSignalements] Error loading reports:', error);
+      console.error('[useSignalements] Erreur chargement signalements :', error);
       setLoadError('Erreur lors du chargement des signalements.');
     } finally {
       setLoadingReports(false);
@@ -119,7 +118,7 @@ export function useSignalements(): UseSignalementsReturn {
       window.setTimeout(() => setSubmitSuccess(false), 5000);
       return true;
     } catch (error) {
-      console.error('[useSignalements] Submit error:', error);
+      console.error('[useSignalements] Erreur envoi signalement :', error);
       const message = error instanceof Error ? error.message : 'Veuillez réessayer.';
       setSubmitError(`Erreur lors de l'envoi : ${message}`);
       return false;

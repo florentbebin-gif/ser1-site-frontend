@@ -21,9 +21,3 @@ export const formatIntegerInput = (n: NumericLike): string => {
   return num === 0 ? '' : Math.round(num).toLocaleString('fr-FR');
 };
 
-/**
- * Formate un pourcentage avec séparateur fr-FR.
- * Exemple : formatPct(2.5) → "2,50"
- */
-export const formatPct = (n: number, decimals = 2): string =>
-  n.toLocaleString('fr-FR', { maximumFractionDigits: decimals });

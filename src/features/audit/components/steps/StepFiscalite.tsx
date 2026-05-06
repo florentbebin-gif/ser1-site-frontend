@@ -1,4 +1,9 @@
+import { DEFAULT_TAX_SETTINGS } from '../../../../constants/settingsDefaults';
 import type { StepProps } from './types';
+
+const TMI_OPTIONS = Array.from(
+  new Set(DEFAULT_TAX_SETTINGS.incomeTax.scaleCurrent.map((row) => row.rate)),
+).sort((a, b) => a - b);
 
 export default function StepFiscalite({ dossier, updateDossier }: StepProps) {
   const { situationFiscale } = dossier;
@@ -74,11 +79,9 @@ export default function StepFiscalite({ dossier, updateDossier }: StepProps) {
               },
             })}
           >
-            <option value="0">0%</option>
-            <option value="11">11%</option>
-            <option value="30">30%</option>
-            <option value="41">41%</option>
-            <option value="45">45%</option>
+            {TMI_OPTIONS.map((rate) => (
+              <option key={rate} value={rate}>{rate}%</option>
+            ))}
           </select>
         </div>
       </div>
