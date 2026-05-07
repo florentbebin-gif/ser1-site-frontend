@@ -605,6 +605,7 @@ Cette section fixe comment ajouter une page, une route ou une feature sans creer
 - Le calcul metier reste dans `src/engine/` si le simulateur introduit une vraie logique de calcul.
 - La route doit declarer un `contextLabel` et une `topbar` coherents avec `APP_ROUTES`.
 - Si le simulateur supporte le reset page, declarer un `resetKey`.
+- Le contrat statique des routes `/sim/*` est vérifié par `src/routes/__tests__/appRoutes.contract.test.ts` : route `private`, `lazy`, `contextLabel`, bouton Home, `resetKey` pour les simulateurs actifs, exception explicite pour les hubs/placeholders.
 - Le mode global Home (`ui_settings.mode`) doit etre respecte par defaut ; un override local est permis seulement s'il reste non persistant.
 - Les paramètres fiscaux passent par `useFiscalContext` pour les nouveaux simulateurs. `usePlacementSettings` est l'adaptateur fiscal du simulateur Placement, au-dessus de `useFiscalContext` et de `extractFiscalParams()`.
 - Aucun `SimulatorAdapter` runtime commun n'est requis par defaut : le contrat est l'API publique de feature + les garde-fous d'architecture.
@@ -657,10 +658,13 @@ Cette section fixe comment ajouter une page, une route ou une feature sans creer
 
 ### 4) Checklist minimale avant merge
 - Route ou page ajoutee a la bonne source de verite (`APP_ROUTES` ou `SETTINGS_ROUTES`)
+- Pour une route `/sim/*`, `npm test -- src/routes` doit valider le contrat `APP_ROUTES`.
+- Les imports publics de features restent vérifiés par `npm run check:arch` (`routes-no-feature-internals`).
 - Docs pivots mises a jour si le contrat change
 - Test adapte au statut du sujet :
   - simulateur stable : smoke test ou test cible
   - simulateur upcoming : au minimum ouverture de route / rendu attendu
+- `npm run report:large-files` fournit une baseline informative des fichiers `src` à 400+ lignes ; ce rapport ne remplace pas le gate strict `max-lines` d'ESLint.
 - Aucun nouveau pattern structurel implicite non documente
 
 ---
