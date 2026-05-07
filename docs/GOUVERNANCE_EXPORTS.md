@@ -33,6 +33,7 @@ Toute personne qui touche :
 ### Règle de périmètre
 - Le composant UI d’une feature n’importe jamais directement `exportStudyDeck`.
 - Le point d’entrée runtime doit être un wrapper feature-owned ou un wrapper dédié export.
+- Cette règle est vérifiée par `npm run check:arch` via `no-export-study-deck-from-ui`.
 - Cas legacy encore actifs :
   - `src/features/audit/export/exportAudit.ts` adapte `src/pptx/auditPptx.ts`
   - `src/features/strategy/export/exportStrategy.ts` adapte `src/pptx/strategyPptx.ts`

@@ -1,32 +1,19 @@
 /**
- * usePlacementSettings.ts - Hook pour charger les paramètres fiscaux du simulateur Placement
- * 
- * Charge les settings depuis Supabase :
- * - fiscality_settings (AV, PER, barèmes)
- * - ps_settings (prélèvements sociaux)
- * - tax_settings (barème IR, TMI)
+ * usePlacementSettings.ts - Adaptateur fiscal du simulateur Placement.
+ *
+ * Source des données : useFiscalContext, point d'entrée standard du dossier fiscal.
  */
 
-import { useState, useEffect, useMemo } from 'react';
-import { extractFiscalParams } from '../engine/placement';
-import { getFiscalSettings, addInvalidationListener } from '../utils/cache/fiscalSettingsCache';
-import {
-  DEFAULT_TAX_SETTINGS,
-  DEFAULT_PS_SETTINGS,
-  DEFAULT_FISCALITY_SETTINGS,
-} from '../constants/settingsDefaults';
+import { useMemo } from 'react';
+import * as placementEngine from '../engine/placement';
+import { useFiscalContext, type FiscalContext } from './useFiscalContext';
 import type { FiscalParams } from '../engine/placement/types';
-import type { GetFiscalSettingsResult } from '../utils/cache/fiscalSettingsCache';
 
-type TaxSettings = typeof DEFAULT_TAX_SETTINGS;
-type PsSettings = typeof DEFAULT_PS_SETTINGS;
-type FiscalitySettings = typeof DEFAULT_FISCALITY_SETTINGS;
-type TaxBracket = TaxSettings['incomeTax']['scaleCurrent'][number];
-type TaxScale = TaxSettings['incomeTax']['scaleCurrent'];
-type LegacyDmtgConfig = TaxSettings['dmtg'] & {
-  abattementLigneDirecte?: number;
-  scale?: TaxSettings['dmtg']['ligneDirecte']['scale'];
-};
+type TaxSettings = FiscalContext['_raw_tax'];
+type PsSettings = FiscalContext['_raw_ps'];
+type FiscalitySettings = FiscalContext['_raw_fiscality'];
+type TaxScale = FiscalContext['irScaleCurrent'];
+type TaxBracket = TaxScale[number];
 
 export interface PlacementTmiOption {
   value: number;
@@ -40,6 +27,7 @@ export interface UsePlacementSettingsResult {
   taxSettings: TaxSettings;
   baremIR: TaxScale;
   tmiOptions: PlacementTmiOption[];
+  fiscalContext: FiscalContext;
   loading: boolean;
   error: string | null;
 }
@@ -51,14 +39,10 @@ function buildTmiOptionsFromRates(rates: number[]): PlacementTmiOption[] {
   }));
 }
 
-function buildTmiOptionsFromBareme(bareme?: TaxScale | null): PlacementTmiOption[] {
-  const effectiveBareme = Array.isArray(bareme) && bareme.length
-    ? bareme
-    : DEFAULT_TAX_SETTINGS.incomeTax.scaleCurrent;
-
+function buildTmiOptionsFromBareme(bareme: TaxScale): PlacementTmiOption[] {
   const uniqueRates = Array.from(
     new Set(
-      effectiveBareme
+      bareme
         .map((tranche: TaxBracket) => (typeof tranche.rate === 'number' ? tranche.rate / 100 : null))
         .filter((rate): rate is number => rate !== null && !Number.isNaN(rate))
     )
@@ -67,80 +51,18 @@ function buildTmiOptionsFromBareme(bareme?: TaxScale | null): PlacementTmiOption
   return buildTmiOptionsFromRates(uniqueRates);
 }
 
-/**
- * Hook pour charger et gérer les settings du simulateur Placement
- * @returns {Object} { fiscalParams, taxSettings, loading, error }
- */
-export function usePlacementSettings(): UsePlacementSettingsResult {
-  const [fiscalitySettings, setFiscalitySettings] = useState<FiscalitySettings>(DEFAULT_FISCALITY_SETTINGS);
-  const [psSettings, setPsSettings] = useState<PsSettings>(DEFAULT_PS_SETTINGS);
-  const [taxSettings, setTaxSettings] = useState<TaxSettings>(DEFAULT_TAX_SETTINGS);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    let mounted = true;
-
-    async function loadSettings() {
-      try {
-        setLoading(true);
-        setError(null);
-        const settings: GetFiscalSettingsResult = await getFiscalSettings();
-        if (!mounted) return;
-        setFiscalitySettings(settings.fiscality);
-        setPsSettings(settings.ps);
-        setTaxSettings(settings.tax);
-
-        setLoading(false);
-      } catch (e) {
-        if (mounted) {
-          console.error('[Placement] Erreur critique chargement settings:', e);
-          setError('Erreur lors du chargement des paramètres fiscaux.');
-          setLoading(false);
-        }
-      }
-    }
-
-    loadSettings();
-    return () => { mounted = false; };
-  }, []);
-
-  // Invalidation cache après mise à jour admin
-  useEffect(() => {
-    const remove = addInvalidationListener((kind) => {
-      if (['tax', 'ps', 'fiscality'].includes(kind)) {
-        void getFiscalSettings({ force: true }).then((settings) => {
-          setFiscalitySettings(settings.fiscality);
-          setPsSettings(settings.ps);
-          setTaxSettings(settings.tax);
-        });
-      }
-    });
-    return remove;
-  }, []);
-
-  // Extraire les paramètres normalisés pour le moteur de calcul
-  const fiscalParams = useMemo<FiscalParams>(() => {
-    const params = extractFiscalParams(fiscalitySettings, psSettings, taxSettings);
-    // Ajouter les paramètres DMTG depuis tax_settings
-    const dmtg = (taxSettings?.dmtg || DEFAULT_TAX_SETTINGS.dmtg) as LegacyDmtgConfig;
-    const dmtgLD = dmtg.ligneDirecte || DEFAULT_TAX_SETTINGS.dmtg.ligneDirecte;
-    return {
-      ...params,
-      dmtgAbattementLigneDirecte:
-        dmtgLD.abattement ??
-        dmtg.abattementLigneDirecte ??
-        DEFAULT_TAX_SETTINGS.dmtg.ligneDirecte.abattement,
-      dmtgScale: dmtgLD.scale || dmtg.scale || DEFAULT_TAX_SETTINGS.dmtg.ligneDirecte.scale,
-    };
-  }, [fiscalitySettings, psSettings, taxSettings]);
-
-  // Extraire le barème IR pour calculer la TMI
-  const baremIR = useMemo<TaxScale>(() => {
-    return taxSettings?.incomeTax?.scaleCurrent || DEFAULT_TAX_SETTINGS.incomeTax.scaleCurrent;
-  }, [taxSettings]);
-
-  const tmiOptions = useMemo(() => buildTmiOptionsFromBareme(baremIR), [baremIR]);
+export function derivePlacementSettingsFromFiscalContext(
+  fiscalContext: FiscalContext,
+): Omit<UsePlacementSettingsResult, 'loading' | 'error' | 'fiscalContext'> {
+  const fiscalitySettings = fiscalContext._raw_fiscality;
+  const psSettings = fiscalContext._raw_ps;
+  const taxSettings = fiscalContext._raw_tax;
+  const baremIR = fiscalContext.irScaleCurrent;
+  const fiscalParams: FiscalParams = {
+    ...placementEngine.extractFiscalParams(fiscalitySettings, psSettings, taxSettings),
+    dmtgAbattementLigneDirecte: fiscalContext.dmtgAbattementEnfant,
+    dmtgScale: fiscalContext.dmtgScaleLigneDirecte,
+  };
 
   return {
     fiscalParams,
@@ -148,17 +70,26 @@ export function usePlacementSettings(): UsePlacementSettingsResult {
     psSettings,
     taxSettings,
     baremIR,
-    tmiOptions,
+    tmiOptions: buildTmiOptionsFromBareme(baremIR),
+  };
+}
+
+/**
+ * Hook pour exposer les settings fiscaux projetés au format Placement.
+ */
+export function usePlacementSettings(): UsePlacementSettingsResult {
+  const { fiscalContext, loading, error } = useFiscalContext({ strict: false });
+  const derived = useMemo(
+    () => derivePlacementSettingsFromFiscalContext(fiscalContext),
+    [fiscalContext],
+  );
+
+  return {
+    ...derived,
+    fiscalContext,
     loading,
     error,
   };
 }
 
-/**
- * Calcule la TMI à partir d'un revenu imposable et du barème
- * @param {number} revenuImposable - Revenu net imposable
- * @param {number} parts - Nombre de parts fiscales
- * @param {Array} bareme - Barème IR
- * @returns {number} TMI en décimal (ex: 0.30 pour 30%)
- */
 export default usePlacementSettings;
