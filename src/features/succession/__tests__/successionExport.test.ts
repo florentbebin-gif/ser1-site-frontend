@@ -10,7 +10,6 @@ import { describe, expect, it } from 'vitest';
 import { DEFAULT_DMTG } from '../../../engine/civil';
 import { calculateSuccession } from '../../../engine/succession';
 import { buildSuccessionStudyDeck } from '../../../pptx/presets/successionDeckBuilder';
-import { DEFAULT_COLORS } from '../../../settings/theme';
 import { buildSuccessionAvFiscalAnalysis } from '../successionAvFiscal';
 import { buildSuccessionChainageAnalysis } from '../successionChainage';
 import { buildSuccessionFiscalSnapshot } from '../successionFiscalContext';
@@ -19,9 +18,7 @@ import { buildSuccessionPrevoyanceFiscalAnalysis } from '../successionPrevoyance
 import { exportSuccessionXlsx } from '../export/successionXlsx';
 import { buildSuccessionChainageExportPayload } from '../hooks/useSuccessionOutcomeExportPayload';
 import { makeLiquidation } from './fixtures';
-
-const THEME_COLORS = DEFAULT_COLORS;
-type SuccessionStudyData = Parameters<typeof buildSuccessionStudyDeck>[0];
+import { THEME_COLORS, type SuccessionStudyData } from './successionExport.fixtures';
 
 describe('Succession PPTX Export', () => {
   it('builds a valid deck spec without crash', () => {

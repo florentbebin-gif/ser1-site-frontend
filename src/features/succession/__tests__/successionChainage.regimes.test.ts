@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { DEFAULT_DMTG } from '../../../engine/civil';
 import { buildSuccessionChainageAnalysis } from '../successionChainage';
 import { computeStep1Split } from '../successionChainageEstateSplit';
+import { DMTG_SETTINGS } from './successionChainage.regimes.fixtures';
 import {
   makeCivil,
   makeLiquidation,
@@ -15,7 +15,7 @@ describe('buildSuccessionChainageAnalysis - special regimes', () => {
       liquidation: makeLiquidation({ actifEpoux1: 200000, actifEpoux2: 300000, actifCommun: 1_500_000, nbEnfants: 2 }),
       regimeUsed: 'communaute_universelle',
       order: 'epoux1',
-      dmtgSettings: DEFAULT_DMTG,
+      dmtgSettings: DMTG_SETTINGS,
       enfantsContext: [
         { id: 'E1', rattachement: 'commun' },
         { id: 'E2', rattachement: 'commun' },
@@ -44,7 +44,7 @@ describe('buildSuccessionChainageAnalysis - special regimes', () => {
       liquidation: makeLiquidation({ actifEpoux1: 300000, actifEpoux2: 200000, actifCommun: 400000, nbEnfants: 2 }),
       regimeUsed: 'separation_biens',
       order: 'epoux1',
-      dmtgSettings: DEFAULT_DMTG,
+      dmtgSettings: DMTG_SETTINGS,
       enfantsContext: [
         { id: 'E1', rattachement: 'commun' },
         { id: 'E2', rattachement: 'commun' },
@@ -87,7 +87,7 @@ describe('buildSuccessionChainageAnalysis - special regimes', () => {
       liquidation: makeLiquidation({ actifEpoux1: 300000, actifEpoux2: 200000, actifCommun: 400000, nbEnfants: 2 }),
       regimeUsed: 'separation_biens',
       order: 'epoux1',
-      dmtgSettings: DEFAULT_DMTG,
+      dmtgSettings: DMTG_SETTINGS,
       enfantsContext: [
         { id: 'E1', rattachement: 'commun' },
         { id: 'E2', rattachement: 'commun' },
@@ -122,7 +122,7 @@ describe('buildSuccessionChainageAnalysis - special regimes', () => {
       liquidation: makeLiquidation({ actifEpoux1: 300000, actifEpoux2: 200000, actifCommun: 400000, nbEnfants: 2 }),
       regimeUsed: 'separation_biens',
       order: 'epoux1',
-      dmtgSettings: DEFAULT_DMTG,
+      dmtgSettings: DMTG_SETTINGS,
       enfantsContext: [
         { id: 'E1', rattachement: 'commun' },
         { id: 'E2', rattachement: 'commun' },
@@ -157,7 +157,7 @@ describe('buildSuccessionChainageAnalysis - special regimes', () => {
       liquidation: makeLiquidation({ actifEpoux1: 500000, actifEpoux2: 200000, actifCommun: 0, nbEnfants: 2 }),
       regimeUsed: 'separation_biens',
       order: 'epoux1',
-      dmtgSettings: DEFAULT_DMTG,
+      dmtgSettings: DMTG_SETTINGS,
       enfantsContext: [
         { id: 'E1', rattachement: 'commun' },
         { id: 'E2', rattachement: 'commun' },
@@ -203,7 +203,7 @@ describe('buildSuccessionChainageAnalysis - special regimes', () => {
       liquidation: makeLiquidation({ actifEpoux1: 300_000, actifEpoux2: 200_000, actifCommun: 400_000, nbEnfants: 2 }),
       regimeUsed: 'separation_biens',
       order: 'epoux1',
-      dmtgSettings: DEFAULT_DMTG,
+      dmtgSettings: DMTG_SETTINGS,
       enfantsContext: [{ id: 'E1', rattachement: 'commun' }, { id: 'E2', rattachement: 'commun' }],
       familyMembers: [],
       patrimonial: {
@@ -236,7 +236,7 @@ describe('buildSuccessionChainageAnalysis - special regimes', () => {
       liquidation: makeLiquidation({ actifEpoux1: 300_000, actifEpoux2: 200_000, actifCommun: 100_000, nbEnfants: 2 }),
       regimeUsed: 'separation_biens',
       order: 'epoux1',
-      dmtgSettings: DEFAULT_DMTG,
+      dmtgSettings: DMTG_SETTINGS,
       enfantsContext: [{ id: 'E1', rattachement: 'commun' }, { id: 'E2', rattachement: 'commun' }],
       familyMembers: [],
       patrimonial: {
@@ -287,7 +287,7 @@ describe('buildSuccessionChainageAnalysis - special regimes', () => {
       liquidation: makeLiquidation({ actifEpoux1: 300_000, actifEpoux2: 200_000, actifCommun: 0, nbEnfants: 2 }),
       regimeUsed: 'separation_biens',
       order: 'epoux1',
-      dmtgSettings: DEFAULT_DMTG,
+      dmtgSettings: DMTG_SETTINGS,
       enfantsContext: [{ id: 'E1', rattachement: 'commun' }, { id: 'E2', rattachement: 'commun' }],
       familyMembers: [],
       patrimonial: {
@@ -394,7 +394,7 @@ describe('buildSuccessionChainageAnalysis - special regimes', () => {
       liquidation: makeLiquidation({ actifEpoux1: 0, actifEpoux2: 0, actifCommun: 1_000_000, nbEnfants: 2 }),
       regimeUsed: 'communaute_legale',
       order: 'epoux1',
-      dmtgSettings: DEFAULT_DMTG,
+      dmtgSettings: DMTG_SETTINGS,
       enfantsContext: [
         { id: 'E1', rattachement: 'commun' },
         { id: 'E2', rattachement: 'commun' },
@@ -408,7 +408,7 @@ describe('buildSuccessionChainageAnalysis - special regimes', () => {
       liquidation: makeLiquidation({ actifEpoux1: 0, actifEpoux2: 0, actifCommun: 1_000_000, nbEnfants: 2 }),
       regimeUsed: 'communaute_legale',
       order: 'epoux1',
-      dmtgSettings: DEFAULT_DMTG,
+      dmtgSettings: DMTG_SETTINGS,
       enfantsContext: [
         { id: 'E1', rattachement: 'commun' },
         { id: 'E2', rattachement: 'commun' },
@@ -451,7 +451,7 @@ describe('buildSuccessionChainageAnalysis - special regimes', () => {
       liquidation: makeLiquidation({ actifEpoux1: 600_000, actifEpoux2: 200_000, actifCommun: 0, nbEnfants: 2 }),
       regimeUsed: 'separation_biens',
       order: 'epoux1',
-      dmtgSettings: DEFAULT_DMTG,
+      dmtgSettings: DMTG_SETTINGS,
       enfantsContext: [{ id: 'E1', rattachement: 'commun' }, { id: 'E2', rattachement: 'commun' }],
       familyMembers: [],
       patrimonial: {
@@ -478,7 +478,7 @@ describe('buildSuccessionChainageAnalysis - special regimes', () => {
       liquidation: makeLiquidation({ actifEpoux1: 300_000, actifEpoux2: 200_000, actifCommun: 0, nbEnfants: 2 }),
       regimeUsed: 'separation_biens',
       order: 'epoux1',
-      dmtgSettings: DEFAULT_DMTG,
+      dmtgSettings: DMTG_SETTINGS,
       referenceDate: new Date('2026-01-01T00:00:00Z'),
       enfantsContext: [{ id: 'E1', rattachement: 'commun' }, { id: 'E2', rattachement: 'commun' }],
       familyMembers: [],
@@ -509,7 +509,7 @@ describe('buildSuccessionChainageAnalysis - special regimes', () => {
       liquidation: makeLiquidation({ actifEpoux1: 300_000, actifEpoux2: 200_000, actifCommun: 400_000, nbEnfants: 2 }),
       regimeUsed: 'communaute_legale',
       order: 'epoux1',
-      dmtgSettings: DEFAULT_DMTG,
+      dmtgSettings: DMTG_SETTINGS,
       attributionBiensCommunsPct: 80,
       enfantsContext: [{ id: 'E1', rattachement: 'commun' }, { id: 'E2', rattachement: 'commun' }],
       familyMembers: [],
@@ -529,7 +529,7 @@ describe('buildSuccessionChainageAnalysis - special regimes', () => {
       liquidation: makeLiquidation({ actifEpoux1: 300_000, actifEpoux2: 200_000, actifCommun: 400_000, nbEnfants: 2 }),
       regimeUsed: 'separation_biens',
       order: 'epoux1',
-      dmtgSettings: DEFAULT_DMTG,
+      dmtgSettings: DMTG_SETTINGS,
       societeAcquetsNetValue: 400_000,
       enfantsContext: [{ id: 'E1', rattachement: 'commun' }, { id: 'E2', rattachement: 'commun' }],
       familyMembers: [],
@@ -566,7 +566,7 @@ describe('buildSuccessionChainageAnalysis - special regimes', () => {
       liquidation: makeLiquidation({ actifEpoux1: 300_000, actifEpoux2: 200_000, actifCommun: 400_000, nbEnfants: 2 }),
       regimeUsed: 'separation_biens',
       order: 'epoux1',
-      dmtgSettings: DEFAULT_DMTG,
+      dmtgSettings: DMTG_SETTINGS,
       societeAcquetsNetValue: 400_000,
       enfantsContext: [{ id: 'E1', rattachement: 'commun' }, { id: 'E2', rattachement: 'commun' }],
       familyMembers: [],
@@ -607,7 +607,7 @@ describe('buildSuccessionChainageAnalysis - special regimes', () => {
       liquidation: makeLiquidation({ actifEpoux1: 200_000, actifEpoux2: 200_000, actifCommun: 400_000, nbEnfants: 2 }),
       regimeUsed: 'communaute_legale',
       order: 'epoux1',
-      dmtgSettings: DEFAULT_DMTG,
+      dmtgSettings: DMTG_SETTINGS,
       enfantsContext: [{ id: 'E1', rattachement: 'commun' }, { id: 'E2', rattachement: 'commun' }],
       familyMembers: [],
       devolution: makeDevolution({ choixLegalConjointSansDDV: 'usufruit', nbEnfantsNonCommuns: 0 }),
@@ -631,7 +631,7 @@ describe('buildSuccessionChainageAnalysis - special regimes', () => {
       liquidation: makeLiquidation({ actifEpoux1: 200_000, actifEpoux2: 200_000, actifCommun: 400_000, nbEnfants: 2 }),
       regimeUsed: 'communaute_legale',
       order: 'epoux1',
-      dmtgSettings: DEFAULT_DMTG,
+      dmtgSettings: DMTG_SETTINGS,
       enfantsContext: [{ id: 'E1', rattachement: 'commun' }, { id: 'E2', rattachement: 'commun' }],
       familyMembers: [],
       devolution: makeDevolution({ choixLegalConjointSansDDV: 'quart_pp', nbEnfantsNonCommuns: 0 }),
@@ -651,7 +651,7 @@ describe('buildSuccessionChainageAnalysis - special regimes', () => {
       liquidation: makeLiquidation({ actifEpoux1: 200_000, actifEpoux2: 200_000, actifCommun: 400_000, nbEnfants: 2 }),
       regimeUsed: 'communaute_legale',
       order: 'epoux1',
-      dmtgSettings: DEFAULT_DMTG,
+      dmtgSettings: DMTG_SETTINGS,
       enfantsContext: [{ id: 'E1', rattachement: 'commun' }, { id: 'E2', rattachement: 'commun' }],
       familyMembers: [],
       devolution: makeDevolution({ choixLegalConjointSansDDV: 'usufruit', nbEnfantsNonCommuns: 0 }),
@@ -669,7 +669,7 @@ describe('buildSuccessionChainageAnalysis - special regimes', () => {
       liquidation: makeLiquidation({ actifEpoux1: 200_000, actifEpoux2: 200_000, actifCommun: 400_000, nbEnfants: 2 }),
       regimeUsed: 'communaute_legale',
       order: 'epoux1',
-      dmtgSettings: DEFAULT_DMTG,
+      dmtgSettings: DMTG_SETTINGS,
       enfantsContext: [{ id: 'E1', rattachement: 'commun' }, { id: 'E2', rattachement: 'commun' }],
       familyMembers: [],
       devolution: makeDevolution({ choixLegalConjointSansDDV: 'usufruit', nbEnfantsNonCommuns: 1 }),

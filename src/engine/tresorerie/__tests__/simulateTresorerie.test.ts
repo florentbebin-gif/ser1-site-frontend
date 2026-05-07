@@ -25,22 +25,8 @@ import {
   calculISRachatCapitalisation,
 } from '../calculPlacements';
 import { calculCreditIR } from '../calculCreditIR';
-import type { TresoFiscalParams, TresoInputs } from '../types';
-
-// ─── Paramètres fiscaux de référence ─────────────────────────────────────────
-
-const PARAMS_STD: TresoFiscalParams = {
-  isNormalRate: 0.25,
-  isReducedRate: 0.15,
-  isReducedThreshold: 42500,
-  motherDaughterStandardQpfcRate: 0.05,
-  motherDaughterGroupQpfcRate: 0.01,
-  pfuRateIR: 0.128,
-  psRate: 0.172,
-  pfuTotal: 0.3,
-  dividendesAbattement: 0.4,
-  irScale: [],
-};
+import type { TresoInputs } from '../types';
+import { BASE_INPUTS, PARAMS_STD } from './simulateTresorerie.fixtures';
 
 // ─── 1. calculIS — IS seul ────────────────────────────────────────────────────
 
@@ -360,17 +346,6 @@ describe('computeProductiveMonthsByCivilYear — délai jouissance', () => {
 });
 
 // ─── 8. simulateTresorerie — scénarios intégrés ───────────────────────────────
-
-const BASE_INPUTS: TresoInputs = {
-  typeCreation: 'newco',
-  ageActuel: 45,
-  ageRetraite: 65,
-  besoinsRetraiteAnnuels: 30000,
-  fraisStructureAnnuels: 3000,
-  ccaInitial: 100000,
-  apportAnnuelCCA: 16600,
-  dureeActiveAns: 20,
-};
 
 describe('simulateTresorerie — intégration', () => {
   it('Produit 30 lignes par défaut', () => {
