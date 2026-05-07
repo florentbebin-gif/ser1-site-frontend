@@ -469,6 +469,12 @@ fiscalContext._raw_fiscality          // brut fiscality_settings
 
 L'admin sauvegarde → `invalidate(kind)` + `broadcastInvalidation(kind)` → événement `ser1:fiscal-settings-updated` → tous les `useFiscalContext` actifs se rafraîchissent.
 
+#### Adaptateur Placement
+
+Le simulateur Placement suit la chaîne standard : `Supabase` → `fiscalSettingsCache.ts` → `useFiscalContext` → `usePlacementSettings` → `engine/placement`.
+
+`usePlacementSettings` projette le dossier fiscal unifié vers le format attendu par `engine/placement`. Il utilise les tables brutes uniquement pour `extractFiscalParams()`, puis les clés normalisées (`irScaleCurrent`, `dmtgScaleLigneDirecte`, `dmtgAbattementEnfant`) pour les besoins propres à l'interface Placement.
+
 ---
 
 ### Identité fiscale & snapshot v4 — `FiscalIdentity`
@@ -600,7 +606,7 @@ Cette section fixe comment ajouter une page, une route ou une feature sans creer
 - La route doit declarer un `contextLabel` et une `topbar` coherents avec `APP_ROUTES`.
 - Si le simulateur supporte le reset page, declarer un `resetKey`.
 - Le mode global Home (`ui_settings.mode`) doit etre respecte par defaut ; un override local est permis seulement s'il reste non persistant.
-- Les parametres fiscaux passent par `useFiscalContext` pour les nouveaux simulateurs. `usePlacementSettings` reste un adaptateur existant du simulateur Placement, adosse a `fiscalSettingsCache.ts` et `extractFiscalParams()`.
+- Les paramètres fiscaux passent par `useFiscalContext` pour les nouveaux simulateurs. `usePlacementSettings` est l'adaptateur fiscal du simulateur Placement, au-dessus de `useFiscalContext` et de `extractFiscalParams()`.
 - Aucun `SimulatorAdapter` runtime commun n'est requis par defaut : le contrat est l'API publique de feature + les garde-fous d'architecture.
 
 #### Si le simulateur n'est pas pret
