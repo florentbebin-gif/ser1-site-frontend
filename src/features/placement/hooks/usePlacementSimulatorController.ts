@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useMemo, useState, type Dispatch, type SetStateAction } from 'react';
 import { useTheme } from '@/settings/ThemeProvider';
 import { usePlacementSettings, type UsePlacementSettingsResult } from '@/hooks/usePlacementSettings';
-import { useFiscalContext } from '@/hooks/useFiscalContext';
 import { simulateComplete, compareProducts } from '@/engine/placement';
 import type { CompareResult } from '@/engine/placement/types';
 import { DEFAULT_INITIAL, DEFAULT_ANNUEL, DEFAULT_DISTRIBUTION, normalizeVersementConfig } from '@/engine/placement/versementConfig';
@@ -89,8 +88,7 @@ export interface PlacementSimulatorUiFlags {
 
 export function usePlacementSimulatorController(isExpert: boolean) {
   const storeKey = storageKeyFor('placement');
-  const { fiscalParams, loading, error, tmiOptions, psSettings } = usePlacementSettings();
-  const { fiscalContext } = useFiscalContext({ strict: false });
+  const { fiscalParams, fiscalContext, loading, error, tmiOptions, psSettings } = usePlacementSettings();
   const { pptxColors, cabinetLogo, logoPlacement } = useTheme();
 
   const [hydrated, setHydrated] = useState(false);
