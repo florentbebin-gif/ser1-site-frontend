@@ -10,6 +10,7 @@
  *      que le index.ts des autres features, pas leurs internals)
  *   6. settings/admin : services only (adminClient, invokeAdmin, logoUpload)
  *      — pas d'import de composants UI depuis l'extérieur
+ *   7. UI : pas d'import direct de exportStudyDeck (passer par hooks/wrappers)
  *
  * Résolution @/ : src/ (tsconfig paths + vite alias)
  *
@@ -104,6 +105,15 @@ module.exports = {
       comment: 'src/components/ ne doit pas importer supabaseClient directement — utiliser un hook dédié dans hooks/ (AGENTS.md §3)',
       from: { path: '^src/components/' },
       to: { path: 'supabaseClient' },
+    },
+
+    // ── 7. UI : pas d'import direct de exportStudyDeck ───────────────────────
+    {
+      name: 'no-export-study-deck-from-ui',
+      severity: 'error',
+      comment: 'src/components/, src/pages/, src/routes/ et src/features/*/components/ ne doivent pas importer directement src/pptx/export/exportStudyDeck — passer par un hook ou wrapper feature-owned (cf. GOUVERNANCE_EXPORTS.md §Règle de périmètre)',
+      from: { path: '^src/(components|pages|routes)/|^src/features/[^/]+/components/' },
+      to: { path: '^src/pptx/export/exportStudyDeck(\\.ts)?$' },
     },
   ],
 
