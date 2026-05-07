@@ -65,15 +65,31 @@ export type AppRouteEntry =
 // ── Lazy-loaded modules ───────────────────────────────────────────────────────
 
 const LoginRoute = Login as unknown as RouteComponent;
-const Placement = lazy(() => import('../features/placement/PlacementPage'));
-const Credit = lazy(() => import('../features/credit/Credit'));
-const Ir = lazy(() => import('../features/ir/IrPage'));
-const AuditWizard = lazy(() => import('../features/audit/AuditWizard'));
-const SuccessionSimulator = lazy(() => import('../features/succession/SuccessionSimulator'));
-const PerHome = lazy(() => import('../features/per/PerHome'));
-const PerPotentielSimulator = lazy(() => import('../features/per/components/potentiel/PerPotentielSimulator'));
+const Placement = lazy(() =>
+  import('../features/placement').then(({ PlacementPage }) => ({ default: PlacementPage })),
+);
+const Credit = lazy(() =>
+  import('../features/credit').then(({ CreditPage }) => ({ default: CreditPage })),
+);
+const Ir = lazy(() =>
+  import('../features/ir').then(({ IrPage }) => ({ default: IrPage })),
+);
+const AuditWizard = lazy(() =>
+  import('../features/audit').then(({ AuditWizard }) => ({ default: AuditWizard })),
+);
+const SuccessionSimulator = lazy(() =>
+  import('../features/succession').then(({ SuccessionSimulator }) => ({ default: SuccessionSimulator })),
+);
+const PerHome = lazy(() =>
+  import('../features/per').then(({ PerHome }) => ({ default: PerHome })),
+);
+const PerPotentielSimulator = lazy(() =>
+  import('../features/per').then(({ PerPotentielSimulator }) => ({ default: PerPotentielSimulator })),
+);
 const UpcomingSimulatorPage = lazy(() => import('../pages/UpcomingSimulatorPage')) as unknown as LazyExoticComponent<ComponentType<RouteProps>>;
-const TresorerieSocietePage = lazy(() => import('../features/tresorerie-societe/TresorerieSocietePage'));
+const TresorerieSocietePage = lazy(() =>
+  import('../features/tresorerie-societe').then(({ TresorerieSocietePage }) => ({ default: TresorerieSocietePage })),
+);
 const StrategyPage = lazy(() => import('../pages/StrategyPage'));
 const SettingsShell = lazy(() => import('../pages/SettingsShell'));
 
