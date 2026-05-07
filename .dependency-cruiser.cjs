@@ -11,6 +11,7 @@
  *   6. settings/admin : services only (adminClient, invokeAdmin, logoUpload)
  *      — pas d'import de composants UI depuis l'extérieur
  *   7. UI : pas d'import direct de exportStudyDeck (passer par hooks/wrappers)
+ *   8. Placement : pas d'import runtime direct de useFiscalContext
  *
  * Résolution @/ : src/ (tsconfig paths + vite alias)
  *
@@ -114,6 +115,15 @@ module.exports = {
       comment: 'src/components/, src/pages/, src/routes/ et src/features/*/components/ ne doivent pas importer directement src/pptx/export/exportStudyDeck — passer par un hook ou wrapper feature-owned (cf. GOUVERNANCE_EXPORTS.md §Règle de périmètre)',
       from: { path: '^src/(components|pages|routes)/|^src/features/[^/]+/components/' },
       to: { path: '^src/pptx/export/exportStudyDeck(\\.ts)?$' },
+    },
+
+    // ── 8. Placement : useFiscalContext reste centralisé dans usePlacementSettings ─────
+    {
+      name: 'placement-no-direct-use-fiscal-context',
+      severity: 'error',
+      comment: 'src/features/placement/ ne doit pas importer directement useFiscalContext en runtime — passer par usePlacementSettings pour conserver une seule entrée fiscale Placement',
+      from: { path: '^src/features/placement/' },
+      to: { path: '^src/hooks/useFiscalContext(\\.ts)?$' },
     },
   ],
 
