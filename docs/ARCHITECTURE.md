@@ -585,8 +585,9 @@ Cette section fixe comment ajouter une page, une route ou une feature sans creer
 - Une route legacy courte (`/<slug>`) n'est ajoutee que si une compatibilite ou un redirect explicite est necessaire.
 
 #### Structure cible
-- Entrypoint feature : `src/features/<slug>/index.ts`
-- Page ou orchestrateur : `src/features/<slug>/<Feature>Page.tsx` ou composant equivalent exporte par l'index
+- API publique de feature : `src/features/<slug>/index.ts`
+- `src/routes/` et les autres features importent uniquement cette API publique, jamais les fichiers internes de la feature.
+- Page ou orchestrateur : `src/features/<slug>/<Feature>Page.tsx` ou composant equivalent exporte par `index.ts`.
 - Sous-dossiers typiques selon besoin :
   - `components/`
   - `hooks/`
@@ -599,6 +600,8 @@ Cette section fixe comment ajouter une page, une route ou une feature sans creer
 - La route doit declarer un `contextLabel` et une `topbar` coherents avec `APP_ROUTES`.
 - Si le simulateur supporte le reset page, declarer un `resetKey`.
 - Le mode global Home (`ui_settings.mode`) doit etre respecte par defaut ; un override local est permis seulement s'il reste non persistant.
+- Les parametres fiscaux passent par `useFiscalContext` pour les nouveaux simulateurs. `usePlacementSettings` reste un adaptateur existant du simulateur Placement, adosse a `fiscalSettingsCache.ts` et `extractFiscalParams()`.
+- Aucun `SimulatorAdapter` runtime commun n'est requis par defaut : le contrat est l'API publique de feature + les garde-fous d'architecture.
 
 #### Si le simulateur n'est pas pret
 - Utiliser `UpcomingSimulatorPage` tant que le simulateur n'a pas un contrat UI ou metier stable.
@@ -635,6 +638,7 @@ Cette section fixe comment ajouter une page, une route ou une feature sans creer
 #### Repartition recommandee
 - `src/engine/` : calcul pur, zero React
 - `src/features/<slug>/` : UI, state, orchestration, exports lies a la feature
+- `src/features/<slug>/index.ts` : API publique de la feature, seule surface importable depuis `src/routes/` ou une autre feature
 - `src/components/` : composants transverses reutilises
 - `src/styles/` : styles partages, tokens, patterns communs
 - `src/pages/` : shells et pages transverses, pas la logique metier d'un simulateur

@@ -5,9 +5,10 @@
  *   1. engine/ et domain/ : pas de React, pas de features/, pas de pages/
  *   2. features/ : pas de pages/
  *   3. pages/ : features importées via index.ts uniquement (pas d'internals)
- *   4. Pas de cross-feature internal imports (chaque feature A ne peut importer
+ *   4. routes/ : features importées via index.ts uniquement (pas d'internals)
+ *   5. Pas de cross-feature internal imports (chaque feature A ne peut importer
  *      que le index.ts des autres features, pas leurs internals)
- *   5. settings/admin : services only (adminClient, invokeAdmin, logoUpload)
+ *   6. settings/admin : services only (adminClient, invokeAdmin, logoUpload)
  *      — pas d'import de composants UI depuis l'extérieur
  *
  * Résolution @/ : src/ (tsconfig paths + vite alias)
@@ -81,10 +82,22 @@ module.exports = {
       },
     },
 
-    // ── 4. Cross-feature internals (un règle par feature) ────────────────────────────────
+    // ── 4. routes/ : features importées via index.ts uniquement ──────────────────────────
+    {
+      name: 'routes-no-feature-internals',
+      severity: 'error',
+      comment: 'src/routes/ doit importer src/features/ uniquement via leur index.ts',
+      from: { path: '^src/routes/' },
+      to: {
+        path: `^src/features/(${FEATURES.join('|')})/`,
+        pathNot: `^src/features/(${FEATURES.join('|')})/index\\.ts$`,
+      },
+    },
+
+    // ── 5. Cross-feature internals (un règle par feature) ────────────────────────────────
     ...FEATURES.map(crossFeatureRule),
 
-    // ── 5. components/ : pas d'import direct de supabaseClient ─────────────────────────
+    // ── 6. components/ : pas d'import direct de supabaseClient ─────────────────────────
     {
       name: 'no-supabase-from-components',
       severity: 'error',
