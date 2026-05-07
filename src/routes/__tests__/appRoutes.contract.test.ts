@@ -80,6 +80,31 @@ describe('Contrat APP_ROUTES', () => {
     ).toEqual([]);
   });
 
+  it('recense toutes les routes simulateur actives attendues', () => {
+    const missingActiveRoutes = [...ACTIVE_SIMULATOR_PATHS]
+      .filter(path => !routePaths.has(path));
+
+    expect(
+      missingActiveRoutes,
+      `Routes /sim/* actives absentes de APP_ROUTES : ${missingActiveRoutes.join(', ')}`,
+    ).toEqual([]);
+  });
+
+  it('classe chaque route simulateur comme active ou hub/placeholder', () => {
+    const unclassifiedRoutes = simulatorRoutes
+      .map(route => route.path)
+      .filter(path => !ACTIVE_SIMULATOR_PATHS.has(path) && !HUBS_OR_PLACEHOLDERS.has(path));
+
+    expect(
+      unclassifiedRoutes,
+      [
+        `Routes /sim/* non classées : ${unclassifiedRoutes.join(', ')}`,
+        'Ajouter le path dans ACTIVE_SIMULATOR_PATHS si le simulateur est actif.',
+        'Sinon, ajouter le path dans HUBS_OR_PLACEHOLDERS.',
+      ].join('\n'),
+    ).toEqual([]);
+  });
+
   it('exige un resetKey sur les simulateurs actifs uniquement', () => {
     const missingResetKey = simulatorRoutes
       .filter(route => ACTIVE_SIMULATOR_PATHS.has(route.path))
