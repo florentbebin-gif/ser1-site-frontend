@@ -22,6 +22,7 @@ import ReserveCivilSection from './DmtgSuccession/ReserveCivilSection';
 import RegimesSection from './DmtgSuccession/RegimesSection';
 import LiberalitesSection from './DmtgSuccession/LiberalitesSection';
 import AvantagesMatrimoniauxSection from './DmtgSuccession/AvantagesMatrimoniauxSection';
+import { checkDmtgGoldenScenario } from './DmtgSuccession/dmtgGoldenCheck';
 
 type DeepFormValue<T> = T extends number
   ? number | null
@@ -197,9 +198,19 @@ export default function SettingsDmtgSuccession() {
     [fiscalitySettings.assuranceVie?.deces]
   );
   const hasErrors = !isValid(dmtgErrors, avDecesErrors);
+  const dmtgGoldenCheck = useMemo(
+    () => checkDmtgGoldenScenario(taxSettings.dmtg),
+    [taxSettings.dmtg],
+  );
+  const saveDisabled = saving || hasErrors || !dmtgGoldenCheck.ok;
+  const saveTitle = hasErrors
+    ? 'Corrigez les erreurs avant de sauvegarder'
+    : !dmtgGoldenCheck.ok
+      ? dmtgGoldenCheck.message
+      : '';
 
   const handleSave = async () => {
-    if (!isAdmin || hasErrors) return;
+    if (!isAdmin || hasErrors || !dmtgGoldenCheck.ok) return;
 
     try {
       setSaving(true);
@@ -329,19 +340,29 @@ export default function SettingsDmtgSuccession() {
       </div>
 
       {isAdmin && (
+        <>
+          {!hasErrors && !dmtgGoldenCheck.ok && (
+            <div className="settings-feedback-message settings-feedback-message--error">
+              {dmtgGoldenCheck.message}
+            </div>
+          )}
+
         <button
           type="button"
           className="chip settings-save-btn"
           onClick={handleSave}
-          disabled={saving || hasErrors}
-          title={hasErrors ? 'Corrigez les erreurs avant de sauvegarder' : ''}
+          disabled={saveDisabled}
+          title={saveTitle}
         >
           {saving
             ? 'Enregistrement…'
             : hasErrors
               ? 'Erreurs de validation'
-              : 'Enregistrer DMTG & Succession'}
+              : !dmtgGoldenCheck.ok
+                ? 'Golden DMTG bloqué'
+                : 'Enregistrer DMTG & Succession'}
         </button>
+        </>
       )}
 
       {message && (

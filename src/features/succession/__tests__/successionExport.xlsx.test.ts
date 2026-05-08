@@ -7,6 +7,7 @@ import { describe, expect, it } from 'vitest';
 import { calculateSuccession } from '../../../engine/succession';
 import { exportSuccessionXlsx } from '../export/successionXlsx';
 import { THEME_COLORS } from './successionExport.fixtures';
+import { buildSuccessionFiscalSnapshot } from '../successionFiscalContext';
 
 describe('Succession Excel Export - XLSX direct', () => {
   it('generates a valid XLSX blob (PK header)', async () => {
@@ -263,5 +264,50 @@ describe('Succession Excel Export - XLSX direct', () => {
 
     expect(xmlPayload).toContain('Chronologie retenue comme source principale');
     expect(xmlPayload).toContain('Chronologie 2 décès non retenue comme source principale pour la situation saisie');
+  });
+
+  it("alimente l'abattement ligne directe depuis le snapshot fiscal transmis", async () => {
+    const customAllowance = 123_456;
+    const fiscalSnapshot = buildSuccessionFiscalSnapshot(null);
+    const customSnapshot = {
+      ...fiscalSnapshot,
+      dmtgSettings: {
+        ...fiscalSnapshot.dmtgSettings,
+        ligneDirecte: {
+          ...fiscalSnapshot.dmtgSettings.ligneDirecte,
+          abattement: customAllowance,
+        },
+      },
+    };
+
+    const blob = await exportSuccessionXlsx(
+      {
+        actifNetSuccession: 320000,
+        nbHeritiers: 2,
+        heritiers: [
+          { lien: 'enfant', partSuccession: 160000 },
+          { lien: 'enfant', partSuccession: 160000 },
+        ],
+      },
+      null,
+      THEME_COLORS.c1,
+      'Simulation-Succession',
+      undefined,
+      undefined,
+      undefined,
+      customSnapshot,
+    );
+
+    const zip = await JSZip.loadAsync(await blob.arrayBuffer());
+    const hypothesesSheet = await zip.file('xl/worksheets/sheet2.xml')?.async('string');
+    const normalizedSheet = (hypothesesSheet ?? '').replace(/\s+/g, ' ');
+    const expectedAllowance = new Intl.NumberFormat('fr-FR', {
+      style: 'currency',
+      currency: 'EUR',
+      maximumFractionDigits: 0,
+    }).format(customAllowance).replace(/\s+/g, ' ');
+
+    expect(normalizedSheet).toContain(`Abattement ligne directe : ${expectedAllowance}`);
+    expect(normalizedSheet).not.toContain('Abattement ligne directe : 100 000 EUR');
   });
 });

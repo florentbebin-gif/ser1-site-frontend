@@ -10,6 +10,7 @@ import { exportSuccessionPptx, type ThemeColorsForExport } from '../../../pptx/e
 import { exportAndDownloadSuccessionXlsx } from '../export/successionXlsx';
 import type { LienParente } from '../../../engine/succession';
 import type { LogoPlacement } from '../../../pptx/theme/types';
+import type { SuccessionFiscalSnapshot } from '../successionFiscalContext';
 
 interface UseSuccessionExportHandlersInput {
   canExport: boolean;
@@ -31,6 +32,7 @@ interface UseSuccessionExportHandlersInput {
   derivedTotalDroits: number;
   exportHeirs: Array<{ lien: LienParente; partSuccession: number }>;
   assumptions: string[];
+  fiscalSnapshot: SuccessionFiscalSnapshot;
 }
 
 export function useSuccessionExportHandlers({
@@ -51,6 +53,7 @@ export function useSuccessionExportHandlers({
   derivedTotalDroits,
   exportHeirs,
   assumptions,
+  fiscalSnapshot,
 }: UseSuccessionExportHandlersInput) {
   const [exportLoading, setExportLoading] = useState(false);
   const exportMasseTransmise = displayUsesChainage ? synthDonutTransmis : derivedMasseTransmise;
@@ -115,6 +118,7 @@ export function useSuccessionExportHandlers({
           chainageExportPayload,
           pptxColors.c7,
           assumptions,
+          fiscalSnapshot,
         );
       }
     } finally {
@@ -130,6 +134,7 @@ export function useSuccessionExportHandlers({
     exportMasseTransmise,
     exportHeirs,
     assumptions,
+    fiscalSnapshot,
   ]);
 
   const exportOptions = [

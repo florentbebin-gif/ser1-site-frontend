@@ -13,6 +13,10 @@ import {
   getSuccessionPocketLabel,
 } from '../successionInterMassClaims';
 import { buildSuccessionExportActiveHypotheses } from '@/utils/export/successionExportHypotheses';
+import {
+  buildSuccessionFiscalSnapshot,
+  type SuccessionFiscalSnapshot,
+} from '../successionFiscalContext';
 
 const LIEN_LABELS: Record<LienParente, string> = {
   conjoint: 'Conjoint survivant',
@@ -204,11 +208,12 @@ function buildDetailsSheet(heritiers: HeritierResult[]): XlsxSheet {
   };
 }
 
-function buildHypothesesSheet(_assumptions: string[] = []): XlsxSheet {
+function buildHypothesesSheet(fiscalSnapshot?: SuccessionFiscalSnapshot): XlsxSheet {
+  const snapshot = fiscalSnapshot ?? buildSuccessionFiscalSnapshot(null);
   const rows: Array<Array<XlsxCell | string>> = [
     [h('Hypothèse'), h('Référence')],
     ['Barème DMTG en vigueur', 'CGI Art. 777'],
-    ['Abattement ligne directe : 100 000 EUR', 'CGI Art. 779'],
+    [`Abattement ligne directe : ${formatMoney(snapshot.dmtgSettings.ligneDirecte.abattement)}`, 'CGI Art. 779'],
     ['Exonération totale du conjoint survivant', 'CGI Art. 796-0 bis'],
     ['Hors donations antérieures rapportables', 'Hypothèse simplificatrice'],
     ['Assurance-vie et PER assurance intégrés à la masse transmise affichée', 'Ventilation fiscale simplifiée'],
@@ -225,8 +230,9 @@ function buildHypothesesSheet(_assumptions: string[] = []): XlsxSheet {
 function buildSuccessionHypothesesSheet(
   assumptions: string[] = [],
   chronologie?: SuccessionChronologieXlsxData,
+  fiscalSnapshot?: SuccessionFiscalSnapshot,
 ): XlsxSheet {
-  const sheet = buildHypothesesSheet();
+  const sheet = buildHypothesesSheet(fiscalSnapshot);
   const activeHypotheses = buildSuccessionExportActiveHypotheses(assumptions, chronologie);
   if (activeHypotheses.length === 0) {
     return sheet;
@@ -472,6 +478,7 @@ export async function exportSuccessionXlsx(
   chronologie?: SuccessionChronologieXlsxData,
   sectionFill?: string,
   assumptions?: string[],
+  fiscalSnapshot?: SuccessionFiscalSnapshot,
 ): Promise<Blob> {
   const sheets: XlsxSheet[] = result
     ? [
@@ -479,11 +486,11 @@ export async function exportSuccessionXlsx(
       buildResultsSheet(result),
       buildDetailsSheet(result.detailHeritiers),
       buildPredecesSheet(chronologie),
-      buildSuccessionHypothesesSheet(assumptions ?? [], chronologie),
+      buildSuccessionHypothesesSheet(assumptions ?? [], chronologie, fiscalSnapshot),
     ]
     : [
       buildPredecesSheet(chronologie),
-      buildSuccessionHypothesesSheet(assumptions ?? [], chronologie),
+      buildSuccessionHypothesesSheet(assumptions ?? [], chronologie, fiscalSnapshot),
     ];
 
   const blob = await buildXlsxBlob({
@@ -505,7 +512,17 @@ export async function exportAndDownloadSuccessionXlsx(
   chronologie?: SuccessionChronologieXlsxData,
   sectionFill?: string,
   assumptions?: string[],
+  fiscalSnapshot?: SuccessionFiscalSnapshot,
 ): Promise<void> {
-  const blob = await exportSuccessionXlsx(input, result, themeColor, filename, chronologie, sectionFill, assumptions);
+  const blob = await exportSuccessionXlsx(
+    input,
+    result,
+    themeColor,
+    filename,
+    chronologie,
+    sectionFill,
+    assumptions,
+    fiscalSnapshot,
+  );
   downloadXlsx(blob, filename);
 }

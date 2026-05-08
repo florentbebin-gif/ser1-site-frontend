@@ -259,6 +259,7 @@ export default function SuccessionSimulator() {
     derivedTotalDroits: derived.derivedTotalDroits,
     exportHeirs: derived.exportHeirs,
     assumptions: derived.assumptions,
+    fiscalSnapshot,
   });
 
   // ── Effets de synchronisation (normalization quand le contexte civil change) ─
