@@ -7,7 +7,7 @@
  * UI read-only : seule action admin = cloturer / rouvrir un produit avec date.
  */
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useUserRole } from '@/auth/useUserRole';
 import { UserInfoBanner } from '@/components/UserInfoBanner';
 import './styles/base-contrat.css';
@@ -26,39 +26,43 @@ import { GRANDE_FAMILLE_OPTIONS, PHASE_LABELS } from './baseContratLabels';
 function useOverrides() {
   const [overrides, setOverrides] = useState<OverrideMap>({});
   const [loading, setLoading] = useState(true);
+  const mountedRef = useRef(true);
 
   const reload = () => {
     setLoading(true);
     getBaseContratOverrides()
       .then((data) => {
-        setOverrides(data);
-        setLoading(false);
-      })
-      .catch(() => setLoading(false));
-  };
-
-  useEffect(() => {
-    let mounted = true;
-
-    getBaseContratOverrides()
-      .then((data) => {
-        if (!mounted) return;
+        if (!mountedRef.current) return;
         setOverrides(data);
         setLoading(false);
       })
       .catch(() => {
-        if (mounted) setLoading(false);
+        if (mountedRef.current) setLoading(false);
+      });
+  };
+
+  useEffect(() => {
+    mountedRef.current = true;
+
+    getBaseContratOverrides()
+      .then((data) => {
+        if (!mountedRef.current) return;
+        setOverrides(data);
+        setLoading(false);
+      })
+      .catch(() => {
+        if (mountedRef.current) setLoading(false);
       });
 
     return () => {
-      mounted = false;
+      mountedRef.current = false;
     };
   }, []);
 
   return { overrides, loading, reload };
 }
 
-function RuleBlockCard({ block }: { block: RuleBlock }) {
+function RuleBlockCard({ block, showAdminMeta }: { block: RuleBlock; showAdminMeta: boolean }) {
   return (
     <div className="base-contrat-rule-card">
       <div className="base-contrat-rule-card__title">{block.title}</div>
@@ -67,6 +71,37 @@ function RuleBlockCard({ block }: { block: RuleBlock }) {
           <li key={index}>{bullet}</li>
         ))}
       </ul>
+      {showAdminMeta && (
+        <div className="base-contrat-rule-meta" aria-label="Métadonnées admin">
+          <span className={`base-contrat-confidence base-contrat-confidence--${block.confidence}`}>
+            Confiance {block.confidence}
+          </span>
+          {block.dependencies && block.dependencies.length > 0 && (
+            <div className="base-contrat-rule-meta__group">
+              <span className="base-contrat-rule-meta__label">Dépendances</span>
+              <ul className="base-contrat-rule-meta__list">
+                {block.dependencies.map((dependency) => (
+                  <li key={dependency}>{dependency}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+          {block.sources && block.sources.length > 0 && (
+            <div className="base-contrat-rule-meta__group">
+              <span className="base-contrat-rule-meta__label">Sources</span>
+              <ul className="base-contrat-rule-meta__list">
+                {block.sources.map((source) => (
+                  <li key={`${source.label}-${source.url}`}>
+                    <a href={source.url} target="_blank" rel="noreferrer">
+                      {source.label}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }
@@ -85,9 +120,11 @@ function EmptyRuleCard() {
 function PhaseColumn({
   phaseKey,
   blocks,
+  showAdminMeta,
 }: {
   phaseKey: 'constitution' | 'sortie' | 'deces';
   blocks: RuleBlock[];
+  showAdminMeta: boolean;
 }) {
   return (
     <div className="base-contrat-phase">
@@ -96,17 +133,32 @@ function PhaseColumn({
       </div>
       {blocks.length === 0
         ? <EmptyRuleCard />
-        : blocks.map((block, index) => <RuleBlockCard key={index} block={block} />)}
+        : blocks.map((block, index) => (
+          <RuleBlockCard key={index} block={block} showAdminMeta={showAdminMeta} />
+        ))}
     </div>
   );
 }
 
-function RulesPanel({ rules, closed }: { rules: ProductRules; closed: boolean }) {
+function RulesPanel({
+  rules,
+  closed,
+  showAdminMeta,
+}: {
+  rules: ProductRules;
+  closed: boolean;
+  showAdminMeta: boolean;
+}) {
   return (
     <div className={`base-contrat-rules${closed ? ' base-contrat-rules--closed' : ''}`}>
       <div className="base-contrat-rules__grid">
         {(['constitution', 'sortie', 'deces'] as const).map((phaseKey) => (
-          <PhaseColumn key={phaseKey} phaseKey={phaseKey} blocks={rules[phaseKey]} />
+          <PhaseColumn
+            key={phaseKey}
+            phaseKey={phaseKey}
+            blocks={rules[phaseKey]}
+            showAdminMeta={showAdminMeta}
+          />
         ))}
       </div>
     </div>
@@ -370,31 +422,28 @@ export default function BaseContrat() {
                       return (
                         <div key={product.id} className="base-contrat-product">
                           <div
-                            role="button"
-                            tabIndex={0}
                             className={`base-contrat-product__header${closed ? ' is-closed' : ''}`}
-                            onClick={() => setOpenProductId(isProductOpen ? null : product.id)}
-                            onKeyDown={(event) => {
-                              if (event.key === 'Enter' || event.key === ' ') {
-                                event.preventDefault();
-                                setOpenProductId(isProductOpen ? null : product.id);
-                              }
-                            }}
                           >
-                            <span className="base-contrat-product__header-main">
-                              <span className="base-contrat-product__label">{product.label}</span>
-                              {hasNoRules && (
-                                <span className="base-contrat-badge base-contrat-badge--muted">
-                                  Aucune règle
-                                </span>
-                              )}
-                              {closed && (
-                                <span className="base-contrat-badge base-contrat-badge--warning">
-                                  Clôturé {override?.closed_date ? `le ${override.closed_date}` : ''}
-                                </span>
-                              )}
-                            </span>
-
+                            <button
+                              type="button"
+                              className="base-contrat-product__toggle"
+                              onClick={() => setOpenProductId(isProductOpen ? null : product.id)}
+                            >
+                              <span className="base-contrat-product__header-main">
+                                <span className="base-contrat-product__label">{product.label}</span>
+                                {hasNoRules && (
+                                  <span className="base-contrat-badge base-contrat-badge--muted">
+                                    Aucune règle
+                                  </span>
+                                )}
+                                {closed && (
+                                  <span className="base-contrat-badge base-contrat-badge--warning">
+                                    Clôturé {override?.closed_date ? `le ${override.closed_date}` : ''}
+                                  </span>
+                                )}
+                              </span>
+                              <span className="fisc-acc-chevron">{isProductOpen ? 'v' : '>'}</span>
+                            </button>
                             <span className="base-contrat-product__header-actions">
                               {isAdmin && (
                                 <button
@@ -408,7 +457,6 @@ export default function BaseContrat() {
                                   {closed ? 'Rouvrir' : 'Clôturer'}
                                 </button>
                               )}
-                              <span className="fisc-acc-chevron">{isProductOpen ? 'v' : '>'}</span>
                             </span>
                           </div>
 
@@ -417,7 +465,7 @@ export default function BaseContrat() {
                               {override?.note_admin && (
                                 <p className="base-contrat-note">Note : {override.note_admin}</p>
                               )}
-                              <RulesPanel rules={rules} closed={closed} />
+                              <RulesPanel rules={rules} closed={closed} showAdminMeta={isAdmin} />
                             </div>
                           )}
                         </div>
