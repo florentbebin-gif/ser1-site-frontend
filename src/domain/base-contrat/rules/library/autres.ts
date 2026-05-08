@@ -18,6 +18,7 @@ function buildPmLifecycleRules(subject: string, tags: string[] = []): ProductRul
         ],
         tags: ['pm', 'detention', ...tags],
         confidence: 'elevee',
+        sources: [{ label: 'Art. 38 CGI — résultat imposable', url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000006302193' }],
       },
     ],
     sortie: [
@@ -29,6 +30,7 @@ function buildPmLifecycleRules(subject: string, tags: string[] = []): ProductRul
         ],
         tags: ['resultat_fiscal', 'cession_pm', ...tags],
         confidence: 'elevee',
+        sources: [{ label: 'Art. 38 CGI — résultat imposable', url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000006302193' }],
       },
     ],
     deces: [
@@ -40,6 +42,7 @@ function buildPmLifecycleRules(subject: string, tags: string[] = []): ProductRul
         ],
         tags: ['fin_vie_pm', 'cloture_pm', ...tags],
         confidence: 'elevee',
+        sources: [{ label: 'Art. 38 CGI — résultat imposable', url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000006302193' }],
       },
     ],
   };
@@ -57,6 +60,7 @@ const TONTINE: ProductRules = {
       ],
       tags: ['tontine', 'terme_fixe', 'no_rachat'],
       confidence: 'moyenne',
+      sources: [{ label: 'Code des assurances — section Tontines', url: 'https://www.legifrance.gouv.fr/loda/id/LEGISCTA000006142811' }],
       dependencies: ['statuts de l\'association tontinière', 'frais de gestion et modalités de répartition'],
     },
   ],
@@ -86,6 +90,7 @@ const TONTINE: ProductRules = {
       ],
       tags: ['no_succession_tontine', 'alea_viager', 'capital_deces_adosse'],
       confidence: 'moyenne',
+      sources: [{ label: 'Code des assurances — section Tontines', url: 'https://www.legifrance.gouv.fr/loda/id/LEGISCTA000006142811' }],
       dependencies: ['présence d\'une assurance-décès complémentaire'],
     },
   ],
@@ -102,6 +107,7 @@ const CRYPTO_ACTIFS: ProductRules = {
       ],
       tags: ['crypto', 'prix_de_revient'],
       confidence: 'elevee',
+      sources: [{ label: 'Art. 150 VH bis CGI — actifs numériques', url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000038612225' }],
     },
   ],
   sortie: [
@@ -125,6 +131,7 @@ const CRYPTO_ACTIFS: ProductRules = {
       ],
       tags: ['bnc_professionnel', 'staking'],
       confidence: 'elevee',
+      sources: [{ label: 'Art. 150 VH bis CGI — actifs numériques', url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000038612225' }],
     },
   ],
   deces: [
@@ -153,6 +160,7 @@ const METAUX_PRECIEUX: ProductRules = {
       ],
       tags: ['tva_argent', 'exoneration_tva_or', 'or_placement'],
       confidence: 'elevee',
+      sources: [{ label: 'Art. 298 sexdecies A CGI — or d’investissement', url: 'https://www.legifrance.gouv.fr/loda/article_lc/LEGIARTI000006304536/2021-02-24' }],
     },
   ],
   sortie: [

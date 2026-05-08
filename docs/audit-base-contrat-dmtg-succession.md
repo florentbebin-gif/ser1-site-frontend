@@ -7,7 +7,7 @@ Date : 2026-05-08.
 Base-Contrat n'est pas une source moteur aujourd'hui : `rg "getRules|base-contrat" src/engine` retourne 0 match.
 DMTG Succession, lui, est bien branché sur la chaîne fiscale standard et alimente le simulateur succession via `useFiscalContext`.
 Base-Contrat est conservable comme référentiel éditorial, mais non prêt comme source de vérité moteur ou exports sans contrat typé, sources visibles et gouvernance de revue.
-Les métriques générées donnent 199 `RuleBlock`, 113 sourcés, 52 en confiance moyenne/faible, 0 phase exposée vide.
+Les métriques générées donnent 199 `RuleBlock`, 166 sourcés, 52 en confiance moyenne/faible, 0 phase exposée vide.
 Décision recommandée : garder et renforcer le référentiel éditorial, puis décider explicitement d'une promotion moteur si le produit le justifie.
 
 ## Verrou stratégique
@@ -28,23 +28,26 @@ Métriques reproductibles :
 npm run audit:base-contrat-dmtg
 npm run audit:base-contrat-dmtg -- --json
 npm run audit:base-contrat-dmtg -- --out docs/audit-base-contrat-dmtg-succession.generated.md
+npm run audit:base-contrat-dmtg -- --out-veille docs/veille-base-contrat.md
 ```
 
 Annexe complète générée : [audit-base-contrat-dmtg-succession.generated.md](audit-base-contrat-dmtg-succession.generated.md). Choix retenu : l'annexe est versionnée comme snapshot daté de cet audit, car elle porte le tableau complet par produit/régime demandé. Elle reste régénérable par la commande ci-dessus.
+
+Livrable de veille : `docs/veille-base-contrat.md` est générable à la demande et ignoré Git. Il liste les blocs par famille avec leurs sources et les colonnes de rapprochement `base_contrat_overrides.review_status` / `next_review_at`.
 
 | Indicateur | Valeur | Lecture |
 |---|---:|---|
 | Produits catalogue | 111 | Périmètre large, multi-familles |
 | Couples produit/audience exposés | 111 | PP/PM selon éligibilité catalogue |
 | RuleBlock déclarés | 199 | Base exhaustive côté librairies |
-| RuleBlock avec sources | 113, soit 56,8 % | 43,2 % restent sans source explicite |
+| RuleBlock avec sources | 166, soit 83,4 % | Les familles prioritaires dépassent l'objectif de 80 % |
 | RuleBlock moyenne/faible | 52 | Dette de validation assumée |
 | Blocs exposés par produit/audience | 352 | Les blocs mutualisés sont réutilisés |
-| Blocs exposés sourcés | 175, soit 49,7 % | La couverture source réelle UI est inférieure à la couverture librairie |
+| Blocs exposés sourcés | 249, soit 70,7 % | La couverture source réelle UI progresse, les blocs mutualisés restent visibles par audience |
 | Conformité moyenne/faible | 71/71, soit 100 % | Invariant métier respecté à l'exposition |
 | Phases exposées vides | 0 | Aucun bloc "Aucune règle renseignée" en PP/PM exposé |
 | Consommateurs `src/engine` | 0 | Pas de source moteur |
-| Verdict produit/audience | 0 source moteur, 107 éditoriaux, 4 non prêts | Promotion moteur impossible en l'état |
+| Verdict produit/audience | 0 source moteur, 111 éditoriaux, 0 non prêt | Promotion moteur impossible en l'état, mais le référentiel éditorial est assaini |
 
 ### Méthode de scoring
 
@@ -58,29 +61,29 @@ Le verdict devient `source moteur` uniquement si un consommateur moteur existe, 
 
 | Fichier | Blocs | Sources | Moyenne/faible | Dependencies | Montants/taux bruts |
 |---|---:|---:|---:|---:|---:|
-| assurance-epargne.ts | 14 | 8 | 3 | 3 | 0 |
-| autres.ts | 13 | 5 | 3 | 3 | 0 |
+| assurance-epargne.ts | 14 | 14 | 3 | 3 | 0 |
+| autres.ts | 13 | 13 | 3 | 3 | 0 |
 | epargne-bancaire.ts | 26 | 18 | 1 | 1 | 0 |
 | fiscaux-immobilier.ts | 15 | 12 | 2 | 2 | 0 |
 | immobilier.ts | 34 | 21 | 10 | 11 | 0 |
-| prevoyance.ts | 22 | 6 | 5 | 5 | 0 |
-| retraite.ts | 42 | 19 | 24 | 24 | 0 |
+| prevoyance.ts | 22 | 22 | 5 | 5 | 0 |
+| retraite.ts | 42 | 42 | 24 | 24 | 0 |
 | valeurs-mobilieres.ts | 33 | 24 | 4 | 4 | 0 |
 
 ### Familles exposées
 
 | Famille | Couples produit/audience | Blocs | Sources | Moyenne/faible | Phases vides |
 |---|---:|---:|---:|---:|---:|
-| Assurance prévoyance | 7 | 22 | 6 | 5 | 0 |
-| Autres | 6 | 19 | 5 | 3 | 0 |
+| Assurance prévoyance | 7 | 22 | 22 | 5 | 0 |
+| Autres | 6 | 19 | 19 | 3 | 0 |
 | Créances/Droits | 5 | 15 | 6 | 3 | 0 |
 | Dispositifs fiscaux immobilier | 10 | 30 | 22 | 2 | 0 |
-| Épargne Assurance | 3 | 14 | 8 | 3 | 0 |
+| Épargne Assurance | 3 | 14 | 14 | 3 | 0 |
 | Épargne bancaire | 17 | 55 | 37 | 1 | 0 |
 | Immobilier direct | 10 | 30 | 21 | 4 | 0 |
 | Immobilier indirect | 6 | 18 | 8 | 10 | 0 |
 | Non coté/PE | 10 | 30 | 13 | 0 | 0 |
-| Retraite & épargne salariale | 19 | 65 | 27 | 36 | 0 |
+| Retraite & épargne salariale | 19 | 65 | 65 | 36 | 0 |
 | Valeurs mobilières | 18 | 54 | 22 | 4 | 0 |
 
 ## Findings
@@ -91,11 +94,11 @@ Le verdict devient `source moteur` uniquement si un consommateur moteur existe, 
 
 3. `src/pages/settings/BaseContrat.tsx:364` : `const rules = getRules(product.id, togglePPPM);`. Impact : seul l'écran settings consomme les règles. Recommandation minimale : formaliser que `/settings/base-contrat` est le consommateur propriétaire tant qu'aucun simulateur/export ne dépend de `getRules`.
 
-4. `src/domain/base-contrat/rules/types.ts:8` et `src/pages/settings/BaseContrat.tsx:64` : les champs `confidence`, `sources`, `dependencies` sont typés mais "non affichés en UI", et la carte affiche seulement `title` + `bullets`. Impact : la veille juridique existe en données mais reste invisible aux admins. Recommandation minimale : afficher en admin une pastille de confiance, les dépendances et les URLs cliquables.
+4. `src/domain/base-contrat/rules/types.ts:8` et `src/pages/settings/BaseContrat.tsx:81` : les champs `confidence`, `sources`, `dependencies` sont affichés en UI admin. Impact : la veille juridique est exploitable sans exposer ces détails aux non-admins. Recommandation minimale : conserver ce rendu admin-only et maintenir la couverture de sources.
 
 5. `src/domain/base-contrat/__tests__/rules.test.ts:235` et `src/domain/base-contrat/__tests__/rules.test.ts:256` : les tests imposent déjà `moyenne/faible => "À confirmer" + dependencies`. Impact : bon garde-fou métier déjà présent. Recommandation minimale : le conserver dans `npm test`, et l'étendre seulement si l'on exige un taux de couverture source minimal par famille.
 
-6. `scripts/audit-base-contrat-dmtg.mjs` : l'audit mesure 199 blocs, 113 sourcés et 52 moyenne/faible. Impact : la base est défendable éditorialement, mais pas assez sourcée pour devenir source moteur. Recommandation minimale : viser d'abord 80 % de sources officielles sur les familles à risque patrimonial.
+6. `scripts/audit-base-contrat-dmtg.mjs` : l'audit mesure 199 blocs, 166 sourcés et 52 moyenne/faible. Impact : la base est défendable éditorialement, mais pas encore source moteur car `src/engine` ne la consomme pas. Recommandation minimale : poursuivre la couverture source sur les familles restantes avant toute promotion moteur.
 
 7. `src/pages/settings/SettingsDmtgSuccession.tsx:79`, `src/pages/settings/SettingsDmtgSuccession.tsx:241` et `src/pages/settings/SettingsDmtgSuccession.tsx:250` : lecture directe `tax_settings`/`fiscality_settings`, upsert, puis `invalidate('tax')` et `broadcastInvalidation('tax')`. Impact : le flux settings respecte le pattern settings admin. Recommandation minimale : garder cette chaîne et ajouter un test golden post-save avant fermeture d'édition.
 
@@ -103,17 +106,17 @@ Le verdict devient `source moteur` uniquement si un consommateur moteur existe, 
 
 9. `supabase/migrations/20260502222622_p2_rls_optimizations.sql:96` à `supabase/migrations/20260502222622_p2_rls_optimizations.sql:115` et `supabase/migrations/20260502222622_p2_rls_optimizations.sql:142` à `supabase/migrations/20260502222622_p2_rls_optimizations.sql:152` : lecture `tax_settings`/`fiscality_settings` aux authentifiés, écritures admin, overrides Base-Contrat admin-only. Impact : les migrations portent une preuve RLS dure. Recommandation minimale : vérifier en environnement déployé via `pg_policies`, pas seulement par lecture repo.
 
-10. `src/pages/settings/DmtgSuccession/migrateDmtgData.ts:13` et `src/pages/settings/SettingsDmtgSuccession.tsx:92` : migration JSONB défensive exécutée au chargement. Impact : dette de schéma persistante, pas un acquis. Recommandation minimale : migration Supabase unique, validation Zod à l'écriture, puis suppression de `migrateDmtgData` si la production est stabilisée.
+10. `rg "migrateDmtgData" src` sans match et `supabase/migrations/20260508000300_normalize_dmtg_jsonb.sql:56` : la migration JSONB défensive a été supprimée après normalisation. Impact : la dette de schéma DMTG est réduite. Recommandation minimale : garder les fixtures legacy de migration comme garde-fou.
 
-11. `supabase/migrations/20260223000100_create_base_contrat_overrides.sql:7` et `src/domain/base-contrat/overrides.ts:10` : `base_contrat_overrides` contient `product_id`, `closed_date`, `note_admin`, `updated_at`, sans `review_status` ni `next_review_at`. Impact : la veille juridique reste binaire ouvert/clôturé. Recommandation minimale : ajouter `à revoir`, `obsolescence à confirmer`, `prochaine_revue`.
+11. `supabase/migrations/20260508000200_add_base_contrat_review_status.sql:23` et `src/domain/base-contrat/overrides.ts:20` : `base_contrat_overrides` porte `review_status`, `review_reason`, `next_review_at`. Impact : la veille juridique peut être pilotée par statut. Recommandation minimale : renseigner ces champs lors des revues annuelles.
 
-12. `rg "updated_by|review_status|next_review|obsolescence" src supabase docs` : aucun match. Impact : pas de traçabilité auteur ni statut de revue sur les bases concernées. Recommandation minimale : ajouter `updated_by` aux tables fiscales et overrides, ou journaliser dans une table d'audit dédiée.
+12. `supabase/migrations/20260508000100_add_dmtg_settings_updated_by.sql:8` et `src/pages/settings/SettingsDmtgSuccession.tsx:268` : les écritures DMTG alimentent `updated_by` sur `tax_settings` et `fiscality_settings`. Impact : la traçabilité auteur est disponible côté DB. Recommandation minimale : vérifier périodiquement les valeurs nulles en production.
 
-13. `src/features/succession/export/successionXlsx.ts:211` : texte d'hypothèse `Abattement ligne directe : 100 000 EUR`. Impact : duplication d'affichage, pas risque de calcul, mais incohérence possible si settings DMTG évolue. Recommandation minimale : alimenter ce texte depuis le snapshot fiscal ou supprimer le montant figé.
+13. `src/features/succession/export/successionXlsx.ts:216` : le texte d'hypothèse `Abattement ligne directe` est alimenté par `snapshot.dmtgSettings.ligneDirecte.abattement`. Impact : l'export suit les settings DMTG au lieu d'une constante. Recommandation minimale : conserver le test XLSX avec abattement personnalisé.
 
 14. `src/features/placement/utils/normalizers.ts:106`, `src/features/placement/hooks/usePlacementSimulatorController.ts:100` et `src/engine/placement/transmission.ts:31` : fallback `0.20` existe dans Placement. Impact : fallback dégradé, non prioritaire si `useFiscalContext` fournit bien le barème. Recommandation minimale : tracer le cas fallback et éviter de le présenter comme valeur de production.
 
-15. `src/pages/settings/BaseContrat.tsx:30` et `src/pages/settings/BaseContrat.tsx:373` : `reload()` sans guard mounted, et `<div role="button" tabIndex={0}>`. Impact : confort qualité, accessibilité et risque mineur de state update tardif. Recommandation minimale : remplacer par `button` natif et protéger le reload lors du prochain passage UI.
+15. `src/pages/settings/BaseContrat.tsx:36` et `src/pages/settings/BaseContrat.tsx:368` : `reload()` est protégé par `mountedRef`, et l'accordéon produit utilise un `button` natif. Impact : dette UI/accessibilité traitée. Recommandation minimale : conserver ce pattern sur les prochains accordéons settings.
 
 16. `docs/ARCHITECTURE.md:65` : les constantes/données pures sont exemptes de la règle de taille. Impact : `retraite.ts`, `immobilier.ts`, `valeurs-mobilieres.ts` ne doivent pas être pénalisés comme composants React longs. Recommandation minimale : ne découper ces fichiers que si la responsabilité métier se mélange avec du rendu ou de l'I/O.
 
@@ -126,7 +129,7 @@ Le verdict devient `source moteur` uniquement si un consommateur moteur existe, 
 | Exports pédagogiques | 3/5 | 3/5 | Utilisables sous conditions | Utiliser les snapshots fiscaux, pas les textes dupliqués |
 | Promotion moteur Base-Contrat | 1/5 | 2/5 | Non prêt | Reporter jusqu'à contrat typé, versionné, sourcé et testé |
 
-Les 4 couples produit/audience non prêts dans l'annexe générée sont tous en retraite/épargne salariale : `Article 39 PP`, `PEE PM`, `PERCOL PM`, `PERCO PM`. Le problème n'est pas une phase vide, mais une combinaison 0 source et confiance moyenne/faible.
+Les 4 couples produit/audience initialement non prêts (`Article 39 PP`, `PEE PM`, `PERCOL PM`, `PERCO PM`) sont désormais éditoriaux après ajout de sources officielles sur les familles prioritaires. Le blocage moteur demeure stratégique : Base-Contrat n'est toujours pas consommée par `src/engine`.
 
 ## Plan d'action
 

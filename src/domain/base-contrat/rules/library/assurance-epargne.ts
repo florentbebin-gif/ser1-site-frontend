@@ -19,6 +19,7 @@ const ASSURANCE_VIE_PP: ProductRules = {
       ],
       tags: ['neutralite_fiscale', 'supports_fe_uc'],
       confidence: 'elevee',
+      sources: [{ label: 'Service-Public — fonctionnement assurance-vie', url: 'https://www.service-public.fr/particuliers/vosdroits/F15274' }],
     },
   ],
   sortie: [
@@ -67,6 +68,7 @@ const ASSURANCE_VIE_PP: ProductRules = {
       ],
       tags: ['hors_succession', 'clause_beneficiaire'],
       confidence: 'elevee',
+      sources: [{ label: 'Art. L132-12 Code des assurances', url: 'https://www.legifrance.gouv.fr/loda/article_lc/LEGIARTI000006793003' }],
     },
     {
       title: 'Primes versées avant 70 ans (art. 990 I CGI)',
@@ -104,6 +106,7 @@ const CONTRAT_CAPITALISATION: ProductRules = {
       ],
       tags: ['pp_eligible', 'supports_fe_uc'],
       confidence: 'elevee',
+      sources: [{ label: 'Art. 125-0 A CGI — BOFiP RPPM-RCM-10-10-80', url: 'https://bofip.impots.gouv.fr/bofip/2279-PGP.html/identifiant=BOI-RPPM-RCM-10-10-80-20220630' }],
     },
   ],
   sortie: [
@@ -141,6 +144,7 @@ const CONTRAT_CAPITALISATION: ProductRules = {
       ],
       tags: ['donation', 'demembrement', 'continuation'],
       confidence: 'elevee',
+      sources: [{ label: 'Art. 779 CGI — abattements DMTG', url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000047678018' }],
     },
   ],
 };
@@ -156,6 +160,7 @@ const CONTRAT_CAPITALISATION_PM: ProductRules = {
       ],
       tags: ['pm_eligible', 'supports_fe_uc'],
       confidence: 'moyenne',
+      sources: [{ label: 'Art. 238 septies E CGI', url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000006304080' }],
       dependencies: ['objet social de la société', 'régime IS ou IR'],
     },
   ],
@@ -183,6 +188,7 @@ const CONTRAT_CAPITALISATION_PM: ProductRules = {
       ],
       tags: ['fin_vie_pm', 'liquidation', 'cession_activite'],
       confidence: 'elevee',
+      sources: [{ label: 'Art. 38 CGI — résultat imposable', url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000006302193' }],
     },
   ],
 };

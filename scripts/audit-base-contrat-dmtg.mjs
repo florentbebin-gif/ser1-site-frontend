@@ -325,9 +325,9 @@ function classifyKnownValues() {
     },
     {
       file: 'src/features/succession/export/successionXlsx.ts',
-      line: 211,
-      class: 'hypothese_export_dupliquee',
-      detail: 'Texte pédagogique figé "Abattement ligne directe : 100 000 EUR", pas valeur de calcul.',
+      line: 216,
+      class: 'hypothese_export_snapshot',
+      detail: 'Texte pédagogique alimenté par le snapshot fiscal DMTG, avec fallback defaults si aucun snapshot n’est fourni.',
     },
     {
       file: 'src/features/placement/utils/normalizers.ts',
@@ -378,10 +378,83 @@ function formatAudience(audience) {
   return audience === 'pp' ? 'PP' : 'PM';
 }
 
+function formatPhase(phase) {
+  if (phase === 'constitution') return 'Constitution';
+  if (phase === 'sortie') return 'Sortie / rachat';
+  return 'Décès / transmission';
+}
+
 function formatVerdict(value) {
   if (value === 'source_moteur_candidate') return 'source moteur';
   if (value === 'referentiel_editorial') return 'éditorial';
   return 'non prêt';
+}
+
+function escapeMarkdownCell(value) {
+  return String(value).replace(/\|/g, '\\|').replace(/\r?\n/g, '<br>');
+}
+
+function formatSources(sources) {
+  if (!Array.isArray(sources) || sources.length === 0) return 'À sourcer';
+  return sources
+    .map((source) => `[${escapeMarkdownCell(source.label)}](${source.url})`)
+    .join('<br>');
+}
+
+function toVeilleMarkdown(CATALOG, getRules) {
+  const rows = [];
+  for (const product of CATALOG) {
+    for (const audience of getEligibleAudiences(product)) {
+      const rules = getRules(product.id, audience);
+      for (const phase of PHASES) {
+        for (const block of rules[phase] ?? []) {
+          rows.push({
+            famille: product.grandeFamille,
+            product: product.label,
+            audience,
+            phase,
+            title: block.title,
+            sources: block.sources,
+          });
+        }
+      }
+    }
+  }
+
+  rows.sort((a, b) =>
+    a.famille.localeCompare(b.famille, 'fr')
+    || a.product.localeCompare(b.product, 'fr')
+    || a.audience.localeCompare(b.audience, 'fr')
+    || PHASES.indexOf(a.phase) - PHASES.indexOf(b.phase)
+    || a.title.localeCompare(b.title, 'fr'),
+  );
+
+  const tableRows = rows
+    .map((row) => [
+      escapeMarkdownCell(row.famille),
+      escapeMarkdownCell(row.product),
+      formatAudience(row.audience),
+      formatPhase(row.phase),
+      escapeMarkdownCell(row.title),
+      formatSources(row.sources),
+      'Non chargé',
+      '—',
+    ].join(' | '))
+    .map((row) => `| ${row} |`)
+    .join('\n');
+
+  return [
+    '# Veille Base-Contrat',
+    '',
+    '> Artefact généré, non versionné. Régénération : `npm run audit:base-contrat-dmtg -- --out-veille docs/veille-base-contrat.md`.',
+    '',
+    'Ce document sert de checklist hors UI pour la revue juridique annuelle. Les colonnes `Statut revue` et `Prochaine revue` sont prévues pour être rapprochées de `base_contrat_overrides.review_status` et `base_contrat_overrides.next_review_at` lorsque les données d’overrides sont disponibles.',
+    '',
+    '| Famille | Produit | Audience | Phase | Bloc | Sources | Statut revue | Prochaine revue |',
+    '|---|---|---:|---|---|---|---|---|',
+    tableRows,
+    '',
+  ].join('\n');
 }
 
 function toMarkdown(metrics) {
@@ -460,7 +533,18 @@ function main() {
   const args = process.argv.slice(2);
   const asJson = args.includes('--json');
   const outIndex = args.indexOf('--out');
+  const veilleOutIndex = args.indexOf('--out-veille');
   const outFile = outIndex >= 0 ? args[outIndex + 1] : null;
+  const veilleOutFile = veilleOutIndex >= 0 ? args[veilleOutIndex + 1] : null;
+
+  if (veilleOutFile) {
+    const resolved = path.resolve(ROOT, veilleOutFile);
+    fs.mkdirSync(path.dirname(resolved), { recursive: true });
+    fs.writeFileSync(resolved, `${toVeilleMarkdown(CATALOG, getRules)}\n`);
+    process.stdout.write(`Veille écrite dans ${toPosix(resolved)}\n`);
+    return;
+  }
+
   const output = asJson ? JSON.stringify(metrics, null, 2) : toMarkdown(metrics);
 
   if (outFile) {

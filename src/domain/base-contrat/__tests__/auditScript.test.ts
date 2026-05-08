@@ -1,5 +1,5 @@
 import { execFileSync } from 'node:child_process';
-import { existsSync } from 'node:fs';
+import { existsSync, readFileSync, rmSync } from 'node:fs';
 import { join } from 'node:path';
 import process from 'node:process';
 import { describe, expect, it } from 'vitest';
@@ -52,5 +52,33 @@ describe('script audit Base-Contrat / DMTG Succession', () => {
       && typeof item.text === 'string',
     )).toBe(true);
     expect(existsSync(join(process.cwd(), '.tmp', 'audit-base-contrat-runtime'))).toBe(false);
+  });
+
+  it('génère un livrable de veille hors UI sans conserver le runtime temporaire', () => {
+    const outPath = join('.tmp', 'veille-base-contrat-test.md');
+    const absoluteOutPath = join(process.cwd(), outPath);
+    rmSync(absoluteOutPath, { force: true });
+
+    const output = execFileSync(
+      process.execPath,
+      ['scripts/audit-base-contrat-dmtg.mjs', '--out-veille', outPath],
+      {
+        cwd: process.cwd(),
+        encoding: 'utf8',
+        maxBuffer: 10 * 1024 * 1024,
+      },
+    );
+
+    expect(output).toContain('Veille écrite dans');
+    expect(existsSync(absoluteOutPath)).toBe(true);
+    const markdown = readFileSync(absoluteOutPath, 'utf8');
+
+    expect(markdown).toContain('# Veille Base-Contrat');
+    expect(markdown).toContain('base_contrat_overrides.review_status');
+    expect(markdown).toContain('| Famille | Produit | Audience | Phase | Bloc | Sources | Statut revue | Prochaine revue |');
+    expect(markdown).toContain('https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000038612905');
+    expect(existsSync(join(process.cwd(), '.tmp', 'audit-base-contrat-runtime'))).toBe(false);
+
+    rmSync(absoluteOutPath, { force: true });
   });
 });
