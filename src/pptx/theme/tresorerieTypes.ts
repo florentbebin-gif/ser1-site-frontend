@@ -7,6 +7,19 @@ export type TresorerieSchemaSlideSpec = {
   title: string;
   subtitle: string;
   typeCreation: 'newco' | 'existante';
+  companyKindLabel?: string;
+  companyKindCode?: string;
+  associates?: Array<{
+    label: string;
+    kind: 'pp' | 'pm';
+    capitalPct: string;
+    economicRightsPct: string;
+  }>;
+  subsidiaries?: Array<{
+    label: string;
+    parentEntityId: string;
+    ownershipPct: string;
+  }>;
   hasHolding: boolean;
   hasDistribution: boolean;
   hasCapitalisation: boolean;

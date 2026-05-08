@@ -1,5 +1,12 @@
 import { calculBaseEtIS } from './calculIS';
 import {
+  getAssociateProfile,
+  getCapitalPct,
+  getEconomicPct,
+  getSelectedAssociate,
+  getSelectedAssociateId,
+} from './runtimeAccessors';
+import {
   buildAssociateRevenueRows,
   computeMatrixYear,
   computeSubsidiariesByYear,
@@ -13,33 +20,116 @@ import {
   sumMapValues,
 } from './simulateTresorerieV2.helpers';
 import type {
+  AssociateInput,
+  CompanyInput,
+  AllocationPocketInput,
+  AllocationMatrixInput,
   TresoFiscalParams,
-  TresoInputsV2,
+  TresoInputsRuntime,
   TresoProjectionRow,
 } from './types';
 
+export class TresoSimulationInputError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'TresoSimulationInputError';
+  }
+}
+
+const CAPITAL_OWNERSHIP_OVERFLOW_ERROR = 'Détention capital supérieure à 100 %.';
+const ECONOMIC_OWNERSHIP_OVERFLOW_ERROR = 'Droits économiques supérieurs à 100 %.';
+
+function getIncomeStatement(company: CompanyInput): {
+  annualRevenue: number;
+  annualStructureCosts: number;
+  workingCapitalRequirement: number;
+} {
+  return company.incomeStatement ?? {
+    annualRevenue: 0,
+    annualStructureCosts: company.annualStructureCosts,
+    workingCapitalRequirement: 0,
+  };
+}
+
+function getInitialCcaBalance(
+  inputs: TresoInputsRuntime,
+  associate: AssociateInput,
+): number {
+  if (associate.cca) {
+    return Math.max(0, associate.cca.currentBalance);
+  }
+  return inputs.company.creationType === 'existante' ? associate.ccaInitial : 0;
+}
+
+function getAnnualCcaContribution(associate: AssociateInput, anneeCivile: number): number {
+  if (associate.cca) {
+    const contribution = associate.cca.annualContribution;
+    const isActive =
+      anneeCivile >= contribution.startYear &&
+      (contribution.endYear == null || anneeCivile <= contribution.endYear);
+    return isActive ? Math.max(0, contribution.amount) : 0;
+  }
+  return isCivilYearBeforeOrEqual(associate.ccaContributionEndYear, anneeCivile)
+    ? associate.ccaAnnualContribution
+    : 0;
+}
+
+function getExceptionalCcaContribution(associate: AssociateInput, anneeCivile: number): number {
+  return associate.cca?.exceptionalContributions
+    .filter(contribution => contribution.year === anneeCivile)
+    .reduce((sum, contribution) => sum + Math.max(0, contribution.amount), 0) ?? 0;
+}
+
+function getInitialCcaContribution(
+  inputs: TresoInputsRuntime,
+  associate: AssociateInput,
+  year: number,
+): number {
+  if (associate.cca) return 0;
+  return year === 1 && inputs.company.creationType !== 'existante'
+    ? Math.max(0, associate.ccaInitial)
+    : 0;
+}
+
+function getAllocationPockets(matrix: AllocationMatrixInput): AllocationPocketInput[] {
+  return matrix.mode === 'single' ? matrix.pockets.slice(0, 1) : matrix.pockets;
+}
+
+function validateOwnershipTotals(associates: AssociateInput[]): void {
+  const totalCapitalPct = associates.reduce((sum, associate) => sum + getCapitalPct(associate), 0);
+  const totalEconomicPct = associates.reduce((sum, associate) => sum + getEconomicPct(associate), 0);
+  if (totalCapitalPct > 100) {
+    throw new TresoSimulationInputError(CAPITAL_OWNERSHIP_OVERFLOW_ERROR);
+  }
+  if (totalEconomicPct > 100) {
+    throw new TresoSimulationInputError(ECONOMIC_OWNERSHIP_OVERFLOW_ERROR);
+  }
+}
+
 export function simulateTresorerieV2(
-  v2: TresoInputsV2,
+  v2: TresoInputsRuntime,
   params: TresoFiscalParams,
   horizonAns: number,
 ): TresoProjectionRow[] {
-  const { foyer, company } = v2;
-  const anneeCivileDebut = foyer.projectionStartYear;
+  const { company } = v2;
   const associates = company.associates;
-  const selectedAssociateId = foyer.selectedAssociateId;
+  validateOwnershipTotals(associates);
+  const selectedAssociateId = getSelectedAssociateId(v2);
+  const selectedAssociate = getSelectedAssociate(v2);
+  const selectedProfile = getAssociateProfile(v2, selectedAssociate);
+  const anneeCivileDebut = selectedProfile.projectionStartYear;
+  const incomeStatement = getIncomeStatement(company);
+  const allocationPockets = getAllocationPockets(v2.allocationMatrix);
 
   const initialCcaBalances = new Map<string, number>();
   associates.forEach(associate => {
-    initialCcaBalances.set(
-      associate.id,
-      company.creationType === 'existante' ? associate.ccaInitial : 0,
-    );
+    initialCcaBalances.set(associate.id, getInitialCcaBalance(v2, associate));
   });
 
-  let ccaBalances = initialCcaBalances;
+  let ccaBalances = new Map(initialCcaBalances);
   let ccaCumuleTotal = sumMapValues(initialCcaBalances);
   const initialLots = createLotsFromAllocation({
-    pockets: v2.allocationMatrix.pockets,
+    pockets: allocationPockets,
     amount: company.treasuryInitial,
     allocationKey: 'initialAllocationPct',
     startYear: anneeCivileDebut,
@@ -55,8 +145,8 @@ export function simulateTresorerieV2(
 
   for (let year = 1; year <= horizonAns; year++) {
     const anneeCivile = anneeCivileDebut + year - 1;
-    const ageAnnee = foyer.currentAge + year - 1;
-    const enPhaseRetraite = ageAnnee >= foyer.retirementAge;
+    const ageAnnee = selectedProfile.currentAge + year - 1;
+    const enPhaseRetraite = ageAnnee >= selectedProfile.retirementAge;
     const ccaBalanceDebut = new Map(ccaBalances);
 
     const remunerationByAssociate = new Map<string, number>();
@@ -68,15 +158,10 @@ export function simulateTresorerieV2(
 
     let apportCCA = 0;
     associates.forEach(associate => {
-      const annualContribution = isCivilYearBeforeOrEqual(
-        associate.ccaContributionEndYear,
-        anneeCivile,
-      )
-        ? associate.ccaAnnualContribution
-        : 0;
-      const initialContribution =
-        year === 1 && company.creationType !== 'existante' ? associate.ccaInitial : 0;
-      const contribution = Math.max(0, annualContribution + initialContribution);
+      const annualContribution = getAnnualCcaContribution(associate, anneeCivile);
+      const initialContribution = getInitialCcaContribution(v2, associate, year);
+      const exceptionalContribution = getExceptionalCcaContribution(associate, anneeCivile);
+      const contribution = Math.max(0, annualContribution + initialContribution + exceptionalContribution);
       if (contribution <= 0) return;
       apportCCA += contribution;
       ccaCumuleTotal += contribution;
@@ -88,12 +173,29 @@ export function simulateTresorerieV2(
     const loansResult = sumCompanyLoansByYear(company.loans, anneeCivileDebut, year);
     const subsidiariesResult = computeSubsidiariesByYear(company.subsidiaries, anneeCivile, params);
 
+    const ccaInterestByAssociate = new Map<string, number>();
+    const ccaDeductibleInterestByAssociate = new Map<string, number>();
+    associates.forEach(associate => {
+      const remunerationRate = Math.max(0, associate.cca?.remunerationRate ?? 0);
+      const balance = ccaBalanceDebut.get(associate.id) ?? 0;
+      if (balance <= 0 || remunerationRate <= 0) return;
+      const interest = balance * remunerationRate;
+      const maxDeductibleRate = params.maxDeductibleCcaInterestRate ?? remunerationRate;
+      const deductibleInterest = balance * Math.min(remunerationRate, Math.max(0, maxDeductibleRate));
+      ccaInterestByAssociate.set(associate.id, interest);
+      ccaDeductibleInterestByAssociate.set(associate.id, Math.min(interest, deductibleInterest));
+    });
+
+    const interetsCCA = sumMapValues(ccaInterestByAssociate);
+    const interetsCCADeductibles = sumMapValues(ccaDeductibleInterestByAssociate);
+    const interetsCCANonDeductibles = Math.max(0, interetsCCA - interetsCCADeductibles);
     const remunerationCost = sumMapValues(remunerationByAssociate);
     const tnsChargesPaidThisYear = sumMapValues(tnsChargesToPayByAssociate);
     const chargesStructure =
-      company.annualStructureCosts + remunerationCost + tnsChargesPaidThisYear;
+      incomeStatement.annualStructureCosts + remunerationCost + tnsChargesPaidThisYear;
 
     const resultatComptableAvantIS =
+      incomeStatement.annualRevenue +
       matrixResult.revenuDistrib +
       matrixResult.gainCapiN +
       loansResult.revenusActifFinance +
@@ -101,9 +203,11 @@ export function simulateTresorerieV2(
       subsidiariesResult.dividendesFiliales +
       subsidiariesResult.disposalGain -
       loansResult.interetsCreditIS -
+      interetsCCA -
       chargesStructure;
 
     const resultatFiscalAvantIS =
+      incomeStatement.annualRevenue +
       matrixResult.revenuDistrib +
       matrixResult.gainCapiN +
       loansResult.revenusActifFinance +
@@ -112,6 +216,7 @@ export function simulateTresorerieV2(
       subsidiariesResult.estimatedFiscalResult +
       subsidiariesResult.disposalGain -
       loansResult.interetsDeductibles -
+      interetsCCADeductibles -
       chargesStructure;
 
     const { baseIS, is } = calculBaseEtIS(
@@ -126,6 +231,7 @@ export function simulateTresorerieV2(
     const tresorerieDisponibleApresIS = Math.max(
       0,
       tresorerieDebut +
+        incomeStatement.annualRevenue +
         matrixResult.revenuDistrib +
         subsidiariesResult.servicesRevenue +
         subsidiariesResult.dividendesFiliales +
@@ -136,12 +242,13 @@ export function simulateTresorerieV2(
         loansResult.revenusActifFinance -
         is -
         loansResult.annuiteCreditIS -
+        interetsCCA -
         chargesStructure,
     );
 
     const selectedRemuneration = remunerationByAssociate.get(selectedAssociateId) ?? 0;
     const besoinRetraiteApresRemuneration = enPhaseRetraite
-      ? Math.max(0, foyer.annualIncomeNeed - selectedRemuneration)
+      ? Math.max(0, selectedProfile.annualIncomeNeed - selectedRemuneration)
       : 0;
     const retraitsCCA = Math.min(
       besoinRetraiteApresRemuneration,
@@ -157,7 +264,7 @@ export function simulateTresorerieV2(
     const selectedEconomicPct =
       (getEconomicRightsPct(associates.find(a => a.id === selectedAssociateId) ?? associates[0]) || 0) / 100;
     const besoinNetRestant = enPhaseRetraite
-      ? Math.max(0, foyer.annualIncomeNeed - selectedRemuneration - retraitsCCA)
+      ? Math.max(0, selectedProfile.annualIncomeNeed - selectedRemuneration - retraitsCCA)
       : 0;
     const dividendesComplementairesBrutsDemandes =
       besoinNetRestant > 0 && params.pfuTotal < 1 && selectedEconomicPct > 0
@@ -207,16 +314,18 @@ export function simulateTresorerieV2(
       {
         remunerationByAssociate,
         ccaRepaidByAssociate,
+        ccaInterestByAssociate,
         grossDividendsByAssociate,
         tnsSocialChargesByAssociate,
       },
       params,
     );
     const revenusNets = sumAssociateNet(revenusParAssocie, selectedAssociateId);
-    const deltaBesoin = revenusNets - foyer.annualIncomeNeed;
+    const deltaBesoin = revenusNets - selectedProfile.annualIncomeNeed;
     const pfuDividendes = dividendesAssociesBruts * params.pfuTotal;
 
     const fluxEntrants =
+      incomeStatement.annualRevenue +
       matrixResult.revenuDistrib +
       subsidiariesResult.servicesRevenue +
       subsidiariesResult.dividendesFiliales +
@@ -230,11 +339,14 @@ export function simulateTresorerieV2(
       retraitsCCA +
       dividendesAssociesBruts +
       loansResult.annuiteCreditIS +
+      interetsCCA +
       chargesStructure;
     const tresorerieAvantBalayage = tresorerieDebut + fluxEntrants - fluxSortants;
-    const sweepBase = Math.max(0, tresorerieAvantBalayage - v2.allocationMatrix.sweepThreshold);
+    const sweepThreshold =
+      v2.allocationMatrix.sweepThreshold + incomeStatement.workingCapitalRequirement;
+    const sweepBase = Math.max(0, tresorerieAvantBalayage - sweepThreshold);
     const annualSweepLots = createLotsFromAllocation({
-      pockets: v2.allocationMatrix.pockets,
+      pockets: allocationPockets,
       amount: sweepBase,
       allocationKey: 'annualAllocationPct',
       startYear: anneeCivile + 1,
@@ -263,6 +375,9 @@ export function simulateTresorerieV2(
       dividendesFilialesExoneres: subsidiariesResult.dividendesFilialesExoneres,
       quotePartTaxable: subsidiariesResult.quotePartTaxable,
       chargesStructure,
+      interetsCCA,
+      interetsCCADeductibles,
+      interetsCCANonDeductibles,
       interetsCreditIS: loansResult.interetsCreditIS,
       resultatComptableAvantIS,
       resultatFiscalAvantIS,

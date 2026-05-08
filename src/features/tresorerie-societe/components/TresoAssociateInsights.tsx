@@ -1,11 +1,12 @@
 /**
- * TresoFoyerInsights.tsx — Timeline et graphe besoin / revenus.
+ * TresoAssociateInsights.tsx — Timeline et graphe besoin / revenus.
  */
 
-import type { TresoInputsV2, TresoProjectionRow } from '../../../engine/tresorerie/types';
+import type { TresoInputsRuntime, TresoProjectionRow } from '../../../engine/tresorerie/types';
+import { getAssociateProfile, getSelectedAssociate } from '../utils/tresorerieSocieteModel';
 
 interface Props {
-  inputs: TresoInputsV2;
+  inputs: TresoInputsRuntime;
   rows: TresoProjectionRow[];
 }
 
@@ -13,22 +14,22 @@ function fmtEuro(n: number): string {
   return `${Math.round(n || 0).toLocaleString('fr-FR')} €`;
 }
 
-export function TresoFoyerInsights({ inputs, rows }: Props) {
-  const v2 = inputs;
+export function TresoAssociateInsights({ inputs, rows }: Props) {
+  const profile = getAssociateProfile(inputs, getSelectedAssociate(inputs));
 
-  const retraiteIndex = Math.max(0, v2.foyer.retirementAge - v2.foyer.currentAge);
+  const retraiteIndex = Math.max(0, profile.retirementAge - profile.currentAge);
   const retraiteRow = rows[retraiteIndex] ?? rows[0];
   const revenus = retraiteRow?.revenusNets ?? 0;
-  const besoin = v2.foyer.annualIncomeNeed;
+  const besoin = profile.annualIncomeNeed;
   const maxGraph = Math.max(besoin, revenus, 1);
-  const currentYear = v2.foyer.projectionStartYear;
+  const currentYear = profile.projectionStartYear;
   const retirementYear = currentYear + retraiteIndex;
 
   return (
-    <div className="premium-card ts-foyer-insights">
+    <div className="premium-card ts-associate-insights">
       <div className="ts-kpi-sidebar__header">
-        <h2 className="ts-kpi-sidebar__title">Foyer</h2>
-        <p className="ts-kpi-sidebar__subtitle">Horizon et revenus à la date cible</p>
+        <h2 className="ts-kpi-sidebar__title">Associé actif</h2>
+        <p className="ts-kpi-sidebar__subtitle">Horizon et revenus paramétrés dans la modale</p>
       </div>
       <div className="ts-kpi-sidebar__divider" />
 

@@ -17,6 +17,8 @@ interface CorporateTaxPeriodSettings {
   normalRate: number | null;
   reducedRate: number | null;
   reducedThreshold: number | null;
+  maxDeductibleCcaInterestRate?: number | null;
+  dividendsAbatementPct?: number | null;
   motherDaughterQpfc?: MotherDaughterQpfc;
 }
 
@@ -124,6 +126,24 @@ export default function ImpotsISSection({
                 unit="%"
                 disabled={!isAdmin}
               />
+              <SettingsFieldRow
+                label="Taux maximum déductible des intérêts CCA"
+                path={['corporateTax', 'current', 'maxDeductibleCcaInterestRate']}
+                value={corporateTax.current.maxDeductibleCcaInterestRate ?? null}
+                onChange={updateField}
+                step="0.01"
+                unit="%"
+                disabled={!isAdmin}
+              />
+              <SettingsFieldRow
+                label="Abattement dividendes au barème"
+                path={['corporateTax', 'current', 'dividendsAbatementPct']}
+                value={corporateTax.current.dividendsAbatementPct ?? null}
+                onChange={updateField}
+                step="0.1"
+                unit="%"
+                disabled={!isAdmin}
+              />
               {qpfcCurrentError && (
                 <p style={{ color: 'var(--color-warning-text)', fontSize: 12, margin: '2px 0 4px' }}>
                   {qpfcCurrentError}
@@ -174,6 +194,24 @@ export default function ImpotsISSection({
                 label="Quote-part frais (groupe fiscal)"
                 path={['corporateTax', 'previous', 'motherDaughterQpfc', 'group']}
                 value={corporateTax.previous.motherDaughterQpfc?.group ?? null}
+                onChange={updateField}
+                step="0.1"
+                unit="%"
+                disabled={!isAdmin}
+              />
+              <SettingsFieldRow
+                label="Taux maximum déductible des intérêts CCA"
+                path={['corporateTax', 'previous', 'maxDeductibleCcaInterestRate']}
+                value={corporateTax.previous.maxDeductibleCcaInterestRate ?? null}
+                onChange={updateField}
+                step="0.01"
+                unit="%"
+                disabled={!isAdmin}
+              />
+              <SettingsFieldRow
+                label="Abattement dividendes au barème"
+                path={['corporateTax', 'previous', 'dividendsAbatementPct']}
+                value={corporateTax.previous.dividendsAbatementPct ?? null}
                 onChange={updateField}
                 step="0.1"
                 unit="%"

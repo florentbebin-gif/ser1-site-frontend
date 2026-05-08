@@ -10,9 +10,15 @@
  */
 
 import type { LogoPlacement, StudyDeckSpec } from '@/pptx/theme/types';
-import type { TresoInputsV2, TresoProjectionRow } from '@/engine/tresorerie/types';
+import type { TresoInputsRuntime, TresoProjectionRow } from '@/engine/tresorerie/types';
 import { paginateTresoYears } from '@/pptx/slides/buildTresorerieProjection';
 import type { TresoKPIs } from '../hooks/useTresorerieCalculations';
+import {
+  getCapitalPct,
+  getCompanyKindCode,
+  getCompanyKindLabel,
+  getEconomicPct,
+} from '../utils/tresorerieSocieteModel';
 
 // ─── Libellés UI premium (jamais les labels Excel bruts) ───────────────────────
 
@@ -38,12 +44,16 @@ function fmtAns(n: number | null): string {
   return n === 1 ? '1 an' : `${n} ans`;
 }
 
+function fmtPct(n: number): string {
+  return `${Math.round(n * 100) / 100} %`;
+}
+
 // ─── Construction du StudyDeckSpec ────────────────────────────────────────────
 
 export interface TresorerieDeckData {
   rows: TresoProjectionRow[];
   kpis: TresoKPIs;
-  inputs: TresoInputsV2;
+  inputs: TresoInputsRuntime;
   clientName?: string;
 }
 
@@ -89,8 +99,10 @@ export function buildTresorerieStudyDeck(
     'IS calculé sur la base fiscale (résultat avant IS clampé à 0) — pas de report de pertes.',
     'Réserve légale (5 % du bénéfice) non modélisée — capacité distribuable simplifiée.',
     'CCA : remboursement hors PFU — diminue le passif, pas les réserves.',
+    'Intérêts CCA : déduction plafonnée au taux maximum déductible issu des paramètres fiscaux.',
     'PFU dividendes : convention Option A (brut unique sans double comptage).',
     'IS latent capitalisation : affiché pour information, non décaissé avant la sortie.',
+    'BFR inclus dans le seuil de sécurité avant balayage de la trésorerie.',
     'Délai de jouissance : premier jour du mois ≥ date de début de jouissance.',
     'Régime mère-fille : conditions BOFiP (≥ 5 % détention, ≥ 2 ans) à vérifier.',
     'Taux fiscaux issus des paramètres admin — aucune valeur hardcodée.',
@@ -112,6 +124,19 @@ export function buildTresorerieStudyDeck(
         title: 'Schéma patrimonial — Société IS',
         subtitle: 'Constitution · Exploitation · Retraite & Transmission',
         typeCreation: inputs.company.creationType,
+        companyKindLabel: getCompanyKindLabel(inputs.company),
+        companyKindCode: getCompanyKindCode(inputs.company),
+        associates: inputs.company.associates.map(associate => ({
+          label: associate.label,
+          kind: associate.kind ?? 'pp',
+          capitalPct: fmtPct(getCapitalPct(associate)),
+          economicRightsPct: fmtPct(getEconomicPct(associate)),
+        })),
+        subsidiaries: inputs.company.subsidiaries.map(subsidiary => ({
+          label: subsidiary.label,
+          parentEntityId: subsidiary.parentEntityId ?? 'societe',
+          ownershipPct: fmtPct(subsidiary.ownershipPct ?? subsidiary.holdingOwnershipPct),
+        })),
         hasHolding,
         hasDistribution,
         hasCapitalisation,

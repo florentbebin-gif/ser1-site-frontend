@@ -4,12 +4,25 @@
 
 import { SimFieldShell } from '../../../components/ui/sim/SimFieldShell';
 import { SimSelect } from '../../../components/ui/sim/SimSelect';
-import type { AllocationPocketInput, TresoInputsV2 } from '../../../engine/tresorerie/types';
+import type {
+  AllocationPocketHorizon,
+  AllocationPocketInput,
+  AllocationStrategyMode,
+  TresoInputsV3,
+} from '../../../engine/tresorerie/types';
 import { getAllocationPocketLabel } from '../utils/tresorerieV2Migration';
+import {
+  fmtEuroInput,
+  fmtRateInput,
+  parseEuroInput,
+  parseNumberInput,
+  parsePctInput,
+  parseRateInput,
+} from '../utils/tresorerieFormatters';
 
 interface Props {
-  inputs: TresoInputsV2;
-  onChange: (nextInputs: TresoInputsV2) => void;
+  inputs: TresoInputsV3;
+  onChange: (nextInputs: TresoInputsV3) => void;
 }
 
 const KIND_OPTIONS = [
@@ -23,38 +36,18 @@ const DESTINATION_OPTIONS = [
   { value: 'same_pocket', label: 'Même poche' },
 ];
 
-function fmt(n: number): string {
-  return Math.round(n || 0).toLocaleString('fr-FR');
-}
-
-function parseEuro(v: string): number {
-  const clean = v.replace(/\s/g, '').replace(/\D/g, '');
-  return clean === '' ? 0 : Math.min(Number(clean), 999_999_999);
-}
-
-function parseNumber(v: string): number {
-  const clean = v.replace(/\D/g, '');
-  return clean === '' ? 0 : Number(clean);
-}
-
-function parsePct(v: string): number {
-  const clean = v.replace(',', '.').replace(/[^\d.]/g, '');
-  if (clean === '') return 0;
-  return Math.min(Number(clean), 100);
-}
-
-function fmtRate(rate: number): string {
-  return ((rate || 0) * 100).toFixed(2).replace('.', ',');
-}
-
-function parseRate(v: string): number {
-  return parsePct(v) / 100;
-}
+const HORIZON_OPTIONS: Array<{ value: AllocationPocketHorizon; label: string }> = [
+  { value: 'court_terme', label: 'Court terme' },
+  { value: 'moyen_terme', label: 'Moyen terme' },
+  { value: 'long_terme', label: 'Long terme' },
+];
 
 function buildDefaultPocket(index: number): AllocationPocketInput {
   return {
     id: `poche-${index + 1}`,
     kind: index === 0 ? 'distribution' : 'capitalisation',
+    horizon: index === 0 ? 'court_terme' : index === 1 ? 'moyen_terme' : 'long_terme',
+    withdrawalPriority: index + 1,
     durationYears: index === 0 ? 5 : 8,
     annualReturnRate: index === 0 ? 0.05 : 0.04,
     enjoymentDelayMonths: 0,
@@ -70,13 +63,19 @@ export function TresoPlacementSection({ inputs, onChange }: Props) {
 
   const matrix = v2.allocationMatrix;
   const pockets = matrix.pockets.slice(0, 5);
+  const mode = matrix.mode ?? (pockets.length <= 1 ? 'single' : 'strategy');
+  const workingCapitalRequirement = v2.company.incomeStatement?.workingCapitalRequirement ?? 0;
 
-  const patchV2 = (nextV2: TresoInputsV2) => {
+  const patchV2 = (nextV2: TresoInputsV3) => {
     onChange(nextV2);
   };
 
-  const patchMatrix = (patch: Partial<TresoInputsV2['allocationMatrix']>) => {
+  const patchMatrix = (patch: Partial<TresoInputsV3['allocationMatrix']>) => {
     patchV2({ ...v2, allocationMatrix: { ...matrix, ...patch } });
+  };
+
+  const setMode = (nextMode: AllocationStrategyMode) => {
+    patchMatrix({ mode: nextMode });
   };
 
   const updatePocket = (id: string, patch: Partial<AllocationPocketInput>) => {
@@ -110,23 +109,46 @@ export function TresoPlacementSection({ inputs, onChange }: Props) {
       </div>
       <div className="ts-section__divider" />
 
+      <div className="ts-placement-mode" aria-label="Mode de placement">
+        <button
+          type="button"
+          className={`ts-modal-tab${mode === 'single' ? ' is-active' : ''}`}
+          onClick={() => setMode('single')}
+        >
+          Placement unique
+        </button>
+        <button
+          type="button"
+          className={`ts-modal-tab${mode === 'strategy' ? ' is-active' : ''}`}
+          onClick={() => setMode('strategy')}
+        >
+          Stratégie multi-poches
+        </button>
+        <span>BFR inclus dans le seuil de sécurité : {fmtEuroInput(workingCapitalRequirement)} €</span>
+      </div>
+
       <div className="ts-fields">
         <SimFieldShell label="Seuil de trésorerie conservée" className="ts-field" rowClassName="ts-field__row">
           <input
             type="text"
             inputMode="numeric"
             className="sim-field__control"
-            value={fmt(matrix.sweepThreshold)}
-            onChange={event => patchMatrix({ sweepThreshold: parseEuro(event.target.value) })}
+            value={fmtEuroInput(matrix.sweepThreshold)}
+            onChange={event => patchMatrix({ sweepThreshold: parseEuroInput(event.target.value) })}
           />
           <span className="sim-field__unit ts-unit">€</span>
         </SimFieldShell>
       </div>
 
+      <div className="ts-section__note">Ordre de consommation</div>
       <div className="ts-matrix-flow" aria-label="Évolution de la matrice d’allocation">
-        {pockets.map(pocket => (
+        {pockets
+          .slice()
+          .sort((a, b) => (a.withdrawalPriority ?? 99) - (b.withdrawalPriority ?? 99))
+          .map(pocket => (
           <div key={pocket.id} className="ts-matrix-flow__item">
             <span>{getAllocationPocketLabel(pocket)}</span>
+            <small>{HORIZON_OPTIONS.find(option => option.value === pocket.horizon)?.label}</small>
             <i style={{ width: `${Math.max(4, pocket.annualAllocationPct)}%` }} />
           </div>
         ))}
@@ -162,6 +184,29 @@ export function TresoPlacementSection({ inputs, onChange }: Props) {
                 />
               </SimFieldShell>
 
+              <SimFieldShell label="Horizon" className="ts-field" rowClassName="ts-field__row">
+                <SimSelect
+                  value={pocket.horizon ?? 'moyen_terme'}
+                  onChange={value => updatePocket(pocket.id, {
+                    horizon: value as AllocationPocketHorizon,
+                  })}
+                  options={HORIZON_OPTIONS}
+                  ariaLabel={`Horizon poche ${index + 1}`}
+                />
+              </SimFieldShell>
+
+              <SimFieldShell label="Ordre de consommation" className="ts-field" rowClassName="ts-field__row">
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  className="sim-field__control"
+                  value={pocket.withdrawalPriority ?? index + 1}
+                  onChange={event => updatePocket(pocket.id, {
+                    withdrawalPriority: parseNumberInput(event.target.value),
+                  })}
+                />
+              </SimFieldShell>
+
               <SimFieldShell label="Durée" className="ts-field" rowClassName="ts-field__row">
                 <input
                   type="text"
@@ -169,7 +214,7 @@ export function TresoPlacementSection({ inputs, onChange }: Props) {
                   className="sim-field__control"
                   value={pocket.durationYears || ''}
                   onChange={event => updatePocket(pocket.id, {
-                    durationYears: parseNumber(event.target.value),
+                    durationYears: parseNumberInput(event.target.value),
                   })}
                 />
                 <span className="sim-field__unit ts-unit">ans</span>
@@ -180,9 +225,9 @@ export function TresoPlacementSection({ inputs, onChange }: Props) {
                   type="text"
                   inputMode="decimal"
                   className="sim-field__control"
-                  value={fmtRate(pocket.annualReturnRate)}
+                  value={fmtRateInput(pocket.annualReturnRate)}
                   onChange={event => updatePocket(pocket.id, {
-                    annualReturnRate: parseRate(event.target.value),
+                    annualReturnRate: parseRateInput(event.target.value),
                   })}
                 />
                 <span className="sim-field__unit ts-unit">%</span>
@@ -195,7 +240,7 @@ export function TresoPlacementSection({ inputs, onChange }: Props) {
                   className="sim-field__control"
                   value={pocket.enjoymentDelayMonths || ''}
                   onChange={event => updatePocket(pocket.id, {
-                    enjoymentDelayMonths: parseNumber(event.target.value),
+                    enjoymentDelayMonths: parseNumberInput(event.target.value),
                   })}
                 />
                 <span className="sim-field__unit ts-unit">mois</span>
@@ -208,7 +253,7 @@ export function TresoPlacementSection({ inputs, onChange }: Props) {
                   className="sim-field__control"
                   value={String(pocket.initialAllocationPct)}
                   onChange={event => updatePocket(pocket.id, {
-                    initialAllocationPct: parsePct(event.target.value),
+                    initialAllocationPct: parsePctInput(event.target.value),
                   })}
                 />
                 <span className="sim-field__unit ts-unit">%</span>
@@ -221,7 +266,7 @@ export function TresoPlacementSection({ inputs, onChange }: Props) {
                   className="sim-field__control"
                   value={String(pocket.annualAllocationPct)}
                   onChange={event => updatePocket(pocket.id, {
-                    annualAllocationPct: parsePct(event.target.value),
+                    annualAllocationPct: parsePctInput(event.target.value),
                   })}
                 />
                 <span className="sim-field__unit ts-unit">%</span>

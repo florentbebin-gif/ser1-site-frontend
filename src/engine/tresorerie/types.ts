@@ -43,6 +43,8 @@ export interface TresoFiscalParams {
   irScale: IRBracket[];
   /** Seuil social TNS sur dividendes (ex: 10 % de capital + primes + CCA) */
   tnsDividendBasePct?: number;
+  /** Taux maximum déductible des intérêts de CCA. */
+  maxDeductibleCcaInterestRate?: number;
 }
 
 // ─── Poches de placement ──────────────────────────────────────────────────────
@@ -136,11 +138,14 @@ export type AssociateRole =
 export interface AssociateInput {
   id: string;
   label: string;
+  kind?: AssociateKind;
+  profile?: AssociateProfileInput;
   ownershipLots: OwnershipLotInput[];
   roles: AssociateRole[];
   ccaInitial: number;
   ccaAnnualContribution: number;
   ccaContributionEndYear?: number;
+  cca?: CcaScheduleInput;
   remunerationAnnualCost: number;
   remunerationEndYear?: number;
   socialChargesManualRate?: number;
@@ -166,6 +171,9 @@ export interface CompanyLoanInput {
 export interface SubsidiaryInput {
   id: string;
   label: string;
+  parentEntityId?: string;
+  ownershipPct?: number;
+  displayOrder?: number;
   holdingOwnershipPct: number;
   annualServicesRevenue: number;
   annualDividends: number;
@@ -179,11 +187,15 @@ export interface SubsidiaryInput {
 
 export type AllocationPocketKind = 'distribution' | 'capitalisation';
 export type AllocationTermDestination = 'treasury' | 'matrix' | 'same_pocket';
+export type AllocationStrategyMode = 'single' | 'strategy';
+export type AllocationPocketHorizon = 'court_terme' | 'moyen_terme' | 'long_terme';
 
 export interface AllocationPocketInput {
   id: string;
   label?: string;
   kind: AllocationPocketKind;
+  horizon?: AllocationPocketHorizon;
+  withdrawalPriority?: number;
   durationYears: number;
   annualReturnRate: number;
   enjoymentDelayMonths: number;
@@ -194,18 +206,58 @@ export interface AllocationPocketInput {
 }
 
 export interface AllocationMatrixInput {
+  mode?: AllocationStrategyMode;
   sweepThreshold: number;
   pockets: AllocationPocketInput[];
 }
 
+export type LegalForm = 'sas' | 'sc' | 'sarl' | 'sa' | 'selarl' | 'spfpl' | 'selas' | 'autre';
+export type CompanyKind =
+  | 'holding_patrimoniale'
+  | 'holding_remuneration'
+  | 'holding_animatrice'
+  | 'societe_exploitation';
+export type AssociateKind = 'pp' | 'pm';
+
+export interface AssociateProfileInput {
+  currentAge: number;
+  retirementAge: number;
+  annualIncomeNeed: number;
+  projectionStartYear: number;
+}
+
+export interface CcaExceptionalContributionInput {
+  year: number;
+  amount: number;
+}
+
+export interface CcaAnnualContributionInput {
+  amount: number;
+  startYear: number;
+  endYear?: number;
+}
+
+export interface CcaScheduleInput {
+  currentBalance: number;
+  exceptionalContributions: CcaExceptionalContributionInput[];
+  annualContribution: CcaAnnualContributionInput;
+  remunerationRate: number;
+}
+
 export interface CompanyInput {
   creationType: 'newco' | 'existante';
-  legalForm: 'sas' | 'sc' | 'sarl' | 'autre';
+  legalForm: LegalForm;
+  companyKind?: CompanyKind;
   shareCapital: number;
   sharePremium: number;
   reservesInitial: number;
   treasuryInitial: number;
   annualStructureCosts: number;
+  incomeStatement?: {
+    annualRevenue: number;
+    annualStructureCosts: number;
+    workingCapitalRequirement: number;
+  };
   reducedCorporateTaxEligible: boolean;
   associates: AssociateInput[];
   loans: CompanyLoanInput[];
@@ -218,6 +270,13 @@ export interface TresoInputsV2 {
   company: CompanyInput;
   allocationMatrix: AllocationMatrixInput;
 }
+
+export interface TresoInputsV3 extends Omit<TresoInputsV2, 'version'> {
+  version: 3;
+  selectedAssociateId: string;
+}
+
+export type TresoInputsRuntime = TresoInputsV2 | TresoInputsV3;
 
 // ─── Entrées legacy du simulateur (migration/compatibilité) ───────────────────
 
@@ -258,6 +317,7 @@ export interface TresoInputs {
 export type TresoAssociateRevenueSource =
   | 'remuneration'
   | 'cca'
+  | 'cca_interets'
   | 'dividendes'
   | 'charges_sociales_tns'
   | 'fiscalite';
@@ -302,6 +362,9 @@ export interface TresoProjectionRow {
 
   // Résultat
   chargesStructure: number;
+  interetsCCA: number;
+  interetsCCADeductibles: number;
+  interetsCCANonDeductibles: number;
   interetsCreditIS: number;
   resultatComptableAvantIS: number;
   resultatFiscalAvantIS: number;

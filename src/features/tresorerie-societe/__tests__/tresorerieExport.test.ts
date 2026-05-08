@@ -2,7 +2,7 @@ import JSZip from 'jszip';
 import { describe, expect, it } from 'vitest';
 import { DEFAULT_COLORS } from '@/settings/theme';
 import { fingerprintPptxExport } from '@/utils/export/exportFingerprint';
-import type { TresoInputsV2, TresoProjectionRow } from '@/engine/tresorerie/types';
+import type { TresoProjectionRow } from '@/engine/tresorerie/types';
 import type { TresoKPIs } from '../hooks/useTresorerieCalculations';
 import { buildTresorerieXlsxBlob } from '../export/tresorerieExcelExport';
 import { buildTresorerieStudyDeck } from '../export/tresoreriePptxWrapper';
@@ -21,8 +21,9 @@ const KPIS: TresoKPIs = {
   anneeRetraiteIndex: 12,
 };
 
-const INPUTS: TresoInputsV2 = {
-  version: 2,
+const INPUTS = {
+  version: 3,
+  selectedAssociateId: 'associe-1',
   foyer: {
     selectedAssociateId: 'associe-1',
     currentAge: 50,
@@ -33,20 +34,39 @@ const INPUTS: TresoInputsV2 = {
   company: {
     creationType: 'newco',
     legalForm: 'sas',
+    companyKind: 'holding_patrimoniale',
     shareCapital: 10000,
     sharePremium: 0,
     reservesInitial: 8000,
     treasuryInitial: 150000,
     annualStructureCosts: 3000,
+    incomeStatement: {
+      annualRevenue: 0,
+      annualStructureCosts: 3000,
+      workingCapitalRequirement: 50000,
+    },
     reducedCorporateTaxEligible: true,
     associates: [{
       id: 'associe-1',
       label: 'Associé 1',
+      kind: 'pp',
+      profile: {
+        currentAge: 50,
+        retirementAge: 62,
+        annualIncomeNeed: 24000,
+        projectionStartYear: 2026,
+      },
       ownershipLots: [{ right: 'pleine_propriete', capitalPct: 100, economicRightsPct: 100 }],
       roles: ['associe_sans_statut'],
       ccaInitial: 90000,
       ccaAnnualContribution: 12000,
       ccaContributionEndYear: 2037,
+      cca: {
+        currentBalance: 90000,
+        exceptionalContributions: [{ year: 2028, amount: 15000 }],
+        annualContribution: { amount: 12000, startYear: 2026, endYear: 2037 },
+        remunerationRate: 0.04,
+      },
       remunerationAnnualCost: 0,
     }],
     loans: [{
@@ -62,6 +82,9 @@ const INPUTS: TresoInputsV2 = {
     subsidiaries: [{
       id: 'filiale-1',
       label: 'Filiale',
+      parentEntityId: 'societe',
+      ownershipPct: 80,
+      displayOrder: 0,
       holdingOwnershipPct: 80,
       annualServicesRevenue: 0,
       annualDividends: 18000,
@@ -70,11 +93,15 @@ const INPUTS: TresoInputsV2 = {
     }],
   },
   allocationMatrix: {
+    mode: 'strategy',
     sweepThreshold: 50000,
     pockets: [
       {
         id: 'distribution-1',
+        label: 'Court terme',
         kind: 'distribution',
+        horizon: 'court_terme',
+        withdrawalPriority: 1,
         durationYears: 5,
         annualReturnRate: 0.045,
         enjoymentDelayMonths: 0,
@@ -85,7 +112,10 @@ const INPUTS: TresoInputsV2 = {
       },
       {
         id: 'capitalisation-1',
+        label: 'Long terme',
         kind: 'capitalisation',
+        horizon: 'long_terme',
+        withdrawalPriority: 3,
         durationYears: 8,
         annualReturnRate: 0.035,
         enjoymentDelayMonths: 0,
@@ -96,7 +126,7 @@ const INPUTS: TresoInputsV2 = {
       },
     ],
   },
-};
+} as any;
 
 function makeRow(year: number): TresoProjectionRow {
   const retirementOffset = INPUTS.foyer.retirementAge - INPUTS.foyer.currentAge;
@@ -118,6 +148,9 @@ function makeRow(year: number): TresoProjectionRow {
     dividendesFilialesExoneres: 0,
     quotePartTaxable: 0,
     chargesStructure: INPUTS.company.annualStructureCosts,
+    interetsCCA: 0,
+    interetsCCADeductibles: 0,
+    interetsCCANonDeductibles: 0,
     interetsCreditIS: 0,
     resultatComptableAvantIS: 150,
     resultatFiscalAvantIS: 150,
@@ -198,12 +231,17 @@ describe('Exports Trésorerie société', () => {
 
     expect(schema).toMatchObject({
       type: 'treso-schema',
+      companyKindLabel: 'Holding patrimoniale',
+      companyKindCode: 'HP',
       hasDistribution: true,
       hasCapitalisation: true,
       hasCreditIS: true,
       hasHolding: true,
       hasAllocationMatrix: true,
     });
+    expect(JSON.stringify(schema)).toContain('Associé 1');
+    expect(JSON.stringify(schema)).toContain('Filiale');
+    expect(JSON.stringify(schema)).toContain('80 %');
   });
 
   it('génère un XLSX valide avec les onglets Projection, Revenus associés puis Hypothèses', async () => {
@@ -226,9 +264,11 @@ describe('Exports Trésorerie société', () => {
 
     expect(workbookXml).toContain('Projection');
     expect(workbookXml).toContain('Revenus associés');
+    expect(workbookXml).toContain('Structure société');
     expect(workbookXml).toContain('Hypothèses');
     expect(projectionXml).toContain('Trésorerie fin d&apos;année');
     expect(revenusXml).toContain('Remboursement CCA');
-    expect(hypothesesXml).toContain('Taux fiscaux issus des paramètres admin');
+    expect(hypothesesXml).toContain('Taux maximum déductible');
+    expect(hypothesesXml).toContain('BFR inclus dans le seuil de sécurité');
   });
 });

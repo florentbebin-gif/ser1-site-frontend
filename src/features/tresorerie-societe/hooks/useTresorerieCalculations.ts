@@ -9,9 +9,13 @@
 
 import { useMemo } from 'react';
 import { useFiscalContext } from '../../../hooks/useFiscalContext';
-import { simulateTresorerieV2 } from '../../../engine/tresorerie/simulateTresorerieV2';
+import {
+  simulateTresorerieV2,
+  TresoSimulationInputError,
+} from '../../../engine/tresorerie/simulateTresorerieV2';
 import { DEFAULT_TAX_SETTINGS, DEFAULT_PS_SETTINGS } from '../../../constants/settingsDefaults';
-import type { TresoInputsV2, TresoFiscalParams, TresoProjectionRow } from '../../../engine/tresorerie/types';
+import type { TresoInputsRuntime, TresoFiscalParams, TresoProjectionRow } from '../../../engine/tresorerie/types';
+import { getAssociateProfile, getSelectedAssociate } from '../utils/tresorerieSocieteModel';
 
 // ─── KPIs ─────────────────────────────────────────────────────────────────────
 
@@ -56,8 +60,19 @@ export interface TresoCalculationsResult {
 // ─── Hook ─────────────────────────────────────────────────────────────────────
 
 const HORIZON_ANS = 40;
+const GENERIC_SIMULATION_ERROR = 'La simulation de trésorerie société a rencontré une erreur.';
 
-export function useTresorerieCalculations(inputs: TresoInputsV2): TresoCalculationsResult {
+interface SimulationState {
+  rows: TresoProjectionRow[];
+  error: string | null;
+}
+
+function getSimulationErrorMessage(simulationError: unknown): string {
+  if (simulationError instanceof TresoSimulationInputError) return simulationError.message;
+  return GENERIC_SIMULATION_ERROR;
+}
+
+export function useTresorerieCalculations(inputs: TresoInputsRuntime): TresoCalculationsResult {
   const { fiscalContext, loading, error } = useFiscalContext({ strict: false });
 
   // ── Construction des TresoFiscalParams depuis la chaîne fiscale ──────────
@@ -75,6 +90,10 @@ export function useTresorerieCalculations(inputs: TresoInputsV2): TresoCalculati
     const reducedThreshold = corpCurrent.reducedThreshold ?? defaultsCorp.reducedThreshold;
     const tnsDividendBasePct =
       (corpCurrent.tnsDividendBasePct ?? defaultsCorp.tnsDividendBasePct) / 100;
+    const maxDeductibleCcaInterestRate =
+      (corpCurrent.maxDeductibleCcaInterestRate ?? defaultsCorp.maxDeductibleCcaInterestRate) / 100;
+    const dividendesAbattement =
+      (corpCurrent.dividendsAbatementPct ?? defaultsCorp.dividendsAbatementPct) / 100;
 
     const qpfc = corpCurrent.motherDaughterQpfc ?? defaultsCorp.motherDaughterQpfc;
     const standardQpfc = (qpfc.standard ?? defaultsCorp.motherDaughterQpfc.standard) / 100;
@@ -92,21 +111,23 @@ export function useTresorerieCalculations(inputs: TresoInputsV2): TresoCalculati
       pfuRateIR,
       psRate,
       pfuTotal: pfuRateIR + psRate,
-      dividendesAbattement: 0.40, // V1 non utilisé — taux légal, non paramétrable en settings V1
+      dividendesAbattement,
       irScale: fiscalContext.irScaleCurrent ?? DEFAULT_TAX_SETTINGS.incomeTax.scaleCurrent,
       tnsDividendBasePct,
+      maxDeductibleCcaInterestRate,
     };
   }, [fiscalContext]);
 
   // ── Simulation ────────────────────────────────────────────────────────────
-  const rows = useMemo<TresoProjectionRow[]>(() => {
-    if (!fiscalParams) return [];
+  const simulation = useMemo<SimulationState>(() => {
+    if (!fiscalParams) return { rows: [], error: null };
     try {
-      return simulateTresorerieV2(inputs, fiscalParams, HORIZON_ANS);
-    } catch {
-      return [];
+      return { rows: simulateTresorerieV2(inputs, fiscalParams, HORIZON_ANS), error: null };
+    } catch (simulationError) {
+      return { rows: [], error: getSimulationErrorMessage(simulationError) };
     }
   }, [inputs, fiscalParams]);
+  const rows = simulation.rows;
 
   // ── KPIs ──────────────────────────────────────────────────────────────────
   const kpis = useMemo<TresoKPIs>(() => {
@@ -126,8 +147,9 @@ export function useTresorerieCalculations(inputs: TresoInputsV2): TresoCalculati
       };
     }
 
+    const activeProfile = getAssociateProfile(inputs, getSelectedAssociate(inputs));
     const anneeRetraiteIndex = Math.min(
-      inputs.foyer.retirementAge - inputs.foyer.currentAge,
+      activeProfile.retirementAge - activeProfile.currentAge,
       rows.length - 1,
     );
 
@@ -146,8 +168,8 @@ export function useTresorerieCalculations(inputs: TresoInputsV2): TresoCalculati
     const revenusNetsRetraite = retraiteRow?.revenusNets ?? 0;
 
     // Durée remboursement CCA
-    const dureeRemboursementCCA = inputs.foyer.annualIncomeNeed > 0 && ccaTotalConstitue > 0
-      ? Math.ceil(ccaTotalConstitue / inputs.foyer.annualIncomeNeed)
+    const dureeRemboursementCCA = activeProfile.annualIncomeNeed > 0 && ccaTotalConstitue > 0
+      ? Math.ceil(ccaTotalConstitue / activeProfile.annualIncomeNeed)
       : null;
 
     // Valeur nette société à la retraite
@@ -182,7 +204,7 @@ export function useTresorerieCalculations(inputs: TresoInputsV2): TresoCalculati
     rows,
     kpis,
     loading,
-    error,
+    error: error ?? simulation.error,
     fiscalParams,
   };
 }

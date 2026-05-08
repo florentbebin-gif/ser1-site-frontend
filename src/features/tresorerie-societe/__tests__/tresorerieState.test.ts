@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import type { TresoInputs } from '@/engine/tresorerie/types';
 import type { TresoPersistedState } from '../types';
 import {
-  DEFAULT_TRESO_INPUTS_V2,
+  DEFAULT_TRESO_INPUTS_V3,
   normalizeTresoreriePersistedState,
 } from '../hooks/useTresorerieState';
 import { storageKeyFor } from '../../../utils/reset';
@@ -28,47 +28,56 @@ const LEGACY_INPUTS: TresoInputs = {
   },
 };
 
-describe('useTresorerieState — source de vérité v2', () => {
+describe('useTresorerieState — source de vérité v3', () => {
   it('STORE_KEY suit la convention ser1:sim:<simId>', () => {
     expect(storageKeyFor('tresorerie-societe')).toBe('ser1:sim:tresorerie-societe');
   });
 
-  it('expose des defaults uniquement en modèle v2 pour le runtime', () => {
-    expect(DEFAULT_TRESO_INPUTS_V2.company.creationType).toBe('newco');
-    expect(DEFAULT_TRESO_INPUTS_V2.foyer.retirementAge)
-      .toBeGreaterThan(DEFAULT_TRESO_INPUTS_V2.foyer.currentAge);
-    expect(DEFAULT_TRESO_INPUTS_V2.company.treasuryInitial).toBe(0);
-    expect(DEFAULT_TRESO_INPUTS_V2.company.reservesInitial).toBe(0);
-    expect(DEFAULT_TRESO_INPUTS_V2.company.associates[0].ccaInitial).toBe(0);
+  it('expose des defaults uniquement en modèle v3 pour le runtime', () => {
+    expect(DEFAULT_TRESO_INPUTS_V3.version).toBe(3);
+    expect(DEFAULT_TRESO_INPUTS_V3.company.creationType).toBe('newco');
+    expect(DEFAULT_TRESO_INPUTS_V3.company.companyKind).toBe('holding_patrimoniale');
+    expect(DEFAULT_TRESO_INPUTS_V3.company.associates[0].profile?.retirementAge)
+      .toBeGreaterThan(DEFAULT_TRESO_INPUTS_V3.company.associates[0].profile?.currentAge ?? 0);
+    expect(DEFAULT_TRESO_INPUTS_V3.company.treasuryInitial).toBe(0);
+    expect(DEFAULT_TRESO_INPUTS_V3.company.reservesInitial).toBe(0);
+    expect(DEFAULT_TRESO_INPUTS_V3.company.incomeStatement?.workingCapitalRequirement).toBe(0);
+    expect(DEFAULT_TRESO_INPUTS_V3.company.associates[0].cca?.currentBalance).toBe(0);
   });
 
-  it('migre une ancienne session legacy vers inputsV2 puis abandonne inputs', () => {
+  it('migre une ancienne session legacy vers inputsV3 puis abandonne inputs', () => {
     const state = normalizeTresoreriePersistedState({ inputs: LEGACY_INPUTS });
 
-    expect(state.inputsV2.foyer.currentAge).toBe(52);
-    expect(state.inputsV2.company.treasuryInitial).toBe(150000);
-    expect(state.inputsV2.allocationMatrix.pockets[0]).toMatchObject({
+    expect(state.inputsV3.company.associates[0].profile?.currentAge).toBe(52);
+    expect(state.inputsV3.company.treasuryInitial).toBe(150000);
+    expect(state.inputsV3.allocationMatrix.pockets[0]).toMatchObject({
       kind: 'distribution',
       annualReturnRate: 0.045,
     });
     expect('inputs' in state).toBe(false);
   });
 
-  it('privilégie inputsV2 quand une session contient encore les deux formats', () => {
+  it('privilégie inputsV3 quand une session contient plusieurs formats', () => {
     const persisted: TresoPersistedState = {
       inputs: LEGACY_INPUTS,
-      inputsV2: {
-        ...DEFAULT_TRESO_INPUTS_V2,
-        foyer: {
-          ...DEFAULT_TRESO_INPUTS_V2.foyer,
-          currentAge: 48,
+      inputsV3: {
+        ...DEFAULT_TRESO_INPUTS_V3,
+        company: {
+          ...DEFAULT_TRESO_INPUTS_V3.company,
+          associates: DEFAULT_TRESO_INPUTS_V3.company.associates.map(associate => ({
+            ...associate,
+            profile: associate.profile ? {
+              ...associate.profile,
+              currentAge: 48,
+            } : undefined,
+          })),
         },
       },
     };
 
     const state = normalizeTresoreriePersistedState(persisted);
 
-    expect(state.inputsV2.foyer.currentAge).toBe(48);
+    expect(state.inputsV3.company.associates[0].profile?.currentAge).toBe(48);
     expect('inputs' in state).toBe(false);
   });
 });

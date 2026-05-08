@@ -6,11 +6,11 @@
  */
 
 import type { TresoKPIs } from '../hooks/useTresorerieCalculations';
-import type { TresoInputsV2 } from '../../../engine/tresorerie/types';
+import type { TresoInputsRuntime } from '../../../engine/tresorerie/types';
 
 interface Props {
   kpis: TresoKPIs;
-  inputs: TresoInputsV2;
+  inputs: TresoInputsRuntime;
 }
 
 function fmtEuro(n: number): string {

@@ -130,6 +130,8 @@ export const DEFAULT_TAX_SETTINGS = {
       reducedThreshold: 42500,
       motherDaughterQpfc: { standard: 5, group: 1 },
       tnsDividendBasePct: 10,
+      maxDeductibleCcaInterestRate: 4.55,
+      dividendsAbatementPct: 40,
     },
     previous: {
       normalRate: 25,
@@ -137,6 +139,8 @@ export const DEFAULT_TAX_SETTINGS = {
       reducedThreshold: 42500,
       motherDaughterQpfc: { standard: 5, group: 1 },
       tnsDividendBasePct: 10,
+      maxDeductibleCcaInterestRate: 5.75,
+      dividendsAbatementPct: 40,
     },
   },
   dmtg: {

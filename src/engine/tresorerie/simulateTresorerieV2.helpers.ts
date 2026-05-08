@@ -29,6 +29,7 @@ export interface SubsidiaryYearResult {
 export interface AssociateCashMaps {
   remunerationByAssociate: Map<string, number>;
   ccaRepaidByAssociate: Map<string, number>;
+  ccaInterestByAssociate?: Map<string, number>;
   grossDividendsByAssociate: Map<string, number>;
   tnsSocialChargesByAssociate: Map<string, number>;
 }
@@ -265,6 +266,14 @@ export function buildAssociateRevenueRows(
         ...emptyAssociateRow(associate, 'cca'),
         ccaRepaid,
         netRevenue: ccaRepaid,
+      });
+    }
+
+    const ccaInterest = cashMaps.ccaInterestByAssociate?.get(associate.id) ?? 0;
+    if (ccaInterest > 0) {
+      rows.push({
+        ...emptyAssociateRow(associate, 'cca_interets'),
+        netRevenue: ccaInterest,
       });
     }
 

@@ -83,6 +83,10 @@ export function buildTresorerieSchema(
       color: theme.colors.color1,
       lines: [
         spec.typeCreation === 'newco' ? 'Société IS à créer (NEWCO)' : 'Société IS existante',
+        spec.companyKindLabel ? `${spec.companyKindLabel} (${spec.companyKindCode ?? ''})` : '',
+        ...(spec.associates ?? []).map(associate =>
+          `${associate.label} — ${associate.capitalPct} capital / ${associate.economicRightsPct} économique`,
+        ),
         `Apport en compte courant d'associé`,
         spec.hasCreditIR ? 'Crédit IR personnel — remboursé par dividendes nets' : '',
       ].filter(Boolean),
@@ -96,6 +100,9 @@ export function buildTresorerieSchema(
         spec.hasAllocationMatrix ? 'Matrice de trésorerie — balayage annuel au-dessus du seuil' : '',
         spec.hasCreditIS ? 'Crédit IS société — intérêts déductibles du résultat fiscal' : '',
         spec.hasHolding ? 'Holding patrimoniale — régime mère-fille (QPFC)' : '',
+        ...(spec.subsidiaries ?? []).map(subsidiary =>
+          `${subsidiary.label} — détention ${subsidiary.ownershipPct}`,
+        ),
         'Impôt sur les sociétés sur le résultat fiscal',
       ].filter(Boolean),
     },

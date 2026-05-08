@@ -427,5 +427,6 @@ describe('simulateTresorerie — modèle société v2', () => {
     expect(rows[1].capitalDistrib).toBeGreaterThan(100_000);
     expect(rows[1].tresorerieFin).toBeGreaterThanOrEqual(0);
   });
+
 });
 

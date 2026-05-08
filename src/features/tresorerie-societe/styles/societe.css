@@ -1,0 +1,257 @@
+/* ─── Société / organigramme ───────────────────────────────────────────────── */
+
+.ts-org-chart {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.ts-org-associates,
+.ts-org-subsidiary-branch {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+}
+
+.ts-org-associate,
+.ts-org-subsidiary {
+  display: grid;
+  min-width: 130px;
+  gap: 2px;
+  padding: 10px 12px;
+  background: #fff;
+  border: 1px solid var(--color-c8);
+  border-radius: 8px;
+  color: var(--color-c1);
+  cursor: pointer;
+  text-align: center;
+}
+
+.ts-org-associate.is-active {
+  border-color: var(--color-c3);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-c3) 16%, transparent);
+}
+
+.ts-org-associate span,
+.ts-org-subsidiary span {
+  font-size: 12px;
+  color: var(--color-c1);
+  font-weight: 600;
+}
+
+.ts-org-associate strong,
+.ts-org-subsidiary strong {
+  font-size: 13px;
+  color: var(--color-c2);
+}
+
+.ts-org-associate em {
+  font-size: 10px;
+  color: var(--color-c9);
+  font-style: normal;
+}
+
+.ts-org-node {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  width: min(260px, 100%);
+  margin: 2px auto 14px;
+  padding: 18px 20px;
+  background: #fff;
+  border: 1px solid var(--color-c8);
+  border-left: 3px solid var(--color-c3);
+  border-radius: 8px;
+  color: var(--color-c1);
+  cursor: pointer;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.04);
+  transition: border-color 0.15s, transform 0.15s;
+}
+
+.ts-org-node:hover {
+  border-color: var(--color-c3);
+  transform: translateY(-1px);
+}
+
+.ts-org-node__label,
+.ts-org-node__meta {
+  font-size: 11px;
+  color: var(--color-c9);
+}
+
+.ts-org-node__meta b {
+  color: var(--color-c2);
+}
+
+.ts-org-node strong {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.ts-org-subsidiary-branch {
+  position: relative;
+  padding-top: 8px;
+}
+
+.ts-org-subsidiary-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.ts-org-alerts {
+  margin-top: 10px;
+}
+
+.ts-card-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  justify-content: flex-end;
+}
+
+.ts-company-snapshot {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.ts-company-snapshot span {
+  padding: 8px 10px;
+  background: var(--color-c7);
+  border: 1px solid var(--color-c8);
+  border-radius: 6px;
+  font-size: 11px;
+  color: var(--color-c9);
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.ts-company-modal {
+  width: min(980px, calc(100vw - 40px));
+  max-height: calc(100vh - 40px);
+}
+
+.ts-company-modal__body {
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.ts-modal-panels {
+  display: grid;
+  grid-template-columns: 190px minmax(0, 1fr);
+  gap: 18px;
+}
+
+.ts-modal-tabs {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.ts-modal-tab {
+  border: 1px solid var(--color-c8);
+  border-radius: 6px;
+  background: #fff;
+  color: var(--color-c9);
+  cursor: pointer;
+  font-size: 12px;
+  padding: 8px 10px;
+  text-align: left;
+}
+
+.ts-modal-tab.is-active {
+  background: color-mix(in srgb, var(--color-c4) 24%, #fff);
+  border-color: var(--color-c3);
+  color: var(--color-c1);
+  font-weight: 600;
+}
+
+.ts-modal-panel {
+  min-width: 0;
+}
+
+.ts-modal-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px 16px;
+}
+
+.ts-modal-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.ts-modal-toggle {
+  align-self: center;
+}
+
+.ts-associate-card,
+.ts-balance-panel {
+  border: 1px solid var(--color-c8);
+  border-radius: 8px;
+  padding: 12px;
+  background: #fff;
+}
+
+.ts-associate-card__header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.ts-associate-card__header strong,
+.ts-balance-panel h3 {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-c1);
+}
+
+.ts-associate-card__header span {
+  color: var(--color-c9);
+  font-size: 11px;
+}
+
+.ts-balance-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.ts-balance-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.ts-text-btn {
+  align-self: flex-start;
+  border: 1px solid var(--color-c8);
+  border-radius: 6px;
+  background: #fff;
+  color: var(--color-c2);
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 500;
+  padding: 7px 12px;
+}
+
+.ts-text-btn:hover {
+  border-color: var(--color-c3);
+  background: color-mix(in srgb, var(--color-c4) 18%, #fff);
+}
+
+.ts-text-btn:disabled {
+  color: var(--color-c9);
+  cursor: not-allowed;
+  background: var(--color-c7);
+}
