@@ -18,6 +18,7 @@ const PREVOYANCE_DECES: ProductRules = {
       ],
       tags: ['primes_non_deductibles', 'risque_pur'],
       confidence: 'elevee',
+      sources: [{ label: 'Service-Public — assurance décès', url: 'https://www.service-public.fr/particuliers/vosdroits/F35395' }],
     },
   ],
   sortie: [
@@ -29,6 +30,7 @@ const PREVOYANCE_DECES: ProductRules = {
       ],
       tags: ['no_rachat'],
       confidence: 'elevee',
+      sources: [{ label: 'Service-Public — assurance décès', url: 'https://www.service-public.fr/particuliers/vosdroits/F35395' }],
     },
   ],
   deces: [
@@ -59,6 +61,7 @@ const PREVOYANCE_ITT: ProductRules = {
       ],
       tags: ['primes_non_deductibles', 'risque_pur'],
       confidence: 'elevee',
+      sources: [{ label: 'BOSS — Prévoyance TNS', url: 'https://boss.gouv.fr/portail/accueil/prevoyance-tns.html' }],
     },
   ],
   sortie: [
@@ -93,6 +96,7 @@ const PREVOYANCE_ITT: ProductRules = {
       ],
       tags: ['no_capital_deces'],
       confidence: 'elevee',
+      sources: [{ label: 'Service-Public — pension d’invalidité', url: 'https://www.service-public.fr/particuliers/vosdroits/F672' }],
     },
   ],
 };
@@ -108,6 +112,7 @@ const ASSURANCE_DEPENDANCE: ProductRules = {
       ],
       tags: ['primes_non_deductibles', 'risque_pur'],
       confidence: 'elevee',
+      sources: [{ label: 'Service-Public — allocation personnalisée d’autonomie', url: 'https://www.service-public.fr/particuliers/vosdroits/F10009' }],
     },
   ],
   sortie: [
@@ -119,6 +124,7 @@ const ASSURANCE_DEPENDANCE: ProductRules = {
       ],
       tags: ['rente_dependance', 'exoneration_conditionnelle'],
       confidence: 'elevee',
+      sources: [{ label: 'Service-Public — rentes viagères', url: 'https://www.service-public.fr/particuliers/vosdroits/F3173' }],
     },
   ],
   deces: [
@@ -130,6 +136,7 @@ const ASSURANCE_DEPENDANCE: ProductRules = {
       ],
       tags: ['no_capital_deces'],
       confidence: 'elevee',
+      sources: [{ label: 'Service-Public — allocation personnalisée d’autonomie', url: 'https://www.service-public.fr/particuliers/vosdroits/F10009' }],
     },
   ],
 };
@@ -144,6 +151,7 @@ const ASSURANCE_OBSEQUES: ProductRules = {
       ],
       tags: ['primes_non_deductibles'],
       confidence: 'elevee',
+      sources: [{ label: 'Service-Public — frais d’obsèques', url: 'https://www.service-public.fr/particuliers/vosdroits/F17059' }],
     },
   ],
   sortie: [
@@ -152,6 +160,7 @@ const ASSURANCE_OBSEQUES: ProductRules = {
       bullets: ['Contrat activé uniquement au décès, pas de sortie anticipée.'],
       tags: ['no_rachat'],
       confidence: 'elevee',
+      sources: [{ label: 'Service-Public — inhumation et contrat obsèques', url: 'https://www.service-public.fr/particuliers/vosdroits/F14935' }],
     },
   ],
   deces: [
@@ -180,6 +189,7 @@ const ASSURANCE_EMPRUNTEUR_PP: ProductRules = {
       ],
       tags: ['primes_non_deductibles', 'deductible_revenus_fonciers'],
       confidence: 'elevee',
+      sources: [{ label: 'BOFiP RFPI — primes d’assurance déductibles', url: 'https://bofip.impots.gouv.fr/doctrine/pgp/5807-PGP' }],
     },
   ],
   sortie: [
@@ -191,6 +201,7 @@ const ASSURANCE_EMPRUNTEUR_PP: ProductRules = {
       ],
       tags: ['capital_banque', 'ij_iti'],
       confidence: 'elevee',
+      sources: [{ label: 'BOFiP RFPI — intérêts et frais d’emprunt', url: 'https://bofip.impots.gouv.fr/bofip/5808-PGP.html/identifiant=BOI-RFPI-BASE-20-80-20170901' }],
     },
   ],
   deces: [
@@ -203,6 +214,7 @@ const ASSURANCE_EMPRUNTEUR_PP: ProductRules = {
       ],
       tags: ['remboursement_pret', 'no_dmtg_capital'],
       confidence: 'elevee',
+      sources: [{ label: 'BOFiP RFPI — intérêts et frais d’emprunt', url: 'https://bofip.impots.gouv.fr/bofip/5808-PGP.html/identifiant=BOI-RFPI-BASE-20-80-20170901' }],
     },
   ],
 };
@@ -217,6 +229,7 @@ const ASSURANCE_EMPRUNTEUR_PM: ProductRules = {
       ],
       tags: ['primes_deductibles_entreprise'],
       confidence: 'elevee',
+      sources: [{ label: 'Art. 38 CGI — résultat imposable', url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000006302193' }],
     },
   ],
   sortie: [
@@ -228,6 +241,7 @@ const ASSURANCE_EMPRUNTEUR_PM: ProductRules = {
       ],
       tags: ['capital_banque', 'produit_exceptionnel'],
       confidence: 'elevee',
+      sources: [{ label: 'Art. 38 CGI — résultat imposable', url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000006302193' }],
     },
   ],
   deces: [
@@ -240,6 +254,7 @@ const ASSURANCE_EMPRUNTEUR_PM: ProductRules = {
       ],
       tags: ['remboursement_pret', 'benefice_exceptionnel', 'is_ir'],
       confidence: 'moyenne',
+      sources: [{ label: 'Art. 38 CGI — résultat imposable', url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000006302193' }],
       dependencies: ['régime fiscal de la société (IS ou IR)', 'traitement comptable du sinistre', 'modalités de clôture de la société'],
     },
   ],
@@ -266,6 +281,7 @@ const ASSURANCE_HOMME_CLE: ProductRules = {
       bullets: ['Contrat de risque pur : pas de valeur de rachat hors sinistre.'],
       tags: ['no_rachat'],
       confidence: 'elevee',
+      sources: [{ label: 'BOI-BIC-CHG-40-20-20 §100', url: 'https://bofip.impots.gouv.fr/bofip/803-PGP.html/identifiant=BOI-BIC-CHG-40-20-20-20130408' }],
     },
   ],
   deces: [

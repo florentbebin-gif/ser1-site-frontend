@@ -93,6 +93,7 @@ console_logs_inventory.txt
 
 # Audit temporaires
 _audit/
+docs/veille-base-contrat.md
 
 # Playwright
 test-results/
