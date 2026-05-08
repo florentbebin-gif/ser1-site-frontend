@@ -216,6 +216,14 @@ export default function SettingsDmtgSuccession() {
       setSaving(true);
       setMessage('');
 
+      const { data: userData, error: userError } = await supabase.auth.getUser();
+      const updatedBy = userData.user?.id ?? null;
+      if (userError || !updatedBy) {
+        console.error('Utilisateur authentifié introuvable pour audit DMTG :', userError);
+        setMessage("Erreur lors de l'identification de l'utilisateur admin.");
+        return;
+      }
+
       const [existingTaxRes, existingFiscRes] = await Promise.all([
         supabase.from('tax_settings').select('data').eq('id', 1).maybeSingle(),
         supabase.from('fiscality_settings').select('data').eq('id', 1).maybeSingle(),
@@ -249,8 +257,8 @@ export default function SettingsDmtgSuccession() {
       };
 
       const [taxRes, fiscRes] = await Promise.all([
-        supabase.from('tax_settings').upsert({ id: 1, data: taxPayload }),
-        supabase.from('fiscality_settings').upsert({ id: 1, data: fiscalityPayload }),
+        supabase.from('tax_settings').upsert({ id: 1, data: taxPayload, updated_by: updatedBy }),
+        supabase.from('fiscality_settings').upsert({ id: 1, data: fiscalityPayload, updated_by: updatedBy }),
       ]);
 
       if (taxRes.error || fiscRes.error) {
