@@ -36,6 +36,10 @@ Le LLM doit optimiser leur utilisation : déléguer uniquement des tâches indé
    Interdit dans `src/components/` sauf migration documentée.
 4. **Diff minimal** — patch le plus petit qui résout le problème. Pas de refactor annexe.
 5. **Langue** — français partout (commentaires, commits, docs). Corriger les fautes dans les fichiers modifiés.
+6. **Pas de doc éphémère versionnée** — audits, plans, annexes générées
+   et notes de clôture ne sont pas committés. La trace décisionnelle passe
+   par commits et PR. Seules les docs structurantes permanentes sont versionnées ;
+   tout artefact régénérable doit rester gitignored et produit par script.
 
 ## Charger selon la tâche
 
