@@ -103,6 +103,7 @@ export const DEFAULT_LIQUIDATION: PlacementLiquidationState = {
   optionBaremeIR: false,
 };
 
+// Fallback dégradé : settings DMTG non chargés.
 export const DEFAULT_DMTG_RATE = 0.20;
 
 export const DEFAULT_TRANSMISSION: PlacementTransmissionState = {
