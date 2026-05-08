@@ -34,6 +34,8 @@ Le LLM doit optimiser leur utilisation : déléguer uniquement des tâches indé
    Zones autorisées : `src/auth/`, `src/utils/cache/`, `src/hooks/`, `src/settings/`,
    `src/pages/` (auth flow + settings admin R/W, invalidation cache après write fiscal).
    Interdit dans `src/components/` sauf migration documentée.
+   `supabase/functions/` est un périmètre Deno autonome (`deno.json` / `deno.lock`) :
+   pas d'import croisé avec `src/`, et les outils Node ne le scannent pas.
 4. **Diff minimal** — patch le plus petit qui résout le problème. Pas de refactor annexe.
 5. **Langue** — français partout (commentaires, commits, docs). Corriger les fautes dans les fichiers modifiés.
 6. **Pas de doc éphémère versionnée** — audits, plans, annexes générées
