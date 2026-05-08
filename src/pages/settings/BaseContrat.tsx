@@ -13,8 +13,14 @@ import { UserInfoBanner } from '@/components/UserInfoBanner';
 import './styles/base-contrat.css';
 import { CATALOG } from '@/domain/base-contrat/catalog';
 import type { CatalogProduct } from '@/domain/base-contrat/catalog';
-import { isProductClosed } from '@/domain/base-contrat/overrides';
-import type { BaseContratOverride, OverrideMap } from '@/domain/base-contrat/overrides';
+import {
+  BASE_CONTRAT_REVIEW_STATUS_LABELS,
+  isProductClosed,
+} from '@/domain/base-contrat/overrides';
+import type {
+  BaseContratOverrideInput,
+  OverrideMap,
+} from '@/domain/base-contrat/overrides';
 import { getRules } from '@/domain/base-contrat/rules/index';
 import type { Audience, ProductRules, RuleBlock } from '@/domain/base-contrat/rules/index';
 import {
@@ -22,6 +28,7 @@ import {
   upsertBaseContratOverride,
 } from '@/utils/cache/baseContratOverridesCache';
 import { GRANDE_FAMILLE_OPTIONS, PHASE_LABELS } from './baseContratLabels';
+import { OverrideModal, ReviewStatusDetails } from './BaseContratOverrideControls';
 
 function useOverrides() {
   const [overrides, setOverrides] = useState<OverrideMap>({});
@@ -165,75 +172,6 @@ function RulesPanel({
   );
 }
 
-function OverrideModal({
-  product,
-  override,
-  onClose,
-  onSave,
-}: {
-  product: CatalogProduct;
-  override: BaseContratOverride | undefined;
-  onClose: () => void;
-  onSave: (_o: Pick<BaseContratOverride, 'product_id' | 'closed_date' | 'note_admin'>) => void;
-}) {
-  const isClosed = override?.closed_date != null;
-  const [closedDate, setClosedDate] = useState(override?.closed_date ?? '');
-  const [note, setNote] = useState(override?.note_admin ?? '');
-  const [saving, setSaving] = useState(false);
-
-  async function handleSave() {
-    setSaving(true);
-    await onSave({
-      product_id: product.id,
-      closed_date: closedDate || null,
-      note_admin: note.trim() || null,
-    });
-    setSaving(false);
-  }
-
-  return (
-    <div className="report-modal-overlay">
-      <div className="report-modal base-contrat-modal">
-        <div className="report-modal-header">
-          <h3>{isClosed ? 'Rouvrir' : 'Clôturer'} - {product.label}</h3>
-          <button className="report-modal-close" onClick={onClose}>&#x2715;</button>
-        </div>
-        <div className="report-modal-content base-contrat-modal__content">
-          <label className="base-contrat-modal__label">
-            Date de clôture <span>(laisser vide = produit ouvert)</span>
-          </label>
-          <input
-            className="base-contrat-modal__field"
-            type="date"
-            value={closedDate}
-            onChange={(event) => setClosedDate(event.target.value)}
-          />
-          <label className="base-contrat-modal__label">
-            Note admin <span>(optionnel)</span>
-          </label>
-          <textarea
-            className="base-contrat-modal__field base-contrat-modal__field--textarea"
-            value={note}
-            onChange={(event) => setNote(event.target.value)}
-            rows={2}
-            placeholder="Ex : dispositif supprimé par la loi de finances 2025"
-          />
-        </div>
-        <div className="report-modal-actions">
-          <button onClick={onClose}>Annuler</button>
-          <button
-            className="chip"
-            onClick={handleSave}
-            disabled={saving}
-          >
-            {saving ? 'Enregistrement…' : 'Enregistrer'}
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
 function formatOpenCount(count: number): string {
   return `${count} ouvert${count > 1 ? 's' : ''}`;
 }
@@ -298,7 +236,7 @@ export default function BaseContrat() {
   const closedCount = CATALOG.length - activeCount;
 
   async function handleSaveOverride(
-    data: Pick<BaseContratOverride, 'product_id' | 'closed_date' | 'note_admin'>,
+    data: BaseContratOverrideInput,
   ) {
     try {
       await upsertBaseContratOverride(data);
@@ -413,6 +351,7 @@ export default function BaseContrat() {
                       const isProductOpen = openProductId === product.id;
                       const closed = isProductClosed(product.id, overrides, today);
                       const override = overrides[product.id];
+                      const reviewStatus = override?.review_status ?? 'ok';
                       const rules = getRules(product.id, togglePPPM);
                       const hasNoRules =
                         rules.constitution.length === 0
@@ -441,6 +380,13 @@ export default function BaseContrat() {
                                     Clôturé {override?.closed_date ? `le ${override.closed_date}` : ''}
                                   </span>
                                 )}
+                                {isAdmin && override && reviewStatus !== 'ok' && (
+                                  <span
+                                    className={`base-contrat-badge base-contrat-badge--review base-contrat-badge--review-${reviewStatus}`}
+                                  >
+                                    {BASE_CONTRAT_REVIEW_STATUS_LABELS[reviewStatus]}
+                                  </span>
+                                )}
                               </span>
                               <span className="fisc-acc-chevron">{isProductOpen ? 'v' : '>'}</span>
                             </button>
@@ -465,6 +411,7 @@ export default function BaseContrat() {
                               {override?.note_admin && (
                                 <p className="base-contrat-note">Note : {override.note_admin}</p>
                               )}
+                              {isAdmin && override && <ReviewStatusDetails override={override} />}
                               <RulesPanel rules={rules} closed={closed} showAdminMeta={isAdmin} />
                             </div>
                           )}

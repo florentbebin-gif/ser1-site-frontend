@@ -11,6 +11,7 @@ import type { ProductRules } from '@/domain/base-contrat/rules';
 let isAdmin = false;
 
 const getBaseContratOverridesMock = vi.fn();
+const upsertBaseContratOverrideMock = vi.fn();
 
 vi.mock('@/auth/useUserRole', () => ({
   useUserRole: (): UserRoleState => ({
@@ -27,7 +28,7 @@ vi.mock('@/components/UserInfoBanner', () => ({
 
 vi.mock('@/utils/cache/baseContratOverridesCache', () => ({
   getBaseContratOverrides: () => getBaseContratOverridesMock(),
-  upsertBaseContratOverride: vi.fn(),
+  upsertBaseContratOverride: (payload: unknown) => upsertBaseContratOverrideMock(payload),
 }));
 
 const mockedRules: ProductRules = {
@@ -61,6 +62,8 @@ describe('BaseContrat', () => {
     isAdmin = false;
     getBaseContratOverridesMock.mockReset();
     getBaseContratOverridesMock.mockResolvedValue({});
+    upsertBaseContratOverrideMock.mockReset();
+    upsertBaseContratOverrideMock.mockResolvedValue(undefined);
   });
 
   it('utilise un bouton natif pour ouvrir un produit', async () => {
@@ -91,5 +94,66 @@ describe('BaseContrat', () => {
       'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000026292566',
     );
     expect(screen.getByText('Validation notaire')).toBeInTheDocument();
+  });
+
+  it('masque le statut de revue des overrides aux non-admins', async () => {
+    getBaseContratOverridesMock.mockResolvedValue({
+      assurance_dependance: {
+        product_id: 'assurance_dependance',
+        closed_date: null,
+        note_admin: null,
+        review_status: 'a_revoir',
+        review_reason: 'Source fiscale à relire',
+        next_review_at: '2026-07-01',
+        updated_at: '2026-05-08T00:00:00.000Z',
+      },
+    });
+
+    await openFirstProduct();
+
+    expect(screen.queryByText('Revue : À revoir')).not.toBeInTheDocument();
+    expect(screen.queryByText('Source fiscale à relire')).not.toBeInTheDocument();
+    expect(screen.queryByText('2026-07-01')).not.toBeInTheDocument();
+  });
+
+  it('affiche le statut de revue des overrides aux admins', async () => {
+    isAdmin = true;
+    getBaseContratOverridesMock.mockResolvedValue({
+      assurance_dependance: {
+        product_id: 'assurance_dependance',
+        closed_date: null,
+        note_admin: null,
+        review_status: 'a_revoir',
+        review_reason: 'Source fiscale à relire',
+        next_review_at: '2026-07-01',
+        updated_at: '2026-05-08T00:00:00.000Z',
+      },
+    });
+
+    await openFirstProduct();
+
+    expect(await screen.findByText('Revue : À revoir')).toBeInTheDocument();
+    expect(screen.getByText('Source fiscale à relire')).toBeInTheDocument();
+    expect(screen.getByText('2026-07-01')).toBeInTheDocument();
+  });
+
+  it('sauvegarde les champs de revue depuis la modale admin', async () => {
+    isAdmin = true;
+
+    await openFirstProduct();
+    await userEvent.click(screen.getAllByRole('button', { name: 'Clôturer' })[0]);
+    await userEvent.selectOptions(screen.getByLabelText(/Statut de revue/i), 'obsolescence_a_confirmer');
+    await userEvent.type(screen.getByLabelText(/Raison de revue/i), 'Barème à confirmer');
+    await userEvent.type(screen.getByLabelText(/Prochaine revue/i), '2026-09-30');
+    await userEvent.click(screen.getByRole('button', { name: 'Enregistrer' }));
+
+    await waitFor(() => {
+      expect(upsertBaseContratOverrideMock).toHaveBeenCalledWith(expect.objectContaining({
+        product_id: 'assurance_dependance',
+        review_status: 'obsolescence_a_confirmer',
+        review_reason: 'Barème à confirmer',
+        next_review_at: '2026-09-30',
+      }));
+    });
   });
 });
