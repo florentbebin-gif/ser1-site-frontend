@@ -9,7 +9,12 @@
  */
 
 import { supabase } from '../../supabaseClient';
-import type { BaseContratOverride, OverrideMap } from '../../domain/base-contrat/overrides';
+import {
+  normalizeBaseContratReviewStatus,
+  type BaseContratOverride,
+  type BaseContratOverrideInput,
+  type OverrideMap,
+} from '../../domain/base-contrat/overrides';
 
 const TABLE = 'base_contrat_overrides';
 const CACHE_TTL_MS = 24 * 60 * 60 * 1000;
@@ -26,7 +31,7 @@ export async function getBaseContratOverrides(): Promise<OverrideMap> {
 
   const { data, error } = await supabase
     .from(TABLE)
-    .select('product_id, closed_date, note_admin, updated_at');
+    .select('product_id, closed_date, note_admin, review_status, review_reason, next_review_at, updated_at');
 
   if (error) {
     console.error('[baseContratOverridesCache] fetch error:', error.message);
@@ -34,8 +39,17 @@ export async function getBaseContratOverrides(): Promise<OverrideMap> {
   }
 
   const map: Record<string, BaseContratOverride> = {};
-  for (const row of (data ?? []) as BaseContratOverride[]) {
-    map[row.product_id] = row;
+  for (const row of (data ?? []) as Partial<BaseContratOverride>[]) {
+    if (!row.product_id) continue;
+    map[row.product_id] = {
+      product_id: row.product_id,
+      closed_date: row.closed_date ?? null,
+      note_admin: row.note_admin ?? null,
+      review_status: normalizeBaseContratReviewStatus(row.review_status),
+      review_reason: row.review_reason ?? null,
+      next_review_at: row.next_review_at ?? null,
+      updated_at: row.updated_at ?? new Date(0).toISOString(),
+    };
   }
 
   _cache = map;
@@ -44,7 +58,7 @@ export async function getBaseContratOverrides(): Promise<OverrideMap> {
 }
 
 export async function upsertBaseContratOverride(
-  override: Pick<BaseContratOverride, 'product_id' | 'closed_date' | 'note_admin'>,
+  override: BaseContratOverrideInput,
 ): Promise<void> {
   const { error } = await supabase.from(TABLE).upsert(
     { ...override, updated_at: new Date().toISOString() },

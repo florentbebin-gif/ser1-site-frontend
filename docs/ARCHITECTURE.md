@@ -309,7 +309,7 @@ Objectif : hasher un manifest déterministe (pas le binaire) pour limiter les va
 ## Base-Contrat — Référentiel Patrimonial (Pivot Hardcodé)
 
 Source de vérité : `src/domain/base-contrat/` (catalogue + règles).
-Overlays admin : table `base_contrat_overrides` (clôture/réouverture + date + note).
+Overlays admin : table `base_contrat_overrides` (clôture/réouverture + date + note + statut de revue juridique).
 
 UI : `/settings/base-contrat` est une vue read-only à 3 colonnes (Constitution / Sortie-Rachat / Décès-Transmission), avec toggle Particulier/Entreprise.
 
@@ -388,7 +388,7 @@ Shell de navigation : `src/pages/SettingsShell.tsx` (rendu dynamique des onglets
 | `fiscality_settings` | Règles par enveloppe (AV, PER, PEA, CTO, dividendes…) — taux, abattements, seuils | Auth | Admin |
 | `pass_history` | Historique PASS annuel administré dans Settings > Prelevements (multi-lignes, clé `year`) | Auth | Admin |
 | `base_contrat_settings` | Singleton de config catalogue présent dans le schéma, non consommé par le runtime courant | Auth | Admin |
-| `base_contrat_overrides` | Clôture/réouverture produit + note admin (uuid per product) | Admin | Admin |
+| `base_contrat_overrides` | Clôture/réouverture produit + note admin + statut de revue juridique (uuid per product) | Admin | Admin |
 
 Schéma complet : `supabase/migrations/20260210214352_remote_commit.sql`.
 

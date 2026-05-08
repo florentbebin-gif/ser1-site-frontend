@@ -116,12 +116,18 @@ describe('isProductClosed', () => {
       product_id: 'pinel_pinel_plus',
       closed_date: '2025-01-01',
       note_admin: 'Fermé fin 2024',
+      review_status: 'ok',
+      review_reason: null,
+      next_review_at: null,
       updated_at: '2025-01-01T00:00:00Z',
     },
     assurance_vie: {
       product_id: 'assurance_vie',
       closed_date: null,
       note_admin: null,
+      review_status: 'ok',
+      review_reason: null,
+      next_review_at: null,
       updated_at: '2025-01-01T00:00:00Z',
     },
   };

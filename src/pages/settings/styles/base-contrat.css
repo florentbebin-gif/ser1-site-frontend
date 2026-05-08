@@ -155,6 +155,19 @@
   background: var(--color-c6);
 }
 
+.base-contrat-badge--review {
+  background: #fff;
+  border-color: var(--color-c2);
+}
+
+.base-contrat-badge--review-a_revoir {
+  color: var(--color-c2);
+}
+
+.base-contrat-badge--review-obsolescence_a_confirmer {
+  color: var(--color-c5);
+}
+
 .base-contrat-product {
   border-top: 1px solid var(--color-c8);
   background: #fff;
@@ -248,6 +261,36 @@
   color: var(--color-c9);
   font-size: 12px;
   font-style: italic;
+}
+
+.base-contrat-review {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin: 12px 0 0;
+  padding: 10px 12px;
+  border: 1px solid var(--color-c8);
+  border-radius: 8px;
+  background: var(--color-c7);
+  color: var(--color-c10);
+  font-size: 12px;
+}
+
+.base-contrat-review__status {
+  font-weight: 700;
+}
+
+.base-contrat-review__status--a_revoir {
+  color: var(--color-c2);
+}
+
+.base-contrat-review__status--obsolescence_a_confirmer {
+  color: var(--color-c5);
+}
+
+.base-contrat-review__line {
+  margin: 0;
+  color: var(--color-c9);
 }
 
 .base-contrat-rules {
@@ -415,6 +458,14 @@
 .base-contrat-modal__field--textarea {
   min-height: 72px;
   resize: vertical;
+}
+
+.base-contrat-modal__review-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--color-c8);
 }
 
 @media (max-width: 900px) {
