@@ -15,7 +15,12 @@ import {
   isValid,
 } from './validators/dmtgValidators';
 import { DEFAULT_DONATION } from './DmtgSuccession/dmtgReferenceData';
-import { migrateDmtgData } from './DmtgSuccession/migrateDmtgData';
+import {
+  formatDmtgSchemaError,
+  normalizeDmtgTaxSettingsForLoad,
+  validateDmtgFiscalityPayload,
+  validateDmtgTaxPayload,
+} from './DmtgSuccession/dmtgSettingsSchema';
 import DonationSection from './DmtgSuccession/DonationSection';
 import AvDecesSection from './DmtgSuccession/AvDecesSection';
 import ReserveCivilSection from './DmtgSuccession/ReserveCivilSection';
@@ -55,8 +60,6 @@ type AvDecesBracket = {
 };
 type AvDecesUpdateValue = number | null | AvDecesBracket[];
 type NestedRecord = Record<string, unknown>;
-type MigrateDmtgInput = Parameters<typeof migrateDmtgData>[0];
-type MigrateDmtgOutput = Partial<TaxSettings> | null | undefined;
 
 interface SettingsRow<T> {
   data: Partial<T> | null;
@@ -90,11 +93,10 @@ export default function SettingsDmtgSuccession() {
         };
 
         if (!taxRes.error && taxRes.data && taxRes.data.length > 0 && taxRes.data[0].data) {
-          const migratedData = migrateDmtgData(
-            taxRes.data[0].data as MigrateDmtgInput,
-          ) as MigrateDmtgOutput;
-          if (mounted && migratedData) {
-            setTaxSettings((prev) => ({ ...prev, ...migratedData }));
+          const normalizedData = normalizeDmtgTaxSettingsForLoad(taxRes.data[0].data);
+          if (mounted && normalizedData) {
+            const normalizedTaxSettings = normalizedData as Partial<TaxSettings>;
+            setTaxSettings((prev) => ({ ...prev, ...normalizedTaxSettings }));
           }
         } else if (taxRes.error && taxRes.error.code !== 'PGRST116') {
           console.error('Erreur chargement tax_settings :', taxRes.error);
@@ -240,7 +242,7 @@ export default function SettingsDmtgSuccession() {
       const existingFiscData = (existingFiscRes.data?.data as Partial<FiscalitySettings> | null) ?? {};
 
       // Pruning : retirer les champs donation obsolètes persistés en DB (ex: donManuel).
-      const { donManuel: _donManuel, ...donationClean } = (taxSettings.donation ?? {}) as Record<string, unknown>;
+      const { donManuel: _donManuel, ...donationClean } = (taxSettings.donation ?? DEFAULT_DONATION) as Record<string, unknown>;
       void _donManuel;
       const taxPayload: Partial<TaxSettings> = {
         ...existingTaxData,
@@ -255,10 +257,16 @@ export default function SettingsDmtgSuccession() {
           deces: fiscalitySettings.assuranceVie.deces,
         },
       };
+      const taxValidation = validateDmtgTaxPayload(taxPayload);
+      const fiscalityValidation = validateDmtgFiscalityPayload(fiscalityPayload);
+      if (!taxValidation.success || !fiscalityValidation.success) {
+        setMessage(formatDmtgSchemaError(taxValidation, fiscalityValidation));
+        return;
+      }
 
       const [taxRes, fiscRes] = await Promise.all([
-        supabase.from('tax_settings').upsert({ id: 1, data: taxPayload, updated_by: updatedBy }),
-        supabase.from('fiscality_settings').upsert({ id: 1, data: fiscalityPayload, updated_by: updatedBy }),
+        supabase.from('tax_settings').upsert({ id: 1, data: taxValidation.data, updated_by: updatedBy }),
+        supabase.from('fiscality_settings').upsert({ id: 1, data: fiscalityValidation.data, updated_by: updatedBy }),
       ]);
 
       if (taxRes.error || fiscRes.error) {

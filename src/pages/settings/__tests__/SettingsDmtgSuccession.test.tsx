@@ -148,4 +148,61 @@ describe('SettingsDmtgSuccession', () => {
       },
     ]));
   });
+
+  it('charge un ancien blob DMTG et sauvegarde un format canonique', async () => {
+    taxSettingsData = {
+      ...DEFAULT_TAX_SETTINGS,
+      dmtg: {
+        abattementLigneDirecte: DEFAULT_TAX_SETTINGS.dmtg.ligneDirecte.abattement,
+        scale: DEFAULT_TAX_SETTINGS.dmtg.ligneDirecte.scale,
+      },
+    };
+
+    render(<SettingsDmtgSuccession />);
+
+    await waitFor(() => {
+      expect(screen.queryByText('Chargement…')).not.toBeInTheDocument();
+    });
+
+    await userEvent.click(screen.getByRole('button', { name: /Enregistrer DMTG & Succession/i }));
+
+    await waitFor(() => {
+      expect(upsertCalls).toHaveLength(2);
+    });
+    const taxWrite = upsertCalls.find((call) => call.table === 'tax_settings')?.payload as {
+      data?: { dmtg?: Record<string, unknown> };
+    };
+    expect(taxWrite.data?.dmtg).toHaveProperty('ligneDirecte');
+    expect(taxWrite.data?.dmtg).not.toHaveProperty('abattementLigneDirecte');
+    expect(taxWrite.data?.dmtg).not.toHaveProperty('scale');
+  });
+
+  it('bloque une écriture non canonique avant Supabase', async () => {
+    fiscalitySettingsData = {
+      ...DEFAULT_FISCALITY_SETTINGS,
+      assuranceVie: {
+        ...DEFAULT_FISCALITY_SETTINGS.assuranceVie,
+        deces: {
+          ...DEFAULT_FISCALITY_SETTINGS.assuranceVie.deces,
+          apres70ans: {
+            ...DEFAULT_FISCALITY_SETTINGS.assuranceVie.deces.apres70ans,
+            globalAllowance: null,
+          },
+        },
+      },
+    };
+
+    render(<SettingsDmtgSuccession />);
+
+    await waitFor(() => {
+      expect(screen.queryByText('Chargement…')).not.toBeInTheDocument();
+    });
+
+    await userEvent.click(screen.getByRole('button', { name: /Enregistrer DMTG & Succession/i }));
+
+    await waitFor(() => {
+      expect(screen.getByText(/Erreur de validation du schéma DMTG/i)).toBeInTheDocument();
+    });
+    expect(upsertCalls).toHaveLength(0);
+  });
 });
