@@ -1,0 +1,4 @@
+{
+  "ignores": ["supabase", "dependency-cruiser", "stylelint-config-standard"],
+  "ignore-patterns": ["supabase/functions/**"]
+}
