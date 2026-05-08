@@ -479,7 +479,7 @@ function toMarkdown(metrics) {
   return [
     '# Audit Base-Contrat / DMTG Succession — métriques brutes',
     '',
-    '> Artefact généré et versionné comme snapshot daté de l’audit. Régénération : `npm run audit:base-contrat-dmtg -- --out docs/audit-base-contrat-dmtg-succession.generated.md`.',
+    '> Artefact généré, non versionné. Régénération : `npm run audit:base-contrat-dmtg -- --out <chemin>`.',
     '',
     '## Synthèse',
     `- Produits catalogue : ${metrics.runtime.catalogProducts}`,
