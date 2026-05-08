@@ -466,7 +466,7 @@ Chaque `RuleBlock` doit obligatoirement avoir un champ `confidence` : `'elevee'`
 - Ne jamais affirmer sans source officielle. Si la source manque → `confidence: 'moyenne'` minimum.
 - Préférer les sources officielles : BOFiP > Légifrance > doctrine professionnelle.
 - Les `tags` sont techniques (moteur futur) et jamais affichés en UI.
-- Les `confidence`, `sources`, `dependencies` sont internes et non affichés en UI.
+- Les `confidence`, `sources`, `dependencies` sont visibles uniquement en UI admin.
 - Les tests (`rules.test.ts`) vérifient automatiquement le respect de cette policy.
 
 ### 3. Ajouter/mettre à jour les tests (Golden Tests)
