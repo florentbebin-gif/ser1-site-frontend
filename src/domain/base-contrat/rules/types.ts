@@ -5,7 +5,7 @@
  * 3 phases : constitution, sortie/rachat, décès/transmission.
  *
  * Les `tags` sont techniques (moteur futur) et jamais affichés en UI.
- * `confidence`, `sources` et `dependencies` sont internes (non affichés en UI).
+ * `confidence`, `sources` et `dependencies` sont affichés en UI admin pour la veille juridique.
  *
  * Règle d'écriture :
  *   - confidence 'elevee'  → règle fiable et sourcée

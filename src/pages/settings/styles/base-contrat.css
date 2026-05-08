@@ -165,12 +165,11 @@
   border: none;
   background: var(--color-c7);
   color: inherit;
-  cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  padding: 12px 16px;
+  padding: 0;
   text-align: left;
   font: inherit;
   transition: background-color 0.15s ease, opacity 0.15s ease;
@@ -182,6 +181,21 @@
 
 .base-contrat-product__header.is-closed {
   opacity: 0.65;
+}
+
+.base-contrat-product__toggle {
+  flex: 1 1 auto;
+  border: none;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 16px;
+  text-align: left;
+  font: inherit;
 }
 
 .base-contrat-product__header-main {
@@ -202,6 +216,7 @@
   align-items: center;
   gap: 10px;
   margin-left: auto;
+  padding-right: 16px;
 }
 
 .base-contrat-admin-action {
@@ -309,6 +324,57 @@
   margin-top: 4px;
 }
 
+.base-contrat-rule-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--color-c8);
+  color: var(--color-c9);
+  font-size: 11px;
+}
+
+.base-contrat-confidence {
+  display: inline-flex;
+  align-self: flex-start;
+  min-height: 22px;
+  align-items: center;
+  border: 1px solid var(--color-c8);
+  border-radius: 999px;
+  padding: 0 8px;
+  background: var(--color-c7);
+  color: var(--color-c10);
+  font-weight: 700;
+}
+
+.base-contrat-confidence--moyenne,
+.base-contrat-confidence--faible {
+  background: var(--color-c6);
+}
+
+.base-contrat-rule-meta__group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.base-contrat-rule-meta__label {
+  color: var(--color-c10);
+  font-weight: 700;
+}
+
+.base-contrat-rule-meta__list {
+  margin: 0;
+  padding-left: 16px;
+  line-height: 1.45;
+}
+
+.base-contrat-rule-meta__list a {
+  color: var(--color-c3);
+  font-weight: 600;
+}
+
 .base-contrat-empty-card {
   border-style: dashed;
 }
@@ -388,6 +454,10 @@
   }
 
   .base-contrat-product__header {
+    align-items: flex-start;
+  }
+
+  .base-contrat-product__toggle {
     align-items: flex-start;
   }
 }
