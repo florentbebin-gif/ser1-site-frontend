@@ -1,3 +1,4 @@
+import { useRef, useState } from 'react';
 import { SimFieldShell } from '@/components/ui/sim/SimFieldShell';
 import { SimModalShell } from '@/components/ui/sim/SimModalShell';
 import { SimSelect } from '@/components/ui/sim/SimSelect';
@@ -28,6 +29,8 @@ interface TresoAssociateModalProps {
   onClose: () => void;
 }
 
+type AssociateModalSection = 'identite' | 'profil' | 'remuneration' | 'cca';
+
 const ASSOCIATE_KIND_OPTIONS: Array<{ value: AssociateKind; label: string }> = [
   { value: 'pp', label: 'Associé PP' },
   { value: 'pm', label: 'Associé PM' },
@@ -42,6 +45,13 @@ const OWNERSHIP_OPTIONS: Array<{ value: OwnershipRight; label: string }> = [
 const REMUNERATION_SOURCE_OPTIONS: Array<{ value: AssociateRemunerationSource; label: string }> = [
   { value: 'holding', label: 'Holding' },
   { value: 'subsidiary', label: 'Filiale' },
+];
+
+const ASSOCIATE_MODAL_SECTIONS: Array<{ key: AssociateModalSection; label: string }> = [
+  { key: 'identite', label: 'Identité' },
+  { key: 'profil', label: 'Profil' },
+  { key: 'remuneration', label: 'Rémunération' },
+  { key: 'cca', label: 'CCA' },
 ];
 
 function getCca(associate: AssociateInput, fallbackYear: number): CcaScheduleInput {
@@ -74,6 +84,13 @@ export function TresoAssociateModal({
   onChange,
   onClose,
 }: TresoAssociateModalProps) {
+  const [activeSection, setActiveSection] = useState<AssociateModalSection>('identite');
+  const sectionRefs = {
+    identite: useRef<HTMLDivElement>(null),
+    profil: useRef<HTMLDivElement>(null),
+    remuneration: useRef<HTMLDivElement>(null),
+    cca: useRef<HTMLDivElement>(null),
+  };
   const kind = associate.kind ?? 'pp';
   const profile = associate.profile ?? fallbackProfile;
   const lot = associate.ownershipLots[0] ?? {
@@ -112,6 +129,11 @@ export function TresoAssociateModal({
     });
   };
 
+  const goToSection = (section: AssociateModalSection) => {
+    setActiveSection(section);
+    sectionRefs[section].current?.scrollIntoView?.({ block: 'start', behavior: 'smooth' });
+  };
+
   return (
     <SimModalShell
       title="Paramétrer l’associé"
@@ -122,14 +144,21 @@ export function TresoAssociateModal({
     >
       <div className="ts-associate-modal-layout">
         <nav className="ts-associate-modal-nav" aria-label="Rubriques de l’associé">
-          <button type="button">Identité</button>
-          <button type="button">Profil</button>
-          <button type="button">Rémunération</button>
-          <button type="button">CCA</button>
+          {ASSOCIATE_MODAL_SECTIONS.map(section => (
+            <button
+              key={section.key}
+              type="button"
+              className={activeSection === section.key ? 'is-active' : ''}
+              aria-current={activeSection === section.key ? 'page' : undefined}
+              onClick={() => goToSection(section.key)}
+            >
+              {section.label}
+            </button>
+          ))}
         </nav>
 
         <div className="ts-modal-stack">
-        <div className="ts-modal-grid ts-modal-grid--three">
+        <div ref={sectionRefs.identite} className="ts-modal-grid ts-modal-grid--three" id="ts-associate-identite">
           <SimFieldShell label="Libellé" className="ts-field" rowClassName="ts-field__row">
             <input
               type="text"
@@ -187,7 +216,7 @@ export function TresoAssociateModal({
         </div>
 
         {kind === 'pp' && (
-          <div className="ts-associate-card">
+          <div ref={sectionRefs.profil} className="ts-associate-card" id="ts-associate-profil">
             <div className="ts-associate-card__header">
               <strong>Profil foyer</strong>
               <span>Paramètres personnels de projection</span>
@@ -234,7 +263,19 @@ export function TresoAssociateModal({
           </div>
         )}
 
-        <div className="ts-associate-card">
+        {kind === 'pm' && (
+          <div ref={sectionRefs.profil} className="ts-associate-card" id="ts-associate-profil">
+            <div className="ts-associate-card__header">
+              <strong>Profil</strong>
+              <span>Associé personne morale</span>
+            </div>
+            <p className="ts-note--info">
+              Une personne morale ne porte pas de besoin retraite personnel dans cette version.
+            </p>
+          </div>
+        )}
+
+        <div ref={sectionRefs.remuneration} className="ts-associate-card" id="ts-associate-remuneration">
           <div className="ts-associate-card__header">
             <strong>Rémunération</strong>
             <span>Coût société et revenu net estimé</span>
@@ -348,7 +389,7 @@ export function TresoAssociateModal({
           )}
         </div>
 
-        <div className="ts-associate-card">
+        <div ref={sectionRefs.cca} className="ts-associate-card" id="ts-associate-cca">
           <div className="ts-associate-card__header">
             <strong>Compte courant d’associé</strong>
             <span>Taux maximum déductible</span>

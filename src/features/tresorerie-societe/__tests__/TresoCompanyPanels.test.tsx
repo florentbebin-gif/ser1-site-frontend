@@ -48,7 +48,7 @@ describe('TresoCompanyPanels', () => {
     expect(html).toContain('Nature actif');
   });
 
-  it('affiche plusieurs filiales avec cession et base fiscale estimées', () => {
+  it('affiche plusieurs filiales comme accès compact vers la modale dédiée', () => {
     const html = renderToStaticMarkup(
       <TresoCompanySubsidiariesPanel
         subsidiaries={[
@@ -81,9 +81,10 @@ describe('TresoCompanyPanels', () => {
 
     expect(html).toContain('Filiale 1');
     expect(html).toContain('Filiale 2');
-    expect(html).toContain('Année de cession');
-    expect(html).toContain('Prix de cession estimé');
-    expect(html).toContain('Base fiscale');
-    expect(html).toContain('Estimation déclarative d’intégration fiscale');
+    expect(html).toContain('Paramétrer');
+    expect(html).toContain('80 % détenu');
+    expect(html).toContain('Cession 2030');
+    expect(html).not.toContain('Prix de cession estimé');
+    expect(html).not.toContain('Estimation déclarative d’intégration fiscale');
   });
 });

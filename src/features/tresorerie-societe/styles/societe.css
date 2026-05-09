@@ -198,17 +198,24 @@
   border-radius: 6px;
   background: #fff;
   color: var(--color-c9);
-  cursor: default;
+  cursor: pointer;
   font-size: 12px;
   padding: 8px 10px;
   text-align: left;
 }
 
-.ts-associate-modal-nav button:first-child {
+.ts-associate-modal-nav button.is-active,
+.ts-associate-modal-nav button[aria-current="page"] {
   background: color-mix(in srgb, var(--color-c4) 24%, #fff);
   border-color: var(--color-c3);
   color: var(--color-c1);
   font-weight: 600;
+}
+
+.ts-associate-modal-nav button:focus-visible {
+  border-color: var(--color-c3);
+  outline: 2px solid color-mix(in srgb, var(--color-c3) 30%, transparent);
+  outline-offset: 2px;
 }
 
 .ts-modal-grid {
@@ -229,6 +236,37 @@
   display: flex;
   flex-direction: column;
   gap: 12px;
+}
+
+.ts-schedule-editor {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.ts-schedule-editor__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding-top: 4px;
+}
+
+.ts-schedule-editor__header strong {
+  color: var(--color-c1);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.ts-schedule-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(0, 0.8fr) minmax(0, 0.8fr) auto;
+  gap: 10px;
+  align-items: end;
+  padding: 8px;
+  background: var(--color-c7);
+  border: 1px solid var(--color-c8);
+  border-radius: 6px;
 }
 
 .ts-modal-toggle {

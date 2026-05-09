@@ -22,6 +22,9 @@ const KPIS: TresoKPIs = {
   reservesRetraite: 42000,
   capaciteDistribuableAn1: 6500,
   alerteDividendesAn1: false,
+  deficitBancaireMax: 0,
+  alerteTresorerieBancaire: false,
+  premiereAnneeDeficitBancaire: null,
   hasRows: true,
   anneeRetraiteIndex: 12,
 };
@@ -152,6 +155,9 @@ function makeRow(year: number): TresoProjectionRow {
     dividendesFiliales: 0,
     dividendesFilialesExoneres: 0,
     quotePartTaxable: 0,
+    cessionFilialesCash: 0,
+    cessionFilialesPlusValueBrute: 0,
+    cessionFilialesQuotePartTaxable: 0,
     chargesStructure: INPUTS.company.annualStructureCosts,
     interetsCCA: 0,
     interetsCCADeductibles: 0,
@@ -372,6 +378,7 @@ describe('Exports Trésorerie société', () => {
     expect(workbookXml).toContain('Structure société');
     expect(workbookXml).toContain('Hypothèses');
     expect(projectionXml).toContain('Trésorerie fin d&apos;année');
+    expect(projectionXml).toContain('Déficit bancaire vs solde minimum + BFR');
     expect(revenusXml).toContain('Remboursement CCA');
     expect(hypothesesXml).toContain('Taux maximum déductible');
     expect(hypothesesXml).toContain('BFR inclus dans le seuil de sécurité');
@@ -396,5 +403,8 @@ describe('Exports Trésorerie société', () => {
     const structureXml = await zip.file('xl/worksheets/sheet4.xml')?.async('string');
 
     expect(structureXml).toContain('Trésorerie conservée sur compte bancaire');
+    expect(structureXml).toContain('Court terme');
+    expect(structureXml).toContain('Moyen terme');
+    expect(structureXml).toContain('Long terme');
   });
 });

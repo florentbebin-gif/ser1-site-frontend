@@ -430,6 +430,10 @@ export function TresoSocieteSection({ inputs, onChange }: Props) {
         <TresoCompanySubsidiariesPanel
           subsidiaries={company.subsidiaries}
           onChange={subsidiaries => patchCompany({ subsidiaries })}
+          onConfigure={subsidiaryId => {
+            setCompanyModalOpen(false);
+            setSubsidiaryModalId(subsidiaryId);
+          }}
         />
       );
     }

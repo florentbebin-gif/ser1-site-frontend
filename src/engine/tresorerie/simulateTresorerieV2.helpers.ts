@@ -26,6 +26,7 @@ export interface SubsidiaryYearResult {
   estimatedFiscalResult: number;
   disposalCash: number;
   disposalGain: number;
+  disposalTaxableGain: number;
 }
 
 export interface AssociateCashMaps {
@@ -250,6 +251,7 @@ export function computeSubsidiariesByYear(
         (subsidiary.fiscalIntegrationEstimateEnabled ? subsidiary.estimatedFiscalResult ?? 0 : 0),
       disposalCash: sum.disposalCash + disposalGrossCash,
       disposalGain: sum.disposalGain + disposalGain,
+      disposalTaxableGain: sum.disposalTaxableGain + disposalTaxableGain,
     };
   }, {
     servicesRevenue: 0,
@@ -259,6 +261,7 @@ export function computeSubsidiariesByYear(
     estimatedFiscalResult: 0,
     disposalCash: 0,
     disposalGain: 0,
+    disposalTaxableGain: 0,
   });
 }
 

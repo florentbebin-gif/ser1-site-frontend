@@ -218,7 +218,32 @@ describe('TresoSocieteSection', () => {
     expect(screen.getByText('BFR filiale')).toBeInTheDocument();
     expect(screen.getByText('Réserves distribuables')).toBeInTheDocument();
     expect(screen.getByText('Scénario de cession')).toBeInTheDocument();
+    expect(screen.getByText('Année d’acquisition')).toBeInTheDocument();
     expect(screen.getByText('Régime PVLT titres de participation')).toBeInTheDocument();
+  });
+
+  it('rend la navigation latérale associé actionnable', () => {
+    render(<TresoSocieteSection inputs={INPUTS} onChange={vi.fn()} />);
+
+    fireEvent.click(screen.getByRole('button', { name: /Paramétrer Associé 2/ }));
+    const remunerationTab = screen.getByRole('button', { name: 'Rémunération' });
+    fireEvent.click(remunerationTab);
+
+    expect(remunerationTab).toHaveAttribute('aria-current', 'page');
+  });
+
+  it('ajoute un palier de dividendes filiale depuis la modale', () => {
+    const onChange = vi.fn();
+    render(<TresoSocieteSection inputs={INPUTS} onChange={onChange} />);
+
+    fireEvent.click(screen.getByRole('button', { name: /Paramétrer Filiale A/ }));
+    fireEvent.click(screen.getByRole('button', { name: /Ajouter un palier de dividendes/i }));
+
+    const nextInputs = onChange.mock.calls[onChange.mock.calls.length - 1]?.[0];
+    expect(nextInputs.company.subsidiaries[0].dividendsSchedule).toHaveLength(2);
+    expect(nextInputs.company.subsidiaries[0].dividendsSchedule[1]).toEqual(expect.objectContaining({
+      startYear: 2031,
+    }));
   });
 
   it('rééquilibre les autres associés quand une saisie ferait dépasser 100 %', () => {

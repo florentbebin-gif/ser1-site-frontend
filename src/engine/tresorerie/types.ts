@@ -403,6 +403,9 @@ export interface TresoProjectionRow {
   dividendesFiliales: number;
   dividendesFilialesExoneres: number;
   quotePartTaxable: number;
+  cessionFilialesCash?: number;
+  cessionFilialesPlusValueBrute?: number;
+  cessionFilialesQuotePartTaxable?: number;
 
   // Résultat
   chargesStructure: number;
