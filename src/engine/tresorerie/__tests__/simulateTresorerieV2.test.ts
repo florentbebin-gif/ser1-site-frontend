@@ -30,16 +30,17 @@ interface V2Overrides {
 }
 
 function baseV2(overrides: V2Overrides = {}): TresoInputsV2 {
-  return {
+  const foyer = {
+    selectedAssociateId: 'associe-us',
+    currentAge: 64,
+    retirementAge: 65,
+    annualIncomeNeed: 0,
+    projectionStartYear: 2026,
+    ...overrides.foyer,
+  };
+  const inputs: TresoInputsV2 = {
     version: 2,
-    foyer: {
-      selectedAssociateId: 'associe-us',
-      currentAge: 64,
-      retirementAge: 65,
-      annualIncomeNeed: 0,
-      projectionStartYear: 2026,
-      ...overrides.foyer,
-    },
+    foyer,
     company: {
       creationType: 'existante',
       legalForm: 'sas',
@@ -53,6 +54,7 @@ function baseV2(overrides: V2Overrides = {}): TresoInputsV2 {
         {
           id: 'associe-us',
           label: 'Associé 1',
+          kind: 'pp',
           ownershipLots: [{ right: 'usufruit', capitalPct: 0, economicRightsPct: 100 }],
           roles: ['associe_sans_statut'],
           cca: {
@@ -66,6 +68,7 @@ function baseV2(overrides: V2Overrides = {}): TresoInputsV2 {
         {
           id: 'associe-np',
           label: 'Associé 2',
+          kind: 'pp',
           ownershipLots: [{ right: 'nue_propriete', capitalPct: 100, economicRightsPct: 0 }],
           roles: ['associe_sans_statut'],
           cca: {
@@ -85,6 +88,24 @@ function baseV2(overrides: V2Overrides = {}): TresoInputsV2 {
       sweepThreshold: 0,
       pockets: [],
       ...overrides.allocationMatrix,
+    },
+  };
+  return {
+    ...inputs,
+    company: {
+      ...inputs.company,
+      associates: inputs.company.associates.map(associate => associate.profile || associate.kind === 'pm'
+        ? associate
+        : {
+          ...associate,
+          kind: associate.kind ?? 'pp',
+          profile: {
+            currentAge: inputs.foyer.currentAge,
+            retirementAge: inputs.foyer.retirementAge,
+            annualIncomeNeed: inputs.foyer.annualIncomeNeed,
+            projectionStartYear: inputs.company.projectionStartYear ?? inputs.foyer.projectionStartYear,
+          },
+        }),
     },
   };
 }
@@ -115,6 +136,7 @@ describe('simulateTresorerie — modèle société v2', () => {
           {
             id: 'associe-us',
             label: 'Associé 1',
+            kind: 'pp',
             ownershipLots: [{ right: 'pleine_propriete', capitalPct: 100, economicRightsPct: 100 }],
             roles: ['associe_sans_statut'],
             cca: {
@@ -243,6 +265,7 @@ describe('simulateTresorerie — modèle société v2', () => {
           {
             id: 'associe-us',
             label: 'Associé 1',
+            kind: 'pp',
             ownershipLots: [{ right: 'pleine_propriete', capitalPct: 100, economicRightsPct: 100 }],
             roles: ['gerant_tns'],
             cca: {

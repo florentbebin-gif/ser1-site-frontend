@@ -20,7 +20,7 @@ export function getAssociateProfile(
   inputs: TresoInputsRuntime,
   associate: AssociateInput | undefined = getSelectedAssociate(inputs),
 ): AssociateProfileInput {
-  const projectionStartYear = inputs.company.projectionStartYear ?? inputs.foyer.projectionStartYear;
+  const projectionStartYear = inputs.company.projectionStartYear ?? new Date().getFullYear();
   if (associate?.kind === 'pp' && associate.profile) {
     return {
       ...associate.profile,
@@ -28,9 +28,9 @@ export function getAssociateProfile(
     };
   }
   return {
-    currentAge: inputs.foyer.currentAge,
-    retirementAge: inputs.foyer.retirementAge,
-    annualIncomeNeed: associate?.kind === 'pm' ? 0 : inputs.foyer.annualIncomeNeed,
+    currentAge: 0,
+    retirementAge: 0,
+    annualIncomeNeed: 0,
     projectionStartYear,
   };
 }

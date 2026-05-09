@@ -287,7 +287,7 @@ describe('migration trésorerie v3', () => {
     const v4 = buildTresoInputsV4FromV3(v3);
 
     expect(v4.company.projectionStartYear).toBe(2026);
-    expect(v4.foyer.projectionStartYear).toBe(2026);
+    expect(v4.foyer).toEqual({ selectedAssociateId: 'associe-1' });
     expect(v4.company.associates.map(associate => associate.profile?.projectionStartYear)).toEqual([2026, 2026]);
   });
 });

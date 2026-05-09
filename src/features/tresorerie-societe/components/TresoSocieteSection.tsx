@@ -90,8 +90,7 @@ export function TresoSocieteSection({ inputs, onChange }: Props) {
   const activeAssociateModal = company.associates.find(associate => associate.id === associateModalId);
   const activeSubsidiaryModal = company.subsidiaries.find(subsidiary => subsidiary.id === subsidiaryModalId);
   const ownershipTotals = getOwnershipTotals(company.associates);
-  const projectionStartYear =
-    company.projectionStartYear ?? inputs.foyer?.projectionStartYear ?? new Date().getFullYear();
+  const projectionStartYear = company.projectionStartYear ?? new Date().getFullYear();
   const incomeStatement = company.incomeStatement ?? {
     annualRevenue: 0,
     annualStructureCosts: company.annualStructureCosts,
@@ -113,10 +112,6 @@ export function TresoSocieteSection({ inputs, onChange }: Props) {
     }));
     const nextInputs = {
       ...inputs,
-      foyer: {
-        ...inputs.foyer,
-        projectionStartYear: nextProjectionStartYear,
-      },
       company: {
         ...company,
         projectionStartYear: nextProjectionStartYear,
@@ -140,9 +135,8 @@ export function TresoSocieteSection({ inputs, onChange }: Props) {
         foyer: {
           ...nextInputs.foyer,
           selectedAssociateId: associateId,
-          ...associate.profile,
-          projectionStartYear: nextProjectionStartYear,
         },
+        company: { ...nextInputs.company, projectionStartYear: nextProjectionStartYear },
       };
     }
     return {

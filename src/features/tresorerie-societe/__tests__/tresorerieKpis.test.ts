@@ -36,6 +36,7 @@ const BASE: TresoInputsV2 = {
     associates: [{
       id: 'associe-1',
       label: 'Associé 1',
+      kind: 'pp',
       ownershipLots: [{ right: 'pleine_propriete', capitalPct: 100, economicRightsPct: 100 }],
       roles: ['associe_sans_statut'],
       cca: {
@@ -133,6 +134,18 @@ describe('Trésorerie société IS — projection moteur v2 et KPIs', () => {
           currentAge: 65,
           retirementAge: 65,
           annualIncomeNeed: 50000,
+        },
+        company: {
+          ...BASE.company,
+          associates: BASE.company.associates.map(associate => ({
+            ...associate,
+            profile: {
+              currentAge: 65,
+              retirementAge: 65,
+              annualIncomeNeed: 50000,
+              projectionStartYear: BASE.company.projectionStartYear ?? BASE.foyer.projectionStartYear,
+            },
+          })),
         },
       }, PARAMS, 1);
 

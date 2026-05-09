@@ -123,6 +123,10 @@ export interface FoyerInput {
   projectionStartYear: number;
 }
 
+export interface RuntimeFoyerInput {
+  selectedAssociateId: string;
+}
+
 export interface OwnershipLotInput {
   right: OwnershipRight;
   capitalPct: number;
@@ -300,8 +304,9 @@ export interface TresoInputsV3 extends Omit<TresoInputsV2, 'version'> {
   selectedAssociateId: string;
 }
 
-export interface TresoInputsV4 extends Omit<TresoInputsV3, 'version'> {
+export interface TresoInputsV4 extends Omit<TresoInputsV3, 'version' | 'foyer'> {
   version: 4;
+  foyer: RuntimeFoyerInput;
 }
 
 export type TresoInputsRuntime = TresoInputsV2 | TresoInputsV3 | TresoInputsV4;

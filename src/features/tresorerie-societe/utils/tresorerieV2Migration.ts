@@ -325,8 +325,7 @@ export function buildTresoInputsV4FromV3(input: TresoInputsV3): TresoInputsV4 {
     ...input,
     version: 4,
     foyer: {
-      ...input.foyer,
-      projectionStartYear,
+      selectedAssociateId: input.foyer.selectedAssociateId,
     },
     company: {
       ...input.company,

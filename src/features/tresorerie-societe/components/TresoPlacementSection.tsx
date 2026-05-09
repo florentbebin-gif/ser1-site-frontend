@@ -178,7 +178,7 @@ export function TresoPlacementSection({ inputs, projectionRows = [], onChange }:
   );
   const firstBankWarning = projectionRows.find(row => row.alerteTresorerieBancaireInsuffisante);
   const firstBankWarningYear = firstBankWarning
-    ? v2.foyer.projectionStartYear + firstBankWarning.year - 1
+    ? (v2.company.projectionStartYear ?? new Date().getFullYear()) + firstBankWarning.year - 1
     : null;
 
   return (

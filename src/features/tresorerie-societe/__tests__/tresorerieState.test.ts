@@ -63,6 +63,13 @@ describe('useTresorerieState — source de vérité v4', () => {
       inputsV3: {
         ...DEFAULT_TRESO_INPUTS_V4,
         version: 3,
+        foyer: {
+          selectedAssociateId: DEFAULT_TRESO_INPUTS_V4.foyer.selectedAssociateId,
+          currentAge: 50,
+          retirementAge: 65,
+          annualIncomeNeed: 30000,
+          projectionStartYear: DEFAULT_TRESO_INPUTS_V4.company.projectionStartYear ?? 2026,
+        },
         company: {
           ...DEFAULT_TRESO_INPUTS_V4.company,
           associates: DEFAULT_TRESO_INPUTS_V4.company.associates.map(associate => ({
