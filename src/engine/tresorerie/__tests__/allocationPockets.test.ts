@@ -23,27 +23,12 @@ function pocket(id: string, withdrawalPriority?: number): AllocationPocketInput 
 }
 
 describe('sortAllocationPockets', () => {
-  it('trie les poches par priorité de consommation croissante', () => {
+  it('conserve l’ordre de saisie, sans priorité de consommation active', () => {
     expect(sortAllocationPockets([
       pocket('long', 3),
       pocket('court', 1),
       pocket('moyen', 2),
-    ]).map(item => item.id)).toEqual(['court', 'moyen', 'long']);
-  });
-
-  it('conserve l’ordre initial quand les priorités sont identiques', () => {
-    expect(sortAllocationPockets([
-      pocket('a', 1),
-      pocket('b', 1),
-      pocket('c', 1),
-    ]).map(item => item.id)).toEqual(['a', 'b', 'c']);
-  });
-
-  it('place les poches sans priorité après les poches priorisées', () => {
-    expect(sortAllocationPockets([
-      pocket('sans-priorite'),
-      pocket('prioritaire', 1),
-    ]).map(item => item.id)).toEqual(['prioritaire', 'sans-priorite']);
+    ]).map(item => item.id)).toEqual(['long', 'court', 'moyen']);
   });
 
   it('déduit le mode de placement du nombre de poches actives', () => {
@@ -57,6 +42,6 @@ describe('sortAllocationPockets', () => {
       mode: 'single',
       sweepThreshold: 0,
       pockets: [pocket('long', 2), pocket('court', 1)],
-    }).map(item => item.id)).toEqual(['court', 'long']);
+    }).map(item => item.id)).toEqual(['long', 'court']);
   });
 });

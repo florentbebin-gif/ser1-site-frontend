@@ -6,9 +6,10 @@ import { describe, expect, it, vi } from 'vitest';
 import { TresoSocieteSection } from '../components/TresoSocieteSection';
 
 const INPUTS = {
-  version: 3,
+  version: 4,
   selectedAssociateId: 'associe-2',
   company: {
+    label: 'Ma holding',
     creationType: 'existante',
     legalForm: 'sas',
     companyKind: 'holding_patrimoniale',
@@ -67,6 +68,13 @@ const INPUTS = {
           remunerationRate: 0.04,
         },
         remunerationAnnualCost: 50000,
+        remuneration: {
+          source: 'holding',
+          loadedAnnualCost: 50000,
+          socialChargeRate: 0.45,
+          endYear: 2030,
+          annualNeedAfterStop: 30000,
+        },
       },
     ],
     loans: [],
@@ -82,6 +90,18 @@ const INPUTS = {
         annualDividends: 18000,
         motherDaughterEligible: true,
         fiscalIntegrationEstimateEnabled: false,
+        treasuryInitial: 20000,
+        workingCapitalRequirement: 5000,
+        distributableReserves: 12000,
+        servicesSchedule: [{ amount: 7000, startYear: 2026, endYear: 2028 }],
+        dividendsSchedule: [{ amount: 18000, startYear: 2026, endYear: 2030 }],
+        disposal: {
+          year: 2031,
+          estimatedPrice: 100000,
+          taxBasis: 40000,
+          fees: 2000,
+          regime: 'pvlt',
+        },
       },
       {
         id: 'filiale-2',
@@ -100,6 +120,7 @@ const INPUTS = {
   allocationMatrix: {
     mode: 'strategy',
     sweepThreshold: 50000,
+    minimumBankBalance: 50000,
     pockets: [],
   },
 } as any;
@@ -160,9 +181,44 @@ describe('TresoSocieteSection', () => {
     fireEvent.click(activeAssociate);
 
     expect(screen.getByText('Paramétrer l’associé')).toBeInTheDocument();
-    expect(screen.getByDisplayValue('45')).toBeInTheDocument();
+    expect(screen.getAllByDisplayValue('45').length).toBeGreaterThan(0);
     expect(screen.getByDisplayValue('62')).toBeInTheDocument();
     expect(screen.getByText('Taux maximum déductible')).toBeInTheDocument();
+  });
+
+  it('paramètre le libellé société sans menu rémunérations dans la société', () => {
+    render(<TresoSocieteSection inputs={INPUTS} onChange={vi.fn()} />);
+
+    fireEvent.click(screen.getByRole('button', { name: /Paramétrer Holding patrimoniale/i }));
+
+    expect(screen.getByDisplayValue('Ma holding')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /Rémunérations & TNS/i })).not.toBeInTheDocument();
+  });
+
+  it('déplace la rémunération dans la modale associé avec source holding ou filiale', () => {
+    render(<TresoSocieteSection inputs={INPUTS} onChange={vi.fn()} />);
+
+    fireEvent.click(screen.getByRole('button', { name: /Paramétrer Associé 2/ }));
+
+    expect(screen.getByRole('button', { name: /Rémunération/i })).toBeInTheDocument();
+    expect(screen.getByText('Rémunération nette estimée')).toBeInTheDocument();
+    expect(screen.getByDisplayValue(value => value.replace(/\s/g, '') === '50000')).toBeInTheDocument();
+    expect(screen.getByText('Filiale A')).toBeInTheDocument();
+  });
+
+  it('enrichit la modale filiale avec trésorerie, paliers vers la mère et cession', () => {
+    render(<TresoSocieteSection inputs={INPUTS} onChange={vi.fn()} />);
+
+    fireEvent.click(screen.getByRole('button', { name: /Paramétrer Filiale A/ }));
+
+    expect(screen.queryByLabelText(/Ordre d’affichage/i)).not.toBeInTheDocument();
+    expect(screen.getByText('Prestations annuelles vers la mère')).toBeInTheDocument();
+    expect(screen.getByText('Dividendes annuels vers la mère')).toBeInTheDocument();
+    expect(screen.getByText('Trésorerie de la filiale')).toBeInTheDocument();
+    expect(screen.getByText('BFR filiale')).toBeInTheDocument();
+    expect(screen.getByText('Réserves distribuables')).toBeInTheDocument();
+    expect(screen.getByText('Scénario de cession')).toBeInTheDocument();
+    expect(screen.getByText('Régime PVLT titres de participation')).toBeInTheDocument();
   });
 
   it('rééquilibre les autres associés quand une saisie ferait dépasser 100 %', () => {

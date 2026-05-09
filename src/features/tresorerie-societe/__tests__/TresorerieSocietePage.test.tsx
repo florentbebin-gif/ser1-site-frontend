@@ -104,8 +104,8 @@ vi.mock('../../../settings/ThemeProvider', () => ({
 
 // ─── Fixtures ─────────────────────────────────────────────────────────────────
 
-const DEFAULT_INPUTS_V3 = {
-  version: 3 as const,
+const DEFAULT_INPUTS_V4 = {
+  version: 4 as const,
   selectedAssociateId: 'associe-1',
   foyer: {
     selectedAssociateId: 'associe-1',
@@ -156,6 +156,7 @@ const DEFAULT_INPUTS_V3 = {
   },
   allocationMatrix: {
     sweepThreshold: 50000,
+    minimumBankBalance: 50000,
     pockets: [],
   },
 };
@@ -163,12 +164,12 @@ const DEFAULT_INPUTS_V3 = {
 function makeStateReturn(overrides: Record<string, unknown> = {}) {
   return {
     state: {
-      inputsV3: DEFAULT_INPUTS_V3,
+      inputsV4: DEFAULT_INPUTS_V4,
       projectionVisible: false,
       projectionMode: 'resume' as const,
     },
     hydrated: true,
-    setInputsV3: vi.fn(),
+    setInputsV4: vi.fn(),
     setProjectionVisible: vi.fn(),
     setProjectionMode: vi.fn(),
     ...overrides,
@@ -261,12 +262,12 @@ describe('TresorerieSocietePage', () => {
     expect(html).toContain('PowerPoint');
   });
 
-  it('branche calculs et exports sur inputsV3, sans state legacy runtime', () => {
+  it('branche calculs et exports sur inputsV4, sans state legacy runtime', () => {
     renderToStaticMarkup(<TresorerieSocietePage />);
 
-    expect(mockUseTresoCalc).toHaveBeenCalledWith(DEFAULT_INPUTS_V3);
+    expect(mockUseTresoCalc).toHaveBeenCalledWith(DEFAULT_INPUTS_V4);
     expect(mockUseTresoExports).toHaveBeenCalledWith(expect.objectContaining({
-      inputs: DEFAULT_INPUTS_V3,
+      inputs: DEFAULT_INPUTS_V4,
     }));
   });
 
@@ -294,7 +295,7 @@ describe('TresorerieSocietePage', () => {
     it('est visible quand projectionVisible=true', () => {
       mockUseTresoState.mockReturnValue(makeStateReturn({
         state: {
-          inputsV3: DEFAULT_INPUTS_V3,
+          inputsV4: DEFAULT_INPUTS_V4,
           projectionVisible: true,
           projectionMode: 'resume' as const,
         },

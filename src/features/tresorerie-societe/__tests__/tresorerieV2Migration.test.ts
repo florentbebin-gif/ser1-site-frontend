@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import type { TresoInputs, TresoProjectionRow } from '@/engine/tresorerie/types';
 import {
+  buildTresoInputsV4FromLegacy,
+  buildTresoInputsV4FromV2,
   buildTresoInputsV3FromLegacy,
   buildTresoInputsV3FromV2,
   getAllocationPocketLabel,
@@ -207,5 +209,51 @@ describe('migration trésorerie v3', () => {
     } as Pick<TresoProjectionRow, 'year' | 'revenusParAssocie'>;
 
     expect(row.revenusParAssocie).toEqual([]);
+  });
+
+  it('normalise les états legacy et v2 vers V4 avec compte bancaire minimum', () => {
+    const legacyV4 = buildTresoInputsV4FromLegacy(LEGACY_INPUTS);
+
+    expect(legacyV4.version).toBe(4);
+    expect(legacyV4.allocationMatrix.minimumBankBalance).toBe(0);
+    expect(legacyV4.company.label).toBe('Holding patrimoniale');
+    expect(legacyV4.company.subsidiaries[0]).toMatchObject({
+      treasuryInitial: 0,
+      workingCapitalRequirement: 0,
+      distributableReserves: 0,
+      servicesSchedule: [],
+      dividendsSchedule: [{ amount: 18000, startYear: 2027 }],
+    });
+
+    const v2 = {
+      ...legacyV4,
+      version: 2,
+      foyer: legacyV4.foyer,
+      allocationMatrix: {
+        sweepThreshold: 50_000,
+        pockets: [{
+          id: 'legacy',
+          kind: 'distribution',
+          withdrawalPriority: 7,
+          durationYears: 3,
+          annualReturnRate: 0.03,
+          enjoymentDelayMonths: 0,
+          initialAllocationPct: 0,
+          annualAllocationPct: 100,
+          repeatAtTerm: false,
+          termDestination: 'matrix',
+        }],
+      },
+    } as any;
+
+    const v4 = buildTresoInputsV4FromV2(v2);
+
+    expect(v4.version).toBe(4);
+    expect(v4.allocationMatrix.minimumBankBalance).toBe(50_000);
+    expect(v4.allocationMatrix.pockets[0]).toMatchObject({
+      id: 'legacy',
+      horizon: 'court_terme',
+      termDestination: 'treasury',
+    });
   });
 });

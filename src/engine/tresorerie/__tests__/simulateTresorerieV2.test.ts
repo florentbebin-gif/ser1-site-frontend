@@ -14,6 +14,7 @@ const PARAMS: TresoFiscalParams = {
   isReducedThreshold: 40_000,
   motherDaughterStandardQpfcRate: 0.05,
   motherDaughterGroupQpfcRate: 0.01,
+  participationDisposalQpfcRate: 0.12,
   pfuRateIR: 0.10,
   psRate: 0.15,
   pfuTotal: 0.25,
@@ -274,7 +275,7 @@ describe('simulateTresorerie — modèle société v2', () => {
     }), PARAMS, 2);
 
     expect(rows[0].resultatFiscalAvantIS).toBe(0);
-    expect(rows[1].resultatFiscalAvantIS).toBe(20_000);
+    expect(rows[1].resultatFiscalAvantIS).toBe(2_400);
     expect(rows[1].tresorerieFin).toBeGreaterThan(rows[0].tresorerieFin);
   });
 
