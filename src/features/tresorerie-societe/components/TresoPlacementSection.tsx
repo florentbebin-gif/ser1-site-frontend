@@ -14,8 +14,8 @@ import {
   normalizeAllocationPockets,
 } from '../../../engine/tresorerie/allocationPockets';
 import { TresoPocketModal } from './TresoPocketModal';
+import { ALLOCATION_HORIZON_OPTIONS } from '../utils/tresorerieSocieteOptions';
 import {
-  ALLOCATION_HORIZON_OPTIONS,
   buildDefaultPocket,
   getAllocationHorizonLabel,
 } from '../utils/tresorerieSocieteModel';
@@ -144,7 +144,7 @@ export function TresoPlacementSection({ inputs, projectionRows = [], onChange }:
     patchMatrix({
       pockets: matrix.pockets.map(pocket => {
         if (pocket.id !== id) return pocket;
-        return { ...pocket, ...patch, termDestination: 'treasury' };
+        return { ...pocket, ...patch };
       }),
     });
   };
@@ -153,13 +153,13 @@ export function TresoPlacementSection({ inputs, projectionRows = [], onChange }:
     if (matrix.pockets.length >= 5) return;
     const nextPocket = buildDefaultPocket(matrix.pockets, horizon);
     const nextPockets = [...matrix.pockets, nextPocket];
-    patchMatrix({ pockets: nextPockets, mode: nextPockets.length > 1 ? 'strategy' : 'single' });
+    patchMatrix({ pockets: nextPockets });
     setEditingPocketId(nextPocket.id);
   };
 
   const deletePocket = (id: string) => {
     const nextPockets = matrix.pockets.filter(pocket => pocket.id !== id);
-    patchMatrix({ pockets: nextPockets, mode: nextPockets.length > 1 ? 'strategy' : 'single' });
+    patchMatrix({ pockets: nextPockets });
     setEditingPocketId(null);
   };
 
@@ -178,7 +178,7 @@ export function TresoPlacementSection({ inputs, projectionRows = [], onChange }:
   );
   const firstBankWarning = projectionRows.find(row => row.alerteTresorerieBancaireInsuffisante);
   const firstBankWarningYear = firstBankWarning
-    ? v2.foyer.projectionStartYear + firstBankWarning.year - 1
+    ? (v2.company.projectionStartYear ?? new Date().getFullYear()) + firstBankWarning.year - 1
     : null;
 
   return (

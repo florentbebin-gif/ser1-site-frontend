@@ -123,6 +123,10 @@ export interface FoyerInput {
   projectionStartYear: number;
 }
 
+export interface RuntimeFoyerInput {
+  selectedAssociateId: string;
+}
+
 export interface OwnershipLotInput {
   right: OwnershipRight;
   capitalPct: number;
@@ -156,13 +160,7 @@ export interface AssociateInput {
   profile?: AssociateProfileInput;
   ownershipLots: OwnershipLotInput[];
   roles: AssociateRole[];
-  ccaInitial: number;
-  ccaAnnualContribution: number;
-  ccaContributionEndYear?: number;
   cca?: CcaScheduleInput;
-  remunerationAnnualCost: number;
-  remunerationEndYear?: number;
-  socialChargesManualRate?: number;
   remuneration?: AssociateRemunerationInput;
 }
 
@@ -205,16 +203,10 @@ export interface SubsidiaryInput {
   label: string;
   parentEntityId?: string;
   ownershipPct?: number;
-  displayOrder?: number;
   holdingOwnershipPct: number;
-  annualServicesRevenue: number;
-  annualDividends: number;
   motherDaughterEligible: boolean;
   fiscalIntegrationEstimateEnabled: boolean;
   estimatedFiscalResult?: number;
-  disposalYear?: number;
-  estimatedDisposalPrice?: number;
-  taxBasis?: number;
   treasuryInitial?: number;
   workingCapitalRequirement?: number;
   distributableReserves?: number;
@@ -224,8 +216,6 @@ export interface SubsidiaryInput {
 }
 
 export type AllocationPocketKind = 'distribution' | 'capitalisation';
-export type AllocationTermDestination = 'treasury' | 'matrix' | 'same_pocket';
-export type AllocationStrategyMode = 'single' | 'strategy';
 export type AllocationPocketHorizon = 'court_terme' | 'moyen_terme' | 'long_terme';
 
 export interface AllocationPocketInput {
@@ -233,18 +223,15 @@ export interface AllocationPocketInput {
   label?: string;
   kind: AllocationPocketKind;
   horizon?: AllocationPocketHorizon;
-  withdrawalPriority?: number;
   durationYears: number;
   annualReturnRate: number;
   enjoymentDelayMonths: number;
   initialAllocationPct: number;
   annualAllocationPct: number;
   repeatAtTerm: boolean;
-  termDestination: AllocationTermDestination;
 }
 
 export interface AllocationMatrixInput {
-  mode?: AllocationStrategyMode;
   sweepThreshold: number;
   minimumBankBalance?: number;
   pockets: AllocationPocketInput[];
@@ -317,8 +304,9 @@ export interface TresoInputsV3 extends Omit<TresoInputsV2, 'version'> {
   selectedAssociateId: string;
 }
 
-export interface TresoInputsV4 extends Omit<TresoInputsV3, 'version'> {
+export interface TresoInputsV4 extends Omit<TresoInputsV3, 'version' | 'foyer'> {
   version: 4;
+  foyer: RuntimeFoyerInput;
 }
 
 export type TresoInputsRuntime = TresoInputsV2 | TresoInputsV3 | TresoInputsV4;

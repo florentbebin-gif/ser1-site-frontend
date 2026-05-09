@@ -335,24 +335,6 @@
   font-weight: 600;
 }
 
-.ts-matrix-empty {
-  display: grid;
-  place-items: center;
-  gap: 10px;
-  margin: 14px 0;
-  padding: 18px;
-  background: var(--color-c7);
-  border: 1px dashed var(--color-c8);
-  border-radius: 8px;
-  text-align: center;
-}
-
-.ts-matrix-empty strong {
-  color: var(--color-c1);
-  font-size: 12px;
-  font-weight: 600;
-}
-
 .ts-matrix-actions {
   display: flex;
   align-items: center;
@@ -498,10 +480,6 @@
   font-size: 12px;
   text-align: right;
   flex-shrink: 0;
-}
-
-.ts-field--toggle {
-  padding: 4px 0;
 }
 
 .ts-toggle-label {
@@ -930,8 +908,7 @@
   .ts-company-snapshot,
   .ts-pocket-board,
   .ts-associate-modal-layout,
-  .ts-modal-panels,
-  .ts-balance-grid {
+  .ts-modal-panels {
     grid-template-columns: 1fr;
   }
 

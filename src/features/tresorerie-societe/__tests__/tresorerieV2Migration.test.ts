@@ -104,11 +104,9 @@ describe('migration trésorerie v3', () => {
     expect(v3.company.subsidiaries[0]).toMatchObject({
       parentEntityId: 'societe',
       ownershipPct: 80,
-      displayOrder: 0,
-      annualDividends: 18000,
+      dividendsSchedule: [{ amount: 18000, startYear: 2027 }],
       motherDaughterEligible: true,
     });
-    expect(v3.allocationMatrix.mode).toBe('strategy');
     expect(v3.allocationMatrix.pockets).toHaveLength(2);
     expect(v3.allocationMatrix.pockets.map(getAllocationPocketLabel)).toEqual([
       'Distribution 5 ans',
@@ -116,13 +114,11 @@ describe('migration trésorerie v3', () => {
     ]);
     expect(v3.allocationMatrix.pockets[0]).toMatchObject({
       horizon: 'court_terme',
-      withdrawalPriority: 1,
       initialAllocationPct: 66.66666666666666,
       annualAllocationPct: 0,
     });
     expect(v3.allocationMatrix.pockets[1]).toMatchObject({
       horizon: 'long_terme',
-      withdrawalPriority: 2,
       initialAllocationPct: 33.33333333333333,
       annualAllocationPct: 0,
     });
@@ -152,20 +148,23 @@ describe('migration trésorerie v3', () => {
           label: 'Associé historique',
           ownershipLots: [{ right: 'pleine_propriete', capitalPct: 80, economicRightsPct: 80 }],
           roles: ['associe_sans_statut'],
-          ccaInitial: 30000,
-          ccaAnnualContribution: 6000,
-          ccaContributionEndYear: 2030,
-          remunerationAnnualCost: 0,
+          cca: {
+            currentBalance: 30000,
+            exceptionalContributions: [],
+            annualContribution: { amount: 6000, startYear: 2028, endYear: 2030 },
+            remunerationRate: 0,
+          },
+          remuneration: { source: 'holding', loadedAnnualCost: 0, socialChargeRate: 0 },
         }],
         loans: [],
         subsidiaries: [{
           id: 'filiale-1',
           label: 'Filiale historique',
           holdingOwnershipPct: 70,
-          annualServicesRevenue: 10000,
-          annualDividends: 15000,
           motherDaughterEligible: true,
           fiscalIntegrationEstimateEnabled: false,
+          servicesSchedule: [{ amount: 10000, startYear: 2028 }],
+          dividendsSchedule: [{ amount: 15000, startYear: 2028 }],
         }],
       },
       allocationMatrix: {
@@ -236,14 +235,12 @@ describe('migration trésorerie v3', () => {
         pockets: [{
           id: 'legacy',
           kind: 'distribution',
-          withdrawalPriority: 7,
           durationYears: 3,
           annualReturnRate: 0.03,
           enjoymentDelayMonths: 0,
           initialAllocationPct: 0,
           annualAllocationPct: 100,
           repeatAtTerm: false,
-          termDestination: 'matrix',
         }],
       },
     } as any;
@@ -255,7 +252,6 @@ describe('migration trésorerie v3', () => {
     expect(v4.allocationMatrix.pockets[0]).toMatchObject({
       id: 'legacy',
       horizon: 'court_terme',
-      termDestination: 'treasury',
     });
   });
 
@@ -291,7 +287,7 @@ describe('migration trésorerie v3', () => {
     const v4 = buildTresoInputsV4FromV3(v3);
 
     expect(v4.company.projectionStartYear).toBe(2026);
-    expect(v4.foyer.projectionStartYear).toBe(2026);
+    expect(v4.foyer).toEqual({ selectedAssociateId: 'associe-1' });
     expect(v4.company.associates.map(associate => associate.profile?.projectionStartYear)).toEqual([2026, 2026]);
   });
 });

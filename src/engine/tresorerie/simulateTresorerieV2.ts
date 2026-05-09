@@ -51,27 +51,17 @@ function getIncomeStatement(company: CompanyInput): {
   };
 }
 
-function getInitialCcaBalance(
-  inputs: TresoInputsRuntime,
-  associate: AssociateInput,
-): number {
-  if (associate.cca) {
-    return Math.max(0, associate.cca.currentBalance);
-  }
-  return inputs.company.creationType === 'existante' ? associate.ccaInitial : 0;
+function getInitialCcaBalance(associate: AssociateInput): number {
+  return Math.max(0, associate.cca?.currentBalance ?? 0);
 }
 
 function getAnnualCcaContribution(associate: AssociateInput, anneeCivile: number): number {
-  if (associate.cca) {
-    const contribution = associate.cca.annualContribution;
-    const isActive =
-      anneeCivile >= contribution.startYear &&
-      (contribution.endYear == null || anneeCivile <= contribution.endYear);
-    return isActive ? Math.max(0, contribution.amount) : 0;
-  }
-  return isCivilYearBeforeOrEqual(associate.ccaContributionEndYear, anneeCivile)
-    ? associate.ccaAnnualContribution
-    : 0;
+  const contribution = associate.cca?.annualContribution;
+  if (!contribution) return 0;
+  const isActive =
+    anneeCivile >= contribution.startYear &&
+    (contribution.endYear == null || anneeCivile <= contribution.endYear);
+  return isActive ? Math.max(0, contribution.amount) : 0;
 }
 
 function getExceptionalCcaContribution(associate: AssociateInput, anneeCivile: number): number {
@@ -80,27 +70,12 @@ function getExceptionalCcaContribution(associate: AssociateInput, anneeCivile: n
     .reduce((sum, contribution) => sum + Math.max(0, contribution.amount), 0) ?? 0;
 }
 
-function getInitialCcaContribution(
-  inputs: TresoInputsRuntime,
-  associate: AssociateInput,
-  year: number,
-): number {
-  if (associate.cca) return 0;
-  return year === 1 && inputs.company.creationType !== 'existante'
-    ? Math.max(0, associate.ccaInitial)
-    : 0;
-}
-
 function getAssociateRemunerationForYear(
   associate: AssociateInput,
   anneeCivile: number,
 ): { holdingCost: number; netRevenue: number } {
-  const remuneration = associate.remuneration ?? {
-    source: 'holding' as const,
-    loadedAnnualCost: Math.max(0, associate.remunerationAnnualCost ?? 0),
-    socialChargeRate: 0,
-    endYear: associate.remunerationEndYear,
-  };
+  const remuneration = associate.remuneration;
+  if (!remuneration) return { holdingCost: 0, netRevenue: 0 };
   const startsBeforeOrDuringYear =
     remuneration.startYear == null || anneeCivile >= remuneration.startYear;
   if (!startsBeforeOrDuringYear || !isCivilYearBeforeOrEqual(remuneration.endYear, anneeCivile)) {
@@ -174,7 +149,7 @@ export function simulateTresorerieV2(
 
   const initialCcaBalances = new Map<string, number>();
   associates.forEach(associate => {
-    initialCcaBalances.set(associate.id, getInitialCcaBalance(v2, associate));
+    initialCcaBalances.set(associate.id, getInitialCcaBalance(associate));
   });
 
   let ccaBalances = new Map(initialCcaBalances);
@@ -221,7 +196,7 @@ export function simulateTresorerieV2(
     let apportCCA = 0;
     associates.forEach(associate => {
       const annualContribution = getAnnualCcaContribution(associate, anneeCivile);
-      const initialContribution = getInitialCcaContribution(v2, associate, year);
+      const initialContribution = 0;
       const exceptionalContribution = getExceptionalCcaContribution(associate, anneeCivile);
       const contribution = Math.max(0, annualContribution + initialContribution + exceptionalContribution);
       if (contribution <= 0) return;
@@ -356,7 +331,7 @@ export function simulateTresorerieV2(
     const tnsSocialChargesByAssociate = new Map<string, number>();
     associates.forEach(associate => {
       if (!isTnsAssociate(associate)) return;
-      const manualRate = associate.socialChargesManualRate ?? 0;
+      const manualRate = associate.remuneration?.socialChargeRate ?? 0;
       if (manualRate <= 0) return;
       const grossDividends = grossDividendsByAssociate.get(associate.id) ?? 0;
       const ccaAtStart = ccaBalanceDebut.get(associate.id) ?? 0;

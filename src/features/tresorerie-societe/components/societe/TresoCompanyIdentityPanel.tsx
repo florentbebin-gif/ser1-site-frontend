@@ -1,10 +1,11 @@
 import { SimFieldShell } from '@/components/ui/sim/SimFieldShell';
 import { SimSelect } from '@/components/ui/sim/SimSelect';
-import type { CompanyInput, CompanyKind, LegalForm } from '@/engine/tresorerie/types';
 import {
-  COMPANY_KIND_CODES,
-  COMPANY_KIND_LABELS,
-} from '../../utils/tresorerieSocieteModel';
+  COMPANY_CREATION_TYPE_OPTIONS,
+  COMPANY_KIND_OPTIONS,
+  LEGAL_FORM_OPTIONS,
+} from '../../utils/tresorerieSocieteOptions';
+import type { CompanyInput, CompanyKind, LegalForm } from '@/engine/tresorerie/types';
 import {
   fmtEuroInput,
   parseEuroInput,
@@ -17,28 +18,6 @@ interface TresoCompanyIdentityPanelProps {
   onCompanyChange: (patch: Partial<CompanyInput>) => void;
   onProjectionStartYearChange: (year: number) => void;
 }
-
-const TYPE_OPTIONS = [
-  { value: 'newco', label: 'Société à créer' },
-  { value: 'existante', label: 'Société existante' },
-];
-
-const LEGAL_FORM_OPTIONS: Array<{ value: LegalForm; label: string }> = [
-  { value: 'sas', label: 'SAS' },
-  { value: 'sc', label: 'SC' },
-  { value: 'sarl', label: 'SARL' },
-  { value: 'sa', label: 'SA' },
-  { value: 'selarl', label: 'SELARL' },
-  { value: 'spfpl', label: 'SPFPL' },
-  { value: 'selas', label: 'SELAS' },
-  { value: 'autre', label: 'Autre' },
-];
-
-const COMPANY_KIND_OPTIONS: Array<{ value: CompanyKind; label: string }> =
-  (Object.keys(COMPANY_KIND_LABELS) as CompanyKind[]).map(kind => ({
-    value: kind,
-    label: `${COMPANY_KIND_LABELS[kind]} (${COMPANY_KIND_CODES[kind]})`,
-  }));
 
 export function TresoCompanyIdentityPanel({
   company,
@@ -71,7 +50,7 @@ export function TresoCompanyIdentityPanel({
         <SimSelect
           value={company.creationType}
           onChange={value => onCompanyChange({ creationType: value as CompanyInput['creationType'] })}
-          options={TYPE_OPTIONS}
+          options={COMPANY_CREATION_TYPE_OPTIONS}
           ariaLabel="Type de société"
         />
       </SimFieldShell>

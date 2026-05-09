@@ -118,16 +118,16 @@ function buildProjectionSheet(
   const activeProfile = getAssociateProfile(inputs, getSelectedAssociate(inputs));
   const anneeCivile = activeProfile.projectionStartYear;
   const ccaInitialTotal = inputs.company.associates.reduce(
-    (sum, associate) => sum + (associate.cca?.currentBalance ?? associate.ccaInitial),
+    (sum, associate) => sum + (associate.cca?.currentBalance ?? 0),
     0,
   );
   const ccaAnnualTotal = inputs.company.associates.reduce(
-    (sum, associate) => sum + (associate.cca?.annualContribution.amount ?? associate.ccaAnnualContribution),
+    (sum, associate) => sum + (associate.cca?.annualContribution.amount ?? 0),
     0,
   );
   const maxContributionEndYear = inputs.company.associates.reduce<number | undefined>(
     (max, associate) => {
-      const endYear = associate.cca?.annualContribution.endYear ?? associate.ccaContributionEndYear;
+      const endYear = associate.cca?.annualContribution.endYear;
       if (endYear == null) return max;
       return max == null ? endYear : Math.max(max, endYear);
     },
@@ -222,25 +222,20 @@ function buildAssociateRevenueSheet(rows: TresoProjectionRow[], inputs: TresoInp
 }
 
 function ccaCurrentBalance(associate: AssociateInput): number {
-  return associate.cca?.currentBalance ?? associate.ccaInitial;
+  return associate.cca?.currentBalance ?? 0;
 }
 
 function scheduleRows(
   subsidiary: SubsidiaryInput,
   label: string,
   schedules: AmountScheduleInput[] | undefined,
-  fallbackAmount: number,
 ): XlsxCell[][] {
-  const rows = schedules && schedules.length > 0
-    ? schedules
-    : [{ amount: fallbackAmount, startYear: 0, endYear: undefined }];
+  const rows = schedules && schedules.length > 0 ? schedules : [];
 
   return rows.map(schedule => [
     txt(subsidiary.label),
     txt(label),
-    txt(schedule.startYear > 0
-      ? `${schedule.startYear} → ${schedule.endYear ?? 'non borné'}`
-      : 'Montant annuel legacy'),
+    txt(`${schedule.startYear} → ${schedule.endYear ?? 'non borné'}`),
     money(schedule.amount),
   ]);
 }
@@ -248,18 +243,7 @@ function scheduleRows(
 function disposalRows(subsidiaries: SubsidiaryInput[]): XlsxCell[][] {
   const rows = subsidiaries
     .map(subsidiary => {
-      const disposal = subsidiary.disposal ?? (
-        subsidiary.disposalYear
-          ? {
-            year: subsidiary.disposalYear,
-            estimatedPrice: subsidiary.estimatedDisposalPrice ?? 0,
-            taxBasis: subsidiary.taxBasis ?? 0,
-            fees: 0,
-            regime: 'auto' as const,
-            acquisitionYear: undefined,
-          }
-          : null
-      );
+      const disposal = subsidiary.disposal;
       if (!disposal) return null;
       return [
         txt(subsidiary.label),
@@ -312,8 +296,8 @@ function buildStructureSheet(inputs: TresoInputsRuntime): XlsxSheet {
     });
   });
   const flowScheduleRows = company.subsidiaries.flatMap(subsidiary => [
-    ...scheduleRows(subsidiary, 'Prestations vers la mère', subsidiary.servicesSchedule, subsidiary.annualServicesRevenue),
-    ...scheduleRows(subsidiary, 'Dividendes vers la mère', subsidiary.dividendsSchedule, subsidiary.annualDividends),
+    ...scheduleRows(subsidiary, 'Prestations vers la mère', subsidiary.servicesSchedule),
+    ...scheduleRows(subsidiary, 'Dividendes vers la mère', subsidiary.dividendsSchedule),
   ]);
   const rows: XlsxCell[][] = [
     [h('Structure société'), h('Valeur'), h('Détail')],
@@ -335,7 +319,7 @@ function buildStructureSheet(inputs: TresoInputsRuntime): XlsxSheet {
     ...company.subsidiaries.map(subsidiary => [
       txt(subsidiary.label),
       txt(`${subsidiary.ownershipPct ?? subsidiary.holdingOwnershipPct} %`),
-      txt(`${(subsidiary.parentEntityId ?? 'societe') === 'societe' ? 'Société mère' : subsidiary.parentEntityId} · trésorerie ${(subsidiary.treasuryInitial ?? 0).toLocaleString('fr-FR')} € · cession ${subsidiary.disposal?.year ?? subsidiary.disposalYear ?? 'non prévue'}`),
+      txt(`${(subsidiary.parentEntityId ?? 'societe') === 'societe' ? 'Société mère' : subsidiary.parentEntityId} · trésorerie ${(subsidiary.treasuryInitial ?? 0).toLocaleString('fr-FR')} € · cession ${subsidiary.disposal?.year ?? 'non prévue'}`),
     ]),
     [sec('Paliers filiales'), sec(''), sec('')],
     [h('Filiale'), h('Flux'), h('Période'), h('Montant')],

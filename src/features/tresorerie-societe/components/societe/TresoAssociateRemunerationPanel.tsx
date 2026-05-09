@@ -92,9 +92,6 @@ export function TresoAssociateRemunerationPanel({
     };
     onChange({
       remuneration: nextRemuneration,
-      remunerationAnnualCost: nextRemuneration.loadedAnnualCost,
-      remunerationEndYear: nextRemuneration.endYear,
-      socialChargesManualRate: nextRemuneration.socialChargeRate,
       profile: nextProfile,
     });
   };

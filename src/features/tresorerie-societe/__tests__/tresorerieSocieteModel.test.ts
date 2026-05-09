@@ -9,9 +9,13 @@ function makeAssociate(id: string, capitalPct: number, economicRightsPct = capit
     kind: 'pp',
     ownershipLots: [{ right: 'pleine_propriete', capitalPct, economicRightsPct }],
     roles: ['associe_sans_statut'],
-    ccaInitial: 0,
-    ccaAnnualContribution: 0,
-    remunerationAnnualCost: 0,
+    cca: {
+      currentBalance: 0,
+      exceptionalContributions: [],
+      annualContribution: { amount: 0, startYear: 2026 },
+      remunerationRate: 0,
+    },
+    remuneration: { source: 'holding', loadedAnnualCost: 0, socialChargeRate: 0 },
   };
 }
 

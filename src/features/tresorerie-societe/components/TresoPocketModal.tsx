@@ -8,7 +8,7 @@ import type {
 import {
   ALLOCATION_HORIZON_OPTIONS,
   ALLOCATION_KIND_OPTIONS,
-} from '../utils/tresorerieSocieteModel';
+} from '../utils/tresorerieSocieteOptions';
 import { getAllocationPocketLabel } from '../utils/tresorerieV2Migration';
 import {
   fmtRateInput,
@@ -33,10 +33,7 @@ export function TresoPocketModal({
   onClose,
 }: TresoPocketModalProps) {
   const patchPocket = (patch: Partial<AllocationPocketInput>) => {
-    onChange({
-      ...patch,
-      termDestination: 'treasury',
-    });
+    onChange(patch);
   };
 
   return (

@@ -36,12 +36,16 @@ const BASE: TresoInputsV2 = {
     associates: [{
       id: 'associe-1',
       label: 'Associé 1',
+      kind: 'pp',
       ownershipLots: [{ right: 'pleine_propriete', capitalPct: 100, economicRightsPct: 100 }],
       roles: ['associe_sans_statut'],
-      ccaInitial: 0,
-      ccaAnnualContribution: 16600,
-      ccaContributionEndYear: 2039,
-      remunerationAnnualCost: 0,
+      cca: {
+        currentBalance: 0,
+        exceptionalContributions: [],
+        annualContribution: { amount: 16600, startYear: 2025, endYear: 2039 },
+        remunerationRate: 0,
+      },
+      remuneration: { source: 'holding', loadedAnnualCost: 0, socialChargeRate: 0 },
     }],
     loans: [],
     subsidiaries: [],
@@ -75,7 +79,7 @@ describe('Trésorerie société IS — projection moteur v2 et KPIs', () => {
   });
 
   describe('CCA cumulé', () => {
-    it('augmente de ccaAnnualContribution chaque année en phase active', () => {
+    it('augmente de l’apport annuel CCA chaque année en phase active', () => {
       const rows = simulateTresorerieV2(BASE, PARAMS, 3);
       expect(rows[0].ccaCumule).toBe(16600);
       expect(rows[1].ccaCumule).toBe(33200);
@@ -107,7 +111,6 @@ describe('Trésorerie société IS — projection moteur v2 et KPIs', () => {
             initialAllocationPct: 100,
             annualAllocationPct: 0,
             repeatAtTerm: false,
-            termDestination: 'treasury',
           }],
         },
       }, PARAMS, 5);
@@ -131,6 +134,18 @@ describe('Trésorerie société IS — projection moteur v2 et KPIs', () => {
           currentAge: 65,
           retirementAge: 65,
           annualIncomeNeed: 50000,
+        },
+        company: {
+          ...BASE.company,
+          associates: BASE.company.associates.map(associate => ({
+            ...associate,
+            profile: {
+              currentAge: 65,
+              retirementAge: 65,
+              annualIncomeNeed: 50000,
+              projectionStartYear: BASE.company.projectionStartYear ?? BASE.foyer.projectionStartYear,
+            },
+          })),
         },
       }, PARAMS, 1);
 

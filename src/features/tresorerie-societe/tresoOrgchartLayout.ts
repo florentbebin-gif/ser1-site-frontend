@@ -73,11 +73,7 @@ function bottomY(node: TresoOrgNode): number {
 }
 
 function sortSubsidiaries(subsidiaries: SubsidiaryInput[]): SubsidiaryInput[] {
-  return subsidiaries.slice().sort((a, b) => {
-    const order = (a.displayOrder ?? 0) - (b.displayOrder ?? 0);
-    if (order !== 0) return order;
-    return a.label.localeCompare(b.label, 'fr');
-  });
+  return subsidiaries.slice().sort((a, b) => a.label.localeCompare(b.label, 'fr'));
 }
 
 function offsetNodes(nodes: TresoOrgNode[], offsetX: number): TresoOrgNode[] {

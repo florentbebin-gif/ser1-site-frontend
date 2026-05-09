@@ -55,21 +55,18 @@ function baseV3(): TresoInputsV3 {
         },
         ownershipLots: [{ right: 'pleine_propriete', capitalPct: 100, economicRightsPct: 100 }],
         roles: ['associe_sans_statut'],
-        ccaInitial: 0,
-        ccaAnnualContribution: 0,
         cca: {
           currentBalance: 0,
           exceptionalContributions: [],
           annualContribution: { amount: 0, startYear: 2026, endYear: 2026 },
           remunerationRate: 0,
         },
-        remunerationAnnualCost: 0,
+        remuneration: { source: 'holding', loadedAnnualCost: 0, socialChargeRate: 0 },
       }],
       loans: [],
       subsidiaries: [],
     },
     allocationMatrix: {
-      mode: 'strategy',
       sweepThreshold: 0,
       pockets: [],
     },
@@ -143,21 +140,18 @@ describe('simulateTresorerie — modèle société v3', () => {
       workingCapitalRequirement: 40_000,
     };
     inputs.allocationMatrix = {
-      mode: 'strategy',
       sweepThreshold: 10_000,
       pockets: [{
         id: 'court-terme',
         label: 'Court terme',
         kind: 'distribution',
         horizon: 'court_terme',
-        withdrawalPriority: 1,
         durationYears: 5,
         annualReturnRate: 0,
         enjoymentDelayMonths: 0,
         initialAllocationPct: 0,
         annualAllocationPct: 100,
         repeatAtTerm: false,
-        termDestination: 'treasury',
       }],
     };
 
@@ -211,24 +205,22 @@ describe('simulateTresorerie — modèle société v3', () => {
         label: 'Filiale A',
         parentEntityId: 'societe',
         ownershipPct: 80,
-        displayOrder: 0,
         holdingOwnershipPct: 80,
-        annualServicesRevenue: 0,
-        annualDividends: 10_000,
         motherDaughterEligible: true,
         fiscalIntegrationEstimateEnabled: false,
+        servicesSchedule: [],
+        dividendsSchedule: [{ amount: 10_000, startYear: 2026 }],
       },
       {
         id: 'filiale-2',
         label: 'Filiale B',
         parentEntityId: 'filiale-1',
         ownershipPct: 60,
-        displayOrder: 1,
         holdingOwnershipPct: 60,
-        annualServicesRevenue: 0,
-        annualDividends: 5_000,
         motherDaughterEligible: true,
         fiscalIntegrationEstimateEnabled: false,
+        servicesSchedule: [],
+        dividendsSchedule: [{ amount: 5_000, startYear: 2026 }],
       },
     ];
 
@@ -242,7 +234,6 @@ describe('simulateTresorerie — modèle société v3', () => {
     const inputs = baseV3();
     inputs.company.treasuryInitial = 100_000;
     inputs.allocationMatrix = {
-      mode: 'single',
       sweepThreshold: 0,
       pockets: [
         {
@@ -250,28 +241,24 @@ describe('simulateTresorerie — modèle société v3', () => {
           label: 'Court terme',
           kind: 'distribution',
           horizon: 'court_terme',
-          withdrawalPriority: 1,
           durationYears: 5,
           annualReturnRate: 0,
           enjoymentDelayMonths: 0,
           initialAllocationPct: 100,
           annualAllocationPct: 0,
           repeatAtTerm: false,
-          termDestination: 'treasury',
         },
         {
           id: 'capitalisation',
           label: 'Long terme',
           kind: 'capitalisation',
           horizon: 'long_terme',
-          withdrawalPriority: 2,
           durationYears: 5,
           annualReturnRate: 0,
           enjoymentDelayMonths: 0,
           initialAllocationPct: 100,
           annualAllocationPct: 0,
           repeatAtTerm: false,
-          termDestination: 'treasury',
         },
       ],
     };
@@ -286,7 +273,6 @@ describe('simulateTresorerie — modèle société v3', () => {
     const inputs = baseV3();
     inputs.company.treasuryInitial = 100_000;
     inputs.allocationMatrix = {
-      mode: 'strategy',
       sweepThreshold: 0,
       pockets: [
         {
@@ -294,28 +280,24 @@ describe('simulateTresorerie — modèle société v3', () => {
           label: 'Long terme',
           kind: 'capitalisation',
           horizon: 'long_terme',
-          withdrawalPriority: 2,
           durationYears: 5,
           annualReturnRate: 0,
           enjoymentDelayMonths: 0,
           initialAllocationPct: 100,
           annualAllocationPct: 0,
           repeatAtTerm: false,
-          termDestination: 'treasury',
         },
         {
           id: 'distribution',
           label: 'Court terme',
           kind: 'distribution',
           horizon: 'court_terme',
-          withdrawalPriority: 1,
           durationYears: 5,
           annualReturnRate: 0,
           enjoymentDelayMonths: 0,
           initialAllocationPct: 100,
           annualAllocationPct: 0,
           repeatAtTerm: false,
-          termDestination: 'treasury',
         },
       ],
     };
@@ -330,7 +312,6 @@ describe('simulateTresorerie — modèle société v3', () => {
     const inputs = baseV3();
     inputs.company.treasuryInitial = 100_000;
     inputs.allocationMatrix = {
-      mode: 'single',
       sweepThreshold: 0,
       pockets: [],
     };
@@ -351,7 +332,6 @@ describe('simulateTresorerie — modèle société v3', () => {
       workingCapitalRequirement: 20_000,
     };
     inputs.allocationMatrix = {
-      mode: 'single',
       sweepThreshold: 70_000,
       minimumBankBalance: 70_000,
       pockets: [{
@@ -359,14 +339,12 @@ describe('simulateTresorerie — modèle société v3', () => {
         label: 'Court terme',
         kind: 'distribution',
         horizon: 'court_terme',
-        withdrawalPriority: 1,
         durationYears: 1,
         annualReturnRate: 0,
         enjoymentDelayMonths: 0,
         initialAllocationPct: 100,
         annualAllocationPct: 0,
         repeatAtTerm: true,
-        termDestination: 'same_pocket',
       }],
     };
 
@@ -386,15 +364,11 @@ describe('simulateTresorerie — modèle société v3', () => {
       label: 'Filiale 1',
       parentEntityId: 'societe',
       ownershipPct: 100,
-      displayOrder: 0,
       holdingOwnershipPct: 100,
-      annualServicesRevenue: 0,
-      annualDividends: 0,
       motherDaughterEligible: true,
       fiscalIntegrationEstimateEnabled: false,
-      disposalYear: 2026,
-      estimatedDisposalPrice: 100_000,
-      taxBasis: 40_000,
+      servicesSchedule: [],
+      dividendsSchedule: [],
       disposal: {
         year: 2026,
         estimatedPrice: 100_000,
@@ -404,7 +378,6 @@ describe('simulateTresorerie — modèle société v3', () => {
       },
     }];
     inputs.allocationMatrix = {
-      mode: 'strategy',
       sweepThreshold: 0,
       minimumBankBalance: 0,
       pockets: [{
@@ -412,14 +385,12 @@ describe('simulateTresorerie — modèle société v3', () => {
         label: 'Balayage annuel',
         kind: 'distribution',
         horizon: 'court_terme',
-        withdrawalPriority: 1,
         durationYears: 3,
         annualReturnRate: 0,
         enjoymentDelayMonths: 0,
         initialAllocationPct: 0,
         annualAllocationPct: 100,
         repeatAtTerm: false,
-        termDestination: 'treasury',
       }],
     };
 
@@ -438,12 +409,11 @@ describe('simulateTresorerie — modèle société v3', () => {
       label: 'Filiale 1',
       parentEntityId: 'societe',
       ownershipPct: 100,
-      displayOrder: 0,
       holdingOwnershipPct: 100,
-      annualServicesRevenue: 12_000,
-      annualDividends: 10_000,
       motherDaughterEligible: true,
       fiscalIntegrationEstimateEnabled: false,
+      servicesSchedule: [{ amount: 12_000, startYear: 2026 }],
+      dividendsSchedule: [{ amount: 10_000, startYear: 2026 }],
       disposal: {
         year: 2026,
         estimatedPrice: 0,
