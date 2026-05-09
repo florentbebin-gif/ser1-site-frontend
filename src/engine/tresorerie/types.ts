@@ -31,6 +31,8 @@ export interface TresoFiscalParams {
   motherDaughterStandardQpfcRate: number;
   /** Quote-part frais et charges régime mère-fille groupe fiscal (ex: 0.01) */
   motherDaughterGroupQpfcRate: number;
+  /** Quote-part taxable des plus-values long terme sur titres de participation. */
+  participationDisposalQpfcRate?: number;
   /** Taux IR du PFU (ex: 0.128) */
   pfuRateIR: number;
   /** Taux PS patrimoine (ex: 0.172) */
@@ -135,6 +137,18 @@ export type AssociateRole =
   | 'associe_sans_statut'
   | 'salarie';
 
+export type AssociateRemunerationSource = 'holding' | 'subsidiary';
+
+export interface AssociateRemunerationInput {
+  source: AssociateRemunerationSource;
+  subsidiaryId?: string;
+  loadedAnnualCost: number;
+  socialChargeRate: number;
+  startYear?: number;
+  endYear?: number;
+  annualNeedAfterStop?: number;
+}
+
 export interface AssociateInput {
   id: string;
   label: string;
@@ -149,6 +163,7 @@ export interface AssociateInput {
   remunerationAnnualCost: number;
   remunerationEndYear?: number;
   socialChargesManualRate?: number;
+  remuneration?: AssociateRemunerationInput;
 }
 
 export type FinancedAssetKind = 'scpi' | 'immobilier' | 'autre';
@@ -168,6 +183,23 @@ export interface CompanyLoanInput {
   enjoymentDelayMonths?: number;
 }
 
+export interface AmountScheduleInput {
+  amount: number;
+  startYear: number;
+  endYear?: number;
+}
+
+export type SubsidiaryDisposalRegime = 'auto' | 'pvlt' | 'standard';
+
+export interface SubsidiaryDisposalInput {
+  year?: number;
+  estimatedPrice: number;
+  taxBasis: number;
+  fees?: number;
+  regime: SubsidiaryDisposalRegime;
+  acquisitionYear?: number;
+}
+
 export interface SubsidiaryInput {
   id: string;
   label: string;
@@ -183,6 +215,12 @@ export interface SubsidiaryInput {
   disposalYear?: number;
   estimatedDisposalPrice?: number;
   taxBasis?: number;
+  treasuryInitial?: number;
+  workingCapitalRequirement?: number;
+  distributableReserves?: number;
+  servicesSchedule?: AmountScheduleInput[];
+  dividendsSchedule?: AmountScheduleInput[];
+  disposal?: SubsidiaryDisposalInput;
 }
 
 export type AllocationPocketKind = 'distribution' | 'capitalisation';
@@ -208,6 +246,7 @@ export interface AllocationPocketInput {
 export interface AllocationMatrixInput {
   mode?: AllocationStrategyMode;
   sweepThreshold: number;
+  minimumBankBalance?: number;
   pockets: AllocationPocketInput[];
 }
 
@@ -245,6 +284,7 @@ export interface CcaScheduleInput {
 }
 
 export interface CompanyInput {
+  label?: string;
   creationType: 'newco' | 'existante';
   legalForm: LegalForm;
   companyKind?: CompanyKind;
@@ -276,7 +316,11 @@ export interface TresoInputsV3 extends Omit<TresoInputsV2, 'version'> {
   selectedAssociateId: string;
 }
 
-export type TresoInputsRuntime = TresoInputsV2 | TresoInputsV3;
+export interface TresoInputsV4 extends Omit<TresoInputsV3, 'version'> {
+  version: 4;
+}
+
+export type TresoInputsRuntime = TresoInputsV2 | TresoInputsV3 | TresoInputsV4;
 
 // ─── Entrées legacy du simulateur (migration/compatibilité) ───────────────────
 
@@ -399,4 +443,14 @@ export interface TresoProjectionRow {
   // Trésorerie
   tresorerieDebut: number;
   tresorerieFin: number;
+  tresorerieBanqueDebut?: number;
+  tresorerieBanqueFin?: number;
+  soldeMinimumCompteBancaire?: number;
+  bfr?: number;
+  tresorerieDisponible?: number;
+  montantInvestiInitial?: number;
+  montantBalayeAnnuel?: number;
+  montantReinvestiAuTerme?: number;
+  deficitTresorerieBancaire?: number;
+  alerteTresorerieBancaireInsuffisante?: boolean;
 }

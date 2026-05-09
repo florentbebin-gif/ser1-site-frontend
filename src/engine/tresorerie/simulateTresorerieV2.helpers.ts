@@ -5,6 +5,7 @@ import type {
   AllocationPocketInput,
   AssociateInput,
   CompanyLoanInput,
+  AmountScheduleInput,
   SubsidiaryInput,
   TresoAssociateRevenueRow,
   TresoFiscalParams,
@@ -53,6 +54,7 @@ export interface MatrixYearResult {
   montantRachatCapi: number;
   maturityCash: number;
   matrixRolloverCash: number;
+  repeatableMaturities: InvestmentLot[];
   nextLots: InvestmentLot[];
 }
 
@@ -178,8 +180,37 @@ export function computeSubsidiariesByYear(
   anneeCivile: number,
   params: TresoFiscalParams,
 ): SubsidiaryYearResult {
+  const amountForSchedule = (
+    schedule: AmountScheduleInput[] | undefined,
+    fallbackAmount: number,
+  ): number => {
+    if (schedule) {
+      return schedule
+        .filter(item => anneeCivile >= item.startYear && (item.endYear == null || anneeCivile <= item.endYear))
+        .reduce((total, item) => total + Math.max(0, item.amount), 0);
+    }
+    return Math.max(0, fallbackAmount);
+  };
+
   return subsidiaries.reduce<SubsidiaryYearResult>((sum, subsidiary) => {
-    const dividendes = subsidiary.annualDividends;
+    const disposal = subsidiary.disposal ?? (
+      subsidiary.disposalYear
+        ? {
+          year: subsidiary.disposalYear,
+          estimatedPrice: subsidiary.estimatedDisposalPrice ?? 0,
+          taxBasis: subsidiary.taxBasis ?? 0,
+          fees: 0,
+          regime: 'auto' as const,
+        }
+        : undefined
+    );
+    const isAfterDisposal = disposal?.year != null && anneeCivile > disposal.year;
+    const servicesRevenue = isAfterDisposal
+      ? 0
+      : amountForSchedule(subsidiary.servicesSchedule, subsidiary.annualServicesRevenue);
+    const dividendes = isAfterDisposal
+      ? 0
+      : amountForSchedule(subsidiary.dividendsSchedule, subsidiary.annualDividends);
     let quotePartTaxable = 0;
     let dividendesFilialesExoneres = 0;
 
@@ -190,24 +221,34 @@ export function computeSubsidiariesByYear(
       quotePartTaxable = dividendes;
     }
 
-    const disposalCash =
-      subsidiary.disposalYear === anneeCivile
-        ? subsidiary.estimatedDisposalPrice ?? 0
-        : 0;
-    const disposalGain =
-      disposalCash > 0
-        ? Math.max(0, disposalCash - (subsidiary.taxBasis ?? 0))
-        : 0;
+    const ownershipRate = Math.max(0, subsidiary.ownershipPct ?? subsidiary.holdingOwnershipPct ?? 0) / 100;
+    const isDisposalYear = disposal?.year === anneeCivile;
+    const disposalGrossCash = isDisposalYear ? Math.max(0, disposal.estimatedPrice) * ownershipRate : 0;
+    const disposalGain = isDisposalYear
+      ? Math.max(
+        0,
+        (disposal.estimatedPrice - disposal.taxBasis - (disposal.fees ?? 0)) * ownershipRate,
+      )
+      : 0;
+    const autoPvlt =
+      (subsidiary.ownershipPct ?? subsidiary.holdingOwnershipPct ?? 0) >= 5 &&
+      (disposal?.acquisitionYear == null || disposal?.year == null || disposal.year - disposal.acquisitionYear >= 2);
+    const disposalRegime = disposal?.regime === 'auto'
+      ? (autoPvlt ? 'pvlt' : 'standard')
+      : disposal?.regime;
+    const disposalTaxableGain = disposalRegime === 'pvlt'
+      ? disposalGain * Math.max(0, params.participationDisposalQpfcRate ?? 0)
+      : disposalGain;
 
     return {
-      servicesRevenue: sum.servicesRevenue + subsidiary.annualServicesRevenue,
+      servicesRevenue: sum.servicesRevenue + servicesRevenue,
       dividendesFiliales: sum.dividendesFiliales + dividendes,
       dividendesFilialesExoneres: sum.dividendesFilialesExoneres + dividendesFilialesExoneres,
-      quotePartTaxable: sum.quotePartTaxable + quotePartTaxable,
+      quotePartTaxable: sum.quotePartTaxable + quotePartTaxable + disposalTaxableGain,
       estimatedFiscalResult:
         sum.estimatedFiscalResult +
         (subsidiary.fiscalIntegrationEstimateEnabled ? subsidiary.estimatedFiscalResult ?? 0 : 0),
-      disposalCash: sum.disposalCash + disposalCash,
+      disposalCash: sum.disposalCash + disposalGrossCash,
       disposalGain: sum.disposalGain + disposalGain,
     };
   }, {
@@ -328,10 +369,7 @@ export function createLotsFromAllocation(params: {
         params.amount * Math.max(0, pocket[params.allocationKey]) * scale / 100;
       if (allocated <= 0) return null;
       return {
-        pocket: {
-          ...pocket,
-          termDestination: pocket.repeatAtTerm ? 'same_pocket' : pocket.termDestination,
-        },
+        pocket: { ...pocket, termDestination: 'treasury' },
         amount: allocated,
         value: allocated,
         capitalInvested: allocated,
@@ -389,8 +427,10 @@ export function computeMatrixYear(
       sum.montantRachatCapi += montantRachatCapi;
     }
 
+    sum.maturityCash += maturityValue;
+
     if (lot.pocket.repeatAtTerm) {
-      sum.nextLots.push({
+      sum.repeatableMaturities.push({
         pocket: lot.pocket,
         amount: maturityValue,
         value: maturityValue,
@@ -398,12 +438,6 @@ export function computeMatrixYear(
         startYear: anneeCivile + 1,
       });
       return sum;
-    }
-
-    if (lot.pocket.termDestination === 'matrix') {
-      sum.matrixRolloverCash += maturityValue;
-    } else {
-      sum.maturityCash += maturityValue;
     }
 
     return sum;
@@ -417,7 +451,35 @@ export function computeMatrixYear(
     montantRachatCapi: 0,
     maturityCash: 0,
     matrixRolloverCash: 0,
+    repeatableMaturities: [],
     nextLots: [],
   });
+}
+
+export function createRepeatLotsFromMaturities(params: {
+  maturities: InvestmentLot[];
+  availableCash: number;
+  startYear: number;
+}): { lots: InvestmentLot[]; amount: number } {
+  let remaining = Math.max(0, params.availableCash);
+  const lots: InvestmentLot[] = [];
+  let amount = 0;
+
+  params.maturities.forEach(maturity => {
+    if (remaining <= 0) return;
+    const reinvested = Math.min(remaining, maturity.amount);
+    if (reinvested <= 0) return;
+    remaining -= reinvested;
+    amount += reinvested;
+    lots.push({
+      pocket: { ...maturity.pocket, termDestination: 'treasury' },
+      amount: reinvested,
+      value: reinvested,
+      capitalInvested: reinvested,
+      startYear: params.startYear,
+    });
+  });
+
+  return { lots, amount };
 }
 

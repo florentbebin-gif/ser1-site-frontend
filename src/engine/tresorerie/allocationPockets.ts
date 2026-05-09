@@ -5,15 +5,7 @@ import type {
 } from './types';
 
 export function sortAllocationPockets(pockets: AllocationPocketInput[]): AllocationPocketInput[] {
-  return pockets
-    .map((pocket, index) => ({ pocket, index }))
-    .sort((a, b) => {
-      const priority = (a.pocket.withdrawalPriority ?? Number.MAX_SAFE_INTEGER)
-        - (b.pocket.withdrawalPriority ?? Number.MAX_SAFE_INTEGER);
-      if (priority !== 0) return priority;
-      return a.index - b.index;
-    })
-    .map(item => item.pocket);
+  return [...pockets];
 }
 
 export function normalizeAllocationPockets(pockets: AllocationPocketInput[]): AllocationPocketInput[] {

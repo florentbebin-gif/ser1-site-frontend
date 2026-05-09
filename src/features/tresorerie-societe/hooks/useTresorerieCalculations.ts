@@ -89,6 +89,8 @@ export function useTresorerieCalculations(inputs: TresoInputsRuntime): TresoCalc
       (corpCurrent.maxDeductibleCcaInterestRate ?? defaultsCorp.maxDeductibleCcaInterestRate) / 100;
     const dividendesAbattement =
       (corpCurrent.dividendsAbatementPct ?? defaultsCorp.dividendsAbatementPct) / 100;
+    const participationDisposalQpfcRate =
+      (corpCurrent.participationDisposalQpfcPct ?? defaultsCorp.participationDisposalQpfcPct) / 100;
 
     const qpfc = corpCurrent.motherDaughterQpfc ?? defaultsCorp.motherDaughterQpfc;
     const standardQpfc = (qpfc.standard ?? defaultsCorp.motherDaughterQpfc.standard) / 100;
@@ -103,6 +105,7 @@ export function useTresorerieCalculations(inputs: TresoInputsRuntime): TresoCalc
       isReducedThreshold: reducedThreshold,
       motherDaughterStandardQpfcRate: standardQpfc,
       motherDaughterGroupQpfcRate: groupQpfc,
+      participationDisposalQpfcRate,
       pfuRateIR,
       psRate,
       pfuTotal: pfuRateIR + psRate,

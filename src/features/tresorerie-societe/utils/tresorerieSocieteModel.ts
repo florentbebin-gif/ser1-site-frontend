@@ -1,7 +1,6 @@
 import type {
   AllocationPocketHorizon,
   AllocationPocketInput,
-  AllocationTermDestination,
   AssociateInput,
   CompanyInput,
   CompanyKind,
@@ -41,12 +40,6 @@ export const ALLOCATION_KIND_OPTIONS = [
   { value: 'distribution', label: 'Distribution' },
   { value: 'capitalisation', label: 'Capitalisation' },
 ] satisfies Array<{ value: AllocationPocketInput['kind']; label: string }>;
-
-export const ALLOCATION_DESTINATION_OPTIONS = [
-  { value: 'treasury', label: 'Trésorerie' },
-  { value: 'matrix', label: 'Matrice' },
-  { value: 'same_pocket', label: 'Même poche' },
-] satisfies Array<{ value: AllocationTermDestination; label: string }>;
 
 export const ALLOCATION_HORIZON_OPTIONS = [
   { value: 'court_terme', label: 'Court terme' },
@@ -188,22 +181,26 @@ function getNextPocketIndex(pockets: AllocationPocketInput[]): number {
   return index;
 }
 
-export function buildDefaultPocket(pockets: AllocationPocketInput[]): AllocationPocketInput {
+export function buildDefaultPocket(
+  pockets: AllocationPocketInput[],
+  preferredHorizon?: AllocationPocketHorizon,
+): AllocationPocketInput {
   const index = getNextPocketIndex(pockets);
   const zeroBasedIndex = Math.min(index - 1, 2);
   const horizon: AllocationPocketHorizon =
-    zeroBasedIndex === 0 ? 'court_terme' : zeroBasedIndex === 1 ? 'moyen_terme' : 'long_terme';
+    preferredHorizon ??
+    (zeroBasedIndex === 0 ? 'court_terme' : zeroBasedIndex === 1 ? 'moyen_terme' : 'long_terme');
+  const isShortTerm = horizon === 'court_terme';
 
   return {
     id: `poche-${index}`,
-    kind: zeroBasedIndex === 0 ? 'distribution' : 'capitalisation',
+    kind: isShortTerm ? 'distribution' : 'capitalisation',
     horizon,
-    withdrawalPriority: index,
-    durationYears: zeroBasedIndex === 0 ? 5 : 8,
-    annualReturnRate: zeroBasedIndex === 0 ? 0.05 : 0.04,
+    durationYears: isShortTerm ? 5 : 8,
+    annualReturnRate: isShortTerm ? 0.05 : 0.04,
     enjoymentDelayMonths: 0,
-    initialAllocationPct: zeroBasedIndex === 0 ? 100 : 0,
-    annualAllocationPct: zeroBasedIndex === 0 ? 100 : 0,
+    initialAllocationPct: isShortTerm ? 100 : 0,
+    annualAllocationPct: isShortTerm ? 100 : 0,
     repeatAtTerm: false,
     termDestination: 'treasury',
   };

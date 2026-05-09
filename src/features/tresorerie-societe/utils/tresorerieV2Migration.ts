@@ -7,9 +7,12 @@ import type {
   TresoInputs,
   TresoInputsV2,
   TresoInputsV3,
+  TresoInputsV4,
 } from '@/engine/tresorerie/types';
 
 const DEFAULT_ASSOCIATE_ID = 'associe-1';
+
+const DEFAULT_COMPANY_LABEL = 'Holding patrimoniale';
 
 function currentYear(): number {
   return new Date().getFullYear();
@@ -232,4 +235,73 @@ export function buildTresoInputsV3FromV2(input: TresoInputsV2): TresoInputsV3 {
 
 export function buildTresoInputsV3FromLegacy(input: TresoInputs): TresoInputsV3 {
   return buildTresoInputsV3FromV2(buildTresoInputsV2FromLegacy(input));
+}
+
+function scheduleFromAnnualAmount(amount: number, startYear: number) {
+  return amount > 0 ? [{ amount, startYear }] : [];
+}
+
+export function buildTresoInputsV4FromV3(input: TresoInputsV3): TresoInputsV4 {
+  const projectionStartYear = input.foyer.projectionStartYear;
+  return {
+    ...input,
+    version: 4,
+    company: {
+      ...input.company,
+      label: input.company.label ?? DEFAULT_COMPANY_LABEL,
+      associates: input.company.associates.map(associate => ({
+        ...associate,
+        remuneration: associate.remuneration ?? {
+          source: 'holding',
+          loadedAnnualCost: Math.max(0, associate.remunerationAnnualCost ?? 0),
+          socialChargeRate: Math.max(0, associate.socialChargesManualRate ?? 0),
+          endYear: associate.remunerationEndYear,
+        },
+      })),
+      subsidiaries: input.company.subsidiaries.map((subsidiary, index) => ({
+        ...subsidiary,
+        parentEntityId: subsidiary.parentEntityId ?? 'societe',
+        ownershipPct: subsidiary.ownershipPct ?? subsidiary.holdingOwnershipPct,
+        displayOrder: subsidiary.displayOrder ?? index,
+        treasuryInitial: subsidiary.treasuryInitial ?? 0,
+        workingCapitalRequirement: subsidiary.workingCapitalRequirement ?? 0,
+        distributableReserves: subsidiary.distributableReserves ?? 0,
+        servicesSchedule: subsidiary.servicesSchedule ??
+          scheduleFromAnnualAmount(subsidiary.annualServicesRevenue, projectionStartYear),
+        dividendsSchedule: subsidiary.dividendsSchedule ??
+          scheduleFromAnnualAmount(subsidiary.annualDividends, projectionStartYear),
+        disposal: subsidiary.disposal ?? (
+          subsidiary.disposalYear
+            ? {
+              year: subsidiary.disposalYear,
+              estimatedPrice: subsidiary.estimatedDisposalPrice ?? 0,
+              taxBasis: subsidiary.taxBasis ?? 0,
+              fees: 0,
+              regime: 'auto',
+            }
+            : undefined
+        ),
+      })),
+    },
+    allocationMatrix: {
+      ...input.allocationMatrix,
+      minimumBankBalance:
+        input.allocationMatrix.minimumBankBalance ?? input.allocationMatrix.sweepThreshold ?? 0,
+      pockets: input.allocationMatrix.pockets.map((pocket, index) => ({
+        ...pocket,
+        horizon: pocket.horizon ?? (
+          index === 0 ? 'court_terme' : index === 1 ? 'long_terme' : 'moyen_terme'
+        ),
+        termDestination: 'treasury',
+      })),
+    },
+  };
+}
+
+export function buildTresoInputsV4FromV2(input: TresoInputsV2): TresoInputsV4 {
+  return buildTresoInputsV4FromV3(buildTresoInputsV3FromV2(input));
+}
+
+export function buildTresoInputsV4FromLegacy(input: TresoInputs): TresoInputsV4 {
+  return buildTresoInputsV4FromV2(buildTresoInputsV2FromLegacy(input));
 }

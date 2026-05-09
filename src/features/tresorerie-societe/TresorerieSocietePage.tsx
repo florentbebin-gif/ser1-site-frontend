@@ -27,14 +27,14 @@ export default function TresorerieSocietePage() {
   const {
     state,
     hydrated,
-    setInputsV3,
+    setInputsV4,
     setProjectionVisible,
     setProjectionMode,
   } = useTresorerieState();
 
   const { colors: themeColors, pptxColors, cabinetLogo, logoPlacement } = useTheme();
-  const activeProfile = getAssociateProfile(state.inputsV3, getSelectedAssociate(state.inputsV3));
-  const { rows, kpis, loading, error, simulationError } = useTresorerieCalculations(state.inputsV3);
+  const activeProfile = getAssociateProfile(state.inputsV4, getSelectedAssociate(state.inputsV4));
+  const { rows, kpis, loading, error, simulationError } = useTresorerieCalculations(state.inputsV4);
   const {
     exportExcel,
     exportPptx,
@@ -43,7 +43,7 @@ export default function TresorerieSocietePage() {
   } = useTresorerieExportHandlers({
     rows,
     kpis,
-    inputs: state.inputsV3,
+    inputs: state.inputsV4,
     themeColors,
     pptxColors,
     cabinetLogo,
@@ -70,12 +70,12 @@ export default function TresorerieSocietePage() {
     >
       <SimPageShell.Main>
         {/* Bloc 1 — Société */}
-        <TresoSocieteSection inputs={state.inputsV3} onChange={setInputsV3} />
+        <TresoSocieteSection inputs={state.inputsV4} onChange={setInputsV4} />
 
         {/* Bloc 2 — Allocation société */}
         <TresoPlacementSection
-          inputs={state.inputsV3}
-          onChange={setInputsV3}
+          inputs={state.inputsV4}
+          onChange={setInputsV4}
         />
 
         {/* Bouton projection */}
@@ -110,8 +110,8 @@ export default function TresorerieSocietePage() {
       </SimPageShell.Main>
 
       <SimPageShell.Side sticky>
-        <TresoAssociateInsights inputs={state.inputsV3} rows={rows} />
-        <TresoKPISidebar kpis={kpis} inputs={state.inputsV3} />
+        <TresoAssociateInsights inputs={state.inputsV4} rows={rows} />
+        <TresoKPISidebar kpis={kpis} inputs={state.inputsV4} />
       </SimPageShell.Side>
     </SimPageShell>
   );
