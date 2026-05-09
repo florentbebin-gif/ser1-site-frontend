@@ -5,8 +5,8 @@ import {
   getCompanyKindLabel,
 } from './utils/tresorerieSocieteModel';
 
-export const TRESO_ORG_NODE_WIDTH = 132;
-export const TRESO_ORG_NODE_HEIGHT = 46;
+export const TRESO_ORG_NODE_WIDTH = 184;
+export const TRESO_ORG_NODE_HEIGHT = 66;
 export const TRESO_ORG_ENTITY_NODE_WIDTH = 104;
 export const TRESO_ORG_ENTITY_NODE_HEIGHT = 38;
 

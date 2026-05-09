@@ -63,6 +63,18 @@
   stroke: var(--color-c3);
 }
 
+.ts-org-svg-node--company .ts-org-svg-node__label {
+  font-size: 13px;
+}
+
+.ts-org-svg-node--company .ts-org-svg-node__meta {
+  font-size: 10px;
+}
+
+.ts-org-svg-node--company .ts-org-svg-node__code {
+  font-size: 8.5px;
+}
+
 .ts-org-svg-node__active-badge rect {
   fill: var(--color-c3);
   stroke: none;

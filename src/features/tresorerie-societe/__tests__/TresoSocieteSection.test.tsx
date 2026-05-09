@@ -147,7 +147,7 @@ describe('TresoSocieteSection', () => {
     render(<TresoSocieteSection inputs={simpleInputs} onChange={vi.fn()} />);
 
     const svg = screen.getByRole('img', { name: /Schéma des détentions société/i });
-    expect(Number.parseFloat(svg.style.width)).toBeLessThan(200);
+    expect(Number.parseFloat(svg.style.width)).toBeLessThan(230);
   });
 
   it('met en évidence l’associé actif et ouvre sa modale au clic', () => {

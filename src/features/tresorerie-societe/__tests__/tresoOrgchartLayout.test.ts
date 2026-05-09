@@ -38,6 +38,8 @@ describe('computeTresoOrgchartLayout', () => {
     expect(layout.nodes.map(node => node.id)).toEqual(['associe-1', 'societe']);
     expect(company?.width).toBeGreaterThan(associate?.width ?? 0);
     expect(company?.height).toBeGreaterThan(associate?.height ?? 0);
+    expect(company?.width).toBeGreaterThanOrEqual(180);
+    expect(company?.height).toBeGreaterThanOrEqual(64);
     expect(layout.svgHeight).toBeLessThanOrEqual(160);
     expect(layout.edges).toEqual(expect.arrayContaining([
       expect.objectContaining({ fromId: 'associe-1', toId: 'societe' }),

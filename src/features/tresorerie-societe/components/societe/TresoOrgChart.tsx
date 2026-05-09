@@ -86,10 +86,11 @@ export function TresoOrgChart({
           const title = node.kind === 'company' ? companyKindLabel : node.label;
           const subtitle = node.kind === 'company' ? node.label : node.meta;
           const metaParts = node.kind === 'company' && node.meta ? node.meta.split(' · ') : [];
-          const titleY = node.kind === 'company' ? 19 : 17;
-          const subtitleY = node.kind === 'company' ? 33 : 30;
-          const maxTitleLength = node.kind === 'company' ? 23 : 18;
-          const maxSubtitleLength = node.kind === 'company' ? 24 : 18;
+          const titleY = node.kind === 'company' ? 27 : 17;
+          const subtitleY = node.kind === 'company' ? 46 : 30;
+          const codeY = node.kind === 'company' ? 58 : 34;
+          const maxTitleLength = node.kind === 'company' ? 30 : 18;
+          const maxSubtitleLength = node.kind === 'company' ? 28 : 18;
           return (
             <g
               key={node.id}
@@ -116,7 +117,7 @@ export function TresoOrgChart({
                 </text>
               ) : null}
               {metaParts.length > 0 ? (
-                <text className="ts-org-svg-node__code" x={node.width / 2} y="41" textAnchor="middle">
+                <text className="ts-org-svg-node__code" x={node.width / 2} y={codeY} textAnchor="middle">
                   <tspan>{truncate(metaParts[0], 8)}</tspan>
                   {metaParts[1] ? <tspan>{` · ${truncate(metaParts[1], 8)}`}</tspan> : null}
                 </text>
