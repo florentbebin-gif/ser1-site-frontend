@@ -16,7 +16,14 @@
 
 import { buildXlsxBlob, downloadXlsx, validateXlsxBlob } from '@/utils/export/xlsxBuilder';
 import type { XlsxCell, XlsxSheet } from '@/utils/export/xlsxBuilder';
-import type { AssociateInput, TresoInputsRuntime, TresoProjectionRow } from '@/engine/tresorerie/types';
+import type {
+  AmountScheduleInput,
+  AllocationPocketHorizon,
+  AssociateInput,
+  SubsidiaryInput,
+  TresoInputsRuntime,
+  TresoProjectionRow,
+} from '@/engine/tresorerie/types';
 import type { TresoKPIs } from '../hooks/useTresorerieCalculations';
 import {
   getAssociateProfile,
@@ -25,6 +32,7 @@ import {
   getCompanyKindLabel,
   getEconomicPct,
   getSelectedAssociate,
+  getAllocationHorizonLabel,
 } from '../utils/tresorerieSocieteModel';
 
 // ─── Helpers de style ─────────────────────────────────────────────────────────
@@ -60,6 +68,10 @@ const RESUME_SERIES: ProjectionSerie[] = [
   { key: 'ccaRestant', label: 'CCA net restant dû', format: 'money' },
   { key: 'revenuDistrib', label: 'Revenus — poche de distribution', format: 'money' },
   { key: 'dividendesFiliales', label: 'Dividendes filiales reçus (régime mère-fille)', format: 'money' },
+  { key: 'cessionFilialesCash', label: 'Cash brut de cession filiale reçu en banque', format: 'money' },
+  { key: 'cessionFilialesPlusValueBrute', label: 'Plus-value brute de cession filiale', format: 'money' },
+  { key: 'cessionFilialesQuotePartTaxable', label: 'Quote-part taxable de cession filiale', format: 'money' },
+  { key: 'quotePartTaxable', label: 'Quote-part taxable totale filiales', format: 'money' },
   { key: 'gainCapiN', label: 'Gain de capitalisation (sortie)', format: 'money' },
   { key: 'valeurCapi', label: 'Valeur poche de capitalisation', format: 'money' },
   { key: 'isLatentCapi', label: 'IS latent capitalisation (non décaissé)', format: 'money' },
@@ -76,6 +88,15 @@ const RESUME_SERIES: ProjectionSerie[] = [
   { key: 'pfu', label: 'Fiscalité dividendes (PFU)', format: 'money' },
   { key: 'revenusNets', label: 'Total revenus nets annuels', format: 'money' },
   { key: 'deltaBesoin', label: 'Écart annuel avec le besoin de revenus', format: 'money' },
+  { key: 'tresorerieBanqueFin', label: 'Compte bancaire fin d’année', format: 'money' },
+  { key: 'soldeMinimumCompteBancaire', label: 'Solde minimum bancaire', format: 'money' },
+  { key: 'bfr', label: 'BFR protégé', format: 'money' },
+  { key: 'tresorerieDisponible', label: 'Trésorerie disponible au-dessus du seuil', format: 'money' },
+  { key: 'montantInvestiInitial', label: 'Montant investi initialement', format: 'money' },
+  { key: 'montantBalayeAnnuel', label: 'Montant balayé vers placements', format: 'money' },
+  { key: 'montantReinvestiAuTerme', label: 'Montant réinvesti au terme', format: 'money' },
+  { key: 'deficitTresorerieBancaire', label: 'Déficit bancaire vs solde minimum + BFR', format: 'money' },
+  { key: 'alerteTresorerieBancaireInsuffisante', label: 'Alerte compte bancaire insuffisant', format: 'bool' },
   { key: 'tresorerieFin', label: "Trésorerie fin d'année", format: 'money' },
 ];
 
@@ -139,6 +160,8 @@ function buildProjectionSheet(
     [txt('Réserves à la retraite'), money(kpis.reservesRetraite)],
     [txt('Capacité distribuable (an 1)'), money(kpis.capaciteDistribuableAn1)],
     [txt('Alerte dividendes > capacité (an 1)'), txt(kpis.alerteDividendesAn1 ? 'Oui — à contrôler' : 'Non')],
+    [txt('Déficit bancaire maximum'), money(kpis.deficitBancaireMax)],
+    [txt('Alerte compte bancaire'), txt(kpis.alerteTresorerieBancaire ? `Oui — première année ${kpis.premiereAnneeDeficitBancaire ?? 'à contrôler'}` : 'Non')],
     [sec(''), sec('')],
   ];
 
@@ -202,6 +225,59 @@ function ccaCurrentBalance(associate: AssociateInput): number {
   return associate.cca?.currentBalance ?? associate.ccaInitial;
 }
 
+function scheduleRows(
+  subsidiary: SubsidiaryInput,
+  label: string,
+  schedules: AmountScheduleInput[] | undefined,
+  fallbackAmount: number,
+): XlsxCell[][] {
+  const rows = schedules && schedules.length > 0
+    ? schedules
+    : [{ amount: fallbackAmount, startYear: 0, endYear: undefined }];
+
+  return rows.map(schedule => [
+    txt(subsidiary.label),
+    txt(label),
+    txt(schedule.startYear > 0
+      ? `${schedule.startYear} → ${schedule.endYear ?? 'non borné'}`
+      : 'Montant annuel legacy'),
+    money(schedule.amount),
+  ]);
+}
+
+function disposalRows(subsidiaries: SubsidiaryInput[]): XlsxCell[][] {
+  const rows = subsidiaries
+    .map(subsidiary => {
+      const disposal = subsidiary.disposal ?? (
+        subsidiary.disposalYear
+          ? {
+            year: subsidiary.disposalYear,
+            estimatedPrice: subsidiary.estimatedDisposalPrice ?? 0,
+            taxBasis: subsidiary.taxBasis ?? 0,
+            fees: 0,
+            regime: 'auto' as const,
+            acquisitionYear: undefined,
+          }
+          : null
+      );
+      if (!disposal) return null;
+      return [
+        txt(subsidiary.label),
+        ctr(disposal.year ?? 'Non renseignée'),
+        money(disposal.estimatedPrice),
+        money(disposal.taxBasis),
+        money(disposal.fees ?? 0),
+        txt(disposal.acquisitionYear ? String(disposal.acquisitionYear) : 'Non renseignée'),
+        txt(disposal.regime === 'auto' ? 'Auto' : disposal.regime.toUpperCase()),
+      ];
+    })
+    .filter((row): row is XlsxCell[] => row !== null);
+
+  return rows.length > 0
+    ? rows
+    : [[txt('Aucune cession prévue'), txt(''), txt(''), txt(''), txt(''), txt(''), txt('')]];
+}
+
 function buildStructureSheet(inputs: TresoInputsRuntime): XlsxSheet {
   const company = inputs.company;
   const incomeStatement = company.incomeStatement ?? {
@@ -209,17 +285,36 @@ function buildStructureSheet(inputs: TresoInputsRuntime): XlsxSheet {
     annualStructureCosts: company.annualStructureCosts,
     workingCapitalRequirement: 0,
   };
-  const pocketRows: XlsxCell[][] = inputs.allocationMatrix.pockets.length > 0
-    ? inputs.allocationMatrix.pockets.map(pocket => [
-      txt(pocket.label ?? pocket.id),
-      txt(pocket.horizon ?? 'moyen_terme'),
-      txt(`${pocket.initialAllocationPct} % initial · ${pocket.annualAllocationPct} % balayage · ${Math.round(pocket.annualReturnRate * 10000) / 100} %`),
-    ])
-    : [[
-      txt('Trésorerie conservée sur compte bancaire'),
-      txt('Sans rendement'),
-      txt('Aucune poche d’allocation renseignée'),
-    ]];
+  const minimumBankBalance = inputs.allocationMatrix.minimumBankBalance ?? inputs.allocationMatrix.sweepThreshold ?? 0;
+  const bankLabel = inputs.allocationMatrix.pockets.length === 0
+    ? 'Trésorerie conservée sur compte bancaire'
+    : 'Compte bancaire';
+  const pocketRows: XlsxCell[][] = [
+    [txt(bankLabel), txt('Poche système'), txt(`0 % · solde minimum ${minimumBankBalance.toLocaleString('fr-FR')} €`)],
+  ];
+  const horizons: AllocationPocketHorizon[] = ['court_terme', 'moyen_terme', 'long_terme'];
+  horizons.forEach(horizon => {
+    const horizonPockets = inputs.allocationMatrix.pockets.filter(pocket => pocket.horizon === horizon);
+    if (horizonPockets.length === 0) {
+      pocketRows.push([
+        txt(getAllocationHorizonLabel(horizon)),
+        txt('Aucune poche'),
+        txt('Trésorerie non affectée à cet horizon'),
+      ]);
+      return;
+    }
+    horizonPockets.forEach(pocket => {
+      pocketRows.push([
+        txt(getAllocationHorizonLabel(pocket.horizon)),
+        txt(pocket.label ?? pocket.id),
+        txt(`${pocket.initialAllocationPct} % initial · ${pocket.annualAllocationPct} % balayage · ${Math.round(pocket.annualReturnRate * 10000) / 100} % · durée ${pocket.durationYears} ans`),
+      ]);
+    });
+  });
+  const flowScheduleRows = company.subsidiaries.flatMap(subsidiary => [
+    ...scheduleRows(subsidiary, 'Prestations vers la mère', subsidiary.servicesSchedule, subsidiary.annualServicesRevenue),
+    ...scheduleRows(subsidiary, 'Dividendes vers la mère', subsidiary.dividendsSchedule, subsidiary.annualDividends),
+  ]);
   const rows: XlsxCell[][] = [
     [h('Structure société'), h('Valeur'), h('Détail')],
     [txt('Type société'), txt(getCompanyKindLabel(company)), txt(getCompanyKindCode(company))],
@@ -227,7 +322,7 @@ function buildStructureSheet(inputs: TresoInputsRuntime): XlsxSheet {
     [txt('Chiffre d’affaires annuel'), money(incomeStatement.annualRevenue), txt('Compte de résultat')],
     [txt('Coûts de structure annuels'), money(incomeStatement.annualStructureCosts), txt('Compte de résultat')],
     [txt('BFR'), money(incomeStatement.workingCapitalRequirement), txt('Seuil non investissable')],
-    [txt('Solde minimum bancaire'), money(inputs.allocationMatrix.minimumBankBalance ?? inputs.allocationMatrix.sweepThreshold ?? 0), txt('Compte bancaire pivot')],
+    [txt('Solde minimum bancaire'), money(minimumBankBalance), txt('Compte bancaire pivot')],
     [sec('Associés'), sec(''), sec('')],
     [h('Associé'), h('% capital / économique'), h('Rémunération / CCA')],
     ...company.associates.map(associate => [
@@ -242,12 +337,18 @@ function buildStructureSheet(inputs: TresoInputsRuntime): XlsxSheet {
       txt(`${subsidiary.ownershipPct ?? subsidiary.holdingOwnershipPct} %`),
       txt(`${(subsidiary.parentEntityId ?? 'societe') === 'societe' ? 'Société mère' : subsidiary.parentEntityId} · trésorerie ${(subsidiary.treasuryInitial ?? 0).toLocaleString('fr-FR')} € · cession ${subsidiary.disposal?.year ?? subsidiary.disposalYear ?? 'non prévue'}`),
     ]),
+    [sec('Paliers filiales'), sec(''), sec('')],
+    [h('Filiale'), h('Flux'), h('Période'), h('Montant')],
+    ...flowScheduleRows,
+    [sec('Cessions filiales'), sec(''), sec(''), sec(''), sec(''), sec(''), sec('')],
+    [h('Filiale'), h('Année'), h('Prix'), h('Base fiscale'), h('Frais'), h('Acquisition'), h('Régime')],
+    ...disposalRows(company.subsidiaries),
     [sec('Stratégie de trésorerie'), sec(''), sec('')],
-    [h('Poche'), h('Horizon'), h('Allocation et rendement')],
+    [h('Groupe'), h('Poche'), h('Allocation, rendement et durée')],
     ...pocketRows,
   ];
 
-  return { name: 'Structure société', rows, columnWidths: [28, 28, 32] };
+  return { name: 'Structure société', rows, columnWidths: [28, 28, 32, 18, 18, 18, 18] };
 }
 
 // ─── Onglet Hypothèses ────────────────────────────────────────────────────────

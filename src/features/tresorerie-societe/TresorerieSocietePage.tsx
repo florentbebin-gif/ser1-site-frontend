@@ -75,6 +75,7 @@ export default function TresorerieSocietePage() {
         {/* Bloc 2 — Allocation société */}
         <TresoPlacementSection
           inputs={state.inputsV4}
+          projectionRows={rows}
           onChange={setInputsV4}
         />
 

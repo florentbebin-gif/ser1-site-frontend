@@ -8,6 +8,7 @@ import type {
   AllocationPocketHorizon,
   AllocationPocketInput,
   TresoInputsV4,
+  TresoProjectionRow,
 } from '../../../engine/tresorerie/types';
 import {
   normalizeAllocationPockets,
@@ -27,10 +28,11 @@ import {
 
 interface Props {
   inputs: TresoInputsV4;
+  projectionRows?: TresoProjectionRow[];
   onChange: (nextInputs: TresoInputsV4) => void;
 }
 
-export function TresoPlacementSection({ inputs, onChange }: Props) {
+export function TresoPlacementSection({ inputs, projectionRows = [], onChange }: Props) {
   const [editingPocketId, setEditingPocketId] = useState<string | null>(null);
   const v2 = inputs;
 
@@ -83,6 +85,10 @@ export function TresoPlacementSection({ inputs, onChange }: Props) {
   const bankAmount = Math.max(0, v2.company.treasuryInitial - initialInvestedAmount);
   const protectedCash = minimumBankBalance + workingCapitalRequirement;
   const availableCash = Math.max(0, bankAmount - protectedCash);
+  const firstBankWarning = projectionRows.find(row => row.alerteTresorerieBancaireInsuffisante);
+  const firstBankWarningYear = firstBankWarning
+    ? v2.foyer.projectionStartYear + firstBankWarning.year - 1
+    : null;
 
   return (
     <div className="premium-card ts-section">
@@ -125,6 +131,12 @@ export function TresoPlacementSection({ inputs, onChange }: Props) {
       <p className="ts-note--info">
         Le balayage place uniquement la trésorerie au-dessus du solde minimum bancaire et du BFR.
       </p>
+      {firstBankWarning ? (
+        <p className="ts-warning" role="alert">
+          Compte bancaire insuffisant en {firstBankWarningYear} :
+          déficit de {fmtEuroInput(firstBankWarning.deficitTresorerieBancaire ?? 0)} € face au solde minimum + BFR.
+        </p>
+      ) : null}
 
       <div className="ts-section__note">Poches par horizon</div>
       <div className="ts-pocket-board" aria-label="Allocation par horizon">

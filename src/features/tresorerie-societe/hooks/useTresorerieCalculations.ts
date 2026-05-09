@@ -41,6 +41,12 @@ export interface TresoKPIs {
   capaciteDistribuableAn1: number;
   /** true si dividendes demandés > capacité à l'année 1 */
   alerteDividendesAn1: boolean;
+  /** Déficit maximum du compte bancaire face au solde minimum + BFR. */
+  deficitBancaireMax: number;
+  /** true si au moins une année ne respecte pas le solde bancaire cible. */
+  alerteTresorerieBancaire: boolean;
+  /** Première année civile où le compte bancaire passe sous le seuil cible. */
+  premiereAnneeDeficitBancaire: number | null;
   /** Indique si la projection a des lignes (inputs valides) */
   hasRows: boolean;
   /** Année de départ en retraite (index 1-based dans rows) */
@@ -143,6 +149,9 @@ export function useTresorerieCalculations(inputs: TresoInputsRuntime): TresoCalc
         reservesRetraite: 0,
         capaciteDistribuableAn1: 0,
         alerteDividendesAn1: false,
+        deficitBancaireMax: 0,
+        alerteTresorerieBancaire: false,
+        premiereAnneeDeficitBancaire: null,
         hasRows: false,
         anneeRetraiteIndex: null,
       };
@@ -185,6 +194,14 @@ export function useTresorerieCalculations(inputs: TresoInputsRuntime): TresoCalc
     const an1 = rows[0];
     const capaciteDistribuableAn1 = an1?.capaciteDistribuable ?? 0;
     const alerteDividendesAn1 = an1?.alerteDividendesSuperieursCapacite ?? false;
+    const deficitBancaireMax = rows.reduce(
+      (max, row) => Math.max(max, row.deficitTresorerieBancaire ?? 0),
+      0,
+    );
+    const firstDeficitRow = rows.find(row => row.alerteTresorerieBancaireInsuffisante);
+    const premiereAnneeDeficitBancaire = firstDeficitRow
+      ? activeProfile.projectionStartYear + firstDeficitRow.year - 1
+      : null;
 
     return {
       ccaTotalConstitue,
@@ -196,6 +213,9 @@ export function useTresorerieCalculations(inputs: TresoInputsRuntime): TresoCalc
       reservesRetraite,
       capaciteDistribuableAn1,
       alerteDividendesAn1,
+      deficitBancaireMax,
+      alerteTresorerieBancaire: deficitBancaireMax > 0,
+      premiereAnneeDeficitBancaire,
       hasRows: true,
       anneeRetraiteIndex,
     };

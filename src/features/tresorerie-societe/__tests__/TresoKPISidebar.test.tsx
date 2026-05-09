@@ -14,6 +14,9 @@ const KPIS: TresoKPIs = {
   reservesRetraite: 40000,
   capaciteDistribuableAn1: 12000,
   alerteDividendesAn1: false,
+  deficitBancaireMax: 0,
+  alerteTresorerieBancaire: false,
+  premiereAnneeDeficitBancaire: null,
   hasRows: true,
   anneeRetraiteIndex: 2,
 };
@@ -82,5 +85,23 @@ describe('TresoKPISidebar', () => {
 
     expect(html).toContain('Dividendes supérieurs à la capacité distribuable');
     expect(html).not.toContain('⚠');
+  });
+
+  it('affiche une alerte bancaire exploitable quand le solde minimum n’est pas respecté', () => {
+    const html = renderToStaticMarkup(
+      <TresoKPISidebar
+        kpis={{
+          ...KPIS,
+          deficitBancaireMax: 15000,
+          alerteTresorerieBancaire: true,
+          premiereAnneeDeficitBancaire: 2028,
+        }}
+        inputs={INPUTS}
+      />,
+    );
+
+    expect(html).toContain('Alerte compte bancaire');
+    expect(html).toContain('Déficit max 15');
+    expect(html).toContain('2028');
   });
 });

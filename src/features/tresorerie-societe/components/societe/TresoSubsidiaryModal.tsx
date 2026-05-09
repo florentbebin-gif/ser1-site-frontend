@@ -33,15 +33,28 @@ function parentLabel(company: CompanyInput, parentId: string | undefined): strin
   return company.subsidiaries.find(subsidiary => subsidiary.id === parentId)?.label ?? 'Filiale parente';
 }
 
-function firstSchedule(
+function normalizeSchedules(
   schedules: AmountScheduleInput[] | undefined,
   fallbackAmount: number | undefined,
   fallbackYear = new Date().getFullYear(),
-): AmountScheduleInput {
-  return schedules?.[0] ?? {
+): AmountScheduleInput[] {
+  if (schedules && schedules.length > 0) return schedules;
+  return [{
     amount: Math.max(0, fallbackAmount ?? 0),
     startYear: fallbackYear,
     endYear: fallbackYear,
+  }];
+}
+
+function buildNextSchedule(schedules: AmountScheduleInput[], fallbackYear: number): AmountScheduleInput {
+  const previous = schedules[schedules.length - 1];
+  const startYear = previous?.endYear != null
+    ? previous.endYear + 1
+    : (previous?.startYear ?? fallbackYear) + 1;
+  return {
+    amount: Math.max(0, previous?.amount ?? 0),
+    startYear,
+    endYear: startYear,
   };
 }
 
@@ -71,32 +84,56 @@ export function TresoSubsidiaryModal({
   const projectionYear =
     company.associates[0]?.profile?.projectionStartYear ??
     new Date().getFullYear();
-  const servicesSchedule = firstSchedule(
+  const servicesSchedules = normalizeSchedules(
     subsidiary.servicesSchedule,
     subsidiary.annualServicesRevenue,
     projectionYear,
   );
-  const dividendsSchedule = firstSchedule(
+  const dividendsSchedules = normalizeSchedules(
     subsidiary.dividendsSchedule,
     subsidiary.annualDividends,
     projectionYear,
   );
   const disposal = defaultDisposal(subsidiary);
 
-  const patchServicesSchedule = (patch: Partial<AmountScheduleInput>) => {
-    const nextSchedule = { ...servicesSchedule, ...patch };
+  const patchServicesSchedule = (index: number, patch: Partial<AmountScheduleInput>) => {
+    const nextSchedules = servicesSchedules.map((schedule, scheduleIndex) =>
+      scheduleIndex === index ? { ...schedule, ...patch } : schedule,
+    );
     onChange({
-      servicesSchedule: [nextSchedule],
-      annualServicesRevenue: nextSchedule.amount,
+      servicesSchedule: nextSchedules,
+      annualServicesRevenue: nextSchedules[0]?.amount ?? 0,
     });
   };
 
-  const patchDividendsSchedule = (patch: Partial<AmountScheduleInput>) => {
-    const nextSchedule = { ...dividendsSchedule, ...patch };
+  const patchDividendsSchedule = (index: number, patch: Partial<AmountScheduleInput>) => {
+    const nextSchedules = dividendsSchedules.map((schedule, scheduleIndex) =>
+      scheduleIndex === index ? { ...schedule, ...patch } : schedule,
+    );
     onChange({
-      dividendsSchedule: [nextSchedule],
-      annualDividends: nextSchedule.amount,
+      dividendsSchedule: nextSchedules,
+      annualDividends: nextSchedules[0]?.amount ?? 0,
     });
+  };
+
+  const addServicesSchedule = () => {
+    const nextSchedules = [...servicesSchedules, buildNextSchedule(servicesSchedules, projectionYear)];
+    onChange({ servicesSchedule: nextSchedules, annualServicesRevenue: nextSchedules[0]?.amount ?? 0 });
+  };
+
+  const addDividendsSchedule = () => {
+    const nextSchedules = [...dividendsSchedules, buildNextSchedule(dividendsSchedules, projectionYear)];
+    onChange({ dividendsSchedule: nextSchedules, annualDividends: nextSchedules[0]?.amount ?? 0 });
+  };
+
+  const removeServicesSchedule = (index: number) => {
+    const nextSchedules = servicesSchedules.filter((_, scheduleIndex) => scheduleIndex !== index);
+    onChange({ servicesSchedule: nextSchedules, annualServicesRevenue: nextSchedules[0]?.amount ?? 0 });
+  };
+
+  const removeDividendsSchedule = (index: number) => {
+    const nextSchedules = dividendsSchedules.filter((_, scheduleIndex) => scheduleIndex !== index);
+    onChange({ dividendsSchedule: nextSchedules, annualDividends: nextSchedules[0]?.amount ?? 0 });
   };
 
   const patchDisposal = (patch: Partial<SubsidiaryDisposalInput>) => {
@@ -229,70 +266,106 @@ export function TresoSubsidiaryModal({
         <div className="ts-associate-card">
           <div className="ts-associate-card__header">
             <strong>Paliers de flux vers la mère</strong>
-            <span>Un premier palier simple, extensible ensuite</span>
+            <span>Montants par périodes successives</span>
           </div>
-          <div className="ts-modal-grid ts-modal-grid--three">
-            <SimFieldShell label="Prestations annuelles vers la mère" className="ts-field" rowClassName="ts-field__row">
-              <input
-                type="text"
-                inputMode="numeric"
-                className="sim-field__control"
-                value={fmtEuroInput(servicesSchedule.amount)}
-                onChange={event => patchServicesSchedule({ amount: parseEuroInput(event.target.value) })}
-              />
-              <span className="sim-field__unit ts-unit">€</span>
-            </SimFieldShell>
-            <SimFieldShell label="Prestations de" className="ts-field" rowClassName="ts-field__row">
-              <input
-                type="text"
-                inputMode="numeric"
-                className="sim-field__control"
-                value={servicesSchedule.startYear}
-                onChange={event => patchServicesSchedule({ startYear: parseNumberInput(event.target.value) })}
-              />
-            </SimFieldShell>
-            <SimFieldShell label="Prestations à" className="ts-field" rowClassName="ts-field__row">
-              <input
-                type="text"
-                inputMode="numeric"
-                className="sim-field__control"
-                value={servicesSchedule.endYear ?? ''}
-                onChange={event => patchServicesSchedule({
-                  endYear: parseNumberInput(event.target.value) || undefined,
-                })}
-              />
-            </SimFieldShell>
+          <div className="ts-schedule-editor">
+            <div className="ts-schedule-editor__header">
+              <strong>Prestations annuelles vers la mère</strong>
+              <button type="button" className="ts-text-btn" onClick={addServicesSchedule}>
+                Ajouter un palier de prestations
+              </button>
+            </div>
+            {servicesSchedules.map((schedule, index) => (
+              <div key={`services-${index}`} className="ts-schedule-row">
+                <SimFieldShell label={`Montant palier ${index + 1}`} className="ts-field" rowClassName="ts-field__row">
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    className="sim-field__control"
+                    value={fmtEuroInput(schedule.amount)}
+                    onChange={event => patchServicesSchedule(index, { amount: parseEuroInput(event.target.value) })}
+                  />
+                  <span className="sim-field__unit ts-unit">€</span>
+                </SimFieldShell>
+                <SimFieldShell label="De" className="ts-field" rowClassName="ts-field__row">
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    className="sim-field__control"
+                    value={schedule.startYear}
+                    onChange={event => patchServicesSchedule(index, { startYear: parseNumberInput(event.target.value) })}
+                  />
+                </SimFieldShell>
+                <SimFieldShell label="À" className="ts-field" rowClassName="ts-field__row">
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    className="sim-field__control"
+                    value={schedule.endYear ?? ''}
+                    onChange={event => patchServicesSchedule(index, {
+                      endYear: parseNumberInput(event.target.value) || undefined,
+                    })}
+                  />
+                </SimFieldShell>
+                <button
+                  type="button"
+                  className="ts-text-btn"
+                  disabled={servicesSchedules.length <= 1}
+                  onClick={() => removeServicesSchedule(index)}
+                >
+                  Supprimer
+                </button>
+              </div>
+            ))}
 
-            <SimFieldShell label="Dividendes annuels vers la mère" className="ts-field" rowClassName="ts-field__row">
-              <input
-                type="text"
-                inputMode="numeric"
-                className="sim-field__control"
-                value={fmtEuroInput(dividendsSchedule.amount)}
-                onChange={event => patchDividendsSchedule({ amount: parseEuroInput(event.target.value) })}
-              />
-              <span className="sim-field__unit ts-unit">€</span>
-            </SimFieldShell>
-            <SimFieldShell label="Dividendes de" className="ts-field" rowClassName="ts-field__row">
-              <input
-                type="text"
-                inputMode="numeric"
-                className="sim-field__control"
-                value={dividendsSchedule.startYear}
-                onChange={event => patchDividendsSchedule({ startYear: parseNumberInput(event.target.value) })}
-              />
-            </SimFieldShell>
-            <SimFieldShell label="Dividendes à" className="ts-field" rowClassName="ts-field__row">
-              <input
-                type="text"
-                inputMode="numeric"
-                className="sim-field__control"
-                value={dividendsSchedule.endYear ?? ''}
-                onChange={event => patchDividendsSchedule({
-                  endYear: parseNumberInput(event.target.value) || undefined,
-                })}
-              />
-            </SimFieldShell>
+            <div className="ts-schedule-editor__header">
+              <strong>Dividendes annuels vers la mère</strong>
+              <button type="button" className="ts-text-btn" onClick={addDividendsSchedule}>
+                Ajouter un palier de dividendes
+              </button>
+            </div>
+            {dividendsSchedules.map((schedule, index) => (
+              <div key={`dividends-${index}`} className="ts-schedule-row">
+                <SimFieldShell label={`Montant palier ${index + 1}`} className="ts-field" rowClassName="ts-field__row">
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    className="sim-field__control"
+                    value={fmtEuroInput(schedule.amount)}
+                    onChange={event => patchDividendsSchedule(index, { amount: parseEuroInput(event.target.value) })}
+                  />
+                  <span className="sim-field__unit ts-unit">€</span>
+                </SimFieldShell>
+                <SimFieldShell label="De" className="ts-field" rowClassName="ts-field__row">
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    className="sim-field__control"
+                    value={schedule.startYear}
+                    onChange={event => patchDividendsSchedule(index, { startYear: parseNumberInput(event.target.value) })}
+                  />
+                </SimFieldShell>
+                <SimFieldShell label="À" className="ts-field" rowClassName="ts-field__row">
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    className="sim-field__control"
+                    value={schedule.endYear ?? ''}
+                    onChange={event => patchDividendsSchedule(index, {
+                      endYear: parseNumberInput(event.target.value) || undefined,
+                    })}
+                  />
+                </SimFieldShell>
+                <button
+                  type="button"
+                  className="ts-text-btn"
+                  disabled={dividendsSchedules.length <= 1}
+                  onClick={() => removeDividendsSchedule(index)}
+                >
+                  Supprimer
+                </button>
+              </div>
+            ))}
           </div>
         </div>
 
@@ -345,6 +418,18 @@ export function TresoSubsidiaryModal({
                 onChange={event => patchDisposal({ fees: parseEuroInput(event.target.value) })}
               />
               <span className="sim-field__unit ts-unit">€</span>
+            </SimFieldShell>
+
+            <SimFieldShell label="Année d’acquisition" className="ts-field" rowClassName="ts-field__row">
+              <input
+                type="text"
+                inputMode="numeric"
+                className="sim-field__control"
+                value={disposal.acquisitionYear ?? ''}
+                onChange={event => patchDisposal({
+                  acquisitionYear: parseNumberInput(event.target.value) || undefined,
+                })}
+              />
             </SimFieldShell>
 
             <SimFieldShell label="Régime de cession" className="ts-field" rowClassName="ts-field__row">

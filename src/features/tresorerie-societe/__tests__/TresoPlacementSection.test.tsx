@@ -112,6 +112,23 @@ describe('TresoPlacementSection', () => {
     expect(screen.getByText('4 %')).toBeInTheDocument();
   });
 
+  it('affiche une alerte quand la projection signale un déficit bancaire', () => {
+    render(
+      <TresoPlacementSection
+        inputs={INPUTS as any}
+        projectionRows={[{
+          year: 3,
+          alerteTresorerieBancaireInsuffisante: true,
+          deficitTresorerieBancaire: 12000,
+        } as any]}
+        onChange={() => {}}
+      />,
+    );
+
+    expect(screen.getByRole('alert')).toHaveTextContent('Compte bancaire insuffisant en 2028');
+    expect(screen.getByRole('alert')).toHaveTextContent('12 000 €');
+  });
+
   it('ouvre une poche depuis sa colonne avec ses valeurs existantes sans ordre ni destination', () => {
     render(<TresoPlacementSection inputs={INPUTS as any} onChange={vi.fn()} />);
 

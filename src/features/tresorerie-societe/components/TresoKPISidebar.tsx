@@ -138,6 +138,17 @@ export function TresoKPISidebar({ kpis, inputs }: Props) {
             />
           ) : null}
 
+          {kpis.alerteTresorerieBancaire ? (
+            <KpiRow
+              label="Alerte compte bancaire"
+              value={`Déficit max ${fmtEuro(kpis.deficitBancaireMax)}`}
+              status="warning"
+              note={kpis.premiereAnneeDeficitBancaire
+                ? `Première année sous le solde minimum + BFR : ${kpis.premiereAnneeDeficitBancaire}`
+                : undefined}
+            />
+          ) : null}
+
         </div>
       )}
     </div>
