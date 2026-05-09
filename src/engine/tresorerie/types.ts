@@ -224,8 +224,6 @@ export interface SubsidiaryInput {
 }
 
 export type AllocationPocketKind = 'distribution' | 'capitalisation';
-export type AllocationTermDestination = 'treasury' | 'matrix' | 'same_pocket';
-export type AllocationStrategyMode = 'single' | 'strategy';
 export type AllocationPocketHorizon = 'court_terme' | 'moyen_terme' | 'long_terme';
 
 export interface AllocationPocketInput {
@@ -233,18 +231,15 @@ export interface AllocationPocketInput {
   label?: string;
   kind: AllocationPocketKind;
   horizon?: AllocationPocketHorizon;
-  withdrawalPriority?: number;
   durationYears: number;
   annualReturnRate: number;
   enjoymentDelayMonths: number;
   initialAllocationPct: number;
   annualAllocationPct: number;
   repeatAtTerm: boolean;
-  termDestination: AllocationTermDestination;
 }
 
 export interface AllocationMatrixInput {
-  mode?: AllocationStrategyMode;
   sweepThreshold: number;
   minimumBankBalance?: number;
   pockets: AllocationPocketInput[];

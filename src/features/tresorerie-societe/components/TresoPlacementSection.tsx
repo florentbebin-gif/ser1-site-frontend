@@ -144,7 +144,7 @@ export function TresoPlacementSection({ inputs, projectionRows = [], onChange }:
     patchMatrix({
       pockets: matrix.pockets.map(pocket => {
         if (pocket.id !== id) return pocket;
-        return { ...pocket, ...patch, termDestination: 'treasury' };
+        return { ...pocket, ...patch };
       }),
     });
   };
@@ -153,13 +153,13 @@ export function TresoPlacementSection({ inputs, projectionRows = [], onChange }:
     if (matrix.pockets.length >= 5) return;
     const nextPocket = buildDefaultPocket(matrix.pockets, horizon);
     const nextPockets = [...matrix.pockets, nextPocket];
-    patchMatrix({ pockets: nextPockets, mode: nextPockets.length > 1 ? 'strategy' : 'single' });
+    patchMatrix({ pockets: nextPockets });
     setEditingPocketId(nextPocket.id);
   };
 
   const deletePocket = (id: string) => {
     const nextPockets = matrix.pockets.filter(pocket => pocket.id !== id);
-    patchMatrix({ pockets: nextPockets, mode: nextPockets.length > 1 ? 'strategy' : 'single' });
+    patchMatrix({ pockets: nextPockets });
     setEditingPocketId(null);
   };
 

@@ -108,7 +108,6 @@ describe('migration trésorerie v3', () => {
       annualDividends: 18000,
       motherDaughterEligible: true,
     });
-    expect(v3.allocationMatrix.mode).toBe('strategy');
     expect(v3.allocationMatrix.pockets).toHaveLength(2);
     expect(v3.allocationMatrix.pockets.map(getAllocationPocketLabel)).toEqual([
       'Distribution 5 ans',
@@ -116,13 +115,11 @@ describe('migration trésorerie v3', () => {
     ]);
     expect(v3.allocationMatrix.pockets[0]).toMatchObject({
       horizon: 'court_terme',
-      withdrawalPriority: 1,
       initialAllocationPct: 66.66666666666666,
       annualAllocationPct: 0,
     });
     expect(v3.allocationMatrix.pockets[1]).toMatchObject({
       horizon: 'long_terme',
-      withdrawalPriority: 2,
       initialAllocationPct: 33.33333333333333,
       annualAllocationPct: 0,
     });
@@ -236,14 +233,12 @@ describe('migration trésorerie v3', () => {
         pockets: [{
           id: 'legacy',
           kind: 'distribution',
-          withdrawalPriority: 7,
           durationYears: 3,
           annualReturnRate: 0.03,
           enjoymentDelayMonths: 0,
           initialAllocationPct: 0,
           annualAllocationPct: 100,
           repeatAtTerm: false,
-          termDestination: 'matrix',
         }],
       },
     } as any;
@@ -255,7 +250,6 @@ describe('migration trésorerie v3', () => {
     expect(v4.allocationMatrix.pockets[0]).toMatchObject({
       id: 'legacy',
       horizon: 'court_terme',
-      termDestination: 'treasury',
     });
   });
 

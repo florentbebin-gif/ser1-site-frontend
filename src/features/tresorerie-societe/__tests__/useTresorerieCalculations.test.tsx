@@ -90,7 +90,6 @@ function baseInputs(): TresoInputsV3 {
       subsidiaries: [],
     },
     allocationMatrix: {
-      mode: 'single',
       sweepThreshold: 0,
       pockets: [],
     },

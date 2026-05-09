@@ -126,7 +126,6 @@ const INPUTS = {
     ],
   },
   allocationMatrix: {
-    mode: 'strategy',
     sweepThreshold: 50000,
     minimumBankBalance: 50000,
     pockets: [],

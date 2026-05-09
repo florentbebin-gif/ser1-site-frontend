@@ -62,7 +62,6 @@ const INPUTS: TresoInputsV2 = {
       initialAllocationPct: 100,
       annualAllocationPct: 100,
       repeatAtTerm: false,
-      termDestination: 'treasury',
     }],
   },
 };

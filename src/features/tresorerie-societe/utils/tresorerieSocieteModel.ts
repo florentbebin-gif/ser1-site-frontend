@@ -225,6 +225,5 @@ export function buildDefaultPocket(
     initialAllocationPct: isShortTerm ? 100 : 0,
     annualAllocationPct: isShortTerm ? 100 : 0,
     repeatAtTerm: false,
-    termDestination: 'treasury',
   };
 }

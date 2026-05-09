@@ -107,7 +107,6 @@ describe('Trésorerie société IS — projection moteur v2 et KPIs', () => {
             initialAllocationPct: 100,
             annualAllocationPct: 0,
             repeatAtTerm: false,
-            termDestination: 'treasury',
           }],
         },
       }, PARAMS, 5);

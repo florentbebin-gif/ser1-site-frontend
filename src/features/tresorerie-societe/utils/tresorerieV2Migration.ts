@@ -33,14 +33,12 @@ function buildDistributionPocket(
     id: 'poche-distribution-1',
     kind: 'distribution',
     horizon: 'court_terme',
-    withdrawalPriority: 1,
     durationYears,
     annualReturnRate: distribution.rendementDistribue ?? 0,
     enjoymentDelayMonths: distribution.delaiJouissanceMois ?? 0,
     initialAllocationPct: treasuryBase > 0 ? distribution.montant / treasuryBase * 100 : 0,
     annualAllocationPct: 0,
     repeatAtTerm: distribution.repetitionAuTerme ?? false,
-    termDestination: distribution.repetitionAuTerme ? 'same_pocket' : 'treasury',
   };
 }
 
@@ -54,14 +52,12 @@ function buildCapitalisationPocket(
     id: 'poche-capitalisation-1',
     kind: 'capitalisation',
     horizon: 'long_terme',
-    withdrawalPriority: 2,
     durationYears,
     annualReturnRate: capitalisation.rendementAnnuel ?? 0,
     enjoymentDelayMonths: 0,
     initialAllocationPct: treasuryBase > 0 ? capitalisation.montant / treasuryBase * 100 : 0,
     annualAllocationPct: 0,
     repeatAtTerm: capitalisation.repetitionAuTerme ?? false,
-    termDestination: capitalisation.repetitionAuTerme ? 'same_pocket' : 'treasury',
   };
 }
 
@@ -154,7 +150,6 @@ export function buildTresoInputsV2FromLegacy(input: TresoInputs): TresoInputsV2 
       subsidiaries: buildSubsidiaries(input),
     },
     allocationMatrix: {
-      mode: pockets.length > 1 ? 'strategy' : 'single',
       sweepThreshold: 0,
       pockets,
     },
@@ -221,15 +216,11 @@ export function buildTresoInputsV3FromV2(input: TresoInputsV2): TresoInputsV3 {
     },
     allocationMatrix: {
       ...input.allocationMatrix,
-      mode: input.allocationMatrix.mode ?? (
-        input.allocationMatrix.pockets.length > 1 ? 'strategy' : 'single'
-      ),
       pockets: input.allocationMatrix.pockets.map((pocket, index) => ({
         ...pocket,
         horizon: pocket.horizon ?? (
           index === 0 ? 'court_terme' : index === 1 ? 'long_terme' : 'moyen_terme'
         ),
-        withdrawalPriority: pocket.withdrawalPriority ?? index + 1,
       })),
     },
   };
@@ -318,7 +309,6 @@ export function buildTresoInputsV4FromV3(input: TresoInputsV3): TresoInputsV4 {
         horizon: pocket.horizon ?? (
           index === 0 ? 'court_terme' : index === 1 ? 'long_terme' : 'moyen_terme'
         ),
-        termDestination: 'treasury',
       })),
     },
   };

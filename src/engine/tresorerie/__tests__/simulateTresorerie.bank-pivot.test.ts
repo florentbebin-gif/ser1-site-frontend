@@ -69,7 +69,6 @@ function baseV3(): TresoInputsV3 {
       subsidiaries: [],
     },
     allocationMatrix: {
-      mode: 'strategy',
       sweepThreshold: 0,
       pockets: [],
     },
@@ -107,7 +106,6 @@ describe('simulateTresorerie — compte bancaire pivot', () => {
       dividendsSchedule: [{ amount: 50_000, startYear: 2026, endYear: 2035 }],
     }];
     inputs.allocationMatrix = {
-      mode: 'strategy',
       sweepThreshold: 20_000,
       minimumBankBalance: 20_000,
       pockets: [{
@@ -115,14 +113,12 @@ describe('simulateTresorerie — compte bancaire pivot', () => {
         label: 'Poche court terme',
         kind: 'distribution',
         horizon: 'court_terme',
-        withdrawalPriority: 1,
         durationYears: 5,
         annualReturnRate: 0,
         enjoymentDelayMonths: 0,
         initialAllocationPct: 50,
         annualAllocationPct: 0,
         repeatAtTerm: false,
-        termDestination: 'treasury',
       }],
     };
 

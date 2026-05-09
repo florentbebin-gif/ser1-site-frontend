@@ -33,10 +33,7 @@ export function TresoPocketModal({
   onClose,
 }: TresoPocketModalProps) {
   const patchPocket = (patch: Partial<AllocationPocketInput>) => {
-    onChange({
-      ...patch,
-      termDestination: 'treasury',
-    });
+    onChange(patch);
   };
 
   return (

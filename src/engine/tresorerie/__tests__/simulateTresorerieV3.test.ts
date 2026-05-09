@@ -69,7 +69,6 @@ function baseV3(): TresoInputsV3 {
       subsidiaries: [],
     },
     allocationMatrix: {
-      mode: 'strategy',
       sweepThreshold: 0,
       pockets: [],
     },
@@ -143,21 +142,18 @@ describe('simulateTresorerie — modèle société v3', () => {
       workingCapitalRequirement: 40_000,
     };
     inputs.allocationMatrix = {
-      mode: 'strategy',
       sweepThreshold: 10_000,
       pockets: [{
         id: 'court-terme',
         label: 'Court terme',
         kind: 'distribution',
         horizon: 'court_terme',
-        withdrawalPriority: 1,
         durationYears: 5,
         annualReturnRate: 0,
         enjoymentDelayMonths: 0,
         initialAllocationPct: 0,
         annualAllocationPct: 100,
         repeatAtTerm: false,
-        termDestination: 'treasury',
       }],
     };
 
@@ -242,7 +238,6 @@ describe('simulateTresorerie — modèle société v3', () => {
     const inputs = baseV3();
     inputs.company.treasuryInitial = 100_000;
     inputs.allocationMatrix = {
-      mode: 'single',
       sweepThreshold: 0,
       pockets: [
         {
@@ -250,28 +245,24 @@ describe('simulateTresorerie — modèle société v3', () => {
           label: 'Court terme',
           kind: 'distribution',
           horizon: 'court_terme',
-          withdrawalPriority: 1,
           durationYears: 5,
           annualReturnRate: 0,
           enjoymentDelayMonths: 0,
           initialAllocationPct: 100,
           annualAllocationPct: 0,
           repeatAtTerm: false,
-          termDestination: 'treasury',
         },
         {
           id: 'capitalisation',
           label: 'Long terme',
           kind: 'capitalisation',
           horizon: 'long_terme',
-          withdrawalPriority: 2,
           durationYears: 5,
           annualReturnRate: 0,
           enjoymentDelayMonths: 0,
           initialAllocationPct: 100,
           annualAllocationPct: 0,
           repeatAtTerm: false,
-          termDestination: 'treasury',
         },
       ],
     };
@@ -286,7 +277,6 @@ describe('simulateTresorerie — modèle société v3', () => {
     const inputs = baseV3();
     inputs.company.treasuryInitial = 100_000;
     inputs.allocationMatrix = {
-      mode: 'strategy',
       sweepThreshold: 0,
       pockets: [
         {
@@ -294,28 +284,24 @@ describe('simulateTresorerie — modèle société v3', () => {
           label: 'Long terme',
           kind: 'capitalisation',
           horizon: 'long_terme',
-          withdrawalPriority: 2,
           durationYears: 5,
           annualReturnRate: 0,
           enjoymentDelayMonths: 0,
           initialAllocationPct: 100,
           annualAllocationPct: 0,
           repeatAtTerm: false,
-          termDestination: 'treasury',
         },
         {
           id: 'distribution',
           label: 'Court terme',
           kind: 'distribution',
           horizon: 'court_terme',
-          withdrawalPriority: 1,
           durationYears: 5,
           annualReturnRate: 0,
           enjoymentDelayMonths: 0,
           initialAllocationPct: 100,
           annualAllocationPct: 0,
           repeatAtTerm: false,
-          termDestination: 'treasury',
         },
       ],
     };
@@ -330,7 +316,6 @@ describe('simulateTresorerie — modèle société v3', () => {
     const inputs = baseV3();
     inputs.company.treasuryInitial = 100_000;
     inputs.allocationMatrix = {
-      mode: 'single',
       sweepThreshold: 0,
       pockets: [],
     };
@@ -351,7 +336,6 @@ describe('simulateTresorerie — modèle société v3', () => {
       workingCapitalRequirement: 20_000,
     };
     inputs.allocationMatrix = {
-      mode: 'single',
       sweepThreshold: 70_000,
       minimumBankBalance: 70_000,
       pockets: [{
@@ -359,14 +343,12 @@ describe('simulateTresorerie — modèle société v3', () => {
         label: 'Court terme',
         kind: 'distribution',
         horizon: 'court_terme',
-        withdrawalPriority: 1,
         durationYears: 1,
         annualReturnRate: 0,
         enjoymentDelayMonths: 0,
         initialAllocationPct: 100,
         annualAllocationPct: 0,
         repeatAtTerm: true,
-        termDestination: 'same_pocket',
       }],
     };
 
@@ -404,7 +386,6 @@ describe('simulateTresorerie — modèle société v3', () => {
       },
     }];
     inputs.allocationMatrix = {
-      mode: 'strategy',
       sweepThreshold: 0,
       minimumBankBalance: 0,
       pockets: [{
@@ -412,14 +393,12 @@ describe('simulateTresorerie — modèle société v3', () => {
         label: 'Balayage annuel',
         kind: 'distribution',
         horizon: 'court_terme',
-        withdrawalPriority: 1,
         durationYears: 3,
         annualReturnRate: 0,
         enjoymentDelayMonths: 0,
         initialAllocationPct: 0,
         annualAllocationPct: 100,
         repeatAtTerm: false,
-        termDestination: 'treasury',
       }],
     };
 

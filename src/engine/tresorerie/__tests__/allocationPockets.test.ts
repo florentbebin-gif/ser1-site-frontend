@@ -1,47 +1,48 @@
 import { describe, expect, it } from 'vitest';
 import {
-  getEffectiveAllocationMode,
+  normalizeAllocationPockets,
   selectAllocationPocketsForSimulation,
-  sortAllocationPockets,
 } from '../allocationPockets';
 import type { AllocationPocketInput } from '../types';
 
-function pocket(id: string, withdrawalPriority?: number): AllocationPocketInput {
+function pocket(id: string): AllocationPocketInput {
   return {
     id,
     kind: 'distribution',
     horizon: 'court_terme',
-    withdrawalPriority,
     durationYears: 5,
     annualReturnRate: 0,
     enjoymentDelayMonths: 0,
     initialAllocationPct: 0,
     annualAllocationPct: 0,
     repeatAtTerm: false,
-    termDestination: 'treasury',
   };
 }
 
-describe('sortAllocationPockets', () => {
+describe('normalizeAllocationPockets', () => {
   it('conserve l’ordre de saisie, sans priorité de consommation active', () => {
-    expect(sortAllocationPockets([
-      pocket('long', 3),
-      pocket('court', 1),
-      pocket('moyen', 2),
+    expect(normalizeAllocationPockets([
+      pocket('long'),
+      pocket('court'),
+      pocket('moyen'),
     ]).map(item => item.id)).toEqual(['long', 'court', 'moyen']);
   });
 
-  it('déduit le mode de placement du nombre de poches actives', () => {
-    expect(getEffectiveAllocationMode([])).toBe('single');
-    expect(getEffectiveAllocationMode([pocket('unique', 1)])).toBe('single');
-    expect(getEffectiveAllocationMode([pocket('court', 1), pocket('long', 2)])).toBe('strategy');
+  it('limite les poches actives à cinq placements', () => {
+    expect(normalizeAllocationPockets([
+      pocket('p1'),
+      pocket('p2'),
+      pocket('p3'),
+      pocket('p4'),
+      pocket('p5'),
+      pocket('p6'),
+    ]).map(item => item.id)).toEqual(['p1', 'p2', 'p3', 'p4', 'p5']);
   });
 
-  it('ignore le mode stocké et conserve plusieurs poches quand elles existent', () => {
+  it('sélectionne les poches de simulation depuis la matrice normalisée', () => {
     expect(selectAllocationPocketsForSimulation({
-      mode: 'single',
       sweepThreshold: 0,
-      pockets: [pocket('long', 2), pocket('court', 1)],
+      pockets: [pocket('long'), pocket('court')],
     }).map(item => item.id)).toEqual(['long', 'court']);
   });
 });

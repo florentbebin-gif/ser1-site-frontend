@@ -372,7 +372,7 @@ export function createLotsFromAllocation(params: {
         params.amount * Math.max(0, pocket[params.allocationKey]) * scale / 100;
       if (allocated <= 0) return null;
       return {
-        pocket: { ...pocket, termDestination: 'treasury' },
+        pocket,
         amount: allocated,
         value: allocated,
         capitalInvested: allocated,
@@ -475,7 +475,7 @@ export function createRepeatLotsFromMaturities(params: {
     remaining -= reinvested;
     amount += reinvested;
     lots.push({
-      pocket: { ...maturity.pocket, termDestination: 'treasury' },
+      pocket: maturity.pocket,
       amount: reinvested,
       value: reinvested,
       capitalInvested: reinvested,
