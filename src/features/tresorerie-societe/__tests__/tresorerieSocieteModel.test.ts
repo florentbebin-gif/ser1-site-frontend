@@ -56,4 +56,45 @@ describe('updateAssociateOwnershipLot', () => {
       economicRightsPct: 0,
     });
   });
+
+  it('synchronise les droits économiques avec le capital en pleine propriété', () => {
+    const associates = [
+      makeAssociate('associe-1', 60, 10),
+      makeAssociate('associe-2', 40, 40),
+    ];
+
+    const next = updateAssociateOwnershipLot(associates, 'associe-1', { capitalPct: 70 });
+
+    expect(firstLot(next, 'associe-1')).toMatchObject({
+      right: 'pleine_propriete',
+      capitalPct: 70,
+      economicRightsPct: 70,
+    });
+  });
+
+  it('laisse les droits économiques libres en démembrement puis resynchronise au retour en pleine propriété', () => {
+    const associates = [
+      makeAssociate('associe-1', 60, 60),
+      makeAssociate('associe-2', 40, 40),
+    ];
+
+    const demembre = updateAssociateOwnershipLot(associates, 'associe-1', {
+      right: 'usufruit',
+      economicRightsPct: 35,
+    });
+    expect(firstLot(demembre, 'associe-1')).toMatchObject({
+      right: 'usufruit',
+      capitalPct: 60,
+      economicRightsPct: 35,
+    });
+
+    const pleinePropriete = updateAssociateOwnershipLot(demembre, 'associe-1', {
+      right: 'pleine_propriete',
+    });
+    expect(firstLot(pleinePropriete, 'associe-1')).toMatchObject({
+      right: 'pleine_propriete',
+      capitalPct: 60,
+      economicRightsPct: 60,
+    });
+  });
 });

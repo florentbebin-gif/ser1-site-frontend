@@ -112,6 +112,29 @@ describe('TresoPlacementSection', () => {
     expect(screen.getByText('4 %')).toBeInTheDocument();
   });
 
+  it('affiche une barre empilée de répartition initiale en euros', () => {
+    const balancedInputs = {
+      ...INPUTS,
+      allocationMatrix: {
+        ...INPUTS.allocationMatrix,
+        pockets: [
+          { ...INPUTS.allocationMatrix.pockets[0], initialAllocationPct: 30 },
+          { ...INPUTS.allocationMatrix.pockets[1], initialAllocationPct: 20 },
+          { ...INPUTS.allocationMatrix.pockets[2], initialAllocationPct: 10 },
+        ],
+      },
+    };
+    render(<TresoPlacementSection inputs={balancedInputs as any} onChange={vi.fn()} />);
+
+    const stack = screen.getByLabelText('Répartition de la trésorerie initiale');
+    expect(within(stack).getByRole('button', { name: /Compte bancaire libre : 5[\s\u202f]000 €/i })).toBeDisabled();
+    expect(within(stack).getByRole('button', { name: /Solde minimum \+ BFR : 35[\s\u202f]000 €/i })).toBeDisabled();
+    expect(within(stack).getByRole('button', { name: /Court terme : 30[\s\u202f]000 €/i })).toBeInTheDocument();
+
+    fireEvent.click(within(stack).getByRole('button', { name: /Court terme : 30[\s\u202f]000 €/i }));
+    expect(screen.getByText('Paramétrer la poche')).toBeInTheDocument();
+  });
+
   it('affiche une alerte quand la projection signale un déficit bancaire', () => {
     render(
       <TresoPlacementSection
@@ -193,6 +216,9 @@ describe('TresoPlacementSection', () => {
 
     render(<TresoPlacementSection inputs={emptyInputs as any} onChange={onChange} />);
 
+    expect(screen.getByRole('button', {
+      name: /Aucun placement, trésorerie sur compte bancaire : 100[\s\u202f]000 €/i,
+    })).toBeDisabled();
     expect(screen.getByText('Trésorerie conservée sur compte bancaire, sans rendement')).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: /Ajouter une poche court terme/i }));
 

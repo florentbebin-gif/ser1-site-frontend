@@ -3,6 +3,7 @@ import type { TresoInputs, TresoProjectionRow } from '@/engine/tresorerie/types'
 import {
   buildTresoInputsV4FromLegacy,
   buildTresoInputsV4FromV2,
+  buildTresoInputsV4FromV3,
   buildTresoInputsV3FromLegacy,
   buildTresoInputsV3FromV2,
   getAllocationPocketLabel,
@@ -217,6 +218,7 @@ describe('migration trésorerie v3', () => {
     expect(legacyV4.version).toBe(4);
     expect(legacyV4.allocationMatrix.minimumBankBalance).toBe(0);
     expect(legacyV4.company.label).toBe('Holding patrimoniale');
+    expect(legacyV4.company.projectionStartYear).toBe(2027);
     expect(legacyV4.company.subsidiaries[0]).toMatchObject({
       treasuryInitial: 0,
       workingCapitalRequirement: 0,
@@ -255,5 +257,41 @@ describe('migration trésorerie v3', () => {
       horizon: 'court_terme',
       termDestination: 'treasury',
     });
+  });
+
+  it('déplace le début de projection au niveau société en retenant l’année la plus ancienne', () => {
+    const legacyV4 = buildTresoInputsV4FromLegacy(LEGACY_INPUTS);
+    const v3 = {
+      ...legacyV4,
+      version: 3,
+      company: {
+        ...legacyV4.company,
+        projectionStartYear: undefined,
+        associates: [
+          {
+            ...legacyV4.company.associates[0],
+            profile: {
+              ...legacyV4.company.associates[0].profile,
+              projectionStartYear: 2029,
+            },
+          },
+          {
+            ...legacyV4.company.associates[0],
+            id: 'associe-2',
+            label: 'Associé 2',
+            profile: {
+              ...legacyV4.company.associates[0].profile,
+              projectionStartYear: 2026,
+            },
+          },
+        ],
+      },
+    } as any;
+
+    const v4 = buildTresoInputsV4FromV3(v3);
+
+    expect(v4.company.projectionStartYear).toBe(2026);
+    expect(v4.foyer.projectionStartYear).toBe(2026);
+    expect(v4.company.associates.map(associate => associate.profile?.projectionStartYear)).toEqual([2026, 2026]);
   });
 });

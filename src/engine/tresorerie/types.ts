@@ -285,6 +285,7 @@ export interface CcaScheduleInput {
 
 export interface CompanyInput {
   label?: string;
+  projectionStartYear?: number;
   creationType: 'newco' | 'existante';
   legalForm: LegalForm;
   companyKind?: CompanyKind;

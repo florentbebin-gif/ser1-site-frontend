@@ -127,6 +127,7 @@ export function buildTresoInputsV2FromLegacy(input: TresoInputs): TresoInputsV2 
       projectionStartYear,
     },
     company: {
+      projectionStartYear,
       creationType: input.typeCreation,
       legalForm: 'sas',
       shareCapital: 0,
@@ -203,6 +204,7 @@ export function buildTresoInputsV3FromV2(input: TresoInputsV2): TresoInputsV3 {
     selectedAssociateId,
     company: {
       ...input.company,
+      projectionStartYear: input.company.projectionStartYear ?? projectionStartYear,
       companyKind: input.company.companyKind ?? 'holding_patrimoniale',
       incomeStatement: input.company.incomeStatement ?? {
         annualRevenue: 0,
@@ -241,16 +243,40 @@ function scheduleFromAnnualAmount(amount: number, startYear: number) {
   return amount > 0 ? [{ amount, startYear }] : [];
 }
 
+function normalizeProjectionStartYear(input: TresoInputsV3): number {
+  const companyYear = input.company.projectionStartYear;
+  if (typeof companyYear === 'number' && Number.isFinite(companyYear) && companyYear > 0) {
+    return companyYear;
+  }
+
+  const associateYears = input.company.associates
+    .map(associate => associate.profile?.projectionStartYear)
+    .filter((year): year is number =>
+      typeof year === 'number' && Number.isFinite(year) && year > 0,
+    );
+  if (associateYears.length > 0) return Math.min(...associateYears);
+
+  return input.foyer.projectionStartYear || currentYear();
+}
+
 export function buildTresoInputsV4FromV3(input: TresoInputsV3): TresoInputsV4 {
-  const projectionStartYear = input.foyer.projectionStartYear;
+  const projectionStartYear = normalizeProjectionStartYear(input);
   return {
     ...input,
     version: 4,
+    foyer: {
+      ...input.foyer,
+      projectionStartYear,
+    },
     company: {
       ...input.company,
       label: input.company.label ?? DEFAULT_COMPANY_LABEL,
+      projectionStartYear,
       associates: input.company.associates.map(associate => ({
         ...associate,
+        profile: associate.profile
+          ? { ...associate.profile, projectionStartYear }
+          : associate.profile,
         remuneration: associate.remuneration ?? {
           source: 'holding',
           loadedAnnualCost: Math.max(0, associate.remunerationAnnualCost ?? 0),
