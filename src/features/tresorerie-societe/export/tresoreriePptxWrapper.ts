@@ -124,6 +124,7 @@ export function buildTresorerieStudyDeck(
         title: 'Schéma patrimonial — Société IS',
         subtitle: 'Constitution · Exploitation · Retraite & Transmission',
         typeCreation: inputs.company.creationType,
+        orgchartCompany: inputs.company,
         companyKindLabel: getCompanyKindLabel(inputs.company),
         companyKindCode: getCompanyKindCode(inputs.company),
         associates: inputs.company.associates.map(associate => ({

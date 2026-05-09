@@ -1,5 +1,10 @@
 import JSZip from 'jszip';
+import PptxGenJS from 'pptxgenjs';
 import { describe, expect, it } from 'vitest';
+import { buildTresorerieSchema } from '@/pptx/slides/buildTresorerieSchema';
+import { defineSlideMasters } from '@/pptx/template/loadBaseTemplate';
+import { getPptxThemeFromUiSettings } from '@/pptx/theme/getPptxThemeFromUiSettings';
+import type { ExportContext, TresorerieSchemaSlideSpec } from '@/pptx/theme/types';
 import { DEFAULT_COLORS } from '@/settings/theme';
 import { fingerprintPptxExport } from '@/utils/export/exportFingerprint';
 import type { TresoProjectionRow } from '@/engine/tresorerie/types';
@@ -191,6 +196,16 @@ function makeRow(year: number): TresoProjectionRow {
 
 const ROWS = Array.from({ length: 12 }, (_, index) => makeRow(index + 1));
 
+function buildPptxContext(): ExportContext {
+  return {
+    theme: getPptxThemeFromUiSettings(DEFAULT_COLORS),
+    locale: 'fr-FR',
+    generatedAt: new Date('2026-01-01T00:00:00.000Z'),
+    footerDisclaimer: '',
+    showSlideNumbers: true,
+  };
+}
+
 describe('Exports Trésorerie société', () => {
   it('construit un deck PPTX paginé avec un fingerprint stable', () => {
     const deck = buildTresorerieStudyDeck({ rows: ROWS, kpis: KPIS, inputs: INPUTS });
@@ -244,6 +259,96 @@ describe('Exports Trésorerie société', () => {
     expect(JSON.stringify(schema)).toContain('80 %');
   });
 
+  it('prépare le schéma PPTX avec filiales imbriquées et matrice vide', () => {
+    const deck = buildTresorerieStudyDeck({
+      rows: ROWS,
+      kpis: KPIS,
+      inputs: {
+        ...INPUTS,
+        company: {
+          ...INPUTS.company,
+          subsidiaries: [
+            ...INPUTS.company.subsidiaries,
+            {
+              id: 'filiale-2',
+              label: 'Filiale B',
+              parentEntityId: 'filiale-1',
+              ownershipPct: 51,
+              displayOrder: 1,
+              holdingOwnershipPct: 51,
+              annualServicesRevenue: 0,
+              annualDividends: 0,
+              motherDaughterEligible: true,
+              fiscalIntegrationEstimateEnabled: false,
+            },
+          ],
+        },
+        allocationMatrix: {
+          ...INPUTS.allocationMatrix,
+          pockets: [],
+        },
+      },
+    });
+    const schema = deck.slides[0] as TresorerieSchemaSlideSpec;
+
+    expect(schema).toMatchObject({
+      type: 'treso-schema',
+      hasAllocationMatrix: false,
+    });
+    expect(schema.subsidiaries).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        label: 'Filiale B',
+        parentEntityId: 'filiale-1',
+        ownershipPct: '51 %',
+      }),
+    ]));
+  });
+
+  it('rend le schéma PPTX en organigramme avec KPIs à droite', async () => {
+    const deck = buildTresorerieStudyDeck({
+      rows: ROWS,
+      kpis: KPIS,
+      inputs: {
+        ...INPUTS,
+        company: {
+          ...INPUTS.company,
+          subsidiaries: [
+            ...INPUTS.company.subsidiaries,
+            {
+              id: 'filiale-2',
+              label: 'Filiale B',
+              parentEntityId: 'filiale-1',
+              ownershipPct: 51,
+              displayOrder: 1,
+              holdingOwnershipPct: 51,
+              annualServicesRevenue: 0,
+              annualDividends: 0,
+              motherDaughterEligible: true,
+              fiscalIntegrationEstimateEnabled: false,
+            },
+          ],
+        },
+      },
+    });
+    const ctx = buildPptxContext();
+    const pptx = new PptxGenJS();
+    pptx.layout = 'LAYOUT_WIDE';
+    defineSlideMasters(pptx, ctx.theme);
+
+    buildTresorerieSchema(pptx, deck.slides[0] as TresorerieSchemaSlideSpec, ctx, 1);
+
+    const blob = await pptx.write({ outputType: 'blob' }) as Blob;
+    const zip = await JSZip.loadAsync(await blob.arrayBuffer());
+    const slideXml = await zip.file('ppt/slides/slide1.xml')?.async('string');
+
+    expect(slideXml).toBeDefined();
+    expect(slideXml).toContain('Filiale B');
+    expect(slideXml).toContain('51 %');
+    expect(slideXml).toContain('CCA total constitué');
+    expect(slideXml).not.toContain('Phase 1');
+    expect(slideXml).not.toMatch(/\bc[xy]="-/);
+  });
+
   it('génère un XLSX valide avec les onglets Projection, Revenus associés puis Hypothèses', async () => {
     const blob = await buildTresorerieXlsxBlob(
       ROWS,
@@ -270,5 +375,26 @@ describe('Exports Trésorerie société', () => {
     expect(revenusXml).toContain('Remboursement CCA');
     expect(hypothesesXml).toContain('Taux maximum déductible');
     expect(hypothesesXml).toContain('BFR inclus dans le seuil de sécurité');
+  });
+
+  it('mentionne la trésorerie conservée sur compte bancaire quand la matrice Excel est vide', async () => {
+    const blob = await buildTresorerieXlsxBlob(
+      ROWS,
+      KPIS,
+      {
+        ...INPUTS,
+        allocationMatrix: {
+          ...INPUTS.allocationMatrix,
+          pockets: [],
+        },
+      },
+      DEFAULT_COLORS.c1,
+      DEFAULT_COLORS.c7,
+    );
+
+    const zip = await JSZip.loadAsync(await blob.arrayBuffer());
+    const structureXml = await zip.file('xl/worksheets/sheet4.xml')?.async('string');
+
+    expect(structureXml).toContain('Trésorerie conservée sur compte bancaire');
   });
 });

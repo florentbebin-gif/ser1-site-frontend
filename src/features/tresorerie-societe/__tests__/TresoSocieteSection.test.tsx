@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 
 import '@testing-library/jest-dom/vitest';
-import { fireEvent, render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, within } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import { TresoSocieteSection } from '../components/TresoSocieteSection';
 
@@ -121,6 +121,35 @@ describe('TresoSocieteSection', () => {
     expect(screen.queryByText(/^CCA /)).not.toBeInTheDocument();
   });
 
+  it('porte les pourcentages sur les liens du schéma, pas dans les blocs', () => {
+    render(<TresoSocieteSection inputs={INPUTS} onChange={vi.fn()} />);
+
+    const associate = screen.getByRole('button', { name: /Paramétrer Associé 1/ });
+    const subsidiary = screen.getByRole('button', { name: /Paramétrer Filiale A/ });
+
+    expect(within(associate).queryByText('60 %')).not.toBeInTheDocument();
+    expect(within(subsidiary).queryByText('80 %')).not.toBeInTheDocument();
+    expect(screen.getByText('60 %')).toBeInTheDocument();
+    expect(screen.getByText('80 %')).toBeInTheDocument();
+  });
+
+  it('n’étire pas un organigramme simple sur toute la largeur du bloc', () => {
+    const simpleInputs = {
+      ...INPUTS,
+      selectedAssociateId: 'associe-1',
+      company: {
+        ...INPUTS.company,
+        associates: [INPUTS.company.associates[0]],
+        subsidiaries: [],
+      },
+    };
+
+    render(<TresoSocieteSection inputs={simpleInputs} onChange={vi.fn()} />);
+
+    const svg = screen.getByRole('img', { name: /Schéma des détentions société/i });
+    expect(svg).toHaveStyle({ width: '240px' });
+  });
+
   it('met en évidence l’associé actif et ouvre sa modale au clic', () => {
     render(<TresoSocieteSection inputs={INPUTS} onChange={vi.fn()} />);
 
@@ -133,6 +162,15 @@ describe('TresoSocieteSection', () => {
     expect(screen.getByDisplayValue('45')).toBeInTheDocument();
     expect(screen.getByDisplayValue('62')).toBeInTheDocument();
     expect(screen.getByText('Taux maximum déductible')).toBeInTheDocument();
+  });
+
+  it('ouvre la modale associé au clavier depuis le schéma SVG', () => {
+    render(<TresoSocieteSection inputs={INPUTS} onChange={vi.fn()} />);
+
+    const activeAssociate = screen.getByRole('button', { name: /Paramétrer Associé 2/ });
+    fireEvent.keyDown(activeAssociate, { key: 'Enter' });
+
+    expect(screen.getByText('Paramétrer l’associé')).toBeInTheDocument();
   });
 
   it('signale seulement les détentions supérieures à 100 %', () => {

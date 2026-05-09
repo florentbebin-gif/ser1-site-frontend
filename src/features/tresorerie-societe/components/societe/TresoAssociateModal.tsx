@@ -90,7 +90,7 @@ export function TresoAssociateModal({
       bodyClassName="ts-company-modal__body"
     >
       <div className="ts-modal-stack">
-        <div className="ts-modal-grid">
+        <div className="ts-modal-grid ts-modal-grid--three">
           <SimFieldShell label="Libellé" className="ts-field" rowClassName="ts-field__row">
             <input
               type="text"
@@ -153,7 +153,7 @@ export function TresoAssociateModal({
               <strong>Profil foyer</strong>
               <span>Paramètres personnels de projection</span>
             </div>
-            <div className="ts-modal-grid">
+            <div className="ts-modal-grid ts-modal-grid--three">
               <SimFieldShell label="Âge actuel" className="ts-field" rowClassName="ts-field__row">
                 <input
                   type="text"
@@ -203,7 +203,7 @@ export function TresoAssociateModal({
           <p className="ts-note--info">
             Les intérêts CCA sont saisis au taux convenu ; la déductibilité est plafonnée par le taux maximum déductible issu des paramètres fiscaux.
           </p>
-          <div className="ts-modal-grid">
+          <div className="ts-modal-grid ts-modal-grid--three">
             <SimFieldShell label="CCA actuel" className="ts-field" rowClassName="ts-field__row">
               <input
                 type="text"

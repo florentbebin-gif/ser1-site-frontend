@@ -443,11 +443,11 @@ export function TresoSocieteSection({ inputs, onChange }: Props) {
         company={company}
         selectedAssociateId={selectedAssociateId}
         onCompanyClick={() => setCompanyModalOpen(true)}
-        onAssociateClick={associate => {
-          setSelectedAssociate(associate.id);
-          setAssociateModalId(associate.id);
+        onAssociateClick={associateId => {
+          setSelectedAssociate(associateId);
+          setAssociateModalId(associateId);
         }}
-        onSubsidiaryClick={subsidiary => setSubsidiaryModalId(subsidiary.id)}
+        onSubsidiaryClick={subsidiaryId => setSubsidiaryModalId(subsidiaryId)}
       />
 
       <div className="ts-org-alerts" aria-live="polite">

@@ -49,7 +49,7 @@
 
 /* ─── Matrice d’allocation ────────────────────────────────────────────────── */
 
-.ts-placement-mode {
+.ts-placement-summary {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
@@ -57,47 +57,103 @@
   margin-bottom: 14px;
 }
 
-.ts-placement-mode .ts-modal-tab {
-  width: auto;
-}
-
-.ts-placement-mode span {
+.ts-placement-summary span {
+  padding: 5px 8px;
+  background: var(--color-c7);
+  border: 1px solid var(--color-c8);
+  border-radius: 6px;
   color: var(--color-c9);
   font-size: 11px;
 }
 
-.ts-matrix-flow {
+.ts-pocket-board {
   display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
-  gap: 8px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
   margin: 14px 0;
 }
 
-.ts-matrix-flow__item {
+.ts-pocket-column {
   min-width: 0;
-  padding: 8px;
+  padding: 10px;
   background: var(--color-c7);
   border: 1px solid var(--color-c8);
-  border-radius: 6px;
+  border-radius: 8px;
 }
 
-.ts-matrix-flow__item span {
-  display: block;
-  overflow: hidden;
+.ts-pocket-column__header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 8px;
+  padding-bottom: 7px;
+  border-bottom: 1px solid var(--color-c8);
+}
+
+.ts-pocket-column__header h3 {
+  margin: 0;
+  color: var(--color-c1);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.ts-pocket-column__header span,
+.ts-pocket-column__empty {
   color: var(--color-c9);
   font-size: 10px;
+}
+
+.ts-pocket-column__items {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.ts-pocket-column__item {
+  appearance: none;
+  min-width: 0;
+  padding: 8px;
+  background: #fff;
+  border: 1px solid var(--color-c8);
+  border-radius: 6px;
+  cursor: pointer;
+  text-align: left;
+}
+
+.ts-pocket-column__item:hover,
+.ts-pocket-column__item:focus-visible {
+  border-color: var(--color-c3);
+  outline: none;
+}
+
+.ts-pocket-column__item strong,
+.ts-pocket-column__item small,
+.ts-pocket-column__item span {
+  display: block;
+  overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.ts-matrix-flow__item small {
-  display: block;
+.ts-pocket-column__item strong {
+  color: var(--color-c1);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.ts-pocket-column__item small,
+.ts-pocket-column__item span {
   color: var(--color-c2);
   font-size: 10px;
   margin-top: 2px;
 }
 
-.ts-matrix-flow__item i {
+.ts-pocket-column__item span {
+  color: var(--color-c9);
+}
+
+.ts-pocket-column__item i {
   display: block;
   height: 5px;
   margin-top: 6px;
@@ -105,46 +161,57 @@
   background: var(--color-c3);
 }
 
-.ts-matrix-pockets {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
+.ts-pocket-column__empty {
+  margin: 10px 0 2px;
+  text-align: center;
 }
 
-.ts-matrix-pocket {
-  border: 1px solid var(--color-c8);
+.ts-matrix-empty {
+  display: grid;
+  place-items: center;
+  gap: 10px;
+  margin: 14px 0;
+  padding: 18px;
+  background: var(--color-c7);
+  border: 1px dashed var(--color-c8);
   border-radius: 8px;
-  padding: 12px;
-  background: #fff;
+  text-align: center;
 }
 
-.ts-matrix-pocket__header,
+.ts-matrix-empty strong {
+  color: var(--color-c1);
+  font-size: 12px;
+  font-weight: 600;
+}
+
 .ts-matrix-actions {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
+  margin-top: 12px;
 }
 
-.ts-matrix-pocket__header {
-  margin-bottom: 10px;
-}
-
-.ts-matrix-pocket__header strong {
-  color: var(--color-c1);
-  font-size: 13px;
-  font-weight: 600;
-}
-
-.ts-matrix-pocket__header span,
 .ts-matrix-actions span {
   color: var(--color-c9);
   font-size: 11px;
   font-variant-numeric: tabular-nums;
 }
 
-.ts-matrix-actions {
-  margin-top: 12px;
+.ts-danger-btn {
+  border: 1px solid var(--color-c1);
+  border-radius: 6px;
+  background: #fff;
+  color: var(--color-c1);
+  cursor: pointer;
+  font-size: 12px;
+  padding: 8px 10px;
+}
+
+.ts-danger-btn:hover,
+.ts-danger-btn:focus-visible {
+  background: color-mix(in srgb, var(--color-c1) 8%, #fff);
+  outline: none;
 }
 
 .ts-matrix-actions .is-warning {
@@ -294,65 +361,6 @@
 .ts-input-month {
   text-align: left !important;
   padding-left: 6px;
-}
-
-/* ─── Poches de placement / crédit ────────────────────────────────────────── */
-
-.ts-pocket {
-  border: 1px solid var(--color-c8);
-  border-radius: 8px;
-  margin-bottom: 12px;
-  overflow: hidden;
-}
-
-.ts-pocket__toggle {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  width: 100%;
-  padding: 10px 14px;
-  background: var(--color-c7);
-  border: none;
-  cursor: pointer;
-  font-size: 13px;
-  color: var(--color-c1);
-  font-weight: 500;
-  text-align: left;
-}
-
-.ts-pocket__toggle:hover {
-  background: color-mix(in srgb, var(--color-c4) 30%, var(--color-c7));
-}
-
-.ts-pocket__toggle.is-open {
-  background: color-mix(in srgb, var(--color-c4) 20%, #fff);
-  border-bottom: 1px solid var(--color-c8);
-}
-
-.ts-pocket__toggle-label {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.ts-pocket__badge {
-  font-size: 11px;
-  font-weight: 600;
-  color: var(--color-c2);
-  background: color-mix(in srgb, var(--color-c4) 40%, transparent);
-  padding: 1px 6px;
-  border-radius: 4px;
-}
-
-.ts-pocket__cta {
-  font-size: 12px;
-  color: var(--color-c2);
-  font-weight: 500;
-}
-
-.ts-pocket-form {
-  padding: 14px 14px 10px;
-  background: #fff;
 }
 
 /* ─── Avertissements ───────────────────────────────────────────────────────── */
@@ -726,15 +734,27 @@
 
 /* ─── Mobile ───────────────────────────────────────────────────────────────── */
 
+@media (max-width: 1080px) {
+  .ts-modal-grid--three {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 720px) {
+  .ts-modal-grid,
+  .ts-modal-grid--three {
+    grid-template-columns: 1fr;
+  }
+}
+
 @media (max-width: 900px) {
   .ts-kpi-sidebar {
     order: -1;
   }
 
   .ts-company-snapshot,
-  .ts-matrix-flow,
+  .ts-pocket-board,
   .ts-modal-panels,
-  .ts-modal-grid,
   .ts-balance-grid {
     grid-template-columns: 1fr;
   }

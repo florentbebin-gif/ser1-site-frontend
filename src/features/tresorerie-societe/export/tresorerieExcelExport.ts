@@ -209,6 +209,17 @@ function buildStructureSheet(inputs: TresoInputsRuntime): XlsxSheet {
     annualStructureCosts: company.annualStructureCosts,
     workingCapitalRequirement: 0,
   };
+  const pocketRows: XlsxCell[][] = inputs.allocationMatrix.pockets.length > 0
+    ? inputs.allocationMatrix.pockets.map(pocket => [
+      txt(pocket.label ?? pocket.id),
+      txt(pocket.horizon ?? 'moyen_terme'),
+      txt(`${pocket.annualAllocationPct} % · priorité ${pocket.withdrawalPriority ?? '-'}`),
+    ])
+    : [[
+      txt('Trésorerie conservée sur compte bancaire'),
+      txt('Sans rendement'),
+      txt('Aucune poche d’allocation renseignée'),
+    ]];
   const rows: XlsxCell[][] = [
     [h('Structure société'), h('Valeur'), h('Détail')],
     [txt('Type société'), txt(getCompanyKindLabel(company)), txt(getCompanyKindCode(company))],
@@ -232,11 +243,7 @@ function buildStructureSheet(inputs: TresoInputsRuntime): XlsxSheet {
     ]),
     [sec('Stratégie de trésorerie'), sec(''), sec('')],
     [h('Poche'), h('Horizon'), h('Allocation annuelle')],
-    ...inputs.allocationMatrix.pockets.map(pocket => [
-      txt(pocket.label ?? pocket.id),
-      txt(pocket.horizon ?? 'moyen_terme'),
-      txt(`${pocket.annualAllocationPct} % · priorité ${pocket.withdrawalPriority ?? '-'}`),
-    ]),
+    ...pocketRows,
   ];
 
   return { name: 'Structure société', rows, columnWidths: [28, 28, 32] };

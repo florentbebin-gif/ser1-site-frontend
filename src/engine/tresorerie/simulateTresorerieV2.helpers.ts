@@ -1,4 +1,5 @@
 import { scheduleAmortissable } from '../credit/loanSchedule';
+import { normalizeAllocationPockets } from './allocationPockets';
 import { computeProductiveMonthsByCivilYear } from './calculPlacements';
 import type {
   AllocationPocketInput,
@@ -313,7 +314,7 @@ export function createLotsFromAllocation(params: {
   startYear: number;
 }): InvestmentLot[] {
   if (params.amount <= 0) return [];
-  const pockets = params.pockets.slice(0, 5);
+  const pockets = normalizeAllocationPockets(params.pockets);
   const totalPct = pockets.reduce(
     (sum, pocket) => sum + Math.max(0, pocket[params.allocationKey]),
     0,

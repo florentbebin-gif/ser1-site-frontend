@@ -2,11 +2,14 @@
  * Specs PPTX Trésorerie société IS.
  */
 
+import type { CompanyInput } from '@/engine/tresorerie/types';
+
 export type TresorerieSchemaSlideSpec = {
   type: 'treso-schema';
   title: string;
   subtitle: string;
   typeCreation: 'newco' | 'existante';
+  orgchartCompany: CompanyInput;
   companyKindLabel?: string;
   companyKindCode?: string;
   associates?: Array<{

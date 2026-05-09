@@ -209,7 +209,7 @@ describe('simulateTresorerie — modèle société v3', () => {
     expect(rows[0].quotePartTaxable).toBe(750);
   });
 
-  it('utilise une seule poche en mode placement unique et plusieurs poches en stratégie', () => {
+  it('déduit une stratégie multi-poches dès que plusieurs poches existent', () => {
     const inputs = baseV3();
     inputs.company.treasuryInitial = 100_000;
     inputs.allocationMatrix = {
@@ -247,19 +247,70 @@ describe('simulateTresorerie — modèle société v3', () => {
       ],
     };
 
-    const single = simulateTresorerieV2(inputs, PARAMS, 1);
-    const strategy = simulateTresorerieV2({
-      ...inputs,
-      allocationMatrix: {
-        ...inputs.allocationMatrix,
-        mode: 'strategy',
-      },
-    }, PARAMS, 1);
+    const rows = simulateTresorerieV2(inputs, PARAMS, 1);
 
-    expect(single[0].capitalDistrib).toBe(100_000);
-    expect(single[0].capitalCapi).toBe(0);
-    expect(strategy[0].capitalDistrib).toBe(50_000);
-    expect(strategy[0].capitalCapi).toBe(50_000);
+    expect(rows[0].capitalDistrib).toBe(50_000);
+    expect(rows[0].capitalCapi).toBe(50_000);
+  });
+
+  it('trie les poches par priorité avant de construire les lots', () => {
+    const inputs = baseV3();
+    inputs.company.treasuryInitial = 100_000;
+    inputs.allocationMatrix = {
+      mode: 'strategy',
+      sweepThreshold: 0,
+      pockets: [
+        {
+          id: 'capitalisation',
+          label: 'Long terme',
+          kind: 'capitalisation',
+          horizon: 'long_terme',
+          withdrawalPriority: 2,
+          durationYears: 5,
+          annualReturnRate: 0,
+          enjoymentDelayMonths: 0,
+          initialAllocationPct: 100,
+          annualAllocationPct: 0,
+          repeatAtTerm: false,
+          termDestination: 'treasury',
+        },
+        {
+          id: 'distribution',
+          label: 'Court terme',
+          kind: 'distribution',
+          horizon: 'court_terme',
+          withdrawalPriority: 1,
+          durationYears: 5,
+          annualReturnRate: 0,
+          enjoymentDelayMonths: 0,
+          initialAllocationPct: 100,
+          annualAllocationPct: 0,
+          repeatAtTerm: false,
+          termDestination: 'treasury',
+        },
+      ],
+    };
+
+    const rows = simulateTresorerieV2(inputs, PARAMS, 1);
+
+    expect(rows[0].capitalDistrib).toBe(50_000);
+    expect(rows[0].capitalCapi).toBe(50_000);
+  });
+
+  it('conserve une trésorerie non placée quand aucune poche n’est renseignée', () => {
+    const inputs = baseV3();
+    inputs.company.treasuryInitial = 100_000;
+    inputs.allocationMatrix = {
+      mode: 'single',
+      sweepThreshold: 0,
+      pockets: [],
+    };
+
+    const rows = simulateTresorerieV2(inputs, PARAMS, 1);
+
+    expect(rows[0].capitalDistrib).toBe(0);
+    expect(rows[0].capitalCapi).toBe(0);
+    expect(rows[0].tresorerieDebut).toBe(100_000);
   });
 
   it('calcule les intérêts de CCA et limite leur déduction au taux maximum fiscal', () => {

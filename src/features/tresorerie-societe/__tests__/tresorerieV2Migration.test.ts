@@ -197,6 +197,7 @@ describe('migration trésorerie v3', () => {
       parentEntityId: 'societe',
       ownershipPct: 70,
     });
+    expect(v3.allocationMatrix.pockets).toEqual([]);
   });
 
   it('prévoit revenusParAssocie sur les lignes de projection dès le socle v2', () => {

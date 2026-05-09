@@ -1,4 +1,5 @@
 import { calculBaseEtIS } from './calculIS';
+import { selectAllocationPocketsForSimulation } from './allocationPockets';
 import {
   getAssociateProfile,
   getCapitalPct,
@@ -22,8 +23,6 @@ import {
 import type {
   AssociateInput,
   CompanyInput,
-  AllocationPocketInput,
-  AllocationMatrixInput,
   TresoFiscalParams,
   TresoInputsRuntime,
   TresoProjectionRow,
@@ -91,10 +90,6 @@ function getInitialCcaContribution(
     : 0;
 }
 
-function getAllocationPockets(matrix: AllocationMatrixInput): AllocationPocketInput[] {
-  return matrix.mode === 'single' ? matrix.pockets.slice(0, 1) : matrix.pockets;
-}
-
 function validateOwnershipTotals(associates: AssociateInput[]): void {
   const totalCapitalPct = associates.reduce((sum, associate) => sum + getCapitalPct(associate), 0);
   const totalEconomicPct = associates.reduce((sum, associate) => sum + getEconomicPct(associate), 0);
@@ -119,7 +114,7 @@ export function simulateTresorerieV2(
   const selectedProfile = getAssociateProfile(v2, selectedAssociate);
   const anneeCivileDebut = selectedProfile.projectionStartYear;
   const incomeStatement = getIncomeStatement(company);
-  const allocationPockets = getAllocationPockets(v2.allocationMatrix);
+  const allocationPockets = selectAllocationPocketsForSimulation(v2.allocationMatrix);
 
   const initialCcaBalances = new Map<string, number>();
   associates.forEach(associate => {
