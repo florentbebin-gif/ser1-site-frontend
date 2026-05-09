@@ -80,9 +80,12 @@ export function TresoOrgChart({
         </g>
 
         {layout.nodes.map(node => {
-          const ariaLabel = node.active
-            ? `${getTresoOrgchartNodeLabel(node)} - associé actif`
+          const baseAriaLabel = node.kind === 'company'
+            ? `Paramétrer ${companyKindLabel}`
             : getTresoOrgchartNodeLabel(node);
+          const ariaLabel = node.active
+            ? `${baseAriaLabel} - associé actif`
+            : baseAriaLabel;
           const title = node.kind === 'company' ? companyKindLabel : node.label;
           const subtitle = node.kind === 'company' ? node.label : node.meta;
           const metaParts = node.kind === 'company' && node.meta ? node.meta.split(' · ') : [];

@@ -1,7 +1,13 @@
 import { SimFieldShell } from '@/components/ui/sim/SimFieldShell';
 import { SimModalShell } from '@/components/ui/sim/SimModalShell';
 import { SimSelect } from '@/components/ui/sim/SimSelect';
-import type { CompanyInput, SubsidiaryInput } from '@/engine/tresorerie/types';
+import type {
+  AmountScheduleInput,
+  CompanyInput,
+  SubsidiaryDisposalInput,
+  SubsidiaryDisposalRegime,
+  SubsidiaryInput,
+} from '@/engine/tresorerie/types';
 import {
   fmtEuroInput,
   parseEuroInput,
@@ -16,9 +22,37 @@ interface TresoSubsidiaryModalProps {
   onClose: () => void;
 }
 
+const DISPOSAL_REGIME_OPTIONS: Array<{ value: SubsidiaryDisposalRegime; label: string }> = [
+  { value: 'auto', label: 'Auto selon détention et durée' },
+  { value: 'pvlt', label: 'Régime PVLT titres de participation' },
+  { value: 'standard', label: 'Régime standard' },
+];
+
 function parentLabel(company: CompanyInput, parentId: string | undefined): string {
-  if (!parentId || parentId === 'societe') return 'Société mère';
+  if (!parentId || parentId === 'societe') return company.label || 'Société mère';
   return company.subsidiaries.find(subsidiary => subsidiary.id === parentId)?.label ?? 'Filiale parente';
+}
+
+function firstSchedule(
+  schedules: AmountScheduleInput[] | undefined,
+  fallbackAmount: number | undefined,
+  fallbackYear = new Date().getFullYear(),
+): AmountScheduleInput {
+  return schedules?.[0] ?? {
+    amount: Math.max(0, fallbackAmount ?? 0),
+    startYear: fallbackYear,
+    endYear: fallbackYear,
+  };
+}
+
+function defaultDisposal(subsidiary: SubsidiaryInput): SubsidiaryDisposalInput {
+  return subsidiary.disposal ?? {
+    year: subsidiary.disposalYear,
+    estimatedPrice: Math.max(0, subsidiary.estimatedDisposalPrice ?? 0),
+    taxBasis: Math.max(0, subsidiary.taxBasis ?? 0),
+    fees: 0,
+    regime: 'auto',
+  };
 }
 
 export function TresoSubsidiaryModal({
@@ -34,6 +68,46 @@ export function TresoSubsidiaryModal({
       .map(candidate => ({ value: candidate.id, label: `Sous ${candidate.label}` })),
   ];
   const parentId = subsidiary.parentEntityId ?? 'societe';
+  const projectionYear =
+    company.associates[0]?.profile?.projectionStartYear ??
+    new Date().getFullYear();
+  const servicesSchedule = firstSchedule(
+    subsidiary.servicesSchedule,
+    subsidiary.annualServicesRevenue,
+    projectionYear,
+  );
+  const dividendsSchedule = firstSchedule(
+    subsidiary.dividendsSchedule,
+    subsidiary.annualDividends,
+    projectionYear,
+  );
+  const disposal = defaultDisposal(subsidiary);
+
+  const patchServicesSchedule = (patch: Partial<AmountScheduleInput>) => {
+    const nextSchedule = { ...servicesSchedule, ...patch };
+    onChange({
+      servicesSchedule: [nextSchedule],
+      annualServicesRevenue: nextSchedule.amount,
+    });
+  };
+
+  const patchDividendsSchedule = (patch: Partial<AmountScheduleInput>) => {
+    const nextSchedule = { ...dividendsSchedule, ...patch };
+    onChange({
+      dividendsSchedule: [nextSchedule],
+      annualDividends: nextSchedule.amount,
+    });
+  };
+
+  const patchDisposal = (patch: Partial<SubsidiaryDisposalInput>) => {
+    const nextDisposal = { ...disposal, ...patch };
+    onChange({
+      disposal: nextDisposal,
+      disposalYear: nextDisposal.year,
+      estimatedDisposalPrice: nextDisposal.estimatedPrice,
+      taxBasis: nextDisposal.taxBasis,
+    });
+  };
 
   return (
     <SimModalShell
@@ -43,88 +117,246 @@ export function TresoSubsidiaryModal({
       modalClassName="ts-company-modal"
       bodyClassName="ts-company-modal__body"
     >
-      <div className="ts-modal-grid">
-        <SimFieldShell label="Libellé" className="ts-field" rowClassName="ts-field__row">
-          <input
-            type="text"
-            className="sim-field__control ts-input-left"
-            value={subsidiary.label}
-            onChange={event => onChange({ label: event.target.value })}
-          />
-        </SimFieldShell>
+      <div className="ts-modal-stack">
+        <div className="ts-associate-card">
+          <div className="ts-associate-card__header">
+            <strong>Identité et détention</strong>
+            <span>La mère est déduite du schéma</span>
+          </div>
+          <div className="ts-modal-grid ts-modal-grid--three">
+            <SimFieldShell label="Libellé" className="ts-field" rowClassName="ts-field__row">
+              <input
+                type="text"
+                className="sim-field__control ts-input-left"
+                value={subsidiary.label}
+                onChange={event => onChange({ label: event.target.value })}
+              />
+            </SimFieldShell>
 
-        <SimFieldShell label="Position dans le schéma" className="ts-field" rowClassName="ts-field__row">
-          <SimSelect
-            value={parentId}
-            onChange={value => onChange({ parentEntityId: value })}
-            options={parentOptions}
-            ariaLabel="Position de la filiale"
-          />
-        </SimFieldShell>
+            <SimFieldShell label="Position dans le schéma" className="ts-field" rowClassName="ts-field__row">
+              <SimSelect
+                value={parentId}
+                onChange={value => onChange({ parentEntityId: value })}
+                options={parentOptions}
+                ariaLabel="Position de la filiale"
+              />
+            </SimFieldShell>
 
-        <SimFieldShell label="Détenteur affiché" className="ts-field" rowClassName="ts-field__row">
-          <input
-            type="text"
-            className="sim-field__control ts-input-left"
-            value={parentLabel(company, parentId)}
-            readOnly
-          />
-        </SimFieldShell>
+            <SimFieldShell label="Détenteur affiché" className="ts-field" rowClassName="ts-field__row">
+              <input
+                type="text"
+                className="sim-field__control ts-input-left"
+                value={parentLabel(company, parentId)}
+                readOnly
+              />
+            </SimFieldShell>
 
-        <SimFieldShell label="% de détention" className="ts-field" rowClassName="ts-field__row">
-          <input
-            type="text"
-            inputMode="decimal"
-            className="sim-field__control"
-            value={String(subsidiary.ownershipPct ?? subsidiary.holdingOwnershipPct)}
-            onChange={event => {
-              const ownershipPct = parsePctInput(event.target.value);
-              onChange({ ownershipPct, holdingOwnershipPct: ownershipPct });
-            }}
-          />
-          <span className="sim-field__unit ts-unit">%</span>
-        </SimFieldShell>
+            <SimFieldShell label="% de détention" className="ts-field" rowClassName="ts-field__row">
+              <input
+                type="text"
+                inputMode="decimal"
+                className="sim-field__control"
+                value={String(subsidiary.ownershipPct ?? subsidiary.holdingOwnershipPct)}
+                onChange={event => {
+                  const ownershipPct = parsePctInput(event.target.value);
+                  onChange({ ownershipPct, holdingOwnershipPct: ownershipPct });
+                }}
+              />
+              <span className="sim-field__unit ts-unit">%</span>
+            </SimFieldShell>
+          </div>
+        </div>
 
-        <SimFieldShell label="Ordre d’affichage" className="ts-field" rowClassName="ts-field__row">
-          <input
-            type="text"
-            inputMode="numeric"
-            className="sim-field__control"
-            value={subsidiary.displayOrder ?? 0}
-            onChange={event => onChange({ displayOrder: parseNumberInput(event.target.value) })}
-          />
-        </SimFieldShell>
+        <div className="ts-associate-card">
+          <div className="ts-associate-card__header">
+            <strong>Trésorerie filiale</strong>
+            <span>Potentiel de remontée vers la mère</span>
+          </div>
+          <div className="ts-modal-grid ts-modal-grid--three">
+            <SimFieldShell label="Trésorerie de la filiale" className="ts-field" rowClassName="ts-field__row">
+              <input
+                type="text"
+                inputMode="numeric"
+                className="sim-field__control"
+                value={fmtEuroInput(subsidiary.treasuryInitial)}
+                onChange={event => onChange({ treasuryInitial: parseEuroInput(event.target.value) })}
+              />
+              <span className="sim-field__unit ts-unit">€</span>
+            </SimFieldShell>
 
-        <SimFieldShell label="Prestations annuelles" className="ts-field" rowClassName="ts-field__row">
-          <input
-            type="text"
-            inputMode="numeric"
-            className="sim-field__control"
-            value={fmtEuroInput(subsidiary.annualServicesRevenue)}
-            onChange={event => onChange({ annualServicesRevenue: parseEuroInput(event.target.value) })}
-          />
-          <span className="sim-field__unit ts-unit">€</span>
-        </SimFieldShell>
+            <SimFieldShell label="BFR filiale" className="ts-field" rowClassName="ts-field__row">
+              <input
+                type="text"
+                inputMode="numeric"
+                className="sim-field__control"
+                value={fmtEuroInput(subsidiary.workingCapitalRequirement)}
+                onChange={event => onChange({ workingCapitalRequirement: parseEuroInput(event.target.value) })}
+              />
+              <span className="sim-field__unit ts-unit">€</span>
+            </SimFieldShell>
 
-        <SimFieldShell label="Dividendes annuels" className="ts-field" rowClassName="ts-field__row">
-          <input
-            type="text"
-            inputMode="numeric"
-            className="sim-field__control"
-            value={fmtEuroInput(subsidiary.annualDividends)}
-            onChange={event => onChange({ annualDividends: parseEuroInput(event.target.value) })}
-          />
-          <span className="sim-field__unit ts-unit">€</span>
-        </SimFieldShell>
+            <SimFieldShell label="Réserves distribuables" className="ts-field" rowClassName="ts-field__row">
+              <input
+                type="text"
+                inputMode="numeric"
+                className="sim-field__control"
+                value={fmtEuroInput(subsidiary.distributableReserves)}
+                onChange={event => onChange({ distributableReserves: parseEuroInput(event.target.value) })}
+              />
+              <span className="sim-field__unit ts-unit">€</span>
+            </SimFieldShell>
 
-        <label className="ts-toggle-label ts-modal-toggle">
-          <input
-            type="checkbox"
-            checked={subsidiary.motherDaughterEligible}
-            onChange={event => onChange({ motherDaughterEligible: event.target.checked })}
-          />
-          Régime mère-fille éligible
-        </label>
+            <label className="ts-toggle-label ts-modal-toggle">
+              <input
+                type="checkbox"
+                checked={subsidiary.motherDaughterEligible}
+                onChange={event => onChange({ motherDaughterEligible: event.target.checked })}
+              />
+              Régime mère-fille éligible
+            </label>
+
+            <label className="ts-toggle-label ts-modal-toggle">
+              <input
+                type="checkbox"
+                checked={subsidiary.fiscalIntegrationEstimateEnabled}
+                onChange={event => onChange({ fiscalIntegrationEstimateEnabled: event.target.checked })}
+              />
+              Estimation déclarative d’intégration fiscale
+            </label>
+          </div>
+        </div>
+
+        <div className="ts-associate-card">
+          <div className="ts-associate-card__header">
+            <strong>Paliers de flux vers la mère</strong>
+            <span>Un premier palier simple, extensible ensuite</span>
+          </div>
+          <div className="ts-modal-grid ts-modal-grid--three">
+            <SimFieldShell label="Prestations annuelles vers la mère" className="ts-field" rowClassName="ts-field__row">
+              <input
+                type="text"
+                inputMode="numeric"
+                className="sim-field__control"
+                value={fmtEuroInput(servicesSchedule.amount)}
+                onChange={event => patchServicesSchedule({ amount: parseEuroInput(event.target.value) })}
+              />
+              <span className="sim-field__unit ts-unit">€</span>
+            </SimFieldShell>
+            <SimFieldShell label="Prestations de" className="ts-field" rowClassName="ts-field__row">
+              <input
+                type="text"
+                inputMode="numeric"
+                className="sim-field__control"
+                value={servicesSchedule.startYear}
+                onChange={event => patchServicesSchedule({ startYear: parseNumberInput(event.target.value) })}
+              />
+            </SimFieldShell>
+            <SimFieldShell label="Prestations à" className="ts-field" rowClassName="ts-field__row">
+              <input
+                type="text"
+                inputMode="numeric"
+                className="sim-field__control"
+                value={servicesSchedule.endYear ?? ''}
+                onChange={event => patchServicesSchedule({
+                  endYear: parseNumberInput(event.target.value) || undefined,
+                })}
+              />
+            </SimFieldShell>
+
+            <SimFieldShell label="Dividendes annuels vers la mère" className="ts-field" rowClassName="ts-field__row">
+              <input
+                type="text"
+                inputMode="numeric"
+                className="sim-field__control"
+                value={fmtEuroInput(dividendsSchedule.amount)}
+                onChange={event => patchDividendsSchedule({ amount: parseEuroInput(event.target.value) })}
+              />
+              <span className="sim-field__unit ts-unit">€</span>
+            </SimFieldShell>
+            <SimFieldShell label="Dividendes de" className="ts-field" rowClassName="ts-field__row">
+              <input
+                type="text"
+                inputMode="numeric"
+                className="sim-field__control"
+                value={dividendsSchedule.startYear}
+                onChange={event => patchDividendsSchedule({ startYear: parseNumberInput(event.target.value) })}
+              />
+            </SimFieldShell>
+            <SimFieldShell label="Dividendes à" className="ts-field" rowClassName="ts-field__row">
+              <input
+                type="text"
+                inputMode="numeric"
+                className="sim-field__control"
+                value={dividendsSchedule.endYear ?? ''}
+                onChange={event => patchDividendsSchedule({
+                  endYear: parseNumberInput(event.target.value) || undefined,
+                })}
+              />
+            </SimFieldShell>
+          </div>
+        </div>
+
+        <div className="ts-associate-card">
+          <div className="ts-associate-card__header">
+            <strong>Scénario de cession</strong>
+            <span>Valorisation, plus-value et régime fiscal</span>
+          </div>
+          <div className="ts-modal-grid ts-modal-grid--three">
+            <SimFieldShell label="Année de cession" className="ts-field" rowClassName="ts-field__row">
+              <input
+                type="text"
+                inputMode="numeric"
+                className="sim-field__control"
+                value={disposal.year ?? ''}
+                onChange={event => patchDisposal({
+                  year: parseNumberInput(event.target.value) || undefined,
+                })}
+              />
+            </SimFieldShell>
+
+            <SimFieldShell label="Valorisation" className="ts-field" rowClassName="ts-field__row">
+              <input
+                type="text"
+                inputMode="numeric"
+                className="sim-field__control"
+                value={fmtEuroInput(disposal.estimatedPrice)}
+                onChange={event => patchDisposal({ estimatedPrice: parseEuroInput(event.target.value) })}
+              />
+              <span className="sim-field__unit ts-unit">€</span>
+            </SimFieldShell>
+
+            <SimFieldShell label="Base fiscale" className="ts-field" rowClassName="ts-field__row">
+              <input
+                type="text"
+                inputMode="numeric"
+                className="sim-field__control"
+                value={fmtEuroInput(disposal.taxBasis)}
+                onChange={event => patchDisposal({ taxBasis: parseEuroInput(event.target.value) })}
+              />
+              <span className="sim-field__unit ts-unit">€</span>
+            </SimFieldShell>
+
+            <SimFieldShell label="Frais de cession" className="ts-field" rowClassName="ts-field__row">
+              <input
+                type="text"
+                inputMode="numeric"
+                className="sim-field__control"
+                value={fmtEuroInput(disposal.fees)}
+                onChange={event => patchDisposal({ fees: parseEuroInput(event.target.value) })}
+              />
+              <span className="sim-field__unit ts-unit">€</span>
+            </SimFieldShell>
+
+            <SimFieldShell label="Régime de cession" className="ts-field" rowClassName="ts-field__row">
+              <SimSelect
+                value={disposal.regime}
+                onChange={value => patchDisposal({ regime: value as SubsidiaryDisposalRegime })}
+                options={DISPOSAL_REGIME_OPTIONS}
+                ariaLabel="Régime de cession"
+              />
+            </SimFieldShell>
+          </div>
+        </div>
       </div>
     </SimModalShell>
   );

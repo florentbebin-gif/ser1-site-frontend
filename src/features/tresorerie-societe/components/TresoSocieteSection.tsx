@@ -12,11 +12,10 @@ import type {
   CompanyInput,
   CompanyKind,
   LegalForm,
-  TresoInputsV3,
+  TresoInputsV4,
 } from '../../../engine/tresorerie/types';
 import {
   TresoCompanyLoansPanel,
-  TresoCompanyRemunerationsPanel,
   TresoCompanySubsidiariesPanel,
 } from './TresoCompanyPanels';
 import { TresoAssociateModal } from './societe/TresoAssociateModal';
@@ -37,11 +36,11 @@ import {
 } from '../utils/tresorerieFormatters';
 
 interface Props {
-  inputs: TresoInputsV3;
-  onChange: (nextInputs: TresoInputsV3) => void;
+  inputs: TresoInputsV4;
+  onChange: (nextInputs: TresoInputsV4) => void;
 }
 
-type PanelKey = 'identite' | 'associes' | 'compte' | 'emprunts' | 'filiales' | 'remunerations';
+type PanelKey = 'identite' | 'associes' | 'compte' | 'emprunts' | 'filiales';
 
 const TYPE_OPTIONS = [
   { value: 'newco', label: 'Société à créer' },
@@ -76,10 +75,9 @@ const PANEL_OPTIONS: Array<{ key: PanelKey; label: string }> = [
   { key: 'compte', label: 'Compte de résultat' },
   { key: 'emprunts', label: 'Emprunts' },
   { key: 'filiales', label: 'Filiales' },
-  { key: 'remunerations', label: 'Rémunérations & TNS' },
 ];
 
-function buildDefaultAssociate(index: number, inputs: TresoInputsV3): AssociateInput {
+function buildDefaultAssociate(index: number, inputs: TresoInputsV4): AssociateInput {
   const profile = getAssociateProfile(inputs);
   return {
     id: `associe-${Date.now()}-${index + 1}`,
@@ -101,6 +99,11 @@ function buildDefaultAssociate(index: number, inputs: TresoInputsV3): AssociateI
       remunerationRate: 0,
     },
     remunerationAnnualCost: 0,
+    remuneration: {
+      source: 'holding',
+      loadedAnnualCost: 0,
+      socialChargeRate: 0,
+    },
   };
 }
 
@@ -123,7 +126,7 @@ export function TresoSocieteSection({ inputs, onChange }: Props) {
     workingCapitalRequirement: 0,
   };
 
-  const patchInputs = (nextInputs: TresoInputsV3) => onChange(nextInputs);
+  const patchInputs = (nextInputs: TresoInputsV4) => onChange(nextInputs);
 
   const patchCompany = (patch: Partial<CompanyInput>) => {
     patchInputs({ ...inputs, company: { ...company, ...patch } });
@@ -132,8 +135,8 @@ export function TresoSocieteSection({ inputs, onChange }: Props) {
   const syncSelectedProfile = (
     associateId: string,
     associates: AssociateInput[],
-    nextInputs: TresoInputsV3,
-  ): TresoInputsV3 => {
+    nextInputs: TresoInputsV4,
+  ): TresoInputsV4 => {
     const associate = associates.find(item => item.id === associateId);
     if (associate?.kind === 'pp' && associate.profile) {
       return {
@@ -201,6 +204,15 @@ export function TresoSocieteSection({ inputs, onChange }: Props) {
 
   const renderIdentitePanel = () => (
     <div className="ts-modal-grid">
+      <SimFieldShell label="Libellé de la société principale" className="ts-field" rowClassName="ts-field__row">
+        <input
+          type="text"
+          className="sim-field__control ts-input-left"
+          value={company.label ?? ''}
+          onChange={event => patchCompany({ label: event.target.value })}
+        />
+      </SimFieldShell>
+
       <SimFieldShell label="Type de société" className="ts-field" rowClassName="ts-field__row">
         <SimSelect
           value={company.creationType}
@@ -421,12 +433,7 @@ export function TresoSocieteSection({ inputs, onChange }: Props) {
         />
       );
     }
-    return (
-      <TresoCompanyRemunerationsPanel
-        associates={company.associates}
-        onChange={updateAssociate}
-      />
-    );
+    return renderIdentitePanel();
   };
 
   return (
@@ -468,7 +475,7 @@ export function TresoSocieteSection({ inputs, onChange }: Props) {
       {isCompanyModalOpen && (
         <SimModalShell
           title="Paramétrer la société"
-          subtitle="Identité, associés, compte de résultat, emprunts, filiales et rémunérations"
+          subtitle="Identité, associés, compte de résultat, emprunts et filiales"
           onClose={() => setCompanyModalOpen(false)}
           modalClassName="ts-company-modal"
           bodyClassName="ts-company-modal__body"
@@ -497,6 +504,7 @@ export function TresoSocieteSection({ inputs, onChange }: Props) {
       {activeAssociateModal && (
         <TresoAssociateModal
           associate={activeAssociateModal}
+          subsidiaries={company.subsidiaries}
           fallbackProfile={getAssociateProfile(inputs, activeAssociateModal)}
           onChange={patch => updateAssociate(activeAssociateModal.id, patch)}
           onClose={() => setAssociateModalId(null)}
