@@ -51,12 +51,12 @@ const ASSOCIATE_MODAL_SECTIONS: Array<{ key: AssociateModalSection; label: strin
 
 function getCca(associate: AssociateInput, fallbackYear: number): CcaScheduleInput {
   return associate.cca ?? {
-    currentBalance: associate.ccaInitial,
+    currentBalance: 0,
     exceptionalContributions: [],
     annualContribution: {
-      amount: associate.ccaAnnualContribution,
+      amount: 0,
       startYear: fallbackYear,
-      endYear: associate.ccaContributionEndYear,
+      endYear: fallbackYear,
     },
     remunerationRate: 0,
   };
@@ -65,9 +65,8 @@ function getCca(associate: AssociateInput, fallbackYear: number): CcaScheduleInp
 function getRemuneration(associate: AssociateInput): AssociateRemunerationInput {
   return associate.remuneration ?? {
     source: 'holding',
-    loadedAnnualCost: Math.max(0, associate.remunerationAnnualCost ?? 0),
-    socialChargeRate: Math.max(0, associate.socialChargesManualRate ?? 0),
-    endYear: associate.remunerationEndYear,
+    loadedAnnualCost: 0,
+    socialChargeRate: 0,
     annualNeedAfterStop: 0,
   };
 }
@@ -100,12 +99,7 @@ export function TresoAssociateModal({
 
   const patchCca = (patch: Partial<CcaScheduleInput>) => {
     const nextCca = { ...cca, ...patch };
-    onChange({
-      cca: nextCca,
-      ccaInitial: nextCca.currentBalance,
-      ccaAnnualContribution: nextCca.annualContribution.amount,
-      ccaContributionEndYear: nextCca.annualContribution.endYear,
-    });
+    onChange({ cca: nextCca });
   };
 
   const selectSection = (section: AssociateModalSection) => {

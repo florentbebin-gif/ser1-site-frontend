@@ -45,10 +45,10 @@ const INPUTS: TresoInputsV2 = {
       id: 'filiale-1',
       label: 'Filiale',
       holdingOwnershipPct: 80,
-      annualServicesRevenue: 0,
-      annualDividends: 18000,
       motherDaughterEligible: true,
       fiscalIntegrationEstimateEnabled: false,
+      servicesSchedule: [],
+      dividendsSchedule: [{ amount: 18000, startYear: 2026 }],
     }],
   },
   allocationMatrix: {

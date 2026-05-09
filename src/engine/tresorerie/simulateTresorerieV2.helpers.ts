@@ -183,35 +183,22 @@ export function computeSubsidiariesByYear(
 ): SubsidiaryYearResult {
   const amountForSchedule = (
     schedule: AmountScheduleInput[] | undefined,
-    fallbackAmount: number,
   ): number => {
-    if (schedule) {
-      return schedule
-        .filter(item => anneeCivile >= item.startYear && (item.endYear == null || anneeCivile <= item.endYear))
-        .reduce((total, item) => total + Math.max(0, item.amount), 0);
-    }
-    return Math.max(0, fallbackAmount);
+    if (!schedule) return 0;
+    return schedule
+      .filter(item => anneeCivile >= item.startYear && (item.endYear == null || anneeCivile <= item.endYear))
+      .reduce((total, item) => total + Math.max(0, item.amount), 0);
   };
 
   return subsidiaries.reduce<SubsidiaryYearResult>((sum, subsidiary) => {
-    const disposal = subsidiary.disposal ?? (
-      subsidiary.disposalYear
-        ? {
-          year: subsidiary.disposalYear,
-          estimatedPrice: subsidiary.estimatedDisposalPrice ?? 0,
-          taxBasis: subsidiary.taxBasis ?? 0,
-          fees: 0,
-          regime: 'auto' as const,
-        }
-        : undefined
-    );
+    const disposal = subsidiary.disposal;
     const isAfterDisposal = disposal?.year != null && anneeCivile > disposal.year;
     const servicesRevenue = isAfterDisposal
       ? 0
-      : amountForSchedule(subsidiary.servicesSchedule, subsidiary.annualServicesRevenue);
+      : amountForSchedule(subsidiary.servicesSchedule);
     const dividendes = isAfterDisposal
       ? 0
-      : amountForSchedule(subsidiary.dividendsSchedule, subsidiary.annualDividends);
+      : amountForSchedule(subsidiary.dividendsSchedule);
     let quotePartTaxable = 0;
     let dividendesFilialesExoneres = 0;
 

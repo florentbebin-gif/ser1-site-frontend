@@ -156,13 +156,7 @@ export interface AssociateInput {
   profile?: AssociateProfileInput;
   ownershipLots: OwnershipLotInput[];
   roles: AssociateRole[];
-  ccaInitial: number;
-  ccaAnnualContribution: number;
-  ccaContributionEndYear?: number;
   cca?: CcaScheduleInput;
-  remunerationAnnualCost: number;
-  remunerationEndYear?: number;
-  socialChargesManualRate?: number;
   remuneration?: AssociateRemunerationInput;
 }
 
@@ -205,16 +199,10 @@ export interface SubsidiaryInput {
   label: string;
   parentEntityId?: string;
   ownershipPct?: number;
-  displayOrder?: number;
   holdingOwnershipPct: number;
-  annualServicesRevenue: number;
-  annualDividends: number;
   motherDaughterEligible: boolean;
   fiscalIntegrationEstimateEnabled: boolean;
   estimatedFiscalResult?: number;
-  disposalYear?: number;
-  estimatedDisposalPrice?: number;
-  taxBasis?: number;
   treasuryInitial?: number;
   workingCapitalRequirement?: number;
   distributableReserves?: number;

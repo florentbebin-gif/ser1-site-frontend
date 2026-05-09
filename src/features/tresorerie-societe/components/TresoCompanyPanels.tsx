@@ -50,10 +50,7 @@ function buildDefaultSubsidiary(index: number): SubsidiaryInput {
     label: `Filiale ${index + 1}`,
     parentEntityId: 'societe',
     ownershipPct: 100,
-    displayOrder: index,
     holdingOwnershipPct: 100,
-    annualServicesRevenue: 0,
-    annualDividends: 0,
     motherDaughterEligible: true,
     fiscalIntegrationEstimateEnabled: false,
     treasuryInitial: 0,
@@ -268,9 +265,7 @@ export function TresoCompanySubsidiariesPanel({
           <div className="ts-company-snapshot">
             <span>{subsidiaryParentLabel(subsidiaries, subsidiary)}</span>
             <span>{subsidiary.ownershipPct ?? subsidiary.holdingOwnershipPct} % détenu</span>
-            <span>
-              Cession {subsidiary.disposal?.year ?? subsidiary.disposalYear ?? 'non prévue'}
-            </span>
+            <span>Cession {subsidiary.disposal?.year ?? 'non prévue'}</span>
           </div>
         </div>
       ))}

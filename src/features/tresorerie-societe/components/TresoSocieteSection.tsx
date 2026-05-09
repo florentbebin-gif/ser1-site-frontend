@@ -61,8 +61,6 @@ function buildDefaultAssociate(index: number, inputs: TresoInputsV4): AssociateI
     profile,
     ownershipLots: [{ right: 'pleine_propriete', capitalPct: 0, economicRightsPct: 0 }],
     roles: ['associe_sans_statut'],
-    ccaInitial: 0,
-    ccaAnnualContribution: 0,
     cca: {
       currentBalance: 0,
       exceptionalContributions: [],
@@ -73,7 +71,6 @@ function buildDefaultAssociate(index: number, inputs: TresoInputsV4): AssociateI
       },
       remunerationRate: 0,
     },
-    remunerationAnnualCost: 0,
     remuneration: {
       source: 'holding',
       loadedAnnualCost: 0,

@@ -35,12 +35,11 @@ function parentLabel(company: CompanyInput, parentId: string | undefined): strin
 
 function normalizeSchedules(
   schedules: AmountScheduleInput[] | undefined,
-  fallbackAmount: number | undefined,
   fallbackYear = new Date().getFullYear(),
 ): AmountScheduleInput[] {
   if (schedules && schedules.length > 0) return schedules;
   return [{
-    amount: Math.max(0, fallbackAmount ?? 0),
+    amount: 0,
     startYear: fallbackYear,
     endYear: fallbackYear,
   }];
@@ -60,9 +59,9 @@ function buildNextSchedule(schedules: AmountScheduleInput[], fallbackYear: numbe
 
 function defaultDisposal(subsidiary: SubsidiaryInput): SubsidiaryDisposalInput {
   return subsidiary.disposal ?? {
-    year: subsidiary.disposalYear,
-    estimatedPrice: Math.max(0, subsidiary.estimatedDisposalPrice ?? 0),
-    taxBasis: Math.max(0, subsidiary.taxBasis ?? 0),
+    year: undefined,
+    estimatedPrice: 0,
+    taxBasis: 0,
     fees: 0,
     regime: 'auto',
   };
@@ -86,12 +85,10 @@ export function TresoSubsidiaryModal({
     new Date().getFullYear();
   const servicesSchedules = normalizeSchedules(
     subsidiary.servicesSchedule,
-    subsidiary.annualServicesRevenue,
     projectionYear,
   );
   const dividendsSchedules = normalizeSchedules(
     subsidiary.dividendsSchedule,
-    subsidiary.annualDividends,
     projectionYear,
   );
   const disposal = defaultDisposal(subsidiary);
@@ -100,50 +97,39 @@ export function TresoSubsidiaryModal({
     const nextSchedules = servicesSchedules.map((schedule, scheduleIndex) =>
       scheduleIndex === index ? { ...schedule, ...patch } : schedule,
     );
-    onChange({
-      servicesSchedule: nextSchedules,
-      annualServicesRevenue: nextSchedules[0]?.amount ?? 0,
-    });
+    onChange({ servicesSchedule: nextSchedules });
   };
 
   const patchDividendsSchedule = (index: number, patch: Partial<AmountScheduleInput>) => {
     const nextSchedules = dividendsSchedules.map((schedule, scheduleIndex) =>
       scheduleIndex === index ? { ...schedule, ...patch } : schedule,
     );
-    onChange({
-      dividendsSchedule: nextSchedules,
-      annualDividends: nextSchedules[0]?.amount ?? 0,
-    });
+    onChange({ dividendsSchedule: nextSchedules });
   };
 
   const addServicesSchedule = () => {
     const nextSchedules = [...servicesSchedules, buildNextSchedule(servicesSchedules, projectionYear)];
-    onChange({ servicesSchedule: nextSchedules, annualServicesRevenue: nextSchedules[0]?.amount ?? 0 });
+    onChange({ servicesSchedule: nextSchedules });
   };
 
   const addDividendsSchedule = () => {
     const nextSchedules = [...dividendsSchedules, buildNextSchedule(dividendsSchedules, projectionYear)];
-    onChange({ dividendsSchedule: nextSchedules, annualDividends: nextSchedules[0]?.amount ?? 0 });
+    onChange({ dividendsSchedule: nextSchedules });
   };
 
   const removeServicesSchedule = (index: number) => {
     const nextSchedules = servicesSchedules.filter((_, scheduleIndex) => scheduleIndex !== index);
-    onChange({ servicesSchedule: nextSchedules, annualServicesRevenue: nextSchedules[0]?.amount ?? 0 });
+    onChange({ servicesSchedule: nextSchedules });
   };
 
   const removeDividendsSchedule = (index: number) => {
     const nextSchedules = dividendsSchedules.filter((_, scheduleIndex) => scheduleIndex !== index);
-    onChange({ dividendsSchedule: nextSchedules, annualDividends: nextSchedules[0]?.amount ?? 0 });
+    onChange({ dividendsSchedule: nextSchedules });
   };
 
   const patchDisposal = (patch: Partial<SubsidiaryDisposalInput>) => {
     const nextDisposal = { ...disposal, ...patch };
-    onChange({
-      disposal: nextDisposal,
-      disposalYear: nextDisposal.year,
-      estimatedDisposalPrice: nextDisposal.estimatedPrice,
-      taxBasis: nextDisposal.taxBasis,
-    });
+    onChange({ disposal: nextDisposal });
   };
 
   return (

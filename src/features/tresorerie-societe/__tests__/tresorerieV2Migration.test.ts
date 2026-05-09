@@ -104,8 +104,7 @@ describe('migration trésorerie v3', () => {
     expect(v3.company.subsidiaries[0]).toMatchObject({
       parentEntityId: 'societe',
       ownershipPct: 80,
-      displayOrder: 0,
-      annualDividends: 18000,
+      dividendsSchedule: [{ amount: 18000, startYear: 2027 }],
       motherDaughterEligible: true,
     });
     expect(v3.allocationMatrix.pockets).toHaveLength(2);
@@ -149,20 +148,23 @@ describe('migration trésorerie v3', () => {
           label: 'Associé historique',
           ownershipLots: [{ right: 'pleine_propriete', capitalPct: 80, economicRightsPct: 80 }],
           roles: ['associe_sans_statut'],
-          ccaInitial: 30000,
-          ccaAnnualContribution: 6000,
-          ccaContributionEndYear: 2030,
-          remunerationAnnualCost: 0,
+          cca: {
+            currentBalance: 30000,
+            exceptionalContributions: [],
+            annualContribution: { amount: 6000, startYear: 2028, endYear: 2030 },
+            remunerationRate: 0,
+          },
+          remuneration: { source: 'holding', loadedAnnualCost: 0, socialChargeRate: 0 },
         }],
         loans: [],
         subsidiaries: [{
           id: 'filiale-1',
           label: 'Filiale historique',
           holdingOwnershipPct: 70,
-          annualServicesRevenue: 10000,
-          annualDividends: 15000,
           motherDaughterEligible: true,
           fiscalIntegrationEstimateEnabled: false,
+          servicesSchedule: [{ amount: 10000, startYear: 2028 }],
+          dividendsSchedule: [{ amount: 15000, startYear: 2028 }],
         }],
       },
       allocationMatrix: {
