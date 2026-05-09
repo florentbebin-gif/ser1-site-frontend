@@ -11,14 +11,15 @@ import type {
   OwnershipRight,
   SubsidiaryInput,
 } from '@/engine/tresorerie/types';
+import { TresoAssociateCcaPanel } from './TresoAssociateCcaPanel';
 import { TresoAssociateRemunerationPanel } from './TresoAssociateRemunerationPanel';
 import {
-  fmtEuroInput,
-  fmtRateInput,
-  parseEuroInput,
+  ASSOCIATE_KIND_OPTIONS,
+  OWNERSHIP_OPTIONS,
+} from '../../utils/tresorerieSocieteOptions';
+import {
   parseNumberInput,
   parsePctInput,
-  parseRateInput,
 } from '../../utils/tresorerieFormatters';
 
 interface TresoAssociateModalProps {
@@ -30,17 +31,6 @@ interface TresoAssociateModalProps {
 }
 
 type AssociateModalSection = 'identite' | 'profil' | 'remuneration' | 'cca';
-
-const ASSOCIATE_KIND_OPTIONS: Array<{ value: AssociateKind; label: string }> = [
-  { value: 'pp', label: 'Associé PP' },
-  { value: 'pm', label: 'Associé PM' },
-];
-
-const OWNERSHIP_OPTIONS: Array<{ value: OwnershipRight; label: string }> = [
-  { value: 'pleine_propriete', label: 'Pleine propriété' },
-  { value: 'usufruit', label: 'Usufruit' },
-  { value: 'nue_propriete', label: 'Nue-propriété' },
-];
 
 const ASSOCIATE_MODAL_SECTIONS: Array<{ key: AssociateModalSection; label: string }> = [
   { key: 'identite', label: 'Identité' },
@@ -88,10 +78,6 @@ export function TresoAssociateModal({
   };
   const cca = getCca(associate, profile.projectionStartYear);
   const remuneration = getRemuneration(associate);
-  const firstExceptionalContribution = cca.exceptionalContributions[0] ?? {
-    year: profile.projectionStartYear,
-    amount: 0,
-  };
 
   const patchProfile = (patch: Partial<AssociateProfileInput>) => {
     onChange({ profile: { ...profile, ...patch } });
@@ -285,112 +271,11 @@ export function TresoAssociateModal({
         )}
 
         {activeSection === 'cca' && (
-        <div className="ts-associate-card">
-          <div className="ts-associate-card__header">
-            <strong>Compte courant d’associé</strong>
-            <span>Taux maximum déductible</span>
-          </div>
-          <p className="ts-note--info">
-            Les intérêts CCA sont saisis au taux convenu ; la déductibilité est plafonnée par le taux maximum déductible issu des paramètres fiscaux.
-          </p>
-          <div className="ts-modal-grid ts-modal-grid--three">
-            <SimFieldShell label="CCA actuel" className="ts-field" rowClassName="ts-field__row">
-              <input
-                type="text"
-                inputMode="numeric"
-                className="sim-field__control"
-                value={fmtEuroInput(cca.currentBalance)}
-                onChange={event => patchCca({ currentBalance: parseEuroInput(event.target.value) })}
-              />
-              <span className="sim-field__unit ts-unit">€</span>
-            </SimFieldShell>
-            <SimFieldShell label="Apport exceptionnel" className="ts-field" rowClassName="ts-field__row">
-              <input
-                type="text"
-                inputMode="numeric"
-                className="sim-field__control"
-                value={fmtEuroInput(firstExceptionalContribution.amount)}
-                onChange={event => patchCca({
-                  exceptionalContributions: [{
-                    ...firstExceptionalContribution,
-                    amount: parseEuroInput(event.target.value),
-                  }],
-                })}
-              />
-              <span className="sim-field__unit ts-unit">€</span>
-            </SimFieldShell>
-            <SimFieldShell label="Année exceptionnelle" className="ts-field" rowClassName="ts-field__row">
-              <input
-                type="text"
-                inputMode="numeric"
-                className="sim-field__control"
-                value={firstExceptionalContribution.year}
-                onChange={event => patchCca({
-                  exceptionalContributions: [{
-                    ...firstExceptionalContribution,
-                    year: parseNumberInput(event.target.value),
-                  }],
-                })}
-              />
-            </SimFieldShell>
-            <SimFieldShell label="Apport annuel" className="ts-field" rowClassName="ts-field__row">
-              <input
-                type="text"
-                inputMode="numeric"
-                className="sim-field__control"
-                value={fmtEuroInput(cca.annualContribution.amount)}
-                onChange={event => patchCca({
-                  annualContribution: {
-                    ...cca.annualContribution,
-                    amount: parseEuroInput(event.target.value),
-                  },
-                })}
-              />
-              <span className="sim-field__unit ts-unit">€</span>
-            </SimFieldShell>
-            <SimFieldShell label="Apport annuel de" className="ts-field" rowClassName="ts-field__row">
-              <input
-                type="text"
-                inputMode="numeric"
-                className="sim-field__control"
-                value={cca.annualContribution.startYear}
-                onChange={event => patchCca({
-                  annualContribution: {
-                    ...cca.annualContribution,
-                    startYear: parseNumberInput(event.target.value),
-                  },
-                })}
-              />
-            </SimFieldShell>
-            <SimFieldShell label="Apport annuel à" className="ts-field" rowClassName="ts-field__row">
-              <input
-                type="text"
-                inputMode="numeric"
-                className="sim-field__control"
-                value={cca.annualContribution.endYear ?? ''}
-                onChange={event => {
-                  const endYear = parseNumberInput(event.target.value);
-                  patchCca({
-                    annualContribution: {
-                      ...cca.annualContribution,
-                      endYear: endYear || undefined,
-                    },
-                  });
-                }}
-              />
-            </SimFieldShell>
-            <SimFieldShell label="Taux de rémunération CCA" className="ts-field" rowClassName="ts-field__row">
-              <input
-                type="text"
-                inputMode="decimal"
-                className="sim-field__control"
-                value={fmtRateInput(cca.remunerationRate)}
-                onChange={event => patchCca({ remunerationRate: parseRateInput(event.target.value) })}
-              />
-              <span className="sim-field__unit ts-unit">%</span>
-            </SimFieldShell>
-          </div>
-        </div>
+          <TresoAssociateCcaPanel
+            cca={cca}
+            projectionStartYear={profile.projectionStartYear}
+            onChange={patchCca}
+          />
         )}
         </div>
       </div>

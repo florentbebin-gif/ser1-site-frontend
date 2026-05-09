@@ -13,6 +13,11 @@ import {
   getSelectedAssociate,
   getSelectedAssociateId,
 } from '@/engine/tresorerie/runtimeAccessors';
+import {
+  ALLOCATION_HORIZON_OPTIONS,
+  COMPANY_KIND_CODES,
+  COMPANY_KIND_LABELS,
+} from './tresorerieSocieteOptions';
 
 export {
   getAssociateProfile,
@@ -21,31 +26,6 @@ export {
   getSelectedAssociate,
   getSelectedAssociateId,
 };
-
-export const COMPANY_KIND_LABELS: Record<CompanyKind, string> = {
-  holding_patrimoniale: 'Holding patrimoniale',
-  holding_remuneration: 'Holding de rémunération',
-  holding_animatrice: 'Holding animatrice',
-  societe_exploitation: 'Société d’exploitation',
-};
-
-export const COMPANY_KIND_CODES: Record<CompanyKind, string> = {
-  holding_patrimoniale: 'HP',
-  holding_remuneration: 'HR',
-  holding_animatrice: 'HA',
-  societe_exploitation: 'SE',
-};
-
-export const ALLOCATION_KIND_OPTIONS = [
-  { value: 'distribution', label: 'Distribution' },
-  { value: 'capitalisation', label: 'Capitalisation' },
-] satisfies Array<{ value: AllocationPocketInput['kind']; label: string }>;
-
-export const ALLOCATION_HORIZON_OPTIONS = [
-  { value: 'court_terme', label: 'Court terme' },
-  { value: 'moyen_terme', label: 'Moyen terme' },
-  { value: 'long_terme', label: 'Long terme' },
-] satisfies Array<{ value: AllocationPocketHorizon; label: string }>;
 
 export function getAllocationHorizonLabel(horizon: AllocationPocketHorizon | undefined): string {
   return ALLOCATION_HORIZON_OPTIONS.find(option => option.value === horizon)?.label ?? 'Moyen terme';

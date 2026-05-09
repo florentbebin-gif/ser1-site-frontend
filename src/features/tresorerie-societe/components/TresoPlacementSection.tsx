@@ -14,8 +14,8 @@ import {
   normalizeAllocationPockets,
 } from '../../../engine/tresorerie/allocationPockets';
 import { TresoPocketModal } from './TresoPocketModal';
+import { ALLOCATION_HORIZON_OPTIONS } from '../utils/tresorerieSocieteOptions';
 import {
-  ALLOCATION_HORIZON_OPTIONS,
   buildDefaultPocket,
   getAllocationHorizonLabel,
 } from '../utils/tresorerieSocieteModel';
