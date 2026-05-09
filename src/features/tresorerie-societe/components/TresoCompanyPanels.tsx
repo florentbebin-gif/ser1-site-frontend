@@ -1,11 +1,17 @@
 import { SimFieldShell } from '../../../components/ui/sim/SimFieldShell';
 import { SimSelect } from '../../../components/ui/sim/SimSelect';
 import type {
-  AssociateInput,
-  AssociateRole,
   CompanyLoanInput,
   SubsidiaryInput,
 } from '../../../engine/tresorerie/types';
+import {
+  fmtEuroInput,
+  fmtRateInput,
+  parseEuroInput,
+  parseNumberInput,
+  parsePctInput,
+  parseRateInput,
+} from '../utils/tresorerieFormatters';
 
 interface LoansPanelProps {
   loans: CompanyLoanInput[];
@@ -18,11 +24,6 @@ interface SubsidiariesPanelProps {
   onChange: (subsidiaries: SubsidiaryInput[]) => void;
 }
 
-interface RemunerationsPanelProps {
-  associates: AssociateInput[];
-  onChange: (associateId: string, patch: Partial<AssociateInput>) => void;
-}
-
 const FINANCED_ASSET_OPTIONS = [
   { value: '', label: 'Non renseigné' },
   { value: 'scpi', label: 'SCPI' },
@@ -30,47 +31,10 @@ const FINANCED_ASSET_OPTIONS = [
   { value: 'autre', label: 'Autre' },
 ];
 
-const ROLE_LABELS: Record<AssociateRole, string> = {
-  gerant_tns: 'Gérant TNS',
-  cogerant_tns: 'Cogérant TNS',
-  pdg: 'PDG',
-  dg: 'DG',
-  associe_sans_statut: 'Associé sans statut',
-  salarie: 'Salarié',
-};
-
-function fmt(n: number | undefined): string {
-  return Math.round(n || 0).toLocaleString('fr-FR');
-}
-
-function fmtPct(rate: number | undefined): string {
-  return rate == null ? '' : String(Math.round(rate * 100));
-}
-
-function parseEuro(v: string): number {
-  const clean = v.replace(/\s/g, '').replace(/\D/g, '');
-  return clean === '' ? 0 : Math.min(Number(clean), 999_999_999);
-}
-
 function parseSignedEuro(v: string): number {
   const negative = v.trim().startsWith('-');
-  const amount = parseEuro(v);
+  const amount = parseEuroInput(v);
   return negative ? -amount : amount;
-}
-
-function parseNumber(v: string): number {
-  const clean = v.replace(/[^\d]/g, '');
-  return clean === '' ? 0 : Number(clean);
-}
-
-function parsePct(v: string): number {
-  const clean = v.replace(',', '.').replace(/[^\d.]/g, '');
-  if (clean === '') return 0;
-  return Math.min(Number(clean), 100);
-}
-
-function parseRate(v: string): number {
-  return parsePct(v) / 100;
 }
 
 function buildDefaultLoan(index: number, startYear: number): CompanyLoanInput {
@@ -90,11 +54,19 @@ function buildDefaultSubsidiary(index: number): SubsidiaryInput {
   return {
     id: `filiale-${Date.now()}-${index + 1}`,
     label: `Filiale ${index + 1}`,
+    parentEntityId: 'societe',
+    ownershipPct: 100,
+    displayOrder: index,
     holdingOwnershipPct: 100,
     annualServicesRevenue: 0,
     annualDividends: 0,
     motherDaughterEligible: true,
     fiscalIntegrationEstimateEnabled: false,
+    treasuryInitial: 0,
+    workingCapitalRequirement: 0,
+    distributableReserves: 0,
+    servicesSchedule: [],
+    dividendsSchedule: [],
   };
 }
 
@@ -150,8 +122,8 @@ export function TresoCompanyLoansPanel({
                 type="text"
                 inputMode="numeric"
                 className="sim-field__control"
-                value={fmt(loan.principal)}
-                onChange={event => updateLoan(loan.id, { principal: parseEuro(event.target.value) })}
+                value={fmtEuroInput(loan.principal)}
+                onChange={event => updateLoan(loan.id, { principal: parseEuroInput(event.target.value) })}
               />
               <span className="sim-field__unit ts-unit">€</span>
             </SimFieldShell>
@@ -161,8 +133,8 @@ export function TresoCompanyLoansPanel({
                 type="text"
                 inputMode="decimal"
                 className="sim-field__control"
-                value={fmtPct(loan.annualRate)}
-                onChange={event => updateLoan(loan.id, { annualRate: parseRate(event.target.value) })}
+                value={fmtRateInput(loan.annualRate)}
+                onChange={event => updateLoan(loan.id, { annualRate: parseRateInput(event.target.value) })}
               />
               <span className="sim-field__unit ts-unit">%</span>
             </SimFieldShell>
@@ -173,7 +145,7 @@ export function TresoCompanyLoansPanel({
                 inputMode="numeric"
                 className="sim-field__control"
                 value={loan.durationMonths || ''}
-                onChange={event => updateLoan(loan.id, { durationMonths: parseNumber(event.target.value) })}
+                onChange={event => updateLoan(loan.id, { durationMonths: parseNumberInput(event.target.value) })}
               />
               <span className="sim-field__unit ts-unit">mois</span>
             </SimFieldShell>
@@ -201,9 +173,9 @@ export function TresoCompanyLoansPanel({
                 type="text"
                 inputMode="decimal"
                 className="sim-field__control"
-                value={fmtPct(loan.financedAssetReturnRate)}
+                value={fmtRateInput(loan.financedAssetReturnRate)}
                 onChange={event => updateLoan(loan.id, {
-                  financedAssetReturnRate: parseRate(event.target.value),
+                  financedAssetReturnRate: parseRateInput(event.target.value),
                 })}
               />
               <span className="sim-field__unit ts-unit">%</span>
@@ -216,7 +188,7 @@ export function TresoCompanyLoansPanel({
                 className="sim-field__control"
                 value={loan.enjoymentDelayMonths ?? ''}
                 onChange={event => updateLoan(loan.id, {
-                  enjoymentDelayMonths: parseNumber(event.target.value),
+                  enjoymentDelayMonths: parseNumberInput(event.target.value),
                 })}
               />
               <span className="sim-field__unit ts-unit">mois</span>
@@ -284,6 +256,20 @@ export function TresoCompanySubsidiariesPanel({
           </div>
 
           <div className="ts-modal-grid">
+            <SimFieldShell label="Position" className="ts-field" rowClassName="ts-field__row">
+              <SimSelect
+                value={subsidiary.parentEntityId ?? 'societe'}
+                onChange={value => updateSubsidiary(subsidiary.id, { parentEntityId: value })}
+                options={[
+                  { value: 'societe', label: 'Sous la société mère' },
+                  ...subsidiaries
+                    .filter(candidate => candidate.id !== subsidiary.id)
+                    .map(candidate => ({ value: candidate.id, label: `Sous ${candidate.label}` })),
+                ]}
+                ariaLabel={`Position filiale ${index + 1}`}
+              />
+            </SimFieldShell>
+
             <SimFieldShell label="Libellé" className="ts-field" rowClassName="ts-field__row">
               <input
                 type="text"
@@ -293,40 +279,101 @@ export function TresoCompanySubsidiariesPanel({
               />
             </SimFieldShell>
 
-            <SimFieldShell label="Détention holding" className="ts-field" rowClassName="ts-field__row">
+            <SimFieldShell label="Détention" className="ts-field" rowClassName="ts-field__row">
               <input
                 type="text"
                 inputMode="decimal"
                 className="sim-field__control"
-                value={String(subsidiary.holdingOwnershipPct)}
-                onChange={event => updateSubsidiary(subsidiary.id, {
-                  holdingOwnershipPct: parsePct(event.target.value),
-                })}
+                value={String(subsidiary.ownershipPct ?? subsidiary.holdingOwnershipPct)}
+                onChange={event => {
+                  const ownershipPct = parsePctInput(event.target.value);
+                  updateSubsidiary(subsidiary.id, { ownershipPct, holdingOwnershipPct: ownershipPct });
+                }}
               />
               <span className="sim-field__unit ts-unit">%</span>
             </SimFieldShell>
 
-            <SimFieldShell label="Prestations annuelles" className="ts-field" rowClassName="ts-field__row">
+            <SimFieldShell label="Détenteur affiché" className="ts-field" rowClassName="ts-field__row">
+              <input
+                type="text"
+                className="sim-field__control ts-input-left"
+                value={(subsidiary.parentEntityId ?? 'societe') === 'societe'
+                  ? 'Société mère'
+                  : subsidiaries.find(candidate => candidate.id === subsidiary.parentEntityId)?.label ?? 'Filiale parente'}
+                readOnly
+              />
+            </SimFieldShell>
+
+            <SimFieldShell label="Prestations annuelles vers la mère" className="ts-field" rowClassName="ts-field__row">
               <input
                 type="text"
                 inputMode="numeric"
                 className="sim-field__control"
-                value={fmt(subsidiary.annualServicesRevenue)}
+                value={fmtEuroInput(subsidiary.annualServicesRevenue)}
                 onChange={event => updateSubsidiary(subsidiary.id, {
-                  annualServicesRevenue: parseEuro(event.target.value),
+                  annualServicesRevenue: parseEuroInput(event.target.value),
+                  servicesSchedule: [{
+                    amount: parseEuroInput(event.target.value),
+                    startYear: subsidiary.servicesSchedule?.[0]?.startYear ?? new Date().getFullYear(),
+                    endYear: subsidiary.servicesSchedule?.[0]?.endYear,
+                  }],
                 })}
               />
               <span className="sim-field__unit ts-unit">€</span>
             </SimFieldShell>
 
-            <SimFieldShell label="Dividendes annuels" className="ts-field" rowClassName="ts-field__row">
+            <SimFieldShell label="Dividendes annuels vers la mère" className="ts-field" rowClassName="ts-field__row">
               <input
                 type="text"
                 inputMode="numeric"
                 className="sim-field__control"
-                value={fmt(subsidiary.annualDividends)}
+                value={fmtEuroInput(subsidiary.annualDividends)}
                 onChange={event => updateSubsidiary(subsidiary.id, {
-                  annualDividends: parseEuro(event.target.value),
+                  annualDividends: parseEuroInput(event.target.value),
+                  dividendsSchedule: [{
+                    amount: parseEuroInput(event.target.value),
+                    startYear: subsidiary.dividendsSchedule?.[0]?.startYear ?? new Date().getFullYear(),
+                    endYear: subsidiary.dividendsSchedule?.[0]?.endYear,
+                  }],
+                })}
+              />
+              <span className="sim-field__unit ts-unit">€</span>
+            </SimFieldShell>
+
+            <SimFieldShell label="Trésorerie de la filiale" className="ts-field" rowClassName="ts-field__row">
+              <input
+                type="text"
+                inputMode="numeric"
+                className="sim-field__control"
+                value={fmtEuroInput(subsidiary.treasuryInitial)}
+                onChange={event => updateSubsidiary(subsidiary.id, {
+                  treasuryInitial: parseEuroInput(event.target.value),
+                })}
+              />
+              <span className="sim-field__unit ts-unit">€</span>
+            </SimFieldShell>
+
+            <SimFieldShell label="BFR filiale" className="ts-field" rowClassName="ts-field__row">
+              <input
+                type="text"
+                inputMode="numeric"
+                className="sim-field__control"
+                value={fmtEuroInput(subsidiary.workingCapitalRequirement)}
+                onChange={event => updateSubsidiary(subsidiary.id, {
+                  workingCapitalRequirement: parseEuroInput(event.target.value),
+                })}
+              />
+              <span className="sim-field__unit ts-unit">€</span>
+            </SimFieldShell>
+
+            <SimFieldShell label="Réserves distribuables" className="ts-field" rowClassName="ts-field__row">
+              <input
+                type="text"
+                inputMode="numeric"
+                className="sim-field__control"
+                value={fmtEuroInput(subsidiary.distributableReserves)}
+                onChange={event => updateSubsidiary(subsidiary.id, {
+                  distributableReserves: parseEuroInput(event.target.value),
                 })}
               />
               <span className="sim-field__unit ts-unit">€</span>
@@ -337,7 +384,7 @@ export function TresoCompanySubsidiariesPanel({
                 type="text"
                 inputMode="numeric"
                 className="sim-field__control"
-                value={fmt(subsidiary.estimatedFiscalResult)}
+                value={fmtEuroInput(subsidiary.estimatedFiscalResult)}
                 onChange={event => updateSubsidiary(subsidiary.id, {
                   estimatedFiscalResult: parseSignedEuro(event.target.value),
                 })}
@@ -352,7 +399,7 @@ export function TresoCompanySubsidiariesPanel({
                 className="sim-field__control"
                 value={subsidiary.disposalYear ?? ''}
                 onChange={event => updateSubsidiary(subsidiary.id, {
-                  disposalYear: parseNumber(event.target.value) || undefined,
+                  disposalYear: parseNumberInput(event.target.value) || undefined,
                 })}
               />
             </SimFieldShell>
@@ -362,9 +409,9 @@ export function TresoCompanySubsidiariesPanel({
                 type="text"
                 inputMode="numeric"
                 className="sim-field__control"
-                value={fmt(subsidiary.estimatedDisposalPrice)}
+                value={fmtEuroInput(subsidiary.estimatedDisposalPrice)}
                 onChange={event => updateSubsidiary(subsidiary.id, {
-                  estimatedDisposalPrice: parseEuro(event.target.value),
+                  estimatedDisposalPrice: parseEuroInput(event.target.value),
                 })}
               />
               <span className="sim-field__unit ts-unit">€</span>
@@ -375,9 +422,9 @@ export function TresoCompanySubsidiariesPanel({
                 type="text"
                 inputMode="numeric"
                 className="sim-field__control"
-                value={fmt(subsidiary.taxBasis)}
+                value={fmtEuroInput(subsidiary.taxBasis)}
                 onChange={event => updateSubsidiary(subsidiary.id, {
-                  taxBasis: parseEuro(event.target.value),
+                  taxBasis: parseEuroInput(event.target.value),
                 })}
               />
               <span className="sim-field__unit ts-unit">€</span>
@@ -415,64 +462,6 @@ export function TresoCompanySubsidiariesPanel({
       >
         Ajouter une filiale
       </button>
-    </div>
-  );
-}
-
-export function TresoCompanyRemunerationsPanel({
-  associates,
-  onChange,
-}: RemunerationsPanelProps) {
-  return (
-    <div className="ts-modal-stack">
-      {associates.map(associate => (
-        <div key={associate.id} className="ts-associate-card">
-          <div className="ts-associate-card__header">
-            <strong>{associate.label}</strong>
-            <span>{ROLE_LABELS[associate.roles[0]] ?? 'Associé'}</span>
-          </div>
-          <div className="ts-modal-grid">
-            <SimFieldShell label="Coût annuel rémunération" className="ts-field" rowClassName="ts-field__row">
-              <input
-                type="text"
-                inputMode="numeric"
-                className="sim-field__control"
-                value={fmt(associate.remunerationAnnualCost)}
-                onChange={event => onChange(associate.id, {
-                  remunerationAnnualCost: parseEuro(event.target.value),
-                })}
-              />
-              <span className="sim-field__unit ts-unit">€</span>
-            </SimFieldShell>
-
-            <SimFieldShell label="Fin de rémunération" className="ts-field" rowClassName="ts-field__row">
-              <input
-                type="text"
-                inputMode="numeric"
-                className="sim-field__control"
-                value={associate.remunerationEndYear ?? ''}
-                onChange={event => onChange(associate.id, {
-                  remunerationEndYear: parseNumber(event.target.value) || undefined,
-                })}
-              />
-              <span className="sim-field__unit ts-unit">année</span>
-            </SimFieldShell>
-
-            <SimFieldShell label="Charges TNS manuelles" className="ts-field" rowClassName="ts-field__row">
-              <input
-                type="text"
-                inputMode="decimal"
-                className="sim-field__control"
-                value={fmtPct(associate.socialChargesManualRate)}
-                onChange={event => onChange(associate.id, {
-                  socialChargesManualRate: parseRate(event.target.value),
-                })}
-              />
-              <span className="sim-field__unit ts-unit">%</span>
-            </SimFieldShell>
-          </div>
-        </div>
-      ))}
     </div>
   );
 }

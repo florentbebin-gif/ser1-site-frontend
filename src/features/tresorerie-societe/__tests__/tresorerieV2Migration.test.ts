@@ -1,7 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import type { TresoInputs, TresoProjectionRow } from '@/engine/tresorerie/types';
 import {
-  buildTresoInputsV2FromLegacy,
+  buildTresoInputsV4FromLegacy,
+  buildTresoInputsV4FromV2,
+  buildTresoInputsV3FromLegacy,
+  buildTresoInputsV3FromV2,
   getAllocationPocketLabel,
 } from '../utils/tresorerieV2Migration';
 
@@ -51,71 +54,152 @@ const LEGACY_INPUTS: TresoInputs = {
   },
 };
 
-describe('migration trésorerie v2', () => {
-  it('construit le foyer, la société, le CCA associé et les flux legacy dans TresoInputsV2', () => {
-    const v2 = buildTresoInputsV2FromLegacy(LEGACY_INPUTS);
+describe('migration trésorerie v3', () => {
+  it('construit le profil associé PP, la société, le CCA et les flux legacy dans TresoInputsV3', () => {
+    const v3 = buildTresoInputsV3FromLegacy(LEGACY_INPUTS);
 
-    expect(v2.version).toBe(2);
-    expect(v2.foyer).toEqual({
-      selectedAssociateId: 'associe-1',
-      currentAge: 52,
-      retirementAge: 64,
-      annualIncomeNeed: 42000,
-      projectionStartYear: 2027,
+    expect(v3.version).toBe(3);
+    expect(v3.selectedAssociateId).toBe('associe-1');
+    expect(v3.company.creationType).toBe('existante');
+    expect(v3.company.companyKind).toBe('holding_patrimoniale');
+    expect(v3.company.legalForm).toBe('sas');
+    expect(v3.company.incomeStatement).toEqual({
+      annualRevenue: 0,
+      annualStructureCosts: 4500,
+      workingCapitalRequirement: 0,
     });
-    expect(v2.company.creationType).toBe('existante');
-    expect(v2.company.reservesInitial).toBe(220000);
-    expect(v2.company.treasuryInitial).toBe(150000);
-    expect(v2.company.associates[0]).toMatchObject({
+    expect(v3.company.reservesInitial).toBe(220000);
+    expect(v3.company.treasuryInitial).toBe(150000);
+    expect(v3.company.associates[0]).toMatchObject({
       id: 'associe-1',
       label: 'Associé 1',
-      ccaInitial: 80000,
-      ccaAnnualContribution: 12000,
-      ccaContributionEndYear: 2036,
+      kind: 'pp',
+      profile: {
+        currentAge: 52,
+        retirementAge: 64,
+        annualIncomeNeed: 42000,
+        projectionStartYear: 2027,
+      },
+      cca: {
+        currentBalance: 80000,
+        annualContribution: {
+          amount: 12000,
+          startYear: 2027,
+          endYear: 2036,
+        },
+        exceptionalContributions: [],
+        remunerationRate: 0,
+      },
     });
-    expect(v2.company.associates[0].ownershipLots).toEqual([
+    expect(v3.company.associates[0].ownershipLots).toEqual([
       { right: 'pleine_propriete', capitalPct: 100, economicRightsPct: 100 },
     ]);
-    expect(v2.company.loans[0]).toMatchObject({
+    expect(v3.company.loans[0]).toMatchObject({
       principal: 90000,
       financedAssetLabel: 'SCPI',
       financedAssetReturnRate: 0.047,
       enjoymentDelayMonths: 6,
     });
-    expect(v2.company.subsidiaries[0]).toMatchObject({
-      holdingOwnershipPct: 80,
+    expect(v3.company.subsidiaries[0]).toMatchObject({
+      parentEntityId: 'societe',
+      ownershipPct: 80,
+      displayOrder: 0,
       annualDividends: 18000,
       motherDaughterEligible: true,
     });
-    expect(v2.allocationMatrix.pockets).toHaveLength(2);
-    expect(v2.allocationMatrix.pockets.map(getAllocationPocketLabel)).toEqual([
+    expect(v3.allocationMatrix.mode).toBe('strategy');
+    expect(v3.allocationMatrix.pockets).toHaveLength(2);
+    expect(v3.allocationMatrix.pockets.map(getAllocationPocketLabel)).toEqual([
       'Distribution 5 ans',
       'Capitalisation 8 ans',
     ]);
-    expect(v2.allocationMatrix.pockets[0]).toMatchObject({
+    expect(v3.allocationMatrix.pockets[0]).toMatchObject({
+      horizon: 'court_terme',
+      withdrawalPriority: 1,
       initialAllocationPct: 66.66666666666666,
       annualAllocationPct: 0,
     });
-    expect(v2.allocationMatrix.pockets[1]).toMatchObject({
+    expect(v3.allocationMatrix.pockets[1]).toMatchObject({
+      horizon: 'long_terme',
+      withdrawalPriority: 2,
       initialAllocationPct: 33.33333333333333,
       annualAllocationPct: 0,
     });
   });
 
-  it("reste un test de compatibilité isolé pour migrer l'ancien modèle vers v2", () => {
-    const v2 = buildTresoInputsV2FromLegacy(LEGACY_INPUTS);
+  it("reste compatible avec les sessions v2 en migrant le foyer vers l'associé PP sélectionné", () => {
+    const v2 = {
+      version: 2,
+      foyer: {
+        selectedAssociateId: 'associe-1',
+        currentAge: 48,
+        retirementAge: 63,
+        annualIncomeNeed: 36000,
+        projectionStartYear: 2028,
+      },
+      company: {
+        creationType: 'newco',
+        legalForm: 'sas',
+        shareCapital: 10000,
+        sharePremium: 0,
+        reservesInitial: 0,
+        treasuryInitial: 120000,
+        annualStructureCosts: 2500,
+        reducedCorporateTaxEligible: true,
+        associates: [{
+          id: 'associe-1',
+          label: 'Associé historique',
+          ownershipLots: [{ right: 'pleine_propriete', capitalPct: 80, economicRightsPct: 80 }],
+          roles: ['associe_sans_statut'],
+          ccaInitial: 30000,
+          ccaAnnualContribution: 6000,
+          ccaContributionEndYear: 2030,
+          remunerationAnnualCost: 0,
+        }],
+        loans: [],
+        subsidiaries: [{
+          id: 'filiale-1',
+          label: 'Filiale historique',
+          holdingOwnershipPct: 70,
+          annualServicesRevenue: 10000,
+          annualDividends: 15000,
+          motherDaughterEligible: true,
+          fiscalIntegrationEstimateEnabled: false,
+        }],
+      },
+      allocationMatrix: {
+        sweepThreshold: 50000,
+        pockets: [],
+      },
+    } as any;
 
-    expect(v2.company.creationType).toBe('existante');
-    expect(v2.foyer.currentAge).toBe(52);
-    expect(v2.foyer.retirementAge).toBe(64);
-    expect(v2.foyer.annualIncomeNeed).toBe(42000);
-    expect(v2.company.associates[0].ccaInitial).toBe(80000);
-    expect(v2.company.associates[0].ccaAnnualContribution).toBe(12000);
-    expect(v2.company.loans[0]).toMatchObject({
-      principal: 90000,
-      financedAssetLabel: 'SCPI',
-      financedAssetReturnRate: 0.047,
+    const v3 = buildTresoInputsV3FromV2(v2);
+
+    expect(v3.version).toBe(3);
+    expect(v3.selectedAssociateId).toBe('associe-1');
+    expect(v3.company.associates[0]).toMatchObject({
+      kind: 'pp',
+      profile: {
+        currentAge: 48,
+        retirementAge: 63,
+        annualIncomeNeed: 36000,
+        projectionStartYear: 2028,
+      },
+      cca: {
+        currentBalance: 30000,
+        annualContribution: {
+          amount: 6000,
+          startYear: 2028,
+          endYear: 2030,
+        },
+      },
     });
+    expect(v3.company.incomeStatement?.annualStructureCosts).toBe(2500);
+    expect(v3.company.subsidiaries[0]).toMatchObject({
+      parentEntityId: 'societe',
+      ownershipPct: 70,
+    });
+    expect(v3.allocationMatrix.pockets).toEqual([]);
   });
 
   it('prévoit revenusParAssocie sur les lignes de projection dès le socle v2', () => {
@@ -125,5 +209,51 @@ describe('migration trésorerie v2', () => {
     } as Pick<TresoProjectionRow, 'year' | 'revenusParAssocie'>;
 
     expect(row.revenusParAssocie).toEqual([]);
+  });
+
+  it('normalise les états legacy et v2 vers V4 avec compte bancaire minimum', () => {
+    const legacyV4 = buildTresoInputsV4FromLegacy(LEGACY_INPUTS);
+
+    expect(legacyV4.version).toBe(4);
+    expect(legacyV4.allocationMatrix.minimumBankBalance).toBe(0);
+    expect(legacyV4.company.label).toBe('Holding patrimoniale');
+    expect(legacyV4.company.subsidiaries[0]).toMatchObject({
+      treasuryInitial: 0,
+      workingCapitalRequirement: 0,
+      distributableReserves: 0,
+      servicesSchedule: [],
+      dividendsSchedule: [{ amount: 18000, startYear: 2027 }],
+    });
+
+    const v2 = {
+      ...legacyV4,
+      version: 2,
+      foyer: legacyV4.foyer,
+      allocationMatrix: {
+        sweepThreshold: 50_000,
+        pockets: [{
+          id: 'legacy',
+          kind: 'distribution',
+          withdrawalPriority: 7,
+          durationYears: 3,
+          annualReturnRate: 0.03,
+          enjoymentDelayMonths: 0,
+          initialAllocationPct: 0,
+          annualAllocationPct: 100,
+          repeatAtTerm: false,
+          termDestination: 'matrix',
+        }],
+      },
+    } as any;
+
+    const v4 = buildTresoInputsV4FromV2(v2);
+
+    expect(v4.version).toBe(4);
+    expect(v4.allocationMatrix.minimumBankBalance).toBe(50_000);
+    expect(v4.allocationMatrix.pockets[0]).toMatchObject({
+      id: 'legacy',
+      horizon: 'court_terme',
+      termDestination: 'treasury',
+    });
   });
 });

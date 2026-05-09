@@ -16,8 +16,16 @@
 
 import { buildXlsxBlob, downloadXlsx, validateXlsxBlob } from '@/utils/export/xlsxBuilder';
 import type { XlsxCell, XlsxSheet } from '@/utils/export/xlsxBuilder';
-import type { TresoInputsV2, TresoProjectionRow } from '@/engine/tresorerie/types';
+import type { AssociateInput, TresoInputsRuntime, TresoProjectionRow } from '@/engine/tresorerie/types';
 import type { TresoKPIs } from '../hooks/useTresorerieCalculations';
+import {
+  getAssociateProfile,
+  getCapitalPct,
+  getCompanyKindCode,
+  getCompanyKindLabel,
+  getEconomicPct,
+  getSelectedAssociate,
+} from '../utils/tresorerieSocieteModel';
 
 // ─── Helpers de style ─────────────────────────────────────────────────────────
 
@@ -30,6 +38,7 @@ const money = (v: number): XlsxCell => ({ v: Math.round(v), style: 'sMoney' });
 function sourceLabel(source: string): string {
   if (source === 'remuneration') return 'Rémunération';
   if (source === 'cca') return 'Remboursement CCA';
+  if (source === 'cca_interets') return 'Intérêts CCA';
   if (source === 'dividendes') return 'Dividendes';
   if (source === 'charges_sociales_tns') return 'Charges sociales TNS';
   if (source === 'fiscalite') return 'Fiscalité';
@@ -55,6 +64,7 @@ const RESUME_SERIES: ProjectionSerie[] = [
   { key: 'valeurCapi', label: 'Valeur poche de capitalisation', format: 'money' },
   { key: 'isLatentCapi', label: 'IS latent capitalisation (non décaissé)', format: 'money' },
   { key: 'chargesStructure', label: 'Charges de structure', format: 'money' },
+  { key: 'interetsCCA', label: 'Intérêts CCA versés', format: 'money' },
   { key: 'interetsCreditIS', label: 'Intérêts crédit IS (déductibles)', format: 'money' },
   { key: 'resultatFiscalAvantIS', label: 'Résultat fiscal avant IS', format: 'money' },
   { key: 'is', label: 'Impôt sur les sociétés', format: 'money' },
@@ -74,7 +84,7 @@ const RESUME_SERIES: ProjectionSerie[] = [
 function buildProjectionSheet(
   rows: TresoProjectionRow[],
   kpis: TresoKPIs,
-  inputs: TresoInputsV2,
+  inputs: TresoInputsRuntime,
 ): XlsxSheet {
   if (rows.length === 0) {
     return {
@@ -84,16 +94,21 @@ function buildProjectionSheet(
     };
   }
 
-  const anneeCivile = inputs.foyer.projectionStartYear;
-  const ccaInitialTotal = inputs.company.associates.reduce((sum, associate) => sum + associate.ccaInitial, 0);
+  const activeProfile = getAssociateProfile(inputs, getSelectedAssociate(inputs));
+  const anneeCivile = activeProfile.projectionStartYear;
+  const ccaInitialTotal = inputs.company.associates.reduce(
+    (sum, associate) => sum + (associate.cca?.currentBalance ?? associate.ccaInitial),
+    0,
+  );
   const ccaAnnualTotal = inputs.company.associates.reduce(
-    (sum, associate) => sum + associate.ccaAnnualContribution,
+    (sum, associate) => sum + (associate.cca?.annualContribution.amount ?? associate.ccaAnnualContribution),
     0,
   );
   const maxContributionEndYear = inputs.company.associates.reduce<number | undefined>(
     (max, associate) => {
-      if (associate.ccaContributionEndYear == null) return max;
-      return max == null ? associate.ccaContributionEndYear : Math.max(max, associate.ccaContributionEndYear);
+      const endYear = associate.cca?.annualContribution.endYear ?? associate.ccaContributionEndYear;
+      if (endYear == null) return max;
+      return max == null ? endYear : Math.max(max, endYear);
     },
     undefined,
   );
@@ -105,10 +120,12 @@ function buildProjectionSheet(
   const paramRows: XlsxCell[][] = [
     [h('Paramètre'), h('Valeur')],
     [txt('Type de société'), txt(inputs.company.creationType === 'existante' ? 'Société existante' : 'Société à créer (NEWCO)')],
-    [txt('Âge actuel'), ctr(inputs.foyer.currentAge)],
-    [txt('Âge de retraite'), ctr(inputs.foyer.retirementAge)],
-    [txt('Besoin annuel net à la retraite'), money(inputs.foyer.annualIncomeNeed)],
-    [txt('Frais annuels de structure'), money(inputs.company.annualStructureCosts)],
+    [txt('Type société'), txt(getCompanyKindLabel(inputs.company))],
+    [txt('Âge actuel associé actif'), ctr(activeProfile.currentAge)],
+    [txt('Âge de retraite associé actif'), ctr(activeProfile.retirementAge)],
+    [txt('Besoin annuel net à la retraite'), money(activeProfile.annualIncomeNeed)],
+    [txt('Coûts de structure annuels'), money(inputs.company.incomeStatement?.annualStructureCosts ?? inputs.company.annualStructureCosts)],
+    [txt('BFR'), money(inputs.company.incomeStatement?.workingCapitalRequirement ?? 0)],
     [txt('CCA initial'), money(ccaInitialTotal)],
     [txt('Apport annuel CCA'), money(ccaAnnualTotal)],
     [txt('Durée phase active'), ctr(activeDurationLabel)],
@@ -148,7 +165,7 @@ function buildProjectionSheet(
   };
 }
 
-function buildAssociateRevenueSheet(rows: TresoProjectionRow[], inputs: TresoInputsV2): XlsxSheet {
+function buildAssociateRevenueSheet(rows: TresoProjectionRow[], inputs: TresoInputsRuntime): XlsxSheet {
   if (rows.length === 0) {
     return {
       name: 'Revenus associés',
@@ -157,7 +174,7 @@ function buildAssociateRevenueSheet(rows: TresoProjectionRow[], inputs: TresoInp
     };
   }
 
-  const anneeCivile = inputs.foyer.projectionStartYear;
+  const anneeCivile = getAssociateProfile(inputs, getSelectedAssociate(inputs)).projectionStartYear;
   const dataRows = rows.flatMap(row => {
     const year = anneeCivile + row.year - 1;
     if (row.revenusParAssocie.length === 0) {
@@ -181,6 +198,58 @@ function buildAssociateRevenueSheet(rows: TresoProjectionRow[], inputs: TresoInp
   };
 }
 
+function ccaCurrentBalance(associate: AssociateInput): number {
+  return associate.cca?.currentBalance ?? associate.ccaInitial;
+}
+
+function buildStructureSheet(inputs: TresoInputsRuntime): XlsxSheet {
+  const company = inputs.company;
+  const incomeStatement = company.incomeStatement ?? {
+    annualRevenue: 0,
+    annualStructureCosts: company.annualStructureCosts,
+    workingCapitalRequirement: 0,
+  };
+  const pocketRows: XlsxCell[][] = inputs.allocationMatrix.pockets.length > 0
+    ? inputs.allocationMatrix.pockets.map(pocket => [
+      txt(pocket.label ?? pocket.id),
+      txt(pocket.horizon ?? 'moyen_terme'),
+      txt(`${pocket.initialAllocationPct} % initial · ${pocket.annualAllocationPct} % balayage · ${Math.round(pocket.annualReturnRate * 10000) / 100} %`),
+    ])
+    : [[
+      txt('Trésorerie conservée sur compte bancaire'),
+      txt('Sans rendement'),
+      txt('Aucune poche d’allocation renseignée'),
+    ]];
+  const rows: XlsxCell[][] = [
+    [h('Structure société'), h('Valeur'), h('Détail')],
+    [txt('Type société'), txt(getCompanyKindLabel(company)), txt(getCompanyKindCode(company))],
+    [txt('Forme sociale'), txt(company.legalForm.toUpperCase()), txt('')],
+    [txt('Chiffre d’affaires annuel'), money(incomeStatement.annualRevenue), txt('Compte de résultat')],
+    [txt('Coûts de structure annuels'), money(incomeStatement.annualStructureCosts), txt('Compte de résultat')],
+    [txt('BFR'), money(incomeStatement.workingCapitalRequirement), txt('Seuil non investissable')],
+    [txt('Solde minimum bancaire'), money(inputs.allocationMatrix.minimumBankBalance ?? inputs.allocationMatrix.sweepThreshold ?? 0), txt('Compte bancaire pivot')],
+    [sec('Associés'), sec(''), sec('')],
+    [h('Associé'), h('% capital / économique'), h('Rémunération / CCA')],
+    ...company.associates.map(associate => [
+      txt(`${associate.label} (${associate.kind === 'pm' ? 'PM' : 'PP'})`),
+      txt(`${getCapitalPct(associate)} % / ${getEconomicPct(associate)} %`),
+      txt(`${associate.remuneration?.source === 'subsidiary' ? 'Filiale' : 'Holding'} · CCA ${ccaCurrentBalance(associate).toLocaleString('fr-FR')} € au taux ${Math.round((associate.cca?.remunerationRate ?? 0) * 10000) / 100} %`),
+    ]),
+    [sec('Filiales'), sec(''), sec('')],
+    [h('Filiale'), h('% détention'), h('Trésorerie / Cession')],
+    ...company.subsidiaries.map(subsidiary => [
+      txt(subsidiary.label),
+      txt(`${subsidiary.ownershipPct ?? subsidiary.holdingOwnershipPct} %`),
+      txt(`${(subsidiary.parentEntityId ?? 'societe') === 'societe' ? 'Société mère' : subsidiary.parentEntityId} · trésorerie ${(subsidiary.treasuryInitial ?? 0).toLocaleString('fr-FR')} € · cession ${subsidiary.disposal?.year ?? subsidiary.disposalYear ?? 'non prévue'}`),
+    ]),
+    [sec('Stratégie de trésorerie'), sec(''), sec('')],
+    [h('Poche'), h('Horizon'), h('Allocation et rendement')],
+    ...pocketRows,
+  ];
+
+  return { name: 'Structure société', rows, columnWidths: [28, 28, 32] };
+}
+
 // ─── Onglet Hypothèses ────────────────────────────────────────────────────────
 
 function buildHypothesesSheet(): XlsxSheet {
@@ -197,6 +266,7 @@ function buildHypothesesSheet(): XlsxSheet {
     [sec('Compte courant d\'associé'), sec('')],
     [txt('Remboursement CCA : hors PFU, diminue le passif uniquement'), txt('CGI Art. 38 quater')],
     [txt('CCA constitué = apports initiaux + apports annuels sur la durée active'), txt('Hypothèse simplificatrice')],
+    [txt('Taux maximum déductible des intérêts CCA issu des paramètres fiscaux'), txt('Service-Public / BOFiP / CGI art. 39')],
     [sec('Dividendes et PFU'), sec('')],
     [txt('PFU dividendes : taux issus des paramètres fiscaux admin'), txt('CGI Art. 200 A')],
     [txt('Convention Option A : dividendes sortis en brut unique (pas de double comptage)'), txt('Convention interne')],
@@ -206,8 +276,9 @@ function buildHypothesesSheet(): XlsxSheet {
     [txt('IS effectif : déclenché uniquement au moment d\'un rachat'), txt('CGI Art. 219')],
     [sec('Matrice de trésorerie'), sec('')],
     [txt('Balayage en fin d’exercice uniquement, après IS, dettes, CCA, charges et dividendes'), txt('Convention SER1')],
+    [txt('BFR inclus dans le seuil de sécurité avant investissement'), txt('Convention SER1')],
     [txt('Les lots investis en fin d’exercice ne produisent pas de revenus sur l’exercice écoulé'), txt('Convention SER1')],
-    [txt('Répétition au terme : réinvestissement dans la même poche, destination au terme ignorée'), txt('Convention SER1')],
+    [txt('Au terme, les placements reviennent sur le compte bancaire ; la répétition réinvestit seulement le surplus'), txt('Convention SER1')],
     [sec('TNS'), sec('')],
     [txt('Seuil social V1 : capital social + primes + CCA TNS de début d’exercice'), txt('CSS L136-3 / R131-7')],
     [txt('Le taux de charges sociales TNS reste une saisie manuelle'), txt('Hypothèse déclarative')],
@@ -236,7 +307,7 @@ function buildHypothesesSheet(): XlsxSheet {
 export async function buildTresorerieXlsxBlob(
   rows: TresoProjectionRow[],
   kpis: TresoKPIs,
-  inputs: TresoInputsV2,
+  inputs: TresoInputsRuntime,
   headerFill?: string,
   sectionFill?: string,
 ): Promise<Blob> {
@@ -244,6 +315,7 @@ export async function buildTresorerieXlsxBlob(
     buildProjectionSheet(rows, kpis, inputs),
     buildAssociateRevenueSheet(rows, inputs),
     buildHypothesesSheet(),
+    buildStructureSheet(inputs),
   ];
 
   const blob = await buildXlsxBlob({ sheets, headerFill, sectionFill });
@@ -258,7 +330,7 @@ export async function buildTresorerieXlsxBlob(
 export async function exportTresorerieExcel(
   rows: TresoProjectionRow[],
   kpis: TresoKPIs,
-  inputs: TresoInputsV2,
+  inputs: TresoInputsRuntime,
   headerFill?: string,
   sectionFill?: string,
 ): Promise<void> {

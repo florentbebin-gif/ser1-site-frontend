@@ -249,7 +249,14 @@ export function validateImpotsSettings(
   const domZones: Array<'gmr' | 'guyane'> = ['gmr', 'guyane'];
   const pfuKeys: Array<'rateIR'> = ['rateIR'];
   const cehrGroups: Array<'single' | 'couple'> = ['single', 'couple'];
-  const corporateKeys: Array<'normalRate' | 'reducedRate'> = ['normalRate', 'reducedRate'];
+  const corporateKeys: Array<
+    'normalRate' | 'reducedRate' | 'maxDeductibleCcaInterestRate' | 'dividendsAbatementPct'
+  > = [
+    'normalRate',
+    'reducedRate',
+    'maxDeductibleCcaInterestRate',
+    'dividendsAbatementPct',
+  ];
 
   // Barèmes IR (scaleCurrent, scalePrevious) — tranches ordonnées + taux 0-100
   for (const period of incomeTaxPeriods) {

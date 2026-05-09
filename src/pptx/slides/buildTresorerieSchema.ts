@@ -1,15 +1,12 @@
 /**
- * buildTresorerieSchema.ts — Slide « Schéma Trésorerie Société IS » (3 phases)
- *
- * Phase 1 — Constitution : Associé → CCA → Société IS
- * Phase 2 — Exploitation : Placements (distribution/capitalisation/crédits/holding)
- * Phase 3 — Retraite : Remboursement CCA + revenus nets → associés
+ * buildTresorerieSchema.ts — Slide « Schéma Trésorerie Société IS »
  *
  * Règle wording GOUVERNANCE_EXPORTS.md : aucun vocabulaire source interdit dans les slides client.
  * Wording premium : "Trésorerie société", "Holding patrimoniale", "Société de capitalisation".
  */
 
 import type PptxGenJS from 'pptxgenjs';
+import { computeTresoOrgchartLayout } from '@/features/tresorerie-societe/tresoOrgchartLayout';
 import type { TresorerieSchemaSlideSpec, ExportContext } from '../theme/types';
 import { MASTER_NAMES } from '../template/loadBaseTemplate';
 import {
@@ -47,13 +44,29 @@ function hex(color: string): string {
   return color.replace('#', '');
 }
 
-function contrastText(bgHex: string, darkText: string): string {
-  const color = hex(bgHex);
-  const r = parseInt(color.substring(0, 2), 16);
-  const g = parseInt(color.substring(2, 4), 16);
-  const b = parseInt(color.substring(4, 6), 16);
-  const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
-  return luminance > 0.58 ? hex(darkText) : 'FFFFFF';
+function drawSafeLine(
+  slide: PptxGenJS.Slide,
+  start: { x: number; y: number },
+  end: { x: number; y: number },
+  line: PptxGenJS.ShapeLineProps,
+): void {
+  const dx = end.x - start.x;
+  const dy = end.y - start.y;
+  if (Math.abs(dx) < 0.001 && Math.abs(dy) < 0.001) return;
+
+  slide.addShape('line', {
+    x: Math.min(start.x, end.x),
+    y: Math.min(start.y, end.y),
+    w: Math.abs(dx),
+    h: Math.abs(dy),
+    flipH: (dx < 0) !== (dy < 0),
+    line,
+  });
+}
+
+function truncate(text: string, maxLength: number): string {
+  if (text.length <= maxLength) return text;
+  return `${text.slice(0, maxLength - 1)}…`;
 }
 
 // ============================================================================
@@ -72,80 +85,129 @@ export function buildTresorerieSchema(
   addHeader(slide, spec.title, spec.subtitle, theme, 'content');
 
   const totalH = CONTENT_BOTTOM_Y - CONTENT_TOP_Y - 0.1;
-  const phaseH = (totalH - 0.25) / 3;
-  const phaseW = CONTENT_W * 0.58;
-  const kpiX = MARGIN_X + phaseW + 0.15;
-  const kpiW = CONTENT_W - phaseW - 0.15;
+  const chartW = CONTENT_W * 0.58;
+  const kpiX = MARGIN_X + chartW + 0.15;
+  const kpiW = CONTENT_W - chartW - 0.15;
 
-  const phases = [
-    {
-      label: 'Phase 1 — Constitution',
-      color: theme.colors.color1,
-      lines: [
-        spec.typeCreation === 'newco' ? 'Société IS à créer (NEWCO)' : 'Société IS existante',
-        `Apport en compte courant d'associé`,
-        spec.hasCreditIR ? 'Crédit IR personnel — remboursé par dividendes nets' : '',
-      ].filter(Boolean),
-    },
-    {
-      label: 'Phase 2 — Exploitation',
-      color: theme.colors.color6,
-      lines: [
-        spec.hasDistribution ? 'Poche de revenus — produits distribués chaque année' : '',
-        spec.hasCapitalisation ? 'Poche de capitalisation — IS payé uniquement à la sortie' : '',
-        spec.hasAllocationMatrix ? 'Matrice de trésorerie — balayage annuel au-dessus du seuil' : '',
-        spec.hasCreditIS ? 'Crédit IS société — intérêts déductibles du résultat fiscal' : '',
-        spec.hasHolding ? 'Holding patrimoniale — régime mère-fille (QPFC)' : '',
-        'Impôt sur les sociétés sur le résultat fiscal',
-      ].filter(Boolean),
-    },
-    {
-      label: 'Phase 3 — Retraite & Transmission',
-      color: theme.colors.color2,
-      lines: [
-        'Remboursement CCA aux associés (sans PFU)',
-        'Distribution de dividendes nets de PFU',
-        'Transmission progressive du patrimoine société',
-      ],
-    },
-  ];
+  const layout = computeTresoOrgchartLayout(spec.orgchartCompany);
+  const chartPadding = 0.12;
+  const chartScale = Math.min(
+    (chartW - chartPadding * 2) / Math.max(1, layout.svgWidth),
+    (totalH - chartPadding * 2) / Math.max(1, layout.svgHeight),
+  );
+  const chartOriginX = MARGIN_X + (chartW - layout.svgWidth * chartScale) / 2;
+  const chartOriginY = CONTENT_TOP_Y + (totalH - layout.svgHeight * chartScale) / 2;
+  const scaleX = (x: number) => chartOriginX + x * chartScale;
+  const scaleY = (y: number) => chartOriginY + y * chartScale;
 
-  phases.forEach((phase, idx) => {
-    const y = CONTENT_TOP_Y + idx * (phaseH + 0.08);
-    const phaseTextColor = contrastText(phase.color, theme.textMain);
+  slide.addShape('roundRect', {
+    x: MARGIN_X,
+    y: CONTENT_TOP_Y,
+    w: chartW,
+    h: totalH,
+    fill: { color: hex(theme.panelBg) },
+    line: { color: hex(theme.panelBorder), pt: 0.5 },
+    rectRadius: 0.08,
+  });
 
-    slide.addShape('rect', {
-      x: MARGIN_X,
-      y,
-      w: phaseW,
-      h: phaseH,
-      fill: { color: hex(phase.color) },
-      line: { color: hex(phase.color), pt: 0 },
+  layout.edges.forEach(edge => {
+    drawSafeLine(
+      slide,
+      { x: scaleX(edge.x1), y: scaleY(edge.y1) },
+      { x: scaleX(edge.x2), y: scaleY(edge.y2) },
+      { color: hex(theme.panelBorder), width: 0.75 },
+    );
+  });
+
+  layout.labels.forEach(label => {
+    const x = scaleX(label.x);
+    const y = scaleY(label.y);
+    slide.addShape('roundRect', {
+      x: x - 0.17,
+      y: y - 0.08,
+      w: 0.34,
+      h: 0.16,
+      fill: { color: 'FFFFFF' },
+      line: { color: hex(theme.panelBorder), pt: 0.35 },
+      rectRadius: 0.03,
     });
-
-    slide.addText(phase.label, {
-      x: MARGIN_X + 0.1,
-      y: y + 0.04,
-      w: phaseW - 0.2,
-      h: 0.22,
-      fontSize: TYPO.sizes.bodySmall,
+    slide.addText(label.text, {
+      x: x - 0.17,
+      y: y - 0.055,
+      w: 0.34,
+      h: 0.12,
+      fontSize: 5.7,
       fontFace: TYPO.fontFace,
       bold: true,
-      color: phaseTextColor,
-    });
-
-    const bodyLines = phase.lines.map(l => ({ text: `• ${l}`, options: {} }));
-    slide.addText(bodyLines, {
-      x: MARGIN_X + 0.1,
-      y: y + 0.28,
-      w: phaseW - 0.2,
-      h: phaseH - 0.35,
-      fontSize: Math.max(6.5, TYPO.sizes.bodyXSmall),
-      fontFace: TYPO.fontFace,
-      color: phaseTextColor,
-      paraSpaceAfter: 2,
+      align: 'center',
+      color: hex(theme.colors.color2),
+      fit: 'shrink',
     });
   });
+
+  layout.nodes.forEach(node => {
+    const x = scaleX(node.x);
+    const y = scaleY(node.y);
+    const w = node.width * chartScale;
+    const h = node.height * chartScale;
+    const title = node.kind === 'company' ? spec.companyKindLabel ?? node.label : node.label;
+    const subtitle = node.kind === 'company'
+      ? `${spec.companyKindCode ?? ''} · ${spec.orgchartCompany.legalForm.toUpperCase()}`
+      : node.meta ?? '';
+
+    slide.addShape('roundRect', {
+      x,
+      y,
+      w,
+      h,
+      fill: { color: 'FFFFFF' },
+      line: {
+        color: node.kind === 'company' ? hex(theme.colors.color3) : hex(theme.panelBorder),
+        width: node.kind === 'company' ? 0.9 : 0.65,
+      },
+      rectRadius: 0.06,
+    });
+    slide.addText(truncate(title, 24), {
+      x: x + 0.04,
+      y: y + h * 0.22,
+      w: Math.max(0.1, w - 0.08),
+      h: h * 0.30,
+      fontSize: node.kind === 'company' ? 7.8 : 7.2,
+      fontFace: TYPO.fontFace,
+      bold: true,
+      align: 'center',
+      color: hex(theme.textMain),
+      fit: 'shrink',
+    });
+    if (subtitle) {
+      slide.addText(truncate(subtitle, 24), {
+        x: x + 0.04,
+        y: y + h * 0.58,
+        w: Math.max(0.1, w - 0.08),
+        h: h * 0.24,
+        fontSize: 6,
+        fontFace: TYPO.fontFace,
+        align: 'center',
+        color: hex(theme.textBody),
+        fit: 'shrink',
+      });
+    }
+  });
+
+  if (!spec.hasAllocationMatrix) {
+    slide.addText('Trésorerie conservée sur compte bancaire', {
+      x: MARGIN_X + 0.16,
+      y: CONTENT_TOP_Y + totalH - 0.30,
+      w: chartW - 0.32,
+      h: 0.16,
+      fontSize: 7,
+      fontFace: TYPO.fontFace,
+      color: hex(theme.textBody),
+      italic: true,
+      align: 'center',
+      fit: 'shrink',
+    });
+  }
 
   // ── KPIs colonne droite ──────────────────────────────────────────────────
 

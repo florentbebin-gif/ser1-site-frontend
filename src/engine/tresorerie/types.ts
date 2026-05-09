@@ -31,6 +31,8 @@ export interface TresoFiscalParams {
   motherDaughterStandardQpfcRate: number;
   /** Quote-part frais et charges régime mère-fille groupe fiscal (ex: 0.01) */
   motherDaughterGroupQpfcRate: number;
+  /** Quote-part taxable des plus-values long terme sur titres de participation. */
+  participationDisposalQpfcRate?: number;
   /** Taux IR du PFU (ex: 0.128) */
   pfuRateIR: number;
   /** Taux PS patrimoine (ex: 0.172) */
@@ -43,6 +45,8 @@ export interface TresoFiscalParams {
   irScale: IRBracket[];
   /** Seuil social TNS sur dividendes (ex: 10 % de capital + primes + CCA) */
   tnsDividendBasePct?: number;
+  /** Taux maximum déductible des intérêts de CCA. */
+  maxDeductibleCcaInterestRate?: number;
 }
 
 // ─── Poches de placement ──────────────────────────────────────────────────────
@@ -133,17 +137,33 @@ export type AssociateRole =
   | 'associe_sans_statut'
   | 'salarie';
 
+export type AssociateRemunerationSource = 'holding' | 'subsidiary';
+
+export interface AssociateRemunerationInput {
+  source: AssociateRemunerationSource;
+  subsidiaryId?: string;
+  loadedAnnualCost: number;
+  socialChargeRate: number;
+  startYear?: number;
+  endYear?: number;
+  annualNeedAfterStop?: number;
+}
+
 export interface AssociateInput {
   id: string;
   label: string;
+  kind?: AssociateKind;
+  profile?: AssociateProfileInput;
   ownershipLots: OwnershipLotInput[];
   roles: AssociateRole[];
   ccaInitial: number;
   ccaAnnualContribution: number;
   ccaContributionEndYear?: number;
+  cca?: CcaScheduleInput;
   remunerationAnnualCost: number;
   remunerationEndYear?: number;
   socialChargesManualRate?: number;
+  remuneration?: AssociateRemunerationInput;
 }
 
 export type FinancedAssetKind = 'scpi' | 'immobilier' | 'autre';
@@ -163,9 +183,29 @@ export interface CompanyLoanInput {
   enjoymentDelayMonths?: number;
 }
 
+export interface AmountScheduleInput {
+  amount: number;
+  startYear: number;
+  endYear?: number;
+}
+
+export type SubsidiaryDisposalRegime = 'auto' | 'pvlt' | 'standard';
+
+export interface SubsidiaryDisposalInput {
+  year?: number;
+  estimatedPrice: number;
+  taxBasis: number;
+  fees?: number;
+  regime: SubsidiaryDisposalRegime;
+  acquisitionYear?: number;
+}
+
 export interface SubsidiaryInput {
   id: string;
   label: string;
+  parentEntityId?: string;
+  ownershipPct?: number;
+  displayOrder?: number;
   holdingOwnershipPct: number;
   annualServicesRevenue: number;
   annualDividends: number;
@@ -175,15 +215,25 @@ export interface SubsidiaryInput {
   disposalYear?: number;
   estimatedDisposalPrice?: number;
   taxBasis?: number;
+  treasuryInitial?: number;
+  workingCapitalRequirement?: number;
+  distributableReserves?: number;
+  servicesSchedule?: AmountScheduleInput[];
+  dividendsSchedule?: AmountScheduleInput[];
+  disposal?: SubsidiaryDisposalInput;
 }
 
 export type AllocationPocketKind = 'distribution' | 'capitalisation';
 export type AllocationTermDestination = 'treasury' | 'matrix' | 'same_pocket';
+export type AllocationStrategyMode = 'single' | 'strategy';
+export type AllocationPocketHorizon = 'court_terme' | 'moyen_terme' | 'long_terme';
 
 export interface AllocationPocketInput {
   id: string;
   label?: string;
   kind: AllocationPocketKind;
+  horizon?: AllocationPocketHorizon;
+  withdrawalPriority?: number;
   durationYears: number;
   annualReturnRate: number;
   enjoymentDelayMonths: number;
@@ -194,18 +244,60 @@ export interface AllocationPocketInput {
 }
 
 export interface AllocationMatrixInput {
+  mode?: AllocationStrategyMode;
   sweepThreshold: number;
+  minimumBankBalance?: number;
   pockets: AllocationPocketInput[];
 }
 
+export type LegalForm = 'sas' | 'sc' | 'sarl' | 'sa' | 'selarl' | 'spfpl' | 'selas' | 'autre';
+export type CompanyKind =
+  | 'holding_patrimoniale'
+  | 'holding_remuneration'
+  | 'holding_animatrice'
+  | 'societe_exploitation';
+export type AssociateKind = 'pp' | 'pm';
+
+export interface AssociateProfileInput {
+  currentAge: number;
+  retirementAge: number;
+  annualIncomeNeed: number;
+  projectionStartYear: number;
+}
+
+export interface CcaExceptionalContributionInput {
+  year: number;
+  amount: number;
+}
+
+export interface CcaAnnualContributionInput {
+  amount: number;
+  startYear: number;
+  endYear?: number;
+}
+
+export interface CcaScheduleInput {
+  currentBalance: number;
+  exceptionalContributions: CcaExceptionalContributionInput[];
+  annualContribution: CcaAnnualContributionInput;
+  remunerationRate: number;
+}
+
 export interface CompanyInput {
+  label?: string;
   creationType: 'newco' | 'existante';
-  legalForm: 'sas' | 'sc' | 'sarl' | 'autre';
+  legalForm: LegalForm;
+  companyKind?: CompanyKind;
   shareCapital: number;
   sharePremium: number;
   reservesInitial: number;
   treasuryInitial: number;
   annualStructureCosts: number;
+  incomeStatement?: {
+    annualRevenue: number;
+    annualStructureCosts: number;
+    workingCapitalRequirement: number;
+  };
   reducedCorporateTaxEligible: boolean;
   associates: AssociateInput[];
   loans: CompanyLoanInput[];
@@ -218,6 +310,17 @@ export interface TresoInputsV2 {
   company: CompanyInput;
   allocationMatrix: AllocationMatrixInput;
 }
+
+export interface TresoInputsV3 extends Omit<TresoInputsV2, 'version'> {
+  version: 3;
+  selectedAssociateId: string;
+}
+
+export interface TresoInputsV4 extends Omit<TresoInputsV3, 'version'> {
+  version: 4;
+}
+
+export type TresoInputsRuntime = TresoInputsV2 | TresoInputsV3 | TresoInputsV4;
 
 // ─── Entrées legacy du simulateur (migration/compatibilité) ───────────────────
 
@@ -258,6 +361,7 @@ export interface TresoInputs {
 export type TresoAssociateRevenueSource =
   | 'remuneration'
   | 'cca'
+  | 'cca_interets'
   | 'dividendes'
   | 'charges_sociales_tns'
   | 'fiscalite';
@@ -302,6 +406,9 @@ export interface TresoProjectionRow {
 
   // Résultat
   chargesStructure: number;
+  interetsCCA: number;
+  interetsCCADeductibles: number;
+  interetsCCANonDeductibles: number;
   interetsCreditIS: number;
   resultatComptableAvantIS: number;
   resultatFiscalAvantIS: number;
@@ -336,4 +443,14 @@ export interface TresoProjectionRow {
   // Trésorerie
   tresorerieDebut: number;
   tresorerieFin: number;
+  tresorerieBanqueDebut?: number;
+  tresorerieBanqueFin?: number;
+  soldeMinimumCompteBancaire?: number;
+  bfr?: number;
+  tresorerieDisponible?: number;
+  montantInvestiInitial?: number;
+  montantBalayeAnnuel?: number;
+  montantReinvestiAuTerme?: number;
+  deficitTresorerieBancaire?: number;
+  alerteTresorerieBancaireInsuffisante?: boolean;
 }

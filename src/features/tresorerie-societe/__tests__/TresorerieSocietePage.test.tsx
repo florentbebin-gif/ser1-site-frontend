@@ -37,10 +37,6 @@ vi.mock('../components/TresoSocieteSection', () => ({
   TresoSocieteSection: () => <div data-testid="societe-section" />,
 }));
 
-vi.mock('../components/TresoFoyerSection', () => ({
-  TresoFoyerSection: () => <div data-testid="foyer-section" />,
-}));
-
 vi.mock('../components/TresoPlacementSection', () => ({
   TresoPlacementSection: () => <div data-testid="placement-section" />,
 }));
@@ -53,8 +49,8 @@ vi.mock('../components/TresoKPISidebar', () => ({
   ),
 }));
 
-vi.mock('../components/TresoFoyerInsights', () => ({
-  TresoFoyerInsights: () => <div data-testid="foyer-insights" />,
+vi.mock('../components/TresoAssociateInsights', () => ({
+  TresoAssociateInsights: () => <div data-testid="associate-insights" />,
 }));
 
 vi.mock('../components/TresoProjectionDrawer', () => ({
@@ -67,10 +63,15 @@ vi.mock('../components/TresoHypotheses', () => ({
 
 vi.mock('../../../components/ui/sim/SimPageShell', () => ({
   SimPageShell: Object.assign(
-    ({ actions, children, pageTestId }: any) => (
+    ({ actions, children, error, notice, pageTestId }: any) => (
       <div data-testid={pageTestId}>
         {actions ? <div data-testid="sim-header-actions">{actions}</div> : null}
-        {children}
+        {error ? <div data-testid="page-error">{error}</div> : (
+          <>
+            {notice ? <div data-testid="sim-notice">{notice}</div> : null}
+            {children}
+          </>
+        )}
       </div>
     ),
     {
@@ -103,8 +104,9 @@ vi.mock('../../../settings/ThemeProvider', () => ({
 
 // ─── Fixtures ─────────────────────────────────────────────────────────────────
 
-const DEFAULT_INPUTS_V2 = {
-  version: 2 as const,
+const DEFAULT_INPUTS_V4 = {
+  version: 4 as const,
+  selectedAssociateId: 'associe-1',
   foyer: {
     selectedAssociateId: 'associe-1',
     currentAge: 50,
@@ -115,18 +117,46 @@ const DEFAULT_INPUTS_V2 = {
   company: {
     creationType: 'newco' as const,
     legalForm: 'sas' as const,
+    companyKind: 'holding_patrimoniale' as const,
     shareCapital: 1000,
     sharePremium: 0,
     reservesInitial: 0,
     treasuryInitial: 0,
     annualStructureCosts: 3000,
+    incomeStatement: {
+      annualRevenue: 0,
+      annualStructureCosts: 3000,
+      workingCapitalRequirement: 0,
+    },
     reducedCorporateTaxEligible: true,
-    associates: [],
+    associates: [{
+      id: 'associe-1',
+      label: 'Associé 1',
+      kind: 'pp' as const,
+      profile: {
+        currentAge: 50,
+        retirementAge: 65,
+        annualIncomeNeed: 30000,
+        projectionStartYear: 2025,
+      },
+      ownershipLots: [{ right: 'pleine_propriete' as const, capitalPct: 100, economicRightsPct: 100 }],
+      roles: ['associe_sans_statut' as const],
+      ccaInitial: 0,
+      ccaAnnualContribution: 0,
+      cca: {
+        currentBalance: 0,
+        exceptionalContributions: [],
+        annualContribution: { amount: 0, startYear: 2025, endYear: 2025 },
+        remunerationRate: 0,
+      },
+      remunerationAnnualCost: 0,
+    }],
     loans: [],
     subsidiaries: [],
   },
   allocationMatrix: {
     sweepThreshold: 50000,
+    minimumBankBalance: 50000,
     pockets: [],
   },
 };
@@ -134,12 +164,12 @@ const DEFAULT_INPUTS_V2 = {
 function makeStateReturn(overrides: Record<string, unknown> = {}) {
   return {
     state: {
-      inputsV2: DEFAULT_INPUTS_V2,
+      inputsV4: DEFAULT_INPUTS_V4,
       projectionVisible: false,
       projectionMode: 'resume' as const,
     },
     hydrated: true,
-    setInputsV2: vi.fn(),
+    setInputsV4: vi.fn(),
     setProjectionVisible: vi.fn(),
     setProjectionMode: vi.fn(),
     ...overrides,
@@ -165,6 +195,7 @@ function makeCalcReturn(kpiOverrides: Record<string, unknown> = {}) {
     },
     loading: false,
     error: null,
+    simulationError: null,
     fiscalParams: null,
   };
 }
@@ -200,11 +231,12 @@ describe('TresorerieSocietePage', () => {
     expect(html).toBe('');
   });
 
-  it('affiche le parcours guidé sans anciens blocs concurrents', () => {
+  it('affiche le parcours guidé sans bloc Foyer autonome ni anciens blocs concurrents', () => {
     const html = renderToStaticMarkup(<TresorerieSocietePage />);
     expect(html).toContain('data-testid="societe-section"');
-    expect(html).toContain('data-testid="foyer-section"');
     expect(html).toContain('data-testid="placement-section"');
+    expect(html).not.toContain('data-testid="foyer-section"');
+    expect(html).not.toContain('>Foyer<');
     expect(html).not.toContain('data-testid="credit-section"');
     expect(html).not.toContain('data-testid="holding-section"');
   });
@@ -230,13 +262,27 @@ describe('TresorerieSocietePage', () => {
     expect(html).toContain('PowerPoint');
   });
 
-  it('branche calculs et exports sur inputsV2, sans state legacy runtime', () => {
+  it('branche calculs et exports sur inputsV4, sans state legacy runtime', () => {
     renderToStaticMarkup(<TresorerieSocietePage />);
 
-    expect(mockUseTresoCalc).toHaveBeenCalledWith(DEFAULT_INPUTS_V2);
+    expect(mockUseTresoCalc).toHaveBeenCalledWith(DEFAULT_INPUTS_V4);
     expect(mockUseTresoExports).toHaveBeenCalledWith(expect.objectContaining({
-      inputs: DEFAULT_INPUTS_V2,
+      inputs: DEFAULT_INPUTS_V4,
     }));
+  });
+
+  it('conserve l’interface quand la simulation signale une erreur métier', () => {
+    mockUseTresoCalc.mockReturnValue({
+      ...makeCalcReturn(),
+      simulationError: 'Détention capital supérieure à 100 %.',
+    });
+
+    const html = renderToStaticMarkup(<TresorerieSocietePage />);
+
+    expect(html).toContain('data-testid="societe-section"');
+    expect(html).toContain('data-testid="placement-section"');
+    expect(html).toContain('Détention capital supérieure à 100 %.');
+    expect(html).not.toContain('data-testid="page-error"');
   });
 
   describe('drawer de projection', () => {
@@ -249,7 +295,7 @@ describe('TresorerieSocietePage', () => {
     it('est visible quand projectionVisible=true', () => {
       mockUseTresoState.mockReturnValue(makeStateReturn({
         state: {
-          inputsV2: DEFAULT_INPUTS_V2,
+          inputsV4: DEFAULT_INPUTS_V4,
           projectionVisible: true,
           projectionMode: 'resume' as const,
         },

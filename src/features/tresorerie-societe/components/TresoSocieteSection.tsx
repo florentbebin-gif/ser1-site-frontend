@@ -1,5 +1,5 @@
 /**
- * TresoSocieteSection.tsx — Bloc Société + organigramme et modale bilan.
+ * TresoSocieteSection.tsx — Bloc Société + organigramme et modales par élément.
  */
 
 import { useState } from 'react';
@@ -8,121 +8,211 @@ import { SimModalShell } from '../../../components/ui/sim/SimModalShell';
 import { SimSelect } from '../../../components/ui/sim/SimSelect';
 import type {
   AssociateInput,
-  AssociateRole,
+  AssociateKind,
   CompanyInput,
-  OwnershipRight,
-  TresoInputsV2,
+  CompanyKind,
+  LegalForm,
+  TresoInputsV4,
 } from '../../../engine/tresorerie/types';
 import {
   TresoCompanyLoansPanel,
-  TresoCompanyRemunerationsPanel,
   TresoCompanySubsidiariesPanel,
 } from './TresoCompanyPanels';
+import { TresoAssociateModal } from './societe/TresoAssociateModal';
+import { TresoOrgChart } from './societe/TresoOrgChart';
+import { TresoSubsidiaryModal } from './societe/TresoSubsidiaryModal';
+import {
+  COMPANY_KIND_CODES,
+  COMPANY_KIND_LABELS,
+  getAssociateProfile,
+  getOwnershipTotals,
+  getSelectedAssociateId,
+  updateAssociateOwnershipLot,
+} from '../utils/tresorerieSocieteModel';
+import {
+  fmtEuroInput,
+  parseEuroInput,
+  parsePctInput,
+} from '../utils/tresorerieFormatters';
 
 interface Props {
-  inputs: TresoInputsV2;
-  onChange: (nextInputs: TresoInputsV2) => void;
+  inputs: TresoInputsV4;
+  onChange: (nextInputs: TresoInputsV4) => void;
 }
 
-type PanelKey = 'identite' | 'associes' | 'bilan' | 'emprunts' | 'filiales' | 'remunerations';
+type PanelKey = 'identite' | 'associes' | 'compte' | 'emprunts' | 'filiales';
 
 const TYPE_OPTIONS = [
   { value: 'newco', label: 'Société à créer' },
   { value: 'existante', label: 'Société existante' },
 ];
 
-const LEGAL_FORM_OPTIONS = [
+const LEGAL_FORM_OPTIONS: Array<{ value: LegalForm; label: string }> = [
   { value: 'sas', label: 'SAS' },
   { value: 'sc', label: 'SC' },
   { value: 'sarl', label: 'SARL' },
+  { value: 'sa', label: 'SA' },
+  { value: 'selarl', label: 'SELARL' },
+  { value: 'spfpl', label: 'SPFPL' },
+  { value: 'selas', label: 'SELAS' },
   { value: 'autre', label: 'Autre' },
 ];
 
-const OWNERSHIP_OPTIONS: Array<{ value: OwnershipRight; label: string }> = [
-  { value: 'pleine_propriete', label: 'Pleine propriété' },
-  { value: 'usufruit', label: 'Usufruit' },
-  { value: 'nue_propriete', label: 'Nue-propriété' },
-];
+const COMPANY_KIND_OPTIONS: Array<{ value: CompanyKind; label: string }> =
+  (Object.keys(COMPANY_KIND_LABELS) as CompanyKind[]).map(kind => ({
+    value: kind,
+    label: `${COMPANY_KIND_LABELS[kind]} (${COMPANY_KIND_CODES[kind]})`,
+  }));
 
-const ROLE_OPTIONS: Array<{ value: AssociateRole; label: string }> = [
-  { value: 'gerant_tns', label: 'Gérant TNS' },
-  { value: 'cogerant_tns', label: 'Cogérant TNS' },
-  { value: 'pdg', label: 'PDG' },
-  { value: 'dg', label: 'DG' },
-  { value: 'associe_sans_statut', label: 'Associé sans statut' },
-  { value: 'salarie', label: 'Salarié' },
+const ASSOCIATE_KIND_OPTIONS: Array<{ value: AssociateKind; label: string }> = [
+  { value: 'pp', label: 'Associé PP' },
+  { value: 'pm', label: 'Associé PM' },
 ];
 
 const PANEL_OPTIONS: Array<{ key: PanelKey; label: string }> = [
   { key: 'identite', label: 'Identité' },
   { key: 'associes', label: 'Associés' },
-  { key: 'bilan', label: 'Bilan' },
+  { key: 'compte', label: 'Compte de résultat' },
   { key: 'emprunts', label: 'Emprunts' },
   { key: 'filiales', label: 'Filiales' },
-  { key: 'remunerations', label: 'Rémunérations & TNS' },
 ];
 
-function fmt(n: number): string {
-  return Math.round(n || 0).toLocaleString('fr-FR');
-}
-
-function parseEuro(v: string): number {
-  const clean = v.replace(/\s/g, '').replace(/\D/g, '');
-  return clean === '' ? 0 : Math.min(Number(clean), 999_999_999);
-}
-
-function parseNumber(v: string): number {
-  const clean = v.replace(/[^\d]/g, '');
-  return clean === '' ? 0 : Number(clean);
-}
-
-function parsePct(v: string): number {
-  const clean = v.replace(',', '.').replace(/[^\d.]/g, '');
-  if (clean === '') return 0;
-  return Math.min(Number(clean), 100);
-}
-
-function getPrimaryAssociate(company: CompanyInput): AssociateInput | undefined {
-  return company.associates[0];
-}
-
-function roleLabel(role: AssociateRole | undefined): string {
-  return ROLE_OPTIONS.find(option => option.value === role)?.label ?? 'Associé';
+function buildDefaultAssociate(index: number, inputs: TresoInputsV4): AssociateInput {
+  const profile = getAssociateProfile(inputs);
+  return {
+    id: `associe-${Date.now()}-${index + 1}`,
+    label: `Associé ${index + 1}`,
+    kind: 'pp',
+    profile,
+    ownershipLots: [{ right: 'pleine_propriete', capitalPct: 0, economicRightsPct: 0 }],
+    roles: ['associe_sans_statut'],
+    ccaInitial: 0,
+    ccaAnnualContribution: 0,
+    cca: {
+      currentBalance: 0,
+      exceptionalContributions: [],
+      annualContribution: {
+        amount: 0,
+        startYear: profile.projectionStartYear,
+        endYear: profile.projectionStartYear,
+      },
+      remunerationRate: 0,
+    },
+    remunerationAnnualCost: 0,
+    remuneration: {
+      source: 'holding',
+      loadedAnnualCost: 0,
+      socialChargeRate: 0,
+    },
+  };
 }
 
 export function TresoSocieteSection({ inputs, onChange }: Props) {
-  const [isModalOpen, setModalOpen] = useState(false);
+  const [isCompanyModalOpen, setCompanyModalOpen] = useState(false);
+  const [associateModalId, setAssociateModalId] = useState<string | null>(null);
+  const [subsidiaryModalId, setSubsidiaryModalId] = useState<string | null>(null);
   const [activePanel, setActivePanel] = useState<PanelKey>('identite');
-  const v2 = inputs;
 
-  const { company } = v2;
-  const primaryAssociate = getPrimaryAssociate(company);
-  const primaryRole = primaryAssociate?.roles[0] ?? 'associe_sans_statut';
-  const totalCca = company.associates.reduce(
-    (sum, associate) => sum + associate.ccaInitial + associate.ccaAnnualContribution,
-    0,
-  );
-
-  const patchV2 = (nextV2: TresoInputsV2) => {
-    onChange(nextV2);
+  const { company } = inputs;
+  const selectedAssociateId = getSelectedAssociateId(inputs);
+  const selectedAssociate = company.associates.find(associate => associate.id === selectedAssociateId)
+    ?? company.associates[0];
+  const activeAssociateModal = company.associates.find(associate => associate.id === associateModalId);
+  const activeSubsidiaryModal = company.subsidiaries.find(subsidiary => subsidiary.id === subsidiaryModalId);
+  const ownershipTotals = getOwnershipTotals(company.associates);
+  const incomeStatement = company.incomeStatement ?? {
+    annualRevenue: 0,
+    annualStructureCosts: company.annualStructureCosts,
+    workingCapitalRequirement: 0,
   };
+
+  const patchInputs = (nextInputs: TresoInputsV4) => onChange(nextInputs);
 
   const patchCompany = (patch: Partial<CompanyInput>) => {
-    patchV2({ ...v2, company: { ...company, ...patch } });
+    patchInputs({ ...inputs, company: { ...company, ...patch } });
   };
 
-  const updateAssociate = (
+  const syncSelectedProfile = (
     associateId: string,
-    patch: Partial<AssociateInput>,
-  ) => {
-    const associates = company.associates.map(associate =>
-      associate.id === associateId ? { ...associate, ...patch } : associate,
+    associates: AssociateInput[],
+    nextInputs: TresoInputsV4,
+  ): TresoInputsV4 => {
+    const associate = associates.find(item => item.id === associateId);
+    if (associate?.kind === 'pp' && associate.profile) {
+      return {
+        ...nextInputs,
+        foyer: {
+          ...nextInputs.foyer,
+          selectedAssociateId: associateId,
+          ...associate.profile,
+        },
+      };
+    }
+    return {
+      ...nextInputs,
+      foyer: {
+        ...nextInputs.foyer,
+        selectedAssociateId: associateId,
+      },
+    };
+  };
+
+  const setSelectedAssociate = (associateId: string) => {
+    patchInputs(syncSelectedProfile(associateId, company.associates, {
+      ...inputs,
+      selectedAssociateId: associateId,
+    }));
+  };
+
+  const updateAssociate = (associateId: string, patch: Partial<AssociateInput>) => {
+    const patchedAssociates = company.associates.map(associate =>
+      associate.id === associateId
+        ? { ...associate, ...patch, ownershipLots: associate.ownershipLots }
+        : associate,
     );
-    patchCompany({ associates });
+    const associates = patch.ownershipLots?.[0]
+      ? updateAssociateOwnershipLot(patchedAssociates, associateId, patch.ownershipLots[0])
+      : patchedAssociates;
+    const nextInputs = {
+      ...inputs,
+      company: { ...company, associates },
+    };
+    patchInputs(syncSelectedProfile(selectedAssociateId, associates, nextInputs));
+  };
+
+  const removeAssociate = (associateId: string) => {
+    if (company.associates.length <= 1) return;
+    const associates = company.associates.filter(associate => associate.id !== associateId);
+    const nextSelectedId = associates.some(associate => associate.id === selectedAssociateId)
+      ? selectedAssociateId
+      : associates[0].id;
+    const nextInputs = {
+      ...inputs,
+      selectedAssociateId: nextSelectedId,
+      company: { ...company, associates },
+    };
+    patchInputs(syncSelectedProfile(nextSelectedId, associates, nextInputs));
+  };
+
+  const patchIncomeStatement = (patch: Partial<typeof incomeStatement>) => {
+    const nextIncomeStatement = { ...incomeStatement, ...patch };
+    patchCompany({
+      incomeStatement: nextIncomeStatement,
+      annualStructureCosts: nextIncomeStatement.annualStructureCosts,
+    });
   };
 
   const renderIdentitePanel = () => (
     <div className="ts-modal-grid">
+      <SimFieldShell label="Libellé de la société principale" className="ts-field" rowClassName="ts-field__row">
+        <input
+          type="text"
+          className="sim-field__control ts-input-left"
+          value={company.label ?? ''}
+          onChange={event => patchCompany({ label: event.target.value })}
+        />
+      </SimFieldShell>
+
       <SimFieldShell label="Type de société" className="ts-field" rowClassName="ts-field__row">
         <SimSelect
           value={company.creationType}
@@ -135,9 +225,18 @@ export function TresoSocieteSection({ inputs, onChange }: Props) {
       <SimFieldShell label="Forme sociale" className="ts-field" rowClassName="ts-field__row">
         <SimSelect
           value={company.legalForm}
-          onChange={value => patchCompany({ legalForm: value as CompanyInput['legalForm'] })}
+          onChange={value => patchCompany({ legalForm: value as LegalForm })}
           options={LEGAL_FORM_OPTIONS}
           ariaLabel="Forme sociale"
+        />
+      </SimFieldShell>
+
+      <SimFieldShell label="Type société" className="ts-field" rowClassName="ts-field__row">
+        <SimSelect
+          value={company.companyKind ?? 'holding_patrimoniale'}
+          onChange={value => patchCompany({ companyKind: value as CompanyKind })}
+          options={COMPANY_KIND_OPTIONS}
+          ariaLabel="Type société"
         />
       </SimFieldShell>
 
@@ -146,8 +245,8 @@ export function TresoSocieteSection({ inputs, onChange }: Props) {
           type="text"
           inputMode="numeric"
           className="sim-field__control"
-          value={fmt(company.shareCapital)}
-          onChange={event => patchCompany({ shareCapital: parseEuro(event.target.value) })}
+          value={fmtEuroInput(company.shareCapital)}
+          onChange={event => patchCompany({ shareCapital: parseEuroInput(event.target.value) })}
         />
         <span className="sim-field__unit ts-unit">€</span>
       </SimFieldShell>
@@ -157,8 +256,30 @@ export function TresoSocieteSection({ inputs, onChange }: Props) {
           type="text"
           inputMode="numeric"
           className="sim-field__control"
-          value={fmt(company.sharePremium)}
-          onChange={event => patchCompany({ sharePremium: parseEuro(event.target.value) })}
+          value={fmtEuroInput(company.sharePremium)}
+          onChange={event => patchCompany({ sharePremium: parseEuroInput(event.target.value) })}
+        />
+        <span className="sim-field__unit ts-unit">€</span>
+      </SimFieldShell>
+
+      <SimFieldShell label="Trésorerie initiale" className="ts-field" rowClassName="ts-field__row">
+        <input
+          type="text"
+          inputMode="numeric"
+          className="sim-field__control"
+          value={fmtEuroInput(company.treasuryInitial)}
+          onChange={event => patchCompany({ treasuryInitial: parseEuroInput(event.target.value) })}
+        />
+        <span className="sim-field__unit ts-unit">€</span>
+      </SimFieldShell>
+
+      <SimFieldShell label="Réserves initiales" className="ts-field" rowClassName="ts-field__row">
+        <input
+          type="text"
+          inputMode="numeric"
+          className="sim-field__control"
+          value={fmtEuroInput(company.reservesInitial)}
+          onChange={event => patchCompany({ reservesInitial: parseEuroInput(event.target.value) })}
         />
         <span className="sim-field__unit ts-unit">€</span>
       </SimFieldShell>
@@ -179,45 +300,36 @@ export function TresoSocieteSection({ inputs, onChange }: Props) {
       {company.associates.map((associate, index) => {
         const lot = associate.ownershipLots[0] ?? {
           right: 'pleine_propriete' as const,
-          capitalPct: 100,
-          economicRightsPct: 100,
+          capitalPct: 0,
+          economicRightsPct: 0,
         };
         return (
           <div key={associate.id} className="ts-associate-card">
             <div className="ts-associate-card__header">
               <strong>{associate.label || `Associé ${index + 1}`}</strong>
-              <span>{roleLabel(associate.roles[0])}</span>
+              <div className="ts-card-actions">
+                <button type="button" className="ts-text-btn" onClick={() => setAssociateModalId(associate.id)}>
+                  Paramétrer
+                </button>
+                <button
+                  type="button"
+                  className="ts-text-btn"
+                  disabled={company.associates.length <= 1}
+                  onClick={() => removeAssociate(associate.id)}
+                >
+                  Supprimer
+                </button>
+              </div>
             </div>
             <div className="ts-modal-grid">
-              <SimFieldShell label="Libellé anonyme" className="ts-field" rowClassName="ts-field__row">
-                <input
-                  type="text"
-                  className="sim-field__control ts-input-left"
-                  value={associate.label}
-                  onChange={event => updateAssociate(associate.id, { label: event.target.value })}
-                />
-              </SimFieldShell>
-
-              <SimFieldShell label="Qualité" className="ts-field" rowClassName="ts-field__row">
+              <SimFieldShell label="Type d’associé" className="ts-field" rowClassName="ts-field__row">
                 <SimSelect
-                  value={associate.roles[0] ?? 'associe_sans_statut'}
-                  onChange={value => updateAssociate(associate.id, { roles: [value as AssociateRole] })}
-                  options={ROLE_OPTIONS}
-                  ariaLabel="Qualité de l’associé"
+                  value={associate.kind ?? 'pp'}
+                  onChange={value => updateAssociate(associate.id, { kind: value as AssociateKind })}
+                  options={ASSOCIATE_KIND_OPTIONS}
+                  ariaLabel={`Type ${associate.label}`}
                 />
               </SimFieldShell>
-
-              <SimFieldShell label="Droit" className="ts-field" rowClassName="ts-field__row">
-                <SimSelect
-                  value={lot.right}
-                  onChange={value => updateAssociate(associate.id, {
-                    ownershipLots: [{ ...lot, right: value as OwnershipRight }],
-                  })}
-                  options={OWNERSHIP_OPTIONS}
-                  ariaLabel="Droit détenu"
-                />
-              </SimFieldShell>
-
               <SimFieldShell label="% capital" className="ts-field" rowClassName="ts-field__row">
                 <input
                   type="text"
@@ -225,12 +337,11 @@ export function TresoSocieteSection({ inputs, onChange }: Props) {
                   className="sim-field__control"
                   value={String(lot.capitalPct)}
                   onChange={event => updateAssociate(associate.id, {
-                    ownershipLots: [{ ...lot, capitalPct: parsePct(event.target.value) }],
+                    ownershipLots: [{ ...lot, capitalPct: parsePctInput(event.target.value) }],
                   })}
                 />
                 <span className="sim-field__unit ts-unit">%</span>
               </SimFieldShell>
-
               <SimFieldShell label="% économique" className="ts-field" rowClassName="ts-field__row">
                 <input
                   type="text"
@@ -238,7 +349,7 @@ export function TresoSocieteSection({ inputs, onChange }: Props) {
                   className="sim-field__control"
                   value={String(lot.economicRightsPct)}
                   onChange={event => updateAssociate(associate.id, {
-                    ownershipLots: [{ ...lot, economicRightsPct: parsePct(event.target.value) }],
+                    ownershipLots: [{ ...lot, economicRightsPct: parsePctInput(event.target.value) }],
                   })}
                 />
                 <span className="sim-field__unit ts-unit">%</span>
@@ -254,15 +365,7 @@ export function TresoSocieteSection({ inputs, onChange }: Props) {
         onClick={() => patchCompany({
           associates: [
             ...company.associates,
-            {
-              id: `associe-${company.associates.length + 1}`,
-              label: `Associé ${company.associates.length + 1}`,
-              ownershipLots: [{ right: 'pleine_propriete', capitalPct: 0, economicRightsPct: 0 }],
-              roles: ['associe_sans_statut'],
-              ccaInitial: 0,
-              ccaAnnualContribution: 0,
-              remunerationAnnualCost: 0,
-            },
+            buildDefaultAssociate(company.associates.length, inputs),
           ],
         })}
       >
@@ -271,96 +374,53 @@ export function TresoSocieteSection({ inputs, onChange }: Props) {
     </div>
   );
 
-  const renderBilanPanel = () => (
-    <div className="ts-balance-grid">
-      <div className="ts-balance-panel">
-        <h3>Actif</h3>
-        <SimFieldShell label="Trésorerie existante" className="ts-field" rowClassName="ts-field__row">
-          <input
-            type="text"
-            inputMode="numeric"
-            className="sim-field__control"
-            value={fmt(company.treasuryInitial)}
-            onChange={event => patchCompany({ treasuryInitial: parseEuro(event.target.value) })}
-          />
-          <span className="sim-field__unit ts-unit">€</span>
-        </SimFieldShell>
-      </div>
-
-      <div className="ts-balance-panel">
-        <h3>Passif</h3>
-        <SimFieldShell label="Réserves" className="ts-field" rowClassName="ts-field__row">
-          <input
-            type="text"
-            inputMode="numeric"
-            className="sim-field__control"
-            value={fmt(company.reservesInitial)}
-            onChange={event => patchCompany({ reservesInitial: parseEuro(event.target.value) })}
-          />
-          <span className="sim-field__unit ts-unit">€</span>
-        </SimFieldShell>
-
-        {primaryAssociate && (
-          <>
-            <SimFieldShell label="CCA initial" className="ts-field" rowClassName="ts-field__row">
-              <input
-                type="text"
-                inputMode="numeric"
-                className="sim-field__control"
-                value={fmt(primaryAssociate.ccaInitial)}
-                onChange={event => updateAssociate(
-                  primaryAssociate.id,
-                  { ccaInitial: parseEuro(event.target.value) },
-                )}
-              />
-              <span className="sim-field__unit ts-unit">€</span>
-            </SimFieldShell>
-
-            <SimFieldShell label="Apport annuel CCA" className="ts-field" rowClassName="ts-field__row">
-              <input
-                type="text"
-                inputMode="numeric"
-                className="sim-field__control"
-                value={fmt(primaryAssociate.ccaAnnualContribution)}
-                onChange={event => updateAssociate(
-                  primaryAssociate.id,
-                  { ccaAnnualContribution: parseEuro(event.target.value) },
-                )}
-              />
-              <span className="sim-field__unit ts-unit">€</span>
-            </SimFieldShell>
-
-            <SimFieldShell label="Fin des apports" className="ts-field" rowClassName="ts-field__row">
-              <input
-                type="text"
-                inputMode="numeric"
-                className="sim-field__control"
-                value={primaryAssociate.ccaContributionEndYear ?? ''}
-                onChange={event => {
-                  const endYear = parseNumber(event.target.value);
-                  updateAssociate(
-                    primaryAssociate.id,
-                    { ccaContributionEndYear: endYear || undefined },
-                  );
-                }}
-              />
-              <span className="sim-field__unit ts-unit">année</span>
-            </SimFieldShell>
-          </>
-        )}
-      </div>
+  const renderComptePanel = () => (
+    <div className="ts-modal-grid">
+      <SimFieldShell label="Chiffre d’affaires annuel" className="ts-field" rowClassName="ts-field__row">
+        <input
+          type="text"
+          inputMode="numeric"
+          className="sim-field__control"
+          value={fmtEuroInput(incomeStatement.annualRevenue)}
+          onChange={event => patchIncomeStatement({ annualRevenue: parseEuroInput(event.target.value) })}
+        />
+        <span className="sim-field__unit ts-unit">€</span>
+      </SimFieldShell>
+      <SimFieldShell label="Coûts de structure annuels" className="ts-field" rowClassName="ts-field__row">
+        <input
+          type="text"
+          inputMode="numeric"
+          className="sim-field__control"
+          value={fmtEuroInput(incomeStatement.annualStructureCosts)}
+          onChange={event => patchIncomeStatement({ annualStructureCosts: parseEuroInput(event.target.value) })}
+        />
+        <span className="sim-field__unit ts-unit">€</span>
+      </SimFieldShell>
+      <SimFieldShell label="BFR" className="ts-field" rowClassName="ts-field__row">
+        <input
+          type="text"
+          inputMode="numeric"
+          className="sim-field__control"
+          value={fmtEuroInput(incomeStatement.workingCapitalRequirement)}
+          onChange={event => patchIncomeStatement({ workingCapitalRequirement: parseEuroInput(event.target.value) })}
+        />
+        <span className="sim-field__unit ts-unit">€</span>
+      </SimFieldShell>
+      <p className="ts-note--info">
+        Le BFR protège la trésorerie minimale avant balayage vers les poches de placement.
+      </p>
     </div>
   );
 
   const renderActivePanel = () => {
     if (activePanel === 'identite') return renderIdentitePanel();
     if (activePanel === 'associes') return renderAssociesPanel();
-    if (activePanel === 'bilan') return renderBilanPanel();
+    if (activePanel === 'compte') return renderComptePanel();
     if (activePanel === 'emprunts') {
       return (
         <TresoCompanyLoansPanel
           loans={company.loans}
-          projectionStartYear={v2.foyer.projectionStartYear}
+          projectionStartYear={getAssociateProfile(inputs, selectedAssociate).projectionStartYear}
           onChange={loans => patchCompany({ loans })}
         />
       );
@@ -373,12 +433,7 @@ export function TresoSocieteSection({ inputs, onChange }: Props) {
         />
       );
     }
-    return (
-      <TresoCompanyRemunerationsPanel
-        associates={company.associates}
-        onChange={updateAssociate}
-      />
-    );
+    return renderIdentitePanel();
   };
 
   return (
@@ -392,37 +447,36 @@ export function TresoSocieteSection({ inputs, onChange }: Props) {
         </span>
         <div>
           <h2 className="ts-section__title">Société</h2>
-          <p className="ts-section__subtitle">Structure, associés, bilan et flux de trésorerie</p>
+          <p className="ts-section__subtitle">Associés, société et filiales paramétrables depuis le schéma</p>
         </div>
       </div>
       <div className="ts-section__divider" />
 
-      <button
-        type="button"
-        className="ts-org-node"
-        onClick={() => setModalOpen(true)}
-        aria-label="Paramétrer la société"
-      >
-        <span className="ts-org-node__label">
-          {company.creationType === 'newco' ? 'Société à créer' : 'Société existante'}
-        </span>
-        <strong>{LEGAL_FORM_OPTIONS.find(option => option.value === company.legalForm)?.label}</strong>
-        <span className="ts-org-node__meta">
-          {company.associates.length} associé{company.associates.length > 1 ? 's' : ''} · {roleLabel(primaryRole)}
-        </span>
-      </button>
+      <TresoOrgChart
+        company={company}
+        selectedAssociateId={selectedAssociateId}
+        onCompanyClick={() => setCompanyModalOpen(true)}
+        onAssociateClick={associateId => {
+          setSelectedAssociate(associateId);
+          setAssociateModalId(associateId);
+        }}
+        onSubsidiaryClick={subsidiaryId => setSubsidiaryModalId(subsidiaryId)}
+      />
 
-      <div className="ts-company-snapshot" aria-label="Synthèse société">
-        <span>Trésorerie {fmt(company.treasuryInitial)} €</span>
-        <span>Réserves {fmt(company.reservesInitial)} €</span>
-        <span>CCA {fmt(totalCca)} €</span>
+      <div className="ts-org-alerts" aria-live="polite">
+        {ownershipTotals.capitalPct > 100 && (
+          <p className="ts-warning">Détention capital supérieure à 100 %</p>
+        )}
+        {ownershipTotals.economicRightsPct > 100 && (
+          <p className="ts-warning">Droits économiques supérieurs à 100 %</p>
+        )}
       </div>
 
-      {isModalOpen && (
+      {isCompanyModalOpen && (
         <SimModalShell
           title="Paramétrer la société"
-          subtitle="Bilan, associés, emprunts, filiales et rémunérations"
-          onClose={() => setModalOpen(false)}
+          subtitle="Identité, associés, compte de résultat, emprunts et filiales"
+          onClose={() => setCompanyModalOpen(false)}
           modalClassName="ts-company-modal"
           bodyClassName="ts-company-modal__body"
         >
@@ -445,6 +499,29 @@ export function TresoSocieteSection({ inputs, onChange }: Props) {
             </div>
           </div>
         </SimModalShell>
+      )}
+
+      {activeAssociateModal && (
+        <TresoAssociateModal
+          associate={activeAssociateModal}
+          subsidiaries={company.subsidiaries}
+          fallbackProfile={getAssociateProfile(inputs, activeAssociateModal)}
+          onChange={patch => updateAssociate(activeAssociateModal.id, patch)}
+          onClose={() => setAssociateModalId(null)}
+        />
+      )}
+
+      {activeSubsidiaryModal && (
+        <TresoSubsidiaryModal
+          company={company}
+          subsidiary={activeSubsidiaryModal}
+          onChange={patch => patchCompany({
+            subsidiaries: company.subsidiaries.map(subsidiary =>
+              subsidiary.id === activeSubsidiaryModal.id ? { ...subsidiary, ...patch } : subsidiary,
+            ),
+          })}
+          onClose={() => setSubsidiaryModalId(null)}
+        />
       )}
     </div>
   );

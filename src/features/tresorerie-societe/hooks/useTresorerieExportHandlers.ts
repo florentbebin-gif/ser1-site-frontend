@@ -1,14 +1,14 @@
 import { useCallback, useState } from 'react';
 import type { LogoPlacement } from '@/pptx/theme/types';
 import type { ThemeColors } from '@/settings/theme';
-import type { TresoInputsV2, TresoProjectionRow } from '@/engine/tresorerie/types';
+import type { TresoInputsRuntime, TresoProjectionRow } from '@/engine/tresorerie/types';
 import type { TresoKPIs } from './useTresorerieCalculations';
 import { exportTresorerieExcel } from '../export/tresorerieExcelExport';
 
 interface UseTresorerieExportHandlersParams {
   rows: TresoProjectionRow[];
   kpis: TresoKPIs;
-  inputs: TresoInputsV2;
+  inputs: TresoInputsRuntime;
   themeColors: ThemeColors;
   pptxColors: ThemeColors;
   cabinetLogo?: string;
