@@ -213,7 +213,7 @@ function buildStructureSheet(inputs: TresoInputsRuntime): XlsxSheet {
     ? inputs.allocationMatrix.pockets.map(pocket => [
       txt(pocket.label ?? pocket.id),
       txt(pocket.horizon ?? 'moyen_terme'),
-      txt(`${pocket.annualAllocationPct} % · priorité ${pocket.withdrawalPriority ?? '-'}`),
+      txt(`${pocket.initialAllocationPct} % initial · ${pocket.annualAllocationPct} % balayage · ${Math.round(pocket.annualReturnRate * 10000) / 100} %`),
     ])
     : [[
       txt('Trésorerie conservée sur compte bancaire'),
@@ -227,22 +227,23 @@ function buildStructureSheet(inputs: TresoInputsRuntime): XlsxSheet {
     [txt('Chiffre d’affaires annuel'), money(incomeStatement.annualRevenue), txt('Compte de résultat')],
     [txt('Coûts de structure annuels'), money(incomeStatement.annualStructureCosts), txt('Compte de résultat')],
     [txt('BFR'), money(incomeStatement.workingCapitalRequirement), txt('Seuil non investissable')],
+    [txt('Solde minimum bancaire'), money(inputs.allocationMatrix.minimumBankBalance ?? inputs.allocationMatrix.sweepThreshold ?? 0), txt('Compte bancaire pivot')],
     [sec('Associés'), sec(''), sec('')],
-    [h('Associé'), h('% capital / économique'), h('CCA rémunéré')],
+    [h('Associé'), h('% capital / économique'), h('Rémunération / CCA')],
     ...company.associates.map(associate => [
       txt(`${associate.label} (${associate.kind === 'pm' ? 'PM' : 'PP'})`),
       txt(`${getCapitalPct(associate)} % / ${getEconomicPct(associate)} %`),
-      txt(`${ccaCurrentBalance(associate).toLocaleString('fr-FR')} € au taux ${Math.round((associate.cca?.remunerationRate ?? 0) * 10000) / 100} %`),
+      txt(`${associate.remuneration?.source === 'subsidiary' ? 'Filiale' : 'Holding'} · CCA ${ccaCurrentBalance(associate).toLocaleString('fr-FR')} € au taux ${Math.round((associate.cca?.remunerationRate ?? 0) * 10000) / 100} %`),
     ]),
     [sec('Filiales'), sec(''), sec('')],
-    [h('Filiale'), h('% détention'), h('Parent')],
+    [h('Filiale'), h('% détention'), h('Trésorerie / Cession')],
     ...company.subsidiaries.map(subsidiary => [
       txt(subsidiary.label),
       txt(`${subsidiary.ownershipPct ?? subsidiary.holdingOwnershipPct} %`),
-      txt(subsidiary.parentEntityId ?? 'societe'),
+      txt(`${(subsidiary.parentEntityId ?? 'societe') === 'societe' ? 'Société mère' : subsidiary.parentEntityId} · trésorerie ${(subsidiary.treasuryInitial ?? 0).toLocaleString('fr-FR')} € · cession ${subsidiary.disposal?.year ?? subsidiary.disposalYear ?? 'non prévue'}`),
     ]),
     [sec('Stratégie de trésorerie'), sec(''), sec('')],
-    [h('Poche'), h('Horizon'), h('Allocation annuelle')],
+    [h('Poche'), h('Horizon'), h('Allocation et rendement')],
     ...pocketRows,
   ];
 
@@ -277,7 +278,7 @@ function buildHypothesesSheet(): XlsxSheet {
     [txt('Balayage en fin d’exercice uniquement, après IS, dettes, CCA, charges et dividendes'), txt('Convention SER1')],
     [txt('BFR inclus dans le seuil de sécurité avant investissement'), txt('Convention SER1')],
     [txt('Les lots investis en fin d’exercice ne produisent pas de revenus sur l’exercice écoulé'), txt('Convention SER1')],
-    [txt('Répétition au terme : réinvestissement dans la même poche, destination au terme ignorée'), txt('Convention SER1')],
+    [txt('Au terme, les placements reviennent sur le compte bancaire ; la répétition réinvestit seulement le surplus'), txt('Convention SER1')],
     [sec('TNS'), sec('')],
     [txt('Seuil social V1 : capital social + primes + CCA TNS de début d’exercice'), txt('CSS L136-3 / R131-7')],
     [txt('Le taux de charges sociales TNS reste une saisie manuelle'), txt('Hypothèse déclarative')],

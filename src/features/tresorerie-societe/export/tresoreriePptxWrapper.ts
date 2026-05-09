@@ -1,7 +1,7 @@
 /**
  * tresoreriePptxWrapper.ts — Assemblage deck PPTX Trésorerie Société IS
  *
- * Structure : Couverture → Schéma 3 phases → Projection paginée → Hypothèses → Fin
+ * Structure : Couverture → Organigramme société → Projection paginée → Hypothèses → Fin
  *
  * Règle GOUVERNANCE_EXPORTS.md:62 :
  * - Aucun recalcul métier ici — on consomme TresoProjectionRow[] tel quel.
@@ -118,11 +118,11 @@ export function buildTresorerieStudyDeck(
       logoPlacement,
     },
     slides: [
-      // Schéma 3 phases + KPIs
+      // Organigramme société + KPIs
       {
         type: 'treso-schema',
         title: 'Schéma patrimonial — Société IS',
-        subtitle: 'Constitution · Exploitation · Retraite & Transmission',
+        subtitle: 'Détentions, filiales et compte bancaire pivot',
         typeCreation: inputs.company.creationType,
         orgchartCompany: inputs.company,
         companyKindLabel: getCompanyKindLabel(inputs.company),
