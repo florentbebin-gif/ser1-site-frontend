@@ -1,0 +1,59 @@
+import { describe, expect, it } from 'vitest';
+import type { AssociateInput } from '@/engine/tresorerie/types';
+import { updateAssociateOwnershipLot } from '../utils/tresorerieSocieteModel';
+
+function makeAssociate(id: string, capitalPct: number, economicRightsPct = capitalPct): AssociateInput {
+  return {
+    id,
+    label: id,
+    kind: 'pp',
+    ownershipLots: [{ right: 'pleine_propriete', capitalPct, economicRightsPct }],
+    roles: ['associe_sans_statut'],
+    ccaInitial: 0,
+    ccaAnnualContribution: 0,
+    remunerationAnnualCost: 0,
+  };
+}
+
+function firstLot(associates: AssociateInput[], id: string) {
+  const associate = associates.find(item => item.id === id);
+  if (!associate) throw new Error(`Associé introuvable: ${id}`);
+  return associate.ownershipLots[0];
+}
+
+describe('updateAssociateOwnershipLot', () => {
+  it('réduit les autres associés au prorata quand le capital dépasserait 100 %', () => {
+    const associates = [
+      makeAssociate('associe-1', 60),
+      makeAssociate('associe-2', 20),
+      makeAssociate('associe-3', 20),
+    ];
+
+    const next = updateAssociateOwnershipLot(associates, 'associe-1', { capitalPct: 80 });
+
+    expect(firstLot(next, 'associe-1').capitalPct).toBe(80);
+    expect(firstLot(next, 'associe-2').capitalPct).toBe(10);
+    expect(firstLot(next, 'associe-3').capitalPct).toBe(10);
+  });
+
+  it('borne la saisie à 100 % et annule les autres détentions sur le même droit', () => {
+    const associates = [
+      makeAssociate('associe-1', 60, 60),
+      makeAssociate('associe-2', 40, 40),
+    ];
+
+    const next = updateAssociateOwnershipLot(associates, 'associe-1', {
+      capitalPct: 125,
+      economicRightsPct: 120,
+    });
+
+    expect(firstLot(next, 'associe-1')).toMatchObject({
+      capitalPct: 100,
+      economicRightsPct: 100,
+    });
+    expect(firstLot(next, 'associe-2')).toMatchObject({
+      capitalPct: 0,
+      economicRightsPct: 0,
+    });
+  });
+});

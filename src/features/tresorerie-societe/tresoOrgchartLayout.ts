@@ -7,10 +7,12 @@ import {
 
 export const TRESO_ORG_NODE_WIDTH = 132;
 export const TRESO_ORG_NODE_HEIGHT = 46;
+export const TRESO_ORG_ENTITY_NODE_WIDTH = 104;
+export const TRESO_ORG_ENTITY_NODE_HEIGHT = 38;
 
-const GAP_X = 22;
-const GAP_Y = 42;
-const PAD = 12;
+const GAP_X = 18;
+const GAP_Y = 30;
+const PAD = 10;
 
 export type TresoOrgNodeKind = 'associate' | 'company' | 'subsidiary';
 
@@ -21,6 +23,8 @@ export interface TresoOrgNode {
   kind: TresoOrgNodeKind;
   x: number;
   y: number;
+  width: number;
+  height: number;
   active?: boolean;
 }
 
@@ -61,11 +65,11 @@ function fmtPct(value: number | undefined): string {
 }
 
 function centerX(node: TresoOrgNode): number {
-  return node.x + TRESO_ORG_NODE_WIDTH / 2;
+  return node.x + node.width / 2;
 }
 
 function bottomY(node: TresoOrgNode): number {
-  return node.y + TRESO_ORG_NODE_HEIGHT;
+  return node.y + node.height;
 }
 
 function sortSubsidiaries(subsidiaries: SubsidiaryInput[]): SubsidiaryInput[] {
@@ -88,27 +92,29 @@ function buildSubsidiaryTree(
   const children = sortSubsidiaries(
     subsidiaries.filter(subsidiary => (subsidiary.parentEntityId ?? 'societe') === parentId),
   );
-  if (children.length === 0) return { width: TRESO_ORG_NODE_WIDTH, nodes: [] };
+  if (children.length === 0) return { width: TRESO_ORG_ENTITY_NODE_WIDTH, nodes: [] };
 
   const nodes: TresoOrgNode[] = [];
   let cursor = 0;
 
   children.forEach(child => {
-    const childTree = buildSubsidiaryTree(subsidiaries, child.id, y + TRESO_ORG_NODE_HEIGHT + GAP_Y);
-    const branchWidth = Math.max(childTree.width, TRESO_ORG_NODE_WIDTH);
+    const childTree = buildSubsidiaryTree(subsidiaries, child.id, y + TRESO_ORG_ENTITY_NODE_HEIGHT + GAP_Y);
+    const branchWidth = Math.max(childTree.width, TRESO_ORG_ENTITY_NODE_WIDTH);
     nodes.push({
       id: child.id,
       label: child.label,
       kind: 'subsidiary',
-      x: cursor + (branchWidth - TRESO_ORG_NODE_WIDTH) / 2,
+      x: cursor + (branchWidth - TRESO_ORG_ENTITY_NODE_WIDTH) / 2,
       y,
+      width: TRESO_ORG_ENTITY_NODE_WIDTH,
+      height: TRESO_ORG_ENTITY_NODE_HEIGHT,
     });
     nodes.push(...offsetNodes(childTree.nodes, cursor));
     cursor += branchWidth + GAP_X;
   });
 
   return {
-    width: Math.max(TRESO_ORG_NODE_WIDTH, cursor - GAP_X),
+    width: Math.max(TRESO_ORG_ENTITY_NODE_WIDTH, cursor - GAP_X),
     nodes,
   };
 }
@@ -150,10 +156,10 @@ export function computeTresoOrgchartLayout(
 ): TresoOrgchartLayout {
   const associates = company.associates;
   const associateRowWidth = associates.length > 0
-    ? associates.length * TRESO_ORG_NODE_WIDTH + (associates.length - 1) * GAP_X
-    : TRESO_ORG_NODE_WIDTH;
+    ? associates.length * TRESO_ORG_ENTITY_NODE_WIDTH + (associates.length - 1) * GAP_X
+    : TRESO_ORG_ENTITY_NODE_WIDTH;
   const hasAssociates = associates.length > 0;
-  const companyY = hasAssociates ? PAD + TRESO_ORG_NODE_HEIGHT + GAP_Y : PAD;
+  const companyY = hasAssociates ? PAD + TRESO_ORG_ENTITY_NODE_HEIGHT + GAP_Y : PAD;
   const subsidiaryTree = buildSubsidiaryTree(
     company.subsidiaries,
     'societe',
@@ -171,8 +177,10 @@ export function computeTresoOrgchartLayout(
       label: associate.label,
       meta: (associate.kind ?? 'pp').toUpperCase(),
       kind: 'associate',
-      x: associateStartX + index * (TRESO_ORG_NODE_WIDTH + GAP_X),
+      x: associateStartX + index * (TRESO_ORG_ENTITY_NODE_WIDTH + GAP_X),
       y: PAD,
+      width: TRESO_ORG_ENTITY_NODE_WIDTH,
+      height: TRESO_ORG_ENTITY_NODE_HEIGHT,
       active: associate.id === selectedAssociateId,
     });
   });
@@ -184,6 +192,8 @@ export function computeTresoOrgchartLayout(
     kind: 'company',
     x: center - TRESO_ORG_NODE_WIDTH / 2,
     y: companyY,
+    width: TRESO_ORG_NODE_WIDTH,
+    height: TRESO_ORG_NODE_HEIGHT,
   };
   nodes.push(companyNode);
 

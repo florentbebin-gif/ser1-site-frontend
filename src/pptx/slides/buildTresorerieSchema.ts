@@ -6,11 +6,7 @@
  */
 
 import type PptxGenJS from 'pptxgenjs';
-import {
-  TRESO_ORG_NODE_HEIGHT,
-  TRESO_ORG_NODE_WIDTH,
-  computeTresoOrgchartLayout,
-} from '@/features/tresorerie-societe/tresoOrgchartLayout';
+import { computeTresoOrgchartLayout } from '@/features/tresorerie-societe/tresoOrgchartLayout';
 import type { TresorerieSchemaSlideSpec, ExportContext } from '../theme/types';
 import { MASTER_NAMES } from '../template/loadBaseTemplate';
 import {
@@ -152,8 +148,8 @@ export function buildTresorerieSchema(
   layout.nodes.forEach(node => {
     const x = scaleX(node.x);
     const y = scaleY(node.y);
-    const w = TRESO_ORG_NODE_WIDTH * chartScale;
-    const h = TRESO_ORG_NODE_HEIGHT * chartScale;
+    const w = node.width * chartScale;
+    const h = node.height * chartScale;
     const title = node.kind === 'company' ? spec.companyKindLabel ?? node.label : node.label;
     const subtitle = node.kind === 'company'
       ? `${spec.companyKindCode ?? ''} · ${spec.orgchartCompany.legalForm.toUpperCase()}`

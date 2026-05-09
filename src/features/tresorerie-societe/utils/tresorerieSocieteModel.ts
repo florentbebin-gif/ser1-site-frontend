@@ -5,6 +5,7 @@ import type {
   AssociateInput,
   CompanyInput,
   CompanyKind,
+  OwnershipLotInput,
 } from '@/engine/tresorerie/types';
 import {
   getAssociateProfile,
@@ -79,6 +80,104 @@ export function getOwnershipTotals(associates: AssociateInput[]): {
       economicRightsPct: sum.economicRightsPct + getEconomicPct(associate),
     }),
     { capitalPct: 0, economicRightsPct: 0 },
+  );
+}
+
+type OwnershipPctField = 'capitalPct' | 'economicRightsPct';
+
+const OWNERSHIP_PCT_FIELDS: OwnershipPctField[] = ['capitalPct', 'economicRightsPct'];
+
+function hasOwn(object: object, key: PropertyKey): boolean {
+  return Object.prototype.hasOwnProperty.call(object, key);
+}
+
+function clampPct(value: number | undefined): number {
+  if (!Number.isFinite(value)) return 0;
+  return Math.min(Math.max(value ?? 0, 0), 100);
+}
+
+function roundPct(value: number): number {
+  return Math.round(value * 10_000) / 10_000;
+}
+
+function defaultOwnershipLot(): OwnershipLotInput {
+  return { right: 'pleine_propriete', capitalPct: 0, economicRightsPct: 0 };
+}
+
+function getOwnershipFieldTotal(associate: AssociateInput, field: OwnershipPctField): number {
+  return associate.ownershipLots.reduce((sum, lot) => sum + clampPct(lot[field]), 0);
+}
+
+function scaleOwnershipField(
+  associate: AssociateInput,
+  field: OwnershipPctField,
+  ratio: number,
+): AssociateInput {
+  return {
+    ...associate,
+    ownershipLots: associate.ownershipLots.map(lot => ({
+      ...lot,
+      [field]: roundPct(clampPct(lot[field]) * ratio),
+    })),
+  };
+}
+
+function rebalanceOwnershipField(
+  associates: AssociateInput[],
+  associateId: string,
+  field: OwnershipPctField,
+): AssociateInput[] {
+  const selected = associates.find(associate => associate.id === associateId);
+  if (!selected) return associates;
+
+  const selectedTotal = getOwnershipFieldTotal(selected, field);
+  if (selectedTotal >= 100) {
+    return associates.map(associate =>
+      associate.id === associateId
+        ? scaleOwnershipField(associate, field, 100 / selectedTotal)
+        : scaleOwnershipField(associate, field, 0),
+    );
+  }
+
+  const total = associates.reduce((sum, associate) => sum + getOwnershipFieldTotal(associate, field), 0);
+  if (total <= 100) return associates;
+
+  const remainingPct = 100 - selectedTotal;
+  const otherTotal = total - selectedTotal;
+  if (otherTotal <= 0) return associates;
+  const ratio = remainingPct / otherTotal;
+
+  return associates.map(associate =>
+    associate.id === associateId ? associate : scaleOwnershipField(associate, field, ratio),
+  );
+}
+
+export function updateAssociateOwnershipLot(
+  associates: AssociateInput[],
+  associateId: string,
+  lotPatch: Partial<OwnershipLotInput>,
+): AssociateInput[] {
+  const patched = associates.map(associate => {
+    if (associate.id !== associateId) return associate;
+    const [firstLot = defaultOwnershipLot(), ...otherLots] = associate.ownershipLots;
+    const nextLot = {
+      ...firstLot,
+      ...lotPatch,
+      capitalPct: hasOwn(lotPatch, 'capitalPct')
+        ? clampPct(lotPatch.capitalPct)
+        : firstLot.capitalPct,
+      economicRightsPct: hasOwn(lotPatch, 'economicRightsPct')
+        ? clampPct(lotPatch.economicRightsPct)
+        : firstLot.economicRightsPct,
+    };
+    return { ...associate, ownershipLots: [nextLot, ...otherLots] };
+  });
+
+  return OWNERSHIP_PCT_FIELDS.reduce(
+    (nextAssociates, field) => hasOwn(lotPatch, field)
+      ? rebalanceOwnershipField(nextAssociates, associateId, field)
+      : nextAssociates,
+    patched,
   );
 }
 

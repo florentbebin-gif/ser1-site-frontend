@@ -34,7 +34,7 @@ export default function TresorerieSocietePage() {
 
   const { colors: themeColors, pptxColors, cabinetLogo, logoPlacement } = useTheme();
   const activeProfile = getAssociateProfile(state.inputsV3, getSelectedAssociate(state.inputsV3));
-  const { rows, kpis, loading, error } = useTresorerieCalculations(state.inputsV3);
+  const { rows, kpis, loading, error, simulationError } = useTresorerieCalculations(state.inputsV3);
   const {
     exportExcel,
     exportPptx,
@@ -65,6 +65,7 @@ export default function TresorerieSocietePage() {
       pageTestId="tresorerie-societe-page"
       loading={loading}
       error={error}
+      notice={simulationError ? <p className="ts-warning" role="alert">{simulationError}</p> : undefined}
       actions={<ExportMenu options={exportOptions} loading={exportLoading} />}
     >
       <SimPageShell.Main>

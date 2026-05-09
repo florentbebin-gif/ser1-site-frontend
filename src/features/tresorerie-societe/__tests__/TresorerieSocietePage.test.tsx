@@ -63,10 +63,15 @@ vi.mock('../components/TresoHypotheses', () => ({
 
 vi.mock('../../../components/ui/sim/SimPageShell', () => ({
   SimPageShell: Object.assign(
-    ({ actions, children, pageTestId }: any) => (
+    ({ actions, children, error, notice, pageTestId }: any) => (
       <div data-testid={pageTestId}>
         {actions ? <div data-testid="sim-header-actions">{actions}</div> : null}
-        {children}
+        {error ? <div data-testid="page-error">{error}</div> : (
+          <>
+            {notice ? <div data-testid="sim-notice">{notice}</div> : null}
+            {children}
+          </>
+        )}
       </div>
     ),
     {
@@ -189,6 +194,7 @@ function makeCalcReturn(kpiOverrides: Record<string, unknown> = {}) {
     },
     loading: false,
     error: null,
+    simulationError: null,
     fiscalParams: null,
   };
 }
@@ -262,6 +268,20 @@ describe('TresorerieSocietePage', () => {
     expect(mockUseTresoExports).toHaveBeenCalledWith(expect.objectContaining({
       inputs: DEFAULT_INPUTS_V3,
     }));
+  });
+
+  it('conserve l’interface quand la simulation signale une erreur métier', () => {
+    mockUseTresoCalc.mockReturnValue({
+      ...makeCalcReturn(),
+      simulationError: 'Détention capital supérieure à 100 %.',
+    });
+
+    const html = renderToStaticMarkup(<TresorerieSocietePage />);
+
+    expect(html).toContain('data-testid="societe-section"');
+    expect(html).toContain('data-testid="placement-section"');
+    expect(html).toContain('Détention capital supérieure à 100 %.');
+    expect(html).not.toContain('data-testid="page-error"');
   });
 
   describe('drawer de projection', () => {

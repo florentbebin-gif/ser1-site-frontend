@@ -28,6 +28,7 @@ import {
   getAssociateProfile,
   getOwnershipTotals,
   getSelectedAssociateId,
+  updateAssociateOwnershipLot,
 } from '../utils/tresorerieSocieteModel';
 import {
   fmtEuroInput,
@@ -161,9 +162,14 @@ export function TresoSocieteSection({ inputs, onChange }: Props) {
   };
 
   const updateAssociate = (associateId: string, patch: Partial<AssociateInput>) => {
-    const associates = company.associates.map(associate =>
-      associate.id === associateId ? { ...associate, ...patch } : associate,
+    const patchedAssociates = company.associates.map(associate =>
+      associate.id === associateId
+        ? { ...associate, ...patch, ownershipLots: associate.ownershipLots }
+        : associate,
     );
+    const associates = patch.ownershipLots?.[0]
+      ? updateAssociateOwnershipLot(patchedAssociates, associateId, patch.ownershipLots[0])
+      : patchedAssociates;
     const nextInputs = {
       ...inputs,
       company: { ...company, associates },

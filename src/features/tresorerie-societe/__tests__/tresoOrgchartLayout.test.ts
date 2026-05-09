@@ -32,8 +32,12 @@ function makeCompany(overrides: Partial<CompanyInput> = {}): CompanyInput {
 describe('computeTresoOrgchartLayout', () => {
   it('positionne un associé, la société et le lien de détention', () => {
     const layout = computeTresoOrgchartLayout(makeCompany());
+    const associate = layout.nodes.find(node => node.kind === 'associate');
+    const company = layout.nodes.find(node => node.kind === 'company');
 
     expect(layout.nodes.map(node => node.id)).toEqual(['associe-1', 'societe']);
+    expect(company?.width).toBeGreaterThan(associate?.width ?? 0);
+    expect(company?.height).toBeGreaterThan(associate?.height ?? 0);
     expect(layout.svgHeight).toBeLessThanOrEqual(160);
     expect(layout.edges).toEqual(expect.arrayContaining([
       expect.objectContaining({ fromId: 'associe-1', toId: 'societe' }),

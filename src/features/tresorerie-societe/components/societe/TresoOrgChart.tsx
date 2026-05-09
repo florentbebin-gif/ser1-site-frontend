@@ -3,8 +3,6 @@ import type { CompanyInput } from '@/engine/tresorerie/types';
 import {
   getTresoOrgchartCompanyKindLabel,
   getTresoOrgchartNodeLabel,
-  TRESO_ORG_NODE_HEIGHT,
-  TRESO_ORG_NODE_WIDTH,
   computeTresoOrgchartLayout,
   type TresoOrgNode,
 } from '../../tresoOrgchartLayout';
@@ -40,8 +38,6 @@ export function TresoOrgChart({
 }: TresoOrgChartProps) {
   const layout = computeTresoOrgchartLayout(company, selectedAssociateId);
   const companyKindLabel = getTresoOrgchartCompanyKindLabel(company);
-  const minDisplayWidth = layout.svgWidth <= 180 ? 240 : 380;
-  const displayedSvgWidth = Math.max(layout.svgWidth, minDisplayWidth);
 
   const runNodeAction = (node: TresoOrgNode) => {
     if (node.kind === 'company') {
@@ -59,7 +55,7 @@ export function TresoOrgChart({
     <div className="ts-org-chart" aria-label="Schéma société">
       <svg
         className="ts-org-chart__svg"
-        style={{ width: `${displayedSvgWidth}px` }}
+        style={{ width: `${layout.svgWidth}px` }}
         role="img"
         aria-label="Schéma des détentions société"
         viewBox={`0 0 ${layout.svgWidth} ${layout.svgHeight}`}
@@ -77,17 +73,23 @@ export function TresoOrgChart({
           ))}
           {layout.labels.map(label => (
             <g key={label.id} className="ts-org-link-label">
-              <rect x={label.x - 23} y={label.y - 11} width="46" height="22" rx="6" />
-              <text x={label.x} y={label.y + 4} textAnchor="middle">{label.text}</text>
+              <rect x={label.x - 18} y={label.y - 8} width="36" height="16" rx="5" />
+              <text x={label.x} y={label.y + 3} textAnchor="middle">{label.text}</text>
             </g>
           ))}
         </g>
 
         {layout.nodes.map(node => {
-          const ariaLabel = getTresoOrgchartNodeLabel(node);
+          const ariaLabel = node.active
+            ? `${getTresoOrgchartNodeLabel(node)} - associé actif`
+            : getTresoOrgchartNodeLabel(node);
           const title = node.kind === 'company' ? companyKindLabel : node.label;
           const subtitle = node.kind === 'company' ? node.label : node.meta;
           const metaParts = node.kind === 'company' && node.meta ? node.meta.split(' · ') : [];
+          const titleY = node.kind === 'company' ? 19 : 17;
+          const subtitleY = node.kind === 'company' ? 33 : 30;
+          const maxTitleLength = node.kind === 'company' ? 23 : 18;
+          const maxSubtitleLength = node.kind === 'company' ? 24 : 18;
           return (
             <g
               key={node.id}
@@ -101,23 +103,29 @@ export function TresoOrgChart({
             >
               <rect
                 className="ts-org-svg-node__box"
-                width={TRESO_ORG_NODE_WIDTH}
-                height={TRESO_ORG_NODE_HEIGHT}
+                width={node.width}
+                height={node.height}
                 rx="8"
               />
-              <text className="ts-org-svg-node__label" x={TRESO_ORG_NODE_WIDTH / 2} y="19" textAnchor="middle">
-                {truncate(title, 23)}
+              <text className="ts-org-svg-node__label" x={node.width / 2} y={titleY} textAnchor="middle">
+                {truncate(title, maxTitleLength)}
               </text>
               {subtitle ? (
-                <text className="ts-org-svg-node__meta" x={TRESO_ORG_NODE_WIDTH / 2} y="33" textAnchor="middle">
-                  {truncate(subtitle, 24)}
+                <text className="ts-org-svg-node__meta" x={node.width / 2} y={subtitleY} textAnchor="middle">
+                  {truncate(subtitle, maxSubtitleLength)}
                 </text>
               ) : null}
               {metaParts.length > 0 ? (
-                <text className="ts-org-svg-node__code" x={TRESO_ORG_NODE_WIDTH / 2} y="41" textAnchor="middle">
+                <text className="ts-org-svg-node__code" x={node.width / 2} y="41" textAnchor="middle">
                   <tspan>{truncate(metaParts[0], 8)}</tspan>
                   {metaParts[1] ? <tspan>{` · ${truncate(metaParts[1], 8)}`}</tspan> : null}
                 </text>
+              ) : null}
+              {node.active ? (
+                <g className="ts-org-svg-node__active-badge">
+                  <rect x={node.width - 33} y="-7" width="29" height="12" rx="4" />
+                  <text x={node.width - 18.5} y="2" textAnchor="middle">Actif</text>
+                </g>
               ) : null}
             </g>
           );

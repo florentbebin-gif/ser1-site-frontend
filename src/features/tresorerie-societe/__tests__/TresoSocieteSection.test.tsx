@@ -147,7 +147,7 @@ describe('TresoSocieteSection', () => {
     render(<TresoSocieteSection inputs={simpleInputs} onChange={vi.fn()} />);
 
     const svg = screen.getByRole('img', { name: /Schéma des détentions société/i });
-    expect(svg).toHaveStyle({ width: '240px' });
+    expect(Number.parseFloat(svg.style.width)).toBeLessThan(200);
   });
 
   it('met en évidence l’associé actif et ouvre sa modale au clic', () => {
@@ -155,6 +155,7 @@ describe('TresoSocieteSection', () => {
 
     const activeAssociate = screen.getByRole('button', { name: /Paramétrer Associé 2/ });
     expect(activeAssociate).toHaveClass('is-active');
+    expect(within(activeAssociate).getByText('Actif')).toBeInTheDocument();
 
     fireEvent.click(activeAssociate);
 
@@ -162,6 +163,18 @@ describe('TresoSocieteSection', () => {
     expect(screen.getByDisplayValue('45')).toBeInTheDocument();
     expect(screen.getByDisplayValue('62')).toBeInTheDocument();
     expect(screen.getByText('Taux maximum déductible')).toBeInTheDocument();
+  });
+
+  it('rééquilibre les autres associés quand une saisie ferait dépasser 100 %', () => {
+    const onChange = vi.fn();
+    render(<TresoSocieteSection inputs={INPUTS} onChange={onChange} />);
+
+    fireEvent.click(screen.getByRole('button', { name: /Paramétrer Associé 1/ }));
+    fireEvent.change(screen.getAllByDisplayValue('60')[0], { target: { value: '80' } });
+
+    const nextInputs = onChange.mock.calls[onChange.mock.calls.length - 1]?.[0];
+    expect(nextInputs.company.associates[0].ownershipLots[0].capitalPct).toBe(80);
+    expect(nextInputs.company.associates[1].ownershipLots[0].capitalPct).toBe(20);
   });
 
   it('ouvre la modale associé au clavier depuis le schéma SVG', () => {

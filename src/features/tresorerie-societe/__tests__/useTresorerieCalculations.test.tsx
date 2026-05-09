@@ -99,14 +99,20 @@ function baseInputs(): TresoInputsV3 {
 
 function CalculationProbe({ inputs }: { inputs: TresoInputsV3 }) {
   const result = useTresorerieCalculations(inputs);
-  return <div data-testid="calculation-error">{result.error ?? ''}</div>;
+  return (
+    <>
+      <div data-testid="calculation-error">{result.error ?? ''}</div>
+      <div data-testid="simulation-error">{result.simulationError ?? ''}</div>
+    </>
+  );
 }
 
 describe('useTresorerieCalculations', () => {
-  it('expose les erreurs de validation moteur au lieu de les masquer', () => {
+  it('expose les erreurs de validation moteur sans bloquer la page', () => {
     render(<CalculationProbe inputs={baseInputs()} />);
 
-    expect(screen.getByTestId('calculation-error').textContent)
+    expect(screen.getByTestId('calculation-error').textContent).toBe('');
+    expect(screen.getByTestId('simulation-error').textContent)
       .toContain('Détention capital supérieure à 100 %');
   });
 });

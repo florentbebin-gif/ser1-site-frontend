@@ -31,7 +31,7 @@
 
 .ts-org-link-label text {
   fill: var(--color-c2);
-  font-size: 10px;
+  font-size: 8.5px;
   font-weight: 600;
 }
 
@@ -54,12 +54,26 @@
 }
 
 .ts-org-svg-node.is-active .ts-org-svg-node__box {
+  fill: color-mix(in srgb, var(--color-c4) 30%, #fff);
   stroke: var(--color-c3);
   stroke-width: 2;
 }
 
 .ts-org-svg-node--company .ts-org-svg-node__box {
   stroke: var(--color-c3);
+}
+
+.ts-org-svg-node__active-badge rect {
+  fill: var(--color-c3);
+  stroke: none;
+}
+
+.ts-org-svg-node__active-badge text {
+  fill: #fff;
+  font-size: 5.6px;
+  font-weight: 700;
+  letter-spacing: 0;
+  pointer-events: none;
 }
 
 .ts-org-svg-node__label {

@@ -54,22 +54,17 @@ export interface TresoCalculationsResult {
   kpis: TresoKPIs;
   loading: boolean;
   error: string | null;
+  simulationError: string | null;
   fiscalParams: TresoFiscalParams | null;
 }
 
 // ─── Hook ─────────────────────────────────────────────────────────────────────
 
 const HORIZON_ANS = 40;
-const GENERIC_SIMULATION_ERROR = 'La simulation de trésorerie société a rencontré une erreur.';
 
 interface SimulationState {
   rows: TresoProjectionRow[];
-  error: string | null;
-}
-
-function getSimulationErrorMessage(simulationError: unknown): string {
-  if (simulationError instanceof TresoSimulationInputError) return simulationError.message;
-  return GENERIC_SIMULATION_ERROR;
+  simulationError: string | null;
 }
 
 export function useTresorerieCalculations(inputs: TresoInputsRuntime): TresoCalculationsResult {
@@ -120,11 +115,14 @@ export function useTresorerieCalculations(inputs: TresoInputsRuntime): TresoCalc
 
   // ── Simulation ────────────────────────────────────────────────────────────
   const simulation = useMemo<SimulationState>(() => {
-    if (!fiscalParams) return { rows: [], error: null };
+    if (!fiscalParams) return { rows: [], simulationError: null };
     try {
-      return { rows: simulateTresorerieV2(inputs, fiscalParams, HORIZON_ANS), error: null };
+      return { rows: simulateTresorerieV2(inputs, fiscalParams, HORIZON_ANS), simulationError: null };
     } catch (simulationError) {
-      return { rows: [], error: getSimulationErrorMessage(simulationError) };
+      if (simulationError instanceof TresoSimulationInputError) {
+        return { rows: [], simulationError: simulationError.message };
+      }
+      throw simulationError;
     }
   }, [inputs, fiscalParams]);
   const rows = simulation.rows;
@@ -204,7 +202,8 @@ export function useTresorerieCalculations(inputs: TresoInputsRuntime): TresoCalc
     rows,
     kpis,
     loading,
-    error: error ?? simulation.error,
+    error,
+    simulationError: simulation.simulationError,
     fiscalParams,
   };
 }
