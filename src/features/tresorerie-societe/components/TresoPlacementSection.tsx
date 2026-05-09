@@ -5,11 +5,11 @@
 import { useState } from 'react';
 import { SimFieldShell } from '../../../components/ui/sim/SimFieldShell';
 import type {
+  AllocationPocketHorizon,
   AllocationPocketInput,
-  TresoInputsV3,
+  TresoInputsV4,
 } from '../../../engine/tresorerie/types';
 import {
-  getEffectiveAllocationMode,
   normalizeAllocationPockets,
 } from '../../../engine/tresorerie/allocationPockets';
 import { TresoPocketModal } from './TresoPocketModal';
@@ -21,12 +21,13 @@ import {
 import { getAllocationPocketLabel } from '../utils/tresorerieV2Migration';
 import {
   fmtEuroInput,
+  fmtRateInput,
   parseEuroInput,
 } from '../utils/tresorerieFormatters';
 
 interface Props {
-  inputs: TresoInputsV3;
-  onChange: (nextInputs: TresoInputsV3) => void;
+  inputs: TresoInputsV4;
+  onChange: (nextInputs: TresoInputsV4) => void;
 }
 
 export function TresoPlacementSection({ inputs, onChange }: Props) {
@@ -35,9 +36,8 @@ export function TresoPlacementSection({ inputs, onChange }: Props) {
 
   const matrix = v2.allocationMatrix;
   const pockets = normalizeAllocationPockets(matrix.pockets);
-  const mode = getEffectiveAllocationMode(pockets);
-  const modeLabel = mode === 'single' ? 'placement unique' : 'stratégie multi-poches';
   const workingCapitalRequirement = v2.company.incomeStatement?.workingCapitalRequirement ?? 0;
+  const minimumBankBalance = matrix.minimumBankBalance ?? matrix.sweepThreshold;
   const editingPocketIndex = pockets.findIndex(pocket => pocket.id === editingPocketId);
   const editingPocket = editingPocketIndex >= 0 ? pockets[editingPocketIndex] : null;
   const pocketsByHorizon = ALLOCATION_HORIZON_OPTIONS.map(option => ({
@@ -45,11 +45,11 @@ export function TresoPlacementSection({ inputs, onChange }: Props) {
     pockets: pockets.filter(pocket => (pocket.horizon ?? 'moyen_terme') === option.value),
   }));
 
-  const patchV2 = (nextV2: TresoInputsV3) => {
+  const patchV2 = (nextV2: TresoInputsV4) => {
     onChange(nextV2);
   };
 
-  const patchMatrix = (patch: Partial<TresoInputsV3['allocationMatrix']>) => {
+  const patchMatrix = (patch: Partial<TresoInputsV4['allocationMatrix']>) => {
     patchV2({ ...v2, allocationMatrix: { ...matrix, ...patch } });
   };
 
@@ -57,31 +57,32 @@ export function TresoPlacementSection({ inputs, onChange }: Props) {
     patchMatrix({
       pockets: matrix.pockets.map(pocket => {
         if (pocket.id !== id) return pocket;
-        const nextPocket = { ...pocket, ...patch };
-        return {
-          ...nextPocket,
-          termDestination: nextPocket.repeatAtTerm ? 'same_pocket' : nextPocket.termDestination,
-        };
+        return { ...pocket, ...patch, termDestination: 'treasury' };
       }),
     });
   };
 
-  const addPocket = () => {
+  const addPocket = (horizon?: AllocationPocketHorizon) => {
     if (matrix.pockets.length >= 5) return;
-    const nextPocket = buildDefaultPocket(matrix.pockets);
+    const nextPocket = buildDefaultPocket(matrix.pockets, horizon);
     const nextPockets = [...matrix.pockets, nextPocket];
-    patchMatrix({ pockets: nextPockets, mode: getEffectiveAllocationMode(nextPockets) });
+    patchMatrix({ pockets: nextPockets, mode: nextPockets.length > 1 ? 'strategy' : 'single' });
     setEditingPocketId(nextPocket.id);
   };
 
   const deletePocket = (id: string) => {
     const nextPockets = matrix.pockets.filter(pocket => pocket.id !== id);
-    patchMatrix({ pockets: nextPockets, mode: getEffectiveAllocationMode(nextPockets) });
+    patchMatrix({ pockets: nextPockets, mode: nextPockets.length > 1 ? 'strategy' : 'single' });
     setEditingPocketId(null);
   };
 
   const totalInitialPct = pockets.reduce((sum, pocket) => sum + pocket.initialAllocationPct, 0);
   const totalAnnualPct = pockets.reduce((sum, pocket) => sum + pocket.annualAllocationPct, 0);
+  const initialInvestedAmount =
+    v2.company.treasuryInitial * Math.min(Math.max(totalInitialPct, 0), 100) / 100;
+  const bankAmount = Math.max(0, v2.company.treasuryInitial - initialInvestedAmount);
+  const protectedCash = minimumBankBalance + workingCapitalRequirement;
+  const availableCash = Math.max(0, bankAmount - protectedCash);
 
   return (
     <div className="premium-card ts-section">
@@ -93,33 +94,59 @@ export function TresoPlacementSection({ inputs, onChange }: Props) {
         </span>
         <div>
           <h2 className="ts-section__title">Allocation trésorerie société</h2>
-          <p className="ts-section__subtitle">Matrice initiale et balayage annuel au-dessus du seuil</p>
+          <p className="ts-section__subtitle">Compte bancaire pivot et placements par horizon</p>
         </div>
       </div>
       <div className="ts-section__divider" />
 
-      <div className="ts-placement-summary" aria-label="Mode de placement déduit">
-        <span>Mode déduit : {modeLabel}</span>
-        <span>BFR inclus dans le seuil de sécurité : {fmtEuroInput(workingCapitalRequirement)} €</span>
+      <div className="ts-placement-summary" aria-label="Répartition de trésorerie">
+        <span>Trésorerie initiale : {fmtEuroInput(v2.company.treasuryInitial)} €</span>
+        <span>Investi : {fmtEuroInput(initialInvestedAmount)} €</span>
+        <span>Compte bancaire : {fmtEuroInput(bankAmount)} €</span>
+        <span>Solde minimum banque + BFR : {fmtEuroInput(protectedCash)} €</span>
+        <span>Disponible : {fmtEuroInput(availableCash)} €</span>
       </div>
 
       <div className="ts-fields">
-        <SimFieldShell label="Seuil de trésorerie conservée" className="ts-field" rowClassName="ts-field__row">
+        <SimFieldShell label="Solde minimum à conserver sur le compte bancaire" className="ts-field" rowClassName="ts-field__row">
           <input
             type="text"
             inputMode="numeric"
             className="sim-field__control"
-            value={fmtEuroInput(matrix.sweepThreshold)}
-            onChange={event => patchMatrix({ sweepThreshold: parseEuroInput(event.target.value) })}
+            value={fmtEuroInput(minimumBankBalance)}
+            onChange={event => {
+              const value = parseEuroInput(event.target.value);
+              patchMatrix({ minimumBankBalance: value, sweepThreshold: value });
+            }}
           />
           <span className="sim-field__unit ts-unit">€</span>
         </SimFieldShell>
       </div>
+      <p className="ts-note--info">
+        Le balayage place uniquement la trésorerie au-dessus du solde minimum bancaire et du BFR.
+      </p>
 
       <div className="ts-section__note">Poches par horizon</div>
-      {pockets.length > 0 ? (
-        <div className="ts-pocket-board" aria-label="Allocation par horizon">
-          {pocketsByHorizon.map(column => (
+      <div className="ts-pocket-board" aria-label="Allocation par horizon">
+        <section
+          className="ts-pocket-column ts-pocket-column--bank"
+          role="group"
+          aria-labelledby="ts-pocket-column-bank"
+        >
+          <header className="ts-pocket-column__header">
+            <h3 id="ts-pocket-column-bank">Compte bancaire</h3>
+            <span>0 %</span>
+          </header>
+          <div className="ts-bank-pocket">
+            <strong>{fmtEuroInput(bankAmount)} €</strong>
+            <small>Non rémunéré · sorties courantes</small>
+            {pockets.length === 0 ? (
+              <span>Trésorerie conservée sur compte bancaire, sans rendement</span>
+            ) : null}
+          </div>
+        </section>
+
+        {pocketsByHorizon.map(column => (
             <section
               key={column.value}
               className="ts-pocket-column"
@@ -140,10 +167,11 @@ export function TresoPlacementSection({ inputs, onChange }: Props) {
                       onClick={() => setEditingPocketId(pocket.id)}
                       aria-label={`Paramétrer ${getAllocationPocketLabel(pocket)}`}
                     >
-                      <strong>{getAllocationPocketLabel(pocket)}</strong>
-                      <small>
-                        Ordre {pocket.withdrawalPriority ?? '-'} · {getAllocationHorizonLabel(pocket.horizon)}
-                      </small>
+                      <span className="ts-pocket-column__item-head">
+                        <strong>{getAllocationPocketLabel(pocket)}</strong>
+                        <em>{fmtRateInput(pocket.annualReturnRate)} %</em>
+                      </span>
+                      <small>{getAllocationHorizonLabel(pocket.horizon)}</small>
                       <span>
                         Initial {pocket.initialAllocationPct} % · Annuel {pocket.annualAllocationPct} %
                       </span>
@@ -152,19 +180,17 @@ export function TresoPlacementSection({ inputs, onChange }: Props) {
                   ))}
                 </div>
               ) : (
-                <p className="ts-pocket-column__empty">Aucune poche</p>
+                <button
+                  type="button"
+                  className="ts-pocket-column__empty"
+                  onClick={() => addPocket(column.value)}
+                >
+                  + Ajouter une poche {column.label.toLowerCase()}
+                </button>
               )}
             </section>
-          ))}
-        </div>
-      ) : (
-        <div className="ts-matrix-empty">
-          <strong>Trésorerie conservée sur compte bancaire, sans rendement</strong>
-          <button type="button" className="ts-text-btn" onClick={addPocket}>
-            Ajouter une poche
-          </button>
-        </div>
-      )}
+        ))}
+      </div>
 
       <div className="ts-matrix-actions">
         {pockets.length > 0 && (
@@ -173,16 +199,16 @@ export function TresoPlacementSection({ inputs, onChange }: Props) {
             className="ts-text-btn"
             disabled={matrix.pockets.length >= 5}
             title={matrix.pockets.length >= 5 ? 'Maximum 5 poches' : undefined}
-            onClick={addPocket}
+            onClick={() => addPocket()}
           >
             Ajouter une poche
           </button>
         )}
         <span className={totalInitialPct <= 100 ? '' : 'is-warning'}>
-          Total initial : {totalInitialPct} %
+          Répartition de l’allocation initiale : {totalInitialPct} %
         </span>
         <span className={totalAnnualPct <= 100 ? '' : 'is-warning'}>
-          Total annuel : {totalAnnualPct} %
+          Répartition du balayage annuel : {totalAnnualPct} %
         </span>
       </div>
 

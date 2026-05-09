@@ -6,7 +6,6 @@ import type {
   AllocationPocketInput,
 } from '@/engine/tresorerie/types';
 import {
-  ALLOCATION_DESTINATION_OPTIONS,
   ALLOCATION_HORIZON_OPTIONS,
   ALLOCATION_KIND_OPTIONS,
 } from '../utils/tresorerieSocieteModel';
@@ -34,10 +33,9 @@ export function TresoPocketModal({
   onClose,
 }: TresoPocketModalProps) {
   const patchPocket = (patch: Partial<AllocationPocketInput>) => {
-    const nextPocket = { ...pocket, ...patch };
     onChange({
       ...patch,
-      termDestination: nextPocket.repeatAtTerm ? 'same_pocket' : nextPocket.termDestination,
+      termDestination: 'treasury',
     });
   };
 
@@ -59,7 +57,20 @@ export function TresoPocketModal({
         </>
       )}
     >
-      <div className="ts-modal-grid ts-modal-grid--three">
+      <div className="ts-pocket-modal-summary">
+        <span>Initial {pocket.initialAllocationPct} %</span>
+        <span>Balayage annuel {pocket.annualAllocationPct} %</span>
+        <span>Rendement {fmtRateInput(pocket.annualReturnRate)} %</span>
+        <span>Durée {pocket.durationYears || 0} ans</span>
+      </div>
+
+      <div className="ts-modal-stack">
+        <section className="ts-associate-card">
+          <div className="ts-associate-card__header">
+            <strong>Identité</strong>
+            <span>Nom et famille de placement</span>
+          </div>
+          <div className="ts-modal-grid ts-modal-grid--three">
         <SimFieldShell label="Libellé" className="ts-field" rowClassName="ts-field__row">
           <input
             type="text"
@@ -80,7 +91,15 @@ export function TresoPocketModal({
             ariaLabel={`Type de poche ${index + 1}`}
           />
         </SimFieldShell>
+          </div>
+        </section>
 
+        <section className="ts-associate-card">
+          <div className="ts-associate-card__header">
+            <strong>Allocation</strong>
+            <span>Part de trésorerie à placer</span>
+          </div>
+          <div className="ts-modal-grid ts-modal-grid--three">
         <SimFieldShell label="Horizon" className="ts-field" rowClassName="ts-field__row">
           <SimSelect
             value={pocket.horizon ?? 'moyen_terme'}
@@ -92,18 +111,40 @@ export function TresoPocketModal({
           />
         </SimFieldShell>
 
-        <SimFieldShell label="Ordre de consommation" className="ts-field" rowClassName="ts-field__row">
+        <SimFieldShell label="Allocation initiale" className="ts-field" rowClassName="ts-field__row">
           <input
             type="text"
-            inputMode="numeric"
+            inputMode="decimal"
             className="sim-field__control"
-            value={pocket.withdrawalPriority ?? index + 1}
+            value={String(pocket.initialAllocationPct)}
             onChange={event => patchPocket({
-              withdrawalPriority: parseNumberInput(event.target.value),
+              initialAllocationPct: parsePctInput(event.target.value),
             })}
           />
+          <span className="sim-field__unit ts-unit">%</span>
         </SimFieldShell>
 
+        <SimFieldShell label="Allocation annuelle" className="ts-field" rowClassName="ts-field__row">
+          <input
+            type="text"
+            inputMode="decimal"
+            className="sim-field__control"
+            value={String(pocket.annualAllocationPct)}
+            onChange={event => patchPocket({
+              annualAllocationPct: parsePctInput(event.target.value),
+            })}
+          />
+          <span className="sim-field__unit ts-unit">%</span>
+        </SimFieldShell>
+          </div>
+        </section>
+
+        <section className="ts-associate-card">
+          <div className="ts-associate-card__header">
+            <strong>Rendement & durée</strong>
+            <span>Performance et indisponibilité</span>
+          </div>
+          <div className="ts-modal-grid ts-modal-grid--three">
         <SimFieldShell label="Durée" className="ts-field" rowClassName="ts-field__row">
           <input
             type="text"
@@ -142,33 +183,17 @@ export function TresoPocketModal({
           />
           <span className="sim-field__unit ts-unit">mois</span>
         </SimFieldShell>
+          </div>
+        </section>
 
-        <SimFieldShell label="Allocation initiale" className="ts-field" rowClassName="ts-field__row">
-          <input
-            type="text"
-            inputMode="decimal"
-            className="sim-field__control"
-            value={String(pocket.initialAllocationPct)}
-            onChange={event => patchPocket({
-              initialAllocationPct: parsePctInput(event.target.value),
-            })}
-          />
-          <span className="sim-field__unit ts-unit">%</span>
-        </SimFieldShell>
-
-        <SimFieldShell label="Allocation annuelle" className="ts-field" rowClassName="ts-field__row">
-          <input
-            type="text"
-            inputMode="decimal"
-            className="sim-field__control"
-            value={String(pocket.annualAllocationPct)}
-            onChange={event => patchPocket({
-              annualAllocationPct: parsePctInput(event.target.value),
-            })}
-          />
-          <span className="sim-field__unit ts-unit">%</span>
-        </SimFieldShell>
-
+        <section className="ts-associate-card">
+          <div className="ts-associate-card__header">
+            <strong>Fin du placement</strong>
+            <span>Retour automatique sur compte bancaire</span>
+          </div>
+          <p className="ts-note--info">
+            Au terme, le produit revient sur le compte bancaire. Si la répétition est activée, seul l’excédent au-dessus du solde minimum est réinvesti.
+          </p>
         <label className="ts-toggle-label ts-modal-toggle">
           <input
             type="checkbox"
@@ -177,21 +202,9 @@ export function TresoPocketModal({
               repeatAtTerm: event.target.checked,
             })}
           />
-          Répéter au terme
+          Réinvestir automatiquement si le solde minimum reste respecté
         </label>
-
-        {!pocket.repeatAtTerm && (
-          <SimFieldShell label="Destination au terme" className="ts-field" rowClassName="ts-field__row">
-            <SimSelect
-              value={pocket.termDestination}
-              onChange={value => patchPocket({
-                termDestination: value as AllocationPocketInput['termDestination'],
-              })}
-              options={ALLOCATION_DESTINATION_OPTIONS}
-              ariaLabel={`Destination au terme ${index + 1}`}
-            />
-          </SimFieldShell>
-        )}
+        </section>
       </div>
     </SimModalShell>
   );

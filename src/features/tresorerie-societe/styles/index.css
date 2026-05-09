@@ -68,7 +68,7 @@
 
 .ts-pocket-board {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 10px;
   margin: 14px 0;
 }
@@ -129,17 +129,32 @@
 
 .ts-pocket-column__item strong,
 .ts-pocket-column__item small,
-.ts-pocket-column__item span {
+.ts-pocket-column__item span:not(.ts-pocket-column__item-head) {
   display: block;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
+.ts-pocket-column__item-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+
 .ts-pocket-column__item strong {
   color: var(--color-c1);
   font-size: 11px;
   font-weight: 600;
+}
+
+.ts-pocket-column__item em {
+  color: var(--color-c3);
+  flex: 0 0 auto;
+  font-size: 11px;
+  font-style: normal;
+  font-weight: 700;
 }
 
 .ts-pocket-column__item small,
@@ -162,8 +177,52 @@
 }
 
 .ts-pocket-column__empty {
+  appearance: none;
+  width: 100%;
   margin: 10px 0 2px;
+  padding: 8px;
+  background: transparent;
+  border: 1px dashed var(--color-c8);
+  border-radius: 6px;
+  cursor: pointer;
   text-align: center;
+}
+
+.ts-bank-pocket {
+  display: grid;
+  gap: 4px;
+  padding: 8px;
+  background: #fff;
+  border: 1px solid var(--color-c8);
+  border-radius: 6px;
+}
+
+.ts-bank-pocket strong {
+  color: var(--color-c1);
+  font-size: 12px;
+}
+
+.ts-bank-pocket small,
+.ts-bank-pocket span {
+  color: var(--color-c9);
+  font-size: 10px;
+}
+
+.ts-pocket-modal-summary {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.ts-pocket-modal-summary span {
+  padding: 8px;
+  background: var(--color-c7);
+  border: 1px solid var(--color-c8);
+  border-radius: 6px;
+  color: var(--color-c1);
+  font-size: 11px;
+  font-weight: 600;
 }
 
 .ts-matrix-empty {
@@ -738,11 +797,17 @@
   .ts-modal-grid--three {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
+
+  .ts-pocket-board,
+  .ts-pocket-modal-summary {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
 @media (max-width: 720px) {
   .ts-modal-grid,
-  .ts-modal-grid--three {
+  .ts-modal-grid--three,
+  .ts-pocket-modal-summary {
     grid-template-columns: 1fr;
   }
 }
@@ -754,6 +819,7 @@
 
   .ts-company-snapshot,
   .ts-pocket-board,
+  .ts-associate-modal-layout,
   .ts-modal-panels,
   .ts-balance-grid {
     grid-template-columns: 1fr;
@@ -764,6 +830,12 @@
   }
 
   .ts-modal-tabs {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .ts-associate-modal-nav {
+    position: static;
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
