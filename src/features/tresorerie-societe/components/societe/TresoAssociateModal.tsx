@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useState, type KeyboardEvent } from 'react';
 import { SimFieldShell } from '@/components/ui/sim/SimFieldShell';
 import { SimModalShell } from '@/components/ui/sim/SimModalShell';
 import { SimSelect } from '@/components/ui/sim/SimSelect';
@@ -7,11 +7,11 @@ import type {
   AssociateKind,
   AssociateProfileInput,
   AssociateRemunerationInput,
-  AssociateRemunerationSource,
   CcaScheduleInput,
   OwnershipRight,
   SubsidiaryInput,
 } from '@/engine/tresorerie/types';
+import { TresoAssociateRemunerationPanel } from './TresoAssociateRemunerationPanel';
 import {
   fmtEuroInput,
   fmtRateInput,
@@ -40,11 +40,6 @@ const OWNERSHIP_OPTIONS: Array<{ value: OwnershipRight; label: string }> = [
   { value: 'pleine_propriete', label: 'Pleine propriété' },
   { value: 'usufruit', label: 'Usufruit' },
   { value: 'nue_propriete', label: 'Nue-propriété' },
-];
-
-const REMUNERATION_SOURCE_OPTIONS: Array<{ value: AssociateRemunerationSource; label: string }> = [
-  { value: 'holding', label: 'Holding' },
-  { value: 'subsidiary', label: 'Filiale' },
 ];
 
 const ASSOCIATE_MODAL_SECTIONS: Array<{ key: AssociateModalSection; label: string }> = [
@@ -85,12 +80,6 @@ export function TresoAssociateModal({
   onClose,
 }: TresoAssociateModalProps) {
   const [activeSection, setActiveSection] = useState<AssociateModalSection>('identite');
-  const sectionRefs = {
-    identite: useRef<HTMLDivElement>(null),
-    profil: useRef<HTMLDivElement>(null),
-    remuneration: useRef<HTMLDivElement>(null),
-    cca: useRef<HTMLDivElement>(null),
-  };
   const kind = associate.kind ?? 'pp';
   const profile = associate.profile ?? fallbackProfile;
   const lot = associate.ownershipLots[0] ?? {
@@ -100,7 +89,6 @@ export function TresoAssociateModal({
   };
   const cca = getCca(associate, profile.projectionStartYear);
   const remuneration = getRemuneration(associate);
-  const netRemuneration = Math.max(0, remuneration.loadedAnnualCost * (1 - remuneration.socialChargeRate));
   const firstExceptionalContribution = cca.exceptionalContributions[0] ?? {
     year: profile.projectionStartYear,
     amount: 0,
@@ -108,15 +96,6 @@ export function TresoAssociateModal({
 
   const patchProfile = (patch: Partial<AssociateProfileInput>) => {
     onChange({ profile: { ...profile, ...patch } });
-  };
-
-  const patchRemuneration = (patch: Partial<AssociateRemunerationInput>) => {
-    const nextRemuneration = { ...remuneration, ...patch };
-    onChange({
-      remuneration: nextRemuneration,
-      remunerationAnnualCost: nextRemuneration.loadedAnnualCost,
-      remunerationEndYear: nextRemuneration.endYear,
-    });
   };
 
   const patchCca = (patch: Partial<CcaScheduleInput>) => {
@@ -129,9 +108,24 @@ export function TresoAssociateModal({
     });
   };
 
-  const goToSection = (section: AssociateModalSection) => {
+  const selectSection = (section: AssociateModalSection) => {
     setActiveSection(section);
-    sectionRefs[section].current?.scrollIntoView?.({ block: 'start', behavior: 'smooth' });
+  };
+
+  const handleTabKeyDown = (event: KeyboardEvent<HTMLButtonElement>, index: number) => {
+    const lastIndex = ASSOCIATE_MODAL_SECTIONS.length - 1;
+    const nextIndex = event.key === 'ArrowDown' || event.key === 'ArrowRight'
+      ? Math.min(index + 1, lastIndex)
+      : event.key === 'ArrowUp' || event.key === 'ArrowLeft'
+        ? Math.max(index - 1, 0)
+        : event.key === 'Home'
+          ? 0
+          : event.key === 'End'
+            ? lastIndex
+            : index;
+    if (nextIndex === index) return;
+    event.preventDefault();
+    setActiveSection(ASSOCIATE_MODAL_SECTIONS[nextIndex].key);
   };
 
   return (
@@ -143,22 +137,39 @@ export function TresoAssociateModal({
       bodyClassName="ts-company-modal__body"
     >
       <div className="ts-associate-modal-layout">
-        <nav className="ts-associate-modal-nav" aria-label="Rubriques de l’associé">
-          {ASSOCIATE_MODAL_SECTIONS.map(section => (
+        <nav
+          className="ts-associate-modal-nav"
+          role="tablist"
+          aria-label="Rubriques de l’associé"
+          aria-orientation="vertical"
+        >
+          {ASSOCIATE_MODAL_SECTIONS.map((section, index) => (
             <button
               key={section.key}
+              id={`ts-associate-tab-${section.key}`}
               type="button"
+              role="tab"
               className={activeSection === section.key ? 'is-active' : ''}
-              aria-current={activeSection === section.key ? 'page' : undefined}
-              onClick={() => goToSection(section.key)}
+              aria-controls={`ts-associate-panel-${section.key}`}
+              aria-selected={activeSection === section.key}
+              tabIndex={activeSection === section.key ? 0 : -1}
+              onClick={() => selectSection(section.key)}
+              onKeyDown={event => handleTabKeyDown(event, index)}
             >
               {section.label}
             </button>
           ))}
         </nav>
 
-        <div className="ts-modal-stack">
-        <div ref={sectionRefs.identite} className="ts-modal-grid ts-modal-grid--three" id="ts-associate-identite">
+        <div
+          className="ts-associate-modal-panel"
+          id={`ts-associate-panel-${activeSection}`}
+          role="tabpanel"
+          aria-labelledby={`ts-associate-tab-${activeSection}`}
+          tabIndex={0}
+        >
+        {activeSection === 'identite' && (
+        <div className="ts-modal-grid ts-modal-grid--three">
           <SimFieldShell label="Libellé" className="ts-field" rowClassName="ts-field__row">
             <input
               type="text"
@@ -181,7 +192,13 @@ export function TresoAssociateModal({
             <SimSelect
               value={lot.right}
               onChange={value => onChange({
-                ownershipLots: [{ ...lot, right: value as OwnershipRight }],
+                ownershipLots: [{
+                  ...lot,
+                  right: value as OwnershipRight,
+                  economicRightsPct: value === 'pleine_propriete'
+                    ? lot.capitalPct
+                    : lot.economicRightsPct,
+                }],
               })}
               options={OWNERSHIP_OPTIONS}
               ariaLabel="Droit détenu"
@@ -195,32 +212,48 @@ export function TresoAssociateModal({
               className="sim-field__control"
               value={String(lot.capitalPct)}
               onChange={event => onChange({
-                ownershipLots: [{ ...lot, capitalPct: parsePctInput(event.target.value) }],
+                ownershipLots: [{
+                  ...lot,
+                  capitalPct: parsePctInput(event.target.value),
+                  economicRightsPct: lot.right === 'pleine_propriete'
+                    ? parsePctInput(event.target.value)
+                    : lot.economicRightsPct,
+                }],
               })}
             />
             <span className="sim-field__unit ts-unit">%</span>
           </SimFieldShell>
 
-          <SimFieldShell label="% économique" className="ts-field" rowClassName="ts-field__row">
-            <input
-              type="text"
-              inputMode="decimal"
-              className="sim-field__control"
-              value={String(lot.economicRightsPct)}
-              onChange={event => onChange({
-                ownershipLots: [{ ...lot, economicRightsPct: parsePctInput(event.target.value) }],
-              })}
-            />
-            <span className="sim-field__unit ts-unit">%</span>
-          </SimFieldShell>
+          {lot.right === 'pleine_propriete' ? (
+            <p className="ts-field-note">
+              En pleine propriété, les droits économiques suivent automatiquement le capital.
+            </p>
+          ) : (
+            <SimFieldShell label="% économique" className="ts-field" rowClassName="ts-field__row">
+              <input
+                type="text"
+                inputMode="decimal"
+                className="sim-field__control"
+                value={String(lot.economicRightsPct)}
+                onChange={event => onChange({
+                  ownershipLots: [{ ...lot, economicRightsPct: parsePctInput(event.target.value) }],
+                })}
+              />
+              <span className="sim-field__unit ts-unit">%</span>
+            </SimFieldShell>
+          )}
         </div>
+        )}
 
-        {kind === 'pp' && (
-          <div ref={sectionRefs.profil} className="ts-associate-card" id="ts-associate-profil">
+        {activeSection === 'profil' && kind === 'pp' && (
+          <div className="ts-associate-card">
             <div className="ts-associate-card__header">
               <strong>Profil foyer</strong>
-              <span>Paramètres personnels de projection</span>
+              <span>Paramètre personnel de projection</span>
             </div>
+            <p className="ts-note--info">
+              La projection démarre en {profile.projectionStartYear}. L’année est pilotée depuis la société.
+            </p>
             <div className="ts-modal-grid ts-modal-grid--three">
               <SimFieldShell label="Âge actuel" className="ts-field" rowClassName="ts-field__row">
                 <input
@@ -231,40 +264,12 @@ export function TresoAssociateModal({
                   onChange={event => patchProfile({ currentAge: parseNumberInput(event.target.value) })}
                 />
               </SimFieldShell>
-              <SimFieldShell label="Âge de retraite" className="ts-field" rowClassName="ts-field__row">
-                <input
-                  type="text"
-                  inputMode="numeric"
-                  className="sim-field__control"
-                  value={profile.retirementAge}
-                  onChange={event => patchProfile({ retirementAge: parseNumberInput(event.target.value) })}
-                />
-              </SimFieldShell>
-              <SimFieldShell label="Besoin annuel net" className="ts-field" rowClassName="ts-field__row">
-                <input
-                  type="text"
-                  inputMode="numeric"
-                  className="sim-field__control"
-                  value={fmtEuroInput(profile.annualIncomeNeed)}
-                  onChange={event => patchProfile({ annualIncomeNeed: parseEuroInput(event.target.value) })}
-                />
-                <span className="sim-field__unit ts-unit">€</span>
-              </SimFieldShell>
-              <SimFieldShell label="Début projection" className="ts-field" rowClassName="ts-field__row">
-                <input
-                  type="text"
-                  inputMode="numeric"
-                  className="sim-field__control"
-                  value={profile.projectionStartYear}
-                  onChange={event => patchProfile({ projectionStartYear: parseNumberInput(event.target.value) })}
-                />
-              </SimFieldShell>
             </div>
           </div>
         )}
 
-        {kind === 'pm' && (
-          <div ref={sectionRefs.profil} className="ts-associate-card" id="ts-associate-profil">
+        {activeSection === 'profil' && kind === 'pm' && (
+          <div className="ts-associate-card">
             <div className="ts-associate-card__header">
               <strong>Profil</strong>
               <span>Associé personne morale</span>
@@ -275,121 +280,18 @@ export function TresoAssociateModal({
           </div>
         )}
 
-        <div ref={sectionRefs.remuneration} className="ts-associate-card" id="ts-associate-remuneration">
-          <div className="ts-associate-card__header">
-            <strong>Rémunération</strong>
-            <span>Coût société et revenu net estimé</span>
-          </div>
-          <div className="ts-modal-grid ts-modal-grid--three">
-            <SimFieldShell label="Source de rémunération" className="ts-field" rowClassName="ts-field__row">
-              <SimSelect
-                value={remuneration.source}
-                onChange={value => patchRemuneration({
-                  source: value as AssociateRemunerationSource,
-                  subsidiaryId: value === 'subsidiary'
-                    ? remuneration.subsidiaryId ?? subsidiaries[0]?.id
-                    : undefined,
-                })}
-                options={REMUNERATION_SOURCE_OPTIONS}
-                ariaLabel="Source du revenu"
-              />
-            </SimFieldShell>
+        {activeSection === 'remuneration' && (
+          <TresoAssociateRemunerationPanel
+            associate={associate}
+            profile={profile}
+            remuneration={remuneration}
+            subsidiaries={subsidiaries}
+            onChange={onChange}
+          />
+        )}
 
-            {remuneration.source === 'subsidiary' && (
-              <SimFieldShell label="Filiale source" className="ts-field" rowClassName="ts-field__row">
-                <SimSelect
-                  value={remuneration.subsidiaryId ?? subsidiaries[0]?.id ?? ''}
-                  onChange={value => patchRemuneration({ subsidiaryId: value || undefined })}
-                  options={subsidiaries.map(subsidiary => ({
-                    value: subsidiary.id,
-                    label: subsidiary.label,
-                  }))}
-                  ariaLabel="Filiale source de rémunération"
-                />
-              </SimFieldShell>
-            )}
-
-            <SimFieldShell label="Rémunération chargée pour la société" className="ts-field" rowClassName="ts-field__row">
-              <input
-                type="text"
-                inputMode="numeric"
-                className="sim-field__control"
-                value={fmtEuroInput(remuneration.loadedAnnualCost)}
-                onChange={event => patchRemuneration({
-                  loadedAnnualCost: parseEuroInput(event.target.value),
-                })}
-              />
-              <span className="sim-field__unit ts-unit">€</span>
-            </SimFieldShell>
-
-            <SimFieldShell label="Taux de charges" className="ts-field" rowClassName="ts-field__row">
-              <input
-                type="text"
-                inputMode="decimal"
-                className="sim-field__control"
-                value={fmtRateInput(remuneration.socialChargeRate)}
-                onChange={event => patchRemuneration({
-                  socialChargeRate: parseRateInput(event.target.value),
-                })}
-              />
-              <span className="sim-field__unit ts-unit">%</span>
-            </SimFieldShell>
-
-            <SimFieldShell label="Rémunération nette estimée" className="ts-field" rowClassName="ts-field__row">
-              <input
-                type="text"
-                className="sim-field__control"
-                value={fmtEuroInput(netRemuneration)}
-                readOnly
-              />
-              <span className="sim-field__unit ts-unit">€</span>
-            </SimFieldShell>
-
-            <SimFieldShell label="Début de rémunération" className="ts-field" rowClassName="ts-field__row">
-              <input
-                type="text"
-                inputMode="numeric"
-                className="sim-field__control"
-                value={remuneration.startYear ?? ''}
-                onChange={event => patchRemuneration({
-                  startYear: parseNumberInput(event.target.value) || undefined,
-                })}
-              />
-            </SimFieldShell>
-
-            <SimFieldShell label="Fin de rémunération" className="ts-field" rowClassName="ts-field__row">
-              <input
-                type="text"
-                inputMode="numeric"
-                className="sim-field__control"
-                value={remuneration.endYear ?? ''}
-                onChange={event => patchRemuneration({
-                  endYear: parseNumberInput(event.target.value) || undefined,
-                })}
-              />
-            </SimFieldShell>
-
-            <SimFieldShell label="Besoin annuel après arrêt" className="ts-field" rowClassName="ts-field__row">
-              <input
-                type="text"
-                inputMode="numeric"
-                className="sim-field__control"
-                value={fmtEuroInput(remuneration.annualNeedAfterStop)}
-                onChange={event => patchRemuneration({
-                  annualNeedAfterStop: parseEuroInput(event.target.value),
-                })}
-              />
-              <span className="sim-field__unit ts-unit">€</span>
-            </SimFieldShell>
-          </div>
-          {subsidiaries.length > 0 && (
-            <p className="ts-note--info">
-              Filiales disponibles : {subsidiaries.map(subsidiary => subsidiary.label).join(', ')}
-            </p>
-          )}
-        </div>
-
-        <div ref={sectionRefs.cca} className="ts-associate-card" id="ts-associate-cca">
+        {activeSection === 'cca' && (
+        <div className="ts-associate-card">
           <div className="ts-associate-card__header">
             <strong>Compte courant d’associé</strong>
             <span>Taux maximum déductible</span>
@@ -495,6 +397,7 @@ export function TresoAssociateModal({
             </SimFieldShell>
           </div>
         </div>
+        )}
         </div>
       </div>
     </SimModalShell>

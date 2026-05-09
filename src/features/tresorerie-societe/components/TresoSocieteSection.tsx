@@ -10,8 +10,6 @@ import type {
   AssociateInput,
   AssociateKind,
   CompanyInput,
-  CompanyKind,
-  LegalForm,
   TresoInputsV4,
 } from '../../../engine/tresorerie/types';
 import {
@@ -19,11 +17,10 @@ import {
   TresoCompanySubsidiariesPanel,
 } from './TresoCompanyPanels';
 import { TresoAssociateModal } from './societe/TresoAssociateModal';
+import { TresoCompanyIdentityPanel } from './societe/TresoCompanyIdentityPanel';
 import { TresoOrgChart } from './societe/TresoOrgChart';
 import { TresoSubsidiaryModal } from './societe/TresoSubsidiaryModal';
 import {
-  COMPANY_KIND_CODES,
-  COMPANY_KIND_LABELS,
   getAssociateProfile,
   getOwnershipTotals,
   getSelectedAssociateId,
@@ -41,28 +38,6 @@ interface Props {
 }
 
 type PanelKey = 'identite' | 'associes' | 'compte' | 'emprunts' | 'filiales';
-
-const TYPE_OPTIONS = [
-  { value: 'newco', label: 'Société à créer' },
-  { value: 'existante', label: 'Société existante' },
-];
-
-const LEGAL_FORM_OPTIONS: Array<{ value: LegalForm; label: string }> = [
-  { value: 'sas', label: 'SAS' },
-  { value: 'sc', label: 'SC' },
-  { value: 'sarl', label: 'SARL' },
-  { value: 'sa', label: 'SA' },
-  { value: 'selarl', label: 'SELARL' },
-  { value: 'spfpl', label: 'SPFPL' },
-  { value: 'selas', label: 'SELAS' },
-  { value: 'autre', label: 'Autre' },
-];
-
-const COMPANY_KIND_OPTIONS: Array<{ value: CompanyKind; label: string }> =
-  (Object.keys(COMPANY_KIND_LABELS) as CompanyKind[]).map(kind => ({
-    value: kind,
-    label: `${COMPANY_KIND_LABELS[kind]} (${COMPANY_KIND_CODES[kind]})`,
-  }));
 
 const ASSOCIATE_KIND_OPTIONS: Array<{ value: AssociateKind; label: string }> = [
   { value: 'pp', label: 'Associé PP' },
@@ -115,11 +90,11 @@ export function TresoSocieteSection({ inputs, onChange }: Props) {
 
   const { company } = inputs;
   const selectedAssociateId = getSelectedAssociateId(inputs);
-  const selectedAssociate = company.associates.find(associate => associate.id === selectedAssociateId)
-    ?? company.associates[0];
   const activeAssociateModal = company.associates.find(associate => associate.id === associateModalId);
   const activeSubsidiaryModal = company.subsidiaries.find(subsidiary => subsidiary.id === subsidiaryModalId);
   const ownershipTotals = getOwnershipTotals(company.associates);
+  const projectionStartYear =
+    company.projectionStartYear ?? inputs.foyer?.projectionStartYear ?? new Date().getFullYear();
   const incomeStatement = company.incomeStatement ?? {
     annualRevenue: 0,
     annualStructureCosts: company.annualStructureCosts,
@@ -132,6 +107,28 @@ export function TresoSocieteSection({ inputs, onChange }: Props) {
     patchInputs({ ...inputs, company: { ...company, ...patch } });
   };
 
+  const patchProjectionStartYear = (nextProjectionStartYear: number) => {
+    const associates = company.associates.map(associate => ({
+      ...associate,
+      profile: associate.profile
+        ? { ...associate.profile, projectionStartYear: nextProjectionStartYear }
+        : associate.profile,
+    }));
+    const nextInputs = {
+      ...inputs,
+      foyer: {
+        ...inputs.foyer,
+        projectionStartYear: nextProjectionStartYear,
+      },
+      company: {
+        ...company,
+        projectionStartYear: nextProjectionStartYear,
+        associates,
+      },
+    };
+    patchInputs(syncSelectedProfile(selectedAssociateId, associates, nextInputs));
+  };
+
   const syncSelectedProfile = (
     associateId: string,
     associates: AssociateInput[],
@@ -139,12 +136,15 @@ export function TresoSocieteSection({ inputs, onChange }: Props) {
   ): TresoInputsV4 => {
     const associate = associates.find(item => item.id === associateId);
     if (associate?.kind === 'pp' && associate.profile) {
+      const nextProjectionStartYear =
+        nextInputs.company.projectionStartYear ?? associate.profile.projectionStartYear;
       return {
         ...nextInputs,
         foyer: {
           ...nextInputs.foyer,
           selectedAssociateId: associateId,
           ...associate.profile,
+          projectionStartYear: nextProjectionStartYear,
         },
       };
     }
@@ -202,99 +202,6 @@ export function TresoSocieteSection({ inputs, onChange }: Props) {
     });
   };
 
-  const renderIdentitePanel = () => (
-    <div className="ts-modal-grid">
-      <SimFieldShell label="Libellé de la société principale" className="ts-field" rowClassName="ts-field__row">
-        <input
-          type="text"
-          className="sim-field__control ts-input-left"
-          value={company.label ?? ''}
-          onChange={event => patchCompany({ label: event.target.value })}
-        />
-      </SimFieldShell>
-
-      <SimFieldShell label="Type de société" className="ts-field" rowClassName="ts-field__row">
-        <SimSelect
-          value={company.creationType}
-          onChange={value => patchCompany({ creationType: value as CompanyInput['creationType'] })}
-          options={TYPE_OPTIONS}
-          ariaLabel="Type de société"
-        />
-      </SimFieldShell>
-
-      <SimFieldShell label="Forme sociale" className="ts-field" rowClassName="ts-field__row">
-        <SimSelect
-          value={company.legalForm}
-          onChange={value => patchCompany({ legalForm: value as LegalForm })}
-          options={LEGAL_FORM_OPTIONS}
-          ariaLabel="Forme sociale"
-        />
-      </SimFieldShell>
-
-      <SimFieldShell label="Type société" className="ts-field" rowClassName="ts-field__row">
-        <SimSelect
-          value={company.companyKind ?? 'holding_patrimoniale'}
-          onChange={value => patchCompany({ companyKind: value as CompanyKind })}
-          options={COMPANY_KIND_OPTIONS}
-          ariaLabel="Type société"
-        />
-      </SimFieldShell>
-
-      <SimFieldShell label="Capital social" className="ts-field" rowClassName="ts-field__row">
-        <input
-          type="text"
-          inputMode="numeric"
-          className="sim-field__control"
-          value={fmtEuroInput(company.shareCapital)}
-          onChange={event => patchCompany({ shareCapital: parseEuroInput(event.target.value) })}
-        />
-        <span className="sim-field__unit ts-unit">€</span>
-      </SimFieldShell>
-
-      <SimFieldShell label="Prime d’émission" className="ts-field" rowClassName="ts-field__row">
-        <input
-          type="text"
-          inputMode="numeric"
-          className="sim-field__control"
-          value={fmtEuroInput(company.sharePremium)}
-          onChange={event => patchCompany({ sharePremium: parseEuroInput(event.target.value) })}
-        />
-        <span className="sim-field__unit ts-unit">€</span>
-      </SimFieldShell>
-
-      <SimFieldShell label="Trésorerie initiale" className="ts-field" rowClassName="ts-field__row">
-        <input
-          type="text"
-          inputMode="numeric"
-          className="sim-field__control"
-          value={fmtEuroInput(company.treasuryInitial)}
-          onChange={event => patchCompany({ treasuryInitial: parseEuroInput(event.target.value) })}
-        />
-        <span className="sim-field__unit ts-unit">€</span>
-      </SimFieldShell>
-
-      <SimFieldShell label="Réserves initiales" className="ts-field" rowClassName="ts-field__row">
-        <input
-          type="text"
-          inputMode="numeric"
-          className="sim-field__control"
-          value={fmtEuroInput(company.reservesInitial)}
-          onChange={event => patchCompany({ reservesInitial: parseEuroInput(event.target.value) })}
-        />
-        <span className="sim-field__unit ts-unit">€</span>
-      </SimFieldShell>
-
-      <label className="ts-toggle-label ts-modal-toggle">
-        <input
-          type="checkbox"
-          checked={company.reducedCorporateTaxEligible}
-          onChange={event => patchCompany({ reducedCorporateTaxEligible: event.target.checked })}
-        />
-        Éligible au taux réduit d’IS
-      </label>
-    </div>
-  );
-
   const renderAssociesPanel = () => (
     <div className="ts-modal-stack">
       {company.associates.map((associate, index) => {
@@ -342,18 +249,24 @@ export function TresoSocieteSection({ inputs, onChange }: Props) {
                 />
                 <span className="sim-field__unit ts-unit">%</span>
               </SimFieldShell>
-              <SimFieldShell label="% économique" className="ts-field" rowClassName="ts-field__row">
-                <input
-                  type="text"
-                  inputMode="decimal"
-                  className="sim-field__control"
-                  value={String(lot.economicRightsPct)}
-                  onChange={event => updateAssociate(associate.id, {
-                    ownershipLots: [{ ...lot, economicRightsPct: parsePctInput(event.target.value) }],
-                  })}
-                />
-                <span className="sim-field__unit ts-unit">%</span>
-              </SimFieldShell>
+              {lot.right === 'pleine_propriete' ? (
+                <p className="ts-field-note">
+                  Droits économiques identiques au capital en pleine propriété.
+                </p>
+              ) : (
+                <SimFieldShell label="% économique" className="ts-field" rowClassName="ts-field__row">
+                  <input
+                    type="text"
+                    inputMode="decimal"
+                    className="sim-field__control"
+                    value={String(lot.economicRightsPct)}
+                    onChange={event => updateAssociate(associate.id, {
+                      ownershipLots: [{ ...lot, economicRightsPct: parsePctInput(event.target.value) }],
+                    })}
+                  />
+                  <span className="sim-field__unit ts-unit">%</span>
+                </SimFieldShell>
+              )}
             </div>
           </div>
         );
@@ -413,16 +326,25 @@ export function TresoSocieteSection({ inputs, onChange }: Props) {
   );
 
   const renderActivePanel = () => {
-    if (activePanel === 'identite') return renderIdentitePanel();
+    if (activePanel === 'identite') {
+      return (
+        <TresoCompanyIdentityPanel
+          company={company}
+          projectionStartYear={projectionStartYear}
+          onCompanyChange={patchCompany}
+          onProjectionStartYearChange={patchProjectionStartYear}
+        />
+      );
+    }
     if (activePanel === 'associes') return renderAssociesPanel();
     if (activePanel === 'compte') return renderComptePanel();
     if (activePanel === 'emprunts') {
       return (
-        <TresoCompanyLoansPanel
-          loans={company.loans}
-          projectionStartYear={getAssociateProfile(inputs, selectedAssociate).projectionStartYear}
-          onChange={loans => patchCompany({ loans })}
-        />
+          <TresoCompanyLoansPanel
+            loans={company.loans}
+          projectionStartYear={projectionStartYear}
+            onChange={loans => patchCompany({ loans })}
+          />
       );
     }
     if (activePanel === 'filiales') {
@@ -437,7 +359,14 @@ export function TresoSocieteSection({ inputs, onChange }: Props) {
         />
       );
     }
-    return renderIdentitePanel();
+    return (
+      <TresoCompanyIdentityPanel
+        company={company}
+        projectionStartYear={projectionStartYear}
+        onCompanyChange={patchCompany}
+        onProjectionStartYearChange={patchProjectionStartYear}
+      />
+    );
   };
 
   return (

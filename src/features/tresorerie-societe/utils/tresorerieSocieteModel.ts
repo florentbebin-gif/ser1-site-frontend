@@ -115,6 +115,17 @@ function scaleOwnershipField(
   };
 }
 
+function syncFullOwnershipLots(associates: AssociateInput[]): AssociateInput[] {
+  return associates.map(associate => ({
+    ...associate,
+    ownershipLots: associate.ownershipLots.map(lot =>
+      lot.right === 'pleine_propriete'
+        ? { ...lot, economicRightsPct: lot.capitalPct }
+        : lot,
+    ),
+  }));
+}
+
 function rebalanceOwnershipField(
   associates: AssociateInput[],
   associateId: string,
@@ -150,28 +161,40 @@ export function updateAssociateOwnershipLot(
   associateId: string,
   lotPatch: Partial<OwnershipLotInput>,
 ): AssociateInput[] {
+  const fieldsToRebalance = new Set<OwnershipPctField>();
   const patched = associates.map(associate => {
     if (associate.id !== associateId) return associate;
     const [firstLot = defaultOwnershipLot(), ...otherLots] = associate.ownershipLots;
+    const right = lotPatch.right ?? firstLot.right;
+    const capitalPct = hasOwn(lotPatch, 'capitalPct')
+      ? clampPct(lotPatch.capitalPct)
+      : firstLot.capitalPct;
+    const economicRightsPct = right === 'pleine_propriete'
+      ? capitalPct
+      : hasOwn(lotPatch, 'economicRightsPct')
+        ? clampPct(lotPatch.economicRightsPct)
+        : firstLot.economicRightsPct;
+    if (hasOwn(lotPatch, 'capitalPct')) fieldsToRebalance.add('capitalPct');
+    if (hasOwn(lotPatch, 'economicRightsPct') || right === 'pleine_propriete') {
+      fieldsToRebalance.add('economicRightsPct');
+    }
     const nextLot = {
       ...firstLot,
       ...lotPatch,
-      capitalPct: hasOwn(lotPatch, 'capitalPct')
-        ? clampPct(lotPatch.capitalPct)
-        : firstLot.capitalPct,
-      economicRightsPct: hasOwn(lotPatch, 'economicRightsPct')
-        ? clampPct(lotPatch.economicRightsPct)
-        : firstLot.economicRightsPct,
+      right,
+      capitalPct,
+      economicRightsPct,
     };
     return { ...associate, ownershipLots: [nextLot, ...otherLots] };
   });
 
-  return OWNERSHIP_PCT_FIELDS.reduce(
-    (nextAssociates, field) => hasOwn(lotPatch, field)
+  const rebalanced = OWNERSHIP_PCT_FIELDS.reduce(
+    (nextAssociates, field) => fieldsToRebalance.has(field)
       ? rebalanceOwnershipField(nextAssociates, associateId, field)
       : nextAssociates,
     patched,
   );
+  return syncFullOwnershipLots(rebalanced);
 }
 
 function getNextPocketIndex(pockets: AllocationPocketInput[]): number {

@@ -8,8 +8,16 @@ import { TresoSocieteSection } from '../components/TresoSocieteSection';
 const INPUTS = {
   version: 4,
   selectedAssociateId: 'associe-2',
+  foyer: {
+    selectedAssociateId: 'associe-2',
+    currentAge: 45,
+    retirementAge: 62,
+    annualIncomeNeed: 24000,
+    projectionStartYear: 2026,
+  },
   company: {
     label: 'Ma holding',
+    projectionStartYear: 2026,
     creationType: 'existante',
     legalForm: 'sas',
     companyKind: 'holding_patrimoniale',
@@ -181,8 +189,10 @@ describe('TresoSocieteSection', () => {
     fireEvent.click(activeAssociate);
 
     expect(screen.getByText('Paramétrer l’associé')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('tab', { name: 'Profil' }));
     expect(screen.getAllByDisplayValue('45').length).toBeGreaterThan(0);
-    expect(screen.getByDisplayValue('62')).toBeInTheDocument();
+    expect(screen.queryByText('Âge de retraite')).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole('tab', { name: 'CCA' }));
     expect(screen.getByText('Taux maximum déductible')).toBeInTheDocument();
   });
 
@@ -192,6 +202,7 @@ describe('TresoSocieteSection', () => {
     fireEvent.click(screen.getByRole('button', { name: /Paramétrer Holding patrimoniale/i }));
 
     expect(screen.getByDisplayValue('Ma holding')).toBeInTheDocument();
+    expect(screen.getByText('Début de projection')).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /Rémunérations & TNS/i })).not.toBeInTheDocument();
   });
 
@@ -199,11 +210,13 @@ describe('TresoSocieteSection', () => {
     render(<TresoSocieteSection inputs={INPUTS} onChange={vi.fn()} />);
 
     fireEvent.click(screen.getByRole('button', { name: /Paramétrer Associé 2/ }));
+    fireEvent.click(screen.getByRole('tab', { name: 'Rémunération' }));
 
-    expect(screen.getByRole('button', { name: /Rémunération/i })).toBeInTheDocument();
-    expect(screen.getByText('Rémunération nette estimée')).toBeInTheDocument();
+    expect(screen.getByRole('tab', { name: /Rémunération/i })).toHaveAttribute('aria-selected', 'true');
+    expect(screen.getByText('Vous payez-vous aujourd’hui ?')).toBeInTheDocument();
+    expect(screen.getByText('Net annuel estimé')).toBeInTheDocument();
     expect(screen.getByDisplayValue(value => value.replace(/\s/g, '') === '50000')).toBeInTheDocument();
-    expect(screen.getByText('Filiale A')).toBeInTheDocument();
+    expect(screen.getByLabelText('Oui, depuis la holding')).toBeChecked();
   });
 
   it('enrichit la modale filiale avec trésorerie, paliers vers la mère et cession', () => {
@@ -226,10 +239,12 @@ describe('TresoSocieteSection', () => {
     render(<TresoSocieteSection inputs={INPUTS} onChange={vi.fn()} />);
 
     fireEvent.click(screen.getByRole('button', { name: /Paramétrer Associé 2/ }));
-    const remunerationTab = screen.getByRole('button', { name: 'Rémunération' });
+    const remunerationTab = screen.getByRole('tab', { name: 'Rémunération' });
     fireEvent.click(remunerationTab);
 
-    expect(remunerationTab).toHaveAttribute('aria-current', 'page');
+    expect(remunerationTab).toHaveAttribute('aria-selected', 'true');
+    expect(screen.getByRole('tabpanel')).toHaveAttribute('aria-labelledby', 'ts-associate-tab-remuneration');
+    expect(screen.queryByText('Compte courant d’associé')).not.toBeInTheDocument();
   });
 
   it('ajoute un palier de dividendes filiale depuis la modale', () => {
@@ -255,6 +270,7 @@ describe('TresoSocieteSection', () => {
 
     const nextInputs = onChange.mock.calls[onChange.mock.calls.length - 1]?.[0];
     expect(nextInputs.company.associates[0].ownershipLots[0].capitalPct).toBe(80);
+    expect(nextInputs.company.associates[0].ownershipLots[0].economicRightsPct).toBe(80);
     expect(nextInputs.company.associates[1].ownershipLots[0].capitalPct).toBe(20);
   });
 

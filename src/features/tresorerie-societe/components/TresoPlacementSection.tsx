@@ -32,6 +32,91 @@ interface Props {
   onChange: (nextInputs: TresoInputsV4) => void;
 }
 
+interface TreasuryStackSegment {
+  key: string;
+  label: string;
+  amount: number;
+  widthPct: number;
+  className: string;
+  pocketId?: string;
+}
+
+function buildTreasuryStackSegments(
+  treasuryInitial: number,
+  pockets: AllocationPocketInput[],
+  totalInitialPct: number,
+  protectedCash: number,
+): TreasuryStackSegment[] {
+  const treasuryBase = Math.max(0, treasuryInitial);
+  if (treasuryBase <= 0) {
+    return [{
+      key: 'bank-empty',
+      label: 'Aucune trésorerie initiale',
+      amount: 0,
+      widthPct: 100,
+      className: 'ts-treasury-stack__segment--bank',
+    }];
+  }
+
+  if (pockets.length === 0) {
+    return [{
+      key: 'bank-only',
+      label: 'Aucun placement, trésorerie sur compte bancaire',
+      amount: treasuryBase,
+      widthPct: 100,
+      className: 'ts-treasury-stack__segment--bank',
+    }];
+  }
+
+  const allocationScale = totalInitialPct > 100 ? 100 / totalInitialPct : 1;
+  const pocketSegments = pockets
+    .map(pocket => {
+      const amount = treasuryBase * Math.max(0, pocket.initialAllocationPct) * allocationScale / 100;
+      return {
+        key: pocket.id,
+        label: getAllocationPocketLabel(pocket),
+        amount,
+        widthPct: amount / treasuryBase * 100,
+        className: `ts-treasury-stack__segment--${pocket.horizon ?? 'moyen_terme'}`,
+        pocketId: pocket.id,
+      };
+    })
+    .filter(segment => segment.amount > 0);
+  const investedAmount = pocketSegments.reduce((sum, segment) => sum + segment.amount, 0);
+  const bankAmount = Math.max(0, treasuryBase - investedAmount);
+  const protectedBankAmount = Math.min(bankAmount, Math.max(0, protectedCash));
+  const freeBankAmount = Math.max(0, bankAmount - protectedBankAmount);
+  const bankSegments = [
+    freeBankAmount > 0
+      ? {
+        key: 'bank-free',
+        label: 'Compte bancaire libre',
+        amount: freeBankAmount,
+        widthPct: freeBankAmount / treasuryBase * 100,
+        className: 'ts-treasury-stack__segment--bank',
+      }
+      : null,
+    protectedBankAmount > 0
+      ? {
+        key: 'bank-protected',
+        label: 'Solde minimum + BFR',
+        amount: protectedBankAmount,
+        widthPct: protectedBankAmount / treasuryBase * 100,
+        className: 'ts-treasury-stack__segment--protected',
+      }
+      : null,
+  ].filter((segment): segment is TreasuryStackSegment => segment !== null);
+
+  const segments = [...bankSegments, ...pocketSegments];
+  return segments.length > 0 ? segments : [{
+    key: 'bank-fallback',
+    label: 'Trésorerie sur compte bancaire',
+    amount: treasuryBase,
+    widthPct: 100,
+    className: 'ts-treasury-stack__segment--bank',
+  }];
+}
+
 export function TresoPlacementSection({ inputs, projectionRows = [], onChange }: Props) {
   const [editingPocketId, setEditingPocketId] = useState<string | null>(null);
   const v2 = inputs;
@@ -85,6 +170,12 @@ export function TresoPlacementSection({ inputs, projectionRows = [], onChange }:
   const bankAmount = Math.max(0, v2.company.treasuryInitial - initialInvestedAmount);
   const protectedCash = minimumBankBalance + workingCapitalRequirement;
   const availableCash = Math.max(0, bankAmount - protectedCash);
+  const treasuryStackSegments = buildTreasuryStackSegments(
+    v2.company.treasuryInitial,
+    pockets,
+    totalInitialPct,
+    protectedCash,
+  );
   const firstBankWarning = projectionRows.find(row => row.alerteTresorerieBancaireInsuffisante);
   const firstBankWarningYear = firstBankWarning
     ? v2.foyer.projectionStartYear + firstBankWarning.year - 1
@@ -111,6 +202,32 @@ export function TresoPlacementSection({ inputs, projectionRows = [], onChange }:
         <span>Compte bancaire : {fmtEuroInput(bankAmount)} €</span>
         <span>Solde minimum banque + BFR : {fmtEuroInput(protectedCash)} €</span>
         <span>Disponible : {fmtEuroInput(availableCash)} €</span>
+      </div>
+
+      <div className="ts-treasury-stack-card">
+        <div className="ts-treasury-stack-card__header">
+          <strong>Répartition de la trésorerie initiale</strong>
+          <span>Montants estimés à partir des allocations saisies</span>
+        </div>
+        <div className="ts-treasury-stack" aria-label="Répartition de la trésorerie initiale">
+          {treasuryStackSegments.map(segment => (
+            <button
+              key={segment.key}
+              type="button"
+              className={`ts-treasury-stack__segment ${segment.className}`}
+              style={{ width: `${segment.widthPct}%` }}
+              title={`${segment.label} : ${fmtEuroInput(segment.amount)} €`}
+              aria-label={`${segment.label} : ${fmtEuroInput(segment.amount)} €`}
+              disabled={!segment.pocketId}
+              onClick={() => {
+                if (segment.pocketId) setEditingPocketId(segment.pocketId);
+              }}
+            >
+              <span>{segment.label}</span>
+              <strong>{fmtEuroInput(segment.amount)} €</strong>
+            </button>
+          ))}
+        </div>
       </div>
 
       <div className="ts-fields">

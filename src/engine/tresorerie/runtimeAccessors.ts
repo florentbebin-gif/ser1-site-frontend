@@ -20,12 +20,18 @@ export function getAssociateProfile(
   inputs: TresoInputsRuntime,
   associate: AssociateInput | undefined = getSelectedAssociate(inputs),
 ): AssociateProfileInput {
-  if (associate?.kind === 'pp' && associate.profile) return associate.profile;
+  const projectionStartYear = inputs.company.projectionStartYear ?? inputs.foyer.projectionStartYear;
+  if (associate?.kind === 'pp' && associate.profile) {
+    return {
+      ...associate.profile,
+      projectionStartYear,
+    };
+  }
   return {
     currentAge: inputs.foyer.currentAge,
     retirementAge: inputs.foyer.retirementAge,
     annualIncomeNeed: associate?.kind === 'pm' ? 0 : inputs.foyer.annualIncomeNeed,
-    projectionStartYear: inputs.foyer.projectionStartYear,
+    projectionStartYear,
   };
 }
 
@@ -36,4 +42,3 @@ export function getCapitalPct(associate: AssociateInput): number {
 export function getEconomicPct(associate: AssociateInput): number {
   return associate.ownershipLots.reduce((sum, lot) => sum + lot.economicRightsPct, 0);
 }
-
