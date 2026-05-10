@@ -142,6 +142,7 @@ export type AssociateRole =
   | 'salarie';
 
 export type AssociateRemunerationSource = 'holding' | 'subsidiary';
+export type AssociateRevenuePhaseSource = 'none' | AssociateRemunerationSource;
 
 export interface AssociateRemunerationInput {
   source: AssociateRemunerationSource;
@@ -153,6 +154,18 @@ export interface AssociateRemunerationInput {
   annualNeedAfterStop?: number;
 }
 
+export interface AssociateRevenuePhaseInput {
+  id: string;
+  startYear: number;
+  label?: string;
+  source: AssociateRevenuePhaseSource;
+  subsidiaryId?: string;
+  loadedAnnualCost: number;
+  socialChargeRate: number;
+  annualNetIncomeNeed: number;
+  useCcaForCompletion: boolean;
+}
+
 export interface AssociateInput {
   id: string;
   label: string;
@@ -162,6 +175,11 @@ export interface AssociateInput {
   roles: AssociateRole[];
   cca?: CcaScheduleInput;
   remuneration?: AssociateRemunerationInput;
+}
+
+export interface AssociateInputV5 extends Omit<AssociateInput, 'remuneration'> {
+  remuneration?: never;
+  revenuePhases: AssociateRevenuePhaseInput[];
 }
 
 export type FinancedAssetKind = 'scpi' | 'immobilier' | 'autre';
@@ -292,6 +310,10 @@ export interface CompanyInput {
   subsidiaries: SubsidiaryInput[];
 }
 
+export interface CompanyInputV5 extends Omit<CompanyInput, 'associates'> {
+  associates: AssociateInputV5[];
+}
+
 export interface TresoInputsV2 {
   version: 2;
   foyer: FoyerInput;
@@ -309,7 +331,12 @@ export interface TresoInputsV4 extends Omit<TresoInputsV3, 'version' | 'foyer'> 
   foyer: RuntimeFoyerInput;
 }
 
-export type TresoInputsRuntime = TresoInputsV2 | TresoInputsV3 | TresoInputsV4;
+export interface TresoInputsV5 extends Omit<TresoInputsV4, 'version' | 'company'> {
+  version: 5;
+  company: CompanyInputV5;
+}
+
+export type TresoInputsRuntime = TresoInputsV2 | TresoInputsV3 | TresoInputsV4 | TresoInputsV5;
 
 // ─── Entrées legacy du simulateur (migration/compatibilité) ───────────────────
 
@@ -428,6 +455,8 @@ export interface TresoProjectionRow {
   revenusActifFinance: number;
 
   // Revenus nets associés
+  phaseIdActive?: string;
+  phaseLabelActive?: string;
   revenusNets: number;
   deltaBesoin: number;
   revenusParAssocie: TresoAssociateRevenueRow[];
