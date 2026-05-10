@@ -15,6 +15,7 @@ import { useTheme } from '../../settings/ThemeProvider';
 import { useTresorerieState } from './hooks/useTresorerieState';
 import { useTresorerieCalculations } from './hooks/useTresorerieCalculations';
 import { useTresorerieExportHandlers } from './hooks/useTresorerieExportHandlers';
+import { TresoTimelineSection } from './components/timeline/TresoTimelineSection';
 import { TresoSocieteSection } from './components/TresoSocieteSection';
 import { TresoPlacementSection } from './components/TresoPlacementSection';
 import { TresoAssociateInsights } from './components/TresoAssociateInsights';
@@ -69,10 +70,13 @@ export default function TresorerieSocietePage() {
       actions={<ExportMenu options={exportOptions} loading={exportLoading} />}
     >
       <SimPageShell.Main>
-        {/* Bloc 1 — Société */}
+        {/* Bloc 1 — Parcours associé */}
+        <TresoTimelineSection inputs={state.inputsV5} onChange={setInputsV5} />
+
+        {/* Bloc 2 — Société */}
         <TresoSocieteSection inputs={state.inputsV5} onChange={setInputsV5} />
 
-        {/* Bloc 2 — Allocation société */}
+        {/* Bloc 3 — Allocation société */}
         <TresoPlacementSection
           inputs={state.inputsV5}
           projectionRows={rows}

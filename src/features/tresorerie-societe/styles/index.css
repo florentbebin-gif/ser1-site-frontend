@@ -811,6 +811,231 @@
   background: var(--color-c7);
 }
 
+/* ─── Timeline associé ─────────────────────────────────────────────────────── */
+
+.ts-timeline-section {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.ts-timeline-content {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.ts-timeline-empty {
+  border: 1px dashed var(--color-c8);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--color-c7) 76%, #fff);
+  padding: 18px;
+  display: grid;
+  gap: 8px;
+  justify-items: start;
+}
+
+.ts-timeline-empty strong {
+  color: var(--color-c10);
+  font-size: 14px;
+}
+
+.ts-timeline-empty p {
+  margin: 0;
+  color: var(--color-c9);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.ts-timeline-year {
+  max-width: 340px;
+}
+
+.ts-timeline-track {
+  border: 1px solid var(--color-c8);
+  border-radius: 8px;
+  background: #fff;
+  padding: 6px 8px;
+  overflow-x: auto;
+}
+
+.ts-timeline-track svg {
+  display: block;
+  min-width: 720px;
+  width: 100%;
+}
+
+.ts-timeline-track__axis,
+.ts-timeline-track__age-axis {
+  stroke: var(--color-c8);
+  stroke-width: 2;
+}
+
+.ts-timeline-track__age-axis {
+  stroke-dasharray: 4 5;
+}
+
+.ts-timeline-track__tick {
+  stroke: color-mix(in srgb, var(--color-c8) 70%, transparent);
+  stroke-width: 1;
+}
+
+.ts-timeline-track__year,
+.ts-timeline-track__age {
+  fill: var(--color-c9);
+  font-size: 13px;
+}
+
+.ts-timeline-track__age {
+  font-size: 11px;
+}
+
+.ts-timeline-track__phase {
+  cursor: pointer;
+  outline: none;
+}
+
+.ts-timeline-track__phase:focus-visible .ts-timeline-track__phase-rect {
+  stroke-width: 3;
+}
+
+.ts-timeline-track__phase-rect {
+  stroke: var(--color-c3);
+  stroke-width: 1.5;
+  fill: color-mix(in srgb, var(--color-c3) 15%, #fff);
+}
+
+.ts-timeline-track__phase--subsidiary {
+  stroke: var(--color-c4);
+  fill: color-mix(in srgb, var(--color-c4) 18%, #fff);
+}
+
+.ts-timeline-track__phase--none {
+  stroke: var(--color-c8);
+  fill: color-mix(in srgb, var(--color-c8) 42%, #fff);
+  stroke-dasharray: 6 4;
+}
+
+.ts-timeline-track__phase-label {
+  fill: var(--color-c10);
+  font-size: 14px;
+  font-weight: 700;
+  pointer-events: none;
+}
+
+.ts-timeline-track__phase-detail {
+  fill: var(--color-c9);
+  font-size: 11px;
+  pointer-events: none;
+}
+
+.ts-timeline-track__milestone-line {
+  stroke: var(--color-c9);
+  stroke-width: 1;
+  stroke-dasharray: 4 4;
+}
+
+.ts-timeline-track__milestone-dot {
+  fill: #fff;
+  stroke: var(--color-c3);
+  stroke-width: 2;
+}
+
+.ts-timeline-track__milestone-label {
+  fill: var(--color-c10);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.ts-timeline-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.ts-timeline-list {
+  display: grid;
+  gap: 8px;
+}
+
+.ts-timeline-list__item {
+  border: 1px solid var(--color-c8);
+  border-radius: 8px;
+  background: #fff;
+  color: var(--color-c10);
+  padding: 10px 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.ts-timeline-list__item:hover,
+.ts-timeline-list__item:focus-visible {
+  border-color: var(--color-c3);
+}
+
+.ts-timeline-list__item span {
+  display: grid;
+  gap: 2px;
+}
+
+.ts-timeline-list__item small {
+  color: var(--color-c9);
+  font-size: 11px;
+}
+
+.ts-phase-source {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.ts-phase-source__choice {
+  border: 1px solid var(--color-c8);
+  border-radius: 8px;
+  padding: 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--color-c10);
+  font-size: 12px;
+  background: #fff;
+}
+
+.ts-phase-net {
+  border: 1px solid var(--color-c8);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--color-c7) 70%, #fff);
+  padding: 10px;
+  display: grid;
+  gap: 4px;
+}
+
+.ts-phase-net span {
+  color: var(--color-c9);
+  font-size: 11px;
+}
+
+.ts-phase-net strong {
+  color: var(--color-c10);
+  font-size: 16px;
+}
+
+.ts-phase-modal__footer-inner {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.ts-phase-modal__footer-actions {
+  display: flex;
+  gap: 8px;
+}
+
 /* ─── Hypothèses ───────────────────────────────────────────────────────────── */
 
 .ts-hypotheses {
@@ -949,6 +1174,16 @@
 
   .ts-income-graph__row {
     grid-template-columns: 1fr;
+  }
+
+  .ts-phase-source {
+    grid-template-columns: 1fr;
+  }
+
+  .ts-timeline-list__item,
+  .ts-phase-modal__footer-inner {
+    align-items: stretch;
+    flex-direction: column;
   }
 
   .ts-drawer__controls {
