@@ -93,7 +93,12 @@ describe('TresoPlacementSection', () => {
     expect(screen.queryByRole('button', { name: 'Placement unique' })).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Stratégie multi-poches' })).not.toBeInTheDocument();
     expect(screen.queryByText(/Mode déduit/i)).not.toBeInTheDocument();
-    expect(screen.getByText(/Solde minimum banque \+ BFR/i)).toBeInTheDocument();
+    expect(screen.queryByText(/^Investi :/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/^Compte bancaire :/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/^Solde minimum banque \+ BFR :/i)).not.toBeInTheDocument();
+    expect(screen.getByText('Trésorerie initiale')).toBeInTheDocument();
+    expect(screen.getByText('Banque protégée')).toBeInTheDocument();
+    expect(screen.getByText('Disponible sur compte bancaire')).toBeInTheDocument();
     expect(screen.getByRole('group', { name: /Compte bancaire/i })).toBeInTheDocument();
     expect(screen.getByText('0 %')).toBeInTheDocument();
     expect(within(screen.getByRole('group', { name: /Court terme/i }))
@@ -103,6 +108,7 @@ describe('TresoPlacementSection', () => {
     expect(within(screen.getByRole('group', { name: /Long terme/i }))
       .getByRole('button', { name: /Paramétrer Long terme/i })).toBeInTheDocument();
     expect(screen.getByText('4 %')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Paramétrer Court terme/i })).toHaveTextContent('80 000 €');
   });
 
   it('affiche une barre empilée de répartition initiale en euros', () => {

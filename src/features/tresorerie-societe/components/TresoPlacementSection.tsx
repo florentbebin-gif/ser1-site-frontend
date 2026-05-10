@@ -17,104 +17,21 @@ import { TresoPocketModal } from './TresoPocketModal';
 import { ALLOCATION_HORIZON_OPTIONS } from '../utils/tresorerieSocieteOptions';
 import {
   buildDefaultPocket,
-  getAllocationHorizonLabel,
 } from '../utils/tresorerieSocieteModel';
-import { getAllocationPocketLabel } from '../utils/tresorerieV2Migration';
 import {
   fmtEuroInput,
-  fmtRateInput,
   parseEuroInput,
 } from '../utils/tresorerieFormatters';
+import {
+  buildTreasuryStackSegments,
+  TresoPlacementOverview,
+} from './placement/TresoPlacementOverview';
+import { TresoPocketBoard } from './placement/TresoPocketBoard';
 
 interface Props {
   inputs: TresoInputsV5;
   projectionRows?: TresoProjectionRow[];
   onChange: (nextInputs: TresoInputsV5) => void;
-}
-
-interface TreasuryStackSegment {
-  key: string;
-  label: string;
-  amount: number;
-  widthPct: number;
-  className: string;
-  pocketId?: string;
-}
-
-function buildTreasuryStackSegments(
-  treasuryInitial: number,
-  pockets: AllocationPocketInput[],
-  totalInitialPct: number,
-  protectedCash: number,
-): TreasuryStackSegment[] {
-  const treasuryBase = Math.max(0, treasuryInitial);
-  if (treasuryBase <= 0) {
-    return [{
-      key: 'bank-empty',
-      label: 'Aucune trésorerie initiale',
-      amount: 0,
-      widthPct: 100,
-      className: 'ts-treasury-stack__segment--bank',
-    }];
-  }
-
-  if (pockets.length === 0) {
-    return [{
-      key: 'bank-only',
-      label: 'Aucun placement, trésorerie sur compte bancaire',
-      amount: treasuryBase,
-      widthPct: 100,
-      className: 'ts-treasury-stack__segment--bank',
-    }];
-  }
-
-  const allocationScale = totalInitialPct > 100 ? 100 / totalInitialPct : 1;
-  const pocketSegments = pockets
-    .map(pocket => {
-      const amount = treasuryBase * Math.max(0, pocket.initialAllocationPct) * allocationScale / 100;
-      return {
-        key: pocket.id,
-        label: getAllocationPocketLabel(pocket),
-        amount,
-        widthPct: amount / treasuryBase * 100,
-        className: `ts-treasury-stack__segment--${pocket.horizon ?? 'moyen_terme'}`,
-        pocketId: pocket.id,
-      };
-    })
-    .filter(segment => segment.amount > 0);
-  const investedAmount = pocketSegments.reduce((sum, segment) => sum + segment.amount, 0);
-  const bankAmount = Math.max(0, treasuryBase - investedAmount);
-  const protectedBankAmount = Math.min(bankAmount, Math.max(0, protectedCash));
-  const freeBankAmount = Math.max(0, bankAmount - protectedBankAmount);
-  const bankSegments = [
-    freeBankAmount > 0
-      ? {
-        key: 'bank-free',
-        label: 'Compte bancaire libre',
-        amount: freeBankAmount,
-        widthPct: freeBankAmount / treasuryBase * 100,
-        className: 'ts-treasury-stack__segment--bank',
-      }
-      : null,
-    protectedBankAmount > 0
-      ? {
-        key: 'bank-protected',
-        label: 'Solde minimum + BFR',
-        amount: protectedBankAmount,
-        widthPct: protectedBankAmount / treasuryBase * 100,
-        className: 'ts-treasury-stack__segment--protected',
-      }
-      : null,
-  ].filter((segment): segment is TreasuryStackSegment => segment !== null);
-
-  const segments = [...bankSegments, ...pocketSegments];
-  return segments.length > 0 ? segments : [{
-    key: 'bank-fallback',
-    label: 'Trésorerie sur compte bancaire',
-    amount: treasuryBase,
-    widthPct: 100,
-    className: 'ts-treasury-stack__segment--bank',
-  }];
 }
 
 export function TresoPlacementSection({ inputs, projectionRows = [], onChange }: Props) {
@@ -196,39 +113,13 @@ export function TresoPlacementSection({ inputs, projectionRows = [], onChange }:
       </div>
       <div className="ts-section__divider" />
 
-      <div className="ts-placement-summary" aria-label="Répartition de trésorerie">
-        <span>Trésorerie initiale : {fmtEuroInput(v2.company.treasuryInitial)} €</span>
-        <span>Investi : {fmtEuroInput(initialInvestedAmount)} €</span>
-        <span>Compte bancaire : {fmtEuroInput(bankAmount)} €</span>
-        <span>Solde minimum banque + BFR : {fmtEuroInput(protectedCash)} €</span>
-        <span>Disponible : {fmtEuroInput(availableCash)} €</span>
-      </div>
-
-      <div className="ts-treasury-stack-card">
-        <div className="ts-treasury-stack-card__header">
-          <strong>Répartition de la trésorerie initiale</strong>
-          <span>Montants estimés à partir des allocations saisies</span>
-        </div>
-        <div className="ts-treasury-stack" aria-label="Répartition de la trésorerie initiale">
-          {treasuryStackSegments.map(segment => (
-            <button
-              key={segment.key}
-              type="button"
-              className={`ts-treasury-stack__segment ${segment.className}`}
-              style={{ width: `${segment.widthPct}%` }}
-              title={`${segment.label} : ${fmtEuroInput(segment.amount)} €`}
-              aria-label={`${segment.label} : ${fmtEuroInput(segment.amount)} €`}
-              disabled={!segment.pocketId}
-              onClick={() => {
-                if (segment.pocketId) setEditingPocketId(segment.pocketId);
-              }}
-            >
-              <span>{segment.label}</span>
-              <strong>{fmtEuroInput(segment.amount)} €</strong>
-            </button>
-          ))}
-        </div>
-      </div>
+      <TresoPlacementOverview
+        treasuryInitial={v2.company.treasuryInitial}
+        protectedCash={protectedCash}
+        availableCash={availableCash}
+        segments={treasuryStackSegments}
+        onEditPocket={setEditingPocketId}
+      />
 
       <div className="ts-fields">
         <SimFieldShell label="Solde minimum à conserver sur le compte bancaire" className="ts-field" rowClassName="ts-field__row">
@@ -256,70 +147,14 @@ export function TresoPlacementSection({ inputs, projectionRows = [], onChange }:
       ) : null}
 
       <div className="ts-section__note">Poches par horizon</div>
-      <div className="ts-pocket-board" aria-label="Allocation par horizon">
-        <section
-          className="ts-pocket-column ts-pocket-column--bank"
-          role="group"
-          aria-labelledby="ts-pocket-column-bank"
-        >
-          <header className="ts-pocket-column__header">
-            <h3 id="ts-pocket-column-bank">Compte bancaire</h3>
-            <span>0 %</span>
-          </header>
-          <div className="ts-bank-pocket">
-            <strong>{fmtEuroInput(bankAmount)} €</strong>
-            <small>Non rémunéré · sorties courantes</small>
-            {pockets.length === 0 ? (
-              <span>Trésorerie conservée sur compte bancaire, sans rendement</span>
-            ) : null}
-          </div>
-        </section>
-
-        {pocketsByHorizon.map(column => (
-            <section
-              key={column.value}
-              className="ts-pocket-column"
-              role="group"
-              aria-labelledby={`ts-pocket-column-${column.value}`}
-            >
-              <header className="ts-pocket-column__header">
-                <h3 id={`ts-pocket-column-${column.value}`}>{column.label}</h3>
-                <span>{column.pockets.length} poche{column.pockets.length > 1 ? 's' : ''}</span>
-              </header>
-              {column.pockets.length > 0 ? (
-                <div className="ts-pocket-column__items">
-                  {column.pockets.map(pocket => (
-                    <button
-                      key={pocket.id}
-                      type="button"
-                      className="ts-pocket-column__item"
-                      onClick={() => setEditingPocketId(pocket.id)}
-                      aria-label={`Paramétrer ${getAllocationPocketLabel(pocket)}`}
-                    >
-                      <span className="ts-pocket-column__item-head">
-                        <strong>{getAllocationPocketLabel(pocket)}</strong>
-                        <em>{fmtRateInput(pocket.annualReturnRate)} %</em>
-                      </span>
-                      <small>{getAllocationHorizonLabel(pocket.horizon)}</small>
-                      <span>
-                        Initial {pocket.initialAllocationPct} % · Annuel {pocket.annualAllocationPct} %
-                      </span>
-                      <i style={{ width: `${Math.max(4, pocket.annualAllocationPct)}%` }} />
-                    </button>
-                  ))}
-                </div>
-              ) : (
-                <button
-                  type="button"
-                  className="ts-pocket-column__empty"
-                  onClick={() => addPocket(column.value)}
-                >
-                  + Ajouter une poche {column.label.toLowerCase()}
-                </button>
-              )}
-            </section>
-        ))}
-      </div>
+      <TresoPocketBoard
+        bankAmount={bankAmount}
+        pocketCount={pockets.length}
+        treasuryInitial={v2.company.treasuryInitial}
+        pocketsByHorizon={pocketsByHorizon}
+        onAddPocket={addPocket}
+        onEditPocket={setEditingPocketId}
+      />
 
       <div className="ts-matrix-actions">
         {pockets.length > 0 && (
