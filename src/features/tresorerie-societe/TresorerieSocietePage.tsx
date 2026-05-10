@@ -23,6 +23,7 @@ import { TresoKPISidebar } from './components/TresoKPISidebar';
 import { TresoProjectionDrawer } from './components/TresoProjectionDrawer';
 import { TresoHypotheses } from './components/TresoHypotheses';
 import { getAssociateProfile, getSelectedAssociate } from './utils/tresorerieSocieteModel';
+import { getTresoReadiness } from './utils/tresorerieReadiness';
 
 export default function TresorerieSocietePage() {
   const {
@@ -35,6 +36,7 @@ export default function TresorerieSocietePage() {
 
   const { colors: themeColors, pptxColors, cabinetLogo, logoPlacement } = useTheme();
   const activeProfile = getAssociateProfile(state.inputsV5, getSelectedAssociate(state.inputsV5));
+  const readiness = getTresoReadiness(state.inputsV5);
   const { rows, kpis, loading, error, simulationError } = useTresorerieCalculations(state.inputsV5);
   const {
     exportExcel,
@@ -73,15 +75,19 @@ export default function TresorerieSocietePage() {
         {/* Bloc 1 — Société */}
         <TresoSocieteSection inputs={state.inputsV5} onChange={setInputsV5} />
 
-        {/* Bloc 2 — Parcours associé */}
-        <TresoTimelineSection inputs={state.inputsV5} onChange={setInputsV5} />
+        {readiness.companyReady ? (
+          <>
+            {/* Bloc 2 — Parcours associé */}
+            <TresoTimelineSection inputs={state.inputsV5} onChange={setInputsV5} />
 
-        {/* Bloc 3 — Allocation société */}
-        <TresoPlacementSection
-          inputs={state.inputsV5}
-          projectionRows={rows}
-          onChange={setInputsV5}
-        />
+            {/* Bloc 3 — Allocation société */}
+            <TresoPlacementSection
+              inputs={state.inputsV5}
+              projectionRows={rows}
+              onChange={setInputsV5}
+            />
+          </>
+        ) : null}
 
         {/* Bouton projection */}
         <div className="ts-projection-btn-row">
@@ -115,7 +121,7 @@ export default function TresorerieSocietePage() {
       </SimPageShell.Main>
 
       <SimPageShell.Side sticky>
-        <TresoAssociateInsights inputs={state.inputsV5} rows={rows} />
+        {readiness.companyReady ? <TresoAssociateInsights inputs={state.inputsV5} rows={rows} /> : null}
         <TresoKPISidebar kpis={kpis} inputs={state.inputsV5} />
       </SimPageShell.Side>
     </SimPageShell>

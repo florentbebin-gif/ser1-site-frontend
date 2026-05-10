@@ -115,9 +115,11 @@ const DEFAULT_INPUTS_V5 = {
     projectionStartYear: 2025,
   },
   company: {
+    label: 'Holding patrimoniale',
     creationType: 'newco' as const,
     legalForm: 'sas' as const,
     companyKind: 'holding_patrimoniale' as const,
+    projectionStartYear: 2025,
     shareCapital: 1000,
     sharePremium: 0,
     reservesInitial: 0,
@@ -248,6 +250,60 @@ describe('TresorerieSocietePage', () => {
     expect(html).not.toContain('>Foyer<');
     expect(html).not.toContain('data-testid="credit-section"');
     expect(html).not.toContain('data-testid="holding-section"');
+  });
+
+  it('masque le parcours et l’allocation tant que la société n’est pas complétée', () => {
+    mockUseTresoState.mockReturnValue(makeStateReturn({
+      state: {
+        inputsV5: {
+          ...DEFAULT_INPUTS_V5,
+          company: {
+            ...DEFAULT_INPUTS_V5.company,
+            label: '',
+          },
+        },
+        projectionVisible: false,
+        projectionMode: 'resume' as const,
+      },
+    }));
+
+    const html = renderToStaticMarkup(<TresorerieSocietePage />);
+
+    expect(html).toContain('data-testid="societe-section"');
+    expect(html).not.toContain('id="ts-timeline-title"');
+    expect(html).not.toContain('data-testid="placement-section"');
+    expect(html).not.toContain('data-testid="associate-insights"');
+  });
+
+  it('masque les blocs avancés si les détentions dépassent 100 %', () => {
+    mockUseTresoState.mockReturnValue(makeStateReturn({
+      state: {
+        inputsV5: {
+          ...DEFAULT_INPUTS_V5,
+          company: {
+            ...DEFAULT_INPUTS_V5.company,
+            associates: [
+              {
+                ...DEFAULT_INPUTS_V5.company.associates[0],
+                ownershipLots: [{ right: 'pleine_propriete' as const, capitalPct: 110, economicRightsPct: 110 }],
+              },
+            ],
+          },
+        },
+        projectionVisible: false,
+        projectionMode: 'resume' as const,
+      },
+    }));
+    mockUseTresoCalc.mockReturnValue({
+      ...makeCalcReturn(),
+      simulationError: 'Détention capital supérieure à 100 %.',
+    });
+
+    const html = renderToStaticMarkup(<TresorerieSocietePage />);
+
+    expect(html).toContain('Détention capital supérieure à 100 %.');
+    expect(html).not.toContain('data-testid="placement-section"');
+    expect(html).not.toContain('data-testid="associate-insights"');
   });
 
   it('affiche la société avant le parcours de revenus', () => {

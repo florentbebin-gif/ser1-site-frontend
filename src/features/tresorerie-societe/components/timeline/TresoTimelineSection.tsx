@@ -19,32 +19,18 @@ import { TresoTimelinePhaseList } from './TresoTimelinePhaseList';
 import { TresoTimelineTrack } from './TresoTimelineTrack';
 import { TresoTimelineYearScrubber } from './TresoTimelineYearScrubber';
 import { computeTimelineRange } from './timelineLayout';
+import { getTresoReadiness } from '../../utils/tresorerieReadiness';
 
 interface TresoTimelineSectionProps {
   inputs: TresoInputsV5;
   onChange: (nextInputs: TresoInputsV5) => void;
 }
 
-function getSelectedAssociate(inputs: TresoInputsV5): AssociateInputV5 | undefined {
-  const selectedId = inputs.selectedAssociateId || inputs.foyer.selectedAssociateId;
-  return inputs.company.associates.find(associate => associate.id === selectedId)
-    ?? inputs.company.associates[0];
-}
-
-function isTimelineReady(company: CompanyInputV5, associate: AssociateInputV5 | undefined): boolean {
-  return Boolean(
-    company.label?.trim()
-      && company.legalForm
-      && company.projectionStartYear
-      && associate?.kind === 'pp'
-      && (associate.profile?.currentAge ?? 0) > 0,
-  );
-}
-
 export function TresoTimelineSection({ inputs, onChange }: TresoTimelineSectionProps) {
   const [editingPhaseId, setEditingPhaseId] = useState<string | null>(null);
   const [horizonYears, setHorizonYears] = useState(15);
-  const selectedAssociate = getSelectedAssociate(inputs);
+  const readiness = getTresoReadiness(inputs);
+  const selectedAssociate = readiness.selectedAssociate as AssociateInputV5 | undefined;
   const projectionStartYear =
     inputs.company.projectionStartYear ??
     selectedAssociate?.profile?.projectionStartYear ??
@@ -147,7 +133,7 @@ export function TresoTimelineSection({ inputs, onChange }: TresoTimelineSectionP
           <strong>Associé personne morale</strong>
           <p>Une personne morale ne porte pas de parcours de revenu personnel.</p>
         </div>
-      ) : !isTimelineReady(inputs.company, selectedAssociate) ? (
+      ) : !readiness.personalTimelineReady ? (
         <TresoTimelineEmptyState />
       ) : layout ? (
         <div className="ts-timeline-content">
