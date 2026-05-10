@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { TresoInputs, TresoProjectionRow } from '@/engine/tresorerie/types';
 import {
+  buildTresoInputsV5FromV4,
   buildTresoInputsV4FromLegacy,
   buildTresoInputsV4FromV2,
   buildTresoInputsV4FromV3,
@@ -289,5 +290,92 @@ describe('migration trésorerie v3', () => {
     expect(v4.company.projectionStartYear).toBe(2026);
     expect(v4.foyer).toEqual({ selectedAssociateId: 'associe-1' });
     expect(v4.company.associates.map(associate => associate.profile?.projectionStartYear)).toEqual([2026, 2026]);
+  });
+
+  it('migre une rémunération V4 vers deux paliers de revenus V5', () => {
+    const v4 = buildTresoInputsV4FromLegacy(LEGACY_INPUTS);
+    const v5 = buildTresoInputsV5FromV4({
+      ...v4,
+      company: {
+        ...v4.company,
+        projectionStartYear: 2026,
+        associates: [{
+          ...v4.company.associates[0],
+          remuneration: {
+            source: 'holding',
+            loadedAnnualCost: 80_000,
+            socialChargeRate: 0.30,
+            startYear: 2026,
+            endYear: 2030,
+            annualNeedAfterStop: 40_000,
+          },
+        }],
+      },
+    });
+
+    expect(v5.version).toBe(5);
+    expect(v5.company.associates[0].revenuePhases).toEqual([
+      {
+        id: 'phase-legacy-1',
+        startYear: 2026,
+        source: 'holding',
+        subsidiaryId: undefined,
+        loadedAnnualCost: 80_000,
+        socialChargeRate: 0.30,
+        annualNetIncomeNeed: 0,
+        useCcaForCompletion: true,
+      },
+      {
+        id: 'phase-legacy-2',
+        startYear: 2031,
+        source: 'none',
+        loadedAnnualCost: 0,
+        socialChargeRate: 0,
+        annualNetIncomeNeed: 42_000,
+        useCcaForCompletion: true,
+      },
+    ]);
+    expect(v5.company.associates[0].remuneration).toBeUndefined();
+  });
+
+  it('garantit un palier par défaut en V5 quand aucune rémunération ni besoin ne sont saisis', () => {
+    const v4 = buildTresoInputsV4FromLegacy({
+      ...LEGACY_INPUTS,
+      besoinsRetraiteAnnuels: 0,
+    });
+    const v5 = buildTresoInputsV5FromV4({
+      ...v4,
+      company: {
+        ...v4.company,
+        projectionStartYear: 2028,
+        associates: [{
+          ...v4.company.associates[0],
+          profile: v4.company.associates[0].profile
+            ? { ...v4.company.associates[0].profile, annualIncomeNeed: 0 }
+            : undefined,
+          remuneration: {
+            source: 'holding',
+            loadedAnnualCost: 0,
+            socialChargeRate: 0,
+          },
+        }],
+      },
+    });
+
+    expect(v5.company.associates[0].revenuePhases).toEqual([{
+      id: 'phase-default',
+      startYear: 2028,
+      source: 'none',
+      loadedAnnualCost: 0,
+      socialChargeRate: 0,
+      annualNetIncomeNeed: 0,
+      useCcaForCompletion: true,
+    }]);
+  });
+
+  it('conserve un état V5 déjà normalisé', () => {
+    const v5 = buildTresoInputsV5FromV4(buildTresoInputsV4FromLegacy(LEGACY_INPUTS));
+
+    expect(buildTresoInputsV5FromV4(v5 as any)).toEqual(v5);
   });
 });

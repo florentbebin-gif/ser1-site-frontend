@@ -27,14 +27,14 @@ export default function TresorerieSocietePage() {
   const {
     state,
     hydrated,
-    setInputsV4,
+    setInputsV5,
     setProjectionVisible,
     setProjectionMode,
   } = useTresorerieState();
 
   const { colors: themeColors, pptxColors, cabinetLogo, logoPlacement } = useTheme();
-  const activeProfile = getAssociateProfile(state.inputsV4, getSelectedAssociate(state.inputsV4));
-  const { rows, kpis, loading, error, simulationError } = useTresorerieCalculations(state.inputsV4);
+  const activeProfile = getAssociateProfile(state.inputsV5, getSelectedAssociate(state.inputsV5));
+  const { rows, kpis, loading, error, simulationError } = useTresorerieCalculations(state.inputsV5);
   const {
     exportExcel,
     exportPptx,
@@ -43,7 +43,7 @@ export default function TresorerieSocietePage() {
   } = useTresorerieExportHandlers({
     rows,
     kpis,
-    inputs: state.inputsV4,
+    inputs: state.inputsV5,
     themeColors,
     pptxColors,
     cabinetLogo,
@@ -70,13 +70,13 @@ export default function TresorerieSocietePage() {
     >
       <SimPageShell.Main>
         {/* Bloc 1 — Société */}
-        <TresoSocieteSection inputs={state.inputsV4} onChange={setInputsV4} />
+        <TresoSocieteSection inputs={state.inputsV5} onChange={setInputsV5} />
 
         {/* Bloc 2 — Allocation société */}
         <TresoPlacementSection
-          inputs={state.inputsV4}
+          inputs={state.inputsV5}
           projectionRows={rows}
-          onChange={setInputsV4}
+          onChange={setInputsV5}
         />
 
         {/* Bouton projection */}
@@ -111,8 +111,8 @@ export default function TresorerieSocietePage() {
       </SimPageShell.Main>
 
       <SimPageShell.Side sticky>
-        <TresoAssociateInsights inputs={state.inputsV4} rows={rows} />
-        <TresoKPISidebar kpis={kpis} inputs={state.inputsV4} />
+        <TresoAssociateInsights inputs={state.inputsV5} rows={rows} />
+        <TresoKPISidebar kpis={kpis} inputs={state.inputsV5} />
       </SimPageShell.Side>
     </SimPageShell>
   );

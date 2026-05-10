@@ -7,7 +7,7 @@ import { SimFieldShell } from '../../../components/ui/sim/SimFieldShell';
 import type {
   AllocationPocketHorizon,
   AllocationPocketInput,
-  TresoInputsV4,
+  TresoInputsV5,
   TresoProjectionRow,
 } from '../../../engine/tresorerie/types';
 import {
@@ -27,9 +27,9 @@ import {
 } from '../utils/tresorerieFormatters';
 
 interface Props {
-  inputs: TresoInputsV4;
+  inputs: TresoInputsV5;
   projectionRows?: TresoProjectionRow[];
-  onChange: (nextInputs: TresoInputsV4) => void;
+  onChange: (nextInputs: TresoInputsV5) => void;
 }
 
 interface TreasuryStackSegment {
@@ -132,11 +132,11 @@ export function TresoPlacementSection({ inputs, projectionRows = [], onChange }:
     pockets: pockets.filter(pocket => (pocket.horizon ?? 'moyen_terme') === option.value),
   }));
 
-  const patchV2 = (nextV2: TresoInputsV4) => {
+  const patchV2 = (nextV2: TresoInputsV5) => {
     onChange(nextV2);
   };
 
-  const patchMatrix = (patch: Partial<TresoInputsV4['allocationMatrix']>) => {
+  const patchMatrix = (patch: Partial<TresoInputsV5['allocationMatrix']>) => {
     patchV2({ ...v2, allocationMatrix: { ...matrix, ...patch } });
   };
 

@@ -1,6 +1,6 @@
 import type {
-  AssociateInput,
-  TresoInputsV4,
+  AssociateInputV5,
+  TresoInputsV5,
 } from '@/engine/tresorerie/types';
 import {
   getAssociateProfile,
@@ -8,7 +8,7 @@ import {
   updateAssociateOwnershipLot,
 } from './tresorerieSocieteModel';
 
-export function buildDefaultAssociate(index: number, inputs: TresoInputsV4): AssociateInput {
+export function buildDefaultAssociate(index: number, inputs: TresoInputsV5): AssociateInputV5 {
   const profile = getAssociateProfile(inputs);
   return {
     id: `associe-${Date.now()}-${index + 1}`,
@@ -27,19 +27,23 @@ export function buildDefaultAssociate(index: number, inputs: TresoInputsV4): Ass
       },
       remunerationRate: 0,
     },
-    remuneration: {
-      source: 'holding',
+    revenuePhases: [{
+      id: `phase-associe-${Date.now()}-${index + 1}`,
+      startYear: profile.projectionStartYear,
+      source: 'none',
       loadedAnnualCost: 0,
       socialChargeRate: 0,
-    },
+      annualNetIncomeNeed: 0,
+      useCcaForCompletion: true,
+    }],
   };
 }
 
 export function syncSelectedProfile(
   associateId: string,
-  associates: AssociateInput[],
-  nextInputs: TresoInputsV4,
-): TresoInputsV4 {
+  associates: AssociateInputV5[],
+  nextInputs: TresoInputsV5,
+): TresoInputsV5 {
   const associate = associates.find(item => item.id === associateId);
   const nextProjectionStartYear = associate?.kind === 'pp' && associate.profile
     ? nextInputs.company.projectionStartYear ?? associate.profile.projectionStartYear
@@ -60,8 +64,8 @@ export function syncSelectedProfile(
 }
 
 export function useTresorerieAssociateHandlers(
-  inputs: TresoInputsV4,
-  onChange: (nextInputs: TresoInputsV4) => void,
+  inputs: TresoInputsV5,
+  onChange: (nextInputs: TresoInputsV5) => void,
 ) {
   const { company } = inputs;
   const selectedAssociateId = getSelectedAssociateId(inputs);
@@ -70,14 +74,14 @@ export function useTresorerieAssociateHandlers(
     onChange(syncSelectedProfile(associateId, company.associates, inputs));
   };
 
-  const updateAssociate = (associateId: string, patch: Partial<AssociateInput>) => {
-    const patchedAssociates = company.associates.map(associate =>
+  const updateAssociate = (associateId: string, patch: Partial<AssociateInputV5>) => {
+    const patchedAssociates: AssociateInputV5[] = company.associates.map(associate =>
       associate.id === associateId
         ? { ...associate, ...patch, ownershipLots: associate.ownershipLots }
         : associate,
     );
     const associates = patch.ownershipLots?.[0]
-      ? updateAssociateOwnershipLot(patchedAssociates, associateId, patch.ownershipLots[0])
+      ? updateAssociateOwnershipLot(patchedAssociates, associateId, patch.ownershipLots[0]) as AssociateInputV5[]
       : patchedAssociates;
     const nextInputs = {
       ...inputs,

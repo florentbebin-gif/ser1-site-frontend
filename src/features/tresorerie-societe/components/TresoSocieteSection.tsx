@@ -8,8 +8,9 @@ import { SimModalShell } from '../../../components/ui/sim/SimModalShell';
 import { SimSelect } from '../../../components/ui/sim/SimSelect';
 import type {
   AssociateKind,
-  CompanyInput,
-  TresoInputsV4,
+  CompanyInputV5,
+  AssociateInputV5,
+  TresoInputsV5,
 } from '../../../engine/tresorerie/types';
 import {
   TresoCompanyLoansPanel,
@@ -35,8 +36,8 @@ import {
 } from '../utils/tresorerieFormatters';
 
 interface Props {
-  inputs: TresoInputsV4;
-  onChange: (nextInputs: TresoInputsV4) => void;
+  inputs: TresoInputsV5;
+  onChange: (nextInputs: TresoInputsV5) => void;
 }
 
 type PanelKey = 'identite' | 'associes' | 'compte' | 'emprunts' | 'filiales';
@@ -73,9 +74,9 @@ export function TresoSocieteSection({ inputs, onChange }: Props) {
     workingCapitalRequirement: 0,
   };
 
-  const patchInputs = (nextInputs: TresoInputsV4) => onChange(nextInputs);
+  const patchInputs = (nextInputs: TresoInputsV5) => onChange(nextInputs);
 
-  const patchCompany = (patch: Partial<CompanyInput>) => {
+  const patchCompany = (patch: Partial<CompanyInputV5>) => {
     patchInputs({ ...inputs, company: { ...company, ...patch } });
   };
 
@@ -337,7 +338,7 @@ export function TresoSocieteSection({ inputs, onChange }: Props) {
           associate={activeAssociateModal}
           subsidiaries={company.subsidiaries}
           fallbackProfile={getAssociateProfile(inputs, activeAssociateModal)}
-          onChange={patch => updateAssociate(activeAssociateModal.id, patch)}
+          onChange={patch => updateAssociate(activeAssociateModal.id, patch as Partial<AssociateInputV5>)}
           onClose={() => setAssociateModalId(null)}
         />
       )}

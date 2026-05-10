@@ -5,7 +5,7 @@ import {
   COMPANY_KIND_OPTIONS,
   LEGAL_FORM_OPTIONS,
 } from '../../utils/tresorerieSocieteOptions';
-import type { CompanyInput, CompanyKind, LegalForm } from '@/engine/tresorerie/types';
+import type { CompanyInput, CompanyInputV5, CompanyKind, LegalForm } from '@/engine/tresorerie/types';
 import {
   fmtEuroInput,
   parseEuroInput,
@@ -13,9 +13,9 @@ import {
 } from '../../utils/tresorerieFormatters';
 
 interface TresoCompanyIdentityPanelProps {
-  company: CompanyInput;
+  company: CompanyInputV5;
   projectionStartYear: number;
-  onCompanyChange: (patch: Partial<CompanyInput>) => void;
+  onCompanyChange: (patch: Partial<CompanyInputV5>) => void;
   onProjectionStartYearChange: (year: number) => void;
 }
 
