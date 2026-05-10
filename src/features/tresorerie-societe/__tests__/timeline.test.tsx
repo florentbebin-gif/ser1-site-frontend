@@ -5,6 +5,7 @@ import { fireEvent, render, screen, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { TresoInputsV5 } from '@/engine/tresorerie/types';
 import { TresoTimelineSection } from '../components/timeline/TresoTimelineSection';
+import { computeTimelineRange } from '../components/timeline/timelineLayout';
 
 const BASE_INPUTS: TresoInputsV5 = {
   version: 5,
@@ -155,6 +156,35 @@ describe('TresoTimelineSection', () => {
     expect(screen.getByText(/2031 - 2050/)).toBeInTheDocument();
   });
 
+  it('place le début et l’horizon de projection dans la même grille de réglages', () => {
+    render(<TresoTimelineSection inputs={cloneInputs()} onChange={vi.fn()} />);
+
+    const grid = document.querySelector('.ts-timeline-settings-grid');
+
+    expect(grid).toBeInTheDocument();
+    expect(grid).toContainElement(screen.getByLabelText('Début de projection'));
+    expect(grid).toContainElement(screen.getByLabelText('Horizon de projection'));
+  });
+
+  it('élargit le SVG quand l’horizon devient long', () => {
+    const inputs = cloneInputs();
+    const layout = computeTimelineRange(inputs.company, inputs.company.associates[0], 30);
+
+    expect(layout.svgWidth).toBeGreaterThan(1000);
+  });
+
+  it('décale les jalons qui tombent la même année', () => {
+    const inputs = cloneInputs(inputs => {
+      inputs.company.associates[0].revenuePhases[1].startYear = 2035;
+      inputs.company.subsidiaries[0].disposal!.year = 2035;
+    });
+    const layout = computeTimelineRange(inputs.company, inputs.company.associates[0], 15);
+    const milestones2035 = layout.milestones.filter(milestone => milestone.year === 2035);
+
+    expect(milestones2035).toHaveLength(2);
+    expect(new Set(milestones2035.map(milestone => milestone.dotY)).size).toBe(2);
+  });
+
   it('masque les détails des segments trop courts pour éviter les chevauchements', () => {
     render(
       <TresoTimelineSection
@@ -187,7 +217,7 @@ describe('TresoTimelineSection', () => {
       />,
     );
 
-    expect(screen.getAllByText('A').length).toBeGreaterThan(0);
+    expect(document.querySelectorAll('.ts-timeline-track__phase-badge')).toHaveLength(2);
     expect(screen.queryByText(/2026-2026 · besoin/i)).not.toBeInTheDocument();
     expect(document.querySelector('.ts-timeline-track-outer')).toBeInTheDocument();
   });
