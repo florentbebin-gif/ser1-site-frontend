@@ -1,8 +1,5 @@
 /**
- * TresoKPISidebar.tsx — 9 KPIs de synthèse (colonne droite sticky)
- *
- * Chaque KPI a un état conditionnel : incomplete, ready, warning.
- * IS latent capitalisation : affiché séparément avec badge "non décaissé".
+ * TresoKPISidebar.tsx — Synthèse courte de la projection holding.
  */
 
 import type { TresoKPIs } from '../hooks/useTresorerieCalculations';
@@ -14,48 +11,37 @@ interface Props {
 }
 
 function fmtEuro(n: number): string {
-  return Math.round(n).toLocaleString('fr-FR') + ' €';
+  return `${Math.round(n).toLocaleString('fr-FR')} €`;
 }
 
-function fmtAns(n: number): string {
-  return n === 1 ? '1 an' : `${n} ans`;
-}
-
-interface KpiRowProps {
+interface KpiCardProps {
   label: string;
-  value: string | null;
-  status: 'ready' | 'incomplete' | 'warning';
-  badge?: string;
+  value: string;
+  tone?: 'neutral' | 'warning' | 'positive';
   note?: string;
 }
 
-function KpiRow({ label, value, status, badge, note }: KpiRowProps) {
+function KpiCard({ label, value, tone = 'neutral', note }: KpiCardProps) {
   return (
-    <div className={`ts-kpi-row ts-kpi-row--${status}`}>
-      <div className="ts-kpi-row__header">
-        <span className="ts-kpi-row__label">{label}</span>
-        {badge && <span className="ts-kpi-row__badge">{badge}</span>}
-      </div>
-      <div className="ts-kpi-row__value">
-        {status === 'incomplete'
-          ? <span className="ts-kpi-row__incomplete">Hypothèses à compléter</span>
-          : value}
-      </div>
-      {note && <p className="ts-kpi-row__note">{note}</p>}
+    <div className={`ts-kpi-card ts-kpi-card--${tone}`}>
+      <span>{label}</span>
+      <strong>{value}</strong>
+      {note ? <small>{note}</small> : null}
     </div>
   );
 }
 
-export function TresoKPISidebar({ kpis, inputs }: Props) {
-  const hasCapitalisation = inputs.allocationMatrix.pockets.some(pocket => pocket.kind === 'capitalisation');
-  const hasCompanyDebtOrSubsidiary = !!(inputs.company.loans.length || inputs.company.subsidiaries.length);
-  const hasAnneeRetraite = kpis.anneeRetraiteIndex !== null && kpis.anneeRetraiteIndex >= 0;
+export function TresoKPISidebar({ kpis }: Props) {
+  const ccaValue = kpis.ccaRestantFinHorizon > 0
+    ? fmtEuro(kpis.ccaRestantFinHorizon)
+    : fmtEuro(kpis.ccaRembourseTotal);
+  const ccaLabel = kpis.ccaRestantFinHorizon > 0 ? 'CCA restant dû' : 'CCA remboursé';
 
   return (
     <div className="premium-card sim-summary-card ts-kpi-sidebar">
       <div className="ts-kpi-sidebar__header">
         <h2 className="ts-kpi-sidebar__title">Synthèse</h2>
-        <p className="ts-kpi-sidebar__subtitle">Indicateurs clés de la simulation</p>
+        <p className="ts-kpi-sidebar__subtitle">4 repères pour lire la projection</p>
       </div>
       <div className="ts-kpi-sidebar__divider" />
 
@@ -64,91 +50,22 @@ export function TresoKPISidebar({ kpis, inputs }: Props) {
           Renseignez les paramètres pour afficher la projection.
         </p>
       ) : (
-        <div className="ts-kpi-list">
-
-          {/* 1 — CCA total constitué */}
-          <KpiRow
-            label="CCA total constitué"
-            value={fmtEuro(kpis.ccaTotalConstitue)}
-            status="ready"
+        <div className="ts-kpi-card-grid">
+          <KpiCard label="IS total décaissé" value={fmtEuro(kpis.isTotalDecaisse)} />
+          <KpiCard
+            label="Compte bancaire fin horizon"
+            value={fmtEuro(kpis.compteBancaireFinHorizon)}
+            tone={kpis.compteBancaireFinHorizon < 0 ? 'warning' : 'neutral'}
           />
-
-          {/* 2 — IS total décaissé */}
-          <KpiRow
-            label="IS total décaissé"
-            value={fmtEuro(kpis.isTotalDecaisse)}
-            status="ready"
+          <KpiCard
+            label="Déficit bancaire maximal"
+            value={fmtEuro(kpis.deficitBancaireMax)}
+            tone={kpis.deficitBancaireMax > 0 ? 'warning' : 'positive'}
+            note={kpis.premiereAnneeDeficitBancaire
+              ? `Dès ${kpis.premiereAnneeDeficitBancaire}`
+              : undefined}
           />
-
-          {/* 3 — IS latent capitalisation (non décaissé) */}
-          {hasCapitalisation ? (
-            <KpiRow
-              label="IS latent capitalisation"
-              value={fmtEuro(kpis.isLatentCapi)}
-              status="ready"
-              badge="non décaissé"
-            />
-          ) : null}
-
-          {/* 4 — Revenu net à la retraite */}
-          <KpiRow
-            label="Revenu net annuel à la retraite"
-            value={hasAnneeRetraite ? fmtEuro(kpis.revenusNetsRetraite) : null}
-            status={hasAnneeRetraite ? 'ready' : 'incomplete'}
-          />
-
-          {/* 5 — Durée remboursement CCA */}
-          <KpiRow
-            label="Durée de remboursement CCA"
-            value={kpis.dureeRemboursementCCA != null
-              ? fmtAns(kpis.dureeRemboursementCCA)
-              : null}
-            status={kpis.dureeRemboursementCCA != null ? 'ready' : 'incomplete'}
-          />
-
-          {/* 6 — Valeur nette société à la retraite */}
-          <KpiRow
-            label="Valeur nette société à la retraite"
-            value={hasAnneeRetraite ? fmtEuro(kpis.valeurNetteSocieteRetraite) : null}
-            status={hasAnneeRetraite ? 'ready' : 'incomplete'}
-          />
-
-          {/* 7 — Réserves à la retraite */}
-          <KpiRow
-            label="Réserves disponibles à la retraite"
-            value={hasAnneeRetraite ? fmtEuro(kpis.reservesRetraite) : null}
-            status={hasAnneeRetraite ? 'ready' : 'incomplete'}
-          />
-
-          {/* 8 — Capacité distribuable année 1 */}
-          <KpiRow
-            label="Capacité distribuable (an 1)"
-            value={fmtEuro(kpis.capaciteDistribuableAn1)}
-            status="ready"
-          />
-
-          {/* 9 — Alerte dividendes > capacité */}
-          {kpis.alerteDividendesAn1 || hasCompanyDebtOrSubsidiary ? (
-            <KpiRow
-              label="Alerte dividendes"
-              value={kpis.alerteDividendesAn1
-                ? 'Dividendes supérieurs à la capacité distribuable'
-                : 'Aucune alerte'}
-              status={kpis.alerteDividendesAn1 ? 'warning' : 'ready'}
-            />
-          ) : null}
-
-          {kpis.alerteTresorerieBancaire ? (
-            <KpiRow
-              label="Alerte compte bancaire"
-              value={`Déficit max ${fmtEuro(kpis.deficitBancaireMax)}`}
-              status="warning"
-              note={kpis.premiereAnneeDeficitBancaire
-                ? `Première année sous le solde minimum + BFR : ${kpis.premiereAnneeDeficitBancaire}`
-                : undefined}
-            />
-          ) : null}
-
+          <KpiCard label={ccaLabel} value={ccaValue} />
         </div>
       )}
     </div>
