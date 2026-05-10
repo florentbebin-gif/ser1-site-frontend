@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { TresoInputs } from '@/engine/tresorerie/types';
+import type { TresoInputs, TresoInputsV5 } from '@/engine/tresorerie/types';
 import type { TresoPersistedState } from '../types';
 import {
   DEFAULT_TRESO_INPUTS_V5,
@@ -29,6 +29,12 @@ const LEGACY_INPUTS: TresoInputs = {
 };
 
 describe('useTresorerieState — source de vérité v5', () => {
+  function expectRevenuePhasesInvariant(inputs: TresoInputsV5) {
+    inputs.company.associates.forEach(associate => {
+      expect(associate.revenuePhases.length).toBeGreaterThan(0);
+    });
+  }
+
   it('STORE_KEY suit la convention ser1:sim:<simId>', () => {
     expect(storageKeyFor('tresorerie-societe')).toBe('ser1:sim:tresorerie-societe');
   });
@@ -55,6 +61,7 @@ describe('useTresorerieState — source de vérité v5', () => {
     const state = normalizeTresoreriePersistedState({ inputs: LEGACY_INPUTS });
 
     expect(state.inputsV5.version).toBe(5);
+    expectRevenuePhasesInvariant(state.inputsV5);
     expect(state.inputsV5.company.associates[0].profile?.currentAge).toBe(52);
     expect(state.inputsV5.company.treasuryInitial).toBe(150000);
     expect(state.inputsV5.allocationMatrix.pockets[0]).toMatchObject({
@@ -93,6 +100,7 @@ describe('useTresorerieState — source de vérité v5', () => {
     const state = normalizeTresoreriePersistedState(persisted);
 
     expect(state.inputsV5.version).toBe(5);
+    expectRevenuePhasesInvariant(state.inputsV5);
     expect(state.inputsV5.company.associates[0].profile?.currentAge).toBe(48);
     expect('inputs' in state).toBe(false);
   });
