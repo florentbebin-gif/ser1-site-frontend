@@ -4,7 +4,7 @@
 
 import { useMemo, useState } from 'react';
 import { SimSelect } from '../../../components/ui/sim/SimSelect';
-import type { TresoProjectionRow } from '../../../engine/tresorerie/types';
+import type { TresoAssociateRevenueSource, TresoProjectionRow } from '../../../engine/tresorerie/types';
 
 interface Props {
   rows: TresoProjectionRow[];
@@ -141,7 +141,7 @@ function buildTresoAccountingProjectionView(
   rows: TresoProjectionRow[],
   associateFilter: string,
 ): RowDef[] {
-  const keys = new Map<string, string>();
+  const keys = new Map<string, { label: string; source?: TresoAssociateRevenueSource }>();
   rows.forEach(row => {
     row.revenusParAssocie.forEach(revenue => {
       if (associateFilter !== 'all' && revenue.associateId !== associateFilter) return;
@@ -151,10 +151,10 @@ function buildTresoAccountingProjectionView(
       const label = associateFilter === 'all'
         ? `Revenus nets — ${revenue.label}`
         : `${sourceLabel(revenue.source)} — ${revenue.label}`;
-      keys.set(key, label);
+      keys.set(key, { label, source: associateFilter === 'all' ? undefined : revenue.source });
     });
   });
-  return Array.from(keys, ([key, label]) => ({
+  return Array.from(keys, ([key, { label, source }]) => ({
     key: `associe:${key}`,
     label,
     group: 'revenus',
@@ -164,7 +164,10 @@ function buildTresoAccountingProjectionView(
           if (associateFilter === 'all') return revenue.associateId === key;
           return `${revenue.associateId}:${revenue.source}` === key;
         })
-        .reduce((sum, revenue) => sum + revenue.netRevenue, 0);
+        .reduce((sum, revenue) => {
+          if (source === 'charges_sociales_tns') return sum - revenue.tnsSocialCharges;
+          return sum + revenue.netRevenue;
+        }, 0);
       return total === 0 ? '—' : fmtE(total);
     },
   }));

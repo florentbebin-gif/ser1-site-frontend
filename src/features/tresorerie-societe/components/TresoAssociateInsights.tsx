@@ -68,7 +68,7 @@ function AssociateDonut({ segments }: { segments: TresoAssociateInsightSegment[]
 
 export function TresoAssociateInsights({ inputs, rows }: Props) {
   const view = buildTresoAssociateInsightViewModel(inputs, rows);
-  const deltaStatus = view.deltaNeed > 0 ? 'warning' : view.deltaNeed < 0 ? 'positive' : 'neutral';
+  const deltaStatus = view.deltaNeed < 0 ? 'warning' : view.deltaNeed > 0 ? 'positive' : 'neutral';
 
   return (
     <div className="premium-card ts-associate-insights">

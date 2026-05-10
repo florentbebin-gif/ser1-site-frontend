@@ -65,7 +65,7 @@ const INPUTS: TresoInputsV5 = {
 const ROW = {
   year: 1,
   revenusNets: 45_000,
-  deltaBesoin: 5_000,
+  deltaBesoin: -5_000,
   revenusParAssocie: [
     {
       associateId: 'associe-1',
@@ -122,8 +122,18 @@ describe('TresoAssociateInsights', () => {
     expect(html).toContain('Rémunération nette');
     expect(html).toContain('Remboursement CCA');
     expect(html).toContain('Dividendes nets');
-    expect(html).toContain('+5');
+    expect(html).toContain('-5');
+    expect(html).toContain('is-warning');
     expect(html).not.toContain('charges sociales');
+  });
+
+  it('affiche un surplus de besoin en statut positif', () => {
+    const html = renderToStaticMarkup(
+      <TresoAssociateInsights inputs={INPUTS} rows={[{ ...ROW, deltaBesoin: 5_000 }]} />,
+    );
+
+    expect(html).toContain('+5');
+    expect(html).toContain('is-positive');
   });
 
   it('affiche un état propre pour un associé personne morale', () => {

@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 
 import '@testing-library/jest-dom/vitest';
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import { TresoProjectionDrawer } from '../components/TresoProjectionDrawer';
 
@@ -56,6 +56,16 @@ const ROW = {
       netRevenue: 30000,
       ccaRepaid: 0,
     },
+    {
+      associateId: 'associe-1',
+      label: 'Associé 1',
+      source: 'charges_sociales_tns',
+      grossDividends: 0,
+      dividendTax: 0,
+      tnsSocialCharges: 3000,
+      netRevenue: 0,
+      ccaRepaid: 0,
+    },
   ],
   tresorerieDebut: 100000,
   tresorerieFin: 82000,
@@ -92,5 +102,24 @@ describe('TresoProjectionDrawer', () => {
     expect(screen.getByText("Trésorerie fin d'année").closest('tr')).toHaveClass('ts-proj-row--total');
     expect(screen.getByText('Déficit bancaire vs solde minimum + BFR').closest('tr'))
       .toHaveClass('ts-proj-row--total');
+  });
+
+  it('affiche les charges sociales TNS en négatif dans le détail filtré par associé', () => {
+    render(
+      <TresoProjectionDrawer
+        rows={[ROW as any]}
+        mode="detail"
+        onModeChange={vi.fn()}
+        ageActuel={50}
+        ageRetraite={65}
+        anneeCivileDebut={2026}
+      />,
+    );
+
+    fireEvent.click(screen.getByLabelText('Filtrer les revenus par associé'));
+    fireEvent.mouseDown(screen.getByRole('option', { name: 'Associé 1' }));
+
+    expect(screen.getByText('Charges sociales TNS — Associé 1')).toBeInTheDocument();
+    expect(screen.getByText('-3 000 €')).toBeInTheDocument();
   });
 });
