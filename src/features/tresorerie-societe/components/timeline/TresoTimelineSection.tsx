@@ -112,11 +112,31 @@ export function TresoTimelineSection({ inputs, onChange }: TresoTimelineSectionP
   return (
     <section className="premium-card ts-section ts-timeline-section" aria-labelledby="ts-timeline-title">
       <div className="ts-section__header">
+        <span className="sim-card__icon">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden="true"
+          >
+            <line x1="3" y1="12" x2="21" y2="12" />
+            <polyline points="8 8 3 12 8 16" />
+            <polyline points="16 8 21 12 16 16" />
+          </svg>
+        </span>
         <div>
-          <h2 id="ts-timeline-title">Parcours de revenus de l’associé</h2>
-          <p>Phases de rémunération, besoins nets et priorité CCA de l’associé sélectionné</p>
+          <h2 className="ts-section__title" id="ts-timeline-title">
+            Parcours de revenus de l’associé
+          </h2>
+          <p className="ts-section__subtitle">
+            Phases de rémunération, besoins nets et priorité CCA de l’associé sélectionné
+          </p>
         </div>
       </div>
+      <div className="ts-section__divider" />
 
       {!selectedAssociate ? (
         <TresoTimelineEmptyState />

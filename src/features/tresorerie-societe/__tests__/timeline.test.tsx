@@ -137,6 +137,16 @@ describe('TresoTimelineSection', () => {
     window.removeEventListener('ts:open-society-panel', openSociety);
   });
 
+  it('reprend l’en-tête standard des sections du simulateur', () => {
+    render(<TresoTimelineSection inputs={cloneInputs()} onChange={vi.fn()} />);
+
+    expect(screen.getByRole('heading', { name: /Parcours de revenus de l’associé/i }))
+      .toHaveClass('ts-section__title');
+    expect(screen.getByText(/Phases de rémunération/i)).toHaveClass('ts-section__subtitle');
+    expect(document.querySelector('.sim-card__icon')).toBeInTheDocument();
+    expect(document.querySelector('.ts-section__divider')).toBeInTheDocument();
+  });
+
   it('affiche un message informatif pour un associé personne morale', () => {
     render(
       <TresoTimelineSection
