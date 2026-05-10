@@ -192,21 +192,21 @@ describe('TresoSocieteSection', () => {
     fireEvent.click(screen.getByRole('button', { name: /Paramétrer Holding patrimoniale/i }));
 
     expect(screen.getByDisplayValue('Ma holding')).toBeInTheDocument();
-    expect(screen.getByText('Début de projection')).toBeInTheDocument();
+    expect(screen.queryByText('Début de projection')).not.toBeInTheDocument();
+    expect(screen.getByText(/date de début de projection se règle dans le parcours associé/i))
+      .toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /Rémunérations & TNS/i })).not.toBeInTheDocument();
   });
 
-  it('déplace la rémunération dans la modale associé avec source holding ou filiale', () => {
+  it('retire la rémunération de la modale associé au profit de la timeline', () => {
     render(<TresoSocieteSection inputs={INPUTS} onChange={vi.fn()} />);
 
     fireEvent.click(screen.getByRole('button', { name: /Paramétrer Associé 2/ }));
-    fireEvent.click(screen.getByRole('tab', { name: 'Rémunération' }));
 
-    expect(screen.getByRole('tab', { name: /Rémunération/i })).toHaveAttribute('aria-selected', 'true');
-    expect(screen.getByText('Vous payez-vous aujourd’hui ?')).toBeInTheDocument();
-    expect(screen.getByText('Net annuel estimé')).toBeInTheDocument();
-    expect(screen.getByDisplayValue(value => value.replace(/\s/g, '') === '50000')).toBeInTheDocument();
-    expect(screen.getByLabelText('Oui, depuis la holding')).toBeChecked();
+    expect(screen.queryByRole('tab', { name: 'Rémunération' })).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole('tab', { name: 'Profil' }));
+    expect(screen.getByText(/paliers de revenus se règlent depuis le parcours associé/i))
+      .toBeInTheDocument();
   });
 
   it('enrichit la modale filiale avec trésorerie, paliers vers la mère et cession', () => {
@@ -229,12 +229,12 @@ describe('TresoSocieteSection', () => {
     render(<TresoSocieteSection inputs={INPUTS} onChange={vi.fn()} />);
 
     fireEvent.click(screen.getByRole('button', { name: /Paramétrer Associé 2/ }));
-    const remunerationTab = screen.getByRole('tab', { name: 'Rémunération' });
-    fireEvent.click(remunerationTab);
+    const ccaTab = screen.getByRole('tab', { name: 'CCA' });
+    fireEvent.click(ccaTab);
 
-    expect(remunerationTab).toHaveAttribute('aria-selected', 'true');
-    expect(screen.getByRole('tabpanel')).toHaveAttribute('aria-labelledby', 'ts-associate-tab-remuneration');
-    expect(screen.queryByText('Compte courant d’associé')).not.toBeInTheDocument();
+    expect(ccaTab).toHaveAttribute('aria-selected', 'true');
+    expect(screen.getByRole('tabpanel')).toHaveAttribute('aria-labelledby', 'ts-associate-tab-cca');
+    expect(screen.getByText('Compte courant d’associé')).toBeInTheDocument();
   });
 
   it('ajoute un palier de dividendes filiale depuis la modale', () => {

@@ -20,6 +20,7 @@ import type {
   AmountScheduleInput,
   AllocationPocketHorizon,
   AssociateInput,
+  AssociateRevenuePhaseInput,
   SubsidiaryInput,
   TresoInputsRuntime,
   TresoProjectionRow,
@@ -34,6 +35,13 @@ import {
   getSelectedAssociate,
   getAllocationHorizonLabel,
 } from '../utils/tresorerieSocieteModel';
+import {
+  computeComplement,
+  computeNetRevenue,
+  getPhaseEndYear,
+  sortPhases,
+} from '../utils/revenuePhases';
+import { getRevenuePhaseSourceLabel } from '../utils/revenuePhaseLabels';
 
 // ─── Helpers de style ─────────────────────────────────────────────────────────
 
@@ -225,6 +233,33 @@ function ccaCurrentBalance(associate: AssociateInput): number {
   return associate.cca?.currentBalance ?? 0;
 }
 
+function getAssociateRevenuePhases(associate: AssociateInput): AssociateRevenuePhaseInput[] {
+  const phases = (associate as { revenuePhases?: AssociateRevenuePhaseInput[] }).revenuePhases;
+  return Array.isArray(phases) ? sortPhases(phases) : [];
+}
+
+function buildRevenuePhaseRows(company: TresoInputsRuntime['company']): XlsxCell[][] {
+  const horizonYear = (company.projectionStartYear ?? new Date().getFullYear()) + 14;
+  const rows = company.associates.flatMap(associate => {
+    const phases = getAssociateRevenuePhases(associate);
+    return phases.map(phase => [
+      txt(associate.label),
+      txt(phase.label?.trim() || getRevenuePhaseSourceLabel(phase.source)),
+      txt(`${phase.startYear} → ${getPhaseEndYear(phase, phases, horizonYear)}`),
+      txt(getRevenuePhaseSourceLabel(phase.source)),
+      money(phase.loadedAnnualCost),
+      money(computeNetRevenue(phase)),
+      money(phase.annualNetIncomeNeed),
+      money(computeComplement(phase)),
+      txt(phase.useCcaForCompletion ? 'CCA prioritaire' : 'Dividendes uniquement'),
+    ]);
+  });
+
+  return rows.length > 0
+    ? rows
+    : [[txt('Aucun parcours renseigné'), txt(''), txt(''), txt(''), txt(''), txt(''), txt(''), txt(''), txt('')]];
+}
+
 function scheduleRows(
   subsidiary: SubsidiaryInput,
   label: string,
@@ -312,8 +347,11 @@ function buildStructureSheet(inputs: TresoInputsRuntime): XlsxSheet {
     ...company.associates.map(associate => [
       txt(`${associate.label} (${associate.kind === 'pm' ? 'PM' : 'PP'})`),
       txt(`${getCapitalPct(associate)} % / ${getEconomicPct(associate)} %`),
-      txt(`${associate.remuneration?.source === 'subsidiary' ? 'Filiale' : 'Holding'} · CCA ${ccaCurrentBalance(associate).toLocaleString('fr-FR')} € au taux ${Math.round((associate.cca?.remunerationRate ?? 0) * 10000) / 100} %`),
+      txt(`Parcours timeline · CCA ${ccaCurrentBalance(associate).toLocaleString('fr-FR')} € au taux ${Math.round((associate.cca?.remunerationRate ?? 0) * 10000) / 100} %`),
     ]),
+    [sec('Parcours de revenus'), sec(''), sec(''), sec(''), sec(''), sec(''), sec(''), sec(''), sec('')],
+    [h('Associé'), h('Palier'), h('Période'), h('Source'), h('Rémunération chargée'), h('Net estimé'), h('Besoin total net'), h('Complément'), h('Priorité')],
+    ...buildRevenuePhaseRows(company),
     [sec('Filiales'), sec(''), sec('')],
     [h('Filiale'), h('% détention'), h('Trésorerie / Cession')],
     ...company.subsidiaries.map(subsidiary => [

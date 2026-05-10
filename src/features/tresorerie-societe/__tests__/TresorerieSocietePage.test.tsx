@@ -104,8 +104,8 @@ vi.mock('../../../settings/ThemeProvider', () => ({
 
 // ─── Fixtures ─────────────────────────────────────────────────────────────────
 
-const DEFAULT_INPUTS_V4 = {
-  version: 4 as const,
+const DEFAULT_INPUTS_V5 = {
+  version: 5 as const,
   selectedAssociateId: 'associe-1',
   foyer: {
     selectedAssociateId: 'associe-1',
@@ -147,7 +147,15 @@ const DEFAULT_INPUTS_V4 = {
         annualContribution: { amount: 0, startYear: 2025, endYear: 2025 },
         remunerationRate: 0,
       },
-      remuneration: { source: 'holding' as const, loadedAnnualCost: 0, socialChargeRate: 0 },
+      revenuePhases: [{
+        id: 'phase-default',
+        startYear: 2025,
+        source: 'none' as const,
+        loadedAnnualCost: 0,
+        socialChargeRate: 0,
+        annualNetIncomeNeed: 30000,
+        useCcaForCompletion: true,
+      }],
     }],
     loans: [],
     subsidiaries: [],
@@ -162,12 +170,12 @@ const DEFAULT_INPUTS_V4 = {
 function makeStateReturn(overrides: Record<string, unknown> = {}) {
   return {
     state: {
-      inputsV4: DEFAULT_INPUTS_V4,
+      inputsV5: DEFAULT_INPUTS_V5,
       projectionVisible: false,
       projectionMode: 'resume' as const,
     },
     hydrated: true,
-    setInputsV4: vi.fn(),
+    setInputsV5: vi.fn(),
     setProjectionVisible: vi.fn(),
     setProjectionMode: vi.fn(),
     ...overrides,
@@ -263,12 +271,12 @@ describe('TresorerieSocietePage', () => {
     expect(html).toContain('PowerPoint');
   });
 
-  it('branche calculs et exports sur inputsV4, sans state legacy runtime', () => {
+  it('branche calculs et exports sur inputsV5, sans state legacy runtime', () => {
     renderToStaticMarkup(<TresorerieSocietePage />);
 
-    expect(mockUseTresoCalc).toHaveBeenCalledWith(DEFAULT_INPUTS_V4);
+    expect(mockUseTresoCalc).toHaveBeenCalledWith(DEFAULT_INPUTS_V5);
     expect(mockUseTresoExports).toHaveBeenCalledWith(expect.objectContaining({
-      inputs: DEFAULT_INPUTS_V4,
+      inputs: DEFAULT_INPUTS_V5,
     }));
   });
 
@@ -296,7 +304,7 @@ describe('TresorerieSocietePage', () => {
     it('est visible quand projectionVisible=true', () => {
       mockUseTresoState.mockReturnValue(makeStateReturn({
         state: {
-          inputsV4: DEFAULT_INPUTS_V4,
+          inputsV5: DEFAULT_INPUTS_V5,
           projectionVisible: true,
           projectionMode: 'resume' as const,
         },

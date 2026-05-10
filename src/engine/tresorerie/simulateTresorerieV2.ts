@@ -1,6 +1,10 @@
 import { calculBaseEtIS } from './calculIS';
 import { selectAllocationPocketsForSimulation } from './allocationPockets';
 import {
+  computeNetRevenue,
+  getActivePhase,
+} from './revenuePhases';
+import {
   getAssociateProfile,
   getCapitalPct,
   getEconomicPct,
@@ -27,6 +31,7 @@ import type {
   TresoFiscalParams,
   TresoInputsRuntime,
   TresoProjectionRow,
+  AssociateRevenuePhaseInput,
 } from './types';
 
 export class TresoSimulationInputError extends Error {
@@ -74,6 +79,15 @@ function getAssociateRemunerationForYear(
   associate: AssociateInput,
   anneeCivile: number,
 ): { holdingCost: number; netRevenue: number } {
+  const phase = getAssociateRevenuePhaseForYear(associate, anneeCivile);
+  if (phase) {
+    const loadedAnnualCost = Math.max(0, phase.loadedAnnualCost);
+    return {
+      holdingCost: phase.source === 'holding' ? loadedAnnualCost : 0,
+      netRevenue: computeNetRevenue(phase),
+    };
+  }
+
   const remuneration = associate.remuneration;
   if (!remuneration) return { holdingCost: 0, netRevenue: 0 };
   const startsBeforeOrDuringYear =
@@ -90,11 +104,23 @@ function getAssociateRemunerationForYear(
   };
 }
 
+function getAssociateRevenuePhaseForYear(
+  associate: AssociateInput,
+  anneeCivile: number,
+): AssociateRevenuePhaseInput | undefined {
+  const phases = (associate as { revenuePhases?: unknown }).revenuePhases;
+  if (!Array.isArray(phases)) return undefined;
+  return phases && phases.length > 0 ? getActivePhase(phases, anneeCivile) : undefined;
+}
+
 function getSelectedAnnualIncomeNeed(
   selectedAssociate: AssociateInput,
   defaultAnnualNeed: number,
   anneeCivile: number,
 ): number {
+  const phase = getAssociateRevenuePhaseForYear(selectedAssociate, anneeCivile);
+  if (phase) return Math.max(0, phase.annualNetIncomeNeed);
+
   const remuneration = selectedAssociate.remuneration;
   if (
     remuneration?.endYear != null &&
@@ -111,6 +137,9 @@ function hasSelectedNeedForYear(
   enPhaseRetraite: boolean,
   anneeCivile: number,
 ): boolean {
+  const phase = getAssociateRevenuePhaseForYear(selectedAssociate, anneeCivile);
+  if (phase) return Math.max(0, phase.annualNetIncomeNeed) > 0;
+
   const remuneration = selectedAssociate.remuneration;
   return enPhaseRetraite || (
     remuneration?.endYear != null &&
@@ -179,6 +208,7 @@ export function simulateTresorerieV2(
       anneeCivile,
     );
     const enPhaseBesoin = hasSelectedNeedForYear(selectedAssociate, enPhaseRetraite, anneeCivile);
+    const selectedActivePhase = getAssociateRevenuePhaseForYear(selectedAssociate, anneeCivile);
     const ccaBalanceDebut = new Map(ccaBalances);
 
     const remunerationByAssociate = new Map<string, number>();
@@ -285,11 +315,14 @@ export function simulateTresorerieV2(
     const besoinRetraiteApresRemuneration = enPhaseBesoin
       ? Math.max(0, annualIncomeNeed - selectedRemuneration)
       : 0;
-    const retraitsCCA = Math.min(
-      besoinRetraiteApresRemuneration,
-      ccaBalances.get(selectedAssociateId) ?? 0,
-      tresorerieDisponibleApresIS,
-    );
+    const canUseCcaForCompletion = selectedActivePhase?.useCcaForCompletion ?? true;
+    const retraitsCCA = canUseCcaForCompletion
+      ? Math.min(
+        besoinRetraiteApresRemuneration,
+        ccaBalances.get(selectedAssociateId) ?? 0,
+        tresorerieDisponibleApresIS,
+      )
+      : 0;
     const ccaRepaidByAssociate = distributeSelectedCcaRepayment({
       selectedAssociateId,
       ccaBalances,
@@ -331,7 +364,8 @@ export function simulateTresorerieV2(
     const tnsSocialChargesByAssociate = new Map<string, number>();
     associates.forEach(associate => {
       if (!isTnsAssociate(associate)) return;
-      const manualRate = associate.remuneration?.socialChargeRate ?? 0;
+      const activePhase = getAssociateRevenuePhaseForYear(associate, anneeCivile);
+      const manualRate = activePhase?.socialChargeRate ?? associate.remuneration?.socialChargeRate ?? 0;
       if (manualRate <= 0) return;
       const grossDividends = grossDividendsByAssociate.get(associate.id) ?? 0;
       const ccaAtStart = ccaBalanceDebut.get(associate.id) ?? 0;
@@ -443,6 +477,8 @@ export function simulateTresorerieV2(
       alerteDividendesSuperieursCapacite,
       annuiteCreditIS: loansResult.annuiteCreditIS,
       revenusActifFinance: loansResult.revenusActifFinance,
+      phaseIdActive: selectedActivePhase?.id,
+      phaseLabelActive: selectedActivePhase?.label,
       revenusNets,
       deltaBesoin,
       revenusParAssocie,

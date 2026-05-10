@@ -10,7 +10,12 @@
  */
 
 import type { LogoPlacement, StudyDeckSpec } from '@/pptx/theme/types';
-import type { TresoInputsRuntime, TresoProjectionRow } from '@/engine/tresorerie/types';
+import type {
+  AssociateInput,
+  AssociateRevenuePhaseInput,
+  TresoInputsRuntime,
+  TresoProjectionRow,
+} from '@/engine/tresorerie/types';
 import { paginateTresoYears } from '@/pptx/slides/buildTresorerieProjection';
 import type { TresoKPIs } from '../hooks/useTresorerieCalculations';
 import {
@@ -18,7 +23,14 @@ import {
   getCompanyKindCode,
   getCompanyKindLabel,
   getEconomicPct,
+  getSelectedAssociate,
 } from '../utils/tresorerieSocieteModel';
+import {
+  computeComplement,
+  getPhaseEndYear,
+  sortPhases,
+} from '../utils/revenuePhases';
+import { getRevenuePhaseSourceLabel } from '../utils/revenuePhaseLabels';
 
 // ─── Libellés UI premium (jamais les labels Excel bruts) ───────────────────────
 
@@ -48,6 +60,25 @@ function fmtPct(n: number): string {
   return `${Math.round(n * 100) / 100} %`;
 }
 
+function getAssociateRevenuePhases(associate: AssociateInput | undefined): AssociateRevenuePhaseInput[] {
+  const phases = (associate as { revenuePhases?: AssociateRevenuePhaseInput[] } | undefined)?.revenuePhases;
+  return Array.isArray(phases) ? sortPhases(phases) : [];
+}
+
+function buildRevenuePhaseSummary(inputs: TresoInputsRuntime) {
+  const associate = getSelectedAssociate(inputs);
+  const phases = getAssociateRevenuePhases(associate);
+  const horizonYear = (inputs.company.projectionStartYear ?? new Date().getFullYear()) + 14;
+  return phases.slice(0, 3).map(phase => ({
+    label: phase.label?.trim() || getRevenuePhaseSourceLabel(phase.source),
+    periodLabel: `${phase.startYear}-${getPhaseEndYear(phase, phases, horizonYear)}`,
+    sourceLabel: getRevenuePhaseSourceLabel(phase.source),
+    annualNetIncomeNeed: phase.annualNetIncomeNeed,
+    complement: computeComplement(phase),
+    useCcaForCompletion: phase.useCcaForCompletion,
+  }));
+}
+
 // ─── Construction du StudyDeckSpec ────────────────────────────────────────────
 
 export interface TresorerieDeckData {
@@ -74,6 +105,7 @@ export function buildTresorerieStudyDeck(
   const hasCapitalisation = pockets.some(pocket => pocket.kind === 'capitalisation');
   const hasCreditIS = inputs.company.loans.length > 0;
   const hasHolding = inputs.company.subsidiaries.length > 0;
+  const revenuePhases = buildRevenuePhaseSummary(inputs);
 
   // ── Projection paginée ──────────────────────────────────────────────────────
   const totalYears = rows.length;
@@ -138,6 +170,7 @@ export function buildTresorerieStudyDeck(
           parentEntityId: subsidiary.parentEntityId ?? 'societe',
           ownershipPct: fmtPct(subsidiary.ownershipPct ?? subsidiary.holdingOwnershipPct),
         })),
+        revenuePhases,
         hasHolding,
         hasDistribution,
         hasCapitalisation,

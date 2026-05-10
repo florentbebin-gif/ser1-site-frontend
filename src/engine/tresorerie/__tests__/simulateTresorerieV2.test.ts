@@ -110,7 +110,6 @@ function baseV2(overrides: V2Overrides = {}): TresoInputsV2 {
   };
 }
 
-
 describe('simulateTresorerie — modèle société v2', () => {
   it('affecte les dividendes à l’usufruitier et pas au nu-propriétaire', () => {
     const rows = simulateTresorerieV2(baseV2({

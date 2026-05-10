@@ -88,15 +88,18 @@ export function buildTresorerieSchema(
   const chartW = CONTENT_W * 0.58;
   const kpiX = MARGIN_X + chartW + 0.15;
   const kpiW = CONTENT_W - chartW - 0.15;
+  const revenuePhases = spec.revenuePhases?.slice(0, 3) ?? [];
+  const phaseBandH = revenuePhases.length > 0 ? 0.56 : 0;
+  const chartAreaH = totalH - phaseBandH - (phaseBandH > 0 ? 0.08 : 0);
 
   const layout = computeTresoOrgchartLayout(spec.orgchartCompany);
   const chartPadding = 0.12;
   const chartScale = Math.min(
     (chartW - chartPadding * 2) / Math.max(1, layout.svgWidth),
-    (totalH - chartPadding * 2) / Math.max(1, layout.svgHeight),
+    (chartAreaH - chartPadding * 2) / Math.max(1, layout.svgHeight),
   );
   const chartOriginX = MARGIN_X + (chartW - layout.svgWidth * chartScale) / 2;
-  const chartOriginY = CONTENT_TOP_Y + (totalH - layout.svgHeight * chartScale) / 2;
+  const chartOriginY = CONTENT_TOP_Y + (chartAreaH - layout.svgHeight * chartScale) / 2;
   const scaleX = (x: number) => chartOriginX + x * chartScale;
   const scaleY = (y: number) => chartOriginY + y * chartScale;
 
@@ -197,7 +200,7 @@ export function buildTresorerieSchema(
   if (!spec.hasAllocationMatrix) {
     slide.addText('Trésorerie conservée sur compte bancaire', {
       x: MARGIN_X + 0.16,
-      y: CONTENT_TOP_Y + totalH - 0.30,
+      y: CONTENT_TOP_Y + chartAreaH - 0.30,
       w: chartW - 0.32,
       h: 0.16,
       fontSize: 7,
@@ -206,6 +209,43 @@ export function buildTresorerieSchema(
       italic: true,
       align: 'center',
       fit: 'shrink',
+    });
+  }
+
+  if (revenuePhases.length > 0) {
+    const bandY = CONTENT_TOP_Y + totalH - phaseBandH;
+    slide.addShape('roundRect', {
+      x: MARGIN_X + 0.12,
+      y: bandY,
+      w: chartW - 0.24,
+      h: phaseBandH - 0.06,
+      fill: { color: hex(theme.colors.color7) },
+      line: { color: hex(theme.panelBorder), pt: 0.4 },
+      rectRadius: 0.04,
+    });
+    slide.addText('Parcours de revenus associé actif', {
+      x: MARGIN_X + 0.22,
+      y: bandY + 0.06,
+      w: chartW - 0.44,
+      h: 0.12,
+      fontSize: 6.4,
+      fontFace: TYPO.fontFace,
+      bold: true,
+      color: hex(theme.textMain),
+      fit: 'shrink',
+    });
+    revenuePhases.forEach((phase, index) => {
+      const line = `${phase.periodLabel} · ${phase.label} · ${phase.sourceLabel} · besoin ${euro(phase.annualNetIncomeNeed)} · complément ${euro(phase.complement)} · CCA ${phase.useCcaForCompletion ? 'oui' : 'non'}`;
+      slide.addText(truncate(line, 84), {
+        x: MARGIN_X + 0.22,
+        y: bandY + 0.20 + index * 0.11,
+        w: chartW - 0.44,
+        h: 0.10,
+        fontSize: 5.7,
+        fontFace: TYPO.fontFace,
+        color: hex(theme.textBody),
+        fit: 'shrink',
+      });
     });
   }
 

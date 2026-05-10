@@ -9,12 +9,13 @@
 import { useCallback, useEffect, useState } from 'react';
 import { storageKeyFor, onResetEvent } from '../../../utils/reset';
 import type { TresoState, TresoPersistedState } from '../types';
-import type { TresoInputs, TresoInputsV2, TresoInputsV4 } from '../../../engine/tresorerie/types';
+import type { TresoInputs, TresoInputsV2, TresoInputsV5 } from '../../../engine/tresorerie/types';
 import {
   buildTresoInputsV2FromLegacy,
-  buildTresoInputsV4FromLegacy,
-  buildTresoInputsV4FromV2,
-  buildTresoInputsV4FromV3,
+  buildTresoInputsV5FromLegacy,
+  buildTresoInputsV5FromV2,
+  buildTresoInputsV5FromV3,
+  buildTresoInputsV5FromV4,
 } from '../utils/tresorerieV2Migration';
 
 // ─── Valeurs par défaut ───────────────────────────────────────────────────────
@@ -40,11 +41,11 @@ const DEFAULT_TRESO_INPUTS_LEGACY: TresoInputs = {
 
 export const DEFAULT_TRESO_INPUTS_V2: TresoInputsV2 =
   buildTresoInputsV2FromLegacy(DEFAULT_TRESO_INPUTS_LEGACY);
-export const DEFAULT_TRESO_INPUTS_V4: TresoInputsV4 =
-  buildTresoInputsV4FromLegacy(DEFAULT_TRESO_INPUTS_LEGACY);
+export const DEFAULT_TRESO_INPUTS_V5: TresoInputsV5 =
+  buildTresoInputsV5FromLegacy(DEFAULT_TRESO_INPUTS_LEGACY);
 
 const DEFAULT_STATE: TresoState = {
-  inputsV4: DEFAULT_TRESO_INPUTS_V4,
+  inputsV5: DEFAULT_TRESO_INPUTS_V5,
   projectionVisible: false,
   projectionMode: 'resume',
 };
@@ -59,14 +60,15 @@ export function normalizeTresoreriePersistedState(raw: TresoPersistedState): Tre
     ...(raw.inputs ?? {}),
   };
   const legacyWithEmbeddedV2 = raw.inputs as (TresoInputs & { v2?: TresoInputsV2 }) | undefined;
-  const inputsV4 =
-    raw.inputsV4 ??
-    (raw.inputsV3 ? buildTresoInputsV4FromV3(raw.inputsV3) : undefined) ??
-    (raw.inputsV2 ? buildTresoInputsV4FromV2(raw.inputsV2) : undefined) ??
-    (legacyWithEmbeddedV2?.v2 ? buildTresoInputsV4FromV2(legacyWithEmbeddedV2.v2) : undefined) ??
-    buildTresoInputsV4FromLegacy(legacyInputs);
+  const inputsV5 =
+    raw.inputsV5 ??
+    (raw.inputsV4 ? buildTresoInputsV5FromV4(raw.inputsV4) : undefined) ??
+    (raw.inputsV3 ? buildTresoInputsV5FromV3(raw.inputsV3) : undefined) ??
+    (raw.inputsV2 ? buildTresoInputsV5FromV2(raw.inputsV2) : undefined) ??
+    (legacyWithEmbeddedV2?.v2 ? buildTresoInputsV5FromV2(legacyWithEmbeddedV2.v2) : undefined) ??
+    buildTresoInputsV5FromLegacy(legacyInputs);
   return {
-    inputsV4,
+    inputsV5,
     projectionVisible: false,
     projectionMode: 'resume',
   };
@@ -79,7 +81,7 @@ export interface TresoStateResult {
   hydrated: boolean;
 
   // Handlers globaux
-  setInputsV4: (nextInputs: TresoInputsV4) => void;
+  setInputsV5: (nextInputs: TresoInputsV5) => void;
   setInputsV2: (nextInputs: TresoInputsV2) => void;
   setProjectionVisible: (v: boolean) => void;
   setProjectionMode: (v: 'resume' | 'detail') => void;
@@ -108,13 +110,13 @@ export function useTresorerieState(): TresoStateResult {
     if (!hydrated) return;
     try {
       const persisted: TresoPersistedState = {
-        inputsV4: state.inputsV4,
+        inputsV5: state.inputsV5,
       };
       sessionStorage.setItem(STORE_KEY, JSON.stringify(persisted));
     } catch {
       // sessionStorage plein ou indisponible
     }
-  }, [hydrated, state.inputsV4]);
+  }, [hydrated, state.inputsV5]);
 
   // ── Listener reset ────────────────────────────────────────────────────────
   useEffect(() => {
@@ -127,12 +129,12 @@ export function useTresorerieState(): TresoStateResult {
 
   // ── Handlers ─────────────────────────────────────────────────────────────
 
-  const setInputsV4 = useCallback((nextInputs: TresoInputsV4) => {
-    setState(s => ({ ...s, inputsV4: nextInputs }));
+  const setInputsV5 = useCallback((nextInputs: TresoInputsV5) => {
+    setState(s => ({ ...s, inputsV5: nextInputs }));
   }, []);
 
   const setInputsV2 = useCallback((nextInputs: TresoInputsV2) => {
-    setState(s => ({ ...s, inputsV4: buildTresoInputsV4FromV2(nextInputs) }));
+    setState(s => ({ ...s, inputsV5: buildTresoInputsV5FromV2(nextInputs) }));
   }, []);
 
   const setProjectionVisible = useCallback((v: boolean) => {
@@ -146,7 +148,7 @@ export function useTresorerieState(): TresoStateResult {
   return {
     state,
     hydrated,
-    setInputsV4,
+    setInputsV5,
     setInputsV2,
     setProjectionVisible,
     setProjectionMode,

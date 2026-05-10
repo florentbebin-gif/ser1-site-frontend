@@ -23,6 +23,14 @@ export type TresorerieSchemaSlideSpec = {
     parentEntityId: string;
     ownershipPct: string;
   }>;
+  revenuePhases?: Array<{
+    label: string;
+    periodLabel: string;
+    sourceLabel: string;
+    annualNetIncomeNeed: number;
+    complement: number;
+    useCcaForCompletion: boolean;
+  }>;
   hasHolding: boolean;
   hasDistribution: boolean;
   hasCapitalisation: boolean;
