@@ -39,10 +39,29 @@ const DEFAULT_TRESO_INPUTS_LEGACY: TresoInputs = {
   holding: undefined,
 };
 
+const BLANK_TRESO_INPUTS_LEGACY: TresoInputs = {
+  typeCreation: 'newco',
+  ageActuel: 0,
+  ageRetraite: 0,
+  besoinsRetraiteAnnuels: 0,
+  fraisStructureAnnuels: 0,
+  ccaInitial: 0,
+  apportAnnuelCCA: 0,
+  dureeActiveAns: 0,
+  tresorerieInitiale: 0,
+  reservesInitiales: 0,
+  anneeCivileDebut: new Date().getFullYear(),
+  distribution: undefined,
+  capitalisation: undefined,
+  creditIS: undefined,
+  creditIR: undefined,
+  holding: undefined,
+};
+
 export const DEFAULT_TRESO_INPUTS_V2: TresoInputsV2 =
   buildTresoInputsV2FromLegacy(DEFAULT_TRESO_INPUTS_LEGACY);
 export const DEFAULT_TRESO_INPUTS_V5: TresoInputsV5 =
-  buildTresoInputsV5FromLegacy(DEFAULT_TRESO_INPUTS_LEGACY);
+  buildTresoInputsV5FromLegacy(BLANK_TRESO_INPUTS_LEGACY);
 
 const DEFAULT_STATE: TresoState = {
   inputsV5: DEFAULT_TRESO_INPUTS_V5,
