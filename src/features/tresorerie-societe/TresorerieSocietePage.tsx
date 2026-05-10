@@ -70,11 +70,11 @@ export default function TresorerieSocietePage() {
       actions={<ExportMenu options={exportOptions} loading={exportLoading} />}
     >
       <SimPageShell.Main>
-        {/* Bloc 1 — Parcours associé */}
-        <TresoTimelineSection inputs={state.inputsV5} onChange={setInputsV5} />
-
-        {/* Bloc 2 — Société */}
+        {/* Bloc 1 — Société */}
         <TresoSocieteSection inputs={state.inputsV5} onChange={setInputsV5} />
+
+        {/* Bloc 2 — Parcours associé */}
+        <TresoTimelineSection inputs={state.inputsV5} onChange={setInputsV5} />
 
         {/* Bloc 3 — Allocation société */}
         <TresoPlacementSection

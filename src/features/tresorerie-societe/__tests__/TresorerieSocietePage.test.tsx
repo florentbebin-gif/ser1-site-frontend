@@ -250,6 +250,14 @@ describe('TresorerieSocietePage', () => {
     expect(html).not.toContain('data-testid="holding-section"');
   });
 
+  it('affiche la société avant le parcours de revenus', () => {
+    const html = renderToStaticMarkup(<TresorerieSocietePage />);
+
+    expect(html.indexOf('data-testid="societe-section"')).toBeLessThan(
+      html.indexOf('id="ts-timeline-title"'),
+    );
+  });
+
   it('affiche la sidebar KPI', () => {
     const html = renderToStaticMarkup(<TresorerieSocietePage />);
     expect(html).toContain('data-testid="kpi-sidebar"');
