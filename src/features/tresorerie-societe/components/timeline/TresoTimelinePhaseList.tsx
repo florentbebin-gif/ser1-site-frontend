@@ -5,7 +5,7 @@ import {
   getPhaseEndYear,
   sortPhases,
 } from '../../utils/revenuePhases';
-import { getRevenuePhaseSourceLabel } from './timelineLabels';
+import { getRevenuePhaseSourceLabel } from '../../utils/revenuePhaseLabels';
 
 interface TresoTimelinePhaseListProps {
   phases: AssociateRevenuePhaseInput[];

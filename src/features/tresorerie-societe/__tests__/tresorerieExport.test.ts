@@ -73,6 +73,28 @@ const INPUTS = {
         remunerationRate: 0.04,
       },
       remuneration: { source: 'holding', loadedAnnualCost: 0, socialChargeRate: 0 },
+      revenuePhases: [
+        {
+          id: 'phase-remu',
+          label: 'Rémunération holding',
+          startYear: 2026,
+          source: 'holding',
+          loadedAnnualCost: 80000,
+          socialChargeRate: 0.3,
+          annualNetIncomeNeed: 0,
+          useCcaForCompletion: true,
+        },
+        {
+          id: 'phase-besoin',
+          label: 'Besoin complémentaire',
+          startYear: 2031,
+          source: 'none',
+          loadedAnnualCost: 0,
+          socialChargeRate: 0,
+          annualNetIncomeNeed: 40000,
+          useCcaForCompletion: false,
+        },
+      ],
     }],
     loans: [{
       id: 'pret-1',
@@ -239,7 +261,7 @@ describe('Exports Trésorerie société', () => {
       kpis: KPIS,
       inputs: INPUTS,
     });
-    const schema = deck.slides[0];
+    const schema = deck.slides[0] as TresorerieSchemaSlideSpec;
 
     expect(schema).toMatchObject({
       type: 'treso-schema',
@@ -254,6 +276,16 @@ describe('Exports Trésorerie société', () => {
     expect(JSON.stringify(schema)).toContain('Associé 1');
     expect(JSON.stringify(schema)).toContain('Filiale');
     expect(JSON.stringify(schema)).toContain('80 %');
+    expect(schema.revenuePhases).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        label: 'Rémunération holding',
+        periodLabel: '2026-2030',
+      }),
+      expect.objectContaining({
+        label: 'Besoin complémentaire',
+        useCcaForCompletion: false,
+      }),
+    ]));
   });
 
   it('prépare le schéma PPTX avec filiales imbriquées et matrice vide', () => {
@@ -340,6 +372,8 @@ describe('Exports Trésorerie société', () => {
     expect(slideXml).toContain('Filiale B');
     expect(slideXml).toContain('51 %');
     expect(slideXml).toContain('CCA total constitué');
+    expect(slideXml).toContain('Parcours de revenus associé actif');
+    expect(slideXml).toContain('Besoin complémentaire');
     expect(slideXml).not.toContain('Phase 1');
     expect(slideXml).not.toMatch(/\bc[xy]="-/);
   });
@@ -392,6 +426,8 @@ describe('Exports Trésorerie société', () => {
     const structureXml = await zip.file('xl/worksheets/sheet4.xml')?.async('string');
 
     expect(structureXml).toContain('Trésorerie conservée sur compte bancaire');
+    expect(structureXml).toContain('Parcours de revenus');
+    expect(structureXml).toContain('Besoin complémentaire');
     expect(structureXml).toContain('Court terme');
     expect(structureXml).toContain('Moyen terme');
     expect(structureXml).toContain('Long terme');

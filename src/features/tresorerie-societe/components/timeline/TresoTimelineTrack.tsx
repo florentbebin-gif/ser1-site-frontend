@@ -1,6 +1,6 @@
 import type { KeyboardEvent } from 'react';
 import type { TresoTimelineLayout } from './timelineLayout';
-import { getRevenuePhaseSourceLabel } from './timelineLabels';
+import { getRevenuePhaseSourceLabel } from '../../utils/revenuePhaseLabels';
 
 interface TresoTimelineTrackProps {
   layout: TresoTimelineLayout;
