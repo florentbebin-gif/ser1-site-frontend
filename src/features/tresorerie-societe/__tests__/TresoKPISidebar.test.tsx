@@ -15,6 +15,9 @@ const KPIS: TresoKPIs = {
   capaciteDistribuableAn1: 12000,
   alerteDividendesAn1: false,
   deficitBancaireMax: 0,
+  compteBancaireFinHorizon: 85000,
+  ccaRestantFinHorizon: 30000,
+  ccaRembourseTotal: 70000,
   alerteTresorerieBancaire: false,
   premiereAnneeDeficitBancaire: null,
   hasRows: true,
@@ -67,23 +70,26 @@ const INPUTS: TresoInputsV2 = {
 };
 
 describe('TresoKPISidebar', () => {
-  it('affiche l’IS latent quand la poche capitalisation vient du modèle v2', () => {
+  it('affiche quatre repères lisibles de la projection', () => {
     const html = renderToStaticMarkup(<TresoKPISidebar kpis={KPIS} inputs={INPUTS} />);
 
-    expect(html).toContain('IS latent capitalisation');
-    expect(html).toContain('Alerte dividendes');
+    expect(html).toContain('IS total décaissé');
+    expect(html).toContain('Compte bancaire fin horizon');
+    expect(html).toContain('Déficit bancaire maximal');
+    expect(html).toContain('CCA restant dû');
+    expect(html).not.toContain('IS latent capitalisation');
   });
 
-  it('affiche l’alerte dividendes avec un libellé sobre sans pictogramme', () => {
+  it('affiche le CCA remboursé quand aucun CCA ne reste dû', () => {
     const html = renderToStaticMarkup(
       <TresoKPISidebar
-        kpis={{ ...KPIS, alerteDividendesAn1: true }}
+        kpis={{ ...KPIS, ccaRestantFinHorizon: 0 }}
         inputs={INPUTS}
       />,
     );
 
-    expect(html).toContain('Dividendes supérieurs à la capacité distribuable');
-    expect(html).not.toContain('⚠');
+    expect(html).toContain('CCA remboursé');
+    expect(html).toContain('70');
   });
 
   it('affiche une alerte bancaire exploitable quand le solde minimum n’est pas respecté', () => {
@@ -99,8 +105,8 @@ describe('TresoKPISidebar', () => {
       />,
     );
 
-    expect(html).toContain('Alerte compte bancaire');
-    expect(html).toContain('Déficit max 15');
+    expect(html).toContain('Déficit bancaire maximal');
+    expect(html).toContain('15');
     expect(html).toContain('2028');
   });
 });

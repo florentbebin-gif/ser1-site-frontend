@@ -15,6 +15,7 @@ import {
 } from '../../../engine/tresorerie/simulateTresorerieV2';
 import { DEFAULT_TAX_SETTINGS, DEFAULT_PS_SETTINGS } from '../../../constants/settingsDefaults';
 import type { TresoInputsRuntime, TresoFiscalParams, TresoProjectionRow } from '../../../engine/tresorerie/types';
+import { getAssociateAnnualIncomeNeedForYear } from '../../../engine/tresorerie/revenuePhases';
 import { getAssociateProfile, getSelectedAssociate } from '../utils/tresorerieSocieteModel';
 
 // ─── KPIs ─────────────────────────────────────────────────────────────────────
@@ -43,6 +44,12 @@ export interface TresoKPIs {
   alerteDividendesAn1: boolean;
   /** Déficit maximum du compte bancaire face au solde minimum + BFR. */
   deficitBancaireMax: number;
+  /** Solde du compte bancaire à la fin de l’horizon. */
+  compteBancaireFinHorizon: number;
+  /** CCA restant dû à la fin de l’horizon. */
+  ccaRestantFinHorizon: number;
+  /** CCA remboursé sur toute la projection. */
+  ccaRembourseTotal: number;
   /** true si au moins une année ne respecte pas le solde bancaire cible. */
   alerteTresorerieBancaire: boolean;
   /** Première année civile où le compte bancaire passe sous le seuil cible. */
@@ -150,6 +157,9 @@ export function useTresorerieCalculations(inputs: TresoInputsRuntime): TresoCalc
         capaciteDistribuableAn1: 0,
         alerteDividendesAn1: false,
         deficitBancaireMax: 0,
+        compteBancaireFinHorizon: 0,
+        ccaRestantFinHorizon: 0,
+        ccaRembourseTotal: 0,
         alerteTresorerieBancaire: false,
         premiereAnneeDeficitBancaire: null,
         hasRows: false,
@@ -157,7 +167,8 @@ export function useTresorerieCalculations(inputs: TresoInputsRuntime): TresoCalc
       };
     }
 
-    const activeProfile = getAssociateProfile(inputs, getSelectedAssociate(inputs));
+    const selectedAssociate = getSelectedAssociate(inputs);
+    const activeProfile = getAssociateProfile(inputs, selectedAssociate);
     const anneeRetraiteIndex = Math.min(
       activeProfile.retirementAge - activeProfile.currentAge,
       rows.length - 1,
@@ -178,8 +189,15 @@ export function useTresorerieCalculations(inputs: TresoInputsRuntime): TresoCalc
     const revenusNetsRetraite = retraiteRow?.revenusNets ?? 0;
 
     // Durée remboursement CCA
-    const dureeRemboursementCCA = activeProfile.annualIncomeNeed > 0 && ccaTotalConstitue > 0
-      ? Math.ceil(ccaTotalConstitue / activeProfile.annualIncomeNeed)
+    const annualNeedAtRetirement = selectedAssociate
+      ? getAssociateAnnualIncomeNeedForYear(
+        selectedAssociate,
+        activeProfile.annualIncomeNeed,
+        activeProfile.projectionStartYear + Math.max(0, anneeRetraiteIndex),
+      )
+      : activeProfile.annualIncomeNeed;
+    const dureeRemboursementCCA = annualNeedAtRetirement > 0 && ccaTotalConstitue > 0
+      ? Math.ceil(ccaTotalConstitue / annualNeedAtRetirement)
       : null;
 
     // Valeur nette société à la retraite
@@ -198,6 +216,9 @@ export function useTresorerieCalculations(inputs: TresoInputsRuntime): TresoCalc
       (max, row) => Math.max(max, row.deficitTresorerieBancaire ?? 0),
       0,
     );
+    const compteBancaireFinHorizon = lastRow?.tresorerieBanqueFin ?? lastRow?.tresorerieFin ?? 0;
+    const ccaRestantFinHorizon = lastRow?.ccaRestant ?? 0;
+    const ccaRembourseTotal = rows.reduce((sum, row) => sum + row.retraitsCCA, 0);
     const firstDeficitRow = rows.find(row => row.alerteTresorerieBancaireInsuffisante);
     const premiereAnneeDeficitBancaire = firstDeficitRow
       ? activeProfile.projectionStartYear + firstDeficitRow.year - 1
@@ -214,6 +235,9 @@ export function useTresorerieCalculations(inputs: TresoInputsRuntime): TresoCalc
       capaciteDistribuableAn1,
       alerteDividendesAn1,
       deficitBancaireMax,
+      compteBancaireFinHorizon,
+      ccaRestantFinHorizon,
+      ccaRembourseTotal,
       alerteTresorerieBancaire: deficitBancaireMax > 0,
       premiereAnneeDeficitBancaire,
       hasRows: true,

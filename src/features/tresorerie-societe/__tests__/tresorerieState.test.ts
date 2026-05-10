@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { TresoInputs } from '@/engine/tresorerie/types';
+import type { TresoInputs, TresoInputsV5 } from '@/engine/tresorerie/types';
 import type { TresoPersistedState } from '../types';
 import {
   DEFAULT_TRESO_INPUTS_V5,
@@ -29,6 +29,12 @@ const LEGACY_INPUTS: TresoInputs = {
 };
 
 describe('useTresorerieState — source de vérité v5', () => {
+  function expectRevenuePhasesInvariant(inputs: TresoInputsV5) {
+    inputs.company.associates.forEach(associate => {
+      expect(associate.revenuePhases.length).toBeGreaterThan(0);
+    });
+  }
+
   it('STORE_KEY suit la convention ser1:sim:<simId>', () => {
     expect(storageKeyFor('tresorerie-societe')).toBe('ser1:sim:tresorerie-societe');
   });
@@ -37,19 +43,25 @@ describe('useTresorerieState — source de vérité v5', () => {
     expect(DEFAULT_TRESO_INPUTS_V5.version).toBe(5);
     expect(DEFAULT_TRESO_INPUTS_V5.company.creationType).toBe('newco');
     expect(DEFAULT_TRESO_INPUTS_V5.company.companyKind).toBe('holding_patrimoniale');
-    expect(DEFAULT_TRESO_INPUTS_V5.company.associates[0].profile?.retirementAge)
-      .toBeGreaterThan(DEFAULT_TRESO_INPUTS_V5.company.associates[0].profile?.currentAge ?? 0);
+    expect(DEFAULT_TRESO_INPUTS_V5.company.associates[0].profile?.currentAge).toBe(0);
+    expect(DEFAULT_TRESO_INPUTS_V5.company.associates[0].profile?.retirementAge).toBe(0);
+    expect(DEFAULT_TRESO_INPUTS_V5.company.associates[0].profile?.annualIncomeNeed).toBe(0);
     expect(DEFAULT_TRESO_INPUTS_V5.company.treasuryInitial).toBe(0);
     expect(DEFAULT_TRESO_INPUTS_V5.company.reservesInitial).toBe(0);
+    expect(DEFAULT_TRESO_INPUTS_V5.company.annualStructureCosts).toBe(0);
     expect(DEFAULT_TRESO_INPUTS_V5.company.incomeStatement?.workingCapitalRequirement).toBe(0);
     expect(DEFAULT_TRESO_INPUTS_V5.company.associates[0].cca?.currentBalance).toBe(0);
+    expect(DEFAULT_TRESO_INPUTS_V5.company.associates[0].cca?.annualContribution.amount).toBe(0);
+    expect(DEFAULT_TRESO_INPUTS_V5.company.associates[0].cca?.annualContribution.endYear).toBeUndefined();
     expect(DEFAULT_TRESO_INPUTS_V5.company.associates[0].revenuePhases).toHaveLength(1);
+    expect(DEFAULT_TRESO_INPUTS_V5.company.associates[0].revenuePhases[0].annualNetIncomeNeed).toBe(0);
   });
 
   it('migre une ancienne session legacy vers inputsV5 puis abandonne inputs', () => {
     const state = normalizeTresoreriePersistedState({ inputs: LEGACY_INPUTS });
 
     expect(state.inputsV5.version).toBe(5);
+    expectRevenuePhasesInvariant(state.inputsV5);
     expect(state.inputsV5.company.associates[0].profile?.currentAge).toBe(52);
     expect(state.inputsV5.company.treasuryInitial).toBe(150000);
     expect(state.inputsV5.allocationMatrix.pockets[0]).toMatchObject({
@@ -88,6 +100,7 @@ describe('useTresorerieState — source de vérité v5', () => {
     const state = normalizeTresoreriePersistedState(persisted);
 
     expect(state.inputsV5.version).toBe(5);
+    expectRevenuePhasesInvariant(state.inputsV5);
     expect(state.inputsV5.company.associates[0].profile?.currentAge).toBe(48);
     expect('inputs' in state).toBe(false);
   });

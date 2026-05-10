@@ -43,7 +43,24 @@ export function TresoHypotheses() {
           </section>
 
           <section className="ts-hyp-section">
-            <h3 className="ts-hyp-title">Poche de capitalisation</h3>
+            <h3 className="ts-hyp-title">Compte bancaire pivot et placements</h3>
+            <ul className="ts-hyp-list">
+              <li>
+                Les sorties courantes de la holding sont financées par le compte bancaire.
+                Les placements ne sont pas liquidés automatiquement avant leur terme.
+              </li>
+              <li>
+                Au terme d'une poche, le produit revient sur le compte bancaire. La répétition
+                éventuelle ne réinvestit que le surplus disponible au-delà du solde minimum bancaire et du BFR.
+              </li>
+              <li>
+                Une trésorerie non allouée à une poche reste sur le compte bancaire, sans rendement.
+              </li>
+            </ul>
+          </section>
+
+          <section className="ts-hyp-section">
+            <h3 className="ts-hyp-title">Poches de capitalisation</h3>
             <ul className="ts-hyp-list">
               <li>
                 Aucun IS annuel — IS payable uniquement à la sortie sur la plus-value nette
@@ -55,6 +72,20 @@ export function TresoHypotheses() {
               <li>
                 En l'absence de <em>valeur actuelle</em> et <em>capital investi historique</em> pour
                 une société existante, l'IS latent est calculé sur la plus-value depuis la souscription.
+              </li>
+            </ul>
+          </section>
+
+          <section className="ts-hyp-section">
+            <h3 className="ts-hyp-title">Parcours associé</h3>
+            <ul className="ts-hyp-list">
+              <li>
+                Les paliers de revenus de l'associé sélectionné sont la source principale du besoin
+                annuel net, de la rémunération et de la priorité CCA dans la projection.
+              </li>
+              <li>
+                Quand la priorité CCA est décochée sur un palier, le complément de besoin est
+                financé directement par dividendes, dans la limite de la trésorerie et de la capacité distribuable.
               </li>
             </ul>
           </section>

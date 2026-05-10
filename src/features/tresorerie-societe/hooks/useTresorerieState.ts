@@ -11,7 +11,6 @@ import { storageKeyFor, onResetEvent } from '../../../utils/reset';
 import type { TresoState, TresoPersistedState } from '../types';
 import type { TresoInputs, TresoInputsV2, TresoInputsV5 } from '../../../engine/tresorerie/types';
 import {
-  buildTresoInputsV2FromLegacy,
   buildTresoInputsV5FromLegacy,
   buildTresoInputsV5FromV2,
   buildTresoInputsV5FromV3,
@@ -39,10 +38,27 @@ const DEFAULT_TRESO_INPUTS_LEGACY: TresoInputs = {
   holding: undefined,
 };
 
-export const DEFAULT_TRESO_INPUTS_V2: TresoInputsV2 =
-  buildTresoInputsV2FromLegacy(DEFAULT_TRESO_INPUTS_LEGACY);
+const BLANK_TRESO_INPUTS_LEGACY: TresoInputs = {
+  typeCreation: 'newco',
+  ageActuel: 0,
+  ageRetraite: 0,
+  besoinsRetraiteAnnuels: 0,
+  fraisStructureAnnuels: 0,
+  ccaInitial: 0,
+  apportAnnuelCCA: 0,
+  dureeActiveAns: 0,
+  tresorerieInitiale: 0,
+  reservesInitiales: 0,
+  anneeCivileDebut: new Date().getFullYear(),
+  distribution: undefined,
+  capitalisation: undefined,
+  creditIS: undefined,
+  creditIR: undefined,
+  holding: undefined,
+};
+
 export const DEFAULT_TRESO_INPUTS_V5: TresoInputsV5 =
-  buildTresoInputsV5FromLegacy(DEFAULT_TRESO_INPUTS_LEGACY);
+  buildTresoInputsV5FromLegacy(BLANK_TRESO_INPUTS_LEGACY);
 
 const DEFAULT_STATE: TresoState = {
   inputsV5: DEFAULT_TRESO_INPUTS_V5,
@@ -82,7 +98,6 @@ export interface TresoStateResult {
 
   // Handlers globaux
   setInputsV5: (nextInputs: TresoInputsV5) => void;
-  setInputsV2: (nextInputs: TresoInputsV2) => void;
   setProjectionVisible: (v: boolean) => void;
   setProjectionMode: (v: 'resume' | 'detail') => void;
 }
@@ -133,10 +148,6 @@ export function useTresorerieState(): TresoStateResult {
     setState(s => ({ ...s, inputsV5: nextInputs }));
   }, []);
 
-  const setInputsV2 = useCallback((nextInputs: TresoInputsV2) => {
-    setState(s => ({ ...s, inputsV5: buildTresoInputsV5FromV2(nextInputs) }));
-  }, []);
-
   const setProjectionVisible = useCallback((v: boolean) => {
     setState(s => ({ ...s, projectionVisible: v }));
   }, []);
@@ -149,7 +160,6 @@ export function useTresorerieState(): TresoStateResult {
     state,
     hydrated,
     setInputsV5,
-    setInputsV2,
     setProjectionVisible,
     setProjectionMode,
   };

@@ -5,6 +5,7 @@ import { fireEvent, render, screen, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { TresoInputsV5 } from '@/engine/tresorerie/types';
 import { TresoTimelineSection } from '../components/timeline/TresoTimelineSection';
+import { computeTimelineRange } from '../components/timeline/timelineLayout';
 
 const BASE_INPUTS: TresoInputsV5 = {
   version: 5,
@@ -137,6 +138,90 @@ describe('TresoTimelineSection', () => {
     window.removeEventListener('ts:open-society-panel', openSociety);
   });
 
+  it('reprend l’en-tête standard des sections du simulateur', () => {
+    render(<TresoTimelineSection inputs={cloneInputs()} onChange={vi.fn()} />);
+
+    expect(screen.getByRole('heading', { name: /Parcours de revenus de l’associé/i }))
+      .toHaveClass('ts-section__title');
+    expect(screen.getByText(/Phases de rémunération/i)).toHaveClass('ts-section__subtitle');
+    expect(document.querySelector('.sim-card__icon')).toBeInTheDocument();
+    expect(document.querySelector('.ts-section__divider')).toBeInTheDocument();
+  });
+
+  it('permet d’allonger l’horizon de projection', () => {
+    render(<TresoTimelineSection inputs={cloneInputs()} onChange={vi.fn()} />);
+
+    fireEvent.change(screen.getByLabelText('Horizon de projection'), { target: { value: '25' } });
+
+    expect(screen.getByText(/2031 - 2050/)).toBeInTheDocument();
+  });
+
+  it('place le début et l’horizon de projection dans la même grille de réglages', () => {
+    render(<TresoTimelineSection inputs={cloneInputs()} onChange={vi.fn()} />);
+
+    const grid = document.querySelector('.ts-timeline-settings-grid');
+
+    expect(grid).toBeInTheDocument();
+    expect(grid).toContainElement(screen.getByLabelText('Début de projection'));
+    expect(grid).toContainElement(screen.getByLabelText('Horizon de projection'));
+  });
+
+  it('élargit le SVG quand l’horizon devient long', () => {
+    const inputs = cloneInputs();
+    const layout = computeTimelineRange(inputs.company, inputs.company.associates[0], 30);
+
+    expect(layout.svgWidth).toBeGreaterThan(1000);
+  });
+
+  it('décale les jalons qui tombent la même année', () => {
+    const inputs = cloneInputs(inputs => {
+      inputs.company.associates[0].revenuePhases[1].startYear = 2035;
+      inputs.company.subsidiaries[0].disposal!.year = 2035;
+    });
+    const layout = computeTimelineRange(inputs.company, inputs.company.associates[0], 15);
+    const milestones2035 = layout.milestones.filter(milestone => milestone.year === 2035);
+
+    expect(milestones2035).toHaveLength(2);
+    expect(new Set(milestones2035.map(milestone => milestone.dotY)).size).toBe(2);
+  });
+
+  it('masque les détails des segments trop courts pour éviter les chevauchements', () => {
+    render(
+      <TresoTimelineSection
+        inputs={cloneInputs(inputs => {
+          inputs.company.subsidiaries = [];
+          inputs.company.associates[0].revenuePhases = [
+            {
+              id: 'phase-2026',
+              label: 'A',
+              startYear: 2026,
+              source: 'holding',
+              loadedAnnualCost: 0,
+              socialChargeRate: 0,
+              annualNetIncomeNeed: 0,
+              useCcaForCompletion: true,
+            },
+            {
+              id: 'phase-2027',
+              label: 'B',
+              startYear: 2027,
+              source: 'none',
+              loadedAnnualCost: 0,
+              socialChargeRate: 0,
+              annualNetIncomeNeed: 0,
+              useCcaForCompletion: true,
+            },
+          ];
+        })}
+        onChange={vi.fn()}
+      />,
+    );
+
+    expect(document.querySelectorAll('.ts-timeline-track__phase-badge')).toHaveLength(2);
+    expect(screen.queryByText(/2026-2026 · besoin/i)).not.toBeInTheDocument();
+    expect(document.querySelector('.ts-timeline-track-outer')).toBeInTheDocument();
+  });
+
   it('affiche un message informatif pour un associé personne morale', () => {
     render(
       <TresoTimelineSection
@@ -170,6 +255,15 @@ describe('TresoTimelineSection', () => {
 
     expect(screen.getByRole('alert')).toHaveTextContent(/Un autre palier commence déjà en 2031/i);
     expect(screen.getByRole('button', { name: 'Enregistrer' })).toBeDisabled();
+  });
+
+  it('recalcule la fin dérivée dès que l’année de début est modifiée', () => {
+    render(<TresoTimelineSection inputs={cloneInputs()} onChange={vi.fn()} />);
+
+    openFirstPhaseModal();
+    fireEvent.change(screen.getByLabelText('Année de début'), { target: { value: '2032' } });
+
+    expect(screen.getByText(/Jusqu’à l’horizon de projection/i)).toBeInTheDocument();
   });
 
   it('désactive la suppression quand il ne reste qu’un seul palier', () => {
