@@ -15,6 +15,7 @@ import {
 } from '../../../engine/tresorerie/simulateTresorerieV2';
 import { DEFAULT_TAX_SETTINGS, DEFAULT_PS_SETTINGS } from '../../../constants/settingsDefaults';
 import type { TresoInputsRuntime, TresoFiscalParams, TresoProjectionRow } from '../../../engine/tresorerie/types';
+import { getAssociateAnnualIncomeNeedForYear } from '../../../engine/tresorerie/revenuePhases';
 import { getAssociateProfile, getSelectedAssociate } from '../utils/tresorerieSocieteModel';
 
 // ─── KPIs ─────────────────────────────────────────────────────────────────────
@@ -157,7 +158,8 @@ export function useTresorerieCalculations(inputs: TresoInputsRuntime): TresoCalc
       };
     }
 
-    const activeProfile = getAssociateProfile(inputs, getSelectedAssociate(inputs));
+    const selectedAssociate = getSelectedAssociate(inputs);
+    const activeProfile = getAssociateProfile(inputs, selectedAssociate);
     const anneeRetraiteIndex = Math.min(
       activeProfile.retirementAge - activeProfile.currentAge,
       rows.length - 1,
@@ -178,8 +180,15 @@ export function useTresorerieCalculations(inputs: TresoInputsRuntime): TresoCalc
     const revenusNetsRetraite = retraiteRow?.revenusNets ?? 0;
 
     // Durée remboursement CCA
-    const dureeRemboursementCCA = activeProfile.annualIncomeNeed > 0 && ccaTotalConstitue > 0
-      ? Math.ceil(ccaTotalConstitue / activeProfile.annualIncomeNeed)
+    const annualNeedAtRetirement = selectedAssociate
+      ? getAssociateAnnualIncomeNeedForYear(
+        selectedAssociate,
+        activeProfile.annualIncomeNeed,
+        activeProfile.projectionStartYear + Math.max(0, anneeRetraiteIndex),
+      )
+      : activeProfile.annualIncomeNeed;
+    const dureeRemboursementCCA = annualNeedAtRetirement > 0 && ccaTotalConstitue > 0
+      ? Math.ceil(ccaTotalConstitue / annualNeedAtRetirement)
       : null;
 
     // Valeur nette société à la retraite

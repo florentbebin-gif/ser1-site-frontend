@@ -3,6 +3,7 @@
  */
 
 import type { TresoInputsRuntime, TresoProjectionRow } from '../../../engine/tresorerie/types';
+import { getAssociateAnnualIncomeNeedForYear } from '../../../engine/tresorerie/revenuePhases';
 import { getAssociateProfile, getSelectedAssociate } from '../utils/tresorerieSocieteModel';
 
 interface Props {
@@ -15,12 +16,16 @@ function fmtEuro(n: number): string {
 }
 
 export function TresoAssociateInsights({ inputs, rows }: Props) {
-  const profile = getAssociateProfile(inputs, getSelectedAssociate(inputs));
+  const selectedAssociate = getSelectedAssociate(inputs);
+  const profile = getAssociateProfile(inputs, selectedAssociate);
 
   const retraiteIndex = Math.max(0, profile.retirementAge - profile.currentAge);
   const retraiteRow = rows[retraiteIndex] ?? rows[0];
   const revenus = retraiteRow?.revenusNets ?? 0;
-  const besoin = profile.annualIncomeNeed;
+  const targetYear = profile.projectionStartYear + retraiteIndex;
+  const besoin = selectedAssociate
+    ? getAssociateAnnualIncomeNeedForYear(selectedAssociate, profile.annualIncomeNeed, targetYear)
+    : profile.annualIncomeNeed;
   const maxGraph = Math.max(besoin, revenus, 1);
   const currentYear = profile.projectionStartYear;
   const retirementYear = currentYear + retraiteIndex;

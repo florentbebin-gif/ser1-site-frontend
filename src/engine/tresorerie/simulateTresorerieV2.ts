@@ -2,7 +2,9 @@ import { calculBaseEtIS } from './calculIS';
 import { selectAllocationPocketsForSimulation } from './allocationPockets';
 import {
   computeNetRevenue,
-  getActivePhase,
+  getAssociateAnnualIncomeNeedForYear,
+  getAssociateRevenuePhaseForYear,
+  hasAssociateAnnualIncomeNeedForYear,
 } from './revenuePhases';
 import {
   getAssociateProfile,
@@ -31,7 +33,6 @@ import type {
   TresoFiscalParams,
   TresoInputsRuntime,
   TresoProjectionRow,
-  AssociateRevenuePhaseInput,
 } from './types';
 
 export class TresoSimulationInputError extends Error {
@@ -104,50 +105,6 @@ function getAssociateRemunerationForYear(
   };
 }
 
-function getAssociateRevenuePhaseForYear(
-  associate: AssociateInput,
-  anneeCivile: number,
-): AssociateRevenuePhaseInput | undefined {
-  const phases = (associate as { revenuePhases?: unknown }).revenuePhases;
-  if (!Array.isArray(phases)) return undefined;
-  return phases && phases.length > 0 ? getActivePhase(phases, anneeCivile) : undefined;
-}
-
-function getSelectedAnnualIncomeNeed(
-  selectedAssociate: AssociateInput,
-  defaultAnnualNeed: number,
-  anneeCivile: number,
-): number {
-  const phase = getAssociateRevenuePhaseForYear(selectedAssociate, anneeCivile);
-  if (phase) return Math.max(0, phase.annualNetIncomeNeed);
-
-  const remuneration = selectedAssociate.remuneration;
-  if (
-    remuneration?.endYear != null &&
-    anneeCivile > remuneration.endYear &&
-    (remuneration.annualNeedAfterStop ?? 0) > 0
-  ) {
-    return Math.max(0, remuneration.annualNeedAfterStop ?? 0);
-  }
-  return defaultAnnualNeed;
-}
-
-function hasSelectedNeedForYear(
-  selectedAssociate: AssociateInput,
-  enPhaseRetraite: boolean,
-  anneeCivile: number,
-): boolean {
-  const phase = getAssociateRevenuePhaseForYear(selectedAssociate, anneeCivile);
-  if (phase) return Math.max(0, phase.annualNetIncomeNeed) > 0;
-
-  const remuneration = selectedAssociate.remuneration;
-  return enPhaseRetraite || (
-    remuneration?.endYear != null &&
-    anneeCivile > remuneration.endYear &&
-    (remuneration.annualNeedAfterStop ?? 0) > 0
-  );
-}
-
 function validateOwnershipTotals(associates: AssociateInput[]): void {
   const totalCapitalPct = associates.reduce((sum, associate) => sum + getCapitalPct(associate), 0);
   const totalEconomicPct = associates.reduce((sum, associate) => sum + getEconomicPct(associate), 0);
@@ -202,12 +159,12 @@ export function simulateTresorerieV2(
     const anneeCivile = anneeCivileDebut + year - 1;
     const ageAnnee = selectedProfile.currentAge + year - 1;
     const enPhaseRetraite = ageAnnee >= selectedProfile.retirementAge;
-    const annualIncomeNeed = getSelectedAnnualIncomeNeed(
+    const annualIncomeNeed = getAssociateAnnualIncomeNeedForYear(
       selectedAssociate,
       selectedProfile.annualIncomeNeed,
       anneeCivile,
     );
-    const enPhaseBesoin = hasSelectedNeedForYear(selectedAssociate, enPhaseRetraite, anneeCivile);
+    const enPhaseBesoin = hasAssociateAnnualIncomeNeedForYear(selectedAssociate, enPhaseRetraite, anneeCivile);
     const selectedActivePhase = getAssociateRevenuePhaseForYear(selectedAssociate, anneeCivile);
     const ccaBalanceDebut = new Map(ccaBalances);
 

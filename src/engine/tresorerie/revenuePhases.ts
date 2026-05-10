@@ -1,4 +1,4 @@
-import type { AssociateRevenuePhaseInput } from './types';
+import type { AssociateInput, AssociateRevenuePhaseInput } from './types';
 
 export type PhaseIdFactory = () => string;
 
@@ -25,6 +25,56 @@ export function getActivePhase(
     else break;
   }
   return active;
+}
+
+function getAssociateRevenuePhases(associate: AssociateInput): AssociateRevenuePhaseInput[] {
+  const phases = (associate as AssociateInput & {
+    revenuePhases?: AssociateRevenuePhaseInput[];
+  }).revenuePhases;
+  return Array.isArray(phases) ? phases : [];
+}
+
+export function getAssociateRevenuePhaseForYear(
+  associate: AssociateInput,
+  anneeCivile: number,
+): AssociateRevenuePhaseInput | undefined {
+  const phases = getAssociateRevenuePhases(associate);
+  return phases.length > 0 ? getActivePhase(phases, anneeCivile) : undefined;
+}
+
+export function getAssociateAnnualIncomeNeedForYear(
+  associate: AssociateInput,
+  defaultAnnualNeed: number,
+  anneeCivile: number,
+): number {
+  const phase = getAssociateRevenuePhaseForYear(associate, anneeCivile);
+  if (phase) return positiveAmount(phase.annualNetIncomeNeed);
+
+  const remuneration = associate.remuneration;
+  if (
+    remuneration?.endYear != null &&
+    anneeCivile > remuneration.endYear &&
+    positiveAmount(remuneration.annualNeedAfterStop ?? 0) > 0
+  ) {
+    return positiveAmount(remuneration.annualNeedAfterStop ?? 0);
+  }
+  return positiveAmount(defaultAnnualNeed);
+}
+
+export function hasAssociateAnnualIncomeNeedForYear(
+  associate: AssociateInput,
+  fallbackNeedActive: boolean,
+  anneeCivile: number,
+): boolean {
+  const phase = getAssociateRevenuePhaseForYear(associate, anneeCivile);
+  if (phase) return positiveAmount(phase.annualNetIncomeNeed) > 0;
+
+  const remuneration = associate.remuneration;
+  return fallbackNeedActive || (
+    remuneration?.endYear != null &&
+    anneeCivile > remuneration.endYear &&
+    positiveAmount(remuneration.annualNeedAfterStop ?? 0) > 0
+  );
 }
 
 export function getPhaseEndYear(

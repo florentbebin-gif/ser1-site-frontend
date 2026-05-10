@@ -1,11 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import type { AssociateRevenuePhaseInput } from '@/engine/tresorerie/types';
+import type { AssociateInput, AssociateRevenuePhaseInput } from '@/engine/tresorerie/types';
 import {
   addPhase,
   buildNextPhase,
   computeComplement,
   computeNetRevenue,
   getActivePhase,
+  getAssociateAnnualIncomeNeedForYear,
   getPhaseEndYear,
   removePhase,
   sortPhases,
@@ -20,6 +21,27 @@ const phase = (
   socialChargeRate: 0,
   annualNetIncomeNeed: 0,
   useCcaForCompletion: true,
+  ...patch,
+});
+
+const associate = (patch: Partial<AssociateInput> = {}): AssociateInput => ({
+  id: 'associe-1',
+  label: 'Associé 1',
+  kind: 'pp',
+  profile: {
+    currentAge: 50,
+    retirementAge: 65,
+    annualIncomeNeed: 30_000,
+    projectionStartYear: 2026,
+  },
+  ownershipLots: [{ right: 'pleine_propriete', capitalPct: 100, economicRightsPct: 100 }],
+  roles: ['associe_sans_statut'],
+  cca: {
+    currentBalance: 0,
+    exceptionalContributions: [],
+    annualContribution: { amount: 0, startYear: 2026 },
+    remunerationRate: 0,
+  },
   ...patch,
 });
 
@@ -97,5 +119,28 @@ describe('revenuePhases', () => {
 
     expect(computeNetRevenue(item)).toBe(60_000);
     expect(computeComplement(item)).toBe(15_000);
+  });
+
+  it('lit le besoin annuel actif depuis le palier puis retombe sur les fallbacks documentés', () => {
+    const withPhases = associate({
+      revenuePhases: [
+        phase({ id: 'p1', startYear: 2026, annualNetIncomeNeed: 0 }),
+        phase({ id: 'p2', startYear: 2031, annualNetIncomeNeed: 42_000 }),
+      ],
+    } as Partial<AssociateInput>);
+
+    expect(getAssociateAnnualIncomeNeedForYear(withPhases, 30_000, 2032)).toBe(42_000);
+
+    const withLegacyStop = associate({
+      remuneration: {
+        source: 'holding',
+        loadedAnnualCost: 0,
+        socialChargeRate: 0,
+        endYear: 2030,
+        annualNeedAfterStop: 36_000,
+      },
+    });
+    expect(getAssociateAnnualIncomeNeedForYear(withLegacyStop, 30_000, 2031)).toBe(36_000);
+    expect(getAssociateAnnualIncomeNeedForYear(associate(), 30_000, 2031)).toBe(30_000);
   });
 });
