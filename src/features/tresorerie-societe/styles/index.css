@@ -893,12 +893,19 @@
   max-width: 340px;
 }
 
+.ts-timeline-horizon-row {
+  max-width: 340px;
+}
+
+.ts-timeline-track-outer {
+  overflow-x: auto;
+}
+
 .ts-timeline-track {
   border: 1px solid var(--color-c8);
   border-radius: 8px;
   background: #fff;
   padding: 6px 8px;
-  overflow-x: auto;
 }
 
 .ts-timeline-track svg {

@@ -147,6 +147,51 @@ describe('TresoTimelineSection', () => {
     expect(document.querySelector('.ts-section__divider')).toBeInTheDocument();
   });
 
+  it('permet d’allonger l’horizon de projection', () => {
+    render(<TresoTimelineSection inputs={cloneInputs()} onChange={vi.fn()} />);
+
+    fireEvent.change(screen.getByLabelText('Horizon de projection'), { target: { value: '25' } });
+
+    expect(screen.getByText(/2031 - 2050/)).toBeInTheDocument();
+  });
+
+  it('masque les détails des segments trop courts pour éviter les chevauchements', () => {
+    render(
+      <TresoTimelineSection
+        inputs={cloneInputs(inputs => {
+          inputs.company.subsidiaries = [];
+          inputs.company.associates[0].revenuePhases = [
+            {
+              id: 'phase-2026',
+              label: 'A',
+              startYear: 2026,
+              source: 'holding',
+              loadedAnnualCost: 0,
+              socialChargeRate: 0,
+              annualNetIncomeNeed: 0,
+              useCcaForCompletion: true,
+            },
+            {
+              id: 'phase-2027',
+              label: 'B',
+              startYear: 2027,
+              source: 'none',
+              loadedAnnualCost: 0,
+              socialChargeRate: 0,
+              annualNetIncomeNeed: 0,
+              useCcaForCompletion: true,
+            },
+          ];
+        })}
+        onChange={vi.fn()}
+      />,
+    );
+
+    expect(screen.getAllByText('A').length).toBeGreaterThan(0);
+    expect(screen.queryByText(/2026-2026 · besoin/i)).not.toBeInTheDocument();
+    expect(document.querySelector('.ts-timeline-track-outer')).toBeInTheDocument();
+  });
+
   it('affiche un message informatif pour un associé personne morale', () => {
     render(
       <TresoTimelineSection

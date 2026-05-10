@@ -5,6 +5,7 @@ import type {
   CompanyInputV5,
   TresoInputsV5,
 } from '@/engine/tresorerie/types';
+import { SimFieldShell } from '@/components/ui/sim/SimFieldShell';
 import {
   addPhase,
   buildNextPhase,
@@ -42,6 +43,7 @@ function isTimelineReady(company: CompanyInputV5, associate: AssociateInputV5 | 
 
 export function TresoTimelineSection({ inputs, onChange }: TresoTimelineSectionProps) {
   const [editingPhaseId, setEditingPhaseId] = useState<string | null>(null);
+  const [horizonYears, setHorizonYears] = useState(15);
   const selectedAssociate = getSelectedAssociate(inputs);
   const projectionStartYear =
     inputs.company.projectionStartYear ??
@@ -50,9 +52,9 @@ export function TresoTimelineSection({ inputs, onChange }: TresoTimelineSectionP
   const phases = selectedAssociate ? sortPhases(selectedAssociate.revenuePhases) : [];
   const layout = useMemo(
     () => selectedAssociate
-      ? computeTimelineRange(inputs.company, selectedAssociate)
+      ? computeTimelineRange(inputs.company, selectedAssociate, horizonYears)
       : null,
-    [inputs.company, selectedAssociate],
+    [horizonYears, inputs.company, selectedAssociate],
   );
   const editingPhase = editingPhaseId
     ? phases.find(phase => phase.id === editingPhaseId) ?? null
@@ -154,6 +156,30 @@ export function TresoTimelineSection({ inputs, onChange }: TresoTimelineSectionP
             selectedAssociateAge={selectedAssociate.profile?.currentAge}
             onChange={patchProjectionStartYear}
           />
+
+          <div className="ts-timeline-horizon-row">
+            <SimFieldShell
+              label="Horizon de projection"
+              className="ts-field"
+              rowClassName="ts-field__row"
+              controlId="ts-horizon-years"
+            >
+              <input
+                id="ts-horizon-years"
+                type="number"
+                min={5}
+                max={40}
+                step={1}
+                value={horizonYears}
+                className="sim-field__control"
+                onChange={event => {
+                  const value = Number(event.target.value);
+                  if (value >= 5 && value <= 40) setHorizonYears(value);
+                }}
+              />
+              <span className="sim-field__unit ts-unit">ans</span>
+            </SimFieldShell>
+          </div>
 
           <TresoTimelineTrack layout={layout} onEditPhase={setEditingPhaseId} />
 
