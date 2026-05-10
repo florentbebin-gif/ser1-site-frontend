@@ -182,6 +182,15 @@ describe('TresoTimelineSection', () => {
     expect(screen.getByRole('button', { name: 'Enregistrer' })).toBeDisabled();
   });
 
+  it('recalcule la fin dérivée dès que l’année de début est modifiée', () => {
+    render(<TresoTimelineSection inputs={cloneInputs()} onChange={vi.fn()} />);
+
+    openFirstPhaseModal();
+    fireEvent.change(screen.getByLabelText('Année de début'), { target: { value: '2032' } });
+
+    expect(screen.getByText(/Jusqu’à l’horizon de projection/i)).toBeInTheDocument();
+  });
+
   it('désactive la suppression quand il ne reste qu’un seul palier', () => {
     render(
       <TresoTimelineSection

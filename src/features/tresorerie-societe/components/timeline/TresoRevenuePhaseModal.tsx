@@ -61,7 +61,8 @@ export function TresoRevenuePhaseModal({
     setDraft(phase);
   }, [phase]);
 
-  const derivedEndYear = getPhaseEndYear(draft, phases, horizonYear);
+  const phasesWithDraft = phases.map(item => (item.id === draft.id ? draft : item));
+  const derivedEndYear = getPhaseEndYear(draft, phasesWithDraft, horizonYear);
   const duplicateStartYear = phases.some(item =>
     item.id !== draft.id && item.startYear === draft.startYear,
   );
