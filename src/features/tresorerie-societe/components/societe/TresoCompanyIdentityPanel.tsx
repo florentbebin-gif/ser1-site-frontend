@@ -9,21 +9,16 @@ import type { CompanyInput, CompanyInputV5, CompanyKind, LegalForm } from '@/eng
 import {
   fmtEuroInput,
   parseEuroInput,
-  parseNumberInput,
 } from '../../utils/tresorerieFormatters';
 
 interface TresoCompanyIdentityPanelProps {
   company: CompanyInputV5;
-  projectionStartYear: number;
   onCompanyChange: (patch: Partial<CompanyInputV5>) => void;
-  onProjectionStartYearChange: (year: number) => void;
 }
 
 export function TresoCompanyIdentityPanel({
   company,
-  projectionStartYear,
   onCompanyChange,
-  onProjectionStartYearChange,
 }: TresoCompanyIdentityPanelProps) {
   return (
     <div className="ts-modal-grid">
@@ -36,15 +31,9 @@ export function TresoCompanyIdentityPanel({
         />
       </SimFieldShell>
 
-      <SimFieldShell label="Début de projection" className="ts-field" rowClassName="ts-field__row">
-        <input
-          type="text"
-          inputMode="numeric"
-          className="sim-field__control"
-          value={projectionStartYear}
-          onChange={event => onProjectionStartYearChange(parseNumberInput(event.target.value))}
-        />
-      </SimFieldShell>
+      <p className="ts-note--info">
+        La date de début de projection se règle dans le parcours associé en haut de page.
+      </p>
 
       <SimFieldShell label="Type de société" className="ts-field" rowClassName="ts-field__row">
         <SimSelect

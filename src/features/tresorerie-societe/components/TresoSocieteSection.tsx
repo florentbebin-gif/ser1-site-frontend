@@ -2,7 +2,7 @@
  * TresoSocieteSection.tsx — Bloc Société + organigramme et modales par élément.
  */
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { SimFieldShell } from '../../../components/ui/sim/SimFieldShell';
 import { SimModalShell } from '../../../components/ui/sim/SimModalShell';
 import { SimSelect } from '../../../components/ui/sim/SimSelect';
@@ -25,10 +25,7 @@ import {
   getOwnershipTotals,
 } from '../utils/tresorerieSocieteModel';
 import { ASSOCIATE_KIND_OPTIONS } from '../utils/tresorerieSocieteOptions';
-import {
-  syncSelectedProfile,
-  useTresorerieAssociateHandlers,
-} from '../utils/tresorerieAssociateHandlers';
+import { useTresorerieAssociateHandlers } from '../utils/tresorerieAssociateHandlers';
 import {
   fmtEuroInput,
   parseEuroInput,
@@ -80,24 +77,6 @@ export function TresoSocieteSection({ inputs, onChange }: Props) {
     patchInputs({ ...inputs, company: { ...company, ...patch } });
   };
 
-  const patchProjectionStartYear = (nextProjectionStartYear: number) => {
-    const associates = company.associates.map(associate => ({
-      ...associate,
-      profile: associate.profile
-        ? { ...associate.profile, projectionStartYear: nextProjectionStartYear }
-        : associate.profile,
-    }));
-    const nextInputs = {
-      ...inputs,
-      company: {
-        ...company,
-        projectionStartYear: nextProjectionStartYear,
-        associates,
-      },
-    };
-    patchInputs(syncSelectedProfile(selectedAssociateId, associates, nextInputs));
-  };
-
   const patchIncomeStatement = (patch: Partial<typeof incomeStatement>) => {
     const nextIncomeStatement = { ...incomeStatement, ...patch };
     patchCompany({
@@ -105,6 +84,18 @@ export function TresoSocieteSection({ inputs, onChange }: Props) {
       annualStructureCosts: nextIncomeStatement.annualStructureCosts,
     });
   };
+
+  useEffect(() => {
+    const handleOpenSocietyPanel = (event: Event) => {
+      const detail = (event as CustomEvent<PanelKey>).detail;
+      const nextPanel = PANEL_OPTIONS.some(panel => panel.key === detail) ? detail : 'identite';
+      setActivePanel(nextPanel);
+      setCompanyModalOpen(true);
+    };
+
+    window.addEventListener('ts:open-society-panel', handleOpenSocietyPanel);
+    return () => window.removeEventListener('ts:open-society-panel', handleOpenSocietyPanel);
+  }, []);
 
   const renderAssociesPanel = () => (
     <div className="ts-modal-stack">
@@ -229,9 +220,7 @@ export function TresoSocieteSection({ inputs, onChange }: Props) {
       return (
         <TresoCompanyIdentityPanel
           company={company}
-          projectionStartYear={projectionStartYear}
           onCompanyChange={patchCompany}
-          onProjectionStartYearChange={patchProjectionStartYear}
         />
       );
     }
@@ -261,9 +250,7 @@ export function TresoSocieteSection({ inputs, onChange }: Props) {
     return (
       <TresoCompanyIdentityPanel
         company={company}
-        projectionStartYear={projectionStartYear}
         onCompanyChange={patchCompany}
-        onProjectionStartYearChange={patchProjectionStartYear}
       />
     );
   };
@@ -336,7 +323,6 @@ export function TresoSocieteSection({ inputs, onChange }: Props) {
       {activeAssociateModal && (
         <TresoAssociateModal
           associate={activeAssociateModal}
-          subsidiaries={company.subsidiaries}
           fallbackProfile={getAssociateProfile(inputs, activeAssociateModal)}
           onChange={patch => updateAssociate(activeAssociateModal.id, patch as Partial<AssociateInputV5>)}
           onClose={() => setAssociateModalId(null)}

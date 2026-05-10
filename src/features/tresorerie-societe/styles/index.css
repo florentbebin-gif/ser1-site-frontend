@@ -1152,22 +1152,6 @@
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  .ts-remuneration-timeline {
-    grid-template-columns: 1fr;
-    text-align: left;
-  }
-
-  .ts-remuneration-timeline i {
-    width: 2px;
-    height: 14px;
-    min-width: 2px;
-    justify-self: center;
-  }
-
-  .ts-remuneration-radios {
-    grid-template-columns: 1fr;
-  }
-
   .ts-schedule-row {
     grid-template-columns: 1fr;
   }

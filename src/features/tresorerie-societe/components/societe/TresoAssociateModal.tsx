@@ -6,13 +6,10 @@ import type {
   AssociateInput,
   AssociateKind,
   AssociateProfileInput,
-  AssociateRemunerationInput,
   CcaScheduleInput,
   OwnershipRight,
-  SubsidiaryInput,
 } from '@/engine/tresorerie/types';
 import { TresoAssociateCcaPanel } from './TresoAssociateCcaPanel';
-import { TresoAssociateRemunerationPanel } from './TresoAssociateRemunerationPanel';
 import {
   ASSOCIATE_KIND_OPTIONS,
   OWNERSHIP_OPTIONS,
@@ -24,18 +21,16 @@ import {
 
 interface TresoAssociateModalProps {
   associate: AssociateInput;
-  subsidiaries: SubsidiaryInput[];
   fallbackProfile: AssociateProfileInput;
   onChange: (patch: Partial<AssociateInput>) => void;
   onClose: () => void;
 }
 
-type AssociateModalSection = 'identite' | 'profil' | 'remuneration' | 'cca';
+type AssociateModalSection = 'identite' | 'profil' | 'cca';
 
 const ASSOCIATE_MODAL_SECTIONS: Array<{ key: AssociateModalSection; label: string }> = [
   { key: 'identite', label: 'Identité' },
   { key: 'profil', label: 'Profil' },
-  { key: 'remuneration', label: 'Rémunération' },
   { key: 'cca', label: 'CCA' },
 ];
 
@@ -52,18 +47,8 @@ function getCca(associate: AssociateInput, fallbackYear: number): CcaScheduleInp
   };
 }
 
-function getRemuneration(associate: AssociateInput): AssociateRemunerationInput {
-  return associate.remuneration ?? {
-    source: 'holding',
-    loadedAnnualCost: 0,
-    socialChargeRate: 0,
-    annualNeedAfterStop: 0,
-  };
-}
-
 export function TresoAssociateModal({
   associate,
-  subsidiaries,
   fallbackProfile,
   onChange,
   onClose,
@@ -77,7 +62,6 @@ export function TresoAssociateModal({
     economicRightsPct: 0,
   };
   const cca = getCca(associate, profile.projectionStartYear);
-  const remuneration = getRemuneration(associate);
 
   const patchProfile = (patch: Partial<AssociateProfileInput>) => {
     onChange({ profile: { ...profile, ...patch } });
@@ -232,7 +216,7 @@ export function TresoAssociateModal({
               <span>Paramètre personnel de projection</span>
             </div>
             <p className="ts-note--info">
-              La projection démarre en {profile.projectionStartYear}. L’année est pilotée depuis la société.
+              La projection démarre en {profile.projectionStartYear}. L’année et les paliers de revenus se règlent depuis le parcours associé en haut de page.
             </p>
             <div className="ts-modal-grid ts-modal-grid--three">
               <SimFieldShell label="Âge actuel" className="ts-field" rowClassName="ts-field__row">
@@ -258,16 +242,6 @@ export function TresoAssociateModal({
               Une personne morale ne porte pas de besoin retraite personnel dans cette version.
             </p>
           </div>
-        )}
-
-        {activeSection === 'remuneration' && (
-          <TresoAssociateRemunerationPanel
-            associate={associate}
-            profile={profile}
-            remuneration={remuneration}
-            subsidiaries={subsidiaries}
-            onChange={onChange}
-          />
         )}
 
         {activeSection === 'cca' && (
