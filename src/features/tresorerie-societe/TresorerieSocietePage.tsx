@@ -85,7 +85,7 @@ export default function TresorerieSocietePage() {
           onAssociateModalOpenerChange={handleAssociateModalOpenerChange}
         />
 
-        {readiness.companyReady ? (
+        {readiness.personalTimelineReady ? (
           <>
             {/* Bloc 2 — Parcours associé */}
             <TresoTimelineSection
@@ -135,8 +135,12 @@ export default function TresorerieSocietePage() {
       </SimPageShell.Main>
 
       <SimPageShell.Side sticky>
-        {readiness.companyReady ? <TresoAssociateInsights inputs={state.inputsV6} rows={rows} /> : null}
-        <TresoKPISidebar kpis={kpis} inputs={state.inputsV6} />
+        {readiness.personalTimelineReady ? (
+          <>
+            <TresoAssociateInsights inputs={state.inputsV6} rows={rows} />
+            <TresoKPISidebar kpis={kpis} inputs={state.inputsV6} />
+          </>
+        ) : null}
       </SimPageShell.Side>
     </SimPageShell>
   );

@@ -22,12 +22,6 @@ export function TresoAssociateCcaPanel({
         <strong>Compte courant d’associé</strong>
         <span>Taux maximum déductible</span>
       </div>
-      <p className="ts-note--info">
-        Les intérêts CCA sont saisis au taux convenu ; la déductibilité est plafonnée par le taux maximum déductible issu des paramètres fiscaux.
-      </p>
-      <p className="ts-note--info">
-        Les apports et leur programmation se définissent dans le parcours de revenus, par palier.
-      </p>
       <div className="ts-modal-grid ts-modal-grid--three">
         <SimFieldShell label="CCA actuel" className="ts-field" rowClassName="ts-field__row">
           <input
@@ -50,6 +44,9 @@ export function TresoAssociateCcaPanel({
           <span className="sim-field__unit ts-unit">%</span>
         </SimFieldShell>
       </div>
+      <p className="ts-note--info">
+        Les intérêts CCA sont saisis au taux convenu ; la déductibilité est plafonnée par le taux maximum déductible issu des paramètres fiscaux.
+      </p>
     </div>
   );
 }

@@ -72,6 +72,8 @@ const ROW = {
   tresorerieBanqueDebut: 70000,
   tresorerieBanqueFin: 52000,
   tresorerieDisponible: 17000,
+  soldeMinimumCompteBancaire: 20000,
+  bfr: 15000,
   montantInvestiInitial: 30000,
   montantBalayeAnnuel: 8000,
   montantReinvestiAuTerme: 5000,
@@ -95,13 +97,14 @@ describe('TresoProjectionDrawer', () => {
     expect(screen.getByText('Résultat')).toBeInTheDocument();
     expect(screen.getByText('CCA')).toBeInTheDocument();
     expect(screen.getByText('Trésorerie')).toBeInTheDocument();
-    expect(screen.getByText('Compte bancaire début')).toBeInTheDocument();
-    expect(screen.getByText('Compte bancaire fin')).toBeInTheDocument();
-    expect(screen.getByText('Déficit bancaire vs solde minimum + BFR')).toBeInTheDocument();
-    expect(screen.getByText('Résultat net comptable').closest('tr')).toHaveClass('ts-proj-row--total');
-    expect(screen.getByText("Trésorerie fin d'année").closest('tr')).toHaveClass('ts-proj-row--total');
-    expect(screen.getByText('Déficit bancaire vs solde minimum + BFR').closest('tr'))
-      .toHaveClass('ts-proj-row--total');
+    expect(screen.getByText('Trésorerie bancaire disponible')).toBeInTheDocument();
+    expect(screen.getByText('Solde minimum à conserver')).toBeInTheDocument();
+    expect(screen.getByText('Besoin en fonds de roulement')).toBeInTheDocument();
+    expect(screen.getByText('Trésorerie placée (poches)')).toBeInTheDocument();
+    expect(screen.getByText('Trésorerie consolidée')).toBeInTheDocument();
+    expect(screen.getByText('Résultat net comptable estimé').closest('tr')).toHaveClass('ts-proj-row--total');
+    expect(screen.getByText('Trésorerie consolidée').closest('tr')).toHaveClass('ts-proj-row--total');
+    expect(screen.getByText('Montant investi automatiquement vers placements')).toBeInTheDocument();
   });
 
   it('affiche les charges sociales TNS en négatif dans le détail filtré par associé', () => {

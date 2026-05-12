@@ -20,6 +20,7 @@ export interface TresoOrgNode {
   id: string;
   label: string;
   meta?: string;
+  detail?: string;
   kind: TresoOrgNodeKind;
   x: number;
   y: number;
@@ -183,8 +184,9 @@ export function computeTresoOrgchartLayout(
 
   const companyNode: TresoOrgNode = {
     id: 'societe',
-    label: company.creationType === 'existante' ? 'Société existante' : 'Société à créer',
-    meta: `${getCompanyKindCode(company)} · ${company.legalForm.toUpperCase()}`,
+    label: company.label?.trim() || 'Société',
+    meta: `Forme sociale : ${company.legalForm.toUpperCase()}`,
+    detail: `Type société : ${getCompanyKindCode(company)}`,
     kind: 'company',
     x: center - TRESO_ORG_NODE_WIDTH / 2,
     y: companyY,

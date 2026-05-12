@@ -76,9 +76,7 @@ function getAnnualCcaContribution(associate: RuntimeAssociateInput, anneeCivile:
   if (isRevenuePhaseV6(phase)) {
     const annual = phase.ccaContribution.annual;
     if (!phase.ccaContribution.enabled || !annual) return 0;
-    return anneeCivile >= annual.startYear && anneeCivile <= annual.endYear
-      ? Math.max(0, annual.amount)
-      : 0;
+    return Math.max(0, annual.amount);
   }
 
   const contribution = getLegacyCcaSchedule(associate.cca)?.annualContribution;
@@ -310,6 +308,8 @@ export function simulateTresorerieV2(
         interetsCCA -
         chargesStructure,
     );
+    const cashReserve = minimumBankBalance + incomeStatement.workingCapitalRequirement;
+    const tresorerieDistribuableApresIS = Math.max(0, tresorerieDisponibleApresIS - cashReserve);
 
     const selectedRemuneration = remunerationByAssociate.get(selectedAssociateId) ?? 0;
     const besoinRetraiteApresRemuneration = enPhaseBesoin
@@ -323,14 +323,14 @@ export function simulateTresorerieV2(
           ? Math.min(
             Math.max(0, selectedActivePhase.ccaRepayment.targetAmount ?? 0),
             selectedCcaBalance,
-            tresorerieDisponibleApresIS,
+            tresorerieDistribuableApresIS,
           )
-          : Math.min(selectedCcaBalance, tresorerieDisponibleApresIS)
+          : Math.min(selectedCcaBalance, tresorerieDistribuableApresIS)
       : selectedActivePhase?.useCcaForCompletion ?? true
         ? Math.min(
           besoinRetraiteApresRemuneration,
           selectedCcaBalance,
-          tresorerieDisponibleApresIS,
+          tresorerieDistribuableApresIS,
         )
         : 0;
     const ccaRepaidByAssociate = distributeSelectedCcaRepayment({
@@ -347,25 +347,31 @@ export function simulateTresorerieV2(
     const selectedDistribution = isRevenuePhaseV6(selectedActivePhase)
       ? selectedActivePhase.distribution
       : undefined;
-    const dividendesComplementairesBrutsDemandes =
-      selectedDistribution?.enabled === false || selectedDistribution?.dividendsStrategy === 'aucun'
-        ? 0
-        : selectedDistribution?.dividendsStrategy === 'montant_cible'
-          ? params.pfuTotal < 1 && selectedEconomicPct > 0
-            ? Math.max(0, selectedDistribution.dividendsTargetAmountNet ?? 0) /
-              (1 - params.pfuTotal) /
-              selectedEconomicPct
-            : 0
-          : besoinNetRestant > 0 && params.pfuTotal < 1 && selectedEconomicPct > 0
-            ? besoinNetRestant / (1 - params.pfuTotal) / selectedEconomicPct
-            : 0;
+    const tresoDispoApresCCAEtIS = Math.max(0, tresorerieDistribuableApresIS - retraitsCCA);
+    let dividendesComplementairesBrutsDemandes = 0;
+    if (selectedDistribution) {
+      if (selectedDistribution.enabled && selectedDistribution.dividendsStrategy === 'montant_cible') {
+        dividendesComplementairesBrutsDemandes = params.pfuTotal < 1 && selectedEconomicPct > 0
+          ? Math.max(
+            0,
+            (selectedDistribution.dividendsTargetAmountNet ?? 0) - selectedRemuneration - retraitsCCA,
+          ) / (1 - params.pfuTotal) / selectedEconomicPct
+          : 0;
+      } else if (selectedDistribution.enabled && selectedDistribution.dividendsStrategy === 'max_treso') {
+        dividendesComplementairesBrutsDemandes = selectedEconomicPct > 0
+          ? Math.min(tresoDispoApresCCAEtIS, capaciteDistribuable) / selectedEconomicPct
+          : 0;
+      }
+    } else if (besoinNetRestant > 0 && params.pfuTotal < 1 && selectedEconomicPct > 0) {
+      dividendesComplementairesBrutsDemandes =
+        besoinNetRestant / (1 - params.pfuTotal) / selectedEconomicPct;
+    }
 
     const creditIRResult = { mensualite: 0, annuite: 0, dividendesBrutsDemandes: 0 };
     const dividendesBrutsCreditIRDemandes = creditIRResult.dividendesBrutsDemandes;
     const dividendesDemandesTotaux =
       dividendesBrutsCreditIRDemandes + dividendesComplementairesBrutsDemandes;
 
-    const tresoDispoApresCCAEtIS = Math.max(0, tresorerieDisponibleApresIS - retraitsCCA);
     const dividendesAssociesBruts = Math.min(
       dividendesDemandesTotaux,
       capaciteDistribuable,
@@ -433,7 +439,6 @@ export function simulateTresorerieV2(
       interetsCCA +
       chargesStructure;
     const tresorerieAvantBalayage = tresorerieDebut + fluxEntrants - fluxSortants;
-    const cashReserve = minimumBankBalance + incomeStatement.workingCapitalRequirement;
     const cashProtectedFromImmediateSweep = subsidiariesResult.disposalCash;
     const sweepBase = Math.max(
       0,

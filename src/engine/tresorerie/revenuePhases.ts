@@ -20,6 +20,14 @@ export function isRevenuePhaseV6(phase: RevenuePhaseInput | undefined): phase is
   return Boolean(phase && 'remuneration' in phase);
 }
 
+function getDistributionAnnualNeed(phase: AssociateRevenuePhaseInputV6): number {
+  if (!phase.distribution.enabled) return 0;
+  if (phase.distribution.dividendsStrategy === 'montant_cible') {
+    return positiveAmount(phase.distribution.dividendsTargetAmountNet ?? 0);
+  }
+  return positiveAmount(phase.distribution.annualNetIncomeNeed);
+}
+
 export function sortPhases<T extends { startYear: number }>(phases: T[]): T[] {
   return [...phases].sort((a, b) => a.startYear - b.startYear);
 }
@@ -63,11 +71,9 @@ export function getAssociateAnnualIncomeNeedForYear(
 ): number {
   const phase = getAssociateRevenuePhaseForYear(associate, anneeCivile);
   if (phase) {
-    return isRevenuePhaseV6(phase) && !phase.distribution.enabled
-      ? 0
-      : positiveAmount(isRevenuePhaseV6(phase)
-        ? phase.distribution.annualNetIncomeNeed
-        : phase.annualNetIncomeNeed);
+    return isRevenuePhaseV6(phase)
+      ? getDistributionAnnualNeed(phase)
+      : positiveAmount(phase.annualNetIncomeNeed);
   }
 
   const remuneration = associate.remuneration;
@@ -89,7 +95,7 @@ export function hasAssociateAnnualIncomeNeedForYear(
   const phase = getAssociateRevenuePhaseForYear(associate, anneeCivile);
   if (phase) {
     return isRevenuePhaseV6(phase)
-      ? phase.distribution.enabled && positiveAmount(phase.distribution.annualNetIncomeNeed) > 0
+      ? getDistributionAnnualNeed(phase) > 0
       : positiveAmount(phase.annualNetIncomeNeed) > 0;
   }
 
@@ -185,7 +191,7 @@ export function computeNetRevenue(phase: RevenuePhaseInput): number {
 
 export function computeComplement(phase: RevenuePhaseInput): number {
   const annualNeed = isRevenuePhaseV6(phase)
-    ? phase.distribution.annualNetIncomeNeed
+    ? getDistributionAnnualNeed(phase)
     : phase.annualNetIncomeNeed;
   return Math.max(0, positiveAmount(annualNeed) - computeNetRevenue(phase));
 }

@@ -4,7 +4,7 @@ import type {
   CompanyInputV6,
   SubsidiaryInput,
 } from '@/engine/tresorerie/types';
-import { computeComplement, computeNetRevenue, sortPhases } from '../../utils/revenuePhases';
+import { computeNetRevenue, sortPhases } from '../../utils/revenuePhases';
 
 export type TimelineSubPhaseKind =
   | 'remuneration'
@@ -28,7 +28,6 @@ export interface TimelinePalierLayout {
   x: number;
   width: number;
   netRevenue: number;
-  complement: number;
   subPhases: TimelineSubPhaseLayout[];
 }
 
@@ -114,16 +113,16 @@ function getRemunerationLabel(phase: AssociateRevenuePhaseInputV6, subsidiaries:
   const source = phase.remuneration.source === 'subsidiary'
     ? getSubsidiaryLabel(subsidiaries, phase.remuneration.subsidiaryId)
     : 'Holding';
-  return `${fmtCompactEuro(phase.remuneration.loadedAnnualCost)} brut · ${source}`;
+  return `${fmtCompactEuro(computeNetRevenue(phase))} net · ${source}`;
 }
 
 function getDistributionLabel(phase: AssociateRevenuePhaseInputV6): string {
   if (!phase.distribution.enabled) return '';
   if (phase.distribution.dividendsStrategy === 'aucun') return 'aucun dividende';
-  const mode = phase.distribution.dividendsStrategy === 'montant_cible'
-    ? `${fmtCompactEuro(phase.distribution.dividendsTargetAmountNet ?? 0)} net`
-    : 'dividendes max';
-  return `Besoin ${fmtCompactEuro(phase.distribution.annualNetIncomeNeed)} · ${mode}`;
+  if (phase.distribution.dividendsStrategy === 'montant_cible') {
+    return `Objectif ${fmtCompactEuro(phase.distribution.dividendsTargetAmountNet ?? 0)} net`;
+  }
+  return 'dividendes max';
 }
 
 function getCcaContributionLabel(phase: AssociateRevenuePhaseInputV6): string {
@@ -160,12 +159,12 @@ function subPhaseDetail(kind: TimelineSubPhaseKind, phase: AssociateRevenuePhase
   const label = SUB_PHASE_LABELS[kind];
   if (kind === 'remuneration') {
     return phase.remuneration.enabled
-      ? `${label} ${fmtCompactEuro(phase.remuneration.loadedAnnualCost)} chargé`
+      ? `${label} ${fmtCompactEuro(computeNetRevenue(phase))} net`
       : `${label} inactive`;
   }
   if (kind === 'distribution') {
     return phase.distribution.enabled
-      ? `${label} besoin ${fmtCompactEuro(phase.distribution.annualNetIncomeNeed)}`
+      ? `${label} ${getDistributionLabel(phase)}`
       : `${label} inactive`;
   }
   if (kind === 'cca_contribution') {
@@ -253,7 +252,6 @@ export function computeTimelineRange(
     x: getPhaseX(phase.startYear, projectionStartYear, endYear, trackRight),
     width: getPhaseWidth(phase.startYear, phase.endYear, projectionStartYear, endYear, trackRight),
     netRevenue: computeNetRevenue(phase),
-    complement: computeComplement(phase),
     subPhases: buildSubPhases(phase, company.subsidiaries),
   }));
 

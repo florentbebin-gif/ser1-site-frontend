@@ -28,6 +28,10 @@ const KPIS: TresoKPIs = {
   ccaRembourseTotal: 0,
   alerteTresorerieBancaire: false,
   premiereAnneeDeficitBancaire: null,
+  tresorerieTientHorizon: true,
+  revenuCibleTientHorizon: null,
+  premiereAnneeRevenuCibleNonTenu: null,
+  performanceMoyenneTresorerie: 0,
   hasRows: true,
   anneeRetraiteIndex: 12,
 };

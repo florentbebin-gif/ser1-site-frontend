@@ -1,6 +1,5 @@
 import type { AssociateRevenuePhaseInputV6 } from '@/engine/tresorerie/types';
 import {
-  computeComplement,
   computeNetRevenue,
   sortPhases,
 } from '../../utils/revenuePhases';
@@ -12,6 +11,16 @@ interface TresoTimelinePhaseListProps {
 
 function fmtEuro(value: number): string {
   return `${Math.round(value).toLocaleString('fr-FR')} €`;
+}
+
+function getDistributionSummary(phase: AssociateRevenuePhaseInputV6): string {
+  if (!phase.distribution.enabled || phase.distribution.dividendsStrategy === 'aucun') {
+    return 'Aucun dividende';
+  }
+  if (phase.distribution.dividendsStrategy === 'montant_cible') {
+    return `Objectif ${fmtEuro(phase.distribution.dividendsTargetAmountNet ?? 0)} net`;
+  }
+  return 'Dividendes max';
 }
 
 export function TresoTimelinePhaseList({
@@ -45,8 +54,8 @@ export function TresoTimelinePhaseList({
               </small>
             </span>
             <span>
-              <strong>{fmtEuro(phase.distribution.annualNetIncomeNeed)}</strong>
-              <small>complément {fmtEuro(computeComplement(phase))} · net {fmtEuro(computeNetRevenue(phase))}</small>
+              <strong>{getDistributionSummary(phase)}</strong>
+              <small>net annuel estimé {fmtEuro(computeNetRevenue(phase))}</small>
             </span>
           </button>
         );

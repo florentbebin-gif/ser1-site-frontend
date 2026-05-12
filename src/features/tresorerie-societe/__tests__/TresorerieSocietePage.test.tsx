@@ -216,6 +216,10 @@ function makeCalcReturn(kpiOverrides: Record<string, unknown> = {}) {
       ccaRembourseTotal: 0,
       alerteTresorerieBancaire: false,
       premiereAnneeDeficitBancaire: null,
+      tresorerieTientHorizon: true,
+      revenuCibleTientHorizon: null,
+      premiereAnneeRevenuCibleNonTenu: null,
+      performanceMoyenneTresorerie: 0,
       hasRows: false,
       anneeRetraiteIndex: null,
       ...kpiOverrides,
@@ -289,6 +293,34 @@ describe('TresorerieSocietePage', () => {
     expect(html).not.toContain('id="ts-timeline-title"');
     expect(html).not.toContain('data-testid="placement-section"');
     expect(html).not.toContain('data-testid="associate-insights"');
+    expect(html).not.toContain('data-testid="kpi-sidebar"');
+  });
+
+  it('masque les blocs avancés pour une personne morale sélectionnée', () => {
+    mockUseTresoState.mockReturnValue(makeStateReturn({
+      state: {
+        inputsV6: {
+          ...DEFAULT_INPUTS_V6,
+          company: {
+            ...DEFAULT_INPUTS_V6.company,
+            associates: [{
+              ...DEFAULT_INPUTS_V6.company.associates[0],
+              kind: 'pm' as const,
+            }],
+          },
+        },
+        projectionVisible: false,
+        projectionMode: 'resume' as const,
+      },
+    }));
+
+    const html = renderToStaticMarkup(<TresorerieSocietePage />);
+
+    expect(html).toContain('data-testid="societe-section"');
+    expect(html).not.toContain('id="ts-timeline-title"');
+    expect(html).not.toContain('data-testid="placement-section"');
+    expect(html).not.toContain('data-testid="associate-insights"');
+    expect(html).not.toContain('data-testid="kpi-sidebar"');
   });
 
   it('masque les blocs avancés si les détentions dépassent 100 %', () => {

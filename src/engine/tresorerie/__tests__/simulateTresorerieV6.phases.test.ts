@@ -116,6 +116,50 @@ describe('simulateTresorerie — sous-phases V6', () => {
     expect(rows[0].ccaRestant).toBe(0);
   });
 
+  it('borne les retraits CCA par la trésorerie bancaire disponible après solde minimum et BFR', () => {
+    const inputs = baseV6();
+    inputs.company.associates[0].cca = {
+      currentBalance: 50_000,
+      remunerationRate: 0,
+    };
+    inputs.company.incomeStatement = {
+      annualRevenue: 0,
+      annualStructureCosts: 0,
+      workingCapitalRequirement: 30_000,
+    };
+    inputs.allocationMatrix.minimumBankBalance = 60_000;
+    inputs.allocationMatrix.sweepThreshold = 60_000;
+    inputs.company.associates[0].revenuePhases = [phase({
+      ccaRepayment: {
+        enabled: true,
+        strategy: 'max_treso',
+      },
+    })];
+
+    const rows = simulateTresorerieV2(inputs, PARAMS, 1);
+
+    expect(rows[0].retraitsCCA).toBe(10_000);
+    expect(rows[0].ccaRestant).toBe(40_000);
+    expect(rows[0].tresorerieDisponible).toBe(0);
+  });
+
+  it('distribue le maximum de trésorerie disponible en mode dividendes max sans dépendre du besoin', () => {
+    const inputs = baseV6();
+    inputs.company.reservesInitial = 50_000;
+    inputs.company.associates[0].revenuePhases = [phase({
+      distribution: {
+        enabled: true,
+        annualNetIncomeNeed: 0,
+        dividendsStrategy: 'max_treso',
+      },
+    })];
+
+    const rows = simulateTresorerieV2(inputs, PARAMS, 1);
+
+    expect(rows[0].dividendesAssociesBruts).toBeCloseTo(50_000, 2);
+    expect(rows[0].revenusNets).toBeCloseTo(37_500, 2);
+  });
+
   it('grosse un dividende cible net associé en brut société avec le PFU et les droits économiques', () => {
     const inputs = baseV6();
     inputs.company.reservesInitial = 100_000;
@@ -157,6 +201,23 @@ describe('simulateTresorerie — sous-phases V6', () => {
     expect(rows[0].apportCCA).toBe(15_000);
     expect(rows[1].apportCCA).toBe(5_000);
     expect(rows[1].interetsCCA).toBeCloseTo(750, 2);
+  });
+
+  it('contraint les apports CCA annuels aux bornes du palier même si les anciennes bornes sont incohérentes', () => {
+    const inputs = baseV6();
+    inputs.company.associates[0].revenuePhases = [phase({
+      startYear: 2026,
+      endYear: 2027,
+      ccaContribution: {
+        enabled: true,
+        annual: { amount: 5_000, startYear: 2028, endYear: 2029 },
+      },
+    })];
+
+    const rows = simulateTresorerieV2(inputs, PARAMS, 2);
+
+    expect(rows[0].apportCCA).toBe(5_000);
+    expect(rows[1].apportCCA).toBe(5_000);
   });
 
   it('ne rembourse pas le CCA lorsque la sous-phase est désactivée ou en mode aucun', () => {

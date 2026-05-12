@@ -144,6 +144,12 @@ function openFirstPhaseModal() {
   fireEvent.click(phaseButton);
 }
 
+function clickModalSubPhase(label: RegExp) {
+  const modal = screen.getByText('Paramétrer le palier').closest('.sim-modal') as HTMLElement;
+  const nav = modal.querySelector('.ts-phase-modal-nav') as HTMLElement;
+  fireEvent.click(within(nav).getByRole('button', { name: label }));
+}
+
 describe('TresoTimelineSection', () => {
   beforeEach(() => {
     vi.restoreAllMocks();
@@ -218,6 +224,14 @@ describe('TresoTimelineSection', () => {
     expect(document.querySelectorAll('.ts-timeline-track__milestone-label')).toHaveLength(0);
   });
 
+  it('affiche le net estimé dans la timeline de rémunération', () => {
+    const inputs = cloneInputs();
+    const layout = computeTimelineRange(inputs.company, inputs.company.associates[0], 15);
+
+    expect(layout.paliers[0].subPhases[0].shortLabel).toContain('56 k€ net');
+    expect(layout.paliers[0].subPhases[0].shortLabel).not.toContain('80 k€ brut');
+  });
+
   it('masque les libellés internes des bandes trop courtes pour éviter les chevauchements', () => {
     render(
       <TresoTimelineSection
@@ -279,6 +293,45 @@ describe('TresoTimelineSection', () => {
     expect(screen.getAllByRole('button', { name: /Rémunération/i }).length).toBeGreaterThan(0);
   });
 
+  it('masque la rémunération depuis une filiale quand aucune filiale n’existe', () => {
+    render(
+      <TresoTimelineSection
+        inputs={cloneInputs(inputs => {
+          inputs.company.subsidiaries = [];
+        })}
+        onChange={vi.fn()}
+      />,
+    );
+
+    openFirstPhaseModal();
+
+    expect(screen.queryByLabelText('Oui, depuis une filiale')).not.toBeInTheDocument();
+  });
+
+  it('retire le besoin et le complément de la phase distribution', () => {
+    render(<TresoTimelineSection inputs={cloneInputs()} onChange={vi.fn()} />);
+
+    fireEvent.click(screen.getByRole('button', { name: /Modifier Besoin retraite/i }));
+    clickModalSubPhase(/Distribution/i);
+    fireEvent.click(screen.getByLabelText('Montant net cible'));
+
+    expect(screen.queryByText('Besoin total annuel net')).not.toBeInTheDocument();
+    expect(screen.queryByText('Complément à financer')).not.toBeInTheDocument();
+    expect(screen.queryByText(/^Besoin total /)).not.toBeInTheDocument();
+    expect(screen.getByText('Objectif net annuel de l’associé')).toBeInTheDocument();
+  });
+
+  it('simplifie la constitution CCA autour des bornes du palier', () => {
+    render(<TresoTimelineSection inputs={cloneInputs()} onChange={vi.fn()} />);
+
+    openFirstPhaseModal();
+    clickModalSubPhase(/Constitution CCA/i);
+
+    expect(screen.getByText('Apport annuel')).toBeInTheDocument();
+    expect(screen.queryByText('Apport annuel de')).not.toBeInTheDocument();
+    expect(screen.queryByText('Apport annuel à')).not.toBeInTheDocument();
+  });
+
   it('bloque l’enregistrement si deux paliers activent la même sous-phase sur les mêmes années', () => {
     render(
       <TresoTimelineSection
@@ -299,7 +352,7 @@ describe('TresoTimelineSection', () => {
     fireEvent.change(screen.getByLabelText('Année de fin'), { target: { value: '2035' } });
 
     expect(screen.getByRole('alert')).toHaveTextContent(/sous-phase Rémunération/i);
-    expect(screen.getByRole('button', { name: 'Enregistrer' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Valider' })).toBeDisabled();
   });
 
   it('persiste l’année de fin saisie dans le palier', () => {
@@ -308,7 +361,7 @@ describe('TresoTimelineSection', () => {
 
     openFirstPhaseModal();
     fireEvent.change(screen.getByLabelText('Année de fin'), { target: { value: '2029' } });
-    fireEvent.click(screen.getByRole('button', { name: 'Enregistrer' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Valider' }));
 
     expect(onChange).toHaveBeenCalledWith(expect.objectContaining({
       company: expect.objectContaining({
@@ -316,6 +369,42 @@ describe('TresoTimelineSection', () => {
           expect.objectContaining({
             revenuePhases: expect.arrayContaining([
               expect.objectContaining({ id: 'phase-remu', endYear: 2029 }),
+            ]),
+          }),
+        ]),
+      }),
+    }));
+  });
+
+  it('normalise le besoin et les bornes CCA annuelles à l’enregistrement', () => {
+    const onChange = vi.fn();
+    render(
+      <TresoTimelineSection
+        inputs={cloneInputs(inputs => {
+          inputs.company.associates[0].revenuePhases[0].ccaContribution = {
+            enabled: true,
+            annual: { amount: 12_000, startYear: 2040, endYear: 2042 },
+          };
+        })}
+        onChange={onChange}
+      />,
+    );
+
+    openFirstPhaseModal();
+    fireEvent.click(screen.getByRole('button', { name: 'Valider' }));
+
+    expect(onChange).toHaveBeenCalledWith(expect.objectContaining({
+      company: expect.objectContaining({
+        associates: expect.arrayContaining([
+          expect.objectContaining({
+            revenuePhases: expect.arrayContaining([
+              expect.objectContaining({
+                id: 'phase-remu',
+                distribution: expect.objectContaining({ annualNetIncomeNeed: 0 }),
+                ccaContribution: expect.objectContaining({
+                  annual: expect.objectContaining({ startYear: 2026, endYear: 2030 }),
+                }),
+              }),
             ]),
           }),
         ]),

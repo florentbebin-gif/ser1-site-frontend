@@ -1,4 +1,5 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 
 export interface SimSelectOption {
   value: string;
@@ -36,15 +37,51 @@ export function SimSelect({
 }: SimSelectProps) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement | null>(null);
+  const triggerRef = useRef<HTMLButtonElement | null>(null);
+  const dropdownRef = useRef<HTMLUListElement | null>(null);
+  const [dropdownStyle, setDropdownStyle] = useState<React.CSSProperties>({});
+
+  const updateDropdownPosition = useCallback(() => {
+    const trigger = triggerRef.current;
+    if (!trigger) return;
+    const rect = trigger.getBoundingClientRect();
+    const viewportHeight = window.innerHeight || document.documentElement.clientHeight;
+    const gap = 4;
+    const maxHeight = Math.min(240, Math.max(120, viewportHeight - rect.bottom - gap - 8));
+
+    setDropdownStyle({
+      top: rect.bottom + gap,
+      left: rect.left,
+      width: rect.width,
+      maxHeight,
+    });
+  }, []);
 
   useEffect(() => {
     if (!open) return;
     const onDown = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+      const target = e.target as Node;
+      if (ref.current?.contains(target) || dropdownRef.current?.contains(target)) return;
+      setOpen(false);
     };
     document.addEventListener('mousedown', onDown);
     return () => document.removeEventListener('mousedown', onDown);
   }, [open]);
+
+  useEffect(() => {
+    if (!open) return;
+    updateDropdownPosition();
+  }, [open, updateDropdownPosition]);
+
+  useEffect(() => {
+    if (!open) return;
+    window.addEventListener('resize', updateDropdownPosition);
+    window.addEventListener('scroll', updateDropdownPosition, true);
+    return () => {
+      window.removeEventListener('resize', updateDropdownPosition);
+      window.removeEventListener('scroll', updateDropdownPosition, true);
+    };
+  }, [open, updateDropdownPosition]);
 
   useEffect(() => {
     if (!open) return;
@@ -74,6 +111,7 @@ export function SimSelect({
     <div ref={ref} className={wrapperClass} style={style}>
       <button
         type="button"
+        ref={triggerRef}
         className={triggerClass}
         disabled={disabled}
         onClick={() => { if (!forced) setOpen((v) => !v); }}
@@ -101,8 +139,14 @@ export function SimSelect({
           />
         </svg>
       </button>
-      {open && (
-        <ul role="listbox" aria-label="Options" className="sim-field__dropdown">
+      {open && createPortal(
+        <ul
+          ref={dropdownRef}
+          role="listbox"
+          aria-label="Options"
+          className="sim-field__dropdown"
+          style={dropdownStyle}
+        >
           {options.map((o) => (
             <li
               key={o.value}
@@ -125,7 +169,8 @@ export function SimSelect({
               )}
             </li>
           ))}
-        </ul>
+        </ul>,
+        document.body,
       )}
     </div>
   );
