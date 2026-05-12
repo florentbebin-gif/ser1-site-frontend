@@ -1,15 +1,12 @@
-import type { AssociateRevenuePhaseInput } from '@/engine/tresorerie/types';
+import type { AssociateRevenuePhaseInputV6 } from '@/engine/tresorerie/types';
 import {
   computeComplement,
   computeNetRevenue,
-  getPhaseEndYear,
   sortPhases,
 } from '../../utils/revenuePhases';
-import { getRevenuePhaseSourceLabel } from '../../utils/revenuePhaseLabels';
 
 interface TresoTimelinePhaseListProps {
-  phases: AssociateRevenuePhaseInput[];
-  horizonYear: number;
+  phases: AssociateRevenuePhaseInputV6[];
   onEditPhase: (phaseId: string) => void;
 }
 
@@ -19,7 +16,6 @@ function fmtEuro(value: number): string {
 
 export function TresoTimelinePhaseList({
   phases,
-  horizonYear,
   onEditPhase,
 }: TresoTimelinePhaseListProps) {
   const sorted = sortPhases(phases);
@@ -27,8 +23,13 @@ export function TresoTimelinePhaseList({
   return (
     <div className="ts-timeline-list" aria-label="Liste des paliers de revenus">
       {sorted.map(phase => {
-        const label = phase.label?.trim() || getRevenuePhaseSourceLabel(phase.source);
-        const endYear = getPhaseEndYear(phase, sorted, horizonYear);
+        const label = phase.label?.trim() || `Palier ${phase.startYear}-${phase.endYear}`;
+        const activeSubPhaseCount = [
+          phase.remuneration.enabled && phase.remuneration.source !== 'none',
+          phase.distribution.enabled && phase.distribution.dividendsStrategy !== 'aucun',
+          phase.ccaContribution.enabled,
+          phase.ccaRepayment.enabled && phase.ccaRepayment.strategy !== 'aucun',
+        ].filter(Boolean).length;
         return (
           <button
             key={phase.id}
@@ -39,10 +40,12 @@ export function TresoTimelinePhaseList({
           >
             <span>
               <strong>{label}</strong>
-              <small>{phase.startYear} - {endYear} · {getRevenuePhaseSourceLabel(phase.source)}</small>
+              <small>
+                {phase.startYear} - {phase.endYear} · {activeSubPhaseCount} sous-phase{activeSubPhaseCount > 1 ? 's' : ''}
+              </small>
             </span>
             <span>
-              <strong>{fmtEuro(phase.annualNetIncomeNeed)}</strong>
+              <strong>{fmtEuro(phase.distribution.annualNetIncomeNeed)}</strong>
               <small>complément {fmtEuro(computeComplement(phase))} · net {fmtEuro(computeNetRevenue(phase))}</small>
             </span>
           </button>

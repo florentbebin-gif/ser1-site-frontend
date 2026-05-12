@@ -3,9 +3,9 @@ import { normalizeAllocationPockets } from './allocationPockets';
 import { computeProductiveMonthsByCivilYear } from './calculPlacements';
 import type {
   AllocationPocketInput,
-  AssociateInput,
   CompanyLoanInput,
   AmountScheduleInput,
+  RuntimeAssociateInput,
   SubsidiaryInput,
   TresoAssociateRevenueRow,
   TresoFiscalParams,
@@ -68,11 +68,11 @@ function parseYearMonth(value: string | undefined, fallbackYear: number): { year
   };
 }
 
-export function getEconomicRightsPct(associate: AssociateInput): number {
+export function getEconomicRightsPct(associate: RuntimeAssociateInput): number {
   return associate.ownershipLots.reduce((sum, lot) => sum + lot.economicRightsPct, 0);
 }
 
-export function isTnsAssociate(associate: AssociateInput): boolean {
+export function isTnsAssociate(associate: RuntimeAssociateInput): boolean {
   return associate.roles.includes('gerant_tns') || associate.roles.includes('cogerant_tns');
 }
 
@@ -81,7 +81,7 @@ export function isCivilYearBeforeOrEqual(endYear: number | undefined, anneeCivil
 }
 
 function emptyAssociateRow(
-  associate: AssociateInput,
+  associate: RuntimeAssociateInput,
   source: TresoAssociateRevenueRow['source'],
 ): TresoAssociateRevenueRow {
   return {
@@ -276,7 +276,7 @@ export function distributeSelectedCcaRepayment(params: {
 }
 
 export function buildAssociateRevenueRows(
-  associates: AssociateInput[],
+  associates: RuntimeAssociateInput[],
   cashMaps: AssociateCashMaps,
   params: TresoFiscalParams,
 ): TresoAssociateRevenueRow[] {

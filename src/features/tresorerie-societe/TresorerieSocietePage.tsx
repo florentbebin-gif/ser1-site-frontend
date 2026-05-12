@@ -9,6 +9,7 @@
 import '@/styles/sim/index.css';
 import './styles/index.css';
 
+import { useCallback, useState } from 'react';
 import { ExportMenu } from '../../components/ExportMenu';
 import { SimPageShell } from '../../components/ui/sim/SimPageShell';
 import { useTheme } from '../../settings/ThemeProvider';
@@ -26,18 +27,19 @@ import { getAssociateProfile, getSelectedAssociate } from './utils/tresorerieSoc
 import { getTresoReadiness } from './utils/tresorerieReadiness';
 
 export default function TresorerieSocietePage() {
+  const [openAssociateModal, setOpenAssociateModal] = useState<((associateId: string) => void) | null>(null);
   const {
     state,
     hydrated,
-    setInputsV5,
+    setInputsV6,
     setProjectionVisible,
     setProjectionMode,
   } = useTresorerieState();
 
   const { colors: themeColors, pptxColors, cabinetLogo, logoPlacement } = useTheme();
-  const activeProfile = getAssociateProfile(state.inputsV5, getSelectedAssociate(state.inputsV5));
-  const readiness = getTresoReadiness(state.inputsV5);
-  const { rows, kpis, loading, error, simulationError } = useTresorerieCalculations(state.inputsV5);
+  const activeProfile = getAssociateProfile(state.inputsV6, getSelectedAssociate(state.inputsV6));
+  const readiness = getTresoReadiness(state.inputsV6);
+  const { rows, kpis, loading, error, simulationError } = useTresorerieCalculations(state.inputsV6);
   const {
     exportExcel,
     exportPptx,
@@ -46,7 +48,7 @@ export default function TresorerieSocietePage() {
   } = useTresorerieExportHandlers({
     rows,
     kpis,
-    inputs: state.inputsV5,
+    inputs: state.inputsV6,
     themeColors,
     pptxColors,
     cabinetLogo,
@@ -57,6 +59,10 @@ export default function TresorerieSocietePage() {
     { label: 'PowerPoint', onClick: exportPptx, disabled: exportDisabled },
     { label: 'Excel', onClick: exportExcel, disabled: exportDisabled },
   ];
+
+  const handleAssociateModalOpenerChange = useCallback((open: ((associateId: string) => void) | null) => {
+    setOpenAssociateModal(open ? () => open : null);
+  }, []);
 
   // Garde anti-flash : ne pas rendre avant l'hydration sessionStorage
   if (!hydrated) return null;
@@ -73,18 +79,26 @@ export default function TresorerieSocietePage() {
     >
       <SimPageShell.Main>
         {/* Bloc 1 — Société */}
-        <TresoSocieteSection inputs={state.inputsV5} onChange={setInputsV5} />
+        <TresoSocieteSection
+          inputs={state.inputsV6}
+          onChange={setInputsV6}
+          onAssociateModalOpenerChange={handleAssociateModalOpenerChange}
+        />
 
         {readiness.companyReady ? (
           <>
             {/* Bloc 2 — Parcours associé */}
-            <TresoTimelineSection inputs={state.inputsV5} onChange={setInputsV5} />
+            <TresoTimelineSection
+              inputs={state.inputsV6}
+              onChange={setInputsV6}
+              onOpenAssociateModal={openAssociateModal ?? undefined}
+            />
 
             {/* Bloc 3 — Allocation société */}
             <TresoPlacementSection
-              inputs={state.inputsV5}
+              inputs={state.inputsV6}
               projectionRows={rows}
-              onChange={setInputsV5}
+              onChange={setInputsV6}
             />
           </>
         ) : null}
@@ -121,8 +135,8 @@ export default function TresorerieSocietePage() {
       </SimPageShell.Main>
 
       <SimPageShell.Side sticky>
-        {readiness.companyReady ? <TresoAssociateInsights inputs={state.inputsV5} rows={rows} /> : null}
-        <TresoKPISidebar kpis={kpis} inputs={state.inputsV5} />
+        {readiness.companyReady ? <TresoAssociateInsights inputs={state.inputsV6} rows={rows} /> : null}
+        <TresoKPISidebar kpis={kpis} inputs={state.inputsV6} />
       </SimPageShell.Side>
     </SimPageShell>
   );

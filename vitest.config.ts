@@ -10,6 +10,8 @@ export default defineConfig({
   test: {
     globals: true,
     environment: 'node',
+    pool: 'vmForks',
+    maxWorkers: 4,
     include: [
       'src/**/*.test.ts',
       'src/**/*.test.tsx',

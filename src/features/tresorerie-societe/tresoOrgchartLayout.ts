@@ -1,4 +1,4 @@
-import type { CompanyInput, SubsidiaryInput } from '@/engine/tresorerie/types';
+import type { RuntimeCompanyInput, SubsidiaryInput } from '@/engine/tresorerie/types';
 import {
   getCapitalPct,
   getCompanyKindCode,
@@ -115,7 +115,7 @@ function buildSubsidiaryTree(
   };
 }
 
-function getOwnershipPct(company: CompanyInput, nodeId: string): number {
+function getOwnershipPct(company: RuntimeCompanyInput, nodeId: string): number {
   const subsidiary = company.subsidiaries.find(candidate => candidate.id === nodeId);
   return subsidiary?.ownershipPct ?? subsidiary?.holdingOwnershipPct ?? 0;
 }
@@ -147,7 +147,7 @@ function buildEdge(params: {
 }
 
 export function computeTresoOrgchartLayout(
-  company: CompanyInput,
+  company: RuntimeCompanyInput,
   selectedAssociateId?: string,
 ): TresoOrgchartLayout {
   const associates = company.associates;
@@ -234,6 +234,6 @@ export function getTresoOrgchartNodeLabel(node: TresoOrgNode): string {
   return `Paramétrer ${node.label}`;
 }
 
-export function getTresoOrgchartCompanyKindLabel(company: CompanyInput): string {
+export function getTresoOrgchartCompanyKindLabel(company: RuntimeCompanyInput): string {
   return getCompanyKindLabel(company);
 }

@@ -14,16 +14,19 @@ import type {
   TresoInputsV3,
   TresoInputsV4,
   TresoInputsV5,
+  TresoInputsV6,
 } from '../../engine/tresorerie/types';
 
 export interface TresoState {
-  inputsV5: TresoInputsV5;
+  inputsV6: TresoInputsV6;
   projectionVisible: boolean;
   projectionMode: 'resume' | 'detail';
 }
 
 export interface TresoPersistedState {
   /** Format runtime actuel. */
+  inputsV6?: TresoInputsV6;
+  /** Ancien format runtime, lu uniquement pendant la migration au chargement. */
   inputsV5?: TresoInputsV5;
   /** Ancien format runtime, lu uniquement pendant la migration au chargement. */
   inputsV4?: TresoInputsV4;

@@ -2,7 +2,7 @@ import { SimFieldShell } from '@/components/ui/sim/SimFieldShell';
 import { SimModalShell } from '@/components/ui/sim/SimModalShell';
 import { SimSelect } from '@/components/ui/sim/SimSelect';
 import type {
-  CompanyInput,
+  RuntimeCompanyInput,
   SubsidiaryDisposalInput,
   SubsidiaryDisposalRegime,
   SubsidiaryInput,
@@ -16,7 +16,7 @@ import {
 } from '../../utils/tresorerieFormatters';
 
 interface TresoSubsidiaryModalProps {
-  company: CompanyInput;
+  company: RuntimeCompanyInput;
   subsidiary: SubsidiaryInput;
   onChange: (patch: Partial<SubsidiaryInput>) => void;
   onClose: () => void;
@@ -28,7 +28,7 @@ const DISPOSAL_REGIME_OPTIONS: Array<{ value: SubsidiaryDisposalRegime; label: s
   { value: 'standard', label: 'Régime standard' },
 ];
 
-function parentLabel(company: CompanyInput, parentId: string | undefined): string {
+function parentLabel(company: RuntimeCompanyInput, parentId: string | undefined): string {
   if (!parentId || parentId === 'societe') return company.label || 'Société mère';
   return company.subsidiaries.find(subsidiary => subsidiary.id === parentId)?.label ?? 'Filiale parente';
 }

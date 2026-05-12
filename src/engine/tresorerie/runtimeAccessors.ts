@@ -1,6 +1,6 @@
 import type {
-  AssociateInput,
   AssociateProfileInput,
+  RuntimeAssociateInput,
   TresoInputsRuntime,
 } from './types';
 
@@ -10,7 +10,7 @@ export function getSelectedAssociateId(inputs: TresoInputsRuntime): string {
     : inputs.foyer.selectedAssociateId;
 }
 
-export function getSelectedAssociate(inputs: TresoInputsRuntime): AssociateInput | undefined {
+export function getSelectedAssociate(inputs: TresoInputsRuntime): RuntimeAssociateInput | undefined {
   const selectedId = getSelectedAssociateId(inputs);
   return inputs.company.associates.find(associate => associate.id === selectedId)
     ?? inputs.company.associates[0];
@@ -18,7 +18,7 @@ export function getSelectedAssociate(inputs: TresoInputsRuntime): AssociateInput
 
 export function getAssociateProfile(
   inputs: TresoInputsRuntime,
-  associate: AssociateInput | undefined = getSelectedAssociate(inputs),
+  associate: RuntimeAssociateInput | undefined = getSelectedAssociate(inputs),
 ): AssociateProfileInput {
   const projectionStartYear = inputs.company.projectionStartYear ?? new Date().getFullYear();
   if (associate?.kind === 'pp' && associate.profile) {
@@ -35,10 +35,10 @@ export function getAssociateProfile(
   };
 }
 
-export function getCapitalPct(associate: AssociateInput): number {
+export function getCapitalPct(associate: RuntimeAssociateInput): number {
   return associate.ownershipLots.reduce((sum, lot) => sum + lot.capitalPct, 0);
 }
 
-export function getEconomicPct(associate: AssociateInput): number {
+export function getEconomicPct(associate: RuntimeAssociateInput): number {
   return associate.ownershipLots.reduce((sum, lot) => sum + lot.economicRightsPct, 0);
 }

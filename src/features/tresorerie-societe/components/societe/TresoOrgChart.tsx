@@ -1,5 +1,5 @@
 import type { KeyboardEvent } from 'react';
-import type { CompanyInput } from '@/engine/tresorerie/types';
+import type { RuntimeCompanyInput } from '@/engine/tresorerie/types';
 import {
   getTresoOrgchartCompanyKindLabel,
   getTresoOrgchartNodeLabel,
@@ -8,7 +8,7 @@ import {
 } from '../../tresoOrgchartLayout';
 
 interface TresoOrgChartProps {
-  company: CompanyInput;
+  company: RuntimeCompanyInput;
   selectedAssociateId: string;
   onCompanyClick: () => void;
   onAssociateClick: (associateId: string) => void;

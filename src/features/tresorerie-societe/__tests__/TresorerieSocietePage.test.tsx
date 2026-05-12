@@ -104,8 +104,8 @@ vi.mock('../../../settings/ThemeProvider', () => ({
 
 // ─── Fixtures ─────────────────────────────────────────────────────────────────
 
-const DEFAULT_INPUTS_V5 = {
-  version: 5 as const,
+const DEFAULT_INPUTS_V6 = {
+  version: 6 as const,
   selectedAssociateId: 'associe-1',
   foyer: {
     selectedAssociateId: 'associe-1',
@@ -123,6 +123,7 @@ const DEFAULT_INPUTS_V5 = {
     shareCapital: 1000,
     sharePremium: 0,
     reservesInitial: 0,
+    legalReserveInitial: 0,
     treasuryInitial: 0,
     annualStructureCosts: 3000,
     incomeStatement: {
@@ -145,18 +146,30 @@ const DEFAULT_INPUTS_V5 = {
       roles: ['associe_sans_statut' as const],
       cca: {
         currentBalance: 0,
-        exceptionalContributions: [],
-        annualContribution: { amount: 0, startYear: 2025, endYear: 2025 },
         remunerationRate: 0,
       },
       revenuePhases: [{
         id: 'phase-default',
         startYear: 2025,
-        source: 'none' as const,
-        loadedAnnualCost: 0,
-        socialChargeRate: 0,
-        annualNetIncomeNeed: 30000,
-        useCcaForCompletion: true,
+        endYear: 2039,
+        remuneration: {
+          enabled: false,
+          source: 'none' as const,
+          loadedAnnualCost: 0,
+          socialChargeRate: 0,
+        },
+        distribution: {
+          enabled: true,
+          annualNetIncomeNeed: 30000,
+          dividendsStrategy: 'max_treso' as const,
+        },
+        ccaContribution: {
+          enabled: false,
+        },
+        ccaRepayment: {
+          enabled: true,
+          strategy: 'max_treso' as const,
+        },
       }],
     }],
     loans: [],
@@ -172,12 +185,12 @@ const DEFAULT_INPUTS_V5 = {
 function makeStateReturn(overrides: Record<string, unknown> = {}) {
   return {
     state: {
-      inputsV5: DEFAULT_INPUTS_V5,
+      inputsV6: DEFAULT_INPUTS_V6,
       projectionVisible: false,
       projectionMode: 'resume' as const,
     },
     hydrated: true,
-    setInputsV5: vi.fn(),
+    setInputsV6: vi.fn(),
     setProjectionVisible: vi.fn(),
     setProjectionMode: vi.fn(),
     ...overrides,
@@ -258,10 +271,10 @@ describe('TresorerieSocietePage', () => {
   it('masque le parcours et l’allocation tant que la société n’est pas complétée', () => {
     mockUseTresoState.mockReturnValue(makeStateReturn({
       state: {
-        inputsV5: {
-          ...DEFAULT_INPUTS_V5,
+        inputsV6: {
+          ...DEFAULT_INPUTS_V6,
           company: {
-            ...DEFAULT_INPUTS_V5.company,
+            ...DEFAULT_INPUTS_V6.company,
             label: '',
           },
         },
@@ -281,13 +294,13 @@ describe('TresorerieSocietePage', () => {
   it('masque les blocs avancés si les détentions dépassent 100 %', () => {
     mockUseTresoState.mockReturnValue(makeStateReturn({
       state: {
-        inputsV5: {
-          ...DEFAULT_INPUTS_V5,
+        inputsV6: {
+          ...DEFAULT_INPUTS_V6,
           company: {
-            ...DEFAULT_INPUTS_V5.company,
+            ...DEFAULT_INPUTS_V6.company,
             associates: [
               {
-                ...DEFAULT_INPUTS_V5.company.associates[0],
+                ...DEFAULT_INPUTS_V6.company.associates[0],
                 ownershipLots: [{ right: 'pleine_propriete' as const, capitalPct: 110, economicRightsPct: 110 }],
               },
             ],
@@ -338,12 +351,12 @@ describe('TresorerieSocietePage', () => {
     expect(html).toContain('PowerPoint');
   });
 
-  it('branche calculs et exports sur inputsV5, sans state legacy runtime', () => {
+  it('branche calculs et exports sur inputsV6, sans state legacy runtime', () => {
     renderToStaticMarkup(<TresorerieSocietePage />);
 
-    expect(mockUseTresoCalc).toHaveBeenCalledWith(DEFAULT_INPUTS_V5);
+    expect(mockUseTresoCalc).toHaveBeenCalledWith(DEFAULT_INPUTS_V6);
     expect(mockUseTresoExports).toHaveBeenCalledWith(expect.objectContaining({
-      inputs: DEFAULT_INPUTS_V5,
+      inputs: DEFAULT_INPUTS_V6,
     }));
   });
 
@@ -371,7 +384,7 @@ describe('TresorerieSocietePage', () => {
     it('est visible quand projectionVisible=true', () => {
       mockUseTresoState.mockReturnValue(makeStateReturn({
         state: {
-          inputsV5: DEFAULT_INPUTS_V5,
+          inputsV6: DEFAULT_INPUTS_V6,
           projectionVisible: true,
           projectionMode: 'resume' as const,
         },

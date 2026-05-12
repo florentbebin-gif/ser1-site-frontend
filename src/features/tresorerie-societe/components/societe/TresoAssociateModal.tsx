@@ -3,10 +3,10 @@ import { SimFieldShell } from '@/components/ui/sim/SimFieldShell';
 import { SimModalShell } from '@/components/ui/sim/SimModalShell';
 import { SimSelect } from '@/components/ui/sim/SimSelect';
 import type {
-  AssociateInput,
+  AssociateInputV6,
   AssociateKind,
   AssociateProfileInput,
-  CcaScheduleInput,
+  CcaScheduleInputV6,
   OwnershipRight,
 } from '@/engine/tresorerie/types';
 import { TresoAssociateCcaPanel } from './TresoAssociateCcaPanel';
@@ -20,29 +20,23 @@ import {
 } from '../../utils/tresorerieFormatters';
 
 interface TresoAssociateModalProps {
-  associate: AssociateInput;
+  associate: AssociateInputV6;
   fallbackProfile: AssociateProfileInput;
-  onChange: (patch: Partial<AssociateInput>) => void;
+  onChange: (patch: Partial<AssociateInputV6>) => void;
   onClose: () => void;
 }
 
 type AssociateModalSection = 'identite' | 'profil' | 'cca';
 
 const ASSOCIATE_MODAL_SECTIONS: Array<{ key: AssociateModalSection; label: string }> = [
-  { key: 'identite', label: 'Identité' },
   { key: 'profil', label: 'Profil' },
+  { key: 'identite', label: 'Identité' },
   { key: 'cca', label: 'CCA' },
 ];
 
-function getCca(associate: AssociateInput, fallbackYear: number): CcaScheduleInput {
+function getCca(associate: AssociateInputV6, _fallbackYear: number): CcaScheduleInputV6 {
   return associate.cca ?? {
     currentBalance: 0,
-    exceptionalContributions: [],
-    annualContribution: {
-      amount: 0,
-      startYear: fallbackYear,
-      endYear: fallbackYear,
-    },
     remunerationRate: 0,
   };
 }
@@ -53,7 +47,7 @@ export function TresoAssociateModal({
   onChange,
   onClose,
 }: TresoAssociateModalProps) {
-  const [activeSection, setActiveSection] = useState<AssociateModalSection>('identite');
+  const [activeSection, setActiveSection] = useState<AssociateModalSection>('profil');
   const kind = associate.kind ?? 'pp';
   const profile = associate.profile ?? fallbackProfile;
   const lot = associate.ownershipLots[0] ?? {
@@ -67,7 +61,7 @@ export function TresoAssociateModal({
     onChange({ profile: { ...profile, ...patch } });
   };
 
-  const patchCca = (patch: Partial<CcaScheduleInput>) => {
+  const patchCca = (patch: Partial<CcaScheduleInputV6>) => {
     const nextCca = { ...cca, ...patch };
     onChange({ cca: nextCca });
   };
@@ -215,9 +209,6 @@ export function TresoAssociateModal({
               <strong>Profil foyer</strong>
               <span>Paramètre personnel de projection</span>
             </div>
-            <p className="ts-note--info">
-              La projection démarre en {profile.projectionStartYear}. L’année et les paliers de revenus se règlent depuis le parcours associé en haut de page.
-            </p>
             <div className="ts-modal-grid ts-modal-grid--three">
               <SimFieldShell label="Âge actuel" className="ts-field" rowClassName="ts-field__row">
                 <input
@@ -247,7 +238,6 @@ export function TresoAssociateModal({
         {activeSection === 'cca' && (
           <TresoAssociateCcaPanel
             cca={cca}
-            projectionStartYear={profile.projectionStartYear}
             onChange={patchCca}
           />
         )}

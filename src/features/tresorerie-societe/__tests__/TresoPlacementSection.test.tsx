@@ -99,6 +99,7 @@ describe('TresoPlacementSection', () => {
     expect(screen.getByText('Trésorerie initiale')).toBeInTheDocument();
     expect(screen.getByText('Banque protégée')).toBeInTheDocument();
     expect(screen.getByText('Disponible sur compte bancaire')).toBeInTheDocument();
+    expect(screen.queryByText(/Le balayage place uniquement la trésorerie/i)).not.toBeInTheDocument();
     expect(screen.getByRole('group', { name: /Compte bancaire/i })).toBeInTheDocument();
     expect(screen.getByText('0 %')).toBeInTheDocument();
     expect(within(screen.getByRole('group', { name: /Court terme/i }))

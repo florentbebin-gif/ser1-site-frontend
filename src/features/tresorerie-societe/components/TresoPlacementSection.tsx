@@ -7,7 +7,7 @@ import { SimFieldShell } from '../../../components/ui/sim/SimFieldShell';
 import type {
   AllocationPocketHorizon,
   AllocationPocketInput,
-  TresoInputsV5,
+  TresoInputsV6,
   TresoProjectionRow,
 } from '../../../engine/tresorerie/types';
 import {
@@ -29,9 +29,9 @@ import {
 import { TresoPocketBoard } from './placement/TresoPocketBoard';
 
 interface Props {
-  inputs: TresoInputsV5;
+  inputs: TresoInputsV6;
   projectionRows?: TresoProjectionRow[];
-  onChange: (nextInputs: TresoInputsV5) => void;
+  onChange: (nextInputs: TresoInputsV6) => void;
 }
 
 export function TresoPlacementSection({ inputs, projectionRows = [], onChange }: Props) {
@@ -49,11 +49,11 @@ export function TresoPlacementSection({ inputs, projectionRows = [], onChange }:
     pockets: pockets.filter(pocket => (pocket.horizon ?? 'moyen_terme') === option.value),
   }));
 
-  const patchV2 = (nextV2: TresoInputsV5) => {
+  const patchV2 = (nextV2: TresoInputsV6) => {
     onChange(nextV2);
   };
 
-  const patchMatrix = (patch: Partial<TresoInputsV5['allocationMatrix']>) => {
+  const patchMatrix = (patch: Partial<TresoInputsV6['allocationMatrix']>) => {
     patchV2({ ...v2, allocationMatrix: { ...matrix, ...patch } });
   };
 
@@ -136,9 +136,6 @@ export function TresoPlacementSection({ inputs, projectionRows = [], onChange }:
           <span className="sim-field__unit ts-unit">€</span>
         </SimFieldShell>
       </div>
-      <p className="ts-note--info">
-        Le balayage place uniquement la trésorerie au-dessus du solde minimum bancaire et du BFR.
-      </p>
       {firstBankWarning ? (
         <p className="ts-warning" role="alert">
           Compte bancaire insuffisant en {firstBankWarningYear} :

@@ -1,119 +1,103 @@
+import { useState } from 'react';
 import { SimFieldShell } from '@/components/ui/sim/SimFieldShell';
 import { SimSelect } from '@/components/ui/sim/SimSelect';
 import {
-  COMPANY_CREATION_TYPE_OPTIONS,
   COMPANY_KIND_OPTIONS,
   LEGAL_FORM_OPTIONS,
 } from '../../utils/tresorerieSocieteOptions';
-import type { CompanyInput, CompanyInputV5, CompanyKind, LegalForm } from '@/engine/tresorerie/types';
+import type { CompanyInputV6, CompanyKind, LegalForm } from '@/engine/tresorerie/types';
 import {
   fmtEuroInput,
   parseEuroInput,
 } from '../../utils/tresorerieFormatters';
+import { TresoCompanyFinancialsModal } from './TresoCompanyFinancialsModal';
 
 interface TresoCompanyIdentityPanelProps {
-  company: CompanyInputV5;
-  onCompanyChange: (patch: Partial<CompanyInputV5>) => void;
+  company: CompanyInputV6;
+  onCompanyChange: (patch: Partial<CompanyInputV6>) => void;
 }
 
 export function TresoCompanyIdentityPanel({
   company,
   onCompanyChange,
 }: TresoCompanyIdentityPanelProps) {
+  const [isFinancialsOpen, setFinancialsOpen] = useState(false);
+
   return (
-    <div className="ts-modal-grid">
-      <SimFieldShell label="Libellé de la société principale" className="ts-field" rowClassName="ts-field__row">
-        <input
-          type="text"
-          className="sim-field__control ts-input-left"
-          value={company.label ?? ''}
-          onChange={event => onCompanyChange({ label: event.target.value })}
-        />
-      </SimFieldShell>
+    <>
+      <div className="ts-identity-panel">
+        <div className="ts-panel-toolbar">
+          <span>Identité</span>
+          <button
+            type="button"
+            className="ts-icon-btn"
+            aria-label="Ouvrir les paramètres financiers de la société"
+            onClick={() => setFinancialsOpen(true)}
+          >
+            <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+              <path
+                d="M8 5.5A2.5 2.5 0 108 10.5 2.5 2.5 0 008 5.5z"
+                stroke="currentColor"
+                strokeWidth="1.4"
+              />
+              <path
+                d="M8 1.5v2M8 12.5v2M3.4 3.4l1.4 1.4M11.2 11.2l1.4 1.4M1.5 8h2M12.5 8h2M3.4 12.6l1.4-1.4M11.2 4.8l1.4-1.4"
+                stroke="currentColor"
+                strokeWidth="1.4"
+                strokeLinecap="round"
+              />
+            </svg>
+          </button>
+        </div>
 
-      <p className="ts-note--info">
-        La date de début de projection se règle dans le parcours associé en haut de page.
-      </p>
+        <div className="ts-modal-grid">
+          <SimFieldShell label="Libellé de la société principale" className="ts-field" rowClassName="ts-field__row">
+            <input
+              type="text"
+              className="sim-field__control ts-input-left"
+              value={company.label ?? ''}
+              onChange={event => onCompanyChange({ label: event.target.value })}
+            />
+          </SimFieldShell>
 
-      <SimFieldShell label="Type de société" className="ts-field" rowClassName="ts-field__row">
-        <SimSelect
-          value={company.creationType}
-          onChange={value => onCompanyChange({ creationType: value as CompanyInput['creationType'] })}
-          options={COMPANY_CREATION_TYPE_OPTIONS}
-          ariaLabel="Type de société"
-        />
-      </SimFieldShell>
+          <SimFieldShell label="Forme sociale" className="ts-field" rowClassName="ts-field__row">
+            <SimSelect
+              value={company.legalForm}
+              onChange={value => onCompanyChange({ legalForm: value as LegalForm })}
+              options={LEGAL_FORM_OPTIONS}
+              ariaLabel="Forme sociale"
+            />
+          </SimFieldShell>
 
-      <SimFieldShell label="Forme sociale" className="ts-field" rowClassName="ts-field__row">
-        <SimSelect
-          value={company.legalForm}
-          onChange={value => onCompanyChange({ legalForm: value as LegalForm })}
-          options={LEGAL_FORM_OPTIONS}
-          ariaLabel="Forme sociale"
-        />
-      </SimFieldShell>
+          <SimFieldShell label="Type société" className="ts-field" rowClassName="ts-field__row">
+            <SimSelect
+              value={company.companyKind ?? 'holding_patrimoniale'}
+              onChange={value => onCompanyChange({ companyKind: value as CompanyKind })}
+              options={COMPANY_KIND_OPTIONS}
+              ariaLabel="Type société"
+            />
+          </SimFieldShell>
 
-      <SimFieldShell label="Type société" className="ts-field" rowClassName="ts-field__row">
-        <SimSelect
-          value={company.companyKind ?? 'holding_patrimoniale'}
-          onChange={value => onCompanyChange({ companyKind: value as CompanyKind })}
-          options={COMPANY_KIND_OPTIONS}
-          ariaLabel="Type société"
-        />
-      </SimFieldShell>
+          <SimFieldShell label="Trésorerie initiale" className="ts-field" rowClassName="ts-field__row">
+            <input
+              type="text"
+              inputMode="numeric"
+              className="sim-field__control"
+              value={fmtEuroInput(company.treasuryInitial)}
+              onChange={event => onCompanyChange({ treasuryInitial: parseEuroInput(event.target.value) })}
+            />
+            <span className="sim-field__unit ts-unit">€</span>
+          </SimFieldShell>
+        </div>
+      </div>
 
-      <SimFieldShell label="Capital social" className="ts-field" rowClassName="ts-field__row">
-        <input
-          type="text"
-          inputMode="numeric"
-          className="sim-field__control"
-          value={fmtEuroInput(company.shareCapital)}
-          onChange={event => onCompanyChange({ shareCapital: parseEuroInput(event.target.value) })}
+      {isFinancialsOpen ? (
+        <TresoCompanyFinancialsModal
+          company={company}
+          onChange={onCompanyChange}
+          onClose={() => setFinancialsOpen(false)}
         />
-        <span className="sim-field__unit ts-unit">€</span>
-      </SimFieldShell>
-
-      <SimFieldShell label="Prime d’émission" className="ts-field" rowClassName="ts-field__row">
-        <input
-          type="text"
-          inputMode="numeric"
-          className="sim-field__control"
-          value={fmtEuroInput(company.sharePremium)}
-          onChange={event => onCompanyChange({ sharePremium: parseEuroInput(event.target.value) })}
-        />
-        <span className="sim-field__unit ts-unit">€</span>
-      </SimFieldShell>
-
-      <SimFieldShell label="Trésorerie initiale" className="ts-field" rowClassName="ts-field__row">
-        <input
-          type="text"
-          inputMode="numeric"
-          className="sim-field__control"
-          value={fmtEuroInput(company.treasuryInitial)}
-          onChange={event => onCompanyChange({ treasuryInitial: parseEuroInput(event.target.value) })}
-        />
-        <span className="sim-field__unit ts-unit">€</span>
-      </SimFieldShell>
-
-      <SimFieldShell label="Réserves initiales" className="ts-field" rowClassName="ts-field__row">
-        <input
-          type="text"
-          inputMode="numeric"
-          className="sim-field__control"
-          value={fmtEuroInput(company.reservesInitial)}
-          onChange={event => onCompanyChange({ reservesInitial: parseEuroInput(event.target.value) })}
-        />
-        <span className="sim-field__unit ts-unit">€</span>
-      </SimFieldShell>
-
-      <label className="ts-toggle-label ts-modal-toggle">
-        <input
-          type="checkbox"
-          checked={company.reducedCorporateTaxEligible}
-          onChange={event => onCompanyChange({ reducedCorporateTaxEligible: event.target.checked })}
-        />
-        Éligible au taux réduit d’IS
-      </label>
-    </div>
+      ) : null}
+    </>
   );
 }

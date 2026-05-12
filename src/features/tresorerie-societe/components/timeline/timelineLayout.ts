@@ -1,34 +1,39 @@
 import type {
-  AssociateInputV5,
-  AssociateProfileInput,
-  AssociateRevenuePhaseInput,
-  CompanyInputV5,
+  AssociateInputV6,
+  AssociateRevenuePhaseInputV6,
+  CompanyInputV6,
+  SubsidiaryInput,
 } from '@/engine/tresorerie/types';
-import {
-  computeComplement,
-  computeNetRevenue,
-  getPhaseEndYear,
-  sortPhases,
-} from '../../utils/revenuePhases';
+import { computeComplement, computeNetRevenue, sortPhases } from '../../utils/revenuePhases';
 
-export interface TimelinePhaseLayout {
-  phase: AssociateRevenuePhaseInput;
+export type TimelineSubPhaseKind =
+  | 'remuneration'
+  | 'distribution'
+  | 'cca_contribution'
+  | 'cca_repayment';
+
+export interface TimelineSubPhaseLayout {
+  kind: TimelineSubPhaseKind;
+  enabled: boolean;
+  bandIndex: 0 | 1 | 2 | 3;
+  shortLabel: string;
+  detail: string;
+  modeIcon?: 'target' | 'max' | 'none';
+}
+
+export interface TimelinePalierLayout {
+  phase: AssociateRevenuePhaseInputV6;
   startYear: number;
   endYear: number;
   x: number;
   width: number;
   netRevenue: number;
   complement: number;
+  subPhases: TimelineSubPhaseLayout[];
 }
 
-export interface TimelineMilestoneLayout {
-  id: string;
-  label: 'S' | 'R' | 'C';
-  year: number;
-  x: number;
-  dotY: number;
-  description: string;
-}
+/** @deprecated Utiliser TimelinePalierLayout. */
+export type TimelinePhaseLayout = TimelinePalierLayout;
 
 export interface TimelineYearTick {
   year: number;
@@ -44,19 +49,21 @@ export interface TresoTimelineLayout {
   trackLeft: number;
   trackRight: number;
   ticks: TimelineYearTick[];
-  phases: TimelinePhaseLayout[];
-  milestones: TimelineMilestoneLayout[];
+  paliers: TimelinePalierLayout[];
 }
 
-const MIN_SVG_WIDTH = 1000;
-const SVG_HEIGHT = 190;
-const TRACK_LEFT = 64;
-const TRACK_RIGHT_PADDING = 64;
-const MIN_YEAR_PX = 56;
-const MILESTONE_X_GAP = 28;
-const MILESTONE_DOT_Y = 76;
-const MILESTONE_STACK_Y = 58;
-const MILESTONE_STACK_GAP = 26;
+const MIN_SVG_WIDTH = 720;
+const SVG_HEIGHT = 168;
+const TRACK_LEFT = 56;
+const TRACK_RIGHT_PADDING = 48;
+const MIN_YEAR_PX = 40;
+
+const SUB_PHASE_LABELS: Record<TimelineSubPhaseKind, string> = {
+  remuneration: 'Rémunération',
+  distribution: 'Distribution',
+  cca_contribution: 'Constitution CCA',
+  cca_repayment: 'Remboursement CCA',
+};
 
 function clampYear(year: number, startYear: number, endYear: number): number {
   return Math.min(Math.max(year, startYear), endYear);
@@ -89,50 +96,129 @@ function getPhaseWidth(
   const slotWidth = (trackRight - TRACK_LEFT) / totalYears;
   const visibleStart = clampYear(startYear, rangeStartYear, rangeEndYear);
   const visibleEnd = clampYear(endYear, rangeStartYear, rangeEndYear);
-  return Math.max(24, (visibleEnd - visibleStart + 1) * slotWidth);
+  return Math.max(26, (visibleEnd - visibleStart + 1) * slotWidth);
 }
 
-function deriveRetirementYear(
-  phases: AssociateRevenuePhaseInput[],
-  profile: AssociateProfileInput | undefined,
-  projectionStartYear: number,
-  horizonYear: number,
-): number | undefined {
-  const sorted = sortPhases(phases);
-  const firstNeedOnlyPhase = sorted.find(phase =>
-    phase.source === 'none' && phase.annualNetIncomeNeed > 0,
-  );
-  if (firstNeedOnlyPhase) return firstNeedOnlyPhase.startYear;
-
-  if (!profile) return undefined;
-  const ageGap = profile.retirementAge - profile.currentAge;
-  if (!Number.isFinite(ageGap) || ageGap < 0) return undefined;
-  return Math.min(projectionStartYear + ageGap, horizonYear);
+function fmtCompactEuro(value: number): string {
+  const amount = Math.max(0, Math.round(value));
+  if (amount >= 1000) return `${Math.round(amount / 1000).toLocaleString('fr-FR')} k€`;
+  return `${amount.toLocaleString('fr-FR')} €`;
 }
 
-function resolveMilestonePositions(milestones: TimelineMilestoneLayout[]): TimelineMilestoneLayout[] {
-  const byYear = new Map<number, TimelineMilestoneLayout[]>();
-  for (const milestone of milestones) {
-    byYear.set(milestone.year, [...(byYear.get(milestone.year) ?? []), milestone]);
+function getSubsidiaryLabel(subsidiaries: SubsidiaryInput[], id: string | undefined): string {
+  return subsidiaries.find(subsidiary => subsidiary.id === id)?.label ?? 'Filiale';
+}
+
+function getRemunerationLabel(phase: AssociateRevenuePhaseInputV6, subsidiaries: SubsidiaryInput[]): string {
+  if (!phase.remuneration.enabled || phase.remuneration.source === 'none') return '';
+  const source = phase.remuneration.source === 'subsidiary'
+    ? getSubsidiaryLabel(subsidiaries, phase.remuneration.subsidiaryId)
+    : 'Holding';
+  return `${fmtCompactEuro(phase.remuneration.loadedAnnualCost)} brut · ${source}`;
+}
+
+function getDistributionLabel(phase: AssociateRevenuePhaseInputV6): string {
+  if (!phase.distribution.enabled) return '';
+  if (phase.distribution.dividendsStrategy === 'aucun') return 'aucun dividende';
+  const mode = phase.distribution.dividendsStrategy === 'montant_cible'
+    ? `${fmtCompactEuro(phase.distribution.dividendsTargetAmountNet ?? 0)} net`
+    : 'dividendes max';
+  return `Besoin ${fmtCompactEuro(phase.distribution.annualNetIncomeNeed)} · ${mode}`;
+}
+
+function getCcaContributionLabel(phase: AssociateRevenuePhaseInputV6): string {
+  if (!phase.ccaContribution.enabled) return '';
+  const annual = phase.ccaContribution.annual;
+  const exceptional = phase.ccaContribution.exceptional;
+  if (annual && annual.amount > 0) return `+${fmtCompactEuro(annual.amount)}/an`;
+  if (exceptional && exceptional.amount > 0) return `+${fmtCompactEuro(exceptional.amount)}`;
+  return 'Apport CCA';
+}
+
+function getCcaRepaymentLabel(phase: AssociateRevenuePhaseInputV6): string {
+  if (!phase.ccaRepayment.enabled) return '';
+  if (phase.ccaRepayment.strategy === 'aucun') return 'aucun remboursement';
+  if (phase.ccaRepayment.strategy === 'montant_cible') {
+    return `${fmtCompactEuro(phase.ccaRepayment.targetAmount ?? 0)}/an`;
   }
+  return 'max tréso';
+}
 
-  return milestones.map(milestone => {
-    const sameYear = byYear.get(milestone.year) ?? [milestone];
-    const index = sameYear.findIndex(item => item.id === milestone.id);
-    if (sameYear.length <= 1 || index < 0) return milestone;
+function getModeIcon(kind: TimelineSubPhaseKind, phase: AssociateRevenuePhaseInputV6): TimelineSubPhaseLayout['modeIcon'] {
+  if (kind === 'distribution') {
+    if (phase.distribution.dividendsStrategy === 'aucun') return 'none';
+    return phase.distribution.dividendsStrategy === 'montant_cible' ? 'target' : 'max';
+  }
+  if (kind === 'cca_repayment') {
+    if (phase.ccaRepayment.strategy === 'aucun') return 'none';
+    return phase.ccaRepayment.strategy === 'montant_cible' ? 'target' : 'max';
+  }
+  return undefined;
+}
 
-    const centeredOffset = index - (sameYear.length - 1) / 2;
-    return {
-      ...milestone,
-      x: milestone.x + centeredOffset * MILESTONE_X_GAP,
-      dotY: MILESTONE_STACK_Y + index * MILESTONE_STACK_GAP,
-    };
-  });
+function subPhaseDetail(kind: TimelineSubPhaseKind, phase: AssociateRevenuePhaseInputV6): string {
+  const label = SUB_PHASE_LABELS[kind];
+  if (kind === 'remuneration') {
+    return phase.remuneration.enabled
+      ? `${label} ${fmtCompactEuro(phase.remuneration.loadedAnnualCost)} chargé`
+      : `${label} inactive`;
+  }
+  if (kind === 'distribution') {
+    return phase.distribution.enabled
+      ? `${label} besoin ${fmtCompactEuro(phase.distribution.annualNetIncomeNeed)}`
+      : `${label} inactive`;
+  }
+  if (kind === 'cca_contribution') {
+    return phase.ccaContribution.enabled
+      ? `${label} ${getCcaContributionLabel(phase)}`
+      : `${label} inactive`;
+  }
+  return phase.ccaRepayment.enabled
+    ? `${label} ${getCcaRepaymentLabel(phase)}`
+    : `${label} inactive`;
+}
+
+function buildSubPhases(
+  phase: AssociateRevenuePhaseInputV6,
+  subsidiaries: SubsidiaryInput[],
+): TimelineSubPhaseLayout[] {
+  return [
+    {
+      kind: 'remuneration',
+      enabled: phase.remuneration.enabled && phase.remuneration.source !== 'none',
+      bandIndex: 0,
+      shortLabel: getRemunerationLabel(phase, subsidiaries),
+      detail: subPhaseDetail('remuneration', phase),
+    },
+    {
+      kind: 'distribution',
+      enabled: phase.distribution.enabled,
+      bandIndex: 1,
+      shortLabel: getDistributionLabel(phase),
+      detail: subPhaseDetail('distribution', phase),
+      modeIcon: getModeIcon('distribution', phase),
+    },
+    {
+      kind: 'cca_contribution',
+      enabled: phase.ccaContribution.enabled,
+      bandIndex: 2,
+      shortLabel: getCcaContributionLabel(phase),
+      detail: subPhaseDetail('cca_contribution', phase),
+    },
+    {
+      kind: 'cca_repayment',
+      enabled: phase.ccaRepayment.enabled,
+      bandIndex: 3,
+      shortLabel: getCcaRepaymentLabel(phase),
+      detail: subPhaseDetail('cca_repayment', phase),
+      modeIcon: getModeIcon('cca_repayment', phase),
+    },
+  ];
 }
 
 export function computeTimelineRange(
-  company: CompanyInputV5,
-  associate: AssociateInputV5,
+  company: CompanyInputV6,
+  associate: AssociateInputV6,
   fallbackHorizonYears = 15,
 ): TresoTimelineLayout {
   const projectionStartYear =
@@ -141,11 +227,11 @@ export function computeTimelineRange(
     new Date().getFullYear();
   const sortedPhases = sortPhases(associate.revenuePhases);
   const baseEndYear = projectionStartYear + fallbackHorizonYears - 1;
-  const lastPhaseStartYear = sortedPhases[sortedPhases.length - 1]?.startYear ?? projectionStartYear;
+  const lastPhaseEndYear = sortedPhases[sortedPhases.length - 1]?.endYear ?? projectionStartYear;
   const disposalYears = company.subsidiaries
     .map(subsidiary => subsidiary.disposal?.year)
     .filter((year): year is number => Number.isFinite(year));
-  const endYear = Math.max(baseEndYear, lastPhaseStartYear + 2, ...disposalYears);
+  const endYear = Math.max(baseEndYear, lastPhaseEndYear, ...disposalYears);
   const totalYears = Math.max(1, endYear - projectionStartYear + 1);
   const svgWidth = Math.max(
     MIN_SVG_WIDTH,
@@ -160,49 +246,16 @@ export function computeTimelineRange(
       x: getYearX(year, projectionStartYear, endYear, trackRight),
     };
   });
-  const phases = sortedPhases.map(phase => {
-    const phaseEndYear = getPhaseEndYear(phase, sortedPhases, endYear);
-    return {
-      phase,
-      startYear: phase.startYear,
-      endYear: phaseEndYear,
-      x: getPhaseX(phase.startYear, projectionStartYear, endYear, trackRight),
-      width: getPhaseWidth(phase.startYear, phaseEndYear, projectionStartYear, endYear, trackRight),
-      netRevenue: computeNetRevenue(phase),
-      complement: computeComplement(phase),
-    };
-  });
-  const milestones: TimelineMilestoneLayout[] = [{
-    id: 'start',
-    label: 'S',
-    year: projectionStartYear,
-    x: getYearX(projectionStartYear, projectionStartYear, endYear, trackRight),
-    dotY: MILESTONE_DOT_Y,
-    description: 'Début de projection',
-  }];
-  const retirementYear = deriveRetirementYear(sortedPhases, associate.profile, projectionStartYear, endYear);
-  if (retirementYear != null) {
-    milestones.push({
-      id: 'retirement',
-      label: 'R',
-      year: retirementYear,
-      x: getYearX(retirementYear, projectionStartYear, endYear, trackRight),
-      dotY: MILESTONE_DOT_Y,
-      description: 'Début du besoin complémentaire',
-    });
-  }
-  for (const subsidiary of company.subsidiaries) {
-    const year = subsidiary.disposal?.year;
-    if (year == null) continue;
-    milestones.push({
-      id: `cession-${subsidiary.id}`,
-      label: 'C',
-      year,
-      x: getYearX(year, projectionStartYear, endYear, trackRight),
-      dotY: MILESTONE_DOT_Y,
-      description: `Cession ${subsidiary.label}`,
-    });
-  }
+  const paliers = sortedPhases.map(phase => ({
+    phase,
+    startYear: phase.startYear,
+    endYear: phase.endYear,
+    x: getPhaseX(phase.startYear, projectionStartYear, endYear, trackRight),
+    width: getPhaseWidth(phase.startYear, phase.endYear, projectionStartYear, endYear, trackRight),
+    netRevenue: computeNetRevenue(phase),
+    complement: computeComplement(phase),
+    subPhases: buildSubPhases(phase, company.subsidiaries),
+  }));
 
   return {
     startYear: projectionStartYear,
@@ -212,7 +265,6 @@ export function computeTimelineRange(
     trackLeft: TRACK_LEFT,
     trackRight,
     ticks,
-    phases,
-    milestones: resolveMilestonePositions(milestones),
+    paliers,
   };
 }

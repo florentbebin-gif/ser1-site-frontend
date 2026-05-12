@@ -1,6 +1,11 @@
-import type { AssociateInput, AssociateRevenuePhaseInput } from './types';
+import type {
+  AssociateRevenuePhaseInput,
+  AssociateRevenuePhaseInputV6,
+  RuntimeAssociateInput,
+} from './types';
 
 export type PhaseIdFactory = () => string;
+export type RevenuePhaseInput = AssociateRevenuePhaseInput | AssociateRevenuePhaseInputV6;
 
 function clampRate(value: number): number {
   if (!Number.isFinite(value)) return 0;
@@ -11,44 +16,59 @@ function positiveAmount(value: number): number {
   return Number.isFinite(value) ? Math.max(0, value) : 0;
 }
 
-export function sortPhases(phases: AssociateRevenuePhaseInput[]): AssociateRevenuePhaseInput[] {
+export function isRevenuePhaseV6(phase: RevenuePhaseInput | undefined): phase is AssociateRevenuePhaseInputV6 {
+  return Boolean(phase && 'remuneration' in phase);
+}
+
+export function sortPhases<T extends { startYear: number }>(phases: T[]): T[] {
   return [...phases].sort((a, b) => a.startYear - b.startYear);
 }
 
 export function getActivePhase(
-  phases: AssociateRevenuePhaseInput[],
+  phases: RevenuePhaseInput[],
   anneeCivile: number,
-): AssociateRevenuePhaseInput | undefined {
-  let active: AssociateRevenuePhaseInput | undefined;
+): RevenuePhaseInput | undefined {
+  let active: RevenuePhaseInput | undefined;
   for (const phase of sortPhases(phases)) {
+    if (isRevenuePhaseV6(phase)) {
+      if (phase.startYear <= anneeCivile && anneeCivile <= phase.endYear) active = phase;
+      if (phase.startYear > anneeCivile) break;
+      continue;
+    }
     if (phase.startYear <= anneeCivile) active = phase;
     else break;
   }
   return active;
 }
 
-function getAssociateRevenuePhases(associate: AssociateInput): AssociateRevenuePhaseInput[] {
-  const phases = (associate as AssociateInput & {
-    revenuePhases?: AssociateRevenuePhaseInput[];
+function getAssociateRevenuePhases(associate: RuntimeAssociateInput): RevenuePhaseInput[] {
+  const phases = (associate as RuntimeAssociateInput & {
+    revenuePhases?: RevenuePhaseInput[];
   }).revenuePhases;
   return Array.isArray(phases) ? phases : [];
 }
 
 export function getAssociateRevenuePhaseForYear(
-  associate: AssociateInput,
+  associate: RuntimeAssociateInput,
   anneeCivile: number,
-): AssociateRevenuePhaseInput | undefined {
+): RevenuePhaseInput | undefined {
   const phases = getAssociateRevenuePhases(associate);
   return phases.length > 0 ? getActivePhase(phases, anneeCivile) : undefined;
 }
 
 export function getAssociateAnnualIncomeNeedForYear(
-  associate: AssociateInput,
+  associate: RuntimeAssociateInput,
   defaultAnnualNeed: number,
   anneeCivile: number,
 ): number {
   const phase = getAssociateRevenuePhaseForYear(associate, anneeCivile);
-  if (phase) return positiveAmount(phase.annualNetIncomeNeed);
+  if (phase) {
+    return isRevenuePhaseV6(phase) && !phase.distribution.enabled
+      ? 0
+      : positiveAmount(isRevenuePhaseV6(phase)
+        ? phase.distribution.annualNetIncomeNeed
+        : phase.annualNetIncomeNeed);
+  }
 
   const remuneration = associate.remuneration;
   if (
@@ -62,12 +82,16 @@ export function getAssociateAnnualIncomeNeedForYear(
 }
 
 export function hasAssociateAnnualIncomeNeedForYear(
-  associate: AssociateInput,
+  associate: RuntimeAssociateInput,
   fallbackNeedActive: boolean,
   anneeCivile: number,
 ): boolean {
   const phase = getAssociateRevenuePhaseForYear(associate, anneeCivile);
-  if (phase) return positiveAmount(phase.annualNetIncomeNeed) > 0;
+  if (phase) {
+    return isRevenuePhaseV6(phase)
+      ? phase.distribution.enabled && positiveAmount(phase.distribution.annualNetIncomeNeed) > 0
+      : positiveAmount(phase.annualNetIncomeNeed) > 0;
+  }
 
   const remuneration = associate.remuneration;
   return fallbackNeedActive || (
@@ -78,10 +102,11 @@ export function hasAssociateAnnualIncomeNeedForYear(
 }
 
 export function getPhaseEndYear(
-  phase: AssociateRevenuePhaseInput,
-  allPhases: AssociateRevenuePhaseInput[],
+  phase: RevenuePhaseInput,
+  allPhases: RevenuePhaseInput[],
   horizonYear: number,
 ): number {
+  if (isRevenuePhaseV6(phase)) return phase.endYear;
   const sorted = sortPhases(allPhases);
   const index = sorted.findIndex(item => item.id === phase.id);
   const next = index >= 0 ? sorted[index + 1] : undefined;
@@ -93,12 +118,23 @@ function defaultPhaseId(): string {
 }
 
 export function buildNextPhase(
-  phases: AssociateRevenuePhaseInput[],
+  phases: RevenuePhaseInput[],
   fallbackYear: number,
   createId: PhaseIdFactory = defaultPhaseId,
-): AssociateRevenuePhaseInput {
+): RevenuePhaseInput {
   const sorted = sortPhases(phases);
   const last = sorted[sorted.length - 1];
+  if (isRevenuePhaseV6(last)) {
+    return {
+      id: createId(),
+      startYear: last.endYear + 1,
+      endYear: last.endYear + 1,
+      remuneration: { ...last.remuneration },
+      distribution: { ...last.distribution },
+      ccaContribution: { enabled: false },
+      ccaRepayment: { ...last.ccaRepayment },
+    };
+  }
   return {
     id: createId(),
     startYear: last ? last.startYear + 1 : fallbackYear,
@@ -112,35 +148,44 @@ export function buildNextPhase(
 }
 
 export function addPhase(
-  phases: AssociateRevenuePhaseInput[],
-  nextPhase: AssociateRevenuePhaseInput,
-): AssociateRevenuePhaseInput[] {
+  phases: RevenuePhaseInput[],
+  nextPhase: RevenuePhaseInput,
+): RevenuePhaseInput[] {
   return sortPhases([...phases, nextPhase]);
 }
 
 export function removePhase(
-  phases: AssociateRevenuePhaseInput[],
+  phases: RevenuePhaseInput[],
   phaseId: string,
-): AssociateRevenuePhaseInput[] {
+): RevenuePhaseInput[] {
   if (phases.length <= 1) return phases;
   return sortPhases(phases.filter(phase => phase.id !== phaseId));
 }
 
 export function updatePhase(
-  phases: AssociateRevenuePhaseInput[],
+  phases: RevenuePhaseInput[],
   phaseId: string,
-  patch: Partial<AssociateRevenuePhaseInput>,
-): AssociateRevenuePhaseInput[] {
+  patch: Partial<RevenuePhaseInput>,
+): RevenuePhaseInput[] {
   return sortPhases(phases.map(phase =>
     phase.id === phaseId ? { ...phase, ...patch } : phase,
   ));
 }
 
-export function computeNetRevenue(phase: AssociateRevenuePhaseInput): number {
-  if (phase.source === 'none') return 0;
-  return positiveAmount(phase.loadedAnnualCost) * (1 - clampRate(phase.socialChargeRate));
+export function computeNetRevenue(phase: RevenuePhaseInput): number {
+  if (isRevenuePhaseV6(phase)) {
+    if (!phase.remuneration.enabled || phase.remuneration.source === 'none') return 0;
+    return positiveAmount(phase.remuneration.loadedAnnualCost) *
+      (1 - clampRate(phase.remuneration.socialChargeRate));
+  }
+  return phase.source === 'none'
+    ? 0
+    : positiveAmount(phase.loadedAnnualCost) * (1 - clampRate(phase.socialChargeRate));
 }
 
-export function computeComplement(phase: AssociateRevenuePhaseInput): number {
-  return Math.max(0, positiveAmount(phase.annualNetIncomeNeed) - computeNetRevenue(phase));
+export function computeComplement(phase: RevenuePhaseInput): number {
+  const annualNeed = isRevenuePhaseV6(phase)
+    ? phase.distribution.annualNetIncomeNeed
+    : phase.annualNetIncomeNeed;
+  return Math.max(0, positiveAmount(annualNeed) - computeNetRevenue(phase));
 }

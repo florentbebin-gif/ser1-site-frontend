@@ -11,8 +11,7 @@
 
 import type { LogoPlacement, StudyDeckSpec } from '@/pptx/theme/types';
 import type {
-  AssociateInput,
-  AssociateRevenuePhaseInput,
+  RuntimeAssociateInput,
   TresoInputsRuntime,
   TresoProjectionRow,
 } from '@/engine/tresorerie/types';
@@ -28,6 +27,8 @@ import {
 import {
   computeComplement,
   getPhaseEndYear,
+  isRevenuePhaseV6,
+  type RevenuePhaseInput,
   sortPhases,
 } from '../utils/revenuePhases';
 import { getRevenuePhaseSourceLabel } from '../utils/revenuePhaseLabels';
@@ -60,9 +61,32 @@ function fmtPct(n: number): string {
   return `${Math.round(n * 100) / 100} %`;
 }
 
-function getAssociateRevenuePhases(associate: AssociateInput | undefined): AssociateRevenuePhaseInput[] {
-  const phases = (associate as { revenuePhases?: AssociateRevenuePhaseInput[] } | undefined)?.revenuePhases;
+function getAssociateRevenuePhases(associate: RuntimeAssociateInput | undefined): RevenuePhaseInput[] {
+  const phases = (associate as { revenuePhases?: RevenuePhaseInput[] } | undefined)?.revenuePhases;
   return Array.isArray(phases) ? sortPhases(phases) : [];
+}
+
+function phaseSummaryLabel(phase: RevenuePhaseInput): string {
+  if (isRevenuePhaseV6(phase)) return phase.label?.trim() || `Palier ${phase.startYear}-${phase.endYear}`;
+  return phase.label?.trim() || getRevenuePhaseSourceLabel(phase.source);
+}
+
+function phaseSourceSummary(phase: RevenuePhaseInput): string {
+  if (!isRevenuePhaseV6(phase)) return getRevenuePhaseSourceLabel(phase.source);
+  return [
+    phase.remuneration.enabled && phase.remuneration.source !== 'none' ? 'Rémunération' : undefined,
+    phase.distribution.enabled ? 'Distribution' : undefined,
+    phase.ccaContribution.enabled ? 'Constitution CCA' : undefined,
+    phase.ccaRepayment.enabled ? 'Remboursement CCA' : undefined,
+  ].filter(Boolean).join(' + ') || 'Aucune sous-phase';
+}
+
+function phaseAnnualNeed(phase: RevenuePhaseInput): number {
+  return isRevenuePhaseV6(phase) ? phase.distribution.annualNetIncomeNeed : phase.annualNetIncomeNeed;
+}
+
+function phaseCcaLabel(phase: RevenuePhaseInput): boolean {
+  return isRevenuePhaseV6(phase) ? phase.ccaRepayment.enabled : phase.useCcaForCompletion;
 }
 
 function buildRevenuePhaseSummary(inputs: TresoInputsRuntime) {
@@ -70,12 +94,12 @@ function buildRevenuePhaseSummary(inputs: TresoInputsRuntime) {
   const phases = getAssociateRevenuePhases(associate);
   const horizonYear = (inputs.company.projectionStartYear ?? new Date().getFullYear()) + 14;
   return phases.slice(0, 3).map(phase => ({
-    label: phase.label?.trim() || getRevenuePhaseSourceLabel(phase.source),
+    label: phaseSummaryLabel(phase),
     periodLabel: `${phase.startYear}-${getPhaseEndYear(phase, phases, horizonYear)}`,
-    sourceLabel: getRevenuePhaseSourceLabel(phase.source),
-    annualNetIncomeNeed: phase.annualNetIncomeNeed,
+    sourceLabel: phaseSourceSummary(phase),
+    annualNetIncomeNeed: phaseAnnualNeed(phase),
     complement: computeComplement(phase),
-    useCcaForCompletion: phase.useCcaForCompletion,
+    useCcaForCompletion: phaseCcaLabel(phase),
   }));
 }
 
@@ -129,7 +153,7 @@ export function buildTresorerieStudyDeck(
   const hypothesesLines = [
     'Périmètre V1 : Société soumise à l\'IS uniquement. SARL de famille à l\'IR : hors scope.',
     'IS calculé sur la base fiscale (résultat avant IS clampé à 0) — pas de report de pertes.',
-    'Réserve légale (5 % du bénéfice) non modélisée — capacité distribuable simplifiée.',
+    'Réserve légale modélisée : dotation de 5 % du résultat net bénéficiaire jusqu’à 10 % du capital social.',
     'CCA : remboursement hors PFU — diminue le passif, pas les réserves.',
     'Intérêts CCA : déduction plafonnée au taux maximum déductible issu des paramètres fiscaux.',
     'PFU dividendes : convention Option A (brut unique sans double comptage).',

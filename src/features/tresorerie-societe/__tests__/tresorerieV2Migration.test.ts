@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import type { TresoInputs, TresoProjectionRow } from '@/engine/tresorerie/types';
 import {
   buildTresoInputsV5FromV4,
+  buildTresoInputsV6FromV5,
   buildTresoInputsV4FromLegacy,
   buildTresoInputsV4FromV2,
   buildTresoInputsV4FromV3,
@@ -377,5 +378,85 @@ describe('migration trésorerie v3', () => {
     const v5 = buildTresoInputsV5FromV4(buildTresoInputsV4FromLegacy(LEGACY_INPUTS));
 
     expect(buildTresoInputsV5FromV4(v5 as any)).toEqual(v5);
+  });
+
+  it('migre les paliers V5 vers des sous-phases V6 et découpe les apports CCA par intersection', () => {
+    const v5 = buildTresoInputsV5FromV4(buildTresoInputsV4FromLegacy(LEGACY_INPUTS));
+    const associate = v5.company.associates[0];
+    const v6 = buildTresoInputsV6FromV5({
+      ...v5,
+      company: {
+        ...v5.company,
+        projectionStartYear: 2026,
+        legalReserveInitial: undefined,
+        associates: [{
+          ...associate,
+          cca: {
+            currentBalance: 10_000,
+            remunerationRate: 0.04,
+            annualContribution: { amount: 6_000, startYear: 2027, endYear: 2033 },
+            exceptionalContributions: [{ amount: 25_000, year: 2029 }],
+          },
+          revenuePhases: [
+            {
+              id: 'phase-1',
+              startYear: 2026,
+              source: 'holding',
+              loadedAnnualCost: 80_000,
+              socialChargeRate: 0.30,
+              annualNetIncomeNeed: 0,
+              useCcaForCompletion: true,
+            },
+            {
+              id: 'phase-2',
+              startYear: 2031,
+              source: 'none',
+              loadedAnnualCost: 0,
+              socialChargeRate: 0,
+              annualNetIncomeNeed: 42_000,
+              useCcaForCompletion: false,
+            },
+          ],
+        }],
+      },
+    });
+
+    expect(v6.version).toBe(6);
+    expect(v6.company.legalReserveInitial).toBe(0);
+    expect(v6.company.associates[0].cca).toEqual({
+      currentBalance: 10_000,
+      remunerationRate: 0.04,
+    });
+    expect(v6.company.associates[0].revenuePhases).toEqual([
+      expect.objectContaining({
+        id: 'phase-1',
+        startYear: 2026,
+        endYear: 2030,
+        remuneration: expect.objectContaining({ enabled: true, source: 'holding' }),
+        distribution: expect.objectContaining({ enabled: false, dividendsStrategy: 'max_treso' }),
+        ccaRepayment: expect.objectContaining({ enabled: true, strategy: 'max_treso' }),
+        ccaContribution: {
+          enabled: true,
+          annual: { amount: 6_000, startYear: 2027, endYear: 2030 },
+          exceptional: { amount: 25_000, year: 2029 },
+        },
+      }),
+      expect.objectContaining({
+        id: 'phase-2',
+        startYear: 2031,
+        endYear: 2040,
+        remuneration: expect.objectContaining({ enabled: false, source: 'none' }),
+        distribution: expect.objectContaining({
+          enabled: true,
+          annualNetIncomeNeed: 42_000,
+          dividendsStrategy: 'max_treso',
+        }),
+        ccaRepayment: expect.objectContaining({ enabled: false, strategy: 'max_treso' }),
+        ccaContribution: {
+          enabled: true,
+          annual: { amount: 6_000, startYear: 2031, endYear: 2033 },
+        },
+      }),
+    ]);
   });
 });

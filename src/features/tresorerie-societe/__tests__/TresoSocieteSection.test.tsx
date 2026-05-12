@@ -179,11 +179,13 @@ describe('TresoSocieteSection', () => {
     fireEvent.click(activeAssociate);
 
     expect(screen.getByText('Paramétrer l’associé')).toBeInTheDocument();
-    fireEvent.click(screen.getByRole('tab', { name: 'Profil' }));
+    expect(screen.getByRole('tab', { name: 'Profil' })).toHaveAttribute('aria-selected', 'true');
     expect(screen.getAllByDisplayValue('45').length).toBeGreaterThan(0);
     expect(screen.queryByText('Âge de retraite')).not.toBeInTheDocument();
     fireEvent.click(screen.getByRole('tab', { name: 'CCA' }));
     expect(screen.getByText('Taux maximum déductible')).toBeInTheDocument();
+    expect(screen.queryByText('Apport exceptionnel')).not.toBeInTheDocument();
+    expect(screen.queryByText('Apport annuel')).not.toBeInTheDocument();
   });
 
   it('paramètre le libellé société sans menu rémunérations dans la société', () => {
@@ -193,8 +195,19 @@ describe('TresoSocieteSection', () => {
 
     expect(screen.getByDisplayValue('Ma holding')).toBeInTheDocument();
     expect(screen.queryByText('Début de projection')).not.toBeInTheDocument();
-    expect(screen.getByText(/date de début de projection se règle dans le parcours associé/i))
-      .toBeInTheDocument();
+    expect(screen.queryByText(/date de début de projection se règle dans le parcours associé/i))
+      .not.toBeInTheDocument();
+    expect(screen.queryByLabelText('Type de société')).not.toBeInTheDocument();
+    expect(screen.queryByLabelText('Capital social')).not.toBeInTheDocument();
+    expect(screen.getByLabelText('Type société')).toBeInTheDocument();
+    expect(screen.getByText('Trésorerie initiale')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: /paramètres financiers de la société/i }));
+    expect(screen.getByText('Paramètres financiers')).toBeInTheDocument();
+    expect(screen.getByText('Capital social')).toBeInTheDocument();
+    expect(screen.getByText('Prime d’émission')).toBeInTheDocument();
+    expect(screen.getByText('Réserves initiales')).toBeInTheDocument();
+    expect(screen.getByText('Réserve légale initiale')).toBeInTheDocument();
+    expect(screen.getByText('Éligible au taux réduit d’IS')).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /Rémunérations & TNS/i })).not.toBeInTheDocument();
   });
 
@@ -204,9 +217,9 @@ describe('TresoSocieteSection', () => {
     fireEvent.click(screen.getByRole('button', { name: /Paramétrer Associé 2/ }));
 
     expect(screen.queryByRole('tab', { name: 'Rémunération' })).not.toBeInTheDocument();
-    fireEvent.click(screen.getByRole('tab', { name: 'Profil' }));
-    expect(screen.getByText(/paliers de revenus se règlent depuis le parcours associé/i))
-      .toBeInTheDocument();
+    expect(screen.getByRole('tab', { name: 'Profil' })).toHaveAttribute('aria-selected', 'true');
+    expect(screen.queryByText(/paliers de revenus se règlent depuis le parcours associé/i))
+      .not.toBeInTheDocument();
   });
 
   it('enrichit la modale filiale avec trésorerie, paliers vers la mère et cession', () => {
@@ -256,6 +269,7 @@ describe('TresoSocieteSection', () => {
     render(<TresoSocieteSection inputs={INPUTS} onChange={onChange} />);
 
     fireEvent.click(screen.getByRole('button', { name: /Paramétrer Associé 1/ }));
+    fireEvent.click(screen.getByRole('tab', { name: 'Identité' }));
     fireEvent.change(screen.getAllByDisplayValue('60')[0], { target: { value: '80' } });
 
     const nextInputs = onChange.mock.calls[onChange.mock.calls.length - 1]?.[0];
