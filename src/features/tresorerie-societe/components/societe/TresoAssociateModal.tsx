@@ -29,8 +29,8 @@ interface TresoAssociateModalProps {
 type AssociateModalSection = 'identite' | 'profil' | 'cca';
 
 const ASSOCIATE_MODAL_SECTIONS: Array<{ key: AssociateModalSection; label: string }> = [
-  { key: 'identite', label: 'Identité' },
   { key: 'profil', label: 'Profil' },
+  { key: 'identite', label: 'Identité' },
   { key: 'cca', label: 'CCA' },
 ];
 
@@ -53,7 +53,7 @@ export function TresoAssociateModal({
   onChange,
   onClose,
 }: TresoAssociateModalProps) {
-  const [activeSection, setActiveSection] = useState<AssociateModalSection>('identite');
+  const [activeSection, setActiveSection] = useState<AssociateModalSection>('profil');
   const kind = associate.kind ?? 'pp';
   const profile = associate.profile ?? fallbackProfile;
   const lot = associate.ownershipLots[0] ?? {
@@ -215,9 +215,6 @@ export function TresoAssociateModal({
               <strong>Profil foyer</strong>
               <span>Paramètre personnel de projection</span>
             </div>
-            <p className="ts-note--info">
-              La projection démarre en {profile.projectionStartYear}. L’année et les paliers de revenus se règlent depuis le parcours associé en haut de page.
-            </p>
             <div className="ts-modal-grid ts-modal-grid--three">
               <SimFieldShell label="Âge actuel" className="ts-field" rowClassName="ts-field__row">
                 <input
@@ -247,7 +244,6 @@ export function TresoAssociateModal({
         {activeSection === 'cca' && (
           <TresoAssociateCcaPanel
             cca={cca}
-            projectionStartYear={profile.projectionStartYear}
             onChange={patchCca}
           />
         )}

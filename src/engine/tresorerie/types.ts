@@ -297,6 +297,7 @@ export interface CompanyInput {
   shareCapital: number;
   sharePremium: number;
   reservesInitial: number;
+  legalReserveInitial?: number;
   treasuryInitial: number;
   annualStructureCosts: number;
   incomeStatement?: {

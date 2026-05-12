@@ -136,9 +136,6 @@ export function TresoPlacementSection({ inputs, projectionRows = [], onChange }:
           <span className="sim-field__unit ts-unit">€</span>
         </SimFieldShell>
       </div>
-      <p className="ts-note--info">
-        Le balayage place uniquement la trésorerie au-dessus du solde minimum bancaire et du BFR.
-      </p>
       {firstBankWarning ? (
         <p className="ts-warning" role="alert">
           Compte bancaire insuffisant en {firstBankWarningYear} :
