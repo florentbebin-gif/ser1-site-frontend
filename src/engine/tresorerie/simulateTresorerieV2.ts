@@ -237,7 +237,7 @@ export function simulateTresorerieV2(
       loansResult.revenusActifFinance +
       subsidiariesResult.servicesRevenue +
       subsidiariesResult.quotePartTaxable +
-      subsidiariesResult.estimatedFiscalResult +
+      subsidiariesResult.estimatedFiscalResult -
       loansResult.interetsDeductibles -
       interetsCCADeductibles -
       chargesStructure;

@@ -220,6 +220,7 @@ describe('simulateTresorerie — modèle société v2', () => {
     expect(rows[0].annuiteCreditIS).toBeGreaterThan(0);
     expect(rows[0].interetsCreditIS).toBeGreaterThan(0);
     expect(rows[0].revenusActifFinance).toBeCloseTo(6_000, 2);
+    expect(rows[0].resultatFiscalAvantIS).toBeLessThanOrEqual(rows[0].resultatComptableAvantIS);
   });
 
   it('traite les filiales, la quote-part mère-fille et l’intégration estimée comme options distinctes', () => {
