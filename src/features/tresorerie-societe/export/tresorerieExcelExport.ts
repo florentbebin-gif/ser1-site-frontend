@@ -19,8 +19,8 @@ import type { XlsxCell, XlsxSheet } from '@/utils/export/xlsxBuilder';
 import type {
   AmountScheduleInput,
   AllocationPocketHorizon,
-  AssociateInput,
-  AssociateRevenuePhaseInput,
+  CcaScheduleInput,
+  RuntimeAssociateInput,
   SubsidiaryInput,
   TresoInputsRuntime,
   TresoProjectionRow,
@@ -39,6 +39,8 @@ import {
   computeComplement,
   computeNetRevenue,
   getPhaseEndYear,
+  isRevenuePhaseV6,
+  type RevenuePhaseInput,
   sortPhases,
 } from '../utils/revenuePhases';
 import { getRevenuePhaseSourceLabel } from '../utils/revenuePhaseLabels';
@@ -59,6 +61,10 @@ function sourceLabel(source: string): string {
   if (source === 'charges_sociales_tns') return 'Charges sociales TNS';
   if (source === 'fiscalite') return 'Fiscalité';
   return source;
+}
+
+function getLegacyCcaSchedule(associate: RuntimeAssociateInput): CcaScheduleInput | undefined {
+  return associate.cca && 'annualContribution' in associate.cca ? associate.cca : undefined;
 }
 
 // ─── Libellés UI premium (jamais les labels Excel bruts) ─────────────────────
@@ -90,6 +96,9 @@ const RESUME_SERIES: ProjectionSerie[] = [
   { key: 'is', label: 'Impôt sur les sociétés', format: 'money' },
   { key: 'resultatNetComptable', label: 'Résultat net comptable', format: 'money' },
   { key: 'reservesDebut', label: "Réserves en début d'exercice", format: 'money' },
+  { key: 'reserveLegaleDebut', label: "Réserve légale en début d'exercice", format: 'money' },
+  { key: 'dotationReserveLegale', label: 'Dotation obligatoire à la réserve légale', format: 'money' },
+  { key: 'reserveLegaleFin', label: "Réserve légale en fin d'exercice", format: 'money' },
   { key: 'dividendesAssociesBruts', label: 'Dividendes versés aux associés (bruts)', format: 'money' },
   { key: 'reservesFin', label: "Réserves en fin d'exercice", format: 'money' },
   { key: 'capaciteDistribuable', label: 'Capacité distribuable', format: 'money' },
@@ -129,15 +138,25 @@ function buildProjectionSheet(
     (sum, associate) => sum + (associate.cca?.currentBalance ?? 0),
     0,
   );
-  const ccaAnnualTotal = inputs.company.associates.reduce(
-    (sum, associate) => sum + (associate.cca?.annualContribution.amount ?? 0),
-    0,
-  );
+  const ccaAnnualTotal = inputs.company.associates.reduce((sum, associate) => {
+    const legacyAnnual = getLegacyCcaSchedule(associate)?.annualContribution.amount ?? 0;
+    const phaseAnnual = getAssociateRevenuePhases(associate)
+      .filter(isRevenuePhaseV6)
+      .reduce((phaseSum, phase) => phaseSum + (phase.ccaContribution.annual?.amount ?? 0), 0);
+    return sum + legacyAnnual + phaseAnnual;
+  }, 0);
   const maxContributionEndYear = inputs.company.associates.reduce<number | undefined>(
     (max, associate) => {
-      const endYear = associate.cca?.annualContribution.endYear;
-      if (endYear == null) return max;
-      return max == null ? endYear : Math.max(max, endYear);
+      const legacyEndYear = getLegacyCcaSchedule(associate)?.annualContribution.endYear;
+      const phaseEndYear = getAssociateRevenuePhases(associate)
+        .filter(isRevenuePhaseV6)
+        .reduce<number | undefined>((phaseMax, phase) => {
+          const endYear = phase.ccaContribution.annual?.endYear;
+          if (endYear == null) return phaseMax;
+          return phaseMax == null ? endYear : Math.max(phaseMax, endYear);
+        }, undefined);
+      const endYear = legacyEndYear == null ? phaseEndYear : phaseEndYear == null ? legacyEndYear : Math.max(legacyEndYear, phaseEndYear);
+      return endYear == null ? max : max == null ? endYear : Math.max(max, endYear);
     },
     undefined,
   );
@@ -229,13 +248,42 @@ function buildAssociateRevenueSheet(rows: TresoProjectionRow[], inputs: TresoInp
   };
 }
 
-function ccaCurrentBalance(associate: AssociateInput): number {
+function ccaCurrentBalance(associate: RuntimeAssociateInput): number {
   return associate.cca?.currentBalance ?? 0;
 }
 
-function getAssociateRevenuePhases(associate: AssociateInput): AssociateRevenuePhaseInput[] {
-  const phases = (associate as { revenuePhases?: AssociateRevenuePhaseInput[] }).revenuePhases;
+function getAssociateRevenuePhases(associate: RuntimeAssociateInput): RevenuePhaseInput[] {
+  const phases = (associate as { revenuePhases?: RevenuePhaseInput[] }).revenuePhases;
   return Array.isArray(phases) ? sortPhases(phases) : [];
+}
+
+function phaseLabel(phase: RevenuePhaseInput): string {
+  if (isRevenuePhaseV6(phase)) return phase.label?.trim() || `Palier ${phase.startYear}-${phase.endYear}`;
+  return phase.label?.trim() || getRevenuePhaseSourceLabel(phase.source);
+}
+
+function phaseSourceLabel(phase: RevenuePhaseInput): string {
+  if (!isRevenuePhaseV6(phase)) return getRevenuePhaseSourceLabel(phase.source);
+  const labels = [
+    phase.remuneration.enabled && phase.remuneration.source !== 'none' ? 'Rémunération' : undefined,
+    phase.distribution.enabled ? 'Distribution' : undefined,
+    phase.ccaContribution.enabled ? 'Constitution CCA' : undefined,
+    phase.ccaRepayment.enabled ? 'Remboursement CCA' : undefined,
+  ].filter(Boolean);
+  return labels.join(' + ') || 'Aucune sous-phase';
+}
+
+function phaseLoadedAnnualCost(phase: RevenuePhaseInput): number {
+  return isRevenuePhaseV6(phase) ? phase.remuneration.loadedAnnualCost : phase.loadedAnnualCost;
+}
+
+function phaseAnnualNeed(phase: RevenuePhaseInput): number {
+  return isRevenuePhaseV6(phase) ? phase.distribution.annualNetIncomeNeed : phase.annualNetIncomeNeed;
+}
+
+function phaseCcaStrategyLabel(phase: RevenuePhaseInput): string {
+  if (!isRevenuePhaseV6(phase)) return phase.useCcaForCompletion ? 'CCA prioritaire' : 'Dividendes uniquement';
+  return phase.ccaRepayment.enabled ? `Remboursement ${phase.ccaRepayment.strategy}` : 'Sans remboursement CCA';
 }
 
 function buildRevenuePhaseRows(company: TresoInputsRuntime['company']): XlsxCell[][] {
@@ -244,14 +292,14 @@ function buildRevenuePhaseRows(company: TresoInputsRuntime['company']): XlsxCell
     const phases = getAssociateRevenuePhases(associate);
     return phases.map(phase => [
       txt(associate.label),
-      txt(phase.label?.trim() || getRevenuePhaseSourceLabel(phase.source)),
+      txt(phaseLabel(phase)),
       txt(`${phase.startYear} → ${getPhaseEndYear(phase, phases, horizonYear)}`),
-      txt(getRevenuePhaseSourceLabel(phase.source)),
-      money(phase.loadedAnnualCost),
+      txt(phaseSourceLabel(phase)),
+      money(phaseLoadedAnnualCost(phase)),
       money(computeNetRevenue(phase)),
-      money(phase.annualNetIncomeNeed),
+      money(phaseAnnualNeed(phase)),
       money(computeComplement(phase)),
-      txt(phase.useCcaForCompletion ? 'CCA prioritaire' : 'Dividendes uniquement'),
+      txt(phaseCcaStrategyLabel(phase)),
     ]);
   });
 
@@ -388,12 +436,12 @@ function buildHypothesesSheet(): XlsxSheet {
     [txt("L'utilisateur confirme l'éligibilité — SER1 n'effectue pas de validation juridique"), txt('Hypothèse déclarative')],
     [sec('Compte courant d\'associé'), sec('')],
     [txt('Remboursement CCA : hors PFU, diminue le passif uniquement'), txt('CGI Art. 38 quater')],
-    [txt('CCA constitué = apports initiaux + apports annuels sur la durée active'), txt('Hypothèse simplificatrice')],
+    [txt('CCA constitué = apports programmés dans les paliers + apports exceptionnels'), txt('Convention SER1')],
     [txt('Taux maximum déductible des intérêts CCA issu des paramètres fiscaux'), txt('Service-Public / BOFiP / CGI art. 39')],
     [sec('Dividendes et PFU'), sec('')],
     [txt('PFU dividendes : taux issus des paramètres fiscaux admin'), txt('CGI Art. 200 A')],
     [txt('Convention Option A : dividendes sortis en brut unique (pas de double comptage)'), txt('Convention interne')],
-    [txt('Dividendes plafonnés à la capacité distribuable et à la trésorerie disponible'), txt('Hypothèse prudentielle')],
+    [txt('Dividendes plafonnés à la capacité distribuable après dotation de réserve légale et à la trésorerie disponible'), txt('C. com. L232-10 / L232-11')],
     [sec('Capitalisation'), sec('')],
     [txt('IS latent capitalisation : affiché pour information, non décaissé avant la sortie'), txt('Hypothèse de présentation')],
     [txt('IS effectif : déclenché uniquement au moment d\'un rachat'), txt('CGI Art. 219')],
@@ -409,7 +457,8 @@ function buildHypothesesSheet(): XlsxSheet {
     [txt('Un mois est productif si son premier jour est ≥ dateDebutJouissance'), txt('Convention SER1')],
     [txt('Revenus proratisés selon les mois productifs de l\'année civile'), txt('Convention SER1')],
     [sec('Réserve légale'), sec('')],
-    [txt('Réserve légale de droit commun non modélisée en V1'), txt('Hypothèse simplificatrice')],
+    [txt('Dotation de 5 % du résultat net bénéficiaire jusqu’à 10 % du capital social'), txt('C. com. L232-10')],
+    [txt('La réserve légale est non distribuable ; les réserves initiales restent le poste distribuable'), txt('C. com. L232-11')],
     [txt('Taux fiscaux issus des paramètres admin — aucune valeur codée en dur dans l’export'), txt('Gouvernance SER1')],
     [sec('Avertissement'), sec('')],
     [txt('Société à l\'IR (SARL de famille) : hors scope V1'), txt('')],

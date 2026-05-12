@@ -2,10 +2,11 @@
  * Tests for snapshot migrations + Zod validation (P1-01, updated P1-06-08)
  *
  * Covers:
- * - v1 snapshot → migrated to v4 → valid
- * - v2 snapshot → migrated to v4 → valid
- * - v3 snapshot → migrated to v4 → valid
- * - v4 snapshot → no migration needed → valid
+ * - v1 snapshot → migrated to v5 → valid
+ * - v2 snapshot → migrated to v5 → valid
+ * - v3 snapshot → migrated to v5 → valid
+ * - v4 snapshot → migrated to v5 → valid
+ * - v5 snapshot → no migration needed → valid
  * - Invalid snapshot → clear error
  * - Future version → clear error
  * - Missing fields → clear error
@@ -78,6 +79,56 @@ const V3_SNAPSHOT = {
   },
 };
 
+const TRESO_INPUTS_V5 = {
+  version: 5,
+  selectedAssociateId: 'associe-1',
+  foyer: { selectedAssociateId: 'associe-1' },
+  company: {
+    projectionStartYear: 2026,
+    creationType: 'existante',
+    legalForm: 'sas',
+    companyKind: 'holding_patrimoniale',
+    shareCapital: 20000,
+    sharePremium: 0,
+    reservesInitial: 0,
+    treasuryInitial: 100000,
+    annualStructureCosts: 0,
+    incomeStatement: { annualRevenue: 0, annualStructureCosts: 0, workingCapitalRequirement: 0 },
+    reducedCorporateTaxEligible: true,
+    associates: [{
+      id: 'associe-1',
+      label: 'Associé 1',
+      kind: 'pp',
+      profile: {
+        currentAge: 50,
+        retirementAge: 65,
+        annualIncomeNeed: 0,
+        projectionStartYear: 2026,
+      },
+      ownershipLots: [{ right: 'pleine_propriete', capitalPct: 100, economicRightsPct: 100 }],
+      roles: ['associe_sans_statut'],
+      cca: {
+        currentBalance: 10000,
+        exceptionalContributions: [],
+        annualContribution: { amount: 5000, startYear: 2026, endYear: 2028 },
+        remunerationRate: 0,
+      },
+      revenuePhases: [{
+        id: 'phase-1',
+        startYear: 2026,
+        source: 'none',
+        loadedAnnualCost: 0,
+        socialChargeRate: 0,
+        annualNetIncomeNeed: 0,
+        useCcaForCompletion: true,
+      }],
+    }],
+    loans: [],
+    subsidiaries: [],
+  },
+  allocationMatrix: { sweepThreshold: 0, minimumBankBalance: 0, pockets: [] },
+};
+
 const V4_SNAPSHOT = {
   app: 'SER1',
   kind: 'snapshot',
@@ -99,6 +150,18 @@ const V4_SNAPSHOT = {
       strategy: null,
       audit: null,
       per: { versementAnnuel: 6000 },
+      'tresorerie-societe': { inputsV5: TRESO_INPUTS_V5 },
+    },
+  },
+};
+
+const V5_SNAPSHOT = {
+  ...V4_SNAPSHOT,
+  version: 5,
+  payload: {
+    sims: {
+      ...V4_SNAPSHOT.payload.sims,
+      'tresorerie-societe': { inputsV6: { ...TRESO_INPUTS_V5, version: 6 } },
     },
   },
 };
@@ -108,13 +171,13 @@ const V4_SNAPSHOT = {
 // ---------------------------------------------------------------------------
 
 describe('snapshotMigrations', () => {
-  it('migrates v1 → v4 successfully (3 steps)', () => {
+  it('migrates v1 → v5 successfully (4 steps)', () => {
     const result = migrateSnapshot(V1_SNAPSHOT as Record<string, unknown>);
 
     expect(result.migratedFrom).toBe(1);
     expect(result.migratedTo).toBe(CURRENT_SNAPSHOT_VERSION);
-    expect(result.steps).toBe(3);
-    expect(result.data.version).toBe(4);
+    expect(result.steps).toBe(4);
+    expect(result.data.version).toBe(5);
 
     // Should have appVersion added
     const meta = result.data.meta as Record<string, unknown>;
@@ -135,13 +198,13 @@ describe('snapshotMigrations', () => {
     expect(sims.per).toBeNull();
   });
 
-  it('migrates v2 → v4 successfully (2 steps, adds per + fiscal null)', () => {
+  it('migrates v2 → v5 successfully (3 steps, adds per + fiscal null)', () => {
     const result = migrateSnapshot(V2_SNAPSHOT as Record<string, unknown>);
 
     expect(result.migratedFrom).toBe(2);
     expect(result.migratedTo).toBe(CURRENT_SNAPSHOT_VERSION);
-    expect(result.steps).toBe(2);
-    expect(result.data.version).toBe(4);
+    expect(result.steps).toBe(3);
+    expect(result.data.version).toBe(5);
 
     const meta = result.data.meta as Record<string, unknown>;
     expect(meta.fiscal).toBeNull();
@@ -152,13 +215,13 @@ describe('snapshotMigrations', () => {
     expect(sims.placement).toEqual({ capital: 200000 });
   });
 
-  it('migrates v3 → v4 successfully (1 step, adds fiscal null)', () => {
+  it('migrates v3 → v5 successfully (2 steps, adds fiscal null)', () => {
     const result = migrateSnapshot(V3_SNAPSHOT as Record<string, unknown>);
 
     expect(result.migratedFrom).toBe(3);
     expect(result.migratedTo).toBe(CURRENT_SNAPSHOT_VERSION);
-    expect(result.steps).toBe(1);
-    expect(result.data.version).toBe(4);
+    expect(result.steps).toBe(2);
+    expect(result.data.version).toBe(5);
 
     const meta = result.data.meta as Record<string, unknown>;
     expect(meta.fiscal).toBeNull();
@@ -168,17 +231,30 @@ describe('snapshotMigrations', () => {
     expect(sims.per).toEqual({ versementAnnuel: 5000 });
   });
 
-  it('v4 snapshot requires no migration', () => {
+  it('migrates v4 → v5 and upgrades trésorerie société inputsV5 to inputsV6', () => {
     const result = migrateSnapshot(V4_SNAPSHOT as Record<string, unknown>);
 
     expect(result.migratedFrom).toBe(4);
-    expect(result.migratedTo).toBe(4);
+    expect(result.migratedTo).toBe(5);
+    expect(result.steps).toBe(1);
+    const payload = result.data.payload as Record<string, unknown>;
+    const sims = payload.sims as Record<string, unknown>;
+    const tresorerie = sims['tresorerie-societe'] as Record<string, unknown>;
+    expect(tresorerie.inputsV5).toBeUndefined();
+    expect((tresorerie.inputsV6 as Record<string, unknown>).version).toBe(6);
+  });
+
+  it('v5 snapshot requires no migration', () => {
+    const result = migrateSnapshot(V5_SNAPSHOT as Record<string, unknown>);
+
+    expect(result.migratedFrom).toBe(5);
+    expect(result.migratedTo).toBe(5);
     expect(result.steps).toBe(0);
-    expect(result.data).toEqual(V4_SNAPSHOT);
+    expect(result.data).toEqual(V5_SNAPSHOT);
   });
 
   it('rejects future version with clear message', () => {
-    const futureSnapshot = { ...V4_SNAPSHOT, version: 99 };
+    const futureSnapshot = { ...V5_SNAPSHOT, version: 99 };
     expect(() => migrateSnapshot(futureSnapshot as Record<string, unknown>)).toThrow(
       /version plus récente/
     );
@@ -204,15 +280,15 @@ describe('snapshotMigrations', () => {
 // ---------------------------------------------------------------------------
 
 describe('SnapshotV2Schema (Zod)', () => {
-  it('validates a correct v4 snapshot with fiscal identity', () => {
-    const result = SnapshotV2Schema.safeParse(V4_SNAPSHOT);
+  it('validates a correct v5 snapshot with fiscal identity', () => {
+    const result = SnapshotV2Schema.safeParse(V5_SNAPSHOT);
     expect(result.success).toBe(true);
   });
 
-  it('validates a v4 snapshot with fiscal: null', () => {
+  it('validates a v5 snapshot with fiscal: null', () => {
     const withNullFiscal = {
-      ...V4_SNAPSHOT,
-      meta: { ...V4_SNAPSHOT.meta, fiscal: null },
+      ...V5_SNAPSHOT,
+      meta: { ...V5_SNAPSHOT.meta, fiscal: null },
     };
     const result = SnapshotV2Schema.safeParse(withNullFiscal);
     expect(result.success).toBe(true);
@@ -231,19 +307,19 @@ describe('SnapshotV2Schema (Zod)', () => {
   });
 
   it('rejects wrong app', () => {
-    const bad = { ...V4_SNAPSHOT, app: 'OTHER' };
+    const bad = { ...V5_SNAPSHOT, app: 'OTHER' };
     const result = SnapshotV2Schema.safeParse(bad);
     expect(result.success).toBe(false);
   });
 
   it('rejects wrong kind', () => {
-    const bad = { ...V4_SNAPSHOT, kind: 'placement' };
+    const bad = { ...V5_SNAPSHOT, kind: 'placement' };
     const result = SnapshotV2Schema.safeParse(bad);
     expect(result.success).toBe(false);
   });
 
   it('rejects missing payload', () => {
-    const bad = { app: 'SER1', kind: 'snapshot', version: 4, meta: { savedAt: '2026-01-01' } };
+    const bad = { app: 'SER1', kind: 'snapshot', version: 5, meta: { savedAt: '2026-01-01' } };
     const result = SnapshotV2Schema.safeParse(bad);
     expect(result.success).toBe(false);
   });
@@ -266,6 +342,11 @@ describe('SnapshotEnvelopeSchema (Zod)', () => {
 
   it('accepts v4 snapshot envelope', () => {
     const result = SnapshotEnvelopeSchema.safeParse(V4_SNAPSHOT);
+    expect(result.success).toBe(true);
+  });
+
+  it('accepts v5 snapshot envelope', () => {
+    const result = SnapshotEnvelopeSchema.safeParse(V5_SNAPSHOT);
     expect(result.success).toBe(true);
   });
 
@@ -306,7 +387,7 @@ describe('Full pipeline: v1 load → migrate → validate', () => {
 
     // 2. Migrate
     const migrated = migrateSnapshot(v1Minimal as Record<string, unknown>);
-    expect(migrated.steps).toBe(3);
+    expect(migrated.steps).toBe(4);
 
     // 3. Strict validate
     const strict = SnapshotV2Schema.safeParse(migrated.data);
@@ -327,12 +408,12 @@ describe('Full pipeline: v1 load → migrate → validate', () => {
 });
 
 // ---------------------------------------------------------------------------
-// Fiscal identity tests (v4)
+// Fiscal identity tests (v5)
 // ---------------------------------------------------------------------------
 
-describe('Fiscal identity in v4 snapshots', () => {
+describe('Fiscal identity in v5 snapshots', () => {
   it('preserves fiscal identity through migration-free path', () => {
-    const result = migrateSnapshot(V4_SNAPSHOT as Record<string, unknown>);
+    const result = migrateSnapshot(V5_SNAPSHOT as Record<string, unknown>);
     expect(result.steps).toBe(0);
     const meta = result.data.meta as Record<string, unknown>;
     const fiscal = meta.fiscal as Record<string, unknown>;

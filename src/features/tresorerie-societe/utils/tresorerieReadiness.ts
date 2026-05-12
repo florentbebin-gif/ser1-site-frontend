@@ -1,11 +1,11 @@
-import type { AssociateInput, TresoInputsRuntime } from '@/engine/tresorerie/types';
+import type { RuntimeAssociateInput, TresoInputsRuntime } from '@/engine/tresorerie/types';
 import {
   getOwnershipTotals,
   getSelectedAssociate,
 } from './tresorerieSocieteModel';
 
 export interface TresoReadiness {
-  selectedAssociate?: AssociateInput;
+  selectedAssociate?: RuntimeAssociateInput;
   companyReady: boolean;
   personalTimelineReady: boolean;
   ownershipCapitalOverflow: boolean;

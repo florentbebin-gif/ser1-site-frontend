@@ -8,9 +8,9 @@ import { SimModalShell } from '../../../components/ui/sim/SimModalShell';
 import { SimSelect } from '../../../components/ui/sim/SimSelect';
 import type {
   AssociateKind,
-  CompanyInputV5,
-  AssociateInputV5,
-  TresoInputsV5,
+  CompanyInputV6,
+  AssociateInputV6,
+  TresoInputsV6,
 } from '../../../engine/tresorerie/types';
 import {
   TresoCompanyLoansPanel,
@@ -33,8 +33,9 @@ import {
 } from '../utils/tresorerieFormatters';
 
 interface Props {
-  inputs: TresoInputsV5;
-  onChange: (nextInputs: TresoInputsV5) => void;
+  inputs: TresoInputsV6;
+  onChange: (nextInputs: TresoInputsV6) => void;
+  onAssociateModalOpenerChange?: (open: ((associateId: string) => void) | null) => void;
 }
 
 type PanelKey = 'identite' | 'associes' | 'compte' | 'emprunts' | 'filiales';
@@ -47,7 +48,7 @@ const PANEL_OPTIONS: Array<{ key: PanelKey; label: string }> = [
   { key: 'filiales', label: 'Filiales' },
 ];
 
-export function TresoSocieteSection({ inputs, onChange }: Props) {
+export function TresoSocieteSection({ inputs, onChange, onAssociateModalOpenerChange }: Props) {
   const [isCompanyModalOpen, setCompanyModalOpen] = useState(false);
   const [associateModalId, setAssociateModalId] = useState<string | null>(null);
   const [subsidiaryModalId, setSubsidiaryModalId] = useState<string | null>(null);
@@ -71,9 +72,9 @@ export function TresoSocieteSection({ inputs, onChange }: Props) {
     workingCapitalRequirement: 0,
   };
 
-  const patchInputs = (nextInputs: TresoInputsV5) => onChange(nextInputs);
+  const patchInputs = (nextInputs: TresoInputsV6) => onChange(nextInputs);
 
-  const patchCompany = (patch: Partial<CompanyInputV5>) => {
+  const patchCompany = (patch: Partial<CompanyInputV6>) => {
     patchInputs({ ...inputs, company: { ...company, ...patch } });
   };
 
@@ -96,6 +97,16 @@ export function TresoSocieteSection({ inputs, onChange }: Props) {
     window.addEventListener('ts:open-society-panel', handleOpenSocietyPanel);
     return () => window.removeEventListener('ts:open-society-panel', handleOpenSocietyPanel);
   }, []);
+
+  useEffect(() => {
+    if (!onAssociateModalOpenerChange) return undefined;
+    const openAssociateModal = (associateId: string) => {
+      setSelectedAssociate(associateId);
+      setAssociateModalId(associateId);
+    };
+    onAssociateModalOpenerChange(openAssociateModal);
+    return () => onAssociateModalOpenerChange(null);
+  }, [onAssociateModalOpenerChange, setSelectedAssociate]);
 
   const renderAssociesPanel = () => (
     <div className="ts-modal-stack">
@@ -324,7 +335,7 @@ export function TresoSocieteSection({ inputs, onChange }: Props) {
         <TresoAssociateModal
           associate={activeAssociateModal}
           fallbackProfile={getAssociateProfile(inputs, activeAssociateModal)}
-          onChange={patch => updateAssociate(activeAssociateModal.id, patch as Partial<AssociateInputV5>)}
+          onChange={patch => updateAssociate(activeAssociateModal.id, patch as Partial<AssociateInputV6>)}
           onClose={() => setAssociateModalId(null)}
         />
       )}

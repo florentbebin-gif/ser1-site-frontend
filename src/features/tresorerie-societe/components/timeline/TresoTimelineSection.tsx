@@ -1,17 +1,14 @@
 import { useMemo, useState } from 'react';
 import type {
-  AssociateInputV5,
-  AssociateRevenuePhaseInput,
-  CompanyInputV5,
-  TresoInputsV5,
+  AssociateInputV6,
+  AssociateRevenuePhaseInputV6,
+  CompanyInputV6,
+  TresoInputsV6,
 } from '@/engine/tresorerie/types';
 import { SimFieldShell } from '@/components/ui/sim/SimFieldShell';
 import {
-  addPhase,
   buildNextPhase,
-  removePhase,
   sortPhases,
-  updatePhase,
 } from '../../utils/revenuePhases';
 import { TresoRevenuePhaseModal } from './TresoRevenuePhaseModal';
 import { TresoTimelineEmptyState } from './TresoTimelineEmptyState';
@@ -22,15 +19,20 @@ import { computeTimelineRange } from './timelineLayout';
 import { getTresoReadiness } from '../../utils/tresorerieReadiness';
 
 interface TresoTimelineSectionProps {
-  inputs: TresoInputsV5;
-  onChange: (nextInputs: TresoInputsV5) => void;
+  inputs: TresoInputsV6;
+  onChange: (nextInputs: TresoInputsV6) => void;
+  onOpenAssociateModal?: (associateId: string) => void;
 }
 
-export function TresoTimelineSection({ inputs, onChange }: TresoTimelineSectionProps) {
+export function TresoTimelineSection({
+  inputs,
+  onChange,
+  onOpenAssociateModal,
+}: TresoTimelineSectionProps) {
   const [editingPhaseId, setEditingPhaseId] = useState<string | null>(null);
   const [horizonYears, setHorizonYears] = useState(15);
   const readiness = getTresoReadiness(inputs);
-  const selectedAssociate = readiness.selectedAssociate as AssociateInputV5 | undefined;
+  const selectedAssociate = readiness.selectedAssociate as AssociateInputV6 | undefined;
   const projectionStartYear =
     inputs.company.projectionStartYear ??
     selectedAssociate?.profile?.projectionStartYear ??
@@ -46,7 +48,7 @@ export function TresoTimelineSection({ inputs, onChange }: TresoTimelineSectionP
     ? phases.find(phase => phase.id === editingPhaseId) ?? null
     : null;
 
-  const patchCompany = (patch: Partial<CompanyInputV5>) => {
+  const patchCompany = (patch: Partial<CompanyInputV6>) => {
     onChange({ ...inputs, company: { ...inputs.company, ...patch } });
   };
 
@@ -67,7 +69,7 @@ export function TresoTimelineSection({ inputs, onChange }: TresoTimelineSectionP
     });
   };
 
-  const patchSelectedAssociate = (patch: Partial<AssociateInputV5>) => {
+  const patchSelectedAssociate = (patch: Partial<AssociateInputV6>) => {
     if (!selectedAssociate) return;
     patchCompany({
       associates: inputs.company.associates.map(associate =>
@@ -76,24 +78,25 @@ export function TresoTimelineSection({ inputs, onChange }: TresoTimelineSectionP
     });
   };
 
-  const setPhases = (nextPhases: AssociateRevenuePhaseInput[]) => {
+  const setPhases = (nextPhases: AssociateRevenuePhaseInputV6[]) => {
     patchSelectedAssociate({ revenuePhases: sortPhases(nextPhases) });
   };
 
   const addRevenuePhase = () => {
-    const nextPhase = buildNextPhase(phases, projectionStartYear, () => `phase-${Date.now()}-${phases.length + 1}`);
-    setPhases(addPhase(phases, nextPhase));
+    const nextPhase = buildNextPhase(phases, projectionStartYear, () => `phase-${Date.now()}-${phases.length + 1}`) as AssociateRevenuePhaseInputV6;
+    setPhases(sortPhases([...phases, nextPhase]));
     setEditingPhaseId(nextPhase.id);
   };
 
-  const saveRevenuePhase = (phase: AssociateRevenuePhaseInput) => {
-    setPhases(updatePhase(phases, phase.id, phase));
+  const saveRevenuePhase = (phase: AssociateRevenuePhaseInputV6) => {
+    setPhases(sortPhases(phases.map(item => (item.id === phase.id ? phase : item))));
     setEditingPhaseId(null);
   };
 
   const deleteRevenuePhase = () => {
     if (!editingPhase) return;
-    setPhases(removePhase(phases, editingPhase.id));
+    if (phases.length <= 1) return;
+    setPhases(sortPhases(phases.filter(phase => phase.id !== editingPhase.id)));
     setEditingPhaseId(null);
   };
 
@@ -123,6 +126,28 @@ export function TresoTimelineSection({ inputs, onChange }: TresoTimelineSectionP
             Phases de rémunération, besoins nets et priorité CCA de l’associé sélectionné
           </p>
         </div>
+        {selectedAssociate ? (
+          <button
+            type="button"
+            className="ts-icon-btn ts-section__header-action"
+            aria-label="Paramétrer l’associé"
+            onClick={() => onOpenAssociateModal?.(selectedAssociate.id)}
+          >
+            <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+              <path
+                d="M8 5.5A2.5 2.5 0 108 10.5 2.5 2.5 0 008 5.5z"
+                stroke="currentColor"
+                strokeWidth="1.4"
+              />
+              <path
+                d="M8 1.5v2M8 12.5v2M3.4 3.4l1.4 1.4M11.2 11.2l1.4 1.4M1.5 8h2M12.5 8h2M3.4 12.6l1.4-1.4M11.2 4.8l1.4-1.4"
+                stroke="currentColor"
+                strokeWidth="1.4"
+                strokeLinecap="round"
+              />
+            </svg>
+          </button>
+        ) : null}
       </div>
       <div className="ts-section__divider" />
 
@@ -179,7 +204,6 @@ export function TresoTimelineSection({ inputs, onChange }: TresoTimelineSectionP
 
           <TresoTimelinePhaseList
             phases={phases}
-            horizonYear={layout.endYear}
             onEditPhase={setEditingPhaseId}
           />
         </div>

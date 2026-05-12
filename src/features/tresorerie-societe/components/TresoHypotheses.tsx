@@ -36,8 +36,8 @@ export function TresoHypotheses() {
                 Une perte comptable réduit les réserves sans générer d'IS.
               </li>
               <li>
-                Réserve légale (5 % du bénéfice jusqu'à 10 % du capital) non modélisée.
-                La capacité distribuable est une approximation simplifiée.
+                Réserve légale modélisée : dotation de 5 % du résultat net bénéficiaire
+                jusqu'à 10 % du capital social. Elle réduit la capacité distribuable.
               </li>
             </ul>
           </section>
@@ -80,12 +80,12 @@ export function TresoHypotheses() {
             <h3 className="ts-hyp-title">Parcours associé</h3>
             <ul className="ts-hyp-list">
               <li>
-                Les paliers de revenus de l'associé sélectionné sont la source principale du besoin
-                annuel net, de la rémunération et de la priorité CCA dans la projection.
+                Les paliers de revenus de l'associé sélectionné portent les sous-phases
+                de rémunération, distribution, constitution CCA et remboursement CCA.
               </li>
               <li>
-                Quand la priorité CCA est décochée sur un palier, le complément de besoin est
-                financé directement par dividendes, dans la limite de la trésorerie et de la capacité distribuable.
+                Les dividendes sont plafonnés par la trésorerie disponible et par la
+                capacité distribuable après dotation de réserve légale.
               </li>
             </ul>
           </section>

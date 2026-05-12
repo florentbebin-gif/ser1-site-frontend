@@ -12,12 +12,30 @@
  */
 
 import { CURRENT_SNAPSHOT_VERSION, SNAPSHOT_APP, SNAPSHOT_KIND } from './snapshotSchema';
+import { buildTresoInputsV6FromV5 } from '@/features/tresorerie-societe/utils/tresorerieV2Migration';
+import type { TresoInputsV5 } from '@/engine/tresorerie/types';
 
 // ---------------------------------------------------------------------------
 // Migration type
 // ---------------------------------------------------------------------------
 
 type MigrationFn = (_input: Record<string, unknown>) => Record<string, unknown>;
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+function migrateTresorerieSocieteSim(sim: unknown): unknown {
+  if (!isRecord(sim)) return sim;
+  if (isRecord(sim.inputsV6)) return sim;
+  if (!isRecord(sim.inputsV5) || sim.inputsV5.version !== 5) return sim;
+
+  const { inputsV5: _legacyInputsV5, ...rest } = sim;
+  return {
+    ...rest,
+    inputsV6: buildTresoInputsV6FromV5(sim.inputsV5 as unknown as TresoInputsV5),
+  };
+}
 
 // ---------------------------------------------------------------------------
 // Registry: version N → function that upgrades to N+1
@@ -93,6 +111,28 @@ const migrations: Record<number, MigrationFn> = {
       meta: {
         ...meta,
         fiscal: meta.fiscal ?? null,
+      },
+    };
+  },
+
+  /**
+   * v4 → v5
+   * - Migrate trésorerie société persisted state from inputsV5 to inputsV6
+   * - Bump version to 5
+   */
+  4: (input) => {
+    const payload = (input.payload ?? {}) as Record<string, unknown>;
+    const sims = (payload.sims ?? {}) as Record<string, unknown>;
+
+    return {
+      ...input,
+      version: 5,
+      payload: {
+        ...payload,
+        sims: {
+          ...sims,
+          'tresorerie-societe': migrateTresorerieSocieteSim(sims['tresorerie-societe']),
+        },
       },
     };
   },

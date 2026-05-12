@@ -8,7 +8,9 @@ export {
   getAssociateRevenuePhaseForYear,
   getPhaseEndYear,
   hasAssociateAnnualIncomeNeedForYear,
+  isRevenuePhaseV6,
   removePhase,
   sortPhases,
   updatePhase,
+  type RevenuePhaseInput,
 } from '@/engine/tresorerie/revenuePhases';

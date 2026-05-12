@@ -1,10 +1,10 @@
 import type {
   AllocationPocketHorizon,
   AllocationPocketInput,
-  AssociateInput,
-  CompanyInput,
   CompanyKind,
   OwnershipLotInput,
+  RuntimeAssociateInput,
+  RuntimeCompanyInput,
 } from '@/engine/tresorerie/types';
 import {
   getAssociateProfile,
@@ -31,19 +31,19 @@ export function getAllocationHorizonLabel(horizon: AllocationPocketHorizon | und
   return ALLOCATION_HORIZON_OPTIONS.find(option => option.value === horizon)?.label ?? 'Moyen terme';
 }
 
-export function getCompanyKind(company: CompanyInput): CompanyKind {
+export function getCompanyKind(company: RuntimeCompanyInput): CompanyKind {
   return company.companyKind ?? 'holding_patrimoniale';
 }
 
-export function getCompanyKindLabel(company: CompanyInput): string {
+export function getCompanyKindLabel(company: RuntimeCompanyInput): string {
   return COMPANY_KIND_LABELS[getCompanyKind(company)];
 }
 
-export function getCompanyKindCode(company: CompanyInput): string {
+export function getCompanyKindCode(company: RuntimeCompanyInput): string {
   return COMPANY_KIND_CODES[getCompanyKind(company)];
 }
 
-export function getOwnershipTotals(associates: AssociateInput[]): {
+export function getOwnershipTotals(associates: RuntimeAssociateInput[]): {
   capitalPct: number;
   economicRightsPct: number;
 } {
@@ -77,25 +77,25 @@ function defaultOwnershipLot(): OwnershipLotInput {
   return { right: 'pleine_propriete', capitalPct: 0, economicRightsPct: 0 };
 }
 
-function getOwnershipFieldTotal(associate: AssociateInput, field: OwnershipPctField): number {
+function getOwnershipFieldTotal(associate: RuntimeAssociateInput, field: OwnershipPctField): number {
   return associate.ownershipLots.reduce((sum, lot) => sum + clampPct(lot[field]), 0);
 }
 
-function scaleOwnershipField(
-  associate: AssociateInput,
+function scaleOwnershipField<T extends RuntimeAssociateInput>(
+  associate: T,
   field: OwnershipPctField,
   ratio: number,
-): AssociateInput {
+): T {
   return {
     ...associate,
     ownershipLots: associate.ownershipLots.map(lot => ({
       ...lot,
       [field]: roundPct(clampPct(lot[field]) * ratio),
     })),
-  };
+  } as T;
 }
 
-function syncFullOwnershipLots(associates: AssociateInput[]): AssociateInput[] {
+function syncFullOwnershipLots<T extends RuntimeAssociateInput>(associates: T[]): T[] {
   return associates.map(associate => ({
     ...associate,
     ownershipLots: associate.ownershipLots.map(lot =>
@@ -103,14 +103,14 @@ function syncFullOwnershipLots(associates: AssociateInput[]): AssociateInput[] {
         ? { ...lot, economicRightsPct: lot.capitalPct }
         : lot,
     ),
-  }));
+  } as T));
 }
 
-function rebalanceOwnershipField(
-  associates: AssociateInput[],
+function rebalanceOwnershipField<T extends RuntimeAssociateInput>(
+  associates: T[],
   associateId: string,
   field: OwnershipPctField,
-): AssociateInput[] {
+): T[] {
   const selected = associates.find(associate => associate.id === associateId);
   if (!selected) return associates;
 
@@ -136,11 +136,11 @@ function rebalanceOwnershipField(
   );
 }
 
-export function updateAssociateOwnershipLot(
-  associates: AssociateInput[],
+export function updateAssociateOwnershipLot<T extends RuntimeAssociateInput>(
+  associates: T[],
   associateId: string,
   lotPatch: Partial<OwnershipLotInput>,
-): AssociateInput[] {
+): T[] {
   const fieldsToRebalance = new Set<OwnershipPctField>();
   const patched = associates.map(associate => {
     if (associate.id !== associateId) return associate;

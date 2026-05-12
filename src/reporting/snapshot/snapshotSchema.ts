@@ -4,8 +4,8 @@
  * Defines the canonical structure of a snapshot file with strict
  * validation. Each schema version is immutable once released.
  *
- * Current version: 4
- * Migration path: v1 → v2 → v3 → v4 (see snapshotMigrations.ts)
+ * Current version: 5
+ * Migration path: v1 → v2 → v3 → v4 → v5 (see snapshotMigrations.ts)
  */
 
 import { z } from 'zod';
@@ -16,7 +16,7 @@ import { z } from 'zod';
 
 export const SNAPSHOT_APP = 'SER1' as const;
 export const SNAPSHOT_KIND = 'snapshot' as const;
-export const CURRENT_SNAPSHOT_VERSION = 4;
+export const CURRENT_SNAPSHOT_VERSION = 5;
 
 // ---------------------------------------------------------------------------
 // Sim data schemas (payload.sims.*)
@@ -60,13 +60,14 @@ export const SnapshotSimsSchema = z.object({
   strategy: SimDataSchema.optional().default(null),
   audit: SimDataSchema.optional().default(null),
   per: SimDataSchema.optional().default(null),
+  'tresorerie-societe': SimDataSchema.optional().default(null),
 });
 
 export const SnapshotPayloadSchema = z.object({
   sims: SnapshotSimsSchema,
 });
 
-export const SnapshotV4Schema = z.object({
+export const SnapshotV5Schema = z.object({
   app: z.literal(SNAPSHOT_APP),
   kind: z.literal(SNAPSHOT_KIND),
   version: z.literal(CURRENT_SNAPSHOT_VERSION),
@@ -74,9 +75,13 @@ export const SnapshotV4Schema = z.object({
   payload: SnapshotPayloadSchema,
 });
 
+export const SnapshotV4Schema = SnapshotV5Schema.extend({
+  version: z.literal(4),
+});
+
 // Backward-compatible aliases
-export const SnapshotV3Schema = SnapshotV4Schema;
-export const SnapshotV2Schema = SnapshotV4Schema;
+export const SnapshotV3Schema = SnapshotV5Schema;
+export const SnapshotV2Schema = SnapshotV5Schema;
 
 // ---------------------------------------------------------------------------
 // Loose schema for initial parsing (accepts any version)
@@ -94,9 +99,10 @@ export const SnapshotEnvelopeSchema = z.object({
 // Inferred types
 // ---------------------------------------------------------------------------
 
+export type SnapshotV5 = z.infer<typeof SnapshotV5Schema>;
 export type SnapshotV4 = z.infer<typeof SnapshotV4Schema>;
-export type SnapshotV3 = SnapshotV4;
-export type SnapshotV2 = SnapshotV4;
+export type SnapshotV3 = SnapshotV5;
+export type SnapshotV2 = SnapshotV5;
 export type SnapshotEnvelope = z.infer<typeof SnapshotEnvelopeSchema>;
 export type SnapshotMeta = z.infer<typeof SnapshotMetaSchema>;
 export type SnapshotSims = z.infer<typeof SnapshotSimsSchema>;

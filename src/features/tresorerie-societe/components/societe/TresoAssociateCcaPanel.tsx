@@ -1,5 +1,5 @@
 import { SimFieldShell } from '@/components/ui/sim/SimFieldShell';
-import type { CcaScheduleInput } from '@/engine/tresorerie/types';
+import type { CcaScheduleInputV6 } from '@/engine/tresorerie/types';
 import {
   fmtEuroInput,
   fmtRateInput,
@@ -8,8 +8,8 @@ import {
 } from '../../utils/tresorerieFormatters';
 
 interface TresoAssociateCcaPanelProps {
-  cca: CcaScheduleInput;
-  onChange: (patch: Partial<CcaScheduleInput>) => void;
+  cca: CcaScheduleInputV6;
+  onChange: (patch: Partial<CcaScheduleInputV6>) => void;
 }
 
 export function TresoAssociateCcaPanel({

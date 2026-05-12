@@ -19,6 +19,11 @@
   margin-bottom: 10px;
 }
 
+.ts-section__header-action {
+  flex: 0 0 auto;
+  margin-left: auto;
+}
+
 .ts-section__title {
   font-size: 15px;
   font-weight: 600;
@@ -1057,14 +1062,29 @@
 
 .ts-timeline-track-outer {
   overflow-x: auto;
-  padding-bottom: 6px;
+  padding: 8px;
+  background: transparent;
+  border: none;
+}
+
+.ts-timeline-track-outer--compact {
+  overflow-x: hidden;
+  padding: 0;
 }
 
 .ts-timeline-track {
   border: 1px solid var(--color-c8);
   border-radius: 8px;
   background: #fff;
-  padding: 6px 8px;
+  padding: 12px 16px;
+  min-width: max-content;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+
+.ts-timeline-track--compact {
+  padding: 8px;
+  min-width: 0;
+  box-shadow: none;
 }
 
 .ts-timeline-track svg {
@@ -1073,13 +1093,9 @@
   max-width: none;
 }
 
-.ts-timeline-track__axis,
 .ts-timeline-track__age-axis {
   stroke: var(--color-c8);
-  stroke-width: 2;
-}
-
-.ts-timeline-track__age-axis {
+  stroke-width: 1.4;
   stroke-dasharray: 4 5;
 }
 
@@ -1098,105 +1114,101 @@
   font-size: 11px;
 }
 
-.ts-timeline-track__phase {
+.ts-timeline-track__pattern-line {
+  stroke: color-mix(in srgb, var(--color-c8) 72%, #fff);
+  stroke-width: 1;
+}
+
+.ts-timeline-track__palier {
   cursor: pointer;
   outline: none;
 }
 
-.ts-timeline-track__phase:focus-visible .ts-timeline-track__phase-rect {
-  stroke-width: 3;
-}
-
-.ts-timeline-track__phase-rect {
+.ts-timeline-track__palier:focus-visible .ts-timeline-track__palier-bg {
   stroke: var(--color-c3);
-  stroke-width: 1.5;
-  fill: color-mix(in srgb, var(--color-c3) 15%, #fff);
+  stroke-width: 2;
 }
 
-.ts-timeline-track__phase--tone-1 {
-  fill: color-mix(in srgb, var(--color-c3) 18%, #fff);
+.ts-timeline-track__palier:hover .ts-timeline-track__palier-bg {
+  stroke: var(--color-c3);
+  filter: drop-shadow(0 2px 5px rgba(0, 0, 0, 0.10));
+}
+
+.ts-timeline-track__palier-bg {
+  fill: #fff;
+  stroke: var(--color-c8);
+  stroke-width: 1;
+  transition: stroke 0.15s, filter 0.15s;
+}
+
+.ts-timeline-track__palier-label {
+  fill: var(--color-c9);
+  font-size: 11px;
+  font-weight: 600;
+  pointer-events: none;
+}
+
+.ts-timeline-track__subphase {
+  stroke-width: 1;
+  pointer-events: none;
+}
+
+.ts-timeline-track__subphase--remuneration {
+  fill: color-mix(in srgb, var(--color-c3) 22%, #fff);
   stroke: var(--color-c3);
 }
 
-.ts-timeline-track__phase--tone-2 {
+.ts-timeline-track__subphase--distribution {
   fill: color-mix(in srgb, var(--color-c4) 22%, #fff);
   stroke: var(--color-c4);
 }
 
-.ts-timeline-track__phase--tone-3 {
-  fill: color-mix(in srgb, var(--color-c5) 18%, #fff);
+.ts-timeline-track__subphase--cca_contribution {
+  fill: color-mix(in srgb, var(--color-c5) 22%, #fff);
   stroke: var(--color-c5);
 }
 
-.ts-timeline-track__phase--tone-4 {
+.ts-timeline-track__subphase--cca_repayment {
   fill: color-mix(in srgb, var(--color-c6) 22%, #fff);
   stroke: var(--color-c6);
 }
 
-.ts-timeline-track__phase--tone-5 {
-  fill: color-mix(in srgb, var(--color-c8) 34%, #fff);
+.ts-timeline-track__subphase.is-disabled {
+  fill: #fff;
+  stroke: color-mix(in srgb, var(--color-c8) 82%, #fff);
+  stroke-dasharray: 4 3;
+}
+
+.ts-timeline-track__subphase.has-none-mode {
+  fill: color-mix(in srgb, var(--color-c8) 32%, #fff);
   stroke: var(--color-c8);
 }
 
-.ts-timeline-track__phase--subsidiary {
+.ts-timeline-track__subphase.is-subsidiary-source {
   stroke-width: 2;
 }
 
-.ts-timeline-track__phase--none {
-  stroke-dasharray: 6 4;
-}
-
-.ts-timeline-track__phase-badge-dot {
-  fill: #fff;
-  stroke: var(--color-c1);
-  stroke-width: 1.4;
+.ts-timeline-track__subphase-hatch {
   pointer-events: none;
 }
 
-.ts-timeline-track__phase-badge {
-  fill: var(--color-c1);
-  font-size: 11px;
-  font-weight: 700;
-  pointer-events: none;
-}
-
-.ts-timeline-track__phase-label {
+.ts-timeline-track__subphase-label {
   fill: var(--color-c10);
-  font-size: 14px;
-  font-weight: 700;
-  pointer-events: none;
-}
-
-.ts-timeline-track__phase-detail {
-  fill: var(--color-c9);
-  font-size: 11px;
-  pointer-events: none;
-}
-
-.ts-timeline-track__phase-source {
-  fill: var(--color-c9);
-  font-size: 9px;
+  font-size: 10px;
   font-weight: 600;
-  text-transform: uppercase;
   pointer-events: none;
 }
 
-.ts-timeline-track__milestone-line {
-  stroke: var(--color-c9);
-  stroke-width: 1;
-  stroke-dasharray: 4 4;
-}
-
-.ts-timeline-track__milestone-dot {
-  fill: #fff;
-  stroke: var(--color-c3);
-  stroke-width: 2;
-}
-
-.ts-timeline-track__milestone-label {
-  fill: var(--color-c10);
-  font-size: 12px;
+.ts-timeline-track__subphase-mode {
+  fill: var(--color-c9);
+  font-size: 8.5px;
   font-weight: 700;
+  pointer-events: none;
+}
+
+.ts-timeline-track__legend-label {
+  fill: var(--color-c9);
+  font-size: 11px;
 }
 
 .ts-timeline-actions {
@@ -1245,6 +1257,13 @@
   margin-bottom: 12px;
 }
 
+.ts-phase-source-title {
+  margin: 10px 0 8px;
+  color: var(--color-c9);
+  font-size: 12px;
+  font-weight: 600;
+}
+
 .ts-phase-source__choice {
   border: 1px solid var(--color-c8);
   border-radius: 8px;
@@ -1255,6 +1274,47 @@
   color: var(--color-c10);
   font-size: 12px;
   background: #fff;
+}
+
+.ts-phase-modal-layout {
+  display: grid;
+  grid-template-columns: 220px minmax(0, 1fr);
+  gap: 16px;
+  align-items: start;
+}
+
+.ts-phase-modal-nav {
+  position: sticky;
+  top: 0;
+  display: grid;
+  gap: 8px;
+}
+
+.ts-phase-modal-nav button {
+  border: 1px solid var(--color-c8);
+  border-radius: 8px;
+  background: #fff;
+  color: var(--color-c9);
+  cursor: pointer;
+  padding: 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  text-align: left;
+  font-size: 12px;
+}
+
+.ts-phase-modal-nav button.is-active {
+  border-color: var(--color-c3);
+  background: color-mix(in srgb, var(--color-c4) 20%, #fff);
+  color: var(--color-c1);
+  font-weight: 600;
+}
+
+.ts-phase-modal-panel {
+  min-width: 0;
+  display: grid;
+  gap: 12px;
 }
 
 .ts-phase-net {
@@ -1387,6 +1447,7 @@
   .ts-company-snapshot,
   .ts-pocket-board,
   .ts-associate-modal-layout,
+  .ts-phase-modal-layout,
   .ts-modal-panels {
     grid-template-columns: 1fr;
   }
@@ -1403,6 +1464,11 @@
   .ts-associate-modal-nav {
     position: static;
     display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .ts-phase-modal-nav {
+    position: static;
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 

@@ -9,12 +9,13 @@
 import { useCallback, useEffect, useState } from 'react';
 import { storageKeyFor, onResetEvent } from '../../../utils/reset';
 import type { TresoState, TresoPersistedState } from '../types';
-import type { TresoInputs, TresoInputsV2, TresoInputsV5 } from '../../../engine/tresorerie/types';
+import type { TresoInputs, TresoInputsV2, TresoInputsV6 } from '../../../engine/tresorerie/types';
 import {
-  buildTresoInputsV5FromLegacy,
-  buildTresoInputsV5FromV2,
-  buildTresoInputsV5FromV3,
-  buildTresoInputsV5FromV4,
+  buildTresoInputsV6FromLegacy,
+  buildTresoInputsV6FromV2,
+  buildTresoInputsV6FromV3,
+  buildTresoInputsV6FromV4,
+  buildTresoInputsV6FromV5,
 } from '../utils/tresorerieV2Migration';
 
 // ─── Valeurs par défaut ───────────────────────────────────────────────────────
@@ -57,11 +58,11 @@ const BLANK_TRESO_INPUTS_LEGACY: TresoInputs = {
   holding: undefined,
 };
 
-export const DEFAULT_TRESO_INPUTS_V5: TresoInputsV5 =
-  buildTresoInputsV5FromLegacy(BLANK_TRESO_INPUTS_LEGACY);
+export const DEFAULT_TRESO_INPUTS_V6: TresoInputsV6 =
+  buildTresoInputsV6FromLegacy(BLANK_TRESO_INPUTS_LEGACY);
 
 const DEFAULT_STATE: TresoState = {
-  inputsV5: DEFAULT_TRESO_INPUTS_V5,
+  inputsV6: DEFAULT_TRESO_INPUTS_V6,
   projectionVisible: false,
   projectionMode: 'resume',
 };
@@ -76,15 +77,16 @@ export function normalizeTresoreriePersistedState(raw: TresoPersistedState): Tre
     ...(raw.inputs ?? {}),
   };
   const legacyWithEmbeddedV2 = raw.inputs as (TresoInputs & { v2?: TresoInputsV2 }) | undefined;
-  const inputsV5 =
-    raw.inputsV5 ??
-    (raw.inputsV4 ? buildTresoInputsV5FromV4(raw.inputsV4) : undefined) ??
-    (raw.inputsV3 ? buildTresoInputsV5FromV3(raw.inputsV3) : undefined) ??
-    (raw.inputsV2 ? buildTresoInputsV5FromV2(raw.inputsV2) : undefined) ??
-    (legacyWithEmbeddedV2?.v2 ? buildTresoInputsV5FromV2(legacyWithEmbeddedV2.v2) : undefined) ??
-    buildTresoInputsV5FromLegacy(legacyInputs);
+  const inputsV6 =
+    raw.inputsV6 ??
+    (raw.inputsV5 ? buildTresoInputsV6FromV5(raw.inputsV5) : undefined) ??
+    (raw.inputsV4 ? buildTresoInputsV6FromV4(raw.inputsV4) : undefined) ??
+    (raw.inputsV3 ? buildTresoInputsV6FromV3(raw.inputsV3) : undefined) ??
+    (raw.inputsV2 ? buildTresoInputsV6FromV2(raw.inputsV2) : undefined) ??
+    (legacyWithEmbeddedV2?.v2 ? buildTresoInputsV6FromV2(legacyWithEmbeddedV2.v2) : undefined) ??
+    buildTresoInputsV6FromLegacy(legacyInputs);
   return {
-    inputsV5,
+    inputsV6,
     projectionVisible: false,
     projectionMode: 'resume',
   };
@@ -97,7 +99,7 @@ export interface TresoStateResult {
   hydrated: boolean;
 
   // Handlers globaux
-  setInputsV5: (nextInputs: TresoInputsV5) => void;
+  setInputsV6: (nextInputs: TresoInputsV6) => void;
   setProjectionVisible: (v: boolean) => void;
   setProjectionMode: (v: 'resume' | 'detail') => void;
 }
@@ -125,13 +127,13 @@ export function useTresorerieState(): TresoStateResult {
     if (!hydrated) return;
     try {
       const persisted: TresoPersistedState = {
-        inputsV5: state.inputsV5,
+        inputsV6: state.inputsV6,
       };
       sessionStorage.setItem(STORE_KEY, JSON.stringify(persisted));
     } catch {
       // sessionStorage plein ou indisponible
     }
-  }, [hydrated, state.inputsV5]);
+  }, [hydrated, state.inputsV6]);
 
   // ── Listener reset ────────────────────────────────────────────────────────
   useEffect(() => {
@@ -144,8 +146,8 @@ export function useTresorerieState(): TresoStateResult {
 
   // ── Handlers ─────────────────────────────────────────────────────────────
 
-  const setInputsV5 = useCallback((nextInputs: TresoInputsV5) => {
-    setState(s => ({ ...s, inputsV5: nextInputs }));
+  const setInputsV6 = useCallback((nextInputs: TresoInputsV6) => {
+    setState(s => ({ ...s, inputsV6: nextInputs }));
   }, []);
 
   const setProjectionVisible = useCallback((v: boolean) => {
@@ -159,7 +161,7 @@ export function useTresorerieState(): TresoStateResult {
   return {
     state,
     hydrated,
-    setInputsV5,
+    setInputsV6,
     setProjectionVisible,
     setProjectionMode,
   };

@@ -1,27 +1,23 @@
 import type { KeyboardEvent } from 'react';
-import type { TresoTimelineLayout } from './timelineLayout';
-import { getRevenuePhaseSourceLabel } from '../../utils/revenuePhaseLabels';
+import type { TimelineSubPhaseLayout, TresoTimelineLayout } from './timelineLayout';
 
 interface TresoTimelineTrackProps {
   layout: TresoTimelineLayout;
   onEditPhase: (phaseId: string) => void;
+  compact?: boolean;
 }
 
-function fmtEuro(value: number): string {
-  return `${Math.round(value).toLocaleString('fr-FR')} €`;
-}
+const BAND_Y = [44, 60, 76, 92] as const;
+const BAND_HEIGHT = 14;
+const PALIER_Y = 28;
+const PALIER_HEIGHT = 82;
 
-function phaseClass(source: string): string {
-  return source === 'holding'
-    ? 'ts-timeline-track__phase--holding'
-    : source === 'subsidiary'
-      ? 'ts-timeline-track__phase--subsidiary'
-      : 'ts-timeline-track__phase--none';
-}
-
-function phaseToneClass(index: number): string {
-  return `ts-timeline-track__phase--tone-${(index % 5) + 1}`;
-}
+const LEGEND_ITEMS: Array<{ kind: TimelineSubPhaseLayout['kind']; label: string }> = [
+  { kind: 'remuneration', label: 'Rémunération' },
+  { kind: 'distribution', label: 'Distribution' },
+  { kind: 'cca_contribution', label: 'Constitution CCA' },
+  { kind: 'cca_repayment', label: 'Remboursement CCA' },
+];
 
 function onSegmentKeyDown(
   event: KeyboardEvent<SVGGElement>,
@@ -33,32 +29,51 @@ function onSegmentKeyDown(
   onEditPhase(phaseId);
 }
 
-export function TresoTimelineTrack({ layout, onEditPhase }: TresoTimelineTrackProps) {
+function getModeText(mode: TimelineSubPhaseLayout['modeIcon']): string {
+  if (mode === 'target') return 'cible';
+  if (mode === 'max') return 'max';
+  if (mode === 'none') return 'aucun';
+  return '';
+}
+
+function getPalierTitle(item: TresoTimelineLayout['paliers'][number]): string {
+  const details = item.subPhases
+    .filter(subPhase => subPhase.enabled)
+    .map(subPhase => subPhase.detail)
+    .join(' · ');
+  return `Palier ${item.startYear}-${item.endYear}${details ? ` · ${details}` : ''}`;
+}
+
+export function TresoTimelineTrack({ layout, onEditPhase, compact = false }: TresoTimelineTrackProps) {
   const tickModulo = layout.ticks.length > 10 ? 2 : 1;
+  const svgHeight = compact ? 124 : layout.svgHeight;
 
   return (
-    <div className="ts-timeline-track-outer ts-scroll-x">
-      <div className="ts-timeline-track" aria-label="Timeline des revenus">
+    <div className={`ts-timeline-track-outer${compact ? ' ts-timeline-track-outer--compact' : ''} ts-scroll-x`}>
+      <div className={`ts-timeline-track${compact ? ' ts-timeline-track--compact' : ''}`} aria-label="Timeline des revenus">
         <svg
           width={layout.svgWidth}
-          height={layout.svgHeight}
-          viewBox={`0 0 ${layout.svgWidth} ${layout.svgHeight}`}
+          height={svgHeight}
+          viewBox={`0 0 ${layout.svgWidth} ${svgHeight}`}
           role="img"
           aria-label="Parcours de revenus"
         >
-          <line x1={layout.trackLeft} y1="76" x2={layout.trackRight} y2="76" className="ts-timeline-track__axis" />
-          <line x1={layout.trackLeft} y1="148" x2={layout.trackRight} y2="148" className="ts-timeline-track__age-axis" />
+          <defs>
+            <pattern id="ts-subphase-disabled" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+              <line x1="0" y1="0" x2="0" y2="6" className="ts-timeline-track__pattern-line" />
+            </pattern>
+          </defs>
 
           {layout.ticks.map((tick, index) => (
             <g key={tick.year}>
-              <line x1={tick.x} y1="68" x2={tick.x} y2="154" className="ts-timeline-track__tick" />
+              <line x1={tick.x} y1="24" x2={tick.x} y2="110" className="ts-timeline-track__tick" />
               {index % tickModulo === 0 ? (
                 <>
-                  <text x={tick.x} y="54" textAnchor="middle" className="ts-timeline-track__year">
+                  <text x={tick.x} y="18" textAnchor="middle" className="ts-timeline-track__year">
                     {tick.year}
                   </text>
-                  {tick.age != null ? (
-                    <text x={tick.x} y="174" textAnchor="middle" className="ts-timeline-track__age">
+                  {!compact && tick.age != null ? (
+                    <text x={tick.x} y="128" textAnchor="middle" className="ts-timeline-track__age">
                       {tick.age} ans
                     </text>
                   ) : null}
@@ -67,113 +82,130 @@ export function TresoTimelineTrack({ layout, onEditPhase }: TresoTimelineTrackPr
             </g>
           ))}
 
-          {layout.phases.map((item, index) => {
-            const label = item.phase.label?.trim() || getRevenuePhaseSourceLabel(item.phase.source);
-            const sourceLabel = getRevenuePhaseSourceLabel(item.phase.source);
-            const clipId = `clip-phase-${item.phase.id}`;
-            const title = `${label} · net ${fmtEuro(item.netRevenue)} · besoin ${fmtEuro(item.phase.annualNetIncomeNeed)} · CCA ${item.phase.useCcaForCompletion ? 'oui' : 'non'}`;
-            const showDetail = item.width >= 200;
-            const showLabel = item.width >= 120;
-            const showSource = item.width >= 84;
-            const badgeX = item.x + Math.min(20, item.width / 2);
+          {!compact ? (
+            <line
+              x1={layout.trackLeft}
+              y1="112"
+              x2={layout.trackRight}
+              y2="112"
+              className="ts-timeline-track__age-axis"
+            />
+          ) : null}
+
+          {layout.paliers.map(item => {
+            const title = getPalierTitle(item);
+            const showPalierLabel = item.width >= 130 && item.phase.label?.trim();
+            const textWidth = Math.max(0, item.width - 18);
             return (
               <g
                 key={item.phase.id}
                 role="button"
                 tabIndex={0}
                 aria-label={`Modifier ${title}`}
-                className="ts-timeline-track__phase"
+                className="ts-timeline-track__palier"
                 onClick={() => onEditPhase(item.phase.id)}
                 onKeyDown={event => onSegmentKeyDown(event, item.phase.id, onEditPhase)}
               >
-                <defs>
-                  <clipPath id={clipId}>
-                    <rect x={item.x} y="86" width={item.width} height="44" />
-                  </clipPath>
-                </defs>
                 <title>{title}</title>
                 <rect
                   x={item.x}
-                  y="86"
+                  y={PALIER_Y}
                   width={item.width}
-                  height="44"
-                  rx="8"
-                  className={`ts-timeline-track__phase-rect ${phaseToneClass(index)} ${phaseClass(item.phase.source)}`}
+                  height={PALIER_HEIGHT}
+                  rx="6"
+                  className="ts-timeline-track__palier-bg"
                 />
-                <g clipPath={`url(#${clipId})`}>
-                  <circle
-                    cx={badgeX}
-                    cy="108"
-                    r="12"
-                    className="ts-timeline-track__phase-badge-dot"
-                  />
-                  <text
-                    x={badgeX}
-                    y="112"
-                    textAnchor="middle"
-                    className="ts-timeline-track__phase-badge"
-                  >
-                    {index + 1}
+                {showPalierLabel ? (
+                  <text x={item.x + 8} y="39" className="ts-timeline-track__palier-label">
+                    {item.phase.label}
                   </text>
-                  {showLabel ? (
-                    <text
-                      x={item.x + item.width / 2}
-                      y={showDetail ? 104 : 112}
-                      textAnchor="middle"
-                      className="ts-timeline-track__phase-label"
-                    >
-                      {label}
-                    </text>
-                  ) : null}
-                  {showDetail ? (
-                    <text
-                      x={item.x + item.width / 2}
-                      y="122"
-                      textAnchor="middle"
-                      className="ts-timeline-track__phase-detail"
-                    >
-                      {item.startYear}-{item.endYear} · besoin {fmtEuro(item.phase.annualNetIncomeNeed)}
-                    </text>
-                  ) : null}
-                  {showSource ? (
-                    <text
-                      x={item.x + item.width - 12}
-                      y="101"
-                      textAnchor="end"
-                      className="ts-timeline-track__phase-source"
-                    >
-                      {sourceLabel}
-                    </text>
-                  ) : null}
-                </g>
+                ) : null}
+                {item.subPhases.map(subPhase => {
+                  const y = BAND_Y[subPhase.bandIndex];
+                  const modeText = getModeText(subPhase.modeIcon);
+                  const showText = subPhase.enabled && item.width >= 80;
+                  const showMode = subPhase.enabled && modeText && item.width >= 118;
+                  const bandClass = [
+                    'ts-timeline-track__subphase',
+                    `ts-timeline-track__subphase--${subPhase.kind}`,
+                    subPhase.enabled ? 'is-enabled' : 'is-disabled',
+                    subPhase.modeIcon === 'none' ? 'has-none-mode' : '',
+                    subPhase.kind === 'remuneration' && item.phase.remuneration.source === 'subsidiary'
+                      ? 'is-subsidiary-source'
+                      : '',
+                  ].filter(Boolean).join(' ');
+                  return (
+                    <g key={subPhase.kind}>
+                      <rect
+                        x={item.x + 6}
+                        y={y}
+                        width={Math.max(0, item.width - 12)}
+                        height={BAND_HEIGHT}
+                        rx="4"
+                        className={bandClass}
+                      />
+                      {!subPhase.enabled ? (
+                        <rect
+                          x={item.x + 6}
+                          y={y}
+                          width={Math.max(0, item.width - 12)}
+                          height={BAND_HEIGHT}
+                          rx="4"
+                          fill="url(#ts-subphase-disabled)"
+                          className="ts-timeline-track__subphase-hatch"
+                        />
+                      ) : null}
+                      {showText ? (
+                        <text
+                          x={item.x + item.width / 2}
+                          y={y + 10}
+                          textAnchor="middle"
+                          className="ts-timeline-track__subphase-label"
+                          textLength={textWidth > 28 ? undefined : textWidth}
+                          lengthAdjust="spacingAndGlyphs"
+                        >
+                          {subPhase.shortLabel}
+                        </text>
+                      ) : null}
+                      {showMode ? (
+                        <text
+                          x={item.x + item.width - 12}
+                          y={y + 10}
+                          textAnchor="end"
+                          className="ts-timeline-track__subphase-mode"
+                        >
+                          {modeText}
+                        </text>
+                      ) : null}
+                    </g>
+                  );
+                })}
               </g>
             );
           })}
 
-          {layout.milestones.map(milestone => {
-            const title = `${milestone.description} · ${milestone.year}`;
-            return (
-              <g key={milestone.id} className="ts-timeline-track__milestone">
-                <line
-                  x1={milestone.x}
-                  y1={Math.min(milestone.dotY + 15, 142)}
-                  x2={milestone.x}
-                  y2="142"
-                  className="ts-timeline-track__milestone-line"
-                />
-                <circle cx={milestone.x} cy={milestone.dotY} r="13" className="ts-timeline-track__milestone-dot" />
-                <text
-                  x={milestone.x}
-                  y={milestone.dotY + 5}
-                  textAnchor="middle"
-                  className="ts-timeline-track__milestone-label"
-                >
-                  {milestone.label}
-                </text>
-                <title>{title}</title>
-              </g>
-            );
-          })}
+          {!compact ? (
+            <g className="ts-timeline-track__legend">
+              {LEGEND_ITEMS.map((item, index) => {
+                const x = layout.trackLeft + index * 150;
+                return (
+                  <g key={item.kind} transform={`translate(${x} 146)`}>
+                    <rect
+                      x="0"
+                      y="-9"
+                      width="18"
+                      height="8"
+                      rx="3"
+                      className={`ts-timeline-track__subphase ts-timeline-track__subphase--${item.kind} is-enabled`}
+                    />
+                    <text x="24" y="-2" className="ts-timeline-track__legend-label">
+                      {item.label}
+                    </text>
+                  </g>
+                );
+              })}
+            </g>
+          ) : null}
         </svg>
       </div>
     </div>

@@ -166,6 +166,51 @@ export interface AssociateRevenuePhaseInput {
   useCcaForCompletion: boolean;
 }
 
+export type DividendsStrategy = 'max_treso' | 'montant_cible' | 'aucun';
+export type CcaRepaymentStrategy = 'max_treso' | 'montant_cible' | 'aucun';
+
+export interface PhaseRemunerationBlock {
+  enabled: boolean;
+  source: AssociateRevenuePhaseSource;
+  subsidiaryId?: string;
+  loadedAnnualCost: number;
+  socialChargeRate: number;
+}
+
+export interface PhaseDistributionBlock {
+  enabled: boolean;
+  annualNetIncomeNeed: number;
+  dividendsStrategy: DividendsStrategy;
+  dividendsTargetAmountNet?: number;
+}
+
+export interface PhaseCcaContributionBlock {
+  enabled: boolean;
+  exceptional?: CcaExceptionalContributionInput;
+  annual?: {
+    amount: number;
+    startYear: number;
+    endYear: number;
+  };
+}
+
+export interface PhaseCcaRepaymentBlock {
+  enabled: boolean;
+  strategy: CcaRepaymentStrategy;
+  targetAmount?: number;
+}
+
+export interface AssociateRevenuePhaseInputV6 {
+  id: string;
+  startYear: number;
+  endYear: number;
+  label?: string;
+  remuneration: PhaseRemunerationBlock;
+  distribution: PhaseDistributionBlock;
+  ccaContribution: PhaseCcaContributionBlock;
+  ccaRepayment: PhaseCcaRepaymentBlock;
+}
+
 export interface AssociateInput {
   id: string;
   label: string;
@@ -180,6 +225,16 @@ export interface AssociateInput {
 export interface AssociateInputV5 extends Omit<AssociateInput, 'remuneration'> {
   remuneration?: never;
   revenuePhases: AssociateRevenuePhaseInput[];
+}
+
+export interface CcaScheduleInputV6 {
+  currentBalance: number;
+  remunerationRate: number;
+}
+
+export interface AssociateInputV6 extends Omit<AssociateInputV5, 'revenuePhases' | 'cca'> {
+  revenuePhases: AssociateRevenuePhaseInputV6[];
+  cca?: CcaScheduleInputV6;
 }
 
 export type FinancedAssetKind = 'scpi' | 'immobilier' | 'autre';
@@ -315,6 +370,11 @@ export interface CompanyInputV5 extends Omit<CompanyInput, 'associates'> {
   associates: AssociateInputV5[];
 }
 
+export interface CompanyInputV6 extends Omit<CompanyInputV5, 'associates'> {
+  associates: AssociateInputV6[];
+  legalReserveInitial?: number;
+}
+
 export interface TresoInputsV2 {
   version: 2;
   foyer: FoyerInput;
@@ -337,7 +397,14 @@ export interface TresoInputsV5 extends Omit<TresoInputsV4, 'version' | 'company'
   company: CompanyInputV5;
 }
 
-export type TresoInputsRuntime = TresoInputsV2 | TresoInputsV3 | TresoInputsV4 | TresoInputsV5;
+export interface TresoInputsV6 extends Omit<TresoInputsV5, 'version' | 'company'> {
+  version: 6;
+  company: CompanyInputV6;
+}
+
+export type TresoInputsRuntime = TresoInputsV2 | TresoInputsV3 | TresoInputsV4 | TresoInputsV5 | TresoInputsV6;
+export type RuntimeAssociateInput = AssociateInput | AssociateInputV5 | AssociateInputV6;
+export type RuntimeCompanyInput = CompanyInput | CompanyInputV5 | CompanyInputV6;
 
 // ─── Entrées legacy du simulateur (migration/compatibilité) ───────────────────
 
@@ -445,6 +512,9 @@ export interface TresoProjectionRow {
 
   // Réserves
   reservesDebut: number;
+  reserveLegaleDebut: number;
+  dotationReserveLegale: number;
+  reserveLegaleFin: number;
   capaciteDistribuable: number;
   miseEnReserve: number;
   reservesFin: number;

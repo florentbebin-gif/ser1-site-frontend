@@ -82,4 +82,33 @@ describe('exportFingerprint', () => {
 
     expect(a).not.toBe(b);
   });
+
+  it('stabilise la sérialisation des sous-phases V6 indépendamment de l’ordre des clés', () => {
+    const first = fingerprintXlsxExport({
+      sim: 'tresorerie-societe',
+      phases: [{
+        id: 'phase-1',
+        startYear: 2026,
+        endYear: 2030,
+        remuneration: { enabled: true, source: 'holding', loadedAnnualCost: 80000, socialChargeRate: 0.3 },
+        distribution: { enabled: true, annualNetIncomeNeed: 42000, dividendsStrategy: 'montant_cible', dividendsTargetAmountNet: 12000 },
+        ccaContribution: { enabled: true, annual: { amount: 6000, startYear: 2027, endYear: 2030 } },
+        ccaRepayment: { enabled: true, strategy: 'max_treso' },
+      }],
+    });
+    const second = fingerprintXlsxExport({
+      phases: [{
+        endYear: 2030,
+        id: 'phase-1',
+        ccaRepayment: { strategy: 'max_treso', enabled: true },
+        distribution: { dividendsTargetAmountNet: 12000, dividendsStrategy: 'montant_cible', annualNetIncomeNeed: 42000, enabled: true },
+        startYear: 2026,
+        ccaContribution: { annual: { endYear: 2030, startYear: 2027, amount: 6000 }, enabled: true },
+        remuneration: { socialChargeRate: 0.3, loadedAnnualCost: 80000, source: 'holding', enabled: true },
+      }],
+      sim: 'tresorerie-societe',
+    });
+
+    expect(first).toBe(second);
+  });
 });

@@ -11,8 +11,10 @@ import type {
   TresoInputsV3,
   TresoInputsV4,
   TresoInputsV5,
+  TresoInputsV6,
 } from '@/engine/tresorerie/types';
 import { sortPhases } from './revenuePhases';
+import { buildTresoInputsV6FromV5 as buildTresoInputsV6FromV5Internal } from './tresorerieV6Migration';
 
 const DEFAULT_ASSOCIATE_ID = 'associe-1';
 
@@ -514,4 +516,24 @@ export function buildTresoInputsV5FromV2(input: TresoInputsV2): TresoInputsV5 {
 
 export function buildTresoInputsV5FromLegacy(input: TresoInputs): TresoInputsV5 {
   return buildTresoInputsV5FromV4(buildTresoInputsV4FromLegacy(input));
+}
+
+export function buildTresoInputsV6FromV5(input: TresoInputsV5 | TresoInputsV6): TresoInputsV6 {
+  return buildTresoInputsV6FromV5Internal(input);
+}
+
+export function buildTresoInputsV6FromV4(input: TresoInputsV4 | TresoInputsV5 | TresoInputsV6): TresoInputsV6 {
+  return input.version === 6 ? input : buildTresoInputsV6FromV5(buildTresoInputsV5FromV4(input));
+}
+
+export function buildTresoInputsV6FromV3(input: TresoInputsV3): TresoInputsV6 {
+  return buildTresoInputsV6FromV4(buildTresoInputsV4FromV3(input));
+}
+
+export function buildTresoInputsV6FromV2(input: TresoInputsV2): TresoInputsV6 {
+  return buildTresoInputsV6FromV4(buildTresoInputsV4FromV2(input));
+}
+
+export function buildTresoInputsV6FromLegacy(input: TresoInputs): TresoInputsV6 {
+  return buildTresoInputsV6FromV4(buildTresoInputsV4FromLegacy(input));
 }

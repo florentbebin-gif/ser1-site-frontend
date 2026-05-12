@@ -1,14 +1,14 @@
 import { SimFieldShell } from '@/components/ui/sim/SimFieldShell';
 import { SimModalShell } from '@/components/ui/sim/SimModalShell';
-import type { CompanyInputV5 } from '@/engine/tresorerie/types';
+import type { CompanyInputV6 } from '@/engine/tresorerie/types';
 import {
   fmtEuroInput,
   parseEuroInput,
 } from '../../utils/tresorerieFormatters';
 
 interface TresoCompanyFinancialsModalProps {
-  company: CompanyInputV5;
-  onChange: (patch: Partial<CompanyInputV5>) => void;
+  company: CompanyInputV6;
+  onChange: (patch: Partial<CompanyInputV6>) => void;
   onClose: () => void;
 }
 

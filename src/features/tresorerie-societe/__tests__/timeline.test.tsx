@@ -3,12 +3,40 @@
 import '@testing-library/jest-dom/vitest';
 import { fireEvent, render, screen, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import type { TresoInputsV5 } from '@/engine/tresorerie/types';
+import type { AssociateRevenuePhaseInputV6, TresoInputsV6 } from '@/engine/tresorerie/types';
 import { TresoTimelineSection } from '../components/timeline/TresoTimelineSection';
 import { computeTimelineRange } from '../components/timeline/timelineLayout';
 
-const BASE_INPUTS: TresoInputsV5 = {
-  version: 5,
+function phase(patch: Partial<AssociateRevenuePhaseInputV6>): AssociateRevenuePhaseInputV6 {
+  return {
+    id: 'phase',
+    label: undefined,
+    startYear: 2026,
+    endYear: 2030,
+    remuneration: {
+      enabled: false,
+      source: 'none',
+      loadedAnnualCost: 0,
+      socialChargeRate: 0,
+    },
+    distribution: {
+      enabled: false,
+      annualNetIncomeNeed: 0,
+      dividendsStrategy: 'max_treso',
+    },
+    ccaContribution: {
+      enabled: false,
+    },
+    ccaRepayment: {
+      enabled: false,
+      strategy: 'aucun',
+    },
+    ...patch,
+  };
+}
+
+const BASE_INPUTS: TresoInputsV6 = {
+  version: 6,
   selectedAssociateId: 'associe-1',
   foyer: {
     selectedAssociateId: 'associe-1',
@@ -22,6 +50,7 @@ const BASE_INPUTS: TresoInputsV5 = {
     shareCapital: 1000,
     sharePremium: 0,
     reservesInitial: 0,
+    legalReserveInitial: 0,
     treasuryInitial: 150000,
     annualStructureCosts: 3000,
     incomeStatement: {
@@ -44,38 +73,43 @@ const BASE_INPUTS: TresoInputsV5 = {
       roles: ['associe_sans_statut'],
       cca: {
         currentBalance: 100000,
-        exceptionalContributions: [],
-        annualContribution: { amount: 0, startYear: 2026, endYear: 2026 },
         remunerationRate: 0,
       },
       revenuePhases: [
-        {
+        phase({
           id: 'phase-remu',
           label: 'Rémunération holding',
           startYear: 2026,
-          source: 'holding',
-          loadedAnnualCost: 80000,
-          socialChargeRate: 0.3,
-          annualNetIncomeNeed: 0,
-          useCcaForCompletion: true,
-        },
-        {
+          endYear: 2030,
+          remuneration: {
+            enabled: true,
+            source: 'holding',
+            loadedAnnualCost: 80000,
+            socialChargeRate: 0.3,
+          },
+          ccaRepayment: {
+            enabled: true,
+            strategy: 'max_treso',
+          },
+        }),
+        phase({
           id: 'phase-besoin',
           label: 'Besoin retraite',
           startYear: 2031,
-          source: 'none',
-          loadedAnnualCost: 0,
-          socialChargeRate: 0,
-          annualNetIncomeNeed: 40000,
-          useCcaForCompletion: false,
-        },
+          endYear: 2040,
+          distribution: {
+            enabled: true,
+            annualNetIncomeNeed: 40000,
+            dividendsStrategy: 'max_treso',
+          },
+        }),
       ],
     }],
     loans: [],
     subsidiaries: [{
       id: 'filiale-1',
       label: 'Filiale A',
-      parentEntityId: 'company',
+      parentEntityId: 'societe',
       ownershipPct: 100,
       holdingOwnershipPct: 100,
       motherDaughterEligible: true,
@@ -99,7 +133,7 @@ const BASE_INPUTS: TresoInputsV5 = {
   },
 };
 
-function cloneInputs(patch?: (inputs: TresoInputsV5) => void): TresoInputsV5 {
+function cloneInputs(patch?: (inputs: TresoInputsV6) => void): TresoInputsV6 {
   const inputs = structuredClone(BASE_INPUTS);
   patch?.(inputs);
   return inputs;
@@ -153,7 +187,7 @@ describe('TresoTimelineSection', () => {
 
     fireEvent.change(screen.getByLabelText('Horizon de projection'), { target: { value: '25' } });
 
-    expect(screen.getByText(/2031 - 2050/)).toBeInTheDocument();
+    expect(screen.getByText('2050')).toBeInTheDocument();
   });
 
   it('place le début et l’horizon de projection dans la même grille de réglages', () => {
@@ -173,53 +207,50 @@ describe('TresoTimelineSection', () => {
     expect(layout.svgWidth).toBeGreaterThan(1000);
   });
 
-  it('décale les jalons qui tombent la même année', () => {
-    const inputs = cloneInputs(inputs => {
-      inputs.company.associates[0].revenuePhases[1].startYear = 2035;
-      inputs.company.subsidiaries[0].disposal!.year = 2035;
-    });
+  it('supprime les jalons et badges numérotés du schéma', () => {
+    const inputs = cloneInputs();
     const layout = computeTimelineRange(inputs.company, inputs.company.associates[0], 15);
-    const milestones2035 = layout.milestones.filter(milestone => milestone.year === 2035);
 
-    expect(milestones2035).toHaveLength(2);
-    expect(new Set(milestones2035.map(milestone => milestone.dotY)).size).toBe(2);
+    render(<TresoTimelineSection inputs={inputs} onChange={vi.fn()} />);
+
+    expect(layout.paliers).toHaveLength(2);
+    expect(document.querySelectorAll('.ts-timeline-track__phase-badge')).toHaveLength(0);
+    expect(document.querySelectorAll('.ts-timeline-track__milestone-label')).toHaveLength(0);
   });
 
-  it('masque les détails des segments trop courts pour éviter les chevauchements', () => {
+  it('masque les libellés internes des bandes trop courtes pour éviter les chevauchements', () => {
     render(
       <TresoTimelineSection
         inputs={cloneInputs(inputs => {
           inputs.company.subsidiaries = [];
           inputs.company.associates[0].revenuePhases = [
-            {
+            phase({
               id: 'phase-2026',
               label: 'A',
               startYear: 2026,
-              source: 'holding',
-              loadedAnnualCost: 0,
-              socialChargeRate: 0,
-              annualNetIncomeNeed: 0,
-              useCcaForCompletion: true,
-            },
-            {
+              endYear: 2026,
+              remuneration: {
+                enabled: true,
+                source: 'holding',
+                loadedAnnualCost: 0,
+                socialChargeRate: 0,
+              },
+            }),
+            phase({
               id: 'phase-2027',
               label: 'B',
               startYear: 2027,
-              source: 'none',
-              loadedAnnualCost: 0,
-              socialChargeRate: 0,
-              annualNetIncomeNeed: 0,
-              useCcaForCompletion: true,
-            },
+              endYear: 2027,
+            }),
           ];
         })}
         onChange={vi.fn()}
       />,
     );
 
-    expect(document.querySelectorAll('.ts-timeline-track__phase-badge')).toHaveLength(2);
+    expect(document.querySelectorAll('.ts-timeline-track__phase-badge')).toHaveLength(0);
     expect(screen.queryByText(/2026-2026 · besoin/i)).not.toBeInTheDocument();
-    expect(document.querySelector('.ts-timeline-track-outer')).toBeInTheDocument();
+    expect(document.querySelector('.ts-timeline-track')).toBeInTheDocument();
   });
 
   it('affiche un message informatif pour un associé personne morale', () => {
@@ -242,28 +273,54 @@ describe('TresoTimelineSection', () => {
     openFirstPhaseModal();
 
     expect(screen.getByText('Paramétrer le palier')).toBeInTheDocument();
-    expect(screen.getAllByDisplayValue('2026')).toHaveLength(2);
+    expect(screen.getByLabelText('Année de début')).toHaveDisplayValue('2026');
+    expect(screen.getByLabelText('Année de fin')).toHaveDisplayValue('2030');
     expect(screen.getByDisplayValue(value => value.replace(/\s/g, '') === '80000')).toBeInTheDocument();
-    expect(screen.getAllByText(/Net annuel estimé/i).length).toBeGreaterThan(0);
+    expect(screen.getAllByRole('button', { name: /Rémunération/i }).length).toBeGreaterThan(0);
   });
 
-  it('bloque l’enregistrement si deux paliers commencent la même année', () => {
-    render(<TresoTimelineSection inputs={cloneInputs()} onChange={vi.fn()} />);
+  it('bloque l’enregistrement si deux paliers activent la même sous-phase sur les mêmes années', () => {
+    render(
+      <TresoTimelineSection
+        inputs={cloneInputs(inputs => {
+          inputs.company.associates[0].revenuePhases[1].remuneration = {
+            enabled: true,
+            source: 'holding',
+            loadedAnnualCost: 50000,
+            socialChargeRate: 0.2,
+          };
+        })}
+        onChange={vi.fn()}
+      />,
+    );
 
     openFirstPhaseModal();
     fireEvent.change(screen.getByLabelText('Année de début'), { target: { value: '2031' } });
+    fireEvent.change(screen.getByLabelText('Année de fin'), { target: { value: '2035' } });
 
-    expect(screen.getByRole('alert')).toHaveTextContent(/Un autre palier commence déjà en 2031/i);
+    expect(screen.getByRole('alert')).toHaveTextContent(/sous-phase Rémunération/i);
     expect(screen.getByRole('button', { name: 'Enregistrer' })).toBeDisabled();
   });
 
-  it('recalcule la fin dérivée dès que l’année de début est modifiée', () => {
-    render(<TresoTimelineSection inputs={cloneInputs()} onChange={vi.fn()} />);
+  it('persiste l’année de fin saisie dans le palier', () => {
+    const onChange = vi.fn();
+    render(<TresoTimelineSection inputs={cloneInputs()} onChange={onChange} />);
 
     openFirstPhaseModal();
-    fireEvent.change(screen.getByLabelText('Année de début'), { target: { value: '2032' } });
+    fireEvent.change(screen.getByLabelText('Année de fin'), { target: { value: '2029' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Enregistrer' }));
 
-    expect(screen.getByText(/Jusqu’à l’horizon de projection/i)).toBeInTheDocument();
+    expect(onChange).toHaveBeenCalledWith(expect.objectContaining({
+      company: expect.objectContaining({
+        associates: expect.arrayContaining([
+          expect.objectContaining({
+            revenuePhases: expect.arrayContaining([
+              expect.objectContaining({ id: 'phase-remu', endYear: 2029 }),
+            ]),
+          }),
+        ]),
+      }),
+    }));
   });
 
   it('désactive la suppression quand il ne reste qu’un seul palier', () => {
