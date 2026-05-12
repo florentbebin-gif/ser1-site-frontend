@@ -54,6 +54,14 @@ export interface TresoKPIs {
   alerteTresorerieBancaire: boolean;
   /** Première année civile où le compte bancaire passe sous le seuil cible. */
   premiereAnneeDeficitBancaire: number | null;
+  /** true si la trésorerie bancaire respecte le solde minimum + BFR jusqu’à l’horizon. */
+  tresorerieTientHorizon: boolean;
+  /** true si la cible de revenu est atteinte ; null si aucune cible n’est saisie. */
+  revenuCibleTientHorizon: boolean | null;
+  /** Première année civile où le revenu net projeté passe sous la cible. */
+  premiereAnneeRevenuCibleNonTenu: number | null;
+  /** Rendement moyen annuel estimé de la trésorerie placée. */
+  performanceMoyenneTresorerie: number;
   /** Indique si la projection a des lignes (inputs valides) */
   hasRows: boolean;
   /** Année de départ en retraite (index 1-based dans rows) */
@@ -162,6 +170,10 @@ export function useTresorerieCalculations(inputs: TresoInputsRuntime): TresoCalc
         ccaRembourseTotal: 0,
         alerteTresorerieBancaire: false,
         premiereAnneeDeficitBancaire: null,
+        tresorerieTientHorizon: true,
+        revenuCibleTientHorizon: null,
+        premiereAnneeRevenuCibleNonTenu: null,
+        performanceMoyenneTresorerie: 0,
         hasRows: false,
         anneeRetraiteIndex: null,
       };
@@ -223,6 +235,41 @@ export function useTresorerieCalculations(inputs: TresoInputsRuntime): TresoCalc
     const premiereAnneeDeficitBancaire = firstDeficitRow
       ? activeProfile.projectionStartYear + firstDeficitRow.year - 1
       : null;
+    const revenuCibleRows = selectedAssociate
+      ? rows.map(row => {
+        const anneeCivile = activeProfile.projectionStartYear + row.year - 1;
+        return {
+          row,
+          anneeCivile,
+          cible: getAssociateAnnualIncomeNeedForYear(
+            selectedAssociate,
+            activeProfile.annualIncomeNeed,
+            anneeCivile,
+          ),
+        };
+      }).filter(item => item.cible > 0)
+      : [];
+    const firstRevenuCibleNonTenu = revenuCibleRows.find(item => item.row.revenusNets + 1 < item.cible);
+    const revenuCibleTientHorizon = revenuCibleRows.length > 0
+      ? !firstRevenuCibleNonTenu
+      : null;
+    let previousCapiGain = 0;
+    const performance = rows.reduce(
+      (sum, row) => {
+        const capitalPlace = row.capitalDistrib + row.capitalCapi;
+        const capiGain = Math.max(0, row.valeurCapi - row.capitalCapi);
+        const capiPerformanceAnnuelle = Math.max(0, capiGain - previousCapiGain);
+        previousCapiGain = capiGain;
+        return {
+          produits: sum.produits + row.revenuDistrib + capiPerformanceAnnuelle,
+          capitalPlace: sum.capitalPlace + capitalPlace,
+        };
+      },
+      { produits: 0, capitalPlace: 0 },
+    );
+    const performanceMoyenneTresorerie = performance.capitalPlace > 0
+      ? performance.produits / performance.capitalPlace
+      : 0;
 
     return {
       ccaTotalConstitue,
@@ -240,6 +287,10 @@ export function useTresorerieCalculations(inputs: TresoInputsRuntime): TresoCalc
       ccaRembourseTotal,
       alerteTresorerieBancaire: deficitBancaireMax > 0,
       premiereAnneeDeficitBancaire,
+      tresorerieTientHorizon: deficitBancaireMax <= 0,
+      revenuCibleTientHorizon,
+      premiereAnneeRevenuCibleNonTenu: firstRevenuCibleNonTenu?.anneeCivile ?? null,
+      performanceMoyenneTresorerie,
       hasRows: true,
       anneeRetraiteIndex,
     };

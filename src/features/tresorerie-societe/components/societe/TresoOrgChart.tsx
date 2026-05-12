@@ -1,7 +1,6 @@
 import type { KeyboardEvent } from 'react';
 import type { RuntimeCompanyInput } from '@/engine/tresorerie/types';
 import {
-  getTresoOrgchartCompanyKindLabel,
   getTresoOrgchartNodeLabel,
   computeTresoOrgchartLayout,
   type TresoOrgNode,
@@ -37,7 +36,6 @@ export function TresoOrgChart({
   onSubsidiaryClick,
 }: TresoOrgChartProps) {
   const layout = computeTresoOrgchartLayout(company, selectedAssociateId);
-  const companyKindLabel = getTresoOrgchartCompanyKindLabel(company);
 
   const runNodeAction = (node: TresoOrgNode) => {
     if (node.kind === 'company') {
@@ -81,19 +79,20 @@ export function TresoOrgChart({
 
         {layout.nodes.map(node => {
           const baseAriaLabel = node.kind === 'company'
-            ? `Paramétrer ${companyKindLabel}`
+            ? `Paramétrer ${node.label}`
             : getTresoOrgchartNodeLabel(node);
           const ariaLabel = node.active
             ? `${baseAriaLabel} - associé actif`
             : baseAriaLabel;
-          const title = node.kind === 'company' ? companyKindLabel : node.label;
-          const subtitle = node.kind === 'company' ? node.label : node.meta;
-          const metaParts = node.kind === 'company' && node.meta ? node.meta.split(' · ') : [];
+          const title = node.label;
+          const subtitle = node.meta;
+          const detail = node.detail;
           const titleY = node.kind === 'company' ? 27 : 17;
           const subtitleY = node.kind === 'company' ? 46 : 30;
           const codeY = node.kind === 'company' ? 58 : 34;
           const maxTitleLength = node.kind === 'company' ? 30 : 18;
           const maxSubtitleLength = node.kind === 'company' ? 28 : 18;
+          const maxDetailLength = node.kind === 'company' ? 28 : 18;
           return (
             <g
               key={node.id}
@@ -119,10 +118,9 @@ export function TresoOrgChart({
                   {truncate(subtitle, maxSubtitleLength)}
                 </text>
               ) : null}
-              {metaParts.length > 0 ? (
+              {detail ? (
                 <text className="ts-org-svg-node__code" x={node.width / 2} y={codeY} textAnchor="middle">
-                  <tspan>{truncate(metaParts[0], 8)}</tspan>
-                  {metaParts[1] ? <tspan>{` · ${truncate(metaParts[1], 8)}`}</tspan> : null}
+                  {truncate(detail, maxDetailLength)}
                 </text>
               ) : null}
               {node.active ? (

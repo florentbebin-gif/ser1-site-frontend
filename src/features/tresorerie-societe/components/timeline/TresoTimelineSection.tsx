@@ -123,7 +123,7 @@ export function TresoTimelineSection({
             Parcours de revenus de l’associé
           </h2>
           <p className="ts-section__subtitle">
-            Phases de rémunération, besoins nets et priorité CCA de l’associé sélectionné
+            Phases de rémunération, objectifs nets et priorité CCA de l’associé sélectionné
           </p>
         </div>
         {selectedAssociate ? (
@@ -197,7 +197,7 @@ export function TresoTimelineSection({
           <TresoTimelineTrack layout={layout} onEditPhase={setEditingPhaseId} />
 
           <div className="ts-timeline-actions">
-            <button type="button" className="ts-secondary-btn" onClick={addRevenuePhase}>
+            <button type="button" className="ts-text-btn" onClick={addRevenuePhase}>
               Ajouter un palier
             </button>
           </div>

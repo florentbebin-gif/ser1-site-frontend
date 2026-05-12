@@ -57,6 +57,14 @@ function sourceLabel(source: string): string {
   return source;
 }
 
+function getTresoreriePlacee(row: TresoProjectionRow): number {
+  return row.capitalDistrib + row.valeurCapi;
+}
+
+function getTresorerieConsolidee(row: TresoProjectionRow): number {
+  return (row.tresorerieBanqueFin ?? row.tresorerieFin) + getTresoreriePlacee(row);
+}
+
 const RESUME_ROWS: RowDef[] = [
   { key: 'apportCCA', label: "Apports en compte courant d'associé", format: r => fmtE(r.apportCCA) },
   { key: 'revenuDistrib', label: 'Revenus de la poche de distribution', format: r => fmtE(r.revenuDistrib) },
@@ -94,7 +102,7 @@ const DETAIL_ROWS: RowDef[] = [
   { key: 'reservesDebut', label: "Réserves en début d'exercice", group: 'reserves', format: r => fmtE(r.reservesDebut) },
   {
     key: 'resultatNetComptable',
-    label: 'Résultat net comptable',
+    label: 'Résultat net comptable estimé',
     group: 'reserves',
     emphasis: 'total',
     format: r => fmtE(r.resultatNetComptable),
@@ -119,13 +127,15 @@ const DETAIL_ROWS: RowDef[] = [
     format: r => fmtE(r.deltaBesoin),
     warning: r => r.deltaBesoin < 0,
   },
-  { key: 'tresorerieDebut', label: "Trésorerie début d'année", group: 'tresorerie', format: r => fmtE(r.tresorerieDebut) },
   { key: 'tresorerieBanqueDebut', label: 'Compte bancaire début', group: 'tresorerie', format: r => fmtOptionalE(r.tresorerieBanqueDebut) },
+  { key: 'soldeMinimumCompteBancaire', label: 'Solde minimum à conserver', group: 'tresorerie', format: r => fmtOptionalE(r.soldeMinimumCompteBancaire) },
+  { key: 'bfr', label: 'Besoin en fonds de roulement', group: 'tresorerie', format: r => fmtOptionalE(r.bfr) },
+  { key: 'tresorerieDisponible', label: 'Trésorerie bancaire disponible', group: 'tresorerie', emphasis: 'subtotal', format: r => fmtOptionalE(r.tresorerieDisponible) },
   { key: 'montantInvestiInitial', label: 'Montant investi initialement', group: 'tresorerie', format: r => fmtOptionalE(r.montantInvestiInitial) },
-  { key: 'montantBalayeAnnuel', label: 'Montant balayé annuellement', group: 'tresorerie', format: r => fmtOptionalE(r.montantBalayeAnnuel) },
+  { key: 'montantBalayeAnnuel', label: 'Montant investi automatiquement vers placements', group: 'tresorerie', format: r => fmtOptionalE(r.montantBalayeAnnuel) },
   { key: 'montantReinvestiAuTerme', label: 'Montant réinvesti au terme', group: 'tresorerie', format: r => fmtOptionalE(r.montantReinvestiAuTerme) },
-  { key: 'tresorerieDisponible', label: 'Trésorerie disponible', group: 'tresorerie', format: r => fmtOptionalE(r.tresorerieDisponible) },
-  { key: 'tresorerieBanqueFin', label: 'Compte bancaire fin', group: 'tresorerie', emphasis: 'subtotal', format: r => fmtOptionalE(r.tresorerieBanqueFin) },
+  { key: 'tresoreriePlacee', label: 'Trésorerie placée (poches)', group: 'tresorerie', emphasis: 'subtotal', format: r => fmtE(getTresoreriePlacee(r)) },
+  { key: 'tresorerieBanqueFin', label: 'Compte bancaire fin', group: 'tresorerie', format: r => fmtOptionalE(r.tresorerieBanqueFin) },
   {
     key: 'deficitTresorerieBancaire',
     label: 'Déficit bancaire vs solde minimum + BFR',
@@ -134,7 +144,7 @@ const DETAIL_ROWS: RowDef[] = [
     format: r => fmtOptionalE(r.deficitTresorerieBancaire),
     warning: r => (r.deficitTresorerieBancaire ?? 0) > 0,
   },
-  { key: 'tresorerieFin', label: "Trésorerie fin d'année", group: 'tresorerie', emphasis: 'total', format: r => fmtE(r.tresorerieFin) },
+  { key: 'tresorerieConsolidee', label: 'Trésorerie consolidée', group: 'tresorerie', emphasis: 'total', format: r => fmtE(getTresorerieConsolidee(r)) },
 ];
 
 function buildTresoAccountingProjectionView(
@@ -330,7 +340,7 @@ export function TresoProjectionDrawer({
       </div>
 
       <p className="ts-drawer__note">
-        Trésorerie en fin d'année — Convention Option A : les dividendes sortent en brut unique.
+        La trésorerie bancaire disponible correspond au compte bancaire après solde minimum et besoin en fonds de roulement.
         {' '}IS latent capitalisation : affiché pour information, non décaissé.
       </p>
     </div>

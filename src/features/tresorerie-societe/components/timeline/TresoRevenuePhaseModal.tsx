@@ -1,4 +1,3 @@
-/* eslint-disable max-lines */
 import { useEffect, useMemo, useState } from 'react';
 import { SimFieldShell } from '@/components/ui/sim/SimFieldShell';
 import { SimModalShell } from '@/components/ui/sim/SimModalShell';
@@ -10,7 +9,6 @@ import type {
   SubsidiaryInput,
 } from '@/engine/tresorerie/types';
 import {
-  computeComplement,
   computeNetRevenue,
   sortPhases,
 } from '../../utils/revenuePhases';
@@ -41,6 +39,42 @@ interface TresoRevenuePhaseModalProps {
   onClose: () => void;
 }
 
+function normalizePhaseForSave(
+  phase: AssociateRevenuePhaseInputV6,
+): AssociateRevenuePhaseInputV6 {
+  return {
+    ...phase,
+    distribution: {
+      ...phase.distribution,
+      annualNetIncomeNeed: 0,
+    },
+    ccaContribution: {
+      ...phase.ccaContribution,
+      annual: phase.ccaContribution.annual
+        ? {
+            ...phase.ccaContribution.annual,
+            startYear: phase.startYear,
+            endYear: phase.endYear,
+          }
+        : undefined,
+    },
+  };
+}
+
+function coercePhaseForSubsidiaries(
+  phase: AssociateRevenuePhaseInputV6,
+  hasSubsidiaries: boolean,
+): AssociateRevenuePhaseInputV6 {
+  if (hasSubsidiaries || phase.remuneration.source !== 'subsidiary') return phase;
+  return {
+    ...phase,
+    remuneration: {
+      ...phase.remuneration,
+      source: 'holding',
+      subsidiaryId: undefined,
+    },
+  };
+}
 
 export function TresoRevenuePhaseModal({
   phase,
@@ -55,9 +89,9 @@ export function TresoRevenuePhaseModal({
   const [activeSubPhase, setActiveSubPhase] = useState<SubPhaseKey>('remuneration');
 
   useEffect(() => {
-    setDraft(phase);
+    setDraft(coercePhaseForSubsidiaries(phase, subsidiaries.length > 0));
     setActiveSubPhase('remuneration');
-  }, [phase]);
+  }, [phase, subsidiaries.length]);
 
   const phasesWithDraft = useMemo(
     () => phases.map(item => (item.id === draft.id ? draft : item)),
@@ -76,12 +110,21 @@ export function TresoRevenuePhaseModal({
     ? 'Constitution et remboursement CCA sont actifs sur le même palier : vérifiez le sens économique de ces flux croisés.'
     : undefined;
   const netRevenue = computeNetRevenue(draft);
-  const complement = computeComplement(draft);
   const activeCount = SUB_PHASE_NAV.filter(item => isSubPhaseActive(draft, item.key)).length;
   const subsidiaryOptions = useMemo(
     () => subsidiaries.map(subsidiary => ({ value: subsidiary.id, label: subsidiary.label })),
     [subsidiaries],
   );
+  const remunerationSourceOptions = useMemo(() => {
+    const options: Array<[AssociateRevenuePhaseInputV6['remuneration']['source'], string]> = [
+      ['holding', 'Oui, depuis la holding'],
+    ];
+    if (subsidiaryOptions.length > 0) {
+      options.push(['subsidiary', 'Oui, depuis une filiale']);
+    }
+    options.push(['none', 'Aucune rémunération']);
+    return options;
+  }, [subsidiaryOptions.length]);
 
   const patchDraft = (patch: Partial<AssociateRevenuePhaseInputV6>) => {
     setDraft(current => ({ ...current, ...patch }));
@@ -153,15 +196,15 @@ export function TresoRevenuePhaseModal({
           </button>
           <div className="ts-phase-modal__footer-actions">
             <button type="button" className="ts-text-btn" onClick={onClose}>
-              Fermer
+              Annuler
             </button>
             <button
               type="button"
               className="ts-primary-btn"
-              onClick={() => onSave(draft)}
+              onClick={() => onSave(normalizePhaseForSave(draft))}
               disabled={!canSave}
             >
-              Enregistrer
+              Valider
             </button>
           </div>
         </div>
@@ -176,8 +219,6 @@ export function TresoRevenuePhaseModal({
 
       <div className="ts-pocket-modal-summary">
         <span>Net annuel estimé {fmtEuro(netRevenue)}</span>
-        <span>Besoin total {fmtEuro(draft.distribution.annualNetIncomeNeed)}</span>
-        <span>Complément {fmtEuro(complement)}</span>
         <span>{activeCount} sous-phase{activeCount > 1 ? 's' : ''} active{activeCount > 1 ? 's' : ''}</span>
       </div>
 
@@ -257,11 +298,7 @@ export function TresoRevenuePhaseModal({
                 <span>Revenu payé</span>
               </div>
               <div className="ts-phase-source" role="radiogroup" aria-label="Source de rémunération">
-                {([
-                  ['holding', 'Oui, depuis la holding'],
-                  ['subsidiary', 'Oui, depuis une filiale'],
-                  ['none', 'Aucune rémunération'],
-                ] as const).map(([value, label]) => (
+                {remunerationSourceOptions.map(([value, label]) => (
                   <label key={value} className="ts-phase-source__choice">
                     <input
                       type="radio"
@@ -325,23 +362,7 @@ export function TresoRevenuePhaseModal({
             <section className="ts-associate-card">
               <div className="ts-associate-card__header">
                 <strong>Phase distribution</strong>
-                <span>Besoin net et dividendes</span>
-              </div>
-              <div className="ts-modal-grid ts-modal-grid--three">
-                <SimFieldShell label="Besoin total annuel net" className="ts-field" rowClassName="ts-field__row">
-                  <input
-                    type="text"
-                    inputMode="numeric"
-                    className="sim-field__control"
-                    value={fmtEuroInput(draft.distribution.annualNetIncomeNeed)}
-                    onChange={event => patchDistribution({ annualNetIncomeNeed: parseEuroInput(event.target.value) })}
-                  />
-                  <span className="sim-field__unit ts-unit">€</span>
-                </SimFieldShell>
-                <div className="ts-phase-net">
-                  <span>Complément à financer</span>
-                  <strong>{fmtEuro(complement)}</strong>
-                </div>
+                <span>Objectif ou trésorerie disponible</span>
               </div>
               <p className="ts-phase-source-title">Dividendes souhaités</p>
               <div className="ts-phase-source" role="radiogroup" aria-label="Dividendes souhaités">
@@ -366,7 +387,7 @@ export function TresoRevenuePhaseModal({
               </div>
               {draft.distribution.dividendsStrategy === 'montant_cible' ? (
                 <div className="ts-modal-grid ts-modal-grid--three">
-                  <SimFieldShell label="Montant cible net associé" className="ts-field" rowClassName="ts-field__row">
+                  <SimFieldShell label="Objectif net annuel de l’associé" className="ts-field" rowClassName="ts-field__row">
                     <input
                       type="text"
                       inputMode="numeric"
@@ -380,6 +401,9 @@ export function TresoRevenuePhaseModal({
                   </SimFieldShell>
                 </div>
               ) : null}
+              <p className="ts-note--info">
+                En maximum selon trésorerie, le calculateur rembourse d’abord le CCA disponible puis distribue les dividendes possibles.
+              </p>
             </section>
           ) : null}
 
@@ -388,6 +412,25 @@ export function TresoRevenuePhaseModal({
               <div className="ts-associate-card__header">
                 <strong>Phase constitution de CCA</strong>
                 <span>Apports ponctuels ou récurrents</span>
+              </div>
+              <div className="ts-modal-grid ts-modal-grid--three">
+                <SimFieldShell label="Apport annuel" className="ts-field" rowClassName="ts-field__row">
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    className="sim-field__control"
+                    value={fmtEuroInput(draft.ccaContribution.annual?.amount ?? 0)}
+                    onChange={event => patchCcaContribution({
+                      enabled: true,
+                      annual: {
+                        amount: parseEuroInput(event.target.value),
+                        startYear: draft.startYear,
+                        endYear: draft.endYear,
+                      },
+                    })}
+                  />
+                  <span className="sim-field__unit ts-unit">€</span>
+                </SimFieldShell>
               </div>
               <div className="ts-modal-grid ts-modal-grid--three">
                 <SimFieldShell label="Apport exceptionnel" className="ts-field" rowClassName="ts-field__row">
@@ -421,63 +464,7 @@ export function TresoRevenuePhaseModal({
                     })}
                   />
                 </SimFieldShell>
-                <SimFieldShell label="Apport annuel" className="ts-field" rowClassName="ts-field__row">
-                  <input
-                    type="text"
-                    inputMode="numeric"
-                    className="sim-field__control"
-                    value={fmtEuroInput(draft.ccaContribution.annual?.amount ?? 0)}
-                    onChange={event => patchCcaContribution({
-                      enabled: true,
-                      annual: {
-                        amount: parseEuroInput(event.target.value),
-                        startYear: draft.ccaContribution.annual?.startYear ?? draft.startYear,
-                        endYear: draft.ccaContribution.annual?.endYear ?? draft.endYear,
-                      },
-                    })}
-                  />
-                  <span className="sim-field__unit ts-unit">€</span>
-                </SimFieldShell>
-                <SimFieldShell label="Apport annuel de" className="ts-field" rowClassName="ts-field__row">
-                  <input
-                    type="text"
-                    inputMode="numeric"
-                    className="sim-field__control"
-                    value={draft.ccaContribution.annual?.startYear ?? draft.startYear}
-                    onChange={event => patchCcaContribution({
-                      enabled: true,
-                      annual: {
-                        amount: draft.ccaContribution.annual?.amount ?? 0,
-                        startYear: parseNumberInput(event.target.value),
-                        endYear: draft.ccaContribution.annual?.endYear ?? draft.endYear,
-                      },
-                    })}
-                  />
-                </SimFieldShell>
-                <SimFieldShell label="Apport annuel à" className="ts-field" rowClassName="ts-field__row">
-                  <input
-                    type="text"
-                    inputMode="numeric"
-                    className="sim-field__control"
-                    value={draft.ccaContribution.annual?.endYear ?? draft.endYear}
-                    onChange={event => patchCcaContribution({
-                      enabled: true,
-                      annual: {
-                        amount: draft.ccaContribution.annual?.amount ?? 0,
-                        startYear: draft.ccaContribution.annual?.startYear ?? draft.startYear,
-                        endYear: parseNumberInput(event.target.value),
-                      },
-                    })}
-                  />
-                </SimFieldShell>
               </div>
-              {draft.ccaContribution.annual &&
-              (draft.ccaContribution.annual.startYear < draft.startYear ||
-                draft.ccaContribution.annual.endYear > draft.endYear) ? (
-                <p className="ts-note--info">
-                  La période d’apport annuel dépasse les bornes du palier ; le moteur ne retiendra que les années couvertes par ce palier.
-                </p>
-              ) : null}
             </section>
           ) : null}
 
@@ -491,7 +478,7 @@ export function TresoRevenuePhaseModal({
               <div className="ts-phase-source" role="radiogroup" aria-label="Remboursement annuel souhaité">
                 {([
                   ['max_treso', 'Maximum selon trésorerie'],
-                  ['montant_cible', 'Montant maximum annuel'],
+                  ['montant_cible', 'Montant max/an'],
                   ['aucun', 'Aucun remboursement'],
                 ] as Array<[CcaRepaymentStrategy, string]>).map(([value, label]) => (
                   <label key={value} className="ts-phase-source__choice">
@@ -523,7 +510,7 @@ export function TresoRevenuePhaseModal({
                 </div>
               ) : null}
               <p className="ts-note--info">
-                Les retraits sont limités au solde CCA et à la trésorerie disponible après IS.
+                Les retraits sont limités au solde CCA et à la trésorerie disponible après IS, solde minimum bancaire et BFR conservés.
               </p>
             </section>
           ) : null}

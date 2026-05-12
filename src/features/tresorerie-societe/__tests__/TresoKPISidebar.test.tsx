@@ -20,6 +20,10 @@ const KPIS: TresoKPIs = {
   ccaRembourseTotal: 70000,
   alerteTresorerieBancaire: false,
   premiereAnneeDeficitBancaire: null,
+  tresorerieTientHorizon: true,
+  revenuCibleTientHorizon: true,
+  premiereAnneeRevenuCibleNonTenu: null,
+  performanceMoyenneTresorerie: 0.042,
   hasRows: true,
   anneeRetraiteIndex: 2,
 };
@@ -74,10 +78,41 @@ describe('TresoKPISidebar', () => {
     const html = renderToStaticMarkup(<TresoKPISidebar kpis={KPIS} inputs={INPUTS} />);
 
     expect(html).toContain('IS total décaissé');
+    expect(html).toContain('Tenue horizon');
+    expect(html).toContain('Performance moyenne');
     expect(html).toContain('Compte bancaire fin horizon');
     expect(html).toContain('Déficit bancaire maximal');
     expect(html).toContain('CCA restant dû');
     expect(html).not.toContain('IS latent capitalisation');
+  });
+
+  it('indique si la trésorerie et la cible de revenu tiennent jusqu’à la fin', () => {
+    const html = renderToStaticMarkup(<TresoKPISidebar kpis={KPIS} inputs={INPUTS} />);
+
+    expect(html).toContain('Tenue horizon');
+    expect(html).toContain('OK');
+    expect(html).toContain('Trésorerie OK');
+    expect(html).toContain('Revenu cible OK');
+    expect(html).toContain('4,2 %');
+  });
+
+  it('signale la première rupture de trésorerie ou de revenu cible', () => {
+    const html = renderToStaticMarkup(
+      <TresoKPISidebar
+        kpis={{
+          ...KPIS,
+          tresorerieTientHorizon: false,
+          revenuCibleTientHorizon: false,
+          premiereAnneeDeficitBancaire: 2029,
+          premiereAnneeRevenuCibleNonTenu: 2032,
+        }}
+        inputs={INPUTS}
+      />,
+    );
+
+    expect(html).toContain('À revoir');
+    expect(html).toContain('Trésorerie dès 2029');
+    expect(html).toContain('Revenu cible dès 2032');
   });
 
   it('affiche le CCA remboursé quand aucun CCA ne reste dû', () => {

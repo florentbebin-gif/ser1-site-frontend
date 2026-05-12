@@ -131,8 +131,12 @@ describe('TresoSocieteSection', () => {
     expect(screen.getByText('Associé 2')).toBeInTheDocument();
     expect(screen.getByText('60 %')).toBeInTheDocument();
     expect(screen.getByText('40 %')).toBeInTheDocument();
-    expect(screen.getByText('Holding patrimoniale')).toBeInTheDocument();
-    expect(screen.getByText('HP')).toBeInTheDocument();
+    expect(screen.getByText('Ma holding')).toBeInTheDocument();
+    expect(screen.getByText('Forme sociale : SAS')).toBeInTheDocument();
+    expect(screen.getByText('Type société : HP')).toBeInTheDocument();
+    expect(screen.queryByText('HP · SAS')).not.toBeInTheDocument();
+    expect(screen.queryByText('Société existante')).not.toBeInTheDocument();
+    expect(screen.queryByText('Société à créer')).not.toBeInTheDocument();
     expect(screen.getByText('Filiale A')).toBeInTheDocument();
     expect(screen.getByText('Filiale B')).toBeInTheDocument();
     expect(screen.queryByText(/Trésorerie 150/)).not.toBeInTheDocument();
@@ -184,6 +188,8 @@ describe('TresoSocieteSection', () => {
     expect(screen.queryByText('Âge de retraite')).not.toBeInTheDocument();
     fireEvent.click(screen.getByRole('tab', { name: 'CCA' }));
     expect(screen.getByText('Taux maximum déductible')).toBeInTheDocument();
+    expect(screen.getByText(/Les intérêts CCA sont saisis au taux convenu/i)).toBeInTheDocument();
+    expect(screen.queryByText(/Les apports et leur programmation/i)).not.toBeInTheDocument();
     expect(screen.queryByText('Apport exceptionnel')).not.toBeInTheDocument();
     expect(screen.queryByText('Apport annuel')).not.toBeInTheDocument();
   });
@@ -191,7 +197,7 @@ describe('TresoSocieteSection', () => {
   it('paramètre le libellé société sans menu rémunérations dans la société', () => {
     render(<TresoSocieteSection inputs={INPUTS} onChange={vi.fn()} />);
 
-    fireEvent.click(screen.getByRole('button', { name: /Paramétrer Holding patrimoniale/i }));
+    fireEvent.click(screen.getByRole('button', { name: /Paramétrer Ma holding/i }));
 
     expect(screen.getByDisplayValue('Ma holding')).toBeInTheDocument();
     expect(screen.queryByText('Début de projection')).not.toBeInTheDocument();
