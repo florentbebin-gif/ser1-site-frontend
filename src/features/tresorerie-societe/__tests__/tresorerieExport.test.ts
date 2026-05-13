@@ -1,10 +1,11 @@
 import JSZip from 'jszip';
 import PptxGenJS from 'pptxgenjs';
 import { describe, expect, it } from 'vitest';
+import { exportStudyDeck } from '@/pptx/export/exportStudyDeck';
 import { buildTresorerieSchema } from '@/pptx/slides/buildTresorerieSchema';
 import { defineSlideMasters } from '@/pptx/template/loadBaseTemplate';
 import { getPptxThemeFromUiSettings } from '@/pptx/theme/getPptxThemeFromUiSettings';
-import type { ExportContext, TresorerieSchemaSlideSpec } from '@/pptx/theme/types';
+import type { ExportContext, StudyDeckSpec, TresorerieSchemaSlideSpec } from '@/pptx/theme/types';
 import { DEFAULT_COLORS } from '@/settings/theme';
 import { fingerprintPptxExport } from '@/utils/export/exportFingerprint';
 import type { TresoProjectionRow } from '@/engine/tresorerie/types';
@@ -159,6 +160,19 @@ const INPUTS = {
 function makeRow(year: number): TresoProjectionRow {
   const retirementOffset = INPUTS.foyer.retirementAge - INPUTS.foyer.currentAge;
   const activeYears = Math.max(1, retirementOffset);
+  const isRemuneration = year <= 5;
+  const revenusParAssocie = [{
+    associateId: 'associe-1',
+    label: 'Associé 1',
+    source: isRemuneration ? 'remuneration' as const : 'cca' as const,
+    remuneration: isRemuneration ? 56000 : 0,
+    ccaRepaid: isRemuneration ? 0 : 24000,
+    grossDividends: 0,
+    dividendTax: 0,
+    tnsSocialCharges: isRemuneration ? 24000 : 0,
+    netRevenue: isRemuneration ? 56000 : 24000,
+  }];
+  const revenusNets = revenusParAssocie.reduce((sum, revenu) => sum + revenu.netRevenue, 0);
   return {
     year,
     apportCCA: year <= activeYears ? 12000 : 0,
@@ -203,27 +217,23 @@ function makeRow(year: number): TresoProjectionRow {
     alerteDividendesSuperieursCapacite: false,
     annuiteCreditIS: 0,
     revenusActifFinance: 0,
-    revenusNets: year > activeYears ? 24000 : 0,
-    deltaBesoin: year > activeYears ? 0 : -INPUTS.foyer.annualIncomeNeed,
-    revenusParAssocie: year >= activeYears
-      ? [{
-        associateId: 'associe-1',
-        label: 'Associé 1',
-        source: 'cca',
-        remuneration: 0,
-        ccaRepaid: 24000,
-        grossDividends: 0,
-        dividendTax: 0,
-        tnsSocialCharges: 0,
-        netRevenue: 24000,
-      }]
-      : [],
+    revenusNets,
+    deltaBesoin: revenusNets - INPUTS.foyer.annualIncomeNeed,
+    revenusParAssocie,
     tresorerieDebut: 15000 + year * 1000,
     tresorerieFin: 16000 + year * 1000,
   };
 }
 
 const ROWS = Array.from({ length: 12 }, (_, index) => makeRow(index + 1));
+
+type DeckSlide = StudyDeckSpec['slides'][number];
+type ProjectionSlide = Extract<DeckSlide, { type: 'treso-projection' }>;
+type TimelineSlide = Extract<DeckSlide, { type: 'treso-timeline' }>;
+
+function isProjectionSlide(slide: DeckSlide): slide is ProjectionSlide {
+  return slide.type === 'treso-projection';
+}
 
 function buildPptxContext(): ExportContext {
   return {
@@ -242,60 +252,78 @@ describe('Exports Trésorerie société', () => {
     const manifest = {
       cover: deck.cover.title,
       slideTypes,
-      projectionRows: deck.slides
-        .filter((slide) => slide.type === 'treso-projection')
-        .flatMap((slide) => slide.rows.map(row => row.label)),
-      projectionPages: deck.slides
-        .filter((slide) => slide.type === 'treso-projection')
-        .map((slide) => ({
+      projectionRows: deck.slides.filter(isProjectionSlide).flatMap(slide => slide.rows.map(row => row.label)),
+      projectionPages: deck.slides.filter(isProjectionSlide).map(slide => ({
           pageIndex: slide.pageIndex,
           yearsForPage: slide.yearsForPage,
           rowsCount: slide.rows.length,
         })),
     };
 
-    expect(slideTypes).toEqual(['treso-schema', 'treso-projection', 'treso-projection', 'content']);
+    expect(slideTypes).toEqual([
+      'treso-schema', 'treso-timeline', 'treso-flow-mechanism', 'treso-allocation-matrix',
+      'treso-allocation-cards', 'treso-synthesis', 'treso-projection', 'treso-projection', 'treso-hypotheses',
+    ]);
     expect(manifest.projectionRows).toEqual(expect.arrayContaining([
-      'Capital placé — matrice distribution',
-      'Valeur — matrice capitalisation',
+      'Liquidité disponible sur compte bancaire',
+      "Compte bancaire en fin d'année",
+      "Trésorerie consolidée en fin d'année",
       'Revenus des filiales',
       'Charges sociales TNS estimées',
     ]));
     expect(JSON.stringify(deck)).not.toContain('FCB');
-    expect(fingerprintPptxExport(manifest)).toBe('ebc6f1bcebc81a9b');
+    expect(fingerprintPptxExport(manifest)).toBe('ec2b82956ff2859f');
   });
 
-  it('déduit les flags PPTX directement depuis le modèle v2', () => {
-    const deck = buildTresorerieStudyDeck({
-      rows: ROWS,
-      kpis: KPIS,
-      inputs: INPUTS,
-    });
+  it('prépare le contexte, la timeline et les poches depuis le modèle v2', () => {
+    const deck = buildTresorerieStudyDeck({ rows: ROWS, kpis: KPIS, inputs: INPUTS });
     const schema = deck.slides[0] as TresorerieSchemaSlideSpec;
+    const timeline = deck.slides.find(slide => slide.type === 'treso-timeline') as TimelineSlide;
+    const allocationCards = deck.slides.find(slide => slide.type === 'treso-allocation-cards');
 
     expect(schema).toMatchObject({
       type: 'treso-schema',
-      companyKindLabel: 'Holding patrimoniale',
-      companyKindCode: 'HP',
-      hasDistribution: true,
-      hasCapitalisation: true,
-      hasCreditIS: true,
-      hasHolding: true,
-      hasAllocationMatrix: true,
+      essentials: {
+        companyKindLabel: 'Holding patrimoniale',
+        minimumBankBalance: 50000,
+        workingCapitalRequirement: 50000,
+        loansCount: 1,
+      },
+      associateHighlights: [
+        expect.objectContaining({
+          label: 'Associé 1',
+          ageLabel: '50 ans',
+          capitalPct: '100 %',
+          ccaInitial: 90000,
+        }),
+      ],
     });
     expect(JSON.stringify(schema)).toContain('Associé 1');
     expect(JSON.stringify(schema)).toContain('Filiale');
-    expect(JSON.stringify(schema)).toContain('80 %');
-    expect(schema.revenuePhases).toEqual(expect.arrayContaining([
+    expect(schema.orgchartCompany.subsidiaries).toEqual(expect.arrayContaining([
+      expect.objectContaining({ label: 'Filiale', ownershipPct: 80 }),
+    ]));
+    expect(timeline.segments).toEqual(expect.arrayContaining([
       expect.objectContaining({
         label: 'Rémunération holding',
-        periodLabel: '2026-2030',
+        startYear: 2026,
+        endYear: 2030,
+        sources: expect.arrayContaining([
+          expect.objectContaining({ label: 'Rémunération nette', annualNetAmount: 56000 }),
+        ]),
       }),
       expect.objectContaining({
         label: 'Besoin complémentaire',
-        useCcaForCompletion: false,
+        startYear: 2031,
+        endYear: 2037,
+        sources: expect.arrayContaining([expect.objectContaining({ label: 'Remboursement CCA' })]),
       }),
     ]));
+    expect(allocationCards).toMatchObject({
+      type: 'treso-allocation-cards',
+      protectedCash: 100000,
+      allocatableBase: 50000,
+    });
   });
 
   it('prépare le schéma PPTX avec filiales imbriquées et matrice vide', () => {
@@ -329,20 +357,17 @@ describe('Exports Trésorerie société', () => {
     });
     const schema = deck.slides[0] as TresorerieSchemaSlideSpec;
 
-    expect(schema).toMatchObject({
-      type: 'treso-schema',
-      hasAllocationMatrix: false,
-    });
-    expect(schema.subsidiaries).toEqual(expect.arrayContaining([
+    expect(deck.slides.map(slide => slide.type)).not.toContain('treso-allocation-cards');
+    expect(schema.orgchartCompany.subsidiaries).toEqual(expect.arrayContaining([
       expect.objectContaining({
         label: 'Filiale B',
         parentEntityId: 'filiale-1',
-        ownershipPct: '51 %',
+        ownershipPct: 51,
       }),
     ]));
   });
 
-  it('rend le schéma PPTX en organigramme avec KPIs à droite', async () => {
+  it('rend le schéma PPTX en organigramme avec paramètres à droite', async () => {
     const deck = buildTresorerieStudyDeck({
       rows: ROWS,
       kpis: KPIS,
@@ -381,11 +406,42 @@ describe('Exports Trésorerie société', () => {
     expect(slideXml).toBeDefined();
     expect(slideXml).toContain('Filiale B');
     expect(slideXml).toContain('51 %');
-    expect(slideXml).toContain('CCA total constitué');
-    expect(slideXml).toContain('Parcours de revenus associé actif');
-    expect(slideXml).toContain('Besoin complémentaire');
+    expect(slideXml).toContain('Paramètres société');
+    expect(slideXml).toContain('Associé principal');
+    expect(slideXml).toContain('Forme sociale');
+    expect(slideXml).toContain('Type société');
+    expect(slideXml).not.toContain('CCA total constitué');
+    expect(slideXml).not.toContain('Parcours de revenus associé actif');
     expect(slideXml).not.toContain('Phase 1');
     expect(slideXml).not.toMatch(/\bc[xy]="-/);
+  });
+
+  it('génère un PPTX headless non vide sans coordonnées négatives ni wording interdit', async () => {
+    const deck = buildTresorerieStudyDeck({ rows: ROWS, kpis: KPIS, inputs: INPUTS });
+
+    const blob = await exportStudyDeck(deck, DEFAULT_COLORS, { footerDisclaimer: '' });
+    const zip = await JSZip.loadAsync(await blob.arrayBuffer());
+    const slideFiles = Object.keys(zip.files)
+      .filter(path => /^ppt\/slides\/slide\d+\.xml$/.test(path))
+      .sort((left, right) => left.localeCompare(right, 'fr', { numeric: true }));
+    const slideXmlByFile = await Promise.all(slideFiles.map(async path => ({
+      path, xml: await zip.file(path)?.async('string') ?? '',
+    })));
+    const allXml = slideXmlByFile.map(slide => slide.xml).join('\n');
+
+    expect(slideFiles).toHaveLength(deck.slides.length + 2);
+    slideXmlByFile.forEach(({ path, xml }) => {
+      expect(xml, path).toContain('<p:cSld');
+      expect(xml.length, path).toBeGreaterThan(900);
+    });
+    expect(allXml).toContain('MÉCANISME DES FLUX');
+    expect(allXml).toContain('SYNTHÈSE AVANT ANNEXE');
+    expect(allXml).toContain('HYPOTHÈSES ET PÉRIMÈTRE');
+    expect(allXml).toContain('LECTURE DES POCHES DE PLACEMENT');
+    expect(allXml).toContain('Liquidité disponible sur compte bancaire');
+    expect(allXml).not.toContain('FCB');
+    expect(allXml).not.toContain('Family Cash Box');
+    expect(allXml).not.toMatch(/\bc[xy]="-/);
   });
 
   it('génère un XLSX valide avec les onglets Projection, Revenus associés puis Hypothèses', async () => {

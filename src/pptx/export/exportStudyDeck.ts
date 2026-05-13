@@ -31,7 +31,13 @@ import type {
   PerFiscalSnapshotSlideSpec,
   PerPlafond3ColSlideSpec,
   PerProjectionTableSlideSpec,
+  TresorerieAllocationCardsSlideSpec,
+  TresorerieAllocationMatrixSlideSpec,
+  TresorerieFlowMechanismSlideSpec,
+  TresorerieHypothesesSlideSpec,
   TresorerieSchemaSlideSpec,
+  TresorerieSynthesisSlideSpec,
+  TresorerieTimelineSlideSpec,
   TresorerieProjectionSlideSpec,
 } from '../theme/types';
 import { SLIDE_SIZE } from '../designSystem/serenity';
@@ -60,6 +66,12 @@ import { buildPerFiscalSnapshot } from '../slides/buildPerFiscalSnapshot';
 import { buildPerPlafond3Col } from '../slides/buildPerPlafond3Col';
 import { buildPerProjectionTable } from '../slides/buildPerProjectionTable';
 import { buildTresorerieSchema } from '../slides/buildTresorerieSchema';
+import { buildTresorerieTimeline } from '../slides/buildTresorerieTimeline';
+import { buildTresorerieFlowMechanism } from '../slides/buildTresorerieFlowMechanism';
+import { buildTresorerieSynthesis } from '../slides/buildTresorerieSynthesis';
+import { buildTresorerieAllocationMatrix } from '../slides/buildTresorerieAllocationMatrix';
+import { buildTresorerieAllocationCards } from '../slides/buildTresorerieAllocationCards';
+import { buildTresorerieHypotheses } from '../slides/buildTresorerieHypotheses';
 import { buildTresorerieProjection } from '../slides/buildTresorerieProjection';
 import { injectThemeColors } from '../theme/themeBuilder';
 import { defineSlideMasters } from '../template/loadBaseTemplate';
@@ -402,8 +414,26 @@ export async function exportStudyDeck(
       // PER — déclaration 2042 et prochain avis IR
       buildPerProjectionTable(pptx, slideSpec as PerProjectionTableSlideSpec, ctx, slideIndex);
     } else if (slideSpec.type === 'treso-schema') {
-      // Trésorerie Société IS — schéma 3 phases + KPIs
+      // Trésorerie Société IS — organigramme et paramètres essentiels
       buildTresorerieSchema(pptx, slideSpec as TresorerieSchemaSlideSpec, ctx, slideIndex);
+    } else if (slideSpec.type === 'treso-timeline') {
+      // Trésorerie Société IS — parcours de revenus client
+      buildTresorerieTimeline(pptx, slideSpec as TresorerieTimelineSlideSpec, ctx, slideIndex);
+    } else if (slideSpec.type === 'treso-flow-mechanism') {
+      // Trésorerie Société IS — mécanisme des flux
+      buildTresorerieFlowMechanism(pptx, slideSpec as TresorerieFlowMechanismSlideSpec, ctx, slideIndex);
+    } else if (slideSpec.type === 'treso-synthesis') {
+      // Trésorerie Société IS — synthèse avant annexe comptable
+      buildTresorerieSynthesis(pptx, slideSpec as TresorerieSynthesisSlideSpec, ctx, slideIndex);
+    } else if (slideSpec.type === 'treso-allocation-matrix') {
+      // Trésorerie Société IS — matrice pédagogique de placement
+      buildTresorerieAllocationMatrix(pptx, slideSpec as TresorerieAllocationMatrixSlideSpec, ctx, slideIndex);
+    } else if (slideSpec.type === 'treso-allocation-cards') {
+      // Trésorerie Société IS — organisation dynamique par poche
+      buildTresorerieAllocationCards(pptx, slideSpec as TresorerieAllocationCardsSlideSpec, ctx, slideIndex);
+    } else if (slideSpec.type === 'treso-hypotheses') {
+      // Trésorerie Société IS — hypothèses regroupées
+      buildTresorerieHypotheses(pptx, slideSpec as TresorerieHypothesesSlideSpec, ctx, slideIndex);
     } else if (slideSpec.type === 'treso-projection') {
       // Trésorerie Société IS — tableau de projection paginé
       buildTresorerieProjection(pptx, slideSpec as TresorerieProjectionSlideSpec, ctx, slideIndex);

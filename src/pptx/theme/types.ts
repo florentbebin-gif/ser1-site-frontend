@@ -4,7 +4,16 @@
  * Les sous-modules gardent un ordre acyclique : core -> domaines -> deck.
  */
 
-export type { TresorerieProjectionSlideSpec, TresorerieSchemaSlideSpec } from './tresorerieTypes';
+export type {
+  TresorerieAllocationCardsSlideSpec,
+  TresorerieAllocationMatrixSlideSpec,
+  TresorerieFlowMechanismSlideSpec,
+  TresorerieHypothesesSlideSpec,
+  TresorerieProjectionSlideSpec,
+  TresorerieSchemaSlideSpec,
+  TresorerieSynthesisSlideSpec,
+  TresorerieTimelineSlideSpec,
+} from './tresorerieTypes';
 export type * from './types/core';
 export type * from './types/ir';
 export type * from './types/succession';
