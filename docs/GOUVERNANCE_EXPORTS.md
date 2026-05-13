@@ -119,7 +119,9 @@ Un deck Serenity suit toujours cette chaîne :
 
 ### Spécificités Trésorerie société
 - Le wrapper runtime est `src/features/tresorerie-societe/export/tresoreriePptxWrapper.ts`.
-- Les slides dédiées sont typées par `TresorerieSchemaSlideSpec` et `TresorerieProjectionSlideSpec`.
+- Les slides dédiées sont typées par `TresorerieSchemaSlideSpec`, `TresorerieTimelineSlideSpec`, `TresorerieFlowMechanismSlideSpec`, `TresorerieAllocationMatrixSlideSpec`, `TresorerieAllocationCardsSlideSpec`, `TresorerieSynthesisSlideSpec`, `TresorerieProjectionSlideSpec` et `TresorerieHypothesesSlideSpec`.
+- Le deck client suit l'ordre : contexte société et associé, parcours de revenus, mécanisme des flux, lecture des poches, organisation de la trésorerie, synthèse, annexe comptable paginée, hypothèses.
+- La projection comptable distingue le compte bancaire, le solde protégé, la liquidité disponible, les montants investis et la trésorerie consolidée.
 - Les slides client ne doivent jamais reprendre le vocabulaire issu des fichiers de travail externes ; employer “Trésorerie société”, “CCA”, “société IS” et “matrice de trésorerie”.
 - Le PPTX consomme exclusivement `TresoProjectionRow[]` et les KPI calculés par la feature.
 

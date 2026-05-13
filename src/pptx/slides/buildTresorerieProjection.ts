@@ -84,23 +84,26 @@ export function buildTresorerieProjection(
   const numYears = spec.yearsForPage.length;
   const totalDataRows = spec.rows.length;
 
-  const labelColWidth = 2.4;
+  const labelColWidth = 2.6;
   const yearColWidth = (LAYOUT.contentWidth - labelColWidth) / Math.max(numYears, 1);
   const colWidths = [labelColWidth, ...Array(numYears).fill(yearColWidth)];
 
-  const calculatedRowH = Math.min(0.25, Math.max(0.18, LAYOUT.tableMaxH / (totalDataRows + 1)));
-  const baseFontSize = totalDataRows > 8 ? 7 : (totalDataRows > 5 ? 8 : 9);
-  const smallFontSize = Math.max(6, baseFontSize - 1);
+  const calculatedRowH = Math.min(0.28, Math.max(0.20, LAYOUT.tableMaxH / (totalDataRows + 1)));
+  const baseFontSize = totalDataRows > 12 ? 8 : (totalDataRows > 8 ? 9 : 10);
+  const smallFontSize = Math.max(8, baseFontSize - 1);
 
-  const altRowColor = lightenColor(theme.colors.color7, 0.5);
-  const headerFill = theme.colors.color1.replace('#', '');
-  const retraiteColor = lightenColor(theme.colors.color6, 0.55);
+  const altRowColor = lightenColor(theme.colors.color7, 0.55);
+  const headerFill = theme.colors.color3.replace('#', '');
+  const totalRowFill = theme.colors.color5.replace('#', '');
+  const retraiteColor = lightenColor(theme.colors.color6, 0.45);
 
   const retraiteYearSet = new Set(
     spec.retraiteYearIndex != null ? [spec.retraiteYearIndex] : [],
   );
 
-  // Ligne d'en-tête (années)
+  const totalRowKeywords = ['consolid', 'fin d'];
+
+  // Ligne d'en-tête : années civiles (YYYY)
   const tableRows: PptxGenJS.TableRow[] = [];
   tableRows.push([
     {
@@ -115,24 +118,31 @@ export function buildTresorerieProjection(
         valign: 'middle' as const,
       },
     },
-    ...spec.yearsForPage.map(year => ({
-      text: `An ${year}`,
-      options: {
-        fill: { color: headerFill },
-        color: 'FFFFFF',
-        bold: true,
-        fontSize: baseFontSize,
-        fontFace: TYPO.fontFace,
-        align: 'center' as const,
-        valign: 'middle' as const,
-      },
-    })),
+    ...spec.yearsForPage.map(year => {
+      const civilYear = spec.projectionStartYear + year - 1;
+      return {
+        text: `${civilYear}`,
+        options: {
+          fill: { color: headerFill },
+          color: 'FFFFFF',
+          bold: true,
+          fontSize: baseFontSize,
+          fontFace: TYPO.fontFace,
+          align: 'center' as const,
+          valign: 'middle' as const,
+        },
+      };
+    }),
   ]);
 
   // Lignes de données
   spec.rows.forEach((row, idx) => {
-    const isAlt = idx % 2 === 1;
-    const baseFill = isAlt ? altRowColor : 'FFFFFF';
+    const labelLower = row.label.toLowerCase();
+    const isTotal = totalRowKeywords.some(keyword => labelLower.includes(keyword));
+    const isAlt = !isTotal && idx % 2 === 1;
+    const baseFill = isTotal ? totalRowFill : (isAlt ? altRowColor : 'FFFFFF');
+    const labelColor = isTotal ? 'FFFFFF' : theme.textMain.replace('#', '');
+    const valueColor = isTotal ? 'FFFFFF' : theme.textBody.replace('#', '');
 
     const values = spec.yearsForPage.map(year => {
       const valueIdx = year - 1;
@@ -144,8 +154,8 @@ export function buildTresorerieProjection(
         text: row.label,
         options: {
           fill: { color: baseFill },
-          color: theme.textMain.replace('#', ''),
-          bold: false,
+          color: labelColor,
+          bold: isTotal,
           fontSize: smallFontSize,
           fontFace: TYPO.fontFace,
           align: 'left' as const,
@@ -155,11 +165,15 @@ export function buildTresorerieProjection(
       ...values.map((val, colIdx) => {
         const year = spec.yearsForPage[colIdx];
         const isRetraite = retraiteYearSet.has(year);
+        const cellFill = isTotal
+          ? totalRowFill
+          : (isRetraite ? retraiteColor : baseFill);
         return {
           text: val,
           options: {
-            fill: { color: isRetraite ? retraiteColor : baseFill },
-            color: theme.textBody.replace('#', ''),
+            fill: { color: cellFill },
+            color: valueColor,
+            bold: isTotal,
             fontSize: smallFontSize,
             fontFace: TYPO.fontFace,
             align: 'right' as const,
