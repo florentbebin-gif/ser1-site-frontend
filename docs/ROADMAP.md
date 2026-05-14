@@ -34,19 +34,17 @@ Objectif : rendre l'outil utilisable en rendez-vous sans intimider, tout en gard
 Statut : `spec`
 
 Travaux :
-- Définir ce qui est visible en simplifié vs expert.
-- Décider où vit le toggle principal.
-- Distinguer mode global et override local de page.
-- Préciser ce qui est seulement masqué de ce qui sort réellement du calcul.
-- Donner des exemples sur `/sim/credit`, `/sim/ir` et `/sim/succession`.
+- Finaliser la matrice visible en simplifié vs expert par simulateur.
+- Donner des exemples validés sur `/sim/credit`, `/sim/ir` et `/sim/succession`.
+- Documenter les exceptions `expertOnly`, notamment `/sim/tresorerie-societe` tant que son parcours simplifié n'est pas défini.
 
 ## PR-P2-02 - Infrastructure modes
 Statut : `spec`
 
 Travaux :
-- Ajouter le mode utilisateur par défaut.
-- Ajouter les helpers d'affichage (`ExpertOnly`, `SimpleOnly`, niveau de détail).
+- Brancher progressivement les helpers d'affichage (`ExpertOnly`, `SimpleOnly`, niveau de détail`) dans les simulateurs.
 - Garantir que l'infrastructure n'altère pas les calculs.
+- Conserver le mode global `ui_settings.mode` comme source de vérité, avec override local non persistant.
 
 ## PR-P2-03 - Déploiement modes sur IR + Succession
 Statut : `spec`
