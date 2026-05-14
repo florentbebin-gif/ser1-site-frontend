@@ -73,22 +73,73 @@ export type TresorerieFlowMechanismSlideSpec = {
   type: 'treso-flow-mechanism';
   title: string;
   subtitle: string;
+  steps: Array<{
+    title: string;
+    label: string;
+    value?: string;
+    iconKey: BusinessIconName;
+    tone: 'main' | 'accent' | 'muted' | 'neutral';
+  }>;
+};
+
+export type TresorerieParametersAnnexSlideSpec = {
+  type: 'treso-parameters-annex';
+  title: string;
+  subtitle: string;
+  sections: Array<{
+    title: string;
+    iconKey: BusinessIconName;
+    rows: Array<{
+      label: string;
+      value: string;
+      accent?: boolean;
+    }>;
+  }>;
 };
 
 export type TresorerieSynthesisSlideSpec = {
   type: 'treso-synthesis';
   title: string;
   subtitle: string;
-  kpis: Array<{
-    label: string;
-    value: string;
-    iconKey: BusinessIconName;
-  }>;
-  hero: {
-    label: string;
-    value: string;
-    caption?: string;
+  rangeStartYear: number;
+  rangeEndYear: number;
+  chartLabels: {
+    investment: string;
+    incomeRelay: string;
   };
+  series: Array<{
+    year: number;
+    investmentValue: number;
+    ccaBalance: number;
+    dividendRevenue: number;
+  }>;
+  triggerMarker?: {
+    year: number;
+    ageLabel: string;
+    label: 'Phase de revenu';
+    kind: 'cca' | 'dividendes';
+  };
+  milestones: {
+    horizon: {
+      year: number;
+      ageLabel?: string;
+      valueLabel: string;
+    };
+  };
+  cashFlows: {
+    annualContributionLabel?: string;
+    annualWithdrawalLabel?: string;
+    revenueLabel?: string;
+  };
+  pocketTimeline: Array<{
+    label: string;
+    horizonLabel: string;
+    startYear: number;
+    endYear: number;
+    amountLabel: string;
+    iconKey: BusinessIconName;
+    tone: 'main' | 'accent' | 'muted' | 'neutral';
+  }>;
 };
 
 export type TresorerieAllocationMatrixSlideSpec = {

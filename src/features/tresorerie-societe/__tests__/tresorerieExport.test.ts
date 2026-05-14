@@ -1,11 +1,19 @@
+/* eslint-disable max-lines */
 import JSZip from 'jszip';
 import PptxGenJS from 'pptxgenjs';
 import { describe, expect, it } from 'vitest';
 import { exportStudyDeck } from '@/pptx/export/exportStudyDeck';
 import { buildTresorerieSchema } from '@/pptx/slides/buildTresorerieSchema';
+import { buildTresorerieSynthesis } from '@/pptx/slides/buildTresorerieSynthesis';
+import { buildTresorerieTimeline } from '@/pptx/slides/buildTresorerieTimeline';
 import { defineSlideMasters } from '@/pptx/template/loadBaseTemplate';
 import { getPptxThemeFromUiSettings } from '@/pptx/theme/getPptxThemeFromUiSettings';
-import type { ExportContext, StudyDeckSpec, TresorerieSchemaSlideSpec } from '@/pptx/theme/types';
+import type {
+  ExportContext,
+  StudyDeckSpec,
+  TresorerieSchemaSlideSpec,
+  TresorerieSynthesisSlideSpec,
+} from '@/pptx/theme/types';
 import { DEFAULT_COLORS } from '@/settings/theme';
 import { fingerprintPptxExport } from '@/utils/export/exportFingerprint';
 import type { TresoProjectionRow } from '@/engine/tresorerie/types';
@@ -228,7 +236,10 @@ function makeRow(year: number): TresoProjectionRow {
 const ROWS = Array.from({ length: 12 }, (_, index) => makeRow(index + 1));
 
 type DeckSlide = StudyDeckSpec['slides'][number];
+type ChapterSlide = Extract<DeckSlide, { type: 'chapter' }>;
+type ParametersAnnexSlide = Extract<DeckSlide, { type: 'treso-parameters-annex' }>;
 type ProjectionSlide = Extract<DeckSlide, { type: 'treso-projection' }>;
+type SynthesisSlide = Extract<DeckSlide, { type: 'treso-synthesis' }>;
 type TimelineSlide = Extract<DeckSlide, { type: 'treso-timeline' }>;
 
 function isProjectionSlide(slide: DeckSlide): slide is ProjectionSlide {
@@ -249,6 +260,7 @@ describe('Exports Trésorerie société', () => {
   it('construit un deck PPTX paginé avec un fingerprint stable', () => {
     const deck = buildTresorerieStudyDeck({ rows: ROWS, kpis: KPIS, inputs: INPUTS });
     const slideTypes = deck.slides.map((slide) => slide.type);
+    const chapters = deck.slides.filter((slide): slide is ChapterSlide => slide.type === 'chapter');
     const manifest = {
       cover: deck.cover.title,
       slideTypes,
@@ -261,9 +273,16 @@ describe('Exports Trésorerie société', () => {
     };
 
     expect(slideTypes).toEqual([
-      'treso-schema', 'treso-timeline', 'treso-flow-mechanism', 'treso-allocation-matrix',
-      'treso-allocation-cards', 'treso-synthesis', 'treso-projection', 'treso-projection', 'treso-hypotheses',
+      'chapter', 'treso-schema', 'treso-timeline',
+      'chapter', 'treso-allocation-matrix', 'treso-allocation-cards', 'treso-synthesis',
+      'chapter', 'treso-projection', 'treso-projection', 'treso-parameters-annex', 'treso-hypotheses',
     ]);
+    expect(chapters.map(chapter => chapter.title)).toEqual([
+      'Comprendre le montage',
+      'Organiser l’excédent',
+      'Annexes détaillées',
+    ]);
+    expect(chapters.map(chapter => chapter.chapterImageIndex)).toEqual([6, 4, 8]);
     expect(manifest.projectionRows).toEqual(expect.arrayContaining([
       'Liquidité disponible sur compte bancaire',
       "Compte bancaire en fin d'année",
@@ -272,14 +291,105 @@ describe('Exports Trésorerie société', () => {
       'Charges sociales TNS estimées',
     ]));
     expect(JSON.stringify(deck)).not.toContain('FCB');
-    expect(fingerprintPptxExport(manifest)).toBe('ec2b82956ff2859f');
+    expect(JSON.stringify(deck)).not.toContain('Synthèse avant annexe');
+    expect(JSON.stringify(deck)).toContain('Synthèse');
+    expect(JSON.stringify(deck)).not.toContain('Mécanisme des flux');
+    expect(JSON.stringify(deck)).not.toContain('Départ en retraite');
+    expect(fingerprintPptxExport(manifest)).toBe('2d1a764c13bdc667');
+  });
+
+  it('compacte les libellés de paliers revenus quand les dates sont déjà affichées', () => {
+    const inputs = {
+      ...INPUTS,
+      company: {
+        ...INPUTS.company,
+        associates: INPUTS.company.associates.map((associate: any) => ({
+          ...associate,
+          revenuePhases: associate.revenuePhases.map(({ label: _label, ...phase }: any) => phase),
+        })),
+      },
+    };
+    const deck = buildTresorerieStudyDeck({ rows: ROWS, kpis: KPIS, inputs });
+    const timeline = deck.slides.find(slide => slide.type === 'treso-timeline') as TimelineSlide;
+
+    expect(timeline.segments.map(segment => segment.label)).toEqual(['Palier', 'Palier']);
+  });
+
+  it('prépare une synthèse visuelle avec jalon CCA prioritaire et poches configurées', () => {
+    const deck = buildTresorerieStudyDeck({ rows: ROWS, kpis: KPIS, inputs: INPUTS });
+    const synthesis = deck.slides.find((slide): slide is SynthesisSlide => slide.type === 'treso-synthesis');
+
+    expect(synthesis).toBeDefined();
+    expect(synthesis?.title).toBe('Synthèse');
+    expect(synthesis?.rangeStartYear).toBe(2026);
+    expect(synthesis?.rangeEndYear).toBe(2037);
+    expect(synthesis?.triggerMarker).toMatchObject({
+      kind: 'cca',
+      label: 'Phase de revenu',
+      year: 2031,
+      ageLabel: 'À 55 ans',
+    });
+    expect(synthesis?.series[0]).toMatchObject({
+      year: 2026,
+      investmentValue: 132100,
+      ccaBalance: 234000,
+      dividendRevenue: 0,
+    });
+    expect(synthesis?.pocketTimeline.map(pocket => pocket.label)).toEqual([
+      'Court terme',
+      'Long terme',
+    ]);
+    expect(JSON.stringify(synthesis)).toContain('Valorisation de la trésorerie');
+    expect(JSON.stringify(synthesis)).toContain('CCA restant puis dividendes');
+    expect(JSON.stringify(synthesis)).not.toContain('Création de la société');
+    expect(JSON.stringify(synthesis)).not.toContain('100 000 €');
+    expect(JSON.stringify(synthesis)).not.toContain('Retraite');
+    expect((synthesis as TresorerieSynthesisSlideSpec & { hero?: unknown }).hero).toBeUndefined();
+  });
+
+  it('utilise les dividendes comme jalon de synthèse quand aucun CCA n’est remboursé', () => {
+    const dividendRows = ROWS.map(row => {
+      const isDividendYear = row.year >= 3;
+      const revenusParAssocie = row.revenusParAssocie.map(revenu => ({
+        ...revenu,
+        source: isDividendYear ? 'dividendes' as const : 'remuneration' as const,
+        ccaRepaid: 0,
+        grossDividends: isDividendYear ? 42000 : 0,
+        dividendTax: isDividendYear ? 12000 : 0,
+        netRevenue: isDividendYear ? 30000 : revenu.netRevenue,
+      }));
+      return {
+        ...row,
+        retraitsCCA: 0,
+        revenusParAssocie,
+        revenusNets: revenusParAssocie.reduce((sum, revenu) => sum + revenu.netRevenue, 0),
+      };
+    });
+    const deck = buildTresorerieStudyDeck({ rows: dividendRows, kpis: KPIS, inputs: INPUTS });
+    const synthesis = deck.slides.find((slide): slide is SynthesisSlide => slide.type === 'treso-synthesis');
+    const timeline = deck.slides.find(slide => slide.type === 'treso-timeline') as TimelineSlide;
+
+    expect(synthesis?.triggerMarker).toMatchObject({
+      kind: 'dividendes',
+      label: 'Phase de revenu',
+      year: 2028,
+      ageLabel: 'À 52 ans',
+    });
+    expect(synthesis?.series[2]).toMatchObject({
+      year: 2028,
+      dividendRevenue: 30000,
+    });
+    expect(JSON.stringify(timeline)).toContain('Dividendes nets de PFU');
   });
 
   it('prépare le contexte, la timeline et les poches depuis le modèle v2', () => {
     const deck = buildTresorerieStudyDeck({ rows: ROWS, kpis: KPIS, inputs: INPUTS });
-    const schema = deck.slides[0] as TresorerieSchemaSlideSpec;
+    const schema = deck.slides.find(slide => slide.type === 'treso-schema') as TresorerieSchemaSlideSpec;
     const timeline = deck.slides.find(slide => slide.type === 'treso-timeline') as TimelineSlide;
     const allocationCards = deck.slides.find(slide => slide.type === 'treso-allocation-cards');
+    const parametersAnnex = deck.slides.find(
+      (slide): slide is ParametersAnnexSlide => slide.type === 'treso-parameters-annex',
+    );
 
     expect(schema).toMatchObject({
       type: 'treso-schema',
@@ -309,7 +419,7 @@ describe('Exports Trésorerie société', () => {
         startYear: 2026,
         endYear: 2030,
         sources: expect.arrayContaining([
-          expect.objectContaining({ label: 'Rémunération nette', annualNetAmount: 56000 }),
+          expect.objectContaining({ label: 'Rémunération nette avant impôt', annualNetAmount: 56000 }),
         ]),
       }),
       expect.objectContaining({
@@ -324,6 +434,11 @@ describe('Exports Trésorerie société', () => {
       protectedCash: 100000,
       allocatableBase: 50000,
     });
+    expect(parametersAnnex?.sections.map(section => section.title)).toEqual([
+      'Société',
+      'Sécurité de trésorerie',
+      'Associé principal',
+    ]);
   });
 
   it('prépare le schéma PPTX avec filiales imbriquées et matrice vide', () => {
@@ -355,7 +470,7 @@ describe('Exports Trésorerie société', () => {
         },
       },
     });
-    const schema = deck.slides[0] as TresorerieSchemaSlideSpec;
+    const schema = deck.slides.find(slide => slide.type === 'treso-schema') as TresorerieSchemaSlideSpec;
 
     expect(deck.slides.map(slide => slide.type)).not.toContain('treso-allocation-cards');
     expect(schema.orgchartCompany.subsidiaries).toEqual(expect.arrayContaining([
@@ -397,7 +512,8 @@ describe('Exports Trésorerie société', () => {
     pptx.layout = 'LAYOUT_WIDE';
     defineSlideMasters(pptx, ctx.theme);
 
-    buildTresorerieSchema(pptx, deck.slides[0] as TresorerieSchemaSlideSpec, ctx, 1);
+    const schema = deck.slides.find(slide => slide.type === 'treso-schema') as TresorerieSchemaSlideSpec;
+    buildTresorerieSchema(pptx, schema, ctx, 1);
 
     const blob = await pptx.write({ outputType: 'blob' }) as Blob;
     const zip = await JSZip.loadAsync(await blob.arrayBuffer());
@@ -406,10 +522,15 @@ describe('Exports Trésorerie société', () => {
     expect(slideXml).toBeDefined();
     expect(slideXml).toContain('Filiale B');
     expect(slideXml).toContain('51 %');
-    expect(slideXml).toContain('Paramètres société');
-    expect(slideXml).toContain('Associé principal');
-    expect(slideXml).toContain('Forme sociale');
-    expect(slideXml).toContain('Type société');
+    expect(slideXml).toContain('Repères clés');
+    expect(slideXml).toContain('Société');
+    expect(slideXml).toContain('Trésorerie initiale');
+    expect(slideXml).toContain('Banque protégée');
+    expect(slideXml).toContain('Horizon');
+    expect(slideXml).toContain('788781');
+    expect(slideXml).not.toContain('Paramètres société');
+    expect(slideXml).not.toContain('Forme sociale');
+    expect(slideXml).not.toContain('Type société');
     expect(slideXml).not.toContain('CCA total constitué');
     expect(slideXml).not.toContain('Parcours de revenus associé actif');
     expect(slideXml).not.toContain('Phase 1');
@@ -434,14 +555,116 @@ describe('Exports Trésorerie société', () => {
       expect(xml, path).toContain('<p:cSld');
       expect(xml.length, path).toBeGreaterThan(900);
     });
-    expect(allXml).toContain('MÉCANISME DES FLUX');
-    expect(allXml).toContain('SYNTHÈSE AVANT ANNEXE');
+    expect(allXml).toContain('COMPRENDRE LE MONTAGE');
+    expect(allXml).toContain('ORGANISER L’EXCÉDENT');
+    expect(allXml).toContain('ANNEXES DÉTAILLÉES');
+    expect(allXml).not.toContain('MÉCANISME DES FLUX');
+    expect(allXml).toContain('SYNTHÈSE');
+    expect(allXml).toContain('Valorisation de la trésorerie');
+    expect(allXml).toContain('CCA restant puis dividendes');
+    expect(allXml).toContain('Phase de revenu');
+    expect(allXml).toContain('Rémunération nette avant impôt');
+    expect(allXml).not.toContain('Dividendes nets</a:t>');
+    expect(allXml).toContain('Remboursement CCA');
+    expect(allXml).toContain('À 55 ans');
+    expect(allXml).toContain('ANNEXE — PARAMÈTRES');
     expect(allXml).toContain('HYPOTHÈSES ET PÉRIMÈTRE');
     expect(allXml).toContain('LECTURE DES POCHES DE PLACEMENT');
     expect(allXml).toContain('Liquidité disponible sur compte bancaire');
+    expect(allXml).not.toContain('SYNTHÈSE AVANT ANNEXE');
+    expect(allXml).not.toContain('SYNTHÈSE DE LA STRATÉGIE DE TRÉSORERIE');
+    expect(allXml).not.toContain('Ordre de lecture');
+    expect(allXml).not.toContain('Départ en retraite');
     expect(allXml).not.toContain('FCB');
     expect(allXml).not.toContain('Family Cash Box');
     expect(allXml).not.toMatch(/\bc[xy]="-/);
+  });
+
+  it('rend la synthèse sans doubler l’année d’horizon sur l’axe', async () => {
+    const deck = buildTresorerieStudyDeck({ rows: ROWS, kpis: KPIS, inputs: INPUTS });
+    const synthesis = deck.slides.find((slide): slide is SynthesisSlide => slide.type === 'treso-synthesis');
+    const ctx = buildPptxContext();
+    const pptx = new PptxGenJS();
+    pptx.layout = 'LAYOUT_WIDE';
+    defineSlideMasters(pptx, ctx.theme);
+
+    expect(synthesis).toBeDefined();
+    buildTresorerieSynthesis(pptx, synthesis as SynthesisSlide, ctx, 1);
+
+    const blob = await pptx.write({ outputType: 'blob' }) as Blob;
+    const zip = await JSZip.loadAsync(await blob.arrayBuffer());
+    const slideXml = await zip.file('ppt/slides/slide1.xml')?.async('string') ?? '';
+
+    expect(slideXml).toContain('Horizon 2037');
+    expect(slideXml).toContain('2026');
+    expect(slideXml).not.toContain('<a:t>2037</a:t>');
+  });
+
+  it('rend les segments courts de revenus sans trou ni libellé final hors cadre', async () => {
+    const ctx = buildPptxContext();
+    const pptx = new PptxGenJS();
+    pptx.layout = 'LAYOUT_WIDE';
+    defineSlideMasters(pptx, ctx.theme);
+
+    const timeline: TimelineSlide = {
+      type: 'treso-timeline',
+      title: 'Parcours de revenus de l’associé',
+      subtitle: 'Associé 1 · revenus nets affichés par période',
+      associateLabel: 'Associé 1',
+      rangeStartYear: 2026,
+      rangeEndYear: 2066,
+      totalNetSum: 2562745,
+      segments: [
+        {
+          startYear: 2026,
+          endYear: 2030,
+          label: 'Palier',
+          sources: [{
+            kind: 'remuneration',
+            label: 'Rémunération nette avant impôt',
+            annualNetAmount: 70000,
+            iconKey: 'money',
+          }],
+        },
+        {
+          startYear: 2031,
+          endYear: 2034,
+          label: 'Palier',
+          sources: [{
+            kind: 'cca-repayment',
+            label: 'Remboursement CCA',
+            annualNetAmount: 50000,
+            iconKey: 'bank',
+          }],
+        },
+        {
+          startYear: 2035,
+          endYear: 2065,
+          label: 'Palier',
+          sources: [{
+            kind: 'dividends',
+            label: 'Dividendes nets de PFU',
+            annualNetAmount: 64927,
+            iconKey: 'chart-up',
+          }],
+        },
+      ],
+      tailSegment: {
+        startYear: 2066,
+        endYear: 2066,
+        label: 'Capital placé · trésorerie capitalisée',
+      },
+    };
+
+    buildTresorerieTimeline(pptx, timeline, ctx, 1);
+
+    const blob = await pptx.write({ outputType: 'blob' }) as Blob;
+    const zip = await JSZip.loadAsync(await blob.arrayBuffer());
+    const slideXml = await zip.file('ppt/slides/slide1.xml')?.async('string') ?? '';
+
+    expect(slideXml).toContain('Trésorerie capitalisée');
+    expect(slideXml).not.toContain('Capital placé · trésorerie capitalisée');
+    expect(slideXml).not.toMatch(/\bc[xy]="-/);
   });
 
   it('génère un XLSX valide avec les onglets Projection, Revenus associés puis Hypothèses', async () => {

@@ -114,24 +114,55 @@ const ROW = {
   ],
 } as TresoProjectionRow;
 
+function revenueRow(year: number, netRevenue: number): TresoProjectionRow {
+  return {
+    year,
+    revenusNets: netRevenue,
+    deltaBesoin: netRevenue - 1_000_000,
+    revenusParAssocie: [{
+      associateId: 'associe-1',
+      label: 'Associé 1',
+      source: 'dividendes',
+      remuneration: 0,
+      ccaRepaid: 0,
+      grossDividends: netRevenue,
+      dividendTax: 0,
+      tnsSocialCharges: 0,
+      netRevenue,
+    }],
+  } as TresoProjectionRow;
+}
+
 describe('TresoAssociateInsights', () => {
   it('affiche un donut à trois sources sans intégrer le déficit ni les charges TNS', () => {
     const html = renderToStaticMarkup(<TresoAssociateInsights inputs={INPUTS} rows={[ROW]} />);
 
-    expect(html).toContain('Répartition des revenus nets');
-    expect(html).toContain('Rémunération nette');
+    expect(html).toContain('Revenus de l’associé');
+    expect(html).toContain('Couverture du besoin moyen par source');
+    expect(html).toContain('Couverture partielle');
+    expect(html).toContain('Rémunération nette avant impôt');
     expect(html).toContain('Remboursement CCA');
-    expect(html).toContain('Dividendes nets');
+    expect(html).toContain('Dividendes nets de PFU');
     expect(html).toContain('-5');
     expect(html).toContain('is-warning');
     expect(html).not.toContain('charges sociales');
   });
 
   it('affiche un surplus de besoin en statut positif', () => {
+    const positiveRow = {
+      ...ROW,
+      revenusNets: 55_000,
+      revenusParAssocie: ROW.revenusParAssocie.map(item => (
+        item.source === 'remuneration'
+          ? { ...item, remuneration: 30_000, netRevenue: 30_000 }
+          : item
+      )),
+    } as TresoProjectionRow;
     const html = renderToStaticMarkup(
-      <TresoAssociateInsights inputs={INPUTS} rows={[{ ...ROW, deltaBesoin: 5_000 }]} />,
+      <TresoAssociateInsights inputs={INPUTS} rows={[positiveRow]} />,
     );
 
+    expect(html).toContain('Couverture totale');
     expect(html).toContain('+5');
     expect(html).toContain('is-positive');
   });
@@ -139,10 +170,54 @@ describe('TresoAssociateInsights', () => {
   it('affiche la moyenne annuelle des revenus récupérés comme une note secondaire', () => {
     const html = renderToStaticMarkup(<TresoAssociateInsights inputs={INPUTS} rows={[ROW]} />);
 
-    expect(html).toContain('Total revenus récupérés');
-    expect(html).toContain('Moyenne annuelle');
+    expect(html).toContain('Revenus servis période');
+    expect(html).toContain('Moyenne annuelle servie');
     expect(html).toContain('ts-associate-kpi-note');
     expect(html).not.toContain('moyenne ');
+  });
+
+  it('raisonne en moyenne sur toute la durée des besoins configurés', () => {
+    const inputs = structuredClone(INPUTS);
+    const associate = inputs.company.associates[0];
+    associate.revenuePhases = [
+      {
+        id: 'phase-longue',
+        startYear: 2026,
+        source: 'none',
+        loadedAnnualCost: 0,
+        socialChargeRate: 0,
+        annualNetIncomeNeed: 1_000_000,
+        useCcaForCompletion: true,
+      },
+      {
+        id: 'phase-stop',
+        startYear: 2029,
+        source: 'none',
+        loadedAnnualCost: 0,
+        socialChargeRate: 0,
+        annualNetIncomeNeed: 0,
+        useCcaForCompletion: true,
+      },
+    ];
+
+    const html = renderToStaticMarkup(
+      <TresoAssociateInsights
+        inputs={inputs}
+        rows={[
+          revenueRow(1, 1_000_000),
+          revenueRow(2, 1_000_000),
+          revenueRow(3, 0),
+        ]}
+      />,
+    );
+
+    expect(html).toContain('Moyenne sur 3 années de besoin');
+    expect(html).toContain('Revenu moyen servi');
+    expect(html).toContain('666');
+    expect(html).toContain('Écart moyen / an');
+    expect(html).toContain('-333');
+    expect(html).toContain('Couverture partielle');
+    expect(html).not.toContain('Couverture totale');
   });
 
   it('affiche un état propre pour un associé personne morale', () => {

@@ -219,7 +219,7 @@ export function TresoRevenuePhaseModal({
       {simultaneousCcaWarning ? <p className="ts-note--info">{simultaneousCcaWarning}</p> : null}
 
       <div className="ts-pocket-modal-summary">
-        <span>Net annuel estimé {fmtEuro(netRevenue)}</span>
+        <span>Net annuel estimé avant IR {fmtEuro(netRevenue)}</span>
         <span>{activeCount} sous-phase{activeCount > 1 ? 's' : ''} active{activeCount > 1 ? 's' : ''}</span>
       </div>
 
@@ -351,7 +351,7 @@ export function TresoRevenuePhaseModal({
                   </SimFieldShell>
 
                   <div className="ts-phase-net">
-                    <span>Net annuel estimé</span>
+                    <span>Net annuel estimé avant IR</span>
                     <strong>{fmtEuro(netRevenue)}</strong>
                   </div>
                 </div>
@@ -387,7 +387,7 @@ export function TresoRevenuePhaseModal({
               </div>
               {draft.distribution.dividendsStrategy === 'montant_cible' ? (
                 <div className="ts-modal-grid ts-modal-grid--three">
-                  <SimFieldShell label="Objectif net annuel de l’associé" className="ts-field" rowClassName="ts-field__row">
+                  <SimFieldShell label="Objectif net annuel de l’associé (net de PFU)" className="ts-field" rowClassName="ts-field__row">
                     <input
                       type="text"
                       inputMode="numeric"

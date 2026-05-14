@@ -47,14 +47,13 @@ export function buildTresorerieAllocationMatrix(
   addHeader(slide, spec.title, spec.subtitle, theme, 'content');
 
   const textMain = roleColor(theme, 'textMain');
-  const textBody = roleColor(theme, 'textBody');
   const panelBorder = roleColor(theme, 'panelBorder');
   const accent = roleColor(theme, 'accent');
 
-  // Couleurs sectorielles : court (pâle) → moyen → long (accent)
+  // Couleurs sectorielles contrastées : les fonds pâles restent réservés aux surfaces internes.
   const horizonColors: Record<HorizonKey, string> = {
-    court: theme.colors.color8.replace('#', ''),
-    moyen: theme.colors.color5.replace('#', ''),
+    court: theme.colors.color2.replace('#', ''),
+    moyen: roleColor(theme, 'bgMain'),
     long: accent,
   };
 
@@ -67,6 +66,7 @@ export function buildTresorerieAllocationMatrix(
     const x = MARGIN_X + index * (colW + gap);
     const horizonColor = horizonColors[horizon.key] ?? accent;
     const headerTextColor = contrastText(horizonColor);
+    const emphasisColor = headerTextColor === '000000' ? textMain : horizonColor;
 
     // ── Carte ombrée colorée full-fill (gomme les coins arrondis) ──────
     slide.addShape('roundRect', {
@@ -135,7 +135,7 @@ export function buildTresorerieAllocationMatrix(
       h: 0.20,
       fontSize: 9.5,
       italic: true,
-      color: textBody,
+      color: textMain,
       align: 'center',
       valign: 'middle',
     });
@@ -146,7 +146,7 @@ export function buildTresorerieAllocationMatrix(
       h: 0.42,
       fontSize: 22,
       bold: true,
-      color: horizonColor,
+      color: emphasisColor,
       align: 'center',
       valign: 'middle',
     });
@@ -160,7 +160,7 @@ export function buildTresorerieAllocationMatrix(
       h: 0.18,
       fontSize: 9.5,
       italic: true,
-      color: textBody,
+      color: textMain,
       align: 'center',
     });
     addTextFr(slide, horizon.durationLabel, {
@@ -194,7 +194,7 @@ export function buildTresorerieAllocationMatrix(
       fontSize: 10.5,
       bold: true,
       italic: true,
-      color: horizonColor,
+      color: emphasisColor,
       align: 'center',
     });
     addTextFr(slide, horizon.typicalSupports.map(support => `· ${support}`).join('\n'), {
@@ -203,9 +203,10 @@ export function buildTresorerieAllocationMatrix(
       w: colW - 0.36,
       h: 0.90,
       fontSize: 10,
-      color: textBody,
+      color: textMain,
       align: 'center',
       breakLine: false,
+      fit: 'shrink',
     });
   });
 

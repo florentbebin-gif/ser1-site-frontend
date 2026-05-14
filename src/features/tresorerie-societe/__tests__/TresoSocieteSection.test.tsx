@@ -240,8 +240,30 @@ describe('TresoSocieteSection', () => {
     expect(screen.getByText('BFR filiale')).toBeInTheDocument();
     expect(screen.getByText('Réserves distribuables')).toBeInTheDocument();
     expect(screen.getByText('Scénario de cession')).toBeInTheDocument();
+    expect(screen.getByText('Valeur fiscale des titres')).toBeInTheDocument();
+    expect(screen.queryByText('Base fiscale')).not.toBeInTheDocument();
     expect(screen.getByText('Année d’acquisition')).toBeInTheDocument();
     expect(screen.getByText('Régime PVLT titres de participation')).toBeInTheDocument();
+  });
+
+  it('explique les régimes fiscaux de cession depuis un bouton info', () => {
+    render(<TresoSocieteSection inputs={INPUTS} onChange={vi.fn()} />);
+
+    fireEvent.click(screen.getByRole('button', { name: /Paramétrer Filiale A/ }));
+
+    const infoButton = screen.getByRole('button', {
+      name: /Comprendre le régime de cession/i,
+    });
+    expect(infoButton).toHaveAttribute('aria-expanded', 'false');
+
+    fireEvent.click(infoButton);
+
+    expect(infoButton).toHaveAttribute('aria-expanded', 'true');
+    expect(screen.getByText(/Régime standard/i)).toBeInTheDocument();
+    expect(screen.getByText(/plus-value imposable à l’IS/i)).toBeInTheDocument();
+    expect(screen.getByText(/quote-part taxable de 12 %/i)).toBeInTheDocument();
+    expect(screen.getByText(/plus-value nette long terme/i)).toBeInTheDocument();
+    expect(screen.getByText(/taux réduit PME/i)).toBeInTheDocument();
   });
 
   it('rend la navigation latérale associé actionnable', () => {

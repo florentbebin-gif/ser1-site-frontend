@@ -9,6 +9,7 @@ export type {
   TresorerieAllocationMatrixSlideSpec,
   TresorerieFlowMechanismSlideSpec,
   TresorerieHypothesesSlideSpec,
+  TresorerieParametersAnnexSlideSpec,
   TresorerieProjectionSlideSpec,
   TresorerieSchemaSlideSpec,
   TresorerieSynthesisSlideSpec,

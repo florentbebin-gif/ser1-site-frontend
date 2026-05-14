@@ -411,7 +411,7 @@ function buildStructureSheet(inputs: TresoInputsRuntime): XlsxSheet {
     [h('Filiale'), h('Flux'), h('Période'), h('Montant')],
     ...flowScheduleRows,
     [sec('Cessions filiales'), sec(''), sec(''), sec(''), sec(''), sec(''), sec('')],
-    [h('Filiale'), h('Année'), h('Prix'), h('Base fiscale'), h('Frais'), h('Acquisition'), h('Régime')],
+    [h('Filiale'), h('Année'), h('Prix'), h('Valeur fiscale des titres'), h('Frais'), h('Acquisition'), h('Régime')],
     ...disposalRows(company.subsidiaries),
     [sec('Stratégie de trésorerie'), sec(''), sec('')],
     [h('Groupe'), h('Poche'), h('Allocation, rendement et durée')],

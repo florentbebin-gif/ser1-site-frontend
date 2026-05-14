@@ -366,6 +366,67 @@
   font-size: 11px;
 }
 
+.ts-associate-card__header--with-action {
+  align-items: flex-start;
+}
+
+.ts-associate-card__header--with-action > div {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.ts-disposal-info-button {
+  width: 26px;
+  height: 26px;
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--color-c8);
+  border-radius: 999px;
+  background: #fff;
+  color: var(--color-c1);
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.ts-disposal-info-button:hover,
+.ts-disposal-info-button:focus-visible {
+  border-color: var(--color-c3);
+  background: color-mix(in srgb, var(--color-c4) 20%, #fff);
+  outline: none;
+}
+
+.ts-disposal-info-button[aria-expanded="true"] {
+  background: var(--color-c1);
+  border-color: var(--color-c1);
+  color: #fff;
+}
+
+.ts-disposal-info {
+  margin-bottom: 12px;
+  padding: 10px 12px;
+  border: 1px solid var(--color-c8);
+  border-radius: 8px;
+  background: var(--color-c7);
+  color: var(--color-c1);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.ts-disposal-info ul {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding-left: 18px;
+}
+
+.ts-disposal-info strong {
+  font-weight: 700;
+}
+
 .ts-field-summary {
   display: inline-flex;
   align-items: center;

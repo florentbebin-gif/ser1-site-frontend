@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { SimFieldShell } from '@/components/ui/sim/SimFieldShell';
 import { SimModalShell } from '@/components/ui/sim/SimModalShell';
 import { SimSelect } from '@/components/ui/sim/SimSelect';
@@ -49,6 +50,7 @@ export function TresoSubsidiaryModal({
   onChange,
   onClose,
 }: TresoSubsidiaryModalProps) {
+  const [showDisposalInfo, setShowDisposalInfo] = useState(false);
   const parentOptions = [
     { value: 'societe', label: 'Sous la société mère' },
     ...company.subsidiaries
@@ -197,10 +199,42 @@ export function TresoSubsidiaryModal({
         </div>
 
         <div className="ts-associate-card">
-          <div className="ts-associate-card__header">
-            <strong>Scénario de cession</strong>
-            <span>Valorisation, plus-value et régime fiscal</span>
+          <div className="ts-associate-card__header ts-associate-card__header--with-action">
+            <div>
+              <strong>Scénario de cession</strong>
+              <span>Valorisation, plus-value et régime fiscal</span>
+            </div>
+            <button
+              type="button"
+              className="ts-disposal-info-button"
+              aria-label="Comprendre le régime de cession"
+              aria-controls="ts-disposal-regime-help"
+              aria-expanded={showDisposalInfo}
+              onClick={() => setShowDisposalInfo(value => !value)}
+            >
+              i
+            </button>
           </div>
+          {showDisposalInfo ? (
+            <div id="ts-disposal-regime-help" className="ts-disposal-info" role="note">
+              <ul>
+                <li>
+                  <strong>Régime standard</strong> : plus-value imposable à l’IS sur la plus-value nette.
+                </li>
+                <li>
+                  <strong>Régime PVLT titres de participation</strong> : plus-value long terme exonérée à 0 %,
+                  avec réintégration d’une quote-part taxable de 12 % du montant brut des plus-values éligibles.
+                </li>
+                <li>
+                  Cette quote-part n’est due que si l’exercice constate une plus-value nette long terme
+                  sur titres de participation.
+                </li>
+                <li>
+                  La quote-part est ensuite imposée à l’IS, éventuellement au taux réduit PME si la société y est éligible.
+                </li>
+              </ul>
+            </div>
+          ) : null}
           <div className="ts-modal-grid ts-modal-grid--three">
             <SimFieldShell label="Année de cession" className="ts-field" rowClassName="ts-field__row">
               <input
@@ -225,7 +259,7 @@ export function TresoSubsidiaryModal({
               <span className="sim-field__unit ts-unit">€</span>
             </SimFieldShell>
 
-            <SimFieldShell label="Base fiscale" className="ts-field" rowClassName="ts-field__row">
+            <SimFieldShell label="Valeur fiscale des titres" className="ts-field" rowClassName="ts-field__row">
               <input
                 type="text"
                 inputMode="numeric"

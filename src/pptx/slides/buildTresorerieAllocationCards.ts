@@ -14,7 +14,6 @@ import type { ExportContext, TresorerieAllocationCardsSlideSpec } from '../theme
 import { MASTER_NAMES } from '../template/loadBaseTemplate';
 import {
   COORDS_CONTENT,
-  COORDS_FOOTER,
   SHADOW_PARAMS,
   addFooter,
   addHeader,
@@ -26,7 +25,6 @@ import { addBusinessIconToSlide } from '../icons/addBusinessIcon';
 const MARGIN_X = COORDS_CONTENT.margin.x;
 const CONTENT_W = COORDS_CONTENT.margin.w;
 const CONTENT_TOP_Y = COORDS_CONTENT.content.y;
-const CONTENT_BOTTOM_Y = COORDS_FOOTER.date.y - 0.15;
 const WHITE = 'FFFFFF';
 
 type Horizon = 'court' | 'moyen' | 'long' | 'banque';
@@ -67,26 +65,68 @@ export function buildTresorerieAllocationCards(
   const { theme } = ctx;
   addHeader(slide, spec.title, spec.subtitle, theme, 'content');
 
-  const accent = roleColor(theme, 'accent');
   const textMain = roleColor(theme, 'textMain');
-  const textBody = roleColor(theme, 'textBody');
   const panelBorder = roleColor(theme, 'panelBorder');
+  const bgMain = roleColor(theme, 'bgMain');
 
-  // Palette sectorielle (CT pâle / MT moyen / LT accent)
+  // Palette sectorielle contrastée pour rester lisible dans le donut et les bandeaux.
   const horizonColors: Record<Horizon, string> = {
-    court: theme.colors.color8.replace('#', ''),
+    court: bgMain,
     moyen: theme.colors.color5.replace('#', ''),
-    long: accent,
+    long: theme.colors.color2.replace('#', ''),
     banque: theme.colors.color2.replace('#', ''),
   };
 
   const cards = spec.cards.slice(0, 5);
   const saturated = spec.allocatableBase <= 0;
 
+  // ── Repères compacts ─────────────────────────────────────────────────
+  const summaryParts = [
+    { label: 'Trésorerie initiale', value: euro(spec.treasuryInitial) },
+    { label: 'Banque protégée', value: euro(spec.protectedCash) },
+    { label: 'Disponible', value: euro(spec.allocatableBase) },
+  ];
+  const summaryY = CONTENT_TOP_Y + 0.02;
+  const summaryGap = 0.16;
+  const summaryH = 0.50;
+  const summaryW = (CONTENT_W - summaryGap * 2) / 3;
+  summaryParts.forEach((item, index) => {
+    const x = MARGIN_X + index * (summaryW + summaryGap);
+    slide.addShape('roundRect', {
+      x,
+      y: summaryY,
+      w: summaryW,
+      h: summaryH,
+      fill: { color: index === 2 ? bgMain : WHITE },
+      line: { color: index === 2 ? bgMain : panelBorder, width: 0.55 },
+      rectRadius: 0.06,
+    });
+    const summaryTextColor = index === 2 ? contrastText(bgMain) : textMain;
+    addTextFr(slide, item.label, {
+      x: x + 0.16,
+      y: summaryY + 0.06,
+      w: summaryW - 0.32,
+      h: 0.16,
+      fontSize: 8,
+      color: summaryTextColor,
+      fit: 'shrink',
+    });
+    addTextFr(slide, item.value, {
+      x: x + 0.16,
+      y: summaryY + 0.23,
+      w: summaryW - 0.32,
+      h: 0.22,
+      fontSize: 12,
+      bold: true,
+      color: summaryTextColor,
+      fit: 'shrink',
+    });
+  });
+
   // ── Donut chart à gauche ──────────────────────────────────────────────
   const donutX = MARGIN_X + 0.10;
-  const donutY = CONTENT_TOP_Y + 0.10;
-  const donutSize = 4.20;
+  const donutY = CONTENT_TOP_Y + 0.72;
+  const donutSize = 3.66;
 
   if (cards.length > 0 && !saturated) {
     const labels = cards.map(card => card.label);
@@ -133,7 +173,7 @@ export function buildTresorerieAllocationCards(
       h: 0.24,
       fontSize: 10.5,
       italic: true,
-      color: textBody,
+      color: textMain,
       align: 'center',
       valign: 'middle',
     });
@@ -144,7 +184,7 @@ export function buildTresorerieAllocationCards(
       h: 0.50,
       fontSize: 20,
       bold: true,
-      color: accent,
+      color: textMain,
       align: 'center',
       valign: 'middle',
     });
@@ -155,7 +195,7 @@ export function buildTresorerieAllocationCards(
       h: 0.20,
       fontSize: 9,
       italic: true,
-      color: textBody,
+      color: textMain,
       align: 'center',
       valign: 'middle',
     });
@@ -189,7 +229,7 @@ export function buildTresorerieAllocationCards(
       h: 0.30,
       fontSize: 9.5,
       italic: true,
-      color: textBody,
+      color: textMain,
       align: 'center',
       valign: 'middle',
     });
@@ -198,8 +238,8 @@ export function buildTresorerieAllocationCards(
   // ── Cards à droite ───────────────────────────────────────────────────
   const cardsX = MARGIN_X + donutSize + 0.40;
   const cardsW = CONTENT_W - donutSize - 0.40;
-  const cardsTopY = CONTENT_TOP_Y + 0.06;
-  const cardsAreaH = donutSize + 0.08;
+  const cardsTopY = CONTENT_TOP_Y + 0.70;
+  const cardsAreaH = donutSize + 0.10;
 
   const cardCount = Math.max(1, cards.length);
   const cols = cardCount <= 3 ? 1 : 2;
@@ -265,7 +305,7 @@ export function buildTresorerieAllocationCards(
       y: bodyY + 0.06,
       w: 0.46,
       h: 0.46,
-    }, theme, 'accent');
+    }, theme, 'textMain');
     addTextFr(slide, card.horizonLabel, {
       x: x + 0.74,
       y: bodyY + 0.02,
@@ -273,7 +313,7 @@ export function buildTresorerieAllocationCards(
       h: 0.20,
       fontSize: 9,
       italic: true,
-      color: textBody,
+      color: textMain,
       valign: 'middle',
     });
     addTextFr(slide, euro(card.initialAmount), {
@@ -283,8 +323,9 @@ export function buildTresorerieAllocationCards(
       h: 0.34,
       fontSize: 17,
       bold: true,
-      color: horizonColor,
+      color: textMain,
       valign: 'middle',
+      fit: 'shrink',
     });
 
     // Séparateur fin
@@ -309,43 +350,8 @@ export function buildTresorerieAllocationCards(
       fontSize: 9,
       color: textMain,
       breakLine: false,
+      fit: 'shrink',
     });
-  });
-
-  // ── Footer synthèse ──────────────────────────────────────────────────
-  const footerY = CONTENT_BOTTOM_Y - 0.62;
-  slide.addShape('roundRect', {
-    x: MARGIN_X,
-    y: footerY,
-    w: CONTENT_W,
-    h: 0.54,
-    fill: { color: accent },
-    line: { color: accent, width: 0 },
-    rectRadius: 0.08,
-    shadow: {
-      type: SHADOW_PARAMS.type,
-      angle: SHADOW_PARAMS.angle,
-      blur: SHADOW_PARAMS.blur,
-      offset: SHADOW_PARAMS.offset,
-      opacity: SHADOW_PARAMS.opacity * 0.7,
-      color: roleColor(theme, 'shadowBase'),
-    },
-  });
-  const synthesisParts = [
-    `Trésorerie initiale ${euro(spec.treasuryInitial)}`,
-    `Banque protégée ${euro(spec.protectedCash)}`,
-    `Disponible ${euro(spec.allocatableBase)}`,
-  ];
-  addTextFr(slide, synthesisParts.join('   ·   '), {
-    x: MARGIN_X + 0.24,
-    y: footerY + 0.14,
-    w: CONTENT_W - 0.48,
-    h: 0.26,
-    fontSize: 11,
-    bold: true,
-    color: WHITE,
-    align: 'center',
-    valign: 'middle',
   });
 
   addFooter(slide, ctx, slideIndex, 'onLight');

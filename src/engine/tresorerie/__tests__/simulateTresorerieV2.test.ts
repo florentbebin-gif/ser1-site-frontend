@@ -291,7 +291,7 @@ describe('simulateTresorerie — modèle société v2', () => {
     expect(rows[2].chargesStructure).toBeCloseTo(12_000, 2);
   });
 
-  it('intègre la cession estimée de titres dans le cash et la base taxable de l’année de cession', () => {
+  it('applique le régime standard en auto quand la durée de détention n’est pas prouvée', () => {
     const rows = simulateTresorerieV2(baseV2({
       company: {
         subsidiaries: [
@@ -316,8 +316,55 @@ describe('simulateTresorerie — modèle société v2', () => {
     }), PARAMS, 2);
 
     expect(rows[0].resultatFiscalAvantIS).toBe(0);
-    expect(rows[1].resultatFiscalAvantIS).toBe(2_400);
+    expect(rows[1].resultatFiscalAvantIS).toBe(20_000);
     expect(rows[1].tresorerieFin).toBeGreaterThan(rows[0].tresorerieFin);
+  });
+
+  it('compense les plus et moins-values long terme avant d’appliquer la quote-part taxable', () => {
+    const rows = simulateTresorerieV2(baseV2({
+      company: {
+        subsidiaries: [
+          {
+            id: 'filiale-gain',
+            label: 'Filiale gain',
+            holdingOwnershipPct: 100,
+            motherDaughterEligible: true,
+            fiscalIntegrationEstimateEnabled: false,
+            servicesSchedule: [],
+            dividendsSchedule: [],
+            disposal: {
+              year: 2027,
+              estimatedPrice: 180_000,
+              taxBasis: 80_000,
+              fees: 0,
+              regime: 'pvlt',
+              acquisitionYear: 2020,
+            },
+          },
+          {
+            id: 'filiale-perte',
+            label: 'Filiale perte',
+            holdingOwnershipPct: 100,
+            motherDaughterEligible: true,
+            fiscalIntegrationEstimateEnabled: false,
+            servicesSchedule: [],
+            dividendsSchedule: [],
+            disposal: {
+              year: 2027,
+              estimatedPrice: 20_000,
+              taxBasis: 100_000,
+              fees: 0,
+              regime: 'pvlt',
+              acquisitionYear: 2020,
+            },
+          },
+        ],
+      },
+    }), PARAMS, 2);
+
+    expect(rows[1].cessionFilialesPlusValueBrute).toBe(100_000);
+    expect(rows[1].cessionFilialesQuotePartTaxable).toBe(12_000);
+    expect(rows[1].resultatComptableAvantIS).toBe(20_000);
   });
 
   it('balaye la trésorerie disponible en fin d’exercice sans produire de revenus sur l’exercice écoulé', () => {

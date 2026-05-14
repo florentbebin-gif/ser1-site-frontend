@@ -35,6 +35,7 @@ import type {
   TresorerieAllocationMatrixSlideSpec,
   TresorerieFlowMechanismSlideSpec,
   TresorerieHypothesesSlideSpec,
+  TresorerieParametersAnnexSlideSpec,
   TresorerieSchemaSlideSpec,
   TresorerieSynthesisSlideSpec,
   TresorerieTimelineSlideSpec,
@@ -72,6 +73,7 @@ import { buildTresorerieSynthesis } from '../slides/buildTresorerieSynthesis';
 import { buildTresorerieAllocationMatrix } from '../slides/buildTresorerieAllocationMatrix';
 import { buildTresorerieAllocationCards } from '../slides/buildTresorerieAllocationCards';
 import { buildTresorerieHypotheses } from '../slides/buildTresorerieHypotheses';
+import { buildTresorerieParametersAnnex } from '../slides/buildTresorerieParametersAnnex';
 import { buildTresorerieProjection } from '../slides/buildTresorerieProjection';
 import { injectThemeColors } from '../theme/themeBuilder';
 import { defineSlideMasters } from '../template/loadBaseTemplate';
@@ -87,6 +89,9 @@ import {
  */
 const DEFAULT_DISCLAIMER =
   "Document non contractuel établi en fonction des dispositions fiscales ou sociales en vigueur à la date des présentes";
+
+const FALLBACK_CHAPTER_IMAGE_DATA_URI =
+  'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+/p9sAAAAASUVORK5CYII=';
 
 const PPTX_KEY_FIELD_PATTERN = /title|subtitle|label|name|total|net|tmi|rate|capital|montant|tax|duree|mensualite|cout|actif|droits|versement|rente|parts|status|location|year|periode|index|count|value/i;
 
@@ -288,12 +293,10 @@ export async function exportStudyDeck(
   for (const slideSpec of spec.slides) {
     if (slideSpec.type === 'chapter') {
       const chapterSpec = slideSpec as ChapterSlideSpec;
-      const imageDataUri = chapterImages.get(chapterSpec.chapterImageIndex);
+      const imageDataUri = chapterImages.get(chapterSpec.chapterImageIndex) ?? FALLBACK_CHAPTER_IMAGE_DATA_URI;
 
-      if (!imageDataUri) {
+      if (!chapterImages.has(chapterSpec.chapterImageIndex)) {
         console.warn(`[PPTX Export] Missing chapter image ${chapterSpec.chapterImageIndex}`);
-        // Skip slide or use fallback
-        continue;
       }
 
       buildChapter(pptx, chapterSpec, ctx, imageDataUri, slideIndex);
@@ -431,6 +434,9 @@ export async function exportStudyDeck(
     } else if (slideSpec.type === 'treso-allocation-cards') {
       // Trésorerie Société IS — organisation dynamique par poche
       buildTresorerieAllocationCards(pptx, slideSpec as TresorerieAllocationCardsSlideSpec, ctx, slideIndex);
+    } else if (slideSpec.type === 'treso-parameters-annex') {
+      // Trésorerie Société IS — détail des paramètres sortis de la synthèse
+      buildTresorerieParametersAnnex(pptx, slideSpec as TresorerieParametersAnnexSlideSpec, ctx, slideIndex);
     } else if (slideSpec.type === 'treso-hypotheses') {
       // Trésorerie Société IS — hypothèses regroupées
       buildTresorerieHypotheses(pptx, slideSpec as TresorerieHypothesesSlideSpec, ctx, slideIndex);

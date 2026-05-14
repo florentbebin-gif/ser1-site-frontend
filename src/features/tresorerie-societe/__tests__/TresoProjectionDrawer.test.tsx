@@ -66,6 +66,16 @@ const ROW = {
       netRevenue: 0,
       ccaRepaid: 0,
     },
+    {
+      associateId: 'associe-1',
+      label: 'Associé 1',
+      source: 'dividendes',
+      grossDividends: 12000,
+      dividendTax: 3000,
+      tnsSocialCharges: 0,
+      netRevenue: 9000,
+      ccaRepaid: 0,
+    },
   ],
   tresorerieDebut: 100000,
   tresorerieFin: 82000,
@@ -122,6 +132,8 @@ describe('TresoProjectionDrawer', () => {
     fireEvent.click(screen.getByLabelText('Filtrer les revenus par associé'));
     fireEvent.mouseDown(screen.getByRole('option', { name: 'Associé 1' }));
 
+    expect(screen.getByText('Rémunération nette avant impôt — Associé 1')).toBeInTheDocument();
+    expect(screen.getByText('Dividendes nets de PFU — Associé 1')).toBeInTheDocument();
     expect(screen.getByText('Charges sociales TNS — Associé 1')).toBeInTheDocument();
     expect(screen.getByText('-3 000 €')).toBeInTheDocument();
   });

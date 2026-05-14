@@ -1,7 +1,7 @@
 /**
  * tresoreriePptxWrapper.ts — Assemblage deck PPTX Trésorerie Société IS
  *
- * Structure : Couverture → Contexte → Timeline → Pédagogie → Allocation → Annexe comptable → Hypothèses → Fin
+ * Structure : Couverture → Chapitres → Contexte → Timeline → Allocation → Synthèse → Annexes → Fin
  *
  * Règle GOUVERNANCE_EXPORTS.md :
  * - Aucun recalcul métier ici — on consomme TresoProjectionRow[] tel quel.
@@ -14,10 +14,7 @@ import type {
   LogoPlacement,
   StudyDeckSpec,
   TresorerieAllocationCardsSlideSpec,
-  TresorerieAllocationMatrixSlideSpec,
-  TresorerieHypothesesSlideSpec,
   TresorerieSchemaSlideSpec,
-  TresorerieSynthesisSlideSpec,
   TresorerieTimelineSlideSpec,
 } from '@/pptx/theme/types';
 import type {
@@ -28,6 +25,7 @@ import type {
   TresoInputsRuntime,
   TresoProjectionRow,
 } from '@/engine/tresorerie/types';
+import { pickChapterImage } from '@/pptx/designSystem/serenity';
 import { paginateTresoYears } from '@/pptx/slides/buildTresorerieProjection';
 import type { TresoKPIs } from '../hooks/useTresorerieCalculations';
 import {
@@ -40,53 +38,38 @@ import {
 } from '../utils/tresorerieSocieteModel';
 import {
   getPhaseEndYear,
-  isRevenuePhaseV6,
   type RevenuePhaseInput,
   sortPhases,
 } from '../utils/revenuePhases';
-import { getRevenuePhaseSourceLabel } from '../utils/revenuePhaseLabels';
+import { getTresoRevenueSourceLabel } from '../utils/tresorerieRevenueLabels';
+import {
+  fmtPct,
+  getBankEnd,
+  getMinimumBankBalance,
+  getProtectedCash,
+  getWorkingCapitalRequirement,
+  positiveAmount,
+} from './tresoreriePptxHelpers';
+import {
+  ALLOCATION_MATRIX_SLIDE,
+  HYPOTHESES_SLIDE,
+  buildParametersAnnexSlide,
+  buildSynthesisSlide,
+} from './tresoreriePptxSlideSpecs';
 
 // ─── Helpers ───────────────────────────────────────────────────────────────────
 
 const PROJECTION_PAGE_SIZE = 8;
-
-function fmtPct(n: number): string {
-  return `${Math.round(n * 100) / 100} %`;
-}
-
-function formatEuro(n: number): string {
-  return `${Math.round(n).toLocaleString('fr-FR')} €`;
-}
-
-function positiveAmount(value: number | undefined): number {
-  return Number.isFinite(value) ? Math.max(0, value ?? 0) : 0;
-}
 
 function getAssociateRevenuePhases(associate: RuntimeAssociateInput | undefined): RevenuePhaseInput[] {
   const phases = (associate as { revenuePhases?: RevenuePhaseInput[] } | undefined)?.revenuePhases;
   return Array.isArray(phases) ? sortPhases(phases) : [];
 }
 
-function getMinimumBankBalance(inputs: TresoInputsRuntime): number {
-  return positiveAmount(inputs.allocationMatrix.minimumBankBalance ?? inputs.allocationMatrix.sweepThreshold);
-}
-
-function getWorkingCapitalRequirement(inputs: TresoInputsRuntime): number {
-  return positiveAmount(inputs.company.incomeStatement?.workingCapitalRequirement);
-}
-
-function getProtectedCash(inputs: TresoInputsRuntime): number {
-  return getMinimumBankBalance(inputs) + getWorkingCapitalRequirement(inputs);
-}
-
 function getCivilYear(inputs: TresoInputsRuntime, row: TresoProjectionRow): number {
   const associate = getSelectedAssociate(inputs);
   const profile = getAssociateProfile(inputs, associate);
   return profile.projectionStartYear + row.year - 1;
-}
-
-function getBankEnd(row: TresoProjectionRow): number {
-  return row.tresorerieBanqueFin ?? row.tresorerieFin;
 }
 
 function getAvailableTreasury(row: TresoProjectionRow, protectedCash: number): number {
@@ -136,8 +119,13 @@ export function getTresoReadiness(inputs: TresoInputsRuntime): {
 }
 
 function phaseLabel(phase: RevenuePhaseInput): string {
-  if (isRevenuePhaseV6(phase)) return phase.label?.trim() || `Palier ${phase.startYear}-${phase.endYear}`;
-  return phase.label?.trim() || getRevenuePhaseSourceLabel(phase.source);
+  return phase.label?.trim() || 'Palier';
+}
+
+function compactPhaseLabel(label: string, startYear: number, endYear: number): string {
+  const normalized = label.replace(/\s+/g, ' ').trim();
+  const rangePattern = new RegExp(`^Palier\\s+${startYear}\\s*(?:-|–|→)\\s*${endYear}$`, 'i');
+  return rangePattern.test(normalized) ? 'Palier' : normalized;
 }
 
 function mapRevenueSource(source: TresoAssociateRevenueSource): {
@@ -146,16 +134,16 @@ function mapRevenueSource(source: TresoAssociateRevenueSource): {
   iconKey: BusinessIconName;
 } | null {
   if (source === 'remuneration') {
-    return { kind: 'remuneration', label: 'Rémunération nette', iconKey: 'money' };
+    return { kind: 'remuneration', label: getTresoRevenueSourceLabel(source), iconKey: 'money' };
   }
   if (source === 'cca') {
-    return { kind: 'cca-repayment', label: 'Remboursement CCA', iconKey: 'bank' };
+    return { kind: 'cca-repayment', label: getTresoRevenueSourceLabel(source), iconKey: 'bank' };
   }
   if (source === 'cca_interets') {
-    return { kind: 'cca-interest', label: 'Intérêts CCA', iconKey: 'percent' };
+    return { kind: 'cca-interest', label: getTresoRevenueSourceLabel(source), iconKey: 'percent' };
   }
   if (source === 'dividendes') {
-    return { kind: 'dividends', label: 'Dividendes nets', iconKey: 'chart-up' };
+    return { kind: 'dividends', label: getTresoRevenueSourceLabel(source), iconKey: 'chart-up' };
   }
   return null;
 }
@@ -208,7 +196,7 @@ function buildTimelineSegments(
     return {
       startYear,
       endYear,
-      label: phaseLabel(phase),
+      label: compactPhaseLabel(phaseLabel(phase), startYear, endYear),
       sources,
     };
   }).filter(segment => segment.endYear >= segment.startYear && segment.sources.length > 0);
@@ -274,113 +262,6 @@ function buildAllocationCards(
   };
 }
 
-function getConsolidatedTreasuryEnd(rows: TresoProjectionRow[]): number {
-  const lastRow = rows[rows.length - 1];
-  if (!lastRow) return 0;
-  return getBankEnd(lastRow) + lastRow.capitalDistrib + lastRow.valeurCapi;
-}
-
-function buildSynthesisSlide(
-  rows: TresoProjectionRow[],
-  kpis: TresoKPIs,
-  rangeEndYear: number,
-): TresorerieSynthesisSlideSpec {
-  const consolidatedEnd = getConsolidatedTreasuryEnd(rows);
-  return {
-    type: 'treso-synthesis',
-    title: 'Synthèse avant annexe',
-    subtitle: 'Les points de repère à retenir avant la projection comptable',
-    kpis: [
-      { label: 'CCA total constitué', value: formatEuro(kpis.ccaTotalConstitue), iconKey: 'bank' },
-      { label: 'IS décaissé', value: formatEuro(kpis.isTotalDecaisse), iconKey: 'calculator' },
-      { label: 'Revenus nets retraite', value: formatEuro(kpis.revenusNetsRetraite), iconKey: 'money' },
-      { label: 'Trésorerie consolidée', value: formatEuro(consolidatedEnd), iconKey: 'chart-up' },
-    ],
-    hero: {
-      label: 'Trésorerie consolidée fin horizon',
-      value: formatEuro(consolidatedEnd),
-      caption: `Compte bancaire + poches investies au ${rangeEndYear}`,
-    },
-  };
-}
-
-const HYPOTHESES_SLIDE: TresorerieHypothesesSlideSpec = {
-  type: 'treso-hypotheses',
-  title: 'Hypothèses et périmètre',
-  subtitle: 'Cadre de lecture de la simulation',
-  sections: [
-    {
-      title: 'Périmètre',
-      iconKey: 'checklist',
-      items: [
-        'Société soumise à l’IS uniquement ; SARL de famille à l’IR hors scope.',
-        'Taux fiscaux issus des paramètres admin, sans valeur hardcodée.',
-        'Document indicatif, non contractuel.',
-      ],
-    },
-    {
-      title: 'Calcul IS',
-      iconKey: 'calculator',
-      items: [
-        'IS calculé sur la base fiscale, sans report de pertes.',
-        'Réserve légale dotée selon le taux légal jusqu’au plafond applicable.',
-        'PFU dividendes : brut unique sans double comptage.',
-        'IS latent capitalisation affiché pour information, non décaissé avant sortie.',
-      ],
-    },
-    {
-      title: 'CCA et trésorerie',
-      iconKey: 'bank',
-      items: [
-        'Remboursement CCA hors PFU : baisse du passif, pas des réserves.',
-        'Intérêts CCA déductibles dans la limite du taux fiscal maximum.',
-        'Solde bancaire minimum et fonds de roulement protégés avant allocation.',
-      ],
-    },
-    {
-      title: 'Régimes et dates',
-      iconKey: 'buildings',
-      items: [
-        'Délai de jouissance : premier jour du mois au moins égal à la date de départ.',
-        'Régime mère-fille : détention et durée de conservation à vérifier.',
-        'Les flux filiales restent conditionnés aux calendriers renseignés.',
-      ],
-    },
-  ],
-};
-
-const ALLOCATION_MATRIX_SLIDE: TresorerieAllocationMatrixSlideSpec = {
-  type: 'treso-allocation-matrix',
-  title: 'Lecture des poches de placement',
-  subtitle: 'Une organisation par horizon pour distinguer liquidité et capital investi',
-  horizons: [
-    {
-      key: 'court',
-      label: 'Court terme',
-      durationLabel: '0 à 3 ans',
-      typicalReturn: '1 à 3 %',
-      typicalSupports: ['Compte bancaire', 'Monétaire', 'DAT court'],
-      iconKey: 'bank',
-    },
-    {
-      key: 'moyen',
-      label: 'Moyen terme',
-      durationLabel: '3 à 8 ans',
-      typicalReturn: '3 à 5 %',
-      typicalSupports: ['Fonds obligataires', 'SCPI', 'Produits structurés prudents'],
-      iconKey: 'balance',
-    },
-    {
-      key: 'long',
-      label: 'Long terme',
-      durationLabel: '8 ans et plus',
-      typicalReturn: '5 à 8 %',
-      typicalSupports: ['Actions diversifiées', 'Private equity', 'Capitalisation long terme'],
-      iconKey: 'chart-up',
-    },
-  ],
-};
-
 // ─── Construction du StudyDeckSpec ────────────────────────────────────────────
 
 export interface TresorerieDeckData {
@@ -409,6 +290,7 @@ export function buildTresorerieStudyDeck(
   const rangeEndYear = projectionStartYear + Math.max(0, horizonYears - 1);
   const timelineSegments = buildTimelineSegments(rows, inputs, selectedAssociate);
   const allocationCards = buildAllocationCards(inputs);
+  const parametersAnnex = buildParametersAnnexSlide(inputs, projectionStartYear, horizonYears);
 
   // ── Projection paginée ──────────────────────────────────────────────────────
   const totalYears = rows.length;
@@ -434,9 +316,16 @@ export function buildTresorerieStudyDeck(
 
   const slides: StudyDeckSpec['slides'] = [
     {
+      type: 'chapter',
+      title: 'Comprendre le montage',
+      subtitle: 'Société, associé et logique de flux',
+      body: 'Une lecture volontairement synthétique avant les annexes détaillées.',
+      chapterImageIndex: pickChapterImage('tresorerie-societe', 0),
+    },
+    {
       type: 'treso-schema',
       title: 'Contexte société et associé',
-      subtitle: 'Organigramme, détentions et paramètres structurants',
+      subtitle: 'Organigramme et repères clés du montage',
       typeCreation: inputs.company.creationType,
       orgchartCompany: inputs.company,
       essentials: {
@@ -479,20 +368,30 @@ export function buildTresorerieStudyDeck(
         return {
           startYear: lastEnd + 1,
           endYear: rangeEndYear,
-          label: 'Capital placé · trésorerie capitalisée',
+          label: 'Trésorerie capitalisée',
         };
       })(),
       segments: timelineSegments,
     },
     {
-      type: 'treso-flow-mechanism',
-      title: 'Mécanisme des flux',
-      subtitle: 'Du compte bancaire société vers les revenus et les poches investies',
+      type: 'chapter',
+      title: 'Organiser l’excédent',
+      subtitle: 'Séparer la trésorerie protégée, disponible et investie',
+      body: 'Les poches permettent de lire clairement ce qui reste liquide et ce qui travaille dans le temps.',
+      chapterImageIndex: pickChapterImage('tresorerie-societe', 1),
     },
     ALLOCATION_MATRIX_SLIDE,
     ...(allocationCards ? [allocationCards] : []),
-    buildSynthesisSlide(rows, kpis, rangeEndYear),
+    buildSynthesisSlide(rows, kpis, inputs, rangeEndYear),
+    {
+      type: 'chapter',
+      title: 'Annexes détaillées',
+      subtitle: 'Projection comptable et hypothèses de lecture',
+      body: 'Le détail annuel reste disponible sans alourdir les slides de décision.',
+      chapterImageIndex: pickChapterImage('tresorerie-societe', 2),
+    },
     ...projectionSlides,
+    parametersAnnex,
     HYPOTHESES_SLIDE,
   ];
 

@@ -46,16 +46,30 @@ export function SimSelect({
     if (!trigger) return;
     const rect = trigger.getBoundingClientRect();
     const viewportHeight = window.innerHeight || document.documentElement.clientHeight;
+    const viewportWidth = window.innerWidth || document.documentElement.clientWidth;
     const gap = 4;
-    const maxHeight = Math.min(240, Math.max(120, viewportHeight - rect.bottom - gap - 8));
+    const edgeMargin = 8;
+    const spaceBelow = viewportHeight - rect.bottom - gap - edgeMargin;
+    const spaceAbove = rect.top - gap - edgeMargin;
+    const opensAbove = spaceBelow < 120 && spaceAbove > spaceBelow;
+    const availableSpace = opensAbove ? spaceAbove : spaceBelow;
+    const estimatedMenuHeight = Math.min(240, Math.max(40, options.length * 38 + 8));
+    const maxHeight = Math.min(estimatedMenuHeight, Math.max(80, availableSpace));
+    const top = opensAbove
+      ? Math.max(edgeMargin, rect.top - gap - maxHeight)
+      : Math.min(rect.bottom + gap, viewportHeight - maxHeight - edgeMargin);
+    const left = Math.min(
+      Math.max(edgeMargin, rect.left),
+      Math.max(edgeMargin, viewportWidth - rect.width - edgeMargin),
+    );
 
     setDropdownStyle({
-      top: rect.bottom + gap,
-      left: rect.left,
+      top,
+      left,
       width: rect.width,
       maxHeight,
     });
-  }, []);
+  }, [options.length]);
 
   useEffect(() => {
     if (!open) return;

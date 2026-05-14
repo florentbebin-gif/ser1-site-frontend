@@ -55,19 +55,19 @@ export function TresoCcaRepaymentPanel({
             {label}
           </label>
         ))}
+        <button
+          type="button"
+          className="ts-phase-source__choice ts-phase-source__choice--button"
+          onClick={() => onChange({
+            enabled: true,
+            strategy: 'montant_cible',
+            targetAmount: linearCcaRepaymentAmount,
+          })}
+        >
+          <span>Linéaire sur la phase</span>
+          <small>{fmtEuro(linearCcaRepaymentAmount)}/an</small>
+        </button>
       </div>
-      <button
-        type="button"
-        className="ts-phase-source__choice ts-phase-source__choice--button"
-        onClick={() => onChange({
-          enabled: true,
-          strategy: 'montant_cible',
-          targetAmount: linearCcaRepaymentAmount,
-        })}
-      >
-        <span>Linéaire sur la phase</span>
-        <small>{fmtEuro(linearCcaRepaymentAmount)}/an</small>
-      </button>
       {phase.ccaRepayment.strategy === 'montant_cible' ? (
         <div className="ts-modal-grid ts-modal-grid--three">
           <SimFieldShell label="Montant max/an" className="ts-field" rowClassName="ts-field__row">
