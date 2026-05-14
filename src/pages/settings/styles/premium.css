@@ -261,7 +261,7 @@
 }
 
 .settings-color-hex {
-  font-family: monospace;
+  font-family: var(--font-mono);
   font-size: 11px;
   color: var(--color-c9);
   background: var(--color-c7);
