@@ -268,13 +268,13 @@
   text-align: left;
 }
 
-.sc-testament-legacy-list {
+.sc-testament-particular-legacy-list {
   display: flex;
   flex-direction: column;
   gap: 8px;
 }
 
-.sc-testament-legacy-row {
+.sc-testament-particular-legacy-row {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
   grid-template-rows: auto auto;
@@ -282,7 +282,7 @@
   align-items: end;
 }
 
-.sc-testament-legacy-row > .sim-select-wrapper {
+.sc-testament-particular-legacy-row > .sim-select-wrapper {
   grid-column: 1 / -1;
 }
 

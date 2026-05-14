@@ -56,11 +56,11 @@ interface SuccessionModalsProps {
   onAddParticularLegacy: (_side: SuccessionPrimarySide) => void;
   onUpdateParticularLegacy: (
     _side: SuccessionPrimarySide,
-    _legacyId: string,
+    _particularLegacyId: string,
     _field: 'beneficiaryRef' | 'amount' | 'label',
     _value: string | number | SuccessionBeneficiaryRef | null,
   ) => void;
-  onRemoveParticularLegacy: (_side: SuccessionPrimarySide, _legacyId: string) => void;
+  onRemoveParticularLegacy: (_side: SuccessionPrimarySide, _particularLegacyId: string) => void;
   onCloseDispositions: () => void;
   onValidateDispositions: () => void;
   onCloseAssuranceVie: () => void;

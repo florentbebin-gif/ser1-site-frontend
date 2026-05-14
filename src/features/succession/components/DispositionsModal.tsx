@@ -67,11 +67,11 @@ interface DispositionsModalProps {
   onAddParticularLegacy: (side: SuccessionPrimarySide) => void;
   onUpdateParticularLegacy: (
     side: SuccessionPrimarySide,
-    legacyId: string,
+    particularLegacyId: string,
     field: 'beneficiaryRef' | 'amount' | 'label',
     value: string | number | SuccessionBeneficiaryRef | null,
   ) => void;
-  onRemoveParticularLegacy: (side: SuccessionPrimarySide, legacyId: string) => void;
+  onRemoveParticularLegacy: (side: SuccessionPrimarySide, particularLegacyId: string) => void;
   onClose: () => void;
   onValidate: () => void;
 }
