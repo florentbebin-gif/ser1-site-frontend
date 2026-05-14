@@ -15,6 +15,9 @@ Dev qui doit dépanner vite, ou exécuter un parcours local/CI.
 - [Dev local (frontend)](#dev-local-frontend)
 - [Env vars](#env-vars)
 - [Debug flags & console policy](#debug-flags--console-policy)
+- [Observabilité production](#observabilité-production)
+- [CI, coverage et performance](#ci-coverage-et-performance)
+- [Previews Vercel](#previews-vercel)
 - [Supabase local + migrations](#supabase-local--migrations)
 - [Gouvernance admin — admin_accounts](#gouvernance-admin--admin_accounts)
 - [Edge Function admin](#edge-function-admin)
@@ -30,6 +33,8 @@ Note securite : `admin_accounts` et `admin_action_audit` doivent rester `service
   - `npm run check` (lint + **check:fiscal-hardcode** + **check:settings-rls** + **check:arch** + **check:circular** + **check:unused** + CSS/theme + typecheck + tests + build)
 
 En CI, c'est le gate principal.
+Le workflow GitHub Actions exécute aussi `npm run check:pre-merge`, `npm run test:deno`, `npm run lint:repo` et `npm run typecheck:tests`.
+Les contrôles `audit:prod`, `coverage`, `build:storybook` et `lhci` sont informatifs au démarrage : ils produisent des warnings CI, pas un blocage merge.
 
 - Garde d'architecture uniquement :
   - `npm run check:arch` (dependency-cruiser, bloquant sur violation de frontière)
@@ -99,6 +104,11 @@ VITE_SUPABASE_ANON_KEY=<anon_key>
 # Optionnel (Playwright E2E)
 E2E_EMAIL=<email>
 E2E_PASSWORD=<password>
+
+# Optionnel (observabilité production)
+VITE_SENTRY_DSN=<dsn_sentry_frontend>
+VITE_SENTRY_TRACES_SAMPLE_RATE=0
+VITE_WEB_VITALS=false
 ```
 
 ---
@@ -122,6 +132,81 @@ E2E_PASSWORD=<password>
   - `SER1_DEBUG_ADMIN_FETCH=1`
 
 Référence code : `src/utils/debugFlags.ts`.
+
+---
+
+## Observabilité production
+
+L'observabilité frontend est opt-in :
+- sans `VITE_SENTRY_DSN`, aucun événement externe n'est envoyé ;
+- avec `VITE_SENTRY_DSN`, les erreurs React, les erreurs critiques de bootstrap et les Web Vitals peuvent être envoyés à Sentry ;
+- `sendDefaultPii` reste désactivé et le logger redige les clés sensibles (`email`, `nom`, `montant`, `rfr`, `token`, etc.).
+
+Fichiers :
+- `src/observability/sentry.ts` : initialisation Sentry, redaction, capture.
+- `src/observability/logger.ts` : logger applicatif minimal (`info`, `warn`, `error`).
+- `src/observability/webVitals.ts` : métriques CLS, INP, LCP, FCP et TTFB.
+- `src/components/AppErrorBoundary.tsx` : capture des erreurs React.
+
+Test manuel en preview :
+1. Définir `VITE_SENTRY_DSN` sur l'environnement cible.
+2. Déclencher une erreur contrôlée sans donnée client.
+3. Vérifier l'événement dans Sentry : pas d'email, pas de nom, pas de montant, pas de contenu métier.
+
+---
+
+## CI, coverage et performance
+
+Commandes locales utiles :
+
+```powershell
+npm run check
+npm run check:pre-merge
+npm run test:deno
+npm run lint:repo
+npm run typecheck:tests
+npm run coverage
+npm run build:storybook
+npm run lhci
+npm run audit:prod
+```
+
+Statut des gates :
+- Bloquants : `npm run check`, `check:pre-merge`, `test:deno`, `lint:repo`, `typecheck:tests`.
+- Informatifs au premier rollout : `audit:prod`, `coverage`, `build:storybook`, `lhci`.
+
+Coverage :
+- Vitest couvre prioritairement `src/engine/**` via `vitest.config.ts`.
+- La CI tente un upload Codecov avec `CODECOV_TOKEN` si configuré ; l'échec d'upload ne bloque pas la PR.
+
+Lighthouse CI :
+- Config : `lighthouserc.cjs`.
+- Routes surveillées au démarrage : `/` et `/login` sur le build preview local.
+- Les budgets sont en warning tant que la baseline n'est pas stabilisée.
+
+Storybook :
+- Config : `.storybook/`.
+- Démarrage local : `npm run storybook`.
+- Build CI : `npm run build:storybook`.
+
+Typedoc :
+- Config : `typedoc.json`.
+- Génération locale : `npm run docs:engine`.
+- La sortie `docs/api/` est ignorée par Git ; publier seulement si un besoin produit ou docs permanent est décidé.
+
+---
+
+## Previews Vercel
+
+Si le projet est relié à Vercel via GitHub, chaque PR doit produire une preview Vercel.
+
+Checklist de review preview :
+1. Ouvrir l'URL de preview attachée à la PR.
+2. Vérifier `/login`, `/`, puis les routes simulateurs touchées.
+3. Comparer avec les smoke tests Playwright (`npm run test:e2e:smoke`) si une route critique bouge.
+4. Vérifier l'onglet Network si une erreur Supabase ou `/api/admin` apparaît.
+
+La preview ne remplace pas `npm run check` ni les tests E2E ; elle sert à valider le rendu réel et les variables d'environnement de déploiement.
 
 ---
 
