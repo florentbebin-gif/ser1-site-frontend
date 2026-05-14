@@ -2,6 +2,7 @@
 node_modules/
 
 # Testing
+coverage/
 test-results/
 playwright-report/
 playwright/.cache/
@@ -9,6 +10,9 @@ playwright/.cache/
 
 # Production
 dist/
+storybook-static/
+docs/api/
+.lighthouseci/
 
 # Env
 .env

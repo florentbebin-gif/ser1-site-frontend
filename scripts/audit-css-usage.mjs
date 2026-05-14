@@ -10,7 +10,7 @@
  * This script is informative: "unused" means "suspect", not "safe to delete".
  */
 
-import { readFileSync, readdirSync, statSync } from 'fs';
+import { readFileSync, readdirSync } from 'fs';
 import { join, relative } from 'path';
 
 const ROOT = process.cwd();

@@ -1,4 +1,12 @@
 {
-  "ignores": ["supabase", "dependency-cruiser", "stylelint-config-standard", "@fontsource-variable/inter"],
+  "ignores": [
+    "supabase",
+    "dependency-cruiser",
+    "stylelint-config-standard",
+    "@fontsource-variable/inter",
+    "@commitlint/config-conventional",
+    "@storybook/addon-a11y",
+    "@storybook/addon-docs"
+  ],
   "ignore-patterns": ["supabase/functions/**"]
 }

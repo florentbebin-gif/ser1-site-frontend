@@ -1,0 +1,9 @@
+{
+  "entryPoints": ["src/engine"],
+  "entryPointStrategy": "expand",
+  "out": "docs/api/engine",
+  "exclude": ["**/__tests__/**", "**/*.test.ts", "**/*.test.tsx"],
+  "excludePrivate": true,
+  "excludeInternal": true,
+  "readme": "none"
+}
