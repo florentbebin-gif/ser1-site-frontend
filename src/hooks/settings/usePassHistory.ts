@@ -31,7 +31,9 @@ export function usePassHistory(isAdmin: boolean): UsePassHistoryReturn {
 
     async function init(): Promise<void> {
       try {
-        await supabase.rpc('ensure_pass_history_current');
+        if (isAdmin) {
+          await supabase.rpc('ensure_pass_history_current');
+        }
 
         const { data, error } = await supabase
           .from('pass_history')
@@ -66,7 +68,7 @@ export function usePassHistory(isAdmin: boolean): UsePassHistoryReturn {
     return () => {
       mounted = false;
     };
-  }, []);
+  }, [isAdmin]);
 
   const handleChange = (index: number, value: string): void => {
     setRows((prev) => {
