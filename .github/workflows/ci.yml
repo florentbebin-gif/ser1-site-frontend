@@ -73,18 +73,42 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Run pre-merge guard
+        run: npm run check:pre-merge
+
       - name: Run all checks
         run: npm run check
         env:
           VITE_SUPABASE_URL: https://placeholder.supabase.co
           VITE_SUPABASE_ANON_KEY: placeholder-key-for-build
 
-      - name: Run admin function tests (Deno)
-        run: deno test supabase/functions/admin/lib/auth_test.ts supabase/functions/admin/lib/loaders_test.ts supabase/functions/admin/cors_test.ts --allow-net --allow-env --deny-import=esm.sh:443,raw.esm.sh:443 --frozen=true
+      - name: Run repo lint
+        run: npm run lint:repo
 
-      - name: Check no console.* in production
-        run: |
-          ! grep -r "console\.(log|debug|info|trace)" src/ \
-            --include="*.ts" --include="*.tsx" --include="*.js" --include="*.jsx" \
-            | grep -v "__tests__" | grep -v ".test." | grep -v "debugFlags" \
-            | grep -v "eslint-disable" | grep -v "import.meta.env.DEV"
+      - name: Typecheck tests and tooling
+        run: npm run typecheck:tests
+
+      - name: Run admin function tests (Deno)
+        run: npm run test:deno
+
+      - name: Run production audit (informative)
+        run: npm run audit:prod || echo "::warning::audit:prod non bloquant pour la première stabilisation"
+
+      - name: Run engine coverage (informative)
+        run: npm run coverage || echo "::warning::coverage non bloquante pour la première stabilisation"
+
+      - name: Build Storybook (informative)
+        run: npm run build:storybook || echo "::warning::Storybook non bloquant pour la première stabilisation"
+
+      - name: Upload coverage (informative)
+        uses: codecov/codecov-action@v6
+        with:
+          files: ./coverage/coverage-final.json
+          fail_ci_if_error: false
+          token: ${{ secrets.CODECOV_TOKEN }}
+
+      - name: Run Lighthouse CI (informative)
+        run: npm run lhci || echo "::warning::Lighthouse CI non bloquant pour la première stabilisation"
+
+      - name: Run no-console guard
+        run: npm run check:no-console
