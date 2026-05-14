@@ -1,4 +1,4 @@
-﻿/* Succession Simulator â€” baseline /sim/* (PR1) */
+/* Succession Simulator - baseline des pages /sim */
 
 /* Ligne sous-titre + actions — base dans .sim-header__subtitle-row (sim/headers.css) */
 
@@ -37,14 +37,14 @@
   border-left: 3px solid var(--color-c3);
 }
 
-/* Titre avec icÃ´ne */
+/* Titre avec icône */
 .sc-card__title-row {
   display: flex;
   align-items: center;
   gap: 8px;
 }
 
-/* Titre hero avec icÃ´ne */
+/* Titre hero avec icône */
 .sc-summary-title-row {
   display: flex;
   align-items: center;
@@ -58,7 +58,7 @@
   margin-bottom: 0;
 }
 
-/* Filiation : mÃªme espace titreâ†’sÃ©parateur que les cartes hero droite */
+/* Filiation : même espace titre -> séparateur que les cartes hero droite */
 .sc-filiation-card .sc-card__header {
   padding-bottom: 0;
 }
@@ -295,7 +295,7 @@
 }
 
 
-/* â”€â”€ Bouton "Ajouter un membre" & panneau â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* Bouton "Ajouter un membre" & panneau */
 .sc-children-actions {
   display: flex;
   justify-content: space-between;
@@ -369,4 +369,4 @@
   white-space: nowrap;
 }
 
-/* â”€â”€ Modal "Ajouter un membre" â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* Modal "Ajouter un membre" */

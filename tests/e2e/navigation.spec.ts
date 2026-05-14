@@ -35,12 +35,6 @@ test.describe('Navigation — Routes publiques', () => {
     }
   });
 
-  test('les redirections de compatibilité fonctionnent', async ({ page }) => {
-    // /placement → /sim/placement (redirect) → /login (auth guard)
-    await page.goto('/placement');
-    await page.waitForURL('**/login', { timeout: 10_000 });
-  });
-
   test('la topbar SER1 est visible sur /login', async ({ page }) => {
     await page.goto(ROUTES.login);
     await expect(page.locator('.brand-name')).toContainText('SER1');

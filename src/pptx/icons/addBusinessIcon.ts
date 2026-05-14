@@ -1,8 +1,8 @@
 /**
- * Business Icon Utility for PPTX Generation
- * 
- * Uses the existing business icon library to add icons to slides.
- * Supports color role mapping for theme-consistent styling.
+ * Utilitaires d'icônes métier pour les exports PPTX.
+ *
+ * S'appuie sur la bibliothèque d'icônes métier existante et résout les
+ * couleurs depuis le thème ou depuis une couleur déjà calculée.
  */
 
 import type PptxGenJS from 'pptxgenjs';
@@ -12,50 +12,45 @@ import { roleColor, addTextFr } from '../designSystem/serenity';
 
 export type { BusinessIconName, IconPlacement };
 
-/**
- * Get color from theme by role name
- */
+type IconColorRole = 'accent' | 'textMain' | 'textBody' | 'white';
+
 function getColorForRole(
-  theme: PptxThemeRoles,
-  role: 'accent' | 'textMain' | 'textBody' | 'white'
+  themeOrColor: PptxThemeRoles | string,
+  role: IconColorRole
 ): string {
+  if (typeof themeOrColor === 'string') {
+    return themeOrColor;
+  }
+
   switch (role) {
     case 'accent':
-      return theme.accent;
+      return themeOrColor.accent;
     case 'textMain':
-      return theme.textMain;
+      return themeOrColor.textMain;
     case 'textBody':
-      return theme.textBody;
+      return themeOrColor.textBody;
     case 'white':
-      return theme.white;
+      return themeOrColor.white;
     default:
-      return theme.textBody;
+      return themeOrColor.textBody;
   }
 }
 
 /**
- * Add a business icon to a slide
- * 
- * @param slide - PptxGenJS slide
- * @param iconName - Name of the business icon
- * @param placement - Position and size (x, y, w, h in inches)
- * @param theme - PPTX theme for color resolution
- * @param colorRole - Color role to use (defaults to 'textBody')
+ * Ajoute une icône métier à une slide.
  */
 export function addBusinessIconToSlide(
   slide: PptxGenJS.Slide,
   iconName: BusinessIconName,
   placement: { x: number; y: number; w: number; h: number },
-  theme: PptxThemeRoles,
-  colorRole: 'accent' | 'textMain' | 'textBody' | 'white' = 'textBody'
+  themeOrColor: PptxThemeRoles | string,
+  colorRole: IconColorRole = 'textBody'
 ): void {
+  const color = getColorForRole(themeOrColor, colorRole);
+
   try {
-    const color = getColorForRole(theme, colorRole);
-    
-    // Get icon as data URI with specified color
     const iconDataUri = getBusinessIconDataUri(iconName, { color });
-    
-    // Add image to slide
+
     slide.addImage({
       data: iconDataUri,
       x: placement.x,
@@ -65,14 +60,15 @@ export function addBusinessIconToSlide(
     });
   } catch (error) {
     console.error(`[PPTX Icons] Failed to add icon ${iconName}:`, error);
-    // Fallback: add placeholder text
     addTextFr(slide, `[${iconName}]`, {
       x: placement.x,
       y: placement.y,
       w: placement.w,
       h: placement.h,
       fontSize: 10,
-      color: roleColor(theme, 'textBody'),
+      color: typeof themeOrColor === 'string'
+        ? color.replace('#', '')
+        : roleColor(themeOrColor, 'textBody'),
       align: 'center',
       valign: 'middle',
     });
@@ -80,11 +76,7 @@ export function addBusinessIconToSlide(
 }
 
 /**
- * Add multiple business icons to a slide from IconPlacement specs
- * 
- * @param slide - PptxGenJS slide
- * @param icons - Array of icon placements
- * @param theme - PPTX theme
+ * Ajoute plusieurs icônes métier à partir de specs IconPlacement.
  */
 export function addBusinessIconsToSlide(
   slide: PptxGenJS.Slide,
@@ -102,9 +94,7 @@ export function addBusinessIconsToSlide(
   }
 }
 
-/**
- * Icon size presets (in inches)
- */
+/** Tailles d'icônes en pouces. */
 export const ICON_SIZE_PRESETS = {
   tiny: { w: 0.3, h: 0.3 },
   small: { w: 0.5, h: 0.5 },
@@ -113,46 +103,11 @@ export const ICON_SIZE_PRESETS = {
   xlarge: { w: 1.5, h: 1.5 },
 } as const;
 
-/**
- * Add a business icon with a direct color string (no theme resolution)
- * Backward-compatible API for callers that already have a resolved color.
- */
-export function addBusinessIconDirect(
-  slide: PptxGenJS.Slide,
-  iconName: BusinessIconName,
-  options: { x: number | string; y: number | string; w: number; h: number; color?: string }
-): void {
-  try {
-    const iconDataUri = getBusinessIconDataUri(iconName, { color: options.color });
-    slide.addImage({
-      data: iconDataUri,
-      x: options.x as number,
-      y: options.y as number,
-      w: options.w,
-      h: options.h,
-    });
-  } catch (error) {
-    console.error(`[PPTX Icons] Failed to add icon ${iconName}:`, error);
-    addTextFr(slide, `[${iconName}]`, {
-      x: options.x as number,
-      y: options.y as number,
-      w: options.w,
-      h: options.h,
-      fontSize: 10,
-      color: options.color || 'FFFFFF',
-      align: 'center',
-      valign: 'middle',
-    });
-  }
-}
-
-/** Alias for backward compatibility */
 export const ICON_SIZES = ICON_SIZE_PRESETS;
 
 export default {
   addBusinessIconToSlide,
   addBusinessIconsToSlide,
-  addBusinessIconDirect,
   ICON_SIZE_PRESETS,
   ICON_SIZES,
 };

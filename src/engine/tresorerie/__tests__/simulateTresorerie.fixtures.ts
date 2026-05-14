@@ -1,4 +1,4 @@
-import type { TresoFiscalParams, TresoInputs } from '../types';
+import type { TresoFiscalParams } from '../types';
 
 export const PARAMS_STD: TresoFiscalParams = {
   isNormalRate: 0.25,
@@ -13,13 +13,3 @@ export const PARAMS_STD: TresoFiscalParams = {
   irScale: [],
 };
 
-export const BASE_INPUTS: TresoInputs = {
-  typeCreation: 'newco',
-  ageActuel: 45,
-  ageRetraite: 65,
-  besoinsRetraiteAnnuels: 30000,
-  fraisStructureAnnuels: 3000,
-  ccaInitial: 100000,
-  apportAnnuelCCA: 16600,
-  dureeActiveAns: 20,
-};

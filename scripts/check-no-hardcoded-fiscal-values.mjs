@@ -23,11 +23,19 @@ const ROOT = join(__dirname, '..');
 const FORBIDDEN_VALUES = [
   {
     label: 'taux PS patrimoine',
-    pattern: /\b17\.2\b/,
+    pattern: /\b17[,.]2\b|\b0[,.]172\b/,
   },
   {
     label: 'taux IR PFU',
-    pattern: /\b12\.8\b/,
+    pattern: /\b12[,.]8\b|\b0[,.]128\b/,
+  },
+  {
+    label: 'libellé PFU figé',
+    pattern: /\bPFU\s*30\s*%/i,
+  },
+  {
+    label: 'taux fiscal 30 %',
+    pattern: /(?:taux|PFU|TMI|abattement|imposable|réduction|reduction|IR|PS)[^'"]{0,80}\b30\s*%|\b30\s*%[^'"]{0,80}(?:taux|PFU|TMI|abattement|imposable|réduction|reduction|IR|PS)/i,
   },
   {
     label: 'TMI 30 %',
@@ -35,7 +43,15 @@ const FORBIDDEN_VALUES = [
   },
   {
     label: 'abattement enfant DMTG (ligne directe)',
-    pattern: /\b100_?000\b/,
+    pattern: /\b100[\s_]?000\b/,
+  },
+  {
+    label: 'abattement 990 I assurance-vie',
+    pattern: /\b152[\s_]?500\b/,
+  },
+  {
+    label: 'abattement 757 B assurance-vie',
+    pattern: /\b30[\s_]?500\b/,
   },
   {
     label: 'abattement frère/sœur DMTG',
@@ -90,6 +106,7 @@ const FORBIDDEN_VALUES = [
 // ─── Répertoires à scanner (relatifs à ROOT) ──────────────────────────────────
 const SCAN_DIRS = [
   'src/engine',
+  'src/domain/base-contrat/rules',
   'src/features',
   'src/hooks',
   'src/pages/settings',
@@ -229,7 +246,7 @@ if (violations.length > 0) {
   ✅  Ces valeurs doivent vivre uniquement dans :
       src/constants/settingsDefaults.ts
   ✅  Les fichiers __tests__ et *.test.* sont exclus de cette règle.
-  ✅  Ref: ROADMAP.md PR-P1-06-09 — garde-fous "source unique"\n`);
+  ✅  Ref: garde-fous "source unique" des paramètres fiscaux\n`);
   process.exit(1);
 } else {
   const scanned = SCAN_DIRS.join(', ');

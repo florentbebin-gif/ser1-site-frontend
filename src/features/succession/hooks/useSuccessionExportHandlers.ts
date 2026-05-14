@@ -1,7 +1,7 @@
 /**
  * useSuccessionExportHandlers — Handlers export PPTX / XLSX du simulateur Succession.
  *
- * Extrait de SuccessionSimulator.tsx (PR-P1-07-03).
+ * Extrait de SuccessionSimulator.tsx.
  * Gère l'état exportLoading et expose les callbacks et options du menu export.
  */
 

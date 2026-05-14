@@ -24,7 +24,7 @@ import {
   RADIUS,
 } from '../designSystem/serenity';
 import { MASTER_NAMES } from '../template/loadBaseTemplate';
-import { addBusinessIconDirect } from '../icons/addBusinessIcon';
+import { addBusinessIconToSlide } from '../icons/addBusinessIcon';
 import {
   PLACEMENT_KPI_ICONS,
   PLACEMENT_KPI_LABELS,
@@ -189,16 +189,13 @@ function drawPanel(
       const cellX = panelX + GEO.kpiGridPaddingX + colIdx * (colW + GEO.kpiGridGapX);
       const value = produit[key];
 
-      // Icon
-      addBusinessIconDirect(slide, PLACEMENT_KPI_ICONS[key], {
+      addBusinessIconToSlide(slide, PLACEMENT_KPI_ICONS[key], {
         x: cellX,
         y: cellY + 0.04,
         w: GEO.kpiIconSize,
         h: GEO.kpiIconSize,
-        color: `#${cleanColor}`,
-      });
+      }, `#${cleanColor}`);
 
-      // Label (below icon, small)
       addTextFr(slide, PLACEMENT_KPI_LABELS[key], {
         x: cellX,
         y: cellY + 0.04 + GEO.kpiIconSize + 0.02,

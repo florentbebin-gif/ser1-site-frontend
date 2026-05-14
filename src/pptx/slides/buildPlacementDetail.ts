@@ -24,7 +24,7 @@ import {
   roleColor,
 } from '../designSystem/serenity';
 import { MASTER_NAMES } from '../template/loadBaseTemplate';
-import { addBusinessIconDirect } from '../icons/addBusinessIcon';
+import { addBusinessIconToSlide } from '../icons/addBusinessIcon';
 
 // ============================================================================
 // LAYOUT CONSTANTS
@@ -367,13 +367,12 @@ function drawDetailPanel(
   secondaryMetrics.forEach((metric, idx) => {
     const rowY = secondaryTopY + idx * rowSpacing;
 
-    addBusinessIconDirect(slide, metric.icon, {
+    addBusinessIconToSlide(slide, metric.icon, {
       x: panelX + PANEL.metricPaddingX,
       y: rowY,
       w: PANEL.metricIconSize,
       h: PANEL.metricIconSize,
-      color: `#${cleanColor}`,
-    });
+    }, `#${cleanColor}`);
 
     addTextFr(slide, metric.label, {
       x: panelX + PANEL.metricPaddingX + PANEL.metricIconSize + 0.10,

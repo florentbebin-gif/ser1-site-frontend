@@ -1,6 +1,6 @@
 import type { IrChild } from './types';
 
-// IR quotient familial: parts computation (moved from utils/irEngine.js for PR-03 split)
+// Calcul des parts de quotient familial IR.
 
 // Règle parent isolé (case T) :
 // - Enfants à charge comptés avant les enfants en alternée pour les 2 premiers rangs.

@@ -48,7 +48,7 @@ Principes : épuré, lisible, respirant.
 - Utiliser systématiquement les composants partagés qui implémentent déjà ce formatage : `InputEuro` (Placement/Credit), `IrAmountInput` (IR). Ne pas créer de `<input type="number">` brut pour des montants €.
 - Exceptions acceptées (pas de formatage nécessaire) : âges, durées (années/mois), pourcentages (0–100 %), champs admin Settings (tableau de saisie du barème, montants de référence).
 - **Anti-pattern** : `<input type="number" value={montant} />` pour un montant € → affiche "1000000" au lieu de "1 000 000", mauvaise lisibilité utilisateur.
-- Références implémentées : `InputEuro` dans `inputs.tsx` (Placement), `CreditInputs.tsx` (Credit), `IrAmountInput` dans `IrFormSection.tsx` (IR).
+- Références implémentées : `InputEuro` dans `PlacementFormControls.tsx` (Placement), `CreditInputs.tsx` (Credit), `IrAmountInput` dans `IrFormSection.tsx` (IR).
 - Références **non encore migrées** (acceptable temporairement) : champs € dans modales Succession (`AssuranceVieModal`, `ScDonationsCard`, `ScAssetsPassifsCard`), champs ponctuel dans `VersementConfigModalSections.tsx`.
 
 ### Selects forcés / option unique (règle critique)
@@ -373,7 +373,7 @@ Règles icônes :
 - La scrollbar du haut est synchronisée avec la scrollbar du bas via deux event listeners JS (`useEffect` dans `CollapsibleTable`).
 - Styles scrollbar webkit : hauteur 4px, couleur C5 (thumb) / C8 (track), radius 2px.
 - **Anti-pattern** : `overflow-x: auto` directement sur un `<table>` ou sur le wrapper sans double scrollbar → scrollbar invisible au chargement, mauvaise UX.
-- Référence : `CollapsibleTable` dans `src/features/placement/components/tables.tsx`, classes `.pl-table-top-scroll` / `.pl-table-scroll-wrap` dans `src/features/placement/styles/results.css`.
+- Référence : `CollapsibleTable` dans `src/features/placement/components/PlacementTables.tsx`, classes `.pl-table-top-scroll` / `.pl-table-scroll-wrap` dans `src/features/placement/styles/results.css`.
 
 #### Interdit
 - Accordéon sans attribut `aria-expanded`.
@@ -606,10 +606,6 @@ Bouton primaire modale : `background: linear-gradient(135deg, C2 0%, C1 100%)`, 
 Règles communes : `font-family: inherit`, hover → C2 texte ou fond C7 selon variante, disabled → `opacity: 0.4; cursor: not-allowed`.
 
 **Statut** : baseline partagée pour toutes les variantes sauf mention contraire.
-
----
-
-> §17 Diagnostic `/sim/per/potentiel` — migré vers `docs/ROADMAP.md` § Dette UI (note de travail, pas une règle permanente).
 
 ---
 

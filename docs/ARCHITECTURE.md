@@ -53,7 +53,7 @@ Un fichier long n'est pas automatiquement prioritaire. Un vrai "god file" devien
 - persistence, réseau, ou I/O
 - helpers métier ou transformations de données
 - modals inline / gros blocs JSX
-- contrats publics / compat legacy
+- contrats publics / compat de migration
 
 Objectif : découper d'abord les fichiers qui mélangent plusieurs responsabilités, pas les fichiers simplement volumineux mais mono-rôle.
 
@@ -102,7 +102,6 @@ Get-ChildItem src -Recurse -Directory |
 
 Source (preuves) :
 - Définitions des routes : `src/routes/appRoutes.ts` (APP_ROUTES)
-- Redirections legacy : `src/routes/appRoutes.ts` (`kind: 'redirect'`)
 - Rendu `<Routes>` : `src/App.tsx` (`APP_ROUTES.map(...)`)
 
 
@@ -127,17 +126,14 @@ Source (preuves) :
 | `/sim/prevoyance` | privé + lazy | `UpcomingSimulatorPage` | `src/pages/UpcomingSimulatorPage.tsx` (lazy) |
 | `/sim/ir` | privé + lazy | `Ir` | `src/features/ir/IrPage.tsx` (exporté via `src/features/ir/index.ts`) |
 | `/settings/*` | privé + lazy | `SettingsShell` | `src/pages/SettingsShell.tsx` (lazy) |
-| `/placement` | redirect | `Navigate` → `/sim/placement` | compat legacy |
-| `/credit` | redirect | `Navigate` → `/sim/credit` | compat legacy |
-| `/prevoyance` | redirect | `Navigate` → `/sim/prevoyance` | compat legacy |
 
 Vérification (commandes) :
 
-```bash
+```powershell
 # Liste des routes (paths)
 rg -n "path:" src/routes/appRoutes.ts
 
-# Liste des redirects legacy
+# Aucun redirect runtime déclaré
 rg -n "kind: 'redirect'" src/routes/appRoutes.ts
 
 # Rendu JSX : App.tsx consomme APP_ROUTES
@@ -273,7 +269,7 @@ Invariants (à ne pas casser) :
 - Design system : `src/pptx/designSystem/serenity.ts`.
 - Slides : `src/pptx/slides/`.
 - **Règles de conception et checklist de création** : `docs/GOUVERNANCE_EXPORTS.md`.
-- Cas legacy encore actifs : `src/features/audit/export/exportAudit.ts` adapte `src/pptx/auditPptx.ts` et `src/features/strategy/export/exportStrategy.ts` adapte `src/pptx/strategyPptx.ts` derrière les features ; les composants UI n'importent plus directement ces générateurs legacy.
+- Adaptateurs historiques encore actifs : `src/features/audit/export/exportAudit.ts` adapte `src/pptx/auditPptx.ts` et `src/features/strategy/export/exportStrategy.ts` adapte `src/pptx/strategyPptx.ts` derrière les features ; les composants UI n'importent plus directement ces générateurs.
 
 Assets statiques (images) :
 - Chapitres PPTX : `public/pptx/chapters/ch-01.png` .. `ch-09.png` (bibliothèque).
@@ -341,7 +337,7 @@ UI : `/settings/base-contrat` est une vue read-only à 3 colonnes (Constitution 
 
 ### Vérification
 
-```bash
+```powershell
 # Nombre de catalogKind (pivot)
 rg "export type CatalogKind" src/domain/base-contrat/types.ts
 # → 1
@@ -416,8 +412,15 @@ Schéma complet : `supabase/migrations/20260210214352_remote_commit.sql`.
 └──────────────────────────┬───────────────────────────────┘
                            │ getFiscalSettings({force})
 ┌──────────────────────────▼───────────────────────────────┐
+│ useFiscalContext.ts  (src/hooks/)                        │
+│  · Monte tax, ps, fiscality et PASS                      │
+│  · Expose les defaults tant que le cache se réhydrate    │
+│  · Relaye les invalidations settings                     │
+└──────────────────────────┬───────────────────────────────┘
+                           │ fiscalContext
+┌──────────────────────────▼───────────────────────────────┐
 │ usePlacementSettings.ts  (src/hooks/)                    │
-│  · Monte les 3 tables · écoute les invalidations         │
+│  · Adapte le contexte fiscal pour Placement              │
 │  · Appelle extractFiscalParams(fiscality, ps, tax)       │
 │  · Dérive tmiOptions depuis barème IR                    │
 │  → fiscalParams (34 valeurs numériques normalisées)      │
@@ -431,7 +434,7 @@ Schéma complet : `supabase/migrations/20260210214352_remote_commit.sql`.
 └──────────────────────────────────────────────────────────┘
 ```
 
-**extractFiscalParams()** (`src/engine/placement/fiscalParams.ts`) : mappe le JSONB des tables → objet normalisé de 34 valeurs. Fallback sur `DEFAULT_FISCAL_PARAMS` (`src/engine/placement/shared.ts`) si clé manquante ou invalide.
+**extractFiscalParams()** (`src/engine/placement/fiscalParams.ts`) : mappe le JSONB des tables → objet normalisé de valeurs numériques. Le fallback `DEFAULT_FISCAL_PARAMS` (`src/engine/placement/shared.ts`) est lui-même dérivé de `settingsDefaults.ts`, sans valeurs fiscales révisables en dur dans le moteur.
 
 ---
 
@@ -453,11 +456,11 @@ Tous les simulateurs consomment les paramètres fiscaux via ce hook. Il expose u
 ```ts
 fiscalContext.irScaleCurrent          // barème IR année courante
 fiscalContext.irScalePrevious         // barème IR année précédente
-fiscalContext.pfuRateIR               // taux IR PFU (ex: 12.8)
+fiscalContext.pfuRateIR               // taux IR PFU
 fiscalContext.psRateGeneral           // taux PS patrimoine cas général
 fiscalContext.psRateException         // taux PS patrimoine régime d'exception
 fiscalContext.dmtgScaleLigneDirecte   // barème DMTG ligne directe
-fiscalContext.dmtgAbattementEnfant    // abattement ligne directe (ex: 100 000)
+fiscalContext.dmtgAbattementEnfant    // abattement ligne directe
 fiscalContext.dmtgSettings            // objet DMTG complet { ligneDirecte, frereSoeur, neveuNiece, autre }
 fiscalContext.passHistoryByYear       // historique PASS runtime (source: public.pass_history)
 fiscalContext._raw_tax                // brut tax_settings (usage exceptionnel)
@@ -474,6 +477,17 @@ L'admin sauvegarde → `invalidate(kind)` + `broadcastInvalidation(kind)` → é
 Le simulateur Placement suit la chaîne standard : `Supabase` → `fiscalSettingsCache.ts` → `useFiscalContext` → `usePlacementSettings` → `engine/placement`.
 
 `usePlacementSettings` projette le dossier fiscal unifié vers le format attendu par `engine/placement`. Il utilise les tables brutes uniquement pour `extractFiscalParams()`, puis les clés normalisées (`irScaleCurrent`, `dmtgScaleLigneDirecte`, `dmtgAbattementEnfant`) pour les besoins propres à l'interface Placement.
+
+---
+
+#### Adaptateur Base-Contrat
+
+Le référentiel Base-Contrat reste pur côté domaine :
+- `src/domain/base-contrat/rules/fiscalLabels.ts` construit des libellés fiscaux à partir d'un contexte fourni.
+- `getRules(productId, audience, context?)` rend les placeholders fiscaux avec ces libellés.
+- `src/pages/settings/BaseContrat.tsx` est le seul point qui branche `useFiscalContext()` sur ce rendu.
+
+Les fichiers `src/domain/base-contrat/**` ne doivent pas importer React, Supabase ni les hooks applicatifs.
 
 ---
 
@@ -508,9 +522,9 @@ Le simulateur Placement suit la chaîne standard : `Supabase` → `fiscalSetting
 | **PFU** | Taux IR du PFU. La part PS est dérivée depuis `ps_settings` | `tax_settings` | Art. 200 A CGI |
 | **CEHR/CDHR** | Seuils (500 k€, 1 M€) + taux (3 %, 4 %) | `tax_settings` | Art. 223 sexies CGI |
 | **IS** | Taux réduit 15 % (seuil 42 500 €), taux normal 25 % | `tax_settings` | Art. 219 CGI |
-| **DMTG successions** | Barèmes par lien de parenté + abattements (100 k€, 15 932 €…) | `tax_settings` | Art. 777 & 779 CGI |
+| **DMTG successions** | Barèmes par lien de parenté + abattements | `tax_settings` | Art. 777 & 779 CGI |
 | **DMTG donations** | Abattements spécifiques donation (31 865 €, 80 724 €…) | *(non implémenté — futur PLF)* | Art. 779, 790 E/F/G CGI |
-| **Assurance-vie** | Abattement 990I (152 500 €), taux 20 %/31,25 %, abattement 757B (30 500 €) | `fiscality_settings` | Art. 990 I & 757 B CGI |
+| **Assurance-vie** | Abattements 990 I / 757 B et barème forfaitaire décès | `fiscality_settings` | Art. 990 I & 757 B CGI |
 | **PS patrimoine** | Taux cas général + taux régime d'exception + CSG déductible | `ps_settings` | Art. L136-6 CSS |
 | **Seuils RFR** | Par nombre de parts (CSG taux réduit, CRDS exo) | `ps_settings` | Art. L136-8 CSS |
 | **PASS** | Historique PASS annuel administre dans Settings et charge via `public.pass_history` | `pass_history` | Art. D612-5 CSS |
@@ -539,28 +553,6 @@ Le simulateur Placement suit la chaîne standard : `Supabase` → `fiscalSetting
 
 ---
 
-### Architecture cible — `reference_rates`
-
-> Voir détail dans `docs/ROADMAP.md` (§ Item transversal — Taux vivants).
-
-Objectif : remplacer les constantes hardcodées dans `settingsDefaults.ts` par une table Supabase `reference_rates` :
-
-```sql
-CREATE TABLE reference_rates (
-  key          TEXT PRIMARY KEY,      -- ex: 'PASS_N', 'TAUX_PS', 'SEUIL_MICRO_BIC'
-  value        NUMERIC NOT NULL,
-  label        TEXT,
-  source_url   TEXT,
-  last_updated_at TIMESTAMPTZ,
-  valid_from   DATE,
-  valid_until  DATE
-);
-```
-
-Edge Function `rates-refresh` (cron hebdomadaire) : fetch URSSAF / legifrance / service-public → upsert horodaté.
-
----
-
 ### Fichiers clés
 
 | Rôle | Fichier |
@@ -573,7 +565,8 @@ Edge Function `rates-refresh` (cron hebdomadaire) : fetch URSSAF / legifrance / 
 | **Hook unifié dossier fiscal** | **`src/hooks/useFiscalContext.ts`** |
 | Hook simulateur placement | `src/hooks/usePlacementSettings.ts` |
 | Extraction params normalisés | `src/engine/placement/fiscalParams.ts` |
-| Params par défaut (34 valeurs) | `src/engine/placement/shared.ts` (`DEFAULT_FISCAL_PARAMS`) |
+| Params Placement par défaut | `src/engine/placement/shared.ts` (`DEFAULT_FISCAL_PARAMS`, dérivé de `settingsDefaults.ts`) |
+| Libellés fiscaux Base-Contrat | `src/domain/base-contrat/rules/fiscalLabels.ts` |
 | Profil fiscal par enveloppe | `src/domain/base-contrat/rules/fiscalProfile.ts` |
 | Migration snapshot (v4 + identity) | `src/reporting/snapshot/snapshotMigrations.ts` |
 
@@ -588,7 +581,7 @@ Cette section fixe comment ajouter une page, une route ou une feature sans creer
 #### Regle
 - Toute nouvelle route simulateur vit dans `APP_ROUTES` dans `src/routes/appRoutes.ts`.
 - Le chemin canonique est toujours `/sim/<slug>`.
-- Une route legacy courte (`/<slug>`) n'est ajoutee que si une compatibilite ou un redirect explicite est necessaire.
+- Les routes courtes historiques (`/<slug>`) ne sont pas déclarées : le seul chemin public d'un simulateur est `/sim/<slug>`.
 
 #### Structure cible
 - API publique de feature : `src/features/<slug>/index.ts`
@@ -634,7 +627,7 @@ Cette section fixe comment ajouter une page, une route ou une feature sans creer
 #### Contrats obligatoires
 - Ne pas creer une navigation settings parallele hors `SettingsShell`.
 - Si une page sensible est `adminOnly` en front, verifier aussi l'enforcement backend/RLS.
-- Si une route settings remplace une ancienne route, documenter le redirect ou le mapping legacy.
+- Si une route settings remplace une ancienne route, documenter le mapping de migration et vérifier l'absence de redirect runtime non voulu.
 
 ### 3) Organiser une feature de simulateur
 

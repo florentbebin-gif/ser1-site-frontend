@@ -28,7 +28,7 @@ const PINEL_PINEL_PLUS: ProductRules = {
       title: 'Cession du bien',
       bullets: [
         'Plus-value soumise au régime des plus-values immobilières des particuliers.',
-        'IR 19 % + PS 17,2 % avec abattement progressif (exonération IR après 22 ans, PS après 30 ans).',
+        '{capitalGainIr} + {psGeneral} avec abattement progressif (exonération IR après 22 ans, PS après 30 ans).',
         'Reprise de la réduction d\'IR si le bien est vendu avant la fin de l\'engagement.',
       ],
       tags: ['pv_immo', 'abattement_detention', 'reprise_reduction'],
@@ -71,7 +71,7 @@ const DENORMANDIE: ProductRules = {
     {
       title: 'Cession du bien',
       bullets: [
-        'Plus-value soumise au régime des plus-values immobilières des particuliers (IR 19 % + PS 17,2 %).',
+        'Plus-value soumise au régime des plus-values immobilières des particuliers ({capitalGainIr} + {psGeneral}).',
         'Abattements pour durée de détention applicables.',
         'Reprise de la réduction d\'IR si cession avant la fin de l\'engagement.',
       ],
@@ -98,7 +98,7 @@ const MALRAUX: ProductRules = {
     {
       title: 'Réduction d\'IR — Restauration de patrimoine',
       bullets: [
-        'Réduction d\'IR de 30 % (SPR avec PSMV) ou 22 % (SPR avec PVAP) des dépenses de travaux.',
+        'Réduction d\'IR de {malrauxReductionRates} des dépenses de travaux.',
         'Plafond des travaux retenus : 400 000 € sur 4 années consécutives. Hors plafonnement global des niches fiscales.',
         'Engagement de location de 9 ans à compter de l\'achèvement.',
         'À confirmer selon l\'obtention de l\'AST validée par l\'ABF et la localisation en SPR.',

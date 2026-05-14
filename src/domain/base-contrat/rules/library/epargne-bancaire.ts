@@ -28,7 +28,7 @@ const LIVRETS_REGLEMENTES: ProductRules = {
       title: 'Exonération totale',
       bullets: [
         'Intérêts totalement exonérés d\'impôt sur le revenu.',
-        'Intérêts exonérés de prélèvements sociaux (17,2 %).',
+        'Intérêts exonérés de prélèvements sociaux ({psException}).',
         'Retraits à tout moment sans contrainte fiscale.',
       ],
       tags: ['exoneration_ir', 'exoneration_ps'],
@@ -42,7 +42,7 @@ const LIVRETS_REGLEMENTES: ProductRules = {
       bullets: [
         'Le solde des livrets entre dans la succession à leur valeur au jour du décès.',
         'Droits de mutation applicables selon le barème et le lien de parenté.',
-        'Abattements légaux classiques (100 000 € par enfant, renouvelables tous 15 ans).',
+        'Abattements légaux classiques ({dmtgLigneDirecteAbattement}, renouvelables tous 15 ans).',
       ],
       tags: ['dmtg_classique', 'succession_active'],
       confidence: 'elevee',
@@ -68,21 +68,21 @@ const CTO: ProductRules = {
     {
       title: 'Plus-values et cessions',
       bullets: [
-        'Plus-values soumises au PFU 30 % (12,8 % IR + 17,2 % prélèvements sociaux) par défaut.',
+        'Plus-values soumises au {pfu} par défaut.',
         'Option possible pour le barème progressif de l\'IR (abattement pour durée de détention uniquement sur titres acquis avant 2018).',
         'Compensation des moins-values sur les plus-values de l\'année et des 10 années suivantes.',
       ],
-      tags: ['pfu_30', 'compensation_mv', 'option_bareme'],
+      tags: ['pfu', 'compensation_mv', 'option_bareme'],
       confidence: 'elevee',
       sources: [{ label: 'Art. 200 A CGI — PFU', url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000036428122' }],
     },
     {
       title: 'Dividendes et revenus',
       bullets: [
-        'Dividendes d\'actions françaises et étrangères : PFU 30 % ou option barème avec abattement 40 % sur les dividendes français.',
-        'Intérêts obligataires : PFU 30 %.',
+        'Dividendes d\'actions françaises et étrangères : {pfu} ou option barème avec abattement 40 % sur les dividendes français.',
+        'Intérêts obligataires : {pfu}.',
       ],
-      tags: ['dividendes', 'abattement_40', 'pfu_30'],
+      tags: ['dividendes', 'abattement_40', 'pfu'],
       confidence: 'elevee',
       sources: [{ label: 'Art. 200 A CGI — PFU + Art. 158-3 CGI — abattement 40%', url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000036428122' }],
     },
@@ -122,7 +122,7 @@ const PEA: ProductRules = {
     {
       title: 'Versements et titres éligibles',
       bullets: [
-        'Plafond de versements : 150 000 € (cumulable avec le PEA-PME dans la limite de 225 000 € au total, art. L221-30 CMF).',
+        '{peaVersementCeilings}.',
         'Titres éligibles : actions de sociétés ayant leur siège dans l\'UE ou l\'EEE, parts d\'OPCVM investis à plus de 75 % en actions européennes.',
         'Un seul PEA par personne physique.',
       ],
@@ -136,9 +136,9 @@ const PEA: ProductRules = {
       title: 'Avant 5 ans',
       bullets: [
         'Retrait entraîne la clôture du plan.',
-        'Plus-value soumise au PFU 30 % (12,8 % IR + 17,2 % PS).',
+        'Plus-value soumise au {pfu}.',
       ],
-      tags: ['cloture_avant_5_ans', 'pfu_30'],
+      tags: ['cloture_avant_5_ans', 'pfu'],
       confidence: 'elevee',
       sources: [{ label: 'Art. 150-0 A II-2 CGI — PEA', url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000042908358' }],
     },
@@ -146,11 +146,11 @@ const PEA: ProductRules = {
       title: 'Après 5 ans',
       bullets: [
         'Exonération totale d\'impôt sur le revenu sur les gains.',
-        'Prélèvements sociaux de 17,2 % restent dus sur les gains.',
+        'Prélèvements sociaux ({psException}) restent dus sur les gains.',
         'Retraits partiels possibles sans clôture du plan.',
         'Conversion en rente viagère exonérée d\'IR après 5 ans.',
       ],
-      tags: ['exoneration_ir', 'ps_17_2', 'rente_viagere'],
+      tags: ['exoneration_ir', 'ps', 'rente_viagere'],
       confidence: 'elevee',
       sources: [{ label: 'Art. 150-0 A II-2 CGI — PEA', url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000042908358' }],
     },
@@ -161,7 +161,7 @@ const PEA: ProductRules = {
       bullets: [
         'Clôture automatique du PEA au décès du titulaire.',
         'Exonération d\'IR sur les gains si le plan avait plus de 5 ans.',
-        'Prélèvements sociaux (17,2 %) dus sur la plus-value constatée à la clôture.',
+        'Prélèvements sociaux ({psException}) dus sur la plus-value constatée à la clôture.',
         'Titres entrent dans la succession ; droits de mutation selon le barème légal.',
       ],
       tags: ['cloture_deces', 'exoneration_ir_5_ans', 'dmtg_classique'],
@@ -176,7 +176,7 @@ const PEA_PME: ProductRules = {
     {
       title: 'Versements et titres éligibles',
       bullets: [
-        'Plafond de versements : 75 000 € (cumulable avec le PEA 150 000 € — plafond global 225 000 €, art. L221-32-1 CMF).',
+        '{peaPmeVersementCeilings}.',
         'Titres éligibles : PME et ETI européennes, titres participatifs, obligations remboursables en actions.',
         'Un seul PEA-PME par personne physique.',
       ],
@@ -190,9 +190,9 @@ const PEA_PME: ProductRules = {
       title: 'Avant 5 ans',
       bullets: [
         'Retrait entraîne la clôture du plan.',
-        'Plus-value soumise au PFU 30 %.',
+        'Plus-value soumise au {pfu}.',
       ],
-      tags: ['cloture_avant_5_ans', 'pfu_30'],
+      tags: ['cloture_avant_5_ans', 'pfu'],
       confidence: 'elevee',
       sources: [{ label: 'Art. 150-0 A II-2 CGI — PEA-PME', url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000042908358' }],
     },
@@ -200,10 +200,10 @@ const PEA_PME: ProductRules = {
       title: 'Après 5 ans',
       bullets: [
         'Exonération d\'IR sur les gains (identique au PEA).',
-        'Prélèvements sociaux 17,2 % restent dus.',
+        'Prélèvements sociaux ({psException}) restent dus.',
         'Retraits partiels sans clôture possibles.',
       ],
-      tags: ['exoneration_ir', 'ps_17_2'],
+      tags: ['exoneration_ir', 'ps'],
       confidence: 'elevee',
       sources: [{ label: 'Art. 150-0 A II-2 CGI — PEA-PME', url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000042908358' }],
     },
@@ -213,7 +213,7 @@ const PEA_PME: ProductRules = {
       title: 'Clôture et succession',
       bullets: [
         'Clôture automatique au décès, mêmes règles que le PEA.',
-        'Exonération d\'IR sur les gains (si plan > 5 ans) ; PS 17,2 % dus.',
+        'Exonération d\'IR sur les gains (si plan > 5 ans) ; prélèvements sociaux ({psException}) dus.',
         'Droits de mutation sur les titres selon le barème légal.',
       ],
       tags: ['cloture_deces', 'exoneration_ir_5_ans', 'dmtg_classique'],
@@ -241,12 +241,12 @@ const PEL: ProductRules = {
     {
       title: 'Fiscalité des intérêts',
       bullets: [
-        'PEL ouvert depuis le 1er janvier 2018 : intérêts soumis au PFU 30 % dès la première année.',
+        'PEL ouvert depuis le 1er janvier 2018 : intérêts soumis au {pfu} dès la première année.',
         'PEL ouvert avant 2018 : intérêts exonérés d\'IR les 12 premières années, puis soumis au PFU.',
         'Prélèvements sociaux prélevés annuellement.',
         'Prime d\'État supprimée pour les PEL ouverts depuis 2018.',
       ],
-      tags: ['pfu_30', 'ps_annuels', 'regime_transitoire'],
+      tags: ['pfu', 'ps_annuels', 'regime_transitoire'],
       confidence: 'elevee',
       sources: [{ label: 'Art. 200 A CGI — PFU', url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000036428122' }],
     },
@@ -283,10 +283,10 @@ const CEL: ProductRules = {
     {
       title: 'Fiscalité des intérêts',
       bullets: [
-        'Intérêts soumis au PFU 30 % (12,8 % IR + 17,2 % PS).',
+        'Intérêts soumis au {pfu}.',
         'Option possible pour le barème progressif de l\'IR.',
       ],
-      tags: ['pfu_30'],
+      tags: ['pfu'],
       confidence: 'elevee',
       sources: [{ label: 'Art. 200 A CGI — PFU', url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000036428122' }],
     },
@@ -321,10 +321,10 @@ const CAT_CSL: ProductRules = {
     {
       title: 'Fiscalité des intérêts',
       bullets: [
-        'Intérêts soumis au PFU 30 % (12,8 % IR + 17,2 % prélèvements sociaux).',
+        'Intérêts soumis au {pfu}.',
         'Option possible pour le barème progressif de l\'IR.',
       ],
-      tags: ['pfu_30', 'option_bareme'],
+      tags: ['pfu', 'option_bareme'],
       confidence: 'elevee',
       sources: [{ label: 'Art. 200 A CGI — PFU', url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000036428122' }],
     },

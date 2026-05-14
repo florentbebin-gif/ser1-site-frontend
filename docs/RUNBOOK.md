@@ -27,7 +27,7 @@ Note securite : `admin_accounts` et `admin_action_audit` doivent rester `service
 
 ## Checks du repo
 - Check complet :
-  - `npm run check` (lint + **check:fiscal-hardcode** + **check:arch** + **check:circular** + typecheck + tests + build)
+  - `npm run check` (lint + **check:fiscal-hardcode** + **check:settings-rls** + **check:arch** + **check:circular** + **check:unused** + CSS/theme + typecheck + tests + build)
 
 En CI, c'est le gate principal.
 
@@ -44,11 +44,13 @@ Règles enforced :
 
 Commande : `npm run check:fiscal-hardcode` (ou inclus dans `npm run check`).
 
-**Ce que ça vérifie** : absence de valeurs fiscales révisables en dur dans `src/engine/` et `src/features/` (hors tests). La liste exacte surveillée vit dans `FORBIDDEN_VALUES` dans `scripts/check-no-hardcoded-fiscal-values.mjs` et couvre notamment :
+**Ce que ça vérifie** : absence de valeurs fiscales révisables en dur dans `src/engine/`, `src/domain/base-contrat/rules/`, `src/features/`, `src/hooks/` et `src/pages/settings/` (hors tests). La liste exacte surveillée vit dans `FORBIDDEN_VALUES` dans `scripts/check-no-hardcoded-fiscal-values.mjs` et couvre notamment :
 
 | Exemple | Label |
 |--------|-------|
-| `18.6` / `17.2` | Taux PS patrimoine (cas general / regime d'exception) |
+| `17,2` / `0.172` | Taux PS patrimoine |
+| `12,8` / `0.128` | Taux IR PFU |
+| `PFU 30 %` | Libellé PFU figé |
 | `100000` | Abattement enfant DMTG (ligne directe) |
 | `15932` | Abattement frère/sœur DMTG |
 | PASS historiques | valeurs annuelles PASS à maintenir uniquement dans les settings et fallbacks documentés |
@@ -90,7 +92,7 @@ Le repo n’utilise pas `.env` :
 
 Variables attendues :
 
-```bash
+```powershell
 VITE_SUPABASE_URL=<supabase_project_url>
 VITE_SUPABASE_ANON_KEY=<anon_key>
 
@@ -133,7 +135,7 @@ Parcours safe (si Supabase CLI configurée) :
 > ⚠️ **Danger zone**: `supabase db reset` est destructif (purge totale) et interdit sans demande explicite.  
 > Préférer `supabase start` + migrations ciblées si l'objectif ne nécessite pas un reset complet.
 
-```bash
+```powershell
 supabase start
 supabase db reset
 supabase migration list
@@ -141,7 +143,7 @@ supabase migration list
 
 Synchroniser le schéma distant (si besoin) :
 
-```bash
+```powershell
 supabase db remote commit --linked
 ```
 
@@ -152,28 +154,15 @@ supabase db remote commit --linked
 ### Contexte
 La table `admin_accounts` est la liste exhaustive des comptes autorisés à utiliser la fonction admin. Elle s'ajoute au check `app_metadata.role='admin'` dans Supabase Auth : les deux doivent être vrais pour qu'un compte soit accepté.
 
-> **Règle** : ne jamais déployer la garde stricte (PR-3) avant que le seed owner soit validé sur l'environnement cible.
+> **Règle** : un compte admin doit être présent dans Supabase Auth avec `app_metadata.role='admin'` et dans `public.admin_accounts`.
 
-### Comptes actuels (PR-0 — 2026-03-22)
+### Bootstrap owner
 
-| UUID | Email | account_kind | Notes |
-|---|---|---|---|
-| `a3fa99e2-12ea-4c42-855a-7b743e83f875` | compte owner | `owner` | Seul admin humain permanent |
-
-Comptes techniques à vérifier / purger :
-- `b4-admin-b-1771145192@test.local` — non référencé dans le code, suspect
-- `b4-admin-a-1771145192@test.local` — non référencé dans le code, suspect
-- `e2e@test.local` — non référencé dans le code, suspect
-
-**Action** : si ces trois comptes ont `app_metadata.role='admin'` dans Supabase Auth, les désactiver ou supprimer avant de déployer PR-3.
-
-### Bootstrap owner (à faire avant PR-3)
-
-Après déploiement de la migration `admin_accounts` (PR-2), insérer le compte owner :
+Après validation du compte owner dans Supabase Auth, insérer son UUID dans `admin_accounts` :
 
 ```sql
 INSERT INTO public.admin_accounts (user_id, account_kind, notes)
-VALUES ('a3fa99e2-12ea-4c42-855a-7b743e83f875', 'owner', 'Compte owner initial — 2026-03-22');
+VALUES ('<owner_user_id>', 'owner', 'Compte owner initial');
 ```
 
 Vérifier :
@@ -186,7 +175,7 @@ SELECT * FROM public.admin_accounts;
 
 ```sql
 INSERT INTO public.admin_accounts (user_id, account_kind, notes, created_by)
-VALUES ('<uuid>', 'dev_admin', 'Dev X — 2026-xx-xx', 'a3fa99e2-12ea-4c42-855a-7b743e83f875');
+VALUES ('<uuid>', 'dev_admin', 'Dev X', '<owner_user_id>');
 ```
 
 ### Désactiver un compte
@@ -215,16 +204,19 @@ VALUES ('<uuid>', 'e2e', now() + interval '7 days', 'Compte E2E run CI — expir
   WHERE expires_at IS NOT NULL AND expires_at < now();
   ```
 
-### Rollout sans lock-out
+### Récupération lock-out admin
 
-Ordre obligatoire avant de déployer la garde stricte :
-1. Déployer la migration `admin_accounts` (table créée, pas encore enforced)
-2. Insérer le seed owner + tout compte `dev_admin` légitime
-3. Vérifier : `SELECT * FROM public.admin_accounts WHERE status='active';` → au moins 1 owner
-4. Déployer l'Edge Function avec la garde stricte
-5. Tester l'accès avec le compte owner seedé
-
-Si lock-out accidentel : désactiver temporairement la garde dans l'Edge Function (retirer le check `admin_accounts`), re-seeder, re-déployer.
+La garde `admin_accounts` est active côté Edge Function. En cas de lock-out :
+1. Se connecter au projet Supabase avec un rôle service.
+2. Vérifier qu'au moins un compte owner actif existe :
+   ```sql
+   SELECT user_id, account_kind, status
+   FROM public.admin_accounts
+   WHERE status = 'active'
+   ORDER BY account_kind;
+   ```
+3. Réactiver ou insérer un compte owner légitime via SQL, puis tester `/settings/comptes`.
+4. Invalider le cache fiscal uniquement si la correction touche aussi une table settings.
 
 ### Consulter l'audit admin
 
@@ -253,7 +245,7 @@ Note : la table est accessible service_role uniquement (RLS activee, policies ex
 
 ## Edge Function admin
 ### Déployer
-```bash
+```powershell
 npx supabase functions deploy admin --project-ref <ref>
 ```
 
@@ -263,13 +255,13 @@ npx supabase functions deploy admin --project-ref <ref>
 
 Exemples :
 
-```bash
+```powershell
 # Public (pas de token)
 supabase functions invoke admin --data '{"action":"ping_public"}'
 
 # Admin (token requis)
-supabase functions invoke admin \
-  --data '{"action":"list_users"}' \
+supabase functions invoke admin `
+  --data '{"action":"list_users"}' `
   --headers '{"Authorization":"Bearer <JWT_ADMIN>"}'
 ```
 
@@ -301,7 +293,7 @@ Au chargement d'un fichier `.ser1` sauvegardé avec le schéma v4, l'app compare
 
 ### Debug
 
-```bash
+```text
 # Vérifier le schéma du snapshot stocké dans un .ser1 (JSON)
 # Les fichiers .ser1 sont du JSON : ouvrir avec un éditeur et chercher "fiscalIdentity"
 # Exemple de structure v4 attendue :
@@ -353,7 +345,7 @@ La fonction est créée lors des migrations d’initialisation. Si absente, rejo
 
 Check rapide (régression sécurité) :
 
-```bash
+```powershell
 rg "user_metadata.*role" supabase/functions --type ts
 rg "user_metadata" supabase/migrations --type sql
 ```
@@ -426,7 +418,7 @@ Toujours utiliser des **libellés métier clairs**. Aucun jargon technique ni ID
 
 ### 2. Ajouter/modifier une règle fiscale (3 colonnes)
 
-Le **référentiel lisible** des règles fiscales est dans `src/domain/base-contrat/rules/` (PR5).  
+Le **référentiel lisible** des règles fiscales est dans `src/domain/base-contrat/rules/`.  
 Le **moteur de calcul** (simulateurs) reste dans `src/engine/`.
 
 #### Modifier une règle existante
@@ -489,7 +481,7 @@ Chaque `RuleBlock` doit obligatoirement avoir un champ `confidence` : `'elevee'`
 
 ### Process
 
-1. **Preuve** : prouver 0 usage (rg/find)
+1. **Preuve** : prouver 0 usage (`rg`, chaîne d'import, route ou script appelant)
 2. **PR** : petite PR ciblée
 3. **Validation** : `npm run check` passe
 4. **Merge** → sinon **revert**
@@ -505,14 +497,14 @@ Chaque `RuleBlock` doit obligatoirement avoir un champ `confidence` : `'elevee'`
 
 Commandes utiles pour vérifier l'hygiène du code et l'organisation (conformité SaaS).
 
-```bash
+```powershell
 # 1. Lister les routes déclarées (source unique attendue)
 rg -n "path:" src/routes/appRoutes.ts
 # Résultat attendu : liste des routes (APP_ROUTES)
 
-# 1b. Lister les redirects legacy
+# 1b. Vérifier l'absence de redirects runtime
 rg -n "kind: 'redirect'" src/routes/appRoutes.ts
-# Résultat attendu : routes legacy (/placement, /credit, /prevoyance)
+# Résultat attendu : aucune sortie
 
 # 1c. Vérifier que App.tsx consomme APP_ROUTES (pas de duplication)
 rg -n "APP_ROUTES\\.map" src/App.tsx
@@ -526,11 +518,13 @@ rg -n "const Icon" src/App.tsx
 # Résultat attendu post-T3 : (aucune sortie)
 
 # 4. Lister les dossiers spike/raw dans src/ (interdits en prod)
-find src -type d \( -name "__spike__" -o -name "_raw" \)
+Get-ChildItem -Path src -Directory -Recurse -Force |
+  Where-Object { $_.Name -in @('__spike__', '_raw') } |
+  Select-Object -ExpandProperty FullName
 # Résultat attendu : (aucune sortie)
 
 # 5. Vérifier l'utilisation centralisée des routes settings
-grep -n "SETTINGS_ROUTES\|settingsRoutes" src/routes/settingsRoutes.ts src/pages/SettingsShell.tsx
+rg -n "SETTINGS_ROUTES|settingsRoutes" src/routes/settingsRoutes.ts src/pages/SettingsShell.tsx
 # Résultat attendu : matches dans les deux fichiers (source unique utilisée)
 ```
 

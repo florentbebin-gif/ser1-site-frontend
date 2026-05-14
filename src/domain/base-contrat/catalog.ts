@@ -2,13 +2,13 @@
  * domain/base-contrat/catalog.ts
  *
  * Catalogue hardcodé des produits patrimoniaux.
- * Source de vérité PR1 — 100% additive, aucun impact runtime.
+ * Source de vérité du catalogue produit.
  *
  * Champs retenus (minimum nécessaire) :
  *   id, label, grandeFamille, catalogKind, ppEligible, pmEligible, templateKey
  *
- * isActive = true par défaut ; closedDate géré via base_contrat_overrides (PR1.6).
- * Pas de commentaires de qualification ni de références longues (PR1 légère).
+ * isActive = true par défaut ; closedDate géré via base_contrat_overrides.
+ * Pas de commentaires de qualification ni de références longues.
  */
 
 import type { CatalogKind, GrandeFamille } from './types';

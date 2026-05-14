@@ -1,7 +1,7 @@
 /**
  * domain/base-contrat/rules/fiscalProfile.ts
  *
- * PR8 — Interface FiscalProfile et mapping engine-envelope → catalog ID.
+ * Interface FiscalProfile et mapping engine-envelope → catalog ID.
  *
  * FiscalProfile est un sous-ensemble de ProductRules enrichi du contexte
  * (enveloppe moteur + audience PP/PM). Il sert de point d'entrée unique

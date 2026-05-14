@@ -2,6 +2,8 @@ import {
   DEFAULT_FISCAL_PARAMS,
   REQUIRED_NUMERIC_FISCAL_KEYS,
   clamp,
+  roundDecimal,
+  toDecimalPercent,
 } from './shared';
 import type { FiscalParams } from './types';
 
@@ -32,6 +34,7 @@ interface FiscalitySettings {
     };
   };
   dividendes?: { abattementBaremePercent?: number };
+  pea?: { ancienneteMinYears?: number };
 }
 
 interface PsSettingsForExtract {
@@ -50,14 +53,6 @@ interface TaxSettingsForExtract {
 }
 
 let hasWarnedMissingFiscalParams = false;
-
-function toDecimalPercent(value: number): number {
-  return Math.round((value / 100) * 1_000_000) / 1_000_000;
-}
-
-function roundDecimal(value: number): number {
-  return Math.round(value * 1_000_000) / 1_000_000;
-}
 
 export function extractFiscalParams(
   fiscalitySettings: FiscalitySettings | null | undefined,
@@ -107,7 +102,9 @@ export function extractFiscalParams(
       if (deces.primesApres1998.brackets?.[0]) {
         params.av990ITranche1Taux = toDecimalPercent(deces.primesApres1998.brackets[0].ratePercent);
         if (deces.primesApres1998.brackets[0].upTo) {
-          params.av990ITranche1Plafond = deces.primesApres1998.brackets[0].upTo - params.av990IAbattement;
+          const upTo = deces.primesApres1998.brackets[0].upTo;
+          params.av990ITranche1Plafond =
+            upTo > params.av990IAbattement ? upTo - params.av990IAbattement : upTo;
         }
       }
       if (deces.primesApres1998.brackets?.[1]) {
@@ -122,6 +119,10 @@ export function extractFiscalParams(
   const dividendes = fiscalitySettings?.dividendes;
   if (dividendes?.abattementBaremePercent != null) {
     params.dividendesAbattementPercent = clamp(toDecimalPercent(dividendes.abattementBaremePercent), 0, 1);
+  }
+
+  if (fiscalitySettings?.pea?.ancienneteMinYears != null) {
+    params.peaAncienneteMin = fiscalitySettings.pea.ancienneteMinYears;
   }
 
   const missingKeys: string[] = [];

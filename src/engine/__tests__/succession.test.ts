@@ -4,7 +4,7 @@
 
 import { describe, it, expect } from 'vitest';
 import { calculateSuccession, calculatePredecesSenarios, getAbattement } from '../succession';
-import { ABATTEMENT_ENFANT, DEFAULT_DMTG } from '../civil';
+import { DEFAULT_DMTG } from '../civil';
 
 describe('Succession Module', () => {
   describe('getAbattement', () => {
@@ -13,11 +13,11 @@ describe('Succession Module', () => {
     });
 
     it('retourne 100000 pour un enfant', () => {
-      expect(getAbattement('enfant')).toBe(ABATTEMENT_ENFANT);
+      expect(getAbattement('enfant')).toBe(DEFAULT_DMTG.ligneDirecte.abattement);
     });
 
-    it('retourne 15932 pour frère/sœur', () => {
-      expect(getAbattement('frere_soeur')).toBe(15932);
+    it('retourne l’abattement frère/sœur par défaut', () => {
+      expect(getAbattement('frere_soeur')).toBe(DEFAULT_DMTG.frereSoeur.abattement);
     });
   });
 
@@ -41,7 +41,7 @@ describe('Succession Module', () => {
       // 200000 - 100000 abattement = 100000 imposable
       // Barème DMTG : environ 18194€
       expect(result.result.totalDroits).toBeGreaterThan(0);
-      expect(result.result.detailHeritiers[0].abattement).toBe(ABATTEMENT_ENFANT);
+      expect(result.result.detailHeritiers[0].abattement).toBe(DEFAULT_DMTG.ligneDirecte.abattement);
     });
 
     it('calcule les droits pour deux enfants', () => {
@@ -55,8 +55,8 @@ describe('Succession Module', () => {
 
       expect(result.result.detailHeritiers).toHaveLength(2);
       // Chaque enfant a son propre abattement
-      expect(result.result.detailHeritiers[0].abattement).toBe(ABATTEMENT_ENFANT);
-      expect(result.result.detailHeritiers[1].abattement).toBe(ABATTEMENT_ENFANT);
+      expect(result.result.detailHeritiers[0].abattement).toBe(DEFAULT_DMTG.ligneDirecte.abattement);
+      expect(result.result.detailHeritiers[1].abattement).toBe(DEFAULT_DMTG.ligneDirecte.abattement);
     });
 
     it('retourne 0 si part inférieure à l\'abattement', () => {
@@ -75,10 +75,11 @@ describe('Succession Module', () => {
         heritiers: [{ lien: 'neveu_niece', partSuccession: 100000 }],
       });
 
-      // 100000 - 7967 abattement = 92033 imposable à 55%
-      const expected = Math.round(92033 * 0.55);
+      const baseImposable = 100000 - DEFAULT_DMTG.neveuNiece.abattement;
+      const [tranche] = DEFAULT_DMTG.neveuNiece.scale;
+      const expected = Math.round(baseImposable * ((tranche?.rate ?? 0) / 100));
       expect(result.result.totalDroits).toBe(expected);
-      expect(result.result.detailHeritiers[0].abattement).toBe(7967);
+      expect(result.result.detailHeritiers[0].abattement).toBe(DEFAULT_DMTG.neveuNiece.abattement);
     });
   });
 
@@ -207,15 +208,15 @@ describe('Succession Module', () => {
         heritiers: [{ lien: 'frere_soeur', partSuccession: 100000 }],
       });
 
-      // 100000 - 15932 abattement = 84068 imposable
+      // 100000 - abattement frère/sœur = base imposable
       // 0-24430 à 35% = 8550.50
-      // 24430-84068 à 45% = 26837.10
-      // Total ≈ 35388
       expect(result.result.totalDroits).toBeGreaterThan(0);
-      expect(result.result.detailHeritiers[0].abattement).toBe(15932);
-      const baseImposable = 100000 - 15932;
-      const tranche1 = 24430 * 0.35;
-      const tranche2 = (baseImposable - 24430) * 0.45;
+      expect(result.result.detailHeritiers[0].abattement).toBe(DEFAULT_DMTG.frereSoeur.abattement);
+      const baseImposable = 100000 - DEFAULT_DMTG.frereSoeur.abattement;
+      const [firstBracket, secondBracket] = DEFAULT_DMTG.frereSoeur.scale;
+      const firstBracketLimit = firstBracket?.to ?? 0;
+      const tranche1 = firstBracketLimit * ((firstBracket?.rate ?? 0) / 100);
+      const tranche2 = (baseImposable - firstBracketLimit) * ((secondBracket?.rate ?? 0) / 100);
       expect(result.result.totalDroits).toBe(Math.round(tranche1 + tranche2));
     });
 

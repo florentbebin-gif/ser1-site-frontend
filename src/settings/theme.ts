@@ -19,12 +19,6 @@ export interface ThemeColors {
   c10: string; // Text primary
 }
 
-/** Configuration complète du thème (format structuré) */
-export interface ThemeConfig {
-  colors: ThemeColors;
-  logo?: string; // Base64 encoded logo
-}
-
 /** Valeurs par défaut SER1 Classic - SOURCE DE VÉRITÉ */
 export const DEFAULT_COLORS: ThemeColors = {
   c1: '#2B3E37',
@@ -39,49 +33,3 @@ export const DEFAULT_COLORS: ThemeColors = {
   c10: '#000000',
 };
 
-/** Theme complet par défaut */
-export const DEFAULT_THEME: ThemeConfig = {
-  colors: DEFAULT_COLORS,
-};
-
-const THEME_STORAGE_KEY = 'ser1_theme';
-
-/**
- * Charge le thème depuis le localStorage
- */
-export function loadTheme(): ThemeConfig {
-  try {
-    const stored = localStorage.getItem(THEME_STORAGE_KEY);
-    if (stored) {
-      return JSON.parse(stored) as ThemeConfig;
-    }
-  } catch (e) {
-    console.warn('Failed to load theme from storage:', e);
-  }
-  return DEFAULT_THEME;
-}
-
-/**
- * Sauvegarde le thème dans le localStorage
- */
-export function saveTheme(theme: ThemeConfig): void {
-  try {
-    localStorage.setItem(THEME_STORAGE_KEY, JSON.stringify(theme));
-  } catch (e) {
-    console.warn('Failed to save theme to storage:', e);
-  }
-}
-
-/**
- * Applique le thème aux variables CSS
- */
-export function applyThemeToCss(theme: ThemeConfig): void {
-  const root = document.documentElement;
-  Object.entries(theme.colors).forEach(([key, value]) => {
-    root.style.setProperty(`--color-${key}`, value);
-  });
-}
-
-/**
- * Réinitialise le thème par défaut
- */

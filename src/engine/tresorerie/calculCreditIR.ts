@@ -1,13 +1,13 @@
 /**
  * calculCreditIR.ts — Crédit contracté par l'associé (remboursé via dividendes)
  *
- * V1 : PFU uniquement — option barème IR hors scope V1 (invariant 3).
+ * PFU uniquement — option barème IR hors périmètre de ce calcul (invariant 3).
  *
  * Formule (preuve : cellule AC21 sheet31 du XLSM) :
  *   dividendesBruts = mensualité × 12 / (1 − pfuTotal)
  *
  * Ces dividendes bruts sont plafonnés par la capacité distribuable et
- * la trésorerie à l'étape 11 de simulateTresorerie.
+ * la trésorerie disponible calculée par simulateTresorerieV2.
  */
 
 import { mensualiteAmortissable } from '../credit/loanSchedule';

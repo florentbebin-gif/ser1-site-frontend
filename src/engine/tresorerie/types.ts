@@ -4,7 +4,7 @@
  * TresoInputs     : entrées legacy du simulateur (migration/compatibilité)
  * TresoInputsV2   : source de vérité du runtime Trésorerie société
  * TresoFiscalParams : paramètres fiscaux typés construits par useTresorerieCalculations
- * TresoProjectionRow : ligne de la projection annuelle produite par simulateTresorerie
+ * TresoProjectionRow : ligne de la projection annuelle produite par simulateTresorerieV2
  *
  * Règle : zéro React, zéro Supabase — types purs.
  */

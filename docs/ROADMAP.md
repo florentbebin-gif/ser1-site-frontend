@@ -1,487 +1,169 @@
-# ROADMAP (source de verite)
+# ROADMAP (source de vérité)
 
 ## But
-Piloter la trajectoire SER1 vers un outil **premium, simple et ultra fiable** pour le conseil patrimonial :
-- des simulateurs coherents entre eux,
-- des parametres actualisables (sans "patch code"),
-- des livrables client (PowerPoint / Excel) utilisables en rendez-vous,
-- une gouvernance "cabinet" (utilisateurs, droits, identite visuelle).
+Piloter la trajectoire SER1 vers un outil premium, simple et fiable pour le conseil patrimonial :
+- simulateurs cohérents entre eux ;
+- paramètres fiscaux actualisables sans patch code ;
+- livrables PowerPoint / Excel exploitables en rendez-vous ;
+- gouvernance cabinet : utilisateurs, droits, identité visuelle.
 
-> Cette roadmap ne contient **que ce qui reste a faire**.
-> Le chantier "Parametres fiscaux unifies + tracabilite + garde-fous" (P1-06) est **livre**.
-> Le chantier "Stabilisation post-P1-06" (P1-07) est **livre** : migration TS cache fiscal, reorganisation `src/utils/`, decomposition `SuccessionSimulator.tsx`, E2E smoke tests, documentation metier.
+> Cette roadmap ne contient que ce qui reste à faire.
+> Les chantiers livrés sont tracés par commits et PR, pas par blocs `done` détaillés.
 
-## Audience
-Owner/PM + responsable produit + LLM operant en PR-only workflow.
+## Principes non négociables
+1. Une seule source de vérité pour les chiffres fiscaux : `Supabase → fiscalSettingsCache.ts → useFiscalContext.ts → settingsDefaults.ts`.
+2. Aucun chiffre révisable en dur dans les moteurs, features ou règles Base-Contrat.
+3. Chargement fiable sur les simulateurs critiques : pas de calcul silencieux avec valeurs provisoires.
+4. Validation côté administration : tranches, bornes, taux et valeurs incohérentes doivent être bloqués.
+5. Traçabilité des dossiers : un dossier sauvegardé doit indiquer si les paramètres fiscaux ont changé.
+6. Documentation alignée : ce qui est vrai dans le code doit être vrai dans les docs.
 
----
-
-## Principes non negociables (trajectoire "outil pro")
-1) **Une seule source de verite pour les chiffres**
-   Tous les simulateurs lisent le meme "dossier fiscal" (deja en place).
-
-2) **Aucun chiffre revisable en dur dans les moteurs**
-   Tout ce qui change (taux/baremes/abattements) doit etre parametrable et verifie.
-
-3) **Chargement fiable sur les simulateurs critiques**
-   Pas de calcul silencieux avec des valeurs provisoires.
-
-4) **Validation cote administration**
-   On bloque la saisie incoherente (tranches, bornes, taux, valeurs negatives, etc.).
-
-5) **Tracabilite des dossiers**
-   Un dossier sauvegarde doit indiquer si les parametres ont change depuis.
-
-6) **Documentation alignee**
-   Ce qui est vrai dans le code doit etre vrai dans les docs (et inversement).
+## Definition of Done
+- `npm run check` passe.
+- Les preuves sont dans la PR : chemins fichiers, commandes `rg`, tests exécutés.
+- Aucun comportement existant n'est cassé sans migration explicite.
+- Les docs structurantes (`ARCHITECTURE`, `METIER`, `RUNBOOK`, `GOUVERNANCE`) sont mises à jour si le flux change.
+- Aucun audit, plan temporaire ou note de clôture générée n'est versionné.
 
 ---
 
-## Definition of Done (pour chaque PR)
-- **Qualite** : `npm run check` passe.
-- **Preuves** : chemins fichiers + commandes `rg`/captures log + tests manuels decrits.
-- **Regressions** : aucun comportement existant casse (ou migration/compatibilite explicite).
-- **Docs** : `docs/ROADMAP.md` mis a jour (`DONE` + preuves + lien PR).
-  Si la PR change un flux, mise a jour de `docs/ARCHITECTURE.md` et/ou `docs/RUNBOOK.md`.
+# P2 - Expérience rendez-vous : mode simplifié / mode expert
+Objectif : rendre l'outil utilisable en rendez-vous sans intimider, tout en gardant une profondeur expert.
+
+## PR-P2-01 - Décision produit : cadre simplifié / expert
+Statut : `spec`
+
+Travaux :
+- Définir ce qui est visible en simplifié vs expert.
+- Décider où vit le toggle principal.
+- Distinguer mode global et override local de page.
+- Préciser ce qui est seulement masqué de ce qui sort réellement du calcul.
+- Donner des exemples sur `/sim/credit`, `/sim/ir` et `/sim/succession`.
+
+## PR-P2-02 - Infrastructure modes
+Statut : `spec`
+
+Travaux :
+- Ajouter le mode utilisateur par défaut.
+- Ajouter les helpers d'affichage (`ExpertOnly`, `SimpleOnly`, niveau de détail).
+- Garantir que l'infrastructure n'altère pas les calculs.
+
+## PR-P2-03 - Déploiement modes sur IR + Succession
+Statut : `spec`
+
+Travaux :
+- Appliquer le mode simplifié aux simulateurs les plus sensibles.
+- Garder les champs calculatoires indispensables disponibles côté moteur.
+- Vérifier que les exports restent cohérents.
+
+## PR-P2-04 - Déploiement modes sur Placement + Crédit
+Statut : `spec`
+
+Travaux :
+- Réduire la densité des formulaires sans casser les hypothèses avancées.
+- Conserver les exports et snapshots compatibles.
+
+## PR-P2-05 - Déploiement modes sur PER + Stratégie
+Statut : `spec`
+
+Travaux :
+- Harmoniser le mode avec les workflows en étapes.
+- Clarifier la place des explications produit.
 
 ---
 
-## Comment utiliser cette roadmap
-- Un item `ready` doit etre executable par une PR courte sans re-cadrage majeur.
-- Un item `spec` n'est pas pret a coder : il faut d'abord figer le cadre ou les decisions.
-- Si un item est trop gros pour une PR mergeable, il doit etre re-decoupe avant execution.
-- Une PR doit couvrir un seul item ou sous-item clair.
-- Toute PR mergee doit remettre a jour le statut de l'item et, si utile, les preuves associees.
+# P3 - PER multi-enveloppes + recommandations fiscales
+Objectif : mieux différencier les enveloppes PER et produire une guidance fiscale exploitable.
 
-## Format standard d'un item executable
-Utiliser ce format pour tout item actif proche de l'execution :
-- `Statut` : `spec` / `ready` / `in_progress` / `blocked` / `done`
-- `Objectif`
-- `Non-objectifs`
-- `Travaux`
-- `Fichiers probables`
-- `Tests attendus`
-- `Preuves attendues`
-- `Taille PR max`
-- `Dependances / blocages`
+## PR-P3-01 - Spécification métier PER
+- Définir les enveloppes, historiques, transferts et limites de calcul.
 
----
+## PR-P3-02 - Modèle de données PER
+- Structurer enveloppes, versements, transferts et validation.
 
-# P1-08 - Finalisation migration JS -> TypeScript sur chemins metier
-Objectif livre : fermeture des derniers ponts JS/TS actifs sur Placement et Credit, sans elargir le chantier a l'UI du repo hors perimetre Credit.
+## PR-P3-03 - Moteur PER : transferts multi-enveloppes
+- Calculer impacts fiscaux et projections.
 
-## PR-P1-08-03b - Hook metier Placement residuel
-### Statut
-done
+## PR-P3-04 - Recommandations PER
+- Guider l'utilisation des enveloppes et le report IR.
 
-### Objectif
-Hook metier Placement desormais en TypeScript pour fermer le dernier pont metier JS/TS cote Placement.
-
-### Non-objectifs
-- Ne pas migrer les composants JSX Placement hors consommations directes.
-- Ne pas refactorer la logique de chargement/caching des settings.
-- Ne pas modifier la logique metier de `extractFiscalParams`.
-
-### Travaux
-- Hook desormais porte par `src/hooks/usePlacementSettings.ts`.
-- Retour du hook explicitement type : `fiscalParams`, `fiscalitySettings`, `psSettings`, `taxSettings`, `baremIR`, `tmiOptions`, `loading`, `error`.
-- Reutilisation de `src/engine/placement/types.ts` pour `FiscalParams`.
-- Consommateur `src/features/placement/hooks/usePlacementSimulatorController.ts` aligné sur le hook TS.
-
-### Fichiers probables
-- `src/hooks/usePlacementSettings.ts`
-- `src/features/placement/hooks/usePlacementSimulatorController.ts`
-- `src/engine/placement/types.ts`
-
-### Tests attendus
-- `npm run typecheck`
-- `npm run check`
-- smoke manuel : chargement settings, invalidation cache, options TMI coherentes
-
-### Preuves attendues
-- plus aucun import local vers l'ancienne implementation JS du hook Placement
-- typecheck vert sur le hook et son consommateur principal
-
-### Taille PR max
-1 petite PR
-
-### Dependances / blocages
-- aucun
+## PR-P3-05 - Exports PER enrichis
+- Mettre à jour PPTX / Excel avec les nouvelles enveloppes.
 
 ---
 
-## PR-P1-08-04 - Hooks + utils Credit en TypeScript
-### Statut
-done
+# P4 - Scan documentaire
+Objectif : préremplir l'analyse patrimoniale depuis des documents, avec relecture humaine.
 
-### Objectif
-Logique metier Credit desormais en TypeScript avant la finalisation de l'UI TSX.
+## PR-P4-01 - Décision infra + confidentialité
+- Décider stockage, durée de conservation, extraction et journalisation.
 
-### Non-objectifs
-- Ne pas changer la logique de calcul ou d'export.
-- Ne pas ajouter de nouveaux tests fonctionnels Credit dans cette PR.
-- Ne pas toucher les styles CSS du feature.
+## PR-P4-02 - Prototype extraction minimale
+- Dépôt document, extraction structurée, validation manuelle.
 
-### Travaux
-- Utils desormais portes par `src/features/credit/utils/creditFormatters.ts` et `src/features/credit/utils/creditNormalizers.ts`.
-- Hooks desormais portes par `src/features/credit/hooks/useCreditCalculations.ts` et `src/features/credit/hooks/useCreditExports.ts`.
-- `src/features/credit/types.ts` centralise les contrats partages : `CreditLoan`, `CreditState`, `CreditPersistedState`, `CreditRawValues`, `CreditScheduleRow`, `CreditCalcResult`, `CreditSynthesis`, `CreditPeriodSummary`.
-- Bridge conserve vers `src/engine/credit/capitalDeces.ts`.
-
-### Fichiers probables
-- `src/features/credit/types.ts`
-- `src/features/credit/utils/creditFormatters.ts`
-- `src/features/credit/utils/creditNormalizers.ts`
-- `src/features/credit/hooks/useCreditCalculations.ts`
-- `src/features/credit/hooks/useCreditExports.ts`
-- `src/engine/credit/capitalDeces.ts`
-
-### Tests attendus
-- `npm run typecheck`
-- `npm run check`
-- verification indirecte via `src/engine/credit/__tests__/capitalDeces.test.ts`
-
-### Preuves attendues
-- plus d'import local vers l'ancienne implementation JS des hooks/utils Credit
-- signatures TS explicites sur les contrats partages du feature
-
-### Taille PR max
-1 PR moyenne
-
-### Dependances / blocages
-- aucune
+## PR-P4-03 - Intégration analyse patrimoniale
+- Réinjecter les données validées dans le workflow audit.
 
 ---
 
-## PR-P1-08-05 - UI Credit en TSX
-### Statut
-done
+# P5 - Cabinet : rôles, utilisateurs, identité visuelle
+Objectif : renforcer l'exploitation multi-cabinet.
 
-### Objectif
-Feature Credit desormais en TSX sans modification de l'UX ni des flux d'export/persistance.
+## PR-P5-01 - Multi-rôles
+- Dépasser le booléen `is_admin` et cadrer les droits.
 
-### Non-objectifs
-- Ne pas refactorer le parcours utilisateur.
-- Ne pas modifier les CSS du simulateur Credit.
-- Ne pas migrer d'autres features UI hors perimetre Credit.
+## PR-P5-02 - Gestion utilisateurs
+- Stabiliser l'interface et le processus cabinet.
 
-### Travaux
-- Feature principal desormais porte par `src/features/credit/Credit.tsx`.
-- Composants de `src/features/credit/components` desormais portes en `.tsx`.
-- Props des composants typees via `src/features/credit/types.ts`.
-- Imports locaux mis a jour pour supprimer les suffixes `.js` / `.jsx` devenus invalides.
-
-### Fichiers probables
-- `src/features/credit/Credit.tsx`
-- `src/features/credit/components/CreditHeader.tsx`
-- `src/features/credit/components/CreditInputs.tsx`
-- `src/features/credit/components/CreditLoanForm.tsx`
-- `src/features/credit/components/CreditLoanTabs.tsx`
-- `src/features/credit/components/CreditPeriodsTable.tsx`
-- `src/features/credit/components/CreditScheduleTable.tsx`
-- `src/features/credit/components/CreditSummaryCard.tsx`
-
-### Tests attendus
-- `npm run typecheck`
-- `npm run check`
-- smoke manuel : chargement, mode simplifie/expert, prets multiples, vues mensuelle/annuelle, exports Excel/PPTX
-
-### Preuves attendues
-- plus aucun import local vers l'ancienne implementation JSX du feature Credit
-- `src/features/credit/index.ts` continue d'exporter `./Credit` sans changement d'API publique
-
-### Taille PR max
-1 PR moyenne a haute
-
-### Dependances / blocages
-- aucune
-
----
-
-# P2 - Experience Rendez-vous : Mode simplifie / Mode expert (priorite produit)
-Objectif : rendre l'outil **utilisable en rendez-vous** sans intimider, tout en gardant une profondeur "expert" quand necessaire.
-
-## PR-P2-01 - Decision produit : definition du mode simplifie / expert (cadre + UX)
-### Statut
-spec
-
-### Objectif
-Figer une regle produit simple et stable pour le mode simplifie / expert avant de continuer a l'etendre a d'autres simulateurs.
-
-### Non-objectifs
-- Ne pas implementer ici les composants utilitaires ni la persistance.
-- Ne pas traiter tous les simulateurs dans la meme decision.
-- Ne pas modifier les moteurs de calcul.
-
-### Travaux
-- Ecrire une decision produit courte dans `docs/GOUVERNANCE.md` ou `docs/ROADMAP.md` sur :
-  - ce qui est visible en simplifie vs expert
-  - ou vit le toggle principal
-  - ce qui releve du mode global vs d'un override local de page
-  - ce qui est masque visuellement seulement vs retire du calcul
-- Donner 1 exemple concret applique a `/sim/credit`, `/sim/ir` et `/sim/succession`.
-- Ajouter une maquette textuelle tres courte du comportement cible si necessaire.
-
-### Fichiers probables
-- `docs/GOUVERNANCE.md`
-- eventuellement `docs/ROADMAP.md`
-
-### Tests attendus
-- revue produit de la decision
-- verification de coherence avec les regles deja presentes sur `useUserMode` et `/sim/credit`
-
-### Preuves attendues
-- decision ecrite et localisable
-- exemples explicites de comportement global vs local
-- mention claire des champs qui doivent sortir du calcul en mode simplifie
-
-### Taille PR max
-1 petite PR documentaire
-
-### Dependances / blocages
-- arbitrage produit sur le perimetre exact du mode simplifie pour IR et Succession
-- validation que la decision reste compatible avec la gouvernance actuelle du Home et de `/sim/credit`
-
----
-
-## PR-P2-02 - Infrastructure "modes" (composants + persistance)
-### Travaux
-- Ajouter un "mode" au niveau utilisateur (par defaut : simplifie) :
-  - stockage local ou profil utilisateur selon ce qui existe
-- Composants utilitaires :
-  - `ExpertOnly`, `SimpleOnly`
-  - helpers pour "niveau de detail" (affichage, sections, explications)
-- S'assurer que ca n'impacte pas les calculs : uniquement l'interface.
-
-### DoD
-- Toggle stable, pas de bug de navigation.
-
-### Preuves
-- test manuel : toggle -> UI change sur au moins 1 ecran
-- `npm run check` vert
-
----
-
-## PR-P2-03 - Deploiement modes sur IR + Succession (les plus sensibles)
-### Travaux
-- Mode simplifie :
-  - inputs reduits aux essentiels
-  - resultats lisibles (1-3 chiffres cles + explications)
-- Mode expert :
-  - acces aux hypotheses, details, parametres avances
-- Ne pas modifier les moteurs : uniquement UI, organisation, explications.
-
-### DoD
-- Un CGP peut utiliser IR/Succession en rendez-vous sans surcharge.
-
-### Preuves
-- captures avant/apres
-- `npm run check` vert
-
----
-
-## PR-P2-04 - Deploiement modes sur Placement + Credit
-### Travaux
-- Simplifie : parcours guide, peu d'options, resultats comparatifs simples
-- Expert : options avancees (hypotheses, details)
-- Garder exports inchanges, ou indiquer clairement les options utilisees.
-
-### DoD
-- Mode simplifie exploitable en RDV.
-
----
-
-## PR-P2-05 - Deploiement modes sur PER + Strategie
-### Travaux
-- PER : simplifie (versement / impact global) vs expert (parametres detailles)
-- Strategie : simplifie (baseline vs recommandation) vs expert (hypotheses + details)
-
----
-
-# P3 - PER "multi-enveloppes" + recommandations fiscales (differenciant)
-Objectif : permettre au CGP de simuler le **transfert** vers un PER et d'optimiser l'utilisation des enveloppes disponibles, avec une restitution claire pour la declaration.
-
-## PR-P3-01 - Specification metier PER (avant code)
-### Travaux
-- Documenter precisement :
-  - transferts : Madelin, PERP, Article 83, PERCO, PER -> PER
-  - regles d'enveloppes disponibles et impacts
-  - logique de recommandation "report" declaration IR (quoi, ou, comment expliquer)
-- Cas types (3-5) avec chiffres simples.
-
-### DoD
-- Specification validable sans lire le code.
-
----
-
-## PR-P3-02 - Modele de donnees PER (enveloppes + historique) + validation
-### Travaux
-- Representation claire :
-  - origine des droits
-  - regles d'utilisation
-  - plafonds disponibles
-- Validation cote interface (coherence, bornes, dates).
-
----
-
-## PR-P3-03 - Moteur PER : transferts multi-enveloppes (calculs)
-### Travaux
-- Etendre l'engine PER pour :
-  - integrer les enveloppes d'origine
-  - simuler le transfert vers PER
-  - calculer impacts (deductibilite, plafonds, etc.)
-- Tests unitaires "cas type".
-
----
-
-## PR-P3-04 - Recommandations : utilisation des enveloppes + guidance report IR
-### Travaux
-- Generer une recommandation structuree :
-  - ordre d'utilisation
-  - message clair "quoi reporter" (sans jargon)
-  - resume actionnable pour le CGP
-
----
-
-## PR-P3-05 - Exports PER (PPTX/Excel) enrichis
-### Travaux
-- Ajouter dans le livrable :
-  - scenario avant/apres transfert
-  - hypotheses utilisees
-  - recommandation report IR
-
----
-
-# P4 - Scan documentaire (pre-remplissage analyse patrimoniale)
-Objectif : reduire la saisie et securiser les donnees via un flux "documents -> extraction -> validation".
-
-## PR-P4-01 - Decision infra + cadre de confidentialite
-### Travaux
-- Choisir l'approche :
-  - extraction locale vs service externe
-  - conservation (ou non) des documents
-  - limites (types de docs au debut)
-- Rediger un cadre simple (ce qui est stocke, combien de temps, qui y accede).
-
----
-
-## PR-P4-02 - Prototype : depot document + extraction minimale + relecture
-### Travaux
-- Upload 1-2 types de documents (ex : avis d'imposition, releve de situation)
-- Extraction minimale (quelques champs) + ecran de validation humaine
-- Aucune automatisation complexe au depart.
-
----
-
-## PR-P4-03 - Integration dans l'analyse patrimoniale
-### Travaux
-- Mapper les champs extraits vers le dossier client
-- Traces : "d'ou vient l'info" (doc, champ, date)
-- Gestion des erreurs et corrections.
-
----
-
-# P5 - Cabinet : roles, utilisateurs, identite visuelle (web + livrables)
-Objectif : fonctionner en cabinet (plusieurs profils) + livrables a l'image du cabinet.
-
-## PR-P5-01 - Multi-roles (au-dela is_admin) + droits
-### Travaux
-- Definir 3-4 roles simples (ex : admin, manager, conseiller, lecture)
-- Modele de droits + regles d'acces
-- Ajustements interface (ce qui est visible selon role)
-
----
-
-## PR-P5-02 - Gestion utilisateurs (interface) + processus cabinet
-### Travaux
-- Page gestion : creation / desactivation / affectation role
-- Regles de securite simples
-
----
-
-## PR-P5-03 - Branding complet : couleurs cabinet + logo dans exports
-### Travaux
-- Alignement theme web + theme PPTX + export Excel
-- Verifier coherence sur les livrables existants (PER/Placement/Audit).
+## PR-P5-03 - Branding complet
+- Couleurs cabinet et logo dans les exports.
 
 ---
 
 # P6 - Analyse patrimoniale premium + livrables
-Objectif : rendre l'audit "vraiment livrable", standardise, et reutilisable.
-Etat runtime actuel : `/audit` reste actif et alimente `strategy`; l'export PPTX transite désormais par `src/features/audit/export/exportAudit.ts` pour isoler le legacy.
 
-## PR-P6-01 - Audit patrimonial (PPTX) : structure stable + donnees minimales
-- Plan de slides fixe
-- Donnees essentielles + hypotheses + limites
-- Zero donnees sensibles serveur
+## PR-P6-01 - Audit patrimonial PPTX stable
+- Stabiliser structure, données minimales et narration.
 
-## PR-P6-02 - Simulateur epargne / arbitrages (comparateurs)
-- Scenarios compares
-- Exports exploitables en RDV
+## PR-P6-02 - Simulateur épargne / arbitrages
+- Ajouter des comparateurs utiles au rendez-vous.
 
-## PR-P6-03 - Simulateur prevoyance (si scope confirme)
-- Definir perimetre exact (avant code)
-- Meme philosophie : regles separees des chiffres
+## PR-P6-03 - Simulateur prévoyance
+- Spécifier si le périmètre produit est confirmé.
 
 ---
 
-# P7 - Strategie avancee + societe fine (si confirme)
-Objectif : recommandations structurees, y compris cas avec societes/holding.
-Etat runtime actuel : `/strategy` dépend du draft `/audit` et l'export PPTX transite désormais par `src/features/strategy/export/exportStrategy.ts` pour isoler le legacy.
+# P7 - Stratégie avancée + société fine
 
-## PR-P7-01 - Moteur de scenarios (baseline vs recommandations)
-- Recommandations expliquees + hypotheses
-- Comparaison claire
+## PR-P7-01 - Moteur de scénarios
+- Comparer baseline et recommandations.
 
-## PR-P7-02 - Societe fine (organigramme, flux, consolidation)
-- Modele minimal utile (pas d'usine a gaz)
+## PR-P7-02 - Société fine
+- Organigramme, flux et consolidation sans surcomplexité.
 
-## PR-P7-03 - Export strategie PPTX complet
+## PR-P7-03 - Export stratégie PPTX complet
+- Produire une synthèse client cohérente avec les scénarios.
 
 ---
 
-# P8 - Anticipation : Catalogue produits personnalisable (a moyen terme)
-Objectif : eviter que `catalog.ts` devienne bloquant si le cabinet veut personnaliser.
+# P8 - Catalogue produits personnalisable
+Objectif : éviter que `catalog.ts` devienne bloquant si un cabinet veut personnaliser.
 
-## PR-P8-01 - Etude / decision : catalogue en base (ou non)
-- Identifier besoins "cabinet"
-- Decider si/quand migrer vers une table Supabase
+## PR-P8-01 - Étude catalogue en base
+- Identifier les besoins cabinet et décider si/quand migrer.
 
 ## PR-P8-02 - Catalogue en base + overrides
-- Disponibilite produits par cabinet
-- Migration progressive (sans casser l'existant)
+- Disponibilité produits par cabinet et migration progressive.
 
 ---
 
-## Dette UI — /sim/per/potentiel
-
-> Migré depuis `docs/GOUVERNANCE.md` §17 (note de travail, pas une règle permanente).
-
-### Anti-patterns restants (non corrigés)
-
-| # | Anti-pattern | Preuve code | Baseline attendue |
-|---|-------------|-------------|-------------------|
-| 5 | Simulation de versement dans hero **gauche** | `SynthesePotentielStep.tsx:223-268` | Colonne droite (§16a, §16c) |
-| 6 | Breakdown plafonds dupliqué | `SynthesePotentielStep.tsx:272` + `:314` | Un seul emplacement (§16c) |
-| 7 | Texte introductif long `per-step-copy` | `ModeStep.tsx` constante `MODES.desc` | Sous-titre 12px/C9 court (§2) |
-| 11 | `<input type="number">` brut pour montants € | `SituationFiscaleStep.tsx:71`, `AvisIrStep.tsx:58` | Composant formaté `PerAmountInput` |
-| 14 | Pas de donut chart dans la sidebar | — | Donut 68×68 dans hero sidebar (§16c) |
-
-### Cibles de refonte
-
-1. Déplacer la simulation de versement vers la sidebar droite (avec donut).
-2. Rationaliser le breakdown plafonds (un seul emplacement).
-3. Migrer les `<input type="number">` vers un composant formaté `PerAmountInput`.
-4. Réutiliser `ScDonut.tsx` pour le ratio plafond utilisé / disponible restant.
-
----
-
-## References (pour travailler vite)
-- Features (simulateurs) : `src/features/{ir,placement,succession,per,credit,strategy,audit}`
-- Engine (calculs purs) : `src/engine/**`
+## Références
+- Features : `src/features/{ir,placement,succession,per,credit,strategy,audit}`
+- Engine : `src/engine/**`
 - Settings : `src/pages/settings/*` + `src/routes/settingsRoutes.ts`
-- Cache parametres : `src/utils/cache/fiscalSettingsCache.ts`
-- Theme cabinet : `src/settings/ThemeProvider.tsx` + `src/settings/theme/**`
+- Cache paramètres : `src/utils/cache/fiscalSettingsCache.ts`
+- Dossier fiscal : `src/hooks/useFiscalContext.ts`
+- Base-Contrat : `src/domain/base-contrat/**`
 - Exports : `src/pptx/**` + `src/utils/export/xlsxBuilder.ts`
 - Snapshots `.ser1` : `src/reporting/snapshot/**`
-- Docs : `docs/{ARCHITECTURE,RUNBOOK,GOUVERNANCE}.md`
+- Docs structurantes : `docs/{ARCHITECTURE,METIER,RUNBOOK,GOUVERNANCE,GOUVERNANCE_EXPORTS}.md`

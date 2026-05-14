@@ -202,8 +202,8 @@ Supports robustes du périmètre actuel :
 | Assurance-vie 990 I / 757 B, clauses simples | `successionGoldenScenarios.test.ts`, `successionDeathInsuranceAllowances.test.ts`, BOFiP BOI-ENR-DMTG-10-10-20-20 |
 | PER assurance / prévoyance décès, pivot 70 ans | `successionPerFiscal.test.ts`, `successionPrevoyanceFiscal.test.ts`, `successionHorizonMatrix.test.ts` |
 | Usufruit / nue-propriété art. 669 CGI, si dates renseignées | `successionUsufruit.test.ts`, `successionUsufruitSuccessif.test.ts`, `successionDevolution.test.ts` |
-| GFA / GFV / GFF / GF | `successionAssetValuation.test.ts`, `successionValidationMatrix.test.ts` |
-| Exports des hypothèses succession | `successionExport.test.ts`, `successionExportHypotheses.test.ts`, `scSuccessionSummaryPanel.test.tsx` |
+| GFA / GFV / GFF / GF | `successionAssetValuation.forfait-actifs.test.ts`, `successionAssetValuation.masses.test.ts`, `successionValidationMatrix.test.ts` |
+| Exports des hypothèses succession | `successionExport.chainage.test.ts`, `successionExport.pptx.test.ts`, `successionExport.xlsx.test.ts`, `successionExportHypotheses.test.ts`, `scSuccessionSummaryPanel.test.tsx` |
 
 Simplifications documentées :
 - `communaute_legale` et `separation_biens` sont robustes dans le périmètre actuel ; `separation_biens` expose aussi une poche manuelle `indivision_separatiste` ventilée via `quotePartEpoux1Pct`.
@@ -280,7 +280,7 @@ La validation de `/sim/succession` repose sur une matrice de cas cibles, reliee 
 | Divorce + enfants | succession directe du defunt simule, ex-conjoint hors droits successoraux legaux | Service-Public F35794 | `successionValidationMatrix.test.ts` |
 | Marie + enfants communs | chronologie 2 deces, conjoint + descendants selon la lecture civile retenue ; sans DDV, choix legal possible entre usufruit total et 1/4 PP ; sans choix explicite, le module peut rester sur une hypothese moteur affichee comme telle | Service-Public F35794 / Code civil art. 757 et 758-3 | `successionChainage.test.ts`, `successionDevolution.test.ts` |
 | Marie + enfant non commun | l'enfant propre n'apparait que sur la branche du parent defunt, avec libelle stable dans la synthese meme en famille recomposee | Code civil art. 757 / 757-1 | `successionChainage.test.ts`, `successionValidationMatrix.test.ts` |
-| Marie + testament (conjoint / enfant) | la chronologie 2 deces retient le testament du cote decede a chaque etape ; l'ordre inverse change le testament retenu et les beneficiaires exportes | Code civil art. 757 / 913 et s. | `successionChainage.test.ts`, `successionExport.test.ts`, `successionValidationMatrix.test.ts` |
+| Marie + testament (conjoint / enfant) | la chronologie 2 deces retient le testament du cote decede a chaque etape ; l'ordre inverse change le testament retenu et les beneficiaires exportes | Code civil art. 757 / 913 et s. | `successionChainage.test.ts`, `successionExport.chainage.test.ts`, `successionValidationMatrix.test.ts` |
 | Marie + communaute universelle + attribution integrale | le 1er deces transmet economiquement 100 % au conjoint survivant, sans droits descendants au 1er deces ; la taxation des descendants est reportee au 2e deces | Code civil / avantage matrimonial ; CGI art. 796-0 bis pour l'exoneration du conjoint | `successionChainage.test.ts` |
 | PACS sans testament | pas de vocation successorale legale automatique du partenaire, lecture directe du deces simule | Service-Public F1621 | `successionDevolution.test.ts`, `successionValidationMatrix.test.ts` |
 | PACS avec testament | le partenaire peut apparaitre dans la synthese directe et le chainage 2 deces, avec exoneration DMTG sur la part leguee | Service-Public F1621 / F35794 | `successionDisplay.test.ts`, `successionValidationMatrix.test.ts`, `successionChainage.pacsApplicability.test.ts` |
@@ -288,7 +288,7 @@ La validation de `/sim/succession` repose sur une matrice de cas cibles, reliee 
 | Union libre + indivision | seule la quote-part du defunt sur l'indivision est retenue, hypothese 50/50 par defaut | Service-Public F904 | `successionDisplay.test.ts`, `successionValidationMatrix.test.ts` |
 | Enfant decede represente par petits-enfants | representation successorale simplifiee par branche | Code civil art. 751 et s. | `successionDevolution.test.ts`, `successionChainage.test.ts` |
 | Usufruit / nue-propriete du conjoint | valorisation selon art. 669 CGI si la date de naissance est renseignee | CGI art. 669 | `successionUsufruit.test.ts`, `successionDevolution.test.ts`, `successionChainage.test.ts` |
-| GFA/GFV > 600 kEUR par beneficiaire | l'exoneration 75 % / 50 % est appliquee sur la quote-part de chaque beneficiaire, pas sur l'entry globale | CGI art. 793 bis | `successionAssetValuation.test.ts`, `successionValidationMatrix.test.ts` |
+| GFA/GFV > 600 kEUR par beneficiaire | l'exoneration 75 % / 50 % est appliquee sur la quote-part de chaque beneficiaire, pas sur l'entry globale | CGI art. 793 bis | `successionAssetValuation.forfait-actifs.test.ts`, `successionValidationMatrix.test.ts` |
 | Prevoyance deces pure non rachetable (art. L132-23 C. assurances) | 990 I avant 70 ans : assiette = derniere prime annuelle ou prime unique (CGI annexe II art. 306-0 F) ; 757 B apres 70 ans : assiette = primes versees apres 70 ans (proxy : derniere prime saisie) ; exoneration conjoint/PACS | BOI-TCAS-AUT-60 §80 §170 / CGI art. 990 I / CGI art. 757 B / CGI annexe II art. 306-0 F | `successionPrevoyanceFiscal.test.ts`, `successionDeathInsuranceAllowances.test.ts` |
 
 En pratique, chaque PR corrective du module succession doit ajouter ou mettre a jour au moins un test rattache a cette matrice. La PR finale de consolidation verifie que les cas ci-dessus restent coherents entre affichage, moteur et exports.

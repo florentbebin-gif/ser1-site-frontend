@@ -38,11 +38,11 @@ const PREVOYANCE_DECES: ProductRules = {
       title: 'Capital versé aux bénéficiaires',
       bullets: [
         'Capital décès versé hors succession aux bénéficiaires désignés.',
-        'Avant 70 ans (art. 990 I CGI) : abattement de 152 500 € par bénéficiaire ; au-delà : 20 % puis 31,25 %.',
-        'Après 70 ans (art. 757 B CGI) : abattement global de 30 500 € partagé entre tous les bénéficiaires.',
+        'Avant 70 ans (art. 990 I CGI) : abattement de {assuranceVie990IAllowance} ; au-delà : {assuranceVie990IRates}.',
+        'Après 70 ans (art. 757 B CGI) : abattement global de {assuranceVie757BAllowance}.',
         'Contrat de risque pur : seule la prime de risque de la dernière année constitue l\'assiette — À confirmer selon les stipulations contractuelles.',
       ],
-      tags: ['art_990_i_cgi', 'art_757_b_cgi', 'hors_succession', 'abattement_152500'],
+      tags: ['art_990_i_cgi', 'art_757_b_cgi', 'hors_succession', 'abattement_990_i'],
       confidence: 'moyenne',
       sources: [{ label: 'Art. 990 I CGI', url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000038612905' }, { label: 'Art. 757 B CGI', url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000006307539' }],
       dependencies: ['nature du contrat (risque pur vs épargne)', 'stipulations contractuelles sur la prime de risque'],
@@ -81,7 +81,7 @@ const PREVOYANCE_ITT: ProductRules = {
       title: 'Rente d\'invalidité',
       bullets: [
         'Régime des rentes viagères à titre onéreux : fraction imposable à l\'IR selon l\'âge au premier versement.',
-        'Âge < 50 ans : 70 % imposable. Entre 50 et 59 ans : 50 %. Entre 60 et 69 ans : 40 %. À partir de 70 ans : 30 %.',
+        '{rvtoTaxableFractions}',
       ],
       tags: ['rente_titre_onereux', 'fraction_imposable_age'],
       confidence: 'elevee',

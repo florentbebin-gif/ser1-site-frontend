@@ -1,3 +1,10 @@
+import {
+  DEFAULT_FISCALITY_SETTINGS,
+  DEFAULT_PS_SETTINGS,
+  DEFAULT_TAX_SETTINGS,
+} from '../../constants/settingsDefaults';
+import type { FiscalParams } from './types';
+
 export const ENVELOPES = {
   AV: 'AV',
   PER: 'PER',
@@ -14,24 +21,40 @@ export const ENVELOPE_LABELS = {
   SCPI: 'SCPI',
 };
 
-export const DEFAULT_FISCAL_PARAMS = {
-  pfuIR: 0.128,
-  pfuPS: 0.186,
-  pfuTotal: 0.314,
-  psGeneral: 0.186,
-  psException: 0.172,
-  avAbattement8ansSingle: 4600,
-  avAbattement8ansCouple: 9200,
-  avSeuilPrimes150k: 150000,
-  avTauxSousSeuil8ans: 0.075,
-  avTauxSurSeuil8ans: 0.128,
-  av990IAbattement: 152500,
-  av990ITranche1Taux: 0.20,
-  av990ITranche1Plafond: 700000,
-  av990ITranche2Taux: 0.3125,
-  av757BAbattement: 30500,
-  peaAncienneteMin: 5,
-  dividendesAbattementPercent: 0.40,
+export function toDecimalPercent(value: number): number {
+  return Math.round((value / 100) * 1_000_000) / 1_000_000;
+}
+
+export function roundDecimal(value: number): number {
+  return Math.round(value * 1_000_000) / 1_000_000;
+}
+
+const avRetraitsDepuis2017 = DEFAULT_FISCALITY_SETTINGS.assuranceVie.retraitsCapital.depuis2017;
+const avPlus8Ans = avRetraitsDepuis2017.plus8Ans;
+const avDeces = DEFAULT_FISCALITY_SETTINGS.assuranceVie.deces;
+const av990IBrackets = avDeces.primesApres1998.brackets;
+const av990IAbattement = avDeces.primesApres1998.allowancePerBeneficiary;
+const pfuIR = toDecimalPercent(DEFAULT_TAX_SETTINGS.pfu.current.rateIR);
+const pfuPS = toDecimalPercent(DEFAULT_PS_SETTINGS.patrimony.current.generalRate);
+
+export const DEFAULT_FISCAL_PARAMS: Required<Omit<FiscalParams, 'dmtgTauxChoisi' | 'dmtgAbattementLigneDirecte' | 'dmtgScale'>> = {
+  pfuIR,
+  pfuPS,
+  pfuTotal: roundDecimal(pfuIR + pfuPS),
+  psGeneral: pfuPS,
+  psException: toDecimalPercent(DEFAULT_PS_SETTINGS.patrimony.current.exceptionRate),
+  avAbattement8ansSingle: avPlus8Ans.abattementAnnuel.single,
+  avAbattement8ansCouple: avPlus8Ans.abattementAnnuel.couple,
+  avSeuilPrimes150k: avPlus8Ans.primesNettesSeuil,
+  avTauxSousSeuil8ans: toDecimalPercent(avPlus8Ans.irRateUnderThresholdPercent),
+  avTauxSurSeuil8ans: toDecimalPercent(avPlus8Ans.irRateOverThresholdPercent),
+  av990IAbattement,
+  av990ITranche1Taux: toDecimalPercent(av990IBrackets[0]?.ratePercent ?? 0),
+  av990ITranche1Plafond: av990IBrackets[0]?.upTo ?? 0,
+  av990ITranche2Taux: toDecimalPercent(av990IBrackets[1]?.ratePercent ?? 0),
+  av757BAbattement: avDeces.apres70ans.globalAllowance,
+  peaAncienneteMin: DEFAULT_FISCALITY_SETTINGS.pea.ancienneteMinYears,
+  dividendesAbattementPercent: toDecimalPercent(DEFAULT_TAX_SETTINGS.corporateTax.current.dividendsAbatementPct),
 };
 
 export const REQUIRED_NUMERIC_FISCAL_KEYS = [

@@ -7,7 +7,7 @@ import type {
   PlacementTransmissionState,
 } from '../utils/normalizers';
 import { BENEFICIARY_OPTIONS } from '../utils/normalizers';
-import { InputNumber } from './inputs';
+import { InputNumber } from './PlacementFormControls';
 import { SimSelect } from '@/components/ui/sim';
 
 interface PlacementTransmissionSectionProps {

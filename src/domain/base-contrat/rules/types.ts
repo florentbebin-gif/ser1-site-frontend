@@ -1,7 +1,7 @@
 /**
  * domain/base-contrat/rules/types.ts
  *
- * Types pour le référentiel des règles fiscales par produit (PR5).
+ * Types pour le référentiel des règles fiscales par produit.
  * 3 phases : constitution, sortie/rachat, décès/transmission.
  *
  * Les `tags` sont techniques (moteur futur) et jamais affichés en UI.
@@ -36,3 +36,30 @@ export interface ProductRules {
 }
 
 export type Audience = 'pp' | 'pm';
+
+export interface BaseContratFiscalLabels {
+  pfu: string;
+  pfuIr: string;
+  psGeneral: string;
+  psException: string;
+  dmtgLigneDirecteAbattement: string;
+  assuranceVie990IAllowance: string;
+  assuranceVie757BAllowance: string;
+  assuranceVie990IRates: string;
+  assuranceVieRachatMoins8Ans: string;
+  assuranceVieRachatPlus8Ans: string;
+  assuranceVieRetraitsPs: string;
+  capitalGainIr: string;
+  malrauxReductionRates: string;
+  microFoncierAbattement: string;
+  peaVersementCeilings: string;
+  peaPmeVersementCeilings: string;
+  preciousMetalsFlatTax: string;
+  rvtoTaxableFractions: string;
+  soficaReductionRates: string;
+  ifiResidencePrincipaleAbattement?: string;
+}
+
+export interface RuleRenderContext {
+  fiscalLabels: BaseContratFiscalLabels;
+}

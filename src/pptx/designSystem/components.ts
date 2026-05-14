@@ -490,14 +490,3 @@ export function addCardPanelWithShadow(
   });
 }
 
-/**
- * Legacy function - kept for backward compatibility
- * @deprecated Use addCardPanelWithShadow instead
- */
-export function addPanelWithShadow(
-  slide: PptxGenJS.Slide,
-  rect: { x: number; y: number; w: number; h: number },
-  theme: PptxThemeRoles
-): void {
-  addCardPanelWithShadow(slide, rect, theme);
-}

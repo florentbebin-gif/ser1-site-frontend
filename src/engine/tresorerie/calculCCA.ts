@@ -68,10 +68,3 @@ export function calculRemboursementCCA(params: {
   return Math.min(besoinsRetraiteAnnuels, ccaRestantDu, Math.max(0, tresorerieDisponibleApresIS));
 }
 
-/**
- * Calcule le CCA restant dû après remboursement.
- * Invariant 1 : résultat ≥ 0
- */
-export function calculCCARestant(ccaRestantAvant: number, remboursement: number): number {
-  return Math.max(0, ccaRestantAvant - remboursement);
-}

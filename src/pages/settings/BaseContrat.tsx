@@ -1,10 +1,10 @@
 /**
- * BaseContrat - Referentiel contrats.
+ * BaseContrat - Référentiel contrats.
  *
  * Page /settings/base-contrat.
  * Catalogue hardcode (domain/base-contrat/catalog.ts) + overrides Supabase.
- * Regles fiscales lues via domain/base-contrat/rules/.
- * UI read-only : seule action admin = cloturer / rouvrir un produit avec date.
+ * Règles fiscales lues via domain/base-contrat/rules/.
+ * UI read-only : seule action admin = clôturer / rouvrir un produit avec date.
  */
 
 import { useEffect, useMemo, useRef, useState } from 'react';
@@ -21,12 +21,16 @@ import type {
   BaseContratOverrideInput,
   OverrideMap,
 } from '@/domain/base-contrat/overrides';
-import { getRules } from '@/domain/base-contrat/rules/index';
-import type { Audience, ProductRules, RuleBlock } from '@/domain/base-contrat/rules/index';
+import {
+  buildBaseContratFiscalLabels,
+  getRules,
+} from '@/domain/base-contrat/rules/index';
+import type { Audience, ProductRules, RuleBlock, RuleRenderContext } from '@/domain/base-contrat/rules/index';
 import {
   getBaseContratOverrides,
   upsertBaseContratOverride,
 } from '@/utils/cache/baseContratOverridesCache';
+import { useFiscalContext } from '@/hooks/useFiscalContext';
 import { GRANDE_FAMILLE_OPTIONS, PHASE_LABELS } from './baseContratLabels';
 import { OverrideModal, ReviewStatusDetails } from './BaseContratOverrideControls';
 
@@ -182,6 +186,7 @@ function formatClosedCount(count: number): string {
 
 export default function BaseContrat() {
   const { isAdmin } = useUserRole();
+  const { fiscalContext } = useFiscalContext();
   const { overrides, loading, reload } = useOverrides();
 
   const [openProductId, setOpenProductId] = useState<string | null>(null);
@@ -193,6 +198,9 @@ export default function BaseContrat() {
   const [errorMsg, setErrorMsg] = useState('');
 
   const today = new Date().toISOString().slice(0, 10);
+  const ruleRenderContext = useMemo<RuleRenderContext>(() => ({
+    fiscalLabels: buildBaseContratFiscalLabels(fiscalContext),
+  }), [fiscalContext]);
 
   const filteredCatalog = useMemo(() => {
     return CATALOG.filter((product) => {
@@ -352,7 +360,7 @@ export default function BaseContrat() {
                       const closed = isProductClosed(product.id, overrides, today);
                       const override = overrides[product.id];
                       const reviewStatus = override?.review_status ?? 'ok';
-                      const rules = getRules(product.id, togglePPPM);
+                      const rules = getRules(product.id, togglePPPM, ruleRenderContext);
                       const hasNoRules =
                         rules.constitution.length === 0
                         && rules.sortie.length === 0

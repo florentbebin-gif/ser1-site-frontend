@@ -600,4 +600,37 @@ export const DEFAULT_FISCALITY_SETTINGS = {
         'Transmission des capitaux en cas de décès : non (sauf éventuelle réversion de la rente).',
     },
   },
+
+  pea: {
+    ancienneteMinYears: 5,
+  },
+};
+
+export const DEFAULT_BASE_CONTRAT_RULE_LABEL_SETTINGS = {
+  capitalGains: {
+    irRatePercent: 19,
+  },
+  malraux: {
+    psmvRatePercent: 30,
+    pvapRatePercent: 22,
+  },
+  microFoncier: {
+    grossRentCeiling: 15000,
+    abatementRatePercent: 30,
+  },
+  sofica: {
+    minReductionRatePercent: 30,
+    maxReductionRatePercent: 48,
+  },
+  pea: {
+    ceiling: 150000,
+    peaPmeCeiling: 75000,
+    globalCeiling: 225000,
+  },
+  preciousMetals: {
+    flatTaxRatePercent: 11,
+    crdsRatePercent: 0.5,
+  },
+  rvtoTaxableFractionByAgeAtFirstPayment:
+    DEFAULT_FISCALITY_SETTINGS.perIndividuel.rente.rvtoTaxableFractionByAgeAtFirstPayment,
 };

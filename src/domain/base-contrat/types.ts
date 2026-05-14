@@ -1,7 +1,7 @@
 /**
  * domain/base-contrat/types.ts
  *
- * PR3 cleanup: types minimaux nécessaires au pivot catalogue hardcodé.
+ * Types minimaux nécessaires au pivot catalogue hardcodé.
  */
 
 export type CatalogKind =

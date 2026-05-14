@@ -15,18 +15,13 @@ import { describe, it, expect } from 'vitest';
 import { readdirSync, readFileSync, existsSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
-import { calculateIR, calculateCEHR, calculateIFI } from '../tax';
 import { calculateSuccession } from '../succession';
-// Legacy calculatePER removed — new engine in src/engine/per/
 
 // ---------- helpers ----------
 
 type EngineFn = (_input: Record<string, unknown>) => { result: Record<string, unknown> };
 
 const FUNCTION_MAP: Record<string, EngineFn> = {
-  calculateIR: calculateIR as unknown as EngineFn,
-  calculateCEHR: calculateCEHR as unknown as EngineFn,
-  calculateIFI: calculateIFI as unknown as EngineFn,
   calculateSuccession: calculateSuccession as unknown as EngineFn,
 };
 

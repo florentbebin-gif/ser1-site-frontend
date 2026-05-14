@@ -1,4 +1,4 @@
-/** Types partagés du moteur IR — créés PR-P1-08-01. */
+/** Types partagés du moteur IR. */
 
 export interface TaxBracket {
   from: number;
@@ -88,12 +88,3 @@ export interface EffectivePartsFullResult {
   effectiveParts: number;
 }
 
-export interface ExcelCaseResult {
-  irTotal: number;
-  tmiRateDisplay: number;
-  revenusDansTmi: number;
-  margeAvantChangement: number | null;
-  taxableIncome: number;
-  parts: number;
-  qfIsCapped: boolean;
-}

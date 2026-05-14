@@ -10,7 +10,7 @@
  *   if (isDebugEnabled('pptx')) console.debug('[PPTX] ...')
  */
 
-export type DebugFlag = 'auth' | 'pptx' | 'admin' | 'admin_fetch' | 'comptes' | 'theme';
+export type DebugFlag = 'auth' | 'pptx' | 'comptes';
 
 /**
  * Vérifie si un flag de debug est activé
@@ -45,8 +45,4 @@ export function debugLog(flag: DebugFlag, message: string, ...args: unknown[]): 
   }
 }
 
-/**
- * Alias spécifiques pour compatibilité avec le code existant
- */
-export const DEBUG_AUTH = isDebugEnabled('auth');
 export const DEBUG_PPTX = isDebugEnabled('pptx');

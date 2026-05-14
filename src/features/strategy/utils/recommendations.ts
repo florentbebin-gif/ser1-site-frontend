@@ -153,7 +153,7 @@ export function generateRecommendations(dossier: DossierAudit): Recommandation[]
     recommandations.push({
       id: 'reco-av-succession',
       titre: 'Optimiser la transmission via assurance-vie',
-      description: 'L\'assurance-vie bénéficie d\'une fiscalité successorale avantageuse (abattement de 152 500 € par bénéficiaire).',
+      description: 'L\'assurance-vie bénéficie d\'une fiscalité successorale avantageuse par bénéficiaire selon les paramètres fiscaux.',
       objectifsCibles: ['reduire_droits_succession', 'preparer_transmission'],
       priorite: 'haute',
       produitsAssocies: ['assurance_vie'],

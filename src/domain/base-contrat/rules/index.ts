@@ -1,17 +1,18 @@
 /**
  * domain/base-contrat/rules/index.ts
  *
- * Point d'entrée du référentiel des règles fiscales par produit (PR5).
+ * Point d'entrée du référentiel des règles fiscales par produit.
  *
  * Exports publics :
- *   getRules(productId, audience) → ProductRules  (jamais null/undefined)
- *   getRulesForProduct(product, audience) → ProductRules
+ *   getRules(productId, audience, context?) → ProductRules  (jamais null/undefined)
+ *   getRulesForProduct(product, audience, context?) → ProductRules
  *   hasSocleRules(productId) → boolean  (false = pas de règles)
  */
 
-import type { Audience, ProductRules } from './types';
+import type { Audience, ProductRules, RuleBlock, RuleRenderContext } from './types';
 import type { CatalogProduct } from '../catalog';
 import { CATALOG_PP_PM_SPLIT_MAP } from '../catalog';
+import { DEFAULT_RULE_RENDER_CONTEXT } from './fiscalLabels';
 
 import { getAssuranceEpargneRules } from './library/assurance-epargne';
 import { getEpargneBancaireRules } from './library/epargne-bancaire';
@@ -22,7 +23,19 @@ import { getValeursMobilieresRules } from './library/valeurs-mobilieres';
 import { getAutresRules } from './library/autres';
 import { getFiscauxImmobilierRules } from './library/fiscaux-immobilier';
 
-export type { ProductRules, RuleBlock, Audience, Confidence, RuleSource } from './types';
+export type {
+  BaseContratFiscalLabels,
+  ProductRules,
+  RuleBlock,
+  RuleRenderContext,
+  Audience,
+  Confidence,
+  RuleSource,
+} from './types';
+export {
+  buildBaseContratFiscalLabels,
+  DEFAULT_RULE_RENDER_CONTEXT,
+} from './fiscalLabels';
 export type { EnvelopeCode, FiscalProfile } from './fiscalProfile';
 export {
   getEnvelopeCatalogId,
@@ -44,51 +57,27 @@ const RESOLVERS: Array<(_id: string, _audience: Audience) => ProductRules | unde
 const LEGACY_SPLIT_IDS = new Set<string>(Object.keys(CATALOG_PP_PM_SPLIT_MAP));
 const WARNED_LEGACY_IDS = new Set<string>();
 
-function sanitizeRuleText(text: string): string {
-  let next = text;
-
-  const replacements: Array<[RegExp, string]> = [
-    [/PFU\s*\d+(?:[,.]\d+)?\s*%(?:\s*\([^)]*\))?/gi, 'PFU'],
-    [/flat tax\s*\d+(?:[,.]\d+)?\s*%/gi, 'PFU'],
-    [/prélèvements sociaux\s*:?\s*\d+(?:[,.]\d+)?\s*%/gi, 'prélèvements sociaux'],
-    [/PS\s*\d+(?:[,.]\d+)?\s*%/gi, 'prélèvements sociaux'],
-    [/abattement de\s*\d+(?:[,.]\d+)?\s*%/gi, 'abattement legal'],
-    [/abattement forfaitaire de\s*\d+(?:[,.]\d+)?\s*%/gi, 'abattement forfaitaire'],
-    [/réduction d'IR de\s*\d+(?:[,.]\d+)?\s*%/gi, "reduction d'IR"],
-    [/exonération de\s*\d+(?:[,.]\d+)?\s*%/gi, 'exoneration partielle'],
-    [/taxe de\s*\d+(?:[,.]\d+)?\s*%/gi, 'taxe forfaitaire'],
-    [/taux IR réduit à\s*\d+(?:[,.]\d+)?\s*%/gi, 'taux IR reduit'],
-    [/taux IR de\s*\d+(?:[,.]\d+)?\s*%/gi, 'taux IR'],
-    [/IR\s*\d+(?:[,.]\d+)?\s*%\s*\+\s*prélèvements sociaux\s*\d+(?:[,.]\d+)?\s*%/gi, 'IR + prelevements sociaux'],
-    [/\d+(?:[,.]\d+)?\s*%/g, ''],
-  ];
-
-  for (const [pattern, replacement] of replacements) {
-    next = next.replace(pattern, replacement);
-  }
-
-  return next
-    .replace(/\s{2,}/g, ' ')
-    .replace(/\(\s+/g, '(')
-    .replace(/\s+\)/g, ')')
-    .replace(/\s+,/g, ',')
-    .replace(/\s+\./g, '.')
-    .replace(/\s+:/g, ':')
-    .replace(/ :/g, ':')
-    .trim();
+function renderRuleText(text: string, context: RuleRenderContext): string {
+  return text.replace(/\{([a-zA-Z0-9]+)\}/g, (match, key: string) => {
+    const labelKey = key as keyof RuleRenderContext['fiscalLabels'];
+    return context.fiscalLabels[labelKey] ?? match;
+  });
 }
 
-function sanitizeRules(rules: ProductRules): ProductRules {
-  const sanitizeBlock = (block: ProductRules['constitution'][number]) => ({
+function renderRules(
+  rules: ProductRules,
+  context: RuleRenderContext = DEFAULT_RULE_RENDER_CONTEXT,
+): ProductRules {
+  const renderBlock = (block: RuleBlock) => ({
     ...block,
-    title: sanitizeRuleText(block.title),
-    bullets: block.bullets.map(sanitizeRuleText),
+    title: renderRuleText(block.title, context),
+    bullets: block.bullets.map((bullet) => renderRuleText(bullet, context)),
   });
 
   return {
-    constitution: rules.constitution.map(sanitizeBlock),
-    sortie: rules.sortie.map(sanitizeBlock),
-    deces: rules.deces.map(sanitizeBlock),
+    constitution: rules.constitution.map(renderBlock),
+    sortie: rules.sortie.map(renderBlock),
+    deces: rules.deces.map(renderBlock),
   };
 }
 
@@ -106,7 +95,7 @@ function warnLegacySplitId(productId: string): void {
 
   WARNED_LEGACY_IDS.add(productId);
   const split = CATALOG_PP_PM_SPLIT_MAP[productId as keyof typeof CATALOG_PP_PM_SPLIT_MAP];
-  // Keep the legacy root-id warning path for backward compatibility with older callers and fixtures.
+  // Conserve l'alerte root-id legacy pour les anciens appels et fixtures.
   console.warn(
     `[base-contrat/rules] Legacy productId "${productId}" is deprecated. Use "${split.ppId}" or "${split.pmId}".`,
   );
@@ -116,13 +105,17 @@ function warnLegacySplitId(productId: string): void {
  * Retourne les règles fiscales pour un produit donné et une audience.
  * Garantit toujours un résultat non-null. S'il n'y a pas de règles, retourne un objet vide mais bien formé.
  */
-export function getRules(productId: string, audience: Audience): ProductRules {
+export function getRules(
+  productId: string,
+  audience: Audience,
+  context: RuleRenderContext = DEFAULT_RULE_RENDER_CONTEXT,
+): ProductRules {
   warnLegacySplitId(productId);
 
   for (const resolver of RESOLVERS) {
     const rules = resolver(productId, audience);
     if (rules) {
-      return sanitizeRules(rules);
+      return renderRules(rules, context);
     }
   }
   return {
@@ -138,8 +131,9 @@ export function getRules(productId: string, audience: Audience): ProductRules {
 export function getRulesForProduct(
   product: CatalogProduct,
   audience: Audience,
+  context: RuleRenderContext = DEFAULT_RULE_RENDER_CONTEXT,
 ): ProductRules {
-  return getRules(product.id, audience);
+  return getRules(product.id, audience, context);
 }
 
 /**

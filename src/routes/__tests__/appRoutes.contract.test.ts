@@ -1,18 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
 import { APP_ROUTES, getRouteMetadata } from '../appRoutes';
-import type { AppRouteEntry } from '../appRoutes';
-
-type RouteEntry = Extract<AppRouteEntry, { kind: 'route' }>;
-type RedirectEntry = Extract<AppRouteEntry, { kind: 'redirect' }>;
-
-function isRouteEntry(route: AppRouteEntry): route is RouteEntry {
-  return route.kind === 'route';
-}
-
-function isRedirectEntry(route: AppRouteEntry): route is RedirectEntry {
-  return route.kind === 'redirect';
-}
 
 const ACTIVE_SIMULATOR_PATHS = new Set([
   '/sim/placement',
@@ -31,15 +19,9 @@ const HUBS_OR_PLACEHOLDERS = new Set([
   '/sim/prevoyance',
 ]);
 
-const routePaths = new Set(
-  APP_ROUTES
-    .filter(isRouteEntry)
-    .map(route => route.path),
-);
+const routePaths = new Set(APP_ROUTES.map(route => route.path));
 
-const simulatorRoutes = APP_ROUTES.filter(
-  (route): route is RouteEntry => isRouteEntry(route) && route.path.startsWith('/sim/'),
-);
+const simulatorRoutes = APP_ROUTES.filter(route => route.path.startsWith('/sim/'));
 
 describe('Contrat APP_ROUTES', () => {
   it('déclare des chemins uniques', () => {
@@ -47,18 +29,6 @@ describe('Contrat APP_ROUTES', () => {
     const duplicates = paths.filter((path, index) => paths.indexOf(path) !== index);
 
     expect(duplicates, `Chemins APP_ROUTES dupliqués : ${duplicates.join(', ')}`).toEqual([]);
-  });
-
-  it('redirige uniquement vers des routes existantes', () => {
-    const invalidRedirects = APP_ROUTES
-      .filter(isRedirectEntry)
-      .filter(route => !routePaths.has(route.to))
-      .map(route => `${route.path} -> ${route.to}`);
-
-    expect(
-      invalidRedirects,
-      `Redirects vers des routes absentes : ${invalidRedirects.join(', ')}`,
-    ).toEqual([]);
   });
 
   it('verrouille le contrat minimal des routes simulateur', () => {

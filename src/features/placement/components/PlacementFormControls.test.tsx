@@ -1,8 +1,8 @@
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it, vi } from 'vitest';
-import { InputNumber, InputPct, Select } from './inputs';
+import { InputNumber, InputPct, Select } from './PlacementFormControls';
 
-describe('placement inputs', () => {
+describe('contrôles de formulaire Placement', () => {
   it('keeps the shared row wrapper on numeric fields', () => {
     const html = renderToStaticMarkup(
       <InputNumber label="Âge actuel" value={42} onChange={vi.fn()} unit="ans" />,
