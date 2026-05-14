@@ -13,6 +13,7 @@ import type {
   TresorerieAllocationMatrixSlideSpec,
   TresorerieFlowMechanismSlideSpec,
   TresorerieHypothesesSlideSpec,
+  TresorerieParametersAnnexSlideSpec,
   TresorerieProjectionSlideSpec,
   TresorerieSchemaSlideSpec,
   TresorerieSynthesisSlideSpec,
@@ -50,6 +51,7 @@ export type StudyDeckSpec = {
     | TresorerieSynthesisSlideSpec
     | TresorerieAllocationMatrixSlideSpec
     | TresorerieAllocationCardsSlideSpec
+    | TresorerieParametersAnnexSlideSpec
     | TresorerieHypothesesSlideSpec
     | TresorerieProjectionSlideSpec
   >;

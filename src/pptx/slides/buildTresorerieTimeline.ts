@@ -33,6 +33,15 @@ function euro(n: number): string {
   return `${Math.round(n).toLocaleString('fr-FR')} €`;
 }
 
+function contrastText(hex: string): string {
+  const clean = hex.replace('#', '');
+  const r = parseInt(clean.substring(0, 2), 16);
+  const g = parseInt(clean.substring(2, 4), 16);
+  const b = parseInt(clean.substring(4, 6), 16);
+  const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+  return luminance > 0.55 ? '000000' : 'FFFFFF';
+}
+
 function yearToX(year: number, startYear: number, totalYears: number): number {
   const offset = Math.max(0, Math.min(totalYears, year - startYear));
   return MARGIN_X + CONTENT_W * (offset / Math.max(1, totalYears));
@@ -54,9 +63,8 @@ export function buildTresorerieTimeline(
   const bandY = CONTENT_TOP_Y + 0.08;
   const bandH = 0.70;
   const lineY = bandY + bandH + 0.30;
-  const sourceTopY = lineY + 0.42;
-  const sourceCardH = 0.66;
-  const sourceGap = 0.12;
+  const sourceTopY = lineY + 0.56;
+  const sourceCardH = 1.08;
   const footerCardY = CONTENT_BOTTOM_Y - 0.66;
 
   // ── Couleurs (palette enrichie) ────────────────────────────────────────
@@ -71,6 +79,8 @@ export function buildTresorerieTimeline(
 
   // Palette alternante des segments (3 niveaux)
   const segmentPalette = [accent, color5, color8];
+  const visibleSegments = spec.segments.slice(0, 3);
+  const laneW = CONTENT_W / Math.max(1, visibleSegments.length);
 
   // ── Axe horizontal ─────────────────────────────────────────────────────
   slide.addShape('line', {
@@ -134,18 +144,21 @@ export function buildTresorerieTimeline(
   }
 
   // ── Segments paliers ───────────────────────────────────────────────────
-  spec.segments.forEach((segment, index) => {
+  visibleSegments.forEach((segment, index) => {
     const x = yearToX(segment.startYear, spec.rangeStartYear, totalYears);
     const xEnd = yearToX(segment.endYear + 1, spec.rangeStartYear, totalYears);
-    const w = Math.max(1.20, xEnd - x);
-    const cappedW = Math.min(w, MARGIN_X + CONTENT_W - x);
+    const rawW = Math.min(xEnd - x, MARGIN_X + CONTENT_W - x);
+    const isNarrow = rawW < 1.15;
+    const bandW = Math.max(0.12, rawW);
     const bandFill = segmentPalette[index % segmentPalette.length];
+    const bandTextColor = contrastText(bandFill);
+    const readableAmountColor = bandTextColor === '000000' ? textMain : bandFill;
 
     // Bandeau du palier
     slide.addShape('roundRect', {
       x,
       y: bandY,
-      w: cappedW,
+      w: bandW,
       h: bandH,
       fill: { color: bandFill },
       line: { color: bandFill, width: 0 },
@@ -159,27 +172,43 @@ export function buildTresorerieTimeline(
         color: roleColor(theme, 'shadowBase'),
       },
     });
-    addTextFr(slide, segment.label, {
-      x: x + 0.12,
-      y: bandY + 0.08,
-      w: Math.max(0.20, cappedW - 0.24),
-      h: 0.30,
-      fontSize: 13,
-      bold: true,
-      color: WHITE,
-      align: 'center',
-      valign: 'middle',
-    });
-    addTextFr(slide, `${segment.startYear} → ${segment.endYear}`, {
-      x: x + 0.12,
-      y: bandY + 0.36,
-      w: Math.max(0.20, cappedW - 0.24),
-      h: 0.26,
-      fontSize: 10,
-      color: WHITE,
-      align: 'center',
-      valign: 'middle',
-    });
+    if (isNarrow) {
+      addTextFr(slide, `${index + 1}`, {
+        x,
+        y: bandY + 0.20,
+        w: bandW,
+        h: 0.26,
+        fontSize: 10,
+        bold: true,
+        color: bandTextColor,
+        align: 'center',
+        valign: 'middle',
+      });
+    } else {
+      addTextFr(slide, segment.label, {
+        x: x + 0.12,
+        y: bandY + 0.08,
+        w: Math.max(0.20, bandW - 0.24),
+        h: 0.30,
+        fontSize: 12.2,
+        bold: true,
+        color: bandTextColor,
+        align: 'center',
+        valign: 'middle',
+        fit: 'shrink',
+      });
+      addTextFr(slide, `${segment.startYear} → ${segment.endYear}`, {
+        x: x + 0.12,
+        y: bandY + 0.36,
+        w: Math.max(0.20, bandW - 0.24),
+        h: 0.26,
+        fontSize: 9.4,
+        color: bandTextColor,
+        align: 'center',
+        valign: 'middle',
+        fit: 'shrink',
+      });
+    }
 
     // Tick sur l'axe
     slide.addShape('line', {
@@ -190,14 +219,13 @@ export function buildTresorerieTimeline(
       line: { color: textMain, width: 1.4 },
     });
 
-    // Cartes sources sous l'axe
-    segment.sources.slice(0, 3).forEach((source, sourceIndex) => {
-      const cardY = sourceTopY + sourceIndex * (sourceCardH + sourceGap);
-      const cardW = Math.max(1.40, cappedW);
-      if (cardY + sourceCardH > footerCardY - 0.10) return;
-
+    // Carte de lecture de phase sous l'axe : un seul bloc par segment.
+    const cardX = MARGIN_X + index * laneW + 0.04;
+    const cardY = sourceTopY;
+    const cardW = Math.max(1.40, laneW - 0.08);
+    if (cardY + sourceCardH <= footerCardY - 0.10) {
       slide.addShape('roundRect', {
-        x,
+        x: cardX,
         y: cardY,
         w: cardW,
         h: sourceCardH,
@@ -205,49 +233,80 @@ export function buildTresorerieTimeline(
         line: { color: panelBorder, width: 0.6 },
         rectRadius: 0.08,
       });
-      // Barre verticale colorée = identité palier
       slide.addShape('rect', {
-        x,
+        x: cardX,
         y: cardY,
         w: 0.10,
         h: sourceCardH,
         fill: { color: bandFill },
         line: { color: bandFill, width: 0 },
       });
-      addBusinessIconToSlide(slide, source.iconKey, {
-        x: x + 0.22,
-        y: cardY + 0.18,
-        w: 0.34,
-        h: 0.34,
-      }, theme, 'accent');
-      addTextFr(slide, source.label, {
-        x: x + 0.64,
+      addTextFr(slide, `${isNarrow ? `${index + 1}. ` : ''}${segment.label}`, {
+        x: cardX + 0.22,
         y: cardY + 0.08,
-        w: Math.max(0.20, cardW - 0.78),
-        h: 0.22,
-        fontSize: 10,
+        w: cardW - 0.44,
+        h: 0.18,
+        fontSize: 8.8,
+        bold: true,
+        color: textMain,
+        valign: 'middle',
+        fit: 'shrink',
+      });
+      addTextFr(slide, `${segment.startYear} → ${segment.endYear}`, {
+        x: cardX + 0.22,
+        y: cardY + 0.27,
+        w: cardW - 0.44,
+        h: 0.16,
+        fontSize: 7.8,
         color: textBody,
         valign: 'middle',
+        fit: 'shrink',
       });
-      addTextFr(slide, `${euro(source.annualNetAmount)} / an`, {
-        x: x + 0.64,
-        y: cardY + 0.30,
-        w: Math.max(0.20, cardW - 0.78),
-        h: 0.30,
-        fontSize: 15,
-        bold: true,
-        color: bandFill,
-        valign: 'middle',
+
+      segment.sources.slice(0, 2).forEach((source, sourceIndex) => {
+        const rowY = cardY + 0.50 + sourceIndex * 0.29;
+        addBusinessIconToSlide(slide, source.iconKey, {
+          x: cardX + 0.22,
+          y: rowY + 0.02,
+          w: 0.22,
+          h: 0.22,
+        }, theme, 'accent');
+        addTextFr(slide, source.label, {
+          x: cardX + 0.52,
+          y: rowY,
+          w: Math.max(0.20, cardW - 1.78),
+          h: 0.19,
+          fontSize: 8.2,
+          color: textMain,
+          valign: 'middle',
+          fit: 'shrink',
+        });
+        addTextFr(slide, `${euro(source.annualNetAmount)} / an`, {
+          x: cardX + cardW - 1.14,
+          y: rowY - 0.02,
+          w: 0.96,
+          h: 0.22,
+          fontSize: 10,
+          bold: true,
+          color: readableAmountColor,
+          align: 'right',
+          valign: 'middle',
+          fit: 'shrink',
+        });
       });
-    });
+    }
   });
 
   // ── Segment final (capital placé) si gap ──────────────────────────────
   if (spec.tailSegment) {
     const x = yearToX(spec.tailSegment.startYear, spec.rangeStartYear, totalYears);
     const xEnd = yearToX(spec.tailSegment.endYear + 1, spec.rangeStartYear, totalYears);
-    const w = Math.max(0.60, xEnd - x);
-    const cappedW = Math.min(w, MARGIN_X + CONTENT_W - x);
+    const rawW = Math.max(0, xEnd - x);
+    const cappedW = Math.max(0.12, Math.min(rawW, MARGIN_X + CONTENT_W - x));
+    const isTailNarrow = cappedW < 1.25;
+    const tailLabel = spec.tailSegment.label.toLocaleLowerCase('fr-FR').includes('trésorerie')
+      ? 'Trésorerie capitalisée'
+      : spec.tailSegment.label;
 
     slide.addShape('roundRect', {
       x,
@@ -258,29 +317,56 @@ export function buildTresorerieTimeline(
       line: { color: color3, width: 1.2, dashType: 'dash' },
       rectRadius: 0.12,
     });
-    addTextFr(slide, spec.tailSegment.label, {
-      x: x + 0.12,
-      y: bandY + 0.08,
-      w: Math.max(0.20, cappedW - 0.24),
-      h: 0.30,
-      fontSize: 12,
-      bold: true,
-      italic: true,
-      color: color3,
-      align: 'center',
-      valign: 'middle',
-    });
-    addTextFr(slide, `${spec.tailSegment.startYear} → ${spec.tailSegment.endYear}`, {
-      x: x + 0.12,
-      y: bandY + 0.36,
-      w: Math.max(0.20, cappedW - 0.24),
-      h: 0.26,
-      fontSize: 10,
-      italic: true,
-      color: textBody,
-      align: 'center',
-      valign: 'middle',
-    });
+    if (isTailNarrow) {
+      const calloutW = 1.78;
+      const calloutX = Math.max(MARGIN_X, Math.min(x - calloutW - 0.12, MARGIN_X + CONTENT_W - calloutW));
+      slide.addShape('line', {
+        x: calloutX + calloutW + 0.02,
+        y: bandY + 0.88,
+        w: Math.max(0, x + cappedW / 2 - calloutX - calloutW - 0.02),
+        h: 0,
+        line: { color: color3, width: 0.7 },
+      });
+      addTextFr(slide, tailLabel, {
+        x: calloutX,
+        y: bandY + 0.74,
+        w: calloutW,
+        h: 0.26,
+        fontSize: 8.4,
+        bold: true,
+        italic: true,
+        color: color3,
+        align: 'right',
+        valign: 'middle',
+        fit: 'shrink',
+      });
+    } else {
+      addTextFr(slide, tailLabel, {
+        x: x + 0.12,
+        y: bandY + 0.08,
+        w: Math.max(0.20, cappedW - 0.24),
+        h: 0.30,
+        fontSize: 12,
+        bold: true,
+        italic: true,
+        color: color3,
+        align: 'center',
+        valign: 'middle',
+        fit: 'shrink',
+      });
+      addTextFr(slide, `${spec.tailSegment.startYear} → ${spec.tailSegment.endYear}`, {
+        x: x + 0.12,
+        y: bandY + 0.36,
+        w: Math.max(0.20, cappedW - 0.24),
+        h: 0.26,
+        fontSize: 10,
+        italic: true,
+        color: textBody,
+        align: 'center',
+        valign: 'middle',
+        fit: 'shrink',
+      });
+    }
   }
 
   // ── Bandeau cumul net ─────────────────────────────────────────────────
@@ -301,13 +387,14 @@ export function buildTresorerieTimeline(
       color: roleColor(theme, 'shadowBase'),
     },
   });
+  const accentTextColor = contrastText(accent);
   addTextFr(slide, 'Cumul revenus nets sur la période', {
     x: MARGIN_X + 0.30,
     y: footerCardY + 0.10,
     w: 6.0,
     h: 0.36,
     fontSize: 11,
-    color: WHITE,
+    color: accentTextColor,
     valign: 'middle',
   });
   addTextFr(slide, euro(spec.totalNetSum), {
@@ -317,7 +404,7 @@ export function buildTresorerieTimeline(
     h: 0.40,
     fontSize: 18,
     bold: true,
-    color: WHITE,
+    color: accentTextColor,
     align: 'right',
     valign: 'middle',
   });

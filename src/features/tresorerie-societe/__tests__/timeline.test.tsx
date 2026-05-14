@@ -346,7 +346,16 @@ describe('TresoTimelineSection', () => {
     expect(screen.queryByText('Besoin total annuel net')).not.toBeInTheDocument();
     expect(screen.queryByText('Complément à financer')).not.toBeInTheDocument();
     expect(screen.queryByText(/^Besoin total /)).not.toBeInTheDocument();
-    expect(screen.getByText('Objectif net annuel de l’associé')).toBeInTheDocument();
+    expect(screen.getByText('Objectif net annuel de l’associé (net de PFU)')).toBeInTheDocument();
+  });
+
+  it('explicite le net de rémunération avant IR dans la modale du palier', () => {
+    render(<TresoTimelineSection inputs={cloneInputs()} onChange={vi.fn()} />);
+
+    openPhaseModal();
+    clickModalSubPhase(/Rémunération/i);
+
+    expect(screen.getAllByText(/Net annuel estimé avant IR/).length).toBeGreaterThan(0);
   });
 
   it('simplifie la constitution CCA autour des bornes du palier', () => {
@@ -366,6 +375,8 @@ describe('TresoTimelineSection', () => {
 
     openPhaseModal();
     clickModalSubPhase(/Remboursement CCA/i);
+    const repaymentGroup = screen.getByRole('radiogroup', { name: /Remboursement annuel souhaité/i });
+    expect(within(repaymentGroup).getByRole('button', { name: /Linéaire sur la phase/i })).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: /Linéaire sur la phase/i }));
     fireEvent.click(screen.getByRole('button', { name: 'Valider' }));
 

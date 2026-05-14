@@ -524,11 +524,34 @@
   font-size: 11px;
 }
 
+.ts-associate-hero__text small {
+  line-height: 1.25;
+}
+
 .ts-associate-hero__text strong {
   color: var(--color-c1);
   font-size: 24px;
   font-weight: 700;
   font-variant-numeric: tabular-nums;
+}
+
+.ts-associate-coverage {
+  align-self: start;
+  border-radius: 999px;
+  padding: 2px 7px;
+  color: var(--color-c1);
+  font-size: 10px;
+  font-style: normal;
+  font-weight: 700;
+}
+
+.ts-associate-coverage.is-total {
+  background: color-mix(in srgb, var(--color-c5) 26%, #fff);
+}
+
+.ts-associate-coverage.is-partial {
+  background: color-mix(in srgb, var(--color-warning-bg, #fff4df) 84%, #fff);
+  color: var(--color-warning-text, #e67e22);
 }
 
 .ts-associate-legend {
@@ -1345,7 +1368,7 @@
   cursor: pointer;
   justify-content: space-between;
   font-family: inherit;
-  margin-bottom: 12px;
+  text-align: left;
 }
 
 .ts-phase-source__choice--button:hover,

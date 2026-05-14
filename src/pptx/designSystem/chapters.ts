@@ -15,9 +15,11 @@
  *   ch-01 → IR
  *   ch-02 → Succession, Placement
  *   ch-03 → IR
+ *   ch-04 → PER, Trésorerie société
  *   ch-05 → Credit
- *   ch-06 → Succession
+ *   ch-06 → Succession, Trésorerie société
  *   ch-07 → Credit
+ *   ch-08 → PER, Trésorerie société
  *   ch-09 → Placement
  */
 export const CHAPTER_IMAGE_POOLS: Record<string, readonly number[]> = {
@@ -26,13 +28,14 @@ export const CHAPTER_IMAGE_POOLS: Record<string, readonly number[]> = {
   per:        [4, 8],  // potentiel PER
   succession: [2, 6],  // diversifié (était [1, 3])
   placement:  [9, 2],  // futur simulateur
+  'tresorerie-societe': [6, 4, 8], // montage, organisation, annexes
 } as const;
 
 /**
  * Retourne l'index d'image de chapitre pour un simulateur et un ordinal donné.
  * Utiliser à la place d'un index hardcodé dans les deck builders.
  *
- * @param simId - Identifiant du simulateur ('ir', 'credit', 'succession', 'per', 'placement')
+ * @param simId - Identifiant du simulateur ('ir', 'credit', 'succession', 'per', 'placement', 'tresorerie-societe')
  * @param chapterOrdinal - Ordinal 0-based dans le deck (0 = premier chapitre, 1 = second, etc.)
  * @returns Index d'image valide (1–9)
  */

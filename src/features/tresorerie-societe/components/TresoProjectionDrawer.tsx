@@ -5,6 +5,7 @@
 import { useMemo, useState } from 'react';
 import { SimSelect } from '../../../components/ui/sim/SimSelect';
 import type { TresoAssociateRevenueSource, TresoProjectionRow } from '../../../engine/tresorerie/types';
+import { getTresoRevenueSourceLabel } from '../utils/tresorerieRevenueLabels';
 
 interface Props {
   rows: TresoProjectionRow[];
@@ -49,12 +50,8 @@ function fmtOptionalE(n: number | undefined): string {
   return n == null ? '—' : fmtE(n);
 }
 
-function sourceLabel(source: string): string {
-  if (source === 'remuneration') return 'Rémunération';
-  if (source === 'cca') return 'Remboursement CCA';
-  if (source === 'dividendes') return 'Dividendes nets';
-  if (source === 'charges_sociales_tns') return 'Charges sociales TNS';
-  return source;
+function sourceLabel(source: TresoAssociateRevenueSource): string {
+  return getTresoRevenueSourceLabel(source);
 }
 
 function getTresoreriePlacee(row: TresoProjectionRow): number {

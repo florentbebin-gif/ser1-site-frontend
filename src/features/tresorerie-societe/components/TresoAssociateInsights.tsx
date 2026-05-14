@@ -27,13 +27,20 @@ function segmentClass(segment: TresoAssociateInsightSegment): string {
   return `ts-associate-donut__segment ts-associate-donut__segment--${segment.key}`;
 }
 
-function AssociateDonut({ segments }: { segments: TresoAssociateInsightSegment[] }) {
+function AssociateDonut({
+  segments,
+  annualNeed,
+}: {
+  segments: TresoAssociateInsightSegment[];
+  annualNeed: number;
+}) {
   const total = segments.reduce((sum, segment) => sum + segment.value, 0);
+  const denominator = annualNeed > 0 ? Math.max(annualNeed, total) : total;
   const radius = 28;
   const circumference = 2 * Math.PI * radius;
   let offset = 0;
 
-  if (total <= 0) {
+  if (denominator <= 0 || total <= 0) {
     return (
       <svg className="ts-associate-donut" viewBox="0 0 72 72" aria-hidden="true">
         <circle cx="36" cy="36" r={radius} className="ts-associate-donut__empty" />
@@ -42,10 +49,10 @@ function AssociateDonut({ segments }: { segments: TresoAssociateInsightSegment[]
   }
 
   return (
-    <svg className="ts-associate-donut" viewBox="0 0 72 72" role="img" aria-label="Répartition des revenus nets">
+    <svg className="ts-associate-donut" viewBox="0 0 72 72" role="img" aria-label="Couverture du besoin moyen par source">
       <circle cx="36" cy="36" r={radius} className="ts-associate-donut__base" />
       {segments.map(segment => {
-        const length = (segment.value / total) * circumference;
+        const length = (segment.value / denominator) * circumference;
         const dashOffset = offset;
         offset -= length;
         return (
@@ -69,14 +76,21 @@ function AssociateDonut({ segments }: { segments: TresoAssociateInsightSegment[]
 export function TresoAssociateInsights({ inputs, rows }: Props) {
   const view = buildTresoAssociateInsightViewModel(inputs, rows);
   const deltaStatus = view.deltaNeed < 0 ? 'warning' : view.deltaNeed > 0 ? 'positive' : 'neutral';
+  const coverageStatus = view.needTotal > 0 && view.revenusTotalRecupere + 0.5 < view.needTotal
+    ? 'partial'
+    : 'total';
+  const coverageLabel = view.annualNeed > 0
+    ? coverageStatus === 'partial' ? 'Couverture partielle' : 'Couverture totale'
+    : 'Revenu projeté';
+  const subtitle = view.analysisMode === 'needs' && view.analysisYearsCount > 0
+    ? `Moyenne sur ${view.analysisYearsCount} année${view.analysisYearsCount > 1 ? 's' : ''} de besoin`
+    : 'Année cible : revenus par source';
 
   return (
     <div className="premium-card ts-associate-insights">
       <div className="ts-kpi-sidebar__header">
-        <h2 className="ts-kpi-sidebar__title">Associé actif</h2>
-        <p className="ts-kpi-sidebar__subtitle">
-          Revenus projetés à l’année cible du parcours
-        </p>
+        <h2 className="ts-kpi-sidebar__title">Revenus de l’associé</h2>
+        <p className="ts-kpi-sidebar__subtitle">{subtitle}</p>
       </div>
       <div className="ts-kpi-sidebar__divider" />
 
@@ -91,14 +105,18 @@ export function TresoAssociateInsights({ inputs, rows }: Props) {
       ) : (
         <>
           <div className="ts-associate-hero">
-            <AssociateDonut segments={view.segments} />
+            <AssociateDonut segments={view.segments} annualNeed={view.annualNeed} />
             <div className="ts-associate-hero__text">
-              <span>{view.associateLabel}</span>
+              <span>Revenu moyen servi</span>
               <strong>{fmtEuro(view.netIncome)}</strong>
               <small>
-                {view.targetYear}
+                {view.associateLabel} ·{' '}
+                {view.periodLabel}
                 {view.targetAge != null ? ` · ${view.targetAge} ans` : ''}
               </small>
+              <em className={`ts-associate-coverage is-${coverageStatus}`}>
+                {coverageLabel}
+              </em>
             </div>
           </div>
 
@@ -114,25 +132,28 @@ export function TresoAssociateInsights({ inputs, rows }: Props) {
 
           <div className="ts-associate-kpis">
             <div>
-              <span>Besoin net</span>
+              <span>Besoin moyen / an</span>
               <strong>{fmtEuro(view.annualNeed)}</strong>
             </div>
             <div className={`is-${deltaStatus}`}>
-              <span>Écart besoin</span>
+              <span>Écart moyen / an</span>
               <strong>{fmtSignedEuro(view.deltaNeed)}</strong>
             </div>
           </div>
 
           <div className="ts-associate-kpis ts-associate-kpis--cca">
             <div>
-              <span>Apport total CCA</span>
-              <strong>{fmtEuro(view.ccaTotalContribution)}</strong>
+              <span>Besoin total période</span>
+              <strong>{fmtEuro(view.needTotal)}</strong>
+              <small className="ts-associate-kpi-note">
+                Apport CCA : {fmtEuro(view.ccaTotalContribution)}
+              </small>
             </div>
             <div>
-              <span>Total revenus récupérés</span>
+              <span>Revenus servis période</span>
               <strong>{fmtEuro(view.revenusTotalRecupere)}</strong>
               <small className="ts-associate-kpi-note">
-                Moyenne annuelle : {fmtEuro(view.revenusMoyenAnnuel)}/an
+                Moyenne annuelle servie : {fmtEuro(view.revenusMoyenAnnuel)}/an
               </small>
             </div>
           </div>

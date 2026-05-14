@@ -262,7 +262,7 @@ export function simulateTresorerieV2(
       loansResult.revenusActifFinance +
       subsidiariesResult.servicesRevenue +
       subsidiariesResult.dividendesFiliales +
-      subsidiariesResult.disposalGain -
+      subsidiariesResult.disposalAccountingResult -
       loansResult.interetsCreditIS -
       interetsCCA -
       chargesStructure;

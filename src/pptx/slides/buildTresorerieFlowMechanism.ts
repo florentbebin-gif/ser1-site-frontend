@@ -1,11 +1,7 @@
 /**
- * buildTresorerieFlowMechanism.ts — Slide pédagogique flux CCA / trésorerie.
+ * buildTresorerieFlowMechanism.ts — Mécanisme des flux Trésorerie société.
  *
- * Style aligné Placement Synthesis :
- * - 4 nœuds en losange avec ombre,
- * - 5 flèches colorées (chaque flux a sa propre couleur sectorielle),
- * - labels dans des roundRect blancs avec bordure colorée (anti-superposition),
- * - bandeau de synthèse pédagogique en bas.
+ * Lecture linéaire volontaire : apports → banque protégée → revenus → poches.
  */
 
 import type PptxGenJS from 'pptxgenjs';
@@ -19,120 +15,64 @@ import {
   addTextFr,
   roleColor,
 } from '../designSystem/serenity';
-import { addBusinessIconToSlide, type BusinessIconName } from '../icons/addBusinessIcon';
+import { addBusinessIconToSlide } from '../icons/addBusinessIcon';
 
-type NodeSpec = {
-  label: string;
-  icon: BusinessIconName;
-  x: number;
-  y: number;
-  accent?: boolean;
-};
-
-const NODE_W = 2.62;
-const NODE_H = 1.18;
 const MARGIN_X = COORDS_CONTENT.margin.x;
 const CONTENT_W = COORDS_CONTENT.margin.w;
+const CONTENT_TOP_Y = COORDS_CONTENT.content.y;
 const WHITE = 'FFFFFF';
 
-function drawNode(slide: PptxGenJS.Slide, node: NodeSpec, ctx: ExportContext): void {
-  const { theme } = ctx;
-  const accent = roleColor(theme, 'accent');
-  const panelBorder = roleColor(theme, 'panelBorder');
-  const fillColor = node.accent ? accent : WHITE;
-  const lineColor = node.accent ? accent : panelBorder;
-  const textColor = node.accent ? WHITE : roleColor(theme, 'textMain');
-
-  slide.addShape('roundRect', {
-    x: node.x,
-    y: node.y,
-    w: NODE_W,
-    h: NODE_H,
-    fill: { color: fillColor },
-    line: { color: lineColor, width: node.accent ? 0 : 1 },
-    rectRadius: 0.12,
-    shadow: {
-      type: SHADOW_PARAMS.type,
-      angle: SHADOW_PARAMS.angle,
-      blur: node.accent ? SHADOW_PARAMS.blur : 14,
-      offset: node.accent ? SHADOW_PARAMS.offset : 6,
-      opacity: node.accent ? SHADOW_PARAMS.opacity : 0.18,
-      color: roleColor(theme, 'shadowBase'),
-    },
-  });
-  addBusinessIconToSlide(slide, node.icon, {
-    x: node.x + 0.22,
-    y: node.y + 0.36,
-    w: 0.50,
-    h: 0.50,
-  }, theme, node.accent ? 'white' : 'accent');
-  addTextFr(slide, node.label, {
-    x: node.x + 0.82,
-    y: node.y + 0.22,
-    w: NODE_W - 0.98,
-    h: 0.74,
-    fontSize: 11.5,
-    bold: true,
-    color: textColor,
-    valign: 'middle',
-  });
+function colorForTone(
+  theme: ExportContext['theme'],
+  tone: TresorerieFlowMechanismSlideSpec['steps'][number]['tone'],
+): string {
+  if (tone === 'main') return roleColor(theme, 'bgMain');
+  if (tone === 'accent') return roleColor(theme, 'accent');
+  if (tone === 'muted') return theme.colors.color5.replace('#', '');
+  return theme.colors.color8.replace('#', '');
 }
 
-function drawFlowArrow(
+function drawArrow(
   slide: PptxGenJS.Slide,
-  from: { x: number; y: number },
-  to: { x: number; y: number },
-  color: string,
+  params: {
+    x: number;
+    y: number;
+    w: number;
+    color: string;
+    index: number;
+  },
 ): void {
-  const x = Math.min(from.x, to.x);
-  const y = Math.min(from.y, to.y);
-  const w = Math.abs(to.x - from.x);
-  const h = Math.abs(to.y - from.y);
+  const { x, y, w, color, index } = params;
   slide.addShape('line', {
     x,
     y,
     w,
-    h,
-    flipH: from.x > to.x,
+    h: 0,
     line: {
       color,
-      width: 2.2,
+      width: 2,
       endArrowType: 'triangle',
     } as PptxGenJS.ShapeLineProps,
   });
-}
-
-function drawFlowLabel(
-  slide: PptxGenJS.Slide,
-  centerX: number,
-  centerY: number,
-  label: string,
-  color: string,
-  theme: ExportContext['theme'],
-  w: number = 2.30,
-): void {
-  const h = 0.36;
-  slide.addShape('roundRect', {
-    x: centerX - w / 2,
-    y: centerY - h / 2,
-    w,
-    h,
-    fill: { color: WHITE },
-    line: { color, width: 1.2 },
-    rectRadius: 0.08,
+  slide.addShape('ellipse', {
+    x: x + w / 2 - 0.13,
+    y: y - 0.13,
+    w: 0.26,
+    h: 0.26,
+    fill: { color },
+    line: { color, width: 0 },
   });
-  addTextFr(slide, label, {
-    x: centerX - w / 2,
-    y: centerY - h / 2,
-    w,
-    h,
-    fontSize: 9.5,
+  addTextFr(slide, `${index}`, {
+    x: x + w / 2 - 0.13,
+    y: y - 0.13,
+    w: 0.26,
+    h: 0.26,
+    fontSize: 8.2,
     bold: true,
-    color,
+    color: WHITE,
     align: 'center',
     valign: 'middle',
   });
-  void theme;
 }
 
 export function buildTresorerieFlowMechanism(
@@ -145,124 +85,137 @@ export function buildTresorerieFlowMechanism(
   const { theme } = ctx;
   addHeader(slide, spec.title, spec.subtitle, theme, 'content');
 
-  const accent = roleColor(theme, 'accent');
-  const color3 = theme.colors.color3.replace('#', '');
-  const color5 = theme.colors.color5.replace('#', '');
-  const color8 = theme.colors.color8.replace('#', '');
+  const steps = spec.steps.slice(0, 4);
+  const gap = 0.30;
+  const cardW = (CONTENT_W - gap * 3) / 4;
+  const cardY = CONTENT_TOP_Y + 0.92;
+  const cardH = 2.44;
+  const arrowY = cardY + cardH / 2;
+  const textMain = roleColor(theme, 'textMain');
+  const textBody = roleColor(theme, 'textBody');
   const panelBorder = roleColor(theme, 'panelBorder');
 
-  // ── Disposition des 4 nœuds en losange ──────────────────────────────
-  const associate: NodeSpec = { label: 'Associé personne physique', icon: 'family', x: 0.78, y: 3.20 };
-  const company: NodeSpec = { label: 'Compte bancaire société', icon: 'bank', x: 5.36, y: 2.16, accent: true };
-  const pockets: NodeSpec = { label: 'Placements de trésorerie', icon: 'chart-up', x: 9.94, y: 3.20 };
-  const subsidiaries: NodeSpec = { label: 'Filiales ou activité', icon: 'buildings', x: 5.36, y: 4.92 };
-
-  [associate, company, pockets, subsidiaries].forEach(node => drawNode(slide, node, ctx));
-
-  // ── Flèches (chaque flux a sa couleur) ───────────────────────────────
-  // 1. Associé → Société : apports (color5 = vert moyen)
-  drawFlowArrow(slide,
-    { x: associate.x + NODE_W, y: associate.y + 0.40 },
-    { x: company.x, y: company.y + 0.50 },
-    color5,
-  );
-  // 2. Société → Associé : revenus (accent = vert foncé)
-  drawFlowArrow(slide,
-    { x: company.x, y: company.y + 0.90 },
-    { x: associate.x + NODE_W, y: associate.y + 0.80 },
-    accent,
-  );
-  // 3. Société → Poches : balayage (color8 = vert pâle)
-  drawFlowArrow(slide,
-    { x: company.x + NODE_W, y: company.y + 0.50 },
-    { x: pockets.x, y: pockets.y + 0.40 },
-    color8,
-  );
-  // 4. Poches → Société : retraits (color3 = accent)
-  drawFlowArrow(slide,
-    { x: pockets.x, y: pockets.y + 0.80 },
-    { x: company.x + NODE_W, y: company.y + 0.90 },
-    color3,
-  );
-  // 5. Filiales → Société : dividendes filiales (panelBorder gris)
-  drawFlowArrow(slide,
-    { x: subsidiaries.x + NODE_W / 2, y: subsidiaries.y },
-    { x: company.x + NODE_W / 2, y: company.y + NODE_H },
-    panelBorder,
-  );
-
-  // ── Labels dans roundRect au milieu de chaque flèche ─────────────────
-  // 1. Apports — milieu haut-gauche
-  drawFlowLabel(slide,
-    (associate.x + NODE_W + company.x) / 2,
-    (associate.y + 0.40 + company.y + 0.50) / 2 - 0.30,
-    'Apports CCA · Capital',
-    color5,
-    theme,
-    2.30,
-  );
-  // 2. Rémunération — milieu bas-gauche
-  drawFlowLabel(slide,
-    (associate.x + NODE_W + company.x) / 2,
-    (associate.y + 0.80 + company.y + 0.90) / 2 + 0.34,
-    'Rémunération · CCA · Dividendes',
-    accent,
-    theme,
-    2.80,
-  );
-  // 3. Balayage — milieu haut-droit
-  drawFlowLabel(slide,
-    (company.x + NODE_W + pockets.x) / 2,
-    (company.y + 0.50 + pockets.y + 0.40) / 2 - 0.30,
-    'Balayage de l’excédent',
-    color8,
-    theme,
-    2.30,
-  );
-  // 4. Retraits — milieu bas-droit
-  drawFlowLabel(slide,
-    (company.x + NODE_W + pockets.x) / 2,
-    (company.y + 0.90 + pockets.y + 0.80) / 2 + 0.34,
-    'Revenus · Retraits',
-    color3,
-    theme,
-    2.00,
-  );
-  // 5. Dividendes filiales — milieu vertical
-  drawFlowLabel(slide,
-    company.x + NODE_W / 2 + 1.30,
-    (company.y + NODE_H + subsidiaries.y) / 2,
-    'Dividendes filiales · Intérêts CCA',
-    panelBorder,
-    theme,
-    2.80,
-  );
-
-  // ── Bandeau de synthèse pédagogique ─────────────────────────────────
-  const footerY = 6.12;
   slide.addShape('roundRect', {
-    x: MARGIN_X,
-    y: footerY,
-    w: CONTENT_W,
-    h: 0.68,
-    fill: { color: theme.colors.color9.replace('#', '') },
-    line: { color: panelBorder, width: 0.6 },
-    rectRadius: 0.10,
+    x: MARGIN_X + CONTENT_W - 4.72,
+    y: CONTENT_TOP_Y + 0.08,
+    w: 4.72,
+    h: 0.36,
+    fill: { color: theme.colors.color7.replace('#', '') },
+    line: { color: panelBorder, width: 0.5 },
+    rectRadius: 0.06,
   });
   addTextFr(
     slide,
-    'La société conserve un solde bancaire minimum et un fonds de roulement. Au-delà, l’excédent finance le parcours de revenus ou rejoint les poches de placement.',
+    'Lecture : banque sécurisée → revenus associés → excédent investi',
     {
-      x: MARGIN_X + 0.30,
-      y: footerY + 0.10,
-      w: CONTENT_W - 0.60,
-      h: 0.50,
-      fontSize: 11,
-      color: roleColor(theme, 'textMain'),
+      x: MARGIN_X + CONTENT_W - 4.54,
+      y: CONTENT_TOP_Y + 0.16,
+      w: 4.36,
+      h: 0.16,
+      fontSize: 8.3,
+      color: textMain,
       align: 'center',
       valign: 'middle',
+      fit: 'shrink',
     },
   );
+
+  steps.forEach((step, index) => {
+    const x = MARGIN_X + index * (cardW + gap);
+    const toneColor = colorForTone(theme, step.tone);
+
+    slide.addShape('roundRect', {
+      x,
+      y: cardY,
+      w: cardW,
+      h: cardH,
+      fill: { color: WHITE },
+      line: { color: panelBorder, width: 0.7 },
+      rectRadius: 0.10,
+      shadow: {
+        type: SHADOW_PARAMS.type,
+        angle: SHADOW_PARAMS.angle,
+        blur: 12,
+        offset: 5,
+        opacity: 0.15,
+        color: roleColor(theme, 'shadowBase'),
+      },
+    });
+    slide.addShape('rect', {
+      x,
+      y: cardY,
+      w: cardW,
+      h: 0.16,
+      fill: { color: toneColor },
+      line: { color: toneColor, width: 0 },
+    });
+    slide.addShape('ellipse', {
+      x: x + 0.20,
+      y: cardY + 0.34,
+      w: 0.62,
+      h: 0.62,
+      fill: { color: toneColor },
+      line: { color: toneColor, width: 0 },
+    });
+    addBusinessIconToSlide(slide, step.iconKey, {
+      x: x + 0.34,
+      y: cardY + 0.48,
+      w: 0.34,
+      h: 0.34,
+    }, theme, 'white');
+    addTextFr(slide, `0${index + 1}`, {
+      x: x + cardW - 0.64,
+      y: cardY + 0.35,
+      w: 0.42,
+      h: 0.22,
+      fontSize: 9,
+      bold: true,
+      color: toneColor,
+      align: 'right',
+    });
+    addTextFr(slide, step.title, {
+      x: x + 0.22,
+      y: cardY + 1.12,
+      w: cardW - 0.44,
+      h: 0.34,
+      fontSize: 12.4,
+      bold: true,
+      color: textMain,
+      fit: 'shrink',
+    });
+    addTextFr(slide, step.label, {
+      x: x + 0.22,
+      y: cardY + 1.50,
+      w: cardW - 0.44,
+      h: 0.50,
+      fontSize: 9,
+      color: textBody,
+      breakLine: false,
+      fit: 'shrink',
+    });
+    if (step.value) {
+      addTextFr(slide, step.value, {
+        x: x + 0.22,
+        y: cardY + 2.10,
+        w: cardW - 0.44,
+        h: 0.28,
+        fontSize: 14,
+        bold: true,
+        color: toneColor,
+        fit: 'shrink',
+      });
+    }
+
+    if (index < steps.length - 1) {
+      drawArrow(slide, {
+        x: x + cardW + 0.07,
+        y: arrowY,
+        w: gap - 0.14,
+        color: toneColor,
+        index: index + 1,
+      });
+    }
+  });
 
   addFooter(slide, ctx, slideIndex, 'onLight');
 }

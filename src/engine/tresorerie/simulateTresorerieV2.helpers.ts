@@ -26,6 +26,7 @@ export interface SubsidiaryYearResult {
   estimatedFiscalResult: number;
   disposalCash: number;
   disposalGain: number;
+  disposalAccountingResult: number;
   disposalTaxableGain: number;
 }
 
@@ -181,6 +182,12 @@ export function computeSubsidiariesByYear(
   anneeCivile: number,
   params: TresoFiscalParams,
 ): SubsidiaryYearResult {
+  type SubsidiaryYearAccumulator = SubsidiaryYearResult & {
+    standardDisposalTaxableResult: number;
+    pvltPositiveDisposalGain: number;
+    pvltNetDisposalResult: number;
+  };
+
   const amountForSchedule = (
     schedule: AmountScheduleInput[] | undefined,
   ): number => {
@@ -190,7 +197,7 @@ export function computeSubsidiariesByYear(
       .reduce((total, item) => total + Math.max(0, item.amount), 0);
   };
 
-  return subsidiaries.reduce<SubsidiaryYearResult>((sum, subsidiary) => {
+  const totals = subsidiaries.reduce<SubsidiaryYearAccumulator>((sum, subsidiary) => {
     const disposal = subsidiary.disposal;
     const isAfterDisposal = disposal?.year != null && anneeCivile > disposal.year;
     const servicesRevenue = isAfterDisposal
@@ -211,34 +218,48 @@ export function computeSubsidiariesByYear(
 
     const ownershipRate = Math.max(0, subsidiary.ownershipPct ?? subsidiary.holdingOwnershipPct ?? 0) / 100;
     const isDisposalYear = disposal?.year === anneeCivile;
-    const disposalGrossCash = isDisposalYear ? Math.max(0, disposal.estimatedPrice) * ownershipRate : 0;
-    const disposalGain = isDisposalYear
-      ? Math.max(
-        0,
-        (disposal.estimatedPrice - disposal.taxBasis - (disposal.fees ?? 0)) * ownershipRate,
-      )
+    const disposalGrossCash = isDisposalYear && disposal
+      ? Math.max(0, disposal.estimatedPrice) * ownershipRate
       : 0;
+    const disposalAccountingResult = isDisposalYear && disposal
+      ? (disposal.estimatedPrice - disposal.taxBasis - (disposal.fees ?? 0)) * ownershipRate
+      : 0;
+    const disposalGain = Math.max(0, disposalAccountingResult);
+    const hasProvenHoldingPeriod =
+      disposal?.acquisitionYear != null &&
+      disposal?.year != null &&
+      disposal.year - disposal.acquisitionYear >= 2;
     const autoPvlt =
       (subsidiary.ownershipPct ?? subsidiary.holdingOwnershipPct ?? 0) >= 5 &&
-      (disposal?.acquisitionYear == null || disposal?.year == null || disposal.year - disposal.acquisitionYear >= 2);
+      hasProvenHoldingPeriod;
     const disposalRegime = disposal?.regime === 'auto'
       ? (autoPvlt ? 'pvlt' : 'standard')
       : disposal?.regime;
-    const disposalTaxableGain = disposalRegime === 'pvlt'
-      ? disposalGain * Math.max(0, params.participationDisposalQpfcRate ?? 0)
-      : disposalGain;
+    const standardDisposalTaxableResult = isDisposalYear && disposalRegime !== 'pvlt'
+      ? disposalAccountingResult
+      : 0;
+    const pvltPositiveDisposalGain = isDisposalYear && disposalRegime === 'pvlt'
+      ? disposalGain
+      : 0;
+    const pvltNetDisposalResult = isDisposalYear && disposalRegime === 'pvlt'
+      ? disposalAccountingResult
+      : 0;
 
     return {
       servicesRevenue: sum.servicesRevenue + servicesRevenue,
       dividendesFiliales: sum.dividendesFiliales + dividendes,
       dividendesFilialesExoneres: sum.dividendesFilialesExoneres + dividendesFilialesExoneres,
-      quotePartTaxable: sum.quotePartTaxable + quotePartTaxable + disposalTaxableGain,
+      quotePartTaxable: sum.quotePartTaxable + quotePartTaxable,
       estimatedFiscalResult:
         sum.estimatedFiscalResult +
         (subsidiary.fiscalIntegrationEstimateEnabled ? subsidiary.estimatedFiscalResult ?? 0 : 0),
       disposalCash: sum.disposalCash + disposalGrossCash,
       disposalGain: sum.disposalGain + disposalGain,
-      disposalTaxableGain: sum.disposalTaxableGain + disposalTaxableGain,
+      disposalAccountingResult: sum.disposalAccountingResult + disposalAccountingResult,
+      disposalTaxableGain: 0,
+      standardDisposalTaxableResult: sum.standardDisposalTaxableResult + standardDisposalTaxableResult,
+      pvltPositiveDisposalGain: sum.pvltPositiveDisposalGain + pvltPositiveDisposalGain,
+      pvltNetDisposalResult: sum.pvltNetDisposalResult + pvltNetDisposalResult,
     };
   }, {
     servicesRevenue: 0,
@@ -248,8 +269,29 @@ export function computeSubsidiariesByYear(
     estimatedFiscalResult: 0,
     disposalCash: 0,
     disposalGain: 0,
+    disposalAccountingResult: 0,
     disposalTaxableGain: 0,
+    standardDisposalTaxableResult: 0,
+    pvltPositiveDisposalGain: 0,
+    pvltNetDisposalResult: 0,
   });
+
+  const pvltTaxableGain = totals.pvltNetDisposalResult > 0
+    ? totals.pvltPositiveDisposalGain * Math.max(0, params.participationDisposalQpfcRate ?? 0)
+    : 0;
+  const disposalTaxableGain = totals.standardDisposalTaxableResult + pvltTaxableGain;
+
+  return {
+    servicesRevenue: totals.servicesRevenue,
+    dividendesFiliales: totals.dividendesFiliales,
+    dividendesFilialesExoneres: totals.dividendesFilialesExoneres,
+    quotePartTaxable: totals.quotePartTaxable + disposalTaxableGain,
+    estimatedFiscalResult: totals.estimatedFiscalResult,
+    disposalCash: totals.disposalCash,
+    disposalGain: totals.disposalGain,
+    disposalAccountingResult: totals.disposalAccountingResult,
+    disposalTaxableGain,
+  };
 }
 
 export function sumMapValues(values: Map<string, number>): number {
