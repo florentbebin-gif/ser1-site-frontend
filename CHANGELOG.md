@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.1.0](https://github.com/florentbebin-gif/ser1-site-frontend/compare/v1.0.0...v1.1.0) (2026-05-14)
+
+
+### Features
+
+* **settings:** appliquer le mode effectif aux simulateurs ([1199f23](https://github.com/florentbebin-gif/ser1-site-frontend/commit/1199f239ad2ef552cbce81def9b46f8db9ec719f))
+
+
+### Bug Fixes
+
+* **credit:** respecter l’override local du mode expert ([bd9f4e9](https://github.com/florentbebin-gif/ser1-site-frontend/commit/bd9f4e9e34ab879c499d20af7fb2bf1da12c00bf))
+
 ## 1.0.0 (2026-05-14)
 
 Version initiale stabilisée de SER1.
