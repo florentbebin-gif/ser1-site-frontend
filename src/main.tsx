@@ -6,6 +6,8 @@ import { waitInitialSession } from './supabaseClient.ts'
 import { ThemeProvider, DEFAULT_COLORS, type ThemeColors } from './settings/ThemeProvider'
 import { AuthProvider } from './auth'
 import AppErrorFallback from './components/AppErrorFallback'
+import { AppErrorBoundary } from './components/AppErrorBoundary'
+import { initSentry, logger, startWebVitals } from './observability'
 import './styles/index.css'
 import './styles/app/index.css'
 import './styles/premium-shared.css'
@@ -92,6 +94,7 @@ function getUserIdFromAuthStorage(): string | null {
 
 // Apply IMMEDIATELY - before any async work
 applyThemeBootstrap()
+void initSentry().then(() => startWebVitals())
 
 const rootElement = document.getElementById('root')
 
@@ -109,7 +112,9 @@ waitInitialSession()
         <BrowserRouter>
           <AuthProvider>
             <ThemeProvider>
-              <App />
+              <AppErrorBoundary>
+                <App />
+              </AppErrorBoundary>
             </ThemeProvider>
           </AuthProvider>
         </BrowserRouter>
@@ -119,7 +124,7 @@ waitInitialSession()
   .catch((error: unknown) => {
     const fatalError = error instanceof Error ? error : new Error(String(error))
     // Cas critique : Supabase mal configuré ou inaccessible au boot
-    console.error('[Fatal] App initialization failed:', fatalError)
+    logger.error('[Fatal] App initialization failed', fatalError, { area: 'bootstrap' })
     root.render(
       <StrictMode>
         <AppErrorFallback error={fatalError} type="config" />
