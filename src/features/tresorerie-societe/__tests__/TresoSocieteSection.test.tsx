@@ -275,7 +275,7 @@ describe('TresoSocieteSection', () => {
     render(<TresoSocieteSection inputs={INPUTS} onChange={onChange} />);
 
     fireEvent.click(screen.getByRole('button', { name: /Paramétrer Associé 1/ }));
-    fireEvent.click(screen.getByRole('tab', { name: 'Identité' }));
+    fireEvent.click(screen.getByRole('tab', { name: 'Détention' }));
     fireEvent.change(screen.getAllByDisplayValue('60')[0], { target: { value: '80' } });
 
     const nextInputs = onChange.mock.calls[onChange.mock.calls.length - 1]?.[0];

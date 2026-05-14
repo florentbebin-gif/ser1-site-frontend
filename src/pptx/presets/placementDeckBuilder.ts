@@ -54,11 +54,13 @@ export function buildPlacementStudyDeck(
   const dateStr = now.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
   const clientSubtitle = data.clientName || 'NOM Prénom';
 
+  const isComparison = data.produit2 !== null;
+
   if (DEBUG_PPTX) {
     // eslint-disable-next-line no-console
     console.debug('[PPTX Placement] Building deck:', {
       produit1: data.produit1.envelopeLabel,
-      produit2: data.produit2.envelopeLabel,
+      produit2: data.produit2?.envelopeLabel ?? null,
     });
   }
 
@@ -68,7 +70,7 @@ export function buildPlacementStudyDeck(
   const rawDeathYear = data.ageAuDeces - liquidationStart + 1;
   const maxLiquidationYears = Math.max(
     data.produit1.liquidationRows.length,
-    data.produit2.liquidationRows.length,
+    data.produit2?.liquidationRows.length ?? 0,
   );
   const deathYearIndex = (maxLiquidationYears > 0 && rawDeathYear >= 1 && rawDeathYear <= maxLiquidationYears)
     ? rawDeathYear
@@ -77,9 +79,9 @@ export function buildPlacementStudyDeck(
   // Projection slides (paginated)
   const projectionSlides: PlacementProjectionSlideSpec[] = [
     ...buildEpargneProjectionSlides(data.produit1.epargneRows, data.produit1.envelopeLabel, 1),
-    ...buildEpargneProjectionSlides(data.produit2.epargneRows, data.produit2.envelopeLabel, 2),
+    ...(data.produit2 ? buildEpargneProjectionSlides(data.produit2.epargneRows, data.produit2.envelopeLabel, 2) : []),
     ...buildLiquidationProjectionSlides(data.produit1.liquidationRows, data.produit1.envelopeLabel, 1, deathYearIndex),
-    ...buildLiquidationProjectionSlides(data.produit2.liquidationRows, data.produit2.envelopeLabel, 2, deathYearIndex),
+    ...(data.produit2 ? buildLiquidationProjectionSlides(data.produit2.liquidationRows, data.produit2.envelopeLabel, 2, deathYearIndex) : []),
   ];
 
   const slides: Array<
@@ -92,8 +94,12 @@ export function buildPlacementStudyDeck(
     {
       type: 'chapter',
       title: 'Objectifs et contexte',
-      subtitle: 'Comparaison de deux stratégies de placement',
-      body: 'Vous souhaitez comparer deux enveloppes d\'épargne sur les trois phases : constitution, liquidation et transmission.',
+      subtitle: isComparison
+        ? 'Comparaison de deux stratégies de placement'
+        : 'Projection d\'une stratégie de placement',
+      body: isComparison
+        ? 'Vous souhaitez comparer deux enveloppes d\'épargne sur les trois phases : constitution, liquidation et transmission.'
+        : 'Vous souhaitez projeter une enveloppe d\'épargne sur les trois phases : constitution, liquidation et transmission.',
       chapterImageIndex: pickChapterImage('placement', 0),
     },
     buildSynthesisSpec(data),

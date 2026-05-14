@@ -358,14 +358,29 @@ export function buildPlacementSynthesis(
   const color5 = theme.colors.color5.replace('#', '');
   const color3 = theme.colors.color3.replace('#', '');
 
-  addHeader(slide, 'Synthèse comparative', 'Comparaison des deux produits', theme, 'content');
+  const isComparison = spec.produit2 !== null;
 
-  const leftX = GEO.marginX;
-  const rightX = GEO.marginX + GEO.panelW + GEO.gap;
+  addHeader(
+    slide,
+    isComparison ? 'Synthèse comparative' : 'Synthèse',
+    isComparison ? 'Comparaison des deux produits' : 'Projection de la stratégie retenue',
+    theme,
+    'content',
+  );
 
-  drawPanel(slide, spec.produit1, leftX, color5, theme);
-  drawVsSeparator(slide, theme);
-  drawPanel(slide, spec.produit2, rightX, color3, theme);
+  if (isComparison && spec.produit2) {
+    const leftX = GEO.marginX;
+    const rightX = GEO.marginX + GEO.panelW + GEO.gap;
+    drawPanel(slide, spec.produit1, leftX, color5, theme);
+    drawVsSeparator(slide, theme);
+    drawPanel(slide, spec.produit2, rightX, color3, theme);
+  } else {
+    // Mode projection : un seul panneau centré horizontalement
+    const slideWidth = 13.3333;
+    const centerX = (slideWidth - GEO.panelW) / 2;
+    drawPanel(slide, spec.produit1, centerX, color5, theme);
+  }
+
   drawTimeline(slide, spec.timeline, theme);
 
   addFooter(slide, ctx, slideIndex, 'onLight');

@@ -7,6 +7,7 @@ import {
   getAssociateProfile,
   getSelectedAssociateId,
   updateAssociateOwnershipLot,
+  updateAssociateOwnershipLots,
 } from './tresorerieSocieteModel';
 
 export function buildDefaultAssociate(index: number, inputs: TresoInputsV6): AssociateInputV6 {
@@ -90,9 +91,16 @@ export function useTresorerieAssociateHandlers(
         ? { ...associate, ...patch, ownershipLots: associate.ownershipLots }
         : associate,
     );
-    const associates = patch.ownershipLots?.[0]
-      ? updateAssociateOwnershipLot(patchedAssociates, associateId, patch.ownershipLots[0])
-      : patchedAssociates;
+    // Multi-lots : si le patch fournit un tableau complet de lots, on remplace l'ensemble
+    // (refonte démembrement PP/US/NP). Sinon, ancien chemin compatibilité 1 lot.
+    let associates: AssociateInputV6[] = patchedAssociates;
+    if (patch.ownershipLots) {
+      associates = patch.ownershipLots.length > 1
+        ? updateAssociateOwnershipLots(patchedAssociates, associateId, patch.ownershipLots)
+        : patch.ownershipLots[0]
+          ? updateAssociateOwnershipLot(patchedAssociates, associateId, patch.ownershipLots[0])
+          : updateAssociateOwnershipLots(patchedAssociates, associateId, patch.ownershipLots);
+    }
     const nextInputs = {
       ...inputs,
       company: { ...company, associates },

@@ -78,7 +78,8 @@ describe('TresoKPISidebar', () => {
     const html = renderToStaticMarkup(<TresoKPISidebar kpis={KPIS} inputs={INPUTS} />);
 
     expect(html).toContain('IS total décaissé');
-    expect(html).toContain('Tenue horizon');
+    expect(html).toContain('Trésorerie sur horizon');
+    expect(html).toContain('Revenu cible');
     expect(html).toContain('Performance moyenne');
     expect(html).toContain('Compte bancaire fin horizon');
     expect(html).toContain('Déficit bancaire maximal');
@@ -89,10 +90,11 @@ describe('TresoKPISidebar', () => {
   it('indique si la trésorerie et la cible de revenu tiennent jusqu’à la fin', () => {
     const html = renderToStaticMarkup(<TresoKPISidebar kpis={KPIS} inputs={INPUTS} />);
 
-    expect(html).toContain('Tenue horizon');
+    expect(html).toContain('Trésorerie sur horizon');
+    expect(html).toContain('Revenu cible');
     expect(html).toContain('OK');
-    expect(html).toContain('Trésorerie OK');
-    expect(html).toContain('Revenu cible OK');
+    expect(html).toContain('Trésorerie suffisante sur tout l’horizon');
+    expect(html).toContain('Cible de revenu tenue sur tout l’horizon');
     expect(html).toContain('4,2 %');
   });
 
@@ -110,9 +112,10 @@ describe('TresoKPISidebar', () => {
       />,
     );
 
-    expect(html).toContain('À revoir');
-    expect(html).toContain('Trésorerie dès 2029');
-    expect(html).toContain('Revenu cible dès 2032');
+    expect(html).toContain('Déficit en 2029');
+    expect(html).toContain('Manqué dès 2032');
+    expect(html).toContain('Trésorerie bancaire passe en négatif cette année-là');
+    expect(html).toContain('Revenu cible non atteint');
   });
 
   it('affiche le CCA remboursé quand aucun CCA ne reste dû', () => {

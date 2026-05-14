@@ -4,7 +4,6 @@ import { SimModalShell } from '@/components/ui/sim/SimModalShell';
 import { SimSelect } from '@/components/ui/sim/SimSelect';
 import type {
   AssociateRevenuePhaseInputV6,
-  CcaRepaymentStrategy,
   DividendsStrategy,
   SubsidiaryInput,
 } from '@/engine/tresorerie/types';
@@ -28,12 +27,14 @@ import {
   SUB_PHASE_NAV,
   type SubPhaseKey,
 } from './revenuePhaseModalUtils';
+import { TresoCcaRepaymentPanel } from './TresoCcaRepaymentPanel';
 
 interface TresoRevenuePhaseModalProps {
   phase: AssociateRevenuePhaseInputV6;
   phases: AssociateRevenuePhaseInputV6[];
   subsidiaries: SubsidiaryInput[];
   horizonYear: number;
+  ccaCurrentBalance: number;
   onSave: (phase: AssociateRevenuePhaseInputV6) => void;
   onDelete: () => void;
   onClose: () => void;
@@ -81,6 +82,7 @@ export function TresoRevenuePhaseModal({
   phases,
   subsidiaries,
   horizonYear,
+  ccaCurrentBalance,
   onSave,
   onDelete,
   onClose,
@@ -122,7 +124,6 @@ export function TresoRevenuePhaseModal({
     if (subsidiaryOptions.length > 0) {
       options.push(['subsidiary', 'Oui, depuis une filiale']);
     }
-    options.push(['none', 'Aucune rémunération']);
     return options;
   }, [subsidiaryOptions.length]);
 
@@ -369,7 +370,6 @@ export function TresoRevenuePhaseModal({
                 {([
                   ['max_treso', 'Maximum selon trésorerie'],
                   ['montant_cible', 'Montant net cible'],
-                  ['aucun', 'Aucun dividende'],
                 ] as Array<[DividendsStrategy, string]>).map(([value, label]) => (
                   <label key={value} className="ts-phase-source__choice">
                     <input
@@ -377,7 +377,7 @@ export function TresoRevenuePhaseModal({
                       name="ts-dividends-strategy"
                       checked={draft.distribution.dividendsStrategy === value}
                       onChange={() => patchDistribution({
-                        enabled: value !== 'aucun',
+                        enabled: true,
                         dividendsStrategy: value,
                       })}
                     />
@@ -469,50 +469,11 @@ export function TresoRevenuePhaseModal({
           ) : null}
 
           {activeSubPhase === 'ccaRepayment' ? (
-            <section className="ts-associate-card">
-              <div className="ts-associate-card__header">
-                <strong>Phase remboursement de CCA</strong>
-                <span>Restitution du compte courant</span>
-              </div>
-              <p className="ts-phase-source-title">Remboursement annuel souhaité</p>
-              <div className="ts-phase-source" role="radiogroup" aria-label="Remboursement annuel souhaité">
-                {([
-                  ['max_treso', 'Maximum selon trésorerie'],
-                  ['montant_cible', 'Montant max/an'],
-                  ['aucun', 'Aucun remboursement'],
-                ] as Array<[CcaRepaymentStrategy, string]>).map(([value, label]) => (
-                  <label key={value} className="ts-phase-source__choice">
-                    <input
-                      type="radio"
-                      name="ts-cca-repayment-strategy"
-                      checked={draft.ccaRepayment.strategy === value}
-                      onChange={() => patchCcaRepayment({
-                        enabled: value !== 'aucun',
-                        strategy: value,
-                      })}
-                    />
-                    {label}
-                  </label>
-                ))}
-              </div>
-              {draft.ccaRepayment.strategy === 'montant_cible' ? (
-                <div className="ts-modal-grid ts-modal-grid--three">
-                  <SimFieldShell label="Montant max/an" className="ts-field" rowClassName="ts-field__row">
-                    <input
-                      type="text"
-                      inputMode="numeric"
-                      className="sim-field__control"
-                      value={fmtEuroInput(draft.ccaRepayment.targetAmount ?? 0)}
-                      onChange={event => patchCcaRepayment({ targetAmount: parseEuroInput(event.target.value) })}
-                    />
-                    <span className="sim-field__unit ts-unit">€</span>
-                  </SimFieldShell>
-                </div>
-              ) : null}
-              <p className="ts-note--info">
-                Les retraits sont limités au solde CCA et à la trésorerie disponible après IS, solde minimum bancaire et BFR conservés.
-              </p>
-            </section>
+            <TresoCcaRepaymentPanel
+              phase={draft}
+              ccaCurrentBalance={ccaCurrentBalance}
+              onChange={patchCcaRepayment}
+            />
           ) : null}
         </div>
       </div>

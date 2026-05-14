@@ -1,6 +1,6 @@
 import { getAssociateAnnualIncomeNeedForYear } from '@/engine/tresorerie/revenuePhases';
 import type { TresoInputsRuntime, TresoProjectionRow } from '@/engine/tresorerie/types';
-import { getAssociateProfile, getSelectedAssociate } from './tresorerieSocieteModel';
+import { getAssociateProfile, getSelectedAssociate, getSelectedAssociateId } from './tresorerieSocieteModel';
 
 export interface TresoAssociateInsightSegment {
   key: 'remuneration' | 'cca' | 'dividendes';
@@ -17,6 +17,12 @@ export interface TresoAssociateInsightViewModel {
   netIncome: number;
   deltaNeed: number;
   segments: TresoAssociateInsightSegment[];
+  /** Apport CCA cumulé sur toute la projection (versements vers la société). */
+  ccaTotalContribution: number;
+  /** Total des revenus récupérés (rémunération + CCA remboursé + dividendes nets) sur toute la projection. */
+  revenusTotalRecupere: number;
+  /** Moyenne annuelle des revenus récupérés. */
+  revenusMoyenAnnuel: number;
 }
 
 function positive(value: number | undefined): number {
@@ -62,6 +68,9 @@ export function buildTresoAssociateInsightViewModel(
       netIncome: 0,
       deltaNeed: 0,
       segments: [],
+      ccaTotalContribution: 0,
+      revenusTotalRecupere: 0,
+      revenusMoyenAnnuel: 0,
     };
   }
 
@@ -75,8 +84,25 @@ export function buildTresoAssociateInsightViewModel(
       netIncome: 0,
       deltaNeed: 0,
       segments: [],
+      ccaTotalContribution: 0,
+      revenusTotalRecupere: 0,
+      revenusMoyenAnnuel: 0,
     };
   }
+
+  // Totaux sur toute la projection pour l'associé sélectionné.
+  const selectedAssociateId = getSelectedAssociateId(inputs);
+  let ccaTotalContribution = 0;
+  let revenusTotalRecupere = 0;
+  rows.forEach(row => {
+    const associateRows = row.revenusParAssocie.filter(r => r.associateId === selectedAssociate.id);
+    revenusTotalRecupere += associateRows.reduce((sum, r) => sum + positive(r.netRevenue), 0);
+    // L'apport CCA est porté au niveau du row (associé sélectionné = celui qui apporte).
+    if (selectedAssociate.id === selectedAssociateId) {
+      ccaTotalContribution += positive(row.apportCCA);
+    }
+  });
+  const revenusMoyenAnnuel = rows.length > 0 ? revenusTotalRecupere / rows.length : 0;
 
   const rowWithNeed = rows.find(row => {
     const year = profile.projectionStartYear + row.year - 1;
@@ -105,5 +131,8 @@ export function buildTresoAssociateInsightViewModel(
     netIncome,
     deltaNeed,
     segments,
+    ccaTotalContribution,
+    revenusTotalRecupere,
+    revenusMoyenAnnuel,
   };
 }

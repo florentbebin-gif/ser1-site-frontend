@@ -122,6 +122,20 @@ export function TresoAssociateInsights({ inputs, rows }: Props) {
               <strong>{fmtSignedEuro(view.deltaNeed)}</strong>
             </div>
           </div>
+
+          <div className="ts-associate-kpis ts-associate-kpis--cca">
+            <div>
+              <span>Apport total CCA</span>
+              <strong>{fmtEuro(view.ccaTotalContribution)}</strong>
+            </div>
+            <div>
+              <span>Total revenus récupérés</span>
+              <strong>{fmtEuro(view.revenusTotalRecupere)}</strong>
+              <small className="ts-associate-kpi-note">
+                Moyenne annuelle : {fmtEuro(view.revenusMoyenAnnuel)}/an
+              </small>
+            </div>
+          </div>
         </>
       )}
     </div>

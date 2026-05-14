@@ -136,6 +136,65 @@ function rebalanceOwnershipField<T extends RuntimeAssociateInput>(
   );
 }
 
+/**
+ * Remplace l'intégralité du tableau `ownershipLots` d'un associé, puis rééquilibre
+ * automatiquement le capital et les droits économiques des autres associés afin que
+ * les sommes totales restent ≤ 100 %.
+ *
+ * Utilisé par la modale associé pour gérer la détention démembrée multi-lots
+ * (ex. associé 1 = 10 % PP + 90 % US).
+ */
+export function updateAssociateOwnershipLots<T extends RuntimeAssociateInput>(
+  associates: T[],
+  associateId: string,
+  nextLots: OwnershipLotInput[],
+): T[] {
+  const sanitizedLots: OwnershipLotInput[] = (nextLots.length === 0
+    ? [defaultOwnershipLot()]
+    : nextLots
+  ).map(lot => {
+    const capitalPct = clampPct(lot.capitalPct);
+    const economicRightsPct = lot.right === 'pleine_propriete'
+      ? capitalPct
+      : clampPct(lot.economicRightsPct);
+    return { ...lot, capitalPct, economicRightsPct };
+  });
+
+  const patched = associates.map(associate =>
+    associate.id === associateId
+      ? ({ ...associate, ownershipLots: sanitizedLots } as T)
+      : associate,
+  );
+
+  const rebalanced = OWNERSHIP_PCT_FIELDS.reduce(
+    (next, field) => rebalanceOwnershipField(next, associateId, field),
+    patched,
+  );
+  return syncFullOwnershipLots(rebalanced);
+}
+
+/**
+ * Somme du `capitalPct` détenu en pleine propriété par un associé.
+ * Utilisé par le moteur pour répartir la distribution issue des réserves
+ * quand la checkbox « réserves démembrées appréhendées par l'usufruitier »
+ * est décochée.
+ */
+export function getPlainPropertyCapitalPct(associate: RuntimeAssociateInput): number {
+  return associate.ownershipLots
+    .filter(lot => lot.right === 'pleine_propriete')
+    .reduce((sum, lot) => sum + clampPct(lot.capitalPct), 0);
+}
+
+/**
+ * Détecte si la société comporte au moins un lot démembré (usufruit ou nue-propriété).
+ * Sert au défaut de la checkbox société sur l'attribution des réserves.
+ */
+export function hasDemembrement(associates: RuntimeAssociateInput[]): boolean {
+  return associates.some(associate =>
+    associate.ownershipLots.some(lot => lot.right !== 'pleine_propriete'),
+  );
+}
+
 export function updateAssociateOwnershipLot<T extends RuntimeAssociateInput>(
   associates: T[],
   associateId: string,

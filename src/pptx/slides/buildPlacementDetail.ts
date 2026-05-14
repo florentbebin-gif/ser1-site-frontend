@@ -457,11 +457,17 @@ export function buildPlacementDetail(
 
   addHeader(slide, spec.title, spec.subtitle, theme, 'content');
 
-  const leftX = PANEL.marginX;
-  const rightX = PANEL.marginX + PANEL.panelW + PANEL.gap;
-
-  drawDetailPanel(slide, spec.produit1, leftX, PANEL.panelW, PANEL.topY, PANEL.height, color5, theme);
-  drawDetailPanel(slide, spec.produit2, rightX, PANEL.panelW, PANEL.topY, PANEL.height, color3, theme);
+  if (spec.produit2) {
+    const leftX = PANEL.marginX;
+    const rightX = PANEL.marginX + PANEL.panelW + PANEL.gap;
+    drawDetailPanel(slide, spec.produit1, leftX, PANEL.panelW, PANEL.topY, PANEL.height, color5, theme);
+    drawDetailPanel(slide, spec.produit2, rightX, PANEL.panelW, PANEL.topY, PANEL.height, color3, theme);
+  } else {
+    // Mode projection : un seul panneau centré horizontalement
+    const slideWidth = 13.3333;
+    const centerX = (slideWidth - PANEL.panelW) / 2;
+    drawDetailPanel(slide, spec.produit1, centerX, PANEL.panelW, PANEL.topY, PANEL.height, color5, theme);
+  }
 
   if (spec.optionalNote) {
     addTextFr(slide, spec.optionalNote, {

@@ -56,6 +56,7 @@ export interface PlacementSimulatorState {
   products: PlacementProductDraft[];
   liquidation: PlacementLiquidationState;
   transmission: PlacementTransmissionState;
+  compareEnabled: boolean;
 }
 
 export interface DmtgScaleItem {
@@ -149,6 +150,7 @@ export function normalizeLoadedState(
     products: [product1, product2],
     liquidation: { ...DEFAULT_LIQUIDATION, ...(payload.liquidation || {}) },
     transmission: { ...DEFAULT_TRANSMISSION, ...(payload.transmission || {}) },
+    compareEnabled: typeof payload.compareEnabled === 'boolean' ? payload.compareEnabled : false,
   };
 }
 
@@ -159,6 +161,7 @@ export function buildPersistedState(state: PlacementSimulatorState): PlacementSi
     products: state.products,
     liquidation: state.liquidation,
     transmission: state.transmission,
+    compareEnabled: state.compareEnabled,
   };
 }
 
@@ -275,6 +278,7 @@ export const DEFAULT_STATE: PlacementSimulatorState = {
   ],
   liquidation: DEFAULT_LIQUIDATION,
   transmission: DEFAULT_TRANSMISSION,
+  compareEnabled: false,
 };
 
 export function withReinvestCumul(rows: EpargneRow[] = []): EpargneRowWithReinvest[] {

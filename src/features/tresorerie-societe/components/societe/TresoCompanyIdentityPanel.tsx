@@ -10,6 +10,7 @@ import {
   fmtEuroInput,
   parseEuroInput,
 } from '../../utils/tresorerieFormatters';
+import { hasDemembrement } from '../../utils/tresorerieSocieteModel';
 import { TresoCompanyFinancialsModal } from './TresoCompanyFinancialsModal';
 
 interface TresoCompanyIdentityPanelProps {
@@ -22,6 +23,11 @@ export function TresoCompanyIdentityPanel({
   onCompanyChange,
 }: TresoCompanyIdentityPanelProps) {
   const [isFinancialsOpen, setFinancialsOpen] = useState(false);
+  const showReserveAttributionRule = hasDemembrement(company.associates);
+  // Défaut métier : sans choix explicite, on considère que l'usufruitier appréhende les réserves
+  // (clé via droits économiques). L'utilisateur peut le désactiver pour modéliser l'application
+  // stricte du principe Cass. com. 27 mai 2015 (réserves attachées au NP).
+  const usufructuaryReserveAttribution = company.usufructuaryReserveAttribution !== false;
 
   return (
     <>
@@ -89,6 +95,31 @@ export function TresoCompanyIdentityPanel({
             <span className="sim-field__unit ts-unit">€</span>
           </SimFieldShell>
         </div>
+
+        {showReserveAttributionRule && (
+          <div className="ts-reserve-attribution">
+            <label className="ts-toggle-label">
+              <input
+                type="checkbox"
+                checked={usufructuaryReserveAttribution}
+                onChange={event =>
+                  onCompanyChange({ usufructuaryReserveAttribution: event.target.checked })
+                }
+              />
+              L’usufruitier appréhende les réserves démembrées
+            </label>
+            <p className="ts-note--info ts-reserve-attribution__note">
+              Sauf convention ou statuts contraires : les réserves accumulées en cours de
+              démembrement appartiennent au nue-propriétaire (Cass. com. 27 mai 2015 n°14-16.246).
+              Si l’usufruitier les perçoit en distribution, il en bénéficie sous forme de
+              quasi-usufruit avec dette de restitution. À valider avec votre conseil juridique.
+              {' '}
+              {usufructuaryReserveAttribution
+                ? 'Réserves distribuables : reparties selon les droits économiques.'
+                : 'Réserves distribuables : reparties uniquement aux associés en pleine propriété.'}
+            </p>
+          </div>
+        )}
       </div>
 
       {isFinancialsOpen ? (

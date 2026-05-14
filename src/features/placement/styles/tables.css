@@ -60,9 +60,96 @@
   min-width: 220px;
 }
 
+.pl-ir-table th.pl-rowlabel {
+  text-align: left !important;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--color-c10);
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.pl-colhead--add {
+  width: 44px;
+  min-width: 44px;
+  text-align: right;
+  vertical-align: middle;
+}
+
+.pl-add-product-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: 1px solid var(--color-c8);
+  border-radius: 50%;
+  background: var(--color-c7);
+  color: var(--color-c2);
+  font-size: 17px;
+  font-weight: 600;
+  line-height: 1;
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s, color 0.2s, transform 0.2s;
+}
+
+.pl-add-product-btn:hover {
+  border-color: var(--color-c2);
+  background: color-mix(in srgb, var(--color-c2) 8%, transparent);
+  transform: translateY(-1px);
+}
+
+.pl-remove-product-btn {
+  margin-left: 6px;
+  width: 20px;
+  height: 20px;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--color-c9);
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.pl-remove-product-btn:hover {
+  background: var(--color-c8);
+  color: var(--color-c1);
+}
+
+/* Mode projection 1 placement : table à 2 colonnes (libellé + valeur unique). */
+.pl-table--single th,
+.pl-table--single td {
+  width: auto;
+}
+
+.pl-table--single th:first-child,
+.pl-table--single td:first-child {
+  width: 28%;
+}
+
+.pl-table--single th:nth-child(2),
+.pl-table--single td:nth-child(2) {
+  width: auto;
+}
+
+.pl-table--single th:nth-child(3),
+.pl-table--single td:nth-child(3) {
+  width: 44px;
+  min-width: 44px;
+  padding-left: 4px;
+}
+
+.pl-table--single .pl-colbadge-wrapper {
+  justify-content: center;
+}
+
 .pl-colbadge-wrapper {
   display: flex;
   justify-content: center;
+  align-items: center;
 }
 
 .pl-collabel {
@@ -111,7 +198,7 @@
   left: 50%;
   transform: translateX(-50%);
   z-index: 50;
-  background: white;
+  background: #FFFFFF;
   border: 1px solid var(--color-c8);
   border-radius: 8px;
   min-width: 180px;

@@ -102,6 +102,28 @@
   gap: 12px;
 }
 
+/* Mode projection 1 placement : carte ROI centrée sur 1 colonne. */
+.pl-roi-compare--single .pl-roi-compare__grid {
+  grid-template-columns: minmax(0, 320px);
+  justify-content: center;
+}
+
+.pl-kpi-compare.pl-kpi-compare--single {
+  max-width: 280px;
+  margin: 0 auto;
+  grid-template-columns: minmax(0, 1fr) auto;
+  justify-content: center;
+  text-align: left;
+}
+
+.pl-kpi-compare--single .pl-kpi-label {
+  text-align: left;
+}
+
+.pl-kpi-compare--single .pl-kpi-val--single {
+  text-align: right;
+}
+
 .pl-roi-compare__card {
   position: relative;
   display: flex;
@@ -188,6 +210,7 @@
 }
 
 .pl-kpi-compare__separator {
+  grid-column: 1 / -1;
   height: 1px;
   margin: 4px 0 2px;
   background: var(--color-c8);

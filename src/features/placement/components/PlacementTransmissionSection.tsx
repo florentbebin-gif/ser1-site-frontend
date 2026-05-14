@@ -20,6 +20,7 @@ interface PlacementTransmissionSectionProps {
   dmtgConsumptionPercentProduit1: number;
   dmtgConsumptionPercentProduit2: number;
   psSettings?: typeof DEFAULT_PS_SETTINGS | null;
+  compareEnabled: boolean;
 }
 
 export function PlacementTransmissionSection({
@@ -32,6 +33,7 @@ export function PlacementTransmissionSection({
   dmtgConsumptionPercentProduit1,
   dmtgConsumptionPercentProduit2,
   psSettings,
+  compareEnabled,
 }: PlacementTransmissionSectionProps) {
   const psDecesProduit1 = produit1?.transmission?.psDeces;
   const psDecesProduit2 = produit2?.transmission?.psDeces;
@@ -128,7 +130,7 @@ export function PlacementTransmissionSection({
                     Consommation estimée de la tranche DMTG (sur l’assiette réellement soumise aux DMTG) <sup>(1)</sup> :
                     <div className="pl-alert__block">
                       <div>Placement 1 : {dmtgConsumptionPercentProduit1}%</div>
-                      <div>Placement 2 : {dmtgConsumptionPercentProduit2}%</div>
+                      {compareEnabled && <div>Placement 2 : {dmtgConsumptionPercentProduit2}%</div>}
                     </div>
                     <div className="pl-alert__block">
                       Pensez à ajuster la tranche DMTG pour refléter l’ensemble du patrimoine.
@@ -165,15 +167,17 @@ export function PlacementTransmissionSection({
               <td>{euro((produit1?.transmission?.taxeForfaitaire || 0) + (produit1?.transmission?.taxeDmtg || 0))}</td>
               <td><strong>{euro(produit1?.transmission?.capitalTransmisNet || 0)}</strong></td>
             </tr>
-            <tr>
-              <td>{produit2?.envelopeLabel || 'Produit 2'}</td>
-              <td>{euro(produit2?.transmission?.capitalTransmis || 0)}</td>
-              <td>{euro(produit2?.transmission?.abattement || 0)}</td>
-              <td>{euro(produit2?.transmission?.assiette || 0)}</td>
-              <td>{formatPsMontant(psDecesProduit2, euro)}</td>
-              <td>{euro((produit2?.transmission?.taxeForfaitaire || 0) + (produit2?.transmission?.taxeDmtg || 0))}</td>
-              <td><strong>{euro(produit2?.transmission?.capitalTransmisNet || 0)}</strong></td>
-            </tr>
+            {compareEnabled && (
+              <tr>
+                <td>{produit2?.envelopeLabel || 'Produit 2'}</td>
+                <td>{euro(produit2?.transmission?.capitalTransmis || 0)}</td>
+                <td>{euro(produit2?.transmission?.abattement || 0)}</td>
+                <td>{euro(produit2?.transmission?.assiette || 0)}</td>
+                <td>{formatPsMontant(psDecesProduit2, euro)}</td>
+                <td>{euro((produit2?.transmission?.taxeForfaitaire || 0) + (produit2?.transmission?.taxeDmtg || 0))}</td>
+                <td><strong>{euro(produit2?.transmission?.capitalTransmisNet || 0)}</strong></td>
+              </tr>
+            )}
             {!hasTransmissionData && (
               <tr>
                 <td colSpan={7} className="pl-empty-row">

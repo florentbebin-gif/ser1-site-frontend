@@ -146,6 +146,7 @@ function buildProps(): ComponentProps<typeof PlacementResultsPanel> {
         { dureeEpargne: 10, envelope: 'SCPI', perBancaire: false },
         { dureeEpargne: 10, envelope: 'AV', perBancaire: false },
       ],
+      compareEnabled: true,
       transmission: { ageAuDeces: 85 },
     } as ComponentProps<typeof PlacementResultsPanel>['state'],
   };

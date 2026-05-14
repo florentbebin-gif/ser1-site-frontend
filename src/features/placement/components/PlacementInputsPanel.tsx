@@ -46,6 +46,7 @@ interface PlacementInputsPanelProps {
   dmtgSelectOptions: DmtgOption[];
   selectedDmtgTrancheWidth: number | null;
   psSettings: UsePlacementSettingsResult['psSettings'];
+  setCompareEnabled: (_value: boolean) => void;
 }
 
 export function PlacementInputsPanel({
@@ -70,11 +71,13 @@ export function PlacementInputsPanel({
   dmtgSelectOptions,
   selectedDmtgTrancheWidth,
   psSettings,
+  setCompareEnabled,
 }: PlacementInputsPanelProps) {
+  const compareEnabled = state.compareEnabled;
   const assietteDmtgProduit1 = (produit1?.transmission?.taxeDmtg || 0) > 0
     ? (produit1?.transmission?.assiette || 0)
     : 0;
-  const assietteDmtgProduit2 = (produit2?.transmission?.taxeDmtg || 0) > 0
+  const assietteDmtgProduit2 = compareEnabled && (produit2?.transmission?.taxeDmtg || 0) > 0
     ? (produit2?.transmission?.assiette || 0)
     : 0;
 
@@ -86,14 +89,13 @@ export function PlacementInputsPanel({
     assietteDmtgProduit1PerBenef,
     selectedDmtgTrancheWidth ?? 0,
   );
-  const dmtgConsumptionRatioProduit2 = computeDmtgConsumptionRatio(
-    assietteDmtgProduit2PerBenef,
-    selectedDmtgTrancheWidth ?? 0,
-  );
+  const dmtgConsumptionRatioProduit2 = compareEnabled
+    ? computeDmtgConsumptionRatio(assietteDmtgProduit2PerBenef, selectedDmtgTrancheWidth ?? 0)
+    : 0;
 
   const showDmtgDisclaimer =
     shouldShowDmtgDisclaimer(assietteDmtgProduit1PerBenef, selectedDmtgTrancheWidth ?? 0)
-    || shouldShowDmtgDisclaimer(assietteDmtgProduit2PerBenef, selectedDmtgTrancheWidth ?? 0);
+    || (compareEnabled && shouldShowDmtgDisclaimer(assietteDmtgProduit2PerBenef, selectedDmtgTrancheWidth ?? 0));
 
   const dmtgConsumptionPercentProduit1 = Math.min(100, Math.round(dmtgConsumptionRatioProduit1 * 100));
   const dmtgConsumptionPercentProduit2 = Math.min(100, Math.round(dmtgConsumptionRatioProduit2 * 100));
@@ -121,6 +123,8 @@ export function PlacementInputsPanel({
           columnsProduit1={columnsProduit1}
           columnsProduit2={columnsProduit2}
           renderEpargneRow={renderEpargneRow}
+          compareEnabled={compareEnabled}
+          setCompareEnabled={setCompareEnabled}
         />
       )}
 
@@ -134,6 +138,7 @@ export function PlacementInputsPanel({
           setShowAllColumns={setShowAllColumns}
           produit1={produit1}
           produit2={produit2}
+          compareEnabled={compareEnabled}
         />
       )}
 
@@ -148,6 +153,7 @@ export function PlacementInputsPanel({
           dmtgConsumptionPercentProduit1={dmtgConsumptionPercentProduit1}
           dmtgConsumptionPercentProduit2={dmtgConsumptionPercentProduit2}
           psSettings={psSettings}
+          compareEnabled={compareEnabled}
         />
       )}
     </>
