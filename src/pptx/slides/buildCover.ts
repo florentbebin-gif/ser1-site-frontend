@@ -10,11 +10,11 @@ import type { CoverSlideSpec, ExportContext } from '../theme/types';
 import {
   COORDS_COVER,
   TYPO,
-  addAccentLine,
   addCornerMarks,
   addTextBox,
   calculateLogoPosition,
   DEFAULT_LOGO_PLACEMENT,
+  roleColor,
 } from '../designSystem/serenity';
 import { MASTER_NAMES } from '../template/loadBaseTemplate';
 
@@ -122,7 +122,16 @@ export function buildCover(
   });
   
   // Divider line (accent color)
-  addAccentLine(slide, theme, 'cover');
+  slide.addShape('line', {
+    x: COORDS_COVER.dividerLine.x,
+    y: COORDS_COVER.dividerLine.y,
+    w: COORDS_COVER.dividerLine.w,
+    h: 0,
+    line: {
+      color: roleColor(theme, 'accent'),
+      width: 0.75,
+    },
+  });
   
   // Subtitle (centered)
   addTextBox(slide, spec.subtitle, COORDS_COVER.subtitle, {

@@ -111,56 +111,6 @@ export function drawDebugLayoutZones(
 }
 
 /**
- * Add accent line (horizontal) - POSITIONED BETWEEN TITLE AND SUBTITLE
- *
- * IMPORTANT: The line is now positioned at the MIDPOINT between title and subtitle zones,
- * not at the bottom of the title box. This creates proper visual separation.
- *
- * @deprecated Use addHeader() instead for text-based positioning
- */
-export function addAccentLine(
-  slide: PptxGenJS.Slide,
-  theme: PptxThemeRoles,
-  variant: 'cover' | 'chapter' | 'content'
-): void {
-  let coords: { x: number; y: number; w: number };
-  let lineWidth: number;
-
-  if (variant === 'cover') {
-    // Cover slide uses fixed coordinates (no subtitle zone)
-    coords = COORDS_COVER.dividerLine;
-    lineWidth = 0.75;
-  } else {
-    // Chapter and Content: calculate Y position at midpoint between title and subtitle
-    const layoutZones = variant === 'chapter' ? LAYOUT_ZONES.chapter : LAYOUT_ZONES.content;
-    const baseCoords = variant === 'chapter' ? COORDS_CHAPTER.accentLine : COORDS_CONTENT.accentLine;
-
-    // Calculate midpoint between title bottom and subtitle top
-    const titleBottomY = layoutZones.titleBox.y + layoutZones.titleBox.h;
-    const subtitleTopY = layoutZones.subtitleBox.y;
-    const accentLineY = titleBottomY + (subtitleTopY - titleBottomY) * 0.5;
-
-    coords = {
-      x: baseCoords.x,
-      y: accentLineY,
-      w: baseCoords.w
-    };
-    lineWidth = 1.5;
-  }
-
-  slide.addShape('line', {
-    x: coords.x,
-    y: coords.y,
-    w: coords.w,
-    h: 0,
-    line: {
-      color: roleColor(theme, 'accent'),
-      width: lineWidth,
-    },
-  });
-}
-
-/**
  * Add complete header (title + accent line + subtitle) with TEXT-BASED positioning
  *
  * IMPORTANT: This function positions the accent line based on the ACTUAL height of the title text,
