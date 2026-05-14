@@ -19,7 +19,7 @@ function Run-ScanSecrets() {
   }
 
   # Run directly (no pipeline) so exit code is reliable.
-  $scanOutput = & powershell -NoProfile -ExecutionPolicy Bypass -File $scriptPath 2>&1
+  $scanOutput = & $scriptPath 2>&1
   $code = $LASTEXITCODE
   $scanOutput | ForEach-Object { Write-Host $_ }
   if ($code -ne 0) {
@@ -47,7 +47,7 @@ function Get-TrackedEvidenceSql() {
 function Get-FilesWithMatches([string]$Pattern) {
   $rg = Get-Command rg -ErrorAction SilentlyContinue
   if ($rg) {
-    $out = @(& rg --files-with-matches --hidden --glob '!**/node_modules/**' --glob '!**/dist/**' --glob '!**/playwright-report/**' --glob '!**/package-lock.json' --glob '!**/.env*' --glob '!scripts/pre-merge-check.ps1' $Pattern 2>$null)
+    $out = @(& rg --files-with-matches --hidden --glob '!**/node_modules/**' --glob '!**/dist/**' --glob '!**/storybook-static/**' --glob '!**/coverage/**' --glob '!**/docs/api/**' --glob '!**/.lighthouseci/**' --glob '!**/playwright-report/**' --glob '!**/test-results/**' --glob '!**/package-lock.json' --glob '!**/.env*' --glob '!scripts/pre-merge-check.ps1' $Pattern 2>$null)
     $code = $LASTEXITCODE
     if ($code -eq 0) { return $out }
     if ($code -eq 1) { return @() }

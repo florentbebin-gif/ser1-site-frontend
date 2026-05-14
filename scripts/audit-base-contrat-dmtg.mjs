@@ -68,10 +68,6 @@ function walk(dir, predicate = () => true, out = []) {
   return out;
 }
 
-function lineNumberFor(content, index) {
-  return content.slice(0, index).split(/\r?\n/).length;
-}
-
 function compileDomainRuntime() {
   const resolvedRuntime = path.resolve(RUNTIME_DIR);
   const resolvedTmp = path.resolve(ROOT, '.tmp');

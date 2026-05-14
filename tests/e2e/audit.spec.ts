@@ -40,6 +40,9 @@ test.describe('Audit Patrimonial', () => {
     // At least one navigation element should be present
     const hasNav = await nextBtn.first().isVisible().catch(() => false);
     // If no explicit nav, the page itself loaded successfully
-    expect(true).toBe(true);
+    const hasWizardShell = await page.locator('main, [class*="audit"], [class*="wizard"]').first()
+      .isVisible()
+      .catch(() => false);
+    expect(hasNav || hasWizardShell).toBe(true);
   });
 });

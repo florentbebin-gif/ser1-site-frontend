@@ -47,7 +47,7 @@ export default defineConfig(({ mode }) => {
           changeOrigin: true,
           rewrite: () => '',
           configure: (proxy) => {
-            proxy.on('proxyReq', (proxyReq, req) => {
+            proxy.on('proxyReq', (proxyReq, _req) => {
               const headersToRemove = [
                 'cookie', 'connection', 'accept-language',
                 'accept-encoding', 'referer', 'origin',
@@ -63,7 +63,7 @@ export default defineConfig(({ mode }) => {
               
               // Debug logs (enable DEBUG_PROXY for troubleshooting)
               if (DEBUG_PROXY) {
-                console.log('[PROXY_REQ]', {
+                console.warn('[PROXY_REQ]', {
                   method: proxyReq.method,
                   path: proxyReq.path,
                   host: proxyReq.getHeader('host'),
@@ -74,7 +74,7 @@ export default defineConfig(({ mode }) => {
             });
             proxy.on('proxyRes', (proxyRes) => {
               if (DEBUG_PROXY) {
-                console.log('[PROXY_RES]', {
+                console.warn('[PROXY_RES]', {
                   status: proxyRes.statusCode,
                   contentType: proxyRes.headers['content-type'],
                 });

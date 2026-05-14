@@ -3,7 +3,7 @@
  *
  * Structure : SimPageShell avec colonne gauche (saisie) + colonne droite sticky (KPIs).
  * Section basse : projection comptable (drawer), hypothèses.
- * Mode expert uniquement (pas de toggle en V1).
+ * Mode expertOnly tant que le parcours simplifié produit n'est pas défini.
  */
 
 import '@/styles/sim/index.css';

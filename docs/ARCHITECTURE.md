@@ -25,7 +25,9 @@ Dev qui doit intervenir sur une feature, un export, un thème, ou Supabase.
 - React 18 + Vite 5 + TypeScript strict
 - Supabase (Auth/DB/Storage/Edge Functions)
 - Exports : PptxGenJS + JSZip (PPTX), OOXML via JSZip (XLSX)
-- Tests : Vitest (+ Playwright E2E)
+- Tests : Vitest (+ Playwright E2E), coverage V8 ciblée `src/engine/**`
+- Observabilité : Sentry + Web Vitals en opt-in (`VITE_SENTRY_DSN`)
+- DevX UI/perf : Storybook, Lighthouse CI et Typedoc engine en gates informatifs
 
 ---
 
@@ -88,7 +90,7 @@ Get-ChildItem src -Recurse -Directory |
 ```
 
 **Dette active liée à cette zone** :
-- `@deprecated` dans `src/engine/*.ts` : dette de compat à maintenir ou réduire, jamais à étendre (`rg "@deprecated" src/engine`)
+- Aucune dette `@deprecated` active dans `src/engine/` au dernier contrôle (`rg "@deprecated" src/engine` doit retourner vide).
 
 ---
 
@@ -244,11 +246,16 @@ Implémentation de référence :
 - Les boutons optionnels de filtres/sous-sections doivent démarrer inactifs par défaut, puis activer explicitement les blocs associés.
 
 ### Mode utilisateur `/sim/*` (contrat)
+Décision produit : `docs/mode-simplifie-expert.md`.
+
 - Source de vérité globale : `ui_settings.mode` via `useUserMode` (`src/settings/userMode.ts`).
 - La page Home est le point de pilotage global (toggle persistant).
 - Chaque simulateur doit lire ce mode global au montage, puis peut appliquer un override local non persistant (pattern `/sim/credit`).
 - Le toggle local d'un simulateur ne doit pas écrire dans `ui_settings` (sinon il écrase le choix Home pour toute l'app).
 - Les boutons locaux additionnels de page (filtres, catégories masquables) ne doivent pas être initialisés comme actifs par défaut sans règle produit documentée.
+- Helpers d'affichage : `src/settings/userModeDisplay.tsx` expose `resolveEffectiveUserMode`, `DetailLevel`, `ExpertOnly` et `SimpleOnly`.
+- Le mode simplifié masque ou replie de l'UI ; il ne doit jamais changer seul les hypothèses calculatoires envoyées au moteur.
+- Un simulateur sans décision produit simplifiée reste explicitement `expertOnly`. C'est le statut de `/sim/tresorerie-societe` tant que son parcours rendez-vous simplifié n'est pas défini.
 
 ### Thème V5 (3 modes)
 Source de vérité : DB (`ui_settings`).

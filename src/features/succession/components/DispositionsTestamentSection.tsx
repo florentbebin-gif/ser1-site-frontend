@@ -41,11 +41,11 @@ interface DispositionsTestamentSectionProps {
   onAddParticularLegacy: (side: SuccessionPrimarySide) => void;
   onUpdateParticularLegacy: (
     side: SuccessionPrimarySide,
-    legacyId: string,
+    particularLegacyId: string,
     field: 'beneficiaryRef' | 'amount' | 'label',
     value: string | number | SuccessionBeneficiaryRef | null,
   ) => void;
-  onRemoveParticularLegacy: (side: SuccessionPrimarySide, legacyId: string) => void;
+  onRemoveParticularLegacy: (side: SuccessionPrimarySide, particularLegacyId: string) => void;
 }
 
 function clampPercentage(value: string): number {
@@ -184,14 +184,14 @@ export function DispositionsTestamentSection({
                   {selectedDisposition === 'legs_particulier' && (
                     <div className="sc-field">
                       <label>Legs particuliers</label>
-                      <div className="sc-testament-legacy-list">
+                      <div className="sc-testament-particular-legacy-list">
                         {testament.particularLegacies.length === 0 && (
                           <p className="sc-hint sc-hint--compact">
                             Aucun legs particulier saisi pour le moment.
                           </p>
                         )}
                         {testament.particularLegacies.map((entry) => (
-                          <div key={entry.id} className="sc-testament-legacy-row">
+                          <div key={entry.id} className="sc-testament-particular-legacy-row">
                             <ScSelect
                               className="sc-testament-select"
                               value={entry.beneficiaryRef ?? ''}

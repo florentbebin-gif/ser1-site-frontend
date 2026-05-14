@@ -120,6 +120,39 @@ export default [
       'no-unused-vars': ['warn', { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }],
     },
   },
+  {
+    files: ['*.config.ts', '.storybook/**/*.{ts,tsx}'],
+    languageOptions: {
+      globals: {
+        ...globals.node,
+        ...globals.browser,
+      },
+    },
+  },
+  {
+    files: ['scripts/**/*.mjs'],
+    languageOptions: {
+      globals: {
+        ...globals.node,
+      },
+    },
+    rules: {
+      'no-console': 'off',
+      'max-lines': 'off',
+    },
+  },
+  {
+    files: ['*.cjs'],
+    languageOptions: {
+      sourceType: 'commonjs',
+      globals: {
+        ...globals.node,
+      },
+    },
+    rules: {
+      'no-console': 'off',
+    },
+  },
   // Source-of-truth catalogs / defaults / design-system modules can stay large
   // without carrying the same review signal as orchestration or business-flow files.
   {
@@ -149,6 +182,6 @@ export default [
     },
   },
   {
-    ignores: ['dist/**', 'node_modules/**', '*.config.js', '*.config.ts', 'tools/eslint-plugin-ser1-colors/**'],
+    ignores: ['dist/**', 'node_modules/**', '*.config.js', 'tools/eslint-plugin-ser1-colors/**'],
   },
 ];

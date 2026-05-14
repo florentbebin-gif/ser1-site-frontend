@@ -19,11 +19,42 @@ $patterns = @(
     @{ Name = "Vercel deployment URL"; Pattern = 'ser1.*\.vercel\.app' }
 )
 
-$excludePattern = '\\(node_modules|dist|\.git|\.vercel|supabase\\\.temp)\\'
+$excludePattern = '\\(node_modules|dist|storybook-static|coverage|docs\\api|\.lighthouseci|playwright-report|test-results|\.git|\.vercel|supabase\\\.temp)\\'
 $allowedMatches = @{
     "Vercel deployment URL" = @(
         "supabase/functions/admin/cors.ts",
         "supabase/functions/admin/cors_test.ts"
+    )
+}
+
+function Get-ScannedFiles() {
+    $rg = Get-Command rg -ErrorAction SilentlyContinue
+    if ($rg) {
+        return @(& rg --files --hidden `
+            --glob '*.ts' `
+            --glob '*.tsx' `
+            --glob '*.js' `
+            --glob '*.jsx' `
+            --glob '*.json' `
+            --glob '*.md' `
+            --glob '*.sql' `
+            --glob '!**/node_modules/**' `
+            --glob '!**/dist/**' `
+            --glob '!**/storybook-static/**' `
+            --glob '!**/coverage/**' `
+            --glob '!**/docs/api/**' `
+            --glob '!**/.lighthouseci/**' `
+            --glob '!**/playwright-report/**' `
+            --glob '!**/test-results/**' `
+            --glob '!**/.git/**' `
+            --glob '!**/.vercel/**' `
+            --glob '!**/supabase/.temp/**')
+    }
+
+    return @(
+        Get-ChildItem -Recurse -File -Include "*.ts","*.tsx","*.js","*.jsx","*.json","*.md","*.sql" |
+            Where-Object { $_.FullName -notmatch $excludePattern } |
+            Select-Object -ExpandProperty FullName
     )
 }
 
@@ -46,12 +77,12 @@ function Test-AllowedMatch([string]$PatternName, [string]$Path) {
 }
 
 $hasIssues = $false
+$scannedFiles = Get-ScannedFiles
 
 foreach ($p in $patterns) {
     Write-Host "Checking: $($p.Name)" -ForegroundColor Yellow
     
-    $matches = Get-ChildItem -Recurse -File -Include "*.ts","*.tsx","*.js","*.jsx","*.json","*.md","*.sql" |
-        Where-Object { $_.FullName -notmatch $excludePattern } |
+    $matches = $scannedFiles |
         Select-String -Pattern $p.Pattern -AllMatches |
         Where-Object { -not (Test-AllowedMatch $p.Name $_.Path) }
     

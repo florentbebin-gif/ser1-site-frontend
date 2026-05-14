@@ -1,5 +1,11 @@
 import { type Page } from '@playwright/test';
 
+declare global {
+  interface Window {
+    __SER1_E2E?: boolean;
+  }
+}
+
 /**
  * Enable the lightweight E2E mode used by smoke tests.
  *
@@ -13,7 +19,7 @@ import { type Page } from '@playwright/test';
  */
 export async function enableE2EMode(page: Page): Promise<void> {
   await page.addInitScript(() => {
-    (window as any).__SER1_E2E = true;
+    window.__SER1_E2E = true;
   });
 }
 

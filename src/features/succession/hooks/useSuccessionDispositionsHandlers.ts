@@ -76,14 +76,14 @@ export function useSuccessionDispositionsHandlers({
 
   const updateDispositionsParticularLegacy = useCallback((
     side: SuccessionPrimarySide,
-    legacyId: string,
+    particularLegacyId: string,
     field: 'beneficiaryRef' | 'amount' | 'label',
     value: string | number | SuccessionBeneficiaryRef | null,
   ) => {
     setDispositionsDraft((prev) => updateDraftTestament(prev, side, (current) => ({
       ...current,
       particularLegacies: current.particularLegacies.map((entry) => {
-        if (entry.id !== legacyId) return entry;
+        if (entry.id !== particularLegacyId) return entry;
         if (field === 'beneficiaryRef') {
           return {
             ...entry,
@@ -104,10 +104,13 @@ export function useSuccessionDispositionsHandlers({
     })));
   }, [setDispositionsDraft]);
 
-  const removeDispositionsParticularLegacy = useCallback((side: SuccessionPrimarySide, legacyId: string) => {
+  const removeDispositionsParticularLegacy = useCallback((
+    side: SuccessionPrimarySide,
+    particularLegacyId: string,
+  ) => {
     setDispositionsDraft((prev) => updateDraftTestament(prev, side, (current) => ({
       ...current,
-      particularLegacies: current.particularLegacies.filter((entry) => entry.id !== legacyId),
+      particularLegacies: current.particularLegacies.filter((entry) => entry.id !== particularLegacyId),
     })));
   }, [setDispositionsDraft]);
 

@@ -20,7 +20,6 @@
  *   npx depcruise src --config .dependency-cruiser.cjs
  */
 
-/* eslint-disable */
 'use strict';
 
 const path = require('path');
