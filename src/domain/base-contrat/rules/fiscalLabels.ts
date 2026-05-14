@@ -47,21 +47,36 @@ export function buildBaseContratFiscalLabels(
   const ps = settings._raw_ps ?? DEFAULT_PS_SETTINGS;
   const fiscality = settings._raw_fiscality ?? DEFAULT_FISCALITY_SETTINGS;
 
-  const pfuRateIR = settings.pfuRateIR ?? tax.pfu.current.rateIR;
-  const psRateGeneral = settings.psRateGeneral ?? ps.patrimony.current.generalRate;
-  const psRateException = settings.psRateException ?? ps.patrimony.current.exceptionRate;
+  const pfuRateIR = settings.pfuRateIR ?? tax.pfu?.current?.rateIR ?? DEFAULT_TAX_SETTINGS.pfu.current.rateIR;
+  const psRateGeneral = settings.psRateGeneral
+    ?? ps.patrimony?.current?.generalRate
+    ?? DEFAULT_PS_SETTINGS.patrimony.current.generalRate;
+  const psRateException = settings.psRateException
+    ?? ps.patrimony?.current?.exceptionRate
+    ?? DEFAULT_PS_SETTINGS.patrimony.current.exceptionRate;
   const pfuRateTotal = pfuRateIR + psRateGeneral;
 
-  const avRetraitsDepuis2017 = fiscality.assuranceVie.retraitsCapital.depuis2017;
-  const avPlus8Ans = avRetraitsDepuis2017.plus8Ans;
-  const avPsRate = fiscality.assuranceVie.retraitsCapital.psRatePercent ?? psRateException;
-  const avDeces = fiscality.assuranceVie.deces;
-  const av990IBrackets = avDeces.primesApres1998.brackets.length >= 2
-    ? avDeces.primesApres1998.brackets
+  const defaultAssuranceVie = DEFAULT_FISCALITY_SETTINGS.assuranceVie;
+  const assuranceVie = fiscality.assuranceVie ?? defaultAssuranceVie;
+  const avRetraitsCapital = assuranceVie.retraitsCapital ?? defaultAssuranceVie.retraitsCapital;
+  const avRetraitsDepuis2017 =
+    avRetraitsCapital.depuis2017 ?? defaultAssuranceVie.retraitsCapital.depuis2017;
+  const avPlus8AnsDefaults = defaultAssuranceVie.retraitsCapital.depuis2017.plus8Ans;
+  const avPlus8Ans = avRetraitsDepuis2017.plus8Ans ?? avPlus8AnsDefaults;
+  const avPlus8AnsAbattementAnnuel =
+    avPlus8Ans.abattementAnnuel ?? avPlus8AnsDefaults.abattementAnnuel;
+  const avPsRate = avRetraitsCapital.psRatePercent ?? psRateException;
+  const avDeces = assuranceVie.deces ?? defaultAssuranceVie.deces;
+  const avPrimesApres1998 = avDeces.primesApres1998 ?? defaultAssuranceVie.deces.primesApres1998;
+  const av990IBrackets = (avPrimesApres1998.brackets?.length ?? 0) >= 2
+    ? avPrimesApres1998.brackets
     : DEFAULT_FISCALITY_SETTINGS.assuranceVie.deces.primesApres1998.brackets;
   const av990ITranche1 = av990IBrackets[0];
   const av990ITranche2 = av990IBrackets[1];
-  const av990IAllowance = avDeces.primesApres1998.allowancePerBeneficiary;
+  const av990IAllowance =
+    avPrimesApres1998.allowancePerBeneficiary
+    ?? defaultAssuranceVie.deces.primesApres1998.allowancePerBeneficiary;
+  const avApres70Ans = avDeces.apres70ans ?? defaultAssuranceVie.deces.apres70ans;
   const av990ITranche1DisplayThreshold =
     av990ITranche1?.upTo == null ? null : av990IAllowance + av990ITranche1.upTo;
   const ruleLabels = DEFAULT_BASE_CONTRAT_RULE_LABEL_SETTINGS;
@@ -77,21 +92,27 @@ export function buildBaseContratFiscalLabels(
     psGeneral: `${formatPercent(psRateGeneral)} prélèvements sociaux`,
     psException: `${formatPercent(psRateException)} prélèvements sociaux`,
     dmtgLigneDirecteAbattement: `${formatEuro(
-      settings.dmtgAbattementEnfant ?? tax.dmtg.ligneDirecte.abattement,
+      settings.dmtgAbattementEnfant
+      ?? tax.dmtg?.ligneDirecte?.abattement
+      ?? DEFAULT_TAX_SETTINGS.dmtg.ligneDirecte.abattement,
     )} par enfant`,
     assuranceVie990IAllowance: `${formatEuro(av990IAllowance)} par bénéficiaire`,
-    assuranceVie757BAllowance: `${formatEuro(avDeces.apres70ans.globalAllowance)} partagé entre tous les bénéficiaires`,
+    assuranceVie757BAllowance: `${formatEuro(
+      avApres70Ans.globalAllowance ?? defaultAssuranceVie.deces.apres70ans.globalAllowance,
+    )} partagé entre tous les bénéficiaires`,
     assuranceVie990IRates: av990IRates,
     assuranceVieRachatMoins8Ans: `Avant 8 ans : PFU ${formatPercent(pfuRateTotal)} (${formatPercent(
       pfuRateIR,
     )} IR + ${formatPercent(avPsRate)} prélèvements sociaux), ou option barème IR.`,
     assuranceVieRachatPlus8Ans: `Après 8 ans : abattement annuel ${formatEuro(
-      avPlus8Ans.abattementAnnuel.single,
+      avPlus8AnsAbattementAnnuel.single,
     )} (personne seule) / ${formatEuro(
-      avPlus8Ans.abattementAnnuel.couple,
+      avPlus8AnsAbattementAnnuel.couple,
     )} (couple). Taux IR ${formatPercent(
-      avPlus8Ans.irRateUnderThresholdPercent,
-    )} si total primes < ${formatEuro(avPlus8Ans.primesNettesSeuil)}, sinon ${formatPercent(pfuRateIR)}.`,
+      avPlus8Ans.irRateUnderThresholdPercent ?? avPlus8AnsDefaults.irRateUnderThresholdPercent,
+    )} si total primes < ${formatEuro(
+      avPlus8Ans.primesNettesSeuil ?? avPlus8AnsDefaults.primesNettesSeuil,
+    )}, sinon ${formatPercent(pfuRateIR)}.`,
     assuranceVieRetraitsPs: `Prélèvements sociaux : ${formatPercent(avPsRate)} dans tous les cas (après abattement).`,
     capitalGainIr: `IR ${formatPercent(ruleLabels.capitalGains.irRatePercent)}`,
     malrauxReductionRates: `${formatPercent(
@@ -116,7 +137,8 @@ export function buildBaseContratFiscalLabels(
       ruleLabels.sofica.minReductionRatePercent,
     )} à ${formatPercent(ruleLabels.sofica.maxReductionRatePercent)} selon les investissements réalisés`,
     ifiResidencePrincipaleAbattement: `${formatPercent(
-      tax.ifi.current.residencePrincipaleAbattementRate,
+      tax.ifi?.current?.residencePrincipaleAbattementRate
+      ?? DEFAULT_TAX_SETTINGS.ifi.current.residencePrincipaleAbattementRate,
     )} sur la valeur de la résidence principale`,
   };
 }
