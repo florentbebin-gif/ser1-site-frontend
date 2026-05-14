@@ -1,6 +1,5 @@
 import type {
   AllocationPocketInput,
-  AssociateRevenuePhaseInput,
   AssociateInput,
   CapitalisationPocketInput,
   CompanyLoanInput,
@@ -13,7 +12,7 @@ import type {
   TresoInputsV5,
   TresoInputsV6,
 } from '@/engine/tresorerie/types';
-import { sortPhases } from './revenuePhases';
+import { buildTresoInputsV5FromV4 as buildTresoInputsV5FromV4Internal } from './tresorerieV5Migration';
 import { buildTresoInputsV6FromV5 as buildTresoInputsV6FromV5Internal } from './tresorerieV6Migration';
 
 const DEFAULT_ASSOCIATE_ID = 'associe-1';
@@ -36,10 +35,6 @@ type LegacySubsidiaryFields = {
   disposalYear?: number;
   estimatedDisposalPrice?: number;
   taxBasis?: number;
-};
-
-type AssociateWithMaybeV5 = AssociateInput & {
-  revenuePhases?: AssociateRevenuePhaseInput[];
 };
 
 function currentYear(): number {
@@ -312,66 +307,6 @@ function scheduleFromAnnualAmount(amount: number, startYear: number) {
   return amount > 0 ? [{ amount, startYear }] : [];
 }
 
-function buildDefaultRevenuePhase(projectionStartYear: number): AssociateRevenuePhaseInput {
-  return {
-    id: 'phase-default',
-    startYear: projectionStartYear,
-    source: 'none',
-    loadedAnnualCost: 0,
-    socialChargeRate: 0,
-    annualNetIncomeNeed: 0,
-    useCcaForCompletion: true,
-  };
-}
-
-function deriveRevenuePhasesFromLegacy(
-  associate: AssociateWithMaybeV5,
-  projectionStartYear: number,
-): AssociateRevenuePhaseInput[] {
-  if (associate.revenuePhases && associate.revenuePhases.length > 0) {
-    return sortPhases(associate.revenuePhases);
-  }
-
-  const remuneration = associate.remuneration;
-  const profileNeed = associate.profile?.annualIncomeNeed ?? 0;
-  const phases: AssociateRevenuePhaseInput[] = [];
-  const startYear = remuneration?.startYear ?? projectionStartYear;
-
-  if (remuneration && remuneration.loadedAnnualCost > 0) {
-    phases.push({
-      id: 'phase-legacy-1',
-      startYear,
-      source: remuneration.source,
-      subsidiaryId: remuneration.subsidiaryId,
-      loadedAnnualCost: Math.max(0, remuneration.loadedAnnualCost),
-      socialChargeRate: Math.max(0, Math.min(remuneration.socialChargeRate, 1)),
-      annualNetIncomeNeed: 0,
-      useCcaForCompletion: true,
-    });
-  }
-
-  const annualNeed = Math.max(remuneration?.annualNeedAfterStop ?? 0, profileNeed);
-  if (annualNeed > 0) {
-    const needStartYear = remuneration?.endYear != null ? remuneration.endYear + 1 : startYear;
-    const existingSameStart = phases.find(phase => phase.startYear === needStartYear);
-    if (existingSameStart) {
-      existingSameStart.annualNetIncomeNeed = annualNeed;
-    } else {
-      phases.push({
-        id: 'phase-legacy-2',
-        startYear: needStartYear,
-        source: 'none',
-        loadedAnnualCost: 0,
-        socialChargeRate: 0,
-        annualNetIncomeNeed: annualNeed,
-        useCcaForCompletion: true,
-      });
-    }
-  }
-
-  return phases.length > 0 ? sortPhases(phases) : [buildDefaultRevenuePhase(projectionStartYear)];
-}
-
 function normalizeProjectionStartYear(input: TresoInputsV3): number {
   const companyYear = input.company.projectionStartYear;
   if (typeof companyYear === 'number' && Number.isFinite(companyYear) && companyYear > 0) {
@@ -484,26 +419,7 @@ export function buildTresoInputsV4FromLegacy(input: TresoInputs): TresoInputsV4 
 }
 
 export function buildTresoInputsV5FromV4(input: TresoInputsV4 | TresoInputsV5): TresoInputsV5 {
-  if (input.version === 5) return input;
-  const projectionStartYear = input.company.projectionStartYear ?? currentYear();
-  return {
-    ...input,
-    version: 5,
-    company: {
-      ...input.company,
-      projectionStartYear,
-      associates: input.company.associates.map(associate => {
-        const { remuneration: _remuneration, ...associateWithoutRemuneration } = associate;
-        return {
-          ...associateWithoutRemuneration,
-          profile: associate.profile
-            ? { ...associate.profile, projectionStartYear }
-            : associate.profile,
-          revenuePhases: deriveRevenuePhasesFromLegacy(associate, projectionStartYear),
-        };
-      }),
-    },
-  };
+  return buildTresoInputsV5FromV4Internal(input);
 }
 
 export function buildTresoInputsV5FromV3(input: TresoInputsV3): TresoInputsV5 {

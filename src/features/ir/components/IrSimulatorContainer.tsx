@@ -8,6 +8,7 @@ import { useFiscalContext } from '../../../hooks/useFiscalContext';
 import { DEFAULT_PS_SETTINGS, DEFAULT_TAX_SETTINGS } from '../../../constants/settingsDefaults';
 import { useTheme } from '../../../settings/ThemeProvider';
 import { useUserMode, type UserMode } from '../../../settings/userMode';
+import { resolveEffectiveUserMode } from '../../../settings/userModeDisplay';
 import { ExportMenu } from '../../../components/ExportMenu';
 import { ModeToggle } from '../../../components/ModeToggle';
 import { SimPageShell } from '@/components/ui/sim';
@@ -90,7 +91,8 @@ export default function IrSimulatorContainer() {
 
   const { mode } = useUserMode();
   const [localMode, setLocalMode] = useState<UserMode | null>(null);
-  const isExpert = (localMode ?? mode) === 'expert';
+  const effectiveMode = resolveEffectiveUserMode(mode, localMode);
+  const isExpert = effectiveMode === 'expert';
   const toggleMode = () => setLocalMode(isExpert ? 'simplifie' : 'expert');
 
   const { fiscalContext, loading: settingsLoading } = useFiscalContext({ strict: true });

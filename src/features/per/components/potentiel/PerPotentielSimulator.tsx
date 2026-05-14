@@ -8,6 +8,7 @@ import { ExportMenu } from '../../../../components/ExportMenu';
 import { ModeToggle } from '../../../../components/ModeToggle';
 import { useFiscalContext } from '../../../../hooks/useFiscalContext';
 import { useUserMode, type UserMode } from '../../../../settings/userMode';
+import { resolveEffectiveUserMode } from '../../../../settings/userModeDisplay';
 import { useTheme } from '../../../../settings/ThemeProvider';
 import '@/styles/sim/index.css';
 import { onResetEvent } from '../../../../utils/reset';
@@ -81,7 +82,8 @@ export default function PerPotentielSimulator(): React.ReactElement {
   const { mode } = useUserMode();
   const [localMode, setLocalMode] = useState<UserMode | null>(null);
   const [incomeFilters, setIncomeFilters] = useState<PerIncomeFilters>(DEFAULT_INCOME_FILTERS);
-  const isExpert = (localMode ?? mode) === 'expert';
+  const effectiveMode = resolveEffectiveUserMode(mode, localMode);
+  const isExpert = effectiveMode === 'expert';
   const isSimplified = !isExpert;
   const toggleMode = () => setLocalMode(isExpert ? 'simplifie' : 'expert');
   const years = getPerWorkflowYears(fiscalContext);

@@ -15,6 +15,7 @@ import { ExportMenu } from '../../components/ExportMenu';
 import { ModeToggle } from '../../components/ModeToggle';
 import { useTheme } from '../../settings/ThemeProvider';
 import { useUserMode } from '../../settings/userMode';
+import { resolveEffectiveUserMode } from '../../settings/userModeDisplay';
 import { SimPageShell } from '@/components/ui/sim';
 import {
   createInitialCreditState,
@@ -224,7 +225,8 @@ export default function CreditV2() {
   // MODE EFFECTIF — simplifié tant qu'aucun capital saisi, expert sinon
   // -------------------------------------------------------------------------
   const hasCapital = ((state.pret1?.capital ?? 0) + (state.pret2?.capital ?? 0) + (state.pret3?.capital ?? 0)) > 0;
-  const effectiveMode = localMode ?? (mode === 'expert' && !hasCapital ? 'simplifie' : mode);
+  const resolvedMode = resolveEffectiveUserMode(mode, localMode);
+  const effectiveMode = localMode == null && resolvedMode === 'expert' && !hasCapital ? 'simplifie' : resolvedMode;
   const isExpert = effectiveMode === 'expert';
   const toggleMode = () => setLocalMode(isExpert ? 'simplifie' : 'expert');
 

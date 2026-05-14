@@ -74,7 +74,7 @@ export async function loadCabinetBrandingKey(userId: string): Promise<string | n
  */
 export async function loadCabinetLogo(_userId: string): Promise<{ logo?: string; placement?: LogoPlacement }> {
   try {
-    // Utiliser RPC SECURITY DEFINER pour récupérer le storage_path et placement sans RLS
+    // Lire le logo via RPC contrôlé afin de garder la logique cabinet côté base.
     const { data: result, error: rpcError } = await supabase
       .rpc('get_my_cabinet_logo');
       
@@ -127,7 +127,7 @@ export async function loadCabinetLogo(_userId: string): Promise<{ logo?: string;
  */
 export async function loadCabinetTheme(_userId: string): Promise<ThemeColors | null> {
   try {
-    // Utiliser RPC SECURITY DEFINER pour récupérer la palette sans RLS
+    // Lire la palette via RPC contrôlé afin de garder la logique cabinet côté base.
     const { data: palette, error: rpcError } = await supabase
       .rpc('get_my_cabinet_theme_palette');
       

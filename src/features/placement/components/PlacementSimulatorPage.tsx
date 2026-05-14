@@ -20,6 +20,7 @@ import { ExportMenu } from '@/components/ExportMenu';
 import { ModeToggle } from '@/components/ModeToggle';
 import { SimPageShell } from '@/components/ui/sim';
 import { useUserMode, type UserMode } from '@/settings/userMode';
+import { resolveEffectiveUserMode } from '@/settings/userModeDisplay';
 import '@/styles/sim/index.css';
 import '../styles/index.css';
 import { VersementConfigModal } from './VersementConfigModal';
@@ -33,7 +34,8 @@ import { usePlacementSimulatorController } from '../hooks/usePlacementSimulatorC
 export default function PlacementSimulatorPage() {
   const { mode } = useUserMode();
   const [localMode, setLocalMode] = useState<UserMode | null>(null);
-  const isExpert = (localMode ?? mode) === 'expert';
+  const effectiveMode = resolveEffectiveUserMode(mode, localMode);
+  const isExpert = effectiveMode === 'expert';
   const toggleMode = () => setLocalMode(isExpert ? 'simplifie' : 'expert');
 
   const {

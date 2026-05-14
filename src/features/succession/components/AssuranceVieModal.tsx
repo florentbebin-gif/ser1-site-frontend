@@ -14,11 +14,13 @@ import {
   CLAUSE_ENFANTS_LABEL,
 } from '../successionSimulator.constants';
 import {
-  getClausePreset,
   labelMember,
+} from '../successionSimulator.helpers';
+import {
+  getClausePreset,
   parseCustomClause,
   serializeCustomClause,
-} from '../successionSimulator.helpers';
+} from '../successionClauseOptions';
 import { ScNumericInput } from './ScNumericInput';
 import { ScSelect } from './ScSelect';
 

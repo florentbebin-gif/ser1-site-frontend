@@ -181,7 +181,7 @@ Coverage :
 
 Lighthouse CI :
 - Config : `lighthouserc.cjs`.
-- Routes surveillées au démarrage : `/` et `/login` sur le build preview local.
+- Routes surveillées au démarrage : `/`, `/login` et les simulateurs clés (`/sim/ir`, `/sim/credit`, `/sim/succession`, `/sim/placement`, `/sim/per`) sur le build preview local.
 - Les budgets sont en warning tant que la baseline n'est pas stabilisée.
 
 Storybook :
