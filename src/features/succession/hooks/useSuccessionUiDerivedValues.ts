@@ -17,10 +17,10 @@ import {
   type SuccessionAssetPocket,
 } from '../successionDraft';
 import {
-  buildPrevoyanceClauseOptions,
   getBirthDateLabels,
   isCoupleSituation,
 } from '../successionSimulator.helpers';
+import { buildPrevoyanceClauseOptions } from '../successionClauseOptions';
 import type {
   SuccessionAssetDetailEntry,
   SuccessionPersonParty,

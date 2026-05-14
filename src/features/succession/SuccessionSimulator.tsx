@@ -11,48 +11,22 @@
  * - Handlers export   → useSuccessionExportHandlers
  */
 
-import { useContext, useEffect, useMemo, useState } from 'react';
+import { useContext, useEffect, useMemo } from 'react';
 import { useSuccessionCalc } from './hooks/useSuccessionCalc';
 import { useTheme } from '../../settings/ThemeProvider';
 import { useUserMode } from '../../settings/userMode';
+import { resolveEffectiveUserMode } from '../../settings/userModeDisplay';
 import { SessionGuardContext } from '../../auth';
 import { useFiscalContext } from '../../hooks/useFiscalContext';
 import { ExportMenu } from '../../components/ExportMenu';
 import { ModeToggle } from '../../components/ModeToggle';
 import { SimPageShell } from '@/components/ui/sim';
-import { onResetEvent, storageKeyFor } from '../../utils/reset';
-import {
-  buildSuccessionDraftPayload,
-  DEFAULT_SUCCESSION_CIVIL_CONTEXT,
-  DEFAULT_SUCCESSION_DEVOLUTION_CONTEXT,
-  DEFAULT_SUCCESSION_DONATIONS,
-  DEFAULT_SUCCESSION_ENFANTS_CONTEXT,
-  DEFAULT_SUCCESSION_FAMILY_MEMBERS,
-  DEFAULT_SUCCESSION_ASSET_DETAILS,
-  DEFAULT_SUCCESSION_ASSURANCE_VIE,
-  DEFAULT_SUCCESSION_PER,
-  DEFAULT_SUCCESSION_LIQUIDATION_CONTEXT,
-  DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT,
-  parseSuccessionDraftPayload,
-  resolveSuccessionAssetLocation,
-  type SuccessionAssetDetailEntry,
-  type SuccessionAssuranceVieEntry,
-  type FamilyMember,
-  type SuccessionDonationEntry,
-  type SuccessionEnfant,
-  type SuccessionGroupementFoncierEntry,
-  type SuccessionPerEntry,
-  type SuccessionPrevoyanceDecesEntry,
-} from './successionDraft';
+import { storageKeyFor } from '../../utils/reset';
+import { resolveSuccessionAssetLocation } from './successionDraft';
 import { buildSuccessionFiscalSnapshot } from './successionFiscalContext';
-import { type SuccessionChainOrder } from './successionChainage';
+import { useSuccessionDraftPersistence } from './hooks/useSuccessionDraftPersistence';
 import { useSuccessionSyncEffects } from './hooks/useSuccessionSyncEffects';
-import {
-  buildInitialDispositionsDraft,
-  EMPTY_ADD_FAMILY_MEMBER_FORM,
-  type AddFamilyMemberFormState,
-  type DispositionsDraftState,
-} from './successionSimulator.helpers';
+import { useSuccessionDraftState } from './hooks/useSuccessionDraftState';
 import { useSuccessionDerivedValues } from './hooks/useSuccessionDerivedValues';
 import { useSuccessionDonationPartageHandlers } from './hooks/useSuccessionDonationPartageHandlers';
 import { useSuccessionExportHandlers } from './hooks/useSuccessionExportHandlers';
@@ -85,45 +59,29 @@ export default function SuccessionSimulator() {
   const { sessionExpired, canExport } = useContext(SessionGuardContext);
 
   // ── États locaux ───────────────────────────────────────────────────────────
-  const [localMode, setLocalMode] = useState<null | 'expert' | 'simplifie'>(null);
-  const isExpert = (localMode ?? mode) === 'expert';
-  const [hypothesesOpen, setHypothesesOpen] = useState(false);
-  const [hydrated, setHydrated] = useState(false);
-  const [civilContext, setCivilContext] = useState(DEFAULT_SUCCESSION_CIVIL_CONTEXT);
-  const [liquidationContext, setLiquidationContext] = useState(DEFAULT_SUCCESSION_LIQUIDATION_CONTEXT);
-  const [assetEntries, setAssetEntries] = useState<SuccessionAssetDetailEntry[]>(DEFAULT_SUCCESSION_ASSET_DETAILS);
-  const [assuranceVieEntries, setAssuranceVieEntries] = useState<SuccessionAssuranceVieEntry[]>(DEFAULT_SUCCESSION_ASSURANCE_VIE);
-  const [perEntries, setPerEntries] = useState<SuccessionPerEntry[]>(DEFAULT_SUCCESSION_PER);
-  const [devolutionContext, setDevolutionContext] = useState(DEFAULT_SUCCESSION_DEVOLUTION_CONTEXT);
-  const [patrimonialContext, setPatrimonialContext] = useState(DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT);
-  const [donationsContext, setDonationsContext] = useState<SuccessionDonationEntry[]>(DEFAULT_SUCCESSION_DONATIONS);
-  const [enfantsContext, setEnfantsContext] = useState<SuccessionEnfant[]>(DEFAULT_SUCCESSION_ENFANTS_CONTEXT);
-  const [familyMembers, setFamilyMembers] = useState<FamilyMember[]>(DEFAULT_SUCCESSION_FAMILY_MEMBERS);
-  const [showAddMemberPanel, setShowAddMemberPanel] = useState(false);
-  const [showDispositionsModal, setShowDispositionsModal] = useState(false);
-  const [showAssuranceVieModal, setShowAssuranceVieModal] = useState(false);
-  const [showPerModal, setShowPerModal] = useState(false);
-  const [showPrevoyanceModal, setShowPrevoyanceModal] = useState(false);
-  const [assuranceVieDraft, setAssuranceVieDraft] = useState<SuccessionAssuranceVieEntry | null>(null);
-  const [perDraft, setPerDraft] = useState<SuccessionPerEntry | null>(null);
-  const [prevoyanceDraft, setPrevoyanceDraft] = useState<SuccessionPrevoyanceDecesEntry | null>(null);
-  const [groupementFoncierEntries, setGroupementFoncierEntries] = useState<SuccessionGroupementFoncierEntry[]>([]);
-  const [prevoyanceDecesEntries, setPrevoyanceDecesEntries] = useState<SuccessionPrevoyanceDecesEntry[]>([]);
-  const [dispositionsDraft, setDispositionsDraft] = useState<DispositionsDraftState>(buildInitialDispositionsDraft);
-  const [addMemberForm, setAddMemberForm] = useState<AddFamilyMemberFormState>(EMPTY_ADD_FAMILY_MEMBER_FORM);
-  const [chainOrder, setChainOrder] = useState<SuccessionChainOrder>('epoux1');
   const {
-    donationPartageActs,
-    setDonationPartageActs,
-    showDonationPartageModal,
-    setShowDonationPartageModal,
-    donationPartageDraft,
-    setDonationPartageDraft,
-    openDonationPartageAct,
-    openDonationPartageFromEntry,
-    closeDonationPartageModal,
-    validateDonationPartageModal,
-    removeDonationPartageAct,
+    localMode, setLocalMode, hypothesesOpen, setHypothesesOpen, hydrated, setHydrated,
+    civilContext, setCivilContext, liquidationContext, setLiquidationContext,
+    assetEntries, setAssetEntries, assuranceVieEntries, setAssuranceVieEntries,
+    perEntries, setPerEntries, devolutionContext, setDevolutionContext,
+    patrimonialContext, setPatrimonialContext, donationsContext, setDonationsContext,
+    enfantsContext, setEnfantsContext, familyMembers, setFamilyMembers,
+    showAddMemberPanel, setShowAddMemberPanel, showDispositionsModal, setShowDispositionsModal,
+    showAssuranceVieModal, setShowAssuranceVieModal, showPerModal, setShowPerModal,
+    showPrevoyanceModal, setShowPrevoyanceModal, assuranceVieDraft, setAssuranceVieDraft,
+    perDraft, setPerDraft, prevoyanceDraft, setPrevoyanceDraft,
+    groupementFoncierEntries, setGroupementFoncierEntries,
+    prevoyanceDecesEntries, setPrevoyanceDecesEntries,
+    dispositionsDraft, setDispositionsDraft, addMemberForm, setAddMemberForm,
+    chainOrder, setChainOrder,
+  } = useSuccessionDraftState();
+  const effectiveMode = resolveEffectiveUserMode(mode, localMode);
+  const isExpert = effectiveMode === 'expert';
+  const {
+    donationPartageActs, setDonationPartageActs, showDonationPartageModal,
+    setShowDonationPartageModal, donationPartageDraft, setDonationPartageDraft,
+    openDonationPartageAct, openDonationPartageFromEntry, closeDonationPartageModal,
+    validateDonationPartageModal, removeDonationPartageAct,
   } = useSuccessionDonationPartageHandlers({
     donationsContext,
     enfantsContext,
@@ -285,78 +243,43 @@ export default function SuccessionSimulator() {
     setPatrimonialContext,
   });
 
-  // Hydratation sessionStorage au montage
-  useEffect(() => {
-    try {
-      const raw = sessionStorage.getItem(STORE_KEY);
-      if (raw) {
-        const parsed = parseSuccessionDraftPayload(raw);
-        if (parsed) {
-          hydrateForm(parsed.form);
-          setCivilContext(parsed.civil);
-          setLiquidationContext(parsed.liquidation);
-          setAssetEntries(parsed.assetEntries);
-          setAssuranceVieEntries(parsed.assuranceVieEntries);
-          setPerEntries(parsed.perEntries);
-          if (parsed.groupementFoncierEntries) setGroupementFoncierEntries(parsed.groupementFoncierEntries);
-          if (parsed.prevoyanceDecesEntries) setPrevoyanceDecesEntries(parsed.prevoyanceDecesEntries);
-          setDevolutionContext(parsed.devolution);
-          setPatrimonialContext(parsed.patrimonial);
-          setDonationsContext(parsed.donations);
-          setDonationPartageActs(parsed.donationPartageActs);
-          setEnfantsContext(parsed.enfants);
-          setFamilyMembers(parsed.familyMembers);
-          setChainOrder(parsed.ui.chainOrder);
-        }
-      }
-    } catch {
-      // ignore
-    }
-    setHydrated(true);
-  }, [hydrateForm, setDonationPartageActs]);
-
-  // Persistance sessionStorage à chaque changement
-  useEffect(() => {
-    if (!hydrated) return;
-    try {
-      sessionStorage.setItem(
-        STORE_KEY,
-        JSON.stringify(
-          buildSuccessionDraftPayload(
-            persistedForm,
-            civilContext,
-            liquidationContext,
-            {
-              ...devolutionContext,
-              nbEnfantsNonCommuns: derived.nbEnfantsNonCommuns,
-            },
-            patrimonialContext,
-            enfantsContext,
-            familyMembers,
-            donationsContext,
-            assetEntries,
-            assuranceVieEntries,
-            perEntries,
-            groupementFoncierEntries,
-            prevoyanceDecesEntries,
-            chainOrder,
-            donationPartageActs,
-          ),
-        ),
-      );
-    } catch {
-      // ignore
-    }
-  }, [hydrated, persistedForm, civilContext, liquidationContext, devolutionContext, patrimonialContext, derived.nbEnfantsNonCommuns, enfantsContext, familyMembers, donationsContext, donationPartageActs, assetEntries, assuranceVieEntries, perEntries, groupementFoncierEntries, prevoyanceDecesEntries, chainOrder]);
-
-  // Écoute l'événement reset global
-  useEffect(() => {
-    const off = onResetEvent?.(({ simId }: { simId?: string }) => {
-      if (simId && simId !== 'succession') return;
-      handleReset();
-    });
-    return off || (() => { });
-  }, [handleReset]);
+  useSuccessionDraftPersistence({
+    storeKey: STORE_KEY,
+    hydrated,
+    setHydrated,
+    persistedForm,
+    hydrateForm,
+    civilContext,
+    setCivilContext,
+    liquidationContext,
+    setLiquidationContext,
+    assetEntries,
+    setAssetEntries,
+    assuranceVieEntries,
+    setAssuranceVieEntries,
+    perEntries,
+    setPerEntries,
+    groupementFoncierEntries,
+    setGroupementFoncierEntries,
+    prevoyanceDecesEntries,
+    setPrevoyanceDecesEntries,
+    devolutionContext,
+    setDevolutionContext,
+    patrimonialContext,
+    setPatrimonialContext,
+    donationsContext,
+    setDonationsContext,
+    donationPartageActs,
+    setDonationPartageActs,
+    enfantsContext,
+    setEnfantsContext,
+    familyMembers,
+    setFamilyMembers,
+    chainOrder,
+    setChainOrder,
+    nbEnfantsNonCommuns: derived.nbEnfantsNonCommuns,
+    handleReset,
+  });
 
   // Synchroniser actifNet dans le moteur de calcul
   useEffect(() => {
