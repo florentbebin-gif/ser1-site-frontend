@@ -58,6 +58,22 @@ function asAmount(value: unknown): number {
   return Math.max(0, amount);
 }
 
+const euroFormatter = new Intl.NumberFormat('fr-FR', {
+  maximumFractionDigits: 0,
+});
+
+const percentFormatter = new Intl.NumberFormat('fr-FR', {
+  maximumFractionDigits: 2,
+});
+
+function formatEuro(value: number): string {
+  return `${euroFormatter.format(value)} €`;
+}
+
+function formatPercent(value: number): string {
+  return `${percentFormatter.format(value)} %`;
+}
+
 function getBirthDateForSouscripteur(
   civil: SuccessionCivilContext,
   souscripteur: SuccessionPersonParty,
@@ -304,6 +320,9 @@ export function buildSuccessionPrevoyanceFiscalAnalysis(
   const lines = mergePrevoyanceLines(byAssure.epoux1.lines, byAssure.epoux2.lines);
   const totalCapitalDeces = entries.reduce((sum, entry) => sum + asAmount(entry.capitalDeces), 0);
   const totalDroits = byAssure.epoux1.totalDroits + byAssure.epoux2.totalDroits;
+  const av990I = snapshot.avDeces.primesApres1998;
+  const av757B = snapshot.avDeces.apres70ans;
+  const av990IRates = av990I.brackets.map((bracket) => formatPercent(bracket.ratePercent)).join('/');
 
   return {
     totalCapitalDeces,
@@ -318,7 +337,7 @@ export function buildSuccessionPrevoyanceFiscalAnalysis(
       ...(entries.length > 0
         ? [
           `Prévoyance décès pure non rachetable (art. L132-23 C. assurances) : le capital décès est ventilé selon la clause bénéficiaire ; l’assiette fiscale est la dernière prime annuelle ou prime unique (art. 990 I CGI, CGI annexe II art. 306-0 F), et non le capital décès.`,
-          `Prévoyance décès : si le décès survient avant 70 ans, l’art. 990 I s’applique (abattement 152 500 € par bénéficiaire, taxe forfaitaire 20 %/31,25 %). Après 70 ans, l’art. 757 B s’applique : l’assiette est la fraction des primes versées après 70 ans, soumise au barème DMTG après abattement global de 30 500 € (BOFiP TCAS-AUT-60).`,
+          `Prévoyance décès : si le décès survient avant 70 ans, l’art. 990 I s’applique (abattement ${formatEuro(av990I.allowancePerBeneficiary)} par bénéficiaire, taxe forfaitaire ${av990IRates}). Après 70 ans, l’art. 757 B s’applique : l’assiette est la fraction des primes versées après 70 ans, soumise au barème DMTG après abattement global de ${formatEuro(av757B.globalAllowance)} (BOFiP TCAS-AUT-60).`,
         ]
         : []),
     ])),

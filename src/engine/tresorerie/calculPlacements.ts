@@ -184,8 +184,7 @@ export function calculCapitalisationAnnuel(
  * Calcule l'IS effectif sur un rachat partiel de la poche capitalisation.
  * Invariant 5 : déclenché uniquement au moment du rachat.
  *
- * V1 : exposée pour usage futur (rachats partiels hors scope PR-TS1).
- * L'orchestrateur simulateTresorerie ne gère que le rachatAuTerme complet.
+ * Exposée pour usage futur : le runtime actuel ne gère que le rachatAuTerme complet.
  */
 export function calculISRachatCapitalisation(params: {
   montantRachat: number;

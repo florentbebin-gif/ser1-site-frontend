@@ -26,31 +26,6 @@ export const CABINET_LOGO_EMPTY = '__none__';
 // Les caches branding cabinet DOIVENT être keyés par cabinetBrandingKey (cabinet:<id>)
 // pour éviter toute fuite cross-tenant lors de switch d'utilisateurs.
 
-// ─── User theme cache ────────────────────────────────────────────────
-
-export function getThemeFromCache(userId: string | null): ThemeColors | null {
-  if (!userId) return null;
-  
-  try {
-    const cacheKey = `${THEME_CACHE_KEY_PREFIX}${userId}`;
-    const cached = localStorage.getItem(cacheKey);
-    if (cached) {
-      const cache: ThemeCache = JSON.parse(cached);
-      const now = Date.now();
-      
-      // Valider le cache
-      if (now - cache.timestamp < THEME_CACHE_TTL) {
-        return cache.colors;
-      } else {
-        localStorage.removeItem(cacheKey);
-      }
-    }
-  } catch (e) {
-    console.warn('[ThemeProvider] Cache read error:', e);
-  }
-  return null;
-}
-
 export function saveThemeToCache(colors: ThemeColors, userId: string | null, themeName?: string): void {
   if (!userId) return;
   

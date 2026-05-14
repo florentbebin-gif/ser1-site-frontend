@@ -1,12 +1,12 @@
 /**
  * SuccessionSimulator — Simulateur Succession
  *
- * PR1-PR3 scope:
+ * Périmètre :
  * - Alignement UI sur la norme /sim/*
  * - Saisie guidée civile / patrimoniale
  * - Actifs détaillés expert + assurance-vie informative
  *
- * Décomposition (PR-P1-07-03) :
+ * Décomposition :
  * - Valeurs dérivées  → useSuccessionDerivedValues
  * - Handlers export   → useSuccessionExportHandlers
  */

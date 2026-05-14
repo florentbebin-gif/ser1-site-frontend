@@ -31,6 +31,15 @@ vi.mock('@/utils/cache/baseContratOverridesCache', () => ({
   upsertBaseContratOverride: (payload: unknown) => upsertBaseContratOverrideMock(payload),
 }));
 
+vi.mock('@/hooks/useFiscalContext', () => ({
+  useFiscalContext: () => ({
+    fiscalContext: {},
+    loading: false,
+    error: null,
+    meta: {},
+  }),
+}));
+
 const mockedRules: ProductRules = {
   constitution: [{
     title: 'Fiscalité de test',
@@ -45,6 +54,28 @@ const mockedRules: ProductRules = {
 
 vi.mock('@/domain/base-contrat/rules/index', () => ({
   getRules: vi.fn(() => mockedRules),
+  buildBaseContratFiscalLabels: vi.fn(() => ({
+    pfu: 'PFU de test',
+    pfuIr: 'IR de test',
+    psGeneral: 'PS de test',
+    psException: 'PS exception de test',
+    dmtgLigneDirecteAbattement: 'abattement de test',
+    assuranceVie990IAllowance: '990 I de test',
+    assuranceVie757BAllowance: '757 B de test',
+    assuranceVie990IRates: 'barème 990 I de test',
+    assuranceVieRachatMoins8Ans: 'rachat avant huit ans de test',
+    assuranceVieRachatPlus8Ans: 'rachat après huit ans de test',
+    assuranceVieRetraitsPs: 'PS assurance-vie de test',
+    capitalGainIr: 'IR PV de test',
+    malrauxReductionRates: 'Malraux de test',
+    microFoncierAbattement: 'micro-foncier de test',
+    peaVersementCeilings: 'plafond PEA de test',
+    peaPmeVersementCeilings: 'plafond PEA-PME de test',
+    preciousMetalsFlatTax: 'taxe métaux de test',
+    rvtoTaxableFractions: 'RVTO de test',
+    soficaReductionRates: 'SOFICA de test',
+    ifiResidencePrincipaleAbattement: 'IFI de test',
+  })),
 }));
 
 async function openFirstProduct() {

@@ -21,6 +21,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '..');
 const DOMAIN_DIR = path.join(ROOT, 'src', 'domain', 'base-contrat');
 const RUNTIME_DIR = path.join(ROOT, '.tmp', 'audit-base-contrat-runtime');
+const RUNTIME_CONSTANTS_DIR = path.join(RUNTIME_DIR, 'constants');
 
 const PHASES = ['constitution', 'sortie', 'deces'];
 const CONSUMER_PATTERNS = [
@@ -34,9 +35,13 @@ const CONSUMER_PATTERNS = [
 
 function cleanupRuntime() {
   const resolvedRuntime = path.resolve(RUNTIME_DIR);
+  const resolvedConstants = path.resolve(RUNTIME_CONSTANTS_DIR);
   const resolvedTmp = path.resolve(ROOT, '.tmp');
   if (resolvedRuntime.startsWith(resolvedTmp + path.sep)) {
     fs.rmSync(resolvedRuntime, { recursive: true, force: true });
+  }
+  if (resolvedConstants.startsWith(resolvedTmp + path.sep)) {
+    fs.rmSync(resolvedConstants, { recursive: true, force: true });
   }
 }
 
@@ -75,7 +80,9 @@ function compileDomainRuntime() {
   }
 
   fs.rmSync(resolvedRuntime, { recursive: true, force: true });
+  fs.rmSync(RUNTIME_CONSTANTS_DIR, { recursive: true, force: true });
   fs.mkdirSync(resolvedRuntime, { recursive: true });
+  fs.mkdirSync(RUNTIME_CONSTANTS_DIR, { recursive: true });
   fs.writeFileSync(
     path.join(resolvedRuntime, 'package.json'),
     JSON.stringify({ type: 'commonjs' }, null, 2),
@@ -99,8 +106,30 @@ function compileDomainRuntime() {
         importsNotUsedAsValues: ts.ImportsNotUsedAsValues.Remove,
       },
     });
-    fs.writeFileSync(outFile, compiled.outputText);
+    const outputText = compiled.outputText.replace(
+      /require\(["']\.\.\/\.\.\/\.\.\/constants\/settingsDefaults["']\)/g,
+      "require('../constants/settingsDefaults')",
+    );
+    fs.writeFileSync(outFile, outputText);
   }
+
+  const settingsDefaultsSource = path.join(ROOT, 'src', 'constants', 'settingsDefaults.ts');
+  const settingsDefaultsCompiled = ts.transpileModule(
+    fs.readFileSync(settingsDefaultsSource, 'utf8'),
+    {
+      fileName: settingsDefaultsSource,
+      compilerOptions: {
+        module: ts.ModuleKind.CommonJS,
+        target: ts.ScriptTarget.ES2020,
+        esModuleInterop: true,
+        importsNotUsedAsValues: ts.ImportsNotUsedAsValues.Remove,
+      },
+    },
+  );
+  fs.writeFileSync(
+    path.join(RUNTIME_CONSTANTS_DIR, 'settingsDefaults.js'),
+    settingsDefaultsCompiled.outputText,
+  );
 
   return resolvedRuntime;
 }

@@ -1,5 +1,5 @@
 /**
- * Types partagés engine/placement — PR-P1-08-03
+ * Types partagés engine/placement.
  */
 
 export interface FiscalParams {

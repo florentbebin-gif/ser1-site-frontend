@@ -69,11 +69,11 @@ const TONTINE: ProductRules = {
       title: 'À l\'échéance du contrat',
       bullets: [
         'Versement de la capitalisation aux membres survivants à la date d\'échéance.',
-        'Gains imposables : régime des produits de placement à revenu fixe — PFU 30 % (12,8 % IR + 17,2 % PS).',
+        'Gains imposables : régime des produits de placement à revenu fixe — {pfu}.',
         'Base imposable : valeur de répartition reçue moins les cotisations versées.',
         'À confirmer selon la nature exacte du contrat tontinier (association tontinière d\'assurance vs clause tontinière immobilière).',
       ],
-      tags: ['pfu_30', 'base_imposable'],
+      tags: ['pfu', 'base_imposable'],
       confidence: 'moyenne',
       sources: [{ label: 'Art. 125-0 A CGI', url: 'https://bofip.impots.gouv.fr/bofip/2279-PGP.html/identifiant=BOI-RPPM-RCM-10-10-80-20220630' }],
       dependencies: ['nature du contrat tontinier (assurance vs clause immobilière)'],
@@ -115,11 +115,11 @@ const CRYPTO_ACTIFS: ProductRules = {
       title: 'Cession contre monnaie ayant cours légal',
       bullets: [
         'Fait générateur de l\'impôt : cession contre euros ou autre devise (pas les échanges crypto-contre-crypto).',
-        'PFU 30 % (12,8 % IR + 17,2 % PS) sur la plus-value nette imposable.',
+        '{pfu} sur la plus-value nette imposable.',
         'Moins-values imputables sur les plus-values de l\'année (méthode de calcul globale sur le portefeuille).',
         'Option pour le barème progressif de l\'IR possible.',
       ],
-      tags: ['pfu_30', 'fait_generateur_cession', 'option_bareme'],
+      tags: ['pfu', 'fait_generateur_cession', 'option_bareme'],
       confidence: 'elevee',
       sources: [{ label: 'Art. 150 VH bis CGI', url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000038612225' }],
     },
@@ -167,8 +167,8 @@ const METAUX_PRECIEUX: ProductRules = {
     {
       title: 'Deux régimes fiscaux au choix',
       bullets: [
-        'Régime forfaitaire : taxe de 11 % sur le prix de cession (+ 0,5 % CRDS). Aucune justification de prix d\'achat requise.',
-        'Régime des plus-values : IR 36,2 % (19 % + 17,2 % PS) sur la PV réelle avec abattement de 5 % par année de détention au-delà de 2 ans (exonération totale après 22 ans).',
+        'Régime forfaitaire : {preciousMetalsFlatTax}. Aucune justification de prix d\'achat requise.',
+        'Régime des plus-values : {capitalGainIr} + {psGeneral} sur la PV réelle avec abattement de 5 % par année de détention au-delà de 2 ans (exonération totale après 22 ans).',
         'Le choix du régime le plus favorable est effectué lors de la déclaration de cession.',
       ],
       tags: ['taxe_forfaitaire_11', 'pv_reelle', 'abattement_detention_22_ans'],

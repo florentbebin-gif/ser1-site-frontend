@@ -1,7 +1,6 @@
 /**
  * Labels FR — Base-Contrat (UI /settings/base-contrat).
- * PR3 cleanup: la page est devenue read-only, donc on conserve uniquement
- * les labels encore utilisés.
+ * La page conserve uniquement les labels encore utilisés.
  */
 
 export type PhaseKey = 'constitution' | 'sortie' | 'deces';

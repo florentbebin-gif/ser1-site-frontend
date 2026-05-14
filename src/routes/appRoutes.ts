@@ -14,19 +14,19 @@ export type RouteComponent =
 
 // ── Route metadata ────────────────────────────────────────────────────────────
 
-/** Topbar behavior for a given route (declarative, data-driven). */
+/** Comportement de la topbar pour une route déclarative. */
 export interface TopbarMeta {
-  /** Show the Home button in topbar */
+  /** Affiche le bouton Accueil dans la topbar. */
   showHome?: boolean;
-  /** Show Save / Load buttons */
+  /** Affiche les boutons Sauvegarder / Charger. */
   showSaveLoad?: boolean;
-  /** Show the global reset button (Home page only) */
+  /** Affiche le reset global (accueil uniquement). */
   showGlobalReset?: boolean;
-  /** If set, show a page-specific reset button calling triggerPageReset(resetKey) */
+  /** Affiche un reset de page via triggerPageReset(resetKey). */
   resetKey?: string;
 }
 
-/** Resolved metadata for the current route (returned by getRouteMetadata). */
+/** Métadonnées résolues pour la route courante. */
 export interface RouteMeta {
   contextLabel: string | null;
   showHome: boolean;
@@ -37,30 +37,23 @@ export interface RouteMeta {
 
 // ── Route entry type ──────────────────────────────────────────────────────────
 
-export type AppRouteEntry =
-  | {
-    kind: 'route';
-    access: 'public' | 'private';
-    path: string;
-    component: RouteComponent;
-    lazy?: boolean;
-    props?: Record<string, unknown>;
-    /**
-     * Exception minimale : Login (publique) déclenche une navigation après login.
-     * Le callback est injecté côté App.jsx (qui a accès à useNavigate()).
-     */
-    onLoginNavigateTo?: string;
-    /** Breadcrumb label displayed in the topbar */
-    contextLabel?: string;
-    /** Topbar behavior — buttons, reset actions */
-    topbar?: TopbarMeta;
-  }
-  | {
-    kind: 'redirect';
-    path: string;
-    to: string;
-    replace?: boolean;
-  };
+export interface AppRouteEntry {
+  kind: 'route';
+  access: 'public' | 'private';
+  path: string;
+  component: RouteComponent;
+  lazy?: boolean;
+  props?: Record<string, unknown>;
+  /**
+   * Exception minimale : Login (publique) déclenche une navigation après login.
+   * Le callback est injecté côté App.tsx (qui a accès à useNavigate()).
+   */
+  onLoginNavigateTo?: string;
+  /** Libellé affiché dans la topbar. */
+  contextLabel?: string;
+  /** Comportement topbar : boutons et actions de reset. */
+  topbar?: TopbarMeta;
+}
 
 // ── Lazy-loaded modules ───────────────────────────────────────────────────────
 
@@ -269,11 +262,6 @@ export const APP_ROUTES: AppRouteEntry[] = [
     contextLabel: 'Paramètres',
     topbar: { showHome: true },
   },
-
-  // Legacy redirects
-  { kind: 'redirect', path: '/placement', to: '/sim/placement', replace: true },
-  { kind: 'redirect', path: '/credit', to: '/sim/credit', replace: true },
-  { kind: 'redirect', path: '/prevoyance', to: '/sim/prevoyance', replace: true },
 ];
 
 // ── Route metadata resolver ──────────────────────────────────────────────────
@@ -287,13 +275,11 @@ const DEFAULT_META: RouteMeta = {
 };
 
 /**
- * Resolve topbar metadata for the given pathname.
- * Matches exact paths and wildcard paths (e.g. `/settings/*`).
+ * Résout les métadonnées topbar pour un pathname.
+ * Gère les chemins exacts et les wildcards (`/settings/*`).
  */
 export function getRouteMetadata(pathname: string): RouteMeta {
   for (const entry of APP_ROUTES) {
-    if (entry.kind === 'redirect') continue;
-
     const isMatch = entry.path.endsWith('/*')
       ? pathname.startsWith(entry.path.slice(0, -2))
       : entry.path === pathname;

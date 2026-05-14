@@ -1,5 +1,5 @@
 /**
- * Placement Input Components - Composants de saisie reutilisables
+ * Placement Input Components - Composants de saisie réutilisables
  */
 
 import React, { useEffect, useState } from 'react';

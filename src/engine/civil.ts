@@ -1,12 +1,7 @@
 /**
- * Module Civil - Régimes matrimoniaux et situation familiale
- * 
- * Ce module fournit des informations descriptives sur les régimes matrimoniaux.
- * Les calculs juridiques complexes ne sont pas implémentés au MVP.
+ * Module Civil - référentiel des régimes matrimoniaux et paramètres DMTG.
  */
 
-import { mkResult, mkRuleVersion } from './helpers';
-import type { CalcResult } from './types';
 import { DEFAULT_TAX_SETTINGS } from '../constants/settingsDefaults';
 
 // Types pour la situation civile
@@ -157,67 +152,3 @@ export interface DmtgSettings {
 
 // --- Barèmes DMTG par défaut — source unique : DEFAULT_TAX_SETTINGS.dmtg ---
 export const DEFAULT_DMTG: DmtgSettings = DEFAULT_TAX_SETTINGS.dmtg;
-
-// Abattements transmission (enfants) - Version 2024
-// @deprecated Utiliser DEFAULT_DMTG.ligneDirecte.abattement
-export const ABATTEMENT_ENFANT = DEFAULT_DMTG.ligneDirecte.abattement;
-
-// Barème DMTG ligne directe (2024)
-// @deprecated Utiliser DEFAULT_DMTG.ligneDirecte.scale
-export const BAREME_DMTG_LIGNE_DIRECTE = DEFAULT_DMTG.ligneDirecte.scale.map(s => ({
-  min: s.from,
-  max: s.to ?? Infinity,
-  taux: s.rate,
-}));
-
-export interface CivilSituationInput {
-  regime: RegimeMatrimonial;
-  nbEnfants: number;
-  nbEnfantsPremierLit?: number;
-}
-
-export interface CivilSituationResult {
-  regime: RegimeInfo;
-  abattementTotal: number;
-  baremeApplicable: typeof BAREME_DMTG_LIGNE_DIRECTE;
-}
-
-/**
- * Analyse la situation civile et retourne les informations pertinentes
- */
-export function analyzeCivilSituation(
-  input: CivilSituationInput
-): CalcResult<CivilSituationResult> {
-  const regime = REGIMES_MATRIMONIAUX[input.regime];
-  const abattementTotal = input.nbEnfants * ABATTEMENT_ENFANT;
-
-  return mkResult({
-    id: 'civil-situation',
-    name: 'Analyse situation civile',
-    inputs: [
-      { id: 'regime', label: 'Régime matrimonial', value: input.regime },
-      { id: 'nbEnfants', label: 'Nombre d\'enfants', value: input.nbEnfants },
-    ],
-    assumptions: [
-      {
-        id: 'abattement_2024',
-        label: 'Abattement enfant',
-        value: ABATTEMENT_ENFANT,
-        source: 'CGI Art. 779',
-        editable: true,
-      },
-    ],
-    formulaText: 'abattementTotal = nbEnfants × abattementEnfant',
-    outputs: [
-      { id: 'abattementTotal', label: 'Abattement total', value: abattementTotal, unit: '€' },
-    ],
-    result: {
-      regime,
-      abattementTotal,
-      baremeApplicable: BAREME_DMTG_LIGNE_DIRECTE,
-    },
-    ruleVersion: mkRuleVersion('2024.1', 'CGI Art. 779, 777', true),
-    sourceNote: 'Barème DMTG et abattements 2024',
-    warnings: [],
-  });
-}

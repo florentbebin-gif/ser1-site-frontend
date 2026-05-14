@@ -1,5 +1,5 @@
 /**
- * Tests pour les métriques TMI robustes — convertis au format Vitest (PR-P1-08-00).
+ * Tests pour les métriques TMI robustes.
  * Scénarios A-D + dernière tranche, logique inchangée.
  */
 

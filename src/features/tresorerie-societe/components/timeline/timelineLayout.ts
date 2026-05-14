@@ -31,9 +31,6 @@ export interface TimelinePalierLayout {
   subPhases: TimelineSubPhaseLayout[];
 }
 
-/** @deprecated Utiliser TimelinePalierLayout. */
-export type TimelinePhaseLayout = TimelinePalierLayout;
-
 export interface TimelineYearTick {
   year: number;
   age: number | null;

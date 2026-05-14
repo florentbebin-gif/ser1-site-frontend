@@ -16,8 +16,8 @@ import {
   makeLiquidation,
 } from './successionBugRepro.helpers';
 
-describe('PR-04 â€” reproduction et triage des bugs succession non prouvÃ©s', () => {
-  it('BUG-8/3.2: DDV usufruit total applique bien lâ€™art. 669 a 70 ans au niveau moteur', () => {
+describe('Reproductions ciblées des anomalies succession', () => {
+  it("BUG-8/3.2: DDV usufruit total applique bien l'art. 669 à 70 ans au niveau moteur", () => {
     const analysis = buildSuccessionChainageAnalysis({
       civil: makeCivil({
         situationMatrimoniale: 'marie',
@@ -128,7 +128,7 @@ describe('PR-04 â€” reproduction et triage des bugs succession non prouvÃ�
     expect(analysis.warnings.some((warning) => warning.includes('date de naissance du conjoint survivant manquante'))).toBe(true);
   });
 
-  it('BUG-10/5.3-5.6: le parseur conserve versementsApres70 lorsquâ€™ils sont saisis', () => {
+  it("BUG-10/5.3-5.6: le parseur conserve versementsApres70 lorsqu'ils sont saisis", () => {
     const payload = buildSuccessionDraftPayload(
       {
         actifNetSuccession: 0,
@@ -195,7 +195,7 @@ describe('PR-04 â€” reproduction et triage des bugs succession non prouvÃ�
     expect(analysis.lines[0].droits757B).toBeGreaterThan(0);
   });
 
-  it('BUG-11/8.3: la devolution fratrie est maintenant correctement restituÃ©e par le display direct', () => {
+  it('BUG-11/8.3: la dévolution fratrie est correctement restituée par le display direct', () => {
     const civil = makeCivil({ situationMatrimoniale: 'celibataire' });
     const familyMembers = [
       { id: 'F1', type: 'frere_soeur' as const, branch: 'epoux1' as const },
@@ -295,7 +295,7 @@ describe('PR-04 â€” reproduction et triage des bugs succession non prouvÃ�
     expect(earlyDeath.totalDroits).not.toBe(laterDeath.totalDroits);
   });
 
-  it('BUG-8: AV 2M / 1 enfant / tout avant 70 â€” droits 990I = 498594', () => {
+  it('BUG-8: AV 2M / 1 enfant / tout avant 70 ans - droits 990I = 498594', () => {
     const snapshot = buildSuccessionFiscalSnapshot(null);
     const analysis = buildSuccessionAvFiscalAnalysis(
       [{
@@ -314,7 +314,7 @@ describe('PR-04 â€” reproduction et triage des bugs succession non prouvÃ�
     );
 
     // 2M - 152500 = 1847500 taxable
-    // 700000 * 20% = 140000, 1147500 * 31.25% = 358594 â†’ total 498594
+    // 700000 * 20% = 140000, 1147500 * 31.25% = 358594 => total 498594
     expect(analysis.lines[0].droits990I).toBe(498_594);
   });
 });

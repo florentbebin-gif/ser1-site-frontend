@@ -13,6 +13,11 @@ const TARGETS = {
     readMustUseAdmin: false,
     writesMustUseAdmin: true,
   },
+  ps_settings: {
+    read: 'authenticated',
+    readMustUseAdmin: false,
+    writesMustUseAdmin: true,
+  },
   fiscality_settings: {
     read: 'authenticated',
     readMustUseAdmin: false,

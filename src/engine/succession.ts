@@ -10,18 +10,6 @@ import type { CalcResult, Warning } from './types';
 import { DEFAULT_DMTG } from './civil';
 import type { DmtgSettings, DmtgScaleItem } from './civil';
 
-// Abattement conjoint survivant (exonération totale)
-export const EXONERATION_CONJOINT = true;
-
-// @deprecated Utiliser dmtgSettings.frereSoeur.abattement
-export const ABATTEMENT_FRERE_SOEUR = DEFAULT_DMTG.frereSoeur.abattement;
-
-// @deprecated Utiliser dmtgSettings.neveuNiece.abattement
-export const ABATTEMENT_NEVEU_NIECE = DEFAULT_DMTG.neveuNiece.abattement;
-
-// @deprecated Utiliser dmtgSettings.autre.abattement
-export const ABATTEMENT_DEFAUT = DEFAULT_DMTG.autre.abattement;
-
 export type LienParente = 
   | 'conjoint'
   | 'enfant'

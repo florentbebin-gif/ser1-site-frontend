@@ -1,5 +1,5 @@
 /**
- * Tests du référentiel des règles fiscales (PR5).
+ * Tests du référentiel des règles fiscales.
  *
  * 1. Tous les produits du catalogue retournent des règles non-nulles.
  * 2. Pas de jargon dev dans les strings UI (title/bullets).
@@ -8,8 +8,9 @@
  */
 
 import { describe, it, expect, vi } from 'vitest';
+import { DEFAULT_FISCALITY_SETTINGS } from '../../../constants/settingsDefaults';
 import { CATALOG, CATALOG_PP_PM_SPLIT_MAP } from '../catalog';
-import { getRules, hasSocleRules } from '../rules/index';
+import { buildBaseContratFiscalLabels, getRules, hasSocleRules } from '../rules/index';
 import type { RuleBlock } from '../rules/types';
 
 const AUDIENCES = ['pp', 'pm'] as const;
@@ -118,10 +119,51 @@ describe('hasSocleRules — coverage report', () => {
   });
 });
 
-describe('getRules â€” aucun pourcentage visible dans title/bullets', () => {
+describe('getRules — contexte fiscal de rendu', () => {
+  it('injecte les libellés fiscaux fournis au domaine', () => {
+    const labels = buildBaseContratFiscalLabels({
+      pfuRateIR: 10,
+      psRateGeneral: 20,
+      psRateException: 30,
+      dmtgAbattementEnfant: 123456,
+    });
+    labels.assuranceVie990IAllowance = 'abattement 990 I de test';
+
+    const rules = getRules('assurance_vie', 'pp', { fiscalLabels: labels });
+    const texts = [
+      ...rules.constitution.flatMap((b) => [b.title, ...b.bullets]),
+      ...rules.sortie.flatMap((b) => [b.title, ...b.bullets]),
+      ...rules.deces.flatMap((b) => [b.title, ...b.bullets]),
+    ].join(' ');
+
+    expect(texts).toContain('PFU 30 % (10 % IR + 20 % prélèvements sociaux)');
+    expect(texts).toContain('abattement 990 I de test');
+  });
+
+  it('retombe sur le barème 990 I par défaut si le contexte fiscal est incomplet', () => {
+    const fiscality = {
+      ...DEFAULT_FISCALITY_SETTINGS,
+      assuranceVie: {
+        ...DEFAULT_FISCALITY_SETTINGS.assuranceVie,
+        deces: {
+          ...DEFAULT_FISCALITY_SETTINGS.assuranceVie.deces,
+          primesApres1998: {
+            ...DEFAULT_FISCALITY_SETTINGS.assuranceVie.deces.primesApres1998,
+            brackets: [],
+          },
+        },
+      },
+    };
+
+    const labels = buildBaseContratFiscalLabels({ _raw_fiscality: fiscality });
+
+    expect(labels.assuranceVie990IRates).toContain('jusqu');
+    expect(labels.assuranceVie990IRates).not.toContain('à confirmer');
+  });
+
   for (const product of CATALOG) {
     const audience = product.ppEligible ? 'pp' : 'pm';
-    it(`${product.id} â€” texte sans taux affiches`, () => {
+    it(`${product.id} — aucun placeholder fiscal visible`, () => {
       const rules = getRules(product.id, audience);
       const texts = [
         ...rules.constitution.flatMap((b) => [b.title, ...b.bullets]),
@@ -130,7 +172,7 @@ describe('getRules â€” aucun pourcentage visible dans title/bullets', () =>
       ];
 
       for (const text of texts) {
-        expect(text).not.toMatch(/\d+(?:[.,]\d+)?\s*%/);
+        expect(text).not.toMatch(/\{[a-zA-Z0-9]+\}/);
       }
     });
   }
@@ -140,7 +182,7 @@ describe('getRules â€” aucun pourcentage visible dans title/bullets', () =>
 // 4. Produits clés — règles réelles attendues
 // ─────────────────────────────────────────────────────────────
 
-describe('socle PR5 — produits clés avec règles réelles', () => {
+describe('socle Base-Contrat — produits clés avec règles réelles', () => {
   const SOCLE_IDS = [
     'assurance_vie',
     'contrat_capitalisation_pp',
@@ -294,10 +336,10 @@ describe('confidence policy — sources ont des URLs https valides', () => {
 });
 
 // ─────────────────────────────────────────────────────────────
-// 11. Strings interdites — PR6 qualité rédactionnelle
+// 11. Strings interdites — qualité rédactionnelle
 // ─────────────────────────────────────────────────────────────
 
-describe('strings interdites — PR6 fiabilisation', () => {
+describe('strings interdites — fiabilisation', () => {
   it('audience PM — couverture pmEligible (3 phases non vides + contenu PM safe)', () => {
     const PM_FORBIDDEN_PATTERNS: RegExp[] = [
       /décès/i,

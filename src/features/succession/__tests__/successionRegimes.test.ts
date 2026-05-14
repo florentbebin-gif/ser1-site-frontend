@@ -1,10 +1,10 @@
 /**
- * PR-02/03 — Infrastructure de tests des 6 régimes matrimoniaux
+ * Infrastructure de tests des 6 régimes matrimoniaux.
  *
  * Couverture :
  * - Section 1 : Mapping des régimes (buildSuccessionPredecesAnalysis)
  *   T-1 à T-5 : CL, CU, SB (directs), PA et CMA (approximations avec warning)
- *   BUG-6 corrigé (PR-03) : SB+SA → separation_biens + warning société d'acquêts
+ *   SB+SA : separation_biens + warning société d'acquêts
  *
  * - Section 2 : Calcul de masse successorale (computeFirstEstate)
  *   CL, CU, SB — formules exactes avec tous les cas d'ordre et d'attribution
@@ -111,7 +111,7 @@ describe('Infrastructure régimes matrimoniaux', () => {
       expect(analysis.warnings.some((w) => w.includes('approximation'))).toBe(true);
     });
 
-    // BUG-6 corrigé en PR-03 : SB+SA mappe vers separation_biens + warning bloquant
+    // SB+SA mappe vers separation_biens avec warning bloquant.
     it("separation_biens_societe_acquets : mappe vers separation_biens + warning societe d'acquets", () => {
       const analysis = buildSuccessionPredecesAnalysis(
         makeCivil({ regimeMatrimonial: 'separation_biens_societe_acquets' }),

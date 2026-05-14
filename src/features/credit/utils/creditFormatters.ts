@@ -67,10 +67,3 @@ export function parseCapital(value: string | number): number {
   return toNum(String(value).replace(/\D/g, '').slice(0, 8));
 }
 
-// ============================================================================
-// ID
-// ============================================================================
-
-export function generateId(): string {
-  return Math.random().toString(36).slice(2, 9);
-}

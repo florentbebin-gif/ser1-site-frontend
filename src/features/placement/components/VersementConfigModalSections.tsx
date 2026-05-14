@@ -10,8 +10,8 @@ import {
 } from '@/engine/placement/versementConfig';
 import { SimSelect } from '@/components/ui/sim';
 import { fmt } from '../utils/formatters';
-import { InputEuro, InputNumber, InputPct } from './inputs';
-import { AllocationSlider } from './tables';
+import { InputEuro, InputNumber, InputPct } from './PlacementFormControls';
+import { AllocationSlider } from './PlacementTables';
 
 interface VersementSectionShellProps {
   step: string;

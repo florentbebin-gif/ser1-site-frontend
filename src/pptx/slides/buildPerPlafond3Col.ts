@@ -9,7 +9,7 @@ import {
   addTextFr,
   roleColor,
 } from '../designSystem/serenity';
-import { addBusinessIconDirect } from '../icons/addBusinessIcon';
+import { addBusinessIconToSlide } from '../icons/addBusinessIcon';
 import { MASTER_NAMES } from '../template/loadBaseTemplate';
 
 const GEO = {
@@ -71,13 +71,12 @@ function drawColumn(
     fill: { color: accent, transparency: 86 },
     line: { color: accent, transparency: 100 },
   });
-  addBusinessIconDirect(slide, column.iconName, {
+  addBusinessIconToSlide(slide, column.iconName, {
     x: centerX - 0.15,
     y: GEO.panelY + 0.48,
     w: 0.30,
     h: 0.30,
-    color: `#${accent}`,
-  });
+  }, `#${accent}`);
 
   addTextFr(slide, column.heading, {
     x: x + 0.22,

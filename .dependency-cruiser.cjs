@@ -8,10 +8,11 @@
  *   4. routes/ : features importées via index.ts uniquement (pas d'internals)
  *   5. Pas de cross-feature internal imports (chaque feature A ne peut importer
  *      que le index.ts des autres features, pas leurs internals)
- *   6. settings/admin : services only (adminClient, invokeAdmin, logoUpload)
+ *   6. Supabase : pas d'import client direct depuis features/, engine/ ou components/
+ *   7. settings/admin : services only (adminClient, invokeAdmin, logoUpload)
  *      — pas d'import de composants UI depuis l'extérieur
- *   7. UI : pas d'import direct de exportStudyDeck (passer par hooks/wrappers)
- *   8. Placement : pas d'import runtime direct de useFiscalContext
+ *   8. UI : pas d'import direct de exportStudyDeck (passer par hooks/wrappers)
+ *   9. Placement : pas d'import runtime direct de useFiscalContext
  *
  * Résolution @/ : src/ (tsconfig paths + vite alias)
  *
@@ -99,16 +100,25 @@ module.exports = {
     // ── 5. Cross-feature internals (un règle par feature) ────────────────────────────────
     ...FEATURES.map(crossFeatureRule),
 
-    // ── 6. components/ : pas d'import direct de supabaseClient ─────────────────────────
+    // ── 6. features/, engine/ et components/ : pas d'import direct de supabaseClient ──
     {
-      name: 'no-supabase-from-components',
+      name: 'no-supabase-from-runtime-domains',
       severity: 'error',
-      comment: 'src/components/ ne doit pas importer supabaseClient directement — utiliser un hook dédié dans hooks/ (AGENTS.md §3)',
-      from: { path: '^src/components/' },
+      comment: 'src/features/, src/engine/ et src/components/ ne doivent pas importer supabaseClient directement — utiliser hooks/, cache/ ou pages autorisées (AGENTS.md §3)',
+      from: { path: '^src/(features|engine|components)/' },
       to: { path: 'supabaseClient' },
     },
 
-    // ── 7. UI : pas d'import direct de exportStudyDeck ───────────────────────
+    // ── 7. UI : pas d'appel direct aux fonctions admin bas niveau ─────────────────────
+    {
+      name: 'no-direct-invoke-admin-from-ui',
+      severity: 'error',
+      comment: 'src/pages/, src/features/ et src/components/ ne doivent pas importer settings/admin/invokeAdmin directement — passer par un service settings/admin dédié',
+      from: { path: '^src/(pages|features|components)/' },
+      to: { path: '^src/settings/admin/invokeAdmin(\\.ts)?$' },
+    },
+
+    // ── 8. UI : pas d'import direct de exportStudyDeck ───────────────────────
     {
       name: 'no-export-study-deck-from-ui',
       severity: 'error',
@@ -117,7 +127,7 @@ module.exports = {
       to: { path: '^src/pptx/export/exportStudyDeck(\\.ts)?$' },
     },
 
-    // ── 8. Placement : useFiscalContext reste centralisé dans usePlacementSettings ─────
+    // ── 9. Placement : useFiscalContext reste centralisé dans usePlacementSettings ─────
     {
       name: 'placement-no-direct-use-fiscal-context',
       severity: 'error',

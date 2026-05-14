@@ -1,7 +1,7 @@
 import type { LiquidationRow, SimulateCompleteResult } from '@/engine/placement/types';
 import { euro } from '../utils/formatters';
 import type { PlacementTableProduct } from '../utils/tableHelpers';
-import { CollapsibleTable } from './tables';
+import { CollapsibleTable } from './PlacementTables';
 import { buildColumns, getRelevantColumns } from '../utils/tableHelpers';
 
 type PlacementLiquidationDetailRow = LiquidationRow & {

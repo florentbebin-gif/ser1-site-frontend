@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback, Suspense } from 'react';
 import type { Session } from '@supabase/supabase-js';
-import { Routes, Route, useNavigate, Navigate } from 'react-router-dom';
+import { Routes, Route, useNavigate } from 'react-router-dom';
 import { supabase, DEBUG_AUTH } from './supabaseClient';
 import { PrivateRoute } from './auth';
 import { useTheme } from './settings/ThemeProvider';
@@ -221,16 +221,6 @@ export default function App(): React.ReactElement {
   }), [sessionExpired, canExport, trackBlobUrl, resetInactivity]);
 
   const renderRouteEntry = (entry: AppRouteEntry): React.ReactElement => {
-    if (entry.kind === 'redirect') {
-      return (
-        <Route
-          key={entry.path}
-          path={entry.path}
-          element={<Navigate to={entry.to} replace={entry.replace !== false} />}
-        />
-      );
-    }
-
     const Component = entry.component;
 
     // Exception minimale : Login a besoin de navigate() dans son callback onLogin.

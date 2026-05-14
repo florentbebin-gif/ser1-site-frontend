@@ -1,7 +1,7 @@
 /**
  * domain/base-contrat/rules/__tests__/fiscalProfile.test.ts
  *
- * PR8 — Tests unitaires pour fiscalProfile.ts.
+ * Tests unitaires pour fiscalProfile.ts.
  * Couvre : getEnvelopeCatalogId / buildFiscalProfile / emptyFiscalProfile.
  */
 

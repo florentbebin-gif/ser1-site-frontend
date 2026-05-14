@@ -1,6 +1,5 @@
 /**
  * Tests de cohérence du catalogue hardcodé.
- * PR1 — Vérifie l'intégrité structurelle de CATALOG sans impact runtime.
  */
 
 import { readFileSync } from 'node:fs';

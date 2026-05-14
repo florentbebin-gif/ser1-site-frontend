@@ -1,4 +1,4 @@
 {
-  "ignores": ["supabase", "dependency-cruiser", "stylelint-config-standard"],
+  "ignores": ["supabase", "dependency-cruiser", "stylelint-config-standard", "@fontsource-variable/inter"],
   "ignore-patterns": ["supabase/functions/**"]
 }

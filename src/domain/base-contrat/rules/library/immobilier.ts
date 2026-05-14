@@ -15,7 +15,7 @@ const RESIDENCE_PRINCIPALE: ProductRules = {
       bullets: [
         'Pas de déductibilité des intérêts d\'emprunt (dispositif supprimé depuis 2011).',
         'Droits de mutation à titre onéreux (DMTO) : environ 5 à 6 % du prix pour un logement ancien.',
-        'Exonération partielle d\'IFI : abattement de 30 % sur la valeur de la résidence principale.',
+        'Exonération partielle d\'IFI : abattement de {ifiResidencePrincipaleAbattement}.',
       ],
       tags: ['dmto', 'ifi_abattement_30'],
       confidence: 'elevee',
@@ -101,7 +101,7 @@ const RESIDENCE_SECONDAIRE: ProductRules = {
     {
       title: 'Plus-value de cession',
       bullets: [
-        'Régime des plus-values immobilières des particuliers : IR 19 % + prélèvements sociaux 17,2 %.',
+        'Régime des plus-values immobilières des particuliers : {capitalGainIr} + {psGeneral}.',
         'Abattements progressifs selon la durée de détention : exonération totale d\'IR après 22 ans, de PS après 30 ans.',
         'Surtaxe de 2 % à 6 % si la plus-value nette imposable dépasse 50 000 €.',
       ],
@@ -130,7 +130,7 @@ const LOCATIF_NU: ProductRules = {
       title: 'Revenus fonciers et charges',
       bullets: [
         'Loyers imposés dans la catégorie des revenus fonciers.',
-        'Micro-foncier (si loyers bruts ≤ 15 000 €/an) : abattement forfaitaire de 30 %.',
+        '{microFoncierAbattement}',
         'Régime réel : déductibilité des charges (travaux, intérêts d\'emprunt, assurances, taxe foncière…).',
         'Déficit foncier déductible du revenu global dans la limite de 10 700 €/an (20 200 € pour les travaux de rénovation énergétique d\'ampleur).',
       ],
@@ -143,7 +143,7 @@ const LOCATIF_NU: ProductRules = {
     {
       title: 'Plus-value de cession',
       bullets: [
-        'Régime des plus-values immobilières des particuliers : IR 19 % + PS 17,2 %.',
+        'Régime des plus-values immobilières des particuliers : {capitalGainIr} + {psGeneral}.',
         'Abattements progressifs : exonération totale d\'IR après 22 ans, de PS après 30 ans de détention.',
         'Surtaxe de 2 % à 6 % si la plus-value nette dépasse 50 000 €.',
       ],
@@ -203,7 +203,7 @@ const LOCATIF_MEUBLE_LMNP: ProductRules = {
     {
       title: 'Plus-value de cession',
       bullets: [
-        'Régime des plus-values des particuliers : IR 19 % + PS 17,2 %.',
+        'Régime des plus-values des particuliers : {capitalGainIr} + {psGeneral}.',
         'Depuis la loi de finances 2025 (art. 84) : les amortissements déduits sont réintégrés dans le calcul de la plus-value imposable (art. 150 VB CGI modifié).',
         'Abattements progressifs selon la durée de détention restent applicables (exonération IR après 22 ans, PS après 30 ans).',
         'À confirmer selon la date de cession (les cessions antérieures à la LF 2025 restent sous l\'ancien régime sans réintégration).',
@@ -249,7 +249,7 @@ const LOCATIF_MEUBLE_LMP: ProductRules = {
       bullets: [
         'Régime des plus-values professionnelles (court terme / long terme).',
         'Court terme (détention < 2 ans) : imposé à l\'IR + PS (et cotisations sociales).',
-        'Long terme (détention ≥ 2 ans) : taux réduit IR 12,8 % + PS 17,2 %.',
+        'Long terme (détention ≥ 2 ans) : taux réduit IR {pfuIr} + {psGeneral}.',
         'Exonération possible sous conditions de recettes sur les 2 derniers exercices (art. 151 septies CGI) — À confirmer selon le CA N-1 et N-2.',
       ],
       tags: ['pv_pro', 'court_terme', 'long_terme', 'exoneration_recettes'],
@@ -289,7 +289,7 @@ const IMMO_AUTRE: ProductRules = {
     {
       title: 'Plus-value de cession',
       bullets: [
-        'Régime des plus-values immobilières des particuliers : IR 19 % + PS 17,2 %.',
+        'Régime des plus-values immobilières des particuliers : {capitalGainIr} + {psGeneral}.',
         'Abattements progressifs selon la durée de détention.',
         'Exonération totale d\'IR après 22 ans, de PS après 30 ans.',
       ],
@@ -344,7 +344,7 @@ const PARTS_SCPI_PP: ProductRules = {
     {
       title: 'Plus-value de cession',
       bullets: [
-        'Régime des plus-values immobilières des particuliers : IR 19 % + PS 17,2 %.',
+        'Régime des plus-values immobilières des particuliers : {capitalGainIr} + {psGeneral}.',
         'Abattements progressifs selon la durée de détention (exonération IR après 22 ans, PS après 30 ans).',
       ],
       tags: ['pv_immo', 'abattement_detention'],
@@ -385,7 +385,7 @@ const GROUPEMENT_FONCIER_AGRI_VITI: ProductRules = {
     {
       title: 'Cession de parts',
       bullets: [
-        'Régime des plus-values des particuliers : IR 19 % + PS 17,2 %.',
+        'Régime des plus-values des particuliers : {capitalGainIr} + {psGeneral}.',
         'Abattements pour durée de détention applicables.',
         'À confirmer selon le statut du cédant et la durée de détention.',
       ],
@@ -446,7 +446,7 @@ const GROUPEMENT_FONCIER_FORESTIER: ProductRules = {
     {
       title: 'Cession de parts',
       bullets: [
-        'Régime des plus-values des particuliers : IR 19 % + PS 17,2 %.',
+        'Régime des plus-values des particuliers : {capitalGainIr} + {psGeneral}.',
         'Abattements pour durée de détention applicables.',
         'À confirmer selon le statut du cédant et la durée de détention.',
       ],

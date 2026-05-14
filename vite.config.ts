@@ -23,6 +23,15 @@ export default defineConfig(({ mode }) => {
       // the component renders on direct refresh, causing layout issues.
       // Trade-off: slightly larger initial CSS bundle, but 100% style stability.
       cssCodeSplit: false,
+      rollupOptions: {
+        output: {
+          manualChunks: {
+            'react-vendor': ['react', 'react-dom', 'react-router-dom'],
+            'supabase-vendor': ['@supabase/supabase-js'],
+            'validation-vendor': ['zod'],
+          },
+        },
+      },
     },
     resolve: {
       alias: {

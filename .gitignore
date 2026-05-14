@@ -1,83 +1,36 @@
 # Dependencies
 node_modules/
-.pnp
-.pnp.js
 
 # Testing
-coverage/
+test-results/
+playwright-report/
+playwright/.cache/
+.playwright-mcp/
 
 # Production
 dist/
-build/
-
-# Misc
-.DS_Store
 
 # Env
 .env
 .env.*
 !.env.example
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
-
-# Logs
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-pnpm-debug.log*
-logs/
 
 # Editor directories and files
-.idea/
 .vscode/
-*.suo
-*.ntvs*
-*.njsproj
-*.sln
-*.sw?
 
 # SER1 Artifacts
-outputs/
-tmp/
-temp/
 .tmp/
 
 # Local tools / refs (do not commit)
 .windsurf/
-_signalements_ref/
-_style_ref/
-!_style_ref/pptx_chapters_raw/
-_style_ref/pptx_chapters_raw/*.png
-_style_ref/pptx_chapters_raw/*.jpg
-_style_ref/pptx_chapters_raw/*.jpeg
-*.zip
-
-# Validation outputs
-validation_results.csv
-validation_results.json
-validation_report.md
-validation_compared.csv
 
 # Office exports / docs (do not commit)
-docs/*.pptx
-docs/*.png
-docs/*.xlsx
-**/render_*/**
 **/*.pptx
 **/*.xlsx
 **/*.xlsm
 
-
-
 # Vercel CLI cache
 .vercel/
-
-# Python artifacts (if any)
-__pycache__/
-*.py[cod]
-.env*.local
 
 # Supabase CLI local artifacts
 supabase/.temp/
@@ -85,21 +38,10 @@ supabase/.branches/
 
 # Claude Code local session config (permissions machine-specific)
 .claude/settings.local.json
-
-# ESLint reports
-eslint-report.json
-theme_debug_inventory.txt
-console_logs_inventory.txt
+.claude/launch.json
 
 # Audit temporaires
 _audit/
 docs/audit-*.md
 docs/audit-*.generated.md
 docs/veille-base-contrat.md
-
-# Playwright
-test-results/
-playwright-report/
-playwright/.cache/
-.playwright-mcp/
-blob-report/

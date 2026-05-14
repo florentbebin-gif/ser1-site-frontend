@@ -64,12 +64,12 @@ const ACTIONS_COTEES: ProductRules = {
     {
       title: 'Plus-values et dividendes',
       bullets: [
-        'Plus-values de cession : PFU 30 % (12,8 % IR + 17,2 % PS) par défaut.',
+        'Plus-values de cession : {pfu} par défaut.',
         'Option globale pour le barème progressif (abattement pour durée de détention uniquement sur titres acquis avant 2018).',
-        'Dividendes d\'actions françaises : PFU 30 % ou option barème avec abattement de 40 %.',
+        'Dividendes d\'actions françaises : {pfu} ou option barème avec abattement de 40 %.',
         'Compensation des moins-values sur les plus-values de l\'année et des 10 années suivantes.',
       ],
-      tags: ['pfu_30', 'dividendes', 'abattement_40', 'compensation_mv'],
+      tags: ['pfu', 'dividendes', 'abattement_40', 'compensation_mv'],
       confidence: 'elevee',
       sources: [{ label: 'Art. 200 A CGI — PFU + Art. 158-3 CGI — abattement 40%', url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000036428122' }],
     },
@@ -109,11 +109,11 @@ const FONDS_OPC: ProductRules = {
     {
       title: 'Cession de parts',
       bullets: [
-        'Plus-values soumises au PFU 30 % (12,8 % IR + 17,2 % PS).',
+        'Plus-values soumises au {pfu}.',
         'FCPR exonérés d\'IR sur les plus-values sous conditions (délai de détention, investissement PME non cotées).',
         'Compensation des moins-values sur les 10 années suivantes.',
       ],
-      tags: ['pfu_30', 'exoneration_fcpr', 'compensation_mv'],
+      tags: ['pfu', 'exoneration_fcpr', 'compensation_mv'],
       confidence: 'elevee',
       sources: [{ label: 'Art. 200 A CGI — PFU', url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000036428122' }],
     },
@@ -149,11 +149,11 @@ const ACTIONS_NON_COTEES: ProductRules = {
     {
       title: 'Cession',
       bullets: [
-        'Plus-values : PFU 30 % (12,8 % IR + 17,2 % PS) par défaut.',
+        'Plus-values : {pfu} par défaut.',
         'Option barème avec abattements pour durée de détention (titres acquis avant 2018 uniquement).',
         'Abattement renforcé possible pour dirigeants partant en retraite (sous conditions).',
       ],
-      tags: ['pfu_30', 'abattement_dirigeant_retraite'],
+      tags: ['pfu', 'abattement_dirigeant_retraite'],
       confidence: 'elevee',
       sources: [{ label: 'Art. 200 A CGI — PFU', url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000036428122' }],
     },
@@ -178,7 +178,7 @@ const SOFICA: ProductRules = {
     {
       title: 'Souscription',
       bullets: [
-        'Réduction d\'IR selon le taux d\'affectation de la SOFICA (30 % à 48 % selon les investissements réalisés).',
+        'Réduction d\'IR selon le taux d\'affectation de la SOFICA ({soficaReductionRates}).',
         'Plafond annuel de souscription plafonné (montant et modalités définis à l\'art. 163 bis G CGI — À confirmer).',
         'Engagement de conservation des parts pendant au moins 5 ans.',
       ],
@@ -191,10 +191,10 @@ const SOFICA: ProductRules = {
     {
       title: 'Cession de parts',
       bullets: [
-        'Plus-values soumises au PFU 30 %.',
+        'Plus-values soumises au {pfu}.',
         'Moins-values non imputables sur d\'autres plus-values de cession de valeurs mobilières.',
       ],
-      tags: ['pfu_30', 'mv_non_imputables'],
+      tags: ['pfu', 'mv_non_imputables'],
       confidence: 'elevee',
       sources: [{ label: 'Art. 200 A CGI — PFU', url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000036428122' }],
     },
@@ -219,7 +219,7 @@ const IR_PME_MADELIN: ProductRules = {
       title: 'Souscription au capital de PME',
       bullets: [
         'Réduction d\'IR de 18 % sur les versements effectués (taux majoré possible si prorogation législative — À confirmer selon la loi de finances en vigueur).',
-        'Plafond annuel : 50 000 € pour une personne seule, 100 000 € pour un couple.',
+        'Plafond annuel légal selon la composition du foyer.',
         'Conditions : PME de moins de 7 ans, secteurs éligibles, engagement de conservation 5 ans minimum.',
       ],
       tags: ['reduction_ir_18_25', 'plafond_50k', 'engagement_5_ans'],
@@ -231,11 +231,11 @@ const IR_PME_MADELIN: ProductRules = {
     {
       title: 'Cession',
       bullets: [
-        'Plus-values : PFU 30 % ou option barème.',
+        'Plus-values : {pfu} ou option barème.',
         'Moins-values déductibles des plus-values de même nature.',
         'Reprise de la réduction d\'IR si cession avant 5 ans (hors cas de force majeure).',
       ],
-      tags: ['pfu_30', 'reprise_reduction'],
+      tags: ['pfu', 'reprise_reduction'],
       confidence: 'elevee',
       sources: [{ label: 'Art. 200 A CGI — PFU', url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000036428122' }],
     },
@@ -271,11 +271,11 @@ const CROWDFUNDING: ProductRules = {
     {
       title: 'Cession / remboursement',
       bullets: [
-        'Plus-values sur actions : PFU 30 %.',
-        'Intérêts sur obligations : PFU 30 %.',
+        'Plus-values sur actions : {pfu}.',
+        'Intérêts sur obligations : {pfu}.',
         'Pertes déductibles des gains de même nature (dans la limite des règles du PFU).',
       ],
-      tags: ['pfu_30'],
+      tags: ['pfu'],
       confidence: 'elevee',
       sources: [{ label: 'Art. 200 A CGI — PFU', url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000036428122' }],
     },
@@ -310,10 +310,10 @@ const OBLIGATIONS_NON_COTEES: ProductRules = {
     {
       title: 'Intérêts et cession',
       bullets: [
-        'Intérêts courus : PFU 30 % (12,8 % IR + 17,2 % PS).',
-        'Plus-values de cession : PFU 30 %.',
+        'Intérêts courus : {pfu}.',
+        'Plus-values de cession : {pfu}.',
       ],
-      tags: ['pfu_30'],
+      tags: ['pfu'],
       confidence: 'elevee',
       sources: [{ label: 'Art. 200 A CGI — PFU', url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000036428122' }],
     },
@@ -349,9 +349,9 @@ const COMPTE_COURANT_ASSOCIE: ProductRules = {
       title: 'Remboursement',
       bullets: [
         'Remboursement du capital : non imposable (restitution de la créance).',
-        'Intérêts perçus : imposables à l\'IR selon le PFU 30 % (ou option barème).',
+        'Intérêts perçus : imposables à l\'IR selon le {pfu} (ou option barème).',
       ],
-      tags: ['pfu_30', 'interet_imposable'],
+      tags: ['pfu', 'interet_imposable'],
       confidence: 'elevee',
       sources: [{ label: 'Art. 200 A CGI — PFU', url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000036428122' }],
     },
@@ -389,9 +389,9 @@ const PRET_PARTICULIERS: ProductRules = {
       title: 'Remboursement',
       bullets: [
         'Remboursement du capital : non imposable.',
-        'Intérêts éventuels : imposables à l\'IR selon le PFU 30 %.',
+        'Intérêts éventuels : imposables à l\'IR selon le {pfu}.',
       ],
-      tags: ['pfu_30', 'interet_imposable'],
+      tags: ['pfu', 'interet_imposable'],
       confidence: 'elevee',
       sources: [{ label: 'Art. 200 A CGI — PFU', url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000036428122' }],
     },

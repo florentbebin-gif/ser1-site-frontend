@@ -3,9 +3,6 @@
  *
  * Cache minimal pour base_contrat_overrides.
  * Fetch Supabase → mémoire. TTL 24 h.
- *
- * PR1 — 100% additive. Aucun impact sur le runtime existant.
- * Non consommé par l'UI ni le moteur avant PR2.
  */
 
 import { supabase } from '../../supabaseClient';
