@@ -41,7 +41,7 @@ function getPalierTitle(item: TresoTimelineLayout['paliers'][number]): string {
     .filter(subPhase => subPhase.enabled)
     .map(subPhase => subPhase.detail)
     .join(' · ');
-  return `Palier ${item.startYear}-${item.endYear}${details ? ` · ${details}` : ''}`;
+  return `Palier ${item.startYear}-${item.endYear}${details ? ` - ${details}` : ''}`;
 }
 
 export function TresoTimelineTrack({ layout, onEditPhase, compact = false }: TresoTimelineTrackProps) {

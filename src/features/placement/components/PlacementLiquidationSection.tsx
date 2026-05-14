@@ -21,6 +21,7 @@ interface PlacementLiquidationSectionProps {
   setShowAllColumns: (_value: boolean) => void;
   produit1: CompareResult['produit1'] | null;
   produit2: CompareResult['produit2'] | null;
+  compareEnabled: boolean;
 }
 
 export function PlacementLiquidationSection({
@@ -32,10 +33,11 @@ export function PlacementLiquidationSection({
   setShowAllColumns,
   produit1,
   produit2,
+  compareEnabled,
 }: PlacementLiquidationSectionProps) {
   const showOptionBareme = isExpert && (
     (produit1 && ['CTO', 'AV', 'PEA'].includes(produit1.envelope))
-    || (produit2 && ['CTO', 'AV', 'PEA'].includes(produit2.envelope))
+    || (compareEnabled && produit2 && ['CTO', 'AV', 'PEA'].includes(produit2.envelope))
   );
 
   const [table1Open, setTable1Open] = useState(false);
@@ -123,23 +125,25 @@ export function PlacementLiquidationSection({
                   <span className="pl-muted">-</span>
                 )}
               </td>
-              <td className="pl-cell--center">
-                {produit2 && ['CTO', 'AV', 'PEA'].includes(produit2.envelope) ? (
-                  <Toggle
-                    checked={produit2OptionBaremeIR}
-                    onChange={(value) => updateProductOption(1, 'liquidation.optionBaremeIR', value)}
-                    ariaLabel={`Activer l’option au barème IR en liquidation pour ${produit2.envelopeLabel}`}
-                  />
-                ) : (
-                  <span className="pl-muted">-</span>
-                )}
-              </td>
+              {compareEnabled && (
+                <td className="pl-cell--center">
+                  {produit2 && ['CTO', 'AV', 'PEA'].includes(produit2.envelope) ? (
+                    <Toggle
+                      checked={produit2OptionBaremeIR}
+                      onChange={(value) => updateProductOption(1, 'liquidation.optionBaremeIR', value)}
+                      ariaLabel={`Activer l’option au barème IR en liquidation pour ${produit2.envelopeLabel}`}
+                    />
+                  ) : (
+                    <span className="pl-muted">-</span>
+                  )}
+                </td>
+              )}
             </tr>
           ) : null}
         </tbody>
       </table>
 
-      {produit1 && produit2 && (
+      {produit1 && (compareEnabled ? produit2 : true) && (
         <div className="pl-details-section">
           <div className="pl-details-header">
             <h4 className="pl-details-title">Détail année par année</h4>
@@ -163,24 +167,28 @@ export function PlacementLiquidationSection({
             )}
           </div>
 
-          <PlacementLiquidationDetailsTable
-            product={produit1}
-            showAllColumns={showAllColumns}
-            showCapitalDecesColumn={Boolean(
-              produit1.envelope === 'PER'
-              && state.products[0].versementConfig?.annuel?.garantieBonneFin?.active
-            )}
-            onOpenChange={setTable1Open}
-          />
-          <PlacementLiquidationDetailsTable
-            product={produit2}
-            showAllColumns={showAllColumns}
-            showCapitalDecesColumn={Boolean(
-              produit2.envelope === 'PER'
-              && state.products[1].versementConfig?.annuel?.garantieBonneFin?.active
-            )}
-            onOpenChange={setTable2Open}
-          />
+          {produit1 && (
+            <PlacementLiquidationDetailsTable
+              product={produit1}
+              showAllColumns={showAllColumns}
+              showCapitalDecesColumn={Boolean(
+                produit1.envelope === 'PER'
+                && state.products[0].versementConfig?.annuel?.garantieBonneFin?.active
+              )}
+              onOpenChange={setTable1Open}
+            />
+          )}
+          {compareEnabled && produit2 && (
+            <PlacementLiquidationDetailsTable
+              product={produit2}
+              showAllColumns={showAllColumns}
+              showCapitalDecesColumn={Boolean(
+                produit2.envelope === 'PER'
+                && state.products[1].versementConfig?.annuel?.garantieBonneFin?.active
+              )}
+              onOpenChange={setTable2Open}
+            />
+          )}
         </div>
       )}
 

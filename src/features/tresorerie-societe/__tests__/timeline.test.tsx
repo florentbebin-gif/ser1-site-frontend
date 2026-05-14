@@ -139,8 +139,8 @@ function cloneInputs(patch?: (inputs: TresoInputsV6) => void): TresoInputsV6 {
   return inputs;
 }
 
-function openFirstPhaseModal() {
-  const [phaseButton] = screen.getAllByRole('button', { name: /Modifier Rémunération holding/i });
+function openPhaseModal(name: RegExp = /Modifier Palier 2026-2030/i) {
+  const [phaseButton] = screen.getAllByRole('button', { name });
   fireEvent.click(phaseButton);
 }
 
@@ -148,6 +148,10 @@ function clickModalSubPhase(label: RegExp) {
   const modal = screen.getByText('Paramétrer le palier').closest('.sim-modal') as HTMLElement;
   const nav = modal.querySelector('.ts-phase-modal-nav') as HTMLElement;
   fireEvent.click(within(nav).getByRole('button', { name: label }));
+}
+
+function getPhaseModal() {
+  return screen.getByText('Paramétrer le palier').closest('.sim-modal') as HTMLElement;
 }
 
 describe('TresoTimelineSection', () => {
@@ -194,6 +198,17 @@ describe('TresoTimelineSection', () => {
     fireEvent.change(screen.getByLabelText('Horizon de projection'), { target: { value: '25' } });
 
     expect(screen.getByText('2050')).toBeInTheDocument();
+  });
+
+  it('partage l’horizon de projection avec le calcul comptable', () => {
+    const onChange = vi.fn();
+    render(<TresoTimelineSection inputs={cloneInputs()} onChange={onChange} />);
+
+    fireEvent.change(screen.getByLabelText('Horizon de projection'), { target: { value: '60' } });
+
+    expect(onChange).toHaveBeenCalledWith(expect.objectContaining({
+      company: expect.objectContaining({ projectionHorizonYears: 60 }),
+    }));
   });
 
   it('place le début et l’horizon de projection dans la même grille de réglages', () => {
@@ -284,13 +299,26 @@ describe('TresoTimelineSection', () => {
   it('ouvre la modale du palier avec les valeurs existantes', () => {
     render(<TresoTimelineSection inputs={cloneInputs()} onChange={vi.fn()} />);
 
-    openFirstPhaseModal();
+    openPhaseModal();
 
     expect(screen.getByText('Paramétrer le palier')).toBeInTheDocument();
     expect(screen.getByLabelText('Année de début')).toHaveDisplayValue('2026');
     expect(screen.getByLabelText('Année de fin')).toHaveDisplayValue('2030');
     expect(screen.getByDisplayValue(value => value.replace(/\s/g, '') === '80000')).toBeInTheDocument();
     expect(screen.getAllByRole('button', { name: /Rémunération/i }).length).toBeGreaterThan(0);
+  });
+
+  it('retire les choix Aucun déjà induits par le rail des sous-phases', () => {
+    render(<TresoTimelineSection inputs={cloneInputs()} onChange={vi.fn()} />);
+
+    openPhaseModal();
+    const modal = getPhaseModal();
+
+    expect(within(modal).queryByLabelText('Aucune rémunération')).not.toBeInTheDocument();
+    clickModalSubPhase(/Distribution/i);
+    expect(within(modal).queryByLabelText('Aucun dividende')).not.toBeInTheDocument();
+    clickModalSubPhase(/Remboursement CCA/i);
+    expect(within(modal).queryByLabelText('Aucun remboursement')).not.toBeInTheDocument();
   });
 
   it('masque la rémunération depuis une filiale quand aucune filiale n’existe', () => {
@@ -303,7 +331,7 @@ describe('TresoTimelineSection', () => {
       />,
     );
 
-    openFirstPhaseModal();
+    openPhaseModal();
 
     expect(screen.queryByLabelText('Oui, depuis une filiale')).not.toBeInTheDocument();
   });
@@ -311,7 +339,7 @@ describe('TresoTimelineSection', () => {
   it('retire le besoin et le complément de la phase distribution', () => {
     render(<TresoTimelineSection inputs={cloneInputs()} onChange={vi.fn()} />);
 
-    fireEvent.click(screen.getByRole('button', { name: /Modifier Besoin retraite/i }));
+    openPhaseModal(/Modifier Palier 2031-2040/i);
     clickModalSubPhase(/Distribution/i);
     fireEvent.click(screen.getByLabelText('Montant net cible'));
 
@@ -324,12 +352,41 @@ describe('TresoTimelineSection', () => {
   it('simplifie la constitution CCA autour des bornes du palier', () => {
     render(<TresoTimelineSection inputs={cloneInputs()} onChange={vi.fn()} />);
 
-    openFirstPhaseModal();
+    openPhaseModal();
     clickModalSubPhase(/Constitution CCA/i);
 
     expect(screen.getByText('Apport annuel')).toBeInTheDocument();
     expect(screen.queryByText('Apport annuel de')).not.toBeInTheDocument();
     expect(screen.queryByText('Apport annuel à')).not.toBeInTheDocument();
+  });
+
+  it('calcule un remboursement CCA linéaire sur la durée du palier', () => {
+    const onChange = vi.fn();
+    render(<TresoTimelineSection inputs={cloneInputs()} onChange={onChange} />);
+
+    openPhaseModal();
+    clickModalSubPhase(/Remboursement CCA/i);
+    fireEvent.click(screen.getByRole('button', { name: /Linéaire sur la phase/i }));
+    fireEvent.click(screen.getByRole('button', { name: 'Valider' }));
+
+    expect(onChange).toHaveBeenCalledWith(expect.objectContaining({
+      company: expect.objectContaining({
+        associates: expect.arrayContaining([
+          expect.objectContaining({
+            revenuePhases: expect.arrayContaining([
+              expect.objectContaining({
+                id: 'phase-remu',
+                ccaRepayment: expect.objectContaining({
+                  enabled: true,
+                  strategy: 'montant_cible',
+                  targetAmount: 20_000,
+                }),
+              }),
+            ]),
+          }),
+        ]),
+      }),
+    }));
   });
 
   it('bloque l’enregistrement si deux paliers activent la même sous-phase sur les mêmes années', () => {
@@ -347,7 +404,7 @@ describe('TresoTimelineSection', () => {
       />,
     );
 
-    openFirstPhaseModal();
+    openPhaseModal();
     fireEvent.change(screen.getByLabelText('Année de début'), { target: { value: '2031' } });
     fireEvent.change(screen.getByLabelText('Année de fin'), { target: { value: '2035' } });
 
@@ -359,7 +416,7 @@ describe('TresoTimelineSection', () => {
     const onChange = vi.fn();
     render(<TresoTimelineSection inputs={cloneInputs()} onChange={onChange} />);
 
-    openFirstPhaseModal();
+    openPhaseModal();
     fireEvent.change(screen.getByLabelText('Année de fin'), { target: { value: '2029' } });
     fireEvent.click(screen.getByRole('button', { name: 'Valider' }));
 
@@ -390,7 +447,7 @@ describe('TresoTimelineSection', () => {
       />,
     );
 
-    openFirstPhaseModal();
+    openPhaseModal();
     fireEvent.click(screen.getByRole('button', { name: 'Valider' }));
 
     expect(onChange).toHaveBeenCalledWith(expect.objectContaining({
@@ -422,7 +479,7 @@ describe('TresoTimelineSection', () => {
       />,
     );
 
-    openFirstPhaseModal();
+    openPhaseModal();
 
     const footer = screen.getByTestId('ts-phase-modal-footer');
     expect(within(footer).getByRole('button', { name: /Supprimer ce palier/i })).toBeDisabled();

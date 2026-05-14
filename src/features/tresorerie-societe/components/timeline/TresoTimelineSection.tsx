@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import type {
   AssociateInputV6,
   AssociateRevenuePhaseInputV6,
@@ -17,6 +17,7 @@ import { TresoTimelineTrack } from './TresoTimelineTrack';
 import { TresoTimelineYearScrubber } from './TresoTimelineYearScrubber';
 import { computeTimelineRange } from './timelineLayout';
 import { getTresoReadiness } from '../../utils/tresorerieReadiness';
+import { normalizeProjectionHorizonYears } from '../../utils/projectionHorizon';
 
 interface TresoTimelineSectionProps {
   inputs: TresoInputsV6;
@@ -30,7 +31,9 @@ export function TresoTimelineSection({
   onOpenAssociateModal,
 }: TresoTimelineSectionProps) {
   const [editingPhaseId, setEditingPhaseId] = useState<string | null>(null);
-  const [horizonYears, setHorizonYears] = useState(15);
+  const [horizonYears, setHorizonYears] = useState(() =>
+    normalizeProjectionHorizonYears(inputs.company.projectionHorizonYears),
+  );
   const readiness = getTresoReadiness(inputs);
   const selectedAssociate = readiness.selectedAssociate as AssociateInputV6 | undefined;
   const projectionStartYear =
@@ -47,9 +50,20 @@ export function TresoTimelineSection({
   const editingPhase = editingPhaseId
     ? phases.find(phase => phase.id === editingPhaseId) ?? null
     : null;
+  const selectedAssociateCcaCurrentBalance = selectedAssociate?.cca?.currentBalance ?? 0;
+
+  useEffect(() => {
+    setHorizonYears(normalizeProjectionHorizonYears(inputs.company.projectionHorizonYears));
+  }, [inputs.company.projectionHorizonYears]);
 
   const patchCompany = (patch: Partial<CompanyInputV6>) => {
     onChange({ ...inputs, company: { ...inputs.company, ...patch } });
+  };
+
+  const patchProjectionHorizonYears = (value: number) => {
+    const horizon = normalizeProjectionHorizonYears(value);
+    setHorizonYears(horizon);
+    patchCompany({ projectionHorizonYears: horizon });
   };
 
   const patchProjectionStartYear = (year: number) => {
@@ -180,13 +194,13 @@ export function TresoTimelineSection({
                   id="ts-horizon-years"
                   type="number"
                   min={5}
-                  max={40}
+                  max={60}
                   step={1}
                   value={horizonYears}
                   className="sim-field__control"
                   onChange={event => {
-                    const value = Number(event.target.value);
-                    if (value >= 5 && value <= 40) setHorizonYears(value);
+                    if (event.target.value === '') return;
+                    patchProjectionHorizonYears(Number(event.target.value));
                   }}
                 />
                 <span className="sim-field__unit ts-unit">ans</span>
@@ -215,6 +229,7 @@ export function TresoTimelineSection({
           phases={phases}
           subsidiaries={inputs.company.subsidiaries}
           horizonYear={layout.endYear}
+          ccaCurrentBalance={selectedAssociateCcaCurrentBalance}
           onSave={saveRevenuePhase}
           onDelete={deleteRevenuePhase}
           onClose={() => setEditingPhaseId(null)}

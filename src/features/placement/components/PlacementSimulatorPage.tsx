@@ -52,6 +52,7 @@ export default function PlacementSimulatorPage() {
     setStep,
     setVersementConfig,
     updateProductOption,
+    setCompareEnabled,
     setModalOpen,
     setShowAllColumns,
   } = handlers;
@@ -90,7 +91,7 @@ export default function PlacementSimulatorPage() {
   if (error) {
     return (
       <SimPageShell
-        title="Comparer deux placements"
+        title="Projeter un placement"
         subtitle="Épargne → Liquidation → Transmission"
         pageClassName="pl-page"
         pageTestId="placement-page"
@@ -111,7 +112,7 @@ export default function PlacementSimulatorPage() {
   return (
     <>
       <SimPageShell
-        title="Comparer deux placements"
+        title="Projeter un placement"
         subtitle="Épargne → Liquidation → Transmission"
         pageClassName="pl-page"
         pageTestId="placement-page"
@@ -135,6 +136,7 @@ export default function PlacementSimulatorPage() {
             setLiquidation={setLiquidation}
             setTransmission={setTransmission}
             updateProductOption={updateProductOption}
+            setCompareEnabled={setCompareEnabled}
             setModalOpen={(productIndex) => setModalOpen(productIndex)}
             showAllColumns={showAllColumns}
             setShowAllColumns={(value) => setShowAllColumns(value)}

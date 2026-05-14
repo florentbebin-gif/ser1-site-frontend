@@ -3,7 +3,6 @@
  */
 
 import { useState } from 'react';
-import { SimFieldShell } from '../../../components/ui/sim/SimFieldShell';
 import type {
   AllocationPocketHorizon,
   AllocationPocketInput,
@@ -20,7 +19,6 @@ import {
 } from '../utils/tresorerieSocieteModel';
 import {
   fmtEuroInput,
-  parseEuroInput,
 } from '../utils/tresorerieFormatters';
 import {
   buildTreasuryStackSegments,
@@ -82,13 +80,15 @@ export function TresoPlacementSection({ inputs, projectionRows = [], onChange }:
 
   const totalInitialPct = pockets.reduce((sum, pocket) => sum + pocket.initialAllocationPct, 0);
   const totalAnnualPct = pockets.reduce((sum, pocket) => sum + pocket.annualAllocationPct, 0);
-  const initialInvestedAmount =
-    v2.company.treasuryInitial * Math.min(Math.max(totalInitialPct, 0), 100) / 100;
-  const bankAmount = Math.max(0, v2.company.treasuryInitial - initialInvestedAmount);
   const protectedCash = minimumBankBalance + workingCapitalRequirement;
+  const initialAllocationBase = Math.max(0, v2.company.treasuryInitial - protectedCash);
+  const initialInvestedAmount =
+    initialAllocationBase * Math.min(Math.max(totalInitialPct, 0), 100) / 100;
+  const bankAmount = Math.max(0, v2.company.treasuryInitial - initialInvestedAmount);
   const availableCash = Math.max(0, bankAmount - protectedCash);
   const treasuryStackSegments = buildTreasuryStackSegments(
     v2.company.treasuryInitial,
+    initialAllocationBase,
     pockets,
     totalInitialPct,
     protectedCash,
@@ -117,25 +117,15 @@ export function TresoPlacementSection({ inputs, projectionRows = [], onChange }:
         treasuryInitial={v2.company.treasuryInitial}
         protectedCash={protectedCash}
         availableCash={availableCash}
+        minimumBankBalance={minimumBankBalance}
+        workingCapitalRequirement={workingCapitalRequirement}
         segments={treasuryStackSegments}
         onEditPocket={setEditingPocketId}
+        onMinimumBankBalanceChange={value =>
+          patchMatrix({ minimumBankBalance: value, sweepThreshold: value })
+        }
       />
 
-      <div className="ts-fields">
-        <SimFieldShell label="Solde minimum à conserver sur le compte bancaire" className="ts-field" rowClassName="ts-field__row">
-          <input
-            type="text"
-            inputMode="numeric"
-            className="sim-field__control"
-            value={fmtEuroInput(minimumBankBalance)}
-            onChange={event => {
-              const value = parseEuroInput(event.target.value);
-              patchMatrix({ minimumBankBalance: value, sweepThreshold: value });
-            }}
-          />
-          <span className="sim-field__unit ts-unit">€</span>
-        </SimFieldShell>
-      </div>
       {firstBankWarning ? (
         <p className="ts-warning" role="alert">
           Compte bancaire insuffisant en {firstBankWarningYear} :
@@ -147,10 +137,10 @@ export function TresoPlacementSection({ inputs, projectionRows = [], onChange }:
       <TresoPocketBoard
         bankAmount={bankAmount}
         pocketCount={pockets.length}
-        treasuryInitial={v2.company.treasuryInitial}
+        treasuryInitial={initialAllocationBase}
         pocketsByHorizon={pocketsByHorizon}
-        onAddPocket={addPocket}
-        onEditPocket={setEditingPocketId}
+          onAddPocket={addPocket}
+          onEditPocket={setEditingPocketId}
       />
 
       <div className="ts-matrix-actions">
@@ -177,6 +167,9 @@ export function TresoPlacementSection({ inputs, projectionRows = [], onChange }:
         <TresoPocketModal
           pocket={editingPocket}
           index={editingPocketIndex}
+          initialAllocationBase={initialAllocationBase}
+          remainingInitialPct={Math.max(0, 100 - (totalInitialPct - editingPocket.initialAllocationPct))}
+          remainingAnnualPct={Math.max(0, 100 - (totalAnnualPct - editingPocket.annualAllocationPct))}
           onChange={patch => updatePocket(editingPocket.id, patch)}
           onDelete={() => deletePocket(editingPocket.id)}
           onClose={() => setEditingPocketId(null)}

@@ -16,7 +16,8 @@ export type PlacementProductKpis = {
 export type PlacementSynthesisSlideSpec = {
   type: 'placement-synthesis';
   produit1: PlacementProductKpis;
-  produit2: PlacementProductKpis;
+  /** Mode projection 1 placement : `produit2` est `null`. Le rendu doit alors centrer produit1. */
+  produit2: PlacementProductKpis | null;
   timeline: {
     ageActuel: number;
     ageDebutLiquidation: number;
@@ -39,12 +40,21 @@ export type PlacementDetailGainBar = {
   revenusPercus?: number;
 };
 
+export type PlacementDetailProduct = {
+  label: string;
+  metrics: Array<{ icon: BusinessIconName; label: string; value: string }>;
+  params?: string[];
+  flowBar?: PlacementDetailFlowBar;
+  gainBar?: PlacementDetailGainBar;
+};
+
 export type PlacementDetailSlideSpec = {
   type: 'placement-detail';
   title: string;
   subtitle: string;
-  produit1: { label: string; metrics: Array<{ icon: BusinessIconName; label: string; value: string }>; params?: string[]; flowBar?: PlacementDetailFlowBar; gainBar?: PlacementDetailGainBar };
-  produit2: { label: string; metrics: Array<{ icon: BusinessIconName; label: string; value: string }>; params?: string[]; flowBar?: PlacementDetailFlowBar; gainBar?: PlacementDetailGainBar };
+  produit1: PlacementDetailProduct;
+  /** Mode projection 1 placement : `produit2` est `null`. Le rendu doit alors centrer produit1. */
+  produit2: PlacementDetailProduct | null;
   optionalNote?: string;
 };
 

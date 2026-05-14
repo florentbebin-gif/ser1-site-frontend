@@ -18,6 +18,7 @@ import {
   getSelectedAssociate,
   getSelectedAssociateId,
 } from './runtimeAccessors';
+import { computeDistributableCapacity, computeDividendsDistribution } from './simulateTresorerieV2.distribution';
 import {
   buildAssociateRevenueRows,
   computeMatrixYear,
@@ -164,8 +165,9 @@ export function simulateTresorerieV2(
   const anneeCivileDebut = selectedProfile.projectionStartYear;
   const incomeStatement = getIncomeStatement(company);
   const allocationPockets = selectAllocationPocketsForSimulation(v2.allocationMatrix);
-  const minimumBankBalance =
-    v2.allocationMatrix.minimumBankBalance ?? v2.allocationMatrix.sweepThreshold ?? 0;
+  const minimumBankBalance = v2.allocationMatrix.minimumBankBalance ?? v2.allocationMatrix.sweepThreshold ?? 0;
+  const cashReserve = minimumBankBalance + incomeStatement.workingCapitalRequirement;
+  const initialAllocatableTreasury = Math.max(0, company.treasuryInitial - cashReserve);
 
   const initialCcaBalances = new Map<string, number>();
   associates.forEach(associate => {
@@ -176,7 +178,7 @@ export function simulateTresorerieV2(
   let ccaCumuleTotal = sumMapValues(initialCcaBalances);
   const initialLots = createLotsFromAllocation({
     pockets: allocationPockets,
-    amount: company.treasuryInitial,
+    amount: initialAllocatableTreasury,
     allocationKey: 'initialAllocationPct',
     startYear: anneeCivileDebut,
   });
@@ -290,7 +292,8 @@ export function simulateTresorerieV2(
       ? Math.min(resultatNetComptable * LEGAL_RESERVE_DOTATION_RATE, reserveLegaleACompleter)
       : 0;
     const reserveLegaleFin = reserveLegaleDebut + dotationReserveLegale;
-    const capaciteDistribuable = Math.max(0, reservesDebut + resultatNetComptable - dotationReserveLegale);
+    // Défaut true (rétro-compat) : l'usufruitier appréhende les réserves démembrées.
+    const usufructuaryAppropriatesReserves = company.usufructuaryReserveAttribution !== false;
 
     const tresorerieDisponibleApresIS = Math.max(
       0,
@@ -308,7 +311,6 @@ export function simulateTresorerieV2(
         interetsCCA -
         chargesStructure,
     );
-    const cashReserve = minimumBankBalance + incomeStatement.workingCapitalRequirement;
     const tresorerieDistribuableApresIS = Math.max(0, tresorerieDisponibleApresIS - cashReserve);
 
     const selectedRemuneration = remunerationByAssociate.get(selectedAssociateId) ?? 0;
@@ -348,6 +350,9 @@ export function simulateTresorerieV2(
       ? selectedActivePhase.distribution
       : undefined;
     const tresoDispoApresCCAEtIS = Math.max(0, tresorerieDistribuableApresIS - retraitsCCA);
+    const capaciteDistribuable = computeDistributableCapacity({
+      associates, resultatNetComptable, dotationReserveLegale, reservesDebut, usufructuaryAppropriatesReserves,
+    });
     let dividendesComplementairesBrutsDemandes = 0;
     if (selectedDistribution) {
       if (selectedDistribution.enabled && selectedDistribution.dividendsStrategy === 'montant_cible') {
@@ -372,21 +377,20 @@ export function simulateTresorerieV2(
     const dividendesDemandesTotaux =
       dividendesBrutsCreditIRDemandes + dividendesComplementairesBrutsDemandes;
 
-    const dividendesAssociesBruts = Math.min(
+    const {
+      dividendesAssociesBruts,
+      grossDividendsByAssociate,
+    } = computeDividendsDistribution({
+      associates,
+      resultatNetComptable,
+      dotationReserveLegale,
+      reservesDebut,
+      usufructuaryAppropriatesReserves,
       dividendesDemandesTotaux,
-      capaciteDistribuable,
       tresoDispoApresCCAEtIS,
-    );
+    });
     const alerteDividendesSuperieursCapacite =
       dividendesAssociesBruts < dividendesDemandesTotaux;
-
-    const grossDividendsByAssociate = new Map<string, number>();
-    associates.forEach(associate => {
-      const grossDividends = dividendesAssociesBruts * (getEconomicRightsPct(associate) / 100);
-      if (grossDividends > 0) {
-        grossDividendsByAssociate.set(associate.id, grossDividends);
-      }
-    });
 
     const tnsSocialChargesByAssociate = new Map<string, number>();
     associates.forEach(associate => {

@@ -37,26 +37,50 @@ function KpiCard({ label, value, tone = 'neutral', note }: KpiCardProps) {
   );
 }
 
-function getHorizonNote(kpis: TresoKPIs): string {
-  const notes: string[] = [];
+function buildTresorerieCard(kpis: TresoKPIs): {
+  value: string;
+  tone: 'positive' | 'warning';
+  note: string;
+} {
   if (kpis.tresorerieTientHorizon) {
-    notes.push('Trésorerie OK');
-  } else {
-    notes.push(kpis.premiereAnneeDeficitBancaire
-      ? `Trésorerie dès ${kpis.premiereAnneeDeficitBancaire}`
-      : 'Trésorerie à revoir');
+    return {
+      value: 'OK',
+      tone: 'positive',
+      note: 'Trésorerie suffisante sur tout l’horizon',
+    };
   }
+  if (kpis.premiereAnneeDeficitBancaire) {
+    return {
+      value: `Déficit en ${kpis.premiereAnneeDeficitBancaire}`,
+      tone: 'warning',
+      note: 'Trésorerie bancaire passe en négatif cette année-là',
+    };
+  }
+  return {
+    value: 'À revoir',
+    tone: 'warning',
+    note: 'Trésorerie insuffisante à horizon',
+  };
+}
 
+function buildRevenuCibleCard(kpis: TresoKPIs): {
+  value: string;
+  tone: 'positive' | 'warning' | 'neutral';
+  note?: string;
+} | null {
   if (kpis.revenuCibleTientHorizon === null) {
-    notes.push('Aucune cible de revenu');
-  } else if (kpis.revenuCibleTientHorizon) {
-    notes.push('Revenu cible OK');
-  } else {
-    notes.push(kpis.premiereAnneeRevenuCibleNonTenu
-      ? `Revenu cible dès ${kpis.premiereAnneeRevenuCibleNonTenu}`
-      : 'Revenu cible à revoir');
+    return null; // Aucune cible définie → on cache la carte.
   }
-  return notes.join(' · ');
+  if (kpis.revenuCibleTientHorizon) {
+    return { value: 'OK', tone: 'positive', note: 'Cible de revenu tenue sur tout l’horizon' };
+  }
+  return {
+    value: kpis.premiereAnneeRevenuCibleNonTenu
+      ? `Manqué dès ${kpis.premiereAnneeRevenuCibleNonTenu}`
+      : 'Manqué',
+    tone: 'warning',
+    note: 'Revenu cible non atteint',
+  };
 }
 
 export function TresoKPISidebar({ kpis }: Props) {
@@ -64,13 +88,14 @@ export function TresoKPISidebar({ kpis }: Props) {
     ? fmtEuro(kpis.ccaRestantFinHorizon)
     : fmtEuro(kpis.ccaRembourseTotal);
   const ccaLabel = kpis.ccaRestantFinHorizon > 0 ? 'CCA restant dû' : 'CCA remboursé';
-  const horizonOk = kpis.tresorerieTientHorizon && kpis.revenuCibleTientHorizon !== false;
+  const tresorerieCard = buildTresorerieCard(kpis);
+  const revenuCibleCard = buildRevenuCibleCard(kpis);
 
   return (
     <div className="premium-card sim-summary-card ts-kpi-sidebar">
       <div className="ts-kpi-sidebar__header">
         <h2 className="ts-kpi-sidebar__title">Synthèse</h2>
-        <p className="ts-kpi-sidebar__subtitle">6 repères pour lire la projection</p>
+        <p className="ts-kpi-sidebar__subtitle">Repères clés pour lire la projection</p>
       </div>
       <div className="ts-kpi-sidebar__divider" />
 
@@ -81,11 +106,19 @@ export function TresoKPISidebar({ kpis }: Props) {
       ) : (
         <div className="ts-kpi-card-grid">
           <KpiCard
-            label="Tenue horizon"
-            value={horizonOk ? 'OK' : 'À revoir'}
-            tone={horizonOk ? 'positive' : 'warning'}
-            note={getHorizonNote(kpis)}
+            label="Trésorerie sur horizon"
+            value={tresorerieCard.value}
+            tone={tresorerieCard.tone}
+            note={tresorerieCard.note}
           />
+          {revenuCibleCard ? (
+            <KpiCard
+              label="Revenu cible"
+              value={revenuCibleCard.value}
+              tone={revenuCibleCard.tone}
+              note={revenuCibleCard.note}
+            />
+          ) : null}
           <KpiCard
             label="Performance moyenne"
             value={fmtPercent(kpis.performanceMoyenneTresorerie)}

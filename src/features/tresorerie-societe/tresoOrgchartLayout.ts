@@ -1,9 +1,56 @@
-import type { RuntimeCompanyInput, SubsidiaryInput } from '@/engine/tresorerie/types';
+import type {
+  OwnershipRight,
+  RuntimeAssociateInput,
+  RuntimeCompanyInput,
+  SubsidiaryInput,
+} from '@/engine/tresorerie/types';
 import {
   getCapitalPct,
   getCompanyKindCode,
   getCompanyKindLabel,
 } from './utils/tresorerieSocieteModel';
+
+function ownershipRightCode(right: OwnershipRight): string {
+  if (right === 'usufruit') return 'US';
+  if (right === 'nue_propriete') return 'NP';
+  return 'PP';
+}
+
+/**
+ * Construit le badge meta de l'associé à partir de ses lots de détention.
+ * Cas mono-lot : « PP », « US » ou « NP ».
+ * Cas multi-lots (ex. 10 % PP + 90 % US) : concaténation des lots significatifs,
+ * tronquée à 24 caractères pour rester lisible dans le nœud SVG.
+ */
+function buildAssociateMeta(associate: RuntimeAssociateInput): string {
+  const lots = associate.ownershipLots ?? [];
+  if (lots.length === 0) return 'PP';
+
+  const sortedLots = [...lots].sort((a, b) => {
+    const aWeight = (a.capitalPct || 0) + (a.economicRightsPct || 0);
+    const bWeight = (b.capitalPct || 0) + (b.economicRightsPct || 0);
+    return bWeight - aWeight;
+  });
+  const significant = sortedLots.filter(lot =>
+    (lot.capitalPct || 0) > 0 || (lot.economicRightsPct || 0) > 0,
+  );
+  const lotsToRender = significant.length > 0 ? significant : sortedLots.slice(0, 1);
+
+  const formatLot = (lot: typeof lotsToRender[number]) => {
+    const value = lot.right === 'usufruit'
+      ? Math.round(lot.economicRightsPct || 0)
+      : Math.round(lot.capitalPct || 0);
+    return `${value}% ${ownershipRightCode(lot.right)}`;
+  };
+
+  const fullLabel = lotsToRender.map(formatLot).join(' + ');
+  if (fullLabel.length <= 24) return fullLabel;
+
+  // Tronqué : on garde le lot dominant et on suffixe avec un compteur.
+  const dominant = formatLot(lotsToRender[0]);
+  const others = lotsToRender.length - 1;
+  return others > 0 ? `${dominant} +${others}` : dominant;
+}
 
 export const TRESO_ORG_NODE_WIDTH = 184;
 export const TRESO_ORG_NODE_HEIGHT = 66;
@@ -172,7 +219,7 @@ export function computeTresoOrgchartLayout(
     nodes.push({
       id: associate.id,
       label: associate.label,
-      meta: (associate.kind ?? 'pp').toUpperCase(),
+      meta: buildAssociateMeta(associate),
       kind: 'associate',
       x: associateStartX + index * (TRESO_ORG_ENTITY_NODE_WIDTH + GAP_X),
       y: PAD,

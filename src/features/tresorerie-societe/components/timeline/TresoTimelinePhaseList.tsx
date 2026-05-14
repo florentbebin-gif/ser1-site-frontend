@@ -1,26 +1,13 @@
 import type { AssociateRevenuePhaseInputV6 } from '@/engine/tresorerie/types';
 import {
-  computeNetRevenue,
+  getPhaseAmountLines,
+  getPhaseTitle,
   sortPhases,
 } from '../../utils/revenuePhases';
 
 interface TresoTimelinePhaseListProps {
   phases: AssociateRevenuePhaseInputV6[];
   onEditPhase: (phaseId: string) => void;
-}
-
-function fmtEuro(value: number): string {
-  return `${Math.round(value).toLocaleString('fr-FR')} €`;
-}
-
-function getDistributionSummary(phase: AssociateRevenuePhaseInputV6): string {
-  if (!phase.distribution.enabled || phase.distribution.dividendsStrategy === 'aucun') {
-    return 'Aucun dividende';
-  }
-  if (phase.distribution.dividendsStrategy === 'montant_cible') {
-    return `Objectif ${fmtEuro(phase.distribution.dividendsTargetAmountNet ?? 0)} net`;
-  }
-  return 'Dividendes max';
 }
 
 export function TresoTimelinePhaseList({
@@ -32,30 +19,29 @@ export function TresoTimelinePhaseList({
   return (
     <div className="ts-timeline-list" aria-label="Liste des paliers de revenus">
       {sorted.map(phase => {
-        const label = phase.label?.trim() || `Palier ${phase.startYear}-${phase.endYear}`;
-        const activeSubPhaseCount = [
-          phase.remuneration.enabled && phase.remuneration.source !== 'none',
-          phase.distribution.enabled && phase.distribution.dividendsStrategy !== 'aucun',
-          phase.ccaContribution.enabled,
-          phase.ccaRepayment.enabled && phase.ccaRepayment.strategy !== 'aucun',
-        ].filter(Boolean).length;
+        const palierLabel = `Palier ${phase.startYear}-${phase.endYear}`;
+        const title = getPhaseTitle(phase);
+        const amountLines = getPhaseAmountLines(phase);
+        const duration = Math.max(1, phase.endYear - phase.startYear + 1);
         return (
           <button
             key={phase.id}
             type="button"
-            className="ts-timeline-list__item"
+            className="ts-timeline-list__item ts-timeline-list__item--enriched"
             onClick={() => onEditPhase(phase.id)}
-            aria-label={`Modifier ${label}`}
+            aria-label={`Modifier ${palierLabel} - ${title}`}
           >
-            <span>
-              <strong>{label}</strong>
-              <small>
-                {phase.startYear} - {phase.endYear} · {activeSubPhaseCount} sous-phase{activeSubPhaseCount > 1 ? 's' : ''}
-              </small>
+            <span className="ts-timeline-list__title">
+              <strong>{palierLabel}</strong>
+              <em> - {title}</em>
             </span>
-            <span>
-              <strong>{getDistributionSummary(phase)}</strong>
-              <small>net annuel estimé {fmtEuro(computeNetRevenue(phase))}</small>
+            <span className="ts-timeline-list__duration">
+              {duration} {duration > 1 ? 'ans' : 'an'}
+            </span>
+            <span className="ts-timeline-list__amounts">
+              {amountLines.length > 0
+                ? amountLines.map(line => <span key={line}>{line}</span>)
+                : <span className="ts-timeline-list__amounts--empty">Aucun flux paramétré</span>}
             </span>
           </button>
         );

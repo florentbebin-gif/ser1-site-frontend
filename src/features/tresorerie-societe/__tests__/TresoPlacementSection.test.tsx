@@ -109,7 +109,7 @@ describe('TresoPlacementSection', () => {
     expect(within(screen.getByRole('group', { name: /Long terme/i }))
       .getByRole('button', { name: /Paramétrer Long terme/i })).toBeInTheDocument();
     expect(screen.getByText('4 %')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /Paramétrer Court terme/i })).toHaveTextContent('80 000 €');
+    expect(screen.getByRole('button', { name: /Paramétrer Court terme/i })).toHaveTextContent('52 000 €');
   });
 
   it('affiche une barre empilée de répartition initiale en euros', () => {
@@ -127,11 +127,11 @@ describe('TresoPlacementSection', () => {
     render(<TresoPlacementSection inputs={balancedInputs as any} onChange={vi.fn()} />);
 
     const stack = screen.getByLabelText('Répartition de la trésorerie initiale');
-    expect(within(stack).getByRole('button', { name: /Compte bancaire libre : 5[\s\u202f]000 €/i })).toBeDisabled();
+    expect(within(stack).getByRole('button', { name: /Compte bancaire libre : 26[\s\u202f]000 €/i })).toBeDisabled();
     expect(within(stack).getByRole('button', { name: /Solde minimum \+ BFR : 35[\s\u202f]000 €/i })).toBeDisabled();
-    expect(within(stack).getByRole('button', { name: /Court terme : 30[\s\u202f]000 €/i })).toBeInTheDocument();
+    expect(within(stack).getByRole('button', { name: /Court terme : 19[\s\u202f]500 €/i })).toBeInTheDocument();
 
-    fireEvent.click(within(stack).getByRole('button', { name: /Court terme : 30[\s\u202f]000 €/i }));
+    fireEvent.click(within(stack).getByRole('button', { name: /Court terme : 19[\s\u202f]500 €/i }));
     expect(screen.getByText('Paramétrer la poche')).toBeInTheDocument();
   });
 

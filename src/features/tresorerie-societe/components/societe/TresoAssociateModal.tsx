@@ -7,6 +7,7 @@ import type {
   AssociateKind,
   AssociateProfileInput,
   CcaScheduleInputV6,
+  OwnershipLotInput,
   OwnershipRight,
 } from '@/engine/tresorerie/types';
 import { TresoAssociateCcaPanel } from './TresoAssociateCcaPanel';
@@ -30,7 +31,7 @@ type AssociateModalSection = 'identite' | 'profil' | 'cca';
 
 const ASSOCIATE_MODAL_SECTIONS: Array<{ key: AssociateModalSection; label: string }> = [
   { key: 'profil', label: 'Profil' },
-  { key: 'identite', label: 'Identité' },
+  { key: 'identite', label: 'Détention' },
   { key: 'cca', label: 'CCA' },
 ];
 
@@ -50,12 +51,41 @@ export function TresoAssociateModal({
   const [activeSection, setActiveSection] = useState<AssociateModalSection>('profil');
   const kind = associate.kind ?? 'pp';
   const profile = associate.profile ?? fallbackProfile;
-  const lot = associate.ownershipLots[0] ?? {
-    right: 'pleine_propriete' as const,
-    capitalPct: 0,
-    economicRightsPct: 0,
-  };
+  const lots: OwnershipLotInput[] = associate.ownershipLots.length > 0
+    ? associate.ownershipLots
+    : [{ right: 'pleine_propriete', capitalPct: 0, economicRightsPct: 0 }];
+  const totalCapital = lots.reduce((sum, l) => sum + (l.capitalPct || 0), 0);
+  const totalEconomic = lots.reduce((sum, l) => sum + (l.economicRightsPct || 0), 0);
+  const usedRights = new Set<OwnershipRight>(lots.map(l => l.right));
+  const availableRights = OWNERSHIP_OPTIONS.filter(opt => !usedRights.has(opt.value));
   const cca = getCca(associate, profile.projectionStartYear);
+
+  const replaceLots = (nextLots: OwnershipLotInput[]) => {
+    onChange({ ownershipLots: nextLots });
+  };
+
+  const patchLot = (index: number, patch: Partial<OwnershipLotInput>) => {
+    const next = lots.map((lot, i) => {
+      if (i !== index) return lot;
+      const updated = { ...lot, ...patch };
+      if (updated.right === 'pleine_propriete') {
+        updated.economicRightsPct = updated.capitalPct;
+      }
+      return updated;
+    });
+    replaceLots(next);
+  };
+
+  const addLot = () => {
+    if (availableRights.length === 0) return;
+    const nextRight = availableRights[0].value;
+    replaceLots([...lots, { right: nextRight, capitalPct: 0, economicRightsPct: 0 }]);
+  };
+
+  const removeLot = (index: number) => {
+    if (lots.length <= 1) return;
+    replaceLots(lots.filter((_, i) => i !== index));
+  };
 
   const patchProfile = (patch: Partial<AssociateProfileInput>) => {
     onChange({ profile: { ...profile, ...patch } });
@@ -127,89 +157,113 @@ export function TresoAssociateModal({
           tabIndex={0}
         >
         {activeSection === 'identite' && (
-        <div className="ts-modal-grid ts-modal-grid--three">
-          <SimFieldShell label="Libellé" className="ts-field" rowClassName="ts-field__row">
-            <input
-              type="text"
-              className="sim-field__control ts-input-left"
-              value={associate.label}
-              onChange={event => onChange({ label: event.target.value })}
-            />
-          </SimFieldShell>
+        <div className="ts-associate-card">
+          <div className="ts-associate-card__header">
+            <strong>Détention</strong>
+            <span>Pleine propriété, usufruit, nue-propriété — cumulables</span>
+          </div>
 
-          <SimFieldShell label="Type d’associé" className="ts-field" rowClassName="ts-field__row">
-            <SimSelect
-              value={kind}
-              onChange={value => onChange({ kind: value as AssociateKind })}
-              options={ASSOCIATE_KIND_OPTIONS}
-              ariaLabel="Type d’associé"
-            />
-          </SimFieldShell>
-
-          <SimFieldShell label="Droit" className="ts-field" rowClassName="ts-field__row">
-            <SimSelect
-              value={lot.right}
-              onChange={value => onChange({
-                ownershipLots: [{
-                  ...lot,
-                  right: value as OwnershipRight,
-                  economicRightsPct: value === 'pleine_propriete'
-                    ? lot.capitalPct
-                    : lot.economicRightsPct,
-                }],
-              })}
-              options={OWNERSHIP_OPTIONS}
-              ariaLabel="Droit détenu"
-            />
-          </SimFieldShell>
-
-          <SimFieldShell label="% capital" className="ts-field" rowClassName="ts-field__row">
-            <input
-              type="text"
-              inputMode="decimal"
-              className="sim-field__control"
-              value={String(lot.capitalPct)}
-              onChange={event => onChange({
-                ownershipLots: [{
-                  ...lot,
-                  capitalPct: parsePctInput(event.target.value),
-                  economicRightsPct: lot.right === 'pleine_propriete'
-                    ? parsePctInput(event.target.value)
-                    : lot.economicRightsPct,
-                }],
-              })}
-            />
-            <span className="sim-field__unit ts-unit">%</span>
-          </SimFieldShell>
-
-          {lot.right === 'pleine_propriete' ? (
-            <p className="ts-field-note">
-              En pleine propriété, les droits économiques suivent automatiquement le capital.
-            </p>
-          ) : (
-            <SimFieldShell label="% économique" className="ts-field" rowClassName="ts-field__row">
-              <input
-                type="text"
-                inputMode="decimal"
-                className="sim-field__control"
-                value={String(lot.economicRightsPct)}
-                onChange={event => onChange({
-                  ownershipLots: [{ ...lot, economicRightsPct: parsePctInput(event.target.value) }],
-                })}
+          <div className="ts-modal-grid ts-modal-grid--three">
+            <SimFieldShell label="Type d’associé" className="ts-field" rowClassName="ts-field__row">
+              <SimSelect
+                value={kind}
+                onChange={value => onChange({ kind: value as AssociateKind })}
+                options={ASSOCIATE_KIND_OPTIONS}
+                ariaLabel="Type d’associé"
               />
-              <span className="sim-field__unit ts-unit">%</span>
             </SimFieldShell>
-          )}
+          </div>
+
+          <div className="ts-ownership-lots">
+            {lots.map((currentLot, index) => (
+              <div key={`${currentLot.right}-${index}`} className="ts-ownership-lot">
+                <SimFieldShell label="Droit" className="ts-field" rowClassName="ts-field__row">
+                  <SimSelect
+                    value={currentLot.right}
+                    onChange={value => patchLot(index, { right: value as OwnershipRight })}
+                    options={OWNERSHIP_OPTIONS.filter(opt =>
+                      opt.value === currentLot.right || !usedRights.has(opt.value),
+                    )}
+                    ariaLabel={`Droit détenu (lot ${index + 1})`}
+                  />
+                </SimFieldShell>
+
+                <SimFieldShell label="% capital" className="ts-field" rowClassName="ts-field__row">
+                  <input
+                    type="text"
+                    inputMode="decimal"
+                    className="sim-field__control"
+                    value={String(currentLot.capitalPct)}
+                    onChange={event => patchLot(index, { capitalPct: parsePctInput(event.target.value) })}
+                  />
+                  <span className="sim-field__unit ts-unit">%</span>
+                </SimFieldShell>
+
+                {currentLot.right === 'pleine_propriete' ? (
+                  <p className="ts-field-note">
+                    En pleine propriété, les droits économiques suivent le capital.
+                  </p>
+                ) : (
+                  <SimFieldShell label="% économique" className="ts-field" rowClassName="ts-field__row">
+                    <input
+                      type="text"
+                      inputMode="decimal"
+                      className="sim-field__control"
+                      value={String(currentLot.economicRightsPct)}
+                      onChange={event => patchLot(index, { economicRightsPct: parsePctInput(event.target.value) })}
+                    />
+                    <span className="sim-field__unit ts-unit">%</span>
+                  </SimFieldShell>
+                )}
+
+                {lots.length > 1 && (
+                  <button
+                    type="button"
+                    className="ts-text-btn ts-ownership-lot__remove"
+                    onClick={() => removeLot(index)}
+                    aria-label={`Supprimer le lot ${index + 1}`}
+                  >
+                    Supprimer
+                  </button>
+                )}
+              </div>
+            ))}
+
+            {availableRights.length > 0 && (
+              <button
+                type="button"
+                className="ts-text-btn ts-ownership-lots__add"
+                onClick={addLot}
+              >
+                + Ajouter un lot de détention
+              </button>
+            )}
+          </div>
+
+          <p className="ts-ownership-totals">
+            Totaux associé : capital {Math.round(totalCapital * 100) / 100} %
+            {' · '}
+            économique {Math.round(totalEconomic * 100) / 100} %
+          </p>
         </div>
         )}
 
         {activeSection === 'profil' && kind === 'pp' && (
           <div className="ts-associate-card">
             <div className="ts-associate-card__header">
-              <strong>Profil foyer</strong>
+              <strong>Profil</strong>
               <span>Paramètre personnel de projection</span>
             </div>
             <div className="ts-modal-grid ts-modal-grid--three">
+              <SimFieldShell label="Libellé" className="ts-field" rowClassName="ts-field__row">
+                <input
+                  type="text"
+                  className="sim-field__control ts-input-left"
+                  value={associate.label}
+                  onChange={event => onChange({ label: event.target.value })}
+                />
+              </SimFieldShell>
+
               <SimFieldShell label="Âge actuel" className="ts-field" rowClassName="ts-field__row">
                 <input
                   type="text"
@@ -228,6 +282,16 @@ export function TresoAssociateModal({
             <div className="ts-associate-card__header">
               <strong>Profil</strong>
               <span>Associé personne morale</span>
+            </div>
+            <div className="ts-modal-grid ts-modal-grid--three">
+              <SimFieldShell label="Libellé" className="ts-field" rowClassName="ts-field__row">
+                <input
+                  type="text"
+                  className="sim-field__control ts-input-left"
+                  value={associate.label}
+                  onChange={event => onChange({ label: event.target.value })}
+                />
+              </SimFieldShell>
             </div>
             <p className="ts-note--info">
               Une personne morale ne porte pas de besoin retraite personnel dans cette version.

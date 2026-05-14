@@ -106,25 +106,22 @@ export function buildTransmissionParams(data: PlacementData): string[] {
 // SLIDE SPEC BUILDERS
 // ============================================================================
 
+function buildProductKpis(p: PlacementProductData) {
+  return {
+    envelopeLabel: p.envelopeLabel,
+    effortTotal: p.totaux.effortReel,
+    capitalAcquis: p.epargne.capitalAcquis,
+    revenusNets: p.totaux.revenusNetsLiquidation,
+    transmissionNette: p.totaux.capitalTransmisNet,
+    roi: computeRoi(p),
+  };
+}
+
 export function buildSynthesisSpec(data: PlacementData): PlacementSynthesisSlideSpec {
   return {
     type: 'placement-synthesis',
-    produit1: {
-      envelopeLabel: data.produit1.envelopeLabel,
-      effortTotal: data.produit1.totaux.effortReel,
-      capitalAcquis: data.produit1.epargne.capitalAcquis,
-      revenusNets: data.produit1.totaux.revenusNetsLiquidation,
-      transmissionNette: data.produit1.totaux.capitalTransmisNet,
-      roi: computeRoi(data.produit1),
-    },
-    produit2: {
-      envelopeLabel: data.produit2.envelopeLabel,
-      effortTotal: data.produit2.totaux.effortReel,
-      capitalAcquis: data.produit2.epargne.capitalAcquis,
-      revenusNets: data.produit2.totaux.revenusNetsLiquidation,
-      transmissionNette: data.produit2.totaux.capitalTransmisNet,
-      roi: computeRoi(data.produit2),
-    },
+    produit1: buildProductKpis(data.produit1),
+    produit2: data.produit2 ? buildProductKpis(data.produit2) : null,
     timeline: {
       ageActuel: data.ageActuel,
       ageDebutLiquidation: data.ageActuel + data.dureeEpargne,
@@ -149,11 +146,13 @@ export function buildEpargneDetail(data: PlacementData): PlacementDetailSlideSpe
       metrics: buildMetrics(data.produit1),
       params: buildEpargneParams(data.produit1.config),
     },
-    produit2: {
-      label: data.produit2.envelopeLabel,
-      metrics: buildMetrics(data.produit2),
-      params: buildEpargneParams(data.produit2.config),
-    },
+    produit2: data.produit2
+      ? {
+        label: data.produit2.envelopeLabel,
+        metrics: buildMetrics(data.produit2),
+        params: buildEpargneParams(data.produit2.config),
+      }
+      : null,
   };
 }
 
@@ -179,12 +178,14 @@ export function buildLiquidationDetail(data: PlacementData): PlacementDetailSlid
       params: buildLiquidationParams(data.produit1.config, data),
       flowBar: buildFlowBar(data.produit1),
     },
-    produit2: {
-      label: data.produit2.envelopeLabel,
-      metrics: buildMetrics(data.produit2),
-      params: buildLiquidationParams(data.produit2.config, data),
-      flowBar: buildFlowBar(data.produit2),
-    },
+    produit2: data.produit2
+      ? {
+        label: data.produit2.envelopeLabel,
+        metrics: buildMetrics(data.produit2),
+        params: buildLiquidationParams(data.produit2.config, data),
+        flowBar: buildFlowBar(data.produit2),
+      }
+      : null,
   };
 }
 
@@ -211,12 +212,14 @@ export function buildTransmissionDetail(data: PlacementData): PlacementDetailSli
       params: transmissionParams,
       flowBar: buildFlowBar(data.produit1),
     },
-    produit2: {
-      label: data.produit2.envelopeLabel,
-      metrics: buildMetrics(data.produit2),
-      params: transmissionParams,
-      flowBar: buildFlowBar(data.produit2),
-    },
+    produit2: data.produit2
+      ? {
+        label: data.produit2.envelopeLabel,
+        metrics: buildMetrics(data.produit2),
+        params: transmissionParams,
+        flowBar: buildFlowBar(data.produit2),
+      }
+      : null,
   };
 }
 

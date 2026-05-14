@@ -11,7 +11,13 @@
  */
 
 import { ENVELOPE_LABELS } from '@/engine/placement';
-import type { CompareResult, EpargneRow, LiquidationRow } from '@/engine/placement/types';
+import type { CompareResult, EpargneRow, LiquidationRow, SimulateCompleteResult } from '@/engine/placement/types';
+
+/** Type interne Excel : autorise `produit2: null` en mode projection 1 placement. */
+interface PlacementResultsForExport {
+  produit1: SimulateCompleteResult;
+  produit2: SimulateCompleteResult | null;
+}
 import { buildXlsxBlob, downloadXlsx, validateXlsxBlob } from '@/utils/export/xlsxBuilder';
 import type { XlsxCell, XlsxSheet } from '@/utils/export/xlsxBuilder';
 import {
@@ -259,14 +265,12 @@ function buildHypothesesSheet(): XlsxSheet {
  */
 export async function buildPlacementXlsxBlob(
   state: PlacementSimulatorState,
-  results: CompareResult,
+  results: PlacementResultsForExport | CompareResult,
   headerFill?: string,
   sectionFill?: string,
 ): Promise<Blob> {
-  const { produit1, produit2 } = results as {
-    produit1: PlacementCompareProduct;
-    produit2: PlacementCompareProduct;
-  };
+  const produit1 = results.produit1 as PlacementCompareProduct;
+  const produit2 = (results.produit2 ?? null) as PlacementCompareProduct | null;
 
   const sheets: XlsxSheet[] = [
     buildParamsSheet(state),
@@ -275,14 +279,18 @@ export async function buildPlacementXlsxBlob(
   const ep1 = buildEpargneSheet(produit1, 'Produit 1');
   if (ep1) sheets.push(ep1);
 
-  const ep2 = buildEpargneSheet(produit2, 'Produit 2');
-  if (ep2) sheets.push(ep2);
+  if (produit2) {
+    const ep2 = buildEpargneSheet(produit2, 'Produit 2');
+    if (ep2) sheets.push(ep2);
+  }
 
   const liq1 = buildLiquidationSheet(produit1, 'Produit 1');
   if (liq1) sheets.push(liq1);
 
-  const liq2 = buildLiquidationSheet(produit2, 'Produit 2');
-  if (liq2) sheets.push(liq2);
+  if (produit2) {
+    const liq2 = buildLiquidationSheet(produit2, 'Produit 2');
+    if (liq2) sheets.push(liq2);
+  }
 
   sheets.push(buildTransmissionSheet(produit1, produit2));
   sheets.push(buildSyntheseSheet(produit1, produit2));
@@ -299,7 +307,7 @@ export async function buildPlacementXlsxBlob(
  */
 export async function exportPlacementExcel(
   state: PlacementSimulatorState,
-  results: CompareResult | null | undefined,
+  results: PlacementResultsForExport | CompareResult | null | undefined,
   headerFill?: string,
   sectionFill?: string,
 ): Promise<void> {

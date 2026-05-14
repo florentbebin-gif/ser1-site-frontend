@@ -1,15 +1,15 @@
 import { useCallback, useState } from 'react';
 import type { ThemeColors } from '@/settings/theme';
 import type { LogoPlacement } from '@/pptx/theme/types';
-import type { CompareResult } from '@/engine/placement/types';
 import { buildPlacementStateForMode } from '../utils/normalizers';
 import type { PlacementSimulatorState } from '../utils/normalizers';
+import type { PlacementUiResults } from '../utils/placementUiResults';
 import { exportPlacementExcel } from '../export/placementExcelExport';
 
 interface UsePlacementExportHandlersParams {
   state: PlacementSimulatorState;
   isExpert: boolean;
-  results: CompareResult | null;
+  results: PlacementUiResults | null;
   pptxColors: ThemeColors;
   cabinetLogo: string | undefined;
   logoPlacement: LogoPlacement | undefined;
@@ -95,6 +95,7 @@ export function usePlacementExportHandlers({
 
       const buildProductData = (productKey: 'produit1' | 'produit2', productIndex: number) => {
         const p = results[productKey];
+        if (!p) return null;
         return {
           envelopeLabel: p.envelopeLabel,
           epargne: {
@@ -127,6 +128,8 @@ export function usePlacementExportHandlers({
         };
       };
 
+      const produit1Data = buildProductData('produit1', 0);
+      if (!produit1Data) return;
       const data = {
         clientName: undefined as string | undefined,
         ageActuel: state.client.ageActuel ?? 0,
@@ -139,8 +142,8 @@ export function usePlacementExportHandlers({
         beneficiaryType: state.transmission.beneficiaryType,
         nbBeneficiaires: state.transmission.nbBeneficiaires,
         dmtgTaux: state.transmission.dmtgTaux,
-        produit1: buildProductData('produit1', 0),
-        produit2: buildProductData('produit2', 1),
+        produit1: produit1Data,
+        produit2: state.compareEnabled ? buildProductData('produit2', 1) : null,
       };
       const deck = buildPlacementStudyDeck(data, pptxColors, cabinetLogo, logoPlacement);
       const dateStr = new Date().toISOString().split('T')[0].replace(/-/g, '');

@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useState, type Dispatch, type SetState
 import { useTheme } from '@/settings/ThemeProvider';
 import { usePlacementSettings, type UsePlacementSettingsResult } from '@/hooks/usePlacementSettings';
 import { simulateComplete, compareProducts } from '@/engine/placement';
-import type { CompareResult } from '@/engine/placement/types';
+import type { SimulateCompleteResult } from '@/engine/placement/types';
 import { DEFAULT_INITIAL, DEFAULT_ANNUEL, DEFAULT_DISTRIBUTION, normalizeVersementConfig } from '@/engine/placement/versementConfig';
 import type { VersementConfig, VersementConfigInput } from '@/engine/placement/versementConfig';
 import { onResetEvent, storageKeyFor } from '@/utils/reset';
@@ -27,13 +27,14 @@ import {
   type PlacementStep,
   type PlacementTransmissionState,
 } from '../utils/normalizers';
+import type { PlacementUiResults } from '../utils/placementUiResults';
 import { getRelevantColumnsEpargne, getBaseColumnsForProduct } from '../utils/tableHelpers';
 import { usePlacementExportHandlers } from './usePlacementExportHandlers';
 
 const PLACEMENT_SAVE_EVENT = 'ser1:placement:save';
 const PLACEMENT_LOAD_EVENT = 'ser1:placement:load';
 
-export type PlacementCompareProduct = CompareResult['produit1'];
+export type PlacementCompareProduct = SimulateCompleteResult;
 
 export interface PlacementSimulatorHandlers {
   setClient: (_patch: Partial<PlacementClient>) => void;
@@ -50,6 +51,7 @@ export interface PlacementSimulatorHandlers {
     _path: 'liquidation.optionBaremeIR',
     _value: boolean,
   ) => void;
+  setCompareEnabled: (_value: boolean) => void;
   setModalOpen: Dispatch<SetStateAction<number | null>>;
   setShowAllColumns: Dispatch<SetStateAction<boolean>>;
   handleSavePlacement: () => Promise<void>;
@@ -58,7 +60,7 @@ export interface PlacementSimulatorHandlers {
 }
 
 export interface PlacementSimulatorResultsDerived {
-  results: CompareResult | null;
+  results: PlacementUiResults | null;
   produit1: PlacementCompareProduct | null;
   produit2: PlacementCompareProduct | null;
   detailRows1: EpargneRowWithReinvest[];
@@ -217,7 +219,7 @@ export function usePlacementSimulatorController(isExpert: boolean) {
     };
   }, [handleSavePlacement, handleLoadPlacement]);
 
-  const results = useMemo<CompareResult | null>(() => {
+  const results = useMemo<PlacementUiResults | null>(() => {
     if (!hydrated || loading || error) return null;
     if (state.client.ageActuel === null) return null;
 
@@ -225,17 +227,11 @@ export function usePlacementSimulatorController(isExpert: boolean) {
     const clientForCalc = { ...stateForCalc.client, ageActuel: stateForCalc.client.ageActuel ?? undefined };
     const fpWithDmtg = { ...fiscalParams, dmtgTauxChoisi: stateForCalc.transmission.dmtgTaux };
     const engineProduct1 = toEngineProduct(stateForCalc.products[0]);
-    const engineProduct2 = toEngineProduct(stateForCalc.products[1]);
 
     const liquidationParams1 = {
       ...stateForCalc.liquidation,
       rendement: getRendementLiquidation(stateForCalc.products[0]) ?? undefined,
       optionBaremeIR: stateForCalc.products[0].liquidation?.optionBaremeIR ?? false,
-    };
-    const liquidationParams2 = {
-      ...stateForCalc.liquidation,
-      rendement: getRendementLiquidation(stateForCalc.products[1]) ?? undefined,
-      optionBaremeIR: stateForCalc.products[1].liquidation?.optionBaremeIR ?? false,
     };
 
     const result1 = simulateComplete(
@@ -245,6 +241,17 @@ export function usePlacementSimulatorController(isExpert: boolean) {
       { ...stateForCalc.transmission, agePremierVersement: clientForCalc.ageActuel },
       fpWithDmtg
     );
+
+    if (!stateForCalc.compareEnabled) {
+      return { produit1: result1, produit2: null };
+    }
+
+    const engineProduct2 = toEngineProduct(stateForCalc.products[1]);
+    const liquidationParams2 = {
+      ...stateForCalc.liquidation,
+      rendement: getRendementLiquidation(stateForCalc.products[1]) ?? undefined,
+      optionBaremeIR: stateForCalc.products[1].liquidation?.optionBaremeIR ?? false,
+    };
 
     const result2 = simulateComplete(
       engineProduct2,
@@ -308,6 +315,9 @@ export function usePlacementSimulatorController(isExpert: boolean) {
     setState((s) => ({ ...s, transmission: { ...s.transmission, ...patch } }));
   const setStep = (step: PlacementStep) => setState((s) => ({ ...s, step }));
 
+  const setCompareEnabled = (value: boolean) =>
+    setState((s) => (s.compareEnabled === value ? s : { ...s, compareEnabled: value }));
+
   const setVersementConfig = (
     productIndex: number,
     config: VersementConfig | VersementConfigInput | undefined,
@@ -364,6 +374,7 @@ export function usePlacementSimulatorController(isExpert: boolean) {
     setStep,
     setVersementConfig,
     updateProductOption,
+    setCompareEnabled,
     setModalOpen,
     setShowAllColumns,
     handleSavePlacement,

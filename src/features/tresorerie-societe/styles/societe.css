@@ -366,6 +366,63 @@
   font-size: 11px;
 }
 
+.ts-field-summary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  min-height: 32px;
+  width: 100%;
+  padding: 0 6px;
+  color: var(--color-c1);
+  font-size: 13px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.25;
+  text-align: right;
+}
+
+.ts-ownership-lots {
+  display: grid;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.ts-ownership-lot {
+  display: grid;
+  grid-template-columns: minmax(130px, 1fr) minmax(110px, 0.8fr) minmax(150px, 1fr) auto;
+  align-items: end;
+  gap: 10px;
+  padding: 10px;
+  border: 1px solid var(--color-c8);
+  border-radius: 8px;
+  background: var(--color-c7);
+}
+
+.ts-ownership-lot .ts-field-note {
+  align-self: center;
+  margin: 0;
+  color: var(--color-c9);
+  font-size: 11px;
+  line-height: 1.35;
+}
+
+.ts-ownership-lot__remove {
+  align-self: center;
+}
+
+.ts-ownership-lots__add {
+  justify-self: start;
+}
+
+.ts-ownership-totals {
+  margin: 10px 0 0;
+  color: var(--color-c9);
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.4;
+  font-variant-numeric: tabular-nums;
+}
+
 .ts-text-btn {
   align-self: flex-start;
   border: 1px solid var(--color-c8);

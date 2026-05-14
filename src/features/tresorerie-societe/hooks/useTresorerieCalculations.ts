@@ -17,6 +17,7 @@ import { DEFAULT_TAX_SETTINGS, DEFAULT_PS_SETTINGS } from '../../../constants/se
 import type { TresoInputsRuntime, TresoFiscalParams, TresoProjectionRow } from '../../../engine/tresorerie/types';
 import { getAssociateAnnualIncomeNeedForYear } from '../../../engine/tresorerie/revenuePhases';
 import { getAssociateProfile, getSelectedAssociate } from '../utils/tresorerieSocieteModel';
+import { normalizeProjectionHorizonYears } from '../utils/projectionHorizon';
 
 // ─── KPIs ─────────────────────────────────────────────────────────────────────
 
@@ -81,8 +82,6 @@ export interface TresoCalculationsResult {
 
 // ─── Hook ─────────────────────────────────────────────────────────────────────
 
-const HORIZON_ANS = 40;
-
 interface SimulationState {
   rows: TresoProjectionRow[];
   simulationError: string | null;
@@ -141,7 +140,8 @@ export function useTresorerieCalculations(inputs: TresoInputsRuntime): TresoCalc
   const simulation = useMemo<SimulationState>(() => {
     if (!fiscalParams) return { rows: [], simulationError: null };
     try {
-      return { rows: simulateTresorerieV2(inputs, fiscalParams, HORIZON_ANS), simulationError: null };
+      const horizonYears = normalizeProjectionHorizonYears(inputs.company.projectionHorizonYears);
+      return { rows: simulateTresorerieV2(inputs, fiscalParams, horizonYears), simulationError: null };
     } catch (simulationError) {
       if (simulationError instanceof TresoSimulationInputError) {
         return { rows: [], simulationError: simulationError.message };

@@ -355,6 +355,78 @@ describe('simulateTresorerie — modèle société v3', () => {
     expect(rows[1].capitalDistrib).toBeCloseTo(10_000, 2);
   });
 
+  it('exclut le solde bancaire protégé de l’allocation initiale', () => {
+    const inputs = baseV3();
+    inputs.company.treasuryInitial = 1_000_000;
+    inputs.allocationMatrix = {
+      sweepThreshold: 400_000,
+      minimumBankBalance: 400_000,
+      pockets: [{
+        id: 'court-terme',
+        label: 'Court terme',
+        kind: 'distribution',
+        horizon: 'court_terme',
+        durationYears: 5,
+        annualReturnRate: 0,
+        enjoymentDelayMonths: 0,
+        initialAllocationPct: 100,
+        annualAllocationPct: 0,
+        repeatAtTerm: false,
+      }],
+    };
+
+    const rows = simulateTresorerieV2(inputs, PARAMS, 1);
+
+    expect(rows[0].montantInvestiInitial).toBeCloseTo(600_000, 2);
+    expect(rows[0].capitalDistrib).toBeCloseTo(600_000, 2);
+    expect(rows[0].tresorerieBanqueFin).toBeCloseTo(400_000, 2);
+    expect(rows[0].deficitTresorerieBancaire).toBe(0);
+  });
+
+  it('reconstitue le solde bancaire protégé avant le balayage annuel', () => {
+    const inputs = baseV3();
+    inputs.company.treasuryInitial = 500_000;
+    inputs.company.loans = [{
+      id: 'pret-court',
+      label: 'Dette courte',
+      principal: 150_000,
+      annualRate: 0,
+      durationMonths: 12,
+      startDate: '2026-01',
+      existingLoan: true,
+      deductibleInterest: true,
+    }];
+    inputs.company.associates[0].cca = {
+      currentBalance: 0,
+      exceptionalContributions: [],
+      annualContribution: { amount: 200_000, startYear: 2027, endYear: 2027 },
+      remunerationRate: 0,
+    };
+    inputs.allocationMatrix = {
+      sweepThreshold: 400_000,
+      minimumBankBalance: 400_000,
+      pockets: [{
+        id: 'court-terme',
+        label: 'Court terme',
+        kind: 'distribution',
+        horizon: 'court_terme',
+        durationYears: 5,
+        annualReturnRate: 0,
+        enjoymentDelayMonths: 0,
+        initialAllocationPct: 100,
+        annualAllocationPct: 100,
+        repeatAtTerm: false,
+      }],
+    };
+
+    const rows = simulateTresorerieV2(inputs, PARAMS, 2);
+
+    expect(rows[0].tresorerieBanqueFin).toBeCloseTo(250_000, 2);
+    expect(rows[0].deficitTresorerieBancaire).toBeCloseTo(150_000, 2);
+    expect(rows[1].montantBalayeAnnuel).toBeCloseTo(50_000, 2);
+    expect(rows[1].tresorerieBanqueFin).toBeCloseTo(400_000, 2);
+  });
+
   it('crédite la cession PVLT sur la banque sans balayage immédiat', () => {
     const inputs = baseV3();
     inputs.company.reducedCorporateTaxEligible = false;

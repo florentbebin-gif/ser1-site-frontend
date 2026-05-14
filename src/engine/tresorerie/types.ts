@@ -346,6 +346,7 @@ export interface CcaScheduleInput {
 export interface CompanyInput {
   label?: string;
   projectionStartYear?: number;
+  projectionHorizonYears?: number;
   creationType: 'newco' | 'existante';
   legalForm: LegalForm;
   companyKind?: CompanyKind;
@@ -361,6 +362,21 @@ export interface CompanyInput {
     workingCapitalRequirement: number;
   };
   reducedCorporateTaxEligible: boolean;
+  /**
+   * En cas de démembrement, contrôle qui appréhende les **réserves antérieures**
+   * lorsqu'elles sont distribuées sous forme de dividendes.
+   *
+   * - `true` : l'usufruitier appréhende les réserves attachées aux lots NP
+   *   (clé `getEconomicRightsPct`, quasi-usufruit avec dette de restitution).
+   * - `false` : seuls les associés en pleine propriété perçoivent leur quote-part
+   *   de réserves (clé `getPlainPropertyCapitalPct`).
+   *
+   * **Sauf convention ou statuts contraires** : Cass. com. 27 mai 2015 n°14-16.246
+   * — les réserves accumulées en cours de démembrement appartiennent au nue-propriétaire.
+   *
+   * Sans démembrement, ce paramètre n'a aucun effet sur la simulation.
+   */
+  usufructuaryReserveAttribution?: boolean;
   associates: AssociateInput[];
   loans: CompanyLoanInput[];
   subsidiaries: SubsidiaryInput[];

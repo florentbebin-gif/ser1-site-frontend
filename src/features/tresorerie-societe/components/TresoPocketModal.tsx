@@ -11,6 +11,7 @@ import {
 } from '../utils/tresorerieSocieteOptions';
 import { getAllocationPocketLabel } from '../utils/tresorerieV2Migration';
 import {
+  fmtEuroInput,
   fmtRateInput,
   parseNumberInput,
   parsePctInput,
@@ -20,6 +21,9 @@ import {
 interface TresoPocketModalProps {
   pocket: AllocationPocketInput;
   index: number;
+  initialAllocationBase: number;
+  remainingInitialPct: number;
+  remainingAnnualPct: number;
   onChange: (patch: Partial<AllocationPocketInput>) => void;
   onDelete: () => void;
   onClose: () => void;
@@ -28,6 +32,9 @@ interface TresoPocketModalProps {
 export function TresoPocketModal({
   pocket,
   index,
+  initialAllocationBase,
+  remainingInitialPct,
+  remainingAnnualPct,
   onChange,
   onDelete,
   onClose,
@@ -35,6 +42,11 @@ export function TresoPocketModal({
   const patchPocket = (patch: Partial<AllocationPocketInput>) => {
     onChange(patch);
   };
+
+  // Cap des allocations : la poche ne peut pas dépasser sa propre part + le reste libre.
+  const maxInitialPct = Math.max(0, Math.min(100, remainingInitialPct + pocket.initialAllocationPct));
+  const maxAnnualPct = Math.max(0, Math.min(100, remainingAnnualPct + pocket.annualAllocationPct));
+  const initialAmount = Math.max(0, initialAllocationBase) * Math.max(0, pocket.initialAllocationPct) / 100;
 
   return (
     <SimModalShell
@@ -108,30 +120,42 @@ export function TresoPocketModal({
           />
         </SimFieldShell>
 
-        <SimFieldShell label="Allocation initiale" className="ts-field" rowClassName="ts-field__row">
+        <SimFieldShell
+          label="Allocation initiale"
+          className="ts-field"
+          rowClassName="ts-field__row ts-field__row--note-below"
+        >
           <input
             type="text"
             inputMode="decimal"
             className="sim-field__control"
             value={String(pocket.initialAllocationPct)}
             onChange={event => patchPocket({
-              initialAllocationPct: parsePctInput(event.target.value),
+              initialAllocationPct: Math.min(parsePctInput(event.target.value), maxInitialPct),
             })}
           />
           <span className="sim-field__unit ts-unit">%</span>
+          <small className="ts-field-note">
+            {fmtEuroInput(initialAmount)} € · maximum disponible : {maxInitialPct} %
+          </small>
         </SimFieldShell>
 
-        <SimFieldShell label="Allocation annuelle" className="ts-field" rowClassName="ts-field__row">
+        <SimFieldShell
+          label="Allocation annuelle"
+          className="ts-field"
+          rowClassName="ts-field__row ts-field__row--note-below"
+        >
           <input
             type="text"
             inputMode="decimal"
             className="sim-field__control"
             value={String(pocket.annualAllocationPct)}
             onChange={event => patchPocket({
-              annualAllocationPct: parsePctInput(event.target.value),
+              annualAllocationPct: Math.min(parsePctInput(event.target.value), maxAnnualPct),
             })}
           />
           <span className="sim-field__unit ts-unit">%</span>
+          <small className="ts-field-note">Maximum disponible : {maxAnnualPct} %</small>
         </SimFieldShell>
           </div>
         </section>

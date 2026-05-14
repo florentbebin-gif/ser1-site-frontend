@@ -128,8 +128,8 @@ describe('simulateTresorerie — compte bancaire pivot', () => {
         expect(row.deficitTresorerieBancaire).toBe(0);
       }
     });
-    expect(rows[1].capitalDistrib).toBeCloseTo(100_000, 2);
-    expect(rows[1].alerteTresorerieBancaireInsuffisante).toBe(true);
+    expect(rows[1].capitalDistrib).toBeCloseTo(75_000, 2);
+    expect(rows[1].alerteTresorerieBancaireInsuffisante).toBe(false);
   });
 
   it('applique le régime standard en auto si la durée de détention renseignée est inférieure à deux ans', () => {

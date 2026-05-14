@@ -28,6 +28,8 @@ interface PlacementEpargneSectionProps {
     _product: PlacementTableProduct,
     _columns: string[],
   ) => (_row: EpargneRowWithReinvest, _index: number) => React.ReactElement;
+  compareEnabled: boolean;
+  setCompareEnabled: (_value: boolean) => void;
 }
 
 const envelopeLabels = ENVELOPE_LABELS as Record<string, string>;
@@ -145,9 +147,11 @@ export function PlacementEpargneSection({
   columnsProduit1,
   columnsProduit2,
   renderEpargneRow,
+  compareEnabled,
+  setCompareEnabled,
 }: PlacementEpargneSectionProps) {
   const showOptionBareme = isExpert
-    && (state.products[0].envelope === 'CTO' || state.products[1].envelope === 'CTO');
+    && (state.products[0].envelope === 'CTO' || (compareEnabled && state.products[1].envelope === 'CTO'));
 
   const [table1Open, setTable1Open] = useState(false);
   const [table2Open, setTable2Open] = useState(false);
@@ -157,10 +161,10 @@ export function PlacementEpargneSection({
     <div className="premium-card">
       <div className="pl-card-title">Phase d'épargne</div>
 
-      <table className="pl-ir-table pl-table premium-table">
+      <table className={`pl-ir-table pl-table premium-table${!compareEnabled ? ' pl-table--single' : ''}`}>
         <thead>
           <tr>
-            <th />
+            <th className="pl-rowlabel">Choix du placement</th>
             <th className="pl-colhead" aria-label="Produit 1">
               <div className="pl-colbadge-wrapper">
                 <EnvelopePillSelect
@@ -170,22 +174,45 @@ export function PlacementEpargneSection({
                 />
               </div>
             </th>
-            <th className="pl-colhead" aria-label="Produit 2">
-              <div className="pl-colbadge-wrapper">
-                <EnvelopePillSelect
-                  envelope={state.products[1].perBancaire && state.products[1].envelope === 'PER' ? 'PER_BANCAIRE_UI' : state.products[1].envelope}
-                  colorClass="pl-collabel--product2"
-                  onSelect={(env) => setProduct(1, { envelope: env })}
-                />
-              </div>
-            </th>
+            {compareEnabled ? (
+              <th className="pl-colhead" aria-label="Produit 2">
+                <div className="pl-colbadge-wrapper">
+                  <EnvelopePillSelect
+                    envelope={state.products[1].perBancaire && state.products[1].envelope === 'PER' ? 'PER_BANCAIRE_UI' : state.products[1].envelope}
+                    colorClass="pl-collabel--product2"
+                    onSelect={(env) => setProduct(1, { envelope: env })}
+                  />
+                  <button
+                    type="button"
+                    className="pl-remove-product-btn"
+                    onClick={() => setCompareEnabled(false)}
+                    aria-label="Retirer le 2e placement"
+                    title="Retirer le 2e placement"
+                  >
+                    ×
+                  </button>
+                </div>
+              </th>
+            ) : (
+              <th className="pl-colhead pl-colhead--add" aria-label="Ajouter un 2e placement">
+                <button
+                  type="button"
+                  className="pl-add-product-btn"
+                  onClick={() => setCompareEnabled(true)}
+                  aria-label="Ajouter un 2e placement"
+                  title="Ajouter un 2e placement"
+                >
+                  +
+                </button>
+              </th>
+            )}
           </tr>
         </thead>
 
         <tbody>
           <tr>
             <td>Durée de la phase épargne</td>
-            {state.products.map((product, index) => (
+            {(compareEnabled ? state.products : state.products.slice(0, 1)).map((product, index) => (
               <td key={index}>
                 <InputNumber
                   value={product.dureeEpargne}
@@ -196,12 +223,13 @@ export function PlacementEpargneSection({
                 />
               </td>
             ))}
+            {!compareEnabled && <td aria-hidden="true" />}
           </tr>
 
           {showOptionBareme && (
             <tr>
               <td>Option dividendes au barème IR</td>
-              {state.products.map((product, index) => (
+              {(compareEnabled ? state.products : state.products.slice(0, 1)).map((product, index) => (
                 <td key={index} className="pl-cell--center">
                   {product.envelope === 'CTO' ? (
                     <Toggle
@@ -214,6 +242,7 @@ export function PlacementEpargneSection({
                   )}
                 </td>
               ))}
+              {!compareEnabled && <td aria-hidden="true" />}
             </tr>
           )}
 
@@ -222,7 +251,7 @@ export function PlacementEpargneSection({
               Paramétrer les versements
               <div className="pl-detail-cumul">Initial, annuel, allocation, frais</div>
             </td>
-            {state.products.map((product, index) => (
+            {(compareEnabled ? state.products : state.products.slice(0, 1)).map((product, index) => (
               <td key={index}>
                 <button
                   type="button"
@@ -242,11 +271,12 @@ export function PlacementEpargneSection({
                 </button>
               </td>
             ))}
+            {!compareEnabled && <td aria-hidden="true" />}
           </tr>
         </tbody>
       </table>
 
-      {produit1 && produit2 && (
+      {produit1 && (compareEnabled ? produit2 : true) && (
         <div className="pl-details-section">
           {anyTableOpen && isExpert && (
             <div className="pl-details-toolbar">
@@ -269,25 +299,29 @@ export function PlacementEpargneSection({
             </div>
           )}
 
-          <div className="pl-details-scroll">
-            <CollapsibleTable
-              title={`Détail ${produit1.envelopeLabel}`}
-              rows={detailRows1}
-              columns={columnsProduit1}
-              renderRow={renderEpargneRow(produit1, columnsProduit1)}
-              onOpenChange={setTable1Open}
-            />
-          </div>
+          {produit1 && (
+            <div className="pl-details-scroll">
+              <CollapsibleTable
+                title={`Détail ${produit1.envelopeLabel}`}
+                rows={detailRows1}
+                columns={columnsProduit1}
+                renderRow={renderEpargneRow(produit1, columnsProduit1)}
+                onOpenChange={setTable1Open}
+              />
+            </div>
+          )}
 
-          <div className="pl-details-scroll">
-            <CollapsibleTable
-              title={`Détail ${produit2.envelopeLabel}`}
-              rows={detailRows2}
-              columns={columnsProduit2}
-              renderRow={renderEpargneRow(produit2, columnsProduit2)}
-              onOpenChange={setTable2Open}
-            />
-          </div>
+          {compareEnabled && produit2 && (
+            <div className="pl-details-scroll">
+              <CollapsibleTable
+                title={`Détail ${produit2.envelopeLabel}`}
+                rows={detailRows2}
+                columns={columnsProduit2}
+                renderRow={renderEpargneRow(produit2, columnsProduit2)}
+                onOpenChange={setTable2Open}
+              />
+            </div>
+          )}
         </div>
       )}
     </div>

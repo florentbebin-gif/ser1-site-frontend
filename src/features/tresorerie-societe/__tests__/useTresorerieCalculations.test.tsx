@@ -101,6 +101,7 @@ function CalculationProbe({ inputs }: { inputs: TresoInputsRuntime }) {
       <div data-testid="calculation-error">{result.error ?? ''}</div>
       <div data-testid="simulation-error">{result.simulationError ?? ''}</div>
       <div data-testid="duree-cca">{result.kpis.dureeRemboursementCCA ?? ''}</div>
+      <div data-testid="rows-count">{result.rows.length}</div>
     </>
   );
 }
@@ -179,5 +180,14 @@ describe('useTresorerieCalculations', () => {
     render(<CalculationProbe inputs={baseInputsV5()} />);
 
     expect(screen.getByTestId('duree-cca').textContent).toBe('3');
+  });
+
+  it('utilise l’horizon de projection partagé pour la projection comptable', () => {
+    const inputs = baseInputsV5();
+    inputs.company.projectionHorizonYears = 60;
+
+    render(<CalculationProbe inputs={inputs} />);
+
+    expect(screen.getByTestId('rows-count').textContent).toBe('60');
   });
 });

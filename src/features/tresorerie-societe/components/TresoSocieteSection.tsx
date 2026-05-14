@@ -10,6 +10,7 @@ import type {
   AssociateKind,
   CompanyInputV6,
   AssociateInputV6,
+  OwnershipRight,
   TresoInputsV6,
 } from '../../../engine/tresorerie/types';
 import {
@@ -29,8 +30,13 @@ import { useTresorerieAssociateHandlers } from '../utils/tresorerieAssociateHand
 import {
   fmtEuroInput,
   parseEuroInput,
-  parsePctInput,
 } from '../utils/tresorerieFormatters';
+
+function ownershipRightCode(right: OwnershipRight): string {
+  if (right === 'usufruit') return 'US';
+  if (right === 'nue_propriete') return 'NP';
+  return 'PP';
+}
 
 interface Props {
   inputs: TresoInputsV6;
@@ -111,11 +117,11 @@ export function TresoSocieteSection({ inputs, onChange, onAssociateModalOpenerCh
   const renderAssociesPanel = () => (
     <div className="ts-modal-stack">
       {company.associates.map((associate, index) => {
-        const lot = associate.ownershipLots[0] ?? {
-          right: 'pleine_propriete' as const,
-          capitalPct: 0,
-          economicRightsPct: 0,
-        };
+        const lotsSummary = associate.ownershipLots.length > 0
+          ? associate.ownershipLots
+            .map(lot => `${Math.round((lot.capitalPct || lot.economicRightsPct) * 100) / 100} % ${ownershipRightCode(lot.right)}`)
+            .join(' + ')
+          : '—';
         return (
           <div key={associate.id} className="ts-associate-card">
             <div className="ts-associate-card__header">
@@ -134,7 +140,7 @@ export function TresoSocieteSection({ inputs, onChange, onAssociateModalOpenerCh
                 </button>
               </div>
             </div>
-            <div className="ts-modal-grid">
+            <div className="ts-modal-grid ts-modal-grid--two">
               <SimFieldShell label="Type d’associé" className="ts-field" rowClassName="ts-field__row">
                 <SimSelect
                   value={associate.kind ?? 'pp'}
@@ -143,37 +149,13 @@ export function TresoSocieteSection({ inputs, onChange, onAssociateModalOpenerCh
                   ariaLabel={`Type ${associate.label}`}
                 />
               </SimFieldShell>
-              <SimFieldShell label="% capital" className="ts-field" rowClassName="ts-field__row">
-                <input
-                  type="text"
-                  inputMode="decimal"
-                  className="sim-field__control"
-                  value={String(lot.capitalPct)}
-                  onChange={event => updateAssociate(associate.id, {
-                    ownershipLots: [{ ...lot, capitalPct: parsePctInput(event.target.value) }],
-                  })}
-                />
-                <span className="sim-field__unit ts-unit">%</span>
+              <SimFieldShell label="Détention" className="ts-field" rowClassName="ts-field__row">
+                <span className="sim-field__readonly ts-field-summary">{lotsSummary}</span>
               </SimFieldShell>
-              {lot.right === 'pleine_propriete' ? (
-                <p className="ts-field-note">
-                  Droits économiques identiques au capital en pleine propriété.
-                </p>
-              ) : (
-                <SimFieldShell label="% économique" className="ts-field" rowClassName="ts-field__row">
-                  <input
-                    type="text"
-                    inputMode="decimal"
-                    className="sim-field__control"
-                    value={String(lot.economicRightsPct)}
-                    onChange={event => updateAssociate(associate.id, {
-                      ownershipLots: [{ ...lot, economicRightsPct: parsePctInput(event.target.value) }],
-                    })}
-                  />
-                  <span className="sim-field__unit ts-unit">%</span>
-                </SimFieldShell>
-              )}
             </div>
+            <p className="ts-field-note">
+              La répartition multi-lots (PP, usufruit, nue-propriété) se règle depuis « Paramétrer ».
+            </p>
           </div>
         );
       })}

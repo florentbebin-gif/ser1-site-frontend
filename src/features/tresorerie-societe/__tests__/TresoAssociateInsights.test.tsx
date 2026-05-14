@@ -136,6 +136,15 @@ describe('TresoAssociateInsights', () => {
     expect(html).toContain('is-positive');
   });
 
+  it('affiche la moyenne annuelle des revenus récupérés comme une note secondaire', () => {
+    const html = renderToStaticMarkup(<TresoAssociateInsights inputs={INPUTS} rows={[ROW]} />);
+
+    expect(html).toContain('Total revenus récupérés');
+    expect(html).toContain('Moyenne annuelle');
+    expect(html).toContain('ts-associate-kpi-note');
+    expect(html).not.toContain('moyenne ');
+  });
+
   it('affiche un état propre pour un associé personne morale', () => {
     const inputs = structuredClone(INPUTS);
     inputs.company.associates[0].kind = 'pm';

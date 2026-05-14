@@ -71,7 +71,8 @@ export interface PlacementProductData {
 export interface PlacementData {
   clientName?: string;
   produit1: PlacementProductData;
-  produit2: PlacementProductData;
+  /** En mode projection 1 placement, `produit2` vaut `null` ; les slides comparatifs sont alors centrés sur produit1. */
+  produit2: PlacementProductData | null;
   ageActuel: number;
   dureeEpargne: number;
   ageAuDeces: number;
