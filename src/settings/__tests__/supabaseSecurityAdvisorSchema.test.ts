@@ -13,6 +13,12 @@ function readMigrations(): string {
     .join('\n');
 }
 
+function readMigration(prefix: string): string {
+  const file = readdirSync(migrationsDir)
+    .find((entry) => entry.startsWith(prefix) && entry.endsWith('.sql'));
+  return file ? readFileSync(path.join(migrationsDir, file), 'utf8') : '';
+}
+
 describe('advisor securite Supabase', () => {
   it('durcit les fonctions SECURITY DEFINER exposees aux utilisateurs authentifies', () => {
     const sql = readMigrations();
@@ -47,5 +53,33 @@ describe('advisor securite Supabase', () => {
     expect(hook).toMatch(
       /if\s*\(\s*isAdmin\s*\)\s*{\s*await\s+supabase\.rpc\s*\(\s*['"]ensure_pass_history_current['"]\s*\)/s,
     );
+  });
+
+  it('evite les policies permissives multiples sur cabinets et logos', () => {
+    const sql = readMigration('20260514000200');
+
+    for (const policyName of [
+      '"Admins can manage cabinets"',
+      'cabinets_select_own',
+      '"Admins can manage logos"',
+      'logos_select_own_cabinet',
+    ]) {
+      expect(sql).toContain(`DROP POLICY IF EXISTS ${policyName}`);
+    }
+
+    expect(sql).toMatch(
+      /create\s+policy\s+cabinets_select_auth[\s\S]*on\s+public\.cabinets[\s\S]*for\s+select[\s\S]*to\s+authenticated[\s\S]*public\.is_admin\(\)[\s\S]*private\.get_my_cabinet_id\(\)/i,
+    );
+    expect(sql).toMatch(
+      /create\s+policy\s+logos_select_auth[\s\S]*on\s+public\.logos[\s\S]*for\s+select[\s\S]*to\s+authenticated[\s\S]*public\.is_admin\(\)[\s\S]*private\.get_my_cabinet_id\(\)/i,
+    );
+
+    for (const table of ['cabinets', 'logos']) {
+      for (const action of ['insert', 'update', 'delete']) {
+        expect(sql).toMatch(
+          new RegExp(String.raw`create\s+policy\s+${table}_${action}_admin[\s\S]*for\s+${action}`, 'i'),
+        );
+      }
+    }
   });
 });
