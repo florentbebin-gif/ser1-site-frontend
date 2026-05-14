@@ -226,7 +226,7 @@ export default function CreditV2() {
   // -------------------------------------------------------------------------
   const hasCapital = ((state.pret1?.capital ?? 0) + (state.pret2?.capital ?? 0) + (state.pret3?.capital ?? 0)) > 0;
   const resolvedMode = resolveEffectiveUserMode(mode, localMode);
-  const effectiveMode = resolvedMode === 'expert' && !hasCapital ? 'simplifie' : resolvedMode;
+  const effectiveMode = localMode == null && resolvedMode === 'expert' && !hasCapital ? 'simplifie' : resolvedMode;
   const isExpert = effectiveMode === 'expert';
   const toggleMode = () => setLocalMode(isExpert ? 'simplifie' : 'expert');
 
