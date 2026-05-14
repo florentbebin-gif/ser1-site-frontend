@@ -1,3 +1,19 @@
+@font-face {
+  font-family: 'Inter Variable';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 100 900;
+  src: url('@fontsource-variable/inter/files/inter-latin-wght-normal.woff2') format('woff2-variations');
+}
+
+@font-face {
+  font-family: 'Inter Variable';
+  font-style: italic;
+  font-display: swap;
+  font-weight: 100 900;
+  src: url('@fontsource-variable/inter/files/inter-latin-wght-italic.woff2') format('woff2-variations');
+}
+
 /* Variables globales */
 :root {
   /*
@@ -39,6 +55,10 @@
   --radius: 12px;
   --sim-input-bg-default: color-mix(in srgb, var(--color-c8) 18%, #FFFFFF);
 
+  /* Polices applicatives — chargement self-hosted, pas de dépendance runtime externe */
+  --font-sans: 'Inter Variable', Inter, system-ui, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, 'Cascadia Code', 'Segoe UI Mono', Consolas, monospace;
+
   /* Ombres - seuls rgba autorisés */
   --shadow-sm: 0 1px 3px rgba(0,0,0,0.05);
   --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
@@ -49,7 +69,7 @@
 /* Reset */
 body {
   margin: 0;
-  font-family: system-ui, sans-serif;
+  font-family: var(--font-sans);
   background: var(--color-c7);
 }
 
