@@ -34,6 +34,41 @@ git commit -m "feat: description claire"
 git push origin feature/nom-clair
 ```
 
+## Commits & Releases
+
+Le `CHANGELOG.md` est généré et maintenu **automatiquement par Release Please** à partir des commits. **Ne pas l'éditer manuellement dans une PR fonctionnelle.**
+
+### Règles
+
+- **Les PR fonctionnelles ne modifient pas `CHANGELOG.md`.** Toute édition manuelle sera écrasée par la PR de release.
+- **Les commits suivent Conventional Commits.** commitlint (hook `commit-msg`) valide localement à chaque commit.
+- **Types autorisés** : `feat`, `fix`, `refactor`, `chore`, `docs`, `test`, `perf`, `style`, `build`, `ci`, `revert`.
+- **Sujet en minuscules**, descriptif, 10-100 caractères, sans point final.
+  - ✅ `feat(succession): ajouter le sélecteur de régime matrimonial`
+  - ❌ `Update stuff.` (trop court, capitalisation, point final)
+- **Seuls `feat:` et `fix:` déclenchent une release** (`feat` → minor, `fix` → patch, `BREAKING CHANGE` → major).
+- **`chore:`, `docs:`, `test:`, `refactor:`** : utiles au repo, n'apparaissent pas dans le CHANGELOG client.
+
+### Cycle de release
+
+Release Please ne tourne **plus à chaque merge sur main** : il est déclenché manuellement ou via cron mensuel pour éviter le bruit.
+
+1. Tu pousses des commits `feat:`/`fix:` sur main (via PRs mergées).
+2. Quand tu décides de release : onglet **Actions** GitHub → workflow **Release Please** → **Run workflow**.
+3. Release Please ouvre ou met à jour la PR `chore(main): release X.Y.Z` avec le diff `CHANGELOG.md` + bump `package.json`.
+4. Tu **relis** la PR de release, ajustes si nécessaire (édition du CHANGELOG OK ici, c'est son rôle).
+5. Tu **merges** la PR de release → tag automatique + GitHub Release + CHANGELOG publié.
+
+Filet de sécurité : cron mensuel le 1er du mois à 09:00 UTC qui met la PR à jour si elle a été oubliée.
+
+### À NE PAS faire
+
+- ❌ Ajouter une règle CI « la PR doit modifier `CHANGELOG.md` » → conflits permanents avec Release Please.
+- ❌ Commit `feat:` pour un simple refactor → fausse une minor bump.
+- ❌ Merger directement sur main sans passer par une PR avec quality gate.
+
+---
+
 ## Conventions
 
 ### Nommage fichiers

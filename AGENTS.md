@@ -58,6 +58,7 @@ Le LLM doit optimiser leur utilisation : déléguer uniquement des tâches indé
 | Debug `npm run check` en échec | `.claude/skills-library/fix-errors.md` |
 | Review avant PR, ajout de fichier dans `src/` | `.claude/skills-library/arch-check.md` |
 | Modification dans `src/features/succession/` | `.claude/skills-library/succession-review.md` |
+| Démarrage nouvelle verticale roadmap (P3 PER, P4 scan, P5 rôles, P6, P7, P8 catalogue) | `.claude/skills-library/start-roadmap-vertical.md` |
 | Après implémentation / refactor | `.claude/skills-library/clean-code.md` |
 | Fichiers `.docx` | `.claude/skills-library/docx.md` |
 | Fichiers `.pdf` | `.claude/skills-library/pdf.md` |

@@ -1,8 +1,17 @@
 name: Release Please
 
+# Release Please ne tourne plus automatiquement à chaque merge sur main.
+# Déclenchement :
+#   - Manuel : onglet Actions GitHub → Release Please → "Run workflow".
+#   - Automatique : 1er de chaque mois à 09:00 UTC (filet de sécurité).
+#
+# Conséquence : moins de bruit (une PR de release groupée plutôt qu'une PR par feat/fix).
+# La PR créée/mise à jour reste relisible avant merge — c'est elle qui publie la release.
+
 on:
-  push:
-    branches: [main]
+  workflow_dispatch:
+  schedule:
+    - cron: '0 9 1 * *'
 
 permissions:
   contents: write
