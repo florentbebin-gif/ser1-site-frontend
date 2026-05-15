@@ -1,5 +1,6 @@
 import React from 'react';
 import SettingsTable from '@/components/settings/SettingsTable';
+import SettingsYearColumn from '@/components/settings/SettingsYearColumn';
 
 type DomPeriodKey = 'current' | 'previous';
 type CellValue = string | number | null;
@@ -81,36 +82,42 @@ export default function ImpotsAbattementDomSection({
           role="region"
           aria-labelledby="impots-header-dom"
         >
-          <p style={{ fontSize: 13, color: 'var(--color-c9)', marginBottom: 8 }}>
+          <p className="fisc-intro fisc-intro--compact">
             Appliqué sur l’impôt issu du barème <strong>après plafonnement du quotient familial</strong> et
             <strong> avant</strong> décote + réductions/crédits.
           </p>
 
-          <div className="income-tax-columns">
+          <div className="tax-two-cols">
             {periods.map((period) => (
-              <div className="income-tax-col" key={period}>
-                <div style={{ fontWeight: 700, marginBottom: 8 }}>
-                  {period === 'current'
-                    ? incomeTax.currentYearLabel || 'Année N'
-                    : incomeTax.previousYearLabel || 'Année N-1'}
+              <SettingsYearColumn
+                key={period}
+                yearLabel={period === 'current'
+                  ? incomeTax.currentYearLabel || 'Année N'
+                  : incomeTax.previousYearLabel || 'Année N-1'}
+                isRight={period === 'previous'}
+              >
+                <div className="income-tax-block">
+                  <div className="income-tax-block-title">Barème DOM</div>
+                  <div className="income-tax-block-body">
+                    <SettingsTable
+                      columns={domCols}
+                      rows={domZones.map((zone) => ({
+                        _key: zone._key,
+                        zone: zone.zone,
+                        ratePercent: incomeTax.domAbatement?.[period]?.[zone.zoneKey]?.ratePercent,
+                        cap: incomeTax.domAbatement?.[period]?.[zone.zoneKey]?.cap,
+                      }))}
+                      onCellChange={(index, key, value: CellValue) => {
+                        updateField(
+                          ['incomeTax', 'domAbatement', period, domZones[index].zoneKey, key],
+                          value === null ? '' : value,
+                        );
+                      }}
+                      disabled={!isAdmin}
+                    />
+                  </div>
                 </div>
-                <SettingsTable
-                  columns={domCols}
-                  rows={domZones.map((zone) => ({
-                    _key: zone._key,
-                    zone: zone.zone,
-                    ratePercent: incomeTax.domAbatement?.[period]?.[zone.zoneKey]?.ratePercent,
-                    cap: incomeTax.domAbatement?.[period]?.[zone.zoneKey]?.cap,
-                  }))}
-                  onCellChange={(index, key, value: CellValue) => {
-                    updateField(
-                      ['incomeTax', 'domAbatement', period, domZones[index].zoneKey, key],
-                      value === null ? '' : value,
-                    );
-                  }}
-                  disabled={!isAdmin}
-                />
-              </div>
+              </SettingsYearColumn>
             ))}
           </div>
         </div>

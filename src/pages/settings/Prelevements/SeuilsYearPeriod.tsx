@@ -1,5 +1,5 @@
 import React from 'react';
-import { numberOrEmpty } from '@/components/settings/settingsHelpers';
+import SettingsFieldRow from '@/components/settings/SettingsFieldRow';
 
 type RegionKey = 'metropole' | 'gmr' | 'guyane';
 type ThresholdFieldKey =
@@ -30,26 +30,26 @@ interface SeuilsYearPeriodProps {
   yearKey: string;
   yearLabel: string;
   thresholds?: ThresholdsByRegion;
-  updateField: (path: string[], value: number | null) => void;
+  updateField: (path: string[], value: string | number | null) => void;
   isAdmin: boolean;
 }
 
 const REGION_SECTIONS: RegionSection[] = [
-  { key: 'metropole', label: 'Residence en metropole' },
+  { key: 'metropole', label: 'Résidence en métropole' },
   {
     key: 'gmr',
-    label: 'Residence en Martinique, Guadeloupe, Reunion, Saint-Barthelemy, Saint-Martin',
+    label: 'Résidence en Martinique, Guadeloupe, Réunion, Saint-Barthélemy, Saint-Martin',
   },
-  { key: 'guyane', label: 'Residence en Guyane' },
+  { key: 'guyane', label: 'Résidence en Guyane' },
 ];
 
 const THRESHOLD_FIELDS: ThresholdField[] = [
-  { key: 'rfrMaxExemption1Part', label: 'Plafond exoneration (1 part)' },
-  { key: 'rfrMaxReduced1Part', label: 'Plafond taux reduit (1 part)' },
-  { key: 'rfrMaxMedian1Part', label: 'Plafond taux median (1 part)' },
-  { key: 'incrementQuarterExemption', label: 'Majoration par quart - exoneration' },
-  { key: 'incrementQuarterReduced', label: 'Majoration par quart - taux reduit' },
-  { key: 'incrementQuarterMedian', label: 'Majoration par quart - taux median' },
+  { key: 'rfrMaxExemption1Part', label: 'Plafond exonération (1 part)' },
+  { key: 'rfrMaxReduced1Part', label: 'Plafond taux réduit (1 part)' },
+  { key: 'rfrMaxMedian1Part', label: 'Plafond taux médian (1 part)' },
+  { key: 'incrementQuarterExemption', label: 'Majoration par quart – exonération' },
+  { key: 'incrementQuarterReduced', label: 'Majoration par quart – taux réduit' },
+  { key: 'incrementQuarterMedian', label: 'Majoration par quart – taux médian' },
 ];
 
 export default function SeuilsYearPeriod({
@@ -61,34 +61,30 @@ export default function SeuilsYearPeriod({
 }: SeuilsYearPeriodProps): React.ReactElement {
   return (
     <>
-      <div style={{ fontWeight: 600, marginBottom: 6 }}>
+      <div className="income-tax-year-label">
         {yearLabel}
       </div>
 
-      {REGION_SECTIONS.map((region, regionIndex) => (
-        <React.Fragment key={`${yearKey}-${region.key}`}>
-          <div style={{ fontWeight: 500, marginTop: regionIndex === 0 ? 8 : 16, marginBottom: 4 }}>
-            {region.label}
-          </div>
-
-          {THRESHOLD_FIELDS.map((field) => (
-            <div className="settings-field-row" key={`${yearKey}-${region.key}-${field.key}`}>
-              <label>{field.label}</label>
-              <input
-                type="number"
-                value={numberOrEmpty(thresholds?.[region.key]?.[field.key])}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                  updateField(
-                    ['retirementThresholds', yearKey, region.key, field.key],
-                    e.target.value === '' ? null : Number(e.target.value),
-                  );
-                }}
+      {REGION_SECTIONS.map((region) => (
+        <div
+          className="income-tax-block income-tax-block--mb12"
+          key={`${yearKey}-${region.key}`}
+        >
+          <div className="income-tax-block-title">{region.label}</div>
+          <div className="income-tax-block-body">
+            {THRESHOLD_FIELDS.map((field) => (
+              <SettingsFieldRow
+                key={`${yearKey}-${region.key}-${field.key}`}
+                label={field.label}
+                path={['retirementThresholds', yearKey, region.key, field.key]}
+                value={thresholds?.[region.key]?.[field.key] ?? null}
+                onChange={updateField}
+                unit="EUR"
                 disabled={!isAdmin}
               />
-              <span>EUR</span>
-            </div>
-          ))}
-        </React.Fragment>
+            ))}
+          </div>
+        </div>
       ))}
     </>
   );

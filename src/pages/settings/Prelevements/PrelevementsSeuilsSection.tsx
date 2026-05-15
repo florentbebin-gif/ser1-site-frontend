@@ -18,7 +18,7 @@ interface RetirementThresholds {
 interface PrelevementsSeuilsSectionProps {
   labels: LabelsProps;
   retirementThresholds: RetirementThresholds;
-  updateField: (path: string[], value: number | null) => void;
+  updateField: (path: string[], value: string | number | null) => void;
   isAdmin: boolean;
   openSection: string | null;
   setOpenSection: React.Dispatch<React.SetStateAction<string | null>>;
@@ -59,7 +59,7 @@ export default function PrelevementsSeuilsSection({
           role="region"
           aria-labelledby="prelev-header-seuils"
         >
-          <p style={{ fontSize: 13, color: 'var(--color-c9)', marginBottom: 12 }}>
+          <p className="fisc-intro">
             Seuils de revenu fiscal de référence (RFR) utilisés pour déterminer
             l'exonération ou l'assujettissement aux taux réduit, médian
             ou normal de CSG sur les pensions de retraite. Ces seuils s'appliquent
@@ -79,7 +79,7 @@ export default function PrelevementsSeuilsSection({
               />
             </div>
 
-            <div className="income-tax-col-right">
+            <div className="tax-two-cols-right">
               <SeuilsYearPeriod
                 yearKey="previous"
                 yearLabel={labels.previousYearLabel}

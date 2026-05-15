@@ -22,6 +22,7 @@ interface SettingsTableProps {
   rows: SettingsTableRow[];
   onCellChange: (rowIndex: number, key: string, value: CellValue) => void;
   disabled?: boolean;
+  className?: string;
   style?: React.CSSProperties;
 }
 
@@ -30,10 +31,11 @@ export default function SettingsTable({
   rows,
   onCellChange,
   disabled = false,
+  className,
   style,
 }: SettingsTableProps): React.ReactElement {
   return (
-    <table className="settings-table" style={style}>
+    <table className={`settings-table${className ? ` ${className}` : ''}`} style={style}>
       <thead>
         <tr>
           {columns.map((col) => (

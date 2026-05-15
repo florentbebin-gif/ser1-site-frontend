@@ -90,7 +90,7 @@ export default function PrelevementsRetraitesSection({
           role="region"
           aria-labelledby="prelev-header-retraites"
         >
-          <p style={{ fontSize: 13, color: 'var(--color-c9)' }}>
+          <p className="fisc-intro">
             Barème des prélèvements sociaux sur les pensions de retraite
             (RFR pour 1 part). Les montants sont ajustés en fonction des
             parts, mais on stocke ici la base "1 part".
@@ -98,8 +98,11 @@ export default function PrelevementsRetraitesSection({
 
           <div>
             {yearPeriods.map(({ yearKey, label, prefix }, index) => (
-              <div key={yearKey} style={index > 0 ? { marginTop: 24 } : undefined}>
-                <div style={{ fontWeight: 600, marginBottom: 6 }}>{label}</div>
+              <div
+                key={yearKey}
+                className={`income-tax-block${index > 0 ? ' income-tax-block--mt12' : ''}`}
+              >
+                <div className="income-tax-block-title">{label}</div>
                 <SettingsTable
                   columns={retCols}
                   rows={retirement[yearKey].brackets.map((bracket, bracketIndex) => ({
@@ -110,6 +113,7 @@ export default function PrelevementsRetraitesSection({
                     updateRetirementBracket(yearKey, bracketIndex, key, value);
                   }}
                   disabled={!isAdmin}
+                  className="settings-table--spaced"
                 />
               </div>
             ))}
