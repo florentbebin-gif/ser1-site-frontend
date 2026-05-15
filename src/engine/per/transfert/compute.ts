@@ -1,5 +1,6 @@
 import { computeCapitalHorizon, projectCapital } from './capitalAmortization';
 import { computeAnnuityConversion, computeCurrentConversionRate } from './conversionRate';
+import { computeCapitalFiscal } from './fiscaliteCapital';
 import { computeRentFiscal, computeSmallAnnuityEligibility } from './fiscaliteRente';
 import { resolvePerCompartiment } from './compartimentMapping';
 import { computePrefonRente } from './pointsMortality';
@@ -38,7 +39,7 @@ function withWarnings(input: PerTransfertInput): string[] {
 }
 
 export function computePerTransfert(input: PerTransfertInput): PerTransfertResult {
-  const compartment = resolvePerCompartiment(input.originalContractType);
+  const compartment = resolvePerCompartiment(input.originalContractType, input.targetCompartment);
   const yearsToRetirement = yearsUntilRetirement(input.insured.currentAge, input.insured.liquidationAge);
   const currentConversionRate = computeCurrentConversionRate(
     input.capitalAcquis,
@@ -54,6 +55,16 @@ export function computePerTransfert(input: PerTransfertInput): PerTransfertResul
   const capitalExitShare = Math.min(1, Math.max(0, input.projection.capitalShareRate));
   const capitalAvailableAtLiquidation = capitalAtLiquidation * capitalExitShare;
   const capitalConvertedToRent = capitalAtLiquidation - capitalAvailableAtLiquidation;
+  const principalBeforeTransfer = Math.max(0, input.capitalAcquis - positive(input.interetsAcquis));
+  const gainsBeforeTransfer = Math.min(positive(input.capitalAcquis), positive(input.interetsAcquis));
+  const transferRatio = positive(input.capitalAcquis) > 0 ? capitalAfterTransfer / positive(input.capitalAcquis) : 0;
+  const principalAfterTransfer = principalBeforeTransfer * transferRatio;
+  const gainsAfterTransfer = gainsBeforeTransfer * transferRatio;
+  const gainsAtLiquidation = Math.min(
+    capitalAtLiquidation,
+    gainsAfterTransfer + Math.max(0, capitalAtLiquidation - principalAfterTransfer - gainsAfterTransfer),
+  );
+  const capitalExitGainsAtLiquidation = gainsAtLiquidation * capitalExitShare;
   const annuityOptions = {
     ...input.annuityOptions,
     technicalRate:
@@ -88,8 +99,8 @@ export function computePerTransfert(input: PerTransfertInput): PerTransfertResul
     : actuarialRent;
   const currentRentAtLiquidation = compoundRent(
     input.renteActuelleAnnuelleBrute,
-    input.projection.currentRentRevaluationRate,
-    yearsToRetirement,
+    0,
+    0,
   );
   const currentRentFiscal = computeRentFiscal({
     annualRent: currentRentAtLiquidation,
@@ -105,17 +116,39 @@ export function computePerTransfert(input: PerTransfertInput): PerTransfertResul
     compartment,
     assumptions: input.fiscalAssumptions,
   });
+  const smallAnnuityCapitalExitEligible = computeSmallAnnuityEligibility(
+    newPerRent.netAnnualRent,
+    input.fiscalAssumptions,
+  );
+  const uniqueCapitalFiscal = computeCapitalFiscal({
+    capital: capitalAvailableAtLiquidation,
+    gains: capitalExitGainsAtLiquidation,
+    compartment,
+    tmiRetraite: input.tmiRetraite,
+    smallAnnuityEligible: smallAnnuityCapitalExitEligible,
+    assumptions: input.fiscalAssumptions,
+  });
   const shortHorizon = computeCapitalHorizon({
     capital: capitalAvailableAtLiquidation,
+    gains: capitalExitGainsAtLiquidation,
     annualRate: input.projection.capitalExitRevaluationRate,
     liquidationAge: input.insured.liquidationAge,
     horizonAge: input.projection.horizonAgeShort,
+    compartment,
+    tmiRetraite: input.tmiRetraite,
+    smallAnnuityEligible: smallAnnuityCapitalExitEligible,
+    assumptions: input.fiscalAssumptions,
   });
   const longHorizon = computeCapitalHorizon({
     capital: capitalAvailableAtLiquidation,
+    gains: capitalExitGainsAtLiquidation,
     annualRate: input.projection.capitalExitRevaluationRate,
     liquidationAge: input.insured.liquidationAge,
     horizonAge: input.projection.horizonAgeLong,
+    compartment,
+    tmiRetraite: input.tmiRetraite,
+    smallAnnuityEligible: smallAnnuityCapitalExitEligible,
+    assumptions: input.fiscalAssumptions,
   });
 
   return {
@@ -144,13 +177,16 @@ export function computePerTransfert(input: PerTransfertInput): PerTransfertResul
       shareRate: capitalExitShare,
       capitalConvertedToRent,
       capitalAvailableAtLiquidation,
+      unique: uniqueCapitalFiscal,
       shortHorizon,
       longHorizon,
+      withoutWithdrawalToLongHorizon: projectCapital({
+        capital: capitalAvailableAtLiquidation,
+        annualRate: input.projection.capitalExitRevaluationRate,
+        years: longHorizon.years,
+      }),
     },
-    smallAnnuityCapitalExitEligible: computeSmallAnnuityEligibility(
-      newPerRent.netAnnualRent,
-      input.fiscalAssumptions,
-    ),
+    smallAnnuityCapitalExitEligible,
     warnings: withWarnings(input),
   };
 }

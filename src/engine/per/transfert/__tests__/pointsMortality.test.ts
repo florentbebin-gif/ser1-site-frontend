@@ -15,20 +15,21 @@ describe('computePrefonRente', () => {
     });
 
     expect(result.pointsRetenus).toBe(1_000);
-    expect(result.renteAnnuelleBrute).toBeCloseTo(105.6078);
+    expect(result.renteAnnuelleBrute).toBeCloseTo(1_267.2936);
+    expect(result.renteMensuelleBrute).toBeCloseTo(105.6078);
   });
 
   it('convertit un capital en points lorsque le nombre de points est absent', () => {
     const result = computePrefonRente({
       params: PREFON_2025,
       points: 0,
-      capitalNet: 1_941.3,
+      capitalNet: 100_000,
       acquisitionAge: 60,
-      liquidationAge: 60,
+      liquidationAge: 64,
       reversionRate: 0,
     });
 
-    expect(result.pointsRetenus).toBeCloseTo(700);
-    expect(result.renteAnnuelleBrute).toBeCloseTo(69.741);
+    expect(result.pointsRetenus).toBeCloseTo(51_511.8735);
+    expect(result.renteAnnuelleBrute).toBeCloseTo(65_280.6676);
   });
 });

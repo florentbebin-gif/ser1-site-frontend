@@ -10,6 +10,10 @@ const COMPARTMENT_BY_CONTRACT: Record<BaseCgRetraiteContractType, PerTransfertCo
   AUTRE: 'C1',
 };
 
-export function resolvePerCompartiment(contractType: BaseCgRetraiteContractType): PerTransfertCompartment {
+export function resolvePerCompartiment(
+  contractType: BaseCgRetraiteContractType,
+  override?: PerTransfertCompartment | null,
+): PerTransfertCompartment {
+  if (override) return override;
   return COMPARTMENT_BY_CONTRACT[contractType] ?? 'C1';
 }

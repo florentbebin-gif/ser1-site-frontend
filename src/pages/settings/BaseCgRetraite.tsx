@@ -1,6 +1,12 @@
 import { useEffect, useMemo, useState } from 'react';
 import { UserInfoBanner } from '@/components/UserInfoBanner';
-import { BASECG_EXTRACTED_COUNT, BASECG_VERSION, type BaseCgRetraiteContract, type BaseCgRetraiteContractType } from '@/data/basecg';
+import {
+  BASECG_EXTRACTED_COUNT,
+  BASECG_VERSION,
+  type BaseCgRetraiteContract,
+  type BaseCgRetraiteContractType,
+  type PerTransfertCompartment,
+} from '@/data/basecg';
 import {
   deleteBaseCgRetraiteContract,
   getBaseCgRetraiteCatalog,
@@ -21,6 +27,15 @@ const TYPE_LABELS: Record<BaseCgRetraiteContractType, string> = {
 
 const TYPE_OPTIONS = Object.keys(TYPE_LABELS) as BaseCgRetraiteContractType[];
 
+const COMPARTMENT_LABELS: Record<PerTransfertCompartment, string> = {
+  C1: 'C1 - Versements déductibles',
+  C1_BIS: 'C1 bis - Versements non déductibles',
+  C2: 'C2 - Épargne salariale',
+  C3: 'C3 - Obligatoire',
+};
+
+const COMPARTMENT_OPTIONS = Object.keys(COMPARTMENT_LABELS) as PerTransfertCompartment[];
+
 function createEmptyContract(): BaseCgRetraiteContract {
   const id = `basecg-local-${Date.now()}`;
   return {
@@ -29,6 +44,7 @@ function createEmptyContract(): BaseCgRetraiteContract {
     compagnie: '',
     nomContrat: '',
     typeContrat: 'PERIN',
+    perCompartment: 'C1',
     phaseEpargne: {
       dateCommercialisation: null,
       nombreFonds: null,
@@ -63,6 +79,21 @@ function createEmptyContract(): BaseCgRetraiteContract {
 
 function updateText(value: string): string | null {
   return value.trim() || null;
+}
+
+function parseRatePercent(value: string): number | null {
+  if (!value.trim()) return null;
+  const parsed = Number(value.replace(',', '.'));
+  return Number.isFinite(parsed) ? parsed / 100 : null;
+}
+
+function formatRatePercent(rate: number | null | undefined): string {
+  return typeof rate === 'number' && Number.isFinite(rate) ? String(rate * 100) : '';
+}
+
+function formatRateLabel(rate: number | null): string | null {
+  if (rate === null) return null;
+  return `${new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 3 }).format(rate * 100)} %`;
 }
 
 function ContractModal({
@@ -129,10 +160,37 @@ function ContractModal({
             </select>
           </label>
           <label>
-            Frais transfert sortant
+            Compartiment PER cible
+            <select
+              value={draft.perCompartment ?? ''}
+              onChange={(event) => setRoot(
+                'perCompartment',
+                (event.target.value || null) as BaseCgRetraiteContract['perCompartment'],
+              )}
+            >
+              <option value="">Déduit du type</option>
+              {COMPARTMENT_OPTIONS.map((compartment) => (
+                <option key={compartment} value={compartment}>{COMPARTMENT_LABELS[compartment]}</option>
+              ))}
+            </select>
+          </label>
+          <label>
+            Libellé frais transfert sortant
             <input
               value={draft.phaseEpargne.fraisTransfertSortant?.toString() ?? ''}
               onChange={(event) => setEpargne('fraisTransfertSortant', updateText(event.target.value))}
+            />
+          </label>
+          <label>
+            Taux frais transfert sortant
+            <input
+              type="number"
+              value={formatRatePercent(draft.phaseEpargne.fraisTransfertSortantRate)}
+              onChange={(event) => {
+                const rate = parseRatePercent(event.target.value);
+                setEpargne('fraisTransfertSortantRate', rate);
+                setEpargne('fraisTransfertSortant', formatRateLabel(rate));
+              }}
             />
           </label>
           <label>
@@ -143,10 +201,22 @@ function ContractModal({
             />
           </label>
           <label>
-            Frais arrérages
+            Libellé frais arrérages
             <input
               value={draft.phaseLiquidation.fraisArrerages?.toString() ?? ''}
               onChange={(event) => setLiquidation('fraisArrerages', updateText(event.target.value))}
+            />
+          </label>
+          <label>
+            Taux frais arrérages
+            <input
+              type="number"
+              value={formatRatePercent(draft.phaseLiquidation.fraisArreragesRate)}
+              onChange={(event) => {
+                const rate = parseRatePercent(event.target.value);
+                setLiquidation('fraisArreragesRate', rate);
+                setLiquidation('fraisArrerages', formatRateLabel(rate));
+              }}
             />
           </label>
           <label className="base-cg-modal__wide">
@@ -272,6 +342,7 @@ export default function BaseCgRetraite() {
                 <th>Compagnie</th>
                 <th>Contrat</th>
                 <th>Type</th>
+                <th>Compartiment</th>
                 <th>Table rente</th>
                 <th>Actions</th>
               </tr>
@@ -282,6 +353,7 @@ export default function BaseCgRetraite() {
                   <td>{contract.compagnie}</td>
                   <td>{contract.nomContrat}</td>
                   <td>{TYPE_LABELS[contract.typeContrat]}</td>
+                  <td>{contract.perCompartment ?? '-'}</td>
                   <td>{contract.phaseLiquidation.tableConversionRente ?? 'A compléter'}</td>
                   <td>
                     <div className="base-cg-row-actions">

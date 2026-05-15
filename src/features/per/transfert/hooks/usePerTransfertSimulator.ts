@@ -96,6 +96,8 @@ function contractToProductType(type: BaseCgRetraiteContractType): PerTransfertPr
 function buildFiscalAssumptions(fiscalContext: FiscalContext): PerTransfertFiscalAssumptions {
   return {
     rvtoTaxableFractionByAge: fiscalContext.rvtoTaxableFractionByAge,
+    pfuIrRate: toRate(fiscalContext.pfuRateIR),
+    psRatePatrimony: toRate(fiscalContext.psRateGeneral),
     psRateRenteInterests: fiscalContext.psRateRenteInterests,
     psRateRenteCapitalCASA: fiscalContext.psRateRenteCapitalCASA,
     abat10Rate: fiscalContext.abat10Rate,
@@ -185,12 +187,10 @@ export function usePerTransfertSimulator(fiscalContext: FiscalContext) {
 
   const input = useMemo<PerTransfertInput>(() => {
     const fiscalAssumptions = buildFiscalAssumptions(fiscalContext);
-    const mortalityTable = selectedContract
-      ? resolveMortalityTableFromContractLabel(selectedContract.phaseLiquidation.tableConversionRente, state.sex)
-      : state.mortalityTable;
     return {
       productType: contractToProductType(state.typeContrat),
       originalContractType: state.typeContrat,
+      targetCompartment: selectedContract?.perCompartment ?? null,
       capitalAcquis: state.capitalAcquis,
       interetsAcquis: state.interetsAcquis,
       renteActuelleAnnuelleBrute: state.renteActuelleAnnuelleBrute,
@@ -203,7 +203,7 @@ export function usePerTransfertSimulator(fiscalContext: FiscalContext) {
       tmiRetraite: toRate(state.tmiRetraite),
       fiscalAssumptions,
       annuityOptions: {
-        mortalityTable,
+        mortalityTable: state.mortalityTable,
         technicalRate: toRate(state.technicalRate),
         frequency: 12,
         paymentTiming: 'arrears',

@@ -1,6 +1,6 @@
 import type { BaseCgRetraiteContract } from '@/data/basecg';
 import type { PerTransfertInput, PerTransfertResult } from '@/engine/per';
-import type { ContentSlideSpec, LogoPlacement, StudyDeckSpec } from '../theme/types';
+import type { ContentSlideSpec, LogoPlacement, PerTransfertSynthesisSlideSpec, StudyDeckSpec } from '../theme/types';
 import { pickChapterImage } from '../designSystem/serenity';
 
 export interface PerTransfertDeckData {
@@ -40,6 +40,7 @@ function euro(value: number): string {
 function percent(value: number): string {
   return new Intl.NumberFormat('fr-FR', {
     style: 'percent',
+    minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   }).format(value || 0);
 }
@@ -58,6 +59,84 @@ function advisorMeta(advisor?: PerTransfertAdvisorInfo): string {
 
 function content(title: string, subtitle: string, body: string): ContentSlideSpec {
   return { type: 'content', title, subtitle, body };
+}
+
+function cumulativeRent(annualRent: number, annualRate: number, years: number): number {
+  let total = 0;
+  for (let index = 0; index < Math.max(0, years); index += 1) {
+    total += Math.max(0, annualRent) * ((1 + annualRate) ** index);
+  }
+  return total;
+}
+
+function buildSynthesisSlide(input: PerTransfertInput, result: PerTransfertResult): PerTransfertSynthesisSlideSpec {
+  const short = result.capitalExit.shortHorizon;
+  const long = result.capitalExit.longHorizon;
+  const newPerCumulShort = cumulativeRent(result.newPerFiscal.netAnnualRent, input.projection.newRentRevaluationRate, short.years);
+  const newPerCumulLong = cumulativeRent(result.newPerFiscal.netAnnualRent, input.projection.newRentRevaluationRate, long.years);
+
+  return {
+    type: 'per-transfert-synthesis',
+    title: 'Synthèse financière',
+    subtitle: 'Contrat actuel versus nouveau PER',
+    rows: [
+      {
+        label: 'Taux de conversion',
+        currentContract: percent(result.currentConversionRate),
+        newPer: percent(result.newPerRent.apparentRate),
+        capitalExit: '-',
+      },
+      {
+        label: 'Rente brute annuelle',
+        currentContract: euro(result.currentRent.grossAnnualRent),
+        newPer: euro(result.newPerRent.grossAnnualRent),
+        capitalExit: '-',
+      },
+      {
+        label: 'Rente nette annuelle',
+        currentContract: euro(result.currentRent.netAnnualRent),
+        newPer: euro(result.newPerFiscal.netAnnualRent),
+        capitalExit: '-',
+      },
+      {
+        label: `Cumul net ${short.horizonAge} ans`,
+        currentContract: euro(result.currentRent.cumulativeToShortHorizon),
+        newPer: euro(newPerCumulShort),
+        capitalExit: euro(short.cumulativeNetWithdrawals),
+      },
+      {
+        label: `Cumul net ${long.horizonAge} ans`,
+        currentContract: euro(result.currentRent.cumulativeToLongHorizon),
+        newPer: euro(newPerCumulLong),
+        capitalExit: euro(long.cumulativeNetWithdrawals),
+      },
+      {
+        label: 'Capital unique',
+        currentContract: '-',
+        newPer: '-',
+        capitalExit: euro(result.capitalExit.unique.netIRPS),
+      },
+      {
+        label: `Capital fractionné ${short.horizonAge} ans`,
+        currentContract: '-',
+        newPer: '-',
+        capitalExit: euro(short.cumulativeNetWithdrawals),
+      },
+      {
+        label: `Capital fractionné ${long.horizonAge} ans`,
+        currentContract: '-',
+        newPer: '-',
+        capitalExit: euro(long.cumulativeNetWithdrawals),
+      },
+      {
+        label: `Sans retrait à ${long.horizonAge} ans`,
+        currentContract: '-',
+        newPer: '-',
+        capitalExit: euro(result.capitalExit.withoutWithdrawalToLongHorizon),
+      },
+    ],
+    legalNote: '*En cas de sortie en capital d’un PER, les intérêts sont fiscalisés selon les paramètres fiscaux chargés dans SER1.',
+  };
 }
 
 export function buildPerTransfertStudyDeck(
@@ -171,6 +250,7 @@ export function buildPerTransfertStudyDeck(
         [
           `Part sortie capital : ${percent(result.capitalExit.shareRate)}`,
           `Capital disponible : ${euro(result.capitalExit.capitalAvailableAtLiquidation)}`,
+          `Capital unique net IR+PS : ${euro(result.capitalExit.unique.netIRPS)}`,
           `Seuil petite rente : ${result.smallAnnuityCapitalExitEligible ? 'éligible' : 'non éligible'}`,
         ].join('\n'),
       ),
@@ -180,7 +260,7 @@ export function buildPerTransfertStudyDeck(
         [
           `Durée : ${short.years} ans`,
           `Retrait annuel : ${euro(short.annualWithdrawal)}`,
-          `Cumul des retraits : ${euro(short.cumulativeWithdrawals)}`,
+          `Cumul net des retraits : ${euro(short.cumulativeNetWithdrawals)}`,
         ].join('\n'),
       ),
       content(
@@ -189,19 +269,10 @@ export function buildPerTransfertStudyDeck(
         [
           `Durée : ${long.years} ans`,
           `Retrait annuel : ${euro(long.annualWithdrawal)}`,
-          `Cumul des retraits : ${euro(long.cumulativeWithdrawals)}`,
+          `Cumul net des retraits : ${euro(long.cumulativeNetWithdrawals)}`,
         ].join('\n'),
       ),
-      content(
-        'Comparaison synthétique',
-        'Contrat actuel versus nouveau PER',
-        [
-          `Rente actuelle nette estimée : ${euro(result.currentRent.netAnnualRent)}`,
-          `Rente PER nette estimée : ${euro(result.newPerFiscal.netAnnualRent)}`,
-          `Cumul rente actuelle horizon court : ${euro(result.currentRent.cumulativeToShortHorizon)}`,
-          `Retraits capital horizon court : ${euro(short.cumulativeWithdrawals)}`,
-        ].join('\n'),
-      ),
+      buildSynthesisSlide(input, result),
       content(
         'Cas Préfon et contrats en points',
         'Calcul distinct du modèle actuariel capital',

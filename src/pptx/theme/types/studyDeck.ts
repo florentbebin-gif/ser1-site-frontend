@@ -7,6 +7,7 @@ import type { CreditAmortizationSlideSpec, CreditAnnexeSlideSpec, CreditGlobalSy
 import type { IrAnnexeSlideSpec, IrSynthesisSlideSpec } from './ir';
 import type { PerFiscalSnapshotSlideSpec, PerPlafond3ColSlideSpec, PerProjectionTableSlideSpec } from './per';
 import type { PlacementDetailSlideSpec, PlacementHypothesesSlideSpec, PlacementProjectionSlideSpec, PlacementSynthesisSlideSpec } from './placement';
+import type { PerTransfertSynthesisSlideSpec } from './perTransfert';
 import type { SuccessionAnnexTableSlideSpec, SuccessionAssetAnnexSlideSpec, SuccessionChronologySlideSpec, SuccessionFamilyContextSlideSpec, SuccessionHypothesesSlideSpec, SuccessionSynthesisSlideSpec } from './succession';
 import type {
   TresorerieAllocationCardsSlideSpec,
@@ -45,6 +46,7 @@ export type StudyDeckSpec = {
     | PerFiscalSnapshotSlideSpec
     | PerPlafond3ColSlideSpec
     | PerProjectionTableSlideSpec
+    | PerTransfertSynthesisSlideSpec
     | TresorerieSchemaSlideSpec
     | TresorerieTimelineSlideSpec
     | TresorerieFlowMechanismSlideSpec

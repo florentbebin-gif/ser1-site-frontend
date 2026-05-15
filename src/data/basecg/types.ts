@@ -56,6 +56,7 @@ export interface BaseCgRetraiteContract {
   compagnie: string;
   nomContrat: string;
   typeContrat: BaseCgRetraiteContractType;
+  perCompartment?: PerTransfertCompartment | null;
   phaseEpargne: BaseCgPhaseEpargne;
   phaseLiquidation: BaseCgPhaseLiquidation;
   pointsParams?: PrefonPointsParams | null;

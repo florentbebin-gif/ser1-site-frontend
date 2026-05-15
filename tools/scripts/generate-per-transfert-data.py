@@ -142,6 +142,17 @@ def detect_contract_type(company: str, name: str, table_label: str | None) -> st
     return "AUTRE"
 
 
+def detect_compartment(contract_type: str, name: str) -> str:
+    haystack = name.upper()
+    if "NON DEDUIT" in haystack or "NON DÉDUIT" in haystack:
+        return "C1_BIS"
+    if contract_type == "ARTICLE83":
+        return "C3"
+    if contract_type == "PERCO":
+        return "C2"
+    return "C1"
+
+
 def extract_rate(value: Any) -> float | None:
     if isinstance(value, (int, float)):
         number = float(value)
@@ -177,6 +188,7 @@ def extract_basecg() -> list[dict[str, Any]]:
             "compagnie": company,
             "nomContrat": name,
             "typeContrat": contract_type,
+            "perCompartment": detect_compartment(contract_type, name),
             "phaseEpargne": {
                 "dateCommercialisation": raw["dateCommercialisation"],
                 "nombreFonds": raw["nombreFonds"],

@@ -34,10 +34,9 @@ function pickAgeCoefficient(table: Record<number, number>, age: number): number 
 }
 
 export function computePrefonRente(input: PrefonRenteInput): PrefonRenteOutput {
-  const acquisitionCoef = pickAgeCoefficient(input.params.coefAcquisitionByAge, input.acquisitionAge);
   const liquidationCoef = pickAgeCoefficient(input.params.coefLiquidationByAge, input.liquidationAge);
   const pointsFromCapital = input.params.valeurAcquisition > 0
-    ? input.capitalNet / input.params.valeurAcquisition * acquisitionCoef
+    ? input.capitalNet / input.params.valeurAcquisition
     : 0;
   const pointsRetenus = input.points > 0 ? input.points : pointsFromCapital;
   const reversionCoef = Math.max(0, 1 - Math.max(0, input.reversionRate));
@@ -45,7 +44,8 @@ export function computePrefonRente(input: PrefonRenteInput): PrefonRenteOutput {
     pointsRetenus
     * input.params.valeurService
     * liquidationCoef
-    * reversionCoef;
+    * reversionCoef
+    * 12;
 
   return {
     pointsRetenus,

@@ -37,6 +37,8 @@ export interface PerTransfertTemporaryIncreaseInput {
 
 export interface PerTransfertFiscalAssumptions {
   rvtoTaxableFractionByAge: Array<{ label: string; ageMaxInclusive: number | null; fraction: number }>;
+  pfuIrRate: number;
+  psRatePatrimony: number;
   psRateRenteInterests: number;
   psRateRenteCapitalCASA: number;
   abat10Rate: number;
@@ -82,6 +84,7 @@ export interface PerTransfertPrefonInput {
 export interface PerTransfertInput {
   productType: PerTransfertProductType;
   originalContractType: BaseCgRetraiteContractType;
+  targetCompartment?: PerTransfertCompartment | null;
   capitalAcquis: number;
   interetsAcquis: number;
   renteActuelleAnnuelleBrute: number;
@@ -106,7 +109,9 @@ export interface PerTransfertCapitalHorizon {
   horizonAge: number;
   years: number;
   annualWithdrawal: number;
+  annualNetWithdrawal: number;
   cumulativeWithdrawals: number;
+  cumulativeNetWithdrawals: number;
   residualCapital: number;
 }
 
@@ -115,7 +120,20 @@ export interface PerTransfertCapitalScheduleRow {
   openingCapital: number;
   interests: number;
   withdrawal: number;
+  incomeTax: number;
+  socialContributions: number;
+  netWithdrawal: number;
   closingCapital: number;
+}
+
+export interface PerTransfertCapitalFiscalResult {
+  available: boolean;
+  capital: number;
+  gains: number;
+  incomeTax: number;
+  socialContributions: number;
+  netPS: number;
+  netIRPS: number;
 }
 
 export interface PerTransfertAnnuityResult {
@@ -145,8 +163,10 @@ export interface PerTransfertResult {
     shareRate: number;
     capitalConvertedToRent: number;
     capitalAvailableAtLiquidation: number;
+    unique: PerTransfertCapitalFiscalResult;
     shortHorizon: PerTransfertCapitalHorizon;
     longHorizon: PerTransfertCapitalHorizon;
+    withoutWithdrawalToLongHorizon: number;
   };
   smallAnnuityCapitalExitEligible: boolean;
   warnings: string[];

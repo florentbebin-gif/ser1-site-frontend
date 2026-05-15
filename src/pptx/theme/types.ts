@@ -20,5 +20,6 @@ export type * from './types/ir';
 export type * from './types/succession';
 export type * from './types/placement';
 export type * from './types/per';
+export type * from './types/perTransfert';
 export type * from './types/credit';
 export type * from './types/studyDeck';

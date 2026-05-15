@@ -31,6 +31,7 @@ import type {
   PerFiscalSnapshotSlideSpec,
   PerPlafond3ColSlideSpec,
   PerProjectionTableSlideSpec,
+  PerTransfertSynthesisSlideSpec,
   TresorerieAllocationCardsSlideSpec,
   TresorerieAllocationMatrixSlideSpec,
   TresorerieFlowMechanismSlideSpec,
@@ -66,6 +67,7 @@ import { buildPlacementProjection } from '../slides/buildPlacementProjection';
 import { buildPerFiscalSnapshot } from '../slides/buildPerFiscalSnapshot';
 import { buildPerPlafond3Col } from '../slides/buildPerPlafond3Col';
 import { buildPerProjectionTable } from '../slides/buildPerProjectionTable';
+import { buildPerTransfertSynthesis } from '../slides/buildPerTransfertSynthesis';
 import { buildTresorerieSchema } from '../slides/buildTresorerieSchema';
 import { buildTresorerieTimeline } from '../slides/buildTresorerieTimeline';
 import { buildTresorerieFlowMechanism } from '../slides/buildTresorerieFlowMechanism';
@@ -416,6 +418,8 @@ export async function exportStudyDeck(
     } else if (slideSpec.type === 'per-projection-table') {
       // PER — déclaration 2042 et prochain avis IR
       buildPerProjectionTable(pptx, slideSpec as PerProjectionTableSlideSpec, ctx, slideIndex);
+    } else if (slideSpec.type === 'per-transfert-synthesis') {
+      buildPerTransfertSynthesis(pptx, slideSpec as PerTransfertSynthesisSlideSpec, ctx, slideIndex);
     } else if (slideSpec.type === 'treso-schema') {
       // Trésorerie Société IS — organigramme et paramètres essentiels
       buildTresorerieSchema(pptx, slideSpec as TresorerieSchemaSlideSpec, ctx, slideIndex);

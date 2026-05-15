@@ -49,6 +49,7 @@ const formatEuro = new Intl.NumberFormat('fr-FR', {
 
 const formatPercent = new Intl.NumberFormat('fr-FR', {
   style: 'percent',
+  minimumFractionDigits: 2,
   maximumFractionDigits: 2,
 });
 
@@ -270,6 +271,8 @@ export function PerTransfertSimulator() {
                 <PerTransfertNumberField label="Frais arrérages" value={state.arrearsFeeRate} onChange={(value) => update('arrearsFeeRate', value)} suffix="%" min={0} step={0.1} />
                 <PerTransfertNumberField label="Annuités garanties" value={state.guaranteedYears} onChange={(value) => update('guaranteedYears', value)} suffix="ans" min={0} step={1} />
                 <PerTransfertNumberField label="Taux de réversion" value={state.reversionRate} onChange={(value) => update('reversionRate', value)} suffix="%" min={0} max={100} step={1} />
+                <PerTransfertNumberField label="Année naissance conjoint" value={state.spouseBirthYear} onChange={(value) => update('spouseBirthYear', value)} min={1900} step={1} />
+                <PerTransfertNumberField label="Âge conjoint liquidation" value={state.spouseAgeAtLiquidation} onChange={(value) => update('spouseAgeAtLiquidation', value)} min={0} step={1} />
               </FieldGrid>
               <label className="per-transfert-checkbox">
                 <input
@@ -304,9 +307,10 @@ export function PerTransfertSimulator() {
 
           <section className="sim-card per-transfert-summary-card">
             <h3>Sortie capital</h3>
-            <Kpi label={`Fractionnement à ${result.capitalExit.shortHorizon.horizonAge} ans`} value={euro(result.capitalExit.shortHorizon.annualWithdrawal)} />
-            <Kpi label={`Fractionnement à ${result.capitalExit.longHorizon.horizonAge} ans`} value={euro(result.capitalExit.longHorizon.annualWithdrawal)} />
-            <Kpi label="Capital affecté" value={euro(result.capitalExit.capitalAvailableAtLiquidation)} />
+            <Kpi label="Capital unique net" value={euro(result.capitalExit.unique.netIRPS)} />
+            <Kpi label={`Cumul net à ${result.capitalExit.shortHorizon.horizonAge} ans`} value={euro(result.capitalExit.shortHorizon.cumulativeNetWithdrawals)} />
+            <Kpi label={`Cumul net à ${result.capitalExit.longHorizon.horizonAge} ans`} value={euro(result.capitalExit.longHorizon.cumulativeNetWithdrawals)} />
+            <Kpi label={`Sans retrait à ${result.capitalExit.longHorizon.horizonAge} ans`} value={euro(result.capitalExit.withoutWithdrawalToLongHorizon)} />
           </section>
 
           {result.warnings.length > 0 ? (

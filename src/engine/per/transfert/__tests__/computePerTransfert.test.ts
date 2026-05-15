@@ -7,6 +7,8 @@ const fiscalAssumptions: PerTransfertFiscalAssumptions = {
     { label: 'test', ageMaxInclusive: 69, fraction: 0.4 },
     { label: 'test', ageMaxInclusive: null, fraction: 0.3 },
   ],
+  pfuIrRate: 0.128,
+  psRatePatrimony: 0.186,
   psRateRenteInterests: 0.172,
   psRateRenteCapitalCASA: 0.003,
   abat10Rate: 0.1,
@@ -72,6 +74,11 @@ function makeInput(overrides: Partial<PerTransfertInput> = {}): PerTransfertInpu
   };
 }
 
+function expectClosePercent(actual: number | undefined, expected: number, toleranceRate: number): void {
+  expect(actual).toBeDefined();
+  expect(Math.abs((actual ?? 0) - expected)).toBeLessThanOrEqual(expected * toleranceRate);
+}
+
 describe('computePerTransfert', () => {
   it('calcule une synthese rente et capital pour un ancien Madelin', () => {
     const result = computePerTransfert(makeInput());
@@ -93,5 +100,67 @@ describe('computePerTransfert', () => {
     }));
 
     expect(result.warnings).toContain('Le taux technique positif est neutralise pour un PER/PERP dans le moteur.');
+  });
+
+  it('conserve la rente du releve comme rente brute a la liquidation', () => {
+    const result = computePerTransfert(makeInput({
+      renteActuelleAnnuelleBrute: 3_000,
+      insured: {
+        sex: 'F',
+        birthYear: 1980,
+        currentAge: 60,
+        liquidationAge: 64,
+      },
+      projection: {
+        ...makeInput().projection,
+        currentRentRevaluationRate: 0.01,
+      },
+    }));
+
+    expect(result.currentRent.grossAnnualRent).toBe(3_000);
+  });
+
+  it('calcule les sorties capital nettes C1 selon les golden Excel G11 a G14', () => {
+    const result = computePerTransfert(makeInput({
+      capitalAcquis: 100_000,
+      interetsAcquis: 0,
+      renteActuelleAnnuelleBrute: 3_000,
+      insured: {
+        sex: 'F',
+        birthYear: 1980,
+        currentAge: 64,
+        liquidationAge: 64,
+      },
+      tmiRetraite: 0.3,
+      projection: {
+        ...makeInput().projection,
+        transferFeeRate: 0,
+        performanceUntilRetirementRate: 0,
+        capitalExitRevaluationRate: 0.03,
+        capitalShareRate: 1,
+      },
+    }));
+    const capitalExit = result.capitalExit as typeof result.capitalExit & {
+      unique?: { netIRPS: number };
+      withoutWithdrawalToLongHorizon?: number;
+      shortHorizon: typeof result.capitalExit.shortHorizon & { cumulativeNetWithdrawals?: number };
+      longHorizon: typeof result.capitalExit.longHorizon & { cumulativeNetWithdrawals?: number };
+    };
+
+    expect(capitalExit.unique?.netIRPS).toBeCloseTo(70_000, 2);
+    expectClosePercent(capitalExit.shortHorizon.cumulativeNetWithdrawals, 89_164, 0.02);
+    expectClosePercent(capitalExit.longHorizon.cumulativeNetWithdrawals, 101_808, 0.02);
+    expect(capitalExit.withoutWithdrawalToLongHorizon).toBeCloseTo(215_659, 0);
+  });
+
+  it('respecte un compartiment cible force depuis le catalogue', () => {
+    const input = {
+      ...makeInput({ originalContractType: 'PERIN' }),
+      targetCompartment: 'C1_BIS',
+    } as PerTransfertInput & { targetCompartment: 'C1_BIS' };
+
+    const result = computePerTransfert(input);
+
+    expect(result.compartment).toBe('C1_BIS');
   });
 });
