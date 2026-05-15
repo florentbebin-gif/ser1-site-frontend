@@ -68,6 +68,7 @@ export function triggerGlobalReset(): void {
     'strategy',
     'succession',
     'per-potentiel',
+    'per-transfert',
     'tresorerie-societe',
   ];
   

@@ -439,6 +439,13 @@ export const DEFAULT_FISCALITY_SETTINGS = {
         allowBaremeIR: true,
       },
       retraite: {
+        petiteRente: {
+          monthlyThreshold: 110,
+          forfaitIrRatePercent: 7.5,
+          forfaitAbatementRatePercent: 10,
+          note:
+            "Sortie en capital possible lorsque la rente mensuelle n'excède pas le seuil réglementaire ; option forfaitaire sous conditions pour les anciens contrats.",
+        },
         deduits: {
           versements: { irMode: "bareme", note: "Part versements déduits : imposable au barème IR (sans abattement)." },
           gains: { mode: "pfu", note: "Part gains : PFU (12,8% + 17,2%) par défaut, option barème pour la part IR possible." },
@@ -484,6 +491,7 @@ export const DEFAULT_FISCALITY_SETTINGS = {
     },
 
     rente: {
+      pensionAbatementRatePercent: 10,
       rvtoTaxableFractionByAgeAtFirstPayment: [
         { label: "< 50 ans", ageMaxInclusive: 49, fraction: 0.7 },
         { label: "50 à 59 ans", ageMaxInclusive: 59, fraction: 0.5 },

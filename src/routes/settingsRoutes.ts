@@ -15,6 +15,7 @@ const Settings = lazy(() => import('../pages/Settings'));
 const SettingsImpots = lazy(() => import('../pages/settings/SettingsImpots'));
 const SettingsPrelevements = lazy(() => import('../pages/settings/SettingsPrelevements'));
 const SettingsBaseContrats = lazy(() => import('../pages/settings/BaseContrat'));
+const SettingsBaseCgRetraite = lazy(() => import('../pages/settings/BaseCgRetraite'));
 const SettingsComptes = lazy(() => import('../pages/settings/SettingsComptes'));
 const SettingsDmtgSuccession = lazy(() => import('../pages/settings/SettingsDmtgSuccession'));
 
@@ -57,6 +58,13 @@ export const SETTINGS_ROUTES: SettingsRouteEntry[] = [
     component: SettingsBaseContrats,
   },
   {
+    key: 'baseCgRetraite',
+    label: 'Base CG retraite',
+    path: 'base-contrat-retraite',
+    urlPath: '/settings/base-contrat-retraite',
+    component: SettingsBaseCgRetraite,
+  },
+  {
     key: 'dmtgSuccession',
     label: 'DMTG & Succession',
     path: 'dmtg-succession',
@@ -77,6 +85,7 @@ export function getActiveSettingsKey(pathname: string): string {
   if (pathname.startsWith('/settings/impots')) return 'impots';
   if (pathname.startsWith('/settings/prelevements')) return 'prelevements';
   if (pathname.startsWith('/settings/fiscalites')) return 'baseContrats';
+  if (pathname.startsWith('/settings/base-contrat-retraite')) return 'baseCgRetraite';
   if (pathname.startsWith('/settings/base-contrat')) return 'baseContrats';
   if (pathname.startsWith('/settings/dmtg-succession')) return 'dmtgSuccession';
   if (pathname.startsWith('/settings/comptes')) return 'comptes';

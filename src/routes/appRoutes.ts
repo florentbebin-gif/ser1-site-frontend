@@ -79,6 +79,9 @@ const PerHome = lazy(() =>
 const PerPotentielSimulator = lazy(() =>
   import('../features/per').then(({ PerPotentielSimulator }) => ({ default: PerPotentielSimulator })),
 );
+const PerTransfertSimulator = lazy(() =>
+  import('../features/per').then(({ PerTransfertSimulator }) => ({ default: PerTransfertSimulator })),
+);
 const UpcomingSimulatorPage = lazy(() => import('../pages/UpcomingSimulatorPage')) as unknown as LazyExoticComponent<ComponentType<RouteProps>>;
 const TresorerieSocietePage = lazy(() =>
   import('../features/tresorerie-societe').then(({ TresorerieSocietePage }) => ({ default: TresorerieSocietePage })),
@@ -185,14 +188,10 @@ export const APP_ROUTES: AppRouteEntry[] = [
     kind: 'route',
     access: 'private',
     path: '/sim/per/transfert',
-    component: UpcomingSimulatorPage,
+    component: PerTransfertSimulator,
     lazy: true,
     contextLabel: 'PER — Transfert',
-    topbar: SIM_TOPBAR,
-    props: {
-      title: 'Transfert épargne retraite',
-      subtitle: 'Ce simulateur premium sera bientôt disponible.',
-    },
+    topbar: { ...SIM_TOPBAR, resetKey: 'per-transfert' },
   },
   {
     kind: 'route',
