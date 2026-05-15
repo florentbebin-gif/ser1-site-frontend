@@ -48,8 +48,8 @@ export default function ImpotsPfuSection({
 
   const currentPs = Number(patrimony.current.generalRate) || 0;
   const previousPs = Number(patrimony.previous.generalRate) || 0;
-  const currentTotal = (Number(pfu.current.rateIR) || 0) + currentPs;
-  const previousTotal = (Number(pfu.previous.rateIR) || 0) + previousPs;
+  const currentTotal = Math.round(((Number(pfu.current.rateIR) || 0) + currentPs) * 10) / 10;
+  const previousTotal = Math.round(((Number(pfu.previous.rateIR) || 0) + previousPs) * 10) / 10;
 
   return (
     <div className="fisc-acc-item">
@@ -76,73 +76,83 @@ export default function ImpotsPfuSection({
           role="region"
           aria-labelledby="impots-header-pfu"
         >
-          <p style={{ fontSize: 13, color: 'var(--color-c9)' }}>
+          <p className="fisc-intro">
             La part prélèvements sociaux du PFU est calculée automatiquement depuis
             /settings/prelevements. Seule la part IR reste éditable ici.
           </p>
 
           <div className="tax-two-cols">
             <SettingsYearColumn yearLabel={incomeTax.currentYearLabel || 'Année N'}>
-              <SettingsFieldRow
-                label="Part impôt sur le revenu"
-                path={['pfu', 'current', 'rateIR']}
-                value={pfu.current.rateIR}
-                onChange={updateField}
-                step="0.1"
-                unit="%"
-                disabled={!isAdmin}
-              />
-              <SettingsFieldRow
-                label="Prélèvements sociaux calculés"
-                path={['pfu', 'current', 'rateSocial']}
-                value={currentPs}
-                onChange={updateField}
-                step="0.1"
-                unit="%"
-                disabled
-              />
-              <SettingsFieldRow
-                label="Taux global PFU calculé"
-                path={['pfu', 'current', 'rateTotal']}
-                value={currentTotal}
-                onChange={updateField}
-                step="0.1"
-                unit="%"
-                disabled
-              />
+              <div className="income-tax-block">
+                <div className="income-tax-block-title">Taux PFU</div>
+                <div className="income-tax-block-body">
+                  <SettingsFieldRow
+                    label="Part impôt sur le revenu"
+                    path={['pfu', 'current', 'rateIR']}
+                    value={pfu.current.rateIR}
+                    onChange={updateField}
+                    step="0.1"
+                    unit="%"
+                    disabled={!isAdmin}
+                  />
+                  <SettingsFieldRow
+                    label="Prélèvements sociaux calculés"
+                    path={['pfu', 'current', 'rateSocial']}
+                    value={currentPs}
+                    onChange={updateField}
+                    step="0.1"
+                    unit="%"
+                    disabled
+                  />
+                  <SettingsFieldRow
+                    label="Taux global PFU calculé"
+                    path={['pfu', 'current', 'rateTotal']}
+                    value={currentTotal}
+                    onChange={updateField}
+                    step="0.1"
+                    unit="%"
+                    disabled
+                  />
+                </div>
+              </div>
             </SettingsYearColumn>
 
             <SettingsYearColumn
               yearLabel={incomeTax.previousYearLabel || 'Année N-1'}
               isRight
             >
-              <SettingsFieldRow
-                label="Part impôt sur le revenu"
-                path={['pfu', 'previous', 'rateIR']}
-                value={pfu.previous.rateIR}
-                onChange={updateField}
-                step="0.1"
-                unit="%"
-                disabled={!isAdmin}
-              />
-              <SettingsFieldRow
-                label="Prélèvements sociaux calculés"
-                path={['pfu', 'previous', 'rateSocial']}
-                value={previousPs}
-                onChange={updateField}
-                step="0.1"
-                unit="%"
-                disabled
-              />
-              <SettingsFieldRow
-                label="Taux global PFU calculé"
-                path={['pfu', 'previous', 'rateTotal']}
-                value={previousTotal}
-                onChange={updateField}
-                step="0.1"
-                unit="%"
-                disabled
-              />
+              <div className="income-tax-block">
+                <div className="income-tax-block-title">Taux PFU</div>
+                <div className="income-tax-block-body">
+                  <SettingsFieldRow
+                    label="Part impôt sur le revenu"
+                    path={['pfu', 'previous', 'rateIR']}
+                    value={pfu.previous.rateIR}
+                    onChange={updateField}
+                    step="0.1"
+                    unit="%"
+                    disabled={!isAdmin}
+                  />
+                  <SettingsFieldRow
+                    label="Prélèvements sociaux calculés"
+                    path={['pfu', 'previous', 'rateSocial']}
+                    value={previousPs}
+                    onChange={updateField}
+                    step="0.1"
+                    unit="%"
+                    disabled
+                  />
+                  <SettingsFieldRow
+                    label="Taux global PFU calculé"
+                    path={['pfu', 'previous', 'rateTotal']}
+                    value={previousTotal}
+                    onChange={updateField}
+                    step="0.1"
+                    unit="%"
+                    disabled
+                  />
+                </div>
+              </div>
             </SettingsYearColumn>
           </div>
         </div>

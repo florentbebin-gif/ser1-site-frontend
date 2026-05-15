@@ -82,146 +82,176 @@ export default function ImpotsISSection({
         >
           <div className="tax-two-cols">
             <SettingsYearColumn yearLabel={incomeTax.currentYearLabel || 'Année N'}>
-              <SettingsFieldRow
-                label="Taux normal IS"
-                path={['corporateTax', 'current', 'normalRate']}
-                value={corporateTax.current.normalRate}
-                onChange={updateField}
-                step="0.1"
-                unit="%"
-                disabled={!isAdmin}
-              />
-              <SettingsFieldRow
-                label="Taux réduit IS"
-                path={['corporateTax', 'current', 'reducedRate']}
-                value={corporateTax.current.reducedRate}
-                onChange={updateField}
-                step="0.1"
-                unit="%"
-                disabled={!isAdmin}
-              />
-              <SettingsFieldRow
-                label="Seuil de bénéfice au taux réduit"
-                path={['corporateTax', 'current', 'reducedThreshold']}
-                value={corporateTax.current.reducedThreshold}
-                onChange={updateField}
-                unit="EUR"
-                disabled={!isAdmin}
-              />
-              <SettingsFieldRow
-                label="Quote-part frais (régime standard)"
-                path={['corporateTax', 'current', 'motherDaughterQpfc', 'standard']}
-                value={corporateTax.current.motherDaughterQpfc?.standard ?? null}
-                onChange={updateField}
-                step="0.1"
-                unit="%"
-                disabled={!isAdmin}
-              />
-              <SettingsFieldRow
-                label="Quote-part frais (groupe fiscal)"
-                path={['corporateTax', 'current', 'motherDaughterQpfc', 'group']}
-                value={corporateTax.current.motherDaughterQpfc?.group ?? null}
-                onChange={updateField}
-                step="0.1"
-                unit="%"
-                disabled={!isAdmin}
-              />
-              <SettingsFieldRow
-                label="Taux maximum déductible des intérêts CCA"
-                path={['corporateTax', 'current', 'maxDeductibleCcaInterestRate']}
-                value={corporateTax.current.maxDeductibleCcaInterestRate ?? null}
-                onChange={updateField}
-                step="0.01"
-                unit="%"
-                disabled={!isAdmin}
-              />
-              <SettingsFieldRow
-                label="Abattement dividendes au barème"
-                path={['corporateTax', 'current', 'dividendsAbatementPct']}
-                value={corporateTax.current.dividendsAbatementPct ?? null}
-                onChange={updateField}
-                step="0.1"
-                unit="%"
-                disabled={!isAdmin}
-              />
-              {qpfcCurrentError && (
-                <p style={{ color: 'var(--color-warning-text)', fontSize: 12, margin: '2px 0 4px' }}>
-                  {qpfcCurrentError}
-                </p>
-              )}
+              <div className="income-tax-block income-tax-block--mb12">
+                <div className="income-tax-block-title">Taux IS</div>
+                <div className="income-tax-block-body">
+                  <SettingsFieldRow
+                    label="Taux normal IS"
+                    path={['corporateTax', 'current', 'normalRate']}
+                    value={corporateTax.current.normalRate}
+                    onChange={updateField}
+                    step="0.1"
+                    unit="%"
+                    disabled={!isAdmin}
+                  />
+                  <SettingsFieldRow
+                    label="Taux réduit IS"
+                    path={['corporateTax', 'current', 'reducedRate']}
+                    value={corporateTax.current.reducedRate}
+                    onChange={updateField}
+                    step="0.1"
+                    unit="%"
+                    disabled={!isAdmin}
+                  />
+                  <SettingsFieldRow
+                    label="Seuil taux réduit"
+                    path={['corporateTax', 'current', 'reducedThreshold']}
+                    value={corporateTax.current.reducedThreshold}
+                    onChange={updateField}
+                    unit="EUR"
+                    disabled={!isAdmin}
+                  />
+                </div>
+              </div>
+
+              <div className="income-tax-block income-tax-block--mb12">
+                <div className="income-tax-block-title">Régime mère-fille</div>
+                <div className="income-tax-block-body">
+                  <SettingsFieldRow
+                    label="Quote-part frais (régime standard)"
+                    path={['corporateTax', 'current', 'motherDaughterQpfc', 'standard']}
+                    value={corporateTax.current.motherDaughterQpfc?.standard ?? null}
+                    onChange={updateField}
+                    step="0.1"
+                    unit="%"
+                    disabled={!isAdmin}
+                  />
+                  <SettingsFieldRow
+                    label="Quote-part frais (groupe fiscal)"
+                    path={['corporateTax', 'current', 'motherDaughterQpfc', 'group']}
+                    value={corporateTax.current.motherDaughterQpfc?.group ?? null}
+                    onChange={updateField}
+                    step="0.1"
+                    unit="%"
+                    disabled={!isAdmin}
+                  />
+                  {qpfcCurrentError && (
+                    <p className="fisc-section-error">{qpfcCurrentError}</p>
+                  )}
+                </div>
+              </div>
+
+              <div className="income-tax-block">
+                <div className="income-tax-block-title">Déductibilité</div>
+                <div className="income-tax-block-body">
+                  <SettingsFieldRow
+                    label="Intérêts CCA (taux max déductible)"
+                    path={['corporateTax', 'current', 'maxDeductibleCcaInterestRate']}
+                    value={corporateTax.current.maxDeductibleCcaInterestRate ?? null}
+                    onChange={updateField}
+                    step="0.01"
+                    unit="%"
+                    disabled={!isAdmin}
+                  />
+                  <SettingsFieldRow
+                    label="Abattement dividendes au barème"
+                    path={['corporateTax', 'current', 'dividendsAbatementPct']}
+                    value={corporateTax.current.dividendsAbatementPct ?? null}
+                    onChange={updateField}
+                    step="0.1"
+                    unit="%"
+                    disabled={!isAdmin}
+                  />
+                </div>
+              </div>
             </SettingsYearColumn>
 
             <SettingsYearColumn
               yearLabel={incomeTax.previousYearLabel || 'Année N-1'}
               isRight
             >
-              <SettingsFieldRow
-                label="Taux normal IS"
-                path={['corporateTax', 'previous', 'normalRate']}
-                value={corporateTax.previous.normalRate}
-                onChange={updateField}
-                step="0.1"
-                unit="%"
-                disabled={!isAdmin}
-              />
-              <SettingsFieldRow
-                label="Taux réduit IS"
-                path={['corporateTax', 'previous', 'reducedRate']}
-                value={corporateTax.previous.reducedRate}
-                onChange={updateField}
-                step="0.1"
-                unit="%"
-                disabled={!isAdmin}
-              />
-              <SettingsFieldRow
-                label="Seuil de bénéfice au taux réduit"
-                path={['corporateTax', 'previous', 'reducedThreshold']}
-                value={corporateTax.previous.reducedThreshold}
-                onChange={updateField}
-                unit="EUR"
-                disabled={!isAdmin}
-              />
-              <SettingsFieldRow
-                label="Quote-part frais (régime standard)"
-                path={['corporateTax', 'previous', 'motherDaughterQpfc', 'standard']}
-                value={corporateTax.previous.motherDaughterQpfc?.standard ?? null}
-                onChange={updateField}
-                step="0.1"
-                unit="%"
-                disabled={!isAdmin}
-              />
-              <SettingsFieldRow
-                label="Quote-part frais (groupe fiscal)"
-                path={['corporateTax', 'previous', 'motherDaughterQpfc', 'group']}
-                value={corporateTax.previous.motherDaughterQpfc?.group ?? null}
-                onChange={updateField}
-                step="0.1"
-                unit="%"
-                disabled={!isAdmin}
-              />
-              <SettingsFieldRow
-                label="Taux maximum déductible des intérêts CCA"
-                path={['corporateTax', 'previous', 'maxDeductibleCcaInterestRate']}
-                value={corporateTax.previous.maxDeductibleCcaInterestRate ?? null}
-                onChange={updateField}
-                step="0.01"
-                unit="%"
-                disabled={!isAdmin}
-              />
-              <SettingsFieldRow
-                label="Abattement dividendes au barème"
-                path={['corporateTax', 'previous', 'dividendsAbatementPct']}
-                value={corporateTax.previous.dividendsAbatementPct ?? null}
-                onChange={updateField}
-                step="0.1"
-                unit="%"
-                disabled={!isAdmin}
-              />
-              {qpfcPreviousError && (
-                <p style={{ color: 'var(--color-warning-text)', fontSize: 12, margin: '2px 0 4px' }}>
-                  {qpfcPreviousError}
-                </p>
-              )}
+              <div className="income-tax-block income-tax-block--mb12">
+                <div className="income-tax-block-title">Taux IS</div>
+                <div className="income-tax-block-body">
+                  <SettingsFieldRow
+                    label="Taux normal IS"
+                    path={['corporateTax', 'previous', 'normalRate']}
+                    value={corporateTax.previous.normalRate}
+                    onChange={updateField}
+                    step="0.1"
+                    unit="%"
+                    disabled={!isAdmin}
+                  />
+                  <SettingsFieldRow
+                    label="Taux réduit IS"
+                    path={['corporateTax', 'previous', 'reducedRate']}
+                    value={corporateTax.previous.reducedRate}
+                    onChange={updateField}
+                    step="0.1"
+                    unit="%"
+                    disabled={!isAdmin}
+                  />
+                  <SettingsFieldRow
+                    label="Seuil taux réduit"
+                    path={['corporateTax', 'previous', 'reducedThreshold']}
+                    value={corporateTax.previous.reducedThreshold}
+                    onChange={updateField}
+                    unit="EUR"
+                    disabled={!isAdmin}
+                  />
+                </div>
+              </div>
+
+              <div className="income-tax-block income-tax-block--mb12">
+                <div className="income-tax-block-title">Régime mère-fille</div>
+                <div className="income-tax-block-body">
+                  <SettingsFieldRow
+                    label="Quote-part frais (régime standard)"
+                    path={['corporateTax', 'previous', 'motherDaughterQpfc', 'standard']}
+                    value={corporateTax.previous.motherDaughterQpfc?.standard ?? null}
+                    onChange={updateField}
+                    step="0.1"
+                    unit="%"
+                    disabled={!isAdmin}
+                  />
+                  <SettingsFieldRow
+                    label="Quote-part frais (groupe fiscal)"
+                    path={['corporateTax', 'previous', 'motherDaughterQpfc', 'group']}
+                    value={corporateTax.previous.motherDaughterQpfc?.group ?? null}
+                    onChange={updateField}
+                    step="0.1"
+                    unit="%"
+                    disabled={!isAdmin}
+                  />
+                  {qpfcPreviousError && (
+                    <p className="fisc-section-error">{qpfcPreviousError}</p>
+                  )}
+                </div>
+              </div>
+
+              <div className="income-tax-block">
+                <div className="income-tax-block-title">Déductibilité</div>
+                <div className="income-tax-block-body">
+                  <SettingsFieldRow
+                    label="Intérêts CCA (taux max déductible)"
+                    path={['corporateTax', 'previous', 'maxDeductibleCcaInterestRate']}
+                    value={corporateTax.previous.maxDeductibleCcaInterestRate ?? null}
+                    onChange={updateField}
+                    step="0.01"
+                    unit="%"
+                    disabled={!isAdmin}
+                  />
+                  <SettingsFieldRow
+                    label="Abattement dividendes au barème"
+                    path={['corporateTax', 'previous', 'dividendsAbatementPct']}
+                    value={corporateTax.previous.dividendsAbatementPct ?? null}
+                    onChange={updateField}
+                    step="0.1"
+                    unit="%"
+                    disabled={!isAdmin}
+                  />
+                </div>
+              </div>
             </SettingsYearColumn>
           </div>
         </div>

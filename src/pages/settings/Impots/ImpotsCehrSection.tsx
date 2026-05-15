@@ -84,7 +84,7 @@ export default function ImpotsCehrSection({
           role="region"
           aria-labelledby="impots-header-cehr"
         >
-          <p style={{ fontSize: 13, color: 'var(--color-c9)' }}>
+          <p className="fisc-intro">
             Contribution exceptionnelle sur les hauts revenus (CEHR) et
             contribution différentielle (CDHR).
           </p>
@@ -104,64 +104,76 @@ export default function ImpotsCehrSection({
                   yearLabel={yearLabel}
                   isRight={period === 'previous'}
                 >
-                  <strong>CEHR - personne seule</strong>
-                  {cehrData.single.map((row, idx) => (
-                    <SettingsFieldRow
-                      key={`cehr-single-${period}-${idx}`}
-                      label={`De ${numberOrEmpty(row.from)} EUR à ${
-                        row.to == null ? 'plus' : `${row.to} EUR`
-                      }`}
-                      path={['cehr', period, 'single', String(idx), 'rate']}
-                      value={row.rate}
-                      onChange={updateField}
-                      step="0.1"
-                      unit="%"
-                      disabled={!isAdmin}
-                    />
-                  ))}
+                  <div className="income-tax-block income-tax-block--mb12">
+                    <div className="income-tax-block-title">CEHR – personne seule</div>
+                    <div className="income-tax-block-body">
+                      {cehrData.single.map((row, idx) => (
+                        <SettingsFieldRow
+                          key={`cehr-single-${period}-${idx}`}
+                          label={`De ${numberOrEmpty(row.from)} EUR à ${
+                            row.to == null ? 'plus' : `${row.to} EUR`
+                          }`}
+                          path={['cehr', period, 'single', String(idx), 'rate']}
+                          value={row.rate}
+                          onChange={updateField}
+                          step="0.1"
+                          unit="%"
+                          disabled={!isAdmin}
+                        />
+                      ))}
+                    </div>
+                  </div>
 
-                  <strong>CEHR - couple</strong>
-                  {cehrData.couple.map((row, idx) => (
-                    <SettingsFieldRow
-                      key={`cehr-couple-${period}-${idx}`}
-                      label={`De ${numberOrEmpty(row.from)} EUR à ${
-                        row.to == null ? 'plus' : `${row.to} EUR`
-                      }`}
-                      path={['cehr', period, 'couple', String(idx), 'rate']}
-                      value={row.rate}
-                      onChange={updateField}
-                      step="0.1"
-                      unit="%"
-                      disabled={!isAdmin}
-                    />
-                  ))}
+                  <div className="income-tax-block income-tax-block--mb12">
+                    <div className="income-tax-block-title">CEHR – couple</div>
+                    <div className="income-tax-block-body">
+                      {cehrData.couple.map((row, idx) => (
+                        <SettingsFieldRow
+                          key={`cehr-couple-${period}-${idx}`}
+                          label={`De ${numberOrEmpty(row.from)} EUR à ${
+                            row.to == null ? 'plus' : `${row.to} EUR`
+                          }`}
+                          path={['cehr', period, 'couple', String(idx), 'rate']}
+                          value={row.rate}
+                          onChange={updateField}
+                          step="0.1"
+                          unit="%"
+                          disabled={!isAdmin}
+                        />
+                      ))}
+                    </div>
+                  </div>
 
-                  <strong>CDHR (taux minimal)</strong>
-                  <SettingsFieldRow
-                    label="Taux effectif minimal"
-                    path={['cdhr', period, 'minEffectiveRate']}
-                    value={cdhrData.minEffectiveRate}
-                    onChange={updateField}
-                    step="0.1"
-                    unit="%"
-                    disabled={!isAdmin}
-                  />
-                  <SettingsFieldRow
-                    label="Seuil RFR personne seule"
-                    path={['cdhr', period, 'thresholdSingle']}
-                    value={cdhrData.thresholdSingle}
-                    onChange={updateField}
-                    unit="EUR"
-                    disabled={!isAdmin}
-                  />
-                  <SettingsFieldRow
-                    label="Seuil RFR couple"
-                    path={['cdhr', period, 'thresholdCouple']}
-                    value={cdhrData.thresholdCouple}
-                    onChange={updateField}
-                    unit="EUR"
-                    disabled={!isAdmin}
-                  />
+                  <div className="income-tax-block">
+                    <div className="income-tax-block-title">CDHR (taux minimal)</div>
+                    <div className="income-tax-block-body">
+                      <SettingsFieldRow
+                        label="Taux effectif minimal"
+                        path={['cdhr', period, 'minEffectiveRate']}
+                        value={cdhrData.minEffectiveRate}
+                        onChange={updateField}
+                        step="0.1"
+                        unit="%"
+                        disabled={!isAdmin}
+                      />
+                      <SettingsFieldRow
+                        label="Seuil RFR – personne seule"
+                        path={['cdhr', period, 'thresholdSingle']}
+                        value={cdhrData.thresholdSingle}
+                        onChange={updateField}
+                        unit="EUR"
+                        disabled={!isAdmin}
+                      />
+                      <SettingsFieldRow
+                        label="Seuil RFR – couple"
+                        path={['cdhr', period, 'thresholdCouple']}
+                        value={cdhrData.thresholdCouple}
+                        onChange={updateField}
+                        unit="EUR"
+                        disabled={!isAdmin}
+                      />
+                    </div>
+                  </div>
                 </SettingsYearColumn>
               );
             })}
