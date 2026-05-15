@@ -122,7 +122,6 @@ Source (preuves) :
 | `/sim/per` | privé + lazy | `PerHome` | `src/features/per/PerHome.tsx` |
 | `/sim/per/potentiel` | privé + lazy | `PerPotentielSimulator` | `src/features/per/components/potentiel/PerPotentielSimulator.tsx` |
 | `/sim/per/transfert` | privé + lazy | `UpcomingSimulatorPage` | `src/pages/UpcomingSimulatorPage.tsx` (lazy, stub) |
-| `/sim/per/ouverture` | privé + lazy | `UpcomingSimulatorPage` | `src/pages/UpcomingSimulatorPage.tsx` (lazy, stub) |
 | `/sim/epargne-salariale` | privé + lazy | `UpcomingSimulatorPage` | `src/pages/UpcomingSimulatorPage.tsx` (lazy) |
 | `/sim/tresorerie-societe` | privé + lazy | `TresorerieSocietePage` | `src/features/tresorerie-societe/TresorerieSocietePage.tsx` (lazy) |
 | `/sim/prevoyance` | privé + lazy | `UpcomingSimulatorPage` | `src/pages/UpcomingSimulatorPage.tsx` (lazy) |

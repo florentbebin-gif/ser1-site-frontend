@@ -80,6 +80,10 @@
     font-size: 18px;
   }
 
+  .per-home-secondary-card {
+    width: 100%;
+  }
+
   .per-home-secondary-grid {
     grid-template-columns: 1fr;
   }

@@ -28,11 +28,6 @@ const PER_SIMS: SimCard[] = [
     title: 'Transfert',
     path: '/sim/per/transfert',
   },
-  {
-    id: 'ouverture',
-    title: 'Projection',
-    path: '/sim/per/ouverture',
-  },
 ];
 
 export default function PerHome(): React.ReactElement {
@@ -43,7 +38,7 @@ export default function PerHome(): React.ReactElement {
       <section className="per-home-hero">
         <h1 className="per-home-title">SIMULATEURS PER</h1>
         <p className="per-home-subtitle">
-          Vérifiez les plafonds de versement, comparez un contrat existant et projetez un PER dans le temps
+          Vérifiez les plafonds de versement et comparez un contrat existant.
         </p>
       </section>
 
@@ -61,7 +56,7 @@ export default function PerHome(): React.ReactElement {
               >
                 <div className="per-home-tile-content">
                   <div className="per-home-tile-icon" aria-hidden="true">
-                    {sim.id === 'potentiel' ? <IconGauge /> : sim.id === 'transfert' ? <IconTransfer /> : <IconCompass />}
+                    {sim.id === 'potentiel' ? <IconGauge /> : <IconTransfer />}
                   </div>
                   <div className="per-home-tile-copy">
                     <span className="per-home-tile-title">{sim.title}</span>
@@ -95,15 +90,6 @@ function IconTransfer(): React.ReactElement {
       <path d="M7 10l-3 3 3 3" />
       <path d="M17 14l3-3-3-3" />
       <path d="M4 13h16" />
-    </svg>
-  );
-}
-
-function IconCompass(): React.ReactElement {
-  return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-      <circle cx="12" cy="12" r="9" />
-      <path d="M14.8 9.2l-1.9 5.6-5.7 1.9 1.9-5.7 5.7-1.8z" />
     </svg>
   );
 }

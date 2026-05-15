@@ -22,7 +22,7 @@ Expliquer ce que SER1 couvre aujourd'hui, ce qui est deja exploitable, et les li
 | `/sim/placement` | disponible | Comparer 2 enveloppes / produits sur epargne, liquidation et transmission |
 | `/sim/credit` | disponible | Simuler echeanciers, assurance et lissage de 1 a 3 prets |
 | `/sim/succession` | disponible | Estimer droits de succession et fournir des analyses civiles/patrimoniales guidees |
-| `/sim/per` | disponible | Hub PER avec controle du potentiel epargne retraite (potentiel actif, transfert et ouverture upcoming) |
+| `/sim/per` | disponible | Hub PER avec contrôle du potentiel épargne retraite (potentiel actif, transfert upcoming) |
 | `/sim/epargne-salariale` | upcoming | non documente metier ici tant que non stabilise |
 | `/sim/tresorerie-societe` | disponible | Projeter une société IS patrimoniale, ses CCA, filiales, emprunts, allocations de trésorerie et revenus associés |
 | `/sim/prevoyance` | upcoming | non documente metier ici tant que non stabilise |
@@ -368,7 +368,7 @@ La surface `/sim/per` est maintenant un hub. Le parcours actif est `Controle du 
 - PASS lu via la chaine fiscale standard (`public.pass_history` -> cache -> `useFiscalContext` -> fallback defaults)
 
 ### Limites connues
-- les simulateurs `Transfert epargne retraite` et `Ouverture PER` restent upcoming
+- le simulateur `Transfert épargne retraite` reste upcoming
 - le parcours n'est pas une declaration 2042 exhaustive case par case
 - les cas de deblocage anticipe et les scenarios de sortie restent hors perimetre de ce module
 - la parite workbook doit rester surveillee sur les cas limites, surtout si le classeur source evolue
