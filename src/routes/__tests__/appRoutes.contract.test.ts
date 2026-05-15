@@ -14,7 +14,6 @@ const ACTIVE_SIMULATOR_PATHS = new Set([
 const HUBS_OR_PLACEHOLDERS = new Set([
   '/sim/per',
   '/sim/per/transfert',
-  '/sim/per/ouverture',
   '/sim/epargne-salariale',
   '/sim/prevoyance',
 ]);

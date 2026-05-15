@@ -197,19 +197,6 @@ export const APP_ROUTES: AppRouteEntry[] = [
   {
     kind: 'route',
     access: 'private',
-    path: '/sim/per/ouverture',
-    component: UpcomingSimulatorPage,
-    lazy: true,
-    contextLabel: 'PER — Ouverture',
-    topbar: SIM_TOPBAR,
-    props: {
-      title: 'Ouverture PER',
-      subtitle: 'Ce simulateur premium sera bientôt disponible.',
-    },
-  },
-  {
-    kind: 'route',
-    access: 'private',
     path: '/sim/epargne-salariale',
     component: UpcomingSimulatorPage,
     lazy: true,
