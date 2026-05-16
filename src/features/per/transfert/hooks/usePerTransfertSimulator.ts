@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { BaseCgRetraiteContract, BaseCgRetraiteContractType } from '@/data/basecg';
+import { isPointsContract } from '@/data/basecg';
 import { getBaseCgRetraiteCatalog } from '@/utils/cache/baseCgRetraiteRepository';
 import { onResetEvent, storageKeyFor } from '@/utils/reset';
 import {
@@ -219,25 +220,33 @@ export function usePerTransfertSimulator(fiscalContext: FiscalContext) {
       setState((previous) => ({ ...previous, contractId }));
       return;
     }
-    setState((previous) => ({
-      ...previous,
-      contractId,
-      typeContrat: contract.typeContrat,
-      compagnie: contract.compagnie,
-      transferFeeRate: toPercent(capOutgoingTransferFeeRate(
-        contract.typeContrat,
-        defaultOutgoingTransferFeeRate(
+    setState((previous) => {
+      // Si l'utilisateur a explicitement filtré sur "Contrat en points" et que le contrat
+      // sélectionné est détecté comme système par points (Préfon, COREM, Médicis, AGIPI PAIR…),
+      // on conserve PER_POINTS pour activer la branche calcul points. Sinon on prend
+      // le typeContrat fiscal réel du contrat (PERIN/MADELIN/ARTICLE83/PERP/PERCO).
+      const keepPoints = previous.typeContrat === 'PER_POINTS' && isPointsContract(contract);
+      const effectiveType = keepPoints ? 'PER_POINTS' : contract.typeContrat;
+      return {
+        ...previous,
+        contractId,
+        typeContrat: effectiveType,
+        compagnie: contract.compagnie,
+        transferFeeRate: toPercent(capOutgoingTransferFeeRate(
           contract.typeContrat,
-          contract.phaseEpargne.fraisTransfertSortantRate ?? previous.transferFeeRate / 100,
+          defaultOutgoingTransferFeeRate(
+            contract.typeContrat,
+            contract.phaseEpargne.fraisTransfertSortantRate ?? previous.transferFeeRate / 100,
+          ),
+          previous.subscriptionDate,
+        )),
+        currentArrearsFeeRate: toPercent(contract.phaseLiquidation.fraisArreragesRate ?? previous.currentArrearsFeeRate / 100),
+        mortalityTable: resolveMortalityTableFromContractLabel(
+          contract.phaseLiquidation.tableConversionRente,
+          previous.sex,
         ),
-        previous.subscriptionDate,
-      )),
-      currentArrearsFeeRate: toPercent(contract.phaseLiquidation.fraisArreragesRate ?? previous.currentArrearsFeeRate / 100),
-      mortalityTable: resolveMortalityTableFromContractLabel(
-        contract.phaseLiquidation.tableConversionRente,
-        previous.sex,
-      ),
-    }));
+      };
+    });
   }, [catalog]);
 
   const input = useMemo<PerTransfertInput>(() => {

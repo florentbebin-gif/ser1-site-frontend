@@ -3,6 +3,7 @@ export {
   BASECG_EXTRACTED_COUNT,
   BASECG_VERSION,
   findBaseCgContractById,
+  isPointsContract,
   listBaseCgCompagnies,
   listBaseCgTypes,
 } from './catalog';
