@@ -11,6 +11,7 @@ import {
   type PerTransfertResult,
   type PerTransfertSex,
 } from '@/engine/per';
+import type { MortalityTableCode } from '@/data/mortality';
 import type { FiscalContext } from '@/hooks/useFiscalContext';
 
 export interface PerTransfertFormState {
@@ -20,20 +21,31 @@ export interface PerTransfertFormState {
   capitalAcquis: number;
   interetsAcquis: number;
   renteActuelleAnnuelleBrute: number;
+  subscriptionDate: string;
+  annualCurrentPayment: number;
   sex: PerTransfertSex;
   birthYear: number;
   currentAge: number;
   liquidationAge: number;
   tmiRetraite: number;
   transferFeeRate: number;
+  newPerEntryFeeRate: number;
   performanceUntilRetirementRate: number;
+  currentContractPerformanceUntilRetirementRate: number;
   currentRentRevaluationRate: number;
   newRentRevaluationRate: number;
   capitalExitRevaluationRate: number;
   capitalShareRate: number;
   horizonAgeShort: number;
   horizonAgeLong: number;
-  mortalityTable: 'TPRV93' | 'TGF05' | 'TGH05' | 'TPG93';
+  mortalityTable: MortalityTableCode;
+  currentRentMode: 'statement' | 'manual_table';
+  currentTechnicalRate: number;
+  currentConversionFeeRate: number;
+  currentArrearsFeeRate: number;
+  currentGuaranteedYears: number;
+  currentReversionEnabled: boolean;
+  currentReversionRate: number;
   technicalRate: number;
   conversionFeeRate: number;
   arrearsFeeRate: number;
@@ -52,13 +64,17 @@ const DEFAULT_STATE: PerTransfertFormState = {
   capitalAcquis: 0,
   interetsAcquis: 0,
   renteActuelleAnnuelleBrute: 0,
+  subscriptionDate: '',
+  annualCurrentPayment: 0,
   sex: 'M',
   birthYear: 1960,
   currentAge: 60,
   liquidationAge: 64,
   tmiRetraite: 0,
   transferFeeRate: 0,
+  newPerEntryFeeRate: 0,
   performanceUntilRetirementRate: 0,
+  currentContractPerformanceUntilRetirementRate: 0,
   currentRentRevaluationRate: 0,
   newRentRevaluationRate: 0,
   capitalExitRevaluationRate: 0,
@@ -66,6 +82,13 @@ const DEFAULT_STATE: PerTransfertFormState = {
   horizonAgeShort: 80,
   horizonAgeLong: 90,
   mortalityTable: 'TGH05',
+  currentRentMode: 'statement',
+  currentTechnicalRate: 0,
+  currentConversionFeeRate: 0,
+  currentArrearsFeeRate: 0,
+  currentGuaranteedYears: 0,
+  currentReversionEnabled: false,
+  currentReversionRate: 0,
   technicalRate: 0,
   conversionFeeRate: 0,
   arrearsFeeRate: 0,
@@ -177,7 +200,7 @@ export function usePerTransfertSimulator(fiscalContext: FiscalContext) {
       typeContrat: contract.typeContrat,
       compagnie: contract.compagnie,
       transferFeeRate: toPercent(contract.phaseEpargne.fraisTransfertSortantRate ?? previous.transferFeeRate / 100),
-      arrearsFeeRate: toPercent(contract.phaseLiquidation.fraisArreragesRate ?? previous.arrearsFeeRate / 100),
+      currentArrearsFeeRate: toPercent(contract.phaseLiquidation.fraisArreragesRate ?? previous.currentArrearsFeeRate / 100),
       mortalityTable: resolveMortalityTableFromContractLabel(
         contract.phaseLiquidation.tableConversionRente,
         previous.sex,
@@ -194,6 +217,8 @@ export function usePerTransfertSimulator(fiscalContext: FiscalContext) {
       capitalAcquis: state.capitalAcquis,
       interetsAcquis: state.interetsAcquis,
       renteActuelleAnnuelleBrute: state.renteActuelleAnnuelleBrute,
+      subscriptionDate: state.subscriptionDate || null,
+      annualCurrentPayment: state.annualCurrentPayment,
       insured: {
         sex: state.sex,
         birthYear: state.birthYear,
@@ -203,7 +228,7 @@ export function usePerTransfertSimulator(fiscalContext: FiscalContext) {
       tmiRetraite: toRate(state.tmiRetraite),
       fiscalAssumptions,
       annuityOptions: {
-        mortalityTable: state.mortalityTable,
+        mortalityTable: state.sex === 'M' ? 'TGH05' : 'TGF05',
         technicalRate: toRate(state.technicalRate),
         frequency: 12,
         paymentTiming: 'arrears',
@@ -229,9 +254,21 @@ export function usePerTransfertSimulator(fiscalContext: FiscalContext) {
           years: 0,
         },
       },
+      currentRentOptions: {
+        mode: state.currentRentMode,
+        mortalityTable: state.mortalityTable,
+        technicalRate: toRate(state.currentTechnicalRate),
+        conversionFeeRate: toRate(state.currentConversionFeeRate),
+        arrearsFeeRate: toRate(state.currentArrearsFeeRate),
+        guaranteedYears: state.currentGuaranteedYears,
+        reversionEnabled: state.currentReversionEnabled,
+        reversionRate: toRate(state.currentReversionRate),
+      },
       projection: {
         transferFeeRate: toRate(state.transferFeeRate),
+        newPerEntryFeeRate: toRate(state.newPerEntryFeeRate),
         performanceUntilRetirementRate: toRate(state.performanceUntilRetirementRate),
+        currentContractPerformanceUntilRetirementRate: toRate(state.currentContractPerformanceUntilRetirementRate),
         currentRentRevaluationRate: toRate(state.currentRentRevaluationRate),
         newRentRevaluationRate: toRate(state.newRentRevaluationRate),
         capitalExitRevaluationRate: toRate(state.capitalExitRevaluationRate),

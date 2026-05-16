@@ -1,6 +1,12 @@
 import type { BaseCgRetraiteContract } from '@/data/basecg';
 import type { PerTransfertInput, PerTransfertResult } from '@/engine/per';
-import type { ContentSlideSpec, LogoPlacement, PerTransfertSynthesisSlideSpec, StudyDeckSpec } from '../theme/types';
+import type {
+  ContentSlideSpec,
+  LogoPlacement,
+  PerTransfertAuditContractSlideSpec,
+  PerTransfertSynthesisSlideSpec,
+  StudyDeckSpec,
+} from '../theme/types';
 import { pickChapterImage } from '../designSystem/serenity';
 
 export interface PerTransfertDeckData {
@@ -45,6 +51,12 @@ function percent(value: number): string {
   }).format(value || 0);
 }
 
+function signedEuro(value: number): string {
+  if (!Number.isFinite(value) || value === 0) return '0 €';
+  const absolute = euro(Math.abs(value));
+  return `${value > 0 ? '+' : '-'} ${absolute}`;
+}
+
 function currentDateLong(): string {
   return new Intl.DateTimeFormat('fr-FR', {
     day: '2-digit',
@@ -74,6 +86,7 @@ function buildSynthesisSlide(input: PerTransfertInput, result: PerTransfertResul
   const long = result.capitalExit.longHorizon;
   const newPerCumulShort = cumulativeRent(result.newPerFiscal.netAnnualRent, input.projection.newRentRevaluationRate, short.years);
   const newPerCumulLong = cumulativeRent(result.newPerFiscal.netAnnualRent, input.projection.newRentRevaluationRate, long.years);
+  const keep = result.keepScenario.currentRent;
 
   return {
     type: 'per-transfert-synthesis',
@@ -82,60 +95,69 @@ function buildSynthesisSlide(input: PerTransfertInput, result: PerTransfertResul
     rows: [
       {
         label: 'Taux de conversion',
-        currentContract: percent(result.currentConversionRate),
-        newPer: percent(result.newPerRent.apparentRate),
-        capitalExit: '-',
+        keepScenario: percent(result.currentConversionRate),
+        transferScenario: percent(result.newPerRent.apparentRate),
+        difference: '-',
       },
       {
         label: 'Rente brute annuelle',
-        currentContract: euro(result.currentRent.grossAnnualRent),
-        newPer: euro(result.newPerRent.grossAnnualRent),
-        capitalExit: '-',
+        keepScenario: euro(keep.grossAnnualRent),
+        transferScenario: euro(result.newPerRent.grossAnnualRent),
+        difference: signedEuro(result.newPerRent.grossAnnualRent - keep.grossAnnualRent),
       },
       {
         label: 'Rente nette annuelle',
-        currentContract: euro(result.currentRent.netAnnualRent),
-        newPer: euro(result.newPerFiscal.netAnnualRent),
-        capitalExit: '-',
+        keepScenario: euro(keep.netAnnualRent),
+        transferScenario: euro(result.newPerFiscal.netAnnualRent),
+        difference: signedEuro(result.newPerFiscal.netAnnualRent - keep.netAnnualRent),
       },
       {
         label: `Cumul net ${short.horizonAge} ans`,
-        currentContract: euro(result.currentRent.cumulativeToShortHorizon),
-        newPer: euro(newPerCumulShort),
-        capitalExit: euro(short.cumulativeNetWithdrawals),
+        keepScenario: euro(keep.cumulativeToShortHorizon),
+        transferScenario: euro(Math.max(newPerCumulShort, short.cumulativeNetWithdrawals)),
+        difference: signedEuro(Math.max(newPerCumulShort, short.cumulativeNetWithdrawals) - keep.cumulativeToShortHorizon),
       },
       {
         label: `Cumul net ${long.horizonAge} ans`,
-        currentContract: euro(result.currentRent.cumulativeToLongHorizon),
-        newPer: euro(newPerCumulLong),
-        capitalExit: euro(long.cumulativeNetWithdrawals),
+        keepScenario: euro(keep.cumulativeToLongHorizon),
+        transferScenario: euro(Math.max(newPerCumulLong, long.cumulativeNetWithdrawals)),
+        difference: signedEuro(Math.max(newPerCumulLong, long.cumulativeNetWithdrawals) - keep.cumulativeToLongHorizon),
       },
       {
         label: 'Capital unique',
-        currentContract: '-',
-        newPer: '-',
-        capitalExit: euro(result.capitalExit.unique.netIRPS),
+        keepScenario: '-',
+        transferScenario: euro(result.capitalExit.unique.netIRPS),
+        difference: '-',
       },
       {
         label: `Capital fractionné ${short.horizonAge} ans`,
-        currentContract: '-',
-        newPer: '-',
-        capitalExit: euro(short.cumulativeNetWithdrawals),
+        keepScenario: '-',
+        transferScenario: euro(short.cumulativeNetWithdrawals),
+        difference: '-',
       },
       {
         label: `Capital fractionné ${long.horizonAge} ans`,
-        currentContract: '-',
-        newPer: '-',
-        capitalExit: euro(long.cumulativeNetWithdrawals),
+        keepScenario: '-',
+        transferScenario: euro(long.cumulativeNetWithdrawals),
+        difference: '-',
       },
       {
         label: `Sans retrait à ${long.horizonAge} ans`,
-        currentContract: '-',
-        newPer: '-',
-        capitalExit: euro(result.capitalExit.withoutWithdrawalToLongHorizon),
+        keepScenario: '-',
+        transferScenario: euro(result.capitalExit.withoutWithdrawalToLongHorizon),
+        difference: '-',
       },
     ],
     legalNote: '*En cas de sortie en capital d’un PER, les intérêts sont fiscalisés selon les paramètres fiscaux chargés dans SER1.',
+  };
+}
+
+function buildAuditSlide(contract: BaseCgRetraiteContract): PerTransfertAuditContractSlideSpec {
+  return {
+    type: 'per-transfert-audit-contract',
+    title: 'Audit complet du contrat actuel',
+    subtitle: `${contract.compagnie} - ${contract.nomContrat}`,
+    contract,
   };
 }
 
@@ -204,6 +226,7 @@ export function buildPerTransfertStudyDeck(
           `Réversion : ${selectedContract?.phaseLiquidation.reversionPossible ?? 'à compléter'}`,
         ].join('\n'),
       ),
+      ...(selectedContract ? [buildAuditSlide(selectedContract)] : []),
       content(
         'Taux de rente actuel',
         'Rente indiquée au relevé rapportée au capital acquis',

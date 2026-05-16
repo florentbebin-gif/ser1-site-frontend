@@ -29,7 +29,7 @@ export function buildPerTransfertSynthesis(
 
   addHeader(slide, spec.title, spec.subtitle, theme, 'content');
 
-  const headers = ['Indicateur', 'Contrat actuel', 'Nouveau PER', 'Capital PER'];
+  const headers = ['Indicateur', 'Conserver', 'Transférer', 'Différence'];
   headers.forEach((header, index) => {
     slide.addShape('rect', {
       x: columnX(index),
@@ -55,7 +55,7 @@ export function buildPerTransfertSynthesis(
   spec.rows.slice(0, 10).forEach((row, rowIndex) => {
     const y = TABLE_Y + ROW_H * (rowIndex + 1);
     const fillColor = rowIndex % 2 === 0 ? theme.colors.color7 : theme.panelBg;
-    [row.label, row.currentContract, row.newPer, row.capitalExit].forEach((value, colIndex) => {
+    [row.label, row.keepScenario, row.transferScenario, row.difference].forEach((value, colIndex) => {
       slide.addShape('rect', {
         x: columnX(colIndex),
         y,

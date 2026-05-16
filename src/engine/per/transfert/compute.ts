@@ -4,7 +4,7 @@ import { computeCapitalFiscal } from './fiscaliteCapital';
 import { computeRentFiscal, computeSmallAnnuityEligibility } from './fiscaliteRente';
 import { resolvePerCompartiment } from './compartimentMapping';
 import { computePrefonRente } from './pointsMortality';
-import type { PerTransfertInput, PerTransfertResult } from './types';
+import type { PerTransfertAnnuityOptions, PerTransfertCurrentRentOptions, PerTransfertInput, PerTransfertResult } from './types';
 
 function positive(value: number): number {
   return Number.isFinite(value) && value > 0 ? value : 0;
@@ -17,6 +17,21 @@ function yearsUntilRetirement(currentAge: number, liquidationAge: number): numbe
 function compoundRent(annualRent: number, annualRate: number, years: number): number {
   if (years <= 0) return positive(annualRent);
   return positive(annualRent) * ((1 + annualRate) ** years);
+}
+
+function projectCapitalWithAnnualPayment(capital: number, annualRate: number, years: number, annualPayment: number): number {
+  const baseCapital = positive(capital);
+  const payment = positive(annualPayment);
+  const duration = Math.max(0, years);
+  if (duration === 0) return baseCapital;
+  const projectedCapital = projectCapital({
+    capital: baseCapital,
+    annualRate,
+    years: duration,
+  });
+  if (payment === 0) return projectedCapital;
+  if (annualRate === 0) return projectedCapital + payment * duration;
+  return projectedCapital + payment * (((1 + annualRate) ** duration - 1) / annualRate);
 }
 
 function cumulativeRent(annualRent: number, annualRate: number, years: number): number {
@@ -38,6 +53,28 @@ function withWarnings(input: PerTransfertInput): string[] {
   return warnings;
 }
 
+function buildCurrentAnnuityOptions(
+  currentRentOptions: PerTransfertCurrentRentOptions,
+  baseOptions: PerTransfertAnnuityOptions,
+): PerTransfertAnnuityOptions {
+  return {
+    ...baseOptions,
+    mortalityTable: currentRentOptions.mortalityTable,
+    technicalRate: currentRentOptions.technicalRate,
+    conversionFeeRate: currentRentOptions.conversionFeeRate,
+    arrearsFeeRate: currentRentOptions.arrearsFeeRate,
+    reversion: {
+      ...baseOptions.reversion,
+      enabled: currentRentOptions.reversionEnabled,
+      rate: currentRentOptions.reversionRate,
+    },
+    guaranteedAnnuities: {
+      enabled: currentRentOptions.guaranteedYears > 0,
+      years: currentRentOptions.guaranteedYears,
+    },
+  };
+}
+
 export function computePerTransfert(input: PerTransfertInput): PerTransfertResult {
   const compartment = resolvePerCompartiment(input.originalContractType, input.targetCompartment);
   const yearsToRetirement = yearsUntilRetirement(input.insured.currentAge, input.insured.liquidationAge);
@@ -45,16 +82,17 @@ export function computePerTransfert(input: PerTransfertInput): PerTransfertResul
     input.capitalAcquis,
     input.renteActuelleAnnuelleBrute,
   );
+  const transferFeeRate = Math.max(0, input.projection.transferFeeRate);
+  const newPerEntryFeeRate = Math.max(0, input.projection.newPerEntryFeeRate ?? 0);
   const capitalAfterTransfer = positive(input.capitalAcquis)
-    * (1 - Math.max(0, input.projection.transferFeeRate));
+    * (1 - transferFeeRate)
+    * (1 - newPerEntryFeeRate);
   const capitalAtLiquidation = projectCapital({
     capital: capitalAfterTransfer,
     annualRate: input.projection.performanceUntilRetirementRate,
     years: yearsToRetirement,
   });
-  const capitalExitShare = Math.min(1, Math.max(0, input.projection.capitalShareRate));
-  const capitalAvailableAtLiquidation = capitalAtLiquidation * capitalExitShare;
-  const capitalConvertedToRent = capitalAtLiquidation - capitalAvailableAtLiquidation;
+  const desiredCapitalExitShare = Math.min(1, Math.max(0, input.projection.capitalShareRate));
   const principalBeforeTransfer = Math.max(0, input.capitalAcquis - positive(input.interetsAcquis));
   const gainsBeforeTransfer = Math.min(positive(input.capitalAcquis), positive(input.interetsAcquis));
   const transferRatio = positive(input.capitalAcquis) > 0 ? capitalAfterTransfer / positive(input.capitalAcquis) : 0;
@@ -64,7 +102,6 @@ export function computePerTransfert(input: PerTransfertInput): PerTransfertResul
     capitalAtLiquidation,
     gainsAfterTransfer + Math.max(0, capitalAtLiquidation - principalAfterTransfer - gainsAfterTransfer),
   );
-  const capitalExitGainsAtLiquidation = gainsAtLiquidation * capitalExitShare;
   const annuityOptions = {
     ...input.annuityOptions,
     technicalRate:
@@ -73,11 +110,26 @@ export function computePerTransfert(input: PerTransfertInput): PerTransfertResul
         : input.annuityOptions.technicalRate,
   };
 
-  const actuarialRent = computeAnnuityConversion({
-    capitalGross: capitalConvertedToRent,
+  const fullRentForEligibility = computeAnnuityConversion({
+    capitalGross: capitalAtLiquidation,
     insured: input.insured,
     options: annuityOptions,
   });
+  const fullRentSmallAnnuityEligible = computeSmallAnnuityEligibility(
+    fullRentForEligibility.netAnnualRent,
+    input.fiscalAssumptions,
+  );
+  const capitalExitShare = compartment === 'C3' && !fullRentSmallAnnuityEligible ? 0 : desiredCapitalExitShare;
+  const capitalAvailableAtLiquidation = capitalAtLiquidation * capitalExitShare;
+  const capitalConvertedToRent = capitalAtLiquidation - capitalAvailableAtLiquidation;
+  const capitalExitGainsAtLiquidation = gainsAtLiquidation * capitalExitShare;
+  const actuarialRent = capitalConvertedToRent === capitalAtLiquidation
+    ? fullRentForEligibility
+    : computeAnnuityConversion({
+      capitalGross: capitalConvertedToRent,
+      insured: input.insured,
+      options: annuityOptions,
+    });
   const prefonRent = input.prefon.enabled && input.prefon.params
     ? computePrefonRente({
       params: input.prefon.params,
@@ -97,11 +149,31 @@ export function computePerTransfert(input: PerTransfertInput): PerTransfertResul
       apparentRate: actuarialRent.capitalNet > 0 ? prefonRent.renteAnnuelleBrute / actuarialRent.capitalNet : 0,
     }
     : actuarialRent;
-  const currentRentAtLiquidation = compoundRent(
-    input.renteActuelleAnnuelleBrute,
-    0,
-    0,
+  const keepPerf = input.projection.currentContractPerformanceUntilRetirementRate
+    ?? input.projection.performanceUntilRetirementRate;
+  const capitalKeptAtLiquidation = projectCapitalWithAnnualPayment(
+    input.capitalAcquis,
+    keepPerf,
+    yearsToRetirement,
+    input.annualCurrentPayment ?? 0,
   );
+  const currentRentOptions = input.currentRentOptions ?? {
+    mode: 'statement',
+    mortalityTable: annuityOptions.mortalityTable,
+    technicalRate: annuityOptions.technicalRate,
+    conversionFeeRate: annuityOptions.conversionFeeRate,
+    arrearsFeeRate: annuityOptions.arrearsFeeRate,
+    guaranteedYears: annuityOptions.guaranteedAnnuities.years,
+    reversionEnabled: annuityOptions.reversion.enabled,
+    reversionRate: annuityOptions.reversion.rate,
+  };
+  const currentRentAtLiquidation = currentRentOptions.mode === 'manual_table'
+    ? computeAnnuityConversion({
+      capitalGross: capitalKeptAtLiquidation,
+      insured: input.insured,
+      options: buildCurrentAnnuityOptions(currentRentOptions, annuityOptions),
+    }).grossAnnualRent
+    : positive(input.renteActuelleAnnuelleBrute);
   const currentRentFiscal = computeRentFiscal({
     annualRent: currentRentAtLiquidation,
     liquidationAge: input.insured.liquidationAge,
@@ -170,6 +242,25 @@ export function computePerTransfert(input: PerTransfertInput): PerTransfertResul
         input.projection.currentRentRevaluationRate,
         longHorizon.years,
       ),
+    },
+    keepScenario: {
+      capitalAtLiquidation: capitalKeptAtLiquidation,
+      currentRent: {
+        grossAnnualRent: currentRentAtLiquidation,
+        netAnnualRent: currentRentFiscal.netAnnualRent,
+        netMonthly: currentRentFiscal.netAnnualRent / 12,
+        fiscal: currentRentFiscal,
+        cumulativeToShortHorizon: cumulativeRent(
+          currentRentFiscal.netAnnualRent,
+          input.projection.currentRentRevaluationRate,
+          shortHorizon.years,
+        ),
+        cumulativeToLongHorizon: cumulativeRent(
+          currentRentFiscal.netAnnualRent,
+          input.projection.currentRentRevaluationRate,
+          longHorizon.years,
+        ),
+      },
     },
     newPerRent,
     newPerFiscal,

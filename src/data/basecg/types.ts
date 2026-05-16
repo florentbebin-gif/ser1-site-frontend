@@ -23,10 +23,14 @@ export interface PrefonPointsParams {
 export interface BaseCgPhaseEpargne {
   dateCommercialisation: string | null;
   nombreFonds: number | string | null;
+  nombreSupportsUc?: number | null;
   repartitionUcEuro: string | null;
   rendementFondsEuro: string | number | null;
+  fondsEuroGarantis?: string | number | null;
   fraisVersements: string | number | null;
   fraisGestion: string | number | null;
+  fraisGestionFondsEuro?: string | number | null;
+  fraisGestionUc?: string | number | null;
   fraisArbitrage: string | number | null;
   fraisTransfertSortant: string | number | null;
   fraisTransfertSortantRate: number | null;
@@ -50,6 +54,15 @@ export interface BaseCgPhaseLiquidation {
   renteEstimee: string | number | null;
 }
 
+export interface BaseCgRetraiteDocument {
+  id: string;
+  label: string;
+  type: 'conditions_generales' | 'notice_information' | 'avenant' | 'autre';
+  sourceUrl?: string;
+  status: 'missing' | 'linked' | 'uploaded';
+  uploadedAt?: string;
+}
+
 export interface BaseCgRetraiteContract {
   id: string;
   sourceId: string;
@@ -59,5 +72,6 @@ export interface BaseCgRetraiteContract {
   perCompartment?: PerTransfertCompartment | null;
   phaseEpargne: BaseCgPhaseEpargne;
   phaseLiquidation: BaseCgPhaseLiquidation;
+  documents?: BaseCgRetraiteDocument[];
   pointsParams?: PrefonPointsParams | null;
 }

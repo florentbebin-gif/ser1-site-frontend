@@ -63,6 +63,11 @@
   font-size: 13px;
 }
 
+.base-cg-modal button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
 .base-cg-filters input,
 .base-cg-filters select {
   min-height: 38px;
@@ -154,6 +159,31 @@
   padding: 18px;
 }
 
+.base-cg-modal__tabs {
+  display: flex;
+  gap: 6px;
+  border-bottom: 1px solid var(--color-c8);
+  padding: 0 18px;
+}
+
+.base-cg-modal__tabs button {
+  min-height: 44px;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  background: transparent;
+  color: var(--color-c9);
+  cursor: pointer;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 800;
+  padding: 0 10px;
+}
+
+.base-cg-modal__tabs button.is-active {
+  border-bottom-color: var(--color-c3);
+  color: var(--color-c1);
+}
+
 .base-cg-modal label {
   display: grid;
   gap: 6px;
@@ -177,6 +207,52 @@
   grid-column: 1 / -1;
 }
 
+.base-cg-documents {
+  grid-column: 1 / -1;
+  display: grid;
+  gap: 14px;
+}
+
+.base-cg-documents__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+  border: 1px solid var(--color-c8);
+  border-radius: 8px;
+  padding: 14px;
+}
+
+.base-cg-documents__header h4 {
+  margin: 0 0 4px;
+  color: var(--color-c1);
+  font-size: 14px;
+}
+
+.base-cg-documents__header p,
+.base-cg-documents__empty {
+  margin: 0;
+  color: var(--color-c9);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.base-cg-document-row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  border: 1px solid var(--color-c8);
+  border-radius: 8px;
+  padding: 14px;
+}
+
+.base-cg-document-row__actions {
+  grid-column: 1 / -1;
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
 @media (max-width: 720px) {
   .base-cg-header-card,
   .base-cg-header-actions,
@@ -186,6 +262,17 @@
   }
 
   .base-cg-modal__body {
+    grid-template-columns: 1fr;
+  }
+
+  .base-cg-modal__tabs,
+  .base-cg-documents__header,
+  .base-cg-document-row__actions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .base-cg-document-row {
     grid-template-columns: 1fr;
   }
 }

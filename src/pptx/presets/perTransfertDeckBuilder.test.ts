@@ -10,6 +10,7 @@ import {
 } from '@/engine/per';
 import { DEFAULT_COLORS } from '@/settings/theme';
 import type { PerTransfertSynthesisSlideSpec } from '../theme/types';
+import type { BaseCgRetraiteContract } from '@/data/basecg';
 
 const theme: PerTransfertUiSettingsForPptx = DEFAULT_COLORS;
 
@@ -71,6 +72,43 @@ const input: PerTransfertInput = {
   prefon: { enabled: false, points: 0, acquisitionAge: 60, params: null },
 };
 
+const selectedContract: BaseCgRetraiteContract = {
+  id: 'test-madelin',
+  sourceId: 'Contrat N°386',
+  compagnie: 'ABEILLE',
+  nomContrat: 'MADELIN- ABEILLE RETRAITE MADELIN',
+  typeContrat: 'MADELIN',
+  perCompartment: 'C1',
+  phaseEpargne: {
+    dateCommercialisation: 'De 2010 à 2017',
+    nombreFonds: 50,
+    repartitionUcEuro: null,
+    rendementFondsEuro: 'NC',
+    fraisVersements: 0.05,
+    fraisGestion: '1% (€) - 1,50% (UC)',
+    fraisArbitrage: '0,5% (max 300€)',
+    fraisTransfertSortant: 0,
+    fraisTransfertSortantRate: 0,
+    clauseBeneficiaire: 'Standard',
+    garantiesComplementaires: 'Plancher décès',
+  },
+  phaseLiquidation: {
+    ageLimiteLiquidation: 'NC',
+    sortieCapitalRetraite: 'Non',
+    fractionnementCapital: 'Non',
+    rachatLibre: 'Non',
+    tableConversionRente: 'TGH05 ou TGF05',
+    tableGarantieAdhesion: 'Oui',
+    tauxTechnique: 'NC',
+    fraisArrerages: 0.03,
+    fraisArreragesRate: 0.03,
+    annuitesGaranties: 'Oui sur option',
+    reversionPossible: 'Oui sur option',
+    reversionIncluse: 'Non',
+    renteEstimee: null,
+  },
+};
+
 function normalizeText(value: string): string {
   return value.replace(/\s/g, ' ');
 }
@@ -103,6 +141,29 @@ describe('buildPerTransfertStudyDeck', () => {
     expect(spec.slides[spec.slides.length - 1]?.type).toBe('content');
   });
 
+  it('ajoute une slide audit quand un contrat Base CG est selectionne', () => {
+    const spec = buildPerTransfertStudyDeck({
+      input,
+      result: computePerTransfert(input),
+      selectedContract,
+    }, theme);
+
+    const auditSlide = spec.slides.find((slide) => (slide as { type: string }).type === 'per-transfert-audit-contract');
+    expect(auditSlide).toBeDefined();
+    expect(JSON.stringify(auditSlide)).toContain('ABEILLE');
+    expect(JSON.stringify(auditSlide)).toContain('MADELIN- ABEILLE RETRAITE MADELIN');
+  });
+
+  it('n ajoute pas de slide audit quand aucun contrat Base CG n est selectionne', () => {
+    const spec = buildPerTransfertStudyDeck({
+      input,
+      result: computePerTransfert(input),
+      selectedContract: null,
+    }, theme);
+
+    expect(spec.slides.some((slide) => (slide as { type: string }).type === 'per-transfert-audit-contract')).toBe(false);
+  });
+
   it('restitue les valeurs golden G1-G14 dans la synthese dediee', () => {
     const computed = computePerTransfert(input);
     const goldenResult: PerTransfertResult = {
@@ -114,6 +175,17 @@ describe('buildPerTransfertStudyDeck', () => {
         netAnnualRent: 1_880,
         cumulativeToShortHorizon: 32_447,
         cumulativeToLongHorizon: 55_511,
+      },
+      keepScenario: {
+        ...computed.keepScenario,
+        currentRent: {
+          ...computed.keepScenario.currentRent,
+          grossAnnualRent: 3_000,
+          netAnnualRent: 1_880,
+          netMonthly: 1_880 / 12,
+          cumulativeToShortHorizon: 32_447,
+          cumulativeToLongHorizon: 55_511,
+        },
       },
       newPerRent: {
         ...computed.newPerRent,
@@ -149,18 +221,16 @@ describe('buildPerTransfertStudyDeck', () => {
       },
     };
     const slide = findSynthesisSlide(goldenResult);
-    const values = slide.rows.flatMap((row) => [
+    const values = (slide.rows as unknown as Array<Record<string, string>>).flatMap((row) => [
       row.label,
-      row.currentContract,
-      row.newPer,
-      row.capitalExit,
+      row.keepScenario,
+      row.transferScenario,
+      row.difference,
     ]).map(normalizeText);
 
-    expect(values).toContain('Taux de conversion');
+    expect(values).toContain('Rente nette annuelle');
     expect(values).toContain('3,00 %');
-    expect(values).toContain('3 000 €');
     expect(values).toContain('1 880 €');
-    expect(values).toContain('3 103 €');
     expect(values).toContain('2 163 €');
     expect(values).toContain('32 447 €');
     expect(values).toContain('55 511 €');

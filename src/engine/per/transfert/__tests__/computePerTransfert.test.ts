@@ -19,7 +19,7 @@ const fiscalAssumptions: PerTransfertFiscalAssumptions = {
   smallAnnuityCapitalExitFlatTaxAbatementRate: 0.1,
 };
 
-function makeInput(overrides: Partial<PerTransfertInput> = {}): PerTransfertInput {
+function makeInput(overrides: Partial<PerTransfertInput> & Record<string, unknown> = {}): PerTransfertInput {
   return {
     productType: 'PER',
     originalContractType: 'MADELIN',
@@ -162,5 +162,80 @@ describe('computePerTransfert', () => {
     const result = computePerTransfert(input);
 
     expect(result.compartment).toBe('C1_BIS');
+  });
+
+  it('applique les frais d entree du nouveau PER apres les frais sortants', () => {
+    const result = computePerTransfert(makeInput({
+      capitalAcquis: 100_000,
+      projection: {
+        ...makeInput().projection,
+        transferFeeRate: 0.05,
+        newPerEntryFeeRate: 0.02,
+      } as PerTransfertInput['projection'] & { newPerEntryFeeRate: number },
+    }));
+
+    expect(result.capitalAfterTransfer).toBeCloseTo(93_100);
+  });
+
+  it('expose un scenario conserver distinct avec la rente du releve non revalorisee avant liquidation', () => {
+    const result = computePerTransfert(makeInput({
+      renteActuelleAnnuelleBrute: 3_000,
+      projection: {
+        ...makeInput().projection,
+        currentRentRevaluationRate: 0.03,
+        currentContractPerformanceUntilRetirementRate: 0.02,
+      } as PerTransfertInput['projection'] & { currentContractPerformanceUntilRetirementRate: number },
+    })) as ReturnType<typeof computePerTransfert> & {
+      keepScenario?: { capitalAtLiquidation: number; currentRent: { grossAnnualRent: number; netMonthly: number } };
+    };
+
+    expect(result.keepScenario).toBeDefined();
+    expect(result.keepScenario?.currentRent.grossAnnualRent).toBe(3_000);
+    expect(result.keepScenario?.currentRent.netMonthly).toBeGreaterThan(0);
+    expect(result.keepScenario?.capitalAtLiquidation).toBeGreaterThan(80_000);
+  });
+
+  it('capitalise le versement annuel actuel uniquement dans le scenario conserver', () => {
+    const base = computePerTransfert(makeInput({
+      projection: {
+        ...makeInput().projection,
+        transferFeeRate: 0,
+        performanceUntilRetirementRate: 0,
+        currentContractPerformanceUntilRetirementRate: 0.02,
+      } as PerTransfertInput['projection'] & { currentContractPerformanceUntilRetirementRate: number },
+    })) as ReturnType<typeof computePerTransfert> & {
+      keepScenario?: { capitalAtLiquidation: number };
+    };
+    const withPayment = computePerTransfert(makeInput({
+      annualCurrentPayment: 1_200,
+      projection: {
+        ...makeInput().projection,
+        transferFeeRate: 0,
+        performanceUntilRetirementRate: 0,
+        currentContractPerformanceUntilRetirementRate: 0.02,
+      } as PerTransfertInput['projection'] & { currentContractPerformanceUntilRetirementRate: number },
+    })) as ReturnType<typeof computePerTransfert> & {
+      keepScenario?: { capitalAtLiquidation: number };
+    };
+
+    expect(withPayment.capitalAfterTransfer).toBe(base.capitalAfterTransfer);
+    expect(withPayment.keepScenario?.capitalAtLiquidation).toBeGreaterThan(base.keepScenario?.capitalAtLiquidation ?? 0);
+  });
+
+  it('force la sortie capital a zero sur le compartiment C3 hors petite rente', () => {
+    const result = computePerTransfert(makeInput({
+      originalContractType: 'ARTICLE83',
+      targetCompartment: 'C3',
+      capitalAcquis: 200_000,
+      renteActuelleAnnuelleBrute: 6_000,
+      projection: {
+        ...makeInput().projection,
+        capitalShareRate: 1,
+      },
+    }));
+
+    expect(result.compartment).toBe('C3');
+    expect(result.capitalExit.shareRate).toBe(0);
+    expect(result.capitalExit.capitalConvertedToRent).toBeCloseTo(result.capitalAtLiquidation);
   });
 });

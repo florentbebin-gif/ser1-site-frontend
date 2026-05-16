@@ -65,7 +65,9 @@ export interface PerTransfertAnnuityOptions {
 
 export interface PerTransfertProjectionInput {
   transferFeeRate: number;
+  newPerEntryFeeRate?: number;
   performanceUntilRetirementRate: number;
+  currentContractPerformanceUntilRetirementRate?: number;
   currentRentRevaluationRate: number;
   newRentRevaluationRate: number;
   capitalExitRevaluationRate: number;
@@ -81,6 +83,17 @@ export interface PerTransfertPrefonInput {
   params: PrefonPointsParams | null;
 }
 
+export interface PerTransfertCurrentRentOptions {
+  mode: 'statement' | 'manual_table';
+  mortalityTable: MortalityTableCode;
+  technicalRate: number;
+  conversionFeeRate: number;
+  arrearsFeeRate: number;
+  guaranteedYears: number;
+  reversionEnabled: boolean;
+  reversionRate: number;
+}
+
 export interface PerTransfertInput {
   productType: PerTransfertProductType;
   originalContractType: BaseCgRetraiteContractType;
@@ -88,10 +101,13 @@ export interface PerTransfertInput {
   capitalAcquis: number;
   interetsAcquis: number;
   renteActuelleAnnuelleBrute: number;
+  subscriptionDate?: string | null;
+  annualCurrentPayment?: number | null;
   insured: PerTransfertInsuredInput;
   tmiRetraite: number;
   fiscalAssumptions: PerTransfertFiscalAssumptions;
   annuityOptions: PerTransfertAnnuityOptions;
+  currentRentOptions?: PerTransfertCurrentRentOptions;
   projection: PerTransfertProjectionInput;
   prefon: PerTransfertPrefonInput;
 }
@@ -145,6 +161,18 @@ export interface PerTransfertAnnuityResult {
   apparentRate: number;
 }
 
+export interface PerTransfertKeepScenario {
+  capitalAtLiquidation: number;
+  currentRent: {
+    grossAnnualRent: number;
+    netAnnualRent: number;
+    netMonthly: number;
+    fiscal: PerTransfertFiscalResult;
+    cumulativeToShortHorizon: number;
+    cumulativeToLongHorizon: number;
+  };
+}
+
 export interface PerTransfertResult {
   compartment: PerTransfertCompartment;
   currentConversionRate: number;
@@ -157,6 +185,7 @@ export interface PerTransfertResult {
     cumulativeToShortHorizon: number;
     cumulativeToLongHorizon: number;
   };
+  keepScenario: PerTransfertKeepScenario;
   newPerRent: PerTransfertAnnuityResult;
   newPerFiscal: PerTransfertFiscalResult;
   capitalExit: {

@@ -12,6 +12,7 @@ export type {
   BaseCgPhaseLiquidation,
   BaseCgRetraiteContract,
   BaseCgRetraiteContractType,
+  BaseCgRetraiteDocument,
   PerTransfertCompartment,
   PrefonPointsParams,
 } from './types';

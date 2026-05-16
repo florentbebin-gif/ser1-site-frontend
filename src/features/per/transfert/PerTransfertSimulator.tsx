@@ -3,19 +3,30 @@ import type { ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import { ExportMenu } from '@/components/ExportMenu';
 import { ModeToggle } from '@/components/ModeToggle';
-import { SimPageShell } from '@/components/ui/sim';
+import { SimFieldShell, SimPageShell } from '@/components/ui/sim';
 import type { SimSelectOption } from '@/components/ui/sim';
 import { useFiscalContext } from '@/hooks/useFiscalContext';
 import { useUserMode } from '@/settings/userMode';
-import { resolveEffectiveUserMode, ExpertOnly } from '@/settings/userModeDisplay';
+import { ExpertOnly, resolveEffectiveUserMode } from '@/settings/userModeDisplay';
 import { useTheme } from '@/settings/ThemeProvider';
 import type { BaseCgRetraiteContractType } from '@/data/basecg';
 import { usePerTransfertSimulator } from './hooks/usePerTransfertSimulator';
 import { usePerTransfertExportHandlers } from './hooks/usePerTransfertExportHandlers';
 import {
-  PerTransfertNumberField,
+  PerTransfertIntegerField,
+  PerTransfertMoneyField,
+  PerTransfertRateField,
   PerTransfertSelectField,
 } from './components/PerTransfertFields';
+import { PerTransfertWizardSteps } from './components/PerTransfertWizardSteps';
+import type { WizardStep } from './components/PerTransfertWizardSteps';
+import { PerTransfertPivotTable } from './components/PerTransfertPivotTable';
+import { PerTransfertCapitalScheduleTable } from './components/PerTransfertCapitalScheduleTable';
+import { PerTransfertSummaryPanel } from './components/PerTransfertSummaryPanel';
+import { ContractAuditCards } from './components/ContractAuditCards';
+import { PerTransfertCurrentRentModal } from './components/PerTransfertCurrentRentModal';
+import { PerTransfertFraisInfoModal } from './components/PerTransfertFraisInfoModal';
+import { RentRevaluationInfoModal } from './components/RentRevaluationInfoModal';
 import '@/styles/sim/index.css';
 import './styles/index.css';
 
@@ -34,28 +45,11 @@ const SEX_OPTIONS: SimSelectOption[] = [
   { value: 'F', label: 'Femme' },
 ];
 
-const MORTALITY_OPTIONS: SimSelectOption[] = [
-  { value: 'TGH05', label: 'TGH05 hommes' },
-  { value: 'TGF05', label: 'TGF05 femmes' },
-  { value: 'TPRV93', label: 'TPRV93 ancienne table' },
-  { value: 'TPG93', label: 'TPG93 générationnelle' },
-];
-
-const formatEuro = new Intl.NumberFormat('fr-FR', {
-  style: 'currency',
-  currency: 'EUR',
-  maximumFractionDigits: 0,
-});
-
 const formatPercent = new Intl.NumberFormat('fr-FR', {
   style: 'percent',
   minimumFractionDigits: 2,
   maximumFractionDigits: 2,
 });
-
-function euro(value: number): string {
-  return formatEuro.format(Math.round(Number.isFinite(value) ? value : 0));
-}
 
 function percent(value: number): string {
   return formatPercent.format(Number.isFinite(value) ? value : 0);
@@ -75,22 +69,37 @@ function Panel({
   children: ReactNode;
 }) {
   return (
-    <section className="sim-card per-transfert-panel">
-      <div className="per-transfert-panel__header">
+    <section className="premium-card premium-card--guide per-transfert-panel">
+      <div className="sim-card__header--bleed per-transfert-panel__header">
         <h2>{title}</h2>
         <p>{subtitle}</p>
       </div>
+      <div className="per-transfert-panel__divider" aria-hidden="true" />
       {children}
     </section>
   );
 }
 
-function Kpi({ label, value, tone }: { label: string; value: string; tone?: 'accent' | 'muted' }) {
+function DateField({
+  label,
+  value,
+  onChange,
+  hint,
+}: {
+  label: string;
+  value: string;
+  onChange: (_value: string) => void;
+  hint?: string;
+}) {
   return (
-    <div className={`per-transfert-kpi${tone ? ` per-transfert-kpi--${tone}` : ''}`}>
-      <span>{label}</span>
-      <strong>{value}</strong>
-    </div>
+    <SimFieldShell label={label} hint={hint}>
+      <input
+        className="sim-field__control"
+        type="date"
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+      />
+    </SimFieldShell>
   );
 }
 
@@ -101,6 +110,10 @@ export function PerTransfertSimulator() {
   const effectiveMode = resolveEffectiveUserMode(mode, localMode);
   const isExpert = effectiveMode === 'expert';
   const theme = useTheme();
+  const [step, setStep] = useState<WizardStep>('contrat');
+  const [rentModalOpen, setRentModalOpen] = useState(false);
+  const [feesModalOpen, setFeesModalOpen] = useState(false);
+  const [revaluationModalOpen, setRevaluationModalOpen] = useState(false);
 
   const simulator = usePerTransfertSimulator(fiscalContext);
   const { state, update, applyContract, catalog, catalogLoading, selectedContract, result, input } = simulator;
@@ -114,11 +127,17 @@ export function PerTransfertSimulator() {
     logoPlacement: theme.logoPlacement,
   });
 
+  const step1Done = Boolean(state.typeContrat && state.capitalAcquis > 0 && state.renteActuelleAnnuelleBrute > 0);
+  const canExport = Boolean(step1Done && state.birthYear && state.liquidationAge);
+  const isC3CapitalLocked = result.compartment === 'C3' && !result.smallAnnuityCapitalExitEligible;
+  const newPerMortalityLabel = state.sex === 'M' ? 'TGH05 hommes' : 'TGF05 femmes';
+
   const typeOptions = useMemo<SimSelectOption[]>(() => (
     Array.from(new Set(catalog.map((contract) => contract.typeContrat)))
       .sort()
       .map((type) => ({ value: type, label: CONTRACT_TYPE_LABELS[type] }))
   ), [catalog]);
+
   const compagnieOptions = useMemo<SimSelectOption[]>(() => (
     Array.from(new Set(
       catalog
@@ -128,6 +147,7 @@ export function PerTransfertSimulator() {
       .sort((left, right) => left.localeCompare(right, 'fr-FR'))
       .map((compagnie) => ({ value: compagnie, label: compagnie }))
   ), [catalog, state.typeContrat]);
+
   const contractOptions = useMemo<SimSelectOption[]>(() => (
     catalog
       .filter((contract) => contract.typeContrat === state.typeContrat)
@@ -135,7 +155,6 @@ export function PerTransfertSimulator() {
       .map((contract) => ({
         value: contract.id,
         label: contract.nomContrat,
-        description: contract.sourceId,
       }))
   ), [catalog, state.compagnie, state.typeContrat]);
 
@@ -151,9 +170,10 @@ export function PerTransfertSimulator() {
   };
 
   return (
-    <SimPageShell
+    <>
+      <SimPageShell
       title="Transfert épargne retraite"
-      subtitle="Analyse devoir de conseil, projection du nouveau PER et comparaison rente/capital."
+      subtitle="Auditer le contrat actuel, simuler le transfert immédiat vers un PER et comparer rente/capital."
       loading={loading || catalogLoading}
       error={error}
       actions={(
@@ -164,165 +184,222 @@ export function PerTransfertSimulator() {
       )}
       notice={(
         <div className="per-transfert-notice">
-          <span>Base CG locale enrichissable en v1.</span>
+          <span>Base CG retraite locale enrichissable depuis les settings.</span>
           <Link to="/settings/base-contrat-retraite">Mettre à jour le référentiel</Link>
         </div>
+      )}
+      controls={(
+        <PerTransfertWizardSteps
+          step={step}
+          step1Done={step1Done}
+          onStepChange={setStep}
+        />
       )}
       pageClassName="per-transfert-page"
       mobileSideFirst
     >
       <SimPageShell.Main>
-        <Panel
-          title="Contrat à transférer"
-          subtitle="Le parcours reprend le triptyque Excel : type, compagnie, nom du contrat."
-        >
-          <FieldGrid>
-            <PerTransfertSelectField
-              label="Type de contrat"
-              value={state.typeContrat}
-              onChange={handleTypeChange}
-              options={typeOptions}
-            />
-            <PerTransfertSelectField
-              label="Compagnie"
-              value={state.compagnie}
-              onChange={handleCompagnieChange}
-              options={compagnieOptions}
-              placeholder="Sélectionner"
-            />
-            <PerTransfertSelectField
-              label="Nom du contrat"
-              value={state.contractId}
-              onChange={applyContract}
-              options={contractOptions}
-              placeholder="Sélectionner"
-            />
-          </FieldGrid>
-
-          {selectedContract ? (
-            <div className="per-transfert-contract-grid">
-              <div>
-                <span>Phase épargne</span>
-                <strong>{selectedContract.phaseEpargne.dateCommercialisation ?? 'Non renseigné'}</strong>
-                <p>{selectedContract.phaseEpargne.fraisGestion ?? 'Frais de gestion non renseignés'}</p>
-              </div>
-              <div>
-                <span>Phase liquidation</span>
-                <strong>{selectedContract.phaseLiquidation.tableConversionRente ?? 'Table non renseignée'}</strong>
-                <p>{selectedContract.phaseLiquidation.reversionPossible ?? 'Réversion à compléter'}</p>
-              </div>
-            </div>
-          ) : (
-            <div className="per-transfert-empty-analysis">
-              Aucun contrat Base CG sélectionné : la grille reste éditable avec les hypothèses ci-dessous.
-            </div>
-          )}
-        </Panel>
-
-        <Panel
-          title="Données du relevé client"
-          subtitle="Capital acquis, intérêts et rente indiquée sur le relevé déterminent le taux de rente actuel."
-        >
-          <FieldGrid>
-            <PerTransfertNumberField label="Capital acquis" value={state.capitalAcquis} onChange={(value) => update('capitalAcquis', value)} suffix="€" min={0} />
-            <PerTransfertNumberField label="Dont intérêts" value={state.interetsAcquis} onChange={(value) => update('interetsAcquis', value)} suffix="€" min={0} />
-            <PerTransfertNumberField label="Rente brute annuelle relevé" value={state.renteActuelleAnnuelleBrute} onChange={(value) => update('renteActuelleAnnuelleBrute', value)} suffix="€" min={0} />
-            <PerTransfertSelectField label="Sexe assuré" value={state.sex} onChange={(value) => update('sex', value as 'M' | 'F')} options={SEX_OPTIONS} />
-            <PerTransfertNumberField label="Année de naissance" value={state.birthYear} onChange={(value) => update('birthYear', value)} min={1900} step={1} />
-            <PerTransfertNumberField label="Âge actuel" value={state.currentAge} onChange={(value) => update('currentAge', value)} min={0} step={1} />
-            <PerTransfertNumberField label="Âge de liquidation" value={state.liquidationAge} onChange={(value) => update('liquidationAge', value)} min={0} step={1} />
-            <PerTransfertNumberField label="TMI retraite" value={state.tmiRetraite} onChange={(value) => update('tmiRetraite', value)} suffix="%" min={0} step={0.1} />
-          </FieldGrid>
-
-          {state.typeContrat === 'PER_POINTS' ? (
-            <div className="per-transfert-points-panel">
-              <PerTransfertNumberField
-                label="Points acquis"
-                value={state.prefonPoints}
-                onChange={(value) => update('prefonPoints', value)}
-                min={0}
-                hint="Si le relevé indique les points, ils priment sur la conversion du capital."
-              />
-            </div>
-          ) : null}
-        </Panel>
-
-        <Panel
-          title="Nouveau PER"
-          subtitle="Affectation automatique du compartiment, frais, performance et liquidation."
-        >
-          <FieldGrid>
-            <PerTransfertNumberField label="Frais de transfert sortant" value={state.transferFeeRate} onChange={(value) => update('transferFeeRate', value)} suffix="%" min={0} step={0.1} />
-            <PerTransfertNumberField label="Performance avant retraite" value={state.performanceUntilRetirementRate} onChange={(value) => update('performanceUntilRetirementRate', value)} suffix="% / an" step={0.1} />
-            <PerTransfertNumberField label="Part en sortie capital" value={state.capitalShareRate} onChange={(value) => update('capitalShareRate', value)} suffix="%" min={0} max={100} step={1} />
-            <PerTransfertNumberField label="Revalorisation capital" value={state.capitalExitRevaluationRate} onChange={(value) => update('capitalExitRevaluationRate', value)} suffix="% / an" step={0.1} />
-            <PerTransfertNumberField label="Revalorisation rente actuelle" value={state.currentRentRevaluationRate} onChange={(value) => update('currentRentRevaluationRate', value)} suffix="% / an" step={0.1} />
-            <PerTransfertNumberField label="Revalorisation rente PER" value={state.newRentRevaluationRate} onChange={(value) => update('newRentRevaluationRate', value)} suffix="% / an" step={0.1} />
-            <PerTransfertNumberField label="Horizon court" value={state.horizonAgeShort} onChange={(value) => update('horizonAgeShort', value)} suffix="ans" min={0} step={1} />
-            <PerTransfertNumberField label="Horizon long" value={state.horizonAgeLong} onChange={(value) => update('horizonAgeLong', value)} suffix="ans" min={0} step={1} />
-          </FieldGrid>
-
-          <ExpertOnly mode={effectiveMode}>
-            <div className="per-transfert-expert-panel">
+        {step === 'contrat' ? (
+          <>
+            <Panel
+              title="Référencement"
+              subtitle="Choisissez le contrat dans la Base CG, puis contrôlez les informations essentielles."
+            >
               <FieldGrid>
-                <PerTransfertSelectField label="Table mortalité" value={state.mortalityTable} onChange={(value) => update('mortalityTable', value as typeof state.mortalityTable)} options={MORTALITY_OPTIONS} />
-                <PerTransfertNumberField label="Taux technique" value={state.technicalRate} onChange={(value) => update('technicalRate', value)} suffix="%" step={0.1} />
-                <PerTransfertNumberField label="Frais conversion rente" value={state.conversionFeeRate} onChange={(value) => update('conversionFeeRate', value)} suffix="%" min={0} step={0.1} />
-                <PerTransfertNumberField label="Frais arrérages" value={state.arrearsFeeRate} onChange={(value) => update('arrearsFeeRate', value)} suffix="%" min={0} step={0.1} />
-                <PerTransfertNumberField label="Annuités garanties" value={state.guaranteedYears} onChange={(value) => update('guaranteedYears', value)} suffix="ans" min={0} step={1} />
-                <PerTransfertNumberField label="Taux de réversion" value={state.reversionRate} onChange={(value) => update('reversionRate', value)} suffix="%" min={0} max={100} step={1} />
-                <PerTransfertNumberField label="Année naissance conjoint" value={state.spouseBirthYear} onChange={(value) => update('spouseBirthYear', value)} min={1900} step={1} />
-                <PerTransfertNumberField label="Âge conjoint liquidation" value={state.spouseAgeAtLiquidation} onChange={(value) => update('spouseAgeAtLiquidation', value)} min={0} step={1} />
-              </FieldGrid>
-              <label className="per-transfert-checkbox">
-                <input
-                  type="checkbox"
-                  checked={state.reversionEnabled}
-                  onChange={(event) => update('reversionEnabled', event.target.checked)}
+                <PerTransfertSelectField
+                  label="Type de contrat"
+                  value={state.typeContrat}
+                  onChange={handleTypeChange}
+                  options={typeOptions}
                 />
-                Activer la réversion dans le tarif de rente
-              </label>
+                <PerTransfertSelectField
+                  label="Compagnie"
+                  value={state.compagnie}
+                  onChange={handleCompagnieChange}
+                  options={compagnieOptions}
+                  placeholder="Sélectionner"
+                />
+                <PerTransfertSelectField
+                  label="Nom du contrat"
+                  value={state.contractId}
+                  onChange={applyContract}
+                  options={contractOptions}
+                  placeholder="Sélectionner"
+                />
+              </FieldGrid>
+            </Panel>
+
+            <Panel
+              title="Audit Base CG"
+              subtitle="Grille devoir de conseil issue du référentiel : frais, garanties, options de rente et conditions de sortie."
+            >
+              <ContractAuditCards contract={selectedContract} />
+            </Panel>
+
+            <Panel
+              title="Relevé de situation"
+              subtitle="Saisissez les éléments du relevé client et les hypothèses si le contrat est conservé."
+            >
+              <FieldGrid>
+                <PerTransfertMoneyField label="Capital acquis" value={state.capitalAcquis} onChange={(value) => update('capitalAcquis', value)} />
+                <PerTransfertMoneyField label="Dont intérêts" value={state.interetsAcquis} onChange={(value) => update('interetsAcquis', value)} />
+                <PerTransfertMoneyField label="Rente brute annuelle relevé" value={state.renteActuelleAnnuelleBrute} onChange={(value) => update('renteActuelleAnnuelleBrute', value)} />
+                <DateField label="Date de souscription" value={state.subscriptionDate} onChange={(value) => update('subscriptionDate', value)} hint="Optionnel, utile pour vérifier les frais sortants et garanties anciennes." />
+                <PerTransfertMoneyField label="Versement annuel actuel" value={state.annualCurrentPayment} onChange={(value) => update('annualCurrentPayment', value)} hint="Alimente uniquement le scénario Conserver." />
+                <PerTransfertRateField label="Performance contrat actuel" value={state.currentContractPerformanceUntilRetirementRate} onChange={(value) => update('currentContractPerformanceUntilRetirementRate', value)} suffix="% / an" />
+                <PerTransfertRateField label="Frais de transfert sortant" value={state.transferFeeRate} onChange={(value) => update('transferFeeRate', value)} />
+                <PerTransfertRateField label="Revalorisation rente actuelle" value={state.currentRentRevaluationRate} onChange={(value) => update('currentRentRevaluationRate', value)} suffix="% / an" />
+              </FieldGrid>
+
+              <div className="per-transfert-inline-actions">
+                <button type="button" className="per-transfert-secondary-button" onClick={() => setFeesModalOpen(true)}>
+                  Info frais sortants
+                </button>
+                <button type="button" className="per-transfert-secondary-button" onClick={() => setRentModalOpen(true)}>
+                  Personnaliser le calcul de rente
+                </button>
+                <button
+                  type="button"
+                  className="per-transfert-secondary-button"
+                  onClick={() => setRevaluationModalOpen(true)}
+                  aria-label="Comprendre la revalorisation"
+                >
+                  Comprendre la revalorisation
+                </button>
+              </div>
+
+              {state.capitalAcquis > 0 && state.renteActuelleAnnuelleBrute > 0 ? (
+                <div className="per-transfert-taux-banner">
+                  <span className="per-transfert-taux-banner__label">Taux de conversion actuel</span>
+                  <strong className="per-transfert-taux-banner__value">{percent(state.renteActuelleAnnuelleBrute / state.capitalAcquis)}</strong>
+                  <span className="per-transfert-taux-banner__note">rente relevé / capital acquis</span>
+                </div>
+              ) : null}
+
+              {state.typeContrat === 'PER_POINTS' ? (
+                <div className="per-transfert-points-panel">
+                  <PerTransfertIntegerField
+                    label="Points acquis"
+                    value={state.prefonPoints}
+                    onChange={(value) => update('prefonPoints', value)}
+                    min={0}
+                    hint="Si le relevé indique les points, ils priment sur la conversion du capital."
+                  />
+                </div>
+              ) : null}
+            </Panel>
+
+            <Panel
+              title="Profil assuré"
+              subtitle="Ces données pilotent la fiscalité et les calculs de rente."
+            >
+              <FieldGrid>
+                <PerTransfertSelectField label="Sexe assuré" value={state.sex} onChange={(value) => update('sex', value as 'M' | 'F')} options={SEX_OPTIONS} />
+                <PerTransfertIntegerField label="Année de naissance" value={state.birthYear} onChange={(value) => update('birthYear', value)} min={1900} />
+                <PerTransfertIntegerField label="Âge actuel" value={state.currentAge} onChange={(value) => update('currentAge', value)} min={0} suffix="ans" />
+                <PerTransfertIntegerField label="Âge de liquidation" value={state.liquidationAge} onChange={(value) => update('liquidationAge', value)} min={0} suffix="ans" />
+                <PerTransfertRateField label="TMI retraite" value={state.tmiRetraite} onChange={(value) => update('tmiRetraite', value)} />
+              </FieldGrid>
+            </Panel>
+          </>
+        ) : (
+          <Panel
+            title="Nouveau PER"
+            subtitle="Hypothèse de transfert immédiat, projection jusqu'à la retraite et sortie principalement en capital."
+          >
+            <div className="per-transfert-compartiment-callout">
+              <div>
+                <span>Compartiment cible</span>
+                <strong>{result.compartment}</strong>
+              </div>
+              <p>Table de rente nouveau PER : {newPerMortalityLabel}, appliquée automatiquement selon le sexe.</p>
             </div>
-          </ExpertOnly>
-        </Panel>
+
+            <FieldGrid>
+              <PerTransfertRateField label="Frais d'entrée nouveau PER" value={state.newPerEntryFeeRate} onChange={(value) => update('newPerEntryFeeRate', value)} />
+              <PerTransfertRateField label="Performance avant retraite" value={state.performanceUntilRetirementRate} onChange={(value) => update('performanceUntilRetirementRate', value)} suffix="% / an" />
+              <PerTransfertRateField label="Revalorisation capital" value={state.capitalExitRevaluationRate} onChange={(value) => update('capitalExitRevaluationRate', value)} suffix="% / an" />
+              <PerTransfertRateField label="Revalorisation rente PER" value={state.newRentRevaluationRate} onChange={(value) => update('newRentRevaluationRate', value)} suffix="% / an" />
+              <PerTransfertIntegerField label="Horizon court" value={state.horizonAgeShort} onChange={(value) => update('horizonAgeShort', value)} suffix="ans" min={state.liquidationAge} />
+              <PerTransfertIntegerField label="Horizon long" value={state.horizonAgeLong} onChange={(value) => update('horizonAgeLong', value)} suffix="ans" min={state.liquidationAge} />
+            </FieldGrid>
+
+            <section className="per-transfert-capital-choice">
+              <h3>Sortie souhaitée</h3>
+              {isC3CapitalLocked ? (
+                <p>
+                  Compartiment C3 : la sortie en capital est neutralisée hors petite rente. Le moteur affecte donc 100 % du capital à la rente.
+                </p>
+              ) : (
+                <PerTransfertRateField
+                  label="Part en sortie capital"
+                  value={state.capitalShareRate}
+                  onChange={(value) => update('capitalShareRate', value)}
+                  min={0}
+                  max={100}
+                />
+              )}
+            </section>
+
+            <ExpertOnly mode={effectiveMode}>
+              <div className="per-transfert-expert-panel">
+                <FieldGrid>
+                  <PerTransfertRateField label="Taux technique PER" value={state.technicalRate} onChange={(value) => update('technicalRate', value)} />
+                  <PerTransfertRateField label="Frais conversion rente PER" value={state.conversionFeeRate} onChange={(value) => update('conversionFeeRate', value)} />
+                  <PerTransfertRateField label="Frais arrérages PER" value={state.arrearsFeeRate} onChange={(value) => update('arrearsFeeRate', value)} />
+                  <PerTransfertIntegerField label="Annuités garanties PER" value={state.guaranteedYears} onChange={(value) => update('guaranteedYears', value)} min={0} suffix="ans" />
+                  <PerTransfertRateField label="Taux de réversion PER" value={state.reversionRate} onChange={(value) => update('reversionRate', value)} />
+                  <PerTransfertIntegerField label="Année naissance conjoint" value={state.spouseBirthYear} onChange={(value) => update('spouseBirthYear', value)} min={1900} />
+                  <PerTransfertIntegerField label="Âge conjoint liquidation" value={state.spouseAgeAtLiquidation} onChange={(value) => update('spouseAgeAtLiquidation', value)} min={0} suffix="ans" />
+                </FieldGrid>
+                <label className="per-transfert-checkbox">
+                  <input
+                    type="checkbox"
+                    checked={state.reversionEnabled}
+                    onChange={(event) => update('reversionEnabled', event.target.checked)}
+                  />
+                  Activer la réversion dans le tarif de rente du nouveau PER
+                </label>
+              </div>
+            </ExpertOnly>
+          </Panel>
+        )}
+
+        <details className="per-transfert-comparison-section">
+          <summary>Afficher la comparaison détaillée</summary>
+          <div className="premium-card per-transfert-comparison-card">
+            <h3>Comparaison rente / capital sur {state.horizonAgeShort} et {state.horizonAgeLong} ans</h3>
+            <PerTransfertPivotTable result={result} liquidationAge={state.liquidationAge} />
+
+            <details className="per-transfert-projection-details">
+              <summary>Voir la projection capital année par année</summary>
+              <PerTransfertCapitalScheduleTable input={input} result={result} />
+            </details>
+          </div>
+        </details>
       </SimPageShell.Main>
 
       <SimPageShell.Side>
-        <div className="per-transfert-side-stack">
-          <section className="sim-card per-transfert-summary-card">
-            <h3>Synthèse</h3>
-            <Kpi label="Compartiment PER" value={result.compartment} tone="accent" />
-            <Kpi label="Taux rente actuel" value={percent(result.currentConversionRate)} />
-            <Kpi label="Capital net transféré" value={euro(result.capitalAfterTransfer)} />
-            <Kpi label="Capital à la retraite" value={euro(result.capitalAtLiquidation)} />
-          </section>
-
-          <section className="sim-card per-transfert-summary-card">
-            <h3>Comparaison rente</h3>
-            <Kpi label="Rente actuelle nette estimée" value={euro(result.currentRent.netAnnualRent)} />
-            <Kpi label="Rente nouveau PER nette" value={euro(result.newPerFiscal.netAnnualRent)} tone="accent" />
-            <Kpi label="Rente mensuelle PER" value={euro(result.newPerRent.monthlyRent)} />
-            <Kpi label="Petite rente" value={result.smallAnnuityCapitalExitEligible ? 'Eligible' : 'Non'} tone="muted" />
-          </section>
-
-          <section className="sim-card per-transfert-summary-card">
-            <h3>Sortie capital</h3>
-            <Kpi label="Capital unique net" value={euro(result.capitalExit.unique.netIRPS)} />
-            <Kpi label={`Cumul net à ${result.capitalExit.shortHorizon.horizonAge} ans`} value={euro(result.capitalExit.shortHorizon.cumulativeNetWithdrawals)} />
-            <Kpi label={`Cumul net à ${result.capitalExit.longHorizon.horizonAge} ans`} value={euro(result.capitalExit.longHorizon.cumulativeNetWithdrawals)} />
-            <Kpi label={`Sans retrait à ${result.capitalExit.longHorizon.horizonAge} ans`} value={euro(result.capitalExit.withoutWithdrawalToLongHorizon)} />
-          </section>
-
-          {result.warnings.length > 0 ? (
-            <section className="sim-card per-transfert-warning-card">
-              <h3>Points de vigilance</h3>
-              <ul>
-                {result.warnings.map((warning) => <li key={warning}>{warning}</li>)}
-              </ul>
-            </section>
-          ) : null}
-        </div>
+        <PerTransfertSummaryPanel
+          result={result}
+          capitalShareRatePercent={result.capitalExit.shareRate * 100}
+          canExport={canExport}
+          exportLoading={exportLoading}
+          onExport={() => exportOptions[0]?.onClick?.()}
+        />
       </SimPageShell.Side>
-    </SimPageShell>
+
+      </SimPageShell>
+
+      {rentModalOpen ? (
+        <PerTransfertCurrentRentModal
+          state={state}
+          update={update}
+          onClose={() => setRentModalOpen(false)}
+        />
+      ) : null}
+      {feesModalOpen ? <PerTransfertFraisInfoModal onClose={() => setFeesModalOpen(false)} /> : null}
+      {revaluationModalOpen ? <RentRevaluationInfoModal onClose={() => setRevaluationModalOpen(false)} /> : null}
+    </>
   );
 }
