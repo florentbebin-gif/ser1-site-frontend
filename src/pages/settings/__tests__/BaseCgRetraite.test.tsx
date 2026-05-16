@@ -69,7 +69,7 @@ const contract: BaseCgRetraiteContract = {
 async function openModal() {
   render(<BaseCgRetraite />);
   expect(await screen.findByText('MADELIN- ABEILLE RETRAITE MADELIN')).toBeInTheDocument();
-  await userEvent.click(screen.getByRole('button', { name: 'Modifier' }));
+  await userEvent.click(await screen.findByRole('button', { name: 'Modifier' }));
 }
 
 describe('BaseCgRetraite', () => {
@@ -132,8 +132,8 @@ describe('BaseCgRetraite', () => {
     const { unmount } = render(<BaseCgRetraite />);
 
     expect(await screen.findByRole('button', { name: 'Ajouter' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Modifier' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Supprimer' })).toBeInTheDocument();
+    expect(await screen.findByRole('button', { name: 'Modifier' })).toBeInTheDocument();
+    expect(await screen.findByRole('button', { name: 'Supprimer' })).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Réinitialiser' })).not.toBeInTheDocument();
     unmount();
 
