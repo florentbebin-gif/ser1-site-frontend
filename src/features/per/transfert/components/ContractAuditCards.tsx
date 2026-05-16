@@ -46,7 +46,7 @@ export function ContractAuditCards({ contract }: ContractAuditCardsProps) {
           <AuditRow label="Nombre de supports" value={contract.phaseEpargne.nombreFonds} />
           <AuditRow label="Nombre d’UC" value={contract.phaseEpargne.nombreSupportsUc} />
           <AuditRow label="Répartition UC / Fonds €" value={contract.phaseEpargne.repartitionUcEuro} />
-          <AuditRow label="Rendement fonds € garanti / constaté" value={contract.phaseEpargne.rendementFondsEuro} format="rate" />
+          <AuditRow label="TMG du contrat (fonds €)" value={contract.phaseEpargne.rendementFondsEuro} format="rate" />
           <AuditRow label="Fonds € garantis" value={contract.phaseEpargne.fondsEuroGarantis} format="rate" />
           <AuditRow label="Frais sur versements" value={contract.phaseEpargne.fraisVersements} format="rate" />
           <AuditRow label="Frais gestion fonds €" value={gestionFees.fraisGestionFondsEuro} format="rate" />

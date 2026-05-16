@@ -121,17 +121,17 @@ export function buildPerTransfertAttentionPoints(
   }
 
   const fondsGarantis = contract.phaseEpargne.fondsEuroGarantis;
-  const rendement = contract.phaseEpargne.rendementFondsEuro;
-  const rendementValue = extractPercentValue(rendement);
+  const tmg = contract.phaseEpargne.rendementFondsEuro;
+  const tmgValue = extractPercentValue(tmg);
   if (
     hasBaseCgRetraiteValue(fondsGarantis)
-    || hasGuaranteedWording(rendement)
-    || (rendementValue !== null && rendementValue > 0.02)
+    || hasGuaranteedWording(tmg)
+    || (tmgValue !== null && tmgValue > 0)
   ) {
     points.push({
       level: 'medium',
-      label: 'Taux garantis fonds €',
-      detail: hasBaseCgRetraiteValue(fondsGarantis) ? asText(fondsGarantis) : asText(rendement),
+      label: 'TMG / taux garantis fonds €',
+      detail: hasBaseCgRetraiteValue(fondsGarantis) ? asText(fondsGarantis) : asText(tmg),
     });
   }
 

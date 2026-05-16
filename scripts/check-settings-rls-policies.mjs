@@ -28,6 +28,16 @@ const TARGETS = {
     readMustUseAdmin: true,
     writesMustUseAdmin: true,
   },
+  base_cg_retraite_overrides: {
+    read: 'authenticated',
+    readMustUseAdmin: false,
+    writesMustUseAdmin: true,
+  },
+  base_cg_retraite_documents: {
+    read: 'authenticated',
+    readMustUseAdmin: false,
+    writesMustUseAdmin: true,
+  },
 };
 
 function normalizeSql(sql) {

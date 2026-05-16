@@ -58,7 +58,12 @@ export interface BaseCgRetraiteDocument {
   id: string;
   label: string;
   type: 'conditions_generales' | 'notice_information' | 'avenant' | 'autre';
-  sourceUrl?: string;
+  sourceUrl?: string | null;
+  versionLabel?: string | null;
+  storagePath?: string | null;
+  fileName?: string | null;
+  mime?: string | null;
+  bytes?: number | null;
   status: 'missing' | 'linked' | 'uploaded';
   uploadedAt?: string;
 }

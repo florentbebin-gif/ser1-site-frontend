@@ -1,10 +1,17 @@
+// @vitest-environment jsdom
+
 import { renderToStaticMarkup } from 'react-dom/server';
 import type { ComponentType } from 'react';
 import { describe, expect, it, vi } from 'vitest';
+import '@testing-library/jest-dom/vitest';
+import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { PerTransfertWizardSteps } from '../components/PerTransfertWizardSteps';
 import { PerTransfertPivotTable } from '../components/PerTransfertPivotTable';
 import { ContractAuditCards } from '../components/ContractAuditCards';
 import { PerTransfertSummaryPanel } from '../components/PerTransfertSummaryPanel';
+import { PerTransfertHypotheses } from '../components/PerTransfertHypotheses';
+import { PerTransfertFraisInfoModal } from '../components/PerTransfertFraisInfoModal';
 import type { PerTransfertResult } from '@/engine/per';
 import type { BaseCgRetraiteContract } from '@/data/basecg';
 
@@ -244,6 +251,19 @@ describe('PerTransfertSummaryPanel', () => {
   });
 });
 
+describe('PerTransfertFraisInfoModal', () => {
+  it('présente le plafond réglementaire applicable aux PERP, Madelin et Article 83', () => {
+    const html = renderToStaticMarkup(<PerTransfertFraisInfoModal onClose={vi.fn()} />);
+
+    expect(html).toContain('PERP, Madelin, Article 83 vers un PER');
+    expect(html).toContain('1 % des droits acquis');
+    expect(html).toContain('10 ans');
+    expect(html).toContain('D224-18');
+    expect(html).toContain('souvent nuls');
+    expect(html).not.toContain('Pas de plafond légal unique');
+  });
+});
+
 describe('ContractAuditCards', () => {
   it('affiche les champs Base CG manquants avec ventilation frais de gestion', () => {
     const contract: BaseCgRetraiteContract = {
@@ -296,5 +316,15 @@ describe('ContractAuditCards', () => {
     expect(html).toContain('Fonds € garantis');
     expect(html).toContain('Rente estimée');
     expect(html).toContain('0,45 %');
+  });
+});
+
+describe('PerTransfertHypotheses', () => {
+  it('mentionne la vérification obligatoire des informations Base CG auprès de la compagnie', async () => {
+    render(<PerTransfertHypotheses />);
+    await userEvent.click(screen.getByRole('button', { name: /Hypothèses et limites/ }));
+
+    expect(screen.getByText(/Base CG fournie à titre indicatif/i)).toBeInTheDocument();
+    expect(screen.getByText(/se rapprocher de la compagnie/i)).toBeInTheDocument();
   });
 });

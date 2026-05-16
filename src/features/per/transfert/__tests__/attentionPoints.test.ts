@@ -67,7 +67,7 @@ describe('buildPerTransfertAttentionPoints', () => {
     expect(points.map((point) => point.label)).toContain('Table de mortalité garantie');
     expect(points.map((point) => point.label)).toContain('Date de souscription à vérifier');
     expect(points.map((point) => point.label)).toContain('Taux technique garanti');
-    expect(points.map((point) => point.label)).toContain('Taux garantis fonds €');
+    expect(points.map((point) => point.label)).toContain('TMG / taux garantis fonds €');
     expect(points.map((point) => point.label)).toContain('Garanties prévoyance');
   });
 

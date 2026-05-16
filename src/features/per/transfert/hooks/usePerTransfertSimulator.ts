@@ -13,6 +13,7 @@ import {
 } from '@/engine/per';
 import type { MortalityTableCode } from '@/data/mortality';
 import type { FiscalContext } from '@/hooks/useFiscalContext';
+import { capOutgoingTransferFeeRate, defaultOutgoingTransferFeeRate } from '../utils/transferFeeCap';
 
 export interface PerTransfertFormState {
   typeContrat: BaseCgRetraiteContractType;
@@ -192,8 +193,25 @@ export function usePerTransfertSimulator(fiscalContext: FiscalContext) {
     key: K,
     value: PerTransfertFormState[K],
   ) => {
-    setState((previous) => ({ ...previous, [key]: value }));
-  }, []);
+    setState((previous) => {
+      const next = { ...previous, [key]: value };
+      const contract = catalog.find((candidate) => candidate.id === previous.contractId);
+      if (contract && (key === 'transferFeeRate' || key === 'subscriptionDate')) {
+        const baseRate = key === 'transferFeeRate'
+          ? toRate(Number(value))
+          : (contract.typeContrat === 'PERCO'
+            ? toRate(previous.transferFeeRate)
+            : defaultOutgoingTransferFeeRate(contract.typeContrat, contract.phaseEpargne.fraisTransfertSortantRate));
+        const subscriptionDate = key === 'subscriptionDate' ? String(value ?? '') : previous.subscriptionDate;
+        next.transferFeeRate = toPercent(capOutgoingTransferFeeRate(
+          contract.typeContrat,
+          baseRate,
+          subscriptionDate,
+        ));
+      }
+      return next;
+    });
+  }, [catalog]);
 
   const applyContract = useCallback((contractId: string) => {
     const contract = catalog.find((candidate) => candidate.id === contractId);
@@ -206,7 +224,14 @@ export function usePerTransfertSimulator(fiscalContext: FiscalContext) {
       contractId,
       typeContrat: contract.typeContrat,
       compagnie: contract.compagnie,
-      transferFeeRate: toPercent(contract.phaseEpargne.fraisTransfertSortantRate ?? previous.transferFeeRate / 100),
+      transferFeeRate: toPercent(capOutgoingTransferFeeRate(
+        contract.typeContrat,
+        defaultOutgoingTransferFeeRate(
+          contract.typeContrat,
+          contract.phaseEpargne.fraisTransfertSortantRate ?? previous.transferFeeRate / 100,
+        ),
+        previous.subscriptionDate,
+      )),
       currentArrearsFeeRate: toPercent(contract.phaseLiquidation.fraisArreragesRate ?? previous.currentArrearsFeeRate / 100),
       mortalityTable: resolveMortalityTableFromContractLabel(
         contract.phaseLiquidation.tableConversionRente,
@@ -278,7 +303,11 @@ export function usePerTransfertSimulator(fiscalContext: FiscalContext) {
         ),
       },
       projection: {
-        transferFeeRate: toRate(state.transferFeeRate),
+        transferFeeRate: capOutgoingTransferFeeRate(
+          state.typeContrat,
+          toRate(state.transferFeeRate),
+          state.subscriptionDate,
+        ),
         newPerEntryFeeRate: toRate(state.newPerEntryFeeRate),
         performanceUntilRetirementRate: toRate(state.performanceUntilRetirementRate),
         currentContractPerformanceUntilRetirementRate: toRate(state.currentContractPerformanceUntilRetirementRate),

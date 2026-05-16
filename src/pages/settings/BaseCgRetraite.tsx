@@ -1,14 +1,16 @@
 import { useEffect, useMemo, useState } from 'react';
+import { useUserRole } from '@/auth/useUserRole';
 import { UserInfoBanner } from '@/components/UserInfoBanner';
 import {
-  BASECG_EXTRACTED_COUNT,
-  BASECG_VERSION,
+  BASE_CG_RETRAITE_LEGAL_NOTICE,
   type BaseCgRetraiteContract,
+  type BaseCgRetraiteDocument,
 } from '@/data/basecg';
 import {
+  bulkUpsertBaseCgRetraiteCatalog,
+  createBaseCgRetraiteDocumentDownloadUrl,
   deleteBaseCgRetraiteContract,
   getBaseCgRetraiteCatalog,
-  resetBaseCgRetraiteOverlay,
   upsertBaseCgRetraiteContract,
 } from '@/utils/cache/baseCgRetraiteRepository';
 import { COMPARTMENT_LABELS, TYPE_LABELS, TYPE_OPTIONS } from './baseCgRetraiteOptions';
@@ -16,8 +18,15 @@ import { BaseCgRetraiteContractModal } from './components/BaseCgRetraiteContract
 import { isRetraiteContractIncomplete } from './utils/retirementContractCompleteness';
 import './styles/base-cg-retraite.css';
 
+function generateContractId(): string {
+  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+    return `basecg-local-${crypto.randomUUID()}`;
+  }
+  return `basecg-local-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
+}
+
 function createEmptyContract(): BaseCgRetraiteContract {
-  const id = `basecg-local-${Date.now()}`;
+  const id = generateContractId();
   return {
     id,
     sourceId: 'Ajout local',
@@ -62,7 +71,30 @@ function createEmptyContract(): BaseCgRetraiteContract {
   };
 }
 
+function plural(value: number, singular: string, pluralLabel: string = `${singular}s`): string {
+  return `${value} ${value > 1 ? pluralLabel : singular}`;
+}
+
+function headerStatsLabel(totalContracts: number, configuredContracts: number, availableCg: number): string {
+  return [
+    `${plural(totalContracts, 'contrat')} disponible${totalContracts > 1 ? 's' : ''}`,
+    `${plural(configuredContracts, 'contrat')} paramétré${configuredContracts > 1 ? 's' : ''}`,
+    `${availableCg} CG disponible${availableCg > 1 ? 's' : ''}`,
+  ].join(' - ');
+}
+
+function isCgDownloadable(document: BaseCgRetraiteDocument): boolean {
+  if (!['conditions_generales', 'notice_information'].includes(document.type)) return false;
+  if (!['linked', 'uploaded'].includes(document.status)) return false;
+  return Boolean(document.sourceUrl || document.storagePath);
+}
+
+function firstCgDocument(contract: BaseCgRetraiteContract): BaseCgRetraiteDocument | null {
+  return (contract.documents ?? []).find(isCgDownloadable) ?? null;
+}
+
 export default function BaseCgRetraite() {
+  const { isAdmin } = useUserRole();
   const [catalog, setCatalog] = useState<BaseCgRetraiteContract[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
@@ -70,6 +102,8 @@ export default function BaseCgRetraite() {
   const [editing, setEditing] = useState<BaseCgRetraiteContract | null>(null);
   const [openCompagnie, setOpenCompagnie] = useState<string | null>(null);
   const [initialAccordionApplied, setInitialAccordionApplied] = useState(false);
+  const [bulkSaving, setBulkSaving] = useState(false);
+  const [bulkStatus, setBulkStatus] = useState<string | null>(null);
 
   const reload = () => {
     setLoading(true);
@@ -120,22 +154,57 @@ export default function BaseCgRetraite() {
   }, [groupedByCompagnie, initialAccordionApplied, openCompagnie]);
 
   async function handleSave(contract: BaseCgRetraiteContract) {
+    if (!isAdmin) return;
     await upsertBaseCgRetraiteContract(contract);
     setEditing(null);
     reload();
   }
 
   async function handleDelete(contract: BaseCgRetraiteContract) {
+    if (!isAdmin) return;
     if (!window.confirm(`Supprimer ${contract.nomContrat} de la Base CG locale ?`)) return;
     await deleteBaseCgRetraiteContract(contract.id);
     reload();
   }
 
-  async function handleReset() {
-    if (!window.confirm('Réinitialiser toutes les modifications locales de la Base CG retraite ?')) return;
-    await resetBaseCgRetraiteOverlay();
-    reload();
+  async function handleDownload(document: BaseCgRetraiteDocument) {
+    const url = await createBaseCgRetraiteDocumentDownloadUrl(document);
+    if (!url) return;
+    window.open(url, '_blank', 'noopener,noreferrer');
   }
+
+  async function handleBulkSave() {
+    if (!isAdmin || bulkSaving) return;
+    if (!window.confirm('Sauvegarder l\'ensemble du catalogue Base CG retraite dans Supabase ? Cette opération met à jour les overrides admin.')) {
+      return;
+    }
+    setBulkSaving(true);
+    setBulkStatus('Sauvegarde en cours…');
+    try {
+      const result = await bulkUpsertBaseCgRetraiteCatalog();
+      if (result.errors.length > 0) {
+        setBulkStatus(`Sauvegarde partielle : ${result.upserted} ok, ${result.skipped} en échec — ${result.errors[0]?.message ?? ''}`);
+      } else {
+        setBulkStatus(`${result.upserted} contrats synchronisés avec Supabase.`);
+      }
+      reload();
+    } catch (error) {
+      setBulkStatus(error instanceof Error ? error.message : 'Sauvegarde impossible.');
+    } finally {
+      setBulkSaving(false);
+    }
+  }
+
+  const configuredCount = useMemo(
+    () => catalog.filter((contract) => !isRetraiteContractIncomplete(contract)).length,
+    [catalog],
+  );
+  const cgAvailableCount = useMemo(
+    () => catalog.reduce((count, contract) => (
+      count + (firstCgDocument(contract) ? 1 : 0)
+    ), 0),
+    [catalog],
+  );
 
   return (
     <div className="base-cg-page">
@@ -145,18 +214,31 @@ export default function BaseCgRetraite() {
         <div>
           <h2 className="settings-premium-title">Base CG retraite</h2>
           <p className="settings-premium-subtitle">
-            {catalog.length} contrats disponibles - extraction {BASECG_EXTRACTED_COUNT} contrats - version {BASECG_VERSION}
+            {headerStatsLabel(catalog.length, configuredCount, cgAvailableCount)}
           </p>
         </div>
-        <div className="base-cg-header-actions">
-          <button type="button" className="base-cg-button" onClick={() => setEditing(createEmptyContract())}>
-            Ajouter
-          </button>
-          <button type="button" className="base-cg-button base-cg-button--ghost" onClick={handleReset}>
-            Réinitialiser
-          </button>
-        </div>
+        {isAdmin ? (
+          <div className="base-cg-header-actions">
+            <button
+              type="button"
+              className="base-cg-button base-cg-button--primary"
+              onClick={handleBulkSave}
+              disabled={bulkSaving}
+            >
+              {bulkSaving ? 'Sauvegarde…' : 'Enregistrer la base CG retraite'}
+            </button>
+            <button type="button" className="base-cg-button" onClick={() => setEditing(createEmptyContract())}>
+              Ajouter
+            </button>
+          </div>
+        ) : null}
       </section>
+
+      {bulkStatus ? (
+        <div className="base-cg-bulk-status" role="status">
+          {bulkStatus}
+        </div>
+      ) : null}
 
       <div className="base-cg-filters">
         <input
@@ -211,17 +293,19 @@ export default function BaseCgRetraite() {
                             <th>Type</th>
                             <th>Compartiment</th>
                             <th>Table rente</th>
-                            <th>Actions</th>
+                            <th>CG</th>
+                            {isAdmin ? <th>Actions</th> : null}
                           </tr>
                         </thead>
                         <tbody>
                           {contracts.map((contract) => {
                             const incomplete = isRetraiteContractIncomplete(contract);
+                            const document = firstCgDocument(contract);
                             return (
                               <tr key={contract.id}>
                                 <td>
                                   <span className="base-cg-contract-name">
-                                    {contract.nomContrat}
+                                    <span className="base-cg-contract-name__label">{contract.nomContrat}</span>
                                     {incomplete ? (
                                       <span className="base-cg-badge base-cg-badge--incomplete">
                                         À compléter
@@ -233,11 +317,31 @@ export default function BaseCgRetraite() {
                                 <td>{contract.perCompartment ? COMPARTMENT_LABELS[contract.perCompartment] : '-'}</td>
                                 <td>{contract.phaseLiquidation.tableConversionRente ?? 'A compléter'}</td>
                                 <td>
-                                  <div className="base-cg-row-actions">
-                                    <button type="button" onClick={() => setEditing(contract)}>Modifier</button>
-                                    <button type="button" onClick={() => handleDelete(contract)}>Supprimer</button>
-                                  </div>
+                                  {document ? (
+                                    <div className="base-cg-document-download">
+                                      <button
+                                        type="button"
+                                        className="base-cg-document-download__button"
+                                        onClick={() => handleDownload(document)}
+                                      >
+                                        Télécharger CG
+                                      </button>
+                                      {document.versionLabel ? (
+                                        <span className="base-cg-document-download__version">Ref : {document.versionLabel}</span>
+                                      ) : null}
+                                    </div>
+                                  ) : (
+                                    <span className="base-cg-muted">Non disponible</span>
+                                  )}
                                 </td>
+                                {isAdmin ? (
+                                  <td>
+                                    <div className="base-cg-row-actions">
+                                      <button type="button" onClick={() => setEditing(contract)}>Modifier</button>
+                                      <button type="button" onClick={() => handleDelete(contract)}>Supprimer</button>
+                                    </div>
+                                  </td>
+                                ) : null}
                               </tr>
                             );
                           })}
@@ -252,7 +356,12 @@ export default function BaseCgRetraite() {
         )}
       </div>
 
-      {editing ? (
+      <section className="settings-premium-card base-cg-limits">
+        <h3>Limites de la Base CG</h3>
+        <p>{BASE_CG_RETRAITE_LEGAL_NOTICE}</p>
+      </section>
+
+      {editing && isAdmin ? (
         <BaseCgRetraiteContractModal
           contract={editing}
           onClose={() => setEditing(null)}

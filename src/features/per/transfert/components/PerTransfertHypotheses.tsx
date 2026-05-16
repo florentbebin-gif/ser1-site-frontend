@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { BASE_CG_RETRAITE_LEGAL_NOTICE } from '@/data/basecg';
 
 export function PerTransfertHypotheses() {
   const [open, setOpen] = useState(false);
@@ -29,6 +30,7 @@ export function PerTransfertHypotheses() {
           <li>La rente est fiscalisée selon le compartiment cible, les paramètres fiscaux chargés et l’âge de liquidation.</li>
           <li>La sortie capital du compartiment C3 reste neutralisée hors éligibilité petite rente.</li>
           <li>Les avantages contractuels du contrat actuel doivent être relus dans les conditions générales avant recommandation.</li>
+          <li>{BASE_CG_RETRAITE_LEGAL_NOTICE} Il convient de se rapprocher de la compagnie pour confirmer la dernière version applicable.</li>
         </ul>
       ) : null}
     </section>

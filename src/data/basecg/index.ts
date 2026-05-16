@@ -8,6 +8,10 @@ export {
 } from './catalog';
 export { PREFON_2025 } from './prefon';
 export {
+  BASE_CG_RETRAITE_LEGAL_NOTICE,
+} from './legal';
+
+export {
   formatBaseCgRetraiteRateField,
   formatBaseCgRetraiteValue,
   hasBaseCgRetraiteValue,

@@ -290,6 +290,9 @@ export function PerTransfertSimulator() {
               expanded={auditExpanded}
               onToggleExpand={() => setAuditExpanded((current) => !current)}
             >
+              <p className="per-transfert-audit-disclaimer">
+                Base CG indicative : confirmer auprès de la compagnie les Conditions Générales, notices et avenants applicables avant recommandation.
+              </p>
               <ContractAuditCards contract={selectedContract} />
             </Panel>
 
