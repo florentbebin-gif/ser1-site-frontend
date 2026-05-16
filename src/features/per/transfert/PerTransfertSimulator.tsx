@@ -10,6 +10,7 @@ import { useUserMode } from '@/settings/userMode';
 import { ExpertOnly, resolveEffectiveUserMode } from '@/settings/userModeDisplay';
 import { useTheme } from '@/settings/ThemeProvider';
 import type { BaseCgRetraiteContractType } from '@/data/basecg';
+import { isPointsContract } from '@/data/basecg';
 import { usePerTransfertSimulator } from './hooks/usePerTransfertSimulator';
 import { usePerTransfertExportHandlers } from './hooks/usePerTransfertExportHandlers';
 import {
@@ -193,25 +194,36 @@ export function PerTransfertSimulator() {
       .map((type) => ({ value: type, label: CONTRACT_TYPE_LABELS[type] }))
   ), [catalog]);
 
+  // Quand "Contrat en points" est sélectionné, on élargit aux contrats détectés en points
+  // via leur ligne "Rendement fonds €" (Système par points, NC\nPoints, Préfon, etc.).
+  // Le moteur ne calcule la rente Préfon que pour les contrats dotés de `pointsParams` ;
+  // les autres remontent un warning dans `result.warnings` (cf. compute.ts).
+  const matchesSelectedType = useMemo(() => (
+    (contract: typeof catalog[number]) => {
+      if (state.typeContrat === 'PER_POINTS') return isPointsContract(contract);
+      return contract.typeContrat === state.typeContrat;
+    }
+  ), [state.typeContrat]);
+
   const compagnieOptions = useMemo<SimSelectOption[]>(() => (
     Array.from(new Set(
       catalog
-        .filter((contract) => contract.typeContrat === state.typeContrat)
+        .filter(matchesSelectedType)
         .map((contract) => contract.compagnie),
     ))
       .sort((left, right) => left.localeCompare(right, 'fr-FR'))
       .map((compagnie) => ({ value: compagnie, label: compagnie }))
-  ), [catalog, state.typeContrat]);
+  ), [catalog, matchesSelectedType]);
 
   const contractOptions = useMemo<SimSelectOption[]>(() => (
     catalog
-      .filter((contract) => contract.typeContrat === state.typeContrat)
+      .filter(matchesSelectedType)
       .filter((contract) => !state.compagnie || contract.compagnie === state.compagnie)
       .map((contract) => ({
         value: contract.id,
         label: contract.nomContrat,
       }))
-  ), [catalog, state.compagnie, state.typeContrat]);
+  ), [catalog, matchesSelectedType, state.compagnie]);
 
   const handleTypeChange = (value: string) => {
     update('typeContrat', value as BaseCgRetraiteContractType);
