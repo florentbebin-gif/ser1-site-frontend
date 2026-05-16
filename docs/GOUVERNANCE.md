@@ -14,6 +14,7 @@ Toute personne qui touche : CSS/UI, thème, Settings, pages `/sim/*`.
 - [Règles UI premium](#règles-ui-premium)
 - [Propriété des styles](#propriété-des-styles)
 - [Norme des pages `/sim/*` (baseline `/sim/credit`)](#norme-des-pages-sim-baseline-simcredit)
+  - [§0 Checklist d'audit obligatoire pour une page `/sim/*`](#0-checklist-daudit-obligatoire-pour-une-page-sim)
   - [§16 Anatomie complète et patterns prouvés](#16-anatomie-complète-dune-page-sim--patterns-prouvés)
   - [§17 Diagnostic /sim/per/potentiel](#17-diagnostic-simper-potentiel--écarts-et-cibles)
 - [Gouvernance couleurs (C1–C10)](#gouvernance-couleurs-c1c10)
@@ -51,6 +52,13 @@ Principes : épuré, lisible, respirant.
 - Références implémentées : `InputEuro` dans `PlacementFormControls.tsx` (Placement), `CreditInputs.tsx` (Credit), `IrAmountInput` dans `IrFormSection.tsx` (IR).
 - Références **non encore migrées** (acceptable temporairement) : champs € dans modales Succession (`AssuranceVieModal`, `ScDonationsCard`, `ScAssetsPassifsCard`), champs ponctuel dans `VersementConfigModalSections.tsx`.
 
+### Taux et pourcentages (règle critique)
+- Les moteurs et catalogues peuvent stocker les taux en décimal (`0.0495`), mais l'utilisateur doit toujours saisir et lire un pourcentage (`4,95 %`).
+- Toute UI qui édite un taux doit séparer conversion UI ↔ donnée : affichage en %, sauvegarde en décimal si le type ou le moteur l'exige.
+- Les parseurs doivent accepter virgule et point (`4,95`, `4.95`) et conserver les textes contractuels déjà explicites (`NC`, `TMG 2 %`, `taux garanti selon millésime`).
+- Les champs de taux doivent avoir un suffixe visuel (`%`, `% / an`, `% du capital`) et ne jamais exposer une valeur brute décimale.
+- Pour auditer une page, chercher `Rate`, `taux`, `frais`, `rendement`, `pourcentage`, `%` dans les fichiers UI, helpers de normalisation, tests et exports.
+
 ### Selects forcés / option unique (règle critique)
 - Un `<select>` avec une seule option atteignable (ex. : bénéficiaire quand la situation est "Célibataire") doit recevoir `disabled` + class `is-forced`.
 - Styles CSS requis : `background: var(--color-c7); color: var(--color-c9); cursor: not-allowed; pointer-events: none;`
@@ -60,10 +68,13 @@ Principes : épuré, lisible, respirant.
 ### Composants (guidelines)
 - Buttons : primary = C2 + texte contrasté ; secondary = fond clair + border C8.
 - Tables : zebra `C7/WHITE`, borders C8, padding confortable.
+- Aide contextuelle champ : `SimInfoButton` uniquement, intégré dans le label du champ via `SimFieldShell label={ReactNode}`. Un lien ou bouton texte "Info" / "Comprendre" éloigné du champ est un écart UX.
 
 ### Modales
 - Overlay : `rgba(0,0,0,0.5)` (seul rgba autorisé).
 - Panel : `#FFFFFF`, centré, `shadow` subtil.
+- Modales `/sim/*` : utiliser `SimModalShell` et ses slots (`title`, `subtitle`, `children`, `footer`), sauf exception documentée.
+- Footer : les boutons d'action sont passés via la prop `footer`, alignés à droite, avec les classes partagées `sim-modal-btn--ghost` et `sim-modal-btn--primary`.
 - **Scroll obligatoire** : toute modale dont le contenu peut croître (liste dynamique, formulaire à n entrées) doit appliquer le patron suivant :
   - `max-height: calc(100vh - 40px)` + `display: flex; flex-direction: column` sur le container `.modal`
   - `overflow-y: auto; flex: 1 1 auto; min-height: 0` sur le `.modal__body`
@@ -105,6 +116,92 @@ Le repo reste en CSS global classique, mais la propriété des styles est désor
 - Styles premium partagés : `src/styles/premium-shared.css`.
 - Inputs/select/toggle : `src/features/credit/components/CreditInputs.tsx` + `src/features/credit/styles/fields.css`.
 - Cette norme s'applique aux futures pages `/sim/*` sauf exception explicitée en PR.
+
+### 0) Checklist d'audit obligatoire pour une page `/sim/*`
+
+Cette checklist est le contrat minimum pour créer, modifier ou auditer une page simulateur. Un LLM chargé d'un audit doit répondre en findings `chemin:ligne`, avec preuve (`rg`, import, classe, test ou extrait), impact et recommandation minimale.
+
+#### Lecture préalable
+- Identifier la route dans `src/routes/appRoutes.ts`, le composant runtime et les CSS importés.
+- Vérifier que l'entrée simulateur importe d'abord `@/styles/sim/index.css`, puis son CSS local.
+- Comparer la page aux références : `/sim/credit`, `/sim/ir`, `/sim/succession`, `/sim/per/transfert`.
+- Chercher les écarts par `rg`, par exemple :
+  ```powershell
+  rg -n "SimInfoButton|sim-info-btn|Frais|Comprendre|Info|modal|Hypothèses|premium-card--guide|sim-card--guide|/mois|Rate|taux" src/features/<feature>
+  ```
+
+#### Structure page
+- Le premier écran doit être l'outil utilisable, pas une page marketing.
+- Le shell doit suivre `SimPageShell` ou reproduire son contrat : header, contrôles, grille `1.85fr / 1fr`, colonne droite sticky, sections pleine largeur en bas.
+- Les actions globales (`ExportMenu`, mode simplifié/expert) restent dans le header. Ne pas ajouter de doublon d'export ou d'édition dans la sidebar.
+- La navigation de workflow utilise des tabs underline avec états `aria-selected`, `disabled` si nécessaire, pas des pills décoratifs.
+
+#### Blocs et liserés
+- Tous les blocs de saisie ou de décision métier de la colonne gauche doivent être des cards avec bordure et liseré : `premium-card premium-card--guide sim-card--guide`.
+- Les headers de blocs utilisent `sim-card__header--bleed` quand la card reprend le pattern simulateur.
+- Un bloc sans liseré ou sans cadre dans une page `/sim/*` est un écart, sauf justification documentée.
+- Les sous-titres de blocs doivent porter une aide métier. Interdit : sous-titre technique ou interne du type "base locale", "source JSON", "version extraite", "enrichissable depuis settings". Les accès settings ou référentiels vont en action contextuelle dans le header du bloc.
+
+#### Champs, montants et taux
+- Les montants en euros saisis ou affichés dans des KPI doivent utiliser le format français avec séparateurs de milliers (`100 000`, pas `100000`).
+- Les taux stockés en décimal (`0.0495`) doivent être affichés et saisis en pourcentage utilisateur (`4,95 %`). La saisie doit accepter virgule et point.
+- Dès qu'un champ, helper, type ou colonne contient `Rate`, `taux`, `frais`, `rendement`, `TMG`, `pourcentage` ou `%`, l'audit doit vérifier :
+  - conversion décimal vers pourcentage et retour vers décimal ;
+  - suffixe visuel `%` ou `% / an` ;
+  - absence de valeur brute `0.0495` visible ;
+  - conservation des textes contractuels explicites (`NC`, `TMG 2 %`, phrases libres).
+- Les unités ne sont pas dans le placeholder : elles sont rendues en suffixe visuel.
+- Les champs d'information calculée courte peuvent être rendus en badge inline près du label, pas en bandeau grossier. Exemple : `Taux conversion 3,00 %`.
+
+#### Boutons d'information
+- Toute aide contextuelle liée à un champ doit utiliser `SimInfoButton` (`src/components/ui/sim/SimInfoButton.tsx`) dans le label du `SimFieldShell`.
+- Le bouton est un petit `i` rond, adjacent au libellé du champ, avec `aria-label` explicite.
+- Interdit : bouton texte long sous le champ, bouton isolé dans le footer du bloc, ou lien "Comprendre..." éloigné de l'input concerné.
+- Si une page a une modale explicative mais aucun `SimInfoButton` près du libellé concerné, c'est un finding UX.
+
+#### Modales
+- Toute modale simulateur doit utiliser `SimModalShell`.
+- Les boutons de validation/annulation passent par la prop `footer`, pas par un footer bricolé dans le body.
+- Les boutons de footer utilisent `sim-modal-btn sim-modal-btn--ghost` et `sim-modal-btn sim-modal-btn--primary`, alignés à droite.
+- Les formulaires modaux suivent la même logique d'inputs que la page : montants lisibles, taux en %, `SimSelect` pour les selects, scroll body si contenu long.
+- Le bouton qui ouvre une modale doit être positionné dans le contexte métier : près du champ concerné via `SimInfoButton`, dans les actions du bloc, ou dans une zone d'actions inline sobre. Pas de CTA primaire concurrent si la modale est secondaire.
+
+#### Sidebar, KPI et graphiques
+- La colonne droite contient la synthèse, pas de formulaire principal.
+- Un KPI principal : label 11px, valeur 26-30px, `font-variant-numeric: tabular-nums`, unité explicite (`/an`, `%`, `€`) et cohérente avec les tableaux/export.
+- Les KPI secondaires sont courts, en grille 2x2 ou stack dense.
+- Les alertes métier ou "points d'attention" doivent être non verbeuses : libellé fort + détail d'une ligne maximum, avec état neutre si rien n'est détecté.
+- Les donuts, barres segmentées et graphiques visuels restent dans la colonne droite. Taille donut cible : 56-64px desktop / 48px mobile, avec `aria-label` et légende compacte.
+- Interdit : graphique ou donut décoratif dans la colonne de saisie.
+
+#### Accordéons, détails et hypothèses
+- Les sections de détail longues (comparaison, échéancier, projection, audit volumineux) sont repliables avec bouton local, chevron ou signe explicite, et `aria-expanded`.
+- Les détails et comparaisons sont fermés par défaut, sauf bloc métier volontairement prioritaire. Exemple accepté : audit Base CG ouvert par défaut pour devoir de conseil.
+- Le bas de page doit contenir un bloc `Hypothèses et limites` repliable, fermé par défaut, dès que la page contient :
+  - hypothèses de calcul ;
+  - fallback ou approximation ;
+  - référentiel indicatif ;
+  - règle fiscale/sociale simplifiée ;
+  - incertitude documentaire ou juridique.
+- Les disclaimers métier ne doivent pas vivre uniquement dans une modale : ils doivent être retrouvables en bas de page et dans les exports si la recommandation client s'appuie dessus.
+
+#### Sorties et cohérence d'unités
+- Les unités doivent être cohérentes sur toute la page, les tableaux, les graphiques, la sidebar et l'export. Exemple : une rente annualisée ne doit laisser aucun `/mois`.
+- Toute conversion métier visible dans un KPI doit être issue du moteur ou d'un helper testé, jamais d'une valeur d'acceptation hardcodée.
+- Les hypothèses affichées dans la page doivent être reprises dans les exports PPTX/XLSX quand l'étude peut être remise au client.
+
+#### Revue d'écarts attendue
+Pour une demande du type "trouve les écarts de normes sur `/sim/tresorerie-societe`", la réponse doit au minimum couvrir :
+- shell/layout/header/actions ;
+- liserés/cadres des blocs ;
+- champs montants/taux/unités ;
+- boutons d'info `i` ;
+- modales/footer ;
+- KPI/sidebar/donut ;
+- tabs/navigation ;
+- accordéons/détails ;
+- hypothèses et limites ;
+- cohérence export si la page exporte.
 
 ### 1) Gabarit global page (largeurs, colonnes, structure)
 #### Obligatoire
@@ -572,10 +669,10 @@ border-top: 1px solid var(--color-c8);
 /* boutons à droite, gap: 10px */
 ```
 
-Bouton primaire modale : `background: linear-gradient(135deg, C2 0%, C1 100%)`, hover `translateY(-1px)`.
+Boutons modale : utiliser les classes partagées de `src/styles/sim/buttons.css` (`sim-modal-btn--ghost`, `sim-modal-btn--primary`) via le footer de `SimModalShell`. Une feature ne recrée ces boutons que si elle documente l'écart.
 
 **Statut** : baseline partagée.
-**Preuves** : `src/features/placement/styles/versements-modal.css` · `src/features/succession/styles/modals.css` `.sc-member-modal`, `.sc-dispositions-modal`.
+**Preuves** : `src/components/ui/sim/SimModalShell.tsx` · `src/styles/sim/modals.css` · `src/styles/sim/buttons.css`.
 
 #### 16e) Responsive « synthèse d'abord »
 
@@ -596,7 +693,7 @@ Bouton primaire modale : `background: linear-gradient(135deg, C2 0%, C1 100%)`, 
 | Variante | Fond | Bordure | Texte | Padding | Radius | Usage |
 |----------|------|---------|-------|---------|--------|-------|
 | Primary | `C2` | aucune | `#FFFFFF`, 13-14px/600 | `10px 18px` | `8px` | Action principale de page |
-| Primary modale | `linear-gradient(135deg, C2→C1)` | aucune | `#FFFFFF`, 14px/600 | `10px 22px` | `8px` | Valider/Confirmer dans une modale |
+| Primary modale | `C3`, hover `C2` | `C3`, hover `C2` | `#FFFFFF`, 13px/700 | `0 14px`, `min-height: 34px` | `6px` | Valider/Confirmer dans une modale via `sim-modal-btn--primary` |
 | Secondary | `#FFFFFF` ou `C7` | `1px solid C8` | C9, 13-14px/500 | `10px 18px` | `6-8px` | Action secondaire / Annuler |
 | Chip filtre inactif | `C7` | `1px solid C8` | C9, 12px/500 | `4px 10px` | `999px` | Filtres de catégories |
 | Chip filtre actif | `color-mix(in srgb, C3 22%, #FFFFFF)` | `color-mix(in srgb, C3 55%, C8)` | C1, 12px/500 | `4px 10px` | `999px` | Filtre sélectionné |

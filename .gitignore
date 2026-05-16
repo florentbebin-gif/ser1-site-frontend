@@ -54,3 +54,5 @@ _audit/
 docs/audit-*.md
 docs/audit-*.generated.md
 docs/veille-base-contrat.md
+.vercel
+.env*.local
