@@ -92,6 +92,8 @@ export interface PerTransfertCurrentRentOptions {
   guaranteedYears: number;
   reversionEnabled: boolean;
   reversionRate: number;
+  spouseBirthYear?: number;
+  spouseAgeAtLiquidation?: number;
 }
 
 export interface PerTransfertInput {

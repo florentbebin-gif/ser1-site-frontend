@@ -1,4 +1,8 @@
 import type { BaseCgRetraiteContract } from '@/data/basecg';
+import {
+  formatBaseCgRetraiteRateField,
+  normalizeBaseCgRetraiteGestionFees,
+} from '@/data/basecg';
 import type { PerTransfertInput, PerTransfertResult } from '@/engine/per';
 import type {
   ContentSlideSpec,
@@ -57,6 +61,10 @@ function signedEuro(value: number): string {
   return `${value > 0 ? '+' : '-'} ${absolute}`;
 }
 
+function baseCgRate(value: string | number | null | undefined): string {
+  return formatBaseCgRetraiteRateField(value) || 'à compléter';
+}
+
 function currentDateLong(): string {
   return new Intl.DateTimeFormat('fr-FR', {
     day: '2-digit',
@@ -110,6 +118,12 @@ function buildSynthesisSlide(input: PerTransfertInput, result: PerTransfertResul
         keepScenario: euro(keep.netAnnualRent),
         transferScenario: euro(result.newPerFiscal.netAnnualRent),
         difference: signedEuro(result.newPerFiscal.netAnnualRent - keep.netAnnualRent),
+      },
+      {
+        label: 'Capital projeté à la retraite',
+        keepScenario: euro(result.keepScenario.capitalAtLiquidation),
+        transferScenario: euro(result.capitalAtLiquidation),
+        difference: signedEuro(result.capitalAtLiquidation - result.keepScenario.capitalAtLiquidation),
       },
       {
         label: `Cumul net ${short.horizonAge} ans`,
@@ -172,6 +186,9 @@ export function buildPerTransfertStudyDeck(
   const contractLabel = selectedContract
     ? `${selectedContract.compagnie} - ${selectedContract.nomContrat}`
     : 'Contrat renseigné manuellement';
+  const selectedGestionFees = selectedContract
+    ? normalizeBaseCgRetraiteGestionFees(selectedContract.phaseEpargne)
+    : null;
   const short = result.capitalExit.shortHorizon;
   const long = result.capitalExit.longHorizon;
   const warningText = result.warnings.length > 0
@@ -211,7 +228,8 @@ export function buildPerTransfertStudyDeck(
         'Données reprises du référentiel Base CG lorsque le contrat est connu',
         [
           `Commercialisation : ${selectedContract?.phaseEpargne.dateCommercialisation ?? 'à compléter'}`,
-          `Frais de gestion : ${selectedContract?.phaseEpargne.fraisGestion ?? 'à compléter'}`,
+          `Frais gestion fonds € : ${baseCgRate(selectedGestionFees?.fraisGestionFondsEuro)}`,
+          `Frais gestion UC : ${baseCgRate(selectedGestionFees?.fraisGestionUc)}`,
           `Frais de transfert sortant : ${selectedContract?.phaseEpargne.fraisTransfertSortant ?? 'à compléter'}`,
           `Garanties : ${selectedContract?.phaseEpargne.garantiesComplementaires ?? 'à compléter'}`,
         ].join('\n'),

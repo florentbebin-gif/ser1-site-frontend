@@ -238,4 +238,34 @@ describe('computePerTransfert', () => {
     expect(result.capitalExit.shareRate).toBe(0);
     expect(result.capitalExit.capitalConvertedToRent).toBeCloseTo(result.capitalAtLiquidation);
   });
+
+  it('utilise l age du conjoint propre a la rente actuelle en mode table manuelle', () => {
+    const baseManualOptions = {
+      mode: 'manual_table',
+      mortalityTable: 'TGH05',
+      technicalRate: 0,
+      conversionFeeRate: 0,
+      arrearsFeeRate: 0,
+      guaranteedYears: 0,
+      reversionEnabled: true,
+      reversionRate: 0.6,
+    } satisfies PerTransfertInput['currentRentOptions'];
+    const withYoungSpouse = computePerTransfert(makeInput({
+      currentRentOptions: {
+        ...baseManualOptions,
+        spouseBirthYear: 2000,
+        spouseAgeAtLiquidation: 24,
+      } as unknown as PerTransfertInput['currentRentOptions'],
+    }));
+    const withOlderSpouse = computePerTransfert(makeInput({
+      currentRentOptions: {
+        ...baseManualOptions,
+        spouseBirthYear: 1940,
+        spouseAgeAtLiquidation: 84,
+      } as unknown as PerTransfertInput['currentRentOptions'],
+    }));
+
+    expect(withOlderSpouse.keepScenario.currentRent.grossAnnualRent)
+      .toBeGreaterThan(withYoungSpouse.keepScenario.currentRent.grossAnnualRent);
+  });
 });

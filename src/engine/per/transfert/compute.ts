@@ -67,6 +67,8 @@ function buildCurrentAnnuityOptions(
       ...baseOptions.reversion,
       enabled: currentRentOptions.reversionEnabled,
       rate: currentRentOptions.reversionRate,
+      spouseBirthYear: currentRentOptions.spouseBirthYear ?? baseOptions.reversion.spouseBirthYear,
+      spouseAgeAtLiquidation: currentRentOptions.spouseAgeAtLiquidation ?? baseOptions.reversion.spouseAgeAtLiquidation,
     },
     guaranteedAnnuities: {
       enabled: currentRentOptions.guaranteedYears > 0,

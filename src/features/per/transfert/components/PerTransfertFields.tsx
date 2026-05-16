@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react';
+import type { ReactNode } from 'react';
 import { SimFieldShell, SimSelect } from '@/components/ui/sim';
 import type { SimSelectOption } from '@/components/ui/sim';
 import { PerAmountInput } from '@/features/per/components/potentiel/PerAmountInput';
 
 interface NumberFieldProps {
-  label: string;
+  label: ReactNode;
+  ariaLabel?: string;
   value: number;
   onChange: (_value: number) => void;
   min?: number;
@@ -15,7 +17,8 @@ interface NumberFieldProps {
 }
 
 interface MoneyFieldProps {
-  label: string;
+  label: ReactNode;
+  ariaLabel?: string;
   value: number;
   onChange: (_value: number) => void;
   hint?: string;
@@ -23,7 +26,8 @@ interface MoneyFieldProps {
 }
 
 interface RateFieldProps {
-  label: string;
+  label: ReactNode;
+  ariaLabel?: string;
   value: number;
   onChange: (_value: number) => void;
   min?: number;
@@ -33,7 +37,8 @@ interface RateFieldProps {
 }
 
 interface IntegerFieldProps {
-  label: string;
+  label: ReactNode;
+  ariaLabel?: string;
   value: number;
   onChange: (_value: number) => void;
   min?: number;
@@ -43,14 +48,15 @@ interface IntegerFieldProps {
 }
 
 interface TextFieldProps {
-  label: string;
+  label: ReactNode;
+  ariaLabel?: string;
   value: string;
   onChange: (_value: string) => void;
   hint?: string;
 }
 
 interface SelectFieldProps {
-  label: string;
+  label: ReactNode;
   value: string;
   options: SimSelectOption[];
   onChange: (_value: string) => void;
@@ -75,13 +81,17 @@ function clamp(value: number, min?: number, max?: number): number {
   return Math.min(ceiling, Math.max(floor, value));
 }
 
-export function PerTransfertMoneyField({ label, value, onChange, hint, min = 0 }: MoneyFieldProps) {
+function ariaText(label: ReactNode, ariaLabel?: string): string {
+  return ariaLabel ?? (typeof label === 'string' ? label : 'Champ PER transfert');
+}
+
+export function PerTransfertMoneyField({ label, ariaLabel, value, onChange, hint, min = 0 }: MoneyFieldProps) {
   return (
     <SimFieldShell label={label} hint={hint}>
       <PerAmountInput
         value={value}
         onChange={onChange}
-        ariaLabel={label}
+        ariaLabel={ariaText(label, ariaLabel)}
         min={min}
       />
       <span className="per-transfert-field-suffix">€</span>
@@ -91,6 +101,7 @@ export function PerTransfertMoneyField({ label, value, onChange, hint, min = 0 }
 
 export function PerTransfertRateField({
   label,
+  ariaLabel,
   value,
   onChange,
   min,
@@ -117,7 +128,7 @@ export function PerTransfertRateField({
         type="text"
         inputMode="decimal"
         value={text}
-        aria-label={label}
+        aria-label={ariaText(label, ariaLabel)}
         onChange={(event) => setText(event.target.value)}
         onBlur={() => commit()}
       />
@@ -128,6 +139,7 @@ export function PerTransfertRateField({
 
 export function PerTransfertIntegerField({
   label,
+  ariaLabel,
   value,
   onChange,
   min,
@@ -145,7 +157,7 @@ export function PerTransfertIntegerField({
         max={max}
         step={1}
         value={Number.isFinite(value) ? value : 0}
-        aria-label={label}
+        aria-label={ariaText(label, ariaLabel)}
         onChange={(event) => onChange(Math.round(Number(event.target.value) || 0))}
       />
       {suffix ? <span className="per-transfert-field-suffix">{suffix}</span> : null}
@@ -155,6 +167,7 @@ export function PerTransfertIntegerField({
 
 export function PerTransfertNumberField({
   label,
+  ariaLabel,
   value,
   onChange,
   min,
@@ -173,6 +186,7 @@ export function PerTransfertNumberField({
         max={max}
         step={step}
         value={Number.isFinite(value) ? value : 0}
+        aria-label={ariaText(label, ariaLabel)}
         onChange={(event) => onChange(Number(event.target.value))}
       />
       {suffix ? <span className="per-transfert-field-suffix">{suffix}</span> : null}
@@ -180,13 +194,14 @@ export function PerTransfertNumberField({
   );
 }
 
-export function PerTransfertTextField({ label, value, onChange, hint }: TextFieldProps) {
+export function PerTransfertTextField({ label, ariaLabel, value, onChange, hint }: TextFieldProps) {
   return (
     <SimFieldShell label={label} hint={hint}>
       <input
         className="sim-field__control"
         type="text"
         value={value}
+        aria-label={ariaText(label, ariaLabel)}
         onChange={(event) => onChange(event.target.value)}
       />
     </SimFieldShell>

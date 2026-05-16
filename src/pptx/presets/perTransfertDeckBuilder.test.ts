@@ -229,6 +229,7 @@ describe('buildPerTransfertStudyDeck', () => {
     ]).map(normalizeText);
 
     expect(values).toContain('Rente nette annuelle');
+    expect(values).toContain('Capital projeté à la retraite');
     expect(values).toContain('3,00 %');
     expect(values).toContain('1 880 €');
     expect(values).toContain('2 163 €');

@@ -1,4 +1,8 @@
 import type PptxGenJS from 'pptxgenjs';
+import {
+  formatBaseCgRetraiteRateField,
+  normalizeBaseCgRetraiteGestionFees,
+} from '@/data/basecg';
 import type { ExportContext, PerTransfertAuditContractSlideSpec } from '../theme/types';
 import { MASTER_NAMES } from '../template/loadBaseTemplate';
 import {
@@ -15,8 +19,9 @@ const ROW_H = 0.31;
 const LABEL_W = 2.55;
 const VALUE_W = SLIDE_SIZE.width - TABLE_X * 2 - LABEL_W;
 
-function display(value: unknown): string {
+function display(value: unknown, format?: 'rate'): string {
   if (value === null || value === undefined || value === '') return 'A compléter';
+  if (format === 'rate') return formatBaseCgRetraiteRateField(value as string | number | null);
   if (typeof value === 'number') {
     return new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 3 }).format(value);
   }
@@ -32,32 +37,42 @@ export function buildAuditContractSlide(
   const slide = pptx.addSlide({ masterName: MASTER_NAMES.CONTENT });
   const { theme } = ctx;
   const { contract } = spec;
+  const gestionFees = normalizeBaseCgRetraiteGestionFees(contract.phaseEpargne);
 
   addHeader(slide, spec.title, spec.subtitle ?? '', theme, 'content');
 
   const rows = [
-    ['Compagnie', contract.compagnie],
-    ['Contrat', contract.nomContrat],
-    ['Type', contract.typeContrat],
-    ['Commercialisation', contract.phaseEpargne.dateCommercialisation],
-    ['Nombre de supports', contract.phaseEpargne.nombreFonds],
-    ['UC / Fonds euros', contract.phaseEpargne.repartitionUcEuro],
-    ['Frais sur versements', contract.phaseEpargne.fraisVersements],
-    ['Frais de gestion', contract.phaseEpargne.fraisGestion],
-    ['Frais de transfert sortant', contract.phaseEpargne.fraisTransfertSortant],
-    ['Clause bénéficiaire', contract.phaseEpargne.clauseBeneficiaire],
-    ['Âge limite liquidation', contract.phaseLiquidation.ageLimiteLiquidation],
-    ['Sortie capital retraite', contract.phaseLiquidation.sortieCapitalRetraite],
-    ['Fractionnement capital', contract.phaseLiquidation.fractionnementCapital],
-    ['Table conversion rente', contract.phaseLiquidation.tableConversionRente],
-    ['Table garantie adhésion', contract.phaseLiquidation.tableGarantieAdhesion],
-    ['Taux technique', contract.phaseLiquidation.tauxTechnique],
-    ['Frais arrérages', contract.phaseLiquidation.fraisArrerages],
-    ['Annuités garanties', contract.phaseLiquidation.annuitesGaranties],
-    ['Réversion possible', contract.phaseLiquidation.reversionPossible],
+    { label: 'Compagnie', value: contract.compagnie },
+    { label: 'Contrat', value: contract.nomContrat },
+    { label: 'Type', value: contract.typeContrat },
+    { label: 'Commercialisation', value: contract.phaseEpargne.dateCommercialisation },
+    { label: 'Nombre de supports', value: contract.phaseEpargne.nombreFonds },
+    { label: 'Nombre UC', value: contract.phaseEpargne.nombreSupportsUc },
+    { label: 'UC / Fonds euros', value: contract.phaseEpargne.repartitionUcEuro },
+    { label: 'Rendement fonds euros', value: contract.phaseEpargne.rendementFondsEuro, format: 'rate' as const },
+    { label: 'Fonds euros garantis', value: contract.phaseEpargne.fondsEuroGarantis, format: 'rate' as const },
+    { label: 'Frais sur versements', value: contract.phaseEpargne.fraisVersements, format: 'rate' as const },
+    { label: 'Frais gestion fonds euros', value: gestionFees.fraisGestionFondsEuro, format: 'rate' as const },
+    { label: 'Frais gestion UC', value: gestionFees.fraisGestionUc, format: 'rate' as const },
+    { label: 'Frais arbitrage', value: contract.phaseEpargne.fraisArbitrage, format: 'rate' as const },
+    { label: 'Frais transfert sortant', value: contract.phaseEpargne.fraisTransfertSortant, format: 'rate' as const },
+    { label: 'Clause bénéficiaire', value: contract.phaseEpargne.clauseBeneficiaire },
+    { label: 'Garanties complémentaires', value: contract.phaseEpargne.garantiesComplementaires },
+    { label: 'Âge limite liquidation', value: contract.phaseLiquidation.ageLimiteLiquidation },
+    { label: 'Sortie capital retraite', value: contract.phaseLiquidation.sortieCapitalRetraite },
+    { label: 'Fractionnement capital', value: contract.phaseLiquidation.fractionnementCapital },
+    { label: 'Rachat libre', value: contract.phaseLiquidation.rachatLibre },
+    { label: 'Table conversion rente', value: contract.phaseLiquidation.tableConversionRente },
+    { label: 'Table garantie adhésion', value: contract.phaseLiquidation.tableGarantieAdhesion },
+    { label: 'Taux technique', value: contract.phaseLiquidation.tauxTechnique, format: 'rate' as const },
+    { label: 'Frais arrérages', value: contract.phaseLiquidation.fraisArrerages, format: 'rate' as const },
+    { label: 'Annuités garanties', value: contract.phaseLiquidation.annuitesGaranties },
+    { label: 'Réversion possible', value: contract.phaseLiquidation.reversionPossible },
+    { label: 'Réversion incluse', value: contract.phaseLiquidation.reversionIncluse },
+    { label: 'Rente estimée', value: contract.phaseLiquidation.renteEstimee },
   ];
 
-  rows.forEach(([label, value], index) => {
+  rows.forEach(({ label, value, format }, index) => {
     const y = TABLE_Y + ROW_H * index;
     const fillColor = (index % 2 === 0 ? theme.colors.color7 : theme.panelBg) ?? theme.panelBg;
     slide.addShape('rect', {
@@ -87,7 +102,7 @@ export function buildAuditContractSlide(
       color: theme.textMain.replace('#', ''),
       fit: 'shrink',
     });
-    addTextFr(slide, display(value), {
+    addTextFr(slide, display(value, format), {
       x: TABLE_X + LABEL_W + 0.08,
       y: y + 0.07,
       w: VALUE_W - 0.16,

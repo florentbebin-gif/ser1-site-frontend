@@ -82,6 +82,61 @@
   overflow-x: auto;
 }
 
+.base-cg-accordion {
+  min-width: 720px;
+}
+
+.base-cg-company__header {
+  gap: 12px;
+}
+
+.base-cg-company__title {
+  min-width: 0;
+  flex: 1 1 auto;
+  color: var(--color-c1);
+  font-size: 14px;
+  font-weight: 800;
+  text-align: left;
+}
+
+.base-cg-company__badges,
+.base-cg-contract-name {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.base-cg-company__badges {
+  justify-content: flex-end;
+}
+
+.base-cg-company__body {
+  padding: 0;
+}
+
+.base-cg-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 22px;
+  border: 1px solid var(--color-c8);
+  border-radius: 999px;
+  background: #fff;
+  color: var(--color-c9);
+  font-size: 11px;
+  font-weight: 800;
+  padding: 0 8px;
+  white-space: nowrap;
+}
+
+.base-cg-badge--warning,
+.base-cg-badge--incomplete {
+  border-color: color-mix(in srgb, var(--color-c6) 35%, var(--color-c8));
+  background: color-mix(in srgb, var(--color-c6) 12%, #fff);
+  color: var(--color-c1);
+}
+
 .base-cg-table {
   width: 100%;
   border-collapse: collapse;

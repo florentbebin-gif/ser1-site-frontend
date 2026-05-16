@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import {
+  formatBaseCgRetraiteRateField,
+  normalizeBaseCgRetraiteGestionFees,
   type BaseCgRetraiteContract,
   type BaseCgRetraiteContractType,
   type BaseCgRetraiteDocument,
@@ -66,6 +68,7 @@ export function BaseCgRetraiteContractModal({ contract, onClose, onSave }: Props
     documents: contract.documents ?? [],
   }));
   const [activeTab, setActiveTab] = useState<ContractModalTab>('identity');
+  const gestionFees = normalizeBaseCgRetraiteGestionFees(draft.phaseEpargne);
 
   function setRoot<K extends keyof BaseCgRetraiteContract>(key: K, value: BaseCgRetraiteContract[K]) {
     setDraft((previous) => ({ ...previous, [key]: value }));
@@ -215,49 +218,42 @@ export function BaseCgRetraiteContractModal({ contract, onClose, onSave }: Props
               <label>
                 Rendement fonds €
                 <input
-                  value={formatFieldValue(draft.phaseEpargne.rendementFondsEuro)}
+                  value={formatBaseCgRetraiteRateField(draft.phaseEpargne.rendementFondsEuro)}
                   onChange={(event) => setEpargne('rendementFondsEuro', updateText(event.target.value))}
                 />
               </label>
               <label>
                 Fonds € garantis
                 <input
-                  value={formatFieldValue(draft.phaseEpargne.fondsEuroGarantis)}
+                  value={formatBaseCgRetraiteRateField(draft.phaseEpargne.fondsEuroGarantis)}
                   onChange={(event) => setEpargne('fondsEuroGarantis', updateText(event.target.value))}
                 />
               </label>
               <label>
                 Frais sur versements
                 <input
-                  value={formatFieldValue(draft.phaseEpargne.fraisVersements)}
+                  value={formatBaseCgRetraiteRateField(draft.phaseEpargne.fraisVersements)}
                   onChange={(event) => setEpargne('fraisVersements', updateText(event.target.value))}
-                />
-              </label>
-              <label>
-                Frais de gestion
-                <input
-                  value={formatFieldValue(draft.phaseEpargne.fraisGestion)}
-                  onChange={(event) => setEpargne('fraisGestion', updateText(event.target.value))}
                 />
               </label>
               <label>
                 Frais gestion fonds €
                 <input
-                  value={formatFieldValue(draft.phaseEpargne.fraisGestionFondsEuro)}
+                  value={formatBaseCgRetraiteRateField(gestionFees.fraisGestionFondsEuro)}
                   onChange={(event) => setEpargne('fraisGestionFondsEuro', updateText(event.target.value))}
                 />
               </label>
               <label>
                 Frais gestion UC
                 <input
-                  value={formatFieldValue(draft.phaseEpargne.fraisGestionUc)}
+                  value={formatBaseCgRetraiteRateField(gestionFees.fraisGestionUc)}
                   onChange={(event) => setEpargne('fraisGestionUc', updateText(event.target.value))}
                 />
               </label>
               <label>
                 Frais d'arbitrage
                 <input
-                  value={formatFieldValue(draft.phaseEpargne.fraisArbitrage)}
+                  value={formatBaseCgRetraiteRateField(draft.phaseEpargne.fraisArbitrage)}
                   onChange={(event) => setEpargne('fraisArbitrage', updateText(event.target.value))}
                 />
               </label>
@@ -339,7 +335,7 @@ export function BaseCgRetraiteContractModal({ contract, onClose, onSave }: Props
               <label>
                 Taux technique
                 <input
-                  value={formatFieldValue(draft.phaseLiquidation.tauxTechnique)}
+                  value={formatBaseCgRetraiteRateField(draft.phaseLiquidation.tauxTechnique)}
                   onChange={(event) => setLiquidation('tauxTechnique', updateText(event.target.value))}
                 />
               </label>

@@ -83,6 +83,35 @@ describe('BaseCgRetraite', () => {
     expect(screen.getByRole('tab', { name: 'Documents' })).toBeInTheDocument();
   });
 
+  it('organise les contrats en accordéons par compagnie avec indicateur incomplet', async () => {
+    const incompleteContract: BaseCgRetraiteContract = {
+      ...contract,
+      id: 'incomplete-contract',
+      compagnie: 'CARDIF',
+      nomContrat: 'Contrat incomplet',
+      phaseEpargne: {
+        ...contract.phaseEpargne,
+        dateCommercialisation: null,
+        fraisGestion: null,
+        fraisGestionFondsEuro: null,
+        fraisGestionUc: null,
+        clauseBeneficiaire: null,
+      },
+    };
+    getBaseCgRetraiteCatalogMock.mockResolvedValueOnce([contract, incompleteContract]);
+
+    render(<BaseCgRetraite />);
+
+    expect(await screen.findByRole('button', { name: /ABEILLE/ })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /CARDIF/ })).toBeInTheDocument();
+    expect(screen.getByText('1 à compléter')).toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole('button', { name: /CARDIF/ }));
+
+    expect(screen.getByText('Contrat incomplet')).toBeInTheDocument();
+    expect(screen.getByText('À compléter')).toBeInTheDocument();
+  });
+
   it('prépare les Conditions Générales sans upload Supabase', async () => {
     await openModal();
     await userEvent.click(screen.getByRole('tab', { name: 'Documents' }));
@@ -108,5 +137,25 @@ describe('BaseCgRetraite', () => {
         })],
       }));
     });
+  });
+
+  it('masque le frais de gestion général et affiche les taux en pourcentage', async () => {
+    const decimalFeesContract: BaseCgRetraiteContract = {
+      ...contract,
+      phaseEpargne: {
+        ...contract.phaseEpargne,
+        fraisGestion: 0.00495,
+        fraisGestionFondsEuro: null,
+        fraisGestionUc: null,
+      },
+    };
+    getBaseCgRetraiteCatalogMock.mockResolvedValueOnce([decimalFeesContract]);
+    await openModal();
+    await userEvent.click(screen.getByRole('tab', { name: 'Phase épargne' }));
+
+    expect(screen.queryByLabelText('Frais de gestion')).not.toBeInTheDocument();
+    expect(screen.getByLabelText('Frais gestion fonds €')).toHaveValue('0,495 %');
+    expect(screen.getByLabelText('Frais gestion UC')).toHaveValue('0,495 %');
+    expect(screen.getByLabelText('Frais sur versements')).toHaveValue('5 %');
   });
 });

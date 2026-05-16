@@ -27,9 +27,19 @@ export function PerTransfertCurrentRentModal({
 }: PerTransfertCurrentRentModalProps) {
   return (
     <SimModalShell
-      title="Calcul de rente personnalisée"
+      title="Calcul de rente personnalisé"
       subtitle="Mode expert pour remplacer la rente indiquée sur le relevé"
       onClose={onClose}
+      footer={(
+        <>
+          <button type="button" className="sim-modal-btn sim-modal-btn--ghost" onClick={onClose}>
+            Fermer
+          </button>
+          <button type="button" className="sim-modal-btn sim-modal-btn--primary" onClick={onClose}>
+            Appliquer
+          </button>
+        </>
+      )}
     >
       <div className="per-transfert-modal-grid">
         <PerTransfertSelectField
@@ -63,6 +73,15 @@ export function PerTransfertCurrentRentModal({
               />
               Activer la réversion dans le tarif du contrat actuel
             </label>
+            {state.currentReversionEnabled ? (
+              <PerTransfertIntegerField
+                label="Année de naissance du conjoint"
+                value={state.currentReversionSpouseBirthYear}
+                onChange={(value) => update('currentReversionSpouseBirthYear', value)}
+                min={1900}
+                hint="Utilisée pour recalculer l’âge du conjoint à la liquidation."
+              />
+            ) : null}
           </>
         ) : (
           <p className="per-transfert-modal-note per-transfert-modal-grid__wide">

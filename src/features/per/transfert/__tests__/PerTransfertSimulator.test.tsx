@@ -3,7 +3,10 @@ import type { ComponentType } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { PerTransfertWizardSteps } from '../components/PerTransfertWizardSteps';
 import { PerTransfertPivotTable } from '../components/PerTransfertPivotTable';
+import { ContractAuditCards } from '../components/ContractAuditCards';
+import { PerTransfertSummaryPanel } from '../components/PerTransfertSummaryPanel';
 import type { PerTransfertResult } from '@/engine/per';
+import type { BaseCgRetraiteContract } from '@/data/basecg';
 
 // ——— Tests composants purs ———
 
@@ -211,5 +214,87 @@ describe('PerTransfertPivotTable', () => {
       <PerTransfertPivotTable result={makeResult()} liquidationAge={64} />,
     );
     expect(html).toContain('Gain PER vs contrat actuel');
+  });
+});
+
+describe('PerTransfertSummaryPanel', () => {
+  it('affiche les rentes nettes annuelles et retire le doublon d export', () => {
+    const SummaryPanel = PerTransfertSummaryPanel as unknown as ComponentType<{
+      result: PerTransfertResult;
+      capitalShareRatePercent: number;
+      selectedContract: BaseCgRetraiteContract | null;
+      subscriptionDate: string;
+    }>;
+
+    const html = renderToStaticMarkup(
+      <SummaryPanel
+        result={makeResult()}
+        capitalShareRatePercent={30}
+        selectedContract={null}
+        subscriptionDate=""
+      />,
+    );
+
+    expect(html).toContain('Rente nette annuelle');
+    expect(html).toContain('2 200');
+    expect(html).toContain('2 400');
+    expect(html).not.toContain('Rente nette mensuelle');
+    expect(html).not.toContain('/mois');
+    expect(html).not.toContain("Éditer l'étude");
+  });
+});
+
+describe('ContractAuditCards', () => {
+  it('affiche les champs Base CG manquants avec ventilation frais de gestion', () => {
+    const contract: BaseCgRetraiteContract = {
+      id: 'audit-contract',
+      sourceId: 'Contrat test',
+      compagnie: 'Test Vie',
+      nomContrat: 'Retraite Test',
+      typeContrat: 'MADELIN',
+      perCompartment: 'C1',
+      phaseEpargne: {
+        dateCommercialisation: 'De 2010 à 2017',
+        nombreFonds: 50,
+        nombreSupportsUc: 123,
+        repartitionUcEuro: 'Libre',
+        rendementFondsEuro: 'TMG 2%',
+        fondsEuroGarantis: '2010-2015 : 3%',
+        fraisVersements: 0.03,
+        fraisGestion: 0.0045,
+        fraisGestionFondsEuro: null,
+        fraisGestionUc: null,
+        fraisArbitrage: '0,5%',
+        fraisTransfertSortant: 0,
+        fraisTransfertSortantRate: 0,
+        clauseBeneficiaire: 'Standard',
+        garantiesComplementaires: 'Garantie plancher',
+      },
+      phaseLiquidation: {
+        ageLimiteLiquidation: '75 ans',
+        sortieCapitalRetraite: 'Non',
+        fractionnementCapital: 'Non',
+        rachatLibre: 'Non',
+        tableConversionRente: 'TPRV93',
+        tableGarantieAdhesion: 'Oui',
+        tauxTechnique: 0.01,
+        fraisArrerages: 0.02,
+        fraisArreragesRate: 0.02,
+        annuitesGaranties: '10 ans',
+        reversionPossible: 'Oui',
+        reversionIncluse: 'Non',
+        renteEstimee: 3200,
+      },
+      documents: [],
+    };
+
+    const html = renderToStaticMarkup(<ContractAuditCards contract={contract} />);
+
+    expect(html).toContain('Nombre d’UC');
+    expect(html).toContain('Frais gestion fonds €');
+    expect(html).toContain('Frais gestion UC');
+    expect(html).toContain('Fonds € garantis');
+    expect(html).toContain('Rente estimée');
+    expect(html).toContain('0,45 %');
   });
 });

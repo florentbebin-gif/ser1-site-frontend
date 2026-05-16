@@ -1,12 +1,13 @@
 import type { PerTransfertResult } from '@/engine/per';
+import type { BaseCgRetraiteContract } from '@/data/basecg';
 import { PerTransfertCapitalRenteDonut } from './PerTransfertCapitalRenteDonut';
+import { PerTransfertAttentionPoints } from './PerTransfertAttentionPoints';
 
 interface PerTransfertSummaryPanelProps {
   result: PerTransfertResult;
   capitalShareRatePercent: number;
-  canExport: boolean;
-  exportLoading: boolean;
-  onExport?: () => void;
+  selectedContract: BaseCgRetraiteContract | null;
+  subscriptionDate: string;
 }
 
 const euroFormatter = new Intl.NumberFormat('fr-FR', {
@@ -31,9 +32,8 @@ function KpiRow({ label, value }: { label: string; value: string }) {
 export function PerTransfertSummaryPanel({
   result,
   capitalShareRatePercent,
-  canExport,
-  exportLoading,
-  onExport,
+  selectedContract,
+  subscriptionDate,
 }: PerTransfertSummaryPanelProps) {
   return (
     <aside className="premium-card per-transfert-summary-panel sim-summary-card">
@@ -51,17 +51,17 @@ export function PerTransfertSummaryPanel({
         rentNet={euro(result.newPerFiscal.netAnnualRent)}
       />
 
-      <section className="per-transfert-summary-panel__hero" aria-label="Comparaison rente nette mensuelle">
-        <span>Rente nette mensuelle</span>
+      <section className="per-transfert-summary-panel__hero" aria-label="Comparaison rente nette annuelle">
+        <span>Rente nette annuelle</span>
         <div className="per-transfert-summary-panel__hero-compare">
           <div>
             <small>Conserver</small>
-            <strong>{euro(result.keepScenario.currentRent.netMonthly)}</strong>
+            <strong>{euro(result.keepScenario.currentRent.netAnnualRent)}</strong>
           </div>
           <div aria-hidden="true" className="per-transfert-summary-panel__hero-arrow">→</div>
           <div className="is-recommendation">
             <small>Transférer</small>
-            <strong>{euro(result.newPerRent.monthlyRent)}</strong>
+            <strong>{euro(result.newPerFiscal.netAnnualRent)}</strong>
           </div>
         </div>
       </section>
@@ -74,14 +74,7 @@ export function PerTransfertSummaryPanel({
         <KpiRow label={`Fractionnement ${result.capitalExit.longHorizon.horizonAge} ans`} value={euro(result.capitalExit.longHorizon.cumulativeNetWithdrawals)} />
       </dl>
 
-      <button
-        type="button"
-        className="per-transfert-summary-panel__export"
-        disabled={!canExport || exportLoading}
-        onClick={onExport}
-      >
-        {exportLoading ? 'Génération...' : "Éditer l'étude"}
-      </button>
+      <PerTransfertAttentionPoints contract={selectedContract} subscriptionDate={subscriptionDate} />
 
       {result.warnings.length > 0 ? (
         <ul className="per-transfert-summary-panel__warnings">

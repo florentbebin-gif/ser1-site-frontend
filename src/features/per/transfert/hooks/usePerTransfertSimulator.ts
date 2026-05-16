@@ -46,6 +46,7 @@ export interface PerTransfertFormState {
   currentGuaranteedYears: number;
   currentReversionEnabled: boolean;
   currentReversionRate: number;
+  currentReversionSpouseBirthYear: number;
   technicalRate: number;
   conversionFeeRate: number;
   arrearsFeeRate: number;
@@ -89,6 +90,7 @@ const DEFAULT_STATE: PerTransfertFormState = {
   currentGuaranteedYears: 0,
   currentReversionEnabled: false,
   currentReversionRate: 0,
+  currentReversionSpouseBirthYear: 1962,
   technicalRate: 0,
   conversionFeeRate: 0,
   arrearsFeeRate: 0,
@@ -114,6 +116,11 @@ function contractToProductType(type: BaseCgRetraiteContractType): PerTransfertPr
   if (type === 'PERP') return 'PERP';
   if (type === 'PER_POINTS') return 'PER_POINTS';
   return 'PER';
+}
+
+function spouseAgeAtLiquidation(insuredBirthYear: number, liquidationAge: number, spouseBirthYear: number): number {
+  const liquidationYear = insuredBirthYear + liquidationAge;
+  return Math.max(0, liquidationYear - spouseBirthYear);
 }
 
 function buildFiscalAssumptions(fiscalContext: FiscalContext): PerTransfertFiscalAssumptions {
@@ -263,6 +270,12 @@ export function usePerTransfertSimulator(fiscalContext: FiscalContext) {
         guaranteedYears: state.currentGuaranteedYears,
         reversionEnabled: state.currentReversionEnabled,
         reversionRate: toRate(state.currentReversionRate),
+        spouseBirthYear: state.currentReversionSpouseBirthYear,
+        spouseAgeAtLiquidation: spouseAgeAtLiquidation(
+          state.birthYear,
+          state.liquidationAge,
+          state.currentReversionSpouseBirthYear,
+        ),
       },
       projection: {
         transferFeeRate: toRate(state.transferFeeRate),

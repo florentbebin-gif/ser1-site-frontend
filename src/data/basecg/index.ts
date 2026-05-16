@@ -7,6 +7,12 @@ export {
   listBaseCgTypes,
 } from './catalog';
 export { PREFON_2025 } from './prefon';
+export {
+  formatBaseCgRetraiteRateField,
+  formatBaseCgRetraiteValue,
+  hasBaseCgRetraiteValue,
+  normalizeBaseCgRetraiteGestionFees,
+} from './retirementNormalization';
 export type {
   BaseCgPhaseEpargne,
   BaseCgPhaseLiquidation,
