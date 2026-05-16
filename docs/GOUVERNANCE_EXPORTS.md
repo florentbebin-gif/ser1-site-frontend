@@ -68,6 +68,13 @@ Un deck Serenity suit toujours cette chaîne :
 | Wrapper | Obligatoire entre la feature et la génération réelle |
 | Tests | Au minimum un smoke export par simulateur |
 
+### Alignement avec l'UI simulateur
+- Les unités affichées dans l'export doivent être identiques à celles de la page : si la sidebar affiche une rente annuelle, aucune slide ne doit parler de rente mensuelle.
+- Les valeurs numériques utilisent le même niveau de transformation utilisateur que l'UI : montants lisibles, taux en `%`, pas de taux décimaux bruts (`0.0495`) dans les textes de slide.
+- Toute page `/sim/*` qui affiche un bloc `Hypothèses et limites` doit reprendre ces hypothèses dans le deck, soit dans une slide dédiée, soit dans une annexe clairement identifiée.
+- Les limites juridiques, référentiels indicatifs, CG non garanties, fallbacks et simplifications visibles dans l'UI doivent être présents dans l'étude remise au client.
+- Interdit : corriger un disclaimer dans la page web sans mettre à jour le PPTX correspondant quand l'export existe.
+
 ### Slides de synthèse
 - Une slide de synthèse traduit une seule idée visuelle.
 - Pas de tableau HTML déguisé dans une slide de synthèse.
