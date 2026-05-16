@@ -7,13 +7,13 @@ const ACTIVE_SIMULATOR_PATHS = new Set([
   '/sim/credit',
   '/sim/succession',
   '/sim/per/potentiel',
+  '/sim/per/transfert',
   '/sim/tresorerie-societe',
   '/sim/ir',
 ]);
 
 const HUBS_OR_PLACEHOLDERS = new Set([
   '/sim/per',
-  '/sim/per/transfert',
   '/sim/epargne-salariale',
   '/sim/prevoyance',
 ]);

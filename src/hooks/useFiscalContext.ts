@@ -61,6 +61,28 @@ export interface FiscalContext {
   psRateGeneral: number;
   /** Taux PS patrimoine année courante - regime d'exception */
   psRateException: number;
+  /** Fractions RVTO par âge au premier versement de rente */
+  rvtoTaxableFractionByAge: typeof DEFAULT_FISCALITY_SETTINGS.perIndividuel.rente.rvtoTaxableFractionByAgeAtFirstPayment;
+  /** Taux PS sur la quote-part intérêts des rentes PER */
+  psRateRenteInterests: number;
+  /** Taux CASA sur la quote-part capital des rentes PER déductibles */
+  psRateRenteCapitalCASA: number;
+  /** Taux d'abattement pension/retraite applicable aux RVTG */
+  abat10Rate: number;
+  /** Bornes de l'abattement pensions/retraites année courante */
+  abat10RetireesCurrent: typeof DEFAULT_TAX_SETTINGS.incomeTax.abat10.retireesCurrent;
+  /** Barèmes PS retraite année courante */
+  psRetirementBrackets: typeof DEFAULT_PS_SETTINGS.retirement.current.brackets;
+  /** Taux PS retraite maximal, utilisé en hypothèse prudente de simulation */
+  psRateRetirementDefault: number;
+  /** Seuil mensuel de sortie en capital pour petite rente */
+  smallAnnuityMonthlyCapitalExitThreshold: number;
+  /** Seuil annuel de sortie en capital pour petite rente */
+  smallAnnuityAnnualCapitalExitThreshold: number;
+  /** Taux IR forfaitaire optionnel pour petite rente */
+  smallAnnuityCapitalExitFlatTaxRate: number;
+  /** Taux d'abattement avant forfait petite rente */
+  smallAnnuityCapitalExitFlatTaxAbatementRate: number;
 
   // ── DMTG ─────────────────────────────────────────────────────────────────
   /**
@@ -116,6 +138,15 @@ type LegacyDmtgSettings = TaxSettings['dmtg'] & {
   scale?: TaxSettings['dmtg']['ligneDirecte']['scale'];
 };
 
+function percentToRate(value: number | null | undefined): number {
+  return (value ?? 0) / 100;
+}
+
+function resolveRetirementPsDefault(ps: PsSettings): number {
+  return (ps?.retirement?.current?.brackets ?? DEFAULT_PS_SETTINGS.retirement.current.brackets)
+    .reduce((maxRate, bracket) => Math.max(maxRate, bracket.totalRate ?? 0), 0);
+}
+
 // ─── Normalisation ────────────────────────────────────────────────────────────
 
 function buildFiscalContext(
@@ -125,6 +156,11 @@ function buildFiscalContext(
   passHistory?: Record<number, number>,
 ): FiscalContext {
   const dmtg: LegacyDmtgSettings = tax?.dmtg ?? DEFAULT_TAX_SETTINGS.dmtg;
+  const perRente = fiscality?.perIndividuel?.rente ?? DEFAULT_FISCALITY_SETTINGS.perIndividuel.rente;
+  const petiteRente =
+    fiscality?.perIndividuel?.sortieCapital?.retraite?.petiteRente
+    ?? DEFAULT_FISCALITY_SETTINGS.perIndividuel.sortieCapital.retraite.petiteRente;
+  const smallAnnuityMonthlyThreshold = petiteRente.monthlyThreshold;
 
   // Normalisation DMTG : supporte les deux anciennes structures (legacy + nouvelle)
   const ligneDirecte = dmtg.ligneDirecte ?? {
@@ -149,6 +185,38 @@ function buildFiscalContext(
       ps?.patrimony?.current?.generalRate ?? DEFAULT_PS_SETTINGS.patrimony.current.generalRate,
     psRateException:
       ps?.patrimony?.current?.exceptionRate ?? DEFAULT_PS_SETTINGS.patrimony.current.exceptionRate,
+    rvtoTaxableFractionByAge:
+      perRente.rvtoTaxableFractionByAgeAtFirstPayment
+      ?? DEFAULT_FISCALITY_SETTINGS.perIndividuel.rente.rvtoTaxableFractionByAgeAtFirstPayment,
+    psRateRenteInterests: percentToRate(
+      perRente.deduits?.interestsQuotePart?.psRatePercent
+      ?? DEFAULT_FISCALITY_SETTINGS.perIndividuel.rente.deduits.interestsQuotePart.psRatePercent,
+    ),
+    psRateRenteCapitalCASA: percentToRate(
+      perRente.deduits?.capitalQuotePart?.psRatePercent
+      ?? DEFAULT_FISCALITY_SETTINGS.perIndividuel.rente.deduits.capitalQuotePart.psRatePercent,
+    ),
+    abat10Rate: percentToRate(
+      perRente.pensionAbatementRatePercent
+      ?? DEFAULT_FISCALITY_SETTINGS.perIndividuel.rente.pensionAbatementRatePercent,
+    ),
+    abat10RetireesCurrent:
+      tax?.incomeTax?.abat10?.retireesCurrent
+      ?? DEFAULT_TAX_SETTINGS.incomeTax.abat10.retireesCurrent,
+    psRetirementBrackets:
+      ps?.retirement?.current?.brackets
+      ?? DEFAULT_PS_SETTINGS.retirement.current.brackets,
+    psRateRetirementDefault: percentToRate(resolveRetirementPsDefault(ps)),
+    smallAnnuityMonthlyCapitalExitThreshold: smallAnnuityMonthlyThreshold,
+    smallAnnuityAnnualCapitalExitThreshold: smallAnnuityMonthlyThreshold * 12,
+    smallAnnuityCapitalExitFlatTaxRate: percentToRate(
+      petiteRente.forfaitIrRatePercent
+      ?? DEFAULT_FISCALITY_SETTINGS.perIndividuel.sortieCapital.retraite.petiteRente.forfaitIrRatePercent,
+    ),
+    smallAnnuityCapitalExitFlatTaxAbatementRate: percentToRate(
+      petiteRente.forfaitAbatementRatePercent
+      ?? DEFAULT_FISCALITY_SETTINGS.perIndividuel.sortieCapital.retraite.petiteRente.forfaitAbatementRatePercent,
+    ),
 
     // DMTG normalisé
     dmtgScaleLigneDirecte:

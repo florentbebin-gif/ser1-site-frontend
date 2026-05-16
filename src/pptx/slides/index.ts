@@ -14,6 +14,8 @@ export { buildIrAnnexe } from './buildIrAnnexe';
 export { buildPerFiscalSnapshot } from './buildPerFiscalSnapshot';
 export { buildPerPlafond3Col } from './buildPerPlafond3Col';
 export { buildPerProjectionTable } from './buildPerProjectionTable';
+export { buildPerTransfertSynthesis } from './buildPerTransfertSynthesis';
+export { buildAuditContractSlide } from './buildAuditContractSlide';
 
 export { buildSuccessionSynthesis } from './buildSuccessionSynthesis';
 export { buildSuccessionFamilyContext } from './buildSuccessionFamilyContext';

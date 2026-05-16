@@ -5,3 +5,4 @@
 export { default } from './PerHome';
 export { default as PerHome } from './PerHome';
 export { default as PerPotentielSimulator } from './components/potentiel/PerPotentielSimulator';
+export { PerTransfertSimulator } from './transfert';

@@ -26,6 +26,14 @@ const FORBIDDEN_VALUES = [
     pattern: /\b17[,.]2\b|\b0[,.]172\b/,
   },
   {
+    label: 'taux PS patrimoine courant',
+    pattern: /\b18[,.]6\b|\b0[,.]186\b/,
+  },
+  {
+    label: 'taux PS retraite maximal',
+    pattern: /\b9[,.]1\b|\b0[,.]091\b/,
+  },
+  {
     label: 'taux IR PFU',
     pattern: /\b12[,.]8\b|\b0[,.]128\b/,
   },
@@ -100,6 +108,14 @@ const FORBIDDEN_VALUES = [
   {
     label: 'abattement retraites previous plancher',
     pattern: /\b442\b/,
+  },
+  {
+    label: 'seuil mensuel petite rente',
+    pattern: /(?:petite\s*rente|rente\s*mensuelle|monthly\s*rent|monthly\s*annuity|monthly\s*threshold|seuil)[^'"]{0,80}\b110\b|\b110\b[^'"]{0,80}(?:petite\s*rente|rente\s*mensuelle|monthly\s*rent|monthly\s*annuity|monthly\s*threshold|seuil)/i,
+  },
+  {
+    label: 'seuil annuel petite rente',
+    pattern: /(?:petite\s*rente|rente\s*annuelle|annual\s*rent|annual\s*annuity|annual\s*threshold|seuil)[^'"]{0,80}\b1320\b|\b1320\b[^'"]{0,80}(?:petite\s*rente|rente\s*annuelle|annual\s*rent|annual\s*annuity|annual\s*threshold|seuil)/i,
   },
 ];
 

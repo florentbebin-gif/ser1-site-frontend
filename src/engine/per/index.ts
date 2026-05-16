@@ -15,6 +15,14 @@ export { computePlafondMadelin, isTNS } from './plafondMadelin';
 export { computeDeclaration2042 } from './perDeclarationFlow';
 export { computePerDeductionFlow } from './perDeductionFlow';
 export { computeProjectionAvis } from './perProjectionAvis';
+export {
+  computeAnnuityConversion,
+  computeAnnuityFactor,
+  computePerTransfert,
+  computePrefonRente,
+  resolveMortalityTableFromContractLabel,
+  resolvePerCompartiment,
+} from './transfert';
 
 export type {
   PerPotentielInput,
@@ -33,3 +41,12 @@ export type {
   PerDeductionFlow,
   PerProjectionAvisDetail,
 } from './types';
+
+export type {
+  PerTransfertAnnuityOptions,
+  PerTransfertFiscalAssumptions,
+  PerTransfertInput,
+  PerTransfertProductType,
+  PerTransfertResult,
+  PerTransfertSex,
+} from './transfert';
