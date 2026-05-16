@@ -40,6 +40,11 @@ docs/api/
 supabase/.temp/
 supabase/.branches/
 
+# Sources locales CG retraite pour upload Supabase Storage (PDF non versionnés)
+supabase/storage/base-cg-retraite-cg/**
+!supabase/storage/base-cg-retraite-cg/
+!supabase/storage/base-cg-retraite-cg/README.md
+
 # Claude Code local session config (permissions machine-specific)
 .claude/settings.local.json
 .claude/launch.json

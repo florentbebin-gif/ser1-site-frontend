@@ -15,9 +15,11 @@ import {
 
 const TABLE_X = 0.78;
 const TABLE_Y = 1.48;
-const ROW_H = 0.31;
-const LABEL_W = 2.55;
-const VALUE_W = SLIDE_SIZE.width - TABLE_X * 2 - LABEL_W;
+const ROW_H = 0.28;
+const COLUMN_GAP = 0.32;
+const COLUMN_W = (SLIDE_SIZE.width - TABLE_X * 2 - COLUMN_GAP) / 2;
+const LABEL_W = 1.78;
+const VALUE_W = COLUMN_W - LABEL_W;
 
 function display(value: unknown, format?: 'rate'): string {
   if (value === null || value === undefined || value === '') return 'A compléter';
@@ -49,7 +51,7 @@ export function buildAuditContractSlide(
     { label: 'Nombre de supports', value: contract.phaseEpargne.nombreFonds },
     { label: 'Nombre UC', value: contract.phaseEpargne.nombreSupportsUc },
     { label: 'UC / Fonds euros', value: contract.phaseEpargne.repartitionUcEuro },
-    { label: 'Rendement fonds euros', value: contract.phaseEpargne.rendementFondsEuro, format: 'rate' as const },
+    { label: 'TMG du contrat', value: contract.phaseEpargne.rendementFondsEuro, format: 'rate' as const },
     { label: 'Fonds euros garantis', value: contract.phaseEpargne.fondsEuroGarantis, format: 'rate' as const },
     { label: 'Frais sur versements', value: contract.phaseEpargne.fraisVersements, format: 'rate' as const },
     { label: 'Frais gestion fonds euros', value: gestionFees.fraisGestionFondsEuro, format: 'rate' as const },
@@ -73,10 +75,14 @@ export function buildAuditContractSlide(
   ];
 
   rows.forEach(({ label, value, format }, index) => {
-    const y = TABLE_Y + ROW_H * index;
+    const rowsPerColumn = Math.ceil(rows.length / 2);
+    const columnIndex = index >= rowsPerColumn ? 1 : 0;
+    const rowIndex = index % rowsPerColumn;
+    const x = TABLE_X + columnIndex * (COLUMN_W + COLUMN_GAP);
+    const y = TABLE_Y + ROW_H * rowIndex;
     const fillColor = (index % 2 === 0 ? theme.colors.color7 : theme.panelBg) ?? theme.panelBg;
     slide.addShape('rect', {
-      x: TABLE_X,
+      x,
       y,
       w: LABEL_W,
       h: ROW_H,
@@ -84,7 +90,7 @@ export function buildAuditContractSlide(
       line: { color: theme.panelBorder.replace('#', ''), width: 0.3 },
     });
     slide.addShape('rect', {
-      x: TABLE_X + LABEL_W,
+      x: x + LABEL_W,
       y,
       w: VALUE_W,
       h: ROW_H,
@@ -92,7 +98,7 @@ export function buildAuditContractSlide(
       line: { color: theme.panelBorder.replace('#', ''), width: 0.3 },
     });
     addTextFr(slide, String(label), {
-      x: TABLE_X + 0.08,
+      x: x + 0.08,
       y: y + 0.07,
       w: LABEL_W - 0.16,
       h: 0.18,
@@ -103,7 +109,7 @@ export function buildAuditContractSlide(
       fit: 'shrink',
     });
     addTextFr(slide, display(value, format), {
-      x: TABLE_X + LABEL_W + 0.08,
+      x: x + LABEL_W + 0.08,
       y: y + 0.07,
       w: VALUE_W - 0.16,
       h: 0.18,
@@ -113,6 +119,20 @@ export function buildAuditContractSlide(
       fit: 'shrink',
     });
   });
+
+  if (spec.legalNote) {
+    addTextFr(slide, spec.legalNote, {
+      x: TABLE_X,
+      y: SLIDE_SIZE.height - 0.72,
+      w: SLIDE_SIZE.width - TABLE_X * 2,
+      h: 0.24,
+      fontSize: 7.2,
+      fontFace: TYPO.fontFace,
+      italic: true,
+      color: theme.footerOnLight.replace('#', ''),
+      fit: 'shrink',
+    });
+  }
 
   addFooter(slide, ctx, slideIndex, 'onLight');
 }

@@ -1,8 +1,8 @@
 /* Fichier genere par tools/scripts/generate-per-transfert-data.py. */
-/* Source : SER1 - LAPLACE 2025.xlsm, onglet BASECG. */
+/* Source : classeur Excel local, onglet BASECG. */
 import type { BaseCgRetraiteContract } from './types';
 
-export const BASECG_VERSION = '2025-01-extrait-laplace';
+export const BASECG_VERSION = '2025-01-base-cg-retraite';
 export const BASECG_EXTRACTED_COUNT = 395;
 
 export const BASECG_CATALOG = [

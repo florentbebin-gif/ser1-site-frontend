@@ -2,7 +2,7 @@
 Genere les donnees PER transfert depuis les sources de reference locales/publiques.
 
 Sources :
-- SER1 - LAPLACE 2025.xlsm, onglet BASECG.
+- Classeur Excel local, onglet BASECG.
 - CASdatasets, fichiers freTGF05/freTGH05/freTPRV93/freTPG93full.
 
 Prerequis Python :
@@ -15,6 +15,7 @@ Usage :
 from __future__ import annotations
 
 import json
+import os
 import re
 import sys
 import urllib.request
@@ -33,7 +34,6 @@ except ImportError as exc:  # pragma: no cover - message operateur
 
 
 ROOT = Path(__file__).resolve().parents[2]
-XLSM_PATH = ROOT / "SER1 - LAPLACE 2025.xlsm"
 BASECG_OUT = ROOT / "src" / "data" / "basecg" / "catalog.generated.ts"
 MORTALITY_DIR = ROOT / "src" / "data" / "mortality"
 TMP_DIR = ROOT / ".tmp" / "per-transfert-data"
@@ -77,6 +77,20 @@ BASECG_ROWS = {
     "reversionIncluse": 30,
     "renteEstimee": 31,
 }
+
+
+def resolve_xlsm_path() -> Path:
+    explicit = os.environ.get("BASECG_XLSM_PATH")
+    if explicit:
+        return Path(explicit).expanduser().resolve()
+
+    candidates = sorted(ROOT.glob("*.xlsm"))
+    if len(candidates) != 1:
+        raise SystemExit("Definir BASECG_XLSM_PATH vers le classeur BASECG.")
+    return candidates[0]
+
+
+XLSM_PATH = resolve_xlsm_path()
 
 
 def slugify(value: str) -> str:
@@ -230,10 +244,10 @@ def write_basecg(contracts: list[dict[str, Any]]) -> None:
     BASECG_OUT.parent.mkdir(parents=True, exist_ok=True)
     lines = [
         "/* Fichier genere par tools/scripts/generate-per-transfert-data.py. */",
-        "/* Source : SER1 - LAPLACE 2025.xlsm, onglet BASECG. */",
+        "/* Source : classeur Excel local, onglet BASECG. */",
         "import type { BaseCgRetraiteContract } from './types';",
         "",
-        "export const BASECG_VERSION = '2025-01-extrait-laplace';",
+        "export const BASECG_VERSION = '2025-01-base-cg-retraite';",
         f"export const BASECG_EXTRACTED_COUNT = {len(contracts)};",
         "",
         "export const BASECG_CATALOG = [",

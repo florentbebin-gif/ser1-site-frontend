@@ -20,4 +20,5 @@ export interface PerTransfertAuditContractSlideSpec {
   title: string;
   subtitle?: string;
   contract: BaseCgRetraiteContract;
+  legalNote?: string;
 }

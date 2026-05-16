@@ -154,6 +154,21 @@ describe('buildPerTransfertStudyDeck', () => {
     expect(JSON.stringify(auditSlide)).toContain('MADELIN- ABEILLE RETRAITE MADELIN');
   });
 
+  it('couvre juridiquement l’usage indicatif de la Base CG dans le deck', () => {
+    const spec = buildPerTransfertStudyDeck({
+      input,
+      result: computePerTransfert(input),
+      selectedContract,
+    }, theme);
+
+    expect(spec.end.legalText).toContain('Base CG');
+    expect(spec.end.legalText).toContain('titre indicatif');
+    expect(spec.end.legalText).toContain('compagnie');
+
+    const auditSlide = spec.slides.find((slide) => (slide as { type: string }).type === 'per-transfert-audit-contract');
+    expect(JSON.stringify(auditSlide)).toContain('vérifier auprès de la compagnie');
+  });
+
   it('n ajoute pas de slide audit quand aucun contrat Base CG n est selectionne', () => {
     const spec = buildPerTransfertStudyDeck({
       input,

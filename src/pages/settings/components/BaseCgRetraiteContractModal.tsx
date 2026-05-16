@@ -1,12 +1,16 @@
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
-  formatBaseCgRetraiteRateField,
   normalizeBaseCgRetraiteGestionFees,
   type BaseCgRetraiteContract,
   type BaseCgRetraiteContractType,
   type BaseCgRetraiteDocument,
 } from '@/data/basecg';
+import {
+  buildBaseCgRetraiteStoragePath,
+  uploadBaseCgRetraitePdf,
+} from '@/utils/cache/baseCgRetraiteRepository';
 import { COMPARTMENT_LABELS, COMPARTMENT_OPTIONS, TYPE_LABELS, TYPE_OPTIONS } from '../baseCgRetraiteOptions';
+import { BaseCgRetraiteDocumentsTab } from './BaseCgRetraiteDocumentsTab';
 
 function updateText(value: string): string | null {
   return value.trim() || null;
@@ -27,6 +31,26 @@ function formatRateLabel(rate: number | null): string | null {
   return `${new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 3 }).format(rate * 100)} %`;
 }
 
+// Taux pouvant venir du catalogue en string ("0,65 %") ou en number (0.0065).
+// L'input modale affiche toujours un libellé "X,XX %" lisible et stocke en décimal au commit.
+function rateInputValue(value: string | number | null | undefined): string {
+  if (value === null || value === undefined || value === '') return '';
+  if (typeof value === 'number' && Number.isFinite(value)) {
+    return `${new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 3 }).format(value * 100)} %`;
+  }
+  return String(value);
+}
+
+function commitRate(value: string): string | number | null {
+  if (!value.trim()) return null;
+  // On accepte "0,65", "0,65 %", "0.65%". Le `%` et les espaces sont nettoyés, virgule fr-FR convertie.
+  const cleaned = value.replace(/%|\s/g, '').replace(',', '.');
+  const parsed = Number(cleaned);
+  // Si la saisie est un nombre pur, on stocke en décimal (0.0065). Sinon on conserve le texte (rare).
+  if (Number.isFinite(parsed)) return parsed / 100;
+  return value.trim();
+}
+
 function formatFieldValue(value: string | number | null | undefined): string {
   return value === null || value === undefined ? '' : String(value);
 }
@@ -35,6 +59,13 @@ function parseOptionalInteger(value: string): number | null {
   if (!value.trim()) return null;
   const parsed = Number(value.replace(/\s/g, '').replace(',', '.'));
   return Number.isFinite(parsed) ? Math.round(parsed) : null;
+}
+
+function generateId(prefix: string): string {
+  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+    return `${prefix}-${crypto.randomUUID()}`;
+  }
+  return `${prefix}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
 }
 
 type ContractModalTab = 'identity' | 'epargne' | 'liquidation' | 'documents';
@@ -48,11 +79,16 @@ const CONTRACT_MODAL_TABS: Array<{ key: ContractModalTab; label: string }> = [
 
 function makeBaseCgDocument(): BaseCgRetraiteDocument {
   return {
-    id: `basecg-document-${Date.now()}`,
+    id: generateId('basecg-document'),
     label: 'Conditions Générales',
     type: 'conditions_generales',
     sourceUrl: '',
-    status: 'linked',
+    versionLabel: '',
+    storagePath: '',
+    fileName: '',
+    mime: 'application/pdf',
+    bytes: null,
+    status: 'missing',
   };
 }
 
@@ -68,7 +104,73 @@ export function BaseCgRetraiteContractModal({ contract, onClose, onSave }: Props
     documents: contract.documents ?? [],
   }));
   const [activeTab, setActiveTab] = useState<ContractModalTab>('identity');
+  const [uploadingDocId, setUploadingDocId] = useState<string | null>(null);
+  const [uploadError, setUploadError] = useState<string | null>(null);
   const gestionFees = normalizeBaseCgRetraiteGestionFees(draft.phaseEpargne);
+
+  // Commit la normalisation des frais de gestion dans le draft au mount
+  // pour qu'une sauvegarde sans édition manuelle préserve les ventilations dérivées.
+  useEffect(() => {
+    setDraft((previous) => {
+      const normalized = normalizeBaseCgRetraiteGestionFees(previous.phaseEpargne);
+      if (
+        previous.phaseEpargne.fraisGestionFondsEuro === normalized.fraisGestionFondsEuro
+        && previous.phaseEpargne.fraisGestionUc === normalized.fraisGestionUc
+      ) {
+        return previous;
+      }
+      return {
+        ...previous,
+        phaseEpargne: {
+          ...previous.phaseEpargne,
+          fraisGestionFondsEuro: normalized.fraisGestionFondsEuro,
+          fraisGestionUc: normalized.fraisGestionUc,
+        },
+      };
+    });
+  }, []);
+
+  const contractIdentity = useMemo(() => ({
+    id: draft.id,
+    compagnie: draft.compagnie,
+    nomContrat: draft.nomContrat,
+  }), [draft.id, draft.compagnie, draft.nomContrat]);
+
+  async function handleDocumentUpload(documentId: string, file: File) {
+    const target = (draft.documents ?? []).find((document) => document.id === documentId);
+    if (!target) return;
+    setUploadError(null);
+    setUploadingDocId(documentId);
+    try {
+      const storagePath = target.storagePath
+        || buildBaseCgRetraiteStoragePath(contractIdentity, target.versionLabel ?? '');
+      const result = await uploadBaseCgRetraitePdf({
+        contractId: contractIdentity.id,
+        versionLabel: target.versionLabel ?? '',
+        file,
+        storagePath,
+      });
+      setDraft((previous) => ({
+        ...previous,
+        documents: (previous.documents ?? []).map((document) => (
+          document.id === documentId
+            ? {
+              ...document,
+              storagePath: result.storagePath,
+              fileName: result.fileName,
+              bytes: result.bytes,
+              mime: result.mime,
+              status: 'uploaded',
+            }
+            : document
+        )),
+      }));
+    } catch (error) {
+      setUploadError(error instanceof Error ? error.message : 'Upload PDF impossible.');
+    } finally {
+      setUploadingDocId(null);
+    }
+  }
 
   function setRoot<K extends keyof BaseCgRetraiteContract>(key: K, value: BaseCgRetraiteContract[K]) {
     setDraft((previous) => ({ ...previous, [key]: value }));
@@ -216,45 +318,51 @@ export function BaseCgRetraiteContractModal({ contract, onClose, onSave }: Props
                 />
               </label>
               <label>
-                Rendement fonds €
+                TMG du contrat (fonds €)
                 <input
-                  value={formatBaseCgRetraiteRateField(draft.phaseEpargne.rendementFondsEuro)}
-                  onChange={(event) => setEpargne('rendementFondsEuro', updateText(event.target.value))}
+                  value={rateInputValue(draft.phaseEpargne.rendementFondsEuro)}
+                  onChange={(event) => setEpargne('rendementFondsEuro', commitRate(event.target.value))}
+                  placeholder="Ex : 3,5 % avant le 31/12/2016"
                 />
+                <small className="base-cg-modal__hint">
+                  Taux Minimum Garanti historique. Encadré par l'arrêté du 9 décembre 2016 (loi Sapin 2)
+                  et l'arrêté du 24 juillet 2018 (préparation loi PACTE). Les TMG anciens restent acquis
+                  aux versements antérieurs à la date de cessation.
+                </small>
               </label>
               <label>
                 Fonds € garantis
                 <input
-                  value={formatBaseCgRetraiteRateField(draft.phaseEpargne.fondsEuroGarantis)}
-                  onChange={(event) => setEpargne('fondsEuroGarantis', updateText(event.target.value))}
+                  value={rateInputValue(draft.phaseEpargne.fondsEuroGarantis)}
+                  onChange={(event) => setEpargne('fondsEuroGarantis', commitRate(event.target.value))}
                 />
               </label>
               <label>
                 Frais sur versements
                 <input
-                  value={formatBaseCgRetraiteRateField(draft.phaseEpargne.fraisVersements)}
-                  onChange={(event) => setEpargne('fraisVersements', updateText(event.target.value))}
+                  value={rateInputValue(draft.phaseEpargne.fraisVersements)}
+                  onChange={(event) => setEpargne('fraisVersements', commitRate(event.target.value))}
                 />
               </label>
               <label>
                 Frais gestion fonds €
                 <input
-                  value={formatBaseCgRetraiteRateField(gestionFees.fraisGestionFondsEuro)}
-                  onChange={(event) => setEpargne('fraisGestionFondsEuro', updateText(event.target.value))}
+                  value={rateInputValue(gestionFees.fraisGestionFondsEuro)}
+                  onChange={(event) => setEpargne('fraisGestionFondsEuro', commitRate(event.target.value))}
                 />
               </label>
               <label>
                 Frais gestion UC
                 <input
-                  value={formatBaseCgRetraiteRateField(gestionFees.fraisGestionUc)}
-                  onChange={(event) => setEpargne('fraisGestionUc', updateText(event.target.value))}
+                  value={rateInputValue(gestionFees.fraisGestionUc)}
+                  onChange={(event) => setEpargne('fraisGestionUc', commitRate(event.target.value))}
                 />
               </label>
               <label>
                 Frais d'arbitrage
                 <input
-                  value={formatBaseCgRetraiteRateField(draft.phaseEpargne.fraisArbitrage)}
-                  onChange={(event) => setEpargne('fraisArbitrage', updateText(event.target.value))}
+                  value={rateInputValue(draft.phaseEpargne.fraisArbitrage)}
+                  onChange={(event) => setEpargne('fraisArbitrage', commitRate(event.target.value))}
                 />
               </label>
               <label>
@@ -335,8 +443,8 @@ export function BaseCgRetraiteContractModal({ contract, onClose, onSave }: Props
               <label>
                 Taux technique
                 <input
-                  value={formatBaseCgRetraiteRateField(draft.phaseLiquidation.tauxTechnique)}
-                  onChange={(event) => setLiquidation('tauxTechnique', updateText(event.target.value))}
+                  value={rateInputValue(draft.phaseLiquidation.tauxTechnique)}
+                  onChange={(event) => setLiquidation('tauxTechnique', commitRate(event.target.value))}
                 />
               </label>
               <label>
@@ -385,64 +493,15 @@ export function BaseCgRetraiteContractModal({ contract, onClose, onSave }: Props
           ) : null}
 
           {activeTab === 'documents' ? (
-            <div className="base-cg-documents">
-              <div className="base-cg-documents__header">
-                <div>
-                  <h4>Documents contractuels</h4>
-                  <p>Stockage PDF prévu pour l'étape Supabase Storage. En attendant, la fiche conserve un lien ou un chemin.</p>
-                </div>
-                <button type="button" className="base-cg-button" onClick={addDocument}>
-                  Ajouter un document
-                </button>
-              </div>
-
-              {(draft.documents ?? []).length === 0 ? (
-                <p className="base-cg-documents__empty">Aucun document référencé.</p>
-              ) : null}
-
-              {(draft.documents ?? []).map((document) => (
-                <div className="base-cg-document-row" key={document.id}>
-                  <label>
-                    Libellé du document
-                    <input
-                      value={document.label}
-                      onChange={(event) => setDocument(document.id, 'label', event.target.value)}
-                    />
-                  </label>
-                  <label>
-                    Nature
-                    <select
-                      value={document.type}
-                      onChange={(event) => setDocument(
-                        document.id,
-                        'type',
-                        event.target.value as BaseCgRetraiteDocument['type'],
-                      )}
-                    >
-                      <option value="conditions_generales">Conditions Générales</option>
-                      <option value="notice_information">Notice d'information</option>
-                      <option value="avenant">Avenant</option>
-                      <option value="autre">Autre</option>
-                    </select>
-                  </label>
-                  <label className="base-cg-modal__wide">
-                    URL ou chemin du document
-                    <input
-                      value={document.sourceUrl ?? ''}
-                      onChange={(event) => setDocument(document.id, 'sourceUrl', event.target.value)}
-                    />
-                  </label>
-                  <div className="base-cg-document-row__actions">
-                    <button type="button" disabled>
-                      Uploader PDF
-                    </button>
-                    <button type="button" onClick={() => removeDocument(document.id)}>
-                      Supprimer
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
+            <BaseCgRetraiteDocumentsTab
+              documents={draft.documents ?? []}
+              uploadError={uploadError}
+              uploadingDocId={uploadingDocId}
+              onAdd={addDocument}
+              onRemove={removeDocument}
+              onChange={setDocument}
+              onUpload={(id, file) => void handleDocumentUpload(id, file)}
+            />
           ) : null}
         </div>
 
