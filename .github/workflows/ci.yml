@@ -91,34 +91,5 @@ jobs:
       - name: Run admin function tests (Deno)
         run: npm run test:deno
 
-      - name: Run production audit (informative)
-        run: npm run audit:prod || echo "::warning::audit:prod non bloquant pour la première stabilisation"
-
-      - name: Run engine coverage (informative)
-        run: npm run coverage || echo "::warning::coverage non bloquante pour la première stabilisation"
-
-      - name: Build Storybook (informative)
-        run: npm run build:storybook || echo "::warning::Storybook non bloquant pour la première stabilisation"
-
-      - name: Generate bundle stats (informative)
-        run: npm run analyze:ci || echo "::warning::stats bundle non bloquantes pour la première stabilisation"
-        env:
-          VITE_SUPABASE_URL: https://placeholder.supabase.co
-          VITE_SUPABASE_ANON_KEY: placeholder-key-for-build
-
-      - name: Upload bundle stats (informative)
-        uses: actions/upload-artifact@v4
-        with:
-          name: bundle-stats
-          path: dist/bundle-stats.html
-          if-no-files-found: warn
-
-      - name: Upload coverage (informative)
-        uses: codecov/codecov-action@v6
-        with:
-          files: ./coverage/coverage-final.json
-          fail_ci_if_error: false
-          token: ${{ secrets.CODECOV_TOKEN }}
-
-      - name: Run Lighthouse CI (informative)
-        run: npm run lhci || echo "::warning::Lighthouse CI non bloquant pour la première stabilisation"
+      - name: Run production audit
+        run: npm run audit:prod

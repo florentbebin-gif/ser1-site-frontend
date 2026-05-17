@@ -1,0 +1,77 @@
+name: Quality reports
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+  schedule:
+    # 03:00 UTC, du lundi au vendredi.
+    - cron: '0 3 * * 1-5'
+
+permissions:
+  contents: read
+
+jobs:
+  quality-reports:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: '22.22.1'
+          cache: 'npm'
+
+      - name: Pin npm version
+        run: |
+          npm install -g npm@10.9.8
+          npm --version
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run engine coverage
+        run: npm run coverage
+
+      - name: Build Storybook
+        run: npm run build:storybook
+
+      - name: Build app for reports
+        run: npm run build
+        env:
+          VITE_SUPABASE_URL: https://placeholder.supabase.co
+          VITE_SUPABASE_ANON_KEY: placeholder-key-for-build
+
+      - name: Generate bundle stats
+        run: npm run analyze:ci
+        env:
+          VITE_SUPABASE_URL: https://placeholder.supabase.co
+          VITE_SUPABASE_ANON_KEY: placeholder-key-for-build
+
+      - name: Upload bundle stats
+        uses: actions/upload-artifact@v4
+        with:
+          name: bundle-stats
+          path: dist/bundle-stats.html
+          if-no-files-found: error
+
+      - name: Upload coverage
+        uses: codecov/codecov-action@v6
+        with:
+          files: ./coverage/coverage-final.json
+          fail_ci_if_error: false
+          token: ${{ secrets.CODECOV_TOKEN }}
+
+      - name: Run Lighthouse CI
+        run: npm run lhci
+        env:
+          LHCI_PROFILE: full
+          LHCI_RUNS: 3
