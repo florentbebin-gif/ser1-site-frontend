@@ -64,7 +64,7 @@ describe('baseCgRetraiteNormalization', () => {
     expect(formatBaseCgRetraiteRateField(normalized.fraisGestionUc)).toBe('1 %');
   });
 
-  it('ventile les frais mixtes fonds euros / UC présents dans le catalogue généré', () => {
+  it('ventile les frais mixtes fonds euros / UC présents dans le catalogue statique', () => {
     const mixedContracts = BASECG_CATALOG.filter((contract) => {
       const value = contract.phaseEpargne.fraisGestion;
       return typeof value === 'string' && value.includes('€') && /\bUC\b/i.test(value);

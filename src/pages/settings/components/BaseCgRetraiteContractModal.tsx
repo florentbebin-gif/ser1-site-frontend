@@ -1,72 +1,18 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useId, useMemo, useRef, useState, type KeyboardEvent } from 'react';
 import {
   normalizeBaseCgRetraiteGestionFees,
   type BaseCgRetraiteContract,
-  type BaseCgRetraiteContractType,
   type BaseCgRetraiteDocument,
 } from '@/data/basecg';
 import {
   buildBaseCgRetraiteStoragePath,
   uploadBaseCgRetraitePdf,
 } from '@/utils/cache/baseCgRetraiteRepository';
-import { COMPARTMENT_LABELS, COMPARTMENT_OPTIONS, TYPE_LABELS, TYPE_OPTIONS } from '../baseCgRetraiteOptions';
 import { BaseCgRetraiteDocumentsTab } from './BaseCgRetraiteDocumentsTab';
-
-function updateText(value: string): string | null {
-  return value.trim() || null;
-}
-
-function parseRatePercent(value: string): number | null {
-  if (!value.trim()) return null;
-  const parsed = Number(value.replace(',', '.'));
-  return Number.isFinite(parsed) ? parsed / 100 : null;
-}
-
-function formatRatePercent(rate: number | null | undefined): string {
-  return typeof rate === 'number' && Number.isFinite(rate) ? String(rate * 100) : '';
-}
-
-function formatRateLabel(rate: number | null): string | null {
-  if (rate === null) return null;
-  return `${new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 3 }).format(rate * 100)} %`;
-}
-
-// Taux pouvant venir du catalogue en string ("0,65 %") ou en number (0.0065).
-// L'input modale affiche toujours un libellé "X,XX %" lisible et stocke en décimal au commit.
-function rateInputValue(value: string | number | null | undefined): string {
-  if (value === null || value === undefined || value === '') return '';
-  if (typeof value === 'number' && Number.isFinite(value)) {
-    return `${new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 3 }).format(value * 100)} %`;
-  }
-  return String(value);
-}
-
-function commitRate(value: string): string | number | null {
-  if (!value.trim()) return null;
-  // On accepte "0,65", "0,65 %", "0.65%". Le `%` et les espaces sont nettoyés, virgule fr-FR convertie.
-  const cleaned = value.replace(/%|\s/g, '').replace(',', '.');
-  const parsed = Number(cleaned);
-  // Si la saisie est un nombre pur, on stocke en décimal (0.0065). Sinon on conserve le texte (rare).
-  if (Number.isFinite(parsed)) return parsed / 100;
-  return value.trim();
-}
-
-function formatFieldValue(value: string | number | null | undefined): string {
-  return value === null || value === undefined ? '' : String(value);
-}
-
-function parseOptionalInteger(value: string): number | null {
-  if (!value.trim()) return null;
-  const parsed = Number(value.replace(/\s/g, '').replace(',', '.'));
-  return Number.isFinite(parsed) ? Math.round(parsed) : null;
-}
-
-function generateId(prefix: string): string {
-  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
-    return `${prefix}-${crypto.randomUUID()}`;
-  }
-  return `${prefix}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
-}
+import { BaseCgRetraiteEpargneTab } from './BaseCgRetraiteEpargneTab';
+import { BaseCgRetraiteIdentityTab } from './BaseCgRetraiteIdentityTab';
+import { BaseCgRetraiteLiquidationTab } from './BaseCgRetraiteLiquidationTab';
+import { generateId } from './baseCgRetraiteModalUtils';
 
 type ContractModalTab = 'identity' | 'epargne' | 'liquidation' | 'documents';
 
@@ -106,6 +52,17 @@ export function BaseCgRetraiteContractModal({ contract, onClose, onSave }: Props
   const [activeTab, setActiveTab] = useState<ContractModalTab>('identity');
   const [uploadingDocId, setUploadingDocId] = useState<string | null>(null);
   const [uploadError, setUploadError] = useState<string | null>(null);
+  const modalId = useId();
+  const modalTitleId = `${modalId}-title`;
+  const panelId = `${modalId}-panel`;
+  const closeButtonRef = useRef<HTMLButtonElement | null>(null);
+  const previousFocusRef = useRef<HTMLElement | null>(null);
+  const tabRefs = useRef<Record<ContractModalTab, HTMLButtonElement | null>>({
+    identity: null,
+    epargne: null,
+    liquidation: null,
+    documents: null,
+  });
   const gestionFees = normalizeBaseCgRetraiteGestionFees(draft.phaseEpargne);
 
   // Commit la normalisation des frais de gestion dans le draft au mount
@@ -129,6 +86,28 @@ export function BaseCgRetraiteContractModal({ contract, onClose, onSave }: Props
       };
     });
   }, []);
+
+  useEffect(() => {
+    previousFocusRef.current = document.activeElement instanceof HTMLElement
+      ? document.activeElement
+      : null;
+    closeButtonRef.current?.focus();
+
+    return () => {
+      previousFocusRef.current?.focus();
+    };
+  }, []);
+
+  useEffect(() => {
+    function handleEscape(event: globalThis.KeyboardEvent) {
+      if (event.key !== 'Escape') return;
+      event.preventDefault();
+      onClose();
+    }
+
+    document.addEventListener('keydown', handleEscape);
+    return () => document.removeEventListener('keydown', handleEscape);
+  }, [onClose]);
 
   const contractIdentity = useMemo(() => ({
     id: draft.id,
@@ -223,273 +202,90 @@ export function BaseCgRetraiteContractModal({ contract, onClose, onSave }: Props
     }));
   }
 
+  function getTabId(tabKey: ContractModalTab): string {
+    return `${modalId}-tab-${tabKey}`;
+  }
+
+  function focusTab(tabKey: ContractModalTab): void {
+    tabRefs.current[tabKey]?.focus();
+  }
+
+  function handleTabKeyDown(event: KeyboardEvent<HTMLButtonElement>, tabKey: ContractModalTab) {
+    const currentIndex = CONTRACT_MODAL_TABS.findIndex((tab) => tab.key === tabKey);
+    let nextIndex = currentIndex;
+
+    if (event.key === 'ArrowRight') nextIndex = (currentIndex + 1) % CONTRACT_MODAL_TABS.length;
+    if (event.key === 'ArrowLeft') {
+      nextIndex = (currentIndex - 1 + CONTRACT_MODAL_TABS.length) % CONTRACT_MODAL_TABS.length;
+    }
+    if (event.key === 'Home') nextIndex = 0;
+    if (event.key === 'End') nextIndex = CONTRACT_MODAL_TABS.length - 1;
+    if (nextIndex === currentIndex && !['Home', 'End'].includes(event.key)) return;
+
+    event.preventDefault();
+    const nextTab = CONTRACT_MODAL_TABS[nextIndex];
+    setActiveTab(nextTab.key);
+    focusTab(nextTab.key);
+  }
+
   return (
     <div className="base-cg-modal-overlay">
-      <div className="base-cg-modal">
+      <div
+        className="base-cg-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={modalTitleId}
+      >
         <div className="base-cg-modal__header">
-          <h3>{contract.sourceId === 'Ajout local' ? 'Ajouter un contrat' : 'Modifier le contrat'}</h3>
-          <button type="button" onClick={onClose} aria-label="Fermer">x</button>
+          <h3 id={modalTitleId}>{contract.sourceId === 'Ajout local' ? 'Ajouter un contrat' : 'Modifier le contrat'}</h3>
+          <button type="button" ref={closeButtonRef} onClick={onClose} aria-label="Fermer">x</button>
         </div>
 
         <div className="base-cg-modal__tabs" role="tablist" aria-label="Fiche contrat retraite">
-          {CONTRACT_MODAL_TABS.map((tab) => (
-            <button
-              key={tab.key}
-              type="button"
-              role="tab"
-              aria-selected={activeTab === tab.key}
-              className={activeTab === tab.key ? 'is-active' : ''}
-              onClick={() => setActiveTab(tab.key)}
-            >
-              {tab.label}
-            </button>
-          ))}
+          {CONTRACT_MODAL_TABS.map((tab) => {
+            const selected = activeTab === tab.key;
+            return (
+              <button
+                key={tab.key}
+                type="button"
+                role="tab"
+                id={getTabId(tab.key)}
+                ref={(node) => {
+                  tabRefs.current[tab.key] = node;
+                }}
+                aria-selected={selected}
+                aria-controls={panelId}
+                tabIndex={selected ? 0 : -1}
+                className={selected ? 'is-active' : ''}
+                onClick={() => setActiveTab(tab.key)}
+                onKeyDown={(event) => handleTabKeyDown(event, tab.key)}
+              >
+                {tab.label}
+              </button>
+            );
+          })}
         </div>
 
-        <div className="base-cg-modal__body" role="tabpanel">
+        <div
+          className="base-cg-modal__body"
+          role="tabpanel"
+          id={panelId}
+          aria-labelledby={getTabId(activeTab)}
+        >
           {activeTab === 'identity' ? (
-            <>
-              <label>
-                Compagnie
-                <input value={draft.compagnie} onChange={(event) => setRoot('compagnie', event.target.value)} />
-              </label>
-              <label>
-                Nom du contrat
-                <input value={draft.nomContrat} onChange={(event) => setRoot('nomContrat', event.target.value)} />
-              </label>
-              <label>
-                Type
-                <select
-                  value={draft.typeContrat}
-                  onChange={(event) => setRoot('typeContrat', event.target.value as BaseCgRetraiteContractType)}
-                >
-                  {TYPE_OPTIONS.map((type) => (
-                    <option key={type} value={type}>{TYPE_LABELS[type]}</option>
-                  ))}
-                </select>
-              </label>
-              <label>
-                Compartiment PER cible
-                <select
-                  value={draft.perCompartment ?? ''}
-                  onChange={(event) => setRoot(
-                    'perCompartment',
-                    (event.target.value || null) as BaseCgRetraiteContract['perCompartment'],
-                  )}
-                >
-                  <option value="">Déduit du type</option>
-                  {COMPARTMENT_OPTIONS.map((compartment) => (
-                    <option key={compartment} value={compartment}>{COMPARTMENT_LABELS[compartment]}</option>
-                  ))}
-                </select>
-              </label>
-            </>
+            <BaseCgRetraiteIdentityTab draft={draft} onRootChange={setRoot} />
           ) : null}
 
           {activeTab === 'epargne' ? (
-            <>
-              <label>
-                Date de commercialisation
-                <input
-                  value={draft.phaseEpargne.dateCommercialisation ?? ''}
-                  onChange={(event) => setEpargne('dateCommercialisation', updateText(event.target.value))}
-                />
-              </label>
-              <label>
-                Nombre de fonds
-                <input
-                  value={formatFieldValue(draft.phaseEpargne.nombreFonds)}
-                  onChange={(event) => setEpargne('nombreFonds', updateText(event.target.value))}
-                />
-              </label>
-              <label>
-                Nombre d'UC
-                <input
-                  inputMode="numeric"
-                  value={formatFieldValue(draft.phaseEpargne.nombreSupportsUc)}
-                  onChange={(event) => setEpargne('nombreSupportsUc', parseOptionalInteger(event.target.value))}
-                />
-              </label>
-              <label>
-                Répartition UC / fonds €
-                <input
-                  value={draft.phaseEpargne.repartitionUcEuro ?? ''}
-                  onChange={(event) => setEpargne('repartitionUcEuro', updateText(event.target.value))}
-                />
-              </label>
-              <label>
-                TMG du contrat (fonds €)
-                <input
-                  value={rateInputValue(draft.phaseEpargne.rendementFondsEuro)}
-                  onChange={(event) => setEpargne('rendementFondsEuro', commitRate(event.target.value))}
-                  placeholder="Ex : 3,5 % avant le 31/12/2016"
-                />
-                <small className="base-cg-modal__hint">
-                  Taux Minimum Garanti historique. Encadré par l'arrêté du 9 décembre 2016 (loi Sapin 2)
-                  et l'arrêté du 24 juillet 2018 (préparation loi PACTE). Les TMG anciens restent acquis
-                  aux versements antérieurs à la date de cessation.
-                </small>
-              </label>
-              <label>
-                Fonds € garantis
-                <input
-                  value={rateInputValue(draft.phaseEpargne.fondsEuroGarantis)}
-                  onChange={(event) => setEpargne('fondsEuroGarantis', commitRate(event.target.value))}
-                />
-              </label>
-              <label>
-                Frais sur versements
-                <input
-                  value={rateInputValue(draft.phaseEpargne.fraisVersements)}
-                  onChange={(event) => setEpargne('fraisVersements', commitRate(event.target.value))}
-                />
-              </label>
-              <label>
-                Frais gestion fonds €
-                <input
-                  value={rateInputValue(gestionFees.fraisGestionFondsEuro)}
-                  onChange={(event) => setEpargne('fraisGestionFondsEuro', commitRate(event.target.value))}
-                />
-              </label>
-              <label>
-                Frais gestion UC
-                <input
-                  value={rateInputValue(gestionFees.fraisGestionUc)}
-                  onChange={(event) => setEpargne('fraisGestionUc', commitRate(event.target.value))}
-                />
-              </label>
-              <label>
-                Frais d'arbitrage
-                <input
-                  value={rateInputValue(draft.phaseEpargne.fraisArbitrage)}
-                  onChange={(event) => setEpargne('fraisArbitrage', commitRate(event.target.value))}
-                />
-              </label>
-              <label>
-                Taux frais transfert sortant
-                <input
-                  type="number"
-                  value={formatRatePercent(draft.phaseEpargne.fraisTransfertSortantRate)}
-                  onChange={(event) => {
-                    const rate = parseRatePercent(event.target.value);
-                    setEpargne('fraisTransfertSortantRate', rate);
-                    setEpargne('fraisTransfertSortant', formatRateLabel(rate));
-                  }}
-                />
-              </label>
-              <label className="base-cg-modal__wide">
-                Modalités en cas de décès
-                <textarea
-                  value={draft.phaseEpargne.clauseBeneficiaire ?? ''}
-                  onChange={(event) => setEpargne('clauseBeneficiaire', updateText(event.target.value))}
-                  rows={3}
-                />
-              </label>
-              <label className="base-cg-modal__wide">
-                Garanties complémentaires
-                <textarea
-                  value={draft.phaseEpargne.garantiesComplementaires ?? ''}
-                  onChange={(event) => setEpargne('garantiesComplementaires', updateText(event.target.value))}
-                  rows={3}
-                />
-              </label>
-            </>
+            <BaseCgRetraiteEpargneTab
+              draft={draft}
+              gestionFees={gestionFees}
+              onEpargneChange={setEpargne}
+            />
           ) : null}
 
           {activeTab === 'liquidation' ? (
-            <>
-              <label>
-                Âge limite de liquidation
-                <input
-                  value={formatFieldValue(draft.phaseLiquidation.ageLimiteLiquidation)}
-                  onChange={(event) => setLiquidation('ageLimiteLiquidation', updateText(event.target.value))}
-                />
-              </label>
-              <label>
-                Sortie en capital à la retraite
-                <input
-                  value={draft.phaseLiquidation.sortieCapitalRetraite ?? ''}
-                  onChange={(event) => setLiquidation('sortieCapitalRetraite', updateText(event.target.value))}
-                />
-              </label>
-              <label>
-                Fractionnement du capital
-                <input
-                  value={draft.phaseLiquidation.fractionnementCapital ?? ''}
-                  onChange={(event) => setLiquidation('fractionnementCapital', updateText(event.target.value))}
-                />
-              </label>
-              <label>
-                Rachat libre
-                <input
-                  value={draft.phaseLiquidation.rachatLibre ?? ''}
-                  onChange={(event) => setLiquidation('rachatLibre', updateText(event.target.value))}
-                />
-              </label>
-              <label>
-                Table conversion rente
-                <input
-                  value={draft.phaseLiquidation.tableConversionRente ?? ''}
-                  onChange={(event) => setLiquidation('tableConversionRente', updateText(event.target.value))}
-                />
-              </label>
-              <label>
-                Table garantie à l'adhésion
-                <input
-                  value={draft.phaseLiquidation.tableGarantieAdhesion ?? ''}
-                  onChange={(event) => setLiquidation('tableGarantieAdhesion', updateText(event.target.value))}
-                />
-              </label>
-              <label>
-                Taux technique
-                <input
-                  value={rateInputValue(draft.phaseLiquidation.tauxTechnique)}
-                  onChange={(event) => setLiquidation('tauxTechnique', commitRate(event.target.value))}
-                />
-              </label>
-              <label>
-                Taux frais sur arrérages
-                <input
-                  type="number"
-                  value={formatRatePercent(draft.phaseLiquidation.fraisArreragesRate)}
-                  onChange={(event) => {
-                    const rate = parseRatePercent(event.target.value);
-                    setLiquidation('fraisArreragesRate', rate);
-                    setLiquidation('fraisArrerages', formatRateLabel(rate));
-                  }}
-                />
-              </label>
-              <label>
-                Annuités garanties
-                <input
-                  value={draft.phaseLiquidation.annuitesGaranties ?? ''}
-                  onChange={(event) => setLiquidation('annuitesGaranties', updateText(event.target.value))}
-                />
-              </label>
-              <label>
-                Réversion incluse dans la rente
-                <input
-                  value={draft.phaseLiquidation.reversionIncluse ?? ''}
-                  onChange={(event) => setLiquidation('reversionIncluse', updateText(event.target.value))}
-                />
-              </label>
-              <label className="base-cg-modal__wide">
-                Réversion possible
-                <textarea
-                  value={draft.phaseLiquidation.reversionPossible ?? ''}
-                  onChange={(event) => setLiquidation('reversionPossible', updateText(event.target.value))}
-                  rows={3}
-                />
-              </label>
-              <label className="base-cg-modal__wide">
-                Rente estimée
-                <textarea
-                  value={formatFieldValue(draft.phaseLiquidation.renteEstimee)}
-                  onChange={(event) => setLiquidation('renteEstimee', updateText(event.target.value))}
-                  rows={2}
-                />
-              </label>
-            </>
+            <BaseCgRetraiteLiquidationTab draft={draft} onLiquidationChange={setLiquidation} />
           ) : null}
 
           {activeTab === 'documents' ? (

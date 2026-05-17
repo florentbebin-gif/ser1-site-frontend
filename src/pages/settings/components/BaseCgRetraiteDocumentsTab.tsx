@@ -1,7 +1,7 @@
 import type { BaseCgRetraiteDocument } from '@/data/basecg';
 
 function updateText(value: string): string | null {
-  return value.trim() || null;
+  return value.trim() ? value : null;
 }
 
 interface Props {
