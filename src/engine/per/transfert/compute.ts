@@ -146,6 +146,7 @@ function buildPrefonResult(input: {
       spouseAgeAtLiquidation: pocket.spouseAgeAtLiquidation
         ?? input.baseInput.annuityOptions.reversion.spouseAgeAtLiquidation,
       serviceValue: pocket.serviceValue,
+      serviceRevaluationRate: pocket.serviceRevaluationRate,
     }).renteAnnuelleBrute;
   };
   const buildStrategy = (strategy: 'all_rente' | 'max_capital'): PerTransfertPrefonStrategyResult => {

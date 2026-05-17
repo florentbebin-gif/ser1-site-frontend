@@ -47,6 +47,21 @@ describe('computePrefonRente', () => {
     expect(result.renteAnnuelleBrute).toBeCloseTo(102.19);
   });
 
+  it('revalorise la valeur de service jusqu’à la liquidation', () => {
+    const result = computePrefonRente({
+      params: PREFON_2025,
+      points: 1_000,
+      capitalNet: 0,
+      acquisitionAge: 55,
+      liquidationAge: 60,
+      reversionRate: 0,
+      serviceValue: 0.1,
+      serviceRevaluationRate: 0.02,
+    });
+
+    expect(result.renteAnnuelleBrute).toBeCloseTo(110.4081);
+  });
+
   it('applique le coefficient de réversion Préfon selon l’écart d’âge et le taux choisi', () => {
     const result = computePrefonRente({
       params: PREFON_2025,

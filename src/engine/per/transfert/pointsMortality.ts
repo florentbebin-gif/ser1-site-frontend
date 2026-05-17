@@ -9,6 +9,7 @@ interface PrefonRenteInput {
   reversionRate: number;
   spouseAgeAtLiquidation?: number | null;
   serviceValue?: number | null;
+  serviceRevaluationRate?: number | null;
 }
 
 export interface PrefonRenteOutput {
@@ -58,9 +59,14 @@ export function computePrefonRente(input: PrefonRenteInput): PrefonRenteOutput {
     : 0;
   const pointsRetenus = input.points > 0 ? input.points : pointsFromCapital;
   const reversionCoef = pickPrefonReversionCoefficient(input);
-  const valeurService = input.serviceValue && input.serviceValue > 0
+  const baseServiceValue = input.serviceValue && input.serviceValue > 0
     ? input.serviceValue
     : input.params.valeurService;
+  const serviceRevaluationYears = Math.max(0, input.liquidationAge - input.acquisitionAge);
+  const serviceRevaluationRate = input.serviceRevaluationRate && input.serviceRevaluationRate > 0
+    ? input.serviceRevaluationRate
+    : 0;
+  const valeurService = baseServiceValue * ((1 + serviceRevaluationRate) ** serviceRevaluationYears);
   const renteAnnuelleBrute =
     pointsRetenus
     * valeurService
