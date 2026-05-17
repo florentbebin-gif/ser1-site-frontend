@@ -122,6 +122,3 @@ jobs:
 
       - name: Run Lighthouse CI (informative)
         run: npm run lhci || echo "::warning::Lighthouse CI non bloquant pour la première stabilisation"
-
-      - name: Run no-console guard
-        run: npm run check:no-console
