@@ -12,8 +12,9 @@ export default function StepCivil({ dossier, updateDossier }: StepProps) {
         <div className="audit-form-section">
           <h3>Régime matrimonial</h3>
           <div className="audit-form-row">
-            <label>Régime</label>
+            <label htmlFor="audit-regime-matrimonial">Régime</label>
             <select
+              id="audit-regime-matrimonial"
               value={situationCivile.regimeMatrimonial || ''}
               onChange={(e) =>
                 updateDossier({
@@ -81,8 +82,9 @@ export default function StepCivil({ dossier, updateDossier }: StepProps) {
         {situationCivile.donations.map((donation, idx) => (
           <div key={donation.id} className="audit-form-card">
             <div className="audit-form-row">
-              <label>Montant</label>
+              <label htmlFor={`audit-donation-montant-${donation.id}`}>Montant</label>
               <input
+                id={`audit-donation-montant-${donation.id}`}
                 type="number"
                 value={donation.montant}
                 onChange={(e) => {
@@ -95,8 +97,9 @@ export default function StepCivil({ dossier, updateDossier }: StepProps) {
               />
             </div>
             <div className="audit-form-row">
-              <label>Bénéficiaire</label>
+              <label htmlFor={`audit-donation-beneficiaire-${donation.id}`}>Bénéficiaire</label>
               <input
+                id={`audit-donation-beneficiaire-${donation.id}`}
                 type="text"
                 value={donation.beneficiaire}
                 onChange={(e) => {

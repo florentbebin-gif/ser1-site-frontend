@@ -9,6 +9,7 @@ export interface SimSelectOption {
 }
 
 export interface SimSelectProps {
+  id?: string;
   value: string;
   onChange: (_value: string) => void;
   options: SimSelectOption[];
@@ -24,6 +25,7 @@ export interface SimSelectProps {
 }
 
 export function SimSelect({
+  id,
   value,
   onChange,
   options,
@@ -130,6 +132,7 @@ export function SimSelect({
   return (
     <div ref={ref} className={wrapperClass} style={style}>
       <button
+        id={id}
         type="button"
         ref={triggerRef}
         className={triggerClass}

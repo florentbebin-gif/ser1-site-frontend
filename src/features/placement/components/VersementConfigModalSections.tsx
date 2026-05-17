@@ -20,18 +20,16 @@ interface VersementSectionShellProps {
   children: JSX.Element;
 }
 
-function VersementSectionShell({ step, title, action, children }: VersementSectionShellProps) {
-  return (
-    <section className="vcm__section">
-      <div className="vcm__section-header">
-        <div className="vcm__section-icon">{step}</div>
-        <h3 className="vcm__section-title">{title}</h3>
-        {action || null}
-      </div>
-      {children}
-    </section>
-  );
-}
+const VersementSectionShell = ({ step, title, action, children }: VersementSectionShellProps) => (
+  <section className="vcm__section">
+    <div className="vcm__section-header">
+      <div className="vcm__section-icon">{step}</div>
+      <h3 className="vcm__section-title">{title}</h3>
+      {action || null}
+    </div>
+    {children}
+  </section>
+);
 
 interface VersementInitialSectionProps {
   initial: VersementEntry;
@@ -93,8 +91,9 @@ export function VersementInitialSection({
           {isExpert && isPER && (
             <>
               <div className="vcm__field vcm__field--compact">
-                <label className="vcm__label">Déductibilité</label>
+                <div className="vcm__label">Déductibilité</div>
                 <SimSelect
+                  ariaLabel="Déductibilité"
                   value={deductionInitiale.mode}
                   onChange={(v) =>
                     onUpdateDeductionInitiale({
@@ -120,7 +119,7 @@ export function VersementInitialSection({
         </div>
 
         <div className="vcm__field">
-          <label className="vcm__label vcm__label--sentence">Allocation</label>
+          <div className="vcm__label vcm__label--sentence">Allocation</div>
           <AllocationSlider
             pctCapi={initial.pctCapitalisation}
             pctDistrib={initial.pctDistribution}
@@ -196,9 +195,9 @@ export function VersementInitialSection({
               {/* Stratégie — masquée pour SCPI en mode simplifié */}
               {(isExpert || !isSCPI) && (
                 <div className="vcm__field">
-                  <label className="vcm__label">Stratégie</label>
-
+                  <div className="vcm__label">Stratégie</div>
                   <SimSelect
+                    ariaLabel="Stratégie"
                     value={distribution.strategie}
                     onChange={(v) => onUpdateDistribution('strategie', v)}
                     options={[
@@ -226,8 +225,9 @@ export function VersementInitialSection({
 
               {!isSCPI && distribution.dureeProduit ? (
                 <div className="vcm__field">
-                  <label className="vcm__label">Au terme du produit, réinvestir vers</label>
+                  <div className="vcm__label">Au terme du produit, réinvestir vers</div>
                   <SimSelect
+                    ariaLabel="Au terme du produit, réinvestir vers"
                     value={distribution.reinvestirVersAuTerme}
                     onChange={(v) => onUpdateDistribution('reinvestirVersAuTerme', v)}
                     options={[
@@ -324,7 +324,7 @@ export function VersementAnnualSection({
             />
           )}
           <div className={`vcm__field vcm__field--alloc${isSCPI ? '' : ''}`}>
-            <label className="vcm__label vcm__label--sentence">Allocation</label>
+            <div className="vcm__label vcm__label--sentence">Allocation</div>
             <AllocationSlider
               pctCapi={annuel.pctCapitalisation}
               pctDistrib={annuel.pctDistribution}

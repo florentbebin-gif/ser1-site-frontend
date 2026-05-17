@@ -10,8 +10,9 @@ export default function StepFamille({ dossier, updateDossier }: StepProps) {
       <div className="audit-form-section">
         <h3>Monsieur</h3>
         <div className="audit-form-row">
-          <label>Prénom</label>
+          <label htmlFor="audit-mr-prenom">Prénom</label>
           <input
+            id="audit-mr-prenom"
             type="text"
             value={situationFamiliale.mr.prenom}
             onChange={(e) =>
@@ -26,8 +27,9 @@ export default function StepFamille({ dossier, updateDossier }: StepProps) {
           />
         </div>
         <div className="audit-form-row">
-          <label>Nom</label>
+          <label htmlFor="audit-mr-nom">Nom</label>
           <input
+            id="audit-mr-nom"
             type="text"
             value={situationFamiliale.mr.nom}
             onChange={(e) =>
@@ -89,8 +91,9 @@ export default function StepFamille({ dossier, updateDossier }: StepProps) {
           <div className="audit-form-section">
             <h3>Madame / Partenaire</h3>
             <div className="audit-form-row">
-              <label>Prénom</label>
+              <label htmlFor="audit-mme-prenom">Prénom</label>
               <input
+                id="audit-mme-prenom"
                 type="text"
                 value={situationFamiliale.mme?.prenom || ''}
                 onChange={(e) =>
@@ -108,8 +111,9 @@ export default function StepFamille({ dossier, updateDossier }: StepProps) {
               />
             </div>
             <div className="audit-form-row">
-              <label>Nom</label>
+              <label htmlFor="audit-mme-nom">Nom</label>
               <input
+                id="audit-mme-nom"
                 type="text"
                 value={situationFamiliale.mme?.nom || ''}
                 onChange={(e) =>

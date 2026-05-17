@@ -42,8 +42,9 @@ export default function StepPassif({ dossier, updateDossier }: StepProps) {
       {passif.emprunts.map((emprunt, idx) => (
         <div key={emprunt.id} className="audit-form-card">
           <div className="audit-form-row">
-            <label>Libellé</label>
+            <label htmlFor={`audit-emprunt-libelle-${emprunt.id}`}>Libellé</label>
             <input
+              id={`audit-emprunt-libelle-${emprunt.id}`}
               type="text"
               value={emprunt.libelle}
               onChange={(e) => {
@@ -55,8 +56,9 @@ export default function StepPassif({ dossier, updateDossier }: StepProps) {
             />
           </div>
           <div className="audit-form-row">
-            <label>Capital restant dû (€)</label>
+            <label htmlFor={`audit-emprunt-crd-${emprunt.id}`}>Capital restant dû (€)</label>
             <input
+              id={`audit-emprunt-crd-${emprunt.id}`}
               type="number"
               value={emprunt.capitalRestantDu}
               onChange={(e) => {
@@ -70,8 +72,9 @@ export default function StepPassif({ dossier, updateDossier }: StepProps) {
             />
           </div>
           <div className="audit-form-row">
-            <label>Mensualité (€)</label>
+            <label htmlFor={`audit-emprunt-mensualite-${emprunt.id}`}>Mensualité (€)</label>
             <input
+              id={`audit-emprunt-mensualite-${emprunt.id}`}
               type="number"
               value={emprunt.mensualite}
               onChange={(e) => {
@@ -82,8 +85,9 @@ export default function StepPassif({ dossier, updateDossier }: StepProps) {
             />
           </div>
           <div className="audit-form-row">
-            <label>Date de fin</label>
+            <label htmlFor={`audit-emprunt-date-fin-${emprunt.id}`}>Date de fin</label>
             <input
+              id={`audit-emprunt-date-fin-${emprunt.id}`}
               type="date"
               value={emprunt.dateFin}
               onChange={(e) => {
