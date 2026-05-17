@@ -46,7 +46,7 @@ describe('baseCgRetraiteRepository', () => {
     });
   });
 
-  it('merge les overrides et documents Supabase avec le catalogue généré', async () => {
+  it('merge les overrides et documents Supabase avec le catalogue statique', async () => {
     fromMock.mockImplementation((table: string) => ({
       select: () => ({
         order: () => Promise.resolve({
@@ -168,5 +168,15 @@ describe('baseCgRetraiteRepository', () => {
 
     expect(createSignedUrlMock).toHaveBeenCalledWith('test/cg.pdf', 300);
     expect(url).toBe('https://signed.example.test/cg.pdf');
+  });
+
+  it('construit un chemin storage stable pour les PDF Base CG', async () => {
+    const { buildBaseCgRetraiteStoragePath } = await import('./baseCgRetraiteRepository');
+
+    expect(buildBaseCgRetraiteStoragePath({
+      id: 'contract-test',
+      compagnie: 'Abeille Vie',
+      nomContrat: 'PERIN Retraite Sérénité',
+    }, 'CG 2026 / client')).toBe('abeille-vie/perin-retraite-serenite/cg-2026-client.pdf');
   });
 });
