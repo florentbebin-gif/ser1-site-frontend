@@ -146,6 +146,11 @@ Un deck Serenity suit toujours cette chaîne :
 - Dette technique majeure encore présente :
   - `placement`
 
+### Artefacts Office
+- Les fichiers Office de travail (`.xls`, `.xlsx`, `.xlsm`, `.ppt`, `.pptx`) ne sont pas versionnes.
+- Le garde-fou `npm run check:no-office-artifacts` verifie les fichiers suivis par Git et echoue si un artefact Office est ajoute par erreur.
+- Cette regle ne concerne pas les exports runtime : conserver `src/pptx/**`, `src/features/*/export/**` et `src/utils/export/**`, qui sont du code applicatif actif.
+
 ### Infrastructure obligatoire
 - Builder OOXML : `src/utils/export/xlsxBuilder.ts`
 - Les exports doivent passer par :
