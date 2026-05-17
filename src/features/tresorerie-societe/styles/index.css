@@ -211,14 +211,13 @@
 }
 
 .ts-treasury-stack__segment--protected {
-  background:
-    repeating-linear-gradient(
-      45deg,
-      color-mix(in srgb, var(--color-c8) 55%, #fff) 0,
-      color-mix(in srgb, var(--color-c8) 55%, #fff) 5px,
-      #fff 5px,
-      #fff 10px
-    );
+  background: repeating-linear-gradient(
+    45deg,
+    color-mix(in srgb, var(--color-c8) 55%, #fff) 0,
+    color-mix(in srgb, var(--color-c8) 55%, #fff) 5px,
+    #fff 5px,
+    #fff 10px
+  );
 }
 
 .ts-treasury-stack__segment--court_terme {
@@ -692,7 +691,7 @@
   cursor: pointer;
 }
 
-.ts-toggle-label input[type="checkbox"] {
+.ts-toggle-label input[type='checkbox'] {
   accent-color: var(--color-c2);
   width: 15px;
   height: 15px;
@@ -890,7 +889,9 @@
   font-weight: 500;
   color: var(--color-c2);
   cursor: pointer;
-  transition: background 0.15s, border-color 0.15s;
+  transition:
+    background 0.15s,
+    border-color 0.15s;
 }
 
 .ts-projection-btn:hover {
@@ -1218,14 +1219,16 @@
 
 .ts-timeline-track__palier:hover .ts-timeline-track__palier-bg {
   stroke: var(--color-c3);
-  filter: drop-shadow(0 2px 5px rgba(0, 0, 0, 0.10));
+  filter: drop-shadow(0 2px 5px rgba(0, 0, 0, 0.1));
 }
 
 .ts-timeline-track__palier-bg {
   fill: #fff;
   stroke: var(--color-c8);
   stroke-width: 1;
-  transition: stroke 0.15s, filter 0.15s;
+  transition:
+    stroke 0.15s,
+    filter 0.15s;
 }
 
 .ts-timeline-track__palier-label {

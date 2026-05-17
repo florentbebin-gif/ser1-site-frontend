@@ -76,7 +76,7 @@ export function buildTresorerieAllocationMatrix(
       h: colH,
       fill: { color: horizonColor },
       line: { color: horizonColor, width: 1 },
-      rectRadius: 0.10,
+      rectRadius: 0.1,
       shadow: {
         type: SHADOW_PARAMS.type,
         angle: SHADOW_PARAMS.angle,
@@ -98,10 +98,10 @@ export function buildTresorerieAllocationMatrix(
 
     // ── Titre dans le bandeau ──────────────────────────────────────────
     addTextFr(slide, horizon.label, {
-      x: x + 0.20,
+      x: x + 0.2,
       y: CONTENT_TOP_Y + 0.16,
-      w: colW - 0.40,
-      h: 0.40,
+      w: colW - 0.4,
+      h: 0.4,
       fontSize: 14,
       bold: true,
       color: headerTextColor,
@@ -112,27 +112,33 @@ export function buildTresorerieAllocationMatrix(
     // ── Icône ronde sous le bandeau (cercle blanc avec icône colorée) ──
     const iconY = CONTENT_TOP_Y + headerH + 0.18;
     slide.addShape('ellipse', {
-      x: x + colW / 2 - 0.50,
+      x: x + colW / 2 - 0.5,
       y: iconY,
-      w: 1.00,
-      h: 1.00,
+      w: 1.0,
+      h: 1.0,
       fill: { color: WHITE },
       line: { color: horizonColor, width: 2 },
     });
-    addBusinessIconToSlide(slide, horizon.iconKey, {
-      x: x + colW / 2 - 0.35,
-      y: iconY + 0.15,
-      w: 0.70,
-      h: 0.70,
-    }, theme, 'accent');
+    addBusinessIconToSlide(
+      slide,
+      horizon.iconKey,
+      {
+        x: x + colW / 2 - 0.35,
+        y: iconY + 0.15,
+        w: 0.7,
+        h: 0.7,
+      },
+      theme,
+      'accent',
+    );
 
     // ── Hero rendement attendu ────────────────────────────────────────
-    const heroY = iconY + 1.10;
+    const heroY = iconY + 1.1;
     addTextFr(slide, 'Rendement attendu', {
       x: x + 0.18,
       y: heroY,
       w: colW - 0.36,
-      h: 0.20,
+      h: 0.2,
       fontSize: 9.5,
       italic: true,
       color: textMain,
@@ -165,7 +171,7 @@ export function buildTresorerieAllocationMatrix(
     });
     addTextFr(slide, horizon.durationLabel, {
       x: x + 0.18,
-      y: dureeY + 0.20,
+      y: dureeY + 0.2,
       w: colW - 0.36,
       h: 0.26,
       fontSize: 12,
@@ -177,9 +183,9 @@ export function buildTresorerieAllocationMatrix(
 
     // ── Séparateur ─────────────────────────────────────────────────────
     slide.addShape('line', {
-      x: x + 0.30,
+      x: x + 0.3,
       y: dureeY + 0.56,
-      w: colW - 0.60,
+      w: colW - 0.6,
       h: 0,
       line: { color: panelBorder, width: 0.6 },
     });
@@ -197,11 +203,11 @@ export function buildTresorerieAllocationMatrix(
       color: emphasisColor,
       align: 'center',
     });
-    addTextFr(slide, horizon.typicalSupports.map(support => `· ${support}`).join('\n'), {
+    addTextFr(slide, horizon.typicalSupports.map((support) => `· ${support}`).join('\n'), {
       x: x + 0.18,
       y: supportsY + 0.26,
       w: colW - 0.36,
-      h: 0.90,
+      h: 0.9,
       fontSize: 10,
       color: textMain,
       align: 'center',

@@ -87,4 +87,3 @@ export interface EffectivePartsFullResult {
   computedParts: number;
   effectiveParts: number;
 }
-

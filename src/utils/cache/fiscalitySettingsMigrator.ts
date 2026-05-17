@@ -26,10 +26,38 @@ import type {
 // Default product catalogue
 // ---------------------------------------------------------------------------
 const DEFAULT_PRODUCTS: Product[] = [
-  { key: 'assuranceVie', label: 'Assurance-vie', holders: 'PP', nature: 'Assurance', isActive: true, sortOrder: 1 },
-  { key: 'perIndividuel', label: 'PER Individuel', holders: 'PP', nature: 'Assurance', isActive: true, sortOrder: 2 },
-  { key: 'cto', label: 'Compte-titres ordinaire', holders: 'PP+PM', nature: 'Titres', isActive: true, sortOrder: 3 },
-  { key: 'pea', label: "Plan d'\u00c9pargne en Actions", holders: 'PP', nature: 'Titres', isActive: true, sortOrder: 4 },
+  {
+    key: 'assuranceVie',
+    label: 'Assurance-vie',
+    holders: 'PP',
+    nature: 'Assurance',
+    isActive: true,
+    sortOrder: 1,
+  },
+  {
+    key: 'perIndividuel',
+    label: 'PER Individuel',
+    holders: 'PP',
+    nature: 'Assurance',
+    isActive: true,
+    sortOrder: 2,
+  },
+  {
+    key: 'cto',
+    label: 'Compte-titres ordinaire',
+    holders: 'PP+PM',
+    nature: 'Titres',
+    isActive: true,
+    sortOrder: 3,
+  },
+  {
+    key: 'pea',
+    label: "Plan d'\u00c9pargne en Actions",
+    holders: 'PP',
+    nature: 'Titres',
+    isActive: true,
+    sortOrder: 4,
+  },
 ];
 
 // ---------------------------------------------------------------------------
@@ -139,7 +167,8 @@ function resolveOneRef(
   const table = withoutPrefix.slice(0, dotIndex);
   const path = withoutPrefix.slice(dotIndex + 1);
 
-  const source = table === 'tax_settings' ? taxSettings : table === 'ps_settings' ? psSettings : null;
+  const source =
+    table === 'tax_settings' ? taxSettings : table === 'ps_settings' ? psSettings : null;
   if (!source) return undefined;
 
   return getByPath(source, path);
@@ -217,12 +246,18 @@ function setByPath(obj: Record<string, unknown>, path: string, value: unknown): 
   let current: Record<string, unknown> = obj;
   for (let i = 0; i < parts.length - 1; i++) {
     const part = parts[i];
-    if (current[part] === undefined || current[part] === null || typeof current[part] !== 'object') {
+    if (!part) return;
+    if (
+      current[part] === undefined ||
+      current[part] === null ||
+      typeof current[part] !== 'object'
+    ) {
       return; // path does not exist — do not create it
     }
     current = current[part] as Record<string, unknown>;
   }
   const lastPart = parts[parts.length - 1];
+  if (!lastPart) return;
   if (lastPart in current) {
     current[lastPart] = value;
   }

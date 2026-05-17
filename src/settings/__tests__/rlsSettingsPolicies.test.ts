@@ -15,12 +15,15 @@ describe('policies RLS settings Base-Contrat / DMTG', () => {
 
     const report = JSON.parse(output) as {
       ok?: boolean;
-      tables?: Record<string, {
-        rlsEnabled?: boolean;
-        expectedRead?: boolean;
-        expectedWrites?: boolean;
-        evidence?: Array<{ file?: string; line?: number; policy?: string }>;
-      }>;
+      tables?: Record<
+        string,
+        {
+          rlsEnabled?: boolean;
+          expectedRead?: boolean;
+          expectedWrites?: boolean;
+          evidence?: Array<{ file?: string; line?: number; policy?: string }>;
+        }
+      >;
     };
 
     expect(report.ok).toBe(true);

@@ -22,7 +22,7 @@
 .sim-info-btn:focus-visible {
   background: var(--color-c3);
   border-color: var(--color-c3);
-  color: #FFFFFF;
+  color: #ffffff;
 }
 
 .sim-modal-btn {
@@ -37,7 +37,7 @@
 }
 
 .sim-modal-btn--ghost {
-  background: #FFFFFF;
+  background: #ffffff;
   color: var(--color-c9);
 }
 
@@ -50,7 +50,7 @@
 .sim-modal-btn--primary {
   background: var(--color-c3);
   border-color: var(--color-c3);
-  color: #FFFFFF;
+  color: #ffffff;
 }
 
 .sim-modal-btn--primary:hover,

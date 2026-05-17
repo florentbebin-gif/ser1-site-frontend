@@ -7,7 +7,7 @@
   right: 24px;
   z-index: 9999;
   background: #996600; /* couleur statut alerte — hors palette C1-C10 */
-  color: #FFFFFF;
+  color: #ffffff;
   padding: 12px 20px;
   border-radius: 8px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
@@ -28,7 +28,7 @@
 }
 
 .session-expired-card {
-  background: #FFFFFF; /* exception fond carte — gouvernance §index.css */
+  background: #ffffff; /* exception fond carte — gouvernance §index.css */
   border-radius: 12px;
   padding: 32px 40px;
   text-align: center;
@@ -51,7 +51,7 @@
 
 .session-expired-btn {
   background: var(--color-c1);
-  color: #FFFFFF;
+  color: #ffffff;
   border: none;
   border-radius: 8px;
   padding: 10px 24px;

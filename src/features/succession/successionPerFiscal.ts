@@ -8,7 +8,9 @@ import type {
 } from './successionDraft.types';
 import type { SuccessionFiscalSnapshot } from './successionFiscalContext';
 
-export interface SuccessionPerFiscalAnalysis extends ReturnType<typeof buildSuccessionAvFiscalAnalysis> {}
+export interface SuccessionPerFiscalAnalysis extends ReturnType<
+  typeof buildSuccessionAvFiscalAnalysis
+> {}
 
 function getAgeAtDate(birthDate: string | undefined, referenceDate: Date): number | null {
   if (!birthDate) return null;
@@ -21,7 +23,8 @@ function getAgeAtDate(birthDate: string | undefined, referenceDate: Date): numbe
   const refMonth = referenceDate.getUTCMonth();
   const refDay = referenceDate.getUTCDate();
 
-  const age = years - (refMonth < birthMonth || (refMonth === birthMonth && refDay < birthDay) ? 1 : 0);
+  const age =
+    years - (refMonth < birthMonth || (refMonth === birthMonth && refDay < birthDay) ? 1 : 0);
   return age >= 0 ? age : null;
 }
 
@@ -33,9 +36,8 @@ function toSyntheticAssuranceVieEntries(
   const warnings: string[] = [];
 
   const assuranceVieEntries = perEntries.map((entry) => {
-    const birthDate = entry.assure === 'epoux1'
-      ? civil.dateNaissanceEpoux1
-      : civil.dateNaissanceEpoux2;
+    const birthDate =
+      entry.assure === 'epoux1' ? civil.dateNaissanceEpoux1 : civil.dateNaissanceEpoux2;
     const ageAtDeath = getAgeAtDate(birthDate, referenceDate);
     const assumeBefore70 = ageAtDeath == null;
 
@@ -87,12 +89,16 @@ export function buildSuccessionPerFiscalAnalysis(
 
   return {
     ...analysis,
-    warnings: Array.from(new Set([
-      ...syntheticWarnings,
-      ...analysis.warnings.map((warning) => warning.replace(/Assurance-vie/g, 'PER assurance')),
-      ...(perEntries.length > 0
-        ? ['PER assurance deces: ventilation fiscale simplifiee sur la base de l\'age de l\'assure au deces simule.']
-        : []),
-    ])),
+    warnings: Array.from(
+      new Set([
+        ...syntheticWarnings,
+        ...analysis.warnings.map((warning) => warning.replace(/Assurance-vie/g, 'PER assurance')),
+        ...(perEntries.length > 0
+          ? [
+              "PER assurance deces: ventilation fiscale simplifiee sur la base de l'age de l'assure au deces simule.",
+            ]
+          : []),
+      ]),
+    ),
   };
 }

@@ -69,11 +69,11 @@ export function computeProjectionAvis({
 
   const declarant2 = deductionFlow.declarant2
     ? allocateNextAvis({
-      avisIr: avisIr2,
-      projectedPlafondCalcule: projectedPlafondD2 ?? 0,
-      plafondDisponibleInitial: deductionFlow.declarant2.plafondDisponible,
-      plafondDisponibleRestant: deductionFlow.declarant2.disponibleRestant,
-    })
+        avisIr: avisIr2,
+        projectedPlafondCalcule: projectedPlafondD2 ?? 0,
+        plafondDisponibleInitial: deductionFlow.declarant2.plafondDisponible,
+        plafondDisponibleRestant: deductionFlow.declarant2.disponibleRestant,
+      })
     : undefined;
 
   return { declarant1, declarant2 };

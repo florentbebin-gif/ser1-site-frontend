@@ -10,7 +10,7 @@ export default function StepObjectifs({ dossier, updateDossier }: StepProps) {
     'proteger_conjoint',
     'proteger_proches',
     'proteger_revenus_sante',
-    ...(hasEntreprise ? ['proteger_entreprise', 'proteger_associes'] as ObjectifClient[] : []),
+    ...(hasEntreprise ? (['proteger_entreprise', 'proteger_associes'] as ObjectifClient[]) : []),
     'preparer_transmission',
     'developper_patrimoine',
     'revenus_differes',
@@ -33,7 +33,10 @@ export default function StepObjectifs({ dossier, updateDossier }: StepProps) {
 
       <div className="audit-objectifs-grid">
         {allObjectifs.map((objectif) => (
-          <label key={objectif} className={`audit-objectif-card ${objectifs.includes(objectif) ? 'selected' : ''}`}>
+          <label
+            key={objectif}
+            className={`audit-objectif-card ${objectifs.includes(objectif) ? 'selected' : ''}`}
+          >
             <input
               type="checkbox"
               checked={objectifs.includes(objectif)}

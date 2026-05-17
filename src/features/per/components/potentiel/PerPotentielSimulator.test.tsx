@@ -87,7 +87,9 @@ vi.mock('./steps/SituationFiscaleStep', () => ({
     mutualisationConjoints: boolean;
   }) => (
     <div>
-      Situation step {showFoyerCard ? 'foyer visible' : 'foyer masqué'} {showIncomeCard ? 'revenus visibles' : 'revenus masqués'} {situationFamiliale} {isCouple ? 'couple' : 'solo'} {mutualisationConjoints ? '6QR oui' : '6QR non'}
+      Situation step {showFoyerCard ? 'foyer visible' : 'foyer masqué'}{' '}
+      {showIncomeCard ? 'revenus visibles' : 'revenus masqués'} {situationFamiliale}{' '}
+      {isCouple ? 'couple' : 'solo'} {mutualisationConjoints ? '6QR oui' : '6QR non'}
     </div>
   ),
 }));
@@ -105,7 +107,12 @@ vi.mock('./PerPotentielContextSidebar', () => ({
     totalAvisIrD1: number;
     totalAvisIrD2: number;
     showProjectedPlafondCalcule: boolean;
-  }) => <div>Sidebar contexte {totalAvisIrD1} / {totalAvisIrD2} {showProjectedPlafondCalcule ? 'plafond connu' : 'plafond à déterminer'}</div>,
+  }) => (
+    <div>
+      Sidebar contexte {totalAvisIrD1} / {totalAvisIrD2}{' '}
+      {showProjectedPlafondCalcule ? 'plafond connu' : 'plafond à déterminer'}
+    </div>
+  ),
 }));
 
 import PerPotentielSimulator from './PerPotentielSimulator';
@@ -152,43 +159,44 @@ function makeHookState(step: number) {
 function makeHookReturn(step: number) {
   return {
     state: makeHookState(step),
-    result: step >= 3
-      ? {
-        situationFiscale: {
-          tmi: 0.3,
-          irEstime: 1000,
-          revenuImposableD1: 20000,
-          revenuImposableD2: 0,
-          revenuFiscalRef: 20000,
-          decote: 0,
-          cehr: 0,
-          montantDansLaTMI: 1000,
-        },
-        plafond163Q: {
-          declarant1: { disponibleRestant: 6000, totalDisponible: 11000 },
-          declarant2: undefined,
-        },
-        deductionFlow163Q: {
-          declarant1: { disponibleRestant: 6000, plafondDisponible: 11000 },
-        },
-        declaration2042: {
-          case6NS: 1000,
-          case6RS: 0,
-          case6QS: 0,
-          case6OS: 0,
-          case6QR: false,
-        },
-        projectionAvisSuivant: {
-          declarant1: {
-            nonUtiliseN2: 2000,
-            nonUtiliseN1: 3000,
-            nonUtiliseN: 1000,
-            plafondCalculeN: 4000,
-            plafondTotal: 10000,
-          },
-        },
-      }
-      : null,
+    result:
+      step >= 3
+        ? {
+            situationFiscale: {
+              tmi: 0.3,
+              irEstime: 1000,
+              revenuImposableD1: 20000,
+              revenuImposableD2: 0,
+              revenuFiscalRef: 20000,
+              decote: 0,
+              cehr: 0,
+              montantDansLaTMI: 1000,
+            },
+            plafond163Q: {
+              declarant1: { disponibleRestant: 6000, totalDisponible: 11000 },
+              declarant2: undefined,
+            },
+            deductionFlow163Q: {
+              declarant1: { disponibleRestant: 6000, plafondDisponible: 11000 },
+            },
+            declaration2042: {
+              case6NS: 1000,
+              case6RS: 0,
+              case6QS: 0,
+              case6OS: 0,
+              case6QR: false,
+            },
+            projectionAvisSuivant: {
+              declarant1: {
+                nonUtiliseN2: 2000,
+                nonUtiliseN1: 3000,
+                nonUtiliseN: 1000,
+                plafondCalculeN: 4000,
+                plafondTotal: 10000,
+              },
+            },
+          }
+        : null,
     visibleSteps: [1, 2, 3, 4],
     setMode: vi.fn(),
     setHistoricalBasis: vi.fn(),
@@ -289,7 +297,9 @@ describe('PerPotentielSimulator', () => {
     const html = renderToStaticMarkup(<PerPotentielSimulator />);
 
     expect(html).toContain('Versement N');
-    expect(html).toContain('Situation step foyer masqué revenus masqués celibataire couple 6QR non');
+    expect(html).toContain(
+      'Situation step foyer masqué revenus masqués celibataire couple 6QR non',
+    );
     expect(html).toContain('plafond à déterminer');
   });
 

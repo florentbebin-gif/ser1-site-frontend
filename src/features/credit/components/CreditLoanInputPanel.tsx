@@ -1,11 +1,6 @@
 import { CreditLoanForm } from './CreditLoanForm';
 import { Toggle } from './CreditInputs';
-import type {
-  CreditCalcResult,
-  CreditLoan,
-  CreditRawLoanValues,
-  CreditState,
-} from '../types';
+import type { CreditCalcResult, CreditLoan, CreditRawLoanValues, CreditState } from '../types';
 
 interface ActiveLoanEntry {
   data: CreditLoan | null;
@@ -115,7 +110,8 @@ export function CreditLoanInputPanel({
           )}
           {state.lisserPret1 && calc.autresIsInfine.some(Boolean) && (
             <p className="cv-lissage__hint">
-              Un prêt in fine comporte une échéance finale de capital : elle n&apos;est pas lissable et reste visible dans l&apos;échéancier.
+              Un prêt in fine comporte une échéance finale de capital : elle n&apos;est pas lissable
+              et reste visible dans l&apos;échéancier.
             </p>
           )}
         </div>

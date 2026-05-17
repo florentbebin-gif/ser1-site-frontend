@@ -23,15 +23,19 @@ function walk(dir, out = []) {
 
 function shouldSkipFile(filePath) {
   const normalized = filePath.replaceAll(path.sep, '/');
-  return normalized.includes('/__tests__/')
-    || normalized.includes('.test.')
-    || normalized.includes('debugFlags');
+  return (
+    normalized.includes('/__tests__/') ||
+    normalized.includes('.test.') ||
+    normalized.includes('debugFlags')
+  );
 }
 
 function shouldSkipLine(line, previousLine) {
-  return line.includes('eslint-disable')
-    || line.includes('import.meta.env.DEV')
-    || previousLine.includes('eslint-disable');
+  return (
+    line.includes('eslint-disable') ||
+    line.includes('import.meta.env.DEV') ||
+    previousLine.includes('eslint-disable')
+  );
 }
 
 const violations = [];

@@ -10,7 +10,7 @@ const CFG_2025 = {
 };
 
 describe('computeDecote', () => {
-  it('retourne 0 si l\'IR brut dépasse le seuil (célibataire)', () => {
+  it("retourne 0 si l'IR brut dépasse le seuil (célibataire)", () => {
     const result = computeDecote({ isCouple: false, decoteYearCfg: CFG_2025, irBrutFoyer: 2000 });
     expect(result).toBe(0);
   });
@@ -27,7 +27,7 @@ describe('computeDecote', () => {
     expect(result).toBeCloseTo(765.25, 1);
   });
 
-  it('la décote ne dépasse jamais l\'IR brut', () => {
+  it("la décote ne dépasse jamais l'IR brut", () => {
     const result = computeDecote({ isCouple: false, decoteYearCfg: CFG_2025, irBrutFoyer: 100 });
     // 873 - (45.25/100) * 100 = 873 - 45.25 = 827.75 → plafonné à 100
     expect(result).toBe(100);

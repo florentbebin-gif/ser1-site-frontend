@@ -13,9 +13,7 @@ import {
   CLAUSE_CONJOINT_LABEL,
   CLAUSE_ENFANTS_LABEL,
 } from '../successionSimulator.constants';
-import {
-  labelMember,
-} from '../successionSimulator.helpers';
+import { labelMember } from '../successionSimulator.helpers';
 import {
   getClausePreset,
   parseCustomClause,
@@ -33,10 +31,7 @@ interface PerModalProps {
   isPacsed: boolean;
   onClose: () => void;
   onValidate: () => void;
-  onUpdate: (
-    _field: keyof SuccessionPerEntry,
-    _value: string | number | undefined,
-  ) => void;
+  onUpdate: (_field: keyof SuccessionPerEntry, _value: string | number | undefined) => void;
 }
 
 export default function PerModal({
@@ -62,7 +57,7 @@ export default function PerModal({
       bodyClassName="sc-member-modal__body sc-assurance-vie-modal__body"
       footerClassName="sc-member-modal__footer"
       closeClassName="sc-member-modal__close"
-      footer={(
+      footer={
         <>
           <button
             type="button"
@@ -79,7 +74,7 @@ export default function PerModal({
             Valider
           </button>
         </>
-      )}
+      }
     >
       <div className="sc-assurance-vie-grid sc-assurance-vie-grid--premium">
         <div className="sc-field">
@@ -87,7 +82,9 @@ export default function PerModal({
           <ScSelect
             className="sc-assurance-vie-select"
             value={entry.typeContrat}
-            onChange={(value) => onUpdate('typeContrat', value as SuccessionAssuranceVieContractType)}
+            onChange={(value) =>
+              onUpdate('typeContrat', value as SuccessionAssuranceVieContractType)
+            }
             options={ASSURANCE_VIE_TYPE_OPTIONS}
           />
         </div>
@@ -99,7 +96,9 @@ export default function PerModal({
               min={1}
               max={120}
               value={entry.ageUsufruitier ?? ''}
-              onChange={(e) => onUpdate('ageUsufruitier', e.target.value ? Number(e.target.value) : undefined)}
+              onChange={(e) =>
+                onUpdate('ageUsufruitier', e.target.value ? Number(e.target.value) : undefined)
+              }
               placeholder="ex. 68"
             />
             <p className="sc-hint sc-hint--compact sc-assurance-vie-contract__hint">

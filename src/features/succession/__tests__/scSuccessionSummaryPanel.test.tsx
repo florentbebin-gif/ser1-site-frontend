@@ -30,7 +30,11 @@ function extractKpiValue(markup: string, label: string): string | undefined {
   return undefined;
 }
 
-function makeDisplayTotals(totalDroits: number, decesSimuleTotal = totalDroits, secondDecesTotal: number | null = null): SuccessionDisplayTotals {
+function makeDisplayTotals(
+  totalDroits: number,
+  decesSimuleTotal = totalDroits,
+  secondDecesTotal: number | null = null,
+): SuccessionDisplayTotals {
   return {
     decesSimule: {
       side: 'epoux1',
@@ -38,14 +42,15 @@ function makeDisplayTotals(totalDroits: number, decesSimuleTotal = totalDroits, 
       droitsHorsSuccession: { assuranceVie: 0, per: 0, prevoyance: 0, total: 0 },
       totalDroits: decesSimuleTotal,
     },
-    secondDeces: secondDecesTotal == null
-      ? null
-      : {
-        side: 'epoux2',
-        droitsSuccession: secondDecesTotal,
-        droitsHorsSuccession: { assuranceVie: 0, per: 0, prevoyance: 0, total: 0 },
-        totalDroits: secondDecesTotal,
-      },
+    secondDeces:
+      secondDecesTotal == null
+        ? null
+        : {
+            side: 'epoux2',
+            droitsSuccession: secondDecesTotal,
+            droitsHorsSuccession: { assuranceVie: 0, per: 0, prevoyance: 0, total: 0 },
+            totalDroits: secondDecesTotal,
+          },
     projectionAutreAssure: {
       side: 'epoux2',
       droitsHorsSuccession: { assuranceVie: 0, per: 0, prevoyance: 0, total: 0 },
@@ -58,15 +63,17 @@ function makeDisplayTotals(totalDroits: number, decesSimuleTotal = totalDroits, 
 
 describe('ScSuccessionSummaryPanel', () => {
   it('affiche le tableau unifié avec capitaux décès nets pour un bénéficiaire avec 990I', () => {
-    const unifiedBlocks: UnifiedBeneficiaryBlock[] = [{
-      id: 'enfant-1',
-      label: 'Enfant 1',
-      isConjoint: false,
-      brut: 100000,
-      capitauxDecesNets: 144000,
-      droits: 5000,
-      transmissionNette: 239000,
-    }];
+    const unifiedBlocks: UnifiedBeneficiaryBlock[] = [
+      {
+        id: 'enfant-1',
+        label: 'Enfant 1',
+        isConjoint: false,
+        brut: 100000,
+        capitauxDecesNets: 144000,
+        droits: 5000,
+        transmissionNette: 239000,
+      },
+    ];
 
     const markup = renderToStaticMarkup(
       <ScSuccessionSummaryPanel
@@ -90,17 +97,19 @@ describe('ScSuccessionSummaryPanel', () => {
     expect(markup).not.toContain('art. 990 I');
   });
 
-  it('n\'affiche pas « Capitaux décès nets » quand la valeur est 0', () => {
-    const unifiedBlocks: UnifiedBeneficiaryBlock[] = [{
-      id: 'conjoint',
-      label: 'Conjoint survivant',
-      isConjoint: true,
-      exonerated: true,
-      brut: 100000,
-      capitauxDecesNets: 0,
-      droits: 0,
-      transmissionNette: 100000,
-    }];
+  it("n'affiche pas « Capitaux décès nets » quand la valeur est 0", () => {
+    const unifiedBlocks: UnifiedBeneficiaryBlock[] = [
+      {
+        id: 'conjoint',
+        label: 'Conjoint survivant',
+        isConjoint: true,
+        exonerated: true,
+        brut: 100000,
+        capitauxDecesNets: 0,
+        droits: 0,
+        transmissionNette: 100000,
+      },
+    ];
 
     const markup = renderToStaticMarkup(
       <ScSuccessionSummaryPanel
@@ -148,7 +157,10 @@ describe('ScSuccessionSummaryPanel', () => {
       directSuccessionDroits: 100,
       avFiscalAnalysis: { totalDroits: 110, byAssure: fiscalByAssure.avFiscalByAssure },
       perFiscalAnalysis: { totalDroits: 330, byAssure: fiscalByAssure.perFiscalByAssure },
-      prevoyanceFiscalAnalysis: { totalDroits: 550, byAssure: fiscalByAssure.prevoyanceFiscalByAssure },
+      prevoyanceFiscalAnalysis: {
+        totalDroits: 550,
+        byAssure: fiscalByAssure.prevoyanceFiscalByAssure,
+      },
     });
 
     const markup = renderToStaticMarkup(

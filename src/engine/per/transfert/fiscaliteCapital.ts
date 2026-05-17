@@ -49,7 +49,10 @@ function buildAvailableResult(input: {
   const netOfSocialContributions = Math.max(0, input.capital - input.socialContributions);
   const netOfAllTaxes = Math.max(0, input.capital - input.socialContributions - input.incomeTax);
   const quotientTax = input.incomeTaxWithQuotient ?? input.incomeTax;
-  const netOfAllTaxesWithQuotient = Math.max(0, input.capital - input.socialContributions - quotientTax);
+  const netOfAllTaxesWithQuotient = Math.max(
+    0,
+    input.capital - input.socialContributions - quotientTax,
+  );
   return {
     available: true,
     capital: input.capital,
@@ -66,7 +69,9 @@ function buildAvailableResult(input: {
   };
 }
 
-export function computeCapitalFiscal(input: ComputeCapitalFiscalInput): PerTransfertCapitalFiscalResult {
+export function computeCapitalFiscal(
+  input: ComputeCapitalFiscalInput,
+): PerTransfertCapitalFiscalResult {
   const capital = positive(input.capital);
   if (capital === 0) return unavailable();
 

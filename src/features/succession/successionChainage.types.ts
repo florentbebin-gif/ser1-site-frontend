@@ -21,7 +21,10 @@ import type {
 import type { SuccessionAssetTransmissionBasis } from './successionTransmissionBasis';
 
 export type SuccessionChainOrder = 'epoux1' | 'epoux2';
-export type SuccessionChainRegime = 'communaute_legale' | 'separation_biens' | 'communaute_universelle';
+export type SuccessionChainRegime =
+  | 'communaute_legale'
+  | 'separation_biens'
+  | 'communaute_universelle';
 
 export interface SuccessionChainStep {
   actifTransmis: number;
@@ -121,19 +124,21 @@ export interface SuccessionChainageInput {
   dmtgSettings: DmtgSettings;
   survivorEconomicInflows?: Record<'epoux1' | 'epoux2', number>;
   attributionBiensCommunsPct?: number;
-  patrimonial?: Partial<Pick<
-    SuccessionPatrimonialContext,
-    | 'attributionIntegrale'
-    | 'donationEntreEpouxActive'
-    | 'donationEntreEpouxOption'
-    | 'stipulationContraireCU'
-    | 'preciputMode'
-    | 'preciputSelections'
-    | 'preciputMontant'
-    | 'participationAcquets'
-    | 'societeAcquets'
-    | 'interMassClaims'
-  >>;
+  patrimonial?: Partial<
+    Pick<
+      SuccessionPatrimonialContext,
+      | 'attributionIntegrale'
+      | 'donationEntreEpouxActive'
+      | 'donationEntreEpouxOption'
+      | 'stipulationContraireCU'
+      | 'preciputMode'
+      | 'preciputSelections'
+      | 'preciputMontant'
+      | 'participationAcquets'
+      | 'societeAcquets'
+      | 'interMassClaims'
+    >
+  >;
   societeAcquetsNetValue?: number;
   assetEntries?: SuccessionAssetDetailEntry[];
   groupementFoncierEntries?: SuccessionGroupementFoncierEntry[];
@@ -146,7 +151,10 @@ export interface SuccessionChainageInput {
   forfaitMobilierMontant?: number;
   enfantsContext?: SuccessionEnfant[];
   familyMembers?: FamilyMember[];
-  devolution?: Pick<SuccessionDevolutionContext, 'testamentsBySide' | 'choixLegalConjointSansDDV' | 'nbEnfantsNonCommuns'>;
+  devolution?: Pick<
+    SuccessionDevolutionContext,
+    'testamentsBySide' | 'choixLegalConjointSansDDV' | 'nbEnfantsNonCommuns'
+  >;
   referenceDate?: Date;
   donations?: SuccessionDonationEntry[];
   donationSettings?: SuccessionFiscalSnapshot['donation'];

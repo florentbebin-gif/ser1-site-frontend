@@ -52,7 +52,9 @@ interface SuccessionModalsProps {
     _side: SuccessionPrimarySide,
     _updater: (_current: SuccessionTestamentConfig) => SuccessionTestamentConfig,
   ) => void;
-  onGetFirstTestamentBeneficiaryRef: (_side: SuccessionPrimarySide) => SuccessionBeneficiaryRef | null;
+  onGetFirstTestamentBeneficiaryRef: (
+    _side: SuccessionPrimarySide,
+  ) => SuccessionBeneficiaryRef | null;
   onAddParticularLegacy: (_side: SuccessionPrimarySide) => void;
   onUpdateParticularLegacy: (
     _side: SuccessionPrimarySide,
@@ -77,7 +79,10 @@ interface SuccessionModalsProps {
   ) => void;
   onClosePrevoyance: () => void;
   onValidatePrevoyance: () => void;
-  onUpdatePrevoyanceContract: (_field: keyof SuccessionPrevoyanceDecesEntry, _value: string | number) => void;
+  onUpdatePrevoyanceContract: (
+    _field: keyof SuccessionPrevoyanceDecesEntry,
+    _value: string | number,
+  ) => void;
   onCloseDonationPartage: () => void;
   onValidateDonationPartage: () => void;
   onUpdateDonationPartageDraft: Dispatch<SetStateAction<SuccessionDonationPartageAct | null>>;

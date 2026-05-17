@@ -57,11 +57,7 @@ export function computeCDHR(
   const majCharges = personsCount * majPerCharge;
   const majorations = majCouple + majCharges;
 
-  const termB =
-    (Number(irRetenu) || 0) +
-    (Number(cehr) || 0) +
-    (Number(pfuIr) || 0) +
-    majorations;
+  const termB = (Number(irRetenu) || 0) + (Number(cehr) || 0) + (Number(pfuIr) || 0) + majorations;
 
   const cdhr = Math.max(0, termA_afterDecote - termB);
 

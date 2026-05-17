@@ -19,8 +19,20 @@ describe('computeSuccessionAssetValuation - forfait et actifs', () => {
     const result = computeSuccessionAssetValuation({
       civilContext: marriedCivilContext,
       assetEntries: [
-        { id: 'asset-1', pocket: 'epoux1', category: 'financier', subCategory: 'Comptes', amount: 200000 },
-        { id: 'asset-2', pocket: 'communaute', category: 'immobilier', subCategory: 'Residence secondaire', amount: 300000 },
+        {
+          id: 'asset-1',
+          pocket: 'epoux1',
+          category: 'financier',
+          subCategory: 'Comptes',
+          amount: 200000,
+        },
+        {
+          id: 'asset-2',
+          pocket: 'communaute',
+          category: 'immobilier',
+          subCategory: 'Residence secondaire',
+          amount: 300000,
+        },
       ],
       groupementFoncierEntries: [],
       forfaitMobilierMode: 'auto',
@@ -42,8 +54,20 @@ describe('computeSuccessionAssetValuation - forfait et actifs', () => {
     const result = computeSuccessionAssetValuation({
       civilContext: marriedCivilContext,
       assetEntries: [
-        { id: 'asset-1', pocket: 'epoux1', category: 'financier', subCategory: 'Comptes', amount: 100000 },
-        { id: 'asset-2', pocket: 'epoux2', category: 'financier', subCategory: 'Titres', amount: 200000 },
+        {
+          id: 'asset-1',
+          pocket: 'epoux1',
+          category: 'financier',
+          subCategory: 'Comptes',
+          amount: 100000,
+        },
+        {
+          id: 'asset-2',
+          pocket: 'epoux2',
+          category: 'financier',
+          subCategory: 'Titres',
+          amount: 200000,
+        },
       ],
       groupementFoncierEntries: [],
       forfaitMobilierMode: 'pct',
@@ -65,7 +89,13 @@ describe('computeSuccessionAssetValuation - forfait et actifs', () => {
     const result = computeSuccessionAssetValuation({
       civilContext: marriedCivilContext,
       assetEntries: [
-        { id: 'asset-1', pocket: 'epoux1', category: 'divers', subCategory: 'Meubles', amount: 100000 },
+        {
+          id: 'asset-1',
+          pocket: 'epoux1',
+          category: 'divers',
+          subCategory: 'Meubles',
+          amount: 100000,
+        },
       ],
       groupementFoncierEntries: [],
       forfaitMobilierMode: 'montant',
@@ -84,7 +114,13 @@ describe('computeSuccessionAssetValuation - forfait et actifs', () => {
     const result = computeSuccessionAssetValuation({
       civilContext: marriedCivilContext,
       assetEntries: [
-        { id: 'asset-1', pocket: 'epoux1', category: 'divers', subCategory: 'Meubles', amount: 100000 },
+        {
+          id: 'asset-1',
+          pocket: 'epoux1',
+          category: 'divers',
+          subCategory: 'Meubles',
+          amount: 100000,
+        },
       ],
       groupementFoncierEntries: [],
       forfaitMobilierMode: 'off',
@@ -101,8 +137,20 @@ describe('computeSuccessionAssetValuation - forfait et actifs', () => {
 
   it('normalizes multiple main residences and applies the 20 percent abatement only once', () => {
     const normalized = normalizeResidencePrincipaleAssetEntries([
-      { id: 'asset-1', pocket: 'epoux1', category: 'immobilier', subCategory: RESIDENCE_PRINCIPALE_SUBCATEGORY, amount: 400000 },
-      { id: 'asset-2', pocket: 'communaute', category: 'immobilier', subCategory: RESIDENCE_PRINCIPALE_SUBCATEGORY, amount: 200000 },
+      {
+        id: 'asset-1',
+        pocket: 'epoux1',
+        category: 'immobilier',
+        subCategory: RESIDENCE_PRINCIPALE_SUBCATEGORY,
+        amount: 400000,
+      },
+      {
+        id: 'asset-2',
+        pocket: 'communaute',
+        category: 'immobilier',
+        subCategory: RESIDENCE_PRINCIPALE_SUBCATEGORY,
+        amount: 200000,
+      },
     ]);
 
     expect(normalized.map((entry) => entry.subCategory)).toEqual([
@@ -136,8 +184,20 @@ describe('computeSuccessionAssetValuation - forfait et actifs', () => {
     const result = computeSuccessionAssetValuation({
       civilContext: marriedCivilContext,
       assetEntries: [
-        { id: 'asset-1', pocket: 'epoux1', category: 'divers', subCategory: 'Meubles', amount: 100000 },
-        { id: 'passif-1', pocket: 'epoux1', category: 'passif', subCategory: 'Dettes', amount: 103000 },
+        {
+          id: 'asset-1',
+          pocket: 'epoux1',
+          category: 'divers',
+          subCategory: 'Meubles',
+          amount: 100000,
+        },
+        {
+          id: 'passif-1',
+          pocket: 'epoux1',
+          category: 'passif',
+          subCategory: 'Dettes',
+          amount: 103000,
+        },
       ],
       groupementFoncierEntries: [],
       forfaitMobilierMode: 'auto',

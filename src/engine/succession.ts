@@ -1,6 +1,6 @@
 /**
  * Module Succession - Calculs droits de succession et prédécès
- * 
+ *
  * IMPORTANT: Les règles de succession sont complexes et dépendent de nombreux facteurs.
  * Ce module fournit des estimations paramétrables avec warnings appropriés.
  */
@@ -10,7 +10,7 @@ import type { CalcResult, Warning } from './types';
 import { DEFAULT_DMTG } from './civil';
 import type { DmtgSettings, DmtgScaleItem } from './civil';
 
-export type LienParente = 
+export type LienParente =
   | 'conjoint'
   | 'enfant'
   | 'petit_enfant'
@@ -91,7 +91,11 @@ function getScaleForLien(lien: LienParente, dmtg: DmtgSettings): DmtgScaleItem[]
 /**
  * Calcule les droits de succession pour une part donnée selon le lien de parenté
  */
-function calculateDMTG(baseImposable: number, lien: LienParente, dmtg: DmtgSettings = DEFAULT_DMTG): number {
+function calculateDMTG(
+  baseImposable: number,
+  lien: LienParente,
+  dmtg: DmtgSettings = DEFAULT_DMTG,
+): number {
   if (lien === 'conjoint') return 0; // Exonéré
   if (baseImposable <= 0) return 0;
 
@@ -114,7 +118,7 @@ function calculateDMTG(baseImposable: number, lien: LienParente, dmtg: DmtgSetti
 export function calculateSuccession(input: SuccessionInput): CalcResult<SuccessionResult> {
   let warnings: Warning[] = [];
   const dmtg = input.dmtgSettings ?? DEFAULT_DMTG;
-  
+
   const detailHeritiers: HeritierResult[] = [];
   let totalDroits = 0;
 
@@ -127,9 +131,7 @@ export function calculateSuccession(input: SuccessionInput): CalcResult<Successi
     const droitsBruts = calculateDMTG(baseImposable, heritier.lien, dmtg);
     const droitsDejaAcquittes = Math.max(0, Number(heritier.droitsDejaAcquittes) || 0);
     const droits = Math.max(0, droitsBruts - droitsDejaAcquittes);
-    const tauxMoyen = heritier.partSuccession > 0 
-      ? (droits / heritier.partSuccession) * 100 
-      : 0;
+    const tauxMoyen = heritier.partSuccession > 0 ? (droits / heritier.partSuccession) * 100 : 0;
 
     detailHeritiers.push({
       lien: heritier.lien,
@@ -143,17 +145,20 @@ export function calculateSuccession(input: SuccessionInput): CalcResult<Successi
     totalDroits += droits;
   }
 
-  const tauxMoyenGlobal = input.actifNetSuccession > 0
-    ? (totalDroits / input.actifNetSuccession) * 100
-    : 0;
-
+  const tauxMoyenGlobal =
+    input.actifNetSuccession > 0 ? (totalDroits / input.actifNetSuccession) * 100 : 0;
 
   return mkResult({
     id: 'succession-calculation',
     name: 'Calcul droits de succession',
     inputs: [
-      { id: 'actifNetSuccession', label: 'Actif net successoral', value: input.actifNetSuccession, unit: '€' },
-      { id: 'nbHeritiers', label: 'Nombre d\'héritiers', value: input.heritiers.length },
+      {
+        id: 'actifNetSuccession',
+        label: 'Actif net successoral',
+        value: input.actifNetSuccession,
+        unit: '€',
+      },
+      { id: 'nbHeritiers', label: "Nombre d'héritiers", value: input.heritiers.length },
     ],
     assumptions: [
       {
@@ -174,7 +179,12 @@ export function calculateSuccession(input: SuccessionInput): CalcResult<Successi
     formulaText: 'Droits = Σ(DMTG(partHeritier - abattement))',
     outputs: [
       { id: 'totalDroits', label: 'Total droits de succession', value: totalDroits, unit: '€' },
-      { id: 'tauxMoyenGlobal', label: 'Taux moyen global', value: Math.round(tauxMoyenGlobal * 100) / 100, unit: '%' },
+      {
+        id: 'tauxMoyenGlobal',
+        label: 'Taux moyen global',
+        value: Math.round(tauxMoyenGlobal * 100) / 100,
+        unit: '%',
+      },
     ],
     result: {
       actifNetSuccession: input.actifNetSuccession,
@@ -212,7 +222,7 @@ export interface PredecesScenariosResult {
  * Calcule les scénarios de prédécès (Mr décède en premier vs Mme)
  */
 export function calculatePredecesSenarios(
-  input: PredecesScenariosInput
+  input: PredecesScenariosInput,
 ): CalcResult<PredecesScenariosResult> {
   let warnings: Warning[] = [];
 
@@ -228,31 +238,31 @@ export function calculatePredecesSenarios(
       warnings = addValidationWarning(
         warnings,
         'REGIME_CU',
-        'Communauté universelle : vérifier clause d\'attribution intégrale'
+        "Communauté universelle : vérifier clause d'attribution intégrale",
       );
       break;
-    
+
     case 'separation_biens':
       actifTransmisMrDecede = input.actifMr;
       actifTransmisMmeDecede = input.actifMme;
       break;
-    
+
     case 'communaute_legale':
     default:
       // Biens propres + moitié communauté
-      actifTransmisMrDecede = input.actifMr + (input.actifCommun / 2);
-      actifTransmisMmeDecede = input.actifMme + (input.actifCommun / 2);
+      actifTransmisMrDecede = input.actifMr + input.actifCommun / 2;
+      actifTransmisMmeDecede = input.actifMme + input.actifCommun / 2;
       break;
   }
 
   // Calcul droits si transmission aux enfants (après décès du second)
   const heritiersMrDecede: HeritiersInput[] = [];
   const heritiersMmeDecede: HeritiersInput[] = [];
-  
+
   if (input.nbEnfants > 0) {
     const partParEnfantMr = actifTransmisMrDecede / input.nbEnfants;
     const partParEnfantMme = actifTransmisMmeDecede / input.nbEnfants;
-    
+
     for (let i = 0; i < input.nbEnfants; i++) {
       heritiersMrDecede.push({ lien: 'enfant', partSuccession: partParEnfantMr });
       heritiersMmeDecede.push({ lien: 'enfant', partSuccession: partParEnfantMme });
@@ -278,7 +288,7 @@ export function calculatePredecesSenarios(
       { id: 'actifMr', label: 'Actif Mr', value: input.actifMr, unit: '€' },
       { id: 'actifMme', label: 'Actif Mme', value: input.actifMme, unit: '€' },
       { id: 'actifCommun', label: 'Actif commun', value: input.actifCommun, unit: '€' },
-      { id: 'nbEnfants', label: 'Nombre d\'enfants', value: input.nbEnfants },
+      { id: 'nbEnfants', label: "Nombre d'enfants", value: input.nbEnfants },
       { id: 'regime', label: 'Régime matrimonial', value: input.regime },
     ],
     assumptions: [
@@ -292,8 +302,18 @@ export function calculatePredecesSenarios(
     ],
     formulaText: 'Droits = DMTG(actifTransmis / nbEnfants - abattement) × nbEnfants',
     outputs: [
-      { id: 'droitsMrDecede', label: 'Droits si Mr décède', value: successionMr.result.totalDroits, unit: '€' },
-      { id: 'droitsMmeDecede', label: 'Droits si Mme décède', value: successionMme.result.totalDroits, unit: '€' },
+      {
+        id: 'droitsMrDecede',
+        label: 'Droits si Mr décède',
+        value: successionMr.result.totalDroits,
+        unit: '€',
+      },
+      {
+        id: 'droitsMmeDecede',
+        label: 'Droits si Mme décède',
+        value: successionMme.result.totalDroits,
+        unit: '€',
+      },
     ],
     result: {
       scenarioMrDecede: {

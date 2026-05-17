@@ -46,49 +46,59 @@ describe('baseCgRetraiteRepository', () => {
     });
   });
 
-  it('merge les overrides et documents Supabase avec le catalogue généré', async () => {
+  it('merge les overrides et documents Supabase avec le catalogue statique', async () => {
     fromMock.mockImplementation((table: string) => ({
       select: () => ({
-        order: () => Promise.resolve({
-          data: table === 'base_cg_retraite_overrides'
-            ? [{
-              contract_id: 'swisslife-perin-swisslife-per-individuel-24',
-              contract_data: {
-                nomContrat: 'PERIN- SWISSLIFE PER INDIVIDUEL MAJ',
-              },
-              is_deleted: false,
-              updated_at: '2026-05-16T00:00:00.000Z',
-            }]
-            : [{
-              id: 'doc-swisslife',
-              contract_id: 'swisslife-perin-swisslife-per-individuel-24',
-              label: 'Notice SwissLife PER Individuel',
-              document_type: 'notice_information',
-              status: 'uploaded',
-              version_label: '13124 – 09.2019',
-              storage_path: 'swisslife/swisslife-per-individuel/13124-09-2019.pdf',
-              file_name: '13124-09-2019.pdf',
-              mime: 'application/pdf',
-              bytes: 462558,
-              uploaded_at: '2026-05-16T00:00:00.000Z',
-            }],
-          error: null,
-        }),
+        order: () =>
+          Promise.resolve({
+            data:
+              table === 'base_cg_retraite_overrides'
+                ? [
+                    {
+                      contract_id: 'swisslife-perin-swisslife-per-individuel-24',
+                      contract_data: {
+                        nomContrat: 'PERIN- SWISSLIFE PER INDIVIDUEL MAJ',
+                      },
+                      is_deleted: false,
+                      updated_at: '2026-05-16T00:00:00.000Z',
+                    },
+                  ]
+                : [
+                    {
+                      id: 'doc-swisslife',
+                      contract_id: 'swisslife-perin-swisslife-per-individuel-24',
+                      label: 'Notice SwissLife PER Individuel',
+                      document_type: 'notice_information',
+                      status: 'uploaded',
+                      version_label: '13124 – 09.2019',
+                      storage_path: 'swisslife/swisslife-per-individuel/13124-09-2019.pdf',
+                      file_name: '13124-09-2019.pdf',
+                      mime: 'application/pdf',
+                      bytes: 462558,
+                      uploaded_at: '2026-05-16T00:00:00.000Z',
+                    },
+                  ],
+            error: null,
+          }),
       }),
     }));
 
     const { getBaseCgRetraiteCatalog } = await import('./baseCgRetraiteRepository');
     const catalog = await getBaseCgRetraiteCatalog();
-    const swisslife = catalog.find((contract) => contract.id === 'swisslife-perin-swisslife-per-individuel-24');
+    const swisslife = catalog.find(
+      (contract) => contract.id === 'swisslife-perin-swisslife-per-individuel-24',
+    );
 
     expect(swisslife?.nomContrat).toBe('PERIN- SWISSLIFE PER INDIVIDUEL MAJ');
-    expect(swisslife?.documents).toEqual([expect.objectContaining({
-      id: 'doc-swisslife',
-      type: 'notice_information',
-      versionLabel: '13124 – 09.2019',
-      storagePath: 'swisslife/swisslife-per-individuel/13124-09-2019.pdf',
-      bytes: 462558,
-    })]);
+    expect(swisslife?.documents).toEqual([
+      expect.objectContaining({
+        id: 'doc-swisslife',
+        type: 'notice_information',
+        versionLabel: '13124 – 09.2019',
+        storagePath: 'swisslife/swisslife-per-individuel/13124-09-2019.pdf',
+        bytes: 462558,
+      }),
+    ]);
   });
 
   it('sauvegarde un contrat en override Supabase sans ses documents', async () => {
@@ -129,13 +139,15 @@ describe('baseCgRetraiteRepository', () => {
         reversionIncluse: null,
         renteEstimee: null,
       },
-      documents: [{
-        id: 'doc-test',
-        label: 'CG',
-        type: 'conditions_generales',
-        status: 'uploaded',
-        storagePath: 'test/cg.pdf',
-      }],
+      documents: [
+        {
+          id: 'doc-test',
+          label: 'CG',
+          type: 'conditions_generales',
+          status: 'uploaded',
+          storagePath: 'test/cg.pdf',
+        },
+      ],
     });
 
     expect(fromMock).toHaveBeenCalledWith('base_cg_retraite_overrides');
@@ -168,5 +180,20 @@ describe('baseCgRetraiteRepository', () => {
 
     expect(createSignedUrlMock).toHaveBeenCalledWith('test/cg.pdf', 300);
     expect(url).toBe('https://signed.example.test/cg.pdf');
+  });
+
+  it('construit un chemin storage stable pour les PDF Base CG', async () => {
+    const { buildBaseCgRetraiteStoragePath } = await import('./baseCgRetraiteRepository');
+
+    expect(
+      buildBaseCgRetraiteStoragePath(
+        {
+          id: 'contract-test',
+          compagnie: 'Abeille Vie',
+          nomContrat: 'PERIN Retraite Sérénité',
+        },
+        'CG 2026 / client',
+      ),
+    ).toBe('abeille-vie/perin-retraite-serenite/cg-2026-client.pdf');
   });
 });

@@ -11,7 +11,14 @@ const baseProps = {
   setIncomes: vi.fn(),
   setParts: vi.fn(),
   incomes: {
-    d1: { salaries: 50000, associes62: 12000, pensions: 10000, bic: 4000, fonciers: 0, autres: 3000 },
+    d1: {
+      salaries: 50000,
+      associes62: 12000,
+      pensions: 10000,
+      bic: 4000,
+      fonciers: 0,
+      autres: 3000,
+    },
     d2: { salaries: 35000, associes62: 9000, pensions: 7000, bic: 2500, fonciers: 0, autres: 1500 },
     capital: { withPs: 0, withoutPs: 0 },
     fonciersFoyer: 4200,
@@ -44,12 +51,7 @@ const baseProps = {
 } satisfies IrFormSectionProps;
 
 function renderSection(overrides: Partial<IrFormSectionProps> = {}) {
-  return renderToStaticMarkup(
-    <IrFormSection
-      {...baseProps}
-      {...overrides}
-    />,
-  );
+  return renderToStaticMarkup(<IrFormSection {...baseProps} {...overrides} />);
 }
 
 describe('IrFormSection income filters UI', () => {

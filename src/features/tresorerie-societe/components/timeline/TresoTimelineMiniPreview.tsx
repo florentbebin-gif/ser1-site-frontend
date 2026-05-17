@@ -23,16 +23,13 @@ export function TresoTimelineMiniPreview({
   horizonYear,
 }: TresoTimelineMiniPreviewProps) {
   const layout = useMemo(() => {
-    const phasesWithDraft = sortPhases(phases.map(item => (item.id === phase.id ? phase : item)));
-    const currentIndex = phasesWithDraft.findIndex(item => item.id === phase.id);
+    const phasesWithDraft = sortPhases(phases.map((item) => (item.id === phase.id ? phase : item)));
+    const currentIndex = phasesWithDraft.findIndex((item) => item.id === phase.id);
     const startIndex = Math.max(0, currentIndex - 1);
     const endIndex = Math.min(phasesWithDraft.length, currentIndex + 2);
     const previewPhases = phasesWithDraft.slice(startIndex, endIndex);
-    const projectionStartYear = Math.min(...previewPhases.map(item => item.startYear));
-    const previewEndYear = Math.max(
-      horizonYear,
-      ...previewPhases.map(item => item.endYear),
-    );
+    const projectionStartYear = Math.min(...previewPhases.map((item) => item.startYear));
+    const previewEndYear = Math.max(horizonYear, ...previewPhases.map((item) => item.endYear));
     const fallbackHorizonYears = Math.max(1, previewEndYear - projectionStartYear + 1);
     const associate: AssociateInputV6 = {
       id: 'preview-associe',

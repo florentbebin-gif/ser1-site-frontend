@@ -20,14 +20,16 @@
   max-height: calc(100vh - 40px);
   display: flex;
   flex-direction: column;
-  background: #FFFFFF;
+  background: #ffffff;
   border-radius: 14px;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2), 0 0 0 1px rgba(0, 0, 0, 0.05);
+  box-shadow:
+    0 20px 60px rgba(0, 0, 0, 0.2),
+    0 0 0 1px rgba(0, 0, 0, 0.05);
 }
 
 .sim-modal__header,
 .sim-modal__footer {
-  background: #FFFFFF;
+  background: #ffffff;
 }
 
 .sim-modal__header {
@@ -52,7 +54,7 @@
   align-items: center;
   justify-content: center;
   border-radius: 10px;
-  background: color-mix(in srgb, var(--color-c4) 45%, #FFFFFF);
+  background: color-mix(in srgb, var(--color-c4) 45%, #ffffff);
   color: var(--color-c2);
 }
 
@@ -80,7 +82,10 @@
   background: none;
   color: var(--color-c9);
   cursor: pointer;
-  transition: background 0.2s, border-color 0.2s, color 0.2s;
+  transition:
+    background 0.2s,
+    border-color 0.2s,
+    color 0.2s;
 }
 
 .sim-modal__close:hover {

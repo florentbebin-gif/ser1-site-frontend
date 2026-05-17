@@ -14,12 +14,14 @@ export default function StepFamille({ dossier, updateDossier }: StepProps) {
           <input
             type="text"
             value={situationFamiliale.mr.prenom}
-            onChange={(e) => updateDossier({
-              situationFamiliale: {
-                ...situationFamiliale,
-                mr: { ...situationFamiliale.mr, prenom: e.target.value },
-              },
-            })}
+            onChange={(e) =>
+              updateDossier({
+                situationFamiliale: {
+                  ...situationFamiliale,
+                  mr: { ...situationFamiliale.mr, prenom: e.target.value },
+                },
+              })
+            }
             placeholder="Prénom"
           />
         </div>
@@ -28,12 +30,14 @@ export default function StepFamille({ dossier, updateDossier }: StepProps) {
           <input
             type="text"
             value={situationFamiliale.mr.nom}
-            onChange={(e) => updateDossier({
-              situationFamiliale: {
-                ...situationFamiliale,
-                mr: { ...situationFamiliale.mr, nom: e.target.value },
-              },
-            })}
+            onChange={(e) =>
+              updateDossier({
+                situationFamiliale: {
+                  ...situationFamiliale,
+                  mr: { ...situationFamiliale.mr, nom: e.target.value },
+                },
+              })
+            }
             placeholder="Nom"
           />
         </div>
@@ -43,12 +47,14 @@ export default function StepFamille({ dossier, updateDossier }: StepProps) {
             id="mr-date-naissance"
             type="date"
             value={situationFamiliale.mr.dateNaissance}
-            onChange={(e) => updateDossier({
-              situationFamiliale: {
-                ...situationFamiliale,
-                mr: { ...situationFamiliale.mr, dateNaissance: e.target.value },
-              },
-            })}
+            onChange={(e) =>
+              updateDossier({
+                situationFamiliale: {
+                  ...situationFamiliale,
+                  mr: { ...situationFamiliale.mr, dateNaissance: e.target.value },
+                },
+              })
+            }
           />
         </div>
       </div>
@@ -60,12 +66,15 @@ export default function StepFamille({ dossier, updateDossier }: StepProps) {
           <select
             id="situation-matrimoniale"
             value={situationFamiliale.situationMatrimoniale}
-            onChange={(e) => updateDossier({
-              situationFamiliale: {
-                ...situationFamiliale,
-                situationMatrimoniale: e.target.value as typeof situationFamiliale.situationMatrimoniale,
-              },
-            })}
+            onChange={(e) =>
+              updateDossier({
+                situationFamiliale: {
+                  ...situationFamiliale,
+                  situationMatrimoniale: e.target
+                    .value as typeof situationFamiliale.situationMatrimoniale,
+                },
+              })
+            }
           >
             <option value="celibataire">Célibataire</option>
             <option value="marie">Marié(e)</option>
@@ -84,15 +93,17 @@ export default function StepFamille({ dossier, updateDossier }: StepProps) {
               <input
                 type="text"
                 value={situationFamiliale.mme?.prenom || ''}
-                onChange={(e) => updateDossier({
-                  situationFamiliale: {
-                    ...situationFamiliale,
-                    mme: {
-                      ...situationFamiliale.mme || { nom: '', dateNaissance: '' },
-                      prenom: e.target.value,
+                onChange={(e) =>
+                  updateDossier({
+                    situationFamiliale: {
+                      ...situationFamiliale,
+                      mme: {
+                        ...(situationFamiliale.mme || { nom: '', dateNaissance: '' }),
+                        prenom: e.target.value,
+                      },
                     },
-                  },
-                })}
+                  })
+                }
                 placeholder="Prénom"
               />
             </div>
@@ -101,15 +112,17 @@ export default function StepFamille({ dossier, updateDossier }: StepProps) {
               <input
                 type="text"
                 value={situationFamiliale.mme?.nom || ''}
-                onChange={(e) => updateDossier({
-                  situationFamiliale: {
-                    ...situationFamiliale,
-                    mme: {
-                      ...situationFamiliale.mme || { prenom: '', dateNaissance: '' },
-                      nom: e.target.value,
+                onChange={(e) =>
+                  updateDossier({
+                    situationFamiliale: {
+                      ...situationFamiliale,
+                      mme: {
+                        ...(situationFamiliale.mme || { prenom: '', dateNaissance: '' }),
+                        nom: e.target.value,
+                      },
                     },
-                  },
-                })}
+                  })
+                }
                 placeholder="Nom"
               />
             </div>
@@ -119,15 +132,17 @@ export default function StepFamille({ dossier, updateDossier }: StepProps) {
                 id="mme-date-naissance"
                 type="date"
                 value={situationFamiliale.mme?.dateNaissance || ''}
-                onChange={(e) => updateDossier({
-                  situationFamiliale: {
-                    ...situationFamiliale,
-                    mme: {
-                      ...situationFamiliale.mme || { prenom: '', nom: '' },
-                      dateNaissance: e.target.value,
+                onChange={(e) =>
+                  updateDossier({
+                    situationFamiliale: {
+                      ...situationFamiliale,
+                      mme: {
+                        ...(situationFamiliale.mme || { prenom: '', nom: '' }),
+                        dateNaissance: e.target.value,
+                      },
                     },
-                  },
-                })}
+                  })
+                }
               />
             </div>
           </div>

@@ -2,10 +2,7 @@ import type { Dispatch, SetStateAction } from 'react';
 import { SimModalShell } from '@/components/ui/sim';
 import type { FamilyBranch, FamilyMemberType, SuccessionEnfant } from '../successionDraft';
 import { getEnfantParentLabel } from '../successionEnfants';
-import {
-  MEMBER_TYPE_NEEDS_BRANCH,
-  MEMBER_TYPE_OPTIONS,
-} from '../successionSimulator.constants';
+import { MEMBER_TYPE_NEEDS_BRANCH, MEMBER_TYPE_OPTIONS } from '../successionSimulator.constants';
 import type { AddFamilyMemberFormState } from '../successionSimulator.helpers';
 import { ScSelect } from './ScSelect';
 
@@ -38,7 +35,7 @@ export default function AddFamilyMemberModal({
       bodyClassName="sc-member-modal__body"
       footerClassName="sc-member-modal__footer"
       closeClassName="sc-member-modal__close"
-      footer={(
+      footer={
         <>
           <button
             type="button"
@@ -52,26 +49,28 @@ export default function AddFamilyMemberModal({
             className="sc-member-modal__btn sc-member-modal__btn--primary"
             onClick={onValidate}
             disabled={
-              !form.type
-              || (MEMBER_TYPE_NEEDS_BRANCH.includes(form.type as FamilyMemberType) && !form.branch)
-              || (form.type === 'petit_enfant' && !form.parentEnfantId)
+              !form.type ||
+              (MEMBER_TYPE_NEEDS_BRANCH.includes(form.type as FamilyMemberType) && !form.branch) ||
+              (form.type === 'petit_enfant' && !form.parentEnfantId)
             }
           >
             Ajouter
           </button>
         </>
-      )}
+      }
     >
       <div className="sc-field">
         <label>Type de membre</label>
         <ScSelect
           value={form.type}
-          onChange={(value) => setForm((prev) => ({
-            ...prev,
-            type: value as FamilyMemberType,
-            branch: '',
-            parentEnfantId: '',
-          }))}
+          onChange={(value) =>
+            setForm((prev) => ({
+              ...prev,
+              type: value as FamilyMemberType,
+              branch: '',
+              parentEnfantId: '',
+            }))
+          }
           options={[{ value: '', label: 'Choisir…', disabled: true }, ...MEMBER_TYPE_OPTIONS]}
         />
       </div>

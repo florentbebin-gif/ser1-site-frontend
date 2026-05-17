@@ -25,4 +25,3 @@ export function parsePctInput(value: string): number {
 export function parseRateInput(value: string): number {
   return parsePctInput(value) / 100;
 }
-

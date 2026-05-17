@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { DEFAULT_FISCALITY_SETTINGS, DEFAULT_PS_SETTINGS, DEFAULT_TAX_SETTINGS } from '../../../constants/settingsDefaults';
+import {
+  DEFAULT_FISCALITY_SETTINGS,
+  DEFAULT_PS_SETTINGS,
+  DEFAULT_TAX_SETTINGS,
+} from '../../../constants/settingsDefaults';
 import type { FiscalContext } from '../../../hooks/useFiscalContext';
 import { buildSuccessionFiscalSnapshot } from '../successionFiscalContext';
 
@@ -12,17 +16,30 @@ function makeFiscalContext(overrides: Partial<FiscalContext>): FiscalContext {
     pfuRateIR: DEFAULT_TAX_SETTINGS.pfu.current.rateIR,
     psRateGeneral: 0,
     psRateException: 0,
-    rvtoTaxableFractionByAge: DEFAULT_FISCALITY_SETTINGS.perIndividuel.rente.rvtoTaxableFractionByAgeAtFirstPayment,
-    psRateRenteInterests: DEFAULT_FISCALITY_SETTINGS.perIndividuel.rente.deduits.interestsQuotePart.psRatePercent / 100,
-    psRateRenteCapitalCASA: DEFAULT_FISCALITY_SETTINGS.perIndividuel.rente.deduits.capitalQuotePart.psRatePercent / 100,
+    rvtoTaxableFractionByAge:
+      DEFAULT_FISCALITY_SETTINGS.perIndividuel.rente.rvtoTaxableFractionByAgeAtFirstPayment,
+    psRateRenteInterests:
+      DEFAULT_FISCALITY_SETTINGS.perIndividuel.rente.deduits.interestsQuotePart.psRatePercent / 100,
+    psRateRenteCapitalCASA:
+      DEFAULT_FISCALITY_SETTINGS.perIndividuel.rente.deduits.capitalQuotePart.psRatePercent / 100,
     abat10Rate: DEFAULT_FISCALITY_SETTINGS.perIndividuel.rente.pensionAbatementRatePercent / 100,
     abat10RetireesCurrent: DEFAULT_TAX_SETTINGS.incomeTax.abat10.retireesCurrent,
     psRetirementBrackets: DEFAULT_PS_SETTINGS.retirement.current.brackets,
-    psRateRetirementDefault: Math.max(...DEFAULT_PS_SETTINGS.retirement.current.brackets.map((bracket) => bracket.totalRate)) / 100,
-    smallAnnuityMonthlyCapitalExitThreshold: DEFAULT_FISCALITY_SETTINGS.perIndividuel.sortieCapital.retraite.petiteRente.monthlyThreshold,
-    smallAnnuityAnnualCapitalExitThreshold: DEFAULT_FISCALITY_SETTINGS.perIndividuel.sortieCapital.retraite.petiteRente.monthlyThreshold * 12,
-    smallAnnuityCapitalExitFlatTaxRate: DEFAULT_FISCALITY_SETTINGS.perIndividuel.sortieCapital.retraite.petiteRente.forfaitIrRatePercent / 100,
-    smallAnnuityCapitalExitFlatTaxAbatementRate: DEFAULT_FISCALITY_SETTINGS.perIndividuel.sortieCapital.retraite.petiteRente.forfaitAbatementRatePercent / 100,
+    psRateRetirementDefault:
+      Math.max(
+        ...DEFAULT_PS_SETTINGS.retirement.current.brackets.map((bracket) => bracket.totalRate),
+      ) / 100,
+    smallAnnuityMonthlyCapitalExitThreshold:
+      DEFAULT_FISCALITY_SETTINGS.perIndividuel.sortieCapital.retraite.petiteRente.monthlyThreshold,
+    smallAnnuityAnnualCapitalExitThreshold:
+      DEFAULT_FISCALITY_SETTINGS.perIndividuel.sortieCapital.retraite.petiteRente.monthlyThreshold *
+      12,
+    smallAnnuityCapitalExitFlatTaxRate:
+      DEFAULT_FISCALITY_SETTINGS.perIndividuel.sortieCapital.retraite.petiteRente
+        .forfaitIrRatePercent / 100,
+    smallAnnuityCapitalExitFlatTaxAbatementRate:
+      DEFAULT_FISCALITY_SETTINGS.perIndividuel.sortieCapital.retraite.petiteRente
+        .forfaitAbatementRatePercent / 100,
     dmtgScaleLigneDirecte: DEFAULT_TAX_SETTINGS.dmtg.ligneDirecte.scale,
     dmtgAbattementEnfant: DEFAULT_TAX_SETTINGS.dmtg.ligneDirecte.abattement,
     dmtgSettings: DEFAULT_TAX_SETTINGS.dmtg,
@@ -39,7 +56,9 @@ describe('buildSuccessionFiscalSnapshot', () => {
   it('retourne un snapshot par défaut quand fiscalContext est absent', () => {
     const snapshot = buildSuccessionFiscalSnapshot(null);
     expect(snapshot.dmtgSettings.ligneDirecte.abattement).toBe(100000);
-    expect(snapshot.avDeces.agePivotPrimes).toBe(DEFAULT_FISCALITY_SETTINGS.assuranceVie.deces.agePivotPrimes);
+    expect(snapshot.avDeces.agePivotPrimes).toBe(
+      DEFAULT_FISCALITY_SETTINGS.assuranceVie.deces.agePivotPrimes,
+    );
     expect(snapshot.avDeces.primesApres1998.allowancePerBeneficiary).toBe(152500);
     expect(snapshot.avDeces.apres70ans.globalAllowance).toBe(30500);
     expect(snapshot.avDeces.primesApres1998.brackets).toEqual([
@@ -115,7 +134,9 @@ describe('buildSuccessionFiscalSnapshot', () => {
     expect(snapshot.donation.donFamilial790G.montant).toBe(
       DEFAULT_TAX_SETTINGS.donation.donFamilial790G.montant,
     );
-    expect(snapshot.avDeces.agePivotPrimes).toBe(DEFAULT_FISCALITY_SETTINGS.assuranceVie.deces.agePivotPrimes);
+    expect(snapshot.avDeces.agePivotPrimes).toBe(
+      DEFAULT_FISCALITY_SETTINGS.assuranceVie.deces.agePivotPrimes,
+    );
     expect(snapshot.avDeces.primesApres1998.brackets).toEqual(
       DEFAULT_FISCALITY_SETTINGS.assuranceVie.deces.primesApres1998.brackets,
     );

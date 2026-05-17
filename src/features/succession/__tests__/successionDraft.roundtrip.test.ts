@@ -220,7 +220,12 @@ describe('successionDraft roundtrip', () => {
     expect(parsed?.ui.chainOrder).toBe('epoux2');
     expect(parsed?.enfants).toHaveLength(2);
     expect(parsed?.enfants[0]).toEqual({ id: 'E1', prenom: 'Alice', rattachement: 'commun' });
-    expect(parsed?.enfants[1]).toEqual({ id: 'E2', prenom: 'Bastien', rattachement: 'epoux1', deceased: true });
+    expect(parsed?.enfants[1]).toEqual({
+      id: 'E2',
+      prenom: 'Bastien',
+      rattachement: 'epoux1',
+      deceased: true,
+    });
   });
 
   it('migre une donation-partage v27 en acte v28 sans perdre la valeur gelée', () => {
@@ -246,16 +251,18 @@ describe('successionDraft roundtrip', () => {
       DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT,
       [{ id: 'E1', prenom: 'Alice', rattachement: 'commun' }],
       [],
-      [{
-        id: 'legacy-dp',
-        type: 'donation_partage',
-        montant: 300000,
-        valeurDonation: 200000,
-        valeurActuelle: 300000,
-        date: '2020-06',
-        donateur: 'epoux1',
-        donataire: 'E1',
-      }],
+      [
+        {
+          id: 'legacy-dp',
+          type: 'donation_partage',
+          montant: 300000,
+          valeurDonation: 200000,
+          valeurActuelle: 300000,
+          date: '2020-06',
+          donateur: 'epoux1',
+          donataire: 'E1',
+        },
+      ],
       [],
       [],
       [],

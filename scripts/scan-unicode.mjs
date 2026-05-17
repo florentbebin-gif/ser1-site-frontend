@@ -37,15 +37,19 @@ for (const file of allFiles) {
       hits.push({
         file: rel,
         line: i + 1,
-        chars: matches.map(m => 'U+' + m[0].charCodeAt(0).toString(16).toUpperCase().padStart(4, '0'))
+        chars: matches.map(
+          (m) => 'U+' + m[0].charCodeAt(0).toString(16).toUpperCase().padStart(4, '0'),
+        ),
       });
     }
   });
 }
 
 if (hits.length === 0) {
-  console.log(`CLEAN: Aucun caractere invisible/bidi detecte (${allFiles.length} fichiers scannes)`);
+  console.log(
+    `CLEAN: Aucun caractere invisible/bidi detecte (${allFiles.length} fichiers scannes)`,
+  );
 } else {
   console.log(`ALERT: ${hits.length} occurrence(s) trouvee(s):`);
-  hits.forEach(h => console.log(`  ${h.file}:${h.line} -> ${h.chars.join(', ')}`));
+  hits.forEach((h) => console.log(`  ${h.file}:${h.line} -> ${h.chars.join(', ')}`));
 }

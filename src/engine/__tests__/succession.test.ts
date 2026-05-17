@@ -41,7 +41,9 @@ describe('Succession Module', () => {
       // 200000 - 100000 abattement = 100000 imposable
       // Barème DMTG : environ 18194€
       expect(result.result.totalDroits).toBeGreaterThan(0);
-      expect(result.result.detailHeritiers[0].abattement).toBe(DEFAULT_DMTG.ligneDirecte.abattement);
+      expect(result.result.detailHeritiers[0].abattement).toBe(
+        DEFAULT_DMTG.ligneDirecte.abattement,
+      );
     });
 
     it('calcule les droits pour deux enfants', () => {
@@ -55,11 +57,15 @@ describe('Succession Module', () => {
 
       expect(result.result.detailHeritiers).toHaveLength(2);
       // Chaque enfant a son propre abattement
-      expect(result.result.detailHeritiers[0].abattement).toBe(DEFAULT_DMTG.ligneDirecte.abattement);
-      expect(result.result.detailHeritiers[1].abattement).toBe(DEFAULT_DMTG.ligneDirecte.abattement);
+      expect(result.result.detailHeritiers[0].abattement).toBe(
+        DEFAULT_DMTG.ligneDirecte.abattement,
+      );
+      expect(result.result.detailHeritiers[1].abattement).toBe(
+        DEFAULT_DMTG.ligneDirecte.abattement,
+      );
     });
 
-    it('retourne 0 si part inférieure à l\'abattement', () => {
+    it("retourne 0 si part inférieure à l'abattement", () => {
       const result = calculateSuccession({
         actifNetSuccession: 50000,
         heritiers: [{ lien: 'enfant', partSuccession: 50000 }],
@@ -106,12 +112,14 @@ describe('Succession Module', () => {
 
     const result = calculateSuccession({
       actifNetSuccession: 200000,
-      heritiers: [{
-        lien: 'enfant',
-        partSuccession: 200000,
-        baseHistoriqueTaxee: 150000,
-        droitsDejaAcquittes: alreadyPaid,
-      }],
+      heritiers: [
+        {
+          lien: 'enfant',
+          partSuccession: 200000,
+          baseHistoriqueTaxee: 150000,
+          droitsDejaAcquittes: alreadyPaid,
+        },
+      ],
     });
 
     expect(result.result.detailHeritiers[0].baseImposable).toBe(250000);
@@ -129,10 +137,10 @@ describe('Succession Module', () => {
       });
 
       expect(result.id).toBe('predeces-scenarios');
-      
+
       // Mr décède : 200000 + 200000 (moitié commun) = 400000
       expect(result.result.scenarioMrDecede.actifTransmis).toBe(400000);
-      
+
       // Mme décède : 100000 + 200000 (moitié commun) = 300000
       expect(result.result.scenarioMmeDecede.actifTransmis).toBe(300000);
     });
@@ -227,7 +235,7 @@ describe('Succession Module', () => {
       });
 
       // 50000 - 1594 abattement = 48406 imposable à 60%
-      const expected = Math.round(48406 * 0.60);
+      const expected = Math.round(48406 * 0.6);
       expect(result.result.totalDroits).toBe(expected);
       expect(result.result.detailHeritiers[0].abattement).toBe(1594);
     });
@@ -259,7 +267,9 @@ describe('Succession Module', () => {
       });
 
       // Doit utiliser DEFAULT_DMTG.ligneDirecte
-      expect(result.result.detailHeritiers[0].abattement).toBe(DEFAULT_DMTG.ligneDirecte.abattement);
+      expect(result.result.detailHeritiers[0].abattement).toBe(
+        DEFAULT_DMTG.ligneDirecte.abattement,
+      );
       expect(result.result.totalDroits).toBeGreaterThan(0);
     });
   });

@@ -31,7 +31,8 @@ export function estimerSituationFiscale(params: IrEstimationParams): SituationFi
 
   const abat10CfgRoot = taxSettings?.incomeTax?.abat10 || {};
   const abat10SalCfg = yearKey === 'current' ? abat10CfgRoot.current : abat10CfgRoot.previous;
-  const abat10RetCfg = yearKey === 'current' ? abat10CfgRoot.retireesCurrent : abat10CfgRoot.retireesPrevious;
+  const abat10RetCfg =
+    yearKey === 'current' ? abat10CfgRoot.retireesCurrent : abat10CfgRoot.retireesPrevious;
 
   const grossSalD1 = (d1.salaires || 0) + (d1.art62 || 0);
   const grossSalD2 = (d2?.salaires || 0) + (d2?.art62 || 0);
@@ -68,13 +69,15 @@ export function estimerSituationFiscale(params: IrEstimationParams): SituationFi
         bic: d1.bic,
         autres: d1.autresRevenus,
       },
-      d2: d2 ? {
-        salaries: d2.salaires,
-        associes62: d2.art62,
-        pensions: d2.retraites,
-        bic: d2.bic,
-        autres: d2.autresRevenus,
-      } : undefined,
+      d2: d2
+        ? {
+            salaries: d2.salaires,
+            associes62: d2.art62,
+            pensions: d2.retraites,
+            bic: d2.bic,
+            autres: d2.autresRevenus,
+          }
+        : undefined,
       fonciersFoyer,
     },
     deductions: deductionsPer + extraDeductions,
@@ -98,7 +101,8 @@ export function estimerSituationFiscale(params: IrEstimationParams): SituationFi
 
   const revenuImposableD1 = Math.max(
     0,
-    grossSalD1 - salDeductionD1 +
+    grossSalD1 -
+      salDeductionD1 +
       Math.max(0, (d1.retraites || 0) - pensionsDeductionD1) +
       (d1.bic || 0) +
       (d1.fonciersNets || 0) +
@@ -108,7 +112,8 @@ export function estimerSituationFiscale(params: IrEstimationParams): SituationFi
   const revenuImposableD2 = d2
     ? Math.max(
         0,
-        grossSalD2 - salDeductionD2 +
+        grossSalD2 -
+          salDeductionD2 +
           Math.max(0, (d2.retraites || 0) - pensionsDeductionD2) +
           (d2.bic || 0) +
           (d2.fonciersNets || 0) +

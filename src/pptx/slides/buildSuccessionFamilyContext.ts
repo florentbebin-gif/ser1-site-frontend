@@ -17,7 +17,7 @@ const NODE_W = 80;
 const NODE_H = 24;
 
 const GEO = {
-  contextY: 2.40,
+  contextY: 2.4,
   contextH: 0.74,
   chartX: 1.18,
   chartY: 3.32,
@@ -56,7 +56,12 @@ function nodeLine(node: SuccessionFiliationNode, ctx: ExportContext): PptxGenJS.
     return { color: roleColor(ctx.theme, 'textMain'), width: 0.75, transparency: 35 };
   }
   if (node.kind === 'tierce') {
-    return { color: roleColor(ctx.theme, 'textBody'), width: 0.65, dashType: 'dash', transparency: 35 };
+    return {
+      color: roleColor(ctx.theme, 'textBody'),
+      width: 0.65,
+      dashType: 'dash',
+      transparency: 35,
+    };
   }
   return { color: roleColor(ctx.theme, 'panelBorder'), width: 0.65 };
 }
@@ -81,7 +86,7 @@ function drawSafeLine(
     y: Math.min(start.y, end.y),
     w: Math.abs(dx),
     h: Math.abs(dy),
-    flipH: (dx < 0) !== (dy < 0),
+    flipH: dx < 0 !== dy < 0,
     line,
   });
 }
@@ -99,7 +104,9 @@ function drawContextBand(
   const items = [
     { label: 'Situation familiale', value: spec.situationLabel },
     ...(spec.regimeLabel ? [{ label: 'Régime matrimonial', value: spec.regimeLabel }] : []),
-    ...(spec.pacsConventionLabel ? [{ label: 'Convention PACS', value: spec.pacsConventionLabel }] : []),
+    ...(spec.pacsConventionLabel
+      ? [{ label: 'Convention PACS', value: spec.pacsConventionLabel }]
+      : []),
   ];
 
   const gap = 0.24;
@@ -118,7 +125,7 @@ function drawContextBand(
     });
     addTextFr(slide, item.value, {
       x,
-      y: GEO.contextY + 0.40,
+      y: GEO.contextY + 0.4,
       w: itemW,
       h: 0.24,
       fontSize: 11,
@@ -197,14 +204,19 @@ function drawDispositions(
   spec: SuccessionFamilyContextSlideSpec,
   ctx: ExportContext,
 ): void {
-  const dispositions = spec.dispositions.length > 0
-    ? spec.dispositions.join(' · ')
-    : 'Aucune disposition particulière ni donation antérieure renseignée.';
+  const dispositions =
+    spec.dispositions.length > 0
+      ? spec.dispositions.join(' · ')
+      : 'Aucune disposition particulière ni donation antérieure renseignée.';
 
-  addCardPanelWithShadow(slide, { x: 0.92, y: GEO.dispositionY, w: 11.5, h: GEO.dispositionH }, ctx.theme);
+  addCardPanelWithShadow(
+    slide,
+    { x: 0.92, y: GEO.dispositionY, w: 11.5, h: GEO.dispositionH },
+    ctx.theme,
+  );
 
   addTextFr(slide, 'Dispositions retenues', {
-    x: 1.20,
+    x: 1.2,
     y: GEO.dispositionY + 0.18,
     w: 2.2,
     h: 0.22,

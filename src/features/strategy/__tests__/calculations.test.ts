@@ -3,7 +3,11 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { calculateBaselineProjection, calculateStrategyProjection, compareScenarios } from '../utils/calculations';
+import {
+  calculateBaselineProjection,
+  calculateStrategyProjection,
+  compareScenarios,
+} from '../utils/calculations';
 import type { DossierAudit } from '../../audit/types';
 import { createEmptyDossier } from '../../audit/types';
 import type { ProduitConfig } from '../types';
@@ -29,11 +33,29 @@ function createTestDossier(): DossierAudit {
       tmi: 30,
     },
     actifs: [
-      { id: '1', libelle: 'RP', valeur: 400000, proprietaire: 'commun', type: 'residence_principale' },
+      {
+        id: '1',
+        libelle: 'RP',
+        valeur: 400000,
+        proprietaire: 'commun',
+        type: 'residence_principale',
+      },
       { id: '2', libelle: 'Épargne', valeur: 50000, proprietaire: 'commun', type: 'livret' },
     ],
     passif: {
-      emprunts: [{ id: 'e1', libelle: 'Crédit RP', type: 'immobilier', capitalInitial: 200000, capitalRestantDu: 150000, mensualite: 1200, tauxInteret: 2, dateDebut: '2018-01-01', dateFin: '2038-01-01' }],
+      emprunts: [
+        {
+          id: 'e1',
+          libelle: 'Crédit RP',
+          type: 'immobilier',
+          capitalInitial: 200000,
+          capitalRestantDu: 150000,
+          mensualite: 1200,
+          tauxInteret: 2,
+          dateDebut: '2018-01-01',
+          dateFin: '2038-01-01',
+        },
+      ],
       autresDettes: [],
     },
     objectifs: ['reduire_fiscalite'],
@@ -63,7 +85,9 @@ describe('Calculations Module', () => {
       const dossier = createTestDossier();
       const scenario = calculateBaselineProjection(dossier);
 
-      expect(scenario.projections[10].patrimoineTotal).toBeGreaterThan(scenario.projections[0].patrimoineTotal);
+      expect(scenario.projections[10].patrimoineTotal).toBeGreaterThan(
+        scenario.projections[0].patrimoineTotal,
+      );
     });
 
     it('contient des hypothèses', () => {
@@ -83,44 +107,52 @@ describe('Calculations Module', () => {
       expect(scenario.projections.length).toBe(11);
     });
 
-    it('avec PER, l\'IR est réduit', () => {
+    it("avec PER, l'IR est réduit", () => {
       const dossier = createTestDossier();
-      
+
       const baselineScenario = calculateBaselineProjection(dossier);
-      
-      const produits: ProduitConfig[] = [{
-        id: 'p1',
-        type: 'per',
-        libelle: 'PER',
-        versementsProgrammes: 500, // 500€/mois = 6000€/an
-        dureeAnnees: 10,
-        tauxRendementEstime: 3,
-      }];
-      
+
+      const produits: ProduitConfig[] = [
+        {
+          id: 'p1',
+          type: 'per',
+          libelle: 'PER',
+          versementsProgrammes: 500, // 500€/mois = 6000€/an
+          dureeAnnees: 10,
+          tauxRendementEstime: 3,
+        },
+      ];
+
       const strategieScenario = calculateStrategyProjection(dossier, produits);
 
       // L'IR devrait être plus faible avec le PER
-      expect(strategieScenario.projections[1].impotRevenu).toBeLessThan(baselineScenario.projections[1].impotRevenu);
+      expect(strategieScenario.projections[1].impotRevenu).toBeLessThan(
+        baselineScenario.projections[1].impotRevenu,
+      );
     });
 
     it('avec versements, le patrimoine augmente plus', () => {
       const dossier = createTestDossier();
-      
+
       const baselineScenario = calculateBaselineProjection(dossier);
-      
-      const produits: ProduitConfig[] = [{
-        id: 'p1',
-        type: 'assurance_vie',
-        libelle: 'AV',
-        versementsProgrammes: 300,
-        dureeAnnees: 10,
-        tauxRendementEstime: 3,
-      }];
-      
+
+      const produits: ProduitConfig[] = [
+        {
+          id: 'p1',
+          type: 'assurance_vie',
+          libelle: 'AV',
+          versementsProgrammes: 300,
+          dureeAnnees: 10,
+          tauxRendementEstime: 3,
+        },
+      ];
+
       const strategieScenario = calculateStrategyProjection(dossier, produits);
 
       // Le patrimoine devrait être plus élevé avec les versements
-      expect(strategieScenario.projections[10].patrimoineTotal).toBeGreaterThan(baselineScenario.projections[10].patrimoineTotal);
+      expect(strategieScenario.projections[10].patrimoineTotal).toBeGreaterThan(
+        baselineScenario.projections[10].patrimoineTotal,
+      );
     });
   });
 
@@ -130,14 +162,16 @@ describe('Calculations Module', () => {
 
       const baseline = calculateBaselineProjection(dossier);
 
-      const produits: ProduitConfig[] = [{
-        id: 'p1',
-        type: 'per',
-        libelle: 'PER',
-        versementsProgrammes: 500,
-        dureeAnnees: 10,
-        tauxRendementEstime: 3,
-      }];
+      const produits: ProduitConfig[] = [
+        {
+          id: 'p1',
+          type: 'per',
+          libelle: 'PER',
+          versementsProgrammes: 500,
+          dureeAnnees: 10,
+          tauxRendementEstime: 3,
+        },
+      ];
 
       const strategie = calculateStrategyProjection(dossier, produits);
       const comparaison = compareScenarios(baseline, strategie);
@@ -148,19 +182,21 @@ describe('Calculations Module', () => {
       expect(typeof comparaison.ecarts.economieImpots).toBe('number');
     });
 
-    it('économie d\'impôts positive avec PER', () => {
+    it("économie d'impôts positive avec PER", () => {
       const dossier = createTestDossier();
 
       const baseline = calculateBaselineProjection(dossier);
 
-      const produits: ProduitConfig[] = [{
-        id: 'p1',
-        type: 'per',
-        libelle: 'PER',
-        versementsProgrammes: 500,
-        dureeAnnees: 10,
-        tauxRendementEstime: 3,
-      }];
+      const produits: ProduitConfig[] = [
+        {
+          id: 'p1',
+          type: 'per',
+          libelle: 'PER',
+          versementsProgrammes: 500,
+          dureeAnnees: 10,
+          tauxRendementEstime: 3,
+        },
+      ];
 
       const strategie = calculateStrategyProjection(dossier, produits);
       const comparaison = compareScenarios(baseline, strategie);

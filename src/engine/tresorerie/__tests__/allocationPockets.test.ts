@@ -21,28 +21,32 @@ function pocket(id: string): AllocationPocketInput {
 
 describe('normalizeAllocationPockets', () => {
   it('conserve l’ordre de saisie, sans priorité de consommation active', () => {
-    expect(normalizeAllocationPockets([
-      pocket('long'),
-      pocket('court'),
-      pocket('moyen'),
-    ]).map(item => item.id)).toEqual(['long', 'court', 'moyen']);
+    expect(
+      normalizeAllocationPockets([pocket('long'), pocket('court'), pocket('moyen')]).map(
+        (item) => item.id,
+      ),
+    ).toEqual(['long', 'court', 'moyen']);
   });
 
   it('limite les poches actives à cinq placements', () => {
-    expect(normalizeAllocationPockets([
-      pocket('p1'),
-      pocket('p2'),
-      pocket('p3'),
-      pocket('p4'),
-      pocket('p5'),
-      pocket('p6'),
-    ]).map(item => item.id)).toEqual(['p1', 'p2', 'p3', 'p4', 'p5']);
+    expect(
+      normalizeAllocationPockets([
+        pocket('p1'),
+        pocket('p2'),
+        pocket('p3'),
+        pocket('p4'),
+        pocket('p5'),
+        pocket('p6'),
+      ]).map((item) => item.id),
+    ).toEqual(['p1', 'p2', 'p3', 'p4', 'p5']);
   });
 
   it('sélectionne les poches de simulation depuis la matrice normalisée', () => {
-    expect(selectAllocationPocketsForSimulation({
-      sweepThreshold: 0,
-      pockets: [pocket('long'), pocket('court')],
-    }).map(item => item.id)).toEqual(['long', 'court']);
+    expect(
+      selectAllocationPocketsForSimulation({
+        sweepThreshold: 0,
+        pockets: [pocket('long'), pocket('court')],
+      }).map((item) => item.id),
+    ).toEqual(['long', 'court']);
   });
 });

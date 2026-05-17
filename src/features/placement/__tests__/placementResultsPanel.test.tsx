@@ -159,7 +159,9 @@ describe('PlacementResultsPanel', () => {
     expect(markup).toContain(shortEuro(112000));
     expect(markup).toContain(shortEuro(100000));
     expect(markup).toContain('Effort total');
-    expect(markup).toContain('Versements sur la période - économies d&#x27;impôt + revenus nets perçus sur la période');
+    expect(markup).toContain(
+      'Versements sur la période - économies d&#x27;impôt + revenus nets perçus sur la période',
+    );
     expect(markup).not.toContain(shortEuro(88000));
   });
 });

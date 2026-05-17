@@ -89,11 +89,11 @@ export function normalizePerPotentielState(
   });
   const projectionFoyer = baseState.projectionFoyerEdited
     ? normalizePerFoyer({
-      situationFamiliale: baseState.projectionSituationFamiliale,
-      isole: baseState.projectionIsole,
-      children: baseState.projectionChildren,
-      mutualisationConjoints: baseState.projectionMutualisationConjoints,
-    })
+        situationFamiliale: baseState.projectionSituationFamiliale,
+        isole: baseState.projectionIsole,
+        children: baseState.projectionChildren,
+        mutualisationConjoints: baseState.projectionMutualisationConjoints,
+      })
     : foyer;
 
   return {
@@ -115,30 +115,33 @@ export function normalizePerPotentielState(
 export function makeDefaultPerPotentielState(
   options: PerPotentielStateOptions = {},
 ): PerPotentielState {
-  return normalizePerPotentielState({
-    step: 1,
-    mode: null,
-    historicalBasis: null,
-    needsCurrentYearEstimate: false,
-    avisIr: null,
-    avisIr2: null,
-    situationFamiliale: 'celibataire',
-    nombreParts: 1,
-    isole: false,
-    children: [],
-    projectionSituationFamiliale: 'celibataire',
-    projectionNombreParts: 1,
-    projectionIsole: false,
-    projectionChildren: [],
-    projectionMutualisationConjoints: false,
-    projectionFoyerEdited: false,
-    revenusN1Declarant1: { ...EMPTY_DECLARANT },
-    revenusN1Declarant2: { ...EMPTY_DECLARANT },
-    projectionNDeclarant1: { ...EMPTY_DECLARANT },
-    projectionNDeclarant2: { ...EMPTY_DECLARANT },
-    versementEnvisage: 0,
-    mutualisationConjoints: false,
-  }, options);
+  return normalizePerPotentielState(
+    {
+      step: 1,
+      mode: null,
+      historicalBasis: null,
+      needsCurrentYearEstimate: false,
+      avisIr: null,
+      avisIr2: null,
+      situationFamiliale: 'celibataire',
+      nombreParts: 1,
+      isole: false,
+      children: [],
+      projectionSituationFamiliale: 'celibataire',
+      projectionNombreParts: 1,
+      projectionIsole: false,
+      projectionChildren: [],
+      projectionMutualisationConjoints: false,
+      projectionFoyerEdited: false,
+      revenusN1Declarant1: { ...EMPTY_DECLARANT },
+      revenusN1Declarant2: { ...EMPTY_DECLARANT },
+      projectionNDeclarant1: { ...EMPTY_DECLARANT },
+      projectionNDeclarant2: { ...EMPTY_DECLARANT },
+      versementEnvisage: 0,
+      mutualisationConjoints: false,
+    },
+    options,
+  );
 }
 
 export function loadPerPotentielSession(
@@ -152,16 +155,19 @@ export function loadPerPotentielSession(
       return null;
     }
 
-    return normalizePerPotentielState({
-      ...makeDefaultPerPotentielState(options),
-      ...parsed,
-      revenusN1Declarant1: { ...EMPTY_DECLARANT, ...parsed.revenusN1Declarant1 },
-      revenusN1Declarant2: { ...EMPTY_DECLARANT, ...parsed.revenusN1Declarant2 },
-      projectionNDeclarant1: { ...EMPTY_DECLARANT, ...parsed.projectionNDeclarant1 },
-      projectionNDeclarant2: { ...EMPTY_DECLARANT, ...parsed.projectionNDeclarant2 },
-      children: normalizePerChildren(parsed.children),
-      projectionChildren: normalizePerChildren(parsed.projectionChildren),
-    }, options);
+    return normalizePerPotentielState(
+      {
+        ...makeDefaultPerPotentielState(options),
+        ...parsed,
+        revenusN1Declarant1: { ...EMPTY_DECLARANT, ...parsed.revenusN1Declarant1 },
+        revenusN1Declarant2: { ...EMPTY_DECLARANT, ...parsed.revenusN1Declarant2 },
+        projectionNDeclarant1: { ...EMPTY_DECLARANT, ...parsed.projectionNDeclarant1 },
+        projectionNDeclarant2: { ...EMPTY_DECLARANT, ...parsed.projectionNDeclarant2 },
+        children: normalizePerChildren(parsed.children),
+        projectionChildren: normalizePerChildren(parsed.projectionChildren),
+      },
+      options,
+    );
   } catch {
     return null;
   }
@@ -188,17 +194,14 @@ export function buildPerSituationInput(
   scope: PerDeclarantScope,
   forceCouple = false,
 ): PerPotentielInput['situationFiscale'] {
-  const declarant1 = scope === 'revenus-n1' ? state.revenusN1Declarant1 : state.projectionNDeclarant1;
-  const declarant2 = scope === 'revenus-n1' ? state.revenusN1Declarant2 : state.projectionNDeclarant2;
-  const situationFamiliale = scope === 'revenus-n1'
-    ? state.situationFamiliale
-    : state.projectionSituationFamiliale;
-  const nombreParts = scope === 'revenus-n1'
-    ? state.nombreParts
-    : state.projectionNombreParts;
-  const isole = scope === 'revenus-n1'
-    ? state.isole
-    : state.projectionIsole;
+  const declarant1 =
+    scope === 'revenus-n1' ? state.revenusN1Declarant1 : state.projectionNDeclarant1;
+  const declarant2 =
+    scope === 'revenus-n1' ? state.revenusN1Declarant2 : state.projectionNDeclarant2;
+  const situationFamiliale =
+    scope === 'revenus-n1' ? state.situationFamiliale : state.projectionSituationFamiliale;
+  const nombreParts = scope === 'revenus-n1' ? state.nombreParts : state.projectionNombreParts;
+  const isole = scope === 'revenus-n1' ? state.isole : state.projectionIsole;
   const isCouple = situationFamiliale === 'marie' || forceCouple;
 
   return {

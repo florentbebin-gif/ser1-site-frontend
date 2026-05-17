@@ -74,11 +74,11 @@ Valeurs de référence :
 
 ### 6. Taille des fichiers
 
-| Fichier | Seuil | Action |
-|---|---|---|
-| Général | > 500 lignes | Vérifier god file |
-| `SuccessionSimulator.tsx` | ~1239 lignes historique | Ne pas augmenter |
-| `successionChainage.ts` | — | Surveillance |
+| Fichier                   | Seuil                   | Action            |
+| ------------------------- | ----------------------- | ----------------- |
+| Général                   | > 500 lignes            | Vérifier god file |
+| `SuccessionSimulator.tsx` | ~1239 lignes historique | Ne pas augmenter  |
+| `successionChainage.ts`   | —                       | Surveillance      |
 
 ### 7. Vérification finale
 

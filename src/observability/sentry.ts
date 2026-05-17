@@ -2,7 +2,8 @@ import type * as SentryModule from '@sentry/react';
 
 export type ObservabilityContext = Record<string, string | number | boolean | null | undefined>;
 
-const SENSITIVE_KEY_PATTERN = /email|mail|nom|name|prenom|phone|tel|montant|amount|capital|patrimoine|revenu|income|rfr|token|jwt|secret|key|password/i;
+const SENSITIVE_KEY_PATTERN =
+  /email|mail|nom|name|prenom|phone|tel|montant|amount|capital|patrimoine|revenu|income|rfr|token|jwt|secret|key|password/i;
 
 let sentryEnabled = false;
 let sentry: typeof SentryModule | null = null;

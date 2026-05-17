@@ -1,24 +1,18 @@
 /**
  * End/Legal Slide Builder
- * 
+ *
  * Layout 55_slide mentions légales
  * White background with legal text and accent corner marks
  */
 
 import type PptxGenJS from 'pptxgenjs';
 import type { EndSlideSpec, ExportContext } from '../theme/types';
-import {
-  COORDS_END,
-  TYPO,
-  addCornerMarks,
-  addFooter,
-  addTextBox,
-} from '../designSystem/serenity';
+import { COORDS_END, TYPO, addCornerMarks, addFooter, addTextBox } from '../designSystem/serenity';
 import { MASTER_NAMES } from '../template/loadBaseTemplate';
 
 /**
  * Build an end/legal slide
- * 
+ *
  * @param pptx - PptxGenJS instance
  * @param spec - End slide specification
  * @param ctx - Export context with theme
@@ -28,11 +22,11 @@ export function buildEnd(
   pptx: PptxGenJS,
   spec: EndSlideSpec,
   ctx: ExportContext,
-  slideIndex: number
+  slideIndex: number,
 ): void {
   const slide = pptx.addSlide({ masterName: MASTER_NAMES.END });
   const { theme } = ctx;
-  
+
   // Legal text block - centered horizontally and vertically
   // textOnMain is white if bgMain is dark, black if bgMain is light
   // Font size 11pt with 1.15 line spacing for readability
@@ -43,10 +37,10 @@ export function buildEnd(
     valign: 'middle', // Centered vertically in the block
     lineSpacing: 1.15, // Slightly increased for readability
   });
-  
+
   // Corner marks (diagonal placement) - uses accent color
   addCornerMarks(slide, theme, 'endDiagonal');
-  
+
   // Footer (onMain variant) - WITHOUT the "Document non contractuel..." disclaimer
   // Create a modified context with empty disclaimer for the end slide
   const endCtx = {

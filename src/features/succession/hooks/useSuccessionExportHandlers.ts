@@ -6,7 +6,10 @@
  */
 
 import { useState, useCallback } from 'react';
-import { exportSuccessionPptx, type ThemeColorsForExport } from '../../../pptx/exports/successionExport';
+import {
+  exportSuccessionPptx,
+  type ThemeColorsForExport,
+} from '../../../pptx/exports/successionExport';
 import { exportAndDownloadSuccessionXlsx } from '../export/successionXlsx';
 import type { LienParente } from '../../../engine/succession';
 import type { LogoPlacement } from '../../../pptx/theme/types';
@@ -67,10 +70,13 @@ export function useSuccessionExportHandlers({
           {
             actifNetSuccession: exportMasseTransmise,
             totalDroits: derivedTotalDroits,
-            tauxMoyenGlobal: exportMasseTransmise > 0
-              ? (derivedTotalDroits / exportMasseTransmise) * 100
-              : 0,
-            heritiers: displayUsesChainage ? [] : (directDisplayResult?.detailHeritiers ?? []) as Parameters<typeof exportSuccessionPptx>[0]['heritiers'],
+            tauxMoyenGlobal:
+              exportMasseTransmise > 0 ? (derivedTotalDroits / exportMasseTransmise) * 100 : 0,
+            heritiers: displayUsesChainage
+              ? []
+              : ((directDisplayResult?.detailHeritiers ?? []) as Parameters<
+                  typeof exportSuccessionPptx
+                >[0]['heritiers']),
             predecesChronologie: chainageExportPayload,
             annexBeneficiarySteps,
             familyContext,
@@ -112,7 +118,11 @@ export function useSuccessionExportHandlers({
             nbHeritiers: exportHeirs.length,
             heritiers: exportHeirs,
           },
-          displayUsesChainage ? null : (directDisplayResult ?? null) as Parameters<typeof exportAndDownloadSuccessionXlsx>[1],
+          displayUsesChainage
+            ? null
+            : ((directDisplayResult ?? null) as Parameters<
+                typeof exportAndDownloadSuccessionXlsx
+              >[1]),
           pptxColors.c1,
           undefined,
           chainageExportPayload,

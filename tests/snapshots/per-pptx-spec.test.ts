@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { DEFAULT_PASS_HISTORY, DEFAULT_PS_SETTINGS, DEFAULT_TAX_SETTINGS } from '../../src/constants/settingsDefaults';
+import {
+  DEFAULT_PASS_HISTORY,
+  DEFAULT_PS_SETTINGS,
+  DEFAULT_TAX_SETTINGS,
+} from '../../src/constants/settingsDefaults';
 import { calculatePerPotentiel } from '../../src/engine/per';
 import { buildPerStudyDeck } from '../../src/pptx/presets/perDeckBuilder';
 import { DEFAULT_COLORS } from '../../src/settings/theme';
@@ -96,9 +100,9 @@ describe('snapshots/per: PPTX deck spec', () => {
 
   it('ajoute la slide Madelin lorsque le foyer comporte un TNS', () => {
     const spec = buildPerStudyDeck(buildData(true), DEFAULT_COLORS);
-    const madelinSlides = spec.slides.filter((slide) => (
-      slide.type === 'per-plafond-3col' && slide.variant === 'madelin'
-    ));
+    const madelinSlides = spec.slides.filter(
+      (slide) => slide.type === 'per-plafond-3col' && slide.variant === 'madelin',
+    );
 
     expect(madelinSlides).toHaveLength(1);
     expect(spec.slides.map((slide) => slide.type)).toEqual([

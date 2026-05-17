@@ -30,7 +30,7 @@ const LAYOUT = {
   marginX: COORDS_CONTENT.margin.x,
   contentWidth: COORDS_CONTENT.margin.w,
   tableY: CONTENT_TOP_Y + 0.05,
-  tableMaxH: CONTENT_BOTTOM_Y - CONTENT_TOP_Y - 0.10,
+  tableMaxH: CONTENT_BOTTOM_Y - CONTENT_TOP_Y - 0.1,
 } as const;
 
 // ============================================================================
@@ -53,7 +53,10 @@ function lightenColor(hex: string, factor: number): string {
 /**
  * Pagine les années (1-based) en tranches de maxPerPage.
  */
-export function paginateTresoYears(totalYears: number, maxPerPage: number = MAX_YEARS_PER_PAGE): number[][] {
+export function paginateTresoYears(
+  totalYears: number,
+  maxPerPage: number = MAX_YEARS_PER_PAGE,
+): number[][] {
   const pages: number[][] = [];
   for (let i = 0; i < totalYears; i += maxPerPage) {
     const page: number[] = [];
@@ -88,8 +91,8 @@ export function buildTresorerieProjection(
   const yearColWidth = (LAYOUT.contentWidth - labelColWidth) / Math.max(numYears, 1);
   const colWidths = [labelColWidth, ...Array(numYears).fill(yearColWidth)];
 
-  const calculatedRowH = Math.min(0.28, Math.max(0.20, LAYOUT.tableMaxH / (totalDataRows + 1)));
-  const baseFontSize = totalDataRows > 12 ? 8 : (totalDataRows > 8 ? 9 : 10);
+  const calculatedRowH = Math.min(0.28, Math.max(0.2, LAYOUT.tableMaxH / (totalDataRows + 1)));
+  const baseFontSize = totalDataRows > 12 ? 8 : totalDataRows > 8 ? 9 : 10;
   const smallFontSize = Math.max(8, baseFontSize - 1);
 
   const altRowColor = lightenColor(theme.colors.color7, 0.55);
@@ -97,9 +100,7 @@ export function buildTresorerieProjection(
   const totalRowFill = theme.colors.color5.replace('#', '');
   const retraiteColor = lightenColor(theme.colors.color6, 0.45);
 
-  const retraiteYearSet = new Set(
-    spec.retraiteYearIndex != null ? [spec.retraiteYearIndex] : [],
-  );
+  const retraiteYearSet = new Set(spec.retraiteYearIndex != null ? [spec.retraiteYearIndex] : []);
 
   const totalRowKeywords = ['consolid', 'fin d'];
 
@@ -118,7 +119,7 @@ export function buildTresorerieProjection(
         valign: 'middle' as const,
       },
     },
-    ...spec.yearsForPage.map(year => {
+    ...spec.yearsForPage.map((year) => {
       const civilYear = spec.projectionStartYear + year - 1;
       return {
         text: `${civilYear}`,
@@ -138,15 +139,16 @@ export function buildTresorerieProjection(
   // Lignes de données
   spec.rows.forEach((row, idx) => {
     const labelLower = row.label.toLowerCase();
-    const isTotal = totalRowKeywords.some(keyword => labelLower.includes(keyword));
+    const isTotal = totalRowKeywords.some((keyword) => labelLower.includes(keyword));
     const isAlt = !isTotal && idx % 2 === 1;
-    const baseFill = isTotal ? totalRowFill : (isAlt ? altRowColor : 'FFFFFF');
+    const baseFill = isTotal ? totalRowFill : isAlt ? altRowColor : 'FFFFFF';
     const labelColor = isTotal ? 'FFFFFF' : theme.textMain.replace('#', '');
     const valueColor = isTotal ? 'FFFFFF' : theme.textBody.replace('#', '');
 
-    const values = spec.yearsForPage.map(year => {
+    const values = spec.yearsForPage.map((year) => {
       const valueIdx = year - 1;
-      return valueIdx < row.values.length ? euro(row.values[valueIdx]) : '—';
+      const value = row.values[valueIdx];
+      return value !== undefined ? euro(value) : '—';
     });
 
     tableRows.push([
@@ -163,11 +165,9 @@ export function buildTresorerieProjection(
         },
       },
       ...values.map((val, colIdx) => {
-        const year = spec.yearsForPage[colIdx];
+        const year = spec.yearsForPage[colIdx] ?? 0;
         const isRetraite = retraiteYearSet.has(year);
-        const cellFill = isTotal
-          ? totalRowFill
-          : (isRetraite ? retraiteColor : baseFill);
+        const cellFill = isTotal ? totalRowFill : isRetraite ? retraiteColor : baseFill;
         return {
           text: val,
           options: {

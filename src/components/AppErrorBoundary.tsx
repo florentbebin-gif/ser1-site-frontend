@@ -10,7 +10,10 @@ interface AppErrorBoundaryState {
   error: unknown;
 }
 
-export class AppErrorBoundary extends React.Component<AppErrorBoundaryProps, AppErrorBoundaryState> {
+export class AppErrorBoundary extends React.Component<
+  AppErrorBoundaryProps,
+  AppErrorBoundaryState
+> {
   state: AppErrorBoundaryState = {
     error: null,
   };

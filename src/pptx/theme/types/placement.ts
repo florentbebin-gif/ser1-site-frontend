@@ -76,5 +76,5 @@ export type PlacementProjectionSlideSpec = {
   rows: Array<{ label: string; values: number[] }>;
   pageIndex: number;
   totalPages: number;
-    deathYearIndex?: number;
+  deathYearIndex?: number;
 };

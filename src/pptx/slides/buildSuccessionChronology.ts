@@ -22,12 +22,12 @@ import { MASTER_NAMES } from '../template/loadBaseTemplate';
 
 const GEO = {
   panelY: 2.42,
-  panelH: 3.50,
+  panelH: 3.5,
   leftX: 0.92,
   rightX: 6.86,
   panelW: 5.55,
-  singleX: 2.10,
-  singleW: 9.10,
+  singleX: 2.1,
+  singleW: 9.1,
   totalY: 6.18,
 } as const;
 
@@ -62,16 +62,18 @@ function drawStepCard(
     ['Part conjoint / partenaire', step.partConjoint],
     ['Autres bénéficiaires', step.autresBeneficiaires],
     ['Droits de succession', step.droitsSuccession],
-    ...(step.droitsHorsSuccession ? [['Droits hors succession', step.droitsHorsSuccession] as [string, string]] : []),
+    ...(step.droitsHorsSuccession
+      ? [['Droits hors succession', step.droitsHorsSuccession] as [string, string]]
+      : []),
   ];
 
   rows.forEach(([label, value], index) => {
     const y = rect.y + 1.02 + index * 0.34;
     addTextFr(slide, label, {
-      x: rect.x + 0.30,
+      x: rect.x + 0.3,
       y,
       w: 2.65,
-      h: 0.20,
+      h: 0.2,
       fontSize: 8.5,
       color: roleColor(theme, 'textBody'),
     });
@@ -79,7 +81,7 @@ function drawStepCard(
       x: rect.x + rect.w - 2.45,
       y,
       w: 2.12,
-      h: 0.20,
+      h: 0.2,
       fontSize: 9,
       color: roleColor(theme, 'textMain'),
       bold: true,
@@ -91,9 +93,9 @@ function drawStepCard(
   step.beneficiaries.slice(0, 3).forEach((beneficiary, index) => {
     const y = startY + index * 0.22;
     addTextFr(slide, `${beneficiary.label} · droits ${beneficiary.tax}`, {
-      x: rect.x + 0.30,
+      x: rect.x + 0.3,
       y,
-      w: rect.w - 0.60,
+      w: rect.w - 0.6,
       h: 0.18,
       fontSize: 7.5,
       color: roleColor(theme, 'textBody'),
@@ -111,8 +113,21 @@ export function buildSuccessionChronology(
   addHeader(slide, spec.title, spec.subtitle, ctx.theme, 'content', 22, TYPO.sizes.h2);
 
   if (spec.applicable && spec.steps.length >= 2) {
-    drawStepCard(slide, spec.steps[0], { x: GEO.leftX, y: GEO.panelY, w: GEO.panelW, h: GEO.panelH }, ctx);
-    drawStepCard(slide, spec.steps[1], { x: GEO.rightX, y: GEO.panelY, w: GEO.panelW, h: GEO.panelH }, ctx);
+    const firstStep = spec.steps[0];
+    const secondStep = spec.steps[1];
+    if (!firstStep || !secondStep) return;
+    drawStepCard(
+      slide,
+      firstStep,
+      { x: GEO.leftX, y: GEO.panelY, w: GEO.panelW, h: GEO.panelH },
+      ctx,
+    );
+    drawStepCard(
+      slide,
+      secondStep,
+      { x: GEO.rightX, y: GEO.panelY, w: GEO.panelW, h: GEO.panelH },
+      ctx,
+    );
   } else {
     const fallbackStep: SuccessionChronologyStepSummary = spec.steps[0] ?? {
       title: 'Succession directe',
@@ -123,7 +138,12 @@ export function buildSuccessionChronology(
       droitsSuccession: spec.totalDroits,
       beneficiaries: [],
     };
-    drawStepCard(slide, fallbackStep, { x: GEO.singleX, y: GEO.panelY, w: GEO.singleW, h: GEO.panelH }, ctx);
+    drawStepCard(
+      slide,
+      fallbackStep,
+      { x: GEO.singleX, y: GEO.panelY, w: GEO.singleW, h: GEO.panelH },
+      ctx,
+    );
   }
 
   addTextFr(slide, `Total cumulé des droits : ${spec.totalDroits}`, {

@@ -1,4 +1,9 @@
-import { buildPerStudyDeck, type PerDeckData, type PerAdvisorInfo, type PerUiSettingsForPptx } from '../presets/perDeckBuilder';
+import {
+  buildPerStudyDeck,
+  type PerDeckData,
+  type PerAdvisorInfo,
+  type PerUiSettingsForPptx,
+} from '../presets/perDeckBuilder';
 import { exportAndDownloadStudyDeck } from '../export/exportStudyDeck';
 import type { LogoPlacement } from '../theme/types';
 

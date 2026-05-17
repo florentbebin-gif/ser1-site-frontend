@@ -21,7 +21,7 @@ export default async function handler(req, res) {
 
   const origin = req.headers.origin || '';
   const isAllowed = allowedOrigins.some((allowed) =>
-    allowed instanceof RegExp ? allowed.test(origin) : allowed === origin
+    allowed instanceof RegExp ? allowed.test(origin) : allowed === origin,
   );
 
   // IMPORTANT: ne JAMAIS renvoyer `*` avec credentials=true (bloqué par les navigateurs)
@@ -38,7 +38,7 @@ export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,POST');
   res.setHeader(
     'Access-Control-Allow-Headers',
-    'Content-Type, Authorization, apikey, x-client-info, x-request-id'
+    'Content-Type, Authorization, apikey, x-client-info, x-request-id',
   );
 
   // Permet au front de lire les headers de diagnostic.
@@ -57,9 +57,9 @@ export default async function handler(req, res) {
 
   if (!supabaseUrl || !supabaseAnonKey) {
     console.error('[api/admin] FATAL: Missing SUPABASE_URL or SUPABASE_ANON_KEY env vars');
-    return res.status(500).json({ 
-      error: 'Server misconfiguration', 
-      details: 'Missing Supabase environment variables on Vercel' 
+    return res.status(500).json({
+      error: 'Server misconfiguration',
+      details: 'Missing Supabase environment variables on Vercel',
     });
   }
 
@@ -86,15 +86,17 @@ export default async function handler(req, res) {
   const action = req.body?.action || '(no action)';
   const hasAuth = !!req.headers.authorization;
   const apikeyPreview = apikey ? `${apikey.slice(0, 10)}...` : '(none)';
-  console.log(`[api/admin] action=${action} hasAuth=${hasAuth} apikey=${apikeyPreview} target=${targetUrl}`);
+  console.log(
+    `[api/admin] action=${action} hasAuth=${hasAuth} apikey=${apikeyPreview} target=${targetUrl}`,
+  );
 
   try {
     const response = await fetch(targetUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': req.headers.authorization || '',
-        'apikey': apikey,
+        Authorization: req.headers.authorization || '',
+        apikey: apikey,
         // Optional: allow frontend (or scripts) to correlate logs with the Edge Function.
         ...(req.headers['x-request-id'] ? { 'x-request-id': req.headers['x-request-id'] } : {}),
       },
@@ -110,7 +112,9 @@ export default async function handler(req, res) {
     const contentType = response.headers.get('content-type') || '';
     const data = await response.text();
 
-    console.log(`[api/admin] upstream status=${response.status} contentType=${contentType} bodyLen=${data.length}`);
+    console.log(
+      `[api/admin] upstream status=${response.status} contentType=${contentType} bodyLen=${data.length}`,
+    );
 
     res.status(response.status);
 
@@ -123,7 +127,6 @@ export default async function handler(req, res) {
     } else {
       return res.send(data);
     }
-
   } catch (error) {
     console.error('[api/admin] Proxy fetch error:', error);
     return res.status(500).json({ error: 'Proxy error', details: error.message });

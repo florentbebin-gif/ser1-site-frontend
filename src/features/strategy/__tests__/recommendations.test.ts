@@ -26,11 +26,29 @@ function createTestDossier(overrides: Partial<DossierAudit> = {}): DossierAudit 
       tmi: 30,
     },
     actifs: [
-      { id: '1', libelle: 'RP', valeur: 500000, proprietaire: 'commun', type: 'residence_principale' },
+      {
+        id: '1',
+        libelle: 'RP',
+        valeur: 500000,
+        proprietaire: 'commun',
+        type: 'residence_principale',
+      },
       { id: '2', libelle: 'Livrets', valeur: 80000, proprietaire: 'commun', type: 'livret' },
     ],
     passif: {
-      emprunts: [{ id: 'e1', libelle: 'Crédit RP', type: 'immobilier', capitalInitial: 300000, capitalRestantDu: 200000, mensualite: 1500, tauxInteret: 2, dateDebut: '2015-01-01', dateFin: '2035-01-01' }],
+      emprunts: [
+        {
+          id: 'e1',
+          libelle: 'Crédit RP',
+          type: 'immobilier',
+          capitalInitial: 300000,
+          capitalRestantDu: 200000,
+          mensualite: 1500,
+          tauxInteret: 2,
+          dateDebut: '2015-01-01',
+          dateFin: '2035-01-01',
+        },
+      ],
       autresDettes: [],
     },
     ...overrides,
@@ -47,7 +65,7 @@ describe('Recommendations Module', () => {
       const recos = generateRecommendations(dossier);
 
       expect(recos.length).toBeGreaterThan(0);
-      expect(recos.some(r => r.id === 'reco-per-ir')).toBe(true);
+      expect(recos.some((r) => r.id === 'reco-per-ir')).toBe(true);
     });
 
     it('génère des recommandations pour objectif proteger_conjoint', () => {
@@ -58,7 +76,7 @@ describe('Recommendations Module', () => {
       const recos = generateRecommendations(dossier);
 
       expect(recos.length).toBeGreaterThan(0);
-      expect(recos.some(r => r.objectifsCibles.includes('proteger_conjoint'))).toBe(true);
+      expect(recos.some((r) => r.objectifsCibles.includes('proteger_conjoint'))).toBe(true);
     });
 
     it('génère des recommandations pour objectif preparer_transmission', () => {
@@ -68,7 +86,7 @@ describe('Recommendations Module', () => {
 
       const recos = generateRecommendations(dossier);
 
-      expect(recos.some(r => r.objectifsCibles.includes('preparer_transmission'))).toBe(true);
+      expect(recos.some((r) => r.objectifsCibles.includes('preparer_transmission'))).toBe(true);
     });
 
     it('génère des recommandations pour objectif developper_patrimoine avec liquidités', () => {
@@ -79,7 +97,7 @@ describe('Recommendations Module', () => {
       const recos = generateRecommendations(dossier);
 
       // Avec 80000€ de liquidités, devrait recommander diversification
-      expect(recos.some(r => r.id === 'reco-diversification')).toBe(true);
+      expect(recos.some((r) => r.id === 'reco-diversification')).toBe(true);
     });
 
     it('trie les recommandations par priorité (haute en premier)', () => {
@@ -93,7 +111,7 @@ describe('Recommendations Module', () => {
       expect(recos[0].priorite).toBe('haute');
     });
 
-    it('ne génère pas de reco IFI si pas d\'IFI', () => {
+    it("ne génère pas de reco IFI si pas d'IFI", () => {
       const dossier = createTestDossier({
         objectifs: ['reduire_fiscalite'],
         situationFiscale: {
@@ -109,7 +127,7 @@ describe('Recommendations Module', () => {
 
       const recos = generateRecommendations(dossier);
 
-      expect(recos.some(r => r.id === 'reco-ifi-scpi')).toBe(false);
+      expect(recos.some((r) => r.id === 'reco-ifi-scpi')).toBe(false);
     });
 
     it('génère reco IFI si IFI > 0', () => {
@@ -128,8 +146,7 @@ describe('Recommendations Module', () => {
 
       const recos = generateRecommendations(dossier);
 
-      expect(recos.some(r => r.id === 'reco-ifi-scpi')).toBe(true);
+      expect(recos.some((r) => r.id === 'reco-ifi-scpi')).toBe(true);
     });
   });
-
 });

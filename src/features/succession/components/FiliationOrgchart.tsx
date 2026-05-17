@@ -15,7 +15,10 @@ import {
   type FiliationOrgNode,
 } from '../filiationOrgchartLayout';
 
-function nodeStyle(kind: FiliationOrgNode['kind'], deceased?: boolean): React.SVGProps<SVGRectElement> {
+function nodeStyle(
+  kind: FiliationOrgNode['kind'],
+  deceased?: boolean,
+): React.SVGProps<SVGRectElement> {
   if (deceased) {
     return {
       fill: 'var(--color-c8)',
@@ -75,7 +78,17 @@ export function FiliationOrgchart({
       <header className="sc-card__header sim-card__header sim-card__header--bleed">
         <div className="sc-card__title-row sim-card__title sim-card__title-row">
           <div className="sim-card__icon">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.8"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
               <circle cx="18" cy="5" r="3" />
               <circle cx="6" cy="12" r="3" />
               <circle cx="18" cy="19" r="3" />
@@ -92,9 +105,7 @@ export function FiliationOrgchart({
       <div className="sc-card__divider sc-card__divider--tight sim-divider sim-divider--tight" />
 
       {isEmpty ? (
-        <p className="sc-hint">
-          Ajoutez des membres de la famille pour visualiser la filiation.
-        </p>
+        <p className="sc-hint">Ajoutez des membres de la famille pour visualiser la filiation.</p>
       ) : (
         <div>
           <svg
@@ -138,9 +149,10 @@ export function FiliationOrgchart({
                 <g
                   key={node.id}
                   style={{
-                    filter: node.kind === 'epoux'
-                      ? 'drop-shadow(0 2px 6px rgba(0,0,0,0.14))'
-                      : 'drop-shadow(0 1px 3px rgba(0,0,0,0.07))',
+                    filter:
+                      node.kind === 'epoux'
+                        ? 'drop-shadow(0 2px 6px rgba(0,0,0,0.14))'
+                        : 'drop-shadow(0 1px 3px rgba(0,0,0,0.07))',
                   }}
                 >
                   <rect
@@ -157,7 +169,13 @@ export function FiliationOrgchart({
                     textAnchor="middle"
                     fontSize={node.kind === 'epoux' ? 10 : 9}
                     fontWeight={node.kind === 'epoux' ? 600 : 400}
-                    fill={node.kind === 'epoux' ? 'var(--color-c1)' : node.deceased ? 'var(--color-c1)' : 'var(--color-c9)'}
+                    fill={
+                      node.kind === 'epoux'
+                        ? 'var(--color-c1)'
+                        : node.deceased
+                          ? 'var(--color-c1)'
+                          : 'var(--color-c9)'
+                    }
                     style={{ userSelect: 'none' }}
                   >
                     {node.label}

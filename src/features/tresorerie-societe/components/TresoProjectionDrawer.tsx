@@ -4,7 +4,10 @@
 
 import { useMemo, useState } from 'react';
 import { SimSelect } from '../../../components/ui/sim/SimSelect';
-import type { TresoAssociateRevenueSource, TresoProjectionRow } from '../../../engine/tresorerie/types';
+import type {
+  TresoAssociateRevenueSource,
+  TresoProjectionRow,
+} from '../../../engine/tresorerie/types';
 import { getTresoRevenueSourceLabel } from '../utils/tresorerieRevenueLabels';
 
 interface Props {
@@ -28,9 +31,7 @@ interface RowDef {
   format?: (row: TresoProjectionRow) => string;
 }
 
-type ProjectionRenderRow =
-  | { type: 'group'; group: RowGroup }
-  | { type: 'row'; rowDef: RowDef };
+type ProjectionRenderRow = { type: 'group'; group: RowGroup } | { type: 'row'; rowDef: RowDef };
 
 const GROUP_LABELS: Record<RowGroup, string> = {
   resultat: 'Résultat',
@@ -63,85 +64,229 @@ function getTresorerieConsolidee(row: TresoProjectionRow): number {
 }
 
 const RESUME_ROWS: RowDef[] = [
-  { key: 'apportCCA', label: "Apports en compte courant d'associé", format: r => fmtE(r.apportCCA) },
-  { key: 'revenuDistrib', label: 'Revenus de la poche de distribution', format: r => fmtE(r.revenuDistrib) },
-  { key: 'is', label: 'Impôt sur les sociétés', format: r => fmtE(r.is) },
-  { key: 'revenusNets', label: 'Total revenus nets annuels', format: r => fmtE(r.revenusNets) },
-  { key: 'deltaBesoin', label: 'Écart annuel avec le besoin de revenus', format: r => fmtE(r.deltaBesoin), warning: r => r.deltaBesoin < 0 },
+  {
+    key: 'apportCCA',
+    label: "Apports en compte courant d'associé",
+    format: (r) => fmtE(r.apportCCA),
+  },
+  {
+    key: 'revenuDistrib',
+    label: 'Revenus de la poche de distribution',
+    format: (r) => fmtE(r.revenuDistrib),
+  },
+  { key: 'is', label: 'Impôt sur les sociétés', format: (r) => fmtE(r.is) },
+  { key: 'revenusNets', label: 'Total revenus nets annuels', format: (r) => fmtE(r.revenusNets) },
+  {
+    key: 'deltaBesoin',
+    label: 'Écart annuel avec le besoin de revenus',
+    format: (r) => fmtE(r.deltaBesoin),
+    warning: (r) => r.deltaBesoin < 0,
+  },
 ];
 
 const DETAIL_ROWS: RowDef[] = [
-  { key: 'revenuDistrib', label: 'Revenus — poche de distribution', group: 'resultat', format: r => fmtE(r.revenuDistrib) },
-  { key: 'dividendesFiliales', label: 'Dividendes filiales reçus', group: 'resultat', format: r => fmtE(r.dividendesFiliales) },
-  { key: 'gainCapiN', label: 'Gain de capitalisation (sortie)', group: 'resultat', format: r => fmtE(r.gainCapiN) },
-  { key: 'chargesStructure', label: 'Charges de la structure', group: 'resultat', format: r => fmtE(r.chargesStructure) },
-  { key: 'interetsCreditIS', label: 'Intérêts crédit IS', group: 'resultat', format: r => fmtE(r.interetsCreditIS) },
+  {
+    key: 'revenuDistrib',
+    label: 'Revenus — poche de distribution',
+    group: 'resultat',
+    format: (r) => fmtE(r.revenuDistrib),
+  },
+  {
+    key: 'dividendesFiliales',
+    label: 'Dividendes filiales reçus',
+    group: 'resultat',
+    format: (r) => fmtE(r.dividendesFiliales),
+  },
+  {
+    key: 'gainCapiN',
+    label: 'Gain de capitalisation (sortie)',
+    group: 'resultat',
+    format: (r) => fmtE(r.gainCapiN),
+  },
+  {
+    key: 'chargesStructure',
+    label: 'Charges de la structure',
+    group: 'resultat',
+    format: (r) => fmtE(r.chargesStructure),
+  },
+  {
+    key: 'interetsCreditIS',
+    label: 'Intérêts crédit IS',
+    group: 'resultat',
+    format: (r) => fmtE(r.interetsCreditIS),
+  },
   {
     key: 'resultatFiscalAvantIS',
     label: 'Résultat fiscal avant IS',
     group: 'resultat',
     emphasis: 'subtotal',
-    format: r => fmtE(r.resultatFiscalAvantIS),
+    format: (r) => fmtE(r.resultatFiscalAvantIS),
   },
-  { key: 'is', label: 'Impôt sur les sociétés', group: 'resultat', emphasis: 'total', format: r => fmtE(r.is) },
-  { key: 'apportCCA', label: "Apports en compte courant d'associé", group: 'cca', format: r => fmtE(r.apportCCA) },
-  { key: 'ccaCumule', label: 'CCA total constitué', group: 'cca', format: r => fmtE(r.ccaCumule) },
-  { key: 'retraitsCCA', label: 'Remboursements CCA (sans PFU)', group: 'cca', format: r => fmtE(r.retraitsCCA) },
-  { key: 'ccaRestant', label: 'CCA net restant dû', group: 'cca', emphasis: 'total', format: r => fmtE(r.ccaRestant) },
-  { key: 'valeurCapi', label: 'Valeur de la poche de capitalisation', group: 'capi', format: r => fmtE(r.valeurCapi) },
+  {
+    key: 'is',
+    label: 'Impôt sur les sociétés',
+    group: 'resultat',
+    emphasis: 'total',
+    format: (r) => fmtE(r.is),
+  },
+  {
+    key: 'apportCCA',
+    label: "Apports en compte courant d'associé",
+    group: 'cca',
+    format: (r) => fmtE(r.apportCCA),
+  },
+  {
+    key: 'ccaCumule',
+    label: 'CCA total constitué',
+    group: 'cca',
+    format: (r) => fmtE(r.ccaCumule),
+  },
+  {
+    key: 'retraitsCCA',
+    label: 'Remboursements CCA (sans PFU)',
+    group: 'cca',
+    format: (r) => fmtE(r.retraitsCCA),
+  },
+  {
+    key: 'ccaRestant',
+    label: 'CCA net restant dû',
+    group: 'cca',
+    emphasis: 'total',
+    format: (r) => fmtE(r.ccaRestant),
+  },
+  {
+    key: 'valeurCapi',
+    label: 'Valeur de la poche de capitalisation',
+    group: 'capi',
+    format: (r) => fmtE(r.valeurCapi),
+  },
   {
     key: 'isLatentCapi',
     label: 'IS latent — non décaissé',
     group: 'capi',
     italic: true,
-    format: r => r.isLatentCapi > 0 ? fmtE(r.isLatentCapi) : '—',
+    format: (r) => (r.isLatentCapi > 0 ? fmtE(r.isLatentCapi) : '—'),
   },
-  { key: 'reservesDebut', label: "Réserves en début d'exercice", group: 'reserves', format: r => fmtE(r.reservesDebut) },
+  {
+    key: 'reservesDebut',
+    label: "Réserves en début d'exercice",
+    group: 'reserves',
+    format: (r) => fmtE(r.reservesDebut),
+  },
   {
     key: 'resultatNetComptable',
     label: 'Résultat net comptable estimé',
     group: 'reserves',
     emphasis: 'total',
-    format: r => fmtE(r.resultatNetComptable),
+    format: (r) => fmtE(r.resultatNetComptable),
   },
-  { key: 'dividendesAssociesBruts', label: 'Dividendes versés aux associés', group: 'reserves', format: r => fmtE(r.dividendesAssociesBruts) },
-  { key: 'reservesFin', label: "Réserves en fin d'exercice", group: 'reserves', format: r => fmtE(r.reservesFin) },
+  {
+    key: 'dividendesAssociesBruts',
+    label: 'Dividendes versés aux associés',
+    group: 'reserves',
+    format: (r) => fmtE(r.dividendesAssociesBruts),
+  },
+  {
+    key: 'reservesFin',
+    label: "Réserves en fin d'exercice",
+    group: 'reserves',
+    format: (r) => fmtE(r.reservesFin),
+  },
   {
     key: 'capaciteDistribuable',
     label: 'Capacité distribuable',
     group: 'reserves',
     emphasis: 'subtotal',
-    format: r => fmtE(r.capaciteDistribuable),
-    warning: r => r.alerteDividendesSuperieursCapacite,
+    format: (r) => fmtE(r.capaciteDistribuable),
+    warning: (r) => r.alerteDividendesSuperieursCapacite,
   },
-  { key: 'pfu', label: 'Fiscalité dividendes (PFU)', group: 'revenus', format: r => fmtE(r.pfu) },
-  { key: 'revenusNets', label: 'Total revenus nets annuels', group: 'revenus', emphasis: 'total', format: r => fmtE(r.revenusNets) },
+  { key: 'pfu', label: 'Fiscalité dividendes (PFU)', group: 'revenus', format: (r) => fmtE(r.pfu) },
+  {
+    key: 'revenusNets',
+    label: 'Total revenus nets annuels',
+    group: 'revenus',
+    emphasis: 'total',
+    format: (r) => fmtE(r.revenusNets),
+  },
   {
     key: 'deltaBesoin',
     label: 'Écart annuel avec le besoin de revenus',
     group: 'revenus',
     emphasis: 'total',
-    format: r => fmtE(r.deltaBesoin),
-    warning: r => r.deltaBesoin < 0,
+    format: (r) => fmtE(r.deltaBesoin),
+    warning: (r) => r.deltaBesoin < 0,
   },
-  { key: 'tresorerieBanqueDebut', label: 'Compte bancaire début', group: 'tresorerie', format: r => fmtOptionalE(r.tresorerieBanqueDebut) },
-  { key: 'soldeMinimumCompteBancaire', label: 'Solde minimum à conserver', group: 'tresorerie', format: r => fmtOptionalE(r.soldeMinimumCompteBancaire) },
-  { key: 'bfr', label: 'Besoin en fonds de roulement', group: 'tresorerie', format: r => fmtOptionalE(r.bfr) },
-  { key: 'tresorerieDisponible', label: 'Trésorerie bancaire disponible', group: 'tresorerie', emphasis: 'subtotal', format: r => fmtOptionalE(r.tresorerieDisponible) },
-  { key: 'montantInvestiInitial', label: 'Montant investi initialement', group: 'tresorerie', format: r => fmtOptionalE(r.montantInvestiInitial) },
-  { key: 'montantBalayeAnnuel', label: 'Montant investi automatiquement vers placements', group: 'tresorerie', format: r => fmtOptionalE(r.montantBalayeAnnuel) },
-  { key: 'montantReinvestiAuTerme', label: 'Montant réinvesti au terme', group: 'tresorerie', format: r => fmtOptionalE(r.montantReinvestiAuTerme) },
-  { key: 'tresoreriePlacee', label: 'Trésorerie placée (poches)', group: 'tresorerie', emphasis: 'subtotal', format: r => fmtE(getTresoreriePlacee(r)) },
-  { key: 'tresorerieBanqueFin', label: 'Compte bancaire fin', group: 'tresorerie', format: r => fmtOptionalE(r.tresorerieBanqueFin) },
+  {
+    key: 'tresorerieBanqueDebut',
+    label: 'Compte bancaire début',
+    group: 'tresorerie',
+    format: (r) => fmtOptionalE(r.tresorerieBanqueDebut),
+  },
+  {
+    key: 'soldeMinimumCompteBancaire',
+    label: 'Solde minimum à conserver',
+    group: 'tresorerie',
+    format: (r) => fmtOptionalE(r.soldeMinimumCompteBancaire),
+  },
+  {
+    key: 'bfr',
+    label: 'Besoin en fonds de roulement',
+    group: 'tresorerie',
+    format: (r) => fmtOptionalE(r.bfr),
+  },
+  {
+    key: 'tresorerieDisponible',
+    label: 'Trésorerie bancaire disponible',
+    group: 'tresorerie',
+    emphasis: 'subtotal',
+    format: (r) => fmtOptionalE(r.tresorerieDisponible),
+  },
+  {
+    key: 'montantInvestiInitial',
+    label: 'Montant investi initialement',
+    group: 'tresorerie',
+    format: (r) => fmtOptionalE(r.montantInvestiInitial),
+  },
+  {
+    key: 'montantBalayeAnnuel',
+    label: 'Montant investi automatiquement vers placements',
+    group: 'tresorerie',
+    format: (r) => fmtOptionalE(r.montantBalayeAnnuel),
+  },
+  {
+    key: 'montantReinvestiAuTerme',
+    label: 'Montant réinvesti au terme',
+    group: 'tresorerie',
+    format: (r) => fmtOptionalE(r.montantReinvestiAuTerme),
+  },
+  {
+    key: 'tresoreriePlacee',
+    label: 'Trésorerie placée (poches)',
+    group: 'tresorerie',
+    emphasis: 'subtotal',
+    format: (r) => fmtE(getTresoreriePlacee(r)),
+  },
+  {
+    key: 'tresorerieBanqueFin',
+    label: 'Compte bancaire fin',
+    group: 'tresorerie',
+    format: (r) => fmtOptionalE(r.tresorerieBanqueFin),
+  },
   {
     key: 'deficitTresorerieBancaire',
     label: 'Déficit bancaire vs solde minimum + BFR',
     group: 'tresorerie',
     emphasis: 'total',
-    format: r => fmtOptionalE(r.deficitTresorerieBancaire),
-    warning: r => (r.deficitTresorerieBancaire ?? 0) > 0,
+    format: (r) => fmtOptionalE(r.deficitTresorerieBancaire),
+    warning: (r) => (r.deficitTresorerieBancaire ?? 0) > 0,
   },
-  { key: 'tresorerieConsolidee', label: 'Trésorerie consolidée', group: 'tresorerie', emphasis: 'total', format: r => fmtE(getTresorerieConsolidee(r)) },
+  {
+    key: 'tresorerieConsolidee',
+    label: 'Trésorerie consolidée',
+    group: 'tresorerie',
+    emphasis: 'total',
+    format: (r) => fmtE(getTresorerieConsolidee(r)),
+  },
 ];
 
 function buildTresoAccountingProjectionView(
@@ -149,15 +294,17 @@ function buildTresoAccountingProjectionView(
   associateFilter: string,
 ): RowDef[] {
   const keys = new Map<string, { label: string; source?: TresoAssociateRevenueSource }>();
-  rows.forEach(row => {
-    row.revenusParAssocie.forEach(revenue => {
+  rows.forEach((row) => {
+    row.revenusParAssocie.forEach((revenue) => {
       if (associateFilter !== 'all' && revenue.associateId !== associateFilter) return;
-      const key = associateFilter === 'all'
-        ? revenue.associateId
-        : `${revenue.associateId}:${revenue.source}`;
-      const label = associateFilter === 'all'
-        ? `Revenus nets — ${revenue.label}`
-        : `${sourceLabel(revenue.source)} — ${revenue.label}`;
+      const key =
+        associateFilter === 'all'
+          ? revenue.associateId
+          : `${revenue.associateId}:${revenue.source}`;
+      const label =
+        associateFilter === 'all'
+          ? `Revenus nets — ${revenue.label}`
+          : `${sourceLabel(revenue.source)} — ${revenue.label}`;
       keys.set(key, { label, source: associateFilter === 'all' ? undefined : revenue.source });
     });
   });
@@ -165,9 +312,9 @@ function buildTresoAccountingProjectionView(
     key: `associe:${key}`,
     label,
     group: 'revenus',
-    format: row => {
+    format: (row) => {
       const total = row.revenusParAssocie
-        .filter(revenue => {
+        .filter((revenue) => {
           if (associateFilter === 'all') return revenue.associateId === key;
           return `${revenue.associateId}:${revenue.source}` === key;
         })
@@ -182,7 +329,7 @@ function buildTresoAccountingProjectionView(
 
 function withGroupHeaders(rowDefs: RowDef[]): ProjectionRenderRow[] {
   const seenGroups = new Set<RowGroup>();
-  return rowDefs.flatMap(rowDef => {
+  return rowDefs.flatMap((rowDef) => {
     if (!rowDef.group || seenGroups.has(rowDef.group)) {
       return [{ type: 'row', rowDef }];
     }
@@ -199,7 +346,9 @@ function getRowClass(rowDef: RowDef): string {
     rowDef.italic ? 'ts-proj-row--italic' : '',
     rowDef.emphasis === 'subtotal' ? 'ts-proj-row--subtotal' : '',
     rowDef.emphasis === 'total' ? 'ts-proj-row--total' : '',
-  ].filter(Boolean).join(' ');
+  ]
+    .filter(Boolean)
+    .join(' ');
 }
 
 export function TresoProjectionDrawer({
@@ -215,8 +364,8 @@ export function TresoProjectionDrawer({
 
   const associateOptions = useMemo(() => {
     const associates = new Map<string, string>();
-    rows.forEach(row => {
-      row.revenusParAssocie.forEach(revenue => {
+    rows.forEach((row) => {
+      row.revenusParAssocie.forEach((revenue) => {
         associates.set(revenue.associateId, revenue.label);
       });
     });
@@ -231,12 +380,11 @@ export function TresoProjectionDrawer({
     [associateFilter, rows],
   );
 
-  const activeRows = mode === 'resume'
-    ? RESUME_ROWS
-    : [...DETAIL_ROWS, ...associateRows];
-  const renderRows = mode === 'detail'
-    ? withGroupHeaders(activeRows)
-    : activeRows.map(rowDef => ({ type: 'row' as const, rowDef }));
+  const activeRows = mode === 'resume' ? RESUME_ROWS : [...DETAIL_ROWS, ...associateRows];
+  const renderRows =
+    mode === 'detail'
+      ? withGroupHeaders(activeRows)
+      : activeRows.map((rowDef) => ({ type: 'row' as const, rowDef }));
 
   if (rows.length === 0) {
     return (
@@ -282,7 +430,7 @@ export function TresoProjectionDrawer({
           <thead>
             <tr>
               <th className="ts-proj-th ts-proj-th--label">Indicateur</th>
-              {rows.map(row => {
+              {rows.map((row) => {
                 const age = ageActuel + row.year - 1;
                 const isRetraite = age >= ageRetraite;
                 return (
@@ -298,7 +446,7 @@ export function TresoProjectionDrawer({
             </tr>
           </thead>
           <tbody>
-            {renderRows.map(renderRow => {
+            {renderRows.map((renderRow) => {
               if (renderRow.type === 'group') {
                 return (
                   <tr key={`group:${renderRow.group}`} className="ts-proj-group-row">
@@ -314,11 +462,9 @@ export function TresoProjectionDrawer({
                 <tr key={rowDef.key} className={getRowClass(rowDef)}>
                   <td className="ts-proj-td ts-proj-td--label">
                     {rowDef.label}
-                    {rowDef.italic && (
-                      <span className="ts-proj-td__badge">non décaissé</span>
-                    )}
+                    {rowDef.italic && <span className="ts-proj-td__badge">non décaissé</span>}
                   </td>
-                  {rows.map(row => {
+                  {rows.map((row) => {
                     const isWarning = rowDef.warning?.(row) ?? false;
                     return (
                       <td
@@ -337,8 +483,9 @@ export function TresoProjectionDrawer({
       </div>
 
       <p className="ts-drawer__note">
-        La trésorerie bancaire disponible correspond au compte bancaire après solde minimum et besoin en fonds de roulement.
-        {' '}IS latent capitalisation : affiché pour information, non décaissé.
+        La trésorerie bancaire disponible correspond au compte bancaire après solde minimum et
+        besoin en fonds de roulement. IS latent capitalisation : affiché pour information, non
+        décaissé.
       </p>
     </div>
   );

@@ -84,9 +84,10 @@ function buildRevenuCibleCard(kpis: TresoKPIs): {
 }
 
 export function TresoKPISidebar({ kpis }: Props) {
-  const ccaValue = kpis.ccaRestantFinHorizon > 0
-    ? fmtEuro(kpis.ccaRestantFinHorizon)
-    : fmtEuro(kpis.ccaRembourseTotal);
+  const ccaValue =
+    kpis.ccaRestantFinHorizon > 0
+      ? fmtEuro(kpis.ccaRestantFinHorizon)
+      : fmtEuro(kpis.ccaRembourseTotal);
   const ccaLabel = kpis.ccaRestantFinHorizon > 0 ? 'CCA restant dû' : 'CCA remboursé';
   const tresorerieCard = buildTresorerieCard(kpis);
   const revenuCibleCard = buildRevenuCibleCard(kpis);
@@ -134,9 +135,11 @@ export function TresoKPISidebar({ kpis }: Props) {
             label="Déficit bancaire maximal"
             value={fmtEuro(kpis.deficitBancaireMax)}
             tone={kpis.deficitBancaireMax > 0 ? 'warning' : 'positive'}
-            note={kpis.premiereAnneeDeficitBancaire
-              ? `Dès ${kpis.premiereAnneeDeficitBancaire}`
-              : undefined}
+            note={
+              kpis.premiereAnneeDeficitBancaire
+                ? `Dès ${kpis.premiereAnneeDeficitBancaire}`
+                : undefined
+            }
           />
           <KpiCard label={ccaLabel} value={ccaValue} />
         </div>

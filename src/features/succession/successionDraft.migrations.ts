@@ -28,43 +28,19 @@ import type {
 } from './successionDraft.types';
 
 export const SUPPORTED_SUCCESSION_DRAFT_VERSIONS = [
-  1,
-  2,
-  3,
-  4,
-  5,
-  6,
-  7,
-  8,
-  9,
-  10,
-  11,
-  12,
-  13,
-  14,
-  15,
-  16,
-  17,
-  18,
-  19,
-  20,
-  21,
-  22,
-  23,
-  24,
-  25,
-  26,
-  27,
+  1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27,
   28,
 ] as const;
 
 export function isSupportedSuccessionDraftVersion(
   version: unknown,
 ): version is (typeof SUPPORTED_SUCCESSION_DRAFT_VERSIONS)[number] {
-  return typeof version === 'number'
-    && SUPPORTED_SUCCESSION_DRAFT_VERSIONS.includes(
+  return (
+    typeof version === 'number' &&
+    SUPPORTED_SUCCESSION_DRAFT_VERSIONS.includes(
       version as (typeof SUPPORTED_SUCCESSION_DRAFT_VERSIONS)[number],
-    );
+    )
+  );
 }
 
 export function deriveLegacyEnfants(
@@ -165,11 +141,12 @@ export function deriveLegacyAssetEntries(
 export function getLegacyTestamentConfig(raw: Record<string, unknown>): SuccessionTestamentConfig {
   const active = asBoolean(raw.testamentActif, DEFAULT_SUCCESSION_TESTAMENT_CONFIG.active);
   const parsedDisposition = raw.typeDispositionTestamentaire;
-  const dispositionType = parsedDisposition === 'legs_universel'
-    || parsedDisposition === 'legs_titre_universel'
-    || parsedDisposition === 'legs_particulier'
-    ? parsedDisposition
-    : DEFAULT_SUCCESSION_TESTAMENT_CONFIG.dispositionType;
+  const dispositionType =
+    parsedDisposition === 'legs_universel' ||
+    parsedDisposition === 'legs_titre_universel' ||
+    parsedDisposition === 'legs_particulier'
+      ? parsedDisposition
+      : DEFAULT_SUCCESSION_TESTAMENT_CONFIG.dispositionType;
 
   return {
     active,
@@ -196,20 +173,20 @@ function resolveLegacyBeneficiaryRef(
   let beneficiaryRef: SuccessionBeneficiaryRef | null = null;
 
   if (
-    donation.donataire === 'conjoint'
-    && civil.situationMatrimoniale !== 'celibataire'
-    && civil.situationMatrimoniale !== 'divorce'
-    && civil.situationMatrimoniale !== 'veuf'
+    donation.donataire === 'conjoint' &&
+    civil.situationMatrimoniale !== 'celibataire' &&
+    civil.situationMatrimoniale !== 'divorce' &&
+    civil.situationMatrimoniale !== 'veuf'
   ) {
     beneficiaryRef = `principal:${donorSide === 'epoux1' ? 'epoux2' : 'epoux1'}`;
   } else if (
-    typeof donation.donataire === 'string'
-    && enfants.some((enfant) => enfant.id === donation.donataire)
+    typeof donation.donataire === 'string' &&
+    enfants.some((enfant) => enfant.id === donation.donataire)
   ) {
     beneficiaryRef = `enfant:${donation.donataire}`;
   } else if (
-    typeof donation.donataire === 'string'
-    && familyMembers.some((member) => member.id === donation.donataire)
+    typeof donation.donataire === 'string' &&
+    familyMembers.some((member) => member.id === donation.donataire)
   ) {
     beneficiaryRef = `family:${donation.donataire}`;
   } else if (isSuccessionBeneficiaryRef(donation.donataire)) {
@@ -228,10 +205,11 @@ export function collectLegacyParticularLegacies(
   donations: SuccessionDonationEntry[];
   particularLegaciesBySide: Record<SuccessionPrimarySide, SuccessionParticularLegacyEntry[]>;
 } {
-  const particularLegaciesBySide: Record<SuccessionPrimarySide, SuccessionParticularLegacyEntry[]> = {
-    epoux1: [],
-    epoux2: [],
-  };
+  const particularLegaciesBySide: Record<SuccessionPrimarySide, SuccessionParticularLegacyEntry[]> =
+    {
+      epoux1: [],
+      epoux2: [],
+    };
 
   const filteredDonations = donations.filter((donation) => {
     if (donation.type !== 'legs_particulier') {

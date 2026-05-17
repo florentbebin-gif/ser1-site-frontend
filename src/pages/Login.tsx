@@ -43,16 +43,29 @@ export default function Login({ onLogin }: LoginProps): React.ReactElement {
       <div className="login-overlay" />
       <div className="login-grid">
         <div className="login-title" data-testid="login-brand-container">
-          <h1 className="login-brand" data-testid="login-brand">SER1</h1>
-          <div className="login-sub" data-testid="login-subtitle">Simulateur épargne retraite</div>
+          <h1 className="login-brand" data-testid="login-brand">
+            SER1
+          </h1>
+          <div className="login-sub" data-testid="login-subtitle">
+            Simulateur épargne retraite
+          </div>
         </div>
         <div className="login-card" data-testid="login-card">
-          <h2 className="card-title" data-testid="login-title">Connexion</h2>
-          {error && <div className="alert error" data-testid="login-error">{error}</div>}
+          <h2 className="card-title" data-testid="login-title">
+            Connexion
+          </h2>
+          {error && (
+            <div className="alert error" data-testid="login-error">
+              {error}
+            </div>
+          )}
           {resetSent && (
             <div className="alert success" data-testid="login-reset-sent">
-              Si votre adresse e-mail existe, un lien vous a été envoyé.<br />
-              <small style={{ opacity: 0.8 }}>Cliquez sur le lien dans l’e-mail pour définir votre mot de passe.</small>
+              Si votre adresse e-mail existe, un lien vous a été envoyé.
+              <br />
+              <small style={{ opacity: 0.8 }}>
+                Cliquez sur le lien dans l’e-mail pour définir votre mot de passe.
+              </small>
             </div>
           )}
           <form className="form-grid" onSubmit={handleLogin} data-testid="login-form">
@@ -72,7 +85,12 @@ export default function Login({ onLogin }: LoginProps): React.ReactElement {
               onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPassword(e.target.value)}
               required
             />
-            <button className="btn" type="submit" disabled={loading} data-testid="login-submit-button">
+            <button
+              className="btn"
+              type="submit"
+              disabled={loading}
+              data-testid="login-submit-button"
+            >
               {loading ? 'Connexion...' : 'Se connecter'}
             </button>
           </form>

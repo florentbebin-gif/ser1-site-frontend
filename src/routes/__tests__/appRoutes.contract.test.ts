@@ -12,26 +12,22 @@ const ACTIVE_SIMULATOR_PATHS = new Set([
   '/sim/ir',
 ]);
 
-const HUBS_OR_PLACEHOLDERS = new Set([
-  '/sim/per',
-  '/sim/epargne-salariale',
-  '/sim/prevoyance',
-]);
+const HUBS_OR_PLACEHOLDERS = new Set(['/sim/per', '/sim/epargne-salariale', '/sim/prevoyance']);
 
-const routePaths = new Set(APP_ROUTES.map(route => route.path));
+const routePaths = new Set(APP_ROUTES.map((route) => route.path));
 
-const simulatorRoutes = APP_ROUTES.filter(route => route.path.startsWith('/sim/'));
+const simulatorRoutes = APP_ROUTES.filter((route) => route.path.startsWith('/sim/'));
 
 describe('Contrat APP_ROUTES', () => {
   it('déclare des chemins uniques', () => {
-    const paths = APP_ROUTES.map(route => route.path);
+    const paths = APP_ROUTES.map((route) => route.path);
     const duplicates = paths.filter((path, index) => paths.indexOf(path) !== index);
 
     expect(duplicates, `Chemins APP_ROUTES dupliqués : ${duplicates.join(', ')}`).toEqual([]);
   });
 
   it('verrouille le contrat minimal des routes simulateur', () => {
-    const violations = simulatorRoutes.flatMap(route => {
+    const violations = simulatorRoutes.flatMap((route) => {
       const errors: string[] = [];
       const metadata = getRouteMetadata(route.path);
 
@@ -40,18 +36,14 @@ describe('Contrat APP_ROUTES', () => {
       if (!route.contextLabel?.trim()) errors.push('contextLabel vide');
       if (metadata.showHome !== true) errors.push('topbar Home absente');
 
-      return errors.map(error => `${route.path}: ${error}`);
+      return errors.map((error) => `${route.path}: ${error}`);
     });
 
-    expect(
-      violations,
-      `Contrat /sim/* invalide : ${violations.join(', ')}`,
-    ).toEqual([]);
+    expect(violations, `Contrat /sim/* invalide : ${violations.join(', ')}`).toEqual([]);
   });
 
   it('recense toutes les routes simulateur actives attendues', () => {
-    const missingActiveRoutes = [...ACTIVE_SIMULATOR_PATHS]
-      .filter(path => !routePaths.has(path));
+    const missingActiveRoutes = [...ACTIVE_SIMULATOR_PATHS].filter((path) => !routePaths.has(path));
 
     expect(
       missingActiveRoutes,
@@ -61,8 +53,8 @@ describe('Contrat APP_ROUTES', () => {
 
   it('classe chaque route simulateur comme active ou hub/placeholder', () => {
     const unclassifiedRoutes = simulatorRoutes
-      .map(route => route.path)
-      .filter(path => !ACTIVE_SIMULATOR_PATHS.has(path) && !HUBS_OR_PLACEHOLDERS.has(path));
+      .map((route) => route.path)
+      .filter((path) => !ACTIVE_SIMULATOR_PATHS.has(path) && !HUBS_OR_PLACEHOLDERS.has(path));
 
     expect(
       unclassifiedRoutes,
@@ -76,14 +68,14 @@ describe('Contrat APP_ROUTES', () => {
 
   it('exige un resetKey sur les simulateurs actifs uniquement', () => {
     const missingResetKey = simulatorRoutes
-      .filter(route => ACTIVE_SIMULATOR_PATHS.has(route.path))
-      .filter(route => !route.topbar?.resetKey)
-      .map(route => route.path);
+      .filter((route) => ACTIVE_SIMULATOR_PATHS.has(route.path))
+      .filter((route) => !route.topbar?.resetKey)
+      .map((route) => route.path);
 
     const unexpectedResetlessRoute = simulatorRoutes
-      .filter(route => !route.topbar?.resetKey)
-      .filter(route => !HUBS_OR_PLACEHOLDERS.has(route.path))
-      .map(route => route.path);
+      .filter((route) => !route.topbar?.resetKey)
+      .filter((route) => !HUBS_OR_PLACEHOLDERS.has(route.path))
+      .map((route) => route.path);
 
     expect(
       missingResetKey,
@@ -104,9 +96,9 @@ describe('Contrat APP_ROUTES', () => {
 
   it('conserve les simulateurs actifs sans props placeholder', () => {
     const activeRoutesWithProps = simulatorRoutes
-      .filter(route => ACTIVE_SIMULATOR_PATHS.has(route.path))
-      .filter(route => route.props !== undefined)
-      .map(route => route.path);
+      .filter((route) => ACTIVE_SIMULATOR_PATHS.has(route.path))
+      .filter((route) => route.props !== undefined)
+      .map((route) => route.path);
 
     expect(
       activeRoutesWithProps,

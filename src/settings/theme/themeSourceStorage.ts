@@ -21,7 +21,10 @@ export function readThemeSourceFromStorage(cabinetBrandingKey: string | null): T
   return 'cabinet';
 }
 
-export function writeThemeSourceToStorage(cabinetBrandingKey: string | null, source: ThemeSource): void {
+export function writeThemeSourceToStorage(
+  cabinetBrandingKey: string | null,
+  source: ThemeSource,
+): void {
   if (typeof window === 'undefined') return;
   // Gouvernance P0-03: themeSource doit être scindé par cabinet pour éviter les fuites cross-tenant.
   localStorage.setItem(getThemeSourceStorageKey(cabinetBrandingKey), source);

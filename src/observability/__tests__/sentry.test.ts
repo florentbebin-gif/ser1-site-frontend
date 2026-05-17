@@ -1,10 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import {
-  captureException,
-  captureMessage,
-  initSentry,
-  redactContext,
-} from '../sentry';
+import { captureException, captureMessage, initSentry, redactContext } from '../sentry';
 
 vi.mock('@sentry/react', () => ({
   init: vi.fn(),
@@ -45,15 +40,15 @@ describe('observability/sentry', () => {
   });
 
   it('redige toutes les clés sensibles du contexte', () => {
-    const input = Object.fromEntries(
-      sensitiveKeys.map((key) => [key, `valeur-${key}`]),
-    );
+    const input = Object.fromEntries(sensitiveKeys.map((key) => [key, `valeur-${key}`]));
 
-    expect(redactContext({
-      ...input,
-      area: 'bootstrap',
-      statusCode: 500,
-    })).toEqual({
+    expect(
+      redactContext({
+        ...input,
+        area: 'bootstrap',
+        statusCode: 500,
+      }),
+    ).toEqual({
       ...Object.fromEntries(sensitiveKeys.map((key) => [key, '[redacted]'])),
       area: 'bootstrap',
       statusCode: 500,

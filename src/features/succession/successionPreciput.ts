@@ -94,8 +94,8 @@ export function buildSuccessionPreciputCandidates({
       label: buildAssetCandidateLabel(entry),
       pocket: entry.pocket,
       maxAmount: asAmount(entry.amount),
-      isResidencePrincipale: entry.category === 'immobilier'
-        && entry.subCategory === RESIDENCE_PRINCIPALE_SUBCATEGORY,
+      isResidencePrincipale:
+        entry.category === 'immobilier' && entry.subCategory === RESIDENCE_PRINCIPALE_SUBCATEGORY,
     }));
 
   const groupementCandidates = groupementFoncierEntries
@@ -159,10 +159,9 @@ export function resolveSuccessionPreciputApplication({
   patrimonial,
   candidates,
 }: {
-  patrimonial?: Partial<Pick<
-    SuccessionPatrimonialContext,
-    'preciputMode' | 'preciputSelections' | 'preciputMontant'
-  >>;
+  patrimonial?: Partial<
+    Pick<SuccessionPatrimonialContext, 'preciputMode' | 'preciputSelections' | 'preciputMontant'>
+  >;
   candidates: SuccessionPreciputCandidate[];
 }): SuccessionResolvedPreciputApplication {
   const syncedSelections = syncSuccessionPreciputSelections(
@@ -215,26 +214,29 @@ export function resolveSuccessionPreciputApplication({
 export function buildSuccessionTargetedPreciputTaxableBasis(
   selections: SuccessionResolvedPreciputSelection[],
 ): SuccessionEstateTaxableBasis {
-  return selections.reduce<SuccessionEstateTaxableBasis>((acc, resolved) => {
-    if (resolved.candidate.sourceType === 'asset') {
-      acc.ordinaryNetBeforeForfait += resolved.amount;
-      if (resolved.candidate.isResidencePrincipale) {
-        acc.residencePrincipaleValeur += resolved.amount;
+  return selections.reduce<SuccessionEstateTaxableBasis>(
+    (acc, resolved) => {
+      if (resolved.candidate.sourceType === 'asset') {
+        acc.ordinaryNetBeforeForfait += resolved.amount;
+        if (resolved.candidate.isResidencePrincipale) {
+          acc.residencePrincipaleValeur += resolved.amount;
+        }
+        return acc;
+      }
+
+      if (resolved.candidate.groupementType) {
+        acc.groupementEntries.push({
+          sourceId: resolved.candidate.sourceId,
+          type: resolved.candidate.groupementType,
+          valeurTotale: resolved.amount,
+        });
       }
       return acc;
-    }
-
-    if (resolved.candidate.groupementType) {
-      acc.groupementEntries.push({
-        sourceId: resolved.candidate.sourceId,
-        type: resolved.candidate.groupementType,
-        valeurTotale: resolved.amount,
-      });
-    }
-    return acc;
-  }, {
-    ordinaryNetBeforeForfait: 0,
-    groupementEntries: [],
-    residencePrincipaleValeur: 0,
-  });
+    },
+    {
+      ordinaryNetBeforeForfait: 0,
+      groupementEntries: [],
+      residencePrincipaleValeur: 0,
+    },
+  );
 }

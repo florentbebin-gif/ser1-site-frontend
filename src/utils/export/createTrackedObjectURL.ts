@@ -37,7 +37,9 @@ export function revokeAllTrackedObjectURLs(): void {
 
 export function createTrackedObjectURL(blob: Blob): string {
   if (typeof URL === 'undefined' || typeof URL.createObjectURL !== 'function') {
-    throw new Error('createTrackedObjectURL: URL.createObjectURL is not available in this environment.');
+    throw new Error(
+      'createTrackedObjectURL: URL.createObjectURL is not available in this environment.',
+    );
   }
 
   const url = URL.createObjectURL(blob);

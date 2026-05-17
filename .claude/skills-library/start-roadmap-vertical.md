@@ -8,6 +8,7 @@ Procédure stricte pour démarrer une nouvelle verticale roadmap SER1 (P3 à P8)
 Le but : éviter de partir « au feeling » sur un chantier large, en forçant la spec avant le code.
 
 Ne pas utiliser pour :
+
 - P2 (mode simplifié/expert) — déjà amorcé, infrastructure existante (`src/settings/userModeDisplay.tsx` + `docs/mode-simplifie-expert.md`).
 - Bug fix, petit refactor, ajout localisé dans une feature existante → utiliser `clean-code` ou `arch-check`.
 
@@ -26,6 +27,7 @@ Refuser de continuer tant que le brief n'est pas écrit.
 **Artefact** : `docs/feature-<vertical-id>.md` (ex. `docs/feature-per-multi-enveloppes.md`, `docs/feature-scan-documentaire.md`).
 
 **Contenu minimum (1 page max)** :
+
 - Problème utilisateur (1 paragraphe).
 - Personae cible (CGP, client, admin cabinet).
 - Périmètre inclus / exclus (explicite).
@@ -42,6 +44,7 @@ Si le brief est plus long, demander au product de réduire. Un brief illisible =
 **Artefact** : section « Modèle données » ajoutée au brief de l'étape 1.
 
 **Contenu** :
+
 - Tables Supabase concernées (existantes ou à créer).
 - Migrations attendues (`supabase/migrations/<timestamp>_<slug>.sql`).
 - RLS : qui lit, qui écrit, owner-only ou pas.
@@ -59,6 +62,7 @@ Refuser de continuer si une nouvelle table est introduite sans plan RLS.
 **Artefact** : section « Infrastructure » dans le brief.
 
 **Contenu** :
+
 - Env vars (`VITE_*`) à ajouter dans `.env.example` (jamais `.env` directement).
 - Secrets nécessaires (CI, Supabase, services externes).
 - Side-effects au boot (init dans `main.tsx` ?).
@@ -76,6 +80,7 @@ Si la verticale introduit un service externe (P4 scan documentaire par exemple),
 **Règle par défaut** : toute nouvelle verticale est `expertOnly` tant qu'une décision produit explicite n'a pas défini un parcours simplifié.
 
 **Contenu** :
+
 - Le mode simplifié masque-t-il cette feature, ou la propose-t-il avec moins de champs ?
 - Quelles routes `/sim/*` ou `/settings/*` sont impactées ?
 - Y a-t-il un override local de mode pour cette feature ?
@@ -87,6 +92,7 @@ Rappel non négociable : **le mode masque l'UI, ne change jamais les hypothèses
 ## Étape 5 — Modèle TypeScript
 
 **Ordre obligatoire** :
+
 1. Types `src/domain/<vertical>/` (modèle métier pur, zéro React, zéro Supabase).
 2. Types `src/engine/<vertical>/` si calculs nécessaires (toujours zéro React).
 3. Types `src/features/<vertical>/` (consomment 1 et 2).
@@ -103,6 +109,7 @@ Vérification : `npm run check:arch` doit passer (depcruise enforce les boundari
 **Artefact** : un test métier minimal qui verrouille un cas représentatif AVANT toute UI.
 
 **Pattern** :
+
 - Engine fiscal : test golden JSON dans `src/engine/<vertical>/__tests__/golden/`.
 - Logique non-fiscale : test Vitest classique avec valeurs attendues figées.
 
@@ -113,12 +120,14 @@ Ce test **doit échouer** au début (le code n'existe pas encore). C'est le cont
 ## Étape 7 — Code + documentation
 
 **Pendant le code** :
+
 - `npm run check` à chaque modification importante.
 - Conventional commits stricts (`feat:`, `fix:`, `chore:`, `refactor:`, `docs:`, `test:`).
 - Pas de console.log (le check CI l'interdit).
 - Pas de hardcode fiscal (`check:fiscal-hardcode` l'interdit).
 
 **Mise à jour docs OBLIGATOIRE si convention change** :
+
 - `docs/ARCHITECTURE.md` : nouvelle frontière, nouveau pattern, nouveau dossier majeur.
 - `docs/METIER.md` : nouvelle règle fiscale, nouveau périmètre simulateur.
 - `docs/ROADMAP.md` : marquer la verticale comme amorcée, livrée ou en cours.
@@ -131,6 +140,7 @@ Refuser de fermer la verticale si la doc n'est pas alignée.
 ## Étape 8 — PR atomique
 
 **Découpe par défaut** :
+
 1. PR-spec : brief + docs (étapes 1-4).
 2. PR-types : modèle TS (étape 5).
 3. PR-test : test golden qui échoue (étape 6).
@@ -138,6 +148,7 @@ Refuser de fermer la verticale si la doc n'est pas alignée.
 5. PR-export : intégration PPTX/XLSX/snapshot si exports impactés.
 
 **Avant chaque PR** :
+
 - `npm run check` vert.
 - Commits conventional commits (commitlint le valide localement via husky).
 - Pas de fichier > 500 lignes (component-structure.md règle « must split »).
@@ -148,6 +159,7 @@ Refuser de fermer la verticale si la doc n'est pas alignée.
 ## Sortie de skill
 
 Quand la verticale est livrée :
+
 - ROADMAP mise à jour (statut `spec` → `livré`).
 - CHANGELOG : laissé à Release Please via les conventional commits — **ne pas éditer manuellement**.
 - Mémoire utilisateur Claude Code mise à jour si pattern récurrent identifié.

@@ -1,6 +1,9 @@
 import type { TaxScale, ProgressiveTaxResult } from './types';
 
-export function computeProgressiveTax(scale: TaxScale = [], taxablePerPart: number): ProgressiveTaxResult {
+export function computeProgressiveTax(
+  scale: TaxScale = [],
+  taxablePerPart: number,
+): ProgressiveTaxResult {
   if (!Array.isArray(scale) || !scale.length || taxablePerPart <= 0) {
     return {
       taxPerPart: 0,

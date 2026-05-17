@@ -10,7 +10,11 @@ import type { DossierAudit } from '../audit/types';
 import type { Strategie, ProduitConfig, ProduitType, Recommandation } from './types';
 import { createEmptyStrategie, PRODUIT_LABELS } from './types';
 import { generateRecommendations } from './utils/recommendations';
-import { calculateBaselineProjection, calculateStrategyProjection, compareScenarios } from './utils/calculations';
+import {
+  calculateBaselineProjection,
+  calculateStrategyProjection,
+  compareScenarios,
+} from './utils/calculations';
 import { useFiscalContext } from '../../hooks/useFiscalContext';
 import type { ComparaisonScenarios } from './types';
 import { exportStrategyPptx } from './export/exportStrategy';
@@ -31,10 +35,12 @@ interface StrategyNumericFieldProps {
   onChange: (value: number) => void;
 }
 
-function parseStrategyNumericValue(rawValue: string, fallbackValue: number, integer = false): number {
-  const parsedValue = integer
-    ? Number.parseInt(rawValue, 10)
-    : Number.parseFloat(rawValue);
+function parseStrategyNumericValue(
+  rawValue: string,
+  fallbackValue: number,
+  integer = false,
+): number {
+  const parsedValue = integer ? Number.parseInt(rawValue, 10) : Number.parseFloat(rawValue);
 
   return Number.isFinite(parsedValue) ? parsedValue : fallbackValue;
 }
@@ -65,7 +71,9 @@ function StrategyNumericField({
         step={step}
         value={value ?? fallbackValue}
         className="strategy-field__control sim-field__control"
-        onChange={(event) => onChange(parseStrategyNumericValue(event.target.value, fallbackValue, integer))}
+        onChange={(event) =>
+          onChange(parseStrategyNumericValue(event.target.value, fallbackValue, integer))
+        }
       />
       {unit ? <span className="strategy-field__unit sim-field__unit">{unit}</span> : null}
     </SimFieldShell>
@@ -84,13 +92,17 @@ export default function StrategyBuilder({ dossier }: StrategyBuilderProps): Reac
   useEffect(() => {
     const recos = generateRecommendations(dossier);
     setRecommandations(recos);
-    setStrategie(prev => ({ ...prev, recommandations: recos }));
+    setStrategie((prev) => ({ ...prev, recommandations: recos }));
   }, [dossier]);
 
   // Calcul des projections quand les produits ou les paramètres fiscaux changent
   useEffect(() => {
     const baseline = calculateBaselineProjection(dossier, fiscalContext);
-    const strategieProj = calculateStrategyProjection(dossier, strategie.produitsSelectionnes, fiscalContext);
+    const strategieProj = calculateStrategyProjection(
+      dossier,
+      strategie.produitsSelectionnes,
+      fiscalContext,
+    );
     const comp = compareScenarios(baseline, strategieProj);
     setComparaison(comp);
   }, [dossier, strategie.produitsSelectionnes, fiscalContext]);
@@ -116,7 +128,7 @@ export default function StrategyBuilder({ dossier }: StrategyBuilderProps): Reac
       tauxRendementEstime: 3,
     };
 
-    setStrategie(prev => ({
+    setStrategie((prev) => ({
       ...prev,
       produitsSelectionnes: [...prev.produitsSelectionnes, newProduit],
       dateModification: new Date().toISOString(),
@@ -125,19 +137,19 @@ export default function StrategyBuilder({ dossier }: StrategyBuilderProps): Reac
   };
 
   const handleUpdateProduit = (id: string, updates: Partial<ProduitConfig>) => {
-    setStrategie(prev => ({
+    setStrategie((prev) => ({
       ...prev,
-      produitsSelectionnes: prev.produitsSelectionnes.map(p =>
-        p.id === id ? { ...p, ...updates } : p
+      produitsSelectionnes: prev.produitsSelectionnes.map((p) =>
+        p.id === id ? { ...p, ...updates } : p,
       ),
       dateModification: new Date().toISOString(),
     }));
   };
 
   const handleRemoveProduit = (id: string) => {
-    setStrategie(prev => ({
+    setStrategie((prev) => ({
       ...prev,
-      produitsSelectionnes: prev.produitsSelectionnes.filter(p => p.id !== id),
+      produitsSelectionnes: prev.produitsSelectionnes.filter((p) => p.id !== id),
       dateModification: new Date().toISOString(),
     }));
   };
@@ -149,7 +161,7 @@ export default function StrategyBuilder({ dossier }: StrategyBuilderProps): Reac
       await exportStrategyPptx({ dossier, strategie, comparaison });
     } catch (error) {
       console.error('Erreur export PPTX:', error);
-      alert('Erreur lors de l\'export PPTX');
+      alert("Erreur lors de l'export PPTX");
     } finally {
       setIsExportingPptx(false);
     }
@@ -163,6 +175,12 @@ export default function StrategyBuilder({ dossier }: StrategyBuilderProps): Reac
       tooltip: !comparaison ? 'Ajoutez au moins un produit avant d’exporter.' : undefined,
     },
   ];
+  const baselineProjectionFinale = comparaison
+    ? comparaison.baseline.projections[comparaison.baseline.projections.length - 1]
+    : undefined;
+  const strategieProjectionFinale = comparaison
+    ? comparaison.strategie.projections[comparaison.strategie.projections.length - 1]
+    : undefined;
 
   return (
     <div className="strategy-builder premium-page" data-testid="strategy-page">
@@ -196,11 +214,16 @@ export default function StrategyBuilder({ dossier }: StrategyBuilderProps): Reac
           </div>
         </div>
         {recommandations.length === 0 && (
-          <p className="empty-state">Aucune recommandation générée. Vérifiez les objectifs du client.</p>
+          <p className="empty-state">
+            Aucune recommandation générée. Vérifiez les objectifs du client.
+          </p>
         )}
         <div className="recommandations-list">
-          {recommandations.map(reco => (
-            <article key={reco.id} className={`reco-card premium-card-compact priority-${reco.priorite}`}>
+          {recommandations.map((reco) => (
+            <article
+              key={reco.id}
+              className={`reco-card premium-card-compact priority-${reco.priorite}`}
+            >
               <div className="reco-header">
                 <h3>{reco.titre}</h3>
                 <span className={`badge badge-${reco.priorite}`}>{reco.priorite}</span>
@@ -208,14 +231,18 @@ export default function StrategyBuilder({ dossier }: StrategyBuilderProps): Reac
               <p>{reco.description}</p>
               <div className="reco-meta">
                 <div className="reco-tags">
-                  {reco.produitsAssocies.map(p => (
-                    <span key={p} className="tag">{PRODUIT_LABELS[p]}</span>
+                  {reco.produitsAssocies.map((p) => (
+                    <span key={p} className="tag">
+                      {PRODUIT_LABELS[p]}
+                    </span>
                   ))}
                 </div>
                 {reco.warnings && reco.warnings.length > 0 && (
                   <div className="reco-warnings">
                     {reco.warnings.map((w, idx) => (
-                      <div key={idx} className="warning">⚠️ {w}</div>
+                      <div key={idx} className="warning">
+                        ⚠️ {w}
+                      </div>
                     ))}
                   </div>
                 )}
@@ -238,11 +265,13 @@ export default function StrategyBuilder({ dossier }: StrategyBuilderProps): Reac
         </div>
 
         {strategie.produitsSelectionnes.length === 0 && (
-          <p className="empty-state">Aucun produit sélectionné. Cliquez sur « Ajouter un produit » pour commencer.</p>
+          <p className="empty-state">
+            Aucun produit sélectionné. Cliquez sur « Ajouter un produit » pour commencer.
+          </p>
         )}
 
         <div className="produits-list">
-          {strategie.produitsSelectionnes.map(produit => (
+          {strategie.produitsSelectionnes.map((produit) => (
             <article key={produit.id} className="produit-card premium-card-compact">
               <div className="produit-header">
                 <h3>{produit.libelle}</h3>
@@ -268,7 +297,9 @@ export default function StrategyBuilder({ dossier }: StrategyBuilderProps): Reac
                   value={produit.versementsProgrammes}
                   unit="€"
                   fallbackValue={0}
-                  onChange={(versementsProgrammes) => handleUpdateProduit(produit.id, { versementsProgrammes })}
+                  onChange={(versementsProgrammes) =>
+                    handleUpdateProduit(produit.id, { versementsProgrammes })
+                  }
                 />
                 <StrategyNumericField
                   label="Durée"
@@ -284,7 +315,9 @@ export default function StrategyBuilder({ dossier }: StrategyBuilderProps): Reac
                   unit="%"
                   step="0.1"
                   fallbackValue={3}
-                  onChange={(tauxRendementEstime) => handleUpdateProduit(produit.id, { tauxRendementEstime })}
+                  onChange={(tauxRendementEstime) =>
+                    handleUpdateProduit(produit.id, { tauxRendementEstime })
+                  }
                 />
               </div>
             </article>
@@ -293,7 +326,7 @@ export default function StrategyBuilder({ dossier }: StrategyBuilderProps): Reac
       </section>
 
       {/* Comparaison scénarios */}
-      {comparaison && (
+      {comparaison && baselineProjectionFinale && strategieProjectionFinale && (
         <section className="strategy-section premium-card">
           <div className="strategy-section-heading">
             <div>
@@ -308,13 +341,16 @@ export default function StrategyBuilder({ dossier }: StrategyBuilderProps): Reac
               <div className="scenario-metric">
                 <span className="metric-label">Patrimoine dans 10 ans</span>
                 <span className="metric-value">
-                  {comparaison.baseline.projections[10].patrimoineTotal.toLocaleString('fr-FR')} €
+                  {baselineProjectionFinale.patrimoineTotal.toLocaleString('fr-FR')} €
                 </span>
               </div>
               <div className="scenario-metric">
                 <span className="metric-label">IR cumulé sur 10 ans</span>
                 <span className="metric-value">
-                  {comparaison.baseline.projections.reduce((s, p) => s + p.impotRevenu, 0).toLocaleString('fr-FR')} €
+                  {comparaison.baseline.projections
+                    .reduce((s, p) => s + p.impotRevenu, 0)
+                    .toLocaleString('fr-FR')}{' '}
+                  €
                 </span>
               </div>
             </div>
@@ -324,13 +360,16 @@ export default function StrategyBuilder({ dossier }: StrategyBuilderProps): Reac
               <div className="scenario-metric">
                 <span className="metric-label">Patrimoine dans 10 ans</span>
                 <span className="metric-value">
-                  {comparaison.strategie.projections[10].patrimoineTotal.toLocaleString('fr-FR')} €
+                  {strategieProjectionFinale.patrimoineTotal.toLocaleString('fr-FR')} €
                 </span>
               </div>
               <div className="scenario-metric">
                 <span className="metric-label">IR cumulé sur 10 ans</span>
                 <span className="metric-value">
-                  {comparaison.strategie.projections.reduce((s, p) => s + p.impotRevenu, 0).toLocaleString('fr-FR')} €
+                  {comparaison.strategie.projections
+                    .reduce((s, p) => s + p.impotRevenu, 0)
+                    .toLocaleString('fr-FR')}{' '}
+                  €
                 </span>
               </div>
             </div>
@@ -365,17 +404,17 @@ export default function StrategyBuilder({ dossier }: StrategyBuilderProps): Reac
           bodyClassName="strategy-modal__body"
           footerClassName="strategy-modal__footer"
           onClose={() => setShowAddProduit(false)}
-          footer={(
+          footer={
             <button type="button" className="premium-btn" onClick={() => setShowAddProduit(false)}>
               Annuler
             </button>
-          )}
+          }
         >
           <div className="strategy-modal__copy">
             <p className="premium-section-title">Catalogue MVP</p>
           </div>
           <div className="produits-grid">
-            {(Object.keys(PRODUIT_LABELS) as ProduitType[]).map(type => (
+            {(Object.keys(PRODUIT_LABELS) as ProduitType[]).map((type) => (
               <button
                 key={type}
                 type="button"

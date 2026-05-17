@@ -16,10 +16,10 @@ const GEO = {
   marginX: 0.92,
   introY: 2.42,
   panelX: 0.92,
-  panelY: 3.00,
+  panelY: 3.0,
   panelW: 11.5,
   panelH: 3.5,
-  noteY: 6.60,
+  noteY: 6.6,
 } as const;
 
 function euro(value: number): string {
@@ -71,12 +71,17 @@ function drawColumn(
     fill: { color: accent, transparency: 86 },
     line: { color: accent, transparency: 100 },
   });
-  addBusinessIconToSlide(slide, column.iconName, {
-    x: centerX - 0.15,
-    y: GEO.panelY + 0.48,
-    w: 0.30,
-    h: 0.30,
-  }, `#${accent}`);
+  addBusinessIconToSlide(
+    slide,
+    column.iconName,
+    {
+      x: centerX - 0.15,
+      y: GEO.panelY + 0.48,
+      w: 0.3,
+      h: 0.3,
+    },
+    `#${accent}`,
+  );
 
   addTextFr(slide, column.heading, {
     x: x + 0.22,
@@ -102,7 +107,7 @@ function drawColumn(
   });
   addTextFr(slide, euro(column.values.declarant1), {
     x: innerX,
-    y: d1Y + 0.20,
+    y: d1Y + 0.2,
     w: colW - 0.64,
     h: 0.34,
     fontSize: 17,
@@ -140,9 +145,9 @@ function drawColumn(
 
   if (column.caption) {
     addTextFr(slide, column.caption, {
-      x: x + 0.30,
+      x: x + 0.3,
       y: GEO.panelY + GEO.panelH - 0.42,
-      w: colW - 0.60,
+      w: colW - 0.6,
       h: 0.22,
       fontSize: 8,
       color: roleColor(theme, 'textBody'),
@@ -173,7 +178,11 @@ export function buildPerPlafond3Col(
     valign: 'middle',
   });
 
-  addCardPanelWithShadow(slide, { x: GEO.panelX, y: GEO.panelY, w: GEO.panelW, h: GEO.panelH }, theme);
+  addCardPanelWithShadow(
+    slide,
+    { x: GEO.panelX, y: GEO.panelY, w: GEO.panelW, h: GEO.panelH },
+    theme,
+  );
   spec.columns.forEach((column, index) => drawColumn(slide, column, index, spec, ctx));
 
   if (spec.note) {

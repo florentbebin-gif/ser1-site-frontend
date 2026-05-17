@@ -6,10 +6,7 @@ import type {
   TresoInputsV6,
 } from '@/engine/tresorerie/types';
 import { SimFieldShell } from '@/components/ui/sim/SimFieldShell';
-import {
-  buildNextPhase,
-  sortPhases,
-} from '../../utils/revenuePhases';
+import { buildNextPhase, sortPhases } from '../../utils/revenuePhases';
 import { TresoRevenuePhaseModal } from './TresoRevenuePhaseModal';
 import { TresoTimelineEmptyState } from './TresoTimelineEmptyState';
 import { TresoTimelinePhaseList } from './TresoTimelinePhaseList';
@@ -42,13 +39,14 @@ export function TresoTimelineSection({
     new Date().getFullYear();
   const phases = selectedAssociate ? sortPhases(selectedAssociate.revenuePhases) : [];
   const layout = useMemo(
-    () => selectedAssociate
-      ? computeTimelineRange(inputs.company, selectedAssociate, horizonYears)
-      : null,
+    () =>
+      selectedAssociate
+        ? computeTimelineRange(inputs.company, selectedAssociate, horizonYears)
+        : null,
     [horizonYears, inputs.company, selectedAssociate],
   );
   const editingPhase = editingPhaseId
-    ? phases.find(phase => phase.id === editingPhaseId) ?? null
+    ? (phases.find((phase) => phase.id === editingPhaseId) ?? null)
     : null;
   const selectedAssociateCcaCurrentBalance = selectedAssociate?.cca?.currentBalance ?? 0;
 
@@ -73,7 +71,7 @@ export function TresoTimelineSection({
       company: {
         ...inputs.company,
         projectionStartYear: safeYear,
-        associates: inputs.company.associates.map(associate => ({
+        associates: inputs.company.associates.map((associate) => ({
           ...associate,
           profile: associate.profile
             ? { ...associate.profile, projectionStartYear: safeYear }
@@ -86,7 +84,7 @@ export function TresoTimelineSection({
   const patchSelectedAssociate = (patch: Partial<AssociateInputV6>) => {
     if (!selectedAssociate) return;
     patchCompany({
-      associates: inputs.company.associates.map(associate =>
+      associates: inputs.company.associates.map((associate) =>
         associate.id === selectedAssociate.id ? { ...associate, ...patch } : associate,
       ),
     });
@@ -97,25 +95,32 @@ export function TresoTimelineSection({
   };
 
   const addRevenuePhase = () => {
-    const nextPhase = buildNextPhase(phases, projectionStartYear, () => `phase-${Date.now()}-${phases.length + 1}`) as AssociateRevenuePhaseInputV6;
+    const nextPhase = buildNextPhase(
+      phases,
+      projectionStartYear,
+      () => `phase-${Date.now()}-${phases.length + 1}`,
+    ) as AssociateRevenuePhaseInputV6;
     setPhases(sortPhases([...phases, nextPhase]));
     setEditingPhaseId(nextPhase.id);
   };
 
   const saveRevenuePhase = (phase: AssociateRevenuePhaseInputV6) => {
-    setPhases(sortPhases(phases.map(item => (item.id === phase.id ? phase : item))));
+    setPhases(sortPhases(phases.map((item) => (item.id === phase.id ? phase : item))));
     setEditingPhaseId(null);
   };
 
   const deleteRevenuePhase = () => {
     if (!editingPhase) return;
     if (phases.length <= 1) return;
-    setPhases(sortPhases(phases.filter(phase => phase.id !== editingPhase.id)));
+    setPhases(sortPhases(phases.filter((phase) => phase.id !== editingPhase.id)));
     setEditingPhaseId(null);
   };
 
   return (
-    <section className="premium-card ts-section ts-timeline-section" aria-labelledby="ts-timeline-title">
+    <section
+      className="premium-card ts-section ts-timeline-section"
+      aria-labelledby="ts-timeline-title"
+    >
       <div className="ts-section__header">
         <span className="sim-card__icon">
           <svg
@@ -198,7 +203,7 @@ export function TresoTimelineSection({
                   step={1}
                   value={horizonYears}
                   className="sim-field__control"
-                  onChange={event => {
+                  onChange={(event) => {
                     if (event.target.value === '') return;
                     patchProjectionHorizonYears(Number(event.target.value));
                   }}
@@ -216,10 +221,7 @@ export function TresoTimelineSection({
             </button>
           </div>
 
-          <TresoTimelinePhaseList
-            phases={phases}
-            onEditPhase={setEditingPhaseId}
-          />
+          <TresoTimelinePhaseList phases={phases} onEditPhase={setEditingPhaseId} />
         </div>
       ) : null}
 

@@ -71,11 +71,11 @@ export function triggerGlobalReset(): void {
     'per-transfert',
     'tresorerie-societe',
   ];
-  
-  simulators.forEach(simId => {
+
+  simulators.forEach((simId) => {
     triggerPageReset(simId);
   });
-  
+
   // Effacer aussi le nom du fichier chargé (sessionStorage)
   try {
     sessionStorage.removeItem('ser1:loadedFilename');

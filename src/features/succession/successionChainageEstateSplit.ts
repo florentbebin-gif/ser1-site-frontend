@@ -9,19 +9,18 @@ import type { SuccessionDeceasedSide } from './successionEnfants';
 import { getUsufruitValuationFromBirthDate } from './successionUsufruit';
 
 type SuccessionChainOrder = 'epoux1' | 'epoux2';
-type SuccessionChainRegime =
-  | 'communaute_legale'
-  | 'separation_biens'
-  | 'communaute_universelle';
+type SuccessionChainRegime = 'communaute_legale' | 'separation_biens' | 'communaute_universelle';
 
-type DonationEntreEpouxSelection = Partial<Pick<
-  SuccessionPatrimonialContext,
-  | 'attributionIntegrale'
-  | 'donationEntreEpouxActive'
-  | 'donationEntreEpouxOption'
-  | 'preciputMontant'
-  | 'societeAcquets'
->>;
+type DonationEntreEpouxSelection = Partial<
+  Pick<
+    SuccessionPatrimonialContext,
+    | 'attributionIntegrale'
+    | 'donationEntreEpouxActive'
+    | 'donationEntreEpouxOption'
+    | 'preciputMontant'
+    | 'societeAcquets'
+  >
+>;
 
 export interface SuccessionSocieteAcquetsDistribution {
   configured: boolean;
@@ -75,13 +74,13 @@ function getSocieteAcquetsQuotes(
     : DEFAULT_SUCCESSION_SOCIETE_ACQUETS_CONFIG;
   return deceased === 'epoux1'
     ? {
-      deceasedPct: config.quoteEpoux1Pct,
-      survivorPct: config.quoteEpoux2Pct,
-    }
+        deceasedPct: config.quoteEpoux1Pct,
+        survivorPct: config.quoteEpoux2Pct,
+      }
     : {
-      deceasedPct: config.quoteEpoux2Pct,
-      survivorPct: config.quoteEpoux1Pct,
-    };
+        deceasedPct: config.quoteEpoux2Pct,
+        survivorPct: config.quoteEpoux1Pct,
+      };
 }
 
 export function computeSocieteAcquetsDistribution(
@@ -106,7 +105,9 @@ export function computeSocieteAcquetsDistribution(
       liquidationMode: activeConfig.liquidationMode,
       deceasedQuotePct: deceasedPct,
       survivorQuotePct: survivorPct,
-      attributionIntegrale: Boolean(patrimonial?.societeAcquets?.active && patrimonial.attributionIntegrale),
+      attributionIntegrale: Boolean(
+        patrimonial?.societeAcquets?.active && patrimonial.attributionIntegrale,
+      ),
       warnings: [],
     };
   }
@@ -123,9 +124,7 @@ export function computeSocieteAcquetsDistribution(
       deceasedQuotePct: deceasedPct,
       survivorQuotePct: survivorPct,
       attributionIntegrale: true,
-      warnings: [
-        "Societe d'acquets: attribution integrale du reliquat au survivant au 1er deces.",
-      ],
+      warnings: ["Societe d'acquets: attribution integrale du reliquat au survivant au 1er deces."],
     };
   }
 
@@ -133,10 +132,10 @@ export function computeSocieteAcquetsDistribution(
     ? Math.min(asAmount(patrimonial.preciputMontant), total)
     : 0;
   const remainingAfterPreciput = Math.max(0, total - preciput);
-  const survivorAttribution = patrimonial?.societeAcquets?.active
-    && activeConfig.liquidationMode === 'attribution_survivant'
-    ? remainingAfterPreciput * (activeConfig.attributionSurvivantPct / 100)
-    : 0;
+  const survivorAttribution =
+    patrimonial?.societeAcquets?.active && activeConfig.liquidationMode === 'attribution_survivant'
+      ? remainingAfterPreciput * (activeConfig.attributionSurvivantPct / 100)
+      : 0;
   const remainingAfterAttribution = Math.max(0, remainingAfterPreciput - survivorAttribution);
   const firstEstateContribution = remainingAfterAttribution * (deceasedPct / 100);
   const survivorShare = total - firstEstateContribution;
@@ -189,7 +188,7 @@ export function computeFirstEstate(
     const pctDefunt = (100 - Math.min(100, Math.max(0, attributionBiensCommunsPct))) / 100;
     if (preserveQualifiedSeparatePocketsInUniversalCommunity) {
       const adjustedCommun = Math.max(0, actifCommun - preciputFromSharedMass);
-      return (order === 'epoux1' ? actifEpoux1 : actifEpoux2) + (adjustedCommun * pctDefunt);
+      return (order === 'epoux1' ? actifEpoux1 : actifEpoux2) + adjustedCommun * pctDefunt;
     }
     const totalShared = actifEpoux1 + actifEpoux2 + actifCommun;
     return Math.max(0, totalShared - preciputFromSharedMass) * pctDefunt;
@@ -201,7 +200,7 @@ export function computeFirstEstate(
 
   const pctDefunt = (100 - Math.min(100, Math.max(0, attributionBiensCommunsPct))) / 100;
   const adjustedCommun = Math.max(0, actifCommun - preciputFromSharedMass);
-  return (order === 'epoux1' ? actifEpoux1 : actifEpoux2) + (adjustedCommun * pctDefunt);
+  return (order === 'epoux1' ? actifEpoux1 : actifEpoux2) + adjustedCommun * pctDefunt;
 }
 
 export function computeStep1Split(
@@ -217,9 +216,9 @@ export function computeStep1Split(
   nbEnfantsNonCommuns?: number,
 ): SuccessionChainStep1Split {
   if (
-    civil.situationMatrimoniale === 'marie'
-    && regimeUsed === 'communaute_universelle'
-    && patrimonial?.attributionIntegrale
+    civil.situationMatrimoniale === 'marie' &&
+    regimeUsed === 'communaute_universelle' &&
+    patrimonial?.attributionIntegrale
   ) {
     const warnings = [
       'Communaute universelle avec attribution integrale: la masse commune est integralement attribuee au conjoint survivant par clause contractuelle.',
@@ -228,7 +227,9 @@ export function computeStep1Split(
       warnings.push('Attribution integrale prioritaire: clause de preciput ignoree au 1er deces.');
     }
     if (patrimonial.donationEntreEpouxActive) {
-      warnings.push('Attribution integrale prioritaire: donation entre epoux ignoree au 1er deces.');
+      warnings.push(
+        'Attribution integrale prioritaire: donation entre epoux ignoree au 1er deces.',
+      );
     }
     if (firstEstate <= 0) {
       return {
@@ -237,15 +238,21 @@ export function computeStep1Split(
         parentsPart: 0,
         carryOverToStep2: 0,
         preciputDeducted: 0,
-        warnings: [...warnings, 'Aucun propre du defunt: la totalite du patrimoine est attribuee au survivant.'],
+        warnings: [
+          ...warnings,
+          'Aucun propre du defunt: la totalite du patrimoine est attribuee au survivant.',
+        ],
       };
     }
-    warnings.push(`Propres du defunt: ${Math.round(firstEstate).toLocaleString('fr-FR')} EUR soumis a la devolution legale.`);
+    warnings.push(
+      `Propres du defunt: ${Math.round(firstEstate).toLocaleString('fr-FR')} EUR soumis a la devolution legale.`,
+    );
   }
 
-  const preciput = (civil.situationMatrimoniale === 'marie')
-    ? Math.min(asAmount(patrimonial?.preciputMontant), firstEstate)
-    : 0;
+  const preciput =
+    civil.situationMatrimoniale === 'marie'
+      ? Math.min(asAmount(patrimonial?.preciputMontant), firstEstate)
+      : 0;
   const estateAfterPreciput = firstEstate - preciput;
 
   if (civil.situationMatrimoniale !== 'marie') {
@@ -259,7 +266,12 @@ export function computeStep1Split(
     };
   }
   if (nbEnfants <= 0) {
-    const preciputWarnings = preciput > 0 ? [`Clause de preciput: ${preciput.toLocaleString('fr-FR')} EUR preleves avant partage successoral.`] : [];
+    const preciputWarnings =
+      preciput > 0
+        ? [
+            `Clause de preciput: ${preciput.toLocaleString('fr-FR')} EUR preleves avant partage successoral.`,
+          ]
+        : [];
     // Art. 757-1 CC: en présence de parents survivants, chaque parent reçoit 1/4
     const clampedParents = Math.min(2, Math.max(0, nbParentsSurvivants));
     const parentsPart = estateAfterPreciput * clampedParents * 0.25;
@@ -270,15 +282,21 @@ export function computeStep1Split(
       parentsPart,
       carryOverToStep2: conjointPart,
       preciputDeducted: preciput,
-      warnings: clampedParents > 0
-        ? [...preciputWarnings, `Art. 757-1 CC: ${clampedParents} parent(s) survivant(s), part du conjoint ${Math.round(conjointPart).toLocaleString('fr-FR')} EUR.`]
-        : preciputWarnings,
+      warnings:
+        clampedParents > 0
+          ? [
+              ...preciputWarnings,
+              `Art. 757-1 CC: ${clampedParents} parent(s) survivant(s), part du conjoint ${Math.round(conjointPart).toLocaleString('fr-FR')} EUR.`,
+            ]
+          : preciputWarnings,
     };
   }
 
   const warnings: string[] = [];
   if (preciput > 0) {
-    warnings.push(`Clause de preciput: ${preciput.toLocaleString('fr-FR')} EUR preleves avant partage successoral.`);
+    warnings.push(
+      `Clause de preciput: ${preciput.toLocaleString('fr-FR')} EUR preleves avant partage successoral.`,
+    );
   }
   const fallback = {
     conjointPart: estateAfterPreciput * 0.25,
@@ -297,7 +315,11 @@ export function computeStep1Split(
         );
         return { ...fallback, preciputDeducted: preciput, warnings };
       }
-      const valuation = getUsufruitValuationFromBirthDate(spouseBirthDate, estateAfterPreciput, referenceDate);
+      const valuation = getUsufruitValuationFromBirthDate(
+        spouseBirthDate,
+        estateAfterPreciput,
+        referenceDate,
+      );
       if (!valuation) {
         warnings.push(
           'Choix legal en usufruit total: valorisation art. 669 CGI impossible, repli moteur sur 1/4 en pleine propriete.',
@@ -368,10 +390,14 @@ export function computeStep1Split(
   }
 
   if (patrimonial.donationEntreEpouxOption === 'usufruit_total') {
-    const valuation = getUsufruitValuationFromBirthDate(spouseBirthDate, estateAfterPreciput, referenceDate);
+    const valuation = getUsufruitValuationFromBirthDate(
+      spouseBirthDate,
+      estateAfterPreciput,
+      referenceDate,
+    );
     if (!valuation) {
       warnings.push(
-        "Donation entre epoux en usufruit total: valorisation art. 669 CGI impossible, repli moteur sur 1/4 en pleine propriete.",
+        'Donation entre epoux en usufruit total: valorisation art. 669 CGI impossible, repli moteur sur 1/4 en pleine propriete.',
       );
       return { ...fallback, preciputDeducted: preciput, warnings };
     }
@@ -396,7 +422,7 @@ export function computeStep1Split(
     );
     if (!valuation) {
       warnings.push(
-        "Donation entre epoux mixte: valorisation art. 669 CGI impossible, repli moteur sur 1/4 en pleine propriete.",
+        'Donation entre epoux mixte: valorisation art. 669 CGI impossible, repli moteur sur 1/4 en pleine propriete.',
       );
       return { ...fallback, preciputDeducted: preciput, warnings };
     }
@@ -404,7 +430,7 @@ export function computeStep1Split(
       `Donation entre epoux mixte: 1/4 en pleine propriete + usufruit des 3/4 valorise selon l'art. 669 CGI (usufruitier ${valuation.age} ans, usufruit ${Math.round(valuation.tauxUsufruit * 100)}% sur la part demembree).`,
     );
     return {
-      conjointPart: (estateAfterPreciput * 0.25) + valuation.valeurUsufruit,
+      conjointPart: estateAfterPreciput * 0.25 + valuation.valeurUsufruit,
       enfantsPart: valuation.valeurNuePropriete,
       parentsPart: 0,
       carryOverToStep2: estateAfterPreciput * 0.25,

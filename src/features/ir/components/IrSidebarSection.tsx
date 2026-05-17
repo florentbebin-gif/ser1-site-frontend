@@ -109,7 +109,10 @@ export function IrSidebarSection({
             onChange={(value) => setYearKey(value as IrSidebarSectionProps['yearKey'])}
             options={[
               { value: 'current', label: taxSettings?.incomeTax?.currentYearLabel || 'Année N' },
-              { value: 'previous', label: taxSettings?.incomeTax?.previousYearLabel || 'Année N-1' },
+              {
+                value: 'previous',
+                label: taxSettings?.incomeTax?.previousYearLabel || 'Année N-1',
+              },
             ]}
           />
         </div>
@@ -128,132 +131,146 @@ export function IrSidebarSection({
       </div>
 
       {hasSituation && (
-      <div className="ir-results-sticky">
-      <div className="ir-tmi-card premium-card sim-summary-card" data-testid="ir-results-card">
-        <div className="ir-tmi-header" data-testid="ir-results-header">
-          <div className="ir-section-icon-wrapper">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-              <line x1="12" y1="20" x2="12" y2="10" />
-              <line x1="18" y1="20" x2="18" y2="4" />
-              <line x1="6" y1="20" x2="6" y2="16" />
-            </svg>
-          </div>
-          Estimation IR
-        </div>
-        <div className="ir-card-divider sim-divider" />
-
-        <div className="ir-tmi-bar" data-testid="ir-tmi-bar">
-          {tmiScale.map((br, idx) => {
-            const rate = Number(br.rate) || 0;
-            const isActive = rate === (result?.tmiRate || 0);
-            return (
-              <div key={idx} className={`ir-tmi-segment${isActive ? ' is-active' : ''}`}>
-                <span>{rate}%</span>
+        <div className="ir-results-sticky">
+          <div className="ir-tmi-card premium-card sim-summary-card" data-testid="ir-results-card">
+            <div className="ir-tmi-header" data-testid="ir-results-header">
+              <div className="ir-section-icon-wrapper">
+                <svg
+                  width="13"
+                  height="13"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.8"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden="true"
+                >
+                  <line x1="12" y1="20" x2="12" y2="10" />
+                  <line x1="18" y1="20" x2="18" y2="4" />
+                  <line x1="6" y1="20" x2="6" y2="16" />
+                </svg>
               </div>
-            );
-          })}
-        </div>
-
-        <div className="ir-tmi-rows" data-testid="ir-tmi-rows">
-          <div className="ir-tmi-row" data-testid="ir-tmi-row">
-            <span>TMI</span>
-            <span data-testid="ir-tmi-value">{result ? `${result.tmiRate || 0} %` : '-'}</span>
-          </div>
-          <div className="ir-tmi-row" data-testid="ir-irnet-row">
-            <span>Impôt sur le revenu</span>
-            <span data-testid="ir-irnet-value">{result ? euro0(result.irNet || 0) : '-'}</span>
-          </div>
-        </div>
-
-        <div className="ir-tmi-sub">
-          <div>Montant des revenus dans cette TMI : {result ? euro0(result.tmiBaseGlobal) : '0 €'}</div>
-          <div>
-            Marge avant changement de TMI :{' '}
-            {result && result.tmiMarginGlobal != null ? euro0(result.tmiMarginGlobal) : '—'}
-          </div>
-        </div>
-      </div>
-
-      {result && showSummaryCard && (
-        <div className="ir-summary-card premium-card sim-summary-card sim-summary-card--secondary" data-testid="ir-summary-card">
-          {isExpert && (
-            <div className="ir-summary-row">
-              <span>Revenu imposable du foyer</span>
-              <span>{euro0(result.taxableIncome)}</span>
+              Estimation IR
             </div>
-          )}
-          <div className="ir-summary-row">
-            <span>Nombre de parts</span>
-            <span className="ir-parts-stepper">
-              <button
-                type="button"
-                className="ir-parts-btn"
-                onClick={() => setParts((parts) => Math.round((parts - 0.25) * 4) / 4)}
-                aria-label="Diminuer les parts"
-              >▼</button>
-              {result.partsNb}
-              <button
-                type="button"
-                className="ir-parts-btn"
-                onClick={() => setParts((parts) => Math.round((parts + 0.25) * 4) / 4)}
-                aria-label="Augmenter les parts"
-              >▲</button>
-            </span>
-          </div>
-          {isExpert && (
-            <div className="ir-summary-row">
-              <span>Revenu par part</span>
-              <span>{euro0(result.taxablePerPart)}</span>
-            </div>
-          )}
+            <div className="ir-card-divider sim-divider" />
 
-          <div className="ir-summary-row">
-            <span>Impôt sur le revenu</span>
-            <span>{euro0(result.irNet || 0)}</span>
+            <div className="ir-tmi-bar" data-testid="ir-tmi-bar">
+              {tmiScale.map((br, idx) => {
+                const rate = Number(br.rate) || 0;
+                const isActive = rate === (result?.tmiRate || 0);
+                return (
+                  <div key={idx} className={`ir-tmi-segment${isActive ? ' is-active' : ''}`}>
+                    <span>{rate}%</span>
+                  </div>
+                );
+              })}
+            </div>
+
+            <div className="ir-tmi-rows" data-testid="ir-tmi-rows">
+              <div className="ir-tmi-row" data-testid="ir-tmi-row">
+                <span>TMI</span>
+                <span data-testid="ir-tmi-value">{result ? `${result.tmiRate || 0} %` : '-'}</span>
+              </div>
+              <div className="ir-tmi-row" data-testid="ir-irnet-row">
+                <span>Impôt sur le revenu</span>
+                <span data-testid="ir-irnet-value">{result ? euro0(result.irNet || 0) : '-'}</span>
+              </div>
+            </div>
+
+            <div className="ir-tmi-sub">
+              <div>
+                Montant des revenus dans cette TMI : {result ? euro0(result.tmiBaseGlobal) : '0 €'}
+              </div>
+              <div>
+                Marge avant changement de TMI :{' '}
+                {result && result.tmiMarginGlobal != null ? euro0(result.tmiMarginGlobal) : '—'}
+              </div>
+            </div>
           </div>
-          <div className="ir-summary-row">
-            <span>PFU {fmtPct(pfuRateIR)} %</span>
-            <span>{euro0(result.pfuIr || 0)}</span>
-          </div>
-          {isExpert && (
-            <>
+
+          {result && showSummaryCard && (
+            <div
+              className="ir-summary-card premium-card sim-summary-card sim-summary-card--secondary"
+              data-testid="ir-summary-card"
+            >
+              {isExpert && (
+                <div className="ir-summary-row">
+                  <span>Revenu imposable du foyer</span>
+                  <span>{euro0(result.taxableIncome)}</span>
+                </div>
+              )}
               <div className="ir-summary-row">
-                <span>CEHR</span>
-                <span>{euro0(result.cehr || 0)}</span>
+                <span>Nombre de parts</span>
+                <span className="ir-parts-stepper">
+                  <button
+                    type="button"
+                    className="ir-parts-btn"
+                    onClick={() => setParts((parts) => Math.round((parts - 0.25) * 4) / 4)}
+                    aria-label="Diminuer les parts"
+                  >
+                    ▼
+                  </button>
+                  {result.partsNb}
+                  <button
+                    type="button"
+                    className="ir-parts-btn"
+                    onClick={() => setParts((parts) => Math.round((parts + 0.25) * 4) / 4)}
+                    aria-label="Augmenter les parts"
+                  >
+                    ▲
+                  </button>
+                </span>
+              </div>
+              {isExpert && (
+                <div className="ir-summary-row">
+                  <span>Revenu par part</span>
+                  <span>{euro0(result.taxablePerPart)}</span>
+                </div>
+              )}
+
+              <div className="ir-summary-row">
+                <span>Impôt sur le revenu</span>
+                <span>{euro0(result.irNet || 0)}</span>
               </div>
               <div className="ir-summary-row">
-                <span>CDHR</span>
-                <span>{euro0(result.cdhr || 0)}</span>
+                <span>PFU {fmtPct(pfuRateIR)} %</span>
+                <span>{euro0(result.pfuIr || 0)}</span>
               </div>
-            </>
-          )}
-          <div className="ir-summary-row">
-            <span>PS sur les revenus fonciers</span>
-            <span>{euro0(result.psFoncier || 0)}</span>
-          </div>
-          {isExpert && (
-            <div className="ir-summary-row">
-              <span>PS sur dividendes</span>
-              <span>{euro0(result.psDividends || 0)}</span>
+              {isExpert && (
+                <>
+                  <div className="ir-summary-row">
+                    <span>CEHR</span>
+                    <span>{euro0(result.cehr || 0)}</span>
+                  </div>
+                  <div className="ir-summary-row">
+                    <span>CDHR</span>
+                    <span>{euro0(result.cdhr || 0)}</span>
+                  </div>
+                </>
+              )}
+              <div className="ir-summary-row">
+                <span>PS sur les revenus fonciers</span>
+                <span>{euro0(result.psFoncier || 0)}</span>
+              </div>
+              {isExpert && (
+                <div className="ir-summary-row">
+                  <span>PS sur dividendes</span>
+                  <span>{euro0(result.psDividends || 0)}</span>
+                </div>
+              )}
+              <div className="ir-card-divider sim-divider sim-divider--tight" />
+              <div className="ir-summary-total-hero">
+                <div>
+                  <div className="ir-summary-total-hero__label">Imposition totale</div>
+                  <div className="ir-summary-total-hero__value">{euro0(result.totalTax || 0)}</div>
+                </div>
+                <IrTaxDonut revenus={result.totalIncome || 0} imposition={result.totalTax || 0} />
+              </div>
             </div>
           )}
-          <div className="ir-card-divider sim-divider sim-divider--tight" />
-          <div className="ir-summary-total-hero">
-            <div>
-              <div className="ir-summary-total-hero__label">Imposition totale</div>
-              <div className="ir-summary-total-hero__value">{euro0(result.totalTax || 0)}</div>
-            </div>
-            <IrTaxDonut
-              revenus={result.totalIncome || 0}
-              imposition={result.totalTax || 0}
-            />
-          </div>
         </div>
       )}
-      </div>
-      )}
-
     </div>
   );
 }
-

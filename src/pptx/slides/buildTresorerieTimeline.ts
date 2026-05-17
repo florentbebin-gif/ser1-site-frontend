@@ -61,8 +61,8 @@ export function buildTresorerieTimeline(
 
   // ── Coordonnées principales ────────────────────────────────────────────
   const bandY = CONTENT_TOP_Y + 0.08;
-  const bandH = 0.70;
-  const lineY = bandY + bandH + 0.30;
+  const bandH = 0.7;
+  const lineY = bandY + bandH + 0.3;
   const sourceTopY = lineY + 0.56;
   const sourceCardH = 1.08;
   const footerCardY = CONTENT_BOTTOM_Y - 0.66;
@@ -92,18 +92,18 @@ export function buildTresorerieTimeline(
   });
 
   addTextFr(slide, `${spec.rangeStartYear}`, {
-    x: MARGIN_X - 0.10,
-    y: lineY + 0.10,
-    w: 0.90,
+    x: MARGIN_X - 0.1,
+    y: lineY + 0.1,
+    w: 0.9,
     h: 0.24,
     fontSize: 10,
     bold: true,
     color: textBody,
   });
   addTextFr(slide, `${spec.rangeEndYear}`, {
-    x: MARGIN_X + CONTENT_W - 0.80,
-    y: lineY + 0.10,
-    w: 0.90,
+    x: MARGIN_X + CONTENT_W - 0.8,
+    y: lineY + 0.1,
+    w: 0.9,
     h: 0.24,
     fontSize: 10,
     bold: true,
@@ -112,7 +112,11 @@ export function buildTresorerieTimeline(
   });
 
   // ── Marqueur retraite (vertical + pastille) ────────────────────────────
-  if (spec.retirementYear && spec.retirementYear > spec.rangeStartYear && spec.retirementYear < spec.rangeEndYear) {
+  if (
+    spec.retirementYear &&
+    spec.retirementYear > spec.rangeStartYear &&
+    spec.retirementYear < spec.rangeEndYear
+  ) {
     const retraiteX = yearToX(spec.retirementYear, spec.rangeStartYear, totalYears);
     slide.addShape('line', {
       x: retraiteX,
@@ -122,17 +126,17 @@ export function buildTresorerieTimeline(
       line: { color: color3, width: 1.5, dashType: 'dash' },
     });
     slide.addShape('ellipse', {
-      x: retraiteX - 0.10,
-      y: lineY - 0.10,
-      w: 0.20,
-      h: 0.20,
+      x: retraiteX - 0.1,
+      y: lineY - 0.1,
+      w: 0.2,
+      h: 0.2,
       fill: { color: color3 },
       line: { color: color3, width: 0 },
     });
     addTextFr(slide, `Retraite ${spec.retirementYear}`, {
       x: retraiteX - 0.85,
       y: bandY + bandH - 0.04,
-      w: 1.70,
+      w: 1.7,
       h: 0.22,
       fontSize: 9.5,
       bold: true,
@@ -150,7 +154,7 @@ export function buildTresorerieTimeline(
     const rawW = Math.min(xEnd - x, MARGIN_X + CONTENT_W - x);
     const isNarrow = rawW < 1.15;
     const bandW = Math.max(0.12, rawW);
-    const bandFill = segmentPalette[index % segmentPalette.length];
+    const bandFill = segmentPalette[index % segmentPalette.length] ?? accent;
     const bandTextColor = contrastText(bandFill);
     const readableAmountColor = bandTextColor === '000000' ? textMain : bandFill;
 
@@ -175,7 +179,7 @@ export function buildTresorerieTimeline(
     if (isNarrow) {
       addTextFr(slide, `${index + 1}`, {
         x,
-        y: bandY + 0.20,
+        y: bandY + 0.2,
         w: bandW,
         h: 0.26,
         fontSize: 10,
@@ -188,8 +192,8 @@ export function buildTresorerieTimeline(
       addTextFr(slide, segment.label, {
         x: x + 0.12,
         y: bandY + 0.08,
-        w: Math.max(0.20, bandW - 0.24),
-        h: 0.30,
+        w: Math.max(0.2, bandW - 0.24),
+        h: 0.3,
         fontSize: 12.2,
         bold: true,
         color: bandTextColor,
@@ -200,7 +204,7 @@ export function buildTresorerieTimeline(
       addTextFr(slide, `${segment.startYear} → ${segment.endYear}`, {
         x: x + 0.12,
         y: bandY + 0.36,
-        w: Math.max(0.20, bandW - 0.24),
+        w: Math.max(0.2, bandW - 0.24),
         h: 0.26,
         fontSize: 9.4,
         color: bandTextColor,
@@ -222,8 +226,8 @@ export function buildTresorerieTimeline(
     // Carte de lecture de phase sous l'axe : un seul bloc par segment.
     const cardX = MARGIN_X + index * laneW + 0.04;
     const cardY = sourceTopY;
-    const cardW = Math.max(1.40, laneW - 0.08);
-    if (cardY + sourceCardH <= footerCardY - 0.10) {
+    const cardW = Math.max(1.4, laneW - 0.08);
+    if (cardY + sourceCardH <= footerCardY - 0.1) {
       slide.addShape('roundRect', {
         x: cardX,
         y: cardY,
@@ -236,7 +240,7 @@ export function buildTresorerieTimeline(
       slide.addShape('rect', {
         x: cardX,
         y: cardY,
-        w: 0.10,
+        w: 0.1,
         h: sourceCardH,
         fill: { color: bandFill },
         line: { color: bandFill, width: 0 },
@@ -264,17 +268,23 @@ export function buildTresorerieTimeline(
       });
 
       segment.sources.slice(0, 2).forEach((source, sourceIndex) => {
-        const rowY = cardY + 0.50 + sourceIndex * 0.29;
-        addBusinessIconToSlide(slide, source.iconKey, {
-          x: cardX + 0.22,
-          y: rowY + 0.02,
-          w: 0.22,
-          h: 0.22,
-        }, theme, 'accent');
+        const rowY = cardY + 0.5 + sourceIndex * 0.29;
+        addBusinessIconToSlide(
+          slide,
+          source.iconKey,
+          {
+            x: cardX + 0.22,
+            y: rowY + 0.02,
+            w: 0.22,
+            h: 0.22,
+          },
+          theme,
+          'accent',
+        );
         addTextFr(slide, source.label, {
           x: cardX + 0.52,
           y: rowY,
-          w: Math.max(0.20, cardW - 1.78),
+          w: Math.max(0.2, cardW - 1.78),
           h: 0.19,
           fontSize: 8.2,
           color: textMain,
@@ -319,7 +329,10 @@ export function buildTresorerieTimeline(
     });
     if (isTailNarrow) {
       const calloutW = 1.78;
-      const calloutX = Math.max(MARGIN_X, Math.min(x - calloutW - 0.12, MARGIN_X + CONTENT_W - calloutW));
+      const calloutX = Math.max(
+        MARGIN_X,
+        Math.min(x - calloutW - 0.12, MARGIN_X + CONTENT_W - calloutW),
+      );
       slide.addShape('line', {
         x: calloutX + calloutW + 0.02,
         y: bandY + 0.88,
@@ -344,8 +357,8 @@ export function buildTresorerieTimeline(
       addTextFr(slide, tailLabel, {
         x: x + 0.12,
         y: bandY + 0.08,
-        w: Math.max(0.20, cappedW - 0.24),
-        h: 0.30,
+        w: Math.max(0.2, cappedW - 0.24),
+        h: 0.3,
         fontSize: 12,
         bold: true,
         italic: true,
@@ -357,7 +370,7 @@ export function buildTresorerieTimeline(
       addTextFr(slide, `${spec.tailSegment.startYear} → ${spec.tailSegment.endYear}`, {
         x: x + 0.12,
         y: bandY + 0.36,
-        w: Math.max(0.20, cappedW - 0.24),
+        w: Math.max(0.2, cappedW - 0.24),
         h: 0.26,
         fontSize: 10,
         italic: true,
@@ -377,7 +390,7 @@ export function buildTresorerieTimeline(
     h: 0.56,
     fill: { color: accent },
     line: { color: accent, width: 0 },
-    rectRadius: 0.10,
+    rectRadius: 0.1,
     shadow: {
       type: SHADOW_PARAMS.type,
       angle: SHADOW_PARAMS.angle,
@@ -389,8 +402,8 @@ export function buildTresorerieTimeline(
   });
   const accentTextColor = contrastText(accent);
   addTextFr(slide, 'Cumul revenus nets sur la période', {
-    x: MARGIN_X + 0.30,
-    y: footerCardY + 0.10,
+    x: MARGIN_X + 0.3,
+    y: footerCardY + 0.1,
     w: 6.0,
     h: 0.36,
     fontSize: 11,
@@ -401,7 +414,7 @@ export function buildTresorerieTimeline(
     x: MARGIN_X + CONTENT_W - 4.5,
     y: footerCardY + 0.08,
     w: 4.3,
-    h: 0.40,
+    h: 0.4,
     fontSize: 18,
     bold: true,
     color: accentTextColor,

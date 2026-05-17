@@ -1,12 +1,12 @@
 /**
  * Bibliothèque d'icônes business pour SER1
- * 
+ *
  * Fournit un accès centralisé aux icônes normalisées
  * avec support pour la recoloration et les exports PPTX
  */
 
 // Types des icônes business disponibles
-export type BusinessIconName = 
+export type BusinessIconName =
   | 'money'
   | 'cheque'
   | 'bank'
@@ -65,40 +65,40 @@ interface BusinessIconOptions {
 
 /**
  * Retourne le SVG d'une icône business
- * 
+ *
  * @param name - Nom de l'icône
  * @param opts - Options (couleur personnalisée)
  * @returns String SVG avec la couleur appliquée
  */
 export function getBusinessIconSvg(name: BusinessIconName, opts?: BusinessIconOptions): string {
   const svg = svgMap[name];
-  
+
   if (!svg) {
     throw new Error(`Icône business inconnue: ${name}`);
   }
-  
+
   // Si une couleur personnalisée est spécifiée, remplacer currentColor
   if (opts?.color) {
     return svg.replace(/fill="currentColor"/g, `fill="${opts.color}"`);
   }
-  
+
   return svg;
 }
 
 /**
  * Retourne l'icône business en Data URI (base64)
  * Utile pour PPTXGenJS addImage({ data })
- * 
+ *
  * @param name - Nom de l'icône
  * @param opts - Options (couleur personnalisée)
  * @returns Data URI SVG encodé en base64
  */
 export function getBusinessIconDataUri(name: BusinessIconName, opts?: BusinessIconOptions): string {
   const svg = getBusinessIconSvg(name, opts);
-  
+
   // Encoder en base64 (compatible navigateur)
   const base64 = btoa(unescape(encodeURIComponent(svg)));
-  
+
   return `data:image/svg+xml;base64,${base64}`;
 }
 
@@ -123,5 +123,5 @@ export default {
   getBusinessIconSvg,
   getBusinessIconDataUri,
   getAvailableBusinessIcons,
-  hasBusinessIcon
+  hasBusinessIcon,
 };

@@ -42,7 +42,10 @@ function getOtherSide(side: SuccessionPrimarySide): SuccessionPrimarySide {
   return side === 'epoux1' ? 'epoux2' : 'epoux1';
 }
 
-function getBirthDate(civil: SuccessionCivilContext, side: SuccessionPrimarySide): string | undefined {
+function getBirthDate(
+  civil: SuccessionCivilContext,
+  side: SuccessionPrimarySide,
+): string | undefined {
   return side === 'epoux1' ? civil.dateNaissanceEpoux1 : civil.dateNaissanceEpoux2;
 }
 
@@ -73,15 +76,17 @@ export function buildSuccessionUsufruitSuccessifAnalysis({
 
     const beneficiaire = donation.usufruitSuccessifBeneficiaire;
     if (
-      !beneficiaire
-      || beneficiaire !== getOtherSide(simulatedDeceased)
-      || !isConjointOrPartnerContext(civil)
+      !beneficiaire ||
+      beneficiaire !== getOtherSide(simulatedDeceased) ||
+      !isConjointOrPartnerContext(civil)
     ) {
       warnings.push(WARNING_BENEFICIAIRE_INCOHERENT);
       return;
     }
 
-    const valeurBase = asAmount(donation.valeurActuelle ?? donation.valeurDonation ?? donation.montant);
+    const valeurBase = asAmount(
+      donation.valeurActuelle ?? donation.valeurDonation ?? donation.montant,
+    );
     if (valeurBase <= 0) return;
 
     const birthDate = getBirthDate(civil, beneficiaire);
@@ -93,10 +98,12 @@ export function buildSuccessionUsufruitSuccessifAnalysis({
     const valeurUsufruit = valeurBase * tauxUsufruit;
     const droits = calculateSuccession({
       actifNetSuccession: valeurUsufruit,
-      heritiers: [{
-        lien: 'conjoint',
-        partSuccession: valeurUsufruit,
-      }],
+      heritiers: [
+        {
+          lien: 'conjoint',
+          partSuccession: valeurUsufruit,
+        },
+      ],
       dmtgSettings,
     }).result.totalDroits;
 

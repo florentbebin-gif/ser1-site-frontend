@@ -1,7 +1,4 @@
-import type {
-  SuccessionAssetCategory,
-  SuccessionAssetDetailEntry,
-} from '../successionDraft.types';
+import type { SuccessionAssetCategory, SuccessionAssetDetailEntry } from '../successionDraft.types';
 import type { SuccessionLegacyAssetOwner } from '../successionDraft';
 import {
   ASSET_SUBCATEGORY_OPTIONS,
@@ -40,12 +37,13 @@ export function buildSubCategoryOptions(
   const isCurrentResidencePrincipale = entry.id === residencePrincipaleEntryId;
 
   return ASSET_SUBCATEGORY_OPTIONS[entry.category as SuccessionAssetCategory]
-    .filter((option) => (
-      entry.category !== 'immobilier'
-      || option !== RESIDENCE_PRINCIPALE_SUBCATEGORY
-      || !hasResidencePrincipale
-      || isCurrentResidencePrincipale
-    ))
+    .filter(
+      (option) =>
+        entry.category !== 'immobilier' ||
+        option !== RESIDENCE_PRINCIPALE_SUBCATEGORY ||
+        !hasResidencePrincipale ||
+        isCurrentResidencePrincipale,
+    )
     .map((option) => ({
       value: option,
       label: option,

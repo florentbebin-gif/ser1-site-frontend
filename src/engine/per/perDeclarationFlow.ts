@@ -17,8 +17,8 @@ function buildDeclarantBoxes(
     case6RS: Math.max(0, declarant.cotisationsPerp || 0),
     case6QS: Math.round(
       Math.max(0, declarant.cotisationsArt83 || 0) +
-      Math.max(0, declarant.abondementPerco || 0) +
-      Math.max(0, madelin?.depassement15Report.madelinRetraite || 0),
+        Math.max(0, declarant.abondementPerco || 0) +
+        Math.max(0, madelin?.depassement15Report.madelinRetraite || 0),
     ),
     case6OS: Math.round(Math.max(0, madelin?.depassement15Report.per154bis || 0)),
   };

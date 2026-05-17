@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { BASECG_CATALOG } from '@/data/basecg';
-import { formatBaseCgRetraiteRateField, normalizeBaseCgRetraiteGestionFees } from '../utils/baseCgRetraiteNormalization';
+import {
+  formatBaseCgRetraiteRateField,
+  normalizeBaseCgRetraiteGestionFees,
+} from '../utils/baseCgRetraiteNormalization';
 
 describe('baseCgRetraiteNormalization', () => {
   it('recopie le frais de gestion général vers les deux ventilations en lecture', () => {
@@ -26,11 +29,7 @@ describe('baseCgRetraiteNormalization', () => {
   });
 
   it('sépare les frais collés sans séparateur (0,65%€0,96%UC)', () => {
-    const cases = [
-      '0,65%€0,96%UC',
-      '0,65%€ 0,96%UC',
-      '0,65% € 0,96% UC',
-    ];
+    const cases = ['0,65%€0,96%UC', '0,65%€ 0,96%UC', '0,65% € 0,96% UC'];
     for (const fraisGestion of cases) {
       const normalized = normalizeBaseCgRetraiteGestionFees({
         fraisGestion,
@@ -64,7 +63,7 @@ describe('baseCgRetraiteNormalization', () => {
     expect(formatBaseCgRetraiteRateField(normalized.fraisGestionUc)).toBe('1 %');
   });
 
-  it('ventile les frais mixtes fonds euros / UC présents dans le catalogue généré', () => {
+  it('ventile les frais mixtes fonds euros / UC présents dans le catalogue statique', () => {
     const mixedContracts = BASECG_CATALOG.filter((contract) => {
       const value = contract.phaseEpargne.fraisGestion;
       return typeof value === 'string' && value.includes('€') && /\bUC\b/i.test(value);
@@ -80,7 +79,9 @@ describe('baseCgRetraiteNormalization', () => {
 
   it('formate les décimaux de taux en pourcentage sans modifier les textes contractuels', () => {
     expect(formatBaseCgRetraiteRateField(0.0495)).toBe('4,95 %');
-    expect(formatBaseCgRetraiteRateField('TMG 2 % selon millésime')).toBe('TMG 2 % selon millésime');
+    expect(formatBaseCgRetraiteRateField('TMG 2 % selon millésime')).toBe(
+      'TMG 2 % selon millésime',
+    );
   });
 
   describe('règles métier monosupport / multisupport', () => {

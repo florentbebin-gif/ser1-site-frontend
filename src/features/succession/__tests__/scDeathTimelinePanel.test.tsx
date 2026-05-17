@@ -76,10 +76,7 @@ describe('ScDeathTimelinePanel', () => {
 
   it('hides the death horizon control outside expert mode', () => {
     const markup = renderToStaticMarkup(
-      <ScDeathTimelinePanel
-        {...buildProps()}
-        showDeathHorizonControl={false}
-      />,
+      <ScDeathTimelinePanel {...buildProps()} showDeathHorizonControl={false} />,
     );
 
     expect(markup).toContain('Chronologie des deces');
@@ -88,16 +85,13 @@ describe('ScDeathTimelinePanel', () => {
 
   it('hides the order toggle outside couple scenarios', () => {
     const markup = renderToStaticMarkup(
-      <ScDeathTimelinePanel
-        {...buildProps()}
-        showOrderToggle={false}
-      />,
+      <ScDeathTimelinePanel {...buildProps()} showOrderToggle={false} />,
     );
 
     expect(markup).not.toContain('Ordre inverse');
   });
 
-  it("affiche la projection autre assuré quand elle explique le coût cumulé direct", () => {
+  it('affiche la projection autre assuré quand elle explique le coût cumulé direct', () => {
     const markup = renderToStaticMarkup(
       <ScDeathTimelinePanel
         {...buildProps()}

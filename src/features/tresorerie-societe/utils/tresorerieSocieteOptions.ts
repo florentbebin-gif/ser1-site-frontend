@@ -49,11 +49,12 @@ export const COMPANY_KIND_CODES: Record<CompanyKind, string> = {
   societe_exploitation: 'SE',
 };
 
-export const COMPANY_KIND_OPTIONS =
-  (Object.keys(COMPANY_KIND_LABELS) as CompanyKind[]).map(kind => ({
+export const COMPANY_KIND_OPTIONS = (Object.keys(COMPANY_KIND_LABELS) as CompanyKind[]).map(
+  (kind) => ({
     value: kind,
     label: `${COMPANY_KIND_LABELS[kind]} (${COMPANY_KIND_CODES[kind]})`,
-  })) satisfies Array<{ value: CompanyKind; label: string }>;
+  }),
+) satisfies Array<{ value: CompanyKind; label: string }>;
 
 export const ALLOCATION_KIND_OPTIONS = [
   { value: 'distribution', label: 'Distribution' },

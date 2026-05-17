@@ -5,7 +5,7 @@
 import React from 'react';
 import type { AvisIrPlafonds, PerHistoricalBasis } from '../../../../../engine/per';
 import { getAvisReferenceYears, type PerWorkflowYears } from '../../../utils/perWorkflowYears';
-import { PerAmountInput } from '../PerAmountInput';
+import { PerAmountInput } from '../../shared/PerAmountInput';
 
 interface AvisIrStepProps {
   avisIr: AvisIrPlafonds | null;
@@ -30,13 +30,15 @@ const fmtCurrency = (value: number): string =>
   }).format(value);
 
 function getAvisValues(avis: AvisIrPlafonds | null, incomeYear: number): AvisIrPlafonds {
-  return avis ?? {
-    nonUtiliseAnnee1: 0,
-    nonUtiliseAnnee2: 0,
-    nonUtiliseAnnee3: 0,
-    plafondCalcule: 0,
-    anneeRef: incomeYear,
-  };
+  return (
+    avis ?? {
+      nonUtiliseAnnee1: 0,
+      nonUtiliseAnnee2: 0,
+      nonUtiliseAnnee3: 0,
+      plafondCalcule: 0,
+      anneeRef: incomeYear,
+    }
+  );
 }
 
 export default function AvisIrStep({
@@ -78,20 +80,28 @@ export default function AvisIrStep({
     <div className="per-step per-step--avis">
       <div className="per-avis-intro">
         <p className="per-avis-copy">
-          Renseignez les montants relevés sur l&apos;avis IR {avisContext.taxYear}. Le potentiel
-          163 quatervicies correspond à l&apos;addition des trois reports non utilisés et du plafond
+          Renseignez les montants relevés sur l&apos;avis IR {avisContext.taxYear}. Le potentiel 163
+          quatervicies correspond à l&apos;addition des trois reports non utilisés et du plafond
           calculé de l&apos;année de référence, pour chaque déclarant.
         </p>
       </div>
 
-      <div className="per-avis-matrix" role="table" aria-label={`Lecture de l'avis IR ${avisContext.taxYear}`}>
+      <div
+        className="per-avis-matrix"
+        role="table"
+        aria-label={`Lecture de l'avis IR ${avisContext.taxYear}`}
+      >
         <div className="per-avis-matrix-head-row" role="row">
           <div className="per-avis-matrix-head per-avis-matrix-head--label" role="columnheader">
             Rubrique
           </div>
           <div className="per-avis-matrix-head per-avis-matrix-head--operator" aria-hidden="true" />
-          <div className="per-avis-matrix-head" role="columnheader">Déclarant 1</div>
-          <div className="per-avis-matrix-head" role="columnheader">Déclarant 2</div>
+          <div className="per-avis-matrix-head" role="columnheader">
+            Déclarant 1
+          </div>
+          <div className="per-avis-matrix-head" role="columnheader">
+            Déclarant 2
+          </div>
         </div>
 
         {rows.map((row) => (
@@ -107,7 +117,9 @@ export default function AvisIrStep({
                 value={valuesD1[row.key]}
                 ariaLabel={`${row.label} - Déclarant 1`}
                 className="per-avis-matrix-input"
-                onChange={(value) => onUpdate({ [row.key]: value, anneeRef: avisContext.incomeYear }, 1)}
+                onChange={(value) =>
+                  onUpdate({ [row.key]: value, anneeRef: avisContext.incomeYear }, 1)
+                }
               />
             </div>
             <div className="per-avis-matrix-cell" data-column-label="Déclarant 2" role="cell">
@@ -115,7 +127,9 @@ export default function AvisIrStep({
                 value={valuesD2[row.key]}
                 ariaLabel={`${row.label} - Déclarant 2`}
                 className="per-avis-matrix-input"
-                onChange={(value) => onUpdate({ [row.key]: value, anneeRef: avisContext.incomeYear }, 2)}
+                onChange={(value) =>
+                  onUpdate({ [row.key]: value, anneeRef: avisContext.incomeYear }, 2)
+                }
               />
             </div>
           </div>
@@ -125,7 +139,10 @@ export default function AvisIrStep({
           <div className="per-avis-matrix-label per-avis-matrix-label--total" role="rowheader">
             Plafond pour les cotisations versées en {avisContext.taxYear}
           </div>
-          <div className="per-avis-matrix-operator per-avis-matrix-operator--total" aria-hidden="true">
+          <div
+            className="per-avis-matrix-operator per-avis-matrix-operator--total"
+            aria-hidden="true"
+          >
             =
           </div>
           <div className="per-avis-matrix-total" data-column-label="Déclarant 1" role="cell">

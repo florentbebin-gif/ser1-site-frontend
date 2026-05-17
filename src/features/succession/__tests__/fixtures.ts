@@ -27,9 +27,7 @@ import { DEFAULT_SUCCESSION_DEVOLUTION_CONTEXT } from '../successionDraft';
  * Contexte civil par défaut : célibataire, aucun régime matrimonial.
  * Aligné sur `DEFAULT_SUCCESSION_CIVIL_CONTEXT`.
  */
-export function makeCivil(
-  overrides: Partial<SuccessionCivilContext> = {},
-): SuccessionCivilContext {
+export function makeCivil(overrides: Partial<SuccessionCivilContext> = {}): SuccessionCivilContext {
   return {
     situationMatrimoniale: 'celibataire',
     regimeMatrimonial: null,

@@ -1,9 +1,6 @@
 import type { RegimeMatrimonial } from '../../engine/civil';
 import type { LienParente } from '../../engine/succession';
-import type {
-  SuccessionAssetPocket,
-  SuccessionPersonParty,
-} from './successionPatrimonialModel';
+import type { SuccessionAssetPocket, SuccessionPersonParty } from './successionPatrimonialModel';
 import type {
   FamilyBranch,
   FamilyMemberType,
@@ -32,22 +29,26 @@ export function isObject(v: unknown): v is Record<string, unknown> {
 }
 
 export function isLienParente(v: unknown): v is LienParente {
-  return v === 'conjoint'
-    || v === 'enfant'
-    || v === 'petit_enfant'
-    || v === 'parent'
-    || v === 'frere_soeur'
-    || v === 'neveu_niece'
-    || v === 'autre';
+  return (
+    v === 'conjoint' ||
+    v === 'enfant' ||
+    v === 'petit_enfant' ||
+    v === 'parent' ||
+    v === 'frere_soeur' ||
+    v === 'neveu_niece' ||
+    v === 'autre'
+  );
 }
 
 export function isSituation(v: unknown): v is SituationMatrimoniale {
-  return v === 'celibataire'
-    || v === 'marie'
-    || v === 'pacse'
-    || v === 'concubinage'
-    || v === 'divorce'
-    || v === 'veuf';
+  return (
+    v === 'celibataire' ||
+    v === 'marie' ||
+    v === 'pacse' ||
+    v === 'concubinage' ||
+    v === 'divorce' ||
+    v === 'veuf'
+  );
 }
 
 export function isPacsConvention(v: unknown): v is PacsConvention {
@@ -55,9 +56,7 @@ export function isPacsConvention(v: unknown): v is PacsConvention {
 }
 
 export function isDispositionTestamentaire(v: unknown): v is SuccessionDispositionTestamentaire {
-  return v === 'legs_universel'
-    || v === 'legs_titre_universel'
-    || v === 'legs_particulier';
+  return v === 'legs_universel' || v === 'legs_titre_universel' || v === 'legs_particulier';
 }
 
 export function isPrimarySide(v: unknown): v is SuccessionPrimarySide {
@@ -69,23 +68,27 @@ export function isPersonParty(v: unknown): v is SuccessionPersonParty {
 }
 
 export function isSuccessionBeneficiaryRef(v: unknown): v is SuccessionBeneficiaryRef {
-  return typeof v === 'string'
-    && (
-      v === 'principal:epoux1'
-      || v === 'principal:epoux2'
-      || v.startsWith('enfant:')
-      || v.startsWith('family:')
-    );
+  return (
+    typeof v === 'string' &&
+    (v === 'principal:epoux1' ||
+      v === 'principal:epoux2' ||
+      v.startsWith('enfant:') ||
+      v.startsWith('family:'))
+  );
 }
 
 export function isDonationEntreEpouxOption(v: unknown): v is SuccessionDonationEntreEpouxOption {
-  return v === 'usufruit_total'
-    || v === 'pleine_propriete_quotite'
-    || v === 'mixte'
-    || v === 'pleine_propriete_totale';
+  return (
+    v === 'usufruit_total' ||
+    v === 'pleine_propriete_quotite' ||
+    v === 'mixte' ||
+    v === 'pleine_propriete_totale'
+  );
 }
 
-export function isSocieteAcquetsLiquidationMode(v: unknown): v is SuccessionSocieteAcquetsLiquidationMode {
+export function isSocieteAcquetsLiquidationMode(
+  v: unknown,
+): v is SuccessionSocieteAcquetsLiquidationMode {
   return v === 'quotes' || v === 'attribution_survivant';
 }
 
@@ -97,29 +100,37 @@ export function isSuccessionInterMassClaimKind(v: unknown): v is SuccessionInter
   return v === 'recompense' || v === 'creance';
 }
 
-export function isSuccessionPreciputSelectionSourceType(v: unknown): v is 'asset' | 'groupement_foncier' {
+export function isSuccessionPreciputSelectionSourceType(
+  v: unknown,
+): v is 'asset' | 'groupement_foncier' {
   return v === 'asset' || v === 'groupement_foncier';
 }
 
-export function isChoixLegalConjointSansDDV(v: unknown): v is Exclude<SuccessionChoixLegalConjointSansDDV, null> {
+export function isChoixLegalConjointSansDDV(
+  v: unknown,
+): v is Exclude<SuccessionChoixLegalConjointSansDDV, null> {
   return v === 'usufruit' || v === 'quart_pp';
 }
 
 export function isRegimeMatrimonial(v: unknown): v is RegimeMatrimonial {
-  return v === 'communaute_legale'
-    || v === 'communaute_universelle'
-    || v === 'separation_biens'
-    || v === 'participation_acquets'
-    || v === 'communaute_meubles_acquets'
-    || v === 'separation_biens_societe_acquets';
+  return (
+    v === 'communaute_legale' ||
+    v === 'communaute_universelle' ||
+    v === 'separation_biens' ||
+    v === 'participation_acquets' ||
+    v === 'communaute_meubles_acquets' ||
+    v === 'separation_biens_societe_acquets'
+  );
 }
 
 export function isFamilyMemberType(v: unknown): v is FamilyMemberType {
-  return v === 'petit_enfant'
-    || v === 'parent'
-    || v === 'frere_soeur'
-    || v === 'oncle_tante'
-    || v === 'tierce_personne';
+  return (
+    v === 'petit_enfant' ||
+    v === 'parent' ||
+    v === 'frere_soeur' ||
+    v === 'oncle_tante' ||
+    v === 'tierce_personne'
+  );
 }
 
 export function isFamilyBranch(v: unknown): v is FamilyBranch {
@@ -131,41 +142,46 @@ export function isEnfantRattachement(v: unknown): v is SuccessionEnfantRattachem
 }
 
 export function isDonationEntryType(v: unknown): v is SuccessionDonationEntryType {
-  return v === 'rapportable' || v === 'hors_part' || v === 'legs_particulier' || v === 'donation_partage';
+  return (
+    v === 'rapportable' || v === 'hors_part' || v === 'legs_particulier' || v === 'donation_partage'
+  );
 }
 
 export function isAssetPocket(v: unknown): v is SuccessionAssetPocket {
-  return v === 'epoux1'
-    || v === 'epoux2'
-    || v === 'communaute'
-    || v === 'societe_acquets'
-    || v === 'indivision_pacse'
-    || v === 'indivision_concubinage'
-    || v === 'indivision_separatiste';
+  return (
+    v === 'epoux1' ||
+    v === 'epoux2' ||
+    v === 'communaute' ||
+    v === 'societe_acquets' ||
+    v === 'indivision_pacse' ||
+    v === 'indivision_concubinage' ||
+    v === 'indivision_separatiste'
+  );
 }
 
 export function isAssetCategory(v: unknown): v is SuccessionAssetCategory {
-  return v === 'immobilier'
-    || v === 'financier'
-    || v === 'professionnel'
-    || v === 'divers'
-    || v === 'passif';
+  return (
+    v === 'immobilier' ||
+    v === 'financier' ||
+    v === 'professionnel' ||
+    v === 'divers' ||
+    v === 'passif'
+  );
 }
 
 export function isSuccessionAssetLegalNature(v: unknown): v is SuccessionAssetLegalNature {
-  return v === 'non_qualifie'
-    || v === 'propre'
-    || v === 'propre_par_nature'
-    || v === 'commun';
+  return v === 'non_qualifie' || v === 'propre' || v === 'propre_par_nature' || v === 'commun';
 }
 
 export function isSuccessionAssetOrigin(v: unknown): v is SuccessionAssetOrigin {
-  return v === 'non_precise'
-    || v === 'avant_union'
-    || v === 'acquisition_onereuse'
-    || v === 'donation_succession'
-    || v === 'emploi_remploi'
-    || v === 'clause_matrimoniale';
+  return (
+    v === 'non_precise' ||
+    v === 'avant_union' ||
+    v === 'acquisition_onereuse' ||
+    v === 'donation_succession' ||
+    v === 'emploi_remploi' ||
+    v === 'clause_matrimoniale'
+  );
 }
 
 export function isSuccessionMeubleImmeubleLegal(v: unknown): v is SuccessionMeubleImmeubleLegal {

@@ -17,15 +17,14 @@ import {
   BASE_CONTRAT_REVIEW_STATUS_LABELS,
   isProductClosed,
 } from '@/domain/base-contrat/overrides';
+import type { BaseContratOverrideInput, OverrideMap } from '@/domain/base-contrat/overrides';
+import { buildBaseContratFiscalLabels, getRules } from '@/domain/base-contrat/rules/index';
 import type {
-  BaseContratOverrideInput,
-  OverrideMap,
-} from '@/domain/base-contrat/overrides';
-import {
-  buildBaseContratFiscalLabels,
-  getRules,
+  Audience,
+  ProductRules,
+  RuleBlock,
+  RuleRenderContext,
 } from '@/domain/base-contrat/rules/index';
-import type { Audience, ProductRules, RuleBlock, RuleRenderContext } from '@/domain/base-contrat/rules/index';
 import {
   getBaseContratOverrides,
   upsertBaseContratOverride,
@@ -142,11 +141,13 @@ function PhaseColumn({
       <div className={`base-contrat-phase__title base-contrat-phase__title--${phaseKey}`}>
         {PHASE_LABELS[phaseKey]}
       </div>
-      {blocks.length === 0
-        ? <EmptyRuleCard />
-        : blocks.map((block, index) => (
+      {blocks.length === 0 ? (
+        <EmptyRuleCard />
+      ) : (
+        blocks.map((block, index) => (
           <RuleBlockCard key={index} block={block} showAdminMeta={showAdminMeta} />
-        ))}
+        ))
+      )}
     </div>
   );
 }
@@ -198,9 +199,12 @@ export default function BaseContrat() {
   const [errorMsg, setErrorMsg] = useState('');
 
   const today = new Date().toISOString().slice(0, 10);
-  const ruleRenderContext = useMemo<RuleRenderContext>(() => ({
-    fiscalLabels: buildBaseContratFiscalLabels(fiscalContext),
-  }), [fiscalContext]);
+  const ruleRenderContext = useMemo<RuleRenderContext>(
+    () => ({
+      fiscalLabels: buildBaseContratFiscalLabels(fiscalContext),
+    }),
+    [fiscalContext],
+  );
 
   const filteredCatalog = useMemo(() => {
     return CATALOG.filter((product) => {
@@ -243,9 +247,7 @@ export default function BaseContrat() {
   );
   const closedCount = CATALOG.length - activeCount;
 
-  async function handleSaveOverride(
-    data: BaseContratOverrideInput,
-  ) {
+  async function handleSaveOverride(data: BaseContratOverrideInput) {
     try {
       await upsertBaseContratOverride(data);
       reload();
@@ -331,7 +333,9 @@ export default function BaseContrat() {
         <div className="fisc-accordion">
           {Array.from(groupedByFamily.entries()).map(([famille, familyProducts]) => {
             const isFamilyOpen = openFamilyId === famille;
-            const closedInFamily = familyProducts.filter((product) => isProductClosed(product.id, overrides, today)).length;
+            const closedInFamily = familyProducts.filter((product) =>
+              isProductClosed(product.id, overrides, today),
+            ).length;
             const openInFamily = familyProducts.length - closedInFamily;
 
             return (
@@ -341,7 +345,9 @@ export default function BaseContrat() {
                   className="fisc-acc-header base-contrat-family__header"
                   onClick={() => setOpenFamilyId(isFamilyOpen ? null : famille)}
                 >
-                  <span className="settings-premium-title settings-premium-title--flush base-contrat-family__title">{famille}</span>
+                  <span className="settings-premium-title settings-premium-title--flush base-contrat-family__title">
+                    {famille}
+                  </span>
                   <span className="base-contrat-family__badges">
                     <span className="base-contrat-badge">{formatOpenCount(openInFamily)}</span>
                     {closedInFamily > 0 && (
@@ -362,9 +368,9 @@ export default function BaseContrat() {
                       const reviewStatus = override?.review_status ?? 'ok';
                       const rules = getRules(product.id, togglePPPM, ruleRenderContext);
                       const hasNoRules =
-                        rules.constitution.length === 0
-                        && rules.sortie.length === 0
-                        && rules.deces.length === 0;
+                        rules.constitution.length === 0 &&
+                        rules.sortie.length === 0 &&
+                        rules.deces.length === 0;
 
                       return (
                         <div key={product.id} className="base-contrat-product">
@@ -385,7 +391,8 @@ export default function BaseContrat() {
                                 )}
                                 {closed && (
                                   <span className="base-contrat-badge base-contrat-badge--warning">
-                                    Clôturé {override?.closed_date ? `le ${override.closed_date}` : ''}
+                                    Clôturé{' '}
+                                    {override?.closed_date ? `le ${override.closed_date}` : ''}
                                   </span>
                                 )}
                                 {isAdmin && override && reviewStatus !== 'ok' && (

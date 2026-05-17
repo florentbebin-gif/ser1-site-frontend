@@ -58,22 +58,9 @@ export function AppLayout({
     isRecoveryMode,
   } = layoutState;
 
-  const {
-    contextLabel,
-    showHome,
-    showSaveLoad,
-    showGlobalReset,
-    resetKey,
-  } = routeMeta;
+  const { contextLabel, showHome, showSaveLoad, showGlobalReset, resetKey } = routeMeta;
 
-  const {
-    onNavigate,
-    onLogout,
-    onGlobalSave,
-    onGlobalLoad,
-    onGlobalReset,
-    onPageReset,
-  } = actions;
+  const { onNavigate, onLogout, onGlobalSave, onGlobalLoad, onGlobalReset, onPageReset } = actions;
   return (
     <>
       {/* P0-06: Session TTL banners */}
@@ -125,11 +112,7 @@ export function AppLayout({
 
               {/* CHARGER */}
               {showSaveLoad && (
-                <button
-                  className="chip icon-btn"
-                  onClick={onGlobalLoad}
-                  title="Charger un dossier"
-                >
+                <button className="chip icon-btn" onClick={onGlobalLoad} title="Charger un dossier">
                   <IconFolder className="icon" />
                 </button>
               )}
@@ -166,11 +149,7 @@ export function AppLayout({
               </button>
 
               {/* DÉCONNEXION */}
-              <button
-                className="chip icon-btn"
-                onClick={onLogout}
-                title="Se déconnecter"
-              >
+              <button className="chip icon-btn" onClick={onLogout} title="Se déconnecter">
                 <IconLogout className="icon" />
               </button>
             </>
@@ -184,4 +163,3 @@ export function AppLayout({
 }
 
 export default AppLayout;
-

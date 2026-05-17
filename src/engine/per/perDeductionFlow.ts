@@ -1,4 +1,9 @@
-import type { DeclarantRevenus, PerDeductionDetail, PerDeductionFlow, PlafondDetail } from './types';
+import type {
+  DeclarantRevenus,
+  PerDeductionDetail,
+  PerDeductionFlow,
+  PlafondDetail,
+} from './types';
 
 interface DeductionContext {
   declarant1: DeclarantRevenus;
@@ -18,7 +23,10 @@ function buildDetail(
   mutualisationRecue: number,
   mutualisationCedee: number,
 ): PerDeductionDetail {
-  const plafondApresMutualisation = Math.max(0, plafondDisponible + mutualisationRecue - mutualisationCedee);
+  const plafondApresMutualisation = Math.max(
+    0,
+    plafondDisponible + mutualisationRecue - mutualisationCedee,
+  );
   const cotisationsRetenuesIr = Math.min(cotisationsVersees, plafondApresMutualisation);
   const cotisationsNonDeductibles = Math.max(0, cotisationsVersees - cotisationsRetenuesIr);
   const disponibleRestant = Math.max(
@@ -66,19 +74,13 @@ export function computePerDeductionFlow({
   );
 
   const declarant2Detail = declarant2
-    ? buildDetail(
-      plafondDisponibleD2,
-      cotisationsD2,
-      mutualisationRecueD2,
-      mutualisationRecueD1,
-    )
+    ? buildDetail(plafondDisponibleD2, cotisationsD2, mutualisationRecueD2, mutualisationRecueD1)
     : undefined;
 
   return {
     declarant1: declarant1Detail,
     declarant2: declarant2Detail,
     totalDeductionsIr:
-      declarant1Detail.cotisationsRetenuesIr +
-      (declarant2Detail?.cotisationsRetenuesIr ?? 0),
+      declarant1Detail.cotisationsRetenuesIr + (declarant2Detail?.cotisationsRetenuesIr ?? 0),
   };
 }

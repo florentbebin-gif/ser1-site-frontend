@@ -5,14 +5,8 @@ import type {
   SuccessionCivilContext,
   SuccessionEnfant,
 } from './successionDraft';
-import {
-  getEnfantParentLabel,
-  getPetitEnfantsRepresentants,
-} from './successionEnfants';
-import {
-  getClausePreset,
-  parseCustomClause,
-} from './successionClauseOptions';
+import { getEnfantParentLabel, getPetitEnfantsRepresentants } from './successionEnfants';
+import { getClausePreset, parseCustomClause } from './successionClauseOptions';
 
 export type AvBeneficiaryKey = 'conjoint' | 'autre' | string;
 
@@ -35,7 +29,8 @@ function findMember(
   familyMembers: FamilyMember[],
 ): AvBeneficiaryTarget | null {
   if (id === 'conjoint') {
-    const isConjointLike = civil.situationMatrimoniale === 'marie' || civil.situationMatrimoniale === 'pacse';
+    const isConjointLike =
+      civil.situationMatrimoniale === 'marie' || civil.situationMatrimoniale === 'pacse';
     return {
       id,
       label: civil.situationMatrimoniale === 'pacse' ? 'Partenaire' : 'Conjoint(e)',
@@ -48,8 +43,8 @@ function findMember(
   }
 
   const enfantIndex = enfants.findIndex((enfant) => enfant.id === id);
-  if (enfantIndex >= 0) {
-    const enfant = enfants[enfantIndex];
+  const enfant = enfantIndex >= 0 ? enfants[enfantIndex] : undefined;
+  if (enfant) {
     return {
       id,
       label: getEnfantParentLabel(enfant, enfantIndex),
@@ -95,10 +90,14 @@ function buildCustomClauseTargets(
     if (enfant?.deceased) {
       const representants = getPetitEnfantsRepresentants(id, familyMembers);
       if (representants.length === 0) {
-        warnings.push(`Clause assurance-vie personnalisée: ${getEnfantParentLabel(enfant, enfantIndex)} est décédé sans petit-enfant représentant, part ignorée.`);
+        warnings.push(
+          `Clause assurance-vie personnalisée: ${getEnfantParentLabel(enfant, enfantIndex)} est décédé sans petit-enfant représentant, part ignorée.`,
+        );
         continue;
       }
-      warnings.push('Clause assurance-vie personnalisée: part d’un enfant décédé ventilée entre ses petits-enfants à titre indicatif.');
+      warnings.push(
+        'Clause assurance-vie personnalisée: part d’un enfant décédé ventilée entre ses petits-enfants à titre indicatif.',
+      );
       representants.forEach((representant) => {
         rawShares.push({
           id: representant.id,
@@ -113,7 +112,9 @@ function buildCustomClauseTargets(
 
     const target = findMember(id, civil, enfants, familyMembers);
     if (!target) {
-      warnings.push(`Clause assurance-vie personnalisée: bénéficiaire "${id}" non reconnu, part ignorée.`);
+      warnings.push(
+        `Clause assurance-vie personnalisée: bénéficiaire "${id}" non reconnu, part ignorée.`,
+      );
       continue;
     }
     rawShares.push({ ...target, ratio: pct });
@@ -122,7 +123,9 @@ function buildCustomClauseTargets(
   const total = rawShares.reduce((sum, item) => sum + item.ratio, 0);
   if (total <= 0) return [];
   if (Math.abs(total - 100) > 0.01) {
-    warnings.push('Clause assurance-vie personnalisée: répartition normalisée car la somme des pourcentages diffère de 100%.');
+    warnings.push(
+      'Clause assurance-vie personnalisée: répartition normalisée car la somme des pourcentages diffère de 100%.',
+    );
   }
 
   return rawShares.map((item) => ({ ...item, ratio: item.ratio / total }));
@@ -138,20 +141,30 @@ export function buildClauseShares(
   const preset = getClausePreset(entry.clauseBeneficiaire);
 
   if (preset === 'personnalisee') {
-    return buildCustomClauseTargets(entry.clauseBeneficiaire ?? 'CUSTOM:', civil, enfants, familyMembers, warnings);
+    return buildCustomClauseTargets(
+      entry.clauseBeneficiaire ?? 'CUSTOM:',
+      civil,
+      enfants,
+      familyMembers,
+      warnings,
+    );
   }
 
   if (preset === 'conjoint_enfants') {
     if (civil.situationMatrimoniale === 'marie' || civil.situationMatrimoniale === 'pacse') {
-      return [{
-        id: 'conjoint',
-        label: civil.situationMatrimoniale === 'pacse' ? 'Partenaire' : 'Conjoint(e)',
-        lien: 'conjoint',
-        isExempt: true,
-        ratio: 1,
-      }];
+      return [
+        {
+          id: 'conjoint',
+          label: civil.situationMatrimoniale === 'pacse' ? 'Partenaire' : 'Conjoint(e)',
+          lien: 'conjoint',
+          isExempt: true,
+          ratio: 1,
+        },
+      ];
     }
-    warnings.push('Clause assurance-vie standard "conjoint puis enfants" sans conjoint/partenaire reconnu: repli sur les enfants vivants.');
+    warnings.push(
+      'Clause assurance-vie standard "conjoint puis enfants" sans conjoint/partenaire reconnu: repli sur les enfants vivants.',
+    );
   }
 
   const livingChildren = enfants
@@ -159,7 +172,9 @@ export function buildClauseShares(
     .filter(({ enfant }) => !enfant.deceased);
 
   if (livingChildren.length === 0) {
-    warnings.push('Assurance-vie sans bénéficiaire descendant vivant identifiable: fiscalité non détaillée pour ce contrat.');
+    warnings.push(
+      'Assurance-vie sans bénéficiaire descendant vivant identifiable: fiscalité non détaillée pour ce contrat.',
+    );
     return [];
   }
 

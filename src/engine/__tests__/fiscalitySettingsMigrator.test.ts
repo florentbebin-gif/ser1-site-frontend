@@ -25,12 +25,12 @@ const EXPECTED_PARAMS = {
   avTauxSousSeuil8ans: 0.075,
   avTauxSurSeuil8ans: 0.128,
   av990IAbattement: 152500,
-  av990ITranche1Taux: 0.20,
+  av990ITranche1Taux: 0.2,
   av990ITranche1Plafond: 700000,
   av990ITranche2Taux: 0.3125,
   av757BAbattement: 30500,
   peaAncienneteMin: 5,
-  dividendesAbattementPercent: 0.40,
+  dividendesAbattementPercent: 0.4,
 };
 
 describe('migrateV1toV2', () => {
@@ -38,9 +38,7 @@ describe('migrateV1toV2', () => {
     const v2 = migrateV1toV2(fiscalityV1);
     expect(v2.schemaVersion).toBe(2);
     expect(v2.products).toHaveLength(4);
-    expect(v2.products.map((p) => p.key)).toEqual([
-      'assuranceVie', 'perIndividuel', 'cto', 'pea',
-    ]);
+    expect(v2.products.map((p) => p.key)).toEqual(['assuranceVie', 'perIndividuel', 'cto', 'pea']);
     expect(v2.rulesetsByKey.assuranceVie).toBeDefined();
     expect(v2.rulesetsByKey.perIndividuel).toBeDefined();
     expect(v2.rulesetsByKey.cto).toBeDefined();

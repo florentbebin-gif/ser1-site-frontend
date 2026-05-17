@@ -86,8 +86,6 @@ export function calculBaseEtIS(
   reducedCorporateTaxEligible = true,
 ): CalculISResult {
   const baseIS = Math.max(0, resultatFiscalAvantIS);
-  const is = reducedCorporateTaxEligible
-    ? calculIS(baseIS, params)
-    : baseIS * params.isNormalRate;
+  const is = reducedCorporateTaxEligible ? calculIS(baseIS, params) : baseIS * params.isNormalRate;
   return { baseIS, is };
 }

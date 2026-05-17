@@ -41,18 +41,17 @@ const TARGETS = {
 };
 
 function normalizeSql(sql) {
-  return sql
-    .replace(/--.*$/gm, '')
-    .replace(/\s+/g, ' ')
-    .trim();
+  return sql.replace(/--.*$/gm, '').replace(/\s+/g, ' ').trim();
 }
 
 function policyNameFrom(statement) {
-  return statement.match(/\bcreate\s+policy\s+"([^"]+)"/i)?.[1]
-    ?? statement.match(/\bcreate\s+policy\s+([^\s"]+)/i)?.[1]
-    ?? statement.match(/\bdrop\s+policy\s+if\s+exists\s+"([^"]+)"/i)?.[1]
-    ?? statement.match(/\bdrop\s+policy\s+if\s+exists\s+([^\s"]+)/i)?.[1]
-    ?? null;
+  return (
+    statement.match(/\bcreate\s+policy\s+"([^"]+)"/i)?.[1] ??
+    statement.match(/\bcreate\s+policy\s+([^\s"]+)/i)?.[1] ??
+    statement.match(/\bdrop\s+policy\s+if\s+exists\s+"([^"]+)"/i)?.[1] ??
+    statement.match(/\bdrop\s+policy\s+if\s+exists\s+([^\s"]+)/i)?.[1] ??
+    null
+  );
 }
 
 function tableRefPattern(table) {
@@ -70,11 +69,16 @@ function alterTablePattern(table) {
 }
 
 function policyCommand(statement) {
-  return statement.match(/\bfor\s+(all|select|insert|update|delete)\b/i)?.[1].toLowerCase() ?? 'all';
+  return (
+    statement.match(/\bfor\s+(all|select|insert|update|delete)\b/i)?.[1].toLowerCase() ?? 'all'
+  );
 }
 
 function policyRole(statement) {
-  return statement.match(/\bto\s+(authenticated|anon|public|service_role)\b/i)?.[1].toLowerCase() ?? 'public';
+  return (
+    statement.match(/\bto\s+(authenticated|anon|public|service_role)\b/i)?.[1].toLowerCase() ??
+    'public'
+  );
 }
 
 function usesAdminGuard(statement) {
@@ -172,17 +176,18 @@ function summarizeTable(table, target, tableState) {
     delete: policies.filter((policy) => commandMatches(policy, 'delete')),
   };
 
-  const expectedRead = readPolicies.some((policy) => (
-    roleAllowsAuthenticated(policy)
-    && (target.readMustUseAdmin ? policy.usesAdmin : !policy.usesAdmin)
-  ));
+  const expectedRead = readPolicies.some(
+    (policy) =>
+      roleAllowsAuthenticated(policy) &&
+      (target.readMustUseAdmin ? policy.usesAdmin : !policy.usesAdmin),
+  );
 
-  const expectedWrites = Object.values(writePolicies).every((candidates) => (
-    candidates.some((policy) => (
-      roleAllowsAuthenticated(policy)
-      && (!target.writesMustUseAdmin || policy.usesAdmin)
-    ))
-  ));
+  const expectedWrites = Object.values(writePolicies).every((candidates) =>
+    candidates.some(
+      (policy) =>
+        roleAllowsAuthenticated(policy) && (!target.writesMustUseAdmin || policy.usesAdmin),
+    ),
+  );
 
   const evidence = [
     tableState.rlsEvidence && {
@@ -190,12 +195,13 @@ function summarizeTable(table, target, tableState) {
       ...tableState.rlsEvidence,
     },
     ...policies
-      .filter((policy) => (
-        commandMatches(policy, 'select')
-        || commandMatches(policy, 'insert')
-        || commandMatches(policy, 'update')
-        || commandMatches(policy, 'delete')
-      ))
+      .filter(
+        (policy) =>
+          commandMatches(policy, 'select') ||
+          commandMatches(policy, 'insert') ||
+          commandMatches(policy, 'update') ||
+          commandMatches(policy, 'delete'),
+      )
       .map(({ policy, file, line }) => ({ policy, file, line })),
   ].filter(Boolean);
 

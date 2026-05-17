@@ -72,38 +72,39 @@ export async function loadCabinetBrandingKey(userId: string): Promise<string | n
  * Load cabinet logo for user via RPC (contourne RLS)
  * Returns data URI (base64) for direct use in PPTX exports
  */
-export async function loadCabinetLogo(_userId: string): Promise<{ logo?: string; placement?: LogoPlacement }> {
+export async function loadCabinetLogo(
+  _userId: string,
+): Promise<{ logo?: string; placement?: LogoPlacement }> {
   try {
     // Lire le logo via RPC contrôlé afin de garder la logique cabinet côté base.
-    const { data: result, error: rpcError } = await supabase
-      .rpc('get_my_cabinet_logo');
-      
+    const { data: result, error: rpcError } = await supabase.rpc('get_my_cabinet_logo');
+
     if (rpcError) {
       return {};
     }
-    
+
     if (!result) {
       return {};
     }
-    
+
     // Handle both old format (string) and new format (array of objects from TABLE)
     const row = Array.isArray(result) ? result[0] : result;
     const storagePath = typeof row === 'string' ? row : row?.storage_path;
     const placement = typeof row === 'string' ? 'center-bottom' : row?.placement;
-    
+
     if (!storagePath) {
       return {};
     }
-    
+
     // Download blob from Storage (works with public AND private buckets)
     const { data: blob, error: downloadError } = await supabase.storage
       .from('logos')
       .download(storagePath);
-    
+
     if (downloadError || !blob) {
       return {};
     }
-    
+
     // Convert blob to data URI for direct use in PPTX
     const dataUri = await new Promise<string>((resolve, reject) => {
       const reader = new FileReader();
@@ -111,7 +112,7 @@ export async function loadCabinetLogo(_userId: string): Promise<{ logo?: string;
       reader.onerror = reject;
       reader.readAsDataURL(blob);
     });
-    
+
     return { logo: dataUri, placement: (placement || 'center-bottom') as LogoPlacement };
   } catch {
     // Silently fail - logo loading is not critical
@@ -128,19 +129,18 @@ export async function loadCabinetLogo(_userId: string): Promise<{ logo?: string;
 export async function loadCabinetTheme(_userId: string): Promise<ThemeColors | null> {
   try {
     // Lire la palette via RPC contrôlé afin de garder la logique cabinet côté base.
-    const { data: palette, error: rpcError } = await supabase
-      .rpc('get_my_cabinet_theme_palette');
-      
+    const { data: palette, error: rpcError } = await supabase.rpc('get_my_cabinet_theme_palette');
+
     if (rpcError) {
       // Erreur RPC = on considère qu'il n'y a pas de cabinet
       return null;
     }
-    
+
     if (!palette) {
       // PAS de cabinet = retourner null (pas DEFAULT_COLORS)
       return null;
     }
-    
+
     // Convertir palette DB vers format ThemeColors
     return convertDbPaletteToThemeColors(palette);
   } catch (error) {
@@ -186,31 +186,31 @@ export async function loadCabinetThemeWithRetry(
   userId: string,
   mountedRef: React.MutableRefObject<boolean>,
   requestIdRef: React.MutableRefObject<number>,
-  requestId: number
+  requestId: number,
 ): Promise<ThemeColors | null> {
   const delays: number[] = []; // Retry disabled to avoid repeated RPCs per session
-  
+
   for (let attempt = 0; attempt < delays.length + 1; attempt++) {
     // Abort if unmounted or request is stale (user changed)
     if (!mountedRef.current || requestId !== requestIdRef.current) {
       return null;
     }
-    
+
     const palette = await loadCabinetTheme(userId);
-    
+
     // Si on a une palette (pas null), c'est le cabinet
     if (palette !== null) {
       return palette;
     }
-    
+
     // Last attempt: pas de cabinet = retourner null (pas fallback)
     if (attempt === delays.length) {
       return null;
     }
-    
+
     // Wait before next retry (but check if still valid)
-    await new Promise(resolve => setTimeout(resolve, delays[attempt]));
+    await new Promise((resolve) => setTimeout(resolve, delays[attempt]));
   }
-  
+
   return null;
 }

@@ -30,9 +30,7 @@ function yesNo(value: boolean): string {
   return value ? 'Oui' : 'Non';
 }
 
-function historicalBasisLabel(
-  basis: PerPotentielExcelState['historicalBasis'],
-): string {
+function historicalBasisLabel(basis: PerPotentielExcelState['historicalBasis']): string {
   if (basis === 'current-avis') return 'Avis IR courant déjà disponible';
   if (basis === 'previous-avis-plus-n1') return 'Avis IR précédent + reconstitution N-1';
   return 'Non défini';
@@ -74,17 +72,17 @@ function pushMadelinRows(
   rows.push([txt('Depassement'), txt(yesNo(plafond.depassement))]);
 }
 
-function buildSyntheseSheet(
-  state: PerPotentielExcelState,
-  result: PerPotentielResult,
-): XlsxSheet {
+function buildSyntheseSheet(state: PerPotentielExcelState, result: PerPotentielResult): XlsxSheet {
   const rows: XlsxCell[][] = [
     [h('Champ'), h('Valeur')],
     [sec('Parcours'), sec('')],
     [txt('Mode'), txt(modeLabel(state.mode))],
     [txt('Base documentaire'), txt(historicalBasisLabel(state.historicalBasis))],
     [txt('Projection N nécessaire'), txt(yesNo(state.needsCurrentYearEstimate))],
-    [txt('Situation familiale'), txt(state.situationFamiliale === 'marie' ? 'Marie / Pacse' : 'Celibataire / Veuf / Divorce')],
+    [
+      txt('Situation familiale'),
+      txt(state.situationFamiliale === 'marie' ? 'Marie / Pacse' : 'Celibataire / Veuf / Divorce'),
+    ],
     [txt('Nombre de parts'), ctr(state.nombreParts)],
     [txt('Parent isole'), txt(yesNo(state.isole))],
     [txt('Mutualisation des plafonds'), txt(yesNo(state.mutualisationConjoints))],
@@ -93,10 +91,16 @@ function buildSyntheseSheet(
   ];
 
   if (result.situationFiscale.revenuImposableD2 > 0) {
-    rows.push([txt('Revenu imposable declarant 2'), money(result.situationFiscale.revenuImposableD2)]);
+    rows.push([
+      txt('Revenu imposable declarant 2'),
+      money(result.situationFiscale.revenuImposableD2),
+    ]);
   }
 
-  rows.push([txt('Revenu fiscal de reference estime'), money(result.situationFiscale.revenuFiscalRef)]);
+  rows.push([
+    txt('Revenu fiscal de reference estime'),
+    money(result.situationFiscale.revenuFiscalRef),
+  ]);
   rows.push([txt('TMI'), pct(result.situationFiscale.tmi)]);
   rows.push([txt('IR estime'), money(result.situationFiscale.irEstime)]);
   rows.push([txt('Decote'), money(result.situationFiscale.decote)]);
@@ -104,19 +108,39 @@ function buildSyntheseSheet(
   rows.push([txt('Marge dans la TMI'), money(result.situationFiscale.montantDansLaTMI)]);
 
   pushPlafondRows(rows, 'Plafond 163 quatervicies - Declarant 1', result.plafond163Q.declarant1);
-  rows.push([txt('Cotisations retenues IR - Declarant 1'), money(result.deductionFlow163Q.declarant1.cotisationsRetenuesIr)]);
-  rows.push([txt('Disponible restant après mutualisation - Declarant 1'), money(result.deductionFlow163Q.declarant1.disponibleRestant)]);
+  rows.push([
+    txt('Cotisations retenues IR - Declarant 1'),
+    money(result.deductionFlow163Q.declarant1.cotisationsRetenuesIr),
+  ]);
+  rows.push([
+    txt('Disponible restant après mutualisation - Declarant 1'),
+    money(result.deductionFlow163Q.declarant1.disponibleRestant),
+  ]);
   if (result.plafond163Q.declarant2) {
     pushPlafondRows(rows, 'Plafond 163 quatervicies - Declarant 2', result.plafond163Q.declarant2);
-    rows.push([txt('Cotisations retenues IR - Declarant 2'), money(result.deductionFlow163Q.declarant2?.cotisationsRetenuesIr ?? 0)]);
-    rows.push([txt('Disponible restant après mutualisation - Declarant 2'), money(result.deductionFlow163Q.declarant2?.disponibleRestant ?? 0)]);
+    rows.push([
+      txt('Cotisations retenues IR - Declarant 2'),
+      money(result.deductionFlow163Q.declarant2?.cotisationsRetenuesIr ?? 0),
+    ]);
+    rows.push([
+      txt('Disponible restant après mutualisation - Declarant 2'),
+      money(result.deductionFlow163Q.declarant2?.disponibleRestant ?? 0),
+    ]);
   }
 
   if (result.plafondMadelin?.declarant1) {
-    pushMadelinRows(rows, 'Plafond Madelin 154 bis - Declarant 1', result.plafondMadelin.declarant1);
+    pushMadelinRows(
+      rows,
+      'Plafond Madelin 154 bis - Declarant 1',
+      result.plafondMadelin.declarant1,
+    );
   }
   if (result.plafondMadelin?.declarant2) {
-    pushMadelinRows(rows, 'Plafond Madelin 154 bis - Declarant 2', result.plafondMadelin.declarant2);
+    pushMadelinRows(
+      rows,
+      'Plafond Madelin 154 bis - Declarant 2',
+      result.plafondMadelin.declarant2,
+    );
   }
 
   if (result.simulation) {
@@ -125,7 +149,10 @@ function buildSyntheseSheet(
     rows.push([txt('Versement deductible'), money(result.simulation.versementDeductible)]);
     rows.push([txt('Economie IR annuelle'), money(result.simulation.economieIRAnnuelle)]);
     rows.push([txt('Cout net apres fiscalite'), money(result.simulation.coutNetApresFiscalite)]);
-    rows.push([txt('Plafond restant apres versement'), money(result.simulation.plafondRestantApres)]);
+    rows.push([
+      txt('Plafond restant apres versement'),
+      money(result.simulation.plafondRestantApres),
+    ]);
   } else if (state.mode === 'versement-n' && state.versementEnvisage > 0) {
     rows.push([sec('Simulation de versement'), sec('')]);
     rows.push([txt('Versement envisage'), money(state.versementEnvisage)]);
@@ -133,17 +160,47 @@ function buildSyntheseSheet(
   }
 
   rows.push([sec('Projection prochain avis IR'), sec('')]);
-  rows.push([txt('Declarant 1 - reliquat N-2'), money(result.projectionAvisSuivant.declarant1.nonUtiliseN2)]);
-  rows.push([txt('Declarant 1 - reliquat N-1'), money(result.projectionAvisSuivant.declarant1.nonUtiliseN1)]);
-  rows.push([txt('Declarant 1 - reliquat N'), money(result.projectionAvisSuivant.declarant1.nonUtiliseN)]);
-  rows.push([txt('Declarant 1 - plafond calcule'), money(result.projectionAvisSuivant.declarant1.plafondCalculeN)]);
-  rows.push([txt('Declarant 1 - total'), money(result.projectionAvisSuivant.declarant1.plafondTotal)]);
+  rows.push([
+    txt('Declarant 1 - reliquat N-2'),
+    money(result.projectionAvisSuivant.declarant1.nonUtiliseN2),
+  ]);
+  rows.push([
+    txt('Declarant 1 - reliquat N-1'),
+    money(result.projectionAvisSuivant.declarant1.nonUtiliseN1),
+  ]);
+  rows.push([
+    txt('Declarant 1 - reliquat N'),
+    money(result.projectionAvisSuivant.declarant1.nonUtiliseN),
+  ]);
+  rows.push([
+    txt('Declarant 1 - plafond calcule'),
+    money(result.projectionAvisSuivant.declarant1.plafondCalculeN),
+  ]);
+  rows.push([
+    txt('Declarant 1 - total'),
+    money(result.projectionAvisSuivant.declarant1.plafondTotal),
+  ]);
   if (result.projectionAvisSuivant.declarant2) {
-    rows.push([txt('Declarant 2 - reliquat N-2'), money(result.projectionAvisSuivant.declarant2.nonUtiliseN2)]);
-    rows.push([txt('Declarant 2 - reliquat N-1'), money(result.projectionAvisSuivant.declarant2.nonUtiliseN1)]);
-    rows.push([txt('Declarant 2 - reliquat N'), money(result.projectionAvisSuivant.declarant2.nonUtiliseN)]);
-    rows.push([txt('Declarant 2 - plafond calcule'), money(result.projectionAvisSuivant.declarant2.plafondCalculeN)]);
-    rows.push([txt('Declarant 2 - total'), money(result.projectionAvisSuivant.declarant2.plafondTotal)]);
+    rows.push([
+      txt('Declarant 2 - reliquat N-2'),
+      money(result.projectionAvisSuivant.declarant2.nonUtiliseN2),
+    ]);
+    rows.push([
+      txt('Declarant 2 - reliquat N-1'),
+      money(result.projectionAvisSuivant.declarant2.nonUtiliseN1),
+    ]);
+    rows.push([
+      txt('Declarant 2 - reliquat N'),
+      money(result.projectionAvisSuivant.declarant2.nonUtiliseN),
+    ]);
+    rows.push([
+      txt('Declarant 2 - plafond calcule'),
+      money(result.projectionAvisSuivant.declarant2.plafondCalculeN),
+    ]);
+    rows.push([
+      txt('Declarant 2 - total'),
+      money(result.projectionAvisSuivant.declarant2.plafondTotal),
+    ]);
   }
 
   if (result.warnings.length > 0) {
@@ -165,24 +222,48 @@ function buildDeclarationSheet(result: PerPotentielResult): XlsxSheet {
     [h('Case'), h('Libelle'), h('Valeur')],
     [ctr('6NS'), txt('PER 163 quatervicies - Declarant 1'), money(result.declaration2042.case6NS)],
     [ctr('6RS'), txt('PERP et assimiles - Declarant 1'), money(result.declaration2042.case6RS)],
-    [ctr('6QS'), txt('Art. 83 / PERCO / Madelin retraite - Declarant 1'), money(result.declaration2042.case6QS)],
+    [
+      ctr('6QS'),
+      txt('Art. 83 / PERCO / Madelin retraite - Declarant 1'),
+      money(result.declaration2042.case6QS),
+    ],
     [ctr('6OS'), txt('PER 154 bis - Declarant 1'), money(result.declaration2042.case6OS)],
   ];
 
   if (typeof result.declaration2042.case6NT === 'number') {
-    rows.push([ctr('6NT'), txt('PER 163 quatervicies - Declarant 2'), money(result.declaration2042.case6NT)]);
+    rows.push([
+      ctr('6NT'),
+      txt('PER 163 quatervicies - Declarant 2'),
+      money(result.declaration2042.case6NT),
+    ]);
   }
   if (typeof result.declaration2042.case6RT === 'number') {
-    rows.push([ctr('6RT'), txt('PERP et assimiles - Declarant 2'), money(result.declaration2042.case6RT)]);
+    rows.push([
+      ctr('6RT'),
+      txt('PERP et assimiles - Declarant 2'),
+      money(result.declaration2042.case6RT),
+    ]);
   }
   if (typeof result.declaration2042.case6QT === 'number') {
-    rows.push([ctr('6QT'), txt('Art. 83 / PERCO / Madelin retraite - Declarant 2'), money(result.declaration2042.case6QT)]);
+    rows.push([
+      ctr('6QT'),
+      txt('Art. 83 / PERCO / Madelin retraite - Declarant 2'),
+      money(result.declaration2042.case6QT),
+    ]);
   }
   if (typeof result.declaration2042.case6OT === 'number') {
-    rows.push([ctr('6OT'), txt('PER 154 bis - Declarant 2'), money(result.declaration2042.case6OT)]);
+    rows.push([
+      ctr('6OT'),
+      txt('PER 154 bis - Declarant 2'),
+      money(result.declaration2042.case6OT),
+    ]);
   }
 
-  rows.push([ctr('6QR'), txt('Mutualisation des plafonds'), txt(yesNo(result.declaration2042.case6QR))]);
+  rows.push([
+    ctr('6QR'),
+    txt('Mutualisation des plafonds'),
+    txt(yesNo(result.declaration2042.case6QR)),
+  ]);
 
   return {
     name: 'Cases 2042',
@@ -194,16 +275,44 @@ function buildDeclarationSheet(result: PerPotentielResult): XlsxSheet {
 function buildHypothesesSheet(state: PerPotentielExcelState): XlsxSheet {
   const rows: XlsxCell[][] = [
     [h('Hypothese'), h('Reference')],
-    [txt('Historique PASS runtime lu via public.pass_history et administre dans Settings > Prelevements.'), txt('Chaine fiscale du repo')],
-    [txt('DEFAULT_PASS_HISTORY dans settingsDefaults.ts ne sert que de fallback si Supabase ne repond pas.'), txt('Fallback documente')],
-    [txt('Estimation IR deleguee au moteur IR du repo pour les parts, la decote, le quotient familial et la CEHR.'), txt('src/engine/ir/compute.ts')],
-    [txt('Le parcours reprend la pedagogie du classeur 2025 tout en gardant le moteur fiscal du repo comme arbitre.'), txt('Parite workbook documentee')],
+    [
+      txt(
+        'Historique PASS runtime lu via public.pass_history et administre dans Settings > Prelevements.',
+      ),
+      txt('Chaine fiscale du repo'),
+    ],
+    [
+      txt(
+        'DEFAULT_PASS_HISTORY dans settingsDefaults.ts ne sert que de fallback si Supabase ne repond pas.',
+      ),
+      txt('Fallback documente'),
+    ],
+    [
+      txt(
+        'Estimation IR deleguee au moteur IR du repo pour les parts, la decote, le quotient familial et la CEHR.',
+      ),
+      txt('src/engine/ir/compute.ts'),
+    ],
+    [
+      txt(
+        'Le parcours reprend la pedagogie du classeur 2025 tout en gardant le moteur fiscal du repo comme arbitre.',
+      ),
+      txt('Parite workbook documentee'),
+    ],
     [txt(`Mode exporte : ${modeLabel(state.mode)}.`), txt('Contexte de simulation')],
-    [txt(`Base documentaire : ${historicalBasisLabel(state.historicalBasis)}.`), txt('Parcours PER')],
+    [
+      txt(`Base documentaire : ${historicalBasisLabel(state.historicalBasis)}.`),
+      txt('Parcours PER'),
+    ],
     [txt(`Projection N active : ${yesNo(state.needsCurrentYearEstimate)}.`), txt('Parcours PER')],
     [sec('Avertissement'), sec('')],
     [txt('Document etabli a titre indicatif pour un rendez-vous de conseil.'), txt('')],
-    [txt('Les montants doivent etre confrontes aux justificatifs et a la declaration fiscale finale.'), txt('')],
+    [
+      txt(
+        'Les montants doivent etre confrontes aux justificatifs et a la declaration fiscale finale.',
+      ),
+      txt(''),
+    ],
   ];
 
   return {
@@ -249,6 +358,6 @@ export async function exportPerPotentielExcel(
   }
 
   const blob = await buildPerPotentielXlsxBlob(state, result, headerFill, sectionFill);
-  const dateStr = new Date().toISOString().split('T')[0].replace(/-/g, '');
+  const dateStr = new Date().toISOString().slice(0, 10).replace(/-/g, '');
   downloadXlsx(blob, `simulation-per-potentiel-${dateStr}.xlsx`);
 }

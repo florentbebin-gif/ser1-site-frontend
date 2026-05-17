@@ -24,10 +24,13 @@ import type {
 // ============================================================================
 
 export const fmt = (v: number): string =>
-  new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(v);
+  new Intl.NumberFormat('fr-FR', {
+    style: 'currency',
+    currency: 'EUR',
+    maximumFractionDigits: 0,
+  }).format(v);
 
-export const fmtPct = (v: number): string =>
-  `${(v * 100).toFixed(2).replace('.', ',')} %`;
+export const fmtPct = (v: number): string => `${(v * 100).toFixed(2).replace('.', ',')} %`;
 
 const STRATEGIE_LABELS: Record<string, string> = {
   stocker: 'Stocker à 0 %',
@@ -54,17 +57,21 @@ export function buildEpargneParams(c: PlacementProductConfig): string[] {
     `Perf. capitalisation : ${fmtPct(c.rendementCapi)}`,
   ];
   if (c.repartitionCapi < 100) {
-    lines.push(`Perf. distribution : ${fmtPct(c.rendementDistrib)} (revalo. ${fmtPct(c.tauxRevalorisation)})`);
+    lines.push(
+      `Perf. distribution : ${fmtPct(c.rendementDistrib)} (revalo. ${fmtPct(c.tauxRevalorisation)})`,
+    );
   }
   lines.push(`Répartition : ${c.repartitionCapi} % capi / ${100 - c.repartitionCapi} % distrib.`);
   if (c.repartitionCapi < 100) {
-    lines.push(`Stratégie distrib. : ${STRATEGIE_LABELS[c.strategieDistribution] ?? c.strategieDistribution}`);
+    lines.push(
+      `Stratégie distrib. : ${STRATEGIE_LABELS[c.strategieDistribution] ?? c.strategieDistribution}`,
+    );
   }
   const versements: string[] = [];
   if (c.versementInitial > 0) versements.push(`Initial : ${fmt(c.versementInitial)}`);
   if (c.versementAnnuel > 0) versements.push(`Annuel : ${fmt(c.versementAnnuel)}`);
   if (versements.length > 0) lines.push(versements.join('  |  '));
-  c.ponctuels.forEach(p => {
+  c.ponctuels.forEach((p) => {
     lines.push(`Ponctuel : ${fmt(p.montant)} (année ${p.annee})`);
   });
   lines.push(`Frais d'entrée : ${fmtPct(c.fraisEntree)}`);
@@ -88,9 +95,7 @@ export function buildLiquidationParams(c: PlacementProductConfig, data: Placemen
 }
 
 export function buildTransmissionParams(data: PlacementData): string[] {
-  const lines: string[] = [
-    `Âge de décès simulé : ${data.ageAuDeces} ans`,
-  ];
+  const lines: string[] = [`Âge de décès simulé : ${data.ageAuDeces} ans`];
   if (data.beneficiaryType === 'enfants') {
     lines.push(`Bénéficiaire : Enfants (${data.nbBeneficiaires})`);
   } else {
@@ -131,11 +136,29 @@ export function buildSynthesisSpec(data: PlacementData): PlacementSynthesisSlide
 }
 
 export function buildEpargneDetail(data: PlacementData): PlacementDetailSlideSpec {
-  const buildMetrics = (p: PlacementProductData): PlacementDetailSlideSpec['produit1']['metrics'] => [
-    { icon: 'money' as BusinessIconName, label: 'Capital acquis', value: fmt(p.epargne.capitalAcquis) },
-    { icon: 'cheque' as BusinessIconName, label: 'Versements cumulés', value: fmt(p.epargne.cumulVersements) },
-    { icon: 'calculator' as BusinessIconName, label: 'Effort réel', value: fmt(p.epargne.cumulEffort) },
-    { icon: 'percent' as BusinessIconName, label: 'Économie IR cumulée', value: fmt(p.epargne.cumulEconomieIR) },
+  const buildMetrics = (
+    p: PlacementProductData,
+  ): PlacementDetailSlideSpec['produit1']['metrics'] => [
+    {
+      icon: 'money' as BusinessIconName,
+      label: 'Capital acquis',
+      value: fmt(p.epargne.capitalAcquis),
+    },
+    {
+      icon: 'cheque' as BusinessIconName,
+      label: 'Versements cumulés',
+      value: fmt(p.epargne.cumulVersements),
+    },
+    {
+      icon: 'calculator' as BusinessIconName,
+      label: 'Effort réel',
+      value: fmt(p.epargne.cumulEffort),
+    },
+    {
+      icon: 'percent' as BusinessIconName,
+      label: 'Économie IR cumulée',
+      value: fmt(p.epargne.cumulEconomieIR),
+    },
   ];
   return {
     type: 'placement-detail',
@@ -148,19 +171,33 @@ export function buildEpargneDetail(data: PlacementData): PlacementDetailSlideSpe
     },
     produit2: data.produit2
       ? {
-        label: data.produit2.envelopeLabel,
-        metrics: buildMetrics(data.produit2),
-        params: buildEpargneParams(data.produit2.config),
-      }
+          label: data.produit2.envelopeLabel,
+          metrics: buildMetrics(data.produit2),
+          params: buildEpargneParams(data.produit2.config),
+        }
       : null,
   };
 }
 
 export function buildLiquidationDetail(data: PlacementData): PlacementDetailSlideSpec {
-  const buildMetrics = (p: PlacementProductData): PlacementDetailSlideSpec['produit1']['metrics'] => [
-    { icon: 'chart-up' as BusinessIconName, label: 'Retraits nets cumulés', value: fmt(p.liquidation.cumulRetraitsNets) },
-    { icon: 'money' as BusinessIconName, label: 'Revenu annuel moyen net', value: fmt(p.liquidation.revenuAnnuelMoyenNet) },
-    { icon: 'balance' as BusinessIconName, label: 'Fiscalité cumulée', value: fmt(p.liquidation.cumulFiscalite) },
+  const buildMetrics = (
+    p: PlacementProductData,
+  ): PlacementDetailSlideSpec['produit1']['metrics'] => [
+    {
+      icon: 'chart-up' as BusinessIconName,
+      label: 'Retraits nets cumulés',
+      value: fmt(p.liquidation.cumulRetraitsNets),
+    },
+    {
+      icon: 'money' as BusinessIconName,
+      label: 'Revenu annuel moyen net',
+      value: fmt(p.liquidation.revenuAnnuelMoyenNet),
+    },
+    {
+      icon: 'balance' as BusinessIconName,
+      label: 'Fiscalité cumulée',
+      value: fmt(p.liquidation.cumulFiscalite),
+    },
   ];
   const buildFlowBar = (p: PlacementProductData) => ({
     gross: p.liquidation.cumulRetraitsNets + p.liquidation.cumulFiscalite,
@@ -180,20 +217,30 @@ export function buildLiquidationDetail(data: PlacementData): PlacementDetailSlid
     },
     produit2: data.produit2
       ? {
-        label: data.produit2.envelopeLabel,
-        metrics: buildMetrics(data.produit2),
-        params: buildLiquidationParams(data.produit2.config, data),
-        flowBar: buildFlowBar(data.produit2),
-      }
+          label: data.produit2.envelopeLabel,
+          metrics: buildMetrics(data.produit2),
+          params: buildLiquidationParams(data.produit2.config, data),
+          flowBar: buildFlowBar(data.produit2),
+        }
       : null,
   };
 }
 
 export function buildTransmissionDetail(data: PlacementData): PlacementDetailSlideSpec {
-  const buildMetrics = (p: PlacementProductData): PlacementDetailSlideSpec['produit1']['metrics'] => [
-    { icon: 'buildings' as BusinessIconName, label: 'Capital transmis net', value: fmt(p.transmission.capitalTransmisNet) },
+  const buildMetrics = (
+    p: PlacementProductData,
+  ): PlacementDetailSlideSpec['produit1']['metrics'] => [
+    {
+      icon: 'buildings' as BusinessIconName,
+      label: 'Capital transmis net',
+      value: fmt(p.transmission.capitalTransmisNet),
+    },
     { icon: 'bank' as BusinessIconName, label: 'Régime fiscal', value: p.transmission.regime },
-    { icon: 'calculator' as BusinessIconName, label: 'Droits / taxe', value: fmt(p.transmission.taxe) },
+    {
+      icon: 'calculator' as BusinessIconName,
+      label: 'Droits / taxe',
+      value: fmt(p.transmission.taxe),
+    },
   ];
   const buildFlowBar = (p: PlacementProductData) => ({
     gross: p.transmission.capitalTransmisNet + p.transmission.taxe,
@@ -214,11 +261,11 @@ export function buildTransmissionDetail(data: PlacementData): PlacementDetailSli
     },
     produit2: data.produit2
       ? {
-        label: data.produit2.envelopeLabel,
-        metrics: buildMetrics(data.produit2),
-        params: transmissionParams,
-        flowBar: buildFlowBar(data.produit2),
-      }
+          label: data.produit2.envelopeLabel,
+          metrics: buildMetrics(data.produit2),
+          params: transmissionParams,
+          flowBar: buildFlowBar(data.produit2),
+        }
       : null,
   };
 }
@@ -250,14 +297,14 @@ export function buildHypothesesSlide(): PlacementHypothesesSlideSpec {
         title: 'Transmission / DMTG',
         body: [
           'Transmission calculée selon le barème DMTG et les abattements légaux en vigueur',
-          'Régime applicable selon l\'enveloppe (art. 990 I ou DMTG)',
+          "Régime applicable selon l'enveloppe (art. 990 I ou DMTG)",
         ],
       },
       {
         icon: 'pen' as BusinessIconName,
         title: 'Limites et arrondis',
         body: [
-          'Les montants sont arrondis à l\'euro le plus proche',
+          "Les montants sont arrondis à l'euro le plus proche",
           'Résultats donnés à titre indicatif, sans valeur contractuelle',
         ],
       },
@@ -279,18 +326,18 @@ export function buildEpargneProjectionSlides(
   return yearPages.map((yearsForPage, pageIndex) => ({
     type: 'placement-projection' as const,
     title: `Projection Épargne — ${productLabel}`,
-    subtitle: 'Détail année par année de la phase d\'épargne',
+    subtitle: "Détail année par année de la phase d'épargne",
     productLabel,
     productIndex,
     phase: 'epargne' as const,
     yearsForPage,
     rows: [
-      { label: 'Versement net', values: rows.map(r => r.versementNet) },
-      { label: 'Capital début', values: rows.map(r => r.capitalDebut) },
-      { label: 'Gains annuels', values: rows.map(r => r.gainsAnnee) },
-      { label: 'Capital fin', values: rows.map(r => r.capitalFin) },
-      { label: 'Effort réel cumulé', values: rows.map(r => r.effortReel) },
-      { label: 'Économie IR', values: rows.map(r => r.economieIR) },
+      { label: 'Versement net', values: rows.map((r) => r.versementNet) },
+      { label: 'Capital début', values: rows.map((r) => r.capitalDebut) },
+      { label: 'Gains annuels', values: rows.map((r) => r.gainsAnnee) },
+      { label: 'Capital fin', values: rows.map((r) => r.capitalFin) },
+      { label: 'Effort réel cumulé', values: rows.map((r) => r.effortReel) },
+      { label: 'Économie IR', values: rows.map((r) => r.economieIR) },
     ],
     pageIndex,
     totalPages: yearPages.length,
@@ -314,12 +361,12 @@ export function buildLiquidationProjectionSlides(
     phase: 'liquidation' as const,
     yearsForPage,
     rows: [
-      { label: 'Capital début', values: rows.map(r => r.capitalDebut) },
-      { label: 'Gains annuels', values: rows.map(r => r.gainsAnnee) },
-      { label: 'Retrait brut', values: rows.map(r => r.retraitBrut) },
-      { label: 'Fiscalité', values: rows.map(r => r.fiscaliteTotal) },
-      { label: 'Retrait net', values: rows.map(r => r.retraitNet) },
-      { label: 'Capital fin', values: rows.map(r => r.capitalFin) },
+      { label: 'Capital début', values: rows.map((r) => r.capitalDebut) },
+      { label: 'Gains annuels', values: rows.map((r) => r.gainsAnnee) },
+      { label: 'Retrait brut', values: rows.map((r) => r.retraitBrut) },
+      { label: 'Fiscalité', values: rows.map((r) => r.fiscaliteTotal) },
+      { label: 'Retrait net', values: rows.map((r) => r.retraitNet) },
+      { label: 'Capital fin', values: rows.map((r) => r.capitalFin) },
     ],
     pageIndex,
     totalPages: yearPages.length,

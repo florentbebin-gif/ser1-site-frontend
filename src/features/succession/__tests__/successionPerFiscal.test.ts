@@ -66,9 +66,11 @@ describe('buildSuccessionPerFiscalAnalysis', () => {
   it('keeps spouse exemption on a standard clause', () => {
     const snapshot = buildSuccessionFiscalSnapshot(null);
     const analysis = buildSuccessionPerFiscalAnalysis(
-      [makePerEntry({
-        clauseBeneficiaire: undefined,
-      })],
+      [
+        makePerEntry({
+          clauseBeneficiaire: undefined,
+        }),
+      ],
       makeCivil({
         dateNaissanceEpoux1: '1970-01-01',
       }),
@@ -85,12 +87,14 @@ describe('buildSuccessionPerFiscalAnalysis', () => {
   it('supports demembrement and keeps the art. 669 warning path', () => {
     const snapshot = buildSuccessionFiscalSnapshot(null);
     const analysis = buildSuccessionPerFiscalAnalysis(
-      [makePerEntry({
-        typeContrat: 'demembree',
-        clauseBeneficiaire: undefined,
-        capitauxDeces: 300000,
-        ageUsufruitier: 68,
-      })],
+      [
+        makePerEntry({
+          typeContrat: 'demembree',
+          clauseBeneficiaire: undefined,
+          capitauxDeces: 300000,
+          ageUsufruitier: 68,
+        }),
+      ],
       makeCivil({
         dateNaissanceEpoux1: '1970-01-01',
       }),

@@ -1,6 +1,6 @@
 /**
  * ExportMenu - Composant partagé pour les menus d'export
- * 
+ *
  * Utilisé par: IR, Credit, Placement
  * Gère: dropdown state, click outside, Escape key, aria-expanded, role="menu"
  */
@@ -76,7 +76,7 @@ export function ExportMenu({
       >
         {loading ? loadingLabel : buttonLabel}
       </button>
-      
+
       {isOpen && !loading && (
         <div role="menu" className="export-menu" data-testid="export-menu-dropdown">
           {options.map((option, index) => (

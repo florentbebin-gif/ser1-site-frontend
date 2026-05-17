@@ -5,7 +5,10 @@
   justify-content: center;
   border-radius: 999px;
   cursor: pointer;
-  transition: background 0.2s, border-color 0.2s, color 0.2s;
+  transition:
+    background 0.2s,
+    border-color 0.2s,
+    color 0.2s;
 }
 
 .vcm__close {
@@ -43,7 +46,7 @@
   flex-shrink: 0;
   border: 1px solid var(--color-c8);
   border-radius: 999px;
-  background: color-mix(in srgb, var(--color-c7) 70%, #FFFFFF);
+  background: color-mix(in srgb, var(--color-c7) 70%, #ffffff);
   color: var(--color-c1);
   font-size: 13px;
   font-weight: 700;
@@ -61,7 +64,7 @@
 .vcm__empty,
 .vcm__ponctuels,
 .vcm__per-options {
-  background: color-mix(in srgb, var(--color-c7) 50%, #FFFFFF);
+  background: color-mix(in srgb, var(--color-c7) 50%, #ffffff);
   border: 1px solid var(--color-c8);
   border-radius: 12px;
 }
@@ -69,7 +72,7 @@
 .vcm__card {
   padding: 18px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-  --sim-input-bg: #FFFFFF;
+  --sim-input-bg: #ffffff;
 }
 
 .vcm__row {
@@ -102,7 +105,6 @@
 .vcm__field--compact {
   margin-bottom: 0;
 }
-
 
 .vcm__label {
   display: block;
@@ -140,7 +142,11 @@
 
 .vcm__suboption--capi {
   border-left: 2px solid var(--color-c2);
-  background: linear-gradient(135deg, color-mix(in srgb, var(--color-c4) 30%, #FFFFFF), transparent);
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--color-c4) 30%, #ffffff),
+    transparent
+  );
 }
 
 /* Limite l'input Rendement Ã  la mÃªme largeur que Montant (50% de la card) */
@@ -154,7 +160,11 @@
 
 .vcm__suboption--distrib {
   border-left: 2px solid var(--color-c5);
-  background: linear-gradient(135deg, color-mix(in srgb, var(--color-c5) 30%, #FFFFFF), transparent);
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--color-c5) 30%, #ffffff),
+    transparent
+  );
 }
 
 .vcm__suboption-header {
@@ -173,13 +183,12 @@
 
 .vcm__badge--capi {
   border: 1px solid var(--color-c2);
-  background: #FFFFFF;
+  background: #ffffff;
   color: var(--color-c2);
 }
 
 .vcm__badge--distrib {
   border: 1px solid var(--color-c5);
-  background: #FFFFFF;
+  background: #ffffff;
   color: var(--color-c5);
 }
-

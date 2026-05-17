@@ -5,7 +5,9 @@ Application web pour CGP : audit patrimonial, stratégie guidée, simulateurs IR
 Stack : React 18 + Vite 5 + TypeScript + Supabase (Auth/DB/Storage/Edge Functions).
 
 ## Documentation
+
 Sources de vérité :
+
 - `docs/ROADMAP.md`
 - `docs/METIER.md`
 - `docs/GOUVERNANCE.md` — contrat UI web, baseline `/sim/*`, theming
@@ -15,6 +17,7 @@ Sources de vérité :
 - `.github/CONTRIBUTING.md` — conventions code, workflow git, PR checklist
 
 Guidance agent / repo automation :
+
 - `AGENTS.md` — règles comportementales agent (source unique, lu par tous les outils)
 - `CLAUDE.md` — workflows automatiques Claude Code (référence AGENTS.md, pas de duplication)
 - `.claude/rules/` — règles auto-chargées de base
@@ -25,6 +28,7 @@ Guidance agent / repo automation :
 ## Quickstart
 
 Prérequis :
+
 - Node.js 22.x (voir `package.json > engines`)
 - (Optionnel) Docker Desktop pour Supabase en local
 
@@ -38,12 +42,14 @@ npm run dev
 Copier `.env.example` vers `.env.local` (local uniquement, gitignored).
 
 Minimum requis :
+
 ```powershell
 VITE_SUPABASE_URL=<supabase_project_url>
 VITE_SUPABASE_ANON_KEY=<anon_key>
 ```
 
 E2E (optionnel) :
+
 ```powershell
 E2E_EMAIL=<email>
 E2E_PASSWORD=<password>
@@ -63,6 +69,7 @@ npm run check       # lint + typecheck + tests unitaires + build + garde-fous ar
 ```
 
 Sous-checks isolés :
+
 ```powershell
 npm run test:e2e
 npm run test:e2e:ui

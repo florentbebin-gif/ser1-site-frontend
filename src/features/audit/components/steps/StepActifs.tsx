@@ -14,15 +14,20 @@ export default function StepActifs({ dossier, updateDossier }: StepProps) {
       <button
         type="button"
         className="premium-btn"
-        onClick={() => updateDossier({
-          actifs: [...actifs, {
-            id: crypto.randomUUID(),
-            libelle: '',
-            valeur: 0,
-            proprietaire: 'commun',
-            type: 'autre_financier',
-          }],
-        })}
+        onClick={() =>
+          updateDossier({
+            actifs: [
+              ...actifs,
+              {
+                id: crypto.randomUUID(),
+                libelle: '',
+                valeur: 0,
+                proprietaire: 'commun',
+                type: 'autre_financier',
+              },
+            ],
+          })
+        }
       >
         + Ajouter un actif
       </button>
@@ -60,7 +65,10 @@ export default function StepActifs({ dossier, updateDossier }: StepProps) {
               value={actif.proprietaire}
               onChange={(e) => {
                 const newActifs = [...actifs];
-                newActifs[idx] = { ...actif, proprietaire: e.target.value as typeof actif.proprietaire };
+                newActifs[idx] = {
+                  ...actif,
+                  proprietaire: e.target.value as typeof actif.proprietaire,
+                };
                 updateDossier({ actifs: newActifs });
               }}
             >

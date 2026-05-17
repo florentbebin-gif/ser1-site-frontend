@@ -1,4 +1,12 @@
-import { useCallback, useEffect, useRef, useState, type Dispatch, type MutableRefObject, type SetStateAction } from 'react';
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  type Dispatch,
+  type MutableRefObject,
+  type SetStateAction,
+} from 'react';
 import { supabase } from '../../../supabaseClient';
 import { DEFAULT_COLORS, type ThemeColors } from '../../theme';
 import type { ThemeMode, ThemeScope, ThemeSource } from '../types';
@@ -81,7 +89,10 @@ export interface ThemeSessionState {
   cabinetBrandingKeyRef: MutableRefObject<string | null>;
   myPaletteRef: MutableRefObject<ThemeColors | null>;
   themeModeRef: MutableRefObject<ThemeMode>;
-  ensureCabinetThemeFetch: (_userId: string, _brandingKey: string | null) => Promise<ThemeColors | null>;
+  ensureCabinetThemeFetch: (
+    _userId: string,
+    _brandingKey: string | null,
+  ) => Promise<ThemeColors | null>;
 }
 
 export function useThemeSession({
@@ -90,7 +101,9 @@ export function useThemeSession({
   lastAppliedSourceRankRef,
 }: UseThemeSessionArgs): ThemeSessionState {
   const themeBootstrap = getThemeBootstrap();
-  const [colorsState, setColorsState] = useState<ThemeColors>(() => themeBootstrap?.colors ?? DEFAULT_COLORS);
+  const [colorsState, setColorsState] = useState<ThemeColors>(
+    () => themeBootstrap?.colors ?? DEFAULT_COLORS,
+  );
   const [logo, setLogo] = useState<string | undefined>(undefined);
   const [cabinetLogo, setCabinetLogo] = useState<string | undefined>(undefined);
   const [logoPlacement, setLogoPlacement] = useState<LogoPlacement>('center-bottom');
@@ -98,7 +111,9 @@ export function useThemeSession({
   const [themeReady, setThemeReady] = useState(false);
   const [themeScope, setThemeScope] = useState<ThemeScope>('all');
   const [cabinetBrandingKey, setCabinetBrandingKey] = useState<string | null>(null);
-  const [themeSource, setThemeSource] = useState<ThemeSource>(() => readThemeSourceFromStorage(null));
+  const [themeSource, setThemeSource] = useState<ThemeSource>(() =>
+    readThemeSourceFromStorage(null),
+  );
   const [activeUserId, setActiveUserId] = useState<string | null>(null);
   const [cabinetColors, setCabinetColors] = useState<ThemeColors | null | undefined>(undefined);
   const [originalColors, setOriginalColors] = useState<ThemeColors | null>(null);
@@ -111,7 +126,10 @@ export function useThemeSession({
   const mountedRef = useRef<boolean>(true);
   const activeRequestIdRef = useRef<number>(0);
   const cabinetThemePromiseRef = useRef<Promise<ThemeColors | null> | null>(null);
-  const cabinetLogoPromiseRef = useRef<Promise<{ logo?: string; placement?: LogoPlacement }> | null>(null);
+  const cabinetLogoPromiseRef = useRef<Promise<{
+    logo?: string;
+    placement?: LogoPlacement;
+  }> | null>(null);
   const cabinetThemeLoadedRef = useRef<string | null>(null);
   const cabinetLogoLoadedRef = useRef<string | null>(null);
   const cabinetThemeRequestIdRef = useRef<number>(0);
@@ -130,72 +148,89 @@ export function useThemeSession({
   logoPlacementRef.current = logoPlacement;
   cabinetBrandingKeyRef.current = cabinetBrandingKey;
 
-  const ensureCabinetThemeFetch = useCallback(async (userId: string, brandingKey: string | null): Promise<ThemeColors | null> => {
-    const loadKey = `${userId}::${brandingKey ?? 'cabinet:none'}`;
+  const ensureCabinetThemeFetch = useCallback(
+    async (userId: string, brandingKey: string | null): Promise<ThemeColors | null> => {
+      const loadKey = `${userId}::${brandingKey ?? 'cabinet:none'}`;
 
-    if (cabinetThemeLoadedRef.current === loadKey && cabinetThemePromiseRef.current) {
-      return cabinetThemePromiseRef.current;
-    }
-
-    if (cabinetThemeLoadedRef.current === loadKey && !cabinetThemePromiseRef.current) {
-      return Promise.resolve(cabinetColorsRef.current ?? null);
-    }
-
-    cabinetThemeLoadedRef.current = loadKey;
-    const requestId = ++cabinetThemeRequestIdRef.current;
-    const promise = (async () => {
-      const colors = await loadCabinetThemeWithRetry(userId, mountedRef, cabinetThemeRequestIdRef, requestId);
-      if (!mountedRef.current || requestId !== cabinetThemeRequestIdRef.current) {
-        return colors;
+      if (cabinetThemeLoadedRef.current === loadKey && cabinetThemePromiseRef.current) {
+        return cabinetThemePromiseRef.current;
       }
 
-      if (colors === null) {
-        setCabinetColors(null);
-        if (brandingKey) {
-          localStorage.removeItem(`${CABINET_THEME_CACHE_KEY_PREFIX}${brandingKey}`);
+      if (cabinetThemeLoadedRef.current === loadKey && !cabinetThemePromiseRef.current) {
+        return Promise.resolve(cabinetColorsRef.current ?? null);
+      }
+
+      cabinetThemeLoadedRef.current = loadKey;
+      const requestId = ++cabinetThemeRequestIdRef.current;
+      const promise = (async () => {
+        const colors = await loadCabinetThemeWithRetry(
+          userId,
+          mountedRef,
+          cabinetThemeRequestIdRef,
+          requestId,
+        );
+        if (!mountedRef.current || requestId !== cabinetThemeRequestIdRef.current) {
+          return colors;
         }
-      } else {
-        setCabinetColors(colors);
-        saveCabinetThemeToCache(colors, brandingKey);
+
+        if (colors === null) {
+          setCabinetColors(null);
+          if (brandingKey) {
+            localStorage.removeItem(`${CABINET_THEME_CACHE_KEY_PREFIX}${brandingKey}`);
+          }
+        } else {
+          setCabinetColors(colors);
+          saveCabinetThemeToCache(colors, brandingKey);
+        }
+
+        return colors;
+      })();
+
+      cabinetThemePromiseRef.current = promise;
+      return promise;
+    },
+    [],
+  );
+
+  const ensureCabinetLogoFetch = useCallback(
+    async (
+      userId: string,
+      brandingKey: string | null,
+    ): Promise<{ logo?: string; placement?: LogoPlacement }> => {
+      const loadKey = `${userId}::${brandingKey ?? 'cabinet:none'}`;
+
+      if (cabinetLogoLoadedRef.current === loadKey && cabinetLogoPromiseRef.current) {
+        return cabinetLogoPromiseRef.current;
       }
 
-      return colors;
-    })();
+      if (cabinetLogoLoadedRef.current === loadKey && !cabinetLogoPromiseRef.current) {
+        return Promise.resolve({
+          logo: cabinetLogoRef.current,
+          placement: logoPlacementRef.current,
+        });
+      }
 
-    cabinetThemePromiseRef.current = promise;
-    return promise;
-  }, []);
+      cabinetLogoLoadedRef.current = loadKey;
+      const requestId = ++cabinetLogoRequestIdRef.current;
+      const promise = (async () => {
+        const result = await loadCabinetLogo(userId);
+        if (!mountedRef.current || requestId !== cabinetLogoRequestIdRef.current) {
+          return result;
+        }
 
-  const ensureCabinetLogoFetch = useCallback(async (userId: string, brandingKey: string | null): Promise<{ logo?: string; placement?: LogoPlacement }> => {
-    const loadKey = `${userId}::${brandingKey ?? 'cabinet:none'}`;
-
-    if (cabinetLogoLoadedRef.current === loadKey && cabinetLogoPromiseRef.current) {
-      return cabinetLogoPromiseRef.current;
-    }
-
-    if (cabinetLogoLoadedRef.current === loadKey && !cabinetLogoPromiseRef.current) {
-      return Promise.resolve({ logo: cabinetLogoRef.current, placement: logoPlacementRef.current });
-    }
-
-    cabinetLogoLoadedRef.current = loadKey;
-    const requestId = ++cabinetLogoRequestIdRef.current;
-    const promise = (async () => {
-      const result = await loadCabinetLogo(userId);
-      if (!mountedRef.current || requestId !== cabinetLogoRequestIdRef.current) {
+        setCabinetLogo(result.logo);
+        if (result.placement) {
+          setLogoPlacement(result.placement);
+        }
+        saveCabinetLogoToCache(result.logo ?? null, brandingKey);
         return result;
-      }
+      })();
 
-      setCabinetLogo(result.logo);
-      if (result.placement) {
-        setLogoPlacement(result.placement);
-      }
-      saveCabinetLogoToCache(result.logo ?? null, brandingKey);
-      return result;
-    })();
-
-    cabinetLogoPromiseRef.current = promise;
-    return promise;
-  }, []);
+      cabinetLogoPromiseRef.current = promise;
+      return promise;
+    },
+    [],
+  );
 
   useEffect(() => {
     mountedRef.current = true;
@@ -205,7 +240,9 @@ export function useThemeSession({
   }, []);
 
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (event === 'SIGNED_OUT') {
         if (activeUserId) {
           clearThemeCacheForUser(activeUserId);
@@ -251,7 +288,9 @@ export function useThemeSession({
       try {
         if (!mountedRef.current || requestId !== activeRequestIdRef.current) return;
 
-        const { data: { user } } = await supabase.auth.getUser();
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
         if (!mountedRef.current || requestId !== activeRequestIdRef.current || !user) return;
         if (user.id !== activeUserId) return;
 
@@ -260,7 +299,9 @@ export function useThemeSession({
         try {
           const { data, error } = await supabase
             .from('ui_settings')
-            .select('theme_mode, preset_id, my_palette, selected_theme_ref, custom_palette, active_palette, colors')
+            .select(
+              'theme_mode, preset_id, my_palette, selected_theme_ref, custom_palette, active_palette, colors',
+            )
             .eq('user_id', user.id)
             .maybeSingle();
           if (!error) {
@@ -349,7 +390,9 @@ export function useThemeSession({
             break;
 
           case 'my': {
-            const convertedMyPalette = rawMyPalette ? convertDbPaletteToThemeColors(rawMyPalette) : null;
+            const convertedMyPalette = rawMyPalette
+              ? convertDbPaletteToThemeColors(rawMyPalette)
+              : null;
             if (convertedMyPalette) {
               finalColors = convertedMyPalette;
               source = 'my-palette';
@@ -363,7 +406,9 @@ export function useThemeSession({
               finalColors = convertFromSettingsFormat(uiSettings.colors);
               source = 'ui_settings-legacy';
             } else if (user.user_metadata?.theme_colors) {
-              finalColors = convertFromSettingsFormat(user.user_metadata.theme_colors as Record<string, string>);
+              finalColors = convertFromSettingsFormat(
+                user.user_metadata.theme_colors as Record<string, string>,
+              );
               source = 'user_metadata-legacy';
             }
             break;
@@ -402,12 +447,22 @@ export function useThemeSession({
     }
 
     void loadTheme();
-  }, [activeUserId, originalColors, ensureCabinetLogoFetch, ensureCabinetThemeFetch, applyColorsToCSSWithGuardRef, lastAppliedHashRef, lastAppliedSourceRankRef]);
+  }, [
+    activeUserId,
+    originalColors,
+    ensureCabinetLogoFetch,
+    ensureCabinetThemeFetch,
+    applyColorsToCSSWithGuardRef,
+    lastAppliedHashRef,
+    lastAppliedSourceRankRef,
+  ]);
 
   useEffect(() => {
     async function loadThemeScope(): Promise<void> {
       try {
-        const { data: { user } } = await supabase.auth.getUser();
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
         if (user) {
           const { data: uiSettings, error } = await supabase
             .from('ui_settings')

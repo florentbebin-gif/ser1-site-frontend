@@ -32,12 +32,12 @@ function buildUsufruitSuccessifAssumptions(
     (sum, transmission) => sum + transmission.droits,
     0,
   );
-  const transmissionLabel = analysis.transmissions.length === 1
-    ? '1 transmission'
-    : `${analysis.transmissions.length} transmissions`;
-  const reunionLabel = analysis.reunions1133.length === 1
-    ? '1 réunion'
-    : `${analysis.reunions1133.length} réunions`;
+  const transmissionLabel =
+    analysis.transmissions.length === 1
+      ? '1 transmission'
+      : `${analysis.transmissions.length} transmissions`;
+  const reunionLabel =
+    analysis.reunions1133.length === 1 ? '1 réunion' : `${analysis.reunions1133.length} réunions`;
 
   return [
     `Usufruit successif actif : ${transmissionLabel}, valeur fiscale de l’usufruit ${fmtCurrency(totalUsufruit)}, droits conjoint/partenaire ${fmtCurrency(totalDroits)} (CGI 669, CGI 796-0 bis).`,

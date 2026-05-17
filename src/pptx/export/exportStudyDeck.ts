@@ -92,12 +92,13 @@ import {
  * Default footer disclaimer (verbatim as specified)
  */
 const DEFAULT_DISCLAIMER =
-  "Document non contractuel établi en fonction des dispositions fiscales ou sociales en vigueur à la date des présentes";
+  'Document non contractuel établi en fonction des dispositions fiscales ou sociales en vigueur à la date des présentes';
 
 const FALLBACK_CHAPTER_IMAGE_DATA_URI =
   'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+/p9sAAAAASUVORK5CYII=';
 
-const PPTX_KEY_FIELD_PATTERN = /title|subtitle|label|name|total|net|tmi|rate|capital|montant|tax|duree|mensualite|cout|actif|droits|versement|rente|parts|status|location|year|periode|index|count|value/i;
+const PPTX_KEY_FIELD_PATTERN =
+  /title|subtitle|label|name|total|net|tmi|rate|capital|montant|tax|duree|mensualite|cout|actif|droits|versement|rente|parts|status|location|year|periode|index|count|value/i;
 
 function isPrimitive(value: unknown): value is string | number | boolean {
   return typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean';
@@ -190,9 +191,7 @@ interface ExportOptions {
 /**
  * Pre-load all required assets for the deck
  */
-async function preloadAssets(
-  spec: StudyDeckSpec
-): Promise<{
+async function preloadAssets(spec: StudyDeckSpec): Promise<{
   logoDataUri?: string;
   chapterImages: Map<number, string>;
 }> {
@@ -237,7 +236,7 @@ async function preloadAssets(
 export async function exportStudyDeck(
   spec: StudyDeckSpec,
   uiSettings: UiSettingsInput,
-  options: ExportOptions = {}
+  options: ExportOptions = {},
 ): Promise<Blob> {
   // 1. Build theme from UI settings
   const theme = getPptxThemeFromUiSettings(uiSettings);
@@ -297,7 +296,8 @@ export async function exportStudyDeck(
   for (const slideSpec of spec.slides) {
     if (slideSpec.type === 'chapter') {
       const chapterSpec = slideSpec as ChapterSlideSpec;
-      const imageDataUri = chapterImages.get(chapterSpec.chapterImageIndex) ?? FALLBACK_CHAPTER_IMAGE_DATA_URI;
+      const imageDataUri =
+        chapterImages.get(chapterSpec.chapterImageIndex) ?? FALLBACK_CHAPTER_IMAGE_DATA_URI;
 
       if (!chapterImages.has(chapterSpec.chapterImageIndex)) {
         console.warn(`[PPTX Export] Missing chapter image ${chapterSpec.chapterImageIndex}`);
@@ -309,62 +309,80 @@ export async function exportStudyDeck(
     } else if (slideSpec.type === 'ir-synthesis') {
       // Premium IR Synthesis slide (4 KPI + TMI bar + tax result)
       const synthesisSpec = slideSpec as IrSynthesisSlideSpec;
-      buildIrSynthesis(pptx, {
-        income1: synthesisSpec.income1,
-        income2: synthesisSpec.income2,
-        isCouple: synthesisSpec.isCouple,
-        taxableIncome: synthesisSpec.taxableIncome,
-        partsNb: synthesisSpec.partsNb,
-        tmiRate: synthesisSpec.tmiRate,
-        irNet: synthesisSpec.irNet,
-        taxablePerPart: synthesisSpec.taxablePerPart,
-        bracketsDetails: synthesisSpec.bracketsDetails,
-        // TMI details (MUST use same source as UI - no recalculation)
-        tmiBaseGlobal: synthesisSpec.tmiBaseGlobal,
-        tmiMarginGlobal: synthesisSpec.tmiMarginGlobal,
-      }, ctx.theme, ctx, slideIndex);
+      buildIrSynthesis(
+        pptx,
+        {
+          income1: synthesisSpec.income1,
+          income2: synthesisSpec.income2,
+          isCouple: synthesisSpec.isCouple,
+          taxableIncome: synthesisSpec.taxableIncome,
+          partsNb: synthesisSpec.partsNb,
+          tmiRate: synthesisSpec.tmiRate,
+          irNet: synthesisSpec.irNet,
+          taxablePerPart: synthesisSpec.taxablePerPart,
+          bracketsDetails: synthesisSpec.bracketsDetails,
+          // TMI details (MUST use same source as UI - no recalculation)
+          tmiBaseGlobal: synthesisSpec.tmiBaseGlobal,
+          tmiMarginGlobal: synthesisSpec.tmiMarginGlobal,
+        },
+        ctx.theme,
+        ctx,
+        slideIndex,
+      );
     } else if (slideSpec.type === 'ir-annexe') {
       // IR Annexe slide (detailed calculation prose)
       const annexeSpec = slideSpec as IrAnnexeSlideSpec;
-      buildIrAnnexe(pptx, {
-        taxableIncome: annexeSpec.taxableIncome,
-        partsNb: annexeSpec.partsNb,
-        taxablePerPart: annexeSpec.taxablePerPart,
-        tmiRate: annexeSpec.tmiRate,
-        irNet: annexeSpec.irNet,
-        totalTax: annexeSpec.totalTax,
-        bracketsDetails: annexeSpec.bracketsDetails,
-        decote: annexeSpec.decote,
-        qfAdvantage: annexeSpec.qfAdvantage,
-        creditsTotal: annexeSpec.creditsTotal,
-        // PFU 12.8% (MUST use same source as UI)
-        pfuIr: annexeSpec.pfuIr,
-        cehr: annexeSpec.cehr,
-        cdhr: annexeSpec.cdhr,
-        psFoncier: annexeSpec.psFoncier,
-        psDividends: annexeSpec.psDividends,
-        psTotal: annexeSpec.psTotal,
-        isCouple: annexeSpec.isCouple,
-        childrenCount: annexeSpec.childrenCount,
-      }, ctx.theme, ctx, slideIndex);
+      buildIrAnnexe(
+        pptx,
+        {
+          taxableIncome: annexeSpec.taxableIncome,
+          partsNb: annexeSpec.partsNb,
+          taxablePerPart: annexeSpec.taxablePerPart,
+          tmiRate: annexeSpec.tmiRate,
+          irNet: annexeSpec.irNet,
+          totalTax: annexeSpec.totalTax,
+          bracketsDetails: annexeSpec.bracketsDetails,
+          decote: annexeSpec.decote,
+          qfAdvantage: annexeSpec.qfAdvantage,
+          creditsTotal: annexeSpec.creditsTotal,
+          // PFU 12.8% (MUST use same source as UI)
+          pfuIr: annexeSpec.pfuIr,
+          cehr: annexeSpec.cehr,
+          cdhr: annexeSpec.cdhr,
+          psFoncier: annexeSpec.psFoncier,
+          psDividends: annexeSpec.psDividends,
+          psTotal: annexeSpec.psTotal,
+          isCouple: annexeSpec.isCouple,
+          childrenCount: annexeSpec.childrenCount,
+        },
+        ctx.theme,
+        ctx,
+        slideIndex,
+      );
     } else if (slideSpec.type === 'credit-synthesis') {
       // Credit Synthesis slide (premium visual - single loan)
       const creditSynthSpec = slideSpec as CreditSynthesisSlideSpec;
-      buildCreditSynthesis(pptx, {
-        capitalEmprunte: creditSynthSpec.capitalEmprunte,
-        dureeMois: creditSynthSpec.dureeMois,
-        tauxNominal: creditSynthSpec.tauxNominal,
-        tauxAssurance: creditSynthSpec.tauxAssurance,
-        mensualiteHorsAssurance: creditSynthSpec.mensualiteHorsAssurance,
-        mensualiteTotale: creditSynthSpec.mensualiteTotale,
-        coutTotalInterets: creditSynthSpec.coutTotalInterets,
-        coutTotalAssurance: creditSynthSpec.coutTotalAssurance,
-        coutTotalCredit: creditSynthSpec.coutTotalCredit,
-        creditType: creditSynthSpec.creditType,
-        assuranceMode: creditSynthSpec.assuranceMode,
-        startYM: creditSynthSpec.startYM,
-        assuranceDecesByYear: creditSynthSpec.assuranceDecesByYear,
-      }, ctx.theme, ctx, slideIndex);
+      buildCreditSynthesis(
+        pptx,
+        {
+          capitalEmprunte: creditSynthSpec.capitalEmprunte,
+          dureeMois: creditSynthSpec.dureeMois,
+          tauxNominal: creditSynthSpec.tauxNominal,
+          tauxAssurance: creditSynthSpec.tauxAssurance,
+          mensualiteHorsAssurance: creditSynthSpec.mensualiteHorsAssurance,
+          mensualiteTotale: creditSynthSpec.mensualiteTotale,
+          coutTotalInterets: creditSynthSpec.coutTotalInterets,
+          coutTotalAssurance: creditSynthSpec.coutTotalAssurance,
+          coutTotalCredit: creditSynthSpec.coutTotalCredit,
+          creditType: creditSynthSpec.creditType,
+          assuranceMode: creditSynthSpec.assuranceMode,
+          startYM: creditSynthSpec.startYM,
+          assuranceDecesByYear: creditSynthSpec.assuranceDecesByYear,
+        },
+        ctx.theme,
+        ctx,
+        slideIndex,
+      );
     } else if (slideSpec.type === 'credit-global-synthesis') {
       // Credit Global Synthesis slide (multi-loan overview)
       const globalSynthSpec = slideSpec as CreditGlobalSynthesisSlideSpec;
@@ -380,14 +398,25 @@ export async function exportStudyDeck(
     } else if (slideSpec.type === 'credit-amortization') {
       // Credit Amortization slide (paginated by YEAR COLUMNS)
       const amortSpec = slideSpec as CreditAmortizationSlideSpec;
-      buildCreditAmortization(pptx, {
-        allRows: amortSpec.allRows,
-        yearsForPage: amortSpec.yearsForPage,
-        pageIndex: amortSpec.pageIndex,
-        totalPages: amortSpec.totalPages,
-      }, ctx.theme, ctx, slideIndex);
+      buildCreditAmortization(
+        pptx,
+        {
+          allRows: amortSpec.allRows,
+          yearsForPage: amortSpec.yearsForPage,
+          pageIndex: amortSpec.pageIndex,
+          totalPages: amortSpec.totalPages,
+        },
+        ctx.theme,
+        ctx,
+        slideIndex,
+      );
     } else if (slideSpec.type === 'succession-family-context') {
-      buildSuccessionFamilyContext(pptx, slideSpec as SuccessionFamilyContextSlideSpec, ctx, slideIndex);
+      buildSuccessionFamilyContext(
+        pptx,
+        slideSpec as SuccessionFamilyContextSlideSpec,
+        ctx,
+        slideIndex,
+      );
     } else if (slideSpec.type === 'succession-synthesis') {
       // Succession Synthesis slide (P1-02)
       buildSuccessionSynthesis(pptx, slideSpec as SuccessionSynthesisSlideSpec, ctx, slideIndex);
@@ -421,9 +450,19 @@ export async function exportStudyDeck(
       // PER — déclaration 2042 et prochain avis IR
       buildPerProjectionTable(pptx, slideSpec as PerProjectionTableSlideSpec, ctx, slideIndex);
     } else if (slideSpec.type === 'per-transfert-synthesis') {
-      buildPerTransfertSynthesis(pptx, slideSpec as PerTransfertSynthesisSlideSpec, ctx, slideIndex);
+      buildPerTransfertSynthesis(
+        pptx,
+        slideSpec as PerTransfertSynthesisSlideSpec,
+        ctx,
+        slideIndex,
+      );
     } else if (slideSpec.type === 'per-transfert-audit-contract') {
-      buildAuditContractSlide(pptx, slideSpec as PerTransfertAuditContractSlideSpec, ctx, slideIndex);
+      buildAuditContractSlide(
+        pptx,
+        slideSpec as PerTransfertAuditContractSlideSpec,
+        ctx,
+        slideIndex,
+      );
     } else if (slideSpec.type === 'treso-schema') {
       // Trésorerie Société IS — organigramme et paramètres essentiels
       buildTresorerieSchema(pptx, slideSpec as TresorerieSchemaSlideSpec, ctx, slideIndex);
@@ -432,19 +471,39 @@ export async function exportStudyDeck(
       buildTresorerieTimeline(pptx, slideSpec as TresorerieTimelineSlideSpec, ctx, slideIndex);
     } else if (slideSpec.type === 'treso-flow-mechanism') {
       // Trésorerie Société IS — mécanisme des flux
-      buildTresorerieFlowMechanism(pptx, slideSpec as TresorerieFlowMechanismSlideSpec, ctx, slideIndex);
+      buildTresorerieFlowMechanism(
+        pptx,
+        slideSpec as TresorerieFlowMechanismSlideSpec,
+        ctx,
+        slideIndex,
+      );
     } else if (slideSpec.type === 'treso-synthesis') {
       // Trésorerie Société IS — synthèse avant annexe comptable
       buildTresorerieSynthesis(pptx, slideSpec as TresorerieSynthesisSlideSpec, ctx, slideIndex);
     } else if (slideSpec.type === 'treso-allocation-matrix') {
       // Trésorerie Société IS — matrice pédagogique de placement
-      buildTresorerieAllocationMatrix(pptx, slideSpec as TresorerieAllocationMatrixSlideSpec, ctx, slideIndex);
+      buildTresorerieAllocationMatrix(
+        pptx,
+        slideSpec as TresorerieAllocationMatrixSlideSpec,
+        ctx,
+        slideIndex,
+      );
     } else if (slideSpec.type === 'treso-allocation-cards') {
       // Trésorerie Société IS — organisation dynamique par poche
-      buildTresorerieAllocationCards(pptx, slideSpec as TresorerieAllocationCardsSlideSpec, ctx, slideIndex);
+      buildTresorerieAllocationCards(
+        pptx,
+        slideSpec as TresorerieAllocationCardsSlideSpec,
+        ctx,
+        slideIndex,
+      );
     } else if (slideSpec.type === 'treso-parameters-annex') {
       // Trésorerie Société IS — détail des paramètres sortis de la synthèse
-      buildTresorerieParametersAnnex(pptx, slideSpec as TresorerieParametersAnnexSlideSpec, ctx, slideIndex);
+      buildTresorerieParametersAnnex(
+        pptx,
+        slideSpec as TresorerieParametersAnnexSlideSpec,
+        ctx,
+        slideIndex,
+      );
     } else if (slideSpec.type === 'treso-hypotheses') {
       // Trésorerie Société IS — hypothèses regroupées
       buildTresorerieHypotheses(pptx, slideSpec as TresorerieHypothesesSlideSpec, ctx, slideIndex);
@@ -460,7 +519,7 @@ export async function exportStudyDeck(
   buildEnd(pptx, spec.end, ctx, slideIndex);
 
   // 6. Write to blob (browser-compatible)
-  const rawBlob = await pptx.write({ outputType: 'blob' }) as Blob;
+  const rawBlob = (await pptx.write({ outputType: 'blob' })) as Blob;
 
   // 7. Inject custom theme colors into the PPTX
   // This patches the ppt/theme/theme1.xml to include our 10 colors
@@ -499,7 +558,7 @@ export async function exportAndDownloadStudyDeck(
   spec: StudyDeckSpec,
   uiSettings: UiSettingsInput,
   filename: string,
-  options: ExportOptions = {}
+  options: ExportOptions = {},
 ): Promise<void> {
   const manifest = buildPptxFingerprintManifest(spec, uiSettings, filename, options);
   const fingerprint = fingerprintPptxExport(manifest);

@@ -79,7 +79,9 @@
   color: var(--color-c9);
   font-size: 12px;
   cursor: pointer;
-  transition: color 0.2s, border-color 0.2s;
+  transition:
+    color 0.2s,
+    border-color 0.2s;
 }
 
 .ir-detail-toggle:hover {
@@ -109,7 +111,7 @@
   border: none;
   border-bottom: 1px solid transparent;
   border-radius: 4px;
-  background-color: var(--sim-input-bg, color-mix(in srgb, var(--color-c8) 18%, #FFFFFF));
+  background-color: var(--sim-input-bg, color-mix(in srgb, var(--color-c8) 18%, #ffffff));
   font-family: inherit;
   font-size: 13px;
   color: var(--color-c10);
@@ -260,8 +262,12 @@
 }
 
 /* Utilitaires cellules tableau de détail */
-.ir-td--right { text-align: right; }
-.ir-td--center { text-align: center; }
+.ir-td--right {
+  text-align: right;
+}
+.ir-td--center {
+  text-align: center;
+}
 
 .ir-td--detail {
   padding-left: 18px;
@@ -272,4 +278,3 @@
   text-align: right;
   opacity: 0.85;
 }
-

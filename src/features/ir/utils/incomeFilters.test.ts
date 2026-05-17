@@ -37,21 +37,25 @@ describe('normalizeIncomeFilters', () => {
 
 describe('hasTaxableIncomeEntries', () => {
   it('returns false when all taxable income fields are empty or zero', () => {
-    expect(hasTaxableIncomeEntries({
-      d1: { salaries: 0, associes62: 0, pensions: 0, bic: 0, autres: 0 },
-      d2: { salaries: 0, associes62: 0, pensions: 0, bic: 0, autres: 0 },
-      capital: { withPs: 0, withoutPs: 0 },
-      fonciersFoyer: 0,
-    })).toBe(false);
+    expect(
+      hasTaxableIncomeEntries({
+        d1: { salaries: 0, associes62: 0, pensions: 0, bic: 0, autres: 0 },
+        d2: { salaries: 0, associes62: 0, pensions: 0, bic: 0, autres: 0 },
+        capital: { withPs: 0, withoutPs: 0 },
+        fonciersFoyer: 0,
+      }),
+    ).toBe(false);
   });
 
   it('returns true when any taxable income field is positive', () => {
-    expect(hasTaxableIncomeEntries({
-      d1: { salaries: 30000 },
-      d2: {},
-      capital: {},
-      fonciersFoyer: 0,
-    })).toBe(true);
+    expect(
+      hasTaxableIncomeEntries({
+        d1: { salaries: 30000 },
+        d2: {},
+        capital: {},
+        fonciersFoyer: 0,
+      }),
+    ).toBe(true);
   });
 });
 
@@ -87,7 +91,11 @@ describe('applyIncomeFilters', () => {
   });
 
   it('supports composition of all three filters', () => {
-    const result = applyIncomeFilters(SAMPLE_INCOMES, { tns: false, pension: false, foncier: false });
+    const result = applyIncomeFilters(SAMPLE_INCOMES, {
+      tns: false,
+      pension: false,
+      foncier: false,
+    });
 
     expect(result).toMatchObject({
       d1: { associes62: 0, bic: 0, pensions: 0 },

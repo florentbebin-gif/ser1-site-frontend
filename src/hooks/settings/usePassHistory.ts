@@ -73,7 +73,9 @@ export function usePassHistory(isAdmin: boolean): UsePassHistoryReturn {
   const handleChange = (index: number, value: string): void => {
     setRows((prev) => {
       const copy = [...prev];
-      copy[index] = { ...copy[index], pass_amount: value === '' ? null : Number(value) };
+      const row = copy[index];
+      if (!row) return prev;
+      copy[index] = { ...row, pass_amount: value === '' ? null : Number(value) };
       return copy;
     });
     setMessage('');

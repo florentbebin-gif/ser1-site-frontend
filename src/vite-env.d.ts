@@ -19,7 +19,6 @@ interface ThemeColors {
 }
 
 declare global {
-   
   interface Window {
     /** Bootstrap thème injecté avant le rendu React pour éviter le FOUC */
     __ser1ThemeBootstrap?: {

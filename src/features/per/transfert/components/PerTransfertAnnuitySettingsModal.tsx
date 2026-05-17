@@ -30,7 +30,7 @@ export function PerTransfertAnnuitySettingsModal({
       title="Paramètres de rente du nouveau PER"
       subtitle="Par défaut : TGF05/TGH05 selon le sexe, taux technique à 0 %."
       onClose={onClose}
-      footer={(
+      footer={
         <>
           <button type="button" className="sim-modal-btn sim-modal-btn--ghost" onClick={onClose}>
             Annuler
@@ -39,7 +39,7 @@ export function PerTransfertAnnuitySettingsModal({
             Appliquer
           </button>
         </>
-      )}
+      }
     >
       <div className="per-transfert-modal-grid">
         <PerTransfertSelectField
@@ -48,14 +48,52 @@ export function PerTransfertAnnuitySettingsModal({
           onChange={(value) => update('mortalityTable', value as MortalityTableCode)}
           options={MORTALITY_OPTIONS}
         />
-        <PerTransfertRateField label="Taux technique" value={state.technicalRate} onChange={(value) => update('technicalRate', value)} />
-        <PerTransfertRateField label="Frais conversion" value={state.conversionFeeRate} onChange={(value) => update('conversionFeeRate', value)} />
-        <PerTransfertRateField label="Frais arrérages" value={state.arrearsFeeRate} onChange={(value) => update('arrearsFeeRate', value)} />
-        <PerTransfertRateField label="Revalorisation rente PER" value={state.newRentRevaluationRate} onChange={(value) => update('newRentRevaluationRate', value)} suffix="% / an" />
-        <PerTransfertIntegerField label="Annuités garanties" value={state.guaranteedYears} onChange={(value) => update('guaranteedYears', value)} min={0} suffix="ans" />
-        <PerTransfertRateField label="Taux de réversion" value={state.reversionRate} onChange={(value) => update('reversionRate', value)} />
-        <PerTransfertIntegerField label="Année naissance conjoint" value={state.spouseBirthYear} onChange={(value) => update('spouseBirthYear', value)} min={1900} />
-        <PerTransfertIntegerField label="Âge conjoint liquidation" value={state.spouseAgeAtLiquidation} onChange={(value) => update('spouseAgeAtLiquidation', value)} min={0} suffix="ans" />
+        <PerTransfertRateField
+          label="Taux technique"
+          value={state.technicalRate}
+          onChange={(value) => update('technicalRate', value)}
+        />
+        <PerTransfertRateField
+          label="Frais conversion"
+          value={state.conversionFeeRate}
+          onChange={(value) => update('conversionFeeRate', value)}
+        />
+        <PerTransfertRateField
+          label="Frais arrérages"
+          value={state.arrearsFeeRate}
+          onChange={(value) => update('arrearsFeeRate', value)}
+        />
+        <PerTransfertRateField
+          label="Revalorisation rente PER"
+          value={state.newRentRevaluationRate}
+          onChange={(value) => update('newRentRevaluationRate', value)}
+          suffix="% / an"
+        />
+        <PerTransfertIntegerField
+          label="Annuités garanties"
+          value={state.guaranteedYears}
+          onChange={(value) => update('guaranteedYears', value)}
+          min={0}
+          suffix="ans"
+        />
+        <PerTransfertRateField
+          label="Taux de réversion"
+          value={state.reversionRate}
+          onChange={(value) => update('reversionRate', value)}
+        />
+        <PerTransfertIntegerField
+          label="Année naissance conjoint"
+          value={state.spouseBirthYear}
+          onChange={(value) => update('spouseBirthYear', value)}
+          min={1900}
+        />
+        <PerTransfertIntegerField
+          label="Âge conjoint liquidation"
+          value={state.spouseAgeAtLiquidation}
+          onChange={(value) => update('spouseAgeAtLiquidation', value)}
+          min={0}
+          suffix="ans"
+        />
         <label className="per-transfert-checkbox per-transfert-modal-grid__wide">
           <input
             type="checkbox"

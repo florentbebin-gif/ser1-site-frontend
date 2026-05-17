@@ -7,9 +7,9 @@
 .sc-asset-section {
   border: 1px solid var(--color-c8);
   border-radius: 10px;
-  background: color-mix(in srgb, var(--color-c7) 70%, #FFFFFF);
+  background: color-mix(in srgb, var(--color-c7) 70%, #ffffff);
   padding: 12px;
-  --sim-input-bg: #FFFFFF;
+  --sim-input-bg: #ffffff;
 }
 
 .sc-asset-section__header,
@@ -92,7 +92,6 @@
   padding: 2px 0 0 4px;
 }
 
-
 .sc-asset-row__value {
   display: block;
   padding: 6px 8px;
@@ -116,9 +115,9 @@
 }
 
 .sc-assurance-vie-contract {
-  border: 1px solid color-mix(in srgb, var(--color-c8) 88%, #FFFFFF);
+  border: 1px solid color-mix(in srgb, var(--color-c8) 88%, #ffffff);
   border-radius: 12px;
-  background: #FFFFFF;
+  background: #ffffff;
   padding: 10px 12px;
   overflow: hidden;
   box-shadow: 0 1px 0 color-mix(in srgb, var(--color-c8) 55%, transparent);
@@ -131,7 +130,7 @@
   gap: 8px;
   margin-bottom: 10px;
   padding-bottom: 8px;
-  border-bottom: 1px solid color-mix(in srgb, var(--color-c8) 72%, #FFFFFF);
+  border-bottom: 1px solid color-mix(in srgb, var(--color-c8) 72%, #ffffff);
 }
 
 .sc-assurance-vie-contract__heading {
@@ -203,7 +202,7 @@
 
 .sc-dispositions-modal__section--testament {
   padding-left: 18px;
-  border-left: 1px solid color-mix(in srgb, var(--color-c8) 72%, #FFFFFF);
+  border-left: 1px solid color-mix(in srgb, var(--color-c8) 72%, #ffffff);
 }
 
 .sc-dispositions-modal__section-header {
@@ -235,10 +234,10 @@
   gap: 12px;
   min-width: 0;
   padding: 14px;
-  border: 1px solid color-mix(in srgb, var(--color-c8) 78%, #FFFFFF);
+  border: 1px solid color-mix(in srgb, var(--color-c8) 78%, #ffffff);
   border-radius: 12px;
-  background: color-mix(in srgb, var(--color-c7) 42%, #FFFFFF);
-  --sim-input-bg: #FFFFFF;
+  background: color-mix(in srgb, var(--color-c7) 42%, #ffffff);
+  --sim-input-bg: #ffffff;
 }
 
 .sc-testament-card__header {
@@ -311,7 +310,7 @@
 .sc-assurance-vie-modal-summary {
   margin-top: 4px;
   padding-top: 10px;
-  border-top: 1px solid color-mix(in srgb, var(--color-c8) 72%, #FFFFFF);
+  border-top: 1px solid color-mix(in srgb, var(--color-c8) 72%, #ffffff);
   display: flex;
   flex-direction: column;
   gap: 6px;
@@ -320,9 +319,9 @@
 .sc-clause-custom--modal {
   margin-top: 2px;
   padding: 8px 10px;
-  border: 1px solid color-mix(in srgb, var(--color-c8) 72%, #FFFFFF);
+  border: 1px solid color-mix(in srgb, var(--color-c8) 72%, #ffffff);
   border-radius: 8px;
-  background: color-mix(in srgb, var(--color-c7) 30%, #FFFFFF);
+  background: color-mix(in srgb, var(--color-c7) 30%, #ffffff);
 }
 
 .sc-heir-row {
@@ -352,12 +351,12 @@
   border-radius: 999px;
   opacity: 0.5;
   font-size: 0;
-  background: color-mix(in srgb, var(--color-c7) 46%, #FFFFFF);
-  border: 1px solid color-mix(in srgb, var(--color-c8) 70%, #FFFFFF);
+  background: color-mix(in srgb, var(--color-c7) 46%, #ffffff);
+  border: 1px solid color-mix(in srgb, var(--color-c8) 70%, #ffffff);
 }
 
 .sc-remove-btn--quiet::before {
-  content: "+";
+  content: '+';
   display: block;
   font-size: 14px;
   line-height: 1;
@@ -401,11 +400,10 @@
   font-size: 13px;
 }
 
-
 .sc-btn--primary {
   background: var(--color-c2);
   border-color: var(--color-c2);
-  color: #FFFFFF;
+  color: #ffffff;
 }
 
 .sc-btn--primary:hover:not(:disabled) {
@@ -418,4 +416,3 @@
   border-color: var(--color-c8);
   color: var(--color-c1);
 }
-

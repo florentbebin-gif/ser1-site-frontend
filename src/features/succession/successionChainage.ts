@@ -17,9 +17,7 @@ import {
   getSuccessionPreciputEligiblePocket,
   resolveSuccessionPreciputApplication,
 } from './successionPreciput';
-import {
-  computeSuccessionParticipationAcquetsSummary,
-} from './successionParticipationAcquets';
+import { computeSuccessionParticipationAcquetsSummary } from './successionParticipationAcquets';
 import {
   asAmount,
   asChildrenCount,
@@ -63,9 +61,9 @@ export function buildSuccessionChainageAnalysis(
     countEffectiveDescendantBranches(enfantsContext, familyMembers),
   );
   const totalPatrimoine =
-    asAmount(input.liquidation.actifEpoux1)
-    + asAmount(input.liquidation.actifEpoux2)
-    + asAmount(input.liquidation.actifCommun);
+    asAmount(input.liquidation.actifEpoux1) +
+    asAmount(input.liquidation.actifEpoux2) +
+    asAmount(input.liquidation.actifCommun);
 
   if (!input.regimeUsed) {
     return buildEmptyAnalysis(
@@ -78,11 +76,11 @@ export function buildSuccessionChainageAnalysis(
     const testament = input.devolution?.testamentsBySide[input.order];
     const partnerRef = `principal:${getOtherSide(input.order)}` as const;
     const hasActivePartnerTestament = Boolean(
-      testament?.active
-      && (
-        testament.beneficiaryRef === partnerRef
-        || testament.particularLegacies.some((legacy) => legacy.beneficiaryRef === partnerRef && asAmount(legacy.amount) > 0)
-      ),
+      testament?.active &&
+      (testament.beneficiaryRef === partnerRef ||
+        testament.particularLegacies.some(
+          (legacy) => legacy.beneficiaryRef === partnerRef && asAmount(legacy.amount) > 0,
+        )),
     );
     if (!hasActivePartnerTestament) {
       // Sans testament, le partenaire pacse n'a aucune vocation successorale
@@ -98,18 +96,21 @@ export function buildSuccessionChainageAnalysis(
   }
 
   const attributionPctBase = input.attributionBiensCommunsPct ?? 50;
-  const attributionPct = (
-    input.civil.situationMatrimoniale === 'marie'
-    && input.civil.regimeMatrimonial === 'communaute_universelle'
-    && input.patrimonial?.attributionIntegrale
-  ) ? 100 : attributionPctBase;
-  const isSocieteAcquetsRegime = input.civil.situationMatrimoniale === 'marie'
-    && input.civil.regimeMatrimonial === 'separation_biens_societe_acquets'
-    && input.regimeUsed === 'separation_biens';
+  const attributionPct =
+    input.civil.situationMatrimoniale === 'marie' &&
+    input.civil.regimeMatrimonial === 'communaute_universelle' &&
+    input.patrimonial?.attributionIntegrale
+      ? 100
+      : attributionPctBase;
+  const isSocieteAcquetsRegime =
+    input.civil.situationMatrimoniale === 'marie' &&
+    input.civil.regimeMatrimonial === 'separation_biens_societe_acquets' &&
+    input.regimeUsed === 'separation_biens';
   const preciputEligiblePocket = getSuccessionPreciputEligiblePocket({
-    isCommunityRegime: input.civil.situationMatrimoniale === 'marie'
-      && input.regimeUsed !== 'separation_biens'
-      && !isSocieteAcquetsRegime,
+    isCommunityRegime:
+      input.civil.situationMatrimoniale === 'marie' &&
+      input.regimeUsed !== 'separation_biens' &&
+      !isSocieteAcquetsRegime,
     isSocieteAcquetsRegime,
   });
   const preciputCandidates = buildSuccessionPreciputCandidates({
@@ -128,57 +129,58 @@ export function buildSuccessionChainageAnalysis(
     liquidation: input.liquidation,
     patrimonial: input.patrimonial,
   });
-  const requestedTargetedPreciputBasis = resolvedPreciput.mode === 'cible'
-    ? buildSuccessionTargetedPreciputTaxableBasis(resolvedPreciput.targetedSelections)
-    : createEmptyEstateTaxableBasis();
-  const preserveQualifiedSeparatePocketsInUniversalCommunity = (
-    input.civil.situationMatrimoniale === 'marie'
-    && input.civil.regimeMatrimonial === 'communaute_universelle'
-    && Boolean(input.patrimonial?.stipulationContraireCU)
-  );
-  const preciputPatrimonial = resolvedPreciput.mode === 'none'
-    ? input.patrimonial
-    : {
-      ...(input.patrimonial ?? {}),
-      preciputMontant: resolvedPreciput.requestedAmount,
-    };
+  const requestedTargetedPreciputBasis =
+    resolvedPreciput.mode === 'cible'
+      ? buildSuccessionTargetedPreciputTaxableBasis(resolvedPreciput.targetedSelections)
+      : createEmptyEstateTaxableBasis();
+  const preserveQualifiedSeparatePocketsInUniversalCommunity =
+    input.civil.situationMatrimoniale === 'marie' &&
+    input.civil.regimeMatrimonial === 'communaute_universelle' &&
+    Boolean(input.patrimonial?.stipulationContraireCU);
+  const preciputPatrimonial =
+    resolvedPreciput.mode === 'none'
+      ? input.patrimonial
+      : {
+          ...(input.patrimonial ?? {}),
+          preciputMontant: resolvedPreciput.requestedAmount,
+        };
   const societeAcquetsDistribution = isSocieteAcquetsRegime
     ? computeSocieteAcquetsDistribution(
-      input.order,
-      input.societeAcquetsNetValue ?? 0,
-      preciputPatrimonial,
-    )
+        input.order,
+        input.societeAcquetsNetValue ?? 0,
+        preciputPatrimonial,
+      )
     : null;
-  const societeAcquetsEstateRatio = (
-    societeAcquetsDistribution
-    && (input.societeAcquetsNetValue ?? 0) > 0
-  )
-    ? societeAcquetsDistribution.firstEstateContribution / Math.max(1, input.societeAcquetsNetValue ?? 0)
-    : 0;
+  const societeAcquetsEstateRatio =
+    societeAcquetsDistribution && (input.societeAcquetsNetValue ?? 0) > 0
+      ? societeAcquetsDistribution.firstEstateContribution /
+        Math.max(1, input.societeAcquetsNetValue ?? 0)
+      : 0;
   const isCommunityRegime = input.regimeUsed !== 'separation_biens';
-  const sharedMassPreciputAmount = (
-    resolvedPreciput.mode !== 'none'
-    && !societeAcquetsDistribution
-    && isCommunityRegime
-  ) ? resolvedPreciput.requestedAmount : 0;
-  const firstEstateBase = computeFirstEstate(
-    input.regimeUsed,
-    input.order,
-    input.liquidation,
-    attributionPct,
-    preserveQualifiedSeparatePocketsInUniversalCommunity,
-    sharedMassPreciputAmount,
-  ) + (societeAcquetsDistribution?.firstEstateContribution ?? 0);
-  const firstEstateWithoutPreciput = sharedMassPreciputAmount > 0
-    ? computeFirstEstate(
+  const sharedMassPreciputAmount =
+    resolvedPreciput.mode !== 'none' && !societeAcquetsDistribution && isCommunityRegime
+      ? resolvedPreciput.requestedAmount
+      : 0;
+  const firstEstateBase =
+    computeFirstEstate(
       input.regimeUsed,
       input.order,
       input.liquidation,
       attributionPct,
       preserveQualifiedSeparatePocketsInUniversalCommunity,
-      0,
-    ) + (societeAcquetsDistribution?.firstEstateContribution ?? 0)
-    : 0;
+      sharedMassPreciputAmount,
+    ) + (societeAcquetsDistribution?.firstEstateContribution ?? 0);
+  const firstEstateWithoutPreciput =
+    sharedMassPreciputAmount > 0
+      ? computeFirstEstate(
+          input.regimeUsed,
+          input.order,
+          input.liquidation,
+          attributionPct,
+          preserveQualifiedSeparatePocketsInUniversalCommunity,
+          0,
+        ) + (societeAcquetsDistribution?.firstEstateContribution ?? 0)
+      : 0;
   const firstEstate = Math.min(
     totalPatrimoine,
     Math.max(0, firstEstateBase + (participationAcquetsSummary?.firstEstateAdjustment ?? 0)),
@@ -228,12 +230,11 @@ export function buildSuccessionChainageAnalysis(
     );
   }
   if (resolvedPreciput.usesGlobalFallback) {
-    warnings.push('Preciput cible: aucune selection compatible active, repli sur le montant global.');
+    warnings.push(
+      'Preciput cible: aucune selection compatible active, repli sur le montant global.',
+    );
   }
-  if (
-    resolvedPreciput.mode === 'cible'
-    && resolvedPreciput.targetedSelections.length > 0
-  ) {
+  if (resolvedPreciput.mode === 'cible' && resolvedPreciput.targetedSelections.length > 0) {
     warnings.push(
       `Preciput cible: biens retenus ${resolvedPreciput.targetedSelections.map((selection) => selection.candidate.label).join(', ')}.`,
     );
@@ -276,7 +277,7 @@ export function buildSuccessionChainageAnalysis(
     firstEstate,
     nbEnfants,
     input.order,
-    (sharedMassPreciputAmount > 0 || societeAcquetsDistribution || !isCommunityRegime)
+    sharedMassPreciputAmount > 0 || societeAcquetsDistribution || !isCommunityRegime
       ? { ...(input.patrimonial ?? {}), preciputMontant: 0 }
       : preciputPatrimonial,
     input.referenceDate,
@@ -286,60 +287,54 @@ export function buildSuccessionChainageAnalysis(
   );
   warnings.push(...step1Split.warnings);
   const step1TaxableEstate = firstEstate - step1Split.preciputDeducted;
-  const effectivePreciputApplied = societeAcquetsDistribution?.preciputAmount
-    ?? (sharedMassPreciputAmount > 0 ? sharedMassPreciputAmount : step1Split.preciputDeducted);
-  const targetedPreciputAppliedAmount = resolvedPreciput.mode === 'cible'
-    ? effectivePreciputApplied
-    : 0;
-  const preciputSummary = (
-    resolvedPreciput.mode === 'none'
-    && effectivePreciputApplied <= 0
-  )
-    ? null
-    : {
-      mode: resolvedPreciput.mode,
-      pocket: preciputEligiblePocket,
-      requestedAmount: resolvedPreciput.requestedAmount,
-      appliedAmount: resolvedPreciput.mode === 'cible'
-        ? targetedPreciputAppliedAmount
-        : effectivePreciputApplied,
-      usesGlobalFallback: resolvedPreciput.usesGlobalFallback,
-      selections: buildTargetedPreciputSelectionsSummary(
-        resolvedPreciput.targetedSelections,
-        resolvedPreciput.requestedAmount,
-        targetedPreciputAppliedAmount,
-      ),
-    };
-  const targetedPreciputAppliedBasis = (
-    resolvedPreciput.mode === 'cible'
-    && resolvedPreciput.requestedAmount > 0
-    && targetedPreciputAppliedAmount > 0
-  )
-    ? scaleSuccessionEstateTaxableBasis(
-      requestedTargetedPreciputBasis,
-      targetedPreciputAppliedAmount / resolvedPreciput.requestedAmount,
-    )
-    : createEmptyEstateTaxableBasis();
-  const firstEstateBasisDenominator = sharedMassPreciputAmount > 0
-    ? Math.max(firstEstate, firstEstateWithoutPreciput)
-    : firstEstate;
-  const step1TransmissionTaxableBasisBase = firstEstateBasisDenominator > 0
-    ? (
-      resolvedPreciput.mode === 'cible'
-        ? (
-          societeAcquetsDistribution
-            ? firstEstateTaxableBasis
-            : subtractSuccessionEstateTaxableBases(
+  const effectivePreciputApplied =
+    societeAcquetsDistribution?.preciputAmount ??
+    (sharedMassPreciputAmount > 0 ? sharedMassPreciputAmount : step1Split.preciputDeducted);
+  const targetedPreciputAppliedAmount =
+    resolvedPreciput.mode === 'cible' ? effectivePreciputApplied : 0;
+  const preciputSummary =
+    resolvedPreciput.mode === 'none' && effectivePreciputApplied <= 0
+      ? null
+      : {
+          mode: resolvedPreciput.mode,
+          pocket: preciputEligiblePocket,
+          requestedAmount: resolvedPreciput.requestedAmount,
+          appliedAmount:
+            resolvedPreciput.mode === 'cible'
+              ? targetedPreciputAppliedAmount
+              : effectivePreciputApplied,
+          usesGlobalFallback: resolvedPreciput.usesGlobalFallback,
+          selections: buildTargetedPreciputSelectionsSummary(
+            resolvedPreciput.targetedSelections,
+            resolvedPreciput.requestedAmount,
+            targetedPreciputAppliedAmount,
+          ),
+        };
+  const targetedPreciputAppliedBasis =
+    resolvedPreciput.mode === 'cible' &&
+    resolvedPreciput.requestedAmount > 0 &&
+    targetedPreciputAppliedAmount > 0
+      ? scaleSuccessionEstateTaxableBasis(
+          requestedTargetedPreciputBasis,
+          targetedPreciputAppliedAmount / resolvedPreciput.requestedAmount,
+        )
+      : createEmptyEstateTaxableBasis();
+  const firstEstateBasisDenominator =
+    sharedMassPreciputAmount > 0 ? Math.max(firstEstate, firstEstateWithoutPreciput) : firstEstate;
+  const step1TransmissionTaxableBasisBase =
+    firstEstateBasisDenominator > 0
+      ? resolvedPreciput.mode === 'cible'
+        ? societeAcquetsDistribution
+          ? firstEstateTaxableBasis
+          : subtractSuccessionEstateTaxableBases(
               firstEstateTaxableBasis,
               targetedPreciputAppliedBasis,
             )
-        )
         : scaleSuccessionEstateTaxableBasis(
-          firstEstateTaxableBasis,
-          step1TaxableEstate / firstEstateBasisDenominator,
-        )
-    )
-    : createEmptyEstateTaxableBasis();
+            firstEstateTaxableBasis,
+            step1TaxableEstate / firstEstateBasisDenominator,
+          )
+      : createEmptyEstateTaxableBasis();
   const step1TransmissionTaxableBasis = applyResidencePrincipaleAbatementToEstateBasis(
     step1TransmissionTaxableBasisBase,
     Boolean(input.abattementResidencePrincipale),
@@ -356,13 +351,15 @@ export function buildSuccessionChainageAnalysis(
     step1Split.parentsPart,
   );
   warnings.push(...step1Details.warnings);
-  warnings.push(...getStepEligibilityWarnings(
-    `Etape 1 (${getLabelForSide(input.order)})`,
-    enfantsContext,
-    familyMembers,
-    input.order,
-    step1Details.transmission.beneficiaries.length > 0,
-  ));
+  warnings.push(
+    ...getStepEligibilityWarnings(
+      `Etape 1 (${getLabelForSide(input.order)})`,
+      enfantsContext,
+      familyMembers,
+      input.order,
+      step1Details.transmission.beneficiaries.length > 0,
+    ),
+  );
 
   const otherSide = getOtherSide(input.order);
   const step2InheritedCarryOverAmount = step1Split.carryOverToStep2 + step1Details.carryOverToStep2;
@@ -372,22 +369,23 @@ export function buildSuccessionChainageAnalysis(
     input.transmissionBasis,
     survivorPocketScales,
   );
-  const carryOverTaxableBasis = resolvedPreciput.mode === 'cible'
-    ? addSuccessionEstateTaxableBases(
-      step1TaxableEstate > 0
-        ? scaleSuccessionEstateTaxableBasis(
-          step1TransmissionTaxableBasisBase,
-          step2InheritedCarryOverAmount / step1TaxableEstate,
+  const carryOverTaxableBasis =
+    resolvedPreciput.mode === 'cible'
+      ? addSuccessionEstateTaxableBases(
+          step1TaxableEstate > 0
+            ? scaleSuccessionEstateTaxableBasis(
+                step1TransmissionTaxableBasisBase,
+                step2InheritedCarryOverAmount / step1TaxableEstate,
+              )
+            : createEmptyEstateTaxableBasis(),
+          targetedPreciputAppliedBasis,
         )
-        : createEmptyEstateTaxableBasis(),
-      targetedPreciputAppliedBasis,
-    )
-    : firstEstateBasisDenominator > 0
-      ? scaleSuccessionEstateTaxableBasis(
-        firstEstateTaxableBasis,
-        step2CarryOverAmount / firstEstateBasisDenominator,
-      )
-      : createEmptyEstateTaxableBasis();
+      : firstEstateBasisDenominator > 0
+        ? scaleSuccessionEstateTaxableBasis(
+            firstEstateTaxableBasis,
+            step2CarryOverAmount / firstEstateBasisDenominator,
+          )
+        : createEmptyEstateTaxableBasis();
   const survivorEconomicInflowsTaxableBasis = {
     ordinaryNetBeforeForfait: survivorEconomicInflows,
     groupementEntries: [],
@@ -399,7 +397,8 @@ export function buildSuccessionChainageAnalysis(
     survivorEconomicInflowsTaxableBasis,
   );
   const nbParentsStep2 = nbEnfants <= 0 ? countSideParents(familyMembers, otherSide) : 0;
-  const step2ParentsPart = nbParentsStep2 > 0 ? step2Estate * Math.min(2, nbParentsStep2) * 0.25 : 0;
+  const step2ParentsPart =
+    nbParentsStep2 > 0 ? step2Estate * Math.min(2, nbParentsStep2) * 0.25 : 0;
   const step2Details = computeStepTransmission(
     input,
     step2Estate,
@@ -412,13 +411,15 @@ export function buildSuccessionChainageAnalysis(
     step2ParentsPart,
   );
   warnings.push(...step2Details.warnings);
-  warnings.push(...getStepEligibilityWarnings(
-    `Etape 2 (${getLabelForSide(otherSide)})`,
-    enfantsContext,
-    familyMembers,
-    otherSide,
-    step2Details.transmission.beneficiaries.length > 0,
-  ));
+  warnings.push(
+    ...getStepEligibilityWarnings(
+      `Etape 2 (${getLabelForSide(otherSide)})`,
+      enfantsContext,
+      familyMembers,
+      otherSide,
+      step2Details.transmission.beneficiaries.length > 0,
+    ),
+  );
   if (survivorEconomicInflows > 0) {
     warnings.push(
       `Etape 2 (${getLabelForSide(otherSide)}): capitaux assurances nets recycles depuis l'etape 1 = ${Math.round(survivorEconomicInflows).toLocaleString('fr-FR')} EUR.`,
@@ -453,44 +454,44 @@ export function buildSuccessionChainageAnalysis(
     },
     societeAcquets: societeAcquetsDistribution
       ? {
-        configured: societeAcquetsDistribution.configured,
-        totalValue: societeAcquetsDistribution.totalValue,
-        firstEstateContribution: societeAcquetsDistribution.firstEstateContribution,
-        survivorShare: societeAcquetsDistribution.survivorShare,
-        preciputAmount: societeAcquetsDistribution.preciputAmount,
-        survivorAttributionAmount: societeAcquetsDistribution.survivorAttributionAmount,
-        liquidationMode: societeAcquetsDistribution.liquidationMode,
-        deceasedQuotePct: societeAcquetsDistribution.deceasedQuotePct,
-        survivorQuotePct: societeAcquetsDistribution.survivorQuotePct,
-        attributionIntegrale: societeAcquetsDistribution.attributionIntegrale,
-      }
+          configured: societeAcquetsDistribution.configured,
+          totalValue: societeAcquetsDistribution.totalValue,
+          firstEstateContribution: societeAcquetsDistribution.firstEstateContribution,
+          survivorShare: societeAcquetsDistribution.survivorShare,
+          preciputAmount: societeAcquetsDistribution.preciputAmount,
+          survivorAttributionAmount: societeAcquetsDistribution.survivorAttributionAmount,
+          liquidationMode: societeAcquetsDistribution.liquidationMode,
+          deceasedQuotePct: societeAcquetsDistribution.deceasedQuotePct,
+          survivorQuotePct: societeAcquetsDistribution.survivorQuotePct,
+          attributionIntegrale: societeAcquetsDistribution.attributionIntegrale,
+        }
       : null,
     participationAcquets: participationAcquetsSummary,
     preciput: preciputSummary,
     interMassClaims: input.interMassClaimsSummary
       ? {
-        configured: input.interMassClaimsSummary.configured,
-        totalRequestedAmount: input.interMassClaimsSummary.totalRequestedAmount,
-        totalAppliedAmount: input.interMassClaimsSummary.totalAppliedAmount,
-        claims: input.interMassClaimsSummary.claims.map((claim) => ({
-          id: claim.id,
-          kind: claim.kind,
-          label: claim.label,
-          fromPocket: claim.fromPocket,
-          toPocket: claim.toPocket,
-          requestedAmount: claim.requestedAmount,
-          appliedAmount: claim.appliedAmount,
-        })),
-      }
+          configured: input.interMassClaimsSummary.configured,
+          totalRequestedAmount: input.interMassClaimsSummary.totalRequestedAmount,
+          totalAppliedAmount: input.interMassClaimsSummary.totalAppliedAmount,
+          claims: input.interMassClaimsSummary.claims.map((claim) => ({
+            id: claim.id,
+            kind: claim.kind,
+            label: claim.label,
+            fromPocket: claim.fromPocket,
+            toPocket: claim.toPocket,
+            requestedAmount: claim.requestedAmount,
+            appliedAmount: claim.appliedAmount,
+          })),
+        }
       : null,
     affectedLiabilities: input.affectedLiabilitySummary
       ? {
-        totalAmount: input.affectedLiabilitySummary.totalAmount,
-        byPocket: input.affectedLiabilitySummary.byPocket.map((entry) => ({
-          pocket: entry.pocket,
-          amount: entry.amount,
-        })),
-      }
+          totalAmount: input.affectedLiabilitySummary.totalAmount,
+          byPocket: input.affectedLiabilitySummary.byPocket.map((entry) => ({
+            pocket: entry.pocket,
+            amount: entry.amount,
+          })),
+        }
       : null,
     totalDroits: step1Details.transmission.droits + step2Details.transmission.droits,
     warnings,

@@ -84,8 +84,7 @@ function isQfCappedForTaxableIncome(taxableIncomeTest: number, params: TmiParams
   const taxPerPartAll = computeProgressiveTaxPerPart(scale, perPartAll);
   const irAllParts = taxPerPartAll * partsNb;
 
-  const perPartBase =
-    basePartsForQf > 0 ? taxableIncomeTest / basePartsForQf : taxableIncomeTest;
+  const perPartBase = basePartsForQf > 0 ? taxableIncomeTest / basePartsForQf : taxableIncomeTest;
   const taxPerPartBase = computeProgressiveTaxPerPart(scale, perPartBase);
   const irBaseTest = taxPerPartBase * basePartsForQf;
 
@@ -217,11 +216,15 @@ export function computeMarginalRate(revenu: number, params: TmiParams): number {
     new Set(
       (Array.isArray(params?.scale) ? params.scale : [])
         .map((br) => Number(br?.rate))
-        .filter((r) => Number.isFinite(r))
-    )
+        .filter((r) => Number.isFinite(r)),
+    ),
   ).sort((a, b) => a - b);
 
   if (!scaleRates.length) {
+    return marginalRatePercent;
+  }
+  const firstRate = scaleRates[0];
+  if (firstRate === undefined) {
     return marginalRatePercent;
   }
 
@@ -230,7 +233,7 @@ export function computeMarginalRate(revenu: number, params: TmiParams): number {
       Math.abs(rate - marginalRatePercent) < Math.abs(closest - marginalRatePercent)
         ? rate
         : closest,
-    scaleRates[0]
+    firstRate,
   );
 }
 
@@ -310,8 +313,7 @@ export function computeTmiMetrics(revenuImposable: number, params: TmiParams): T
   const seuilBasFoyer = findSeuilBasFoyer();
   const seuilHautFoyer = findSeuilHautFoyer();
 
-  const trancheWidth =
-    seuilHautFoyer == null ? null : Math.max(0, seuilHautFoyer - seuilBasFoyer);
+  const trancheWidth = seuilHautFoyer == null ? null : Math.max(0, seuilHautFoyer - seuilBasFoyer);
   const rawAvant = Math.max(0, revenu - seuilBasFoyer);
   let revenusDansTmi = trancheWidth == null ? rawAvant : Math.min(rawAvant, trancheWidth);
   revenusDansTmi = Math.round(revenusDansTmi);
@@ -322,8 +324,8 @@ export function computeTmiMetrics(revenuImposable: number, params: TmiParams): T
   const qfCappedNow = Boolean(qfInfo?.qfCapped);
 
   const partsForTmi = qfCappedNow
-    ? (Number(params.basePartsForQf) || 1)
-    : (Number(params.partsNb) || 1);
+    ? Number(params.basePartsForQf) || 1
+    : Number(params.partsNb) || 1;
   const taxablePerPartForTmi = partsForTmi > 0 ? revenu / partsForTmi : revenu;
 
   let currentBracket: { from: number; to: number } | null = null;
@@ -336,8 +338,7 @@ export function computeTmiMetrics(revenuImposable: number, params: TmiParams): T
     }
   }
 
-  const toFinite =
-    currentBracket && Number.isFinite(currentBracket.to) ? currentBracket.to : null;
+  const toFinite = currentBracket && Number.isFinite(currentBracket.to) ? currentBracket.to : null;
 
   let margeAvantChangement: number | null =
     toFinite == null ? null : Math.max(0, toFinite - taxablePerPartForTmi) * partsForTmi;

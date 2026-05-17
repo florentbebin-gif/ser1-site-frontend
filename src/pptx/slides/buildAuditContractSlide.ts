@@ -1,17 +1,8 @@
 import type PptxGenJS from 'pptxgenjs';
-import {
-  formatBaseCgRetraiteRateField,
-  normalizeBaseCgRetraiteGestionFees,
-} from '@/data/basecg';
+import { formatBaseCgRetraiteRateField, normalizeBaseCgRetraiteGestionFees } from '@/data/basecg';
 import type { ExportContext, PerTransfertAuditContractSlideSpec } from '../theme/types';
 import { MASTER_NAMES } from '../template/loadBaseTemplate';
-import {
-  SLIDE_SIZE,
-  TYPO,
-  addFooter,
-  addHeader,
-  addTextFr,
-} from '../designSystem/serenity';
+import { SLIDE_SIZE, TYPO, addFooter, addHeader, addTextFr } from '../designSystem/serenity';
 
 const TABLE_X = 0.78;
 const TABLE_Y = 1.48;
@@ -51,13 +42,37 @@ export function buildAuditContractSlide(
     { label: 'Nombre de supports', value: contract.phaseEpargne.nombreFonds },
     { label: 'Nombre UC', value: contract.phaseEpargne.nombreSupportsUc },
     { label: 'UC / Fonds euros', value: contract.phaseEpargne.repartitionUcEuro },
-    { label: 'TMG du contrat', value: contract.phaseEpargne.rendementFondsEuro, format: 'rate' as const },
-    { label: 'Fonds euros garantis', value: contract.phaseEpargne.fondsEuroGarantis, format: 'rate' as const },
-    { label: 'Frais sur versements', value: contract.phaseEpargne.fraisVersements, format: 'rate' as const },
-    { label: 'Frais gestion fonds euros', value: gestionFees.fraisGestionFondsEuro, format: 'rate' as const },
+    {
+      label: 'TMG du contrat',
+      value: contract.phaseEpargne.rendementFondsEuro,
+      format: 'rate' as const,
+    },
+    {
+      label: 'Fonds euros garantis',
+      value: contract.phaseEpargne.fondsEuroGarantis,
+      format: 'rate' as const,
+    },
+    {
+      label: 'Frais sur versements',
+      value: contract.phaseEpargne.fraisVersements,
+      format: 'rate' as const,
+    },
+    {
+      label: 'Frais gestion fonds euros',
+      value: gestionFees.fraisGestionFondsEuro,
+      format: 'rate' as const,
+    },
     { label: 'Frais gestion UC', value: gestionFees.fraisGestionUc, format: 'rate' as const },
-    { label: 'Frais arbitrage', value: contract.phaseEpargne.fraisArbitrage, format: 'rate' as const },
-    { label: 'Frais transfert sortant', value: contract.phaseEpargne.fraisTransfertSortant, format: 'rate' as const },
+    {
+      label: 'Frais arbitrage',
+      value: contract.phaseEpargne.fraisArbitrage,
+      format: 'rate' as const,
+    },
+    {
+      label: 'Frais transfert sortant',
+      value: contract.phaseEpargne.fraisTransfertSortant,
+      format: 'rate' as const,
+    },
     { label: 'Modalités en cas de décès', value: contract.phaseEpargne.clauseBeneficiaire },
     { label: 'Garanties complémentaires', value: contract.phaseEpargne.garantiesComplementaires },
     { label: 'Âge limite liquidation', value: contract.phaseLiquidation.ageLimiteLiquidation },
@@ -66,8 +81,16 @@ export function buildAuditContractSlide(
     { label: 'Rachat libre', value: contract.phaseLiquidation.rachatLibre },
     { label: 'Table conversion rente', value: contract.phaseLiquidation.tableConversionRente },
     { label: 'Table garantie adhésion', value: contract.phaseLiquidation.tableGarantieAdhesion },
-    { label: 'Taux technique', value: contract.phaseLiquidation.tauxTechnique, format: 'rate' as const },
-    { label: 'Frais arrérages', value: contract.phaseLiquidation.fraisArrerages, format: 'rate' as const },
+    {
+      label: 'Taux technique',
+      value: contract.phaseLiquidation.tauxTechnique,
+      format: 'rate' as const,
+    },
+    {
+      label: 'Frais arrérages',
+      value: contract.phaseLiquidation.fraisArrerages,
+      format: 'rate' as const,
+    },
     { label: 'Annuités garanties', value: contract.phaseLiquidation.annuitesGaranties },
     { label: 'Réversion possible', value: contract.phaseLiquidation.reversionPossible },
     { label: 'Réversion incluse', value: contract.phaseLiquidation.reversionIncluse },

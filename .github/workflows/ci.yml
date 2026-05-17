@@ -25,7 +25,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6
 
-      - name: "Guard: forbid committed env files"
+      - name: 'Guard: forbid committed env files'
         shell: bash
         run: |
           set -euo pipefail
@@ -99,6 +99,19 @@ jobs:
 
       - name: Build Storybook (informative)
         run: npm run build:storybook || echo "::warning::Storybook non bloquant pour la première stabilisation"
+
+      - name: Generate bundle stats (informative)
+        run: npm run analyze:ci || echo "::warning::stats bundle non bloquantes pour la première stabilisation"
+        env:
+          VITE_SUPABASE_URL: https://placeholder.supabase.co
+          VITE_SUPABASE_ANON_KEY: placeholder-key-for-build
+
+      - name: Upload bundle stats (informative)
+        uses: actions/upload-artifact@v4
+        with:
+          name: bundle-stats
+          path: dist/bundle-stats.html
+          if-no-files-found: warn
 
       - name: Upload coverage (informative)
         uses: codecov/codecov-action@v6

@@ -24,11 +24,11 @@ export function PerTransfertPrefonPocketSettingsModal({
       title={`Paramètres de la poche ${index + 1}`}
       subtitle="Réversion, revalorisation de la valeur de service et options capital propres au compartiment Préfon."
       onClose={onClose}
-      footer={(
+      footer={
         <button type="button" className="sim-modal-btn sim-modal-btn--primary" onClick={onClose}>
           Appliquer
         </button>
-      )}
+      }
     >
       <div className="per-transfert-modal-grid">
         <PerTransfertRateField
@@ -69,12 +69,16 @@ export function PerTransfertPrefonPocketSettingsModal({
             <input
               type="checkbox"
               checked={Boolean(pocket.c0CapitalOptionEnabled)}
-              onChange={(event) => onChange(index, { c0CapitalOptionEnabled: event.target.checked })}
+              onChange={(event) =>
+                onChange(index, { c0CapitalOptionEnabled: event.target.checked })
+              }
             />
             Option capital C0 limitée à 20 %
           </label>
         ) : null}
-        {pocket.compartment === 'C1' || pocket.compartment === 'C1_BIS' || pocket.compartment === 'C2' ? (
+        {pocket.compartment === 'C1' ||
+        pocket.compartment === 'C1_BIS' ||
+        pocket.compartment === 'C2' ? (
           <label className="per-transfert-checkbox">
             <input
               type="checkbox"

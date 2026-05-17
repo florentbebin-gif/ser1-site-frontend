@@ -19,11 +19,13 @@ describe('buildDonationRecallWarningMessages', () => {
     expect(buildDonationRecallWarningMessages([])).toEqual([]);
   });
 
-  it("restitue le warning NP + 790 G sans message de date de naissance à zéro", () => {
-    const messages = buildDonationRecallWarningMessages([{
-      type: 'np_incompatible_790g',
-      donationId: 'np-790g',
-    }]);
+  it('restitue le warning NP + 790 G sans message de date de naissance à zéro', () => {
+    const messages = buildDonationRecallWarningMessages([
+      {
+        type: 'np_incompatible_790g',
+        donationId: 'np-790g',
+      },
+    ]);
 
     expect(messages).toHaveLength(1);
     expect(messages[0]).toContain('790 G');
@@ -46,22 +48,34 @@ describe('buildDonationRecallWarningMessages', () => {
 describe('applySuccessionDonationRecallToHeirs', () => {
   it.each([
     ['montant seul', { montant: 80000 }, 80000],
-    ['valeur à la donation supérieure au montant actuel', { montant: 80000, valeurDonation: 120000 }, 120000],
-    ['valeur à la donation inférieure au montant actuel', { montant: 120000, valeurDonation: 80000 }, 80000],
-    ['valeur à la donation présente avec montant actuel nul', { montant: 0, valeurDonation: 90000 }, 90000],
+    [
+      'valeur à la donation supérieure au montant actuel',
+      { montant: 80000, valeurDonation: 120000 },
+      120000,
+    ],
+    [
+      'valeur à la donation inférieure au montant actuel',
+      { montant: 120000, valeurDonation: 80000 },
+      80000,
+    ],
+    [
+      'valeur à la donation présente avec montant actuel nul',
+      { montant: 0, valeurDonation: 90000 },
+      90000,
+    ],
   ])('retient %s pour la base historique taxée', (_label, donationValues, expectedBase) => {
     const { heirs } = applySuccessionDonationRecallToHeirs({
-      heirs: [
-        { id: 'E1', lien: 'enfant' as const, partSuccession: 200000 },
+      heirs: [{ id: 'E1', lien: 'enfant' as const, partSuccession: 200000 }],
+      donations: [
+        {
+          id: 'don-1',
+          type: 'rapportable',
+          date: '2020-06',
+          donateur: 'epoux1',
+          donataire: 'E1',
+          ...donationValues,
+        },
       ],
-      donations: [{
-        id: 'don-1',
-        type: 'rapportable',
-        date: '2020-06',
-        donateur: 'epoux1',
-        donataire: 'E1',
-        ...donationValues,
-      }],
       simulatedDeceased: 'epoux1',
       donationSettings: DONATION_SETTINGS,
       dmtgSettings: DEFAULT_DMTG,
@@ -294,17 +308,19 @@ describe('applySuccessionDonationRecallToHeirs — plafond 790 G multi-dons', ()
     // Règle conservatrice : traité comme NP seul, 790 G ignoré
     const { heirs, warnings } = applySuccessionDonationRecallToHeirs({
       heirs: [{ id: 'E1', lien: 'enfant' as const, partSuccession: 200000 }],
-      donations: [{
-        id: 'np-790g-conflict',
-        type: 'rapportable',
-        montant: 150000,
-        valeurDonation: 150000,
-        date: '2020-01',
-        donateur: 'epoux1',
-        donataire: 'E1',
-        avecReserveUsufruit: true,
-        donSommeArgentExonere: true,
-      }],
+      donations: [
+        {
+          id: 'np-790g-conflict',
+          type: 'rapportable',
+          montant: 150000,
+          valeurDonation: 150000,
+          date: '2020-01',
+          donateur: 'epoux1',
+          donataire: 'E1',
+          avecReserveUsufruit: true,
+          donSommeArgentExonere: true,
+        },
+      ],
       simulatedDeceased: 'epoux1',
       donationSettings: DONATION_SETTINGS,
       dmtgSettings: DEFAULT_DMTG,
@@ -323,15 +339,17 @@ describe('applySuccessionDonationRecallToHeirs — donation_partage (CCV 1078)',
     // Donation 150k > abattement enfant 100k → droitsDejaAcquittes > 0
     const { heirs, warnings } = applySuccessionDonationRecallToHeirs({
       heirs: [{ id: 'E1', lien: 'enfant' as const, partSuccession: 50000 }],
-      donations: [{
-        id: 'dp-1',
-        type: 'donation_partage',
-        montant: 150000,
-        valeurDonation: 150000,
-        date: '2020-06',
-        donateur: 'epoux1',
-        donataire: 'E1',
-      }],
+      donations: [
+        {
+          id: 'dp-1',
+          type: 'donation_partage',
+          montant: 150000,
+          valeurDonation: 150000,
+          date: '2020-06',
+          donateur: 'epoux1',
+          donataire: 'E1',
+        },
+      ],
       simulatedDeceased: 'epoux1',
       donationSettings: DONATION_SETTINGS,
       dmtgSettings: DEFAULT_DMTG,
@@ -346,16 +364,18 @@ describe('applySuccessionDonationRecallToHeirs — donation_partage (CCV 1078)',
   it('790 G via applySuccessionDonationRecallToHeirs : baseHistoriqueTaxee undefined si donation totalement exonérée', () => {
     const { heirs } = applySuccessionDonationRecallToHeirs({
       heirs: [{ id: 'E1', lien: 'enfant' as const, partSuccession: 200000 }],
-      donations: [{
-        id: '790g-full',
-        type: 'rapportable',
-        montant: 25000,
-        valeurDonation: 25000,
-        date: '2020-06',
-        donateur: 'epoux1',
-        donataire: 'E1',
-        donSommeArgentExonere: true,
-      }],
+      donations: [
+        {
+          id: '790g-full',
+          type: 'rapportable',
+          montant: 25000,
+          valeurDonation: 25000,
+          date: '2020-06',
+          donateur: 'epoux1',
+          donataire: 'E1',
+          donSommeArgentExonere: true,
+        },
+      ],
       simulatedDeceased: 'epoux1',
       donationSettings: DONATION_SETTINGS,
       dmtgSettings: DEFAULT_DMTG,

@@ -81,11 +81,14 @@ export function buildSuccessionEstateTaxableBasis(
   }
 
   const ordinaryAssets = (Object.keys(EMPTY_POCKET_SCALES) as SuccessionAssetPocket[]).reduce(
-    (sum, pocket) => sum + (asAmount(transmissionBasis.ordinaryTaxableAssetsParPocket[pocket]) * pocketScales[pocket]),
+    (sum, pocket) =>
+      sum +
+      asAmount(transmissionBasis.ordinaryTaxableAssetsParPocket[pocket]) * pocketScales[pocket],
     0,
   );
   const passifs = (Object.keys(EMPTY_POCKET_SCALES) as SuccessionAssetPocket[]).reduce(
-    (sum, pocket) => sum + (asAmount(transmissionBasis.passifsParPocket[pocket]) * pocketScales[pocket]),
+    (sum, pocket) =>
+      sum + asAmount(transmissionBasis.passifsParPocket[pocket]) * pocketScales[pocket],
     0,
   );
 
@@ -103,8 +106,8 @@ export function buildSuccessionEstateTaxableBasis(
       })
       .filter((entry): entry is NonNullable<typeof entry> => entry !== null),
     residencePrincipaleValeur: transmissionBasis.residencePrincipaleEntry
-      ? asAmount(transmissionBasis.residencePrincipaleEntry.valeurTotale)
-        * pocketScales[transmissionBasis.residencePrincipaleEntry.pocket]
+      ? asAmount(transmissionBasis.residencePrincipaleEntry.valeurTotale) *
+        pocketScales[transmissionBasis.residencePrincipaleEntry.pocket]
       : 0,
   };
 }
@@ -135,15 +138,18 @@ export function scaleSuccessionEstateTaxableBasis(
 export function addSuccessionEstateTaxableBases(
   ...bases: SuccessionEstateTaxableBasis[]
 ): SuccessionEstateTaxableBasis {
-  return bases.reduce<SuccessionEstateTaxableBasis>((acc, basis) => ({
-    ordinaryNetBeforeForfait: acc.ordinaryNetBeforeForfait + basis.ordinaryNetBeforeForfait,
-    groupementEntries: [...acc.groupementEntries, ...basis.groupementEntries],
-    residencePrincipaleValeur: acc.residencePrincipaleValeur + basis.residencePrincipaleValeur,
-  }), {
-    ordinaryNetBeforeForfait: 0,
-    groupementEntries: [],
-    residencePrincipaleValeur: 0,
-  });
+  return bases.reduce<SuccessionEstateTaxableBasis>(
+    (acc, basis) => ({
+      ordinaryNetBeforeForfait: acc.ordinaryNetBeforeForfait + basis.ordinaryNetBeforeForfait,
+      groupementEntries: [...acc.groupementEntries, ...basis.groupementEntries],
+      residencePrincipaleValeur: acc.residencePrincipaleValeur + basis.residencePrincipaleValeur,
+    }),
+    {
+      ordinaryNetBeforeForfait: 0,
+      groupementEntries: [],
+      residencePrincipaleValeur: 0,
+    },
+  );
 }
 
 export function subtractSuccessionEstateTaxableBases(
@@ -185,7 +191,10 @@ export function applyResidencePrincipaleAbatementToEstateBasis(
   // Invariant: cette valeur suit déjà les réductions de masse (préciput cible, passifs, etc.).
   return {
     ...basis,
-    ordinaryNetBeforeForfait: Math.max(0, basis.ordinaryNetBeforeForfait - (basis.residencePrincipaleValeur * 0.2)),
+    ordinaryNetBeforeForfait: Math.max(
+      0,
+      basis.ordinaryNetBeforeForfait - basis.residencePrincipaleValeur * 0.2,
+    ),
   };
 }
 
@@ -201,13 +210,16 @@ function computeForfaitMobilier(
     return asAmount(mobilier.forfaitMobilierMontant);
   }
 
-  const rate = mobilier.forfaitMobilierMode === 'pct'
-    ? Math.max(0, Number(mobilier.forfaitMobilierPct) || 0) / 100
-    : 0.05;
+  const rate =
+    mobilier.forfaitMobilierMode === 'pct'
+      ? Math.max(0, Number(mobilier.forfaitMobilierPct) || 0) / 100
+      : 0.05;
   return totalBase * rate;
 }
 
-export function assignBeneficiaryTaxableBasis<TBeneficiary extends BeneficiaryTaxableAllocationInput>(
+export function assignBeneficiaryTaxableBasis<
+  TBeneficiary extends BeneficiaryTaxableAllocationInput,
+>(
   beneficiaries: TBeneficiary[],
   estateBasis: SuccessionEstateTaxableBasis,
   mobilier: Pick<
@@ -215,7 +227,10 @@ export function assignBeneficiaryTaxableBasis<TBeneficiary extends BeneficiaryTa
     'forfaitMobilierMode' | 'forfaitMobilierPct' | 'forfaitMobilierMontant'
   >,
 ): Array<TBeneficiary & { taxablePartSuccession: number }> {
-  const totalBrut = beneficiaries.reduce((sum, beneficiary) => sum + asAmount(beneficiary.partSuccession), 0);
+  const totalBrut = beneficiaries.reduce(
+    (sum, beneficiary) => sum + asAmount(beneficiary.partSuccession),
+    0,
+  );
   if (totalBrut <= 0) {
     return beneficiaries.map((beneficiary) => ({
       ...beneficiary,
@@ -226,9 +241,11 @@ export function assignBeneficiaryTaxableBasis<TBeneficiary extends BeneficiaryTa
   const beforeForfaitByBeneficiary = beneficiaries.map((beneficiary) => {
     const ratio = asAmount(beneficiary.partSuccession) / totalBrut;
     const ordinaryBase = estateBasis.ordinaryNetBeforeForfait * ratio;
-    const groupementBase = estateBasis.groupementEntries.reduce((sum, entry) => (
-      sum + computeGroupementFoncierExoneration(entry.type, entry.valeurTotale * ratio).taxable
-    ), 0);
+    const groupementBase = estateBasis.groupementEntries.reduce(
+      (sum, entry) =>
+        sum + computeGroupementFoncierExoneration(entry.type, entry.valeurTotale * ratio).taxable,
+      0,
+    );
     return ordinaryBase + groupementBase;
   });
 
@@ -236,10 +253,9 @@ export function assignBeneficiaryTaxableBasis<TBeneficiary extends BeneficiaryTa
   const forfaitMobilier = computeForfaitMobilier(mobilier, totalBeforeForfait);
 
   return beneficiaries.map((beneficiary, index) => {
-    const baseBeforeForfait = beforeForfaitByBeneficiary[index];
-    const forfaitShare = totalBeforeForfait > 0
-      ? forfaitMobilier * (baseBeforeForfait / totalBeforeForfait)
-      : 0;
+    const baseBeforeForfait = beforeForfaitByBeneficiary[index] ?? 0;
+    const forfaitShare =
+      totalBeforeForfait > 0 ? forfaitMobilier * (baseBeforeForfait / totalBeforeForfait) : 0;
     return {
       ...beneficiary,
       taxablePartSuccession: baseBeforeForfait + forfaitShare,

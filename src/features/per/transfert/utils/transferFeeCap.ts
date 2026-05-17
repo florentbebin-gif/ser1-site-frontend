@@ -26,7 +26,8 @@ export function defaultOutgoingTransferFeeRate(
   contractTransferFeeRate: number | null | undefined,
 ): number {
   if (contractType === 'PERCO') return 0;
-  if (typeof contractTransferFeeRate !== 'number' || !Number.isFinite(contractTransferFeeRate)) return 0;
+  if (typeof contractTransferFeeRate !== 'number' || !Number.isFinite(contractTransferFeeRate))
+    return 0;
   return Math.max(0, contractTransferFeeRate);
 }
 

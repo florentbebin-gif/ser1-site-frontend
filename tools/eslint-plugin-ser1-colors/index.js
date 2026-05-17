@@ -1,6 +1,6 @@
 /**
  * ESLint Plugin - Color Governance
- * 
+ *
  * Règles pour interdire les couleurs hardcodées (sauf WHITE #FFFFFF et WARNING #996600)
  * Conforme à la gouvernance SER1 documentée dans docs/GOUVERNANCE.md
  */
@@ -20,11 +20,14 @@ const ALLOWED_COLORS = ['#ffffff', '#fff', '#996600'];
  */
 function isAllowedColor(color) {
   const normalized = color.toLowerCase().replace(/#/g, '');
-  const normalizedHex = normalized.length === 3 
-    ? normalized.split('').map(c => c + c).join('')
-    : normalized;
-  return ALLOWED_COLORS.includes('#' + normalizedHex) || 
-         ALLOWED_COLORS.includes('#' + normalized);
+  const normalizedHex =
+    normalized.length === 3
+      ? normalized
+          .split('')
+          .map((c) => c + c)
+          .join('')
+      : normalized;
+  return ALLOWED_COLORS.includes('#' + normalizedHex) || ALLOWED_COLORS.includes('#' + normalized);
 }
 
 /**
@@ -53,7 +56,8 @@ const noHardcodedColors = {
       },
     ],
     messages: {
-      noHardcodedHex: 'Couleur hex hardcodée interdite: "{{color}}". Utilisez les tokens sémantiques C1-C10 via getSemanticColors() ou DEFAULT_COLORS.',
+      noHardcodedHex:
+        'Couleur hex hardcodée interdite: "{{color}}". Utilisez les tokens sémantiques C1-C10 via getSemanticColors() ou DEFAULT_COLORS.',
       noHardcodedRgb: 'Couleur RGB hardcodée interdite. Utilisez les tokens sémantiques C1-C10.',
       noHardcodedHsl: 'Couleur HSL hardcodée interdite. Utilisez les tokens sémantiques C1-C10.',
     },
@@ -61,14 +65,14 @@ const noHardcodedColors = {
 
   create(context) {
     const options = context.options[0] || {};
-    const customAllowed = (options.allowedColors || []).map(c => c.toLowerCase());
+    const customAllowed = (options.allowedColors || []).map((c) => c.toLowerCase());
     const allAllowed = [...ALLOWED_COLORS, ...customAllowed];
 
     function checkColorInNode(node, value) {
       // Check hex colors
       const hexMatches = value.match(HEX_COLOR_PATTERN);
       if (hexMatches) {
-        hexMatches.forEach(color => {
+        hexMatches.forEach((color) => {
           if (!isAllowedColor(color) && !customAllowed.includes(color.toLowerCase())) {
             context.report({
               node,
@@ -133,13 +137,14 @@ const useSemanticColors = {
   meta: {
     type: 'suggestion',
     docs: {
-      description: 'Encourage l\'utilisation des tokens sémantiques C1-C10',
+      description: "Encourage l'utilisation des tokens sémantiques C1-C10",
       category: 'Best Practices',
       recommended: true,
     },
     schema: [],
     messages: {
-      useSemantic: 'Privilégiez getSemanticColors() ou DEFAULT_COLORS pour une meilleure maintenabilité.',
+      useSemantic:
+        'Privilégiez getSemanticColors() ou DEFAULT_COLORS pour une meilleure maintenabilité.',
     },
   },
 

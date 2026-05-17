@@ -1,24 +1,17 @@
 import type { AssociateRevenuePhaseInputV6 } from '@/engine/tresorerie/types';
-import {
-  getPhaseAmountLines,
-  getPhaseTitle,
-  sortPhases,
-} from '../../utils/revenuePhases';
+import { getPhaseAmountLines, getPhaseTitle, sortPhases } from '../../utils/revenuePhases';
 
 interface TresoTimelinePhaseListProps {
   phases: AssociateRevenuePhaseInputV6[];
   onEditPhase: (phaseId: string) => void;
 }
 
-export function TresoTimelinePhaseList({
-  phases,
-  onEditPhase,
-}: TresoTimelinePhaseListProps) {
+export function TresoTimelinePhaseList({ phases, onEditPhase }: TresoTimelinePhaseListProps) {
   const sorted = sortPhases(phases);
 
   return (
     <div className="ts-timeline-list" aria-label="Liste des paliers de revenus">
-      {sorted.map(phase => {
+      {sorted.map((phase) => {
         const palierLabel = `Palier ${phase.startYear}-${phase.endYear}`;
         const title = getPhaseTitle(phase);
         const amountLines = getPhaseAmountLines(phase);
@@ -39,9 +32,11 @@ export function TresoTimelinePhaseList({
               {duration} {duration > 1 ? 'ans' : 'an'}
             </span>
             <span className="ts-timeline-list__amounts">
-              {amountLines.length > 0
-                ? amountLines.map(line => <span key={line}>{line}</span>)
-                : <span className="ts-timeline-list__amounts--empty">Aucun flux paramétré</span>}
+              {amountLines.length > 0 ? (
+                amountLines.map((line) => <span key={line}>{line}</span>)
+              ) : (
+                <span className="ts-timeline-list__amounts--empty">Aucun flux paramétré</span>
+              )}
             </span>
           </button>
         );

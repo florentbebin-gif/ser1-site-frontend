@@ -143,8 +143,9 @@ function percentToRate(value: number | null | undefined): number {
 }
 
 function resolveRetirementPsDefault(ps: PsSettings): number {
-  return (ps?.retirement?.current?.brackets ?? DEFAULT_PS_SETTINGS.retirement.current.brackets)
-    .reduce((maxRate, bracket) => Math.max(maxRate, bracket.totalRate ?? 0), 0);
+  return (
+    ps?.retirement?.current?.brackets ?? DEFAULT_PS_SETTINGS.retirement.current.brackets
+  ).reduce((maxRate, bracket) => Math.max(maxRate, bracket.totalRate ?? 0), 0);
 }
 
 // ─── Normalisation ────────────────────────────────────────────────────────────
@@ -156,10 +157,11 @@ function buildFiscalContext(
   passHistory?: Record<number, number>,
 ): FiscalContext {
   const dmtg: LegacyDmtgSettings = tax?.dmtg ?? DEFAULT_TAX_SETTINGS.dmtg;
-  const perRente = fiscality?.perIndividuel?.rente ?? DEFAULT_FISCALITY_SETTINGS.perIndividuel.rente;
+  const perRente =
+    fiscality?.perIndividuel?.rente ?? DEFAULT_FISCALITY_SETTINGS.perIndividuel.rente;
   const petiteRente =
-    fiscality?.perIndividuel?.sortieCapital?.retraite?.petiteRente
-    ?? DEFAULT_FISCALITY_SETTINGS.perIndividuel.sortieCapital.retraite.petiteRente;
+    fiscality?.perIndividuel?.sortieCapital?.retraite?.petiteRente ??
+    DEFAULT_FISCALITY_SETTINGS.perIndividuel.sortieCapital.retraite.petiteRente;
   const smallAnnuityMonthlyThreshold = petiteRente.monthlyThreshold;
 
   // Normalisation DMTG : supporte les deux anciennes structures (legacy + nouvelle)
@@ -170,10 +172,8 @@ function buildFiscalContext(
 
   return {
     // IR
-    irScaleCurrent:
-      tax?.incomeTax?.scaleCurrent ?? DEFAULT_TAX_SETTINGS.incomeTax.scaleCurrent,
-    irScalePrevious:
-      tax?.incomeTax?.scalePrevious ?? DEFAULT_TAX_SETTINGS.incomeTax.scalePrevious,
+    irScaleCurrent: tax?.incomeTax?.scaleCurrent ?? DEFAULT_TAX_SETTINGS.incomeTax.scaleCurrent,
+    irScalePrevious: tax?.incomeTax?.scalePrevious ?? DEFAULT_TAX_SETTINGS.incomeTax.scalePrevious,
     irCurrentYearLabel:
       tax?.incomeTax?.currentYearLabel ?? DEFAULT_TAX_SETTINGS.incomeTax.currentYearLabel,
     irPreviousYearLabel:
@@ -186,41 +186,41 @@ function buildFiscalContext(
     psRateException:
       ps?.patrimony?.current?.exceptionRate ?? DEFAULT_PS_SETTINGS.patrimony.current.exceptionRate,
     rvtoTaxableFractionByAge:
-      perRente.rvtoTaxableFractionByAgeAtFirstPayment
-      ?? DEFAULT_FISCALITY_SETTINGS.perIndividuel.rente.rvtoTaxableFractionByAgeAtFirstPayment,
+      perRente.rvtoTaxableFractionByAgeAtFirstPayment ??
+      DEFAULT_FISCALITY_SETTINGS.perIndividuel.rente.rvtoTaxableFractionByAgeAtFirstPayment,
     psRateRenteInterests: percentToRate(
-      perRente.deduits?.interestsQuotePart?.psRatePercent
-      ?? DEFAULT_FISCALITY_SETTINGS.perIndividuel.rente.deduits.interestsQuotePart.psRatePercent,
+      perRente.deduits?.interestsQuotePart?.psRatePercent ??
+        DEFAULT_FISCALITY_SETTINGS.perIndividuel.rente.deduits.interestsQuotePart.psRatePercent,
     ),
     psRateRenteCapitalCASA: percentToRate(
-      perRente.deduits?.capitalQuotePart?.psRatePercent
-      ?? DEFAULT_FISCALITY_SETTINGS.perIndividuel.rente.deduits.capitalQuotePart.psRatePercent,
+      perRente.deduits?.capitalQuotePart?.psRatePercent ??
+        DEFAULT_FISCALITY_SETTINGS.perIndividuel.rente.deduits.capitalQuotePart.psRatePercent,
     ),
     abat10Rate: percentToRate(
-      perRente.pensionAbatementRatePercent
-      ?? DEFAULT_FISCALITY_SETTINGS.perIndividuel.rente.pensionAbatementRatePercent,
+      perRente.pensionAbatementRatePercent ??
+        DEFAULT_FISCALITY_SETTINGS.perIndividuel.rente.pensionAbatementRatePercent,
     ),
     abat10RetireesCurrent:
-      tax?.incomeTax?.abat10?.retireesCurrent
-      ?? DEFAULT_TAX_SETTINGS.incomeTax.abat10.retireesCurrent,
+      tax?.incomeTax?.abat10?.retireesCurrent ??
+      DEFAULT_TAX_SETTINGS.incomeTax.abat10.retireesCurrent,
     psRetirementBrackets:
-      ps?.retirement?.current?.brackets
-      ?? DEFAULT_PS_SETTINGS.retirement.current.brackets,
+      ps?.retirement?.current?.brackets ?? DEFAULT_PS_SETTINGS.retirement.current.brackets,
     psRateRetirementDefault: percentToRate(resolveRetirementPsDefault(ps)),
     smallAnnuityMonthlyCapitalExitThreshold: smallAnnuityMonthlyThreshold,
     smallAnnuityAnnualCapitalExitThreshold: smallAnnuityMonthlyThreshold * 12,
     smallAnnuityCapitalExitFlatTaxRate: percentToRate(
-      petiteRente.forfaitIrRatePercent
-      ?? DEFAULT_FISCALITY_SETTINGS.perIndividuel.sortieCapital.retraite.petiteRente.forfaitIrRatePercent,
+      petiteRente.forfaitIrRatePercent ??
+        DEFAULT_FISCALITY_SETTINGS.perIndividuel.sortieCapital.retraite.petiteRente
+          .forfaitIrRatePercent,
     ),
     smallAnnuityCapitalExitFlatTaxAbatementRate: percentToRate(
-      petiteRente.forfaitAbatementRatePercent
-      ?? DEFAULT_FISCALITY_SETTINGS.perIndividuel.sortieCapital.retraite.petiteRente.forfaitAbatementRatePercent,
+      petiteRente.forfaitAbatementRatePercent ??
+        DEFAULT_FISCALITY_SETTINGS.perIndividuel.sortieCapital.retraite.petiteRente
+          .forfaitAbatementRatePercent,
     ),
 
     // DMTG normalisé
-    dmtgScaleLigneDirecte:
-      ligneDirecte.scale ?? DEFAULT_TAX_SETTINGS.dmtg.ligneDirecte.scale,
+    dmtgScaleLigneDirecte: ligneDirecte.scale ?? DEFAULT_TAX_SETTINGS.dmtg.ligneDirecte.scale,
     dmtgAbattementEnfant:
       ligneDirecte.abattement ?? DEFAULT_TAX_SETTINGS.dmtg.ligneDirecte.abattement,
     dmtgSettings: {
@@ -280,7 +280,9 @@ const DEFAULT_FISCAL_CONTEXT = buildFiscalContext(
  * // Mode stale (autres pages) — retourne immédiatement
  * const { fiscalContext } = useFiscalContext();
  */
-export function useFiscalContext({ strict = false }: UseFiscalContextOptions = {}): UseFiscalContextResult {
+export function useFiscalContext({
+  strict = false,
+}: UseFiscalContextOptions = {}): UseFiscalContextResult {
   const [fiscalContext, setFiscalContext] = useState<FiscalContext>(DEFAULT_FISCAL_CONTEXT);
   const [loading, setLoading] = useState<boolean>(strict);
   const [error, setError] = useState<string | null>(null);
@@ -324,13 +326,27 @@ export function useFiscalContext({ strict = false }: UseFiscalContextOptions = {
           setError(null);
           const result = await loadFiscalSettingsStrict();
           if (!mounted) return;
-          applySettings(result.tax, result.ps, result.fiscality, result.fromCache, result.meta, result.passHistory);
+          applySettings(
+            result.tax,
+            result.ps,
+            result.fiscality,
+            result.fromCache,
+            result.meta,
+            result.passHistory,
+          );
           if (result.error) setError(result.error);
         } else {
           // Mode stale : retourne immédiatement cache/defaults
           const result = await getFiscalSettings();
           if (!mounted) return;
-          applySettings(result.tax, result.ps, result.fiscality, false, result.meta, result.passHistory);
+          applySettings(
+            result.tax,
+            result.ps,
+            result.fiscality,
+            false,
+            result.meta,
+            result.passHistory,
+          );
         }
       } catch (e: unknown) {
         if (!mounted) return;
@@ -341,7 +357,9 @@ export function useFiscalContext({ strict = false }: UseFiscalContextOptions = {
     }
 
     load();
-    return () => { mounted = false; };
+    return () => {
+      mounted = false;
+    };
   }, [strict, applySettings]);
 
   // Invalidation cache après mise à jour admin (broadcast événement)
@@ -351,10 +369,24 @@ export function useFiscalContext({ strict = false }: UseFiscalContextOptions = {
         try {
           if (strict) {
             const result = await loadFiscalSettingsStrict();
-            applySettings(result.tax, result.ps, result.fiscality, result.fromCache, result.meta, result.passHistory);
+            applySettings(
+              result.tax,
+              result.ps,
+              result.fiscality,
+              result.fromCache,
+              result.meta,
+              result.passHistory,
+            );
           } else {
             const result = await getFiscalSettings({ force: true });
-            applySettings(result.tax, result.ps, result.fiscality, false, result.meta, result.passHistory);
+            applySettings(
+              result.tax,
+              result.ps,
+              result.fiscality,
+              false,
+              result.meta,
+              result.passHistory,
+            );
           }
         } catch (e: unknown) {
           setError(e instanceof Error ? e.message : 'Erreur rechargement paramètres');

@@ -1,15 +1,9 @@
 import { useState } from 'react';
 import { SimFieldShell } from '@/components/ui/sim/SimFieldShell';
 import { SimSelect } from '@/components/ui/sim/SimSelect';
-import {
-  COMPANY_KIND_OPTIONS,
-  LEGAL_FORM_OPTIONS,
-} from '../../utils/tresorerieSocieteOptions';
+import { COMPANY_KIND_OPTIONS, LEGAL_FORM_OPTIONS } from '../../utils/tresorerieSocieteOptions';
 import type { CompanyInputV6, CompanyKind, LegalForm } from '@/engine/tresorerie/types';
-import {
-  fmtEuroInput,
-  parseEuroInput,
-} from '../../utils/tresorerieFormatters';
+import { fmtEuroInput, parseEuroInput } from '../../utils/tresorerieFormatters';
 import { hasDemembrement } from '../../utils/tresorerieSocieteModel';
 import { TresoCompanyFinancialsModal } from './TresoCompanyFinancialsModal';
 
@@ -57,19 +51,23 @@ export function TresoCompanyIdentityPanel({
         </div>
 
         <div className="ts-modal-grid">
-          <SimFieldShell label="Libellé de la société principale" className="ts-field" rowClassName="ts-field__row">
+          <SimFieldShell
+            label="Libellé de la société principale"
+            className="ts-field"
+            rowClassName="ts-field__row"
+          >
             <input
               type="text"
               className="sim-field__control ts-input-left"
               value={company.label ?? ''}
-              onChange={event => onCompanyChange({ label: event.target.value })}
+              onChange={(event) => onCompanyChange({ label: event.target.value })}
             />
           </SimFieldShell>
 
           <SimFieldShell label="Forme sociale" className="ts-field" rowClassName="ts-field__row">
             <SimSelect
               value={company.legalForm}
-              onChange={value => onCompanyChange({ legalForm: value as LegalForm })}
+              onChange={(value) => onCompanyChange({ legalForm: value as LegalForm })}
               options={LEGAL_FORM_OPTIONS}
               ariaLabel="Forme sociale"
             />
@@ -78,19 +76,25 @@ export function TresoCompanyIdentityPanel({
           <SimFieldShell label="Type société" className="ts-field" rowClassName="ts-field__row">
             <SimSelect
               value={company.companyKind ?? 'holding_patrimoniale'}
-              onChange={value => onCompanyChange({ companyKind: value as CompanyKind })}
+              onChange={(value) => onCompanyChange({ companyKind: value as CompanyKind })}
               options={COMPANY_KIND_OPTIONS}
               ariaLabel="Type société"
             />
           </SimFieldShell>
 
-          <SimFieldShell label="Trésorerie initiale" className="ts-field" rowClassName="ts-field__row">
+          <SimFieldShell
+            label="Trésorerie initiale"
+            className="ts-field"
+            rowClassName="ts-field__row"
+          >
             <input
               type="text"
               inputMode="numeric"
               className="sim-field__control"
               value={fmtEuroInput(company.treasuryInitial)}
-              onChange={event => onCompanyChange({ treasuryInitial: parseEuroInput(event.target.value) })}
+              onChange={(event) =>
+                onCompanyChange({ treasuryInitial: parseEuroInput(event.target.value) })
+              }
             />
             <span className="sim-field__unit ts-unit">€</span>
           </SimFieldShell>
@@ -102,7 +106,7 @@ export function TresoCompanyIdentityPanel({
               <input
                 type="checkbox"
                 checked={usufructuaryReserveAttribution}
-                onChange={event =>
+                onChange={(event) =>
                   onCompanyChange({ usufructuaryReserveAttribution: event.target.checked })
                 }
               />
@@ -112,8 +116,7 @@ export function TresoCompanyIdentityPanel({
               Sauf convention ou statuts contraires : les réserves accumulées en cours de
               démembrement appartiennent au nue-propriétaire (Cass. com. 27 mai 2015 n°14-16.246).
               Si l’usufruitier les perçoit en distribution, il en bénéficie sous forme de
-              quasi-usufruit avec dette de restitution. À valider avec votre conseil juridique.
-              {' '}
+              quasi-usufruit avec dette de restitution. À valider avec votre conseil juridique.{' '}
               {usufructuaryReserveAttribution
                 ? 'Réserves distribuables : reparties selon les droits économiques.'
                 : 'Réserves distribuables : reparties uniquement aux associés en pleine propriété.'}

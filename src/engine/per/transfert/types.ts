@@ -1,9 +1,21 @@
-import type { BaseCgRetraiteContractType, PerTransfertCompartment, PrefonPointsParams } from '@/data/basecg';
+import type {
+  BaseCgRetraiteContractType,
+  PerTransfertCompartment,
+  PrefonPointsParams,
+} from '@/data/basecg';
 import type { MortalityTableCode } from '@/data/mortality';
 
 export type { PerTransfertCompartment } from '@/data/basecg';
 
-export type PerTransfertProductType = 'PER' | 'PERP' | 'MADELIN' | 'ARTICLE83' | 'PEROB' | 'PERCO' | 'PERECO' | 'PER_POINTS';
+export type PerTransfertProductType =
+  | 'PER'
+  | 'PERP'
+  | 'MADELIN'
+  | 'ARTICLE83'
+  | 'PEROB'
+  | 'PERCO'
+  | 'PERECO'
+  | 'PER_POINTS';
 export type PerTransfertSex = 'M' | 'F';
 export type PerTransfertPaymentTiming = 'arrears' | 'advance';
 export type PerTransfertFiscalFamily = 'RVTG' | 'RVTO';
@@ -36,7 +48,11 @@ export interface PerTransfertTemporaryIncreaseInput {
 }
 
 export interface PerTransfertFiscalAssumptions {
-  rvtoTaxableFractionByAge: Array<{ label: string; ageMaxInclusive: number | null; fraction: number }>;
+  rvtoTaxableFractionByAge: Array<{
+    label: string;
+    ageMaxInclusive: number | null;
+    fraction: number;
+  }>;
   pfuIrRate: number;
   psRatePatrimony: number;
   psRateRenteInterests: number;

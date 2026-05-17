@@ -70,7 +70,9 @@ export default function SettingsTable({
               const inputValue =
                 col.type === 'text'
                   ? String(value ?? '')
-                  : numberOrEmpty(typeof value === 'number' ? value : value == null ? null : Number(value));
+                  : numberOrEmpty(
+                      typeof value === 'number' ? value : value == null ? null : Number(value),
+                    );
 
               return (
                 <td key={col.key} className={col.className}>
@@ -81,11 +83,7 @@ export default function SettingsTable({
                     onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                       const raw = e.target.value;
                       const parsed: CellValue =
-                        raw === ''
-                          ? null
-                          : col.type === 'text'
-                            ? raw
-                            : Number(raw);
+                        raw === '' ? null : col.type === 'text' ? raw : Number(raw);
                       onCellChange(rowIdx, col.key, parsed);
                     }}
                     disabled={disabled}

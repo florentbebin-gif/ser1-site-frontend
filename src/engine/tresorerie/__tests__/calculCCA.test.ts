@@ -4,20 +4,37 @@ import { calculApportCCAAnnuel, calculCCACumule, calculRemboursementCCA } from '
 
 describe('calculCCA', () => {
   it('calcule le CCA cumulé avec initial et apport annuel', () => {
-    expect(calculCCACumule({ ccaInitial: 100000, apportAnnuelCCA: 16600, dureeActiveAns: 20, annee: 1 }))
-      .toBe(116600);
+    expect(
+      calculCCACumule({ ccaInitial: 100000, apportAnnuelCCA: 16600, dureeActiveAns: 20, annee: 1 }),
+    ).toBe(116600);
   });
 
   it('plafonne le CCA cumulé à la durée active', () => {
-    const cumule20 = calculCCACumule({ ccaInitial: 100000, apportAnnuelCCA: 16600, dureeActiveAns: 20, annee: 20 });
-    const cumule25 = calculCCACumule({ ccaInitial: 100000, apportAnnuelCCA: 16600, dureeActiveAns: 20, annee: 25 });
+    const cumule20 = calculCCACumule({
+      ccaInitial: 100000,
+      apportAnnuelCCA: 16600,
+      dureeActiveAns: 20,
+      annee: 20,
+    });
+    const cumule25 = calculCCACumule({
+      ccaInitial: 100000,
+      apportAnnuelCCA: 16600,
+      dureeActiveAns: 20,
+      annee: 25,
+    });
 
     expect(cumule25).toBe(cumule20);
   });
 
   it('retourne un apport CCA nul en phase retraite', () => {
-    expect(calculApportCCAAnnuel({ ccaInitial: 100000, apportAnnuelCCA: 16600, annee: 25, dureeActiveAns: 20 }))
-      .toBe(0);
+    expect(
+      calculApportCCAAnnuel({
+        ccaInitial: 100000,
+        apportAnnuelCCA: 16600,
+        annee: 25,
+        dureeActiveAns: 20,
+      }),
+    ).toBe(0);
   });
 
   it('plafonne le remboursement CCA par le solde restant dû', () => {

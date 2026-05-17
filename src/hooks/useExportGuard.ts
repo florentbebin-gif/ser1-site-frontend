@@ -13,7 +13,10 @@
  */
 
 import { useCallback, useEffect } from 'react';
-import { registerTrackedObjectURL, revokeAllTrackedObjectURLs } from '../utils/export/createTrackedObjectURL';
+import {
+  registerTrackedObjectURL,
+  revokeAllTrackedObjectURLs,
+} from '../utils/export/createTrackedObjectURL';
 
 export interface ExportGuardState {
   /** false si la session est expirée — désactiver les boutons export */

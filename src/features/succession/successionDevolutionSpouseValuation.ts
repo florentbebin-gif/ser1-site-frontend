@@ -24,9 +24,7 @@ function getSurvivingSpouseBirthDate(
   civil: SuccessionCivilContext,
   simulatedDeceased: SuccessionPrimarySide,
 ): string | undefined {
-  return simulatedDeceased === 'epoux1'
-    ? civil.dateNaissanceEpoux2
-    : civil.dateNaissanceEpoux1;
+  return simulatedDeceased === 'epoux1' ? civil.dateNaissanceEpoux2 : civil.dateNaissanceEpoux1;
 }
 
 export function getDonationEntreEpouxValuation(
@@ -102,7 +100,7 @@ export function getDonationEntreEpouxValuation(
       `Donation entre \u00e9poux mixte: valorisation art. 669 CGI sur 3/4 d\u00e9membr\u00e9s, usufruitier \u00e2g\u00e9 de ${demembreValuation.age} ans.`,
     );
     return {
-      conjointAmount: (masseReference * 0.25) + demembreValuation.valeurUsufruit,
+      conjointAmount: masseReference * 0.25 + demembreValuation.valeurUsufruit,
       descendantsAmount: demembreValuation.valeurNuePropriete,
       conjointRights: `1/4 en pleine propri\u00e9t\u00e9 + usufruit des 3/4 (${Math.round(demembreValuation.tauxUsufruit * 100)}% sur la part d\u00e9membr\u00e9e)`,
       descendantsRights: `Nue-propri\u00e9t\u00e9 des 3/4 (${Math.round(demembreValuation.tauxNuePropriete * 100)}% sur la part d\u00e9membr\u00e9e)`,
@@ -162,8 +160,7 @@ export function getLegalSpouseValuationWithoutDonation(
     return {
       conjointAmount: masseReference * 0.25,
       descendantsAmount: masseReference * 0.75,
-      conjointRights:
-        'Usufruit de la totalite (repli de calcul 1/4 PP faute de date de naissance)',
+      conjointRights: 'Usufruit de la totalite (repli de calcul 1/4 PP faute de date de naissance)',
       descendantsRights:
         '75% en pleine propri\u00e9t\u00e9 (repli moteur faute de valorisation art. 669 CGI)',
       warnings,

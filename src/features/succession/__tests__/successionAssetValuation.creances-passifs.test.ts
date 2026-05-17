@@ -24,8 +24,20 @@ describe('computeSuccessionAssetValuation - créances et passifs', () => {
         ],
       },
       assetEntries: [
-        { id: 'asset-1', pocket: 'epoux1', category: 'financier', subCategory: 'Titres', amount: 100_000 },
-        { id: 'asset-2', pocket: 'epoux2', category: 'financier', subCategory: 'Comptes', amount: 80_000 },
+        {
+          id: 'asset-1',
+          pocket: 'epoux1',
+          category: 'financier',
+          subCategory: 'Titres',
+          amount: 100_000,
+        },
+        {
+          id: 'asset-2',
+          pocket: 'epoux2',
+          category: 'financier',
+          subCategory: 'Comptes',
+          amount: 80_000,
+        },
       ],
       groupementFoncierEntries: [],
       forfaitMobilierMode: 'off',
@@ -35,7 +47,7 @@ describe('computeSuccessionAssetValuation - créances et passifs', () => {
     });
 
     expect(result.interMassClaimsSummary.totalAppliedAmount).toBe(30_000);
-    expect(result.assetNetTotals.epoux1).toBe(70_000);  // 100 000 - 30 000
+    expect(result.assetNetTotals.epoux1).toBe(70_000); // 100 000 - 30 000
     expect(result.assetNetTotals.epoux2).toBe(110_000); // 80 000 + 30 000
   });
 
@@ -56,8 +68,20 @@ describe('computeSuccessionAssetValuation - créances et passifs', () => {
         ],
       },
       assetEntries: [
-        { id: 'asset-1', pocket: 'communaute', category: 'financier', subCategory: 'Comptes', amount: 40_000 },
-        { id: 'asset-2', pocket: 'epoux1', category: 'financier', subCategory: 'Titres', amount: 200_000 },
+        {
+          id: 'asset-1',
+          pocket: 'communaute',
+          category: 'financier',
+          subCategory: 'Comptes',
+          amount: 40_000,
+        },
+        {
+          id: 'asset-2',
+          pocket: 'epoux1',
+          category: 'financier',
+          subCategory: 'Titres',
+          amount: 200_000,
+        },
       ],
       groupementFoncierEntries: [],
       forfaitMobilierMode: 'off',
@@ -90,7 +114,13 @@ describe('computeSuccessionAssetValuation - créances et passifs', () => {
         ],
       },
       assetEntries: [
-        { id: 'asset-1', pocket: 'epoux1', category: 'financier', subCategory: 'Comptes', amount: 200_000 },
+        {
+          id: 'asset-1',
+          pocket: 'epoux1',
+          category: 'financier',
+          subCategory: 'Comptes',
+          amount: 200_000,
+        },
       ],
       groupementFoncierEntries: [],
       forfaitMobilierMode: 'off',
@@ -108,9 +138,27 @@ describe('computeSuccessionAssetValuation - créances et passifs', () => {
     const result = computeSuccessionAssetValuation({
       civilContext: marriedCivilContext,
       assetEntries: [
-        { id: 'asset-1', pocket: 'epoux1', category: 'financier', subCategory: 'Comptes', amount: 120000 },
-        { id: 'passif-1', pocket: 'epoux1', category: 'passif', subCategory: 'Emprunt', amount: 30000 },
-        { id: 'passif-2', pocket: 'communaute', category: 'passif', subCategory: 'Dette fiscale', amount: 15000 },
+        {
+          id: 'asset-1',
+          pocket: 'epoux1',
+          category: 'financier',
+          subCategory: 'Comptes',
+          amount: 120000,
+        },
+        {
+          id: 'passif-1',
+          pocket: 'epoux1',
+          category: 'passif',
+          subCategory: 'Emprunt',
+          amount: 30000,
+        },
+        {
+          id: 'passif-2',
+          pocket: 'communaute',
+          category: 'passif',
+          subCategory: 'Dette fiscale',
+          amount: 15000,
+        },
       ],
       groupementFoncierEntries: [],
       forfaitMobilierMode: 'off',
@@ -152,9 +200,27 @@ describe('computeSuccessionAssetValuation - créances et passifs', () => {
         ],
       },
       assetEntries: [
-        { id: 'a1', pocket: 'communaute', category: 'financier', subCategory: 'Titres', amount: 200_000 },
-        { id: 'a2', pocket: 'epoux1', category: 'financier', subCategory: 'Comptes', amount: 100_000 },
-        { id: 'a3', pocket: 'epoux2', category: 'financier', subCategory: 'Comptes', amount: 80_000 },
+        {
+          id: 'a1',
+          pocket: 'communaute',
+          category: 'financier',
+          subCategory: 'Titres',
+          amount: 200_000,
+        },
+        {
+          id: 'a2',
+          pocket: 'epoux1',
+          category: 'financier',
+          subCategory: 'Comptes',
+          amount: 100_000,
+        },
+        {
+          id: 'a3',
+          pocket: 'epoux2',
+          category: 'financier',
+          subCategory: 'Comptes',
+          amount: 80_000,
+        },
       ],
       groupementFoncierEntries: [],
       forfaitMobilierMode: 'off',

@@ -11,4 +11,9 @@ export const MORTALITY_TABLES: Record<MortalityTableCode, MortalityTable> = {
   TPG93,
 };
 
-export type { GenerationMortalityTable, MortalityTable, MortalityTableCode, SingleMortalityTable } from './types';
+export type {
+  GenerationMortalityTable,
+  MortalityTable,
+  MortalityTableCode,
+  SingleMortalityTable,
+} from './types';

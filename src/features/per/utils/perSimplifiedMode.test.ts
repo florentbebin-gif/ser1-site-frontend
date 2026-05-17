@@ -20,10 +20,12 @@ describe('perSimplifiedMode', () => {
   });
 
   it('détecte un état qui ne correspond pas au preset simplifié', () => {
-    expect(isPerSimplifiedPresetState({
-      mode: 'versement-n',
-      historicalBasis: 'previous-avis-plus-n1',
-      needsCurrentYearEstimate: false,
-    })).toBe(false);
+    expect(
+      isPerSimplifiedPresetState({
+        mode: 'versement-n',
+        historicalBasis: 'previous-avis-plus-n1',
+        needsCurrentYearEstimate: false,
+      }),
+    ).toBe(false);
   });
 });

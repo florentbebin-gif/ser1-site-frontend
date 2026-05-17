@@ -1,12 +1,5 @@
-import type {
-  FamilyMember,
-  FamilyMemberType,
-  SuccessionEnfant,
-} from './successionDraft';
-import {
-  CLAUSE_CONJOINT_LABEL,
-  CLAUSE_ENFANTS_LABEL,
-} from './successionSimulator.constants';
+import type { FamilyMember, FamilyMemberType, SuccessionEnfant } from './successionDraft';
+import { CLAUSE_CONJOINT_LABEL, CLAUSE_ENFANTS_LABEL } from './successionSimulator.constants';
 
 export type ClauseBeneficiairePreset =
   | 'conjoint_enfants'
@@ -34,9 +27,12 @@ export function parseCustomClause(clause: string): Record<string, number> {
 }
 
 export function serializeCustomClause(parts: Record<string, number>): string {
-  return 'CUSTOM:' + Object.entries(parts)
-    .map(([id, pct]) => `${id}:${pct}`)
-    .join(';');
+  return (
+    'CUSTOM:' +
+    Object.entries(parts)
+      .map(([id, pct]) => `${id}:${pct}`)
+      .join(';')
+  );
 }
 
 function getGenericFamilyMemberTypeLabel(type: FamilyMemberType): string {

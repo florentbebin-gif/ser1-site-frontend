@@ -1,6 +1,6 @@
 /**
  * Calculs de projections financières
- * 
+ *
  * Projections simplifiées MVP :
  * - Baseline : situation actuelle sans intervention
  * - Stratégie : avec les produits sélectionnés
@@ -38,7 +38,7 @@ export function calculateBaselineProjection(
   fiscalContext?: FiscalContext | null,
 ): Scenario {
   const projections: Projection[] = [];
-  
+
   const totalActifs = dossier.actifs.reduce((sum, a) => sum + a.valeur, 0);
   const totalPassifs = dossier.passif.emprunts.reduce((sum, e) => sum + e.capitalRestantDu, 0);
 
@@ -52,7 +52,11 @@ export function calculateBaselineProjection(
     const patrimoineTotal = actifs - passifs;
 
     // Calcul IR à partir du barème fiscalContext (ou défaut)
-    const impotRevenu = computeIR(revenuAnnuel, dossier.situationFiscale.nombreParts, fiscalContext);
+    const impotRevenu = computeIR(
+      revenuAnnuel,
+      dossier.situationFiscale.nombreParts,
+      fiscalContext,
+    );
 
     projections.push({
       annee,
@@ -87,14 +91,14 @@ export function calculateStrategyProjection(
   fiscalContext?: FiscalContext | null,
 ): Scenario {
   const projections: Projection[] = [];
-  
+
   const totalActifs = dossier.actifs.reduce((sum, a) => sum + a.valeur, 0);
   const totalPassifs = dossier.passif.emprunts.reduce((sum, e) => sum + e.capitalRestantDu, 0);
   const revenuAnnuel = dossier.situationFiscale.revenuFiscalReference;
 
   // Calcul des versements PER pour déduction IR
   const versementsPER = produits
-    .filter(p => p.type === 'per')
+    .filter((p) => p.type === 'per')
     .reduce((sum, p) => sum + (p.versementsProgrammes || 0) * 12, 0);
 
   const tauxCroissancePatrimoine = 0.03; // 3% avec stratégie optimisée
@@ -104,7 +108,7 @@ export function calculateStrategyProjection(
     const passifs = totalPassifs * Math.pow(0.95, annee);
 
     // Ajout des versements programmés capitalisés
-    produits.forEach(produit => {
+    produits.forEach((produit) => {
       if (produit.versementsProgrammes && annee > 0) {
         const versementsAnnuels = produit.versementsProgrammes * 12;
         const taux = (produit.tauxRendementEstime || 3) / 100;
@@ -121,7 +125,11 @@ export function calculateStrategyProjection(
 
     // Calcul IR avec déduction PER, à partir du barème fiscalContext (ou défaut)
     const revenuImposable = Math.max(0, revenuAnnuel - versementsPER);
-    const impotRevenu = computeIR(revenuImposable, dossier.situationFiscale.nombreParts, fiscalContext);
+    const impotRevenu = computeIR(
+      revenuImposable,
+      dossier.situationFiscale.nombreParts,
+      fiscalContext,
+    );
 
     projections.push({
       annee,
@@ -151,18 +159,23 @@ export function calculateStrategyProjection(
 /**
  * Compare les deux scénarios
  */
-export function compareScenarios(
-  baseline: Scenario,
-  strategie: Scenario
-): ComparaisonScenarios {
+export function compareScenarios(baseline: Scenario, strategie: Scenario): ComparaisonScenarios {
   const dernierAnneeBaseline = baseline.projections[baseline.projections.length - 1];
   const dernierAnneeStrategie = strategie.projections[strategie.projections.length - 1];
+  if (!dernierAnneeBaseline || !dernierAnneeStrategie) {
+    throw new Error('Comparaison impossible: scénario sans projection.');
+  }
 
-  const ecartPatrimoine = dernierAnneeStrategie.patrimoineTotal - dernierAnneeBaseline.patrimoineTotal;
+  const ecartPatrimoine =
+    dernierAnneeStrategie.patrimoineTotal - dernierAnneeBaseline.patrimoineTotal;
 
   // Somme des économies d'impôts sur la période
   const economieImpots = baseline.projections.reduce((sum, proj, idx) => {
-    return sum + (proj.impotRevenu - strategie.projections[idx].impotRevenu);
+    const strategieProjection = strategie.projections[idx];
+    if (!strategieProjection) {
+      throw new Error(`Projection stratégie manquante pour l'année ${proj.annee}.`);
+    }
+    return sum + (proj.impotRevenu - strategieProjection.impotRevenu);
   }, 0);
 
   // Estimation succession (simplifié)

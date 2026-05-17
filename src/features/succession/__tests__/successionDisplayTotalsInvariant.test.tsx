@@ -86,7 +86,9 @@ function makeChainageAnalysis({
 function buildScenario(input: ScenarioInput) {
   const avFiscalAnalysis = makeFiscalAnalysis<AvFiscalAnalysis>(input.avDroits);
   const perFiscalAnalysis = makeFiscalAnalysis<PerFiscalAnalysis>(input.perDroits);
-  const prevoyanceFiscalAnalysis = makeFiscalAnalysis<PrevoyanceFiscalAnalysis>(input.prevoyanceDroits);
+  const prevoyanceFiscalAnalysis = makeFiscalAnalysis<PrevoyanceFiscalAnalysis>(
+    input.prevoyanceDroits,
+  );
   const chainageAnalysis = makeChainageAnalysis({
     order: input.chainageOrder,
     step1Droits: input.chainageStep1Droits,
@@ -132,7 +134,9 @@ function extractSummaryHeroValue(markup: string): string | undefined {
 }
 
 function extractChronologyTotal(markup: string): string | undefined {
-  return markup.match(/<div class="sc-chrono-total"><span>Total cumule des droits<\/span><strong>([^<]+)<\/strong><\/div>/)?.[1];
+  return markup.match(
+    /<div class="sc-chrono-total"><span>Total cumule des droits<\/span><strong>([^<]+)<\/strong><\/div>/,
+  )?.[1];
 }
 
 function renderSummary({
@@ -323,24 +327,24 @@ describe('invariants droits affiches succession', () => {
   it.each(['celibataire', 'divorce', 'veuf'] as const)(
     'null la projection autre assuré pour %s et masque le bloc dans la Chronologie',
     () => {
-    const scenario = buildScenario({
-      displayUsesChainage: false,
-      hasSecondSubject: false,
-      directSimulatedDeceased: 'epoux1',
-      directSuccessionDroits: 100,
-      chainageOrder: 'epoux1',
-      chainageStep1Droits: 0,
-      chainageStep2Droits: 0,
-      avDroits: { epoux1: 10, epoux2: 999 },
-      perDroits: { epoux1: 20, epoux2: 999 },
-      prevoyanceDroits: { epoux1: 30, epoux2: 999 },
-    });
+      const scenario = buildScenario({
+        displayUsesChainage: false,
+        hasSecondSubject: false,
+        directSimulatedDeceased: 'epoux1',
+        directSuccessionDroits: 100,
+        chainageOrder: 'epoux1',
+        chainageStep1Droits: 0,
+        chainageStep2Droits: 0,
+        avDroits: { epoux1: 10, epoux2: 999 },
+        perDroits: { epoux1: 20, epoux2: 999 },
+        prevoyanceDroits: { epoux1: 30, epoux2: 999 },
+      });
 
-    expect(scenario.displayTotals.projectionAutreAssure).toBeNull();
+      expect(scenario.displayTotals.projectionAutreAssure).toBeNull();
 
-    const timelineMarkup = renderTimeline(scenario);
-    expect(timelineMarkup).not.toContain('Projection autre assuré');
-    expect(timelineMarkup).not.toContain('La succession patrimoniale future');
+      const timelineMarkup = renderTimeline(scenario);
+      expect(timelineMarkup).not.toContain('Projection autre assuré');
+      expect(timelineMarkup).not.toContain('La succession patrimoniale future');
     },
   );
 

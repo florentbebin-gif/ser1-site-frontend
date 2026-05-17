@@ -50,9 +50,10 @@ export function computeSuccessionParticipationAcquetsSummary({
   liquidation,
   patrimonial,
 }: ComputeSuccessionParticipationAcquetsSummaryInput): SuccessionParticipationAcquetsSummary | null {
-  const configured = civil.situationMatrimoniale === 'marie'
-    && civil.regimeMatrimonial === 'participation_acquets'
-    && regimeUsed === 'separation_biens';
+  const configured =
+    civil.situationMatrimoniale === 'marie' &&
+    civil.regimeMatrimonial === 'participation_acquets' &&
+    regimeUsed === 'separation_biens';
   if (!configured) return null;
 
   const config = patrimonial?.participationAcquets;
@@ -98,19 +99,16 @@ export function computeSuccessionParticipationAcquetsSummary({
     creditor = 'epoux2';
     debtor = 'epoux1';
     quoteAppliedPct = asAmount(config.quoteEpoux2Pct);
-    creanceAmount = Math.max(0, acquetsEpoux1 - acquetsEpoux2) * quoteAppliedPct / 100;
+    creanceAmount = (Math.max(0, acquetsEpoux1 - acquetsEpoux2) * quoteAppliedPct) / 100;
   } else if (acquetsEpoux2 > acquetsEpoux1) {
     creditor = 'epoux1';
     debtor = 'epoux2';
     quoteAppliedPct = asAmount(config.quoteEpoux1Pct);
-    creanceAmount = Math.max(0, acquetsEpoux2 - acquetsEpoux1) * quoteAppliedPct / 100;
+    creanceAmount = (Math.max(0, acquetsEpoux2 - acquetsEpoux1) * quoteAppliedPct) / 100;
   }
 
-  const firstEstateAdjustment = creditor === order
-    ? creanceAmount
-    : creditor === getOtherSide(order)
-      ? -creanceAmount
-      : 0;
+  const firstEstateAdjustment =
+    creditor === order ? creanceAmount : creditor === getOtherSide(order) ? -creanceAmount : 0;
 
   const warnings: string[] = [];
   if (creanceAmount > 0 && creditor && debtor) {
@@ -118,14 +116,20 @@ export function computeSuccessionParticipationAcquetsSummary({
       `Participation aux acquets: creance de ${Math.round(creanceAmount).toLocaleString('fr-FR')} EUR due par ${debtor === 'epoux1' ? 'Epoux 1' : 'Epoux 2'} au profit de ${creditor === 'epoux1' ? 'Epoux 1' : 'Epoux 2'} (quote ${Math.round(quoteAppliedPct)} %).`,
     );
   } else {
-    warnings.push('Participation aux acquets: aucune creance nette calculee sur les acquets declares.');
+    warnings.push(
+      'Participation aux acquets: aucune creance nette calculee sur les acquets declares.',
+    );
   }
 
   if (config.useCurrentAssetsAsFinalPatrimony) {
-    warnings.push('Participation aux acquets: patrimoines finals derives des actifs propres actuellement saisis.');
+    warnings.push(
+      'Participation aux acquets: patrimoines finals derives des actifs propres actuellement saisis.',
+    );
   }
   if (asAmount(liquidation.actifCommun) > 0) {
-    warnings.push('Participation aux acquets: actif commun saisi hors logique de separation, conserve hors calcul de creance.');
+    warnings.push(
+      'Participation aux acquets: actif commun saisi hors logique de separation, conserve hors calcul de creance.',
+    );
   }
 
   return {

@@ -5,7 +5,7 @@
 import type { ObjectifClient } from '../audit/types';
 
 // Types de produits disponibles (MVP)
-export type ProduitType = 
+export type ProduitType =
   | 'per'
   | 'assurance_vie'
   | 'cto'

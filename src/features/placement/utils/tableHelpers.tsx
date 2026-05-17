@@ -39,7 +39,7 @@ export const structuralEpargneColumns: ColumnName[] = [
 ];
 
 export const columnResolvers: Record<ColumnName, ColumnResolver> = {
-  'Âge': (row) => row.age,
+  Âge: (row) => row.age,
   'Capital début': (row) => row.capitalDebut,
   'Versement net': (row) => row.versementNet,
   'Poche capi (fin)': (row) => row.capitalCapi,
@@ -93,8 +93,26 @@ export function buildColumns(produit: PlacementTableProduct): ColumnName[] {
     produit.envelope === 'SCPI'
       ? ['Âge', 'Capital', 'Loyers bruts', 'Fiscalité', 'Loyers nets', 'Capital fin']
       : ['CTO', 'PEA'].includes(produit.envelope || '')
-        ? ['Âge', 'Capital', 'Cession brute', 'PV latente (début)', 'Fiscalité', 'Cession nette', 'PV latente (fin)', 'Capital fin']
-        : ['Âge', 'Capital début', 'Retrait brut', 'Part intérêts', 'Part capital', 'Fiscalité', 'Retrait net', 'Capital fin'];
+        ? [
+            'Âge',
+            'Capital',
+            'Cession brute',
+            'PV latente (début)',
+            'Fiscalité',
+            'Cession nette',
+            'PV latente (fin)',
+            'Capital fin',
+          ]
+        : [
+            'Âge',
+            'Capital début',
+            'Retrait brut',
+            'Part intérêts',
+            'Part capital',
+            'Fiscalité',
+            'Retrait net',
+            'Capital fin',
+          ];
 
   if (produit.envelope === 'PER' && produit?.versementConfig?.annuel?.garantieBonneFin?.active) {
     baseColumns.splice(baseColumns.length - 1, 0, 'Capital décès théorique');
@@ -104,7 +122,8 @@ export function buildColumns(produit: PlacementTableProduct): ColumnName[] {
 }
 
 export const hasDegressifData = (produit?: PlacementTableProduct | null): boolean =>
-  produit?.epargne?.rows?.some((row) => Math.abs(row.capitalDecesDegressif || 0) > EPSILON) || false;
+  produit?.epargne?.rows?.some((row) => Math.abs(row.capitalDecesDegressif || 0) > EPSILON) ||
+  false;
 
 export const shouldShowDegressifColumn = (produit?: PlacementTableProduct | null): boolean =>
   produit?.envelope === 'PER' &&
@@ -195,7 +214,9 @@ export function renderEpargneCell(
       return (
         <>
           {euro(gainsValue)}
-          <div className="pl-detail-cumul">Cumul : {euro(row.cumulGains ?? row.cumulInterets ?? 0)}</div>
+          <div className="pl-detail-cumul">
+            Cumul : {euro(row.cumulGains ?? row.cumulInterets ?? 0)}
+          </div>
         </>
       );
     }
@@ -206,8 +227,10 @@ export function renderEpargneCell(
         <>
           {euro(row.reinvestissement ?? 0)}
           <div className="pl-detail-cumul">
-            {produit.envelope === 'SCPI' ? 'Loyer net N (réinvesti N+1)' : 'Coupon net N (réinvesti N+1)'} :{' '}
-            {euro(row.reinvestissementDistribNetAnnee ?? 0)}
+            {produit.envelope === 'SCPI'
+              ? 'Loyer net N (réinvesti N+1)'
+              : 'Coupon net N (réinvesti N+1)'}{' '}
+            : {euro(row.reinvestissementDistribNetAnnee ?? 0)}
           </div>
         </>
       );

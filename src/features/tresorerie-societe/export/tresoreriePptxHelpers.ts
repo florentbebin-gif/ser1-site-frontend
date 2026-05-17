@@ -13,7 +13,9 @@ export function positiveAmount(value: number | undefined): number {
 }
 
 export function getMinimumBankBalance(inputs: TresoInputsRuntime): number {
-  return positiveAmount(inputs.allocationMatrix.minimumBankBalance ?? inputs.allocationMatrix.sweepThreshold);
+  return positiveAmount(
+    inputs.allocationMatrix.minimumBankBalance ?? inputs.allocationMatrix.sweepThreshold,
+  );
 }
 
 export function getWorkingCapitalRequirement(inputs: TresoInputsRuntime): number {

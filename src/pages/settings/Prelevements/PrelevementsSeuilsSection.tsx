@@ -47,9 +47,7 @@ export default function PrelevementsSeuilsSection({
         <span className="settings-premium-title settings-premium-title--flush">
           Seuils de revenus pour la CSG, la CRDS et la CASA (RFR)
         </span>
-        <span className="fisc-acc-chevron">
-          {isOpen ? 'v' : '>'}
-        </span>
+        <span className="fisc-acc-chevron">{isOpen ? 'v' : '>'}</span>
       </button>
 
       {isOpen && (
@@ -60,11 +58,10 @@ export default function PrelevementsSeuilsSection({
           aria-labelledby="prelev-header-seuils"
         >
           <p className="fisc-intro">
-            Seuils de revenu fiscal de référence (RFR) utilisés pour déterminer
-            l'exonération ou l'assujettissement aux taux réduit, médian
-            ou normal de CSG sur les pensions de retraite. Ces seuils s'appliquent
-            aussi pour la CRDS et la CASA. Les montants sont indiqués pour{' '}
-            <strong>1 part</strong>, avec une majoration par{' '}
+            Seuils de revenu fiscal de référence (RFR) utilisés pour déterminer l'exonération ou
+            l'assujettissement aux taux réduit, médian ou normal de CSG sur les pensions de
+            retraite. Ces seuils s'appliquent aussi pour la CRDS et la CASA. Les montants sont
+            indiqués pour <strong>1 part</strong>, avec une majoration par{' '}
             <strong>quart de part supplémentaire</strong>.
           </p>
 

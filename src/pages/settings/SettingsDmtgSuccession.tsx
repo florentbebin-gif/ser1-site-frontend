@@ -9,11 +9,7 @@ import { UserInfoBanner } from '@/components/UserInfoBanner';
 import { DEFAULT_TAX_SETTINGS, DEFAULT_FISCALITY_SETTINGS } from '@/constants/settingsDefaults';
 
 import ImpotsDmtgSection from './Impots/ImpotsDmtgSection';
-import {
-  validateDmtg,
-  validateAvDeces,
-  isValid,
-} from './validators/dmtgValidators';
+import { validateDmtg, validateAvDeces, isValid } from './validators/dmtgValidators';
 import { DEFAULT_DONATION } from './DmtgSuccession/dmtgReferenceData';
 import {
   formatDmtgSchemaError,
@@ -69,7 +65,9 @@ export default function SettingsDmtgSuccession() {
   const { isAdmin } = useUserRole();
   const [loading, setLoading] = useState(true);
   const [taxSettings, setTaxSettings] = useState<TaxSettings>(DEFAULT_TAX_SETTINGS);
-  const [fiscalitySettings, setFiscalitySettings] = useState<FiscalitySettings>(DEFAULT_FISCALITY_SETTINGS);
+  const [fiscalitySettings, setFiscalitySettings] = useState<FiscalitySettings>(
+    DEFAULT_FISCALITY_SETTINGS,
+  );
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState('');
   const [openSection, setOpenSection] = useState<string | null>(null);
@@ -92,8 +90,9 @@ export default function SettingsDmtgSuccession() {
           error: { code?: string } | null;
         };
 
-        if (!taxRes.error && taxRes.data && taxRes.data.length > 0 && taxRes.data[0].data) {
-          const normalizedData = normalizeDmtgTaxSettingsForLoad(taxRes.data[0].data);
+        const taxRow = taxRes.data?.[0];
+        if (!taxRes.error && taxRow?.data) {
+          const normalizedData = normalizeDmtgTaxSettingsForLoad(taxRow.data);
           if (mounted && normalizedData) {
             const normalizedTaxSettings = normalizedData as Partial<TaxSettings>;
             setTaxSettings((prev) => ({ ...prev, ...normalizedTaxSettings }));
@@ -102,8 +101,9 @@ export default function SettingsDmtgSuccession() {
           console.error('Erreur chargement tax_settings :', taxRes.error);
         }
 
-        if (!fiscRes.error && fiscRes.data && fiscRes.data.length > 0 && fiscRes.data[0].data) {
-          const fiscalityData = fiscRes.data[0].data;
+        const fiscalityRow = fiscRes.data?.[0];
+        if (!fiscRes.error && fiscalityRow?.data) {
+          const fiscalityData = fiscalityRow.data;
           if (mounted) {
             setFiscalitySettings((prev) => ({ ...prev, ...fiscalityData }));
           }
@@ -142,7 +142,7 @@ export default function SettingsDmtgSuccession() {
             [categoryKey]: {
               ...category,
               scale: category.scale.map((row, i) =>
-                i === idx ? { ...row, [key]: cellValue as DmtgScaleRow[keyof DmtgScaleRow] } : row
+                i === idx ? { ...row, [key]: cellValue as DmtgScaleRow[keyof DmtgScaleRow] } : row,
               ),
             },
           },
@@ -170,10 +170,12 @@ export default function SettingsDmtgSuccession() {
       let obj = clone.donation as NestedRecord;
       for (let i = 0; i < path.length - 1; i += 1) {
         const key = path[i];
+        if (!key) continue;
         if (obj[key] === undefined || obj[key] === null) obj[key] = {};
         obj = obj[key] as NestedRecord;
       }
-      obj[path[path.length - 1]] = value;
+      const lastKey = path[path.length - 1];
+      if (lastKey) obj[lastKey] = value;
       return clone;
     });
     setMessage('');
@@ -185,10 +187,12 @@ export default function SettingsDmtgSuccession() {
       let obj = clone.assuranceVie.deces as NestedRecord;
       for (let i = 0; i < path.length - 1; i += 1) {
         const key = path[i];
+        if (!key) continue;
         if (obj[key] === undefined || obj[key] === null) obj[key] = {};
         obj = obj[key] as NestedRecord;
       }
-      obj[path[path.length - 1]] = value;
+      const lastKey = path[path.length - 1];
+      if (lastKey) obj[lastKey] = value;
       return clone;
     });
     setMessage('');
@@ -197,7 +201,7 @@ export default function SettingsDmtgSuccession() {
   const dmtgErrors = useMemo(() => validateDmtg(taxSettings.dmtg), [taxSettings.dmtg]);
   const avDecesErrors = useMemo(
     () => validateAvDeces(fiscalitySettings.assuranceVie?.deces),
-    [fiscalitySettings.assuranceVie?.deces]
+    [fiscalitySettings.assuranceVie?.deces],
   );
   const hasErrors = !isValid(dmtgErrors, avDecesErrors);
   const dmtgGoldenCheck = useMemo(
@@ -231,18 +235,22 @@ export default function SettingsDmtgSuccession() {
         supabase.from('fiscality_settings').select('data').eq('id', 1).maybeSingle(),
       ]);
 
-      if ((existingTaxRes.error && existingTaxRes.error.code !== 'PGRST116')
-        || (existingFiscRes.error && existingFiscRes.error.code !== 'PGRST116')) {
+      if (
+        (existingTaxRes.error && existingTaxRes.error.code !== 'PGRST116') ||
+        (existingFiscRes.error && existingFiscRes.error.code !== 'PGRST116')
+      ) {
         console.error(existingTaxRes.error, existingFiscRes.error);
-        setMessage("Erreur lors du chargement des paramètres existants.");
+        setMessage('Erreur lors du chargement des paramètres existants.');
         return;
       }
 
       const existingTaxData = (existingTaxRes.data?.data as Partial<TaxSettings> | null) ?? {};
-      const existingFiscData = (existingFiscRes.data?.data as Partial<FiscalitySettings> | null) ?? {};
+      const existingFiscData =
+        (existingFiscRes.data?.data as Partial<FiscalitySettings> | null) ?? {};
 
       // Pruning : retirer les champs donation obsolètes persistés en DB (ex: donManuel).
-      const { donManuel: _donManuel, ...donationClean } = (taxSettings.donation ?? DEFAULT_DONATION) as Record<string, unknown>;
+      const { donManuel: _donManuel, ...donationClean } = (taxSettings.donation ??
+        DEFAULT_DONATION) as Record<string, unknown>;
       void _donManuel;
       const taxPayload: Partial<TaxSettings> = {
         ...existingTaxData,
@@ -265,8 +273,12 @@ export default function SettingsDmtgSuccession() {
       }
 
       const [taxRes, fiscRes] = await Promise.all([
-        supabase.from('tax_settings').upsert({ id: 1, data: taxValidation.data, updated_by: updatedBy }),
-        supabase.from('fiscality_settings').upsert({ id: 1, data: fiscalityValidation.data, updated_by: updatedBy }),
+        supabase
+          .from('tax_settings')
+          .upsert({ id: 1, data: taxValidation.data, updated_by: updatedBy }),
+        supabase
+          .from('fiscality_settings')
+          .upsert({ id: 1, data: fiscalityValidation.data, updated_by: updatedBy }),
       ]);
 
       if (taxRes.error || fiscRes.error) {
@@ -293,7 +305,8 @@ export default function SettingsDmtgSuccession() {
 
   const { dmtg } = taxSettings;
   const donation = { ...DEFAULT_DONATION, ...taxSettings.donation };
-  const avDeces = fiscalitySettings.assuranceVie?.deces || DEFAULT_FISCALITY_SETTINGS.assuranceVie.deces;
+  const avDeces =
+    fiscalitySettings.assuranceVie?.deces || DEFAULT_FISCALITY_SETTINGS.assuranceVie.deces;
 
   return (
     <div className="settings-stack settings-stack--offset">
@@ -334,25 +347,13 @@ export default function SettingsDmtgSuccession() {
           errors={avDecesErrors}
         />
 
-        <ReserveCivilSection
-          openSection={openSection}
-          setOpenSection={setOpenSection}
-        />
+        <ReserveCivilSection openSection={openSection} setOpenSection={setOpenSection} />
 
-        <RegimesSection
-          openSection={openSection}
-          setOpenSection={setOpenSection}
-        />
+        <RegimesSection openSection={openSection} setOpenSection={setOpenSection} />
 
-        <LiberalitesSection
-          openSection={openSection}
-          setOpenSection={setOpenSection}
-        />
+        <LiberalitesSection openSection={openSection} setOpenSection={setOpenSection} />
 
-        <AvantagesMatrimoniauxSection
-          openSection={openSection}
-          setOpenSection={setOpenSection}
-        />
+        <AvantagesMatrimoniauxSection openSection={openSection} setOpenSection={setOpenSection} />
       </div>
 
       {isAdmin && (
@@ -363,30 +364,31 @@ export default function SettingsDmtgSuccession() {
             </div>
           )}
 
-        <button
-          type="button"
-          className="chip settings-save-btn"
-          onClick={handleSave}
-          disabled={saveDisabled}
-          title={saveTitle}
-        >
-          {saving
-            ? 'Enregistrement…'
-            : hasErrors
-              ? 'Erreurs de validation'
-              : !dmtgGoldenCheck.ok
-                ? 'Golden DMTG bloqué'
-                : 'Enregistrer DMTG & Succession'}
-        </button>
+          <button
+            type="button"
+            className="chip settings-save-btn"
+            onClick={handleSave}
+            disabled={saveDisabled}
+            title={saveTitle}
+          >
+            {saving
+              ? 'Enregistrement…'
+              : hasErrors
+                ? 'Erreurs de validation'
+                : !dmtgGoldenCheck.ok
+                  ? 'Golden DMTG bloqué'
+                  : 'Enregistrer DMTG & Succession'}
+          </button>
         </>
       )}
 
       {message && (
-        <div className={`settings-feedback-message ${message.includes('Erreur') ? 'settings-feedback-message--error' : 'settings-feedback-message--success'}`}>
+        <div
+          className={`settings-feedback-message ${message.includes('Erreur') ? 'settings-feedback-message--error' : 'settings-feedback-message--success'}`}
+        >
           {message}
         </div>
       )}
     </div>
   );
 }
-

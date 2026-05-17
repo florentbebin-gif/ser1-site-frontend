@@ -67,4 +67,3 @@ export function calculRemboursementCCA(params: {
   if (!enPhaseRetraite) return 0;
   return Math.min(besoinsRetraiteAnnuels, ccaRestantDu, Math.max(0, tresorerieDisponibleApresIS));
 }
-

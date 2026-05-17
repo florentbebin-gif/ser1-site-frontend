@@ -100,7 +100,11 @@ describe('buildSuccessionChainageAnalysis - applicabilite PACS', () => {
         situationMatrimoniale: 'pacse',
         pacsConvention: 'indivision',
       }),
-      liquidation: makeLiquidation({ actifEpoux1: 250000, actifEpoux2: 50000, actifCommun: 100000 }),
+      liquidation: makeLiquidation({
+        actifEpoux1: 250000,
+        actifEpoux2: 50000,
+        actifCommun: 100000,
+      }),
       regimeUsed: 'communaute_legale',
       order: 'epoux1',
       dmtgSettings: DEFAULT_DMTG,

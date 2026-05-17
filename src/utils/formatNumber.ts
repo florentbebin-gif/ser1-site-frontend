@@ -20,4 +20,3 @@ export const formatIntegerInput = (n: NumericLike): string => {
   const num = Number(n) || 0;
   return num === 0 ? '' : Math.round(num).toLocaleString('fr-FR');
 };
-

@@ -13,7 +13,10 @@ interface PerTransfertInfoModalProps {
   onClose: () => void;
 }
 
-const INFO_CONTENT: Record<PerTransfertInfoKind, { title: string; subtitle?: string; body: string[] }> = {
+const INFO_CONTENT: Record<
+  PerTransfertInfoKind,
+  { title: string; subtitle?: string; body: string[] }
+> = {
   subscriptionDate: {
     title: 'Date de souscription',
     body: [
@@ -66,11 +69,11 @@ export function PerTransfertInfoModal({ kind, onClose }: PerTransfertInfoModalPr
       title={content.title}
       subtitle={content.subtitle}
       onClose={onClose}
-      footer={(
+      footer={
         <button type="button" className="sim-modal-btn sim-modal-btn--primary" onClick={onClose}>
           Compris
         </button>
-      )}
+      }
     >
       <div className="per-transfert-modal-copy">
         {content.body.map((paragraph) => (

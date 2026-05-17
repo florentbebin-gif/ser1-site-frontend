@@ -24,18 +24,18 @@ export const TMI_BRACKETS = [
 ] as const;
 
 const CONTENT_TOP_Y = COORDS_CONTENT.content.y;
-const VERTICAL_SHIFT = 0.40;
-const KPI_TO_BAR_GAP = 0.30;
+const VERTICAL_SHIFT = 0.4;
+const KPI_TO_BAR_GAP = 0.3;
 const CURSOR_TO_CONTENT_GAP = 0.42;
 
 export const LAYOUT = {
   marginX: COORDS_CONTENT.margin.x,
   contentWidth: COORDS_CONTENT.margin.w,
   kpi: {
-    iconSize: 0.50,
+    iconSize: 0.5,
     iconY: CONTENT_TOP_Y + VERTICAL_SHIFT,
     labelY: CONTENT_TOP_Y + VERTICAL_SHIFT + 0.55,
-    valueY: CONTENT_TOP_Y + VERTICAL_SHIFT + 0.80,
+    valueY: CONTENT_TOP_Y + VERTICAL_SHIFT + 0.8,
     colWidth: 2.9,
     colSpacing: 0.15,
     sectionEndY: CONTENT_TOP_Y + VERTICAL_SHIFT + 1.12,
@@ -43,29 +43,77 @@ export const LAYOUT = {
   bar: {
     y: CONTENT_TOP_Y + VERTICAL_SHIFT + 1.12 + KPI_TO_BAR_GAP,
     height: 0.33,
-    marginX: 0.60,
+    marginX: 0.6,
     endY: CONTENT_TOP_Y + VERTICAL_SHIFT + 1.12 + KPI_TO_BAR_GAP + 0.33,
   },
   cursor: {
     y: CONTENT_TOP_Y + VERTICAL_SHIFT + 1.12 + KPI_TO_BAR_GAP + 0.33,
-    height: 0.20,
+    height: 0.2,
   },
   callout: {
-    y: CONTENT_TOP_Y + VERTICAL_SHIFT + 1.12 + KPI_TO_BAR_GAP + 0.33 + 0.20 + CURSOR_TO_CONTENT_GAP,
-    height: 0.20,
-    endY: CONTENT_TOP_Y + VERTICAL_SHIFT + 1.12 + KPI_TO_BAR_GAP + 0.33 + 0.20 + CURSOR_TO_CONTENT_GAP + 0.20,
+    y: CONTENT_TOP_Y + VERTICAL_SHIFT + 1.12 + KPI_TO_BAR_GAP + 0.33 + 0.2 + CURSOR_TO_CONTENT_GAP,
+    height: 0.2,
+    endY:
+      CONTENT_TOP_Y +
+      VERTICAL_SHIFT +
+      1.12 +
+      KPI_TO_BAR_GAP +
+      0.33 +
+      0.2 +
+      CURSOR_TO_CONTENT_GAP +
+      0.2,
   },
   hero: {
-    y: CONTENT_TOP_Y + VERTICAL_SHIFT + 1.12 + KPI_TO_BAR_GAP + 0.33 + 0.20 + CURSOR_TO_CONTENT_GAP + 0.25,
+    y:
+      CONTENT_TOP_Y +
+      VERTICAL_SHIFT +
+      1.12 +
+      KPI_TO_BAR_GAP +
+      0.33 +
+      0.2 +
+      CURSOR_TO_CONTENT_GAP +
+      0.25,
     labelHeight: 0.24,
     valueHeight: 0.44,
-    lineY: CONTENT_TOP_Y + VERTICAL_SHIFT + 1.12 + KPI_TO_BAR_GAP + 0.33 + 0.20 + CURSOR_TO_CONTENT_GAP + 1.05,
-    endY: CONTENT_TOP_Y + VERTICAL_SHIFT + 1.12 + KPI_TO_BAR_GAP + 0.33 + 0.20 + CURSOR_TO_CONTENT_GAP + 1.07,
+    lineY:
+      CONTENT_TOP_Y +
+      VERTICAL_SHIFT +
+      1.12 +
+      KPI_TO_BAR_GAP +
+      0.33 +
+      0.2 +
+      CURSOR_TO_CONTENT_GAP +
+      1.05,
+    endY:
+      CONTENT_TOP_Y +
+      VERTICAL_SHIFT +
+      1.12 +
+      KPI_TO_BAR_GAP +
+      0.33 +
+      0.2 +
+      CURSOR_TO_CONTENT_GAP +
+      1.07,
   },
   marginInfo: {
-    y: CONTENT_TOP_Y + VERTICAL_SHIFT + 1.12 + KPI_TO_BAR_GAP + 0.33 + 0.20 + CURSOR_TO_CONTENT_GAP + 1.12,
+    y:
+      CONTENT_TOP_Y +
+      VERTICAL_SHIFT +
+      1.12 +
+      KPI_TO_BAR_GAP +
+      0.33 +
+      0.2 +
+      CURSOR_TO_CONTENT_GAP +
+      1.12,
     height: 0.18,
-    endY: CONTENT_TOP_Y + VERTICAL_SHIFT + 1.12 + KPI_TO_BAR_GAP + 0.33 + 0.20 + CURSOR_TO_CONTENT_GAP + 1.30,
+    endY:
+      CONTENT_TOP_Y +
+      VERTICAL_SHIFT +
+      1.12 +
+      KPI_TO_BAR_GAP +
+      0.33 +
+      0.2 +
+      CURSOR_TO_CONTENT_GAP +
+      1.3,
   },
 } as const;
 
@@ -130,11 +178,11 @@ export function getCursorPositionInBracket(
   tmiMarginGlobal?: number | null,
 ): number {
   if (
-    tmiBaseGlobal !== undefined
-    && tmiBaseGlobal !== null
-    && tmiMarginGlobal !== undefined
-    && tmiMarginGlobal !== null
-    && tmiMarginGlobal > 0
+    tmiBaseGlobal !== undefined &&
+    tmiBaseGlobal !== null &&
+    tmiMarginGlobal !== undefined &&
+    tmiMarginGlobal !== null &&
+    tmiMarginGlobal > 0
   ) {
     const totalBracketUsed = tmiBaseGlobal + tmiMarginGlobal;
     if (totalBracketUsed > 0) {
@@ -154,10 +202,14 @@ export function getCursorPositionInBracket(
   return Math.min(1, positionInBracket / bracketRange);
 }
 
-export function getCursorXOffset(positionRatio: number, segmentWidth: number, tmiRate: number): number {
+export function getCursorXOffset(
+  positionRatio: number,
+  segmentWidth: number,
+  tmiRate: number,
+): number {
   const thirdWidth = segmentWidth / 3;
   if (tmiRate === 45) {
-    return positionRatio < 0.50 ? -thirdWidth : 0;
+    return positionRatio < 0.5 ? -thirdWidth : 0;
   }
   if (positionRatio < 0.33) return -thirdWidth;
   if (positionRatio > 0.66) return thirdWidth;
@@ -176,17 +228,17 @@ export function getBracketColor(rate: number, theme: PptxThemeRoles): string {
   const b2 = parseInt(color2.substring(4, 6), 16);
 
   if (rate === 0) {
-    const mixR = Math.round(255 - (255 - r4) * 0.30);
-    const mixG = Math.round(255 - (255 - g4) * 0.30);
-    const mixB = Math.round(255 - (255 - b4) * 0.30);
+    const mixR = Math.round(255 - (255 - r4) * 0.3);
+    const mixG = Math.round(255 - (255 - g4) * 0.3);
+    const mixB = Math.round(255 - (255 - b4) * 0.3);
     const toHex = (value: number) => value.toString(16).padStart(2, '0');
     return `${toHex(mixR)}${toHex(mixG)}${toHex(mixB)}`;
   }
 
   const progressMap: Record<number, number> = {
     11: 0.0,
-    30: 0.40,
-    41: 0.70,
+    30: 0.4,
+    41: 0.7,
     45: 1.0,
   };
 
@@ -203,15 +255,12 @@ function getRelativeLuminance(hexColor: string): number {
   const r = parseInt(hex.substring(0, 2), 16) / 255;
   const g = parseInt(hex.substring(2, 4), 16) / 255;
   const b = parseInt(hex.substring(4, 6), 16) / 255;
-  const toLinear = (value: number) => (
-    value <= 0.03928 ? value / 12.92 : Math.pow((value + 0.055) / 1.055, 2.4)
-  );
+  const toLinear = (value: number) =>
+    value <= 0.03928 ? value / 12.92 : Math.pow((value + 0.055) / 1.055, 2.4);
 
   return 0.2126 * toLinear(r) + 0.7152 * toLinear(g) + 0.0722 * toLinear(b);
 }
 
 export function getTextColorForBackground(bgColor: string, theme: PptxThemeRoles): string {
-  return getRelativeLuminance(bgColor) < 0.4
-    ? 'FFFFFF'
-    : theme.textMain.replace('#', '');
+  return getRelativeLuminance(bgColor) < 0.4 ? 'FFFFFF' : theme.textMain.replace('#', '');
 }

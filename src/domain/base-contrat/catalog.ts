@@ -37,10 +37,19 @@ export const CATALOG_PP_PM_SPLIT_MAP = {
   perco_ancien: { ppId: 'perco_ancien_pp', pmId: 'perco_ancien_pm' },
   pero: { ppId: 'pero_pp', pmId: 'pero_pm' },
   locatif_nu: { ppId: 'locatif_nu_pp', pmId: 'locatif_nu_pm' },
-  immobilier_garage_parking: { ppId: 'immobilier_garage_parking_pp', pmId: 'immobilier_garage_parking_pm' },
+  immobilier_garage_parking: {
+    ppId: 'immobilier_garage_parking_pp',
+    pmId: 'immobilier_garage_parking_pm',
+  },
   immobilier_terrain: { ppId: 'immobilier_terrain_pp', pmId: 'immobilier_terrain_pm' },
-  groupement_foncier_agri_viti: { ppId: 'groupement_foncier_agri_viti_pp', pmId: 'groupement_foncier_agri_viti_pm' },
-  groupement_foncier_forestier: { ppId: 'groupement_foncier_forestier_pp', pmId: 'groupement_foncier_forestier_pm' },
+  groupement_foncier_agri_viti: {
+    ppId: 'groupement_foncier_agri_viti_pp',
+    pmId: 'groupement_foncier_agri_viti_pm',
+  },
+  groupement_foncier_forestier: {
+    ppId: 'groupement_foncier_forestier_pp',
+    pmId: 'groupement_foncier_forestier_pm',
+  },
   parts_scpi: { ppId: 'parts_scpi_pp', pmId: 'parts_scpi_pm' },
   fcpr: { ppId: 'fcpr_pp', pmId: 'fcpr_pm' },
   fcpi: { ppId: 'fcpi_pp', pmId: 'fcpi_pm' },
@@ -48,7 +57,10 @@ export const CATALOG_PP_PM_SPLIT_MAP = {
   opci_grand_public: { ppId: 'opci_grand_public_pp', pmId: 'opci_grand_public_pm' },
   actions_cotees: { ppId: 'actions_cotees_pp', pmId: 'actions_cotees_pm' },
   actions_preference: { ppId: 'actions_preference_pp', pmId: 'actions_preference_pm' },
-  parts_sociales_cooperatives: { ppId: 'parts_sociales_cooperatives_pp', pmId: 'parts_sociales_cooperatives_pm' },
+  parts_sociales_cooperatives: {
+    ppId: 'parts_sociales_cooperatives_pp',
+    pmId: 'parts_sociales_cooperatives_pm',
+  },
   titres_participatifs: { ppId: 'titres_participatifs_pp', pmId: 'titres_participatifs_pm' },
   droits_bsa_dps: { ppId: 'droits_bsa_dps_pp', pmId: 'droits_bsa_dps_pm' },
   actions_non_cotees: { ppId: 'actions_non_cotees_pp', pmId: 'actions_non_cotees_pm' },
@@ -232,7 +244,7 @@ export const CATALOG: CatalogProduct[] = [
   },
   {
     id: 'peac',
-    label: 'PEAC (Plan d\'épargne avenir climat)',
+    label: "PEAC (Plan d'épargne avenir climat)",
     grandeFamille: 'Épargne bancaire',
     catalogKind: 'wrapper',
     ppEligible: true,
@@ -247,7 +259,7 @@ export const CATALOG: CatalogProduct[] = [
   }),
   {
     id: 'pea',
-    label: 'PEA (Plan d\'épargne en actions)',
+    label: "PEA (Plan d'épargne en actions)",
     grandeFamille: 'Épargne bancaire',
     catalogKind: 'wrapper',
     ppEligible: true,
@@ -287,7 +299,7 @@ export const CATALOG: CatalogProduct[] = [
     templateKey: 'retirement_individual',
   },
   ...splitAudienceCatalogProduct('pee', {
-    label: 'PEE (Plan d\'épargne entreprise)',
+    label: "PEE (Plan d'épargne entreprise)",
     grandeFamille: 'Retraite & épargne salariale',
     catalogKind: 'wrapper',
     templateKey: 'employee_savings_plan',
@@ -395,7 +407,7 @@ export const CATALOG: CatalogProduct[] = [
   },
   {
     id: 'loc_avantages',
-    label: 'Loc\'Avantages (convention Anah)',
+    label: "Loc'Avantages (convention Anah)",
     grandeFamille: 'Dispositifs fiscaux immobilier',
     catalogKind: 'tax_overlay',
     ppEligible: true,
@@ -583,7 +595,7 @@ export const CATALOG: CatalogProduct[] = [
     templateKey: 'listed_securities',
   }),
   ...splitAudienceCatalogProduct('droits_bsa_dps', {
-    label: 'Bon de souscription d\'actions / Droits / DPS',
+    label: "Bon de souscription d'actions / Droits / DPS",
     grandeFamille: 'Valeurs mobilières',
     catalogKind: 'asset',
     templateKey: 'listed_securities',
@@ -623,7 +635,7 @@ export const CATALOG: CatalogProduct[] = [
 
   // ── Créances / Droits ────────────────────────────────────────────────────
   ...splitAudienceCatalogProduct('compte_courant_associe', {
-    label: 'Compte courant d\'associé (créance)',
+    label: "Compte courant d'associé (créance)",
     grandeFamille: 'Créances/Droits',
     catalogKind: 'liability',
     templateKey: 'claim_right',
@@ -665,8 +677,9 @@ export const CATALOG: CatalogProduct[] = [
   }),
 ];
 
-export const CATALOG_BY_ID: Readonly<Record<string, CatalogProduct>> =
-  Object.fromEntries(CATALOG.map((p) => [p.id, p]));
+export const CATALOG_BY_ID: Readonly<Record<string, CatalogProduct>> = Object.fromEntries(
+  CATALOG.map((p) => [p.id, p]),
+);
 
 export function getCatalogProduct(id: string): CatalogProduct | undefined {
   return CATALOG_BY_ID[id];

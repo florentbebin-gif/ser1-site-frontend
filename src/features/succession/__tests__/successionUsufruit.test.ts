@@ -21,7 +21,11 @@ describe('successionUsufruit', () => {
   });
 
   it('valorise usufruit et nue-propriété à partir de la date de naissance', () => {
-    const valuation = getUsufruitValuationFromBirthDate('1957-05-12', 500000, new Date('2026-03-08'));
+    const valuation = getUsufruitValuationFromBirthDate(
+      '1957-05-12',
+      500000,
+      new Date('2026-03-08'),
+    );
 
     expect(valuation).not.toBeNull();
     expect(valuation?.age).toBe(68);
@@ -34,17 +38,29 @@ describe('successionUsufruit', () => {
     const birth = '1955-06-15';
 
     // Veille des 71 ans (2026-06-14): age = 70 → taux = 40%
-    const veille = getUsufruitValuationFromBirthDate(birth, 1_000_000, new Date('2026-06-14T00:00:00Z'));
+    const veille = getUsufruitValuationFromBirthDate(
+      birth,
+      1_000_000,
+      new Date('2026-06-14T00:00:00Z'),
+    );
     expect(veille?.age).toBe(70);
     expect(veille?.tauxUsufruit).toBe(0.4);
 
     // Jour des 71 ans (2026-06-15): age = 71 → taux = 30%
-    const jour = getUsufruitValuationFromBirthDate(birth, 1_000_000, new Date('2026-06-15T00:00:00Z'));
+    const jour = getUsufruitValuationFromBirthDate(
+      birth,
+      1_000_000,
+      new Date('2026-06-15T00:00:00Z'),
+    );
     expect(jour?.age).toBe(71);
     expect(jour?.tauxUsufruit).toBe(0.3);
 
     // Lendemain (2026-06-16): age = 71 → taux = 30%
-    const lendemain = getUsufruitValuationFromBirthDate(birth, 1_000_000, new Date('2026-06-16T00:00:00Z'));
+    const lendemain = getUsufruitValuationFromBirthDate(
+      birth,
+      1_000_000,
+      new Date('2026-06-16T00:00:00Z'),
+    );
     expect(lendemain?.age).toBe(71);
     expect(lendemain?.tauxUsufruit).toBe(0.3);
   });

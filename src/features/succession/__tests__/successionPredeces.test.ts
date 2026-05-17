@@ -18,7 +18,11 @@ describe('buildSuccessionPredecesAnalysis', () => {
 
   it('active une approximation PACS indivision avec warnings explicites', () => {
     const analysis = buildSuccessionPredecesAnalysis(
-      makeCivil({ situationMatrimoniale: 'pacse', regimeMatrimonial: null, pacsConvention: 'indivision' }),
+      makeCivil({
+        situationMatrimoniale: 'pacse',
+        regimeMatrimonial: null,
+        pacsConvention: 'indivision',
+      }),
       { actifEpoux1: 200000, actifEpoux2: 200000, actifCommun: 100000, nbEnfants: 1 },
       DEFAULT_DMTG,
     );

@@ -1,10 +1,10 @@
 /**
  * Debug Flags Helper
- * 
+ *
  * Standardise l'activation des flags de debug via:
  * - Variables d'environnement VITE_DEBUG_* (prioritaire)
  * - localStorage SER1_DEBUG_* (fallback)
- * 
+ *
  * Usage:
  *   if (isDebugEnabled('auth')) console.debug('[Auth] ...')
  *   if (isDebugEnabled('pptx')) console.debug('[PPTX] ...')

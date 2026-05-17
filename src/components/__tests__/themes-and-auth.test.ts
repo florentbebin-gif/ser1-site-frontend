@@ -74,7 +74,7 @@ describe('Thèmes - Mode Personnalisé automatique', () => {
     const mockSetSelectedTheme = vi.fn();
     const mockSetColorsLegacy = vi.fn();
     const mockSyncThemeColors = vi.fn();
-    
+
     // État initial : thème prédéfini sélectionné
     let selectedTheme = 'Thème Original';
     const colorsLegacy = {
@@ -94,13 +94,13 @@ describe('Thèmes - Mode Personnalisé automatique', () => {
     const handleColorChange = (key: string, value: string) => {
       const newColors = { ...colorsLegacy, [key]: value };
       mockSetColorsLegacy(newColors);
-      
+
       // 🔄 UX: Si on modifie une couleur manuellement, basculer sur "Personnalisé"
       if (selectedTheme !== 'Personnalisé') {
         selectedTheme = 'Personnalisé';
         mockSetSelectedTheme('Personnalisé');
       }
-      
+
       mockSyncThemeColors(newColors);
     };
 
@@ -110,10 +110,10 @@ describe('Thèmes - Mode Personnalisé automatique', () => {
     // Vérifications
     expect(mockSetSelectedTheme).toHaveBeenCalledWith('Personnalisé');
     expect(mockSetColorsLegacy).toHaveBeenCalledWith(
-      expect.objectContaining({ color1: '#FF0000' })
+      expect.objectContaining({ color1: '#FF0000' }),
     );
     expect(mockSyncThemeColors).toHaveBeenCalled();
-    
+
     // Vérifier que le thème est bien "Personnalisé"
     expect(selectedTheme).toBe('Personnalisé');
   });
@@ -135,8 +135,8 @@ describe('Thèmes - Mode Personnalisé automatique', () => {
           color8: '#D9D9D9',
           color9: '#7F7F7F',
           color10: '#000000',
-        })
-      }
+        }),
+      },
     ];
 
     const mockSetColorsLegacy = vi.fn();
@@ -148,8 +148,8 @@ describe('Thèmes - Mode Personnalisé automatique', () => {
       if (themeName === 'Personnalisé') {
         return;
       }
-      
-      const theme = PREDEFINED_THEMES.find(t => t.name === themeName);
+
+      const theme = PREDEFINED_THEMES.find((t) => t.name === themeName);
       if (theme) {
         // 🔄 UX: Appliquer les couleurs du preset (copie immuable)
         const newColors = { ...theme.colors };
@@ -164,7 +164,7 @@ describe('Thèmes - Mode Personnalisé automatique', () => {
 
     // Vérifications
     expect(mockSetColorsLegacy).toHaveBeenCalledWith(
-      expect.objectContaining({ color1: '#2B3E37' })
+      expect.objectContaining({ color1: '#2B3E37' }),
     );
     expect(mockSetColorText).toHaveBeenCalled();
     expect(mockSyncThemeColors).toHaveBeenCalled();
@@ -175,9 +175,9 @@ describe('Thèmes - Mode Personnalisé automatique', () => {
 
   it('ne doit pas basculer sur "Personnalisé" si déjà "Personnalisé"', () => {
     const mockSetSelectedTheme = vi.fn();
-    
+
     let selectedTheme = 'Personnalisé';
-    
+
     const handleColorChange = (_key: string, _value: string) => {
       // 🔄 UX: Si on modifie une couleur manuellement, basculer sur "Personnalisé"
       if (selectedTheme !== 'Personnalisé') {
@@ -201,7 +201,7 @@ describe('Logout - Déconnexion', () => {
     navigateMock.mockClear();
   });
 
-  it('doit déconnecter l\'utilisateur et rediriger vers login', async () => {
+  it("doit déconnecter l'utilisateur et rediriger vers login", async () => {
     supabaseMock.auth.signOut.mockResolvedValue({});
 
     // Simuler handleLogout (logique de déconnexion)
@@ -209,7 +209,7 @@ describe('Logout - Déconnexion', () => {
       try {
         // Déconnexion Supabase
         await supabaseMock.auth.signOut();
-        
+
         // Redirection vers login
         navigateMock('/login');
       } catch (error) {
@@ -227,7 +227,7 @@ describe('Logout - Déconnexion', () => {
     expect(navigateMock).toHaveBeenCalledWith('/login');
   });
 
-  it('doit rediriger même en cas d\'erreur Supabase', async () => {
+  it("doit rediriger même en cas d'erreur Supabase", async () => {
     const mockError = new Error('Network error');
     supabaseMock.auth.signOut.mockRejectedValue(mockError);
 
@@ -269,24 +269,26 @@ describe('Settings - Timeout anti-blocage', () => {
   it('doit lever un timeout après 8s si getUser ne répond pas', () => {
     // Mock getUser qui ne résout jamais (simule un hang)
     supabaseMock.auth.getUser.mockImplementation(() => new Promise(() => {}));
-    
+
     const mockSetLoading = vi.fn();
     let mounted = true;
 
     // Simuler la logique de timeout de Settings.jsx
     const loadUser = async () => {
       let timeoutId: ReturnType<typeof setTimeout> | undefined;
-      
+
       try {
         timeoutId = setTimeout(() => {
           if (mounted) {
-            console.warn('[Settings] Timeout lors du chargement utilisateur, utilisation des valeurs par défaut');
+            console.warn(
+              '[Settings] Timeout lors du chargement utilisateur, utilisation des valeurs par défaut',
+            );
             mockSetLoading(false);
           }
         }, 8000);
 
         await supabaseMock.auth.getUser();
-        
+
         if (timeoutId) clearTimeout(timeoutId);
       } catch {
         if (timeoutId) clearTimeout(timeoutId);
@@ -307,24 +309,26 @@ describe('Settings - Timeout anti-blocage', () => {
   it('doit annuler le timeout si getUser répond rapidement', async () => {
     // Mock getUser qui résout immédiatement
     supabaseMock.auth.getUser.mockResolvedValue({ data: { user: { id: '123' } } });
-    
+
     const mockSetLoading = vi.fn();
     const clearTimeoutSpy = vi.spyOn(globalThis, 'clearTimeout');
     let mounted = true;
 
     const loadUser = async () => {
       let timeoutId: ReturnType<typeof setTimeout> | undefined;
-      
+
       try {
         timeoutId = setTimeout(() => {
           if (mounted) {
-            console.warn('[Settings] Timeout lors du chargement utilisateur, utilisation des valeurs par défaut');
+            console.warn(
+              '[Settings] Timeout lors du chargement utilisateur, utilisation des valeurs par défaut',
+            );
             mockSetLoading(false);
           }
         }, 8000);
 
         await supabaseMock.auth.getUser();
-        
+
         if (timeoutId) clearTimeout(timeoutId);
         mockSetLoading(false);
       } catch {
@@ -339,7 +343,7 @@ describe('Settings - Timeout anti-blocage', () => {
     // Vérifications immédiates (pas besoin d'attendre le timeout)
     expect(mockSetLoading).toHaveBeenCalledWith(false);
     expect(clearTimeoutSpy).toHaveBeenCalled();
-    
+
     clearTimeoutSpy.mockRestore();
   });
 });

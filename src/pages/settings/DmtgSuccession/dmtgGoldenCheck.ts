@@ -29,15 +29,23 @@ function isFiniteNumber(value: unknown): value is number {
 function hasGoldenReadyLineDirecte(dmtg: unknown): dmtg is DmtgSettings {
   if (!dmtg || typeof dmtg !== 'object') return false;
   const ligneDirecte = (dmtg as Partial<DmtgSettings>).ligneDirecte;
-  if (!ligneDirecte || !isFiniteNumber(ligneDirecte.abattement) || !Array.isArray(ligneDirecte.scale)) {
+  if (
+    !ligneDirecte ||
+    !isFiniteNumber(ligneDirecte.abattement) ||
+    !Array.isArray(ligneDirecte.scale)
+  ) {
     return false;
   }
 
-  return ligneDirecte.scale.length > 0 && ligneDirecte.scale.every((row) => (
-    isFiniteNumber(row.from)
-    && (row.to === null || isFiniteNumber(row.to))
-    && isFiniteNumber(row.rate)
-  ));
+  return (
+    ligneDirecte.scale.length > 0 &&
+    ligneDirecte.scale.every(
+      (row) =>
+        isFiniteNumber(row.from) &&
+        (row.to === null || isFiniteNumber(row.to)) &&
+        isFiniteNumber(row.rate),
+    )
+  );
 }
 
 function formatEuros(value: number): string {

@@ -62,7 +62,7 @@ export function useTresorerieExportHandlers({
         import('@/pptx/export/exportStudyDeck'),
       ]);
       const deck = buildTresorerieStudyDeck({ rows, kpis, inputs }, cabinetLogo, logoPlacement);
-      const dateStr = new Date().toISOString().split('T')[0].replace(/-/g, '');
+      const dateStr = (new Date().toISOString().split('T')[0] ?? 'date').replace(/-/g, '');
 
       await exportAndDownloadStudyDeck(
         deck,

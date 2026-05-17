@@ -98,9 +98,9 @@ interface BuildSuccessionDisplayTotalsInput {
 
 export function hasSuccessionSecondSubject(situationMatrimoniale: SituationMatrimoniale): boolean {
   return (
-    situationMatrimoniale === 'marie'
-    || situationMatrimoniale === 'pacse'
-    || situationMatrimoniale === 'concubinage'
+    situationMatrimoniale === 'marie' ||
+    situationMatrimoniale === 'pacse' ||
+    situationMatrimoniale === 'concubinage'
   );
 }
 
@@ -116,9 +116,10 @@ export function computeCumulativeSuccessionTotalDroits({
   if (!shouldRenderSuccessionComputationSections) return 0;
 
   const droitsSuccession = displayUsesChainage ? chainageTotalDroits : directTotalDroits;
-  const droitsHorsSuccession = avFiscalAnalysis.totalDroits
-    + perFiscalAnalysis.totalDroits
-    + prevoyanceFiscalAnalysis.totalDroits;
+  const droitsHorsSuccession =
+    avFiscalAnalysis.totalDroits +
+    perFiscalAnalysis.totalDroits +
+    prevoyanceFiscalAnalysis.totalDroits;
 
   return droitsSuccession + droitsHorsSuccession;
 }
@@ -197,28 +198,29 @@ export function buildSuccessionDisplayTotals({
   );
   const secondDeces = displayUsesChainage
     ? buildDeathTotals(
-      otherSide,
-      chainageStep2Droits,
-      avFiscalAnalysis,
-      perFiscalAnalysis,
-      prevoyanceFiscalAnalysis,
-    )
-    : null;
-  const projectionAutreAssure: SuccessionDisplayProjectionTotals | null = !displayUsesChainage && hasSecondSubject
-    ? (() => {
-      const droitsHorsSuccession = buildDroitsHorsSuccession(
         otherSide,
+        chainageStep2Droits,
         avFiscalAnalysis,
         perFiscalAnalysis,
         prevoyanceFiscalAnalysis,
-      );
-      return {
-        side: otherSide,
-        droitsHorsSuccession,
-        totalDroits: droitsHorsSuccession.total,
-      };
-    })()
+      )
     : null;
+  const projectionAutreAssure: SuccessionDisplayProjectionTotals | null =
+    !displayUsesChainage && hasSecondSubject
+      ? (() => {
+          const droitsHorsSuccession = buildDroitsHorsSuccession(
+            otherSide,
+            avFiscalAnalysis,
+            perFiscalAnalysis,
+            prevoyanceFiscalAnalysis,
+          );
+          return {
+            side: otherSide,
+            droitsHorsSuccession,
+            totalDroits: droitsHorsSuccession.total,
+          };
+        })()
+      : null;
   const droitsCumulesProjetes = computeCumulativeSuccessionTotalDroits({
     shouldRenderSuccessionComputationSections,
     displayUsesChainage,
@@ -240,10 +242,10 @@ export function buildSuccessionDisplayTotals({
       secondDeces: null,
       projectionAutreAssure: projectionAutreAssure
         ? {
-          ...projectionAutreAssure,
-          droitsHorsSuccession: ZERO_DROITS_HORS_SUCCESSION,
-          totalDroits: 0,
-        }
+            ...projectionAutreAssure,
+            droitsHorsSuccession: ZERO_DROITS_HORS_SUCCESSION,
+            totalDroits: 0,
+          }
         : null,
       droitsCumulesProjetes: 0,
       droitsChronologie: 0,
@@ -259,10 +261,27 @@ export function buildSuccessionDisplayTotals({
   };
 }
 
-function aggregateByBeneficiary(lines: Array<{ id: string; label: string; capitalTransmis: number; baseFiscale: number; sourceKind: InsuranceSourceKind; totalDroits: number }>): InsuranceBeneficiaryLine[] {
+function aggregateByBeneficiary(
+  lines: Array<{
+    id: string;
+    label: string;
+    capitalTransmis: number;
+    baseFiscale: number;
+    sourceKind: InsuranceSourceKind;
+    totalDroits: number;
+  }>,
+): InsuranceBeneficiaryLine[] {
   const map = new Map<string, InsuranceBeneficiaryLine>();
   for (const line of lines) {
-    const current = map.get(line.id) ?? { id: line.id, label: line.label, capitalTransmis: 0, baseFiscale: 0, sourceKind: line.sourceKind, totalDroits: 0, netTransmis: 0 };
+    const current = map.get(line.id) ?? {
+      id: line.id,
+      label: line.label,
+      capitalTransmis: 0,
+      baseFiscale: 0,
+      sourceKind: line.sourceKind,
+      totalDroits: 0,
+      netTransmis: 0,
+    };
     current.capitalTransmis += line.capitalTransmis;
     current.baseFiscale += line.baseFiscale;
     current.totalDroits += line.totalDroits;
@@ -290,9 +309,12 @@ export function mergeInsuranceBeneficiaryLines(
     label: line.label,
     // Prévoyance (capitalTransmis défini) : capital nominal si régime 990I (capitauxAvant70 > 0), sinon 0
     // AV/PER (capitalTransmis non défini) : juste la tranche avant 70
-    capitalTransmis: line.capitalTransmis != null
-      ? (line.capitauxAvant70 > 0 ? line.capitalTransmis : 0)
-      : line.capitauxAvant70,
+    capitalTransmis:
+      line.capitalTransmis != null
+        ? line.capitauxAvant70 > 0
+          ? line.capitalTransmis
+          : 0
+        : line.capitauxAvant70,
     baseFiscale: line.baseFiscale990I ?? line.capitauxAvant70,
     sourceKind: line.sourceKind,
     totalDroits: line.droits990I,
@@ -303,9 +325,12 @@ export function mergeInsuranceBeneficiaryLines(
     label: line.label,
     // Prévoyance (capitalTransmis défini) : capital nominal si régime 757B (capitauxApres70 > 0), sinon 0
     // AV/PER (capitalTransmis non défini) : juste la tranche après 70 (0 pour un contrat purement avant 70)
-    capitalTransmis: line.capitalTransmis != null
-      ? (line.capitauxApres70 > 0 ? line.capitalTransmis : 0)
-      : line.capitauxApres70,
+    capitalTransmis:
+      line.capitalTransmis != null
+        ? line.capitauxApres70 > 0
+          ? line.capitalTransmis
+          : 0
+        : line.capitauxApres70,
     baseFiscale: line.baseFiscale757B ?? line.capitauxApres70,
     sourceKind: line.sourceKind,
     totalDroits: line.droits757B,
@@ -367,7 +392,12 @@ export function buildUnifiedBeneficiaryBlocks({
   for (const row of transmissionRows) {
     ids.set(row.id, { label: row.label, exonerated: row.exonerated });
   }
-  for (const line of [...insurance990IStep1, ...insurance757BStep1, ...insurance990IStep2, ...insurance757BStep2]) {
+  for (const line of [
+    ...insurance990IStep1,
+    ...insurance757BStep1,
+    ...insurance990IStep2,
+    ...insurance757BStep2,
+  ]) {
     if (!ids.has(line.id)) ids.set(line.id, { label: line.label });
   }
 
@@ -463,17 +493,18 @@ export function buildSuccessionSynthHypothese({
   }
 
   if (donationEntreEpouxActive) {
-    const option = DONATION_ENTRE_EPOUX_OPTIONS.find((entry) => entry.value === donationEntreEpouxOption);
+    const option = DONATION_ENTRE_EPOUX_OPTIONS.find(
+      (entry) => entry.value === donationEntreEpouxOption,
+    );
     const spouseBirthDate = chainOrder === 'epoux1' ? dateNaissanceEpoux2 : dateNaissanceEpoux1;
-    const valuationBase = donationEntreEpouxOption === 'mixte'
-      ? derivedActifNetSuccession * 0.75
-      : derivedActifNetSuccession;
-    const valuation = (
-      donationEntreEpouxOption === 'usufruit_total'
-      || donationEntreEpouxOption === 'mixte'
-    )
-      ? getUsufruitValuationFromBirthDate(spouseBirthDate, valuationBase, simulatedDeathDate)
-      : null;
+    const valuationBase =
+      donationEntreEpouxOption === 'mixte'
+        ? derivedActifNetSuccession * 0.75
+        : derivedActifNetSuccession;
+    const valuation =
+      donationEntreEpouxOption === 'usufruit_total' || donationEntreEpouxOption === 'mixte'
+        ? getUsufruitValuationFromBirthDate(spouseBirthDate, valuationBase, simulatedDeathDate)
+        : null;
     const baseLabel = `Donation entre epoux : ${option?.label ?? donationEntreEpouxOption}`;
 
     if (valuation) {
@@ -499,7 +530,7 @@ export function buildSuccessionSynthHypothese({
     if (valuation) {
       return `Art. 757 CC : usufruit de la totalite retenu - valorisation art. 669 CGI : usufruit ${Math.round(valuation.tauxUsufruit * 100)}%, nue-propriete ${Math.round(valuation.tauxNuePropriete * 100)}% (usufruitier ${valuation.age} ans)`;
     }
-    return "Art. 757 CC : usufruit de la totalite demande - valorisation art. 669 CGI en attente de la date de naissance du conjoint survivant (repli moteur sur 1/4 en pleine propriete).";
+    return 'Art. 757 CC : usufruit de la totalite demande - valorisation art. 669 CGI en attente de la date de naissance du conjoint survivant (repli moteur sur 1/4 en pleine propriete).';
   }
 
   if (choixLegalConjointSansDDV === 'quart_pp') {

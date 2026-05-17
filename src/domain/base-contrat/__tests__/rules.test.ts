@@ -251,8 +251,12 @@ function allBlocks(productId: string): RuleBlock[] {
   const pp = getRules(productId, 'pp');
   const pm = getRules(productId, 'pm');
   return [
-    ...pp.constitution, ...pp.sortie, ...pp.deces,
-    ...pm.constitution, ...pm.sortie, ...pm.deces,
+    ...pp.constitution,
+    ...pp.sortie,
+    ...pp.deces,
+    ...pm.constitution,
+    ...pm.sortie,
+    ...pm.deces,
   ];
 }
 
@@ -355,9 +359,14 @@ describe('strings interdites — fiabilisation', () => {
 
     for (const product of CATALOG.filter((p) => p.pmEligible)) {
       const rules = getRules(product.id, 'pm');
-      expect(rules.constitution.length, `constitution vide en PM pour ${product.id}`).toBeGreaterThanOrEqual(1);
+      expect(
+        rules.constitution.length,
+        `constitution vide en PM pour ${product.id}`,
+      ).toBeGreaterThanOrEqual(1);
       expect(rules.sortie.length, `sortie vide en PM pour ${product.id}`).toBeGreaterThanOrEqual(1);
-      expect(rules.deces.length, `fin de vie vide en PM pour ${product.id}`).toBeGreaterThanOrEqual(1);
+      expect(rules.deces.length, `fin de vie vide en PM pour ${product.id}`).toBeGreaterThanOrEqual(
+        1,
+      );
 
       const pmDeathTexts = rules.deces.flatMap((b) => [b.title, ...b.bullets]).join(' ');
       expect(
@@ -404,10 +413,7 @@ describe('strings interdites — fiabilisation', () => {
     for (const product of CATALOG.filter((p) => p.pmEligible)) {
       const rules = getRules(product.id, 'pm');
 
-      expect(
-        rules.deces.length,
-        `Phase 3 vide en PM pour ${product.id}`,
-      ).toBeGreaterThanOrEqual(1);
+      expect(rules.deces.length, `Phase 3 vide en PM pour ${product.id}`).toBeGreaterThanOrEqual(1);
 
       for (const block of rules.deces) {
         expect(
@@ -433,22 +439,25 @@ describe('strings interdites — fiabilisation', () => {
     const pp = getRules('article_83_pp', 'pp');
     const pm = getRules('article_83_pm', 'pm');
     const allBullets = [
-      ...pp.constitution, ...pp.sortie, ...pp.deces,
-      ...pm.constitution, ...pm.sortie, ...pm.deces,
+      ...pp.constitution,
+      ...pp.sortie,
+      ...pp.deces,
+      ...pm.constitution,
+      ...pm.sortie,
+      ...pm.deces,
     ].flatMap((b) => b.bullets);
     for (const bullet of allBullets) {
-      expect(
-        bullet,
-        'Bullet interdit : "Article 39" détecté dans article_83',
-      ).not.toMatch(/[Aa]rticle 39/);
+      expect(bullet, 'Bullet interdit : "Article 39" détecté dans article_83').not.toMatch(
+        /[Aa]rticle 39/,
+      );
     }
   });
 
   it('contrat_capitalisation (PP) — pas de "238 septies E" dans les bullets', () => {
     const rules = getRules('contrat_capitalisation_pp', 'pp');
-    const allBullets = [
-      ...rules.constitution, ...rules.sortie, ...rules.deces,
-    ].flatMap((b) => b.bullets);
+    const allBullets = [...rules.constitution, ...rules.sortie, ...rules.deces].flatMap(
+      (b) => b.bullets,
+    );
     for (const bullet of allBullets) {
       expect(
         bullet,
@@ -593,10 +602,7 @@ describe('strings interdites — fiabilisation', () => {
     ).toBe(true);
 
     for (const text of texts) {
-      expect(
-        /154 bis OA/i.test(text),
-        `Orthographe interdite détectée: "${text}"`,
-      ).toBe(false);
+      expect(/154 bis OA/i.test(text), `Orthographe interdite détectée: "${text}"`).toBe(false);
     }
   });
 });

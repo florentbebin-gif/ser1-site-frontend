@@ -27,14 +27,20 @@ export function InputEuro({
   onBlur,
   highlight = false,
 }: InputEuroProps) {
-  const fmt = (num: number) => (Math.round(Number(num) || 0)).toLocaleString('fr-FR');
+  const fmt = (num: number) => Math.round(Number(num) || 0).toLocaleString('fr-FR');
 
   const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
     onChange(parseCapital(event.target.value));
   };
 
   return (
-    <SimFieldShell label={label} hint={hint} error={error} className="ci-field" rowClassName="ci-field-row">
+    <SimFieldShell
+      label={label}
+      hint={hint}
+      error={error}
+      className="ci-field"
+      rowClassName="ci-field-row"
+    >
       <input
         type="text"
         inputMode="numeric"
@@ -81,7 +87,14 @@ export function InputPct({
   };
 
   return (
-    <SimFieldShell label={label} hint={hint} error={error} testId={testId} className="ci-field" rowClassName="ci-field-row">
+    <SimFieldShell
+      label={label}
+      hint={hint}
+      error={error}
+      testId={testId}
+      className="ci-field"
+      rowClassName="ci-field-row"
+    >
       <input
         type="text"
         inputMode="decimal"
@@ -120,7 +133,14 @@ export function InputNumber({
   };
 
   return (
-    <SimFieldShell label={label} hint={hint} error={error} testId={testId} className="ci-field" rowClassName="ci-field-row">
+    <SimFieldShell
+      label={label}
+      hint={hint}
+      error={error}
+      testId={testId}
+      className="ci-field"
+      rowClassName="ci-field-row"
+    >
       <input
         type="text"
         inputMode="numeric"
@@ -199,15 +219,24 @@ export function Select<TValue extends string | number>({
         setIsOpen(true);
         return;
       }
-      if (index < options.length - 1) onChange(options[index + 1].value);
+      const nextOption = options[index + 1];
+      if (index < options.length - 1 && nextOption) onChange(nextOption.value);
     } else if (event.key === 'ArrowUp') {
       event.preventDefault();
-      if (index > 0) onChange(options[index - 1].value);
+      const previousOption = options[index - 1];
+      if (index > 0 && previousOption) onChange(previousOption.value);
     }
   };
 
   return (
-    <SimFieldShell label={label} hint={hint} error={error} testId={testId} className="ci-field" rowClassName="ci-field-row">
+    <SimFieldShell
+      label={label}
+      hint={hint}
+      error={error}
+      testId={testId}
+      className="ci-field"
+      rowClassName="ci-field-row"
+    >
       <div ref={containerRef} className={`sim-select-wrapper${isOpen ? ' is-open' : ''}`}>
         <button
           type="button"
@@ -216,12 +245,9 @@ export function Select<TValue extends string | number>({
           onKeyDown={handleKeyDown}
           aria-haspopup="listbox"
           aria-expanded={isOpen}
-          aria-invalid={!!error}
           className={`sim-field__select-trigger${isOpen ? ' is-open' : ''}${error ? ' sim-field__control--error' : ''}`}
         >
-          <span className="sim-field__select-value">
-            {selectedOption?.label ?? ''}
-          </span>
+          <span className="sim-field__select-value">{selectedOption?.label ?? ''}</span>
           <svg
             className="sim-field__select-arrow"
             width="10"
@@ -263,13 +289,7 @@ export function Select<TValue extends string | number>({
   );
 }
 
-export function Toggle({
-  checked,
-  onChange,
-  label,
-  disabled = false,
-  testId,
-}: ToggleProps) {
+export function Toggle({ checked, onChange, label, disabled = false, testId }: ToggleProps) {
   return (
     <div className="ci-toggle" data-testid={testId}>
       <button

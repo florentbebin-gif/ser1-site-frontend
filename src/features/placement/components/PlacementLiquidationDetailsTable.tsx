@@ -29,17 +29,25 @@ export function PlacementLiquidationDetailsTable({
   showCapitalDecesColumn,
   onOpenChange,
 }: PlacementLiquidationDetailsTableProps) {
-  const detailRows = product.liquidation.rows.filter((row) => row.age <= product.liquidation.ageAuDeces);
+  const detailRows = product.liquidation.rows.filter(
+    (row) => row.age <= product.liquidation.ageAuDeces,
+  );
 
   return (
     <CollapsibleTable
       title={`Détail ${product.envelopeLabel}`}
       rows={detailRows}
-      columns={getRelevantColumns(detailRows, buildColumns(product as PlacementTableProduct), showAllColumns)}
+      columns={getRelevantColumns(
+        detailRows,
+        buildColumns(product as PlacementTableProduct),
+        showAllColumns,
+      )}
       onOpenChange={onOpenChange}
       renderRow={(row: PlacementLiquidationDetailRow, index) => (
         <tr key={index} className={row.isAgeAuDeces ? 'pl-row-deces' : ''}>
-          <td>{row.age} ans {row.isAgeAuDeces && '†'}</td>
+          <td>
+            {row.age} ans {row.isAgeAuDeces && '†'}
+          </td>
           {product.envelope === 'SCPI' ? (
             <>
               <td>{euro(row.capitalDebut)}</td>
@@ -63,7 +71,9 @@ export function PlacementLiquidationDetailsTable({
               <td>
                 {euro(row.capitalDebut)}
                 <div className="pl-detail-cumul">+{euro(row.gainsAnnee)} intérêts</div>
-                <div className="pl-detail-cumul">Cumul : {euro(row.cumulRevenusNetsPercus || 0)}</div>
+                <div className="pl-detail-cumul">
+                  Cumul : {euro(row.cumulRevenusNetsPercus || 0)}
+                </div>
               </td>
               <td>{euro(row.retraitBrut)}</td>
               <td>
@@ -76,9 +86,7 @@ export function PlacementLiquidationDetailsTable({
               </td>
               <td>{euro(row.fiscaliteTotal)}</td>
               <td>{euro(row.retraitNet)}</td>
-              {showCapitalDecesColumn && (
-                <td>{euro(row.capitalDecesTheorique || 0)}</td>
-              )}
+              {showCapitalDecesColumn && <td>{euro(row.capitalDecesTheorique || 0)}</td>}
               <td>{euro(row.capitalFin)}</td>
             </>
           )}
@@ -87,4 +95,3 @@ export function PlacementLiquidationDetailsTable({
     />
   );
 }
-

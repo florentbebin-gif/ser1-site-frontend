@@ -7,7 +7,7 @@ import { SimSelect } from '@/components/ui/sim/SimSelect';
 import type { DeclarantRevenus, PlafondMadelinDetail } from '../../../../../engine/per';
 import type { PerDeclarantPatch } from '../../../hooks/usePerPotentiel';
 import type { PerChildDraft } from '../../../utils/perParts';
-import { PerAmountInput } from '../PerAmountInput';
+import { PerAmountInput } from '../../shared/PerAmountInput';
 import { PerMadelinInfoModal } from '../PerMadelinInfoModal';
 import {
   PerIncomeTable,
@@ -37,11 +37,13 @@ interface SituationFiscaleStepProps {
   incomeFilters: PerIncomeFilters;
   abat10SalCfg: PerAbattementConfig;
   abat10RetCfg: PerAbattementConfig;
-  onUpdateSituation: (_patch: Partial<{
-    situationFamiliale: 'celibataire' | 'marie';
-    isole: boolean;
-    mutualisationConjoints: boolean;
-  }>) => void;
+  onUpdateSituation: (
+    _patch: Partial<{
+      situationFamiliale: 'celibataire' | 'marie';
+      isole: boolean;
+      mutualisationConjoints: boolean;
+    }>,
+  ) => void;
   onAddChild: () => void;
   onUpdateChildMode: (_id: number, _mode: PerChildDraft['mode']) => void;
   onRemoveChild: (_id: number) => void;
@@ -92,26 +94,54 @@ export default function SituationFiscaleStep({
     tnsOnly?: boolean;
     infoAction?: boolean;
   }[] = [
-    { label: 'PER 163 quatervicies', note: variant === 'revenus-n1' ? '2042 : 6NS / 6NT' : 'année en cours', key: 'cotisationsPer163Q' },
-    { label: 'PERP et assimilés', note: variant === 'revenus-n1' ? '2042 : 6RS / 6RT' : 'année en cours', key: 'cotisationsPerp' },
-    { label: 'Art. 83 employeur + salarié', note: variant === 'revenus-n1' ? '2042 : 6QS / 6QT' : 'année en cours', key: 'cotisationsArt83' },
-    { label: 'PER 154 bis', note: variant === 'revenus-n1' ? '2042 : 6OS / 6OT' : 'année en cours', key: 'cotisationsMadelin154bis', tnsOnly: true, infoAction: true },
-    { label: 'Madelin retraite', note: 'contribue à 6QS / 6QT', key: 'cotisationsMadelinRetraite', tnsOnly: true },
+    {
+      label: 'PER 163 quatervicies',
+      note: variant === 'revenus-n1' ? '2042 : 6NS / 6NT' : 'année en cours',
+      key: 'cotisationsPer163Q',
+    },
+    {
+      label: 'PERP et assimilés',
+      note: variant === 'revenus-n1' ? '2042 : 6RS / 6RT' : 'année en cours',
+      key: 'cotisationsPerp',
+    },
+    {
+      label: 'Art. 83 employeur + salarié',
+      note: variant === 'revenus-n1' ? '2042 : 6QS / 6QT' : 'année en cours',
+      key: 'cotisationsArt83',
+    },
+    {
+      label: 'PER 154 bis',
+      note: variant === 'revenus-n1' ? '2042 : 6OS / 6OT' : 'année en cours',
+      key: 'cotisationsMadelin154bis',
+      tnsOnly: true,
+      infoAction: true,
+    },
+    {
+      label: 'Madelin retraite',
+      note: 'contribue à 6QS / 6QT',
+      key: 'cotisationsMadelinRetraite',
+      tnsOnly: true,
+    },
     { label: 'Abondement PERCO', note: 'contribue à 6QS / 6QT', key: 'abondementPerco' },
-    { label: 'Prévoyance Madelin', note: 'nécessaire pour le calcul de l\'assiette de versement 154 bis', key: 'cotisationsPrevo', tnsOnly: true },
+    {
+      label: 'Prévoyance Madelin',
+      note: "nécessaire pour le calcul de l'assiette de versement 154 bis",
+      key: 'cotisationsPrevo',
+      tnsOnly: true,
+    },
   ];
 
   return (
     <div className="per-step per-step--situation">
       {showFoyerCard && (
         <div className="premium-card premium-card--guide sim-card--guide per-situation-card">
-          <SectionHeader
-            title="Situation familiale"
-            icon="foyer"
-          />
+          <SectionHeader title="Situation familiale" icon="foyer" />
 
           <div className="per-situation-foyer-grid">
-            <div className="per-field premium-field per-field--no-label" data-testid="per-situation-field">
+            <div
+              className="per-field premium-field per-field--no-label"
+              data-testid="per-situation-field"
+            >
               <SimSelect
                 ariaLabel="Situation familiale"
                 value={situationFamiliale}
@@ -139,12 +169,18 @@ export default function SituationFiscaleStep({
             </div>
 
             <div className="per-children-zone">
-              <button
-                type="button"
-                className="per-child-add-btn"
-                onClick={onAddChild}
-              >
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <button type="button" className="per-child-add-btn" onClick={onAddChild}>
+                <svg
+                  width="12"
+                  height="12"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden="true"
+                >
                   <line x1="12" y1="5" x2="12" y2="19" />
                   <line x1="5" y1="12" x2="19" y2="12" />
                 </svg>
@@ -157,7 +193,9 @@ export default function SituationFiscaleStep({
                       <span className="per-child-row__label">E{index + 1}</span>
                       <SimSelect
                         value={child.mode}
-                        onChange={(value) => onUpdateChildMode(child.id, value as PerChildDraft['mode'])}
+                        onChange={(value) =>
+                          onUpdateChildMode(child.id, value as PerChildDraft['mode'])
+                        }
                         options={[
                           { value: 'charge', label: 'À charge' },
                           { value: 'shared', label: 'Garde alternée' },
@@ -170,7 +208,17 @@ export default function SituationFiscaleStep({
                         onClick={() => onRemoveChild(child.id)}
                         aria-label={`Supprimer enfant ${index + 1}`}
                       >
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                        <svg
+                          width="14"
+                          height="14"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          aria-hidden="true"
+                        >
                           <line x1="18" y1="6" x2="6" y2="18" />
                           <line x1="6" y1="6" x2="18" y2="18" />
                         </svg>
@@ -206,52 +254,56 @@ export default function SituationFiscaleStep({
         />
 
         <div className={`per-contribution-table ${isCouple ? 'is-couple' : ''}`}>
-          <div className="per-contribution-table-head per-contribution-table-head--label">Catégorie</div>
+          <div className="per-contribution-table-head per-contribution-table-head--label">
+            Catégorie
+          </div>
           <div className="per-contribution-table-head">Déclarant 1</div>
           {isCouple && <div className="per-contribution-table-head">Déclarant 2</div>}
 
-          {contributionRows.filter(row => !row.tnsOnly || showTnsContributionRows).map((row) => (
-            <React.Fragment key={row.key}>
-              <div className="per-contribution-table-label">
-                <span className="per-contribution-table-label__text">
-                  {row.label}
-                  {row.infoAction && (
-                    <button
-                      type="button"
-                      className="per-info-btn"
-                      onClick={() => setShowMadelinInfo(true)}
-                      aria-label="Afficher le détail des enveloppes Madelin 154 bis"
-                    >
-                      i
-                    </button>
-                  )}
-                </span>
-                <small>{row.note}</small>
-              </div>
-              <div className="per-contribution-table-cell">
-                <span className="per-contribution-mobile-label">Déclarant 1</span>
-                <PerAmountInput
-                  value={declarant1[row.key]}
-                  ariaLabel={`${row.label} déclarant 1`}
-                  className="per-contribution-input"
-                  disabled={Boolean(row.tnsOnly && !declarant1.statutTns)}
-                  onChange={(value) => onUpdateDeclarant(1, { [row.key]: value })}
-                />
-              </div>
-              {isCouple && (
+          {contributionRows
+            .filter((row) => !row.tnsOnly || showTnsContributionRows)
+            .map((row) => (
+              <React.Fragment key={row.key}>
+                <div className="per-contribution-table-label">
+                  <span className="per-contribution-table-label__text">
+                    {row.label}
+                    {row.infoAction && (
+                      <button
+                        type="button"
+                        className="per-info-btn"
+                        onClick={() => setShowMadelinInfo(true)}
+                        aria-label="Afficher le détail des enveloppes Madelin 154 bis"
+                      >
+                        i
+                      </button>
+                    )}
+                  </span>
+                  <small>{row.note}</small>
+                </div>
                 <div className="per-contribution-table-cell">
-                  <span className="per-contribution-mobile-label">Déclarant 2</span>
+                  <span className="per-contribution-mobile-label">Déclarant 1</span>
                   <PerAmountInput
-                    value={declarant2[row.key]}
-                    ariaLabel={`${row.label} déclarant 2`}
+                    value={declarant1[row.key]}
+                    ariaLabel={`${row.label} déclarant 1`}
                     className="per-contribution-input"
-                    disabled={Boolean(row.tnsOnly && !declarant2.statutTns)}
-                    onChange={(value) => onUpdateDeclarant(2, { [row.key]: value })}
+                    disabled={Boolean(row.tnsOnly && !declarant1.statutTns)}
+                    onChange={(value) => onUpdateDeclarant(1, { [row.key]: value })}
                   />
                 </div>
-              )}
-            </React.Fragment>
-          ))}
+                {isCouple && (
+                  <div className="per-contribution-table-cell">
+                    <span className="per-contribution-mobile-label">Déclarant 2</span>
+                    <PerAmountInput
+                      value={declarant2[row.key]}
+                      ariaLabel={`${row.label} déclarant 2`}
+                      className="per-contribution-input"
+                      disabled={Boolean(row.tnsOnly && !declarant2.statutTns)}
+                      onChange={(value) => onUpdateDeclarant(2, { [row.key]: value })}
+                    />
+                  </div>
+                )}
+              </React.Fragment>
+            ))}
         </div>
 
         {isCouple && (
@@ -259,7 +311,9 @@ export default function SituationFiscaleStep({
             <input
               type="checkbox"
               checked={mutualisationConjoints}
-              onChange={(event) => onUpdateSituation({ mutualisationConjoints: event.target.checked })}
+              onChange={(event) =>
+                onUpdateSituation({ mutualisationConjoints: event.target.checked })
+              }
             />
             <span>Mutualisation des plafonds (case 6QR)</span>
           </label>

@@ -2,14 +2,9 @@ import type {
   AllocationPocketHorizon,
   AllocationPocketInput,
 } from '../../../../engine/tresorerie/types';
-import {
-  getAllocationHorizonLabel,
-} from '../../utils/tresorerieSocieteModel';
+import { getAllocationHorizonLabel } from '../../utils/tresorerieSocieteModel';
 import { getAllocationPocketLabel } from '../../utils/tresorerieV2Migration';
-import {
-  fmtEuroInput,
-  fmtRateInput,
-} from '../../utils/tresorerieFormatters';
+import { fmtEuroInput, fmtRateInput } from '../../utils/tresorerieFormatters';
 
 interface PocketColumn {
   value: AllocationPocketHorizon;
@@ -27,7 +22,7 @@ interface Props {
 }
 
 function getPocketInitialAmount(treasuryInitial: number, pocket: AllocationPocketInput): number {
-  return Math.max(0, treasuryInitial) * Math.max(0, pocket.initialAllocationPct) / 100;
+  return (Math.max(0, treasuryInitial) * Math.max(0, pocket.initialAllocationPct)) / 100;
 }
 
 export function TresoPocketBoard({
@@ -58,7 +53,7 @@ export function TresoPocketBoard({
         </div>
       </section>
 
-      {pocketsByHorizon.map(column => (
+      {pocketsByHorizon.map((column) => (
         <section
           key={column.value}
           className="ts-pocket-column"
@@ -67,11 +62,13 @@ export function TresoPocketBoard({
         >
           <header className="ts-pocket-column__header">
             <h3 id={`ts-pocket-column-${column.value}`}>{column.label}</h3>
-            <span>{column.pockets.length} poche{column.pockets.length > 1 ? 's' : ''}</span>
+            <span>
+              {column.pockets.length} poche{column.pockets.length > 1 ? 's' : ''}
+            </span>
           </header>
           {column.pockets.length > 0 ? (
             <div className="ts-pocket-column__items">
-              {column.pockets.map(pocket => (
+              {column.pockets.map((pocket) => (
                 <button
                   key={pocket.id}
                   type="button"
@@ -83,8 +80,12 @@ export function TresoPocketBoard({
                     <strong>{getAllocationPocketLabel(pocket)}</strong>
                     <em>{fmtRateInput(pocket.annualReturnRate)} %</em>
                   </span>
-                  <small>{fmtEuroInput(getPocketInitialAmount(treasuryInitial, pocket))} € estimés</small>
-                  <span>{pocket.durationYears} ans · {getAllocationHorizonLabel(pocket.horizon)}</span>
+                  <small>
+                    {fmtEuroInput(getPocketInitialAmount(treasuryInitial, pocket))} € estimés
+                  </small>
+                  <span>
+                    {pocket.durationYears} ans · {getAllocationHorizonLabel(pocket.horizon)}
+                  </span>
                 </button>
               ))}
             </div>

@@ -1,8 +1,5 @@
 import { SimModalShell } from '@/components/ui/sim';
-import type {
-  SuccessionPersonParty,
-  SuccessionPrevoyanceDecesEntry,
-} from '../successionDraft';
+import type { SuccessionPersonParty, SuccessionPrevoyanceDecesEntry } from '../successionDraft';
 import { ScNumericInput } from './ScNumericInput';
 import { ScSelect } from './ScSelect';
 
@@ -39,7 +36,7 @@ export default function PrevoyanceModal({
       bodyClassName="sc-member-modal__body sc-assurance-vie-modal__body"
       footerClassName="sc-member-modal__footer"
       closeClassName="sc-member-modal__close"
-      footer={(
+      footer={
         <>
           <button
             type="button"
@@ -56,7 +53,7 @@ export default function PrevoyanceModal({
             Valider
           </button>
         </>
-      )}
+      }
     >
       <div className="sc-assurance-vie-grid sc-assurance-vie-grid--premium">
         <div className="sc-field">

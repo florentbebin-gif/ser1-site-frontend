@@ -31,7 +31,9 @@ export default function ForgotPassword(): React.ReactElement {
             <p style={{ margin: '12px 0' }}>
               Si cette adresse existe, un lien vient d’être envoyé à <strong>{email}</strong>.
             </p>
-            <Link to="/login" className="btn">Retour à la connexion</Link>
+            <Link to="/login" className="btn">
+              Retour à la connexion
+            </Link>
           </div>
         </div>
       </div>
@@ -58,8 +60,12 @@ export default function ForgotPassword(): React.ReactElement {
               onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEmail(e.target.value)}
               required
             />
-            <button className="btn" type="submit">Envoyer le lien</button>
-            <Link to="/login" className="btn-link">Annuler</Link>
+            <button className="btn" type="submit">
+              Envoyer le lien
+            </button>
+            <Link to="/login" className="btn-link">
+              Annuler
+            </Link>
           </form>
         </div>
       </div>

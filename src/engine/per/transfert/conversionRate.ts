@@ -1,5 +1,9 @@
 import { computeAnnuityFactor } from './mortalityFactor';
-import type { PerTransfertAnnuityOptions, PerTransfertAnnuityResult, PerTransfertInsuredInput } from './types';
+import type {
+  PerTransfertAnnuityOptions,
+  PerTransfertAnnuityResult,
+  PerTransfertInsuredInput,
+} from './types';
 
 interface ComputeAnnuityConversionInput {
   capitalGross: number;
@@ -17,11 +21,13 @@ export function computeCurrentConversionRate(capital: number, annualRent: number
   return positive(annualRent) / safeCapital;
 }
 
-export function computeAnnuityConversion(input: ComputeAnnuityConversionInput): PerTransfertAnnuityResult {
+export function computeAnnuityConversion(
+  input: ComputeAnnuityConversionInput,
+): PerTransfertAnnuityResult {
   const capitalNet = Math.max(
     0,
-    positive(input.capitalGross) * (1 - Math.max(0, input.options.conversionFeeRate))
-    - Math.max(0, input.options.conversionFeeFixed),
+    positive(input.capitalGross) * (1 - Math.max(0, input.options.conversionFeeRate)) -
+      Math.max(0, input.options.conversionFeeFixed),
   );
   const annuityFactor = computeAnnuityFactor({
     insured: input.insured,
@@ -36,8 +42,8 @@ export function computeAnnuityConversion(input: ComputeAnnuityConversionInput): 
   const grossAnnualRent = annuityFactor > 0 ? capitalNet / annuityFactor : 0;
   const netAnnualRent = Math.max(
     0,
-    grossAnnualRent * (1 - Math.max(0, input.options.arrearsFeeRate))
-    - Math.max(0, input.options.arrearsFeeFixedPerPayment) * input.options.frequency,
+    grossAnnualRent * (1 - Math.max(0, input.options.arrearsFeeRate)) -
+      Math.max(0, input.options.arrearsFeeFixedPerPayment) * input.options.frequency,
   );
 
   return {

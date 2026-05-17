@@ -9,12 +9,12 @@ const PARAMS: TresoFiscalParams = {
   motherDaughterStandardQpfcRate: 0.05,
   motherDaughterGroupQpfcRate: 0.01,
   participationDisposalQpfcRate: 0.12,
-  pfuRateIR: 0.10,
+  pfuRateIR: 0.1,
   psRate: 0.15,
   pfuTotal: 0.25,
   dividendesAbattement: 0,
   irScale: [],
-  tnsDividendBasePct: 0.10,
+  tnsDividendBasePct: 0.1,
 };
 
 /**
@@ -26,9 +26,7 @@ const PARAMS: TresoFiscalParams = {
  *
  * Le test vérifie la clé de répartition selon `usufructuaryReserveAttribution`.
  */
-function buildDemembrementInputs(
-  usufructuaryReserveAttribution?: boolean,
-): TresoInputsV6 {
+function buildDemembrementInputs(usufructuaryReserveAttribution?: boolean): TresoInputsV6 {
   return {
     version: 6,
     selectedAssociateId: 'associe-1',
@@ -68,15 +66,26 @@ function buildDemembrementInputs(
           ],
           roles: ['associe_sans_statut'],
           cca: { currentBalance: 0, remunerationRate: 0 },
-          revenuePhases: [{
-            id: 'phase-1',
-            startYear: 2026,
-            endYear: 2026,
-            remuneration: { enabled: false, source: 'none', loadedAnnualCost: 0, socialChargeRate: 0 },
-            distribution: { enabled: true, annualNetIncomeNeed: 0, dividendsStrategy: 'max_treso' },
-            ccaContribution: { enabled: false },
-            ccaRepayment: { enabled: false, strategy: 'aucun' },
-          }],
+          revenuePhases: [
+            {
+              id: 'phase-1',
+              startYear: 2026,
+              endYear: 2026,
+              remuneration: {
+                enabled: false,
+                source: 'none',
+                loadedAnnualCost: 0,
+                socialChargeRate: 0,
+              },
+              distribution: {
+                enabled: true,
+                annualNetIncomeNeed: 0,
+                dividendsStrategy: 'max_treso',
+              },
+              ccaContribution: { enabled: false },
+              ccaRepayment: { enabled: false, strategy: 'aucun' },
+            },
+          ],
         },
         {
           id: 'associe-2',
@@ -88,20 +97,25 @@ function buildDemembrementInputs(
             annualIncomeNeed: 0,
             projectionStartYear: 2026,
           },
-          ownershipLots: [
-            { right: 'nue_propriete', capitalPct: 90, economicRightsPct: 0 },
-          ],
+          ownershipLots: [{ right: 'nue_propriete', capitalPct: 90, economicRightsPct: 0 }],
           roles: ['associe_sans_statut'],
           cca: { currentBalance: 0, remunerationRate: 0 },
-          revenuePhases: [{
-            id: 'phase-2',
-            startYear: 2026,
-            endYear: 2026,
-            remuneration: { enabled: false, source: 'none', loadedAnnualCost: 0, socialChargeRate: 0 },
-            distribution: { enabled: false, annualNetIncomeNeed: 0, dividendsStrategy: 'aucun' },
-            ccaContribution: { enabled: false },
-            ccaRepayment: { enabled: false, strategy: 'aucun' },
-          }],
+          revenuePhases: [
+            {
+              id: 'phase-2',
+              startYear: 2026,
+              endYear: 2026,
+              remuneration: {
+                enabled: false,
+                source: 'none',
+                loadedAnnualCost: 0,
+                socialChargeRate: 0,
+              },
+              distribution: { enabled: false, annualNetIncomeNeed: 0, dividendsStrategy: 'aucun' },
+              ccaContribution: { enabled: false },
+              ccaRepayment: { enabled: false, strategy: 'aucun' },
+            },
+          ],
         },
       ],
       loans: [],
@@ -120,37 +134,37 @@ describe('simulateTresorerie — attribution des réserves démembrées', () => 
     const rows = simulateTresorerieV2(buildDemembrementInputs(undefined), PARAMS, 1);
 
     const row = rows[0];
-    const a1 = row.revenusParAssocie?.find(r => r.associateId === 'associe-1');
-    const a2 = row.revenusParAssocie?.find(r => r.associateId === 'associe-2');
+    const a1 = row.revenusParAssocie?.find((r) => r.associateId === 'associe-1');
+    const a2 = row.revenusParAssocie?.find((r) => r.associateId === 'associe-2');
 
     // Résultat courant + réserves doivent revenir à l'usufruitier (clé getEconomicRightsPct)
     // → associé 1 reçoit 100 % des dividendes, associé 2 = 0
     expect(a2?.grossDividends ?? 0).toBe(0);
-    expect((a1?.grossDividends ?? 0)).toBeGreaterThan(0);
+    expect(a1?.grossDividends ?? 0).toBeGreaterThan(0);
   });
 
   it('checkbox cochée (true) : associé en US appréhende 100 % des dividendes (résultat + réserves)', () => {
     const rows = simulateTresorerieV2(buildDemembrementInputs(true), PARAMS, 1);
 
     const row = rows[0];
-    const a1 = row.revenusParAssocie?.find(r => r.associateId === 'associe-1');
-    const a2 = row.revenusParAssocie?.find(r => r.associateId === 'associe-2');
+    const a1 = row.revenusParAssocie?.find((r) => r.associateId === 'associe-1');
+    const a2 = row.revenusParAssocie?.find((r) => r.associateId === 'associe-2');
 
     expect(a2?.grossDividends ?? 0).toBe(0);
-    expect((a1?.grossDividends ?? 0)).toBeGreaterThan(0);
+    expect(a1?.grossDividends ?? 0).toBeGreaterThan(0);
   });
 
   it('checkbox décochée (false) : résultat courant via économique (100 % asso 1), réserves via PP (10 % asso 1 sur la part réserves)', () => {
     const rows = simulateTresorerieV2(buildDemembrementInputs(false), PARAMS, 1);
 
     const row = rows[0];
-    const a1 = row.revenusParAssocie?.find(r => r.associateId === 'associe-1');
-    const a2 = row.revenusParAssocie?.find(r => r.associateId === 'associe-2');
+    const a1 = row.revenusParAssocie?.find((r) => r.associateId === 'associe-1');
+    const a2 = row.revenusParAssocie?.find((r) => r.associateId === 'associe-2');
 
     // Σ PP = 10 % (asso 1 uniquement). Les réserves vont donc à 100 % à l'associé 1 en PP.
     // L'associé 2 reste à 0 (il n'a aucune PP).
     expect(a2?.grossDividends ?? 0).toBe(0);
-    expect((a1?.grossDividends ?? 0)).toBeGreaterThan(0);
+    expect(a1?.grossDividends ?? 0).toBeGreaterThan(0);
 
     // L'associé 1 reçoit moins qu'avec usufructuaryReserveAttribution=true uniquement si
     // les réserves seules ne sont pas distribuables (cas Σ PP = 0). Ici Σ PP > 0 donc
@@ -169,11 +183,11 @@ describe('simulateTresorerie — attribution des réserves démembrées', () => 
 
     const rows = simulateTresorerieV2(inputs, PARAMS, 1);
     const row = rows[0];
-    const a1 = row.revenusParAssocie?.find(r => r.associateId === 'associe-1');
+    const a1 = row.revenusParAssocie?.find((r) => r.associateId === 'associe-1');
 
     // Reserves initial 200k mais Σ PP = 0 → seul le résultat courant (≈79 000 €) est distribué.
     // Aucune réserve ne peut être consommée.
-    expect((a1?.grossDividends ?? 0)).toBeCloseTo(79_000, 2);
+    expect(a1?.grossDividends ?? 0).toBeCloseTo(79_000, 2);
   });
 
   it('société full PP (sans démembrement) : checkbox sans effet', () => {
@@ -199,8 +213,8 @@ describe('simulateTresorerie — attribution des réserves démembrées', () => 
     const rowsFalse = simulateTresorerieV2(inputsAvecCheckboxFalse, PARAMS, 1);
     const rowsTrue = simulateTresorerieV2(inputsAvecCheckboxTrue, PARAMS, 1);
 
-    const a1False = rowsFalse[0].revenusParAssocie?.find(r => r.associateId === 'associe-1');
-    const a1True = rowsTrue[0].revenusParAssocie?.find(r => r.associateId === 'associe-1');
+    const a1False = rowsFalse[0].revenusParAssocie?.find((r) => r.associateId === 'associe-1');
+    const a1True = rowsTrue[0].revenusParAssocie?.find((r) => r.associateId === 'associe-1');
     expect(a1False?.grossDividends).toBeCloseTo(a1True?.grossDividends ?? -1, 2);
   });
 });

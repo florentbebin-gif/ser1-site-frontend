@@ -23,9 +23,11 @@ vi.mock('@/auth/useUserRole', () => ({
 
 vi.mock('@/utils/cache/baseCgRetraiteRepository', () => ({
   getBaseCgRetraiteCatalog: () => getBaseCgRetraiteCatalogMock(),
-  upsertBaseCgRetraiteContract: (contract: BaseCgRetraiteContract) => upsertBaseCgRetraiteContractMock(contract),
+  upsertBaseCgRetraiteContract: (contract: BaseCgRetraiteContract) =>
+    upsertBaseCgRetraiteContractMock(contract),
   deleteBaseCgRetraiteContract: (id: string) => deleteBaseCgRetraiteContractMock(id),
-  createBaseCgRetraiteDocumentDownloadUrl: (...args: unknown[]) => createBaseCgRetraiteDocumentDownloadUrlMock(...args),
+  createBaseCgRetraiteDocumentDownloadUrl: (...args: unknown[]) =>
+    createBaseCgRetraiteDocumentDownloadUrlMock(...args),
 }));
 
 const contract: BaseCgRetraiteContract = {
@@ -81,7 +83,9 @@ describe('BaseCgRetraite', () => {
     deleteBaseCgRetraiteContractMock.mockReset();
     deleteBaseCgRetraiteContractMock.mockResolvedValue(undefined);
     createBaseCgRetraiteDocumentDownloadUrlMock.mockReset();
-    createBaseCgRetraiteDocumentDownloadUrlMock.mockResolvedValue('https://signed.example.test/cg.pdf');
+    createBaseCgRetraiteDocumentDownloadUrlMock.mockResolvedValue(
+      'https://signed.example.test/cg.pdf',
+    );
     useUserRoleMock.mockReset();
     useUserRoleMock.mockReturnValue({
       role: 'admin',
@@ -107,23 +111,27 @@ describe('BaseCgRetraite', () => {
     };
     const documentedContract: BaseCgRetraiteContract = {
       ...contract,
-      documents: [{
-        id: 'doc-swisslife',
-        label: 'Notice SwissLife PER Individuel',
-        type: 'notice_information',
-        status: 'uploaded',
-        versionLabel: '13124 – 09.2019',
-        storagePath: 'swisslife/swisslife-per-individuel/13124-09-2019.pdf',
-        fileName: '13124-09-2019.pdf',
-        mime: 'application/pdf',
-        bytes: 462558,
-      }],
+      documents: [
+        {
+          id: 'doc-swisslife',
+          label: 'Notice SwissLife PER Individuel',
+          type: 'notice_information',
+          status: 'uploaded',
+          versionLabel: '13124 – 09.2019',
+          storagePath: 'swisslife/swisslife-per-individuel/13124-09-2019.pdf',
+          fileName: '13124-09-2019.pdf',
+          mime: 'application/pdf',
+          bytes: 462558,
+        },
+      ],
     };
     getBaseCgRetraiteCatalogMock.mockResolvedValueOnce([documentedContract, incompleteContract]);
 
     render(<BaseCgRetraite />);
 
-    expect(await screen.findByText('2 contrats disponibles - 1 contrat paramétré - 1 CG disponible')).toBeInTheDocument();
+    expect(
+      await screen.findByText('2 contrats disponibles - 1 contrat paramétré - 1 CG disponible'),
+    ).toBeInTheDocument();
     expect(screen.queryByText(/extraction/i)).not.toBeInTheDocument();
     expect(screen.queryByText(/version/i)).not.toBeInTheDocument();
   });
@@ -155,11 +163,122 @@ describe('BaseCgRetraite', () => {
   it('affiche la modale en 4 onglets', async () => {
     await openModal();
 
+    expect(screen.getByRole('dialog', { name: 'Modifier le contrat' })).toBeInTheDocument();
     expect(screen.getAllByRole('tab')).toHaveLength(4);
     expect(screen.getByRole('tab', { name: 'Identité' })).toBeInTheDocument();
     expect(screen.getByRole('tab', { name: 'Phase épargne' })).toBeInTheDocument();
     expect(screen.getByRole('tab', { name: 'Phase liquidation' })).toBeInTheDocument();
     expect(screen.getByRole('tab', { name: 'Documents' })).toBeInTheDocument();
+  });
+
+  it('relie les onglets au panneau et permet la navigation clavier', async () => {
+    await openModal();
+
+    const identityTab = screen.getByRole('tab', { name: 'Identité' });
+    const epargneTab = screen.getByRole('tab', { name: 'Phase épargne' });
+    const documentsTab = screen.getByRole('tab', { name: 'Documents' });
+    const panel = screen.getByRole('tabpanel');
+
+    expect(identityTab).toHaveAttribute('aria-controls', panel.id);
+    expect(panel).toHaveAttribute('aria-labelledby', identityTab.id);
+    expect(identityTab).toHaveAttribute('tabindex', '0');
+
+    identityTab.focus();
+    await userEvent.keyboard('{ArrowRight}');
+
+    await waitFor(() => {
+      expect(epargneTab).toHaveAttribute('aria-selected', 'true');
+      expect(epargneTab).toHaveFocus();
+      expect(screen.getByRole('tabpanel')).toHaveAttribute('aria-labelledby', epargneTab.id);
+    });
+
+    await userEvent.keyboard('{End}');
+
+    await waitFor(() => {
+      expect(documentsTab).toHaveAttribute('aria-selected', 'true');
+      expect(documentsTab).toHaveFocus();
+      expect(screen.getByRole('tabpanel')).toHaveAttribute('aria-labelledby', documentsTab.id);
+    });
+  });
+
+  it('ferme la modale avec Escape et restitue le focus au déclencheur', async () => {
+    const user = userEvent.setup();
+    render(<BaseCgRetraite />);
+    const editButton = await screen.findByRole('button', { name: 'Modifier' });
+
+    await user.click(editButton);
+    const closeButton = await screen.findByRole('button', { name: 'Fermer' });
+
+    await waitFor(() => expect(closeButton).toHaveFocus());
+    await user.keyboard('{Escape}');
+
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+    expect(editButton).toHaveFocus();
+  });
+
+  it('garde le focus dans la modale avec Tab et Shift Tab', async () => {
+    const user = userEvent.setup();
+    await openModal();
+    const closeButton = await screen.findByRole('button', { name: 'Fermer' });
+    const saveButton = screen.getByRole('button', { name: 'Enregistrer' });
+
+    await waitFor(() => expect(closeButton).toHaveFocus());
+
+    await user.tab({ shift: true });
+    expect(saveButton).toHaveFocus();
+
+    await user.tab();
+    expect(closeButton).toHaveFocus();
+  });
+
+  it('persiste une édition de l’onglet identité', async () => {
+    await openModal();
+
+    await userEvent.clear(screen.getByLabelText('Compagnie'));
+    await userEvent.type(screen.getByLabelText('Compagnie'), 'ABEILLE VIE');
+    await userEvent.click(screen.getByRole('button', { name: 'Enregistrer' }));
+
+    await waitFor(() => {
+      expect(upsertBaseCgRetraiteContractMock).toHaveBeenCalledWith(
+        expect.objectContaining({
+          compagnie: 'ABEILLE VIE',
+        }),
+      );
+    });
+  });
+
+  it('persiste une édition de l’onglet phase épargne', async () => {
+    await openModal();
+    await userEvent.click(screen.getByRole('tab', { name: 'Phase épargne' }));
+
+    await userEvent.clear(screen.getByLabelText('Modalités en cas de décès'));
+    await userEvent.type(screen.getByLabelText('Modalités en cas de décès'), 'Clause dédiée');
+    await userEvent.click(screen.getByRole('button', { name: 'Enregistrer' }));
+
+    await waitFor(() => {
+      expect(upsertBaseCgRetraiteContractMock).toHaveBeenCalledWith(
+        expect.objectContaining({
+          phaseEpargne: expect.objectContaining({
+            clauseBeneficiaire: 'Clause dédiée',
+          }),
+        }),
+      );
+    });
+  });
+
+  it('persiste une édition de l’onglet phase liquidation', async () => {
+    await openModal();
+    await userEvent.click(screen.getByRole('tab', { name: 'Phase liquidation' }));
+
+    await userEvent.clear(screen.getByLabelText('Taux frais sur arrérages'));
+    await userEvent.type(screen.getByLabelText('Taux frais sur arrérages'), '4.5');
+    await userEvent.click(screen.getByRole('button', { name: 'Enregistrer' }));
+
+    await waitFor(() => {
+      const saved = upsertBaseCgRetraiteContractMock.mock.calls[0]?.[0] as BaseCgRetraiteContract;
+      expect(saved.phaseLiquidation.fraisArreragesRate).toBeCloseTo(0.045);
+      expect(saved.phaseLiquidation.fraisArrerages).toBe('4,5 %');
+    });
   });
 
   it('organise les contrats en accordéons par compagnie avec indicateur incomplet', async () => {
@@ -207,32 +326,43 @@ describe('BaseCgRetraite', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Ajouter un document' }));
     await userEvent.type(screen.getByLabelText('Version CG'), '13124 – 09.2019');
     await userEvent.clear(screen.getByLabelText('Chemin Supabase Storage'));
-    await userEvent.type(screen.getByLabelText('Chemin Supabase Storage'), 'swisslife/swisslife-per-individuel/13124-09-2019.pdf');
+    await userEvent.type(
+      screen.getByLabelText('Chemin Supabase Storage'),
+      'swisslife/swisslife-per-individuel/13124-09-2019.pdf',
+    );
     await userEvent.click(screen.getByRole('button', { name: 'Enregistrer' }));
 
     await waitFor(() => {
-      expect(upsertBaseCgRetraiteContractMock).toHaveBeenCalledWith(expect.objectContaining({
-        documents: [expect.objectContaining({
-          label: 'Conditions Générales',
-          versionLabel: expect.stringContaining('13124'),
-          storagePath: 'swisslife/swisslife-per-individuel/13124-09-2019.pdf',
-        })],
-      }));
+      expect(upsertBaseCgRetraiteContractMock).toHaveBeenCalledWith(
+        expect.objectContaining({
+          documents: [
+            expect.objectContaining({
+              label: 'Conditions Générales',
+              versionLabel: expect.stringContaining('13124'),
+              storagePath: 'swisslife/swisslife-per-individuel/13124-09-2019.pdf',
+            }),
+          ],
+        }),
+      );
     });
   });
 
   it('met en avant les noms de contrats et le lien de téléchargement CG', async () => {
-    getBaseCgRetraiteCatalogMock.mockResolvedValueOnce([{
-      ...contract,
-      documents: [{
-        id: 'doc-swisslife',
-        label: 'Notice SwissLife PER Individuel',
-        type: 'notice_information',
-        status: 'uploaded',
-        versionLabel: '13124 – 09.2019',
-        storagePath: 'swisslife/swisslife-per-individuel/13124-09-2019.pdf',
-      }],
-    }]);
+    getBaseCgRetraiteCatalogMock.mockResolvedValueOnce([
+      {
+        ...contract,
+        documents: [
+          {
+            id: 'doc-swisslife',
+            label: 'Notice SwissLife PER Individuel',
+            type: 'notice_information',
+            status: 'uploaded',
+            versionLabel: '13124 – 09.2019',
+            storagePath: 'swisslife/swisslife-per-individuel/13124-09-2019.pdf',
+          },
+        ],
+      },
+    ]);
 
     render(<BaseCgRetraite />);
 

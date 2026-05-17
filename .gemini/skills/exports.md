@@ -6,18 +6,18 @@
 
 ## Architecture exports SER1
 
-| Composant | Fichier |
-|---|---|
-| Contrat produit | `docs/GOUVERNANCE_EXPORTS.md` |
-| Orchestrateur PPTX | `src/pptx/export/exportStudyDeck.ts` |
-| Design system PPTX | `src/pptx/designSystem/serenity.ts` |
-| Slides PPTX | `src/pptx/slides/` |
-| Wrapper audit | `src/features/audit/export/exportAudit.ts` |
-| Wrapper stratégie | `src/features/strategy/export/exportStrategy.ts` |
-| Builder XLSX partagé | `src/utils/export/xlsxBuilder.ts` |
-| Fingerprint exports | `src/utils/export/exportFingerprint.ts` |
-| Exports feature-owned | `src/features/*/export/` |
-| Snapshots exports | `tests/snapshots/` |
+| Composant             | Fichier                                          |
+| --------------------- | ------------------------------------------------ |
+| Contrat produit       | `docs/GOUVERNANCE_EXPORTS.md`                    |
+| Orchestrateur PPTX    | `src/pptx/export/exportStudyDeck.ts`             |
+| Design system PPTX    | `src/pptx/designSystem/serenity.ts`              |
+| Slides PPTX           | `src/pptx/slides/`                               |
+| Wrapper audit         | `src/features/audit/export/exportAudit.ts`       |
+| Wrapper stratégie     | `src/features/strategy/export/exportStrategy.ts` |
+| Builder XLSX partagé  | `src/utils/export/xlsxBuilder.ts`                |
+| Fingerprint exports   | `src/utils/export/exportFingerprint.ts`          |
+| Exports feature-owned | `src/features/*/export/`                         |
+| Snapshots exports     | `tests/snapshots/`                               |
 
 ---
 

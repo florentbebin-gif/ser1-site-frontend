@@ -58,7 +58,7 @@ export function Panel({
             <h2>{title}</h2>
             <p>{subtitle}</p>
           </div>
-          {(headerActions || collapsible) ? (
+          {headerActions || collapsible ? (
             <div className="per-transfert-panel__actions">
               {headerActions}
               {collapsible ? (
@@ -76,7 +76,7 @@ export function Panel({
           ) : null}
         </div>
       </div>
-      {(!collapsible || expanded) ? (
+      {!collapsible || expanded ? (
         <>
           <div className="per-transfert-panel__divider" aria-hidden="true" />
           {children}

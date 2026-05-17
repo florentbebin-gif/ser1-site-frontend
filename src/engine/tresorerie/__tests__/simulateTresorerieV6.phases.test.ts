@@ -9,12 +9,12 @@ const PARAMS: TresoFiscalParams = {
   motherDaughterStandardQpfcRate: 0.05,
   motherDaughterGroupQpfcRate: 0.01,
   participationDisposalQpfcRate: 0.12,
-  pfuRateIR: 0.10,
+  pfuRateIR: 0.1,
   psRate: 0.15,
   pfuTotal: 0.25,
   dividendesAbattement: 0,
   irScale: [],
-  tnsDividendBasePct: 0.10,
+  tnsDividendBasePct: 0.1,
   maxDeductibleCcaInterestRate: 0.05,
 };
 
@@ -67,24 +67,26 @@ function baseV6(): TresoInputsV6 {
         workingCapitalRequirement: 0,
       },
       reducedCorporateTaxEligible: true,
-      associates: [{
-        id: 'associe-1',
-        label: 'Associé 1',
-        kind: 'pp',
-        profile: {
-          currentAge: 50,
-          retirementAge: 90,
-          annualIncomeNeed: 0,
-          projectionStartYear: 2026,
+      associates: [
+        {
+          id: 'associe-1',
+          label: 'Associé 1',
+          kind: 'pp',
+          profile: {
+            currentAge: 50,
+            retirementAge: 90,
+            annualIncomeNeed: 0,
+            projectionStartYear: 2026,
+          },
+          ownershipLots: [{ right: 'pleine_propriete', capitalPct: 100, economicRightsPct: 100 }],
+          roles: ['associe_sans_statut'],
+          cca: {
+            currentBalance: 0,
+            remunerationRate: 0,
+          },
+          revenuePhases: [phase({})],
         },
-        ownershipLots: [{ right: 'pleine_propriete', capitalPct: 100, economicRightsPct: 100 }],
-        roles: ['associe_sans_statut'],
-        cca: {
-          currentBalance: 0,
-          remunerationRate: 0,
-        },
-        revenuePhases: [phase({})],
-      }],
+      ],
       loans: [],
       subsidiaries: [],
     },
@@ -103,12 +105,14 @@ describe('simulateTresorerie — sous-phases V6', () => {
       currentBalance: 20_000,
       remunerationRate: 0,
     };
-    inputs.company.associates[0].revenuePhases = [phase({
-      ccaRepayment: {
-        enabled: true,
-        strategy: 'max_treso',
-      },
-    })];
+    inputs.company.associates[0].revenuePhases = [
+      phase({
+        ccaRepayment: {
+          enabled: true,
+          strategy: 'max_treso',
+        },
+      }),
+    ];
 
     const rows = simulateTresorerieV2(inputs, PARAMS, 1);
 
@@ -129,12 +133,14 @@ describe('simulateTresorerie — sous-phases V6', () => {
     };
     inputs.allocationMatrix.minimumBankBalance = 60_000;
     inputs.allocationMatrix.sweepThreshold = 60_000;
-    inputs.company.associates[0].revenuePhases = [phase({
-      ccaRepayment: {
-        enabled: true,
-        strategy: 'max_treso',
-      },
-    })];
+    inputs.company.associates[0].revenuePhases = [
+      phase({
+        ccaRepayment: {
+          enabled: true,
+          strategy: 'max_treso',
+        },
+      }),
+    ];
 
     const rows = simulateTresorerieV2(inputs, PARAMS, 1);
 
@@ -146,13 +152,15 @@ describe('simulateTresorerie — sous-phases V6', () => {
   it('distribue le maximum de trésorerie disponible en mode dividendes max sans dépendre du besoin', () => {
     const inputs = baseV6();
     inputs.company.reservesInitial = 50_000;
-    inputs.company.associates[0].revenuePhases = [phase({
-      distribution: {
-        enabled: true,
-        annualNetIncomeNeed: 0,
-        dividendsStrategy: 'max_treso',
-      },
-    })];
+    inputs.company.associates[0].revenuePhases = [
+      phase({
+        distribution: {
+          enabled: true,
+          annualNetIncomeNeed: 0,
+          dividendsStrategy: 'max_treso',
+        },
+      }),
+    ];
 
     const rows = simulateTresorerieV2(inputs, PARAMS, 1);
 
@@ -163,14 +171,16 @@ describe('simulateTresorerie — sous-phases V6', () => {
   it('grosse un dividende cible net associé en brut société avec le PFU et les droits économiques', () => {
     const inputs = baseV6();
     inputs.company.reservesInitial = 100_000;
-    inputs.company.associates[0].revenuePhases = [phase({
-      distribution: {
-        enabled: true,
-        annualNetIncomeNeed: 0,
-        dividendsStrategy: 'montant_cible',
-        dividendsTargetAmountNet: 7_500,
-      },
-    })];
+    inputs.company.associates[0].revenuePhases = [
+      phase({
+        distribution: {
+          enabled: true,
+          annualNetIncomeNeed: 0,
+          dividendsStrategy: 'montant_cible',
+          dividendsTargetAmountNet: 7_500,
+        },
+      }),
+    ];
 
     const rows = simulateTresorerieV2(inputs, PARAMS, 1);
 
@@ -186,15 +196,17 @@ describe('simulateTresorerie — sous-phases V6', () => {
       currentBalance: 0,
       remunerationRate: 0.05,
     };
-    inputs.company.associates[0].revenuePhases = [phase({
-      startYear: 2026,
-      endYear: 2027,
-      ccaContribution: {
-        enabled: true,
-        exceptional: { year: 2026, amount: 10_000 },
-        annual: { amount: 5_000, startYear: 2026, endYear: 2027 },
-      },
-    })];
+    inputs.company.associates[0].revenuePhases = [
+      phase({
+        startYear: 2026,
+        endYear: 2027,
+        ccaContribution: {
+          enabled: true,
+          exceptional: { year: 2026, amount: 10_000 },
+          annual: { amount: 5_000, startYear: 2026, endYear: 2027 },
+        },
+      }),
+    ];
 
     const rows = simulateTresorerieV2(inputs, PARAMS, 2);
 
@@ -205,14 +217,16 @@ describe('simulateTresorerie — sous-phases V6', () => {
 
   it('contraint les apports CCA annuels aux bornes du palier même si les anciennes bornes sont incohérentes', () => {
     const inputs = baseV6();
-    inputs.company.associates[0].revenuePhases = [phase({
-      startYear: 2026,
-      endYear: 2027,
-      ccaContribution: {
-        enabled: true,
-        annual: { amount: 5_000, startYear: 2028, endYear: 2029 },
-      },
-    })];
+    inputs.company.associates[0].revenuePhases = [
+      phase({
+        startYear: 2026,
+        endYear: 2027,
+        ccaContribution: {
+          enabled: true,
+          annual: { amount: 5_000, startYear: 2028, endYear: 2029 },
+        },
+      }),
+    ];
 
     const rows = simulateTresorerieV2(inputs, PARAMS, 2);
 
@@ -226,17 +240,19 @@ describe('simulateTresorerie — sous-phases V6', () => {
       currentBalance: 20_000,
       remunerationRate: 0,
     };
-    inputs.company.associates[0].revenuePhases = [phase({
-      distribution: {
-        enabled: true,
-        annualNetIncomeNeed: 10_000,
-        dividendsStrategy: 'aucun',
-      },
-      ccaRepayment: {
-        enabled: false,
-        strategy: 'aucun',
-      },
-    })];
+    inputs.company.associates[0].revenuePhases = [
+      phase({
+        distribution: {
+          enabled: true,
+          annualNetIncomeNeed: 10_000,
+          dividendsStrategy: 'aucun',
+        },
+        ccaRepayment: {
+          enabled: false,
+          strategy: 'aucun',
+        },
+      }),
+    ];
 
     const rows = simulateTresorerieV2(inputs, PARAMS, 1);
 

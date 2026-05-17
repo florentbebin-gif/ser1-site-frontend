@@ -3,10 +3,7 @@ interface CreditHypothesesProps {
   onToggle: () => void;
 }
 
-export function CreditHypotheses({
-  hypothesesOpen,
-  onToggle,
-}: CreditHypothesesProps) {
+export function CreditHypotheses({ hypothesesOpen, onToggle }: CreditHypothesesProps) {
   return (
     <div className="cv-hypotheses">
       <button
@@ -36,8 +33,13 @@ export function CreditHypotheses({
         <ul>
           <li>Les résultats sont indicatifs et ne constituent pas une offre de prêt.</li>
           <li>Le calcul suppose un taux fixe sur toute la durée du prêt.</li>
-          <li>L&apos;assurance emprunteur est calculée selon le mode sélectionné (capital initial ou restant dû) pour chaque prêt.</li>
-          <li>Les frais de dossier, de garantie et de notaire ne sont pas inclus dans ce simulateur.</li>
+          <li>
+            L&apos;assurance emprunteur est calculée selon le mode sélectionné (capital initial ou
+            restant dû) pour chaque prêt.
+          </li>
+          <li>
+            Les frais de dossier, de garantie et de notaire ne sont pas inclus dans ce simulateur.
+          </li>
         </ul>
       )}
     </div>

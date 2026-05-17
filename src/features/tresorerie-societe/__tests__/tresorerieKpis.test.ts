@@ -10,8 +10,8 @@ const PARAMS: TresoFiscalParams = {
   motherDaughterGroupQpfcRate: 0.01,
   pfuRateIR: 0.128,
   psRate: 0.172,
-  pfuTotal: 0.30,
-  dividendesAbattement: 0.40,
+  pfuTotal: 0.3,
+  dividendesAbattement: 0.4,
   irScale: [],
 };
 
@@ -33,20 +33,22 @@ const BASE: TresoInputsV2 = {
     treasuryInitial: 0,
     annualStructureCosts: 3000,
     reducedCorporateTaxEligible: true,
-    associates: [{
-      id: 'associe-1',
-      label: 'Associé 1',
-      kind: 'pp',
-      ownershipLots: [{ right: 'pleine_propriete', capitalPct: 100, economicRightsPct: 100 }],
-      roles: ['associe_sans_statut'],
-      cca: {
-        currentBalance: 0,
-        exceptionalContributions: [],
-        annualContribution: { amount: 16600, startYear: 2025, endYear: 2039 },
-        remunerationRate: 0,
+    associates: [
+      {
+        id: 'associe-1',
+        label: 'Associé 1',
+        kind: 'pp',
+        ownershipLots: [{ right: 'pleine_propriete', capitalPct: 100, economicRightsPct: 100 }],
+        roles: ['associe_sans_statut'],
+        cca: {
+          currentBalance: 0,
+          exceptionalContributions: [],
+          annualContribution: { amount: 16600, startYear: 2025, endYear: 2039 },
+          remunerationRate: 0,
+        },
+        remuneration: { source: 'holding', loadedAnnualCost: 0, socialChargeRate: 0 },
       },
-      remuneration: { source: 'holding', loadedAnnualCost: 0, socialChargeRate: 0 },
-    }],
+    ],
     loans: [],
     subsidiaries: [],
   },
@@ -90,30 +92,36 @@ describe('Trésorerie société IS — projection moteur v2 et KPIs', () => {
   describe('Poche de capitalisation — IS latent', () => {
     it('isLatentCapi = 0 sans poche de capitalisation', () => {
       const rows = simulateTresorerieV2(BASE, PARAMS, 5);
-      expect(rows.every(r => r.isLatentCapi === 0)).toBe(true);
+      expect(rows.every((r) => r.isLatentCapi === 0)).toBe(true);
     });
 
     it('isLatentCapi croît chaque année avec les gains (non décaissé)', () => {
-      const rows = simulateTresorerieV2({
-        ...BASE,
-        company: {
-          ...BASE.company,
-          treasuryInitial: 200000,
+      const rows = simulateTresorerieV2(
+        {
+          ...BASE,
+          company: {
+            ...BASE.company,
+            treasuryInitial: 200000,
+          },
+          allocationMatrix: {
+            sweepThreshold: 0,
+            pockets: [
+              {
+                id: 'capitalisation-1',
+                kind: 'capitalisation',
+                durationYears: 20,
+                annualReturnRate: 0.04,
+                enjoymentDelayMonths: 0,
+                initialAllocationPct: 100,
+                annualAllocationPct: 0,
+                repeatAtTerm: false,
+              },
+            ],
+          },
         },
-        allocationMatrix: {
-          sweepThreshold: 0,
-          pockets: [{
-            id: 'capitalisation-1',
-            kind: 'capitalisation',
-            durationYears: 20,
-            annualReturnRate: 0.04,
-            enjoymentDelayMonths: 0,
-            initialAllocationPct: 100,
-            annualAllocationPct: 0,
-            repeatAtTerm: false,
-          }],
-        },
-      }, PARAMS, 5);
+        PARAMS,
+        5,
+      );
 
       expect(rows[0].isLatentCapi).toBeGreaterThan(0);
       expect(rows[4].isLatentCapi).toBeGreaterThan(rows[0].isLatentCapi);
@@ -127,27 +135,32 @@ describe('Trésorerie société IS — projection moteur v2 et KPIs', () => {
     });
 
     it('alerte active quand le besoin de revenus dépasse la capacité distribuable', () => {
-      const rows = simulateTresorerieV2({
-        ...BASE,
-        foyer: {
-          ...BASE.foyer,
-          currentAge: 65,
-          retirementAge: 65,
-          annualIncomeNeed: 50000,
+      const rows = simulateTresorerieV2(
+        {
+          ...BASE,
+          foyer: {
+            ...BASE.foyer,
+            currentAge: 65,
+            retirementAge: 65,
+            annualIncomeNeed: 50000,
+          },
+          company: {
+            ...BASE.company,
+            associates: BASE.company.associates.map((associate) => ({
+              ...associate,
+              profile: {
+                currentAge: 65,
+                retirementAge: 65,
+                annualIncomeNeed: 50000,
+                projectionStartYear:
+                  BASE.company.projectionStartYear ?? BASE.foyer.projectionStartYear,
+              },
+            })),
+          },
         },
-        company: {
-          ...BASE.company,
-          associates: BASE.company.associates.map(associate => ({
-            ...associate,
-            profile: {
-              currentAge: 65,
-              retirementAge: 65,
-              annualIncomeNeed: 50000,
-              projectionStartYear: BASE.company.projectionStartYear ?? BASE.foyer.projectionStartYear,
-            },
-          })),
-        },
-      }, PARAMS, 1);
+        PARAMS,
+        1,
+      );
 
       expect(rows[0].alerteDividendesSuperieursCapacite).toBe(true);
     });

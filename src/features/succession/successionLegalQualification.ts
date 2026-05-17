@@ -71,10 +71,7 @@ export function resolveSuccessionQualifiedAssetPocket({
 }: {
   civilContext: Pick<SuccessionCivilContext, 'situationMatrimoniale' | 'regimeMatrimonial'>;
   patrimonialContext?: Pick<SuccessionPatrimonialContext, 'stipulationContraireCU'>;
-  entry: Pick<
-    SuccessionAssetDetailEntry,
-    'category' | 'legalNature' | 'meubleImmeubleLegal'
-  >;
+  entry: Pick<SuccessionAssetDetailEntry, 'category' | 'legalNature' | 'meubleImmeubleLegal'>;
   pocket: SuccessionAssetPocket;
 }): SuccessionAssetPocket {
   if (entry.category === 'passif' || civilContext.situationMatrimoniale !== 'marie') {
@@ -82,11 +79,10 @@ export function resolveSuccessionQualifiedAssetPocket({
   }
 
   if (civilContext.regimeMatrimonial === 'communaute_universelle') {
-    const canKeepSeparateOwnPocket = (
-      patrimonialContext?.stipulationContraireCU
-      && entry.legalNature === 'propre_par_nature'
-      && (pocket === 'epoux1' || pocket === 'epoux2')
-    );
+    const canKeepSeparateOwnPocket =
+      patrimonialContext?.stipulationContraireCU &&
+      entry.legalNature === 'propre_par_nature' &&
+      (pocket === 'epoux1' || pocket === 'epoux2');
     return canKeepSeparateOwnPocket ? pocket : 'communaute';
   }
 
@@ -94,9 +90,7 @@ export function resolveSuccessionQualifiedAssetPocket({
     if (keepsSeparateQualifiedPocket(entry.legalNature)) {
       return pocket;
     }
-    return getEffectiveSuccessionMeubleImmeubleLegal(entry) === 'meuble'
-      ? 'communaute'
-      : pocket;
+    return getEffectiveSuccessionMeubleImmeubleLegal(entry) === 'meuble' ? 'communaute' : pocket;
   }
 
   return pocket;

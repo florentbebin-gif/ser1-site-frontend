@@ -50,9 +50,9 @@ export default function SuccessionSimulator() {
     () => buildSuccessionFiscalSnapshot(fiscalContext),
     [fiscalContext],
   );
-  const {
-    persistedForm, setActifNet, hydrateForm, reset,
-  } = useSuccessionCalc({ dmtgSettings: fiscalSnapshot.dmtgSettings });
+  const { persistedForm, setActifNet, hydrateForm, reset } = useSuccessionCalc({
+    dmtgSettings: fiscalSnapshot.dmtgSettings,
+  });
 
   const { pptxColors, cabinetLogo, logoPlacement } = useTheme();
   const { mode } = useUserMode();
@@ -60,28 +60,73 @@ export default function SuccessionSimulator() {
 
   // ── États locaux ───────────────────────────────────────────────────────────
   const {
-    localMode, setLocalMode, hypothesesOpen, setHypothesesOpen, hydrated, setHydrated,
-    civilContext, setCivilContext, liquidationContext, setLiquidationContext,
-    assetEntries, setAssetEntries, assuranceVieEntries, setAssuranceVieEntries,
-    perEntries, setPerEntries, devolutionContext, setDevolutionContext,
-    patrimonialContext, setPatrimonialContext, donationsContext, setDonationsContext,
-    enfantsContext, setEnfantsContext, familyMembers, setFamilyMembers,
-    showAddMemberPanel, setShowAddMemberPanel, showDispositionsModal, setShowDispositionsModal,
-    showAssuranceVieModal, setShowAssuranceVieModal, showPerModal, setShowPerModal,
-    showPrevoyanceModal, setShowPrevoyanceModal, assuranceVieDraft, setAssuranceVieDraft,
-    perDraft, setPerDraft, prevoyanceDraft, setPrevoyanceDraft,
-    groupementFoncierEntries, setGroupementFoncierEntries,
-    prevoyanceDecesEntries, setPrevoyanceDecesEntries,
-    dispositionsDraft, setDispositionsDraft, addMemberForm, setAddMemberForm,
-    chainOrder, setChainOrder,
+    localMode,
+    setLocalMode,
+    hypothesesOpen,
+    setHypothesesOpen,
+    hydrated,
+    setHydrated,
+    civilContext,
+    setCivilContext,
+    liquidationContext,
+    setLiquidationContext,
+    assetEntries,
+    setAssetEntries,
+    assuranceVieEntries,
+    setAssuranceVieEntries,
+    perEntries,
+    setPerEntries,
+    devolutionContext,
+    setDevolutionContext,
+    patrimonialContext,
+    setPatrimonialContext,
+    donationsContext,
+    setDonationsContext,
+    enfantsContext,
+    setEnfantsContext,
+    familyMembers,
+    setFamilyMembers,
+    showAddMemberPanel,
+    setShowAddMemberPanel,
+    showDispositionsModal,
+    setShowDispositionsModal,
+    showAssuranceVieModal,
+    setShowAssuranceVieModal,
+    showPerModal,
+    setShowPerModal,
+    showPrevoyanceModal,
+    setShowPrevoyanceModal,
+    assuranceVieDraft,
+    setAssuranceVieDraft,
+    perDraft,
+    setPerDraft,
+    prevoyanceDraft,
+    setPrevoyanceDraft,
+    groupementFoncierEntries,
+    setGroupementFoncierEntries,
+    prevoyanceDecesEntries,
+    setPrevoyanceDecesEntries,
+    dispositionsDraft,
+    setDispositionsDraft,
+    addMemberForm,
+    setAddMemberForm,
+    chainOrder,
+    setChainOrder,
   } = useSuccessionDraftState();
   const effectiveMode = resolveEffectiveUserMode(mode, localMode);
   const isExpert = effectiveMode === 'expert';
   const {
-    donationPartageActs, setDonationPartageActs, showDonationPartageModal,
-    setShowDonationPartageModal, donationPartageDraft, setDonationPartageDraft,
-    openDonationPartageAct, openDonationPartageFromEntry, closeDonationPartageModal,
-    validateDonationPartageModal, removeDonationPartageAct,
+    donationPartageActs,
+    setDonationPartageActs,
+    showDonationPartageModal,
+    setShowDonationPartageModal,
+    donationPartageDraft,
+    setDonationPartageDraft,
+    openDonationPartageAct,
+    openDonationPartageFromEntry,
+    closeDonationPartageModal,
+    validateDonationPartageModal,
+    removeDonationPartageAct,
   } = useSuccessionDonationPartageHandlers({
     donationsContext,
     enfantsContext,
@@ -317,20 +362,24 @@ export default function SuccessionSimulator() {
     onOpenPrevoyanceModal: openPrevoyanceModal,
     onRemovePrevoyanceDecesEntry: removePrevoyanceDecesEntry,
     groupementFoncierEntries,
-    onUpdateGroupementFoncierEntry: (id: string, field: string, value: string | number) => setGroupementFoncierEntries((prev) => prev.map((entry) => {
-      if (entry.id !== id) return entry;
-      if (field === 'pocket') {
-        const location = resolveSuccessionAssetLocation({
-          pocket: value,
-          situationMatrimoniale: civilContext.situationMatrimoniale,
-          regimeMatrimonial: civilContext.regimeMatrimonial,
-          pacsConvention: civilContext.pacsConvention,
-        });
-        return location ? { ...entry, pocket: location.pocket } : entry;
-      }
-      return { ...entry, [field]: value };
-    })),
-    onRemoveGroupementFoncierEntry: (id: string) => setGroupementFoncierEntries((prev) => prev.filter((entry) => entry.id !== id)),
+    onUpdateGroupementFoncierEntry: (id: string, field: string, value: string | number) =>
+      setGroupementFoncierEntries((prev) =>
+        prev.map((entry) => {
+          if (entry.id !== id) return entry;
+          if (field === 'pocket') {
+            const location = resolveSuccessionAssetLocation({
+              pocket: value,
+              situationMatrimoniale: civilContext.situationMatrimoniale,
+              regimeMatrimonial: civilContext.regimeMatrimonial,
+              pacsConvention: civilContext.pacsConvention,
+            });
+            return location ? { ...entry, pocket: location.pocket } : entry;
+          }
+          return { ...entry, [field]: value };
+        }),
+      ),
+    onRemoveGroupementFoncierEntry: (id: string) =>
+      setGroupementFoncierEntries((prev) => prev.filter((entry) => entry.id !== id)),
     prevoyanceDecesEntries,
     onSetSimplifiedBalanceField: setSimplifiedBalanceField,
     onAddDonationEntry: addDonationEntry,
@@ -344,7 +393,8 @@ export default function SuccessionSimulator() {
     forfaitMobilierMontant: patrimonialContext.forfaitMobilierMontant,
     abattementResidencePrincipale: patrimonialContext.abattementResidencePrincipale,
     decesDansXAns: patrimonialContext.decesDansXAns,
-    onUpdatePatrimonialField: (field: string, value: unknown) => setPatrimonialContext((prev) => ({ ...prev, [field]: value })),
+    onUpdatePatrimonialField: (field: string, value: unknown) =>
+      setPatrimonialContext((prev) => ({ ...prev, [field]: value })),
   };
 
   // ── Rendu ──────────────────────────────────────────────────────────────────
@@ -358,11 +408,9 @@ export default function SuccessionSimulator() {
         pageTestId="succession-page"
         statusTestId="succession-settings-loading"
         loading
-        loadingContent={(
-          <div className="sc-settings-loading">
-            Chargement des paramètres fiscaux…
-          </div>
-        )}
+        loadingContent={
+          <div className="sc-settings-loading">Chargement des paramètres fiscaux…</div>
+        }
       />
     );
   }
@@ -375,22 +423,23 @@ export default function SuccessionSimulator() {
         pageClassName="sc-page"
         pageTestId="succession-page"
         mobileSideFirst
-        actions={(
+        actions={
           <>
-            <ModeToggle value={isExpert} onChange={() => setLocalMode(isExpert ? 'simplifie' : 'expert')} />
+            <ModeToggle
+              value={isExpert}
+              onChange={() => setLocalMode(isExpert ? 'simplifie' : 'expert')}
+            />
             <ExportMenu options={exportOptions} loading={exportLoading} />
           </>
-        )}
-        notice={(
+        }
+        notice={
           <div className="sc-page-notice">
             {sessionExpired && (
-              <p className="sc-session-msg">
-                Session expirée — reconnectez-vous pour exporter.
-              </p>
+              <p className="sc-session-msg">Session expirée — reconnectez-vous pour exporter.</p>
             )}
             <SuccessionFamilyOverview {...successionPageSectionsProps} />
           </div>
-        )}
+        }
       >
         {derived.shouldRenderSuccessionComputationSections && (
           <>
@@ -453,7 +502,9 @@ export default function SuccessionSimulator() {
         onCloseDonationPartage={closeDonationPartageModal}
         onValidateDonationPartage={validateDonationPartageModal}
         onUpdateDonationPartageDraft={setDonationPartageDraft}
-        onDeleteDonationPartage={donationPartageDraft ? () => removeDonationPartageAct(donationPartageDraft.id) : undefined}
+        onDeleteDonationPartage={
+          donationPartageDraft ? () => removeDonationPartageAct(donationPartageDraft.id) : undefined
+        }
         onCloseAddMemberPanel={() => setShowAddMemberPanel(false)}
         onValidateAddMember={addFamilyMember}
       />

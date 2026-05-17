@@ -36,9 +36,21 @@ export const DISPOSITION_TESTAMENTAIRE_OPTIONS: {
   label: string;
   description: string;
 }[] = [
-  { value: 'legs_universel', label: 'Legs universel', description: TESTAMENT_TYPE_DESCRIPTIONS.legs_universel },
-  { value: 'legs_titre_universel', label: 'Legs a titre universel', description: TESTAMENT_TYPE_DESCRIPTIONS.legs_titre_universel },
-  { value: 'legs_particulier', label: 'Legs particulier', description: TESTAMENT_TYPE_DESCRIPTIONS.legs_particulier },
+  {
+    value: 'legs_universel',
+    label: 'Legs universel',
+    description: TESTAMENT_TYPE_DESCRIPTIONS.legs_universel,
+  },
+  {
+    value: 'legs_titre_universel',
+    label: 'Legs a titre universel',
+    description: TESTAMENT_TYPE_DESCRIPTIONS.legs_titre_universel,
+  },
+  {
+    value: 'legs_particulier',
+    label: 'Legs particulier',
+    description: TESTAMENT_TYPE_DESCRIPTIONS.legs_particulier,
+  },
 ];
 
 export const DONATION_ENTRE_EPOUX_OPTIONS: {
@@ -91,11 +103,7 @@ export const ASSET_SUBCATEGORY_OPTIONS: Record<SuccessionAssetCategory, string[]
     'Assurance vie',
     'PER assurance',
   ],
-  professionnel: [
-    'Parts sociales',
-    'Fonds de commerce',
-    'Autres biens professionnels',
-  ],
+  professionnel: ['Parts sociales', 'Fonds de commerce', 'Autres biens professionnels'],
   divers: [
     'Véhicules',
     'Mobilier',
@@ -103,11 +111,7 @@ export const ASSET_SUBCATEGORY_OPTIONS: Record<SuccessionAssetCategory, string[]
     // Sous-catégorie spéciale
     'Prévoyance décès',
   ],
-  passif: [
-    'Emprunts immobiliers',
-    'Dettes diverses',
-    'Passifs professionnels',
-  ],
+  passif: ['Emprunts immobiliers', 'Dettes diverses', 'Passifs professionnels'],
 };
 
 // Valeurs sentinelles identifiant les sous-catégories spéciales (transformation de ligne)
@@ -141,7 +145,11 @@ export const BRANCH_OPTIONS: { value: FamilyBranch; label: string }[] = [
   { value: 'epoux2', label: 'Côté Époux 2' },
 ];
 
-export const MEMBER_TYPE_NEEDS_BRANCH: FamilyMemberType[] = ['parent', 'frere_soeur', 'oncle_tante'];
+export const MEMBER_TYPE_NEEDS_BRANCH: FamilyMemberType[] = [
+  'parent',
+  'frere_soeur',
+  'oncle_tante',
+];
 
 export const TESTAMENT_SIDES: SuccessionPrimarySide[] = ['epoux1', 'epoux2'];
 
@@ -153,14 +161,16 @@ export const CLAUSE_BENEFICIAIRE_PRESETS: { value: string; label: string }[] = [
 
 export const CLAUSE_CONJOINT_LABEL = 'Conjoint survivant, à défaut enfants, à défaut héritiers';
 export const CLAUSE_ENFANTS_LABEL = 'Les enfants par parts égales';
-export const RESIDENCE_PRINCIPALE_SUBCATEGORY = ASSET_SUBCATEGORY_OPTIONS.immobilier[0];
-export const RESIDENCE_SECONDAIRE_SUBCATEGORY = ASSET_SUBCATEGORY_OPTIONS.immobilier[1];
+export const RESIDENCE_PRINCIPALE_SUBCATEGORY =
+  ASSET_SUBCATEGORY_OPTIONS.immobilier[0] ?? 'Résidence principale';
+export const RESIDENCE_SECONDAIRE_SUBCATEGORY =
+  ASSET_SUBCATEGORY_OPTIONS.immobilier[1] ?? 'Résidence secondaire';
 
 export const DECES_DANS_X_ANS_OPTIONS: {
   value: SuccessionPatrimonialContext['decesDansXAns'];
   label: string;
 }[] = [
-  { value: 0, label: 'Aujourd\'hui' },
+  { value: 0, label: "Aujourd'hui" },
   { value: 5, label: 'Dans 5 ans' },
   { value: 10, label: 'Dans 10 ans' },
   { value: 15, label: 'Dans 15 ans' },

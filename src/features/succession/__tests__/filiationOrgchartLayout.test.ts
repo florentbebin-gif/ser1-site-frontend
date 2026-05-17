@@ -36,11 +36,13 @@ describe('filiationOrgchartLayout', () => {
     const attachmentBar = layout.edges.find((edge) => {
       const left = Math.min(edge.x1, edge.x2);
       const right = Math.max(edge.x1, edge.x2);
-      return edge.y1 === edge.y2
-        && edge.y1 > parentBottom
-        && edge.y1 < childTop
-        && left <= Math.min(...childCenters)
-        && right >= Math.max(...childCenters);
+      return (
+        edge.y1 === edge.y2 &&
+        edge.y1 > parentBottom &&
+        edge.y1 < childTop &&
+        left <= Math.min(...childCenters) &&
+        right >= Math.max(...childCenters)
+      );
     });
 
     expect(attachmentBar).toBeDefined();

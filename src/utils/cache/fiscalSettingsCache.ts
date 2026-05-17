@@ -25,7 +25,12 @@ import {
 } from '../../constants/settingsDefaults';
 
 // Re-export pour les consommateurs historiques
-export { DEFAULT_TAX_SETTINGS, DEFAULT_PS_SETTINGS, DEFAULT_FISCALITY_SETTINGS, DEFAULT_PASS_HISTORY };
+export {
+  DEFAULT_TAX_SETTINGS,
+  DEFAULT_PS_SETTINGS,
+  DEFAULT_FISCALITY_SETTINGS,
+  DEFAULT_PASS_HISTORY,
+};
 
 // --- Types publics ---
 
@@ -110,7 +115,7 @@ function createTimeoutPromise(ms: number): Promise<never> {
 function isCacheValid(kind: CacheKind): boolean {
   const now = Date.now();
   const data = kind === 'pass' ? cache.passHistory : cache[kind];
-  return data !== null && cache.timestamp !== 0 && (now - cache.timestamp) < CACHE_TTL;
+  return data !== null && cache.timestamp !== 0 && now - cache.timestamp < CACHE_TTL;
 }
 
 function persistCache(): void {
@@ -140,7 +145,11 @@ function hydrateFromStorage(): boolean {
       cache.fiscality = payload.fiscality ? migrateV1toV2(payload.fiscality) : null;
       cache.passHistory = payload.passHistory ?? null;
       cache.timestamp = payload.timestamp;
-      cache.meta = payload.meta ?? { taxUpdatedAt: null, psUpdatedAt: null, fiscalityUpdatedAt: null };
+      cache.meta = payload.meta ?? {
+        taxUpdatedAt: null,
+        psUpdatedAt: null,
+        fiscalityUpdatedAt: null,
+      };
       return true;
     }
   } catch {
@@ -174,7 +183,10 @@ async function fetchFromSupabase(kind: CacheKind): Promise<void> {
         // kind === 'pass' — pass_history is a multi-row table, not a single-row data column
         try {
           const passRes = await Promise.race([
-            supabase.from('pass_history').select('year, pass_amount').order('year', { ascending: true }),
+            supabase
+              .from('pass_history')
+              .select('year, pass_amount')
+              .order('year', { ascending: true }),
             createTimeoutPromise(SUPABASE_TIMEOUT),
           ]);
           if (!passRes.error && passRes.data && passRes.data.length > 0) {
@@ -222,7 +234,9 @@ async function fetchFromSupabase(kind: CacheKind): Promise<void> {
 }
 
 // --- API publique ---
-export async function getFiscalSettings({ force = false }: GetFiscalSettingsOptions = {}): Promise<GetFiscalSettingsResult> {
+export async function getFiscalSettings({
+  force = false,
+}: GetFiscalSettingsOptions = {}): Promise<GetFiscalSettingsResult> {
   // Hydrate depuis localStorage au premier appel
   if (!cache.timestamp) hydrateFromStorage();
 
@@ -244,7 +258,8 @@ export async function getFiscalSettings({ force = false }: GetFiscalSettingsOpti
         if (kind === 'tax' && cache.tax) result.tax = cache.tax;
         else if (kind === 'ps' && cache.ps) result.ps = cache.ps;
         // fiscality: cast V2 → V1 shape (V2 preserves V1 legacy fields for consumers)
-        else if (kind === 'fiscality' && cache.fiscality) result.fiscality = cache.fiscality as unknown as typeof DEFAULT_FISCALITY_SETTINGS;
+        else if (kind === 'fiscality' && cache.fiscality)
+          result.fiscality = cache.fiscality as unknown as typeof DEFAULT_FISCALITY_SETTINGS;
         else if (kind === 'pass' && cache.passHistory) result.passHistory = cache.passHistory;
       }
     }
@@ -272,13 +287,16 @@ export async function loadFiscalSettingsStrict(): Promise<LoadFiscalSettingsStri
   if (!cache.timestamp) hydrateFromStorage();
 
   // Si toutes les données sont en cache valide, pas besoin d'attendre
-  const allCached = (['tax', 'ps', 'fiscality', 'pass'] as CacheKind[]).every((k) => isCacheValid(k));
+  const allCached = (['tax', 'ps', 'fiscality', 'pass'] as CacheKind[]).every((k) =>
+    isCacheValid(k),
+  );
   if (allCached) {
     return {
       tax: cache.tax ?? DEFAULT_TAX_SETTINGS,
       ps: cache.ps ?? DEFAULT_PS_SETTINGS,
       // fiscality: cast V2 → V1 shape (V2 preserves V1 legacy fields for consumers)
-      fiscality: (cache.fiscality ?? DEFAULT_FISCALITY_SETTINGS) as unknown as typeof DEFAULT_FISCALITY_SETTINGS,
+      fiscality: (cache.fiscality ??
+        DEFAULT_FISCALITY_SETTINGS) as unknown as typeof DEFAULT_FISCALITY_SETTINGS,
       passHistory: cache.passHistory ?? DEFAULT_PASS_HISTORY,
       fromCache: true,
       error: null,
@@ -290,7 +308,7 @@ export async function loadFiscalSettingsStrict(): Promise<LoadFiscalSettingsStri
   let fetchError: string | null = null;
   try {
     await Promise.allSettled(
-      (['tax', 'ps', 'fiscality', 'pass'] as CacheKind[]).map((kind) => fetchFromSupabase(kind))
+      (['tax', 'ps', 'fiscality', 'pass'] as CacheKind[]).map((kind) => fetchFromSupabase(kind)),
     );
   } catch (e: unknown) {
     fetchError = (e instanceof Error ? e.message : null) ?? 'Erreur chargement Supabase';
@@ -299,8 +317,11 @@ export async function loadFiscalSettingsStrict(): Promise<LoadFiscalSettingsStri
   return {
     tax: isCacheValid('tax') && cache.tax ? cache.tax : DEFAULT_TAX_SETTINGS,
     ps: isCacheValid('ps') && cache.ps ? cache.ps : DEFAULT_PS_SETTINGS,
-    fiscality: (isCacheValid('fiscality') && cache.fiscality ? cache.fiscality : DEFAULT_FISCALITY_SETTINGS) as unknown as typeof DEFAULT_FISCALITY_SETTINGS,
-    passHistory: isCacheValid('pass') && cache.passHistory ? cache.passHistory : DEFAULT_PASS_HISTORY,
+    fiscality: (isCacheValid('fiscality') && cache.fiscality
+      ? cache.fiscality
+      : DEFAULT_FISCALITY_SETTINGS) as unknown as typeof DEFAULT_FISCALITY_SETTINGS,
+    passHistory:
+      isCacheValid('pass') && cache.passHistory ? cache.passHistory : DEFAULT_PASS_HISTORY,
     fromCache: false,
     error: fetchError,
     meta: { ...cache.meta },

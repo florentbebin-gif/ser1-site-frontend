@@ -1,9 +1,6 @@
 import type { RegimeMatrimonial } from '../../engine/civil';
 import type { LienParente } from '../../engine/succession';
-import type {
-  SuccessionAssetPocket,
-  SuccessionPersonParty,
-} from './successionPatrimonialModel';
+import type { SuccessionAssetPocket, SuccessionPersonParty } from './successionPatrimonialModel';
 
 export interface PersistedHeritierRow {
   lien: LienParente;
@@ -38,11 +35,7 @@ export type SuccessionChoixLegalConjointSansDDV = 'usufruit' | 'quart_pp' | null
 export type SuccessionSocieteAcquetsLiquidationMode = 'quotes' | 'attribution_survivant';
 export type SuccessionPreciputMode = 'global' | 'cible';
 export type SuccessionInterMassClaimKind = 'recompense' | 'creance';
-export type SuccessionAssetLegalNature =
-  | 'non_qualifie'
-  | 'propre'
-  | 'propre_par_nature'
-  | 'commun';
+export type SuccessionAssetLegalNature = 'non_qualifie' | 'propre' | 'propre_par_nature' | 'commun';
 export type SuccessionAssetOrigin =
   | 'non_precise'
   | 'avant_union'
@@ -100,8 +93,9 @@ export interface SuccessionDevolutionContext {
   };
 }
 
-export interface SuccessionDevolutionContextInput
-  extends Partial<Omit<SuccessionDevolutionContext, 'testamentsBySide' | 'ascendantsSurvivantsBySide'>> {
+export interface SuccessionDevolutionContextInput extends Partial<
+  Omit<SuccessionDevolutionContext, 'testamentsBySide' | 'ascendantsSurvivantsBySide'>
+> {
   testamentsBySide?: {
     epoux1?: Partial<SuccessionTestamentConfig>;
     epoux2?: Partial<SuccessionTestamentConfig>;
@@ -170,7 +164,11 @@ export interface SuccessionPatrimonialContext {
   decesDansXAns: 0 | 5 | 10 | 15 | 20 | 25 | 30 | 35 | 40 | 45 | 50;
 }
 
-export type SuccessionDonationEntryType = 'rapportable' | 'hors_part' | 'legs_particulier' | 'donation_partage';
+export type SuccessionDonationEntryType =
+  | 'rapportable'
+  | 'hors_part'
+  | 'legs_particulier'
+  | 'donation_partage';
 
 export interface SuccessionDonationEntry {
   id: string;

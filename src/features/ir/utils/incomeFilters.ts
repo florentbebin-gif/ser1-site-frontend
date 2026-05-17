@@ -31,9 +31,7 @@ export const DEFAULT_INCOME_FILTERS: Readonly<IncomeFilters> = Object.freeze({
   foncier: false,
 });
 
-export function normalizeIncomeFilters(
-  filters?: Partial<IncomeFilters> | null,
-): IncomeFilters {
+export function normalizeIncomeFilters(filters?: Partial<IncomeFilters> | null): IncomeFilters {
   return {
     tns: filters?.tns === true,
     pension: filters?.pension === true,

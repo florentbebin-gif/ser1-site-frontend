@@ -23,7 +23,7 @@ import {
 } from '../designSystem/serenity';
 import { MASTER_NAMES } from '../template/loadBaseTemplate';
 
-const COL_W: [number, number, number, number, number] = [3.05, 2.10, 1.95, 2.05, 2.35];
+const COL_W: [number, number, number, number, number] = [3.05, 2.1, 1.95, 2.05, 2.35];
 const HEADER_LABELS = [
   'Bénéficiaire',
   'Capitaux décès\nnets',
@@ -36,7 +36,11 @@ const CONTENT_TOP_Y = COORDS_CONTENT.content.y;
 const CONTENT_BOTTOM_Y = COORDS_FOOTER.date.y - 0.15;
 
 const fmt = (v: number): string =>
-  new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(v);
+  new Intl.NumberFormat('fr-FR', {
+    style: 'currency',
+    currency: 'EUR',
+    maximumFractionDigits: 0,
+  }).format(v);
 
 function lightenColor(hex: string, factor: number): string {
   const color = hex.replace('#', '');
@@ -50,10 +54,7 @@ function lightenColor(hex: string, factor: number): string {
   return `${toHex(newR)}${toHex(newG)}${toHex(newB)}`;
 }
 
-function cell(
-  text: string,
-  options: PptxGenJS.TableCellProps,
-): PptxGenJS.TableCell {
+function cell(text: string, options: PptxGenJS.TableCellProps): PptxGenJS.TableCell {
   return { text, options: { fontFace: TYPO.fontFace, valign: 'middle', ...options } };
 }
 
@@ -69,7 +70,10 @@ function buildBeneficiaryRow(
     cell(b.label, { ...base, align: 'left' }),
     cell(fmt(b.capitauxDecesNets), { ...base, align: 'right' }),
     cell(fmt(b.droitsAssuranceVie990I), { ...base, align: 'right' }),
-    cell(b.exonerated && !b.isTotal ? 'Exonéré' : fmt(b.droitsSuccession), { ...base, align: 'right' }),
+    cell(b.exonerated && !b.isTotal ? 'Exonéré' : fmt(b.droitsSuccession), {
+      ...base,
+      align: 'right',
+    }),
     cell(fmt(b.transmissionNetteSuccession), { ...base, align: 'right' }),
   ];
 }
@@ -107,8 +111,7 @@ export function buildSuccessionAnnexTable(
 
   for (const step of spec.steps) {
     // Ligne de section (étape de décès)
-    const emptyCell = (fill: string) =>
-      cell('', { fill: { color: fill }, fontSize: 9 });
+    const emptyCell = (fill: string) => cell('', { fill: { color: fill }, fontSize: 9 });
     tableRows.push([
       cell(step.title, {
         bold: true,
@@ -130,7 +133,7 @@ export function buildSuccessionAnnexTable(
   }
 
   const availableH = CONTENT_BOTTOM_Y - CONTENT_TOP_Y - 0.1;
-  const rowH = Math.min(0.40, Math.max(0.28, availableH / Math.max(tableRows.length, 1)));
+  const rowH = Math.min(0.4, Math.max(0.28, availableH / Math.max(tableRows.length, 1)));
 
   slide.addTable(tableRows, {
     x: COORDS_CONTENT.margin.x,

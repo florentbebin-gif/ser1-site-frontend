@@ -75,7 +75,11 @@ function plural(value: number, singular: string, pluralLabel: string = `${singul
   return `${value} ${value > 1 ? pluralLabel : singular}`;
 }
 
-function headerStatsLabel(totalContracts: number, configuredContracts: number, availableCg: number): string {
+function headerStatsLabel(
+  totalContracts: number,
+  configuredContracts: number,
+  availableCg: number,
+): string {
   return [
     `${plural(totalContracts, 'contrat')} disponible${totalContracts > 1 ? 's' : ''}`,
     `${plural(configuredContracts, 'contrat')} paramétré${configuredContracts > 1 ? 's' : ''}`,
@@ -135,10 +139,15 @@ export default function BaseCgRetraite() {
       groups.set(compagnie, [...(groups.get(compagnie) ?? []), contract]);
     }
     return Array.from(groups.entries())
-      .map(([compagnie, contracts]) => [
-        compagnie,
-        contracts.sort((left, right) => left.nomContrat.localeCompare(right.nomContrat, 'fr-FR')),
-      ] as const)
+      .map(
+        ([compagnie, contracts]) =>
+          [
+            compagnie,
+            contracts.sort((left, right) =>
+              left.nomContrat.localeCompare(right.nomContrat, 'fr-FR'),
+            ),
+          ] as const,
+      )
       .sort(([left], [right]) => left.localeCompare(right, 'fr-FR'));
   }, [filtered]);
 
@@ -175,7 +184,11 @@ export default function BaseCgRetraite() {
 
   async function handleBulkSave() {
     if (!isAdmin || bulkSaving) return;
-    if (!window.confirm('Sauvegarder l\'ensemble du catalogue Base CG retraite dans Supabase ? Cette opération met à jour les overrides admin.')) {
+    if (
+      !window.confirm(
+        "Sauvegarder l'ensemble du catalogue Base CG retraite dans Supabase ? Cette opération met à jour les overrides admin.",
+      )
+    ) {
       return;
     }
     setBulkSaving(true);
@@ -183,7 +196,9 @@ export default function BaseCgRetraite() {
     try {
       const result = await bulkUpsertBaseCgRetraiteCatalog();
       if (result.errors.length > 0) {
-        setBulkStatus(`Sauvegarde partielle : ${result.upserted} ok, ${result.skipped} en échec — ${result.errors[0]?.message ?? ''}`);
+        setBulkStatus(
+          `Sauvegarde partielle : ${result.upserted} ok, ${result.skipped} en échec — ${result.errors[0]?.message ?? ''}`,
+        );
       } else {
         setBulkStatus(`${result.upserted} contrats synchronisés avec Supabase.`);
       }
@@ -200,9 +215,7 @@ export default function BaseCgRetraite() {
     [catalog],
   );
   const cgAvailableCount = useMemo(
-    () => catalog.reduce((count, contract) => (
-      count + (firstCgDocument(contract) ? 1 : 0)
-    ), 0),
+    () => catalog.reduce((count, contract) => count + (firstCgDocument(contract) ? 1 : 0), 0),
     [catalog],
   );
 
@@ -227,7 +240,11 @@ export default function BaseCgRetraite() {
             >
               {bulkSaving ? 'Sauvegarde…' : 'Enregistrer la base CG retraite'}
             </button>
-            <button type="button" className="base-cg-button" onClick={() => setEditing(createEmptyContract())}>
+            <button
+              type="button"
+              className="base-cg-button"
+              onClick={() => setEditing(createEmptyContract())}
+            >
               Ajouter
             </button>
           </div>
@@ -250,7 +267,9 @@ export default function BaseCgRetraite() {
         <select value={typeFilter} onChange={(event) => setTypeFilter(event.target.value)}>
           <option value="">Tous les types</option>
           {TYPE_OPTIONS.map((type) => (
-            <option key={type} value={type}>{TYPE_LABELS[type]}</option>
+            <option key={type} value={type}>
+              {TYPE_LABELS[type]}
+            </option>
           ))}
         </select>
       </div>
@@ -274,7 +293,9 @@ export default function BaseCgRetraite() {
                   >
                     <span className="base-cg-company__title">{compagnie}</span>
                     <span className="base-cg-company__badges">
-                      <span className="base-cg-badge">{contracts.length} contrat{contracts.length > 1 ? 's' : ''}</span>
+                      <span className="base-cg-badge">
+                        {contracts.length} contrat{contracts.length > 1 ? 's' : ''}
+                      </span>
                       {incompleteCount > 0 ? (
                         <span className="base-cg-badge base-cg-badge--warning">
                           {incompleteCount} à compléter
@@ -305,7 +326,9 @@ export default function BaseCgRetraite() {
                               <tr key={contract.id}>
                                 <td>
                                   <span className="base-cg-contract-name">
-                                    <span className="base-cg-contract-name__label">{contract.nomContrat}</span>
+                                    <span className="base-cg-contract-name__label">
+                                      {contract.nomContrat}
+                                    </span>
                                     {incomplete ? (
                                       <span className="base-cg-badge base-cg-badge--incomplete">
                                         À compléter
@@ -314,8 +337,14 @@ export default function BaseCgRetraite() {
                                   </span>
                                 </td>
                                 <td>{TYPE_LABELS[contract.typeContrat]}</td>
-                                <td>{contract.perCompartment ? COMPARTMENT_LABELS[contract.perCompartment] : '-'}</td>
-                                <td>{contract.phaseLiquidation.tableConversionRente ?? 'A compléter'}</td>
+                                <td>
+                                  {contract.perCompartment
+                                    ? COMPARTMENT_LABELS[contract.perCompartment]
+                                    : '-'}
+                                </td>
+                                <td>
+                                  {contract.phaseLiquidation.tableConversionRente ?? 'A compléter'}
+                                </td>
                                 <td>
                                   {document ? (
                                     <div className="base-cg-document-download">
@@ -327,7 +356,9 @@ export default function BaseCgRetraite() {
                                         Télécharger CG
                                       </button>
                                       {document.versionLabel ? (
-                                        <span className="base-cg-document-download__version">Ref : {document.versionLabel}</span>
+                                        <span className="base-cg-document-download__version">
+                                          Ref : {document.versionLabel}
+                                        </span>
                                       ) : null}
                                     </div>
                                   ) : (
@@ -337,8 +368,12 @@ export default function BaseCgRetraite() {
                                 {isAdmin ? (
                                   <td>
                                     <div className="base-cg-row-actions">
-                                      <button type="button" onClick={() => setEditing(contract)}>Modifier</button>
-                                      <button type="button" onClick={() => handleDelete(contract)}>Supprimer</button>
+                                      <button type="button" onClick={() => setEditing(contract)}>
+                                        Modifier
+                                      </button>
+                                      <button type="button" onClick={() => handleDelete(contract)}>
+                                        Supprimer
+                                      </button>
                                     </div>
                                   </td>
                                 ) : null}

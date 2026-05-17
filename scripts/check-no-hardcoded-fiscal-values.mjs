@@ -43,7 +43,8 @@ const FORBIDDEN_VALUES = [
   },
   {
     label: 'taux fiscal 30 %',
-    pattern: /(?:taux|PFU|TMI|abattement|imposable|réduction|reduction|IR|PS)[^'"]{0,80}\b30\s*%|\b30\s*%[^'"]{0,80}(?:taux|PFU|TMI|abattement|imposable|réduction|reduction|IR|PS)/i,
+    pattern:
+      /(?:taux|PFU|TMI|abattement|imposable|réduction|reduction|IR|PS)[^'"]{0,80}\b30\s*%|\b30\s*%[^'"]{0,80}(?:taux|PFU|TMI|abattement|imposable|réduction|reduction|IR|PS)/i,
   },
   {
     label: 'TMI 30 %',
@@ -111,11 +112,13 @@ const FORBIDDEN_VALUES = [
   },
   {
     label: 'seuil mensuel petite rente',
-    pattern: /(?:petite\s*rente|rente\s*mensuelle|monthly\s*rent|monthly\s*annuity|monthly\s*threshold|seuil)[^'"]{0,80}\b110\b|\b110\b[^'"]{0,80}(?:petite\s*rente|rente\s*mensuelle|monthly\s*rent|monthly\s*annuity|monthly\s*threshold|seuil)/i,
+    pattern:
+      /(?:petite\s*rente|rente\s*mensuelle|monthly\s*rent|monthly\s*annuity|monthly\s*threshold|seuil)[^'"]{0,80}\b110\b|\b110\b[^'"]{0,80}(?:petite\s*rente|rente\s*mensuelle|monthly\s*rent|monthly\s*annuity|monthly\s*threshold|seuil)/i,
   },
   {
     label: 'seuil annuel petite rente',
-    pattern: /(?:petite\s*rente|rente\s*annuelle|annual\s*rent|annual\s*annuity|annual\s*threshold|seuil)[^'"]{0,80}\b1320\b|\b1320\b[^'"]{0,80}(?:petite\s*rente|rente\s*annuelle|annual\s*rent|annual\s*annuity|annual\s*threshold|seuil)/i,
+    pattern:
+      /(?:petite\s*rente|rente\s*annuelle|annual\s*rent|annual\s*annuity|annual\s*threshold|seuil)[^'"]{0,80}\b1320\b|\b1320\b[^'"]{0,80}(?:petite\s*rente|rente\s*annuelle|annual\s*rent|annual\s*annuity|annual\s*threshold|seuil)/i,
   },
 ];
 
@@ -130,14 +133,10 @@ const SCAN_DIRS = [
 
 // ─── Fichiers/répertoires autorisés (exclus du contrôle) ─────────────────────
 // 1. Source unique des valeurs fiscales par défaut
-const ALLOWED_EXACT = [
-  'src/constants/settingsDefaults.ts',
-];
+const ALLOWED_EXACT = ['src/constants/settingsDefaults.ts'];
 
 // 2. Répertoires de tests (toujours exclus)
-const ALLOWED_DIR_PATTERNS = [
-  /__tests__[/\\]/,
-];
+const ALLOWED_DIR_PATTERNS = [/__tests__[/\\]/];
 
 // 3. Extensions de fichiers tests
 const ALLOWED_FILE_SUFFIXES = [

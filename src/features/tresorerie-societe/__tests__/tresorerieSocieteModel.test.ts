@@ -2,7 +2,11 @@ import { describe, expect, it } from 'vitest';
 import type { AssociateInput } from '@/engine/tresorerie/types';
 import { updateAssociateOwnershipLot } from '../utils/tresorerieSocieteModel';
 
-function makeAssociate(id: string, capitalPct: number, economicRightsPct = capitalPct): AssociateInput {
+function makeAssociate(
+  id: string,
+  capitalPct: number,
+  economicRightsPct = capitalPct,
+): AssociateInput {
   return {
     id,
     label: id,
@@ -20,7 +24,7 @@ function makeAssociate(id: string, capitalPct: number, economicRightsPct = capit
 }
 
 function firstLot(associates: AssociateInput[], id: string) {
-  const associate = associates.find(item => item.id === id);
+  const associate = associates.find((item) => item.id === id);
   if (!associate) throw new Error(`Associé introuvable: ${id}`);
   return associate.ownershipLots[0];
 }
@@ -41,10 +45,7 @@ describe('updateAssociateOwnershipLot', () => {
   });
 
   it('borne la saisie à 100 % et annule les autres détentions sur le même droit', () => {
-    const associates = [
-      makeAssociate('associe-1', 60, 60),
-      makeAssociate('associe-2', 40, 40),
-    ];
+    const associates = [makeAssociate('associe-1', 60, 60), makeAssociate('associe-2', 40, 40)];
 
     const next = updateAssociateOwnershipLot(associates, 'associe-1', {
       capitalPct: 125,
@@ -62,10 +63,7 @@ describe('updateAssociateOwnershipLot', () => {
   });
 
   it('synchronise les droits économiques avec le capital en pleine propriété', () => {
-    const associates = [
-      makeAssociate('associe-1', 60, 10),
-      makeAssociate('associe-2', 40, 40),
-    ];
+    const associates = [makeAssociate('associe-1', 60, 10), makeAssociate('associe-2', 40, 40)];
 
     const next = updateAssociateOwnershipLot(associates, 'associe-1', { capitalPct: 70 });
 
@@ -77,10 +75,7 @@ describe('updateAssociateOwnershipLot', () => {
   });
 
   it('laisse les droits économiques libres en démembrement puis resynchronise au retour en pleine propriété', () => {
-    const associates = [
-      makeAssociate('associe-1', 60, 60),
-      makeAssociate('associe-2', 40, 40),
-    ];
+    const associates = [makeAssociate('associe-1', 60, 60), makeAssociate('associe-2', 40, 40)];
 
     const demembre = updateAssociateOwnershipLot(associates, 'associe-1', {
       right: 'usufruit',

@@ -47,14 +47,11 @@ describe('observability/logger', () => {
 
     logger.error('erreur technique', 'boom', { area: 'react-error-boundary' });
 
-    expect(errorSpy).toHaveBeenCalledWith(
-      'erreur technique',
-      expect.any(Error),
-      { area: 'react-error-boundary' },
-    );
-    expect(sentry.captureException).toHaveBeenCalledWith(
-      expect.any(Error),
-      { area: 'react-error-boundary' },
-    );
+    expect(errorSpy).toHaveBeenCalledWith('erreur technique', expect.any(Error), {
+      area: 'react-error-boundary',
+    });
+    expect(sentry.captureException).toHaveBeenCalledWith(expect.any(Error), {
+      area: 'react-error-boundary',
+    });
   });
 });

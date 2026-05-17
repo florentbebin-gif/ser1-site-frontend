@@ -9,17 +9,11 @@ import type {
   TresoInputsV6,
   TresoProjectionRow,
 } from '../../../engine/tresorerie/types';
-import {
-  normalizeAllocationPockets,
-} from '../../../engine/tresorerie/allocationPockets';
+import { normalizeAllocationPockets } from '../../../engine/tresorerie/allocationPockets';
 import { TresoPocketModal } from './TresoPocketModal';
 import { ALLOCATION_HORIZON_OPTIONS } from '../utils/tresorerieSocieteOptions';
-import {
-  buildDefaultPocket,
-} from '../utils/tresorerieSocieteModel';
-import {
-  fmtEuroInput,
-} from '../utils/tresorerieFormatters';
+import { buildDefaultPocket } from '../utils/tresorerieSocieteModel';
+import { fmtEuroInput } from '../utils/tresorerieFormatters';
 import {
   buildTreasuryStackSegments,
   TresoPlacementOverview,
@@ -40,11 +34,11 @@ export function TresoPlacementSection({ inputs, projectionRows = [], onChange }:
   const pockets = normalizeAllocationPockets(matrix.pockets);
   const workingCapitalRequirement = v2.company.incomeStatement?.workingCapitalRequirement ?? 0;
   const minimumBankBalance = matrix.minimumBankBalance ?? matrix.sweepThreshold;
-  const editingPocketIndex = pockets.findIndex(pocket => pocket.id === editingPocketId);
+  const editingPocketIndex = pockets.findIndex((pocket) => pocket.id === editingPocketId);
   const editingPocket = editingPocketIndex >= 0 ? pockets[editingPocketIndex] : null;
-  const pocketsByHorizon = ALLOCATION_HORIZON_OPTIONS.map(option => ({
+  const pocketsByHorizon = ALLOCATION_HORIZON_OPTIONS.map((option) => ({
     ...option,
-    pockets: pockets.filter(pocket => (pocket.horizon ?? 'moyen_terme') === option.value),
+    pockets: pockets.filter((pocket) => (pocket.horizon ?? 'moyen_terme') === option.value),
   }));
 
   const patchV2 = (nextV2: TresoInputsV6) => {
@@ -57,7 +51,7 @@ export function TresoPlacementSection({ inputs, projectionRows = [], onChange }:
 
   const updatePocket = (id: string, patch: Partial<AllocationPocketInput>) => {
     patchMatrix({
-      pockets: matrix.pockets.map(pocket => {
+      pockets: matrix.pockets.map((pocket) => {
         if (pocket.id !== id) return pocket;
         return { ...pocket, ...patch };
       }),
@@ -73,7 +67,7 @@ export function TresoPlacementSection({ inputs, projectionRows = [], onChange }:
   };
 
   const deletePocket = (id: string) => {
-    const nextPockets = matrix.pockets.filter(pocket => pocket.id !== id);
+    const nextPockets = matrix.pockets.filter((pocket) => pocket.id !== id);
     patchMatrix({ pockets: nextPockets });
     setEditingPocketId(null);
   };
@@ -83,7 +77,7 @@ export function TresoPlacementSection({ inputs, projectionRows = [], onChange }:
   const protectedCash = minimumBankBalance + workingCapitalRequirement;
   const initialAllocationBase = Math.max(0, v2.company.treasuryInitial - protectedCash);
   const initialInvestedAmount =
-    initialAllocationBase * Math.min(Math.max(totalInitialPct, 0), 100) / 100;
+    (initialAllocationBase * Math.min(Math.max(totalInitialPct, 0), 100)) / 100;
   const bankAmount = Math.max(0, v2.company.treasuryInitial - initialInvestedAmount);
   const availableCash = Math.max(0, bankAmount - protectedCash);
   const treasuryStackSegments = buildTreasuryStackSegments(
@@ -93,7 +87,7 @@ export function TresoPlacementSection({ inputs, projectionRows = [], onChange }:
     totalInitialPct,
     protectedCash,
   );
-  const firstBankWarning = projectionRows.find(row => row.alerteTresorerieBancaireInsuffisante);
+  const firstBankWarning = projectionRows.find((row) => row.alerteTresorerieBancaireInsuffisante);
   const firstBankWarningYear = firstBankWarning
     ? (v2.company.projectionStartYear ?? new Date().getFullYear()) + firstBankWarning.year - 1
     : null;
@@ -103,7 +97,13 @@ export function TresoPlacementSection({ inputs, projectionRows = [], onChange }:
       <div className="ts-section__header">
         <span className="sim-card__icon">
           <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-            <path d="M2 12L6 8l3 3 5-7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+            <path
+              d="M2 12L6 8l3 3 5-7"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
           </svg>
         </span>
         <div>
@@ -121,15 +121,16 @@ export function TresoPlacementSection({ inputs, projectionRows = [], onChange }:
         workingCapitalRequirement={workingCapitalRequirement}
         segments={treasuryStackSegments}
         onEditPocket={setEditingPocketId}
-        onMinimumBankBalanceChange={value =>
+        onMinimumBankBalanceChange={(value) =>
           patchMatrix({ minimumBankBalance: value, sweepThreshold: value })
         }
       />
 
       {firstBankWarning ? (
         <p className="ts-warning" role="alert">
-          Compte bancaire insuffisant en {firstBankWarningYear} :
-          déficit de {fmtEuroInput(firstBankWarning.deficitTresorerieBancaire ?? 0)} € face au solde minimum + BFR.
+          Compte bancaire insuffisant en {firstBankWarningYear} : déficit de{' '}
+          {fmtEuroInput(firstBankWarning.deficitTresorerieBancaire ?? 0)} € face au solde minimum +
+          BFR.
         </p>
       ) : null}
 
@@ -139,8 +140,8 @@ export function TresoPlacementSection({ inputs, projectionRows = [], onChange }:
         pocketCount={pockets.length}
         treasuryInitial={initialAllocationBase}
         pocketsByHorizon={pocketsByHorizon}
-          onAddPocket={addPocket}
-          onEditPocket={setEditingPocketId}
+        onAddPocket={addPocket}
+        onEditPocket={setEditingPocketId}
       />
 
       <div className="ts-matrix-actions">
@@ -168,9 +169,15 @@ export function TresoPlacementSection({ inputs, projectionRows = [], onChange }:
           pocket={editingPocket}
           index={editingPocketIndex}
           initialAllocationBase={initialAllocationBase}
-          remainingInitialPct={Math.max(0, 100 - (totalInitialPct - editingPocket.initialAllocationPct))}
-          remainingAnnualPct={Math.max(0, 100 - (totalAnnualPct - editingPocket.annualAllocationPct))}
-          onChange={patch => updatePocket(editingPocket.id, patch)}
+          remainingInitialPct={Math.max(
+            0,
+            100 - (totalInitialPct - editingPocket.initialAllocationPct),
+          )}
+          remainingAnnualPct={Math.max(
+            0,
+            100 - (totalAnnualPct - editingPocket.annualAllocationPct),
+          )}
+          onChange={(patch) => updatePocket(editingPocket.id, patch)}
           onDelete={() => deletePocket(editingPocket.id)}
           onClose={() => setEditingPocketId(null)}
         />

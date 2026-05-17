@@ -18,9 +18,9 @@ import { MASTER_NAMES } from '../template/loadBaseTemplate';
 const GEO = {
   gridX: 0.92,
   gridY: 2.14,
-  gridW: 11.50,
+  gridW: 11.5,
   gridH: 4.66,
-  gap: 0.20,
+  gap: 0.2,
   leftW: 4.34,
 } as const;
 
@@ -33,10 +33,12 @@ type PositionedHypothesesGroup = HypothesesGroup & {
 function getGroups(spec: SuccessionHypothesesSlideSpec): HypothesesGroup[] {
   const groups = spec.groups?.filter((group) => group.items.length > 0) ?? [];
   if (groups.length > 0) return groups;
-  return [{
-    title: 'Cadre de calcul',
-    items: spec.items,
-  }];
+  return [
+    {
+      title: 'Cadre de calcul',
+      items: spec.items,
+    },
+  ];
 }
 
 function estimateGroupDensity(group: HypothesesGroup): number {
@@ -47,7 +49,9 @@ function getLargeGroupIndex(groups: HypothesesGroup[]): number {
   const fiscalIndex = groups.findIndex((group) => group.title === 'Hypothèses fiscales');
   return groups.reduce((largestIndex, group, index) => {
     const groupDensity = estimateGroupDensity(group);
-    const largestDensity = estimateGroupDensity(groups[largestIndex]);
+    const largestGroup = groups[largestIndex];
+    if (!largestGroup) return index;
+    const largestDensity = estimateGroupDensity(largestGroup);
     if (groupDensity > largestDensity) return index;
     if (groupDensity === largestDensity && index === fiscalIndex) return index;
     return largestIndex;
@@ -68,7 +72,7 @@ function buildLeftLayout(groups: HypothesesGroup[]): PositionedHypothesesGroup[]
     const isLast = index === groups.length - 1;
     const remainingGroups = groups.length - index - 1;
     const remainingMinH = remainingGroups * minH + Math.max(0, remainingGroups) * GEO.gap;
-    const proportionalH = minH + (flexH * densities[index]) / densityTotal;
+    const proportionalH = minH + (flexH * (densities[index] ?? 1)) / densityTotal;
     const h = isLast
       ? Math.max(minH, GEO.gridY + GEO.gridH - y)
       : Math.min(proportionalH, GEO.gridY + GEO.gridH - y - remainingMinH);
@@ -100,6 +104,7 @@ export function buildSuccessionHypothesesLayout(
 
   const largeIndex = getLargeGroupIndex(groups);
   const largeGroup = groups[largeIndex];
+  if (!largeGroup) return [];
   const leftGroups = groups
     .filter((_, index) => index !== largeIndex)
     .sort((a, b) => estimateGroupDensity(a) - estimateGroupDensity(b));
@@ -120,7 +125,10 @@ export function buildSuccessionHypothesesLayout(
   ];
 }
 
-function bodyFontSize(group: HypothesesGroup, emphasis: PositionedHypothesesGroup['emphasis']): number {
+function bodyFontSize(
+  group: HypothesesGroup,
+  emphasis: PositionedHypothesesGroup['emphasis'],
+): number {
   const density = estimateGroupDensity(group);
   if (emphasis === 'compact') {
     if (density > 8) return 6.2;

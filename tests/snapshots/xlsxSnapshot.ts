@@ -1,12 +1,13 @@
 import JSZip from 'jszip';
 
-const countTag = (xml: string, tag: string) => (xml.match(new RegExp(`<${tag}\\b`, 'g')) || []).length;
+const countTag = (xml: string, tag: string) =>
+  (xml.match(new RegExp(`<${tag}\\b`, 'g')) || []).length;
 
 const extractSheetNames = (workbookXml: string): string[] => {
   const names: string[] = [];
   const re = /<sheet\b[^>]*\bname="([^"]+)"/g;
   let m: RegExpExecArray | null;
-   
+
   while ((m = re.exec(workbookXml))) names.push(m[1]);
   return names;
 };
@@ -15,7 +16,7 @@ const extractCellRefs = (worksheetXml: string, limit = 25): string[] => {
   const refs: string[] = [];
   const re = /<c\b[^>]*\br="([^"]+)"/g;
   let m: RegExpExecArray | null;
-   
+
   while ((m = re.exec(worksheetXml))) {
     refs.push(m[1]);
     if (refs.length >= limit) break;
@@ -40,7 +41,7 @@ export async function snapshotXlsxBlob(blob: Blob) {
         cellCount: countTag(xml, 'c'),
         firstCellRefs: extractCellRefs(xml),
       };
-    })
+    }),
   );
 
   return {

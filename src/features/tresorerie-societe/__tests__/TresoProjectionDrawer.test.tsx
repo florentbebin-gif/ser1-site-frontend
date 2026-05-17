@@ -112,8 +112,12 @@ describe('TresoProjectionDrawer', () => {
     expect(screen.getByText('Besoin en fonds de roulement')).toBeInTheDocument();
     expect(screen.getByText('Trésorerie placée (poches)')).toBeInTheDocument();
     expect(screen.getByText('Trésorerie consolidée')).toBeInTheDocument();
-    expect(screen.getByText('Résultat net comptable estimé').closest('tr')).toHaveClass('ts-proj-row--total');
-    expect(screen.getByText('Trésorerie consolidée').closest('tr')).toHaveClass('ts-proj-row--total');
+    expect(screen.getByText('Résultat net comptable estimé').closest('tr')).toHaveClass(
+      'ts-proj-row--total',
+    );
+    expect(screen.getByText('Trésorerie consolidée').closest('tr')).toHaveClass(
+      'ts-proj-row--total',
+    );
     expect(screen.getByText('Montant investi automatiquement vers placements')).toBeInTheDocument();
   });
 

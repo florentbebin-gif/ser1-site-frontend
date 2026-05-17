@@ -17,7 +17,9 @@ import {
 type UseSuccessionDerivedValuesInput = Parameters<typeof useSuccessionDerivedValues>[0];
 type SuccessionDerivedValues = ReturnType<typeof useSuccessionDerivedValues>;
 
-function renderSuccessionDerivedValues(input: UseSuccessionDerivedValuesInput): SuccessionDerivedValues {
+function renderSuccessionDerivedValues(
+  input: UseSuccessionDerivedValuesInput,
+): SuccessionDerivedValues {
   let captured: SuccessionDerivedValues | null = null;
 
   function Probe() {
@@ -72,8 +74,14 @@ describe('useSuccessionDerivedValues', () => {
 
     expect(derived.nbEnfantsNonCommuns).toBe(1);
     expect(derived.chainageAnalysis.step1?.partConjoint).toBe(100_000);
-    expect(derived.chainageAnalysis.warnings.some((warning) => warning.includes("enfant(s) non commun(s)"))).toBe(true);
-    expect(derived.chainageAnalysis.warnings.some((warning) => warning.includes('669'))).toBe(false);
+    expect(
+      derived.chainageAnalysis.warnings.some((warning) =>
+        warning.includes('enfant(s) non commun(s)'),
+      ),
+    ).toBe(true);
+    expect(derived.chainageAnalysis.warnings.some((warning) => warning.includes('669'))).toBe(
+      false,
+    );
   });
 
   describe('Scénarios avec horizon variable (T1)', () => {
@@ -170,7 +178,13 @@ describe('useSuccessionDerivedValues', () => {
               quotePartPct: 100,
               particularLegacies: [],
             },
-            epoux2: { active: false, dispositionType: 'legs_universel', beneficiaryRef: 'principal:epoux1', quotePartPct: 100, particularLegacies: [] },
+            epoux2: {
+              active: false,
+              dispositionType: 'legs_universel',
+              beneficiaryRef: 'principal:epoux1',
+              quotePartPct: 100,
+              particularLegacies: [],
+            },
           },
         },
         patrimonialContext: {
@@ -241,7 +255,11 @@ describe('useSuccessionDerivedValues', () => {
       expect(derived.chainageAnalysis.step1?.actifTransmis).toBe(0);
       expect(derived.chainageAnalysis.step2?.actifTransmis).toBe(1_000_000);
       expect(derived.chainageAnalysis.step1?.droitsEnfants).toBe(0);
-      expect(derived.chainageAnalysis.warnings.some(w => w.includes('attribution integrale') || w.includes('attribution intégrale'))).toBe(true);
+      expect(
+        derived.chainageAnalysis.warnings.some(
+          (w) => w.includes('attribution integrale') || w.includes('attribution intégrale'),
+        ),
+      ).toBe(true);
     });
 
     it('T1.4 — simulatedDeathDate transmise à applySuccessionDonationRecallToHeirs → fenêtre rappel variable', () => {

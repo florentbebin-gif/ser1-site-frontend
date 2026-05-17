@@ -75,7 +75,12 @@ function getYearX(year: number, startYear: number, endYear: number, trackRight: 
   return TRACK_LEFT + (clampYear(year, startYear, endYear) - startYear + 0.5) * slotWidth;
 }
 
-function getPhaseX(startYear: number, rangeStartYear: number, rangeEndYear: number, trackRight: number): number {
+function getPhaseX(
+  startYear: number,
+  rangeStartYear: number,
+  rangeEndYear: number,
+  trackRight: number,
+): number {
   const totalYears = Math.max(1, rangeEndYear - rangeStartYear + 1);
   const slotWidth = (trackRight - TRACK_LEFT) / totalYears;
   return TRACK_LEFT + Math.max(0, startYear - rangeStartYear) * slotWidth;
@@ -102,14 +107,18 @@ function fmtCompactEuro(value: number): string {
 }
 
 function getSubsidiaryLabel(subsidiaries: SubsidiaryInput[], id: string | undefined): string {
-  return subsidiaries.find(subsidiary => subsidiary.id === id)?.label ?? 'Filiale';
+  return subsidiaries.find((subsidiary) => subsidiary.id === id)?.label ?? 'Filiale';
 }
 
-function getRemunerationLabel(phase: AssociateRevenuePhaseInputV6, subsidiaries: SubsidiaryInput[]): string {
+function getRemunerationLabel(
+  phase: AssociateRevenuePhaseInputV6,
+  subsidiaries: SubsidiaryInput[],
+): string {
   if (!phase.remuneration.enabled || phase.remuneration.source === 'none') return '';
-  const source = phase.remuneration.source === 'subsidiary'
-    ? getSubsidiaryLabel(subsidiaries, phase.remuneration.subsidiaryId)
-    : 'Holding';
+  const source =
+    phase.remuneration.source === 'subsidiary'
+      ? getSubsidiaryLabel(subsidiaries, phase.remuneration.subsidiaryId)
+      : 'Holding';
   return `${fmtCompactEuro(computeNetRevenue(phase))} net · ${source}`;
 }
 
@@ -140,7 +149,10 @@ function getCcaRepaymentLabel(phase: AssociateRevenuePhaseInputV6): string {
   return 'max tréso';
 }
 
-function getModeIcon(kind: TimelineSubPhaseKind, phase: AssociateRevenuePhaseInputV6): TimelineSubPhaseLayout['modeIcon'] {
+function getModeIcon(
+  kind: TimelineSubPhaseKind,
+  phase: AssociateRevenuePhaseInputV6,
+): TimelineSubPhaseLayout['modeIcon'] {
   if (kind === 'distribution') {
     if (phase.distribution.dividendsStrategy === 'aucun') return 'none';
     return phase.distribution.dividendsStrategy === 'montant_cible' ? 'target' : 'max';
@@ -225,7 +237,7 @@ export function computeTimelineRange(
   const baseEndYear = projectionStartYear + fallbackHorizonYears - 1;
   const lastPhaseEndYear = sortedPhases[sortedPhases.length - 1]?.endYear ?? projectionStartYear;
   const disposalYears = company.subsidiaries
-    .map(subsidiary => subsidiary.disposal?.year)
+    .map((subsidiary) => subsidiary.disposal?.year)
     .filter((year): year is number => Number.isFinite(year));
   const endYear = Math.max(baseEndYear, lastPhaseEndYear, ...disposalYears);
   const totalYears = Math.max(1, endYear - projectionStartYear + 1);
@@ -242,7 +254,7 @@ export function computeTimelineRange(
       x: getYearX(year, projectionStartYear, endYear, trackRight),
     };
   });
-  const paliers = sortedPhases.map(phase => ({
+  const paliers = sortedPhases.map((phase) => ({
     phase,
     startYear: phase.startYear,
     endYear: phase.endYear,

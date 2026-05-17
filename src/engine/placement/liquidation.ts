@@ -1,5 +1,10 @@
 import { DEFAULT_FISCAL_PARAMS, ENVELOPES, round2 } from './shared';
-import type { EpargneResult, FiscalParams, FiscaliteRetraitResult, LiquidationResult } from './types';
+import type {
+  EpargneResult,
+  FiscalParams,
+  FiscaliteRetraitResult,
+  LiquidationResult,
+} from './types';
 
 interface FiscaliteRetraitParams {
   envelope: string;
@@ -40,9 +45,8 @@ export function calculFiscaliteRetrait(
   switch (envelope) {
     case ENVELOPES.AV: {
       if (anneeOuverture >= 8) {
-        const abattementMax = situation === 'couple'
-          ? fp.avAbattement8ansCouple
-          : fp.avAbattement8ansSingle;
+        const abattementMax =
+          situation === 'couple' ? fp.avAbattement8ansCouple : fp.avAbattement8ansSingle;
         const abattementDispo = Math.max(0, abattementMax - abattementUtilise);
         abattementApplique = Math.min(partGains, abattementDispo);
         const assiette = Math.max(0, partGains - abattementApplique);
@@ -50,9 +54,8 @@ export function calculFiscaliteRetrait(
         if (optionBaremeIR) {
           irSurGains = assiette * tmiRetraite;
         } else {
-          const taux = primesCumulees <= fp.avSeuilPrimes150k
-            ? fp.avTauxSousSeuil8ans
-            : fp.avTauxSurSeuil8ans;
+          const taux =
+            primesCumulees <= fp.avSeuilPrimes150k ? fp.avTauxSousSeuil8ans : fp.avTauxSurSeuil8ans;
           irSurGains = assiette * taux;
         }
       } else if (optionBaremeIR) {
@@ -112,7 +115,7 @@ function calculVPM(capital: number, rendement: number, duree: number): number {
   if (rendement === 0) return capital / duree;
   const r = rendement;
   const n = duree;
-  return capital * r / (1 - Math.pow(1 + r, -n));
+  return (capital * r) / (1 - Math.pow(1 + r, -n));
 }
 
 interface LiquidationParams {
@@ -149,11 +152,7 @@ export function simulateLiquidation(
     optionBaremeIR: optionBaremeIRLiquidation = false,
   } = liquidationParams;
 
-  const {
-    tmiRetraite = 0.11,
-    situation = 'single',
-    ageActuel = 45,
-  } = client;
+  const { tmiRetraite = 0.11, situation = 'single', ageActuel = 45 } = client;
 
   const {
     envelope,
@@ -282,18 +281,21 @@ export function simulateLiquidation(
         abattementApplique: 0,
       };
     } else {
-      fiscalite = calculFiscaliteRetrait({
-        envelope,
-        montantRetrait: retraitBrut,
-        partGains,
-        partCapital,
-        anneeOuverture,
-        tmiRetraite,
-        situation,
-        primesCumulees: cumulVersements,
-        abattementUtilise: abattementCumulUtilise,
-        optionBaremeIR: optionBaremeIRLiquidation,
-      }, fp);
+      fiscalite = calculFiscaliteRetrait(
+        {
+          envelope,
+          montantRetrait: retraitBrut,
+          partGains,
+          partCapital,
+          anneeOuverture,
+          tmiRetraite,
+          situation,
+          primesCumulees: cumulVersements,
+          abattementUtilise: abattementCumulUtilise,
+          optionBaremeIR: optionBaremeIRLiquidation,
+        },
+        fp,
+      );
     }
 
     abattementCumulUtilise += fiscalite.abattementApplique || 0;

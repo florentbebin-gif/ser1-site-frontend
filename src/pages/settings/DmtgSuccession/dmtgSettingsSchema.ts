@@ -12,67 +12,93 @@ type JsonRecord = Record<string, unknown>;
 const amountSchema = z.number().finite().nonnegative();
 const percentSchema = z.number().finite().min(0).max(100);
 
-const dmtgScaleRowSchema = z.object({
-  from: amountSchema,
-  to: amountSchema.nullable(),
-  rate: percentSchema,
-}).strict();
+const dmtgScaleRowSchema = z
+  .object({
+    from: amountSchema,
+    to: amountSchema.nullable(),
+    rate: percentSchema,
+  })
+  .strict();
 
-const dmtgCategorySchema = z.object({
-  abattement: amountSchema,
-  scale: z.array(dmtgScaleRowSchema).min(1),
-}).strict();
+const dmtgCategorySchema = z
+  .object({
+    abattement: amountSchema,
+    scale: z.array(dmtgScaleRowSchema).min(1),
+  })
+  .strict();
 
-export const dmtgSettingsSchema = z.object({
-  ligneDirecte: dmtgCategorySchema,
-  frereSoeur: dmtgCategorySchema,
-  neveuNiece: dmtgCategorySchema,
-  autre: dmtgCategorySchema,
-}).strict();
+export const dmtgSettingsSchema = z
+  .object({
+    ligneDirecte: dmtgCategorySchema,
+    frereSoeur: dmtgCategorySchema,
+    neveuNiece: dmtgCategorySchema,
+    autre: dmtgCategorySchema,
+  })
+  .strict();
 
-const donationSettingsSchema = z.object({
-  rappelFiscalAnnees: amountSchema,
-  donFamilial790G: z.object({
-    montant: amountSchema,
-    conditions: z.string(),
-  }).passthrough(),
-}).passthrough();
+const donationSettingsSchema = z
+  .object({
+    rappelFiscalAnnees: amountSchema,
+    donFamilial790G: z
+      .object({
+        montant: amountSchema,
+        conditions: z.string(),
+      })
+      .passthrough(),
+  })
+  .passthrough();
 
-const avDecesBracketSchema = z.object({
-  upTo: amountSchema.nullable(),
-  ratePercent: percentSchema,
-}).strict();
+const avDecesBracketSchema = z
+  .object({
+    upTo: amountSchema.nullable(),
+    ratePercent: percentSchema,
+  })
+  .strict();
 
-const assuranceVieDecesSchema = z.object({
-  contratAvantDate: z.string(),
-  contratApresDate: z.string(),
-  agePivotPrimes: z.number().finite().min(0).max(120),
-  primesAvant1998: z.object({
-    taxRatePercent: percentSchema,
-    note: z.string().optional(),
-  }).passthrough(),
-  primesApres1998: z.object({
-    allowancePerBeneficiary: amountSchema,
-    brackets: z.array(avDecesBracketSchema).min(1),
-    note: z.string().optional(),
-  }).passthrough(),
-  apres70ans: z.object({
-    globalAllowance: amountSchema,
-    taxationMode: z.string().optional(),
-    note: z.string().optional(),
-  }).passthrough(),
-}).passthrough();
+const assuranceVieDecesSchema = z
+  .object({
+    contratAvantDate: z.string(),
+    contratApresDate: z.string(),
+    agePivotPrimes: z.number().finite().min(0).max(120),
+    primesAvant1998: z
+      .object({
+        taxRatePercent: percentSchema,
+        note: z.string().optional(),
+      })
+      .passthrough(),
+    primesApres1998: z
+      .object({
+        allowancePerBeneficiary: amountSchema,
+        brackets: z.array(avDecesBracketSchema).min(1),
+        note: z.string().optional(),
+      })
+      .passthrough(),
+    apres70ans: z
+      .object({
+        globalAllowance: amountSchema,
+        taxationMode: z.string().optional(),
+        note: z.string().optional(),
+      })
+      .passthrough(),
+  })
+  .passthrough();
 
-const dmtgTaxPayloadSchema = z.object({
-  dmtg: dmtgSettingsSchema,
-  donation: donationSettingsSchema.optional(),
-}).passthrough();
+const dmtgTaxPayloadSchema = z
+  .object({
+    dmtg: dmtgSettingsSchema,
+    donation: donationSettingsSchema.optional(),
+  })
+  .passthrough();
 
-const dmtgFiscalityPayloadSchema = z.object({
-  assuranceVie: z.object({
-    deces: assuranceVieDecesSchema,
-  }).passthrough(),
-}).passthrough();
+const dmtgFiscalityPayloadSchema = z
+  .object({
+    assuranceVie: z
+      .object({
+        deces: assuranceVieDecesSchema,
+      })
+      .passthrough(),
+  })
+  .passthrough();
 
 function isRecord(value: unknown): value is JsonRecord {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
@@ -81,9 +107,7 @@ function isRecord(value: unknown): value is JsonRecord {
 function mergeDonation(rawDonation: unknown): typeof DEFAULT_TAX_SETTINGS.donation {
   if (!isRecord(rawDonation)) return DEFAULT_TAX_SETTINGS.donation;
 
-  const rawDonFamilial = isRecord(rawDonation.donFamilial790G)
-    ? rawDonation.donFamilial790G
-    : {};
+  const rawDonFamilial = isRecord(rawDonation.donFamilial790G) ? rawDonation.donFamilial790G : {};
   const candidate = {
     ...DEFAULT_TAX_SETTINGS.donation,
     ...rawDonation,
@@ -94,7 +118,9 @@ function mergeDonation(rawDonation: unknown): typeof DEFAULT_TAX_SETTINGS.donati
   };
   const parsed = donationSettingsSchema.safeParse(candidate);
 
-  return parsed.success ? parsed.data as typeof DEFAULT_TAX_SETTINGS.donation : DEFAULT_TAX_SETTINGS.donation;
+  return parsed.success
+    ? (parsed.data as typeof DEFAULT_TAX_SETTINGS.donation)
+    : DEFAULT_TAX_SETTINGS.donation;
 }
 
 function normalizeCategory(rawCategory: unknown, fallback: DmtgCategory): DmtgCategory {
@@ -106,7 +132,7 @@ function normalizeCategory(rawCategory: unknown, fallback: DmtgCategory): DmtgCa
   };
   const parsed = dmtgCategorySchema.safeParse(candidate);
 
-  return parsed.success ? parsed.data as DmtgCategory : fallback;
+  return parsed.success ? (parsed.data as DmtgCategory) : fallback;
 }
 
 function normalizeDmtgSettings(rawDmtg: unknown): DmtgSettings {
@@ -144,7 +170,11 @@ export function validateDmtgFiscalityPayload(payload: unknown) {
   return dmtgFiscalityPayloadSchema.safeParse(payload);
 }
 
-export function formatDmtgSchemaError(...results: Array<ReturnType<typeof validateDmtgTaxPayload> | ReturnType<typeof validateDmtgFiscalityPayload>>): string {
+export function formatDmtgSchemaError(
+  ...results: Array<
+    ReturnType<typeof validateDmtgTaxPayload> | ReturnType<typeof validateDmtgFiscalityPayload>
+  >
+): string {
   const failed = results.find((result) => !result.success);
   if (!failed || failed.success) return '';
 

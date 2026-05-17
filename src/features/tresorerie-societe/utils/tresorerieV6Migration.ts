@@ -105,21 +105,24 @@ function buildAssociateV6FromV5(
   );
   const annualContribution = associate.cca?.annualContribution;
   const annualEndYear = annualContribution
-    ? annualContribution.endYear ?? projectionStartYear + horizonYears - 1
+    ? (annualContribution.endYear ?? projectionStartYear + horizonYears - 1)
     : projectionStartYear + horizonYears - 1;
-  const withAnnual = annualContribution && annualContribution.amount > 0
-    ? basePhases.map(phase => attachAnnualCcaContribution(
-      phase,
-      Math.max(0, annualContribution.amount),
-      annualContribution.startYear,
-      annualEndYear,
-    ))
-    : basePhases;
+  const withAnnual =
+    annualContribution && annualContribution.amount > 0
+      ? basePhases.map((phase) =>
+          attachAnnualCcaContribution(
+            phase,
+            Math.max(0, annualContribution.amount),
+            annualContribution.startYear,
+            annualEndYear,
+          ),
+        )
+      : basePhases;
 
   const exceptionalContributions = associate.cca?.exceptionalContributions ?? [];
   const withExceptional = exceptionalContributions.reduce((phases, contribution) => {
     let matched = false;
-    const nextPhases = phases.map(phase => {
+    const nextPhases = phases.map((phase) => {
       const nextPhase = attachExceptionalCcaContribution(phase, contribution);
       if (nextPhase !== phase) matched = true;
       return nextPhase;
@@ -136,9 +139,9 @@ function buildAssociateV6FromV5(
     ...associate,
     cca: associate.cca
       ? {
-        currentBalance: associate.cca.currentBalance,
-        remunerationRate: associate.cca.remunerationRate,
-      }
+          currentBalance: associate.cca.currentBalance,
+          remunerationRate: associate.cca.remunerationRate,
+        }
       : undefined,
     revenuePhases: withExceptional,
   };
@@ -151,7 +154,7 @@ export function buildTresoInputsV6FromV5(input: TresoInputsV5 | TresoInputsV6): 
   const company: CompanyInputV6 = {
     ...input.company,
     legalReserveInitial: input.company.legalReserveInitial ?? 0,
-    associates: input.company.associates.map(associate =>
+    associates: input.company.associates.map((associate) =>
       buildAssociateV6FromV5(associate, projectionStartYear, horizonYears),
     ),
   };

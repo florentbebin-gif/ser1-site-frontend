@@ -2,11 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { DEFAULT_DMTG } from '../../../engine/civil';
 import { buildSuccessionChainageAnalysis } from '../successionChainage';
 import { computeSuccessionAssetValuation } from '../successionAssetValuation';
-import {
-  makeCivil,
-  makeDevolution,
-  makeLiquidation,
-} from './successionChainage.test.helpers';
+import { makeCivil, makeDevolution, makeLiquidation } from './successionChainage.test.helpers';
 
 describe('buildSuccessionChainageAnalysis', () => {
   it('returns an applicable chainage with total rights', () => {
@@ -27,7 +23,11 @@ describe('buildSuccessionChainageAnalysis', () => {
   it('exposes inter-mass claims and affected liabilities in the chainage summary and warnings', () => {
     const analysis = buildSuccessionChainageAnalysis({
       civil: makeCivil({}),
-      liquidation: makeLiquidation({ actifEpoux1: 450000, actifEpoux2: 200000, actifCommun: 250000 }),
+      liquidation: makeLiquidation({
+        actifEpoux1: 450000,
+        actifEpoux2: 200000,
+        actifCommun: 250000,
+      }),
       regimeUsed: 'communaute_legale',
       order: 'epoux1',
       dmtgSettings: DEFAULT_DMTG,
@@ -67,7 +67,9 @@ describe('buildSuccessionChainageAnalysis', () => {
 
     expect(analysis.interMassClaims?.totalAppliedAmount).toBe(60000);
     expect(analysis.affectedLiabilities?.totalAmount).toBe(35000);
-    expect(analysis.warnings.some((warning) => warning.includes('Creances entre masses'))).toBe(true);
+    expect(analysis.warnings.some((warning) => warning.includes('Creances entre masses'))).toBe(
+      true,
+    );
     expect(analysis.warnings.some((warning) => warning.includes('Passif affecte'))).toBe(true);
   });
 
@@ -123,7 +125,12 @@ describe('buildSuccessionChainageAnalysis', () => {
   it('allocates parents under art. 757-1 when married with no children', () => {
     const with2Parents = buildSuccessionChainageAnalysis({
       civil: makeCivil({}),
-      liquidation: makeLiquidation({ actifEpoux1: 0, actifEpoux2: 0, actifCommun: 400000, nbEnfants: 0 }),
+      liquidation: makeLiquidation({
+        actifEpoux1: 0,
+        actifEpoux2: 0,
+        actifCommun: 400000,
+        nbEnfants: 0,
+      }),
       regimeUsed: 'communaute_legale',
       order: 'epoux1',
       dmtgSettings: DEFAULT_DMTG,
@@ -142,7 +149,12 @@ describe('buildSuccessionChainageAnalysis', () => {
 
     const with1Parent = buildSuccessionChainageAnalysis({
       civil: makeCivil({}),
-      liquidation: makeLiquidation({ actifEpoux1: 0, actifEpoux2: 0, actifCommun: 400000, nbEnfants: 0 }),
+      liquidation: makeLiquidation({
+        actifEpoux1: 0,
+        actifEpoux2: 0,
+        actifCommun: 400000,
+        nbEnfants: 0,
+      }),
       regimeUsed: 'communaute_legale',
       order: 'epoux1',
       dmtgSettings: DEFAULT_DMTG,
@@ -173,13 +185,22 @@ describe('buildSuccessionChainageAnalysis', () => {
     });
 
     expect(analysis.totalDroits).toBeGreaterThan(0);
-    expect(analysis.warnings.some((warning) => warning.includes('representation successorale simplifiee'))).toBe(true);
+    expect(
+      analysis.warnings.some((warning) =>
+        warning.includes('representation successorale simplifiee'),
+      ),
+    ).toBe(true);
   });
 
   it('shares the represented branch allowance across grandchildren at step 1', () => {
     const analysis = buildSuccessionChainageAnalysis({
       civil: makeCivil({ regimeMatrimonial: 'separation_biens' }),
-      liquidation: makeLiquidation({ actifEpoux1: 800000, actifEpoux2: 200000, actifCommun: 0, nbEnfants: 2 }),
+      liquidation: makeLiquidation({
+        actifEpoux1: 800000,
+        actifEpoux2: 200000,
+        actifCommun: 0,
+        nbEnfants: 2,
+      }),
       regimeUsed: 'separation_biens',
       order: 'epoux1',
       dmtgSettings: DEFAULT_DMTG,
@@ -193,15 +214,26 @@ describe('buildSuccessionChainageAnalysis', () => {
       ],
     });
 
-    expect(analysis.step1?.beneficiaries.find((beneficiary) => beneficiary.id === 'E1')?.droits).toBe(38194);
-    expect(analysis.step1?.beneficiaries.find((beneficiary) => beneficiary.id === 'PG1')?.droits).toBe(18194);
-    expect(analysis.step1?.beneficiaries.find((beneficiary) => beneficiary.id === 'PG2')?.droits).toBe(18194);
+    expect(
+      analysis.step1?.beneficiaries.find((beneficiary) => beneficiary.id === 'E1')?.droits,
+    ).toBe(38194);
+    expect(
+      analysis.step1?.beneficiaries.find((beneficiary) => beneficiary.id === 'PG1')?.droits,
+    ).toBe(18194);
+    expect(
+      analysis.step1?.beneficiaries.find((beneficiary) => beneficiary.id === 'PG2')?.droits,
+    ).toBe(18194);
   });
 
   it('répartit deux branches représentées avec des petits-enfants en cascade', () => {
     const analysis = buildSuccessionChainageAnalysis({
       civil: makeCivil({ regimeMatrimonial: 'separation_biens' }),
-      liquidation: makeLiquidation({ actifEpoux1: 900000, actifEpoux2: 0, actifCommun: 0, nbEnfants: 3 }),
+      liquidation: makeLiquidation({
+        actifEpoux1: 900000,
+        actifEpoux2: 0,
+        actifCommun: 0,
+        nbEnfants: 3,
+      }),
       regimeUsed: 'separation_biens',
       order: 'epoux1',
       dmtgSettings: DEFAULT_DMTG,
@@ -229,16 +261,37 @@ describe('buildSuccessionChainageAnalysis', () => {
       'PG3',
     ]);
     expect(beneficiaries.get('E1')).toMatchObject({ lien: 'enfant', brut: 225000, droits: 23194 });
-    expect(beneficiaries.get('PG1')).toMatchObject({ lien: 'petit_enfant', brut: 225000, droits: 23194 });
-    expect(beneficiaries.get('PG2')).toMatchObject({ lien: 'petit_enfant', brut: 112500, droits: 10694 });
-    expect(beneficiaries.get('PG3')).toMatchObject({ lien: 'petit_enfant', brut: 112500, droits: 10694 });
-    expect(analysis.warnings.some((warning) => warning.includes('representation successorale simplifiee'))).toBe(true);
+    expect(beneficiaries.get('PG1')).toMatchObject({
+      lien: 'petit_enfant',
+      brut: 225000,
+      droits: 23194,
+    });
+    expect(beneficiaries.get('PG2')).toMatchObject({
+      lien: 'petit_enfant',
+      brut: 112500,
+      droits: 10694,
+    });
+    expect(beneficiaries.get('PG3')).toMatchObject({
+      lien: 'petit_enfant',
+      brut: 112500,
+      droits: 10694,
+    });
+    expect(
+      analysis.warnings.some((warning) =>
+        warning.includes('representation successorale simplifiee'),
+      ),
+    ).toBe(true);
   });
 
   it('keeps only the deceased branch descendants at step 1', () => {
     const analysis = buildSuccessionChainageAnalysis({
       civil: makeCivil({ regimeMatrimonial: 'separation_biens' }),
-      liquidation: makeLiquidation({ actifEpoux1: 500000, actifEpoux2: 300000, actifCommun: 0, nbEnfants: 2 }),
+      liquidation: makeLiquidation({
+        actifEpoux1: 500000,
+        actifEpoux2: 300000,
+        actifCommun: 0,
+        nbEnfants: 2,
+      }),
       regimeUsed: 'separation_biens',
       order: 'epoux1',
       dmtgSettings: DEFAULT_DMTG,
@@ -249,14 +302,22 @@ describe('buildSuccessionChainageAnalysis', () => {
       familyMembers: [],
     });
 
-    expect(analysis.step1?.beneficiaries.map((beneficiary) => beneficiary.id)).toEqual(['conjoint', 'E1']);
+    expect(analysis.step1?.beneficiaries.map((beneficiary) => beneficiary.id)).toEqual([
+      'conjoint',
+      'E1',
+    ]);
     expect(analysis.step2?.beneficiaries.map((beneficiary) => beneficiary.id)).toEqual(['E2']);
   });
 
   it('keeps a common child on both steps and limits a separate child to its branch', () => {
     const analysis = buildSuccessionChainageAnalysis({
       civil: makeCivil({ regimeMatrimonial: 'separation_biens' }),
-      liquidation: makeLiquidation({ actifEpoux1: 450000, actifEpoux2: 250000, actifCommun: 0, nbEnfants: 2 }),
+      liquidation: makeLiquidation({
+        actifEpoux1: 450000,
+        actifEpoux2: 250000,
+        actifCommun: 0,
+        nbEnfants: 2,
+      }),
       regimeUsed: 'separation_biens',
       order: 'epoux1',
       dmtgSettings: DEFAULT_DMTG,
@@ -267,14 +328,23 @@ describe('buildSuccessionChainageAnalysis', () => {
       familyMembers: [],
     });
 
-    expect(analysis.step1?.beneficiaries.map((beneficiary) => beneficiary.id)).toEqual(['conjoint', 'E1', 'E2']);
+    expect(analysis.step1?.beneficiaries.map((beneficiary) => beneficiary.id)).toEqual([
+      'conjoint',
+      'E1',
+      'E2',
+    ]);
     expect(analysis.step2?.beneficiaries.map((beneficiary) => beneficiary.id)).toEqual(['E1']);
   });
 
   it('keeps stable labels in a symmetric blended family', () => {
     const analysis = buildSuccessionChainageAnalysis({
       civil: makeCivil({ regimeMatrimonial: 'separation_biens' }),
-      liquidation: makeLiquidation({ actifEpoux1: 450000, actifEpoux2: 350000, actifCommun: 0, nbEnfants: 3 }),
+      liquidation: makeLiquidation({
+        actifEpoux1: 450000,
+        actifEpoux2: 350000,
+        actifCommun: 0,
+        nbEnfants: 3,
+      }),
       regimeUsed: 'separation_biens',
       order: 'epoux1',
       dmtgSettings: DEFAULT_DMTG,
@@ -286,8 +356,15 @@ describe('buildSuccessionChainageAnalysis', () => {
       familyMembers: [],
     });
 
-    expect(analysis.step1?.beneficiaries.map((beneficiary) => beneficiary.label)).toEqual(['Conjoint survivant', 'E1', 'E2']);
-    expect(analysis.step2?.beneficiaries.map((beneficiary) => beneficiary.label)).toEqual(['E2', 'E3']);
+    expect(analysis.step1?.beneficiaries.map((beneficiary) => beneficiary.label)).toEqual([
+      'Conjoint survivant',
+      'E1',
+      'E2',
+    ]);
+    expect(analysis.step2?.beneficiaries.map((beneficiary) => beneficiary.label)).toEqual([
+      'E2',
+      'E3',
+    ]);
   });
 
   it('values total usufruct at step 1 and does not carry it into step 2', () => {
@@ -296,7 +373,12 @@ describe('buildSuccessionChainageAnalysis', () => {
         dateNaissanceEpoux1: '1955-06-01',
         dateNaissanceEpoux2: '1957-05-12',
       }),
-      liquidation: makeLiquidation({ actifEpoux1: 500000, actifEpoux2: 200000, actifCommun: 0, nbEnfants: 2 }),
+      liquidation: makeLiquidation({
+        actifEpoux1: 500000,
+        actifEpoux2: 200000,
+        actifCommun: 0,
+        nbEnfants: 2,
+      }),
       regimeUsed: 'separation_biens',
       order: 'epoux1',
       dmtgSettings: DEFAULT_DMTG,
@@ -316,7 +398,9 @@ describe('buildSuccessionChainageAnalysis', () => {
     expect(analysis.step1?.partConjoint).toBe(200000);
     expect(analysis.step1?.partEnfants).toBe(300000);
     expect(analysis.step2?.actifTransmis).toBe(200000);
-    expect(analysis.warnings.some((warning) => warning.includes('usufruit total valorise'))).toBe(true);
+    expect(analysis.warnings.some((warning) => warning.includes('usufruit total valorise'))).toBe(
+      true,
+    );
   });
 
   it('uses referenceDate to update usufruct valuation thresholds', () => {
@@ -325,7 +409,12 @@ describe('buildSuccessionChainageAnalysis', () => {
         dateNaissanceEpoux1: '1960-01-01',
         dateNaissanceEpoux2: '1970-06-15',
       }),
-      liquidation: makeLiquidation({ actifEpoux1: 500000, actifEpoux2: 200000, actifCommun: 0, nbEnfants: 2 }),
+      liquidation: makeLiquidation({
+        actifEpoux1: 500000,
+        actifEpoux2: 200000,
+        actifCommun: 0,
+        nbEnfants: 2,
+      }),
       regimeUsed: 'separation_biens' as const,
       order: 'epoux1' as const,
       dmtgSettings: DEFAULT_DMTG,
@@ -360,7 +449,12 @@ describe('buildSuccessionChainageAnalysis', () => {
   it('uses the testament of the side selected by death order', () => {
     const baseInput = {
       civil: makeCivil({ regimeMatrimonial: 'separation_biens' }),
-      liquidation: makeLiquidation({ actifEpoux1: 300000, actifEpoux2: 280000, actifCommun: 0, nbEnfants: 2 }),
+      liquidation: makeLiquidation({
+        actifEpoux1: 300000,
+        actifEpoux2: 280000,
+        actifCommun: 0,
+        nbEnfants: 2,
+      }),
       regimeUsed: 'separation_biens' as const,
       dmtgSettings: DEFAULT_DMTG,
       enfantsContext: [
@@ -397,10 +491,14 @@ describe('buildSuccessionChainageAnalysis', () => {
       order: 'epoux2',
     });
 
-    expect(epoux1First.step1?.beneficiaries.find((beneficiary) => beneficiary.id === 'E1')?.brut).toBeGreaterThan(
+    expect(
+      epoux1First.step1?.beneficiaries.find((beneficiary) => beneficiary.id === 'E1')?.brut,
+    ).toBeGreaterThan(
       epoux1First.step1?.beneficiaries.find((beneficiary) => beneficiary.id === 'E2')?.brut ?? 0,
     );
-    expect(epoux2First.step1?.beneficiaries.find((beneficiary) => beneficiary.id === 'E2')?.brut).toBeGreaterThan(
+    expect(
+      epoux2First.step1?.beneficiaries.find((beneficiary) => beneficiary.id === 'E2')?.brut,
+    ).toBeGreaterThan(
       epoux2First.step1?.beneficiaries.find((beneficiary) => beneficiary.id === 'E1')?.brut ?? 0,
     );
   });
@@ -411,18 +509,32 @@ describe('récompenses → chainage end-to-end', () => {
     const valuationResult = computeSuccessionAssetValuation({
       civilContext: makeCivil({}),
       patrimonialContext: {
-        interMassClaims: [{
-          id: 'claim-1',
-          kind: 'recompense',
-          fromPocket: 'communaute',
-          toPocket: 'epoux1',
-          amount: 50_000,
-          enabled: true,
-        }],
+        interMassClaims: [
+          {
+            id: 'claim-1',
+            kind: 'recompense',
+            fromPocket: 'communaute',
+            toPocket: 'epoux1',
+            amount: 50_000,
+            enabled: true,
+          },
+        ],
       },
       assetEntries: [
-        { id: 'a1', pocket: 'communaute', category: 'financier', subCategory: 'Comptes', amount: 200_000 },
-        { id: 'a2', pocket: 'epoux1', category: 'financier', subCategory: 'Titres', amount: 100_000 },
+        {
+          id: 'a1',
+          pocket: 'communaute',
+          category: 'financier',
+          subCategory: 'Comptes',
+          amount: 200_000,
+        },
+        {
+          id: 'a2',
+          pocket: 'epoux1',
+          category: 'financier',
+          subCategory: 'Titres',
+          amount: 100_000,
+        },
       ],
       groupementFoncierEntries: [],
       forfaitMobilierMode: 'off',
@@ -433,9 +545,9 @@ describe('récompenses → chainage end-to-end', () => {
 
     // Liquidation construite depuis assetNetTotals (comme useSuccessionSyncEffects:132-134)
     const liquidation = makeLiquidation({
-      actifEpoux1: valuationResult.assetNetTotals.epoux1,  // 150 000
-      actifEpoux2: valuationResult.assetNetTotals.epoux2,  // 0
-      actifCommun: valuationResult.assetNetTotals.commun,  // 150 000
+      actifEpoux1: valuationResult.assetNetTotals.epoux1, // 150 000
+      actifEpoux2: valuationResult.assetNetTotals.epoux2, // 0
+      actifCommun: valuationResult.assetNetTotals.commun, // 150 000
       nbEnfants: 2,
     });
 
@@ -454,8 +566,8 @@ describe('récompenses → chainage end-to-end', () => {
     // firstEstate = 150 000 + 0.5 × 150 000 = 225 000 (récompense appliquée)
     // sans récompense : firstEstate = 100 000 + 0.5 × 200 000 = 200 000 → régression détectée
     expect(analysis.step1?.actifTransmis).toBe(225_000);
-    expect(analysis.step1?.partConjoint).toBe(56_250);   // 225 000 × 1/4
-    expect(analysis.step1?.partEnfants).toBe(168_750);   // 225 000 × 3/4
+    expect(analysis.step1?.partConjoint).toBe(56_250); // 225 000 × 1/4
+    expect(analysis.step1?.partEnfants).toBe(168_750); // 225 000 × 3/4
   });
 
   it('une créance époux1→époux2 réduit actifEpoux1 et augmente actifEpoux2 avant step1', () => {
@@ -467,19 +579,39 @@ describe('récompenses → chainage end-to-end', () => {
     const valuationResult = computeSuccessionAssetValuation({
       civilContext: makeCivil({}),
       patrimonialContext: {
-        interMassClaims: [{
-          id: 'creance-1',
-          kind: 'creance',
-          fromPocket: 'epoux1',
-          toPocket: 'epoux2',
-          amount: 30_000,
-          enabled: true,
-        }],
+        interMassClaims: [
+          {
+            id: 'creance-1',
+            kind: 'creance',
+            fromPocket: 'epoux1',
+            toPocket: 'epoux2',
+            amount: 30_000,
+            enabled: true,
+          },
+        ],
       },
       assetEntries: [
-        { id: 'a1', pocket: 'epoux1', category: 'financier', subCategory: 'Comptes', amount: 130_000 },
-        { id: 'a2', pocket: 'epoux2', category: 'financier', subCategory: 'Comptes', amount: 50_000 },
-        { id: 'a3', pocket: 'communaute', category: 'financier', subCategory: 'Titres', amount: 200_000 },
+        {
+          id: 'a1',
+          pocket: 'epoux1',
+          category: 'financier',
+          subCategory: 'Comptes',
+          amount: 130_000,
+        },
+        {
+          id: 'a2',
+          pocket: 'epoux2',
+          category: 'financier',
+          subCategory: 'Comptes',
+          amount: 50_000,
+        },
+        {
+          id: 'a3',
+          pocket: 'communaute',
+          category: 'financier',
+          subCategory: 'Titres',
+          amount: 200_000,
+        },
       ],
       groupementFoncierEntries: [],
       forfaitMobilierMode: 'off',
@@ -489,9 +621,9 @@ describe('récompenses → chainage end-to-end', () => {
     });
 
     const liquidation = makeLiquidation({
-      actifEpoux1: valuationResult.assetNetTotals.epoux1,  // 100 000
-      actifEpoux2: valuationResult.assetNetTotals.epoux2,  // 80 000
-      actifCommun: valuationResult.assetNetTotals.commun,  // 200 000
+      actifEpoux1: valuationResult.assetNetTotals.epoux1, // 100 000
+      actifEpoux2: valuationResult.assetNetTotals.epoux2, // 80 000
+      actifCommun: valuationResult.assetNetTotals.commun, // 200 000
       nbEnfants: 2,
     });
 
@@ -510,8 +642,8 @@ describe('récompenses → chainage end-to-end', () => {
 
     expect(valuationResult.assetNetTotals.epoux1).toBe(100_000);
     expect(valuationResult.assetNetTotals.epoux2).toBe(80_000);
-    expect(analysis.step1?.actifTransmis).toBe(200_000);    // 100k + 0.5 × 200k
-    expect(analysis.step1?.partConjoint).toBe(50_000);      // 200k × 1/4
-    expect(analysis.step1?.partEnfants).toBe(150_000);      // 200k × 3/4
+    expect(analysis.step1?.actifTransmis).toBe(200_000); // 100k + 0.5 × 200k
+    expect(analysis.step1?.partConjoint).toBe(50_000); // 200k × 1/4
+    expect(analysis.step1?.partEnfants).toBe(150_000); // 200k × 3/4
   });
 });

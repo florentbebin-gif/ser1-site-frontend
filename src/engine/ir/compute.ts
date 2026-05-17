@@ -92,17 +92,22 @@ export function computeIrResult({
   const isCouple = status === 'couple';
 
   const incomeTaxCfg = taxSettings.incomeTax || {};
-  const scale = yearKey === 'current' ? incomeTaxCfg.scaleCurrent || [] : incomeTaxCfg.scalePrevious || [];
+  const scale =
+    yearKey === 'current' ? incomeTaxCfg.scaleCurrent || [] : incomeTaxCfg.scalePrevious || [];
 
   const cehrCfg = taxSettings.cehr || {};
-  const cehrYearCfg = (cehrCfg as Record<string, typeof cehrCfg.current>)[yearKey ?? 'current'] || {};
-  const cehrBrackets = (cehrYearCfg as typeof cehrCfg.current)[isCouple ? 'couple' : 'single'] || [];
+  const cehrYearCfg =
+    (cehrCfg as Record<string, typeof cehrCfg.current>)[yearKey ?? 'current'] || {};
+  const cehrBrackets =
+    (cehrYearCfg as typeof cehrCfg.current)[isCouple ? 'couple' : 'single'] || [];
 
   const cdhrYearCfg = taxSettings.cdhr as Record<string, typeof taxSettings.cdhr.current>;
-  const cdhrCfg = cdhrYearCfg && cdhrYearCfg[yearKey ?? 'current'] ? cdhrYearCfg[yearKey ?? 'current'] : null;
+  const cdhrCfg =
+    cdhrYearCfg && cdhrYearCfg[yearKey ?? 'current'] ? cdhrYearCfg[yearKey ?? 'current'] : null;
 
   const decoteCfgRoot = incomeTaxCfg.decote || {};
-  const decoteYearCfg = (decoteCfgRoot as Record<string, typeof decoteCfgRoot.current>)[yearKey ?? 'current'] || {};
+  const decoteYearCfg =
+    (decoteCfgRoot as Record<string, typeof decoteCfgRoot.current>)[yearKey ?? 'current'] || {};
 
   const qfCfgRoot = incomeTaxCfg.quotientFamily || {};
   const qfYearCfg = yearKey === 'current' ? qfCfgRoot.current || {} : qfCfgRoot.previous || {};
@@ -121,11 +126,11 @@ export function computeIrResult({
     (incomes.d1.autres || 0);
 
   const totalIncomeD2 = isCouple
-    ? ((incomes.d2?.salaries || 0) +
+    ? (incomes.d2?.salaries || 0) +
       (incomes.d2?.associes62 || 0) +
       (incomes.d2?.pensions || 0) +
       (incomes.d2?.bic || 0) +
-      (incomes.d2?.autres || 0))
+      (incomes.d2?.autres || 0)
     : 0;
 
   const capWithPs = incomes.capital?.withPs || 0;
@@ -139,10 +144,7 @@ export function computeIrResult({
   });
 
   const baseRevenusBareme =
-    totalIncomeD1 +
-    totalIncomeD2 +
-    (incomes.fonciersFoyer || 0) +
-    capitalBaseBareme;
+    totalIncomeD1 + totalIncomeD2 + (incomes.fonciersFoyer || 0) + capitalBaseBareme;
 
   const deductionsTotal = Math.max(0, deductions || 0);
   const creditsTotal = Math.max(0, credits || 0);

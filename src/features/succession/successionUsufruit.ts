@@ -30,7 +30,9 @@ function asAmount(value: number): number {
 
 export function getUsufruitRateFromAge(age: number): number {
   const safeAge = Number.isFinite(age) ? Math.max(0, Math.floor(age)) : 0;
-  return BAREME_USUFRUIT_669.find((bracket) => safeAge < bracket.maxExclusiveAge)?.tauxUsufruit ?? 0.1;
+  return (
+    BAREME_USUFRUIT_669.find((bracket) => safeAge < bracket.maxExclusiveAge)?.tauxUsufruit ?? 0.1
+  );
 }
 
 export function getBareOwnershipRateFromAge(age: number): number {

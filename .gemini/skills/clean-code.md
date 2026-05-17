@@ -17,12 +17,12 @@ Get-ChildItem -Path src/features,src/pages,src/engine -Recurse -Include *.ts,*.t
   Select-Object -First 20
 ```
 
-| Seuil | Statut | Action |
-|---|---|---|
-| < 400 lignes | ✅ OK | Aucune action |
-| 400–500 lignes | ⚠️ Warning | Noter, continuer |
-| > 500 lignes | 🔴 Dette | Vérifier "god file" : mélange de responsabilités ? |
-| > 800 lignes | 🚫 Bloquant | Découpage obligatoire avant merge |
+| Seuil          | Statut      | Action                                             |
+| -------------- | ----------- | -------------------------------------------------- |
+| < 400 lignes   | ✅ OK       | Aucune action                                      |
+| 400–500 lignes | ⚠️ Warning  | Noter, continuer                                   |
+| > 500 lignes   | 🔴 Dette    | Vérifier "god file" : mélange de responsabilités ? |
+| > 800 lignes   | 🚫 Bloquant | Découpage obligatoire avant merge                  |
 
 Signes de "god file" :
 

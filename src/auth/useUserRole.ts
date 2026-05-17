@@ -1,6 +1,6 @@
 /**
  * Hook pour récupérer le rôle de l'utilisateur connecté
- * 
+ *
  * SÉCURITÉ : le rôle est lu depuis app_metadata.role UNIQUEMENT.
  * user_metadata est modifiable par l'utilisateur et ne doit JAMAIS
  * servir pour l'autorisation (risque d'élévation de privilèges).
@@ -70,8 +70,10 @@ export function useUserRole(): UserRoleState {
           // eslint-disable-next-line no-console
           console.debug('[useUserRole] fetchRole:start');
         }
-        const { data: { user } } = await supabase.auth.getUser();
-        
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
+
         if (!mounted) return;
 
         if (!user) {
@@ -89,10 +91,7 @@ export function useUserRole(): UserRoleState {
         }
 
         // SÉCURITÉ : app_metadata uniquement (non modifiable par l'utilisateur)
-        const role = (
-          user.app_metadata?.role || 
-          'user'
-        ) as 'admin' | 'user';
+        const role = (user.app_metadata?.role || 'user') as 'admin' | 'user';
 
         if (DEBUG_AUTH) {
           // eslint-disable-next-line no-console
@@ -137,9 +136,11 @@ export function useUserRole(): UserRoleState {
  * Vérifie si l'utilisateur actuel est admin (fonction utilitaire)
  */
 export async function checkIsAdmin(): Promise<boolean> {
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
   if (!user) return false;
-  
+
   // SÉCURITÉ : app_metadata uniquement (non modifiable par l'utilisateur)
   const role = user.app_metadata?.role || 'user';
   return role === 'admin';

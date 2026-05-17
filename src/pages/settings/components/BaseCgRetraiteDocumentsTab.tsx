@@ -1,7 +1,7 @@
 import type { BaseCgRetraiteDocument } from '@/data/basecg';
 
 function updateText(value: string): string | null {
-  return value.trim() || null;
+  return value.trim() ? value : null;
 }
 
 interface Props {
@@ -33,9 +33,8 @@ export function BaseCgRetraiteDocumentsTab({
         <div>
           <h4>Documents contractuels</h4>
           <p>
-            Les PDF sont uploadés dans le bucket privé Supabase Storage. Le chemin proposé suit le pattern
-            {' '}
-            <code>compagnie/contrat/version.pdf</code>.
+            Les PDF sont uploadés dans le bucket privé Supabase Storage. Le chemin proposé suit le
+            pattern <code>compagnie/contrat/version.pdf</code>.
           </p>
         </div>
         <button type="button" className="base-cg-button" onClick={onAdd}>
@@ -44,7 +43,9 @@ export function BaseCgRetraiteDocumentsTab({
       </div>
 
       {uploadError ? (
-        <p className="base-cg-documents__error" role="alert">{uploadError}</p>
+        <p className="base-cg-documents__error" role="alert">
+          {uploadError}
+        </p>
       ) : null}
 
       {documents.length === 0 ? (
@@ -64,11 +65,9 @@ export function BaseCgRetraiteDocumentsTab({
             Nature
             <select
               value={document.type}
-              onChange={(event) => onChange(
-                document.id,
-                'type',
-                event.target.value as BaseCgRetraiteDocument['type'],
-              )}
+              onChange={(event) =>
+                onChange(document.id, 'type', event.target.value as BaseCgRetraiteDocument['type'])
+              }
             >
               <option value="conditions_generales">Conditions Générales</option>
               <option value="notice_information">Notice d'information</option>
@@ -80,7 +79,9 @@ export function BaseCgRetraiteDocumentsTab({
             Version CG
             <input
               value={document.versionLabel ?? ''}
-              onChange={(event) => onChange(document.id, 'versionLabel', updateText(event.target.value))}
+              onChange={(event) =>
+                onChange(document.id, 'versionLabel', updateText(event.target.value))
+              }
             />
           </label>
           <div className="base-cg-modal__wide base-cg-document-row__upload">
@@ -109,14 +110,18 @@ export function BaseCgRetraiteDocumentsTab({
             Chemin Supabase Storage
             <input
               value={document.storagePath ?? ''}
-              onChange={(event) => onChange(document.id, 'storagePath', updateText(event.target.value))}
+              onChange={(event) =>
+                onChange(document.id, 'storagePath', updateText(event.target.value))
+              }
             />
           </label>
           <label className="base-cg-modal__wide">
             URL externe
             <input
               value={document.sourceUrl ?? ''}
-              onChange={(event) => onChange(document.id, 'sourceUrl', updateText(event.target.value))}
+              onChange={(event) =>
+                onChange(document.id, 'sourceUrl', updateText(event.target.value))
+              }
             />
           </label>
           <div className="base-cg-document-row__actions">

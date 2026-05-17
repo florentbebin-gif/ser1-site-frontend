@@ -263,7 +263,9 @@ describe('Succession Excel Export - XLSX direct', () => {
     const xmlPayload = `${chronologySheet ?? ''}\n${sharedStrings ?? ''}`;
 
     expect(xmlPayload).toContain('Chronologie retenue comme source principale');
-    expect(xmlPayload).toContain('Chronologie 2 décès non retenue comme source principale pour la situation saisie');
+    expect(xmlPayload).toContain(
+      'Chronologie 2 décès non retenue comme source principale pour la situation saisie',
+    );
   });
 
   it("alimente l'abattement ligne directe depuis le snapshot fiscal transmis", async () => {
@@ -305,7 +307,9 @@ describe('Succession Excel Export - XLSX direct', () => {
       style: 'currency',
       currency: 'EUR',
       maximumFractionDigits: 0,
-    }).format(customAllowance).replace(/\s+/g, ' ');
+    })
+      .format(customAllowance)
+      .replace(/\s+/g, ' ');
 
     expect(normalizedSheet).toContain(`Abattement ligne directe : ${expectedAllowance}`);
     expect(normalizedSheet).not.toContain('Abattement ligne directe : 100 000 EUR');

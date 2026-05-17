@@ -31,10 +31,13 @@
     "check:arch": "depcruise src --config .dependency-cruiser.cjs --output-type err",
     "check:circular": "npx madge --circular --ts-config tsconfig.json --extensions ts,tsx,js,jsx src/",
     "check:unused": "npx depcheck",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
     "audit:base-contrat-dmtg": "node scripts/audit-base-contrat-dmtg.mjs",
     "generate:mortality": "python tools/scripts/generate-mortality-data.py",
     "report:large-files": "node scripts/report-large-files.mjs",
     "analyze": "npx vite-bundle-visualizer",
+    "analyze:ci": "vite-bundle-visualizer --template treemap --output dist/bundle-stats.html --open false",
     "check:pre-merge": "pwsh -NoProfile -File scripts/pre-merge-check.ps1",
     "audit:prod": "npm audit --omit=dev --audit-level=high",
     "commitlint": "commitlint --from=HEAD~1 --to=HEAD --verbose",
@@ -83,6 +86,7 @@
     "depcheck": "^1.4.7",
     "dependency-cruiser": "^17.3.9",
     "eslint": "^9.39.2",
+    "eslint-plugin-jsx-a11y": "^6.10.2",
     "eslint-plugin-react": "^7.37.5",
     "eslint-plugin-react-hooks": "^7.0.1",
     "globals": "^16.5.0",
@@ -90,6 +94,7 @@
     "jsdom": "^29.1.1",
     "lint-staged": "^16.2.7",
     "madge": "^8.0.0",
+    "prettier": "^3.8.3",
     "release-please": "^17.6.0",
     "storybook": "^10.4.0",
     "stylelint": "^17.6.0",
@@ -102,6 +107,9 @@
     "vitest": "^4.0.16"
   },
   "lint-staged": {
+    "*.{js,jsx,ts,tsx,css,md,json,yml,yaml,mjs,cjs}": [
+      "prettier --write"
+    ],
     "*.{js,jsx,ts,tsx}": [
       "eslint --fix"
     ]

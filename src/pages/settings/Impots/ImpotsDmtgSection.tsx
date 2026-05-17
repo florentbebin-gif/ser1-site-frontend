@@ -91,9 +91,7 @@ export default function ImpotsDmtgSection({
         <span className="settings-premium-title settings-premium-title--flush">
           Droits de mutation à titre gratuit (DMTG)
         </span>
-        <span className="fisc-acc-chevron">
-          {isOpen ? 'v' : '>'}
-        </span>
+        <span className="fisc-acc-chevron">{isOpen ? 'v' : '>'}</span>
       </button>
 
       {isOpen && (
@@ -104,20 +102,15 @@ export default function ImpotsDmtgSection({
           aria-labelledby="impots-header-dmtg"
         >
           <p style={{ fontSize: 13, color: 'var(--color-c9)', marginBottom: 16 }}>
-            Barèmes applicables aux successions et donations selon le lien de
-            parenté. Utilisés par le simulateur de placement pour la phase de
-            transmission.
+            Barèmes applicables aux successions et donations selon le lien de parenté. Utilisés par
+            le simulateur de placement pour la phase de transmission.
           </p>
 
           {categories.map(({ key, title, labelAbattement }) => {
             const category = dmtg[key];
 
             return (
-              <div
-                key={key}
-                className="income-tax-block"
-                style={{ marginBottom: 24 }}
-              >
+              <div key={key} className="income-tax-block" style={{ marginBottom: 24 }}>
                 <div
                   className="income-tax-block-title"
                   style={{
@@ -138,9 +131,7 @@ export default function ImpotsDmtgSection({
                         updateDmtgCategory(
                           key,
                           'abattement',
-                          event.target.value === ''
-                            ? null
-                            : Number(event.target.value)
+                          event.target.value === '' ? null : Number(event.target.value),
                         )
                       }
                       disabled={!isAdmin}
@@ -162,7 +153,7 @@ export default function ImpotsDmtgSection({
                       (row, index): DmtgScaleTableRow => ({
                         ...row,
                         _key: `${key}_${index}`,
-                      })
+                      }),
                     )}
                     onCellChange={(idx, colKey, value: CellValue) =>
                       updateDmtgCategory(key, 'scale', { idx, key: colKey, value })

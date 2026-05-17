@@ -37,8 +37,9 @@ export function DispositionsInterMassClaimsSection({
       <div className="sc-field">
         <label>Récompenses / créances entre masses</label>
         <p className="sc-hint sc-hint--compact">
-          Ces écritures déplacent une valeur simplifiée d&apos;une masse débitrice vers une masse créancière avant liquidation.
-          Les passifs détaillés rattachés à une masse restent traités à part comme passifs affectés.
+          Ces écritures déplacent une valeur simplifiée d&apos;une masse débitrice vers une masse
+          créancière avant liquidation. Les passifs détaillés rattachés à une masse restent traités
+          à part comme passifs affectés.
         </p>
       </div>
 
@@ -52,7 +53,8 @@ export function DispositionsInterMassClaimsSection({
                     {claim.label ?? getSuccessionInterMassClaimKindLabel(claim.kind)}
                   </div>
                   <p className="sc-hint sc-hint--compact">
-                    {getSuccessionPocketLabel(claim.fromPocket)} vers {getSuccessionPocketLabel(claim.toPocket)}
+                    {getSuccessionPocketLabel(claim.fromPocket)} vers{' '}
+                    {getSuccessionPocketLabel(claim.toPocket)}
                   </p>
                 </div>
                 <button
@@ -70,7 +72,9 @@ export function DispositionsInterMassClaimsSection({
                   <label>Active</label>
                   <ScSelect
                     value={claim.enabled ? 'oui' : 'non'}
-                    onChange={(value) => onUpdateInterMassClaim(claim.id, 'enabled', value === 'oui')}
+                    onChange={(value) =>
+                      onUpdateInterMassClaim(claim.id, 'enabled', value === 'oui')
+                    }
                     options={OUI_NON_OPTIONS}
                   />
                 </div>
@@ -122,11 +126,7 @@ export function DispositionsInterMassClaimsSection({
         </div>
       )}
 
-      <button
-        type="button"
-        className="sc-child-add-btn"
-        onClick={onAddInterMassClaim}
-      >
+      <button type="button" className="sc-child-add-btn" onClick={onAddInterMassClaim}>
         + Ajouter une écriture entre masses
       </button>
     </>

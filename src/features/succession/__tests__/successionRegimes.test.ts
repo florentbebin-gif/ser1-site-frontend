@@ -60,7 +60,7 @@ describe('Infrastructure régimes matrimoniaux', () => {
     });
 
     // T-2 : Communauté universelle
-    it('communaute_universelle : mapping direct, regimeUsed correct, pas de warning d\'approximation', () => {
+    it("communaute_universelle : mapping direct, regimeUsed correct, pas de warning d'approximation", () => {
       const analysis = buildSuccessionPredecesAnalysis(
         makeCivil({ regimeMatrimonial: 'communaute_universelle' }),
         makeLiquidationWithAssets(),
@@ -120,7 +120,9 @@ describe('Infrastructure régimes matrimoniaux', () => {
       );
       expect(analysis.applicable).toBe(true);
       expect(analysis.regimeUsed).toBe('separation_biens');
-      expect(analysis.warnings.some((w) => w.toLowerCase().includes("société d'acquêts"))).toBe(true);
+      expect(analysis.warnings.some((w) => w.toLowerCase().includes("société d'acquêts"))).toBe(
+        true,
+      );
     });
   });
 
@@ -168,7 +170,7 @@ describe('Infrastructure régimes matrimoniaux', () => {
       expect(ep1).toBe(ep2);
     });
 
-    it("communaute_universelle : attributionBiensCommunsPct=80 → 20 % au décédé", () => {
+    it('communaute_universelle : attributionBiensCommunsPct=80 → 20 % au décédé', () => {
       const defaut = computeFirstEstate('communaute_universelle', 'epoux1', liq);
       const custom = computeFirstEstate('communaute_universelle', 'epoux1', liq, 80);
       expect(custom).toBe((300_000 + 200_000 + 400_000) * 0.2); // 180_000
@@ -195,7 +197,11 @@ describe('Infrastructure régimes matrimoniaux', () => {
 
     it('separation_biens : actifs nuls retournent 0', () => {
       expect(
-        computeFirstEstate('separation_biens', 'epoux1', makeLiquidationWithAssets({ actifEpoux1: 0, actifCommun: 0 })),
+        computeFirstEstate(
+          'separation_biens',
+          'epoux1',
+          makeLiquidationWithAssets({ actifEpoux1: 0, actifCommun: 0 }),
+        ),
       ).toBe(0);
     });
   });
@@ -348,23 +354,22 @@ describe('Infrastructure régimes matrimoniaux', () => {
       ['communaute_legale' as const, 'communaute_legale' as const],
       ['communaute_universelle' as const, 'communaute_universelle' as const],
       ['separation_biens' as const, 'separation_biens' as const],
-    ])(
-      'non-régression : chainage applicable pour %s',
-      (regimeMatrimonial, regimeUsed) => {
-        const analysis = buildSuccessionChainageAnalysis({
-          civil: makeCivil({ regimeMatrimonial }),
-          liquidation: makeLiquidationWithAssets({ actifCommun: regimeUsed === 'separation_biens' ? 0 : 400_000 }),
-          regimeUsed,
-          order: 'epoux1',
-          dmtgSettings: DEFAULT_DMTG,
-          enfantsContext: makeEnfants(2),
-          familyMembers: [],
-        });
-        expect(analysis.applicable).toBe(true);
-        expect(analysis.step1).not.toBeNull();
-        expect(analysis.step2).not.toBeNull();
-        expect(analysis.totalDroits).toBeGreaterThanOrEqual(0);
-      },
-    );
+    ])('non-régression : chainage applicable pour %s', (regimeMatrimonial, regimeUsed) => {
+      const analysis = buildSuccessionChainageAnalysis({
+        civil: makeCivil({ regimeMatrimonial }),
+        liquidation: makeLiquidationWithAssets({
+          actifCommun: regimeUsed === 'separation_biens' ? 0 : 400_000,
+        }),
+        regimeUsed,
+        order: 'epoux1',
+        dmtgSettings: DEFAULT_DMTG,
+        enfantsContext: makeEnfants(2),
+        familyMembers: [],
+      });
+      expect(analysis.applicable).toBe(true);
+      expect(analysis.step1).not.toBeNull();
+      expect(analysis.step2).not.toBeNull();
+      expect(analysis.totalDroits).toBeGreaterThanOrEqual(0);
+    });
   });
 });

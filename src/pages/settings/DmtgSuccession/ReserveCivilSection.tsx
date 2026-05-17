@@ -36,21 +36,15 @@ export default function ReserveCivilSection({
         <span className="settings-premium-title settings-premium-title--flush">
           Réserve héréditaire & droits du conjoint
         </span>
-        <span className="fisc-acc-chevron">
-          {isOpen ? 'v' : '>'}
-        </span>
+        <span className="fisc-acc-chevron">{isOpen ? 'v' : '>'}</span>
       </button>
 
       {isOpen && (
         <div className="fisc-acc-body">
-          <p className="dmtg-intro">
-            Règles du Code civil - lecture seule (non paramétrable).
-          </p>
+          <p className="dmtg-intro">Règles du Code civil - lecture seule (non paramétrable).</p>
 
           <div className="income-tax-block dmtg-block--mb16">
-            <div className="dmtg-block-title">
-              Réserve héréditaire (art. 913 C. civ.)
-            </div>
+            <div className="dmtg-block-title">Réserve héréditaire (art. 913 C. civ.)</div>
             <table className="settings-table dmtg-table--mt8">
               <thead>
                 <tr>

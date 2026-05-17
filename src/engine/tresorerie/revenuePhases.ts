@@ -16,7 +16,9 @@ function positiveAmount(value: number): number {
   return Number.isFinite(value) ? Math.max(0, value) : 0;
 }
 
-export function isRevenuePhaseV6(phase: RevenuePhaseInput | undefined): phase is AssociateRevenuePhaseInputV6 {
+export function isRevenuePhaseV6(
+  phase: RevenuePhaseInput | undefined,
+): phase is AssociateRevenuePhaseInputV6 {
   return Boolean(phase && 'remuneration' in phase);
 }
 
@@ -50,9 +52,11 @@ export function getActivePhase(
 }
 
 function getAssociateRevenuePhases(associate: RuntimeAssociateInput): RevenuePhaseInput[] {
-  const phases = (associate as RuntimeAssociateInput & {
-    revenuePhases?: RevenuePhaseInput[];
-  }).revenuePhases;
+  const phases = (
+    associate as RuntimeAssociateInput & {
+      revenuePhases?: RevenuePhaseInput[];
+    }
+  ).revenuePhases;
   return Array.isArray(phases) ? phases : [];
 }
 
@@ -100,10 +104,11 @@ export function hasAssociateAnnualIncomeNeedForYear(
   }
 
   const remuneration = associate.remuneration;
-  return fallbackNeedActive || (
-    remuneration?.endYear != null &&
-    anneeCivile > remuneration.endYear &&
-    positiveAmount(remuneration.annualNeedAfterStop ?? 0) > 0
+  return (
+    fallbackNeedActive ||
+    (remuneration?.endYear != null &&
+      anneeCivile > remuneration.endYear &&
+      positiveAmount(remuneration.annualNeedAfterStop ?? 0) > 0)
   );
 }
 
@@ -114,7 +119,7 @@ export function getPhaseEndYear(
 ): number {
   if (isRevenuePhaseV6(phase)) return phase.endYear;
   const sorted = sortPhases(allPhases);
-  const index = sorted.findIndex(item => item.id === phase.id);
+  const index = sorted.findIndex((item) => item.id === phase.id);
   const next = index >= 0 ? sorted[index + 1] : undefined;
   return next ? next.startYear - 1 : horizonYear;
 }
@@ -160,12 +165,9 @@ export function addPhase(
   return sortPhases([...phases, nextPhase]);
 }
 
-export function removePhase(
-  phases: RevenuePhaseInput[],
-  phaseId: string,
-): RevenuePhaseInput[] {
+export function removePhase(phases: RevenuePhaseInput[], phaseId: string): RevenuePhaseInput[] {
   if (phases.length <= 1) return phases;
-  return sortPhases(phases.filter(phase => phase.id !== phaseId));
+  return sortPhases(phases.filter((phase) => phase.id !== phaseId));
 }
 
 export function updatePhase(
@@ -173,16 +175,16 @@ export function updatePhase(
   phaseId: string,
   patch: Partial<RevenuePhaseInput>,
 ): RevenuePhaseInput[] {
-  return sortPhases(phases.map(phase =>
-    phase.id === phaseId ? { ...phase, ...patch } : phase,
-  ));
+  return sortPhases(phases.map((phase) => (phase.id === phaseId ? { ...phase, ...patch } : phase)));
 }
 
 export function computeNetRevenue(phase: RevenuePhaseInput): number {
   if (isRevenuePhaseV6(phase)) {
     if (!phase.remuneration.enabled || phase.remuneration.source === 'none') return 0;
-    return positiveAmount(phase.remuneration.loadedAnnualCost) *
-      (1 - clampRate(phase.remuneration.socialChargeRate));
+    return (
+      positiveAmount(phase.remuneration.loadedAnnualCost) *
+      (1 - clampRate(phase.remuneration.socialChargeRate))
+    );
   }
   return phase.source === 'none'
     ? 0

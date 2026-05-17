@@ -82,9 +82,10 @@ export function isCoupleSituation(situation: SituationMatrimoniale): boolean {
   return situation === 'marie' || situation === 'pacse' || situation === 'concubinage';
 }
 
-export function getBirthDateLabels(
-  situation: SituationMatrimoniale,
-): { primary: string; secondary?: string } {
+export function getBirthDateLabels(situation: SituationMatrimoniale): {
+  primary: string;
+  secondary?: string;
+} {
   if (situation === 'marie') {
     return { primary: 'Date Naiss. Ep1', secondary: 'Date Naiss. Ep2' };
   }
@@ -237,7 +238,9 @@ export function buildInitialDispositionsDraft(): DispositionsDraftState {
     preciputMontant: DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT.preciputMontant,
     attributionIntegrale: DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT.attributionIntegrale,
     choixLegalConjointSansDDV: DEFAULT_SUCCESSION_DEVOLUTION_CONTEXT.choixLegalConjointSansDDV,
-    testamentsBySide: cloneSuccessionTestamentsBySide(DEFAULT_SUCCESSION_DEVOLUTION_CONTEXT.testamentsBySide),
+    testamentsBySide: cloneSuccessionTestamentsBySide(
+      DEFAULT_SUCCESSION_DEVOLUTION_CONTEXT.testamentsBySide,
+    ),
     ascendantsSurvivantsBySide: cloneAscendantsSurvivantsBySide(
       DEFAULT_SUCCESSION_DEVOLUTION_CONTEXT.ascendantsSurvivantsBySide,
     ),
@@ -262,10 +265,12 @@ export function getTestamentParticularLegaciesTotal(
   testamentsBySide: DispositionsDraftState['testamentsBySide'],
 ): number {
   return TESTAMENT_SIDES.reduce(
-    (sum, side) => sum + testamentsBySide[side].particularLegacies.reduce(
-      (acc, entry) => acc + Math.max(0, entry.amount),
-      0,
-    ),
+    (sum, side) =>
+      sum +
+      testamentsBySide[side].particularLegacies.reduce(
+        (acc, entry) => acc + Math.max(0, entry.amount),
+        0,
+      ),
     0,
   );
 }
@@ -274,14 +279,17 @@ export function getDonationEffectiveAmount(entry: SuccessionDonationEntry): numb
   return Math.max(0, entry.valeurActuelle ?? entry.montant);
 }
 
-export function buildAggregateAssetEntries(values: {
-  actifs: Record<SuccessionLegacyAssetOwner, number>;
-  passifs: Record<SuccessionLegacyAssetOwner, number>;
-}, civilContext: {
-  situationMatrimoniale: SituationMatrimoniale;
-  regimeMatrimonial?: RegimeMatrimonial | null;
-  pacsConvention?: PacsConvention;
-}): SuccessionAssetDetailEntry[] {
+export function buildAggregateAssetEntries(
+  values: {
+    actifs: Record<SuccessionLegacyAssetOwner, number>;
+    passifs: Record<SuccessionLegacyAssetOwner, number>;
+  },
+  civilContext: {
+    situationMatrimoniale: SituationMatrimoniale;
+    regimeMatrimonial?: RegimeMatrimonial | null;
+    pacsConvention?: PacsConvention;
+  },
+): SuccessionAssetDetailEntry[] {
   const order: SuccessionLegacyAssetOwner[] = ['epoux1', 'epoux2', 'commun'];
   const entries: SuccessionAssetDetailEntry[] = [];
 
@@ -398,10 +406,10 @@ export function applySuccessionDonationFieldUpdate(
       donSommeArgentExonere: enabled,
       ...(enabled
         ? {
-          avecReserveUsufruit: false,
-          usufruitSuccessif: false,
-          usufruitSuccessifBeneficiaire: undefined,
-        }
+            avecReserveUsufruit: false,
+            usufruitSuccessif: false,
+            usufruitSuccessifBeneficiaire: undefined,
+          }
         : {}),
     };
   }
@@ -413,18 +421,15 @@ export function applySuccessionDonationFieldUpdate(
       ...(enabled
         ? { donSommeArgentExonere: false }
         : {
-          usufruitSuccessif: false,
-          usufruitSuccessifBeneficiaire: undefined,
-        }),
+            usufruitSuccessif: false,
+            usufruitSuccessifBeneficiaire: undefined,
+          }),
     };
   }
   if (field === 'usufruitSuccessif') {
     const enabled = Boolean(value);
-    const beneficiary = entry.donateur === 'epoux1'
-      ? 'epoux2'
-      : entry.donateur === 'epoux2'
-        ? 'epoux1'
-        : undefined;
+    const beneficiary =
+      entry.donateur === 'epoux1' ? 'epoux2' : entry.donateur === 'epoux2' ? 'epoux1' : undefined;
     return {
       ...entry,
       usufruitSuccessif: enabled && Boolean(entry.avecReserveUsufruit),
@@ -433,13 +438,18 @@ export function applySuccessionDonationFieldUpdate(
     };
   }
   if (field === 'usufruitSuccessifBeneficiaire') {
-    return { ...entry, usufruitSuccessifBeneficiaire: value as SuccessionDonationEntry['usufruitSuccessifBeneficiaire'] };
+    return {
+      ...entry,
+      usufruitSuccessifBeneficiaire:
+        value as SuccessionDonationEntry['usufruitSuccessifBeneficiaire'],
+    };
   }
   return { ...entry, [field]: typeof value === 'string' ? value : String(value) };
 }
 
 export function labelMember(member: FamilyMember, enfants: SuccessionEnfant[]): string {
-  const typeLabel = MEMBER_TYPE_OPTIONS.find((option) => option.value === member.type)?.label ?? member.type;
+  const typeLabel =
+    MEMBER_TYPE_OPTIONS.find((option) => option.value === member.type)?.label ?? member.type;
 
   if (member.type === 'petit_enfant' && member.parentEnfantId) {
     const idx = enfants.findIndex((enfant) => enfant.id === member.parentEnfantId);
@@ -449,7 +459,8 @@ export function labelMember(member: FamilyMember, enfants: SuccessionEnfant[]): 
   }
 
   if (member.branch) {
-    const branchLabel = BRANCH_OPTIONS.find((option) => option.value === member.branch)?.label ?? member.branch;
+    const branchLabel =
+      BRANCH_OPTIONS.find((option) => option.value === member.branch)?.label ?? member.branch;
     return `${typeLabel} (${branchLabel})`;
   }
 

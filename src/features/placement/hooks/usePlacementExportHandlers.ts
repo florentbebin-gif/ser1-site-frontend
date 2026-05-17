@@ -28,7 +28,12 @@ export function usePlacementExportHandlers({
   const exportExcel = useCallback(async () => {
     setExportLoading(true);
     try {
-      await exportPlacementExcel(buildPlacementStateForMode(state, isExpert), results, pptxColors.c1, pptxColors.c7);
+      await exportPlacementExcel(
+        buildPlacementStateForMode(state, isExpert),
+        results,
+        pptxColors.c1,
+        pptxColors.c7,
+      );
     } catch (errorExport) {
       const err = errorExport instanceof Error ? errorExport : new Error(String(errorExport));
       console.error('[ExcelExport] Export failed', {
@@ -54,6 +59,9 @@ export function usePlacementExportHandlers({
 
       const buildProductConfig = (productIndex: number) => {
         const p = stateForCalc.products[productIndex];
+        if (!p) {
+          throw new Error(`Produit placement introuvable pour l'export: ${productIndex + 1}`);
+        }
         const vc = p.versementConfig;
         return {
           tmi: state.client.tmiEpargne,
@@ -65,14 +73,17 @@ export function usePlacementExportHandlers({
           strategieDistribution: vc.distribution.strategie ?? 'stocker',
           versementInitial: vc.initial.montant,
           versementAnnuel: vc.annuel.montant,
-          ponctuels: (vc.ponctuels || []).map((pt: { annee: number; montant: number }) => ({ annee: pt.annee, montant: pt.montant })),
+          ponctuels: (vc.ponctuels || []).map((pt: { annee: number; montant: number }) => ({
+            annee: pt.annee,
+            montant: pt.montant,
+          })),
           fraisEntree: vc.initial.fraisEntree,
           optionBaremeIR: p.liquidation?.optionBaremeIR ?? false,
         };
       };
 
       const mapEpargneRows = (rows: typeof results.produit1.epargne.rows) =>
-        rows.map(r => ({
+        rows.map((r) => ({
           annee: r.annee,
           versementNet: r.versementNet,
           capitalDebut: r.capitalDebut,
@@ -83,7 +94,7 @@ export function usePlacementExportHandlers({
         }));
 
       const mapLiquidationRows = (rows: typeof results.produit1.liquidation.rows) =>
-        rows.map(r => ({
+        rows.map((r) => ({
           annee: r.annee,
           capitalDebut: r.capitalDebut,
           gainsAnnee: r.gainsAnnee,
@@ -130,10 +141,14 @@ export function usePlacementExportHandlers({
 
       const produit1Data = buildProductData('produit1', 0);
       if (!produit1Data) return;
+      const produit1 = state.products[0];
+      if (!produit1) {
+        throw new Error("Produit 1 introuvable pour l'export placement.");
+      }
       const data = {
         clientName: undefined as string | undefined,
         ageActuel: state.client.ageActuel ?? 0,
-        dureeEpargne: state.products[0].dureeEpargne,
+        dureeEpargne: produit1.dureeEpargne,
         ageAuDeces: state.transmission.ageAuDeces,
         liquidationMode: state.liquidation.mode,
         liquidationDuree: state.liquidation.duree,
@@ -146,7 +161,7 @@ export function usePlacementExportHandlers({
         produit2: state.compareEnabled ? buildProductData('produit2', 1) : null,
       };
       const deck = buildPlacementStudyDeck(data, pptxColors, cabinetLogo, logoPlacement);
-      const dateStr = new Date().toISOString().split('T')[0].replace(/-/g, '');
+      const dateStr = new Date().toISOString().slice(0, 10).replace(/-/g, '');
       await exportAndDownloadStudyDeck(deck, pptxColors, `simulation-placement-${dateStr}.pptx`, {
         locale: 'fr-FR',
         showSlideNumbers: true,

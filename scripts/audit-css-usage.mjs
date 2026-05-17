@@ -49,7 +49,13 @@ function getOwner(relPath) {
 function getScope(relPath) {
   if (relPath.includes('/settings/')) return 'settings';
   if (relPath.includes('/audit/')) return 'audit';
-  if (relPath.includes('/credit/') || relPath.includes('/ir/') || relPath.includes('/placement/') || relPath.includes('/succession/') || relPath.includes('/per/')) {
+  if (
+    relPath.includes('/credit/') ||
+    relPath.includes('/ir/') ||
+    relPath.includes('/placement/') ||
+    relPath.includes('/succession/') ||
+    relPath.includes('/per/')
+  ) {
     return 'sim';
   }
   if (relPath.startsWith('src/styles/')) return 'global/shared';
@@ -87,7 +93,9 @@ function findCodeRefs(className, codeIndex) {
 }
 
 const cssFiles = walk(SRC_DIR, (filePath) => filePath.endsWith(CSS_EXT));
-const codeFiles = walk(SRC_DIR, (filePath) => CODE_EXTENSIONS.has(filePath.slice(filePath.lastIndexOf('.'))));
+const codeFiles = walk(SRC_DIR, (filePath) =>
+  CODE_EXTENSIONS.has(filePath.slice(filePath.lastIndexOf('.'))),
+);
 const codeIndex = buildCodeIndex(codeFiles);
 
 const files = [];
@@ -126,7 +134,9 @@ for (const cssFile of cssFiles) {
 }
 
 files.sort((a, b) => b.lines - a.lines);
-suspectClasses.sort((a, b) => a.file.localeCompare(b.file) || a.className.localeCompare(b.className));
+suspectClasses.sort(
+  (a, b) => a.file.localeCompare(b.file) || a.className.localeCompare(b.className),
+);
 
 const summary = {
   cssFileCount: files.length,

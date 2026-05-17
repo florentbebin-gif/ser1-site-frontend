@@ -94,12 +94,12 @@ describe('ScAssetsPassifsCard', () => {
       label: 'Appartement',
     };
 
-    expect(buildSubCategoryOptions(currentResidence, 'asset-rp').map((option) => option.value)).toContain(
-      RESIDENCE_PRINCIPALE_SUBCATEGORY,
-    );
-    expect(buildSubCategoryOptions(secondaryResidence, 'asset-rp').map((option) => option.value)).not.toContain(
-      RESIDENCE_PRINCIPALE_SUBCATEGORY,
-    );
+    expect(
+      buildSubCategoryOptions(currentResidence, 'asset-rp').map((option) => option.value),
+    ).toContain(RESIDENCE_PRINCIPALE_SUBCATEGORY);
+    expect(
+      buildSubCategoryOptions(secondaryResidence, 'asset-rp').map((option) => option.value),
+    ).not.toContain(RESIDENCE_PRINCIPALE_SUBCATEGORY);
   });
 
   it('shows the 20 percent abatement under the main residence row', () => {
@@ -207,14 +207,16 @@ describe('ScAssetsPassifsCard', () => {
         entries: [],
       },
     ];
-    props.prevoyanceDecesEntries = [{
-      id: 'prev-1',
-      souscripteur: 'epoux1',
-      assure: 'epoux1',
-      capitalDeces: 250000,
-      dernierePrime: 15000,
-      clauseBeneficiaire: CLAUSE_CONJOINT_LABEL,
-    }];
+    props.prevoyanceDecesEntries = [
+      {
+        id: 'prev-1',
+        souscripteur: 'epoux1',
+        assure: 'epoux1',
+        capitalDeces: 250000,
+        dernierePrime: 15000,
+        clauseBeneficiaire: CLAUSE_CONJOINT_LABEL,
+      },
+    ];
 
     const markup = renderToStaticMarkup(<ScAssetsPassifsCard {...props} />);
 
@@ -233,12 +235,14 @@ describe('ScAssetsPassifsCard', () => {
       },
     ];
     props.hasBeneficiaryLevelGfAdjustment = true;
-    props.groupementFoncierEntries = [{
-      id: 'gf-1',
-      pocket: 'epoux1',
-      type: 'GFA',
-      valeurTotale: 1_000_000,
-    }];
+    props.groupementFoncierEntries = [
+      {
+        id: 'gf-1',
+        pocket: 'epoux1',
+        type: 'GFA',
+        valeurTotale: 1_000_000,
+      },
+    ];
 
     const markup = renderToStaticMarkup(<ScAssetsPassifsCard {...props} />);
 

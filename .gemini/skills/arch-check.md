@@ -85,7 +85,7 @@ rg "from '@/" src/engine/ --include="*.ts" -n
 
 → `src/engine/` ne doit importer que des constantes/types internes — jamais via `@/` vers des features ou hooks React.
 
-### 6. Fichiers legacy / spike / _raw
+### 6. Fichiers legacy / spike / \_raw
 
 ```powershell
 rg "legacy/|__spike__|/_raw" src/ -n
@@ -95,12 +95,12 @@ rg "legacy/|__spike__|/_raw" src/ -n
 
 ### 7. Taille des fichiers
 
-| Seuil | Action |
-|---|---|
-| < 400 lignes | OK |
-| 400–500 | Warning — noter |
-| > 500 | Vérifier "god file" : mélange de responsabilités ? |
-| > 800 | Découpage obligatoire avant merge |
+| Seuil        | Action                                             |
+| ------------ | -------------------------------------------------- |
+| < 400 lignes | OK                                                 |
+| 400–500      | Warning — noter                                    |
+| > 500        | Vérifier "god file" : mélange de responsabilités ? |
+| > 800        | Découpage obligatoire avant merge                  |
 
 ```powershell
 Get-ChildItem -Path src -Recurse -Include *.ts,*.tsx |

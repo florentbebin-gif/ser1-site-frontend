@@ -11,7 +11,12 @@
  */
 
 import { ENVELOPE_LABELS } from '@/engine/placement';
-import type { CompareResult, EpargneRow, LiquidationRow, SimulateCompleteResult } from '@/engine/placement/types';
+import type {
+  CompareResult,
+  EpargneRow,
+  LiquidationRow,
+  SimulateCompleteResult,
+} from '@/engine/placement/types';
 
 /** Type interne Excel : autorise `produit2: null` en mode projection 1 placement. */
 interface PlacementResultsForExport {
@@ -33,7 +38,7 @@ import type { PlacementSimulatorState } from '../utils/normalizers';
 // Helpers de style (même convention que IR / Succession)
 // ---------------------------------------------------------------------------
 
-const h   = (t: string): XlsxCell => ({ v: t, style: 'sHeader' });
+const h = (t: string): XlsxCell => ({ v: t, style: 'sHeader' });
 const sec = (t: string): XlsxCell => ({ v: t, style: 'sSection' });
 const txt = (t: string): XlsxCell => ({ v: t, style: 'sText' });
 const ctr = (t: string | number): XlsxCell => ({ v: t, style: 'sCenter' });
@@ -91,8 +96,14 @@ function buildParamsSheet(state: PlacementSimulatorState): XlsxSheet {
     rows.push([txt(`${prefix} - PER bancaire`), txt(product.perBancaire ? 'Oui' : 'Non')]);
     rows.push([txt(`${prefix} - Versement initial`), money(versementConfig.initial?.montant || 0)]);
     rows.push([txt(`${prefix} - Versements annuels`), money(versementConfig.annuel?.montant || 0)]);
-    rows.push([txt(`${prefix} - Allocation capitalisation`), pct((versementConfig.initial?.pctCapitalisation || 0) / 100)]);
-    rows.push([txt(`${prefix} - Allocation distribution`), pct((versementConfig.initial?.pctDistribution || 0) / 100)]);
+    rows.push([
+      txt(`${prefix} - Allocation capitalisation`),
+      pct((versementConfig.initial?.pctCapitalisation || 0) / 100),
+    ]);
+    rows.push([
+      txt(`${prefix} - Allocation distribution`),
+      pct((versementConfig.initial?.pctDistribution || 0) / 100),
+    ]);
   });
 
   return { name: 'Paramètres', rows, columnWidths: [36, 22] };
@@ -193,20 +204,56 @@ function buildTransmissionSheet(
 
   const rows: XlsxCell[][] = [
     [h('Indicateur'), h('Produit 1'), h('Produit 2')],
-    [txt('Capital transmis'), money(produit1?.transmission?.capitalTransmis || 0), money(produit2?.transmission?.capitalTransmis || 0)],
-    [txt('Abattement'), money(produit1?.transmission?.abattement || 0), money(produit2?.transmission?.abattement || 0)],
-    [txt('Assiette fiscale'), money(produit1?.transmission?.assiette || 0), money(produit2?.transmission?.assiette || 0)],
+    [
+      txt('Capital transmis'),
+      money(produit1?.transmission?.capitalTransmis || 0),
+      money(produit2?.transmission?.capitalTransmis || 0),
+    ],
+    [
+      txt('Abattement'),
+      money(produit1?.transmission?.abattement || 0),
+      money(produit2?.transmission?.abattement || 0),
+    ],
+    [
+      txt('Assiette fiscale'),
+      money(produit1?.transmission?.assiette || 0),
+      money(produit2?.transmission?.assiette || 0),
+    ],
     [sec('Prélèvements sociaux au décès'), sec(''), sec('')],
-    [txt('PS décès — applicables ?'), txt(formatPsApplicability(ps1)), txt(formatPsApplicability(ps2))],
-    [txt('PS décès — assiette'), money(getPsAssietteNumeric(ps1)), money(getPsAssietteNumeric(ps2))],
+    [
+      txt('PS décès — applicables ?'),
+      txt(formatPsApplicability(ps1)),
+      txt(formatPsApplicability(ps2)),
+    ],
+    [
+      txt('PS décès — assiette'),
+      money(getPsAssietteNumeric(ps1)),
+      money(getPsAssietteNumeric(ps2)),
+    ],
     [txt('PS décès — taux'), pct(getPsTauxNumeric(ps1)), pct(getPsTauxNumeric(ps2))],
     [txt('PS décès — montant'), money(getPsMontantNumeric(ps1)), money(getPsMontantNumeric(ps2))],
     [txt('PS décès — commentaire'), txt(formatPsNote(ps1)), txt(formatPsNote(ps2))],
     [sec('Fiscalité'), sec(''), sec('')],
-    [txt('Fiscalité forfaitaire (990 I / 757 B)'), money(produit1?.transmission?.taxeForfaitaire || 0), money(produit2?.transmission?.taxeForfaitaire || 0)],
-    [txt('Fiscalité DMTG'), money(produit1?.transmission?.taxeDmtg || 0), money(produit2?.transmission?.taxeDmtg || 0)],
-    [txt('Fiscalité totale'), money(produit1?.transmission?.taxe || 0), money(produit2?.transmission?.taxe || 0)],
-    [txt('Net transmis'), money(produit1?.transmission?.capitalTransmisNet || 0), money(produit2?.transmission?.capitalTransmisNet || 0)],
+    [
+      txt('Fiscalité forfaitaire (990 I / 757 B)'),
+      money(produit1?.transmission?.taxeForfaitaire || 0),
+      money(produit2?.transmission?.taxeForfaitaire || 0),
+    ],
+    [
+      txt('Fiscalité DMTG'),
+      money(produit1?.transmission?.taxeDmtg || 0),
+      money(produit2?.transmission?.taxeDmtg || 0),
+    ],
+    [
+      txt('Fiscalité totale'),
+      money(produit1?.transmission?.taxe || 0),
+      money(produit2?.transmission?.taxe || 0),
+    ],
+    [
+      txt('Net transmis'),
+      money(produit1?.transmission?.capitalTransmisNet || 0),
+      money(produit2?.transmission?.capitalTransmisNet || 0),
+    ],
   ];
 
   return { name: 'Transmission', rows, columnWidths: [30, 18, 18] };
@@ -222,11 +269,37 @@ function buildSyntheseSheet(
 ): XlsxSheet {
   const rows: XlsxCell[][] = [
     [h('Indicateur'), h('Produit 1'), h('Produit 2')],
-    [txt('Enveloppe'), txt(getEnvelopeLabel(produit1?.envelope || '')), txt(getEnvelopeLabel(produit2?.envelope || ''))],
-    [txt('Capital acquis épargne'), money(produit1?.epargne?.capitalFin || 0), money(produit2?.epargne?.capitalFin || 0)],
-    [txt('Total retraits liquidation'), money(produit1?.liquidation?.totalRetraits || 0), money(produit2?.liquidation?.totalRetraits || 0)],
-    [txt('Fiscalité totale'), money((produit1?.liquidation?.totalFiscalite || 0) + (produit1?.transmission?.taxe || 0)), money((produit2?.liquidation?.totalFiscalite || 0) + (produit2?.transmission?.taxe || 0))],
-    [txt('Net global'), money((produit1?.liquidation?.totalRetraits || 0) + (produit1?.transmission?.capitalTransmisNet || 0)), money((produit2?.liquidation?.totalRetraits || 0) + (produit2?.transmission?.capitalTransmisNet || 0))],
+    [
+      txt('Enveloppe'),
+      txt(getEnvelopeLabel(produit1?.envelope || '')),
+      txt(getEnvelopeLabel(produit2?.envelope || '')),
+    ],
+    [
+      txt('Capital acquis épargne'),
+      money(produit1?.epargne?.capitalFin || 0),
+      money(produit2?.epargne?.capitalFin || 0),
+    ],
+    [
+      txt('Total retraits liquidation'),
+      money(produit1?.liquidation?.totalRetraits || 0),
+      money(produit2?.liquidation?.totalRetraits || 0),
+    ],
+    [
+      txt('Fiscalité totale'),
+      money((produit1?.liquidation?.totalFiscalite || 0) + (produit1?.transmission?.taxe || 0)),
+      money((produit2?.liquidation?.totalFiscalite || 0) + (produit2?.transmission?.taxe || 0)),
+    ],
+    [
+      txt('Net global'),
+      money(
+        (produit1?.liquidation?.totalRetraits || 0) +
+          (produit1?.transmission?.capitalTransmisNet || 0),
+      ),
+      money(
+        (produit2?.liquidation?.totalRetraits || 0) +
+          (produit2?.transmission?.capitalTransmisNet || 0),
+      ),
+    ],
   ];
 
   return { name: 'Synthèse', rows, columnWidths: [30, 18, 18] };
@@ -239,14 +312,26 @@ function buildSyntheseSheet(
 function buildHypothesesSheet(): XlsxSheet {
   const rows: XlsxCell[][] = [
     [h('Hypothèse'), h('Référence')],
-    [txt('Versements supposés constants sur la durée d\'épargne'), txt('Hypothèse simplificatrice')],
+    [txt("Versements supposés constants sur la durée d'épargne"), txt('Hypothèse simplificatrice')],
     [txt('Rendement et frais constants sur la durée'), txt('Hypothèse simplificatrice')],
     [txt('PER : déduction des versements selon plafond PASS'), txt('CGI Art. 163 quatervicies')],
-    [txt('Assurance-vie : abattement 990 I ou 757 B selon souscription'), txt('CGI Art. 990 I et 757 B')],
-    [txt('PFU : part IR + prélèvements sociaux selon les paramètres en vigueur'), txt('CGI Art. 200 A')],
-    [txt('Prélèvements sociaux du patrimoine : selon les paramètres en vigueur'), txt('CSS Art. L136-7')],
-    [txt('Fiscalité de transmission : barème DMTG ou forfait selon enveloppe'), txt('CGI Art. 777 et suivants')],
-    [txt('Montants arrondis à l\'euro le plus proche'), txt('Convention')],
+    [
+      txt('Assurance-vie : abattement 990 I ou 757 B selon souscription'),
+      txt('CGI Art. 990 I et 757 B'),
+    ],
+    [
+      txt('PFU : part IR + prélèvements sociaux selon les paramètres en vigueur'),
+      txt('CGI Art. 200 A'),
+    ],
+    [
+      txt('Prélèvements sociaux du patrimoine : selon les paramètres en vigueur'),
+      txt('CSS Art. L136-7'),
+    ],
+    [
+      txt('Fiscalité de transmission : barème DMTG ou forfait selon enveloppe'),
+      txt('CGI Art. 777 et suivants'),
+    ],
+    [txt("Montants arrondis à l'euro le plus proche"), txt('Convention')],
     [sec('Avertissement'), sec('')],
     [txt('Ce document est établi à titre strictement indicatif.'), txt('')],
     [txt('Il ne constitue pas un conseil en investissement ou fiscal.'), txt('')],
@@ -272,9 +357,7 @@ export async function buildPlacementXlsxBlob(
   const produit1 = results.produit1 as PlacementCompareProduct;
   const produit2 = (results.produit2 ?? null) as PlacementCompareProduct | null;
 
-  const sheets: XlsxSheet[] = [
-    buildParamsSheet(state),
-  ];
+  const sheets: XlsxSheet[] = [buildParamsSheet(state)];
 
   const ep1 = buildEpargneSheet(produit1, 'Produit 1');
   if (ep1) sheets.push(ep1);
@@ -317,6 +400,6 @@ export async function exportPlacementExcel(
   }
 
   const blob = await buildPlacementXlsxBlob(state, results, headerFill, sectionFill);
-  const dateStr = new Date().toISOString().split('T')[0].replace(/-/g, '');
+  const dateStr = new Date().toISOString().slice(0, 10).replace(/-/g, '');
   downloadXlsx(blob, `simulation-placement-${dateStr}.xlsx`);
 }

@@ -20,20 +20,30 @@ const LIVRETS_REGLEMENTES: ProductRules = {
       ],
       tags: ['plafond_reglemente', 'resident_fiscal'],
       confidence: 'elevee',
-      sources: [{ label: 'Service-public.fr — Livrets réglementés', url: 'https://www.service-public.fr/particuliers/vosdroits/N91' }],
+      sources: [
+        {
+          label: 'Service-public.fr — Livrets réglementés',
+          url: 'https://www.service-public.fr/particuliers/vosdroits/N91',
+        },
+      ],
     },
   ],
   sortie: [
     {
       title: 'Exonération totale',
       bullets: [
-        'Intérêts totalement exonérés d\'impôt sur le revenu.',
+        "Intérêts totalement exonérés d'impôt sur le revenu.",
         'Intérêts exonérés de prélèvements sociaux ({psException}).',
         'Retraits à tout moment sans contrainte fiscale.',
       ],
       tags: ['exoneration_ir', 'exoneration_ps'],
       confidence: 'elevee',
-      sources: [{ label: 'Art. 157-7° CGI', url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000006307751' }],
+      sources: [
+        {
+          label: 'Art. 157-7° CGI',
+          url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000006307751',
+        },
+      ],
     },
   ],
   deces: [
@@ -46,7 +56,12 @@ const LIVRETS_REGLEMENTES: ProductRules = {
       ],
       tags: ['dmtg_classique', 'succession_active'],
       confidence: 'elevee',
-      sources: [{ label: 'Art. 779 CGI — abattements DMTG', url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000047678018' }],
+      sources: [
+        {
+          label: 'Art. 779 CGI — abattements DMTG',
+          url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000047678018',
+        },
+      ],
     },
   ],
 };
@@ -69,22 +84,32 @@ const CTO: ProductRules = {
       title: 'Plus-values et cessions',
       bullets: [
         'Plus-values soumises au {pfu} par défaut.',
-        'Option possible pour le barème progressif de l\'IR (abattement pour durée de détention uniquement sur titres acquis avant 2018).',
-        'Compensation des moins-values sur les plus-values de l\'année et des 10 années suivantes.',
+        "Option possible pour le barème progressif de l'IR (abattement pour durée de détention uniquement sur titres acquis avant 2018).",
+        "Compensation des moins-values sur les plus-values de l'année et des 10 années suivantes.",
       ],
       tags: ['pfu', 'compensation_mv', 'option_bareme'],
       confidence: 'elevee',
-      sources: [{ label: 'Art. 200 A CGI — PFU', url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000036428122' }],
+      sources: [
+        {
+          label: 'Art. 200 A CGI — PFU',
+          url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000036428122',
+        },
+      ],
     },
     {
       title: 'Dividendes et revenus',
       bullets: [
-        'Dividendes d\'actions françaises et étrangères : {pfu} ou option barème avec abattement 40 % sur les dividendes français.',
+        "Dividendes d'actions françaises et étrangères : {pfu} ou option barème avec abattement 40 % sur les dividendes français.",
         'Intérêts obligataires : {pfu}.',
       ],
       tags: ['dividendes', 'abattement_40', 'pfu'],
       confidence: 'elevee',
-      sources: [{ label: 'Art. 200 A CGI — PFU + Art. 158-3 CGI — abattement 40%', url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000036428122' }],
+      sources: [
+        {
+          label: 'Art. 200 A CGI — PFU + Art. 158-3 CGI — abattement 40%',
+          url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000036428122',
+        },
+      ],
     },
   ],
   deces: [
@@ -123,36 +148,48 @@ const PEA: ProductRules = {
       title: 'Versements et titres éligibles',
       bullets: [
         '{peaVersementCeilings}.',
-        'Titres éligibles : actions de sociétés ayant leur siège dans l\'UE ou l\'EEE, parts d\'OPCVM investis à plus de 75 % en actions européennes.',
+        "Titres éligibles : actions de sociétés ayant leur siège dans l'UE ou l'EEE, parts d'OPCVM investis à plus de 75 % en actions européennes.",
         'Un seul PEA par personne physique.',
       ],
       tags: ['plafond_150k', 'actions_europeennes', 'pp_uniquement'],
       confidence: 'elevee',
-      sources: [{ label: 'Art. L221-30 Code monétaire et financier — PEA', url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000038612481' }],
+      sources: [
+        {
+          label: 'Art. L221-30 Code monétaire et financier — PEA',
+          url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000038612481',
+        },
+      ],
     },
   ],
   sortie: [
     {
       title: 'Avant 5 ans',
-      bullets: [
-        'Retrait entraîne la clôture du plan.',
-        'Plus-value soumise au {pfu}.',
-      ],
+      bullets: ['Retrait entraîne la clôture du plan.', 'Plus-value soumise au {pfu}.'],
       tags: ['cloture_avant_5_ans', 'pfu'],
       confidence: 'elevee',
-      sources: [{ label: 'Art. 150-0 A II-2 CGI — PEA', url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000042908358' }],
+      sources: [
+        {
+          label: 'Art. 150-0 A II-2 CGI — PEA',
+          url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000042908358',
+        },
+      ],
     },
     {
       title: 'Après 5 ans',
       bullets: [
-        'Exonération totale d\'impôt sur le revenu sur les gains.',
+        "Exonération totale d'impôt sur le revenu sur les gains.",
         'Prélèvements sociaux ({psException}) restent dus sur les gains.',
         'Retraits partiels possibles sans clôture du plan.',
-        'Conversion en rente viagère exonérée d\'IR après 5 ans.',
+        "Conversion en rente viagère exonérée d'IR après 5 ans.",
       ],
       tags: ['exoneration_ir', 'ps', 'rente_viagere'],
       confidence: 'elevee',
-      sources: [{ label: 'Art. 150-0 A II-2 CGI — PEA', url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000042908358' }],
+      sources: [
+        {
+          label: 'Art. 150-0 A II-2 CGI — PEA',
+          url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000042908358',
+        },
+      ],
     },
   ],
   deces: [
@@ -160,13 +197,18 @@ const PEA: ProductRules = {
       title: 'Clôture et succession',
       bullets: [
         'Clôture automatique du PEA au décès du titulaire.',
-        'Exonération d\'IR sur les gains si le plan avait plus de 5 ans.',
+        "Exonération d'IR sur les gains si le plan avait plus de 5 ans.",
         'Prélèvements sociaux ({psException}) dus sur la plus-value constatée à la clôture.',
         'Titres entrent dans la succession ; droits de mutation selon le barème légal.',
       ],
       tags: ['cloture_deces', 'exoneration_ir_5_ans', 'dmtg_classique'],
       confidence: 'elevee',
-      sources: [{ label: 'Art. 150-0 A II-2 CGI — PEA clôture décès', url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000042908358' }],
+      sources: [
+        {
+          label: 'Art. 150-0 A II-2 CGI — PEA clôture décès',
+          url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000042908358',
+        },
+      ],
     },
   ],
 };
@@ -182,30 +224,42 @@ const PEA_PME: ProductRules = {
       ],
       tags: ['plafond_75k', 'pme_eti_europeennes', 'pp_uniquement'],
       confidence: 'elevee',
-      sources: [{ label: 'Art. L221-32-1 Code monétaire et financier — PEA-PME', url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000038612477' }],
+      sources: [
+        {
+          label: 'Art. L221-32-1 Code monétaire et financier — PEA-PME',
+          url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000038612477',
+        },
+      ],
     },
   ],
   sortie: [
     {
       title: 'Avant 5 ans',
-      bullets: [
-        'Retrait entraîne la clôture du plan.',
-        'Plus-value soumise au {pfu}.',
-      ],
+      bullets: ['Retrait entraîne la clôture du plan.', 'Plus-value soumise au {pfu}.'],
       tags: ['cloture_avant_5_ans', 'pfu'],
       confidence: 'elevee',
-      sources: [{ label: 'Art. 150-0 A II-2 CGI — PEA-PME', url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000042908358' }],
+      sources: [
+        {
+          label: 'Art. 150-0 A II-2 CGI — PEA-PME',
+          url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000042908358',
+        },
+      ],
     },
     {
       title: 'Après 5 ans',
       bullets: [
-        'Exonération d\'IR sur les gains (identique au PEA).',
+        "Exonération d'IR sur les gains (identique au PEA).",
         'Prélèvements sociaux ({psException}) restent dus.',
         'Retraits partiels sans clôture possibles.',
       ],
       tags: ['exoneration_ir', 'ps'],
       confidence: 'elevee',
-      sources: [{ label: 'Art. 150-0 A II-2 CGI — PEA-PME', url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000042908358' }],
+      sources: [
+        {
+          label: 'Art. 150-0 A II-2 CGI — PEA-PME',
+          url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000042908358',
+        },
+      ],
     },
   ],
   deces: [
@@ -213,12 +267,17 @@ const PEA_PME: ProductRules = {
       title: 'Clôture et succession',
       bullets: [
         'Clôture automatique au décès, mêmes règles que le PEA.',
-        'Exonération d\'IR sur les gains (si plan > 5 ans) ; prélèvements sociaux ({psException}) dus.',
+        "Exonération d'IR sur les gains (si plan > 5 ans) ; prélèvements sociaux ({psException}) dus.",
         'Droits de mutation sur les titres selon le barème légal.',
       ],
       tags: ['cloture_deces', 'exoneration_ir_5_ans', 'dmtg_classique'],
       confidence: 'elevee',
-      sources: [{ label: 'Art. 150-0 A II-2 CGI — PEA-PME clôture décès', url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000042908358' }],
+      sources: [
+        {
+          label: 'Art. 150-0 A II-2 CGI — PEA-PME clôture décès',
+          url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000042908358',
+        },
+      ],
     },
   ],
 };
@@ -228,13 +287,18 @@ const PEL: ProductRules = {
     {
       title: 'Versements',
       bullets: [
-        'Versement minimal à l\'ouverture : 225 €. Versements annuels minimaux : 540 €.',
+        "Versement minimal à l'ouverture : 225 €. Versements annuels minimaux : 540 €.",
         'Plafond des versements : 61 200 €.',
-        'Taux d\'intérêt garanti fixé à l\'ouverture (taux réglementé).',
+        "Taux d'intérêt garanti fixé à l'ouverture (taux réglementé).",
       ],
       tags: ['plafond_61200', 'taux_garanti'],
       confidence: 'elevee',
-      sources: [{ label: 'Service-public.fr — Plan épargne logement (PEL)', url: 'https://www.service-public.fr/particuliers/vosdroits/F16140' }],
+      sources: [
+        {
+          label: 'Service-public.fr — Plan épargne logement (PEL)',
+          url: 'https://www.service-public.fr/particuliers/vosdroits/F16140',
+        },
+      ],
     },
   ],
   sortie: [
@@ -242,13 +306,18 @@ const PEL: ProductRules = {
       title: 'Fiscalité des intérêts',
       bullets: [
         'PEL ouvert depuis le 1er janvier 2018 : intérêts soumis au {pfu} dès la première année.',
-        'PEL ouvert avant 2018 : intérêts exonérés d\'IR les 12 premières années, puis soumis au PFU.',
+        "PEL ouvert avant 2018 : intérêts exonérés d'IR les 12 premières années, puis soumis au PFU.",
         'Prélèvements sociaux prélevés annuellement.',
-        'Prime d\'État supprimée pour les PEL ouverts depuis 2018.',
+        "Prime d'État supprimée pour les PEL ouverts depuis 2018.",
       ],
       tags: ['pfu', 'ps_annuels', 'regime_transitoire'],
       confidence: 'elevee',
-      sources: [{ label: 'Art. 200 A CGI — PFU', url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000036428122' }],
+      sources: [
+        {
+          label: 'Art. 200 A CGI — PFU',
+          url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000036428122',
+        },
+      ],
     },
   ],
   deces: [
@@ -270,25 +339,32 @@ const CEL: ProductRules = {
       title: 'Versements',
       bullets: [
         'Plafond des versements : 15 300 €.',
-        'Doit être détenu conjointement avec un PEL pour l\'accès au prêt épargne logement.',
-        'À confirmer : taux d\'intérêt réglementé variable, fixé par arrêté ministériel.',
+        "Doit être détenu conjointement avec un PEL pour l'accès au prêt épargne logement.",
+        "À confirmer : taux d'intérêt réglementé variable, fixé par arrêté ministériel.",
       ],
       tags: ['plafond_15300', 'taux_reglemente'],
       confidence: 'moyenne',
-      sources: [{ label: 'Service-public.fr — Compte épargne logement (CEL)', url: 'https://www.service-public.fr/particuliers/vosdroits/F16139' }],
+      sources: [
+        {
+          label: 'Service-public.fr — Compte épargne logement (CEL)',
+          url: 'https://www.service-public.fr/particuliers/vosdroits/F16139',
+        },
+      ],
       dependencies: ['taux CEL en vigueur (arrêté ministériel)'],
     },
   ],
   sortie: [
     {
       title: 'Fiscalité des intérêts',
-      bullets: [
-        'Intérêts soumis au {pfu}.',
-        'Option possible pour le barème progressif de l\'IR.',
-      ],
+      bullets: ['Intérêts soumis au {pfu}.', "Option possible pour le barème progressif de l'IR."],
       tags: ['pfu'],
       confidence: 'elevee',
-      sources: [{ label: 'Art. 200 A CGI — PFU', url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000036428122' }],
+      sources: [
+        {
+          label: 'Art. 200 A CGI — PFU',
+          url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000036428122',
+        },
+      ],
     },
   ],
   deces: [
@@ -320,13 +396,15 @@ const CAT_CSL: ProductRules = {
   sortie: [
     {
       title: 'Fiscalité des intérêts',
-      bullets: [
-        'Intérêts soumis au {pfu}.',
-        'Option possible pour le barème progressif de l\'IR.',
-      ],
+      bullets: ['Intérêts soumis au {pfu}.', "Option possible pour le barème progressif de l'IR."],
       tags: ['pfu', 'option_bareme'],
       confidence: 'elevee',
-      sources: [{ label: 'Art. 200 A CGI — PFU', url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000036428122' }],
+      sources: [
+        {
+          label: 'Art. 200 A CGI — PFU',
+          url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000036428122',
+        },
+      ],
     },
   ],
   deces: [

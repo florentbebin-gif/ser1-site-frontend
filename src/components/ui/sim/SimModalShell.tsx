@@ -27,12 +27,7 @@ function joinClasses(...classes: Array<string | false | null | undefined>) {
 function CloseIcon() {
   return (
     <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true">
-      <path
-        d="M4 4l8 8M12 4l-8 8"
-        stroke="currentColor"
-        strokeWidth="1.6"
-        strokeLinecap="round"
-      />
+      <path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
     </svg>
   );
 }
@@ -61,10 +56,14 @@ export function SimModalShell({
       <div className={joinClasses('sim-modal', modalClassName)}>
         <div className={joinClasses('sim-modal__header', headerClassName)}>
           <div className={joinClasses('sim-modal__header-content', headerContentClassName)}>
-            {icon ? <div className={joinClasses('sim-modal__icon', iconClassName)}>{icon}</div> : null}
+            {icon ? (
+              <div className={joinClasses('sim-modal__icon', iconClassName)}>{icon}</div>
+            ) : null}
             <div>
               <h2 className={joinClasses('sim-modal__title', titleClassName)}>{title}</h2>
-              {subtitle ? <p className={joinClasses('sim-modal__subtitle', subtitleClassName)}>{subtitle}</p> : null}
+              {subtitle ? (
+                <p className={joinClasses('sim-modal__subtitle', subtitleClassName)}>{subtitle}</p>
+              ) : null}
             </div>
           </div>
 
@@ -80,14 +79,10 @@ export function SimModalShell({
           ) : null}
         </div>
 
-        <div className={joinClasses('sim-modal__body', bodyClassName)}>
-          {children}
-        </div>
+        <div className={joinClasses('sim-modal__body', bodyClassName)}>{children}</div>
 
         {footer ? (
-          <div className={joinClasses('sim-modal__footer', footerClassName)}>
-            {footer}
-          </div>
+          <div className={joinClasses('sim-modal__footer', footerClassName)}>{footer}</div>
         ) : null}
       </div>
     </div>

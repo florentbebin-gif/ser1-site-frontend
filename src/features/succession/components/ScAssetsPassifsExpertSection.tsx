@@ -16,7 +16,11 @@ import type {
   SuccessionPersonParty,
 } from '../successionDraft';
 import { RESIDENCE_PRINCIPALE_SUBCATEGORY } from '../successionSimulator.constants';
-import { computeGroupementFoncierExoneration, GF_UI_OPTIONS, normalizeGfTypeForUi } from '../successionGroupementFoncier';
+import {
+  computeGroupementFoncierExoneration,
+  GF_UI_OPTIONS,
+  normalizeGfTypeForUi,
+} from '../successionGroupementFoncier';
 import { fmt } from '../successionSimulator.helpers';
 import AssetLegalQualificationModal from './AssetLegalQualificationModal';
 import { ScAssetsSummary, ScForfaitMobilierSection } from './ScAssetsPassifsExtras';
@@ -63,13 +67,7 @@ interface ScAssetsPassifsExpertSectionProps {
   getActifNetLabel: (owner: SuccessionLegacyAssetOwner) => string;
 }
 
-function EditRowButton({
-  label,
-  onClick,
-}: {
-  label: string;
-  onClick: () => void;
-}) {
+function EditRowButton({ label, onClick }: { label: string; onClick: () => void }) {
   return (
     <button
       type="button"
@@ -139,22 +137,25 @@ export function ScAssetsPassifsExpertSection({
     [assetEntriesByCategory],
   );
   const legalModalEntry = legalModalEntryId
-    ? allAssetEntries.find((entry) => entry.id === legalModalEntryId) ?? null
+    ? (allAssetEntries.find((entry) => entry.id === legalModalEntryId) ?? null)
     : null;
 
-  const handleLegalSave = useCallback((
-    id: string,
-    fields: {
-      legalNature: SuccessionAssetLegalNature;
-      origin: SuccessionAssetOrigin;
-      meubleImmeubleLegal: SuccessionMeubleImmeubleLegal;
+  const handleLegalSave = useCallback(
+    (
+      id: string,
+      fields: {
+        legalNature: SuccessionAssetLegalNature;
+        origin: SuccessionAssetOrigin;
+        meubleImmeubleLegal: SuccessionMeubleImmeubleLegal;
+      },
+    ) => {
+      onUpdateAssetEntry(id, 'legalNature', fields.legalNature);
+      onUpdateAssetEntry(id, 'origin', fields.origin);
+      onUpdateAssetEntry(id, 'meubleImmeubleLegal', fields.meubleImmeubleLegal);
+      setLegalModalEntryId(null);
     },
-  ) => {
-    onUpdateAssetEntry(id, 'legalNature', fields.legalNature);
-    onUpdateAssetEntry(id, 'origin', fields.origin);
-    onUpdateAssetEntry(id, 'meubleImmeubleLegal', fields.meubleImmeubleLegal);
-    setLegalModalEntryId(null);
-  }, [onUpdateAssetEntry]);
+    [onUpdateAssetEntry],
+  );
 
   return (
     <>
@@ -163,11 +164,10 @@ export function ScAssetsPassifsExpertSection({
           const showFinancierContracts = category.value === 'financier';
           const showImmobilierContracts = category.value === 'immobilier';
           const showDiversContracts = category.value === 'divers';
-          const hasExtraRows = (
-            (showFinancierContracts && (assuranceVieEntries.length > 0 || perEntries.length > 0))
-            || (showImmobilierContracts && groupementFoncierEntries.length > 0)
-            || (showDiversContracts && prevoyanceDecesEntries.length > 0)
-          );
+          const hasExtraRows =
+            (showFinancierContracts && (assuranceVieEntries.length > 0 || perEntries.length > 0)) ||
+            (showImmobilierContracts && groupementFoncierEntries.length > 0) ||
+            (showDiversContracts && prevoyanceDecesEntries.length > 0);
 
           return (
             <section key={category.value} className="sc-asset-section">
@@ -187,10 +187,9 @@ export function ScAssetsPassifsExpertSection({
 
               <div className="sc-assets-list">
                 {category.entries.map((entry) => {
-                  const showResidenceCheckbox = (
-                    category.value === 'immobilier'
-                    && entry.subCategory === RESIDENCE_PRINCIPALE_SUBCATEGORY
-                  );
+                  const showResidenceCheckbox =
+                    category.value === 'immobilier' &&
+                    entry.subCategory === RESIDENCE_PRINCIPALE_SUBCATEGORY;
 
                   return (
                     <div key={entry.id} className="sc-asset-row-stack">
@@ -245,11 +244,13 @@ export function ScAssetsPassifsExpertSection({
                             value={entry.quotePartEpoux1Pct ?? 50}
                             min={0}
                             max={100}
-                            onChange={(value) => onUpdateAssetEntry(entry.id, 'quotePartEpoux1Pct', value)}
+                            onChange={(value) =>
+                              onUpdateAssetEntry(entry.id, 'quotePartEpoux1Pct', value)
+                            }
                           />
                           <p className="sc-hint sc-hint--compact">
-                            100 = entièrement Époux 1, 0 = entièrement Époux 2. La quote-part du défunt est déduite
-                            selon l&apos;ordre de décès simulé.
+                            100 = entièrement Époux 1, 0 = entièrement Époux 2. La quote-part du
+                            défunt est déduite selon l&apos;ordre de décès simulé.
                           </p>
                         </div>
                       )}
@@ -259,10 +260,12 @@ export function ScAssetsPassifsExpertSection({
                             <input
                               type="checkbox"
                               checked={abattementResidencePrincipale}
-                              onChange={(event) => onUpdatePatrimonialField(
-                                'abattementResidencePrincipale',
-                                event.target.checked,
-                              )}
+                              onChange={(event) =>
+                                onUpdatePatrimonialField(
+                                  'abattementResidencePrincipale',
+                                  event.target.checked,
+                                )
+                              }
                             />
                             Appliquer l&apos;abattement 20 % (occupation éligible au jour du décès)
                           </label>
@@ -272,173 +275,195 @@ export function ScAssetsPassifsExpertSection({
                   );
                 })}
 
-                {showImmobilierContracts && groupementFoncierEntries.map((entry) => {
-                  const uiType = normalizeGfTypeForUi(entry.type);
-                  const exoneration = computeGroupementFoncierExoneration(entry.type, entry.valeurTotale);
+                {showImmobilierContracts &&
+                  groupementFoncierEntries.map((entry) => {
+                    const uiType = normalizeGfTypeForUi(entry.type);
+                    const exoneration = computeGroupementFoncierExoneration(
+                      entry.type,
+                      entry.valeurTotale,
+                    );
 
-                  return (
-                    <div key={entry.id} className="sc-asset-row-stack">
-                      <div className="sc-asset-row">
-                        <div className="sc-field">
-                          <label>Masse de rattachement</label>
-                          <ScSelect
-                            className="sc-asset-select"
-                            value={entry.pocket ?? assetPocketOptions[0]?.value ?? 'epoux1'}
-                            onChange={(value) => onUpdateGroupementFoncierEntry(entry.id, 'pocket', value)}
-                            options={assetPocketOptions}
-                          />
+                    return (
+                      <div key={entry.id} className="sc-asset-row-stack">
+                        <div className="sc-asset-row">
+                          <div className="sc-field">
+                            <label>Masse de rattachement</label>
+                            <ScSelect
+                              className="sc-asset-select"
+                              value={entry.pocket ?? assetPocketOptions[0]?.value ?? 'epoux1'}
+                              onChange={(value) =>
+                                onUpdateGroupementFoncierEntry(entry.id, 'pocket', value)
+                              }
+                              options={assetPocketOptions}
+                            />
+                          </div>
+                          <div className="sc-field">
+                            <label>Type GF</label>
+                            <ScSelect
+                              className="sc-asset-select"
+                              value={uiType}
+                              onChange={(value) =>
+                                onUpdateGroupementFoncierEntry(entry.id, 'type', value)
+                              }
+                              options={GF_UI_OPTIONS}
+                            />
+                          </div>
+                          <div className="sc-field">
+                            <label>Valeur totale (€)</label>
+                            <ScNumericInput
+                              value={entry.valeurTotale || 0}
+                              min={0}
+                              onChange={(value) =>
+                                onUpdateGroupementFoncierEntry(entry.id, 'valeurTotale', value)
+                              }
+                            />
+                          </div>
+                          <button
+                            type="button"
+                            className="sc-remove-btn"
+                            onClick={() => onRemoveGroupementFoncierEntry(entry.id)}
+                            title="Supprimer cette ligne"
+                          >
+                            &#10005;
+                          </button>
                         </div>
-                        <div className="sc-field">
-                          <label>Type GF</label>
-                          <ScSelect
-                            className="sc-asset-select"
-                            value={uiType}
-                            onChange={(value) => onUpdateGroupementFoncierEntry(entry.id, 'type', value)}
-                            options={GF_UI_OPTIONS}
-                          />
-                        </div>
-                        <div className="sc-field">
-                          <label>Valeur totale (€)</label>
-                          <ScNumericInput
-                            value={entry.valeurTotale || 0}
-                            min={0}
-                            onChange={(value) => onUpdateGroupementFoncierEntry(entry.id, 'valeurTotale', value)}
-                          />
-                        </div>
+                        {entry.pocket === 'indivision_separatiste' && (
+                          <div className="sc-field sc-field--full sc-asset-row__suboption">
+                            <label>Quote-part Époux 1 (%)</label>
+                            <ScNumericInput
+                              value={entry.quotePartEpoux1Pct ?? 50}
+                              min={0}
+                              max={100}
+                              onChange={(value) =>
+                                onUpdateGroupementFoncierEntry(
+                                  entry.id,
+                                  'quotePartEpoux1Pct',
+                                  value,
+                                )
+                              }
+                            />
+                            <p className="sc-hint sc-hint--compact">
+                              100 = entièrement Époux 1, 0 = entièrement Époux 2. La quote-part du
+                              défunt est déduite selon l&apos;ordre de décès simulé.
+                            </p>
+                          </div>
+                        )}
+                        {entry.valeurTotale > 0 && (
+                          <div className="sc-field sc-field--full sc-asset-row__suboption sc-asset-row__suboption--info">
+                            Exonéré : {fmt(exoneration.exonere)} | Taxable :{' '}
+                            {fmt(exoneration.taxable)}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+
+                {showDiversContracts &&
+                  prevoyanceDecesEntries.map((entry) => (
+                    <div key={entry.id} className="sc-asset-row">
+                      <div className="sc-field">
+                        <label>Souscripteur</label>
+                        <span className="sc-asset-row__value">
+                          {getPartyLabel(assuranceViePartyOptions, entry.souscripteur)}
+                        </span>
+                      </div>
+                      <div className="sc-field">
+                        <label>Sous-catégorie</label>
+                        <span className="sc-asset-row__value">Prévoyance décès</span>
+                      </div>
+                      <div className="sc-field">
+                        <label>Capital décès (€)</label>
+                        <span className="sc-asset-row__value">{fmt(entry.capitalDeces)}</span>
+                      </div>
+                      <div className="sc-row-actions">
+                        <EditRowButton
+                          label="Modifier ce contrat"
+                          onClick={() => onOpenPrevoyanceModal(entry.id)}
+                        />
                         <button
                           type="button"
                           className="sc-remove-btn"
-                          onClick={() => onRemoveGroupementFoncierEntry(entry.id)}
+                          onClick={() => onRemovePrevoyanceDecesEntry(entry.id)}
                           title="Supprimer cette ligne"
                         >
                           &#10005;
                         </button>
                       </div>
-                      {entry.pocket === 'indivision_separatiste' && (
-                        <div className="sc-field sc-field--full sc-asset-row__suboption">
-                          <label>Quote-part Époux 1 (%)</label>
-                          <ScNumericInput
-                            value={entry.quotePartEpoux1Pct ?? 50}
-                            min={0}
-                            max={100}
-                            onChange={(value) => onUpdateGroupementFoncierEntry(entry.id, 'quotePartEpoux1Pct', value)}
-                          />
-                          <p className="sc-hint sc-hint--compact">
-                            100 = entièrement Époux 1, 0 = entièrement Époux 2. La quote-part du défunt est déduite
-                            selon l&apos;ordre de décès simulé.
-                          </p>
-                        </div>
-                      )}
-                      {entry.valeurTotale > 0 && (
-                        <div className="sc-field sc-field--full sc-asset-row__suboption sc-asset-row__suboption--info">
-                          Exonéré : {fmt(exoneration.exonere)} | Taxable : {fmt(exoneration.taxable)}
-                        </div>
-                      )}
                     </div>
-                  );
-                })}
+                  ))}
 
-                {showDiversContracts && prevoyanceDecesEntries.map((entry) => (
-                  <div key={entry.id} className="sc-asset-row">
-                    <div className="sc-field">
-                      <label>Souscripteur</label>
-                      <span className="sc-asset-row__value">
-                        {getPartyLabel(assuranceViePartyOptions, entry.souscripteur)}
-                      </span>
+                {showFinancierContracts &&
+                  assuranceVieEntries.map((entry) => (
+                    <div key={entry.id} className="sc-asset-row">
+                      <div className="sc-field">
+                        <label>Personne assurée</label>
+                        <span className="sc-asset-row__value">
+                          {getPartyLabel(assuranceViePartyOptions, entry.assure)}
+                        </span>
+                      </div>
+                      <div className="sc-field">
+                        <label>Sous-catégorie</label>
+                        <span className="sc-asset-row__value">Assurance-vie</span>
+                      </div>
+                      <div className="sc-field">
+                        <label>Capitaux décès (€)</label>
+                        <span className="sc-asset-row__value">{fmt(entry.capitauxDeces)}</span>
+                      </div>
+                      <div className="sc-row-actions">
+                        <EditRowButton
+                          label="Modifier ce contrat"
+                          onClick={() => onOpenAssuranceVieModal(entry.id)}
+                        />
+                        <button
+                          type="button"
+                          className="sc-remove-btn"
+                          onClick={() => onRemoveAssuranceVieEntry(entry.id)}
+                          title="Supprimer cette ligne"
+                        >
+                          &#10005;
+                        </button>
+                      </div>
                     </div>
-                    <div className="sc-field">
-                      <label>Sous-catégorie</label>
-                      <span className="sc-asset-row__value">Prévoyance décès</span>
-                    </div>
-                    <div className="sc-field">
-                      <label>Capital décès (€)</label>
-                      <span className="sc-asset-row__value">{fmt(entry.capitalDeces)}</span>
-                    </div>
-                    <div className="sc-row-actions">
-                      <EditRowButton
-                        label="Modifier ce contrat"
-                        onClick={() => onOpenPrevoyanceModal(entry.id)}
-                      />
-                      <button
-                        type="button"
-                        className="sc-remove-btn"
-                        onClick={() => onRemovePrevoyanceDecesEntry(entry.id)}
-                        title="Supprimer cette ligne"
-                      >
-                        &#10005;
-                      </button>
-                    </div>
-                  </div>
-                ))}
+                  ))}
 
-                {showFinancierContracts && assuranceVieEntries.map((entry) => (
-                  <div key={entry.id} className="sc-asset-row">
-                    <div className="sc-field">
-                      <label>Personne assurée</label>
-                      <span className="sc-asset-row__value">
-                        {getPartyLabel(assuranceViePartyOptions, entry.assure)}
-                      </span>
+                {showFinancierContracts &&
+                  perEntries.map((entry) => (
+                    <div key={entry.id} className="sc-asset-row">
+                      <div className="sc-field">
+                        <label>Personne assurée</label>
+                        <span className="sc-asset-row__value">
+                          {getPartyLabel(assuranceViePartyOptions, entry.assure)}
+                        </span>
+                      </div>
+                      <div className="sc-field">
+                        <label>Sous-catégorie</label>
+                        <span className="sc-asset-row__value">PER assurance</span>
+                      </div>
+                      <div className="sc-field">
+                        <label>Capitaux décès (€)</label>
+                        <span className="sc-asset-row__value">{fmt(entry.capitauxDeces)}</span>
+                      </div>
+                      <div className="sc-row-actions">
+                        <EditRowButton
+                          label="Modifier ce contrat"
+                          onClick={() => onOpenPerModal(entry.id)}
+                        />
+                        <button
+                          type="button"
+                          className="sc-remove-btn"
+                          onClick={() => onRemovePerEntry(entry.id)}
+                          title="Supprimer cette ligne"
+                        >
+                          &#10005;
+                        </button>
+                      </div>
                     </div>
-                    <div className="sc-field">
-                      <label>Sous-catégorie</label>
-                      <span className="sc-asset-row__value">Assurance-vie</span>
-                    </div>
-                    <div className="sc-field">
-                      <label>Capitaux décès (€)</label>
-                      <span className="sc-asset-row__value">{fmt(entry.capitauxDeces)}</span>
-                    </div>
-                    <div className="sc-row-actions">
-                      <EditRowButton
-                        label="Modifier ce contrat"
-                        onClick={() => onOpenAssuranceVieModal(entry.id)}
-                      />
-                      <button
-                        type="button"
-                        className="sc-remove-btn"
-                        onClick={() => onRemoveAssuranceVieEntry(entry.id)}
-                        title="Supprimer cette ligne"
-                      >
-                        &#10005;
-                      </button>
-                    </div>
-                  </div>
-                ))}
-
-                {showFinancierContracts && perEntries.map((entry) => (
-                  <div key={entry.id} className="sc-asset-row">
-                    <div className="sc-field">
-                      <label>Personne assurée</label>
-                      <span className="sc-asset-row__value">
-                        {getPartyLabel(assuranceViePartyOptions, entry.assure)}
-                      </span>
-                    </div>
-                    <div className="sc-field">
-                      <label>Sous-catégorie</label>
-                      <span className="sc-asset-row__value">PER assurance</span>
-                    </div>
-                    <div className="sc-field">
-                      <label>Capitaux décès (€)</label>
-                      <span className="sc-asset-row__value">{fmt(entry.capitauxDeces)}</span>
-                    </div>
-                    <div className="sc-row-actions">
-                      <EditRowButton
-                        label="Modifier ce contrat"
-                        onClick={() => onOpenPerModal(entry.id)}
-                      />
-                      <button
-                        type="button"
-                        className="sc-remove-btn"
-                        onClick={() => onRemovePerEntry(entry.id)}
-                        title="Supprimer cette ligne"
-                      >
-                        &#10005;
-                      </button>
-                    </div>
-                  </div>
-                ))}
+                  ))}
 
                 {category.entries.length === 0 && !hasExtraRows && (
-                  <p className="sc-hint sc-hint--compact">Aucune ligne détaillée dans cette catégorie.</p>
+                  <p className="sc-hint sc-hint--compact">
+                    Aucune ligne détaillée dans cette catégorie.
+                  </p>
                 )}
               </div>
             </section>

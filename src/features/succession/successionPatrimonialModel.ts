@@ -29,11 +29,11 @@ interface SuccessionAssetLocationContext {
   pacsConvention?: string | null;
 }
 
-export function isSuccessionSocieteAcquetsRegime(
-  context: SuccessionAssetLocationContext,
-): boolean {
-  return context.situationMatrimoniale === 'marie'
-    && context.regimeMatrimonial === 'separation_biens_societe_acquets';
+export function isSuccessionSocieteAcquetsRegime(context: SuccessionAssetLocationContext): boolean {
+  return (
+    context.situationMatrimoniale === 'marie' &&
+    context.regimeMatrimonial === 'separation_biens_societe_acquets'
+  );
 }
 
 export function isSuccessionLegacyAssetOwner(value: unknown): value is SuccessionLegacyAssetOwner {
@@ -41,13 +41,15 @@ export function isSuccessionLegacyAssetOwner(value: unknown): value is Successio
 }
 
 export function isSuccessionAssetPocket(value: unknown): value is SuccessionAssetPocket {
-  return value === 'epoux1'
-    || value === 'epoux2'
-    || value === 'communaute'
-    || value === 'societe_acquets'
-    || value === 'indivision_pacse'
-    || value === 'indivision_concubinage'
-    || value === 'indivision_separatiste';
+  return (
+    value === 'epoux1' ||
+    value === 'epoux2' ||
+    value === 'communaute' ||
+    value === 'societe_acquets' ||
+    value === 'indivision_pacse' ||
+    value === 'indivision_concubinage' ||
+    value === 'indivision_separatiste'
+  );
 }
 
 export function getSuccessionLegacyOwnerFromPocket(
@@ -70,17 +72,16 @@ export function getSuccessionSharedPocketForContext({
   if (situationMatrimoniale !== 'marie') {
     return null;
   }
-  if (
-    regimeMatrimonial === 'separation_biens'
-    || regimeMatrimonial === 'participation_acquets'
-  ) {
+  if (regimeMatrimonial === 'separation_biens' || regimeMatrimonial === 'participation_acquets') {
     return null;
   }
-  if (isSuccessionSocieteAcquetsRegime({
-    situationMatrimoniale,
-    regimeMatrimonial,
-    pacsConvention,
-  })) {
+  if (
+    isSuccessionSocieteAcquetsRegime({
+      situationMatrimoniale,
+      regimeMatrimonial,
+      pacsConvention,
+    })
+  ) {
     return 'societe_acquets';
   }
   return 'communaute';
@@ -97,9 +98,8 @@ export function getSuccessionAssetPocketFromOwner(
   context: SuccessionAssetLocationContext | string | null = {},
 ): SuccessionAssetPocket {
   if (owner === 'epoux1' || owner === 'epoux2') return owner;
-  const normalizedContext = typeof context === 'string'
-    ? { situationMatrimoniale: context }
-    : (context ?? {});
+  const normalizedContext =
+    typeof context === 'string' ? { situationMatrimoniale: context } : (context ?? {});
   const sharedPocket = getSuccessionSharedPocketForContext(normalizedContext);
   if (sharedPocket) return sharedPocket;
   if (normalizedContext.situationMatrimoniale === 'pacse') return 'indivision_pacse';
@@ -176,9 +176,10 @@ export function buildSuccessionAssetOwnerOptions(
     { value: 'epoux1', label: partyLabels.epoux1 },
   ];
 
-  const isCoupleSituation = context.situationMatrimoniale === 'marie'
-    || context.situationMatrimoniale === 'pacse'
-    || context.situationMatrimoniale === 'concubinage';
+  const isCoupleSituation =
+    context.situationMatrimoniale === 'marie' ||
+    context.situationMatrimoniale === 'pacse' ||
+    context.situationMatrimoniale === 'concubinage';
   if (isCoupleSituation) {
     options.push({ value: 'epoux2', label: partyLabels.epoux2 });
   }
@@ -202,9 +203,10 @@ export function buildSuccessionAssetPocketOptions(
     { value: 'epoux1', label: partyLabels.epoux1 },
   ];
 
-  const isCoupleSituation = context.situationMatrimoniale === 'marie'
-    || context.situationMatrimoniale === 'pacse'
-    || context.situationMatrimoniale === 'concubinage';
+  const isCoupleSituation =
+    context.situationMatrimoniale === 'marie' ||
+    context.situationMatrimoniale === 'pacse' ||
+    context.situationMatrimoniale === 'concubinage';
   if (isCoupleSituation) {
     options.push({ value: 'epoux2', label: partyLabels.epoux2 });
   }
@@ -218,12 +220,10 @@ export function buildSuccessionAssetPocketOptions(
   }
 
   if (
-    context.situationMatrimoniale === 'marie'
-    && (
-      context.regimeMatrimonial === 'separation_biens'
-      || context.regimeMatrimonial === 'participation_acquets'
-      || context.regimeMatrimonial === 'separation_biens_societe_acquets'
-    )
+    context.situationMatrimoniale === 'marie' &&
+    (context.regimeMatrimonial === 'separation_biens' ||
+      context.regimeMatrimonial === 'participation_acquets' ||
+      context.regimeMatrimonial === 'separation_biens_societe_acquets')
   ) {
     options.push({ value: 'indivision_separatiste', label: 'Indivision' });
   }

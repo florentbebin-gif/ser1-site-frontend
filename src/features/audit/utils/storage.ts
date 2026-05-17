@@ -1,6 +1,6 @@
 /**
  * Storage - Export/Import JSON pour sauvegarde locale RGPD
- * 
+ *
  * RGPD : pas de stockage serveur des noms clients.
  * Les dossiers sont sauvegardés localement (fichier JSON).
  */
@@ -17,10 +17,11 @@ export function exportDossierToFile(dossier: DossierAudit, filename?: string): v
   const data = JSON.stringify(dossier, null, 2);
   const blob = new Blob([data], { type: 'application/json' });
   const url = createTrackedObjectURL(blob);
-  
+
   const link = document.createElement('a');
   link.href = url;
-  link.download = filename || `audit_${dossier.id.slice(0, 8)}_${new Date().toISOString().split('T')[0]}.json`;
+  link.download =
+    filename || `audit_${dossier.id.slice(0, 8)}_${new Date().toISOString().split('T')[0]}.json`;
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
@@ -33,29 +34,33 @@ export function exportDossierToFile(dossier: DossierAudit, filename?: string): v
 export function importDossierFromFile(file: File): Promise<DossierAudit> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
-    
+
     reader.onload = (event) => {
       try {
         const data = JSON.parse(event.target?.result as string);
-        
+
         // Validation basique
         if (!data.id || !data.version || !data.situationFamiliale) {
           throw new Error('Format de fichier invalide');
         }
-        
+
         // Mise à jour de la date de modification
         data.dateModification = new Date().toISOString();
-        
+
         resolve(data as DossierAudit);
       } catch {
-        reject(new Error('Impossible de lire le fichier. Vérifiez qu\'il s\'agit d\'un export audit valide.'));
+        reject(
+          new Error(
+            "Impossible de lire le fichier. Vérifiez qu'il s'agit d'un export audit valide.",
+          ),
+        );
       }
     };
-    
+
     reader.onerror = () => {
       reject(new Error('Erreur de lecture du fichier'));
     };
-    
+
     reader.readAsText(file);
   });
 }
@@ -107,13 +112,14 @@ export function setupBeforeUnloadWarning(hasChanges: () => boolean): () => void 
   const handler = (event: BeforeUnloadEvent) => {
     if (hasChanges()) {
       event.preventDefault();
-      event.returnValue = 'Vous avez des modifications non sauvegardées. Êtes-vous sûr de vouloir quitter ?';
+      event.returnValue =
+        'Vous avez des modifications non sauvegardées. Êtes-vous sûr de vouloir quitter ?';
       return event.returnValue;
     }
   };
 
   window.addEventListener('beforeunload', handler);
-  
+
   return () => {
     window.removeEventListener('beforeunload', handler);
   };

@@ -1,6 +1,6 @@
 /**
  * AuthProvider - Version simplifiée
- * 
+ *
  * Principe : faire confiance à Supabase pour gérer les sessions.
  * - autoRefreshToken: true dans supabaseClient.ts gère le refresh automatique
  * - onAuthStateChange écoute les changements d'état
@@ -61,32 +61,37 @@ export function AuthProvider({ children }: { children: React.ReactNode }): React
   }, []);
 
   // ensureSession simplifié - juste récupérer la session actuelle
-  const ensureSession = useCallback(async (_reason: string = 'unknown'): Promise<Session | null> => {
-    if (DEBUG_AUTH) {
-      // eslint-disable-next-line no-console
-      console.debug('[Auth] ensureSession', { _reason });
-    }
-
-    try {
-      const { data: { session: currentSession } } = await supabase.auth.getSession();
-      
+  const ensureSession = useCallback(
+    async (_reason: string = 'unknown'): Promise<Session | null> => {
       if (DEBUG_AUTH) {
         // eslint-disable-next-line no-console
-        console.debug('[Auth] ensureSession:result', {
-          _reason,
-          hasSession: !!currentSession,
-          expiresAt: currentSession?.expires_at,
-        });
+        console.debug('[Auth] ensureSession', { _reason });
       }
 
-      return currentSession;
-    } catch (e) {
-      if (DEBUG_AUTH) {
-        console.warn('[Auth] ensureSession:error', { _reason, message: (e as Error)?.message });
+      try {
+        const {
+          data: { session: currentSession },
+        } = await supabase.auth.getSession();
+
+        if (DEBUG_AUTH) {
+          // eslint-disable-next-line no-console
+          console.debug('[Auth] ensureSession:result', {
+            _reason,
+            hasSession: !!currentSession,
+            expiresAt: currentSession?.expires_at,
+          });
+        }
+
+        return currentSession;
+      } catch (e) {
+        if (DEBUG_AUTH) {
+          console.warn('[Auth] ensureSession:error', { _reason, message: (e as Error)?.message });
+        }
+        return null;
       }
-      return null;
-    }
-  }, []);
+    },
+    [],
+  );
 
   // Initialisation et écoute des changements d'état
   useEffect(() => {
@@ -103,7 +108,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }): React
         await supabase.auth.signOut();
       } catch {
         // signOut peut échouer si le token est déjà invalide, on nettoie manuellement
-        localStorage.removeItem('sb-' + new URL(import.meta.env.VITE_SUPABASE_URL).hostname.split('.')[0] + '-auth-token');
+        localStorage.removeItem(
+          'sb-' + new URL(import.meta.env.VITE_SUPABASE_URL).hostname.split('.')[0] + '-auth-token',
+        );
       }
       if (mounted) {
         updateFromSession(null, `invalidRefreshToken:${reason}`);
@@ -114,7 +121,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }): React
     // Récupérer la session initiale
     const initSession = async () => {
       try {
-        const { data: { session: initialSession }, error } = await supabase.auth.getSession();
+        const {
+          data: { session: initialSession },
+          error,
+        } = await supabase.auth.getSession();
         if (!mounted) return;
         // Détecter refresh token invalide dès l'init
         if (error && /refresh.token/i.test(error.message)) {
@@ -139,7 +149,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }): React
     // - Connexion/déconnexion
     // - Refresh du token (automatique grâce à autoRefreshToken: true)
     // - Changement de session
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, newSession) => {
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((event, newSession) => {
       if (!mounted) return;
 
       if (DEBUG_AUTH) {
@@ -169,16 +181,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }): React
   const role = useMemo(() => computeRole(user), [user]);
   const isAdmin = role === 'admin';
 
-  const value = useMemo<AuthState>(() => ({
-    authReady,
-    session,
-    user,
-    role,
-    isAdmin,
-    authRevision,
-    appAwakeRevision,
-    ensureSession,
-  }), [authReady, session, user, role, isAdmin, authRevision, appAwakeRevision, ensureSession]);
+  const value = useMemo<AuthState>(
+    () => ({
+      authReady,
+      session,
+      user,
+      role,
+      isAdmin,
+      authRevision,
+      appAwakeRevision,
+      ensureSession,
+    }),
+    [authReady, session, user, role, isAdmin, authRevision, appAwakeRevision, ensureSession],
+  );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

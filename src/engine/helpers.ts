@@ -17,7 +17,11 @@ export function mkResult<T>(builder: CalcResultBuilder<T>): CalcResult<T> {
 /**
  * Ajoute un warning "À valider" pour les règles incertaines
  */
-export function addValidationWarning(warnings: Warning[], ruleId: string, message: string): Warning[] {
+export function addValidationWarning(
+  warnings: Warning[],
+  ruleId: string,
+  message: string,
+): Warning[] {
   return [
     ...warnings,
     {
@@ -34,7 +38,7 @@ export function addValidationWarning(warnings: Warning[], ruleId: string, messag
 export function mkRuleVersion(version: string, source: string, validated = false): RuleVersion {
   return {
     version,
-    date: new Date().toISOString().split('T')[0],
+    date: new Date().toISOString().slice(0, 10),
     source,
     validated,
   };

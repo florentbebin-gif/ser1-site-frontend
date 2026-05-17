@@ -1,9 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { DEFAULT_DMTG } from '../../../engine/civil';
 import { applySuccessionDonationRecallToHeirs } from '../successionDonationRecall';
-import {
-  buildSuccessionUsufruitSuccessifAnalysis,
-} from '../successionUsufruitSuccessif';
+import { buildSuccessionUsufruitSuccessifAnalysis } from '../successionUsufruitSuccessif';
 import type { SuccessionCivilContext, SuccessionDonationEntry } from '../successionDraft';
 
 const DONATION_SETTINGS = {

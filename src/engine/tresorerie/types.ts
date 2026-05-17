@@ -418,7 +418,12 @@ export interface TresoInputsV6 extends Omit<TresoInputsV5, 'version' | 'company'
   company: CompanyInputV6;
 }
 
-export type TresoInputsRuntime = TresoInputsV2 | TresoInputsV3 | TresoInputsV4 | TresoInputsV5 | TresoInputsV6;
+export type TresoInputsRuntime =
+  | TresoInputsV2
+  | TresoInputsV3
+  | TresoInputsV4
+  | TresoInputsV5
+  | TresoInputsV6;
 export type RuntimeAssociateInput = AssociateInput | AssociateInputV5 | AssociateInputV6;
 export type RuntimeCompanyInput = CompanyInput | CompanyInputV5 | CompanyInputV6;
 
@@ -453,7 +458,6 @@ export interface TresoInputs {
 
   // Holding
   holding?: HoldingParticipationInput;
-
 }
 
 // ─── Ligne de projection annuelle ────────────────────────────────────────────

@@ -8,10 +8,7 @@ import type {
   SuccessionEnfant,
   SuccessionPrimarySide,
 } from '../successionDraft';
-import {
-  createDonationPartageSoulteId,
-  fmt,
-} from '../successionSimulator.helpers';
+import { createDonationPartageSoulteId, fmt } from '../successionSimulator.helpers';
 import { validateDonationPartageAct } from '../successionDonationPartage';
 import { ScNumericInput } from './ScNumericInput';
 import { ScSelect } from './ScSelect';
@@ -54,25 +51,33 @@ export default function DonationPartageModal({
   onDelete,
 }: DonationPartageModalProps) {
   const enfantsVivants = useMemo(() => livingChildren(enfantsContext), [enfantsContext]);
-  const childOptions = useMemo(() => enfantsVivants.map((enfant, index) => ({
-    value: enfant.id,
-    label: childLabel(enfant, index),
-  })), [enfantsVivants]);
-  const errors = useMemo(() => validateDonationPartageAct(draft, enfantsContext), [draft, enfantsContext]);
+  const childOptions = useMemo(
+    () =>
+      enfantsVivants.map((enfant, index) => ({
+        value: enfant.id,
+        label: childLabel(enfant, index),
+      })),
+    [enfantsVivants],
+  );
+  const errors = useMemo(
+    () => validateDonationPartageAct(draft, enfantsContext),
+    [draft, enfantsContext],
+  );
   const totalLots = draft.lots
     .filter((lot) => lot.accepted)
     .reduce((sum, lot) => sum + Math.max(0, lot.valeur), 0);
   const totalSoultes = draft.soultes.reduce((sum, soulte) => sum + Math.max(0, soulte.montant), 0);
-  const canUseUsufruitSuccessif = (
-    draft.avecReserveUsufruit
-    && Boolean(draft.donateur)
-    && (situationMatrimoniale === 'marie' || situationMatrimoniale === 'pacse')
-  );
+  const canUseUsufruitSuccessif =
+    draft.avecReserveUsufruit &&
+    Boolean(draft.donateur) &&
+    (situationMatrimoniale === 'marie' || situationMatrimoniale === 'pacse');
   const beneficiaryOptions = draft.donateur
-    ? [{
-      value: otherSide(draft.donateur),
-      label: personLabel(otherSide(draft.donateur), situationMatrimoniale),
-    }]
+    ? [
+        {
+          value: otherSide(draft.donateur),
+          label: personLabel(otherSide(draft.donateur), situationMatrimoniale),
+        },
+      ]
     : [];
 
   const updateAct = <K extends keyof SuccessionDonationPartageAct>(
@@ -93,9 +98,8 @@ export default function DonationPartageModal({
       onChange({
         ...draft,
         usufruitSuccessif: enabled,
-        usufruitSuccessifBeneficiaire: enabled && draft.donateur
-          ? otherSide(draft.donateur)
-          : undefined,
+        usufruitSuccessifBeneficiaire:
+          enabled && draft.donateur ? otherSide(draft.donateur) : undefined,
       });
       return;
     }
@@ -112,20 +116,25 @@ export default function DonationPartageModal({
   const updateSoulte = (soulteId: string, patch: Partial<SuccessionDonationPartageSoulte>) => {
     onChange({
       ...draft,
-      soultes: draft.soultes.map((soulte) => (soulte.id === soulteId ? { ...soulte, ...patch } : soulte)),
+      soultes: draft.soultes.map((soulte) =>
+        soulte.id === soulteId ? { ...soulte, ...patch } : soulte,
+      ),
     });
   };
 
   const addSoulte = () => {
     if (childOptions.length < 2) return;
+    const payeur = childOptions[0];
+    const receveur = childOptions[1];
+    if (!payeur || !receveur) return;
     onChange({
       ...draft,
       soultes: [
         ...draft.soultes,
         {
           id: createDonationPartageSoulteId(),
-          payeurEnfantId: childOptions[0].value,
-          receveurEnfantId: childOptions[1].value,
+          payeurEnfantId: payeur.value,
+          receveurEnfantId: receveur.value,
           montant: 0,
         },
       ],
@@ -146,14 +155,22 @@ export default function DonationPartageModal({
       modalClassName="sc-member-modal--wide sc-donation-partage-modal"
       bodyClassName="sc-donation-partage-modal__body"
       onClose={onClose}
-      footer={(
+      footer={
         <>
           {onDelete && (
-            <button type="button" className="sc-member-modal__btn sc-member-modal__btn--secondary" onClick={onDelete}>
+            <button
+              type="button"
+              className="sc-member-modal__btn sc-member-modal__btn--secondary"
+              onClick={onDelete}
+            >
               Supprimer
             </button>
           )}
-          <button type="button" className="sc-member-modal__btn sc-member-modal__btn--secondary" onClick={onClose}>
+          <button
+            type="button"
+            className="sc-member-modal__btn sc-member-modal__btn--secondary"
+            onClick={onClose}
+          >
             Annuler
           </button>
           <button
@@ -165,7 +182,7 @@ export default function DonationPartageModal({
             Enregistrer l’acte
           </button>
         </>
-      )}
+      }
     >
       <div className="sc-donation-partage-grid">
         <div className="sc-field">
@@ -186,7 +203,9 @@ export default function DonationPartageModal({
               onChange({
                 ...draft,
                 donateur,
-                usufruitSuccessifBeneficiaire: draft.usufruitSuccessif ? otherSide(donateur) : undefined,
+                usufruitSuccessifBeneficiaire: draft.usufruitSuccessif
+                  ? otherSide(donateur)
+                  : undefined,
               });
             }}
             options={[
@@ -217,7 +236,9 @@ export default function DonationPartageModal({
             <ScSelect
               className="sc-donation-select"
               value={draft.usufruitSuccessifBeneficiaire ?? ''}
-              onChange={(value) => updateAct('usufruitSuccessifBeneficiaire', value as SuccessionPrimarySide)}
+              onChange={(value) =>
+                updateAct('usufruitSuccessifBeneficiaire', value as SuccessionPrimarySide)
+              }
               options={beneficiaryOptions}
             />
           )}
@@ -231,7 +252,9 @@ export default function DonationPartageModal({
         </div>
         <div className="sc-donation-partage-lots">
           {draft.lots.map((lot, index) => {
-            const label = childOptions.find((option) => option.value === lot.enfantId)?.label ?? `Enfant ${index + 1}`;
+            const label =
+              childOptions.find((option) => option.value === lot.enfantId)?.label ??
+              `Enfant ${index + 1}`;
             return (
               <div key={lot.id} className="sc-donation-partage-lot-row">
                 <label className="sc-checkbox-label">
@@ -244,11 +267,19 @@ export default function DonationPartageModal({
                 </label>
                 <div className="sc-field">
                   <label>Valeur acte (EUR)</label>
-                  <ScNumericInput value={lot.valeur} min={0} onChange={(value) => updateLot(lot.id, { valeur: value })} />
+                  <ScNumericInput
+                    value={lot.valeur}
+                    min={0}
+                    onChange={(value) => updateLot(lot.id, { valeur: value })}
+                  />
                 </div>
                 <div className="sc-field">
                   <label>Valeur actuelle (EUR)</label>
-                  <ScNumericInput value={lot.valeurActuelle ?? 0} min={0} onChange={(value) => updateLot(lot.id, { valeurActuelle: value })} />
+                  <ScNumericInput
+                    value={lot.valeurActuelle ?? 0}
+                    min={0}
+                    onChange={(value) => updateLot(lot.id, { valeurActuelle: value })}
+                  />
                 </div>
               </div>
             );
@@ -284,7 +315,11 @@ export default function DonationPartageModal({
               </div>
               <div className="sc-field">
                 <label>Montant (EUR)</label>
-                <ScNumericInput value={soulte.montant} min={0} onChange={(value) => updateSoulte(soulte.id, { montant: value })} />
+                <ScNumericInput
+                  value={soulte.montant}
+                  min={0}
+                  onChange={(value) => updateSoulte(soulte.id, { montant: value })}
+                />
               </div>
               <button
                 type="button"
@@ -297,7 +332,12 @@ export default function DonationPartageModal({
             </div>
           ))}
         </div>
-        <button type="button" className="sc-child-add-btn" onClick={addSoulte} disabled={childOptions.length < 2}>
+        <button
+          type="button"
+          className="sc-child-add-btn"
+          onClick={addSoulte}
+          disabled={childOptions.length < 2}
+        >
           + Ajouter une soulte
         </button>
       </section>

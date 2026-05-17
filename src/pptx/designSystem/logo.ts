@@ -36,7 +36,7 @@ export const DEFAULT_LOGO_PLACEMENT: LogoPlacement = 'center-bottom';
 export function calculateLogoPosition(
   placement: LogoPlacement,
   logoWidth: number,
-  logoHeight: number
+  logoHeight: number,
 ): { x: number; y: number } {
   switch (placement) {
     case 'center-top':

@@ -28,11 +28,19 @@ describe('buildSuccessionChainageAnalysis - DDV', () => {
     // carryOver = 300 000 → step2 = 200 000 + 300 000 = 500 000
     const analysis = buildSuccessionChainageAnalysis({
       civil: makeCivil({ situationMatrimoniale: 'marie', regimeMatrimonial: 'separation_biens' }),
-      liquidation: makeLiquidation({ actifEpoux1: 300_000, actifEpoux2: 200_000, actifCommun: 0, nbEnfants: 2 }),
+      liquidation: makeLiquidation({
+        actifEpoux1: 300_000,
+        actifEpoux2: 200_000,
+        actifCommun: 0,
+        nbEnfants: 2,
+      }),
       regimeUsed: 'separation_biens',
       order: 'epoux1',
       dmtgSettings: DMTG_SETTINGS,
-      enfantsContext: [{ id: 'E1', rattachement: 'commun' }, { id: 'E2', rattachement: 'commun' }],
+      enfantsContext: [
+        { id: 'E1', rattachement: 'commun' },
+        { id: 'E2', rattachement: 'commun' },
+      ],
       familyMembers: [],
       patrimonial: {
         donationEntreEpouxActive: true,
@@ -135,7 +143,12 @@ describe('buildSuccessionChainageAnalysis - DDV', () => {
 
     const withoutAbatement = buildSuccessionChainageAnalysis({
       civil: makeCivil({}),
-      liquidation: makeLiquidation({ actifEpoux1: 0, actifEpoux2: 0, actifCommun: 1_000_000, nbEnfants: 2 }),
+      liquidation: makeLiquidation({
+        actifEpoux1: 0,
+        actifEpoux2: 0,
+        actifCommun: 1_000_000,
+        nbEnfants: 2,
+      }),
       regimeUsed: 'communaute_legale',
       order: 'epoux1',
       dmtgSettings: DMTG_SETTINGS,
@@ -149,7 +162,12 @@ describe('buildSuccessionChainageAnalysis - DDV', () => {
     });
     const withAbatement = buildSuccessionChainageAnalysis({
       civil: makeCivil({}),
-      liquidation: makeLiquidation({ actifEpoux1: 0, actifEpoux2: 0, actifCommun: 1_000_000, nbEnfants: 2 }),
+      liquidation: makeLiquidation({
+        actifEpoux1: 0,
+        actifEpoux2: 0,
+        actifCommun: 1_000_000,
+        nbEnfants: 2,
+      }),
       regimeUsed: 'communaute_legale',
       order: 'epoux1',
       dmtgSettings: DMTG_SETTINGS,
@@ -162,10 +180,14 @@ describe('buildSuccessionChainageAnalysis - DDV', () => {
       abattementResidencePrincipale: true,
     });
 
-    expect(withAbatement.step1?.droitsEnfants).toBeLessThan(withoutAbatement.step1?.droitsEnfants ?? 0);
+    expect(withAbatement.step1?.droitsEnfants).toBeLessThan(
+      withoutAbatement.step1?.droitsEnfants ?? 0,
+    );
     expect(withAbatement.step2?.droitsEnfants).toBe(withoutAbatement.step2?.droitsEnfants);
     expect(
-      withAbatement.warnings.some((warning) => warning.includes('abattement residence principale 20 % applique')),
+      withAbatement.warnings.some((warning) =>
+        warning.includes('abattement residence principale 20 % applique'),
+      ),
     ).toBe(true);
   });
 
@@ -192,11 +214,19 @@ describe('buildSuccessionChainageAnalysis - DDV', () => {
     // survivorBase = (600k+200k) - 600k = 200k ; step2 = 200k + 200k = 400k
     const analysis = buildSuccessionChainageAnalysis({
       civil: makeCivil({ regimeMatrimonial: 'separation_biens' }),
-      liquidation: makeLiquidation({ actifEpoux1: 600_000, actifEpoux2: 200_000, actifCommun: 0, nbEnfants: 2 }),
+      liquidation: makeLiquidation({
+        actifEpoux1: 600_000,
+        actifEpoux2: 200_000,
+        actifCommun: 0,
+        nbEnfants: 2,
+      }),
       regimeUsed: 'separation_biens',
       order: 'epoux1',
       dmtgSettings: DMTG_SETTINGS,
-      enfantsContext: [{ id: 'E1', rattachement: 'commun' }, { id: 'E2', rattachement: 'commun' }],
+      enfantsContext: [
+        { id: 'E1', rattachement: 'commun' },
+        { id: 'E2', rattachement: 'commun' },
+      ],
       familyMembers: [],
       patrimonial: {
         donationEntreEpouxActive: true,
@@ -206,9 +236,9 @@ describe('buildSuccessionChainageAnalysis - DDV', () => {
       },
     });
 
-    expect(analysis.step1?.partConjoint).toBeCloseTo(200_000, 0);  // quotité 1/3 = 200k
-    expect(analysis.step1?.partEnfants).toBeCloseTo(400_000, 0);   // réserve 2/3 = 400k
-    expect(analysis.step2?.actifTransmis).toBe(400_000);           // survivorBase(200k) + carry PP(200k)
+    expect(analysis.step1?.partConjoint).toBeCloseTo(200_000, 0); // quotité 1/3 = 200k
+    expect(analysis.step1?.partEnfants).toBeCloseTo(400_000, 0); // réserve 2/3 = 400k
+    expect(analysis.step2?.actifTransmis).toBe(400_000); // survivorBase(200k) + carry PP(200k)
   });
 
   it('DDV mixte avec date de naissance (chainage e2e) : 1/4 PP + 3/4 usufruit CGI 669, carry = PP seule', () => {
@@ -218,13 +248,24 @@ describe('buildSuccessionChainageAnalysis - DDV', () => {
     // conjointPart = 75k + 90k = 165k ; carryOverToStep2 = 75k (PP seule, usufruit non transmis)
     // survivorBase = (300k+200k) - 300k = 200k ; step2 = 200k + 75k = 275k
     const analysis = buildSuccessionChainageAnalysis({
-      civil: makeCivil({ regimeMatrimonial: 'separation_biens', dateNaissanceEpoux2: '1965-01-01' }),
-      liquidation: makeLiquidation({ actifEpoux1: 300_000, actifEpoux2: 200_000, actifCommun: 0, nbEnfants: 2 }),
+      civil: makeCivil({
+        regimeMatrimonial: 'separation_biens',
+        dateNaissanceEpoux2: '1965-01-01',
+      }),
+      liquidation: makeLiquidation({
+        actifEpoux1: 300_000,
+        actifEpoux2: 200_000,
+        actifCommun: 0,
+        nbEnfants: 2,
+      }),
       regimeUsed: 'separation_biens',
       order: 'epoux1',
       dmtgSettings: DMTG_SETTINGS,
       referenceDate: new Date('2026-01-01T00:00:00Z'),
-      enfantsContext: [{ id: 'E1', rattachement: 'commun' }, { id: 'E2', rattachement: 'commun' }],
+      enfantsContext: [
+        { id: 'E1', rattachement: 'commun' },
+        { id: 'E2', rattachement: 'commun' },
+      ],
       familyMembers: [],
       patrimonial: {
         donationEntreEpouxActive: true,
@@ -250,12 +291,20 @@ describe('buildSuccessionChainageAnalysis - DDV', () => {
     // step2 = survivorBase + carryOver = 615k
     const analysis = buildSuccessionChainageAnalysis({
       civil: makeCivil({ regimeMatrimonial: 'communaute_legale' }),
-      liquidation: makeLiquidation({ actifEpoux1: 300_000, actifEpoux2: 200_000, actifCommun: 400_000, nbEnfants: 2 }),
+      liquidation: makeLiquidation({
+        actifEpoux1: 300_000,
+        actifEpoux2: 200_000,
+        actifCommun: 400_000,
+        nbEnfants: 2,
+      }),
       regimeUsed: 'communaute_legale',
       order: 'epoux1',
       dmtgSettings: DMTG_SETTINGS,
       attributionBiensCommunsPct: 80,
-      enfantsContext: [{ id: 'E1', rattachement: 'commun' }, { id: 'E2', rattachement: 'commun' }],
+      enfantsContext: [
+        { id: 'E1', rattachement: 'commun' },
+        { id: 'E2', rattachement: 'commun' },
+      ],
       familyMembers: [],
     });
 

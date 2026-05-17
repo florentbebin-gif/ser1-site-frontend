@@ -7,10 +7,7 @@ import { UserInfoBanner } from '@/components/UserInfoBanner';
 import { createFieldUpdater } from '@/components/settings/settingsHelpers';
 
 import { DEFAULT_PS_SETTINGS, DEFAULT_TAX_SETTINGS } from '@/constants/settingsDefaults';
-import {
-  validateImpotsSettings,
-  isValid,
-} from './validators/dmtgValidators';
+import { validateImpotsSettings, isValid } from './validators/dmtgValidators';
 
 import ImpotsBaremeSection from './Impots/ImpotsBaremeSection';
 import ImpotsAbattementDomSection from './Impots/ImpotsAbattementDomSection';
@@ -43,10 +40,7 @@ interface PsSettingsRow {
   data: Partial<PsSettings> | null;
 }
 
-function mergeTaxSettings(
-  base: TaxSettings,
-  nextData: Partial<TaxSettings>,
-): TaxSettings {
+function mergeTaxSettings(base: TaxSettings, nextData: Partial<TaxSettings>): TaxSettings {
   return {
     ...base,
     ...nextData,
@@ -191,7 +185,7 @@ export default function SettingsImpots() {
 
       if (existingError && existingError.code !== 'PGRST116') {
         console.error(existingError);
-        setMessage("Erreur lors du chargement des paramètres existants.");
+        setMessage('Erreur lors du chargement des paramètres existants.');
         return;
       }
 
@@ -208,9 +202,7 @@ export default function SettingsImpots() {
         corporateTax: settings.corporateTax,
       };
 
-      const { error } = await supabase
-        .from('tax_settings')
-        .upsert({ id: 1, data: payload });
+      const { error } = await supabase.from('tax_settings').upsert({ id: 1, data: payload });
 
       if (error) {
         console.error(error);
@@ -230,9 +222,7 @@ export default function SettingsImpots() {
   };
 
   const setData = setSettings;
-  const setDataRecord = (
-    updater: (prev: Record<string, unknown>) => Record<string, unknown>,
-  ) => {
+  const setDataRecord = (updater: (prev: Record<string, unknown>) => Record<string, unknown>) => {
     setData((prev) => updater(prev as Record<string, unknown>) as TaxSettings);
   };
 
@@ -247,7 +237,7 @@ export default function SettingsImpots() {
       incomeTax: {
         ...prev.incomeTax,
         [which]: prev.incomeTax[which].map((row, i) =>
-          i === index ? { ...row, [key]: value as IncomeScaleRow[keyof IncomeScaleRow] } : row
+          i === index ? { ...row, [key]: value as IncomeScaleRow[keyof IncomeScaleRow] } : row,
         ),
       },
     }));
@@ -316,10 +306,15 @@ export default function SettingsImpots() {
 
       {hasErrors && (
         <div className="settings-feedback-message settings-feedback-message--error">
-          <strong>Erreurs de validation ({Object.keys(impotsErrors).length}) - corrigez avant de sauvegarder :</strong>
+          <strong>
+            Erreurs de validation ({Object.keys(impotsErrors).length}) - corrigez avant de
+            sauvegarder :
+          </strong>
           <ul style={{ margin: '4px 0 0', paddingLeft: 20, fontSize: 13 }}>
             {Object.entries(impotsErrors).map(([key, msg]) => (
-              <li key={key}>{key} : {msg}</li>
+              <li key={key}>
+                {key} : {msg}
+              </li>
             ))}
           </ul>
         </div>
@@ -342,7 +337,9 @@ export default function SettingsImpots() {
       )}
 
       {message && (
-        <div className={`settings-feedback-message ${message.includes('Erreur') ? 'settings-feedback-message--error' : 'settings-feedback-message--success'}`}>
+        <div
+          className={`settings-feedback-message ${message.includes('Erreur') ? 'settings-feedback-message--error' : 'settings-feedback-message--success'}`}
+        >
           {message}
         </div>
       )}

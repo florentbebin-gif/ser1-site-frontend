@@ -58,5 +58,10 @@ export function useThemeEvents({
     return () => {
       window.removeEventListener('ser1-theme-updated', handleThemeUpdated);
     };
-  }, [applyColorsToCSSWithGuardRef, lastAppliedSourceRankRef, lastAppliedUserIdRef, setColorsState]);
+  }, [
+    applyColorsToCSSWithGuardRef,
+    lastAppliedSourceRankRef,
+    lastAppliedUserIdRef,
+    setColorsState,
+  ]);
 }

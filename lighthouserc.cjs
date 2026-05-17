@@ -12,7 +12,7 @@ module.exports = {
         'http://127.0.0.1:4173/sim/placement',
         'http://127.0.0.1:4173/sim/per',
       ],
-      numberOfRuns: 1,
+      numberOfRuns: 3,
       settings: {
         chromeFlags: '--no-sandbox --headless=new',
         preset: 'desktop',
@@ -20,10 +20,10 @@ module.exports = {
     },
     assert: {
       assertions: {
-        'categories:performance': ['warn', { minScore: 0.55 }],
-        'categories:accessibility': ['warn', { minScore: 0.85 }],
-        'categories:best-practices': ['warn', { minScore: 0.85 }],
-        'categories:seo': ['warn', { minScore: 0.75 }],
+        'categories:performance': ['warn', { minScore: 0.8 }],
+        'categories:accessibility': ['warn', { minScore: 0.9 }],
+        'categories:best-practices': ['warn', { minScore: 0.9 }],
+        'categories:seo': ['warn', { minScore: 0.8 }],
       },
     },
     upload: {

@@ -4,13 +4,7 @@
 
 import type PptxGenJS from 'pptxgenjs';
 import type { PptxThemeRoles } from '../theme/types';
-import {
-  SLIDE_SIZE,
-  CORNER_MARKS,
-  LAYOUT_ZONES,
-  DEBUG_LAYOUT_ZONES,
-  RADIUS,
-} from './layout';
+import { SLIDE_SIZE, CORNER_MARKS, LAYOUT_ZONES, DEBUG_LAYOUT_ZONES, RADIUS } from './layout';
 import { TYPO } from './typography';
 import { COORDS_COVER, COORDS_CHAPTER, COORDS_CONTENT, COORDS_FOOTER } from './coords';
 import { SHADOW_PARAMS, roleColor } from './colorsShadows';
@@ -26,9 +20,9 @@ import { addTextFr, addTextBox } from './helpers';
 export function normalizeTitleText(text: string): string {
   return text
     .trim()
-    .replace(/\n+/g, ' ')      // Replace ALL newlines with space
-    .replace(/\s+/g, ' ')      // Collapse multiple spaces into one
-    .trim();                    // Final trim
+    .replace(/\n+/g, ' ') // Replace ALL newlines with space
+    .replace(/\s+/g, ' ') // Collapse multiple spaces into one
+    .trim(); // Final trim
 }
 
 /**
@@ -39,7 +33,7 @@ export function normalizeTitleText(text: string): string {
 export function calculateTitleTextHeight(
   _titleText: string,
   fontSize: number,
-  lineHeightMultiple: number = 1.15
+  lineHeightMultiple: number = 1.15,
 ): number {
   // Title is always 1 line after normalization
   const lines = 1;
@@ -58,14 +52,14 @@ export function drawDebugLayoutZones(
   slide: PptxGenJS.Slide,
   variant: 'chapter' | 'content',
   titleTextBottomY?: number,
-  accentLineY?: number
+  accentLineY?: number,
 ): void {
   if (!DEBUG_LAYOUT_ZONES) return;
 
   const layoutZones = variant === 'chapter' ? LAYOUT_ZONES.chapter : LAYOUT_ZONES.content;
-  const debugColorRed = 'FF0000';    // Red for boxes
+  const debugColorRed = 'FF0000'; // Red for boxes
   const debugColorGreen = '00FF00'; // Green for titleTextBottomY
-  const debugColorBlue = '0000FF';  // Blue for accentLineY
+  const debugColorBlue = '0000FF'; // Blue for accentLineY
 
   // Draw title box border (RED)
   slide.addShape('rect', {
@@ -132,7 +126,7 @@ export function addHeader(
   theme: PptxThemeRoles,
   variant: 'chapter' | 'content',
   titleFontSize: number = TYPO.sizes.h1,
-  subtitleFontSize: number = TYPO.sizes.h2
+  subtitleFontSize: number = TYPO.sizes.h2,
 ): void {
   const layoutZones = variant === 'chapter' ? LAYOUT_ZONES.chapter : LAYOUT_ZONES.content;
   const baseCoords = variant === 'chapter' ? COORDS_CHAPTER : COORDS_CONTENT;
@@ -223,7 +217,7 @@ export function addHeader(
 export function addCornerMarks(
   slide: PptxGenJS.Slide,
   theme: PptxThemeRoles,
-  placementVariant: 'coverBottom' | 'endDiagonal'
+  placementVariant: 'coverBottom' | 'endDiagonal',
 ): void {
   const accentColor = roleColor(theme, 'accent');
   const lineWidth = 0.75;
@@ -336,7 +330,7 @@ export function addFooter(
     theme: PptxThemeRoles;
   },
   slideIndex: number,
-  variant: 'onLight' | 'accent' | 'onMain'
+  variant: 'onLight' | 'accent' | 'onMain',
 ): void {
   let textColor: string;
   if (variant === 'onLight') {
@@ -349,9 +343,10 @@ export function addFooter(
   }
 
   // Use explicit check to allow empty string to suppress disclaimer
-  const disclaimer = ctx.footerDisclaimer !== undefined
-    ? ctx.footerDisclaimer
-    : "Document non contractuel établi en fonction des dispositions fiscales ou sociales en vigueur à la date des présentes";
+  const disclaimer =
+    ctx.footerDisclaimer !== undefined
+      ? ctx.footerDisclaimer
+      : 'Document non contractuel établi en fonction des dispositions fiscales ou sociales en vigueur à la date des présentes';
 
   // Date
   addTextFr(slide, formatDateFr(ctx.generatedAt), {
@@ -414,7 +409,7 @@ export function addCardPanelWithShadow(
   slide: PptxGenJS.Slide,
   rect: { x: number; y: number; w: number; h: number },
   theme: PptxThemeRoles,
-  panelRadius: number = RADIUS.panel
+  panelRadius: number = RADIUS.panel,
 ): void {
   const shadowColor = roleColor(theme, 'shadowBase');
   const borderColor = roleColor(theme, 'panelBorder');
@@ -439,4 +434,3 @@ export function addCardPanelWithShadow(
     },
   });
 }
-

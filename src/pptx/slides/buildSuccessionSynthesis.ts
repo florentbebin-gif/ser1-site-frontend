@@ -30,7 +30,11 @@ const GEO = {
   heroH: 1.28,
 } as const;
 
-function drawKpis(slide: PptxGenJS.Slide, spec: SuccessionSynthesisSlideSpec, ctx: ExportContext): void {
+function drawKpis(
+  slide: PptxGenJS.Slide,
+  spec: SuccessionSynthesisSlideSpec,
+  ctx: ExportContext,
+): void {
   const { theme } = ctx;
   const totalW = GEO.kpiColW * 4 + GEO.kpiGap * 3;
   const startX = (SLIDE_SIZE.width - totalW) / 2;
@@ -70,7 +74,11 @@ function drawKpis(slide: PptxGenJS.Slide, spec: SuccessionSynthesisSlideSpec, ct
   });
 }
 
-function drawHero(slide: PptxGenJS.Slide, spec: SuccessionSynthesisSlideSpec, ctx: ExportContext): void {
+function drawHero(
+  slide: PptxGenJS.Slide,
+  spec: SuccessionSynthesisSlideSpec,
+  ctx: ExportContext,
+): void {
   const { theme } = ctx;
   addCardPanelWithShadow(slide, { x: GEO.heroX, y: GEO.heroY, w: GEO.heroW, h: GEO.heroH }, theme);
   addTextFr(slide, spec.heroLabel, {

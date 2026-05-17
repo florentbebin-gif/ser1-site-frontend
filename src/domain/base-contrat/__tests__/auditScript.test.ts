@@ -40,17 +40,23 @@ describe('script audit Base-Contrat / DMTG Succession', () => {
     expect(Array.isArray(metrics.consumers)).toBe(true);
     expect(metrics.consumers?.some((consumer) => consumer.zone === 'engine')).toBe(false);
     expect(metrics.valueClassification?.length).toBeGreaterThan(0);
-    expect(metrics.valueClassification?.every((item) =>
-      typeof item.file === 'string'
-      && typeof item.class === 'string'
-      && typeof item.detail === 'string',
-    )).toBe(true);
+    expect(
+      metrics.valueClassification?.every(
+        (item) =>
+          typeof item.file === 'string' &&
+          typeof item.class === 'string' &&
+          typeof item.detail === 'string',
+      ),
+    ).toBe(true);
     expect(metrics.policyEvidence?.length).toBeGreaterThan(0);
-    expect(metrics.policyEvidence?.every((item) =>
-      typeof item.file === 'string'
-      && typeof item.line === 'number'
-      && typeof item.text === 'string',
-    )).toBe(true);
+    expect(
+      metrics.policyEvidence?.every(
+        (item) =>
+          typeof item.file === 'string' &&
+          typeof item.line === 'number' &&
+          typeof item.text === 'string',
+      ),
+    ).toBe(true);
     expect(existsSync(join(process.cwd(), '.tmp', 'audit-base-contrat-runtime'))).toBe(false);
   });
 
@@ -75,8 +81,12 @@ describe('script audit Base-Contrat / DMTG Succession', () => {
 
     expect(markdown).toContain('# Veille Base-Contrat');
     expect(markdown).toContain('base_contrat_overrides.review_status');
-    expect(markdown).toContain('| Famille | Produit | Audience | Phase | Bloc | Sources | Statut revue | Prochaine revue |');
-    expect(markdown).toContain('https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000038612905');
+    expect(markdown).toContain(
+      '| Famille | Produit | Audience | Phase | Bloc | Sources | Statut revue | Prochaine revue |',
+    );
+    expect(markdown).toContain(
+      'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000038612905',
+    );
     expect(existsSync(join(process.cwd(), '.tmp', 'audit-base-contrat-runtime'))).toBe(false);
 
     rmSync(absoluteOutPath, { force: true });

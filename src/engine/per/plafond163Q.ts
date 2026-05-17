@@ -40,9 +40,7 @@ export function computeProfessionalDeduction(
   const plancherAbat10 = toNumber(abat10SalCfg.plancher, 0);
   const salBrut = (d.salaires || 0) + (d.art62 || 0);
 
-  return salBrut > 0
-    ? Math.min(Math.max(salBrut * 0.1, plancherAbat10), plafondAbat10)
-    : 0;
+  return salBrut > 0 ? Math.min(Math.max(salBrut * 0.1, plancherAbat10), plafondAbat10) : 0;
 }
 
 /**
@@ -58,20 +56,14 @@ export function computeRevenuImposable(
 
   const plafondAbatRetraites = toNumber(abat10RetCfg.plafond, 0);
   const plancherAbatRetraites = toNumber(abat10RetCfg.plancher, 0);
-  const abatRetraites = (d.retraites || 0) > 0
-    ? Math.min(
-      Math.max((d.retraites || 0) * 0.1, plancherAbatRetraites),
-      plafondAbatRetraites,
-    )
-    : 0;
+  const abatRetraites =
+    (d.retraites || 0) > 0
+      ? Math.min(Math.max((d.retraites || 0) * 0.1, plancherAbatRetraites), plafondAbatRetraites)
+      : 0;
   const pensionsNet = Math.max(0, (d.retraites || 0) - abatRetraites);
 
   return Math.round(
-    salNet +
-    (d.bic || 0) +
-    pensionsNet +
-    (d.fonciersNets || 0) +
-    (d.autresRevenus || 0),
+    salNet + (d.bic || 0) + pensionsNet + (d.fonciersNets || 0) + (d.autresRevenus || 0),
   );
 }
 
@@ -85,12 +77,7 @@ export function computeRevenuActiviteProfessionnelle(
 ): number {
   const salDeduction = computeProfessionalDeduction(d, abat10SalCfg);
 
-  return Math.round(
-    (d.salaires || 0) +
-    (d.art62 || 0) -
-    salDeduction +
-    (d.bic || 0),
-  );
+  return Math.round((d.salaires || 0) + (d.art62 || 0) - salDeduction + (d.bic || 0));
 }
 
 /**
@@ -149,13 +136,13 @@ export function computePlafond163Q(
 ): PlafondDetail {
   const { cotisationSource } = params;
   const cotisationsVersees =
-    (cotisationSource.cotisationsPer163Q || 0) +
-    (cotisationSource.cotisationsPerp || 0);
+    (cotisationSource.cotisationsPer163Q || 0) + (cotisationSource.cotisationsPerp || 0);
 
   if ((cotisationSource.cotisationsPrevo || 0) > 0) {
     warnings.push({
       code: 'PER_PREVOYANCE_WARNING',
-      message: 'Les cotisations prévoyance Madelin entrent dans le calcul du potentiel 154 bis. Vérifiez leur impact sur l’assiette TNS.',
+      message:
+        'Les cotisations prévoyance Madelin entrent dans le calcul du potentiel 154 bis. Vérifiez leur impact sur l’assiette TNS.',
       severity: 'info',
     });
   }
@@ -166,9 +153,7 @@ export function computePlafond163Q(
 /**
  * Calcule le plafond 163Q projeté pour le prochain avis IR.
  */
-export function computeProjectedPlafond163Q(
-  params: Plafond163QParams,
-): number {
+export function computeProjectedPlafond163Q(params: Plafond163QParams): number {
   if (!params.revenuSource) {
     return 0;
   }

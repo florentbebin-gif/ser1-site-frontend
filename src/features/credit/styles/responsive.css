@@ -2,18 +2,17 @@
    SKELETON LOADING
    ---------------------------------------- */
 @keyframes cv-shimmer {
-  0% { background-position: -400px 0; }
-  100% { background-position: 400px 0; }
+  0% {
+    background-position: -400px 0;
+  }
+  100% {
+    background-position: 400px 0;
+  }
 }
 
 .cv-skeleton {
   border-radius: 6px;
-  background: linear-gradient(
-    90deg,
-    var(--color-c7) 25%,
-    var(--color-c8) 50%,
-    var(--color-c7) 75%
-  );
+  background: linear-gradient(90deg, var(--color-c7) 25%, var(--color-c8) 50%, var(--color-c7) 75%);
   background-size: 800px 100%;
   animation: cv-shimmer 1.4s infinite linear;
 }

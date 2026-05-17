@@ -135,10 +135,13 @@ export interface CreditCalcResult {
   mensuBasePret1: number;
 }
 
-export type CreditThemeColors = {
-  c1?: string;
-  c7?: string;
-} | null | undefined;
+export type CreditThemeColors =
+  | {
+      c1?: string;
+      c7?: string;
+    }
+  | null
+  | undefined;
 
 export interface CreditExportHookParams {
   state: CreditState;

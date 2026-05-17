@@ -61,12 +61,8 @@ export default function ImpotsPfuSection({
         aria-controls="impots-panel-pfu"
         onClick={() => setOpenSection(isOpen ? null : 'pfu')}
       >
-        <span className="settings-premium-title settings-premium-title--flush">
-          PFU
-        </span>
-        <span className="fisc-acc-chevron">
-          {isOpen ? 'v' : '>'}
-        </span>
+        <span className="settings-premium-title settings-premium-title--flush">PFU</span>
+        <span className="fisc-acc-chevron">{isOpen ? 'v' : '>'}</span>
       </button>
 
       {isOpen && (
@@ -117,10 +113,7 @@ export default function ImpotsPfuSection({
               </div>
             </SettingsYearColumn>
 
-            <SettingsYearColumn
-              yearLabel={incomeTax.previousYearLabel || 'Année N-1'}
-              isRight
-            >
+            <SettingsYearColumn yearLabel={incomeTax.previousYearLabel || 'Année N-1'} isRight>
               <div className="income-tax-block">
                 <div className="income-tax-block-title">Taux PFU</div>
                 <div className="income-tax-block-body">

@@ -27,25 +27,17 @@ import { getAssociateProfile, getSelectedAssociate } from './utils/tresorerieSoc
 import { getTresoReadiness } from './utils/tresorerieReadiness';
 
 export default function TresorerieSocietePage() {
-  const [openAssociateModal, setOpenAssociateModal] = useState<((associateId: string) => void) | null>(null);
-  const {
-    state,
-    hydrated,
-    setInputsV6,
-    setProjectionVisible,
-    setProjectionMode,
-  } = useTresorerieState();
+  const [openAssociateModal, setOpenAssociateModal] = useState<
+    ((associateId: string) => void) | null
+  >(null);
+  const { state, hydrated, setInputsV6, setProjectionVisible, setProjectionMode } =
+    useTresorerieState();
 
   const { colors: themeColors, pptxColors, cabinetLogo, logoPlacement } = useTheme();
   const activeProfile = getAssociateProfile(state.inputsV6, getSelectedAssociate(state.inputsV6));
   const readiness = getTresoReadiness(state.inputsV6);
   const { rows, kpis, loading, error, simulationError } = useTresorerieCalculations(state.inputsV6);
-  const {
-    exportExcel,
-    exportPptx,
-    exportLoading,
-    exportDisabled,
-  } = useTresorerieExportHandlers({
+  const { exportExcel, exportPptx, exportLoading, exportDisabled } = useTresorerieExportHandlers({
     rows,
     kpis,
     inputs: state.inputsV6,
@@ -60,9 +52,12 @@ export default function TresorerieSocietePage() {
     { label: 'Excel', onClick: exportExcel, disabled: exportDisabled },
   ];
 
-  const handleAssociateModalOpenerChange = useCallback((open: ((associateId: string) => void) | null) => {
-    setOpenAssociateModal(open ? () => open : null);
-  }, []);
+  const handleAssociateModalOpenerChange = useCallback(
+    (open: ((associateId: string) => void) | null) => {
+      setOpenAssociateModal(open ? () => open : null);
+    },
+    [],
+  );
 
   // Garde anti-flash : ne pas rendre avant l'hydration sessionStorage
   if (!hydrated) return null;
@@ -74,7 +69,13 @@ export default function TresorerieSocietePage() {
       pageTestId="tresorerie-societe-page"
       loading={loading}
       error={error}
-      notice={simulationError ? <p className="ts-warning" role="alert">{simulationError}</p> : undefined}
+      notice={
+        simulationError ? (
+          <p className="ts-warning" role="alert">
+            {simulationError}
+          </p>
+        ) : undefined
+      }
       actions={<ExportMenu options={exportOptions} loading={exportLoading} />}
     >
       <SimPageShell.Main>

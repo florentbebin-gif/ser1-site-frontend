@@ -24,34 +24,38 @@ const INPUTS: TresoInputsV5 = {
       workingCapitalRequirement: 0,
     },
     reducedCorporateTaxEligible: true,
-    associates: [{
-      id: 'associe-1',
-      label: 'Associé 1',
-      kind: 'pp',
-      profile: {
-        currentAge: 50,
-        retirementAge: 65,
-        annualIncomeNeed: 0,
-        projectionStartYear: 2026,
+    associates: [
+      {
+        id: 'associe-1',
+        label: 'Associé 1',
+        kind: 'pp',
+        profile: {
+          currentAge: 50,
+          retirementAge: 65,
+          annualIncomeNeed: 0,
+          projectionStartYear: 2026,
+        },
+        ownershipLots: [{ right: 'pleine_propriete', capitalPct: 100, economicRightsPct: 100 }],
+        roles: ['associe_sans_statut'],
+        cca: {
+          currentBalance: 0,
+          exceptionalContributions: [],
+          annualContribution: { amount: 0, startYear: 2026 },
+          remunerationRate: 0,
+        },
+        revenuePhases: [
+          {
+            id: 'phase-besoin',
+            startYear: 2026,
+            source: 'none',
+            loadedAnnualCost: 0,
+            socialChargeRate: 0,
+            annualNetIncomeNeed: 50_000,
+            useCcaForCompletion: true,
+          },
+        ],
       },
-      ownershipLots: [{ right: 'pleine_propriete', capitalPct: 100, economicRightsPct: 100 }],
-      roles: ['associe_sans_statut'],
-      cca: {
-        currentBalance: 0,
-        exceptionalContributions: [],
-        annualContribution: { amount: 0, startYear: 2026 },
-        remunerationRate: 0,
-      },
-      revenuePhases: [{
-        id: 'phase-besoin',
-        startYear: 2026,
-        source: 'none',
-        loadedAnnualCost: 0,
-        socialChargeRate: 0,
-        annualNetIncomeNeed: 50_000,
-        useCcaForCompletion: true,
-      }],
-    }],
+    ],
     loans: [],
     subsidiaries: [],
   },
@@ -119,17 +123,19 @@ function revenueRow(year: number, netRevenue: number): TresoProjectionRow {
     year,
     revenusNets: netRevenue,
     deltaBesoin: netRevenue - 1_000_000,
-    revenusParAssocie: [{
-      associateId: 'associe-1',
-      label: 'Associé 1',
-      source: 'dividendes',
-      remuneration: 0,
-      ccaRepaid: 0,
-      grossDividends: netRevenue,
-      dividendTax: 0,
-      tnsSocialCharges: 0,
-      netRevenue,
-    }],
+    revenusParAssocie: [
+      {
+        associateId: 'associe-1',
+        label: 'Associé 1',
+        source: 'dividendes',
+        remuneration: 0,
+        ccaRepaid: 0,
+        grossDividends: netRevenue,
+        dividendTax: 0,
+        tnsSocialCharges: 0,
+        netRevenue,
+      },
+    ],
   } as TresoProjectionRow;
 }
 
@@ -152,11 +158,11 @@ describe('TresoAssociateInsights', () => {
     const positiveRow = {
       ...ROW,
       revenusNets: 55_000,
-      revenusParAssocie: ROW.revenusParAssocie.map(item => (
+      revenusParAssocie: ROW.revenusParAssocie.map((item) =>
         item.source === 'remuneration'
           ? { ...item, remuneration: 30_000, netRevenue: 30_000 }
-          : item
-      )),
+          : item,
+      ),
     } as TresoProjectionRow;
     const html = renderToStaticMarkup(
       <TresoAssociateInsights inputs={INPUTS} rows={[positiveRow]} />,
@@ -203,11 +209,7 @@ describe('TresoAssociateInsights', () => {
     const html = renderToStaticMarkup(
       <TresoAssociateInsights
         inputs={inputs}
-        rows={[
-          revenueRow(1, 1_000_000),
-          revenueRow(2, 1_000_000),
-          revenueRow(3, 0),
-        ]}
+        rows={[revenueRow(1, 1_000_000), revenueRow(2, 1_000_000), revenueRow(3, 0)]}
       />,
     );
 

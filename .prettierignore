@@ -1,0 +1,9 @@
+coverage/
+dist/
+node_modules/
+playwright-report/
+storybook-static/
+.git-blame-ignore-revs
+supabase/functions/
+supabase/.branches/
+supabase/.temp/

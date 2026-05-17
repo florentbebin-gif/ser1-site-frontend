@@ -1,6 +1,8 @@
 import type { AllocationMatrixInput, AllocationPocketInput } from './types';
 
-export function normalizeAllocationPockets(pockets: AllocationPocketInput[]): AllocationPocketInput[] {
+export function normalizeAllocationPockets(
+  pockets: AllocationPocketInput[],
+): AllocationPocketInput[] {
   return [...pockets].slice(0, 5);
 }
 

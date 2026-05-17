@@ -16,7 +16,9 @@ import type {
 } from '../successionDraft';
 import { makeCivil as makeCivilBase } from './fixtures';
 
-function makeCivilWithDates(overrides: Partial<SuccessionCivilContext> = {}): SuccessionCivilContext {
+function makeCivilWithDates(
+  overrides: Partial<SuccessionCivilContext> = {},
+): SuccessionCivilContext {
   return makeCivilBase({
     dateNaissanceEpoux1: '1970-01-01',
     dateNaissanceEpoux2: '1972-01-01',
@@ -93,8 +95,8 @@ describe('coordinateSuccessionInsuranceAllowances', () => {
 
     expect(coordinated.prevoyanceFiscalAnalysis.totalDroits).toBeGreaterThan(0);
     expect(
-      coordinated.avFiscalAnalysis.byAssure.epoux1.lines[0].taxable990I
-      + coordinated.prevoyanceFiscalAnalysis.byAssure.epoux1.lines[0].taxable990I,
+      coordinated.avFiscalAnalysis.byAssure.epoux1.lines[0].taxable990I +
+        coordinated.prevoyanceFiscalAnalysis.byAssure.epoux1.lines[0].taxable990I,
     ).toBeCloseTo(857500, 6);
   });
 
@@ -105,11 +107,13 @@ describe('coordinateSuccessionInsuranceAllowances', () => {
       { id: 'fam-1', type: 'tierce_personne', branch: 'epoux1' },
     ];
     const avFiscalAnalysis = buildSuccessionAvFiscalAnalysis(
-      [makeAssuranceVieEntry({
-        capitauxDeces: 20_000,
-        versementsApres70: 20_000,
-        clauseBeneficiaire: 'CUSTOM:fam-1:100',
-      })],
+      [
+        makeAssuranceVieEntry({
+          capitauxDeces: 20_000,
+          versementsApres70: 20_000,
+          clauseBeneficiaire: 'CUSTOM:fam-1:100',
+        }),
+      ],
       civil,
       [],
       familyMembers,
@@ -124,11 +128,13 @@ describe('coordinateSuccessionInsuranceAllowances', () => {
       new Date('2026-03-19T00:00:00Z'),
     );
     const prevoyanceFiscalAnalysis = buildSuccessionPrevoyanceFiscalAnalysis(
-      [makePrevoyanceEntry({
-        capitalDeces: 300_000,
-        dernierePrime: 20_000,
-        clauseBeneficiaire: 'CUSTOM:fam-1:100',
-      })],
+      [
+        makePrevoyanceEntry({
+          capitalDeces: 300_000,
+          dernierePrime: 20_000,
+          clauseBeneficiaire: 'CUSTOM:fam-1:100',
+        }),
+      ],
       civil,
       [],
       familyMembers,
@@ -147,10 +153,12 @@ describe('coordinateSuccessionInsuranceAllowances', () => {
     });
 
     expect(coordinated.avFiscalAnalysis.byAssure.epoux1.lines[0].taxable757B).toBeGreaterThan(0);
-    expect(coordinated.prevoyanceFiscalAnalysis.byAssure.epoux1.lines[0].taxable757B).toBeGreaterThan(0);
     expect(
-      coordinated.avFiscalAnalysis.byAssure.epoux1.lines[0].taxable757B
-      + coordinated.prevoyanceFiscalAnalysis.byAssure.epoux1.lines[0].taxable757B,
+      coordinated.prevoyanceFiscalAnalysis.byAssure.epoux1.lines[0].taxable757B,
+    ).toBeGreaterThan(0);
+    expect(
+      coordinated.avFiscalAnalysis.byAssure.epoux1.lines[0].taxable757B +
+        coordinated.prevoyanceFiscalAnalysis.byAssure.epoux1.lines[0].taxable757B,
     ).toBeCloseTo(9500, 6);
   });
 
@@ -164,13 +172,15 @@ describe('coordinateSuccessionInsuranceAllowances', () => {
 
     // PER after 70: 200k total, 100k per child
     const perFiscalAnalysis = buildSuccessionPerFiscalAnalysis(
-      [{
-        id: 'per-1',
-        typeContrat: 'standard',
-        assure: 'epoux1',
-        clauseBeneficiaire: 'CUSTOM:E1:50;E2:50',
-        capitauxDeces: 200_000,
-      }],
+      [
+        {
+          id: 'per-1',
+          typeContrat: 'standard',
+          assure: 'epoux1',
+          clauseBeneficiaire: 'CUSTOM:E1:50;E2:50',
+          capitauxDeces: 200_000,
+        },
+      ],
       civil,
       enfants,
       [],
@@ -180,7 +190,12 @@ describe('coordinateSuccessionInsuranceAllowances', () => {
 
     const avFiscalAnalysis = buildSuccessionAvFiscalAnalysis([], civil, enfants, [], snapshot);
     const prevoyanceFiscalAnalysis = buildSuccessionPrevoyanceFiscalAnalysis(
-      [], civil, enfants, [], snapshot, new Date('2026-03-19T00:00:00Z'),
+      [],
+      civil,
+      enfants,
+      [],
+      snapshot,
+      new Date('2026-03-19T00:00:00Z'),
     );
 
     // Succession consumed the full 100k abattement per child (e.g. 250k brut each)
@@ -214,13 +229,15 @@ describe('coordinateSuccessionInsuranceAllowances', () => {
     const enfants = [{ id: 'E1', rattachement: 'epoux1' as const }];
 
     const perFiscalAnalysis = buildSuccessionPerFiscalAnalysis(
-      [{
-        id: 'per-1',
-        typeContrat: 'standard',
-        assure: 'epoux1',
-        clauseBeneficiaire: 'CUSTOM:E1:100',
-        capitauxDeces: 200_000,
-      }],
+      [
+        {
+          id: 'per-1',
+          typeContrat: 'standard',
+          assure: 'epoux1',
+          clauseBeneficiaire: 'CUSTOM:E1:100',
+          capitauxDeces: 200_000,
+        },
+      ],
       civil,
       enfants,
       [],
@@ -230,7 +247,12 @@ describe('coordinateSuccessionInsuranceAllowances', () => {
 
     const avFiscalAnalysis = buildSuccessionAvFiscalAnalysis([], civil, enfants, [], snapshot);
     const prevoyanceFiscalAnalysis = buildSuccessionPrevoyanceFiscalAnalysis(
-      [], civil, enfants, [], snapshot, new Date('2026-03-19T00:00:00Z'),
+      [],
+      civil,
+      enfants,
+      [],
+      snapshot,
+      new Date('2026-03-19T00:00:00Z'),
     );
 
     // Succession consumed 60k of the 100k abattement → residual = 40k
@@ -268,16 +290,18 @@ describe('coordinateSuccessionInsuranceAllowances', () => {
 
     // Demembered AV: conjoint gets usufruit (40%), child gets NP (60%)
     const avFiscalAnalysis = buildSuccessionAvFiscalAnalysis(
-      [{
-        id: 'av-1',
-        typeContrat: 'demembree',
-        souscripteur: 'epoux1',
-        assure: 'epoux1',
-        clauseBeneficiaire: 'Conjoint survivant, à défaut enfants, à défaut héritiers',
-        capitauxDeces: 1_000_000,
-        versementsApres70: 0,
-        ageUsufruitier: 70,
-      }],
+      [
+        {
+          id: 'av-1',
+          typeContrat: 'demembree',
+          souscripteur: 'epoux1',
+          assure: 'epoux1',
+          clauseBeneficiaire: 'Conjoint survivant, à défaut enfants, à défaut héritiers',
+          capitauxDeces: 1_000_000,
+          versementsApres70: 0,
+          ageUsufruitier: 70,
+        },
+      ],
       civil,
       enfants,
       [],
@@ -285,10 +309,20 @@ describe('coordinateSuccessionInsuranceAllowances', () => {
     );
 
     const perFiscalAnalysis = buildSuccessionPerFiscalAnalysis(
-      [], civil, enfants, [], snapshot, new Date('2035-06-01T00:00:00Z'),
+      [],
+      civil,
+      enfants,
+      [],
+      snapshot,
+      new Date('2035-06-01T00:00:00Z'),
     );
     const prevoyanceFiscalAnalysis = buildSuccessionPrevoyanceFiscalAnalysis(
-      [], civil, enfants, [], snapshot, new Date('2035-06-01T00:00:00Z'),
+      [],
+      civil,
+      enfants,
+      [],
+      snapshot,
+      new Date('2035-06-01T00:00:00Z'),
     );
 
     const coordinated = coordinateSuccessionInsuranceAllowances({

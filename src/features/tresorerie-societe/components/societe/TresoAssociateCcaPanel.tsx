@@ -12,10 +12,7 @@ interface TresoAssociateCcaPanelProps {
   onChange: (patch: Partial<CcaScheduleInputV6>) => void;
 }
 
-export function TresoAssociateCcaPanel({
-  cca,
-  onChange,
-}: TresoAssociateCcaPanelProps) {
+export function TresoAssociateCcaPanel({ cca, onChange }: TresoAssociateCcaPanelProps) {
   return (
     <div className="ts-associate-card">
       <div className="ts-associate-card__header">
@@ -29,23 +26,28 @@ export function TresoAssociateCcaPanel({
             inputMode="numeric"
             className="sim-field__control"
             value={fmtEuroInput(cca.currentBalance)}
-            onChange={event => onChange({ currentBalance: parseEuroInput(event.target.value) })}
+            onChange={(event) => onChange({ currentBalance: parseEuroInput(event.target.value) })}
           />
           <span className="sim-field__unit ts-unit">€</span>
         </SimFieldShell>
-        <SimFieldShell label="Taux de rémunération CCA" className="ts-field" rowClassName="ts-field__row">
+        <SimFieldShell
+          label="Taux de rémunération CCA"
+          className="ts-field"
+          rowClassName="ts-field__row"
+        >
           <input
             type="text"
             inputMode="decimal"
             className="sim-field__control"
             value={fmtRateInput(cca.remunerationRate)}
-            onChange={event => onChange({ remunerationRate: parseRateInput(event.target.value) })}
+            onChange={(event) => onChange({ remunerationRate: parseRateInput(event.target.value) })}
           />
           <span className="sim-field__unit ts-unit">%</span>
         </SimFieldShell>
       </div>
       <p className="ts-note--info">
-        Les intérêts CCA sont saisis au taux convenu ; la déductibilité est plafonnée par le taux maximum déductible issu des paramètres fiscaux.
+        Les intérêts CCA sont saisis au taux convenu ; la déductibilité est plafonnée par le taux
+        maximum déductible issu des paramètres fiscaux.
       </p>
     </div>
   );

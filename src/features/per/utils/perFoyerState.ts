@@ -10,14 +10,19 @@ export interface PerNormalizedFoyer {
   mutualisationConjoints: boolean;
 }
 
-export function normalizePerChildren(children: PerChildDraft[] | null | undefined): PerChildDraft[] {
+export function normalizePerChildren(
+  children: PerChildDraft[] | null | undefined,
+): PerChildDraft[] {
   return Array.isArray(children)
     ? children
-      .filter((child): child is PerChildDraft => Boolean(child) && (child.mode === 'charge' || child.mode === 'shared'))
-      .map((child, index) => ({
-        id: Number.isFinite(child.id) ? child.id : index + 1,
-        mode: child.mode,
-      }))
+        .filter(
+          (child): child is PerChildDraft =>
+            Boolean(child) && (child.mode === 'charge' || child.mode === 'shared'),
+        )
+        .map((child, index) => ({
+          id: Number.isFinite(child.id) ? child.id : index + 1,
+          mode: child.mode,
+        }))
     : [];
 }
 
@@ -34,9 +39,7 @@ export function normalizePerFoyer({
 }): PerNormalizedFoyer {
   const normalizedChildren = normalizePerChildren(children);
   const normalizedIsole = situationFamiliale === 'marie' ? false : isole;
-  const normalizedMutualisation = situationFamiliale === 'marie'
-    ? mutualisationConjoints
-    : false;
+  const normalizedMutualisation = situationFamiliale === 'marie' ? mutualisationConjoints : false;
 
   return {
     situationFamiliale,

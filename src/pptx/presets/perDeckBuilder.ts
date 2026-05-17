@@ -150,7 +150,7 @@ function buildFiscalSnapshotSlide(data: PerDeckData): PerFiscalSnapshotSlideSpec
 
 function passIntro(data: PerDeckData): string {
   if (!data.passReference || data.passReference <= 0) {
-    return "Le potentiel personnel correspond au plafond 163 quatervicies disponible après prise en compte des versements et de la mutualisation éventuelle.";
+    return 'Le potentiel personnel correspond au plafond 163 quatervicies disponible après prise en compte des versements et de la mutualisation éventuelle.';
   }
 
   return [
@@ -224,7 +224,8 @@ function buildMadelinSlide(data: PerDeckData): PerPlafond3ColSlideSpec | null {
     title: `Plafonds Madelin 154 bis pour ${year}`,
     subtitle: 'Assiette, enveloppe et solde TNS',
     variant: 'madelin',
-    intro: "Le potentiel Madelin 154 bis est réservé aux travailleurs non-salariés. Il distingue l'assiette de versement, l'enveloppe ouverte et le disponible restant après consommation.",
+    intro:
+      "Le potentiel Madelin 154 bis est réservé aux travailleurs non-salariés. Il distingue l'assiette de versement, l'enveloppe ouverte et le disponible restant après consommation.",
     isCouple: !!d2,
     columns: [
       {
@@ -269,26 +270,62 @@ function buildProjectionSlide(data: PerDeckData): PerProjectionTableSlideSpec {
     subtitle: 'Synthèse des reports et reliquats projetés',
     isCouple,
     declarationRows: [
-      { label: '6NS / 6NT — PER 163 quatervicies', declarant1: declaration2042.case6NS, declarant2: declaration2042.case6NT },
-      { label: '6RS / 6RT — PERP et assimilés', declarant1: declaration2042.case6RS, declarant2: declaration2042.case6RT },
-      { label: '6OS / 6OT — PER 154 bis', declarant1: declaration2042.case6OS, declarant2: declaration2042.case6OT },
-      { label: '6QS / 6QT — Madelin, PERCO, Art. 83', declarant1: declaration2042.case6QS, declarant2: declaration2042.case6QT },
+      {
+        label: '6NS / 6NT — PER 163 quatervicies',
+        declarant1: declaration2042.case6NS,
+        declarant2: declaration2042.case6NT,
+      },
+      {
+        label: '6RS / 6RT — PERP et assimilés',
+        declarant1: declaration2042.case6RS,
+        declarant2: declaration2042.case6RT,
+      },
+      {
+        label: '6OS / 6OT — PER 154 bis',
+        declarant1: declaration2042.case6OS,
+        declarant2: declaration2042.case6OT,
+      },
+      {
+        label: '6QS / 6QT — Madelin, PERCO, Art. 83',
+        declarant1: declaration2042.case6QS,
+        declarant2: declaration2042.case6QT,
+      },
       { label: '6QR — Mutualisation conjoint', declarant1: declaration2042.case6QR },
     ],
     avisRows: [
-      { label: 'Reliquat N-2', declarant1: projection1.nonUtiliseN2, declarant2: projection2?.nonUtiliseN2 },
-      { label: 'Reliquat N-1', declarant1: projection1.nonUtiliseN1, declarant2: projection2?.nonUtiliseN1 },
-      { label: 'Reliquat N', declarant1: projection1.nonUtiliseN, declarant2: projection2?.nonUtiliseN },
-      { label: 'Plafond calculé', declarant1: projection1.plafondCalculeN, declarant2: projection2?.plafondCalculeN },
-      { label: 'Total projeté', declarant1: projection1.plafondTotal, declarant2: projection2?.plafondTotal },
+      {
+        label: 'Reliquat N-2',
+        declarant1: projection1.nonUtiliseN2,
+        declarant2: projection2?.nonUtiliseN2,
+      },
+      {
+        label: 'Reliquat N-1',
+        declarant1: projection1.nonUtiliseN1,
+        declarant2: projection2?.nonUtiliseN1,
+      },
+      {
+        label: 'Reliquat N',
+        declarant1: projection1.nonUtiliseN,
+        declarant2: projection2?.nonUtiliseN,
+      },
+      {
+        label: 'Plafond calculé',
+        declarant1: projection1.plafondCalculeN,
+        declarant2: projection2?.plafondCalculeN,
+      },
+      {
+        label: 'Total projeté',
+        declarant1: projection1.plafondTotal,
+        declarant2: projection2?.plafondTotal,
+      },
     ],
     simulationRows: simulation
       ? [
-        { label: 'Versement envisagé', value: simulation.versementEnvisage },
-        { label: 'Versement déductible retenu', value: simulation.versementDeductible },
-        { label: "Économie d'IR estimée", value: simulation.economieIRAnnuelle },
-        { label: 'Coût net après fiscalité', value: simulation.coutNetApresFiscalite },
-      ]
+          { label: 'Versement envisagé', value: simulation.versementEnvisage },
+          { label: 'Versement déductible retenu', value: simulation.versementDeductible },
+          { label: "Économie d'IR estimée", value: simulation.economieIRAnnuelle },
+          { label: 'Coût net après fiscalité', value: simulation.coutNetApresFiscalite },
+        ]
       : undefined,
   };
 }

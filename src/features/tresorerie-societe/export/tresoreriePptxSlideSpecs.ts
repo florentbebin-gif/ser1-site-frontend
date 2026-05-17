@@ -46,8 +46,8 @@ function sumSelectedRevenue(
   source: 'cca' | 'dividendes',
 ): number {
   return row.revenusParAssocie
-    .filter(revenue => !associateId || revenue.associateId === associateId)
-    .filter(revenue => revenue.source === source)
+    .filter((revenue) => !associateId || revenue.associateId === associateId)
+    .filter((revenue) => revenue.source === source)
     .reduce((sum, revenue) => {
       const sourceAmount = source === 'cca' ? revenue.ccaRepaid : revenue.grossDividends;
       return sum + Math.max(positiveAmount(sourceAmount), positiveAmount(revenue.netRevenue));
@@ -61,8 +61,8 @@ function buildTriggerMarker(
   const selectedAssociate = getSelectedAssociate(inputs);
   const profile = getAssociateProfile(inputs, selectedAssociate);
   const associateId = selectedAssociate?.id;
-  const ccaRow = rows.find(row => sumSelectedRevenue(row, associateId, 'cca') > 0);
-  const dividendRow = rows.find(row => sumSelectedRevenue(row, associateId, 'dividendes') > 0);
+  const ccaRow = rows.find((row) => sumSelectedRevenue(row, associateId, 'cca') > 0);
+  const dividendRow = rows.find((row) => sumSelectedRevenue(row, associateId, 'dividendes') > 0);
   const row = ccaRow ?? dividendRow;
   if (!row) return undefined;
 
@@ -81,7 +81,9 @@ function getPocketIcon(horizon: string | undefined): BusinessIconName {
   return 'balance';
 }
 
-function getPocketTone(index: number): TresorerieSynthesisSlideSpec['pocketTimeline'][number]['tone'] {
+function getPocketTone(
+  index: number,
+): TresorerieSynthesisSlideSpec['pocketTimeline'][number]['tone'] {
   if (index === 0) return 'main';
   if (index === 1) return 'muted';
   if (index === 2) return 'accent';
@@ -93,18 +95,23 @@ function buildPocketTimeline(
   projectionStartYear: number,
   rangeEndYear: number,
 ): TresorerieSynthesisSlideSpec['pocketTimeline'] {
-  const allocatableBase = Math.max(0, positiveAmount(inputs.company.treasuryInitial) - getProtectedCash(inputs));
+  const allocatableBase = Math.max(
+    0,
+    positiveAmount(inputs.company.treasuryInitial) - getProtectedCash(inputs),
+  );
   const pockets = inputs.allocationMatrix.pockets;
   if (pockets.length === 0) {
-    return [{
-      label: 'Trésorerie conservée sur compte bancaire',
-      horizonLabel: 'Compte bancaire',
-      startYear: projectionStartYear,
-      endYear: rangeEndYear,
-      amountLabel: formatEuro(positiveAmount(inputs.company.treasuryInitial)),
-      iconKey: 'bank',
-      tone: 'neutral',
-    }];
+    return [
+      {
+        label: 'Trésorerie conservée sur compte bancaire',
+        horizonLabel: 'Compte bancaire',
+        startYear: projectionStartYear,
+        endYear: rangeEndYear,
+        amountLabel: formatEuro(positiveAmount(inputs.company.treasuryInitial)),
+        iconKey: 'bank',
+        tone: 'neutral',
+      },
+    ];
   }
 
   return pockets.slice(0, 4).map((pocket, index) => {
@@ -116,7 +123,9 @@ function buildPocketTimeline(
       horizonLabel: getAllocationHorizonLabel(pocket.horizon),
       startYear,
       endYear: Math.min(rangeEndYear, startYear + duration - 1),
-      amountLabel: formatEuro(allocatableBase * positiveAmount(pocket.initialAllocationPct) / 100),
+      amountLabel: formatEuro(
+        (allocatableBase * positiveAmount(pocket.initialAllocationPct)) / 100,
+      ),
       iconKey: getPocketIcon(pocket.horizon),
       tone: getPocketTone(index),
     };
@@ -129,19 +138,25 @@ function buildCashFlows(
 ): TresorerieSynthesisSlideSpec['cashFlows'] {
   const selectedAssociate = getSelectedAssociate(inputs);
   const associateId = selectedAssociate?.id;
-  const annualContribution = selectedAssociate?.cca && 'annualContribution' in selectedAssociate.cca
-    ? positiveAmount(selectedAssociate.cca.annualContribution.amount)
-    : 0;
+  const annualContribution =
+    selectedAssociate?.cca && 'annualContribution' in selectedAssociate.cca
+      ? positiveAmount(selectedAssociate.cca.annualContribution.amount)
+      : 0;
   const firstCcaAmount = rows
-    .map(row => sumSelectedRevenue(row, associateId, 'cca'))
-    .find(amount => amount > 0);
-  const hasDividends = rows.some(row => row.revenusParAssocie
-    .filter(revenue => !associateId || revenue.associateId === associateId)
-    .some(revenue => revenue.source === 'dividendes' && positiveAmount(revenue.netRevenue) > 0));
+    .map((row) => sumSelectedRevenue(row, associateId, 'cca'))
+    .find((amount) => amount > 0);
+  const hasDividends = rows.some((row) =>
+    row.revenusParAssocie
+      .filter((revenue) => !associateId || revenue.associateId === associateId)
+      .some((revenue) => revenue.source === 'dividendes' && positiveAmount(revenue.netRevenue) > 0),
+  );
 
   return {
-    annualContributionLabel: annualContribution > 0 ? `Apports CCA annuels ${formatEuro(annualContribution)}` : undefined,
-    annualWithdrawalLabel: firstCcaAmount ? `CCA servi ${formatEuro(firstCcaAmount)} / an` : undefined,
+    annualContributionLabel:
+      annualContribution > 0 ? `Apports CCA annuels ${formatEuro(annualContribution)}` : undefined,
+    annualWithdrawalLabel: firstCcaAmount
+      ? `CCA servi ${formatEuro(firstCcaAmount)} / an`
+      : undefined,
     revenueLabel: hasDividends ? 'Dividendes nets selon phase' : undefined,
   };
 }
@@ -151,8 +166,8 @@ function getSelectedDividendNetRevenue(
   associateId: string | undefined,
 ): number {
   return row.revenusParAssocie
-    .filter(revenue => !associateId || revenue.associateId === associateId)
-    .filter(revenue => revenue.source === 'dividendes')
+    .filter((revenue) => !associateId || revenue.associateId === associateId)
+    .filter((revenue) => revenue.source === 'dividendes')
     .reduce((sum, revenue) => sum + positiveAmount(revenue.netRevenue), 0);
 }
 
@@ -177,7 +192,7 @@ export function buildSynthesisSlide(
       investment: 'Valorisation de la trésorerie',
       incomeRelay: 'CCA restant puis dividendes',
     },
-    series: rows.map(row => ({
+    series: rows.map((row) => ({
       year: getCivilYear(profile, row),
       investmentValue: positiveAmount(row.capitalDistrib) + positiveAmount(row.valeurCapi),
       ccaBalance: positiveAmount(row.ccaRestant),
@@ -187,7 +202,10 @@ export function buildSynthesisSlide(
     milestones: {
       horizon: {
         year: rangeEndYear,
-        ageLabel: profile.currentAge > 0 ? `${profile.currentAge + Math.max(rows.length - 1, 0)} ans` : undefined,
+        ageLabel:
+          profile.currentAge > 0
+            ? `${profile.currentAge + Math.max(rows.length - 1, 0)} ans`
+            : undefined,
         valueLabel: formatEuro(consolidatedEnd),
       },
     },
@@ -204,11 +222,15 @@ export function buildFlowMechanismSlide(
     (sum, associate) => sum + positiveAmount(associate.cca?.currentBalance),
     0,
   );
-  const initialContributions = positiveAmount(inputs.company.shareCapital)
-    + positiveAmount(inputs.company.sharePremium)
-    + ccaInitialTotal;
+  const initialContributions =
+    positiveAmount(inputs.company.shareCapital) +
+    positiveAmount(inputs.company.sharePremium) +
+    ccaInitialTotal;
   const protectedCash = getProtectedCash(inputs);
-  const allocatableBase = Math.max(0, positiveAmount(inputs.company.treasuryInitial) - protectedCash);
+  const allocatableBase = Math.max(
+    0,
+    positiveAmount(inputs.company.treasuryInitial) - protectedCash,
+  );
 
   return {
     type: 'treso-flow-mechanism',
@@ -254,12 +276,16 @@ export function buildParametersAnnexSlide(
 ): TresorerieParametersAnnexSlideSpec {
   const selectedAssociate = getSelectedAssociate(inputs);
   const profile = getAssociateProfile(inputs, selectedAssociate);
-  const companyType = inputs.company.creationType === 'existante' ? 'Société existante' : 'Société à créer';
+  const companyType =
+    inputs.company.creationType === 'existante' ? 'Société existante' : 'Société à créer';
   const ccaInitialTotal = inputs.company.associates.reduce(
     (sum, associate) => sum + positiveAmount(associate.cca?.currentBalance),
     0,
   );
-  const loansTotal = inputs.company.loans.reduce((sum, loan) => sum + positiveAmount(loan.principal), 0);
+  const loansTotal = inputs.company.loans.reduce(
+    (sum, loan) => sum + positiveAmount(loan.principal),
+    0,
+  );
 
   return {
     type: 'treso-parameters-annex',
@@ -271,13 +297,20 @@ export function buildParametersAnnexSlide(
         iconKey: 'buildings',
         rows: [
           { label: 'Type de montage', value: companyType, accent: true },
-          { label: 'Forme et type', value: `${inputs.company.legalForm.toUpperCase()} · ${getCompanyKindLabel(inputs.company)}` },
-          { label: 'Capital social', value: formatEuro(positiveAmount(inputs.company.shareCapital)) },
+          {
+            label: 'Forme et type',
+            value: `${inputs.company.legalForm.toUpperCase()} · ${getCompanyKindLabel(inputs.company)}`,
+          },
+          {
+            label: 'Capital social',
+            value: formatEuro(positiveAmount(inputs.company.shareCapital)),
+          },
           {
             label: 'Crédits société',
-            value: inputs.company.loans.length > 0
-              ? `${inputs.company.loans.length} prêt(s) · ${formatEuro(loansTotal)}`
-              : 'Aucun',
+            value:
+              inputs.company.loans.length > 0
+                ? `${inputs.company.loans.length} prêt(s) · ${formatEuro(loansTotal)}`
+                : 'Aucun',
           },
         ],
       },
@@ -285,11 +318,18 @@ export function buildParametersAnnexSlide(
         title: 'Sécurité de trésorerie',
         iconKey: 'bank',
         rows: [
-          { label: 'Trésorerie initiale', value: formatEuro(positiveAmount(inputs.company.treasuryInitial)), accent: true },
+          {
+            label: 'Trésorerie initiale',
+            value: formatEuro(positiveAmount(inputs.company.treasuryInitial)),
+            accent: true,
+          },
           { label: 'Solde bancaire minimum', value: formatEuro(getMinimumBankBalance(inputs)) },
           { label: 'Fonds de roulement', value: formatEuro(getWorkingCapitalRequirement(inputs)) },
           { label: 'CCA initial total', value: formatEuro(ccaInitialTotal) },
-          { label: 'Horizon de projection', value: `${projectionStartYear} → ${projectionStartYear + Math.max(0, horizonYears - 1)}` },
+          {
+            label: 'Horizon de projection',
+            value: `${projectionStartYear} → ${projectionStartYear + Math.max(0, horizonYears - 1)}`,
+          },
         ],
       },
       {
@@ -297,7 +337,10 @@ export function buildParametersAnnexSlide(
         iconKey: 'family',
         rows: [
           { label: 'Nom', value: selectedAssociate?.label ?? 'Associé', accent: true },
-          { label: 'Profil', value: selectedAssociate?.kind === 'pm' ? 'Personne morale' : 'Personne physique' },
+          {
+            label: 'Profil',
+            value: selectedAssociate?.kind === 'pm' ? 'Personne morale' : 'Personne physique',
+          },
           { label: 'Âge', value: profile.currentAge > 0 ? `${profile.currentAge} ans` : '—' },
           {
             label: 'Capital · Économique',
@@ -305,7 +348,10 @@ export function buildParametersAnnexSlide(
               ? `${fmtPct(getCapitalPct(selectedAssociate))} · ${fmtPct(getEconomicPct(selectedAssociate))}`
               : '—',
           },
-          { label: 'CCA initial', value: formatEuro(positiveAmount(selectedAssociate?.cca?.currentBalance)) },
+          {
+            label: 'CCA initial',
+            value: formatEuro(positiveAmount(selectedAssociate?.cca?.currentBalance)),
+          },
         ],
       },
     ],

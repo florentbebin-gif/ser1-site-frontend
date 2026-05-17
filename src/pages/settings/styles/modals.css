@@ -12,14 +12,16 @@
 }
 
 .report-modal {
-  background: #FFFFFF;
+  background: #ffffff;
   border-radius: 12px;
   padding: 24px;
   max-width: 800px;
   width: 90%;
   max-height: 85vh;
   overflow-y: auto;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15), 0 8px 25px rgba(0, 0, 0, 0.1);
+  box-shadow:
+    0 20px 60px rgba(0, 0, 0, 0.15),
+    0 8px 25px rgba(0, 0, 0, 0.1);
 }
 
 .report-modal--sm {
@@ -125,7 +127,7 @@
 
 .report-modal-actions button.danger:hover {
   background: var(--color-error-border);
-  color: #FFFFFF;
+  color: #ffffff;
 }
 
 .reports-table {
@@ -171,7 +173,7 @@
 }
 
 .report-status.read {
-  background: #FFFFFF;
+  background: #ffffff;
   border: 1px solid var(--color-c8);
   color: var(--color-c9);
 }
@@ -191,12 +193,14 @@
   padding: 8px 12px;
   border-radius: 6px;
   border: 1px solid var(--color-c8);
-  background: #FFFFFF;
+  background: #ffffff;
   color: var(--color-c10);
   cursor: pointer;
   font-size: 13px;
   font-weight: 500;
-  transition: background-color 0.15s ease, border-color 0.15s ease;
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease;
 }
 
 .report-view-btn:hover,
@@ -245,7 +249,7 @@
   padding: 16px;
   border: 1px solid var(--color-c8);
   border-radius: 8px;
-  background: #FFFFFF;
+  background: #ffffff;
   line-height: 1.6;
 }
 
@@ -286,7 +290,7 @@
   border: 1px solid var(--color-c8);
   border-radius: 6px;
   font-size: 14px;
-  background: #FFFFFF;
+  background: #ffffff;
   color: var(--color-c10);
 }
 

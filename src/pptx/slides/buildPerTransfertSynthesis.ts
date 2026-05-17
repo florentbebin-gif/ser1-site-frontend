@@ -1,13 +1,7 @@
 import type PptxGenJS from 'pptxgenjs';
 import type { ExportContext, PerTransfertSynthesisSlideSpec } from '../theme/types';
 import { MASTER_NAMES } from '../template/loadBaseTemplate';
-import {
-  SLIDE_SIZE,
-  TYPO,
-  addFooter,
-  addHeader,
-  addTextFr,
-} from '../designSystem/serenity';
+import { SLIDE_SIZE, TYPO, addFooter, addHeader, addTextFr } from '../designSystem/serenity';
 
 const TABLE_X = 0.78;
 const TABLE_Y = 1.75;
@@ -34,7 +28,7 @@ export function buildPerTransfertSynthesis(
     slide.addShape('rect', {
       x: columnX(index),
       y: TABLE_Y,
-      w: COLS[index],
+      w: COLS[index] ?? 1,
       h: ROW_H,
       fill: { color: theme.colors.color1.replace('#', '') },
       line: { color: theme.panelBorder.replace('#', ''), width: 0.5 },
@@ -42,7 +36,7 @@ export function buildPerTransfertSynthesis(
     addTextFr(slide, header, {
       x: columnX(index) + 0.08,
       y: TABLE_Y + 0.09,
-      w: COLS[index] - 0.16,
+      w: (COLS[index] ?? 1) - 0.16,
       h: 0.24,
       fontSize: 8.5,
       fontFace: TYPO.fontFace,
@@ -55,27 +49,29 @@ export function buildPerTransfertSynthesis(
   spec.rows.slice(0, 10).forEach((row, rowIndex) => {
     const y = TABLE_Y + ROW_H * (rowIndex + 1);
     const fillColor = rowIndex % 2 === 0 ? theme.colors.color7 : theme.panelBg;
-    [row.label, row.keepScenario, row.transferScenario, row.difference].forEach((value, colIndex) => {
-      slide.addShape('rect', {
-        x: columnX(colIndex),
-        y,
-        w: COLS[colIndex],
-        h: ROW_H,
-        fill: { color: fillColor.replace('#', '') },
-        line: { color: theme.panelBorder.replace('#', ''), width: 0.35 },
-      });
-      addTextFr(slide, value, {
-        x: columnX(colIndex) + 0.08,
-        y: y + 0.08,
-        w: COLS[colIndex] - 0.16,
-        h: 0.26,
-        fontSize: colIndex === 0 ? 8 : 8.5,
-        fontFace: TYPO.fontFace,
-        bold: colIndex !== 0,
-        color: (colIndex === 0 ? theme.textBody : theme.textMain).replace('#', ''),
-        valign: 'middle',
-      });
-    });
+    [row.label, row.keepScenario, row.transferScenario, row.difference].forEach(
+      (value, colIndex) => {
+        slide.addShape('rect', {
+          x: columnX(colIndex),
+          y,
+          w: COLS[colIndex] ?? 1,
+          h: ROW_H,
+          fill: { color: fillColor.replace('#', '') },
+          line: { color: theme.panelBorder.replace('#', ''), width: 0.35 },
+        });
+        addTextFr(slide, value, {
+          x: columnX(colIndex) + 0.08,
+          y: y + 0.08,
+          w: (COLS[colIndex] ?? 1) - 0.16,
+          h: 0.26,
+          fontSize: colIndex === 0 ? 8 : 8.5,
+          fontFace: TYPO.fontFace,
+          bold: colIndex !== 0,
+          color: (colIndex === 0 ? theme.textBody : theme.textMain).replace('#', ''),
+          valign: 'middle',
+        });
+      },
+    );
   });
 
   if (spec.legalNote) {

@@ -38,13 +38,8 @@ export default function PlacementSimulatorPage() {
   const isExpert = effectiveMode === 'expert';
   const toggleMode = () => setLocalMode(isExpert ? 'simplifie' : 'expert');
 
-  const {
-    state,
-    handlers,
-    resultsDerived,
-    exportHandlers,
-    uiFlags,
-  } = usePlacementSimulatorController(isExpert);
+  const { state, handlers, resultsDerived, exportHandlers, uiFlags } =
+    usePlacementSimulatorController(isExpert);
 
   const {
     setClient,
@@ -75,14 +70,9 @@ export default function PlacementSimulatorPage() {
 
   const { exportExcel, exportPptx } = exportHandlers;
 
-  const {
-    loading,
-    error,
-    hydrated,
-    modalOpen,
-    showAllColumns,
-    exportLoading,
-  } = uiFlags;
+  const { loading, error, hydrated, modalOpen, showAllColumns, exportLoading } = uiFlags;
+
+  const modalProduct = modalOpen === null ? null : (state.products[modalOpen] ?? null);
 
   const exportOptions = [
     { label: 'Excel', onClick: exportExcel, disabled: !results?.produit1 },
@@ -99,12 +89,12 @@ export default function PlacementSimulatorPage() {
         pageTestId="placement-page"
         titleTestId="placement-title"
         mobileSideFirst
-        actions={(
+        actions={
           <>
             <ModeToggle value={isExpert} onChange={toggleMode} testId="placement-mode-btn" />
             <ExportMenu options={exportOptions} loading={exportLoading} />
           </>
-        )}
+        }
         nav={<PlacementPhaseNav step={state.step} onStepChange={setStep} />}
         error={error}
       />
@@ -120,12 +110,12 @@ export default function PlacementSimulatorPage() {
         pageTestId="placement-page"
         titleTestId="placement-title"
         mobileSideFirst
-        actions={(
+        actions={
           <>
             <ModeToggle value={isExpert} onChange={toggleMode} testId="placement-mode-btn" />
             <ExportMenu options={exportOptions} loading={exportLoading} />
           </>
-        )}
+        }
         nav={<PlacementPhaseNav step={state.step} onStepChange={setStep} />}
       >
         <SimPageShell.Main className="pl-ir-left">
@@ -176,11 +166,11 @@ export default function PlacementSimulatorPage() {
         </SimPageShell.Section>
       </SimPageShell>
 
-      {modalOpen !== null && (
+      {modalOpen !== null && modalProduct && (
         <VersementConfigModal
-          envelope={state.products[modalOpen].envelope}
-          config={state.products[modalOpen].versementConfig}
-          dureeEpargne={state.products[modalOpen].dureeEpargne}
+          envelope={modalProduct.envelope}
+          config={modalProduct.versementConfig}
+          dureeEpargne={modalProduct.dureeEpargne}
           isExpert={isExpert}
           onSave={(config) => {
             try {

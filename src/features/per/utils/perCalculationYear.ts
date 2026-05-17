@@ -31,9 +31,10 @@ export function resolvePerCalculationYear({
   useProjection,
   years,
 }: PerCalculationYearParams): PerCalculationYear {
-  const anneeRef = useProjection || (mode === 'versement-n' && historicalBasis === 'current-avis')
-    ? years.currentTaxYear
-    : years.currentIncomeYear;
+  const anneeRef =
+    useProjection || (mode === 'versement-n' && historicalBasis === 'current-avis')
+      ? years.currentTaxYear
+      : years.currentIncomeYear;
 
   return {
     anneeRef,

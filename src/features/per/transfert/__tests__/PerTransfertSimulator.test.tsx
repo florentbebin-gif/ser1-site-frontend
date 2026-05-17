@@ -13,7 +13,11 @@ import { PerTransfertHypotheses } from '../components/PerTransfertHypotheses';
 import { PerTransfertFraisInfoModal } from '../components/PerTransfertFraisInfoModal';
 import { PerTransfertPrefonPocketsForm } from '../components/PerTransfertPrefonPocketsForm';
 import { TransferRulesInfoModal } from '../components/TransferRulesInfoModal';
-import type { PerTransfertCapitalFiscalResult, PerTransfertFiscalResult, PerTransfertResult } from '@/engine/per';
+import type {
+  PerTransfertCapitalFiscalResult,
+  PerTransfertFiscalResult,
+  PerTransfertResult,
+} from '@/engine/per';
 import type { BaseCgRetraiteContract } from '@/data/basecg';
 
 // ——— Tests composants purs ———
@@ -46,33 +50,35 @@ describe('PerTransfertWizardSteps', () => {
   });
 
   it('marque le bon onglet comme sélectionné via aria-selected', () => {
-    const html = renderToStaticMarkup(
-      <Wizard step="newper" step1Done onStepChange={noop} />,
-    );
+    const html = renderToStaticMarkup(<Wizard step="newper" step1Done onStepChange={noop} />);
     expect(html).toContain('aria-selected="true"');
   });
 
   it('aucun bouton désactivé quand step1Done est true', () => {
-    const html = renderToStaticMarkup(
-      <Wizard step="contrat" step1Done onStepChange={noop} />,
-    );
+    const html = renderToStaticMarkup(<Wizard step="contrat" step1Done onStepChange={noop} />);
     expect(html).not.toContain('disabled');
   });
 });
 
 // ——— Résultat minimal pour la synthèse PER transfert ———
 
-function makeFiscalResult(overrides: Partial<PerTransfertFiscalResult> = {}): PerTransfertFiscalResult {
+function makeFiscalResult(
+  overrides: Partial<PerTransfertFiscalResult> = {},
+): PerTransfertFiscalResult {
   const grossAnnualRent = overrides.grossAnnualRent ?? overrides.netAnnualRent ?? 0;
   const socialContributions = overrides.socialContributions ?? 0;
   const incomeTax = overrides.incomeTax ?? 0;
-  const netOfAllTaxes = overrides.netOfAllTaxes ?? overrides.netAnnualRent ?? Math.max(0, grossAnnualRent - incomeTax - socialContributions);
+  const netOfAllTaxes =
+    overrides.netOfAllTaxes ??
+    overrides.netAnnualRent ??
+    Math.max(0, grossAnnualRent - incomeTax - socialContributions);
   return {
     family: 'RVTG',
     taxableFraction: 1,
     taxableIncome: grossAnnualRent,
     grossAnnualRent,
-    netOfSocialContributions: overrides.netOfSocialContributions ?? Math.max(0, grossAnnualRent - socialContributions),
+    netOfSocialContributions:
+      overrides.netOfSocialContributions ?? Math.max(0, grossAnnualRent - socialContributions),
     netOfAllTaxes,
     incomeTax,
     socialContributions,
@@ -81,12 +87,20 @@ function makeFiscalResult(overrides: Partial<PerTransfertFiscalResult> = {}): Pe
   };
 }
 
-function makeCapitalFiscalResult(overrides: Partial<PerTransfertCapitalFiscalResult> = {}): PerTransfertCapitalFiscalResult {
+function makeCapitalFiscalResult(
+  overrides: Partial<PerTransfertCapitalFiscalResult> = {},
+): PerTransfertCapitalFiscalResult {
   const capital = overrides.capital ?? 0;
   const socialContributions = overrides.socialContributions ?? 0;
   const incomeTax = overrides.incomeTax ?? 0;
-  const netOfAllTaxes = overrides.netOfAllTaxes ?? overrides.netIRPS ?? Math.max(0, capital - socialContributions - incomeTax);
-  const netOfSocialContributions = overrides.netOfSocialContributions ?? overrides.netPS ?? Math.max(0, capital - socialContributions);
+  const netOfAllTaxes =
+    overrides.netOfAllTaxes ??
+    overrides.netIRPS ??
+    Math.max(0, capital - socialContributions - incomeTax);
+  const netOfSocialContributions =
+    overrides.netOfSocialContributions ??
+    overrides.netPS ??
+    Math.max(0, capital - socialContributions);
   return {
     available: false,
     capital,
@@ -113,7 +127,12 @@ function makeResult(overrides: Partial<PerTransfertResult> = {}): PerTransfertRe
     currentRent: {
       grossAnnualRent: 3000,
       netAnnualRent: 2200,
-      fiscal: makeFiscalResult({ grossAnnualRent: 3000, taxableIncome: 2700, incomeTax: 810, netAnnualRent: 2200 }),
+      fiscal: makeFiscalResult({
+        grossAnnualRent: 3000,
+        taxableIncome: 2700,
+        incomeTax: 810,
+        netAnnualRent: 2200,
+      }),
       cumulativeToShortHorizon: 22000,
       cumulativeToLongHorizon: 44000,
     },
@@ -123,7 +142,12 @@ function makeResult(overrides: Partial<PerTransfertResult> = {}): PerTransfertRe
         grossAnnualRent: 3000,
         netAnnualRent: 2200,
         netMonthly: 2200 / 12,
-        fiscal: makeFiscalResult({ grossAnnualRent: 3000, taxableIncome: 2700, incomeTax: 810, netAnnualRent: 2200 }),
+        fiscal: makeFiscalResult({
+          grossAnnualRent: 3000,
+          taxableIncome: 2700,
+          incomeTax: 810,
+          netAnnualRent: 2200,
+        }),
         cumulativeToShortHorizon: 22000,
         cumulativeToLongHorizon: 44000,
       },
@@ -136,7 +160,12 @@ function makeResult(overrides: Partial<PerTransfertResult> = {}): PerTransfertRe
       monthlyRent: 200,
       apparentRate: 0.025,
     },
-    newPerFiscal: makeFiscalResult({ grossAnnualRent: 2800, taxableIncome: 2520, incomeTax: 756, netAnnualRent: 2400 }),
+    newPerFiscal: makeFiscalResult({
+      grossAnnualRent: 2800,
+      taxableIncome: 2520,
+      incomeTax: 756,
+      netAnnualRent: 2400,
+    }),
     capitalExit: {
       shareRate: 0,
       capitalConvertedToRent: 110000,
@@ -339,7 +368,9 @@ describe('ContractAuditCards', () => {
 
     const html = renderToStaticMarkup(<ContractAuditCards contract={emptyContract} />);
 
-    expect(html).toContain('La grille de devoir de conseil reste à compléter avec les hypothèses du relevé et des conditions générales.');
+    expect(html).toContain(
+      'La grille de devoir de conseil reste à compléter avec les hypothèses du relevé et des conditions générales.',
+    );
     expect(html).not.toContain('Phase épargne');
     expect(html).not.toContain('Phase liquidation');
   });
@@ -355,14 +386,16 @@ describe('PerTransfertPrefonPocketsForm', () => {
   it('affiche les poches Préfon sans valeur de transfert nette par point', () => {
     const html = renderToStaticMarkup(
       <PerTransfertPrefonPocketsForm
-        pockets={[{
-          compartment: 'C1',
-          points: 1000,
-          capitalAmount: null,
-          unitValue: 0.10219,
-          serviceValue: 0.10219,
-          transferValue: null,
-        }]}
+        pockets={[
+          {
+            compartment: 'C1',
+            points: 1000,
+            capitalAmount: null,
+            unitValue: 0.10219,
+            serviceValue: 0.10219,
+            transferValue: null,
+          },
+        ]}
         onChange={vi.fn()}
         onOpenInfo={vi.fn()}
         onOpenPocketSettings={vi.fn()}

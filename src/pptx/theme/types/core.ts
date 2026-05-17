@@ -16,7 +16,6 @@ export type UiThemeColors = {
 };
 
 export type PptxThemeRoles = {
-
   colors: UiThemeColors;
 
   white: '#FFFFFF';

@@ -37,28 +37,30 @@ async function readSheetSharedText(zip: JSZip, sheetPath: string): Promise<strin
   const sharedStringsXml = await zip.file('xl/sharedStrings.xml')?.async('string');
   expect(sheetXml).toBeTruthy();
 
-  const sharedStrings = [...(sharedStringsXml ?? '').matchAll(/<si><t(?: xml:space="preserve")?>(.*?)<\/t><\/si>/g)]
-    .map((match) => decodeXmlText(match[1] ?? ''));
-  const sharedStringIds = [...(sheetXml ?? '').matchAll(/<c[^>]*t="s"[^>]*>\s*<v>(\d+)<\/v>\s*<\/c>/g)]
-    .map((match) => Number(match[1]));
-  const inlineStrings = [...(sheetXml ?? '').matchAll(/<c[^>]*t="inlineStr"[^>]*>\s*<is><t>(.*?)<\/t><\/is>\s*<\/c>/g)]
-    .map((match) => decodeXmlText(match[1] ?? ''));
+  const sharedStrings = [
+    ...(sharedStringsXml ?? '').matchAll(/<si><t(?: xml:space="preserve")?>(.*?)<\/t><\/si>/g),
+  ].map((match) => decodeXmlText(match[1] ?? ''));
+  const sharedStringIds = [
+    ...(sheetXml ?? '').matchAll(/<c[^>]*t="s"[^>]*>\s*<v>(\d+)<\/v>\s*<\/c>/g),
+  ].map((match) => Number(match[1]));
+  const inlineStrings = [
+    ...(sheetXml ?? '').matchAll(/<c[^>]*t="inlineStr"[^>]*>\s*<is><t>(.*?)<\/t><\/is>\s*<\/c>/g),
+  ].map((match) => decodeXmlText(match[1] ?? ''));
 
-  return [
-    ...sharedStringIds.map((index) => sharedStrings[index] ?? ''),
-    ...inlineStrings,
-  ].join('\n');
+  return [...sharedStringIds.map((index) => sharedStrings[index] ?? ''), ...inlineStrings].join(
+    '\n',
+  );
 }
 
 async function getSheetXmlByName(zip: JSZip, sheetName: string): Promise<string | null> {
-  const workbook = await zip.file('xl/workbook.xml')?.async('string') ?? '';
+  const workbook = (await zip.file('xl/workbook.xml')?.async('string')) ?? '';
   const idMatch = workbook.match(new RegExp(`<sheet[^>]+name="${sheetName}"[^>]+r:id="(rId\\d+)"`));
   if (!idMatch) return null;
-  const rels = await zip.file('xl/_rels/workbook.xml.rels')?.async('string') ?? '';
+  const rels = (await zip.file('xl/_rels/workbook.xml.rels')?.async('string')) ?? '';
   const targetMatch = rels.match(new RegExp(`Id="${idMatch[1]}"[^>]+Target="([^"]+)"`));
   if (!targetMatch) return null;
   const target = targetMatch[1].replace(/^\/xl\//, '');
-  return await zip.file(`xl/${target}`)?.async('string') ?? null;
+  return (await zip.file(`xl/${target}`)?.async('string')) ?? null;
 }
 
 describe('Succession export - hypothèses actives', () => {
@@ -87,7 +89,9 @@ describe('Succession export - hypothèses actives', () => {
     const zip = await JSZip.loadAsync(await blob.arrayBuffer());
     const hypothesesText = await readSheetSharedText(zip, 'xl/worksheets/sheet2.xml');
 
-    expect(hypothesesText).toContain('PACS: absence de vocation successorale légale automatique sans testament.');
+    expect(hypothesesText).toContain(
+      'PACS: absence de vocation successorale légale automatique sans testament.',
+    );
     expect(hypothesesText).toContain('chronologie 2 décès');
   });
 
@@ -135,7 +139,7 @@ describe('Succession export - hypothèses actives', () => {
       applicable: true,
       societeAcquets: { configured: true, totalValue: 400000 },
     });
-    expect(items.some((item) => item.includes("Société d’acquêts"))).toBe(true);
+    expect(items.some((item) => item.includes('Société d’acquêts'))).toBe(true);
   });
 
   it('restitue le préciput cible dans les hypothèses actives', () => {
@@ -153,7 +157,12 @@ describe('Succession export - hypothèses actives', () => {
       regimeMatrimonial: 'separation_biens_societe_acquets',
       pacsConvention: 'separation',
     } as const;
-    const liquidation = makeLiquidation({ actifEpoux1: 300_000, actifEpoux2: 200_000, actifCommun: 0, nbEnfants: 2 });
+    const liquidation = makeLiquidation({
+      actifEpoux1: 300_000,
+      actifEpoux2: 200_000,
+      actifCommun: 0,
+      nbEnfants: 2,
+    });
     const chainageAnalysis = buildSuccessionChainageAnalysis({
       civil,
       liquidation,
@@ -162,7 +171,13 @@ describe('Succession export - hypothèses actives', () => {
       dmtgSettings: DEFAULT_DMTG,
       societeAcquetsNetValue: 400_000,
       patrimonial: {
-        societeAcquets: { active: true, liquidationMode: 'quotes', quoteEpoux1Pct: 50, quoteEpoux2Pct: 50, attributionSurvivantPct: 0 },
+        societeAcquets: {
+          active: true,
+          liquidationMode: 'quotes',
+          quoteEpoux1Pct: 50,
+          quoteEpoux2Pct: 50,
+          attributionSurvivantPct: 0,
+        },
         preciputMode: 'global',
         preciputMontant: 50_000,
       },
@@ -176,7 +191,14 @@ describe('Succession export - hypothèses actives', () => {
     const snapshot = buildSuccessionFiscalSnapshot(null);
     const zeroFiscal = buildSuccessionAvFiscalAnalysis([], civil, [], [], snapshot);
     const zeroPer = buildSuccessionPerFiscalAnalysis([], civil, [], [], snapshot, new Date());
-    const zeroPrevoyance = buildSuccessionPrevoyanceFiscalAnalysis([], civil, [], [], snapshot, new Date());
+    const zeroPrevoyance = buildSuccessionPrevoyanceFiscalAnalysis(
+      [],
+      civil,
+      [],
+      [],
+      snapshot,
+      new Date(),
+    );
     const payload = buildSuccessionChainageExportPayload({
       displayUsesChainage: true,
       chainageAnalysis,
@@ -206,8 +228,8 @@ describe('Succession export - hypothèses actives', () => {
     const zip = await JSZip.loadAsync(await blob.arrayBuffer());
     const hypothesesText = await readSheetSharedText(zip, 'xl/worksheets/sheet2.xml');
 
-    expect(hypothesesText).toContain('liquidation simplifiée de la poche');  // SA hypothesis
-    expect(hypothesesText).toContain('préciput');                             // préciput hypothesis
+    expect(hypothesesText).toContain('liquidation simplifiée de la poche'); // SA hypothesis
+    expect(hypothesesText).toContain('préciput'); // préciput hypothesis
   });
 
   it('restitue la participation aux acquêts dans la slide Hypothèses PPTX', () => {
@@ -260,9 +282,18 @@ describe('Succession export - hypothèses actives', () => {
     // Chaîne couverte : successionChainage.ts:263 → chainageAnalysis.warnings
     //                 → buildSuccessionExportActiveHypotheses (src/utils/export/successionExportHypotheses.ts)
     const chainageAnalysis = buildSuccessionChainageAnalysis({
-      civil: { situationMatrimoniale: 'marie', regimeMatrimonial: 'communaute_meubles_acquets', pacsConvention: 'separation' },
-      liquidation: makeLiquidation({ actifEpoux1: 200_000, actifEpoux2: 150_000, actifCommun: 100_000, nbEnfants: 2 }),
-      regimeUsed: 'communaute_legale',  // CMA est calculé comme CL
+      civil: {
+        situationMatrimoniale: 'marie',
+        regimeMatrimonial: 'communaute_meubles_acquets',
+        pacsConvention: 'separation',
+      },
+      liquidation: makeLiquidation({
+        actifEpoux1: 200_000,
+        actifEpoux2: 150_000,
+        actifCommun: 100_000,
+        nbEnfants: 2,
+      }),
+      regimeUsed: 'communaute_legale', // CMA est calculé comme CL
       order: 'epoux1',
       dmtgSettings: DEFAULT_DMTG,
     });
@@ -282,7 +313,17 @@ describe('Succession export - hypothèses actives', () => {
       500_000,
       1,
       DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT,
-      [{ id: 'd1', type: 'donation_partage', montant: 100_000, donataire: 'enfant-1', date: '2020-01', donateur: 'epoux1', donSommeArgentExonere: false }],
+      [
+        {
+          id: 'd1',
+          type: 'donation_partage',
+          montant: 100_000,
+          donataire: 'enfant-1',
+          date: '2020-01',
+          donateur: 'epoux1',
+          donSommeArgentExonere: false,
+        },
+      ],
     );
 
     const assumptions = buildSuccessionAssumptions({
@@ -293,14 +334,16 @@ describe('Succession export - hypothèses actives', () => {
       hasDonationsPartage: patrimonialAnalysis.donationsPartagees > 0,
       hasUsufruitSuccessif: true,
       usufruitSuccessifAnalysis: {
-        transmissions: [{
-          donationId: 'd-us',
-          beneficiaire: 'epoux2',
-          valeurBase: 200_000,
-          tauxUsufruit: 0.3,
-          valeurUsufruit: 60_000,
-          droits: 0,
-        }],
+        transmissions: [
+          {
+            donationId: 'd-us',
+            beneficiaire: 'epoux2',
+            valeurBase: 200_000,
+            tauxUsufruit: 0.3,
+            valeurUsufruit: 60_000,
+            droits: 0,
+          },
+        ],
         reunions1133: [{ donationId: 'd-us', droits: 0 }],
         warnings: [],
       },
@@ -310,11 +353,13 @@ describe('Succession export - hypothèses actives', () => {
     const groups = buildSuccessionExportHypothesesGroups(hypotheses);
 
     expect(patrimonialAnalysis.donationsPartagees).toBe(100_000);
-    expect(hypotheses.some(h => h.includes('CCV 1078'))).toBe(true);
-    expect(hypotheses.some(h => h.includes('CGI 669'))).toBe(true);
-    expect(hypotheses.some(h => h.includes('CGI 1133'))).toBe(true);
-    expect(hypotheses.some(h => h.includes('CGI 796-0 bis'))).toBe(true);
-    expect(hypotheses.some(h => h.includes('60') && h.includes('000') && h.includes('droits'))).toBe(true);
+    expect(hypotheses.some((h) => h.includes('CCV 1078'))).toBe(true);
+    expect(hypotheses.some((h) => h.includes('CGI 669'))).toBe(true);
+    expect(hypotheses.some((h) => h.includes('CGI 1133'))).toBe(true);
+    expect(hypotheses.some((h) => h.includes('CGI 796-0 bis'))).toBe(true);
+    expect(
+      hypotheses.some((h) => h.includes('60') && h.includes('000') && h.includes('droits')),
+    ).toBe(true);
     expect(groups.map((group) => group.title)).toContain('Hypothèses fiscales');
     expect(groups.map((group) => group.title)).toContain('Limites de l’étude');
 
@@ -334,12 +379,12 @@ describe('Succession export - hypothèses actives', () => {
         warnings: [],
       },
       undefined,
-      hypotheses
+      hypotheses,
     );
 
     const zip = await JSZip.loadAsync(await blob.arrayBuffer());
-    const hypoXml = await getSheetXmlByName(zip, 'Hypothèses') ?? '';
-    const strXml = await zip.file('xl/sharedStrings.xml')?.async('string') ?? '';
+    const hypoXml = (await getSheetXmlByName(zip, 'Hypothèses')) ?? '';
+    const strXml = (await zip.file('xl/sharedStrings.xml')?.async('string')) ?? '';
     expect(hypoXml + strXml).toContain('CCV 1078');
     expect(hypoXml + strXml).toContain('CGI 1133');
     expect(hypoXml + strXml).toContain('60');
@@ -352,30 +397,44 @@ describe('Succession export - hypothèses actives', () => {
         nbEnfantsNonCommuns: 0,
         choixLegalConjointSansDDV: null,
         testamentsBySide: {
-          epoux1: { active: false, dispositionType: null, beneficiaryRef: null, quotePartPct: 100, particularLegacies: [] },
-          epoux2: { active: false, dispositionType: null, beneficiaryRef: null, quotePartPct: 100, particularLegacies: [] },
+          epoux1: {
+            active: false,
+            dispositionType: null,
+            beneficiaryRef: null,
+            quotePartPct: 100,
+            particularLegacies: [],
+          },
+          epoux2: {
+            active: false,
+            dispositionType: null,
+            beneficiaryRef: null,
+            quotePartPct: 100,
+            particularLegacies: [],
+          },
         },
         ascendantsSurvivantsBySide: { epoux1: false, epoux2: false },
       },
       patrimonialContext: DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT,
       donationsContext: [],
-      donationPartageActs: [{
-        id: 'dp-1',
-        date: '2020-06',
-        donateur: 'epoux1',
-        avecReserveUsufruit: true,
-        usufruitSuccessif: true,
-        usufruitSuccessifBeneficiaire: 'epoux2',
-        lots: [
-          { id: 'lot-1', enfantId: 'E1', valeur: 300_000, accepted: true },
-          { id: 'lot-2', enfantId: 'E2', valeur: 200_000, accepted: true },
-          { id: 'lot-3', enfantId: 'E3', valeur: 100_000, accepted: true },
-        ],
-        soultes: [
-          { id: 's1', payeurEnfantId: 'E1', receveurEnfantId: 'E3', montant: 100_000 },
-          { id: 's2', payeurEnfantId: 'E1', receveurEnfantId: 'E2', montant: 50_000 },
-        ],
-      }],
+      donationPartageActs: [
+        {
+          id: 'dp-1',
+          date: '2020-06',
+          donateur: 'epoux1',
+          avecReserveUsufruit: true,
+          usufruitSuccessif: true,
+          usufruitSuccessifBeneficiaire: 'epoux2',
+          lots: [
+            { id: 'lot-1', enfantId: 'E1', valeur: 300_000, accepted: true },
+            { id: 'lot-2', enfantId: 'E2', valeur: 200_000, accepted: true },
+            { id: 'lot-3', enfantId: 'E3', valeur: 100_000, accepted: true },
+          ],
+          soultes: [
+            { id: 's1', payeurEnfantId: 'E1', receveurEnfantId: 'E3', montant: 100_000 },
+            { id: 's2', payeurEnfantId: 'E1', receveurEnfantId: 'E2', montant: 50_000 },
+          ],
+        },
+      ],
       enfantsContext: [
         { id: 'E1', rattachement: 'commun' },
         { id: 'E2', rattachement: 'commun' },
@@ -395,11 +454,14 @@ describe('Succession export - hypothèses actives', () => {
   it('place le groupe d’hypothèses le plus dense à droite dans la slide PPTX', () => {
     const layout = buildSuccessionHypothesesLayout([
       { title: 'Points d’attention', items: ['Attention courte.'] },
-      { title: 'Hypothèses fiscales', items: [
-        'Barèmes DMTG et abattements appliqués depuis les paramètres de l’application.',
-        'Usufruit successif selon CGI 669, CGI 796-0 bis et CGI 1133.',
-        'Donation-partage : valeur gelée CCV 1078.',
-      ] },
+      {
+        title: 'Hypothèses fiscales',
+        items: [
+          'Barèmes DMTG et abattements appliqués depuis les paramètres de l’application.',
+          'Usufruit successif selon CGI 669, CGI 796-0 bis et CGI 1133.',
+          'Donation-partage : valeur gelée CCV 1078.',
+        ],
+      },
       { title: 'Limites de l’étude', items: ['Liquidation notariale exhaustive non modélisée.'] },
       { title: 'Cadre de calcul', items: ['Succession directe simulée.'] },
     ]);
@@ -416,13 +478,19 @@ describe('Succession export - hypothèses actives', () => {
 
   it('garde le plus gros volume de texte à droite même si ce n’est pas fiscal', () => {
     const layout = buildSuccessionHypothesesLayout([
-      { title: 'Points d’attention', items: [
-        'Avertissement long sur la situation civile, la chronologie, les dates manquantes et les limites de projection.',
-        'Second avertissement long sur les données incohérentes détectées dans la simulation exportée.',
-      ] },
-      { title: 'Hypothèses fiscales', items: [
-        'Barème DMTG appliqué avec les abattements, les paramètres transmis au module fiscal et les règles de rappel disponibles.',
-      ] },
+      {
+        title: 'Points d’attention',
+        items: [
+          'Avertissement long sur la situation civile, la chronologie, les dates manquantes et les limites de projection.',
+          'Second avertissement long sur les données incohérentes détectées dans la simulation exportée.',
+        ],
+      },
+      {
+        title: 'Hypothèses fiscales',
+        items: [
+          'Barème DMTG appliqué avec les abattements, les paramètres transmis au module fiscal et les règles de rappel disponibles.',
+        ],
+      },
       { title: 'Limites de l’étude', items: ['Limite courte.'] },
       { title: 'Cadre de calcul', items: ['Cadre court.'] },
     ]);
@@ -439,16 +507,22 @@ describe('Succession export - hypothèses actives', () => {
   it('donne plus de hauteur au cadre gauche le plus chargé', () => {
     const layout = buildSuccessionHypothesesLayout([
       { title: 'Points d’attention', items: ['Attention courte.'] },
-      { title: 'Hypothèses fiscales', items: [
-        'Barème DMTG, donation-partage, usufruit successif, CGI 669, CGI 1133, CGI 796-0 bis, CCV 1078.',
-        'Valorisation fiscale des transmissions et rappels de donations avec les paramètres transmis au module.',
-        'Exonérations du conjoint ou partenaire PACS et réunion au nu-propriétaire sans droits nouveaux.',
-      ] },
-      { title: 'Limites de l’étude', items: [
-        'La lecture civile reste simplifiée et ne remplace pas une liquidation notariale exhaustive.',
-        'L’intégration chiffrée fine du rapport civil, de la réduction et de l’imputation sur la réserve n’est pas modélisée.',
-        'Le résultat est indicatif et doit être confirmé par une analyse patrimoniale et notariale.',
-      ] },
+      {
+        title: 'Hypothèses fiscales',
+        items: [
+          'Barème DMTG, donation-partage, usufruit successif, CGI 669, CGI 1133, CGI 796-0 bis, CCV 1078.',
+          'Valorisation fiscale des transmissions et rappels de donations avec les paramètres transmis au module.',
+          'Exonérations du conjoint ou partenaire PACS et réunion au nu-propriétaire sans droits nouveaux.',
+        ],
+      },
+      {
+        title: 'Limites de l’étude',
+        items: [
+          'La lecture civile reste simplifiée et ne remplace pas une liquidation notariale exhaustive.',
+          'L’intégration chiffrée fine du rapport civil, de la réduction et de l’imputation sur la réserve n’est pas modélisée.',
+          'Le résultat est indicatif et doit être confirmé par une analyse patrimoniale et notariale.',
+        ],
+      },
       { title: 'Cadre de calcul', items: ['Cadre court.'] },
     ]);
 

@@ -31,9 +31,14 @@ describe('snapshots/ir: XLSX workbook spec', () => {
         {
           name: 'Détails calculs',
           rows: [
-            [cell('Poste', 'sHeader'), cell('Base', 'sHeader'), cell('Taux', 'sHeader'), cell('Impôt', 'sHeader')],
             [
-              cell("11% de 11 294 à 28 797 €", 'sText'),
+              cell('Poste', 'sHeader'),
+              cell('Base', 'sHeader'),
+              cell('Taux', 'sHeader'),
+              cell('Impôt', 'sHeader'),
+            ],
+            [
+              cell('11% de 11 294 à 28 797 €', 'sText'),
               cell(17503, 'sMoney'),
               cell(0.11, 'sPercent'),
               cell(1925.33, 'sMoney'),

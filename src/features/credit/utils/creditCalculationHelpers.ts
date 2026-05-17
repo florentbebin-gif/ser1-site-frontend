@@ -8,16 +8,10 @@ import type {
 } from '../types';
 import { toNum } from './creditFormatters';
 
-export function shiftRows(
-  rows: CreditScheduleRow[],
-  offset: number,
-): CreditShiftedScheduleRow[] {
+export function shiftRows(rows: CreditScheduleRow[], offset: number): CreditShiftedScheduleRow[] {
   if (offset === 0) return rows.slice();
   if (offset > 0) {
-    return [
-      ...Array.from({ length: offset }, (): CreditShiftedScheduleRow => null),
-      ...rows,
-    ];
+    return [...Array.from({ length: offset }, (): CreditShiftedScheduleRow => null), ...rows];
   }
   return rows.slice(-offset);
 }
@@ -66,7 +60,12 @@ export function buildRequiredLoanParams(
   state: CreditState,
   fallbackStartYM: string,
 ): CreditLoanParams {
-  return buildLoanParams(loan, state, fallbackStartYM) ?? { ...EMPTY_LOAN_PARAMS, startYM: fallbackStartYM };
+  return (
+    buildLoanParams(loan, state, fallbackStartYM) ?? {
+      ...EMPTY_LOAN_PARAMS,
+      startYM: fallbackStartYM,
+    }
+  );
 }
 
 export function buildCapitalDecesParams(loan: CreditLoanParams): LoanParams {

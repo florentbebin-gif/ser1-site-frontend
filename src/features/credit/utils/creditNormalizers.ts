@@ -1,6 +1,6 @@
 /**
  * creditNormalizers.ts - State management pour CreditV2
- * 
+ *
  * Inspiré des normalizers historiques du simulateur Placement
  * Centralise la structure du state et les fonctions de normalisation.
  */
@@ -123,9 +123,15 @@ function migrateFromLegacyFormat(raw: CreditLegacyState): Partial<CreditState> {
       viewMode: raw.viewMode ?? DEFAULT_STATE.viewMode,
       lisserPret1: raw.lisserPret1 ?? false,
       lissageMode: raw.lissageMode ?? 'mensu',
-      pret1: raw.pret1 ? { ...DEFAULT_PRET, ...raw.pret1, startYM: raw.pret1.startYM ?? raw.startYM ?? null } : null,
-      pret2: raw.pret2 ? { ...DEFAULT_PRET, ...raw.pret2, startYM: raw.pret2.startYM ?? raw.startYM ?? null } : null,
-      pret3: raw.pret3 ? { ...DEFAULT_PRET, ...raw.pret3, startYM: raw.pret3.startYM ?? raw.startYM ?? null } : null,
+      pret1: raw.pret1
+        ? { ...DEFAULT_PRET, ...raw.pret1, startYM: raw.pret1.startYM ?? raw.startYM ?? null }
+        : null,
+      pret2: raw.pret2
+        ? { ...DEFAULT_PRET, ...raw.pret2, startYM: raw.pret2.startYM ?? raw.startYM ?? null }
+        : null,
+      pret3: raw.pret3
+        ? { ...DEFAULT_PRET, ...raw.pret3, startYM: raw.pret3.startYM ?? raw.startYM ?? null }
+        : null,
     };
   }
 
@@ -240,7 +246,9 @@ export function patchPret(pret: CreditLoan, patch: Partial<CreditLoan>): CreditL
 /**
  * Initialise les valeurs raw pour les inputs de taux
  */
-export function initRawValues(state: Pick<CreditState, 'pret1' | 'pret2' | 'pret3'>): CreditRawValues {
+export function initRawValues(
+  state: Pick<CreditState, 'pret1' | 'pret2' | 'pret3'>,
+): CreditRawValues {
   const raw: CreditRawValues = {};
 
   // Pret1
@@ -251,7 +259,7 @@ export function initRawValues(state: Pick<CreditState, 'pret1' | 'pret2' | 'pret
       quotite: String(state.pret1.quotite ?? 100),
     };
   }
-  
+
   // Pret2
   if (state.pret2) {
     raw.pret2 = {
@@ -260,7 +268,7 @@ export function initRawValues(state: Pick<CreditState, 'pret1' | 'pret2' | 'pret
       quotite: String(state.pret2.quotite ?? 100),
     };
   }
-  
+
   // Pret3
   if (state.pret3) {
     raw.pret3 = {
@@ -269,7 +277,7 @@ export function initRawValues(state: Pick<CreditState, 'pret1' | 'pret2' | 'pret
       quotite: String(state.pret3.quotite ?? 100),
     };
   }
-  
+
   return raw;
 }
 

@@ -54,6 +54,10 @@ interface TaxSettingsForExtract {
 
 let hasWarnedMissingFiscalParams = false;
 
+function getParam(params: Record<string, number>, key: string): number {
+  return params[key] ?? DEFAULT_FISCAL_PARAMS[key as keyof typeof DEFAULT_FISCAL_PARAMS] ?? 0;
+}
+
 export function extractFiscalParams(
   fiscalitySettings: FiscalitySettings | null | undefined,
   psSettings: PsSettingsForExtract | null | undefined,
@@ -68,13 +72,13 @@ export function extractFiscalParams(
     params.psException = toDecimalPercent(psSettings.patrimony.current.exceptionRate);
   }
 
-  params.pfuPS = params.psGeneral;
-  params.pfuTotal = roundDecimal(params.pfuIR + params.pfuPS);
+  params.pfuPS = getParam(params, 'psGeneral');
+  params.pfuTotal = roundDecimal(getParam(params, 'pfuIR') + getParam(params, 'pfuPS'));
 
   const pfuRateIR = taxSettings?.pfu?.current?.rateIR;
   if (typeof pfuRateIR === 'number') {
     params.pfuIR = toDecimalPercent(pfuRateIR);
-    params.pfuTotal = roundDecimal(params.pfuIR + params.pfuPS);
+    params.pfuTotal = roundDecimal(getParam(params, 'pfuIR') + getParam(params, 'pfuPS'));
   }
 
   const av = fiscalitySettings?.assuranceVie;
@@ -83,15 +87,19 @@ export function extractFiscalParams(
     const depuis2017 = retraitsCapital?.depuis2017;
     if (depuis2017?.plus8Ans) {
       const plus8Ans = depuis2017.plus8Ans;
-      if (plus8Ans.abattementAnnuel?.single) params.avAbattement8ansSingle = plus8Ans.abattementAnnuel.single;
-      if (plus8Ans.abattementAnnuel?.couple) params.avAbattement8ansCouple = plus8Ans.abattementAnnuel.couple;
+      if (plus8Ans.abattementAnnuel?.single)
+        params.avAbattement8ansSingle = plus8Ans.abattementAnnuel.single;
+      if (plus8Ans.abattementAnnuel?.couple)
+        params.avAbattement8ansCouple = plus8Ans.abattementAnnuel.couple;
       if (plus8Ans.primesNettesSeuil) params.avSeuilPrimes150k = plus8Ans.primesNettesSeuil;
-      if (plus8Ans.irRateUnderThresholdPercent) params.avTauxSousSeuil8ans = toDecimalPercent(plus8Ans.irRateUnderThresholdPercent);
-      if (plus8Ans.irRateOverThresholdPercent) params.avTauxSurSeuil8ans = toDecimalPercent(plus8Ans.irRateOverThresholdPercent);
+      if (plus8Ans.irRateUnderThresholdPercent)
+        params.avTauxSousSeuil8ans = toDecimalPercent(plus8Ans.irRateUnderThresholdPercent);
+      if (plus8Ans.irRateOverThresholdPercent)
+        params.avTauxSurSeuil8ans = toDecimalPercent(plus8Ans.irRateOverThresholdPercent);
     }
     if (depuis2017?.moins8Ans?.irRatePercent && typeof pfuRateIR !== 'number') {
       params.pfuIR = toDecimalPercent(depuis2017.moins8Ans.irRatePercent);
-      params.pfuTotal = roundDecimal(params.pfuIR + params.pfuPS);
+      params.pfuTotal = roundDecimal(getParam(params, 'pfuIR') + getParam(params, 'pfuPS'));
     }
 
     const deces = av.deces;
@@ -104,7 +112,9 @@ export function extractFiscalParams(
         if (deces.primesApres1998.brackets[0].upTo) {
           const upTo = deces.primesApres1998.brackets[0].upTo;
           params.av990ITranche1Plafond =
-            upTo > params.av990IAbattement ? upTo - params.av990IAbattement : upTo;
+            upTo > getParam(params, 'av990IAbattement')
+              ? upTo - getParam(params, 'av990IAbattement')
+              : upTo;
         }
       }
       if (deces.primesApres1998.brackets?.[1]) {
@@ -118,7 +128,11 @@ export function extractFiscalParams(
 
   const dividendes = fiscalitySettings?.dividendes;
   if (dividendes?.abattementBaremePercent != null) {
-    params.dividendesAbattementPercent = clamp(toDecimalPercent(dividendes.abattementBaremePercent), 0, 1);
+    params.dividendesAbattementPercent = clamp(
+      toDecimalPercent(dividendes.abattementBaremePercent),
+      0,
+      1,
+    );
   }
 
   if (fiscalitySettings?.pea?.ancienneteMinYears != null) {
@@ -129,12 +143,12 @@ export function extractFiscalParams(
   for (const key of REQUIRED_NUMERIC_FISCAL_KEYS) {
     const value = params[key];
     if (typeof value !== 'number' || Number.isNaN(value)) {
-      params[key] = (DEFAULT_FISCAL_PARAMS as Record<string, number>)[key];
+      params[key] = getParam(DEFAULT_FISCAL_PARAMS, key);
       missingKeys.push(key);
     }
   }
 
-  params.pfuTotal = roundDecimal((params.pfuIR ?? 0) + (params.pfuPS ?? 0));
+  params.pfuTotal = roundDecimal(getParam(params, 'pfuIR') + getParam(params, 'pfuPS'));
 
   if (missingKeys.length && !hasWarnedMissingFiscalParams) {
     console.warn(

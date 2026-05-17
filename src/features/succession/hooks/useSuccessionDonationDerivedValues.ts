@@ -29,18 +29,25 @@ export function useSuccessionDonationDerivedValues({
     () => [...donationsContext, ...donationPartageFiscalLines],
     [donationsContext, donationPartageFiscalLines],
   );
-  const donationTotals = useMemo(() => donationsFiscalContext.reduce((totals, entry) => {
-    const amount = getDonationEffectiveAmount(entry);
-    if (entry.type === 'rapportable') totals.rapportable += amount;
-    if (entry.type === 'hors_part') totals.horsPart += amount;
-    if (entry.type === 'donation_partage') totals.partagees += amount;
-    return totals;
-  }, {
-    rapportable: 0,
-    horsPart: 0,
-    partagees: 0,
-    legsParticuliers: getTestamentParticularLegaciesTotal(devolutionContext.testamentsBySide),
-  }), [donationsFiscalContext, devolutionContext.testamentsBySide]);
+  const donationTotals = useMemo(
+    () =>
+      donationsFiscalContext.reduce(
+        (totals, entry) => {
+          const amount = getDonationEffectiveAmount(entry);
+          if (entry.type === 'rapportable') totals.rapportable += amount;
+          if (entry.type === 'hors_part') totals.horsPart += amount;
+          if (entry.type === 'donation_partage') totals.partagees += amount;
+          return totals;
+        },
+        {
+          rapportable: 0,
+          horsPart: 0,
+          partagees: 0,
+          legsParticuliers: getTestamentParticularLegaciesTotal(devolutionContext.testamentsBySide),
+        },
+      ),
+    [donationsFiscalContext, devolutionContext.testamentsBySide],
+  );
 
   return {
     donationPartageFiscalLines,

@@ -24,7 +24,16 @@
 
 const path = require('path');
 
-const FEATURES = ['audit', 'credit', 'ir', 'per', 'placement', 'strategy', 'succession', 'tresorerie-societe'];
+const FEATURES = [
+  'audit',
+  'credit',
+  'ir',
+  'per',
+  'placement',
+  'strategy',
+  'succession',
+  'tresorerie-societe',
+];
 
 /**
  * Génère les règles cross-feature pour une feature donnée.
@@ -103,7 +112,8 @@ module.exports = {
     {
       name: 'no-supabase-from-runtime-domains',
       severity: 'error',
-      comment: 'src/features/, src/engine/ et src/components/ ne doivent pas importer supabaseClient directement — utiliser hooks/, cache/ ou pages autorisées (AGENTS.md §3)',
+      comment:
+        'src/features/, src/engine/ et src/components/ ne doivent pas importer supabaseClient directement — utiliser hooks/, cache/ ou pages autorisées (AGENTS.md §3)',
       from: { path: '^src/(features|engine|components)/' },
       to: { path: 'supabaseClient' },
     },
@@ -112,7 +122,8 @@ module.exports = {
     {
       name: 'no-direct-invoke-admin-from-ui',
       severity: 'error',
-      comment: 'src/pages/, src/features/ et src/components/ ne doivent pas importer settings/admin/invokeAdmin directement — passer par un service settings/admin dédié',
+      comment:
+        'src/pages/, src/features/ et src/components/ ne doivent pas importer settings/admin/invokeAdmin directement — passer par un service settings/admin dédié',
       from: { path: '^src/(pages|features|components)/' },
       to: { path: '^src/settings/admin/invokeAdmin(\\.ts)?$' },
     },
@@ -121,7 +132,8 @@ module.exports = {
     {
       name: 'no-export-study-deck-from-ui',
       severity: 'error',
-      comment: 'src/components/, src/pages/, src/routes/ et src/features/*/components/ ne doivent pas importer directement src/pptx/export/exportStudyDeck — passer par un hook ou wrapper feature-owned (cf. GOUVERNANCE_EXPORTS.md §Règle de périmètre)',
+      comment:
+        'src/components/, src/pages/, src/routes/ et src/features/*/components/ ne doivent pas importer directement src/pptx/export/exportStudyDeck — passer par un hook ou wrapper feature-owned (cf. GOUVERNANCE_EXPORTS.md §Règle de périmètre)',
       from: { path: '^src/(components|pages|routes)/|^src/features/[^/]+/components/' },
       to: { path: '^src/pptx/export/exportStudyDeck(\\.ts)?$' },
     },
@@ -130,7 +142,8 @@ module.exports = {
     {
       name: 'placement-no-direct-use-fiscal-context',
       severity: 'error',
-      comment: 'src/features/placement/ ne doit pas importer directement useFiscalContext en runtime — passer par usePlacementSettings pour conserver une seule entrée fiscale Placement',
+      comment:
+        'src/features/placement/ ne doit pas importer directement useFiscalContext en runtime — passer par usePlacementSettings pour conserver une seule entrée fiscale Placement',
       from: { path: '^src/features/placement/' },
       to: { path: '^src/hooks/useFiscalContext(\\.ts)?$' },
     },
@@ -150,13 +163,7 @@ module.exports = {
     /* Inclure uniquement src/, exclure tests, node_modules, dist */
     includeOnly: '^src/',
     exclude: {
-      path: [
-        '__tests__',
-        '\\.test\\.',
-        '\\.spec\\.',
-        'node_modules',
-        'dist',
-      ],
+      path: ['__tests__', '\\.test\\.', '\\.spec\\.', 'node_modules', 'dist'],
     },
 
     moduleSystems: ['es6', 'cjs'],

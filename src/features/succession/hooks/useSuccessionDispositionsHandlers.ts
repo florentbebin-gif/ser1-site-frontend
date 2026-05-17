@@ -56,63 +56,84 @@ export function useSuccessionDispositionsHandlers({
     [testamentBeneficiaryOptionsBySide],
   );
 
-  const updateDispositionsTestament = useCallback((
-    side: SuccessionPrimarySide,
-    updater: (_current: SuccessionTestamentConfig) => SuccessionTestamentConfig,
-  ) => {
-    setDispositionsDraft((prev) => updateDraftTestament(prev, side, updater));
-  }, [setDispositionsDraft]);
+  const updateDispositionsTestament = useCallback(
+    (
+      side: SuccessionPrimarySide,
+      updater: (_current: SuccessionTestamentConfig) => SuccessionTestamentConfig,
+    ) => {
+      setDispositionsDraft((prev) => updateDraftTestament(prev, side, updater));
+    },
+    [setDispositionsDraft],
+  );
 
-  const addDispositionsParticularLegacy = useCallback((side: SuccessionPrimarySide) => {
-    const defaultBeneficiaryRef = getFirstTestamentBeneficiaryRef(side);
-    setDispositionsDraft((prev) => updateDraftTestament(prev, side, (current) => ({
-      ...current,
-      particularLegacies: [
-        ...current.particularLegacies,
-        createSuccessionParticularLegacyEntry(defaultBeneficiaryRef),
-      ],
-    })));
-  }, [getFirstTestamentBeneficiaryRef, setDispositionsDraft]);
+  const addDispositionsParticularLegacy = useCallback(
+    (side: SuccessionPrimarySide) => {
+      const defaultBeneficiaryRef = getFirstTestamentBeneficiaryRef(side);
+      setDispositionsDraft((prev) =>
+        updateDraftTestament(prev, side, (current) => ({
+          ...current,
+          particularLegacies: [
+            ...current.particularLegacies,
+            createSuccessionParticularLegacyEntry(defaultBeneficiaryRef),
+          ],
+        })),
+      );
+    },
+    [getFirstTestamentBeneficiaryRef, setDispositionsDraft],
+  );
 
-  const updateDispositionsParticularLegacy = useCallback((
-    side: SuccessionPrimarySide,
-    particularLegacyId: string,
-    field: 'beneficiaryRef' | 'amount' | 'label',
-    value: string | number | SuccessionBeneficiaryRef | null,
-  ) => {
-    setDispositionsDraft((prev) => updateDraftTestament(prev, side, (current) => ({
-      ...current,
-      particularLegacies: current.particularLegacies.map((entry) => {
-        if (entry.id !== particularLegacyId) return entry;
-        if (field === 'beneficiaryRef') {
-          return {
-            ...entry,
-            beneficiaryRef: typeof value === 'string' && value.length > 0 ? value as SuccessionBeneficiaryRef : null,
-          };
-        }
-        if (field === 'amount') {
-          return {
-            ...entry,
-            amount: Math.max(0, Number(value) || 0),
-          };
-        }
-        return {
-          ...entry,
-          label: typeof value === 'string' && value.trim().length > 0 ? value.trim() : undefined,
-        };
-      }),
-    })));
-  }, [setDispositionsDraft]);
+  const updateDispositionsParticularLegacy = useCallback(
+    (
+      side: SuccessionPrimarySide,
+      particularLegacyId: string,
+      field: 'beneficiaryRef' | 'amount' | 'label',
+      value: string | number | SuccessionBeneficiaryRef | null,
+    ) => {
+      setDispositionsDraft((prev) =>
+        updateDraftTestament(prev, side, (current) => ({
+          ...current,
+          particularLegacies: current.particularLegacies.map((entry) => {
+            if (entry.id !== particularLegacyId) return entry;
+            if (field === 'beneficiaryRef') {
+              return {
+                ...entry,
+                beneficiaryRef:
+                  typeof value === 'string' && value.length > 0
+                    ? (value as SuccessionBeneficiaryRef)
+                    : null,
+              };
+            }
+            if (field === 'amount') {
+              return {
+                ...entry,
+                amount: Math.max(0, Number(value) || 0),
+              };
+            }
+            return {
+              ...entry,
+              label:
+                typeof value === 'string' && value.trim().length > 0 ? value.trim() : undefined,
+            };
+          }),
+        })),
+      );
+    },
+    [setDispositionsDraft],
+  );
 
-  const removeDispositionsParticularLegacy = useCallback((
-    side: SuccessionPrimarySide,
-    particularLegacyId: string,
-  ) => {
-    setDispositionsDraft((prev) => updateDraftTestament(prev, side, (current) => ({
-      ...current,
-      particularLegacies: current.particularLegacies.filter((entry) => entry.id !== particularLegacyId),
-    })));
-  }, [setDispositionsDraft]);
+  const removeDispositionsParticularLegacy = useCallback(
+    (side: SuccessionPrimarySide, particularLegacyId: string) => {
+      setDispositionsDraft((prev) =>
+        updateDraftTestament(prev, side, (current) => ({
+          ...current,
+          particularLegacies: current.particularLegacies.filter(
+            (entry) => entry.id !== particularLegacyId,
+          ),
+        })),
+      );
+    },
+    [setDispositionsDraft],
+  );
 
   const openDispositionsModal = useCallback(() => {
     if (!canOpenDispositionsModal) return;
@@ -122,7 +143,9 @@ export function useSuccessionDispositionsHandlers({
       donationEntreEpouxOption: patrimonialContext.donationEntreEpouxOption,
       stipulationContraireCU: patrimonialContext.stipulationContraireCU,
       societeAcquets: cloneSuccessionSocieteAcquetsConfig(patrimonialContext.societeAcquets),
-      participationAcquets: cloneSuccessionParticipationAcquetsConfig(patrimonialContext.participationAcquets),
+      participationAcquets: cloneSuccessionParticipationAcquetsConfig(
+        patrimonialContext.participationAcquets,
+      ),
       preciputMode: patrimonialContext.preciputMode,
       preciputSelections: cloneSuccessionPreciputSelections(patrimonialContext.preciputSelections),
       interMassClaims: cloneSuccessionInterMassClaims(patrimonialContext.interMassClaims),
@@ -130,7 +153,9 @@ export function useSuccessionDispositionsHandlers({
       attributionIntegrale: patrimonialContext.attributionIntegrale,
       choixLegalConjointSansDDV: devolutionContext.choixLegalConjointSansDDV,
       testamentsBySide: cloneSuccessionTestamentsBySide(devolutionContext.testamentsBySide),
-      ascendantsSurvivantsBySide: cloneAscendantsSurvivantsBySide(devolutionContext.ascendantsSurvivantsBySide),
+      ascendantsSurvivantsBySide: cloneAscendantsSurvivantsBySide(
+        devolutionContext.ascendantsSurvivantsBySide,
+      ),
     });
     setShowDispositionsModal(true);
   }, [
@@ -149,7 +174,9 @@ export function useSuccessionDispositionsHandlers({
       donationEntreEpouxOption: dispositionsDraft.donationEntreEpouxOption,
       stipulationContraireCU: dispositionsDraft.stipulationContraireCU,
       societeAcquets: cloneSuccessionSocieteAcquetsConfig(dispositionsDraft.societeAcquets),
-      participationAcquets: cloneSuccessionParticipationAcquetsConfig(dispositionsDraft.participationAcquets),
+      participationAcquets: cloneSuccessionParticipationAcquetsConfig(
+        dispositionsDraft.participationAcquets,
+      ),
       preciputMode: dispositionsDraft.preciputMode,
       preciputSelections: cloneSuccessionPreciputSelections(dispositionsDraft.preciputSelections),
       interMassClaims: cloneSuccessionInterMassClaims(dispositionsDraft.interMassClaims),
@@ -162,7 +189,9 @@ export function useSuccessionDispositionsHandlers({
       ...prev,
       choixLegalConjointSansDDV: dispositionsDraft.choixLegalConjointSansDDV,
       testamentsBySide: cloneSuccessionTestamentsBySide(dispositionsDraft.testamentsBySide),
-      ascendantsSurvivantsBySide: cloneAscendantsSurvivantsBySide(dispositionsDraft.ascendantsSurvivantsBySide),
+      ascendantsSurvivantsBySide: cloneAscendantsSurvivantsBySide(
+        dispositionsDraft.ascendantsSurvivantsBySide,
+      ),
     }));
     setShowDispositionsModal(false);
   }, [

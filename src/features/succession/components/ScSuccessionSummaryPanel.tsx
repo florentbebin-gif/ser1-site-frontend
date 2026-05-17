@@ -55,15 +55,36 @@ interface ScSuccessionSummaryPanelProps {
         id: string;
         kind: 'recompense' | 'creance';
         label?: string;
-        fromPocket: 'epoux1' | 'epoux2' | 'communaute' | 'societe_acquets' | 'indivision_pacse' | 'indivision_concubinage' | 'indivision_separatiste';
-        toPocket: 'epoux1' | 'epoux2' | 'communaute' | 'societe_acquets' | 'indivision_pacse' | 'indivision_concubinage' | 'indivision_separatiste';
+        fromPocket:
+          | 'epoux1'
+          | 'epoux2'
+          | 'communaute'
+          | 'societe_acquets'
+          | 'indivision_pacse'
+          | 'indivision_concubinage'
+          | 'indivision_separatiste';
+        toPocket:
+          | 'epoux1'
+          | 'epoux2'
+          | 'communaute'
+          | 'societe_acquets'
+          | 'indivision_pacse'
+          | 'indivision_concubinage'
+          | 'indivision_separatiste';
         appliedAmount: number;
       }>;
     } | null;
     affectedLiabilities: {
       totalAmount: number;
       byPocket: Array<{
-        pocket: 'epoux1' | 'epoux2' | 'communaute' | 'societe_acquets' | 'indivision_pacse' | 'indivision_concubinage' | 'indivision_separatiste';
+        pocket:
+          | 'epoux1'
+          | 'epoux2'
+          | 'communaute'
+          | 'societe_acquets'
+          | 'indivision_pacse'
+          | 'indivision_concubinage'
+          | 'indivision_separatiste';
         amount: number;
       }>;
     } | null;
@@ -115,7 +136,17 @@ export default function ScSuccessionSummaryPanel({
     <div className="premium-card sc-summary-card sim-summary-card sim-summary-card--secondary sc-hero-card sc-hero-card--secondary">
       <div className="sc-summary-title-row">
         <div className="sim-card__icon">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <svg
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.8"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden="true"
+          >
             <path d="M21.21 15.89A10 10 0 1 1 8 2.83" />
             <path d="M22 12A10 10 0 0 0 12 2v10z" />
           </svg>
@@ -141,19 +172,31 @@ export default function ScSuccessionSummaryPanel({
       <div className="sc-card__divider sc-card__divider--tight" />
       <div className="sc-synth-kpis">
         <div className="sc-synth-kpi">
-          <span className="sc-synth-kpi__label">{displayUsesChainage ? 'Cumul transmis au 1er décès' : 'Patrimoine transmis'}</span>
-          <strong className="sc-synth-kpi__value">{fmt(displayUsesChainage ? step1TotalTransmis : synthDonutTransmis)}</strong>
+          <span className="sc-synth-kpi__label">
+            {displayUsesChainage ? 'Cumul transmis au 1er décès' : 'Patrimoine transmis'}
+          </span>
+          <strong className="sc-synth-kpi__value">
+            {fmt(displayUsesChainage ? step1TotalTransmis : synthDonutTransmis)}
+          </strong>
         </div>
         <div className="sc-synth-kpi">
-          <span className="sc-synth-kpi__label">{displayUsesChainage ? 'Cumul transmis au 2ème décès' : 'Coût cumulé'}</span>
-          <strong className="sc-synth-kpi__value">{fmt(displayUsesChainage ? step2TotalTransmis : derivedTotalDroits)}</strong>
+          <span className="sc-synth-kpi__label">
+            {displayUsesChainage ? 'Cumul transmis au 2ème décès' : 'Coût cumulé'}
+          </span>
+          <strong className="sc-synth-kpi__value">
+            {fmt(displayUsesChainage ? step2TotalTransmis : derivedTotalDroits)}
+          </strong>
         </div>
         <div className="sc-synth-kpi">
-          <span className="sc-synth-kpi__label">{displayUsesChainage ? 'Coût 1er décès' : 'Coût décès simulé'}</span>
+          <span className="sc-synth-kpi__label">
+            {displayUsesChainage ? 'Coût 1er décès' : 'Coût décès simulé'}
+          </span>
           <strong className="sc-synth-kpi__value">{fmt(firstCost)}</strong>
         </div>
         <div className="sc-synth-kpi">
-          <span className="sc-synth-kpi__label">{displayUsesChainage ? 'Coût 2e décès' : 'Net transmis'}</span>
+          <span className="sc-synth-kpi__label">
+            {displayUsesChainage ? 'Coût 2e décès' : 'Net transmis'}
+          </span>
           <strong className="sc-synth-kpi__value">{fmt(secondValue)}</strong>
         </div>
       </div>
@@ -197,32 +240,34 @@ export default function ScSuccessionSummaryPanel({
           )}
         </>
       )}
-      {displayUsesChainage && preciput && (preciput.appliedAmount > 0 || preciput.selections.length > 0) && (
-        <>
-          <div className="sc-card__divider sc-card__divider--tight" />
-          <div className="sc-synth-section-title">Preciput applique</div>
-          <div className="sc-summary-row">
-            <span>Mode retenu</span>
-            <strong>{preciput.mode === 'cible' ? 'Cible' : 'Global'}</strong>
-          </div>
-          <div className="sc-summary-row">
-            <span>Montant preleve</span>
-            <strong>{fmt(preciput.appliedAmount)}</strong>
-          </div>
-          {preciput.usesGlobalFallback && (
+      {displayUsesChainage &&
+        preciput &&
+        (preciput.appliedAmount > 0 || preciput.selections.length > 0) && (
+          <>
+            <div className="sc-card__divider sc-card__divider--tight" />
+            <div className="sc-synth-section-title">Preciput applique</div>
             <div className="sc-summary-row">
-              <span>Mode de repli global</span>
-              <strong>Oui</strong>
+              <span>Mode retenu</span>
+              <strong>{preciput.mode === 'cible' ? 'Cible' : 'Global'}</strong>
             </div>
-          )}
-          {preciput.selections.map((selection) => (
-            <div key={selection.id} className="sc-summary-row">
-              <span>{selection.label}</span>
-              <strong>{fmt(selection.appliedAmount)}</strong>
+            <div className="sc-summary-row">
+              <span>Montant preleve</span>
+              <strong>{fmt(preciput.appliedAmount)}</strong>
             </div>
-          ))}
-        </>
-      )}
+            {preciput.usesGlobalFallback && (
+              <div className="sc-summary-row">
+                <span>Mode de repli global</span>
+                <strong>Oui</strong>
+              </div>
+            )}
+            {preciput.selections.map((selection) => (
+              <div key={selection.id} className="sc-summary-row">
+                <span>{selection.label}</span>
+                <strong>{fmt(selection.appliedAmount)}</strong>
+              </div>
+            ))}
+          </>
+        )}
       {displayUsesChainage && participationAcquets && (
         <>
           <div className="sc-card__divider sc-card__divider--tight" />
@@ -279,7 +324,7 @@ export default function ScSuccessionSummaryPanel({
             .map((claim) => (
               <div key={claim.id} className="sc-summary-row">
                 <span>
-                  {(claim.label ?? getSuccessionInterMassClaimKindLabel(claim.kind))}
+                  {claim.label ?? getSuccessionInterMassClaimKindLabel(claim.kind)}
                   {' - '}
                   {getSuccessionPocketLabel(claim.fromPocket)}
                   {' vers '}
@@ -310,7 +355,9 @@ export default function ScSuccessionSummaryPanel({
         <>
           <div className="sc-card__divider sc-card__divider--tight" />
           <div className="sc-synth-section-title">Transmission par bénéficiaire</div>
-          <div className={`sc-unified-grid${displayUsesChainage ? ' sc-unified-grid--chainage' : ''}`}>
+          <div
+            className={`sc-unified-grid${displayUsesChainage ? ' sc-unified-grid--chainage' : ''}`}
+          >
             <div className="sc-unified-grid__head">
               <span />
               {displayUsesChainage && <span>1er décès</span>}
@@ -322,27 +369,37 @@ export default function ScSuccessionSummaryPanel({
                 <div className="sc-unified-row--name">
                   <span>{block.label}</span>
                   {displayUsesChainage && <span>{fmt(block.step1Brut ?? 0)}</span>}
-                  {displayUsesChainage && <span>{block.isConjoint ? '—' : fmt(block.step2Brut ?? 0)}</span>}
+                  {displayUsesChainage && (
+                    <span>{block.isConjoint ? '—' : fmt(block.step2Brut ?? 0)}</span>
+                  )}
                   <span>{fmt(block.brut)}</span>
                 </div>
                 {block.capitauxDecesNets > 0 && (
                   <div className="sc-unified-row--sub">
                     <span>Capitaux décès nets</span>
                     {displayUsesChainage && <span>{fmt(block.step1CapitauxDecesNets ?? 0)}</span>}
-                    {displayUsesChainage && <span>{block.isConjoint ? '—' : fmt(block.step2CapitauxDecesNets ?? 0)}</span>}
+                    {displayUsesChainage && (
+                      <span>{block.isConjoint ? '—' : fmt(block.step2CapitauxDecesNets ?? 0)}</span>
+                    )}
                     <span>{fmt(block.capitauxDecesNets)}</span>
                   </div>
                 )}
                 <div className="sc-unified-row--sub">
                   <span>Droits</span>
-                  {displayUsesChainage && <span>{block.exonerated ? 'Exonéré' : fmt(block.step1Droits ?? 0)}</span>}
-                  {displayUsesChainage && <span>{block.isConjoint ? '—' : fmt(block.step2Droits ?? 0)}</span>}
+                  {displayUsesChainage && (
+                    <span>{block.exonerated ? 'Exonéré' : fmt(block.step1Droits ?? 0)}</span>
+                  )}
+                  {displayUsesChainage && (
+                    <span>{block.isConjoint ? '—' : fmt(block.step2Droits ?? 0)}</span>
+                  )}
                   <span>{block.exonerated ? 'Exonéré' : fmt(block.droits)}</span>
                 </div>
                 <div className="sc-unified-row--net">
                   <span>Transmission nette</span>
                   {displayUsesChainage && <span>{fmt(block.step1TransmissionNette ?? 0)}</span>}
-                  {displayUsesChainage && <span>{block.isConjoint ? '—' : fmt(block.step2TransmissionNette ?? 0)}</span>}
+                  {displayUsesChainage && (
+                    <span>{block.isConjoint ? '—' : fmt(block.step2TransmissionNette ?? 0)}</span>
+                  )}
                   <span>{fmt(block.transmissionNette)}</span>
                 </div>
               </div>

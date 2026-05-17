@@ -65,15 +65,10 @@ export interface LogoRecord {
 // ─── Helpers internes ─────────────────────────────────────────────────
 
 function asRecord(value: unknown): Record<string, unknown> | null {
-  return typeof value === 'object' && value !== null
-    ? (value as Record<string, unknown>)
-    : null;
+  return typeof value === 'object' && value !== null ? (value as Record<string, unknown>) : null;
 }
 
-async function invoke<T>(
-  action: string,
-  payload?: Record<string, unknown>,
-): Promise<T> {
+async function invoke<T>(action: string, payload?: Record<string, unknown>): Promise<T> {
   const { data, error } = await invokeAdmin(action, payload);
   if (error) throw new Error(error.message);
   return data as T;
@@ -82,7 +77,6 @@ async function invoke<T>(
 // ─── API publique ─────────────────────────────────────────────────────
 
 export const adminClient = {
-
   // ── Utilisateurs ──────────────────────────────────────────────────
 
   async listUsers(opts?: { includeTestAccounts?: boolean }): Promise<UserRecord[]> {
@@ -159,10 +153,7 @@ export const adminClient = {
     return Array.isArray(themes) ? (themes as ThemeRecord[]) : [];
   },
 
-  async createTheme(cmd: {
-    name: string;
-    palette: Record<string, string>;
-  }): Promise<ThemeRecord> {
+  async createTheme(cmd: { name: string; palette: Record<string, string> }): Promise<ThemeRecord> {
     const data = await invoke<unknown>('create_theme', cmd as Record<string, unknown>);
     return asRecord(data)?.theme as ThemeRecord;
   },
@@ -233,10 +224,7 @@ export const adminClient = {
     return asRecord(data)?.logo as LogoRecord;
   },
 
-  async assignCabinetLogo(cmd: {
-    cabinetId: string;
-    logoId: string | null;
-  }): Promise<void> {
+  async assignCabinetLogo(cmd: { cabinetId: string; logoId: string | null }): Promise<void> {
     await invoke('assign_cabinet_logo', {
       cabinet_id: cmd.cabinetId,
       logo_id: cmd.logoId,

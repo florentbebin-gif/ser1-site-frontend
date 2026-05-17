@@ -43,12 +43,12 @@ write → fiscalSettingsCache.invalidate(kind) → broadcastInvalidation(kind)
 
 ## Fichiers à lire si nécessaire
 
-| Fichier | Quand lire |
-|---|---|
-| `src/settings/admin/adminClient.ts` | Si opération admin à implémenter |
-| `src/utils/cache/fiscalSettingsCache.ts` | Si invalidation cache nécessaire |
-| `supabase/migrations/` | Si nouvelle migration DB |
-| `src/pages/settings/SettingsImpots.jsx` | Si modification settings fiscaux |
+| Fichier                                       | Quand lire                            |
+| --------------------------------------------- | ------------------------------------- |
+| `src/settings/admin/adminClient.ts`           | Si opération admin à implémenter      |
+| `src/utils/cache/fiscalSettingsCache.ts`      | Si invalidation cache nécessaire      |
+| `supabase/migrations/`                        | Si nouvelle migration DB              |
+| `src/pages/settings/SettingsImpots.jsx`       | Si modification settings fiscaux      |
 | `src/pages/settings/SettingsPrelevements.jsx` | Si modification settings prélèvements |
 
 ---

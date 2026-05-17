@@ -1,7 +1,5 @@
 import { useMemo } from 'react';
-import {
-  countEffectiveDescendantBranchesForDeceased,
-} from '../successionEnfants';
+import { countEffectiveDescendantBranchesForDeceased } from '../successionEnfants';
 import { canOpenDispositions } from '../successionDispositions';
 import { buildTestamentBeneficiaryOptions } from '../successionTestament';
 import {
@@ -16,10 +14,7 @@ import {
   type SuccessionLegacyAssetOwner,
   type SuccessionAssetPocket,
 } from '../successionDraft';
-import {
-  getBirthDateLabels,
-  isCoupleSituation,
-} from '../successionSimulator.helpers';
+import { getBirthDateLabels, isCoupleSituation } from '../successionSimulator.helpers';
 import { buildPrevoyanceClauseOptions } from '../successionClauseOptions';
 import type {
   SuccessionAssetDetailEntry,
@@ -82,26 +77,39 @@ export function useSuccessionUiDerivedValues({
   const showSecondBirthDate = isCoupleSituation(civilContext.situationMatrimoniale);
 
   const assetOwnerOptions = useMemo(
-    (): { value: SuccessionLegacyAssetOwner; label: string }[] => buildSuccessionAssetOwnerOptions({
-      situationMatrimoniale: civilContext.situationMatrimoniale,
-      regimeMatrimonial: civilContext.regimeMatrimonial,
-      pacsConvention: civilContext.pacsConvention,
-    }),
-    [civilContext.pacsConvention, civilContext.regimeMatrimonial, civilContext.situationMatrimoniale],
+    (): { value: SuccessionLegacyAssetOwner; label: string }[] =>
+      buildSuccessionAssetOwnerOptions({
+        situationMatrimoniale: civilContext.situationMatrimoniale,
+        regimeMatrimonial: civilContext.regimeMatrimonial,
+        pacsConvention: civilContext.pacsConvention,
+      }),
+    [
+      civilContext.pacsConvention,
+      civilContext.regimeMatrimonial,
+      civilContext.situationMatrimoniale,
+    ],
   );
 
   const assetPocketOptions = useMemo(
-    (): { value: SuccessionAssetPocket; label: string }[] => buildSuccessionAssetPocketOptions({
-      situationMatrimoniale: civilContext.situationMatrimoniale,
-      regimeMatrimonial: civilContext.regimeMatrimonial,
-      pacsConvention: civilContext.pacsConvention,
-    }),
-    [civilContext.pacsConvention, civilContext.regimeMatrimonial, civilContext.situationMatrimoniale],
+    (): { value: SuccessionAssetPocket; label: string }[] =>
+      buildSuccessionAssetPocketOptions({
+        situationMatrimoniale: civilContext.situationMatrimoniale,
+        regimeMatrimonial: civilContext.regimeMatrimonial,
+        pacsConvention: civilContext.pacsConvention,
+      }),
+    [
+      civilContext.pacsConvention,
+      civilContext.regimeMatrimonial,
+      civilContext.situationMatrimoniale,
+    ],
   );
 
   const assuranceViePartyOptions = useMemo(
-    (): { value: SuccessionPersonParty; label: string }[] => assetOwnerOptions
-      .filter((option): option is { value: SuccessionPersonParty; label: string } => option.value !== 'commun'),
+    (): { value: SuccessionPersonParty; label: string }[] =>
+      assetOwnerOptions.filter(
+        (option): option is { value: SuccessionPersonParty; label: string } =>
+          option.value !== 'commun',
+      ),
     [assetOwnerOptions],
   );
 
@@ -111,14 +119,20 @@ export function useSuccessionUiDerivedValues({
   );
 
   const testamentSides = useMemo(
-    () => (isCoupleSituation(civilContext.situationMatrimoniale) ? TESTAMENT_SIDES : ['epoux1']) as SuccessionPrimarySide[],
+    () =>
+      (isCoupleSituation(civilContext.situationMatrimoniale)
+        ? TESTAMENT_SIDES
+        : ['epoux1']) as SuccessionPrimarySide[],
     [civilContext.situationMatrimoniale],
   );
 
-  const descendantBranchesBySide = useMemo(() => ({
-    epoux1: countEffectiveDescendantBranchesForDeceased(enfantsContext, familyMembers, 'epoux1'),
-    epoux2: countEffectiveDescendantBranchesForDeceased(enfantsContext, familyMembers, 'epoux2'),
-  }), [enfantsContext, familyMembers]);
+  const descendantBranchesBySide = useMemo(
+    () => ({
+      epoux1: countEffectiveDescendantBranchesForDeceased(enfantsContext, familyMembers, 'epoux1'),
+      epoux2: countEffectiveDescendantBranchesForDeceased(enfantsContext, familyMembers, 'epoux2'),
+    }),
+    [enfantsContext, familyMembers],
+  );
 
   const testamentBeneficiaryOptionsBySide = useMemo(
     () => ({
@@ -182,24 +196,23 @@ export function useSuccessionUiDerivedValues({
       ];
     }
     if (situation === 'celibataire' || situation === 'veuf') {
-      return [
-        { value: 'epoux1', label: 'Cote Defunt(e)' },
-      ];
+      return [{ value: 'epoux1', label: 'Cote Defunt(e)' }];
     }
     return BRANCH_OPTIONS;
   }, [civilContext.situationMatrimoniale]);
 
   const assetValuation = useMemo(
-    () => computeSuccessionAssetValuation({
-      civilContext,
-      patrimonialContext,
-      assetEntries,
-      groupementFoncierEntries,
-      forfaitMobilierMode,
-      forfaitMobilierPct,
-      forfaitMobilierMontant,
-      abattementResidencePrincipale,
-    }),
+    () =>
+      computeSuccessionAssetValuation({
+        civilContext,
+        patrimonialContext,
+        assetEntries,
+        groupementFoncierEntries,
+        forfaitMobilierMode,
+        forfaitMobilierPct,
+        forfaitMobilierMontant,
+        abattementResidencePrincipale,
+      }),
     [
       civilContext,
       patrimonialContext,
@@ -212,59 +225,105 @@ export function useSuccessionUiDerivedValues({
     ],
   );
 
-  const assuranceVieTotals = useMemo(() => assuranceVieEntries.reduce((totals, entry) => ({
-    capitaux: totals.capitaux + entry.capitauxDeces,
-    versementsApres70: totals.versementsApres70 + entry.versementsApres70,
-  }), {
-    capitaux: 0,
-    versementsApres70: 0,
-  }), [assuranceVieEntries]);
+  const assuranceVieTotals = useMemo(
+    () =>
+      assuranceVieEntries.reduce(
+        (totals, entry) => ({
+          capitaux: totals.capitaux + entry.capitauxDeces,
+          versementsApres70: totals.versementsApres70 + entry.versementsApres70,
+        }),
+        {
+          capitaux: 0,
+          versementsApres70: 0,
+        },
+      ),
+    [assuranceVieEntries],
+  );
 
-  const assuranceVieByAssure = useMemo(() => assuranceVieEntries.reduce((totals, entry) => {
-    totals[entry.assure] += entry.capitauxDeces;
-    return totals;
-  }, {
-    epoux1: 0,
-    epoux2: 0,
-  } as Record<'epoux1' | 'epoux2', number>), [assuranceVieEntries]);
+  const assuranceVieByAssure = useMemo(
+    () =>
+      assuranceVieEntries.reduce(
+        (totals, entry) => {
+          totals[entry.assure] += entry.capitauxDeces;
+          return totals;
+        },
+        {
+          epoux1: 0,
+          epoux2: 0,
+        } as Record<'epoux1' | 'epoux2', number>,
+      ),
+    [assuranceVieEntries],
+  );
 
-  const perTotals = useMemo(() => perEntries.reduce((totals, entry) => ({
-    capitaux: totals.capitaux + entry.capitauxDeces,
-  }), {
-    capitaux: 0,
-  }), [perEntries]);
+  const perTotals = useMemo(
+    () =>
+      perEntries.reduce(
+        (totals, entry) => ({
+          capitaux: totals.capitaux + entry.capitauxDeces,
+        }),
+        {
+          capitaux: 0,
+        },
+      ),
+    [perEntries],
+  );
 
-  const perByAssure = useMemo(() => perEntries.reduce((totals, entry) => {
-    totals[entry.assure] += entry.capitauxDeces;
-    return totals;
-  }, {
-    epoux1: 0,
-    epoux2: 0,
-  } as Record<'epoux1' | 'epoux2', number>), [perEntries]);
+  const perByAssure = useMemo(
+    () =>
+      perEntries.reduce(
+        (totals, entry) => {
+          totals[entry.assure] += entry.capitauxDeces;
+          return totals;
+        },
+        {
+          epoux1: 0,
+          epoux2: 0,
+        } as Record<'epoux1' | 'epoux2', number>,
+      ),
+    [perEntries],
+  );
 
-  const prevoyanceTotals = useMemo(() => prevoyanceDecesEntries.reduce((totals, entry) => ({
-    capitaux: totals.capitaux + entry.capitalDeces,
-  }), {
-    capitaux: 0,
-  }), [prevoyanceDecesEntries]);
+  const prevoyanceTotals = useMemo(
+    () =>
+      prevoyanceDecesEntries.reduce(
+        (totals, entry) => ({
+          capitaux: totals.capitaux + entry.capitalDeces,
+        }),
+        {
+          capitaux: 0,
+        },
+      ),
+    [prevoyanceDecesEntries],
+  );
 
-  const prevoyanceByAssure = useMemo(() => prevoyanceDecesEntries.reduce((totals, entry) => {
-    totals[entry.assure] += entry.capitalDeces;
-    return totals;
-  }, {
-    epoux1: 0,
-    epoux2: 0,
-  } as Record<'epoux1' | 'epoux2', number>), [prevoyanceDecesEntries]);
+  const prevoyanceByAssure = useMemo(
+    () =>
+      prevoyanceDecesEntries.reduce(
+        (totals, entry) => {
+          totals[entry.assure] += entry.capitalDeces;
+          return totals;
+        },
+        {
+          epoux1: 0,
+          epoux2: 0,
+        } as Record<'epoux1' | 'epoux2', number>,
+      ),
+    [prevoyanceDecesEntries],
+  );
 
   const prevoyanceClauseOptions = useMemo(
     () => buildPrevoyanceClauseOptions(enfantsContext, familyMembers),
     [enfantsContext, familyMembers],
   );
 
-  const assetEntriesByCategory = useMemo(() => ASSET_CATEGORY_OPTIONS.map((category) => ({
-    ...category,
-    entries: assetEntries.filter((entry) => entry.category === category.value),
-  })), [assetEntries]);
+  const assetEntriesByCategory = useMemo(
+    () =>
+      ASSET_CATEGORY_OPTIONS.map((category) => ({
+        ...category,
+        entries: assetEntries.filter((entry) => entry.category === category.value),
+      })),
+    [assetEntries],
+  );
 
   return {
     birthDateLabels,
@@ -297,11 +356,14 @@ export function useSuccessionUiDerivedValues({
     prevoyanceTotals,
     prevoyanceByAssure,
     prevoyanceClauseOptions,
-    hasBeneficiaryLevelGfAdjustment: assetValuation.transmissionBasis.hasBeneficiaryLevelGfAdjustment,
+    hasBeneficiaryLevelGfAdjustment:
+      assetValuation.transmissionBasis.hasBeneficiaryLevelGfAdjustment,
     assetEntriesByCategory,
-    isCommunauteUniverselleRegime: civilContext.situationMatrimoniale === 'marie'
-      && civilContext.regimeMatrimonial === 'communaute_universelle',
-    isCommunauteMeublesAcquetsRegime: civilContext.situationMatrimoniale === 'marie'
-      && civilContext.regimeMatrimonial === 'communaute_meubles_acquets',
+    isCommunauteUniverselleRegime:
+      civilContext.situationMatrimoniale === 'marie' &&
+      civilContext.regimeMatrimonial === 'communaute_universelle',
+    isCommunauteMeublesAcquetsRegime:
+      civilContext.situationMatrimoniale === 'marie' &&
+      civilContext.regimeMatrimonial === 'communaute_meubles_acquets',
   };
 }

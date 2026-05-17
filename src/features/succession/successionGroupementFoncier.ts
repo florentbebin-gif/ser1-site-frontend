@@ -25,7 +25,7 @@ export function computeGroupementFoncierExoneration(
     return { exonere, taxable: valeur - exonere };
   }
   const exonereTranche1 = Math.round(SEUIL_EXONERATION_GF * 0.75);
-  const exonereTranche2 = Math.round((valeurExonerable - SEUIL_EXONERATION_GF) * 0.50);
+  const exonereTranche2 = Math.round((valeurExonerable - SEUIL_EXONERATION_GF) * 0.5);
   const exonere = exonereTranche1 + exonereTranche2;
   return { exonere, taxable: valeur - exonere };
 }

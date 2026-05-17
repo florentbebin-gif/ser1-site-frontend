@@ -81,10 +81,26 @@ const RESUME_SERIES: ProjectionSerie[] = [
   { key: 'retraitsCCA', label: 'Remboursements CCA (sans PFU)', format: 'money' },
   { key: 'ccaRestant', label: 'CCA net restant dû', format: 'money' },
   { key: 'revenuDistrib', label: 'Revenus — poche de distribution', format: 'money' },
-  { key: 'dividendesFiliales', label: 'Dividendes filiales reçus (régime mère-fille)', format: 'money' },
-  { key: 'cessionFilialesCash', label: 'Cash brut de cession filiale reçu en banque', format: 'money' },
-  { key: 'cessionFilialesPlusValueBrute', label: 'Plus-value brute de cession filiale', format: 'money' },
-  { key: 'cessionFilialesQuotePartTaxable', label: 'Quote-part taxable de cession filiale', format: 'money' },
+  {
+    key: 'dividendesFiliales',
+    label: 'Dividendes filiales reçus (régime mère-fille)',
+    format: 'money',
+  },
+  {
+    key: 'cessionFilialesCash',
+    label: 'Cash brut de cession filiale reçu en banque',
+    format: 'money',
+  },
+  {
+    key: 'cessionFilialesPlusValueBrute',
+    label: 'Plus-value brute de cession filiale',
+    format: 'money',
+  },
+  {
+    key: 'cessionFilialesQuotePartTaxable',
+    label: 'Quote-part taxable de cession filiale',
+    format: 'money',
+  },
   { key: 'quotePartTaxable', label: 'Quote-part taxable totale filiales', format: 'money' },
   { key: 'gainCapiN', label: 'Gain de capitalisation (sortie)', format: 'money' },
   { key: 'valeurCapi', label: 'Valeur poche de capitalisation', format: 'money' },
@@ -97,9 +113,17 @@ const RESUME_SERIES: ProjectionSerie[] = [
   { key: 'resultatNetComptable', label: 'Résultat net comptable', format: 'money' },
   { key: 'reservesDebut', label: "Réserves en début d'exercice", format: 'money' },
   { key: 'reserveLegaleDebut', label: "Réserve légale en début d'exercice", format: 'money' },
-  { key: 'dotationReserveLegale', label: 'Dotation obligatoire à la réserve légale', format: 'money' },
+  {
+    key: 'dotationReserveLegale',
+    label: 'Dotation obligatoire à la réserve légale',
+    format: 'money',
+  },
   { key: 'reserveLegaleFin', label: "Réserve légale en fin d'exercice", format: 'money' },
-  { key: 'dividendesAssociesBruts', label: 'Dividendes versés aux associés (bruts)', format: 'money' },
+  {
+    key: 'dividendesAssociesBruts',
+    label: 'Dividendes versés aux associés (bruts)',
+    format: 'money',
+  },
   { key: 'reservesFin', label: "Réserves en fin d'exercice", format: 'money' },
   { key: 'capaciteDistribuable', label: 'Capacité distribuable', format: 'money' },
   { key: 'pfu', label: 'Fiscalité dividendes (PFU)', format: 'money' },
@@ -108,12 +132,24 @@ const RESUME_SERIES: ProjectionSerie[] = [
   { key: 'tresorerieBanqueFin', label: 'Compte bancaire fin d’année', format: 'money' },
   { key: 'soldeMinimumCompteBancaire', label: 'Solde minimum bancaire', format: 'money' },
   { key: 'bfr', label: 'BFR protégé', format: 'money' },
-  { key: 'tresorerieDisponible', label: 'Trésorerie disponible au-dessus du seuil', format: 'money' },
+  {
+    key: 'tresorerieDisponible',
+    label: 'Trésorerie disponible au-dessus du seuil',
+    format: 'money',
+  },
   { key: 'montantInvestiInitial', label: 'Montant investi initialement', format: 'money' },
   { key: 'montantBalayeAnnuel', label: 'Montant balayé vers placements', format: 'money' },
   { key: 'montantReinvestiAuTerme', label: 'Montant réinvesti au terme', format: 'money' },
-  { key: 'deficitTresorerieBancaire', label: 'Déficit bancaire vs solde minimum + BFR', format: 'money' },
-  { key: 'alerteTresorerieBancaireInsuffisante', label: 'Alerte compte bancaire insuffisant', format: 'bool' },
+  {
+    key: 'deficitTresorerieBancaire',
+    label: 'Déficit bancaire vs solde minimum + BFR',
+    format: 'money',
+  },
+  {
+    key: 'alerteTresorerieBancaireInsuffisante',
+    label: 'Alerte compte bancaire insuffisant',
+    format: 'bool',
+  },
   { key: 'tresorerieFin', label: "Trésorerie fin d'année", format: 'money' },
 ];
 
@@ -155,24 +191,42 @@ function buildProjectionSheet(
           if (endYear == null) return phaseMax;
           return phaseMax == null ? endYear : Math.max(phaseMax, endYear);
         }, undefined);
-      const endYear = legacyEndYear == null ? phaseEndYear : phaseEndYear == null ? legacyEndYear : Math.max(legacyEndYear, phaseEndYear);
+      const endYear =
+        legacyEndYear == null
+          ? phaseEndYear
+          : phaseEndYear == null
+            ? legacyEndYear
+            : Math.max(legacyEndYear, phaseEndYear);
       return endYear == null ? max : max == null ? endYear : Math.max(max, endYear);
     },
     undefined,
   );
-  const activeDurationLabel = maxContributionEndYear == null
-    ? 'Non bornée'
-    : `${Math.max(0, maxContributionEndYear - anneeCivile + 1)} ans`;
+  const activeDurationLabel =
+    maxContributionEndYear == null
+      ? 'Non bornée'
+      : `${Math.max(0, maxContributionEndYear - anneeCivile + 1)} ans`;
 
   // En-tête avec paramètres
   const paramRows: XlsxCell[][] = [
     [h('Paramètre'), h('Valeur')],
-    [txt('Type de société'), txt(inputs.company.creationType === 'existante' ? 'Société existante' : 'Société à créer (NEWCO)')],
+    [
+      txt('Type de société'),
+      txt(
+        inputs.company.creationType === 'existante'
+          ? 'Société existante'
+          : 'Société à créer (NEWCO)',
+      ),
+    ],
     [txt('Type société'), txt(getCompanyKindLabel(inputs.company))],
     [txt('Âge actuel associé actif'), ctr(activeProfile.currentAge)],
     [txt('Âge de retraite associé actif'), ctr(activeProfile.retirementAge)],
     [txt('Besoin annuel net à la retraite'), money(activeProfile.annualIncomeNeed)],
-    [txt('Coûts de structure annuels'), money(inputs.company.incomeStatement?.annualStructureCosts ?? inputs.company.annualStructureCosts)],
+    [
+      txt('Coûts de structure annuels'),
+      money(
+        inputs.company.incomeStatement?.annualStructureCosts ?? inputs.company.annualStructureCosts,
+      ),
+    ],
     [txt('BFR'), money(inputs.company.incomeStatement?.workingCapitalRequirement ?? 0)],
     [txt('CCA initial'), money(ccaInitialTotal)],
     [txt('Apport annuel CCA'), money(ccaAnnualTotal)],
@@ -186,9 +240,19 @@ function buildProjectionSheet(
     [txt('Valeur nette société à la retraite'), money(kpis.valeurNetteSocieteRetraite)],
     [txt('Réserves à la retraite'), money(kpis.reservesRetraite)],
     [txt('Capacité distribuable (an 1)'), money(kpis.capaciteDistribuableAn1)],
-    [txt('Alerte dividendes > capacité (an 1)'), txt(kpis.alerteDividendesAn1 ? 'Oui — à contrôler' : 'Non')],
+    [
+      txt('Alerte dividendes > capacité (an 1)'),
+      txt(kpis.alerteDividendesAn1 ? 'Oui — à contrôler' : 'Non'),
+    ],
     [txt('Déficit bancaire maximum'), money(kpis.deficitBancaireMax)],
-    [txt('Alerte compte bancaire'), txt(kpis.alerteTresorerieBancaire ? `Oui — première année ${kpis.premiereAnneeDeficitBancaire ?? 'à contrôler'}` : 'Non')],
+    [
+      txt('Alerte compte bancaire'),
+      txt(
+        kpis.alerteTresorerieBancaire
+          ? `Oui — première année ${kpis.premiereAnneeDeficitBancaire ?? 'à contrôler'}`
+          : 'Non',
+      ),
+    ],
     [sec(''), sec('')],
   ];
 
@@ -196,12 +260,12 @@ function buildProjectionSheet(
   const nbAns = rows.length;
   const headerYear: XlsxCell[] = [
     h('Indicateur'),
-    ...rows.map(r => h(`${anneeCivile + r.year - 1} — An ${r.year}`)),
+    ...rows.map((r) => h(`${anneeCivile + r.year - 1} — An ${r.year}`)),
   ];
 
   const dataRows: XlsxCell[][] = RESUME_SERIES.map(({ key, label }) => [
     txt(label),
-    ...rows.map(r => {
+    ...rows.map((r) => {
       const val = r[key];
       if (typeof val === 'boolean') return txt(val ? 'Oui' : 'Non');
       return money(typeof val === 'number' ? val : 0);
@@ -215,7 +279,10 @@ function buildProjectionSheet(
   };
 }
 
-function buildAssociateRevenueSheet(rows: TresoProjectionRow[], inputs: TresoInputsRuntime): XlsxSheet {
+function buildAssociateRevenueSheet(
+  rows: TresoProjectionRow[],
+  inputs: TresoInputsRuntime,
+): XlsxSheet {
   if (rows.length === 0) {
     return {
       name: 'Revenus associés',
@@ -225,12 +292,12 @@ function buildAssociateRevenueSheet(rows: TresoProjectionRow[], inputs: TresoInp
   }
 
   const anneeCivile = getAssociateProfile(inputs, getSelectedAssociate(inputs)).projectionStartYear;
-  const dataRows = rows.flatMap(row => {
+  const dataRows = rows.flatMap((row) => {
     const year = anneeCivile + row.year - 1;
     if (row.revenusParAssocie.length === 0) {
       return [[ctr(year), txt('—'), txt('Aucun revenu associé détaillé'), money(0)]];
     }
-    return row.revenusParAssocie.map(revenue => [
+    return row.revenusParAssocie.map((revenue) => [
       ctr(year),
       txt(revenue.label),
       txt(sourceLabel(revenue.source)),
@@ -240,10 +307,7 @@ function buildAssociateRevenueSheet(rows: TresoProjectionRow[], inputs: TresoInp
 
   return {
     name: 'Revenus associés',
-    rows: [
-      [h('Année'), h('Associé'), h('Source'), h('Revenu net')],
-      ...dataRows,
-    ],
+    rows: [[h('Année'), h('Associé'), h('Source'), h('Revenu net')], ...dataRows],
     columnWidths: [14, 24, 24, 16],
   };
 }
@@ -258,7 +322,8 @@ function getAssociateRevenuePhases(associate: RuntimeAssociateInput): RevenuePha
 }
 
 function phaseLabel(phase: RevenuePhaseInput): string {
-  if (isRevenuePhaseV6(phase)) return phase.label?.trim() || `Palier ${phase.startYear}-${phase.endYear}`;
+  if (isRevenuePhaseV6(phase))
+    return phase.label?.trim() || `Palier ${phase.startYear}-${phase.endYear}`;
   return phase.label?.trim() || getRevenuePhaseSourceLabel(phase.source);
 }
 
@@ -278,19 +343,24 @@ function phaseLoadedAnnualCost(phase: RevenuePhaseInput): number {
 }
 
 function phaseAnnualNeed(phase: RevenuePhaseInput): number {
-  return isRevenuePhaseV6(phase) ? phase.distribution.annualNetIncomeNeed : phase.annualNetIncomeNeed;
+  return isRevenuePhaseV6(phase)
+    ? phase.distribution.annualNetIncomeNeed
+    : phase.annualNetIncomeNeed;
 }
 
 function phaseCcaStrategyLabel(phase: RevenuePhaseInput): string {
-  if (!isRevenuePhaseV6(phase)) return phase.useCcaForCompletion ? 'CCA prioritaire' : 'Dividendes uniquement';
-  return phase.ccaRepayment.enabled ? `Remboursement ${phase.ccaRepayment.strategy}` : 'Sans remboursement CCA';
+  if (!isRevenuePhaseV6(phase))
+    return phase.useCcaForCompletion ? 'CCA prioritaire' : 'Dividendes uniquement';
+  return phase.ccaRepayment.enabled
+    ? `Remboursement ${phase.ccaRepayment.strategy}`
+    : 'Sans remboursement CCA';
 }
 
 function buildRevenuePhaseRows(company: TresoInputsRuntime['company']): XlsxCell[][] {
   const horizonYear = (company.projectionStartYear ?? new Date().getFullYear()) + 14;
-  const rows = company.associates.flatMap(associate => {
+  const rows = company.associates.flatMap((associate) => {
     const phases = getAssociateRevenuePhases(associate);
-    return phases.map(phase => [
+    return phases.map((phase) => [
       txt(associate.label),
       txt(phaseLabel(phase)),
       txt(`${phase.startYear} → ${getPhaseEndYear(phase, phases, horizonYear)}`),
@@ -305,7 +375,19 @@ function buildRevenuePhaseRows(company: TresoInputsRuntime['company']): XlsxCell
 
   return rows.length > 0
     ? rows
-    : [[txt('Aucun parcours renseigné'), txt(''), txt(''), txt(''), txt(''), txt(''), txt(''), txt(''), txt('')]];
+    : [
+        [
+          txt('Aucun parcours renseigné'),
+          txt(''),
+          txt(''),
+          txt(''),
+          txt(''),
+          txt(''),
+          txt(''),
+          txt(''),
+          txt(''),
+        ],
+      ];
 }
 
 function scheduleRows(
@@ -315,7 +397,7 @@ function scheduleRows(
 ): XlsxCell[][] {
   const rows = schedules && schedules.length > 0 ? schedules : [];
 
-  return rows.map(schedule => [
+  return rows.map((schedule) => [
     txt(subsidiary.label),
     txt(label),
     txt(`${schedule.startYear} → ${schedule.endYear ?? 'non borné'}`),
@@ -325,7 +407,7 @@ function scheduleRows(
 
 function disposalRows(subsidiaries: SubsidiaryInput[]): XlsxCell[][] {
   const rows = subsidiaries
-    .map(subsidiary => {
+    .map((subsidiary) => {
       const disposal = subsidiary.disposal;
       if (!disposal) return null;
       return [
@@ -352,16 +434,24 @@ function buildStructureSheet(inputs: TresoInputsRuntime): XlsxSheet {
     annualStructureCosts: company.annualStructureCosts,
     workingCapitalRequirement: 0,
   };
-  const minimumBankBalance = inputs.allocationMatrix.minimumBankBalance ?? inputs.allocationMatrix.sweepThreshold ?? 0;
-  const bankLabel = inputs.allocationMatrix.pockets.length === 0
-    ? 'Trésorerie conservée sur compte bancaire'
-    : 'Compte bancaire';
+  const minimumBankBalance =
+    inputs.allocationMatrix.minimumBankBalance ?? inputs.allocationMatrix.sweepThreshold ?? 0;
+  const bankLabel =
+    inputs.allocationMatrix.pockets.length === 0
+      ? 'Trésorerie conservée sur compte bancaire'
+      : 'Compte bancaire';
   const pocketRows: XlsxCell[][] = [
-    [txt(bankLabel), txt('Poche système'), txt(`0 % · solde minimum ${minimumBankBalance.toLocaleString('fr-FR')} €`)],
+    [
+      txt(bankLabel),
+      txt('Poche système'),
+      txt(`0 % · solde minimum ${minimumBankBalance.toLocaleString('fr-FR')} €`),
+    ],
   ];
   const horizons: AllocationPocketHorizon[] = ['court_terme', 'moyen_terme', 'long_terme'];
-  horizons.forEach(horizon => {
-    const horizonPockets = inputs.allocationMatrix.pockets.filter(pocket => pocket.horizon === horizon);
+  horizons.forEach((horizon) => {
+    const horizonPockets = inputs.allocationMatrix.pockets.filter(
+      (pocket) => pocket.horizon === horizon,
+    );
     if (horizonPockets.length === 0) {
       pocketRows.push([
         txt(getAllocationHorizonLabel(horizon)),
@@ -370,15 +460,17 @@ function buildStructureSheet(inputs: TresoInputsRuntime): XlsxSheet {
       ]);
       return;
     }
-    horizonPockets.forEach(pocket => {
+    horizonPockets.forEach((pocket) => {
       pocketRows.push([
         txt(getAllocationHorizonLabel(pocket.horizon)),
         txt(pocket.label ?? pocket.id),
-        txt(`${pocket.initialAllocationPct} % initial · ${pocket.annualAllocationPct} % balayage · ${Math.round(pocket.annualReturnRate * 10000) / 100} % · durée ${pocket.durationYears} ans`),
+        txt(
+          `${pocket.initialAllocationPct} % initial · ${pocket.annualAllocationPct} % balayage · ${Math.round(pocket.annualReturnRate * 10000) / 100} % · durée ${pocket.durationYears} ans`,
+        ),
       ]);
     });
   });
-  const flowScheduleRows = company.subsidiaries.flatMap(subsidiary => [
+  const flowScheduleRows = company.subsidiaries.flatMap((subsidiary) => [
     ...scheduleRows(subsidiary, 'Prestations vers la mère', subsidiary.servicesSchedule),
     ...scheduleRows(subsidiary, 'Dividendes vers la mère', subsidiary.dividendsSchedule),
   ]);
@@ -386,32 +478,72 @@ function buildStructureSheet(inputs: TresoInputsRuntime): XlsxSheet {
     [h('Structure société'), h('Valeur'), h('Détail')],
     [txt('Type société'), txt(getCompanyKindLabel(company)), txt(getCompanyKindCode(company))],
     [txt('Forme sociale'), txt(company.legalForm.toUpperCase()), txt('')],
-    [txt('Chiffre d’affaires annuel'), money(incomeStatement.annualRevenue), txt('Compte de résultat')],
-    [txt('Coûts de structure annuels'), money(incomeStatement.annualStructureCosts), txt('Compte de résultat')],
+    [
+      txt('Chiffre d’affaires annuel'),
+      money(incomeStatement.annualRevenue),
+      txt('Compte de résultat'),
+    ],
+    [
+      txt('Coûts de structure annuels'),
+      money(incomeStatement.annualStructureCosts),
+      txt('Compte de résultat'),
+    ],
     [txt('BFR'), money(incomeStatement.workingCapitalRequirement), txt('Seuil non investissable')],
     [txt('Solde minimum bancaire'), money(minimumBankBalance), txt('Compte bancaire pivot')],
     [sec('Associés'), sec(''), sec('')],
     [h('Associé'), h('% capital / économique'), h('Rémunération / CCA')],
-    ...company.associates.map(associate => [
+    ...company.associates.map((associate) => [
       txt(`${associate.label} (${associate.kind === 'pm' ? 'PM' : 'PP'})`),
       txt(`${getCapitalPct(associate)} % / ${getEconomicPct(associate)} %`),
-      txt(`Parcours timeline · CCA ${ccaCurrentBalance(associate).toLocaleString('fr-FR')} € au taux ${Math.round((associate.cca?.remunerationRate ?? 0) * 10000) / 100} %`),
+      txt(
+        `Parcours timeline · CCA ${ccaCurrentBalance(associate).toLocaleString('fr-FR')} € au taux ${Math.round((associate.cca?.remunerationRate ?? 0) * 10000) / 100} %`,
+      ),
     ]),
-    [sec('Parcours de revenus'), sec(''), sec(''), sec(''), sec(''), sec(''), sec(''), sec(''), sec('')],
-    [h('Associé'), h('Palier'), h('Période'), h('Source'), h('Rémunération chargée'), h('Net estimé'), h('Besoin total net'), h('Complément'), h('Priorité')],
+    [
+      sec('Parcours de revenus'),
+      sec(''),
+      sec(''),
+      sec(''),
+      sec(''),
+      sec(''),
+      sec(''),
+      sec(''),
+      sec(''),
+    ],
+    [
+      h('Associé'),
+      h('Palier'),
+      h('Période'),
+      h('Source'),
+      h('Rémunération chargée'),
+      h('Net estimé'),
+      h('Besoin total net'),
+      h('Complément'),
+      h('Priorité'),
+    ],
     ...buildRevenuePhaseRows(company),
     [sec('Filiales'), sec(''), sec('')],
     [h('Filiale'), h('% détention'), h('Trésorerie / Cession')],
-    ...company.subsidiaries.map(subsidiary => [
+    ...company.subsidiaries.map((subsidiary) => [
       txt(subsidiary.label),
       txt(`${subsidiary.ownershipPct ?? subsidiary.holdingOwnershipPct} %`),
-      txt(`${(subsidiary.parentEntityId ?? 'societe') === 'societe' ? 'Société mère' : subsidiary.parentEntityId} · trésorerie ${(subsidiary.treasuryInitial ?? 0).toLocaleString('fr-FR')} € · cession ${subsidiary.disposal?.year ?? 'non prévue'}`),
+      txt(
+        `${(subsidiary.parentEntityId ?? 'societe') === 'societe' ? 'Société mère' : subsidiary.parentEntityId} · trésorerie ${(subsidiary.treasuryInitial ?? 0).toLocaleString('fr-FR')} € · cession ${subsidiary.disposal?.year ?? 'non prévue'}`,
+      ),
     ]),
     [sec('Paliers filiales'), sec(''), sec('')],
     [h('Filiale'), h('Flux'), h('Période'), h('Montant')],
     ...flowScheduleRows,
     [sec('Cessions filiales'), sec(''), sec(''), sec(''), sec(''), sec(''), sec('')],
-    [h('Filiale'), h('Année'), h('Prix'), h('Valeur fiscale des titres'), h('Frais'), h('Acquisition'), h('Régime')],
+    [
+      h('Filiale'),
+      h('Année'),
+      h('Prix'),
+      h('Valeur fiscale des titres'),
+      h('Frais'),
+      h('Acquisition'),
+      h('Régime'),
+    ],
     ...disposalRows(company.subsidiaries),
     [sec('Stratégie de trésorerie'), sec(''), sec('')],
     [h('Groupe'), h('Poche'), h('Allocation, rendement et durée')],
@@ -431,40 +563,94 @@ function buildHypothesesSheet(): XlsxSheet {
     [txt('Taux réduit IS sur les PME selon seuil paramétrable'), txt('CGI Art. 219 I-b')],
     [txt('Pas de report de pertes en V1'), txt('Hypothèse simplificatrice')],
     [sec('Régime mère-fille'), sec('')],
-    [txt('Quote-part de frais et charges (QPFC) issue des paramètres fiscaux'), txt('CGI Art. 216 — BOI-IS-BASE-10-10-10-10')],
+    [
+      txt('Quote-part de frais et charges (QPFC) issue des paramètres fiscaux'),
+      txt('CGI Art. 216 — BOI-IS-BASE-10-10-10-10'),
+    ],
     [txt('Conditions : ≥ 5 % de détention, ≥ 2 ans de conservation'), txt('CGI Art. 145')],
-    [txt("L'utilisateur confirme l'éligibilité — SER1 n'effectue pas de validation juridique"), txt('Hypothèse déclarative')],
-    [sec('Compte courant d\'associé'), sec('')],
+    [
+      txt("L'utilisateur confirme l'éligibilité — SER1 n'effectue pas de validation juridique"),
+      txt('Hypothèse déclarative'),
+    ],
+    [sec("Compte courant d'associé"), sec('')],
     [txt('Remboursement CCA : hors PFU, diminue le passif uniquement'), txt('CGI Art. 38 quater')],
-    [txt('CCA constitué = apports programmés dans les paliers + apports exceptionnels'), txt('Convention SER1')],
-    [txt('Taux maximum déductible des intérêts CCA issu des paramètres fiscaux'), txt('Service-Public / BOFiP / CGI art. 39')],
+    [
+      txt('CCA constitué = apports programmés dans les paliers + apports exceptionnels'),
+      txt('Convention SER1'),
+    ],
+    [
+      txt('Taux maximum déductible des intérêts CCA issu des paramètres fiscaux'),
+      txt('Service-Public / BOFiP / CGI art. 39'),
+    ],
     [sec('Dividendes et PFU'), sec('')],
     [txt('PFU dividendes : taux issus des paramètres fiscaux admin'), txt('CGI Art. 200 A')],
-    [txt('Convention Option A : dividendes sortis en brut unique (pas de double comptage)'), txt('Convention interne')],
-    [txt('Dividendes plafonnés à la capacité distribuable après dotation de réserve légale et à la trésorerie disponible'), txt('C. com. L232-10 / L232-11')],
+    [
+      txt('Convention Option A : dividendes sortis en brut unique (pas de double comptage)'),
+      txt('Convention interne'),
+    ],
+    [
+      txt(
+        'Dividendes plafonnés à la capacité distribuable après dotation de réserve légale et à la trésorerie disponible',
+      ),
+      txt('C. com. L232-10 / L232-11'),
+    ],
     [sec('Capitalisation'), sec('')],
-    [txt('IS latent capitalisation : affiché pour information, non décaissé avant la sortie'), txt('Hypothèse de présentation')],
-    [txt('IS effectif : déclenché uniquement au moment d\'un rachat'), txt('CGI Art. 219')],
+    [
+      txt('IS latent capitalisation : affiché pour information, non décaissé avant la sortie'),
+      txt('Hypothèse de présentation'),
+    ],
+    [txt("IS effectif : déclenché uniquement au moment d'un rachat"), txt('CGI Art. 219')],
     [sec('Matrice de trésorerie'), sec('')],
-    [txt('Balayage en fin d’exercice uniquement, après IS, dettes, CCA, charges et dividendes'), txt('Convention SER1')],
+    [
+      txt('Balayage en fin d’exercice uniquement, après IS, dettes, CCA, charges et dividendes'),
+      txt('Convention SER1'),
+    ],
     [txt('BFR inclus dans le seuil de sécurité avant investissement'), txt('Convention SER1')],
-    [txt('Les lots investis en fin d’exercice ne produisent pas de revenus sur l’exercice écoulé'), txt('Convention SER1')],
-    [txt('Au terme, les placements reviennent sur le compte bancaire ; la répétition réinvestit seulement le surplus'), txt('Convention SER1')],
+    [
+      txt('Les lots investis en fin d’exercice ne produisent pas de revenus sur l’exercice écoulé'),
+      txt('Convention SER1'),
+    ],
+    [
+      txt(
+        'Au terme, les placements reviennent sur le compte bancaire ; la répétition réinvestit seulement le surplus',
+      ),
+      txt('Convention SER1'),
+    ],
     [sec('TNS'), sec('')],
-    [txt('Seuil social V1 : capital social + primes + CCA TNS de début d’exercice'), txt('CSS L136-3 / R131-7')],
-    [txt('Le taux de charges sociales TNS reste une saisie manuelle'), txt('Hypothèse déclarative')],
+    [
+      txt('Seuil social V1 : capital social + primes + CCA TNS de début d’exercice'),
+      txt('CSS L136-3 / R131-7'),
+    ],
+    [
+      txt('Le taux de charges sociales TNS reste une saisie manuelle'),
+      txt('Hypothèse déclarative'),
+    ],
     [sec('Délai de jouissance'), sec('')],
-    [txt('Un mois est productif si son premier jour est ≥ dateDebutJouissance'), txt('Convention SER1')],
-    [txt('Revenus proratisés selon les mois productifs de l\'année civile'), txt('Convention SER1')],
+    [
+      txt('Un mois est productif si son premier jour est ≥ dateDebutJouissance'),
+      txt('Convention SER1'),
+    ],
+    [txt("Revenus proratisés selon les mois productifs de l'année civile"), txt('Convention SER1')],
     [sec('Réserve légale'), sec('')],
-    [txt('Dotation de 5 % du résultat net bénéficiaire jusqu’à 10 % du capital social'), txt('C. com. L232-10')],
-    [txt('La réserve légale est non distribuable ; les réserves initiales restent le poste distribuable'), txt('C. com. L232-11')],
-    [txt('Taux fiscaux issus des paramètres admin — aucune valeur codée en dur dans l’export'), txt('Gouvernance SER1')],
+    [
+      txt('Dotation de 5 % du résultat net bénéficiaire jusqu’à 10 % du capital social'),
+      txt('C. com. L232-10'),
+    ],
+    [
+      txt(
+        'La réserve légale est non distribuable ; les réserves initiales restent le poste distribuable',
+      ),
+      txt('C. com. L232-11'),
+    ],
+    [
+      txt('Taux fiscaux issus des paramètres admin — aucune valeur codée en dur dans l’export'),
+      txt('Gouvernance SER1'),
+    ],
     [sec('Avertissement'), sec('')],
-    [txt('Société à l\'IR (SARL de famille) : hors scope V1'), txt('')],
+    [txt("Société à l'IR (SARL de famille) : hors scope V1"), txt('')],
     [txt('Ce document est établi à titre strictement indicatif.'), txt('')],
     [txt('Il ne constitue pas un conseil en investissement ou fiscal.'), txt('')],
-    [txt('Montants arrondis à l\'euro le plus proche.'), txt('Convention')],
+    [txt("Montants arrondis à l'euro le plus proche."), txt('Convention')],
   ];
 
   return { name: 'Hypothèses', rows, columnWidths: [55, 35] };
@@ -507,6 +693,6 @@ export async function exportTresorerieExcel(
   sectionFill?: string,
 ): Promise<void> {
   const blob = await buildTresorerieXlsxBlob(rows, kpis, inputs, headerFill, sectionFill);
-  const dateStr = new Date().toISOString().split('T')[0].replace(/-/g, '');
+  const dateStr = (new Date().toISOString().split('T')[0] ?? 'date').replace(/-/g, '');
   downloadXlsx(blob, `simulation-tresorerie-societe-${dateStr}.xlsx`);
 }

@@ -28,4 +28,7 @@ export { buildCreditSynthesis } from './buildCreditSynthesis';
 export { buildCreditGlobalSynthesis } from './buildCreditGlobalSynthesis';
 export { buildCreditLoanSynthesis } from './buildCreditLoanSynthesis';
 export { buildCreditAnnexe } from './buildCreditAnnexe';
-export { buildCreditAmortization, buildAllCreditAmortizationSlides } from './buildCreditAmortization';
+export {
+  buildCreditAmortization,
+  buildAllCreditAmortizationSlides,
+} from './buildCreditAmortization';

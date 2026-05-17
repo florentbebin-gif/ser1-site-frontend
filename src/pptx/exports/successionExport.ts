@@ -4,7 +4,11 @@
  * API simplifiée pour exporter une simulation succession en PPTX.
  */
 
-import { buildSuccessionStudyDeck, type SuccessionData, type AdvisorInfo } from '../presets/successionDeckBuilder';
+import {
+  buildSuccessionStudyDeck,
+  type SuccessionData,
+  type AdvisorInfo,
+} from '../presets/successionDeckBuilder';
 import { exportAndDownloadStudyDeck } from '../export/exportStudyDeck';
 import type { LogoPlacement } from '../theme/types';
 

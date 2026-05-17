@@ -33,7 +33,7 @@ test.describe('Settings', () => {
     // The key in SETTINGS_ROUTES is 'general', label is 'Généraux'.
     await expect(page.getByRole('button', { name: 'Généraux' })).toBeVisible();
     await expect(page.getByRole('button', { name: 'Impôts' })).toBeVisible();
-    
+
     // Check if the content area loads (active component)
     // The 'Généraux' tab renders the Settings component which usually has some content.
     // We can look for a generic element or just ensure no error is shown.
@@ -42,17 +42,17 @@ test.describe('Settings', () => {
 
   test('navigation entre les onglets', async ({ page }) => {
     await page.goto(ROUTES.settings);
-    
+
     // Click on "Impôts" tab
     await page.getByRole('button', { name: 'Impôts' }).click();
-    
+
     // URL should update
     await expect(page).toHaveURL(/.*\/settings\/impots/);
-    
-    // Content should update (we can check for specific content of SettingsImpots if known, 
+
+    // Content should update (we can check for specific content of SettingsImpots if known,
     // or just that the tab is active)
     await expect(page.getByRole('button', { name: 'Impôts' })).toHaveClass(/is-active/);
-    
+
     // Go back to "Généraux"
     await page.getByRole('button', { name: 'Généraux' }).click();
     await expect(page).toHaveURL(/.*\/settings/);

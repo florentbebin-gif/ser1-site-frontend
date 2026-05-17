@@ -41,8 +41,15 @@ describe('matrice succession directe par situation familiale', () => {
       'Frere / soeur 1',
       'Frere / soeur 2',
     ]);
-    expect(analysis.transmissionRows.map((row) => row.brut)).toEqual([200000, 200000, 200000, 200000]);
-    expect(analysis.heirs.map((heir) => heir.lien)).toEqual(['parent', 'parent', 'frere_soeur', 'frere_soeur']);
+    expect(analysis.transmissionRows.map((row) => row.brut)).toEqual([
+      200000, 200000, 200000, 200000,
+    ]);
+    expect(analysis.heirs.map((heir) => heir.lien)).toEqual([
+      'parent',
+      'parent',
+      'frere_soeur',
+      'frere_soeur',
+    ]);
     expectDirectDisplayMatchesResult(analysis);
   });
 
@@ -153,9 +160,7 @@ describe('matrice succession directe par situation familiale', () => {
   });
 
   it('divorcé avec enfants et legs à un tiers: le tiers est taxé comme autre bénéficiaire', () => {
-    const familyMembers: FamilyMember[] = [
-      { id: 'T1', type: 'tierce_personne' },
-    ];
+    const familyMembers: FamilyMember[] = [{ id: 'T1', type: 'tierce_personne' }];
     const analysis = buildDirectAnalysis({
       civil: makeCivil({ situationMatrimoniale: 'divorce' }),
       liquidation: makeLiquidation({ actifEpoux1: 300000, nbEnfants: 2 }),
@@ -168,15 +173,17 @@ describe('matrice succession directe par situation familiale', () => {
             dispositionType: 'legs_particulier',
             beneficiaryRef: null,
             quotePartPct: 100,
-            particularLegacies: [
-              { id: 'leg-1', beneficiaryRef: 'family:T1', amount: 50000 },
-            ],
+            particularLegacies: [{ id: 'leg-1', beneficiaryRef: 'family:T1', amount: 50000 }],
           },
         },
       }),
     });
 
-    expect(analysis.transmissionRows.map((row) => row.label)).toEqual(['Tierce personne', 'E1', 'E2']);
+    expect(analysis.transmissionRows.map((row) => row.label)).toEqual([
+      'Tierce personne',
+      'E1',
+      'E2',
+    ]);
     expect(analysis.heirs.map((heir) => heir.lien)).toEqual(['autre', 'enfant', 'enfant']);
     expect(analysis.heirs.map((heir) => heir.partSuccession)).toEqual([50000, 125000, 125000]);
     expect(analysis.transmissionRows.some((row) => row.label === 'Ex-conjoint')).toBe(false);

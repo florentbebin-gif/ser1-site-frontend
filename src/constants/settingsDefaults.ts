@@ -167,15 +167,11 @@ export const DEFAULT_TAX_SETTINGS = {
     },
     neveuNiece: {
       abattement: 7967,
-      scale: [
-        { from: 0, to: null, rate: 55 },
-      ],
+      scale: [{ from: 0, to: null, rate: 55 }],
     },
     autre: {
       abattement: 1594,
-      scale: [
-        { from: 0, to: null, rate: 60 },
-      ],
+      scale: [{ from: 0, to: null, rate: 60 }],
     },
   },
   donation: {
@@ -398,37 +394,31 @@ export const DEFAULT_FISCALITY_SETTINGS = {
     epargne: {
       plafond163Quatervicies: {
         ratePercent: 10,
-        base: "revenu imposable après abattement 10% (frais pro éventuels)",
+        base: 'revenu imposable après abattement 10% (frais pro éventuels)',
         minPassMultiple: 1,
         maxPassMultiple: 8,
-        note:
-          "Plafond = 10% des revenus imposables (après abattement 10% si applicable). Minimum = 10% d'1 PASS, maximum = 10% de 8 PASS.",
+        note: "Plafond = 10% des revenus imposables (après abattement 10% si applicable). Minimum = 10% d'1 PASS, maximum = 10% de 8 PASS.",
       },
       plafond154Bis: {
         assiettePotentielle: {
-          base:
-            "assiette sociale (revenu imposable majoré des cotisations facultatives)",
+          base: 'assiette sociale (revenu imposable majoré des cotisations facultatives)',
           part15: {
             ratePercent: 15,
-            base: "revenus - 1 PASS",
+            base: 'revenus - 1 PASS',
             maxPassMultiple: 8,
           },
           part10: {
             ratePercent: 10,
-            base:
-              "revenus (après abattement 10% si applicable) - composante plancher/plafond",
+            base: 'revenus (après abattement 10% si applicable) - composante plancher/plafond',
             minPassMultiple: 1,
             maxPassMultiple: 8,
           },
         },
         assietteReportDeclaration: {
-          base:
-            "recalcul sur revenu imposable (après abattement 10% si applicable) : on reporte uniquement le dépassement de l'enveloppe 15%",
-          note:
-            "Assiette report = dépassement de l'enveloppe 15%, recalculé sur l'assiette 'revenu imposable après abattement 10%'.",
+          base: "recalcul sur revenu imposable (après abattement 10% si applicable) : on reporte uniquement le dépassement de l'enveloppe 15%",
+          note: "Assiette report = dépassement de l'enveloppe 15%, recalculé sur l'assiette 'revenu imposable après abattement 10%'.",
         },
-        note:
-          "Plafond 'Madelin' (154 bis) : 15% des revenus - 1 PASS (max 8 PASS) + 10% des revenus (max 8 PASS avec mini 10% PASS).",
+        note: "Plafond 'Madelin' (154 bis) : 15% des revenus - 1 PASS (max 8 PASS) + 10% des revenus (max 8 PASS avec mini 10% PASS).",
       },
     },
 
@@ -443,27 +433,34 @@ export const DEFAULT_FISCALITY_SETTINGS = {
           monthlyThreshold: 110,
           forfaitIrRatePercent: 7.5,
           forfaitAbatementRatePercent: 10,
-          note:
-            "Sortie en capital possible lorsque la rente mensuelle n'excède pas le seuil réglementaire ; option forfaitaire sous conditions pour les anciens contrats.",
+          note: "Sortie en capital possible lorsque la rente mensuelle n'excède pas le seuil réglementaire ; option forfaitaire sous conditions pour les anciens contrats.",
         },
         deduits: {
-          versements: { irMode: "bareme", note: "Part versements déduits : imposable au barème IR (sans abattement)." },
-          gains: { mode: "pfu", note: "Part gains : PFU (12,8% + 17,2%) par défaut, option barème pour la part IR possible." },
+          versements: {
+            irMode: 'bareme',
+            note: 'Part versements déduits : imposable au barème IR (sans abattement).',
+          },
+          gains: {
+            mode: 'pfu',
+            note: 'Part gains : PFU (12,8% + 17,2%) par défaut, option barème pour la part IR possible.',
+          },
         },
         nonDeduits: {
-          versements: { irMode: "exonere", note: "Part versements non déduits : exonérée d'IR." },
-          gains: { mode: "pfu", note: "Part gains : PFU (12,8% + 17,2%) par défaut, option barème pour la part IR possible." },
+          versements: { irMode: 'exonere', note: "Part versements non déduits : exonérée d'IR." },
+          gains: {
+            mode: 'pfu',
+            note: 'Part gains : PFU (12,8% + 17,2%) par défaut, option barème pour la part IR possible.',
+          },
         },
       },
       anticipation: {
         achatRP: {
-          deduits: { versementsIR: "bareme", gains: "pfu" },
-          nonDeduits: { versementsIR: "exonere", gains: "pfu" },
-          note: "Déblocage anticipé pour achat de résidence principale : logique proche de la sortie à la retraite.",
+          deduits: { versementsIR: 'bareme', gains: 'pfu' },
+          nonDeduits: { versementsIR: 'exonere', gains: 'pfu' },
+          note: 'Déblocage anticipé pour achat de résidence principale : logique proche de la sortie à la retraite.',
         },
         accidentsDeLaVie: {
-          note:
-            "Déblocages anticipés 'accidents de la vie' : traitement fiscal à gérer au cas par cas (règles spécifiques, souvent exonérations).",
+          note: "Déblocages anticipés 'accidents de la vie' : traitement fiscal à gérer au cas par cas (règles spécifiques, souvent exonérations).",
         },
       },
     },
@@ -479,13 +476,13 @@ export const DEFAULT_FISCALITY_SETTINGS = {
         ],
         apres70ans: {
           globalAllowance: 30500,
-          mode: "dmtg",
-          note: "Au-delà : DMTG (barème succession).",
+          mode: 'dmtg',
+          note: 'Au-delà : DMTG (barème succession).',
         },
-        note: "PER assurantiel : transmission alignée assurance-vie (990 I / 757 B).",
+        note: 'PER assurantiel : transmission alignée assurance-vie (990 I / 757 B).',
       },
       perBancaire: {
-        mode: "succession",
+        mode: 'succession',
         note: "PER bancaire : intégration à l'actif successoral (DMTG barème succession).",
       },
     },
@@ -493,31 +490,28 @@ export const DEFAULT_FISCALITY_SETTINGS = {
     rente: {
       pensionAbatementRatePercent: 10,
       rvtoTaxableFractionByAgeAtFirstPayment: [
-        { label: "< 50 ans", ageMaxInclusive: 49, fraction: 0.7 },
-        { label: "50 à 59 ans", ageMaxInclusive: 59, fraction: 0.5 },
-        { label: "60 à 69 ans", ageMaxInclusive: 69, fraction: 0.4 },
-        { label: "≥ 70 ans", ageMaxInclusive: null, fraction: 0.3 },
+        { label: '< 50 ans', ageMaxInclusive: 49, fraction: 0.7 },
+        { label: '50 à 59 ans', ageMaxInclusive: 59, fraction: 0.5 },
+        { label: '60 à 69 ans', ageMaxInclusive: 69, fraction: 0.4 },
+        { label: '≥ 70 ans', ageMaxInclusive: null, fraction: 0.3 },
       ],
       deduits: {
         capitalQuotePart: {
-          irMode: "bareme_sans_abattement_10",
+          irMode: 'bareme_sans_abattement_10',
           psRatePercent: 0.3,
-          psLabel: "CASA",
-          note:
-            "Quote-part capital : rente à titre gratuit, imposée au barème IR (sans abattement 10%). PS : CASA 0,3%.",
+          psLabel: 'CASA',
+          note: 'Quote-part capital : rente à titre gratuit, imposée au barème IR (sans abattement 10%). PS : CASA 0,3%.',
         },
         interestsQuotePart: {
-          irMode: "rvto",
+          irMode: 'rvto',
           psRatePercent: 17.2,
-          note:
-            "Quote-part intérêts : RVTO (fraction imposable selon âge). PS : 17,2% sur l'assiette après abattement RVTO.",
+          note: "Quote-part intérêts : RVTO (fraction imposable selon âge). PS : 17,2% sur l'assiette après abattement RVTO.",
         },
       },
       nonDeduits: {
-        irMode: "rvto",
+        irMode: 'rvto',
         psRatePercent: 17.2,
-        note:
-          "Totalité de la rente : RVTO (fraction imposable selon âge). PS : 17,2% sur l'assiette après abattement RVTO.",
+        note: "Totalité de la rente : RVTO (fraction imposable selon âge). PS : 17,2% sur l'assiette après abattement RVTO.",
       },
     },
   },
@@ -527,7 +521,7 @@ export const DEFAULT_FISCALITY_SETTINGS = {
       versementDeductibleIR: false,
       socialOnInterestsDuringAccumulation: {
         psRatePercent: 17.2,
-        note: "PS sur intérêts (fonds €) prélevés annuellement.",
+        note: 'PS sur intérêts (fonds €) prélevés annuellement.',
       },
     },
 
@@ -575,7 +569,7 @@ export const DEFAULT_FISCALITY_SETTINGS = {
 
       primesAvant1998: {
         taxRatePercent: 0,
-        note: "Contrats souscrits avant le 13/10/1998 : primes versées avant le 13/10/1998 exonérées.",
+        note: 'Contrats souscrits avant le 13/10/1998 : primes versées avant le 13/10/1998 exonérées.',
       },
 
       primesApres1998: {

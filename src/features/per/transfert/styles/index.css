@@ -21,7 +21,7 @@
 }
 
 .per-transfert-phase-nav::after {
-  content: "";
+  content: '';
   position: absolute;
   right: 0;
   bottom: -1px;
@@ -42,7 +42,9 @@
   font: inherit;
   font-size: 14px;
   font-weight: 500;
-  transition: color 0.15s, border-color 0.15s;
+  transition:
+    color 0.15s,
+    border-color 0.15s;
 }
 
 .per-transfert-phase-tab:hover:not(:disabled),
@@ -106,7 +108,7 @@
   justify-content: center;
   border: 1px solid var(--color-c8);
   border-radius: 999px;
-  background: #FFFFFF;
+  background: #ffffff;
   color: var(--color-c9);
   cursor: pointer;
   font: inherit;
@@ -178,7 +180,7 @@
   gap: 6px;
   border: 1px solid color-mix(in srgb, var(--color-c3) 25%, var(--color-c8));
   border-radius: 999px;
-  background: color-mix(in srgb, var(--color-c3) 8%, #FFFFFF);
+  background: color-mix(in srgb, var(--color-c3) 8%, #ffffff);
   color: var(--color-c9);
   font-size: 11px;
   font-weight: 600;
@@ -204,7 +206,7 @@
 .per-transfert-points-panel {
   border: 1px solid var(--color-c8);
   border-radius: 8px;
-  background: #FFFFFF;
+  background: #ffffff;
   padding: 14px;
 }
 
@@ -271,7 +273,7 @@
 .per-transfert-secondary-button {
   border: 1px solid var(--color-c8);
   border-radius: 8px;
-  background: #FFFFFF;
+  background: #ffffff;
   color: var(--color-c10);
   cursor: pointer;
   font: inherit;
@@ -346,7 +348,7 @@
   min-height: 28px;
   border: 1px solid var(--color-c8);
   border-radius: 999px;
-  background: #FFFFFF;
+  background: #ffffff;
   color: var(--color-c9);
   cursor: pointer;
   font: inherit;
@@ -387,13 +389,13 @@
 .per-transfert-compare2__placeholder {
   border: 1px solid var(--color-c8);
   border-radius: 8px;
-  background: #FFFFFF;
+  background: #ffffff;
   padding: 12px;
 }
 
 .per-transfert-compare2__card.is-highlighted {
   border-color: color-mix(in srgb, var(--color-c3) 45%, var(--color-c8));
-  background: color-mix(in srgb, var(--color-c3) 6%, #FFFFFF);
+  background: color-mix(in srgb, var(--color-c3) 6%, #ffffff);
 }
 
 .per-transfert-compare2__card header h4,
@@ -492,7 +494,7 @@
 
 .per-transfert-mini-bar__segment.is-active {
   background: var(--color-c3);
-  color: #FFFFFF;
+  color: #ffffff;
 }
 
 .per-transfert-prefon-strategy {
@@ -505,7 +507,7 @@
   min-height: 30px;
   border: 1px solid var(--color-c8);
   border-radius: 8px;
-  background: #FFFFFF;
+  background: #ffffff;
   color: var(--color-c9);
   cursor: pointer;
   font: inherit;
@@ -515,7 +517,7 @@
 
 .per-transfert-prefon-strategy button.is-active {
   border-color: var(--color-c3);
-  background: color-mix(in srgb, var(--color-c3) 8%, #FFFFFF);
+  background: color-mix(in srgb, var(--color-c3) 8%, #ffffff);
   color: var(--color-c3);
 }
 
@@ -537,7 +539,7 @@
   min-width: 0;
   border: 1px solid var(--color-c8);
   border-radius: 6px;
-  background: #FFFFFF;
+  background: #ffffff;
   color: var(--color-c10);
   font: inherit;
   font-size: 13px;
@@ -582,7 +584,7 @@
   margin: 0;
   border: 1px solid var(--color-c8);
   border-radius: 8px;
-  background: #FFFFFF;
+  background: #ffffff;
   padding: 12px;
 }
 
@@ -600,7 +602,7 @@
 .per-transfert-prefon-pockets__settings {
   border: 1px solid var(--color-c8);
   border-radius: 999px;
-  background: #FFFFFF;
+  background: #ffffff;
   color: var(--color-c3);
   cursor: pointer;
   font: inherit;
@@ -640,7 +642,7 @@
   gap: 4px;
   border: 1px solid var(--color-c8);
   border-radius: 8px;
-  background: #FFFFFF;
+  background: #ffffff;
   padding: 12px;
 }
 
@@ -668,7 +670,7 @@
   gap: 8px;
   border: 1px solid color-mix(in srgb, var(--color-c6) 30%, var(--color-c8));
   border-radius: 8px;
-  background: color-mix(in srgb, var(--color-c6) 10%, #FFFFFF);
+  background: color-mix(in srgb, var(--color-c6) 10%, #ffffff);
   padding: 12px 14px;
 }
 

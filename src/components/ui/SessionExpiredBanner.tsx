@@ -14,14 +14,17 @@ interface Props {
   isWarning?: boolean;
 }
 
-export function SessionExpiredBanner({ visible, minutesRemaining, isWarning }: Props): React.ReactElement | null {
+export function SessionExpiredBanner({
+  visible,
+  minutesRemaining,
+  isWarning,
+}: Props): React.ReactElement | null {
   if (!visible) return null;
 
   if (isWarning && typeof minutesRemaining === 'number' && minutesRemaining > 0) {
     return (
       <div role="alert" className="session-warning-toast">
-        Votre session expire dans {minutesRemaining} min.
-        Effectuez une action pour rester connecté.
+        Votre session expire dans {minutesRemaining} min. Effectuez une action pour rester connecté.
       </div>
     );
   }
@@ -29,16 +32,12 @@ export function SessionExpiredBanner({ visible, minutesRemaining, isWarning }: P
   return (
     <div role="alert" className="session-expired-overlay">
       <div className="session-expired-card">
-        <h2 className="session-expired-title">
-          Session expirée
-        </h2>
+        <h2 className="session-expired-title">Session expirée</h2>
         <p className="session-expired-message">
-          Votre session a expiré après une période d'inactivité. Vos données de simulateur ont été purgées pour des raisons de sécurité.
+          Votre session a expiré après une période d'inactivité. Vos données de simulateur ont été
+          purgées pour des raisons de sécurité.
         </p>
-        <button
-          onClick={() => window.location.reload()}
-          className="session-expired-btn"
-        >
+        <button onClick={() => window.location.reload()} className="session-expired-btn">
           Se reconnecter
         </button>
       </div>

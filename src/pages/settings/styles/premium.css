@@ -1,6 +1,6 @@
 /* Premium settings cards */
 .settings-premium-card {
-  background: #FFFFFF;
+  background: #ffffff;
   border: 1px solid var(--color-c8);
   border-radius: 8px;
   padding: 20px 24px;
@@ -103,7 +103,7 @@
   background: var(--color-c4);
 }
 
-.settings-radio-option input[type="radio"] {
+.settings-radio-option input[type='radio'] {
   appearance: none;
   margin: 0;
   width: 18px;
@@ -116,15 +116,15 @@
   transition: all 0.15s ease;
 }
 
-.settings-radio-option input[type="radio"]:hover {
+.settings-radio-option input[type='radio']:hover {
   border-color: var(--color-c2);
 }
 
-.settings-radio-option input[type="radio"]:checked {
+.settings-radio-option input[type='radio']:checked {
   border-color: var(--color-c2);
 }
 
-.settings-radio-option input[type="radio"]:checked::after {
+.settings-radio-option input[type='radio']:checked::after {
   content: '';
   position: absolute;
   top: 50%;
@@ -151,11 +151,14 @@
 
 .settings-theme-card {
   position: relative;
-  background: #FFFFFF;
+  background: #ffffff;
   border: 1.5px solid var(--color-c8);
   border-radius: 6px;
+  color: inherit;
   padding: 10px;
   cursor: pointer;
+  font: inherit;
+  text-align: left;
   transition: all 0.15s ease;
 }
 
@@ -250,7 +253,7 @@
   gap: 10px;
 }
 
-.settings-color-inputs input[type="color"] {
+.settings-color-inputs input[type='color'] {
   width: 32px;
   height: 32px;
   border: 1px solid var(--color-c8);
@@ -297,7 +300,7 @@
 }
 
 .settings-action-card {
-  background: #FFFFFF;
+  background: #ffffff;
   padding: 20px 24px;
 }
 
@@ -355,7 +358,9 @@
   font-size: 13px;
   font-weight: 500;
   cursor: pointer;
-  transition: background-color 0.15s ease, transform 0.1s ease;
+  transition:
+    background-color 0.15s ease,
+    transform 0.1s ease;
 }
 
 .settings-action-btn:hover {

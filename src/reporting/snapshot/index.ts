@@ -14,7 +14,14 @@ export {
   SnapshotEnvelopeSchema,
   FiscalIdentitySchema,
 } from './snapshotSchema';
-export type { SnapshotV4, SnapshotV2, SnapshotEnvelope, SnapshotMeta, SnapshotSims, FiscalIdentity } from './snapshotSchema';
+export type {
+  SnapshotV4,
+  SnapshotV2,
+  SnapshotEnvelope,
+  SnapshotMeta,
+  SnapshotSims,
+  FiscalIdentity,
+} from './snapshotSchema';
 
 // Migrations
 export { migrateSnapshot } from './snapshotMigrations';

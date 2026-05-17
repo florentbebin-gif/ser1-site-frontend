@@ -8,13 +8,13 @@
 
 ### Fichiers clés
 
-| Fichier | Rôle |
-|---|---|
-| `src/reporting/snapshot/snapshotSchema.ts` | Définition du schéma courant |
-| `src/reporting/snapshot/snapshotMigrations.ts` | Migrations inter-versions |
-| `src/reporting/snapshot/snapshotIO.ts` | Lecture/écriture fichiers `.ser1` |
-| `src/reporting/snapshot/index.ts` | Point d'entrée public |
-| `src/utils/export/exportFingerprint.ts` | Fingerprint fiscal (consommé par `App.tsx`) |
+| Fichier                                        | Rôle                                        |
+| ---------------------------------------------- | ------------------------------------------- |
+| `src/reporting/snapshot/snapshotSchema.ts`     | Définition du schéma courant                |
+| `src/reporting/snapshot/snapshotMigrations.ts` | Migrations inter-versions                   |
+| `src/reporting/snapshot/snapshotIO.ts`         | Lecture/écriture fichiers `.ser1`           |
+| `src/reporting/snapshot/index.ts`              | Point d'entrée public                       |
+| `src/utils/export/exportFingerprint.ts`        | Fingerprint fiscal (consommé par `App.tsx`) |
 
 ---
 

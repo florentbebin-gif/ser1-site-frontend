@@ -107,7 +107,9 @@ export default function IrSimulatorContainer() {
   const [children, setChildren] = useState<IrChildDraft[]>([]);
 
   const [incomes, setIncomes] = useState<IrIncomes>(DEFAULT_INCOMES);
-  const [incomeFilters, setIncomeFilters] = useState<IncomeFilters>(() => ({ ...DEFAULT_INCOME_FILTERS }));
+  const [incomeFilters, setIncomeFilters] = useState<IncomeFilters>(() => ({
+    ...DEFAULT_INCOME_FILTERS,
+  }));
   const [capitalMode, setCapitalMode] = useState<IrCapitalMode>('pfu');
 
   const [realMode, setRealMode] = useState<IrRealMode>({ d1: 'abat10', d2: 'abat10' });
@@ -137,7 +139,10 @@ export default function IrSimulatorContainer() {
               ? {
                   d1: { ...DEFAULT_INCOMES.d1, ...(persistedState.incomes.d1 || {}) },
                   d2: { ...DEFAULT_INCOMES.d2, ...(persistedState.incomes.d2 || {}) },
-                  capital: { ...DEFAULT_INCOMES.capital, ...(persistedState.incomes.capital || {}) },
+                  capital: {
+                    ...DEFAULT_INCOMES.capital,
+                    ...(persistedState.incomes.capital || {}),
+                  },
                   fonciersFoyer: persistedState.incomes.fonciersFoyer ?? 0,
                 }
               : DEFAULT_INCOMES,
@@ -234,13 +239,16 @@ export default function IrSimulatorContainer() {
   }, [storeKey]);
 
   const updateIncome = (who: IrIncomeTarget, field: string, value: number) => {
-    setIncomes((prev) => ({
-      ...prev,
-      [who]: {
-        ...(prev[who] as Record<string, number | undefined>),
-        [field]: toNum(value, 0),
-      },
-    } as IrIncomes));
+    setIncomes(
+      (prev) =>
+        ({
+          ...prev,
+          [who]: {
+            ...(prev[who] as Record<string, number | undefined>),
+            [field]: toNum(value, 0),
+          },
+        }) as IrIncomes,
+    );
   };
 
   const effectiveIncomes = useMemo(
@@ -265,7 +273,8 @@ export default function IrSimulatorContainer() {
   const abat10SalD1 = computeAbattement10(baseSalD1, abat10SalCfg);
   const abat10SalD2 = computeAbattement10(baseSalD2, abat10SalCfg);
 
-  const cfgRet = yearKey === 'current' ? abat10CfgRoot.retireesCurrent : abat10CfgRoot.retireesPrevious;
+  const cfgRet =
+    yearKey === 'current' ? abat10CfgRoot.retireesCurrent : abat10CfgRoot.retireesPrevious;
   const baseRet =
     (effectiveIncomes.d1.pensions || 0) +
     (status === 'couple' ? effectiveIncomes.d2.pensions || 0 : 0);
@@ -279,43 +288,40 @@ export default function IrSimulatorContainer() {
     abat10SalD2,
   });
 
-  const result = useMemo<IrComputedResult | null>(
-    () => {
-      if (!status) return null;
-      return computeIrResultEngine({
-        yearKey,
-        status,
-        isIsolated,
-        parts: effectiveParts,
-        location,
-        incomes: isExpert
-          ? effectiveIncomes
-          : { ...effectiveIncomes, capital: { withPs: 0, withoutPs: 0 } },
-        deductions: (isExpert ? deductions : 0) + extraDeductions,
-        credits: isExpert ? credits : 0,
-        taxSettings,
-        psSettings,
-        capitalMode,
-        personsAChargeCount: countPersonsACharge(children),
-      });
-    },
-    [
+  const result = useMemo<IrComputedResult | null>(() => {
+    if (!status) return null;
+    return computeIrResultEngine({
       yearKey,
       status,
       isIsolated,
-      effectiveParts,
+      parts: effectiveParts,
       location,
-      effectiveIncomes,
-      isExpert,
-      deductions,
-      extraDeductions,
-      credits,
+      incomes: isExpert
+        ? effectiveIncomes
+        : { ...effectiveIncomes, capital: { withPs: 0, withoutPs: 0 } },
+      deductions: (isExpert ? deductions : 0) + extraDeductions,
+      credits: isExpert ? credits : 0,
       taxSettings,
       psSettings,
       capitalMode,
-      children,
-    ],
-  );
+      personsAChargeCount: countPersonsACharge(children),
+    });
+  }, [
+    yearKey,
+    status,
+    isIsolated,
+    effectiveParts,
+    location,
+    effectiveIncomes,
+    isExpert,
+    deductions,
+    extraDeductions,
+    credits,
+    taxSettings,
+    psSettings,
+    capitalMode,
+    children,
+  ]);
 
   const yearLabel =
     yearKey === 'current'
@@ -363,31 +369,31 @@ export default function IrSimulatorContainer() {
   if (settingsLoading) {
     return (
       <SimPageShell
-        title="Simulateur d&apos;imp&ocirc;t sur le revenu"
+        title="Simulateur d'imp&ocirc;t sur le revenu"
         subtitle="Estimez votre imp&ocirc;t sur le revenu et vos pr&eacute;l&egrave;vements sociaux."
         pageTestId="ir-page"
         headerTestId="ir-header"
         titleTestId="ir-title"
         statusTestId="ir-settings-loading"
         loading
-        loadingContent={(
+        loadingContent={
           <div className="ir-settings-loading">
             Chargement des param&egrave;tres fiscaux&hellip;
           </div>
-        )}
+        }
       />
     );
   }
 
   return (
     <SimPageShell
-      title="Simulateur d&apos;imp&ocirc;t sur le revenu"
+      title="Simulateur d'imp&ocirc;t sur le revenu"
       subtitle="Estimez votre imp&ocirc;t sur le revenu et vos pr&eacute;l&egrave;vements sociaux."
       pageTestId="ir-page"
       headerTestId="ir-header"
       titleTestId="ir-title"
       mobileSideFirst
-      actions={(
+      actions={
         <>
           <ModeToggle value={isExpert} onChange={() => toggleMode()} testId="ir-mode-btn" />
           <ExportMenu
@@ -398,7 +404,7 @@ export default function IrSimulatorContainer() {
             loading={exportLoading}
           />
         </>
-      )}
+      }
     >
       <SimPageShell.Main>
         <IrFormSection

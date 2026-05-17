@@ -37,9 +37,7 @@ export default function DonationSection({
         <span className="settings-premium-title settings-premium-title--flush">
           Donation & rappel fiscal
         </span>
-        <span className="fisc-acc-chevron">
-          {isOpen ? 'v' : '>'}
-        </span>
+        <span className="fisc-acc-chevron">{isOpen ? 'v' : '>'}</span>
       </button>
 
       {isOpen && (
@@ -49,9 +47,7 @@ export default function DonationSection({
           </p>
 
           <div className="income-tax-block dmtg-block--mb16">
-            <div className="dmtg-block-title">
-              Rappel fiscal
-            </div>
+            <div className="dmtg-block-title">Rappel fiscal</div>
             <div className="dmtg-indent">
               <div className="settings-field-row">
                 <label>Durée du rappel fiscal</label>
@@ -61,7 +57,7 @@ export default function DonationSection({
                   onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
                     updateDonation(
                       ['rappelFiscalAnnees'],
-                      event.target.value === '' ? null : Number(event.target.value)
+                      event.target.value === '' ? null : Number(event.target.value),
                     )
                   }
                   disabled={!isAdmin}
@@ -72,9 +68,7 @@ export default function DonationSection({
           </div>
 
           <div className="income-tax-block">
-            <div className="dmtg-block-title">
-              Don familial de sommes d'argent (art. 790 G)
-            </div>
+            <div className="dmtg-block-title">Don familial de sommes d'argent (art. 790 G)</div>
             <div className="dmtg-indent">
               <div className="settings-field-row dmtg-field-row--mb8">
                 <label>Montant exonéré</label>
@@ -84,7 +78,7 @@ export default function DonationSection({
                   onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
                     updateDonation(
                       ['donFamilial790G', 'montant'],
-                      event.target.value === '' ? null : Number(event.target.value)
+                      event.target.value === '' ? null : Number(event.target.value),
                     )
                   }
                   disabled={!isAdmin}

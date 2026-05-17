@@ -2,7 +2,6 @@
   margin: 14px 0 18px;
 }
 
-
 /* Carte TMI â€” fond/border/radius/padding/shadow viennent de .premium-card (JSX) */
 /* LiserÃ© gauche C3 â€” carte de synthÃ¨se principale (GOUVERNANCE.md Â§3) */
 .ir-tmi-card {
@@ -160,4 +159,3 @@
   color: var(--color-c1); /* Danger - utilise C1 selon gouvernance couleurs */
   font-size: 13px;
 }
-

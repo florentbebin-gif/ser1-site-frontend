@@ -1,13 +1,6 @@
 import { SimFieldShell } from '@/components/ui/sim/SimFieldShell';
-import type {
-  AmountScheduleInput,
-  SubsidiaryInput,
-} from '@/engine/tresorerie/types';
-import {
-  fmtEuroInput,
-  parseEuroInput,
-  parseNumberInput,
-} from '../../utils/tresorerieFormatters';
+import type { AmountScheduleInput, SubsidiaryInput } from '@/engine/tresorerie/types';
+import { fmtEuroInput, parseEuroInput, parseNumberInput } from '../../utils/tresorerieFormatters';
 
 interface TresoSubsidiarySchedulesEditorProps {
   servicesSchedule: AmountScheduleInput[] | undefined;
@@ -21,11 +14,13 @@ export function normalizeSchedules(
   fallbackYear = new Date().getFullYear(),
 ): AmountScheduleInput[] {
   if (schedules && schedules.length > 0) return schedules;
-  return [{
-    amount: 0,
-    startYear: fallbackYear,
-    endYear: fallbackYear,
-  }];
+  return [
+    {
+      amount: 0,
+      startYear: fallbackYear,
+      endYear: fallbackYear,
+    },
+  ];
 }
 
 export function buildNextSchedule(
@@ -33,9 +28,8 @@ export function buildNextSchedule(
   fallbackYear: number,
 ): AmountScheduleInput {
   const previous = schedules[schedules.length - 1];
-  const startYear = previous?.endYear != null
-    ? previous.endYear + 1
-    : (previous?.startYear ?? fallbackYear) + 1;
+  const startYear =
+    previous?.endYear != null ? previous.endYear + 1 : (previous?.startYear ?? fallbackYear) + 1;
   return {
     amount: Math.max(0, previous?.amount ?? 0),
     startYear,
@@ -59,9 +53,11 @@ function ScheduleRows({
   onSchedulesChange: (schedules: AmountScheduleInput[]) => void;
 }) {
   const patchSchedule = (index: number, patch: Partial<AmountScheduleInput>) => {
-    onSchedulesChange(schedules.map((schedule, scheduleIndex) =>
-      scheduleIndex === index ? { ...schedule, ...patch } : schedule,
-    ));
+    onSchedulesChange(
+      schedules.map((schedule, scheduleIndex) =>
+        scheduleIndex === index ? { ...schedule, ...patch } : schedule,
+      ),
+    );
   };
 
   return (
@@ -71,20 +67,28 @@ function ScheduleRows({
         <button
           type="button"
           className="ts-text-btn"
-          onClick={() => onSchedulesChange([...schedules, buildNextSchedule(schedules, projectionYear)])}
+          onClick={() =>
+            onSchedulesChange([...schedules, buildNextSchedule(schedules, projectionYear)])
+          }
         >
           {addLabel}
         </button>
       </div>
       {schedules.map((schedule, index) => (
         <div key={`${kind}-${index}`} className="ts-schedule-row">
-          <SimFieldShell label={`Montant palier ${index + 1}`} className="ts-field" rowClassName="ts-field__row">
+          <SimFieldShell
+            label={`Montant palier ${index + 1}`}
+            className="ts-field"
+            rowClassName="ts-field__row"
+          >
             <input
               type="text"
               inputMode="numeric"
               className="sim-field__control"
               value={fmtEuroInput(schedule.amount)}
-              onChange={event => patchSchedule(index, { amount: parseEuroInput(event.target.value) })}
+              onChange={(event) =>
+                patchSchedule(index, { amount: parseEuroInput(event.target.value) })
+              }
             />
             <span className="sim-field__unit ts-unit">€</span>
           </SimFieldShell>
@@ -94,7 +98,9 @@ function ScheduleRows({
               inputMode="numeric"
               className="sim-field__control"
               value={schedule.startYear}
-              onChange={event => patchSchedule(index, { startYear: parseNumberInput(event.target.value) })}
+              onChange={(event) =>
+                patchSchedule(index, { startYear: parseNumberInput(event.target.value) })
+              }
             />
           </SimFieldShell>
           <SimFieldShell label="À" className="ts-field" rowClassName="ts-field__row">
@@ -103,16 +109,20 @@ function ScheduleRows({
               inputMode="numeric"
               className="sim-field__control"
               value={schedule.endYear ?? ''}
-              onChange={event => patchSchedule(index, {
-                endYear: parseNumberInput(event.target.value) || undefined,
-              })}
+              onChange={(event) =>
+                patchSchedule(index, {
+                  endYear: parseNumberInput(event.target.value) || undefined,
+                })
+              }
             />
           </SimFieldShell>
           <button
             type="button"
             className="ts-text-btn"
             disabled={schedules.length <= 1}
-            onClick={() => onSchedulesChange(schedules.filter((_, scheduleIndex) => scheduleIndex !== index))}
+            onClick={() =>
+              onSchedulesChange(schedules.filter((_, scheduleIndex) => scheduleIndex !== index))
+            }
           >
             Supprimer
           </button>
@@ -139,7 +149,7 @@ export function TresoSubsidiarySchedulesEditor({
         addLabel="Ajouter un palier de prestations"
         schedules={servicesSchedules}
         projectionYear={projectionYear}
-        onSchedulesChange={nextSchedules => onChange({ servicesSchedule: nextSchedules })}
+        onSchedulesChange={(nextSchedules) => onChange({ servicesSchedule: nextSchedules })}
       />
       <ScheduleRows
         kind="dividends"
@@ -147,7 +157,7 @@ export function TresoSubsidiarySchedulesEditor({
         addLabel="Ajouter un palier de dividendes"
         schedules={dividendsSchedules}
         projectionYear={projectionYear}
-        onSchedulesChange={nextSchedules => onChange({ dividendsSchedule: nextSchedules })}
+        onSchedulesChange={(nextSchedules) => onChange({ dividendsSchedule: nextSchedules })}
       />
     </div>
   );

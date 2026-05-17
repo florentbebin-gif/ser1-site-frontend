@@ -1,6 +1,6 @@
 /**
  * Convert UI Settings to PPTX Theme Roles
- * 
+ *
  * Maps the 10 theme colors from UI settings to semantic PPTX roles.
  * No hardcoded fallback hex values (except white).
  */
@@ -59,10 +59,10 @@ function isColorDark(hexColor: string): boolean {
   const r = parseInt(hex.substring(0, 2), 16);
   const g = parseInt(hex.substring(2, 4), 16);
   const b = parseInt(hex.substring(4, 6), 16);
-  
+
   // Calculate relative luminance using sRGB coefficients
   const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
-  
+
   // Return true if dark (luminance < 0.5)
   return luminance < 0.5;
 }
@@ -87,16 +87,16 @@ function fromThemeProviderFormat(colors: ThemeProviderColors): UiThemeColors {
 
 /**
  * Get PPTX Theme Roles from UI Settings
- * 
+ *
  * @param uiSettingsOrColors - Either UiSettings object or ThemeProviderColors
  * @returns PptxThemeRoles with all semantic color mappings
  * @throws Error if any required color is missing
  */
 export function getPptxThemeFromUiSettings(
-  uiSettingsOrColors: UiSettings | ThemeProviderColors
+  uiSettingsOrColors: UiSettings | ThemeProviderColors,
 ): PptxThemeRoles {
   let colors: UiThemeColors;
-  
+
   // Detect format: ThemeProvider (c1..c10) vs UiSettings (color1..color10)
   if ('c1' in uiSettingsOrColors) {
     colors = fromThemeProviderFormat(uiSettingsOrColors as ThemeProviderColors);
@@ -118,39 +118,47 @@ export function getPptxThemeFromUiSettings(
       color10: settings.colors.color10 || '',
     };
   }
-  
+
   // Validate all 10 colors are present
   const requiredColors: (keyof UiThemeColors)[] = [
-    'color1', 'color2', 'color3', 'color4', 'color5',
-    'color6', 'color7', 'color8', 'color9', 'color10'
+    'color1',
+    'color2',
+    'color3',
+    'color4',
+    'color5',
+    'color6',
+    'color7',
+    'color8',
+    'color9',
+    'color10',
   ];
-  
+
   for (const key of requiredColors) {
     if (!isValidHexColor(colors[key])) {
       throw new Error(
         `PPTX Theme Error: Missing or invalid ${key}. ` +
-        `Expected hex color (e.g., #2B3E37), got: ${colors[key]}`
+          `Expected hex color (e.g., #2B3E37), got: ${colors[key]}`,
       );
     }
   }
-  
+
   // Build theme roles
   // Serenity template uses: color1 (main), color6 (accent), color10 (body text)
-  
+
   // Adaptive text color based on background luminance
   const textOnMainColor = isColorDark(colors.color1) ? '#FFFFFF' : '#000000';
-  
+
   const theme: PptxThemeRoles = {
     // Preserve all 10 colors
     colors,
-    
+
     // Constants
     white: '#FFFFFF',
     panelBg: '#FFFFFF',
-    
+
     // Adaptive text on main background
     textOnMain: textOnMainColor,
-    
+
     // Role mappings
     bgMain: colors.color1,
     textMain: colors.color1,
@@ -161,7 +169,7 @@ export function getPptxThemeFromUiSettings(
     footerOnLight: colors.color10,
     footerAccent: colors.color6,
   };
-  
+
   return theme;
 }
 

@@ -30,15 +30,19 @@ export function projectCapital({ capital, annualRate, years }: ProjectCapitalInp
   const safeCapital = toPositive(capital);
   const safeYears = Math.max(0, Math.floor(years));
   if (safeCapital === 0 || safeYears === 0) return safeCapital;
-  return safeCapital * ((1 + annualRate) ** safeYears);
+  return safeCapital * (1 + annualRate) ** safeYears;
 }
 
-export function computeAnnualWithdrawal(capital: number, annualRate: number, years: number): number {
+export function computeAnnualWithdrawal(
+  capital: number,
+  annualRate: number,
+  years: number,
+): number {
   const safeCapital = toPositive(capital);
   const safeYears = Math.max(0, Math.floor(years));
   if (safeCapital === 0 || safeYears === 0) return safeCapital;
   if (Math.abs(annualRate) < EPSILON) return safeCapital / safeYears;
-  return safeCapital * annualRate / (1 - ((1 + annualRate) ** -safeYears));
+  return (safeCapital * annualRate) / (1 - (1 + annualRate) ** -safeYears);
 }
 
 export function buildCapitalSchedule(input: CapitalHorizonInput): PerTransfertCapitalScheduleRow[] {
@@ -52,27 +56,32 @@ export function buildCapitalSchedule(input: CapitalHorizonInput): PerTransfertCa
     const withdrawal = computeAnnualWithdrawal(opening, input.annualRate, remainingYears);
     const interests = opening * input.annualRate;
     const capitalBeforeWithdrawal = Math.max(0, opening + interests);
-    const gainsBeforeWithdrawal = Math.min(capitalBeforeWithdrawal, openingGains + Math.max(0, interests));
+    const gainsBeforeWithdrawal = Math.min(
+      capitalBeforeWithdrawal,
+      openingGains + Math.max(0, interests),
+    );
     const cappedWithdrawal = Math.min(withdrawal, capitalBeforeWithdrawal);
-    const withdrawalGains = capitalBeforeWithdrawal > 0
-      ? cappedWithdrawal * (gainsBeforeWithdrawal / capitalBeforeWithdrawal)
-      : 0;
-    const fiscal = input.compartment && input.assumptions
-      ? computeCapitalFiscal({
-        capital: cappedWithdrawal,
-        gains: withdrawalGains,
-        compartment: input.compartment,
-        tmiRetraite: input.tmiRetraite ?? 0,
-        smallAnnuityEligible: input.smallAnnuityEligible ?? false,
-        assumptions: input.assumptions,
-      })
-      : {
-        incomeTax: 0,
-        socialContributions: 0,
-        netOfSocialContributions: cappedWithdrawal,
-        netOfAllTaxes: cappedWithdrawal,
-        netIRPS: cappedWithdrawal,
-      };
+    const withdrawalGains =
+      capitalBeforeWithdrawal > 0
+        ? cappedWithdrawal * (gainsBeforeWithdrawal / capitalBeforeWithdrawal)
+        : 0;
+    const fiscal =
+      input.compartment && input.assumptions
+        ? computeCapitalFiscal({
+            capital: cappedWithdrawal,
+            gains: withdrawalGains,
+            compartment: input.compartment,
+            tmiRetraite: input.tmiRetraite ?? 0,
+            smallAnnuityEligible: input.smallAnnuityEligible ?? false,
+            assumptions: input.assumptions,
+          })
+        : {
+            incomeTax: 0,
+            socialContributions: 0,
+            netOfSocialContributions: cappedWithdrawal,
+            netOfAllTaxes: cappedWithdrawal,
+            netIRPS: cappedWithdrawal,
+          };
     const closingCapital = Math.max(0, capitalBeforeWithdrawal - cappedWithdrawal);
     rows.push({
       age: input.liquidationAge + index + 1,

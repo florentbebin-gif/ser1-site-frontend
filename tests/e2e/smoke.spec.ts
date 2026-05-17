@@ -46,10 +46,14 @@ test.describe('Smoke Tests - Surfaces stables', () => {
 
     const formBoxAfterSummary = await form.boundingBox();
     expect(formBoxAfterSummary).not.toBeNull();
-    expect(Math.abs(formBoxBeforeSummary!.width - formBoxAfterSummary!.width)).toBeLessThanOrEqual(2);
+    expect(Math.abs(formBoxBeforeSummary!.width - formBoxAfterSummary!.width)).toBeLessThanOrEqual(
+      2,
+    );
   });
 
-  test('Credit aligne les champs expert et conserve l’espacement entre les grilles', async ({ page }) => {
+  test('Credit aligne les champs expert et conserve l’espacement entre les grilles', async ({
+    page,
+  }) => {
     await page.goto(ROUTES.credit);
     await expect(page.locator('body')).not.toContainText('Application error');
 
@@ -75,7 +79,9 @@ test.describe('Smoke Tests - Surfaces stables', () => {
 
     const startControl = page.getByTestId('credit-pret0-start').locator('.sim-field__control');
     const typeControl = page.getByTestId('credit-pret0-type').locator('.sim-field__select-trigger');
-    const modeControl = page.getByTestId('credit-pret0-assurmode').locator('.sim-field__select-trigger');
+    const modeControl = page
+      .getByTestId('credit-pret0-assurmode')
+      .locator('.sim-field__select-trigger');
 
     await expect(startControl).toBeVisible();
     await expect(typeControl).toBeVisible();
@@ -106,7 +112,9 @@ test.describe('Smoke Tests - Surfaces stables', () => {
     await expect(page.getByRole('button', { name: 'Généraux' })).toBeVisible();
     await page.getByRole('button', { name: 'Impôts', exact: true }).click();
     await expect(page).toHaveURL(/\/settings\/impots$/);
-    await expect(page.getByRole('button', { name: 'Impôts', exact: true })).toHaveClass(/is-active/);
+    await expect(page.getByRole('button', { name: 'Impôts', exact: true })).toHaveClass(
+      /is-active/,
+    );
   });
 
   test('Strategy charge sans draft et affiche son fallback minimal', async ({ page }) => {

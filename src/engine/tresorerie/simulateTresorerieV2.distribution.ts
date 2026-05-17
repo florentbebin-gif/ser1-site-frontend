@@ -3,7 +3,7 @@ import type { RuntimeAssociateInput } from './types';
 
 export function getPlainPropertyCapitalPct(associate: RuntimeAssociateInput): number {
   return associate.ownershipLots
-    .filter(lot => lot.right === 'pleine_propriete')
+    .filter((lot) => lot.right === 'pleine_propriete')
     .reduce((sum, lot) => sum + (lot.capitalPct || 0), 0);
 }
 
@@ -29,7 +29,9 @@ export function computeDistributableCapacity(params: {
   );
   const reservesEffectivementDistribuables = usufructuaryAppropriatesReserves
     ? reservesDisponibles
-    : (totalPlainPropertyPct > 0 ? reservesDisponibles : 0);
+    : totalPlainPropertyPct > 0
+      ? reservesDisponibles
+      : 0;
   return resultatCourantDistribuable + reservesEffectivementDistribuables;
 }
 
@@ -76,7 +78,7 @@ export function computeDividendsDistribution(params: {
   );
 
   const grossDividendsByAssociate = new Map<string, number>();
-  associates.forEach(associate => {
+  associates.forEach((associate) => {
     const economicShare = getEconomicRightsPct(associate) / 100;
     const fromResult = dividendesIssusResultat * economicShare;
     let fromReserves = 0;
@@ -84,7 +86,8 @@ export function computeDividendsDistribution(params: {
       if (usufructuaryAppropriatesReserves) {
         fromReserves = dividendesIssusReserves * economicShare;
       } else if (totalPlainPropertyPct > 0) {
-        fromReserves = dividendesIssusReserves * (getPlainPropertyCapitalPct(associate) / totalPlainPropertyPct);
+        fromReserves =
+          dividendesIssusReserves * (getPlainPropertyCapitalPct(associate) / totalPlainPropertyPct);
       }
     }
     const total = fromResult + fromReserves;

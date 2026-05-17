@@ -18,9 +18,11 @@ type SettingsTable = 'tax_settings' | 'fiscality_settings';
 
 function makeQueryBuilder(table: SettingsTable) {
   const listResult = {
-    data: [{
-      data: table === 'tax_settings' ? taxSettingsData : fiscalitySettingsData,
-    }],
+    data: [
+      {
+        data: table === 'tax_settings' ? taxSettingsData : fiscalitySettingsData,
+      },
+    ],
     error: null,
   };
   const singleResult = {
@@ -46,7 +48,8 @@ function makeQueryBuilder(table: SettingsTable) {
     return Promise.resolve(writeResult);
   });
   builder.maybeSingle = vi.fn(() => Promise.resolve(singleResult));
-  builder.then = (onFulfilled, onRejected) => Promise.resolve(listResult).then(onFulfilled, onRejected);
+  builder.then = (onFulfilled, onRejected) =>
+    Promise.resolve(listResult).then(onFulfilled, onRejected);
 
   return builder;
 }
@@ -72,10 +75,12 @@ vi.mock('@/utils/cache/fiscalSettingsCache', () => ({
 vi.mock('@/supabaseClient', () => ({
   supabase: {
     auth: {
-      getUser: vi.fn(() => Promise.resolve({
-        data: { user: authUserId ? { id: authUserId } : null },
-        error: null,
-      })),
+      getUser: vi.fn(() =>
+        Promise.resolve({
+          data: { user: authUserId ? { id: authUserId } : null },
+          error: null,
+        }),
+      ),
     },
     from: vi.fn((table: SettingsTable) => makeQueryBuilder(table)),
   },
@@ -122,7 +127,9 @@ describe('SettingsDmtgSuccession', () => {
 
     const saveButton = screen.getByRole('button', { name: /Enregistrer DMTG & Succession/i });
     expect(saveButton).toBeEnabled();
-    expect(screen.queryByText(/Scénario conjoint \+ deux enfants 600 kEUR/i)).not.toBeInTheDocument();
+    expect(
+      screen.queryByText(/Scénario conjoint \+ deux enfants 600 kEUR/i),
+    ).not.toBeInTheDocument();
   });
 
   it("trace l'utilisateur authentifié dans les deux écritures DMTG", async () => {
@@ -137,16 +144,18 @@ describe('SettingsDmtgSuccession', () => {
     await waitFor(() => {
       expect(upsertCalls).toHaveLength(2);
     });
-    expect(upsertCalls).toEqual(expect.arrayContaining([
-      {
-        table: 'tax_settings',
-        payload: expect.objectContaining({ id: 1, updated_by: authUserId }),
-      },
-      {
-        table: 'fiscality_settings',
-        payload: expect.objectContaining({ id: 1, updated_by: authUserId }),
-      },
-    ]));
+    expect(upsertCalls).toEqual(
+      expect.arrayContaining([
+        {
+          table: 'tax_settings',
+          payload: expect.objectContaining({ id: 1, updated_by: authUserId }),
+        },
+        {
+          table: 'fiscality_settings',
+          payload: expect.objectContaining({ id: 1, updated_by: authUserId }),
+        },
+      ]),
+    );
   });
 
   it('charge un ancien blob DMTG et sauvegarde un format canonique', async () => {

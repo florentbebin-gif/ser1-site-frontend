@@ -22,7 +22,9 @@ describe('successionSimulator.helpers', () => {
 
   it('detects whether the family context is sufficient to open succession computations', () => {
     expect(hasComputableSuccessionFiliation('celibataire', [], [])).toBe(false);
-    expect(hasComputableSuccessionFiliation('celibataire', [{ id: 'E1', rattachement: 'epoux1' }], [])).toBe(true);
+    expect(
+      hasComputableSuccessionFiliation('celibataire', [{ id: 'E1', rattachement: 'epoux1' }], []),
+    ).toBe(true);
     expect(hasComputableSuccessionFiliation('concubinage', [], [])).toBe(true);
   });
 
@@ -58,7 +60,9 @@ describe('successionSimulator.helpers', () => {
       montant: 1000,
     };
 
-    expect(applySuccessionDonationFieldUpdate(initialEntry, 'type', 'hors_part').type).toBe('hors_part');
+    expect(applySuccessionDonationFieldUpdate(initialEntry, 'type', 'hors_part').type).toBe(
+      'hors_part',
+    );
     expect(applySuccessionDonationFieldUpdate(initialEntry, 'montant', -10)).toMatchObject({
       montant: 0,
       valeurDonation: 0,
@@ -67,7 +71,10 @@ describe('successionSimulator.helpers', () => {
       montant: 2500,
       valeurDonation: 2500,
     });
-    expect(applySuccessionDonationFieldUpdate(initialEntry, 'donSommeArgentExonere', 1).donSommeArgentExonere).toBe(true);
+    expect(
+      applySuccessionDonationFieldUpdate(initialEntry, 'donSommeArgentExonere', 1)
+        .donSommeArgentExonere,
+    ).toBe(true);
     expect(applySuccessionDonationFieldUpdate(initialEntry, 'donataire', 42).donataire).toBe('42');
   });
 

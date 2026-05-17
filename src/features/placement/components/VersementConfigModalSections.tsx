@@ -20,12 +20,7 @@ interface VersementSectionShellProps {
   children: JSX.Element;
 }
 
-function VersementSectionShell({
-  step,
-  title,
-  action,
-  children,
-}: VersementSectionShellProps) {
+function VersementSectionShell({ step, title, action, children }: VersementSectionShellProps) {
   return (
     <section className="vcm__section">
       <div className="vcm__section-header">
@@ -83,18 +78,30 @@ export function VersementInitialSection({
     <VersementSectionShell step="1" title="Versement initial">
       <div className="vcm__card">
         <div className="vcm__row">
-          <InputEuro label="Montant" value={initial.montant} onChange={(value) => onUpdateInitial('montant', value)} />
-          {!isSCPI && <InputPct label="Frais d'entrée" value={initial.fraisEntree} onChange={(value) => onUpdateInitial('fraisEntree', value)} />}
+          <InputEuro
+            label="Montant"
+            value={initial.montant}
+            onChange={(value) => onUpdateInitial('montant', value)}
+          />
+          {!isSCPI && (
+            <InputPct
+              label="Frais d'entrée"
+              value={initial.fraisEntree}
+              onChange={(value) => onUpdateInitial('fraisEntree', value)}
+            />
+          )}
           {isExpert && isPER && (
             <>
               <div className="vcm__field vcm__field--compact">
                 <label className="vcm__label">Déductibilité</label>
                 <SimSelect
                   value={deductionInitiale.mode}
-                  onChange={(v) => onUpdateDeductionInitiale({
-                    mode: v as 'tmi' | 'montant',
-                    montant: v === 'tmi' ? 0 : deductionInitiale.montant,
-                  })}
+                  onChange={(v) =>
+                    onUpdateDeductionInitiale({
+                      mode: v as 'tmi' | 'montant',
+                      montant: v === 'tmi' ? 0 : deductionInitiale.montant,
+                    })
+                  }
                   options={[
                     { value: 'tmi', label: 'Déduction TMI' },
                     { value: 'montant', label: 'Montant fixe' },
@@ -125,102 +132,113 @@ export function VersementInitialSection({
         </div>
 
         <div className={showCapiBlock && showDistribBlock ? 'vcm__suboptions-row' : ''}>
-        {showCapiBlock ? (
-          <div className="vcm__suboption vcm__suboption--capi">
-            <div className="vcm__suboption-header">
-              <span className="vcm__badge vcm__badge--capi">Capitalisation</span>
-            </div>
-            <InputPct
-              label="Rendement annuel net de FG"
-              value={capitalisation.rendementAnnuel}
-              onChange={(value) => onUpdateCapitalisation('rendementAnnuel', value)}
-            />
-          </div>
-        ) : null}
-
-        {showDistribBlock ? (
-          <div className="vcm__suboption vcm__suboption--distrib">
-            <div className="vcm__suboption-header">
-              <span className="vcm__badge vcm__badge--distrib">Distribution</span>
-            </div>
-
-            <div className="vcm__row">
-              {/* Rendement annuel net de FG — masqué pour SCPI en mode simplifié */}
-              {(isExpert || !isSCPI) && (
-                <InputPct
-                  label="Rendement annuel net de FG"
-                  value={distribution.rendementAnnuel}
-                  onChange={(value) => onUpdateDistribution('rendementAnnuel', value)}
-                />
-              )}
+          {showCapiBlock ? (
+            <div className="vcm__suboption vcm__suboption--capi">
+              <div className="vcm__suboption-header">
+                <span className="vcm__badge vcm__badge--capi">Capitalisation</span>
+              </div>
               <InputPct
-                label={isSCPI ? 'Taux de loyers net de FG' : 'Taux de distribution net de FG'}
-                value={distribution.tauxDistribution}
-                onChange={(value) => onUpdateDistribution('tauxDistribution', value)}
+                label="Rendement annuel net de FG"
+                value={capitalisation.rendementAnnuel}
+                onChange={(value) => onUpdateCapitalisation('rendementAnnuel', value)}
               />
             </div>
+          ) : null}
 
-            {(isExpert || !isSCPI) && (
+          {showDistribBlock ? (
+            <div className="vcm__suboption vcm__suboption--distrib">
+              <div className="vcm__suboption-header">
+                <span className="vcm__badge vcm__badge--distrib">Distribution</span>
+              </div>
+
               <div className="vcm__row">
-                {!isSCPI ? (
-                  <InputNumber
-                    label="Durée du produit"
-                    value={distribution.dureeProduit || ''}
-                    onChange={(value) => onUpdateDistribution('dureeProduit', value || null)}
-                    unit="ans"
-                    min={1}
-                    max={100}
+                {/* Rendement annuel net de FG — masqué pour SCPI en mode simplifié */}
+                {(isExpert || !isSCPI) && (
+                  <InputPct
+                    label="Rendement annuel net de FG"
+                    value={distribution.rendementAnnuel}
+                    onChange={(value) => onUpdateDistribution('rendementAnnuel', value)}
                   />
-                ) : <div />}
-                {/* Délai de jouissance — masqué pour SCPI en mode simplifié */}
-                <InputNumber
-                  label="Délai de jouissance"
-                  value={distribution.delaiJouissance}
-                  onChange={(value) => onUpdateDistribution('delaiJouissance', value ?? 0)}
-                  unit="mois"
-                  min={0}
-                  max={12}
+                )}
+                <InputPct
+                  label={isSCPI ? 'Taux de loyers net de FG' : 'Taux de distribution net de FG'}
+                  value={distribution.tauxDistribution}
+                  onChange={(value) => onUpdateDistribution('tauxDistribution', value)}
                 />
               </div>
-            )}
 
-            {/* Stratégie — masquée pour SCPI en mode simplifié */}
-            {(isExpert || !isSCPI) && (
-              <div className="vcm__field">
-                <label className="vcm__label">Stratégie</label>
+              {(isExpert || !isSCPI) && (
+                <div className="vcm__row">
+                  {!isSCPI ? (
+                    <InputNumber
+                      label="Durée du produit"
+                      value={distribution.dureeProduit || ''}
+                      onChange={(value) => onUpdateDistribution('dureeProduit', value || null)}
+                      unit="ans"
+                      min={1}
+                      max={100}
+                    />
+                  ) : (
+                    <div />
+                  )}
+                  {/* Délai de jouissance — masqué pour SCPI en mode simplifié */}
+                  <InputNumber
+                    label="Délai de jouissance"
+                    value={distribution.delaiJouissance}
+                    onChange={(value) => onUpdateDistribution('delaiJouissance', value ?? 0)}
+                    unit="mois"
+                    min={0}
+                    max={12}
+                  />
+                </div>
+              )}
 
-                <SimSelect
-                  value={distribution.strategie}
-                  onChange={(v) => onUpdateDistribution('strategie', v)}
-                  options={[
-                    ...(!isSCPI ? [{ value: 'stocker', label: 'Stocker les distributions à 0%' }] : []),
-                    ...((isSCPI || isCTO) ? [{ value: 'apprehender', label: 'Appréhender les distributions chaque année' }] : []),
-                    {
-                      value: 'reinvestir_capi',
-                      label: isSCPI
-                        ? 'Réinvestir les distributions nettes de fiscalité chaque année'
-                        : 'Réinvestir les distributions chaque année vers la capitalisation',
-                    },
-                  ]}
-                />
-              </div>
-            )}
+              {/* Stratégie — masquée pour SCPI en mode simplifié */}
+              {(isExpert || !isSCPI) && (
+                <div className="vcm__field">
+                  <label className="vcm__label">Stratégie</label>
 
-            {!isSCPI && distribution.dureeProduit ? (
-              <div className="vcm__field">
-                <label className="vcm__label">Au terme du produit, réinvestir vers</label>
-                <SimSelect
-                  value={distribution.reinvestirVersAuTerme}
-                  onChange={(v) => onUpdateDistribution('reinvestirVersAuTerme', v)}
-                  options={[
-                    { value: 'capitalisation', label: 'Capitalisation' },
-                    { value: 'distribution', label: 'Distribution' },
-                  ]}
-                />
-              </div>
-            ) : null}
-          </div>
-        ) : null}
+                  <SimSelect
+                    value={distribution.strategie}
+                    onChange={(v) => onUpdateDistribution('strategie', v)}
+                    options={[
+                      ...(!isSCPI
+                        ? [{ value: 'stocker', label: 'Stocker les distributions à 0%' }]
+                        : []),
+                      ...(isSCPI || isCTO
+                        ? [
+                            {
+                              value: 'apprehender',
+                              label: 'Appréhender les distributions chaque année',
+                            },
+                          ]
+                        : []),
+                      {
+                        value: 'reinvestir_capi',
+                        label: isSCPI
+                          ? 'Réinvestir les distributions nettes de fiscalité chaque année'
+                          : 'Réinvestir les distributions chaque année vers la capitalisation',
+                      },
+                    ]}
+                  />
+                </div>
+              )}
+
+              {!isSCPI && distribution.dureeProduit ? (
+                <div className="vcm__field">
+                  <label className="vcm__label">Au terme du produit, réinvestir vers</label>
+                  <SimSelect
+                    value={distribution.reinvestirVersAuTerme}
+                    onChange={(v) => onUpdateDistribution('reinvestirVersAuTerme', v)}
+                    options={[
+                      { value: 'capitalisation', label: 'Capitalisation' },
+                      { value: 'distribution', label: 'Distribution' },
+                    ]}
+                  />
+                </div>
+              ) : null}
+            </div>
+          ) : null}
         </div>
       </div>
     </VersementSectionShell>
@@ -261,11 +279,11 @@ export function VersementAnnualSection({
       <VersementSectionShell
         step="2"
         title="Versement annuel"
-        action={(
+        action={
           <button type="button" className="vcm__add-btn" onClick={onAddAnnual}>
             + Ajouter
           </button>
-        )}
+        }
       >
         <div className="vcm__empty">
           <p>Aucun versement annuel configure</p>
@@ -281,16 +299,30 @@ export function VersementAnnualSection({
     <VersementSectionShell
       step="2"
       title="Versement annuel"
-      action={(
-        <button type="button" className="vcm__add-btn vcm__add-btn--secondary" onClick={onRemoveAnnual}>
+      action={
+        <button
+          type="button"
+          className="vcm__add-btn vcm__add-btn--secondary"
+          onClick={onRemoveAnnual}
+        >
           Supprimer
         </button>
-      )}
+      }
     >
       <div className="vcm__card">
         <div className="vcm__row vcm__row--4cols">
-          <InputEuro label="Montant" value={annuel.montant} onChange={(value) => onUpdateAnnuel('montant', value)} />
-          {!isSCPI && <InputPct label="Frais d'entrée" value={annuel.fraisEntree} onChange={(value) => onUpdateAnnuel('fraisEntree', value)} />}
+          <InputEuro
+            label="Montant"
+            value={annuel.montant}
+            onChange={(value) => onUpdateAnnuel('montant', value)}
+          />
+          {!isSCPI && (
+            <InputPct
+              label="Frais d'entrée"
+              value={annuel.fraisEntree}
+              onChange={(value) => onUpdateAnnuel('fraisEntree', value)}
+            />
+          )}
           <div className={`vcm__field vcm__field--alloc${isSCPI ? '' : ''}`}>
             <label className="vcm__label vcm__label--sentence">Allocation</label>
             <AllocationSlider
@@ -311,7 +343,9 @@ export function VersementAnnualSection({
                 <input
                   type="checkbox"
                   checked={annuel.garantieBonneFin.active}
-                  onChange={(event) => onUpdateAnnuelOption('garantieBonneFin', 'active', event.target.checked)}
+                  onChange={(event) =>
+                    onUpdateAnnuelOption('garantieBonneFin', 'active', event.target.checked)
+                  }
                 />
                 <span>Garantie de bonne fin</span>
               </label>
@@ -330,7 +364,9 @@ export function VersementAnnualSection({
                 <input
                   type="checkbox"
                   checked={annuel.exonerationCotisations.active}
-                  onChange={(event) => onUpdateAnnuelOption('exonerationCotisations', 'active', event.target.checked)}
+                  onChange={(event) =>
+                    onUpdateAnnuelOption('exonerationCotisations', 'active', event.target.checked)
+                  }
                 />
                 <span>Exonération des cotisations</span>
               </label>
@@ -338,7 +374,9 @@ export function VersementAnnualSection({
                 <InputPct
                   label="Coût annuel"
                   value={annuel.exonerationCotisations.cout}
-                  onChange={(value) => onUpdateAnnuelOption('exonerationCotisations', 'cout', value)}
+                  onChange={(value) =>
+                    onUpdateAnnuelOption('exonerationCotisations', 'cout', value)
+                  }
                 />
               ) : null}
             </div>
@@ -378,16 +416,20 @@ export function VersementPonctuelsSection({
     <VersementSectionShell
       step="3"
       title="Versements ponctuels"
-      action={(
+      action={
         <button type="button" className="vcm__add-btn" onClick={onAddPonctuel}>
           + Ajouter
         </button>
-      )}
+      }
     >
       {ponctuels.length === 0 ? (
         <div className="vcm__empty">
           <p>Aucun versement ponctuel configuré</p>
-          <button type="button" className="vcm__add-btn vcm__add-btn--large" onClick={onAddPonctuel}>
+          <button
+            type="button"
+            className="vcm__add-btn vcm__add-btn--large"
+            onClick={onAddPonctuel}
+          >
             + Ajouter un versement
           </button>
         </div>
@@ -437,7 +479,9 @@ export function VersementPonctuelsSection({
                       type="number"
                       step="0.1"
                       value={(ponctuel.fraisEntree * 100).toFixed(1)}
-                      onChange={(event) => onUpdatePonctuel(index, 'fraisEntree', Number(event.target.value) / 100)}
+                      onChange={(event) =>
+                        onUpdatePonctuel(index, 'fraisEntree', Number(event.target.value) / 100)
+                      }
                       className="vcm__mini-input"
                       aria-label="Frais d'entrée (%)"
                     />

@@ -51,12 +51,24 @@ export interface FiliationOrgLayout {
   svgHeight: number;
 }
 
-function cx(node: FiliationOrgNode): number { return node.x + FILIATION_NODE_WIDTH / 2; }
-function cy(node: FiliationOrgNode): number { return node.y + FILIATION_NODE_HEIGHT / 2; }
-function bottom(node: FiliationOrgNode): number { return node.y + FILIATION_NODE_HEIGHT; }
-function top(node: FiliationOrgNode): number { return node.y; }
-function right(node: FiliationOrgNode): number { return node.x + FILIATION_NODE_WIDTH; }
-function left(node: FiliationOrgNode): number { return node.x; }
+function cx(node: FiliationOrgNode): number {
+  return node.x + FILIATION_NODE_WIDTH / 2;
+}
+function cy(node: FiliationOrgNode): number {
+  return node.y + FILIATION_NODE_HEIGHT / 2;
+}
+function bottom(node: FiliationOrgNode): number {
+  return node.y + FILIATION_NODE_HEIGHT;
+}
+function top(node: FiliationOrgNode): number {
+  return node.y;
+}
+function right(node: FiliationOrgNode): number {
+  return node.x + FILIATION_NODE_WIDTH;
+}
+function left(node: FiliationOrgNode): number {
+  return node.x;
+}
 
 function addAttachmentBus(
   edges: FiliationOrgEdge[],
@@ -107,7 +119,8 @@ export function computeFiliationOrgchartLayout(
 
   const { situationMatrimoniale } = civilContext;
   const hasPair = ['marie', 'pacse', 'concubinage', 'divorce'].includes(situationMatrimoniale);
-  const isDashedCouple = situationMatrimoniale === 'concubinage' || situationMatrimoniale === 'divorce';
+  const isDashedCouple =
+    situationMatrimoniale === 'concubinage' || situationMatrimoniale === 'divorce';
 
   const parents1 = familyMembers.filter((m) => m.type === 'parent' && m.branch === 'epoux1');
   const parents2 = familyMembers.filter((m) => m.type === 'parent' && m.branch === 'epoux2');
@@ -133,7 +146,7 @@ export function computeFiliationOrgchartLayout(
   const yOncle = hasOncles ? currentY : -1;
   if (hasOncles) currentY += FILIATION_NODE_HEIGHT + GV;
 
-  const yParent = (hasParents || hasFreres) ? currentY : -1;
+  const yParent = hasParents || hasFreres ? currentY : -1;
   if (hasParents || hasFreres) currentY += FILIATION_NODE_HEIGHT + GV;
 
   const yEpoux = currentY;
@@ -150,8 +163,11 @@ export function computeFiliationOrgchartLayout(
   const nEpoux1 = enfEpoux1.length;
   const wCommuns = nCommuns > 0 ? nCommuns * FILIATION_NODE_WIDTH + (nCommuns - 1) * GH : 0;
   const wEpoux1ch = nEpoux1 > 0 ? nEpoux1 * FILIATION_NODE_WIDTH + (nEpoux1 - 1) * GH : 0;
-  const centerX = PAD + wEpoux1ch + (wEpoux1ch > 0 ? GH * 2 : 0)
-    + (wCommuns > 0 ? wCommuns / 2 : FILIATION_NODE_WIDTH);
+  const centerX =
+    PAD +
+    wEpoux1ch +
+    (wEpoux1ch > 0 ? GH * 2 : 0) +
+    (wCommuns > 0 ? wCommuns / 2 : FILIATION_NODE_WIDTH);
 
   let epoux1Node: FiliationOrgNode | null = null;
   let epoux2Node: FiliationOrgNode | null = null;
@@ -218,11 +234,15 @@ export function computeFiliationOrgchartLayout(
       nodes.push(node);
       commonChildNodes.push(node);
 
-      const peChildren = petitsEnfants.filter((petitEnfant) => petitEnfant.parentEnfantId === enfant.id);
+      const peChildren = petitsEnfants.filter(
+        (petitEnfant) => petitEnfant.parentEnfantId === enfant.id,
+      );
       const grandChildNodes: FiliationOrgNode[] = [];
       peChildren.forEach((petitEnfant, petitIndex) => {
-        const peX = nodeX + petitIndex * (FILIATION_NODE_WIDTH + GH)
-          - (peChildren.length - 1) * (FILIATION_NODE_WIDTH + GH) / 2;
+        const peX =
+          nodeX +
+          petitIndex * (FILIATION_NODE_WIDTH + GH) -
+          ((peChildren.length - 1) * (FILIATION_NODE_WIDTH + GH)) / 2;
         const peNode: FiliationOrgNode = {
           id: petitEnfant.id,
           label: 'PE',
@@ -233,14 +253,26 @@ export function computeFiliationOrgchartLayout(
         nodes.push(peNode);
         grandChildNodes.push(peNode);
       });
-      addAttachmentBus(edges, cx(node), bottom(node), grandChildNodes, top(node) + FILIATION_NODE_HEIGHT + groupPad);
+      addAttachmentBus(
+        edges,
+        cx(node),
+        bottom(node),
+        grandChildNodes,
+        top(node) + FILIATION_NODE_HEIGHT + groupPad,
+      );
     });
 
     if (epoux1Node && epoux2Node) {
       const junctionX = (right(epoux1Node) + left(epoux2Node)) / 2;
       addAttachmentBus(edges, junctionX, cy(epoux1Node), commonChildNodes, yEnfant - groupPad);
     } else if (epoux1Node) {
-      addAttachmentBus(edges, cx(epoux1Node), bottom(epoux1Node), commonChildNodes, yEnfant - groupPad);
+      addAttachmentBus(
+        edges,
+        cx(epoux1Node),
+        bottom(epoux1Node),
+        commonChildNodes,
+        yEnfant - groupPad,
+      );
     }
   }
 
@@ -262,7 +294,9 @@ export function computeFiliationOrgchartLayout(
       nodes.push(node);
       childNodes.push(node);
 
-      const peChildren = petitsEnfants.filter((petitEnfant) => petitEnfant.parentEnfantId === enfant.id);
+      const peChildren = petitsEnfants.filter(
+        (petitEnfant) => petitEnfant.parentEnfantId === enfant.id,
+      );
       const grandChildNodes: FiliationOrgNode[] = [];
       peChildren.forEach((petitEnfant, petitIndex) => {
         const peX = nodeX + petitIndex * (FILIATION_NODE_WIDTH + GH);
@@ -276,14 +310,20 @@ export function computeFiliationOrgchartLayout(
         nodes.push(peNode);
         grandChildNodes.push(peNode);
       });
-      addAttachmentBus(edges, cx(node), bottom(node), grandChildNodes, top(node) + FILIATION_NODE_HEIGHT + groupPad);
+      addAttachmentBus(
+        edges,
+        cx(node),
+        bottom(node),
+        grandChildNodes,
+        top(node) + FILIATION_NODE_HEIGHT + groupPad,
+      );
     });
     addAttachmentBus(edges, cx(epoux1Node), bottom(epoux1Node), childNodes, yEnfant - groupPad);
   }
 
   if (enfEpoux2.length > 0 && epoux2Node) {
-    const startX = PAD + wEpoux1ch + (wEpoux1ch > 0 ? GH * 2 : 0)
-      + wCommuns + (wCommuns > 0 ? GH * 2 : 0);
+    const startX =
+      PAD + wEpoux1ch + (wEpoux1ch > 0 ? GH * 2 : 0) + wCommuns + (wCommuns > 0 ? GH * 2 : 0);
     const childNodes: FiliationOrgNode[] = [];
     const groupPad = 8;
     enfEpoux2.forEach((enfant, index) => {
@@ -300,7 +340,9 @@ export function computeFiliationOrgchartLayout(
       nodes.push(node);
       childNodes.push(node);
 
-      const peChildren = petitsEnfants.filter((petitEnfant) => petitEnfant.parentEnfantId === enfant.id);
+      const peChildren = petitsEnfants.filter(
+        (petitEnfant) => petitEnfant.parentEnfantId === enfant.id,
+      );
       const grandChildNodes: FiliationOrgNode[] = [];
       peChildren.forEach((petitEnfant, petitIndex) => {
         const peX = nodeX + petitIndex * (FILIATION_NODE_WIDTH + GH);
@@ -314,30 +356,60 @@ export function computeFiliationOrgchartLayout(
         nodes.push(peNode);
         grandChildNodes.push(peNode);
       });
-      addAttachmentBus(edges, cx(node), bottom(node), grandChildNodes, top(node) + FILIATION_NODE_HEIGHT + groupPad);
+      addAttachmentBus(
+        edges,
+        cx(node),
+        bottom(node),
+        grandChildNodes,
+        top(node) + FILIATION_NODE_HEIGHT + groupPad,
+      );
     });
     addAttachmentBus(edges, cx(epoux2Node), bottom(epoux2Node), childNodes, yEnfant - groupPad);
   }
 
   if (yParent >= 0) {
     parents1.forEach((parent, index) => {
-      const nodeX = epoux1Node ? left(epoux1Node) - (index + 1) * (FILIATION_NODE_WIDTH + GH) : PAD + index * (FILIATION_NODE_WIDTH + GH);
-      const node: FiliationOrgNode = { id: parent.id, label: 'Parent', x: nodeX, y: yParent, kind: 'parent' };
+      const nodeX = epoux1Node
+        ? left(epoux1Node) - (index + 1) * (FILIATION_NODE_WIDTH + GH)
+        : PAD + index * (FILIATION_NODE_WIDTH + GH);
+      const node: FiliationOrgNode = {
+        id: parent.id,
+        label: 'Parent',
+        x: nodeX,
+        y: yParent,
+        kind: 'parent',
+      };
       nodes.push(node);
-      if (epoux1Node) edges.push({ x1: cx(node), y1: bottom(node), x2: cx(epoux1Node), y2: top(epoux1Node) });
+      if (epoux1Node)
+        edges.push({ x1: cx(node), y1: bottom(node), x2: cx(epoux1Node), y2: top(epoux1Node) });
     });
     parents2.forEach((parent, index) => {
-      const nodeX = epoux2Node ? right(epoux2Node) + index * (FILIATION_NODE_WIDTH + GH) : PAD + index * (FILIATION_NODE_WIDTH + GH);
-      const node: FiliationOrgNode = { id: parent.id, label: 'Parent', x: nodeX, y: yParent, kind: 'parent' };
+      const nodeX = epoux2Node
+        ? right(epoux2Node) + index * (FILIATION_NODE_WIDTH + GH)
+        : PAD + index * (FILIATION_NODE_WIDTH + GH);
+      const node: FiliationOrgNode = {
+        id: parent.id,
+        label: 'Parent',
+        x: nodeX,
+        y: yParent,
+        kind: 'parent',
+      };
       nodes.push(node);
-      if (epoux2Node) edges.push({ x1: cx(node), y1: bottom(node), x2: cx(epoux2Node), y2: top(epoux2Node) });
+      if (epoux2Node)
+        edges.push({ x1: cx(node), y1: bottom(node), x2: cx(epoux2Node), y2: top(epoux2Node) });
     });
 
     freres1.forEach((frere, index) => {
       const nodeX = epoux1Node
         ? left(epoux1Node) - (parents1.length + index + 1) * (FILIATION_NODE_WIDTH + GH)
         : PAD + index * (FILIATION_NODE_WIDTH + GH);
-      const node: FiliationOrgNode = { id: frere.id, label: 'Frère/Sœur', x: nodeX, y: yParent, kind: 'frere_soeur' };
+      const node: FiliationOrgNode = {
+        id: frere.id,
+        label: 'Frère/Sœur',
+        x: nodeX,
+        y: yParent,
+        kind: 'frere_soeur',
+      };
       nodes.push(node);
       if (epoux1Node) {
         edges.push({
@@ -352,7 +424,13 @@ export function computeFiliationOrgchartLayout(
       const nodeX = epoux2Node
         ? right(epoux2Node) + (parents2.length + index) * (FILIATION_NODE_WIDTH + GH)
         : PAD + index * (FILIATION_NODE_WIDTH + GH);
-      const node: FiliationOrgNode = { id: frere.id, label: 'Frère/Sœur', x: nodeX, y: yParent, kind: 'frere_soeur' };
+      const node: FiliationOrgNode = {
+        id: frere.id,
+        label: 'Frère/Sœur',
+        x: nodeX,
+        y: yParent,
+        kind: 'frere_soeur',
+      };
       nodes.push(node);
       if (epoux2Node) {
         edges.push({
@@ -367,12 +445,16 @@ export function computeFiliationOrgchartLayout(
 
   if (yOncle >= 0) {
     oncles1.forEach((oncle, index) => {
-      const refX = epoux1Node ? left(epoux1Node) - parents1.length * (FILIATION_NODE_WIDTH + GH) : PAD;
+      const refX = epoux1Node
+        ? left(epoux1Node) - parents1.length * (FILIATION_NODE_WIDTH + GH)
+        : PAD;
       const nodeX = refX - (index + 1) * (FILIATION_NODE_WIDTH + GH);
       nodes.push({ id: oncle.id, label: 'Oncle/Tante', x: nodeX, y: yOncle, kind: 'oncle_tante' });
     });
     oncles2.forEach((oncle, index) => {
-      const refX = epoux2Node ? right(epoux2Node) + parents2.length * (FILIATION_NODE_WIDTH + GH) : PAD;
+      const refX = epoux2Node
+        ? right(epoux2Node) + parents2.length * (FILIATION_NODE_WIDTH + GH)
+        : PAD;
       const nodeX = refX + index * (FILIATION_NODE_WIDTH + GH);
       nodes.push({ id: oncle.id, label: 'Oncle/Tante', x: nodeX, y: yOncle, kind: 'oncle_tante' });
     });
@@ -394,12 +476,16 @@ export function computeFiliationOrgchartLayout(
   const minNodeX = nodes.reduce((acc, node) => Math.min(acc, node.x), Infinity);
   const leftShift = minNodeX < PAD ? PAD - minNodeX : 0;
   if (leftShift > 0) {
-    nodes.forEach((node) => { node.x += leftShift; });
+    nodes.forEach((node) => {
+      node.x += leftShift;
+    });
     edges.forEach((edge) => {
       edge.x1 += leftShift;
       edge.x2 += leftShift;
     });
-    groups.forEach((group) => { group.x += leftShift; });
+    groups.forEach((group) => {
+      group.x += leftShift;
+    });
   }
 
   const maxNodeRight = nodes.reduce((acc, node) => Math.max(acc, right(node)), 0);
@@ -407,12 +493,16 @@ export function computeFiliationOrgchartLayout(
   const svgWidth = Math.max(naturalWidth, BASELINE_WIDTH);
   if (naturalWidth < svgWidth) {
     const centerShift = (svgWidth - naturalWidth) / 2;
-    nodes.forEach((node) => { node.x += centerShift; });
+    nodes.forEach((node) => {
+      node.x += centerShift;
+    });
     edges.forEach((edge) => {
       edge.x1 += centerShift;
       edge.x2 += centerShift;
     });
-    groups.forEach((group) => { group.x += centerShift; });
+    groups.forEach((group) => {
+      group.x += centerShift;
+    });
   }
 
   return { nodes, edges, groups, svgWidth, svgHeight };

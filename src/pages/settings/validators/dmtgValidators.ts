@@ -82,7 +82,10 @@ export function validatePositive(value: number | string | null | undefined): str
  * @param {number} max
  * @returns {string|null}
  */
-export function validateReasonable(value: number | string | null | undefined, max: number = 10000000): string | null {
+export function validateReasonable(
+  value: number | string | null | undefined,
+  max: number = 10000000,
+): string | null {
   const posErr = validatePositive(value);
   if (posErr) return posErr;
   if (value === null || value === undefined || value === '') return null;
@@ -96,12 +99,15 @@ export function validateReasonable(value: number | string | null | undefined, ma
  * @param {Array<{from: number|null, to: number|null, rate?: number}>} scale
  * @returns {Array<{index: number, field: string, message: string}>}
  */
-export function validateScaleOrdered(scale: ScaleBracket[]): Array<{ index: number; field: string; message: string }> {
+export function validateScaleOrdered(
+  scale: ScaleBracket[],
+): Array<{ index: number; field: string; message: string }> {
   if (!Array.isArray(scale) || scale.length === 0) return [];
   const errors: Array<{ index: number; field: string; message: string }> = [];
 
   for (let i = 0; i < scale.length; i++) {
     const row = scale[i];
+    if (!row) continue;
 
     // Validate rate
     if (row.rate !== null && row.rate !== undefined) {
@@ -119,18 +125,27 @@ export function validateScaleOrdered(scale: ScaleBracket[]): Array<{ index: numb
     // Validate from < to (unless to is null = last bracket)
     if (row.to !== null && row.to !== undefined && row.from !== null && row.from !== undefined) {
       if (row.to <= row.from) {
-        errors.push({ index: i, field: 'to', message: 'La borne haute doit être supérieure à la borne basse.' });
+        errors.push({
+          index: i,
+          field: 'to',
+          message: 'La borne haute doit être supérieure à la borne basse.',
+        });
       }
     }
 
     // Validate ordering with previous bracket
     if (i > 0) {
       const prev = scale[i - 1];
+      if (!prev) continue;
       const prevTo = prev.to;
       const currFrom = row.from;
       if (prevTo !== null && prevTo !== undefined && currFrom !== null && currFrom !== undefined) {
         if (currFrom < prevTo) {
-          errors.push({ index: i, field: 'from', message: 'La tranche suivante doit commencer après la précédente.' });
+          errors.push({
+            index: i,
+            field: 'from',
+            message: 'La tranche suivante doit commencer après la précédente.',
+          });
         }
       }
     }
@@ -183,7 +198,7 @@ export function validateAvDeces(avDeces: AvDecesConfig | null | undefined): Reco
   if (avDeces.agePivotPrimes !== null && avDeces.agePivotPrimes !== undefined) {
     const n = Number(avDeces.agePivotPrimes);
     if (Number.isNaN(n) || n < 0 || n > 120) {
-      errors['agePivotPrimes'] = 'L\'âge pivot doit être entre 0 et 120.';
+      errors['agePivotPrimes'] = "L'âge pivot doit être entre 0 et 120.";
     }
   }
 
@@ -199,6 +214,7 @@ export function validateAvDeces(avDeces: AvDecesConfig | null | undefined): Reco
     if (Array.isArray(pa.brackets)) {
       for (let i = 0; i < pa.brackets.length; i++) {
         const b = pa.brackets[i];
+        if (!b) continue;
         const rateErr = validatePercent(b.ratePercent);
         if (rateErr) {
           errors[`primesApres1998.brackets[${i}].ratePercent`] = rateErr;
@@ -231,7 +247,7 @@ export function validateAvDeces(avDeces: AvDecesConfig | null | undefined): Reco
  * @returns {boolean}
  */
 export function isValid(...errorObjects: Record<string, string>[]): boolean {
-  return errorObjects.every(e => Object.keys(e).length === 0);
+  return errorObjects.every((e) => Object.keys(e).length === 0);
 }
 
 /**
@@ -244,19 +260,17 @@ export function validateImpotsSettings(
 ): Record<string, string> {
   const errors: Record<string, string> = {};
   const { incomeTax, pfu, cehr, cdhr, corporateTax } = settings || {};
-  const incomeTaxPeriods: Array<'scaleCurrent' | 'scalePrevious'> = ['scaleCurrent', 'scalePrevious'];
+  const incomeTaxPeriods: Array<'scaleCurrent' | 'scalePrevious'> = [
+    'scaleCurrent',
+    'scalePrevious',
+  ];
   const yearPeriods: Array<'current' | 'previous'> = ['current', 'previous'];
   const domZones: Array<'gmr' | 'guyane'> = ['gmr', 'guyane'];
   const pfuKeys: Array<'rateIR'> = ['rateIR'];
   const cehrGroups: Array<'single' | 'couple'> = ['single', 'couple'];
   const corporateKeys: Array<
     'normalRate' | 'reducedRate' | 'maxDeductibleCcaInterestRate' | 'dividendsAbatementPct'
-  > = [
-    'normalRate',
-    'reducedRate',
-    'maxDeductibleCcaInterestRate',
-    'dividendsAbatementPct',
-  ];
+  > = ['normalRate', 'reducedRate', 'maxDeductibleCcaInterestRate', 'dividendsAbatementPct'];
 
   // Barèmes IR (scaleCurrent, scalePrevious) — tranches ordonnées + taux 0-100
   for (const period of incomeTaxPeriods) {
@@ -293,7 +307,9 @@ export function validateImpotsSettings(
     for (const group of cehrGroups) {
       const rows = cehr?.[period]?.[group] || [];
       for (let i = 0; i < rows.length; i++) {
-        const rateErr = validatePercent(rows[i].rate);
+        const row = rows[i];
+        if (!row) continue;
+        const rateErr = validatePercent(row.rate);
         if (rateErr) errors[`cehr.${period}.${group}[${i}].rate`] = rateErr;
       }
     }
@@ -357,8 +373,10 @@ export function validatePrelevementsSettings(
   for (const period of yearPeriods) {
     const brackets = retirement?.[period]?.brackets || [];
     for (let i = 0; i < brackets.length; i++) {
+      const bracket = brackets[i];
+      if (!bracket) continue;
       for (const key of retirementKeys) {
-        const rateErr = validatePercent(brackets[i][key]);
+        const rateErr = validatePercent(bracket[key]);
         if (rateErr) errors[`retirement.${period}.brackets[${i}].${key}`] = rateErr;
       }
     }

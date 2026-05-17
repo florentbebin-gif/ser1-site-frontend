@@ -8,7 +8,9 @@ import type {
 } from '../successionDraft';
 import { makeCivilMarie } from './fixtures';
 
-function makeCivilWithDates(overrides: Partial<SuccessionCivilContext> = {}): SuccessionCivilContext {
+function makeCivilWithDates(
+  overrides: Partial<SuccessionCivilContext> = {},
+): SuccessionCivilContext {
   return makeCivilMarie({
     dateNaissanceEpoux1: '1970-01-01',
     dateNaissanceEpoux2: '1972-01-01',
@@ -16,7 +18,9 @@ function makeCivilWithDates(overrides: Partial<SuccessionCivilContext> = {}): Su
   });
 }
 
-function makeEntry(overrides: Partial<SuccessionPrevoyanceDecesEntry> = {}): SuccessionPrevoyanceDecesEntry {
+function makeEntry(
+  overrides: Partial<SuccessionPrevoyanceDecesEntry> = {},
+): SuccessionPrevoyanceDecesEntry {
   return {
     id: 'prev-1',
     souscripteur: 'epoux1',
@@ -53,11 +57,13 @@ describe('buildSuccessionPrevoyanceFiscalAnalysis', () => {
   it('applies 990 I on the last annual premium only before 70', () => {
     const snapshot = buildSuccessionFiscalSnapshot(null);
     const analysis = buildSuccessionPrevoyanceFiscalAnalysis(
-      [makeEntry({
-        capitalDeces: 1_000_000,
-        dernierePrime: 300000,
-        clauseBeneficiaire: 'CUSTOM:E1:100',
-      })],
+      [
+        makeEntry({
+          capitalDeces: 1_000_000,
+          dernierePrime: 300000,
+          clauseBeneficiaire: 'CUSTOM:E1:100',
+        }),
+      ],
       makeCivilWithDates({
         situationMatrimoniale: 'celibataire',
         regimeMatrimonial: null,
@@ -128,11 +134,13 @@ describe('buildSuccessionPrevoyanceFiscalAnalysis', () => {
   it('falls back to 990 I on the capital with an explicit warning when the last premium is missing', () => {
     const snapshot = buildSuccessionFiscalSnapshot(null);
     const analysis = buildSuccessionPrevoyanceFiscalAnalysis(
-      [makeEntry({
-        capitalDeces: 200000,
-        dernierePrime: 0,
-        clauseBeneficiaire: 'CUSTOM:E1:100',
-      })],
+      [
+        makeEntry({
+          capitalDeces: 200000,
+          dernierePrime: 0,
+          clauseBeneficiaire: 'CUSTOM:E1:100',
+        }),
+      ],
       makeCivilWithDates({
         situationMatrimoniale: 'celibataire',
         regimeMatrimonial: null,
@@ -146,7 +154,9 @@ describe('buildSuccessionPrevoyanceFiscalAnalysis', () => {
     expect(analysis.lines[0]?.capitauxAvant70).toBe(200000);
     expect(analysis.lines[0]?.capitauxApres70).toBe(0);
     expect(analysis.lines[0]?.taxable990I).toBe(47500);
-    expect(analysis.warnings.some((warning) => warning.includes('Dernière prime non renseignée'))).toBe(true);
+    expect(
+      analysis.warnings.some((warning) => warning.includes('Dernière prime non renseignée')),
+    ).toBe(true);
   });
 
   it('includes legal references in warnings (990 I / 757 B / art. 306-0 F)', () => {
@@ -168,13 +178,13 @@ describe('buildSuccessionPrevoyanceFiscalAnalysis', () => {
 
   it('supports a generic family-member beneficiary label', () => {
     const snapshot = buildSuccessionFiscalSnapshot(null);
-    const familyMembers: FamilyMember[] = [
-      { id: 'fam-1', type: 'oncle_tante', branch: 'epoux1' },
-    ];
+    const familyMembers: FamilyMember[] = [{ id: 'fam-1', type: 'oncle_tante', branch: 'epoux1' }];
     const analysis = buildSuccessionPrevoyanceFiscalAnalysis(
-      [makeEntry({
-        clauseBeneficiaire: 'CUSTOM:fam-1:100',
-      })],
+      [
+        makeEntry({
+          clauseBeneficiaire: 'CUSTOM:fam-1:100',
+        }),
+      ],
       makeCivilWithDates({
         situationMatrimoniale: 'celibataire',
         regimeMatrimonial: null,

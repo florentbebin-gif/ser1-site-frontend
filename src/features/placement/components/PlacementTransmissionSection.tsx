@@ -81,9 +81,9 @@ export function PlacementTransmissionSection({
                         setTransmission({ beneficiaryType: v });
                       }}
                       forced={isSingleOption}
-                      options={BENEFICIARY_OPTIONS
-                        .filter((option) => option.value !== 'conjoint' || !isSingleOption)
-                        .map((option) => ({ value: option.value, label: option.label }))}
+                      options={BENEFICIARY_OPTIONS.filter(
+                        (option) => option.value !== 'conjoint' || !isSingleOption,
+                      ).map((option) => ({ value: option.value, label: option.label }))}
                     />
                   );
                 })()}
@@ -127,7 +127,8 @@ export function PlacementTransmissionSection({
               <tr>
                 <td colSpan={3}>
                   <div className="pl-alert pl-alert--warning">
-                    Consommation estimée de la tranche DMTG (sur l’assiette réellement soumise aux DMTG) <sup>(1)</sup> :
+                    Consommation estimée de la tranche DMTG (sur l’assiette réellement soumise aux
+                    DMTG) <sup>(1)</sup> :
                     <div className="pl-alert__block">
                       <div>Placement 1 : {dmtgConsumptionPercentProduit1}%</div>
                       {compareEnabled && <div>Placement 2 : {dmtgConsumptionPercentProduit2}%</div>}
@@ -145,48 +146,62 @@ export function PlacementTransmissionSection({
         <div className="pl-card-title pl-card-title--spaced">Détail des droits de succession</div>
 
         <div className="pl-detail-table-scroll">
-        <table className="pl-ir-table pl-detail-table">
-          <thead>
-            <tr>
-              <th>Produit</th>
-              <th>Capital transmis</th>
-              <th>Abattement</th>
-              <th>Assiette</th>
-              <th>PS</th>
-              <th>Taxes + DMTG</th>
-              <th>Net transmis</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>{produit1?.envelopeLabel || 'Produit 1'}</td>
-              <td>{euro(produit1?.transmission?.capitalTransmis || 0)}</td>
-              <td>{euro(produit1?.transmission?.abattement || 0)}</td>
-              <td>{euro(produit1?.transmission?.assiette || 0)}</td>
-              <td>{formatPsMontant(psDecesProduit1, euro)}</td>
-              <td>{euro((produit1?.transmission?.taxeForfaitaire || 0) + (produit1?.transmission?.taxeDmtg || 0))}</td>
-              <td><strong>{euro(produit1?.transmission?.capitalTransmisNet || 0)}</strong></td>
-            </tr>
-            {compareEnabled && (
+          <table className="pl-ir-table pl-detail-table">
+            <thead>
               <tr>
-                <td>{produit2?.envelopeLabel || 'Produit 2'}</td>
-                <td>{euro(produit2?.transmission?.capitalTransmis || 0)}</td>
-                <td>{euro(produit2?.transmission?.abattement || 0)}</td>
-                <td>{euro(produit2?.transmission?.assiette || 0)}</td>
-                <td>{formatPsMontant(psDecesProduit2, euro)}</td>
-                <td>{euro((produit2?.transmission?.taxeForfaitaire || 0) + (produit2?.transmission?.taxeDmtg || 0))}</td>
-                <td><strong>{euro(produit2?.transmission?.capitalTransmisNet || 0)}</strong></td>
+                <th>Produit</th>
+                <th>Capital transmis</th>
+                <th>Abattement</th>
+                <th>Assiette</th>
+                <th>PS</th>
+                <th>Taxes + DMTG</th>
+                <th>Net transmis</th>
               </tr>
-            )}
-            {!hasTransmissionData && (
+            </thead>
+            <tbody>
               <tr>
-                <td colSpan={7} className="pl-empty-row">
-                  Aucune donnée à afficher - configurez les paramètres de transmission ci-dessus
+                <td>{produit1?.envelopeLabel || 'Produit 1'}</td>
+                <td>{euro(produit1?.transmission?.capitalTransmis || 0)}</td>
+                <td>{euro(produit1?.transmission?.abattement || 0)}</td>
+                <td>{euro(produit1?.transmission?.assiette || 0)}</td>
+                <td>{formatPsMontant(psDecesProduit1, euro)}</td>
+                <td>
+                  {euro(
+                    (produit1?.transmission?.taxeForfaitaire || 0) +
+                      (produit1?.transmission?.taxeDmtg || 0),
+                  )}
+                </td>
+                <td>
+                  <strong>{euro(produit1?.transmission?.capitalTransmisNet || 0)}</strong>
                 </td>
               </tr>
-            )}
-          </tbody>
-        </table>
+              {compareEnabled && (
+                <tr>
+                  <td>{produit2?.envelopeLabel || 'Produit 2'}</td>
+                  <td>{euro(produit2?.transmission?.capitalTransmis || 0)}</td>
+                  <td>{euro(produit2?.transmission?.abattement || 0)}</td>
+                  <td>{euro(produit2?.transmission?.assiette || 0)}</td>
+                  <td>{formatPsMontant(psDecesProduit2, euro)}</td>
+                  <td>
+                    {euro(
+                      (produit2?.transmission?.taxeForfaitaire || 0) +
+                        (produit2?.transmission?.taxeDmtg || 0),
+                    )}
+                  </td>
+                  <td>
+                    <strong>{euro(produit2?.transmission?.capitalTransmisNet || 0)}</strong>
+                  </td>
+                </tr>
+              )}
+              {!hasTransmissionData && (
+                <tr>
+                  <td colSpan={7} className="pl-empty-row">
+                    Aucune donnée à afficher - configurez les paramètres de transmission ci-dessus
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
         </div>
       </div>
 
@@ -199,17 +214,32 @@ export function PlacementTransmissionSection({
           <li>Conjoint / partenaire PACS : exonération du prélèvement 20 % et des DMTG</li>
         </ul>
         <p>
-          <a href="/settings/dmtg-succession" className="pl-transmission-info-card__link">Consulter le barème DMTG &rarr;</a>
+          <a href="/settings/dmtg-succession" className="pl-transmission-info-card__link">
+            Consulter le barème DMTG &rarr;
+          </a>
         </p>
         <strong>Hypothèses PS décès :</strong>
         <p>
-          Assurance-vie et PEA simulés à 100 % en unités de compte. Les PS au décès sont appliqués à {psSettings?.patrimony?.current?.exceptionRate ?? DEFAULT_PS_SETTINGS.patrimony.current.exceptionRate}% pour l'assurance-vie et à {psSettings?.patrimony?.current?.generalRate ?? DEFAULT_PS_SETTINGS.patrimony.current.generalRate}% pour le PEA (<a href="/settings/prelevements" className="pl-transmission-info-card__link">paramétrable</a>). PER : pas de PS au décès dans ce simulateur ; les PS sont acquittés à la sortie en vie.
+          Assurance-vie et PEA simulés à 100 % en unités de compte. Les PS au décès sont appliqués à{' '}
+          {psSettings?.patrimony?.current?.exceptionRate ??
+            DEFAULT_PS_SETTINGS.patrimony.current.exceptionRate}
+          % pour l'assurance-vie et à{' '}
+          {psSettings?.patrimony?.current?.generalRate ??
+            DEFAULT_PS_SETTINGS.patrimony.current.generalRate}
+          % pour le PEA (
+          <a href="/settings/prelevements" className="pl-transmission-info-card__link">
+            paramétrable
+          </a>
+          ). PER : pas de PS au décès dans ce simulateur ; les PS sont acquittés à la sortie en vie.
         </p>
         <p className="pl-transmission-info-card__note">
-          La détermination de l’assiette taxable au prélèvement 990 I s’effectue après imputation des PS dus sur les produits du contrat, prélevés par l’assureur au décès (BOI-TCAS-AUT-60).
+          La détermination de l’assiette taxable au prélèvement 990 I s’effectue après imputation
+          des PS dus sur les produits du contrat, prélevés par l’assureur au décès
+          (BOI-TCAS-AUT-60).
         </p>
         <p className="pl-transmission-info-card__footnote">
-          <sup>(1)</sup> Seuls les montants réellement soumis aux PS/DMTG sont utilisés pour les pourcentages affichés.
+          <sup>(1)</sup> Seuls les montants réellement soumis aux PS/DMTG sont utilisés pour les
+          pourcentages affichés.
         </p>
       </div>
     </>

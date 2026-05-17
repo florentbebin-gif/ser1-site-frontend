@@ -39,12 +39,12 @@ const EMPTY_RULES: ProductRules = { constitution: [], sortie: [], deces: [] };
 type CatalogIdPair = { pp: string; pm: string | null };
 
 const ENVELOPE_CATALOG_MAP: Record<EnvelopeCode, CatalogIdPair> = {
-  AV:   { pp: 'assurance_vie',          pm: 'contrat_capitalisation_pm' },
+  AV: { pp: 'assurance_vie', pm: 'contrat_capitalisation_pm' },
   // PER géré séparément via le flag perBancaire
-  PER:  { pp: 'perin_assurance',        pm: 'perin_assurance' },
-  PEA:  { pp: 'pea',                    pm: null },
-  CTO:  { pp: 'cto_pp',                 pm: 'cto_pm' },
-  SCPI: { pp: 'parts_scpi_pp',          pm: 'parts_scpi_pm' },
+  PER: { pp: 'perin_assurance', pm: 'perin_assurance' },
+  PEA: { pp: 'pea', pm: null },
+  CTO: { pp: 'cto_pp', pm: 'cto_pm' },
+  SCPI: { pp: 'parts_scpi_pp', pm: 'parts_scpi_pm' },
 };
 
 /**
@@ -78,18 +78,13 @@ export function buildFiscalProfile(
   rules: ProductRules,
 ): FiscalProfile {
   const hasRules =
-    rules.constitution.length > 0 ||
-    rules.sortie.length > 0 ||
-    rules.deces.length > 0;
+    rules.constitution.length > 0 || rules.sortie.length > 0 || rules.deces.length > 0;
   return { catalogId, audience, rules, hasRules };
 }
 
 /**
  * Profil vide (produit sans règles connues ou combinaison non supportée).
  */
-export function emptyFiscalProfile(
-  catalogId: string,
-  audience: Audience,
-): FiscalProfile {
+export function emptyFiscalProfile(catalogId: string, audience: Audience): FiscalProfile {
   return { catalogId, audience, rules: EMPTY_RULES, hasRules: false };
 }

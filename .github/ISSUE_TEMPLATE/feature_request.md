@@ -1,8 +1,8 @@
 ---
 name: Demande de fonctionnalité
 about: Suggérer une nouvelle idée ou amélioration
-title: "[FEATURE] "
-labels: ["enhancement", "triage"]
+title: '[FEATURE] '
+labels: ['enhancement', 'triage']
 assignees: []
 ---
 

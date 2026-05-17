@@ -49,20 +49,23 @@ function makeContract(overrides: Partial<BaseCgRetraiteContract> = {}): BaseCgRe
 
 describe('buildPerTransfertAttentionPoints', () => {
   it('détecte les points CGP sans crasher sur des valeurs mixtes', () => {
-    const points = buildPerTransfertAttentionPoints(makeContract({
-      phaseEpargne: {
-        ...makeContract().phaseEpargne,
-        dateCommercialisation: 'De 2010 à 2017',
-        rendementFondsEuro: 'NC - TMG 2,50 % selon millésime',
-        fondsEuroGarantis: 0.03,
-        garantiesComplementaires: 'Garantie plancher décès',
-      },
-      phaseLiquidation: {
-        ...makeContract().phaseLiquidation,
-        tableGarantieAdhesion: 'Oui, table garantie à l’adhésion',
-        tauxTechnique: 'Taux garanti 1,25 %',
-      },
-    }), { subscriptionDate: '2018-01-01' });
+    const points = buildPerTransfertAttentionPoints(
+      makeContract({
+        phaseEpargne: {
+          ...makeContract().phaseEpargne,
+          dateCommercialisation: 'De 2010 à 2017',
+          rendementFondsEuro: 'NC - TMG 2,50 % selon millésime',
+          fondsEuroGarantis: 0.03,
+          garantiesComplementaires: 'Garantie plancher décès',
+        },
+        phaseLiquidation: {
+          ...makeContract().phaseLiquidation,
+          tableGarantieAdhesion: 'Oui, table garantie à l’adhésion',
+          tauxTechnique: 'Taux garanti 1,25 %',
+        },
+      }),
+      { subscriptionDate: '2018-01-01' },
+    );
 
     expect(points.map((point) => point.label)).toContain('Table de mortalité garantie');
     expect(points.map((point) => point.label)).toContain('Date de souscription à vérifier');
@@ -74,9 +77,11 @@ describe('buildPerTransfertAttentionPoints', () => {
   it('renvoie un état neutre sans contrat sélectionné', () => {
     const points = buildPerTransfertAttentionPoints(null, { subscriptionDate: '' });
 
-    expect(points).toEqual([expect.objectContaining({
-      level: 'neutral',
-      label: 'Base CG non sélectionnée',
-    })]);
+    expect(points).toEqual([
+      expect.objectContaining({
+        level: 'neutral',
+        label: 'Base CG non sélectionnée',
+      }),
+    ]);
   });
 });

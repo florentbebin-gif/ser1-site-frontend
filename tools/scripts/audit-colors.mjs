@@ -22,7 +22,8 @@ const SRC_DIR = join(__dirname, '../../src');
 const HEX_COLOR_PATTERN = /#([0-9A-Fa-f]{6}|[0-9A-Fa-f]{3})/gi;
 const RGB_COLOR_PATTERN = /rgba?\s*\(\s*\d+\s*,\s*\d+\s*,\s*\d+/gi;
 const TOKEN_PATTERN = /colors\.(c[1-9]|c10)\b|semantic\[['"][a-z-]+['"]\]|getSemanticColors\(\)/gi;
-const UI_COMPONENT_PATTERN = /from\s+['"]\.\/\.\.\/components\/ui['"]|from\s+['"]@\/components\/ui['"]/g;
+const UI_COMPONENT_PATTERN =
+  /from\s+['"]\.\/\.\.\/components\/ui['"]|from\s+['"]@\/components\/ui['"]/g;
 
 // Couleurs autorisées (exceptions)
 const ALLOWED_COLORS = ['#ffffff', '#fff', '#996600', '#ffffff80'];
@@ -32,11 +33,14 @@ const ALLOWED_COLORS = ['#ffffff', '#fff', '#996600', '#ffffff80'];
  */
 function isAllowedColor(color) {
   const normalized = color.toLowerCase().replace(/#/g, '');
-  const normalizedHex = normalized.length === 3
-    ? normalized.split('').map(c => c + c).join('')
-    : normalized;
-  return ALLOWED_COLORS.includes('#' + normalizedHex) ||
-         ALLOWED_COLORS.includes('#' + normalized);
+  const normalizedHex =
+    normalized.length === 3
+      ? normalized
+          .split('')
+          .map((c) => c + c)
+          .join('')
+      : normalized;
+  return ALLOWED_COLORS.includes('#' + normalizedHex) || ALLOWED_COLORS.includes('#' + normalized);
 }
 
 /**
@@ -79,7 +83,7 @@ function analyzeFile(filepath) {
     // Détecte les couleurs hex
     const hexMatches = line.match(HEX_COLOR_PATTERN);
     if (hexMatches) {
-      hexMatches.forEach(color => {
+      hexMatches.forEach((color) => {
         if (!isAllowedColor(color)) {
           findings.hardcodedColors.push({
             line: index + 1,
@@ -112,27 +116,27 @@ function analyzeFile(filepath) {
  * Génère le rapport
  */
 function generateReport(results) {
-  const validResults = results.filter(r => r !== null);
+  const validResults = results.filter((r) => r !== null);
 
   const totalFiles = validResults.length;
-  const filesWithHardcodes = validResults.filter(r => r.hardcodedColors.length > 0);
-  const filesUsingTokens = validResults.filter(r => r.tokensUsed.length > 0);
-  const filesUsingUI = validResults.filter(r => r.uiComponents);
+  const filesWithHardcodes = validResults.filter((r) => r.hardcodedColors.length > 0);
+  const filesUsingTokens = validResults.filter((r) => r.tokensUsed.length > 0);
+  const filesUsingUI = validResults.filter((r) => r.uiComponents);
 
-  const allHardcodes = filesWithHardcodes.flatMap(r =>
-    r.hardcodedColors.map(h => ({ ...h, file: r.path }))
+  const allHardcodes = filesWithHardcodes.flatMap((r) =>
+    r.hardcodedColors.map((h) => ({ ...h, file: r.path })),
   );
 
   const colorFrequency = {};
-  allHardcodes.forEach(h => {
+  allHardcodes.forEach((h) => {
     colorFrequency[h.color] = (colorFrequency[h.color] || 0) + 1;
   });
 
   console.log('\n' + '='.repeat(70));
-  console.log('📊 RAPPORT D\'AUDIT COULEURS SER1');
+  console.log("📊 RAPPORT D'AUDIT COULEURS SER1");
   console.log('='.repeat(70));
 
-  console.log('\n📁 Vue d\'ensemble:');
+  console.log("\n📁 Vue d'ensemble:");
   console.log(`   Fichiers analysés: ${totalFiles}`);
   console.log(`   Fichiers avec hardcodes: ${filesWithHardcodes.length}`);
   console.log(`   Fichiers avec tokens C1-C10: ${filesUsingTokens.length}`);
@@ -144,14 +148,14 @@ function generateReport(results) {
 
     console.log('\n   Top couleurs hardcodées:');
     Object.entries(colorFrequency)
-      .sort(([,a], [,b]) => b - a)
+      .sort(([, a], [, b]) => b - a)
       .slice(0, 10)
       .forEach(([color, count]) => {
         console.log(`     ${color}: ${count} occurrences`);
       });
 
     console.log('\n   Détails (premiers 10):');
-    allHardcodes.slice(0, 10).forEach(h => {
+    allHardcodes.slice(0, 10).forEach((h) => {
       const relativePath = h.file.replace(SRC_DIR, 'src');
       console.log(`     ${relativePath}:${h.line} -> ${h.color}`);
       console.log(`       ${h.context.substring(0, 60)}...`);

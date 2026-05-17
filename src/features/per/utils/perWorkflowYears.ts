@@ -41,8 +41,10 @@ export function getPerWorkflowYears(
   const previous = parseYearLabel(fiscalContext.irPreviousYearLabel, current.taxYear - 1);
 
   return {
-    currentTaxLabel: fiscalContext.irCurrentYearLabel || `${current.taxYear} (revenus ${current.incomeYear})`,
-    previousTaxLabel: fiscalContext.irPreviousYearLabel || `${previous.taxYear} (revenus ${previous.incomeYear})`,
+    currentTaxLabel:
+      fiscalContext.irCurrentYearLabel || `${current.taxYear} (revenus ${current.incomeYear})`,
+    previousTaxLabel:
+      fiscalContext.irPreviousYearLabel || `${previous.taxYear} (revenus ${previous.incomeYear})`,
     currentTaxYear: current.taxYear,
     currentIncomeYear: current.incomeYear,
     previousTaxYear: previous.taxYear,

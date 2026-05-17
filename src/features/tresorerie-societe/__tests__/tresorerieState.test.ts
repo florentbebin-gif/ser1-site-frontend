@@ -31,9 +31,9 @@ const LEGACY_INPUTS: TresoInputs = {
 
 describe('useTresorerieState — source de vérité v6', () => {
   function expectRevenuePhasesInvariant(inputs: TresoInputsV6) {
-    inputs.company.associates.forEach(associate => {
+    inputs.company.associates.forEach((associate) => {
       expect(associate.revenuePhases.length).toBeGreaterThan(0);
-      associate.revenuePhases.forEach(phase => {
+      associate.revenuePhases.forEach((phase) => {
         expect(phase.endYear).toBeGreaterThanOrEqual(phase.startYear);
         expect(phase.remuneration).toBeDefined();
         expect(phase.distribution).toBeDefined();
@@ -62,7 +62,10 @@ describe('useTresorerieState — source de vérité v6', () => {
     expect(DEFAULT_TRESO_INPUTS_V6.company.associates[0].cca?.currentBalance).toBe(0);
     expect(DEFAULT_TRESO_INPUTS_V6.company.associates[0].cca?.remunerationRate).toBe(0);
     expect(DEFAULT_TRESO_INPUTS_V6.company.associates[0].revenuePhases).toHaveLength(1);
-    expect(DEFAULT_TRESO_INPUTS_V6.company.associates[0].revenuePhases[0].distribution.annualNetIncomeNeed).toBe(0);
+    expect(
+      DEFAULT_TRESO_INPUTS_V6.company.associates[0].revenuePhases[0].distribution
+        .annualNetIncomeNeed,
+    ).toBe(0);
   });
 
   it('migre une ancienne session legacy vers inputsV6 puis abandonne inputs', () => {

@@ -36,37 +36,40 @@ export function useSuccessionProtectionFiscalAnalyses({
   simulatedDeathDate,
 }: UseSuccessionProtectionFiscalAnalysesInput) {
   const rawAvFiscalAnalysis = useMemo(
-    () => buildSuccessionAvFiscalAnalysis(
-      assuranceVieEntries,
-      civilContext,
-      enfantsContext,
-      familyMembers,
-      fiscalSnapshot,
-    ),
+    () =>
+      buildSuccessionAvFiscalAnalysis(
+        assuranceVieEntries,
+        civilContext,
+        enfantsContext,
+        familyMembers,
+        fiscalSnapshot,
+      ),
     [assuranceVieEntries, civilContext, enfantsContext, familyMembers, fiscalSnapshot],
   );
 
   const rawPerFiscalAnalysis = useMemo(
-    () => buildSuccessionPerFiscalAnalysis(
-      perEntries,
-      civilContext,
-      enfantsContext,
-      familyMembers,
-      fiscalSnapshot,
-      simulatedDeathDate,
-    ),
+    () =>
+      buildSuccessionPerFiscalAnalysis(
+        perEntries,
+        civilContext,
+        enfantsContext,
+        familyMembers,
+        fiscalSnapshot,
+        simulatedDeathDate,
+      ),
     [perEntries, civilContext, enfantsContext, familyMembers, fiscalSnapshot, simulatedDeathDate],
   );
 
   const rawPrevoyanceFiscalAnalysis = useMemo(
-    () => buildSuccessionPrevoyanceFiscalAnalysis(
-      prevoyanceDecesEntries,
-      civilContext,
-      enfantsContext,
-      familyMembers,
-      fiscalSnapshot,
-      simulatedDeathDate,
-    ),
+    () =>
+      buildSuccessionPrevoyanceFiscalAnalysis(
+        prevoyanceDecesEntries,
+        civilContext,
+        enfantsContext,
+        familyMembers,
+        fiscalSnapshot,
+        simulatedDeathDate,
+      ),
     [
       prevoyanceDecesEntries,
       civilContext,
@@ -78,12 +81,13 @@ export function useSuccessionProtectionFiscalAnalyses({
   );
 
   const prevoyanceRegimeByEntry = useMemo(
-    () => buildSuccessionPrevoyanceRegimeByEntry(
-      prevoyanceDecesEntries,
-      civilContext,
-      simulatedDeathDate,
-      fiscalSnapshot.avDeces.agePivotPrimes,
-    ),
+    () =>
+      buildSuccessionPrevoyanceRegimeByEntry(
+        prevoyanceDecesEntries,
+        civilContext,
+        simulatedDeathDate,
+        fiscalSnapshot.avDeces.agePivotPrimes,
+      ),
     [
       prevoyanceDecesEntries,
       civilContext,
@@ -93,11 +97,12 @@ export function useSuccessionProtectionFiscalAnalyses({
   );
 
   const survivorEconomicInflows = useMemo(
-    () => buildSuccessionSurvivorEconomicInflows({
-      avFiscalAnalysis: rawAvFiscalAnalysis,
-      perFiscalAnalysis: rawPerFiscalAnalysis,
-      prevoyanceFiscalAnalysis: rawPrevoyanceFiscalAnalysis,
-    }),
+    () =>
+      buildSuccessionSurvivorEconomicInflows({
+        avFiscalAnalysis: rawAvFiscalAnalysis,
+        perFiscalAnalysis: rawPerFiscalAnalysis,
+        prevoyanceFiscalAnalysis: rawPrevoyanceFiscalAnalysis,
+      }),
     [rawAvFiscalAnalysis, rawPerFiscalAnalysis, rawPrevoyanceFiscalAnalysis],
   );
 

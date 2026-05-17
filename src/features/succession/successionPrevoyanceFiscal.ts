@@ -78,9 +78,7 @@ function getBirthDateForSouscripteur(
   civil: SuccessionCivilContext,
   souscripteur: SuccessionPersonParty,
 ): string | undefined {
-  return souscripteur === 'epoux1'
-    ? civil.dateNaissanceEpoux1
-    : civil.dateNaissanceEpoux2;
+  return souscripteur === 'epoux1' ? civil.dateNaissanceEpoux1 : civil.dateNaissanceEpoux2;
 }
 
 export function getSuccessionPrevoyanceRegimeInfo(
@@ -150,15 +148,18 @@ function buildSyntheticEntries(
   const warnings: string[] = [];
   const regimeByEntry: Record<string, SuccessionPrevoyanceRegimeInfo> = {};
 
-  const capitalEntries = entries.map((entry) => ({
-    id: `prev-cap-${entry.id}`,
-    typeContrat: 'standard',
-    souscripteur: entry.souscripteur,
-    assure: entry.assure,
-    clauseBeneficiaire: entry.clauseBeneficiaire,
-    capitauxDeces: asAmount(entry.capitalDeces),
-    versementsApres70: 0,
-  } satisfies SuccessionAssuranceVieEntry));
+  const capitalEntries = entries.map(
+    (entry) =>
+      ({
+        id: `prev-cap-${entry.id}`,
+        typeContrat: 'standard',
+        souscripteur: entry.souscripteur,
+        assure: entry.assure,
+        clauseBeneficiaire: entry.clauseBeneficiaire,
+        capitauxDeces: asAmount(entry.capitalDeces),
+        versementsApres70: 0,
+      }) satisfies SuccessionAssuranceVieEntry,
+  );
 
   const fiscalEntries = entries.map((entry) => {
     const regimeInfo = getSuccessionPrevoyanceRegimeInfo(
@@ -194,7 +195,10 @@ function buildSyntheticEntries(
 
 function filterPrevoyanceWarnings(warnings: string[]): string[] {
   return warnings
-    .filter((warning) => !warning.includes('ventilation fiscale simplifiée à partir de la clause bénéficiaire'))
+    .filter(
+      (warning) =>
+        !warning.includes('ventilation fiscale simplifiée à partir de la clause bénéficiaire'),
+    )
     .map((warning) => warning.replace(/Assurance-vie/g, 'Prévoyance décès'));
 }
 
@@ -204,34 +208,34 @@ function mergeSideLines(
 ): SuccessionPrevoyanceFiscalLine[] {
   const capitalById = new Map(capitalLines.map((line) => [line.id, line] as const));
   const fiscalById = new Map(fiscalLines.map((line) => [line.id, line] as const));
-  const ids = new Set<string>([
-    ...capitalById.keys(),
-    ...fiscalById.keys(),
-  ]);
+  const ids = new Set<string>([...capitalById.keys(), ...fiscalById.keys()]);
 
-  return Array.from(ids).map((id) => {
-    const capitalLine = capitalById.get(id);
-    const fiscalLine = fiscalById.get(id);
-    const label = capitalLine?.label ?? fiscalLine?.label ?? 'Bénéficiaire';
-    const lien = capitalLine?.lien ?? fiscalLine?.lien ?? 'autre';
-    const capitalTransmis = (capitalLine?.capitauxAvant70 ?? 0) + (capitalLine?.capitauxApres70 ?? 0);
-    const totalDroits = fiscalLine?.totalDroits ?? 0;
+  return Array.from(ids)
+    .map((id) => {
+      const capitalLine = capitalById.get(id);
+      const fiscalLine = fiscalById.get(id);
+      const label = capitalLine?.label ?? fiscalLine?.label ?? 'Bénéficiaire';
+      const lien = capitalLine?.lien ?? fiscalLine?.lien ?? 'autre';
+      const capitalTransmis =
+        (capitalLine?.capitauxAvant70 ?? 0) + (capitalLine?.capitauxApres70 ?? 0);
+      const totalDroits = fiscalLine?.totalDroits ?? 0;
 
-    return {
-      id,
-      label,
-      lien,
-      capitalTransmis,
-      capitauxAvant70: fiscalLine?.capitauxAvant70 ?? 0,
-      capitauxApres70: fiscalLine?.capitauxApres70 ?? 0,
-      taxable990I: fiscalLine?.taxable990I ?? 0,
-      droits990I: fiscalLine?.droits990I ?? 0,
-      taxable757B: fiscalLine?.taxable757B ?? 0,
-      droits757B: fiscalLine?.droits757B ?? 0,
-      totalDroits,
-      netTransmis: Math.max(0, capitalTransmis - totalDroits),
-    };
-  }).sort((a, b) => b.capitalTransmis - a.capitalTransmis);
+      return {
+        id,
+        label,
+        lien,
+        capitalTransmis,
+        capitauxAvant70: fiscalLine?.capitauxAvant70 ?? 0,
+        capitauxApres70: fiscalLine?.capitauxApres70 ?? 0,
+        taxable990I: fiscalLine?.taxable990I ?? 0,
+        droits990I: fiscalLine?.droits990I ?? 0,
+        taxable757B: fiscalLine?.taxable757B ?? 0,
+        droits757B: fiscalLine?.droits757B ?? 0,
+        totalDroits,
+        netTransmis: Math.max(0, capitalTransmis - totalDroits),
+      };
+    })
+    .sort((a, b) => b.capitalTransmis - a.capitalTransmis);
 }
 
 function mergePrevoyanceLines(
@@ -322,7 +326,9 @@ export function buildSuccessionPrevoyanceFiscalAnalysis(
   const totalDroits = byAssure.epoux1.totalDroits + byAssure.epoux2.totalDroits;
   const av990I = snapshot.avDeces.primesApres1998;
   const av757B = snapshot.avDeces.apres70ans;
-  const av990IRates = av990I.brackets.map((bracket) => formatPercent(bracket.ratePercent)).join('/');
+  const av990IRates = av990I.brackets
+    .map((bracket) => formatPercent(bracket.ratePercent))
+    .join('/');
 
   return {
     totalCapitalDeces,
@@ -330,16 +336,18 @@ export function buildSuccessionPrevoyanceFiscalAnalysis(
     totalNetTransmis: Math.max(0, totalCapitalDeces - totalDroits),
     lines,
     byAssure,
-    warnings: Array.from(new Set([
-      ...regimeWarnings,
-      ...filterPrevoyanceWarnings(capitalAnalysis.warnings),
-      ...filterPrevoyanceWarnings(fiscalAnalysis.warnings),
-      ...(entries.length > 0
-        ? [
-          `Prévoyance décès pure non rachetable (art. L132-23 C. assurances) : le capital décès est ventilé selon la clause bénéficiaire ; l’assiette fiscale est la dernière prime annuelle ou prime unique (art. 990 I CGI, CGI annexe II art. 306-0 F), et non le capital décès.`,
-          `Prévoyance décès : si le décès survient avant 70 ans, l’art. 990 I s’applique (abattement ${formatEuro(av990I.allowancePerBeneficiary)} par bénéficiaire, taxe forfaitaire ${av990IRates}). Après 70 ans, l’art. 757 B s’applique : l’assiette est la fraction des primes versées après 70 ans, soumise au barème DMTG après abattement global de ${formatEuro(av757B.globalAllowance)} (BOFiP TCAS-AUT-60).`,
-        ]
-        : []),
-    ])),
+    warnings: Array.from(
+      new Set([
+        ...regimeWarnings,
+        ...filterPrevoyanceWarnings(capitalAnalysis.warnings),
+        ...filterPrevoyanceWarnings(fiscalAnalysis.warnings),
+        ...(entries.length > 0
+          ? [
+              `Prévoyance décès pure non rachetable (art. L132-23 C. assurances) : le capital décès est ventilé selon la clause bénéficiaire ; l’assiette fiscale est la dernière prime annuelle ou prime unique (art. 990 I CGI, CGI annexe II art. 306-0 F), et non le capital décès.`,
+              `Prévoyance décès : si le décès survient avant 70 ans, l’art. 990 I s’applique (abattement ${formatEuro(av990I.allowancePerBeneficiary)} par bénéficiaire, taxe forfaitaire ${av990IRates}). Après 70 ans, l’art. 757 B s’applique : l’assiette est la fraction des primes versées après 70 ans, soumise au barème DMTG après abattement global de ${formatEuro(av757B.globalAllowance)} (BOFiP TCAS-AUT-60).`,
+            ]
+          : []),
+      ]),
+    ),
   };
 }

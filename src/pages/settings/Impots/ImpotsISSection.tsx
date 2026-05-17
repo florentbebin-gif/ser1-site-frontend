@@ -68,9 +68,7 @@ export default function ImpotsISSection({
         <span className="settings-premium-title settings-premium-title--flush">
           Impôt sur les sociétés
         </span>
-        <span className="fisc-acc-chevron">
-          {isOpen ? 'v' : '>'}
-        </span>
+        <span className="fisc-acc-chevron">{isOpen ? 'v' : '>'}</span>
       </button>
 
       {isOpen && (
@@ -135,9 +133,7 @@ export default function ImpotsISSection({
                     unit="%"
                     disabled={!isAdmin}
                   />
-                  {qpfcCurrentError && (
-                    <p className="fisc-section-error">{qpfcCurrentError}</p>
-                  )}
+                  {qpfcCurrentError && <p className="fisc-section-error">{qpfcCurrentError}</p>}
                 </div>
               </div>
 
@@ -166,10 +162,7 @@ export default function ImpotsISSection({
               </div>
             </SettingsYearColumn>
 
-            <SettingsYearColumn
-              yearLabel={incomeTax.previousYearLabel || 'Année N-1'}
-              isRight
-            >
+            <SettingsYearColumn yearLabel={incomeTax.previousYearLabel || 'Année N-1'} isRight>
               <div className="income-tax-block income-tax-block--mb12">
                 <div className="income-tax-block-title">Taux IS</div>
                 <div className="income-tax-block-body">
@@ -223,9 +216,7 @@ export default function ImpotsISSection({
                     unit="%"
                     disabled={!isAdmin}
                   />
-                  {qpfcPreviousError && (
-                    <p className="fisc-section-error">{qpfcPreviousError}</p>
-                  )}
+                  {qpfcPreviousError && <p className="fisc-section-error">{qpfcPreviousError}</p>}
                 </div>
               </div>
 

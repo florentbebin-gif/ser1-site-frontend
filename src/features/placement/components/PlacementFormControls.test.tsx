@@ -14,9 +14,7 @@ describe('contrôles de formulaire Placement', () => {
   });
 
   it('renders percent inputs with the shared field control class', () => {
-    const html = renderToStaticMarkup(
-      <InputPct label="Taux" value={0.15} onChange={vi.fn()} />,
-    );
+    const html = renderToStaticMarkup(<InputPct label="Taux" value={0.15} onChange={vi.fn()} />);
 
     expect(html).toContain('sim-field__control');
     expect(html).toContain('sim-field__unit');

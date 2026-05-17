@@ -14,7 +14,11 @@ import {
   TresoSimulationInputError,
 } from '../../../engine/tresorerie/simulateTresorerieV2';
 import { DEFAULT_TAX_SETTINGS, DEFAULT_PS_SETTINGS } from '../../../constants/settingsDefaults';
-import type { TresoInputsRuntime, TresoFiscalParams, TresoProjectionRow } from '../../../engine/tresorerie/types';
+import type {
+  TresoInputsRuntime,
+  TresoFiscalParams,
+  TresoProjectionRow,
+} from '../../../engine/tresorerie/types';
 import { getAssociateAnnualIncomeNeedForYear } from '../../../engine/tresorerie/revenuePhases';
 import { getAssociateProfile, getSelectedAssociate } from '../utils/tresorerieSocieteModel';
 import { normalizeProjectionHorizonYears } from '../utils/projectionHorizon';
@@ -117,7 +121,9 @@ export function useTresorerieCalculations(inputs: TresoInputsRuntime): TresoCalc
     const groupQpfc = (qpfc.group ?? defaultsCorp.motherDaughterQpfc.group) / 100;
 
     const pfuRateIR = (fiscalContext.pfuRateIR ?? DEFAULT_TAX_SETTINGS.pfu.current.rateIR) / 100;
-    const psRate = (rawPs?.patrimony?.current?.generalRate ?? DEFAULT_PS_SETTINGS.patrimony.current.generalRate) / 100;
+    const psRate =
+      (rawPs?.patrimony?.current?.generalRate ??
+        DEFAULT_PS_SETTINGS.patrimony.current.generalRate) / 100;
 
     return {
       isNormalRate: normalRate,
@@ -141,7 +147,10 @@ export function useTresorerieCalculations(inputs: TresoInputsRuntime): TresoCalc
     if (!fiscalParams) return { rows: [], simulationError: null };
     try {
       const horizonYears = normalizeProjectionHorizonYears(inputs.company.projectionHorizonYears);
-      return { rows: simulateTresorerieV2(inputs, fiscalParams, horizonYears), simulationError: null };
+      return {
+        rows: simulateTresorerieV2(inputs, fiscalParams, horizonYears),
+        simulationError: null,
+      };
     } catch (simulationError) {
       if (simulationError instanceof TresoSimulationInputError) {
         return { rows: [], simulationError: simulationError.message };
@@ -203,18 +212,19 @@ export function useTresorerieCalculations(inputs: TresoInputsRuntime): TresoCalc
     // Durée remboursement CCA
     const annualNeedAtRetirement = selectedAssociate
       ? getAssociateAnnualIncomeNeedForYear(
-        selectedAssociate,
-        activeProfile.annualIncomeNeed,
-        activeProfile.projectionStartYear + Math.max(0, anneeRetraiteIndex),
-      )
+          selectedAssociate,
+          activeProfile.annualIncomeNeed,
+          activeProfile.projectionStartYear + Math.max(0, anneeRetraiteIndex),
+        )
       : activeProfile.annualIncomeNeed;
-    const dureeRemboursementCCA = annualNeedAtRetirement > 0 && ccaTotalConstitue > 0
-      ? Math.ceil(ccaTotalConstitue / annualNeedAtRetirement)
-      : null;
+    const dureeRemboursementCCA =
+      annualNeedAtRetirement > 0 && ccaTotalConstitue > 0
+        ? Math.ceil(ccaTotalConstitue / annualNeedAtRetirement)
+        : null;
 
     // Valeur nette société à la retraite
     const valeurNetteSocieteRetraite = retraiteRow
-      ? (retraiteRow.valeurCapi + retraiteRow.capitalDistrib)
+      ? retraiteRow.valeurCapi + retraiteRow.capitalDistrib
       : 0;
 
     // Réserves à la retraite
@@ -231,28 +241,30 @@ export function useTresorerieCalculations(inputs: TresoInputsRuntime): TresoCalc
     const compteBancaireFinHorizon = lastRow?.tresorerieBanqueFin ?? lastRow?.tresorerieFin ?? 0;
     const ccaRestantFinHorizon = lastRow?.ccaRestant ?? 0;
     const ccaRembourseTotal = rows.reduce((sum, row) => sum + row.retraitsCCA, 0);
-    const firstDeficitRow = rows.find(row => row.alerteTresorerieBancaireInsuffisante);
+    const firstDeficitRow = rows.find((row) => row.alerteTresorerieBancaireInsuffisante);
     const premiereAnneeDeficitBancaire = firstDeficitRow
       ? activeProfile.projectionStartYear + firstDeficitRow.year - 1
       : null;
     const revenuCibleRows = selectedAssociate
-      ? rows.map(row => {
-        const anneeCivile = activeProfile.projectionStartYear + row.year - 1;
-        return {
-          row,
-          anneeCivile,
-          cible: getAssociateAnnualIncomeNeedForYear(
-            selectedAssociate,
-            activeProfile.annualIncomeNeed,
-            anneeCivile,
-          ),
-        };
-      }).filter(item => item.cible > 0)
+      ? rows
+          .map((row) => {
+            const anneeCivile = activeProfile.projectionStartYear + row.year - 1;
+            return {
+              row,
+              anneeCivile,
+              cible: getAssociateAnnualIncomeNeedForYear(
+                selectedAssociate,
+                activeProfile.annualIncomeNeed,
+                anneeCivile,
+              ),
+            };
+          })
+          .filter((item) => item.cible > 0)
       : [];
-    const firstRevenuCibleNonTenu = revenuCibleRows.find(item => item.row.revenusNets + 1 < item.cible);
-    const revenuCibleTientHorizon = revenuCibleRows.length > 0
-      ? !firstRevenuCibleNonTenu
-      : null;
+    const firstRevenuCibleNonTenu = revenuCibleRows.find(
+      (item) => item.row.revenusNets + 1 < item.cible,
+    );
+    const revenuCibleTientHorizon = revenuCibleRows.length > 0 ? !firstRevenuCibleNonTenu : null;
     let previousCapiGain = 0;
     const performance = rows.reduce(
       (sum, row) => {
@@ -267,9 +279,8 @@ export function useTresorerieCalculations(inputs: TresoInputsRuntime): TresoCalc
       },
       { produits: 0, capitalPlace: 0 },
     );
-    const performanceMoyenneTresorerie = performance.capitalPlace > 0
-      ? performance.produits / performance.capitalPlace
-      : 0;
+    const performanceMoyenneTresorerie =
+      performance.capitalPlace > 0 ? performance.produits / performance.capitalPlace : 0;
 
     return {
       ccaTotalConstitue,

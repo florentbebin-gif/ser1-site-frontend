@@ -21,19 +21,34 @@ export interface PrefonRenteOutput {
 function pickAgeCoefficient(table: Record<number, number>, age: number): number {
   const roundedAge = Math.floor(age);
   if (table[roundedAge] !== undefined) return table[roundedAge];
-  const ages = Object.keys(table).map(Number).sort((left, right) => left - right);
+  const ages = Object.keys(table)
+    .map(Number)
+    .sort((left, right) => left - right);
   const firstAge = ages[0];
   const lastAge = ages[ages.length - 1];
-  if (roundedAge <= firstAge) return table[firstAge];
-  if (roundedAge >= lastAge) return table[lastAge];
+  if (firstAge === undefined || lastAge === undefined) {
+    throw new Error('Table de coefficients Préfon vide.');
+  }
+  const firstCoefficient = table[firstAge];
+  const lastCoefficient = table[lastAge];
+  if (firstCoefficient === undefined || lastCoefficient === undefined) {
+    throw new Error('Borne de coefficient Préfon manquante.');
+  }
+  if (roundedAge <= firstAge) return firstCoefficient;
+  if (roundedAge >= lastAge) return lastCoefficient;
 
   const lowerAges = ages.filter((candidate) => candidate < roundedAge);
-  const previousAge = lowerAges.length > 0 ? lowerAges[lowerAges.length - 1] : firstAge;
+  const previousAge = lowerAges[lowerAges.length - 1] ?? firstAge;
   const nextAge = ages.find((candidate) => candidate > roundedAge) ?? lastAge;
+  const previousCoefficient = table[previousAge];
+  const nextCoefficient = table[nextAge];
+  if (previousCoefficient === undefined || nextCoefficient === undefined) {
+    throw new Error('Coefficient Préfon manquant pour interpolation.');
+  }
   const span = nextAge - previousAge;
-  if (span <= 0) return table[previousAge];
+  if (span <= 0) return previousCoefficient;
   const weight = (roundedAge - previousAge) / span;
-  return table[previousAge] + (table[nextAge] - table[previousAge]) * weight;
+  return previousCoefficient + (nextCoefficient - previousCoefficient) * weight;
 }
 
 function pickPrefonReversionCoefficient(input: PrefonRenteInput): number {
@@ -53,25 +68,23 @@ function pickPrefonReversionCoefficient(input: PrefonRenteInput): number {
 }
 
 export function computePrefonRente(input: PrefonRenteInput): PrefonRenteOutput {
-  const liquidationCoef = pickAgeCoefficient(input.params.coefLiquidationByAge, input.liquidationAge);
-  const pointsFromCapital = input.params.valeurAcquisition > 0
-    ? input.capitalNet / input.params.valeurAcquisition
-    : 0;
+  const liquidationCoef = pickAgeCoefficient(
+    input.params.coefLiquidationByAge,
+    input.liquidationAge,
+  );
+  const pointsFromCapital =
+    input.params.valeurAcquisition > 0 ? input.capitalNet / input.params.valeurAcquisition : 0;
   const pointsRetenus = input.points > 0 ? input.points : pointsFromCapital;
   const reversionCoef = pickPrefonReversionCoefficient(input);
-  const baseServiceValue = input.serviceValue && input.serviceValue > 0
-    ? input.serviceValue
-    : input.params.valeurService;
+  const baseServiceValue =
+    input.serviceValue && input.serviceValue > 0 ? input.serviceValue : input.params.valeurService;
   const serviceRevaluationYears = Math.max(0, input.liquidationAge - input.acquisitionAge);
-  const serviceRevaluationRate = input.serviceRevaluationRate && input.serviceRevaluationRate > 0
-    ? input.serviceRevaluationRate
-    : 0;
-  const valeurService = baseServiceValue * ((1 + serviceRevaluationRate) ** serviceRevaluationYears);
-  const renteAnnuelleBrute =
-    pointsRetenus
-    * valeurService
-    * liquidationCoef
-    * reversionCoef;
+  const serviceRevaluationRate =
+    input.serviceRevaluationRate && input.serviceRevaluationRate > 0
+      ? input.serviceRevaluationRate
+      : 0;
+  const valeurService = baseServiceValue * (1 + serviceRevaluationRate) ** serviceRevaluationYears;
+  const renteAnnuelleBrute = pointsRetenus * valeurService * liquidationCoef * reversionCoef;
 
   return {
     pointsRetenus,

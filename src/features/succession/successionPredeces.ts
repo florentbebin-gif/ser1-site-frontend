@@ -1,4 +1,8 @@
-import { REGIMES_MATRIMONIAUX, type DmtgSettings, type RegimeMatrimonial } from '../../engine/civil';
+import {
+  REGIMES_MATRIMONIAUX,
+  type DmtgSettings,
+  type RegimeMatrimonial,
+} from '../../engine/civil';
 import { calculatePredecesSenarios, type PredecesScenariosResult } from '../../engine/succession';
 import type { CalcResult } from '../../engine/types';
 import {
@@ -36,7 +40,9 @@ function asChildrenCount(value: unknown, fallback = 1): number {
   return Math.max(0, Math.floor(num));
 }
 
-function normalizeLiquidationContext(input?: Partial<SuccessionLiquidationContext>): SuccessionLiquidationContext {
+function normalizeLiquidationContext(
+  input?: Partial<SuccessionLiquidationContext>,
+): SuccessionLiquidationContext {
   return {
     actifEpoux1: asAmount(input?.actifEpoux1, DEFAULT_SUCCESSION_LIQUIDATION_CONTEXT.actifEpoux1),
     actifEpoux2: asAmount(input?.actifEpoux2, DEFAULT_SUCCESSION_LIQUIDATION_CONTEXT.actifEpoux2),
@@ -61,7 +67,7 @@ function mapMarriedRegime(regime: RegimeMatrimonial | null): RegimeMapping {
       regimeUsed: 'communaute_legale',
       regimeLabel: REGIMES_MATRIMONIAUX[selectedRegime].label,
       warnings: [
-        'Communaute de meubles et acquets: approximation en communaute legale pour l\'audit predeces ; le detail succession peut toutefois requalifier les actifs meubles / immeubles de facon simplifiee.',
+        "Communaute de meubles et acquets: approximation en communaute legale pour l'audit predeces ; le detail succession peut toutefois requalifier les actifs meubles / immeubles de facon simplifiee.",
       ],
     };
   }
@@ -93,7 +99,7 @@ function mapCivilToPredecesRegime(civil: SuccessionCivilContext): RegimeMapping 
         regimeLabel: 'PACS - indivision conventionnelle',
         warnings: [
           'PACS indivision: approximation en communaute legale (indivision conventionnelle non liquidee finement).',
-          "PACS: absence de vocation successorale legale sans testament (devolution non modelisee a ce stade).",
+          'PACS: absence de vocation successorale legale sans testament (devolution non modelisee a ce stade).',
         ],
       };
     }
@@ -102,7 +108,7 @@ function mapCivilToPredecesRegime(civil: SuccessionCivilContext): RegimeMapping 
       regimeLabel: 'PACS - separation de biens',
       warnings: [
         'PACS separation: approximation en separation de biens.',
-        "PACS: absence de vocation successorale legale sans testament (devolution non modelisee a ce stade).",
+        'PACS: absence de vocation successorale legale sans testament (devolution non modelisee a ce stade).',
       ],
     };
   }
@@ -112,7 +118,7 @@ function mapCivilToPredecesRegime(civil: SuccessionCivilContext): RegimeMapping 
       regimeUsed: null,
       regimeLabel: null,
       warnings: [
-        "Union libre: pas de liquidation matrimoniale. La synthese retient la succession directe du defunt simule.",
+        'Union libre: pas de liquidation matrimoniale. La synthese retient la succession directe du defunt simule.',
         "Union libre: les biens en indivision ne sont retenus qu'a hauteur de la quote-part du defunt (50 % par defaut dans ce module).",
       ],
     };
@@ -121,7 +127,9 @@ function mapCivilToPredecesRegime(civil: SuccessionCivilContext): RegimeMapping 
   return {
     regimeUsed: null,
     regimeLabel: null,
-    warnings: ['Ce module de liquidation matrimoniale est applicable aux couples maries ou pacses.'],
+    warnings: [
+      'Ce module de liquidation matrimoniale est applicable aux couples maries ou pacses.',
+    ],
   };
 }
 
@@ -148,9 +156,10 @@ export function buildSuccessionPredecesAnalysis(
   // L'engine de predeces suppose un partage communautaire 50/50.
   // On ajuste donc en entree pour refleter l'attribution economique retenue.
   const pct = Math.min(100, Math.max(0, attributionBiensCommunsPct));
-  const adjustedActifCommun = mapping.regimeUsed === 'communaute_legale'
-    ? liquidation.actifCommun * 2 * (100 - pct) / 100
-    : liquidation.actifCommun;
+  const adjustedActifCommun =
+    mapping.regimeUsed === 'communaute_legale'
+      ? (liquidation.actifCommun * 2 * (100 - pct)) / 100
+      : liquidation.actifCommun;
 
   const calc = calculatePredecesSenarios({
     actifMr: liquidation.actifEpoux1,

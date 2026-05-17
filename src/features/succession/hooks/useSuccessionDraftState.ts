@@ -33,27 +33,53 @@ export function useSuccessionDraftState() {
   const [hypothesesOpen, setHypothesesOpen] = useState(false);
   const [hydrated, setHydrated] = useState(false);
   const [civilContext, setCivilContext] = useState(DEFAULT_SUCCESSION_CIVIL_CONTEXT);
-  const [liquidationContext, setLiquidationContext] = useState(DEFAULT_SUCCESSION_LIQUIDATION_CONTEXT);
-  const [assetEntries, setAssetEntries] = useState<SuccessionAssetDetailEntry[]>(DEFAULT_SUCCESSION_ASSET_DETAILS);
-  const [assuranceVieEntries, setAssuranceVieEntries] = useState<SuccessionAssuranceVieEntry[]>(DEFAULT_SUCCESSION_ASSURANCE_VIE);
+  const [liquidationContext, setLiquidationContext] = useState(
+    DEFAULT_SUCCESSION_LIQUIDATION_CONTEXT,
+  );
+  const [assetEntries, setAssetEntries] = useState<SuccessionAssetDetailEntry[]>(
+    DEFAULT_SUCCESSION_ASSET_DETAILS,
+  );
+  const [assuranceVieEntries, setAssuranceVieEntries] = useState<SuccessionAssuranceVieEntry[]>(
+    DEFAULT_SUCCESSION_ASSURANCE_VIE,
+  );
   const [perEntries, setPerEntries] = useState<SuccessionPerEntry[]>(DEFAULT_SUCCESSION_PER);
   const [devolutionContext, setDevolutionContext] = useState(DEFAULT_SUCCESSION_DEVOLUTION_CONTEXT);
-  const [patrimonialContext, setPatrimonialContext] = useState(DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT);
-  const [donationsContext, setDonationsContext] = useState<SuccessionDonationEntry[]>(DEFAULT_SUCCESSION_DONATIONS);
-  const [enfantsContext, setEnfantsContext] = useState<SuccessionEnfant[]>(DEFAULT_SUCCESSION_ENFANTS_CONTEXT);
-  const [familyMembers, setFamilyMembers] = useState<FamilyMember[]>(DEFAULT_SUCCESSION_FAMILY_MEMBERS);
+  const [patrimonialContext, setPatrimonialContext] = useState(
+    DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT,
+  );
+  const [donationsContext, setDonationsContext] = useState<SuccessionDonationEntry[]>(
+    DEFAULT_SUCCESSION_DONATIONS,
+  );
+  const [enfantsContext, setEnfantsContext] = useState<SuccessionEnfant[]>(
+    DEFAULT_SUCCESSION_ENFANTS_CONTEXT,
+  );
+  const [familyMembers, setFamilyMembers] = useState<FamilyMember[]>(
+    DEFAULT_SUCCESSION_FAMILY_MEMBERS,
+  );
   const [showAddMemberPanel, setShowAddMemberPanel] = useState(false);
   const [showDispositionsModal, setShowDispositionsModal] = useState(false);
   const [showAssuranceVieModal, setShowAssuranceVieModal] = useState(false);
   const [showPerModal, setShowPerModal] = useState(false);
   const [showPrevoyanceModal, setShowPrevoyanceModal] = useState(false);
-  const [assuranceVieDraft, setAssuranceVieDraft] = useState<SuccessionAssuranceVieEntry | null>(null);
+  const [assuranceVieDraft, setAssuranceVieDraft] = useState<SuccessionAssuranceVieEntry | null>(
+    null,
+  );
   const [perDraft, setPerDraft] = useState<SuccessionPerEntry | null>(null);
-  const [prevoyanceDraft, setPrevoyanceDraft] = useState<SuccessionPrevoyanceDecesEntry | null>(null);
-  const [groupementFoncierEntries, setGroupementFoncierEntries] = useState<SuccessionGroupementFoncierEntry[]>([]);
-  const [prevoyanceDecesEntries, setPrevoyanceDecesEntries] = useState<SuccessionPrevoyanceDecesEntry[]>([]);
-  const [dispositionsDraft, setDispositionsDraft] = useState<DispositionsDraftState>(buildInitialDispositionsDraft);
-  const [addMemberForm, setAddMemberForm] = useState<AddFamilyMemberFormState>(EMPTY_ADD_FAMILY_MEMBER_FORM);
+  const [prevoyanceDraft, setPrevoyanceDraft] = useState<SuccessionPrevoyanceDecesEntry | null>(
+    null,
+  );
+  const [groupementFoncierEntries, setGroupementFoncierEntries] = useState<
+    SuccessionGroupementFoncierEntry[]
+  >([]);
+  const [prevoyanceDecesEntries, setPrevoyanceDecesEntries] = useState<
+    SuccessionPrevoyanceDecesEntry[]
+  >([]);
+  const [dispositionsDraft, setDispositionsDraft] = useState<DispositionsDraftState>(
+    buildInitialDispositionsDraft,
+  );
+  const [addMemberForm, setAddMemberForm] = useState<AddFamilyMemberFormState>(
+    EMPTY_ADD_FAMILY_MEMBER_FORM,
+  );
   const [chainOrder, setChainOrder] = useState<SuccessionChainOrder>('epoux1');
 
   return {

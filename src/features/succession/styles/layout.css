@@ -199,7 +199,7 @@
   border: none;
   border-bottom: 1px solid transparent;
   border-radius: 4px;
-  background-color: var(--sim-input-bg, color-mix(in srgb, var(--color-c8) 18%, #FFFFFF));
+  background-color: var(--sim-input-bg, color-mix(in srgb, var(--color-c8) 18%, #ffffff));
   color: var(--color-c10);
   font-size: 13px;
   text-align: left;
@@ -288,12 +288,11 @@
   white-space: nowrap;
 }
 
-.sc-checkbox-label--mini input[type="checkbox"] {
+.sc-checkbox-label--mini input[type='checkbox'] {
   width: 8px;
   height: 8px;
   accent-color: var(--color-c2);
 }
-
 
 /* Bouton "Ajouter un membre" & panneau */
 .sc-children-actions {
@@ -317,7 +316,10 @@
   justify-content: center;
   cursor: pointer;
   flex-shrink: 0;
-  transition: background 0.15s, border-color 0.15s, color 0.15s;
+  transition:
+    background 0.15s,
+    border-color 0.15s,
+    color 0.15s;
 }
 
 .sc-member-add-icon-btn:hover {
@@ -361,7 +363,7 @@
   border: none;
   border-bottom: 1px solid transparent;
   border-radius: 4px;
-  background-color: var(--sim-input-bg, color-mix(in srgb, var(--color-c8) 18%, #FFFFFF));
+  background-color: var(--sim-input-bg, color-mix(in srgb, var(--color-c8) 18%, #ffffff));
   font-size: 13px;
   color: var(--color-c10);
   overflow: hidden;

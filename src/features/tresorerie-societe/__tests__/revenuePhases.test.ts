@@ -49,8 +49,8 @@ describe('revenuePhases', () => {
   it('trie les paliers par année de début sans muter la liste source', () => {
     const phases = [phase({ id: 'p2', startYear: 2031 }), phase({ id: 'p1', startYear: 2026 })];
 
-    expect(sortPhases(phases).map(item => item.id)).toEqual(['p1', 'p2']);
-    expect(phases.map(item => item.id)).toEqual(['p2', 'p1']);
+    expect(sortPhases(phases).map((item) => item.id)).toEqual(['p1', 'p2']);
+    expect(phases.map((item) => item.id)).toEqual(['p2', 'p1']);
   });
 
   it('retourne le dernier palier actif à une année donnée', () => {
@@ -74,24 +74,28 @@ describe('revenuePhases', () => {
   });
 
   it('construit le palier suivant en héritant du dernier palier', () => {
-    const next = buildNextPhase([
-      phase({
-        id: 'p1',
-        startYear: 2026,
-        source: 'holding',
-        loadedAnnualCost: 80_000,
-        socialChargeRate: 0.30,
-        annualNetIncomeNeed: 56_000,
-        useCcaForCompletion: false,
-      }),
-    ], 2026, () => 'p2');
+    const next = buildNextPhase(
+      [
+        phase({
+          id: 'p1',
+          startYear: 2026,
+          source: 'holding',
+          loadedAnnualCost: 80_000,
+          socialChargeRate: 0.3,
+          annualNetIncomeNeed: 56_000,
+          useCcaForCompletion: false,
+        }),
+      ],
+      2026,
+      () => 'p2',
+    );
 
     expect(next).toMatchObject({
       id: 'p2',
       startYear: 2027,
       source: 'holding',
       loadedAnnualCost: 80_000,
-      socialChargeRate: 0.30,
+      socialChargeRate: 0.3,
       annualNetIncomeNeed: 56_000,
       useCcaForCompletion: false,
     });
@@ -101,7 +105,7 @@ describe('revenuePhases', () => {
     const p1 = phase({ id: 'p1', startYear: 2026 });
     const p2 = phase({ id: 'p2', startYear: 2031 });
 
-    expect(addPhase([p2], p1).map(item => item.id)).toEqual(['p1', 'p2']);
+    expect(addPhase([p2], p1).map((item) => item.id)).toEqual(['p1', 'p2']);
     expect(updatePhase([p1, p2], 'p2', { startYear: 2035 })[1].startYear).toBe(2035);
     expect(removePhase([p1, p2], 'p2')).toEqual([p1]);
     expect(removePhase([p1], 'p1')).toEqual([p1]);
@@ -113,7 +117,7 @@ describe('revenuePhases', () => {
       startYear: 2026,
       source: 'holding',
       loadedAnnualCost: 100_000,
-      socialChargeRate: 0.40,
+      socialChargeRate: 0.4,
       annualNetIncomeNeed: 75_000,
     });
 

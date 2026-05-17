@@ -37,7 +37,9 @@ const av990IAbattement = avDeces.primesApres1998.allowancePerBeneficiary;
 const pfuIR = toDecimalPercent(DEFAULT_TAX_SETTINGS.pfu.current.rateIR);
 const pfuPS = toDecimalPercent(DEFAULT_PS_SETTINGS.patrimony.current.generalRate);
 
-export const DEFAULT_FISCAL_PARAMS: Required<Omit<FiscalParams, 'dmtgTauxChoisi' | 'dmtgAbattementLigneDirecte' | 'dmtgScale'>> = {
+export const DEFAULT_FISCAL_PARAMS: Required<
+  Omit<FiscalParams, 'dmtgTauxChoisi' | 'dmtgAbattementLigneDirecte' | 'dmtgScale'>
+> = {
   pfuIR,
   pfuPS,
   pfuTotal: roundDecimal(pfuIR + pfuPS),
@@ -54,7 +56,9 @@ export const DEFAULT_FISCAL_PARAMS: Required<Omit<FiscalParams, 'dmtgTauxChoisi'
   av990ITranche2Taux: toDecimalPercent(av990IBrackets[1]?.ratePercent ?? 0),
   av757BAbattement: avDeces.apres70ans.globalAllowance,
   peaAncienneteMin: DEFAULT_FISCALITY_SETTINGS.pea.ancienneteMinYears,
-  dividendesAbattementPercent: toDecimalPercent(DEFAULT_TAX_SETTINGS.corporateTax.current.dividendsAbatementPct),
+  dividendesAbattementPercent: toDecimalPercent(
+    DEFAULT_TAX_SETTINGS.corporateTax.current.dividendsAbatementPct,
+  ),
 };
 
 export const REQUIRED_NUMERIC_FISCAL_KEYS = [
@@ -77,5 +81,6 @@ export const REQUIRED_NUMERIC_FISCAL_KEYS = [
   'dividendesAbattementPercent',
 ];
 
-export const clamp = (n: number, min: number, max: number): number => Math.min(max, Math.max(min, n));
+export const clamp = (n: number, min: number, max: number): number =>
+  Math.min(max, Math.max(min, n));
 export const round2 = (n: number): number => Math.round(n * 100) / 100;

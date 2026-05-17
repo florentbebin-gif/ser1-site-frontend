@@ -1,7 +1,10 @@
 import type { ReactElement } from 'react';
 import type { CompareResult } from '@/engine/placement/types';
 import type { UsePlacementSettingsResult } from '@/hooks/usePlacementSettings';
-import { computeDmtgConsumptionRatio, shouldShowDmtgDisclaimer } from '@/engine/placement/transmissionDisclaimer';
+import {
+  computeDmtgConsumptionRatio,
+  shouldShowDmtgDisclaimer,
+} from '@/engine/placement/transmissionDisclaimer';
 import type {
   DmtgOption,
   EpargneRowWithReinvest,
@@ -74,12 +77,12 @@ export function PlacementInputsPanel({
   setCompareEnabled,
 }: PlacementInputsPanelProps) {
   const compareEnabled = state.compareEnabled;
-  const assietteDmtgProduit1 = (produit1?.transmission?.taxeDmtg || 0) > 0
-    ? (produit1?.transmission?.assiette || 0)
-    : 0;
-  const assietteDmtgProduit2 = compareEnabled && (produit2?.transmission?.taxeDmtg || 0) > 0
-    ? (produit2?.transmission?.assiette || 0)
-    : 0;
+  const assietteDmtgProduit1 =
+    (produit1?.transmission?.taxeDmtg || 0) > 0 ? produit1?.transmission?.assiette || 0 : 0;
+  const assietteDmtgProduit2 =
+    compareEnabled && (produit2?.transmission?.taxeDmtg || 0) > 0
+      ? produit2?.transmission?.assiette || 0
+      : 0;
 
   const nbBenef = Math.max(1, state.transmission.nbBeneficiaires);
   const assietteDmtgProduit1PerBenef = assietteDmtgProduit1 / nbBenef;
@@ -94,11 +97,18 @@ export function PlacementInputsPanel({
     : 0;
 
   const showDmtgDisclaimer =
-    shouldShowDmtgDisclaimer(assietteDmtgProduit1PerBenef, selectedDmtgTrancheWidth ?? 0)
-    || (compareEnabled && shouldShowDmtgDisclaimer(assietteDmtgProduit2PerBenef, selectedDmtgTrancheWidth ?? 0));
+    shouldShowDmtgDisclaimer(assietteDmtgProduit1PerBenef, selectedDmtgTrancheWidth ?? 0) ||
+    (compareEnabled &&
+      shouldShowDmtgDisclaimer(assietteDmtgProduit2PerBenef, selectedDmtgTrancheWidth ?? 0));
 
-  const dmtgConsumptionPercentProduit1 = Math.min(100, Math.round(dmtgConsumptionRatioProduit1 * 100));
-  const dmtgConsumptionPercentProduit2 = Math.min(100, Math.round(dmtgConsumptionRatioProduit2 * 100));
+  const dmtgConsumptionPercentProduit1 = Math.min(
+    100,
+    Math.round(dmtgConsumptionRatioProduit1 * 100),
+  );
+  const dmtgConsumptionPercentProduit2 = Math.min(
+    100,
+    Math.round(dmtgConsumptionRatioProduit2 * 100),
+  );
 
   return (
     <>
@@ -159,4 +169,3 @@ export function PlacementInputsPanel({
     </>
   );
 }
-

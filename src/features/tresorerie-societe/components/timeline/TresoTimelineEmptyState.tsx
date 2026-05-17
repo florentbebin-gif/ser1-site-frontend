@@ -7,7 +7,8 @@ export function TresoTimelineEmptyState() {
     <div className="ts-timeline-empty">
       <strong>Compléter la société et l’associé</strong>
       <p>
-        Le parcours devient disponible dès que la société et l’âge de l’associé personne physique sont renseignés.
+        Le parcours devient disponible dès que la société et l’âge de l’associé personne physique
+        sont renseignés.
       </p>
       <button type="button" className="ts-secondary-btn" onClick={openSociety}>
         Compléter la société

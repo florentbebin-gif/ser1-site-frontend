@@ -27,9 +27,11 @@ function isFresh(): boolean {
 }
 
 function isMissingReviewColumnsError(error: { message?: string } | null): boolean {
-  return typeof error?.message === 'string'
-    && error.message.includes('base_contrat_overrides.review_')
-    && error.message.includes('does not exist');
+  return (
+    typeof error?.message === 'string' &&
+    error.message.includes('base_contrat_overrides.review_') &&
+    error.message.includes('does not exist')
+  );
 }
 
 export async function getBaseContratOverrides(): Promise<OverrideMap> {
@@ -38,16 +40,12 @@ export async function getBaseContratOverrides(): Promise<OverrideMap> {
   let data: Array<Partial<BaseContratOverride>> | null = null;
   let error: { message: string } | null = null;
 
-  const reviewResult = await supabase
-    .from(TABLE)
-    .select(SELECT_WITH_REVIEW);
+  const reviewResult = await supabase.from(TABLE).select(SELECT_WITH_REVIEW);
   data = reviewResult.data as Array<Partial<BaseContratOverride>> | null;
   error = reviewResult.error;
 
   if (isMissingReviewColumnsError(error)) {
-    const legacyResult = await supabase
-      .from(TABLE)
-      .select(SELECT_LEGACY);
+    const legacyResult = await supabase.from(TABLE).select(SELECT_LEGACY);
     data = legacyResult.data as Array<Partial<BaseContratOverride>> | null;
     error = legacyResult.error;
   }
@@ -76,14 +74,9 @@ export async function getBaseContratOverrides(): Promise<OverrideMap> {
   return _cache;
 }
 
-export async function upsertBaseContratOverride(
-  override: BaseContratOverrideInput,
-): Promise<void> {
+export async function upsertBaseContratOverride(override: BaseContratOverrideInput): Promise<void> {
   const payload = { ...override, updated_at: new Date().toISOString() };
-  let { error } = await supabase.from(TABLE).upsert(
-    payload,
-    { onConflict: 'product_id' },
-  );
+  let { error } = await supabase.from(TABLE).upsert(payload, { onConflict: 'product_id' });
 
   if (isMissingReviewColumnsError(error)) {
     const {
@@ -92,10 +85,9 @@ export async function upsertBaseContratOverride(
       next_review_at: _nextReviewAt,
       ...legacyPayload
     } = payload;
-    const legacyResult = await supabase.from(TABLE).upsert(
-      legacyPayload,
-      { onConflict: 'product_id' },
-    );
+    const legacyResult = await supabase
+      .from(TABLE)
+      .upsert(legacyPayload, { onConflict: 'product_id' });
     error = legacyResult.error;
   }
 

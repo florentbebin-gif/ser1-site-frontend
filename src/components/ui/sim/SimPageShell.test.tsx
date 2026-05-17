@@ -11,12 +11,12 @@ describe('SimPageShell', () => {
         actions={<button type="button">Exporter</button>}
         nav={<button type="button">Navigation</button>}
         notice={<p>Notice</p>}
-        controls={(
+        controls={
           <>
             <div className="sim-controls-row__main">Controles principaux</div>
             <div className="sim-controls-row__side">Controles lateraux</div>
           </>
-        )}
+        }
         pageClassName="custom-page"
         pageTestId="page"
         headerTestId="header"
@@ -42,7 +42,9 @@ describe('SimPageShell', () => {
     expect(html).toContain('class="sim-notice"');
     expect(html).toContain('class="sim-controls-row"');
     expect(html).toContain('class="sim-grid__col sim-grid__col--main main-slot"');
-    expect(html).toContain('class="sim-grid__col sim-grid__col--side sim-grid__col--sticky side-slot"');
+    expect(html).toContain(
+      'class="sim-grid__col sim-grid__col--side sim-grid__col--sticky side-slot"',
+    );
     expect(html).toContain('class="sim-section section-slot"');
     expect(html).toContain('Contenu principal');
     expect(html).toContain('Contenu lateral');

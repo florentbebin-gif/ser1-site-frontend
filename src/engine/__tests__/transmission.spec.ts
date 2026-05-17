@@ -1,6 +1,9 @@
 import { describe, it, expect } from 'vitest';
 import { calculTransmission, ENVELOPES, simulateComplete } from '../placement';
-import { computeDmtgConsumptionRatio, shouldShowDmtgDisclaimer } from '../placement/transmissionDisclaimer';
+import {
+  computeDmtgConsumptionRatio,
+  shouldShowDmtgDisclaimer,
+} from '../placement/transmissionDisclaimer';
 
 const baseFiscalParams = {
   dmtgTauxChoisi: 0.2,
@@ -17,18 +20,21 @@ const baseFiscalParams = {
 
 describe('calculTransmission', () => {
   it('Assurance-vie < 70 ans applique PS deces puis 990 I', () => {
-    const res = calculTransmission({
-      envelope: ENVELOPES.AV,
-      capitalTransmis: 400000,
-      agePremierVersement: 55,
-      nbBeneficiaires: 2,
-      cumulVersements: 250000,
-    }, baseFiscalParams);
+    const res = calculTransmission(
+      {
+        envelope: ENVELOPES.AV,
+        capitalTransmis: 400000,
+        agePremierVersement: 55,
+        nbBeneficiaires: 2,
+        cumulVersements: 250000,
+      },
+      baseFiscalParams,
+    );
 
     expect(res.regime).toBe('990 I');
     expect(res.abattement).toBe(305000);
     expect(res.psDeces.montant).toBeCloseTo((400000 - 250000) * baseFiscalParams.psException, 2);
-    const expectedAssiette = (400000 - res.psDeces.montant) - res.abattement;
+    const expectedAssiette = 400000 - res.psDeces.montant - res.abattement;
     expect(res.assiette).toBeCloseTo(expectedAssiette, 2);
     expect(res.taxeForfaitaire).toBeCloseTo(expectedAssiette * 0.2, 2);
     expect(res.taxeDmtg).toBe(0);
@@ -37,12 +43,15 @@ describe('calculTransmission', () => {
   });
 
   it('Assurance-vie > 70 ans applique abattement 30 500 EUR puis DMTG simplifie', () => {
-    const res = calculTransmission({
-      envelope: ENVELOPES.AV,
-      capitalTransmis: 120000,
-      agePremierVersement: 72,
-      nbBeneficiaires: 1,
-    }, baseFiscalParams);
+    const res = calculTransmission(
+      {
+        envelope: ENVELOPES.AV,
+        capitalTransmis: 120000,
+        agePremierVersement: 72,
+        nbBeneficiaires: 1,
+      },
+      baseFiscalParams,
+    );
 
     expect(res.psDeces.montant).toBeCloseTo(120000 * baseFiscalParams.psException, 2);
     const assiette = 120000 - res.psDeces.montant - baseFiscalParams.av757BAbattement;
@@ -53,27 +62,36 @@ describe('calculTransmission', () => {
   });
 
   it('PER assurance deces >= 70 ans applique 757 B sans PS deces', () => {
-    const res = calculTransmission({
-      envelope: ENVELOPES.PER,
-      capitalTransmis: 80000,
-      ageAuDeces: 75,
-      perBancaire: false,
-    }, baseFiscalParams);
+    const res = calculTransmission(
+      {
+        envelope: ENVELOPES.PER,
+        capitalTransmis: 80000,
+        ageAuDeces: 75,
+        perBancaire: false,
+      },
+      baseFiscalParams,
+    );
 
     expect(res.regime).toContain('757 B');
     expect(res.taxeForfaitaire).toBe(0);
-    expect(res.taxeDmtg).toBeCloseTo((80000 - baseFiscalParams.av757BAbattement) * baseFiscalParams.dmtgTauxChoisi, 2);
+    expect(res.taxeDmtg).toBeCloseTo(
+      (80000 - baseFiscalParams.av757BAbattement) * baseFiscalParams.dmtgTauxChoisi,
+      2,
+    );
     expect(res.taxe).toBeCloseTo(res.taxeDmtg, 2);
     expect(res.psDeces.applicable).toBe(false);
     expect(res.psDeces.note).toBe('PS déjà acquittés pendant la vie du contrat');
   });
 
   it('PER bancaire applique uniquement la taxe DMTG simplifiee', () => {
-    const res = calculTransmission({
-      envelope: ENVELOPES.PER,
-      capitalTransmis: 50000,
-      perBancaire: true,
-    }, baseFiscalParams);
+    const res = calculTransmission(
+      {
+        envelope: ENVELOPES.PER,
+        capitalTransmis: 50000,
+        perBancaire: true,
+      },
+      baseFiscalParams,
+    );
 
     expect(res.regime).toBe('DMTG (PER bancaire)');
     expect(res.taxeForfaitaire).toBe(0);
@@ -84,22 +102,31 @@ describe('calculTransmission', () => {
   });
 
   it('PEA applique PS deces sur gains puis DMTG', () => {
-    const res = calculTransmission({
-      envelope: ENVELOPES.PEA,
-      capitalTransmis: 150000,
-      cumulVersements: 90000,
-    }, baseFiscalParams);
+    const res = calculTransmission(
+      {
+        envelope: ENVELOPES.PEA,
+        capitalTransmis: 150000,
+        cumulVersements: 90000,
+      },
+      baseFiscalParams,
+    );
 
     const gains = 60000;
     expect(res.psDeces.montant).toBeCloseTo(gains * baseFiscalParams.psGeneral, 2);
-    expect(res.taxeDmtg).toBeCloseTo((150000 - res.psDeces.montant) * baseFiscalParams.dmtgTauxChoisi, 2);
+    expect(res.taxeDmtg).toBeCloseTo(
+      (150000 - res.psDeces.montant) * baseFiscalParams.dmtgTauxChoisi,
+      2,
+    );
   });
 
   it('SCPI indique PS non applicables car preleves pendant la vie', () => {
-    const res = calculTransmission({
-      envelope: ENVELOPES.SCPI,
-      capitalTransmis: 80000,
-    }, baseFiscalParams);
+    const res = calculTransmission(
+      {
+        envelope: ENVELOPES.SCPI,
+        capitalTransmis: 80000,
+      },
+      baseFiscalParams,
+    );
 
     expect(res.psDeces.applicable).toBe(false);
     expect(res.psDeces.note).toBe('PS prélevés sur les loyers annuels');
@@ -149,7 +176,10 @@ describe('Garantie de bonne fin (simulateComplete)', () => {
       { ...transmission, ageAuDeces: 90 },
       baseFiscalParams,
     );
-    expect(result.transmission.capitalTransmis).toBeCloseTo(result.liquidation.capitalRestantAuDeces, 2);
+    expect(result.transmission.capitalTransmis).toBeCloseTo(
+      result.liquidation.capitalRestantAuDeces,
+      2,
+    );
   });
 });
 

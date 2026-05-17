@@ -45,7 +45,9 @@ describe('computeTmiMetrics — Scénario A : Marié/Pacsé 90k€', () => {
   it('Invariant : revenus dans TMI + marge ≈ largeur tranche', () => {
     if (metrics.seuilHautFoyer && metrics.margeAvantChangement != null) {
       const largeur = metrics.seuilHautFoyer - metrics.seuilBasFoyer;
-      expect(Math.abs(metrics.revenusDansTmi + metrics.margeAvantChangement - largeur)).toBeLessThan(100);
+      expect(
+        Math.abs(metrics.revenusDansTmi + metrics.margeAvantChangement - largeur),
+      ).toBeLessThan(100);
     }
   });
 });
@@ -68,8 +70,20 @@ describe('computeTmiMetrics — Scénario B : Célibataire 2 enfants, parent iso
 });
 
 describe('computeTmiMetrics — Scénario C : Célibataire 2 enfants, parent isolé ON, 90k€', () => {
-  const paramsOn = baseParams({ partsNb: 3, basePartsForQf: 1, extraParts: 2, extraHalfParts: 2, isIsolated: true });
-  const paramsOff = baseParams({ partsNb: 3, basePartsForQf: 1, extraParts: 2, extraHalfParts: 2, isIsolated: false });
+  const paramsOn = baseParams({
+    partsNb: 3,
+    basePartsForQf: 1,
+    extraParts: 2,
+    extraHalfParts: 2,
+    isIsolated: true,
+  });
+  const paramsOff = baseParams({
+    partsNb: 3,
+    basePartsForQf: 1,
+    extraParts: 2,
+    extraHalfParts: 2,
+    isIsolated: false,
+  });
   const metricsOn = computeTmiMetrics(90000, paramsOn);
   const _metricsOff = computeTmiMetrics(90000, paramsOff);
   void _metricsOff;
@@ -82,7 +96,9 @@ describe('computeTmiMetrics — Scénario C : Célibataire 2 enfants, parent iso
   it('Cohérence interne ON : revenusDansTmi + marge ≈ largeur tranche', () => {
     if (metricsOn.seuilHautFoyer) {
       const largeur = metricsOn.seuilHautFoyer - metricsOn.seuilBasFoyer;
-      expect(Math.abs(metricsOn.revenusDansTmi + (metricsOn.margeAvantChangement || 0) - largeur)).toBeLessThan(100);
+      expect(
+        Math.abs(metricsOn.revenusDansTmi + (metricsOn.margeAvantChangement || 0) - largeur),
+      ).toBeLessThan(100);
     }
   });
 });
@@ -107,6 +123,7 @@ describe('computeTmiMetrics — Dernière tranche (300k€)', () => {
   const metrics = computeTmiMetrics(300000, params);
 
   it('TMI = 45%', () => expect(metrics.tmiRate).toBe(45));
-  it('Marge = null (pas de tranche supérieure)', () => expect(metrics.margeAvantChangement).toBeNull());
+  it('Marge = null (pas de tranche supérieure)', () =>
+    expect(metrics.margeAvantChangement).toBeNull());
   it('Revenus dans TMI > 0', () => expect(metrics.revenusDansTmi).toBeGreaterThan(0));
 });

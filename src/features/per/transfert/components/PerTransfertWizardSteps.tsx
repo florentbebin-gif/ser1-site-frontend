@@ -8,7 +8,7 @@ interface Props {
 
 export function PerTransfertWizardSteps({ step, step1Done, onStepChange }: Props) {
   return (
-    <nav className="per-transfert-phase-nav" role="tablist" aria-label="Étapes du transfert">
+    <div className="per-transfert-phase-nav" role="tablist" aria-label="Étapes du transfert">
       <button
         type="button"
         role="tab"
@@ -28,6 +28,6 @@ export function PerTransfertWizardSteps({ step, step1Done, onStepChange }: Props
       >
         Nouveau PER
       </button>
-    </nav>
+    </div>
   );
 }

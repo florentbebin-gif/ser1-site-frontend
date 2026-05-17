@@ -61,7 +61,9 @@ export default function PassHistoryAccordion({
                           type="number"
                           value={numberOrEmpty(row.pass_amount)}
                           placeholder="À renseigner"
-                          onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleChange(idx, e.target.value)}
+                          onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                            handleChange(idx, e.target.value)
+                          }
                           disabled={!isAdmin}
                         />
                       </td>
@@ -84,7 +86,9 @@ export default function PassHistoryAccordion({
               )}
 
               {message && (
-                <div className={`settings-feedback-message settings-feedback-message--compact ${message.includes('Erreur') ? 'settings-feedback-message--error' : 'settings-feedback-message--success'}`}>
+                <div
+                  className={`settings-feedback-message settings-feedback-message--compact ${message.includes('Erreur') ? 'settings-feedback-message--error' : 'settings-feedback-message--success'}`}
+                >
                   {message}
                 </div>
               )}

@@ -50,7 +50,17 @@ export default function ModeStep({
           <div className="per-mode-step-header sim-card__header--bleed">
             <div className="sim-card__title-row">
               <div className="sim-card__icon">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.8"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden="true"
+                >
                   <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
                 </svg>
               </div>
@@ -60,12 +70,15 @@ export default function ModeStep({
           <div className="sim-divider" />
 
           <div className="per-mode-grid">
-            <div className="per-mode-card per-mode-card--selected per-mode-card--locked" aria-disabled="true">
+            <div
+              className="per-mode-card per-mode-card--selected per-mode-card--locked"
+              aria-disabled="true"
+            >
               <span className="per-mode-card-marker">Versement N</span>
               <h4 className="per-mode-card-title">Contrôle du potentiel avant versement</h4>
               <p className="per-mode-card-desc">
-                Parcours préselectionné à partir de l&apos;avis IR {years.currentTaxYear},
-                sans projection de l&apos;année en cours.
+                Parcours préselectionné à partir de l&apos;avis IR {years.currentTaxYear}, sans
+                projection de l&apos;année en cours.
               </p>
             </div>
           </div>
@@ -75,21 +88,36 @@ export default function ModeStep({
           <div className="per-mode-docs-header sim-card__header--bleed">
             <div className="sim-card__title-row">
               <div className="sim-card__icon">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.8"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden="true"
+                >
                   <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
                   <polyline points="14 2 14 8 20 8" />
                 </svg>
               </div>
               <h3 className="sim-card__title">Documents nécessaires</h3>
             </div>
-            <p className="per-mode-docs-subtitle">Base documentaire verrouillée en mode simplifié</p>
+            <p className="per-mode-docs-subtitle">
+              Base documentaire verrouillée en mode simplifié
+            </p>
           </div>
           <div className="sim-divider" />
 
           <div className="per-mode-panel-stack">
             <div className="per-mode-panel-block">
               <div className="per-mode-doc-grid">
-                <div className="per-mode-doc-card is-selected per-mode-doc-card--locked" aria-disabled="true">
+                <div
+                  className="per-mode-doc-card is-selected per-mode-doc-card--locked"
+                  aria-disabled="true"
+                >
                   <span className="per-mode-doc-title">
                     Avis IR {years.currentTaxYear} disponible
                   </span>
@@ -120,7 +148,17 @@ export default function ModeStep({
         <div className="per-mode-step-header sim-card__header--bleed">
           <div className="sim-card__title-row">
             <div className="sim-card__icon">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.8"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
+              >
                 <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
               </svg>
             </div>
@@ -150,7 +188,17 @@ export default function ModeStep({
           <div className="per-mode-docs-header sim-card__header--bleed">
             <div className="sim-card__title-row">
               <div className="sim-card__icon">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.8"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden="true"
+                >
                   <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
                   <polyline points="14 2 14 8 20 8" />
                 </svg>
@@ -189,8 +237,9 @@ export default function ModeStep({
                       Avis IR {years.currentTaxYear} disponible
                     </span>
                     <span className="per-mode-doc-desc">
-                      Avis sur les revenus {years.currentIncomeYear}. Le plafond épargne retraite est
-                      déjà visible sur l&apos;avis ; vous pouvez passer directement aux versements de l&apos;année.
+                      Avis sur les revenus {years.currentIncomeYear}. Le plafond épargne retraite
+                      est déjà visible sur l&apos;avis ; vous pouvez passer directement aux
+                      versements de l&apos;année.
                     </span>
                   </button>
                 </div>
@@ -211,9 +260,9 @@ export default function ModeStep({
                 </div>
                 {needsCurrentYearEstimate && (
                   <p className="per-mode-toggle-hint">
-                    L&apos;estimation {years.currentTaxYear} est activée. Vous renseignerez les revenus
-                    et versements de l&apos;année en cours (Madelin, PERCO, PEROB, art. 83) dans la tab
-                    Versement N.
+                    L&apos;estimation {years.currentTaxYear} est activée. Vous renseignerez les
+                    revenus et versements de l&apos;année en cours (Madelin, PERCO, PEROB, art. 83)
+                    dans la tab Versement N.
                   </p>
                 )}
               </div>
@@ -229,9 +278,7 @@ export default function ModeStep({
                 </span>
               </div>
               <div className="per-mode-doc-card is-selected">
-                <span className="per-mode-doc-title">
-                  Déclaration {years.previousTaxYear}
-                </span>
+                <span className="per-mode-doc-title">Déclaration {years.previousTaxYear}</span>
                 <span className="per-mode-doc-desc">
                   Ensemble des revenus et versements épargne retraite {years.currentIncomeYear}.
                 </span>

@@ -12,4 +12,3 @@ export const PARAMS_STD: TresoFiscalParams = {
   dividendesAbattement: 0.4,
   irScale: [],
 };
-

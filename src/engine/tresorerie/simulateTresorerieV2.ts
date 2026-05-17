@@ -1,8 +1,5 @@
 import { calculBaseEtIS } from './calculIS';
-import {
-  LEGAL_RESERVE_CAP_RATIO,
-  LEGAL_RESERVE_DOTATION_RATE,
-} from './accountingConstants';
+import { LEGAL_RESERVE_CAP_RATIO, LEGAL_RESERVE_DOTATION_RATE } from './accountingConstants';
 import { selectAllocationPocketsForSimulation } from './allocationPockets';
 import {
   getAssociateAnnualIncomeNeedForYear,
@@ -17,7 +14,10 @@ import {
   getSelectedAssociate,
   getSelectedAssociateId,
 } from './runtimeAccessors';
-import { computeDistributableCapacity, computeDividendsDistribution } from './simulateTresorerieV2.distribution';
+import {
+  computeDistributableCapacity,
+  computeDividendsDistribution,
+} from './simulateTresorerieV2.distribution';
 import {
   buildAssociateRevenueRows,
   computeMatrixYear,
@@ -57,7 +57,10 @@ const ECONOMIC_OWNERSHIP_OVERFLOW_ERROR = 'Droits économiques supérieurs à 10
 
 function validateOwnershipTotals(associates: RuntimeAssociateInput[]): void {
   const totalCapitalPct = associates.reduce((sum, associate) => sum + getCapitalPct(associate), 0);
-  const totalEconomicPct = associates.reduce((sum, associate) => sum + getEconomicPct(associate), 0);
+  const totalEconomicPct = associates.reduce(
+    (sum, associate) => sum + getEconomicPct(associate),
+    0,
+  );
   if (totalCapitalPct > 100) {
     throw new TresoSimulationInputError(CAPITAL_OWNERSHIP_OVERFLOW_ERROR);
   }
@@ -72,20 +75,24 @@ export function simulateTresorerieV2(
   horizonAns: number,
 ): TresoProjectionRow[] {
   const { company } = v2;
-  const associates = company.associates;
+  const associates: RuntimeAssociateInput[] = company.associates;
   validateOwnershipTotals(associates);
   const selectedAssociateId = getSelectedAssociateId(v2);
   const selectedAssociate = getSelectedAssociate(v2) ?? associates[0];
+  if (!selectedAssociate) {
+    throw new TresoSimulationInputError('Aucun associé renseigné pour la simulation trésorerie.');
+  }
   const selectedProfile = getAssociateProfile(v2, selectedAssociate);
   const anneeCivileDebut = selectedProfile.projectionStartYear;
   const incomeStatement = getIncomeStatement(company);
   const allocationPockets = selectAllocationPocketsForSimulation(v2.allocationMatrix);
-  const minimumBankBalance = v2.allocationMatrix.minimumBankBalance ?? v2.allocationMatrix.sweepThreshold ?? 0;
+  const minimumBankBalance =
+    v2.allocationMatrix.minimumBankBalance ?? v2.allocationMatrix.sweepThreshold ?? 0;
   const cashReserve = minimumBankBalance + incomeStatement.workingCapitalRequirement;
   const initialAllocatableTreasury = Math.max(0, company.treasuryInitial - cashReserve);
 
   const initialCcaBalances = new Map<string, number>();
-  associates.forEach(associate => {
+  associates.forEach((associate) => {
     initialCcaBalances.set(associate.id, getInitialCcaBalance(associate));
   });
 
@@ -116,13 +123,17 @@ export function simulateTresorerieV2(
       selectedProfile.annualIncomeNeed,
       anneeCivile,
     );
-    const enPhaseBesoin = hasAssociateAnnualIncomeNeedForYear(selectedAssociate, enPhaseRetraite, anneeCivile);
+    const enPhaseBesoin = hasAssociateAnnualIncomeNeedForYear(
+      selectedAssociate,
+      enPhaseRetraite,
+      anneeCivile,
+    );
     const selectedActivePhase = getAssociateRevenuePhaseForYear(selectedAssociate, anneeCivile);
     const ccaBalanceDebut = new Map(ccaBalances);
 
     const remunerationByAssociate = new Map<string, number>();
     const holdingRemunerationCostByAssociate = new Map<string, number>();
-    associates.forEach(associate => {
+    associates.forEach((associate) => {
       const remuneration = getAssociateRemunerationForYear(associate, anneeCivile);
       if (remuneration.netRevenue > 0) {
         remunerationByAssociate.set(associate.id, remuneration.netRevenue);
@@ -133,11 +144,14 @@ export function simulateTresorerieV2(
     });
 
     let apportCCA = 0;
-    associates.forEach(associate => {
+    associates.forEach((associate) => {
       const annualContribution = getAnnualCcaContribution(associate, anneeCivile);
       const initialContribution = 0;
       const exceptionalContribution = getExceptionalCcaContribution(associate, anneeCivile);
-      const contribution = Math.max(0, annualContribution + initialContribution + exceptionalContribution);
+      const contribution = Math.max(
+        0,
+        annualContribution + initialContribution + exceptionalContribution,
+      );
       if (contribution <= 0) return;
       apportCCA += contribution;
       ccaCumuleTotal += contribution;
@@ -151,13 +165,14 @@ export function simulateTresorerieV2(
 
     const ccaInterestByAssociate = new Map<string, number>();
     const ccaDeductibleInterestByAssociate = new Map<string, number>();
-    associates.forEach(associate => {
+    associates.forEach((associate) => {
       const remunerationRate = Math.max(0, associate.cca?.remunerationRate ?? 0);
       const balance = ccaBalanceDebut.get(associate.id) ?? 0;
       if (balance <= 0 || remunerationRate <= 0) return;
       const interest = balance * remunerationRate;
       const maxDeductibleRate = params.maxDeductibleCcaInterestRate ?? remunerationRate;
-      const deductibleInterest = balance * Math.min(remunerationRate, Math.max(0, maxDeductibleRate));
+      const deductibleInterest =
+        balance * Math.min(remunerationRate, Math.max(0, maxDeductibleRate));
       ccaInterestByAssociate.set(associate.id, interest);
       ccaDeductibleInterestByAssociate.set(associate.id, Math.min(interest, deductibleInterest));
     });
@@ -203,9 +218,10 @@ export function simulateTresorerieV2(
     const resultatNetComptable = resultatComptableAvantIS - is;
     const plafondReserveLegale = Math.max(0, company.shareCapital * LEGAL_RESERVE_CAP_RATIO);
     const reserveLegaleACompleter = Math.max(0, plafondReserveLegale - reserveLegaleDebut);
-    const dotationReserveLegale = resultatNetComptable > 0
-      ? Math.min(resultatNetComptable * LEGAL_RESERVE_DOTATION_RATE, reserveLegaleACompleter)
-      : 0;
+    const dotationReserveLegale =
+      resultatNetComptable > 0
+        ? Math.min(resultatNetComptable * LEGAL_RESERVE_DOTATION_RATE, reserveLegaleACompleter)
+        : 0;
     const reserveLegaleFin = reserveLegaleDebut + dotationReserveLegale;
     // Défaut true (rétro-compat) : l'usufruitier appréhende les réserves démembrées.
     const usufructuaryAppropriatesReserves = company.usufructuaryReserveAttribution !== false;
@@ -234,21 +250,22 @@ export function simulateTresorerieV2(
       : 0;
     const selectedCcaBalance = ccaBalances.get(selectedAssociateId) ?? 0;
     const retraitsCCA = isRevenuePhaseV6(selectedActivePhase)
-      ? selectedActivePhase.ccaRepayment.strategy === 'aucun' || !selectedActivePhase.ccaRepayment.enabled
+      ? selectedActivePhase.ccaRepayment.strategy === 'aucun' ||
+        !selectedActivePhase.ccaRepayment.enabled
         ? 0
         : selectedActivePhase.ccaRepayment.strategy === 'montant_cible'
           ? Math.min(
-            Math.max(0, selectedActivePhase.ccaRepayment.targetAmount ?? 0),
+              Math.max(0, selectedActivePhase.ccaRepayment.targetAmount ?? 0),
+              selectedCcaBalance,
+              tresorerieDistribuableApresIS,
+            )
+          : Math.min(selectedCcaBalance, tresorerieDistribuableApresIS)
+      : (selectedActivePhase?.useCcaForCompletion ?? true)
+        ? Math.min(
+            besoinRetraiteApresRemuneration,
             selectedCcaBalance,
             tresorerieDistribuableApresIS,
           )
-          : Math.min(selectedCcaBalance, tresorerieDistribuableApresIS)
-      : selectedActivePhase?.useCcaForCompletion ?? true
-        ? Math.min(
-          besoinRetraiteApresRemuneration,
-          selectedCcaBalance,
-          tresorerieDistribuableApresIS,
-        )
         : 0;
     const ccaRepaidByAssociate = distributeSelectedCcaRepayment({
       selectedAssociateId,
@@ -256,8 +273,7 @@ export function simulateTresorerieV2(
       amount: retraitsCCA,
     });
 
-    const selectedEconomicPct =
-      (getEconomicRightsPct(associates.find(a => a.id === selectedAssociateId) ?? associates[0]) || 0) / 100;
+    const selectedEconomicPct = (getEconomicRightsPct(selectedAssociate) || 0) / 100;
     const besoinNetRestant = enPhaseBesoin
       ? Math.max(0, annualIncomeNeed - selectedRemuneration - retraitsCCA)
       : 0;
@@ -266,21 +282,37 @@ export function simulateTresorerieV2(
       : undefined;
     const tresoDispoApresCCAEtIS = Math.max(0, tresorerieDistribuableApresIS - retraitsCCA);
     const capaciteDistribuable = computeDistributableCapacity({
-      associates, resultatNetComptable, dotationReserveLegale, reservesDebut, usufructuaryAppropriatesReserves,
+      associates,
+      resultatNetComptable,
+      dotationReserveLegale,
+      reservesDebut,
+      usufructuaryAppropriatesReserves,
     });
     let dividendesComplementairesBrutsDemandes = 0;
     if (selectedDistribution) {
-      if (selectedDistribution.enabled && selectedDistribution.dividendsStrategy === 'montant_cible') {
-        dividendesComplementairesBrutsDemandes = params.pfuTotal < 1 && selectedEconomicPct > 0
-          ? Math.max(
-            0,
-            (selectedDistribution.dividendsTargetAmountNet ?? 0) - selectedRemuneration - retraitsCCA,
-          ) / (1 - params.pfuTotal) / selectedEconomicPct
-          : 0;
-      } else if (selectedDistribution.enabled && selectedDistribution.dividendsStrategy === 'max_treso') {
-        dividendesComplementairesBrutsDemandes = selectedEconomicPct > 0
-          ? Math.min(tresoDispoApresCCAEtIS, capaciteDistribuable) / selectedEconomicPct
-          : 0;
+      if (
+        selectedDistribution.enabled &&
+        selectedDistribution.dividendsStrategy === 'montant_cible'
+      ) {
+        dividendesComplementairesBrutsDemandes =
+          params.pfuTotal < 1 && selectedEconomicPct > 0
+            ? Math.max(
+                0,
+                (selectedDistribution.dividendsTargetAmountNet ?? 0) -
+                  selectedRemuneration -
+                  retraitsCCA,
+              ) /
+              (1 - params.pfuTotal) /
+              selectedEconomicPct
+            : 0;
+      } else if (
+        selectedDistribution.enabled &&
+        selectedDistribution.dividendsStrategy === 'max_treso'
+      ) {
+        dividendesComplementairesBrutsDemandes =
+          selectedEconomicPct > 0
+            ? Math.min(tresoDispoApresCCAEtIS, capaciteDistribuable) / selectedEconomicPct
+            : 0;
       }
     } else if (besoinNetRestant > 0 && params.pfuTotal < 1 && selectedEconomicPct > 0) {
       dividendesComplementairesBrutsDemandes =
@@ -292,10 +324,7 @@ export function simulateTresorerieV2(
     const dividendesDemandesTotaux =
       dividendesBrutsCreditIRDemandes + dividendesComplementairesBrutsDemandes;
 
-    const {
-      dividendesAssociesBruts,
-      grossDividendsByAssociate,
-    } = computeDividendsDistribution({
+    const { dividendesAssociesBruts, grossDividendsByAssociate } = computeDividendsDistribution({
       associates,
       resultatNetComptable,
       dotationReserveLegale,
@@ -304,16 +333,15 @@ export function simulateTresorerieV2(
       dividendesDemandesTotaux,
       tresoDispoApresCCAEtIS,
     });
-    const alerteDividendesSuperieursCapacite =
-      dividendesAssociesBruts < dividendesDemandesTotaux;
+    const alerteDividendesSuperieursCapacite = dividendesAssociesBruts < dividendesDemandesTotaux;
 
     const tnsSocialChargesByAssociate = new Map<string, number>();
-    associates.forEach(associate => {
+    associates.forEach((associate) => {
       if (!isTnsAssociate(associate)) return;
       const activePhase = getAssociateRevenuePhaseForYear(associate, anneeCivile);
       const manualRate = isRevenuePhaseV6(activePhase)
         ? activePhase.remuneration.socialChargeRate
-        : activePhase?.socialChargeRate ?? associate.remuneration?.socialChargeRate ?? 0;
+        : (activePhase?.socialChargeRate ?? associate.remuneration?.socialChargeRate ?? 0);
       if (manualRate <= 0) return;
       const grossDividends = grossDividendsByAssociate.get(associate.id) ?? 0;
       const ccaAtStart = ccaBalanceDebut.get(associate.id) ?? 0;

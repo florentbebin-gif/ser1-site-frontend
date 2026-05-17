@@ -32,16 +32,9 @@ export type {
   Confidence,
   RuleSource,
 } from './types';
-export {
-  buildBaseContratFiscalLabels,
-  DEFAULT_RULE_RENDER_CONTEXT,
-} from './fiscalLabels';
+export { buildBaseContratFiscalLabels, DEFAULT_RULE_RENDER_CONTEXT } from './fiscalLabels';
 export type { EnvelopeCode, FiscalProfile } from './fiscalProfile';
-export {
-  getEnvelopeCatalogId,
-  buildFiscalProfile,
-  emptyFiscalProfile,
-} from './fiscalProfile';
+export { getEnvelopeCatalogId, buildFiscalProfile, emptyFiscalProfile } from './fiscalProfile';
 
 const RESOLVERS: Array<(_id: string, _audience: Audience) => ProductRules | undefined> = [
   getAssuranceEpargneRules,
@@ -82,9 +75,8 @@ function renderRules(
 }
 
 function isDevRuntime(): boolean {
-  const nodeEnv = (
-    globalThis as { process?: { env?: { NODE_ENV?: string } } }
-  ).process?.env?.NODE_ENV;
+  const nodeEnv = (globalThis as { process?: { env?: { NODE_ENV?: string } } }).process?.env
+    ?.NODE_ENV;
   return nodeEnv !== 'production';
 }
 

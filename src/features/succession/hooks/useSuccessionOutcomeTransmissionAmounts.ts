@@ -60,9 +60,10 @@ export function useSuccessionOutcomeTransmissionAmounts({
   );
 
   const derivedCapitauxHorsSuccession = useMemo(
-    () => (shouldRenderSuccessionComputationSections
-      ? displayAssuranceVieTransmise + displayPerTransmis + displayPrevoyanceTransmise
-      : 0),
+    () =>
+      shouldRenderSuccessionComputationSections
+        ? displayAssuranceVieTransmise + displayPerTransmis + displayPrevoyanceTransmise
+        : 0,
     [
       shouldRenderSuccessionComputationSections,
       displayAssuranceVieTransmise,
@@ -77,14 +78,16 @@ export function useSuccessionOutcomeTransmissionAmounts({
       const step1 = chainageAnalysis.step1;
       const step2 = chainageAnalysis.step2;
       if (!step1 || !step2) return derivedMasseSuccessorale + derivedCapitauxHorsSuccession;
-      return step1.actifTransmis
-        + step2.actifTransmis
-        + assuranceVieByAssure.epoux1
-        + assuranceVieByAssure.epoux2
-        + perByAssure.epoux1
-        + perByAssure.epoux2
-        + prevoyanceByAssure.epoux1
-        + prevoyanceByAssure.epoux2;
+      return (
+        step1.actifTransmis +
+        step2.actifTransmis +
+        assuranceVieByAssure.epoux1 +
+        assuranceVieByAssure.epoux2 +
+        perByAssure.epoux1 +
+        perByAssure.epoux2 +
+        prevoyanceByAssure.epoux1 +
+        prevoyanceByAssure.epoux2
+      );
     }
     return derivedMasseSuccessorale + derivedCapitauxHorsSuccession;
   }, [

@@ -83,7 +83,10 @@ function resolveImport(fromRelativePath, importPath) {
   return null;
 }
 
-assert(!/@import\b/.test(read('src/styles/index.css')), 'src/styles/index.css ne doit plus importer de CSS de domaine');
+assert(
+  !/@import\b/.test(read('src/styles/index.css')),
+  'src/styles/index.css ne doit plus importer de CSS de domaine',
+);
 
 const removedFiles = [
   'src/components/TopBar.css',
@@ -106,8 +109,8 @@ const expectedMainImports = [
 ];
 
 assert(
-  mainCssImports.length === expectedMainImports.length
-    && expectedMainImports.every((importPath) => mainCssImports.includes(importPath)),
+  mainCssImports.length === expectedMainImports.length &&
+    expectedMainImports.every((importPath) => mainCssImports.includes(importPath)),
   `src/main.tsx doit importer uniquement ${expectedMainImports.join(', ')}`,
 );
 

@@ -61,7 +61,7 @@ function deriveRevenuePhasesFromLegacy(
   const annualNeed = Math.max(remuneration?.annualNeedAfterStop ?? 0, profileNeed);
   if (annualNeed > 0) {
     const needStartYear = remuneration?.endYear != null ? remuneration.endYear + 1 : startYear;
-    const existingSameStart = phases.find(phase => phase.startYear === needStartYear);
+    const existingSameStart = phases.find((phase) => phase.startYear === needStartYear);
     if (existingSameStart) {
       existingSameStart.annualNetIncomeNeed = annualNeed;
     } else {
@@ -89,7 +89,7 @@ export function buildTresoInputsV5FromV4(input: TresoInputsV4 | TresoInputsV5): 
     company: {
       ...input.company,
       projectionStartYear,
-      associates: input.company.associates.map(associate => {
+      associates: input.company.associates.map((associate) => {
         const legacyAssociate = associate as AssociateInput & LegacyAssociateFields;
         const associateWithRemuneration = {
           ...associate,
@@ -100,13 +100,17 @@ export function buildTresoInputsV5FromV4(input: TresoInputsV4 | TresoInputsV5): 
             endYear: legacyAssociate.remunerationEndYear,
           },
         };
-        const { remuneration: _remuneration, ...associateWithoutRemuneration } = associateWithRemuneration;
+        const { remuneration: _remuneration, ...associateWithoutRemuneration } =
+          associateWithRemuneration;
         return {
           ...associateWithoutRemuneration,
           profile: associate.profile
             ? { ...associate.profile, projectionStartYear }
             : associate.profile,
-          revenuePhases: deriveRevenuePhasesFromLegacy(associateWithRemuneration, projectionStartYear),
+          revenuePhases: deriveRevenuePhasesFromLegacy(
+            associateWithRemuneration,
+            projectionStartYear,
+          ),
         };
       }),
     },

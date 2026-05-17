@@ -37,9 +37,17 @@ export function DetailLevel({
 }
 
 export function ExpertOnly({ mode, children, fallback = null }: ModeGateProps): ReactNode {
-  return <DetailLevel level="expert" mode={mode} fallback={fallback}>{children}</DetailLevel>;
+  return (
+    <DetailLevel level="expert" mode={mode} fallback={fallback}>
+      {children}
+    </DetailLevel>
+  );
 }
 
 export function SimpleOnly({ mode, children, fallback = null }: ModeGateProps): ReactNode {
-  return <DetailLevel level="simple" mode={mode} fallback={fallback}>{children}</DetailLevel>;
+  return (
+    <DetailLevel level="simple" mode={mode} fallback={fallback}>
+      {children}
+    </DetailLevel>
+  );
 }
