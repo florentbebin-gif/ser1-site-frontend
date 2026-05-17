@@ -147,7 +147,7 @@ export function useSuccessionAssetHandlers({
         const nextSubCategory =
           category === 'immobilier' && hasResidencePrincipale(prev)
             ? RESIDENCE_SECONDAIRE_SUBCATEGORY
-            : (ASSET_SUBCATEGORY_OPTIONS[category][0] ?? 'Saisie libre');
+            : (ASSET_SUBCATEGORY_OPTIONS[category]?.[0] ?? 'Saisie libre');
         return [
           ...prev,
           {
@@ -240,7 +240,7 @@ export function useSuccessionAssetHandlers({
             const nextSubCategory =
               category === 'immobilier' && hasResidencePrincipale(prev, id)
                 ? RESIDENCE_SECONDAIRE_SUBCATEGORY
-                : (ASSET_SUBCATEGORY_OPTIONS[category][0] ?? 'Saisie libre');
+                : (ASSET_SUBCATEGORY_OPTIONS[category]?.[0] ?? 'Saisie libre');
             return {
               ...entry,
               category,

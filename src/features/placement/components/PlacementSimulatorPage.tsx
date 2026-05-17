@@ -72,6 +72,8 @@ export default function PlacementSimulatorPage() {
 
   const { loading, error, hydrated, modalOpen, showAllColumns, exportLoading } = uiFlags;
 
+  const modalProduct = modalOpen === null ? null : (state.products[modalOpen] ?? null);
+
   const exportOptions = [
     { label: 'Excel', onClick: exportExcel, disabled: !results?.produit1 },
     { label: 'PowerPoint', onClick: exportPptx, disabled: !results?.produit1 },
@@ -164,11 +166,11 @@ export default function PlacementSimulatorPage() {
         </SimPageShell.Section>
       </SimPageShell>
 
-      {modalOpen !== null && (
+      {modalOpen !== null && modalProduct && (
         <VersementConfigModal
-          envelope={state.products[modalOpen].envelope}
-          config={state.products[modalOpen].versementConfig}
-          dureeEpargne={state.products[modalOpen].dureeEpargne}
+          envelope={modalProduct.envelope}
+          config={modalProduct.versementConfig}
+          dureeEpargne={modalProduct.dureeEpargne}
           isExpert={isExpert}
           onSave={(config) => {
             try {

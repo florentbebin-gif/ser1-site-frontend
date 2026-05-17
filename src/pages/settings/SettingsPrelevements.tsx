@@ -84,8 +84,9 @@ export default function SettingsPrelevements() {
           error: { code?: string } | null;
         };
 
-        if (!psErr && psRows && psRows.length > 0 && psRows[0].data) {
-          const nextData = psRows[0].data;
+        const psRow = psRows?.[0];
+        if (!psErr && psRow?.data) {
+          const nextData = psRow.data;
           setSettings((prev) => ({
             ...prev,
             ...nextData,

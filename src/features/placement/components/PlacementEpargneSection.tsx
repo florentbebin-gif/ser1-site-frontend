@@ -158,14 +158,17 @@ export function PlacementEpargneSection({
   compareEnabled,
   setCompareEnabled,
 }: PlacementEpargneSectionProps) {
-  const showOptionBareme =
-    isExpert &&
-    (state.products[0].envelope === 'CTO' ||
-      (compareEnabled && state.products[1].envelope === 'CTO'));
-
+  const produit1Draft = state.products[0];
+  const produit2Draft = state.products[1];
   const [table1Open, setTable1Open] = useState(false);
   const [table2Open, setTable2Open] = useState(false);
   const anyTableOpen = table1Open || table2Open;
+
+  if (!produit1Draft || (compareEnabled && !produit2Draft)) return null;
+
+  const showOptionBareme =
+    isExpert &&
+    (produit1Draft.envelope === 'CTO' || (compareEnabled && produit2Draft?.envelope === 'CTO'));
 
   return (
     <div className="premium-card">
@@ -181,23 +184,23 @@ export function PlacementEpargneSection({
               <div className="pl-colbadge-wrapper">
                 <EnvelopePillSelect
                   envelope={
-                    state.products[0].perBancaire && state.products[0].envelope === 'PER'
+                    produit1Draft.perBancaire && produit1Draft.envelope === 'PER'
                       ? 'PER_BANCAIRE_UI'
-                      : state.products[0].envelope
+                      : produit1Draft.envelope
                   }
                   colorClass="pl-collabel--product1"
                   onSelect={(env) => setProduct(0, { envelope: env })}
                 />
               </div>
             </th>
-            {compareEnabled ? (
+            {compareEnabled && produit2Draft ? (
               <th className="pl-colhead" aria-label="Produit 2">
                 <div className="pl-colbadge-wrapper">
                   <EnvelopePillSelect
                     envelope={
-                      state.products[1].perBancaire && state.products[1].envelope === 'PER'
+                      produit2Draft.perBancaire && produit2Draft.envelope === 'PER'
                         ? 'PER_BANCAIRE_UI'
-                        : state.products[1].envelope
+                        : produit2Draft.envelope
                     }
                     colorClass="pl-collabel--product2"
                     onSelect={(env) => setProduct(1, { envelope: env })}

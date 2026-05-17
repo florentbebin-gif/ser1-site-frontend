@@ -147,7 +147,8 @@ export function buildTresorerieProjection(
 
     const values = spec.yearsForPage.map((year) => {
       const valueIdx = year - 1;
-      return valueIdx < row.values.length ? euro(row.values[valueIdx]) : '—';
+      const value = row.values[valueIdx];
+      return value !== undefined ? euro(value) : '—';
     });
 
     tableRows.push([
@@ -164,7 +165,7 @@ export function buildTresorerieProjection(
         },
       },
       ...values.map((val, colIdx) => {
-        const year = spec.yearsForPage[colIdx];
+        const year = spec.yearsForPage[colIdx] ?? 0;
         const isRetraite = retraiteYearSet.has(year);
         const cellFill = isTotal ? totalRowFill : isRetraite ? retraiteColor : baseFill;
         return {

@@ -59,6 +59,9 @@ export function usePlacementExportHandlers({
 
       const buildProductConfig = (productIndex: number) => {
         const p = stateForCalc.products[productIndex];
+        if (!p) {
+          throw new Error(`Produit placement introuvable pour l'export: ${productIndex + 1}`);
+        }
         const vc = p.versementConfig;
         return {
           tmi: state.client.tmiEpargne,
@@ -138,10 +141,14 @@ export function usePlacementExportHandlers({
 
       const produit1Data = buildProductData('produit1', 0);
       if (!produit1Data) return;
+      const produit1 = state.products[0];
+      if (!produit1) {
+        throw new Error("Produit 1 introuvable pour l'export placement.");
+      }
       const data = {
         clientName: undefined as string | undefined,
         ageActuel: state.client.ageActuel ?? 0,
-        dureeEpargne: state.products[0].dureeEpargne,
+        dureeEpargne: produit1.dureeEpargne,
         ageAuDeces: state.transmission.ageAuDeces,
         liquidationMode: state.liquidation.mode,
         liquidationDuree: state.liquidation.duree,
@@ -154,7 +161,7 @@ export function usePlacementExportHandlers({
         produit2: state.compareEnabled ? buildProductData('produit2', 1) : null,
       };
       const deck = buildPlacementStudyDeck(data, pptxColors, cabinetLogo, logoPlacement);
-      const dateStr = new Date().toISOString().split('T')[0].replace(/-/g, '');
+      const dateStr = new Date().toISOString().slice(0, 10).replace(/-/g, '');
       await exportAndDownloadStudyDeck(deck, pptxColors, `simulation-placement-${dateStr}.pptx`, {
         locale: 'fr-FR',
         showSlideNumbers: true,

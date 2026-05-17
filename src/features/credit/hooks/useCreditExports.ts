@@ -41,7 +41,7 @@ function aggregateToYearsFromRows(
   rows.forEach((row, idx) => {
     if (!row) return;
     const ym = addMonths(startYMBase, idx);
-    const year = ym.split('-')[0];
+    const year = ym.slice(0, 4);
     const current = map.get(year) || {
       periode: year,
       interet: 0,
@@ -83,8 +83,12 @@ function transpose<T>(aoa: T[][]): T[][] {
   const cols = Math.max(...aoa.map((row) => row.length));
   const out = Array.from({ length: cols }, () => Array(rows).fill('' as unknown as T));
   for (let row = 0; row < rows; row += 1) {
+    const sourceRow = aoa[row];
+    if (!sourceRow) continue;
     for (let col = 0; col < cols; col += 1) {
-      out[col][row] = aoa[row][col] ?? ('' as unknown as T);
+      const targetRow = out[col];
+      if (!targetRow) continue;
+      targetRow[row] = sourceRow[col] ?? ('' as unknown as T);
     }
   }
   return out;
@@ -321,7 +325,7 @@ export function useCreditExports({
       });
       const isValid = await validateXlsxBlob(blob);
       if (!isValid) throw new Error('XLSX invalide (signature PK manquante).');
-      const dateStr = new Date().toISOString().split('T')[0].replace(/-/g, '');
+      const dateStr = new Date().toISOString().slice(0, 10).replace(/-/g, '');
       downloadXlsx(blob, `simulation-credit-${dateStr}.xlsx`);
     } catch (error) {
       console.error('Export Excel échoué', error);
@@ -482,7 +486,7 @@ export function useCreditExports({
       };
 
       const deck = buildCreditStudyDeck(creditData, pptxColors, exportLogo, logoPlacement);
-      const dateStr = new Date().toISOString().split('T')[0].replace(/-/g, '');
+      const dateStr = new Date().toISOString().slice(0, 10).replace(/-/g, '');
       await exportAndDownloadStudyDeck(deck, pptxColors, `simulation-credit-${dateStr}.pptx`);
     } catch (error) {
       console.error('Export PowerPoint Crédit échoué:', error);

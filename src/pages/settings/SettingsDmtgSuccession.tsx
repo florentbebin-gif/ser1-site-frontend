@@ -90,8 +90,9 @@ export default function SettingsDmtgSuccession() {
           error: { code?: string } | null;
         };
 
-        if (!taxRes.error && taxRes.data && taxRes.data.length > 0 && taxRes.data[0].data) {
-          const normalizedData = normalizeDmtgTaxSettingsForLoad(taxRes.data[0].data);
+        const taxRow = taxRes.data?.[0];
+        if (!taxRes.error && taxRow?.data) {
+          const normalizedData = normalizeDmtgTaxSettingsForLoad(taxRow.data);
           if (mounted && normalizedData) {
             const normalizedTaxSettings = normalizedData as Partial<TaxSettings>;
             setTaxSettings((prev) => ({ ...prev, ...normalizedTaxSettings }));
@@ -100,8 +101,9 @@ export default function SettingsDmtgSuccession() {
           console.error('Erreur chargement tax_settings :', taxRes.error);
         }
 
-        if (!fiscRes.error && fiscRes.data && fiscRes.data.length > 0 && fiscRes.data[0].data) {
-          const fiscalityData = fiscRes.data[0].data;
+        const fiscalityRow = fiscRes.data?.[0];
+        if (!fiscRes.error && fiscalityRow?.data) {
+          const fiscalityData = fiscalityRow.data;
           if (mounted) {
             setFiscalitySettings((prev) => ({ ...prev, ...fiscalityData }));
           }
@@ -168,10 +170,12 @@ export default function SettingsDmtgSuccession() {
       let obj = clone.donation as NestedRecord;
       for (let i = 0; i < path.length - 1; i += 1) {
         const key = path[i];
+        if (!key) continue;
         if (obj[key] === undefined || obj[key] === null) obj[key] = {};
         obj = obj[key] as NestedRecord;
       }
-      obj[path[path.length - 1]] = value;
+      const lastKey = path[path.length - 1];
+      if (lastKey) obj[lastKey] = value;
       return clone;
     });
     setMessage('');
@@ -183,10 +187,12 @@ export default function SettingsDmtgSuccession() {
       let obj = clone.assuranceVie.deces as NestedRecord;
       for (let i = 0; i < path.length - 1; i += 1) {
         const key = path[i];
+        if (!key) continue;
         if (obj[key] === undefined || obj[key] === null) obj[key] = {};
         obj = obj[key] as NestedRecord;
       }
-      obj[path[path.length - 1]] = value;
+      const lastKey = path[path.length - 1];
+      if (lastKey) obj[lastKey] = value;
       return clone;
     });
     setMessage('');

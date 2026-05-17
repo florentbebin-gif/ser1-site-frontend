@@ -75,10 +75,13 @@ export function simulateTresorerieV2(
   horizonAns: number,
 ): TresoProjectionRow[] {
   const { company } = v2;
-  const associates = company.associates;
+  const associates: RuntimeAssociateInput[] = company.associates;
   validateOwnershipTotals(associates);
   const selectedAssociateId = getSelectedAssociateId(v2);
   const selectedAssociate = getSelectedAssociate(v2) ?? associates[0];
+  if (!selectedAssociate) {
+    throw new TresoSimulationInputError('Aucun associé renseigné pour la simulation trésorerie.');
+  }
   const selectedProfile = getAssociateProfile(v2, selectedAssociate);
   const anneeCivileDebut = selectedProfile.projectionStartYear;
   const incomeStatement = getIncomeStatement(company);
@@ -270,10 +273,7 @@ export function simulateTresorerieV2(
       amount: retraitsCCA,
     });
 
-    const selectedEconomicPct =
-      (getEconomicRightsPct(
-        associates.find((a) => a.id === selectedAssociateId) ?? associates[0],
-      ) || 0) / 100;
+    const selectedEconomicPct = (getEconomicRightsPct(selectedAssociate) || 0) / 100;
     const besoinNetRestant = enPhaseBesoin
       ? Math.max(0, annualIncomeNeed - selectedRemuneration - retraitsCCA)
       : 0;

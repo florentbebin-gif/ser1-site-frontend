@@ -42,5 +42,5 @@ export const CHAPTER_IMAGE_POOLS: Record<string, readonly number[]> = {
 export function pickChapterImage(simId: string, chapterOrdinal: number): number {
   const pool = CHAPTER_IMAGE_POOLS[simId];
   if (!pool || pool.length === 0) return 1;
-  return pool[chapterOrdinal % pool.length];
+  return pool[chapterOrdinal % pool.length] ?? 1;
 }

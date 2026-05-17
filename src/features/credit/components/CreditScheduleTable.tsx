@@ -32,7 +32,7 @@ function aggregateAnnual(
   monthlyRows.forEach((row, index) => {
     if (!row) return;
     const ym = addMonths(startYM, index);
-    const year = ym.split('-')[0];
+    const year = ym.slice(0, 4);
 
     if (!buckets.has(year)) {
       buckets.set(year, {
@@ -46,7 +46,10 @@ function aggregateAnnual(
         assuranceDeces: 0,
       });
     }
-    const bucket = buckets.get(year)!;
+    const bucket = buckets.get(year);
+    if (!bucket) {
+      throw new Error(`Regroupement annuel crédit introuvable pour ${year}`);
+    }
     bucket.interet += row.interet ?? 0;
     bucket.assurance += row.assurance ?? 0;
     bucket.amort += row.amort ?? 0;

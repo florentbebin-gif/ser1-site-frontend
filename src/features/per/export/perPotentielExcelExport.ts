@@ -358,6 +358,6 @@ export async function exportPerPotentielExcel(
   }
 
   const blob = await buildPerPotentielXlsxBlob(state, result, headerFill, sectionFill);
-  const dateStr = new Date().toISOString().split('T')[0].replace(/-/g, '');
+  const dateStr = new Date().toISOString().slice(0, 10).replace(/-/g, '');
   downloadXlsx(blob, `simulation-per-potentiel-${dateStr}.xlsx`);
 }

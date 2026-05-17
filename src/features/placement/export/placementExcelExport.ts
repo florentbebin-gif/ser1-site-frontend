@@ -400,6 +400,6 @@ export async function exportPlacementExcel(
   }
 
   const blob = await buildPlacementXlsxBlob(state, results, headerFill, sectionFill);
-  const dateStr = new Date().toISOString().split('T')[0].replace(/-/g, '');
+  const dateStr = new Date().toISOString().slice(0, 10).replace(/-/g, '');
   downloadXlsx(blob, `simulation-placement-${dateStr}.xlsx`);
 }

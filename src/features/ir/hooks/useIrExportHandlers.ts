@@ -279,7 +279,7 @@ export function useIrExportHandlers({
         throw new Error('XLSX invalide (signature PK manquante).');
       }
 
-      const dateStr = new Date().toISOString().split('T')[0].replace(/-/g, '');
+      const dateStr = new Date().toISOString().slice(0, 10).replace(/-/g, '');
       downloadXlsx(blob, `simulation-ir-${dateStr}.xlsx`);
     } catch (error) {
       console.error('Export Excel IR échoué:', error);
@@ -348,7 +348,7 @@ export function useIrExportHandlers({
       };
 
       const deck = buildIrStudyDeck(irData, pptxColors, exportLogo, logoPlacement);
-      const dateStr = new Date().toISOString().split('T')[0].replace(/-/g, '');
+      const dateStr = new Date().toISOString().slice(0, 10).replace(/-/g, '');
       const filename = `simulation-ir-${dateStr}.pptx`;
 
       await exportAndDownloadStudyDeck(deck, pptxColors, filename);

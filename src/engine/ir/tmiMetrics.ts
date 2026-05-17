@@ -223,13 +223,17 @@ export function computeMarginalRate(revenu: number, params: TmiParams): number {
   if (!scaleRates.length) {
     return marginalRatePercent;
   }
+  const firstRate = scaleRates[0];
+  if (firstRate === undefined) {
+    return marginalRatePercent;
+  }
 
   return scaleRates.reduce(
     (closest, rate) =>
       Math.abs(rate - marginalRatePercent) < Math.abs(closest - marginalRatePercent)
         ? rate
         : closest,
-    scaleRates[0],
+    firstRate,
   );
 }
 

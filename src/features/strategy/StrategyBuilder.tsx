@@ -175,6 +175,12 @@ export default function StrategyBuilder({ dossier }: StrategyBuilderProps): Reac
       tooltip: !comparaison ? 'Ajoutez au moins un produit avant d’exporter.' : undefined,
     },
   ];
+  const baselineProjectionFinale = comparaison
+    ? comparaison.baseline.projections[comparaison.baseline.projections.length - 1]
+    : undefined;
+  const strategieProjectionFinale = comparaison
+    ? comparaison.strategie.projections[comparaison.strategie.projections.length - 1]
+    : undefined;
 
   return (
     <div className="strategy-builder premium-page" data-testid="strategy-page">
@@ -320,7 +326,7 @@ export default function StrategyBuilder({ dossier }: StrategyBuilderProps): Reac
       </section>
 
       {/* Comparaison scénarios */}
-      {comparaison && (
+      {comparaison && baselineProjectionFinale && strategieProjectionFinale && (
         <section className="strategy-section premium-card">
           <div className="strategy-section-heading">
             <div>
@@ -335,7 +341,7 @@ export default function StrategyBuilder({ dossier }: StrategyBuilderProps): Reac
               <div className="scenario-metric">
                 <span className="metric-label">Patrimoine dans 10 ans</span>
                 <span className="metric-value">
-                  {comparaison.baseline.projections[10].patrimoineTotal.toLocaleString('fr-FR')} €
+                  {baselineProjectionFinale.patrimoineTotal.toLocaleString('fr-FR')} €
                 </span>
               </div>
               <div className="scenario-metric">
@@ -354,7 +360,7 @@ export default function StrategyBuilder({ dossier }: StrategyBuilderProps): Reac
               <div className="scenario-metric">
                 <span className="metric-label">Patrimoine dans 10 ans</span>
                 <span className="metric-value">
-                  {comparaison.strategie.projections[10].patrimoineTotal.toLocaleString('fr-FR')} €
+                  {strategieProjectionFinale.patrimoineTotal.toLocaleString('fr-FR')} €
                 </span>
               </div>
               <div className="scenario-metric">

@@ -21,8 +21,8 @@ interface PlacementFilePayload {
 
 function buildFilename() {
   const now = new Date();
-  const date = now.toISOString().split('T')[0];
-  const time = now.toTimeString().split(' ')[0].replace(/:/g, '-');
+  const date = now.toISOString().slice(0, 10);
+  const time = now.toTimeString().slice(0, 8).replace(/:/g, '-');
   return `SER1_Placement_${date}_${time}.json`;
 }
 
@@ -151,6 +151,7 @@ async function pickFileForLoad() {
           },
         ],
       });
+      if (!handle) return null;
       const file = await handle.getFile();
       return file;
     } catch (err) {

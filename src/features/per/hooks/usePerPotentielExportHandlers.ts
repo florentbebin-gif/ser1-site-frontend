@@ -107,7 +107,7 @@ export function usePerPotentielExportHandlers({
       const exportUsesProjection = usesProjectionResult(state);
       const anneeRef = exportUsesProjection ? years.currentTaxYear : years.currentIncomeYear;
       const usesPreviousScale = anneeRef === years.previousIncomeYear;
-      const dateStr = new Date().toISOString().split('T')[0].replace(/-/g, '');
+      const dateStr = new Date().toISOString().slice(0, 10).replace(/-/g, '');
       await exportPerPotentielPptx(
         {
           mode: state.mode,

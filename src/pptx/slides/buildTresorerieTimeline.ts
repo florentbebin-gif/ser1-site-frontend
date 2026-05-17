@@ -154,7 +154,7 @@ export function buildTresorerieTimeline(
     const rawW = Math.min(xEnd - x, MARGIN_X + CONTENT_W - x);
     const isNarrow = rawW < 1.15;
     const bandW = Math.max(0.12, rawW);
-    const bandFill = segmentPalette[index % segmentPalette.length];
+    const bandFill = segmentPalette[index % segmentPalette.length] ?? accent;
     const bandTextColor = contrastText(bandFill);
     const readableAmountColor = bandTextColor === '000000' ? textMain : bandFill;
 

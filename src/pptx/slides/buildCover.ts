@@ -39,7 +39,7 @@ export function buildCover(
   if (logoDataUri) {
     // Extract dimensions from dataUri (synchronous approach)
     const getDimensionsFromDataUri = (dataUri: string) => {
-      const base64Data = dataUri.split(',')[1];
+      const base64Data = dataUri.split(',')[1] ?? '';
       const binaryString = atob(base64Data);
       const bytes = new Uint8Array(binaryString.length);
 
@@ -49,8 +49,16 @@ export function buildCover(
 
       // Parse PNG header for dimensions
       if (bytes[0] === 0x89 && bytes[1] === 0x50 && bytes[2] === 0x4e && bytes[3] === 0x47) {
-        const width = (bytes[16] << 24) | (bytes[17] << 16) | (bytes[18] << 8) | bytes[19];
-        const height = (bytes[20] << 24) | (bytes[21] << 16) | (bytes[22] << 8) | bytes[23];
+        const width =
+          ((bytes[16] ?? 0) << 24) |
+          ((bytes[17] ?? 0) << 16) |
+          ((bytes[18] ?? 0) << 8) |
+          (bytes[19] ?? 0);
+        const height =
+          ((bytes[20] ?? 0) << 24) |
+          ((bytes[21] ?? 0) << 16) |
+          ((bytes[22] ?? 0) << 8) |
+          (bytes[23] ?? 0);
         return { width, height };
       }
 
@@ -61,11 +69,11 @@ export function buildCover(
           if (bytes[i] === 0xff) {
             const marker = bytes[i + 1];
             if (marker === 0xc0 || marker === 0xc2) {
-              const height = (bytes[i + 5] << 8) | bytes[i + 6];
-              const width = (bytes[i + 7] << 8) | bytes[i + 8];
+              const height = ((bytes[i + 5] ?? 0) << 8) | (bytes[i + 6] ?? 0);
+              const width = ((bytes[i + 7] ?? 0) << 8) | (bytes[i + 8] ?? 0);
               return { width, height };
             }
-            const length = (bytes[i + 2] << 8) | bytes[i + 3];
+            const length = ((bytes[i + 2] ?? 0) << 8) | (bytes[i + 3] ?? 0);
             i += length + 2;
           } else {
             i++;

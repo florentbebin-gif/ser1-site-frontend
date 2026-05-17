@@ -234,8 +234,8 @@ function getFamilyMemberLabel(
   const baseLabel = getFamilyMemberTypeLabel(member.type);
   if (member.type === 'petit_enfant' && member.parentEnfantId) {
     const parentIndex = enfants.findIndex((enfant) => enfant.id === member.parentEnfantId);
-    if (parentIndex >= 0)
-      return `${baseLabel} (branche ${getEnfantParentLabel(enfants[parentIndex], parentIndex)})`;
+    const parent = parentIndex >= 0 ? enfants[parentIndex] : undefined;
+    if (parent) return `${baseLabel} (branche ${getEnfantParentLabel(parent, parentIndex)})`;
   }
   if (member.branch) return `${baseLabel} (${getBranchLabel(situation, member.branch)})`;
   return baseLabel;
@@ -269,8 +269,8 @@ function resolveTestamentBeneficiary(
   if (beneficiaryRef.startsWith('enfant:')) {
     const enfantId = beneficiaryRef.slice('enfant:'.length);
     const enfantIndex = enfants.findIndex((enfant) => enfant.id === enfantId);
-    if (enfantIndex < 0) return null;
-    const enfant = enfants[enfantIndex];
+    const enfant = enfantIndex >= 0 ? enfants[enfantIndex] : undefined;
+    if (!enfant) return null;
     return {
       id: enfant.id,
       beneficiaryRef,

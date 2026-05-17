@@ -12,6 +12,7 @@
     "noEmit": true,
     "jsx": "react-jsx",
     "strict": true,
+    "noUncheckedIndexedAccess": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
@@ -24,6 +25,13 @@
     "types": ["vite/client", "vitest/globals"]
   },
   "include": ["src"],
-  "exclude": ["supabase", "node_modules", "dist"],
+  "exclude": [
+    "supabase",
+    "node_modules",
+    "dist",
+    "src/**/*.test.ts",
+    "src/**/*.test.tsx",
+    "src/**/__tests__/**"
+  ],
   "references": [{ "path": "./tsconfig.node.json" }]
 }

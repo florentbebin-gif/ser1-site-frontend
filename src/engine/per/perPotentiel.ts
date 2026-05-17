@@ -63,7 +63,9 @@ export function calculatePerPotentiel(input: PerPotentielInput): PerPotentielRes
   const passKeys = Object.keys(passHistory)
     .map(Number)
     .sort((a, b) => b - a);
-  const pass = passHistory[anneeRef] ?? passHistory[anneeRef - 1] ?? passHistory[passKeys[0]] ?? 0;
+  const lastPassYear = passKeys[0];
+  const lastPass = lastPassYear === undefined ? undefined : passHistory[lastPassYear];
+  const pass = passHistory[anneeRef] ?? passHistory[anneeRef - 1] ?? lastPass ?? 0;
 
   const tax = taxSettings as typeof DEFAULT_TAX_SETTINGS;
   const ps = psSettings as typeof DEFAULT_PS_SETTINGS;

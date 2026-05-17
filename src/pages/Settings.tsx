@@ -336,7 +336,8 @@ export default function Settings() {
                     if (myPalette) {
                       applyThemeMode('my');
                     } else {
-                      applyThemeMode('preset', PRESET_THEMES[0].id);
+                      const firstPreset = PRESET_THEMES[0];
+                      if (firstPreset) applyThemeMode('preset', firstPreset.id);
                     }
                   }}
                 />
@@ -435,7 +436,9 @@ export default function Settings() {
               <div className="settings-colors-grid">
                 <div className="settings-color-row">
                   <div className="settings-color-info">
-                    <span className="settings-color-desc">{COLOR_FIELDS[0].description}</span>
+                    <span className="settings-color-desc">
+                      {COLOR_FIELDS[0]?.description ?? ''}
+                    </span>
                   </div>
                   <div className="settings-color-inputs">
                     <input

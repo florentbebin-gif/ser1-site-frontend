@@ -109,8 +109,10 @@ export default function ImpotsAbattementDomSection({
                         cap: incomeTax.domAbatement?.[period]?.[zone.zoneKey]?.cap,
                       }))}
                       onCellChange={(index, key, value: CellValue) => {
+                        const zone = domZones[index];
+                        if (!zone) return;
                         updateField(
-                          ['incomeTax', 'domAbatement', period, domZones[index].zoneKey, key],
+                          ['incomeTax', 'domAbatement', period, zone.zoneKey, key],
                           value === null ? '' : value,
                         );
                       }}

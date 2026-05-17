@@ -301,12 +301,14 @@ export default function CreditV2() {
       if (!rows?.length) return null;
       const validRows = rows.filter(isDefinedRow);
       if (!validRows.length) return null;
+      const firstRow = validRows[0];
+      if (!firstRow) return null;
       const totalInterets = validRows.reduce((s, r) => s + (r.interet || 0), 0);
       const totalAssurance = validRows.reduce((s, r) => s + (r.assurance || 0), 0);
       const capitalEmprunte = validRows.reduce((s, r) => s + (r.amort || 0), 0);
       return {
-        mensualiteTotaleM1: validRows[0].mensu || 0,
-        primeAssMensuelle: validRows[0].assurance || 0,
+        mensualiteTotaleM1: firstRow.mensu || 0,
+        primeAssMensuelle: firstRow.assurance || 0,
         totalInterets,
         totalAssurance,
         coutTotalCredit: totalInterets + totalAssurance,
@@ -388,12 +390,12 @@ export default function CreditV2() {
   const isAnnual = state.viewMode === 'annuel';
   const showSummary = calc.synthese.capitalEmprunte > 0;
 
-  const pretLookup: PretLookupEntry[] = [
+  const pretLookup = [
     { data: state.pret1, raw: rawValues.pret1, set: setPret1 },
     { data: state.pret2, raw: rawValues.pret2, set: setPret2 },
     { data: state.pret3, raw: rawValues.pret3, set: setPret3 },
-  ];
-  const activeLoan = pretLookup[activeTab] || pretLookup[0];
+  ] satisfies [PretLookupEntry, PretLookupEntry, PretLookupEntry];
+  const activeLoan = pretLookup[activeTab] ?? pretLookup[0];
 
   return (
     <SimPageShell

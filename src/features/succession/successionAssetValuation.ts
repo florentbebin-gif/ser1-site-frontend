@@ -120,7 +120,7 @@ export function normalizeResidencePrincipaleAssetEntries(
   const normalized = assetEntries.map((entry) => {
     const normalizedSubCategory =
       entry.category === 'immobilier'
-        ? normalizeResidenceSubCategoryLabel(entry.subCategory)
+        ? normalizeResidenceSubCategoryLabel(entry.subCategory ?? 'Saisie libre')
         : entry.subCategory;
 
     if (normalizedSubCategory !== entry.subCategory) {

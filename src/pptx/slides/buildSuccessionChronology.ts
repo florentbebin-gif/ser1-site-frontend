@@ -113,15 +113,18 @@ export function buildSuccessionChronology(
   addHeader(slide, spec.title, spec.subtitle, ctx.theme, 'content', 22, TYPO.sizes.h2);
 
   if (spec.applicable && spec.steps.length >= 2) {
+    const firstStep = spec.steps[0];
+    const secondStep = spec.steps[1];
+    if (!firstStep || !secondStep) return;
     drawStepCard(
       slide,
-      spec.steps[0],
+      firstStep,
       { x: GEO.leftX, y: GEO.panelY, w: GEO.panelW, h: GEO.panelH },
       ctx,
     );
     drawStepCard(
       slide,
-      spec.steps[1],
+      secondStep,
       { x: GEO.rightX, y: GEO.panelY, w: GEO.panelW, h: GEO.panelH },
       ctx,
     );

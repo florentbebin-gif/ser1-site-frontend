@@ -247,12 +247,14 @@ export function usePlacementSimulatorController(isExpert: boolean) {
       ageActuel: stateForCalc.client.ageActuel ?? undefined,
     };
     const fpWithDmtg = { ...fiscalParams, dmtgTauxChoisi: stateForCalc.transmission.dmtgTaux };
-    const engineProduct1 = toEngineProduct(stateForCalc.products[0]);
+    const product1 = stateForCalc.products[0];
+    if (!product1) return null;
+    const engineProduct1 = toEngineProduct(product1);
 
     const liquidationParams1 = {
       ...stateForCalc.liquidation,
-      rendement: getRendementLiquidation(stateForCalc.products[0]) ?? undefined,
-      optionBaremeIR: stateForCalc.products[0].liquidation?.optionBaremeIR ?? false,
+      rendement: getRendementLiquidation(product1) ?? undefined,
+      optionBaremeIR: product1.liquidation?.optionBaremeIR ?? false,
     };
 
     const result1 = simulateComplete(
@@ -267,11 +269,13 @@ export function usePlacementSimulatorController(isExpert: boolean) {
       return { produit1: result1, produit2: null };
     }
 
-    const engineProduct2 = toEngineProduct(stateForCalc.products[1]);
+    const product2 = stateForCalc.products[1];
+    if (!product2) return { produit1: result1, produit2: null };
+    const engineProduct2 = toEngineProduct(product2);
     const liquidationParams2 = {
       ...stateForCalc.liquidation,
-      rendement: getRendementLiquidation(stateForCalc.products[1]) ?? undefined,
-      optionBaremeIR: stateForCalc.products[1].liquidation?.optionBaremeIR ?? false,
+      rendement: getRendementLiquidation(product2) ?? undefined,
+      optionBaremeIR: product2.liquidation?.optionBaremeIR ?? false,
     };
 
     const result2 = simulateComplete(
@@ -299,6 +303,8 @@ export function usePlacementSimulatorController(isExpert: boolean) {
     });
   const setProduct = (index: number, patch: Partial<PlacementProductDraft>) =>
     setState((s) => {
+      const currentProduct = s.products[index];
+      if (!currentProduct) return s;
       const updatedPatch = { ...patch };
       if (patch.envelope === 'PER_BANCAIRE_UI') {
         updatedPatch.envelope = 'PER';
@@ -307,7 +313,7 @@ export function usePlacementSimulatorController(isExpert: boolean) {
         updatedPatch.perBancaire = false;
       }
       if (updatedPatch.envelope === 'SCPI') {
-        const currentVc = s.products[index].versementConfig;
+        const currentVc = currentProduct.versementConfig;
         updatedPatch.versementConfig = {
           ...currentVc,
           initial: {
@@ -329,8 +335,8 @@ export function usePlacementSimulatorController(isExpert: boolean) {
           })),
           distribution: { ...currentVc.distribution, rendementAnnuel: 0 },
         };
-      } else if ('envelope' in updatedPatch && s.products[index].envelope === 'SCPI') {
-        const currentVc = s.products[index].versementConfig;
+      } else if ('envelope' in updatedPatch && currentProduct.envelope === 'SCPI') {
+        const currentVc = currentProduct.versementConfig;
         updatedPatch.versementConfig = {
           ...currentVc,
           initial: {

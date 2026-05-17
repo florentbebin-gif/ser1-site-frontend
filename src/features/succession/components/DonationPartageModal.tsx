@@ -124,14 +124,17 @@ export default function DonationPartageModal({
 
   const addSoulte = () => {
     if (childOptions.length < 2) return;
+    const payeur = childOptions[0];
+    const receveur = childOptions[1];
+    if (!payeur || !receveur) return;
     onChange({
       ...draft,
       soultes: [
         ...draft.soultes,
         {
           id: createDonationPartageSoulteId(),
-          payeurEnfantId: childOptions[0].value,
-          receveurEnfantId: childOptions[1].value,
+          payeurEnfantId: payeur.value,
+          receveurEnfantId: receveur.value,
           montant: 0,
         },
       ],

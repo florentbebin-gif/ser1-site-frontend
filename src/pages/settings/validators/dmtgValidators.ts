@@ -107,6 +107,7 @@ export function validateScaleOrdered(
 
   for (let i = 0; i < scale.length; i++) {
     const row = scale[i];
+    if (!row) continue;
 
     // Validate rate
     if (row.rate !== null && row.rate !== undefined) {
@@ -135,6 +136,7 @@ export function validateScaleOrdered(
     // Validate ordering with previous bracket
     if (i > 0) {
       const prev = scale[i - 1];
+      if (!prev) continue;
       const prevTo = prev.to;
       const currFrom = row.from;
       if (prevTo !== null && prevTo !== undefined && currFrom !== null && currFrom !== undefined) {
@@ -212,6 +214,7 @@ export function validateAvDeces(avDeces: AvDecesConfig | null | undefined): Reco
     if (Array.isArray(pa.brackets)) {
       for (let i = 0; i < pa.brackets.length; i++) {
         const b = pa.brackets[i];
+        if (!b) continue;
         const rateErr = validatePercent(b.ratePercent);
         if (rateErr) {
           errors[`primesApres1998.brackets[${i}].ratePercent`] = rateErr;
@@ -304,7 +307,9 @@ export function validateImpotsSettings(
     for (const group of cehrGroups) {
       const rows = cehr?.[period]?.[group] || [];
       for (let i = 0; i < rows.length; i++) {
-        const rateErr = validatePercent(rows[i].rate);
+        const row = rows[i];
+        if (!row) continue;
+        const rateErr = validatePercent(row.rate);
         if (rateErr) errors[`cehr.${period}.${group}[${i}].rate`] = rateErr;
       }
     }
@@ -368,8 +373,10 @@ export function validatePrelevementsSettings(
   for (const period of yearPeriods) {
     const brackets = retirement?.[period]?.brackets || [];
     for (let i = 0; i < brackets.length; i++) {
+      const bracket = brackets[i];
+      if (!bracket) continue;
       for (const key of retirementKeys) {
-        const rateErr = validatePercent(brackets[i][key]);
+        const rateErr = validatePercent(bracket[key]);
         if (rateErr) errors[`retirement.${period}.brackets[${i}].${key}`] = rateErr;
       }
     }

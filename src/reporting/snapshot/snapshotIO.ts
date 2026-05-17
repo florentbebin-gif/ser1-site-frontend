@@ -73,8 +73,8 @@ function buildSnapshot(fiscalIdentity?: FiscalIdentity): SnapshotV2 {
 }
 
 function generateFilename(): string {
-  const date = new Date().toISOString().split('T')[0];
-  const time = new Date().toTimeString().split(' ')[0].replace(/:/g, '-');
+  const date = new Date().toISOString().split('T')[0] ?? 'date';
+  const time = (new Date().toTimeString().split(' ')[0] ?? 'time').replace(/:/g, '-');
   return `SER1_Snapshot_${date}_${time}.ser1`;
 }
 

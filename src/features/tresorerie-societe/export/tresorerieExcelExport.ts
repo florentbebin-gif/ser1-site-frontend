@@ -693,6 +693,6 @@ export async function exportTresorerieExcel(
   sectionFill?: string,
 ): Promise<void> {
   const blob = await buildTresorerieXlsxBlob(rows, kpis, inputs, headerFill, sectionFill);
-  const dateStr = new Date().toISOString().split('T')[0].replace(/-/g, '');
+  const dateStr = (new Date().toISOString().split('T')[0] ?? 'date').replace(/-/g, '');
   downloadXlsx(blob, `simulation-tresorerie-societe-${dateStr}.xlsx`);
 }

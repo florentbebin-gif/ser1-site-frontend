@@ -47,7 +47,7 @@ export default function SettingsShell(): React.ReactElement {
   const activeComponent = useMemo(() => {
     const routes: SettingsRouteEntry[] = SETTINGS_ROUTES;
     const found = routes.find((tab) => tab.key === activeTab);
-    return found ? found.component : routes[0].component;
+    return found?.component ?? routes[0]?.component ?? null;
   }, [activeTab]);
 
   const checkScroll = (): void => {
@@ -147,9 +147,7 @@ export default function SettingsShell(): React.ReactElement {
           />
         </nav>
 
-        <div className="settings-tab-content">
-          <ActiveComponent />
-        </div>
+        <div className="settings-tab-content">{ActiveComponent ? <ActiveComponent /> : null}</div>
       </div>
     </div>
   );

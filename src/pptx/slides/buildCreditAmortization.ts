@@ -340,21 +340,35 @@ export function buildCreditAmortization(
   const globalAmort = yearsForPage.map((y) => euro(globalAggregates.get(y)?.amort || 0));
   const globalCrd = yearsForPage.map((y) => euro(globalAggregates.get(y)?.crd || 0));
 
-  tableRows.push(buildRow(GLOBAL_ROW_LABELS[0], globalAnnuite, 'FFFFFF', true, baseFontSize));
-  tableRows.push(buildRow(GLOBAL_ROW_LABELS[1], globalInteret, altRowColor, false, smallFontSize));
+  tableRows.push(
+    buildRow(GLOBAL_ROW_LABELS[0] ?? 'Annuité', globalAnnuite, 'FFFFFF', true, baseFontSize),
+  );
+  tableRows.push(
+    buildRow(GLOBAL_ROW_LABELS[1] ?? 'Intérêts', globalInteret, altRowColor, false, smallFontSize),
+  );
   if (!noAssurance) {
-    tableRows.push(buildRow(GLOBAL_ROW_LABELS[2], globalAssurance, 'FFFFFF', false, smallFontSize));
+    tableRows.push(
+      buildRow(
+        GLOBAL_ROW_LABELS[2] ?? 'Assurance',
+        globalAssurance,
+        'FFFFFF',
+        false,
+        smallFontSize,
+      ),
+    );
   }
   tableRows.push(
     buildRow(
-      GLOBAL_ROW_LABELS[3],
+      GLOBAL_ROW_LABELS[3] ?? 'Amortissement',
       globalAmort,
       noAssurance ? 'FFFFFF' : altRowColor,
       false,
       smallFontSize,
     ),
   );
-  tableRows.push(buildRow(GLOBAL_ROW_LABELS[4], globalCrd, crdFill, true, baseFontSize));
+  tableRows.push(
+    buildRow(GLOBAL_ROW_LABELS[4] ?? 'Capital restant dû', globalCrd, crdFill, true, baseFontSize),
+  );
 
   // ===== PER-LOAN SECTIONS (only for multi-loan) =====
   if (isMultiLoan) {
@@ -379,18 +393,36 @@ export function buildCreditAmortization(
       );
 
       // 3 or 4 rows per loan with gray background (skip assurance if noAssurance)
-      const loanLabel = `Prêt N°${loanIdx} ${LOAN_ROW_LABELS[0]}`;
+      const loanLabel = `Prêt N°${loanIdx} ${LOAN_ROW_LABELS[0] ?? 'Annuité'}`;
       tableRows.push(buildRow(loanLabel, annuiteValues, loanSectionFill, true, smallFontSize));
       if (!noAssurance) {
         tableRows.push(
-          buildRow(LOAN_ROW_LABELS[1], assuranceValues, loanSectionFill, false, smallFontSize),
+          buildRow(
+            LOAN_ROW_LABELS[1] ?? 'Assurance',
+            assuranceValues,
+            loanSectionFill,
+            false,
+            smallFontSize,
+          ),
         );
       }
       tableRows.push(
-        buildRow(LOAN_ROW_LABELS[2], amortValues, loanSectionFill, false, smallFontSize),
+        buildRow(
+          LOAN_ROW_LABELS[2] ?? 'Amortissement',
+          amortValues,
+          loanSectionFill,
+          false,
+          smallFontSize,
+        ),
       );
       tableRows.push(
-        buildRow(LOAN_ROW_LABELS[3], crdValues, loanSectionFill, false, smallFontSize),
+        buildRow(
+          LOAN_ROW_LABELS[3] ?? 'Capital restant dû',
+          crdValues,
+          loanSectionFill,
+          false,
+          smallFontSize,
+        ),
       );
     });
   }

@@ -219,10 +219,12 @@ export function Select<TValue extends string | number>({
         setIsOpen(true);
         return;
       }
-      if (index < options.length - 1) onChange(options[index + 1].value);
+      const nextOption = options[index + 1];
+      if (index < options.length - 1 && nextOption) onChange(nextOption.value);
     } else if (event.key === 'ArrowUp') {
       event.preventDefault();
-      if (index > 0) onChange(options[index - 1].value);
+      const previousOption = options[index - 1];
+      if (index > 0 && previousOption) onChange(previousOption.value);
     }
   };
 

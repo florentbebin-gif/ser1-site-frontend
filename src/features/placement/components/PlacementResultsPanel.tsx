@@ -67,157 +67,166 @@ export function PlacementResultsPanel({
             : 'Sélectionnez un placement...'}
         </div>
       ) : (
-        <>
-          <TimelineBar
-            ageActuel={state.client.ageActuel ?? 0}
-            ageDebutLiquidation={(state.client.ageActuel ?? 0) + state.products[0].dureeEpargne}
-            ageAuDeces={state.transmission.ageAuDeces}
-          />
+        (() => {
+          const produit1Draft = state.products[0];
+          const produit2Draft = state.products[1];
+          if (!produit1Draft || (compareEnabled && !produit2Draft)) {
+            return <div className="pl-synthesis-placeholder">Sélectionnez un placement...</div>;
+          }
+          return (
+            <>
+              <TimelineBar
+                ageActuel={state.client.ageActuel ?? 0}
+                ageDebutLiquidation={(state.client.ageActuel ?? 0) + produit1Draft.dureeEpargne}
+                ageAuDeces={state.transmission.ageAuDeces}
+              />
 
-          <div className="sim-divider" />
+              <div className="sim-divider" />
 
-          {(() => {
-            const totalGains1 =
-              produit1.totaux.revenusNetsLiquidation + produit1.totaux.capitalTransmisNet;
-            const totalGains2 =
-              compareEnabled && produit2
-                ? produit2.totaux.revenusNetsLiquidation + produit2.totaux.capitalTransmisNet
-                : 0;
-            const roi1 =
-              produit1.totaux.effortTotal > 0 ? totalGains1 / produit1.totaux.effortTotal : 0;
-            const roi2 =
-              compareEnabled && produit2 && produit2.totaux.effortTotal > 0
-                ? totalGains2 / produit2.totaux.effortTotal
-                : 0;
-            const meilleurProduit = compareEnabled ? (roi1 > roi2 ? 1 : 2) : 1;
+              {(() => {
+                const totalGains1 =
+                  produit1.totaux.revenusNetsLiquidation + produit1.totaux.capitalTransmisNet;
+                const totalGains2 =
+                  compareEnabled && produit2
+                    ? produit2.totaux.revenusNetsLiquidation + produit2.totaux.capitalTransmisNet
+                    : 0;
+                const roi1 =
+                  produit1.totaux.effortTotal > 0 ? totalGains1 / produit1.totaux.effortTotal : 0;
+                const roi2 =
+                  compareEnabled && produit2 && produit2.totaux.effortTotal > 0
+                    ? totalGains2 / produit2.totaux.effortTotal
+                    : 0;
+                const meilleurProduit = compareEnabled ? (roi1 > roi2 ? 1 : 2) : 1;
 
-            return (
-              <>
-                <div
-                  className={`pl-roi-compare${!compareEnabled ? ' pl-roi-compare--single' : ''}`}
-                >
-                  <div className="pl-roi-compare__title">ROI</div>
-                  <div className="pl-roi-compare__grid">
+                return (
+                  <>
                     <div
-                      className={`pl-roi-compare__card ${meilleurProduit === 1 ? 'is-winner' : ''}`}
+                      className={`pl-roi-compare${!compareEnabled ? ' pl-roi-compare--single' : ''}`}
                     >
-                      <div className="pl-roi-compare__product-indicator pl-indicator--product1" />
-                      <div className="pl-roi-compare__product">
-                        {state.products[0].perBancaire && state.products[0].envelope === 'PER'
-                          ? 'PER bancaire (CTO)'
-                          : produit1.envelopeLabel
-                              .replace('PER individuel déductible', 'PER individuel')
-                              .replace('PER individuel deductible', 'PER individuel')}
+                      <div className="pl-roi-compare__title">ROI</div>
+                      <div className="pl-roi-compare__grid">
+                        <div
+                          className={`pl-roi-compare__card ${meilleurProduit === 1 ? 'is-winner' : ''}`}
+                        >
+                          <div className="pl-roi-compare__product-indicator pl-indicator--product1" />
+                          <div className="pl-roi-compare__product">
+                            {produit1Draft.perBancaire && produit1Draft.envelope === 'PER'
+                              ? 'PER bancaire (CTO)'
+                              : produit1.envelopeLabel
+                                  .replace('PER individuel déductible', 'PER individuel')
+                                  .replace('PER individuel deductible', 'PER individuel')}
+                          </div>
+                          <div className="pl-roi-compare__ratio">x {roi1.toFixed(2)}</div>
+                        </div>
+
+                        {compareEnabled && produit2 && (
+                          <div
+                            className={`pl-roi-compare__card ${meilleurProduit === 2 ? 'is-winner' : ''}`}
+                          >
+                            <div className="pl-roi-compare__product-indicator pl-indicator--product2" />
+                            <div className="pl-roi-compare__product">
+                              {produit2Draft?.perBancaire && produit2Draft.envelope === 'PER'
+                                ? 'PER bancaire (CTO)'
+                                : produit2.envelopeLabel
+                                    .replace('PER individuel déductible', 'PER individuel')
+                                    .replace('PER individuel deductible', 'PER individuel')}
+                            </div>
+                            <div className="pl-roi-compare__ratio">x {roi2.toFixed(2)}</div>
+                          </div>
+                        )}
                       </div>
-                      <div className="pl-roi-compare__ratio">x {roi1.toFixed(2)}</div>
                     </div>
 
-                    {compareEnabled && produit2 && (
-                      <div
-                        className={`pl-roi-compare__card ${meilleurProduit === 2 ? 'is-winner' : ''}`}
-                      >
-                        <div className="pl-roi-compare__product-indicator pl-indicator--product2" />
-                        <div className="pl-roi-compare__product">
-                          {state.products[1].perBancaire && state.products[1].envelope === 'PER'
-                            ? 'PER bancaire (CTO)'
-                            : produit2.envelopeLabel
-                                .replace('PER individuel déductible', 'PER individuel')
-                                .replace('PER individuel deductible', 'PER individuel')}
+                    {compareEnabled && produit2 ? (
+                      <div className="pl-kpi-compare">
+                        <div className="pl-kpi-val pl-kpi-val--left">
+                          {shortEuro(produit1.totaux.effortTotal)}
                         </div>
-                        <div className="pl-roi-compare__ratio">x {roi2.toFixed(2)}</div>
+                        <div
+                          className="pl-kpi-label"
+                          title="Versements sur la période - économies d'impôt + revenus nets perçus sur la période"
+                        >
+                          Effort total
+                        </div>
+                        <div className="pl-kpi-val pl-kpi-val--right">
+                          {shortEuro(produit2.totaux.effortTotal)}
+                        </div>
+
+                        <div className="pl-kpi-val pl-kpi-val--left">
+                          {shortEuro(produit1.epargne.capitalAcquis)}
+                        </div>
+                        <div className="pl-kpi-label">Capital acquis</div>
+                        <div className="pl-kpi-val pl-kpi-val--right">
+                          {shortEuro(produit2.epargne.capitalAcquis)}
+                        </div>
+
+                        <div className="pl-kpi-val pl-kpi-val--left">
+                          {shortEuro(produit1.totaux.revenusNetsLiquidation)}
+                        </div>
+                        <div className="pl-kpi-label">Revenus nets</div>
+                        <div className="pl-kpi-val pl-kpi-val--right">
+                          {shortEuro(produit2.totaux.revenusNetsLiquidation)}
+                        </div>
+
+                        <div className="pl-kpi-val pl-kpi-val--left">
+                          {shortEuro(produit1.totaux.capitalTransmisNet)}
+                        </div>
+                        <div className="pl-kpi-label">Transmis net</div>
+                        <div className="pl-kpi-val pl-kpi-val--right">
+                          {shortEuro(produit2.totaux.capitalTransmisNet)}
+                        </div>
+
+                        <div className="pl-kpi-compare__separator" />
+
+                        <div className="pl-kpi-val pl-kpi-val--left pl-kpi-val--total">
+                          {shortEuro(totalGains1)}
+                        </div>
+                        <div className="pl-kpi-label pl-kpi-label--total">Total récupéré</div>
+                        <div className="pl-kpi-val pl-kpi-val--right pl-kpi-val--total">
+                          {shortEuro(totalGains2)}
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="pl-kpi-compare pl-kpi-compare--single">
+                        <div
+                          className="pl-kpi-label"
+                          title="Versements sur la période - économies d'impôt + revenus nets perçus sur la période"
+                        >
+                          Effort total
+                        </div>
+                        <div className="pl-kpi-val pl-kpi-val--single">
+                          {shortEuro(produit1.totaux.effortTotal)}
+                        </div>
+
+                        <div className="pl-kpi-label">Capital acquis</div>
+                        <div className="pl-kpi-val pl-kpi-val--single">
+                          {shortEuro(produit1.epargne.capitalAcquis)}
+                        </div>
+
+                        <div className="pl-kpi-label">Revenus nets</div>
+                        <div className="pl-kpi-val pl-kpi-val--single">
+                          {shortEuro(produit1.totaux.revenusNetsLiquidation)}
+                        </div>
+
+                        <div className="pl-kpi-label">Transmis net</div>
+                        <div className="pl-kpi-val pl-kpi-val--single">
+                          {shortEuro(produit1.totaux.capitalTransmisNet)}
+                        </div>
+
+                        <div className="pl-kpi-compare__separator" />
+
+                        <div className="pl-kpi-label pl-kpi-label--total">Total récupéré</div>
+                        <div className="pl-kpi-val pl-kpi-val--single pl-kpi-val--total">
+                          {shortEuro(totalGains1)}
+                        </div>
                       </div>
                     )}
-                  </div>
-                </div>
-
-                {compareEnabled && produit2 ? (
-                  <div className="pl-kpi-compare">
-                    <div className="pl-kpi-val pl-kpi-val--left">
-                      {shortEuro(produit1.totaux.effortTotal)}
-                    </div>
-                    <div
-                      className="pl-kpi-label"
-                      title="Versements sur la période - économies d'impôt + revenus nets perçus sur la période"
-                    >
-                      Effort total
-                    </div>
-                    <div className="pl-kpi-val pl-kpi-val--right">
-                      {shortEuro(produit2.totaux.effortTotal)}
-                    </div>
-
-                    <div className="pl-kpi-val pl-kpi-val--left">
-                      {shortEuro(produit1.epargne.capitalAcquis)}
-                    </div>
-                    <div className="pl-kpi-label">Capital acquis</div>
-                    <div className="pl-kpi-val pl-kpi-val--right">
-                      {shortEuro(produit2.epargne.capitalAcquis)}
-                    </div>
-
-                    <div className="pl-kpi-val pl-kpi-val--left">
-                      {shortEuro(produit1.totaux.revenusNetsLiquidation)}
-                    </div>
-                    <div className="pl-kpi-label">Revenus nets</div>
-                    <div className="pl-kpi-val pl-kpi-val--right">
-                      {shortEuro(produit2.totaux.revenusNetsLiquidation)}
-                    </div>
-
-                    <div className="pl-kpi-val pl-kpi-val--left">
-                      {shortEuro(produit1.totaux.capitalTransmisNet)}
-                    </div>
-                    <div className="pl-kpi-label">Transmis net</div>
-                    <div className="pl-kpi-val pl-kpi-val--right">
-                      {shortEuro(produit2.totaux.capitalTransmisNet)}
-                    </div>
-
-                    <div className="pl-kpi-compare__separator" />
-
-                    <div className="pl-kpi-val pl-kpi-val--left pl-kpi-val--total">
-                      {shortEuro(totalGains1)}
-                    </div>
-                    <div className="pl-kpi-label pl-kpi-label--total">Total récupéré</div>
-                    <div className="pl-kpi-val pl-kpi-val--right pl-kpi-val--total">
-                      {shortEuro(totalGains2)}
-                    </div>
-                  </div>
-                ) : (
-                  <div className="pl-kpi-compare pl-kpi-compare--single">
-                    <div
-                      className="pl-kpi-label"
-                      title="Versements sur la période - économies d'impôt + revenus nets perçus sur la période"
-                    >
-                      Effort total
-                    </div>
-                    <div className="pl-kpi-val pl-kpi-val--single">
-                      {shortEuro(produit1.totaux.effortTotal)}
-                    </div>
-
-                    <div className="pl-kpi-label">Capital acquis</div>
-                    <div className="pl-kpi-val pl-kpi-val--single">
-                      {shortEuro(produit1.epargne.capitalAcquis)}
-                    </div>
-
-                    <div className="pl-kpi-label">Revenus nets</div>
-                    <div className="pl-kpi-val pl-kpi-val--single">
-                      {shortEuro(produit1.totaux.revenusNetsLiquidation)}
-                    </div>
-
-                    <div className="pl-kpi-label">Transmis net</div>
-                    <div className="pl-kpi-val pl-kpi-val--single">
-                      {shortEuro(produit1.totaux.capitalTransmisNet)}
-                    </div>
-
-                    <div className="pl-kpi-compare__separator" />
-
-                    <div className="pl-kpi-label pl-kpi-label--total">Total récupéré</div>
-                    <div className="pl-kpi-val pl-kpi-val--single pl-kpi-val--total">
-                      {shortEuro(totalGains1)}
-                    </div>
-                  </div>
-                )}
-              </>
-            );
-          })()}
-        </>
+                  </>
+                );
+              })()}
+            </>
+          );
+        })()
       )}
     </div>
   );

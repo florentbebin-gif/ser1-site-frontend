@@ -43,8 +43,8 @@ function findMember(
   }
 
   const enfantIndex = enfants.findIndex((enfant) => enfant.id === id);
-  if (enfantIndex >= 0) {
-    const enfant = enfants[enfantIndex];
+  const enfant = enfantIndex >= 0 ? enfants[enfantIndex] : undefined;
+  if (enfant) {
     return {
       id,
       label: getEnfantParentLabel(enfant, enfantIndex),

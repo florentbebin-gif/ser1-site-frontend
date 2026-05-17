@@ -162,13 +162,20 @@ export function calculateStrategyProjection(
 export function compareScenarios(baseline: Scenario, strategie: Scenario): ComparaisonScenarios {
   const dernierAnneeBaseline = baseline.projections[baseline.projections.length - 1];
   const dernierAnneeStrategie = strategie.projections[strategie.projections.length - 1];
+  if (!dernierAnneeBaseline || !dernierAnneeStrategie) {
+    throw new Error('Comparaison impossible: scénario sans projection.');
+  }
 
   const ecartPatrimoine =
     dernierAnneeStrategie.patrimoineTotal - dernierAnneeBaseline.patrimoineTotal;
 
   // Somme des économies d'impôts sur la période
   const economieImpots = baseline.projections.reduce((sum, proj, idx) => {
-    return sum + (proj.impotRevenu - strategie.projections[idx].impotRevenu);
+    const strategieProjection = strategie.projections[idx];
+    if (!strategieProjection) {
+      throw new Error(`Projection stratégie manquante pour l'année ${proj.annee}.`);
+    }
+    return sum + (proj.impotRevenu - strategieProjection.impotRevenu);
   }, 0);
 
   // Estimation succession (simplifié)

@@ -253,7 +253,7 @@ export function assignBeneficiaryTaxableBasis<
   const forfaitMobilier = computeForfaitMobilier(mobilier, totalBeforeForfait);
 
   return beneficiaries.map((beneficiary, index) => {
-    const baseBeforeForfait = beforeForfaitByBeneficiary[index];
+    const baseBeforeForfait = beforeForfaitByBeneficiary[index] ?? 0;
     const forfaitShare =
       totalBeforeForfait > 0 ? forfaitMobilier * (baseBeforeForfait / totalBeforeForfait) : 0;
     return {

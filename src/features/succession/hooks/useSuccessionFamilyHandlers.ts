@@ -90,11 +90,12 @@ export function useSuccessionFamilyHandlers({
   );
 
   const addEnfant = useCallback(() => {
+    const defaultRattachement = enfantRattachementOptions[0]?.value ?? 'commun';
     setEnfantsContext((prev) => [
       ...prev,
       {
         id: createEnfantId(),
-        rattachement: enfantRattachementOptions[0].value as 'commun' | 'epoux1' | 'epoux2',
+        rattachement: defaultRattachement as 'commun' | 'epoux1' | 'epoux2',
       },
     ]);
   }, [enfantRattachementOptions, setEnfantsContext]);

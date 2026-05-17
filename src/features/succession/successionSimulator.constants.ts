@@ -161,8 +161,10 @@ export const CLAUSE_BENEFICIAIRE_PRESETS: { value: string; label: string }[] = [
 
 export const CLAUSE_CONJOINT_LABEL = 'Conjoint survivant, à défaut enfants, à défaut héritiers';
 export const CLAUSE_ENFANTS_LABEL = 'Les enfants par parts égales';
-export const RESIDENCE_PRINCIPALE_SUBCATEGORY = ASSET_SUBCATEGORY_OPTIONS.immobilier[0];
-export const RESIDENCE_SECONDAIRE_SUBCATEGORY = ASSET_SUBCATEGORY_OPTIONS.immobilier[1];
+export const RESIDENCE_PRINCIPALE_SUBCATEGORY =
+  ASSET_SUBCATEGORY_OPTIONS.immobilier[0] ?? 'Résidence principale';
+export const RESIDENCE_SECONDAIRE_SUBCATEGORY =
+  ASSET_SUBCATEGORY_OPTIONS.immobilier[1] ?? 'Résidence secondaire';
 
 export const DECES_DANS_X_ANS_OPTIONS: {
   value: SuccessionPatrimonialContext['decesDansXAns'];

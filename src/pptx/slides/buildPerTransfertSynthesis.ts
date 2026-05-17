@@ -28,7 +28,7 @@ export function buildPerTransfertSynthesis(
     slide.addShape('rect', {
       x: columnX(index),
       y: TABLE_Y,
-      w: COLS[index],
+      w: COLS[index] ?? 1,
       h: ROW_H,
       fill: { color: theme.colors.color1.replace('#', '') },
       line: { color: theme.panelBorder.replace('#', ''), width: 0.5 },
@@ -36,7 +36,7 @@ export function buildPerTransfertSynthesis(
     addTextFr(slide, header, {
       x: columnX(index) + 0.08,
       y: TABLE_Y + 0.09,
-      w: COLS[index] - 0.16,
+      w: (COLS[index] ?? 1) - 0.16,
       h: 0.24,
       fontSize: 8.5,
       fontFace: TYPO.fontFace,
@@ -54,7 +54,7 @@ export function buildPerTransfertSynthesis(
         slide.addShape('rect', {
           x: columnX(colIndex),
           y,
-          w: COLS[colIndex],
+          w: COLS[colIndex] ?? 1,
           h: ROW_H,
           fill: { color: fillColor.replace('#', '') },
           line: { color: theme.panelBorder.replace('#', ''), width: 0.35 },
@@ -62,7 +62,7 @@ export function buildPerTransfertSynthesis(
         addTextFr(slide, value, {
           x: columnX(colIndex) + 0.08,
           y: y + 0.08,
-          w: COLS[colIndex] - 0.16,
+          w: (COLS[colIndex] ?? 1) - 0.16,
           h: 0.26,
           fontSize: colIndex === 0 ? 8 : 8.5,
           fontFace: TYPO.fontFace,

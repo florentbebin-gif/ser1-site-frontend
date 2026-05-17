@@ -151,6 +151,14 @@ export default function AuditWizard(): React.ReactElement {
   const currentStepIndex = STEPS.findIndex((s) => s.id === currentStep);
   const canGoNext = currentStepIndex < STEPS.length - 1;
   const canGoPrev = currentStepIndex > 0;
+  const goToPreviousStep = () => {
+    const previousStep = STEPS[currentStepIndex - 1];
+    if (previousStep) setCurrentStep(previousStep.id);
+  };
+  const goToNextStep = () => {
+    const nextStep = STEPS[currentStepIndex + 1];
+    if (nextStep) setCurrentStep(nextStep.id);
+  };
   const exportOptions: ExportOption[] = [
     {
       label: 'PowerPoint (.pptx)',
@@ -250,7 +258,7 @@ export default function AuditWizard(): React.ReactElement {
           <button
             type="button"
             className="premium-btn"
-            onClick={() => setCurrentStep(STEPS[currentStepIndex - 1].id)}
+            onClick={goToPreviousStep}
             disabled={!canGoPrev}
           >
             Précédent
@@ -258,7 +266,7 @@ export default function AuditWizard(): React.ReactElement {
           <button
             type="button"
             className="premium-btn premium-btn-primary"
-            onClick={() => setCurrentStep(STEPS[currentStepIndex + 1].id)}
+            onClick={goToNextStep}
             disabled={!canGoNext}
           >
             Suivant

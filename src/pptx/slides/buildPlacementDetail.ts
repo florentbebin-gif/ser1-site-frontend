@@ -373,6 +373,7 @@ function drawDetailPanel(
 
   if (hasHero) {
     const hero = data.metrics[0];
+    if (!hero) return;
 
     addTextFr(slide, hero.label, {
       x: panelX + PANEL.metricPaddingX,

@@ -128,7 +128,7 @@ export function buildCreditGlobalSynthesis(
 
   // ========== HERO: VOTRE MENSUALITÉ ==========
   const heroY = LAYOUT.hero.y;
-  const initialMensualite = data.paymentPeriods.length > 0 ? data.paymentPeriods[0].total : 0;
+  const initialMensualite = data.paymentPeriods[0]?.total ?? 0;
 
   addTextFr(slide, 'VOTRE MENSUALITÉ', {
     x: 0,
@@ -253,7 +253,7 @@ export function buildCreditGlobalSynthesis(
     const parseYM = (ym: string | undefined): { y: number; m: number } => {
       if (!ym) return { y: new Date().getFullYear(), m: 1 };
       const [y, m] = ym.split('-').map(Number);
-      return { y, m };
+      return { y: y ?? new Date().getFullYear(), m: m ?? 1 };
     };
     const ymFromOffset = (startY: number, startM: number, offsetMonths: number): string => {
       const d = new Date(startY, startM - 1 + offsetMonths, 1);
@@ -272,10 +272,10 @@ export function buildCreditGlobalSynthesis(
     // Draw equal-width segments with mensualité + date range embedded inside
     let segX = LAYOUT.timeline.marginX;
     sortedPeriods.slice(0, segmentCount).forEach((period, idx) => {
-      const segColor = segmentColors[idx];
-      const txtColor = textColors[idx];
-      const fromDate = ymFromOffset(startY, startM, breakpoints[idx]);
-      const toDate = ymFromOffset(startY, startM, breakpoints[idx + 1]);
+      const segColor = segmentColors[idx] ?? roleColor(theme, 'bgMain');
+      const txtColor = textColors[idx] ?? 'FFFFFF';
+      const fromDate = ymFromOffset(startY, startM, breakpoints[idx] ?? 0);
+      const toDate = ymFromOffset(startY, startM, breakpoints[idx + 1] ?? data.maxDureeMois);
 
       slide.addShape('rect', {
         x: segX,

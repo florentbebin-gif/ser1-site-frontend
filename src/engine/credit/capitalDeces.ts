@@ -145,9 +145,13 @@ export function computeGlobalCapitalDecesSchedule(
       if (!row) {
         return;
       }
+      const loanParams = allLoansParams[idx];
+      if (!loanParams) {
+        throw new Error(`Paramètres du prêt manquants pour l'échéancier ${idx + 1}.`);
+      }
 
       const assuranceDeces = computeCapitalDecesPeriod(
-        allLoansParams[idx],
+        loanParams,
         (row.crd || 0) + (row.amort || 0),
       );
 

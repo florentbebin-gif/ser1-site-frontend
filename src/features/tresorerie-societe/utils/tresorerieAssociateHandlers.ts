@@ -134,7 +134,8 @@ export function useTresorerieAssociateHandlers(
       const associates = company.associates.filter((associate) => associate.id !== associateId);
       const nextSelectedId = associates.some((associate) => associate.id === selectedAssociateId)
         ? selectedAssociateId
-        : associates[0].id;
+        : associates[0]?.id;
+      if (!nextSelectedId) return;
       const nextInputs = {
         ...inputs,
         company: { ...company, associates },

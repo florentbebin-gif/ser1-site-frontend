@@ -41,8 +41,10 @@ export function PlacementLiquidationSection({
   const [table2Open, setTable2Open] = useState(false);
   const anyTableOpen = table1Open || table2Open;
 
-  const produit1OptionBaremeIR = state.products[0].liquidation?.optionBaremeIR ?? false;
-  const produit2OptionBaremeIR = state.products[1].liquidation?.optionBaremeIR ?? false;
+  const produit1Draft = state.products[0];
+  const produit2Draft = state.products[1];
+  const produit1OptionBaremeIR = produit1Draft?.liquidation?.optionBaremeIR ?? false;
+  const produit2OptionBaremeIR = produit2Draft?.liquidation?.optionBaremeIR ?? false;
 
   return (
     <div className="premium-card">
@@ -176,7 +178,7 @@ export function PlacementLiquidationSection({
               showAllColumns={showAllColumns}
               showCapitalDecesColumn={Boolean(
                 produit1.envelope === 'PER' &&
-                state.products[0].versementConfig?.annuel?.garantieBonneFin?.active,
+                produit1Draft?.versementConfig?.annuel?.garantieBonneFin?.active,
               )}
               onOpenChange={setTable1Open}
             />
@@ -187,7 +189,7 @@ export function PlacementLiquidationSection({
               showAllColumns={showAllColumns}
               showCapitalDecesColumn={Boolean(
                 produit2.envelope === 'PER' &&
-                state.products[1].versementConfig?.annuel?.garantieBonneFin?.active,
+                produit2Draft?.versementConfig?.annuel?.garantieBonneFin?.active,
               )}
               onOpenChange={setTable2Open}
             />

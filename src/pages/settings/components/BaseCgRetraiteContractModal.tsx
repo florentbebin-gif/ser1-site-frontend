@@ -132,6 +132,7 @@ export function BaseCgRetraiteContractModal({ contract, onClose, onSave }: Props
       const firstElement = focusableElements[0];
       const lastElement = focusableElements[focusableElements.length - 1];
       const activeElement = document.activeElement;
+      if (!firstElement || !lastElement) return;
 
       if (event.shiftKey && activeElement === firstElement) {
         event.preventDefault();
@@ -289,6 +290,7 @@ export function BaseCgRetraiteContractModal({ contract, onClose, onSave }: Props
 
     event.preventDefault();
     const nextTab = CONTRACT_MODAL_TABS[nextIndex];
+    if (!nextTab) return;
     setActiveTab(nextTab.key);
     focusTab(nextTab.key);
   }

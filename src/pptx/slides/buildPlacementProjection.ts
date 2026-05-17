@@ -147,7 +147,8 @@ export function buildPlacementProjection(
     // Find values for the years on this page
     const values = spec.yearsForPage.map((year) => {
       const valueIdx = year - 1; // yearsForPage is 1-based
-      return valueIdx < row.values.length ? euro(row.values[valueIdx]) : '—';
+      const value = row.values[valueIdx];
+      return value !== undefined ? euro(value) : '—';
     });
 
     tableRows.push([
@@ -164,7 +165,7 @@ export function buildPlacementProjection(
         },
       },
       ...values.map((val, colIdx) => {
-        const year = spec.yearsForPage[colIdx];
+        const year = spec.yearsForPage[colIdx] ?? 0;
         const isDeath = deathYearSet.has(year);
         return {
           text: val,

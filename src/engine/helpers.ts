@@ -38,7 +38,7 @@ export function addValidationWarning(
 export function mkRuleVersion(version: string, source: string, validated = false): RuleVersion {
   return {
     version,
-    date: new Date().toISOString().split('T')[0],
+    date: new Date().toISOString().slice(0, 10),
     source,
     validated,
   };

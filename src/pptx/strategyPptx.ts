@@ -273,6 +273,9 @@ export async function generateStrategyPptx(options: StrategyPptxOptions): Promis
   const fin = comparaison.baseline.projections.length - 1;
   const baselineFin = comparaison.baseline.projections[fin];
   const strategieFin = comparaison.strategie.projections[fin];
+  if (!baselineFin || !strategieFin) {
+    throw new Error('Export stratégie impossible: projection comparative incomplète.');
+  }
 
   const compRows: string[][] = [
     ['', 'Situation actuelle', 'Avec stratégie', 'Écart'],

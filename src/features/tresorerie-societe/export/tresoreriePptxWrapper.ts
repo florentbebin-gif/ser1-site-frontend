@@ -323,8 +323,9 @@ export function buildTresorerieStudyDeck(
 
   const projectionRows = buildProjectionRows(rows, inputs);
   const projectionSlides = pages.map((yearsForPage, pageIdx) => {
-    const firstCivilYear = projectionStartYear + yearsForPage[0] - 1;
-    const lastYearIndex = yearsForPage[yearsForPage.length - 1] ?? yearsForPage[0];
+    const firstYearIndex = yearsForPage[0] ?? 1;
+    const firstCivilYear = projectionStartYear + firstYearIndex - 1;
+    const lastYearIndex = yearsForPage[yearsForPage.length - 1] ?? firstYearIndex;
     const lastCivilYear = projectionStartYear + lastYearIndex - 1;
     return {
       type: 'treso-projection' as const,

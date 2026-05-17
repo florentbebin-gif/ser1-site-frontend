@@ -26,15 +26,23 @@ export function createFieldUpdater(
   setMessage: (msg: string) => void,
 ): (path: string[], value: unknown) => void {
   return (path, value) => {
+    const lastKey = path[path.length - 1];
+    if (!lastKey) {
+      throw new Error('Chemin de champ settings vide.');
+    }
+
     setData((prev) => {
       const clone = structuredClone(prev) as NestedRecord;
       let obj: NestedRecord = clone;
       for (let i = 0; i < path.length - 1; i += 1) {
         const key = path[i];
+        if (!key) {
+          throw new Error('Chemin de champ settings invalide.');
+        }
         if (obj[key] === undefined || obj[key] === null) obj[key] = {};
         obj = obj[key] as NestedRecord;
       }
-      obj[path[path.length - 1]] = value;
+      obj[lastKey] = value;
       return clone;
     });
     setMessage('');

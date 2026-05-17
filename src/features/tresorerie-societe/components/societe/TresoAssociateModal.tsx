@@ -74,8 +74,9 @@ export function TresoAssociateModal({
   };
 
   const addLot = () => {
-    if (availableRights.length === 0) return;
-    const nextRight = availableRights[0].value;
+    const firstAvailableRight = availableRights[0];
+    if (!firstAvailableRight) return;
+    const nextRight = firstAvailableRight.value;
     replaceLots([...lots, { right: nextRight, capitalPct: 0, economicRightsPct: 0 }]);
   };
 
@@ -111,7 +112,9 @@ export function TresoAssociateModal({
               : index;
     if (nextIndex === index) return;
     event.preventDefault();
-    setActiveSection(ASSOCIATE_MODAL_SECTIONS[nextIndex].key);
+    const nextSection = ASSOCIATE_MODAL_SECTIONS[nextIndex];
+    if (!nextSection) return;
+    setActiveSection(nextSection.key);
   };
 
   return (

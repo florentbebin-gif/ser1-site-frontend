@@ -132,12 +132,12 @@ function allocateRounded(total: number, weights: number[]): number[] {
   let remaining = total - floored.reduce((sum, value) => sum + value, 0);
 
   const byRemainder = exactShares
-    .map((value, index) => ({ index, remainder: value - floored[index] }))
+    .map((value, index) => ({ index, remainder: value - (floored[index] ?? 0) }))
     .sort((a, b) => b.remainder - a.remainder);
 
   byRemainder.forEach(({ index }) => {
     if (remaining <= 0) return;
-    floored[index] += 1;
+    floored[index] = (floored[index] ?? 0) + 1;
     remaining -= 1;
   });
 
@@ -334,7 +334,7 @@ function applyCombined990I(
     );
 
     entries.forEach((entry, index) => {
-      entry.applyBefore70(taxableAllocations[index], droitsAllocations[index]);
+      entry.applyBefore70(taxableAllocations[index] ?? 0, droitsAllocations[index] ?? 0);
     });
   });
 }
@@ -389,7 +389,7 @@ function applyCombined757B(
     );
 
     row.entries.forEach((entry, index) => {
-      entry.applyAfter70(taxableAllocations[index], droitsAllocations[index]);
+      entry.applyAfter70(taxableAllocations[index] ?? 0, droitsAllocations[index] ?? 0);
     });
   });
 }

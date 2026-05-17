@@ -48,7 +48,9 @@ function buildAssociateMeta(associate: RuntimeAssociateInput): string {
   if (fullLabel.length <= 24) return fullLabel;
 
   // Tronqué : on garde le lot dominant et on suffixe avec un compteur.
-  const dominant = formatLot(lotsToRender[0]);
+  const dominantLot = lotsToRender[0];
+  if (!dominantLot) return '';
+  const dominant = formatLot(dominantLot);
   const others = lotsToRender.length - 1;
   return others > 0 ? `${dominant} +${others}` : dominant;
 }

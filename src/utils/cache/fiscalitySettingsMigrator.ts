@@ -246,6 +246,7 @@ function setByPath(obj: Record<string, unknown>, path: string, value: unknown): 
   let current: Record<string, unknown> = obj;
   for (let i = 0; i < parts.length - 1; i++) {
     const part = parts[i];
+    if (!part) return;
     if (
       current[part] === undefined ||
       current[part] === null ||
@@ -256,6 +257,7 @@ function setByPath(obj: Record<string, unknown>, path: string, value: unknown): 
     current = current[part] as Record<string, unknown>;
   }
   const lastPart = parts[parts.length - 1];
+  if (!lastPart) return;
   if (lastPart in current) {
     current[lastPart] = value;
   }

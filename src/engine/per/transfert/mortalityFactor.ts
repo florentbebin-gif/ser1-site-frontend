@@ -31,10 +31,14 @@ function getGenerationKey(table: MortalityTable, birthYear: number): string {
   const generations = Object.keys(table.generations)
     .map(Number)
     .sort((left, right) => left - right);
+  const firstGeneration = generations[0];
+  if (firstGeneration === undefined) {
+    throw new Error('Table de mortalité générationnelle vide.');
+  }
   const closest = generations.reduce(
     (best, candidate) =>
       Math.abs(candidate - birthYear) < Math.abs(best - birthYear) ? candidate : best,
-    generations[0],
+    firstGeneration,
   );
   return String(closest);
 }

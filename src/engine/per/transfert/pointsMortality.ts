@@ -26,16 +26,29 @@ function pickAgeCoefficient(table: Record<number, number>, age: number): number 
     .sort((left, right) => left - right);
   const firstAge = ages[0];
   const lastAge = ages[ages.length - 1];
-  if (roundedAge <= firstAge) return table[firstAge];
-  if (roundedAge >= lastAge) return table[lastAge];
+  if (firstAge === undefined || lastAge === undefined) {
+    throw new Error('Table de coefficients Préfon vide.');
+  }
+  const firstCoefficient = table[firstAge];
+  const lastCoefficient = table[lastAge];
+  if (firstCoefficient === undefined || lastCoefficient === undefined) {
+    throw new Error('Borne de coefficient Préfon manquante.');
+  }
+  if (roundedAge <= firstAge) return firstCoefficient;
+  if (roundedAge >= lastAge) return lastCoefficient;
 
   const lowerAges = ages.filter((candidate) => candidate < roundedAge);
-  const previousAge = lowerAges.length > 0 ? lowerAges[lowerAges.length - 1] : firstAge;
+  const previousAge = lowerAges[lowerAges.length - 1] ?? firstAge;
   const nextAge = ages.find((candidate) => candidate > roundedAge) ?? lastAge;
+  const previousCoefficient = table[previousAge];
+  const nextCoefficient = table[nextAge];
+  if (previousCoefficient === undefined || nextCoefficient === undefined) {
+    throw new Error('Coefficient Préfon manquant pour interpolation.');
+  }
   const span = nextAge - previousAge;
-  if (span <= 0) return table[previousAge];
+  if (span <= 0) return previousCoefficient;
   const weight = (roundedAge - previousAge) / span;
-  return table[previousAge] + (table[nextAge] - table[previousAge]) * weight;
+  return previousCoefficient + (nextCoefficient - previousCoefficient) * weight;
 }
 
 function pickPrefonReversionCoefficient(input: PrefonRenteInput): number {
