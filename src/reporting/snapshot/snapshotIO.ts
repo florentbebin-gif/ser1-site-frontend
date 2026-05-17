@@ -171,7 +171,11 @@ export async function saveGlobalState(options?: {
 
     if (hasFileSystemAccess()) {
       try {
-        const handle = await (window as FSWindow).showSaveFilePicker!({
+        const picker = (window as FSWindow).showSaveFilePicker;
+        if (typeof picker !== 'function') {
+          throw new Error('File System Access API indisponible');
+        }
+        const handle = await picker({
           suggestedName: generateFilename(),
           types: [
             {

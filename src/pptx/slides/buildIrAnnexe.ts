@@ -165,9 +165,12 @@ function buildAnnexeProse(data: IrAnnexeData): Array<{ text: string; bold?: bool
   }
 
   // ===== PARAGRAPH 3: Corrections (CONDENSED) =====
-  const hasDecote = data.decote && data.decote > 0;
-  const hasQfAdvantage = data.qfAdvantage && data.qfAdvantage > 0;
-  const hasCredits = data.creditsTotal && data.creditsTotal > 0;
+  const decote = data.decote ?? 0;
+  const qfAdvantage = data.qfAdvantage ?? 0;
+  const creditsTotal = data.creditsTotal ?? 0;
+  const hasDecote = decote > 0;
+  const hasQfAdvantage = qfAdvantage > 0;
+  const hasCredits = creditsTotal > 0;
 
   if (hasDecote || hasQfAdvantage || hasCredits) {
     let correctionText: { text: string; bold?: boolean }[] = [
@@ -175,9 +178,9 @@ function buildAnnexeProse(data: IrAnnexeData): Array<{ text: string; bold?: bool
     ];
 
     const corrections: string[] = [];
-    if (hasDecote) corrections.push(`décote ${euro(data.decote!)}`);
-    if (hasQfAdvantage) corrections.push(`avantage QF ${euro(data.qfAdvantage!)}`);
-    if (hasCredits) corrections.push(`réductions/crédits ${euro(data.creditsTotal!)}`);
+    if (hasDecote) corrections.push(`décote ${euro(decote)}`);
+    if (hasQfAdvantage) corrections.push(`avantage QF ${euro(qfAdvantage)}`);
+    if (hasCredits) corrections.push(`réductions/crédits ${euro(creditsTotal)}`);
 
     corrections.forEach((c, idx) => {
       if (idx > 0) correctionText.push({ text: ', ' });
@@ -204,23 +207,28 @@ function buildAnnexeProse(data: IrAnnexeData): Array<{ text: string; bold?: bool
   }
 
   // ===== PARAGRAPH 5: PFU (CONDENSED) =====
-  const hasPfuIr = data.pfuIr && data.pfuIr > 0;
+  const pfuIr = data.pfuIr ?? 0;
+  const hasPfuIr = pfuIr > 0;
 
   if (hasPfuIr) {
     paragraphs.push([
       { text: 'Revenus du capital : ' },
       { text: 'PFU 12,8%', bold: true },
       { text: ' de ' },
-      { text: euro(data.pfuIr!), bold: true },
+      { text: euro(pfuIr), bold: true },
       { text: ' (+ prélèvements sociaux sur le capital selon les paramètres en vigueur).' },
     ]);
   }
 
   // ===== PARAGRAPH 6: Contributions (CONDENSED) =====
-  const hasCehr = data.cehr && data.cehr > 0;
-  const hasCdhr = data.cdhr && data.cdhr > 0;
-  const hasPsFoncier = data.psFoncier && data.psFoncier > 0;
-  const hasPsDividends = data.psDividends && data.psDividends > 0;
+  const cehr = data.cehr ?? 0;
+  const cdhr = data.cdhr ?? 0;
+  const psFoncier = data.psFoncier ?? 0;
+  const psDividends = data.psDividends ?? 0;
+  const hasCehr = cehr > 0;
+  const hasCdhr = cdhr > 0;
+  const hasPsFoncier = psFoncier > 0;
+  const hasPsDividends = psDividends > 0;
   const hasContributions = hasCehr || hasCdhr || hasPsFoncier || hasPsDividends;
 
   if (hasContributions) {
@@ -229,10 +237,10 @@ function buildAnnexeProse(data: IrAnnexeData): Array<{ text: string; bold?: bool
     ];
 
     const contribs: string[] = [];
-    if (hasCehr) contribs.push(`CEHR ${euro(data.cehr!)}`);
-    if (hasCdhr) contribs.push(`CDHR ${euro(data.cdhr!)}`);
-    if (hasPsFoncier) contribs.push(`PS fonciers ${euro(data.psFoncier!)}`);
-    if (hasPsDividends) contribs.push(`PS dividendes ${euro(data.psDividends!)}`);
+    if (hasCehr) contribs.push(`CEHR ${euro(cehr)}`);
+    if (hasCdhr) contribs.push(`CDHR ${euro(cdhr)}`);
+    if (hasPsFoncier) contribs.push(`PS fonciers ${euro(psFoncier)}`);
+    if (hasPsDividends) contribs.push(`PS dividendes ${euro(psDividends)}`);
 
     contribs.forEach((c, idx) => {
       if (idx > 0) contribText.push({ text: ', ' });

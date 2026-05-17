@@ -88,7 +88,11 @@ function groupRowsByLoan(rows: CreditAmortizationRow[]): Map<number, CreditAmort
     if (!groups.has(loanIdx)) {
       groups.set(loanIdx, []);
     }
-    groups.get(loanIdx)!.push(row);
+    const group = groups.get(loanIdx);
+    if (!group) {
+      throw new Error("État interne invalide : groupe d'amortissement absent.");
+    }
+    group.push(row);
   });
 
   return groups;
@@ -375,22 +379,24 @@ export function buildCreditAmortization(
     const sortedLoanIndices = Array.from(loanGroups.keys()).sort((a, b) => a - b);
 
     sortedLoanIndices.forEach((loanIdx) => {
-      const loanRows = loanGroups.get(loanIdx)!;
+      const loanRows = loanGroups.get(loanIdx);
+      if (!loanRows) {
+        throw new Error("État interne invalide : lignes d'amortissement absentes.");
+      }
       const loanYearMap = new Map(loanRows.map((r) => [r.periode, r]));
+      const formatLoanYearValue = (
+        year: string,
+        field: 'annuite' | 'assurance' | 'amort' | 'crd',
+      ): string => {
+        const yearRow = loanYearMap.get(year);
+        return yearRow ? euro(yearRow[field]) : '—';
+      };
 
       // Values for this loan (filtered to years for this page)
-      const annuiteValues = yearsForPage.map((y) =>
-        loanYearMap.has(y) ? euro(loanYearMap.get(y)!.annuite) : '—',
-      );
-      const assuranceValues = yearsForPage.map((y) =>
-        loanYearMap.has(y) ? euro(loanYearMap.get(y)!.assurance) : '—',
-      );
-      const amortValues = yearsForPage.map((y) =>
-        loanYearMap.has(y) ? euro(loanYearMap.get(y)!.amort) : '—',
-      );
-      const crdValues = yearsForPage.map((y) =>
-        loanYearMap.has(y) ? euro(loanYearMap.get(y)!.crd) : '—',
-      );
+      const annuiteValues = yearsForPage.map((y) => formatLoanYearValue(y, 'annuite'));
+      const assuranceValues = yearsForPage.map((y) => formatLoanYearValue(y, 'assurance'));
+      const amortValues = yearsForPage.map((y) => formatLoanYearValue(y, 'amort'));
+      const crdValues = yearsForPage.map((y) => formatLoanYearValue(y, 'crd'));
 
       // 3 or 4 rows per loan with gray background (skip assurance if noAssurance)
       const loanLabel = `Prêt N°${loanIdx} ${LOAN_ROW_LABELS[0] ?? 'Annuité'}`;
