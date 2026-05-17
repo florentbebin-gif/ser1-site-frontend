@@ -5,7 +5,7 @@ import { computeAbattement10 } from '../../../../../engine/ir/abattement10';
 import type { DeclarantRevenus } from '../../../../../engine/per';
 import { formatInteger } from '../../../../../utils/formatNumber';
 import type { PerDeclarantPatch } from '../../../hooks/usePerPotentiel';
-import { PerAmountInput } from '../PerAmountInput';
+import { PerAmountInput } from '../../shared/PerAmountInput';
 
 export type PerIncomeFilters = {
   pension: boolean;

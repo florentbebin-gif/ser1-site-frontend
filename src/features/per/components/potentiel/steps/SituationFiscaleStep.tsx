@@ -7,7 +7,7 @@ import { SimSelect } from '@/components/ui/sim/SimSelect';
 import type { DeclarantRevenus, PlafondMadelinDetail } from '../../../../../engine/per';
 import type { PerDeclarantPatch } from '../../../hooks/usePerPotentiel';
 import type { PerChildDraft } from '../../../utils/perParts';
-import { PerAmountInput } from '../PerAmountInput';
+import { PerAmountInput } from '../../shared/PerAmountInput';
 import { PerMadelinInfoModal } from '../PerMadelinInfoModal';
 import {
   PerIncomeTable,

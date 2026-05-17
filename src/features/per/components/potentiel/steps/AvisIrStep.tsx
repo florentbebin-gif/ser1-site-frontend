@@ -5,7 +5,7 @@
 import React from 'react';
 import type { AvisIrPlafonds, PerHistoricalBasis } from '../../../../../engine/per';
 import { getAvisReferenceYears, type PerWorkflowYears } from '../../../utils/perWorkflowYears';
-import { PerAmountInput } from '../PerAmountInput';
+import { PerAmountInput } from '../../shared/PerAmountInput';
 
 interface AvisIrStepProps {
   avisIr: AvisIrPlafonds | null;

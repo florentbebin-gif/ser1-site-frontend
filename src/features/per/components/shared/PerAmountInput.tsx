@@ -12,7 +12,6 @@ interface PerAmountInputProps {
   disabled?: boolean;
 }
 
-
 const parseInput = (raw: string): number => {
   const cleaned = raw.replace(/\s/g, '').replace(',', '.');
   const n = Number(cleaned);

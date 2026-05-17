@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import type { ReactNode } from 'react';
 import { SimFieldShell, SimSelect } from '@/components/ui/sim';
 import type { SimSelectOption } from '@/components/ui/sim';
-import { PerAmountInput } from '@/features/per/components/potentiel/PerAmountInput';
+import { PerAmountInput } from '@/features/per/components/shared/PerAmountInput';
 
 interface NumberFieldProps {
   label: ReactNode;
