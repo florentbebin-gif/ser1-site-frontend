@@ -1,0 +1,39 @@
+.sim-segmented {
+  display: inline-flex;
+  min-width: 0;
+  padding: 3px;
+  border: 1px solid var(--color-c8);
+  border-radius: 999px;
+  background: var(--color-c7);
+}
+
+.sim-segmented__option {
+  min-width: 0;
+  padding: 6px 14px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--color-c9);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.sim-segmented__option:hover,
+.sim-segmented__option:focus-visible {
+  color: var(--color-c2);
+}
+
+.sim-segmented__option.is-active {
+  background: #FFFFFF;
+  color: var(--color-c3);
+  box-shadow: 0 1px 3px color-mix(in srgb, var(--color-c1) 12%, transparent);
+}
+
+.sim-segmented--sm .sim-segmented__option {
+  padding: 4px 10px;
+  font-size: 11px;
+}

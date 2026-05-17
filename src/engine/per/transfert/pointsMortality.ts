@@ -7,6 +7,8 @@ interface PrefonRenteInput {
   acquisitionAge: number;
   liquidationAge: number;
   reversionRate: number;
+  spouseAgeAtLiquidation?: number | null;
+  serviceValue?: number | null;
 }
 
 export interface PrefonRenteOutput {
@@ -33,19 +35,37 @@ function pickAgeCoefficient(table: Record<number, number>, age: number): number 
   return table[previousAge] + (table[nextAge] - table[previousAge]) * weight;
 }
 
+function pickPrefonReversionCoefficient(input: PrefonRenteInput): number {
+  if (input.reversionRate <= 0 || !input.spouseAgeAtLiquidation) return 1;
+  const table = input.params.coefReversionByAgeGap;
+  if (!table || table.length === 0) return 1;
+  const ageGap = Math.floor(input.spouseAgeAtLiquidation - input.liquidationAge);
+  const row = table.find((candidate) => {
+    const min = candidate.minGapInclusive ?? Number.NEGATIVE_INFINITY;
+    const max = candidate.maxGapInclusive ?? Number.POSITIVE_INFINITY;
+    return ageGap >= min && ageGap <= max;
+  });
+  if (!row) return 1;
+  if (input.reversionRate >= 0.99) return row.coefficients.rate100;
+  if (input.reversionRate >= 0.79) return row.coefficients.rate80;
+  return row.coefficients.rate60;
+}
+
 export function computePrefonRente(input: PrefonRenteInput): PrefonRenteOutput {
   const liquidationCoef = pickAgeCoefficient(input.params.coefLiquidationByAge, input.liquidationAge);
   const pointsFromCapital = input.params.valeurAcquisition > 0
     ? input.capitalNet / input.params.valeurAcquisition
     : 0;
   const pointsRetenus = input.points > 0 ? input.points : pointsFromCapital;
-  const reversionCoef = Math.max(0, 1 - Math.max(0, input.reversionRate));
+  const reversionCoef = pickPrefonReversionCoefficient(input);
+  const valeurService = input.serviceValue && input.serviceValue > 0
+    ? input.serviceValue
+    : input.params.valeurService;
   const renteAnnuelleBrute =
     pointsRetenus
-    * input.params.valeurService
+    * valeurService
     * liquidationCoef
-    * reversionCoef
-    * 12;
+    * reversionCoef;
 
   return {
     pointsRetenus,

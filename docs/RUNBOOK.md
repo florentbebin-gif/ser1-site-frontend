@@ -289,6 +289,22 @@ VALUES ('<uuid>', 'e2e', now() + interval '7 days', 'Compte E2E run CI — expir
   WHERE expires_at IS NOT NULL AND expires_at < now();
   ```
 
+### Compte de vérification LLM local
+
+Pour les vérifications UI manuelles ou assistées par LLM, utiliser un compte Supabase **non-admin** dédié, par convention `e2e@test.local`.
+
+- Le compte doit rester `user` dans `app_metadata.role` et dans `public.profiles.role`.
+- Il ne doit pas être présent dans `public.admin_accounts`.
+- Les accès opérationnels de ce compte (URL locale, email, mot de passe) sont stockés uniquement dans `.env.local`, fichier local ignoré par Git (`.gitignore`).
+- Variables locales recommandées :
+  ```dotenv
+  SER1_LLM_TEST_URL=http://127.0.0.1:5174/sim/per/transfert
+  SER1_LLM_TEST_EMAIL=e2e@test.local
+  SER1_LLM_TEST_PASSWORD=<mot-de-passe-local>
+  ```
+- Procédure agent : ouvrir `/login`, se connecter avec `SER1_LLM_TEST_EMAIL` / `SER1_LLM_TEST_PASSWORD`, puis rouvrir `SER1_LLM_TEST_URL` après la redirection d'accueil.
+- Ne jamais copier le mot de passe dans une documentation versionnée, une PR, un ticket ou un log.
+
 ### Récupération lock-out admin
 
 La garde `admin_accounts` est active côté Edge Function. En cas de lock-out :

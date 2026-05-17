@@ -11,8 +11,8 @@ const POINTS_CONTRACT_IDS = new Set(
 function resolveGeneratedCompartment(contract: BaseCgRetraiteContract): PerTransfertCompartment {
   if (contract.perCompartment) return contract.perCompartment;
   if (/non d[eé]duit/i.test(contract.nomContrat)) return 'C1_BIS';
-  if (contract.typeContrat === 'ARTICLE83') return 'C3';
-  if (contract.typeContrat === 'PERCO') return 'C2';
+  if (contract.typeContrat === 'ARTICLE83' || contract.typeContrat === 'PEROB') return 'C3';
+  if (contract.typeContrat === 'PERCO' || contract.typeContrat === 'PERECO') return 'C2';
   return 'C1';
 }
 

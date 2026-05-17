@@ -20,6 +20,7 @@ export interface SimSelectProps {
   className?: string;
   style?: React.CSSProperties;
   testId?: string;
+  clearable?: boolean;
 }
 
 export function SimSelect({
@@ -34,6 +35,7 @@ export function SimSelect({
   className,
   style,
   testId,
+  clearable = false,
 }: SimSelectProps) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement | null>(null);
@@ -129,6 +131,13 @@ export function SimSelect({
         className={triggerClass}
         disabled={disabled}
         onClick={() => { if (!forced) setOpen((v) => !v); }}
+        onKeyDown={(event) => {
+          if (clearable && value && (event.key === 'Delete' || event.key === 'Backspace')) {
+            event.preventDefault();
+            onChange('');
+            setOpen(false);
+          }
+        }}
         aria-haspopup="listbox"
         aria-expanded={open}
         aria-label={ariaLabel}

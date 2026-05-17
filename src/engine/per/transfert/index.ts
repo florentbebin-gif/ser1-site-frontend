@@ -20,6 +20,8 @@ export type {
   PerTransfertInsuredInput,
   PerTransfertPaymentTiming,
   PerTransfertPrefonInput,
+  PerTransfertPrefonResult,
+  PerTransfertPrefonStrategyResult,
   PerTransfertProductType,
   PerTransfertProjectionInput,
   PerTransfertResult,

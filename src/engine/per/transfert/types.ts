@@ -3,7 +3,7 @@ import type { MortalityTableCode } from '@/data/mortality';
 
 export type { PerTransfertCompartment } from '@/data/basecg';
 
-export type PerTransfertProductType = 'PER' | 'PERP' | 'MADELIN' | 'ARTICLE83' | 'PER_POINTS';
+export type PerTransfertProductType = 'PER' | 'PERP' | 'MADELIN' | 'ARTICLE83' | 'PEROB' | 'PERCO' | 'PERECO' | 'PER_POINTS';
 export type PerTransfertSex = 'M' | 'F';
 export type PerTransfertPaymentTiming = 'arrears' | 'advance';
 export type PerTransfertFiscalFamily = 'RVTG' | 'RVTO';
@@ -68,6 +68,7 @@ export interface PerTransfertProjectionInput {
   newPerEntryFeeRate?: number;
   performanceUntilRetirementRate: number;
   currentContractPerformanceUntilRetirementRate?: number;
+  newPerAnnualPayment?: number;
   currentRentRevaluationRate: number;
   newRentRevaluationRate: number;
   capitalExitRevaluationRate: number;
@@ -79,8 +80,23 @@ export interface PerTransfertProjectionInput {
 export interface PerTransfertPrefonInput {
   enabled: boolean;
   points: number;
+  pockets?: PerTransfertPrefonPocketInput[];
   acquisitionAge: number;
   params: PrefonPointsParams | null;
+}
+
+export interface PerTransfertPrefonPocketInput {
+  compartment: PerTransfertCompartment;
+  points: number;
+  capitalAmount: number;
+  transferValuePerPoint: number;
+  serviceValue?: number | null;
+  serviceRevaluationRate?: number | null;
+  reversionEnabled?: boolean | null;
+  reversionRate?: number | null;
+  spouseAgeAtLiquidation?: number | null;
+  c0CapitalOptionEnabled?: boolean | null;
+  capitalOptionEnabled?: boolean | null;
 }
 
 export interface PerTransfertCurrentRentOptions {
@@ -118,6 +134,9 @@ export interface PerTransfertFiscalResult {
   family: PerTransfertFiscalFamily;
   taxableFraction: number;
   taxableIncome: number;
+  grossAnnualRent: number;
+  netOfSocialContributions: number;
+  netOfAllTaxes: number;
   incomeTax: number;
   socialContributions: number;
   netAnnualRent: number;
@@ -148,7 +167,12 @@ export interface PerTransfertCapitalFiscalResult {
   available: boolean;
   capital: number;
   gains: number;
+  netOfSocialContributions: number;
+  netOfAllTaxes: number;
+  netOfAllTaxesWithQuotient: number;
   incomeTax: number;
+  incomeTaxAtBareme: number;
+  incomeTaxWithQuotient: number;
   socialContributions: number;
   netPS: number;
   netIRPS: number;
@@ -173,6 +197,26 @@ export interface PerTransfertKeepScenario {
     cumulativeToShortHorizon: number;
     cumulativeToLongHorizon: number;
   };
+  capitalExit?: {
+    unique: PerTransfertCapitalFiscalResult;
+    shortHorizon: PerTransfertCapitalHorizon;
+    longHorizon: PerTransfertCapitalHorizon | null;
+  };
+}
+
+export interface PerTransfertPrefonStrategyResult {
+  totalRenteBrute: number;
+  totalCapital: number;
+  fiscal: PerTransfertFiscalResult;
+  capitalUnique: PerTransfertCapitalFiscalResult;
+  shortHorizon: PerTransfertCapitalHorizon;
+  longHorizon: PerTransfertCapitalHorizon | null;
+}
+
+export interface PerTransfertPrefonResult {
+  allRente: PerTransfertPrefonStrategyResult;
+  maxCapital: PerTransfertPrefonStrategyResult;
+  fractionnementYears: number;
 }
 
 export interface PerTransfertResult {
@@ -200,5 +244,6 @@ export interface PerTransfertResult {
     withoutWithdrawalToLongHorizon: number;
   };
   smallAnnuityCapitalExitEligible: boolean;
+  prefon?: PerTransfertPrefonResult | null;
   warnings: string[];
 }

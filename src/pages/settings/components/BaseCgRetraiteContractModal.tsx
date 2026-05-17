@@ -378,7 +378,7 @@ export function BaseCgRetraiteContractModal({ contract, onClose, onSave }: Props
                 />
               </label>
               <label className="base-cg-modal__wide">
-                Clause bénéficiaire
+                Modalités en cas de décès
                 <textarea
                   value={draft.phaseEpargne.clauseBeneficiaire ?? ''}
                   onChange={(event) => setEpargne('clauseBeneficiaire', updateText(event.target.value))}

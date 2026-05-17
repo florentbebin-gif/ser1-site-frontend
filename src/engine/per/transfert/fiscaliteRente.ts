@@ -43,14 +43,19 @@ export function computeRentFiscal(input: ComputeRentFiscalInput): PerTransfertFi
     ? input.assumptions.psRateRenteInterests
     : input.assumptions.psRateRetirementDefault;
   const socialContributions = annualRent * (family === 'RVTO' ? taxableFraction : 1) * socialRate;
+  const netOfSocialContributions = Math.max(0, annualRent - socialContributions);
+  const netOfAllTaxes = Math.max(0, annualRent - incomeTax - socialContributions);
 
   return {
     family,
     taxableFraction,
     taxableIncome,
+    grossAnnualRent: annualRent,
+    netOfSocialContributions,
+    netOfAllTaxes,
     incomeTax,
     socialContributions,
-    netAnnualRent: Math.max(0, annualRent - incomeTax - socialContributions),
+    netAnnualRent: netOfAllTaxes,
   };
 }
 

@@ -44,8 +44,13 @@ export type {
 
 export type {
   PerTransfertAnnuityOptions,
+  PerTransfertCapitalFiscalResult,
+  PerTransfertCapitalHorizon,
   PerTransfertFiscalAssumptions,
+  PerTransfertFiscalResult,
   PerTransfertInput,
+  PerTransfertPrefonResult,
+  PerTransfertPrefonStrategyResult,
   PerTransfertProductType,
   PerTransfertResult,
   PerTransfertSex,

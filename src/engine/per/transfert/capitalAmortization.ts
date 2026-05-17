@@ -69,6 +69,8 @@ export function buildCapitalSchedule(input: CapitalHorizonInput): PerTransfertCa
       : {
         incomeTax: 0,
         socialContributions: 0,
+        netOfSocialContributions: cappedWithdrawal,
+        netOfAllTaxes: cappedWithdrawal,
         netIRPS: cappedWithdrawal,
       };
     const closingCapital = Math.max(0, capitalBeforeWithdrawal - cappedWithdrawal);

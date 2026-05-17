@@ -4,7 +4,18 @@ import { computeCapitalFiscal } from './fiscaliteCapital';
 import { computeRentFiscal, computeSmallAnnuityEligibility } from './fiscaliteRente';
 import { resolvePerCompartiment } from './compartimentMapping';
 import { computePrefonRente } from './pointsMortality';
-import type { PerTransfertAnnuityOptions, PerTransfertCurrentRentOptions, PerTransfertInput, PerTransfertResult } from './types';
+import type {
+  PerTransfertAnnuityOptions,
+  PerTransfertCapitalFiscalResult,
+  PerTransfertCapitalHorizon,
+  PerTransfertCompartment,
+  PerTransfertCurrentRentOptions,
+  PerTransfertInput,
+  PerTransfertPrefonPocketInput,
+  PerTransfertPrefonResult,
+  PerTransfertPrefonStrategyResult,
+  PerTransfertResult,
+} from './types';
 
 function positive(value: number): number {
   return Number.isFinite(value) && value > 0 ? value : 0;
@@ -77,6 +88,131 @@ function buildCurrentAnnuityOptions(
   };
 }
 
+function emptyCapitalFiscal(): PerTransfertCapitalFiscalResult {
+  return {
+    available: false,
+    capital: 0,
+    gains: 0,
+    netOfSocialContributions: 0,
+    netOfAllTaxes: 0,
+    netOfAllTaxesWithQuotient: 0,
+    incomeTax: 0,
+    incomeTaxAtBareme: 0,
+    incomeTaxWithQuotient: 0,
+    socialContributions: 0,
+    netPS: 0,
+    netIRPS: 0,
+  };
+}
+
+function emptyCapitalHorizon(horizonAge: number, liquidationAge: number): PerTransfertCapitalHorizon {
+  return {
+    horizonAge,
+    years: Math.max(0, Math.floor(horizonAge - liquidationAge)),
+    annualWithdrawal: 0,
+    annualNetWithdrawal: 0,
+    cumulativeWithdrawals: 0,
+    cumulativeNetWithdrawals: 0,
+    residualCapital: 0,
+  };
+}
+
+function prefonPocketCapitalBasis(pocket: PerTransfertPrefonPocketInput, acquisitionValue: number): number {
+  const capitalAmount = positive(pocket.capitalAmount);
+  if (capitalAmount > 0) return capitalAmount;
+  const pointValue = positive(pocket.transferValuePerPoint) || positive(acquisitionValue);
+  return positive(pocket.points) * pointValue;
+}
+
+function buildPrefonResult(input: {
+  pockets: PerTransfertPrefonPocketInput[];
+  params: NonNullable<PerTransfertInput['prefon']['params']>;
+  baseInput: PerTransfertInput;
+}): PerTransfertPrefonResult {
+  const liquidationAge = input.baseInput.insured.liquidationAge;
+  const fractionnementYears = 10;
+  const capitalCompartment: PerTransfertCompartment = 'C1';
+  const computePocketRent = (pocket: PerTransfertPrefonPocketInput, rentShare: number) => {
+    const capitalBasis = prefonPocketCapitalBasis(pocket, input.params.valeurAcquisition);
+    return computePrefonRente({
+      params: input.params,
+      points: positive(pocket.points) * rentShare,
+      capitalNet: positive(pocket.points) > 0 ? 0 : capitalBasis * rentShare,
+      acquisitionAge: input.baseInput.prefon.acquisitionAge,
+      liquidationAge,
+      reversionRate: pocket.reversionEnabled === false
+        ? 0
+        : positive(pocket.reversionRate ?? input.baseInput.annuityOptions.reversion.rate),
+      spouseAgeAtLiquidation: pocket.spouseAgeAtLiquidation
+        ?? input.baseInput.annuityOptions.reversion.spouseAgeAtLiquidation,
+      serviceValue: pocket.serviceValue,
+    }).renteAnnuelleBrute;
+  };
+  const buildStrategy = (strategy: 'all_rente' | 'max_capital'): PerTransfertPrefonStrategyResult => {
+    let totalRenteBrute = 0;
+    let totalCapital = 0;
+    for (const pocket of input.pockets) {
+      const capitalBasis = prefonPocketCapitalBasis(pocket, input.params.valeurAcquisition);
+      let capitalShare = 0;
+      if (strategy === 'max_capital') {
+        if (pocket.compartment === 'C0') {
+          capitalShare = pocket.c0CapitalOptionEnabled === false ? 0 : 0.2;
+        } else if (pocket.compartment === 'C1' || pocket.compartment === 'C1_BIS' || pocket.compartment === 'C2') {
+          capitalShare = pocket.capitalOptionEnabled === false ? 0 : 1;
+        }
+      }
+      totalCapital += capitalBasis * capitalShare;
+      totalRenteBrute += computePocketRent(pocket, 1 - capitalShare);
+    }
+    const fiscal = computeRentFiscal({
+      annualRent: totalRenteBrute,
+      liquidationAge,
+      tmiRetraite: input.baseInput.tmiRetraite,
+      compartment: capitalCompartment,
+      assumptions: input.baseInput.fiscalAssumptions,
+    });
+    const capitalUnique = totalCapital > 0
+      ? computeCapitalFiscal({
+        capital: totalCapital,
+        gains: 0,
+        compartment: capitalCompartment,
+        tmiRetraite: input.baseInput.tmiRetraite,
+        smallAnnuityEligible: true,
+        assumptions: input.baseInput.fiscalAssumptions,
+      })
+      : emptyCapitalFiscal();
+    const shortHorizonAge = liquidationAge + fractionnementYears;
+    const shortHorizon = totalCapital > 0
+      ? computeCapitalHorizon({
+        capital: totalCapital,
+        gains: 0,
+        annualRate: 0,
+        liquidationAge,
+        horizonAge: shortHorizonAge,
+        compartment: capitalCompartment,
+        tmiRetraite: input.baseInput.tmiRetraite,
+        smallAnnuityEligible: true,
+        assumptions: input.baseInput.fiscalAssumptions,
+      })
+      : emptyCapitalHorizon(shortHorizonAge, liquidationAge);
+
+    return {
+      totalRenteBrute,
+      totalCapital,
+      fiscal,
+      capitalUnique,
+      shortHorizon,
+      longHorizon: null,
+    };
+  };
+
+  return {
+    allRente: buildStrategy('all_rente'),
+    maxCapital: buildStrategy('max_capital'),
+    fractionnementYears,
+  };
+}
+
 export function computePerTransfert(input: PerTransfertInput): PerTransfertResult {
   const compartment = resolvePerCompartiment(input.originalContractType, input.targetCompartment);
   const yearsToRetirement = yearsUntilRetirement(input.insured.currentAge, input.insured.liquidationAge);
@@ -89,11 +225,12 @@ export function computePerTransfert(input: PerTransfertInput): PerTransfertResul
   const capitalAfterTransfer = positive(input.capitalAcquis)
     * (1 - transferFeeRate)
     * (1 - newPerEntryFeeRate);
-  const capitalAtLiquidation = projectCapital({
-    capital: capitalAfterTransfer,
-    annualRate: input.projection.performanceUntilRetirementRate,
-    years: yearsToRetirement,
-  });
+  const capitalAtLiquidation = projectCapitalWithAnnualPayment(
+    capitalAfterTransfer,
+    input.projection.performanceUntilRetirementRate,
+    yearsToRetirement,
+    input.projection.newPerAnnualPayment ?? 0,
+  );
   const desiredCapitalExitShare = Math.min(1, Math.max(0, input.projection.capitalShareRate));
   const principalBeforeTransfer = Math.max(0, input.capitalAcquis - positive(input.interetsAcquis));
   const gainsBeforeTransfer = Math.min(positive(input.capitalAcquis), positive(input.interetsAcquis));
@@ -132,25 +269,24 @@ export function computePerTransfert(input: PerTransfertInput): PerTransfertResul
       insured: input.insured,
       options: annuityOptions,
     });
-  const prefonRent = input.prefon.enabled && input.prefon.params
-    ? computePrefonRente({
-      params: input.prefon.params,
-      points: input.prefon.points,
-      capitalNet: actuarialRent.capitalNet,
-      acquisitionAge: input.prefon.acquisitionAge,
-      liquidationAge: input.insured.liquidationAge,
-      reversionRate: annuityOptions.reversion.enabled ? annuityOptions.reversion.rate : 0,
+  const fallbackPrefonPocket: PerTransfertPrefonPocketInput = {
+    compartment,
+    points: input.prefon.points,
+    capitalAmount: 0,
+    transferValuePerPoint: 0,
+  };
+  const prefonPockets = input.prefon.pockets && input.prefon.pockets.length > 0
+    ? input.prefon.pockets
+    : [fallbackPrefonPocket];
+  const prefonParams = input.prefon.params;
+  const prefonResult = input.prefon.enabled && prefonParams
+    ? buildPrefonResult({
+      pockets: prefonPockets,
+      params: prefonParams,
+      baseInput: input,
     })
     : null;
-  const newPerRent = prefonRent
-    ? {
-      ...actuarialRent,
-      grossAnnualRent: prefonRent.renteAnnuelleBrute,
-      netAnnualRent: Math.max(0, prefonRent.renteAnnuelleBrute * (1 - annuityOptions.arrearsFeeRate)),
-      monthlyRent: Math.max(0, prefonRent.renteMensuelleBrute * (1 - annuityOptions.arrearsFeeRate)),
-      apparentRate: actuarialRent.capitalNet > 0 ? prefonRent.renteAnnuelleBrute / actuarialRent.capitalNet : 0,
-    }
-    : actuarialRent;
+  const newPerRent = actuarialRent;
   const keepPerf = input.projection.currentContractPerformanceUntilRetirementRate
     ?? input.projection.performanceUntilRetirementRate;
   const capitalKeptAtLiquidation = projectCapitalWithAnnualPayment(
@@ -169,13 +305,15 @@ export function computePerTransfert(input: PerTransfertInput): PerTransfertResul
     reversionEnabled: annuityOptions.reversion.enabled,
     reversionRate: annuityOptions.reversion.rate,
   };
-  const currentRentAtLiquidation = currentRentOptions.mode === 'manual_table'
-    ? computeAnnuityConversion({
+  const currentRentAtLiquidation = prefonResult
+    ? prefonResult.allRente.totalRenteBrute
+    : currentRentOptions.mode === 'manual_table'
+      ? computeAnnuityConversion({
       capitalGross: capitalKeptAtLiquidation,
       insured: input.insured,
       options: buildCurrentAnnuityOptions(currentRentOptions, annuityOptions),
     }).grossAnnualRent
-    : positive(input.renteActuelleAnnuelleBrute);
+      : positive(input.renteActuelleAnnuelleBrute);
   const currentRentFiscal = computeRentFiscal({
     annualRent: currentRentAtLiquidation,
     liquidationAge: input.insured.liquidationAge,
@@ -224,6 +362,63 @@ export function computePerTransfert(input: PerTransfertInput): PerTransfertResul
     smallAnnuityEligible: smallAnnuityCapitalExitEligible,
     assumptions: input.fiscalAssumptions,
   });
+  const currentSmallAnnuityCapitalExitEligible = computeSmallAnnuityEligibility(
+    currentRentFiscal.netAnnualRent,
+    input.fiscalAssumptions,
+  );
+  const currentTypeCapitalLocked = input.originalContractType === 'MADELIN'
+    || input.originalContractType === 'PERP'
+    || input.originalContractType === 'ARTICLE83'
+    || input.originalContractType === 'PEROB'
+    || compartment === 'C3';
+  const currentCapitalAllowed = !input.prefon.enabled
+    && (!currentTypeCapitalLocked || currentSmallAnnuityCapitalExitEligible);
+  const currentFractionAllowed = currentCapitalAllowed
+    && input.originalContractType !== 'MADELIN'
+    && input.originalContractType !== 'PERP'
+    && input.originalContractType !== 'ARTICLE83'
+    && input.originalContractType !== 'PEROB'
+    && compartment !== 'C3';
+  const currentGainsAtLiquidation = Math.min(
+    capitalKeptAtLiquidation,
+    positive(input.interetsAcquis) + Math.max(0, capitalKeptAtLiquidation - positive(input.capitalAcquis) - positive(input.annualCurrentPayment ?? 0) * yearsToRetirement),
+  );
+  const keepUniqueCapitalFiscal = currentCapitalAllowed
+    ? computeCapitalFiscal({
+      capital: capitalKeptAtLiquidation,
+      gains: currentGainsAtLiquidation,
+      compartment,
+      tmiRetraite: input.tmiRetraite,
+      smallAnnuityEligible: currentSmallAnnuityCapitalExitEligible,
+      assumptions: input.fiscalAssumptions,
+    })
+    : emptyCapitalFiscal();
+  const keepShortHorizon = currentFractionAllowed
+    ? computeCapitalHorizon({
+      capital: capitalKeptAtLiquidation,
+      gains: currentGainsAtLiquidation,
+      annualRate: input.projection.capitalExitRevaluationRate,
+      liquidationAge: input.insured.liquidationAge,
+      horizonAge: input.projection.horizonAgeShort,
+      compartment,
+      tmiRetraite: input.tmiRetraite,
+      smallAnnuityEligible: currentSmallAnnuityCapitalExitEligible,
+      assumptions: input.fiscalAssumptions,
+    })
+    : emptyCapitalHorizon(input.projection.horizonAgeShort, input.insured.liquidationAge);
+  const keepLongHorizon = currentFractionAllowed
+    ? computeCapitalHorizon({
+      capital: capitalKeptAtLiquidation,
+      gains: currentGainsAtLiquidation,
+      annualRate: input.projection.capitalExitRevaluationRate,
+      liquidationAge: input.insured.liquidationAge,
+      horizonAge: input.projection.horizonAgeLong,
+      compartment,
+      tmiRetraite: input.tmiRetraite,
+      smallAnnuityEligible: currentSmallAnnuityCapitalExitEligible,
+      assumptions: input.fiscalAssumptions,
+    })
+    : null;
 
   return {
     compartment,
@@ -263,6 +458,11 @@ export function computePerTransfert(input: PerTransfertInput): PerTransfertResul
           longHorizon.years,
         ),
       },
+      capitalExit: {
+        unique: keepUniqueCapitalFiscal,
+        shortHorizon: keepShortHorizon,
+        longHorizon: keepLongHorizon,
+      },
     },
     newPerRent,
     newPerFiscal,
@@ -280,6 +480,7 @@ export function computePerTransfert(input: PerTransfertInput): PerTransfertResul
       }),
     },
     smallAnnuityCapitalExitEligible,
+    prefon: prefonResult,
     warnings: withWarnings(input),
   };
 }

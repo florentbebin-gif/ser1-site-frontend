@@ -222,6 +222,27 @@ describe('computePerTransfert', () => {
     expect(withPayment.keepScenario?.capitalAtLiquidation).toBeGreaterThan(base.keepScenario?.capitalAtLiquidation ?? 0);
   });
 
+  it('capitalise le versement annuel nouveau PER uniquement dans le scénario transférer', () => {
+    const base = computePerTransfert(makeInput({
+      projection: {
+        ...makeInput().projection,
+        transferFeeRate: 0,
+        performanceUntilRetirementRate: 0.02,
+      },
+    }));
+    const withPayment = computePerTransfert(makeInput({
+      projection: {
+        ...makeInput().projection,
+        transferFeeRate: 0,
+        performanceUntilRetirementRate: 0.02,
+        newPerAnnualPayment: 1_200,
+      } as PerTransfertInput['projection'] & { newPerAnnualPayment: number },
+    }));
+
+    expect(withPayment.keepScenario.capitalAtLiquidation).toBeCloseTo(base.keepScenario.capitalAtLiquidation);
+    expect(withPayment.capitalAtLiquidation).toBeGreaterThan(base.capitalAtLiquidation);
+  });
+
   it('force la sortie capital a zero sur le compartiment C3 hors petite rente', () => {
     const result = computePerTransfert(makeInput({
       originalContractType: 'ARTICLE83',
@@ -237,6 +258,75 @@ describe('computePerTransfert', () => {
     expect(result.compartment).toBe('C3');
     expect(result.capitalExit.shareRate).toBe(0);
     expect(result.capitalExit.capitalConvertedToRent).toBeCloseTo(result.capitalAtLiquidation);
+  });
+
+  it('fiscalise le capital C3 petite rente comme un PER transféré et conserve les alias historiques', () => {
+    const result = computePerTransfert(makeInput({
+      originalContractType: 'ARTICLE83',
+      targetCompartment: 'C3',
+      capitalAcquis: 10_000,
+      interetsAcquis: 1_000,
+      renteActuelleAnnuelleBrute: 300,
+      projection: {
+        ...makeInput().projection,
+        transferFeeRate: 0,
+        performanceUntilRetirementRate: 0,
+        capitalShareRate: 1,
+      },
+    }));
+
+    expect(result.smallAnnuityCapitalExitEligible).toBe(true);
+    expect(result.capitalExit.unique.available).toBe(true);
+    expect(result.capitalExit.unique.incomeTax).toBeCloseTo(1_118);
+    expect(result.capitalExit.unique.socialContributions).toBeCloseTo(186);
+    expect(result.capitalExit.unique.netOfSocialContributions).toBe(result.capitalExit.unique.netPS);
+    expect(result.capitalExit.unique.netOfAllTaxes).toBe(result.capitalExit.unique.netIRPS);
+    expect(result.currentRent.fiscal.grossAnnualRent).toBeGreaterThan(0);
+    expect(result.currentRent.fiscal.netOfSocialContributions).toBeGreaterThan(result.currentRent.fiscal.netOfAllTaxes);
+    expect(result.currentRent.fiscal.netAnnualRent).toBe(result.currentRent.fiscal.netOfAllTaxes);
+  });
+
+  it('agrège plusieurs poches Préfon sans reclassement automatique C0 vers C1', () => {
+    const result = computePerTransfert(makeInput({
+      productType: 'PER_POINTS',
+      originalContractType: 'PER_POINTS',
+      targetCompartment: 'C0',
+      capitalAcquis: 10_000,
+      interetsAcquis: 0,
+      renteActuelleAnnuelleBrute: 300,
+      projection: {
+        ...makeInput().projection,
+        transferFeeRate: 0,
+        performanceUntilRetirementRate: 0,
+        capitalShareRate: 0,
+      },
+      prefon: {
+        enabled: true,
+        points: 0,
+        acquisitionAge: 60,
+        params: {
+          millesime: 2025,
+          valeurAcquisition: 2,
+          valeurService: 0.1,
+          fraisVersementRate: 0,
+          fraisTransfertRate: 0,
+          coefAcquisitionByAge: { 60: 1 },
+          coefLiquidationByAge: { 64: 1 },
+          sourceLabel: 'test',
+        },
+        pockets: [
+          { compartment: 'C0', points: 1_000, capitalAmount: 0, transferValuePerPoint: 0, serviceValue: 0.1 },
+          { compartment: 'C2', points: 500, capitalAmount: 0, transferValuePerPoint: 0, serviceValue: 0.1 },
+        ],
+      },
+    }));
+
+    expect(result.compartment).toBe('C1');
+    expect(result.keepScenario.currentRent.grossAnnualRent).toBeCloseTo(150);
+    expect(result.warnings).not.toContain('Compartiment Préfon C0 historique ramené en C1 lors du transfert.');
+    expect(result.prefon?.allRente.totalRenteBrute).toBeCloseTo(150);
+    expect(result.prefon?.maxCapital.totalRenteBrute).toBeCloseTo(80);
+    expect(result.prefon?.maxCapital.totalCapital).toBeCloseTo(1_400);
   });
 
   it('utilise l age du conjoint propre a la rente actuelle en mode table manuelle', () => {
