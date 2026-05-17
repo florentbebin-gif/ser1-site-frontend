@@ -1,4 +1,4 @@
-/* Fichier genere par tools/scripts/generate-per-transfert-data.py. */
+/* Fichier genere par tools/scripts/generate-mortality-data.py. */
 /* Source : CASdatasets, donnees freMortTables. */
 import type { MortalityTable } from './types';
 

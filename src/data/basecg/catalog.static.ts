@@ -1,9 +1,11 @@
-/* Fichier genere par tools/scripts/generate-per-transfert-data.py. */
-/* Source : classeur Excel local, onglet BASECG. */
+/* Snapshot statique Base CG retraite.
+ * Source historique : extraction Excel validee, desormais conservee comme donnee applicative statique.
+ * Ne pas regenerer depuis un classeur local.
+ */
 import type { BaseCgRetraiteContract } from './types';
 
 export const BASECG_VERSION = '2025-01-base-cg-retraite';
-export const BASECG_EXTRACTED_COUNT = 395;
+export const BASECG_CONTRACT_COUNT = 395;
 
 export const BASECG_CATALOG = [
   {"id":"umr-art83-corem-co-1","sourceId":"Contrat N°1","compagnie":"UMR","nomContrat":"ART83- COREM CO","typeContrat":"ARTICLE83","phaseEpargne":{"dateCommercialisation":"De 2006 à NC","nombreFonds":1,"repartitionUcEuro":"-","rendementFondsEuro":"Système par points","fraisVersements":0.035,"fraisGestion":0.003,"fraisArbitrage":"-","fraisTransfertSortant":"5%\n (0 après 10 ans)","fraisTransfertSortantRate":0.05,"clauseBeneficiaire":"Standard\n(Rente viagère conjoint à partir de 55 ans)","garantiesComplementaires":"Non"},"phaseLiquidation":{"ageLimiteLiquidation":"Non","sortieCapitalRetraite":"Non","fractionnementCapital":"Non","rachatLibre":"Non","tableConversionRente":"Celle du vst\nSystème par points","tableGarantieAdhesion":"Celle du vst\nSystème par points","tauxTechnique":"NC","fraisArrerages":0.02,"fraisArreragesRate":0.02,"annuitesGaranties":"Oui sur option","reversionPossible":"Oui sur option\n(60-80-100%)","reversionIncluse":"Non","renteEstimee":null}},

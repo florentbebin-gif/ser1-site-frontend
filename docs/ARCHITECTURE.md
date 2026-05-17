@@ -315,6 +315,12 @@ Overlays admin : table `base_contrat_overrides` (clôture/réouverture + date + 
 
 UI : `/settings/base-contrat` est une vue read-only à 3 colonnes (Constitution / Sortie-Rachat / Décès-Transmission), avec toggle Particulier/Entreprise.
 
+### Base CG retraite
+
+Source applicative : `src/data/basecg/catalog.static.ts` (snapshot statique TypeScript). Le classeur historique n'est plus une source runtime et ne doit pas etre requis pour demarrer, tester ou builder l'application.
+
+Les corrections vivantes passent par les pages settings/admin et les overlays Supabase existants. Les fichiers Office de travail restent hors Git ; `npm run check:no-office-artifacts` bloque tout `.xls`, `.xlsx`, `.xlsm`, `.ppt` ou `.pptx` versionne par erreur.
+
 ### Gouvernance catalogue — assimilation
 
 - Si les règles fiscales sont identiques : **pas de sous-catégories** (assimilation).

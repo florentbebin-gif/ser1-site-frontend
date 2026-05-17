@@ -1,6 +1,6 @@
 export {
   BASECG_CATALOG,
-  BASECG_EXTRACTED_COUNT,
+  BASECG_CONTRACT_COUNT,
   BASECG_VERSION,
   findBaseCgContractById,
   isPointsContract,
