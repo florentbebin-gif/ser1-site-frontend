@@ -7,6 +7,7 @@ import {
   type PerTransfertFiscalAssumptions,
   type PerTransfertInput,
   type PerTransfertResult,
+  type PerTransfertCapitalFiscalResult,
 } from '@/engine/per';
 import { DEFAULT_COLORS } from '@/settings/theme';
 import type { PerTransfertSynthesisSlideSpec } from '../theme/types';
@@ -125,6 +126,29 @@ function findSynthesisSlide(result: PerTransfertResult): PerTransfertSynthesisSl
   return slide as PerTransfertSynthesisSlideSpec;
 }
 
+function makeCapitalFiscalResult(overrides: Partial<PerTransfertCapitalFiscalResult>): PerTransfertCapitalFiscalResult {
+  const capital = overrides.capital ?? 0;
+  const socialContributions = overrides.socialContributions ?? 0;
+  const incomeTax = overrides.incomeTax ?? 0;
+  const netPS = overrides.netPS ?? Math.max(0, capital - socialContributions);
+  const netIRPS = overrides.netIRPS ?? Math.max(0, capital - socialContributions - incomeTax);
+  return {
+    available: false,
+    capital,
+    gains: 0,
+    netOfSocialContributions: overrides.netOfSocialContributions ?? netPS,
+    netOfAllTaxes: overrides.netOfAllTaxes ?? netIRPS,
+    netOfAllTaxesWithQuotient: overrides.netOfAllTaxesWithQuotient ?? netIRPS,
+    incomeTax,
+    incomeTaxAtBareme: overrides.incomeTaxAtBareme ?? incomeTax,
+    incomeTaxWithQuotient: overrides.incomeTaxWithQuotient ?? incomeTax,
+    socialContributions,
+    netPS,
+    netIRPS,
+    ...overrides,
+  };
+}
+
 describe('buildPerTransfertStudyDeck', () => {
   it('genere une etude client structuree en quinze slides de contenu', () => {
     const data: PerTransfertDeckData = {
@@ -213,7 +237,7 @@ describe('buildPerTransfertStudyDeck', () => {
       },
       capitalExit: {
         ...computed.capitalExit,
-        unique: {
+        unique: makeCapitalFiscalResult({
           available: true,
           capital: 100_000,
           gains: 0,
@@ -221,7 +245,7 @@ describe('buildPerTransfertStudyDeck', () => {
           socialContributions: 0,
           netPS: 100_000,
           netIRPS: 70_000,
-        },
+        }),
         shortHorizon: {
           ...computed.capitalExit.shortHorizon,
           horizonAge: 80,

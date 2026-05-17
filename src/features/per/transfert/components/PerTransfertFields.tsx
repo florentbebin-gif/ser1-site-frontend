@@ -25,6 +25,10 @@ interface MoneyFieldProps {
   min?: number;
 }
 
+interface DecimalMoneyFieldProps extends MoneyFieldProps {
+  decimals?: number;
+}
+
 interface RateFieldProps {
   label: ReactNode;
   ariaLabel?: string;
@@ -62,6 +66,7 @@ interface SelectFieldProps {
   onChange: (_value: string) => void;
   placeholder?: string;
   hint?: string;
+  clearable?: boolean;
 }
 
 function parseFrenchNumber(value: string): number {
@@ -73,6 +78,12 @@ function formatRateFr(value: number): string {
   return Number.isFinite(value)
     ? value.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
     : '0,00';
+}
+
+function formatDecimalFr(value: number, decimals: number): string {
+  return Number.isFinite(value)
+    ? value.toLocaleString('fr-FR', { minimumFractionDigits: decimals, maximumFractionDigits: decimals })
+    : (0).toLocaleString('fr-FR', { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
 }
 
 function clamp(value: number, min?: number, max?: number): number {
@@ -93,6 +104,43 @@ export function PerTransfertMoneyField({ label, ariaLabel, value, onChange, hint
         onChange={onChange}
         ariaLabel={ariaText(label, ariaLabel)}
         min={min}
+      />
+      <span className="per-transfert-field-suffix">€</span>
+    </SimFieldShell>
+  );
+}
+
+export function PerTransfertDecimalMoneyField({
+  label,
+  ariaLabel,
+  value,
+  onChange,
+  hint,
+  min = 0,
+  decimals = 4,
+}: DecimalMoneyFieldProps) {
+  const [text, setText] = useState(formatDecimalFr(value, decimals));
+
+  useEffect(() => {
+    setText(formatDecimalFr(value, decimals));
+  }, [decimals, value]);
+
+  function commit(nextText = text) {
+    const nextValue = clamp(parseFrenchNumber(nextText), min);
+    setText(formatDecimalFr(nextValue, decimals));
+    onChange(nextValue);
+  }
+
+  return (
+    <SimFieldShell label={label} hint={hint}>
+      <input
+        className="sim-field__control"
+        type="text"
+        inputMode="decimal"
+        value={text}
+        aria-label={ariaText(label, ariaLabel)}
+        onChange={(event) => setText(event.target.value)}
+        onBlur={() => commit()}
       />
       <span className="per-transfert-field-suffix">€</span>
     </SimFieldShell>
@@ -215,6 +263,7 @@ export function PerTransfertSelectField({
   onChange,
   placeholder,
   hint,
+  clearable = false,
 }: SelectFieldProps) {
   return (
     <SimFieldShell label={label} hint={hint}>
@@ -224,6 +273,7 @@ export function PerTransfertSelectField({
         options={options}
         placeholder={placeholder}
         align="right"
+        clearable={clearable}
       />
     </SimFieldShell>
   );

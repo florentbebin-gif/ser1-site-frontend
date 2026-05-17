@@ -2,6 +2,7 @@ import type { BaseCgRetraiteContract } from '@/data/basecg';
 import {
   formatBaseCgRetraiteRateField,
   formatBaseCgRetraiteValue,
+  hasBaseCgRetraiteValue,
   normalizeBaseCgRetraiteGestionFees,
 } from '@/data/basecg';
 
@@ -17,6 +18,7 @@ function display(value: unknown, format?: 'rate'): string {
 }
 
 function AuditRow({ label, value, format }: { label: string; value: unknown; format?: 'rate' }) {
+  if (!hasBaseCgRetraiteValue(value)) return null;
   return (
     <div className="per-transfert-audit-row">
       <dt>{label}</dt>
@@ -36,9 +38,50 @@ export function ContractAuditCards({ contract }: ContractAuditCardsProps) {
 
   const documents = contract.documents ?? [];
   const gestionFees = normalizeBaseCgRetraiteGestionFees(contract.phaseEpargne);
+  const epargneRows = [
+    contract.phaseEpargne.dateCommercialisation,
+    contract.phaseEpargne.nombreFonds,
+    contract.phaseEpargne.nombreSupportsUc,
+    contract.phaseEpargne.repartitionUcEuro,
+    contract.phaseEpargne.rendementFondsEuro,
+    contract.phaseEpargne.fondsEuroGarantis,
+    contract.phaseEpargne.fraisVersements,
+    gestionFees.fraisGestionFondsEuro,
+    gestionFees.fraisGestionUc,
+    contract.phaseEpargne.fraisArbitrage,
+    contract.phaseEpargne.fraisTransfertSortant,
+    contract.phaseEpargne.clauseBeneficiaire,
+    contract.phaseEpargne.garantiesComplementaires,
+  ];
+  const liquidationRows = [
+    contract.phaseLiquidation.ageLimiteLiquidation,
+    contract.phaseLiquidation.sortieCapitalRetraite,
+    contract.phaseLiquidation.fractionnementCapital,
+    contract.phaseLiquidation.rachatLibre,
+    contract.phaseLiquidation.tableConversionRente,
+    contract.phaseLiquidation.tableGarantieAdhesion,
+    contract.phaseLiquidation.tauxTechnique,
+    contract.phaseLiquidation.fraisArrerages,
+    contract.phaseLiquidation.annuitesGaranties,
+    contract.phaseLiquidation.reversionPossible,
+    contract.phaseLiquidation.reversionIncluse,
+    contract.phaseLiquidation.renteEstimee,
+  ];
+  const hasEpargne = epargneRows.some(hasBaseCgRetraiteValue);
+  const hasLiquidation = liquidationRows.some(hasBaseCgRetraiteValue);
+  const hasDocuments = documents.length > 0;
+
+  if (!hasEpargne && !hasLiquidation && !hasDocuments) {
+    return (
+      <div className="per-transfert-empty-analysis">
+        La grille de devoir de conseil reste à compléter avec les hypothèses du relevé et des conditions générales.
+      </div>
+    );
+  }
 
   return (
     <div className="per-transfert-contract-audit">
+      {hasEpargne ? (
       <section className="per-transfert-contract-audit__phase">
         <h4>Phase épargne</h4>
         <dl>
@@ -53,11 +96,13 @@ export function ContractAuditCards({ contract }: ContractAuditCardsProps) {
           <AuditRow label="Frais gestion UC" value={gestionFees.fraisGestionUc} format="rate" />
           <AuditRow label="Frais d'arbitrage" value={contract.phaseEpargne.fraisArbitrage} format="rate" />
           <AuditRow label="Frais de transfert sortant" value={contract.phaseEpargne.fraisTransfertSortant} format="rate" />
-          <AuditRow label="Clause bénéficiaire" value={contract.phaseEpargne.clauseBeneficiaire} />
+          <AuditRow label="Modalités en cas de décès" value={contract.phaseEpargne.clauseBeneficiaire} />
           <AuditRow label="Garanties complémentaires" value={contract.phaseEpargne.garantiesComplementaires} />
         </dl>
       </section>
+      ) : null}
 
+      {hasLiquidation ? (
       <section className="per-transfert-contract-audit__phase">
         <h4>Phase liquidation</h4>
         <dl>
@@ -75,6 +120,7 @@ export function ContractAuditCards({ contract }: ContractAuditCardsProps) {
           <AuditRow label="Rente estimée" value={contract.phaseLiquidation.renteEstimee} />
         </dl>
       </section>
+      ) : null}
 
       {documents.length > 0 ? (
         <section className="per-transfert-contract-audit__documents">

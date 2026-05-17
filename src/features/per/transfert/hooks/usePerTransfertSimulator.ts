@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import type { BaseCgRetraiteContract, BaseCgRetraiteContractType } from '@/data/basecg';
+import type { BaseCgRetraiteContract, BaseCgRetraiteContractType, BaseCgRetraitePrefonPocket } from '@/data/basecg';
 import { isPointsContract } from '@/data/basecg';
+import { PREFON_USER_2026_SERVICE_VALUE } from '@/data/basecg';
 import { getBaseCgRetraiteCatalog } from '@/utils/cache/baseCgRetraiteRepository';
 import { onResetEvent, storageKeyFor } from '@/utils/reset';
 import {
@@ -32,6 +33,7 @@ export interface PerTransfertFormState {
   tmiRetraite: number;
   transferFeeRate: number;
   newPerEntryFeeRate: number;
+  newPerAnnualPayment: number;
   performanceUntilRetirementRate: number;
   currentContractPerformanceUntilRetirementRate: number;
   currentRentRevaluationRate: number;
@@ -58,6 +60,7 @@ export interface PerTransfertFormState {
   spouseBirthYear: number;
   spouseAgeAtLiquidation: number;
   prefonPoints: number;
+  prefonPockets: BaseCgRetraitePrefonPocket[];
 }
 
 const DEFAULT_STATE: PerTransfertFormState = {
@@ -76,6 +79,7 @@ const DEFAULT_STATE: PerTransfertFormState = {
   tmiRetraite: 0,
   transferFeeRate: 0,
   newPerEntryFeeRate: 0,
+  newPerAnnualPayment: 0,
   performanceUntilRetirementRate: 0,
   currentContractPerformanceUntilRetirementRate: 0,
   currentRentRevaluationRate: 0,
@@ -102,6 +106,7 @@ const DEFAULT_STATE: PerTransfertFormState = {
   spouseBirthYear: 1962,
   spouseAgeAtLiquidation: 62,
   prefonPoints: 0,
+  prefonPockets: [],
 };
 
 function toRate(percent: number): number {
@@ -113,11 +118,39 @@ function toPercent(rate: number): number {
 }
 
 function contractToProductType(type: BaseCgRetraiteContractType): PerTransfertProductType {
-  if (type === 'ARTICLE83') return 'ARTICLE83';
+  if (type === 'ARTICLE83' || type === 'PEROB') return type;
+  if (type === 'PERCO' || type === 'PERECO') return type;
   if (type === 'MADELIN') return 'MADELIN';
   if (type === 'PERP') return 'PERP';
   if (type === 'PER_POINTS') return 'PER_POINTS';
   return 'PER';
+}
+
+function normalizePrefonPocket(pocket: Partial<BaseCgRetraitePrefonPocket>): BaseCgRetraitePrefonPocket {
+  return {
+    compartment: pocket.compartment ?? 'C1',
+    points: pocket.points ?? 0,
+    capitalAmount: pocket.capitalAmount ?? 0,
+    unitValue: pocket.unitValue ?? null,
+    serviceValue: pocket.serviceValue ?? null,
+    transferValue: pocket.transferValue ?? null,
+    serviceRevaluationRate: pocket.serviceRevaluationRate ?? 0,
+    reversionEnabled: pocket.reversionEnabled ?? false,
+    reversionRate: pocket.reversionRate ?? 0,
+    spouseBirthYear: pocket.spouseBirthYear ?? null,
+    spouseAgeAtLiquidation: pocket.spouseAgeAtLiquidation ?? null,
+    c0CapitalOptionEnabled: pocket.c0CapitalOptionEnabled ?? false,
+    capitalOptionEnabled: pocket.capitalOptionEnabled ?? true,
+  };
+}
+
+function prefonPocketsCapital(pockets: BaseCgRetraitePrefonPocket[]): number {
+  return pockets.reduce((sum, pocket) => {
+    const points = Math.max(0, pocket.points ?? 0);
+    const unitValue = Math.max(0, pocket.unitValue ?? 0);
+    const capitalAmount = Math.max(0, pocket.capitalAmount ?? 0);
+    return sum + (capitalAmount > 0 ? capitalAmount : points * unitValue);
+  }, 0);
 }
 
 function spouseAgeAtLiquidation(insuredBirthYear: number, liquidationAge: number, spouseBirthYear: number): number {
@@ -245,17 +278,31 @@ export function usePerTransfertSimulator(fiscalContext: FiscalContext) {
           contract.phaseLiquidation.tableConversionRente,
           previous.sex,
         ),
+        prefonPockets: isPointsContract(contract) && previous.prefonPockets.length === 0
+          ? [
+            normalizePrefonPocket({
+              compartment: contract.perCompartment ?? 'C1',
+              unitValue: contract.pointsParams?.valeurAcquisition ?? null,
+              serviceValue: PREFON_USER_2026_SERVICE_VALUE,
+              transferValue: null,
+            }),
+          ]
+          : previous.prefonPockets,
       };
     });
   }, [catalog]);
 
   const input = useMemo<PerTransfertInput>(() => {
     const fiscalAssumptions = buildFiscalAssumptions(fiscalContext);
+    const prefonCapitalAcquis = state.typeContrat === 'PER_POINTS' ? prefonPocketsCapital(state.prefonPockets) : 0;
+    const capitalAcquis = state.typeContrat === 'PER_POINTS' && prefonCapitalAcquis > 0
+      ? prefonCapitalAcquis
+      : state.capitalAcquis;
     return {
       productType: contractToProductType(state.typeContrat),
       originalContractType: state.typeContrat,
       targetCompartment: selectedContract?.perCompartment ?? null,
-      capitalAcquis: state.capitalAcquis,
+      capitalAcquis,
       interetsAcquis: state.interetsAcquis,
       renteActuelleAnnuelleBrute: state.renteActuelleAnnuelleBrute,
       subscriptionDate: state.subscriptionDate || null,
@@ -318,6 +365,7 @@ export function usePerTransfertSimulator(fiscalContext: FiscalContext) {
           state.subscriptionDate,
         ),
         newPerEntryFeeRate: toRate(state.newPerEntryFeeRate),
+        newPerAnnualPayment: state.newPerAnnualPayment,
         performanceUntilRetirementRate: toRate(state.performanceUntilRetirementRate),
         currentContractPerformanceUntilRetirementRate: toRate(state.currentContractPerformanceUntilRetirementRate),
         currentRentRevaluationRate: toRate(state.currentRentRevaluationRate),
@@ -330,6 +378,24 @@ export function usePerTransfertSimulator(fiscalContext: FiscalContext) {
       prefon: {
         enabled: state.typeContrat === 'PER_POINTS',
         points: state.prefonPoints,
+        pockets: state.prefonPockets.length > 0
+          ? state.prefonPockets.map((pocket) => ({
+            compartment: pocket.compartment,
+            points: Math.max(0, pocket.points ?? 0),
+            capitalAmount: Math.max(0, pocket.capitalAmount ?? 0),
+            transferValuePerPoint: Math.max(0, pocket.transferValue ?? 0),
+            serviceValue: pocket.serviceValue,
+            serviceRevaluationRate: toRate(pocket.serviceRevaluationRate ?? 0),
+            reversionEnabled: pocket.reversionEnabled,
+            reversionRate: toRate(pocket.reversionRate ?? 0),
+            spouseAgeAtLiquidation: pocket.spouseAgeAtLiquidation
+              ?? (pocket.spouseBirthYear
+                ? spouseAgeAtLiquidation(state.birthYear, state.liquidationAge, pocket.spouseBirthYear)
+                : state.spouseAgeAtLiquidation),
+            c0CapitalOptionEnabled: pocket.c0CapitalOptionEnabled,
+            capitalOptionEnabled: pocket.capitalOptionEnabled,
+          }))
+          : undefined,
         acquisitionAge: state.currentAge,
         params: selectedContract?.pointsParams ?? null,
       },

@@ -3,11 +3,13 @@ export type BaseCgRetraiteContractType =
   | 'PERP'
   | 'MADELIN'
   | 'ARTICLE83'
+  | 'PEROB'
   | 'PERCO'
+  | 'PERECO'
   | 'PER_POINTS'
   | 'AUTRE';
 
-export type PerTransfertCompartment = 'C1' | 'C1_BIS' | 'C2' | 'C3';
+export type PerTransfertCompartment = 'C0' | 'C1' | 'C1_BIS' | 'C2' | 'C3';
 
 export interface PrefonPointsParams {
   millesime: number;
@@ -17,7 +19,34 @@ export interface PrefonPointsParams {
   fraisTransfertRate: number;
   coefAcquisitionByAge: Record<number, number>;
   coefLiquidationByAge: Record<number, number>;
+  coefReversionByAgeGap?: PrefonReversionCoefficient[];
   sourceLabel: string;
+}
+
+export interface PrefonReversionCoefficient {
+  minGapInclusive: number | null;
+  maxGapInclusive: number | null;
+  coefficients: {
+    rate60: number;
+    rate80: number;
+    rate100: number;
+  };
+}
+
+export interface BaseCgRetraitePrefonPocket {
+  compartment: PerTransfertCompartment;
+  points: number | null;
+  capitalAmount: number | null;
+  unitValue?: number | null;
+  serviceValue?: number | null;
+  transferValue?: number | null;
+  serviceRevaluationRate?: number | null;
+  reversionEnabled?: boolean | null;
+  reversionRate?: number | null;
+  spouseBirthYear?: number | null;
+  spouseAgeAtLiquidation?: number | null;
+  c0CapitalOptionEnabled?: boolean | null;
+  capitalOptionEnabled?: boolean | null;
 }
 
 export interface BaseCgPhaseEpargne {
@@ -34,6 +63,7 @@ export interface BaseCgPhaseEpargne {
   fraisArbitrage: string | number | null;
   fraisTransfertSortant: string | number | null;
   fraisTransfertSortantRate: number | null;
+  prefonPockets?: BaseCgRetraitePrefonPocket[];
   clauseBeneficiaire: string | null;
   garantiesComplementaires: string | null;
 }

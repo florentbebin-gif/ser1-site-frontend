@@ -26,10 +26,43 @@ function unavailable(): PerTransfertCapitalFiscalResult {
     available: false,
     capital: 0,
     gains: 0,
+    netOfSocialContributions: 0,
+    netOfAllTaxes: 0,
+    netOfAllTaxesWithQuotient: 0,
     incomeTax: 0,
+    incomeTaxAtBareme: 0,
+    incomeTaxWithQuotient: 0,
     socialContributions: 0,
     netPS: 0,
     netIRPS: 0,
+  };
+}
+
+function buildAvailableResult(input: {
+  capital: number;
+  gains: number;
+  incomeTax: number;
+  incomeTaxAtBareme?: number;
+  incomeTaxWithQuotient?: number;
+  socialContributions: number;
+}): PerTransfertCapitalFiscalResult {
+  const netOfSocialContributions = Math.max(0, input.capital - input.socialContributions);
+  const netOfAllTaxes = Math.max(0, input.capital - input.socialContributions - input.incomeTax);
+  const quotientTax = input.incomeTaxWithQuotient ?? input.incomeTax;
+  const netOfAllTaxesWithQuotient = Math.max(0, input.capital - input.socialContributions - quotientTax);
+  return {
+    available: true,
+    capital: input.capital,
+    gains: input.gains,
+    netOfSocialContributions,
+    netOfAllTaxes,
+    netOfAllTaxesWithQuotient,
+    incomeTax: input.incomeTax,
+    incomeTaxAtBareme: input.incomeTaxAtBareme ?? input.incomeTax,
+    incomeTaxWithQuotient: quotientTax,
+    socialContributions: input.socialContributions,
+    netPS: netOfSocialContributions,
+    netIRPS: netOfAllTaxes,
   };
 }
 
@@ -48,42 +81,31 @@ export function computeCapitalFiscal(input: ComputeCapitalFiscalInput): PerTrans
   if (input.compartment === 'C1') {
     const socialContributions = gains * input.assumptions.psRatePatrimony;
     const incomeTax = principal * tmi + gains * input.assumptions.pfuIrRate;
-    const netPS = Math.max(0, capital - socialContributions);
-    return {
-      available: true,
+    return buildAvailableResult({
       capital,
       gains,
       incomeTax,
       socialContributions,
-      netPS,
-      netIRPS: Math.max(0, capital - socialContributions - incomeTax),
-    };
+    });
   }
 
   if (input.compartment === 'C1_BIS' || input.compartment === 'C2') {
     const socialContributions = gains * input.assumptions.psRatePatrimony;
     const incomeTax = gains * input.assumptions.pfuIrRate;
-    return {
-      available: true,
+    return buildAvailableResult({
       capital,
       gains,
       incomeTax,
       socialContributions,
-      netPS: Math.max(0, capital - socialContributions),
-      netIRPS: Math.max(0, capital - socialContributions - incomeTax),
-    };
+    });
   }
 
-  const forfaitBase = capital * (1 - input.assumptions.smallAnnuityCapitalExitFlatTaxAbatementRate);
-  const incomeTax = forfaitBase * input.assumptions.smallAnnuityCapitalExitFlatTaxRate;
-  const socialContributions = capital * input.assumptions.psRateRetirementDefault;
-  return {
-    available: true,
+  const socialContributions = gains * input.assumptions.psRatePatrimony;
+  const incomeTax = principal * tmi + gains * input.assumptions.pfuIrRate;
+  return buildAvailableResult({
     capital,
     gains,
     incomeTax,
     socialContributions,
-    netPS: Math.max(0, capital - socialContributions),
-    netIRPS: Math.max(0, capital - socialContributions - incomeTax),
-  };
+  });
 }

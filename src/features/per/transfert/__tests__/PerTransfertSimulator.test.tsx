@@ -7,12 +7,13 @@ import '@testing-library/jest-dom/vitest';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { PerTransfertWizardSteps } from '../components/PerTransfertWizardSteps';
-import { PerTransfertPivotTable } from '../components/PerTransfertPivotTable';
 import { ContractAuditCards } from '../components/ContractAuditCards';
-import { PerTransfertSummaryPanel } from '../components/PerTransfertSummaryPanel';
+import { PerTransfertSidebar } from '../components/PerTransfertSidebar';
 import { PerTransfertHypotheses } from '../components/PerTransfertHypotheses';
 import { PerTransfertFraisInfoModal } from '../components/PerTransfertFraisInfoModal';
-import type { PerTransfertResult } from '@/engine/per';
+import { PerTransfertPrefonPocketsForm } from '../components/PerTransfertPrefonPocketsForm';
+import { TransferRulesInfoModal } from '../components/TransferRulesInfoModal';
+import type { PerTransfertCapitalFiscalResult, PerTransfertFiscalResult, PerTransfertResult } from '@/engine/per';
 import type { BaseCgRetraiteContract } from '@/data/basecg';
 
 // ——— Tests composants purs ———
@@ -59,7 +60,49 @@ describe('PerTransfertWizardSteps', () => {
   });
 });
 
-// ——— Résultat minimal pour PerTransfertPivotTable ———
+// ——— Résultat minimal pour la synthèse PER transfert ———
+
+function makeFiscalResult(overrides: Partial<PerTransfertFiscalResult> = {}): PerTransfertFiscalResult {
+  const grossAnnualRent = overrides.grossAnnualRent ?? overrides.netAnnualRent ?? 0;
+  const socialContributions = overrides.socialContributions ?? 0;
+  const incomeTax = overrides.incomeTax ?? 0;
+  const netOfAllTaxes = overrides.netOfAllTaxes ?? overrides.netAnnualRent ?? Math.max(0, grossAnnualRent - incomeTax - socialContributions);
+  return {
+    family: 'RVTG',
+    taxableFraction: 1,
+    taxableIncome: grossAnnualRent,
+    grossAnnualRent,
+    netOfSocialContributions: overrides.netOfSocialContributions ?? Math.max(0, grossAnnualRent - socialContributions),
+    netOfAllTaxes,
+    incomeTax,
+    socialContributions,
+    netAnnualRent: netOfAllTaxes,
+    ...overrides,
+  };
+}
+
+function makeCapitalFiscalResult(overrides: Partial<PerTransfertCapitalFiscalResult> = {}): PerTransfertCapitalFiscalResult {
+  const capital = overrides.capital ?? 0;
+  const socialContributions = overrides.socialContributions ?? 0;
+  const incomeTax = overrides.incomeTax ?? 0;
+  const netOfAllTaxes = overrides.netOfAllTaxes ?? overrides.netIRPS ?? Math.max(0, capital - socialContributions - incomeTax);
+  const netOfSocialContributions = overrides.netOfSocialContributions ?? overrides.netPS ?? Math.max(0, capital - socialContributions);
+  return {
+    available: false,
+    capital,
+    gains: 0,
+    netOfSocialContributions,
+    netOfAllTaxes,
+    netOfAllTaxesWithQuotient: overrides.netOfAllTaxesWithQuotient ?? netOfAllTaxes,
+    incomeTax,
+    incomeTaxAtBareme: overrides.incomeTaxAtBareme ?? incomeTax,
+    incomeTaxWithQuotient: overrides.incomeTaxWithQuotient ?? incomeTax,
+    socialContributions,
+    netPS: netOfSocialContributions,
+    netIRPS: netOfAllTaxes,
+    ...overrides,
+  };
+}
 
 function makeResult(overrides: Partial<PerTransfertResult> = {}): PerTransfertResult {
   return {
@@ -70,14 +113,7 @@ function makeResult(overrides: Partial<PerTransfertResult> = {}): PerTransfertRe
     currentRent: {
       grossAnnualRent: 3000,
       netAnnualRent: 2200,
-      fiscal: {
-        family: 'RVTG',
-        taxableFraction: 1,
-        taxableIncome: 2700,
-        incomeTax: 810,
-        socialContributions: 0,
-        netAnnualRent: 2200,
-      },
+      fiscal: makeFiscalResult({ grossAnnualRent: 3000, taxableIncome: 2700, incomeTax: 810, netAnnualRent: 2200 }),
       cumulativeToShortHorizon: 22000,
       cumulativeToLongHorizon: 44000,
     },
@@ -87,14 +123,7 @@ function makeResult(overrides: Partial<PerTransfertResult> = {}): PerTransfertRe
         grossAnnualRent: 3000,
         netAnnualRent: 2200,
         netMonthly: 2200 / 12,
-        fiscal: {
-          family: 'RVTG',
-          taxableFraction: 1,
-          taxableIncome: 2700,
-          incomeTax: 810,
-          socialContributions: 0,
-          netAnnualRent: 2200,
-        },
+        fiscal: makeFiscalResult({ grossAnnualRent: 3000, taxableIncome: 2700, incomeTax: 810, netAnnualRent: 2200 }),
         cumulativeToShortHorizon: 22000,
         cumulativeToLongHorizon: 44000,
       },
@@ -107,27 +136,12 @@ function makeResult(overrides: Partial<PerTransfertResult> = {}): PerTransfertRe
       monthlyRent: 200,
       apparentRate: 0.025,
     },
-    newPerFiscal: {
-      family: 'RVTG',
-      taxableFraction: 1,
-      taxableIncome: 2520,
-      incomeTax: 756,
-      socialContributions: 0,
-      netAnnualRent: 2400,
-    },
+    newPerFiscal: makeFiscalResult({ grossAnnualRent: 2800, taxableIncome: 2520, incomeTax: 756, netAnnualRent: 2400 }),
     capitalExit: {
       shareRate: 0,
       capitalConvertedToRent: 110000,
       capitalAvailableAtLiquidation: 0,
-      unique: {
-        available: false,
-        capital: 0,
-        gains: 0,
-        incomeTax: 0,
-        socialContributions: 0,
-        netPS: 0,
-        netIRPS: 0,
-      },
+      unique: makeCapitalFiscalResult(),
       shortHorizon: {
         horizonAge: 80,
         years: 16,
@@ -154,100 +168,65 @@ function makeResult(overrides: Partial<PerTransfertResult> = {}): PerTransfertRe
   };
 }
 
-describe('PerTransfertPivotTable', () => {
-  it('affiche les sections Conserver et Transférer', () => {
+describe('PerTransfertSidebar', () => {
+  it('affiche quatre oppositions sans sélecteur de sortie', () => {
     const html = renderToStaticMarkup(
-      <PerTransfertPivotTable result={makeResult()} liquidationAge={64} />,
-    );
-    expect(html).toContain('Conserver le contrat actuel');
-    expect(html).toContain('Transférer vers le nouveau PER');
-  });
-
-  it('affiche la rente nette du contrat actuel', () => {
-    const html = renderToStaticMarkup(
-      <PerTransfertPivotTable result={makeResult()} liquidationAge={64} />,
-    );
-    expect(html).toContain('2');
-    expect(html).toContain('200');
-  });
-
-  it("affiche l'âge de liquidation dans l'en-tête", () => {
-    const html = renderToStaticMarkup(
-      <PerTransfertPivotTable result={makeResult()} liquidationAge={64} />,
-    );
-    expect(html).toContain('64 ans');
-  });
-
-  it('affiche les horizons court et long', () => {
-    const html = renderToStaticMarkup(
-      <PerTransfertPivotTable result={makeResult()} liquidationAge={64} />,
-    );
-    expect(html).toContain('80 ans');
-    expect(html).toContain('90 ans');
-  });
-
-  it('affiche — pour le capital unique quand non disponible', () => {
-    const html = renderToStaticMarkup(
-      <PerTransfertPivotTable result={makeResult()} liquidationAge={64} />,
-    );
-    expect(html).toContain('—');
-  });
-
-  it('affiche + quand le PER est meilleur (gain positif)', () => {
-    const result = makeResult({
-      currentRent: {
-        grossAnnualRent: 1800,
-        netAnnualRent: 1500,
-        fiscal: {
-          family: 'RVTG',
-          taxableFraction: 1,
-          taxableIncome: 1620,
-          incomeTax: 486,
-          socialContributions: 0,
-          netAnnualRent: 1500,
-        },
-        cumulativeToShortHorizon: 15000,
-        cumulativeToLongHorizon: 30000,
-      },
-    });
-    const html = renderToStaticMarkup(
-      <PerTransfertPivotTable result={result} liquidationAge={64} />,
-    );
-    expect(html).toContain('+');
-  });
-
-  it('affiche la ligne Gain PER', () => {
-    const html = renderToStaticMarkup(
-      <PerTransfertPivotTable result={makeResult()} liquidationAge={64} />,
-    );
-    expect(html).toContain('Gain PER vs contrat actuel');
-  });
-});
-
-describe('PerTransfertSummaryPanel', () => {
-  it('affiche les rentes nettes annuelles et retire le doublon d export', () => {
-    const SummaryPanel = PerTransfertSummaryPanel as unknown as ComponentType<{
-      result: PerTransfertResult;
-      capitalShareRatePercent: number;
-      selectedContract: BaseCgRetraiteContract | null;
-      subscriptionDate: string;
-    }>;
-
-    const html = renderToStaticMarkup(
-      <SummaryPanel
+      <PerTransfertSidebar
         result={makeResult()}
-        capitalShareRatePercent={30}
         selectedContract={null}
+        typeContrat="MADELIN"
         subscriptionDate=""
+        step2Done
+        horizonAgeShort={80}
+        horizonAgeLong={90}
+        onHorizonChange={vi.fn()}
+        onOpenQuotientInfo={vi.fn()}
+        onOpenFractionalInfo={vi.fn()}
       />,
     );
 
-    expect(html).toContain('Rente nette annuelle');
-    expect(html).toContain('2 200');
-    expect(html).toContain('2 400');
+    expect(html).not.toContain('Type de sortie à comparer');
+    expect(html).toContain('Contrat actuel');
+    expect(html).toContain('Nouveau PER');
+    expect(html).toContain('Rente');
+    expect(html).toContain('Capital unique');
+    expect(html).toContain('Capital fractionné court');
+    expect(html).toContain('Capital fractionné long');
+    expect(html).toContain('Net de PS + IR');
+    expect(html).toContain('Points d’attention');
     expect(html).not.toContain('Rente nette mensuelle');
     expect(html).not.toContain('/mois');
-    expect(html).not.toContain("Éditer l'étude");
+  });
+
+  it('affiche la stratégie Max capital uniquement pour Préfon', () => {
+    const html = renderToStaticMarkup(
+      <PerTransfertSidebar
+        result={makeResult({ compartment: 'C1' })}
+        selectedContract={null}
+        typeContrat="PER_POINTS"
+        subscriptionDate=""
+        step2Done
+        horizonAgeShort={80}
+        horizonAgeLong={90}
+        onHorizonChange={vi.fn()}
+        onOpenQuotientInfo={vi.fn()}
+        onOpenFractionalInfo={vi.fn()}
+      />,
+    );
+
+    expect(html).toContain('Max capital');
+    expect(html).toContain('Tout rente');
+  });
+});
+
+describe('TransferRulesInfoModal', () => {
+  it('détaille la limite PERCO/PERECO d’un transfert tous les trois ans', () => {
+    const html = renderToStaticMarkup(<TransferRulesInfoModal onClose={vi.fn()} />);
+
+    expect(html).toContain('L3334-1');
+    expect(html).toContain('L224-1');
+    expect(html).toContain('limite d’un transfert tous les trois ans');
+    expect(html).toContain('PER d’entreprise collectif');
   });
 });
 
@@ -316,6 +295,84 @@ describe('ContractAuditCards', () => {
     expect(html).toContain('Fonds € garantis');
     expect(html).toContain('Rente estimée');
     expect(html).toContain('0,45 %');
+    expect(html).toContain('Modalités en cas de décès');
+    expect(html).not.toContain('Clause bénéficiaire');
+  });
+
+  it('affiche un message global quand un contrat sélectionné ne contient aucune valeur Base CG', () => {
+    const emptyContract: BaseCgRetraiteContract = {
+      id: 'empty-contract',
+      sourceId: 'Contrat vide',
+      compagnie: 'Test Vie',
+      nomContrat: 'Contrat vide',
+      typeContrat: 'PERCO',
+      phaseEpargne: {
+        dateCommercialisation: null,
+        nombreFonds: null,
+        repartitionUcEuro: null,
+        rendementFondsEuro: null,
+        fraisVersements: null,
+        fraisGestion: null,
+        fraisArbitrage: null,
+        fraisTransfertSortant: null,
+        fraisTransfertSortantRate: null,
+        clauseBeneficiaire: null,
+        garantiesComplementaires: null,
+      },
+      phaseLiquidation: {
+        ageLimiteLiquidation: null,
+        sortieCapitalRetraite: null,
+        fractionnementCapital: null,
+        rachatLibre: null,
+        tableConversionRente: null,
+        tableGarantieAdhesion: null,
+        tauxTechnique: null,
+        fraisArrerages: null,
+        fraisArreragesRate: null,
+        annuitesGaranties: null,
+        reversionPossible: null,
+        reversionIncluse: null,
+        renteEstimee: null,
+      },
+      documents: [],
+    };
+
+    const html = renderToStaticMarkup(<ContractAuditCards contract={emptyContract} />);
+
+    expect(html).toContain('La grille de devoir de conseil reste à compléter avec les hypothèses du relevé et des conditions générales.');
+    expect(html).not.toContain('Phase épargne');
+    expect(html).not.toContain('Phase liquidation');
+  });
+
+  it('garde le message long quand aucun contrat Base CG n’est sélectionné', () => {
+    const html = renderToStaticMarkup(<ContractAuditCards contract={null} />);
+
+    expect(html).toContain('Aucun contrat Base CG sélectionné');
+  });
+});
+
+describe('PerTransfertPrefonPocketsForm', () => {
+  it('affiche les poches Préfon sans valeur de transfert nette par point', () => {
+    const html = renderToStaticMarkup(
+      <PerTransfertPrefonPocketsForm
+        pockets={[{
+          compartment: 'C1',
+          points: 1000,
+          capitalAmount: null,
+          unitValue: 0.10219,
+          serviceValue: 0.10219,
+          transferValue: null,
+        }]}
+        onChange={vi.fn()}
+        onOpenInfo={vi.fn()}
+        onOpenPocketSettings={vi.fn()}
+      />,
+    );
+
+    expect(html).toContain('Valeur de service du point');
+    expect(html).toContain('Paramètres de la poche');
+    expect(html).not.toContain('Valeur transfert nette par point');
+    expect(html).not.toContain('Valeur de transfert globale');
   });
 });
 

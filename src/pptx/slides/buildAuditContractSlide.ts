@@ -58,7 +58,7 @@ export function buildAuditContractSlide(
     { label: 'Frais gestion UC', value: gestionFees.fraisGestionUc, format: 'rate' as const },
     { label: 'Frais arbitrage', value: contract.phaseEpargne.fraisArbitrage, format: 'rate' as const },
     { label: 'Frais transfert sortant', value: contract.phaseEpargne.fraisTransfertSortant, format: 'rate' as const },
-    { label: 'Clause bénéficiaire', value: contract.phaseEpargne.clauseBeneficiaire },
+    { label: 'Modalités en cas de décès', value: contract.phaseEpargne.clauseBeneficiaire },
     { label: 'Garanties complémentaires', value: contract.phaseEpargne.garantiesComplementaires },
     { label: 'Âge limite liquidation', value: contract.phaseLiquidation.ageLimiteLiquidation },
     { label: 'Sortie capital retraite', value: contract.phaseLiquidation.sortieCapitalRetraite },
