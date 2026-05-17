@@ -37,6 +37,7 @@
     "generate:mortality": "python tools/scripts/generate-mortality-data.py",
     "report:large-files": "node scripts/report-large-files.mjs",
     "analyze": "npx vite-bundle-visualizer",
+    "analyze:ci": "vite-bundle-visualizer --template treemap --output dist/bundle-stats.html --open false",
     "check:pre-merge": "pwsh -NoProfile -File scripts/pre-merge-check.ps1",
     "audit:prod": "npm audit --omit=dev --audit-level=high",
     "commitlint": "commitlint --from=HEAD~1 --to=HEAD --verbose",
