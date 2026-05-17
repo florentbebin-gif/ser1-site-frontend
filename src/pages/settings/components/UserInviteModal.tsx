@@ -64,8 +64,11 @@ export default function UserInviteModal({
             </div>
           )}
           <div className="settings-modal-field">
-            <label className="settings-modal-label">Email *</label>
+            <label className="settings-modal-label" htmlFor="invite-email">
+              Email *
+            </label>
             <input
+              id="invite-email"
               type="email"
               value={email}
               onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEmail(e.target.value)}

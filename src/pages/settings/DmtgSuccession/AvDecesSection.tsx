@@ -68,8 +68,9 @@ export default function AvDecesSection({
             <div className="dmtg-block-title">Paramètres généraux</div>
             <div className="dmtg-indent">
               <div className="settings-field-row dmtg-field-row--mb8">
-                <label>Âge pivot primes (avant/après)</label>
+                <label htmlFor="av-deces-age-pivot">Âge pivot primes (avant/après)</label>
                 <input
+                  id="av-deces-age-pivot"
                   type="number"
                   value={numberOrEmpty(avDeces.agePivotPrimes)}
                   onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
@@ -95,8 +96,11 @@ export default function AvDecesSection({
             </div>
             <div className="dmtg-indent">
               <div className="settings-field-row dmtg-field-row--mb8">
-                <label>Abattement par bénéficiaire</label>
+                <label htmlFor="av-deces-allowance-per-beneficiary">
+                  Abattement par bénéficiaire
+                </label>
                 <input
+                  id="av-deces-allowance-per-beneficiary"
                   type="number"
                   value={numberOrEmpty(avDeces.primesApres1998.allowancePerBeneficiary)}
                   onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
@@ -167,8 +171,11 @@ export default function AvDecesSection({
             </div>
             <div className="dmtg-indent">
               <div className="settings-field-row dmtg-field-row--mb8">
-                <label>Abattement global (tous bénéficiaires)</label>
+                <label htmlFor="av-deces-global-allowance">
+                  Abattement global (tous bénéficiaires)
+                </label>
                 <input
+                  id="av-deces-global-allowance"
                   type="number"
                   value={numberOrEmpty(avDeces.apres70ans.globalAllowance)}
                   onChange={(event: React.ChangeEvent<HTMLInputElement>) =>

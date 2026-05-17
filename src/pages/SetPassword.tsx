@@ -134,8 +134,9 @@ export default function SetPassword(): React.ReactElement {
           )}
 
           <form className="form-grid" onSubmit={handleSubmit}>
-            <label>Nouveau mot de passe</label>
+            <label htmlFor="set-password-new">Nouveau mot de passe</label>
             <input
+              id="set-password-new"
               type="password"
               value={password}
               onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPassword(e.target.value)}
@@ -143,8 +144,9 @@ export default function SetPassword(): React.ReactElement {
               disabled={loading}
             />
 
-            <label>Confirmer le mot de passe</label>
+            <label htmlFor="set-password-confirm">Confirmer le mot de passe</label>
             <input
+              id="set-password-confirm"
               type="password"
               value={password2}
               onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPassword2(e.target.value)}

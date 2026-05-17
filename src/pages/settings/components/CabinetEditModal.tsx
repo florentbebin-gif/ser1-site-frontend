@@ -168,8 +168,11 @@ export default function CabinetEditModal({
             </div>
           )}
           <div className="settings-modal-field">
-            <label className="settings-modal-label">Nom du cabinet *</label>
+            <label className="settings-modal-label" htmlFor="cabinet-name">
+              Nom du cabinet *
+            </label>
             <input
+              id="cabinet-name"
               type="text"
               value={form.name}
               onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
@@ -200,7 +203,9 @@ export default function CabinetEditModal({
             </select>
           </div>
           <div className="settings-modal-field">
-            <label className="settings-modal-label">Logo du cabinet</label>
+            <label className="settings-modal-label" htmlFor="cabinet-logo">
+              Logo du cabinet
+            </label>
             <div className="settings-modal-file-row">
               <button type="button" onClick={() => inputRef.current?.click()} className="chip">
                 Choisir une image...
@@ -209,6 +214,7 @@ export default function CabinetEditModal({
                 {logoFile ? logoFile.name : logoPreview ? 'Logo selectionne' : 'Aucun fichier'}
               </span>
               <input
+                id="cabinet-logo"
                 ref={inputRef}
                 type="file"
                 accept="image/png,image/jpeg"
@@ -252,7 +258,7 @@ export default function CabinetEditModal({
             )}
           </div>
           <div className="settings-modal-field">
-            <label className="settings-modal-label">Position du logo</label>
+            <div className="settings-modal-label">Position du logo</div>
             <div className="settings-modal-grid-3">
               {LOGO_PLACEMENT_OPTIONS.map((position) => (
                 <button

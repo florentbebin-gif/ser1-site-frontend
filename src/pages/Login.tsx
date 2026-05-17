@@ -69,16 +69,18 @@ export default function Login({ onLogin }: LoginProps): React.ReactElement {
             </div>
           )}
           <form className="form-grid" onSubmit={handleLogin} data-testid="login-form">
-            <label>Email</label>
+            <label htmlFor="login-email">Email</label>
             <input
+              id="login-email"
               type="email"
               data-testid="login-email-input"
               value={email}
               onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEmail(e.target.value)}
               required
             />
-            <label>Mot de passe</label>
+            <label htmlFor="login-password">Mot de passe</label>
             <input
+              id="login-password"
               type="password"
               data-testid="login-password-input"
               value={password}
