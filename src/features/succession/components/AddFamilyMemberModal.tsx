@@ -60,8 +60,9 @@ export default function AddFamilyMemberModal({
       }
     >
       <div className="sc-field">
-        <label>Type de membre</label>
+        <label htmlFor="sc-family-member-type">Type de membre</label>
         <ScSelect
+          id="sc-family-member-type"
           value={form.type}
           onChange={(value) =>
             setForm((prev) => ({
@@ -76,8 +77,9 @@ export default function AddFamilyMemberModal({
       </div>
       {MEMBER_TYPE_NEEDS_BRANCH.includes(form.type as FamilyMemberType) && (
         <div className="sc-field">
-          <label>Branche familiale</label>
+          <label htmlFor="sc-family-member-branch">Branche familiale</label>
           <ScSelect
+            id="sc-family-member-branch"
             value={form.branch}
             onChange={(value) => setForm((prev) => ({ ...prev, branch: value as FamilyBranch }))}
             options={[{ value: '', label: 'Choisir…', disabled: true }, ...branchOptions]}
@@ -86,8 +88,9 @@ export default function AddFamilyMemberModal({
       )}
       {form.type === 'petit_enfant' && (
         <div className="sc-field">
-          <label>Enfant parent</label>
+          <label htmlFor="sc-family-member-parent-enfant">Enfant parent</label>
           <ScSelect
+            id="sc-family-member-parent-enfant"
             value={form.parentEnfantId}
             onChange={(value) => setForm((prev) => ({ ...prev, parentEnfantId: value }))}
             options={[

@@ -69,8 +69,9 @@ export function ScForfaitMobilierSection({
         <div className="sc-assets-list">
           <div className="sc-asset-row sc-asset-row--three-cols">
             <div className="sc-field">
-              <label>Mode</label>
+              <label htmlFor="sc-forfait-mobilier-mode">Mode</label>
               <ScSelect
+                id="sc-forfait-mobilier-mode"
                 value={forfaitMobilierMode}
                 onChange={(value) => onUpdatePatrimonialField('forfaitMobilierMode', value)}
                 options={[
@@ -82,8 +83,9 @@ export function ScForfaitMobilierSection({
             </div>
             {forfaitMobilierMode === 'pct' ? (
               <div className="sc-field">
-                <label>Pourcentage (%)</label>
+                <label htmlFor="sc-forfait-mobilier-pct">Pourcentage (%)</label>
                 <input
+                  id="sc-forfait-mobilier-pct"
                   type="number"
                   min={0}
                   max={100}
@@ -95,13 +97,14 @@ export function ScForfaitMobilierSection({
               </div>
             ) : (
               <div className="sc-field">
-                <label>Pourcentage (%)</label>
-                <input type="number" value={5} disabled />
+                <label htmlFor="sc-forfait-mobilier-pct-auto">Pourcentage (%)</label>
+                <input id="sc-forfait-mobilier-pct-auto" type="number" value={5} disabled />
               </div>
             )}
             <div className="sc-field">
-              <label>Montant fixe (€)</label>
+              <label htmlFor="sc-forfait-mobilier-montant">Montant fixe (€)</label>
               <ScNumericInput
+                id="sc-forfait-mobilier-montant"
                 value={forfaitMobilierMode === 'montant' ? forfaitMobilierMontant : 0}
                 min={0}
                 onChange={(val) => onUpdatePatrimonialField('forfaitMobilierMontant', val)}

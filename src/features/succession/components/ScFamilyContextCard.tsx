@@ -81,16 +81,18 @@ export default function ScFamilyContextCard({
             className={`sc-civil-grid__top-row${showSecondBirthDate ? ' sc-civil-grid__top-row--triple' : ''}`}
           >
             <div className="sc-field">
-              <label>Situation familiale</label>
+              <label htmlFor="sc-family-situation">Situation familiale</label>
               <ScSelect
+                id="sc-family-situation"
                 value={civilContext.situationMatrimoniale}
                 onChange={(value) => onSituationChange(value as SituationMatrimoniale)}
                 options={SITUATION_OPTIONS}
               />
             </div>
             <div className="sc-field">
-              <label>{birthDateLabels.primary}</label>
+              <label htmlFor="sc-family-date-naissance-epoux1">{birthDateLabels.primary}</label>
               <input
+                id="sc-family-date-naissance-epoux1"
                 type="date"
                 className="sc-input--left"
                 value={civilContext.dateNaissanceEpoux1 ?? ''}
@@ -104,8 +106,9 @@ export default function ScFamilyContextCard({
             </div>
             {showSecondBirthDate && (
               <div className="sc-field">
-                <label>{birthDateLabels.secondary}</label>
+                <label htmlFor="sc-family-date-naissance-epoux2">{birthDateLabels.secondary}</label>
                 <input
+                  id="sc-family-date-naissance-epoux2"
                   type="date"
                   className="sc-input--left"
                   value={civilContext.dateNaissanceEpoux2 ?? ''}
@@ -122,8 +125,9 @@ export default function ScFamilyContextCard({
 
           {civilContext.situationMatrimoniale === 'marie' && (
             <div className="sc-field">
-              <label>Régime matrimonial</label>
+              <label htmlFor="sc-family-regime-matrimonial">Régime matrimonial</label>
               <ScSelect
+                id="sc-family-regime-matrimonial"
                 value={civilContext.regimeMatrimonial ?? 'communaute_legale'}
                 onChange={(value) =>
                   setCivilContext((prev) => ({
@@ -140,8 +144,9 @@ export default function ScFamilyContextCard({
           )}
           {civilContext.situationMatrimoniale === 'pacse' && (
             <div className="sc-field">
-              <label>Convention PACS</label>
+              <label htmlFor="sc-family-pacs-convention">Convention PACS</label>
               <ScSelect
+                id="sc-family-pacs-convention"
                 value={civilContext.pacsConvention}
                 onChange={(value) =>
                   setCivilContext((prev) => ({
@@ -213,6 +218,7 @@ export default function ScFamilyContextCard({
                       </span>
                       {enfantRattachementOptions.length > 1 && (
                         <ScSelect
+                          ariaLabel={`Rattachement de ${getEnfantNodeLabel(idx, enfant.deceased)}`}
                           className="sc-child-select"
                           value={enfant.rattachement}
                           onChange={(value) =>

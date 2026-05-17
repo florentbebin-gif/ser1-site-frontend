@@ -78,8 +78,9 @@ export default function PerModal({
     >
       <div className="sc-assurance-vie-grid sc-assurance-vie-grid--premium">
         <div className="sc-field">
-          <label>Type de clause</label>
+          <label htmlFor="sc-per-type-contrat">Type de clause</label>
           <ScSelect
+            id="sc-per-type-contrat"
             className="sc-assurance-vie-select"
             value={entry.typeContrat}
             onChange={(value) =>
@@ -90,8 +91,9 @@ export default function PerModal({
         </div>
         {entry.typeContrat === 'demembree' && (
           <div className="sc-field">
-            <label>Âge de l&apos;usufruitier</label>
+            <label htmlFor="sc-per-age-usufruitier">Âge de l&apos;usufruitier</label>
             <input
+              id="sc-per-age-usufruitier"
               type="number"
               min={1}
               max={120}
@@ -107,8 +109,9 @@ export default function PerModal({
           </div>
         )}
         <div className="sc-field">
-          <label>Assuré</label>
+          <label htmlFor="sc-per-assure">Assuré</label>
           <ScSelect
+            id="sc-per-assure"
             className="sc-assurance-vie-select"
             value={entry.assure}
             onChange={(value) => onUpdate('assure', value)}
@@ -120,8 +123,9 @@ export default function PerModal({
         <p className="sc-assurance-vie-contract__section-title">Clause bénéficiaire</p>
         <div className="sc-assurance-vie-grid sc-assurance-vie-grid--stack">
           <div className="sc-field sc-field--full">
-            <label>Clause bénéficiaire</label>
+            <label htmlFor="sc-per-clause-beneficiaire">Clause bénéficiaire</label>
             <ScSelect
+              id="sc-per-clause-beneficiaire"
               className="sc-assurance-vie-select"
               value={getClausePreset(entry.clauseBeneficiaire)}
               onChange={(preset) => {
@@ -145,7 +149,7 @@ export default function PerModal({
           )}
           {getClausePreset(entry.clauseBeneficiaire) === 'personnalisee' && (
             <div className="sc-field sc-field--full sc-clause-custom">
-              <label>Répartition (%)</label>
+              <div className="sc-field-label">Répartition (%)</div>
               {[
                 ...(isMarried || isPacsed
                   ? [{ id: 'conjoint', label: isPacsed ? 'Partenaire' : 'Conjoint(e)' }]
@@ -165,6 +169,7 @@ export default function PerModal({
                     <span className="sc-clause-custom-row__label">{label}</span>
                     <input
                       type="number"
+                      aria-label={`Répartition ${label}`}
                       min={0}
                       max={100}
                       value={parts[id] || ''}
@@ -181,8 +186,9 @@ export default function PerModal({
             </div>
           )}
           <div className="sc-field">
-            <label>Capitaux décès (€)</label>
+            <label htmlFor="sc-per-capitaux-deces">Capitaux décès (€)</label>
             <ScNumericInput
+              id="sc-per-capitaux-deces"
               value={entry.capitauxDeces || 0}
               min={0}
               onChange={(val) => onUpdate('capitauxDeces', val)}

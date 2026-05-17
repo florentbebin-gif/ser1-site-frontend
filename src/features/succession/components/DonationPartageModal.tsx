@@ -186,8 +186,9 @@ export default function DonationPartageModal({
     >
       <div className="sc-donation-partage-grid">
         <div className="sc-field">
-          <label>Date de l’acte</label>
+          <label htmlFor="sc-donation-partage-date">Date de l’acte</label>
           <input
+            id="sc-donation-partage-date"
             type="month"
             className="sc-input-month"
             value={draft.date ?? ''}
@@ -195,8 +196,9 @@ export default function DonationPartageModal({
           />
         </div>
         <div className="sc-field">
-          <label>Donateur</label>
+          <label htmlFor="sc-donation-partage-donateur">Donateur</label>
           <ScSelect
+            id="sc-donation-partage-donateur"
             value={draft.donateur ?? ''}
             onChange={(value) => {
               const donateur = value as SuccessionPrimarySide;
@@ -234,6 +236,7 @@ export default function DonationPartageModal({
           </label>
           {draft.usufruitSuccessif && (
             <ScSelect
+              ariaLabel="Bénéficiaire de l'usufruit successif"
               className="sc-donation-select"
               value={draft.usufruitSuccessifBeneficiaire ?? ''}
               onChange={(value) =>
@@ -266,16 +269,22 @@ export default function DonationPartageModal({
                   {label}
                 </label>
                 <div className="sc-field">
-                  <label>Valeur acte (EUR)</label>
+                  <label htmlFor={`sc-donation-partage-lot-valeur-${lot.id}`}>
+                    Valeur acte (EUR)
+                  </label>
                   <ScNumericInput
+                    id={`sc-donation-partage-lot-valeur-${lot.id}`}
                     value={lot.valeur}
                     min={0}
                     onChange={(value) => updateLot(lot.id, { valeur: value })}
                   />
                 </div>
                 <div className="sc-field">
-                  <label>Valeur actuelle (EUR)</label>
+                  <label htmlFor={`sc-donation-partage-lot-valeur-actuelle-${lot.id}`}>
+                    Valeur actuelle (EUR)
+                  </label>
                   <ScNumericInput
+                    id={`sc-donation-partage-lot-valeur-actuelle-${lot.id}`}
                     value={lot.valeurActuelle ?? 0}
                     min={0}
                     onChange={(value) => updateLot(lot.id, { valeurActuelle: value })}
@@ -296,8 +305,11 @@ export default function DonationPartageModal({
           {draft.soultes.map((soulte) => (
             <div key={soulte.id} className="sc-donation-partage-soulte-row">
               <div className="sc-field">
-                <label>Enfant payeur</label>
+                <label htmlFor={`sc-donation-partage-soulte-payeur-${soulte.id}`}>
+                  Enfant payeur
+                </label>
                 <ScSelect
+                  id={`sc-donation-partage-soulte-payeur-${soulte.id}`}
                   className="sc-donation-select"
                   value={soulte.payeurEnfantId}
                   onChange={(value) => updateSoulte(soulte.id, { payeurEnfantId: value })}
@@ -305,8 +317,11 @@ export default function DonationPartageModal({
                 />
               </div>
               <div className="sc-field">
-                <label>Enfant receveur</label>
+                <label htmlFor={`sc-donation-partage-soulte-receveur-${soulte.id}`}>
+                  Enfant receveur
+                </label>
                 <ScSelect
+                  id={`sc-donation-partage-soulte-receveur-${soulte.id}`}
                   className="sc-donation-select"
                   value={soulte.receveurEnfantId}
                   onChange={(value) => updateSoulte(soulte.id, { receveurEnfantId: value })}
@@ -314,8 +329,11 @@ export default function DonationPartageModal({
                 />
               </div>
               <div className="sc-field">
-                <label>Montant (EUR)</label>
+                <label htmlFor={`sc-donation-partage-soulte-montant-${soulte.id}`}>
+                  Montant (EUR)
+                </label>
                 <ScNumericInput
+                  id={`sc-donation-partage-soulte-montant-${soulte.id}`}
                   value={soulte.montant}
                   min={0}
                   onChange={(value) => updateSoulte(soulte.id, { montant: value })}

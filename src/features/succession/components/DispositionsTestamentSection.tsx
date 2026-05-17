@@ -113,8 +113,9 @@ export function DispositionsTestamentSection({
               </div>
 
               <div className="sc-field">
-                <label>Testament actif</label>
+                <label htmlFor={`sc-testament-active-${side}`}>Testament actif</label>
                 <ScSelect
+                  id={`sc-testament-active-${side}`}
                   className="sc-testament-select"
                   value={testament.active ? 'oui' : 'non'}
                   onChange={(value) =>
@@ -140,8 +141,11 @@ export function DispositionsTestamentSection({
               {testament.active && (
                 <>
                   <div className="sc-field">
-                    <label>Type de disposition testamentaire</label>
+                    <label htmlFor={`sc-testament-disposition-${side}`}>
+                      Type de disposition testamentaire
+                    </label>
                     <ScSelect
+                      id={`sc-testament-disposition-${side}`}
                       className="sc-testament-select"
                       value={selectedDisposition}
                       onChange={(value) =>
@@ -164,8 +168,9 @@ export function DispositionsTestamentSection({
                   {selectedDisposition !== 'legs_particulier' && (
                     <>
                       <div className="sc-field">
-                        <label>Bénéficiaire</label>
+                        <label htmlFor={`sc-testament-beneficiary-${side}`}>Bénéficiaire</label>
                         <ScSelect
+                          id={`sc-testament-beneficiary-${side}`}
                           className="sc-testament-select"
                           value={testament.beneficiaryRef ?? ''}
                           onChange={(value) =>
@@ -185,8 +190,11 @@ export function DispositionsTestamentSection({
 
                       {selectedDisposition === 'legs_titre_universel' && (
                         <div className="sc-field">
-                          <label>Quote-part du legs à titre universel (%)</label>
+                          <label htmlFor={`sc-testament-quote-part-${side}`}>
+                            Quote-part du legs à titre universel (%)
+                          </label>
                           <input
+                            id={`sc-testament-quote-part-${side}`}
                             type="number"
                             min={0}
                             max={100}
@@ -206,7 +214,7 @@ export function DispositionsTestamentSection({
 
                   {selectedDisposition === 'legs_particulier' && (
                     <div className="sc-field">
-                      <label>Legs particuliers</label>
+                      <div className="sc-field-label">Legs particuliers</div>
                       <div className="sc-testament-particular-legacy-list">
                         {testament.particularLegacies.length === 0 && (
                           <p className="sc-hint sc-hint--compact">
@@ -216,6 +224,7 @@ export function DispositionsTestamentSection({
                         {testament.particularLegacies.map((entry) => (
                           <div key={entry.id} className="sc-testament-particular-legacy-row">
                             <ScSelect
+                              ariaLabel="Bénéficiaire du legs particulier"
                               className="sc-testament-select"
                               value={entry.beneficiaryRef ?? ''}
                               onChange={(value) =>
@@ -229,6 +238,7 @@ export function DispositionsTestamentSection({
                               options={beneficiarySelectOptions}
                             />
                             <ScNumericInput
+                              id={`sc-testament-particular-amount-${entry.id}`}
                               value={entry.amount || 0}
                               min={0}
                               onChange={(value) =>
@@ -236,6 +246,7 @@ export function DispositionsTestamentSection({
                               }
                             />
                             <input
+                              aria-label="Libellé du legs particulier"
                               type="text"
                               className="sc-input--left"
                               value={entry.label ?? ''}
@@ -268,11 +279,12 @@ export function DispositionsTestamentSection({
 
                   {showAscendantsField && (
                     <div className="sc-field">
-                      <label>Ascendants survivants</label>
+                      <div className="sc-field-label">Ascendants survivants</div>
                       {hasDerivedParents ? (
                         <span className="sc-auto-derived">Oui - déduit des membres ajoutés</span>
                       ) : (
                         <ScSelect
+                          ariaLabel="Ascendants survivants"
                           className="sc-testament-select"
                           value={dispositionsDraft.ascendantsSurvivantsBySide[side] ? 'oui' : 'non'}
                           onChange={(value) =>

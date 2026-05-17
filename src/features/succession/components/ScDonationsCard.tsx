@@ -131,8 +131,9 @@ export default function ScDonationsCard({
                 </div>
                 <div className="sc-donation-grid">
                   <div className="sc-field sc-field--span-2">
-                    <label>Type</label>
+                    <label htmlFor={`sc-donation-type-${entry.id}`}>Type</label>
                     <ScSelect
+                      id={`sc-donation-type-${entry.id}`}
                       className="sc-donation-select"
                       value={entry.type}
                       onChange={(value) => {
@@ -150,8 +151,9 @@ export default function ScDonationsCard({
                     </p>
                   </div>
                   <div className="sc-field">
-                    <label>Date</label>
+                    <label htmlFor={`sc-donation-date-${entry.id}`}>Date</label>
                     <input
+                      id={`sc-donation-date-${entry.id}`}
                       type="month"
                       className="sc-input-month"
                       value={entry.date ?? ''}
@@ -159,8 +161,9 @@ export default function ScDonationsCard({
                     />
                   </div>
                   <div className="sc-field">
-                    <label>Donateur</label>
+                    <label htmlFor={`sc-donation-donateur-${entry.id}`}>Donateur</label>
                     <ScSelect
+                      id={`sc-donation-donateur-${entry.id}`}
                       className="sc-donation-select"
                       value={entry.donateur ?? ''}
                       onChange={(value) => onUpdateDonationEntry(entry.id, 'donateur', value)}
@@ -168,8 +171,9 @@ export default function ScDonationsCard({
                     />
                   </div>
                   <div className="sc-field">
-                    <label>Donataire</label>
+                    <label htmlFor={`sc-donation-donataire-${entry.id}`}>Donataire</label>
                     <ScSelect
+                      id={`sc-donation-donataire-${entry.id}`}
                       className="sc-donation-select"
                       value={entry.donataire ?? ''}
                       onChange={(value) => onUpdateDonationEntry(entry.id, 'donataire', value)}
@@ -177,16 +181,22 @@ export default function ScDonationsCard({
                     />
                   </div>
                   <div className="sc-field">
-                    <label>Valeur à la donation (EUR)</label>
+                    <label htmlFor={`sc-donation-valeur-${entry.id}`}>
+                      Valeur à la donation (EUR)
+                    </label>
                     <ScNumericInput
+                      id={`sc-donation-valeur-${entry.id}`}
                       value={entry.valeurDonation ?? entry.montant ?? 0}
                       min={0}
                       onChange={(val) => onUpdateDonationEntry(entry.id, 'valeurDonation', val)}
                     />
                   </div>
                   <div className="sc-field">
-                    <label>Valeur actuelle (EUR)</label>
+                    <label htmlFor={`sc-donation-valeur-actuelle-${entry.id}`}>
+                      Valeur actuelle (EUR)
+                    </label>
                     <ScNumericInput
+                      id={`sc-donation-valeur-actuelle-${entry.id}`}
                       value={entry.valeurActuelle || 0}
                       min={0}
                       onChange={(val) => onUpdateDonationEntry(entry.id, 'valeurActuelle', val)}

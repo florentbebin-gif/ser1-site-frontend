@@ -36,10 +36,7 @@ export default [
       'no-console': ['error', { allow: ['warn', 'error'] }],
       'no-empty': ['error', { allowEmptyCatch: true }],
       ...jsxA11yPlugin.flatConfigs.recommended.rules,
-      // Le repo contient encore des formulaires historiques avec libellé visuel
-      // et contrôle voisin. Les autres règles jsx-a11y sont activées maintenant ;
-      // l'association systématique des labels doit rester un chantier dédié.
-      'jsx-a11y/label-has-associated-control': 'off',
+      'jsx-a11y/label-has-associated-control': ['error', { assert: 'either' }],
       'react/react-in-jsx-scope': 'off',
       'react/prop-types': 'off',
       'react-hooks/rules-of-hooks': 'error',

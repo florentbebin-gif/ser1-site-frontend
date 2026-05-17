@@ -35,7 +35,7 @@ export function DispositionsInterMassClaimsSection({
   return (
     <>
       <div className="sc-field">
-        <label>Récompenses / créances entre masses</label>
+        <div className="sc-field-label">Récompenses / créances entre masses</div>
         <p className="sc-hint sc-hint--compact">
           Ces écritures déplacent une valeur simplifiée d&apos;une masse débitrice vers une masse
           créancière avant liquidation. Les passifs détaillés rattachés à une masse restent traités
@@ -69,8 +69,9 @@ export function DispositionsInterMassClaimsSection({
 
               <div className="sc-preciput-item__grid">
                 <div className="sc-field">
-                  <label>Active</label>
+                  <label htmlFor={`sc-inter-mass-enabled-${claim.id}`}>Active</label>
                   <ScSelect
+                    id={`sc-inter-mass-enabled-${claim.id}`}
                     value={claim.enabled ? 'oui' : 'non'}
                     onChange={(value) =>
                       onUpdateInterMassClaim(claim.id, 'enabled', value === 'oui')
@@ -79,40 +80,45 @@ export function DispositionsInterMassClaimsSection({
                   />
                 </div>
                 <div className="sc-field">
-                  <label>Nature</label>
+                  <label htmlFor={`sc-inter-mass-kind-${claim.id}`}>Nature</label>
                   <ScSelect
+                    id={`sc-inter-mass-kind-${claim.id}`}
                     value={claim.kind}
                     onChange={(value) => onUpdateInterMassClaim(claim.id, 'kind', value)}
                     options={INTER_MASS_CLAIM_KIND_OPTIONS}
                   />
                 </div>
                 <div className="sc-field">
-                  <label>Masse débitrice</label>
+                  <label htmlFor={`sc-inter-mass-from-${claim.id}`}>Masse débitrice</label>
                   <ScSelect
+                    id={`sc-inter-mass-from-${claim.id}`}
                     value={claim.fromPocket}
                     onChange={(value) => onUpdateInterMassClaim(claim.id, 'fromPocket', value)}
                     options={interMassClaimPocketOptions}
                   />
                 </div>
                 <div className="sc-field">
-                  <label>Masse créancière</label>
+                  <label htmlFor={`sc-inter-mass-to-${claim.id}`}>Masse créancière</label>
                   <ScSelect
+                    id={`sc-inter-mass-to-${claim.id}`}
                     value={claim.toPocket}
                     onChange={(value) => onUpdateInterMassClaim(claim.id, 'toPocket', value)}
                     options={interMassClaimPocketOptions}
                   />
                 </div>
                 <div className="sc-field">
-                  <label>Montant (EUR)</label>
+                  <label htmlFor={`sc-inter-mass-amount-${claim.id}`}>Montant (EUR)</label>
                   <ScNumericInput
+                    id={`sc-inter-mass-amount-${claim.id}`}
                     value={claim.amount}
                     min={0}
                     onChange={(value) => onUpdateInterMassClaim(claim.id, 'amount', value)}
                   />
                 </div>
                 <div className="sc-field">
-                  <label>Libellé</label>
+                  <label htmlFor={`sc-inter-mass-label-${claim.id}`}>Libellé</label>
                   <input
+                    id={`sc-inter-mass-label-${claim.id}`}
                     type="text"
                     className="sc-input--left"
                     value={claim.label ?? ''}

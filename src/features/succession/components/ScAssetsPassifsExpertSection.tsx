@@ -195,8 +195,11 @@ export function ScAssetsPassifsExpertSection({
                     <div key={entry.id} className="sc-asset-row-stack">
                       <div className="sc-asset-row">
                         <div className="sc-field">
-                          <label>Masse de rattachement</label>
+                          <label htmlFor={`sc-asset-pocket-${entry.id}`}>
+                            Masse de rattachement
+                          </label>
                           <ScSelect
+                            id={`sc-asset-pocket-${entry.id}`}
                             className="sc-asset-select"
                             value={entry.pocket ?? assetPocketOptions[0]?.value ?? 'epoux1'}
                             onChange={(value) => onUpdateAssetEntry(entry.id, 'pocket', value)}
@@ -204,8 +207,9 @@ export function ScAssetsPassifsExpertSection({
                           />
                         </div>
                         <div className="sc-field">
-                          <label>Sous-catégorie</label>
+                          <label htmlFor={`sc-asset-subcategory-${entry.id}`}>Sous-catégorie</label>
                           <ScSelect
+                            id={`sc-asset-subcategory-${entry.id}`}
                             className="sc-asset-select"
                             value={entry.subCategory}
                             onChange={(value) => onUpdateAssetEntry(entry.id, 'subCategory', value)}
@@ -213,8 +217,9 @@ export function ScAssetsPassifsExpertSection({
                           />
                         </div>
                         <div className="sc-field">
-                          <label>Montant (€)</label>
+                          <label htmlFor={`sc-asset-amount-${entry.id}`}>Montant (€)</label>
                           <ScNumericInput
+                            id={`sc-asset-amount-${entry.id}`}
                             value={entry.amount || 0}
                             min={0}
                             onChange={(value) => onUpdateAssetEntry(entry.id, 'amount', value)}
@@ -239,8 +244,11 @@ export function ScAssetsPassifsExpertSection({
                       </div>
                       {entry.pocket === 'indivision_separatiste' && (
                         <div className="sc-field sc-field--full sc-asset-row__suboption">
-                          <label>Quote-part Époux 1 (%)</label>
+                          <label htmlFor={`sc-asset-quote-epoux1-${entry.id}`}>
+                            Quote-part Époux 1 (%)
+                          </label>
                           <ScNumericInput
+                            id={`sc-asset-quote-epoux1-${entry.id}`}
                             value={entry.quotePartEpoux1Pct ?? 50}
                             min={0}
                             max={100}
@@ -287,8 +295,11 @@ export function ScAssetsPassifsExpertSection({
                       <div key={entry.id} className="sc-asset-row-stack">
                         <div className="sc-asset-row">
                           <div className="sc-field">
-                            <label>Masse de rattachement</label>
+                            <label htmlFor={`sc-gf-pocket-${entry.id}`}>
+                              Masse de rattachement
+                            </label>
                             <ScSelect
+                              id={`sc-gf-pocket-${entry.id}`}
                               className="sc-asset-select"
                               value={entry.pocket ?? assetPocketOptions[0]?.value ?? 'epoux1'}
                               onChange={(value) =>
@@ -298,8 +309,9 @@ export function ScAssetsPassifsExpertSection({
                             />
                           </div>
                           <div className="sc-field">
-                            <label>Type GF</label>
+                            <label htmlFor={`sc-gf-type-${entry.id}`}>Type GF</label>
                             <ScSelect
+                              id={`sc-gf-type-${entry.id}`}
                               className="sc-asset-select"
                               value={uiType}
                               onChange={(value) =>
@@ -309,8 +321,11 @@ export function ScAssetsPassifsExpertSection({
                             />
                           </div>
                           <div className="sc-field">
-                            <label>Valeur totale (€)</label>
+                            <label htmlFor={`sc-gf-valeur-totale-${entry.id}`}>
+                              Valeur totale (€)
+                            </label>
                             <ScNumericInput
+                              id={`sc-gf-valeur-totale-${entry.id}`}
                               value={entry.valeurTotale || 0}
                               min={0}
                               onChange={(value) =>
@@ -329,8 +344,11 @@ export function ScAssetsPassifsExpertSection({
                         </div>
                         {entry.pocket === 'indivision_separatiste' && (
                           <div className="sc-field sc-field--full sc-asset-row__suboption">
-                            <label>Quote-part Époux 1 (%)</label>
+                            <label htmlFor={`sc-gf-quote-epoux1-${entry.id}`}>
+                              Quote-part Époux 1 (%)
+                            </label>
                             <ScNumericInput
+                              id={`sc-gf-quote-epoux1-${entry.id}`}
                               value={entry.quotePartEpoux1Pct ?? 50}
                               min={0}
                               max={100}
@@ -362,17 +380,17 @@ export function ScAssetsPassifsExpertSection({
                   prevoyanceDecesEntries.map((entry) => (
                     <div key={entry.id} className="sc-asset-row">
                       <div className="sc-field">
-                        <label>Souscripteur</label>
+                        <div className="sc-field-label">Souscripteur</div>
                         <span className="sc-asset-row__value">
                           {getPartyLabel(assuranceViePartyOptions, entry.souscripteur)}
                         </span>
                       </div>
                       <div className="sc-field">
-                        <label>Sous-catégorie</label>
+                        <div className="sc-field-label">Sous-catégorie</div>
                         <span className="sc-asset-row__value">Prévoyance décès</span>
                       </div>
                       <div className="sc-field">
-                        <label>Capital décès (€)</label>
+                        <div className="sc-field-label">Capital décès (€)</div>
                         <span className="sc-asset-row__value">{fmt(entry.capitalDeces)}</span>
                       </div>
                       <div className="sc-row-actions">
@@ -396,17 +414,17 @@ export function ScAssetsPassifsExpertSection({
                   assuranceVieEntries.map((entry) => (
                     <div key={entry.id} className="sc-asset-row">
                       <div className="sc-field">
-                        <label>Personne assurée</label>
+                        <div className="sc-field-label">Personne assurée</div>
                         <span className="sc-asset-row__value">
                           {getPartyLabel(assuranceViePartyOptions, entry.assure)}
                         </span>
                       </div>
                       <div className="sc-field">
-                        <label>Sous-catégorie</label>
+                        <div className="sc-field-label">Sous-catégorie</div>
                         <span className="sc-asset-row__value">Assurance-vie</span>
                       </div>
                       <div className="sc-field">
-                        <label>Capitaux décès (€)</label>
+                        <div className="sc-field-label">Capitaux décès (€)</div>
                         <span className="sc-asset-row__value">{fmt(entry.capitauxDeces)}</span>
                       </div>
                       <div className="sc-row-actions">
@@ -430,17 +448,17 @@ export function ScAssetsPassifsExpertSection({
                   perEntries.map((entry) => (
                     <div key={entry.id} className="sc-asset-row">
                       <div className="sc-field">
-                        <label>Personne assurée</label>
+                        <div className="sc-field-label">Personne assurée</div>
                         <span className="sc-asset-row__value">
                           {getPartyLabel(assuranceViePartyOptions, entry.assure)}
                         </span>
                       </div>
                       <div className="sc-field">
-                        <label>Sous-catégorie</label>
+                        <div className="sc-field-label">Sous-catégorie</div>
                         <span className="sc-asset-row__value">PER assurance</span>
                       </div>
                       <div className="sc-field">
-                        <label>Capitaux décès (€)</label>
+                        <div className="sc-field-label">Capitaux décès (€)</div>
                         <span className="sc-asset-row__value">{fmt(entry.capitauxDeces)}</span>
                       </div>
                       <div className="sc-row-actions">

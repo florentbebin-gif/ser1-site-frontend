@@ -81,8 +81,9 @@ export default function AssuranceVieModal({
     >
       <div className="sc-assurance-vie-grid sc-assurance-vie-grid--premium">
         <div className="sc-field">
-          <label>Type de clause</label>
+          <label htmlFor="sc-assurance-vie-type-contrat">Type de clause</label>
           <ScSelect
+            id="sc-assurance-vie-type-contrat"
             className="sc-assurance-vie-select"
             value={entry.typeContrat}
             onChange={(value) =>
@@ -93,8 +94,9 @@ export default function AssuranceVieModal({
         </div>
         {entry.typeContrat === 'demembree' && (
           <div className="sc-field">
-            <label>Âge de l&apos;usufruitier</label>
+            <label htmlFor="sc-assurance-vie-age-usufruitier">Âge de l&apos;usufruitier</label>
             <input
+              id="sc-assurance-vie-age-usufruitier"
               type="number"
               min={1}
               max={120}
@@ -110,8 +112,9 @@ export default function AssuranceVieModal({
           </div>
         )}
         <div className="sc-field">
-          <label>Souscripteur</label>
+          <label htmlFor="sc-assurance-vie-souscripteur">Souscripteur</label>
           <ScSelect
+            id="sc-assurance-vie-souscripteur"
             className="sc-assurance-vie-select"
             value={entry.souscripteur}
             onChange={(value) => onUpdate('souscripteur', value)}
@@ -119,8 +122,9 @@ export default function AssuranceVieModal({
           />
         </div>
         <div className="sc-field">
-          <label>Assuré</label>
+          <label htmlFor="sc-assurance-vie-assure">Assuré</label>
           <ScSelect
+            id="sc-assurance-vie-assure"
             className="sc-assurance-vie-select"
             value={entry.assure}
             onChange={(value) => onUpdate('assure', value)}
@@ -132,8 +136,9 @@ export default function AssuranceVieModal({
         <p className="sc-assurance-vie-contract__section-title">Clause bénéficiaire</p>
         <div className="sc-assurance-vie-grid sc-assurance-vie-grid--stack">
           <div className="sc-field sc-field--full">
-            <label>Clause bénéficiaire</label>
+            <label htmlFor="sc-assurance-vie-clause-beneficiaire">Clause bénéficiaire</label>
             <ScSelect
+              id="sc-assurance-vie-clause-beneficiaire"
               className="sc-assurance-vie-select"
               value={getClausePreset(entry.clauseBeneficiaire)}
               onChange={(preset) => {
@@ -157,7 +162,7 @@ export default function AssuranceVieModal({
           )}
           {getClausePreset(entry.clauseBeneficiaire) === 'personnalisee' && (
             <div className="sc-field sc-field--full sc-clause-custom">
-              <label>Répartition (%)</label>
+              <div className="sc-field-label">Répartition (%)</div>
               {[
                 ...(isMarried || isPacsed
                   ? [{ id: 'conjoint', label: isPacsed ? 'Partenaire' : 'Conjoint(e)' }]
@@ -177,6 +182,7 @@ export default function AssuranceVieModal({
                     <span className="sc-clause-custom-row__label">{label}</span>
                     <input
                       type="number"
+                      aria-label={`Répartition ${label}`}
                       min={0}
                       max={100}
                       value={parts[id] || ''}
@@ -193,8 +199,9 @@ export default function AssuranceVieModal({
             </div>
           )}
           <div className="sc-field">
-            <label>Capitaux décès (€)</label>
+            <label htmlFor="sc-assurance-vie-capitaux-deces">Capitaux décès (€)</label>
             <ScNumericInput
+              id="sc-assurance-vie-capitaux-deces"
               value={entry.capitauxDeces || 0}
               min={0}
               onChange={(val) => onUpdate('capitauxDeces', val)}
@@ -202,8 +209,11 @@ export default function AssuranceVieModal({
             />
           </div>
           <div className="sc-field">
-            <label>Dont versements après 70 ans — art. 757B (€)</label>
+            <label htmlFor="sc-assurance-vie-versements-apres-70">
+              Dont versements après 70 ans — art. 757B (€)
+            </label>
             <ScNumericInput
+              id="sc-assurance-vie-versements-apres-70"
               value={entry.versementsApres70 || 0}
               min={0}
               onChange={(val) => onUpdate('versementsApres70', val)}
@@ -211,8 +221,11 @@ export default function AssuranceVieModal({
             />
           </div>
           <div className="sc-field">
-            <label>Dont versements avant le 13/10/1998 (EUR)</label>
+            <label htmlFor="sc-assurance-vie-versements-avant-1998">
+              Dont versements avant le 13/10/1998 (EUR)
+            </label>
             <ScNumericInput
+              id="sc-assurance-vie-versements-avant-1998"
               value={entry.versementsAvant13101998 || 0}
               min={0}
               onChange={(val) => onUpdate('versementsAvant13101998', val)}
