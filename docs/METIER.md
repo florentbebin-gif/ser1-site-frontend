@@ -22,7 +22,7 @@ Expliquer ce que SER1 couvre aujourd'hui, ce qui est deja exploitable, et les li
 | `/sim/placement` | disponible | Comparer 2 enveloppes / produits sur epargne, liquidation et transmission |
 | `/sim/credit` | disponible | Simuler echeanciers, assurance et lissage de 1 a 3 prets |
 | `/sim/succession` | disponible | Estimer droits de succession et fournir des analyses civiles/patrimoniales guidees |
-| `/sim/per` | disponible | Hub PER avec contrôle du potentiel épargne retraite (potentiel actif, transfert upcoming) |
+| `/sim/per` | disponible | Hub PER avec contrôle du potentiel épargne retraite et transfert vers nouveau PER |
 | `/sim/epargne-salariale` | upcoming | non documente metier ici tant que non stabilise |
 | `/sim/tresorerie-societe` | disponible | Projeter une société IS patrimoniale, ses CCA, filiales, emprunts, allocations de trésorerie et revenus associés |
 | `/sim/prevoyance` | upcoming | non documente metier ici tant que non stabilise |
@@ -339,7 +339,7 @@ Le simulateur placement compare 2 produits / enveloppes sur 3 temps :
 ## 5) PER
 
 ### Ce que SER1 calcule
-La surface `/sim/per` est maintenant un hub. Le parcours actif est `Controle du potentiel epargne retraite`, qui reprend la logique pedagogique du classeur PER 2025 pour verifier les plafonds de deduction, accompagner la declaration 2042 et simuler l'impact fiscal d'un versement.
+La surface `/sim/per` est un hub avec deux parcours actifs. `Controle du potentiel epargne retraite` reprend la logique pedagogique du classeur PER 2025 pour verifier les plafonds de deduction, accompagner la declaration 2042 et simuler l'impact fiscal d'un versement. `Transfert epargne retraite` compare un contrat actuel avec un nouveau PER, en s'appuyant sur la Base CG retraite, les hypotheses de releve, les sorties rente/capital et la fiscalite issue du contexte fiscal unifie.
 
 ### Entrees principales
 - choix du mode : controle du potentiel ou declaration 2042 N-1
@@ -349,6 +349,8 @@ La surface `/sim/per` est maintenant un hub. Le parcours actif est `Controle du 
 - cotisations epargne retraite par case 2042 (6NS/6NT/6RS/6RT/6QS/6QT/6OS/6OT)
 - mutualisation des plafonds entre conjoints
 - versement envisage pour la simulation d'impact fiscal
+- contrat retraite actuel, donnees de releve, compartiment PER, poches Prefon le cas echeant
+- hypotheses du nouveau PER : frais, performance, rente, capital unique et capital fractionne
 
 ### Sorties principales
 - situation fiscale estimee (TMI, IR, CEHR, marge dans la TMI)
@@ -356,6 +358,8 @@ La surface `/sim/per` est maintenant un hub. Le parcours actif est `Controle du 
 - plafond Madelin 154 bis pour les TNS
 - cases 2042 simulees et indicateur de mutualisation 6QR
 - simulation d'un versement deductible et de l'economie d'IR associee
+- comparaison conserver / transferer sur rente, capital unique et capital fractionne
+- points d'attention Base CG : frais, garanties, liquidation, modalites en cas de deces
 - exports PPTX et XLSX de synthese
 
 ### Ce qui est couvert
@@ -366,11 +370,12 @@ La surface `/sim/per` est maintenant un hub. Le parcours actif est `Controle du 
 - mutualisation des plafonds entre conjoints
 - arbitrage IR delegue au moteur fiscal du repo
 - PASS lu via la chaine fiscale standard (`public.pass_history` -> cache -> `useFiscalContext` -> fallback defaults)
+- transfert PER avec Base CG retraite statique + overlays Supabase admin
+- liquidation PER : rente, capital unique, capital fractionne, fiscalite brut / net de PS / net de PS et IR quand applicable
 
 ### Limites connues
-- le simulateur `Transfert épargne retraite` reste upcoming
 - le parcours n'est pas une declaration 2042 exhaustive case par case
-- les cas de deblocage anticipe et les scenarios de sortie restent hors perimetre de ce module
+- les cas de deblocage anticipe restent hors perimetre de ce module
 - la parite workbook doit rester surveillee sur les cas limites, surtout si le classeur source evolue
 
 ## 6) Credit

@@ -121,7 +121,7 @@ Source (preuves) :
 | `/sim/succession` | privé + lazy | `SuccessionSimulator` | `src/features/succession/SuccessionSimulator.tsx` (exporté via `src/features/succession/index.ts`) |
 | `/sim/per` | privé + lazy | `PerHome` | `src/features/per/PerHome.tsx` |
 | `/sim/per/potentiel` | privé + lazy | `PerPotentielSimulator` | `src/features/per/components/potentiel/PerPotentielSimulator.tsx` |
-| `/sim/per/transfert` | privé + lazy | `PerTransfertSimulator` | `src/features/per/PerTransfertSimulator.tsx` (exporté via `src/features/per/index.ts`) |
+| `/sim/per/transfert` | privé + lazy | `PerTransfertSimulator` | `src/features/per/transfert/PerTransfertSimulator.tsx` (réexporté par `src/features/per/transfert/index.ts`, puis `src/features/per/index.ts`) |
 | `/sim/epargne-salariale` | privé + lazy | `UpcomingSimulatorPage` | `src/pages/UpcomingSimulatorPage.tsx` (lazy) |
 | `/sim/tresorerie-societe` | privé + lazy | `TresorerieSocietePage` | `src/features/tresorerie-societe/TresorerieSocietePage.tsx` (lazy) |
 | `/sim/prevoyance` | privé + lazy | `UpcomingSimulatorPage` | `src/pages/UpcomingSimulatorPage.tsx` (lazy) |
@@ -317,9 +317,15 @@ UI : `/settings/base-contrat` est une vue read-only à 3 colonnes (Constitution 
 
 ### Base CG retraite
 
-Source applicative : `src/data/basecg/catalog.static.ts` (snapshot statique TypeScript). Le classeur historique n'est plus une source runtime et ne doit pas etre requis pour demarrer, tester ou builder l'application.
+Source applicative : `src/data/basecg/catalog.static.ts` (snapshot statique TypeScript). Le classeur historique n'est plus une source runtime et ne doit pas être requis pour démarrer, tester ou builder l'application.
 
-Les corrections vivantes passent par les pages settings/admin et les overlays Supabase existants. Les fichiers Office de travail restent hors Git ; `npm run check:no-office-artifacts` bloque tout `.xls`, `.xlsx`, `.xlsm`, `.ppt` ou `.pptx` versionne par erreur.
+UI : `/settings/base-contrat-retraite`, déclarée dans `src/routes/settingsRoutes.ts`. La lecture est accessible aux utilisateurs authentifiés ; les actions de création, modification, suppression et synchronisation restent réservées aux admins via l'UI et les protections Supabase/RLS.
+
+Overlays Supabase :
+- `base_cg_retraite_overrides` : corrections et enrichissements admin des contrats du snapshot.
+- `base_cg_retraite_documents` : métadonnées et liens de documents associés aux contrats.
+
+Les corrections vivantes passent par la page settings/admin et les overlays Supabase existants. Les fichiers Office de travail restent hors Git ; `npm run check:no-office-artifacts` bloque tout `.xls`, `.xlsx`, `.xlsm`, `.ppt` ou `.pptx` versionné par erreur.
 
 ### Gouvernance catalogue — assimilation
 
@@ -379,6 +385,7 @@ rg "export const CATALOG" src/domain/base-contrat/catalog.ts
 | `/settings/impots` | `SettingsImpots` | `tax_settings` | Barème IR (2 ans), PFU part IR, CEHR/CDHR, IS |
 | `/settings/prelevements` | `SettingsPrelevements` | `ps_settings` | PS patrimoine (cas général + régime d'exception), cotisations retraite, seuils RFR (CSG/CRDS/CASA) |
 | `/settings/base-contrat` | `BaseContrat` | `base_contrat_overrides` | Référentiel produits (read-only 3 colonnes + toggles admin) |
+| `/settings/base-contrat-retraite` | `BaseCgRetraite` | `base_cg_retraite_overrides`, `base_cg_retraite_documents` | Base CG retraite : snapshot statique TypeScript + corrections et documents admin |
 | `/settings/comptes` | `SettingsComptes` | `profiles` | Comptes utilisateurs par cabinet (admin only) |
 | `/settings/dmtg-succession` | `SettingsDmtgSuccession` | `tax_settings`, `fiscality_settings` | Éditeur unique DMTG successions + donations + AV décès |
 
