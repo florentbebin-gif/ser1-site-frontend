@@ -208,6 +208,21 @@ describe('BaseCgRetraite', () => {
     expect(editButton).toHaveFocus();
   });
 
+  it('garde le focus dans la modale avec Tab et Shift Tab', async () => {
+    const user = userEvent.setup();
+    await openModal();
+    const closeButton = await screen.findByRole('button', { name: 'Fermer' });
+    const saveButton = screen.getByRole('button', { name: 'Enregistrer' });
+
+    await waitFor(() => expect(closeButton).toHaveFocus());
+
+    await user.tab({ shift: true });
+    expect(saveButton).toHaveFocus();
+
+    await user.tab();
+    expect(closeButton).toHaveFocus();
+  });
+
   it('persiste une édition de l’onglet identité', async () => {
     await openModal();
 

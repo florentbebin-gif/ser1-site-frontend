@@ -23,6 +23,15 @@ const CONTRACT_MODAL_TABS: Array<{ key: ContractModalTab; label: string }> = [
   { key: 'documents', label: 'Documents' },
 ];
 
+const FOCUSABLE_SELECTOR = [
+  'a[href]',
+  'button:not([disabled])',
+  'input:not([disabled])',
+  'select:not([disabled])',
+  'textarea:not([disabled])',
+  '[tabindex]:not([tabindex="-1"])',
+].join(',');
+
 function makeBaseCgDocument(): BaseCgRetraiteDocument {
   return {
     id: generateId('basecg-document'),
@@ -55,6 +64,7 @@ export function BaseCgRetraiteContractModal({ contract, onClose, onSave }: Props
   const modalId = useId();
   const modalTitleId = `${modalId}-title`;
   const panelId = `${modalId}-panel`;
+  const modalRef = useRef<HTMLDivElement | null>(null);
   const closeButtonRef = useRef<HTMLButtonElement | null>(null);
   const previousFocusRef = useRef<HTMLElement | null>(null);
   const tabRefs = useRef<Record<ContractModalTab, HTMLButtonElement | null>>({
@@ -228,13 +238,49 @@ export function BaseCgRetraiteContractModal({ contract, onClose, onSave }: Props
     focusTab(nextTab.key);
   }
 
+  function getFocusableElements(): HTMLElement[] {
+    if (!modalRef.current) return [];
+    return Array.from(modalRef.current.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR))
+      .filter((element) => element.tabIndex >= 0 && element.getAttribute('aria-hidden') !== 'true');
+  }
+
+  function handleDialogKeyDown(event: KeyboardEvent<HTMLDivElement>) {
+    if (event.key !== 'Tab') return;
+
+    const focusableElements = getFocusableElements();
+    if (focusableElements.length === 0) return;
+
+    const firstElement = focusableElements[0];
+    const lastElement = focusableElements[focusableElements.length - 1];
+    const activeElement = document.activeElement;
+
+    if (event.shiftKey && activeElement === firstElement) {
+      event.preventDefault();
+      lastElement.focus();
+      return;
+    }
+
+    if (!event.shiftKey && activeElement === lastElement) {
+      event.preventDefault();
+      firstElement.focus();
+      return;
+    }
+
+    if (!modalRef.current?.contains(activeElement)) {
+      event.preventDefault();
+      firstElement.focus();
+    }
+  }
+
   return (
     <div className="base-cg-modal-overlay">
       <div
+        ref={modalRef}
         className="base-cg-modal"
         role="dialog"
         aria-modal="true"
         aria-labelledby={modalTitleId}
+        onKeyDown={handleDialogKeyDown}
       >
         <div className="base-cg-modal__header">
           <h3 id={modalTitleId}>{contract.sourceId === 'Ajout local' ? 'Ajouter un contrat' : 'Modifier le contrat'}</h3>
