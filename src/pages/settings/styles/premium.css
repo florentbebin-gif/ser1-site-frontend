@@ -154,8 +154,11 @@
   background: #FFFFFF;
   border: 1.5px solid var(--color-c8);
   border-radius: 6px;
+  color: inherit;
   padding: 10px;
   cursor: pointer;
+  font: inherit;
+  text-align: left;
   transition: all 0.15s ease;
 }
 

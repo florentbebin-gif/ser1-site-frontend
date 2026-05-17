@@ -216,7 +216,6 @@ export function Select<TValue extends string | number>({
           onKeyDown={handleKeyDown}
           aria-haspopup="listbox"
           aria-expanded={isOpen}
-          aria-invalid={!!error}
           className={`sim-field__select-trigger${isOpen ? ' is-open' : ''}${error ? ' sim-field__control--error' : ''}`}
         >
           <span className="sim-field__select-value">

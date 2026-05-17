@@ -125,7 +125,7 @@ export function TresoAssociateModal({
       bodyClassName="ts-company-modal__body"
     >
       <div className="ts-associate-modal-layout">
-        <nav
+        <div
           className="ts-associate-modal-nav"
           role="tablist"
           aria-label="Rubriques de l’associé"
@@ -147,7 +147,7 @@ export function TresoAssociateModal({
               {section.label}
             </button>
           ))}
-        </nav>
+        </div>
 
         <div
           className="ts-associate-modal-panel"

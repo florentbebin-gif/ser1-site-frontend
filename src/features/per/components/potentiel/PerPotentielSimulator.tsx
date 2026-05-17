@@ -240,7 +240,7 @@ export default function PerPotentielSimulator(): React.ReactElement {
         </div>
       </div>
 
-      <nav className="per-potentiel-tabs" aria-label="Étapes du parcours" role="tablist">
+      <div className="per-potentiel-tabs" aria-label="Étapes du parcours" role="tablist">
         {visibleSteps.map((stepId) => {
           const meta = getStepMeta(stepId, state.mode, state.historicalBasis, years);
           const isCurrent = state.step === stepId;
@@ -262,7 +262,7 @@ export default function PerPotentielSimulator(): React.ReactElement {
             </button>
           );
         })}
-      </nav>
+      </div>
 
       <div className="sim-grid">
         <main className="sim-grid__col">

@@ -312,9 +312,11 @@ export default function Settings() {
                   <div className="settings-theme-cards">
                     {/* V5: Tile "Mon thème" visible dès que myPalette existe */}
                     {myPalette && (
-                      <div
+                      <button
+                        type="button"
                         className={`settings-theme-card ${themeMode === 'my' ? 'is-selected' : ''}`}
                         onClick={handleMyThemeSelect}
+                        aria-pressed={themeMode === 'my'}
                       >
                         <div className="settings-theme-preview">
                           {Object.values(myPalette).slice(0, 5).map((color, i) => (
@@ -326,15 +328,17 @@ export default function Settings() {
                           ))}
                         </div>
                         <div className="settings-theme-name">Mon thème</div>
-                      </div>
+                      </button>
                     )}
 
                     {/* V5: Preset cards */}
                     {PREDEFINED_THEMES.map((theme) => (
-                      <div
+                      <button
                         key={theme.id}
+                        type="button"
                         className={`settings-theme-card ${themeMode === 'preset' && presetId === theme.id ? 'is-selected' : ''}`}
                         onClick={() => handlePresetSelect(theme)}
+                        aria-pressed={themeMode === 'preset' && presetId === theme.id}
                       >
                         <div className="settings-theme-preview">
                           {Object.values(theme.colors).slice(0, 5).map((color, i) => (
@@ -346,7 +350,7 @@ export default function Settings() {
                           ))}
                         </div>
                         <div className="settings-theme-name">{theme.name}</div>
-                      </div>
+                      </button>
                     ))}
                   </div>
 

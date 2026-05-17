@@ -1,4 +1,11 @@
-import { useEffect, useId, useMemo, useRef, useState, type KeyboardEvent } from 'react';
+import {
+  useEffect,
+  useId,
+  useMemo,
+  useRef,
+  useState,
+  type KeyboardEvent as ReactKeyboardEvent,
+} from 'react';
 import {
   normalizeBaseCgRetraiteGestionFees,
   type BaseCgRetraiteContract,
@@ -109,14 +116,52 @@ export function BaseCgRetraiteContractModal({ contract, onClose, onSave }: Props
   }, []);
 
   useEffect(() => {
-    function handleEscape(event: globalThis.KeyboardEvent) {
-      if (event.key !== 'Escape') return;
-      event.preventDefault();
-      onClose();
+    function getFocusableElements(): HTMLElement[] {
+      if (!modalRef.current) return [];
+      return Array.from(modalRef.current.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR))
+        .filter((element) => element.tabIndex >= 0 && element.getAttribute('aria-hidden') !== 'true');
     }
 
-    document.addEventListener('keydown', handleEscape);
-    return () => document.removeEventListener('keydown', handleEscape);
+    function handleFocusTrap(event: globalThis.KeyboardEvent) {
+      if (event.key !== 'Tab') return;
+      if (!modalRef.current?.contains(document.activeElement)) return;
+
+      const focusableElements = getFocusableElements();
+      if (focusableElements.length === 0) return;
+
+      const firstElement = focusableElements[0];
+      const lastElement = focusableElements[focusableElements.length - 1];
+      const activeElement = document.activeElement;
+
+      if (event.shiftKey && activeElement === firstElement) {
+        event.preventDefault();
+        lastElement.focus();
+        return;
+      }
+
+      if (!event.shiftKey && activeElement === lastElement) {
+        event.preventDefault();
+        firstElement.focus();
+        return;
+      }
+
+      if (!modalRef.current?.contains(activeElement)) {
+        event.preventDefault();
+        firstElement.focus();
+      }
+    }
+
+    function handleDocumentKeyDown(event: globalThis.KeyboardEvent) {
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        onClose();
+        return;
+      }
+      handleFocusTrap(event);
+    }
+
+    document.addEventListener('keydown', handleDocumentKeyDown);
+    return () => document.removeEventListener('keydown', handleDocumentKeyDown);
   }, [onClose]);
 
   const contractIdentity = useMemo(() => ({
@@ -220,7 +265,7 @@ export function BaseCgRetraiteContractModal({ contract, onClose, onSave }: Props
     tabRefs.current[tabKey]?.focus();
   }
 
-  function handleTabKeyDown(event: KeyboardEvent<HTMLButtonElement>, tabKey: ContractModalTab) {
+  function handleTabKeyDown(event: ReactKeyboardEvent<HTMLButtonElement>, tabKey: ContractModalTab) {
     const currentIndex = CONTRACT_MODAL_TABS.findIndex((tab) => tab.key === tabKey);
     let nextIndex = currentIndex;
 
@@ -238,40 +283,6 @@ export function BaseCgRetraiteContractModal({ contract, onClose, onSave }: Props
     focusTab(nextTab.key);
   }
 
-  function getFocusableElements(): HTMLElement[] {
-    if (!modalRef.current) return [];
-    return Array.from(modalRef.current.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR))
-      .filter((element) => element.tabIndex >= 0 && element.getAttribute('aria-hidden') !== 'true');
-  }
-
-  function handleDialogKeyDown(event: KeyboardEvent<HTMLDivElement>) {
-    if (event.key !== 'Tab') return;
-
-    const focusableElements = getFocusableElements();
-    if (focusableElements.length === 0) return;
-
-    const firstElement = focusableElements[0];
-    const lastElement = focusableElements[focusableElements.length - 1];
-    const activeElement = document.activeElement;
-
-    if (event.shiftKey && activeElement === firstElement) {
-      event.preventDefault();
-      lastElement.focus();
-      return;
-    }
-
-    if (!event.shiftKey && activeElement === lastElement) {
-      event.preventDefault();
-      firstElement.focus();
-      return;
-    }
-
-    if (!modalRef.current?.contains(activeElement)) {
-      event.preventDefault();
-      firstElement.focus();
-    }
-  }
-
   return (
     <div className="base-cg-modal-overlay">
       <div
@@ -280,7 +291,6 @@ export function BaseCgRetraiteContractModal({ contract, onClose, onSave }: Props
         role="dialog"
         aria-modal="true"
         aria-labelledby={modalTitleId}
-        onKeyDown={handleDialogKeyDown}
       >
         <div className="base-cg-modal__header">
           <h3 id={modalTitleId}>{contract.sourceId === 'Ajout local' ? 'Ajouter un contrat' : 'Modifier le contrat'}</h3>

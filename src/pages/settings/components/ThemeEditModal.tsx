@@ -141,9 +141,9 @@ export default function ThemeEditModal({
                 return (
                   <div key={key} className="theme-palette-item">
                     <span className="theme-palette-token-wrap">
-                      <span className="theme-palette-token" tabIndex={0} aria-describedby={tooltipId}>
+                      <button type="button" className="theme-palette-token" aria-describedby={tooltipId}>
                         {token}
-                      </span>
+                      </button>
                       <span id={tooltipId} role="tooltip" className="theme-palette-tooltip">
                         {help}
                       </span>

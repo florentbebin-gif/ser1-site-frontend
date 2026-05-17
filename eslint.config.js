@@ -2,6 +2,7 @@ import js from '@eslint/js';
 import globals from 'globals';
 import reactPlugin from 'eslint-plugin-react';
 import reactHooksPlugin from 'eslint-plugin-react-hooks';
+import jsxA11yPlugin from 'eslint-plugin-jsx-a11y';
 import tsParser from '@typescript-eslint/parser';
 import tsPlugin from '@typescript-eslint/eslint-plugin';
 import ser1ColorsPlugin from './tools/eslint-plugin-ser1-colors/index.js';
@@ -27,12 +28,18 @@ export default [
     plugins: {
       react: reactPlugin,
       'react-hooks': reactHooksPlugin,
+      'jsx-a11y': jsxA11yPlugin,
       'ser1-colors': ser1ColorsPlugin,
     },
     rules: {
       'no-unused-vars': ['warn', { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }],
       'no-console': ['error', { allow: ['warn', 'error'] }],
       'no-empty': ['error', { allowEmptyCatch: true }],
+      ...jsxA11yPlugin.flatConfigs.recommended.rules,
+      // Le repo contient encore des formulaires historiques avec libellé visuel
+      // et contrôle voisin. Les autres règles jsx-a11y sont activées maintenant ;
+      // l'association systématique des labels doit rester un chantier dédié.
+      'jsx-a11y/label-has-associated-control': 'off',
       'react/react-in-jsx-scope': 'off',
       'react/prop-types': 'off',
       'react-hooks/rules-of-hooks': 'error',

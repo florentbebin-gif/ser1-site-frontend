@@ -328,7 +328,8 @@ export function SettingsUsersSection({
                 <td>{user.last_sign_in_at ? new Date(user.last_sign_in_at).toLocaleDateString('fr-FR') : 'Jamais'}</td>
                 <td>
                   {user.total_reports > 0 ? (
-                    <div
+                    <button
+                      type="button"
                       className="report-badge-container"
                       onClick={() => onViewReports(user.id, user.email)}
                       title={`${user.total_reports} signalement${user.total_reports > 1 ? 's' : ''}${user.unread_reports > 0 ? ` dont ${user.unread_reports} non lu${user.unread_reports > 1 ? 's' : ''}` : ''}`}
@@ -337,7 +338,7 @@ export function SettingsUsersSection({
                         {user.total_reports}
                         {user.unread_reports > 0 && <span className="unread-dot" />}
                       </span>
-                    </div>
+                    </button>
                   ) : (
                     <span className="no-reports">-</span>
                   )}
