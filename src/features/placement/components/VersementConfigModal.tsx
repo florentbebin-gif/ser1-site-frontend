@@ -63,12 +63,10 @@ export function buildNeutralAnnualState(isSCPI: boolean): VersementAnnuel {
 }
 
 export function seedAnnualSection(annuel: VersementAnnuel, isPER: boolean): boolean {
-  return annuel.montant > 0 || (
-    isPER
-    && (
-      Boolean(annuel.garantieBonneFin.active)
-      || Boolean(annuel.exonerationCotisations.active)
-    )
+  return (
+    annuel.montant > 0 ||
+    (isPER &&
+      (Boolean(annuel.garantieBonneFin.active) || Boolean(annuel.exonerationCotisations.active)))
   );
 }
 
@@ -92,19 +90,17 @@ export function computeVersementSectionVisibility({
   const annualHasDistribution = hasAnnualSection && hasDistribution(annuel);
   const annualHasCapitalisation = hasAnnualSection && hasCapitalisation(annuel);
 
-  const showCapiBlock = !isSCPI && (
-    isExpert
-      ? (
-        hasCapitalisation(initial)
-        || annualHasCapitalisation
-        || distributionStrategy === 'reinvestir_capi'
-      )
-      : true
-  );
+  const showCapiBlock =
+    !isSCPI &&
+    (isExpert
+      ? hasCapitalisation(initial) ||
+        annualHasCapitalisation ||
+        distributionStrategy === 'reinvestir_capi'
+      : true);
 
   const showDistribBlock = isExpert
-    ? (hasDistribution(initial) || annualHasDistribution)
-    : (isSCPI && (hasDistribution(initial) || annualHasDistribution));
+    ? hasDistribution(initial) || annualHasDistribution
+    : isSCPI && (hasDistribution(initial) || annualHasDistribution);
 
   return {
     showCapiBlock,
@@ -159,10 +155,12 @@ export function VersementConfigModal({
   onSave,
   onClose,
 }: VersementConfigModalProps) {
-  const [draft, setDraft] = useState<VersementConfig>(() => normalizeVersementConfig(config ?? undefined));
-  const [hasAnnualSection, setHasAnnualSection] = useState<boolean>(() => (
-    seedAnnualSection(normalizeVersementConfig(config ?? undefined).annuel, envelope === 'PER')
-  ));
+  const [draft, setDraft] = useState<VersementConfig>(() =>
+    normalizeVersementConfig(config ?? undefined),
+  );
+  const [hasAnnualSection, setHasAnnualSection] = useState<boolean>(() =>
+    seedAnnualSection(normalizeVersementConfig(config ?? undefined).annuel, envelope === 'PER'),
+  );
 
   const isSCPI = envelope === 'SCPI';
   const isPER = envelope === 'PER';
@@ -289,20 +287,20 @@ export function VersementConfigModal({
   ) => {
     setDraft((currentDraft) => ({
       ...currentDraft,
-      ponctuels: currentDraft.ponctuels.map((ponctuel, ponctuelIndex) => (
-        ponctuelIndex === index ? { ...ponctuel, [field]: value } : ponctuel
-      )),
+      ponctuels: currentDraft.ponctuels.map((ponctuel, ponctuelIndex) =>
+        ponctuelIndex === index ? { ...ponctuel, [field]: value } : ponctuel,
+      ),
     }));
   };
 
   const updatePonctuelAlloc = (index: number, capi: number, distrib: number) => {
     setDraft((currentDraft) => ({
       ...currentDraft,
-      ponctuels: currentDraft.ponctuels.map((ponctuel, ponctuelIndex) => (
+      ponctuels: currentDraft.ponctuels.map((ponctuel, ponctuelIndex) =>
         ponctuelIndex === index
           ? { ...ponctuel, pctCapitalisation: capi, pctDistribution: distrib }
-          : ponctuel
-      )),
+          : ponctuel,
+      ),
     }));
   };
 
@@ -345,10 +343,7 @@ export function VersementConfigModal({
 
   return (
     <div className="vcm-overlay sim-modal-overlay">
-      <div
-        className="vcm sim-modal"
-        data-testid="placement-versements-modal"
-      >
+      <div className="vcm sim-modal" data-testid="placement-versements-modal">
         <div className="vcm__header sim-modal__header">
           <div className="vcm__header-content sim-modal__header-content">
             <div className="vcm__icon sim-modal__icon" aria-hidden="true">
@@ -374,7 +369,8 @@ export function VersementConfigModal({
         <div className="vcm__body sim-modal__body">
           {isAV ? (
             <div className="vcm__hint vcm__hint--spaced">
-              Hypothese : investissement 100 % unites de compte - prelevements sociaux dus au rachat.
+              Hypothese : investissement 100 % unites de compte - prelevements sociaux dus au
+              rachat.
             </div>
           ) : null}
 

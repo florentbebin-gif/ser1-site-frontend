@@ -57,11 +57,14 @@ describe('références notariales succession', () => {
     expect(SUCCESSION_NOTARIAL_REFERENCES).toHaveLength(7);
     for (const reference of SUCCESSION_NOTARIAL_REFERENCES) {
       expect(reference.sources.length).toBeGreaterThan(0);
-      expect(reference.sources.every((source) => (
-        source.url.includes('service-public.fr')
-        || source.url.includes('service-public.gouv.fr')
-        || source.url.includes('legifrance.gouv.fr')
-      ))).toBe(true);
+      expect(
+        reference.sources.every(
+          (source) =>
+            source.url.includes('service-public.fr') ||
+            source.url.includes('service-public.gouv.fr') ||
+            source.url.includes('legifrance.gouv.fr'),
+        ),
+      ).toBe(true);
     }
   });
 
@@ -83,10 +86,12 @@ describe('références notariales succession', () => {
   it.each(SUCCESSION_NOTARIAL_REFERENCES)(
     '$id - la succession directe restitue les mêmes droits',
     (reference) => {
-      const directHeirs = reference.directDisplay?.heirs ?? reference.engineInput.heritiers.map((heir) => ({
-        lien: heir.lien,
-        partSuccession: heir.partSuccession,
-      }));
+      const directHeirs =
+        reference.directDisplay?.heirs ??
+        reference.engineInput.heritiers.map((heir) => ({
+          lien: heir.lien,
+          partSuccession: heir.partSuccession,
+        }));
       const devolution = buildSyntheticDevolution(directHeirs, reference.directDisplay?.heirIds);
       const analysis = buildSuccessionDirectDisplayAnalysis({
         civil: makeCivil(reference.directDisplay?.civil ?? {}),
@@ -146,11 +151,14 @@ describe('références notariales succession', () => {
     expect(ASSURANCE_VIE_NOTARIAL_REFERENCES.length).toBeGreaterThanOrEqual(4);
     for (const reference of ASSURANCE_VIE_NOTARIAL_REFERENCES) {
       expect(reference.sources.length).toBeGreaterThan(0);
-      expect(reference.sources.every((source) => (
-        source.url.includes('service-public.fr')
-        || source.url.includes('service-public.gouv.fr')
-        || source.url.includes('legifrance.gouv.fr')
-      ))).toBe(true);
+      expect(
+        reference.sources.every(
+          (source) =>
+            source.url.includes('service-public.fr') ||
+            source.url.includes('service-public.gouv.fr') ||
+            source.url.includes('legifrance.gouv.fr'),
+        ),
+      ).toBe(true);
     }
   });
 });

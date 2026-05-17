@@ -1,8 +1,5 @@
 import type { Dispatch, SetStateAction } from 'react';
-import type {
-  SuccessionAssetPocket,
-  SuccessionDonationEntreEpouxOption,
-} from '../successionDraft';
+import type { SuccessionAssetPocket, SuccessionDonationEntreEpouxOption } from '../successionDraft';
 import type { DispositionsDraftState } from '../successionSimulator.helpers';
 import {
   CHOIX_LEGAL_CONJOINT_OPTIONS,
@@ -43,10 +40,7 @@ interface DispositionsCommonSectionProps {
     value: string | number | boolean,
   ) => void;
   onRemoveInterMassClaim: (claimId: string) => void;
-  preciputConfiguratorProps: Omit<
-    DispositionsPreciputConfiguratorProps,
-    'title' | 'globalHint'
-  >;
+  preciputConfiguratorProps: Omit<DispositionsPreciputConfiguratorProps, 'title' | 'globalHint'>;
 }
 
 function clampPercentage(value: string): number {
@@ -108,10 +102,12 @@ export function DispositionsCommonSection({
             min={0}
             max={100}
             value={dispositionsDraft.attributionBiensCommunsPct}
-            onChange={(e) => setDispositionsDraft((prev) => ({
-              ...prev,
-              attributionBiensCommunsPct: clampPercentage(e.target.value),
-            }))}
+            onChange={(e) =>
+              setDispositionsDraft((prev) => ({
+                ...prev,
+                attributionBiensCommunsPct: clampPercentage(e.target.value),
+              }))
+            }
           />
           <p className="sc-hint sc-hint--compact">
             50 = partage usuel ; 100 = attribution intégrale économique.
@@ -124,10 +120,12 @@ export function DispositionsCommonSection({
           <label>Donation entre époux</label>
           <ScSelect
             value={dispositionsDraft.donationEntreEpouxActive ? 'oui' : 'non'}
-            onChange={(value) => setDispositionsDraft((prev) => ({
-              ...prev,
-              donationEntreEpouxActive: value === 'oui',
-            }))}
+            onChange={(value) =>
+              setDispositionsDraft((prev) => ({
+                ...prev,
+                donationEntreEpouxActive: value === 'oui',
+              }))
+            }
             options={OUI_NON_OPTIONS}
           />
         </div>
@@ -138,10 +136,12 @@ export function DispositionsCommonSection({
           <label>Type de donation entre époux</label>
           <ScSelect
             value={dispositionsDraft.donationEntreEpouxOption}
-            onChange={(value) => setDispositionsDraft((prev) => ({
-              ...prev,
-              donationEntreEpouxOption: value as SuccessionDonationEntreEpouxOption,
-            }))}
+            onChange={(value) =>
+              setDispositionsDraft((prev) => ({
+                ...prev,
+                donationEntreEpouxOption: value as SuccessionDonationEntreEpouxOption,
+              }))
+            }
             options={DONATION_ENTRE_EPOUX_OPTIONS}
           />
           <p className="sc-hint sc-hint--compact">
@@ -149,38 +149,40 @@ export function DispositionsCommonSection({
           </p>
           {dispositionsDraft.donationEntreEpouxOption === 'pleine_propriete_totale' && (
             <p className="sc-hint sc-hint--compact">
-              Cette option simule une transmission de 100 % au conjoint survivant. En présence d&apos;enfants,
-              elle n&apos;est pas automatique et peut être réduite pour respecter leur réserve héréditaire.
+              Cette option simule une transmission de 100 % au conjoint survivant. En présence
+              d&apos;enfants, elle n&apos;est pas automatique et peut être réduite pour respecter
+              leur réserve héréditaire.
             </p>
           )}
         </div>
       )}
 
-      {showDonationEntreEpoux
-        && !dispositionsDraft.donationEntreEpouxActive
-        && nbDescendantBranches > 0 && (
+      {showDonationEntreEpoux &&
+        !dispositionsDraft.donationEntreEpouxActive &&
+        nbDescendantBranches > 0 && (
           <div className="sc-field">
             <label>Choix légal du conjoint</label>
             {nbEnfantsNonCommuns > 0 ? (
               <p className="sc-hint sc-hint--compact">
-                En présence d&apos;enfants non communs, le conjoint survivant n&apos;a droit qu&apos;au quart en pleine propriété
-                (art. 757 CC).
+                En présence d&apos;enfants non communs, le conjoint survivant n&apos;a droit
+                qu&apos;au quart en pleine propriété (art. 757 CC).
               </p>
             ) : (
               <>
                 <ScSelect
                   value={dispositionsDraft.choixLegalConjointSansDDV ?? '__moteur__'}
-                  onChange={(value) => setDispositionsDraft((prev) => ({
-                    ...prev,
-                    choixLegalConjointSansDDV: value === '__moteur__'
-                      ? null
-                      : value as 'usufruit' | 'quart_pp',
-                  }))}
+                  onChange={(value) =>
+                    setDispositionsDraft((prev) => ({
+                      ...prev,
+                      choixLegalConjointSansDDV:
+                        value === '__moteur__' ? null : (value as 'usufruit' | 'quart_pp'),
+                    }))
+                  }
                   options={CHOIX_LEGAL_CONJOINT_OPTIONS}
                 />
                 <p className="sc-hint sc-hint--compact">
-                  Sans précision, le simulateur conserve l&apos;hypothèse moteur actuelle ; le droit positif prévoit un
-                  choix entre usufruit total et quart en pleine propriété.
+                  Sans précision, le simulateur conserve l&apos;hypothèse moteur actuelle ; le droit
+                  positif prévoit un choix entre usufruit total et quart en pleine propriété.
                 </p>
               </>
             )}
@@ -192,15 +194,17 @@ export function DispositionsCommonSection({
           <label>Stipulation contraire en communauté universelle</label>
           <ScSelect
             value={dispositionsDraft.stipulationContraireCU ? 'oui' : 'non'}
-            onChange={(value) => setDispositionsDraft((prev) => ({
-              ...prev,
-              stipulationContraireCU: value === 'oui',
-            }))}
+            onChange={(value) =>
+              setDispositionsDraft((prev) => ({
+                ...prev,
+                stipulationContraireCU: value === 'oui',
+              }))
+            }
             options={OUI_NON_OPTIONS}
           />
           <p className="sc-hint sc-hint--compact">
-            Si oui, les biens détaillés qualifiés &quot;propres par nature&quot; et rattachés à un époux restent hors de la
-            masse commune simplifiée.
+            Si oui, les biens détaillés qualifiés &quot;propres par nature&quot; et rattachés à un
+            époux restent hors de la masse commune simplifiée.
           </p>
         </div>
       )}
@@ -209,8 +213,9 @@ export function DispositionsCommonSection({
         <div className="sc-field">
           <label>Qualification meuble / immeuble pour CMA</label>
           <p className="sc-hint sc-hint--compact">
-            Les actifs détaillés qualifiés meubles sont rapprochés de la communauté simplifiée. Les immeubles restent
-            sur leur masse déclarée. À défaut de saisie explicite, la catégorie détaillée sert de proxy.
+            Les actifs détaillés qualifiés meubles sont rapprochés de la communauté simplifiée. Les
+            immeubles restent sur leur masse déclarée. À défaut de saisie explicite, la catégorie
+            détaillée sert de proxy.
           </p>
         </div>
       )}
@@ -221,10 +226,12 @@ export function DispositionsCommonSection({
             <label>Bloc participation aux acquêts</label>
             <ScSelect
               value={dispositionsDraft.participationAcquets.active ? 'oui' : 'non'}
-              onChange={(value) => updateParticipationAcquets((current) => ({
-                ...current,
-                active: value === 'oui',
-              }))}
+              onChange={(value) =>
+                updateParticipationAcquets((current) => ({
+                  ...current,
+                  active: value === 'oui',
+                }))
+              }
               options={OUI_NON_OPTIONS}
             />
             <p className="sc-hint sc-hint--compact">
@@ -237,15 +244,22 @@ export function DispositionsCommonSection({
               <div className="sc-field">
                 <label>Patrimoine final dérivé des actifs saisis</label>
                 <ScSelect
-                  value={dispositionsDraft.participationAcquets.useCurrentAssetsAsFinalPatrimony ? 'oui' : 'non'}
-                  onChange={(value) => updateParticipationAcquets((current) => ({
-                    ...current,
-                    useCurrentAssetsAsFinalPatrimony: value === 'oui',
-                  }))}
+                  value={
+                    dispositionsDraft.participationAcquets.useCurrentAssetsAsFinalPatrimony
+                      ? 'oui'
+                      : 'non'
+                  }
+                  onChange={(value) =>
+                    updateParticipationAcquets((current) => ({
+                      ...current,
+                      useCurrentAssetsAsFinalPatrimony: value === 'oui',
+                    }))
+                  }
                   options={OUI_NON_OPTIONS}
                 />
                 <p className="sc-hint sc-hint--compact">
-                  Oui = le simulateur reprend les actifs propres actuellement saisis pour chaque époux.
+                  Oui = le simulateur reprend les actifs propres actuellement saisis pour chaque
+                  époux.
                 </p>
               </div>
 
@@ -254,10 +268,12 @@ export function DispositionsCommonSection({
                 <ScNumericInput
                   value={dispositionsDraft.participationAcquets.patrimoineOriginaireEpoux1 || 0}
                   min={0}
-                  onChange={(value) => updateParticipationAcquets((current) => ({
-                    ...current,
-                    patrimoineOriginaireEpoux1: value,
-                  }))}
+                  onChange={(value) =>
+                    updateParticipationAcquets((current) => ({
+                      ...current,
+                      patrimoineOriginaireEpoux1: value,
+                    }))
+                  }
                 />
               </div>
 
@@ -266,10 +282,12 @@ export function DispositionsCommonSection({
                 <ScNumericInput
                   value={dispositionsDraft.participationAcquets.patrimoineOriginaireEpoux2 || 0}
                   min={0}
-                  onChange={(value) => updateParticipationAcquets((current) => ({
-                    ...current,
-                    patrimoineOriginaireEpoux2: value,
-                  }))}
+                  onChange={(value) =>
+                    updateParticipationAcquets((current) => ({
+                      ...current,
+                      patrimoineOriginaireEpoux2: value,
+                    }))
+                  }
                 />
               </div>
 
@@ -280,10 +298,12 @@ export function DispositionsCommonSection({
                     <ScNumericInput
                       value={dispositionsDraft.participationAcquets.patrimoineFinalEpoux1 || 0}
                       min={0}
-                      onChange={(value) => updateParticipationAcquets((current) => ({
-                        ...current,
-                        patrimoineFinalEpoux1: value,
-                      }))}
+                      onChange={(value) =>
+                        updateParticipationAcquets((current) => ({
+                          ...current,
+                          patrimoineFinalEpoux1: value,
+                        }))
+                      }
                     />
                   </div>
 
@@ -292,10 +312,12 @@ export function DispositionsCommonSection({
                     <ScNumericInput
                       value={dispositionsDraft.participationAcquets.patrimoineFinalEpoux2 || 0}
                       min={0}
-                      onChange={(value) => updateParticipationAcquets((current) => ({
-                        ...current,
-                        patrimoineFinalEpoux2: value,
-                      }))}
+                      onChange={(value) =>
+                        updateParticipationAcquets((current) => ({
+                          ...current,
+                          patrimoineFinalEpoux2: value,
+                        }))
+                      }
                     />
                   </div>
                 </>
@@ -336,7 +358,8 @@ export function DispositionsCommonSection({
                   }}
                 />
                 <p className="sc-hint sc-hint--compact">
-                  La quote du conjoint créancier s&apos;applique à l&apos;écart d&apos;acquêts net calculé.
+                  La quote du conjoint créancier s&apos;applique à l&apos;écart d&apos;acquêts net
+                  calculé.
                 </p>
               </div>
             </>
@@ -366,10 +389,12 @@ export function DispositionsCommonSection({
             <label>Bloc société d&apos;acquets</label>
             <ScSelect
               value={dispositionsDraft.societeAcquets.active ? 'oui' : 'non'}
-              onChange={(value) => updateSocieteAcquets((current) => ({
-                ...current,
-                active: value === 'oui',
-              }))}
+              onChange={(value) =>
+                updateSocieteAcquets((current) => ({
+                  ...current,
+                  active: value === 'oui',
+                }))
+              }
               options={OUI_NON_OPTIONS}
             />
             <p className="sc-hint sc-hint--compact">
@@ -383,15 +408,17 @@ export function DispositionsCommonSection({
                 <label>Mode de liquidation de la société d&apos;acquets</label>
                 <ScSelect
                   value={dispositionsDraft.societeAcquets.liquidationMode}
-                  onChange={(value) => updateSocieteAcquets((current) => ({
-                    ...current,
-                    liquidationMode: value as 'quotes' | 'attribution_survivant',
-                  }))}
+                  onChange={(value) =>
+                    updateSocieteAcquets((current) => ({
+                      ...current,
+                      liquidationMode: value as 'quotes' | 'attribution_survivant',
+                    }))
+                  }
                   options={SOCIETE_ACQUETS_LIQUIDATION_OPTIONS}
                 />
                 <p className="sc-hint sc-hint--compact">
-                  Le mode quotes répartit la poche selon les quotes contractuelles ; le mode attribution ajoute une part
-                  préalable au survivant avant de partager le reliquat.
+                  Le mode quotes répartit la poche selon les quotes contractuelles ; le mode
+                  attribution ajoute une part préalable au survivant avant de partager le reliquat.
                 </p>
               </div>
 
@@ -442,13 +469,16 @@ export function DispositionsCommonSection({
                     min={0}
                     max={100}
                     value={dispositionsDraft.societeAcquets.attributionSurvivantPct}
-                    onChange={(e) => updateSocieteAcquets((current) => ({
-                      ...current,
-                      attributionSurvivantPct: clampPercentage(e.target.value),
-                    }))}
+                    onChange={(e) =>
+                      updateSocieteAcquets((current) => ({
+                        ...current,
+                        attributionSurvivantPct: clampPercentage(e.target.value),
+                      }))
+                    }
                   />
                   <p className="sc-hint sc-hint--compact">
-                    Cette part est attribuée au survivant avant d&apos;appliquer les quotes sur le reliquat.
+                    Cette part est attribuée au survivant avant d&apos;appliquer les quotes sur le
+                    reliquat.
                   </p>
                 </div>
               )}
@@ -457,14 +487,17 @@ export function DispositionsCommonSection({
                 <label>Attribution intégrale de la société d&apos;acquets</label>
                 <ScSelect
                   value={dispositionsDraft.attributionIntegrale ? 'oui' : 'non'}
-                  onChange={(value) => setDispositionsDraft((prev) => ({
-                    ...prev,
-                    attributionIntegrale: value === 'oui',
-                  }))}
+                  onChange={(value) =>
+                    setDispositionsDraft((prev) => ({
+                      ...prev,
+                      attributionIntegrale: value === 'oui',
+                    }))
+                  }
                   options={OUI_NON_OPTIONS}
                 />
                 <p className="sc-hint sc-hint--compact">
-                  Si oui, la poche société d&apos;acquets est reportée en totalité au survivant au 1er décès.
+                  Si oui, la poche société d&apos;acquets est reportée en totalité au survivant au
+                  1er décès.
                 </p>
               </div>
 

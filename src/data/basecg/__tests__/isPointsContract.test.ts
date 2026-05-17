@@ -26,13 +26,17 @@ describe('isPointsContract', () => {
   });
 
   it('reconnaît AGIPI PAIR avec « NC\\nPoints »', () => {
-    const pair = BASECG_CATALOG.find((c) => c.compagnie === 'AGIPI' && c.nomContrat.includes('PAIR'));
+    const pair = BASECG_CATALOG.find(
+      (c) => c.compagnie === 'AGIPI' && c.nomContrat.includes('PAIR'),
+    );
     expect(pair).toBeDefined();
     expect(isPointsContract(pair!)).toBe(true);
   });
 
   it('reconnaît "PER MEDICIS PRODUIT EN POINTS" via "Système par points"', () => {
-    const medicisPoints = BASECG_CATALOG.find((c) => c.nomContrat.includes('PER MEDICIS PRODUIT EN POINTS'));
+    const medicisPoints = BASECG_CATALOG.find((c) =>
+      c.nomContrat.includes('PER MEDICIS PRODUIT EN POINTS'),
+    );
     expect(medicisPoints).toBeDefined();
     expect(isPointsContract(medicisPoints!)).toBe(true);
   });

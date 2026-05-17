@@ -143,17 +143,20 @@ export function useSuccessionOutcomeDerivedValues({
   shouldRenderSuccessionComputationSections,
 }: UseSuccessionOutcomeDerivedValuesInput) {
   const displayUsesChainage = Boolean(
-    shouldRenderSuccessionComputationSections
-    && (isMarried || isPacsed)
-    && chainageAnalysis.applicable
-    && chainageAnalysis.step1
-    && chainageAnalysis.step2,
+    shouldRenderSuccessionComputationSections &&
+    (isMarried || isPacsed) &&
+    chainageAnalysis.applicable &&
+    chainageAnalysis.step1 &&
+    chainageAnalysis.step2,
   );
 
   const displayActifNetSuccession = useMemo(
-    () => (shouldRenderSuccessionComputationSections
-      ? (displayUsesChainage ? derivedActifNetSuccession : directEstateBasis.actifNetSuccession)
-      : 0),
+    () =>
+      shouldRenderSuccessionComputationSections
+        ? displayUsesChainage
+          ? derivedActifNetSuccession
+          : directEstateBasis.actifNetSuccession
+        : 0,
     [
       shouldRenderSuccessionComputationSections,
       displayUsesChainage,
@@ -163,25 +166,26 @@ export function useSuccessionOutcomeDerivedValues({
   );
 
   const directDisplayAnalysis = useMemo(
-    () => buildSuccessionDirectDisplayAnalysis({
-      civil: civilContext,
-      devolution: devolutionAnalysis,
-      devolutionContext,
-      dmtgSettings: fiscalSnapshot.dmtgSettings,
-      enfantsContext,
-      familyMembers,
-      order: chainOrder,
-      actifNetSuccession: directEstateBasis.actifNetSuccession,
-      baseWarnings: directEstateBasis.warnings,
-      transmissionBasis,
-      abattementResidencePrincipale,
-      forfaitMobilierMode: patrimonialContext.forfaitMobilierMode,
-      forfaitMobilierPct: patrimonialContext.forfaitMobilierPct,
-      forfaitMobilierMontant: patrimonialContext.forfaitMobilierMontant,
-      donationsContext,
-      donationSettings: fiscalSnapshot.donation,
-      referenceDate: simulatedDeathDate,
-    }),
+    () =>
+      buildSuccessionDirectDisplayAnalysis({
+        civil: civilContext,
+        devolution: devolutionAnalysis,
+        devolutionContext,
+        dmtgSettings: fiscalSnapshot.dmtgSettings,
+        enfantsContext,
+        familyMembers,
+        order: chainOrder,
+        actifNetSuccession: directEstateBasis.actifNetSuccession,
+        baseWarnings: directEstateBasis.warnings,
+        transmissionBasis,
+        abattementResidencePrincipale,
+        forfaitMobilierMode: patrimonialContext.forfaitMobilierMode,
+        forfaitMobilierPct: patrimonialContext.forfaitMobilierPct,
+        forfaitMobilierMontant: patrimonialContext.forfaitMobilierMontant,
+        donationsContext,
+        donationSettings: fiscalSnapshot.donation,
+        referenceDate: simulatedDeathDate,
+      }),
     [
       civilContext,
       devolutionAnalysis,
@@ -225,20 +229,21 @@ export function useSuccessionOutcomeDerivedValues({
   const hasSecondSubject = hasSuccessionSecondSubject(civilContext.situationMatrimoniale);
 
   const displayTotals = useMemo(
-    () => buildSuccessionDisplayTotals({
-      shouldRenderSuccessionComputationSections,
-      displayUsesChainage,
-      hasSecondSubject,
-      chainageOrder: chainageAnalysis.order,
-      chainageStep1Droits: chainageAnalysis.step1?.droitsEnfants ?? 0,
-      chainageStep2Droits: chainageAnalysis.step2?.droitsEnfants ?? 0,
-      chainageTotalDroits: chainageAnalysis.totalDroits,
-      directSimulatedDeceased: directDisplayAnalysis.simulatedDeceased,
-      directSuccessionDroits: directDisplayAnalysis.result?.totalDroits ?? 0,
-      avFiscalAnalysis,
-      perFiscalAnalysis,
-      prevoyanceFiscalAnalysis,
-    }),
+    () =>
+      buildSuccessionDisplayTotals({
+        shouldRenderSuccessionComputationSections,
+        displayUsesChainage,
+        hasSecondSubject,
+        chainageOrder: chainageAnalysis.order,
+        chainageStep1Droits: chainageAnalysis.step1?.droitsEnfants ?? 0,
+        chainageStep2Droits: chainageAnalysis.step2?.droitsEnfants ?? 0,
+        chainageTotalDroits: chainageAnalysis.totalDroits,
+        directSimulatedDeceased: directDisplayAnalysis.simulatedDeceased,
+        directSuccessionDroits: directDisplayAnalysis.result?.totalDroits ?? 0,
+        avFiscalAnalysis,
+        perFiscalAnalysis,
+        prevoyanceFiscalAnalysis,
+      }),
     [
       shouldRenderSuccessionComputationSections,
       displayUsesChainage,
@@ -256,35 +261,39 @@ export function useSuccessionOutcomeDerivedValues({
   );
   const derivedTotalDroits = displayTotals.droitsCumulesProjetes;
 
-  const synthHypothese = useMemo(() => buildSuccessionSynthHypothese({
-    isMarried,
-    nbDescendantBranches,
-    nbEnfantsNonCommuns,
-    regimeMatrimonial: civilContext.regimeMatrimonial,
-    attributionIntegrale: patrimonialContext.attributionIntegrale,
-    donationEntreEpouxActive: patrimonialContext.donationEntreEpouxActive,
-    donationEntreEpouxOption: patrimonialContext.donationEntreEpouxOption,
-    chainOrder,
-    dateNaissanceEpoux1: civilContext.dateNaissanceEpoux1,
-    dateNaissanceEpoux2: civilContext.dateNaissanceEpoux2,
-    derivedActifNetSuccession,
-    simulatedDeathDate,
-    choixLegalConjointSansDDV: devolutionContext.choixLegalConjointSansDDV,
-  }), [
-    isMarried,
-    nbDescendantBranches,
-    nbEnfantsNonCommuns,
-    civilContext.regimeMatrimonial,
-    patrimonialContext.attributionIntegrale,
-    patrimonialContext.donationEntreEpouxActive,
-    patrimonialContext.donationEntreEpouxOption,
-    chainOrder,
-    civilContext.dateNaissanceEpoux1,
-    civilContext.dateNaissanceEpoux2,
-    derivedActifNetSuccession,
-    simulatedDeathDate,
-    devolutionContext.choixLegalConjointSansDDV,
-  ]);
+  const synthHypothese = useMemo(
+    () =>
+      buildSuccessionSynthHypothese({
+        isMarried,
+        nbDescendantBranches,
+        nbEnfantsNonCommuns,
+        regimeMatrimonial: civilContext.regimeMatrimonial,
+        attributionIntegrale: patrimonialContext.attributionIntegrale,
+        donationEntreEpouxActive: patrimonialContext.donationEntreEpouxActive,
+        donationEntreEpouxOption: patrimonialContext.donationEntreEpouxOption,
+        chainOrder,
+        dateNaissanceEpoux1: civilContext.dateNaissanceEpoux1,
+        dateNaissanceEpoux2: civilContext.dateNaissanceEpoux2,
+        derivedActifNetSuccession,
+        simulatedDeathDate,
+        choixLegalConjointSansDDV: devolutionContext.choixLegalConjointSansDDV,
+      }),
+    [
+      isMarried,
+      nbDescendantBranches,
+      nbEnfantsNonCommuns,
+      civilContext.regimeMatrimonial,
+      patrimonialContext.attributionIntegrale,
+      patrimonialContext.donationEntreEpouxActive,
+      patrimonialContext.donationEntreEpouxOption,
+      chainOrder,
+      civilContext.dateNaissanceEpoux1,
+      civilContext.dateNaissanceEpoux2,
+      derivedActifNetSuccession,
+      simulatedDeathDate,
+      devolutionContext.choixLegalConjointSansDDV,
+    ],
+  );
 
   const transmissionRows = useMemo(() => {
     if (!shouldRenderSuccessionComputationSections) return [];
@@ -301,49 +310,55 @@ export function useSuccessionOutcomeDerivedValues({
     directDisplayAnalysis.transmissionRows,
   ]);
 
-  const insuranceLines = useMemo(() => buildSuccessionOutcomeInsuranceLines({
-    shouldRenderSuccessionComputationSections,
-    displayUsesChainage,
-    chainageOrder: chainageAnalysis.order,
-    directSimulatedDeceased: directDisplayAnalysis.simulatedDeceased,
-    avFiscalAnalysis,
-    perFiscalAnalysis,
-    prevoyanceFiscalAnalysis,
-  }), [
-    shouldRenderSuccessionComputationSections,
-    displayUsesChainage,
-    chainageAnalysis.order,
-    directDisplayAnalysis.simulatedDeceased,
-    avFiscalAnalysis,
-    perFiscalAnalysis,
-    prevoyanceFiscalAnalysis,
-  ]);
+  const insuranceLines = useMemo(
+    () =>
+      buildSuccessionOutcomeInsuranceLines({
+        shouldRenderSuccessionComputationSections,
+        displayUsesChainage,
+        chainageOrder: chainageAnalysis.order,
+        directSimulatedDeceased: directDisplayAnalysis.simulatedDeceased,
+        avFiscalAnalysis,
+        perFiscalAnalysis,
+        prevoyanceFiscalAnalysis,
+      }),
+    [
+      shouldRenderSuccessionComputationSections,
+      displayUsesChainage,
+      chainageAnalysis.order,
+      directDisplayAnalysis.simulatedDeceased,
+      avFiscalAnalysis,
+      perFiscalAnalysis,
+      prevoyanceFiscalAnalysis,
+    ],
+  );
   const insurance990ILines = insuranceLines.merged.lines990I;
   const insurance757BLines = insuranceLines.merged.lines757B;
 
   const unifiedBlocks = useMemo(
-    () => buildUnifiedBeneficiaryBlocks({
-      transmissionRows,
-      insurance990IStep1: insuranceLines.byStep.step1.lines990I,
-      insurance757BStep1: insuranceLines.byStep.step1.lines757B,
-      insurance990IStep2: insuranceLines.byStep.step2.lines990I,
-      insurance757BStep2: insuranceLines.byStep.step2.lines757B,
-      displayUsesChainage,
-    }),
+    () =>
+      buildUnifiedBeneficiaryBlocks({
+        transmissionRows,
+        insurance990IStep1: insuranceLines.byStep.step1.lines990I,
+        insurance757BStep1: insuranceLines.byStep.step1.lines757B,
+        insurance990IStep2: insuranceLines.byStep.step2.lines990I,
+        insurance757BStep2: insuranceLines.byStep.step2.lines757B,
+        displayUsesChainage,
+      }),
     [transmissionRows, insuranceLines, displayUsesChainage],
   );
 
   const annexBeneficiarySteps = useMemo(
-    () => buildSuccessionAnnexBeneficiarySteps({
-      transmissionRows,
-      insurance990IStep1: insuranceLines.byStep.step1.lines990I,
-      insurance757BStep1: insuranceLines.byStep.step1.lines757B,
-      insurance990IStep2: insuranceLines.byStep.step2.lines990I,
-      insurance757BStep2: insuranceLines.byStep.step2.lines757B,
-      displayUsesChainage,
-      firstDecedeLabel: chainageAnalysis.firstDecedeLabel,
-      secondDecedeLabel: chainageAnalysis.secondDecedeLabel,
-    }),
+    () =>
+      buildSuccessionAnnexBeneficiarySteps({
+        transmissionRows,
+        insurance990IStep1: insuranceLines.byStep.step1.lines990I,
+        insurance757BStep1: insuranceLines.byStep.step1.lines757B,
+        insurance990IStep2: insuranceLines.byStep.step2.lines990I,
+        insurance757BStep2: insuranceLines.byStep.step2.lines757B,
+        displayUsesChainage,
+        firstDecedeLabel: chainageAnalysis.firstDecedeLabel,
+        secondDecedeLabel: chainageAnalysis.secondDecedeLabel,
+      }),
     [
       transmissionRows,
       insuranceLines,
@@ -354,7 +369,17 @@ export function useSuccessionOutcomeDerivedValues({
   );
 
   const familyContext = useMemo(
-    () => buildSuccessionFamilyContextExport({
+    () =>
+      buildSuccessionFamilyContextExport({
+        civilContext,
+        devolutionContext,
+        patrimonialContext,
+        donationsContext,
+        donationPartageActs,
+        enfantsContext,
+        familyMembers,
+      }),
+    [
       civilContext,
       devolutionContext,
       patrimonialContext,
@@ -362,20 +387,20 @@ export function useSuccessionOutcomeDerivedValues({
       donationPartageActs,
       enfantsContext,
       familyMembers,
-    }),
-    [civilContext, devolutionContext, patrimonialContext, donationsContext, donationPartageActs, enfantsContext, familyMembers],
+    ],
   );
 
   const assetAnnex = useMemo(
-    () => buildSuccessionAssetAnnexExport({
-      assetEntries,
-      groupementFoncierEntries,
-      assuranceVieEntries,
-      perEntries,
-      prevoyanceDecesEntries,
-      assetPocketOptions,
-      assuranceViePartyOptions,
-    }),
+    () =>
+      buildSuccessionAssetAnnexExport({
+        assetEntries,
+        groupementFoncierEntries,
+        assuranceVieEntries,
+        perEntries,
+        prevoyanceDecesEntries,
+        assetPocketOptions,
+        assuranceViePartyOptions,
+      }),
     [
       assetEntries,
       groupementFoncierEntries,
@@ -388,22 +413,23 @@ export function useSuccessionOutcomeDerivedValues({
   );
 
   const chainageExportPayload = useMemo(
-    () => buildSuccessionChainageExportPayload({
-      displayUsesChainage,
-      chainageAnalysis,
-      assuranceVieByAssure,
-      perByAssure,
-      prevoyanceByAssure,
-      assuranceVieTotale: assuranceVieTotals.capitaux,
-      perTotale: perTotals.capitaux,
-      prevoyanceTotale: prevoyanceTotals.capitaux,
-      avFiscalAnalysis,
-      perFiscalAnalysis,
-      prevoyanceFiscalAnalysis,
-      derivedTotalDroits,
-      isPacsed,
-      directDisplayWarnings: directDisplayAnalysis.warnings,
-    }),
+    () =>
+      buildSuccessionChainageExportPayload({
+        displayUsesChainage,
+        chainageAnalysis,
+        assuranceVieByAssure,
+        perByAssure,
+        prevoyanceByAssure,
+        assuranceVieTotale: assuranceVieTotals.capitaux,
+        perTotale: perTotals.capitaux,
+        prevoyanceTotale: prevoyanceTotals.capitaux,
+        avFiscalAnalysis,
+        perFiscalAnalysis,
+        prevoyanceFiscalAnalysis,
+        derivedTotalDroits,
+        isPacsed,
+        directDisplayWarnings: directDisplayAnalysis.warnings,
+      }),
     [
       displayUsesChainage,
       chainageAnalysis,
@@ -451,10 +477,11 @@ export function useSuccessionOutcomeDerivedValues({
   });
 
   const exportHeirs = useMemo(
-    () => (displayUsesChainage ? [] : directDisplayAnalysis.heirs).map((heir) => ({
-      lien: heir.lien,
-      partSuccession: heir.partSuccession,
-    })),
+    () =>
+      (displayUsesChainage ? [] : directDisplayAnalysis.heirs).map((heir) => ({
+        lien: heir.lien,
+        partSuccession: heir.partSuccession,
+      })),
     [displayUsesChainage, directDisplayAnalysis.heirs],
   );
 

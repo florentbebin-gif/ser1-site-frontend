@@ -9,12 +9,12 @@ const PARAMS: TresoFiscalParams = {
   motherDaughterStandardQpfcRate: 0.05,
   motherDaughterGroupQpfcRate: 0.01,
   participationDisposalQpfcRate: 0.12,
-  pfuRateIR: 0.10,
+  pfuRateIR: 0.1,
   psRate: 0.15,
   pfuTotal: 0.25,
   dividendesAbattement: 0,
   irScale: [],
-  tnsDividendBasePct: 0.10,
+  tnsDividendBasePct: 0.1,
 };
 
 function baseV6(): TresoInputsV6 {
@@ -39,46 +39,50 @@ function baseV6(): TresoInputsV6 {
         workingCapitalRequirement: 0,
       },
       reducedCorporateTaxEligible: true,
-      associates: [{
-        id: 'associe-1',
-        label: 'Associé 1',
-        kind: 'pp',
-        profile: {
-          currentAge: 50,
-          retirementAge: 90,
-          annualIncomeNeed: 0,
-          projectionStartYear: 2026,
+      associates: [
+        {
+          id: 'associe-1',
+          label: 'Associé 1',
+          kind: 'pp',
+          profile: {
+            currentAge: 50,
+            retirementAge: 90,
+            annualIncomeNeed: 0,
+            projectionStartYear: 2026,
+          },
+          ownershipLots: [{ right: 'pleine_propriete', capitalPct: 100, economicRightsPct: 100 }],
+          roles: ['associe_sans_statut'],
+          cca: {
+            currentBalance: 0,
+            remunerationRate: 0,
+          },
+          revenuePhases: [
+            {
+              id: 'phase-1',
+              startYear: 2026,
+              endYear: 2030,
+              remuneration: {
+                enabled: false,
+                source: 'none',
+                loadedAnnualCost: 0,
+                socialChargeRate: 0,
+              },
+              distribution: {
+                enabled: false,
+                annualNetIncomeNeed: 0,
+                dividendsStrategy: 'max_treso',
+              },
+              ccaContribution: {
+                enabled: false,
+              },
+              ccaRepayment: {
+                enabled: false,
+                strategy: 'aucun',
+              },
+            },
+          ],
         },
-        ownershipLots: [{ right: 'pleine_propriete', capitalPct: 100, economicRightsPct: 100 }],
-        roles: ['associe_sans_statut'],
-        cca: {
-          currentBalance: 0,
-          remunerationRate: 0,
-        },
-        revenuePhases: [{
-          id: 'phase-1',
-          startYear: 2026,
-          endYear: 2030,
-          remuneration: {
-            enabled: false,
-            source: 'none',
-            loadedAnnualCost: 0,
-            socialChargeRate: 0,
-          },
-          distribution: {
-            enabled: false,
-            annualNetIncomeNeed: 0,
-            dividendsStrategy: 'max_treso',
-          },
-          ccaContribution: {
-            enabled: false,
-          },
-          ccaRepayment: {
-            enabled: false,
-            strategy: 'aucun',
-          },
-        }],
-      }],
+      ],
       loans: [],
       subsidiaries: [],
     },

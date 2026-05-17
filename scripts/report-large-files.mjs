@@ -22,23 +22,25 @@ function getMaxLinesExemptions() {
   return new Set(
     eslintConfig
       .filter(isMaxLinesOff)
-      .flatMap(config => config.files ?? [])
-      .filter(pattern => pattern.startsWith('src/') && EXTENSIONS.has(path.extname(pattern)))
+      .flatMap((config) => config.files ?? [])
+      .filter((pattern) => pattern.startsWith('src/') && EXTENSIONS.has(path.extname(pattern)))
       .map(normalizePath),
   );
 }
 
 async function listSourceFiles(directory) {
   const entries = await readdir(directory, { withFileTypes: true });
-  const files = await Promise.all(entries.map(async entry => {
-    const absolutePath = path.join(directory, entry.name);
+  const files = await Promise.all(
+    entries.map(async (entry) => {
+      const absolutePath = path.join(directory, entry.name);
 
-    if (entry.isDirectory()) return listSourceFiles(absolutePath);
-    if (!entry.isFile()) return [];
-    if (!EXTENSIONS.has(path.extname(entry.name))) return [];
+      if (entry.isDirectory()) return listSourceFiles(absolutePath);
+      if (!entry.isFile()) return [];
+      if (!EXTENSIONS.has(path.extname(entry.name))) return [];
 
-    return [absolutePath];
-  }));
+      return [absolutePath];
+    }),
+  );
 
   return files.flat();
 }
@@ -54,21 +56,23 @@ function countPhysicalLines(source) {
 
 const maxLinesExemptions = getMaxLinesExemptions();
 const sourceFiles = await listSourceFiles(SRC_DIR);
-const rows = await Promise.all(sourceFiles.map(async absolutePath => {
-  const source = await readFile(absolutePath, 'utf8');
-  const relativePath = normalizePath(path.relative(ROOT, absolutePath));
-  const lines = countPhysicalLines(source);
+const rows = await Promise.all(
+  sourceFiles.map(async (absolutePath) => {
+    const source = await readFile(absolutePath, 'utf8');
+    const relativePath = normalizePath(path.relative(ROOT, absolutePath));
+    const lines = countPhysicalLines(source);
 
-  return {
-    path: relativePath,
-    lines,
-    gapTo500: MAX_LINES - lines,
-    maxLinesExempt: maxLinesExemptions.has(relativePath),
-  };
-}));
+    return {
+      path: relativePath,
+      lines,
+      gapTo500: MAX_LINES - lines,
+      maxLinesExempt: maxLinesExemptions.has(relativePath),
+    };
+  }),
+);
 
 const largeFiles = rows
-  .filter(row => row.lines >= MIN_LINES)
+  .filter((row) => row.lines >= MIN_LINES)
   .sort((a, b) => b.lines - a.lines || a.path.localeCompare(b.path));
 
 console.log('path\tlines\tgap_to_500\tmax_lines_exempt');

@@ -3,10 +3,7 @@ import {
   ASSET_SUBCATEGORY_OPTIONS,
   SPECIAL_ASSET_SUBCATEGORIES,
 } from '../successionSimulator.constants';
-import {
-  GF_UI_OPTIONS,
-  normalizeGfTypeForUi,
-} from '../successionGroupementFoncier';
+import { GF_UI_OPTIONS, normalizeGfTypeForUi } from '../successionGroupementFoncier';
 
 describe('SPECIAL_ASSET_SUBCATEGORIES', () => {
   it('contains exactly the five expected sentinel values', () => {

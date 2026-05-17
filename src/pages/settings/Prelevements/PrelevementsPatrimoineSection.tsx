@@ -50,9 +50,7 @@ export default function PrelevementsPatrimoineSection({
         <span className="settings-premium-title settings-premium-title--flush">
           Prélèvements sociaux - patrimoine et capital
         </span>
-        <span className="fisc-acc-chevron">
-          {isOpen ? 'v' : '>'}
-        </span>
+        <span className="fisc-acc-chevron">{isOpen ? 'v' : '>'}</span>
       </button>
 
       {isOpen && (
@@ -64,7 +62,8 @@ export default function PrelevementsPatrimoineSection({
         >
           <p className="fisc-intro">
             Cas général pour les revenus du capital au taux en vigueur ; taux d'exception pour les
-            revenus fonciers, plus-values immobilières, assurance-vie, PEP et épargne logement selon les cas.
+            revenus fonciers, plus-values immobilières, assurance-vie, PEP et épargne logement selon
+            les cas.
           </p>
 
           <div className="tax-two-cols">

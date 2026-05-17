@@ -140,22 +140,26 @@ export function useTresorerieState(): TresoStateResult {
     return onResetEvent(({ simId }) => {
       if (simId !== 'tresorerie-societe') return;
       setState(DEFAULT_STATE);
-      try { sessionStorage.removeItem(STORE_KEY); } catch { /* noop */ }
+      try {
+        sessionStorage.removeItem(STORE_KEY);
+      } catch {
+        /* noop */
+      }
     });
   }, []);
 
   // ── Handlers ─────────────────────────────────────────────────────────────
 
   const setInputsV6 = useCallback((nextInputs: TresoInputsV6) => {
-    setState(s => ({ ...s, inputsV6: nextInputs }));
+    setState((s) => ({ ...s, inputsV6: nextInputs }));
   }, []);
 
   const setProjectionVisible = useCallback((v: boolean) => {
-    setState(s => ({ ...s, projectionVisible: v }));
+    setState((s) => ({ ...s, projectionVisible: v }));
   }, []);
 
   const setProjectionMode = useCallback((v: 'resume' | 'detail') => {
-    setState(s => ({ ...s, projectionMode: v }));
+    setState((s) => ({ ...s, projectionMode: v }));
   }, []);
 
   return {

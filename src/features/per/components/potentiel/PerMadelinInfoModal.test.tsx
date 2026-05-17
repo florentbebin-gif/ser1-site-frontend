@@ -25,11 +25,7 @@ const zeroDetail = {
 describe('PerMadelinInfoModal', () => {
   it('affiche uniquement le message d’absence de base TNS quand aucun revenu TNS n’est saisi', () => {
     const html = renderToStaticMarkup(
-      <PerMadelinInfoModal
-        declarant1={zeroDetail}
-        isCouple={false}
-        onClose={vi.fn()}
-      />,
+      <PerMadelinInfoModal declarant1={zeroDetail} isCouple={false} onClose={vi.fn()} />,
     );
 
     expect(html).toContain('Aucune base TNS saisie');

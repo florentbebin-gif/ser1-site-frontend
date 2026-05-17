@@ -1,7 +1,6 @@
 import type { Dispatch, SetStateAction } from 'react';
 import { REGIMES_MATRIMONIAUX } from '../../../engine/civil';
-import type {
-  DEFAULT_SUCCESSION_CIVIL_CONTEXT} from '../successionDraft';
+import type { DEFAULT_SUCCESSION_CIVIL_CONTEXT } from '../successionDraft';
 import {
   type FamilyMember,
   type SuccessionEnfant,
@@ -9,10 +8,7 @@ import {
 } from '../successionDraft';
 import type { getEnfantRattachementOptions } from '../successionEnfants';
 import { getEnfantNodeLabel } from '../successionEnfants';
-import {
-  PACS_CONVENTION_OPTIONS,
-  SITUATION_OPTIONS,
-} from '../successionSimulator.constants';
+import { PACS_CONVENTION_OPTIONS, SITUATION_OPTIONS } from '../successionSimulator.constants';
 import { labelMember } from '../successionSimulator.helpers';
 import { ScSelect } from './ScSelect';
 
@@ -58,7 +54,17 @@ export default function ScFamilyContextCard({
       <header className="sc-card__header sim-card__header sim-card__header--bleed">
         <div className="sc-card__title-row sim-card__title sim-card__title-row">
           <div className="sim-card__icon">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.8"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
               <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
               <circle cx="9" cy="7" r="4" />
               <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
@@ -71,7 +77,9 @@ export default function ScFamilyContextCard({
       <div className="sc-card__divider sim-divider" />
       <div className="sc-context-grid">
         <div className="sc-civil-grid">
-          <div className={`sc-civil-grid__top-row${showSecondBirthDate ? ' sc-civil-grid__top-row--triple' : ''}`}>
+          <div
+            className={`sc-civil-grid__top-row${showSecondBirthDate ? ' sc-civil-grid__top-row--triple' : ''}`}
+          >
             <div className="sc-field">
               <label>Situation familiale</label>
               <ScSelect
@@ -86,10 +94,12 @@ export default function ScFamilyContextCard({
                 type="date"
                 className="sc-input--left"
                 value={civilContext.dateNaissanceEpoux1 ?? ''}
-                onChange={(e) => setCivilContext((prev) => ({
-                  ...prev,
-                  dateNaissanceEpoux1: e.target.value || undefined,
-                }))}
+                onChange={(e) =>
+                  setCivilContext((prev) => ({
+                    ...prev,
+                    dateNaissanceEpoux1: e.target.value || undefined,
+                  }))
+                }
               />
             </div>
             {showSecondBirthDate && (
@@ -99,10 +109,12 @@ export default function ScFamilyContextCard({
                   type="date"
                   className="sc-input--left"
                   value={civilContext.dateNaissanceEpoux2 ?? ''}
-                  onChange={(e) => setCivilContext((prev) => ({
-                    ...prev,
-                    dateNaissanceEpoux2: e.target.value || undefined,
-                  }))}
+                  onChange={(e) =>
+                    setCivilContext((prev) => ({
+                      ...prev,
+                      dateNaissanceEpoux2: e.target.value || undefined,
+                    }))
+                  }
                 />
               </div>
             )}
@@ -117,7 +129,8 @@ export default function ScFamilyContextCard({
                   setCivilContext((prev) => ({
                     ...prev,
                     regimeMatrimonial: value as keyof typeof REGIMES_MATRIMONIAUX,
-                  }))}
+                  }))
+                }
                 options={Object.values(REGIMES_MATRIMONIAUX).map((regime) => ({
                   value: regime.id,
                   label: regime.label,
@@ -134,7 +147,8 @@ export default function ScFamilyContextCard({
                   setCivilContext((prev) => ({
                     ...prev,
                     pacsConvention: value as 'separation' | 'indivision',
-                  }))}
+                  }))
+                }
                 options={PACS_CONVENTION_OPTIONS}
               />
             </div>
@@ -145,7 +159,11 @@ export default function ScFamilyContextCard({
               className="sc-child-add-btn"
               onClick={onOpenDispositions}
               disabled={!canOpenDispositionsModal}
-              title={!canOpenDispositionsModal ? 'Merci de renseigner un contexte familial au préalable' : undefined}
+              title={
+                !canOpenDispositionsModal
+                  ? 'Merci de renseigner un contexte familial au préalable'
+                  : undefined
+              }
             >
               + Dispositions
             </button>
@@ -178,19 +196,31 @@ export default function ScFamilyContextCard({
           </div>
 
           {enfantsContext.length === 0 && familyMembers.length === 0 ? (
-            <p className="sc-hint sc-hint--compact">Aucun enfant ni membre déclaré pour l&apos;instant.</p>
+            <p className="sc-hint sc-hint--compact">
+              Aucun enfant ni membre déclaré pour l&apos;instant.
+            </p>
           ) : (
             <>
               {enfantsContext.length > 0 && (
                 <div className="sc-children-list">
                   {enfantsContext.map((enfant, idx) => (
-                    <div key={enfant.id} className={`sc-child-row${enfant.deceased ? ' sc-child-row--deceased' : ''}`}>
-                      <span className="sc-child-row__label">{getEnfantNodeLabel(idx, enfant.deceased)}</span>
+                    <div
+                      key={enfant.id}
+                      className={`sc-child-row${enfant.deceased ? ' sc-child-row--deceased' : ''}`}
+                    >
+                      <span className="sc-child-row__label">
+                        {getEnfantNodeLabel(idx, enfant.deceased)}
+                      </span>
                       {enfantRattachementOptions.length > 1 && (
                         <ScSelect
                           className="sc-child-select"
                           value={enfant.rattachement}
-                          onChange={(value) => onUpdateEnfantRattachement(enfant.id, value as 'commun' | 'epoux1' | 'epoux2')}
+                          onChange={(value) =>
+                            onUpdateEnfantRattachement(
+                              enfant.id,
+                              value as 'commun' | 'epoux1' | 'epoux2',
+                            )
+                          }
                           options={enfantRattachementOptions}
                         />
                       )}
@@ -219,7 +249,9 @@ export default function ScFamilyContextCard({
                   {familyMembers.map((member) => (
                     <div key={member.id} className="sc-member-chip">
                       <span className="sc-member-chip__icon">⊕</span>
-                      <span className="sc-member-chip__label">{labelMember(member, enfantsContext)}</span>
+                      <span className="sc-member-chip__label">
+                        {labelMember(member, enfantsContext)}
+                      </span>
                       <button
                         type="button"
                         className="sc-child-remove-btn"

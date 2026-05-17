@@ -1,11 +1,19 @@
-import { BASECG_CATALOG as STATIC_BASECG_CATALOG, BASECG_CONTRACT_COUNT, BASECG_VERSION } from './catalog.static';
+import {
+  BASECG_CATALOG as STATIC_BASECG_CATALOG,
+  BASECG_CONTRACT_COUNT,
+  BASECG_VERSION,
+} from './catalog.static';
 import { PREFON_2025 } from './prefon';
-import type { BaseCgRetraiteContract, BaseCgRetraiteContractType, PerTransfertCompartment } from './types';
+import type {
+  BaseCgRetraiteContract,
+  BaseCgRetraiteContractType,
+  PerTransfertCompartment,
+} from './types';
 
 const POINTS_CONTRACT_IDS = new Set(
-  STATIC_BASECG_CATALOG
-    .filter((contract) => contract.typeContrat === 'PER_POINTS')
-    .map((contract) => contract.id),
+  STATIC_BASECG_CATALOG.filter((contract) => contract.typeContrat === 'PER_POINTS').map(
+    (contract) => contract.id,
+  ),
 );
 
 function resolveStaticCompartment(contract: BaseCgRetraiteContract): PerTransfertCompartment {
@@ -24,7 +32,9 @@ export const BASECG_CATALOG: BaseCgRetraiteContract[] = STATIC_BASECG_CATALOG.ma
 
 export { BASECG_CONTRACT_COUNT, BASECG_VERSION };
 
-export function listBaseCgTypes(catalog: BaseCgRetraiteContract[] = BASECG_CATALOG): BaseCgRetraiteContractType[] {
+export function listBaseCgTypes(
+  catalog: BaseCgRetraiteContract[] = BASECG_CATALOG,
+): BaseCgRetraiteContractType[] {
   return Array.from(new Set(catalog.map((contract) => contract.typeContrat))).sort();
 }
 

@@ -42,6 +42,7 @@ Le mode expert affiche :
 Un simulateur peut rester `expertOnly` si son parcours simplifié n'est pas défini.
 
 Exception active :
+
 - `/sim/tresorerie-societe` reste `expertOnly` tant que le parcours rendez-vous simplifié société / associé / allocation n'est pas validé.
 
 Une exception doit être documentée dans `docs/ARCHITECTURE.md` ou dans la doc métier du simulateur concerné.
@@ -51,11 +52,13 @@ Une exception doit être documentée dans `docs/ARCHITECTURE.md` ou dans la doc 
 ### `/sim/credit`
 
 Simplifié :
+
 - montant, durée, taux, assurance ;
 - mensualité, coût total, synthèse amortissement ;
 - affichage d'un seul prêt par défaut.
 
 Expert :
+
 - prêts multiples ;
 - lissage ;
 - décalages de calendrier ;
@@ -64,11 +67,13 @@ Expert :
 ### `/sim/ir`
 
 Simplifié :
+
 - foyer, revenus principaux, réductions ou charges majeures ;
 - impôt estimé, TMI, revenu net fiscal lisible ;
 - alertes de cohérence.
 
 Expert :
+
 - détail par catégorie de revenus ;
 - quotient familial, décote, CEHR/CDHR ;
 - métriques TMI détaillées ;
@@ -77,12 +82,14 @@ Expert :
 ### `/sim/succession`
 
 Simplifié :
+
 - situation familiale ;
 - masses patrimoniales principales ;
 - donations / legs agrégés ;
 - droits estimés et alertes structurantes.
 
 Expert :
+
 - actifs et passifs détaillés par poche ;
 - donations, assurance-vie, PER, prévoyance et legs détaillés ;
 - dispositions matrimoniales avancées ;

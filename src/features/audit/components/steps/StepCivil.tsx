@@ -15,12 +15,14 @@ export default function StepCivil({ dossier, updateDossier }: StepProps) {
             <label>Régime</label>
             <select
               value={situationCivile.regimeMatrimonial || ''}
-              onChange={(e) => updateDossier({
-                situationCivile: {
-                  ...situationCivile,
-                  regimeMatrimonial: e.target.value as typeof situationCivile.regimeMatrimonial,
-                },
-              })}
+              onChange={(e) =>
+                updateDossier({
+                  situationCivile: {
+                    ...situationCivile,
+                    regimeMatrimonial: e.target.value as typeof situationCivile.regimeMatrimonial,
+                  },
+                })
+              }
             >
               <option value="">Sélectionner...</option>
               <option value="communaute_legale">Communauté réduite aux acquêts</option>
@@ -28,7 +30,9 @@ export default function StepCivil({ dossier, updateDossier }: StepProps) {
               <option value="separation_biens">Séparation de biens</option>
               <option value="participation_acquets">Participation aux acquêts</option>
               <option value="communaute_meubles_acquets">Communauté de meubles et acquêts</option>
-              <option value="separation_biens_societe_acquets">Séparation de biens avec société d'acquêts</option>
+              <option value="separation_biens_societe_acquets">
+                Séparation de biens avec société d'acquêts
+              </option>
             </select>
           </div>
           <div className="audit-form-row">
@@ -36,9 +40,11 @@ export default function StepCivil({ dossier, updateDossier }: StepProps) {
               <input
                 type="checkbox"
                 checked={situationCivile.contratMariage}
-                onChange={(e) => updateDossier({
-                  situationCivile: { ...situationCivile, contratMariage: e.target.checked },
-                })}
+                onChange={(e) =>
+                  updateDossier({
+                    situationCivile: { ...situationCivile, contratMariage: e.target.checked },
+                  })
+                }
               />
               Contrat de mariage
             </label>
@@ -52,18 +58,23 @@ export default function StepCivil({ dossier, updateDossier }: StepProps) {
         <button
           type="button"
           className="premium-btn"
-          onClick={() => updateDossier({
-            situationCivile: {
-              ...situationCivile,
-              donations: [...situationCivile.donations, {
-                id: crypto.randomUUID(),
-                type: 'donation_simple',
-                date: '',
-                montant: 0,
-                beneficiaire: '',
-              }],
-            },
-          })}
+          onClick={() =>
+            updateDossier({
+              situationCivile: {
+                ...situationCivile,
+                donations: [
+                  ...situationCivile.donations,
+                  {
+                    id: crypto.randomUUID(),
+                    type: 'donation_simple',
+                    date: '',
+                    montant: 0,
+                    beneficiaire: '',
+                  },
+                ],
+              },
+            })
+          }
         >
           + Ajouter une donation
         </button>
@@ -77,7 +88,9 @@ export default function StepCivil({ dossier, updateDossier }: StepProps) {
                 onChange={(e) => {
                   const newDonations = [...situationCivile.donations];
                   newDonations[idx] = { ...donation, montant: parseFloat(e.target.value) || 0 };
-                  updateDossier({ situationCivile: { ...situationCivile, donations: newDonations } });
+                  updateDossier({
+                    situationCivile: { ...situationCivile, donations: newDonations },
+                  });
                 }}
               />
             </div>
@@ -89,7 +102,9 @@ export default function StepCivil({ dossier, updateDossier }: StepProps) {
                 onChange={(e) => {
                   const newDonations = [...situationCivile.donations];
                   newDonations[idx] = { ...donation, beneficiaire: e.target.value };
-                  updateDossier({ situationCivile: { ...situationCivile, donations: newDonations } });
+                  updateDossier({
+                    situationCivile: { ...situationCivile, donations: newDonations },
+                  });
                 }}
               />
             </div>

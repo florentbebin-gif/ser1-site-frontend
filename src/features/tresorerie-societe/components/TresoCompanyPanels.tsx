@@ -1,9 +1,6 @@
 import { SimFieldShell } from '../../../components/ui/sim/SimFieldShell';
 import { SimSelect } from '../../../components/ui/sim/SimSelect';
-import type {
-  CompanyLoanInput,
-  SubsidiaryInput,
-} from '../../../engine/tresorerie/types';
+import type { CompanyLoanInput, SubsidiaryInput } from '../../../engine/tresorerie/types';
 import {
   fmtEuroInput,
   fmtRateInput,
@@ -61,23 +58,22 @@ function buildDefaultSubsidiary(index: number): SubsidiaryInput {
   };
 }
 
-function subsidiaryParentLabel(subsidiaries: SubsidiaryInput[], subsidiary: SubsidiaryInput): string {
+function subsidiaryParentLabel(
+  subsidiaries: SubsidiaryInput[],
+  subsidiary: SubsidiaryInput,
+): string {
   const parentId = subsidiary.parentEntityId ?? 'societe';
   if (parentId === 'societe') return 'Société mère';
-  return subsidiaries.find(candidate => candidate.id === parentId)?.label ?? 'Filiale parente';
+  return subsidiaries.find((candidate) => candidate.id === parentId)?.label ?? 'Filiale parente';
 }
 
-export function TresoCompanyLoansPanel({
-  loans,
-  projectionStartYear,
-  onChange,
-}: LoansPanelProps) {
+export function TresoCompanyLoansPanel({ loans, projectionStartYear, onChange }: LoansPanelProps) {
   const updateLoan = (loanId: string, patch: Partial<CompanyLoanInput>) => {
-    onChange(loans.map(loan => loan.id === loanId ? { ...loan, ...patch } : loan));
+    onChange(loans.map((loan) => (loan.id === loanId ? { ...loan, ...patch } : loan)));
   };
 
   const removeLoan = (loanId: string) => {
-    onChange(loans.filter(loan => loan.id !== loanId));
+    onChange(loans.filter((loan) => loan.id !== loanId));
   };
 
   return (
@@ -97,30 +93,38 @@ export function TresoCompanyLoansPanel({
                 type="text"
                 className="sim-field__control ts-input-left"
                 value={loan.label}
-                onChange={event => updateLoan(loan.id, { label: event.target.value })}
+                onChange={(event) => updateLoan(loan.id, { label: event.target.value })}
               />
             </SimFieldShell>
 
             <SimFieldShell label="Nature actif" className="ts-field" rowClassName="ts-field__row">
               <SimSelect
                 value={loan.financedAssetKind ?? ''}
-                onChange={value => updateLoan(loan.id, {
-                  financedAssetKind: value
-                    ? value as CompanyLoanInput['financedAssetKind']
-                    : undefined,
-                })}
+                onChange={(value) =>
+                  updateLoan(loan.id, {
+                    financedAssetKind: value
+                      ? (value as CompanyLoanInput['financedAssetKind'])
+                      : undefined,
+                  })
+                }
                 options={FINANCED_ASSET_OPTIONS}
                 ariaLabel={`Nature actif ${index + 1}`}
               />
             </SimFieldShell>
 
-            <SimFieldShell label="Capital emprunté" className="ts-field" rowClassName="ts-field__row">
+            <SimFieldShell
+              label="Capital emprunté"
+              className="ts-field"
+              rowClassName="ts-field__row"
+            >
               <input
                 type="text"
                 inputMode="numeric"
                 className="sim-field__control"
                 value={fmtEuroInput(loan.principal)}
-                onChange={event => updateLoan(loan.id, { principal: parseEuroInput(event.target.value) })}
+                onChange={(event) =>
+                  updateLoan(loan.id, { principal: parseEuroInput(event.target.value) })
+                }
               />
               <span className="sim-field__unit ts-unit">€</span>
             </SimFieldShell>
@@ -131,7 +135,9 @@ export function TresoCompanyLoansPanel({
                 inputMode="decimal"
                 className="sim-field__control"
                 value={fmtRateInput(loan.annualRate)}
-                onChange={event => updateLoan(loan.id, { annualRate: parseRateInput(event.target.value) })}
+                onChange={(event) =>
+                  updateLoan(loan.id, { annualRate: parseRateInput(event.target.value) })
+                }
               />
               <span className="sim-field__unit ts-unit">%</span>
             </SimFieldShell>
@@ -142,7 +148,9 @@ export function TresoCompanyLoansPanel({
                 inputMode="numeric"
                 className="sim-field__control"
                 value={loan.durationMonths || ''}
-                onChange={event => updateLoan(loan.id, { durationMonths: parseNumberInput(event.target.value) })}
+                onChange={(event) =>
+                  updateLoan(loan.id, { durationMonths: parseNumberInput(event.target.value) })
+                }
               />
               <span className="sim-field__unit ts-unit">mois</span>
             </SimFieldShell>
@@ -152,7 +160,7 @@ export function TresoCompanyLoansPanel({
                 type="month"
                 className="sim-field__control ts-input-month"
                 value={loan.startDate}
-                onChange={event => updateLoan(loan.id, { startDate: event.target.value })}
+                onChange={(event) => updateLoan(loan.id, { startDate: event.target.value })}
               />
             </SimFieldShell>
 
@@ -161,32 +169,46 @@ export function TresoCompanyLoansPanel({
                 type="text"
                 className="sim-field__control ts-input-left"
                 value={loan.financedAssetLabel ?? ''}
-                onChange={event => updateLoan(loan.id, { financedAssetLabel: event.target.value })}
+                onChange={(event) =>
+                  updateLoan(loan.id, { financedAssetLabel: event.target.value })
+                }
               />
             </SimFieldShell>
 
-            <SimFieldShell label="Rendement actif" className="ts-field" rowClassName="ts-field__row">
+            <SimFieldShell
+              label="Rendement actif"
+              className="ts-field"
+              rowClassName="ts-field__row"
+            >
               <input
                 type="text"
                 inputMode="decimal"
                 className="sim-field__control"
                 value={fmtRateInput(loan.financedAssetReturnRate)}
-                onChange={event => updateLoan(loan.id, {
-                  financedAssetReturnRate: parseRateInput(event.target.value),
-                })}
+                onChange={(event) =>
+                  updateLoan(loan.id, {
+                    financedAssetReturnRate: parseRateInput(event.target.value),
+                  })
+                }
               />
               <span className="sim-field__unit ts-unit">%</span>
             </SimFieldShell>
 
-            <SimFieldShell label="Délai de jouissance" className="ts-field" rowClassName="ts-field__row">
+            <SimFieldShell
+              label="Délai de jouissance"
+              className="ts-field"
+              rowClassName="ts-field__row"
+            >
               <input
                 type="text"
                 inputMode="numeric"
                 className="sim-field__control"
                 value={loan.enjoymentDelayMonths ?? ''}
-                onChange={event => updateLoan(loan.id, {
-                  enjoymentDelayMonths: parseNumberInput(event.target.value),
-                })}
+                onChange={(event) =>
+                  updateLoan(loan.id, {
+                    enjoymentDelayMonths: parseNumberInput(event.target.value),
+                  })
+                }
               />
               <span className="sim-field__unit ts-unit">mois</span>
             </SimFieldShell>
@@ -195,7 +217,7 @@ export function TresoCompanyLoansPanel({
               <input
                 type="checkbox"
                 checked={loan.existingLoan}
-                onChange={event => updateLoan(loan.id, { existingLoan: event.target.checked })}
+                onChange={(event) => updateLoan(loan.id, { existingLoan: event.target.checked })}
               />
               Emprunt existant
             </label>
@@ -204,7 +226,9 @@ export function TresoCompanyLoansPanel({
               <input
                 type="checkbox"
                 checked={loan.deductibleInterest}
-                onChange={event => updateLoan(loan.id, { deductibleInterest: event.target.checked })}
+                onChange={(event) =>
+                  updateLoan(loan.id, { deductibleInterest: event.target.checked })
+                }
               />
               Intérêts déductibles
             </label>
@@ -229,7 +253,7 @@ export function TresoCompanySubsidiariesPanel({
   onConfigure,
 }: SubsidiariesPanelProps) {
   const removeSubsidiary = (subsidiaryId: string) => {
-    onChange(subsidiaries.filter(subsidiary => subsidiary.id !== subsidiaryId));
+    onChange(subsidiaries.filter((subsidiary) => subsidiary.id !== subsidiaryId));
   };
 
   const addSubsidiary = () => {
@@ -270,11 +294,7 @@ export function TresoCompanySubsidiariesPanel({
         </div>
       ))}
 
-      <button
-        type="button"
-        className="ts-text-btn"
-        onClick={addSubsidiary}
-      >
+      <button type="button" className="ts-text-btn" onClick={addSubsidiary}>
         Ajouter une filiale
       </button>
     </div>

@@ -26,21 +26,27 @@ export function BaseCgRetraiteLiquidationTab({ draft, onLiquidationChange }: Pro
         Âge limite de liquidation
         <input
           value={formatFieldValue(draft.phaseLiquidation.ageLimiteLiquidation)}
-          onChange={(event) => onLiquidationChange('ageLimiteLiquidation', updateText(event.target.value))}
+          onChange={(event) =>
+            onLiquidationChange('ageLimiteLiquidation', updateText(event.target.value))
+          }
         />
       </label>
       <label>
         Sortie en capital à la retraite
         <input
           value={draft.phaseLiquidation.sortieCapitalRetraite ?? ''}
-          onChange={(event) => onLiquidationChange('sortieCapitalRetraite', updateText(event.target.value))}
+          onChange={(event) =>
+            onLiquidationChange('sortieCapitalRetraite', updateText(event.target.value))
+          }
         />
       </label>
       <label>
         Fractionnement du capital
         <input
           value={draft.phaseLiquidation.fractionnementCapital ?? ''}
-          onChange={(event) => onLiquidationChange('fractionnementCapital', updateText(event.target.value))}
+          onChange={(event) =>
+            onLiquidationChange('fractionnementCapital', updateText(event.target.value))
+          }
         />
       </label>
       <label>
@@ -54,14 +60,18 @@ export function BaseCgRetraiteLiquidationTab({ draft, onLiquidationChange }: Pro
         Table conversion rente
         <input
           value={draft.phaseLiquidation.tableConversionRente ?? ''}
-          onChange={(event) => onLiquidationChange('tableConversionRente', updateText(event.target.value))}
+          onChange={(event) =>
+            onLiquidationChange('tableConversionRente', updateText(event.target.value))
+          }
         />
       </label>
       <label>
         Table garantie à l'adhésion
         <input
           value={draft.phaseLiquidation.tableGarantieAdhesion ?? ''}
-          onChange={(event) => onLiquidationChange('tableGarantieAdhesion', updateText(event.target.value))}
+          onChange={(event) =>
+            onLiquidationChange('tableGarantieAdhesion', updateText(event.target.value))
+          }
         />
       </label>
       <label>
@@ -87,21 +97,27 @@ export function BaseCgRetraiteLiquidationTab({ draft, onLiquidationChange }: Pro
         Annuités garanties
         <input
           value={draft.phaseLiquidation.annuitesGaranties ?? ''}
-          onChange={(event) => onLiquidationChange('annuitesGaranties', updateText(event.target.value))}
+          onChange={(event) =>
+            onLiquidationChange('annuitesGaranties', updateText(event.target.value))
+          }
         />
       </label>
       <label>
         Réversion incluse dans la rente
         <input
           value={draft.phaseLiquidation.reversionIncluse ?? ''}
-          onChange={(event) => onLiquidationChange('reversionIncluse', updateText(event.target.value))}
+          onChange={(event) =>
+            onLiquidationChange('reversionIncluse', updateText(event.target.value))
+          }
         />
       </label>
       <label className="base-cg-modal__wide">
         Réversion possible
         <textarea
           value={draft.phaseLiquidation.reversionPossible ?? ''}
-          onChange={(event) => onLiquidationChange('reversionPossible', updateText(event.target.value))}
+          onChange={(event) =>
+            onLiquidationChange('reversionPossible', updateText(event.target.value))
+          }
           rows={3}
         />
       </label>

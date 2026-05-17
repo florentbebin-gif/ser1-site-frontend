@@ -1,9 +1,5 @@
 ﻿import type { ScheduleRowInput } from '../../../engine/credit/capitalDeces';
-import type {
-  CreditAssurMode,
-  CreditShiftedScheduleRow,
-  CreditType,
-} from '../types';
+import type { CreditAssurMode, CreditShiftedScheduleRow, CreditType } from '../types';
 import {
   mensualiteAmortissable,
   scheduleAmortissable as scheduleAmortissableEngine,
@@ -63,11 +59,12 @@ export function scheduleLisseePret1({
   const assurFixe = assurMode === 'CI' ? capital * rAss : null;
   const EPS = 1e-8;
 
-  const mensuAutresAt = (m: number): number => autresPretsRows.reduce((sum, arr, i) => {
-    const row = arr[m - 1];
-    if (!row) return sum;
-    return sum + (autresIsInfine[i] ? (row.mensuTotal - row.amort) : row.mensuTotal);
-  }, 0);
+  const mensuAutresAt = (m: number): number =>
+    autresPretsRows.reduce((sum, arr, i) => {
+      const row = arr[m - 1];
+      if (!row) return sum;
+      return sum + (autresIsInfine[i] ? row.mensuTotal - row.amort : row.mensuTotal);
+    }, 0);
 
   for (let m = 1; m <= N; m += 1) {
     if (crd <= EPS) break;
@@ -114,11 +111,12 @@ export function scheduleLisseePret1Duration({
   const assurFixe = assurMode === 'CI' ? capital * rAss : null;
   const EPS = 1e-8;
 
-  const sumAutres = (m: number): number => autresPretsRows.reduce((sum, arr, i) => {
-    const row = arr[m - 1];
-    if (!row) return sum;
-    return sum + (autresIsInfine[i] ? (row.mensuTotal - row.amort) : row.mensuTotal);
-  }, 0);
+  const sumAutres = (m: number): number =>
+    autresPretsRows.reduce((sum, arr, i) => {
+      const row = arr[m - 1];
+      if (!row) return sum;
+      return sum + (autresIsInfine[i] ? row.mensuTotal - row.amort : row.mensuTotal);
+    }, 0);
 
   for (let m = 1; m <= N; m += 1) {
     if (crd <= EPS) break;
@@ -169,7 +167,7 @@ export function totalConstantForDuration({
     const autres = autresPretsRows.reduce((sum, arr, i) => {
       const row = arr[t - 1];
       if (!row) return sum;
-      return sum + (autresIsInfine[i] ? (row.mensuTotal - row.amort) : row.mensuTotal);
+      return sum + (autresIsInfine[i] ? row.mensuTotal - row.amort : row.mensuTotal);
     }, 0);
     B += autres * a;
   }

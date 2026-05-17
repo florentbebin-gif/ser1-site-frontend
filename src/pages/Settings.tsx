@@ -38,17 +38,24 @@ const PREDEFINED_THEMES: ThemeCard[] = PRESET_THEMES.map((t: PresetTheme) => ({
   name: t.name,
   description: t.description,
   colors: {
-    color1: t.colors.c1, color2: t.colors.c2, color3: t.colors.c3,
-    color4: t.colors.c4, color5: t.colors.c5, color6: t.colors.c6,
-    color7: t.colors.c7, color8: t.colors.c8, color9: t.colors.c9,
+    color1: t.colors.c1,
+    color2: t.colors.c2,
+    color3: t.colors.c3,
+    color4: t.colors.c4,
+    color5: t.colors.c5,
+    color6: t.colors.c6,
+    color7: t.colors.c7,
+    color8: t.colors.c8,
+    color9: t.colors.c9,
     color10: t.colors.c10,
   },
 }));
 
-const COLOR_FIELDS: Array<{ key: LegacyColorKey; description: string }> = COLOR_USAGE_GUIDELINES.map(({ legacyKey, usage }) => ({
-  key: legacyKey as LegacyColorKey,
-  description: usage,
-}));
+const COLOR_FIELDS: Array<{ key: LegacyColorKey; description: string }> =
+  COLOR_USAGE_GUIDELINES.map(({ legacyKey, usage }) => ({
+    key: legacyKey as LegacyColorKey,
+    description: usage,
+  }));
 
 export default function Settings() {
   const [user, setUser] = useState<User | null>(null);
@@ -59,13 +66,13 @@ export default function Settings() {
   const [colorText, setColorText] = useState<LegacyColors>(DEFAULT_COLORS);
   const [savingColors, setSavingColors] = useState(false);
   const [saveMessage, setSaveMessage] = useState('');
-  
+
   // V5: useTheme — source de vérité unique
-  const { 
-    colors, 
-    setColors, 
-    isLoading: themeLoading, 
-    logo, 
+  const {
+    colors,
+    setColors,
+    isLoading: themeLoading,
+    logo,
     setLogo,
     // V5 API
     themeMode,
@@ -77,7 +84,7 @@ export default function Settings() {
 
   // Signalements block visibility
   const [showSignalements, setShowSignalements] = useState(false);
-  
+
   // Advanced colors visibility
   const [showAdvancedColors, setShowAdvancedColors] = useState(false);
 
@@ -85,9 +92,15 @@ export default function Settings() {
   useEffect(() => {
     if (colors && !themeLoading) {
       const legacyColors = {
-        color1: colors.c1, color2: colors.c2, color3: colors.c3,
-        color4: colors.c4, color5: colors.c5, color6: colors.c6,
-        color7: colors.c7, color8: colors.c8, color9: colors.c9,
+        color1: colors.c1,
+        color2: colors.c2,
+        color3: colors.c3,
+        color4: colors.c4,
+        color5: colors.c5,
+        color6: colors.c6,
+        color7: colors.c7,
+        color8: colors.c8,
+        color9: colors.c9,
         color10: colors.c10,
       };
       setColorsLegacy(legacyColors);
@@ -98,9 +111,15 @@ export default function Settings() {
   // Fonction pour synchroniser les couleurs avec ThemeProvider (preview live)
   const syncThemeColors = (settingsColors: LegacyColors) => {
     setColors({
-      c1: settingsColors.color1, c2: settingsColors.color2, c3: settingsColors.color3,
-      c4: settingsColors.color4, c5: settingsColors.color5, c6: settingsColors.color6,
-      c7: settingsColors.color7, c8: settingsColors.color8, c9: settingsColors.color9,
+      c1: settingsColors.color1,
+      c2: settingsColors.color2,
+      c3: settingsColors.color3,
+      c4: settingsColors.color4,
+      c5: settingsColors.color5,
+      c6: settingsColors.color6,
+      c7: settingsColors.color7,
+      c8: settingsColors.color8,
+      c9: settingsColors.color9,
       c10: settingsColors.color10,
     });
   };
@@ -118,13 +137,15 @@ export default function Settings() {
         // Timeout de 6s pour éviter le blocage infini
         timeoutId = setTimeout(() => {
           if (mounted) {
-            console.warn('[Settings] Timeout lors du chargement utilisateur, utilisation des valeurs par défaut');
+            console.warn(
+              '[Settings] Timeout lors du chargement utilisateur, utilisation des valeurs par défaut',
+            );
             setLoading(false);
           }
         }, 6000);
 
         const { data, error } = await supabase.auth.getUser();
-        
+
         if (error) {
           console.error('Erreur chargement user :', error);
           return;
@@ -168,21 +189,21 @@ export default function Settings() {
   const handleColorChange = (key: LegacyColorKey, value: string) => {
     // Bloquer l'édition sauf en mode 'my'
     if (themeMode !== 'my') return;
-    
+
     const newColors = { ...colorsLegacy, [key]: value };
     setColorsLegacy(newColors);
-    setColorText(prev => ({ ...prev, [key]: value.toUpperCase() }));
+    setColorText((prev) => ({ ...prev, [key]: value.toUpperCase() }));
     setSaveMessage('');
-    
+
     // If changing c1, recalculate other colors automatically
     if (key === 'color1') {
       const recalculated = recalculatePaletteFromC1(value) as LegacyColors;
       const finalColors = { ...newColors, ...recalculated };
       setColorsLegacy(finalColors);
       const recalculatedText = Object.fromEntries(
-        Object.entries(recalculated).map(([k, v]) => [k, v.toUpperCase()])
+        Object.entries(recalculated).map(([k, v]) => [k, v.toUpperCase()]),
       ) as LegacyColors;
-      setColorText(prev => ({ ...prev, ...recalculatedText }));
+      setColorText((prev) => ({ ...prev, ...recalculatedText }));
       syncThemeColors(finalColors);
     } else {
       syncThemeColors(newColors);
@@ -214,9 +235,15 @@ export default function Settings() {
       }
 
       const paletteToSave = {
-        c1: colorsLegacy.color1, c2: colorsLegacy.color2, c3: colorsLegacy.color3,
-        c4: colorsLegacy.color4, c5: colorsLegacy.color5, c6: colorsLegacy.color6,
-        c7: colorsLegacy.color7, c8: colorsLegacy.color8, c9: colorsLegacy.color9,
+        c1: colorsLegacy.color1,
+        c2: colorsLegacy.color2,
+        c3: colorsLegacy.color3,
+        c4: colorsLegacy.color4,
+        c5: colorsLegacy.color5,
+        c6: colorsLegacy.color6,
+        c7: colorsLegacy.color7,
+        c8: colorsLegacy.color8,
+        c9: colorsLegacy.color9,
         c10: colorsLegacy.color10,
       };
 
@@ -249,247 +276,293 @@ export default function Settings() {
     <>
       {/* Contenu onglet Généraux */}
       <div className="settings-stack settings-stack--spacious">
-          {/* Infos utilisateur */}
-          <UserInfoBanner />
+        {/* Infos utilisateur */}
+        <UserInfoBanner />
 
-          {/* Personnalisation avancée du thème */}
-          <section className="settings-premium-card">
-            <header className="settings-premium-header settings-premium-header--row">
-              <div className="settings-action-icon">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                  <circle cx="13.5" cy="6.5" r="2.5"/>
-                  <circle cx="17.5" cy="10.5" r="2.5"/>
-                  <circle cx="8.5" cy="7.5" r="2.5"/>
-                  <circle cx="6.5" cy="12.5" r="2.5"/>
-                  <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.6 1.6 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"/>
-                </svg>
-              </div>
-              <div className="settings-action-text">
-                <h2 className="settings-premium-title">Personnalisation avancée du thème</h2>
-                <p className="settings-premium-subtitle">
-                  Adaptez l'interface à votre identité visuelle : couleurs de marque,
-                  accents graphiques et ambiance générale.
-                </p>
-              </div>
-            </header>
-
-            <div className="settings-premium-divider" />
-
-            {/* V5: Section Source du thème */}
-            <div className="settings-premium-section">
-              <h3 className="settings-section-title">Source du thème</h3>
-              <div className="settings-source-options">
-                <label className="settings-radio-option">
-                  <input
-                    type="radio"
-                    name="themeSource"
-                    value="cabinet"
-                    checked={themeMode === 'cabinet'}
-                    onChange={() => applyThemeMode('cabinet')}
-                  />
-                  <span>Thème du cabinet</span>
-                </label>
-                <label className="settings-radio-option">
-                  <input
-                    type="radio"
-                    name="themeSource"
-                    value="custom"
-                    checked={themeMode !== 'cabinet'}
-                    onChange={() => {
-                      // Passer en mode perso: appliquer "Mon thème" si existant, sinon premier preset
-                      if (myPalette) {
-                        applyThemeMode('my');
-                      } else {
-                        applyThemeMode('preset', PRESET_THEMES[0].id);
-                      }
-                    }}
-                  />
-                  <span>Thème personnalisé</span>
-                </label>
-              </div>
-              {themeMode !== 'cabinet' && (
-                <div className="settings-premium-section">
-                  <div className="settings-theme-cards">
-                    {/* V5: Tile "Mon thème" visible dès que myPalette existe */}
-                    {myPalette && (
-                      <button
-                        type="button"
-                        className={`settings-theme-card ${themeMode === 'my' ? 'is-selected' : ''}`}
-                        onClick={handleMyThemeSelect}
-                        aria-pressed={themeMode === 'my'}
-                      >
-                        <div className="settings-theme-preview">
-                          {Object.values(myPalette).slice(0, 5).map((color, i) => (
-                            <div
-                              key={i}
-                              className="settings-theme-preview-bar"
-                              style={{ backgroundColor: color }}
-                            />
-                          ))}
-                        </div>
-                        <div className="settings-theme-name">Mon thème</div>
-                      </button>
-                    )}
-
-                    {/* V5: Preset cards */}
-                    {PREDEFINED_THEMES.map((theme) => (
-                      <button
-                        key={theme.id}
-                        type="button"
-                        className={`settings-theme-card ${themeMode === 'preset' && presetId === theme.id ? 'is-selected' : ''}`}
-                        onClick={() => handlePresetSelect(theme)}
-                        aria-pressed={themeMode === 'preset' && presetId === theme.id}
-                      >
-                        <div className="settings-theme-preview">
-                          {Object.values(theme.colors).slice(0, 5).map((color, i) => (
-                            <div
-                              key={i}
-                              className="settings-theme-preview-bar"
-                              style={{ backgroundColor: color }}
-                            />
-                          ))}
-                        </div>
-                        <div className="settings-theme-name">{theme.name}</div>
-                      </button>
-                    ))}
-                  </div>
-
-                  {/* V5: Bouton "Enregistrer" uniquement en mode 'my' */}
-                  {themeMode === 'my' && (
-                    <div className="settings-premium-actions settings-premium-actions--end">
-                      <button
-                        type="button"
-                        className="settings-action-btn"
-                        onClick={handleSaveMyPalette}
-                        disabled={savingColors || !user}
-                        title="Enregistrer votre palette personnalisée"
-                      >
-                        {savingColors ? 'Enregistrement…' : 'Enregistrer mon thème'}
-                      </button>
-                    </div>
-                  )}
-                </div>
-              )}
+        {/* Personnalisation avancée du thème */}
+        <section className="settings-premium-card">
+          <header className="settings-premium-header settings-premium-header--row">
+            <div className="settings-action-icon">
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <circle cx="13.5" cy="6.5" r="2.5" />
+                <circle cx="17.5" cy="10.5" r="2.5" />
+                <circle cx="8.5" cy="7.5" r="2.5" />
+                <circle cx="6.5" cy="12.5" r="2.5" />
+                <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.6 1.6 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z" />
+              </svg>
             </div>
+            <div className="settings-action-text">
+              <h2 className="settings-premium-title">Personnalisation avancée du thème</h2>
+              <p className="settings-premium-subtitle">
+                Adaptez l'interface à votre identité visuelle : couleurs de marque, accents
+                graphiques et ambiance générale.
+              </p>
+            </div>
+          </header>
 
-            {saveMessage && (
+          <div className="settings-premium-divider" />
+
+          {/* V5: Section Source du thème */}
+          <div className="settings-premium-section">
+            <h3 className="settings-section-title">Source du thème</h3>
+            <div className="settings-source-options">
+              <label className="settings-radio-option">
+                <input
+                  type="radio"
+                  name="themeSource"
+                  value="cabinet"
+                  checked={themeMode === 'cabinet'}
+                  onChange={() => applyThemeMode('cabinet')}
+                />
+                <span>Thème du cabinet</span>
+              </label>
+              <label className="settings-radio-option">
+                <input
+                  type="radio"
+                  name="themeSource"
+                  value="custom"
+                  checked={themeMode !== 'cabinet'}
+                  onChange={() => {
+                    // Passer en mode perso: appliquer "Mon thème" si existant, sinon premier preset
+                    if (myPalette) {
+                      applyThemeMode('my');
+                    } else {
+                      applyThemeMode('preset', PRESET_THEMES[0].id);
+                    }
+                  }}
+                />
+                <span>Thème personnalisé</span>
+              </label>
+            </div>
+            {themeMode !== 'cabinet' && (
               <div className="settings-premium-section">
-                <div className={`settings-feedback-panel ${saveMessage.includes('Erreur') ? 'settings-feedback-panel--error' : 'settings-feedback-panel--success'}`}>
-                  {saveMessage}
-                </div>
-              </div>
-            )}
-
-            {/* V5: Section Couleurs — uniquement en mode 'my' */}
-            {themeMode === 'my' && (
-              <div className="settings-premium-section">
-                <h3 className="settings-section-title">Couleurs de l'interface</h3>
-                <p className="settings-premium-note">
-                  Modifiez la couleur principale (C1) pour adapter automatiquement toute la palette.
-                  Les autres couleurs se calculent intelligemment à partir de celle-ci.
-                </p>
-
-                {/* Always show color1 */}
-                <div className="settings-colors-grid">
-                  <div className="settings-color-row">
-                    <div className="settings-color-info">
-                      <span className="settings-color-desc">{COLOR_FIELDS[0].description}</span>
-                    </div>
-                    <div className="settings-color-inputs">
-                      <input
-                        type="color"
-                        value={colorsLegacy.color1 ?? '#000000'}
-                        onChange={(e) => handleColorChange('color1', e.target.value)}
-                      />
-                      <code className="settings-color-hex">{(colorText.color1 ?? colorsLegacy.color1 ?? '#000000').toUpperCase()}</code>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Button to show/hide advanced colors */}
-                <button
-                  type="button"
-                  onClick={() => setShowAdvancedColors(!showAdvancedColors)}
-                  className="settings-premium-toggle"
-                >
-                  <svg
-                    width="12"
-                    height="12"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    style={{ transform: showAdvancedColors ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s ease' }}
-                  >
-                    <polyline points="6 9 12 15 18 9"/>
-                  </svg>
-                  <span>{showAdvancedColors ? 'Masquer les couleurs avancées' : 'Afficher les couleurs avancées'}</span>
-                </button>
-
-                {/* Advanced colors - only shown when expanded */}
-                {showAdvancedColors && (
-                  <div className="settings-colors-grid">
-                    {COLOR_FIELDS.slice(1).map(({ key, description }) => (
-                      <div key={key} className="settings-color-row">
-                        <div className="settings-color-info">
-                          <span className="settings-color-desc">{description}</span>
-                        </div>
-                        <div className="settings-color-inputs">
-                          <input
-                            type="color"
-                            value={colorsLegacy[key] ?? '#000000'}
-                            onChange={(e) => handleColorChange(key, e.target.value)}
-                          />
-                          <code className="settings-color-hex">{(colorText[key] ?? colorsLegacy[key] ?? '#000000').toUpperCase()}</code>
-                        </div>
+                <div className="settings-theme-cards">
+                  {/* V5: Tile "Mon thème" visible dès que myPalette existe */}
+                  {myPalette && (
+                    <button
+                      type="button"
+                      className={`settings-theme-card ${themeMode === 'my' ? 'is-selected' : ''}`}
+                      onClick={handleMyThemeSelect}
+                      aria-pressed={themeMode === 'my'}
+                    >
+                      <div className="settings-theme-preview">
+                        {Object.values(myPalette)
+                          .slice(0, 5)
+                          .map((color, i) => (
+                            <div
+                              key={i}
+                              className="settings-theme-preview-bar"
+                              style={{ backgroundColor: color }}
+                            />
+                          ))}
                       </div>
-                    ))}
+                      <div className="settings-theme-name">Mon thème</div>
+                    </button>
+                  )}
+
+                  {/* V5: Preset cards */}
+                  {PREDEFINED_THEMES.map((theme) => (
+                    <button
+                      key={theme.id}
+                      type="button"
+                      className={`settings-theme-card ${themeMode === 'preset' && presetId === theme.id ? 'is-selected' : ''}`}
+                      onClick={() => handlePresetSelect(theme)}
+                      aria-pressed={themeMode === 'preset' && presetId === theme.id}
+                    >
+                      <div className="settings-theme-preview">
+                        {Object.values(theme.colors)
+                          .slice(0, 5)
+                          .map((color, i) => (
+                            <div
+                              key={i}
+                              className="settings-theme-preview-bar"
+                              style={{ backgroundColor: color }}
+                            />
+                          ))}
+                      </div>
+                      <div className="settings-theme-name">{theme.name}</div>
+                    </button>
+                  ))}
+                </div>
+
+                {/* V5: Bouton "Enregistrer" uniquement en mode 'my' */}
+                {themeMode === 'my' && (
+                  <div className="settings-premium-actions settings-premium-actions--end">
+                    <button
+                      type="button"
+                      className="settings-action-btn"
+                      onClick={handleSaveMyPalette}
+                      disabled={savingColors || !user}
+                      title="Enregistrer votre palette personnalisée"
+                    >
+                      {savingColors ? 'Enregistrement…' : 'Enregistrer mon thème'}
+                    </button>
                   </div>
                 )}
               </div>
             )}
-          </section>
+          </div>
 
-          {/* Signalements */}
-          <section className="settings-premium-card settings-action-card">
-            <header className="settings-premium-header">
-              <div className="settings-action-icon">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-                </svg>
+          {saveMessage && (
+            <div className="settings-premium-section">
+              <div
+                className={`settings-feedback-panel ${saveMessage.includes('Erreur') ? 'settings-feedback-panel--error' : 'settings-feedback-panel--success'}`}
+              >
+                {saveMessage}
               </div>
-              <div className="settings-action-text">
-                <h2 className="settings-premium-title">Assistance & Suggestions</h2>
-                <p className="settings-premium-subtitle">
-                  Une question ou une suggestion ? Notre équipe est à votre écoute.
-                </p>
-              </div>
-            </header>
+            </div>
+          )}
 
-            <div className="settings-action-footer">
+          {/* V5: Section Couleurs — uniquement en mode 'my' */}
+          {themeMode === 'my' && (
+            <div className="settings-premium-section">
+              <h3 className="settings-section-title">Couleurs de l'interface</h3>
+              <p className="settings-premium-note">
+                Modifiez la couleur principale (C1) pour adapter automatiquement toute la palette.
+                Les autres couleurs se calculent intelligemment à partir de celle-ci.
+              </p>
+
+              {/* Always show color1 */}
+              <div className="settings-colors-grid">
+                <div className="settings-color-row">
+                  <div className="settings-color-info">
+                    <span className="settings-color-desc">{COLOR_FIELDS[0].description}</span>
+                  </div>
+                  <div className="settings-color-inputs">
+                    <input
+                      type="color"
+                      value={colorsLegacy.color1 ?? '#000000'}
+                      onChange={(e) => handleColorChange('color1', e.target.value)}
+                    />
+                    <code className="settings-color-hex">
+                      {(colorText.color1 ?? colorsLegacy.color1 ?? '#000000').toUpperCase()}
+                    </code>
+                  </div>
+                </div>
+              </div>
+
+              {/* Button to show/hide advanced colors */}
               <button
                 type="button"
-                className="settings-action-btn"
-                onClick={() => setShowSignalements(!showSignalements)}
+                onClick={() => setShowAdvancedColors(!showAdvancedColors)}
+                className="settings-premium-toggle"
               >
-                <span>{showSignalements ? 'Fermer' : 'Nous contacter'}</span>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ transform: showSignalements ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s ease' }}>
-                  <polyline points="6 9 12 15 18 9"/>
+                <svg
+                  width="12"
+                  height="12"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  style={{
+                    transform: showAdvancedColors ? 'rotate(180deg)' : 'none',
+                    transition: 'transform 0.2s ease',
+                  }}
+                >
+                  <polyline points="6 9 12 15 18 9" />
                 </svg>
+                <span>
+                  {showAdvancedColors
+                    ? 'Masquer les couleurs avancées'
+                    : 'Afficher les couleurs avancées'}
+                </span>
               </button>
-            </div>
 
-            {showSignalements && (
-              <div className="settings-action-content">
-                <SignalementsBlock />
-              </div>
-            )}
-          </section>
-        </div>
+              {/* Advanced colors - only shown when expanded */}
+              {showAdvancedColors && (
+                <div className="settings-colors-grid">
+                  {COLOR_FIELDS.slice(1).map(({ key, description }) => (
+                    <div key={key} className="settings-color-row">
+                      <div className="settings-color-info">
+                        <span className="settings-color-desc">{description}</span>
+                      </div>
+                      <div className="settings-color-inputs">
+                        <input
+                          type="color"
+                          value={colorsLegacy[key] ?? '#000000'}
+                          onChange={(e) => handleColorChange(key, e.target.value)}
+                        />
+                        <code className="settings-color-hex">
+                          {(colorText[key] ?? colorsLegacy[key] ?? '#000000').toUpperCase()}
+                        </code>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+        </section>
+
+        {/* Signalements */}
+        <section className="settings-premium-card settings-action-card">
+          <header className="settings-premium-header">
+            <div className="settings-action-icon">
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+              </svg>
+            </div>
+            <div className="settings-action-text">
+              <h2 className="settings-premium-title">Assistance & Suggestions</h2>
+              <p className="settings-premium-subtitle">
+                Une question ou une suggestion ? Notre équipe est à votre écoute.
+              </p>
+            </div>
+          </header>
+
+          <div className="settings-action-footer">
+            <button
+              type="button"
+              className="settings-action-btn"
+              onClick={() => setShowSignalements(!showSignalements)}
+            >
+              <span>{showSignalements ? 'Fermer' : 'Nous contacter'}</span>
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                style={{
+                  transform: showSignalements ? 'rotate(180deg)' : 'none',
+                  transition: 'transform 0.2s ease',
+                }}
+              >
+                <polyline points="6 9 12 15 18 9" />
+              </svg>
+            </button>
+          </div>
+
+          {showSignalements && (
+            <div className="settings-action-content">
+              <SignalementsBlock />
+            </div>
+          )}
+        </section>
+      </div>
     </>
   );
 }
-
-

@@ -142,11 +142,13 @@ function getHistoricalRights({
   if (baseHistoriqueTaxee <= 0) return 0;
   return calculateSuccession({
     actifNetSuccession: baseHistoriqueTaxee,
-    heritiers: [{
-      lien,
-      partSuccession: baseHistoriqueTaxee,
-      ...(abattementOverride != null ? { abattementOverride } : {}),
-    }],
+    heritiers: [
+      {
+        lien,
+        partSuccession: baseHistoriqueTaxee,
+        ...(abattementOverride != null ? { abattementOverride } : {}),
+      },
+    ],
     dmtgSettings,
   }).result.totalDroits;
 }
@@ -174,7 +176,9 @@ export function applySuccessionDonationRecallToHeirs<THeir extends DonationRecal
   donateurDateNaissance?: string;
 }): DonationRecallResult<THeir> {
   const emptyResult: DonationRecallResult<THeir> = {
-    heirs: heirs as Array<THeir & Pick<DonationRecallHeirLike, 'baseHistoriqueTaxee' | 'droitsDejaAcquittes'>>,
+    heirs: heirs as Array<
+      THeir & Pick<DonationRecallHeirLike, 'baseHistoriqueTaxee' | 'droitsDejaAcquittes'>
+    >,
     warnings: [],
   };
   if (!donationSettings || !donations || donations.length === 0) return emptyResult;
@@ -183,15 +187,21 @@ export function applySuccessionDonationRecallToHeirs<THeir extends DonationRecal
   const allWarnings: DonationRecallWarning[] = [];
 
   const updatedHeirs = heirs.map((heir) => {
-    const relevantDonations = donations.filter((entry) => (
-      entry.type !== 'legs_particulier'
-      && entry.donateur === simulatedDeceased
-      && entry.donataire === heir.id
-      && isWithinRappelFiscalYears(entry.date, donationSettings.rappelFiscalAnnees, effectiveReferenceDate)
-    ));
+    const relevantDonations = donations.filter(
+      (entry) =>
+        entry.type !== 'legs_particulier' &&
+        entry.donateur === simulatedDeceased &&
+        entry.donataire === heir.id &&
+        isWithinRappelFiscalYears(
+          entry.date,
+          donationSettings.rappelFiscalAnnees,
+          effectiveReferenceDate,
+        ),
+    );
 
     if (relevantDonations.length === 0) {
-      return heir as THeir & Pick<DonationRecallHeirLike, 'baseHistoriqueTaxee' | 'droitsDejaAcquittes'>;
+      return heir as THeir &
+        Pick<DonationRecallHeirLike, 'baseHistoriqueTaxee' | 'droitsDejaAcquittes'>;
     }
 
     const heirWarnings: DonationRecallWarning[] = [];
@@ -226,7 +236,8 @@ export function applySuccessionDonationRecallToHeirs<THeir extends DonationRecal
     allWarnings.push(...heirWarnings);
 
     if (baseHistoriqueTaxee <= 0) {
-      return heir as THeir & Pick<DonationRecallHeirLike, 'baseHistoriqueTaxee' | 'droitsDejaAcquittes'>;
+      return heir as THeir &
+        Pick<DonationRecallHeirLike, 'baseHistoriqueTaxee' | 'droitsDejaAcquittes'>;
     }
 
     const droitsDejaAcquittes = getHistoricalRights({

@@ -45,13 +45,13 @@ test.describe('IR Simulator', () => {
     await expect(page.getByTestId('ir-irnet-value')).toContainText('€');
   });
 
-  test('le bouton export est présent et le menu s\'ouvre', async ({ page }) => {
+  test("le bouton export est présent et le menu s'ouvre", async ({ page }) => {
     await page.goto(ROUTES.ir);
     await page.waitForLoadState('networkidle');
 
     // ExportMenu component should be rendered
     await expect(page.getByTestId('export-menu-button')).toBeVisible({ timeout: 10_000 });
-    
+
     // Open menu
     await page.getByTestId('export-menu-button').click();
     await expect(page.getByTestId('export-menu-dropdown')).toBeVisible();
@@ -59,24 +59,24 @@ test.describe('IR Simulator', () => {
 
   test('téléchargement export Excel', async ({ page }) => {
     // Note: This test verifies that the download is triggered, not the content of the file.
-    // Ideally we should mock the heavy generation process if it takes too long, 
+    // Ideally we should mock the heavy generation process if it takes too long,
     // but for E2E we want to ensure the button is hooked up correctly.
-    
+
     await page.goto(ROUTES.ir);
     await page.waitForLoadState('networkidle');
-    
+
     // Ensure we have some data
     await page.getByTestId('ir-salary-d1-input').fill('45000');
-    
+
     // Open menu
     await page.getByTestId('export-menu-button').click();
-    
+
     // Setup download listener
     const downloadPromise = page.waitForEvent('download', { timeout: 20_000 });
-    
+
     // Click Excel option
     await page.getByTestId('export-option-excel').click();
-    
+
     // Wait for download
     const download = await downloadPromise;
     expect(download.suggestedFilename()).toMatch(/\.xlsx$/);
@@ -95,7 +95,7 @@ test.describe('IR Simulator', () => {
     // Depending on implementation, it might strip the sign or keep it.
     // The critical part is that the result card is still visible or re-renders without error.
     await expect(page.getByTestId('ir-results-card')).toBeVisible();
-    
+
     // Verify it didn't crash the whole page (header still there)
     await expect(page.getByTestId('ir-header')).toBeVisible();
   });

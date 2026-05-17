@@ -19,7 +19,10 @@
   font-weight: 600;
   cursor: pointer;
   white-space: nowrap;
-  transition: background 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease,
+    box-shadow 0.15s ease;
 }
 
 .sim-segmented__option:hover,
@@ -28,7 +31,7 @@
 }
 
 .sim-segmented__option.is-active {
-  background: #FFFFFF;
+  background: #ffffff;
   color: var(--color-c3);
   box-shadow: 0 1px 3px color-mix(in srgb, var(--color-c1) 12%, transparent);
 }

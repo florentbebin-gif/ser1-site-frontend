@@ -3,7 +3,8 @@
   font-style: normal;
   font-display: swap;
   font-weight: 100 900;
-  src: url('@fontsource-variable/inter/files/inter-latin-wght-normal.woff2') format('woff2-variations');
+  src: url('@fontsource-variable/inter/files/inter-latin-wght-normal.woff2')
+    format('woff2-variations');
 }
 
 @font-face {
@@ -11,7 +12,8 @@
   font-style: italic;
   font-display: swap;
   font-weight: 100 900;
-  src: url('@fontsource-variable/inter/files/inter-latin-wght-italic.woff2') format('woff2-variations');
+  src: url('@fontsource-variable/inter/files/inter-latin-wght-italic.woff2')
+    format('woff2-variations');
 }
 
 /* Variables globales */
@@ -30,15 +32,15 @@
    *   les fichiers concernés — elles ne font pas partie de la palette thème C1-C10
    * - rgba() pour les ombres et overlays : autorisé
    */
-  --color-c1: #2B3E37;
-  --color-c2: #709B8B;
-  --color-c3: #9FBDB2;
-  --color-c4: #CFDED8;
+  --color-c1: #2b3e37;
+  --color-c2: #709b8b;
+  --color-c3: #9fbdb2;
+  --color-c4: #cfded8;
   --color-c5: #788781;
-  --color-c6: #CEC1B6;
-  --color-c7: #F5F3F0;
-  --color-c8: #D9D9D9;
-  --color-c9: #7F7F7F;
+  --color-c6: #cec1b6;
+  --color-c7: #f5f3f0;
+  --color-c8: #d9d9d9;
+  --color-c9: #7f7f7f;
   --color-c10: #000000;
 
   /* Couleurs pour les messages de statut - utilisent les variables du thème */
@@ -53,17 +55,17 @@
   --color-warning-text: var(--color-c10);
 
   --radius: 12px;
-  --sim-input-bg-default: color-mix(in srgb, var(--color-c8) 18%, #FFFFFF);
+  --sim-input-bg-default: color-mix(in srgb, var(--color-c8) 18%, #ffffff);
 
   /* Polices applicatives — chargement self-hosted, pas de dépendance runtime externe */
   --font-sans: 'Inter Variable', Inter, system-ui, sans-serif;
   --font-mono: ui-monospace, SFMono-Regular, 'Cascadia Code', 'Segoe UI Mono', Consolas, monospace;
 
   /* Ombres - seuls rgba autorisés */
-  --shadow-sm: 0 1px 3px rgba(0,0,0,0.05);
-  --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
-  --shadow-lg: 0 8px 32px rgba(0,0,0,0.12);
-  --shadow-overlay: 0 0 0 100vmax rgba(0,0,0,0.5);
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.12);
+  --shadow-overlay: 0 0 0 100vmax rgba(0, 0, 0, 0.5);
 }
 
 /* Reset */
@@ -72,4 +74,3 @@ body {
   font-family: var(--font-sans);
   background: var(--color-c7);
 }
-

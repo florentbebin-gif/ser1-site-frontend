@@ -59,7 +59,7 @@ function buildDistributionPocket(
     durationYears,
     annualReturnRate: distribution.rendementDistribue ?? 0,
     enjoymentDelayMonths: distribution.delaiJouissanceMois ?? 0,
-    initialAllocationPct: treasuryBase > 0 ? distribution.montant / treasuryBase * 100 : 0,
+    initialAllocationPct: treasuryBase > 0 ? (distribution.montant / treasuryBase) * 100 : 0,
     annualAllocationPct: 0,
     repeatAtTerm: distribution.repetitionAuTerme ?? false,
   };
@@ -78,7 +78,7 @@ function buildCapitalisationPocket(
     durationYears,
     annualReturnRate: capitalisation.rendementAnnuel ?? 0,
     enjoymentDelayMonths: 0,
-    initialAllocationPct: treasuryBase > 0 ? capitalisation.montant / treasuryBase * 100 : 0,
+    initialAllocationPct: treasuryBase > 0 ? (capitalisation.montant / treasuryBase) * 100 : 0,
     annualAllocationPct: 0,
     repeatAtTerm: capitalisation.repetitionAuTerme ?? false,
   };
@@ -87,37 +87,41 @@ function buildCapitalisationPocket(
 function buildCompanyLoan(input: TresoInputs): CompanyLoanInput[] {
   const credit = input.creditIS;
   if (!credit?.actif) return [];
-  return [{
-    id: 'emprunt-is-1',
-    label: 'Emprunt IS 1',
-    principal: credit.capitalEmprunte,
-    annualRate: credit.taux,
-    durationMonths: credit.dureeMois,
-    startDate: credit.dateDeblocage ?? `${input.anneeCivileDebut ?? currentYear()}-01`,
-    existingLoan: false,
-    deductibleInterest: credit.interetsDeductibles,
-    financedAssetKind: credit.actifFinance ? 'autre' : undefined,
-    financedAssetLabel: credit.actifFinance,
-    financedAssetReturnRate: credit.rendementActifFinance,
-    enjoymentDelayMonths: credit.delaiJouissanceMois,
-  }];
+  return [
+    {
+      id: 'emprunt-is-1',
+      label: 'Emprunt IS 1',
+      principal: credit.capitalEmprunte,
+      annualRate: credit.taux,
+      durationMonths: credit.dureeMois,
+      startDate: credit.dateDeblocage ?? `${input.anneeCivileDebut ?? currentYear()}-01`,
+      existingLoan: false,
+      deductibleInterest: credit.interetsDeductibles,
+      financedAssetKind: credit.actifFinance ? 'autre' : undefined,
+      financedAssetLabel: credit.actifFinance,
+      financedAssetReturnRate: credit.rendementActifFinance,
+      enjoymentDelayMonths: credit.delaiJouissanceMois,
+    },
+  ];
 }
 
 function buildSubsidiaries(input: TresoInputs): SubsidiaryInput[] {
   const holding = input.holding;
   if (!holding?.actif) return [];
   const projectionStartYear = input.anneeCivileDebut ?? currentYear();
-  return [{
-    id: 'filiale-1',
-    label: 'Filiale 1',
-    parentEntityId: 'societe',
-    ownershipPct: holding.tauxDetention,
-    holdingOwnershipPct: holding.tauxDetention,
-    motherDaughterEligible: holding.regimeMereFilleEligible,
-    fiscalIntegrationEstimateEnabled: holding.regimeGroupeFiscal,
-    servicesSchedule: [],
-    dividendsSchedule: scheduleFromAnnualAmount(holding.dividendesFiliales, projectionStartYear),
-  }];
+  return [
+    {
+      id: 'filiale-1',
+      label: 'Filiale 1',
+      parentEntityId: 'societe',
+      ownershipPct: holding.tauxDetention,
+      holdingOwnershipPct: holding.tauxDetention,
+      motherDaughterEligible: holding.regimeMereFilleEligible,
+      fiscalIntegrationEstimateEnabled: holding.regimeGroupeFiscal,
+      servicesSchedule: [],
+      dividendsSchedule: scheduleFromAnnualAmount(holding.dividendesFiliales, projectionStartYear),
+    },
+  ];
 }
 
 export function getAllocationPocketLabel(pocket: AllocationPocketInput): string {
@@ -155,31 +159,35 @@ export function buildTresoInputsV2FromLegacy(input: TresoInputs): TresoInputsV2 
       treasuryInitial,
       annualStructureCosts: input.fraisStructureAnnuels,
       reducedCorporateTaxEligible: true,
-      associates: [{
-        id: DEFAULT_ASSOCIATE_ID,
-        label: 'Associé 1',
-        ownershipLots: [{
-          right: 'pleine_propriete',
-          capitalPct: 100,
-          economicRightsPct: 100,
-        }],
-        roles: ['associe_sans_statut'],
-        cca: {
-          currentBalance: input.ccaInitial,
-          exceptionalContributions: [],
-          annualContribution: {
-            amount: input.apportAnnuelCCA,
-            startYear: projectionStartYear,
-            endYear: endYearFromDuration(projectionStartYear, input.dureeActiveAns),
+      associates: [
+        {
+          id: DEFAULT_ASSOCIATE_ID,
+          label: 'Associé 1',
+          ownershipLots: [
+            {
+              right: 'pleine_propriete',
+              capitalPct: 100,
+              economicRightsPct: 100,
+            },
+          ],
+          roles: ['associe_sans_statut'],
+          cca: {
+            currentBalance: input.ccaInitial,
+            exceptionalContributions: [],
+            annualContribution: {
+              amount: input.apportAnnuelCCA,
+              startYear: projectionStartYear,
+              endYear: endYearFromDuration(projectionStartYear, input.dureeActiveAns),
+            },
+            remunerationRate: 0,
           },
-          remunerationRate: 0,
+          remuneration: {
+            source: 'holding',
+            loadedAnnualCost: 0,
+            socialChargeRate: 0,
+          },
         },
-        remuneration: {
-          source: 'holding',
-          loadedAnnualCost: 0,
-          socialChargeRate: 0,
-        },
-      }],
+      ],
       loans: buildCompanyLoan(input),
       subsidiaries: buildSubsidiaries(input),
     },
@@ -217,21 +225,26 @@ export function buildTresoInputsV3FromV2(input: TresoInputsV2): TresoInputsV3 {
       id: associate.id,
       label: associate.label,
       kind: associate.kind ?? 'pp',
-      profile: associate.profile ?? (isSelected
-        ? {
-          currentAge: input.foyer.currentAge,
-          retirementAge: input.foyer.retirementAge,
-          annualIncomeNeed: input.foyer.annualIncomeNeed,
-          projectionStartYear,
-        }
-        : undefined),
-      ownershipLots: associate.ownershipLots.length > 0
-        ? associate.ownershipLots
-        : [{
-          right: 'pleine_propriete' as const,
-          capitalPct: index === 0 ? 100 : 0,
-          economicRightsPct: index === 0 ? 100 : 0,
-        }],
+      profile:
+        associate.profile ??
+        (isSelected
+          ? {
+              currentAge: input.foyer.currentAge,
+              retirementAge: input.foyer.retirementAge,
+              annualIncomeNeed: input.foyer.annualIncomeNeed,
+              projectionStartYear,
+            }
+          : undefined),
+      ownershipLots:
+        associate.ownershipLots.length > 0
+          ? associate.ownershipLots
+          : [
+              {
+                right: 'pleine_propriete' as const,
+                capitalPct: index === 0 ? 100 : 0,
+                economicRightsPct: index === 0 ? 100 : 0,
+              },
+            ],
       roles: associate.roles,
       cca,
       remuneration,
@@ -252,23 +265,28 @@ export function buildTresoInputsV3FromV2(input: TresoInputsV2): TresoInputsV3 {
         workingCapitalRequirement: 0,
       },
       associates,
-      subsidiaries: input.company.subsidiaries.map(subsidiary => {
+      subsidiaries: input.company.subsidiaries.map((subsidiary) => {
         const legacySubsidiary = subsidiary as SubsidiaryInput & LegacySubsidiaryFields;
-        const servicesSchedule = subsidiary.servicesSchedule ??
-          scheduleFromAnnualAmount(legacySubsidiary.annualServicesRevenue ?? 0, projectionStartYear);
-        const dividendsSchedule = subsidiary.dividendsSchedule ??
+        const servicesSchedule =
+          subsidiary.servicesSchedule ??
+          scheduleFromAnnualAmount(
+            legacySubsidiary.annualServicesRevenue ?? 0,
+            projectionStartYear,
+          );
+        const dividendsSchedule =
+          subsidiary.dividendsSchedule ??
           scheduleFromAnnualAmount(legacySubsidiary.annualDividends ?? 0, projectionStartYear);
-        const disposal = subsidiary.disposal ?? (
-          legacySubsidiary.disposalYear
+        const disposal =
+          subsidiary.disposal ??
+          (legacySubsidiary.disposalYear
             ? {
-              year: legacySubsidiary.disposalYear,
-              estimatedPrice: legacySubsidiary.estimatedDisposalPrice ?? 0,
-              taxBasis: legacySubsidiary.taxBasis ?? 0,
-              fees: 0,
-              regime: 'auto' as const,
-            }
-            : undefined
-        );
+                year: legacySubsidiary.disposalYear,
+                estimatedPrice: legacySubsidiary.estimatedDisposalPrice ?? 0,
+                taxBasis: legacySubsidiary.taxBasis ?? 0,
+                fees: 0,
+                regime: 'auto' as const,
+              }
+            : undefined);
         return {
           id: subsidiary.id,
           label: subsidiary.label,
@@ -291,9 +309,9 @@ export function buildTresoInputsV3FromV2(input: TresoInputsV2): TresoInputsV3 {
       ...input.allocationMatrix,
       pockets: input.allocationMatrix.pockets.map((pocket, index) => ({
         ...pocket,
-        horizon: pocket.horizon ?? (
-          index === 0 ? 'court_terme' : index === 1 ? 'long_terme' : 'moyen_terme'
-        ),
+        horizon:
+          pocket.horizon ??
+          (index === 0 ? 'court_terme' : index === 1 ? 'long_terme' : 'moyen_terme'),
       })),
     },
   };
@@ -314,9 +332,9 @@ function normalizeProjectionStartYear(input: TresoInputsV3): number {
   }
 
   const associateYears = input.company.associates
-    .map(associate => associate.profile?.projectionStartYear)
-    .filter((year): year is number =>
-      typeof year === 'number' && Number.isFinite(year) && year > 0,
+    .map((associate) => associate.profile?.projectionStartYear)
+    .filter(
+      (year): year is number => typeof year === 'number' && Number.isFinite(year) && year > 0,
     );
   if (associateYears.length > 0) return Math.min(...associateYears);
 
@@ -335,7 +353,7 @@ export function buildTresoInputsV4FromV3(input: TresoInputsV3): TresoInputsV4 {
       ...input.company,
       label: input.company.label ?? DEFAULT_COMPANY_LABEL,
       projectionStartYear,
-      associates: input.company.associates.map(associate => {
+      associates: input.company.associates.map((associate) => {
         const legacyAssociate = associate as AssociateInput & LegacyAssociateFields;
         return {
           id: associate.id,
@@ -364,7 +382,7 @@ export function buildTresoInputsV4FromV3(input: TresoInputsV3): TresoInputsV4 {
           },
         };
       }),
-      subsidiaries: input.company.subsidiaries.map(subsidiary => {
+      subsidiaries: input.company.subsidiaries.map((subsidiary) => {
         const legacySubsidiary = subsidiary as SubsidiaryInput & LegacySubsidiaryFields;
         return {
           id: subsidiary.id,
@@ -378,21 +396,26 @@ export function buildTresoInputsV4FromV3(input: TresoInputsV3): TresoInputsV4 {
           treasuryInitial: subsidiary.treasuryInitial ?? 0,
           workingCapitalRequirement: subsidiary.workingCapitalRequirement ?? 0,
           distributableReserves: subsidiary.distributableReserves ?? 0,
-          servicesSchedule: subsidiary.servicesSchedule ??
-            scheduleFromAnnualAmount(legacySubsidiary.annualServicesRevenue ?? 0, projectionStartYear),
-          dividendsSchedule: subsidiary.dividendsSchedule ??
+          servicesSchedule:
+            subsidiary.servicesSchedule ??
+            scheduleFromAnnualAmount(
+              legacySubsidiary.annualServicesRevenue ?? 0,
+              projectionStartYear,
+            ),
+          dividendsSchedule:
+            subsidiary.dividendsSchedule ??
             scheduleFromAnnualAmount(legacySubsidiary.annualDividends ?? 0, projectionStartYear),
-          disposal: subsidiary.disposal ?? (
-            legacySubsidiary.disposalYear
+          disposal:
+            subsidiary.disposal ??
+            (legacySubsidiary.disposalYear
               ? {
-                year: legacySubsidiary.disposalYear,
-                estimatedPrice: legacySubsidiary.estimatedDisposalPrice ?? 0,
-                taxBasis: legacySubsidiary.taxBasis ?? 0,
-                fees: 0,
-                regime: 'auto' as const,
-              }
-              : undefined
-          ),
+                  year: legacySubsidiary.disposalYear,
+                  estimatedPrice: legacySubsidiary.estimatedDisposalPrice ?? 0,
+                  taxBasis: legacySubsidiary.taxBasis ?? 0,
+                  fees: 0,
+                  regime: 'auto' as const,
+                }
+              : undefined),
         };
       }),
     },
@@ -402,9 +425,9 @@ export function buildTresoInputsV4FromV3(input: TresoInputsV3): TresoInputsV4 {
         input.allocationMatrix.minimumBankBalance ?? input.allocationMatrix.sweepThreshold ?? 0,
       pockets: input.allocationMatrix.pockets.map((pocket, index) => ({
         ...pocket,
-        horizon: pocket.horizon ?? (
-          index === 0 ? 'court_terme' : index === 1 ? 'long_terme' : 'moyen_terme'
-        ),
+        horizon:
+          pocket.horizon ??
+          (index === 0 ? 'court_terme' : index === 1 ? 'long_terme' : 'moyen_terme'),
       })),
     },
   };
@@ -438,7 +461,9 @@ export function buildTresoInputsV6FromV5(input: TresoInputsV5 | TresoInputsV6): 
   return buildTresoInputsV6FromV5Internal(input);
 }
 
-export function buildTresoInputsV6FromV4(input: TresoInputsV4 | TresoInputsV5 | TresoInputsV6): TresoInputsV6 {
+export function buildTresoInputsV6FromV4(
+  input: TresoInputsV4 | TresoInputsV5 | TresoInputsV6,
+): TresoInputsV6 {
   return input.version === 6 ? input : buildTresoInputsV6FromV5(buildTresoInputsV5FromV4(input));
 }
 

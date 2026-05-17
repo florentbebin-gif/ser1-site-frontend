@@ -230,10 +230,7 @@ describe('successionDraft migrations', () => {
 
     const parsed = parseSuccessionDraftPayload(raw);
     expect(parsed).not.toBeNull();
-    expect(parsed?.donations.map((entry) => entry.type)).toEqual([
-      'rapportable',
-      'hors_part',
-    ]);
+    expect(parsed?.donations.map((entry) => entry.type)).toEqual(['rapportable', 'hors_part']);
     expect(parsed?.devolution.testamentsBySide.epoux1.particularLegacies).toEqual([
       expect.objectContaining({ amount: 5000 }),
     ]);
@@ -278,13 +275,11 @@ describe('successionDraft migrations', () => {
 
     const parsed = parseSuccessionDraftPayload(raw);
     expect(parsed).not.toBeNull();
-    expect(parsed?.assetEntries.map((entry) => ({
-      pocket: entry.pocket,
-    }))).toEqual([
-      { pocket: 'epoux1' },
-      { pocket: 'epoux2' },
-      { pocket: 'communaute' },
-    ]);
+    expect(
+      parsed?.assetEntries.map((entry) => ({
+        pocket: entry.pocket,
+      })),
+    ).toEqual([{ pocket: 'epoux1' }, { pocket: 'epoux2' }, { pocket: 'communaute' }]);
     expect(parsed?.assuranceVieEntries).toEqual([]);
   });
 

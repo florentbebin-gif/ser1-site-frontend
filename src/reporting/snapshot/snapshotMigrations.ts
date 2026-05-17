@@ -166,7 +166,7 @@ export function migrateSnapshot(raw: Record<string, unknown>): MigrationResult {
   if (startVersion > CURRENT_SNAPSHOT_VERSION) {
     throw new Error(
       `Ce fichier a été créé avec une version plus récente de SER1 (v${startVersion}). ` +
-      `Mettez à jour l'application (version actuelle : v${CURRENT_SNAPSHOT_VERSION}).`
+        `Mettez à jour l'application (version actuelle : v${CURRENT_SNAPSHOT_VERSION}).`,
     );
   }
 
@@ -181,8 +181,7 @@ export function migrateSnapshot(raw: Record<string, unknown>): MigrationResult {
     const migrateFn = migrations[version];
     if (!migrateFn) {
       throw new Error(
-        `Migration manquante : v${version} → v${version + 1}. ` +
-        'Contactez le support technique.'
+        `Migration manquante : v${version} → v${version + 1}. ` + 'Contactez le support technique.',
       );
     }
     current = migrateFn(current);

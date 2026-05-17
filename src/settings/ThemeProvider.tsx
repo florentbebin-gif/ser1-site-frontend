@@ -77,66 +77,70 @@ export function ThemeProvider({ children }: ThemeProviderProps): React.ReactElem
     session.originalColors,
   );
 
-  const applyColorsToCSSWithGuard = useCallback((colors: ThemeColors, userId?: string, source: string = 'unknown'): void => {
-    const hash = getThemeHash(colors, userId);
-    const currentRank = SOURCE_RANKS[source] ?? 0;
-    const lastRank = lastAppliedSourceRankRef.current;
+  const applyColorsToCSSWithGuard = useCallback(
+    (colors: ThemeColors, userId?: string, source: string = 'unknown'): void => {
+      const hash = getThemeHash(colors, userId);
+      const currentRank = SOURCE_RANKS[source] ?? 0;
+      const lastRank = lastAppliedSourceRankRef.current;
 
-    if (lastAppliedHashRef.current === hash) {
-      return;
-    }
+      if (lastAppliedHashRef.current === hash) {
+        return;
+      }
 
-    if (currentRank < lastRank && lastAppliedUserIdRef.current === (userId || '')) {
-      console.warn(`[ThemeProvider] BLOCKED - Source ${source}(rank ${currentRank}) tried to overwrite rank ${lastRank}`);
-      return;
-    }
+      if (currentRank < lastRank && lastAppliedUserIdRef.current === (userId || '')) {
+        console.warn(
+          `[ThemeProvider] BLOCKED - Source ${source}(rank ${currentRank}) tried to overwrite rank ${lastRank}`,
+        );
+        return;
+      }
 
-    applyColorsToCSS(colors);
+      applyColorsToCSS(colors);
 
-    lastAppliedHashRef.current = hash;
-    lastAppliedUserIdRef.current = userId || '';
-    lastAppliedSourceRankRef.current = currentRank;
+      lastAppliedHashRef.current = hash;
+      lastAppliedUserIdRef.current = userId || '';
+      lastAppliedSourceRankRef.current = currentRank;
 
-    if (!themeReady) {
-      setThemeReady(true);
-    }
-  }, [setThemeReady, themeReady]);
+      if (!themeReady) {
+        setThemeReady(true);
+      }
+    },
+    [setThemeReady, themeReady],
+  );
 
   applyColorsToCSSWithGuardRef.current = applyColorsToCSSWithGuard;
 
   if (!initialApplyDone.current) {
     if (session.themeBootstrap?.colors) {
-      applyColorsToCSSWithGuard(session.themeBootstrap.colors, session.themeBootstrap.userId ?? undefined, 'bootstrap-cache');
+      applyColorsToCSSWithGuard(
+        session.themeBootstrap.colors,
+        session.themeBootstrap.userId ?? undefined,
+        'bootstrap-cache',
+      );
     } else {
       applyColorsToCSSWithGuard(DEFAULT_COLORS, undefined, 'default-sync-init');
     }
     initialApplyDone.current = true;
   }
 
-  const {
-    setColors,
-    applyThemeMode,
-    saveMyPalette,
-    saveCustomPalette,
-    saveThemeToUiSettings,
-  } = useThemeActions({
-    setColorsState: session.setColorsState,
-    setThemeMode: session.setThemeMode,
-    setPresetId: session.setPresetId,
-    setThemeSource: session.setThemeSource,
-    setMyPalette: session.setMyPalette,
-    setCustomPalette: session.setCustomPalette,
-    setSelectedThemeRef: session.setSelectedThemeRef,
-    cabinetColorsRef: session.cabinetColorsRef,
-    cabinetBrandingKeyRef: session.cabinetBrandingKeyRef,
-    ensureCabinetThemeFetch: session.ensureCabinetThemeFetch,
-    myPaletteRef: session.myPaletteRef,
-    themeModeRef: session.themeModeRef,
-    lastAppliedHashRef,
-    lastAppliedSourceRankRef,
-    lastAppliedUserIdRef,
-    applyColorsToCSSWithGuardRef,
-  });
+  const { setColors, applyThemeMode, saveMyPalette, saveCustomPalette, saveThemeToUiSettings } =
+    useThemeActions({
+      setColorsState: session.setColorsState,
+      setThemeMode: session.setThemeMode,
+      setPresetId: session.setPresetId,
+      setThemeSource: session.setThemeSource,
+      setMyPalette: session.setMyPalette,
+      setCustomPalette: session.setCustomPalette,
+      setSelectedThemeRef: session.setSelectedThemeRef,
+      cabinetColorsRef: session.cabinetColorsRef,
+      cabinetBrandingKeyRef: session.cabinetBrandingKeyRef,
+      ensureCabinetThemeFetch: session.ensureCabinetThemeFetch,
+      myPaletteRef: session.myPaletteRef,
+      themeModeRef: session.themeModeRef,
+      lastAppliedHashRef,
+      lastAppliedSourceRankRef,
+      lastAppliedUserIdRef,
+      applyColorsToCSSWithGuardRef,
+    });
 
   useThemeEvents({
     setOriginalColors: session.setOriginalColors,

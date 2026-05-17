@@ -82,7 +82,10 @@ export function validatePositive(value: number | string | null | undefined): str
  * @param {number} max
  * @returns {string|null}
  */
-export function validateReasonable(value: number | string | null | undefined, max: number = 10000000): string | null {
+export function validateReasonable(
+  value: number | string | null | undefined,
+  max: number = 10000000,
+): string | null {
   const posErr = validatePositive(value);
   if (posErr) return posErr;
   if (value === null || value === undefined || value === '') return null;
@@ -96,7 +99,9 @@ export function validateReasonable(value: number | string | null | undefined, ma
  * @param {Array<{from: number|null, to: number|null, rate?: number}>} scale
  * @returns {Array<{index: number, field: string, message: string}>}
  */
-export function validateScaleOrdered(scale: ScaleBracket[]): Array<{ index: number; field: string; message: string }> {
+export function validateScaleOrdered(
+  scale: ScaleBracket[],
+): Array<{ index: number; field: string; message: string }> {
   if (!Array.isArray(scale) || scale.length === 0) return [];
   const errors: Array<{ index: number; field: string; message: string }> = [];
 
@@ -119,7 +124,11 @@ export function validateScaleOrdered(scale: ScaleBracket[]): Array<{ index: numb
     // Validate from < to (unless to is null = last bracket)
     if (row.to !== null && row.to !== undefined && row.from !== null && row.from !== undefined) {
       if (row.to <= row.from) {
-        errors.push({ index: i, field: 'to', message: 'La borne haute doit être supérieure à la borne basse.' });
+        errors.push({
+          index: i,
+          field: 'to',
+          message: 'La borne haute doit être supérieure à la borne basse.',
+        });
       }
     }
 
@@ -130,7 +139,11 @@ export function validateScaleOrdered(scale: ScaleBracket[]): Array<{ index: numb
       const currFrom = row.from;
       if (prevTo !== null && prevTo !== undefined && currFrom !== null && currFrom !== undefined) {
         if (currFrom < prevTo) {
-          errors.push({ index: i, field: 'from', message: 'La tranche suivante doit commencer après la précédente.' });
+          errors.push({
+            index: i,
+            field: 'from',
+            message: 'La tranche suivante doit commencer après la précédente.',
+          });
         }
       }
     }
@@ -183,7 +196,7 @@ export function validateAvDeces(avDeces: AvDecesConfig | null | undefined): Reco
   if (avDeces.agePivotPrimes !== null && avDeces.agePivotPrimes !== undefined) {
     const n = Number(avDeces.agePivotPrimes);
     if (Number.isNaN(n) || n < 0 || n > 120) {
-      errors['agePivotPrimes'] = 'L\'âge pivot doit être entre 0 et 120.';
+      errors['agePivotPrimes'] = "L'âge pivot doit être entre 0 et 120.";
     }
   }
 
@@ -231,7 +244,7 @@ export function validateAvDeces(avDeces: AvDecesConfig | null | undefined): Reco
  * @returns {boolean}
  */
 export function isValid(...errorObjects: Record<string, string>[]): boolean {
-  return errorObjects.every(e => Object.keys(e).length === 0);
+  return errorObjects.every((e) => Object.keys(e).length === 0);
 }
 
 /**
@@ -244,19 +257,17 @@ export function validateImpotsSettings(
 ): Record<string, string> {
   const errors: Record<string, string> = {};
   const { incomeTax, pfu, cehr, cdhr, corporateTax } = settings || {};
-  const incomeTaxPeriods: Array<'scaleCurrent' | 'scalePrevious'> = ['scaleCurrent', 'scalePrevious'];
+  const incomeTaxPeriods: Array<'scaleCurrent' | 'scalePrevious'> = [
+    'scaleCurrent',
+    'scalePrevious',
+  ];
   const yearPeriods: Array<'current' | 'previous'> = ['current', 'previous'];
   const domZones: Array<'gmr' | 'guyane'> = ['gmr', 'guyane'];
   const pfuKeys: Array<'rateIR'> = ['rateIR'];
   const cehrGroups: Array<'single' | 'couple'> = ['single', 'couple'];
   const corporateKeys: Array<
     'normalRate' | 'reducedRate' | 'maxDeductibleCcaInterestRate' | 'dividendsAbatementPct'
-  > = [
-    'normalRate',
-    'reducedRate',
-    'maxDeductibleCcaInterestRate',
-    'dividendsAbatementPct',
-  ];
+  > = ['normalRate', 'reducedRate', 'maxDeductibleCcaInterestRate', 'dividendsAbatementPct'];
 
   // Barèmes IR (scaleCurrent, scalePrevious) — tranches ordonnées + taux 0-100
   for (const period of incomeTaxPeriods) {

@@ -31,7 +31,8 @@ export function ContractAuditCards({ contract }: ContractAuditCardsProps) {
   if (!contract) {
     return (
       <div className="per-transfert-empty-analysis">
-        Aucun contrat Base CG sélectionné : la grille de devoir de conseil reste à compléter avec les hypothèses du relevé et des conditions générales.
+        Aucun contrat Base CG sélectionné : la grille de devoir de conseil reste à compléter avec
+        les hypothèses du relevé et des conditions générales.
       </div>
     );
   }
@@ -74,7 +75,8 @@ export function ContractAuditCards({ contract }: ContractAuditCardsProps) {
   if (!hasEpargne && !hasLiquidation && !hasDocuments) {
     return (
       <div className="per-transfert-empty-analysis">
-        La grille de devoir de conseil reste à compléter avec les hypothèses du relevé et des conditions générales.
+        La grille de devoir de conseil reste à compléter avec les hypothèses du relevé et des
+        conditions générales.
       </div>
     );
   }
@@ -82,44 +84,112 @@ export function ContractAuditCards({ contract }: ContractAuditCardsProps) {
   return (
     <div className="per-transfert-contract-audit">
       {hasEpargne ? (
-      <section className="per-transfert-contract-audit__phase">
-        <h4>Phase épargne</h4>
-        <dl>
-          <AuditRow label="Date de commercialisation" value={contract.phaseEpargne.dateCommercialisation} />
-          <AuditRow label="Nombre de supports" value={contract.phaseEpargne.nombreFonds} />
-          <AuditRow label="Nombre d’UC" value={contract.phaseEpargne.nombreSupportsUc} />
-          <AuditRow label="Répartition UC / Fonds €" value={contract.phaseEpargne.repartitionUcEuro} />
-          <AuditRow label="TMG du contrat (fonds €)" value={contract.phaseEpargne.rendementFondsEuro} format="rate" />
-          <AuditRow label="Fonds € garantis" value={contract.phaseEpargne.fondsEuroGarantis} format="rate" />
-          <AuditRow label="Frais sur versements" value={contract.phaseEpargne.fraisVersements} format="rate" />
-          <AuditRow label="Frais gestion fonds €" value={gestionFees.fraisGestionFondsEuro} format="rate" />
-          <AuditRow label="Frais gestion UC" value={gestionFees.fraisGestionUc} format="rate" />
-          <AuditRow label="Frais d'arbitrage" value={contract.phaseEpargne.fraisArbitrage} format="rate" />
-          <AuditRow label="Frais de transfert sortant" value={contract.phaseEpargne.fraisTransfertSortant} format="rate" />
-          <AuditRow label="Modalités en cas de décès" value={contract.phaseEpargne.clauseBeneficiaire} />
-          <AuditRow label="Garanties complémentaires" value={contract.phaseEpargne.garantiesComplementaires} />
-        </dl>
-      </section>
+        <section className="per-transfert-contract-audit__phase">
+          <h4>Phase épargne</h4>
+          <dl>
+            <AuditRow
+              label="Date de commercialisation"
+              value={contract.phaseEpargne.dateCommercialisation}
+            />
+            <AuditRow label="Nombre de supports" value={contract.phaseEpargne.nombreFonds} />
+            <AuditRow label="Nombre d’UC" value={contract.phaseEpargne.nombreSupportsUc} />
+            <AuditRow
+              label="Répartition UC / Fonds €"
+              value={contract.phaseEpargne.repartitionUcEuro}
+            />
+            <AuditRow
+              label="TMG du contrat (fonds €)"
+              value={contract.phaseEpargne.rendementFondsEuro}
+              format="rate"
+            />
+            <AuditRow
+              label="Fonds € garantis"
+              value={contract.phaseEpargne.fondsEuroGarantis}
+              format="rate"
+            />
+            <AuditRow
+              label="Frais sur versements"
+              value={contract.phaseEpargne.fraisVersements}
+              format="rate"
+            />
+            <AuditRow
+              label="Frais gestion fonds €"
+              value={gestionFees.fraisGestionFondsEuro}
+              format="rate"
+            />
+            <AuditRow label="Frais gestion UC" value={gestionFees.fraisGestionUc} format="rate" />
+            <AuditRow
+              label="Frais d'arbitrage"
+              value={contract.phaseEpargne.fraisArbitrage}
+              format="rate"
+            />
+            <AuditRow
+              label="Frais de transfert sortant"
+              value={contract.phaseEpargne.fraisTransfertSortant}
+              format="rate"
+            />
+            <AuditRow
+              label="Modalités en cas de décès"
+              value={contract.phaseEpargne.clauseBeneficiaire}
+            />
+            <AuditRow
+              label="Garanties complémentaires"
+              value={contract.phaseEpargne.garantiesComplementaires}
+            />
+          </dl>
+        </section>
       ) : null}
 
       {hasLiquidation ? (
-      <section className="per-transfert-contract-audit__phase">
-        <h4>Phase liquidation</h4>
-        <dl>
-          <AuditRow label="Âge limite de liquidation" value={contract.phaseLiquidation.ageLimiteLiquidation} />
-          <AuditRow label="Sortie capital à la retraite" value={contract.phaseLiquidation.sortieCapitalRetraite} />
-          <AuditRow label="Fractionnement du capital" value={contract.phaseLiquidation.fractionnementCapital} />
-          <AuditRow label="Rachat libre" value={contract.phaseLiquidation.rachatLibre} />
-          <AuditRow label="Table de mortalité utilisée" value={contract.phaseLiquidation.tableConversionRente} />
-          <AuditRow label="Table garantie à l'adhésion" value={contract.phaseLiquidation.tableGarantieAdhesion} />
-          <AuditRow label="Taux technique" value={contract.phaseLiquidation.tauxTechnique} format="rate" />
-          <AuditRow label="Frais sur arrérages" value={contract.phaseLiquidation.fraisArrerages} format="rate" />
-          <AuditRow label="Annuités garanties" value={contract.phaseLiquidation.annuitesGaranties} />
-          <AuditRow label="Réversion possible" value={contract.phaseLiquidation.reversionPossible} />
-          <AuditRow label="Réversion incluse" value={contract.phaseLiquidation.reversionIncluse} />
-          <AuditRow label="Rente estimée" value={contract.phaseLiquidation.renteEstimee} />
-        </dl>
-      </section>
+        <section className="per-transfert-contract-audit__phase">
+          <h4>Phase liquidation</h4>
+          <dl>
+            <AuditRow
+              label="Âge limite de liquidation"
+              value={contract.phaseLiquidation.ageLimiteLiquidation}
+            />
+            <AuditRow
+              label="Sortie capital à la retraite"
+              value={contract.phaseLiquidation.sortieCapitalRetraite}
+            />
+            <AuditRow
+              label="Fractionnement du capital"
+              value={contract.phaseLiquidation.fractionnementCapital}
+            />
+            <AuditRow label="Rachat libre" value={contract.phaseLiquidation.rachatLibre} />
+            <AuditRow
+              label="Table de mortalité utilisée"
+              value={contract.phaseLiquidation.tableConversionRente}
+            />
+            <AuditRow
+              label="Table garantie à l'adhésion"
+              value={contract.phaseLiquidation.tableGarantieAdhesion}
+            />
+            <AuditRow
+              label="Taux technique"
+              value={contract.phaseLiquidation.tauxTechnique}
+              format="rate"
+            />
+            <AuditRow
+              label="Frais sur arrérages"
+              value={contract.phaseLiquidation.fraisArrerages}
+              format="rate"
+            />
+            <AuditRow
+              label="Annuités garanties"
+              value={contract.phaseLiquidation.annuitesGaranties}
+            />
+            <AuditRow
+              label="Réversion possible"
+              value={contract.phaseLiquidation.reversionPossible}
+            />
+            <AuditRow
+              label="Réversion incluse"
+              value={contract.phaseLiquidation.reversionIncluse}
+            />
+            <AuditRow label="Rente estimée" value={contract.phaseLiquidation.renteEstimee} />
+          </dl>
+        </section>
       ) : null}
 
       {documents.length > 0 ? (
@@ -129,8 +199,12 @@ export function ContractAuditCards({ contract }: ContractAuditCardsProps) {
             {documents.map((document) => (
               <li key={document.id}>
                 {document.sourceUrl ? (
-                  <a href={document.sourceUrl} target="_blank" rel="noreferrer">{document.label}</a>
-                ) : document.label}
+                  <a href={document.sourceUrl} target="_blank" rel="noreferrer">
+                    {document.label}
+                  </a>
+                ) : (
+                  document.label
+                )}
               </li>
             ))}
           </ul>

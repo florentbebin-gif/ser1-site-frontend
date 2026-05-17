@@ -59,7 +59,7 @@ function drawSafeLine(
     y: Math.min(start.y, end.y),
     w: Math.abs(dx),
     h: Math.abs(dy),
-    flipH: (dx < 0) !== (dy < 0),
+    flipH: dx < 0 !== dy < 0,
     line,
   });
 }
@@ -85,7 +85,7 @@ function drawMetricTile(
   const textColor = emphasized ? WHITE : roleColor(theme, 'textMain');
   const bodyColor = emphasized ? WHITE : roleColor(theme, 'textBody');
   const iconRole = emphasized ? 'white' : 'accent';
-  const compact = h < 0.90;
+  const compact = h < 0.9;
 
   slide.addShape('roundRect', {
     x,
@@ -96,25 +96,31 @@ function drawMetricTile(
     line: { color: emphasized ? fill : roleColor(theme, 'panelBorder'), width: 0.7 },
     rectRadius: 0.08,
   });
-  addBusinessIconToSlide(slide, iconKey, {
-    x: x + 0.12,
-    y: y + (compact ? 0.16 : 0.18),
-    w: compact ? 0.26 : 0.28,
-    h: compact ? 0.26 : 0.28,
-  }, theme, iconRole);
+  addBusinessIconToSlide(
+    slide,
+    iconKey,
+    {
+      x: x + 0.12,
+      y: y + (compact ? 0.16 : 0.18),
+      w: compact ? 0.26 : 0.28,
+      h: compact ? 0.26 : 0.28,
+    },
+    theme,
+    iconRole,
+  );
   addTextFr(slide, label, {
     x: x + 0.48,
     y: y + 0.09,
-    w: w - 0.60,
-    h: 0.20,
+    w: w - 0.6,
+    h: 0.2,
     fontSize: 8.5,
     color: bodyColor,
     fit: 'shrink',
   });
   addTextFr(slide, value, {
     x: x + 0.48,
-    y: y + (compact ? 0.30 : 0.34),
-    w: w - 0.60,
+    y: y + (compact ? 0.3 : 0.34),
+    w: w - 0.6,
     h: compact ? 0.28 : 0.32,
     fontSize: compact ? 11 : 11.5,
     bold: true,
@@ -125,8 +131,8 @@ function drawMetricTile(
     addTextFr(slide, detail, {
       x: x + 0.48,
       y: y + (compact ? 0.58 : 0.68),
-      w: w - 0.60,
-      h: compact ? 0.18 : 0.20,
+      w: w - 0.6,
+      h: compact ? 0.18 : 0.2,
       fontSize: 7.4,
       italic: true,
       color: bodyColor,
@@ -147,8 +153,8 @@ export function buildTresorerieSchema(
   addHeader(slide, spec.title, spec.subtitle, theme, 'content');
 
   const totalH = CONTENT_BOTTOM_Y - CONTENT_TOP_Y;
-  const chartW = 7.30;
-  const sideGap = 0.30;
+  const chartW = 7.3;
+  const sideGap = 0.3;
   const sideX = MARGIN_X + chartW + sideGap;
   const sideW = CONTENT_W - chartW - sideGap;
   const textMain = roleColor(theme, 'textMain');
@@ -166,7 +172,7 @@ export function buildTresorerieSchema(
     h: totalH,
     fill: { color: WHITE },
     line: { color: panelBorder, width: 0.75 },
-    rectRadius: 0.10,
+    rectRadius: 0.1,
     shadow: {
       type: SHADOW_PARAMS.type,
       angle: SHADOW_PARAMS.angle,
@@ -207,7 +213,7 @@ export function buildTresorerieSchema(
   const scaleX = (x: number) => chartOriginX + x * chartScale;
   const scaleY = (y: number) => chartOriginY + y * chartScale;
 
-  layout.edges.forEach(edge => {
+  layout.edges.forEach((edge) => {
     drawSafeLine(
       slide,
       { x: scaleX(edge.x1), y: scaleY(edge.y1) },
@@ -216,22 +222,22 @@ export function buildTresorerieSchema(
     );
   });
 
-  layout.labels.forEach(label => {
+  layout.labels.forEach((label) => {
     const x = scaleX(label.x);
     const y = scaleY(label.y);
     slide.addShape('roundRect', {
-      x: x - 0.30,
+      x: x - 0.3,
       y: y - 0.13,
-      w: 0.60,
+      w: 0.6,
       h: 0.26,
       fill: { color: orgchartAccent },
       line: { color: orgchartAccent, width: 0 },
       rectRadius: 0.05,
     });
     addTextFr(slide, label.text, {
-      x: x - 0.30,
+      x: x - 0.3,
       y: y - 0.13,
-      w: 0.60,
+      w: 0.6,
       h: 0.26,
       fontSize: 9,
       bold: true,
@@ -241,7 +247,7 @@ export function buildTresorerieSchema(
     });
   });
 
-  layout.nodes.forEach(node => {
+  layout.nodes.forEach((node) => {
     const x = scaleX(node.x);
     const y = scaleY(node.y);
     const w = node.width * chartScale;
@@ -261,8 +267,8 @@ export function buildTresorerieSchema(
     addTextFr(slide, truncate(node.label, 32), {
       x: x + 0.05,
       y: y + (isCompany ? h * 0.12 : h * 0.18),
-      w: Math.max(0.1, w - 0.10),
-      h: h * 0.40,
+      w: Math.max(0.1, w - 0.1),
+      h: h * 0.4,
       fontSize: isCompany ? 12 : 10.5,
       bold: true,
       align: 'center',
@@ -274,8 +280,8 @@ export function buildTresorerieSchema(
       addTextFr(slide, truncate(detail ?? '', 30), {
         x: x + 0.05,
         y: y + h * (isCompany ? 0.58 + index * 0.18 : 0.62),
-        w: Math.max(0.1, w - 0.10),
-        h: h * 0.20,
+        w: Math.max(0.1, w - 0.1),
+        h: h * 0.2,
         fontSize: 8.6,
         align: 'center',
         valign: 'middle',
@@ -292,7 +298,7 @@ export function buildTresorerieSchema(
     h: totalH,
     fill: { color: WHITE },
     line: { color: panelBorder, width: 0.75 },
-    rectRadius: 0.10,
+    rectRadius: 0.1,
     shadow: {
       type: SHADOW_PARAMS.type,
       angle: SHADOW_PARAMS.angle,
@@ -321,7 +327,8 @@ export function buildTresorerieSchema(
     valign: 'middle',
   });
 
-  const protectedCash = spec.essentials.minimumBankBalance + spec.essentials.workingCapitalRequirement;
+  const protectedCash =
+    spec.essentials.minimumBankBalance + spec.essentials.workingCapitalRequirement;
   const metrics = [
     {
       label: 'Société',
@@ -351,9 +358,9 @@ export function buildTresorerieSchema(
     },
   ];
   const tileGap = 0.16;
-  const tileX = sideX + 0.20;
+  const tileX = sideX + 0.2;
   const tileTopY = CONTENT_TOP_Y + 0.82;
-  const sideInnerW = sideW - 0.40;
+  const sideInnerW = sideW - 0.4;
   const companyTileH = 0.82;
   const smallTileW = (sideInnerW - tileGap) / 2;
   const smallTileH = 1.08;

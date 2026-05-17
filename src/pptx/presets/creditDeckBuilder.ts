@@ -1,9 +1,9 @@
 /**
  * Credit Deck Builder
- * 
+ *
  * Generates a StudyDeckSpec for Credit simulation results using the Serenity template.
  * Supports multi-loan scenarios with global synthesis + per-loan synthesis slides.
- * 
+ *
  * Structure:
  * 1. Cover - "NOM Prénom" as subtitle
  * 2. Chapter "Votre projet de financement"
@@ -44,36 +44,36 @@ export interface CreditData {
   // Global totals
   totalCapital?: number;
   maxDureeMois?: number;
-  startYM?: string;  // point 6 — date de début réelle pour labels timeline PPTX
+  startYM?: string; // point 6 — date de début réelle pour labels timeline PPTX
   coutTotalInterets: number;
   coutTotalAssurance: number;
   coutTotalCredit: number;
   assuranceDecesByYear?: number[];
-  
+
   // Smoothing info
   smoothingEnabled?: boolean;
   smoothingMode?: 'mensu' | 'duree';
-  
+
   // Per-loan data (array of loan summaries)
   loans?: LoanSummary[];
-  
+
   // Payment periods timeline (for multi-loan)
   paymentPeriods?: PaymentPeriod[];
-  
+
   // Total amortization (aggregated all loans)
   amortizationRows: CreditAmortizationRow[];
-  
+
   // Legacy single-loan fields (for backward compatibility)
   capitalEmprunte: number;
   dureeMois: number;
   tauxNominal: number;
   tauxAssurance: number;
-  quotite?: number;  // 0..1, défaut 1 (100%). Quotité assurée prêt principal
+  quotite?: number; // 0..1, défaut 1 (100%). Quotité assurée prêt principal
   mensualiteHorsAssurance: number;
   mensualiteTotale: number;
   creditType: 'amortissable' | 'infine';
   assuranceMode: 'CI' | 'CRD';
-  
+
   // Client info
   clientName?: string;
 }
@@ -113,7 +113,7 @@ const MAX_YEARS_PER_SLIDE = 10;
  * Get unique sorted years from all amortization rows
  */
 function getUniqueYears(rows: CreditAmortizationRow[]): string[] {
-  const years = new Set(rows.map(r => r.periode));
+  const years = new Set(rows.map((r) => r.periode));
   return Array.from(years).sort();
 }
 
@@ -121,16 +121,17 @@ function getUniqueYears(rows: CreditAmortizationRow[]): string[] {
  * Paginate years into chunks for column-based pagination
  * Returns { allRows, yearPages } where yearPages is array of year arrays
  */
-function paginateByYearColumns(
-  rows: CreditAmortizationRow[]
-): { allRows: CreditAmortizationRow[]; yearPages: string[][] } {
+function paginateByYearColumns(rows: CreditAmortizationRow[]): {
+  allRows: CreditAmortizationRow[];
+  yearPages: string[][];
+} {
   const allYears = getUniqueYears(rows);
   const yearPages: string[][] = [];
-  
+
   for (let i = 0; i < allYears.length; i += MAX_YEARS_PER_SLIDE) {
     yearPages.push(allYears.slice(i, i + MAX_YEARS_PER_SLIDE));
   }
-  
+
   return { allRows: rows, yearPages };
 }
 
@@ -140,11 +141,11 @@ function paginateByYearColumns(
 
 /**
  * Build Credit Study Deck Specification
- * 
+ *
  * Supports multi-loan scenarios:
  * - If 1 loan: Global synthesis only
  * - If 2+ loans: Global synthesis + per-loan synthesis slides
- * 
+ *
  * @param creditData - Credit simulation results (multi-loan support)
  * @param uiSettings - Theme colors from ThemeProvider
  * @param logoUrl - Optional logo URL from user_metadata
@@ -156,19 +157,19 @@ export function buildCreditStudyDeck(
   _uiSettings: UiSettingsForPptx,
   logoUrl?: string,
   logoPlacement?: LogoPlacement,
-  advisor?: AdvisorInfo
+  advisor?: AdvisorInfo,
 ): StudyDeckSpec {
   // Determine if multi-loan scenario
   const loans = creditData.loans || [];
   const isMultiLoan = loans.length > 1;
   const paymentPeriods = creditData.paymentPeriods || [];
-  
+
   // Use provided totals or calculate from legacy fields
   const totalCapital = creditData.totalCapital || creditData.capitalEmprunte;
   const maxDureeMois = creditData.maxDureeMois || creditData.dureeMois;
   const smoothingEnabled = creditData.smoothingEnabled || false;
   const smoothingMode = creditData.smoothingMode;
-  
+
   if (DEBUG_PPTX) {
     // eslint-disable-next-line no-console
     console.debug('[PPTX Credit] Building deck with:');
@@ -181,29 +182,36 @@ export function buildCreditStudyDeck(
     // eslint-disable-next-line no-console
     console.debug('  Logo URL:', logoUrl ? logoUrl.substring(0, 50) + '...' : '(none)');
   }
-  
+
   // Format date
   const now = new Date();
-  const dateStr = now.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
-  
+  const dateStr = now.toLocaleDateString('fr-FR', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  });
+
   // Client name for subtitle
   const clientSubtitle = creditData.clientName || 'NOM Prénom';
-  
+
   // Advisor meta
   const advisorMeta = advisor?.name || 'NOM Prénom';
-  
+
   // Total remboursé
   const totalRembourse = totalCapital + creditData.coutTotalCredit;
-  
+
   // Build amortization rows with proper loanIndex for multi-loan support
   // If loans have their own amortizationRows, merge them with loanIndex set
   let allAmortizationRows: CreditAmortizationRow[] = [];
-  
-  if (isMultiLoan && loans.some(loan => loan.amortizationRows && loan.amortizationRows.length > 0)) {
+
+  if (
+    isMultiLoan &&
+    loans.some((loan) => loan.amortizationRows && loan.amortizationRows.length > 0)
+  ) {
     // Multi-loan with per-loan amortization data: merge with loanIndex
-    loans.forEach(loan => {
+    loans.forEach((loan) => {
       if (loan.amortizationRows) {
-        loan.amortizationRows.forEach(row => {
+        loan.amortizationRows.forEach((row) => {
           allAmortizationRows.push({
             ...row,
             loanIndex: loan.index,
@@ -213,37 +221,37 @@ export function buildCreditStudyDeck(
     });
   } else {
     // Fallback to legacy single amortization array
-    allAmortizationRows = creditData.amortizationRows.map(row => ({
+    allAmortizationRows = creditData.amortizationRows.map((row) => ({
       ...row,
       loanIndex: row.loanIndex ?? 1, // Default to loan 1
     }));
   }
-  
+
   // Paginate amortization by YEAR COLUMNS (not rows)
   const { allRows: amortAllRows, yearPages } = paginateByYearColumns(allAmortizationRows);
   const totalAmortizationPages = yearPages.length;
-  
+
   // Build slides array dynamically based on loan count
   const slides: Array<
-    | ChapterSlideSpec 
+    | ChapterSlideSpec
     | CreditSynthesisSlideSpec
     | CreditGlobalSynthesisSlideSpec
     | CreditLoanSynthesisSlideSpec
-    | CreditAnnexeSlideSpec 
+    | CreditAnnexeSlideSpec
     | CreditAmortizationSlideSpec
   > = [];
-  
+
   // Chapter 1: Votre projet de financement
   slides.push({
     type: 'chapter',
     title: 'Votre projet de financement',
-    subtitle: isMultiLoan 
-      ? 'Vue d\'ensemble de votre montage multi-prêts'
-      : 'Vue d\'ensemble de votre crédit immobilier',
-    body: 'Vous souhaitez mesurer l\'efficacité de votre financement et comprendre l\'impact des paramètres clés sur votre mensualité et le coût total.',
+    subtitle: isMultiLoan
+      ? "Vue d'ensemble de votre montage multi-prêts"
+      : "Vue d'ensemble de votre crédit immobilier",
+    body: "Vous souhaitez mesurer l'efficacité de votre financement et comprendre l'impact des paramètres clés sur votre mensualité et le coût total.",
     chapterImageIndex: pickChapterImage('credit', 0),
   });
-  
+
   // Synthesis slides depend on loan count
   if (isMultiLoan) {
     // Multi-loan: Global synthesis first
@@ -261,7 +269,7 @@ export function buildCreditStudyDeck(
       smoothingMode,
       startYM: creditData.startYM, // point 6 — pour labels de dates timeline
     });
-    
+
     // Per-loan synthesis slides
     loans.forEach((loan) => {
       slides.push({
@@ -295,7 +303,7 @@ export function buildCreditStudyDeck(
       creditType: creditData.creditType,
       assuranceMode: creditData.assuranceMode,
     };
-    
+
     slides.push({
       type: 'credit-synthesis',
       capitalEmprunte: loan.capital,
@@ -313,16 +321,16 @@ export function buildCreditStudyDeck(
       assuranceDecesByYear: creditData.assuranceDecesByYear,
     });
   }
-  
+
   // Chapter 2: Annexes
   slides.push({
     type: 'chapter',
     title: 'Annexes',
     subtitle: 'Informations complémentaires',
-    body: 'Retrouvez ci-après le détail des calculs et le tableau d\'amortissement de votre financement.',
+    body: "Retrouvez ci-après le détail des calculs et le tableau d'amortissement de votre financement.",
     chapterImageIndex: pickChapterImage('credit', 1),
   });
-  
+
   // Credit Annexe (prose explanation - multi-loan aware)
   slides.push({
     type: 'credit-annexe',
@@ -332,19 +340,24 @@ export function buildCreditStudyDeck(
     coutTotalAssurance: creditData.coutTotalAssurance,
     coutTotalCredit: creditData.coutTotalCredit,
     totalRembourse,
-    loans: loans.length > 0 ? loans : [{
-      index: 1,
-      capital: creditData.capitalEmprunte,
-      dureeMois: creditData.dureeMois,
-      tauxNominal: creditData.tauxNominal,
-      tauxAssurance: creditData.tauxAssurance,
-      creditType: creditData.creditType,
-      assuranceMode: creditData.assuranceMode,
-      mensualiteHorsAssurance: creditData.mensualiteHorsAssurance,
-      mensualiteTotale: creditData.mensualiteTotale,
-      coutInterets: creditData.coutTotalInterets,
-      coutAssurance: creditData.coutTotalAssurance,
-    }],
+    loans:
+      loans.length > 0
+        ? loans
+        : [
+            {
+              index: 1,
+              capital: creditData.capitalEmprunte,
+              dureeMois: creditData.dureeMois,
+              tauxNominal: creditData.tauxNominal,
+              tauxAssurance: creditData.tauxAssurance,
+              creditType: creditData.creditType,
+              assuranceMode: creditData.assuranceMode,
+              mensualiteHorsAssurance: creditData.mensualiteHorsAssurance,
+              mensualiteTotale: creditData.mensualiteTotale,
+              coutInterets: creditData.coutTotalInterets,
+              coutAssurance: creditData.coutTotalAssurance,
+            },
+          ],
     smoothingEnabled,
     smoothingMode,
     // Legacy fields for backward compatibility
@@ -357,7 +370,7 @@ export function buildCreditStudyDeck(
     creditType: creditData.creditType,
     assuranceMode: creditData.assuranceMode,
   });
-  
+
   // Amortization tables (paginated by YEAR COLUMNS)
   yearPages.forEach((yearsForPage, pageIndex) => {
     slides.push({
@@ -368,7 +381,7 @@ export function buildCreditStudyDeck(
       totalPages: totalAmortizationPages,
     });
   });
-  
+
   // Build complete deck spec
   const spec: StudyDeckSpec = {
     cover: {
@@ -392,18 +405,18 @@ Cette simulation ne constitue pas une offre de prêt. Les conditions réelles d�
 Toute reproduction, représentation, diffusion ou rediffusion, totale ou partielle, sur quelque support ou par quelque procédé que ce soit, ainsi que toute vente, revente, retransmission ou mise à disposition de tiers, est strictement encadrée.`,
     },
   };
-  
+
   if (DEBUG_PPTX) {
     // eslint-disable-next-line no-console
     console.debug('[PPTX Credit] Deck spec built:', {
       coverTitle: spec.cover.title,
       coverSubtitle: spec.cover.subtitle,
       slidesCount: spec.slides.length,
-      slideTypes: spec.slides.map(s => s.type),
+      slideTypes: spec.slides.map((s) => s.type),
       amortizationPages: totalAmortizationPages,
     });
   }
-  
+
   return spec;
 }
 

@@ -77,19 +77,19 @@ function syncRawValues(
   patch: Partial<CreditLoan>,
 ): void {
   if (patch.taux !== undefined) {
-    setRawValues(r => ({
+    setRawValues((r) => ({
       ...r,
       [pretKey]: { ...(r[pretKey] || {}), taux: formatTauxRaw(patch.taux) },
     }));
   }
   if (patch.tauxAssur !== undefined) {
-    setRawValues(r => ({
+    setRawValues((r) => ({
       ...r,
       [pretKey]: { ...(r[pretKey] || {}), tauxAssur: formatTauxRaw(patch.tauxAssur) },
     }));
   }
   if (patch.quotite !== undefined) {
-    setRawValues(r => ({
+    setRawValues((r) => ({
       ...r,
       [pretKey]: { ...(r[pretKey] || {}), quotite: String(patch.quotite) },
     }));
@@ -136,7 +136,9 @@ export default function CreditV2() {
       }
       // Sans sessionStorage : state déjà initialisé via createInitialCreditState(),
       // rawValues reste {} — les inputs taux utilisent leur fallback formatTauxRaw
-    } catch { /* noop */ }
+    } catch {
+      /* noop */
+    }
     setHydrated(true);
   }, [STORE_KEY]);
 
@@ -144,7 +146,9 @@ export default function CreditV2() {
     if (!hydrated) return;
     try {
       sessionStorage.setItem(STORE_KEY, JSON.stringify(buildPersistedState(state)));
-    } catch { /* noop */ }
+    } catch {
+      /* noop */
+    }
   }, [hydrated, state, STORE_KEY]);
 
   // -------------------------------------------------------------------------
@@ -158,7 +162,11 @@ export default function CreditV2() {
       setRawValues(initRawValues(fresh));
       setLocalMode(null); // réactive l'auto-mode (effectiveMode recalculé)
       setActiveTab(0);
-      try { sessionStorage.removeItem(STORE_KEY); } catch { /* noop */ }
+      try {
+        sessionStorage.removeItem(STORE_KEY);
+      } catch {
+        /* noop */
+      }
     });
     return off || (() => {});
   }, [STORE_KEY]);
@@ -167,11 +175,11 @@ export default function CreditV2() {
   // HELPERS DE MUTATION
   // -------------------------------------------------------------------------
   const setGlobal = useCallback((patch: Partial<CreditState>) => {
-    setState(s => ({ ...s, ...patch }));
+    setState((s) => ({ ...s, ...patch }));
   }, []);
 
   const setPret1 = useCallback((patch: Partial<CreditLoan>) => {
-    setState(s => {
+    setState((s) => {
       if (!s.pret1) return s;
       const next = { ...s, pret1: patchPret(s.pret1, patch) };
       // Sync global startYM and assurMode when pret1 changes them
@@ -184,39 +192,61 @@ export default function CreditV2() {
   }, []);
 
   const setPret2 = useCallback((patch: Partial<CreditLoan>) => {
-    setState(s => s.pret2 ? ({ ...s, pret2: patchPret(s.pret2, patch) }) : s);
+    setState((s) => (s.pret2 ? { ...s, pret2: patchPret(s.pret2, patch) } : s));
     syncRawValues(setRawValues, 'pret2', patch);
   }, []);
 
   const setPret3 = useCallback((patch: Partial<CreditLoan>) => {
-    setState(s => s.pret3 ? ({ ...s, pret3: patchPret(s.pret3, patch) }) : s);
+    setState((s) => (s.pret3 ? { ...s, pret3: patchPret(s.pret3, patch) } : s));
     syncRawValues(setRawValues, 'pret3', patch);
   }, []);
 
   const addPret2 = useCallback(() => {
     if (state.pret2) return;
-    const p = createNewPret({ startYM: state.startYM, type: state.creditType, assurMode: state.assurMode });
-    setState(s => ({ ...s, pret2: p }));
-    setRawValues(r => ({ ...r, pret2: { taux: formatTauxRaw(p.taux), tauxAssur: formatTauxRaw(p.tauxAssur), quotite: String(p.quotite) } }));
+    const p = createNewPret({
+      startYM: state.startYM,
+      type: state.creditType,
+      assurMode: state.assurMode,
+    });
+    setState((s) => ({ ...s, pret2: p }));
+    setRawValues((r) => ({
+      ...r,
+      pret2: {
+        taux: formatTauxRaw(p.taux),
+        tauxAssur: formatTauxRaw(p.tauxAssur),
+        quotite: String(p.quotite),
+      },
+    }));
     setActiveTab(1);
   }, [state.startYM, state.creditType, state.assurMode, state.pret2]);
 
   const addPret3 = useCallback(() => {
     if (state.pret3 || !state.pret2) return;
-    const p = createNewPret({ startYM: state.startYM, type: state.creditType, assurMode: state.assurMode });
-    setState(s => ({ ...s, pret3: p }));
-    setRawValues(r => ({ ...r, pret3: { taux: formatTauxRaw(p.taux), tauxAssur: formatTauxRaw(p.tauxAssur), quotite: String(p.quotite) } }));
+    const p = createNewPret({
+      startYM: state.startYM,
+      type: state.creditType,
+      assurMode: state.assurMode,
+    });
+    setState((s) => ({ ...s, pret3: p }));
+    setRawValues((r) => ({
+      ...r,
+      pret3: {
+        taux: formatTauxRaw(p.taux),
+        tauxAssur: formatTauxRaw(p.tauxAssur),
+        quotite: String(p.quotite),
+      },
+    }));
     setActiveTab(2);
   }, [state.startYM, state.creditType, state.assurMode, state.pret2, state.pret3]);
 
   const removePret2 = useCallback(() => {
-    setState(s => ({ ...s, pret2: null, pret3: null, lisserPret1: false }));
+    setState((s) => ({ ...s, pret2: null, pret3: null, lisserPret1: false }));
     setRawValues(({ pret2: _a, pret3: _b, ...rest }) => ({ ...rest }));
     if (activeTab >= 1) setActiveTab(0);
   }, [activeTab]);
 
   const removePret3 = useCallback(() => {
-    setState(s => ({ ...s, pret3: null }));
+    setState((s) => ({ ...s, pret3: null }));
     setRawValues(({ pret3: _a, ...rest }) => ({ ...rest }));
     if (activeTab === 2) setActiveTab(1);
   }, [activeTab]);
@@ -224,9 +254,11 @@ export default function CreditV2() {
   // -------------------------------------------------------------------------
   // MODE EFFECTIF — simplifié tant qu'aucun capital saisi, expert sinon
   // -------------------------------------------------------------------------
-  const hasCapital = ((state.pret1?.capital ?? 0) + (state.pret2?.capital ?? 0) + (state.pret3?.capital ?? 0)) > 0;
+  const hasCapital =
+    (state.pret1?.capital ?? 0) + (state.pret2?.capital ?? 0) + (state.pret3?.capital ?? 0) > 0;
   const resolvedMode = resolveEffectiveUserMode(mode, localMode);
-  const effectiveMode = localMode == null && resolvedMode === 'expert' && !hasCapital ? 'simplifie' : resolvedMode;
+  const effectiveMode =
+    localMode == null && resolvedMode === 'expert' && !hasCapital ? 'simplifie' : resolvedMode;
   const isExpert = effectiveMode === 'expert';
   const toggleMode = () => setLocalMode(isExpert ? 'simplifie' : 'expert');
 
@@ -238,22 +270,24 @@ export default function CreditV2() {
   useEffect(() => {
     if (!hydrated || modeLoading || isExpert) return;
     if (state.pret2 || state.pret3) {
-      setState(s => ({ ...s, pret2: null, pret3: null, lisserPret1: false }));
+      setState((s) => ({ ...s, pret2: null, pret3: null, lisserPret1: false }));
       setRawValues(({ pret2: _a, pret3: _b, ...rest }) => ({ ...rest }));
       if (activeTab >= 1) setActiveTab(0);
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [hydrated, modeLoading, isExpert]);
 
   // -------------------------------------------------------------------------
   // CALCULS (state dérivé pour le mode simplifié : assurance = 0, pret2/3 ignorés)
   // -------------------------------------------------------------------------
-  const stateForCalc: CreditState = isExpert ? state : {
-    ...state,
-    pret1: state.pret1 ? { ...state.pret1, tauxAssur: 0 } : null,
-    pret2: null, /* point 5 — jamais de pret2/3 en simplifié */
-    pret3: null,
-  };
+  const stateForCalc: CreditState = isExpert
+    ? state
+    : {
+        ...state,
+        pret1: state.pret1 ? { ...state.pret1, tauxAssur: 0 } : null,
+        pret2: null /* point 5 — jamais de pret2/3 en simplifié */,
+        pret3: null,
+      };
   const calc = useCreditCalculations(stateForCalc, stateForCalc.startYM);
 
   // -------------------------------------------------------------------------
@@ -292,15 +326,23 @@ export default function CreditV2() {
     if (!state.lisserPret1 || !calc.hasPretsAdditionnels) return 0;
     if (!calc.mensuBasePret1 || !calc.dureeBaseMois) return 0;
     const lissedInterets = (calc.pret1Rows || [])
-      .filter(r => r)
+      .filter((r) => r)
       .reduce((s, r) => s + (r.interet || 0), 0);
     const baseInterets = calc.mensuBasePret1 * calc.dureeBaseMois - (state.pret1?.capital || 0);
     return Math.round(lissedInterets - baseInterets);
-  }, [calc.pret1Rows, calc.mensuBasePret1, calc.dureeBaseMois, state.pret1?.capital, state.lisserPret1, calc.hasPretsAdditionnels]);
+  }, [
+    calc.pret1Rows,
+    calc.mensuBasePret1,
+    calc.dureeBaseMois,
+    state.pret1?.capital,
+    state.lisserPret1,
+    calc.hasPretsAdditionnels,
+  ]);
 
-  const activeSynthese = (isExpert && calc.hasPretsAdditionnels)
-    ? (perLoanSyntheses[activeTab] || calc.synthese)
-    : calc.synthese;
+  const activeSynthese =
+    isExpert && calc.hasPretsAdditionnels
+      ? perLoanSyntheses[activeTab] || calc.synthese
+      : calc.synthese;
 
   // -------------------------------------------------------------------------
   // EXPORTS
@@ -333,12 +375,12 @@ export default function CreditV2() {
         titleTestId="credit-title"
         statusTestId="credit-loading"
         loading
-        loadingContent={(
+        loadingContent={
           <div className="cv-skeleton-grid">
             <div className="cv-skeleton cv-skeleton--card" />
             <div className="cv-skeleton cv-skeleton--card-sm" />
           </div>
-        )}
+        }
       />
     );
   }
@@ -361,13 +403,13 @@ export default function CreditV2() {
       pageTestId="credit-page"
       titleTestId="credit-title"
       mobileSideFirst
-      actions={(
+      actions={
         <>
           <ModeToggle value={isExpert} onChange={toggleMode} />
           <ExportMenu options={exportOptions} loading={exportLoading} />
         </>
-      )}
-      controls={(
+      }
+      controls={
         <CreditControlsRow
           activeTab={activeTab}
           onChangeTab={setActiveTab}
@@ -381,7 +423,7 @@ export default function CreditV2() {
           viewMode={state.viewMode}
           onChangeViewMode={(viewMode) => setGlobal({ viewMode })}
         />
-      )}
+      }
     >
       <SimPageShell.Main>
         <CreditLoanInputPanel

@@ -105,7 +105,7 @@ export const DEFAULT_LIQUIDATION: PlacementLiquidationState = {
 };
 
 // Fallback dégradé : settings DMTG non chargés.
-export const DEFAULT_DMTG_RATE = 0.20;
+export const DEFAULT_DMTG_RATE = 0.2;
 
 export const DEFAULT_TRANSMISSION: PlacementTransmissionState = {
   ageAuDeces: 90,
@@ -134,7 +134,9 @@ export function normalizeProduct(
 
 export function sanitizeStep(step: unknown): PlacementStep {
   const allowed = new Set<PlacementStep>(['epargne', 'liquidation', 'transmission', 'synthese']);
-  return typeof step === 'string' && allowed.has(step as PlacementStep) ? (step as PlacementStep) : 'epargne';
+  return typeof step === 'string' && allowed.has(step as PlacementStep)
+    ? (step as PlacementStep)
+    : 'epargne';
 }
 
 export function normalizeLoadedState(
@@ -176,24 +178,30 @@ export function buildPlacementStateForMode(
     const vc = product.versementConfig;
     return {
       ...product,
-      ...(!isExpert ? {
-        perBancaire: false,
-        optionBaremeIR: false,
-        liquidation: product.liquidation
-          ? { ...product.liquidation, optionBaremeIR: false }
-          : product.liquidation,
-      } : {}),
+      ...(!isExpert
+        ? {
+            perBancaire: false,
+            optionBaremeIR: false,
+            liquidation: product.liquidation
+              ? { ...product.liquidation, optionBaremeIR: false }
+              : product.liquidation,
+          }
+        : {}),
       versementConfig: {
         ...vc,
         initial: {
           ...vc.initial,
           ...(isSCPI ? { fraisEntree: 0 } : {}),
-          ...(!isExpert ? { pctCapitalisation: isSCPI ? 0 : 100, pctDistribution: isSCPI ? 100 : 0 } : {}),
+          ...(!isExpert
+            ? { pctCapitalisation: isSCPI ? 0 : 100, pctDistribution: isSCPI ? 100 : 0 }
+            : {}),
         },
         annuel: {
           ...vc.annuel,
           ...(isSCPI ? { fraisEntree: 0 } : {}),
-          ...(!isExpert ? { pctCapitalisation: isSCPI ? 0 : 100, pctDistribution: isSCPI ? 100 : 0 } : {}),
+          ...(!isExpert
+            ? { pctCapitalisation: isSCPI ? 0 : 100, pctDistribution: isSCPI ? 100 : 0 }
+            : {}),
         },
         ponctuels: !isExpert
           ? vc.ponctuels.map((p) => ({
@@ -202,11 +210,13 @@ export function buildPlacementStateForMode(
               pctDistribution: isSCPI ? 100 : 0,
             }))
           : vc.ponctuels,
-        distribution: isSCPI ? {
-          ...vc.distribution,
-          rendementAnnuel: 0,
-          ...(!isExpert ? { delaiJouissance: 0, strategie: 'apprehender' } : {}),
-        } : vc.distribution,
+        distribution: isSCPI
+          ? {
+              ...vc.distribution,
+              rendementAnnuel: 0,
+              ...(!isExpert ? { delaiJouissance: 0, strategie: 'apprehender' } : {}),
+            }
+          : vc.distribution,
         ...(!isExpert ? { deductionInitiale: { mode: 'tmi' as const, montant: 0 } } : {}),
       },
     };
@@ -220,7 +230,10 @@ export function buildPlacementStateForMode(
   return {
     ...state,
     liquidation: { ...state.liquidation, mode: 'epuiser' },
-    transmission: { ...state.transmission, dmtgTaux: state.transmission.dmtgTaux ?? DEFAULT_DMTG_RATE },
+    transmission: {
+      ...state.transmission,
+      dmtgTaux: state.transmission.dmtgTaux ?? DEFAULT_DMTG_RATE,
+    },
     products,
   };
 }
@@ -272,10 +285,7 @@ export function buildCustomDmtgOption(value: number): DmtgOption {
 export const DEFAULT_STATE: PlacementSimulatorState = {
   step: 'epargne',
   client: DEFAULT_CLIENT,
-  products: [
-    normalizeProduct({ envelope: 'AV' }),
-    normalizeProduct({ envelope: 'PER' }),
-  ],
+  products: [normalizeProduct({ envelope: 'AV' }), normalizeProduct({ envelope: 'PER' })],
   liquidation: DEFAULT_LIQUIDATION,
   transmission: DEFAULT_TRANSMISSION,
   compareEnabled: false,

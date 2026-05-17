@@ -21,7 +21,9 @@ export interface PrefonRenteOutput {
 function pickAgeCoefficient(table: Record<number, number>, age: number): number {
   const roundedAge = Math.floor(age);
   if (table[roundedAge] !== undefined) return table[roundedAge];
-  const ages = Object.keys(table).map(Number).sort((left, right) => left - right);
+  const ages = Object.keys(table)
+    .map(Number)
+    .sort((left, right) => left - right);
   const firstAge = ages[0];
   const lastAge = ages[ages.length - 1];
   if (roundedAge <= firstAge) return table[firstAge];
@@ -53,25 +55,23 @@ function pickPrefonReversionCoefficient(input: PrefonRenteInput): number {
 }
 
 export function computePrefonRente(input: PrefonRenteInput): PrefonRenteOutput {
-  const liquidationCoef = pickAgeCoefficient(input.params.coefLiquidationByAge, input.liquidationAge);
-  const pointsFromCapital = input.params.valeurAcquisition > 0
-    ? input.capitalNet / input.params.valeurAcquisition
-    : 0;
+  const liquidationCoef = pickAgeCoefficient(
+    input.params.coefLiquidationByAge,
+    input.liquidationAge,
+  );
+  const pointsFromCapital =
+    input.params.valeurAcquisition > 0 ? input.capitalNet / input.params.valeurAcquisition : 0;
   const pointsRetenus = input.points > 0 ? input.points : pointsFromCapital;
   const reversionCoef = pickPrefonReversionCoefficient(input);
-  const baseServiceValue = input.serviceValue && input.serviceValue > 0
-    ? input.serviceValue
-    : input.params.valeurService;
+  const baseServiceValue =
+    input.serviceValue && input.serviceValue > 0 ? input.serviceValue : input.params.valeurService;
   const serviceRevaluationYears = Math.max(0, input.liquidationAge - input.acquisitionAge);
-  const serviceRevaluationRate = input.serviceRevaluationRate && input.serviceRevaluationRate > 0
-    ? input.serviceRevaluationRate
-    : 0;
-  const valeurService = baseServiceValue * ((1 + serviceRevaluationRate) ** serviceRevaluationYears);
-  const renteAnnuelleBrute =
-    pointsRetenus
-    * valeurService
-    * liquidationCoef
-    * reversionCoef;
+  const serviceRevaluationRate =
+    input.serviceRevaluationRate && input.serviceRevaluationRate > 0
+      ? input.serviceRevaluationRate
+      : 0;
+  const valeurService = baseServiceValue * (1 + serviceRevaluationRate) ** serviceRevaluationYears;
+  const renteAnnuelleBrute = pointsRetenus * valeurService * liquidationCoef * reversionCoef;
 
   return {
     pointsRetenus,

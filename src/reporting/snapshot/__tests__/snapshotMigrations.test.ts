@@ -95,34 +95,38 @@ const TRESO_INPUTS_V5 = {
     annualStructureCosts: 0,
     incomeStatement: { annualRevenue: 0, annualStructureCosts: 0, workingCapitalRequirement: 0 },
     reducedCorporateTaxEligible: true,
-    associates: [{
-      id: 'associe-1',
-      label: 'Associé 1',
-      kind: 'pp',
-      profile: {
-        currentAge: 50,
-        retirementAge: 65,
-        annualIncomeNeed: 0,
-        projectionStartYear: 2026,
+    associates: [
+      {
+        id: 'associe-1',
+        label: 'Associé 1',
+        kind: 'pp',
+        profile: {
+          currentAge: 50,
+          retirementAge: 65,
+          annualIncomeNeed: 0,
+          projectionStartYear: 2026,
+        },
+        ownershipLots: [{ right: 'pleine_propriete', capitalPct: 100, economicRightsPct: 100 }],
+        roles: ['associe_sans_statut'],
+        cca: {
+          currentBalance: 10000,
+          exceptionalContributions: [],
+          annualContribution: { amount: 5000, startYear: 2026, endYear: 2028 },
+          remunerationRate: 0,
+        },
+        revenuePhases: [
+          {
+            id: 'phase-1',
+            startYear: 2026,
+            source: 'none',
+            loadedAnnualCost: 0,
+            socialChargeRate: 0,
+            annualNetIncomeNeed: 0,
+            useCcaForCompletion: true,
+          },
+        ],
       },
-      ownershipLots: [{ right: 'pleine_propriete', capitalPct: 100, economicRightsPct: 100 }],
-      roles: ['associe_sans_statut'],
-      cca: {
-        currentBalance: 10000,
-        exceptionalContributions: [],
-        annualContribution: { amount: 5000, startYear: 2026, endYear: 2028 },
-        remunerationRate: 0,
-      },
-      revenuePhases: [{
-        id: 'phase-1',
-        startYear: 2026,
-        source: 'none',
-        loadedAnnualCost: 0,
-        socialChargeRate: 0,
-        annualNetIncomeNeed: 0,
-        useCcaForCompletion: true,
-      }],
-    }],
+    ],
     loans: [],
     subsidiaries: [],
   },
@@ -256,22 +260,20 @@ describe('snapshotMigrations', () => {
   it('rejects future version with clear message', () => {
     const futureSnapshot = { ...V5_SNAPSHOT, version: 99 };
     expect(() => migrateSnapshot(futureSnapshot as Record<string, unknown>)).toThrow(
-      /version plus récente/
+      /version plus récente/,
     );
   });
 
   it('rejects missing version', () => {
     const noVersion = { app: 'SER1', kind: 'snapshot', payload: {} };
     expect(() => migrateSnapshot(noVersion as Record<string, unknown>)).toThrow(
-      /invalide ou manquante/
+      /invalide ou manquante/,
     );
   });
 
   it('rejects version 0', () => {
     const v0 = { ...V1_SNAPSHOT, version: 0 };
-    expect(() => migrateSnapshot(v0 as Record<string, unknown>)).toThrow(
-      /invalide ou manquante/
-    );
+    expect(() => migrateSnapshot(v0 as Record<string, unknown>)).toThrow(/invalide ou manquante/);
   });
 });
 

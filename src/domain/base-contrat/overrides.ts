@@ -27,17 +27,12 @@ export type OverrideMap = Readonly<Record<string, BaseContratOverride>>;
 
 export type BaseContratOverrideInput = Pick<
   BaseContratOverride,
-  'product_id'
-  | 'closed_date'
-  | 'note_admin'
-  | 'review_status'
-  | 'review_reason'
-  | 'next_review_at'
+  'product_id' | 'closed_date' | 'note_admin' | 'review_status' | 'review_reason' | 'next_review_at'
 >;
 
 export function normalizeBaseContratReviewStatus(value: unknown): BaseContratReviewStatus {
   return typeof value === 'string' && value in BASE_CONTRAT_REVIEW_STATUS_LABELS
-    ? value as BaseContratReviewStatus
+    ? (value as BaseContratReviewStatus)
     : 'ok';
 }
 

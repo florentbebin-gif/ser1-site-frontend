@@ -42,7 +42,7 @@ test.describe('Credit Simulator', () => {
     await expect(page.getByTestId('credit-cout-total-value')).toContainText('€');
   });
 
-  test('le bouton export est présent et le menu s\'ouvre', async ({ page }) => {
+  test("le bouton export est présent et le menu s'ouvre", async ({ page }) => {
     await page.goto(ROUTES.credit);
     await page.waitForLoadState('networkidle');
 
@@ -54,15 +54,15 @@ test.describe('Credit Simulator', () => {
   test('téléchargement export Excel', async ({ page }) => {
     await page.goto(ROUTES.credit);
     await page.waitForLoadState('networkidle');
-    
+
     // Fill capital to have results
     await page.getByTestId('credit-capital-input').fill('200000');
-    
+
     // Trigger download
     await page.getByTestId('export-menu-button').click();
     const downloadPromise = page.waitForEvent('download', { timeout: 20_000 });
     await page.getByTestId('export-option-excel').click();
-    
+
     const download = await downloadPromise;
     expect(download.suggestedFilename()).toMatch(/\.xlsx$/);
   });
@@ -78,7 +78,7 @@ test.describe('Credit Simulator', () => {
 
     // Verify app stability (summary card still there or re-rendered)
     await expect(page.getByTestId('credit-summary-card')).toBeVisible();
-    
+
     // Verify total cost is not NaN or crashing
     await expect(page.getByTestId('credit-cout-total-value')).toBeVisible();
   });

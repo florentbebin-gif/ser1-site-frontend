@@ -7,7 +7,7 @@ const fiscalParams = extractFiscalParams({}, {});
 function makeClient(overrides: Record<string, unknown> = {}) {
   return {
     ageActuel: 45,
-    tmiEpargne: 0.30,
+    tmiEpargne: 0.3,
     tmiRetraite: 0.11,
     situation: 'single',
     ...overrides,
@@ -84,14 +84,16 @@ describe('simulateComplete effortTotal', () => {
           },
         }),
       },
-      makeClient({ tmiEpargne: 0.30 }),
+      makeClient({ tmiEpargne: 0.3 }),
       makeLiquidationParams(),
       makeTransmissionParams(),
       fiscalParams,
     );
 
     expect(result.epargne.cumulEconomieIR).toBe(30000);
-    expect(result.totaux.effortTotal).toBe(result.epargne.cumulVersements - result.epargne.cumulEconomieIR);
+    expect(result.totaux.effortTotal).toBe(
+      result.epargne.cumulVersements - result.epargne.cumulEconomieIR,
+    );
     expect(result.totaux.effortTotal).toBe(70000);
   });
 
@@ -130,9 +132,9 @@ describe('simulateComplete effortTotal', () => {
 
     expect(result.epargne.cumulRevenusNetsPercus).toBeGreaterThan(0);
     expect(result.totaux.effortTotal).toBe(
-      result.epargne.cumulVersements
-      - result.epargne.cumulEconomieIR
-      + result.epargne.cumulRevenusNetsPercus,
+      result.epargne.cumulVersements -
+        result.epargne.cumulEconomieIR +
+        result.epargne.cumulRevenusNetsPercus,
     );
     expect(result.totaux.effortTotal).toBeGreaterThan(result.epargne.cumulVersements);
     expect(result.totaux.effortTotal).toBeGreaterThan(result.totaux.effortReel);

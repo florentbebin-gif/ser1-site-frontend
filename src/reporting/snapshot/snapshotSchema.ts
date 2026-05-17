@@ -37,11 +37,14 @@ const FiscalSettingEntrySchema = z.object({
   hash: z.string().nullable().optional(),
 });
 
-export const FiscalIdentitySchema = z.object({
-  tax: FiscalSettingEntrySchema.optional(),
-  ps: FiscalSettingEntrySchema.optional(),
-  fiscality: FiscalSettingEntrySchema.optional(),
-}).nullable().optional();
+export const FiscalIdentitySchema = z
+  .object({
+    tax: FiscalSettingEntrySchema.optional(),
+    ps: FiscalSettingEntrySchema.optional(),
+    fiscality: FiscalSettingEntrySchema.optional(),
+  })
+  .nullable()
+  .optional();
 
 // ---------------------------------------------------------------------------
 // V4 Schema (current) — canonical structure

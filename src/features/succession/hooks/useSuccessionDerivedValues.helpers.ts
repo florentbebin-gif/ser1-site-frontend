@@ -58,13 +58,13 @@ export function buildSuccessionSituationFlags(
     civilContext.dateNaissanceEpoux1,
     civilContext.dateNaissanceEpoux2,
   );
-  const shouldRenderSuccessionComputationSections = hasComputableFiliation
-    && hasRequiredBirthDatesForCurrentSituation;
-  const isCommunityRegime = isMarried && (
-    civilContext.regimeMatrimonial === 'communaute_legale'
-    || civilContext.regimeMatrimonial === 'communaute_universelle'
-    || civilContext.regimeMatrimonial === 'communaute_meubles_acquets'
-  );
+  const shouldRenderSuccessionComputationSections =
+    hasComputableFiliation && hasRequiredBirthDatesForCurrentSituation;
+  const isCommunityRegime =
+    isMarried &&
+    (civilContext.regimeMatrimonial === 'communaute_legale' ||
+      civilContext.regimeMatrimonial === 'communaute_universelle' ||
+      civilContext.regimeMatrimonial === 'communaute_meubles_acquets');
   const isPacsIndivision = isPacsed && civilContext.pacsConvention === 'indivision';
 
   return {
@@ -104,10 +104,13 @@ export function buildSuccessionPrevoyanceRegimeByEntry(
         agePivotPrimes,
       );
 
-      return [entry.id, {
-        regimeLabel: regimeInfo.regimeLabel,
-        warning: regimeInfo.warning,
-      }];
+      return [
+        entry.id,
+        {
+          regimeLabel: regimeInfo.regimeLabel,
+          warning: regimeInfo.warning,
+        },
+      ];
     }),
   );
 }

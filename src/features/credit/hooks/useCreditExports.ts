@@ -114,7 +114,8 @@ export function useCreditExports({
   const exportExcel = useCallback(async () => {
     setExportLoading(true);
     try {
-      const { buildXlsxBlob, downloadXlsx, validateXlsxBlob } = await import('../../../utils/export/xlsxBuilder');
+      const { buildXlsxBlob, downloadXlsx, validateXlsxBlob } =
+        await import('../../../utils/export/xlsxBuilder');
 
       const cell = (value: string | number, style: string) => ({ v: value, style });
 
@@ -145,32 +146,105 @@ export function useCreditExports({
       if (!p1) return;
 
       rowsParams.push([cell('Prêt 1', 'sSection'), cell('', 'sSection')]);
-      rowsParams.push([cell('Type de crédit (Prêt 1)', 'sText'), cell(p1.type === 'amortissable' ? 'Amortissable' : 'In fine', 'sText')]);
-      rowsParams.push([cell('Date de souscription (Prêt 1)', 'sText'), cell(startYM ? labelMonthFR(startYM) : '', 'sText')]);
+      rowsParams.push([
+        cell('Type de crédit (Prêt 1)', 'sText'),
+        cell(p1.type === 'amortissable' ? 'Amortissable' : 'In fine', 'sText'),
+      ]);
+      rowsParams.push([
+        cell('Date de souscription (Prêt 1)', 'sText'),
+        cell(startYM ? labelMonthFR(startYM) : '', 'sText'),
+      ]);
       rowsParams.push([cell('Durée (mois) - Prêt 1', 'sText'), cell(p1.duree, 'sCenter')]);
-      rowsParams.push([cell('Montant emprunté (Prêt 1)', 'sText'), cell(toNum(p1.capital), 'sMoney')]);
-      rowsParams.push([cell('Taux annuel (crédit) - Prêt 1', 'sText'), cell((Number(p1.taux) || 0) / 100, 'sPercent')]);
-      rowsParams.push([cell('Mensualité (hors assurance) - Prêt 1', 'sText'), cell(toNum(calc.mensuBasePret1), 'sMoney')]);
-      rowsParams.push([cell('Mensualité totale estimée', 'sText'), cell(Math.round(calc.synthese.mensualiteTotaleM1 + calc.synthese.primeAssMensuelle), 'sMoney')]);
-      rowsParams.push([cell("Mode de l'assurance (Prêt 1)", 'sText'), cell((p1.assurMode || state.assurMode) === 'CI' ? 'Capital initial' : 'Capital restant dû', 'sText')]);
-      rowsParams.push([cell('Taux annuel (assurance) - Prêt 1', 'sText'), cell((Number(p1.tauxAssur) || 0) / 100, 'sPercent')]);
-      rowsParams.push([cell('Quotité assurée - Prêt 1', 'sText'), cell(p1.quotite / 100, 'sPercent')]);
-      rowsParams.push([cell('Vue', 'sText'), cell(isAnnual ? 'Vue annuelle' : 'Vue mensuelle', 'sText')]);
-      rowsParams.push([cell('Lissage prêt 1', 'sText'), cell(state.lisserPret1 ? (state.lissageMode === 'mensu' ? 'Mensualité constante' : 'Durée constante') : 'Aucun', 'sText')]);
+      rowsParams.push([
+        cell('Montant emprunté (Prêt 1)', 'sText'),
+        cell(toNum(p1.capital), 'sMoney'),
+      ]);
+      rowsParams.push([
+        cell('Taux annuel (crédit) - Prêt 1', 'sText'),
+        cell((Number(p1.taux) || 0) / 100, 'sPercent'),
+      ]);
+      rowsParams.push([
+        cell('Mensualité (hors assurance) - Prêt 1', 'sText'),
+        cell(toNum(calc.mensuBasePret1), 'sMoney'),
+      ]);
+      rowsParams.push([
+        cell('Mensualité totale estimée', 'sText'),
+        cell(
+          Math.round(calc.synthese.mensualiteTotaleM1 + calc.synthese.primeAssMensuelle),
+          'sMoney',
+        ),
+      ]);
+      rowsParams.push([
+        cell("Mode de l'assurance (Prêt 1)", 'sText'),
+        cell(
+          (p1.assurMode || state.assurMode) === 'CI' ? 'Capital initial' : 'Capital restant dû',
+          'sText',
+        ),
+      ]);
+      rowsParams.push([
+        cell('Taux annuel (assurance) - Prêt 1', 'sText'),
+        cell((Number(p1.tauxAssur) || 0) / 100, 'sPercent'),
+      ]);
+      rowsParams.push([
+        cell('Quotité assurée - Prêt 1', 'sText'),
+        cell(p1.quotite / 100, 'sPercent'),
+      ]);
+      rowsParams.push([
+        cell('Vue', 'sText'),
+        cell(isAnnual ? 'Vue annuelle' : 'Vue mensuelle', 'sText'),
+      ]);
+      rowsParams.push([
+        cell('Lissage prêt 1', 'sText'),
+        cell(
+          state.lisserPret1
+            ? state.lissageMode === 'mensu'
+              ? 'Mensualité constante'
+              : 'Durée constante'
+            : 'Aucun',
+          'sText',
+        ),
+      ]);
 
       [state.pret2, state.pret3].forEach((loan, idx) => {
         if (!loan) return;
         const loanIndex = idx + 2;
         const loanAssurMode = loan.assurMode || state.assurMode || 'CRD';
         rowsParams.push([cell(`Prêt ${loanIndex}`, 'sSection'), cell('', 'sSection')]);
-        rowsParams.push([cell(`Prêt ${loanIndex} - Type de crédit`, 'sText'), cell((loan.type || state.creditType) === 'amortissable' ? 'Amortissable' : 'In fine', 'sText')]);
-        rowsParams.push([cell(`Prêt ${loanIndex} - Montant emprunté`, 'sText'), cell(toNum(loan.capital), 'sMoney')]);
-        rowsParams.push([cell(`Prêt ${loanIndex} - Durée (mois)`, 'sText'), cell(toNum(loan.duree), 'sCenter')]);
-        rowsParams.push([cell(`Prêt ${loanIndex} - Taux annuel (crédit)`, 'sText'), cell((Number(loan.taux || 0) || 0) / 100, 'sPercent')]);
-        rowsParams.push([cell(`Prêt ${loanIndex} - Taux annuel (assurance)`, 'sText'), cell((Number(loan.tauxAssur || 0) || 0) / 100, 'sPercent')]);
-        rowsParams.push([cell(`Prêt ${loanIndex} - Mode assurance`, 'sText'), cell(loanAssurMode === 'CI' ? 'Capital initial' : 'Capital restant dû', 'sText')]);
-        rowsParams.push([cell(`Prêt ${loanIndex} - Quotité assurée`, 'sText'), cell((loan.quotite ?? 100) / 100, 'sPercent')]);
-        rowsParams.push([cell(`Prêt ${loanIndex} - Date de souscription`, 'sText'), cell(loan.startYM ? labelMonthFR(loan.startYM) : '', 'sText')]);
+        rowsParams.push([
+          cell(`Prêt ${loanIndex} - Type de crédit`, 'sText'),
+          cell(
+            (loan.type || state.creditType) === 'amortissable' ? 'Amortissable' : 'In fine',
+            'sText',
+          ),
+        ]);
+        rowsParams.push([
+          cell(`Prêt ${loanIndex} - Montant emprunté`, 'sText'),
+          cell(toNum(loan.capital), 'sMoney'),
+        ]);
+        rowsParams.push([
+          cell(`Prêt ${loanIndex} - Durée (mois)`, 'sText'),
+          cell(toNum(loan.duree), 'sCenter'),
+        ]);
+        rowsParams.push([
+          cell(`Prêt ${loanIndex} - Taux annuel (crédit)`, 'sText'),
+          cell((Number(loan.taux || 0) || 0) / 100, 'sPercent'),
+        ]);
+        rowsParams.push([
+          cell(`Prêt ${loanIndex} - Taux annuel (assurance)`, 'sText'),
+          cell((Number(loan.tauxAssur || 0) || 0) / 100, 'sPercent'),
+        ]);
+        rowsParams.push([
+          cell(`Prêt ${loanIndex} - Mode assurance`, 'sText'),
+          cell(loanAssurMode === 'CI' ? 'Capital initial' : 'Capital restant dû', 'sText'),
+        ]);
+        rowsParams.push([
+          cell(`Prêt ${loanIndex} - Quotité assurée`, 'sText'),
+          cell((loan.quotite ?? 100) / 100, 'sPercent'),
+        ]);
+        rowsParams.push([
+          cell(`Prêt ${loanIndex} - Date de souscription`, 'sText'),
+          cell(loan.startYM ? labelMonthFR(loan.startYM) : '', 'sText'),
+        ]);
       });
 
       const tableDisplay = isAnnual
@@ -188,33 +262,63 @@ export function useCreditExports({
         cell(Math.round(line.assuranceDeces ?? 0), 'sMoney'),
       ]);
 
-      const mapRows = (rows: CreditScheduleRow[]) => (isAnnual
-        ? aggregateToYearsFromRows(rows, startYM)
-        : attachMonthLabels(rows, startYM)
-      ).map((line) => [
-        cell(line.periode, 'sCenter'),
-        cell(Math.round(line.interet ?? 0), 'sMoney'),
-        cell(Math.round(line.assurance ?? 0), 'sMoney'),
-        cell(Math.round(line.amort ?? 0), 'sMoney'),
-        cell(Math.round(line.mensu ?? 0), 'sMoney'),
-        cell(Math.round(line.mensuTotal ?? 0), 'sMoney'),
-        cell(Math.round(line.crd ?? 0), 'sMoney'),
-        cell(Math.round(line.assuranceDeces ?? 0), 'sMoney'),
-      ]);
+      const mapRows = (rows: CreditScheduleRow[]) =>
+        (isAnnual ? aggregateToYearsFromRows(rows, startYM) : attachMonthLabels(rows, startYM)).map(
+          (line) => [
+            cell(line.periode, 'sCenter'),
+            cell(Math.round(line.interet ?? 0), 'sMoney'),
+            cell(Math.round(line.assurance ?? 0), 'sMoney'),
+            cell(Math.round(line.amort ?? 0), 'sMoney'),
+            cell(Math.round(line.mensu ?? 0), 'sMoney'),
+            cell(Math.round(line.mensuTotal ?? 0), 'sMoney'),
+            cell(Math.round(line.crd ?? 0), 'sMoney'),
+            cell(Math.round(line.assuranceDeces ?? 0), 'sMoney'),
+          ],
+        );
 
       const pret1Arr = mapRows(calc.pret1Rows);
-      const pret2Arr = calc.pret2Rows.length > 0 ? mapRows(calc.pret2Rows.filter(isDefinedRow)) : [];
-      const pret3Arr = calc.pret3Rows.length > 0 ? mapRows(calc.pret3Rows.filter(isDefinedRow)) : [];
+      const pret2Arr =
+        calc.pret2Rows.length > 0 ? mapRows(calc.pret2Rows.filter(isDefinedRow)) : [];
+      const pret3Arr =
+        calc.pret3Rows.length > 0 ? mapRows(calc.pret3Rows.filter(isDefinedRow)) : [];
 
       const sheets = [
         { name: 'Paramètres', rows: [headerParams, ...rowsParams], columnWidths: [36, 22] },
-        { name: 'Résumé', rows: transpose([headerResume, ...resumeRows]), columnWidths: [18, 14, 14, 14, 14, 14, 14, 14] },
-        { name: 'Prêt 1', rows: transpose([headerPret, ...pret1Arr]), columnWidths: [18, 14, 14, 14, 14, 14, 14, 14] },
-        ...(pret2Arr.length > 0 ? [{ name: 'Prêt 2', rows: transpose([headerPret, ...pret2Arr]), columnWidths: [18, 14, 14, 14, 14, 14, 14, 14] }] : []),
-        ...(pret3Arr.length > 0 ? [{ name: 'Prêt 3', rows: transpose([headerPret, ...pret3Arr]), columnWidths: [18, 14, 14, 14, 14, 14, 14, 14] }] : []),
+        {
+          name: 'Résumé',
+          rows: transpose([headerResume, ...resumeRows]),
+          columnWidths: [18, 14, 14, 14, 14, 14, 14, 14],
+        },
+        {
+          name: 'Prêt 1',
+          rows: transpose([headerPret, ...pret1Arr]),
+          columnWidths: [18, 14, 14, 14, 14, 14, 14, 14],
+        },
+        ...(pret2Arr.length > 0
+          ? [
+              {
+                name: 'Prêt 2',
+                rows: transpose([headerPret, ...pret2Arr]),
+                columnWidths: [18, 14, 14, 14, 14, 14, 14, 14],
+              },
+            ]
+          : []),
+        ...(pret3Arr.length > 0
+          ? [
+              {
+                name: 'Prêt 3',
+                rows: transpose([headerPret, ...pret3Arr]),
+                columnWidths: [18, 14, 14, 14, 14, 14, 14, 14],
+              },
+            ]
+          : []),
       ];
 
-      const blob = await buildXlsxBlob({ sheets, headerFill: themeColors?.c1, sectionFill: themeColors?.c7 });
+      const blob = await buildXlsxBlob({
+        sheets,
+        headerFill: themeColors?.c1,
+        sectionFill: themeColors?.c7,
+      });
       const isValid = await validateXlsxBlob(blob);
       if (!isValid) throw new Error('XLSX invalide (signature PK manquante).');
       const dateStr = new Date().toISOString().split('T')[0].replace(/-/g, '');
@@ -262,9 +366,10 @@ export function useCreditExports({
         crd: row.crd,
       }));
 
-      const totalCapital = p1Params.capital
-        + (state.pret2 ? toNum(state.pret2.capital) : 0)
-        + (state.pret3 ? toNum(state.pret3.capital) : 0);
+      const totalCapital =
+        p1Params.capital +
+        (state.pret2 ? toNum(state.pret2.capital) : 0) +
+        (state.pret3 ? toNum(state.pret3.capital) : 0);
 
       const maxDureeMois = Math.max(
         p1Params.duree,
@@ -275,27 +380,32 @@ export function useCreditExports({
       const pret1Interets = calc.pret1Rows.reduce((sum, row) => sum + (row.interet || 0), 0);
       const pret1Assurance = calc.pret1Rows.reduce((sum, row) => sum + (row.assurance || 0), 0);
 
-      const loans: NonNullable<CreditPptxData['loans']> = [{
-        index: 1,
-        capital: p1Params.capital,
-        dureeMois: p1Params.duree,
-        tauxNominal: p1.taux,
-        tauxAssurance: p1.tauxAssur,
-        quotite: p1Params.quotite,
-        creditType: p1.type || state.creditType,
-        assuranceMode: p1.assurMode || state.assurMode,
-        mensualiteHorsAssurance: (state.lisserPret1 && calc.hasPretsAdditionnels)
-          ? (calc.pret1Rows[0]?.mensu ?? calc.mensuBasePret1)
-          : calc.mensuBasePret1,
-        mensualiteTotale: (state.lisserPret1 && calc.hasPretsAdditionnels)
-          ? (calc.pret1Rows[0]?.mensuTotal ?? (calc.mensuBasePret1 + (calc.pret1Rows[0]?.assurance || 0)))
-          : calc.mensuBasePret1 + (calc.pret1Rows[0]?.assurance || 0),
-        coutInterets: pret1Interets,
-        coutAssurance: pret1Assurance,
-        amortizationRows: amortizationRowsPret1,
-        startYM,
-        dateEffet: startYM ? labelMonthFR(startYM) : undefined,
-      }];
+      const loans: NonNullable<CreditPptxData['loans']> = [
+        {
+          index: 1,
+          capital: p1Params.capital,
+          dureeMois: p1Params.duree,
+          tauxNominal: p1.taux,
+          tauxAssurance: p1.tauxAssur,
+          quotite: p1Params.quotite,
+          creditType: p1.type || state.creditType,
+          assuranceMode: p1.assurMode || state.assurMode,
+          mensualiteHorsAssurance:
+            state.lisserPret1 && calc.hasPretsAdditionnels
+              ? (calc.pret1Rows[0]?.mensu ?? calc.mensuBasePret1)
+              : calc.mensuBasePret1,
+          mensualiteTotale:
+            state.lisserPret1 && calc.hasPretsAdditionnels
+              ? (calc.pret1Rows[0]?.mensuTotal ??
+                calc.mensuBasePret1 + (calc.pret1Rows[0]?.assurance || 0))
+              : calc.mensuBasePret1 + (calc.pret1Rows[0]?.assurance || 0),
+          coutInterets: pret1Interets,
+          coutAssurance: pret1Assurance,
+          amortizationRows: amortizationRowsPret1,
+          startYM,
+          dateEffet: startYM ? labelMonthFR(startYM) : undefined,
+        },
+      ];
 
       [
         { pret: state.pret2, rows: calc.pret2Rows, idx: 0 },
@@ -334,14 +444,15 @@ export function useCreditExports({
         });
       });
 
-      const paymentPeriods: NonNullable<CreditPptxData['paymentPeriods']> = calc.synthesePeriodes.map((period) => ({
-        label: period.from,
-        mensualitePret1: period.p1,
-        mensualitePret2: period.p2,
-        mensualitePret3: period.p3,
-        total: period.p1 + period.p2 + period.p3,
-        monthIndex: period.monthIndex ?? 0,
-      }));
+      const paymentPeriods: NonNullable<CreditPptxData['paymentPeriods']> =
+        calc.synthesePeriodes.map((period) => ({
+          label: period.from,
+          mensualitePret1: period.p1,
+          mensualitePret2: period.p2,
+          mensualitePret3: period.p3,
+          total: period.p1 + period.p2 + period.p3,
+          monthIndex: period.monthIndex ?? 0,
+        }));
 
       const assuranceDecesByYear = aggregatedYears.map((row) => row.assuranceDeces ?? 0);
 

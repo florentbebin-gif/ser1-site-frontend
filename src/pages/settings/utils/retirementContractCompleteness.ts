@@ -7,8 +7,8 @@ export function isRetraiteContractIncomplete(contract: BaseCgRetraiteContract): 
   const gestionFees = normalizeBaseCgRetraiteGestionFees(contract.phaseEpargne);
   const criticalValues = [
     contract.phaseEpargne.dateCommercialisation,
-    hasBaseCgRetraiteValue(gestionFees.fraisGestionFondsEuro)
-      || hasBaseCgRetraiteValue(gestionFees.fraisGestionUc)
+    hasBaseCgRetraiteValue(gestionFees.fraisGestionFondsEuro) ||
+    hasBaseCgRetraiteValue(gestionFees.fraisGestionUc)
       ? 'renseigné'
       : null,
     contract.phaseEpargne.clauseBeneficiaire,

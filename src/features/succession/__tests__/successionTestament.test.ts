@@ -120,7 +120,7 @@ describe('computeTestamentDistribution', () => {
     const partE1 = result!.beneficiaries.find((b) => b.id === 'E1')?.partSuccession ?? 0;
     const partE2 = result!.beneficiaries.find((b) => b.id === 'E2')?.partSuccession ?? 0;
     expect(partE1).toBeCloseTo(120_000, 0); // 150 000 × 0.8
-    expect(partE2).toBeCloseTo(80_000, 0);  // 100 000 × 0.8
+    expect(partE2).toBeCloseTo(80_000, 0); // 100 000 × 0.8
     expect(result!.warnings.some((w) => w.includes('plafonnement'))).toBe(true);
   });
 
@@ -133,9 +133,7 @@ describe('computeTestamentDistribution', () => {
         dispositionType: 'legs_particulier',
         beneficiaryRef: null,
         quotePartPct: 0,
-        particularLegacies: [
-          { id: 'L1', beneficiaryRef: null, amount: 50_000 },
-        ],
+        particularLegacies: [{ id: 'L1', beneficiaryRef: null, amount: 50_000 }],
       },
       masseReference: 300_000,
       enfants: ENFANTS_2,
@@ -200,7 +198,12 @@ describe('computeTestamentDistribution → chainage end-to-end', () => {
     ];
     const analysis = buildSuccessionChainageAnalysis({
       civil: makeCivil({ situationMatrimoniale: 'marie', regimeMatrimonial: 'communaute_legale' }),
-      liquidation: makeLiquidation({ actifEpoux1: 300_000, actifEpoux2: 200_000, actifCommun: 0, nbEnfants: 2 }),
+      liquidation: makeLiquidation({
+        actifEpoux1: 300_000,
+        actifEpoux2: 200_000,
+        actifCommun: 0,
+        nbEnfants: 2,
+      }),
       regimeUsed: 'communaute_legale',
       order: 'epoux1',
       dmtgSettings: DEFAULT_DMTG,
@@ -220,13 +223,13 @@ describe('computeTestamentDistribution → chainage end-to-end', () => {
     });
 
     expect(analysis.applicable).toBe(true);
-    expect(analysis.step1?.actifTransmis).toBe(300_000);   // propres époux1, pas de commun
+    expect(analysis.step1?.actifTransmis).toBe(300_000); // propres époux1, pas de commun
     const conjoint = analysis.step1?.beneficiaries.find((b) => b.lien === 'conjoint');
-    expect(conjoint?.brut).toBe(75_000);                   // 300 000 × 1/4 (part légale sans DDV)
+    expect(conjoint?.brut).toBe(75_000); // 300 000 × 1/4 (part légale sans DDV)
     const e1 = analysis.step1?.beneficiaries.find((b) => b.id === 'E1');
-    expect(e1?.brut).toBe(162_500);                        // 100 000 (testament) + 62 500 (réserve)
+    expect(e1?.brut).toBe(162_500); // 100 000 (testament) + 62 500 (réserve)
     const e2 = analysis.step1?.beneficiaries.find((b) => b.id === 'E2');
-    expect(e2?.brut).toBe(62_500);                         // 125 000 résiduel / 2 (réserve seule)
+    expect(e2?.brut).toBe(62_500); // 125 000 résiduel / 2 (réserve seule)
   });
 
   it('legs_titre_universel (chainage e2e) : plafonné à la quotité, bruts exacts', () => {
@@ -241,7 +244,12 @@ describe('computeTestamentDistribution → chainage end-to-end', () => {
     ];
     const analysis = buildSuccessionChainageAnalysis({
       civil: makeCivil({ situationMatrimoniale: 'marie', regimeMatrimonial: 'communaute_legale' }),
-      liquidation: makeLiquidation({ actifEpoux1: 300_000, actifEpoux2: 200_000, actifCommun: 0, nbEnfants: 2 }),
+      liquidation: makeLiquidation({
+        actifEpoux1: 300_000,
+        actifEpoux2: 200_000,
+        actifCommun: 0,
+        nbEnfants: 2,
+      }),
       regimeUsed: 'communaute_legale',
       order: 'epoux1',
       dmtgSettings: DEFAULT_DMTG,
@@ -263,11 +271,11 @@ describe('computeTestamentDistribution → chainage end-to-end', () => {
     expect(analysis.applicable).toBe(true);
     expect(analysis.step1?.actifTransmis).toBe(300_000);
     const conjoint3 = analysis.step1?.beneficiaries.find((b) => b.lien === 'conjoint');
-    expect(conjoint3?.brut).toBe(75_000);                  // 1/4 PP légal
+    expect(conjoint3?.brut).toBe(75_000); // 1/4 PP légal
     const e1t3 = analysis.step1?.beneficiaries.find((b) => b.id === 'E1');
-    expect(e1t3?.brut).toBe(162_500);                      // 100k testament (plafonné) + 62.5k réserve
+    expect(e1t3?.brut).toBe(162_500); // 100k testament (plafonné) + 62.5k réserve
     const e2t3 = analysis.step1?.beneficiaries.find((b) => b.id === 'E2');
-    expect(e2t3?.brut).toBe(62_500);                       // réserve seule
+    expect(e2t3?.brut).toBe(62_500); // réserve seule
     expect(analysis.warnings.some((w) => w.includes('plafonnement'))).toBe(true);
   });
 
@@ -283,7 +291,12 @@ describe('computeTestamentDistribution → chainage end-to-end', () => {
     ];
     const analysis = buildSuccessionChainageAnalysis({
       civil: makeCivil({ situationMatrimoniale: 'marie', regimeMatrimonial: 'communaute_legale' }),
-      liquidation: makeLiquidation({ actifEpoux1: 300_000, actifEpoux2: 200_000, actifCommun: 0, nbEnfants: 2 }),
+      liquidation: makeLiquidation({
+        actifEpoux1: 300_000,
+        actifEpoux2: 200_000,
+        actifCommun: 0,
+        nbEnfants: 2,
+      }),
       regimeUsed: 'communaute_legale',
       order: 'epoux1',
       dmtgSettings: DEFAULT_DMTG,
@@ -310,9 +323,9 @@ describe('computeTestamentDistribution → chainage end-to-end', () => {
     const conjoint4 = analysis.step1?.beneficiaries.find((b) => b.lien === 'conjoint');
     expect(conjoint4?.brut).toBe(75_000);
     const e1t4 = analysis.step1?.beneficiaries.find((b) => b.id === 'E1');
-    expect(e1t4?.brut).toBe(137_500);                      // 75k testament (ratio 0.5) + 62.5k réserve
+    expect(e1t4?.brut).toBe(137_500); // 75k testament (ratio 0.5) + 62.5k réserve
     const e2t4 = analysis.step1?.beneficiaries.find((b) => b.id === 'E2');
-    expect(e2t4?.brut).toBe(87_500);                       // 25k testament + 62.5k réserve
+    expect(e2t4?.brut).toBe(87_500); // 25k testament + 62.5k réserve
     expect(analysis.warnings.some((w) => w.includes('plafonnement'))).toBe(true);
   });
 });
@@ -330,9 +343,13 @@ describe('successionTestament helpers', () => {
 
     const options = buildTestamentBeneficiaryOptions('pacse', 'epoux1', enfants, familyMembers);
 
-    expect(options.find((option) => option.value === 'principal:epoux2')?.label).toBe('Partenaire 2');
+    expect(options.find((option) => option.value === 'principal:epoux2')?.label).toBe(
+      'Partenaire 2',
+    );
     expect(options.find((option) => option.value === 'enfant:E1')?.label).toContain('reservataire');
-    expect(options.find((option) => option.value === 'enfant:E2')?.label).not.toContain('reservataire');
+    expect(options.find((option) => option.value === 'enfant:E2')?.label).not.toContain(
+      'reservataire',
+    );
     expect(options.find((option) => option.value === 'family:F1')?.label).toContain('Parent');
   });
 

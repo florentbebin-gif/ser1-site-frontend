@@ -22,7 +22,7 @@ export function TresoTreasuryStackBar({ segments, onEditPocket }: Props) {
         <span>Montants estimés à partir des allocations saisies</span>
       </div>
       <div className="ts-treasury-stack" aria-label="Répartition de la trésorerie initiale">
-        {segments.map(segment => (
+        {segments.map((segment) => (
           <button
             key={segment.key}
             type="button"

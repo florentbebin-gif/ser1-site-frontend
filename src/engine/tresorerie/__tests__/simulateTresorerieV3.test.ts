@@ -9,12 +9,12 @@ const PARAMS: TresoFiscalParams = {
   motherDaughterStandardQpfcRate: 0.05,
   motherDaughterGroupQpfcRate: 0.01,
   participationDisposalQpfcRate: 0.12,
-  pfuRateIR: 0.10,
+  pfuRateIR: 0.1,
   psRate: 0.15,
   pfuTotal: 0.25,
   dividendesAbattement: 0,
   irScale: [],
-  tnsDividendBasePct: 0.10,
+  tnsDividendBasePct: 0.1,
 };
 
 function baseV3(): TresoInputsV3 {
@@ -43,26 +43,28 @@ function baseV3(): TresoInputsV3 {
         workingCapitalRequirement: 0,
       },
       reducedCorporateTaxEligible: true,
-      associates: [{
-        id: 'associe-us',
-        label: 'Associé 1',
-        kind: 'pp',
-        profile: {
-          currentAge: 50,
-          retirementAge: 65,
-          annualIncomeNeed: 0,
-          projectionStartYear: 2026,
+      associates: [
+        {
+          id: 'associe-us',
+          label: 'Associé 1',
+          kind: 'pp',
+          profile: {
+            currentAge: 50,
+            retirementAge: 65,
+            annualIncomeNeed: 0,
+            projectionStartYear: 2026,
+          },
+          ownershipLots: [{ right: 'pleine_propriete', capitalPct: 100, economicRightsPct: 100 }],
+          roles: ['associe_sans_statut'],
+          cca: {
+            currentBalance: 0,
+            exceptionalContributions: [],
+            annualContribution: { amount: 0, startYear: 2026, endYear: 2026 },
+            remunerationRate: 0,
+          },
+          remuneration: { source: 'holding', loadedAnnualCost: 0, socialChargeRate: 0 },
         },
-        ownershipLots: [{ right: 'pleine_propriete', capitalPct: 100, economicRightsPct: 100 }],
-        roles: ['associe_sans_statut'],
-        cca: {
-          currentBalance: 0,
-          exceptionalContributions: [],
-          annualContribution: { amount: 0, startYear: 2026, endYear: 2026 },
-          remunerationRate: 0,
-        },
-        remuneration: { source: 'holding', loadedAnnualCost: 0, socialChargeRate: 0 },
-      }],
+      ],
       loans: [],
       subsidiaries: [],
     },
@@ -121,14 +123,16 @@ describe('simulateTresorerie — modèle société v3', () => {
     const rows = simulateTresorerieV2(inputs, PARAMS, 1);
 
     expect(rows[0].chargesStructure).toBe(0);
-    expect(rows[0].revenusParAssocie).toEqual(expect.arrayContaining([
-      expect.objectContaining({
-        associateId: 'associe-us',
-        source: 'remuneration',
-        remuneration: 30_000,
-        netRevenue: 30_000,
-      }),
-    ]));
+    expect(rows[0].revenusParAssocie).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          associateId: 'associe-us',
+          source: 'remuneration',
+          remuneration: 30_000,
+          netRevenue: 30_000,
+        }),
+      ]),
+    );
   });
 
   it('conserve le BFR comme trésorerie non investissable avant le balayage annuel', () => {
@@ -141,18 +145,20 @@ describe('simulateTresorerie — modèle société v3', () => {
     };
     inputs.allocationMatrix = {
       sweepThreshold: 10_000,
-      pockets: [{
-        id: 'court-terme',
-        label: 'Court terme',
-        kind: 'distribution',
-        horizon: 'court_terme',
-        durationYears: 5,
-        annualReturnRate: 0,
-        enjoymentDelayMonths: 0,
-        initialAllocationPct: 0,
-        annualAllocationPct: 100,
-        repeatAtTerm: false,
-      }],
+      pockets: [
+        {
+          id: 'court-terme',
+          label: 'Court terme',
+          kind: 'distribution',
+          horizon: 'court_terme',
+          durationYears: 5,
+          annualReturnRate: 0,
+          enjoymentDelayMonths: 0,
+          initialAllocationPct: 0,
+          annualAllocationPct: 100,
+          repeatAtTerm: false,
+        },
+      ],
     };
 
     const rows = simulateTresorerieV2(inputs, PARAMS, 1);
@@ -176,8 +182,9 @@ describe('simulateTresorerie — modèle société v3', () => {
       },
     ];
 
-    expect(() => simulateTresorerieV2(inputs, PARAMS, 1))
-      .toThrow('Détention capital supérieure à 100 %');
+    expect(() => simulateTresorerieV2(inputs, PARAMS, 1)).toThrow(
+      'Détention capital supérieure à 100 %',
+    );
   });
 
   it('neutralise le besoin retraite quand l’associé actif est une PM', () => {
@@ -334,18 +341,20 @@ describe('simulateTresorerie — modèle société v3', () => {
     inputs.allocationMatrix = {
       sweepThreshold: 70_000,
       minimumBankBalance: 70_000,
-      pockets: [{
-        id: 'court-terme',
-        label: 'Court terme',
-        kind: 'distribution',
-        horizon: 'court_terme',
-        durationYears: 1,
-        annualReturnRate: 0,
-        enjoymentDelayMonths: 0,
-        initialAllocationPct: 100,
-        annualAllocationPct: 0,
-        repeatAtTerm: true,
-      }],
+      pockets: [
+        {
+          id: 'court-terme',
+          label: 'Court terme',
+          kind: 'distribution',
+          horizon: 'court_terme',
+          durationYears: 1,
+          annualReturnRate: 0,
+          enjoymentDelayMonths: 0,
+          initialAllocationPct: 100,
+          annualAllocationPct: 0,
+          repeatAtTerm: true,
+        },
+      ],
     };
 
     const rows = simulateTresorerieV2(inputs, PARAMS, 2);
@@ -361,18 +370,20 @@ describe('simulateTresorerie — modèle société v3', () => {
     inputs.allocationMatrix = {
       sweepThreshold: 400_000,
       minimumBankBalance: 400_000,
-      pockets: [{
-        id: 'court-terme',
-        label: 'Court terme',
-        kind: 'distribution',
-        horizon: 'court_terme',
-        durationYears: 5,
-        annualReturnRate: 0,
-        enjoymentDelayMonths: 0,
-        initialAllocationPct: 100,
-        annualAllocationPct: 0,
-        repeatAtTerm: false,
-      }],
+      pockets: [
+        {
+          id: 'court-terme',
+          label: 'Court terme',
+          kind: 'distribution',
+          horizon: 'court_terme',
+          durationYears: 5,
+          annualReturnRate: 0,
+          enjoymentDelayMonths: 0,
+          initialAllocationPct: 100,
+          annualAllocationPct: 0,
+          repeatAtTerm: false,
+        },
+      ],
     };
 
     const rows = simulateTresorerieV2(inputs, PARAMS, 1);
@@ -386,16 +397,18 @@ describe('simulateTresorerie — modèle société v3', () => {
   it('reconstitue le solde bancaire protégé avant le balayage annuel', () => {
     const inputs = baseV3();
     inputs.company.treasuryInitial = 500_000;
-    inputs.company.loans = [{
-      id: 'pret-court',
-      label: 'Dette courte',
-      principal: 150_000,
-      annualRate: 0,
-      durationMonths: 12,
-      startDate: '2026-01',
-      existingLoan: true,
-      deductibleInterest: true,
-    }];
+    inputs.company.loans = [
+      {
+        id: 'pret-court',
+        label: 'Dette courte',
+        principal: 150_000,
+        annualRate: 0,
+        durationMonths: 12,
+        startDate: '2026-01',
+        existingLoan: true,
+        deductibleInterest: true,
+      },
+    ];
     inputs.company.associates[0].cca = {
       currentBalance: 0,
       exceptionalContributions: [],
@@ -405,18 +418,20 @@ describe('simulateTresorerie — modèle société v3', () => {
     inputs.allocationMatrix = {
       sweepThreshold: 400_000,
       minimumBankBalance: 400_000,
-      pockets: [{
-        id: 'court-terme',
-        label: 'Court terme',
-        kind: 'distribution',
-        horizon: 'court_terme',
-        durationYears: 5,
-        annualReturnRate: 0,
-        enjoymentDelayMonths: 0,
-        initialAllocationPct: 100,
-        annualAllocationPct: 100,
-        repeatAtTerm: false,
-      }],
+      pockets: [
+        {
+          id: 'court-terme',
+          label: 'Court terme',
+          kind: 'distribution',
+          horizon: 'court_terme',
+          durationYears: 5,
+          annualReturnRate: 0,
+          enjoymentDelayMonths: 0,
+          initialAllocationPct: 100,
+          annualAllocationPct: 100,
+          repeatAtTerm: false,
+        },
+      ],
     };
 
     const rows = simulateTresorerieV2(inputs, PARAMS, 2);
@@ -431,39 +446,43 @@ describe('simulateTresorerie — modèle société v3', () => {
     const inputs = baseV3();
     inputs.company.reducedCorporateTaxEligible = false;
     inputs.company.treasuryInitial = 0;
-    inputs.company.subsidiaries = [{
-      id: 'filiale-1',
-      label: 'Filiale 1',
-      parentEntityId: 'societe',
-      ownershipPct: 100,
-      holdingOwnershipPct: 100,
-      motherDaughterEligible: true,
-      fiscalIntegrationEstimateEnabled: false,
-      servicesSchedule: [],
-      dividendsSchedule: [],
-      disposal: {
-        year: 2026,
-        estimatedPrice: 100_000,
-        taxBasis: 40_000,
-        fees: 0,
-        regime: 'pvlt',
+    inputs.company.subsidiaries = [
+      {
+        id: 'filiale-1',
+        label: 'Filiale 1',
+        parentEntityId: 'societe',
+        ownershipPct: 100,
+        holdingOwnershipPct: 100,
+        motherDaughterEligible: true,
+        fiscalIntegrationEstimateEnabled: false,
+        servicesSchedule: [],
+        dividendsSchedule: [],
+        disposal: {
+          year: 2026,
+          estimatedPrice: 100_000,
+          taxBasis: 40_000,
+          fees: 0,
+          regime: 'pvlt',
+        },
       },
-    }];
+    ];
     inputs.allocationMatrix = {
       sweepThreshold: 0,
       minimumBankBalance: 0,
-      pockets: [{
-        id: 'balayage',
-        label: 'Balayage annuel',
-        kind: 'distribution',
-        horizon: 'court_terme',
-        durationYears: 3,
-        annualReturnRate: 0,
-        enjoymentDelayMonths: 0,
-        initialAllocationPct: 0,
-        annualAllocationPct: 100,
-        repeatAtTerm: false,
-      }],
+      pockets: [
+        {
+          id: 'balayage',
+          label: 'Balayage annuel',
+          kind: 'distribution',
+          horizon: 'court_terme',
+          durationYears: 3,
+          annualReturnRate: 0,
+          enjoymentDelayMonths: 0,
+          initialAllocationPct: 0,
+          annualAllocationPct: 100,
+          repeatAtTerm: false,
+        },
+      ],
     };
 
     const rows = simulateTresorerieV2(inputs, PARAMS, 1);
@@ -476,24 +495,26 @@ describe('simulateTresorerie — modèle société v3', () => {
   it('arrête les prestations et dividendes filiale à partir de l’année suivant la cession', () => {
     const inputs = baseV3();
     inputs.company.treasuryInitial = 0;
-    inputs.company.subsidiaries = [{
-      id: 'filiale-1',
-      label: 'Filiale 1',
-      parentEntityId: 'societe',
-      ownershipPct: 100,
-      holdingOwnershipPct: 100,
-      motherDaughterEligible: true,
-      fiscalIntegrationEstimateEnabled: false,
-      servicesSchedule: [{ amount: 12_000, startYear: 2026 }],
-      dividendsSchedule: [{ amount: 10_000, startYear: 2026 }],
-      disposal: {
-        year: 2026,
-        estimatedPrice: 0,
-        taxBasis: 0,
-        fees: 0,
-        regime: 'standard',
+    inputs.company.subsidiaries = [
+      {
+        id: 'filiale-1',
+        label: 'Filiale 1',
+        parentEntityId: 'societe',
+        ownershipPct: 100,
+        holdingOwnershipPct: 100,
+        motherDaughterEligible: true,
+        fiscalIntegrationEstimateEnabled: false,
+        servicesSchedule: [{ amount: 12_000, startYear: 2026 }],
+        dividendsSchedule: [{ amount: 10_000, startYear: 2026 }],
+        disposal: {
+          year: 2026,
+          estimatedPrice: 0,
+          taxBasis: 0,
+          fees: 0,
+          regime: 'standard',
+        },
       },
-    }];
+    ];
 
     const rows = simulateTresorerieV2(inputs, PARAMS, 2);
 
@@ -510,23 +531,29 @@ describe('simulateTresorerie — modèle société v3', () => {
       currentBalance: 100_000,
       exceptionalContributions: [],
       annualContribution: { amount: 0, startYear: 2026, endYear: 2026 },
-      remunerationRate: 0.10,
+      remunerationRate: 0.1,
     };
 
-    const rows = simulateTresorerieV2(inputs, {
-      ...PARAMS,
-      maxDeductibleCcaInterestRate: 0.04,
-    }, 1);
+    const rows = simulateTresorerieV2(
+      inputs,
+      {
+        ...PARAMS,
+        maxDeductibleCcaInterestRate: 0.04,
+      },
+      1,
+    );
 
     expect(rows[0].interetsCCA).toBe(10_000);
     expect(rows[0].interetsCCADeductibles).toBe(4_000);
     expect(rows[0].interetsCCANonDeductibles).toBe(6_000);
-    expect(rows[0].revenusParAssocie).toEqual(expect.arrayContaining([
-      expect.objectContaining({
-        associateId: 'associe-us',
-        source: 'cca_interets',
-        netRevenue: 10_000,
-      }),
-    ]));
+    expect(rows[0].revenusParAssocie).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          associateId: 'associe-us',
+          source: 'cca_interets',
+          netRevenue: 10_000,
+        }),
+      ]),
+    );
   });
 });

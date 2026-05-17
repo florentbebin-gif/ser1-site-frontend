@@ -25,13 +25,15 @@ describe('successionEnfants', () => {
   });
 
   it('compte les branches représentées par les petits-enfants', () => {
-    expect(countEffectiveDescendantBranches(
-      [
-        { id: 'E1', rattachement: 'commun' as const },
-        { id: 'E2', rattachement: 'commun' as const, deceased: true },
-      ],
-      [{ id: 'PG1', type: 'petit_enfant', parentEnfantId: 'E2' }],
-    )).toBe(2);
+    expect(
+      countEffectiveDescendantBranches(
+        [
+          { id: 'E1', rattachement: 'commun' as const },
+          { id: 'E2', rattachement: 'commun' as const, deceased: true },
+        ],
+        [{ id: 'PG1', type: 'petit_enfant', parentEnfantId: 'E2' }],
+      ),
+    ).toBe(2);
   });
   it('conserve les labels globaux des enfants aprÃ¨s filtrage par dÃ©funt', () => {
     const enfants = [

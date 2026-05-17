@@ -72,7 +72,9 @@ describe('engine/ir/adjustments', () => {
 
   describe('countPersonsACharge', () => {
     it('counts charge/shared only', () => {
-      expect(countPersonsACharge([{ mode: 'charge' }, { mode: 'shared' }, { mode: 'none' }])).toBe(2);
+      expect(countPersonsACharge([{ mode: 'charge' }, { mode: 'shared' }, { mode: 'none' }])).toBe(
+        2,
+      );
       expect(countPersonsACharge(null as unknown as any[])).toBe(0);
     });
   });

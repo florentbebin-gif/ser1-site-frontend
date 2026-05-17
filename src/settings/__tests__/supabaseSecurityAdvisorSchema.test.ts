@@ -14,8 +14,9 @@ function readMigrations(): string {
 }
 
 function readMigration(prefix: string): string {
-  const file = readdirSync(migrationsDir)
-    .find((entry) => entry.startsWith(prefix) && entry.endsWith('.sql'));
+  const file = readdirSync(migrationsDir).find(
+    (entry) => entry.startsWith(prefix) && entry.endsWith('.sql'),
+  );
   return file ? readFileSync(path.join(migrationsDir, file), 'utf8') : '';
 }
 
@@ -77,7 +78,10 @@ describe('advisor securite Supabase', () => {
     for (const table of ['cabinets', 'logos']) {
       for (const action of ['insert', 'update', 'delete']) {
         expect(sql).toMatch(
-          new RegExp(String.raw`create\s+policy\s+${table}_${action}_admin[\s\S]*for\s+${action}`, 'i'),
+          new RegExp(
+            String.raw`create\s+policy\s+${table}_${action}_admin[\s\S]*for\s+${action}`,
+            'i',
+          ),
         );
       }
     }

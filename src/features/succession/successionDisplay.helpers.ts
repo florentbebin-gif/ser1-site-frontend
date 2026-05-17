@@ -79,9 +79,11 @@ export function buildSuccessionChainTransmissionRowsInternal(
 
   const rows = new Map<string, SuccessionTransmissionRowLike>();
   analysis.step1.beneficiaries.forEach((beneficiary) =>
-    accumulateTransmissionRow(rows, beneficiary, 1));
+    accumulateTransmissionRow(rows, beneficiary, 1),
+  );
   analysis.step2.beneficiaries.forEach((beneficiary) =>
-    accumulateTransmissionRow(rows, beneficiary, 2));
+    accumulateTransmissionRow(rows, beneficiary, 2),
+  );
 
   return Array.from(rows.values()).sort((left, right) => {
     const exoRank = Number(Boolean(left.exonerated)) - Number(Boolean(right.exonerated));

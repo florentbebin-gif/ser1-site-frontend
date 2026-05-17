@@ -2,18 +2,8 @@
  * CreditLoanForm.tsx - Formulaire de saisie d'un prêt (réutilisable)
  */
 
-import {
-  InputEuro,
-  InputPct,
-  InputNumber,
-  InputMonth,
-  Select,
-} from './CreditInputs';
-import type {
-  CreditAssurMode,
-  CreditLoanFormProps,
-  CreditType,
-} from '../types';
+import { InputEuro, InputPct, InputNumber, InputMonth, Select } from './CreditInputs';
+import type { CreditAssurMode, CreditLoanFormProps, CreditType } from '../types';
 
 export function CreditLoanForm({
   pretNum,
@@ -90,7 +80,10 @@ export function CreditLoanForm({
       {isExpert && (
         <>
           <div className="cv-loan-card__divider" />
-          <div className="cv-loan-form__section cv-loan-form__section--no-border" data-testid={pretNum === 0 ? 'credit-assurance-section' : undefined}>
+          <div
+            className="cv-loan-form__section cv-loan-form__section--no-border"
+            data-testid={pretNum === 0 ? 'credit-assurance-section' : undefined}
+          >
             <div className="cv-loan-form__section-title">Assurance emprunteur</div>
             <div className="cv-loan-form__grid--3">
               <Select<CreditAssurMode>

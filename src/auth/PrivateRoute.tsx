@@ -1,6 +1,6 @@
 /**
  * PrivateRoute - Composant de route protégée
- * 
+ *
  * Redirige vers /login si l'utilisateur n'est pas connecté.
  */
 
@@ -19,14 +19,17 @@ export function PrivateRoute({ children }: PrivateRouteProps): React.ReactElemen
   // Affiche un loader pendant la vérification
   if (isLoading) {
     return (
-      <div className="loading-container" style={{
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        height: '100vh',
-        fontSize: '1.2rem',
-        color: 'var(--color-c5)',
-      }}>
+      <div
+        className="loading-container"
+        style={{
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          height: '100vh',
+          fontSize: '1.2rem',
+          color: 'var(--color-c5)',
+        }}
+      >
         Chargement...
       </div>
     );

@@ -28,7 +28,17 @@ function formatReadonlyMoney(value: number): string {
 function SectionIcon({ kind }: { kind: 'foyer' | 'revenus' | 'versements' }): React.ReactElement {
   if (kind === 'foyer') {
     return (
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <svg
+        width="14"
+        height="14"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden="true"
+      >
         <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
         <circle cx="9" cy="7" r="4" />
         <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
@@ -39,7 +49,17 @@ function SectionIcon({ kind }: { kind: 'foyer' | 'revenus' | 'versements' }): Re
 
   if (kind === 'revenus') {
     return (
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <svg
+        width="14"
+        height="14"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden="true"
+      >
         <rect x="3" y="3" width="18" height="18" rx="2" />
         <line x1="3" y1="9" x2="21" y2="9" />
         <line x1="3" y1="15" x2="21" y2="15" />
@@ -49,7 +69,17 @@ function SectionIcon({ kind }: { kind: 'foyer' | 'revenus' | 'versements' }): Re
   }
 
   return (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <svg
+      width="14"
+      height="14"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
       <path d="M3 7h18" />
       <path d="M6 11h12" />
       <path d="M8 15h8" />
@@ -109,7 +139,9 @@ function ReadonlyAmountInput({
         value={formatReadonlyAmount(value)}
         className="sim-field__control per-table-input__control per-table-input__control--readonly"
       />
-      <span className="per-table-input__unit sim-field__unit" aria-hidden="true">€</span>
+      <span className="per-table-input__unit sim-field__unit" aria-hidden="true">
+        €
+      </span>
     </SimFieldShell>
   );
 }
@@ -134,7 +166,9 @@ function PerTableAmountInput({
         disabled={disabled}
         onChange={onChange}
       />
-      <span className="per-table-input__unit sim-field__unit" aria-hidden="true">€</span>
+      <span className="per-table-input__unit sim-field__unit" aria-hidden="true">
+        €
+      </span>
     </SimFieldShell>
   );
 }
@@ -166,10 +200,7 @@ export function buildTnsFoyerTogglePatches({
   const isActive = declarant1.statutTns || (isCouple && declarant2.statutTns);
   const patch = buildTnsTogglePatch(!isActive);
 
-  return [
-    { decl: 1 as const, patch },
-    ...(isCouple ? [{ decl: 2 as const, patch }] : []),
-  ];
+  return [{ decl: 1 as const, patch }, ...(isCouple ? [{ decl: 2 as const, patch }] : [])];
 }
 
 function DividerRow({ isCouple }: { isCouple: boolean }): React.ReactElement {
@@ -219,7 +250,7 @@ export function PerIncomeTable({
     abat10SalCfg,
   );
   const abat10PensionsFoyer = computeAbattement10(
-    (declarant1.retraites || 0) + (isCouple ? (declarant2.retraites || 0) : 0),
+    (declarant1.retraites || 0) + (isCouple ? declarant2.retraites || 0 : 0),
     abat10RetCfg,
   );
 
@@ -229,8 +260,12 @@ export function PerIncomeTable({
         title="Revenus imposables"
         subtitle="Renseignez vos sources de revenus par catégorie pour affiner le calcul"
         icon="revenus"
-        actions={(
-          <div className="per-income-filters" role="group" aria-label="Filtres des lignes de revenus imposables">
+        actions={
+          <div
+            className="per-income-filters"
+            role="group"
+            aria-label="Filtres des lignes de revenus imposables"
+          >
             <button
               type="button"
               className={`per-income-filter-btn${showTnsRows ? ' is-active' : ''}`}
@@ -259,11 +294,14 @@ export function PerIncomeTable({
               Foncier
             </button>
           </div>
-        )}
+        }
       />
 
       <div className="per-income-table-wrap">
-        <table className={`per-income-table${isCouple ? '' : ' per-income-table--single'}`} aria-label="Revenus imposables">
+        <table
+          className={`per-income-table${isCouple ? '' : ' per-income-table--single'}`}
+          aria-label="Revenus imposables"
+        >
           <colgroup>
             <col style={{ width: '40%' }} />
             <col style={{ width: '30%' }} />
@@ -431,7 +469,10 @@ export function PerIncomeTable({
                 </tr>
                 <tr className="per-income-table-row-title">
                   <td>Abattement 10 % pensions (foyer)</td>
-                  <td colSpan={2} className="per-income-table-value-cell per-income-table-value-cell--center">
+                  <td
+                    colSpan={2}
+                    className="per-income-table-value-cell per-income-table-value-cell--center"
+                  >
                     {formatReadonlyMoney(abat10PensionsFoyer)}
                   </td>
                 </tr>

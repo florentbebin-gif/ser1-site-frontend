@@ -72,6 +72,7 @@ Filet de sécurité : cron mensuel le 1er du mois à 09:00 UTC qui met la PR à 
 ## Conventions
 
 ### Nommage fichiers
+
 - Nouveau code : **TypeScript** (`.ts` / `.tsx`) dans `src/`
 - `src/` ne doit contenir aucun fichier `.js/.jsx` ; `npm run check:no-js` bloque ces extensions
 - Composants : PascalCase (`SettingsCard.tsx`)
@@ -79,6 +80,7 @@ Filet de sécurité : cron mensuel le 1er du mois à 09:00 UTC qui met la PR à 
 - Tests : `*.test.ts` à côté du fichier testé
 
 ### Architecture
+
 - **Logique métier** → `src/engine/` uniquement
 - **UI / State** → `src/pages/` ou `src/features/`
 - **Pas de calcul fiscal dans les composants React**
@@ -90,6 +92,7 @@ Filet de sécurité : cron mensuel le 1er du mois à 09:00 UTC qui met la PR à 
   - **Chemins relatifs** (`./`, `../`) OK pour les imports locaux (même dossier ou sous-dossier)
 
 ### Sécurité
+
 - **Auth** : Ne JAMAIS utiliser `user_metadata` pour les décisions d'autorisation (rôles, permissions). Utiliser `app_metadata` uniquement.
   - Voir [docs/GOUVERNANCE.md](../docs/GOUVERNANCE.md)
 - **Admin** : Toujours consommer les actions admin via `adminClient` (`src/settings/admin/adminClient.ts`), **jamais via `invokeAdmin` directement** depuis une page ou un composant.
@@ -100,41 +103,49 @@ Filet de sécurité : cron mensuel le 1er du mois à 09:00 UTC qui met la PR à 
   - Utiliser uniquement des templates `*.example` + redactions.
 
 ### TypeScript
+
 - Types importés depuis les **modules sources**, pas depuis les Providers
 - Exemple : `import { ThemeColors } from './theme'` ✓  
   Pas : `import { ThemeColors } from './ThemeProvider'` ✗ (sauf si ré-exporté)
 - `allowJs: true` dans `tsconfig` ne change pas la règle repo : pas de nouveau `.js/.jsx` dans `src/`
 
 ### TODO/FIXME
+
 - Format obligatoire : `TODO(#123): description` avec référence issue
 - Interdit : `TODO: fix this` sans identifiant
 
 ### Logging
+
 - `console.error/warn` : erreurs réelles uniquement
 - `console.log/info/debug` : **interdit** sauf derrière flag `DEBUG_*`
 - En prod : aucun log sensible (pas de données utilisateur)
 
 ### Scripts
+
 - Tout script dans `scripts/` ou `tools/scripts/` doit être soit référencé dans `package.json`, soit documenté avec un commentaire `// Usage: <description>` en tête de fichier.
 - Un script non référencé et non documenté est considéré orphelin et candidat à la suppression.
 
 ### CSS Governance
+
 - **Interdiction** : Un fichier CSS d'une page ou d'une feature ne doit jamais importer le CSS d'une autre page/feature
-- **Pattern correct** : 
+- **Pattern correct** :
   - Styles partagés → `src/styles/` (variables CSS, utilitaires, patterns communs)
   - Styles spécifiques → co-localisés avec la surface concernée (`src/pages/` ou `src/features/...`)
 - **Si deux surfaces partagent des styles** : extraire la base commune vers `src/styles/` ou vers un composant partagé, jamais vers le CSS d'une autre page
 
 ### Imports (règles détaillées)
+
 - **Alias `@/`** : Toujours privilégié pour les imports cross-module
+
   ```javascript
   // ✅ Correct
   import { Button } from '@/components/Button';
   import { debugLog } from '@/utils/debugFlags';
-  
+
   // ❌ Incorrect
   import { Button } from '../../../components/Button';
   ```
+
 - **Chemins relatifs** : Uniquement pour imports locaux (même dossier ou sous-dossier)
   ```javascript
   // ✅ Correct - import local
@@ -143,6 +154,7 @@ Filet de sécurité : cron mensuel le 1er du mois à 09:00 UTC qui met la PR à 
   ```
 
 ### Chaînes UI
+
 - Toute chaîne UI visible modifiée dans une PR doit être relue en français correct.
 - Utiliser les accents et les apostrophes typographiques sur les textes affichés à l’utilisateur.
 

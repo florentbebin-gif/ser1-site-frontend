@@ -47,13 +47,16 @@ export function buildBaseContratFiscalLabels(
   const ps = settings._raw_ps ?? DEFAULT_PS_SETTINGS;
   const fiscality = settings._raw_fiscality ?? DEFAULT_FISCALITY_SETTINGS;
 
-  const pfuRateIR = settings.pfuRateIR ?? tax.pfu?.current?.rateIR ?? DEFAULT_TAX_SETTINGS.pfu.current.rateIR;
-  const psRateGeneral = settings.psRateGeneral
-    ?? ps.patrimony?.current?.generalRate
-    ?? DEFAULT_PS_SETTINGS.patrimony.current.generalRate;
-  const psRateException = settings.psRateException
-    ?? ps.patrimony?.current?.exceptionRate
-    ?? DEFAULT_PS_SETTINGS.patrimony.current.exceptionRate;
+  const pfuRateIR =
+    settings.pfuRateIR ?? tax.pfu?.current?.rateIR ?? DEFAULT_TAX_SETTINGS.pfu.current.rateIR;
+  const psRateGeneral =
+    settings.psRateGeneral ??
+    ps.patrimony?.current?.generalRate ??
+    DEFAULT_PS_SETTINGS.patrimony.current.generalRate;
+  const psRateException =
+    settings.psRateException ??
+    ps.patrimony?.current?.exceptionRate ??
+    DEFAULT_PS_SETTINGS.patrimony.current.exceptionRate;
   const pfuRateTotal = pfuRateIR + psRateGeneral;
 
   const defaultAssuranceVie = DEFAULT_FISCALITY_SETTINGS.assuranceVie;
@@ -68,23 +71,27 @@ export function buildBaseContratFiscalLabels(
   const avPsRate = avRetraitsCapital.psRatePercent ?? psRateException;
   const avDeces = assuranceVie.deces ?? defaultAssuranceVie.deces;
   const avPrimesApres1998 = avDeces.primesApres1998 ?? defaultAssuranceVie.deces.primesApres1998;
-  const av990IBrackets = (avPrimesApres1998.brackets?.length ?? 0) >= 2
-    ? avPrimesApres1998.brackets
-    : DEFAULT_FISCALITY_SETTINGS.assuranceVie.deces.primesApres1998.brackets;
+  const av990IBrackets =
+    (avPrimesApres1998.brackets?.length ?? 0) >= 2
+      ? avPrimesApres1998.brackets
+      : DEFAULT_FISCALITY_SETTINGS.assuranceVie.deces.primesApres1998.brackets;
   const av990ITranche1 = av990IBrackets[0];
   const av990ITranche2 = av990IBrackets[1];
   const av990IAllowance =
-    avPrimesApres1998.allowancePerBeneficiary
-    ?? defaultAssuranceVie.deces.primesApres1998.allowancePerBeneficiary;
+    avPrimesApres1998.allowancePerBeneficiary ??
+    defaultAssuranceVie.deces.primesApres1998.allowancePerBeneficiary;
   const avApres70Ans = avDeces.apres70ans ?? defaultAssuranceVie.deces.apres70ans;
   const av990ITranche1DisplayThreshold =
     av990ITranche1?.upTo == null ? null : av990IAllowance + av990ITranche1.upTo;
   const ruleLabels = DEFAULT_BASE_CONTRAT_RULE_LABEL_SETTINGS;
-  const av990IRates = av990ITranche1 && av990ITranche2
-    ? `${formatPercent(av990ITranche1.ratePercent)} jusqu'à ${
-      av990ITranche1DisplayThreshold ? formatEuro(av990ITranche1DisplayThreshold) : 'la première tranche'
-    }, puis ${formatPercent(av990ITranche2.ratePercent)} au-delà`
-    : 'barème 990 I à confirmer depuis les paramètres fiscaux';
+  const av990IRates =
+    av990ITranche1 && av990ITranche2
+      ? `${formatPercent(av990ITranche1.ratePercent)} jusqu'à ${
+          av990ITranche1DisplayThreshold
+            ? formatEuro(av990ITranche1DisplayThreshold)
+            : 'la première tranche'
+        }, puis ${formatPercent(av990ITranche2.ratePercent)} au-delà`
+      : 'barème 990 I à confirmer depuis les paramètres fiscaux';
 
   return {
     pfu: `PFU ${formatPercent(pfuRateTotal)} (${formatPercent(pfuRateIR)} IR + ${formatPercent(psRateGeneral)} prélèvements sociaux)`,
@@ -92,9 +99,9 @@ export function buildBaseContratFiscalLabels(
     psGeneral: `${formatPercent(psRateGeneral)} prélèvements sociaux`,
     psException: `${formatPercent(psRateException)} prélèvements sociaux`,
     dmtgLigneDirecteAbattement: `${formatEuro(
-      settings.dmtgAbattementEnfant
-      ?? tax.dmtg?.ligneDirecte?.abattement
-      ?? DEFAULT_TAX_SETTINGS.dmtg.ligneDirecte.abattement,
+      settings.dmtgAbattementEnfant ??
+        tax.dmtg?.ligneDirecte?.abattement ??
+        DEFAULT_TAX_SETTINGS.dmtg.ligneDirecte.abattement,
     )} par enfant`,
     assuranceVie990IAllowance: `${formatEuro(av990IAllowance)} par bénéficiaire`,
     assuranceVie757BAllowance: `${formatEuro(
@@ -137,8 +144,8 @@ export function buildBaseContratFiscalLabels(
       ruleLabels.sofica.minReductionRatePercent,
     )} à ${formatPercent(ruleLabels.sofica.maxReductionRatePercent)} selon les investissements réalisés`,
     ifiResidencePrincipaleAbattement: `${formatPercent(
-      tax.ifi?.current?.residencePrincipaleAbattementRate
-      ?? DEFAULT_TAX_SETTINGS.ifi.current.residencePrincipaleAbattementRate,
+      tax.ifi?.current?.residencePrincipaleAbattementRate ??
+        DEFAULT_TAX_SETTINGS.ifi.current.residencePrincipaleAbattementRate,
     )} sur la valeur de la résidence principale`,
   };
 }

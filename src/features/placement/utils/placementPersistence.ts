@@ -27,7 +27,11 @@ function buildFilename() {
 }
 
 function hasFileSystemAccess() {
-  return typeof window !== 'undefined' && typeof window.showSaveFilePicker === 'function' && typeof window.showOpenFilePicker === 'function';
+  return (
+    typeof window !== 'undefined' &&
+    typeof window.showSaveFilePicker === 'function' &&
+    typeof window.showOpenFilePicker === 'function'
+  );
 }
 
 async function fallbackDownload(json: string, filename: string): Promise<void> {
@@ -81,7 +85,9 @@ function validatePayload(data: PlacementFilePayload | null | undefined): string[
   return errors;
 }
 
-export async function savePlacementState(state: unknown): Promise<{ success?: boolean; filename?: string; cancelled?: boolean; message?: string }> {
+export async function savePlacementState(
+  state: unknown,
+): Promise<{ success?: boolean; filename?: string; cancelled?: boolean; message?: string }> {
   try {
     const payload = {
       version: FILE_VERSION,
@@ -125,7 +131,11 @@ export async function savePlacementState(state: unknown): Promise<{ success?: bo
     return { success: true, filename };
   } catch (error) {
     console.error('[SER1] Sauvegarde placement échouée:', error);
-    return { success: false, message: error instanceof Error ? error.message : "Échec de la sauvegarde. Veuillez réessayer." };
+    return {
+      success: false,
+      message:
+        error instanceof Error ? error.message : 'Échec de la sauvegarde. Veuillez réessayer.',
+    };
   }
 }
 
@@ -157,7 +167,10 @@ export async function loadPlacementStateFromFile() {
     if (!file) return { cancelled: true };
 
     if (!file.name.toLowerCase().endsWith('.json') && !file.name.toLowerCase().endsWith('.ser1')) {
-      return { success: false, message: 'Format de fichier non reconnu. Sélectionnez un fichier .json.' };
+      return {
+        success: false,
+        message: 'Format de fichier non reconnu. Sélectionnez un fichier .json.',
+      };
     }
 
     const text = await file.text();
@@ -177,6 +190,9 @@ export async function loadPlacementStateFromFile() {
     return { success: true, data: data.payload, filename: file.name };
   } catch (error) {
     console.error('[SER1] Chargement placement échoué:', error);
-    return { success: false, message: error instanceof Error ? error.message : "Impossible de charger ce fichier." };
+    return {
+      success: false,
+      message: error instanceof Error ? error.message : 'Impossible de charger ce fichier.',
+    };
   }
 }

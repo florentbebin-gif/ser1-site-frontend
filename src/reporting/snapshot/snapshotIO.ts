@@ -119,7 +119,8 @@ function restoreData(snapshot: SnapshotV2): number {
  */
 function formatZodErrors(error: unknown): string {
   if (error && typeof error === 'object' && 'issues' in error) {
-    const issues = (error as { issues: Array<{ message: string; path: (string | number)[] }> }).issues;
+    const issues = (error as { issues: Array<{ message: string; path: (string | number)[] }> })
+      .issues;
     if (issues.length > 0) {
       return issues
         .slice(0, 3)
@@ -160,7 +161,9 @@ export type { FiscalIdentity } from './snapshotSchema';
 // SAVE
 // ---------------------------------------------------------------------------
 
-export async function saveGlobalState(options?: { fiscalIdentity?: FiscalIdentity }): Promise<SaveResult> {
+export async function saveGlobalState(options?: {
+  fiscalIdentity?: FiscalIdentity;
+}): Promise<SaveResult> {
   try {
     const snapshot = buildSnapshot(options?.fiscalIdentity);
     const jsonContent = JSON.stringify(snapshot, null, 2);
@@ -260,7 +263,8 @@ export function loadGlobalState(file: File): Promise<LoadResult> {
         if (!envelopeResult.success) {
           resolve({
             success: false,
-            message: 'Ce fichier n\'est pas un snapshot SER1 valide. ' +
+            message:
+              "Ce fichier n'est pas un snapshot SER1 valide. " +
               formatZodErrors(envelopeResult.error),
           });
           return;
@@ -283,8 +287,8 @@ export function loadGlobalState(file: File): Promise<LoadResult> {
         if (!strictResult.success) {
           resolve({
             success: false,
-            message: 'Le fichier est invalide après migration. ' +
-              formatZodErrors(strictResult.error),
+            message:
+              'Le fichier est invalide après migration. ' + formatZodErrors(strictResult.error),
           });
           return;
         }
@@ -295,7 +299,7 @@ export function loadGlobalState(file: File): Promise<LoadResult> {
         if (restoredCount === 0) {
           resolve({
             success: false,
-            message: 'Aucune donnée n\'a pu être restaurée depuis ce fichier.',
+            message: "Aucune donnée n'a pu être restaurée depuis ce fichier.",
           });
           return;
         }
@@ -343,7 +347,7 @@ export function loadGlobalState(file: File): Promise<LoadResult> {
     reader.onerror = () => {
       resolve({
         success: false,
-        message: 'Impossible de lire le fichier. Vérifiez qu\'il n\'est pas endommagé.',
+        message: "Impossible de lire le fichier. Vérifiez qu'il n'est pas endommagé.",
       });
     };
 

@@ -1,14 +1,17 @@
 # METIER (ce que SER1 calcule vraiment)
 
 ## But
+
 Expliquer ce que SER1 couvre aujourd'hui, ce qui est deja exploitable, et les limites connues.
 
 ## Audience
+
 - Owner / PM
 - Dev ou agent qui doit comprendre le perimetre fonctionnel sans lire tout le code
 - Toute personne qui doit distinguer "deja calcule" de "encore a specifier"
 
 ## Ce que ce doc couvre / ne couvre pas
+
 - Couvre : les simulateurs et regles metier deja presentes dans le repo
 - Ne couvre pas : l'architecture technique detaillee, les regles UI, les procedures de debug
 - Ne remplace pas une validation juridique, fiscale ou notariale
@@ -16,24 +19,27 @@ Expliquer ce que SER1 couvre aujourd'hui, ce qui est deja exploitable, et les li
 ## Vue d'ensemble
 
 ### Simulateurs disponibles
-| Surface | Statut | Role metier principal |
-|---|---|---|
-| `/sim/ir` | disponible | Estimer IR, TMI, CEHR et effets des revenus/charges du foyer |
-| `/sim/placement` | disponible | Comparer 2 enveloppes / produits sur epargne, liquidation et transmission |
-| `/sim/credit` | disponible | Simuler echeanciers, assurance et lissage de 1 a 3 prets |
-| `/sim/succession` | disponible | Estimer droits de succession et fournir des analyses civiles/patrimoniales guidees |
-| `/sim/per` | disponible | Hub PER avec contrôle du potentiel épargne retraite et transfert vers nouveau PER |
-| `/sim/epargne-salariale` | upcoming | non documente metier ici tant que non stabilise |
+
+| Surface                   | Statut     | Role metier principal                                                                                            |
+| ------------------------- | ---------- | ---------------------------------------------------------------------------------------------------------------- |
+| `/sim/ir`                 | disponible | Estimer IR, TMI, CEHR et effets des revenus/charges du foyer                                                     |
+| `/sim/placement`          | disponible | Comparer 2 enveloppes / produits sur epargne, liquidation et transmission                                        |
+| `/sim/credit`             | disponible | Simuler echeanciers, assurance et lissage de 1 a 3 prets                                                         |
+| `/sim/succession`         | disponible | Estimer droits de succession et fournir des analyses civiles/patrimoniales guidees                               |
+| `/sim/per`                | disponible | Hub PER avec contrôle du potentiel épargne retraite et transfert vers nouveau PER                                |
+| `/sim/epargne-salariale`  | upcoming   | non documente metier ici tant que non stabilise                                                                  |
 | `/sim/tresorerie-societe` | disponible | Projeter une société IS patrimoniale, ses CCA, filiales, emprunts, allocations de trésorerie et revenus associés |
-| `/sim/prevoyance` | upcoming | non documente metier ici tant que non stabilise |
+| `/sim/prevoyance`         | upcoming   | non documente metier ici tant que non stabilise                                                                  |
 
 ### Workflows actifs hors simulateurs
-| Surface | Statut | Role metier principal |
-|---|---|---|
-| `/audit` | actif, workflow prive P6 | Constituer un dossier patrimonial guide, persiste en session, exportable, et servant d'entree a `strategy` |
+
+| Surface     | Statut                   | Role metier principal                                                                                                                       |
+| ----------- | ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| `/audit`    | actif, workflow prive P6 | Constituer un dossier patrimonial guide, persiste en session, exportable, et servant d'entree a `strategy`                                  |
 | `/strategy` | actif, workflow prive P7 | Produire des recommandations et projections a partir du draft audit courant, sans etre encore traite comme un simulateur `/sim/*` stabilise |
 
 ### Regle de lecture
+
 - Ce doc decrit uniquement le perimetre implemente.
 - Si un sujet est encore en page "upcoming", il n'est pas traite comme une feature metier stable.
 - Les taux, baremes et abattements modifiables vivent dans les settings et sont consommes par les simulateurs via le dossier fiscal unifie.
@@ -44,9 +50,11 @@ Expliquer ce que SER1 couvre aujourd'hui, ce qui est deja exploitable, et les li
 ## 1) IR
 
 ### Ce que SER1 calcule
+
 Le simulateur IR estime l'impot du foyer a partir de la situation familiale, du nombre de parts, de la residence, des revenus imposables et des charges/credits saisis.
 
 ### Entrees principales
+
 - statut du foyer
 - isolement, enfants et personnes a charge
 - revenus par declarant : salaires, article 62, pensions, BIC, fonciers, autres
@@ -56,12 +64,14 @@ Le simulateur IR estime l'impot du foyer a partir de la situation familiale, du 
 - annee de bareme courante ou precedente
 
 ### Sorties principales
+
 - impot estime
 - TMI
 - CEHR si applicable
 - detail de calcul et ventilation des revenus
 
 ### Ce qui est couvert
+
 - quotient familial
 - abattement de 10 % salaires / pensions selon settings
 - PFU et option bareme sur certains revenus du capital
@@ -70,6 +80,7 @@ Le simulateur IR estime l'impot du foyer a partir de la situation familiale, du 
 - lecture stricte des baremes et parametres fiscaux via le dossier fiscal
 
 ### Limites connues
+
 - ce n'est pas un moteur declaratif exhaustif case par case
 - les cas complexes de fiscalite personnelle ne sont pas tous modelises
 - le simulateur donne une estimation exploitable en rendez-vous, pas une liasse fiscale complete
@@ -77,30 +88,36 @@ Le simulateur IR estime l'impot du foyer a partir de la situation familiale, du 
 ## 2) Prelevements sociaux
 
 ### Role dans SER1
+
 Il n'existe pas aujourd'hui de simulateur "prelevements sociaux" autonome. Les prelevements sociaux servent de donnees metier transverses pour IR, placement et certaines analyses de transmission.
 
 ### Ce qui est couvert
+
 - taux de prelevements sociaux du patrimoine
 - seuils et baremes retraite stockes dans les settings dedies
 - historique PASS disponible dans les settings
 - consommation des taux PS dans les moteurs qui en ont besoin
 
 ### Ou cela se pilote
+
 - `settings/impots` pour les baremes fiscaux et DMTG
 - `settings/prelevements` pour les PS patrimoine, retraites et seuils
 
 ### Limites connues
+
 - pas de parcours utilisateur autonome pour "simuler uniquement les PS"
 - la couverture depend du simulateur consommateur : IR, placement et transmission n'utilisent pas exactement les memes sous-ensembles de regles
 
 ## 3) DMTG / succession
 
 ### Ce que SER1 calcule
+
 Le coeur moteur calcule des droits de succession a partir d'un actif net et d'heritiers avec leur lien de parente. La page `/sim/succession` expose surtout un parcours guide organise en 3 blocs de saisie (`Contexte familial`, `Actifs / Passifs`, `Donations`) complete par un modal `+ Dispositions` pour le testament, les ascendants et les clauses civiles (donation entre epoux, preciput, attribution communautaire simplifiee).
 
 Le bouton `+ Dispositions` reste bloque tant qu'un contexte familial minimum n'est pas saisi, puis le modal adapte ses sections a la situation retenue.
 
 ### Entrees principales
+
 - situation matrimoniale et contexte familial
 - horizon de deces simule (`Aujourd'hui`, puis paliers de 5 a 50 ans) pour reevaluer les lectures dependantes de la date
 - forfait mobilier optionnel et abattement de 20 % sur la residence principale, saisis dans le bloc patrimonial expert
@@ -117,6 +134,7 @@ Le bouton `+ Dispositions` reste bloque tant qu'un contexte familial minimum n'e
 - parametres DMTG issus du dossier fiscal
 
 ### Sorties principales
+
 - analyses de predeces et de chainage
 - succession directe affichee quand la chronologie 2 deces n'est pas la bonne source de verite pour la situation saisie
 - lecture civile simplifiee de la devolution
@@ -126,6 +144,7 @@ Le bouton `+ Dispositions` reste bloque tant qu'un contexte familial minimum n'e
 - points d'attention et warnings de simplification
 
 ### Ce qui est couvert
+
 - baremes et abattements DMTG par grandes categories de liens
 - exoneration conjoint
 - prise en compte du regime matrimonial dans certaines analyses guidees
@@ -163,6 +182,7 @@ Le bouton `+ Dispositions` reste bloque tant qu'un contexte familial minimum n'e
 - restitution simplifiee des recompenses / creances entre masses et du passif affecte dans la synthese et la chronologie
 
 ### Limites connues
+
 - ce n'est pas une liquidation notariale exhaustive
 - toutes les subtilites civiles, donations anterieures et clauses complexes ne sont pas integralement calculees en moteur
 - la ventilation assurance-vie reste simplifiee et depend des clauses beneficiaires saisies; les contrats demembres avec clause non standard ou sans age de l'usufruitier font l'objet d'un repli simplifie avec warning
@@ -184,28 +204,31 @@ Le bouton `+ Dispositions` reste bloque tant qu'un contexte familial minimum n'e
 - la chronologie 2 deces reste un module simplifie: elle reemploie le testament du cote du decede et le report economique vers le 2e deces, mais ne remplace pas une liquidation notariale exhaustive
 
 ### Périmètre de fiabilité du modèle matrimonial et successoral
+
 Cette section est la source métier du périmètre de fiabilité succession. SER1 est un simulateur CGP d'aide à l'analyse patrimoniale : il sert au pré-diagnostic, à la comparaison de scénarios et à la discussion CGP / notaire, mais ne remplace pas une liquidation notariale exhaustive. BIG peut servir de comparaison secondaire, pas de source juridique unique.
 
 Règle de lecture :
+
 - `Support robuste` : exploitable dans le périmètre SER1, avec tests et restitution UI/export cohérente.
 - `Simplification documentée` : choix volontaire, affiché ou exporté, mais incomplet par rapport à une liquidation notariale.
 - `Non modélisé` : sujet absent du moteur ou seulement signalé par warning.
 
 Supports robustes du périmètre actuel :
 
-| Sujet | Preuves principales |
-|---|---|
-| Succession directe avec enfants / conjoint / parents / fratrie | `successionDisplay.test.ts`, `successionValidationMatrix.test.ts`, `successionGoldenScenarios.test.ts` |
-| DMTG par lien de parenté et exonération conjoint / partenaire PACS | `src/engine/succession.ts`, `successionFiscalContext.test.ts`, CGI art. 777, 779, 796-0 bis |
-| PACS sans testament | `successionDevolution.test.ts`, `successionValidationMatrix.test.ts`, `successionChainage.pacsApplicability.test.ts` |
-| PACS avec testament partenaire | `successionDisplay.test.ts`, `successionValidationMatrix.test.ts`, `successionChainage.pacsApplicability.test.ts` |
-| Assurance-vie 990 I / 757 B, clauses simples | `successionGoldenScenarios.test.ts`, `successionDeathInsuranceAllowances.test.ts`, BOFiP BOI-ENR-DMTG-10-10-20-20 |
-| PER assurance / prévoyance décès, pivot 70 ans | `successionPerFiscal.test.ts`, `successionPrevoyanceFiscal.test.ts`, `successionHorizonMatrix.test.ts` |
-| Usufruit / nue-propriété art. 669 CGI, si dates renseignées | `successionUsufruit.test.ts`, `successionUsufruitSuccessif.test.ts`, `successionDevolution.test.ts` |
-| GFA / GFV / GFF / GF | `successionAssetValuation.forfait-actifs.test.ts`, `successionAssetValuation.masses.test.ts`, `successionValidationMatrix.test.ts` |
-| Exports des hypothèses succession | `successionExport.chainage.test.ts`, `successionExport.pptx.test.ts`, `successionExport.xlsx.test.ts`, `successionExportHypotheses.test.ts`, `scSuccessionSummaryPanel.test.tsx` |
+| Sujet                                                              | Preuves principales                                                                                                                                                              |
+| ------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Succession directe avec enfants / conjoint / parents / fratrie     | `successionDisplay.test.ts`, `successionValidationMatrix.test.ts`, `successionGoldenScenarios.test.ts`                                                                           |
+| DMTG par lien de parenté et exonération conjoint / partenaire PACS | `src/engine/succession.ts`, `successionFiscalContext.test.ts`, CGI art. 777, 779, 796-0 bis                                                                                      |
+| PACS sans testament                                                | `successionDevolution.test.ts`, `successionValidationMatrix.test.ts`, `successionChainage.pacsApplicability.test.ts`                                                             |
+| PACS avec testament partenaire                                     | `successionDisplay.test.ts`, `successionValidationMatrix.test.ts`, `successionChainage.pacsApplicability.test.ts`                                                                |
+| Assurance-vie 990 I / 757 B, clauses simples                       | `successionGoldenScenarios.test.ts`, `successionDeathInsuranceAllowances.test.ts`, BOFiP BOI-ENR-DMTG-10-10-20-20                                                                |
+| PER assurance / prévoyance décès, pivot 70 ans                     | `successionPerFiscal.test.ts`, `successionPrevoyanceFiscal.test.ts`, `successionHorizonMatrix.test.ts`                                                                           |
+| Usufruit / nue-propriété art. 669 CGI, si dates renseignées        | `successionUsufruit.test.ts`, `successionUsufruitSuccessif.test.ts`, `successionDevolution.test.ts`                                                                              |
+| GFA / GFV / GFF / GF                                               | `successionAssetValuation.forfait-actifs.test.ts`, `successionAssetValuation.masses.test.ts`, `successionValidationMatrix.test.ts`                                               |
+| Exports des hypothèses succession                                  | `successionExport.chainage.test.ts`, `successionExport.pptx.test.ts`, `successionExport.xlsx.test.ts`, `successionExportHypotheses.test.ts`, `scSuccessionSummaryPanel.test.tsx` |
 
 Simplifications documentées :
+
 - `communaute_legale` et `separation_biens` sont robustes dans le périmètre actuel ; `separation_biens` expose aussi une poche manuelle `indivision_separatiste` ventilée via `quotePartEpoux1Pct`.
 - `communaute_universelle`, `communaute_meubles_acquets`, `participation_acquets` et `separation_biens_societe_acquets` restent des lectures simplifiées, avec poches, créances, requalifications ou société d'acquêts restituées dans la synthèse/export quand le bloc dédié est saisi.
 - Le chaînage 2 décès marié / PACS testament calcule step1 + step2 avec report économique et bénéficiaires identifiés, sans liquidation notariale fine des masses, remplois ou calendriers distincts.
@@ -220,6 +243,7 @@ Simplifications documentées :
 - Les assurances-vie, PER et prévoyance démembrés ou non standards passent par un repli structuré avec warnings.
 
 Non modélisé :
+
 - liquidation notariale exhaustive des régimes matrimoniaux ;
 - rapport civil détaillé, réduction fine des libéralités et récompenses probatoires ;
 - historique complet des donations avec droits déjà acquittés par acte ;
@@ -229,6 +253,7 @@ Non modélisé :
 - vérification documentaire des actes, dates, preuves et qualités civiles.
 
 Invariants :
+
 - aucune approximation ne doit être masquée : elle doit apparaître dans les warnings, hypothèses, docs ou tests ;
 - les produits d'assurance (AV, PER assurance, prévoyance) ne doivent jamais être rattachés à une masse patrimoniale ;
 - les valeurs fiscales doivent passer par la chaîne fiscal settings, pas par des constantes métier en dur ;
@@ -241,13 +266,13 @@ Validation attendue avant merge d'une modification succession : `npm run check`,
 
 Les types d'actifs suivants ne sont pas saisis via un bouton dédié mais via le menu **Sous-catégorie** d'une ligne générique :
 
-| Sous-catégorie sélectionnée | Action déclenchée |
-|---|---|
-| `GFA/GFV` (immobilier) | Transforme la ligne en entrée GF de type GFA, ouvre le champ d'édition en ligne |
-| `GFF/GF` (immobilier) | Transforme la ligne en entrée GF de type GFF, ouvre le champ d'édition en ligne |
-| `Assurance vie` (financier) | Transforme la ligne en entrée AV, ouvre la modal mono-contrat pour compléter |
-| `PER assurance` (financier) | Transforme la ligne en entrée PER, ouvre la modal mono-contrat |
-| `Prévoyance décès` (divers) | Transforme la ligne en entrée Prévoyance, ouvre la modal mono-contrat |
+| Sous-catégorie sélectionnée | Action déclenchée                                                               |
+| --------------------------- | ------------------------------------------------------------------------------- |
+| `GFA/GFV` (immobilier)      | Transforme la ligne en entrée GF de type GFA, ouvre le champ d'édition en ligne |
+| `GFF/GF` (immobilier)       | Transforme la ligne en entrée GF de type GFF, ouvre le champ d'édition en ligne |
+| `Assurance vie` (financier) | Transforme la ligne en entrée AV, ouvre la modal mono-contrat pour compléter    |
+| `PER assurance` (financier) | Transforme la ligne en entrée PER, ouvre la modal mono-contrat                  |
+| `Prévoyance décès` (divers) | Transforme la ligne en entrée Prévoyance, ouvre la modal mono-contrat           |
 
 La ligne générique est supprimée de `assetEntries` et l'entrée spécialisée est créée dans son tableau dédié (`groupementFoncierEntries`, `assuranceVieEntries`, etc.) avec le porteur et le montant récupérés de la ligne source. Les sous-catégories spéciales sont positionnées en fin de liste pour ne jamais être le choix par défaut à la création.
 
@@ -258,50 +283,55 @@ Les entrées spécialisées affichées dans la liste `Actifs / Passifs` montrent
 Chaque contrat `Assurance vie`, `PER assurance` ou `Prévoyance décès` est édité dans une modal dédiée à ce seul contrat (pattern mono-contrat). Le draft dans le simulateur est `entry | null` (non un tableau). La validation (`Valider`) met à jour l'entrée dans le tableau correspondant ; `Annuler` abandonne sans effet. Un clic sur **Modifier** depuis la liste Actifs / Passifs charge l'entrée dans la modal.
 
 ### Matrice age / horizon deces simule
+
 L'horizon `decesDansXAns` est converti en `simulatedDeathDate` dans `useSuccessionDerivedValues.ts`, sur la base de la date du jour.
 
-| Regle | Date de reference utilisee | Fallback actuel | Statut repo |
-| --- | --- | --- | --- |
-| Chaînage 2 décès | `simulatedDeathDate` | date du jour si horizon = 0 | OK |
-| Dévolution avec valorisation usufruit / nue-propriété | `simulatedDeathDate` | repli moteur si date de naissance manquante | OK |
-| Donation entre époux / option usufruit | `simulatedDeathDate` | warning si date de naissance manquante | OK |
-| Assurance-vie | montants saisis `versementsApres70` / `versementsAvant13101998` | pas de bascule automatique par âge au décès | OK |
-| PER assurance | âge de l'assuré à `simulatedDeathDate` | hypothèse avant 70 ans si date de naissance manquante | OK |
-| Donations et rappel fiscal | `simulatedDeathDate` | date du jour si référence absente | OK |
-| Prévoyance décès pure | âge du souscripteur à `simulatedDeathDate` | 990 I par défaut si la dernière prime n'est pas saisie | OK sous réserve de la donnée `dernierePrime` |
+| Regle                                                 | Date de reference utilisee                                      | Fallback actuel                                        | Statut repo                                  |
+| ----------------------------------------------------- | --------------------------------------------------------------- | ------------------------------------------------------ | -------------------------------------------- |
+| Chaînage 2 décès                                      | `simulatedDeathDate`                                            | date du jour si horizon = 0                            | OK                                           |
+| Dévolution avec valorisation usufruit / nue-propriété | `simulatedDeathDate`                                            | repli moteur si date de naissance manquante            | OK                                           |
+| Donation entre époux / option usufruit                | `simulatedDeathDate`                                            | warning si date de naissance manquante                 | OK                                           |
+| Assurance-vie                                         | montants saisis `versementsApres70` / `versementsAvant13101998` | pas de bascule automatique par âge au décès            | OK                                           |
+| PER assurance                                         | âge de l'assuré à `simulatedDeathDate`                          | hypothèse avant 70 ans si date de naissance manquante  | OK                                           |
+| Donations et rappel fiscal                            | `simulatedDeathDate`                                            | date du jour si référence absente                      | OK                                           |
+| Prévoyance décès pure                                 | âge du souscripteur à `simulatedDeathDate`                      | 990 I par défaut si la dernière prime n'est pas saisie | OK sous réserve de la donnée `dernierePrime` |
 
 ### Matrice juridique de validation succession
+
 La validation de `/sim/succession` repose sur une matrice de cas cibles, reliee a la fois aux sources juridiques et aux tests de non-regression du module.
 
-| Situation | Attendu produit | Source juridique principale | Couverture repo |
-| --- | --- | --- | --- |
-| Celibataire + enfants | succession directe, droits DMTG ligne directe, affichage une ligne par enfant | Service-Public F35794 | `successionDisplay.test.ts`, `successionValidationMatrix.test.ts` |
-| Veuf + enfants | succession directe, pas de chaînage 2 deces, droits ligne directe sur les enfants | Service-Public F35794 | `successionValidationMatrix.test.ts` |
-| Divorce + enfants | succession directe du defunt simule, ex-conjoint hors droits successoraux legaux | Service-Public F35794 | `successionValidationMatrix.test.ts` |
-| Marie + enfants communs | chronologie 2 deces, conjoint + descendants selon la lecture civile retenue ; sans DDV, choix legal possible entre usufruit total et 1/4 PP ; sans choix explicite, le module peut rester sur une hypothese moteur affichee comme telle | Service-Public F35794 / Code civil art. 757 et 758-3 | `successionChainage.test.ts`, `successionDevolution.test.ts` |
-| Marie + enfant non commun | l'enfant propre n'apparait que sur la branche du parent defunt, avec libelle stable dans la synthese meme en famille recomposee | Code civil art. 757 / 757-1 | `successionChainage.test.ts`, `successionValidationMatrix.test.ts` |
-| Marie + testament (conjoint / enfant) | la chronologie 2 deces retient le testament du cote decede a chaque etape ; l'ordre inverse change le testament retenu et les beneficiaires exportes | Code civil art. 757 / 913 et s. | `successionChainage.test.ts`, `successionExport.chainage.test.ts`, `successionValidationMatrix.test.ts` |
-| Marie + communaute universelle + attribution integrale | le 1er deces transmet economiquement 100 % au conjoint survivant, sans droits descendants au 1er deces ; la taxation des descendants est reportee au 2e deces | Code civil / avantage matrimonial ; CGI art. 796-0 bis pour l'exoneration du conjoint | `successionChainage.test.ts` |
-| PACS sans testament | pas de vocation successorale legale automatique du partenaire, lecture directe du deces simule | Service-Public F1621 | `successionDevolution.test.ts`, `successionValidationMatrix.test.ts` |
-| PACS avec testament | le partenaire peut apparaitre dans la synthese directe et le chainage 2 deces, avec exoneration DMTG sur la part leguee | Service-Public F1621 / F35794 | `successionDisplay.test.ts`, `successionValidationMatrix.test.ts`, `successionChainage.pacsApplicability.test.ts` |
-| PACS avec ordre inverse | l'ordre inverse sert a choisir le partenaire simule comme defunt; le chainage reste conditionne a un testament partenaire actif | Service-Public F1621 | `successionValidationMatrix.test.ts`, `scDeathTimelinePanel.test.tsx`, `tests/e2e/succession.spec.ts`, `successionChainage.pacsApplicability.test.ts` |
-| Union libre + indivision | seule la quote-part du defunt sur l'indivision est retenue, hypothese 50/50 par defaut | Service-Public F904 | `successionDisplay.test.ts`, `successionValidationMatrix.test.ts` |
-| Enfant decede represente par petits-enfants | representation successorale simplifiee par branche | Code civil art. 751 et s. | `successionDevolution.test.ts`, `successionChainage.test.ts` |
-| Usufruit / nue-propriete du conjoint | valorisation selon art. 669 CGI si la date de naissance est renseignee | CGI art. 669 | `successionUsufruit.test.ts`, `successionDevolution.test.ts`, `successionChainage.test.ts` |
-| GFA/GFV > 600 kEUR par beneficiaire | l'exoneration 75 % / 50 % est appliquee sur la quote-part de chaque beneficiaire, pas sur l'entry globale | CGI art. 793 bis | `successionAssetValuation.forfait-actifs.test.ts`, `successionValidationMatrix.test.ts` |
-| Prevoyance deces pure non rachetable (art. L132-23 C. assurances) | 990 I avant 70 ans : assiette = derniere prime annuelle ou prime unique (CGI annexe II art. 306-0 F) ; 757 B apres 70 ans : assiette = primes versees apres 70 ans (proxy : derniere prime saisie) ; exoneration conjoint/PACS | BOI-TCAS-AUT-60 §80 §170 / CGI art. 990 I / CGI art. 757 B / CGI annexe II art. 306-0 F | `successionPrevoyanceFiscal.test.ts`, `successionDeathInsuranceAllowances.test.ts` |
+| Situation                                                         | Attendu produit                                                                                                                                                                                                                         | Source juridique principale                                                             | Couverture repo                                                                                                                                       |
+| ----------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Celibataire + enfants                                             | succession directe, droits DMTG ligne directe, affichage une ligne par enfant                                                                                                                                                           | Service-Public F35794                                                                   | `successionDisplay.test.ts`, `successionValidationMatrix.test.ts`                                                                                     |
+| Veuf + enfants                                                    | succession directe, pas de chaînage 2 deces, droits ligne directe sur les enfants                                                                                                                                                       | Service-Public F35794                                                                   | `successionValidationMatrix.test.ts`                                                                                                                  |
+| Divorce + enfants                                                 | succession directe du defunt simule, ex-conjoint hors droits successoraux legaux                                                                                                                                                        | Service-Public F35794                                                                   | `successionValidationMatrix.test.ts`                                                                                                                  |
+| Marie + enfants communs                                           | chronologie 2 deces, conjoint + descendants selon la lecture civile retenue ; sans DDV, choix legal possible entre usufruit total et 1/4 PP ; sans choix explicite, le module peut rester sur une hypothese moteur affichee comme telle | Service-Public F35794 / Code civil art. 757 et 758-3                                    | `successionChainage.test.ts`, `successionDevolution.test.ts`                                                                                          |
+| Marie + enfant non commun                                         | l'enfant propre n'apparait que sur la branche du parent defunt, avec libelle stable dans la synthese meme en famille recomposee                                                                                                         | Code civil art. 757 / 757-1                                                             | `successionChainage.test.ts`, `successionValidationMatrix.test.ts`                                                                                    |
+| Marie + testament (conjoint / enfant)                             | la chronologie 2 deces retient le testament du cote decede a chaque etape ; l'ordre inverse change le testament retenu et les beneficiaires exportes                                                                                    | Code civil art. 757 / 913 et s.                                                         | `successionChainage.test.ts`, `successionExport.chainage.test.ts`, `successionValidationMatrix.test.ts`                                               |
+| Marie + communaute universelle + attribution integrale            | le 1er deces transmet economiquement 100 % au conjoint survivant, sans droits descendants au 1er deces ; la taxation des descendants est reportee au 2e deces                                                                           | Code civil / avantage matrimonial ; CGI art. 796-0 bis pour l'exoneration du conjoint   | `successionChainage.test.ts`                                                                                                                          |
+| PACS sans testament                                               | pas de vocation successorale legale automatique du partenaire, lecture directe du deces simule                                                                                                                                          | Service-Public F1621                                                                    | `successionDevolution.test.ts`, `successionValidationMatrix.test.ts`                                                                                  |
+| PACS avec testament                                               | le partenaire peut apparaitre dans la synthese directe et le chainage 2 deces, avec exoneration DMTG sur la part leguee                                                                                                                 | Service-Public F1621 / F35794                                                           | `successionDisplay.test.ts`, `successionValidationMatrix.test.ts`, `successionChainage.pacsApplicability.test.ts`                                     |
+| PACS avec ordre inverse                                           | l'ordre inverse sert a choisir le partenaire simule comme defunt; le chainage reste conditionne a un testament partenaire actif                                                                                                         | Service-Public F1621                                                                    | `successionValidationMatrix.test.ts`, `scDeathTimelinePanel.test.tsx`, `tests/e2e/succession.spec.ts`, `successionChainage.pacsApplicability.test.ts` |
+| Union libre + indivision                                          | seule la quote-part du defunt sur l'indivision est retenue, hypothese 50/50 par defaut                                                                                                                                                  | Service-Public F904                                                                     | `successionDisplay.test.ts`, `successionValidationMatrix.test.ts`                                                                                     |
+| Enfant decede represente par petits-enfants                       | representation successorale simplifiee par branche                                                                                                                                                                                      | Code civil art. 751 et s.                                                               | `successionDevolution.test.ts`, `successionChainage.test.ts`                                                                                          |
+| Usufruit / nue-propriete du conjoint                              | valorisation selon art. 669 CGI si la date de naissance est renseignee                                                                                                                                                                  | CGI art. 669                                                                            | `successionUsufruit.test.ts`, `successionDevolution.test.ts`, `successionChainage.test.ts`                                                            |
+| GFA/GFV > 600 kEUR par beneficiaire                               | l'exoneration 75 % / 50 % est appliquee sur la quote-part de chaque beneficiaire, pas sur l'entry globale                                                                                                                               | CGI art. 793 bis                                                                        | `successionAssetValuation.forfait-actifs.test.ts`, `successionValidationMatrix.test.ts`                                                               |
+| Prevoyance deces pure non rachetable (art. L132-23 C. assurances) | 990 I avant 70 ans : assiette = derniere prime annuelle ou prime unique (CGI annexe II art. 306-0 F) ; 757 B apres 70 ans : assiette = primes versees apres 70 ans (proxy : derniere prime saisie) ; exoneration conjoint/PACS          | BOI-TCAS-AUT-60 §80 §170 / CGI art. 990 I / CGI art. 757 B / CGI annexe II art. 306-0 F | `successionPrevoyanceFiscal.test.ts`, `successionDeathInsuranceAllowances.test.ts`                                                                    |
 
 En pratique, chaque PR corrective du module succession doit ajouter ou mettre a jour au moins un test rattache a cette matrice. La PR finale de consolidation verifie que les cas ci-dessus restent coherents entre affichage, moteur et exports.
 
 ## 4) Placement
 
 ### Ce que SER1 calcule
+
 Le simulateur placement compare 2 produits / enveloppes sur 3 temps :
+
 - phase d'epargne
 - phase de liquidation
 - phase de transmission
 
 ### Enveloppes actuellement prises en charge
+
 - assurance-vie
 - PER
 - PEA
@@ -309,6 +339,7 @@ Le simulateur placement compare 2 produits / enveloppes sur 3 temps :
 - SCPI
 
 ### Entrees principales
+
 - profil client (age, TMI, etc.)
 - 2 produits a comparer
 - versement initial, versements annuels et ponctuels
@@ -317,6 +348,7 @@ Le simulateur placement compare 2 produits / enveloppes sur 3 temps :
 - dossier fiscal unifie
 
 ### Sorties principales
+
 - capital acquis
 - effort d'epargne reel
 - economie d'IR quand applicable
@@ -326,12 +358,14 @@ Le simulateur placement compare 2 produits / enveloppes sur 3 temps :
 - comparaison produit 1 / produit 2
 
 ### Ce qui est couvert
+
 - capitalisation et distribution selon enveloppe
 - fiscalite differenciee selon enveloppe
 - transmission avec regimes AV / PER / DMTG simplifie selon cas
 - comparaison de deux scenarios homogenes dans une meme interface
 
 ### Limites connues
+
 - le simulateur est un comparateur de scenarios, pas un back-office produit exhaustif
 - le catalogue complet "Base-Contrat" n'est pas encore integre comme moteur universel de tous les produits
 - certaines hypotheses restent simplifiees par rapport a la realite commerciale ou fiscale
@@ -339,9 +373,11 @@ Le simulateur placement compare 2 produits / enveloppes sur 3 temps :
 ## 5) PER
 
 ### Ce que SER1 calcule
+
 La surface `/sim/per` est un hub avec deux parcours actifs. `Controle du potentiel epargne retraite` reprend la logique pedagogique du classeur PER 2025 pour verifier les plafonds de deduction, accompagner la declaration 2042 et simuler l'impact fiscal d'un versement. `Transfert epargne retraite` compare un contrat actuel avec un nouveau PER, en s'appuyant sur la Base CG retraite, les hypotheses de releve, les sorties rente/capital et la fiscalite issue du contexte fiscal unifie.
 
 ### Entrees principales
+
 - choix du mode : controle du potentiel ou declaration 2042 N-1
 - avis IR N-2 facultatif pour reconstituer les reports
 - situation familiale, nombre de parts et parent isole
@@ -353,6 +389,7 @@ La surface `/sim/per` est un hub avec deux parcours actifs. `Controle du potenti
 - hypotheses du nouveau PER : frais, performance, rente, capital unique et capital fractionne
 
 ### Sorties principales
+
 - situation fiscale estimee (TMI, IR, CEHR, marge dans la TMI)
 - plafond 163 quatervicies par declarant, avec reports N-1 a N-3
 - plafond Madelin 154 bis pour les TNS
@@ -363,6 +400,7 @@ La surface `/sim/per` est un hub avec deux parcours actifs. `Controle du potenti
 - exports PPTX et XLSX de synthese
 
 ### Ce qui est couvert
+
 - parcours pedagogique issu de l'Excel 2025
 - plafond personnel PER (163 quatervicies)
 - report en avant sur 3 ans
@@ -374,6 +412,7 @@ La surface `/sim/per` est un hub avec deux parcours actifs. `Controle du potenti
 - liquidation PER : rente, capital unique, capital fractionne, fiscalite brut / net de PS / net de PS et IR quand applicable
 
 ### Limites connues
+
 - le parcours n'est pas une declaration 2042 exhaustive case par case
 - les cas de deblocage anticipe restent hors perimetre de ce module
 - la parite workbook doit rester surveillee sur les cas limites, surtout si le classeur source evolue
@@ -381,9 +420,11 @@ La surface `/sim/per` est un hub avec deux parcours actifs. `Controle du potenti
 ## 6) Credit
 
 ### Ce que SER1 calcule
+
 Le simulateur credit calcule des echeanciers de prets et des agregats de cout / assurance pour 1 a 3 prets.
 
 ### Entrees principales
+
 - capital
 - duree
 - taux
@@ -394,6 +435,7 @@ Le simulateur credit calcule des echeanciers de prets et des agregats de cout / 
 - options de lissage et dates de depart
 
 ### Sorties principales
+
 - mensualites
 - interets
 - assurance
@@ -403,6 +445,7 @@ Le simulateur credit calcule des echeanciers de prets et des agregats de cout / 
 - capital deces associe aux prets assures
 
 ### Ce qui est couvert
+
 - jusqu'a 3 prets dans la meme simulation
 - lissage du pret principal selon les autres prets
 - agregations globales pour l'echeancier
@@ -414,6 +457,7 @@ Le simulateur credit calcule des echeanciers de prets et des agregats de cout / 
 Au chargement ou après un reset, le formulaire de saisie est toujours visible. La synthèse et l'échéancier n'apparaissent que dès qu'au moins un capital est saisi sur l'un des prêts (`calc.synthese.capitalEmprunte > 0`).
 
 Le **mode effectif** (simplifié / expert) suit la règle suivante :
+
 - Si l'utilisateur n'a pas choisi de mode localement (`localMode = null`) et que le mode global est expert mais qu'aucun capital n'est encore saisi, le mode est forcé en **simplifié** (affichage minimal : Montant + Durée + Taux seulement).
 - Dès qu'un capital est saisi sur n'importe quel prêt, le mode expert s'active automatiquement (les champs Type de crédit, Date de souscription et la section Assurance emprunteur apparaissent).
 - Un toggle mode local peut être utilisé par l'utilisateur pour forcer le mode sans dépendre du capital saisi. Ce choix local est réinitialisé au reset.
@@ -421,6 +465,7 @@ Le **mode effectif** (simplifié / expert) suit la règle suivante :
 ### UX — Disposition des inputs (mode expert)
 
 En mode expert, les inputs crédit sont organisés en deux grilles :
+
 - Grille 2 colonnes : Montant emprunté | Durée (toujours visible)
 - Grille 3 colonnes : Taux annuel (crédit) | Type de crédit | Date de souscription
 - Section Assurance emprunteur (grille 3 colonnes) : Mode de calcul | Taux annuel (assurance) | Quotité assurée
@@ -428,6 +473,7 @@ En mode expert, les inputs crédit sont organisés en deux grilles :
 En mode simplifié, seuls Montant, Durée et Taux annuel sont affichés.
 
 ### Limites connues
+
 - pas de scoring bancaire ni d'accord de financement
 - pas de TAEG reglementaire complet
 - pas de modelisation juridique detaillee des contrats d'assurance emprunteur
@@ -439,6 +485,7 @@ Le simulateur `/sim/tresorerie-societe` projette une société soumise à l’IS
 Source de vérité runtime : `TresoInputsV2`. L’ancien modèle `TresoInputs` est accepté uniquement pour migrer les anciennes sessions au chargement.
 
 ### Périmètre calculé
+
 - Société à créer ou existante : capital social, réserves, trésorerie, frais annuels, associés et droits économiques.
 - CCA par associé : CCA initial, apports annuels, fin des apports et remboursement au créancier déclaré.
 - Associés : pleine propriété, usufruit, nue-propriété, qualités dirigeantes et rémunérations.
@@ -448,6 +495,7 @@ Source de vérité runtime : `TresoInputsV2`. L’ancien modèle `TresoInputs` e
 - Allocation : matrice de cinq poches maximum, seuil de balayage, lots datés, répétition au terme.
 
 ### Conventions métier
+
 - L’intégration fiscale est une estimation déclarative agrégée, non une validation juridique.
 - Le taux réduit d’IS est appliqué seulement si l’option société l’autorise ; sinon toute la base IS passe au taux normal.
 - Les charges sociales TNS sur dividendes utilisent un taux manuel et sont payées par la société en N+1.
@@ -455,11 +503,13 @@ Source de vérité runtime : `TresoInputsV2`. L’ancien modèle `TresoInputs` e
 - Les exports consomment les lignes de projection sans recalcul métier.
 
 ### Limites connues
+
 - Pas de mini-liasse fiscale, pas de contrôle juridique des régimes mère-fille ou intégration fiscale.
 - Plus-value sur titres modélisée comme une estimation prudente à partir du prix de cession et de la valeur fiscale saisie.
 - La réserve légale et les pactes/statuts ne sont pas modélisés dans cette version.
 
 ## Ce qui ne doit pas etre sur-vendu aujourd'hui
+
 - Les pages "upcoming" ne sont pas des simulateurs metier finalises.
 - SER1 ne remplace ni un logiciel de declaration fiscale, ni un logiciel notarial, ni un moteur bancaire de souscription.
 - La valeur actuelle du produit est : comparer, expliquer, illustrer et fiabiliser des scenarios de conseil patrimonial.
@@ -469,10 +519,13 @@ Source de vérité runtime : `TresoInputsV2`. L’ancien modèle `TresoInputs` e
 > Migré depuis `docs/GOUVERNANCE.md` — ces règles sont métier, pas UI.
 
 ### Contexte & trajectoire
+
 Le client du CGP est une **personne physique** qui souhaite des conseils sur son patrimoine personnel (PP) ou l'entreprise qu'il détient (PM). Chaque produit du catalogue doit être qualifié selon ce prisme.
 
 ### Règle de regroupement des produits (3 phases fiscales)
+
 On peut regrouper des produits **uniquement** si les 3 phases fiscales sont identiques :
+
 1. **Constitution** — taxation des revenus (intérêts, dividendes, loyers…)
 2. **Sortie / Rachat** — fiscalité de la cession ou du rachat
 3. **Décès / Transmission** — fiscalité successorale (DMTG, exonérations…)
@@ -480,21 +533,23 @@ On peut regrouper des produits **uniquement** si les 3 phases fiscales sont iden
 > Exemple : on ne regroupe PAS les GFA/GFV et les GFF car l'exonération DMTG relève d'articles différents (art. 793 bis vs art. 793 1° 3° CGI).
 
 ### Taxonomie des familles (grandeFamille)
-| Famille | Contenu | Type |
-|---------|---------|------|
-| Épargne Assurance | AV, contrat de capitalisation | Wrappers (épargne) |
-| Assurance prévoyance | Prévoyance décès, ITT/invalidité, dépendance, emprunteur, obsèques, homme-clé | Protections |
-| Épargne bancaire | Livrets, PEL, CEL, CAT, CSL, PEAC, CTO, PEA, PEA-PME | Wrappers (comptes/enveloppes) |
-| Valeurs mobilières | Actions, FCPR, FCPI, FIP, OPCI, parts sociales, titres participatifs, BSA/DPS | Actifs détenus en direct |
-| Immobilier direct | RP, RS, locatif nu, LMNP, LMP, garages, terrains | Actifs |
-| Immobilier indirect | SCPI, GFA/GFV, GFF | Actifs (pierre-papier) |
-| Non coté/PE | Actions non cotées, crowdfunding, obligations non cotées, SOFICA, IR-PME | Actifs |
-| Créances/Droits | Compte courant associé, prêt entre particuliers, usufruit/nue-propriété | Actifs |
-| Dispositifs fiscaux immobilier | Pinel, Malraux, MH, Scellier, Denormandie… | Overlays fiscaux |
-| Retraite & épargne salariale | PER, PEE, PERCOL, PERCO, Art. 83/39, Madelin, PERP | Wrappers |
-| Autres | Métaux précieux, crypto-actifs, tontine | Actifs divers |
+
+| Famille                        | Contenu                                                                       | Type                          |
+| ------------------------------ | ----------------------------------------------------------------------------- | ----------------------------- |
+| Épargne Assurance              | AV, contrat de capitalisation                                                 | Wrappers (épargne)            |
+| Assurance prévoyance           | Prévoyance décès, ITT/invalidité, dépendance, emprunteur, obsèques, homme-clé | Protections                   |
+| Épargne bancaire               | Livrets, PEL, CEL, CAT, CSL, PEAC, CTO, PEA, PEA-PME                          | Wrappers (comptes/enveloppes) |
+| Valeurs mobilières             | Actions, FCPR, FCPI, FIP, OPCI, parts sociales, titres participatifs, BSA/DPS | Actifs détenus en direct      |
+| Immobilier direct              | RP, RS, locatif nu, LMNP, LMP, garages, terrains                              | Actifs                        |
+| Immobilier indirect            | SCPI, GFA/GFV, GFF                                                            | Actifs (pierre-papier)        |
+| Non coté/PE                    | Actions non cotées, crowdfunding, obligations non cotées, SOFICA, IR-PME      | Actifs                        |
+| Créances/Droits                | Compte courant associé, prêt entre particuliers, usufruit/nue-propriété       | Actifs                        |
+| Dispositifs fiscaux immobilier | Pinel, Malraux, MH, Scellier, Denormandie…                                    | Overlays fiscaux              |
+| Retraite & épargne salariale   | PER, PEE, PERCOL, PERCO, Art. 83/39, Madelin, PERP                            | Wrappers                      |
+| Autres                         | Métaux précieux, crypto-actifs, tontine                                       | Actifs divers                 |
 
 ### Règles de holdability (PP / PM)
+
 - **Résidence secondaire** : PP-only.
 - **LMNP / LMP** : PP-only.
 - **Épargne réglementée** (Livret A, LDDS, LEP, Livret Jeune, PEL, CEL) : PP-only.
@@ -503,17 +558,19 @@ On peut regrouper des produits **uniquement** si les 3 phases fiscales sont iden
 - Les produits PP+PM sont **splittés** en deux lignes dans le catalogue V5.
 
 ### Produits non directement souscriptibles (exclus du catalogue)
+
 - OPC / OPCVM / SICAV / FCP / ETF → sous-jacents de CTO/PEA, pas de souscription directe.
 - FCPE → sous-jacent de PEE/PERCOL.
 
 ---
 
 ## Repartition des sources de verite
-| Sujet | Doc de reference |
-|---|---|
-| Ce que le produit calcule et ses limites | `docs/METIER.md` |
-| Structure des routes, features et pages | `docs/ARCHITECTURE.md` |
-| Contrat UI, baseline `/sim/*`, theming | `docs/GOUVERNANCE.md` |
-| Contrat PPTX/XLSX et wrappers d’export | `docs/GOUVERNANCE_EXPORTS.md` |
-| Exploitation, Supabase, debug, procedures | `docs/RUNBOOK.md` |
-| Priorites et reste a faire | `docs/ROADMAP.md` |
+
+| Sujet                                     | Doc de reference              |
+| ----------------------------------------- | ----------------------------- |
+| Ce que le produit calcule et ses limites  | `docs/METIER.md`              |
+| Structure des routes, features et pages   | `docs/ARCHITECTURE.md`        |
+| Contrat UI, baseline `/sim/*`, theming    | `docs/GOUVERNANCE.md`         |
+| Contrat PPTX/XLSX et wrappers d’export    | `docs/GOUVERNANCE_EXPORTS.md` |
+| Exploitation, Supabase, debug, procedures | `docs/RUNBOOK.md`             |
+| Priorites et reste a faire                | `docs/ROADMAP.md`             |

@@ -1,8 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import {
-  resolveEffectiveUserMode,
-  shouldDisplayForDetailLevel,
-} from './userModeDisplay';
+import { resolveEffectiveUserMode, shouldDisplayForDetailLevel } from './userModeDisplay';
 
 describe('userModeDisplay', () => {
   it('priorise un override local sans modifier le mode global', () => {

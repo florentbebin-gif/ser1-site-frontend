@@ -49,8 +49,12 @@ export function CollapsibleTable<Row>({
     if (!wrap || !top) return;
     const spacer = top.firstElementChild as HTMLElement;
     if (spacer) spacer.style.width = `${wrap.scrollWidth}px`;
-    const onTop = () => { wrap.scrollLeft = top.scrollLeft; };
-    const onWrap = () => { top.scrollLeft = wrap.scrollLeft; };
+    const onTop = () => {
+      wrap.scrollLeft = top.scrollLeft;
+    };
+    const onWrap = () => {
+      top.scrollLeft = wrap.scrollLeft;
+    };
     top.addEventListener('scroll', onTop);
     wrap.addEventListener('scroll', onWrap);
     return () => {
@@ -75,18 +79,24 @@ export function CollapsibleTable<Row>({
         onClick={handleToggle}
         aria-expanded={open}
       >
-        <span>{title} ({rows.length} années)</span>
+        <span>
+          {title} ({rows.length} années)
+        </span>
         <ChevronIcon open={open} />
       </button>
 
       {open && (
         <>
-          <div ref={topRef} className="pl-table-top-scroll"><div /></div>
+          <div ref={topRef} className="pl-table-top-scroll">
+            <div />
+          </div>
           <div ref={scrollRef} className="pl-table-scroll-wrap">
             <table className="pl-ir-table pl-detail-table">
               <thead>
                 <tr>
-                  {columns.map((column, index) => <th key={index}>{column}</th>)}
+                  {columns.map((column, index) => (
+                    <th key={index}>{column}</th>
+                  ))}
                 </tr>
               </thead>
               <tbody>{rows.map((row, index) => renderRow(row, index))}</tbody>

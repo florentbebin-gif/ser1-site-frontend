@@ -13,7 +13,11 @@
  */
 
 import type PptxGenJS from 'pptxgenjs';
-import type { PlacementSynthesisSlideSpec, PlacementProductKpis, ExportContext } from '../theme/types';
+import type {
+  PlacementSynthesisSlideSpec,
+  PlacementProductKpis,
+  ExportContext,
+} from '../theme/types';
 import {
   TYPO,
   SHADOW_PARAMS,
@@ -25,11 +29,7 @@ import {
 } from '../designSystem/serenity';
 import { MASTER_NAMES } from '../template/loadBaseTemplate';
 import { addBusinessIconToSlide } from '../icons/addBusinessIcon';
-import {
-  PLACEMENT_KPI_ICONS,
-  PLACEMENT_KPI_LABELS,
-  type PlacementKpiKey,
-} from './placementIcons';
+import { PLACEMENT_KPI_ICONS, PLACEMENT_KPI_LABELS, type PlacementKpiKey } from './placementIcons';
 
 // ============================================================================
 // GEOMETRY
@@ -38,23 +38,23 @@ import {
 const GEO = {
   marginX: 0.85,
   panelW: 5.55,
-  gap: 0.5333,   // 13.3333 - 2*0.85 - 2*5.55
+  gap: 0.5333, // 13.3333 - 2*0.85 - 2*5.55
   panelY: 2.42,
-  panelH: 3.60,
+  panelH: 3.6,
 
   bandeauH: 0.44,
-  roiHeroH: 0.90,
-  separatorOffsetY: 0.44 + 0.90, // bandeau + roiHero
+  roiHeroH: 0.9,
+  separatorOffsetY: 0.44 + 0.9, // bandeau + roiHero
 
   kpiGridPaddingX: 0.18,
   kpiIconSize: 0.22,
-  kpiGridGapX: 0.10,  // gap between left and right KPI columns
+  kpiGridGapX: 0.1, // gap between left and right KPI columns
 
   // Timeline (segments calculés dynamiquement depuis les âges)
   timeline: {
     y: 6.42,
     h: 0.33,
-    startX: 1.00,
+    startX: 1.0,
     endX: 12.33,
   },
 } as const;
@@ -70,7 +70,11 @@ const KPI_GRID: [PlacementKpiKey, PlacementKpiKey][] = [
 // ============================================================================
 
 const fmt = (v: number): string =>
-  new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(v);
+  new Intl.NumberFormat('fr-FR', {
+    style: 'currency',
+    currency: 'EUR',
+    maximumFractionDigits: 0,
+  }).format(v);
 
 function contrastText(bgHex: string): string {
   const clean = bgHex.replace('#', '');
@@ -156,9 +160,9 @@ function drawPanel(
 
   addTextFr(slide, roiValue, {
     x: panelX,
-    y: roiTopY + 0.30,
+    y: roiTopY + 0.3,
     w: GEO.panelW,
-    h: 0.50,
+    h: 0.5,
     fontSize: 26,
     bold: true,
     color: cleanColor,
@@ -178,7 +182,7 @@ function drawPanel(
 
   // 2×2 KPI grid
   const gridTopY = sepY + 0.12;
-  const gridAvailH = (GEO.panelY + GEO.panelH) - gridTopY - 0.20;
+  const gridAvailH = GEO.panelY + GEO.panelH - gridTopY - 0.2;
   const rowH = gridAvailH / 2;
   const colW = (GEO.panelW - GEO.kpiGridPaddingX * 2 - GEO.kpiGridGapX) / 2;
 
@@ -189,12 +193,17 @@ function drawPanel(
       const cellX = panelX + GEO.kpiGridPaddingX + colIdx * (colW + GEO.kpiGridGapX);
       const value = produit[key];
 
-      addBusinessIconToSlide(slide, PLACEMENT_KPI_ICONS[key], {
-        x: cellX,
-        y: cellY + 0.04,
-        w: GEO.kpiIconSize,
-        h: GEO.kpiIconSize,
-      }, `#${cleanColor}`);
+      addBusinessIconToSlide(
+        slide,
+        PLACEMENT_KPI_ICONS[key],
+        {
+          x: cellX,
+          y: cellY + 0.04,
+          w: GEO.kpiIconSize,
+          h: GEO.kpiIconSize,
+        },
+        `#${cleanColor}`,
+      );
 
       addTextFr(slide, PLACEMENT_KPI_LABELS[key], {
         x: cellX,
@@ -227,27 +236,24 @@ function drawPanel(
 // VS SEPARATOR
 // ============================================================================
 
-function drawVsSeparator(
-  slide: PptxGenJS.Slide,
-  theme: ExportContext['theme'],
-): void {
+function drawVsSeparator(slide: PptxGenJS.Slide, theme: ExportContext['theme']): void {
   const centerX = GEO.marginX + GEO.panelW + GEO.gap / 2;
 
   // Vertical line
   slide.addShape('line', {
     x: centerX,
-    y: GEO.panelY + 0.30,
+    y: GEO.panelY + 0.3,
     w: 0,
-    h: GEO.panelH - 0.60,
+    h: GEO.panelH - 0.6,
     line: { color: roleColor(theme, 'panelBorder'), width: 0.5 },
   });
 
   // "ou" label
   addTextFr(slide, 'ou', {
-    x: centerX - 0.20,
+    x: centerX - 0.2,
     y: GEO.panelY + GEO.panelH / 2 - 0.15,
-    w: 0.40,
-    h: 0.30,
+    w: 0.4,
+    h: 0.3,
     fontSize: TYPO.sizes.footer + 1,
     italic: true,
     color: roleColor(theme, 'textBody'),
@@ -276,9 +282,10 @@ function drawTimeline(
   const durationEpargne = timeline.ageDebutLiquidation - timeline.ageActuel;
   const hasLiquidation = timeline.ageAuDeces > timeline.ageDebutLiquidation;
 
-  const ratio = (durationTotal > 0 && hasLiquidation)
-    ? Math.min(1, Math.max(0, durationEpargne / durationTotal))
-    : 1;
+  const ratio =
+    durationTotal > 0 && hasLiquidation
+      ? Math.min(1, Math.max(0, durationEpargne / durationTotal))
+      : 1;
 
   const seg1X = tl.startX;
   const seg1W = totalW * ratio;
@@ -287,11 +294,17 @@ function drawTimeline(
 
   // Segment 1 — Épargne (toujours présent)
   slide.addShape('rect', {
-    x: seg1X, y: tl.y, w: seg1W, h: tl.h,
+    x: seg1X,
+    y: tl.y,
+    w: seg1W,
+    h: tl.h,
     fill: { color: bgMainColor },
   });
   addTextFr(slide, seg1W >= 1.5 ? 'Phase Épargne' : 'Épargne', {
-    x: seg1X, y: tl.y, w: seg1W, h: tl.h,
+    x: seg1X,
+    y: tl.y,
+    w: seg1W,
+    h: tl.h,
     fontSize: TYPO.sizes.footer,
     italic: true,
     color: 'FFFFFF',
@@ -302,11 +315,17 @@ function drawTimeline(
   // Segment 2 — Liquidation / Transmission (seulement si hasLiquidation)
   if (hasLiquidation) {
     slide.addShape('rect', {
-      x: seg2X, y: tl.y, w: seg2W, h: tl.h,
+      x: seg2X,
+      y: tl.y,
+      w: seg2W,
+      h: tl.h,
       fill: { color: color4 },
     });
     addTextFr(slide, seg2W >= 2.0 ? 'Liquidation / Transmission' : 'Liquidation', {
-      x: seg2X, y: tl.y, w: seg2W, h: tl.h,
+      x: seg2X,
+      y: tl.y,
+      w: seg2W,
+      h: tl.h,
       fontSize: TYPO.sizes.footer,
       italic: true,
       color: contrastText(color4),
@@ -326,9 +345,9 @@ function drawTimeline(
 
   ageMarkers.forEach(({ x, age, align }) => {
     addTextFr(slide, `${age} ans`, {
-      x: x - 0.60,
+      x: x - 0.6,
       y: tl.y - 0.28,
-      w: 1.20,
+      w: 1.2,
       h: 0.22,
       fontSize: TYPO.sizes.bodyXSmall,
       bold: true,

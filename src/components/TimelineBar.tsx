@@ -22,9 +22,7 @@ const ProgressIcon = (): React.ReactElement => (
   </svg>
 );
 
-const DaggerIcon = (): React.ReactElement => (
-  <span className="pl-timeline__dagger">&dagger;</span>
-);
+const DaggerIcon = (): React.ReactElement => <span className="pl-timeline__dagger">&dagger;</span>;
 
 export function TimelineBar({
   ageActuel,
@@ -69,7 +67,10 @@ export function TimelineBar({
         </div>
 
         {showLiquidationMarker && (
-          <div className="pl-timeline__marker pl-timeline__marker--center" style={{ left: `${Math.min(88, Math.max(12, positionDebutLiquidation))}%` }}>
+          <div
+            className="pl-timeline__marker pl-timeline__marker--center"
+            style={{ left: `${Math.min(88, Math.max(12, positionDebutLiquidation))}%` }}
+          >
             <div className="pl-timeline__line" />
             <div className="pl-timeline__label">
               <span className="pl-timeline__age">{ageDebutLiquidation}</span>

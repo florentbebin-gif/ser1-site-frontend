@@ -40,7 +40,9 @@ export function findLineAmount(
   ...labels: string[]
 ): number {
   const normalizedLabels = labels.map(normalizeLabel);
-  const line = devolution.lines.find((candidate) => normalizedLabels.includes(normalizeLabel(candidate.heritier)));
+  const line = devolution.lines.find((candidate) =>
+    normalizedLabels.includes(normalizeLabel(candidate.heritier)),
+  );
   return asAmount(line?.montantEstime);
 }
 
@@ -53,8 +55,15 @@ export function buildDetailedDescendantHeirs(
 ): { heirs: DetailedHeirInput[]; warnings: string[] } {
   if (amount <= 0) return { heirs: [], warnings: [] };
 
-  const recipients = buildSuccessionDescendantRecipientsForDeceased(enfantsContext, familyMembers, deceased);
-  const abattementOverrides = buildRepresentationAbattementOverrides(recipients, dmtgSettings.ligneDirecte.abattement);
+  const recipients = buildSuccessionDescendantRecipientsForDeceased(
+    enfantsContext,
+    familyMembers,
+    deceased,
+  );
+  const abattementOverrides = buildRepresentationAbattementOverrides(
+    recipients,
+    dmtgSettings.ligneDirecte.abattement,
+  );
   const branchCount = Math.max(
     1,
     countEffectiveDescendantBranchesForDeceased(enfantsContext, familyMembers, deceased),
@@ -69,7 +78,9 @@ export function buildDetailedDescendantHeirs(
         lien: 'enfant' as const,
         partSuccession: amountByBranch,
       })),
-      warnings: ['Repartition descendants: ventilation egale par branche faute d\'identifiants detailles.'],
+      warnings: [
+        "Repartition descendants: ventilation egale par branche faute d'identifiants detailles.",
+      ],
     };
   }
 
@@ -127,9 +138,12 @@ function buildDetailedFamilyHeirs(
       lien,
       partSuccession: amountByHeir,
     })),
-    warnings: members.length > 0
-      ? []
-      : [`Repartition ${baseLabel.toLowerCase()}: ventilation egale faute d'identifiants detailles.`],
+    warnings:
+      members.length > 0
+        ? []
+        : [
+            `Repartition ${baseLabel.toLowerCase()}: ventilation egale faute d'identifiants detailles.`,
+          ],
   };
 }
 
@@ -148,11 +162,25 @@ export function buildParentAndSiblingHeirs(
   const siblingsAmount = findLineAmount(devolution, 'Freres et soeurs');
 
   if (parentsAmount > 0) {
-    const detailedParents = buildDetailedFamilyHeirs(parentsAmount, deceased, 'parent', parentMembers, 2, 'Parent');
+    const detailedParents = buildDetailedFamilyHeirs(
+      parentsAmount,
+      deceased,
+      'parent',
+      parentMembers,
+      2,
+      'Parent',
+    );
     heirs.push(...detailedParents.heirs);
     warnings.push(...detailedParents.warnings);
   } else if (oneParentAmount > 0) {
-    const detailedParent = buildDetailedFamilyHeirs(oneParentAmount, deceased, 'parent', parentMembers, 1, 'Parent');
+    const detailedParent = buildDetailedFamilyHeirs(
+      oneParentAmount,
+      deceased,
+      'parent',
+      parentMembers,
+      1,
+      'Parent',
+    );
     heirs.push(...detailedParent.heirs);
     warnings.push(...detailedParent.warnings);
   }
@@ -179,18 +207,20 @@ export function buildLegalPartnerHeirs(
 ): DetailedHeirInput[] {
   if (civil.situationMatrimoniale !== 'marie') return [];
   const amount = findLineAmount(devolution, 'Conjoint survivant');
-  return amount > 0 ? [{
-    id: 'conjoint',
-    label: 'Conjoint survivant',
-    lien: 'conjoint',
-    partSuccession: amount,
-    exonerated: true,
-  }] : [];
+  return amount > 0
+    ? [
+        {
+          id: 'conjoint',
+          label: 'Conjoint survivant',
+          lien: 'conjoint',
+          partSuccession: amount,
+          exonerated: true,
+        },
+      ]
+    : [];
 }
 
-export function buildTestamentHeirs(
-  devolution: SuccessionDevolutionAnalysis,
-): DetailedHeirInput[] {
+export function buildTestamentHeirs(devolution: SuccessionDevolutionAnalysis): DetailedHeirInput[] {
   return (devolution.testamentDistribution?.beneficiaries ?? []).map((beneficiary) => ({
     id: beneficiary.id,
     label: beneficiary.label,

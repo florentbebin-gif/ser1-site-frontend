@@ -32,7 +32,7 @@ const LAYOUT = {
   marginX: COORDS_CONTENT.margin.x,
   contentWidth: COORDS_CONTENT.margin.w,
   tableY: CONTENT_TOP_Y + 0.05,
-  tableMaxH: CONTENT_BOTTOM_Y - CONTENT_TOP_Y - 0.10,
+  tableMaxH: CONTENT_BOTTOM_Y - CONTENT_TOP_Y - 0.1,
 } as const;
 
 // ============================================================================
@@ -55,7 +55,10 @@ function lightenColor(hex: string, factor: number): string {
 /**
  * Paginate years into chunks of maxPerPage
  */
-export function paginateYears(totalYears: number, maxPerPage: number = MAX_YEARS_PER_PAGE): number[][] {
+export function paginateYears(
+  totalYears: number,
+  maxPerPage: number = MAX_YEARS_PER_PAGE,
+): number[][] {
   const pages: number[][] = [];
   for (let i = 0; i < totalYears; i += maxPerPage) {
     const page: number[] = [];
@@ -94,7 +97,7 @@ export function buildPlacementProjection(
 
   // Row height & font sizes (adaptive)
   const calculatedRowH = Math.min(0.25, Math.max(0.18, LAYOUT.tableMaxH / (totalDataRows + 1)));
-  const baseFontSize = totalDataRows > 8 ? 7 : (totalDataRows > 5 ? 8 : 9);
+  const baseFontSize = totalDataRows > 8 ? 7 : totalDataRows > 5 ? 8 : 9;
   const smallFontSize = Math.max(6, baseFontSize - 1);
 
   // Colors
@@ -118,7 +121,7 @@ export function buildPlacementProjection(
         valign: 'middle' as const,
       },
     },
-    ...spec.yearsForPage.map(year => ({
+    ...spec.yearsForPage.map((year) => ({
       text: `An ${year}`,
       options: {
         fill: { color: headerFill },
@@ -134,9 +137,7 @@ export function buildPlacementProjection(
 
   // Death year column highlighting
   const deathColor = lightenColor(theme.colors.color5, 0.55);
-  const deathYearSet = new Set(
-    spec.deathYearIndex != null ? [spec.deathYearIndex] : [],
-  );
+  const deathYearSet = new Set(spec.deathYearIndex != null ? [spec.deathYearIndex] : []);
 
   // Data rows
   spec.rows.forEach((row, idx) => {
@@ -144,7 +145,7 @@ export function buildPlacementProjection(
     const baseFill = isAlt ? altRowColor : 'FFFFFF';
 
     // Find values for the years on this page
-    const values = spec.yearsForPage.map(year => {
+    const values = spec.yearsForPage.map((year) => {
       const valueIdx = year - 1; // yearsForPage is 1-based
       return valueIdx < row.values.length ? euro(row.values[valueIdx]) : '—';
     });

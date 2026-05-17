@@ -31,7 +31,7 @@
   font-size: 13px;
   font-weight: 500;
   border: none;
-  background: #FFFFFF;
+  background: #ffffff;
   color: var(--color-c9);
   cursor: pointer;
   transition: all 0.2s;
@@ -48,7 +48,7 @@
 
 .cv-pill-toggle__btn.is-active {
   background: var(--color-c2);
-  color: #FFFFFF;
+  color: #ffffff;
   font-weight: 600;
 }
 
@@ -67,18 +67,13 @@
 }
 
 .cv-tabs__list::after {
-  content: "";
+  content: '';
   position: absolute;
   left: 0;
   right: 0;
   bottom: 0;
   height: 2px;
-  background: linear-gradient(
-    to right,
-    var(--color-c8) 0%,
-    var(--color-c8) 85%,
-    transparent 100%
-  );
+  background: linear-gradient(to right, var(--color-c8) 0%, var(--color-c8) 85%, transparent 100%);
 }
 
 .cv-tabs__tab {
@@ -90,7 +85,9 @@
   font-weight: 400;
   color: var(--color-c9);
   cursor: pointer;
-  transition: color 0.2s, border-color 0.2s;
+  transition:
+    color 0.2s,
+    border-color 0.2s;
   display: flex;
   align-items: center;
   gap: 6px;
@@ -137,12 +134,14 @@
   font-size: 14px;
   font-weight: 700;
   line-height: 1;
-  transition: background 0.2s, color 0.2s;
+  transition:
+    background 0.2s,
+    color 0.2s;
 }
 
 .cv-tabs__tab.is-addable:hover .cv-tabs__add-badge {
   background: var(--color-c2);
-  color: #FFFFFF;
+  color: #ffffff;
 }
 
 /* point 9 â€” wrapper tab + bouton Ã— (sibling HTML valide) */
@@ -168,7 +167,10 @@
   line-height: 1;
   cursor: pointer;
   opacity: 0;
-  transition: opacity 0.15s, background 0.15s, color 0.15s;
+  transition:
+    opacity 0.15s,
+    background 0.15s,
+    color 0.15s;
   padding: 0;
   margin-left: -8px; /* recouvre lÃ©gÃ¨rement le padding-right du tab */
   margin-right: 4px;
@@ -202,4 +204,3 @@
 .premium-card + .premium-card {
   margin-top: 20px;
 }
-

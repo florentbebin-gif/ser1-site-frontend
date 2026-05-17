@@ -4,10 +4,7 @@
 
 import { useMemo, useState } from 'react';
 import { euro0, addMonths, labelMonthFR } from '../utils/creditFormatters';
-import type {
-  CreditScheduleRow,
-  CreditScheduleTableProps,
-} from '../types';
+import type { CreditScheduleRow, CreditScheduleTableProps } from '../types';
 
 interface AnnualScheduleRow {
   year: string;
@@ -62,7 +59,9 @@ function aggregateAnnual(
   return Array.from(buckets.values());
 }
 
-function isMonthlyScheduleRow(row: AnnualScheduleRow | MonthlyScheduleRow): row is MonthlyScheduleRow {
+function isMonthlyScheduleRow(
+  row: AnnualScheduleRow | MonthlyScheduleRow,
+): row is MonthlyScheduleRow {
   return 'period' in row;
 }
 
@@ -80,7 +79,9 @@ export function CreditScheduleTable({
     if (!rows || rows.length === 0) return [];
     if (isAnnual) return aggregateAnnual(rows, startYM);
     return rows
-      .map((row, index) => (row ? { ...row, period: labelMonthFR(addMonths(startYM, index)) } : null))
+      .map((row, index) =>
+        row ? { ...row, period: labelMonthFR(addMonths(startYM, index)) } : null,
+      )
       .filter((row): row is MonthlyScheduleRow => row !== null);
   }, [rows, startYM, isAnnual]);
 
@@ -122,9 +123,7 @@ export function CreditScheduleTable({
               <tr>
                 <th className="cv-table__th">Période</th>
                 <th className="cv-table__th cv-table__th--right">Intérêts</th>
-                {!hideInsurance && (
-                  <th className="cv-table__th cv-table__th--right">Assurance</th>
-                )}
+                {!hideInsurance && <th className="cv-table__th cv-table__th--right">Assurance</th>}
                 <th className="cv-table__th cv-table__th--right">Amort.</th>
                 <th className="cv-table__th cv-table__th--right">
                   {isAnnual ? 'Annuité' : 'Mensualité'}
@@ -138,10 +137,14 @@ export function CreditScheduleTable({
             <tbody>
               {displayRows.map((row, index) => (
                 <tr key={index} className="cv-table__row">
-                  <td className="cv-table__td">{isMonthlyScheduleRow(row) ? row.period : row.year}</td>
+                  <td className="cv-table__td">
+                    {isMonthlyScheduleRow(row) ? row.period : row.year}
+                  </td>
                   <td className="cv-table__td cv-table__td--right">{euro0(row.interet ?? 0)}</td>
                   {!hideInsurance && (
-                    <td className="cv-table__td cv-table__td--right">{euro0(row.assurance ?? 0)}</td>
+                    <td className="cv-table__td cv-table__td--right">
+                      {euro0(row.assurance ?? 0)}
+                    </td>
                   )}
                   <td className="cv-table__td cv-table__td--right">{euro0(row.amort ?? 0)}</td>
                   <td className="cv-table__td cv-table__td--right cv-table__td--bold">

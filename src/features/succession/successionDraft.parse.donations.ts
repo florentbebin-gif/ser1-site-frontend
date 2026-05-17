@@ -20,7 +20,10 @@ export function parseDonations(rawDonations: unknown): SuccessionDonationEntry[]
       if (!isDonationEntryType(item.type)) return null;
 
       const donation: SuccessionDonationEntry = {
-        id: typeof item.id === 'string' && item.id.trim().length > 0 ? item.id.trim() : `don-${idx + 1}`,
+        id:
+          typeof item.id === 'string' && item.id.trim().length > 0
+            ? item.id.trim()
+            : `don-${idx + 1}`,
         type: item.type,
         montant: asAmount(item.montant, 0),
       };
@@ -43,7 +46,8 @@ export function parseDonations(rawDonations: unknown): SuccessionDonationEntry[]
         donation.usufruitSuccessifBeneficiaire = item.usufruitSuccessifBeneficiaire;
       }
       const sourceDonationPartageActId = normalizeOptionalString(item.sourceDonationPartageActId);
-      if (sourceDonationPartageActId) donation.sourceDonationPartageActId = sourceDonationPartageActId;
+      if (sourceDonationPartageActId)
+        donation.sourceDonationPartageActId = sourceDonationPartageActId;
 
       return donation;
     })
@@ -110,9 +114,7 @@ export function parseDonationPartageActs(rawActs: unknown): SuccessionDonationPa
     .filter((item): item is SuccessionDonationPartageAct => item !== null);
 }
 
-export function extractLegacyDonationPartageActs(
-  donations: SuccessionDonationEntry[],
-): {
+export function extractLegacyDonationPartageActs(donations: SuccessionDonationEntry[]): {
   donations: SuccessionDonationEntry[];
   donationPartageActs: SuccessionDonationPartageAct[];
 } {

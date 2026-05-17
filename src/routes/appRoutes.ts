@@ -64,27 +64,33 @@ const Placement = lazy(() =>
 const Credit = lazy(() =>
   import('../features/credit').then(({ CreditPage }) => ({ default: CreditPage })),
 );
-const Ir = lazy(() =>
-  import('../features/ir').then(({ IrPage }) => ({ default: IrPage })),
-);
+const Ir = lazy(() => import('../features/ir').then(({ IrPage }) => ({ default: IrPage })));
 const AuditWizard = lazy(() =>
   import('../features/audit').then(({ AuditWizard }) => ({ default: AuditWizard })),
 );
 const SuccessionSimulator = lazy(() =>
-  import('../features/succession').then(({ SuccessionSimulator }) => ({ default: SuccessionSimulator })),
+  import('../features/succession').then(({ SuccessionSimulator }) => ({
+    default: SuccessionSimulator,
+  })),
 );
-const PerHome = lazy(() =>
-  import('../features/per').then(({ PerHome }) => ({ default: PerHome })),
-);
+const PerHome = lazy(() => import('../features/per').then(({ PerHome }) => ({ default: PerHome })));
 const PerPotentielSimulator = lazy(() =>
-  import('../features/per').then(({ PerPotentielSimulator }) => ({ default: PerPotentielSimulator })),
+  import('../features/per').then(({ PerPotentielSimulator }) => ({
+    default: PerPotentielSimulator,
+  })),
 );
 const PerTransfertSimulator = lazy(() =>
-  import('../features/per').then(({ PerTransfertSimulator }) => ({ default: PerTransfertSimulator })),
+  import('../features/per').then(({ PerTransfertSimulator }) => ({
+    default: PerTransfertSimulator,
+  })),
 );
-const UpcomingSimulatorPage = lazy(() => import('../pages/UpcomingSimulatorPage')) as unknown as LazyExoticComponent<ComponentType<RouteProps>>;
+const UpcomingSimulatorPage = lazy(
+  () => import('../pages/UpcomingSimulatorPage'),
+) as unknown as LazyExoticComponent<ComponentType<RouteProps>>;
 const TresorerieSocietePage = lazy(() =>
-  import('../features/tresorerie-societe').then(({ TresorerieSocietePage }) => ({ default: TresorerieSocietePage })),
+  import('../features/tresorerie-societe').then(({ TresorerieSocietePage }) => ({
+    default: TresorerieSocietePage,
+  })),
 );
 const StrategyPage = lazy(() => import('../pages/StrategyPage'));
 const SettingsShell = lazy(() => import('../pages/SettingsShell'));

@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { computeAnnuityConversion, type PerTransfertAnnuityOptions, type PerTransfertInsuredInput } from '../index';
+import {
+  computeAnnuityConversion,
+  type PerTransfertAnnuityOptions,
+  type PerTransfertInsuredInput,
+} from '../index';
 
 const insured: PerTransfertInsuredInput = {
   sex: 'M',

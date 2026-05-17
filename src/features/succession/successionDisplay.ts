@@ -92,15 +92,14 @@ export interface SuccessionDirectEstateBasis {
   warnings: string[];
 }
 
-
 function getRelevantDeceased(
   civil: SuccessionCivilContext,
   order: 'epoux1' | 'epoux2' | undefined,
 ): 'epoux1' | 'epoux2' {
   if (
-    civil.situationMatrimoniale === 'marie'
-    || civil.situationMatrimoniale === 'pacse'
-    || civil.situationMatrimoniale === 'concubinage'
+    civil.situationMatrimoniale === 'marie' ||
+    civil.situationMatrimoniale === 'pacse' ||
+    civil.situationMatrimoniale === 'concubinage'
   ) {
     return order === 'epoux2' ? 'epoux2' : 'epoux1';
   }
@@ -113,28 +112,35 @@ export function computeSuccessionDirectEstateBasis(
   order?: 'epoux1' | 'epoux2',
 ): SuccessionDirectEstateBasis {
   const simulatedDeceased = getRelevantDeceased(civil, order);
-  const ownAmount = simulatedDeceased === 'epoux1'
-    ? asAmount(liquidation.actifEpoux1)
-    : asAmount(liquidation.actifEpoux2);
+  const ownAmount =
+    simulatedDeceased === 'epoux1'
+      ? asAmount(liquidation.actifEpoux1)
+      : asAmount(liquidation.actifEpoux2);
   const sharedAmount = asAmount(liquidation.actifCommun);
 
   if (civil.situationMatrimoniale === 'concubinage') {
     return {
-      actifNetSuccession: ownAmount + (sharedAmount * 0.5),
+      actifNetSuccession: ownAmount + sharedAmount * 0.5,
       simulatedDeceased,
-      warnings: sharedAmount > 0
-        ? ['Union libre: la quote-part indivise du defunt est estimee a 50 % de la masse en indivision.']
-        : [],
+      warnings:
+        sharedAmount > 0
+          ? [
+              'Union libre: la quote-part indivise du defunt est estimee a 50 % de la masse en indivision.',
+            ]
+          : [],
     };
   }
 
   if (civil.situationMatrimoniale === 'pacse' && civil.pacsConvention === 'indivision') {
     return {
-      actifNetSuccession: ownAmount + (sharedAmount * 0.5),
+      actifNetSuccession: ownAmount + sharedAmount * 0.5,
       simulatedDeceased,
-      warnings: sharedAmount > 0
-        ? ['PACS indivision: la quote-part indivise du defunt est estimee a 50 % dans la succession directe.']
-        : [],
+      warnings:
+        sharedAmount > 0
+          ? [
+              'PACS indivision: la quote-part indivise du defunt est estimee a 50 % dans la succession directe.',
+            ]
+          : [],
     };
   }
 
@@ -153,7 +159,6 @@ export function computeSuccessionDirectEstateBasis(
   };
 }
 
-
 function buildDirectEstatePocketScales(
   civil: SuccessionCivilContext,
   simulatedDeceased: 'epoux1' | 'epoux2',
@@ -167,11 +172,9 @@ function buildDirectEstatePocketScales(
   });
 
   if (
-    sharedPocket
-    && (
-      civil.situationMatrimoniale === 'concubinage'
-      || (civil.situationMatrimoniale === 'pacse' && civil.pacsConvention === 'indivision')
-    )
+    sharedPocket &&
+    (civil.situationMatrimoniale === 'concubinage' ||
+      (civil.situationMatrimoniale === 'pacse' && civil.pacsConvention === 'indivision'))
   ) {
     scales[sharedPocket] = 0.5;
   }
@@ -181,7 +184,9 @@ function buildDirectEstatePocketScales(
 
 export function buildSuccessionChainTransmissionRows(
   analysis: SuccessionChainageAnalysis,
-): SuccessionTransmissionRow[] { return buildSuccessionChainTransmissionRowsInternal(analysis); }
+): SuccessionTransmissionRow[] {
+  return buildSuccessionChainTransmissionRowsInternal(analysis);
+}
 
 export function buildSuccessionDirectDisplayAnalysis(
   input: BuildSuccessionDirectDisplayInput,
@@ -211,17 +216,23 @@ export function buildSuccessionDirectDisplayAnalysis(
   warnings.push(...parentAndSiblingHeirs.warnings);
 
   const redistributableLegalHeirs = [...descendantHeirs.heirs, ...parentAndSiblingHeirs.heirs];
-  const redistributableTotal = redistributableLegalHeirs.reduce((sum, heir) => sum + heir.partSuccession, 0);
+  const redistributableTotal = redistributableLegalHeirs.reduce(
+    (sum, heir) => sum + heir.partSuccession,
+    0,
+  );
 
   const testamentHeirs = buildTestamentHeirs(input.devolution);
   const testamentTotal = testamentHeirs.reduce((sum, heir) => sum + heir.partSuccession, 0);
 
   // BUG 11 fix: for legs_universel / legs_titre_universel targeting the conjoint,
   // apply max(legal, testament) instead of cumulating both.
-  const isUniversalDisposition = input.devolution.testamentDistribution?.dispositionType === 'legs_universel'
-    || input.devolution.testamentDistribution?.dispositionType === 'legs_titre_universel';
+  const isUniversalDisposition =
+    input.devolution.testamentDistribution?.dispositionType === 'legs_universel' ||
+    input.devolution.testamentDistribution?.dispositionType === 'legs_titre_universel';
   const testamentConjointAmount = isUniversalDisposition
-    ? testamentHeirs.filter((h) => h.lien === 'conjoint').reduce((sum, h) => sum + h.partSuccession, 0)
+    ? testamentHeirs
+        .filter((h) => h.lien === 'conjoint')
+        .reduce((sum, h) => sum + h.partSuccession, 0)
     : 0;
   let effectiveProtectedHeirs = protectedHeirs;
   let effectiveTestamentHeirs = testamentHeirs;
@@ -239,11 +250,15 @@ export function buildSuccessionDirectDisplayAnalysis(
 
   const remainingRedistributable = Math.max(
     0,
-    Math.min(redistributableTotal, estateAmount - effectiveProtectedTotal - effectiveTestamentTotal),
+    Math.min(
+      redistributableTotal,
+      estateAmount - effectiveProtectedTotal - effectiveTestamentTotal,
+    ),
   );
-  const scaledRedistributableHeirs = effectiveTestamentHeirs.length > 0 || (isUniversalDisposition && testamentConjointAmount > 0)
-    ? scaleDetailedHeirs(redistributableLegalHeirs, remainingRedistributable)
-    : redistributableLegalHeirs;
+  const scaledRedistributableHeirs =
+    effectiveTestamentHeirs.length > 0 || (isUniversalDisposition && testamentConjointAmount > 0)
+      ? scaleDetailedHeirs(redistributableLegalHeirs, remainingRedistributable)
+      : redistributableLegalHeirs;
 
   const detailedHeirs = mergeDetailedHeirs([
     ...effectiveProtectedHeirs,
@@ -252,24 +267,25 @@ export function buildSuccessionDirectDisplayAnalysis(
   ]);
   const detailedHeirsWithTaxableBasis = input.transmissionBasis
     ? assignBeneficiaryTaxableBasis(
-      detailedHeirs,
-      applyResidencePrincipaleAbatementToEstateBasis(
-        buildSuccessionEstateTaxableBasis(
-          input.transmissionBasis,
-          buildDirectEstatePocketScales(input.civil, simulatedDeceased),
+        detailedHeirs,
+        applyResidencePrincipaleAbatementToEstateBasis(
+          buildSuccessionEstateTaxableBasis(
+            input.transmissionBasis,
+            buildDirectEstatePocketScales(input.civil, simulatedDeceased),
+          ),
+          Boolean(input.abattementResidencePrincipale),
         ),
-        Boolean(input.abattementResidencePrincipale),
-      ),
-      {
-        forfaitMobilierMode: input.forfaitMobilierMode ?? 'off',
-        forfaitMobilierPct: input.forfaitMobilierPct ?? 0,
-        forfaitMobilierMontant: input.forfaitMobilierMontant ?? 0,
-      },
-    )
+        {
+          forfaitMobilierMode: input.forfaitMobilierMode ?? 'off',
+          forfaitMobilierPct: input.forfaitMobilierPct ?? 0,
+          forfaitMobilierMontant: input.forfaitMobilierMontant ?? 0,
+        },
+      )
     : detailedHeirs;
-  const donateurDateNaissance = simulatedDeceased === 'epoux1'
-    ? input.civil.dateNaissanceEpoux1
-    : input.civil.dateNaissanceEpoux2;
+  const donateurDateNaissance =
+    simulatedDeceased === 'epoux1'
+      ? input.civil.dateNaissanceEpoux1
+      : input.civil.dateNaissanceEpoux2;
   const donationRecallResult = applySuccessionDonationRecallToHeirs({
     heirs: detailedHeirsWithTaxableBasis,
     donations: input.donationsContext,
@@ -283,37 +299,45 @@ export function buildSuccessionDirectDisplayAnalysis(
   warnings.push(...buildDonationRecallWarningMessages(donationRecallResult.warnings));
 
   const heirs = toHeritiersInput(detailedHeirsWithDonationRecall);
-  const actifNetSuccession = heirs.reduce((sum, heir) => sum + heir.partSuccession, 0) || estateAmount;
+  const actifNetSuccession =
+    heirs.reduce((sum, heir) => sum + heir.partSuccession, 0) || estateAmount;
   const taxableHeirs = toTaxableHeritiersInput(detailedHeirsWithDonationRecall);
-  const rawResult = taxableHeirs.length > 0
-    ? calculateSuccession({
-      actifNetSuccession,
-      heritiers: taxableHeirs,
-      dmtgSettings: input.dmtgSettings,
-    }).result
+  const rawResult =
+    taxableHeirs.length > 0
+      ? calculateSuccession({
+          actifNetSuccession,
+          heritiers: taxableHeirs,
+          dmtgSettings: input.dmtgSettings,
+        }).result
+      : null;
+  const result = rawResult
+    ? {
+        ...rawResult,
+        actifNetSuccession,
+        detailHeritiers: rawResult.detailHeritiers.map((detail, index) => {
+          const brut = detailedHeirsWithTaxableBasis[index]?.partSuccession ?? detail.partBrute;
+          return {
+            ...detail,
+            partBrute: brut,
+            tauxMoyen: brut > 0 ? Math.round((detail.droits / brut) * 100 * 100) / 100 : 0,
+          };
+        }),
+        tauxMoyenGlobal:
+          actifNetSuccession > 0
+            ? Math.round((rawResult.totalDroits / actifNetSuccession) * 100 * 100) / 100
+            : 0,
+      }
     : null;
-  const result = rawResult ? {
-    ...rawResult,
-    actifNetSuccession,
-    detailHeritiers: rawResult.detailHeritiers.map((detail, index) => {
-      const brut = detailedHeirsWithTaxableBasis[index]?.partSuccession ?? detail.partBrute;
-      return {
-        ...detail,
-        partBrute: brut,
-        tauxMoyen: brut > 0 ? Math.round(((detail.droits / brut) * 100) * 100) / 100 : 0,
-      };
-    }),
-    tauxMoyenGlobal: actifNetSuccession > 0
-      ? Math.round(((rawResult.totalDroits / actifNetSuccession) * 100) * 100) / 100
-      : 0,
-  } : null;
 
   return {
     actifNetSuccession,
     simulatedDeceased,
     heirs,
     result,
-    transmissionRows: buildSuccessionDirectTransmissionRows(detailedHeirsWithDonationRecall, result),
+    transmissionRows: buildSuccessionDirectTransmissionRows(
+      detailedHeirsWithDonationRecall,
+      result,
+    ),
     warnings,
   };
 }

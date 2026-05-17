@@ -10,37 +10,42 @@ describe('buildSuccessionEstateTaxableBasis', () => {
     pocketScales.communaute = 0.2;
     pocketScales.indivision_pacse = 0.5;
 
-    const basis = buildSuccessionEstateTaxableBasis({
-      ordinaryTaxableAssetsParPocket: {
-        epoux1: 0,
-        epoux2: 0,
-        communaute: 100,
-        societe_acquets: 0,
-        indivision_pacse: 400,
-        indivision_concubinage: 0,
-        indivision_separatiste: 0,
+    const basis = buildSuccessionEstateTaxableBasis(
+      {
+        ordinaryTaxableAssetsParPocket: {
+          epoux1: 0,
+          epoux2: 0,
+          communaute: 100,
+          societe_acquets: 0,
+          indivision_pacse: 400,
+          indivision_concubinage: 0,
+          indivision_separatiste: 0,
+        },
+        passifsParPocket: {
+          epoux1: 0,
+          epoux2: 0,
+          communaute: 0,
+          societe_acquets: 0,
+          indivision_pacse: 0,
+          indivision_concubinage: 0,
+          indivision_separatiste: 0,
+        },
+        groupementFoncierEntries: [
+          {
+            id: 'gf-1',
+            pocket: 'indivision_pacse',
+            type: 'GFA',
+            valeurTotale: 200,
+          },
+        ],
+        hasBeneficiaryLevelGfAdjustment: true,
+        residencePrincipaleEntry: {
+          pocket: 'indivision_pacse',
+          valeurTotale: 300,
+        },
       },
-      passifsParPocket: {
-        epoux1: 0,
-        epoux2: 0,
-        communaute: 0,
-        societe_acquets: 0,
-        indivision_pacse: 0,
-        indivision_concubinage: 0,
-        indivision_separatiste: 0,
-      },
-      groupementFoncierEntries: [{
-        id: 'gf-1',
-        pocket: 'indivision_pacse',
-        type: 'GFA',
-        valeurTotale: 200,
-      }],
-      hasBeneficiaryLevelGfAdjustment: true,
-      residencePrincipaleEntry: {
-        pocket: 'indivision_pacse',
-        valeurTotale: 300,
-      },
-    }, pocketScales);
+      pocketScales,
+    );
 
     expect(basis.ordinaryNetBeforeForfait).toBe(220);
     expect(basis.groupementEntries).toEqual([{ sourceId: 'gf-1', type: 'GFA', valeurTotale: 100 }]);

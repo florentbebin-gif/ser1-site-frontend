@@ -20,7 +20,7 @@ export const SLIDE_SIZE = {
 
 export const LINE_STYLES = {
   divider: { w: 0.75 / 72 }, // 0.75 pt in inches
-  accent: { w: 1.5 / 72 },   // 1.5 pt in inches
+  accent: { w: 1.5 / 72 }, // 1.5 pt in inches
 } as const;
 
 // ============================================================================
@@ -70,7 +70,7 @@ export const CORNER_MARKS = {
   /** Height of primary line (inches) */
   primaryHeight: 0.55,
   /** Height of secondary line (inches) */
-  secondaryHeight: 0.40,
+  secondaryHeight: 0.4,
   /** Vertical offset for secondary line */
   secondaryOffset: 0.08,
   /** Line width in points */

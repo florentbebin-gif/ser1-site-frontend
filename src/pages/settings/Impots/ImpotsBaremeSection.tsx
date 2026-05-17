@@ -41,11 +41,9 @@ export default function ImpotsBaremeSection({
         onClick={() => setOpenSection(isOpen ? null : 'bareme')}
       >
         <span className="settings-premium-title settings-premium-title--flush">
-          {"Bar\u00e8me de l\u2019imp\u00f4t sur le revenu"}
+          {'Bar\u00e8me de l\u2019imp\u00f4t sur le revenu'}
         </span>
-        <span className="fisc-acc-chevron">
-          {isOpen ? '\u25be' : '\u25b8'}
-        </span>
+        <span className="fisc-acc-chevron">{isOpen ? '\u25be' : '\u25b8'}</span>
       </button>
 
       {isOpen && (

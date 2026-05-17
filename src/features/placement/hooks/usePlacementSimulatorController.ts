@@ -1,9 +1,24 @@
-import { useCallback, useEffect, useMemo, useState, type Dispatch, type SetStateAction } from 'react';
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+  type Dispatch,
+  type SetStateAction,
+} from 'react';
 import { useTheme } from '@/settings/ThemeProvider';
-import { usePlacementSettings, type UsePlacementSettingsResult } from '@/hooks/usePlacementSettings';
+import {
+  usePlacementSettings,
+  type UsePlacementSettingsResult,
+} from '@/hooks/usePlacementSettings';
 import { simulateComplete, compareProducts } from '@/engine/placement';
 import type { SimulateCompleteResult } from '@/engine/placement/types';
-import { DEFAULT_INITIAL, DEFAULT_ANNUEL, DEFAULT_DISTRIBUTION, normalizeVersementConfig } from '@/engine/placement/versementConfig';
+import {
+  DEFAULT_INITIAL,
+  DEFAULT_ANNUEL,
+  DEFAULT_DISTRIBUTION,
+  normalizeVersementConfig,
+} from '@/engine/placement/versementConfig';
 import type { VersementConfig, VersementConfigInput } from '@/engine/placement/versementConfig';
 import { onResetEvent, storageKeyFor } from '@/utils/reset';
 import { savePlacementState, loadPlacementStateFromFile } from '../utils/placementPersistence';
@@ -90,7 +105,8 @@ export interface PlacementSimulatorUiFlags {
 
 export function usePlacementSimulatorController(isExpert: boolean) {
   const storeKey = storageKeyFor('placement');
-  const { fiscalParams, fiscalContext, loading, error, tmiOptions, psSettings } = usePlacementSettings();
+  const { fiscalParams, fiscalContext, loading, error, tmiOptions, psSettings } =
+    usePlacementSettings();
   const { pptxColors, cabinetLogo, logoPlacement } = useTheme();
 
   const [hydrated, setHydrated] = useState(false);
@@ -112,13 +128,15 @@ export function usePlacementSimulatorController(isExpert: boolean) {
   }, [dmtgOptions, state.transmission.dmtgTaux]);
 
   const selectedDmtgOption = useMemo(
-    () => dmtgSelectOptions.find((opt: { value: number }) => opt.value === state.transmission.dmtgTaux),
-    [dmtgSelectOptions, state.transmission.dmtgTaux]
+    () =>
+      dmtgSelectOptions.find((opt: { value: number }) => opt.value === state.transmission.dmtgTaux),
+    [dmtgSelectOptions, state.transmission.dmtgTaux],
   );
 
   const selectedDmtgTrancheWidth = useMemo(() => {
     if (!selectedDmtgOption) return null;
-    const from = typeof selectedDmtgOption.rangeFrom === 'number' ? selectedDmtgOption.rangeFrom : 0;
+    const from =
+      typeof selectedDmtgOption.rangeFrom === 'number' ? selectedDmtgOption.rangeFrom : 0;
     const to = typeof selectedDmtgOption.rangeTo === 'number' ? selectedDmtgOption.rangeTo : null;
     if (to == null) return null;
     const width = to - from;
@@ -224,7 +242,10 @@ export function usePlacementSimulatorController(isExpert: boolean) {
     if (state.client.ageActuel === null) return null;
 
     const stateForCalc = buildPlacementStateForMode(state, isExpert);
-    const clientForCalc = { ...stateForCalc.client, ageActuel: stateForCalc.client.ageActuel ?? undefined };
+    const clientForCalc = {
+      ...stateForCalc.client,
+      ageActuel: stateForCalc.client.ageActuel ?? undefined,
+    };
     const fpWithDmtg = { ...fiscalParams, dmtgTauxChoisi: stateForCalc.transmission.dmtgTaux };
     const engineProduct1 = toEngineProduct(stateForCalc.products[0]);
 
@@ -239,7 +260,7 @@ export function usePlacementSimulatorController(isExpert: boolean) {
       clientForCalc,
       liquidationParams1,
       { ...stateForCalc.transmission, agePremierVersement: clientForCalc.ageActuel },
-      fpWithDmtg
+      fpWithDmtg,
     );
 
     if (!stateForCalc.compareEnabled) {
@@ -258,7 +279,7 @@ export function usePlacementSimulatorController(isExpert: boolean) {
       clientForCalc,
       liquidationParams2,
       { ...stateForCalc.transmission, agePremierVersement: clientForCalc.ageActuel },
-      fpWithDmtg
+      fpWithDmtg,
     );
 
     return compareProducts(result1, result2);
@@ -289,18 +310,46 @@ export function usePlacementSimulatorController(isExpert: boolean) {
         const currentVc = s.products[index].versementConfig;
         updatedPatch.versementConfig = {
           ...currentVc,
-          initial: { ...currentVc.initial, fraisEntree: 0, pctCapitalisation: 0, pctDistribution: 100 },
-          annuel: { ...currentVc.annuel, fraisEntree: 0, pctCapitalisation: 0, pctDistribution: 100 },
-          ponctuels: (currentVc.ponctuels || []).map((p) => ({ ...p, pctCapitalisation: 0, pctDistribution: 100 })),
+          initial: {
+            ...currentVc.initial,
+            fraisEntree: 0,
+            pctCapitalisation: 0,
+            pctDistribution: 100,
+          },
+          annuel: {
+            ...currentVc.annuel,
+            fraisEntree: 0,
+            pctCapitalisation: 0,
+            pctDistribution: 100,
+          },
+          ponctuels: (currentVc.ponctuels || []).map((p) => ({
+            ...p,
+            pctCapitalisation: 0,
+            pctDistribution: 100,
+          })),
           distribution: { ...currentVc.distribution, rendementAnnuel: 0 },
         };
       } else if ('envelope' in updatedPatch && s.products[index].envelope === 'SCPI') {
         const currentVc = s.products[index].versementConfig;
         updatedPatch.versementConfig = {
           ...currentVc,
-          initial: { ...currentVc.initial, fraisEntree: DEFAULT_INITIAL.fraisEntree, pctCapitalisation: 100, pctDistribution: 0 },
-          annuel: { ...currentVc.annuel, fraisEntree: DEFAULT_ANNUEL.fraisEntree, pctCapitalisation: 100, pctDistribution: 0 },
-          ponctuels: (currentVc.ponctuels || []).map((p) => ({ ...p, pctCapitalisation: 100, pctDistribution: 0 })),
+          initial: {
+            ...currentVc.initial,
+            fraisEntree: DEFAULT_INITIAL.fraisEntree,
+            pctCapitalisation: 100,
+            pctDistribution: 0,
+          },
+          annuel: {
+            ...currentVc.annuel,
+            fraisEntree: DEFAULT_ANNUEL.fraisEntree,
+            pctCapitalisation: 100,
+            pctDistribution: 0,
+          },
+          ponctuels: (currentVc.ponctuels || []).map((p) => ({
+            ...p,
+            pctCapitalisation: 100,
+            pctDistribution: 0,
+          })),
           distribution: { ...DEFAULT_DISTRIBUTION },
         };
       }
@@ -325,7 +374,9 @@ export function usePlacementSimulatorController(isExpert: boolean) {
     const normalized = normalizeVersementConfig(config);
     setState((s) => ({
       ...s,
-      products: s.products.map((p, idx) => (idx === productIndex ? { ...p, versementConfig: normalized } : p)),
+      products: s.products.map((p, idx) =>
+        idx === productIndex ? { ...p, versementConfig: normalized } : p,
+      ),
     }));
   };
 
@@ -336,7 +387,7 @@ export function usePlacementSimulatorController(isExpert: boolean) {
   ) => {
     setState((prev) => ({
       ...prev,
-      products: prev.products.map((product, index) => (
+      products: prev.products.map((product, index) =>
         index === productIndex
           ? {
               ...product,
@@ -345,13 +396,18 @@ export function usePlacementSimulatorController(isExpert: boolean) {
                 optionBaremeIR: value,
               },
             }
-          : product
-      )),
+          : product,
+      ),
     }));
   };
 
   const { exportExcel, exportPptx, exportLoading } = usePlacementExportHandlers({
-    state, isExpert, results, pptxColors, cabinetLogo, logoPlacement,
+    state,
+    isExpert,
+    results,
+    pptxColors,
+    cabinetLogo,
+    logoPlacement,
   });
 
   const exportHandlers: PlacementSimulatorExportHandlers = {
@@ -361,10 +417,22 @@ export function usePlacementSimulatorController(isExpert: boolean) {
 
   const produit1 = results?.produit1 ?? null;
   const produit2 = results?.produit2 ?? null;
-  const detailRows1: EpargneRowWithReinvest[] = produit1 ? withReinvestCumul(produit1.epargne.rows) : [];
-  const detailRows2: EpargneRowWithReinvest[] = produit2 ? withReinvestCumul(produit2.epargne.rows) : [];
-  const columnsProduit1 = getRelevantColumnsEpargne(detailRows1, getBaseColumnsForProduct(produit1), showAllColumns);
-  const columnsProduit2 = getRelevantColumnsEpargne(detailRows2, getBaseColumnsForProduct(produit2), showAllColumns);
+  const detailRows1: EpargneRowWithReinvest[] = produit1
+    ? withReinvestCumul(produit1.epargne.rows)
+    : [];
+  const detailRows2: EpargneRowWithReinvest[] = produit2
+    ? withReinvestCumul(produit2.epargne.rows)
+    : [];
+  const columnsProduit1 = getRelevantColumnsEpargne(
+    detailRows1,
+    getBaseColumnsForProduct(produit1),
+    showAllColumns,
+  );
+  const columnsProduit2 = getRelevantColumnsEpargne(
+    detailRows2,
+    getBaseColumnsForProduct(produit2),
+    showAllColumns,
+  );
 
   const handlers: PlacementSimulatorHandlers = {
     setClient,

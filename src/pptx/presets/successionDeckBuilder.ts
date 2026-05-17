@@ -111,8 +111,22 @@ export interface SuccessionData {
         id: string;
         kind: 'recompense' | 'creance';
         label?: string;
-        fromPocket: 'epoux1' | 'epoux2' | 'communaute' | 'societe_acquets' | 'indivision_pacse' | 'indivision_concubinage' | 'indivision_separatiste';
-        toPocket: 'epoux1' | 'epoux2' | 'communaute' | 'societe_acquets' | 'indivision_pacse' | 'indivision_concubinage' | 'indivision_separatiste';
+        fromPocket:
+          | 'epoux1'
+          | 'epoux2'
+          | 'communaute'
+          | 'societe_acquets'
+          | 'indivision_pacse'
+          | 'indivision_concubinage'
+          | 'indivision_separatiste';
+        toPocket:
+          | 'epoux1'
+          | 'epoux2'
+          | 'communaute'
+          | 'societe_acquets'
+          | 'indivision_pacse'
+          | 'indivision_concubinage'
+          | 'indivision_separatiste';
         requestedAmount: number;
         appliedAmount: number;
       }>;
@@ -120,7 +134,14 @@ export interface SuccessionData {
     affectedLiabilities?: {
       totalAmount: number;
       byPocket: Array<{
-        pocket: 'epoux1' | 'epoux2' | 'communaute' | 'societe_acquets' | 'indivision_pacse' | 'indivision_concubinage' | 'indivision_separatiste';
+        pocket:
+          | 'epoux1'
+          | 'epoux2'
+          | 'communaute'
+          | 'societe_acquets'
+          | 'indivision_pacse'
+          | 'indivision_concubinage'
+          | 'indivision_separatiste';
         amount: number;
       }>;
     } | null;
@@ -184,18 +205,21 @@ const LIEN_LABELS: Record<string, string> = {
 };
 
 const fmt = (v: number): string =>
-  new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(v);
+  new Intl.NumberFormat('fr-FR', {
+    style: 'currency',
+    currency: 'EUR',
+    maximumFractionDigits: 0,
+  }).format(v);
 
 const fmtPct = (v: number): string =>
-  new Intl.NumberFormat('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(v) + ' %';
+  new Intl.NumberFormat('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(v) +
+  ' %';
 
 const compactCount = (value: number): string =>
   new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 0 }).format(value);
 
 function orderLabel(order: 'epoux1' | 'epoux2'): string {
-  return order === 'epoux1'
-    ? 'Époux 1 puis Époux 2'
-    : 'Époux 2 puis Époux 1';
+  return order === 'epoux1' ? 'Époux 1 puis Époux 2' : 'Époux 2 puis Époux 1';
 }
 
 function droitsHorsSuccession(step: SuccessionChronologieStep): number {
@@ -217,9 +241,7 @@ function buildBeneficiarySummaries(
 
 function buildSynthesisSlide(data: SuccessionData): SuccessionSynthesisSlideSpec {
   const beneficiaryCount =
-    data.heritiers.length ||
-    data.predecesChronologie?.step1?.beneficiaries?.length ||
-    0;
+    data.heritiers.length || data.predecesChronologie?.step1?.beneficiaries?.length || 0;
 
   return {
     type: 'succession-synthesis',
@@ -273,8 +295,8 @@ function buildDirectChronologyStep(data: SuccessionData): SuccessionChronologySt
   const partConjoint = data.heritiers
     .filter((heir) => heir.lien === 'conjoint')
     .reduce((sum, heir) => sum + heir.partBrute, 0);
-  const masseTransmise = data.heritiers.reduce((sum, heir) => sum + heir.partBrute, 0)
-    || data.actifNetSuccession;
+  const masseTransmise =
+    data.heritiers.reduce((sum, heir) => sum + heir.partBrute, 0) || data.actifNetSuccession;
   const autresBeneficiaires = Math.max(0, masseTransmise - partConjoint);
 
   return {
@@ -315,8 +337,16 @@ function buildChronologySlide(data: SuccessionData): SuccessionChronologySlideSp
     applicable: true,
     orderLabel: orderLabel(chronologie.order),
     steps: [
-      buildChronologyStep(`1er décès — ${chronologie.firstDecedeLabel}`, 'Transmission initiale', chronologie.step1),
-      buildChronologyStep(`2e décès — ${chronologie.secondDecedeLabel}`, 'Transmission finale', chronologie.step2),
+      buildChronologyStep(
+        `1er décès — ${chronologie.firstDecedeLabel}`,
+        'Transmission initiale',
+        chronologie.step1,
+      ),
+      buildChronologyStep(
+        `2e décès — ${chronologie.secondDecedeLabel}`,
+        'Transmission finale',
+        chronologie.step2,
+      ),
     ],
     totalDroits: fmt(chronologie.totalDroits),
   };
@@ -339,9 +369,7 @@ function buildHypothesesSlide(
   };
 }
 
-function stepToBeneficiaryRows(
-  step: SuccessionChronologieStep,
-): SuccessionAnnexBeneficiaryRow[] {
+function stepToBeneficiaryRows(step: SuccessionChronologieStep): SuccessionAnnexBeneficiaryRow[] {
   return (step.beneficiaries ?? []).map((b) => ({
     label: b.label,
     capitauxDecesNets: b.capitauxDecesNets ?? 0,
@@ -429,7 +457,11 @@ export function buildSuccessionStudyDeck(
   advisor?: AdvisorInfo,
 ): StudyDeckSpec {
   const now = new Date();
-  const dateStr = now.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
+  const dateStr = now.toLocaleDateString('fr-FR', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  });
   const clientSubtitle = data.clientName || 'NOM Prénom';
   const advisorMeta = advisor?.name || 'NOM Prénom';
 
@@ -451,14 +483,14 @@ export function buildSuccessionStudyDeck(
     | SuccessionAssetAnnexSlideSpec
     | SuccessionHypothesesSlideSpec
   > = [
-      {
-        type: 'chapter',
-        title: 'Objectifs et contexte',
-        subtitle: 'Estimation des droits de succession',
-        body: 'Vous souhaitez estimer les droits de mutation à titre gratuit applicables à votre situation patrimoniale.',
-        chapterImageIndex: pickChapterImage('succession', 0),
-      },
-    ];
+    {
+      type: 'chapter',
+      title: 'Objectifs et contexte',
+      subtitle: 'Estimation des droits de succession',
+      body: 'Vous souhaitez estimer les droits de mutation à titre gratuit applicables à votre situation patrimoniale.',
+      chapterImageIndex: pickChapterImage('succession', 0),
+    },
+  ];
 
   const familyContextSlide = buildFamilyContextSlide(data.familyContext);
   if (familyContextSlide) slides.push(familyContextSlide);

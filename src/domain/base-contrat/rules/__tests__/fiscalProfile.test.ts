@@ -6,11 +6,7 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import {
-  getEnvelopeCatalogId,
-  buildFiscalProfile,
-  emptyFiscalProfile,
-} from '../fiscalProfile';
+import { getEnvelopeCatalogId, buildFiscalProfile, emptyFiscalProfile } from '../fiscalProfile';
 import type { ProductRules } from '../types';
 
 // ── Fixtures ──────────────────────────────────────────────────────────────────
@@ -22,9 +18,7 @@ const EMPTY_RULES: ProductRules = {
 };
 
 const RULES_WITH_DATA: ProductRules = {
-  constitution: [
-    { title: 'Plafond déductible', bullets: ['8 000 €/an'], confidence: 'elevee' },
-  ],
+  constitution: [{ title: 'Plafond déductible', bullets: ['8 000 €/an'], confidence: 'elevee' }],
   sortie: [],
   deces: [],
 };

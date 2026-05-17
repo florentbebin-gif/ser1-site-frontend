@@ -69,12 +69,8 @@ export default function ImpotsCehrSection({
         aria-controls="impots-panel-cehr"
         onClick={() => setOpenSection(isOpen ? null : 'cehr')}
       >
-        <span className="settings-premium-title settings-premium-title--flush">
-          CEHR / CDHR
-        </span>
-        <span className="fisc-acc-chevron">
-          {isOpen ? 'v' : '>'}
-        </span>
+        <span className="settings-premium-title settings-premium-title--flush">CEHR / CDHR</span>
+        <span className="fisc-acc-chevron">{isOpen ? 'v' : '>'}</span>
       </button>
 
       {isOpen && (
@@ -85,8 +81,8 @@ export default function ImpotsCehrSection({
           aria-labelledby="impots-header-cehr"
         >
           <p className="fisc-intro">
-            Contribution exceptionnelle sur les hauts revenus (CEHR) et
-            contribution différentielle (CDHR).
+            Contribution exceptionnelle sur les hauts revenus (CEHR) et contribution différentielle
+            (CDHR).
           </p>
 
           <div className="tax-two-cols">

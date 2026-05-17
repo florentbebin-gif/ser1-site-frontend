@@ -108,19 +108,28 @@ export default function DispositionsModal({
 }: DispositionsModalProps) {
   const [pendingPreciputCandidateKey, setPendingPreciputCandidateKey] = useState('');
 
-  const preciputEligiblePocket = useMemo(() => getSuccessionPreciputEligiblePocket({
-    isCommunityRegime,
-    isSocieteAcquetsRegime: isSocieteAcquetsRegime && dispositionsDraft.societeAcquets.active,
-  }), [dispositionsDraft.societeAcquets.active, isCommunityRegime, isSocieteAcquetsRegime]);
+  const preciputEligiblePocket = useMemo(
+    () =>
+      getSuccessionPreciputEligiblePocket({
+        isCommunityRegime,
+        isSocieteAcquetsRegime: isSocieteAcquetsRegime && dispositionsDraft.societeAcquets.active,
+      }),
+    [dispositionsDraft.societeAcquets.active, isCommunityRegime, isSocieteAcquetsRegime],
+  );
 
-  const preciputCandidates = useMemo(() => buildSuccessionPreciputCandidates({
-    assetEntries,
-    groupementFoncierEntries,
-    allowedPocket: preciputEligiblePocket,
-  }), [assetEntries, groupementFoncierEntries, preciputEligiblePocket]);
+  const preciputCandidates = useMemo(
+    () =>
+      buildSuccessionPreciputCandidates({
+        assetEntries,
+        groupementFoncierEntries,
+        allowedPocket: preciputEligiblePocket,
+      }),
+    [assetEntries, groupementFoncierEntries, preciputEligiblePocket],
+  );
 
   const syncedPreciputSelections = useMemo(
-    () => syncSuccessionPreciputSelections(dispositionsDraft.preciputSelections, preciputCandidates),
+    () =>
+      syncSuccessionPreciputSelections(dispositionsDraft.preciputSelections, preciputCandidates),
     [dispositionsDraft.preciputSelections, preciputCandidates],
   );
 
@@ -130,24 +139,31 @@ export default function DispositionsModal({
   );
 
   const selectedPreciputCandidateKeys = useMemo(
-    () => new Set(syncedPreciputSelections.map((selection) => `${selection.sourceType}:${selection.sourceId}`)),
+    () =>
+      new Set(
+        syncedPreciputSelections.map(
+          (selection) => `${selection.sourceType}:${selection.sourceId}`,
+        ),
+      ),
     [syncedPreciputSelections],
   );
 
-  const preciputCandidateOptions = useMemo<ScSelectOption[]>(() => [
-    { value: '', label: 'Choisir un bien...', disabled: true },
-    ...preciputCandidates
-      .filter((candidate) => !selectedPreciputCandidateKeys.has(candidate.key))
-      .map((candidate) => ({
-        value: candidate.key,
-        label: candidate.label,
-        description: `Disponible jusqu'à ${formatPreciputAmount(candidate.maxAmount)}`,
-      })),
-  ], [preciputCandidates, selectedPreciputCandidateKeys]);
+  const preciputCandidateOptions = useMemo<ScSelectOption[]>(
+    () => [
+      { value: '', label: 'Choisir un bien...', disabled: true },
+      ...preciputCandidates
+        .filter((candidate) => !selectedPreciputCandidateKeys.has(candidate.key))
+        .map((candidate) => ({
+          value: candidate.key,
+          label: candidate.label,
+          description: `Disponible jusqu'à ${formatPreciputAmount(candidate.maxAmount)}`,
+        })),
+    ],
+    [preciputCandidates, selectedPreciputCandidateKeys],
+  );
 
-  const preciputScopeLabel = preciputEligiblePocket === 'societe_acquets'
-    ? "la société d'acquets"
-    : 'la communauté';
+  const preciputScopeLabel =
+    preciputEligiblePocket === 'societe_acquets' ? "la société d'acquets" : 'la communauté';
 
   const updatePreciputSelections = (
     updater: (
@@ -178,26 +194,32 @@ export default function DispositionsModal({
     field: 'enabled' | 'amount',
     value: boolean | number,
   ) => {
-    updatePreciputSelections((current) => current.map((selection) => {
-      if (selection.id !== selectionId) return selection;
-      if (field === 'enabled') {
+    updatePreciputSelections((current) =>
+      current.map((selection) => {
+        if (selection.id !== selectionId) return selection;
+        if (field === 'enabled') {
+          return {
+            ...selection,
+            enabled: Boolean(value),
+          };
+        }
+
+        const candidate = preciputCandidatesByKey.get(
+          `${selection.sourceType}:${selection.sourceId}`,
+        );
+        const maxAmount = candidate?.maxAmount ?? 0;
         return {
           ...selection,
-          enabled: Boolean(value),
+          amount: Math.min(maxAmount, Math.max(0, Number(value) || 0)),
         };
-      }
-
-      const candidate = preciputCandidatesByKey.get(`${selection.sourceType}:${selection.sourceId}`);
-      const maxAmount = candidate?.maxAmount ?? 0;
-      return {
-        ...selection,
-        amount: Math.min(maxAmount, Math.max(0, Number(value) || 0)),
-      };
-    }));
+      }),
+    );
   };
 
   const removePreciputSelection = (selectionId: string) => {
-    updatePreciputSelections((current) => current.filter((selection) => selection.id !== selectionId));
+    updatePreciputSelections((current) =>
+      current.filter((selection) => selection.id !== selectionId),
+    );
   };
 
   const addInterMassClaim = () => {
@@ -275,7 +297,7 @@ export default function DispositionsModal({
       bodyClassName="sc-member-modal__body sc-dispositions-modal__body"
       footerClassName="sc-member-modal__footer"
       closeClassName="sc-member-modal__close"
-      footer={(
+      footer={
         <>
           <button
             type="button"
@@ -292,7 +314,7 @@ export default function DispositionsModal({
             Valider
           </button>
         </>
-      )}
+      }
     >
       <DispositionsCommonSection
         dispositionsDraft={dispositionsDraft}

@@ -95,10 +95,10 @@ function allocateSequentially(
 export function computeAssietteMadelin(d: DeclarantRevenus): number {
   return Math.round(
     (d.bic || 0) +
-    (d.art62 || 0) +
-    (d.cotisationsMadelinRetraite || 0) +
-    (d.cotisationsMadelin154bis || 0) +
-    (d.cotisationsPrevo || 0),
+      (d.art62 || 0) +
+      (d.cotisationsMadelinRetraite || 0) +
+      (d.cotisationsMadelin154bis || 0) +
+      (d.cotisationsPrevo || 0),
   );
 }
 
@@ -139,7 +139,10 @@ export function computePlafondMadelin(
   const perco = Math.max(0, declarant.abondementPerco || 0);
 
   const utilisation15VersementMadelin = Math.min(madelinRetraite, enveloppe15Versement);
-  const remaining15VersementAfterMadelin = Math.max(0, enveloppe15Versement - utilisation15VersementMadelin);
+  const remaining15VersementAfterMadelin = Math.max(
+    0,
+    enveloppe15Versement - utilisation15VersementMadelin,
+  );
   const utilisation15VersementPer154 = Math.min(per154bis, remaining15VersementAfterMadelin);
 
   const utilisation15ReportMadelin = Math.min(madelinRetraite, enveloppe15Report);
@@ -163,10 +166,7 @@ export function computePlafondMadelin(
   ]);
 
   const demande10Totale =
-    art83 +
-    perco +
-    depassement15Versement.madelinRetraite +
-    depassement15Versement.per154bis;
+    art83 + perco + depassement15Versement.madelinRetraite + depassement15Versement.per154bis;
 
   const surplusAReintegrer = Math.max(0, Math.round(demande10Totale - consommation10.total));
   const reste15Versement = Math.max(

@@ -70,9 +70,7 @@ export default function ImpotsAbattementDomSection({
         <span className="settings-premium-title settings-premium-title--flush">
           Abattement DOM sur l’IR (barème)
         </span>
-        <span className="fisc-acc-chevron">
-          {isOpen ? 'v' : '>'}
-        </span>
+        <span className="fisc-acc-chevron">{isOpen ? 'v' : '>'}</span>
       </button>
 
       {isOpen && (
@@ -83,7 +81,8 @@ export default function ImpotsAbattementDomSection({
           aria-labelledby="impots-header-dom"
         >
           <p className="fisc-intro fisc-intro--compact">
-            Appliqué sur l’impôt issu du barème <strong>après plafonnement du quotient familial</strong> et
+            Appliqué sur l’impôt issu du barème{' '}
+            <strong>après plafonnement du quotient familial</strong> et
             <strong> avant</strong> décote + réductions/crédits.
           </p>
 
@@ -91,9 +90,11 @@ export default function ImpotsAbattementDomSection({
             {periods.map((period) => (
               <SettingsYearColumn
                 key={period}
-                yearLabel={period === 'current'
-                  ? incomeTax.currentYearLabel || 'Année N'
-                  : incomeTax.previousYearLabel || 'Année N-1'}
+                yearLabel={
+                  period === 'current'
+                    ? incomeTax.currentYearLabel || 'Année N'
+                    : incomeTax.previousYearLabel || 'Année N-1'
+                }
                 isRight={period === 'previous'}
               >
                 <div className="income-tax-block">

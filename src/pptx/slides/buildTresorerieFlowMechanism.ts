@@ -86,7 +86,7 @@ export function buildTresorerieFlowMechanism(
   addHeader(slide, spec.title, spec.subtitle, theme, 'content');
 
   const steps = spec.steps.slice(0, 4);
-  const gap = 0.30;
+  const gap = 0.3;
   const cardW = (CONTENT_W - gap * 3) / 4;
   const cardY = CONTENT_TOP_Y + 0.92;
   const cardH = 2.44;
@@ -104,21 +104,17 @@ export function buildTresorerieFlowMechanism(
     line: { color: panelBorder, width: 0.5 },
     rectRadius: 0.06,
   });
-  addTextFr(
-    slide,
-    'Lecture : banque sécurisée → revenus associés → excédent investi',
-    {
-      x: MARGIN_X + CONTENT_W - 4.54,
-      y: CONTENT_TOP_Y + 0.16,
-      w: 4.36,
-      h: 0.16,
-      fontSize: 8.3,
-      color: textMain,
-      align: 'center',
-      valign: 'middle',
-      fit: 'shrink',
-    },
-  );
+  addTextFr(slide, 'Lecture : banque sécurisée → revenus associés → excédent investi', {
+    x: MARGIN_X + CONTENT_W - 4.54,
+    y: CONTENT_TOP_Y + 0.16,
+    w: 4.36,
+    h: 0.16,
+    fontSize: 8.3,
+    color: textMain,
+    align: 'center',
+    valign: 'middle',
+    fit: 'shrink',
+  });
 
   steps.forEach((step, index) => {
     const x = MARGIN_X + index * (cardW + gap);
@@ -131,7 +127,7 @@ export function buildTresorerieFlowMechanism(
       h: cardH,
       fill: { color: WHITE },
       line: { color: panelBorder, width: 0.7 },
-      rectRadius: 0.10,
+      rectRadius: 0.1,
       shadow: {
         type: SHADOW_PARAMS.type,
         angle: SHADOW_PARAMS.angle,
@@ -150,19 +146,25 @@ export function buildTresorerieFlowMechanism(
       line: { color: toneColor, width: 0 },
     });
     slide.addShape('ellipse', {
-      x: x + 0.20,
+      x: x + 0.2,
       y: cardY + 0.34,
       w: 0.62,
       h: 0.62,
       fill: { color: toneColor },
       line: { color: toneColor, width: 0 },
     });
-    addBusinessIconToSlide(slide, step.iconKey, {
-      x: x + 0.34,
-      y: cardY + 0.48,
-      w: 0.34,
-      h: 0.34,
-    }, theme, 'white');
+    addBusinessIconToSlide(
+      slide,
+      step.iconKey,
+      {
+        x: x + 0.34,
+        y: cardY + 0.48,
+        w: 0.34,
+        h: 0.34,
+      },
+      theme,
+      'white',
+    );
     addTextFr(slide, `0${index + 1}`, {
       x: x + cardW - 0.64,
       y: cardY + 0.35,
@@ -185,9 +187,9 @@ export function buildTresorerieFlowMechanism(
     });
     addTextFr(slide, step.label, {
       x: x + 0.22,
-      y: cardY + 1.50,
+      y: cardY + 1.5,
       w: cardW - 0.44,
-      h: 0.50,
+      h: 0.5,
       fontSize: 9,
       color: textBody,
       breakLine: false,
@@ -196,7 +198,7 @@ export function buildTresorerieFlowMechanism(
     if (step.value) {
       addTextFr(slide, step.value, {
         x: x + 0.22,
-        y: cardY + 2.10,
+        y: cardY + 2.1,
         w: cardW - 0.44,
         h: 0.28,
         fontSize: 14,

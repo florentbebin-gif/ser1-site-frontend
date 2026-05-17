@@ -51,7 +51,11 @@ export function buildPlacementStudyDeck(
   logoPlacement?: LogoPlacement,
 ): StudyDeckSpec {
   const now = new Date();
-  const dateStr = now.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
+  const dateStr = now.toLocaleDateString('fr-FR', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  });
   const clientSubtitle = data.clientName || 'NOM Prénom';
 
   const isComparison = data.produit2 !== null;
@@ -72,16 +76,31 @@ export function buildPlacementStudyDeck(
     data.produit1.liquidationRows.length,
     data.produit2?.liquidationRows.length ?? 0,
   );
-  const deathYearIndex = (maxLiquidationYears > 0 && rawDeathYear >= 1 && rawDeathYear <= maxLiquidationYears)
-    ? rawDeathYear
-    : undefined;
+  const deathYearIndex =
+    maxLiquidationYears > 0 && rawDeathYear >= 1 && rawDeathYear <= maxLiquidationYears
+      ? rawDeathYear
+      : undefined;
 
   // Projection slides (paginated)
   const projectionSlides: PlacementProjectionSlideSpec[] = [
     ...buildEpargneProjectionSlides(data.produit1.epargneRows, data.produit1.envelopeLabel, 1),
-    ...(data.produit2 ? buildEpargneProjectionSlides(data.produit2.epargneRows, data.produit2.envelopeLabel, 2) : []),
-    ...buildLiquidationProjectionSlides(data.produit1.liquidationRows, data.produit1.envelopeLabel, 1, deathYearIndex),
-    ...(data.produit2 ? buildLiquidationProjectionSlides(data.produit2.liquidationRows, data.produit2.envelopeLabel, 2, deathYearIndex) : []),
+    ...(data.produit2
+      ? buildEpargneProjectionSlides(data.produit2.epargneRows, data.produit2.envelopeLabel, 2)
+      : []),
+    ...buildLiquidationProjectionSlides(
+      data.produit1.liquidationRows,
+      data.produit1.envelopeLabel,
+      1,
+      deathYearIndex,
+    ),
+    ...(data.produit2
+      ? buildLiquidationProjectionSlides(
+          data.produit2.liquidationRows,
+          data.produit2.envelopeLabel,
+          2,
+          deathYearIndex,
+        )
+      : []),
   ];
 
   const slides: Array<
@@ -96,10 +115,10 @@ export function buildPlacementStudyDeck(
       title: 'Objectifs et contexte',
       subtitle: isComparison
         ? 'Comparaison de deux stratégies de placement'
-        : 'Projection d\'une stratégie de placement',
+        : "Projection d'une stratégie de placement",
       body: isComparison
-        ? 'Vous souhaitez comparer deux enveloppes d\'épargne sur les trois phases : constitution, liquidation et transmission.'
-        : 'Vous souhaitez projeter une enveloppe d\'épargne sur les trois phases : constitution, liquidation et transmission.',
+        ? "Vous souhaitez comparer deux enveloppes d'épargne sur les trois phases : constitution, liquidation et transmission."
+        : "Vous souhaitez projeter une enveloppe d'épargne sur les trois phases : constitution, liquidation et transmission.",
       chapterImageIndex: pickChapterImage('placement', 0),
     },
     buildSynthesisSpec(data),

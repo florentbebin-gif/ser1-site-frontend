@@ -53,7 +53,9 @@ export default function UserInviteModal({
       <div className="report-modal report-modal--sm">
         <div className="report-modal-header">
           <h3>Nouvel utilisateur</h3>
-          <button className="report-modal-close" onClick={onClose} type="button">X</button>
+          <button className="report-modal-close" onClick={onClose} type="button">
+            X
+          </button>
         </div>
         <div className="report-modal-content">
           {error && (
@@ -93,7 +95,9 @@ export default function UserInviteModal({
           </div>
         </div>
         <div className="report-modal-actions">
-          <button onClick={onClose} disabled={submitting} type="button">Annuler</button>
+          <button onClick={onClose} disabled={submitting} type="button">
+            Annuler
+          </button>
           <button
             className="chip"
             onClick={() => {

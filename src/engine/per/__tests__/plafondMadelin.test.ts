@@ -50,19 +50,25 @@ describe('computeAssietteMadelin', () => {
 describe('computePlafondMadelin', () => {
   it('retourne null pour un non-TNS', () => {
     const warnings: PerWarning[] = [];
-    const result = computePlafondMadelin({
-      declarant: { ...EMPTY_DECLARANT, salaires: 50000 },
-      pass: PASS,
-    }, warnings);
+    const result = computePlafondMadelin(
+      {
+        declarant: { ...EMPTY_DECLARANT, salaires: 50000 },
+        pass: PASS,
+      },
+      warnings,
+    );
     expect(result).toBeNull();
   });
 
   it('retourne un détail à zéro quand le statut TNS est actif sans base positive', () => {
     const warnings: PerWarning[] = [];
-    const result = computePlafondMadelin({
-      declarant: { ...EMPTY_DECLARANT, statutTns: true },
-      pass: PASS,
-    }, warnings);
+    const result = computePlafondMadelin(
+      {
+        declarant: { ...EMPTY_DECLARANT, statutTns: true },
+        pass: PASS,
+      },
+      warnings,
+    );
 
     expect(result).not.toBeNull();
     expect(result!.assietteVersement).toBe(0);
@@ -72,10 +78,13 @@ describe('computePlafondMadelin', () => {
 
   it('calcule les deux enveloppes pour un TNS sous 1 PASS', () => {
     const warnings: PerWarning[] = [];
-    const result = computePlafondMadelin({
-      declarant: { ...EMPTY_DECLARANT, statutTns: true, bic: 30000 },
-      pass: PASS,
-    }, warnings);
+    const result = computePlafondMadelin(
+      {
+        declarant: { ...EMPTY_DECLARANT, statutTns: true, bic: 30000 },
+        pass: PASS,
+      },
+      warnings,
+    );
 
     expect(result).not.toBeNull();
     expect(result!.enveloppe15Versement).toBe(0);
@@ -85,18 +94,21 @@ describe('computePlafondMadelin', () => {
 
   it('partage l’enveloppe 10 % avec art. 83, PERCO et les dépassements Madelin', () => {
     const warnings: PerWarning[] = [];
-    const result = computePlafondMadelin({
-      declarant: {
-        ...EMPTY_DECLARANT,
-        statutTns: true,
-        bic: 100000,
-        cotisationsArt83: 2000,
-        abondementPerco: 1000,
-        cotisationsMadelinRetraite: 12000,
-        cotisationsMadelin154bis: 5000,
+    const result = computePlafondMadelin(
+      {
+        declarant: {
+          ...EMPTY_DECLARANT,
+          statutTns: true,
+          bic: 100000,
+          cotisationsArt83: 2000,
+          abondementPerco: 1000,
+          cotisationsMadelinRetraite: 12000,
+          cotisationsMadelin154bis: 5000,
+        },
+        pass: PASS,
       },
-      pass: PASS,
-    }, warnings);
+      warnings,
+    );
 
     expect(result).not.toBeNull();
     expect(result!.consommation10.art83).toBe(2000);
@@ -107,16 +119,19 @@ describe('computePlafondMadelin', () => {
 
   it('calcule la réintégration quand les enveloppes sont dépassées', () => {
     const warnings: PerWarning[] = [];
-    const result = computePlafondMadelin({
-      declarant: {
-        ...EMPTY_DECLARANT,
-        statutTns: true,
-        bic: 30000,
-        cotisationsMadelinRetraite: 6000,
-        cotisationsMadelin154bis: 5000,
+    const result = computePlafondMadelin(
+      {
+        declarant: {
+          ...EMPTY_DECLARANT,
+          statutTns: true,
+          bic: 30000,
+          cotisationsMadelinRetraite: 6000,
+          cotisationsMadelin154bis: 5000,
+        },
+        pass: PASS,
       },
-      pass: PASS,
-    }, warnings);
+      warnings,
+    );
 
     expect(result).not.toBeNull();
     expect(result!.depassement).toBe(true);
@@ -126,17 +141,20 @@ describe('computePlafondMadelin', () => {
 
   it('assietteReport non affectée par fraisReels = true (BOI-IR-BASE-20-50-20 §340)', () => {
     const warnings: PerWarning[] = [];
-    const result = computePlafondMadelin({
-      declarant: {
-        ...EMPTY_DECLARANT,
-        statutTns: true,
-        art62: 60000,
-        bic: 20000,
-        fraisReels: true,
-        fraisReelsMontant: 8000,
+    const result = computePlafondMadelin(
+      {
+        declarant: {
+          ...EMPTY_DECLARANT,
+          statutTns: true,
+          art62: 60000,
+          bic: 20000,
+          fraisReels: true,
+          fraisReelsMontant: 8000,
+        },
+        pass: PASS,
       },
-      pass: PASS,
-    }, warnings);
+      warnings,
+    );
 
     expect(result).not.toBeNull();
     expect(result!.assietteReport).toBe(80000);
@@ -144,16 +162,19 @@ describe('computePlafondMadelin', () => {
 
   it('calcule l’assiette report sur art.62 + bic sans abattement frais professionnels (BOI-IR-BASE-20-50-20 §340)', () => {
     const warnings: PerWarning[] = [];
-    const result = computePlafondMadelin({
-      declarant: {
-        ...EMPTY_DECLARANT,
-        statutTns: true,
-        salaires: 30000,
-        art62: 10000,
-        bic: 5000,
+    const result = computePlafondMadelin(
+      {
+        declarant: {
+          ...EMPTY_DECLARANT,
+          statutTns: true,
+          salaires: 30000,
+          art62: 10000,
+          bic: 5000,
+        },
+        pass: PASS,
       },
-      pass: PASS,
-    }, warnings);
+      warnings,
+    );
 
     expect(result).not.toBeNull();
     expect(result!.assietteReport).toBe(15000);

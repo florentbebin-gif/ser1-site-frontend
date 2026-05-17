@@ -5,10 +5,7 @@
 import { euro0 } from '../utils/creditFormatters';
 import type { CreditPeriodsTableProps } from '../types';
 
-export function CreditPeriodsTable({
-  synthesePeriodes,
-  hasPret3,
-}: CreditPeriodsTableProps) {
+export function CreditPeriodsTable({ synthesePeriodes, hasPret3 }: CreditPeriodsTableProps) {
   if (!synthesePeriodes || synthesePeriodes.length === 0) return null;
 
   return (

@@ -4,9 +4,7 @@
   "function": "calculateSuccession",
   "input": {
     "actifNetSuccession": 200000,
-    "heritiers": [
-      { "lien": "frere_soeur", "partSuccession": 200000 }
-    ]
+    "heritiers": [{ "lien": "frere_soeur", "partSuccession": 200000 }]
   },
   "expected": {
     "result.totalDroits__gt": 0,

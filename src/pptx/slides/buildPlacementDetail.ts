@@ -11,7 +11,12 @@
  */
 
 import type PptxGenJS from 'pptxgenjs';
-import type { PlacementDetailSlideSpec, PlacementDetailFlowBar, PlacementDetailGainBar, ExportContext } from '../theme/types';
+import type {
+  PlacementDetailSlideSpec,
+  PlacementDetailFlowBar,
+  PlacementDetailGainBar,
+  ExportContext,
+} from '../theme/types';
 import {
   TYPO,
   COORDS_CONTENT,
@@ -30,21 +35,27 @@ import { addBusinessIconToSlide } from '../icons/addBusinessIcon';
 // LAYOUT CONSTANTS
 // ============================================================================
 
-const CONTENT_TOP_Y = COORDS_CONTENT.content.y;      // 2.3754
+const CONTENT_TOP_Y = COORDS_CONTENT.content.y; // 2.3754
 const CONTENT_BOTTOM_Y = COORDS_FOOTER.date.y - 0.15; // ~6.80
 
 const PANEL = {
-  gap: 0.40,
-  marginX: 0.9,                                               // était 1.2
-  get totalW() { return 13.3333 - 2 * this.marginX; },
-  get panelW() { return (this.totalW - this.gap) / 2; },     // ~5.5667"
+  gap: 0.4,
+  marginX: 0.9, // était 1.2
+  get totalW() {
+    return 13.3333 - 2 * this.marginX;
+  },
+  get panelW() {
+    return (this.totalW - this.gap) / 2;
+  }, // ~5.5667"
   topY: CONTENT_TOP_Y + 0.08,
-  get height() { return CONTENT_BOTTOM_Y - this.topY - 0.08; },
+  get height() {
+    return CONTENT_BOTTOM_Y - this.topY - 0.08;
+  },
   bandeauH: 0.38,
-  heroH: 0.80,                 // zone chiffre héros
-  flowBarH: 0.68,              // hauteur zone flow bar : 0.22+0.24+0.04+0.16 + marge
+  heroH: 0.8, // zone chiffre héros
+  flowBarH: 0.68, // hauteur zone flow bar : 0.22+0.24+0.04+0.16 + marge
   metricIconSize: 0.24,
-  metricPaddingX: 0.20,
+  metricPaddingX: 0.2,
 } as const;
 
 // ============================================================================
@@ -70,7 +81,11 @@ function contrastText(bgHex: string): string {
 }
 
 const fmt = (v: number): string =>
-  new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(v);
+  new Intl.NumberFormat('fr-FR', {
+    style: 'currency',
+    currency: 'EUR',
+    maximumFractionDigits: 0,
+  }).format(v);
 
 // ============================================================================
 // FLOW BAR
@@ -95,7 +110,7 @@ function drawFlowBar(
   const warningColor = lightenHex(theme.colors.color9.replace('#', ''), 0.35);
 
   const barH = 0.24;
-  const barY = startY + 0.22;   // 0.22" réservé pour label "Brut" au-dessus
+  const barY = startY + 0.22; // 0.22" réservé pour label "Brut" au-dessus
   const labelsY = barY + barH + 0.04;
 
   // Label "Brut" au-dessus — discret, right-aligned
@@ -125,7 +140,10 @@ function drawFlowBar(
   const netW = Math.max(0, barMaxW * netRatio);
   if (netW > 0) {
     slide.addShape('rect', {
-      x: barX, y: barY, w: netW, h: barH,
+      x: barX,
+      y: barY,
+      w: netW,
+      h: barH,
       fill: { color: productColor },
       line: { color: productColor, width: 0 },
     });
@@ -136,7 +154,10 @@ function drawFlowBar(
   const taxW = taxRatio > 0 ? Math.max(0, Math.min(taxAvailable, barMaxW * taxRatio)) : 0;
   if (taxW > 0) {
     slide.addShape('rect', {
-      x: barX + netW, y: barY, w: taxW, h: barH,
+      x: barX + netW,
+      y: barY,
+      w: taxW,
+      h: barH,
       fill: { color: warningColor },
       line: { color: warningColor, width: 0 },
     });
@@ -185,12 +206,10 @@ function drawGainBar(
   const lightColor = lightenHex(productColor, 0.45);
   const color9 = theme.colors.color9.replace('#', '');
 
-  const versementsRatio = gainBar.capitalAcquis > 0
-    ? Math.min(1, gainBar.versements / gainBar.capitalAcquis)
-    : 1;
-  const gainsRatio = gainBar.capitalAcquis > 0 && gainBar.gains > 0
-    ? gainBar.gains / gainBar.capitalAcquis
-    : 0;
+  const versementsRatio =
+    gainBar.capitalAcquis > 0 ? Math.min(1, gainBar.versements / gainBar.capitalAcquis) : 1;
+  const gainsRatio =
+    gainBar.capitalAcquis > 0 && gainBar.gains > 0 ? gainBar.gains / gainBar.capitalAcquis : 0;
 
   const barH = 0.24;
   const barY = startY + 0.22;
@@ -198,15 +217,24 @@ function drawGainBar(
 
   // Label "Capital acquis" au-dessus
   addTextFr(slide, `Capital acquis : ${fmt(gainBar.capitalAcquis)}`, {
-    x: barX, y: startY, w: barMaxW, h: 0.18,
-    fontSize: 7, italic: true, color: color9,
-    align: 'right', valign: 'middle',
+    x: barX,
+    y: startY,
+    w: barMaxW,
+    h: 0.18,
+    fontSize: 7,
+    italic: true,
+    color: color9,
+    align: 'right',
+    valign: 'middle',
   });
 
   // Segment Versements (productColor) — toujours présent
   const versW = barMaxW * versementsRatio;
   slide.addShape('rect', {
-    x: barX, y: barY, w: versW, h: barH,
+    x: barX,
+    y: barY,
+    w: versW,
+    h: barH,
     fill: { color: productColor },
     line: { color: productColor, width: 0 },
   });
@@ -215,7 +243,10 @@ function drawGainBar(
   if (gainBar.gains > 0) {
     const gainsW = barMaxW * gainsRatio;
     slide.addShape('rect', {
-      x: barX + versW, y: barY, w: gainsW, h: barH,
+      x: barX + versW,
+      y: barY,
+      w: gainsW,
+      h: barH,
       fill: { color: lightColor },
       line: { color: lightColor, width: 0 },
     });
@@ -223,32 +254,57 @@ function drawGainBar(
 
   // Label Versements
   addTextFr(slide, `Versements : ${fmt(gainBar.versements)}`, {
-    x: barX, y: labelsY, w: barMaxW * 0.6, h: 0.16,
-    fontSize: TYPO.sizes.footer, bold: true, color: productColor,
-    align: 'left', valign: 'middle',
+    x: barX,
+    y: labelsY,
+    w: barMaxW * 0.6,
+    h: 0.16,
+    fontSize: TYPO.sizes.footer,
+    bold: true,
+    color: productColor,
+    align: 'left',
+    valign: 'middle',
   });
 
   // Label Gains ou Écart
   if (gainBar.gains > 0) {
     addTextFr(slide, `Gains : ${fmt(gainBar.gains)}`, {
-      x: barX + barMaxW * 0.4, y: labelsY, w: barMaxW * 0.6, h: 0.16,
-      fontSize: TYPO.sizes.footer, bold: false, color: lightColor,
-      align: 'right', valign: 'middle',
+      x: barX + barMaxW * 0.4,
+      y: labelsY,
+      w: barMaxW * 0.6,
+      h: 0.16,
+      fontSize: TYPO.sizes.footer,
+      bold: false,
+      color: lightColor,
+      align: 'right',
+      valign: 'middle',
     });
   } else if (gainBar.shortfall) {
     addTextFr(slide, `Écart : −${fmt(gainBar.shortfall)}`, {
-      x: barX + barMaxW * 0.4, y: labelsY, w: barMaxW * 0.6, h: 0.16,
-      fontSize: TYPO.sizes.footer, bold: false, italic: true, color: color9,
-      align: 'right', valign: 'middle',
+      x: barX + barMaxW * 0.4,
+      y: labelsY,
+      w: barMaxW * 0.6,
+      h: 0.16,
+      fontSize: TYPO.sizes.footer,
+      bold: false,
+      italic: true,
+      color: color9,
+      align: 'right',
+      valign: 'middle',
     });
   }
 
   // Note revenus appréhendés (si > 0)
   if (gainBar.revenusPercus) {
     addTextFr(slide, `dont ${fmt(gainBar.revenusPercus)} reçus hors capital`, {
-      x: barX, y: labelsY + 0.16, w: barMaxW, h: 0.14,
-      fontSize: 6.5, italic: true, color: color9,
-      align: 'right', valign: 'middle',
+      x: barX,
+      y: labelsY + 0.16,
+      w: barMaxW,
+      h: 0.14,
+      fontSize: 6.5,
+      italic: true,
+      color: color9,
+      align: 'right',
+      valign: 'middle',
     });
   }
 }
@@ -313,7 +369,7 @@ function drawDetailPanel(
 
   // --- Hero metric (metrics[0]) ---
   const hasHero = data.metrics.length > 0;
-  const heroTopY = panelY + PANEL.bandeauH + 0.10;
+  const heroTopY = panelY + PANEL.bandeauH + 0.1;
 
   if (hasHero) {
     const hero = data.metrics[0];
@@ -355,27 +411,31 @@ function drawDetailPanel(
   // --- Supporting metrics (metrics[1..]) ---
   const params = data.params ?? [];
   const hasParams = params.length > 0;
-  const paramsReservedH = hasParams ? 0.40 : 0;
+  const paramsReservedH = hasParams ? 0.4 : 0;
 
   const secondaryMetrics = data.metrics.slice(1);
-  const secondaryTopY = (hasFlowBar || hasGainBar)
-    ? flowBarTopY + PANEL.flowBarH + 0.08
-    : heroTopY + PANEL.heroH + 0.08;
+  const secondaryTopY =
+    hasFlowBar || hasGainBar ? flowBarTopY + PANEL.flowBarH + 0.08 : heroTopY + PANEL.heroH + 0.08;
   const secondaryAvailH = panelY + panelH - secondaryTopY - paramsReservedH - 0.15;
   const rowSpacing = Math.min(0.48, secondaryAvailH / Math.max(1, secondaryMetrics.length));
 
   secondaryMetrics.forEach((metric, idx) => {
     const rowY = secondaryTopY + idx * rowSpacing;
 
-    addBusinessIconToSlide(slide, metric.icon, {
-      x: panelX + PANEL.metricPaddingX,
-      y: rowY,
-      w: PANEL.metricIconSize,
-      h: PANEL.metricIconSize,
-    }, `#${cleanColor}`);
+    addBusinessIconToSlide(
+      slide,
+      metric.icon,
+      {
+        x: panelX + PANEL.metricPaddingX,
+        y: rowY,
+        w: PANEL.metricIconSize,
+        h: PANEL.metricIconSize,
+      },
+      `#${cleanColor}`,
+    );
 
     addTextFr(slide, metric.label, {
-      x: panelX + PANEL.metricPaddingX + PANEL.metricIconSize + 0.10,
+      x: panelX + PANEL.metricPaddingX + PANEL.metricIconSize + 0.1,
       y: rowY - 0.02,
       w: panelW - PANEL.metricPaddingX - PANEL.metricIconSize - 0.28,
       h: 0.16,
@@ -386,10 +446,10 @@ function drawDetailPanel(
     });
 
     addTextFr(slide, metric.value, {
-      x: panelX + PANEL.metricPaddingX + PANEL.metricIconSize + 0.10,
+      x: panelX + PANEL.metricPaddingX + PANEL.metricIconSize + 0.1,
       y: rowY + 0.14,
       w: panelW - PANEL.metricPaddingX - PANEL.metricIconSize - 0.28,
-      h: 0.20,
+      h: 0.2,
       fontSize: TYPO.sizes.bodySmall,
       bold: true,
       color: roleColor(theme, 'textMain'),
@@ -416,7 +476,7 @@ function drawDetailPanel(
       x: panelX + 0.01,
       y: paramsY - 0.04,
       w: panelW - 0.02,
-      h: paramsReservedH + 0.10,
+      h: paramsReservedH + 0.1,
       fill: { color: lightenHex(cleanColor, 0.93) },
       line: { color: lightenHex(cleanColor, 0.93), width: 0 },
     });
@@ -459,13 +519,40 @@ export function buildPlacementDetail(
   if (spec.produit2) {
     const leftX = PANEL.marginX;
     const rightX = PANEL.marginX + PANEL.panelW + PANEL.gap;
-    drawDetailPanel(slide, spec.produit1, leftX, PANEL.panelW, PANEL.topY, PANEL.height, color5, theme);
-    drawDetailPanel(slide, spec.produit2, rightX, PANEL.panelW, PANEL.topY, PANEL.height, color3, theme);
+    drawDetailPanel(
+      slide,
+      spec.produit1,
+      leftX,
+      PANEL.panelW,
+      PANEL.topY,
+      PANEL.height,
+      color5,
+      theme,
+    );
+    drawDetailPanel(
+      slide,
+      spec.produit2,
+      rightX,
+      PANEL.panelW,
+      PANEL.topY,
+      PANEL.height,
+      color3,
+      theme,
+    );
   } else {
     // Mode projection : un seul panneau centré horizontalement
     const slideWidth = 13.3333;
     const centerX = (slideWidth - PANEL.panelW) / 2;
-    drawDetailPanel(slide, spec.produit1, centerX, PANEL.panelW, PANEL.topY, PANEL.height, color5, theme);
+    drawDetailPanel(
+      slide,
+      spec.produit1,
+      centerX,
+      PANEL.panelW,
+      PANEL.topY,
+      PANEL.height,
+      color5,
+      theme,
+    );
   }
 
   if (spec.optionalNote) {

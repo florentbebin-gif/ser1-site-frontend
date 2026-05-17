@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { simulateComplete, extractFiscalParams } from '../../../engine/placement';
-import { DEFAULT_VERSEMENT_CONFIG, normalizeVersementConfig } from '../../../engine/placement/versementConfig';
+import {
+  DEFAULT_VERSEMENT_CONFIG,
+  normalizeVersementConfig,
+} from '../../../engine/placement/versementConfig';
 import { toEngineProduct, computeRendementPondere } from '../adapters/toEngineProduct';
 
 const baseProduct = {
@@ -16,7 +19,7 @@ const baseProduct = {
 const baseState = {
   client: {
     ageActuel: 45,
-    tmiEpargne: 0.30,
+    tmiEpargne: 0.3,
     tmiRetraite: 0.11,
     situation: 'single',
   },
@@ -47,7 +50,8 @@ function getRendementLiquidationLocal(product: any) {
 }
 
 function legacyBuildEngineProduct(product: any) {
-  const { versementConfig, envelope, dureeEpargne, perBancaire, optionBaremeIR, fraisGestion } = product;
+  const { versementConfig, envelope, dureeEpargne, perBancaire, optionBaremeIR, fraisGestion } =
+    product;
   const normalizedConfig = normalizeVersementConfig(versementConfig);
   const { initial, annuel, ponctuels, capitalisation, distribution } = normalizedConfig;
 
@@ -69,7 +73,7 @@ function legacyBuildEngineProduct(product: any) {
     fraisEntree: initial.fraisEntree,
     rendement: rendementMoyen,
     tauxRevalorisation: tauxRevalo,
-    delaiJouissance: pctDistrib > 0 ? (distribution.delaiJouissance || 0) : 0,
+    delaiJouissance: pctDistrib > 0 ? distribution.delaiJouissance || 0 : 0,
     dureeProduit: pctDistrib > 0 ? distribution.dureeProduit : null,
     strategieCompteEspece: pctDistrib > 0 ? distribution.strategie : 'reinvestir_capi',
     reinvestirVersAuTerme: distribution.reinvestirVersAuTerme || 'capitalisation',

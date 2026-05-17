@@ -11,14 +11,11 @@
 
 import type PptxGenJS from 'pptxgenjs';
 import type { ExportContext, PerFiscalSnapshotSlideSpec } from '../theme/types';
+import { SLIDE_SIZE, TYPO, addFooter, addHeader, addTextFr } from '../designSystem/serenity';
 import {
-  SLIDE_SIZE,
-  TYPO,
-  addFooter,
-  addHeader,
-  addTextFr,
-} from '../designSystem/serenity';
-import { getBusinessIconDataUri, type BusinessIconName } from '../../icons/business/businessIconLibrary';
+  getBusinessIconDataUri,
+  type BusinessIconName,
+} from '../../icons/business/businessIconLibrary';
 import { MASTER_NAMES } from '../template/loadBaseTemplate';
 import {
   LAYOUT,
@@ -264,9 +261,12 @@ export function buildPerFiscalSnapshot(
 
   // ========== MARGIN INFO ==========
   const nextTmiInfo = calculateMarginToNextTmi(safeTaxablePerPart, tmiPercent);
-  const marginValue = spec.montantDansLaTMI > 0
-    ? spec.montantDansLaTMI
-    : (nextTmiInfo ? nextTmiInfo.margin * safeParts : null);
+  const marginValue =
+    spec.montantDansLaTMI > 0
+      ? spec.montantDansLaTMI
+      : nextTmiInfo
+        ? nextTmiInfo.margin * safeParts
+        : null;
   const marginText = marginValue !== null ? euro(marginValue) : '—';
 
   addTextFr(slide, `Marge avant changement de TMI : ${marginText}`, {

@@ -107,8 +107,10 @@ export function useSuccessionDraftPersistence({
           setAssetEntries(parsed.assetEntries);
           setAssuranceVieEntries(parsed.assuranceVieEntries);
           setPerEntries(parsed.perEntries);
-          if (parsed.groupementFoncierEntries) setGroupementFoncierEntries(parsed.groupementFoncierEntries);
-          if (parsed.prevoyanceDecesEntries) setPrevoyanceDecesEntries(parsed.prevoyanceDecesEntries);
+          if (parsed.groupementFoncierEntries)
+            setGroupementFoncierEntries(parsed.groupementFoncierEntries);
+          if (parsed.prevoyanceDecesEntries)
+            setPrevoyanceDecesEntries(parsed.prevoyanceDecesEntries);
           setDevolutionContext(parsed.devolution);
           setPatrimonialContext(parsed.patrimonial);
           setDonationsContext(parsed.donations);

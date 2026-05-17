@@ -14,10 +14,7 @@ interface TresoOrgChartProps {
   onSubsidiaryClick: (subsidiaryId: string) => void;
 }
 
-function handleKeyboardActivation(
-  event: KeyboardEvent<SVGGElement>,
-  callback: () => void,
-): void {
+function handleKeyboardActivation(event: KeyboardEvent<SVGGElement>, callback: () => void): void {
   if (event.key !== 'Enter' && event.key !== ' ') return;
   event.preventDefault();
   callback();
@@ -59,7 +56,7 @@ export function TresoOrgChart({
         viewBox={`0 0 ${layout.svgWidth} ${layout.svgHeight}`}
       >
         <g className="ts-org-links" aria-hidden="true">
-          {layout.edges.map(edge => (
+          {layout.edges.map((edge) => (
             <line
               key={edge.id}
               className="ts-org-link"
@@ -69,21 +66,20 @@ export function TresoOrgChart({
               y2={edge.y2}
             />
           ))}
-          {layout.labels.map(label => (
+          {layout.labels.map((label) => (
             <g key={label.id} className="ts-org-link-label">
               <rect x={label.x - 18} y={label.y - 8} width="36" height="16" rx="5" />
-              <text x={label.x} y={label.y + 3} textAnchor="middle">{label.text}</text>
+              <text x={label.x} y={label.y + 3} textAnchor="middle">
+                {label.text}
+              </text>
             </g>
           ))}
         </g>
 
-        {layout.nodes.map(node => {
-          const baseAriaLabel = node.kind === 'company'
-            ? `Paramétrer ${node.label}`
-            : getTresoOrgchartNodeLabel(node);
-          const ariaLabel = node.active
-            ? `${baseAriaLabel} - associé actif`
-            : baseAriaLabel;
+        {layout.nodes.map((node) => {
+          const baseAriaLabel =
+            node.kind === 'company' ? `Paramétrer ${node.label}` : getTresoOrgchartNodeLabel(node);
+          const ariaLabel = node.active ? `${baseAriaLabel} - associé actif` : baseAriaLabel;
           const title = node.label;
           const subtitle = node.meta;
           const detail = node.detail;
@@ -102,7 +98,7 @@ export function TresoOrgChart({
               className={`ts-org-svg-node ts-org-svg-node--${node.kind}${node.active ? ' is-active' : ''}`}
               transform={`translate(${node.x} ${node.y})`}
               onClick={() => runNodeAction(node)}
-              onKeyDown={event => handleKeyboardActivation(event, () => runNodeAction(node))}
+              onKeyDown={(event) => handleKeyboardActivation(event, () => runNodeAction(node))}
             >
               <rect
                 className="ts-org-svg-node__box"
@@ -110,23 +106,40 @@ export function TresoOrgChart({
                 height={node.height}
                 rx="8"
               />
-              <text className="ts-org-svg-node__label" x={node.width / 2} y={titleY} textAnchor="middle">
+              <text
+                className="ts-org-svg-node__label"
+                x={node.width / 2}
+                y={titleY}
+                textAnchor="middle"
+              >
                 {truncate(title, maxTitleLength)}
               </text>
               {subtitle ? (
-                <text className="ts-org-svg-node__meta" x={node.width / 2} y={subtitleY} textAnchor="middle">
+                <text
+                  className="ts-org-svg-node__meta"
+                  x={node.width / 2}
+                  y={subtitleY}
+                  textAnchor="middle"
+                >
                   {truncate(subtitle, maxSubtitleLength)}
                 </text>
               ) : null}
               {detail ? (
-                <text className="ts-org-svg-node__code" x={node.width / 2} y={codeY} textAnchor="middle">
+                <text
+                  className="ts-org-svg-node__code"
+                  x={node.width / 2}
+                  y={codeY}
+                  textAnchor="middle"
+                >
                   {truncate(detail, maxDetailLength)}
                 </text>
               ) : null}
               {node.active ? (
                 <g className="ts-org-svg-node__active-badge">
                   <rect x={node.width - 33} y="-7" width="29" height="12" rx="4" />
-                  <text x={node.width - 18.5} y="2" textAnchor="middle">Actif</text>
+                  <text x={node.width - 18.5} y="2" textAnchor="middle">
+                    Actif
+                  </text>
                 </g>
               ) : null}
             </g>

@@ -1,11 +1,17 @@
 /**
  * IR (Impôt sur le Revenu) Deck Builder
- * 
+ *
  * Generates a StudyDeckSpec for IR simulation results using the Serenity template.
  * Now with KPI-style slides matching the design specification.
  */
 
-import type { StudyDeckSpec, ChapterSlideSpec, IrSynthesisSlideSpec, IrAnnexeSlideSpec, LogoPlacement } from '../theme/types';
+import type {
+  StudyDeckSpec,
+  ChapterSlideSpec,
+  IrSynthesisSlideSpec,
+  IrAnnexeSlideSpec,
+  LogoPlacement,
+} from '../theme/types';
 import { isDebugEnabled } from '../../utils/debugFlags';
 import { pickChapterImage } from '../designSystem/serenity';
 
@@ -23,11 +29,11 @@ export interface IrData {
   tmiRate: number;
   irNet: number;
   totalTax: number;
-  
+
   // Income breakdown (for KPI display)
   income1?: number; // Déclarant 1
   income2?: number; // Déclarant 2
-  
+
   // Detailed breakdown
   pfuIr?: number;
   cehr?: number;
@@ -35,22 +41,22 @@ export interface IrData {
   psFoncier?: number;
   psDividends?: number;
   psTotal?: number;
-  
+
   // Foyer info
   status?: 'single' | 'couple';
   childrenCount?: number;
   location?: 'metropole' | 'gmr' | 'guyane';
-  
+
   // Additional details
   decote?: number;
   qfAdvantage?: number;
   creditsTotal?: number;
   bracketsDetails?: Array<{ label: string; base: number; rate: number; tax: number }>;
-  
+
   // TMI details (from IR card - exact values)
-  tmiBaseGlobal?: number;   // Montant des revenus dans cette TMI
+  tmiBaseGlobal?: number; // Montant des revenus dans cette TMI
   tmiMarginGlobal?: number; // Marge avant changement de TMI
-  
+
   // Client info
   clientName?: string; // NOM Prénom for cover
 }
@@ -80,18 +86,17 @@ export interface AdvisorInfo {
   office?: string;
 }
 
-
 /**
  * Build IR Study Deck Specification
- * 
+ *
  * Structure:
  * 1. Cover - "NOM Prénom" as subtitle
  * 2. Chapter "Objectifs et contexte" - short description only
  * 3. Content "Synthèse" - KPI style with icons
- * 4. Chapter "Annexes" 
+ * 4. Chapter "Annexes"
  * 5. Content "Détail du calcul" - full calculation details
  * 6. End - legal mentions
- * 
+ *
  * @param irData - IR simulation results
  * @param uiSettings - Theme colors from ThemeProvider
  * @param logoUrl - Optional logo URL from Supabase Storage
@@ -103,7 +108,7 @@ export function buildIrStudyDeck(
   uiSettings: UiSettingsForPptx,
   logoUrl?: string,
   logoPlacement?: LogoPlacement,
-  advisor?: AdvisorInfo
+  advisor?: AdvisorInfo,
 ): StudyDeckSpec {
   // Debug logging
   if (DEBUG_PPTX) {
@@ -126,19 +131,21 @@ export function buildIrStudyDeck(
     // eslint-disable-next-line no-console
     console.debug('  Chapter images: ch-01.png, ch-03.png');
   }
-  
+
   // Format date
   const now = new Date();
-  const dateStr = now.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
-  
+  const dateStr = now.toLocaleDateString('fr-FR', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  });
+
   // Client name for subtitle (NOM Prénom format)
   const clientSubtitle = irData.clientName || 'NOM Prénom';
-  
+
   // Advisor meta
-  const advisorMeta = advisor?.name 
-    ? advisor.name
-    : 'NOM Prénom';
-  
+  const advisorMeta = advisor?.name ? advisor.name : 'NOM Prénom';
+
   // Build slides array with new premium slide types
   const slides: Array<ChapterSlideSpec | IrSynthesisSlideSpec | IrAnnexeSlideSpec> = [
     // Chapter 1: Objectifs et contexte
@@ -146,7 +153,7 @@ export function buildIrStudyDeck(
       type: 'chapter',
       title: 'Objectifs et contexte',
       subtitle: 'Estimation de votre impôt sur le revenu',
-      body: 'Vous souhaitez connaître le montant de votre impôt et comprendre les mécanismes de calcul qui s\'appliquent à votre situation.',
+      body: "Vous souhaitez connaître le montant de votre impôt et comprendre les mécanismes de calcul qui s'appliquent à votre situation.",
       chapterImageIndex: pickChapterImage('ir', 0),
     },
     // Slide 3: Synthèse Premium (4 KPI + barre TMI + impôt central)
@@ -196,7 +203,7 @@ export function buildIrStudyDeck(
       childrenCount: irData.childrenCount,
     },
   ];
-  
+
   // Build complete deck spec
   const spec: StudyDeckSpec = {
     cover: {
@@ -218,17 +225,17 @@ Les informations qu'il contient sont strictement confidentielles et destinées e
 Toute reproduction, représentation, diffusion ou rediffusion, totale ou partielle, sur quelque support ou par quelque procédé que ce soit, ainsi que toute vente, revente, retransmission ou mise à disposition de tiers, est strictement encadrée. Le non-respect de ces dispositions est susceptible de constituer une contrefaçon engageant la responsabilité civile et pénale de son auteur, conformément aux articles L335-1 à L335-10 du Code de la propriété intellectuelle.`,
     },
   };
-  
+
   if (DEBUG_PPTX) {
     // eslint-disable-next-line no-console
     console.debug('[PPTX IR] Deck spec built:', {
       coverTitle: spec.cover.title,
       coverSubtitle: spec.cover.subtitle,
       slidesCount: spec.slides.length,
-      slideTypes: spec.slides.map(s => s.type),
+      slideTypes: spec.slides.map((s) => s.type),
     });
   }
-  
+
   return spec;
 }
 

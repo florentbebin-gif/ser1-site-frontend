@@ -16,11 +16,14 @@ import { ScSelect } from './ScSelect';
 interface AssetLegalQualificationModalProps {
   entry: SuccessionAssetDetailEntry;
   onClose: () => void;
-  onSave: (_id: string, _fields: {
-    legalNature: SuccessionAssetLegalNature;
-    origin: SuccessionAssetOrigin;
-    meubleImmeubleLegal: SuccessionMeubleImmeubleLegal;
-  }) => void;
+  onSave: (
+    _id: string,
+    _fields: {
+      legalNature: SuccessionAssetLegalNature;
+      origin: SuccessionAssetOrigin;
+      meubleImmeubleLegal: SuccessionMeubleImmeubleLegal;
+    },
+  ) => void;
 }
 
 export default function AssetLegalQualificationModal({
@@ -28,7 +31,9 @@ export default function AssetLegalQualificationModal({
   onClose,
   onSave,
 }: AssetLegalQualificationModalProps) {
-  const [legalNature, setLegalNature] = useState<SuccessionAssetLegalNature>(entry.legalNature ?? 'non_qualifie');
+  const [legalNature, setLegalNature] = useState<SuccessionAssetLegalNature>(
+    entry.legalNature ?? 'non_qualifie',
+  );
   const [origin, setOrigin] = useState<SuccessionAssetOrigin>(entry.origin ?? 'non_precise');
   const [meubleImmeubleLegal, setMeubleImmeubleLegal] = useState<SuccessionMeubleImmeubleLegal>(
     entry.meubleImmeubleLegal ?? 'non_qualifie',
@@ -46,7 +51,7 @@ export default function AssetLegalQualificationModal({
       bodyClassName="sc-member-modal__body sc-assurance-vie-modal__body"
       footerClassName="sc-member-modal__footer"
       closeClassName="sc-member-modal__close"
-      footer={(
+      footer={
         <>
           <button
             type="button"
@@ -63,7 +68,7 @@ export default function AssetLegalQualificationModal({
             Valider
           </button>
         </>
-      )}
+      }
     >
       <div className="sc-assurance-vie-grid sc-assurance-vie-grid--premium">
         <div className="sc-field">

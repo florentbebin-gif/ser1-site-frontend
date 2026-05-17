@@ -1,7 +1,10 @@
 import { describe, expect, it } from 'vitest';
 
 import { buildPerTransfertStudyDeck } from './perTransfertDeckBuilder';
-import type { PerTransfertDeckData, PerTransfertUiSettingsForPptx } from './perTransfertDeckBuilder';
+import type {
+  PerTransfertDeckData,
+  PerTransfertUiSettingsForPptx,
+} from './perTransfertDeckBuilder';
 import {
   computePerTransfert,
   type PerTransfertFiscalAssumptions,
@@ -16,9 +19,7 @@ import type { BaseCgRetraiteContract } from '@/data/basecg';
 const theme: PerTransfertUiSettingsForPptx = DEFAULT_COLORS;
 
 const fiscalAssumptions: PerTransfertFiscalAssumptions = {
-  rvtoTaxableFractionByAge: [
-    { label: 'test', ageMaxInclusive: null, fraction: 0.4 },
-  ],
+  rvtoTaxableFractionByAge: [{ label: 'test', ageMaxInclusive: null, fraction: 0.4 }],
   pfuIrRate: 0.128,
   psRatePatrimony: 0.186,
   psRateRenteInterests: 0.172,
@@ -126,7 +127,9 @@ function findSynthesisSlide(result: PerTransfertResult): PerTransfertSynthesisSl
   return slide as PerTransfertSynthesisSlideSpec;
 }
 
-function makeCapitalFiscalResult(overrides: Partial<PerTransfertCapitalFiscalResult>): PerTransfertCapitalFiscalResult {
+function makeCapitalFiscalResult(
+  overrides: Partial<PerTransfertCapitalFiscalResult>,
+): PerTransfertCapitalFiscalResult {
   const capital = overrides.capital ?? 0;
   const socialContributions = overrides.socialContributions ?? 0;
   const incomeTax = overrides.incomeTax ?? 0;
@@ -166,41 +169,58 @@ describe('buildPerTransfertStudyDeck', () => {
   });
 
   it('ajoute une slide audit quand un contrat Base CG est selectionne', () => {
-    const spec = buildPerTransfertStudyDeck({
-      input,
-      result: computePerTransfert(input),
-      selectedContract,
-    }, theme);
+    const spec = buildPerTransfertStudyDeck(
+      {
+        input,
+        result: computePerTransfert(input),
+        selectedContract,
+      },
+      theme,
+    );
 
-    const auditSlide = spec.slides.find((slide) => (slide as { type: string }).type === 'per-transfert-audit-contract');
+    const auditSlide = spec.slides.find(
+      (slide) => (slide as { type: string }).type === 'per-transfert-audit-contract',
+    );
     expect(auditSlide).toBeDefined();
     expect(JSON.stringify(auditSlide)).toContain('ABEILLE');
     expect(JSON.stringify(auditSlide)).toContain('MADELIN- ABEILLE RETRAITE MADELIN');
   });
 
   it('couvre juridiquement l’usage indicatif de la Base CG dans le deck', () => {
-    const spec = buildPerTransfertStudyDeck({
-      input,
-      result: computePerTransfert(input),
-      selectedContract,
-    }, theme);
+    const spec = buildPerTransfertStudyDeck(
+      {
+        input,
+        result: computePerTransfert(input),
+        selectedContract,
+      },
+      theme,
+    );
 
     expect(spec.end.legalText).toContain('Base CG');
     expect(spec.end.legalText).toContain('titre indicatif');
     expect(spec.end.legalText).toContain('compagnie');
 
-    const auditSlide = spec.slides.find((slide) => (slide as { type: string }).type === 'per-transfert-audit-contract');
+    const auditSlide = spec.slides.find(
+      (slide) => (slide as { type: string }).type === 'per-transfert-audit-contract',
+    );
     expect(JSON.stringify(auditSlide)).toContain('vérifier auprès de la compagnie');
   });
 
   it('n ajoute pas de slide audit quand aucun contrat Base CG n est selectionne', () => {
-    const spec = buildPerTransfertStudyDeck({
-      input,
-      result: computePerTransfert(input),
-      selectedContract: null,
-    }, theme);
+    const spec = buildPerTransfertStudyDeck(
+      {
+        input,
+        result: computePerTransfert(input),
+        selectedContract: null,
+      },
+      theme,
+    );
 
-    expect(spec.slides.some((slide) => (slide as { type: string }).type === 'per-transfert-audit-contract')).toBe(false);
+    expect(
+      spec.slides.some(
+        (slide) => (slide as { type: string }).type === 'per-transfert-audit-contract',
+      ),
+    ).toBe(false);
   });
 
   it('restitue les valeurs golden G1-G14 dans la synthese dediee', () => {
@@ -260,12 +280,9 @@ describe('buildPerTransfertStudyDeck', () => {
       },
     };
     const slide = findSynthesisSlide(goldenResult);
-    const values = (slide.rows as unknown as Array<Record<string, string>>).flatMap((row) => [
-      row.label,
-      row.keepScenario,
-      row.transferScenario,
-      row.difference,
-    ]).map(normalizeText);
+    const values = (slide.rows as unknown as Array<Record<string, string>>)
+      .flatMap((row) => [row.label, row.keepScenario, row.transferScenario, row.difference])
+      .map(normalizeText);
 
     expect(values).toContain('Rente nette annuelle');
     expect(values).toContain('Capital projeté à la retraite');

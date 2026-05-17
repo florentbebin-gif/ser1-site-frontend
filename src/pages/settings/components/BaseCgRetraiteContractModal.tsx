@@ -88,8 +88,8 @@ export function BaseCgRetraiteContractModal({ contract, onClose, onSave }: Props
     setDraft((previous) => {
       const normalized = normalizeBaseCgRetraiteGestionFees(previous.phaseEpargne);
       if (
-        previous.phaseEpargne.fraisGestionFondsEuro === normalized.fraisGestionFondsEuro
-        && previous.phaseEpargne.fraisGestionUc === normalized.fraisGestionUc
+        previous.phaseEpargne.fraisGestionFondsEuro === normalized.fraisGestionFondsEuro &&
+        previous.phaseEpargne.fraisGestionUc === normalized.fraisGestionUc
       ) {
         return previous;
       }
@@ -105,9 +105,8 @@ export function BaseCgRetraiteContractModal({ contract, onClose, onSave }: Props
   }, []);
 
   useEffect(() => {
-    previousFocusRef.current = document.activeElement instanceof HTMLElement
-      ? document.activeElement
-      : null;
+    previousFocusRef.current =
+      document.activeElement instanceof HTMLElement ? document.activeElement : null;
     closeButtonRef.current?.focus();
 
     return () => {
@@ -118,8 +117,9 @@ export function BaseCgRetraiteContractModal({ contract, onClose, onSave }: Props
   useEffect(() => {
     function getFocusableElements(): HTMLElement[] {
       if (!modalRef.current) return [];
-      return Array.from(modalRef.current.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR))
-        .filter((element) => element.tabIndex >= 0 && element.getAttribute('aria-hidden') !== 'true');
+      return Array.from(modalRef.current.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR)).filter(
+        (element) => element.tabIndex >= 0 && element.getAttribute('aria-hidden') !== 'true',
+      );
     }
 
     function handleFocusTrap(event: globalThis.KeyboardEvent) {
@@ -164,11 +164,14 @@ export function BaseCgRetraiteContractModal({ contract, onClose, onSave }: Props
     return () => document.removeEventListener('keydown', handleDocumentKeyDown);
   }, [onClose]);
 
-  const contractIdentity = useMemo(() => ({
-    id: draft.id,
-    compagnie: draft.compagnie,
-    nomContrat: draft.nomContrat,
-  }), [draft.id, draft.compagnie, draft.nomContrat]);
+  const contractIdentity = useMemo(
+    () => ({
+      id: draft.id,
+      compagnie: draft.compagnie,
+      nomContrat: draft.nomContrat,
+    }),
+    [draft.id, draft.compagnie, draft.nomContrat],
+  );
 
   async function handleDocumentUpload(documentId: string, file: File) {
     const target = (draft.documents ?? []).find((document) => document.id === documentId);
@@ -176,8 +179,9 @@ export function BaseCgRetraiteContractModal({ contract, onClose, onSave }: Props
     setUploadError(null);
     setUploadingDocId(documentId);
     try {
-      const storagePath = target.storagePath
-        || buildBaseCgRetraiteStoragePath(contractIdentity, target.versionLabel ?? '');
+      const storagePath =
+        target.storagePath ||
+        buildBaseCgRetraiteStoragePath(contractIdentity, target.versionLabel ?? '');
       const result = await uploadBaseCgRetraitePdf({
         contractId: contractIdentity.id,
         versionLabel: target.versionLabel ?? '',
@@ -186,18 +190,18 @@ export function BaseCgRetraiteContractModal({ contract, onClose, onSave }: Props
       });
       setDraft((previous) => ({
         ...previous,
-        documents: (previous.documents ?? []).map((document) => (
+        documents: (previous.documents ?? []).map((document) =>
           document.id === documentId
             ? {
-              ...document,
-              storagePath: result.storagePath,
-              fileName: result.fileName,
-              bytes: result.bytes,
-              mime: result.mime,
-              status: 'uploaded',
-            }
-            : document
-        )),
+                ...document,
+                storagePath: result.storagePath,
+                fileName: result.fileName,
+                bytes: result.bytes,
+                mime: result.mime,
+                status: 'uploaded',
+              }
+            : document,
+        ),
       }));
     } catch (error) {
       setUploadError(error instanceof Error ? error.message : 'Upload PDF impossible.');
@@ -206,7 +210,10 @@ export function BaseCgRetraiteContractModal({ contract, onClose, onSave }: Props
     }
   }
 
-  function setRoot<K extends keyof BaseCgRetraiteContract>(key: K, value: BaseCgRetraiteContract[K]) {
+  function setRoot<K extends keyof BaseCgRetraiteContract>(
+    key: K,
+    value: BaseCgRetraiteContract[K],
+  ) {
     setDraft((previous) => ({ ...previous, [key]: value }));
   }
 
@@ -237,9 +244,9 @@ export function BaseCgRetraiteContractModal({ contract, onClose, onSave }: Props
   ) {
     setDraft((previous) => ({
       ...previous,
-      documents: (previous.documents ?? []).map((document) => (
-        document.id === documentId ? { ...document, [key]: value } : document
-      )),
+      documents: (previous.documents ?? []).map((document) =>
+        document.id === documentId ? { ...document, [key]: value } : document,
+      ),
     }));
   }
 
@@ -265,7 +272,10 @@ export function BaseCgRetraiteContractModal({ contract, onClose, onSave }: Props
     tabRefs.current[tabKey]?.focus();
   }
 
-  function handleTabKeyDown(event: ReactKeyboardEvent<HTMLButtonElement>, tabKey: ContractModalTab) {
+  function handleTabKeyDown(
+    event: ReactKeyboardEvent<HTMLButtonElement>,
+    tabKey: ContractModalTab,
+  ) {
     const currentIndex = CONTRACT_MODAL_TABS.findIndex((tab) => tab.key === tabKey);
     let nextIndex = currentIndex;
 
@@ -293,8 +303,12 @@ export function BaseCgRetraiteContractModal({ contract, onClose, onSave }: Props
         aria-labelledby={modalTitleId}
       >
         <div className="base-cg-modal__header">
-          <h3 id={modalTitleId}>{contract.sourceId === 'Ajout local' ? 'Ajouter un contrat' : 'Modifier le contrat'}</h3>
-          <button type="button" ref={closeButtonRef} onClick={onClose} aria-label="Fermer">x</button>
+          <h3 id={modalTitleId}>
+            {contract.sourceId === 'Ajout local' ? 'Ajouter un contrat' : 'Modifier le contrat'}
+          </h3>
+          <button type="button" ref={closeButtonRef} onClick={onClose} aria-label="Fermer">
+            x
+          </button>
         </div>
 
         <div className="base-cg-modal__tabs" role="tablist" aria-label="Fiche contrat retraite">
@@ -358,7 +372,9 @@ export function BaseCgRetraiteContractModal({ contract, onClose, onSave }: Props
         </div>
 
         <div className="base-cg-modal__footer">
-          <button type="button" onClick={onClose}>Annuler</button>
+          <button type="button" onClick={onClose}>
+            Annuler
+          </button>
           <button type="button" className="chip" onClick={() => onSave(draft)}>
             Enregistrer
           </button>

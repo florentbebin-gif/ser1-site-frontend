@@ -45,26 +45,26 @@ Le LLM doit optimiser leur utilisation : déléguer uniquement des tâches indé
 
 ## Charger selon la tâche
 
-| Si la tâche touche… | Lire |
-|---|---|
-| CSS, UI, thème, couleurs, pages `/sim/*` | `docs/GOUVERNANCE.md` |
-| Architecture, structure, flux, Supabase | `docs/ARCHITECTURE.md` |
-| Règles métier fiscales, périmètre simulateurs | `docs/METIER.md` |
-| Exports PPTX / Excel | `docs/GOUVERNANCE_EXPORTS.md` |
-| Calculs `src/engine/`, IR, succession, PS, PFU | `.claude/rules-library/fiscal-engine.md` |
-| Auth, RLS, migrations, admin Supabase | `.claude/rules-library/supabase-patterns.md` |
-| Snapshot, `src/reporting/` | `.claude/rules-library/reporting.md` |
-| `src/domain/base-contrat/` (catalogue, règles) | `docs/ARCHITECTURE.md` § Base-Contrat |
-| Debug `npm run check` en échec | `.claude/skills-library/fix-errors.md` |
-| Review avant PR, ajout de fichier dans `src/` | `.claude/skills-library/arch-check.md` |
-| Modification dans `src/features/succession/` | `.claude/skills-library/succession-review.md` |
+| Si la tâche touche…                                                                    | Lire                                               |
+| -------------------------------------------------------------------------------------- | -------------------------------------------------- |
+| CSS, UI, thème, couleurs, pages `/sim/*`                                               | `docs/GOUVERNANCE.md`                              |
+| Architecture, structure, flux, Supabase                                                | `docs/ARCHITECTURE.md`                             |
+| Règles métier fiscales, périmètre simulateurs                                          | `docs/METIER.md`                                   |
+| Exports PPTX / Excel                                                                   | `docs/GOUVERNANCE_EXPORTS.md`                      |
+| Calculs `src/engine/`, IR, succession, PS, PFU                                         | `.claude/rules-library/fiscal-engine.md`           |
+| Auth, RLS, migrations, admin Supabase                                                  | `.claude/rules-library/supabase-patterns.md`       |
+| Snapshot, `src/reporting/`                                                             | `.claude/rules-library/reporting.md`               |
+| `src/domain/base-contrat/` (catalogue, règles)                                         | `docs/ARCHITECTURE.md` § Base-Contrat              |
+| Debug `npm run check` en échec                                                         | `.claude/skills-library/fix-errors.md`             |
+| Review avant PR, ajout de fichier dans `src/`                                          | `.claude/skills-library/arch-check.md`             |
+| Modification dans `src/features/succession/`                                           | `.claude/skills-library/succession-review.md`      |
 | Démarrage nouvelle verticale roadmap (P3 PER, P4 scan, P5 rôles, P6, P7, P8 catalogue) | `.claude/skills-library/start-roadmap-vertical.md` |
-| Après implémentation / refactor | `.claude/skills-library/clean-code.md` |
-| Fichiers `.docx` | `.claude/skills-library/docx.md` |
-| Fichiers `.pdf` | `.claude/skills-library/pdf.md` |
-| Fichiers `.pptx` | `.claude/skills-library/pptx.md` |
-| Fichiers `.xlsx`, `.csv`, `.tsv` | `.claude/skills-library/xlsx.md` |
-| Git workflow, PR, conventions humains | `.github/CONTRIBUTING.md` |
+| Après implémentation / refactor                                                        | `.claude/skills-library/clean-code.md`             |
+| Fichiers `.docx`                                                                       | `.claude/skills-library/docx.md`                   |
+| Fichiers `.pdf`                                                                        | `.claude/skills-library/pdf.md`                    |
+| Fichiers `.pptx`                                                                       | `.claude/skills-library/pptx.md`                   |
+| Fichiers `.xlsx`, `.csv`, `.tsv`                                                       | `.claude/skills-library/xlsx.md`                   |
+| Git workflow, PR, conventions humains                                                  | `.github/CONTRIBUTING.md`                          |
 
 > Ne charger un fichier que si la tâche le justifie directement.
 

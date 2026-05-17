@@ -7,10 +7,7 @@ import { createFieldUpdater } from '@/components/settings/settingsHelpers';
 import PassHistoryAccordion from '@/components/settings/PassHistoryAccordion';
 
 import { DEFAULT_PS_SETTINGS, DEFAULT_TAX_SETTINGS } from '@/constants/settingsDefaults';
-import {
-  validatePrelevementsSettings,
-  isValid,
-} from './validators/dmtgValidators';
+import { validatePrelevementsSettings, isValid } from './validators/dmtgValidators';
 
 import PrelevementsPatrimoineSection from './Prelevements/PrelevementsPatrimoineSection';
 import PrelevementsRetraitesSection from './Prelevements/PrelevementsRetraitesSection';
@@ -153,9 +150,7 @@ export default function SettingsPrelevements() {
   }, []);
 
   const setData = setSettings;
-  const setDataRecord = (
-    updater: (prev: Record<string, unknown>) => Record<string, unknown>,
-  ) => {
+  const setDataRecord = (updater: (prev: Record<string, unknown>) => Record<string, unknown>) => {
     setData((prev) => updater(prev as Record<string, unknown>) as PsSettings);
   };
 
@@ -169,7 +164,10 @@ export default function SettingsPrelevements() {
   ) => {
     setData((prev) => {
       const copy = structuredClone(prev);
-      const bracket = copy.retirement[yearKey].brackets[index] as Record<string, string | number | null>;
+      const bracket = copy.retirement[yearKey].brackets[index] as Record<
+        string,
+        string | number | null
+      >;
       bracket[key] = value;
       return copy;
     });
@@ -178,26 +176,30 @@ export default function SettingsPrelevements() {
   };
 
   const psErrors = useMemo(
-    () => validatePrelevementsSettings(settings as Parameters<typeof validatePrelevementsSettings>[0]),
+    () =>
+      validatePrelevementsSettings(settings as Parameters<typeof validatePrelevementsSettings>[0]),
     [settings],
   );
   const hasErrors = !isValid(psErrors);
 
-  const effectiveLabels = useMemo(() => ({
-    currentYearLabel: derivePsYearLabel(
-      taxSettings.incomeTax.currentYearLabel,
+  const effectiveLabels = useMemo(
+    () => ({
+      currentYearLabel: derivePsYearLabel(
+        taxSettings.incomeTax.currentYearLabel,
+        settings.labels.currentYearLabel,
+      ),
+      previousYearLabel: derivePsYearLabel(
+        taxSettings.incomeTax.previousYearLabel,
+        settings.labels.previousYearLabel,
+      ),
+    }),
+    [
       settings.labels.currentYearLabel,
-    ),
-    previousYearLabel: derivePsYearLabel(
-      taxSettings.incomeTax.previousYearLabel,
       settings.labels.previousYearLabel,
-    ),
-  }), [
-    settings.labels.currentYearLabel,
-    settings.labels.previousYearLabel,
-    taxSettings.incomeTax.currentYearLabel,
-    taxSettings.incomeTax.previousYearLabel,
-  ]);
+      taxSettings.incomeTax.currentYearLabel,
+      taxSettings.incomeTax.previousYearLabel,
+    ],
+  );
 
   const handleSave = async () => {
     if (!isAdmin || hasErrors) return;
@@ -212,12 +214,10 @@ export default function SettingsPrelevements() {
         labels: effectiveLabels,
       };
 
-      const { error: saveError } = await supabase
-        .from('ps_settings')
-        .upsert({
-          id: 1,
-          data: payload,
-        });
+      const { error: saveError } = await supabase.from('ps_settings').upsert({
+        id: 1,
+        data: payload,
+      });
 
       if (saveError) {
         console.error(saveError);
@@ -244,9 +244,7 @@ export default function SettingsPrelevements() {
       <UserInfoBanner />
 
       {error && (
-        <div className="settings-feedback-message settings-feedback-message--error">
-          {error}
-        </div>
+        <div className="settings-feedback-message settings-feedback-message--error">{error}</div>
       )}
 
       {loading ? (
@@ -290,10 +288,15 @@ export default function SettingsPrelevements() {
 
           {hasErrors && (
             <div className="settings-feedback-message settings-feedback-message--error">
-              <strong>Erreurs de validation ({Object.keys(psErrors).length}) - corrigez avant de sauvegarder :</strong>
+              <strong>
+                Erreurs de validation ({Object.keys(psErrors).length}) - corrigez avant de
+                sauvegarder :
+              </strong>
               <ul style={{ margin: '4px 0 0', paddingLeft: 20, fontSize: 13 }}>
                 {Object.entries(psErrors).map(([key, msg]) => (
-                  <li key={key}>{key} : {msg}</li>
+                  <li key={key}>
+                    {key} : {msg}
+                  </li>
                 ))}
               </ul>
             </div>
@@ -316,7 +319,9 @@ export default function SettingsPrelevements() {
           )}
 
           {message && (
-            <div className={`settings-feedback-message ${message.includes('Erreur') ? 'settings-feedback-message--error' : 'settings-feedback-message--success'}`}>
+            <div
+              className={`settings-feedback-message ${message.includes('Erreur') ? 'settings-feedback-message--error' : 'settings-feedback-message--success'}`}
+            >
               {message}
             </div>
           )}

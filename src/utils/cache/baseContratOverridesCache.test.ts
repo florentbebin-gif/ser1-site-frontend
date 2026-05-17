@@ -31,12 +31,14 @@ describe('baseContratOverridesCache', () => {
         },
       })
       .mockResolvedValueOnce({
-        data: [{
-          product_id: 'assurance_vie',
-          closed_date: null,
-          note_admin: 'Note admin',
-          updated_at: '2026-05-14T00:00:00.000Z',
-        }],
+        data: [
+          {
+            product_id: 'assurance_vie',
+            closed_date: null,
+            note_admin: 'Note admin',
+            updated_at: '2026-05-14T00:00:00.000Z',
+          },
+        ],
         error: null,
       });
 

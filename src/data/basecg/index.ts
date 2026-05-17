@@ -7,10 +7,12 @@ export {
   listBaseCgCompagnies,
   listBaseCgTypes,
 } from './catalog';
-export { PREFON_2025, PREFON_USER_2026_SERVICE_VALUE, PREFON_USER_2026_SOURCE_LABEL } from './prefon';
 export {
-  BASE_CG_RETRAITE_LEGAL_NOTICE,
-} from './legal';
+  PREFON_2025,
+  PREFON_USER_2026_SERVICE_VALUE,
+  PREFON_USER_2026_SOURCE_LABEL,
+} from './prefon';
+export { BASE_CG_RETRAITE_LEGAL_NOTICE } from './legal';
 export { TYPE_LABELS, COMPARTMENT_LABELS } from './labels';
 
 export {

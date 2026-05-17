@@ -9,7 +9,7 @@ describe('computeAutoPartsWithChildren - oracle 10 cas', () => {
         status: 'single',
         isIsolated: false,
         children: [{ mode: 'shared' }],
-      })
+      }),
     ).toBe(1.25);
   });
 
@@ -19,7 +19,7 @@ describe('computeAutoPartsWithChildren - oracle 10 cas', () => {
         status: 'single',
         isIsolated: true,
         children: [{ mode: 'charge' }],
-      })
+      }),
     ).toBe(2);
   });
 
@@ -29,7 +29,7 @@ describe('computeAutoPartsWithChildren - oracle 10 cas', () => {
         status: 'single',
         isIsolated: true,
         children: [{ mode: 'shared' }],
-      })
+      }),
     ).toBe(1.5);
   });
 
@@ -39,7 +39,7 @@ describe('computeAutoPartsWithChildren - oracle 10 cas', () => {
         status: 'single',
         isIsolated: true,
         children: [{ mode: 'charge' }, { mode: 'shared' }],
-      })
+      }),
     ).toBe(2.25);
   });
 
@@ -49,7 +49,7 @@ describe('computeAutoPartsWithChildren - oracle 10 cas', () => {
         status: 'single',
         isIsolated: true,
         children: [{ mode: 'shared' }, { mode: 'shared' }],
-      })
+      }),
     ).toBe(2);
   });
 
@@ -59,7 +59,7 @@ describe('computeAutoPartsWithChildren - oracle 10 cas', () => {
         status: 'single',
         isIsolated: true,
         children: [{ mode: 'shared' }, { mode: 'shared' }, { mode: 'shared' }],
-      })
+      }),
     ).toBe(2.5);
   });
 
@@ -68,13 +68,8 @@ describe('computeAutoPartsWithChildren - oracle 10 cas', () => {
       computeAutoPartsWithChildren({
         status: 'single',
         isIsolated: true,
-        children: [
-          { mode: 'shared' },
-          { mode: 'shared' },
-          { mode: 'charge' },
-          { mode: 'charge' },
-        ],
-      })
+        children: [{ mode: 'shared' }, { mode: 'shared' }, { mode: 'charge' }, { mode: 'charge' }],
+      }),
     ).toBe(3.5);
   });
 
@@ -83,13 +78,8 @@ describe('computeAutoPartsWithChildren - oracle 10 cas', () => {
       computeAutoPartsWithChildren({
         status: 'single',
         isIsolated: true,
-        children: [
-          { mode: 'shared' },
-          { mode: 'charge' },
-          { mode: 'charge' },
-          { mode: 'charge' },
-        ],
-      })
+        children: [{ mode: 'shared' }, { mode: 'charge' }, { mode: 'charge' }, { mode: 'charge' }],
+      }),
     ).toBe(4);
   });
 
@@ -99,7 +89,7 @@ describe('computeAutoPartsWithChildren - oracle 10 cas', () => {
         status: 'single',
         isIsolated: false,
         children: [{ mode: 'shared' }, { mode: 'shared' }, { mode: 'shared' }],
-      })
+      }),
     ).toBe(2);
   });
 
@@ -108,13 +98,8 @@ describe('computeAutoPartsWithChildren - oracle 10 cas', () => {
       computeAutoPartsWithChildren({
         status: 'single',
         isIsolated: false,
-        children: [
-          { mode: 'shared' },
-          { mode: 'shared' },
-          { mode: 'charge' },
-          { mode: 'charge' },
-        ],
-      })
+        children: [{ mode: 'shared' }, { mode: 'shared' }, { mode: 'charge' }, { mode: 'charge' }],
+      }),
     ).toBe(3);
   });
 });

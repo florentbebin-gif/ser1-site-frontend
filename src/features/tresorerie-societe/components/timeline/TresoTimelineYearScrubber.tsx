@@ -19,7 +19,11 @@ export function TresoTimelineYearScrubber({
         className="ts-field"
         rowClassName="ts-field__row"
         controlId="ts-timeline-start-year"
-        hint={selectedAssociateAge != null ? `Âge de l’associé sélectionné : ${selectedAssociateAge} ans` : undefined}
+        hint={
+          selectedAssociateAge != null
+            ? `Âge de l’associé sélectionné : ${selectedAssociateAge} ans`
+            : undefined
+        }
       >
         <input
           id="ts-timeline-start-year"
@@ -27,7 +31,7 @@ export function TresoTimelineYearScrubber({
           inputMode="numeric"
           className="sim-field__control"
           value={projectionStartYear}
-          onChange={event => onChange(parseNumberInput(event.target.value))}
+          onChange={(event) => onChange(parseNumberInput(event.target.value))}
         />
       </SimFieldShell>
     </div>

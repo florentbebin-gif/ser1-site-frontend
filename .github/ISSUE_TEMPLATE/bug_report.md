@@ -1,8 +1,8 @@
 ---
 name: Rapport de bug
 about: Créer un rapport de bug pour nous aider à améliorer
-labels: ["bug", "triage"]
-title: "[BUG] "
+labels: ['bug', 'triage']
+title: '[BUG] '
 assignees: []
 ---
 

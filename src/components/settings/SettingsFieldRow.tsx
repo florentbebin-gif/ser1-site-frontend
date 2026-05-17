@@ -32,7 +32,8 @@ export default function SettingsFieldRow({
     onChange(pathArray, parsed);
   };
 
-  const displayValue = type === 'number' ? numberOrEmpty(typeof value === 'number' ? value : null) : value ?? '';
+  const displayValue =
+    type === 'number' ? numberOrEmpty(typeof value === 'number' ? value : null) : (value ?? '');
 
   return (
     <div className={`settings-field-row${type === 'text' ? ' settings-field-row--text' : ''}`}>

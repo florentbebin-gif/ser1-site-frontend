@@ -32,22 +32,22 @@ Composants / features
 
 ## Fichiers clés
 
-| Fichier | Rôle |
-|---|---|
-| `src/constants/settingsDefaults.ts` | Toutes les valeurs fiscales par défaut |
-| `src/utils/cache/fiscalSettingsCache.ts` | Cache singleton (stale-while-revalidate) |
-| `src/hooks/useFiscalContext.ts` | Hook React unifié |
-| `scripts/check-no-hardcoded-fiscal-values.mjs` | Guard CI |
+| Fichier                                        | Rôle                                     |
+| ---------------------------------------------- | ---------------------------------------- |
+| `src/constants/settingsDefaults.ts`            | Toutes les valeurs fiscales par défaut   |
+| `src/utils/cache/fiscalSettingsCache.ts`       | Cache singleton (stale-while-revalidate) |
+| `src/hooks/useFiscalContext.ts`                | Hook React unifié                        |
+| `scripts/check-no-hardcoded-fiscal-values.mjs` | Guard CI                                 |
 
 ## Fichiers à lire si nécessaire
 
-| Fichier | Quand lire |
-|---|---|
-| `src/constants/settingsDefaults.ts` | Si besoin de valeurs fiscales par défaut |
-| `src/utils/cache/fiscalSettingsCache.ts` | Si modification du cache ou invalidation |
-| `src/hooks/useFiscalContext.ts` | Si modification du hook React |
-| `scripts/check-no-hardcoded-fiscal-values.mjs` | Si le CI fiscal-hardcode échoue |
-| `docs/METIER.md` | Si périmètre métier du simulateur concerné |
+| Fichier                                        | Quand lire                                 |
+| ---------------------------------------------- | ------------------------------------------ |
+| `src/constants/settingsDefaults.ts`            | Si besoin de valeurs fiscales par défaut   |
+| `src/utils/cache/fiscalSettingsCache.ts`       | Si modification du cache ou invalidation   |
+| `src/hooks/useFiscalContext.ts`                | Si modification du hook React              |
+| `scripts/check-no-hardcoded-fiscal-values.mjs` | Si le CI fiscal-hardcode échoue            |
+| `docs/METIER.md`                               | Si périmètre métier du simulateur concerné |
 
 ---
 

@@ -70,69 +70,75 @@ const INPUTS = {
       workingCapitalRequirement: 50000,
     },
     reducedCorporateTaxEligible: true,
-    associates: [{
-      id: 'associe-1',
-      label: 'Associé 1',
-      kind: 'pp',
-      profile: {
-        currentAge: 50,
-        retirementAge: 62,
-        annualIncomeNeed: 24000,
-        projectionStartYear: 2026,
-      },
-      ownershipLots: [{ right: 'pleine_propriete', capitalPct: 100, economicRightsPct: 100 }],
-      roles: ['associe_sans_statut'],
-      cca: {
-        currentBalance: 90000,
-        exceptionalContributions: [{ year: 2028, amount: 15000 }],
-        annualContribution: { amount: 12000, startYear: 2026, endYear: 2037 },
-        remunerationRate: 0.04,
-      },
-      remuneration: { source: 'holding', loadedAnnualCost: 0, socialChargeRate: 0 },
-      revenuePhases: [
-        {
-          id: 'phase-remu',
-          label: 'Rémunération holding',
-          startYear: 2026,
-          source: 'holding',
-          loadedAnnualCost: 80000,
-          socialChargeRate: 0.3,
-          annualNetIncomeNeed: 0,
-          useCcaForCompletion: true,
+    associates: [
+      {
+        id: 'associe-1',
+        label: 'Associé 1',
+        kind: 'pp',
+        profile: {
+          currentAge: 50,
+          retirementAge: 62,
+          annualIncomeNeed: 24000,
+          projectionStartYear: 2026,
         },
-        {
-          id: 'phase-besoin',
-          label: 'Besoin complémentaire',
-          startYear: 2031,
-          source: 'none',
-          loadedAnnualCost: 0,
-          socialChargeRate: 0,
-          annualNetIncomeNeed: 40000,
-          useCcaForCompletion: false,
+        ownershipLots: [{ right: 'pleine_propriete', capitalPct: 100, economicRightsPct: 100 }],
+        roles: ['associe_sans_statut'],
+        cca: {
+          currentBalance: 90000,
+          exceptionalContributions: [{ year: 2028, amount: 15000 }],
+          annualContribution: { amount: 12000, startYear: 2026, endYear: 2037 },
+          remunerationRate: 0.04,
         },
-      ],
-    }],
-    loans: [{
-      id: 'pret-1',
-      label: 'Emprunt société',
-      principal: 90000,
-      annualRate: 0.035,
-      durationMonths: 120,
-      startDate: '2026-01',
-      existingLoan: false,
-      deductibleInterest: true,
-    }],
-    subsidiaries: [{
-      id: 'filiale-1',
-      label: 'Filiale',
-      parentEntityId: 'societe',
-      ownershipPct: 80,
-      holdingOwnershipPct: 80,
-      motherDaughterEligible: true,
-      fiscalIntegrationEstimateEnabled: false,
-      servicesSchedule: [],
-      dividendsSchedule: [{ amount: 18000, startYear: 2026 }],
-    }],
+        remuneration: { source: 'holding', loadedAnnualCost: 0, socialChargeRate: 0 },
+        revenuePhases: [
+          {
+            id: 'phase-remu',
+            label: 'Rémunération holding',
+            startYear: 2026,
+            source: 'holding',
+            loadedAnnualCost: 80000,
+            socialChargeRate: 0.3,
+            annualNetIncomeNeed: 0,
+            useCcaForCompletion: true,
+          },
+          {
+            id: 'phase-besoin',
+            label: 'Besoin complémentaire',
+            startYear: 2031,
+            source: 'none',
+            loadedAnnualCost: 0,
+            socialChargeRate: 0,
+            annualNetIncomeNeed: 40000,
+            useCcaForCompletion: false,
+          },
+        ],
+      },
+    ],
+    loans: [
+      {
+        id: 'pret-1',
+        label: 'Emprunt société',
+        principal: 90000,
+        annualRate: 0.035,
+        durationMonths: 120,
+        startDate: '2026-01',
+        existingLoan: false,
+        deductibleInterest: true,
+      },
+    ],
+    subsidiaries: [
+      {
+        id: 'filiale-1',
+        label: 'Filiale',
+        parentEntityId: 'societe',
+        ownershipPct: 80,
+        holdingOwnershipPct: 80,
+        motherDaughterEligible: true,
+        fiscalIntegrationEstimateEnabled: false,
+        servicesSchedule: [],
+        dividendsSchedule: [{ amount: 18000, startYear: 2026 }],
+      },
+    ],
   },
   allocationMatrix: {
     sweepThreshold: 50000,
@@ -169,17 +175,19 @@ function makeRow(year: number): TresoProjectionRow {
   const retirementOffset = INPUTS.foyer.retirementAge - INPUTS.foyer.currentAge;
   const activeYears = Math.max(1, retirementOffset);
   const isRemuneration = year <= 5;
-  const revenusParAssocie = [{
-    associateId: 'associe-1',
-    label: 'Associé 1',
-    source: isRemuneration ? 'remuneration' as const : 'cca' as const,
-    remuneration: isRemuneration ? 56000 : 0,
-    ccaRepaid: isRemuneration ? 0 : 24000,
-    grossDividends: 0,
-    dividendTax: 0,
-    tnsSocialCharges: isRemuneration ? 24000 : 0,
-    netRevenue: isRemuneration ? 56000 : 24000,
-  }];
+  const revenusParAssocie = [
+    {
+      associateId: 'associe-1',
+      label: 'Associé 1',
+      source: isRemuneration ? ('remuneration' as const) : ('cca' as const),
+      remuneration: isRemuneration ? 56000 : 0,
+      ccaRepaid: isRemuneration ? 0 : 24000,
+      grossDividends: 0,
+      dividendTax: 0,
+      tnsSocialCharges: isRemuneration ? 24000 : 0,
+      netRevenue: isRemuneration ? 56000 : 24000,
+    },
+  ];
   const revenusNets = revenusParAssocie.reduce((sum, revenu) => sum + revenu.netRevenue, 0);
   return {
     year,
@@ -264,32 +272,45 @@ describe('Exports Trésorerie société', () => {
     const manifest = {
       cover: deck.cover.title,
       slideTypes,
-      projectionRows: deck.slides.filter(isProjectionSlide).flatMap(slide => slide.rows.map(row => row.label)),
-      projectionPages: deck.slides.filter(isProjectionSlide).map(slide => ({
-          pageIndex: slide.pageIndex,
-          yearsForPage: slide.yearsForPage,
-          rowsCount: slide.rows.length,
-        })),
+      projectionRows: deck.slides
+        .filter(isProjectionSlide)
+        .flatMap((slide) => slide.rows.map((row) => row.label)),
+      projectionPages: deck.slides.filter(isProjectionSlide).map((slide) => ({
+        pageIndex: slide.pageIndex,
+        yearsForPage: slide.yearsForPage,
+        rowsCount: slide.rows.length,
+      })),
     };
 
     expect(slideTypes).toEqual([
-      'chapter', 'treso-schema', 'treso-timeline',
-      'chapter', 'treso-allocation-matrix', 'treso-allocation-cards', 'treso-synthesis',
-      'chapter', 'treso-projection', 'treso-projection', 'treso-parameters-annex', 'treso-hypotheses',
+      'chapter',
+      'treso-schema',
+      'treso-timeline',
+      'chapter',
+      'treso-allocation-matrix',
+      'treso-allocation-cards',
+      'treso-synthesis',
+      'chapter',
+      'treso-projection',
+      'treso-projection',
+      'treso-parameters-annex',
+      'treso-hypotheses',
     ]);
-    expect(chapters.map(chapter => chapter.title)).toEqual([
+    expect(chapters.map((chapter) => chapter.title)).toEqual([
       'Comprendre le montage',
       'Organiser l’excédent',
       'Annexes détaillées',
     ]);
-    expect(chapters.map(chapter => chapter.chapterImageIndex)).toEqual([6, 4, 8]);
-    expect(manifest.projectionRows).toEqual(expect.arrayContaining([
-      'Liquidité disponible sur compte bancaire',
-      "Compte bancaire en fin d'année",
-      "Trésorerie consolidée en fin d'année",
-      'Revenus des filiales',
-      'Charges sociales TNS estimées',
-    ]));
+    expect(chapters.map((chapter) => chapter.chapterImageIndex)).toEqual([6, 4, 8]);
+    expect(manifest.projectionRows).toEqual(
+      expect.arrayContaining([
+        'Liquidité disponible sur compte bancaire',
+        "Compte bancaire en fin d'année",
+        "Trésorerie consolidée en fin d'année",
+        'Revenus des filiales',
+        'Charges sociales TNS estimées',
+      ]),
+    );
     expect(JSON.stringify(deck)).not.toContain('FCB');
     expect(JSON.stringify(deck)).not.toContain('Synthèse avant annexe');
     expect(JSON.stringify(deck)).toContain('Synthèse');
@@ -310,14 +331,16 @@ describe('Exports Trésorerie société', () => {
       },
     };
     const deck = buildTresorerieStudyDeck({ rows: ROWS, kpis: KPIS, inputs });
-    const timeline = deck.slides.find(slide => slide.type === 'treso-timeline') as TimelineSlide;
+    const timeline = deck.slides.find((slide) => slide.type === 'treso-timeline') as TimelineSlide;
 
-    expect(timeline.segments.map(segment => segment.label)).toEqual(['Palier', 'Palier']);
+    expect(timeline.segments.map((segment) => segment.label)).toEqual(['Palier', 'Palier']);
   });
 
   it('prépare une synthèse visuelle avec jalon CCA prioritaire et poches configurées', () => {
     const deck = buildTresorerieStudyDeck({ rows: ROWS, kpis: KPIS, inputs: INPUTS });
-    const synthesis = deck.slides.find((slide): slide is SynthesisSlide => slide.type === 'treso-synthesis');
+    const synthesis = deck.slides.find(
+      (slide): slide is SynthesisSlide => slide.type === 'treso-synthesis',
+    );
 
     expect(synthesis).toBeDefined();
     expect(synthesis?.title).toBe('Synthèse');
@@ -335,7 +358,7 @@ describe('Exports Trésorerie société', () => {
       ccaBalance: 234000,
       dividendRevenue: 0,
     });
-    expect(synthesis?.pocketTimeline.map(pocket => pocket.label)).toEqual([
+    expect(synthesis?.pocketTimeline.map((pocket) => pocket.label)).toEqual([
       'Court terme',
       'Long terme',
     ]);
@@ -348,11 +371,11 @@ describe('Exports Trésorerie société', () => {
   });
 
   it('utilise les dividendes comme jalon de synthèse quand aucun CCA n’est remboursé', () => {
-    const dividendRows = ROWS.map(row => {
+    const dividendRows = ROWS.map((row) => {
       const isDividendYear = row.year >= 3;
-      const revenusParAssocie = row.revenusParAssocie.map(revenu => ({
+      const revenusParAssocie = row.revenusParAssocie.map((revenu) => ({
         ...revenu,
-        source: isDividendYear ? 'dividendes' as const : 'remuneration' as const,
+        source: isDividendYear ? ('dividendes' as const) : ('remuneration' as const),
         ccaRepaid: 0,
         grossDividends: isDividendYear ? 42000 : 0,
         dividendTax: isDividendYear ? 12000 : 0,
@@ -366,8 +389,10 @@ describe('Exports Trésorerie société', () => {
       };
     });
     const deck = buildTresorerieStudyDeck({ rows: dividendRows, kpis: KPIS, inputs: INPUTS });
-    const synthesis = deck.slides.find((slide): slide is SynthesisSlide => slide.type === 'treso-synthesis');
-    const timeline = deck.slides.find(slide => slide.type === 'treso-timeline') as TimelineSlide;
+    const synthesis = deck.slides.find(
+      (slide): slide is SynthesisSlide => slide.type === 'treso-synthesis',
+    );
+    const timeline = deck.slides.find((slide) => slide.type === 'treso-timeline') as TimelineSlide;
 
     expect(synthesis?.triggerMarker).toMatchObject({
       kind: 'dividendes',
@@ -384,9 +409,11 @@ describe('Exports Trésorerie société', () => {
 
   it('prépare le contexte, la timeline et les poches depuis le modèle v2', () => {
     const deck = buildTresorerieStudyDeck({ rows: ROWS, kpis: KPIS, inputs: INPUTS });
-    const schema = deck.slides.find(slide => slide.type === 'treso-schema') as TresorerieSchemaSlideSpec;
-    const timeline = deck.slides.find(slide => slide.type === 'treso-timeline') as TimelineSlide;
-    const allocationCards = deck.slides.find(slide => slide.type === 'treso-allocation-cards');
+    const schema = deck.slides.find(
+      (slide) => slide.type === 'treso-schema',
+    ) as TresorerieSchemaSlideSpec;
+    const timeline = deck.slides.find((slide) => slide.type === 'treso-timeline') as TimelineSlide;
+    const allocationCards = deck.slides.find((slide) => slide.type === 'treso-allocation-cards');
     const parametersAnnex = deck.slides.find(
       (slide): slide is ParametersAnnexSlide => slide.type === 'treso-parameters-annex',
     );
@@ -410,31 +437,38 @@ describe('Exports Trésorerie société', () => {
     });
     expect(JSON.stringify(schema)).toContain('Associé 1');
     expect(JSON.stringify(schema)).toContain('Filiale');
-    expect(schema.orgchartCompany.subsidiaries).toEqual(expect.arrayContaining([
-      expect.objectContaining({ label: 'Filiale', ownershipPct: 80 }),
-    ]));
-    expect(timeline.segments).toEqual(expect.arrayContaining([
-      expect.objectContaining({
-        label: 'Rémunération holding',
-        startYear: 2026,
-        endYear: 2030,
-        sources: expect.arrayContaining([
-          expect.objectContaining({ label: 'Rémunération nette avant impôt', annualNetAmount: 56000 }),
-        ]),
-      }),
-      expect.objectContaining({
-        label: 'Besoin complémentaire',
-        startYear: 2031,
-        endYear: 2037,
-        sources: expect.arrayContaining([expect.objectContaining({ label: 'Remboursement CCA' })]),
-      }),
-    ]));
+    expect(schema.orgchartCompany.subsidiaries).toEqual(
+      expect.arrayContaining([expect.objectContaining({ label: 'Filiale', ownershipPct: 80 })]),
+    );
+    expect(timeline.segments).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          label: 'Rémunération holding',
+          startYear: 2026,
+          endYear: 2030,
+          sources: expect.arrayContaining([
+            expect.objectContaining({
+              label: 'Rémunération nette avant impôt',
+              annualNetAmount: 56000,
+            }),
+          ]),
+        }),
+        expect.objectContaining({
+          label: 'Besoin complémentaire',
+          startYear: 2031,
+          endYear: 2037,
+          sources: expect.arrayContaining([
+            expect.objectContaining({ label: 'Remboursement CCA' }),
+          ]),
+        }),
+      ]),
+    );
     expect(allocationCards).toMatchObject({
       type: 'treso-allocation-cards',
       protectedCash: 100000,
       allocatableBase: 50000,
     });
-    expect(parametersAnnex?.sections.map(section => section.title)).toEqual([
+    expect(parametersAnnex?.sections.map((section) => section.title)).toEqual([
       'Société',
       'Sécurité de trésorerie',
       'Associé principal',
@@ -470,16 +504,20 @@ describe('Exports Trésorerie société', () => {
         },
       },
     });
-    const schema = deck.slides.find(slide => slide.type === 'treso-schema') as TresorerieSchemaSlideSpec;
+    const schema = deck.slides.find(
+      (slide) => slide.type === 'treso-schema',
+    ) as TresorerieSchemaSlideSpec;
 
-    expect(deck.slides.map(slide => slide.type)).not.toContain('treso-allocation-cards');
-    expect(schema.orgchartCompany.subsidiaries).toEqual(expect.arrayContaining([
-      expect.objectContaining({
-        label: 'Filiale B',
-        parentEntityId: 'filiale-1',
-        ownershipPct: 51,
-      }),
-    ]));
+    expect(deck.slides.map((slide) => slide.type)).not.toContain('treso-allocation-cards');
+    expect(schema.orgchartCompany.subsidiaries).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          label: 'Filiale B',
+          parentEntityId: 'filiale-1',
+          ownershipPct: 51,
+        }),
+      ]),
+    );
   });
 
   it('rend le schéma PPTX en organigramme avec paramètres à droite', async () => {
@@ -512,10 +550,12 @@ describe('Exports Trésorerie société', () => {
     pptx.layout = 'LAYOUT_WIDE';
     defineSlideMasters(pptx, ctx.theme);
 
-    const schema = deck.slides.find(slide => slide.type === 'treso-schema') as TresorerieSchemaSlideSpec;
+    const schema = deck.slides.find(
+      (slide) => slide.type === 'treso-schema',
+    ) as TresorerieSchemaSlideSpec;
     buildTresorerieSchema(pptx, schema, ctx, 1);
 
-    const blob = await pptx.write({ outputType: 'blob' }) as Blob;
+    const blob = (await pptx.write({ outputType: 'blob' })) as Blob;
     const zip = await JSZip.loadAsync(await blob.arrayBuffer());
     const slideXml = await zip.file('ppt/slides/slide1.xml')?.async('string');
 
@@ -543,12 +583,15 @@ describe('Exports Trésorerie société', () => {
     const blob = await exportStudyDeck(deck, DEFAULT_COLORS, { footerDisclaimer: '' });
     const zip = await JSZip.loadAsync(await blob.arrayBuffer());
     const slideFiles = Object.keys(zip.files)
-      .filter(path => /^ppt\/slides\/slide\d+\.xml$/.test(path))
+      .filter((path) => /^ppt\/slides\/slide\d+\.xml$/.test(path))
       .sort((left, right) => left.localeCompare(right, 'fr', { numeric: true }));
-    const slideXmlByFile = await Promise.all(slideFiles.map(async path => ({
-      path, xml: await zip.file(path)?.async('string') ?? '',
-    })));
-    const allXml = slideXmlByFile.map(slide => slide.xml).join('\n');
+    const slideXmlByFile = await Promise.all(
+      slideFiles.map(async (path) => ({
+        path,
+        xml: (await zip.file(path)?.async('string')) ?? '',
+      })),
+    );
+    const allXml = slideXmlByFile.map((slide) => slide.xml).join('\n');
 
     expect(slideFiles).toHaveLength(deck.slides.length + 2);
     slideXmlByFile.forEach(({ path, xml }) => {
@@ -582,7 +625,9 @@ describe('Exports Trésorerie société', () => {
 
   it('rend la synthèse sans doubler l’année d’horizon sur l’axe', async () => {
     const deck = buildTresorerieStudyDeck({ rows: ROWS, kpis: KPIS, inputs: INPUTS });
-    const synthesis = deck.slides.find((slide): slide is SynthesisSlide => slide.type === 'treso-synthesis');
+    const synthesis = deck.slides.find(
+      (slide): slide is SynthesisSlide => slide.type === 'treso-synthesis',
+    );
     const ctx = buildPptxContext();
     const pptx = new PptxGenJS();
     pptx.layout = 'LAYOUT_WIDE';
@@ -591,9 +636,9 @@ describe('Exports Trésorerie société', () => {
     expect(synthesis).toBeDefined();
     buildTresorerieSynthesis(pptx, synthesis as SynthesisSlide, ctx, 1);
 
-    const blob = await pptx.write({ outputType: 'blob' }) as Blob;
+    const blob = (await pptx.write({ outputType: 'blob' })) as Blob;
     const zip = await JSZip.loadAsync(await blob.arrayBuffer());
-    const slideXml = await zip.file('ppt/slides/slide1.xml')?.async('string') ?? '';
+    const slideXml = (await zip.file('ppt/slides/slide1.xml')?.async('string')) ?? '';
 
     expect(slideXml).toContain('Horizon 2037');
     expect(slideXml).toContain('2026');
@@ -619,34 +664,40 @@ describe('Exports Trésorerie société', () => {
           startYear: 2026,
           endYear: 2030,
           label: 'Palier',
-          sources: [{
-            kind: 'remuneration',
-            label: 'Rémunération nette avant impôt',
-            annualNetAmount: 70000,
-            iconKey: 'money',
-          }],
+          sources: [
+            {
+              kind: 'remuneration',
+              label: 'Rémunération nette avant impôt',
+              annualNetAmount: 70000,
+              iconKey: 'money',
+            },
+          ],
         },
         {
           startYear: 2031,
           endYear: 2034,
           label: 'Palier',
-          sources: [{
-            kind: 'cca-repayment',
-            label: 'Remboursement CCA',
-            annualNetAmount: 50000,
-            iconKey: 'bank',
-          }],
+          sources: [
+            {
+              kind: 'cca-repayment',
+              label: 'Remboursement CCA',
+              annualNetAmount: 50000,
+              iconKey: 'bank',
+            },
+          ],
         },
         {
           startYear: 2035,
           endYear: 2065,
           label: 'Palier',
-          sources: [{
-            kind: 'dividends',
-            label: 'Dividendes nets de PFU',
-            annualNetAmount: 64927,
-            iconKey: 'chart-up',
-          }],
+          sources: [
+            {
+              kind: 'dividends',
+              label: 'Dividendes nets de PFU',
+              annualNetAmount: 64927,
+              iconKey: 'chart-up',
+            },
+          ],
         },
       ],
       tailSegment: {
@@ -658,9 +709,9 @@ describe('Exports Trésorerie société', () => {
 
     buildTresorerieTimeline(pptx, timeline, ctx, 1);
 
-    const blob = await pptx.write({ outputType: 'blob' }) as Blob;
+    const blob = (await pptx.write({ outputType: 'blob' })) as Blob;
     const zip = await JSZip.loadAsync(await blob.arrayBuffer());
-    const slideXml = await zip.file('ppt/slides/slide1.xml')?.async('string') ?? '';
+    const slideXml = (await zip.file('ppt/slides/slide1.xml')?.async('string')) ?? '';
 
     expect(slideXml).toContain('Trésorerie capitalisée');
     expect(slideXml).not.toContain('Capital placé · trésorerie capitalisée');

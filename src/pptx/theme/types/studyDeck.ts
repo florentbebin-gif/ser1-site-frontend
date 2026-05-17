@@ -3,12 +3,37 @@
  */
 
 import type { ChapterSlideSpec, ContentSlideSpec, CoverSlideSpec, EndSlideSpec } from './core';
-import type { CreditAmortizationSlideSpec, CreditAnnexeSlideSpec, CreditGlobalSynthesisSlideSpec, CreditLoanSynthesisSlideSpec, CreditSynthesisSlideSpec } from './credit';
+import type {
+  CreditAmortizationSlideSpec,
+  CreditAnnexeSlideSpec,
+  CreditGlobalSynthesisSlideSpec,
+  CreditLoanSynthesisSlideSpec,
+  CreditSynthesisSlideSpec,
+} from './credit';
 import type { IrAnnexeSlideSpec, IrSynthesisSlideSpec } from './ir';
-import type { PerFiscalSnapshotSlideSpec, PerPlafond3ColSlideSpec, PerProjectionTableSlideSpec } from './per';
-import type { PlacementDetailSlideSpec, PlacementHypothesesSlideSpec, PlacementProjectionSlideSpec, PlacementSynthesisSlideSpec } from './placement';
-import type { PerTransfertAuditContractSlideSpec, PerTransfertSynthesisSlideSpec } from './perTransfert';
-import type { SuccessionAnnexTableSlideSpec, SuccessionAssetAnnexSlideSpec, SuccessionChronologySlideSpec, SuccessionFamilyContextSlideSpec, SuccessionHypothesesSlideSpec, SuccessionSynthesisSlideSpec } from './succession';
+import type {
+  PerFiscalSnapshotSlideSpec,
+  PerPlafond3ColSlideSpec,
+  PerProjectionTableSlideSpec,
+} from './per';
+import type {
+  PlacementDetailSlideSpec,
+  PlacementHypothesesSlideSpec,
+  PlacementProjectionSlideSpec,
+  PlacementSynthesisSlideSpec,
+} from './placement';
+import type {
+  PerTransfertAuditContractSlideSpec,
+  PerTransfertSynthesisSlideSpec,
+} from './perTransfert';
+import type {
+  SuccessionAnnexTableSlideSpec,
+  SuccessionAssetAnnexSlideSpec,
+  SuccessionChronologySlideSpec,
+  SuccessionFamilyContextSlideSpec,
+  SuccessionHypothesesSlideSpec,
+  SuccessionSynthesisSlideSpec,
+} from './succession';
 import type {
   TresorerieAllocationCardsSlideSpec,
   TresorerieAllocationMatrixSlideSpec,

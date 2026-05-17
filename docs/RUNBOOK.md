@@ -1,16 +1,20 @@
 # RUNBOOK (dev / ops)
 
 ## But
+
 Donner une procédure **actionnable** pour exécuter, diagnostiquer et opérer le repo (local dev, Supabase, Edge Functions, troubleshooting).
 
 ## Audience
+
 Dev qui doit dépanner vite, ou exécuter un parcours local/CI.
 
 ## Ce que ce doc couvre / ne couvre pas
+
 - ✅ Couvre : commandes, symptômes→cause→fix, flags debug, Edge Functions, migrations.
 - ❌ Ne couvre pas : les conventions UI/couleurs (voir `docs/GOUVERNANCE.md`) ni les contrats d’exports PPTX/Excel (voir `docs/GOUVERNANCE_EXPORTS.md`).
 
 ## Sommaire
+
 - [Checks du repo](#checks-du-repo)
 - [Dev local (frontend)](#dev-local-frontend)
 - [Env vars](#env-vars)
@@ -29,6 +33,7 @@ Note securite : `admin_accounts` et `admin_action_audit` doivent rester `service
 ---
 
 ## Checks du repo
+
 - Check complet :
   - `npm run check` (lint + **check:fiscal-hardcode** + **check:settings-rls** + **check:arch** + **check:circular** + **check:unused** + CSS/theme + typecheck + tests + build)
 
@@ -40,6 +45,7 @@ Les contrôles `audit:prod`, `coverage`, `build:storybook` et `lhci` sont inform
   - `npm run check:arch` (dependency-cruiser, bloquant sur violation de frontière)
 
 Règles enforced :
+
 - `engine/` et `domain/` : zéro React, zéro imports features/pages
 - `features/` : pas d'import de pages
 - `pages/` : imports features via `index.ts` uniquement
@@ -51,13 +57,13 @@ Commande : `npm run check:fiscal-hardcode` (ou inclus dans `npm run check`).
 
 **Ce que ça vérifie** : absence de valeurs fiscales révisables en dur dans `src/engine/`, `src/domain/base-contrat/rules/`, `src/features/`, `src/hooks/` et `src/pages/settings/` (hors tests). La liste exacte surveillée vit dans `FORBIDDEN_VALUES` dans `scripts/check-no-hardcoded-fiscal-values.mjs` et couvre notamment :
 
-| Exemple | Label |
-|--------|-------|
-| `17,2` / `0.172` | Taux PS patrimoine |
-| `12,8` / `0.128` | Taux IR PFU |
-| `PFU 30 %` | Libellé PFU figé |
-| `100000` | Abattement enfant DMTG (ligne directe) |
-| `15932` | Abattement frère/sœur DMTG |
+| Exemple          | Label                                                                                   |
+| ---------------- | --------------------------------------------------------------------------------------- |
+| `17,2` / `0.172` | Taux PS patrimoine                                                                      |
+| `12,8` / `0.128` | Taux IR PFU                                                                             |
+| `PFU 30 %`       | Libellé PFU figé                                                                        |
+| `100000`         | Abattement enfant DMTG (ligne directe)                                                  |
+| `15932`          | Abattement frère/sœur DMTG                                                              |
 | PASS historiques | valeurs annuelles PASS à maintenir uniquement dans les settings et fallbacks documentés |
 
 **Seul fichier autorisé** à contenir ces valeurs : `src/constants/settingsDefaults.ts`.
@@ -65,12 +71,14 @@ Commande : `npm run check:fiscal-hardcode` (ou inclus dans `npm run check`).
 **Si la garde échoue** (violation détectée) : déplacer la valeur en dur vers `settingsDefaults.ts` et la consommer via `DEFAULT_TAX_SETTINGS` ou `useFiscalContext`.
 
 **Si une valeur légale change au PLF** (ex: abattement 100 000 € → 120 000 €) :
+
 1. Mettre à jour la valeur dans `settingsDefaults.ts` (défaut code) ET dans Supabase via la page settings concernée (`/settings/impots`, `/settings/prelevements` ou `/settings/dmtg-succession`).
 2. Si le pattern `FORBIDDEN_VALUES` dans `check-no-hardcoded-fiscal-values.mjs` référence l'ancienne valeur, mettre à jour le pattern pour correspondre à la nouvelle valeur légale.
 
 ---
 
 ## Scripts versionnés
+
 Ces scripts sont conservés dans le repo car ils servent au gate CI, à l'outillage opérateur ou aux contrôles ponctuels. Ne pas les supprimer sans preuve d'inutilité.
 
 - `scripts/check-no-hardcoded-fiscal-values.mjs` : garde fiscal-hardcode incluse dans `npm run check`.
@@ -85,13 +93,16 @@ Ces scripts sont conservés dans le repo car ils servent au gate CI, à l'outill
 ---
 
 ## Dev local (frontend)
+
 - `npm install`
 - `npm run dev`
 
 ---
 
 ## Env vars
+
 Le repo n’utilise pas `.env` :
+
 - Copier `.env.example` → `.env.local` (local uniquement, gitignored)
 - Ne jamais committer de secrets.
 
@@ -114,11 +125,14 @@ VITE_WEB_VITALS=false
 ---
 
 ## Debug flags & console policy
+
 ### Console
+
 - Autorisé en prod : `console.error`, `console.warn`.
 - Interdit en prod : `console.log/debug/info/trace` (bloqué ESLint).
 
 ### Activer des logs
+
 - Via `.env.local` (recommandé) :
   - `VITE_DEBUG_AUTH=1`
   - `VITE_DEBUG_PPTX=1`
@@ -138,17 +152,20 @@ Référence code : `src/utils/debugFlags.ts`.
 ## Observabilité production
 
 L'observabilité frontend est opt-in :
+
 - sans `VITE_SENTRY_DSN`, aucun événement externe n'est envoyé ;
 - avec `VITE_SENTRY_DSN`, les erreurs React, les erreurs critiques de bootstrap et les Web Vitals peuvent être envoyés à Sentry ;
 - `sendDefaultPii` reste désactivé et le logger redige les clés sensibles (`email`, `nom`, `montant`, `rfr`, `token`, etc.).
 
 Fichiers :
+
 - `src/observability/sentry.ts` : initialisation Sentry, redaction, capture.
 - `src/observability/logger.ts` : logger applicatif minimal (`info`, `warn`, `error`).
 - `src/observability/webVitals.ts` : métriques CLS, INP, LCP, FCP et TTFB.
 - `src/components/AppErrorBoundary.tsx` : capture des erreurs React.
 
 Test manuel en preview :
+
 1. Définir `VITE_SENTRY_DSN` sur l'environnement cible.
 2. Déclencher une erreur contrôlée sans donnée client.
 3. Vérifier l'événement dans Sentry : pas d'email, pas de nom, pas de montant, pas de contenu métier.
@@ -172,24 +189,29 @@ npm run audit:prod
 ```
 
 Statut des gates :
+
 - Bloquants : `npm run check`, `check:pre-merge`, `test:deno`, `lint:repo`, `typecheck:tests`.
 - Informatifs au premier rollout : `audit:prod`, `coverage`, `build:storybook`, `lhci`.
 
 Coverage :
+
 - Vitest couvre prioritairement `src/engine/**` via `vitest.config.ts`.
 - La CI tente un upload Codecov avec `CODECOV_TOKEN` si configuré ; l'échec d'upload ne bloque pas la PR.
 
 Lighthouse CI :
+
 - Config : `lighthouserc.cjs`.
 - Routes surveillées au démarrage : `/`, `/login` et les simulateurs clés (`/sim/ir`, `/sim/credit`, `/sim/succession`, `/sim/placement`, `/sim/per`) sur le build preview local.
 - Les budgets sont en warning tant que la baseline n'est pas stabilisée.
 
 Storybook :
+
 - Config : `.storybook/`.
 - Démarrage local : `npm run storybook`.
 - Build CI : `npm run build:storybook`.
 
 Typedoc :
+
 - Config : `typedoc.json`.
 - Génération locale : `npm run docs:engine`.
 - La sortie `docs/api/` est ignorée par Git ; publier seulement si un besoin produit ou docs permanent est décidé.
@@ -201,6 +223,7 @@ Typedoc :
 Si le projet est relié à Vercel via GitHub, chaque PR doit produire une preview Vercel.
 
 Checklist de review preview :
+
 1. Ouvrir l'URL de preview attachée à la PR.
 2. Vérifier `/login`, `/`, puis les routes simulateurs touchées.
 3. Comparer avec les smoke tests Playwright (`npm run test:e2e:smoke`) si une route critique bouge.
@@ -211,6 +234,7 @@ La preview ne remplace pas `npm run check` ni les tests E2E ; elle sert à valid
 ---
 
 ## Supabase local + migrations
+
 Source de vérité migrations : `supabase/migrations/`.
 
 Projet : **SER1-Simulator** — réf configurée localement via Supabase CLI — Région : West EU (Paris).
@@ -237,6 +261,7 @@ supabase db remote commit --linked
 ## Gouvernance admin — `admin_accounts`
 
 ### Contexte
+
 La table `admin_accounts` est la liste exhaustive des comptes autorisés à utiliser la fonction admin. Elle s'ajoute au check `app_metadata.role='admin'` dans Supabase Auth : les deux doivent être vrais pour qu'un compte soit accepté.
 
 > **Règle** : un compte admin doit être présent dans Supabase Auth avec `app_metadata.role='admin'` et dans `public.admin_accounts`.
@@ -251,6 +276,7 @@ VALUES ('<owner_user_id>', 'owner', 'Compte owner initial');
 ```
 
 Vérifier :
+
 ```sql
 SELECT * FROM public.admin_accounts;
 -- Doit retourner exactement 1 ligne owner active
@@ -308,6 +334,7 @@ Pour les vérifications UI manuelles ou assistées par LLM, utiliser un compte S
 ### Récupération lock-out admin
 
 La garde `admin_accounts` est active côté Edge Function. En cas de lock-out :
+
 1. Se connecter au projet Supabase avec un rôle service.
 2. Vérifier qu'au moins un compte owner actif existe :
    ```sql
@@ -345,12 +372,15 @@ Note : la table est accessible service_role uniquement (RLS activee, policies ex
 ---
 
 ## Edge Function admin
+
 ### Déployer
+
 ```powershell
 npx supabase functions deploy admin --project-ref <ref>
 ```
 
 ### Tester
+
 - Public : `ping_public`
 - Auth/admin : via Dashboard Functions ou `supabase functions invoke admin`.
 
@@ -404,17 +434,22 @@ Au chargement d'un fichier `.ser1` sauvegardé avec le schéma v4, l'app compare
 ---
 
 ## Troubleshooting rapide
+
 ### CORS / /functions/v1/admin
+
 Symptôme : erreur CORS ou requêtes invisibles côté logs Supabase.
+
 - Vérifier `VITE_SUPABASE_URL` / token.
 - Tester `ping_public` depuis navigateur.
 - Vérifier preflight `OPTIONS` (Network tab).
 
 ### Thème ne s’applique pas / cache stale
+
 - Vider les caches `ser1_theme_cache_*` / `ser1_cabinet_*` dans localStorage.
 - Vérifier `theme_mode/preset_id/my_palette` en DB (`ui_settings`).
 
 ### RLS / rôle admin
+
 - Vérifier que l’autorisation utilise `app_metadata.role`.
 - Interdit : checks `user_metadata`.
 
@@ -432,6 +467,7 @@ Ou redémarrer le projet via Dashboard > Settings > General > Restart project.
 ### Bucket "logos" not found
 
 Si le bucket n’existe pas après migration :
+
 1. Vérifier que la migration de création du bucket a bien été exécutée.
 2. Vérifier dans Dashboard > Storage que le bucket existe.
 3. Vérifier les policies RLS dans Dashboard > Storage > Policies.
@@ -486,6 +522,7 @@ Procédure à suivre chaque année (PLF, BOFiP, BOSS…). Aucune compétence tec
 ## Base-Contrat — Clôturer / rouvrir un produit
 
 La page `/settings/base-contrat` affiche un **catalogue hardcodé** et permet uniquement (admin) de :
+
 - **Clôturer / rouvrir** un produit avec une date
 - Ajouter une **note admin** optionnelle
 
@@ -508,9 +545,11 @@ Policy active : `overrides_select_admin` (migration `20260226000100_rls_override
 Le référentiel est 100% hardcodé dans `src/domain/base-contrat/`. Toute modification du catalogue ou des règles passe par une PR.
 
 ### Règle d'or (UX Premium)
+
 Toujours utiliser des **libellés métier clairs**. Aucun jargon technique ni ID ne doit être visible par l'utilisateur final.
 
 ### 1. Ajouter un produit
+
 1. Ouvrir `src/domain/base-contrat/catalog.ts`.
 2. Ajouter une entrée dans le tableau `CATALOG` dans la bonne `GrandeFamille`.
 3. Renseigner `id`, `label` (métier), `grandeFamille`, `catalogKind`, `ppEligible`, `pmEligible`.
@@ -523,6 +562,7 @@ Le **référentiel lisible** des règles fiscales est dans `src/domain/base-cont
 Le **moteur de calcul** (simulateurs) reste dans `src/engine/`.
 
 #### Modifier une règle existante
+
 1. Identifier le produit et la phase impactée : **Constitution**, **Sortie/Rachat**, ou **Décès/Transmission**.
 2. Ouvrir le fichier de bibliothèque correspondant dans `src/domain/base-contrat/rules/library/` :
    - `assurance-epargne.ts` — Assurance-vie, Contrat de capitalisation
@@ -537,6 +577,7 @@ Le **moteur de calcul** (simulateurs) reste dans `src/engine/`.
 4. Lancer `npm run check`.
 
 #### Ajouter des règles
+
 1. Créer ou ouvrir le fichier de bibliothèque de la famille dans `src/domain/base-contrat/rules/library/` ou créer une entrée dans le `switch` du fichier concerné.
 2. Ajouter une `ProductRules` avec title + bullets métier.
 3. Lancer `npm run check` — le test de coverage se met à jour automatiquement.
@@ -545,17 +586,19 @@ Le **moteur de calcul** (simulateurs) reste dans `src/engine/`.
 
 Chaque `RuleBlock` doit obligatoirement avoir un champ `confidence` : `'elevee'`, `'moyenne'`, ou `'faible'`.
 
-| Confidence | Signification | Obligations |
-|---|---|---|
-| `elevee` | Règle fiable, sourcée, stable | Aucune obligation supplémentaire |
-| `moyenne` | Règle correcte mais dépend de paramètres client | Au moins 1 bullet « À confirmer selon … » + `dependencies` non vide |
-| `faible` | Règle incertaine ou en attente de validation | Idem `moyenne` + `sources` obligatoire |
+| Confidence | Signification                                   | Obligations                                                         |
+| ---------- | ----------------------------------------------- | ------------------------------------------------------------------- |
+| `elevee`   | Règle fiable, sourcée, stable                   | Aucune obligation supplémentaire                                    |
+| `moyenne`  | Règle correcte mais dépend de paramètres client | Au moins 1 bullet « À confirmer selon … » + `dependencies` non vide |
+| `faible`   | Règle incertaine ou en attente de validation    | Idem `moyenne` + `sources` obligatoire                              |
 
 **Champs optionnels** :
+
 - `sources` : max 2 entrées `{ label, url }` pointant vers BOFiP, Légifrance ou doctrine fiable (URLs `https://`).
 - `dependencies` : max 6 courtes phrases décrivant les paramètres dont dépend la règle.
 
 **Règles d'écriture** :
+
 - Ne jamais affirmer sans source officielle. Si la source manque → `confidence: 'moyenne'` minimum.
 - Préférer les sources officielles : BOFiP > Légifrance > doctrine professionnelle.
 - Les `tags` sont techniques (moteur futur) et jamais affichés en UI.
@@ -563,6 +606,7 @@ Chaque `RuleBlock` doit obligatoirement avoir un champ `confidence` : `'elevee'`
 - Les tests (`rules.test.ts`) vérifient automatiquement le respect de cette policy.
 
 ### 3. Ajouter/mettre à jour les tests (Golden Tests)
+
 1. Ouvrir `src/engine/__tests__/goldenCases.test.ts` (ou le fichier de test lié au domaine).
 2. Ajouter un cas de test documenté avec des entrées déterministes et les sorties attendues calculées manuellement.
 3. Lancer `npm test` et `npm run check` pour garantir l'absence de régression.
@@ -636,6 +680,7 @@ rg -n "SETTINGS_ROUTES|settingsRoutes" src/routes/settingsRoutes.ts src/pages/Se
 ---
 
 Voir aussi :
+
 - `docs/ARCHITECTURE.md` (cartographie)
 - `docs/GOUVERNANCE.md` (règles UI/couleurs/thème)
 - `docs/GOUVERNANCE_EXPORTS.md` (règles PPTX/Excel)

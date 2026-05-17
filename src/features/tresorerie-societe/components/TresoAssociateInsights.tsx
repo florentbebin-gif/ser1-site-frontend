@@ -49,9 +49,14 @@ function AssociateDonut({
   }
 
   return (
-    <svg className="ts-associate-donut" viewBox="0 0 72 72" role="img" aria-label="Couverture du besoin moyen par source">
+    <svg
+      className="ts-associate-donut"
+      viewBox="0 0 72 72"
+      role="img"
+      aria-label="Couverture du besoin moyen par source"
+    >
       <circle cx="36" cy="36" r={radius} className="ts-associate-donut__base" />
-      {segments.map(segment => {
+      {segments.map((segment) => {
         const length = (segment.value / denominator) * circumference;
         const dashOffset = offset;
         offset -= length;
@@ -76,15 +81,18 @@ function AssociateDonut({
 export function TresoAssociateInsights({ inputs, rows }: Props) {
   const view = buildTresoAssociateInsightViewModel(inputs, rows);
   const deltaStatus = view.deltaNeed < 0 ? 'warning' : view.deltaNeed > 0 ? 'positive' : 'neutral';
-  const coverageStatus = view.needTotal > 0 && view.revenusTotalRecupere + 0.5 < view.needTotal
-    ? 'partial'
-    : 'total';
-  const coverageLabel = view.annualNeed > 0
-    ? coverageStatus === 'partial' ? 'Couverture partielle' : 'Couverture totale'
-    : 'Revenu projeté';
-  const subtitle = view.analysisMode === 'needs' && view.analysisYearsCount > 0
-    ? `Moyenne sur ${view.analysisYearsCount} année${view.analysisYearsCount > 1 ? 's' : ''} de besoin`
-    : 'Année cible : revenus par source';
+  const coverageStatus =
+    view.needTotal > 0 && view.revenusTotalRecupere + 0.5 < view.needTotal ? 'partial' : 'total';
+  const coverageLabel =
+    view.annualNeed > 0
+      ? coverageStatus === 'partial'
+        ? 'Couverture partielle'
+        : 'Couverture totale'
+      : 'Revenu projeté';
+  const subtitle =
+    view.analysisMode === 'needs' && view.analysisYearsCount > 0
+      ? `Moyenne sur ${view.analysisYearsCount} année${view.analysisYearsCount > 1 ? 's' : ''} de besoin`
+      : 'Année cible : revenus par source';
 
   return (
     <div className="premium-card ts-associate-insights">
@@ -99,9 +107,7 @@ export function TresoAssociateInsights({ inputs, rows }: Props) {
           Une personne morale ne porte pas de revenus personnels.
         </p>
       ) : view.status === 'empty' ? (
-        <p className="ts-kpi-sidebar__empty">
-          Aucun revenu associé projeté pour l’instant.
-        </p>
+        <p className="ts-kpi-sidebar__empty">Aucun revenu associé projeté pour l’instant.</p>
       ) : (
         <>
           <div className="ts-associate-hero">
@@ -110,20 +116,19 @@ export function TresoAssociateInsights({ inputs, rows }: Props) {
               <span>Revenu moyen servi</span>
               <strong>{fmtEuro(view.netIncome)}</strong>
               <small>
-                {view.associateLabel} ·{' '}
-                {view.periodLabel}
+                {view.associateLabel} · {view.periodLabel}
                 {view.targetAge != null ? ` · ${view.targetAge} ans` : ''}
               </small>
-              <em className={`ts-associate-coverage is-${coverageStatus}`}>
-                {coverageLabel}
-              </em>
+              <em className={`ts-associate-coverage is-${coverageStatus}`}>{coverageLabel}</em>
             </div>
           </div>
 
           <div className="ts-associate-legend">
-            {view.segments.map(segment => (
+            {view.segments.map((segment) => (
               <div key={segment.key} className="ts-associate-legend__item">
-                <span className={`ts-associate-legend__dot ts-associate-legend__dot--${segment.key}`} />
+                <span
+                  className={`ts-associate-legend__dot ts-associate-legend__dot--${segment.key}`}
+                />
                 <span>{segment.label}</span>
                 <strong>{fmtEuro(segment.value)}</strong>
               </div>

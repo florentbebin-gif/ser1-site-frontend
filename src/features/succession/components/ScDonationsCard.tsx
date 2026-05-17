@@ -48,7 +48,17 @@ export default function ScDonationsCard({
       <header className="sc-card__header sim-card__header sim-card__header--bleed">
         <div className="sc-card__title-row sim-card__title sim-card__title-row">
           <div className="sim-card__icon">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.8"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
               <polyline points="20 12 20 22 4 22 4 12" />
               <rect x="2" y="7" width="20" height="5" />
               <line x1="12" y1="22" x2="12" y2="7" />
@@ -98,8 +108,9 @@ export default function ScDonationsCard({
       {donationsContext.length > 0 ? (
         <div className="sc-donations-list">
           {donationsContext.map((entry, idx) => {
-            const donationTypeLabel = DONATION_TYPE_OPTIONS.find((option) => option.value === entry.type)?.label
-              ?? 'Donation détaillée';
+            const donationTypeLabel =
+              DONATION_TYPE_OPTIONS.find((option) => option.value === entry.type)?.label ??
+              'Donation détaillée';
 
             return (
               <div key={entry.id} className="sc-donation-card">
@@ -134,8 +145,8 @@ export default function ScDonationsCard({
                       options={DONATION_TYPE_OPTIONS}
                     />
                     <p className="sc-hint sc-hint--compact">
-                      Avance de part successorale : sera rapportée au partage entre héritiers.
-                      Hors part successorale : s&apos;ajoute aux libéralités et peut entamer la réserve.
+                      Avance de part successorale : sera rapportée au partage entre héritiers. Hors
+                      part successorale : s&apos;ajoute aux libéralités et peut entamer la réserve.
                     </p>
                   </div>
                   <div className="sc-field">
@@ -182,13 +193,23 @@ export default function ScDonationsCard({
                     />
                   </div>
                   <div className="sc-field sc-field--span-2 sc-field--donation-toggles">
-                    <div className="sc-donation-checkbox-row" role="group" aria-label="Options de donation">
+                    <div
+                      className="sc-donation-checkbox-row"
+                      role="group"
+                      aria-label="Options de donation"
+                    >
                       <label className="sc-checkbox-label sc-checkbox-label--compact">
                         <input
                           type="checkbox"
                           checked={entry.donSommeArgentExonere ?? false}
                           disabled={entry.avecReserveUsufruit ?? false}
-                          onChange={(e) => onUpdateDonationEntry(entry.id, 'donSommeArgentExonere', e.target.checked)}
+                          onChange={(e) =>
+                            onUpdateDonationEntry(
+                              entry.id,
+                              'donSommeArgentExonere',
+                              e.target.checked,
+                            )
+                          }
                         />
                         Don 790 G
                       </label>
@@ -197,7 +218,9 @@ export default function ScDonationsCard({
                           type="checkbox"
                           checked={entry.avecReserveUsufruit ?? false}
                           disabled={entry.donSommeArgentExonere ?? false}
-                          onChange={(e) => onUpdateDonationEntry(entry.id, 'avecReserveUsufruit', e.target.checked)}
+                          onChange={(e) =>
+                            onUpdateDonationEntry(entry.id, 'avecReserveUsufruit', e.target.checked)
+                          }
                         />
                         Réserve d&apos;usufruit
                       </label>
@@ -206,7 +229,9 @@ export default function ScDonationsCard({
                           type="checkbox"
                           checked={entry.usufruitSuccessif ?? false}
                           disabled={!entry.avecReserveUsufruit || !canUseUsufruitSuccessif}
-                          onChange={(e) => onUpdateDonationEntry(entry.id, 'usufruitSuccessif', e.target.checked)}
+                          onChange={(e) =>
+                            onUpdateDonationEntry(entry.id, 'usufruitSuccessif', e.target.checked)
+                          }
                         />
                         Usufruit successif
                       </label>
@@ -222,11 +247,7 @@ export default function ScDonationsCard({
       )}
 
       <div className="sc-inline-actions">
-        <button
-          type="button"
-          className="sc-child-add-btn"
-          onClick={onAddDonationEntry}
-        >
+        <button type="button" className="sc-child-add-btn" onClick={onAddDonationEntry}>
           + Ajouter une donation
         </button>
       </div>

@@ -9,6 +9,7 @@ description: Travail XLSX/CSV pour SER1. Priorité aux builders d'export version
 Utiliser ce skill pour les demandes liées aux fichiers `.xlsx`, `.xlsm`, `.csv` ou `.tsv`.
 
 Dans SER1, le flux principal est le code :
+
 - contrat produit : `docs/GOUVERNANCE_EXPORTS.md`
 - builder XLSX partagé : `src/utils/export/xlsxBuilder.ts`
 - fingerprint exports : `src/utils/export/exportFingerprint.ts`

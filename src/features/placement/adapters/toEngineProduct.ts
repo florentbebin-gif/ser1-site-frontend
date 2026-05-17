@@ -58,14 +58,8 @@ export function computeRendementPondere({
 }
 
 export function toEngineProduct(product: PlacementProductInput): EnginePlacementProduct {
-  const {
-    versementConfig,
-    envelope,
-    dureeEpargne,
-    perBancaire,
-    optionBaremeIR,
-    fraisGestion,
-  } = product;
+  const { versementConfig, envelope, dureeEpargne, perBancaire, optionBaremeIR, fraisGestion } =
+    product;
   const normalizedConfig = normalizeVersementConfig(versementConfig ?? {});
   const { initial, annuel, ponctuels, capitalisation, distribution } = normalizedConfig;
 

@@ -23,9 +23,11 @@ vi.mock('@/auth/useUserRole', () => ({
 
 vi.mock('@/utils/cache/baseCgRetraiteRepository', () => ({
   getBaseCgRetraiteCatalog: () => getBaseCgRetraiteCatalogMock(),
-  upsertBaseCgRetraiteContract: (contract: BaseCgRetraiteContract) => upsertBaseCgRetraiteContractMock(contract),
+  upsertBaseCgRetraiteContract: (contract: BaseCgRetraiteContract) =>
+    upsertBaseCgRetraiteContractMock(contract),
   deleteBaseCgRetraiteContract: (id: string) => deleteBaseCgRetraiteContractMock(id),
-  createBaseCgRetraiteDocumentDownloadUrl: (...args: unknown[]) => createBaseCgRetraiteDocumentDownloadUrlMock(...args),
+  createBaseCgRetraiteDocumentDownloadUrl: (...args: unknown[]) =>
+    createBaseCgRetraiteDocumentDownloadUrlMock(...args),
 }));
 
 const contract: BaseCgRetraiteContract = {
@@ -81,7 +83,9 @@ describe('BaseCgRetraite', () => {
     deleteBaseCgRetraiteContractMock.mockReset();
     deleteBaseCgRetraiteContractMock.mockResolvedValue(undefined);
     createBaseCgRetraiteDocumentDownloadUrlMock.mockReset();
-    createBaseCgRetraiteDocumentDownloadUrlMock.mockResolvedValue('https://signed.example.test/cg.pdf');
+    createBaseCgRetraiteDocumentDownloadUrlMock.mockResolvedValue(
+      'https://signed.example.test/cg.pdf',
+    );
     useUserRoleMock.mockReset();
     useUserRoleMock.mockReturnValue({
       role: 'admin',
@@ -107,23 +111,27 @@ describe('BaseCgRetraite', () => {
     };
     const documentedContract: BaseCgRetraiteContract = {
       ...contract,
-      documents: [{
-        id: 'doc-swisslife',
-        label: 'Notice SwissLife PER Individuel',
-        type: 'notice_information',
-        status: 'uploaded',
-        versionLabel: '13124 – 09.2019',
-        storagePath: 'swisslife/swisslife-per-individuel/13124-09-2019.pdf',
-        fileName: '13124-09-2019.pdf',
-        mime: 'application/pdf',
-        bytes: 462558,
-      }],
+      documents: [
+        {
+          id: 'doc-swisslife',
+          label: 'Notice SwissLife PER Individuel',
+          type: 'notice_information',
+          status: 'uploaded',
+          versionLabel: '13124 – 09.2019',
+          storagePath: 'swisslife/swisslife-per-individuel/13124-09-2019.pdf',
+          fileName: '13124-09-2019.pdf',
+          mime: 'application/pdf',
+          bytes: 462558,
+        },
+      ],
     };
     getBaseCgRetraiteCatalogMock.mockResolvedValueOnce([documentedContract, incompleteContract]);
 
     render(<BaseCgRetraite />);
 
-    expect(await screen.findByText('2 contrats disponibles - 1 contrat paramétré - 1 CG disponible')).toBeInTheDocument();
+    expect(
+      await screen.findByText('2 contrats disponibles - 1 contrat paramétré - 1 CG disponible'),
+    ).toBeInTheDocument();
     expect(screen.queryByText(/extraction/i)).not.toBeInTheDocument();
     expect(screen.queryByText(/version/i)).not.toBeInTheDocument();
   });
@@ -231,9 +239,11 @@ describe('BaseCgRetraite', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Enregistrer' }));
 
     await waitFor(() => {
-      expect(upsertBaseCgRetraiteContractMock).toHaveBeenCalledWith(expect.objectContaining({
-        compagnie: 'ABEILLE VIE',
-      }));
+      expect(upsertBaseCgRetraiteContractMock).toHaveBeenCalledWith(
+        expect.objectContaining({
+          compagnie: 'ABEILLE VIE',
+        }),
+      );
     });
   });
 
@@ -246,11 +256,13 @@ describe('BaseCgRetraite', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Enregistrer' }));
 
     await waitFor(() => {
-      expect(upsertBaseCgRetraiteContractMock).toHaveBeenCalledWith(expect.objectContaining({
-        phaseEpargne: expect.objectContaining({
-          clauseBeneficiaire: 'Clause dédiée',
+      expect(upsertBaseCgRetraiteContractMock).toHaveBeenCalledWith(
+        expect.objectContaining({
+          phaseEpargne: expect.objectContaining({
+            clauseBeneficiaire: 'Clause dédiée',
+          }),
         }),
-      }));
+      );
     });
   });
 
@@ -314,32 +326,43 @@ describe('BaseCgRetraite', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Ajouter un document' }));
     await userEvent.type(screen.getByLabelText('Version CG'), '13124 – 09.2019');
     await userEvent.clear(screen.getByLabelText('Chemin Supabase Storage'));
-    await userEvent.type(screen.getByLabelText('Chemin Supabase Storage'), 'swisslife/swisslife-per-individuel/13124-09-2019.pdf');
+    await userEvent.type(
+      screen.getByLabelText('Chemin Supabase Storage'),
+      'swisslife/swisslife-per-individuel/13124-09-2019.pdf',
+    );
     await userEvent.click(screen.getByRole('button', { name: 'Enregistrer' }));
 
     await waitFor(() => {
-      expect(upsertBaseCgRetraiteContractMock).toHaveBeenCalledWith(expect.objectContaining({
-        documents: [expect.objectContaining({
-          label: 'Conditions Générales',
-          versionLabel: expect.stringContaining('13124'),
-          storagePath: 'swisslife/swisslife-per-individuel/13124-09-2019.pdf',
-        })],
-      }));
+      expect(upsertBaseCgRetraiteContractMock).toHaveBeenCalledWith(
+        expect.objectContaining({
+          documents: [
+            expect.objectContaining({
+              label: 'Conditions Générales',
+              versionLabel: expect.stringContaining('13124'),
+              storagePath: 'swisslife/swisslife-per-individuel/13124-09-2019.pdf',
+            }),
+          ],
+        }),
+      );
     });
   });
 
   it('met en avant les noms de contrats et le lien de téléchargement CG', async () => {
-    getBaseCgRetraiteCatalogMock.mockResolvedValueOnce([{
-      ...contract,
-      documents: [{
-        id: 'doc-swisslife',
-        label: 'Notice SwissLife PER Individuel',
-        type: 'notice_information',
-        status: 'uploaded',
-        versionLabel: '13124 – 09.2019',
-        storagePath: 'swisslife/swisslife-per-individuel/13124-09-2019.pdf',
-      }],
-    }]);
+    getBaseCgRetraiteCatalogMock.mockResolvedValueOnce([
+      {
+        ...contract,
+        documents: [
+          {
+            id: 'doc-swisslife',
+            label: 'Notice SwissLife PER Individuel',
+            type: 'notice_information',
+            status: 'uploaded',
+            versionLabel: '13124 – 09.2019',
+            storagePath: 'swisslife/swisslife-per-individuel/13124-09-2019.pdf',
+          },
+        ],
+      },
+    ]);
 
     render(<BaseCgRetraite />);
 

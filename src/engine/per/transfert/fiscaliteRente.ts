@@ -25,23 +25,25 @@ export function resolveRvtoTaxableFraction(
   age: number,
   assumptions: PerTransfertFiscalAssumptions,
 ): number {
-  const bracket = assumptions.rvtoTaxableFractionByAge.find((candidate) => (
-    candidate.ageMaxInclusive === null || age <= candidate.ageMaxInclusive
-  ));
+  const bracket = assumptions.rvtoTaxableFractionByAge.find(
+    (candidate) => candidate.ageMaxInclusive === null || age <= candidate.ageMaxInclusive,
+  );
   return bracket?.fraction ?? 1;
 }
 
 export function computeRentFiscal(input: ComputeRentFiscalInput): PerTransfertFiscalResult {
   const annualRent = positive(input.annualRent);
   const family = resolveFiscalFamily(input.compartment);
-  const taxableFraction = family === 'RVTO'
-    ? resolveRvtoTaxableFraction(input.liquidationAge, input.assumptions)
-    : Math.max(0, 1 - input.assumptions.abat10Rate);
+  const taxableFraction =
+    family === 'RVTO'
+      ? resolveRvtoTaxableFraction(input.liquidationAge, input.assumptions)
+      : Math.max(0, 1 - input.assumptions.abat10Rate);
   const taxableIncome = annualRent * taxableFraction;
   const incomeTax = taxableIncome * Math.max(0, input.tmiRetraite);
-  const socialRate = family === 'RVTO'
-    ? input.assumptions.psRateRenteInterests
-    : input.assumptions.psRateRetirementDefault;
+  const socialRate =
+    family === 'RVTO'
+      ? input.assumptions.psRateRenteInterests
+      : input.assumptions.psRateRetirementDefault;
   const socialContributions = annualRent * (family === 'RVTO' ? taxableFraction : 1) * socialRate;
   const netOfSocialContributions = Math.max(0, annualRent - socialContributions);
   const netOfAllTaxes = Math.max(0, annualRent - incomeTax - socialContributions);

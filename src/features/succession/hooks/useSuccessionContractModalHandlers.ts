@@ -25,12 +25,15 @@ function useContractModalHandlers<T extends { id: string }>({
   numericFields,
   positiveOptionalField,
 }: UseContractModalHandlersArgs<T>) {
-  const openModal = useCallback((id: string) => {
-    const entry = entries.find((current) => current.id === id);
-    if (!entry) return;
-    setDraft({ ...entry });
-    setShowModal(true);
-  }, [entries, setDraft, setShowModal]);
+  const openModal = useCallback(
+    (id: string) => {
+      const entry = entries.find((current) => current.id === id);
+      if (!entry) return;
+      setDraft({ ...entry });
+      setShowModal(true);
+    },
+    [entries, setDraft, setShowModal],
+  );
 
   const closeModal = useCallback(() => {
     setShowModal(false);
@@ -44,26 +47,32 @@ function useContractModalHandlers<T extends { id: string }>({
     setDraft(null);
   }, [draft, setDraft, setEntries, setShowModal]);
 
-  const updateDraft = useCallback((field: keyof T, value: string | number | undefined) => {
-    setDraft((prev) => {
-      if (!prev) return null;
-      if (numericFields.includes(field)) {
-        return { ...prev, [field]: Math.max(0, Number(value) || 0) };
-      }
-      if (positiveOptionalField === field) {
-        const numericValue = Number(value);
-        return {
-          ...prev,
-          [field]: Number.isFinite(numericValue) && numericValue > 0 ? numericValue : undefined,
-        };
-      }
-      return { ...prev, [field]: value };
-    });
-  }, [numericFields, positiveOptionalField, setDraft]);
+  const updateDraft = useCallback(
+    (field: keyof T, value: string | number | undefined) => {
+      setDraft((prev) => {
+        if (!prev) return null;
+        if (numericFields.includes(field)) {
+          return { ...prev, [field]: Math.max(0, Number(value) || 0) };
+        }
+        if (positiveOptionalField === field) {
+          const numericValue = Number(value);
+          return {
+            ...prev,
+            [field]: Number.isFinite(numericValue) && numericValue > 0 ? numericValue : undefined,
+          };
+        }
+        return { ...prev, [field]: value };
+      });
+    },
+    [numericFields, positiveOptionalField, setDraft],
+  );
 
-  const removeEntry = useCallback((id: string) => {
-    setEntries((prev) => prev.filter((entry) => entry.id !== id));
-  }, [setEntries]);
+  const removeEntry = useCallback(
+    (id: string) => {
+      setEntries((prev) => prev.filter((entry) => entry.id !== id));
+    },
+    [setEntries],
+  );
 
   return {
     openModal,

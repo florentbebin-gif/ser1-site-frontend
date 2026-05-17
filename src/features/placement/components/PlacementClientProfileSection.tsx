@@ -43,7 +43,9 @@ export function PlacementClientProfileSection({
           </div>
           <span>Profil client</span>
         </div>
-        <p className="pl-card-subtitle sim-card__subtitle">Paramètres communs aux deux placements</p>
+        <p className="pl-card-subtitle sim-card__subtitle">
+          Paramètres communs aux deux placements
+        </p>
       </div>
 
       <div className="sim-divider" />

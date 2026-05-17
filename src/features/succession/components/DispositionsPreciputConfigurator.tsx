@@ -72,15 +72,18 @@ export function DispositionsPreciputConfigurator({
         <label>Mode de préciput</label>
         <ScSelect
           value={dispositionsDraft.preciputMode}
-          onChange={(value) => setDispositionsDraft((prev) => ({
-            ...prev,
-            preciputMode: value as 'global' | 'cible',
-          }))}
+          onChange={(value) =>
+            setDispositionsDraft((prev) => ({
+              ...prev,
+              preciputMode: value as 'global' | 'cible',
+            }))
+          }
           options={PRECIPUT_MODE_OPTIONS.map((option) => ({
             ...option,
-            description: option.value === 'cible' && !hasSelectableCandidate
-              ? `Aucun bien compatible dans ${preciputScopeLabel}.`
-              : option.description,
+            description:
+              option.value === 'cible' && !hasSelectableCandidate
+                ? `Aucun bien compatible dans ${preciputScopeLabel}.`
+                : option.description,
             disabled: option.value === 'cible' && !hasSelectableCandidate,
           }))}
         />
@@ -90,14 +93,18 @@ export function DispositionsPreciputConfigurator({
       </div>
 
       <div className="sc-field">
-        <label>{dispositionsDraft.preciputMode === 'cible' ? `${title} de repli (EUR)` : title}</label>
+        <label>
+          {dispositionsDraft.preciputMode === 'cible' ? `${title} de repli (EUR)` : title}
+        </label>
         <ScNumericInput
           value={dispositionsDraft.preciputMontant || 0}
           min={0}
-          onChange={(value) => setDispositionsDraft((prev) => ({
-            ...prev,
-            preciputMontant: value,
-          }))}
+          onChange={(value) =>
+            setDispositionsDraft((prev) => ({
+              ...prev,
+              preciputMontant: value,
+            }))
+          }
         />
         <p className="sc-hint sc-hint--compact">
           {dispositionsDraft.preciputMode === 'cible'
@@ -134,7 +141,8 @@ export function DispositionsPreciputConfigurator({
                       <div>
                         <div className="sc-preciput-item__title">{selection.labelSnapshot}</div>
                         <p className="sc-hint sc-hint--compact">
-                          Disponible jusqu&apos;à {formatPreciputAmount(maxAmount)} dans {preciputScopeLabel}.
+                          Disponible jusqu&apos;à {formatPreciputAmount(maxAmount)} dans{' '}
+                          {preciputScopeLabel}.
                         </p>
                       </div>
                       <button
@@ -155,11 +163,9 @@ export function DispositionsPreciputConfigurator({
                         <label>Sélection active</label>
                         <ScSelect
                           value={selection.enabled ? 'oui' : 'non'}
-                          onChange={(value) => onUpdatePreciputSelection(
-                            selection.id,
-                            'enabled',
-                            value === 'oui',
-                          )}
+                          onChange={(value) =>
+                            onUpdatePreciputSelection(selection.id, 'enabled', value === 'oui')
+                          }
                           options={OUI_NON_OPTIONS}
                         />
                       </div>
@@ -169,7 +175,9 @@ export function DispositionsPreciputConfigurator({
                         <ScNumericInput
                           value={selection.amount}
                           min={0}
-                          onChange={(value) => onUpdatePreciputSelection(selection.id, 'amount', value)}
+                          onChange={(value) =>
+                            onUpdatePreciputSelection(selection.id, 'amount', value)
+                          }
                         />
                       </div>
                     </div>
@@ -179,7 +187,8 @@ export function DispositionsPreciputConfigurator({
             </div>
           ) : (
             <p className="sc-hint sc-hint--compact">
-              Aucun bien ciblé pour l’instant. Ajoutez au moins une ligne compatible pour activer le préciput ciblé.
+              Aucun bien ciblé pour l’instant. Ajoutez au moins une ligne compatible pour activer le
+              préciput ciblé.
             </p>
           )}
         </>

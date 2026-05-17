@@ -96,7 +96,7 @@ export function buildTresorerieParametersAnnex(
       h: cardH,
       fill: { color: WHITE },
       line: { color: roleColor(theme, 'panelBorder'), width: 0.7 },
-      rectRadius: 0.10,
+      rectRadius: 0.1,
       shadow: {
         type: SHADOW_PARAMS.type,
         angle: SHADOW_PARAMS.angle,
@@ -114,17 +114,23 @@ export function buildTresorerieParametersAnnex(
       fill: { color: headerFill },
       line: { color: headerFill, width: 0 },
     });
-    addBusinessIconToSlide(slide, section.iconKey, {
-      x: x + 0.18,
-      y: cardY + 0.16,
-      w: 0.32,
-      h: 0.32,
-    }, theme, 'white');
+    addBusinessIconToSlide(
+      slide,
+      section.iconKey,
+      {
+        x: x + 0.18,
+        y: cardY + 0.16,
+        w: 0.32,
+        h: 0.32,
+      },
+      theme,
+      'white',
+    );
     addTextFr(slide, section.title, {
       x: x + 0.62,
       y: cardY + 0.12,
       w: cardW - 0.82,
-      h: 0.40,
+      h: 0.4,
       fontSize: 12,
       bold: true,
       color: WHITE,
@@ -134,8 +140,11 @@ export function buildTresorerieParametersAnnex(
 
     const rows = section.rows.slice(0, 6);
     const rowGap = 0.12;
-    const rowAreaY = cardY + headerH + 0.20;
-    const rowH = Math.min(0.56, (cardH - headerH - 0.40 - rowGap * (rows.length - 1)) / Math.max(1, rows.length));
+    const rowAreaY = cardY + headerH + 0.2;
+    const rowH = Math.min(
+      0.56,
+      (cardH - headerH - 0.4 - rowGap * (rows.length - 1)) / Math.max(1, rows.length),
+    );
     rows.forEach((row, rowIndex) => {
       drawRow(slide, {
         x: x + 0.18,

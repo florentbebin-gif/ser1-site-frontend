@@ -17,10 +17,7 @@ const PLACEMENT_PHASE_LABELS: Record<Exclude<PlacementStep, 'synthese'>, string>
   transmission: 'Transmission',
 };
 
-export function PlacementPhaseNav({
-  step,
-  onStepChange,
-}: PlacementPhaseNavProps) {
+export function PlacementPhaseNav({ step, onStepChange }: PlacementPhaseNavProps) {
   return (
     <div className="pl-phase-nav" role="tablist" aria-label="Phases de la simulation placement">
       {PLACEMENT_PHASES.map((phase) => (

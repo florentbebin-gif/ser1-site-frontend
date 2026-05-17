@@ -112,11 +112,10 @@ export default function ScAssetsPassifsCard({
   onUpdatePatrimonialField,
 }: ScAssetsPassifsCardProps) {
   const flags: ScAssetsOwnerFlags = { isMarried, isPacsed, isConcubinage };
-  const showCivilVsFiscalHint = (
-    abattementResidencePrincipale
-    || hasBeneficiaryLevelGfAdjustment
-    || forfaitMobilierMode !== 'off'
-  );
+  const showCivilVsFiscalHint =
+    abattementResidencePrincipale ||
+    hasBeneficiaryLevelGfAdjustment ||
+    forfaitMobilierMode !== 'off';
   const showForfaitMobilier = forfaitMobilierMode !== 'off';
   const getNetLabel = (owner: SuccessionLegacyAssetOwner) => getActifNetLabel(owner, flags);
 
@@ -157,8 +156,8 @@ export default function ScAssetsPassifsCard({
         )}
         {isExpert && isCommunauteMeublesAcquetsRegime && (
           <p className="sc-hint sc-hint--compact">
-            En communauté de meubles et acquêts, les biens qualifiés meubles rejoignent la communauté simplifiée ; les
-            immeubles restent sur leur masse déclarée.
+            En communauté de meubles et acquêts, les biens qualifiés meubles rejoignent la
+            communauté simplifiée ; les immeubles restent sur leur masse déclarée.
           </p>
         )}
       </header>
@@ -199,7 +198,9 @@ export default function ScAssetsPassifsCard({
         <div className="sc-balance-grid">
           <div
             className="sc-balance-grid__row"
-            style={{ gridTemplateColumns: `88px repeat(${assetOwnerOptions.length}, minmax(0, 1fr))` }}
+            style={{
+              gridTemplateColumns: `88px repeat(${assetOwnerOptions.length}, minmax(0, 1fr))`,
+            }}
           >
             <div className="sc-balance-grid__label">Actifs</div>
             {assetOwnerOptions.map((option) => (
@@ -215,7 +216,9 @@ export default function ScAssetsPassifsCard({
           </div>
           <div
             className="sc-balance-grid__row"
-            style={{ gridTemplateColumns: `88px repeat(${assetOwnerOptions.length}, minmax(0, 1fr))` }}
+            style={{
+              gridTemplateColumns: `88px repeat(${assetOwnerOptions.length}, minmax(0, 1fr))`,
+            }}
           >
             <div className="sc-balance-grid__label">Passifs</div>
             {assetOwnerOptions.map((option) => (
@@ -239,14 +242,14 @@ export default function ScAssetsPassifsCard({
 
       {hasBeneficiaryLevelGfAdjustment && (
         <p className="sc-hint sc-hint--compact">
-          Les totaux GFA/GFV affichés dans cette carte restent provisoires. La base taxable définitive est recalculée
-          par bénéficiaire dans la synthèse et l&apos;export.
+          Les totaux GFA/GFV affichés dans cette carte restent provisoires. La base taxable
+          définitive est recalculée par bénéficiaire dans la synthèse et l&apos;export.
         </p>
       )}
       {showCivilVsFiscalHint && (
         <p className="sc-hint sc-hint--compact">
-          Les totaux affichés dans cette carte correspondent à la masse civile nette. L&apos;assiette fiscale est
-          recalculée séparément pour les droits.
+          Les totaux affichés dans cette carte correspondent à la masse civile nette.
+          L&apos;assiette fiscale est recalculée séparément pour les droits.
         </p>
       )}
     </div>

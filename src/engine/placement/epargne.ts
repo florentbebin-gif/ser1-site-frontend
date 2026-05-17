@@ -90,7 +90,9 @@ export function simulateEpargne(
     optionBaremeIR = false,
   } = product;
 
-  const versementConfig: VersementConfig = normalizeVersementConfig(product.versementConfig || DEFAULT_VERSEMENT_CONFIG);
+  const versementConfig: VersementConfig = normalizeVersementConfig(
+    product.versementConfig || DEFAULT_VERSEMENT_CONFIG,
+  );
   const { initial, annuel, ponctuels = [], capitalisation, distribution } = versementConfig;
 
   const { tmiEpargne = DEFAULT_TMI_EPARGNE, ageActuel = 45 } = client;
@@ -98,9 +100,13 @@ export function simulateEpargne(
 
   const isSCPI = envelope === ENVELOPES.SCPI;
 
-  const pct = (value: number | null | undefined): number => Math.max(0, Math.min(100, value ?? 0)) / 100;
+  const pct = (value: number | null | undefined): number =>
+    Math.max(0, Math.min(100, value ?? 0)) / 100;
 
-  const sanitizeSplit = (pctCapi: number, pctDistrib: number): { capi: number; distrib: number } => {
+  const sanitizeSplit = (
+    pctCapi: number,
+    pctDistrib: number,
+  ): { capi: number; distrib: number } => {
     let capi = pctCapi;
     let distrib = pctDistrib;
     if (isSCPI) {
@@ -119,8 +125,14 @@ export function simulateEpargne(
     return { capi, distrib };
   };
 
-  const initialSplitRatio = sanitizeSplit(pct(initial.pctCapitalisation), pct(initial.pctDistribution));
-  const annualSplitRatio = sanitizeSplit(pct(annuel.pctCapitalisation), pct(annuel.pctDistribution));
+  const initialSplitRatio = sanitizeSplit(
+    pct(initial.pctCapitalisation),
+    pct(initial.pctDistribution),
+  );
+  const annualSplitRatio = sanitizeSplit(
+    pct(annuel.pctCapitalisation),
+    pct(annuel.pctDistribution),
+  );
 
   const splitAmount = (amount: number, splitRatio: { capi: number; distrib: number }) => ({
     capi: amount * splitRatio.capi,
@@ -138,9 +150,8 @@ export function simulateEpargne(
   const distributionYield = distribution.tauxDistribution ?? 0;
   const distributionRevalo = distribution.rendementAnnuel ?? product.tauxRevalorisation ?? 0.02;
   const distributionStrategyRaw = distribution.strategie || 'stocker';
-  const distributionStrategy = isSCPI && distributionStrategyRaw === 'stocker'
-    ? 'apprehender'
-    : distributionStrategyRaw;
+  const distributionStrategy =
+    isSCPI && distributionStrategyRaw === 'stocker' ? 'apprehender' : distributionStrategyRaw;
   const delaiJouissance = distribution.delaiJouissance ?? product.delaiJouissance ?? 0;
   const coeffDelaiJouissance = delaiJouissance > 0 ? (12 - delaiJouissance) / 12 : 1;
 
@@ -181,7 +192,8 @@ export function simulateEpargne(
   if (envelope === ENVELOPES.PER && initialAmount > 0) {
     const dedMode = versementConfig.deductionInitiale?.mode ?? 'tmi';
     const dedMontant = versementConfig.deductionInitiale?.montant ?? 0;
-    const eco = dedMode === 'montant' ? Math.min(dedMontant, initialAmount) : initialAmount * tmiEpargne;
+    const eco =
+      dedMode === 'montant' ? Math.min(dedMontant, initialAmount) : initialAmount * tmiEpargne;
     cumulEconomieIR += eco;
     cumulEffort += initialAmount - eco;
   } else {
@@ -282,7 +294,9 @@ export function simulateEpargne(
     const revaloDistrib = distribInvested * distributionRevalo;
     capitalDistrib += revaloDistrib;
 
-    const couponBase = (annee === 1 ? capitalDistribDebut * coeffDelaiJouissance : capitalDistribDebut) + (addedDistrib * coeffDelaiJouissance);
+    const couponBase =
+      (annee === 1 ? capitalDistribDebut * coeffDelaiJouissance : capitalDistribDebut) +
+      addedDistrib * coeffDelaiJouissance;
     const couponBrut = couponBase * distributionYield;
 
     let fiscaliteCoupon = 0;

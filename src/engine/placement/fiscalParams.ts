@@ -83,11 +83,15 @@ export function extractFiscalParams(
     const depuis2017 = retraitsCapital?.depuis2017;
     if (depuis2017?.plus8Ans) {
       const plus8Ans = depuis2017.plus8Ans;
-      if (plus8Ans.abattementAnnuel?.single) params.avAbattement8ansSingle = plus8Ans.abattementAnnuel.single;
-      if (plus8Ans.abattementAnnuel?.couple) params.avAbattement8ansCouple = plus8Ans.abattementAnnuel.couple;
+      if (plus8Ans.abattementAnnuel?.single)
+        params.avAbattement8ansSingle = plus8Ans.abattementAnnuel.single;
+      if (plus8Ans.abattementAnnuel?.couple)
+        params.avAbattement8ansCouple = plus8Ans.abattementAnnuel.couple;
       if (plus8Ans.primesNettesSeuil) params.avSeuilPrimes150k = plus8Ans.primesNettesSeuil;
-      if (plus8Ans.irRateUnderThresholdPercent) params.avTauxSousSeuil8ans = toDecimalPercent(plus8Ans.irRateUnderThresholdPercent);
-      if (plus8Ans.irRateOverThresholdPercent) params.avTauxSurSeuil8ans = toDecimalPercent(plus8Ans.irRateOverThresholdPercent);
+      if (plus8Ans.irRateUnderThresholdPercent)
+        params.avTauxSousSeuil8ans = toDecimalPercent(plus8Ans.irRateUnderThresholdPercent);
+      if (plus8Ans.irRateOverThresholdPercent)
+        params.avTauxSurSeuil8ans = toDecimalPercent(plus8Ans.irRateOverThresholdPercent);
     }
     if (depuis2017?.moins8Ans?.irRatePercent && typeof pfuRateIR !== 'number') {
       params.pfuIR = toDecimalPercent(depuis2017.moins8Ans.irRatePercent);
@@ -118,7 +122,11 @@ export function extractFiscalParams(
 
   const dividendes = fiscalitySettings?.dividendes;
   if (dividendes?.abattementBaremePercent != null) {
-    params.dividendesAbattementPercent = clamp(toDecimalPercent(dividendes.abattementBaremePercent), 0, 1);
+    params.dividendesAbattementPercent = clamp(
+      toDecimalPercent(dividendes.abattementBaremePercent),
+      0,
+      1,
+    );
   }
 
   if (fiscalitySettings?.pea?.ancienneteMinYears != null) {

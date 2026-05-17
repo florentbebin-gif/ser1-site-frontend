@@ -41,7 +41,9 @@ export function CreditLoanTabs({
                   isActive && 'is-active',
                   tab.addable && 'is-addable',
                   !tab.available && !tab.addable && 'is-disabled',
-                ].filter(Boolean).join(' ')}
+                ]
+                  .filter(Boolean)
+                  .join(' ')}
                 aria-current={isActive ? 'page' : undefined}
                 onClick={() => {
                   if (tab.available) {
@@ -54,7 +56,11 @@ export function CreditLoanTabs({
                 data-testid={`credit-tab-${tab.idx}`}
               >
                 {tab.label}
-                {tab.addable && <span className="cv-tabs__add-badge" aria-hidden="true">+</span>}
+                {tab.addable && (
+                  <span className="cv-tabs__add-badge" aria-hidden="true">
+                    +
+                  </span>
+                )}
               </button>
               {showRemove && (
                 <button

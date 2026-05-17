@@ -71,43 +71,53 @@ describe('calculatePerPotentiel', () => {
   });
 
   it('fait chuter le disponible restant quand les cotisations 163Q augmentent', () => {
-    const withoutContributions = calculatePerPotentiel(makeInput({
-      situationFiscale: {
-        situationFamiliale: 'celibataire',
-        nombreParts: 1,
-        isole: false,
-        declarant1: makeDeclarant({ salaires: 60000 }),
-      },
-    }));
-    const withContributions = calculatePerPotentiel(makeInput({
-      situationFiscale: {
-        situationFamiliale: 'celibataire',
-        nombreParts: 1,
-        isole: false,
-        declarant1: makeDeclarant({ salaires: 60000, cotisationsPer163Q: 2000, cotisationsPerp: 300 }),
-      },
-    }));
+    const withoutContributions = calculatePerPotentiel(
+      makeInput({
+        situationFiscale: {
+          situationFamiliale: 'celibataire',
+          nombreParts: 1,
+          isole: false,
+          declarant1: makeDeclarant({ salaires: 60000 }),
+        },
+      }),
+    );
+    const withContributions = calculatePerPotentiel(
+      makeInput({
+        situationFiscale: {
+          situationFamiliale: 'celibataire',
+          nombreParts: 1,
+          isole: false,
+          declarant1: makeDeclarant({
+            salaires: 60000,
+            cotisationsPer163Q: 2000,
+            cotisationsPerp: 300,
+          }),
+        },
+      }),
+    );
 
     expect(withoutContributions.deductionFlow163Q.declarant1.disponibleRestant).toBe(10000);
     expect(withContributions.deductionFlow163Q.declarant1.disponibleRestant).toBe(7700);
   });
 
   it('dérive correctement les cases 6OS / 6QS pour un TNS', () => {
-    const result = calculatePerPotentiel(makeInput({
-      situationFiscale: {
-        situationFamiliale: 'celibataire',
-        nombreParts: 1,
-        isole: false,
-        declarant1: makeDeclarant({
-          statutTns: true,
-          bic: 100000,
-          cotisationsArt83: 1000,
-          abondementPerco: 500,
-          cotisationsMadelinRetraite: 8000,
-          cotisationsMadelin154bis: 6000,
-        }),
-      },
-    }));
+    const result = calculatePerPotentiel(
+      makeInput({
+        situationFiscale: {
+          situationFamiliale: 'celibataire',
+          nombreParts: 1,
+          isole: false,
+          declarant1: makeDeclarant({
+            statutTns: true,
+            bic: 100000,
+            cotisationsArt83: 1000,
+            abondementPerco: 500,
+            cotisationsMadelinRetraite: 8000,
+            cotisationsMadelin154bis: 6000,
+          }),
+        },
+      }),
+    );
 
     expect(result.estTNS).toBe(true);
     expect(result.declaration2042.case6OS).toBe(6000);
@@ -149,51 +159,69 @@ describe('calculatePerPotentiel', () => {
   });
 
   it('réintègre le surplus Madelin dans la base TNS', () => {
-    const withoutOverflow = calculatePerPotentiel(makeInput({
-      situationFiscale: {
-        situationFamiliale: 'celibataire',
-        nombreParts: 1,
-        isole: false,
-        declarant1: makeDeclarant({
-          statutTns: true,
-          bic: 30000,
-          cotisationsPer163Q: 2000,
-        }),
-      },
-    }));
+    const withoutOverflow = calculatePerPotentiel(
+      makeInput({
+        situationFiscale: {
+          situationFamiliale: 'celibataire',
+          nombreParts: 1,
+          isole: false,
+          declarant1: makeDeclarant({
+            statutTns: true,
+            bic: 30000,
+            cotisationsPer163Q: 2000,
+          }),
+        },
+      }),
+    );
 
-    const withOverflow = calculatePerPotentiel(makeInput({
-      situationFiscale: {
-        situationFamiliale: 'celibataire',
-        nombreParts: 1,
-        isole: false,
-        declarant1: makeDeclarant({
-          statutTns: true,
-          bic: 30000,
-          cotisationsPer163Q: 2000,
-          cotisationsMadelinRetraite: 6000,
-          cotisationsMadelin154bis: 5000,
-        }),
-      },
-    }));
+    const withOverflow = calculatePerPotentiel(
+      makeInput({
+        situationFiscale: {
+          situationFamiliale: 'celibataire',
+          nombreParts: 1,
+          isole: false,
+          declarant1: makeDeclarant({
+            statutTns: true,
+            bic: 30000,
+            cotisationsPer163Q: 2000,
+            cotisationsMadelinRetraite: 6000,
+            cotisationsMadelin154bis: 5000,
+          }),
+        },
+      }),
+    );
 
     expect(withOverflow.plafondMadelin?.declarant1.surplusAReintegrer).toBeGreaterThan(0);
-    expect(withOverflow.situationFiscale.irEstime).toBeGreaterThan(withoutOverflow.situationFiscale.irEstime);
+    expect(withOverflow.situationFiscale.irEstime).toBeGreaterThan(
+      withoutOverflow.situationFiscale.irEstime,
+    );
   });
 
   it('applique la mutualisation des conjoints au niveau moteur', () => {
-    const result = calculatePerPotentiel(makeInput({
-      situationFiscale: {
-        situationFamiliale: 'marie',
-        nombreParts: 2,
-        isole: false,
-        declarant1: makeDeclarant({ salaires: 70000, cotisationsPer163Q: 12000 }),
-        declarant2: makeDeclarant({ salaires: 30000, cotisationsPer163Q: 0 }),
-      },
-      avisIr: makeAvis({ nonUtiliseAnnee1: 0, nonUtiliseAnnee2: 0, nonUtiliseAnnee3: 0, plafondCalcule: 10000 }),
-      avisIr2: makeAvis({ nonUtiliseAnnee1: 0, nonUtiliseAnnee2: 0, nonUtiliseAnnee3: 0, plafondCalcule: 6000 }),
-      mutualisationConjoints: true,
-    }));
+    const result = calculatePerPotentiel(
+      makeInput({
+        situationFiscale: {
+          situationFamiliale: 'marie',
+          nombreParts: 2,
+          isole: false,
+          declarant1: makeDeclarant({ salaires: 70000, cotisationsPer163Q: 12000 }),
+          declarant2: makeDeclarant({ salaires: 30000, cotisationsPer163Q: 0 }),
+        },
+        avisIr: makeAvis({
+          nonUtiliseAnnee1: 0,
+          nonUtiliseAnnee2: 0,
+          nonUtiliseAnnee3: 0,
+          plafondCalcule: 10000,
+        }),
+        avisIr2: makeAvis({
+          nonUtiliseAnnee1: 0,
+          nonUtiliseAnnee2: 0,
+          nonUtiliseAnnee3: 0,
+          plafondCalcule: 6000,
+        }),
+        mutualisationConjoints: true,
+      }),
+    );
 
     expect(result.declaration2042.case6QR).toBe(true);
     expect(result.deductionFlow163Q.declarant1.cotisationsRetenuesIr).toBe(12000);
@@ -204,20 +232,22 @@ describe('calculatePerPotentiel', () => {
   });
 
   it('consomme le plafond de l’année avant les reports plus anciens', () => {
-    const result = calculatePerPotentiel(makeInput({
-      situationFiscale: {
-        situationFamiliale: 'celibataire',
-        nombreParts: 1,
-        isole: false,
-        declarant1: makeDeclarant({ cotisationsPer163Q: 250 }),
-      },
-      avisIr: makeAvis({
-        nonUtiliseAnnee1: 100,
-        nonUtiliseAnnee2: 200,
-        nonUtiliseAnnee3: 300,
-        plafondCalcule: 400,
+    const result = calculatePerPotentiel(
+      makeInput({
+        situationFiscale: {
+          situationFamiliale: 'celibataire',
+          nombreParts: 1,
+          isole: false,
+          declarant1: makeDeclarant({ cotisationsPer163Q: 250 }),
+        },
+        avisIr: makeAvis({
+          nonUtiliseAnnee1: 100,
+          nonUtiliseAnnee2: 200,
+          nonUtiliseAnnee3: 300,
+          plafondCalcule: 400,
+        }),
       }),
-    }));
+    );
 
     expect(result.projectionAvisSuivant.declarant1.nonUtiliseN2).toBe(200);
     expect(result.projectionAvisSuivant.declarant1.nonUtiliseN1).toBe(300);
@@ -225,80 +255,109 @@ describe('calculatePerPotentiel', () => {
   });
 
   it('projette le prochain plafond sans tenir compte des pensions et revenus patrimoniaux', () => {
-    const baseResult = calculatePerPotentiel(makeInput({
-      situationFiscale: {
-        situationFamiliale: 'celibataire',
-        nombreParts: 1,
-        isole: false,
-        declarant1: makeDeclarant({ salaires: 50000, bic: 5000 }),
-      },
-      avisIr: makeAvis({ nonUtiliseAnnee1: 0, nonUtiliseAnnee2: 0, nonUtiliseAnnee3: 0, plafondCalcule: 0 }),
-    }));
-    const withExtraIncome = calculatePerPotentiel(makeInput({
-      situationFiscale: {
-        situationFamiliale: 'celibataire',
-        nombreParts: 1,
-        isole: false,
-        declarant1: makeDeclarant({
-          salaires: 50000,
-          bic: 5000,
-          retraites: 40000,
-          fonciersNets: 12000,
-          autresRevenus: 6000,
+    const baseResult = calculatePerPotentiel(
+      makeInput({
+        situationFiscale: {
+          situationFamiliale: 'celibataire',
+          nombreParts: 1,
+          isole: false,
+          declarant1: makeDeclarant({ salaires: 50000, bic: 5000 }),
+        },
+        avisIr: makeAvis({
+          nonUtiliseAnnee1: 0,
+          nonUtiliseAnnee2: 0,
+          nonUtiliseAnnee3: 0,
+          plafondCalcule: 0,
         }),
-      },
-      avisIr: makeAvis({ nonUtiliseAnnee1: 0, nonUtiliseAnnee2: 0, nonUtiliseAnnee3: 0, plafondCalcule: 0 }),
-    }));
+      }),
+    );
+    const withExtraIncome = calculatePerPotentiel(
+      makeInput({
+        situationFiscale: {
+          situationFamiliale: 'celibataire',
+          nombreParts: 1,
+          isole: false,
+          declarant1: makeDeclarant({
+            salaires: 50000,
+            bic: 5000,
+            retraites: 40000,
+            fonciersNets: 12000,
+            autresRevenus: 6000,
+          }),
+        },
+        avisIr: makeAvis({
+          nonUtiliseAnnee1: 0,
+          nonUtiliseAnnee2: 0,
+          nonUtiliseAnnee3: 0,
+          plafondCalcule: 0,
+        }),
+      }),
+    );
 
-    expect(withExtraIncome.projectionAvisSuivant.declarant1.plafondCalculeN)
-      .toBe(baseResult.projectionAvisSuivant.declarant1.plafondCalculeN);
+    expect(withExtraIncome.projectionAvisSuivant.declarant1.plafondCalculeN).toBe(
+      baseResult.projectionAvisSuivant.declarant1.plafondCalculeN,
+    );
   });
 
   it('utilise bien le PASS 2025 en step revenus tant que la projection N n’est pas active', () => {
-    const result = calculatePerPotentiel(makeInput({
-      mode: 'versement-n',
-      historicalBasis: 'previous-avis-plus-n1',
-      anneeRef: 2025,
-      situationFiscale: {
-        situationFamiliale: 'celibataire',
-        nombreParts: 1,
-        isole: false,
-        declarant1: makeDeclarant(),
-      },
-      avisIr: makeAvis({ nonUtiliseAnnee1: 0, nonUtiliseAnnee2: 0, nonUtiliseAnnee3: 0, plafondCalcule: 0 }),
-      passHistory: {
-        2025: 47100,
-        2026: 48060,
-      },
-    }));
+    const result = calculatePerPotentiel(
+      makeInput({
+        mode: 'versement-n',
+        historicalBasis: 'previous-avis-plus-n1',
+        anneeRef: 2025,
+        situationFiscale: {
+          situationFamiliale: 'celibataire',
+          nombreParts: 1,
+          isole: false,
+          declarant1: makeDeclarant(),
+        },
+        avisIr: makeAvis({
+          nonUtiliseAnnee1: 0,
+          nonUtiliseAnnee2: 0,
+          nonUtiliseAnnee3: 0,
+          plafondCalcule: 0,
+        }),
+        passHistory: {
+          2025: 47100,
+          2026: 48060,
+        },
+      }),
+    );
 
     expect(result.projectionAvisSuivant.declarant1.plafondCalculeN).toBe(4710);
   });
 
   it('utilise le PASS 2026 en estimation 2026', () => {
-    const result = calculatePerPotentiel(makeInput({
-      mode: 'versement-n',
-      historicalBasis: 'previous-avis-plus-n1',
-      anneeRef: 2026,
-      yearKey: 'current',
-      situationFiscale: {
-        situationFamiliale: 'celibataire',
-        nombreParts: 1,
-        isole: false,
-        declarant1: makeDeclarant(),
-      },
-      projectionFiscale: {
-        situationFamiliale: 'celibataire',
-        nombreParts: 1,
-        isole: false,
-        declarant1: makeDeclarant(),
-      },
-      avisIr: makeAvis({ nonUtiliseAnnee1: 0, nonUtiliseAnnee2: 0, nonUtiliseAnnee3: 0, plafondCalcule: 0 }),
-      passHistory: {
-        2025: 47100,
-        2026: 48060,
-      },
-    }));
+    const result = calculatePerPotentiel(
+      makeInput({
+        mode: 'versement-n',
+        historicalBasis: 'previous-avis-plus-n1',
+        anneeRef: 2026,
+        yearKey: 'current',
+        situationFiscale: {
+          situationFamiliale: 'celibataire',
+          nombreParts: 1,
+          isole: false,
+          declarant1: makeDeclarant(),
+        },
+        projectionFiscale: {
+          situationFamiliale: 'celibataire',
+          nombreParts: 1,
+          isole: false,
+          declarant1: makeDeclarant(),
+        },
+        avisIr: makeAvis({
+          nonUtiliseAnnee1: 0,
+          nonUtiliseAnnee2: 0,
+          nonUtiliseAnnee3: 0,
+          plafondCalcule: 0,
+        }),
+        passHistory: {
+          2025: 47100,
+          2026: 48060,
+        },
+      }),
+    );
 
     expect(result.projectionAvisSuivant.declarant1.plafondCalculeN).toBe(4806);
   });
@@ -320,7 +379,12 @@ describe('calculatePerPotentiel', () => {
         isole: false,
         declarant1: makeDeclarant({ salaires: 120000 }),
       },
-      avisIr: makeAvis({ nonUtiliseAnnee1: 0, nonUtiliseAnnee2: 0, nonUtiliseAnnee3: 0, plafondCalcule: 0 }),
+      avisIr: makeAvis({
+        nonUtiliseAnnee1: 0,
+        nonUtiliseAnnee2: 0,
+        nonUtiliseAnnee3: 0,
+        plafondCalcule: 0,
+      }),
       taxSettings,
     });
 

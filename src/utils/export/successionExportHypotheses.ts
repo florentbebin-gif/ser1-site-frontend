@@ -45,43 +45,49 @@ function includesAny(value: string, patterns: string[]): boolean {
 }
 
 function groupTitleForItem(item: string): string {
-  if (includesAny(item, [
-    'ignoré',
-    'manquante',
-    'absence',
-    'non retenue',
-    'avertissement',
-    'warning',
-    'repli',
-  ])) {
+  if (
+    includesAny(item, [
+      'ignoré',
+      'manquante',
+      'absence',
+      'non retenue',
+      'avertissement',
+      'warning',
+      'repli',
+    ])
+  ) {
     return 'Points d’attention';
   }
 
-  if (includesAny(item, [
-    'cgi',
-    'ccv',
-    'barème',
-    'barèmes',
-    'dmtg',
-    'abattement',
-    '990 i',
-    '757 b',
-    'usufruit',
-    'donation',
-  ])) {
+  if (
+    includesAny(item, [
+      'cgi',
+      'ccv',
+      'barème',
+      'barèmes',
+      'dmtg',
+      'abattement',
+      '990 i',
+      '757 b',
+      'usufruit',
+      'donation',
+    ])
+  ) {
     return 'Hypothèses fiscales';
   }
 
-  if (includesAny(item, [
-    'simplifi',
-    'non modélis',
-    'non exhaustive',
-    'indicatif',
-    'confirmer',
-    'horizon',
-    'dévolution',
-    'liquidation notariale',
-  ])) {
+  if (
+    includesAny(item, [
+      'simplifi',
+      'non modélis',
+      'non exhaustive',
+      'indicatif',
+      'confirmer',
+      'horizon',
+      'dévolution',
+      'liquidation notariale',
+    ])
+  ) {
     return 'Limites de l’étude';
   }
 
@@ -97,12 +103,7 @@ export function buildSuccessionExportHypothesesGroups(
     byTitle.set(title, [...(byTitle.get(title) ?? []), item]);
   }
 
-  return [
-    'Points d’attention',
-    'Hypothèses fiscales',
-    'Limites de l’étude',
-    'Cadre de calcul',
-  ]
+  return ['Points d’attention', 'Hypothèses fiscales', 'Limites de l’étude', 'Cadre de calcul']
     .map((title) => ({ title, items: byTitle.get(title) ?? [] }))
     .filter((group) => group.items.length > 0);
 }
@@ -131,7 +132,10 @@ export function buildSuccessionExportActiveHypotheses(
     );
   }
 
-  if (chronologie?.interMassClaims?.configured && (chronologie.interMassClaims.totalAppliedAmount ?? 0) > 0) {
+  if (
+    chronologie?.interMassClaims?.configured &&
+    (chronologie.interMassClaims.totalAppliedAmount ?? 0) > 0
+  ) {
     activeHypotheses.push(
       'Les récompenses et créances entre masses sont appliquées comme transferts simplifiés entre poches patrimoniales.',
     );
@@ -152,9 +156,5 @@ export function buildSuccessionExportActiveHypotheses(
     );
   }
 
-  return uniqueStrings([
-    ...assumptions,
-    ...activeHypotheses,
-    ...(chronologie?.warnings ?? []),
-  ]);
+  return uniqueStrings([...assumptions, ...activeHypotheses, ...(chronologie?.warnings ?? [])]);
 }

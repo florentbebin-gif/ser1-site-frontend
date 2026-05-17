@@ -32,7 +32,6 @@ interface CabinetFormState {
   logo_placement: string;
 }
 
-
 const DEFAULT_FORM: CabinetFormState = {
   name: '',
   default_theme_id: '',
@@ -56,7 +55,7 @@ export default function CabinetEditModal({
   onSuccess,
 }: CabinetEditModalProps): React.ReactElement {
   const inputRef = useRef<HTMLInputElement | null>(null);
-  const [form, setForm] = useState<CabinetFormState>(() => (
+  const [form, setForm] = useState<CabinetFormState>(() =>
     cabinet
       ? {
           name: cabinet.name || '',
@@ -64,8 +63,8 @@ export default function CabinetEditModal({
           logo_id: cabinet.logo_id || '',
           logo_placement: cabinet.logo_placement || 'center-bottom',
         }
-      : DEFAULT_FORM
-  ));
+      : DEFAULT_FORM,
+  );
   const [saving, setSaving] = useState(false);
   const [logoFile, setLogoFile] = useState<File | null>(null);
   const [logoPreview, setLogoPreview] = useState<string | null>(
@@ -144,7 +143,9 @@ export default function CabinetEditModal({
       onSuccess();
       onClose();
     } catch (error) {
-      setError(error instanceof Error ? error.message : "Erreur lors de l'enregistrement du cabinet.");
+      setError(
+        error instanceof Error ? error.message : "Erreur lors de l'enregistrement du cabinet.",
+      );
     } finally {
       setSaving(false);
       setLogoUploading(false);
@@ -156,7 +157,9 @@ export default function CabinetEditModal({
       <div className="report-modal report-modal--sm">
         <div className="report-modal-header">
           <h3>{cabinet ? 'Modifier le cabinet' : 'Nouveau cabinet'}</h3>
-          <button className="report-modal-close" onClick={onClose} type="button">X</button>
+          <button className="report-modal-close" onClick={onClose} type="button">
+            X
+          </button>
         </div>
         <div className="report-modal-content">
           {error && (
@@ -165,9 +168,7 @@ export default function CabinetEditModal({
             </div>
           )}
           <div className="settings-modal-field">
-            <label className="settings-modal-label">
-              Nom du cabinet *
-            </label>
+            <label className="settings-modal-label">Nom du cabinet *</label>
             <input
               type="text"
               value={form.name}
@@ -192,20 +193,16 @@ export default function CabinetEditModal({
             >
               <option value="">-- Aucun theme --</option>
               {themes.map((theme) => (
-                <option key={theme.id} value={theme.id}>{theme.name}</option>
+                <option key={theme.id} value={theme.id}>
+                  {theme.name}
+                </option>
               ))}
             </select>
           </div>
           <div className="settings-modal-field">
-            <label className="settings-modal-label">
-              Logo du cabinet
-            </label>
+            <label className="settings-modal-label">Logo du cabinet</label>
             <div className="settings-modal-file-row">
-              <button
-                type="button"
-                onClick={() => inputRef.current?.click()}
-                className="chip"
-              >
+              <button type="button" onClick={() => inputRef.current?.click()} className="chip">
                 Choisir une image...
               </button>
               <span className="settings-modal-hint">
@@ -222,11 +219,7 @@ export default function CabinetEditModal({
             </div>
             {logoPreview && (
               <div className="settings-modal-preview">
-                <img
-                  src={logoPreview}
-                  alt="Apercu logo"
-                  className="settings-modal-preview-image"
-                />
+                <img src={logoPreview} alt="Apercu logo" className="settings-modal-preview-image" />
                 <button
                   type="button"
                   onClick={() => {
@@ -238,7 +231,16 @@ export default function CabinetEditModal({
                   title="Supprimer le logo"
                   aria-label="Supprimer le logo"
                 >
-                  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <svg
+                    viewBox="0 0 24 24"
+                    width="16"
+                    height="16"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
                     <polyline points="3 6 5 6 21 6" />
                     <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
                   </svg>
@@ -250,9 +252,7 @@ export default function CabinetEditModal({
             )}
           </div>
           <div className="settings-modal-field">
-            <label className="settings-modal-label">
-              Position du logo
-            </label>
+            <label className="settings-modal-label">Position du logo</label>
             <div className="settings-modal-grid-3">
               {LOGO_PLACEMENT_OPTIONS.map((position) => (
                 <button
@@ -273,7 +273,9 @@ export default function CabinetEditModal({
           </div>
         </div>
         <div className="report-modal-actions">
-          <button onClick={onClose} type="button">Annuler</button>
+          <button onClick={onClose} type="button">
+            Annuler
+          </button>
           <button
             className="chip"
             onClick={() => {

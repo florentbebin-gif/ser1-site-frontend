@@ -57,21 +57,15 @@ export default function AvDecesSection({
         <span className="settings-premium-title settings-premium-title--flush">
           Assurance-vie décès (990 I / 757 B)
         </span>
-        <span className="fisc-acc-chevron">
-          {isOpen ? 'v' : '>'}
-        </span>
+        <span className="fisc-acc-chevron">{isOpen ? 'v' : '>'}</span>
       </button>
 
       {isOpen && (
         <div className="fisc-acc-body">
-          <p className="dmtg-intro">
-            Fiscalité des capitaux décès transmis via l’assurance-vie.
-          </p>
+          <p className="dmtg-intro">Fiscalité des capitaux décès transmis via l’assurance-vie.</p>
 
           <div className="income-tax-block dmtg-block--mb16">
-            <div className="dmtg-block-title">
-              Paramètres généraux
-            </div>
+            <div className="dmtg-block-title">Paramètres généraux</div>
             <div className="dmtg-indent">
               <div className="settings-field-row dmtg-field-row--mb8">
                 <label>Âge pivot primes (avant/après)</label>
@@ -81,7 +75,7 @@ export default function AvDecesSection({
                   onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
                     updateAvDeces(
                       ['agePivotPrimes'],
-                      event.target.value === '' ? null : Number(event.target.value)
+                      event.target.value === '' ? null : Number(event.target.value),
                     )
                   }
                   disabled={!isAdmin}
@@ -89,30 +83,26 @@ export default function AvDecesSection({
                 <span>ans</span>
               </div>
               {errors.agePivotPrimes && (
-                <div className="dmtg-field-error">
-                  {errors.agePivotPrimes}
-                </div>
+                <div className="dmtg-field-error">{errors.agePivotPrimes}</div>
               )}
             </div>
           </div>
 
           <div className="income-tax-block dmtg-block--mb16">
             <div className="dmtg-block-title">
-              Primes versées après le 13/10/1998 - avant {avDeces.agePivotPrimes || 70}{' '}
-              ans (art. 990 I)
+              Primes versées après le 13/10/1998 - avant {avDeces.agePivotPrimes || 70} ans (art.
+              990 I)
             </div>
             <div className="dmtg-indent">
               <div className="settings-field-row dmtg-field-row--mb8">
                 <label>Abattement par bénéficiaire</label>
                 <input
                   type="number"
-                  value={numberOrEmpty(
-                    avDeces.primesApres1998.allowancePerBeneficiary
-                  )}
+                  value={numberOrEmpty(avDeces.primesApres1998.allowancePerBeneficiary)}
                   onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
                     updateAvDeces(
                       ['primesApres1998', 'allowancePerBeneficiary'],
-                      event.target.value === '' ? null : Number(event.target.value)
+                      event.target.value === '' ? null : Number(event.target.value),
                     )
                   }
                   disabled={!isAdmin}
@@ -126,9 +116,7 @@ export default function AvDecesSection({
               )}
 
               <div className="dmtg-subsection--mt12">
-                <div className="dmtg-subsection-title">
-                  Barème par bénéficiaire
-                </div>
+                <div className="dmtg-subsection-title">Barème par bénéficiaire</div>
                 <SettingsTable
                   columns={[
                     { key: 'upTo', header: 'Jusqu’à (EUR cumulés)' },
@@ -143,18 +131,17 @@ export default function AvDecesSection({
                     (bracket, index): AvDecesBracketRow => ({
                       ...bracket,
                       _key: `av-deces-${index}`,
-                    })
+                    }),
                   )}
                   onCellChange={(idx, colKey, value: CellValue) => {
                     const fieldKey = colKey as BracketFieldKey;
-                    const newBrackets = avDeces.primesApres1998.brackets.map(
-                      (bracket, index) =>
-                        index === idx
-                          ? {
-                              ...bracket,
-                              [fieldKey]: value as number | null,
-                            }
-                          : bracket
+                    const newBrackets = avDeces.primesApres1998.brackets.map((bracket, index) =>
+                      index === idx
+                        ? {
+                            ...bracket,
+                            [fieldKey]: value as number | null,
+                          }
+                        : bracket,
                     );
                     updateAvDeces(['primesApres1998', 'brackets'], newBrackets);
                   }}
@@ -163,8 +150,7 @@ export default function AvDecesSection({
                 {Object.entries(errors)
                   .filter(
                     ([key, msg]) =>
-                      key.startsWith('primesApres1998.brackets') &&
-                      typeof msg === 'string'
+                      key.startsWith('primesApres1998.brackets') && typeof msg === 'string',
                   )
                   .map(([key, msg]) => (
                     <div key={key} className="dmtg-field-error--mt2">
@@ -188,7 +174,7 @@ export default function AvDecesSection({
                   onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
                     updateAvDeces(
                       ['apres70ans', 'globalAllowance'],
-                      event.target.value === '' ? null : Number(event.target.value)
+                      event.target.value === '' ? null : Number(event.target.value),
                     )
                   }
                   disabled={!isAdmin}
@@ -196,13 +182,9 @@ export default function AvDecesSection({
                 <span>EUR</span>
               </div>
               {errors['apres70ans.globalAllowance'] && (
-                <div className="dmtg-field-error">
-                  {errors['apres70ans.globalAllowance']}
-                </div>
+                <div className="dmtg-field-error">{errors['apres70ans.globalAllowance']}</div>
               )}
-              <p className="dmtg-note--mt4">
-                Au-delà : taxation aux DMTG (barème succession).
-              </p>
+              <p className="dmtg-note--mt4">Au-delà : taxation aux DMTG (barème succession).</p>
             </div>
           </div>
         </div>

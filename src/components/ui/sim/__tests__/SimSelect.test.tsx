@@ -37,12 +37,7 @@ describe('SimSelect', () => {
     const onChange = vi.fn();
     const user = userEvent.setup();
     render(
-      <SimSelect
-        value="a"
-        onChange={onChange}
-        options={OPTIONS}
-        ariaLabel="Nom du contrat"
-      />,
+      <SimSelect value="a" onChange={onChange} options={OPTIONS} ariaLabel="Nom du contrat" />,
     );
 
     screen.getByRole('button', { name: 'Nom du contrat' }).focus();

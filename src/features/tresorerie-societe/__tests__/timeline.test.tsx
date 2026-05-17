@@ -59,72 +59,76 @@ const BASE_INPUTS: TresoInputsV6 = {
       workingCapitalRequirement: 0,
     },
     reducedCorporateTaxEligible: true,
-    associates: [{
-      id: 'associe-1',
-      label: 'Associé 1',
-      kind: 'pp',
-      profile: {
-        currentAge: 50,
-        retirementAge: 65,
-        annualIncomeNeed: 0,
-        projectionStartYear: 2026,
+    associates: [
+      {
+        id: 'associe-1',
+        label: 'Associé 1',
+        kind: 'pp',
+        profile: {
+          currentAge: 50,
+          retirementAge: 65,
+          annualIncomeNeed: 0,
+          projectionStartYear: 2026,
+        },
+        ownershipLots: [{ right: 'pleine_propriete', capitalPct: 100, economicRightsPct: 100 }],
+        roles: ['associe_sans_statut'],
+        cca: {
+          currentBalance: 100000,
+          remunerationRate: 0,
+        },
+        revenuePhases: [
+          phase({
+            id: 'phase-remu',
+            label: 'Rémunération holding',
+            startYear: 2026,
+            endYear: 2030,
+            remuneration: {
+              enabled: true,
+              source: 'holding',
+              loadedAnnualCost: 80000,
+              socialChargeRate: 0.3,
+            },
+            ccaRepayment: {
+              enabled: true,
+              strategy: 'max_treso',
+            },
+          }),
+          phase({
+            id: 'phase-besoin',
+            label: 'Besoin retraite',
+            startYear: 2031,
+            endYear: 2040,
+            distribution: {
+              enabled: true,
+              annualNetIncomeNeed: 40000,
+              dividendsStrategy: 'max_treso',
+            },
+          }),
+        ],
       },
-      ownershipLots: [{ right: 'pleine_propriete', capitalPct: 100, economicRightsPct: 100 }],
-      roles: ['associe_sans_statut'],
-      cca: {
-        currentBalance: 100000,
-        remunerationRate: 0,
-      },
-      revenuePhases: [
-        phase({
-          id: 'phase-remu',
-          label: 'Rémunération holding',
-          startYear: 2026,
-          endYear: 2030,
-          remuneration: {
-            enabled: true,
-            source: 'holding',
-            loadedAnnualCost: 80000,
-            socialChargeRate: 0.3,
-          },
-          ccaRepayment: {
-            enabled: true,
-            strategy: 'max_treso',
-          },
-        }),
-        phase({
-          id: 'phase-besoin',
-          label: 'Besoin retraite',
-          startYear: 2031,
-          endYear: 2040,
-          distribution: {
-            enabled: true,
-            annualNetIncomeNeed: 40000,
-            dividendsStrategy: 'max_treso',
-          },
-        }),
-      ],
-    }],
+    ],
     loans: [],
-    subsidiaries: [{
-      id: 'filiale-1',
-      label: 'Filiale A',
-      parentEntityId: 'societe',
-      ownershipPct: 100,
-      holdingOwnershipPct: 100,
-      motherDaughterEligible: true,
-      fiscalIntegrationEstimateEnabled: false,
-      servicesSchedule: [],
-      dividendsSchedule: [],
-      disposal: {
-        year: 2035,
-        estimatedPrice: 500000,
-        taxBasis: 100000,
-        fees: 0,
-        regime: 'auto',
-        acquisitionYear: 2026,
+    subsidiaries: [
+      {
+        id: 'filiale-1',
+        label: 'Filiale A',
+        parentEntityId: 'societe',
+        ownershipPct: 100,
+        holdingOwnershipPct: 100,
+        motherDaughterEligible: true,
+        fiscalIntegrationEstimateEnabled: false,
+        servicesSchedule: [],
+        dividendsSchedule: [],
+        disposal: {
+          year: 2035,
+          estimatedPrice: 500000,
+          taxBasis: 100000,
+          fees: 0,
+          regime: 'auto',
+          acquisitionYear: 2026,
+        },
       },
-    }],
+    ],
   },
   allocationMatrix: {
     sweepThreshold: 50000,
@@ -166,7 +170,7 @@ describe('TresoTimelineSection', () => {
 
     render(
       <TresoTimelineSection
-        inputs={cloneInputs(inputs => {
+        inputs={cloneInputs((inputs) => {
           inputs.company.label = '';
           inputs.company.associates[0].profile!.currentAge = 0;
         })}
@@ -185,8 +189,9 @@ describe('TresoTimelineSection', () => {
   it('reprend l’en-tête standard des sections du simulateur', () => {
     render(<TresoTimelineSection inputs={cloneInputs()} onChange={vi.fn()} />);
 
-    expect(screen.getByRole('heading', { name: /Parcours de revenus de l’associé/i }))
-      .toHaveClass('ts-section__title');
+    expect(screen.getByRole('heading', { name: /Parcours de revenus de l’associé/i })).toHaveClass(
+      'ts-section__title',
+    );
     expect(screen.getByText(/Phases de rémunération/i)).toHaveClass('ts-section__subtitle');
     expect(document.querySelector('.sim-card__icon')).toBeInTheDocument();
     expect(document.querySelector('.ts-section__divider')).toBeInTheDocument();
@@ -206,9 +211,11 @@ describe('TresoTimelineSection', () => {
 
     fireEvent.change(screen.getByLabelText('Horizon de projection'), { target: { value: '60' } });
 
-    expect(onChange).toHaveBeenCalledWith(expect.objectContaining({
-      company: expect.objectContaining({ projectionHorizonYears: 60 }),
-    }));
+    expect(onChange).toHaveBeenCalledWith(
+      expect.objectContaining({
+        company: expect.objectContaining({ projectionHorizonYears: 60 }),
+      }),
+    );
   });
 
   it('place le début et l’horizon de projection dans la même grille de réglages', () => {
@@ -250,7 +257,7 @@ describe('TresoTimelineSection', () => {
   it('masque les libellés internes des bandes trop courtes pour éviter les chevauchements', () => {
     render(
       <TresoTimelineSection
-        inputs={cloneInputs(inputs => {
+        inputs={cloneInputs((inputs) => {
           inputs.company.subsidiaries = [];
           inputs.company.associates[0].revenuePhases = [
             phase({
@@ -285,15 +292,16 @@ describe('TresoTimelineSection', () => {
   it('affiche un message informatif pour un associé personne morale', () => {
     render(
       <TresoTimelineSection
-        inputs={cloneInputs(inputs => {
+        inputs={cloneInputs((inputs) => {
           inputs.company.associates[0].kind = 'pm';
         })}
         onChange={vi.fn()}
       />,
     );
 
-    expect(screen.getByText(/Une personne morale ne porte pas de parcours de revenu personnel/i))
-      .toBeInTheDocument();
+    expect(
+      screen.getByText(/Une personne morale ne porte pas de parcours de revenu personnel/i),
+    ).toBeInTheDocument();
   });
 
   it('ouvre la modale du palier avec les valeurs existantes', () => {
@@ -304,7 +312,9 @@ describe('TresoTimelineSection', () => {
     expect(screen.getByText('Paramétrer le palier')).toBeInTheDocument();
     expect(screen.getByLabelText('Année de début')).toHaveDisplayValue('2026');
     expect(screen.getByLabelText('Année de fin')).toHaveDisplayValue('2030');
-    expect(screen.getByDisplayValue(value => value.replace(/\s/g, '') === '80000')).toBeInTheDocument();
+    expect(
+      screen.getByDisplayValue((value) => value.replace(/\s/g, '') === '80000'),
+    ).toBeInTheDocument();
     expect(screen.getAllByRole('button', { name: /Rémunération/i }).length).toBeGreaterThan(0);
   });
 
@@ -324,7 +334,7 @@ describe('TresoTimelineSection', () => {
   it('masque la rémunération depuis une filiale quand aucune filiale n’existe', () => {
     render(
       <TresoTimelineSection
-        inputs={cloneInputs(inputs => {
+        inputs={cloneInputs((inputs) => {
           inputs.company.subsidiaries = [];
         })}
         onChange={vi.fn()}
@@ -375,35 +385,41 @@ describe('TresoTimelineSection', () => {
 
     openPhaseModal();
     clickModalSubPhase(/Remboursement CCA/i);
-    const repaymentGroup = screen.getByRole('radiogroup', { name: /Remboursement annuel souhaité/i });
-    expect(within(repaymentGroup).getByRole('button', { name: /Linéaire sur la phase/i })).toBeInTheDocument();
+    const repaymentGroup = screen.getByRole('radiogroup', {
+      name: /Remboursement annuel souhaité/i,
+    });
+    expect(
+      within(repaymentGroup).getByRole('button', { name: /Linéaire sur la phase/i }),
+    ).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: /Linéaire sur la phase/i }));
     fireEvent.click(screen.getByRole('button', { name: 'Valider' }));
 
-    expect(onChange).toHaveBeenCalledWith(expect.objectContaining({
-      company: expect.objectContaining({
-        associates: expect.arrayContaining([
-          expect.objectContaining({
-            revenuePhases: expect.arrayContaining([
-              expect.objectContaining({
-                id: 'phase-remu',
-                ccaRepayment: expect.objectContaining({
-                  enabled: true,
-                  strategy: 'montant_cible',
-                  targetAmount: 20_000,
+    expect(onChange).toHaveBeenCalledWith(
+      expect.objectContaining({
+        company: expect.objectContaining({
+          associates: expect.arrayContaining([
+            expect.objectContaining({
+              revenuePhases: expect.arrayContaining([
+                expect.objectContaining({
+                  id: 'phase-remu',
+                  ccaRepayment: expect.objectContaining({
+                    enabled: true,
+                    strategy: 'montant_cible',
+                    targetAmount: 20_000,
+                  }),
                 }),
-              }),
-            ]),
-          }),
-        ]),
+              ]),
+            }),
+          ]),
+        }),
       }),
-    }));
+    );
   });
 
   it('bloque l’enregistrement si deux paliers activent la même sous-phase sur les mêmes années', () => {
     render(
       <TresoTimelineSection
-        inputs={cloneInputs(inputs => {
+        inputs={cloneInputs((inputs) => {
           inputs.company.associates[0].revenuePhases[1].remuneration = {
             enabled: true,
             source: 'holding',
@@ -431,24 +447,26 @@ describe('TresoTimelineSection', () => {
     fireEvent.change(screen.getByLabelText('Année de fin'), { target: { value: '2029' } });
     fireEvent.click(screen.getByRole('button', { name: 'Valider' }));
 
-    expect(onChange).toHaveBeenCalledWith(expect.objectContaining({
-      company: expect.objectContaining({
-        associates: expect.arrayContaining([
-          expect.objectContaining({
-            revenuePhases: expect.arrayContaining([
-              expect.objectContaining({ id: 'phase-remu', endYear: 2029 }),
-            ]),
-          }),
-        ]),
+    expect(onChange).toHaveBeenCalledWith(
+      expect.objectContaining({
+        company: expect.objectContaining({
+          associates: expect.arrayContaining([
+            expect.objectContaining({
+              revenuePhases: expect.arrayContaining([
+                expect.objectContaining({ id: 'phase-remu', endYear: 2029 }),
+              ]),
+            }),
+          ]),
+        }),
       }),
-    }));
+    );
   });
 
   it('normalise le besoin et les bornes CCA annuelles à l’enregistrement', () => {
     const onChange = vi.fn();
     render(
       <TresoTimelineSection
-        inputs={cloneInputs(inputs => {
+        inputs={cloneInputs((inputs) => {
           inputs.company.associates[0].revenuePhases[0].ccaContribution = {
             enabled: true,
             annual: { amount: 12_000, startYear: 2040, endYear: 2042 },
@@ -461,30 +479,34 @@ describe('TresoTimelineSection', () => {
     openPhaseModal();
     fireEvent.click(screen.getByRole('button', { name: 'Valider' }));
 
-    expect(onChange).toHaveBeenCalledWith(expect.objectContaining({
-      company: expect.objectContaining({
-        associates: expect.arrayContaining([
-          expect.objectContaining({
-            revenuePhases: expect.arrayContaining([
-              expect.objectContaining({
-                id: 'phase-remu',
-                distribution: expect.objectContaining({ annualNetIncomeNeed: 0 }),
-                ccaContribution: expect.objectContaining({
-                  annual: expect.objectContaining({ startYear: 2026, endYear: 2030 }),
+    expect(onChange).toHaveBeenCalledWith(
+      expect.objectContaining({
+        company: expect.objectContaining({
+          associates: expect.arrayContaining([
+            expect.objectContaining({
+              revenuePhases: expect.arrayContaining([
+                expect.objectContaining({
+                  id: 'phase-remu',
+                  distribution: expect.objectContaining({ annualNetIncomeNeed: 0 }),
+                  ccaContribution: expect.objectContaining({
+                    annual: expect.objectContaining({ startYear: 2026, endYear: 2030 }),
+                  }),
                 }),
-              }),
-            ]),
-          }),
-        ]),
+              ]),
+            }),
+          ]),
+        }),
       }),
-    }));
+    );
   });
 
   it('désactive la suppression quand il ne reste qu’un seul palier', () => {
     render(
       <TresoTimelineSection
-        inputs={cloneInputs(inputs => {
-          inputs.company.associates[0].revenuePhases = [inputs.company.associates[0].revenuePhases[0]];
+        inputs={cloneInputs((inputs) => {
+          inputs.company.associates[0].revenuePhases = [
+            inputs.company.associates[0].revenuePhases[0],
+          ];
         })}
         onChange={vi.fn()}
       />,

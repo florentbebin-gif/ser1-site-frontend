@@ -27,7 +27,9 @@ export interface BulkSyncResult {
   errors: Array<{ id: string; message: string }>;
 }
 
-function withoutDocuments(contract: BaseCgRetraiteContract): Omit<BaseCgRetraiteContract, 'documents'> {
+function withoutDocuments(
+  contract: BaseCgRetraiteContract,
+): Omit<BaseCgRetraiteContract, 'documents'> {
   const { documents: _documents, ...rest } = contract;
   return rest;
 }
@@ -86,12 +88,17 @@ function mergeSupabaseRows(
     });
   }
 
-  return merged.sort((left, right) => (
-    `${left.compagnie} ${left.nomContrat}`.localeCompare(`${right.compagnie} ${right.nomContrat}`, 'fr-FR')
-  ));
+  return merged.sort((left, right) =>
+    `${left.compagnie} ${left.nomContrat}`.localeCompare(
+      `${right.compagnie} ${right.nomContrat}`,
+      'fr-FR',
+    ),
+  );
 }
 
-export async function fetchBaseCgRetraiteSupabaseCatalog(): Promise<BaseCgRetraiteContract[] | null> {
+export async function fetchBaseCgRetraiteSupabaseCatalog(): Promise<
+  BaseCgRetraiteContract[] | null
+> {
   const [overridesResult, documentsResult] = await Promise.all([
     supabase
       .from(OVERRIDES_TABLE)
@@ -103,7 +110,10 @@ export async function fetchBaseCgRetraiteSupabaseCatalog(): Promise<BaseCgRetrai
       .order('contract_id', { ascending: true }),
   ]);
 
-  if (isMissingSupabaseTableError(overridesResult.error) || isMissingSupabaseTableError(documentsResult.error)) {
+  if (
+    isMissingSupabaseTableError(overridesResult.error) ||
+    isMissingSupabaseTableError(documentsResult.error)
+  ) {
     return null;
   }
   if (overridesResult.error || documentsResult.error) {
@@ -181,14 +191,15 @@ export async function bulkUpsertBaseCgRetraiteCatalog(): Promise<BulkSyncResult>
 }
 
 export async function deleteBaseCgRetraiteSupabaseContract(id: string): Promise<boolean> {
-  const { error } = await supabase
-    .from(OVERRIDES_TABLE)
-    .upsert({
+  const { error } = await supabase.from(OVERRIDES_TABLE).upsert(
+    {
       contract_id: id,
       contract_data: { id },
       is_deleted: true,
       updated_at: new Date().toISOString(),
-    }, { onConflict: 'contract_id' });
+    },
+    { onConflict: 'contract_id' },
+  );
 
   if (isMissingSupabaseTableError(error)) return false;
   if (error) throw new Error(`[baseCgRetraiteRepository] delete error: ${error.message}`);

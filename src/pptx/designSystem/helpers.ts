@@ -19,7 +19,7 @@ export function addChapterImage(
   slide: PptxGenJS.Slide,
   imageDataUri: string,
   rect: { x: number; y: number; w: number; h: number },
-  applyBleed: boolean = true
+  applyBleed: boolean = true,
 ): void {
   // Apply bleed to eliminate anti-aliasing gaps at corners
   const bleed = applyBleed ? BLEED.image : 0;
@@ -40,24 +40,30 @@ export function addChapterImage(
  */
 export function validateNoOverflow(
   rect: { x: number; y: number; w: number; h: number },
-  context: string = 'element'
+  context: string = 'element',
 ): void {
   const rightEdge = rect.x + rect.w;
   const bottomEdge = rect.y + rect.h;
 
   if (rect.x < 0 || rect.y < 0) {
     if (import.meta.env.DEV) {
-      console.warn(`[Layout Contract] ${context}: Negative position detected (x:${rect.x}, y:${rect.y})`);
+      console.warn(
+        `[Layout Contract] ${context}: Negative position detected (x:${rect.x}, y:${rect.y})`,
+      );
     }
   }
   if (rightEdge > SLIDE_SIZE.width) {
     if (import.meta.env.DEV) {
-      console.warn(`[Layout Contract] ${context}: Right edge overflow (${rightEdge} > ${SLIDE_SIZE.width})`);
+      console.warn(
+        `[Layout Contract] ${context}: Right edge overflow (${rightEdge} > ${SLIDE_SIZE.width})`,
+      );
     }
   }
   if (bottomEdge > SLIDE_SIZE.height) {
     if (import.meta.env.DEV) {
-      console.warn(`[Layout Contract] ${context}: Bottom edge overflow (${bottomEdge} > ${SLIDE_SIZE.height})`);
+      console.warn(
+        `[Layout Contract] ${context}: Bottom edge overflow (${bottomEdge} > ${SLIDE_SIZE.height})`,
+      );
     }
   }
 }
@@ -66,9 +72,12 @@ export function validateNoOverflow(
  * Clamp a rect to stay within slide bounds
  * Used to enforce NO OVERFLOW rule
  */
-export function clampToSlide(
-  rect: { x: number; y: number; w: number; h: number }
-): { x: number; y: number; w: number; h: number } {
+export function clampToSlide(rect: { x: number; y: number; w: number; h: number }): {
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+} {
   const x = Math.max(0, rect.x);
   const y = Math.max(0, rect.y);
   const w = Math.min(rect.w, SLIDE_SIZE.width - x);
@@ -83,7 +92,7 @@ export function clampToSlide(
 export function addTextFr(
   slide: PptxGenJS.Slide,
   text: string | PptxGenJS.TextProps[],
-  options: PptxGenJS.TextPropsOptions & Record<string, unknown>
+  options: PptxGenJS.TextPropsOptions & Record<string, unknown>,
 ): void {
   const normalizedText = Array.isArray(text)
     ? text.map((run) => ({
@@ -120,7 +129,7 @@ export function addTextBox(
     isUpperCase?: boolean;
     lineSpacing?: number; // Line spacing multiplier (e.g., 1.15 for 115%)
     wrap?: boolean; // Enable text wrapping (default: true)
-  }
+  },
 ): void {
   const displayText = style.isUpperCase ? text.toUpperCase() : text;
 

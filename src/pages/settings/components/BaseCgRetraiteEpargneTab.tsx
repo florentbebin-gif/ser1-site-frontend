@@ -17,7 +17,10 @@ type EpargneSetter = <K extends keyof BaseCgRetraiteContract['phaseEpargne']>(
 
 interface Props {
   draft: BaseCgRetraiteContract;
-  gestionFees: Pick<BaseCgRetraiteContract['phaseEpargne'], 'fraisGestionFondsEuro' | 'fraisGestionUc'>;
+  gestionFees: Pick<
+    BaseCgRetraiteContract['phaseEpargne'],
+    'fraisGestionFondsEuro' | 'fraisGestionUc'
+  >;
   onEpargneChange: EpargneSetter;
 }
 
@@ -28,7 +31,9 @@ export function BaseCgRetraiteEpargneTab({ draft, gestionFees, onEpargneChange }
         Date de commercialisation
         <input
           value={draft.phaseEpargne.dateCommercialisation ?? ''}
-          onChange={(event) => onEpargneChange('dateCommercialisation', updateText(event.target.value))}
+          onChange={(event) =>
+            onEpargneChange('dateCommercialisation', updateText(event.target.value))
+          }
         />
       </label>
       <label>
@@ -43,7 +48,9 @@ export function BaseCgRetraiteEpargneTab({ draft, gestionFees, onEpargneChange }
         <input
           inputMode="numeric"
           value={formatFieldValue(draft.phaseEpargne.nombreSupportsUc)}
-          onChange={(event) => onEpargneChange('nombreSupportsUc', parseOptionalInteger(event.target.value))}
+          onChange={(event) =>
+            onEpargneChange('nombreSupportsUc', parseOptionalInteger(event.target.value))
+          }
         />
       </label>
       <label>
@@ -57,13 +64,15 @@ export function BaseCgRetraiteEpargneTab({ draft, gestionFees, onEpargneChange }
         TMG du contrat (fonds €)
         <input
           value={rateInputValue(draft.phaseEpargne.rendementFondsEuro)}
-          onChange={(event) => onEpargneChange('rendementFondsEuro', commitRate(event.target.value))}
+          onChange={(event) =>
+            onEpargneChange('rendementFondsEuro', commitRate(event.target.value))
+          }
           placeholder="Ex : 3,5 % avant le 31/12/2016"
         />
         <small className="base-cg-modal__hint">
-          Taux Minimum Garanti historique. Encadré par l'arrêté du 9 décembre 2016 (loi Sapin 2)
-          et l'arrêté du 24 juillet 2018 (préparation loi PACTE). Les TMG anciens restent acquis
-          aux versements antérieurs à la date de cessation.
+          Taux Minimum Garanti historique. Encadré par l'arrêté du 9 décembre 2016 (loi Sapin 2) et
+          l'arrêté du 24 juillet 2018 (préparation loi PACTE). Les TMG anciens restent acquis aux
+          versements antérieurs à la date de cessation.
         </small>
       </label>
       <label>
@@ -84,7 +93,9 @@ export function BaseCgRetraiteEpargneTab({ draft, gestionFees, onEpargneChange }
         Frais gestion fonds €
         <input
           value={rateInputValue(gestionFees.fraisGestionFondsEuro)}
-          onChange={(event) => onEpargneChange('fraisGestionFondsEuro', commitRate(event.target.value))}
+          onChange={(event) =>
+            onEpargneChange('fraisGestionFondsEuro', commitRate(event.target.value))
+          }
         />
       </label>
       <label>
@@ -117,7 +128,9 @@ export function BaseCgRetraiteEpargneTab({ draft, gestionFees, onEpargneChange }
         Modalités en cas de décès
         <textarea
           value={draft.phaseEpargne.clauseBeneficiaire ?? ''}
-          onChange={(event) => onEpargneChange('clauseBeneficiaire', updateText(event.target.value))}
+          onChange={(event) =>
+            onEpargneChange('clauseBeneficiaire', updateText(event.target.value))
+          }
           rows={3}
         />
       </label>
@@ -125,7 +138,9 @@ export function BaseCgRetraiteEpargneTab({ draft, gestionFees, onEpargneChange }
         Garanties complémentaires
         <textarea
           value={draft.phaseEpargne.garantiesComplementaires ?? ''}
-          onChange={(event) => onEpargneChange('garantiesComplementaires', updateText(event.target.value))}
+          onChange={(event) =>
+            onEpargneChange('garantiesComplementaires', updateText(event.target.value))
+          }
           rows={3}
         />
       </label>

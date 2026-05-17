@@ -82,7 +82,8 @@ export function buildSuccessionFiscalSnapshot(
   fiscalContext: FiscalContext | null | undefined,
 ): SuccessionFiscalSnapshot {
   const tax = (fiscalContext?._raw_tax ?? DEFAULT_TAX_SETTINGS) as LooseTaxSettings;
-  const fiscality = (fiscalContext?._raw_fiscality ?? DEFAULT_FISCALITY_SETTINGS) as LooseFiscalitySettings;
+  const fiscality = (fiscalContext?._raw_fiscality ??
+    DEFAULT_FISCALITY_SETTINGS) as LooseFiscalitySettings;
 
   const donationRaw = tax.donation;
   const avDecesRaw = fiscality.assuranceVie?.deces;
@@ -94,9 +95,15 @@ export function buildSuccessionFiscalSnapshot(
   return {
     dmtgSettings: fiscalContext?.dmtgSettings ?? tax.dmtg ?? DEFAULT_TAX_SETTINGS.dmtg,
     donation: {
-      rappelFiscalAnnees: asNumberOr(donationRaw?.rappelFiscalAnnees, DEFAULT_DONATION.rappelFiscalAnnees),
+      rappelFiscalAnnees: asNumberOr(
+        donationRaw?.rappelFiscalAnnees,
+        DEFAULT_DONATION.rappelFiscalAnnees,
+      ),
       donFamilial790G: {
-        montant: asNumberOr(donationRaw?.donFamilial790G?.montant, DEFAULT_DONATION.donFamilial790G.montant),
+        montant: asNumberOr(
+          donationRaw?.donFamilial790G?.montant,
+          DEFAULT_DONATION.donFamilial790G.montant,
+        ),
         conditions: asStringOr(
           donationRaw?.donFamilial790G?.conditions,
           DEFAULT_DONATION.donFamilial790G.conditions,
@@ -113,7 +120,10 @@ export function buildSuccessionFiscalSnapshot(
         brackets: normalizeBrackets(avDecesRaw?.primesApres1998?.brackets, default990I.brackets),
       },
       apres70ans: {
-        globalAllowance: asNumberOr(avDecesRaw?.apres70ans?.globalAllowance, default757B.globalAllowance),
+        globalAllowance: asNumberOr(
+          avDecesRaw?.apres70ans?.globalAllowance,
+          default757B.globalAllowance,
+        ),
         taxationMode: asStringOr(avDecesRaw?.apres70ans?.taxationMode, default757B.taxationMode),
       },
     },

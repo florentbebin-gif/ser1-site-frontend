@@ -102,16 +102,60 @@ export const PREFON_2025: PrefonPointsParams = {
     77: 1.7,
   },
   coefReversionByAgeGap: [
-    { minGapInclusive: 8, maxGapInclusive: null, coefficients: { rate60: 0.93, rate80: 0.91, rate100: 0.89 } },
-    { minGapInclusive: 4, maxGapInclusive: 7, coefficients: { rate60: 0.89, rate80: 0.86, rate100: 0.83 } },
-    { minGapInclusive: -3, maxGapInclusive: 3, coefficients: { rate60: 0.81, rate80: 0.76, rate100: 0.72 } },
-    { minGapInclusive: -7, maxGapInclusive: -4, coefficients: { rate60: 0.76, rate80: 0.70, rate100: 0.65 } },
-    { minGapInclusive: -15, maxGapInclusive: -8, coefficients: { rate60: 0.66, rate80: 0.59, rate100: 0.54 } },
-    { minGapInclusive: -23, maxGapInclusive: -16, coefficients: { rate60: 0.58, rate80: 0.51, rate100: 0.45 } },
-    { minGapInclusive: -29, maxGapInclusive: -24, coefficients: { rate60: 0.53, rate80: 0.46, rate100: 0.40 } },
-    { minGapInclusive: -34, maxGapInclusive: -30, coefficients: { rate60: 0.49, rate80: 0.42, rate100: 0.37 } },
-    { minGapInclusive: -39, maxGapInclusive: -35, coefficients: { rate60: 0.47, rate80: 0.40, rate100: 0.35 } },
-    { minGapInclusive: -44, maxGapInclusive: -40, coefficients: { rate60: 0.42, rate80: 0.35, rate100: 0.30 } },
-    { minGapInclusive: null, maxGapInclusive: -45, coefficients: { rate60: 0.35, rate80: 0.29, rate100: 0.24 } },
+    {
+      minGapInclusive: 8,
+      maxGapInclusive: null,
+      coefficients: { rate60: 0.93, rate80: 0.91, rate100: 0.89 },
+    },
+    {
+      minGapInclusive: 4,
+      maxGapInclusive: 7,
+      coefficients: { rate60: 0.89, rate80: 0.86, rate100: 0.83 },
+    },
+    {
+      minGapInclusive: -3,
+      maxGapInclusive: 3,
+      coefficients: { rate60: 0.81, rate80: 0.76, rate100: 0.72 },
+    },
+    {
+      minGapInclusive: -7,
+      maxGapInclusive: -4,
+      coefficients: { rate60: 0.76, rate80: 0.7, rate100: 0.65 },
+    },
+    {
+      minGapInclusive: -15,
+      maxGapInclusive: -8,
+      coefficients: { rate60: 0.66, rate80: 0.59, rate100: 0.54 },
+    },
+    {
+      minGapInclusive: -23,
+      maxGapInclusive: -16,
+      coefficients: { rate60: 0.58, rate80: 0.51, rate100: 0.45 },
+    },
+    {
+      minGapInclusive: -29,
+      maxGapInclusive: -24,
+      coefficients: { rate60: 0.53, rate80: 0.46, rate100: 0.4 },
+    },
+    {
+      minGapInclusive: -34,
+      maxGapInclusive: -30,
+      coefficients: { rate60: 0.49, rate80: 0.42, rate100: 0.37 },
+    },
+    {
+      minGapInclusive: -39,
+      maxGapInclusive: -35,
+      coefficients: { rate60: 0.47, rate80: 0.4, rate100: 0.35 },
+    },
+    {
+      minGapInclusive: -44,
+      maxGapInclusive: -40,
+      coefficients: { rate60: 0.42, rate80: 0.35, rate100: 0.3 },
+    },
+    {
+      minGapInclusive: null,
+      maxGapInclusive: -45,
+      coefficients: { rate60: 0.35, rate80: 0.29, rate100: 0.24 },
+    },
   ],
 };

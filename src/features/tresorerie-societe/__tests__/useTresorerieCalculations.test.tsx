@@ -3,7 +3,11 @@
 import '@testing-library/jest-dom/vitest';
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
-import type { TresoInputsRuntime, TresoInputsV3, TresoInputsV5 } from '../../../engine/tresorerie/types';
+import type {
+  TresoInputsRuntime,
+  TresoInputsV3,
+  TresoInputsV5,
+} from '../../../engine/tresorerie/types';
 import { useTresorerieCalculations } from '../hooks/useTresorerieCalculations';
 
 vi.mock('../../../hooks/useFiscalContext', () => ({
@@ -64,26 +68,28 @@ function baseInputs(): TresoInputsV3 {
         workingCapitalRequirement: 0,
       },
       reducedCorporateTaxEligible: true,
-      associates: [{
-        id: 'associe-1',
-        label: 'Associé 1',
-        kind: 'pp',
-        profile: {
-          currentAge: 45,
-          retirementAge: 65,
-          annualIncomeNeed: 30_000,
-          projectionStartYear: 2026,
+      associates: [
+        {
+          id: 'associe-1',
+          label: 'Associé 1',
+          kind: 'pp',
+          profile: {
+            currentAge: 45,
+            retirementAge: 65,
+            annualIncomeNeed: 30_000,
+            projectionStartYear: 2026,
+          },
+          ownershipLots: [{ right: 'pleine_propriete', capitalPct: 120, economicRightsPct: 100 }],
+          roles: ['associe_sans_statut'],
+          cca: {
+            currentBalance: 0,
+            exceptionalContributions: [],
+            annualContribution: { amount: 0, startYear: 2026, endYear: 2026 },
+            remunerationRate: 0,
+          },
+          remuneration: { source: 'holding', loadedAnnualCost: 0, socialChargeRate: 0 },
         },
-        ownershipLots: [{ right: 'pleine_propriete', capitalPct: 120, economicRightsPct: 100 }],
-        roles: ['associe_sans_statut'],
-        cca: {
-          currentBalance: 0,
-          exceptionalContributions: [],
-          annualContribution: { amount: 0, startYear: 2026, endYear: 2026 },
-          remunerationRate: 0,
-        },
-        remuneration: { source: 'holding', loadedAnnualCost: 0, socialChargeRate: 0 },
-      }],
+      ],
       loans: [],
       subsidiaries: [],
     },
@@ -128,34 +134,38 @@ function baseInputsV5(): TresoInputsV5 {
         workingCapitalRequirement: 0,
       },
       reducedCorporateTaxEligible: true,
-      associates: [{
-        id: 'associe-1',
-        label: 'Associé 1',
-        kind: 'pp',
-        profile: {
-          currentAge: 65,
-          retirementAge: 65,
-          annualIncomeNeed: 30_000,
-          projectionStartYear: 2026,
+      associates: [
+        {
+          id: 'associe-1',
+          label: 'Associé 1',
+          kind: 'pp',
+          profile: {
+            currentAge: 65,
+            retirementAge: 65,
+            annualIncomeNeed: 30_000,
+            projectionStartYear: 2026,
+          },
+          ownershipLots: [{ right: 'pleine_propriete', capitalPct: 100, economicRightsPct: 100 }],
+          roles: ['associe_sans_statut'],
+          cca: {
+            currentBalance: 30_000,
+            exceptionalContributions: [],
+            annualContribution: { amount: 0, startYear: 2026 },
+            remunerationRate: 0,
+          },
+          revenuePhases: [
+            {
+              id: 'phase-besoin',
+              startYear: 2026,
+              source: 'none',
+              loadedAnnualCost: 0,
+              socialChargeRate: 0,
+              annualNetIncomeNeed: 10_000,
+              useCcaForCompletion: true,
+            },
+          ],
         },
-        ownershipLots: [{ right: 'pleine_propriete', capitalPct: 100, economicRightsPct: 100 }],
-        roles: ['associe_sans_statut'],
-        cca: {
-          currentBalance: 30_000,
-          exceptionalContributions: [],
-          annualContribution: { amount: 0, startYear: 2026 },
-          remunerationRate: 0,
-        },
-        revenuePhases: [{
-          id: 'phase-besoin',
-          startYear: 2026,
-          source: 'none',
-          loadedAnnualCost: 0,
-          socialChargeRate: 0,
-          annualNetIncomeNeed: 10_000,
-          useCcaForCompletion: true,
-        }],
-      }],
+      ],
       loans: [],
       subsidiaries: [],
     },
@@ -172,8 +182,9 @@ describe('useTresorerieCalculations', () => {
     render(<CalculationProbe inputs={baseInputs()} />);
 
     expect(screen.getByTestId('calculation-error').textContent).toBe('');
-    expect(screen.getByTestId('simulation-error').textContent)
-      .toContain('Détention capital supérieure à 100 %');
+    expect(screen.getByTestId('simulation-error').textContent).toContain(
+      'Détention capital supérieure à 100 %',
+    );
   });
 
   it('calcule la durée CCA avec le besoin annuel du palier actif V5', () => {

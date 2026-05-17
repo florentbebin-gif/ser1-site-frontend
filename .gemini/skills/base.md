@@ -10,15 +10,15 @@ Règles de base actives en permanence pour tout travail sur ce dépôt.
 - Ne jamais proposer de commandes macOS/Linux (`bash`, `ls`, `grep`, `wc -l`, etc.)
 - Toujours utiliser les équivalents PowerShell :
 
-| Commande Linux | Équivalent PowerShell |
-|---|---|
-| `ls` | `Get-ChildItem` |
-| `grep` | `rg` (ripgrep) ou `Select-String` |
-| `wc -l` | `(Get-Content fichier).Count` |
-| `cat` | `Get-Content` |
-| `rm` | `Remove-Item` |
-| `&&` | `;` ou `Start-Process` |
-| `2>&1` | `2>&1` (compatible PowerShell) |
+| Commande Linux | Équivalent PowerShell             |
+| -------------- | --------------------------------- |
+| `ls`           | `Get-ChildItem`                   |
+| `grep`         | `rg` (ripgrep) ou `Select-String` |
+| `wc -l`        | `(Get-Content fichier).Count`     |
+| `cat`          | `Get-Content`                     |
+| `rm`           | `Remove-Item`                     |
+| `&&`           | `;` ou `Start-Process`            |
+| `2>&1`         | `2>&1` (compatible PowerShell)    |
 
 Exemple de diagnostic CI :
 

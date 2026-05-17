@@ -28,7 +28,12 @@ export function usePlacementExportHandlers({
   const exportExcel = useCallback(async () => {
     setExportLoading(true);
     try {
-      await exportPlacementExcel(buildPlacementStateForMode(state, isExpert), results, pptxColors.c1, pptxColors.c7);
+      await exportPlacementExcel(
+        buildPlacementStateForMode(state, isExpert),
+        results,
+        pptxColors.c1,
+        pptxColors.c7,
+      );
     } catch (errorExport) {
       const err = errorExport instanceof Error ? errorExport : new Error(String(errorExport));
       console.error('[ExcelExport] Export failed', {
@@ -65,14 +70,17 @@ export function usePlacementExportHandlers({
           strategieDistribution: vc.distribution.strategie ?? 'stocker',
           versementInitial: vc.initial.montant,
           versementAnnuel: vc.annuel.montant,
-          ponctuels: (vc.ponctuels || []).map((pt: { annee: number; montant: number }) => ({ annee: pt.annee, montant: pt.montant })),
+          ponctuels: (vc.ponctuels || []).map((pt: { annee: number; montant: number }) => ({
+            annee: pt.annee,
+            montant: pt.montant,
+          })),
           fraisEntree: vc.initial.fraisEntree,
           optionBaremeIR: p.liquidation?.optionBaremeIR ?? false,
         };
       };
 
       const mapEpargneRows = (rows: typeof results.produit1.epargne.rows) =>
-        rows.map(r => ({
+        rows.map((r) => ({
           annee: r.annee,
           versementNet: r.versementNet,
           capitalDebut: r.capitalDebut,
@@ -83,7 +91,7 @@ export function usePlacementExportHandlers({
         }));
 
       const mapLiquidationRows = (rows: typeof results.produit1.liquidation.rows) =>
-        rows.map(r => ({
+        rows.map((r) => ({
           annee: r.annee,
           capitalDebut: r.capitalDebut,
           gainsAnnee: r.gainsAnnee,

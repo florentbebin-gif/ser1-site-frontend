@@ -29,9 +29,7 @@ export function CreditSummarySidebar({
         lisserPret1={lisserPret1}
         isExpert={isExpert}
         loanLabel={
-          isExpert && calc.hasPretsAdditionnels
-            ? `Synthèse du prêt ${activeTab + 1}`
-            : undefined
+          isExpert && calc.hasPretsAdditionnels ? `Synthèse du prêt ${activeTab + 1}` : undefined
         }
         lissageCoutDelta={isExpert && activeTab === 0 ? lissageCoutDelta : 0}
       />
@@ -40,7 +38,17 @@ export function CreditSummarySidebar({
         <div className="cv-total-mensu sim-summary-card sim-summary-card--secondary">
           <div className="cv-summary__title-row">
             <div className="sim-card__icon sim-card__icon--sm">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <svg
+                width="13"
+                height="13"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.8"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
+              >
                 <polygon points="12 2 2 7 12 12 22 7 12 2" />
                 <polyline points="2 17 12 22 22 17" />
                 <polyline points="2 12 12 17 22 12" />
@@ -60,7 +68,8 @@ export function CreditSummarySidebar({
               </div>
               {isExpert && calc.synthese.primeAssMensuelle > 0 && (
                 <div className="cv-summary__kpi-assurance">
-                  + {euro0(calc.synthese.primeAssMensuelle * (isAnnual ? 12 : 1))} {isAnnual ? '/an' : '/mois'} ass.
+                  + {euro0(calc.synthese.primeAssMensuelle * (isAnnual ? 12 : 1))}{' '}
+                  {isAnnual ? '/an' : '/mois'} ass.
                 </div>
               )}
             </div>

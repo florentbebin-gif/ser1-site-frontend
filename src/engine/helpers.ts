@@ -17,7 +17,11 @@ export function mkResult<T>(builder: CalcResultBuilder<T>): CalcResult<T> {
 /**
  * Ajoute un warning "À valider" pour les règles incertaines
  */
-export function addValidationWarning(warnings: Warning[], ruleId: string, message: string): Warning[] {
+export function addValidationWarning(
+  warnings: Warning[],
+  ruleId: string,
+  message: string,
+): Warning[] {
   return [
     ...warnings,
     {

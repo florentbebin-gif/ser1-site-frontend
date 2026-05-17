@@ -43,14 +43,18 @@ test.describe('Placement - smoke and key interactions', () => {
     await expect(page.getByTestId('placement-row-liquidation-bareme-ir')).toBeVisible();
   });
 
-  test("permet de saisir les champs numériques et conserve les contrôles forcés", async ({ page }) => {
+  test('permet de saisir les champs numériques et conserve les contrôles forcés', async ({
+    page,
+  }) => {
     await page.goto(ROUTES.placement);
 
     await saisirAgeActuel(page);
 
     await page.getByRole('tab', { name: 'Liquidation' }).click();
 
-    const liquidationCard = page.locator('.premium-card').filter({ hasText: 'Phase de liquidation' });
+    const liquidationCard = page
+      .locator('.premium-card')
+      .filter({ hasText: 'Phase de liquidation' });
     const durationField = liquidationCard
       .locator('tr')
       .filter({ hasText: 'Durée de liquidation' })

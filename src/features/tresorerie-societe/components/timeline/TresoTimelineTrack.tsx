@@ -38,19 +38,28 @@ function getModeText(mode: TimelineSubPhaseLayout['modeIcon']): string {
 
 function getPalierTitle(item: TresoTimelineLayout['paliers'][number]): string {
   const details = item.subPhases
-    .filter(subPhase => subPhase.enabled)
-    .map(subPhase => subPhase.detail)
+    .filter((subPhase) => subPhase.enabled)
+    .map((subPhase) => subPhase.detail)
     .join(' · ');
   return `Palier ${item.startYear}-${item.endYear}${details ? ` - ${details}` : ''}`;
 }
 
-export function TresoTimelineTrack({ layout, onEditPhase, compact = false }: TresoTimelineTrackProps) {
+export function TresoTimelineTrack({
+  layout,
+  onEditPhase,
+  compact = false,
+}: TresoTimelineTrackProps) {
   const tickModulo = layout.ticks.length > 10 ? 2 : 1;
   const svgHeight = compact ? 124 : layout.svgHeight;
 
   return (
-    <div className={`ts-timeline-track-outer${compact ? ' ts-timeline-track-outer--compact' : ''} ts-scroll-x`}>
-      <div className={`ts-timeline-track${compact ? ' ts-timeline-track--compact' : ''}`} aria-label="Timeline des revenus">
+    <div
+      className={`ts-timeline-track-outer${compact ? ' ts-timeline-track-outer--compact' : ''} ts-scroll-x`}
+    >
+      <div
+        className={`ts-timeline-track${compact ? ' ts-timeline-track--compact' : ''}`}
+        aria-label="Timeline des revenus"
+      >
         <svg
           width={layout.svgWidth}
           height={svgHeight}
@@ -59,7 +68,13 @@ export function TresoTimelineTrack({ layout, onEditPhase, compact = false }: Tre
           aria-label="Parcours de revenus"
         >
           <defs>
-            <pattern id="ts-subphase-disabled" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+            <pattern
+              id="ts-subphase-disabled"
+              width="6"
+              height="6"
+              patternUnits="userSpaceOnUse"
+              patternTransform="rotate(45)"
+            >
               <line x1="0" y1="0" x2="0" y2="6" className="ts-timeline-track__pattern-line" />
             </pattern>
           </defs>
@@ -92,7 +107,7 @@ export function TresoTimelineTrack({ layout, onEditPhase, compact = false }: Tre
             />
           ) : null}
 
-          {layout.paliers.map(item => {
+          {layout.paliers.map((item) => {
             const title = getPalierTitle(item);
             const showPalierLabel = item.width >= 130 && item.phase.label?.trim();
             const textWidth = Math.max(0, item.width - 18);
@@ -104,7 +119,7 @@ export function TresoTimelineTrack({ layout, onEditPhase, compact = false }: Tre
                 aria-label={`Modifier ${title}`}
                 className="ts-timeline-track__palier"
                 onClick={() => onEditPhase(item.phase.id)}
-                onKeyDown={event => onSegmentKeyDown(event, item.phase.id, onEditPhase)}
+                onKeyDown={(event) => onSegmentKeyDown(event, item.phase.id, onEditPhase)}
               >
                 <title>{title}</title>
                 <rect
@@ -120,7 +135,7 @@ export function TresoTimelineTrack({ layout, onEditPhase, compact = false }: Tre
                     {item.phase.label}
                   </text>
                 ) : null}
-                {item.subPhases.map(subPhase => {
+                {item.subPhases.map((subPhase) => {
                   const y = BAND_Y[subPhase.bandIndex];
                   const modeText = getModeText(subPhase.modeIcon);
                   const showText = subPhase.enabled && item.width >= 80;
@@ -130,10 +145,13 @@ export function TresoTimelineTrack({ layout, onEditPhase, compact = false }: Tre
                     `ts-timeline-track__subphase--${subPhase.kind}`,
                     subPhase.enabled ? 'is-enabled' : 'is-disabled',
                     subPhase.modeIcon === 'none' ? 'has-none-mode' : '',
-                    subPhase.kind === 'remuneration' && item.phase.remuneration.source === 'subsidiary'
+                    subPhase.kind === 'remuneration' &&
+                    item.phase.remuneration.source === 'subsidiary'
                       ? 'is-subsidiary-source'
                       : '',
-                  ].filter(Boolean).join(' ');
+                  ]
+                    .filter(Boolean)
+                    .join(' ');
                   return (
                     <g key={subPhase.kind}>
                       <rect

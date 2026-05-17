@@ -21,7 +21,10 @@ function hasUpdatedByColumn(sql: string, table: 'tax_settings' | 'fiscality_sett
   return columnPattern.test(sql);
 }
 
-function hasUpdatedByForeignKey(sql: string, table: 'tax_settings' | 'fiscality_settings'): boolean {
+function hasUpdatedByForeignKey(
+  sql: string,
+  table: 'tax_settings' | 'fiscality_settings',
+): boolean {
   const fkPattern = new RegExp(
     String.raw`alter\s+table\s+public\.${table}[\s\S]*foreign\s+key\s*\(\s*updated_by\s*\)\s+references\s+auth\.users\s*\(\s*id\s*\)`,
     'i',
@@ -33,8 +36,12 @@ describe('audit log DMTG settings', () => {
   it('conserve updated_at et ajoute updated_by vers auth.users sur les tables DMTG', () => {
     const sql = readMigrations();
 
-    expect(sql).toMatch(/create\s+table\s+"public"\."tax_settings"[\s\S]*"updated_at"\s+timestamp\s+with\s+time\s+zone/i);
-    expect(sql).toMatch(/create\s+table\s+"public"\."fiscality_settings"[\s\S]*"updated_at"\s+timestamp\s+with\s+time\s+zone/i);
+    expect(sql).toMatch(
+      /create\s+table\s+"public"\."tax_settings"[\s\S]*"updated_at"\s+timestamp\s+with\s+time\s+zone/i,
+    );
+    expect(sql).toMatch(
+      /create\s+table\s+"public"\."fiscality_settings"[\s\S]*"updated_at"\s+timestamp\s+with\s+time\s+zone/i,
+    );
 
     for (const table of ['tax_settings', 'fiscality_settings'] as const) {
       expect(hasUpdatedByColumn(sql, table)).toBe(true);

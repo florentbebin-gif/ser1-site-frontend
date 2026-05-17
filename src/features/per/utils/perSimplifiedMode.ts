@@ -20,7 +20,9 @@ export function applyPerSimplifiedPreset<T extends PerSimplifiableState>(state: 
 }
 
 export function isPerSimplifiedPresetState(state: PerSimplifiableState): boolean {
-  return state.mode === PER_SIMPLIFIED_PRESET.mode
-    && state.historicalBasis === PER_SIMPLIFIED_PRESET.historicalBasis
-    && state.needsCurrentYearEstimate === PER_SIMPLIFIED_PRESET.needsCurrentYearEstimate;
+  return (
+    state.mode === PER_SIMPLIFIED_PRESET.mode &&
+    state.historicalBasis === PER_SIMPLIFIED_PRESET.historicalBasis &&
+    state.needsCurrentYearEstimate === PER_SIMPLIFIED_PRESET.needsCurrentYearEstimate
+  );
 }

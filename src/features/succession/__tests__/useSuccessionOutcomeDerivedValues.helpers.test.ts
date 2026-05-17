@@ -16,25 +16,31 @@ const baseInput = {
 
 describe('computeCumulativeSuccessionTotalDroits', () => {
   it('additionne les droits hors succession des deux assures en mode direct epoux1', () => {
-    expect(computeCumulativeSuccessionTotalDroits({
-      ...baseInput,
-      displayUsesChainage: false,
-    })).toBe(310);
+    expect(
+      computeCumulativeSuccessionTotalDroits({
+        ...baseInput,
+        displayUsesChainage: false,
+      }),
+    ).toBe(310);
   });
 
   it('additionne les droits hors succession des deux assures en mode direct epoux2', () => {
-    expect(computeCumulativeSuccessionTotalDroits({
-      ...baseInput,
-      displayUsesChainage: false,
-      directTotalDroits: 120,
-    })).toBe(330);
+    expect(
+      computeCumulativeSuccessionTotalDroits({
+        ...baseInput,
+        displayUsesChainage: false,
+        directTotalDroits: 120,
+      }),
+    ).toBe(330);
   });
 
   it('conserve les droits globaux des deux assures en mode chainage', () => {
-    expect(computeCumulativeSuccessionTotalDroits({
-      ...baseInput,
-      displayUsesChainage: true,
-    })).toBe(1210);
+    expect(
+      computeCumulativeSuccessionTotalDroits({
+        ...baseInput,
+        displayUsesChainage: true,
+      }),
+    ).toBe(1210);
   });
 });
 
@@ -91,19 +97,19 @@ describe('buildSuccessionDisplayTotals', () => {
   it.each(['celibataire', 'divorce', 'veuf'] as const)(
     'null la projection autre assuré pour %s',
     () => {
-    const totals = buildSuccessionDisplayTotals({
-      ...directCoupleScenario,
-      hasSecondSubject: false,
-      // Même si byAssure[epoux2] porte des droits (donnée résiduelle),
-      // la projection ne doit pas s'afficher faute de second sujet métier.
-    });
+      const totals = buildSuccessionDisplayTotals({
+        ...directCoupleScenario,
+        hasSecondSubject: false,
+        // Même si byAssure[epoux2] porte des droits (donnée résiduelle),
+        // la projection ne doit pas s'afficher faute de second sujet métier.
+      });
 
-    expect(totals.projectionAutreAssure).toBeNull();
-    expect(totals.decesSimule.side).toBe('epoux1');
-    // Le coût cumulé reste calculé sur la totalité des droits hors succession :
-    // c'est le helper computeCumulativeSuccessionTotalDroits qui s'en charge.
-    // L'invariant projection nullable n'altère que l'affichage.
-    expect(totals.droitsCumulesProjetes).toBe(1090);
+      expect(totals.projectionAutreAssure).toBeNull();
+      expect(totals.decesSimule.side).toBe('epoux1');
+      // Le coût cumulé reste calculé sur la totalité des droits hors succession :
+      // c'est le helper computeCumulativeSuccessionTotalDroits qui s'en charge.
+      // L'invariant projection nullable n'altère que l'affichage.
+      expect(totals.droitsCumulesProjetes).toBe(1090);
     },
   );
 

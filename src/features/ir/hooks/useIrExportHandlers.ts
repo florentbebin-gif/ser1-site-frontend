@@ -91,7 +91,8 @@ export function useIrExportHandlers({
         return;
       }
 
-      const { buildXlsxBlob, downloadXlsx, validateXlsxBlob } = await import('../../../utils/export/xlsxBuilder');
+      const { buildXlsxBlob, downloadXlsx, validateXlsxBlob } =
+        await import('../../../utils/export/xlsxBuilder');
 
       const headerParams = [cell('Champ', 'sHeader'), cell('Valeur', 'sHeader')];
       const rowsParams: XlsxSheet['rows'] = [];
@@ -103,7 +104,10 @@ export function useIrExportHandlers({
         cell(status === 'couple' ? 'Marié / Pacsé' : 'Célibataire / Veuf / Divorcé', 'sText'),
       ]);
       rowsParams.push([cell('Parent isolé', 'sText'), cell(isIsolated ? 'Oui' : 'Non', 'sText')]);
-      rowsParams.push([cell('Nombre de parts (calculé)', 'sText'), cell(result.partsNb || effectiveParts, 'sCenter')]);
+      rowsParams.push([
+        cell('Nombre de parts (calculé)', 'sText'),
+        cell(result.partsNb || effectiveParts, 'sCenter'),
+      ]);
       rowsParams.push([
         cell('Zone géographique', 'sText'),
         cell(
@@ -119,15 +123,30 @@ export function useIrExportHandlers({
       rowsParams.push([cell('Revenus', 'sSection'), cell('', 'sSection')]);
       rowsParams.push([cell('Salaires D1', 'sText'), cell(incomes.d1?.salaries || 0, 'sMoney')]);
       rowsParams.push([cell('Salaires D2', 'sText'), cell(incomes.d2?.salaries || 0, 'sMoney')]);
-      rowsParams.push([cell('Associés/gérants D1', 'sText'), cell(incomes.d1?.associes62 || 0, 'sMoney')]);
-      rowsParams.push([cell('Associés/gérants D2', 'sText'), cell(incomes.d2?.associes62 || 0, 'sMoney')]);
+      rowsParams.push([
+        cell('Associés/gérants D1', 'sText'),
+        cell(incomes.d1?.associes62 || 0, 'sMoney'),
+      ]);
+      rowsParams.push([
+        cell('Associés/gérants D2', 'sText'),
+        cell(incomes.d2?.associes62 || 0, 'sMoney'),
+      ]);
       rowsParams.push([cell('BIC/BNC/BA D1', 'sText'), cell(incomes.d1?.bic || 0, 'sMoney')]);
       rowsParams.push([cell('BIC/BNC/BA D2', 'sText'), cell(incomes.d2?.bic || 0, 'sMoney')]);
       rowsParams.push([cell('Pensions D1', 'sText'), cell(incomes.d1?.pensions || 0, 'sMoney')]);
       rowsParams.push([cell('Pensions D2', 'sText'), cell(incomes.d2?.pensions || 0, 'sMoney')]);
-      rowsParams.push([cell('Revenus fonciers nets', 'sText'), cell(incomes.fonciersFoyer || 0, 'sMoney')]);
-      rowsParams.push([cell('RCM soumis aux PS', 'sText'), cell(incomes.capital?.withPs || 0, 'sMoney')]);
-      rowsParams.push([cell('RCM hors PS', 'sText'), cell(incomes.capital?.withoutPs || 0, 'sMoney')]);
+      rowsParams.push([
+        cell('Revenus fonciers nets', 'sText'),
+        cell(incomes.fonciersFoyer || 0, 'sMoney'),
+      ]);
+      rowsParams.push([
+        cell('RCM soumis aux PS', 'sText'),
+        cell(incomes.capital?.withPs || 0, 'sMoney'),
+      ]);
+      rowsParams.push([
+        cell('RCM hors PS', 'sText'),
+        cell(incomes.capital?.withoutPs || 0, 'sMoney'),
+      ]);
       rowsParams.push([
         cell('Option RCM', 'sText'),
         cell(capitalMode === 'pfu' ? 'PFU (flat tax)' : 'Barème', 'sText'),
@@ -147,8 +166,14 @@ export function useIrExportHandlers({
 
       const headerSynth = [cell('Indicateur', 'sHeader'), cell('Valeur', 'sHeader')];
       const rowsSynth: XlsxSheet['rows'] = [];
-      rowsSynth.push([cell('Revenu imposable du foyer', 'sText'), cell(result.taxableIncome || 0, 'sMoney')]);
-      rowsSynth.push([cell('Revenu imposable par part', 'sText'), cell(result.taxablePerPart || 0, 'sMoney')]);
+      rowsSynth.push([
+        cell('Revenu imposable du foyer', 'sText'),
+        cell(result.taxableIncome || 0, 'sMoney'),
+      ]);
+      rowsSynth.push([
+        cell('Revenu imposable par part', 'sText'),
+        cell(result.taxablePerPart || 0, 'sMoney'),
+      ]);
       rowsSynth.push([cell('TMI', 'sText'), cell((result.tmiRate || 0) / 100, 'sPercent')]);
       rowsSynth.push([cell('Impôt sur le revenu', 'sText'), cell(result.irNet || 0, 'sMoney')]);
       rowsSynth.push([cell('PFU IR', 'sText'), cell(result.pfuIr || 0, 'sMoney')]);
@@ -166,7 +191,12 @@ export function useIrExportHandlers({
         cell('Impôt', 'sHeader'),
       ];
       const rowsDetails: XlsxSheet['rows'] = [];
-      rowsDetails.push([cell('Barème (tranches)', 'sSection'), cell('', 'sSection'), cell('', 'sSection'), cell('', 'sSection')]);
+      rowsDetails.push([
+        cell('Barème (tranches)', 'sSection'),
+        cell('', 'sSection'),
+        cell('', 'sSection'),
+        cell('', 'sSection'),
+      ]);
       (result.bracketsDetails || []).forEach((b) => {
         rowsDetails.push([
           cell(b.label || '', 'sText'),
@@ -175,21 +205,70 @@ export function useIrExportHandlers({
           cell(b.tax || 0, 'sMoney'),
         ]);
       });
-      rowsDetails.push([cell('Décote', 'sText'), cell(result.decote || 0, 'sMoney'), cell('', 'sText'), cell('', 'sText')]);
-      rowsDetails.push([cell('Avantage QF', 'sText'), cell(result.qfAdvantage || 0, 'sMoney'), cell('', 'sText'), cell('', 'sText')]);
-      rowsDetails.push([cell('Crédits / Réductions', 'sText'), cell(result.creditsTotal || 0, 'sMoney'), cell('', 'sText'), cell('', 'sText')]);
-      rowsDetails.push([cell('PFU IR', 'sText'), cell(result.pfuIr || 0, 'sMoney'), cell('', 'sText'), cell('', 'sText')]);
-      rowsDetails.push([cell('CEHR', 'sText'), cell(result.cehr || 0, 'sMoney'), cell('', 'sText'), cell('', 'sText')]);
-      rowsDetails.push([cell('CDHR', 'sText'), cell(result.cdhr || 0, 'sMoney'), cell('', 'sText'), cell('', 'sText')]);
-      rowsDetails.push([cell('PS fonciers', 'sText'), cell(result.psFoncier || 0, 'sMoney'), cell('', 'sText'), cell('', 'sText')]);
-      rowsDetails.push([cell('PS dividendes', 'sText'), cell(result.psDividends || 0, 'sMoney'), cell('', 'sText'), cell('', 'sText')]);
-      rowsDetails.push([cell('PS total', 'sText'), cell(result.psTotal || 0, 'sMoney'), cell('', 'sText'), cell('', 'sText')]);
+      rowsDetails.push([
+        cell('Décote', 'sText'),
+        cell(result.decote || 0, 'sMoney'),
+        cell('', 'sText'),
+        cell('', 'sText'),
+      ]);
+      rowsDetails.push([
+        cell('Avantage QF', 'sText'),
+        cell(result.qfAdvantage || 0, 'sMoney'),
+        cell('', 'sText'),
+        cell('', 'sText'),
+      ]);
+      rowsDetails.push([
+        cell('Crédits / Réductions', 'sText'),
+        cell(result.creditsTotal || 0, 'sMoney'),
+        cell('', 'sText'),
+        cell('', 'sText'),
+      ]);
+      rowsDetails.push([
+        cell('PFU IR', 'sText'),
+        cell(result.pfuIr || 0, 'sMoney'),
+        cell('', 'sText'),
+        cell('', 'sText'),
+      ]);
+      rowsDetails.push([
+        cell('CEHR', 'sText'),
+        cell(result.cehr || 0, 'sMoney'),
+        cell('', 'sText'),
+        cell('', 'sText'),
+      ]);
+      rowsDetails.push([
+        cell('CDHR', 'sText'),
+        cell(result.cdhr || 0, 'sMoney'),
+        cell('', 'sText'),
+        cell('', 'sText'),
+      ]);
+      rowsDetails.push([
+        cell('PS fonciers', 'sText'),
+        cell(result.psFoncier || 0, 'sMoney'),
+        cell('', 'sText'),
+        cell('', 'sText'),
+      ]);
+      rowsDetails.push([
+        cell('PS dividendes', 'sText'),
+        cell(result.psDividends || 0, 'sMoney'),
+        cell('', 'sText'),
+        cell('', 'sText'),
+      ]);
+      rowsDetails.push([
+        cell('PS total', 'sText'),
+        cell(result.psTotal || 0, 'sMoney'),
+        cell('', 'sText'),
+        cell('', 'sText'),
+      ]);
 
       const blob = await buildXlsxBlob({
         sheets: [
           { name: 'Paramètres', rows: [headerParams, ...rowsParams], columnWidths: [36, 22] },
           { name: 'Synthèse impôts', rows: [headerSynth, ...rowsSynth], columnWidths: [36, 22] },
-          { name: 'Détails calculs', rows: [headerDetails, ...rowsDetails], columnWidths: [36, 18, 14, 18] },
+          {
+            name: 'Détails calculs',
+            rows: [headerDetails, ...rowsDetails],
+            columnWidths: [36, 18, 14, 18],
+          },
         ],
         headerFill: colors?.c1,
         sectionFill: colors?.c7,
@@ -240,14 +319,10 @@ export function useIrExportHandlers({
 
       const exportLogo = cabinetLogo || undefined;
       const activityIncomeD1 =
-        (incomes?.d1?.salaries || 0) +
-        (incomes?.d1?.associes62 || 0) +
-        (incomes?.d1?.bic || 0);
+        (incomes?.d1?.salaries || 0) + (incomes?.d1?.associes62 || 0) + (incomes?.d1?.bic || 0);
       const activityIncomeD2 =
         status === 'couple'
-          ? (incomes?.d2?.salaries || 0) +
-            (incomes?.d2?.associes62 || 0) +
-            (incomes?.d2?.bic || 0)
+          ? (incomes?.d2?.salaries || 0) + (incomes?.d2?.associes62 || 0) + (incomes?.d2?.bic || 0)
           : 0;
 
       const irData: IrData = {

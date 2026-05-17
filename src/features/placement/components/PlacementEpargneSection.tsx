@@ -87,7 +87,15 @@ function EnvelopePillSelect({ envelope, colorClass, onSelect }: EnvelopePillSele
         aria-expanded={open}
       >
         {ALL_ENVELOPE_LABELS[envelope] ?? envelope}
-        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+        <svg
+          width="10"
+          height="10"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          aria-hidden="true"
+        >
           <path d="m6 9 6 6 6-6" />
         </svg>
       </button>
@@ -150,8 +158,10 @@ export function PlacementEpargneSection({
   compareEnabled,
   setCompareEnabled,
 }: PlacementEpargneSectionProps) {
-  const showOptionBareme = isExpert
-    && (state.products[0].envelope === 'CTO' || (compareEnabled && state.products[1].envelope === 'CTO'));
+  const showOptionBareme =
+    isExpert &&
+    (state.products[0].envelope === 'CTO' ||
+      (compareEnabled && state.products[1].envelope === 'CTO'));
 
   const [table1Open, setTable1Open] = useState(false);
   const [table2Open, setTable2Open] = useState(false);
@@ -161,14 +171,20 @@ export function PlacementEpargneSection({
     <div className="premium-card">
       <div className="pl-card-title">Phase d'épargne</div>
 
-      <table className={`pl-ir-table pl-table premium-table${!compareEnabled ? ' pl-table--single' : ''}`}>
+      <table
+        className={`pl-ir-table pl-table premium-table${!compareEnabled ? ' pl-table--single' : ''}`}
+      >
         <thead>
           <tr>
             <th className="pl-rowlabel">Choix du placement</th>
             <th className="pl-colhead" aria-label="Produit 1">
               <div className="pl-colbadge-wrapper">
                 <EnvelopePillSelect
-                  envelope={state.products[0].perBancaire && state.products[0].envelope === 'PER' ? 'PER_BANCAIRE_UI' : state.products[0].envelope}
+                  envelope={
+                    state.products[0].perBancaire && state.products[0].envelope === 'PER'
+                      ? 'PER_BANCAIRE_UI'
+                      : state.products[0].envelope
+                  }
                   colorClass="pl-collabel--product1"
                   onSelect={(env) => setProduct(0, { envelope: env })}
                 />
@@ -178,7 +194,11 @@ export function PlacementEpargneSection({
               <th className="pl-colhead" aria-label="Produit 2">
                 <div className="pl-colbadge-wrapper">
                   <EnvelopePillSelect
-                    envelope={state.products[1].perBancaire && state.products[1].envelope === 'PER' ? 'PER_BANCAIRE_UI' : state.products[1].envelope}
+                    envelope={
+                      state.products[1].perBancaire && state.products[1].envelope === 'PER'
+                        ? 'PER_BANCAIRE_UI'
+                        : state.products[1].envelope
+                    }
                     colorClass="pl-collabel--product2"
                     onSelect={(env) => setProduct(1, { envelope: env })}
                   />
@@ -212,36 +232,40 @@ export function PlacementEpargneSection({
         <tbody>
           <tr>
             <td>Durée de la phase épargne</td>
-            {(compareEnabled ? state.products : state.products.slice(0, 1)).map((product, index) => (
-              <td key={index}>
-                <InputNumber
-                  value={product.dureeEpargne}
-                  onChange={(value) => setProduct(index, { dureeEpargne: value ?? 1 })}
-                  unit="ans"
-                  min={1}
-                  max={50}
-                />
-              </td>
-            ))}
+            {(compareEnabled ? state.products : state.products.slice(0, 1)).map(
+              (product, index) => (
+                <td key={index}>
+                  <InputNumber
+                    value={product.dureeEpargne}
+                    onChange={(value) => setProduct(index, { dureeEpargne: value ?? 1 })}
+                    unit="ans"
+                    min={1}
+                    max={50}
+                  />
+                </td>
+              ),
+            )}
             {!compareEnabled && <td aria-hidden="true" />}
           </tr>
 
           {showOptionBareme && (
             <tr>
               <td>Option dividendes au barème IR</td>
-              {(compareEnabled ? state.products : state.products.slice(0, 1)).map((product, index) => (
-                <td key={index} className="pl-cell--center">
-                  {product.envelope === 'CTO' ? (
-                    <Toggle
-                      checked={product.optionBaremeIR}
-                      onChange={(value) => setProduct(index, { optionBaremeIR: value })}
-                      ariaLabel={`Activer l’option dividendes au barème IR pour ${envelopeLabels[product.envelope]}`}
-                    />
-                  ) : (
-                    <span className="pl-muted">-</span>
-                  )}
-                </td>
-              ))}
+              {(compareEnabled ? state.products : state.products.slice(0, 1)).map(
+                (product, index) => (
+                  <td key={index} className="pl-cell--center">
+                    {product.envelope === 'CTO' ? (
+                      <Toggle
+                        checked={product.optionBaremeIR}
+                        onChange={(value) => setProduct(index, { optionBaremeIR: value })}
+                        ariaLabel={`Activer l’option dividendes au barème IR pour ${envelopeLabels[product.envelope]}`}
+                      />
+                    ) : (
+                      <span className="pl-muted">-</span>
+                    )}
+                  </td>
+                ),
+              )}
               {!compareEnabled && <td aria-hidden="true" />}
             </tr>
           )}
@@ -251,26 +275,28 @@ export function PlacementEpargneSection({
               Paramétrer les versements
               <div className="pl-detail-cumul">Initial, annuel, allocation, frais</div>
             </td>
-            {(compareEnabled ? state.products : state.products.slice(0, 1)).map((product, index) => (
-              <td key={index}>
-                <button
-                  type="button"
-                  className="pl-btn pl-btn--config"
-                  onClick={() => setModalOpen(index)}
-                  data-testid={`placement-config-product-${index + 1}`}
-                >
-                  <span className="pl-btn__icon">
-                    <SettingsIcon />
-                  </span>
-                  <span className="pl-btn__summary">
-                    {formatVersementConfigSummary(
-                      product.versementConfig.initial.montant,
-                      product.versementConfig.annuel.montant,
-                    )}
-                  </span>
-                </button>
-              </td>
-            ))}
+            {(compareEnabled ? state.products : state.products.slice(0, 1)).map(
+              (product, index) => (
+                <td key={index}>
+                  <button
+                    type="button"
+                    className="pl-btn pl-btn--config"
+                    onClick={() => setModalOpen(index)}
+                    data-testid={`placement-config-product-${index + 1}`}
+                  >
+                    <span className="pl-btn__icon">
+                      <SettingsIcon />
+                    </span>
+                    <span className="pl-btn__summary">
+                      {formatVersementConfigSummary(
+                        product.versementConfig.initial.montant,
+                        product.versementConfig.annuel.montant,
+                      )}
+                    </span>
+                  </button>
+                </td>
+              ),
+            )}
             {!compareEnabled && <td aria-hidden="true" />}
           </tr>
         </tbody>

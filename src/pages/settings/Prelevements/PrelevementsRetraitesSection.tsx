@@ -78,9 +78,7 @@ export default function PrelevementsRetraitesSection({
         <span className="settings-premium-title settings-premium-title--flush">
           Prélèvements sociaux - pensions de retraite
         </span>
-        <span className="fisc-acc-chevron">
-          {isOpen ? 'v' : '>'}
-        </span>
+        <span className="fisc-acc-chevron">{isOpen ? 'v' : '>'}</span>
       </button>
 
       {isOpen && (
@@ -91,9 +89,8 @@ export default function PrelevementsRetraitesSection({
           aria-labelledby="prelev-header-retraites"
         >
           <p className="fisc-intro">
-            Barème des prélèvements sociaux sur les pensions de retraite
-            (RFR pour 1 part). Les montants sont ajustés en fonction des
-            parts, mais on stocke ici la base "1 part".
+            Barème des prélèvements sociaux sur les pensions de retraite (RFR pour 1 part). Les
+            montants sont ajustés en fonction des parts, mais on stocke ici la base "1 part".
           </p>
 
           <div>

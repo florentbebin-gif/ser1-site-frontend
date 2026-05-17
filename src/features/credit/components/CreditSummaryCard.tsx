@@ -3,10 +3,7 @@
  */
 
 import { euro0 } from '../utils/creditFormatters';
-import type {
-  CreditSummaryCardProps,
-  SummaryDonutProps,
-} from '../types';
+import type { CreditSummaryCardProps, SummaryDonutProps } from '../types';
 
 const DONUT_R = 27;
 const DONUT_CX = 34;
@@ -22,13 +19,7 @@ export function SummaryDonut({
 
   if (total <= 0) {
     return (
-      <svg
-        width="68"
-        height="68"
-        viewBox="0 0 68 68"
-        className="cv-donut"
-        aria-hidden="true"
-      >
+      <svg width="68" height="68" viewBox="0 0 68 68" className="cv-donut" aria-hidden="true">
         <circle
           cx={DONUT_CX}
           cy={DONUT_CY}
@@ -113,7 +104,17 @@ export function CreditSummaryCard({
     <aside className="cv-summary sim-summary-card" data-testid="credit-summary-card">
       <div className="cv-summary__title-row">
         <div className="sim-card__icon sim-card__icon--sm">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <svg
+            width="13"
+            height="13"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.8"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden="true"
+          >
             <line x1="12" y1="20" x2="12" y2="10" />
             <line x1="18" y1="20" x2="18" y2="4" />
             <line x1="6" y1="20" x2="6" y2="16" />
@@ -127,10 +128,7 @@ export function CreditSummaryCard({
       <div className="cv-summary__kpi-zone">
         <div>
           <div className="cv-summary__kpi-label-small">{kpiLabel}</div>
-          <div
-            className="cv-summary__kpi-main-value"
-            data-testid="credit-mensu-totale-avec-ass"
-          >
+          <div className="cv-summary__kpi-main-value" data-testid="credit-mensu-totale-avec-ass">
             {euro0(mensualiteTotaleM1 * factor)}
           </div>
           {isExpert && primeAssMensuelle > 0 && (
@@ -138,9 +136,7 @@ export function CreditSummaryCard({
               + {euro0(primeAssMensuelle * factor)} {assLabel} ass.
             </div>
           )}
-          {!isExpert && (
-            <div className="cv-summary__badge">Hors assurance</div>
-          )}
+          {!isExpert && <div className="cv-summary__badge">Hors assurance</div>}
         </div>
         <SummaryDonut capital={capitalEmprunte} interets={totalInterets} />
       </div>
@@ -181,7 +177,8 @@ export function CreditSummaryCard({
                   {diffDureesMois > 0 ? 'Durée allongée' : 'Durée réduite'}
                 </span>
                 <span className="cv-summary__row-value">
-                  {diffDureesMois > 0 ? '+' : ''}{diffDureesMois} mois
+                  {diffDureesMois > 0 ? '+' : ''}
+                  {diffDureesMois} mois
                 </span>
               </div>
             )}
@@ -190,9 +187,7 @@ export function CreditSummaryCard({
                 <span className="cv-summary__row-label">
                   {lissageCoutDelta > 0 ? 'Coût supplémentaire' : 'Économie du lissage'}
                 </span>
-                <span className="cv-summary__row-value">
-                  {euro0(Math.abs(lissageCoutDelta))}
-                </span>
+                <span className="cv-summary__row-value">{euro0(Math.abs(lissageCoutDelta))}</span>
               </div>
             )}
           </div>

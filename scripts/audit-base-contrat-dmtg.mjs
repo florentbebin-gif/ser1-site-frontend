@@ -28,8 +28,15 @@ const CONSUMER_PATTERNS = [
   { key: 'getRules', regex: /\bgetRules\s*\(/ },
   { key: 'CATALOG', regex: /\bCATALOG\b/ },
   { key: 'getCatalogProduct', regex: /\bgetCatalogProduct\b/ },
-  { key: 'FiscalProfile', regex: /\b(FiscalProfile|getEnvelopeCatalogId|buildFiscalProfile|emptyFiscalProfile)\b/ },
-  { key: 'route base-contrat', regex: /href="\/settings\/base-contrat"|path:\s*'base-contrat'|urlPath:\s*'\/settings\/base-contrat'|startsWith\('\/settings\/base-contrat'\)/ },
+  {
+    key: 'FiscalProfile',
+    regex: /\b(FiscalProfile|getEnvelopeCatalogId|buildFiscalProfile|emptyFiscalProfile)\b/,
+  },
+  {
+    key: 'route base-contrat',
+    regex:
+      /href="\/settings\/base-contrat"|path:\s*'base-contrat'|urlPath:\s*'\/settings\/base-contrat'|startsWith\('\/settings\/base-contrat'\)/,
+  },
   { key: 'base_contrat_overrides', regex: /base_contrat_overrides|baseContratOverridesCache/ },
 ];
 
@@ -84,8 +91,9 @@ function compileDomainRuntime() {
     JSON.stringify({ type: 'commonjs' }, null, 2),
   );
 
-  const files = walk(DOMAIN_DIR, (file) =>
-    file.endsWith('.ts') && !file.includes(`${path.sep}__tests__${path.sep}`),
+  const files = walk(
+    DOMAIN_DIR,
+    (file) => file.endsWith('.ts') && !file.includes(`${path.sep}__tests__${path.sep}`),
   );
 
   for (const file of files) {
@@ -180,11 +188,11 @@ function scoreEngine(profile, options) {
 
 function verdict(profile, options) {
   if (
-    options.hasEngineConsumer
-    && profile.engineScore >= 4
-    && profile.sourceRatio === 1
-    && profile.mediumLowCount === 0
-    && profile.emptyPhaseCount === 0
+    options.hasEngineConsumer &&
+    profile.engineScore >= 4 &&
+    profile.sourceRatio === 1 &&
+    profile.mediumLowCount === 0 &&
+    profile.emptyPhaseCount === 0
   ) {
     return 'source_moteur_candidate';
   }
@@ -206,16 +214,23 @@ function buildRuntimeMetrics(CATALOG, getRules, options) {
       const rules = getRules(product.id, audience);
       const blocks = flattenRules(rules);
       const total = blocks.length;
-      const withSources = blocks.filter((block) => Array.isArray(block.sources) && block.sources.length > 0).length;
-      const mediumLowBlocks = blocks.filter((block) => block.confidence === 'moyenne' || block.confidence === 'faible');
-      const mediumLowCompliant = mediumLowBlocks.filter((block) =>
-        Array.isArray(block.dependencies)
-        && block.dependencies.length > 0
-        && block.bullets.some((bullet) => bullet.includes('À confirmer')),
+      const withSources = blocks.filter(
+        (block) => Array.isArray(block.sources) && block.sources.length > 0,
+      ).length;
+      const mediumLowBlocks = blocks.filter(
+        (block) => block.confidence === 'moyenne' || block.confidence === 'faible',
+      );
+      const mediumLowCompliant = mediumLowBlocks.filter(
+        (block) =>
+          Array.isArray(block.dependencies) &&
+          block.dependencies.length > 0 &&
+          block.bullets.some((bullet) => bullet.includes('À confirmer')),
       ).length;
       const emptyPhases = PHASES.filter((phase) => (rules[phase] ?? []).length === 0);
       const hasOfficialSource = blocks.some((block) =>
-        (block.sources ?? []).some((src) => /legifrance|bofip|impots\.gouv|service-public|urssaf/i.test(src.url)),
+        (block.sources ?? []).some((src) =>
+          /legifrance|bofip|impots\.gouv|service-public|urssaf/i.test(src.url),
+        ),
       );
 
       const profile = {
@@ -271,7 +286,8 @@ function buildRuntimeMetrics(CATALOG, getRules, options) {
     exposedSourceRatio: exposedBlockCount === 0 ? 0 : exposedSourceCount / exposedBlockCount,
     exposedMediumLowCount,
     exposedMediumLowCompliant,
-    exposedMediumLowComplianceRatio: exposedMediumLowCount === 0 ? 1 : exposedMediumLowCompliant / exposedMediumLowCount,
+    exposedMediumLowComplianceRatio:
+      exposedMediumLowCount === 0 ? 1 : exposedMediumLowCompliant / exposedMediumLowCount,
     emptyPhaseCount,
     byFamily: [...byFamily.values()].sort((a, b) => a.famille.localeCompare(b.famille, 'fr')),
     byProductAudience,
@@ -280,7 +296,8 @@ function buildRuntimeMetrics(CATALOG, getRules, options) {
 
 function buildLibraryMetrics() {
   const libraryDir = path.join(DOMAIN_DIR, 'rules', 'library');
-  const rows = fs.readdirSync(libraryDir)
+  const rows = fs
+    .readdirSync(libraryDir)
     .filter((name) => name.endsWith('.ts'))
     .sort((a, b) => a.localeCompare(b, 'fr'))
     .map((name) => {
@@ -292,18 +309,30 @@ function buildLibraryMetrics() {
         sources: [...content.matchAll(/sources\s*:/g)].length,
         mediumLow: [...content.matchAll(/confidence\s*:\s*'(moyenne|faible)'/g)].length,
         dependencies: [...content.matchAll(/dependencies\s*:/g)].length,
-        visibleAmountsOrRates: [...content.matchAll(/\b\d[\d\s_]*(?:[,.]\d+)?\s*(?:%|€|EUR|k€|M€)\b/g)].length,
+        visibleAmountsOrRates: [
+          ...content.matchAll(/\b\d[\d\s_]*(?:[,.]\d+)?\s*(?:%|€|EUR|k€|M€)\b/g),
+        ].length,
       };
     });
 
-  const total = rows.reduce((sum, row) => ({
-    file: 'TOTAL',
-    blocks: sum.blocks + row.blocks,
-    sources: sum.sources + row.sources,
-    mediumLow: sum.mediumLow + row.mediumLow,
-    dependencies: sum.dependencies + row.dependencies,
-    visibleAmountsOrRates: sum.visibleAmountsOrRates + row.visibleAmountsOrRates,
-  }), { file: 'TOTAL', blocks: 0, sources: 0, mediumLow: 0, dependencies: 0, visibleAmountsOrRates: 0 });
+  const total = rows.reduce(
+    (sum, row) => ({
+      file: 'TOTAL',
+      blocks: sum.blocks + row.blocks,
+      sources: sum.sources + row.sources,
+      mediumLow: sum.mediumLow + row.mediumLow,
+      dependencies: sum.dependencies + row.dependencies,
+      visibleAmountsOrRates: sum.visibleAmountsOrRates + row.visibleAmountsOrRates,
+    }),
+    {
+      file: 'TOTAL',
+      blocks: 0,
+      sources: 0,
+      mediumLow: 0,
+      dependencies: 0,
+      visibleAmountsOrRates: 0,
+    },
+  );
 
   return { rows, total };
 }
@@ -352,7 +381,8 @@ function classifyKnownValues() {
       file: 'src/features/succession/export/successionXlsx.ts',
       line: 216,
       class: 'hypothese_export_snapshot',
-      detail: 'Texte pédagogique alimenté par le snapshot fiscal DMTG, avec fallback defaults si aucun snapshot n’est fourni.',
+      detail:
+        'Texte pédagogique alimenté par le snapshot fiscal DMTG, avec fallback defaults si aucun snapshot n’est fourni.',
     },
     {
       file: 'src/features/placement/utils/normalizers.ts',
@@ -364,7 +394,8 @@ function classifyKnownValues() {
       file: 'src/domain/base-contrat/rules/library/*.ts',
       line: null,
       class: 'texte_editorial_brut',
-      detail: 'Montants/taux présents dans les bibliothèques, sanitizés à l’affichage par getRules().',
+      detail:
+        'Montants/taux présents dans les bibliothèques, sanitizés à l’affichage par getRules().',
     },
   ];
 }
@@ -446,25 +477,28 @@ function toVeilleMarkdown(CATALOG, getRules) {
     }
   }
 
-  rows.sort((a, b) =>
-    a.famille.localeCompare(b.famille, 'fr')
-    || a.product.localeCompare(b.product, 'fr')
-    || a.audience.localeCompare(b.audience, 'fr')
-    || PHASES.indexOf(a.phase) - PHASES.indexOf(b.phase)
-    || a.title.localeCompare(b.title, 'fr'),
+  rows.sort(
+    (a, b) =>
+      a.famille.localeCompare(b.famille, 'fr') ||
+      a.product.localeCompare(b.product, 'fr') ||
+      a.audience.localeCompare(b.audience, 'fr') ||
+      PHASES.indexOf(a.phase) - PHASES.indexOf(b.phase) ||
+      a.title.localeCompare(b.title, 'fr'),
   );
 
   const tableRows = rows
-    .map((row) => [
-      escapeMarkdownCell(row.famille),
-      escapeMarkdownCell(row.product),
-      formatAudience(row.audience),
-      formatPhase(row.phase),
-      escapeMarkdownCell(row.title),
-      formatSources(row.sources),
-      'Non chargé',
-      '—',
-    ].join(' | '))
+    .map((row) =>
+      [
+        escapeMarkdownCell(row.famille),
+        escapeMarkdownCell(row.product),
+        formatAudience(row.audience),
+        formatPhase(row.phase),
+        escapeMarkdownCell(row.title),
+        formatSources(row.sources),
+        'Non chargé',
+        '—',
+      ].join(' | '),
+    )
     .map((row) => `| ${row} |`)
     .join('\n');
 
@@ -484,17 +518,29 @@ function toVeilleMarkdown(CATALOG, getRules) {
 
 function toMarkdown(metrics) {
   const libraryRows = metrics.library.rows
-    .map((row) => `| ${row.file.replace('src/domain/base-contrat/rules/library/', '')} | ${row.blocks} | ${row.sources} | ${row.mediumLow} | ${row.dependencies} | ${row.visibleAmountsOrRates} |`)
+    .map(
+      (row) =>
+        `| ${row.file.replace('src/domain/base-contrat/rules/library/', '')} | ${row.blocks} | ${row.sources} | ${row.mediumLow} | ${row.dependencies} | ${row.visibleAmountsOrRates} |`,
+    )
     .join('\n');
   const familyRows = metrics.runtime.byFamily
-    .map((row) => `| ${row.famille} | ${row.productAudiences} | ${row.blocks} | ${row.sources} | ${row.mediumLow} | ${row.emptyPhases} |`)
+    .map(
+      (row) =>
+        `| ${row.famille} | ${row.productAudiences} | ${row.blocks} | ${row.sources} | ${row.mediumLow} | ${row.emptyPhases} |`,
+    )
     .join('\n');
   const consumerRows = metrics.consumers
     .filter((match) => match.zone !== 'domain')
-    .map((match) => `| ${match.zone} | ${match.file}:${match.line} | ${match.key} | ${match.text.replace(/\|/g, '\\|')} |`)
+    .map(
+      (match) =>
+        `| ${match.zone} | ${match.file}:${match.line} | ${match.key} | ${match.text.replace(/\|/g, '\\|')} |`,
+    )
     .join('\n');
   const productRows = metrics.runtime.byProductAudience
-    .map((row) => `| ${row.label.replace(/\|/g, '\\|')} | ${row.famille.replace(/\|/g, '\\|')} | ${formatAudience(row.audience)} | ${row.totalBlocks} | ${row.withSources}/${row.totalBlocks} | ${row.mediumLowCount} | ${row.editorialScore}/5 | ${row.engineScore}/5 | ${formatVerdict(row.verdict)} |`)
+    .map(
+      (row) =>
+        `| ${row.label.replace(/\|/g, '\\|')} | ${row.famille.replace(/\|/g, '\\|')} | ${formatAudience(row.audience)} | ${row.totalBlocks} | ${row.withSources}/${row.totalBlocks} | ${row.mediumLowCount} | ${row.editorialScore}/5 | ${row.engineScore}/5 | ${formatVerdict(row.verdict)} |`,
+    )
     .join('\n');
   const verdictCounts = metrics.runtime.byProductAudience.reduce((acc, row) => {
     acc[row.verdict] = (acc[row.verdict] ?? 0) + 1;

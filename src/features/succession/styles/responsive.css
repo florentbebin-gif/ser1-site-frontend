@@ -26,7 +26,7 @@
   .sc-dispositions-modal__section--testament {
     padding-left: 0;
     border-left: none;
-    border-top: 1px solid color-mix(in srgb, var(--color-c8) 72%, #FFFFFF);
+    border-top: 1px solid color-mix(in srgb, var(--color-c8) 72%, #ffffff);
     padding-top: 18px;
   }
 

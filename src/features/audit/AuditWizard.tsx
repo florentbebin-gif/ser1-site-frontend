@@ -41,7 +41,7 @@ const STEPS = [
   { id: 'objectifs', label: 'Objectifs', num: 6 },
 ] as const;
 
-type StepId = typeof STEPS[number]['id'];
+type StepId = (typeof STEPS)[number]['id'];
 
 export default function AuditWizard(): React.ReactElement {
   const { colors } = useTheme();
@@ -109,7 +109,7 @@ export default function AuditWizard(): React.ReactElement {
   }, []);
 
   const updateDossier = useCallback((updates: Partial<DossierAudit>) => {
-    setDossier(prev => ({
+    setDossier((prev) => ({
       ...prev,
       ...updates,
       dateModification: new Date().toISOString(),
@@ -123,7 +123,7 @@ export default function AuditWizard(): React.ReactElement {
       await exportAuditPptx({ dossier, colors });
     } catch (error) {
       console.error('Erreur export PPTX:', error);
-      alert('Erreur lors de l\'export PPTX');
+      alert("Erreur lors de l'export PPTX");
     } finally {
       setIsExportingPptx(false);
     }
@@ -141,15 +141,14 @@ export default function AuditWizard(): React.ReactElement {
     } catch (error) {
       alert((error as Error).message);
     }
-    
+
     // Reset input
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
   };
 
-  
-  const currentStepIndex = STEPS.findIndex(s => s.id === currentStep);
+  const currentStepIndex = STEPS.findIndex((s) => s.id === currentStep);
   const canGoNext = currentStepIndex < STEPS.length - 1;
   const canGoPrev = currentStepIndex > 0;
   const exportOptions: ExportOption[] = [
@@ -167,7 +166,8 @@ export default function AuditWizard(): React.ReactElement {
           <p className="premium-section-title">Workflow privé P6</p>
           <h1 className="premium-title">Audit patrimonial</h1>
           <p className="premium-subtitle audit-subtitle">
-            Dossier guidé, persistant en session, exportable et utilisé comme point d’entrée de la stratégie.
+            Dossier guidé, persistant en session, exportable et utilisé comme point d’entrée de la
+            stratégie.
           </p>
         </div>
         <div className="audit-header-actions">
@@ -205,7 +205,9 @@ export default function AuditWizard(): React.ReactElement {
               style={{ width: `${((currentStepIndex + 1) / STEPS.length) * 100}%` }}
             />
           </div>
-          <span className="audit-progress__text">Étape {currentStepIndex + 1} sur {STEPS.length}</span>
+          <span className="audit-progress__text">
+            Étape {currentStepIndex + 1} sur {STEPS.length}
+          </span>
         </div>
 
         {/* Navigation étapes sobre */}
@@ -228,9 +230,7 @@ export default function AuditWizard(): React.ReactElement {
           {currentStep === 'famille' && (
             <StepFamille dossier={dossier} updateDossier={updateDossier} />
           )}
-          {currentStep === 'civil' && (
-            <StepCivil dossier={dossier} updateDossier={updateDossier} />
-          )}
+          {currentStep === 'civil' && <StepCivil dossier={dossier} updateDossier={updateDossier} />}
           {currentStep === 'actifs' && (
             <StepActifs dossier={dossier} updateDossier={updateDossier} />
           )}

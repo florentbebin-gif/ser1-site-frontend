@@ -28,9 +28,12 @@ function fmtEuro(value: number): string {
 export function getPhaseTitle(phase: AssociateRevenuePhaseInputV6): string {
   const parts: string[] = [];
   if (phase.ccaContribution.enabled) parts.push('constitution CCA');
-  if (phase.remuneration.enabled && phase.remuneration.source !== 'none') parts.push('Rémunération');
-  if (phase.ccaRepayment.enabled && phase.ccaRepayment.strategy !== 'aucun') parts.push('remboursement CCA');
-  if (phase.distribution.enabled && phase.distribution.dividendsStrategy !== 'aucun') parts.push('dividendes');
+  if (phase.remuneration.enabled && phase.remuneration.source !== 'none')
+    parts.push('Rémunération');
+  if (phase.ccaRepayment.enabled && phase.ccaRepayment.strategy !== 'aucun')
+    parts.push('remboursement CCA');
+  if (phase.distribution.enabled && phase.distribution.dividendsStrategy !== 'aucun')
+    parts.push('dividendes');
   if (parts.length === 0) return phase.label?.trim() ? phase.label.trim() : 'Phase non paramétrée';
   // Capitalise le premier mot : "constitution CCA & Rémunération" → "Constitution CCA & Rémunération".
   const joined = parts.join(' & ');

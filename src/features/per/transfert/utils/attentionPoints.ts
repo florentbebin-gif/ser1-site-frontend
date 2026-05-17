@@ -1,8 +1,5 @@
 import type { BaseCgRetraiteContract } from '@/data/basecg';
-import {
-  formatBaseCgRetraiteRateField,
-  hasBaseCgRetraiteValue,
-} from '@/data/basecg';
+import { formatBaseCgRetraiteRateField, hasBaseCgRetraiteValue } from '@/data/basecg';
 
 export type PerTransfertAttentionLevel = 'high' | 'medium' | 'neutral';
 
@@ -42,7 +39,11 @@ function subscriptionYear(subscriptionDate?: string | null): number | null {
   return Number.isInteger(year) ? year : null;
 }
 
-function commercializationRange(value: unknown): { start: number | null; end: number | null; parseable: boolean } {
+function commercializationRange(value: unknown): {
+  start: number | null;
+  end: number | null;
+  parseable: boolean;
+} {
   const years = Array.from(asText(value).matchAll(/\b(19\d{2}|20\d{2})\b/g))
     .map((match) => Number(match[1]))
     .filter((year) => Number.isInteger(year));
@@ -54,7 +55,10 @@ function commercializationRange(value: unknown): { start: number | null; end: nu
   };
 }
 
-function datePoint(contract: BaseCgRetraiteContract, context: PerTransfertAttentionContext): PerTransfertAttentionPoint | null {
+function datePoint(
+  contract: BaseCgRetraiteContract,
+  context: PerTransfertAttentionContext,
+): PerTransfertAttentionPoint | null {
   const year = subscriptionYear(context.subscriptionDate);
   if (!year) return null;
   const label = contract.phaseEpargne.dateCommercialisation;
@@ -88,16 +92,21 @@ export function buildPerTransfertAttentionPoints(
   context: PerTransfertAttentionContext,
 ): PerTransfertAttentionPoint[] {
   if (!contract) {
-    return [{
-      level: 'neutral',
-      label: 'Base CG non sélectionnée',
-      detail: 'Sélectionner un contrat pour afficher les points de vigilance.',
-    }];
+    return [
+      {
+        level: 'neutral',
+        label: 'Base CG non sélectionnée',
+        detail: 'Sélectionner un contrat pour afficher les points de vigilance.',
+      },
+    ];
   }
 
   const points: PerTransfertAttentionPoint[] = [];
   const tableGarantie = contract.phaseLiquidation.tableGarantieAdhesion;
-  if (hasBaseCgRetraiteValue(tableGarantie) && (/oui/i.test(asText(tableGarantie)) || hasGuaranteedWording(tableGarantie))) {
+  if (
+    hasBaseCgRetraiteValue(tableGarantie) &&
+    (/oui/i.test(asText(tableGarantie)) || hasGuaranteedWording(tableGarantie))
+  ) {
     points.push({
       level: 'high',
       label: 'Table de mortalité garantie',
@@ -110,7 +119,10 @@ export function buildPerTransfertAttentionPoints(
 
   const tauxTechnique = contract.phaseLiquidation.tauxTechnique;
   const tauxTechniqueValue = extractPercentValue(tauxTechnique);
-  if ((tauxTechniqueValue !== null && tauxTechniqueValue > 0) || hasGuaranteedWording(tauxTechnique)) {
+  if (
+    (tauxTechniqueValue !== null && tauxTechniqueValue > 0) ||
+    hasGuaranteedWording(tauxTechnique)
+  ) {
     points.push({
       level: 'high',
       label: 'Taux technique garanti',
@@ -124,9 +136,9 @@ export function buildPerTransfertAttentionPoints(
   const tmg = contract.phaseEpargne.rendementFondsEuro;
   const tmgValue = extractPercentValue(tmg);
   if (
-    hasBaseCgRetraiteValue(fondsGarantis)
-    || hasGuaranteedWording(tmg)
-    || (tmgValue !== null && tmgValue > 0)
+    hasBaseCgRetraiteValue(fondsGarantis) ||
+    hasGuaranteedWording(tmg) ||
+    (tmgValue !== null && tmgValue > 0)
   ) {
     points.push({
       level: 'medium',

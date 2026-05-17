@@ -141,8 +141,12 @@ export function IrDetailsSection({ result, euro0, fmtPct, pfuRateIR }: IrDetails
             </tr>
 
             <tr>
-              <td><strong>Terme A (après décote)</strong></td>
-              <td className="ir-td--right"><strong>{euro0(result.cdhrDetails.termA_afterDecote)}</strong></td>
+              <td>
+                <strong>Terme A (après décote)</strong>
+              </td>
+              <td className="ir-td--right">
+                <strong>{euro0(result.cdhrDetails.termA_afterDecote)}</strong>
+              </td>
             </tr>
 
             <tr>
@@ -161,7 +165,10 @@ export function IrDetailsSection({ result, euro0, fmtPct, pfuRateIR }: IrDetails
             </tr>
 
             <tr>
-              <td>+ Majorations (couple + charges) — charges : {result.cdhrDetails.personsAChargeCount}</td>
+              <td>
+                + Majorations (couple + charges) — charges :{' '}
+                {result.cdhrDetails.personsAChargeCount}
+              </td>
               <td className="ir-td--right">{euro0(result.cdhrDetails.majorations)}</td>
             </tr>
 
@@ -176,8 +183,12 @@ export function IrDetailsSection({ result, euro0, fmtPct, pfuRateIR }: IrDetails
             </tr>
 
             <tr>
-              <td><strong>CDHR = max(0, Terme A (après décote) − Terme B)</strong></td>
-              <td className="ir-td--right"><strong>{euro0(result.cdhr || 0)}</strong></td>
+              <td>
+                <strong>CDHR = max(0, Terme A (après décote) − Terme B)</strong>
+              </td>
+              <td className="ir-td--right">
+                <strong>{euro0(result.cdhr || 0)}</strong>
+              </td>
             </tr>
           </tbody>
         </table>
@@ -187,4 +198,3 @@ export function IrDetailsSection({ result, euro0, fmtPct, pfuRateIR }: IrDetails
     </div>
   );
 }
-

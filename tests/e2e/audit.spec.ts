@@ -38,9 +38,14 @@ test.describe('Audit Patrimonial', () => {
     // Look for step/navigation buttons (Suivant, Précédent, etc.)
     const nextBtn = page.locator('text=Suivant').or(page.locator('text=Continuer'));
     // At least one navigation element should be present
-    const hasNav = await nextBtn.first().isVisible().catch(() => false);
+    const hasNav = await nextBtn
+      .first()
+      .isVisible()
+      .catch(() => false);
     // If no explicit nav, the page itself loaded successfully
-    const hasWizardShell = await page.locator('main, [class*="audit"], [class*="wizard"]').first()
+    const hasWizardShell = await page
+      .locator('main, [class*="audit"], [class*="wizard"]')
+      .first()
       .isVisible()
       .catch(() => false);
     expect(hasNav || hasWizardShell).toBe(true);

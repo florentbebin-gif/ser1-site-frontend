@@ -22,7 +22,9 @@ const ENFANTS: SuccessionEnfant[] = [
   { id: 'E3', prenom: 'Camille', rattachement: 'commun' },
 ];
 
-function makeAct(overrides: Partial<SuccessionDonationPartageAct> = {}): SuccessionDonationPartageAct {
+function makeAct(
+  overrides: Partial<SuccessionDonationPartageAct> = {},
+): SuccessionDonationPartageAct {
   return {
     id: 'dp-1',
     date: '2020-06',
@@ -130,10 +132,12 @@ describe('donation-partage en acte', () => {
       }),
     ]);
 
-    expect(lines.map((line) => [line.donataire, line.valeurDonation, line.valeurActuelle])).toEqual([
-      ['E1', 200000, 450000],
-      ['E2', 200000, 180000],
-    ]);
+    expect(lines.map((line) => [line.donataire, line.valeurDonation, line.valeurActuelle])).toEqual(
+      [
+        ['E1', 200000, 450000],
+        ['E2', 200000, 180000],
+      ],
+    );
   });
 
   it('retient la valeur gelée CCV 1078 dans le rappel fiscal malgré une valeur actuelle supérieure', () => {

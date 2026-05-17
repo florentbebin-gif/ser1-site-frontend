@@ -6,12 +6,7 @@
  */
 
 import { useMemo } from 'react';
-import {
-  monthsDiff,
-  addMonths,
-  labelMonthFR,
-  toNum,
-} from '../utils/creditFormatters';
+import { monthsDiff, addMonths, labelMonthFR, toNum } from '../utils/creditFormatters';
 import {
   buildCapitalDecesParams,
   buildLoanParams,
@@ -58,12 +53,7 @@ export function useCreditCalculations(
   );
 
   const mensuBasePret1 = useMemo<number>(() => {
-    const {
-      type,
-      capital,
-      r,
-      duree: N,
-    } = pret1Params;
+    const { type, capital, r, duree: N } = pret1Params;
     if (type === 'infine') return r === 0 ? 0 : capital * r;
     return mensualiteAmortissable(capital, r, N);
   }, [pret1Params]);
@@ -76,39 +66,35 @@ export function useCreditCalculations(
     return params.filter((value): value is CreditLoanParams => value !== null);
   }, [state, startYM]);
 
-  const autresRows = useMemo<CreditShiftedScheduleRow[][]>(() => (
-    autresParams.map((loan) => {
-      const baseRows = loan.type === 'infine'
-        ? scheduleInFine({
-          capital: loan.capital,
-          r: loan.r,
-          rAss: loan.rA,
-          N: loan.duree,
-          assurMode: loan.assurMode,
-        })
-        : scheduleAmortissable({
-          capital: loan.capital,
-          r: loan.r,
-          rAss: loan.rA,
-          N: loan.duree,
-          assurMode: loan.assurMode,
-        });
+  const autresRows = useMemo<CreditShiftedScheduleRow[][]>(
+    () =>
+      autresParams.map((loan) => {
+        const baseRows =
+          loan.type === 'infine'
+            ? scheduleInFine({
+                capital: loan.capital,
+                r: loan.r,
+                rAss: loan.rA,
+                N: loan.duree,
+                assurMode: loan.assurMode,
+              })
+            : scheduleAmortissable({
+                capital: loan.capital,
+                r: loan.r,
+                rAss: loan.rA,
+                N: loan.duree,
+                assurMode: loan.assurMode,
+              });
 
-      const rowsWithDeces = computeCapitalDecesSchedule(buildCapitalDecesParams(loan), baseRows);
-      const offset = monthsDiff(startYM, loan.startYM);
-      return shiftRows(rowsWithDeces, offset);
-    })
-  ), [autresParams, startYM]);
+        const rowsWithDeces = computeCapitalDecesSchedule(buildCapitalDecesParams(loan), baseRows);
+        const offset = monthsDiff(startYM, loan.startYM);
+        return shiftRows(rowsWithDeces, offset);
+      }),
+    [autresParams, startYM],
+  );
 
   const basePret1Rows = useMemo<CreditScheduleRow[]>(() => {
-    const {
-      capital,
-      r,
-      rA: rAss,
-      duree: N,
-      assurMode,
-      type,
-    } = pret1Params;
+    const { capital, r, rA: rAss, duree: N, assurMode, type } = pret1Params;
 
     const base = {
       capital,
@@ -118,9 +104,10 @@ export function useCreditCalculations(
       assurMode,
     };
 
-    const rows = type === 'infine'
-      ? scheduleInFine({ ...base, mensuOverride: mensuBasePret1 })
-      : scheduleAmortissable({ ...base, mensuOverride: mensuBasePret1 });
+    const rows =
+      type === 'infine'
+        ? scheduleInFine({ ...base, mensuOverride: mensuBasePret1 })
+        : scheduleAmortissable({ ...base, mensuOverride: mensuBasePret1 });
 
     return computeCapitalDecesSchedule(buildCapitalDecesParams(pret1Params), rows);
   }, [pret1Params, mensuBasePret1]);
@@ -135,14 +122,7 @@ export function useCreditCalculations(
   const anyInfine = pret1IsInfine || autresIsInfine.some(Boolean);
 
   const pret1Rows = useMemo<CreditScheduleRow[]>(() => {
-    const {
-      capital,
-      r,
-      rA: rAss,
-      duree: N,
-      assurMode,
-      type,
-    } = pret1Params;
+    const { capital, r, rA: rAss, duree: N, assurMode, type } = pret1Params;
     const basePret1: SmoothPret1Args = {
       capital,
       r,
@@ -154,9 +134,10 @@ export function useCreditCalculations(
 
     let rows: ScheduleRowInput[];
     if (!state.lisserPret1 || pret1IsInfine || autresRows.length === 0) {
-      rows = type === 'infine'
-        ? scheduleInFine({ ...basePret1, mensuOverride: mensuBasePret1 })
-        : scheduleAmortissable({ ...basePret1, mensuOverride: mensuBasePret1 });
+      rows =
+        type === 'infine'
+          ? scheduleInFine({ ...basePret1, mensuOverride: mensuBasePret1 })
+          : scheduleAmortissable({ ...basePret1, mensuOverride: mensuBasePret1 });
     } else if (state.lissageMode === 'mensu') {
       const mensuAutresM1 = autresRows.reduce((sum, arr) => sum + (arr[0]?.mensuTotal || 0), 0);
       rows = scheduleLisseePret1({
@@ -230,11 +211,18 @@ export function useCreditCalculations(
       totalInterets,
       totalAssurance,
       coutTotalCredit: totalInterets + totalAssurance,
-      mensualiteTotaleM1: (pret1Rows[0]?.mensu || 0) + autresRows.reduce((sum, rows) => sum + (rows[0]?.mensu || 0), 0),
-      primeAssMensuelle: (pret1Rows[0]?.assurance || 0) + autresRows.reduce((sum, rows) => sum + (rows[0]?.assurance || 0), 0),
+      mensualiteTotaleM1:
+        (pret1Rows[0]?.mensu || 0) +
+        autresRows.reduce((sum, rows) => sum + (rows[0]?.mensu || 0), 0),
+      primeAssMensuelle:
+        (pret1Rows[0]?.assurance || 0) +
+        autresRows.reduce((sum, rows) => sum + (rows[0]?.assurance || 0), 0),
       capitalEmprunte:
-        pret1Rows.reduce((sum, row) => sum + (row.amort || 0), 0)
-        + autresRows.reduce((total, rows) => total + rows.reduce((sum, row) => sum + (row?.amort || 0), 0), 0),
+        pret1Rows.reduce((sum, row) => sum + (row.amort || 0), 0) +
+        autresRows.reduce(
+          (total, rows) => total + rows.reduce((sum, row) => sum + (row?.amort || 0), 0),
+          0,
+        ),
       diffDureesMois,
     };
   }, [pret1Rows, autresRows, diffDureesMois]);
@@ -253,7 +241,11 @@ export function useCreditCalculations(
       changeSet.add(endIndex);
     });
 
-    const maxLen = Math.max(pret1Rows.length, ...autresRows.map((rows) => rows.length), pret1Params.duree);
+    const maxLen = Math.max(
+      pret1Rows.length,
+      ...autresRows.map((rows) => rows.length),
+      pret1Params.duree,
+    );
     const points = Array.from(changeSet)
       .sort((a, b) => a - b)
       .filter((value) => value < maxLen);

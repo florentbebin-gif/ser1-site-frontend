@@ -53,14 +53,18 @@ describe('isRetraiteContractIncomplete', () => {
   });
 
   it('considère incomplet un contrat avec au moins trois champs critiques vides', () => {
-    expect(isRetraiteContractIncomplete(makeContract({
-      phaseEpargne: {
-        ...makeContract().phaseEpargne,
-        dateCommercialisation: null,
-        fraisGestionFondsEuro: null,
-        fraisGestionUc: null,
-        clauseBeneficiaire: null,
-      },
-    }))).toBe(true);
+    expect(
+      isRetraiteContractIncomplete(
+        makeContract({
+          phaseEpargne: {
+            ...makeContract().phaseEpargne,
+            dateCommercialisation: null,
+            fraisGestionFondsEuro: null,
+            fraisGestionUc: null,
+            clauseBeneficiaire: null,
+          },
+        }),
+      ),
+    ).toBe(true);
   });
 });

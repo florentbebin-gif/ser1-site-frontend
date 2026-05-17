@@ -31,15 +31,16 @@ function buildAssociateMeta(associate: RuntimeAssociateInput): string {
     const bWeight = (b.capitalPct || 0) + (b.economicRightsPct || 0);
     return bWeight - aWeight;
   });
-  const significant = sortedLots.filter(lot =>
-    (lot.capitalPct || 0) > 0 || (lot.economicRightsPct || 0) > 0,
+  const significant = sortedLots.filter(
+    (lot) => (lot.capitalPct || 0) > 0 || (lot.economicRightsPct || 0) > 0,
   );
   const lotsToRender = significant.length > 0 ? significant : sortedLots.slice(0, 1);
 
-  const formatLot = (lot: typeof lotsToRender[number]) => {
-    const value = lot.right === 'usufruit'
-      ? Math.round(lot.economicRightsPct || 0)
-      : Math.round(lot.capitalPct || 0);
+  const formatLot = (lot: (typeof lotsToRender)[number]) => {
+    const value =
+      lot.right === 'usufruit'
+        ? Math.round(lot.economicRightsPct || 0)
+        : Math.round(lot.capitalPct || 0);
     return `${value}% ${ownershipRightCode(lot.right)}`;
   };
 
@@ -108,7 +109,7 @@ interface RelativeTree {
 }
 
 function fmtPct(value: number | undefined): string {
-  const safeValue = Number.isFinite(value) ? value ?? 0 : 0;
+  const safeValue = Number.isFinite(value) ? (value ?? 0) : 0;
   return `${Math.round(safeValue * 100) / 100} %`;
 }
 
@@ -125,7 +126,7 @@ function sortSubsidiaries(subsidiaries: SubsidiaryInput[]): SubsidiaryInput[] {
 }
 
 function offsetNodes(nodes: TresoOrgNode[], offsetX: number): TresoOrgNode[] {
-  return nodes.map(node => ({ ...node, x: node.x + offsetX }));
+  return nodes.map((node) => ({ ...node, x: node.x + offsetX }));
 }
 
 function buildSubsidiaryTree(
@@ -134,15 +135,19 @@ function buildSubsidiaryTree(
   y: number,
 ): RelativeTree {
   const children = sortSubsidiaries(
-    subsidiaries.filter(subsidiary => (subsidiary.parentEntityId ?? 'societe') === parentId),
+    subsidiaries.filter((subsidiary) => (subsidiary.parentEntityId ?? 'societe') === parentId),
   );
   if (children.length === 0) return { width: TRESO_ORG_ENTITY_NODE_WIDTH, nodes: [] };
 
   const nodes: TresoOrgNode[] = [];
   let cursor = 0;
 
-  children.forEach(child => {
-    const childTree = buildSubsidiaryTree(subsidiaries, child.id, y + TRESO_ORG_ENTITY_NODE_HEIGHT + GAP_Y);
+  children.forEach((child) => {
+    const childTree = buildSubsidiaryTree(
+      subsidiaries,
+      child.id,
+      y + TRESO_ORG_ENTITY_NODE_HEIGHT + GAP_Y,
+    );
     const branchWidth = Math.max(childTree.width, TRESO_ORG_ENTITY_NODE_WIDTH);
     nodes.push({
       id: child.id,
@@ -164,15 +169,14 @@ function buildSubsidiaryTree(
 }
 
 function getOwnershipPct(company: RuntimeCompanyInput, nodeId: string): number {
-  const subsidiary = company.subsidiaries.find(candidate => candidate.id === nodeId);
+  const subsidiary = company.subsidiaries.find((candidate) => candidate.id === nodeId);
   return subsidiary?.ownershipPct ?? subsidiary?.holdingOwnershipPct ?? 0;
 }
 
-function buildEdge(params: {
-  from: TresoOrgNode;
-  to: TresoOrgNode;
-  label: string;
-}): { edge: TresoOrgEdge; label: TresoOrgLabel } {
+function buildEdge(params: { from: TresoOrgNode; to: TresoOrgNode; label: string }): {
+  edge: TresoOrgEdge;
+  label: TresoOrgLabel;
+} {
   const edge: TresoOrgEdge = {
     id: `${params.from.id}->${params.to.id}`,
     fromId: params.from.id,
@@ -199,9 +203,10 @@ export function computeTresoOrgchartLayout(
   selectedAssociateId?: string,
 ): TresoOrgchartLayout {
   const associates = company.associates;
-  const associateRowWidth = associates.length > 0
-    ? associates.length * TRESO_ORG_ENTITY_NODE_WIDTH + (associates.length - 1) * GAP_X
-    : TRESO_ORG_ENTITY_NODE_WIDTH;
+  const associateRowWidth =
+    associates.length > 0
+      ? associates.length * TRESO_ORG_ENTITY_NODE_WIDTH + (associates.length - 1) * GAP_X
+      : TRESO_ORG_ENTITY_NODE_WIDTH;
   const hasAssociates = associates.length > 0;
   const companyY = hasAssociates ? PAD + TRESO_ORG_ENTITY_NODE_HEIGHT + GAP_Y : PAD;
   const subsidiaryTree = buildSubsidiaryTree(
@@ -245,11 +250,11 @@ export function computeTresoOrgchartLayout(
   const subsidiaryStartX = center - subsidiaryTree.width / 2;
   nodes.push(...offsetNodes(subsidiaryTree.nodes, subsidiaryStartX));
 
-  const nodeMap = new Map(nodes.map(node => [node.id, node]));
+  const nodeMap = new Map(nodes.map((node) => [node.id, node]));
   const edges: TresoOrgEdge[] = [];
   const labels: TresoOrgLabel[] = [];
 
-  associates.forEach(associate => {
+  associates.forEach((associate) => {
     const from = nodeMap.get(associate.id);
     const to = nodeMap.get('societe');
     if (!from || !to) return;
@@ -258,11 +263,15 @@ export function computeTresoOrgchartLayout(
     labels.push(relation.label);
   });
 
-  company.subsidiaries.forEach(subsidiary => {
+  company.subsidiaries.forEach((subsidiary) => {
     const from = nodeMap.get(subsidiary.parentEntityId ?? 'societe');
     const to = nodeMap.get(subsidiary.id);
     if (!from || !to) return;
-    const relation = buildEdge({ from, to, label: fmtPct(getOwnershipPct(company, subsidiary.id)) });
+    const relation = buildEdge({
+      from,
+      to,
+      label: fmtPct(getOwnershipPct(company, subsidiary.id)),
+    });
     edges.push(relation.edge);
     labels.push(relation.label);
   });

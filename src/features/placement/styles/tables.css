@@ -91,7 +91,11 @@
   font-weight: 600;
   line-height: 1;
   cursor: pointer;
-  transition: border-color 0.2s, background 0.2s, color 0.2s, transform 0.2s;
+  transition:
+    border-color 0.2s,
+    background 0.2s,
+    color 0.2s,
+    transform 0.2s;
 }
 
 .pl-add-product-btn:hover {
@@ -111,7 +115,9 @@
   font-size: 16px;
   line-height: 1;
   cursor: pointer;
-  transition: background 0.15s, color 0.15s;
+  transition:
+    background 0.15s,
+    color 0.15s;
 }
 
 .pl-remove-product-btn:hover {
@@ -169,7 +175,7 @@
 .pl-collabel--product1 {
   border-color: var(--color-c2);
   background: var(--color-c2);
-  color: #FFFFFF;
+  color: #ffffff;
 }
 
 .pl-collabel--product2 {
@@ -198,7 +204,7 @@
   left: 50%;
   transform: translateX(-50%);
   z-index: 50;
-  background: #FFFFFF;
+  background: #ffffff;
   border: 1px solid var(--color-c8);
   border-radius: 8px;
   min-width: 180px;
@@ -227,4 +233,3 @@
   font-weight: 700;
   color: var(--color-c2);
 }
-

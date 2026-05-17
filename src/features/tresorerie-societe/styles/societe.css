@@ -44,13 +44,16 @@
   fill: #fff;
   stroke: var(--color-c8);
   stroke-width: 1;
-  transition: stroke 0.15s, filter 0.15s, transform 0.15s;
+  transition:
+    stroke 0.15s,
+    filter 0.15s,
+    transform 0.15s;
 }
 
 .ts-org-svg-node:hover .ts-org-svg-node__box,
 .ts-org-svg-node:focus-visible .ts-org-svg-node__box {
   stroke: var(--color-c3);
-  filter: drop-shadow(0 2px 5px rgba(0,0,0,0.10));
+  filter: drop-shadow(0 2px 5px rgba(0, 0, 0, 0.1));
 }
 
 .ts-org-svg-node.is-active .ts-org-svg-node__box {
@@ -252,7 +255,7 @@
 }
 
 .ts-associate-modal-nav button.is-active,
-.ts-associate-modal-nav button[aria-selected="true"] {
+.ts-associate-modal-nav button[aria-selected='true'] {
   background: color-mix(in srgb, var(--color-c4) 24%, #fff);
   border-color: var(--color-c3);
   color: var(--color-c1);
@@ -399,7 +402,7 @@
   outline: none;
 }
 
-.ts-disposal-info-button[aria-expanded="true"] {
+.ts-disposal-info-button[aria-expanded='true'] {
   background: var(--color-c1);
   border-color: var(--color-c1);
   color: #fff;

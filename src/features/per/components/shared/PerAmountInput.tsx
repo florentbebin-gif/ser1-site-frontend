@@ -44,12 +44,15 @@ export function PerAmountInput({
     setRaw(null);
   }, [raw, min, onChange]);
 
-  const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    const v = e.target.value;
-    setRaw(v);
-    const parsed = parseInput(v);
-    onChange(Math.max(min, parsed));
-  }, [min, onChange]);
+  const handleChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const v = e.target.value;
+      setRaw(v);
+      const parsed = parseInput(v);
+      onChange(Math.max(min, parsed));
+    },
+    [min, onChange],
+  );
 
   const displayValue = isFocused ? (raw ?? '') : formatIntegerInput(value);
 

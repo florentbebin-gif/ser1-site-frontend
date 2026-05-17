@@ -3,7 +3,10 @@ import { enableE2EMode } from './helpers/auth';
 import { ROUTES } from './helpers/fixtures';
 
 async function selectSituation(page: Page, optionName: RegExp) {
-  const situationTrigger = page.locator('.sc-civil-grid .sc-field').first().locator('.sc-select__trigger');
+  const situationTrigger = page
+    .locator('.sc-civil-grid .sc-field')
+    .first()
+    .locator('.sc-select__trigger');
   await situationTrigger.click();
   await page.getByRole('option', { name: optionName }).click();
 }
@@ -33,7 +36,9 @@ test.describe('Succession - dispositions and chronology', () => {
     await expect(page.locator('.sc-testament-card')).toHaveCount(2);
   });
 
-  test('hides the order toggle on non-couple situations and persists chainOrder for couple scenarios', async ({ page }) => {
+  test('hides the order toggle on non-couple situations and persists chainOrder for couple scenarios', async ({
+    page,
+  }) => {
     await page.goto(ROUTES.succession);
     await expect(page.locator('body')).not.toContainText('Application error');
 

@@ -33,7 +33,7 @@
   text-align: right;
   border: 1px solid var(--color-c8);
   border-radius: 4px;
-  background-color: #FFFFFF;
+  background-color: #ffffff;
   color: var(--color-c10);
 }
 
@@ -85,7 +85,7 @@
   border: 1px solid var(--color-c8);
   border-radius: 4px;
   text-align: right;
-  background-color: #FFFFFF;
+  background-color: #ffffff;
   color: var(--color-c10);
 }
 
@@ -124,7 +124,7 @@
 .fisc-acc-item {
   border: 1px solid var(--color-c8);
   border-radius: 12px;
-  background: #FFFFFF;
+  background: #ffffff;
   overflow: hidden;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
   transition: box-shadow 0.15s ease;

@@ -14,10 +14,7 @@ import type {
 } from './types';
 import { computeDeclaration2042 } from './perDeclarationFlow';
 import { computePerDeductionFlow } from './perDeductionFlow';
-import {
-  computePlafond163Q,
-  computeProjectedPlafond163Q,
-} from './plafond163Q';
+import { computePlafond163Q, computeProjectedPlafond163Q } from './plafond163Q';
 import { computePlafondMadelin, createEmptyMadelinDetail, isTNS } from './plafondMadelin';
 import { computeProjectionAvis } from './perProjectionAvis';
 import { estimerSituationFiscale } from './perIrEstimation';
@@ -36,9 +33,9 @@ function addMadelinReintegration(
     },
     declarant2: situation.declarant2
       ? {
-        ...situation.declarant2,
-        bic: Math.max(0, (situation.declarant2.bic || 0) + surplusD2),
-      }
+          ...situation.declarant2,
+          bic: Math.max(0, (situation.declarant2.bic || 0) + surplusD2),
+        }
       : undefined,
   };
 }
@@ -63,58 +60,72 @@ export function calculatePerPotentiel(input: PerPotentielInput): PerPotentielRes
     psSettings,
   } = input;
 
-  const passKeys = Object.keys(passHistory).map(Number).sort((a, b) => b - a);
+  const passKeys = Object.keys(passHistory)
+    .map(Number)
+    .sort((a, b) => b - a);
   const pass = passHistory[anneeRef] ?? passHistory[anneeRef - 1] ?? passHistory[passKeys[0]] ?? 0;
 
   const tax = taxSettings as typeof DEFAULT_TAX_SETTINGS;
   const ps = psSettings as typeof DEFAULT_PS_SETTINGS;
   const abat10CfgRoot = tax?.incomeTax?.abat10 ?? {};
-  const abat10SalCfg = yearKey === 'current'
-    ? abat10CfgRoot.current ?? {}
-    : abat10CfgRoot.previous ?? {};
-  const abat10RetCfg = yearKey === 'current'
-    ? abat10CfgRoot.retireesCurrent ?? {}
-    : abat10CfgRoot.retireesPrevious ?? {};
+  const abat10SalCfg =
+    yearKey === 'current' ? (abat10CfgRoot.current ?? {}) : (abat10CfgRoot.previous ?? {});
+  const abat10RetCfg =
+    yearKey === 'current'
+      ? (abat10CfgRoot.retireesCurrent ?? {})
+      : (abat10CfgRoot.retireesPrevious ?? {});
 
   const activeSituation = projectionFiscale ?? situationFiscale;
   const activeDeclarant1 = activeSituation.declarant1;
   const activeDeclarant2 = activeSituation.declarant2;
 
-  const plafond163QD1 = computePlafond163Q({
-    cotisationSource: activeDeclarant1,
-    avisIr,
-    pass,
-    abat10SalCfg,
-    abat10RetCfg,
-  }, warnings);
-
-  const plafond163QD2 = activeDeclarant2
-    ? computePlafond163Q({
-      cotisationSource: activeDeclarant2,
-      avisIr: avisIr2,
+  const plafond163QD1 = computePlafond163Q(
+    {
+      cotisationSource: activeDeclarant1,
+      avisIr,
       pass,
       abat10SalCfg,
       abat10RetCfg,
-    }, warnings)
+    },
+    warnings,
+  );
+
+  const plafond163QD2 = activeDeclarant2
+    ? computePlafond163Q(
+        {
+          cotisationSource: activeDeclarant2,
+          avisIr: avisIr2,
+          pass,
+          abat10SalCfg,
+          abat10RetCfg,
+        },
+        warnings,
+      )
     : undefined;
 
-  const mad1 = computePlafondMadelin({
-    declarant: activeDeclarant1,
-    pass,
-  }, warnings);
-  const mad2 = activeDeclarant2
-    ? computePlafondMadelin({
-      declarant: activeDeclarant2,
+  const mad1 = computePlafondMadelin(
+    {
+      declarant: activeDeclarant1,
       pass,
-    }, warnings)
+    },
+    warnings,
+  );
+  const mad2 = activeDeclarant2
+    ? computePlafondMadelin(
+        {
+          declarant: activeDeclarant2,
+          pass,
+        },
+        warnings,
+      )
     : null;
 
   const estTNS = Boolean(isTNS(activeDeclarant1) || (activeDeclarant2 && isTNS(activeDeclarant2)));
   const plafondMadelin = estTNS
     ? {
-      declarant1: mad1 ?? createEmptyMadelinDetail(),
-      declarant2: mad2 ?? undefined,
-    }
+        declarant1: mad1 ?? createEmptyMadelinDetail(),
+        declarant2: mad2 ?? undefined,
+      }
     : undefined;
 
   const declaration2042 = computeDeclaration2042({
@@ -174,14 +185,14 @@ export function calculatePerPotentiel(input: PerPotentielInput): PerPotentielRes
 
   const projectedPlafondD2 = adjustedSituation.declarant2
     ? computeProjectedPlafond163Q({
-      revenuSource: adjustedSituation.declarant2,
-      cotisationSource: activeDeclarant2!,
-      avisIr: avisIr2,
-      reduction2042: (declaration2042.case6QT ?? 0) + (declaration2042.case6OT ?? 0),
-      pass,
-      abat10SalCfg,
-      abat10RetCfg,
-    })
+        revenuSource: adjustedSituation.declarant2,
+        cotisationSource: activeDeclarant2!,
+        avisIr: avisIr2,
+        reduction2042: (declaration2042.case6QT ?? 0) + (declaration2042.case6OT ?? 0),
+        pass,
+        abat10SalCfg,
+        abat10RetCfg,
+      })
     : undefined;
 
   const projectionAvisSuivant = computeProjectionAvis({
@@ -196,7 +207,7 @@ export function calculatePerPotentiel(input: PerPotentielInput): PerPotentielRes
   if (mode === 'versement-n' && versementEnvisage != null && versementEnvisage > 0) {
     const plafondDispoD1 = deductionFlow163Q.declarant1.disponibleRestant;
     const plafondDispoD2 = mutualisationConjoints
-      ? deductionFlow163Q.declarant2?.disponibleRestant ?? 0
+      ? (deductionFlow163Q.declarant2?.disponibleRestant ?? 0)
       : 0;
     const totalDispo = plafondDispoD1 + plafondDispoD2;
     const versementDeductible = Math.min(versementEnvisage, totalDispo);

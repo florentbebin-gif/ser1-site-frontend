@@ -16,7 +16,7 @@ import { adminClient } from './adminClient';
 export async function sha256(buffer: ArrayBuffer): Promise<string> {
   const hashBuffer = await crypto.subtle.digest('SHA-256', buffer);
   const hashArray = Array.from(new Uint8Array(hashBuffer));
-  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+  return hashArray.map((b) => b.toString(16).padStart(2, '0')).join('');
 }
 
 /**
@@ -25,37 +25,38 @@ export async function sha256(buffer: ArrayBuffer): Promise<string> {
  * @param {string} cabinetId - Cabinet ID for storage path
  * @returns {Promise<{logo_id: string, reused: boolean, error?: string}>}
  */
-export async function uploadLogoWithDedup(file: File, cabinetId: string): Promise<{ logo_id: string | null; reused: boolean; error?: string }> {
+export async function uploadLogoWithDedup(
+  file: File,
+  cabinetId: string,
+): Promise<{ logo_id: string | null; reused: boolean; error?: string }> {
   try {
     // 1. Read file and calculate SHA256
     const arrayBuffer = await file.arrayBuffer();
     const hash = await sha256(arrayBuffer);
-    
+
     // 2. Check if logo already exists
     const { exists, logo: existingLogo } = await adminClient.checkLogoExists(hash);
     if (exists && existingLogo?.id) {
       return { logo_id: existingLogo.id, reused: true };
     }
-    
+
     // 3. Upload to Storage
     const timestamp = Date.now();
     const ext = file.name.split('.').pop()?.toLowerCase() || 'png';
     const storagePath = `${cabinetId}/${timestamp}-${hash.substring(0, 8)}.${ext}`;
-    
-    const { error: uploadError } = await supabase.storage
-      .from('logos')
-      .upload(storagePath, file, {
-        contentType: file.type,
-        upsert: false
-      });
-    
+
+    const { error: uploadError } = await supabase.storage.from('logos').upload(storagePath, file, {
+      contentType: file.type,
+      upsert: false,
+    });
+
     if (uploadError) {
       return { logo_id: null, reused: false, error: `Upload failed: ${uploadError.message}` };
     }
-    
+
     // 4. Get image dimensions
     const img = await loadImageDimensions(file);
-    
+
     // 5. Create logo record in DB
     const created = await adminClient.createLogo({
       sha256: hash,
@@ -66,9 +67,12 @@ export async function uploadLogoWithDedup(file: File, cabinetId: string): Promis
       bytes: file.size,
     });
     return { logo_id: created.id, reused: false };
-    
   } catch (err) {
-    return { logo_id: null, reused: false, error: err instanceof Error ? err.message : String(err) };
+    return {
+      logo_id: null,
+      reused: false,
+      error: err instanceof Error ? err.message : String(err),
+    };
   }
 }
 

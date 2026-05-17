@@ -13,24 +13,15 @@ import type {
   OwnershipRight,
   TresoInputsV6,
 } from '../../../engine/tresorerie/types';
-import {
-  TresoCompanyLoansPanel,
-  TresoCompanySubsidiariesPanel,
-} from './TresoCompanyPanels';
+import { TresoCompanyLoansPanel, TresoCompanySubsidiariesPanel } from './TresoCompanyPanels';
 import { TresoAssociateModal } from './societe/TresoAssociateModal';
 import { TresoCompanyIdentityPanel } from './societe/TresoCompanyIdentityPanel';
 import { TresoOrgChart } from './societe/TresoOrgChart';
 import { TresoSubsidiaryModal } from './societe/TresoSubsidiaryModal';
-import {
-  getAssociateProfile,
-  getOwnershipTotals,
-} from '../utils/tresorerieSocieteModel';
+import { getAssociateProfile, getOwnershipTotals } from '../utils/tresorerieSocieteModel';
 import { ASSOCIATE_KIND_OPTIONS } from '../utils/tresorerieSocieteOptions';
 import { useTresorerieAssociateHandlers } from '../utils/tresorerieAssociateHandlers';
-import {
-  fmtEuroInput,
-  parseEuroInput,
-} from '../utils/tresorerieFormatters';
+import { fmtEuroInput, parseEuroInput } from '../utils/tresorerieFormatters';
 
 function ownershipRightCode(right: OwnershipRight): string {
   if (right === 'usufruit') return 'US';
@@ -68,8 +59,12 @@ export function TresoSocieteSection({ inputs, onChange, onAssociateModalOpenerCh
     addAssociate,
     removeAssociate,
   } = useTresorerieAssociateHandlers(inputs, onChange);
-  const activeAssociateModal = company.associates.find(associate => associate.id === associateModalId);
-  const activeSubsidiaryModal = company.subsidiaries.find(subsidiary => subsidiary.id === subsidiaryModalId);
+  const activeAssociateModal = company.associates.find(
+    (associate) => associate.id === associateModalId,
+  );
+  const activeSubsidiaryModal = company.subsidiaries.find(
+    (subsidiary) => subsidiary.id === subsidiaryModalId,
+  );
   const ownershipTotals = getOwnershipTotals(company.associates);
   const projectionStartYear = company.projectionStartYear ?? new Date().getFullYear();
   const incomeStatement = company.incomeStatement ?? {
@@ -95,7 +90,7 @@ export function TresoSocieteSection({ inputs, onChange, onAssociateModalOpenerCh
   useEffect(() => {
     const handleOpenSocietyPanel = (event: Event) => {
       const detail = (event as CustomEvent<PanelKey>).detail;
-      const nextPanel = PANEL_OPTIONS.some(panel => panel.key === detail) ? detail : 'identite';
+      const nextPanel = PANEL_OPTIONS.some((panel) => panel.key === detail) ? detail : 'identite';
       setActivePanel(nextPanel);
       setCompanyModalOpen(true);
     };
@@ -117,17 +112,25 @@ export function TresoSocieteSection({ inputs, onChange, onAssociateModalOpenerCh
   const renderAssociesPanel = () => (
     <div className="ts-modal-stack">
       {company.associates.map((associate, index) => {
-        const lotsSummary = associate.ownershipLots.length > 0
-          ? associate.ownershipLots
-            .map(lot => `${Math.round((lot.capitalPct || lot.economicRightsPct) * 100) / 100} % ${ownershipRightCode(lot.right)}`)
-            .join(' + ')
-          : '—';
+        const lotsSummary =
+          associate.ownershipLots.length > 0
+            ? associate.ownershipLots
+                .map(
+                  (lot) =>
+                    `${Math.round((lot.capitalPct || lot.economicRightsPct) * 100) / 100} % ${ownershipRightCode(lot.right)}`,
+                )
+                .join(' + ')
+            : '—';
         return (
           <div key={associate.id} className="ts-associate-card">
             <div className="ts-associate-card__header">
               <strong>{associate.label || `Associé ${index + 1}`}</strong>
               <div className="ts-card-actions">
-                <button type="button" className="ts-text-btn" onClick={() => setAssociateModalId(associate.id)}>
+                <button
+                  type="button"
+                  className="ts-text-btn"
+                  onClick={() => setAssociateModalId(associate.id)}
+                >
                   Paramétrer
                 </button>
                 <button
@@ -141,10 +144,16 @@ export function TresoSocieteSection({ inputs, onChange, onAssociateModalOpenerCh
               </div>
             </div>
             <div className="ts-modal-grid ts-modal-grid--two">
-              <SimFieldShell label="Type d’associé" className="ts-field" rowClassName="ts-field__row">
+              <SimFieldShell
+                label="Type d’associé"
+                className="ts-field"
+                rowClassName="ts-field__row"
+              >
                 <SimSelect
                   value={associate.kind ?? 'pp'}
-                  onChange={value => updateAssociate(associate.id, { kind: value as AssociateKind })}
+                  onChange={(value) =>
+                    updateAssociate(associate.id, { kind: value as AssociateKind })
+                  }
                   options={ASSOCIATE_KIND_OPTIONS}
                   ariaLabel={`Type ${associate.label}`}
                 />
@@ -154,17 +163,14 @@ export function TresoSocieteSection({ inputs, onChange, onAssociateModalOpenerCh
               </SimFieldShell>
             </div>
             <p className="ts-field-note">
-              La répartition multi-lots (PP, usufruit, nue-propriété) se règle depuis « Paramétrer ».
+              La répartition multi-lots (PP, usufruit, nue-propriété) se règle depuis « Paramétrer
+              ».
             </p>
           </div>
         );
       })}
 
-      <button
-        type="button"
-        className="ts-text-btn"
-        onClick={addAssociate}
-      >
+      <button type="button" className="ts-text-btn" onClick={addAssociate}>
         Ajouter un associé
       </button>
     </div>
@@ -172,23 +178,35 @@ export function TresoSocieteSection({ inputs, onChange, onAssociateModalOpenerCh
 
   const renderComptePanel = () => (
     <div className="ts-modal-grid">
-      <SimFieldShell label="Chiffre d’affaires annuel" className="ts-field" rowClassName="ts-field__row">
+      <SimFieldShell
+        label="Chiffre d’affaires annuel"
+        className="ts-field"
+        rowClassName="ts-field__row"
+      >
         <input
           type="text"
           inputMode="numeric"
           className="sim-field__control"
           value={fmtEuroInput(incomeStatement.annualRevenue)}
-          onChange={event => patchIncomeStatement({ annualRevenue: parseEuroInput(event.target.value) })}
+          onChange={(event) =>
+            patchIncomeStatement({ annualRevenue: parseEuroInput(event.target.value) })
+          }
         />
         <span className="sim-field__unit ts-unit">€</span>
       </SimFieldShell>
-      <SimFieldShell label="Coûts de structure annuels" className="ts-field" rowClassName="ts-field__row">
+      <SimFieldShell
+        label="Coûts de structure annuels"
+        className="ts-field"
+        rowClassName="ts-field__row"
+      >
         <input
           type="text"
           inputMode="numeric"
           className="sim-field__control"
           value={fmtEuroInput(incomeStatement.annualStructureCosts)}
-          onChange={event => patchIncomeStatement({ annualStructureCosts: parseEuroInput(event.target.value) })}
+          onChange={(event) =>
+            patchIncomeStatement({ annualStructureCosts: parseEuroInput(event.target.value) })
+          }
         />
         <span className="sim-field__unit ts-unit">€</span>
       </SimFieldShell>
@@ -198,7 +216,9 @@ export function TresoSocieteSection({ inputs, onChange, onAssociateModalOpenerCh
           inputMode="numeric"
           className="sim-field__control"
           value={fmtEuroInput(incomeStatement.workingCapitalRequirement)}
-          onChange={event => patchIncomeStatement({ workingCapitalRequirement: parseEuroInput(event.target.value) })}
+          onChange={(event) =>
+            patchIncomeStatement({ workingCapitalRequirement: parseEuroInput(event.target.value) })
+          }
         />
         <span className="sim-field__unit ts-unit">€</span>
       </SimFieldShell>
@@ -210,42 +230,32 @@ export function TresoSocieteSection({ inputs, onChange, onAssociateModalOpenerCh
 
   const renderActivePanel = () => {
     if (activePanel === 'identite') {
-      return (
-        <TresoCompanyIdentityPanel
-          company={company}
-          onCompanyChange={patchCompany}
-        />
-      );
+      return <TresoCompanyIdentityPanel company={company} onCompanyChange={patchCompany} />;
     }
     if (activePanel === 'associes') return renderAssociesPanel();
     if (activePanel === 'compte') return renderComptePanel();
     if (activePanel === 'emprunts') {
       return (
-          <TresoCompanyLoansPanel
-            loans={company.loans}
+        <TresoCompanyLoansPanel
+          loans={company.loans}
           projectionStartYear={projectionStartYear}
-            onChange={loans => patchCompany({ loans })}
-          />
+          onChange={(loans) => patchCompany({ loans })}
+        />
       );
     }
     if (activePanel === 'filiales') {
       return (
         <TresoCompanySubsidiariesPanel
           subsidiaries={company.subsidiaries}
-          onChange={subsidiaries => patchCompany({ subsidiaries })}
-          onConfigure={subsidiaryId => {
+          onChange={(subsidiaries) => patchCompany({ subsidiaries })}
+          onConfigure={(subsidiaryId) => {
             setCompanyModalOpen(false);
             setSubsidiaryModalId(subsidiaryId);
           }}
         />
       );
     }
-    return (
-      <TresoCompanyIdentityPanel
-        company={company}
-        onCompanyChange={patchCompany}
-      />
-    );
+    return <TresoCompanyIdentityPanel company={company} onCompanyChange={patchCompany} />;
   };
 
   return (
@@ -253,13 +263,28 @@ export function TresoSocieteSection({ inputs, onChange, onAssociateModalOpenerCh
       <div className="ts-section__header">
         <span className="sim-card__icon">
           <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-            <rect x="2" y="7" width="12" height="8" rx="1" stroke="currentColor" strokeWidth="1.5" />
-            <path d="M5 7V5a3 3 0 016 0v2" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+            <rect
+              x="2"
+              y="7"
+              width="12"
+              height="8"
+              rx="1"
+              stroke="currentColor"
+              strokeWidth="1.5"
+            />
+            <path
+              d="M5 7V5a3 3 0 016 0v2"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+            />
           </svg>
         </span>
         <div>
           <h2 className="ts-section__title">Société</h2>
-          <p className="ts-section__subtitle">Associés, société et filiales paramétrables depuis le schéma</p>
+          <p className="ts-section__subtitle">
+            Associés, société et filiales paramétrables depuis le schéma
+          </p>
         </div>
       </div>
       <div className="ts-section__divider" />
@@ -268,11 +293,11 @@ export function TresoSocieteSection({ inputs, onChange, onAssociateModalOpenerCh
         company={company}
         selectedAssociateId={selectedAssociateId}
         onCompanyClick={() => setCompanyModalOpen(true)}
-        onAssociateClick={associateId => {
+        onAssociateClick={(associateId) => {
           setSelectedAssociate(associateId);
           setAssociateModalId(associateId);
         }}
-        onSubsidiaryClick={subsidiaryId => setSubsidiaryModalId(subsidiaryId)}
+        onSubsidiaryClick={(subsidiaryId) => setSubsidiaryModalId(subsidiaryId)}
       />
 
       <div className="ts-org-alerts" aria-live="polite">
@@ -294,7 +319,7 @@ export function TresoSocieteSection({ inputs, onChange, onAssociateModalOpenerCh
         >
           <div className="ts-modal-panels">
             <nav className="ts-modal-tabs" aria-label="Rubriques de la société">
-              {PANEL_OPTIONS.map(panel => (
+              {PANEL_OPTIONS.map((panel) => (
                 <button
                   key={panel.key}
                   type="button"
@@ -306,9 +331,7 @@ export function TresoSocieteSection({ inputs, onChange, onAssociateModalOpenerCh
               ))}
             </nav>
 
-            <div className="ts-modal-panel">
-              {renderActivePanel()}
-            </div>
+            <div className="ts-modal-panel">{renderActivePanel()}</div>
           </div>
         </SimModalShell>
       )}
@@ -317,7 +340,9 @@ export function TresoSocieteSection({ inputs, onChange, onAssociateModalOpenerCh
         <TresoAssociateModal
           associate={activeAssociateModal}
           fallbackProfile={getAssociateProfile(inputs, activeAssociateModal)}
-          onChange={patch => updateAssociate(activeAssociateModal.id, patch as Partial<AssociateInputV6>)}
+          onChange={(patch) =>
+            updateAssociate(activeAssociateModal.id, patch as Partial<AssociateInputV6>)
+          }
           onClose={() => setAssociateModalId(null)}
         />
       )}
@@ -326,11 +351,15 @@ export function TresoSocieteSection({ inputs, onChange, onAssociateModalOpenerCh
         <TresoSubsidiaryModal
           company={company}
           subsidiary={activeSubsidiaryModal}
-          onChange={patch => patchCompany({
-            subsidiaries: company.subsidiaries.map(subsidiary =>
-              subsidiary.id === activeSubsidiaryModal.id ? { ...subsidiary, ...patch } : subsidiary,
-            ),
-          })}
+          onChange={(patch) =>
+            patchCompany({
+              subsidiaries: company.subsidiaries.map((subsidiary) =>
+                subsidiary.id === activeSubsidiaryModal.id
+                  ? { ...subsidiary, ...patch }
+                  : subsidiary,
+              ),
+            })
+          }
           onClose={() => setSubsidiaryModalId(null)}
         />
       )}

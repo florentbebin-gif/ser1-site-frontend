@@ -7,7 +7,9 @@ import { buildSuccessionFiscalSnapshot } from '../successionFiscalContext';
 import { buildSuccessionPatrimonialAnalysis } from '../successionPatrimonial';
 import { makeCivilMarie as makeCivil } from './fixtures';
 
-function makePatrimonial(overrides: Partial<SuccessionPatrimonialContext>): SuccessionPatrimonialContext {
+function makePatrimonial(
+  overrides: Partial<SuccessionPatrimonialContext>,
+): SuccessionPatrimonialContext {
   return {
     ...DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT,
     societeAcquets: { ...DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT.societeAcquets },
@@ -69,7 +71,9 @@ describe('buildSuccessionPatrimonialAnalysis', () => {
       }),
     );
 
-    expect(analysis.warnings.some((warning) => warning.includes('option mixte 1/4 PP + 3/4 usufruit'))).toBe(true);
+    expect(
+      analysis.warnings.some((warning) => warning.includes('option mixte 1/4 PP + 3/4 usufruit')),
+    ).toBe(true);
   });
 
   it('utilise la valeur actuelle des donations détaillées et signale le rappel fiscal', () => {
@@ -146,9 +150,7 @@ describe('buildSuccessionPatrimonialAnalysis', () => {
           dispositionType: 'legs_particulier',
           beneficiaryRef: null,
           quotePartPct: 50,
-          particularLegacies: [
-            { id: 'leg-1', beneficiaryRef: 'family:T1', amount: 80000 },
-          ],
+          particularLegacies: [{ id: 'leg-1', beneficiaryRef: 'family:T1', amount: 80000 }],
         },
       },
     );

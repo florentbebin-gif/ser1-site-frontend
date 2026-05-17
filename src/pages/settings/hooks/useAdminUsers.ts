@@ -10,39 +10,42 @@ export function useAdminUsers(onError: (msg: string) => void) {
   const fetchUsersRequestIdRef = useRef(0);
   const DEBUG = isDebugEnabled('comptes');
 
-  const fetchUsers = useCallback(async (reason = '') => {
-    const requestId = ++fetchUsersRequestIdRef.current;
-    try {
-      setLoading(true);
-      onError('');
+  const fetchUsers = useCallback(
+    async (reason = '') => {
+      const requestId = ++fetchUsersRequestIdRef.current;
+      try {
+        setLoading(true);
+        onError('');
 
-      if (DEBUG) {
-        // eslint-disable-next-line no-console
-        console.debug('[SettingsComptes] fetchUsers:start', { reason, requestId });
-      }
+        if (DEBUG) {
+          // eslint-disable-next-line no-console
+          console.debug('[SettingsComptes] fetchUsers:start', { reason, requestId });
+        }
 
-      const usersList = await adminClient.listUsers();
-      if (requestId !== fetchUsersRequestIdRef.current) return;
-      setUsers(usersList);
+        const usersList = await adminClient.listUsers();
+        if (requestId !== fetchUsersRequestIdRef.current) return;
+        setUsers(usersList);
 
-      if (DEBUG) {
-        // eslint-disable-next-line no-console
-        console.debug('[SettingsComptes] fetchUsers:success', {
-          reason,
-          requestId,
-          usersCount: usersList.length,
-        });
+        if (DEBUG) {
+          // eslint-disable-next-line no-console
+          console.debug('[SettingsComptes] fetchUsers:success', {
+            reason,
+            requestId,
+            usersCount: usersList.length,
+          });
+        }
+      } catch (err) {
+        if (requestId === fetchUsersRequestIdRef.current) {
+          onError(err instanceof Error ? err.message : 'Erreur inconnue.');
+        }
+      } finally {
+        if (requestId === fetchUsersRequestIdRef.current) {
+          setLoading(false);
+        }
       }
-    } catch (err) {
-      if (requestId === fetchUsersRequestIdRef.current) {
-        onError(err instanceof Error ? err.message : 'Erreur inconnue.');
-      }
-    } finally {
-      if (requestId === fetchUsersRequestIdRef.current) {
-        setLoading(false);
-      }
-    }
-  }, [DEBUG, onError]);
+    },
+    [DEBUG, onError],
+  );
 
   const handleAssignUserCabinet = async (userId: string, cabinetId: string) => {
     try {

@@ -18,12 +18,16 @@ interface PerTransfertPrefonPocketsFormProps {
   onOpenPocketSettings: (_index: number) => void;
 }
 
-const COMPARTMENT_OPTIONS = (Object.keys(COMPARTMENT_LABELS) as PerTransfertCompartment[]).map((value) => ({
-  value,
-  label: COMPARTMENT_LABELS[value],
-}));
+const COMPARTMENT_OPTIONS = (Object.keys(COMPARTMENT_LABELS) as PerTransfertCompartment[]).map(
+  (value) => ({
+    value,
+    label: COMPARTMENT_LABELS[value],
+  }),
+);
 
-function normalizedPocket(pocket?: Partial<BaseCgRetraitePrefonPocket>): BaseCgRetraitePrefonPocket {
+function normalizedPocket(
+  pocket?: Partial<BaseCgRetraitePrefonPocket>,
+): BaseCgRetraitePrefonPocket {
   return {
     compartment: pocket?.compartment ?? 'C1',
     points: pocket?.points ?? 0,
@@ -50,27 +54,36 @@ export function PerTransfertPrefonPocketsForm({
   const rows = pockets.length > 0 ? pockets : [normalizedPocket()];
 
   const updatePocket = (index: number, updates: Partial<BaseCgRetraitePrefonPocket>) => {
-    onChange(rows.map((pocket, rowIndex) => (
-      rowIndex === index ? normalizedPocket({ ...pocket, ...updates }) : normalizedPocket(pocket)
-    )));
+    onChange(
+      rows.map((pocket, rowIndex) =>
+        rowIndex === index ? normalizedPocket({ ...pocket, ...updates }) : normalizedPocket(pocket),
+      ),
+    );
   };
 
   const addPocket = () => onChange([...rows.map(normalizedPocket), normalizedPocket()]);
-  const removePocket = (index: number) => onChange(rows.filter((_, rowIndex) => rowIndex !== index).map(normalizedPocket));
+  const removePocket = (index: number) =>
+    onChange(rows.filter((_, rowIndex) => rowIndex !== index).map(normalizedPocket));
 
   return (
     <section className="per-transfert-points-panel per-transfert-prefon-pockets">
       <header className="per-transfert-prefon-pockets__header">
         <div>
           <h3>Compartiments Préfon</h3>
-          <p>Saisissez chaque poche du relevé : compartiment, points acquis et valeur de service du point.</p>
+          <p>
+            Saisissez chaque poche du relevé : compartiment, points acquis et valeur de service du
+            point.
+          </p>
         </div>
         <SimInfoButton ariaLabel="Informations sur les valeurs Préfon" onClick={onOpenInfo} />
       </header>
 
       <div className="per-transfert-prefon-pockets__list">
         {rows.map((pocket, index) => (
-          <fieldset className="per-transfert-prefon-pockets__row" key={`${pocket.compartment}-${index}`}>
+          <fieldset
+            className="per-transfert-prefon-pockets__row"
+            key={`${pocket.compartment}-${index}`}
+          >
             <legend>
               Poche {index + 1}
               <button
@@ -85,7 +98,9 @@ export function PerTransfertPrefonPocketsForm({
             <PerTransfertSelectField
               label="Compartiment"
               value={pocket.compartment}
-              onChange={(value) => updatePocket(index, { compartment: value as PerTransfertCompartment })}
+              onChange={(value) =>
+                updatePocket(index, { compartment: value as PerTransfertCompartment })
+              }
               options={COMPARTMENT_OPTIONS}
             />
             <PerTransfertIntegerField

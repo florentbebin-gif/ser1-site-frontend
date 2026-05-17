@@ -102,7 +102,15 @@ export const SUCCESSION_NOTARIAL_REFERENCES: SuccessionNotarialReference[] = [
     },
     expected: {
       totalDroits: 8194,
-      details: [{ lien: 'enfant', partBrute: 150000, abattement: 100000, baseImposable: 50000, droits: 8194 }],
+      details: [
+        {
+          lien: 'enfant',
+          partBrute: 150000,
+          abattement: 100000,
+          baseImposable: 50000,
+          droits: 8194,
+        },
+      ],
     },
   },
   {
@@ -121,8 +129,20 @@ export const SUCCESSION_NOTARIAL_REFERENCES: SuccessionNotarialReference[] = [
       totalDroits: 16388,
       details: [
         { lien: 'conjoint', partBrute: 300000, abattement: 300000, baseImposable: 0, droits: 0 },
-        { lien: 'enfant', partBrute: 150000, abattement: 100000, baseImposable: 50000, droits: 8194 },
-        { lien: 'enfant', partBrute: 150000, abattement: 100000, baseImposable: 50000, droits: 8194 },
+        {
+          lien: 'enfant',
+          partBrute: 150000,
+          abattement: 100000,
+          baseImposable: 50000,
+          droits: 8194,
+        },
+        {
+          lien: 'enfant',
+          partBrute: 150000,
+          abattement: 100000,
+          baseImposable: 50000,
+          droits: 8194,
+        },
       ],
     },
     directDisplay: {
@@ -135,29 +155,41 @@ export const SUCCESSION_NOTARIAL_REFERENCES: SuccessionNotarialReference[] = [
     sources: [SOURCES.cgi777, SOURCES.cgi779, SOURCES.cgi784],
     engineInput: {
       actifNetSuccession: 150000,
-      heritiers: [{
-        lien: 'enfant',
-        partSuccession: 150000,
-        baseHistoriqueTaxee: 80000,
-        droitsDejaAcquittes: 0,
-      }],
+      heritiers: [
+        {
+          lien: 'enfant',
+          partSuccession: 150000,
+          baseHistoriqueTaxee: 80000,
+          droitsDejaAcquittes: 0,
+        },
+      ],
     },
     expected: {
       totalDroits: 24194,
-      details: [{ lien: 'enfant', partBrute: 150000, abattement: 100000, baseImposable: 130000, droits: 24194 }],
+      details: [
+        {
+          lien: 'enfant',
+          partBrute: 150000,
+          abattement: 100000,
+          baseImposable: 130000,
+          droits: 24194,
+        },
+      ],
     },
     directDisplay: {
       heirs: [{ lien: 'enfant', partSuccession: 150000 }],
       heirIds: ['enfant-donataire'],
-      donations: [{
-        id: 'don-rappelable',
-        type: 'rapportable',
-        montant: 80000,
-        valeurDonation: 80000,
-        date: '2020-06',
-        donateur: 'epoux1',
-        donataire: 'enfant-donataire',
-      }],
+      donations: [
+        {
+          id: 'don-rappelable',
+          type: 'rapportable',
+          montant: 80000,
+          valeurDonation: 80000,
+          date: '2020-06',
+          donateur: 'epoux1',
+          donataire: 'enfant-donataire',
+        },
+      ],
       donationSettings: SUCCESSION_DONATION_SETTINGS,
       referenceDate: '2026-01-01T00:00:00Z',
     },
@@ -172,20 +204,30 @@ export const SUCCESSION_NOTARIAL_REFERENCES: SuccessionNotarialReference[] = [
     },
     expected: {
       totalDroits: 8194,
-      details: [{ lien: 'enfant', partBrute: 150000, abattement: 100000, baseImposable: 50000, droits: 8194 }],
+      details: [
+        {
+          lien: 'enfant',
+          partBrute: 150000,
+          abattement: 100000,
+          baseImposable: 50000,
+          droits: 8194,
+        },
+      ],
     },
     directDisplay: {
       heirs: [{ lien: 'enfant', partSuccession: 150000 }],
       heirIds: ['enfant-donataire'],
-      donations: [{
-        id: 'don-hors-rappel',
-        type: 'rapportable',
-        montant: 80000,
-        valeurDonation: 80000,
-        date: '2010-12',
-        donateur: 'epoux1',
-        donataire: 'enfant-donataire',
-      }],
+      donations: [
+        {
+          id: 'don-hors-rappel',
+          type: 'rapportable',
+          montant: 80000,
+          valeurDonation: 80000,
+          date: '2010-12',
+          donateur: 'epoux1',
+          donataire: 'enfant-donataire',
+        },
+      ],
       donationSettings: SUCCESSION_DONATION_SETTINGS,
       referenceDate: '2026-01-01T00:00:00Z',
     },
@@ -200,7 +242,15 @@ export const SUCCESSION_NOTARIAL_REFERENCES: SuccessionNotarialReference[] = [
     },
     expected: {
       totalDroits: 80388,
-      details: [{ lien: 'frere_soeur', partBrute: 200000, abattement: 15932, baseImposable: 184068, droits: 80388 }],
+      details: [
+        {
+          lien: 'frere_soeur',
+          partBrute: 200000,
+          abattement: 15932,
+          baseImposable: 184068,
+          droits: 80388,
+        },
+      ],
     },
   },
   {
@@ -213,7 +263,15 @@ export const SUCCESSION_NOTARIAL_REFERENCES: SuccessionNotarialReference[] = [
     },
     expected: {
       totalDroits: 50618,
-      details: [{ lien: 'neveu_niece', partBrute: 100000, abattement: 7967, baseImposable: 92033, droits: 50618 }],
+      details: [
+        {
+          lien: 'neveu_niece',
+          partBrute: 100000,
+          abattement: 7967,
+          baseImposable: 92033,
+          droits: 50618,
+        },
+      ],
     },
   },
   {
@@ -226,7 +284,9 @@ export const SUCCESSION_NOTARIAL_REFERENCES: SuccessionNotarialReference[] = [
     },
     expected: {
       totalDroits: 29044,
-      details: [{ lien: 'autre', partBrute: 50000, abattement: 1594, baseImposable: 48406, droits: 29044 }],
+      details: [
+        { lien: 'autre', partBrute: 50000, abattement: 1594, baseImposable: 48406, droits: 29044 },
+      ],
     },
   },
 ];

@@ -134,8 +134,20 @@ describe('computeSuccessionAssetValuation - masses patrimoniales', () => {
         ],
       },
       assetEntries: [
-        { id: 'asset-1', pocket: 'communaute', category: 'financier', subCategory: 'Titres', amount: 200000 },
-        { id: 'asset-2', pocket: 'epoux1', category: 'financier', subCategory: 'Comptes', amount: 100000 },
+        {
+          id: 'asset-1',
+          pocket: 'communaute',
+          category: 'financier',
+          subCategory: 'Titres',
+          amount: 200000,
+        },
+        {
+          id: 'asset-2',
+          pocket: 'epoux1',
+          category: 'financier',
+          subCategory: 'Comptes',
+          amount: 100000,
+        },
       ],
       groupementFoncierEntries: [],
       forfaitMobilierMode: 'off',

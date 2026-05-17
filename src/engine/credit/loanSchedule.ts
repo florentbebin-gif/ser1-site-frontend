@@ -107,8 +107,7 @@ export function scheduleInFine({
 
     const crdStart = crd;
     const interet = crdStart * r;
-    let mensu =
-      typeof mensuOverride === 'number' && mensuOverride > 0 ? mensuOverride : interet;
+    let mensu = typeof mensuOverride === 'number' && mensuOverride > 0 ? mensuOverride : interet;
 
     const maxMensu = interet + (m === N ? crdStart : 0);
     if (mensu > maxMensu) mensu = maxMensu;

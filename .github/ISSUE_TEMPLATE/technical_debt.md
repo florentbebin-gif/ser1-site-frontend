@@ -1,8 +1,8 @@
 ---
 name: Dette technique
 about: Signaler un code à refactorer, une dépendance obsolète, ou une amélioration interne
-title: "[TECH] "
-labels: ["technical-debt", "triage"]
+title: '[TECH] '
+labels: ['technical-debt', 'triage']
 assignees: []
 ---
 

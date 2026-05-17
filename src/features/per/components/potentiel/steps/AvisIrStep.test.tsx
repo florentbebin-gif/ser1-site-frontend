@@ -51,7 +51,9 @@ describe('AvisIrStep', () => {
     expect(html).toContain('Plafond pour les cotisations versées en 2025');
     expect(html).toContain(fmtCurrency(11000));
     expect(html).toContain(fmtCurrency(7000));
-    expect(html).toContain('aria-label="Plafond non utilisé pour les revenus de 2022 - Déclarant 1"');
+    expect(html).toContain(
+      'aria-label="Plafond non utilisé pour les revenus de 2022 - Déclarant 1"',
+    );
     expect(html).toContain('aria-label="Plafond calculé sur les revenus de 2024 - Déclarant 2"');
   });
 });

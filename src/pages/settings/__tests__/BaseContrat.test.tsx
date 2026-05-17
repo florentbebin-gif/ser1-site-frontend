@@ -41,13 +41,20 @@ vi.mock('@/hooks/useFiscalContext', () => ({
 }));
 
 const mockedRules: ProductRules = {
-  constitution: [{
-    title: 'Fiscalité de test',
-    bullets: ['À confirmer selon le régime applicable.'],
-    confidence: 'moyenne',
-    sources: [{ label: 'CGI art. 779', url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000026292566' }],
-    dependencies: ['Validation notaire'],
-  }],
+  constitution: [
+    {
+      title: 'Fiscalité de test',
+      bullets: ['À confirmer selon le régime applicable.'],
+      confidence: 'moyenne',
+      sources: [
+        {
+          label: 'CGI art. 779',
+          url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000026292566',
+        },
+      ],
+      dependencies: ['Validation notaire'],
+    },
+  ],
   sortie: [],
   deces: [],
 };
@@ -173,18 +180,23 @@ describe('BaseContrat', () => {
 
     await openFirstProduct();
     await userEvent.click(screen.getAllByRole('button', { name: 'Clôturer' })[0]);
-    await userEvent.selectOptions(screen.getByLabelText(/Statut de revue/i), 'obsolescence_a_confirmer');
+    await userEvent.selectOptions(
+      screen.getByLabelText(/Statut de revue/i),
+      'obsolescence_a_confirmer',
+    );
     await userEvent.type(screen.getByLabelText(/Raison de revue/i), 'Barème à confirmer');
     await userEvent.type(screen.getByLabelText(/Prochaine revue/i), '2026-09-30');
     await userEvent.click(screen.getByRole('button', { name: 'Enregistrer' }));
 
     await waitFor(() => {
-      expect(upsertBaseContratOverrideMock).toHaveBeenCalledWith(expect.objectContaining({
-        product_id: 'assurance_dependance',
-        review_status: 'obsolescence_a_confirmer',
-        review_reason: 'Barème à confirmer',
-        next_review_at: '2026-09-30',
-      }));
+      expect(upsertBaseContratOverrideMock).toHaveBeenCalledWith(
+        expect.objectContaining({
+          product_id: 'assurance_dependance',
+          review_status: 'obsolescence_a_confirmer',
+          review_reason: 'Barème à confirmer',
+          next_review_at: '2026-09-30',
+        }),
+      );
     });
   });
 });

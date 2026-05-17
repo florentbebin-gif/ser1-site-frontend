@@ -47,7 +47,9 @@
   font-size: 13px;
   font-weight: 500;
   padding: 9px 18px;
-  transition: background-color 0.15s ease, color 0.15s ease;
+  transition:
+    background-color 0.15s ease,
+    color 0.15s ease;
 }
 
 .base-contrat-toggle__button:hover {
@@ -185,7 +187,9 @@
   padding: 0;
   text-align: left;
   font: inherit;
-  transition: background-color 0.15s ease, opacity 0.15s ease;
+  transition:
+    background-color 0.15s ease,
+    opacity 0.15s ease;
 }
 
 .base-contrat-product__header:hover {

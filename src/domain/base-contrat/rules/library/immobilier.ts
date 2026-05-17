@@ -13,22 +13,27 @@ const RESIDENCE_PRINCIPALE: ProductRules = {
     {
       title: 'Acquisition',
       bullets: [
-        'Pas de déductibilité des intérêts d\'emprunt (dispositif supprimé depuis 2011).',
+        "Pas de déductibilité des intérêts d'emprunt (dispositif supprimé depuis 2011).",
         'Droits de mutation à titre onéreux (DMTO) : environ 5 à 6 % du prix pour un logement ancien.',
-        'Exonération partielle d\'IFI : abattement de {ifiResidencePrincipaleAbattement}.',
+        "Exonération partielle d'IFI : abattement de {ifiResidencePrincipaleAbattement}.",
       ],
       tags: ['dmto', 'ifi_abattement_30'],
       confidence: 'elevee',
-      sources: [{ label: 'Art. 885 S CGI — IFI abattement résidence principale', url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000036454733' }],
+      sources: [
+        {
+          label: 'Art. 885 S CGI — IFI abattement résidence principale',
+          url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000036454733',
+        },
+      ],
     },
   ],
   sortie: [
     {
       title: 'Plus-value de cession — Exonération totale',
       bullets: [
-        'La plus-value réalisée à la cession est totalement exonérée d\'IR et de prélèvements sociaux.',
+        "La plus-value réalisée à la cession est totalement exonérée d'IR et de prélèvements sociaux.",
         'Condition : le bien doit être la résidence principale du cédant au jour de la vente.',
-        'L\'exonération s\'applique quelle que soit la durée de détention.',
+        "L'exonération s'applique quelle que soit la durée de détention.",
       ],
       tags: ['exoneration_totale', 'residence_principale_vente'],
       confidence: 'elevee',
@@ -43,7 +48,12 @@ const RESIDENCE_PRINCIPALE: ProductRules = {
       ],
       tags: ['dmtg_classique'],
       confidence: 'elevee',
-      sources: [{ label: 'Art. 779 CGI — abattements DMTG', url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000047678018' }],
+      sources: [
+        {
+          label: 'Art. 779 CGI — abattements DMTG',
+          url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000047678018',
+        },
+      ],
     },
   ],
 };
@@ -64,7 +74,7 @@ const PARTS_SCPI_PM: ProductRules = {
     {
       title: 'Cession des parts',
       bullets: [
-        'La plus-value de cession est intégrée au résultat fiscal de la personne morale selon son régime d\'imposition.',
+        "La plus-value de cession est intégrée au résultat fiscal de la personne morale selon son régime d'imposition.",
         'Le traitement comptable et fiscal dépend des modalités de détention et de clôture des comptes.',
       ],
       tags: ['cession_parts', 'resultat_fiscal', 'traitement_comptable'],
@@ -75,7 +85,7 @@ const PARTS_SCPI_PM: ProductRules = {
     {
       title: 'Fin de vie / sortie de la PM',
       bullets: [
-        'En cas de dissolution, liquidation ou cession d\'activité, les parts de SCPI sont intégrées aux opérations de clôture de la personne morale.',
+        "En cas de dissolution, liquidation ou cession d'activité, les parts de SCPI sont intégrées aux opérations de clôture de la personne morale.",
         'Le résultat de cession ou de liquidation est traité selon le régime fiscal de la personne morale.',
       ],
       tags: ['fin_vie_pm', 'liquidation', 'cession_activite'],
@@ -90,11 +100,16 @@ const RESIDENCE_SECONDAIRE: ProductRules = {
       title: 'Acquisition',
       bullets: [
         'Droits de mutation à titre onéreux (DMTO) : environ 5 à 6 % pour un bien ancien.',
-        'Intégration à l\'assiette IFI à sa valeur vénale.',
+        "Intégration à l'assiette IFI à sa valeur vénale.",
       ],
       tags: ['dmto', 'ifi'],
       confidence: 'elevee',
-      sources: [{ label: 'Service-public.fr — Droits de mutation immobilier', url: 'https://www.service-public.fr/particuliers/vosdroits/F35830' }],
+      sources: [
+        {
+          label: 'Service-public.fr — Droits de mutation immobilier',
+          url: 'https://www.service-public.fr/particuliers/vosdroits/F35830',
+        },
+      ],
     },
   ],
   sortie: [
@@ -102,12 +117,17 @@ const RESIDENCE_SECONDAIRE: ProductRules = {
       title: 'Plus-value de cession',
       bullets: [
         'Régime des plus-values immobilières des particuliers : {capitalGainIr} + {psGeneral}.',
-        'Abattements progressifs selon la durée de détention : exonération totale d\'IR après 22 ans, de PS après 30 ans.',
+        "Abattements progressifs selon la durée de détention : exonération totale d'IR après 22 ans, de PS après 30 ans.",
         'Surtaxe de 2 % à 6 % si la plus-value nette imposable dépasse 50 000 €.',
       ],
       tags: ['pv_immo', 'abattement_detention', 'surtaxe'],
       confidence: 'elevee',
-      sources: [{ label: 'Art. 150 U CGI — plus-values immobilières', url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000043655826' }],
+      sources: [
+        {
+          label: 'Art. 150 U CGI — plus-values immobilières',
+          url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000043655826',
+        },
+      ],
     },
   ],
   deces: [
@@ -119,7 +139,12 @@ const RESIDENCE_SECONDAIRE: ProductRules = {
       ],
       tags: ['dmtg_classique'],
       confidence: 'elevee',
-      sources: [{ label: 'Art. 779 CGI — abattements DMTG', url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000047678018' }],
+      sources: [
+        {
+          label: 'Art. 779 CGI — abattements DMTG',
+          url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000047678018',
+        },
+      ],
     },
   ],
 };
@@ -131,12 +156,17 @@ const LOCATIF_NU: ProductRules = {
       bullets: [
         'Loyers imposés dans la catégorie des revenus fonciers.',
         '{microFoncierAbattement}',
-        'Régime réel : déductibilité des charges (travaux, intérêts d\'emprunt, assurances, taxe foncière…).',
-        'Déficit foncier déductible du revenu global dans la limite de 10 700 €/an (20 200 € pour les travaux de rénovation énergétique d\'ampleur).',
+        "Régime réel : déductibilité des charges (travaux, intérêts d'emprunt, assurances, taxe foncière…).",
+        "Déficit foncier déductible du revenu global dans la limite de 10 700 €/an (20 200 € pour les travaux de rénovation énergétique d'ampleur).",
       ],
       tags: ['revenus_fonciers', 'micro_foncier', 'regime_reel', 'deficit_foncier'],
       confidence: 'elevee',
-      sources: [{ label: 'Art. 28 CGI — revenus fonciers', url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000006302449' }],
+      sources: [
+        {
+          label: 'Art. 28 CGI — revenus fonciers',
+          url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000006302449',
+        },
+      ],
     },
   ],
   sortie: [
@@ -144,13 +174,16 @@ const LOCATIF_NU: ProductRules = {
       title: 'Plus-value de cession',
       bullets: [
         'Régime des plus-values immobilières des particuliers : {capitalGainIr} + {psGeneral}.',
-        'Abattements progressifs : exonération totale d\'IR après 22 ans, de PS après 30 ans de détention.',
+        "Abattements progressifs : exonération totale d'IR après 22 ans, de PS après 30 ans de détention.",
         'Surtaxe de 2 % à 6 % si la plus-value nette dépasse 50 000 €.',
       ],
       tags: ['pv_immo', 'abattement_detention', 'surtaxe'],
       confidence: 'elevee',
       sources: [
-        { label: 'Art. 150 U CGI — plus-values immobilières', url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000043655826' },
+        {
+          label: 'Art. 150 U CGI — plus-values immobilières',
+          url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000043655826',
+        },
       ],
     },
   ],
@@ -163,7 +196,12 @@ const LOCATIF_NU: ProductRules = {
       ],
       tags: ['dmtg_classique'],
       confidence: 'elevee',
-      sources: [{ label: 'Art. 779 CGI — abattements DMTG', url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000047678018' }],
+      sources: [
+        {
+          label: 'Art. 779 CGI — abattements DMTG',
+          url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000047678018',
+        },
+      ],
     },
   ],
 };
@@ -206,11 +244,16 @@ const LOCATIF_MEUBLE_LMNP: ProductRules = {
         'Régime des plus-values des particuliers : {capitalGainIr} + {psGeneral}.',
         'Depuis la loi de finances 2025 (art. 84) : les amortissements déduits sont réintégrés dans le calcul de la plus-value imposable (art. 150 VB CGI modifié).',
         'Abattements progressifs selon la durée de détention restent applicables (exonération IR après 22 ans, PS après 30 ans).',
-        'À confirmer selon la date de cession (les cessions antérieures à la LF 2025 restent sous l\'ancien régime sans réintégration).',
+        "À confirmer selon la date de cession (les cessions antérieures à la LF 2025 restent sous l'ancien régime sans réintégration).",
       ],
       tags: ['pv_immo', 'lmnp_pv', 'abattement_detention'],
       confidence: 'moyenne',
-      sources: [{ label: 'Art. 84 LF 2025 — réintégration amortissements', url: 'https://www.legifrance.gouv.fr/jorf/id/JORFTEXT000051199510' }],
+      sources: [
+        {
+          label: 'Art. 84 LF 2025 — réintégration amortissements',
+          url: 'https://www.legifrance.gouv.fr/jorf/id/JORFTEXT000051199510',
+        },
+      ],
       dependencies: ['date de cession (avant/après LF 2025)', 'basculement éventuel en LMP'],
     },
   ],
@@ -223,7 +266,12 @@ const LOCATIF_MEUBLE_LMNP: ProductRules = {
       ],
       tags: ['dmtg_classique'],
       confidence: 'elevee',
-      sources: [{ label: 'Art. 779 CGI — abattements DMTG', url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000047678018' }],
+      sources: [
+        {
+          label: 'Art. 779 CGI — abattements DMTG',
+          url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000047678018',
+        },
+      ],
     },
   ],
 };
@@ -239,7 +287,12 @@ const LOCATIF_MEUBLE_LMP: ProductRules = {
       ],
       tags: ['bic_professionnel', 'lmp', 'cotisations_sociales'],
       confidence: 'moyenne',
-      sources: [{ label: 'URSSAF — LMP cotisations sociales', url: 'https://www.urssaf.fr/accueil/employeur/beneficiaires-de-revenus/loueurs-meubés-professionnels.html' }],
+      sources: [
+        {
+          label: 'URSSAF — LMP cotisations sociales',
+          url: 'https://www.urssaf.fr/accueil/employeur/beneficiaires-de-revenus/loueurs-meubés-professionnels.html',
+        },
+      ],
       dependencies: ['affiliation sociale (SSI ou régime général)', 'seuil de recettes annuelles'],
     },
   ],
@@ -248,14 +301,19 @@ const LOCATIF_MEUBLE_LMP: ProductRules = {
       title: 'Plus-value professionnelle',
       bullets: [
         'Régime des plus-values professionnelles (court terme / long terme).',
-        'Court terme (détention < 2 ans) : imposé à l\'IR + PS (et cotisations sociales).',
+        "Court terme (détention < 2 ans) : imposé à l'IR + PS (et cotisations sociales).",
         'Long terme (détention ≥ 2 ans) : taux réduit IR {pfuIr} + {psGeneral}.',
         'Exonération possible sous conditions de recettes sur les 2 derniers exercices (art. 151 septies CGI) — À confirmer selon le CA N-1 et N-2.',
       ],
       tags: ['pv_pro', 'court_terme', 'long_terme', 'exoneration_recettes'],
       confidence: 'moyenne',
-      sources: [{ label: 'Art. 151 septies CGI', url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000042908282' }],
-      dependencies: ['chiffre d\'affaires N-1 et N-2', 'durée d\'activité LMP'],
+      sources: [
+        {
+          label: 'Art. 151 septies CGI',
+          url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000042908282',
+        },
+      ],
+      dependencies: ["chiffre d'affaires N-1 et N-2", "durée d'activité LMP"],
     },
   ],
   deces: [
@@ -267,7 +325,12 @@ const LOCATIF_MEUBLE_LMP: ProductRules = {
       ],
       tags: ['dmtg_classique'],
       confidence: 'elevee',
-      sources: [{ label: 'Art. 779 CGI — abattements DMTG', url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000047678018' }],
+      sources: [
+        {
+          label: 'Art. 779 CGI — abattements DMTG',
+          url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000047678018',
+        },
+      ],
       dependencies: ['statut du défunt (LMP ou non)'],
     },
   ],
@@ -279,7 +342,7 @@ const IMMO_AUTRE: ProductRules = {
       title: 'Acquisition',
       bullets: [
         'Droits de mutation à titre onéreux selon la nature du bien.',
-        'Intégration à l\'assiette IFI selon la nature et l\'utilisation.',
+        "Intégration à l'assiette IFI selon la nature et l'utilisation.",
       ],
       tags: ['dmto', 'ifi'],
       confidence: 'elevee',
@@ -291,11 +354,16 @@ const IMMO_AUTRE: ProductRules = {
       bullets: [
         'Régime des plus-values immobilières des particuliers : {capitalGainIr} + {psGeneral}.',
         'Abattements progressifs selon la durée de détention.',
-        'Exonération totale d\'IR après 22 ans, de PS après 30 ans.',
+        "Exonération totale d'IR après 22 ans, de PS après 30 ans.",
       ],
       tags: ['pv_immo', 'abattement_detention'],
       confidence: 'elevee',
-      sources: [{ label: 'Art. 150 U CGI — plus-values immobilières', url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000043655826' }],
+      sources: [
+        {
+          label: 'Art. 150 U CGI — plus-values immobilières',
+          url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000043655826',
+        },
+      ],
     },
   ],
   deces: [
@@ -307,7 +375,12 @@ const IMMO_AUTRE: ProductRules = {
       ],
       tags: ['dmtg_classique'],
       confidence: 'elevee',
-      sources: [{ label: 'Art. 779 CGI — abattements DMTG', url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000047678018' }],
+      sources: [
+        {
+          label: 'Art. 779 CGI — abattements DMTG',
+          url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000047678018',
+        },
+      ],
     },
   ],
 };
@@ -349,7 +422,12 @@ const PARTS_SCPI_PP: ProductRules = {
       ],
       tags: ['pv_immo', 'abattement_detention'],
       confidence: 'elevee',
-      sources: [{ label: 'Art. 150 U CGI — plus-values immobilières', url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000043655826' }],
+      sources: [
+        {
+          label: 'Art. 150 U CGI — plus-values immobilières',
+          url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000043655826',
+        },
+      ],
     },
   ],
   deces: [
@@ -361,7 +439,12 @@ const PARTS_SCPI_PP: ProductRules = {
       ],
       tags: ['dmtg_classique'],
       confidence: 'elevee',
-      sources: [{ label: 'Art. 779 CGI — abattements DMTG', url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000047678018' }],
+      sources: [
+        {
+          label: 'Art. 779 CGI — abattements DMTG',
+          url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000047678018',
+        },
+      ],
     },
   ],
 };
@@ -372,12 +455,17 @@ const GROUPEMENT_FONCIER_AGRI_VITI: ProductRules = {
       title: 'Souscription de parts (GFA / GFV)',
       bullets: [
         'Revenus agricoles (GFA) ou viticoles (GFV) imposés dans la catégorie des bénéfices agricoles (BA).',
-        'Exonération partielle d\'IFI sur les parts sous conditions de gestion (statuts + engagement de location).',
+        "Exonération partielle d'IFI sur les parts sous conditions de gestion (statuts + engagement de location).",
         'À confirmer selon le visa préfectoral et les statuts du groupement.',
       ],
       tags: ['benefices_agricoles', 'ifi_exoneration_partielle'],
       confidence: 'moyenne',
-      sources: [{ label: 'Art. 793 bis CGI', url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000006310364' }],
+      sources: [
+        {
+          label: 'Art. 793 bis CGI',
+          url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000006310364',
+        },
+      ],
       dependencies: ['visa préfectoral', 'statuts du GFA/GFV', 'mise en valeur active'],
     },
   ],
@@ -401,12 +489,21 @@ const GROUPEMENT_FONCIER_AGRI_VITI: ProductRules = {
         'Exonération de 75 % des DMTG (art. 793 bis CGI) si les biens sont donnés à bail long terme (≥ 18 ans) et les parts détenues depuis plus de 2 ans.',
         'Au-delà de 600 000 € par bénéficiaire (seuil relevé par LF 2025 art. 70) : exonération réduite à 50 %. Plafond de valeur exonérable : 20 M€.',
         'DMTG classiques si aucun bail long terme ou engagement de conservation non respecté.',
-        'À confirmer selon l\'existence du bail long terme et le respect des conditions de conservation (5 ans).',
+        "À confirmer selon l'existence du bail long terme et le respect des conditions de conservation (5 ans).",
       ],
       tags: ['dmtg_classique', 'art_793_bis', 'exoneration_75'],
       confidence: 'moyenne',
-      sources: [{ label: 'Art. 793 bis CGI', url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000006310364' }],
-      dependencies: ['bail long terme ≥ 18 ans', 'engagement de conservation 5 ans', 'seuil 600 000 € (LF 2025 art. 70)'],
+      sources: [
+        {
+          label: 'Art. 793 bis CGI',
+          url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000006310364',
+        },
+      ],
+      dependencies: [
+        'bail long terme ≥ 18 ans',
+        'engagement de conservation 5 ans',
+        'seuil 600 000 € (LF 2025 art. 70)',
+      ],
     },
   ],
 };
@@ -433,12 +530,17 @@ const GROUPEMENT_FONCIER_FORESTIER: ProductRules = {
       title: 'Souscription de parts (GFF)',
       bullets: [
         'Revenus forestiers imposés dans la catégorie des bénéfices agricoles (BA) ou forfait forestier selon le cas.',
-        'Exonération partielle d\'IFI possible si les forêts font l\'objet d\'un Plan Simple de Gestion (PSG) agréé.',
+        "Exonération partielle d'IFI possible si les forêts font l'objet d'un Plan Simple de Gestion (PSG) agréé.",
         'À confirmer selon le PSG et les statuts du groupement.',
       ],
       tags: ['benefices_agricoles', 'ifi_exoneration_partielle', 'psg'],
       confidence: 'moyenne',
-      sources: [{ label: 'Art. 793 CGI', url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000006310362' }],
+      sources: [
+        {
+          label: 'Art. 793 CGI',
+          url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000006310362',
+        },
+      ],
       dependencies: ['PSG agréé', 'statuts du GFF'],
     },
   ],
@@ -460,12 +562,17 @@ const GROUPEMENT_FONCIER_FORESTIER: ProductRules = {
       title: 'Transmission — régime art. 793 CGI (forêts)',
       bullets: [
         'Exonération de 75 % des DMTG (art. 793 CGI — Loi Sérot) si les forêts sont couvertes par un Plan Simple de Gestion agréé (PSG) et engagement de conservation.',
-        'Contrairement au régime GFA, pas de plafond monétaire sur l\'exonération si les conditions PSG sont remplies.',
-        'À confirmer selon l\'existence du PSG agréé, la durée et les conditions de conservation appliquées.',
+        "Contrairement au régime GFA, pas de plafond monétaire sur l'exonération si les conditions PSG sont remplies.",
+        "À confirmer selon l'existence du PSG agréé, la durée et les conditions de conservation appliquées.",
       ],
       tags: ['dmtg_classique', 'art_793_cgi', 'exoneration_75', 'psg'],
       confidence: 'moyenne',
-      sources: [{ label: 'Art. 793 CGI', url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000006310362' }],
+      sources: [
+        {
+          label: 'Art. 793 CGI',
+          url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000006310362',
+        },
+      ],
       dependencies: ['PSG agréé', 'engagement de conservation', 'durée de détention des parts'],
     },
   ],

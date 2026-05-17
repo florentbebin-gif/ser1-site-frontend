@@ -33,22 +33,18 @@ export default function RegimesSection({
         <span className="settings-premium-title settings-premium-title--flush">
           Régimes matrimoniaux & PACS
         </span>
-        <span className="fisc-acc-chevron">
-          {isOpen ? 'v' : '>'}
-        </span>
+        <span className="fisc-acc-chevron">{isOpen ? 'v' : '>'}</span>
       </button>
 
       {isOpen && (
         <div className="fisc-acc-body">
           <p className="dmtg-intro">
-            Référentiel civil utilisé par la simulation successorale (lecture seule).
-            Les situations familiales et les régimes matrimoniaux sont distingués.
+            Référentiel civil utilisé par la simulation successorale (lecture seule). Les situations
+            familiales et les régimes matrimoniaux sont distingués.
           </p>
 
           <div className="income-tax-block dmtg-block--mb12">
-            <div className="dmtg-block-title">
-              Situations familiales
-            </div>
+            <div className="dmtg-block-title">Situations familiales</div>
             <table className="settings-table dmtg-table--mt8">
               <thead>
                 <tr>
@@ -70,30 +66,31 @@ export default function RegimesSection({
           </div>
 
           {regimes.map((regime) => (
-            <div
-              key={regime.id}
-              className="income-tax-block dmtg-block--mb12"
-            >
+            <div key={regime.id} className="income-tax-block dmtg-block--mb12">
               <div className="dmtg-block-title dmtg-block-title--flex">
                 <span>{regime.label}</span>
-                <span className={`dmtg-badge ${regime.category === 'communautaire' ? 'dmtg-badge--communautaire' : 'dmtg-badge--separatiste'}`}>
+                <span
+                  className={`dmtg-badge ${regime.category === 'communautaire' ? 'dmtg-badge--communautaire' : 'dmtg-badge--separatiste'}`}
+                >
                   {regime.category === 'communautaire' ? 'Communautaire' : 'Séparatiste'}
                 </span>
               </div>
-              <p className="dmtg-desc">
-                {regime.description}
-              </p>
+              <p className="dmtg-desc">{regime.description}</p>
               <div className="dmtg-grid-2col">
                 <div>
                   <strong className="dmtg-strong">Avantages</strong>
                   <ul className="dmtg-list">
-                    {regime.avantages.map((item, index) => <li key={index}>{item}</li>)}
+                    {regime.avantages.map((item, index) => (
+                      <li key={index}>{item}</li>
+                    ))}
                   </ul>
                 </div>
                 <div>
                   <strong className="dmtg-strong--secondary">Limites</strong>
                   <ul className="dmtg-list">
-                    {regime.limites.map((item, index) => <li key={index}>{item}</li>)}
+                    {regime.limites.map((item, index) => (
+                      <li key={index}>{item}</li>
+                    ))}
                   </ul>
                 </div>
               </div>
@@ -101,12 +98,10 @@ export default function RegimesSection({
           ))}
 
           <div className="income-tax-block dmtg-block--mt4">
-            <div className="dmtg-block-title">
-              PACS
-            </div>
+            <div className="dmtg-block-title">PACS</div>
             <p className="dmtg-desc--flush">
-              Par défaut : séparation de biens. Option : indivision des acquêts.
-              Le partenaire pacsé est exonéré de droits de succession (loi TEPA 2007).
+              Par défaut : séparation de biens. Option : indivision des acquêts. Le partenaire pacsé
+              est exonéré de droits de succession (loi TEPA 2007).
             </p>
           </div>
         </div>

@@ -37,9 +37,7 @@ describe('Succession PPTX rendering', () => {
           { id: 'epoux1', label: 'Époux 1', x: 190, y: 20, kind: 'epoux' },
           { id: 'enfant-1', label: 'E1', x: 60, y: 100, kind: 'enfant_autre' },
         ],
-        edges: [
-          { x1: 230, y1: 44, x2: 100, y2: 100 },
-        ],
+        edges: [{ x1: 230, y1: 44, x2: 100, y2: 100 }],
         groups: [],
         svgWidth: 320,
         svgHeight: 160,
@@ -48,7 +46,7 @@ describe('Succession PPTX rendering', () => {
 
     buildSuccessionFamilyContext(pptx, spec, buildContext(), 3);
 
-    const blob = await pptx.write({ outputType: 'blob' }) as Blob;
+    const blob = (await pptx.write({ outputType: 'blob' })) as Blob;
     const zip = await JSZip.loadAsync(await blob.arrayBuffer());
     const slideXml = await zip.file('ppt/slides/slide1.xml')?.async('string');
 

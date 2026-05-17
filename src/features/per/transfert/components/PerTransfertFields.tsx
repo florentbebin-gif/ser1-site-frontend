@@ -82,8 +82,14 @@ function formatRateFr(value: number): string {
 
 function formatDecimalFr(value: number, decimals: number): string {
   return Number.isFinite(value)
-    ? value.toLocaleString('fr-FR', { minimumFractionDigits: decimals, maximumFractionDigits: decimals })
-    : (0).toLocaleString('fr-FR', { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
+    ? value.toLocaleString('fr-FR', {
+        minimumFractionDigits: decimals,
+        maximumFractionDigits: decimals,
+      })
+    : (0).toLocaleString('fr-FR', {
+        minimumFractionDigits: decimals,
+        maximumFractionDigits: decimals,
+      });
 }
 
 function clamp(value: number, min?: number, max?: number): number {
@@ -96,7 +102,14 @@ function ariaText(label: ReactNode, ariaLabel?: string): string {
   return ariaLabel ?? (typeof label === 'string' ? label : 'Champ PER transfert');
 }
 
-export function PerTransfertMoneyField({ label, ariaLabel, value, onChange, hint, min = 0 }: MoneyFieldProps) {
+export function PerTransfertMoneyField({
+  label,
+  ariaLabel,
+  value,
+  onChange,
+  hint,
+  min = 0,
+}: MoneyFieldProps) {
   return (
     <SimFieldShell label={label} hint={hint}>
       <PerAmountInput

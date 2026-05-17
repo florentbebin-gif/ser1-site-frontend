@@ -13,9 +13,7 @@ import {
   CLAUSE_CONJOINT_LABEL,
   CLAUSE_ENFANTS_LABEL,
 } from '../successionSimulator.constants';
-import {
-  labelMember,
-} from '../successionSimulator.helpers';
+import { labelMember } from '../successionSimulator.helpers';
 import {
   getClausePreset,
   parseCustomClause,
@@ -62,7 +60,7 @@ export default function AssuranceVieModal({
       bodyClassName="sc-member-modal__body sc-assurance-vie-modal__body"
       footerClassName="sc-member-modal__footer"
       closeClassName="sc-member-modal__close"
-      footer={(
+      footer={
         <>
           <button
             type="button"
@@ -79,7 +77,7 @@ export default function AssuranceVieModal({
             Valider
           </button>
         </>
-      )}
+      }
     >
       <div className="sc-assurance-vie-grid sc-assurance-vie-grid--premium">
         <div className="sc-field">
@@ -87,7 +85,9 @@ export default function AssuranceVieModal({
           <ScSelect
             className="sc-assurance-vie-select"
             value={entry.typeContrat}
-            onChange={(value) => onUpdate('typeContrat', value as SuccessionAssuranceVieContractType)}
+            onChange={(value) =>
+              onUpdate('typeContrat', value as SuccessionAssuranceVieContractType)
+            }
             options={ASSURANCE_VIE_TYPE_OPTIONS}
           />
         </div>
@@ -99,7 +99,9 @@ export default function AssuranceVieModal({
               min={1}
               max={120}
               value={entry.ageUsufruitier ?? ''}
-              onChange={(e) => onUpdate('ageUsufruitier', e.target.value ? Number(e.target.value) : undefined)}
+              onChange={(e) =>
+                onUpdate('ageUsufruitier', e.target.value ? Number(e.target.value) : undefined)
+              }
               placeholder="ex. 68"
             />
             <p className="sc-hint sc-hint--compact sc-assurance-vie-contract__hint">
@@ -217,7 +219,8 @@ export default function AssuranceVieModal({
               placeholder="Montant"
             />
             <p className="sc-hint sc-hint--compact sc-assurance-vie-contract__hint">
-              Cette part est exclue des bases 990 I et 757 B. Si le cumul avec les versements apres 70 ans depasse le capital, le moteur applique un cap avec warning.
+              Cette part est exclue des bases 990 I et 757 B. Si le cumul avec les versements apres
+              70 ans depasse le capital, le moteur applique un cap avec warning.
             </p>
           </div>
         </div>

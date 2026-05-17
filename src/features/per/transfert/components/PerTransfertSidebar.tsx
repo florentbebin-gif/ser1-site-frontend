@@ -1,7 +1,12 @@
 import { useState } from 'react';
 import type { ReactNode } from 'react';
 import { SimInfoButton } from '@/components/ui/sim';
-import { COMPARTMENT_LABELS, TYPE_LABELS, type BaseCgRetraiteContract, type BaseCgRetraiteContractType } from '@/data/basecg';
+import {
+  COMPARTMENT_LABELS,
+  TYPE_LABELS,
+  type BaseCgRetraiteContract,
+  type BaseCgRetraiteContractType,
+} from '@/data/basecg';
 import type {
   PerTransfertCapitalFiscalResult,
   PerTransfertCapitalHorizon,
@@ -47,9 +52,8 @@ export function PerTransfertSidebar({
   onOpenFractionalInfo,
 }: PerTransfertSidebarProps) {
   const [prefonStrategy, setPrefonStrategy] = useState<PrefonStrategy>('all_rente');
-  const activePrefonStrategy = prefonStrategy === 'max_capital'
-    ? result.prefon?.maxCapital
-    : result.prefon?.allRente;
+  const activePrefonStrategy =
+    prefonStrategy === 'max_capital' ? result.prefon?.maxCapital : result.prefon?.allRente;
   const isPrefon = typeContrat === 'PER_POINTS';
 
   return (
@@ -86,9 +90,15 @@ export function PerTransfertSidebar({
         <OppositionSection
           title="Rente"
           currentTitle={selectedContract?.nomContrat ?? 'Contrat actuel'}
-          currentSubtitle={selectedContract ? TYPE_LABELS[selectedContract.typeContrat] : 'Hypothèses du relevé'}
+          currentSubtitle={
+            selectedContract ? TYPE_LABELS[selectedContract.typeContrat] : 'Hypothèses du relevé'
+          }
           newPerVisible={step2Done}
-          current={<RentMetrics fiscal={activePrefonStrategy?.fiscal ?? result.keepScenario.currentRent.fiscal} />}
+          current={
+            <RentMetrics
+              fiscal={activePrefonStrategy?.fiscal ?? result.keepScenario.currentRent.fiscal}
+            />
+          }
           transfer={<RentMetrics fiscal={result.newPerFiscal} />}
         />
 
@@ -97,13 +107,18 @@ export function PerTransfertSidebar({
           currentTitle={selectedContract?.nomContrat ?? 'Contrat actuel'}
           currentSubtitle="Choix à 100 % si autorisé"
           newPerVisible={step2Done}
-          current={(
+          current={
             <CapitalMetrics
               fiscal={currentCapitalUnique(result, activePrefonStrategy, isPrefon)}
               onOpenQuotientInfo={onOpenQuotientInfo}
             />
-          )}
-          transfer={<CapitalMetrics fiscal={result.capitalExit.unique} onOpenQuotientInfo={onOpenQuotientInfo} />}
+          }
+          transfer={
+            <CapitalMetrics
+              fiscal={result.capitalExit.unique}
+              onOpenQuotientInfo={onOpenQuotientInfo}
+            />
+          }
         />
 
         <OppositionSection
@@ -111,13 +126,18 @@ export function PerTransfertSidebar({
           currentTitle={selectedContract?.nomContrat ?? 'Contrat actuel'}
           currentSubtitle={`Horizon ${isPrefon ? '10 versements' : `${horizonAgeShort} ans`}`}
           newPerVisible={step2Done}
-          current={(
+          current={
             <HorizonMetrics
               horizon={currentShortHorizon(result, activePrefonStrategy, isPrefon)}
               onOpenFractionalInfo={onOpenFractionalInfo}
             />
-          )}
-          transfer={<HorizonMetrics horizon={result.capitalExit.shortHorizon} onOpenFractionalInfo={onOpenFractionalInfo} />}
+          }
+          transfer={
+            <HorizonMetrics
+              horizon={result.capitalExit.shortHorizon}
+              onOpenFractionalInfo={onOpenFractionalInfo}
+            />
+          }
         />
 
         <OppositionSection
@@ -125,13 +145,18 @@ export function PerTransfertSidebar({
           currentTitle={selectedContract?.nomContrat ?? 'Contrat actuel'}
           currentSubtitle={`Horizon ${horizonAgeLong} ans`}
           newPerVisible={step2Done}
-          current={(
+          current={
             <HorizonMetrics
-              horizon={isPrefon ? null : result.keepScenario.capitalExit?.longHorizon ?? null}
+              horizon={isPrefon ? null : (result.keepScenario.capitalExit?.longHorizon ?? null)}
               onOpenFractionalInfo={onOpenFractionalInfo}
             />
-          )}
-          transfer={<HorizonMetrics horizon={result.capitalExit.longHorizon} onOpenFractionalInfo={onOpenFractionalInfo} />}
+          }
+          transfer={
+            <HorizonMetrics
+              horizon={result.capitalExit.longHorizon}
+              onOpenFractionalInfo={onOpenFractionalInfo}
+            />
+          }
         />
       </div>
 
@@ -146,7 +171,9 @@ export function PerTransfertSidebar({
               max={100}
               step={1}
               value={horizonAgeShort}
-              onChange={(event) => onHorizonChange(Math.round(Number(event.target.value) || 80), horizonAgeLong)}
+              onChange={(event) =>
+                onHorizonChange(Math.round(Number(event.target.value) || 80), horizonAgeLong)
+              }
             />
           </label>
           <label>
@@ -157,7 +184,9 @@ export function PerTransfertSidebar({
               max={100}
               step={1}
               value={horizonAgeLong}
-              onChange={(event) => onHorizonChange(horizonAgeShort, Math.round(Number(event.target.value) || 90))}
+              onChange={(event) =>
+                onHorizonChange(horizonAgeShort, Math.round(Number(event.target.value) || 90))
+              }
             />
           </label>
         </div>
@@ -265,19 +294,23 @@ function CapitalMetrics({
   fiscal: PerTransfertCapitalFiscalResult | null;
   onOpenQuotientInfo: () => void;
 }) {
-  if (!fiscal?.available) return <Unavailable label="Capital unique non disponible pour ce dispositif." />;
+  if (!fiscal?.available)
+    return <Unavailable label="Capital unique non disponible pour ce dispositif." />;
   return (
     <dl className="per-transfert-compare2__kpis">
       <KpiRow label="Brut" value={euro(fiscal.capital)} />
       <KpiRow label="Net de PS" value={euro(fiscal.netOfSocialContributions)} muted />
       <KpiRow label="Net de PS + IR/PFU" value={euro(fiscal.netOfAllTaxes)} highlighted />
       <KpiRow
-        label={(
+        label={
           <span className="per-transfert-compare2__info-label">
             Quotient
-            <SimInfoButton ariaLabel="Informations sur le système du quotient" onClick={onOpenQuotientInfo} />
+            <SimInfoButton
+              ariaLabel="Informations sur le système du quotient"
+              onClick={onOpenQuotientInfo}
+            />
           </span>
-        )}
+        }
         value={euro(fiscal.netOfAllTaxesWithQuotient)}
       />
     </dl>
@@ -291,20 +324,28 @@ function HorizonMetrics({
   horizon: PerTransfertCapitalHorizon | null;
   onOpenFractionalInfo: () => void;
 }) {
-  if (!horizon || horizon.annualWithdrawal <= 0) return <Unavailable label="Capital fractionné non disponible pour ce dispositif." />;
+  if (!horizon || horizon.annualWithdrawal <= 0)
+    return <Unavailable label="Capital fractionné non disponible pour ce dispositif." />;
   return (
     <dl className="per-transfert-compare2__kpis">
       <KpiRow
-        label={(
+        label={
           <span className="per-transfert-compare2__info-label">
             Brut annuel
-            <SimInfoButton ariaLabel="Informations sur le capital fractionné" onClick={onOpenFractionalInfo} />
+            <SimInfoButton
+              ariaLabel="Informations sur le capital fractionné"
+              onClick={onOpenFractionalInfo}
+            />
           </span>
-        )}
+        }
         value={euro(horizon.annualWithdrawal)}
       />
       <KpiRow label="Net PS + IR annuel" value={euro(horizon.annualNetWithdrawal)} muted />
-      <KpiRow label={`Cumul net ${horizon.horizonAge} ans`} value={euro(horizon.cumulativeNetWithdrawals)} highlighted />
+      <KpiRow
+        label={`Cumul net ${horizon.horizonAge} ans`}
+        value={euro(horizon.cumulativeNetWithdrawals)}
+        highlighted
+      />
     </dl>
   );
 }
@@ -313,14 +354,21 @@ function Unavailable({ label }: { label: string }) {
   return <p className="per-transfert-compare2__not-available">{label}</p>;
 }
 
-function KpiRow({ label, value, muted = false, highlighted = false }: {
+function KpiRow({
+  label,
+  value,
+  muted = false,
+  highlighted = false,
+}: {
   label: ReactNode;
   value: string;
   muted?: boolean;
   highlighted?: boolean;
 }) {
   return (
-    <div className={`per-transfert-compare2__row${muted ? ' is-muted' : ''}${highlighted ? ' is-highlighted' : ''}`}>
+    <div
+      className={`per-transfert-compare2__row${muted ? ' is-muted' : ''}${highlighted ? ' is-highlighted' : ''}`}
+    >
       <dt>{label}</dt>
       <dd>{value}</dd>
     </div>
@@ -334,7 +382,10 @@ function CompartmentMiniBar({ active }: { active: PerTransfertResult['compartmen
       <h4>Compartiment cible</h4>
       <div className="per-transfert-mini-bar__track">
         {segments.map((segment) => (
-          <span key={segment} className={`per-transfert-mini-bar__segment${segment === active ? ' is-active' : ''}`}>
+          <span
+            key={segment}
+            className={`per-transfert-mini-bar__segment${segment === active ? ' is-active' : ''}`}
+          >
             {COMPARTMENT_LABELS[segment].split(' ')[0]}
           </span>
         ))}

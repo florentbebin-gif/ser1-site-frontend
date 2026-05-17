@@ -4,7 +4,10 @@ import { onResetEvent, triggerPageReset } from './reset';
 const originalWindow = Object.getOwnPropertyDescriptor(globalThis, 'window');
 const originalSessionStorage = Object.getOwnPropertyDescriptor(globalThis, 'sessionStorage');
 
-function restoreGlobalProperty(key: 'window' | 'sessionStorage', descriptor: PropertyDescriptor | undefined): void {
+function restoreGlobalProperty(
+  key: 'window' | 'sessionStorage',
+  descriptor: PropertyDescriptor | undefined,
+): void {
   if (descriptor) {
     Object.defineProperty(globalThis, key, descriptor);
     return;

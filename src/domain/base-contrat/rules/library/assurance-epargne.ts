@@ -13,13 +13,18 @@ const ASSURANCE_VIE_PP: ProductRules = {
       title: 'Versements',
       bullets: [
         'Versements libres ou programmés, sans plafond légal.',
-        'Aucune déductibilité des primes de l\'impôt sur le revenu à l\'entrée.',
-        'Neutralité fiscale pendant la phase d\'épargne : intérêts et plus-values non imposés annuellement.',
+        "Aucune déductibilité des primes de l'impôt sur le revenu à l'entrée.",
+        "Neutralité fiscale pendant la phase d'épargne : intérêts et plus-values non imposés annuellement.",
         'Supports : fonds euros (capital garanti) et unités de compte.',
       ],
       tags: ['neutralite_fiscale', 'supports_fe_uc'],
       confidence: 'elevee',
-      sources: [{ label: 'Service-Public — fonctionnement assurance-vie', url: 'https://www.service-public.fr/particuliers/vosdroits/F15274' }],
+      sources: [
+        {
+          label: 'Service-Public — fonctionnement assurance-vie',
+          url: 'https://www.service-public.fr/particuliers/vosdroits/F15274',
+        },
+      ],
     },
   ],
   sortie: [
@@ -28,33 +33,48 @@ const ASSURANCE_VIE_PP: ProductRules = {
       bullets: [
         'Seuls les gains (intérêts et plus-values) sont imposés — pas le capital versé.',
         '{pfu}.',
-        'Option possible pour l\'imposition au barème progressif de l\'IR.',
+        "Option possible pour l'imposition au barème progressif de l'IR.",
       ],
       tags: ['pfu', 'ps'],
       confidence: 'elevee',
-      sources: [{ label: 'Art. 125-0 A CGI', url: 'https://bofip.impots.gouv.fr/bofip/2279-PGP.html/identifiant=BOI-RPPM-RCM-10-10-80-20220630' }],
+      sources: [
+        {
+          label: 'Art. 125-0 A CGI',
+          url: 'https://bofip.impots.gouv.fr/bofip/2279-PGP.html/identifiant=BOI-RPPM-RCM-10-10-80-20220630',
+        },
+      ],
     },
     {
       title: 'Contrat de 8 ans et plus',
-      bullets: [
-        '{assuranceVieRachatPlus8Ans}',
-        '{assuranceVieRetraitsPs}',
-      ],
+      bullets: ['{assuranceVieRachatPlus8Ans}', '{assuranceVieRetraitsPs}'],
       tags: ['abattement_4600_9200', 'seuil_150k', 'taux_7_5', 'art_125_0_a_cgi'],
       confidence: 'elevee',
-      sources: [{ label: 'Art. 125-0 A CGI — BOFiP RPPM-RCM-10-10-80', url: 'https://bofip.impots.gouv.fr/bofip/2279-PGP.html/identifiant=BOI-RPPM-RCM-10-10-80-20220630' }],
+      sources: [
+        {
+          label: 'Art. 125-0 A CGI — BOFiP RPPM-RCM-10-10-80',
+          url: 'https://bofip.impots.gouv.fr/bofip/2279-PGP.html/identifiant=BOI-RPPM-RCM-10-10-80-20220630',
+        },
+      ],
     },
     {
       title: 'Anciens contrats — régimes antérieurs à 1997',
       bullets: [
-        'Primes versées avant le 26 septembre 1997 sur des contrats ouverts avant cette date : gains susceptibles d\'être exonérés d\'IR (art. 125-0 A CGI — régimes I et I bis).',
-        'Plusieurs régimes transitoires coexistent selon la date d\'ouverture du contrat et la date de versement de chaque prime.',
-        'À confirmer selon l\'historique complet du contrat et les dates précises de versement.',
+        "Primes versées avant le 26 septembre 1997 sur des contrats ouverts avant cette date : gains susceptibles d'être exonérés d'IR (art. 125-0 A CGI — régimes I et I bis).",
+        "Plusieurs régimes transitoires coexistent selon la date d'ouverture du contrat et la date de versement de chaque prime.",
+        "À confirmer selon l'historique complet du contrat et les dates précises de versement.",
       ],
       tags: ['anciens_contrats', 'regime_transitoire', 'art_125_0_a_cgi'],
       confidence: 'moyenne',
-      sources: [{ label: 'Art. 125-0 A CGI — BOFiP RPPM-RCM-10-10-80', url: 'https://bofip.impots.gouv.fr/bofip/2279-PGP.html/identifiant=BOI-RPPM-RCM-10-10-80-20220630' }],
-      dependencies: ['date d\'ouverture du contrat', 'dates de versement des primes antérieures au 26/09/1997'],
+      sources: [
+        {
+          label: 'Art. 125-0 A CGI — BOFiP RPPM-RCM-10-10-80',
+          url: 'https://bofip.impots.gouv.fr/bofip/2279-PGP.html/identifiant=BOI-RPPM-RCM-10-10-80-20220630',
+        },
+      ],
+      dependencies: [
+        "date d'ouverture du contrat",
+        'dates de versement des primes antérieures au 26/09/1997',
+      ],
     },
   ],
   deces: [
@@ -66,18 +86,28 @@ const ASSURANCE_VIE_PP: ProductRules = {
       ],
       tags: ['hors_succession', 'clause_beneficiaire'],
       confidence: 'elevee',
-      sources: [{ label: 'Art. L132-12 Code des assurances', url: 'https://www.legifrance.gouv.fr/loda/article_lc/LEGIARTI000006793003' }],
+      sources: [
+        {
+          label: 'Art. L132-12 Code des assurances',
+          url: 'https://www.legifrance.gouv.fr/loda/article_lc/LEGIARTI000006793003',
+        },
+      ],
     },
     {
       title: 'Primes versées avant 70 ans (art. 990 I CGI)',
       bullets: [
-        'Abattement de {assuranceVie990IAllowance} (tous contrats d\'AV du défunt confondus).',
+        "Abattement de {assuranceVie990IAllowance} (tous contrats d'AV du défunt confondus).",
         'Au-delà : taxation à {assuranceVie990IRates}.',
         'Pas de droits de succession classiques sur ces sommes.',
       ],
       tags: ['art_990_i_cgi', 'abattement_990_i'],
       confidence: 'elevee',
-      sources: [{ label: 'Art. 990 I CGI', url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000038612905' }],
+      sources: [
+        {
+          label: 'Art. 990 I CGI',
+          url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000038612905',
+        },
+      ],
     },
     {
       title: 'Primes versées après 70 ans (art. 757 B CGI)',
@@ -88,7 +118,12 @@ const ASSURANCE_VIE_PP: ProductRules = {
       ],
       tags: ['art_757_b_cgi', 'abattement_757_b'],
       confidence: 'elevee',
-      sources: [{ label: 'Art. 757 B CGI', url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000006310172' }],
+      sources: [
+        {
+          label: 'Art. 757 B CGI',
+          url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000006310172',
+        },
+      ],
     },
   ],
 };
@@ -100,16 +135,21 @@ const CONTRAT_CAPITALISATION: ProductRules = {
       bullets: [
         'Versements libres ou programmés, sans plafond légal.',
         'Accessible aux personnes physiques.',
-        'Mêmes supports qu\'un contrat d\'assurance-vie : fonds euros et unités de compte.',
+        "Mêmes supports qu'un contrat d'assurance-vie : fonds euros et unités de compte.",
       ],
       tags: ['pp_eligible', 'supports_fe_uc'],
       confidence: 'elevee',
-      sources: [{ label: 'Art. 125-0 A CGI — BOFiP RPPM-RCM-10-10-80', url: 'https://bofip.impots.gouv.fr/bofip/2279-PGP.html/identifiant=BOI-RPPM-RCM-10-10-80-20220630' }],
+      sources: [
+        {
+          label: 'Art. 125-0 A CGI — BOFiP RPPM-RCM-10-10-80',
+          url: 'https://bofip.impots.gouv.fr/bofip/2279-PGP.html/identifiant=BOI-RPPM-RCM-10-10-80-20220630',
+        },
+      ],
     },
   ],
   sortie: [
     {
-      title: 'Fiscalité des gains — même régime que l\'assurance-vie',
+      title: "Fiscalité des gains — même régime que l'assurance-vie",
       bullets: [
         'Seule la part de gains est imposable (pas le capital remboursé).',
         '{assuranceVieRachatMoins8Ans}',
@@ -118,20 +158,30 @@ const CONTRAT_CAPITALISATION: ProductRules = {
       ],
       tags: ['pfu', 'abattement_assurance_vie', 'seuil_primes_assurance_vie'],
       confidence: 'elevee',
-      sources: [{ label: 'Art. 125-0 A CGI', url: 'https://bofip.impots.gouv.fr/bofip/2279-PGP.html/identifiant=BOI-RPPM-RCM-10-10-80-20220630' }],
+      sources: [
+        {
+          label: 'Art. 125-0 A CGI',
+          url: 'https://bofip.impots.gouv.fr/bofip/2279-PGP.html/identifiant=BOI-RPPM-RCM-10-10-80-20220630',
+        },
+      ],
     },
   ],
   deces: [
     {
       title: 'Intégration dans la succession',
       bullets: [
-        'Contrairement à l\'assurance-vie, le contrat entre dans la succession à sa valeur de rachat.',
+        "Contrairement à l'assurance-vie, le contrat entre dans la succession à sa valeur de rachat.",
         'Droits de mutation applicables selon le barème et le lien de parenté.',
-        'L\'abattement spécifique AV (art. 990 I) ne s\'applique pas.',
+        "L'abattement spécifique AV (art. 990 I) ne s'applique pas.",
       ],
       tags: ['dmtg_classique', 'succession_active'],
       confidence: 'elevee',
-      sources: [{ label: 'Art. 990 I CGI (inapplicable au contrat de capitalisation)', url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000038612905' }],
+      sources: [
+        {
+          label: 'Art. 990 I CGI (inapplicable au contrat de capitalisation)',
+          url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000038612905',
+        },
+      ],
     },
     {
       title: 'Avantages de transmissibilité',
@@ -142,7 +192,12 @@ const CONTRAT_CAPITALISATION: ProductRules = {
       ],
       tags: ['donation', 'demembrement', 'continuation'],
       confidence: 'elevee',
-      sources: [{ label: 'Art. 779 CGI — abattements DMTG', url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000047678018' }],
+      sources: [
+        {
+          label: 'Art. 779 CGI — abattements DMTG',
+          url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000047678018',
+        },
+      ],
     },
   ],
 };
@@ -152,13 +207,18 @@ const CONTRAT_CAPITALISATION_PM: ProductRules = {
     {
       title: 'Versements (Personne Morale)',
       bullets: [
-        'Accessible aux personnes morales (sociétés patrimoniales, SCI à l\'IS, holding…).',
+        "Accessible aux personnes morales (sociétés patrimoniales, SCI à l'IS, holding…).",
         'Versements libres ou programmés, sans plafond légal.',
-        'À confirmer selon les statuts de la société : l\'objet social doit autoriser ce type de placement.',
+        "À confirmer selon les statuts de la société : l'objet social doit autoriser ce type de placement.",
       ],
       tags: ['pm_eligible', 'supports_fe_uc'],
       confidence: 'moyenne',
-      sources: [{ label: 'Art. 238 septies E CGI', url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000006304080' }],
+      sources: [
+        {
+          label: 'Art. 238 septies E CGI',
+          url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000006304080',
+        },
+      ],
       dependencies: ['objet social de la société', 'régime IS ou IR'],
     },
   ],
@@ -166,27 +226,41 @@ const CONTRAT_CAPITALISATION_PM: ProductRules = {
     {
       title: 'Fiscalité des gains (IS)',
       bullets: [
-        'Régime des primes de remboursement (art. 238 septies E CGI) : l\'écart entre le prix d\'acquisition et la valeur de remboursement estimée est rattaché au résultat de chaque exercice selon un taux actuariel fixé à la souscription.',
-        'Lors d\'un rachat : imposition de la plus-value réelle, avec déduction des produits déjà rattachés aux exercices antérieurs.',
-        'Les gains nets sont intégrés au résultat fiscal soumis à l\'IS (25 %, ou 15 % pour les PME sous conditions).',
+        "Régime des primes de remboursement (art. 238 septies E CGI) : l'écart entre le prix d'acquisition et la valeur de remboursement estimée est rattaché au résultat de chaque exercice selon un taux actuariel fixé à la souscription.",
+        "Lors d'un rachat : imposition de la plus-value réelle, avec déduction des produits déjà rattachés aux exercices antérieurs.",
+        "Les gains nets sont intégrés au résultat fiscal soumis à l'IS (25 %, ou 15 % pour les PME sous conditions).",
         'À confirmer selon la valeur de rachat à la clôture de chaque exercice et le taux actuariel applicable au contrat.',
       ],
       tags: ['is_25', 'is_15_pme', 'taxation_forfaitaire_annuelle', 'tme'],
       confidence: 'moyenne',
-      sources: [{ label: 'Art. 238 septies E CGI', url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000006304080' }],
-      dependencies: ['type de contrat', 'clôture exercice comptable', 'taux actuariel à la souscription'],
+      sources: [
+        {
+          label: 'Art. 238 septies E CGI',
+          url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000006304080',
+        },
+      ],
+      dependencies: [
+        'type de contrat',
+        'clôture exercice comptable',
+        'taux actuariel à la souscription',
+      ],
     },
   ],
   deces: [
     {
       title: 'Fin de vie / sortie de la PM',
       bullets: [
-        'Le contrat suit la continuité de la personne morale tant qu\'elle est en activité.',
-        'En cas de dissolution, liquidation ou cession d\'activité, le contrat entre dans les opérations de clôture (boni/mali de liquidation selon la situation).',
+        "Le contrat suit la continuité de la personne morale tant qu'elle est en activité.",
+        "En cas de dissolution, liquidation ou cession d'activité, le contrat entre dans les opérations de clôture (boni/mali de liquidation selon la situation).",
       ],
       tags: ['fin_vie_pm', 'liquidation', 'cession_activite'],
       confidence: 'elevee',
-      sources: [{ label: 'Art. 38 CGI — résultat imposable', url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000006302193' }],
+      sources: [
+        {
+          label: 'Art. 38 CGI — résultat imposable',
+          url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000006302193',
+        },
+      ],
     },
   ],
 };

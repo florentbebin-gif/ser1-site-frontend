@@ -70,12 +70,14 @@ function getFallbackPocket(
   regimeMatrimonial: RegimeMatrimonial | null,
   pacsConvention: PacsConvention,
 ) {
-  return resolveSuccessionAssetLocation({
-    pocket: fallbackPocket,
-    situationMatrimoniale,
-    regimeMatrimonial,
-    pacsConvention,
-  })?.pocket ?? 'epoux1';
+  return (
+    resolveSuccessionAssetLocation({
+      pocket: fallbackPocket,
+      situationMatrimoniale,
+      regimeMatrimonial,
+      pacsConvention,
+    })?.pocket ?? 'epoux1'
+  );
 }
 
 export function useSuccessionSyncEffects({
@@ -101,21 +103,30 @@ export function useSuccessionSyncEffects({
 }: UseSuccessionSyncEffectsParams): void {
   useEffect(() => {
     const validValues = new Set(enfantRattachementOptions.map((option) => option.value));
-    const defaultValue = (enfantRattachementOptions[0]?.value ?? 'epoux1') as 'commun' | 'epoux1' | 'epoux2';
-    setEnfantsContext((prev) => prev.map((entry) => (
-      validValues.has(entry.rattachement) ? entry : { ...entry, rattachement: defaultValue }
-    )));
+    const defaultValue = (enfantRattachementOptions[0]?.value ?? 'epoux1') as
+      | 'commun'
+      | 'epoux1'
+      | 'epoux2';
+    setEnfantsContext((prev) =>
+      prev.map((entry) =>
+        validValues.has(entry.rattachement) ? entry : { ...entry, rattachement: defaultValue },
+      ),
+    );
   }, [enfantRattachementOptions, setEnfantsContext]);
 
   useEffect(() => {
     const hasParentsBySide = {
-      epoux1: familyMembers.some((member) => member.type === 'parent' && (!member.branch || member.branch === 'epoux1')),
-      epoux2: familyMembers.some((member) => member.type === 'parent' && member.branch === 'epoux2'),
+      epoux1: familyMembers.some(
+        (member) => member.type === 'parent' && (!member.branch || member.branch === 'epoux1'),
+      ),
+      epoux2: familyMembers.some(
+        (member) => member.type === 'parent' && member.branch === 'epoux2',
+      ),
     };
     setDevolutionContext((prev) => {
       if (
-        prev.ascendantsSurvivantsBySide.epoux1 === hasParentsBySide.epoux1
-        && prev.ascendantsSurvivantsBySide.epoux2 === hasParentsBySide.epoux2
+        prev.ascendantsSurvivantsBySide.epoux1 === hasParentsBySide.epoux1 &&
+        prev.ascendantsSurvivantsBySide.epoux2 === hasParentsBySide.epoux2
       ) {
         return prev;
       }
@@ -135,16 +146,22 @@ export function useSuccessionSyncEffects({
         nbEnfants,
       };
       if (
-        prev.actifEpoux1 === next.actifEpoux1
-        && prev.actifEpoux2 === next.actifEpoux2
-        && prev.actifCommun === next.actifCommun
-        && prev.nbEnfants === next.nbEnfants
+        prev.actifEpoux1 === next.actifEpoux1 &&
+        prev.actifEpoux2 === next.actifEpoux2 &&
+        prev.actifCommun === next.actifCommun &&
+        prev.nbEnfants === next.nbEnfants
       ) {
         return prev;
       }
       return next;
     });
-  }, [assetNetTotals.commun, assetNetTotals.epoux1, assetNetTotals.epoux2, nbEnfants, setLiquidationContext]);
+  }, [
+    assetNetTotals.commun,
+    assetNetTotals.epoux1,
+    assetNetTotals.epoux2,
+    nbEnfants,
+    setLiquidationContext,
+  ]);
 
   useEffect(() => {
     const validPockets = new Set(assetPocketOptions.map((option) => option.value));
@@ -165,15 +182,16 @@ export function useSuccessionSyncEffects({
           regimeMatrimonial,
           pacsConvention,
         });
-        const pocket = resolved && validPockets.has(resolved.pocket)
-          ? resolved.pocket
-          : fallbackPocket;
+        const pocket =
+          resolved && validPockets.has(resolved.pocket) ? resolved.pocket : fallbackPocket;
         if (entry.pocket === pocket) return entry;
         changed = true;
         return { ...entry, pocket };
       });
       const normalized = normalizeResidencePrincipaleAssetEntries(mapped);
-      const residenceChanged = normalized.some((entry, index) => entry.subCategory !== mapped[index]?.subCategory);
+      const residenceChanged = normalized.some(
+        (entry, index) => entry.subCategory !== mapped[index]?.subCategory,
+      );
       return changed || residenceChanged ? normalized : prev;
     });
   }, [
@@ -190,7 +208,9 @@ export function useSuccessionSyncEffects({
     setAssuranceVieEntries((prev) => {
       let changed = false;
       const next = prev.map((entry) => {
-        const souscripteur = validOwners.has(entry.souscripteur) ? entry.souscripteur : fallbackOwner;
+        const souscripteur = validOwners.has(entry.souscripteur)
+          ? entry.souscripteur
+          : fallbackOwner;
         const assure = validOwners.has(entry.assure) ? entry.assure : fallbackOwner;
         if (souscripteur === entry.souscripteur && assure === entry.assure) return entry;
         changed = true;
@@ -241,9 +261,8 @@ export function useSuccessionSyncEffects({
           regimeMatrimonial,
           pacsConvention,
         });
-        const pocket = resolved && validPockets.has(resolved.pocket)
-          ? resolved.pocket
-          : fallbackPocket;
+        const pocket =
+          resolved && validPockets.has(resolved.pocket) ? resolved.pocket : fallbackPocket;
         if (entry.pocket === pocket) return entry;
         changed = true;
         return { ...entry, pocket };
@@ -264,7 +283,9 @@ export function useSuccessionSyncEffects({
     setPrevoyanceDecesEntries((prev) => {
       let changed = false;
       const next = prev.map((entry) => {
-        const souscripteur = validOwners.has(entry.souscripteur) ? entry.souscripteur : fallbackOwner;
+        const souscripteur = validOwners.has(entry.souscripteur)
+          ? entry.souscripteur
+          : fallbackOwner;
         const assure = validOwners.has(entry.assure) ? entry.assure : fallbackOwner;
         if (souscripteur === entry.souscripteur && assure === entry.assure) return entry;
         changed = true;
@@ -277,9 +298,9 @@ export function useSuccessionSyncEffects({
   useEffect(() => {
     setPatrimonialContext((prev) => {
       if (
-        prev.donationsRapportables === donationTotals.rapportable
-        && prev.donationsHorsPart === donationTotals.horsPart
-        && prev.legsParticuliers === donationTotals.legsParticuliers
+        prev.donationsRapportables === donationTotals.rapportable &&
+        prev.donationsHorsPart === donationTotals.horsPart &&
+        prev.legsParticuliers === donationTotals.legsParticuliers
       ) {
         return prev;
       }
@@ -290,5 +311,10 @@ export function useSuccessionSyncEffects({
         legsParticuliers: donationTotals.legsParticuliers,
       };
     });
-  }, [donationTotals.horsPart, donationTotals.legsParticuliers, donationTotals.rapportable, setPatrimonialContext]);
+  }, [
+    donationTotals.horsPart,
+    donationTotals.legsParticuliers,
+    donationTotals.rapportable,
+    setPatrimonialContext,
+  ]);
 }

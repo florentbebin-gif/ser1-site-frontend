@@ -201,8 +201,9 @@ describe('TresoSocieteSection', () => {
 
     expect(screen.getByDisplayValue('Ma holding')).toBeInTheDocument();
     expect(screen.queryByText('Début de projection')).not.toBeInTheDocument();
-    expect(screen.queryByText(/date de début de projection se règle dans le parcours associé/i))
-      .not.toBeInTheDocument();
+    expect(
+      screen.queryByText(/date de début de projection se règle dans le parcours associé/i),
+    ).not.toBeInTheDocument();
     expect(screen.queryByLabelText('Type de société')).not.toBeInTheDocument();
     expect(screen.queryByLabelText('Capital social')).not.toBeInTheDocument();
     expect(screen.getByLabelText('Type société')).toBeInTheDocument();
@@ -224,8 +225,9 @@ describe('TresoSocieteSection', () => {
 
     expect(screen.queryByRole('tab', { name: 'Rémunération' })).not.toBeInTheDocument();
     expect(screen.getByRole('tab', { name: 'Profil' })).toHaveAttribute('aria-selected', 'true');
-    expect(screen.queryByText(/paliers de revenus se règlent depuis le parcours associé/i))
-      .not.toBeInTheDocument();
+    expect(
+      screen.queryByText(/paliers de revenus se règlent depuis le parcours associé/i),
+    ).not.toBeInTheDocument();
   });
 
   it('enrichit la modale filiale avec trésorerie, paliers vers la mère et cession', () => {
@@ -287,9 +289,11 @@ describe('TresoSocieteSection', () => {
 
     const nextInputs = onChange.mock.calls[onChange.mock.calls.length - 1]?.[0];
     expect(nextInputs.company.subsidiaries[0].dividendsSchedule).toHaveLength(2);
-    expect(nextInputs.company.subsidiaries[0].dividendsSchedule[1]).toEqual(expect.objectContaining({
-      startYear: 2031,
-    }));
+    expect(nextInputs.company.subsidiaries[0].dividendsSchedule[1]).toEqual(
+      expect.objectContaining({
+        startYear: 2031,
+      }),
+    );
   });
 
   it('rééquilibre les autres associés quand une saisie ferait dépasser 100 %', () => {
@@ -323,11 +327,13 @@ describe('TresoSocieteSection', () => {
         ...INPUTS.company,
         associates: INPUTS.company.associates.map((associate: any, index: number) => ({
           ...associate,
-          ownershipLots: [{
-            ...associate.ownershipLots[0],
-            capitalPct: index === 0 ? 70 : 40,
-            economicRightsPct: index === 0 ? 70 : 40,
-          }],
+          ownershipLots: [
+            {
+              ...associate.ownershipLots[0],
+              capitalPct: index === 0 ? 70 : 40,
+              economicRightsPct: index === 0 ? 70 : 40,
+            },
+          ],
         })),
       },
     };

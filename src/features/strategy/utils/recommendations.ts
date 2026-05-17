@@ -1,6 +1,6 @@
 /**
  * Moteur de recommandations
- * 
+ *
  * Génère des recommandations basées sur :
  * - Les objectifs cochés par le client
  * - Les métriques de l'audit (TMI, IFI, patrimoine, etc.)
@@ -32,7 +32,7 @@ export function generateRecommendations(dossier: DossierAudit): Recommandation[]
     if (tmi >= TMI_PER_RECOMMANDATION) {
       recommandations.push({
         id: 'reco-per-ir',
-        titre: 'Optimiser l\'IR via un PER',
+        titre: "Optimiser l'IR via un PER",
         description: `Avec une TMI de ${tmi}%, un Plan Épargne Retraite permet de déduire les versements du revenu imposable et de réduire significativement l'impôt.`,
         objectifsCibles: ['reduire_fiscalite', 'revenus_differes'],
         priorite: 'haute',
@@ -44,8 +44,9 @@ export function generateRecommendations(dossier: DossierAudit): Recommandation[]
     if (ifi > 0) {
       recommandations.push({
         id: 'reco-ifi-scpi',
-        titre: 'Réduire l\'IFI via des placements financiers',
-        description: 'L\'IFI ne porte que sur l\'immobilier. Diversifier vers des SCPI ou des placements financiers peut optimiser la fiscalité patrimoniale.',
+        titre: "Réduire l'IFI via des placements financiers",
+        description:
+          "L'IFI ne porte que sur l'immobilier. Diversifier vers des SCPI ou des placements financiers peut optimiser la fiscalité patrimoniale.",
         objectifsCibles: ['reduire_fiscalite'],
         priorite: 'moyenne',
         produitsAssocies: ['scpi', 'assurance_vie'],
@@ -57,12 +58,13 @@ export function generateRecommendations(dossier: DossierAudit): Recommandation[]
 
   // === OBJECTIF : Protéger le conjoint ===
   if (objectifs.includes('proteger_conjoint')) {
-    const hasAV = actifs.some(a => 'type' in a && a.type === 'assurance_vie');
-    if (!hasAV || actifs.filter(a => 'type' in a && a.type === 'assurance_vie').length < 2) {
+    const hasAV = actifs.some((a) => 'type' in a && a.type === 'assurance_vie');
+    if (!hasAV || actifs.filter((a) => 'type' in a && a.type === 'assurance_vie').length < 2) {
       recommandations.push({
         id: 'reco-av-conjoint',
         titre: 'Souscrire une assurance-vie au profit du conjoint',
-        description: 'L\'assurance-vie avec clause bénéficiaire permet de transmettre un capital au conjoint hors succession, avec une fiscalité avantageuse.',
+        description:
+          "L'assurance-vie avec clause bénéficiaire permet de transmettre un capital au conjoint hors succession, avec une fiscalité avantageuse.",
         objectifsCibles: ['proteger_conjoint'],
         priorite: 'haute',
         produitsAssocies: ['assurance_vie'],
@@ -74,7 +76,8 @@ export function generateRecommendations(dossier: DossierAudit): Recommandation[]
       recommandations.push({
         id: 'reco-donation-dernier-vivant',
         titre: 'Envisager une donation au dernier vivant',
-        description: 'La donation au dernier vivant permet d\'augmenter les droits du conjoint survivant sur la succession.',
+        description:
+          "La donation au dernier vivant permet d'augmenter les droits du conjoint survivant sur la succession.",
         objectifsCibles: ['proteger_conjoint', 'preparer_transmission'],
         priorite: 'haute',
         produitsAssocies: ['donation'],
@@ -106,7 +109,7 @@ export function generateRecommendations(dossier: DossierAudit): Recommandation[]
   // === OBJECTIF : Développer le patrimoine ===
   if (objectifs.includes('developper_patrimoine')) {
     const liquidites = actifs
-      .filter(a => 'type' in a && ['compte_courant', 'livret'].includes(a.type))
+      .filter((a) => 'type' in a && ['compte_courant', 'livret'].includes(a.type))
       .reduce((sum, a) => sum + a.valeur, 0);
 
     if (liquidites > 50_000) {
@@ -127,7 +130,8 @@ export function generateRecommendations(dossier: DossierAudit): Recommandation[]
     recommandations.push({
       id: 'reco-per-retraite',
       titre: 'Préparer la retraite avec un PER',
-      description: 'Le PER permet de constituer une épargne retraite tout en bénéficiant d\'une déduction fiscale immédiate.',
+      description:
+        "Le PER permet de constituer une épargne retraite tout en bénéficiant d'une déduction fiscale immédiate.",
       objectifsCibles: ['revenus_differes', 'reduire_fiscalite'],
       priorite: 'haute',
       produitsAssocies: ['per'],
@@ -140,7 +144,8 @@ export function generateRecommendations(dossier: DossierAudit): Recommandation[]
     recommandations.push({
       id: 'reco-scpi-revenus',
       titre: 'Générer des revenus via SCPI',
-      description: 'Les SCPI permettent de percevoir des revenus fonciers réguliers avec une gestion déléguée.',
+      description:
+        'Les SCPI permettent de percevoir des revenus fonciers réguliers avec une gestion déléguée.',
       objectifsCibles: ['revenus_immediats'],
       priorite: 'moyenne',
       produitsAssocies: ['scpi', 'immobilier_locatif'],
@@ -153,7 +158,8 @@ export function generateRecommendations(dossier: DossierAudit): Recommandation[]
     recommandations.push({
       id: 'reco-av-succession',
       titre: 'Optimiser la transmission via assurance-vie',
-      description: 'L\'assurance-vie bénéficie d\'une fiscalité successorale avantageuse par bénéficiaire selon les paramètres fiscaux.',
+      description:
+        "L'assurance-vie bénéficie d'une fiscalité successorale avantageuse par bénéficiaire selon les paramètres fiscaux.",
       objectifsCibles: ['reduire_droits_succession', 'preparer_transmission'],
       priorite: 'haute',
       produitsAssocies: ['assurance_vie'],
@@ -167,4 +173,3 @@ export function generateRecommendations(dossier: DossierAudit): Recommandation[]
     return priorityOrder[a.priorite] - priorityOrder[b.priorite];
   });
 }
-

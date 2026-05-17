@@ -10,18 +10,21 @@ import type {
   BaseContratReviewStatus,
 } from '@/domain/base-contrat/overrides';
 
-const REVIEW_STATUS_OPTIONS = (Object.keys(BASE_CONTRAT_REVIEW_STATUS_LABELS) as BaseContratReviewStatus[])
-  .map((value) => ({
-    value,
-    label: BASE_CONTRAT_REVIEW_STATUS_LABELS[value],
-  }));
+const REVIEW_STATUS_OPTIONS = (
+  Object.keys(BASE_CONTRAT_REVIEW_STATUS_LABELS) as BaseContratReviewStatus[]
+).map((value) => ({
+  value,
+  label: BASE_CONTRAT_REVIEW_STATUS_LABELS[value],
+}));
 
 export function ReviewStatusDetails({ override }: { override: BaseContratOverride }) {
   const reviewLabel = BASE_CONTRAT_REVIEW_STATUS_LABELS[override.review_status];
 
   return (
     <div className="base-contrat-review" aria-label="Statut de revue admin">
-      <span className={`base-contrat-review__status base-contrat-review__status--${override.review_status}`}>
+      <span
+        className={`base-contrat-review__status base-contrat-review__status--${override.review_status}`}
+      >
         Revue : {reviewLabel}
       </span>
       {override.review_reason && (
@@ -87,8 +90,12 @@ export function OverrideModal({
     <div className="report-modal-overlay">
       <div className="report-modal base-contrat-modal">
         <div className="report-modal-header">
-          <h3>{isClosed ? 'Rouvrir' : 'Clôturer'} - {product.label}</h3>
-          <button className="report-modal-close" onClick={onClose}>&#x2715;</button>
+          <h3>
+            {isClosed ? 'Rouvrir' : 'Clôturer'} - {product.label}
+          </h3>
+          <button className="report-modal-close" onClick={onClose}>
+            &#x2715;
+          </button>
         </div>
         <div className="report-modal-content base-contrat-modal__content">
           <label className="base-contrat-modal__label" htmlFor={closedDateId}>
@@ -120,7 +127,9 @@ export function OverrideModal({
               id={reviewStatusId}
               className="base-contrat-modal__field"
               value={reviewStatus}
-              onChange={(event) => setReviewStatus(normalizeBaseContratReviewStatus(event.target.value))}
+              onChange={(event) =>
+                setReviewStatus(normalizeBaseContratReviewStatus(event.target.value))
+              }
             >
               {REVIEW_STATUS_OPTIONS.map((option) => (
                 <option key={option.value} value={option.value}>
@@ -153,11 +162,7 @@ export function OverrideModal({
         </div>
         <div className="report-modal-actions">
           <button onClick={onClose}>Annuler</button>
-          <button
-            className="chip"
-            onClick={handleSave}
-            disabled={saving}
-          >
+          <button className="chip" onClick={handleSave} disabled={saving}>
             {saving ? 'Enregistrement…' : 'Enregistrer'}
           </button>
         </div>

@@ -13,7 +13,7 @@
 }
 
 .app-error-card {
-  background-color: #FFFFFF; /* exception fond carte — gouvernance §index.css */
+  background-color: #ffffff; /* exception fond carte — gouvernance §index.css */
   padding: 40px;
   border-radius: 12px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
@@ -53,7 +53,7 @@
 
 .app-error-retry {
   background-color: var(--color-c2);
-  color: #FFFFFF; /* exception bouton CTA — gouvernance §index.css */
+  color: #ffffff; /* exception bouton CTA — gouvernance §index.css */
   border: none;
   padding: 10px 20px;
   border-radius: 999px;

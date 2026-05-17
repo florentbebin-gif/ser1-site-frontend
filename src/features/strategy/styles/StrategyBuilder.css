@@ -160,7 +160,7 @@
 }
 
 .produit-card {
-  background: color-mix(in srgb, var(--color-c7) 88%, #FFFFFF);
+  background: color-mix(in srgb, var(--color-c7) 88%, #ffffff);
   border: 1px solid var(--color-c8);
 }
 
@@ -193,7 +193,7 @@
 }
 
 .btn-remove:hover {
-  background: color-mix(in srgb, var(--color-c1) 8%, #FFFFFF);
+  background: color-mix(in srgb, var(--color-c1) 8%, #ffffff);
   color: var(--color-c1);
 }
 
@@ -233,7 +233,7 @@
 
 .scenario-card.scenario-strategy {
   border-color: var(--color-c3);
-  background: color-mix(in srgb, var(--color-c3) 16%, #FFFFFF);
+  background: color-mix(in srgb, var(--color-c3) 16%, #ffffff);
 }
 
 .scenario-card h3 {
@@ -266,7 +266,7 @@
 }
 
 .ecarts-summary {
-  background: color-mix(in srgb, var(--color-c4) 60%, #FFFFFF);
+  background: color-mix(in srgb, var(--color-c4) 60%, #ffffff);
   border: 1px solid var(--color-c8);
 }
 
@@ -320,7 +320,7 @@
 
 .produit-option {
   padding: 16px;
-  background: color-mix(in srgb, var(--color-c7) 88%, #FFFFFF);
+  background: color-mix(in srgb, var(--color-c7) 88%, #ffffff);
   border: 1px solid var(--color-c8);
   border-radius: 10px;
   cursor: pointer;
@@ -330,7 +330,7 @@
 
 .produit-option:hover {
   border-color: var(--color-c2);
-  background: color-mix(in srgb, var(--color-c4) 55%, #FFFFFF);
+  background: color-mix(in srgb, var(--color-c4) 55%, #ffffff);
 }
 
 @media (max-width: 767px) {

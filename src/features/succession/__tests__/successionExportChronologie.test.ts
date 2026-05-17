@@ -15,23 +15,31 @@ import { buildSuccessionPrevoyanceFiscalAnalysis } from '../successionPrevoyance
 const THEME_COLORS = DEFAULT_COLORS;
 
 async function getSheetXmlByName(zip: JSZip, sheetName: string): Promise<string | null> {
-  const workbook = await zip.file('xl/workbook.xml')?.async('string') ?? '';
+  const workbook = (await zip.file('xl/workbook.xml')?.async('string')) ?? '';
   const idMatch = workbook.match(new RegExp(`<sheet[^>]+name="${sheetName}"[^>]+r:id="(rId\\d+)"`));
   if (!idMatch) return null;
-  const rels = await zip.file('xl/_rels/workbook.xml.rels')?.async('string') ?? '';
+  const rels = (await zip.file('xl/_rels/workbook.xml.rels')?.async('string')) ?? '';
   const targetMatch = rels.match(new RegExp(`Id="${idMatch[1]}"[^>]+Target="([^"]+)"`));
   if (!targetMatch) return null;
   const target = targetMatch[1].replace(/^\/xl\//, '');
-  return await zip.file(`xl/${target}`)?.async('string') ?? null;
+  return (await zip.file(`xl/${target}`)?.async('string')) ?? null;
 }
 
 describe('Succession export - Chronologie et cas particuliers', () => {
   it('T2.1 — Ordre inversé : chaîne moteur réelle → XLSX, oracle numérique', async () => {
-    const civil = makeCivil({ situationMatrimoniale: 'marie', regimeMatrimonial: 'separation_biens' });
-    const liquidation = makeLiquidation({ actifEpoux1: 800_000, actifEpoux2: 200_000, actifCommun: 0, nbEnfants: 2 });
+    const civil = makeCivil({
+      situationMatrimoniale: 'marie',
+      regimeMatrimonial: 'separation_biens',
+    });
+    const liquidation = makeLiquidation({
+      actifEpoux1: 800_000,
+      actifEpoux2: 200_000,
+      actifCommun: 0,
+      nbEnfants: 2,
+    });
     const enfantsContext = [
       { id: 'E1', rattachement: 'commun' as const, dateNaissance: '2000-01-01', decede: false },
-      { id: 'E2', rattachement: 'commun' as const, dateNaissance: '2002-01-01', decede: false }
+      { id: 'E2', rattachement: 'commun' as const, dateNaissance: '2002-01-01', decede: false },
     ];
 
     const analysis_e2 = buildSuccessionChainageAnalysis({
@@ -41,7 +49,7 @@ describe('Succession export - Chronologie et cas particuliers', () => {
       order: 'epoux2',
       dmtgSettings: DEFAULT_DMTG,
       enfantsContext,
-      familyMembers: []
+      familyMembers: [],
     });
 
     expect(analysis_e2.step1?.actifTransmis).toBe(200_000);
@@ -50,8 +58,15 @@ describe('Succession export - Chronologie et cas particuliers', () => {
     const snapshot = buildSuccessionFiscalSnapshot(null);
     const zeroFiscal = buildSuccessionAvFiscalAnalysis([], civil, [], [], snapshot);
     const zeroPer = buildSuccessionPerFiscalAnalysis([], civil, [], [], snapshot, new Date());
-    const zeroPrevoyance = buildSuccessionPrevoyanceFiscalAnalysis([], civil, [], [], snapshot, new Date());
-    
+    const zeroPrevoyance = buildSuccessionPrevoyanceFiscalAnalysis(
+      [],
+      civil,
+      [],
+      [],
+      snapshot,
+      new Date(),
+    );
+
     const payload = buildSuccessionChainageExportPayload({
       displayUsesChainage: true,
       chainageAnalysis: analysis_e2,
@@ -74,11 +89,11 @@ describe('Succession export - Chronologie et cas particuliers', () => {
       null,
       THEME_COLORS.c1,
       'test',
-      payload
+      payload,
     );
 
     const zip = await JSZip.loadAsync(await blob.arrayBuffer());
-    const chronXml = await getSheetXmlByName(zip, 'Chronologie') ?? '';
+    const chronXml = (await getSheetXmlByName(zip, 'Chronologie')) ?? '';
 
     // Ordre simulé correct
     expect(chronXml).toContain('Époux 2 décède en premier');
@@ -89,11 +104,19 @@ describe('Succession export - Chronologie et cas particuliers', () => {
   });
 
   it('T2.2 — Ordre inversé → PPTX bénéficiaires corrects', async () => {
-    const civil = makeCivil({ situationMatrimoniale: 'marie', regimeMatrimonial: 'separation_biens' });
-    const liquidation = makeLiquidation({ actifEpoux1: 800_000, actifEpoux2: 200_000, actifCommun: 0, nbEnfants: 2 });
+    const civil = makeCivil({
+      situationMatrimoniale: 'marie',
+      regimeMatrimonial: 'separation_biens',
+    });
+    const liquidation = makeLiquidation({
+      actifEpoux1: 800_000,
+      actifEpoux2: 200_000,
+      actifCommun: 0,
+      nbEnfants: 2,
+    });
     const enfantsContext = [
       { id: 'E1', rattachement: 'commun' as const, dateNaissance: '2000-01-01', decede: false },
-      { id: 'E2', rattachement: 'commun' as const, dateNaissance: '2002-01-01', decede: false }
+      { id: 'E2', rattachement: 'commun' as const, dateNaissance: '2002-01-01', decede: false },
     ];
 
     const analysis_e2 = buildSuccessionChainageAnalysis({
@@ -103,14 +126,21 @@ describe('Succession export - Chronologie et cas particuliers', () => {
       order: 'epoux2',
       dmtgSettings: DEFAULT_DMTG,
       enfantsContext,
-      familyMembers: []
+      familyMembers: [],
     });
 
     const snapshot = buildSuccessionFiscalSnapshot(null);
     const zeroFiscal = buildSuccessionAvFiscalAnalysis([], civil, [], [], snapshot);
     const zeroPer = buildSuccessionPerFiscalAnalysis([], civil, [], [], snapshot, new Date());
-    const zeroPrevoyance = buildSuccessionPrevoyanceFiscalAnalysis([], civil, [], [], snapshot, new Date());
-    
+    const zeroPrevoyance = buildSuccessionPrevoyanceFiscalAnalysis(
+      [],
+      civil,
+      [],
+      [],
+      snapshot,
+      new Date(),
+    );
+
     const payload = buildSuccessionChainageExportPayload({
       displayUsesChainage: true,
       chainageAnalysis: analysis_e2,
@@ -128,30 +158,41 @@ describe('Succession export - Chronologie et cas particuliers', () => {
       directDisplayWarnings: [],
     });
 
-    const spec = buildSuccessionStudyDeck({
-      actifNetSuccession: 1_000_000,
-      totalDroits: analysis_e2.totalDroits,
-      tauxMoyenGlobal: 0,
-      heritiers: [],
-      predecesChronologie: payload
-    }, THEME_COLORS);
+    const spec = buildSuccessionStudyDeck(
+      {
+        actifNetSuccession: 1_000_000,
+        totalDroits: analysis_e2.totalDroits,
+        tauxMoyenGlobal: 0,
+        heritiers: [],
+        predecesChronologie: payload,
+      },
+      THEME_COLORS,
+    );
 
-    const chronSlide = spec.slides.find(s => s.type === 'succession-chronology');
+    const chronSlide = spec.slides.find((s) => s.type === 'succession-chronology');
     if (chronSlide?.type === 'succession-chronology') {
-      const survivant = chronSlide.steps[0].beneficiaries.find(b => b.exonerated);
+      const survivant = chronSlide.steps[0].beneficiaries.find((b) => b.exonerated);
       expect(survivant).toBeDefined();
       expect(survivant?.label).toMatch(/poux 1|survivant/i);
     } else {
-      throw new Error("Slide chronologie introuvable ou mauvais type");
+      throw new Error('Slide chronologie introuvable ou mauvais type');
     }
   });
 
   it('P2-A — Abattement RP : réduit step1 mais pas step2', async () => {
-    const civil = makeCivil({ situationMatrimoniale: 'marie', regimeMatrimonial: 'separation_biens' });
-    const liquidation = makeLiquidation({ actifEpoux1: 800_000, actifEpoux2: 200_000, actifCommun: 0, nbEnfants: 2 });
+    const civil = makeCivil({
+      situationMatrimoniale: 'marie',
+      regimeMatrimonial: 'separation_biens',
+    });
+    const liquidation = makeLiquidation({
+      actifEpoux1: 800_000,
+      actifEpoux2: 200_000,
+      actifCommun: 0,
+      nbEnfants: 2,
+    });
     const enfantsContext = [
       { id: 'E1', rattachement: 'commun' as const, dateNaissance: '2000-01-01', decede: false },
-      { id: 'E2', rattachement: 'commun' as const, dateNaissance: '2002-01-01', decede: false }
+      { id: 'E2', rattachement: 'commun' as const, dateNaissance: '2002-01-01', decede: false },
     ];
 
     // transmissionBasis requis : c'est via residencePrincipaleEntry que la valeur RP
@@ -159,12 +200,22 @@ describe('Succession export - Chronologie et cas particuliers', () => {
     // (successionTransmissionBasis.ts:105-108 + successionChainage.ts:343-345)
     const transmissionBasis = {
       ordinaryTaxableAssetsParPocket: {
-        epoux1: 800_000, epoux2: 200_000, communaute: 0, societe_acquets: 0,
-        indivision_pacse: 0, indivision_concubinage: 0, indivision_separatiste: 0,
+        epoux1: 800_000,
+        epoux2: 200_000,
+        communaute: 0,
+        societe_acquets: 0,
+        indivision_pacse: 0,
+        indivision_concubinage: 0,
+        indivision_separatiste: 0,
       },
       passifsParPocket: {
-        epoux1: 0, epoux2: 0, communaute: 0, societe_acquets: 0,
-        indivision_pacse: 0, indivision_concubinage: 0, indivision_separatiste: 0,
+        epoux1: 0,
+        epoux2: 0,
+        communaute: 0,
+        societe_acquets: 0,
+        indivision_pacse: 0,
+        indivision_concubinage: 0,
+        indivision_separatiste: 0,
       },
       groupementFoncierEntries: [],
       hasBeneficiaryLevelGfAdjustment: false,
@@ -203,7 +254,14 @@ describe('Succession export - Chronologie et cas particuliers', () => {
     const snapshot = buildSuccessionFiscalSnapshot(null);
     const zeroFiscal = buildSuccessionAvFiscalAnalysis([], civil, [], [], snapshot);
     const zeroPer = buildSuccessionPerFiscalAnalysis([], civil, [], [], snapshot, new Date());
-    const zeroPrevoyance = buildSuccessionPrevoyanceFiscalAnalysis([], civil, [], [], snapshot, new Date());
+    const zeroPrevoyance = buildSuccessionPrevoyanceFiscalAnalysis(
+      [],
+      civil,
+      [],
+      [],
+      snapshot,
+      new Date(),
+    );
 
     const payload = buildSuccessionChainageExportPayload({
       displayUsesChainage: true,
@@ -227,12 +285,12 @@ describe('Succession export - Chronologie et cas particuliers', () => {
       null,
       THEME_COLORS.c1,
       'test',
-      payload
+      payload,
     );
 
     const zip = await JSZip.loadAsync(await blob.arrayBuffer());
-    const chronXml = await getSheetXmlByName(zip, 'Chronologie') ?? '';
-    const hypothesesXml = await getSheetXmlByName(zip, 'Hypothèses') ?? '';
+    const chronXml = (await getSheetXmlByName(zip, 'Chronologie')) ?? '';
+    const hypothesesXml = (await getSheetXmlByName(zip, 'Hypothèses')) ?? '';
 
     // Export text : l'onglet Hypothèses mentionne la RP
     expect(/sidence principale|abattement/i.test(hypothesesXml)).toBe(true);
@@ -243,19 +301,37 @@ describe('Succession export - Chronologie et cas particuliers', () => {
   });
 
   it('P2-D — Forfait mobilier (mode pct) via chaîne', async () => {
-    const civil = makeCivil({ situationMatrimoniale: 'marie', regimeMatrimonial: 'separation_biens' });
-    const liquidation = makeLiquidation({ actifEpoux1: 800_000, actifEpoux2: 200_000, actifCommun: 0, nbEnfants: 2 });
+    const civil = makeCivil({
+      situationMatrimoniale: 'marie',
+      regimeMatrimonial: 'separation_biens',
+    });
+    const liquidation = makeLiquidation({
+      actifEpoux1: 800_000,
+      actifEpoux2: 200_000,
+      actifCommun: 0,
+      nbEnfants: 2,
+    });
 
     // transmissionBasis requis : forfaitMobilierMode n'est appliqué que quand
     // transmissionBasis est fourni (successionChainage.helpers.ts:385-391)
     const transmissionBasis = {
       ordinaryTaxableAssetsParPocket: {
-        epoux1: 800_000, epoux2: 200_000, communaute: 0, societe_acquets: 0,
-        indivision_pacse: 0, indivision_concubinage: 0, indivision_separatiste: 0,
+        epoux1: 800_000,
+        epoux2: 200_000,
+        communaute: 0,
+        societe_acquets: 0,
+        indivision_pacse: 0,
+        indivision_concubinage: 0,
+        indivision_separatiste: 0,
       },
       passifsParPocket: {
-        epoux1: 0, epoux2: 0, communaute: 0, societe_acquets: 0,
-        indivision_pacse: 0, indivision_concubinage: 0, indivision_separatiste: 0,
+        epoux1: 0,
+        epoux2: 0,
+        communaute: 0,
+        societe_acquets: 0,
+        indivision_pacse: 0,
+        indivision_concubinage: 0,
+        indivision_separatiste: 0,
       },
       groupementFoncierEntries: [],
       hasBeneficiaryLevelGfAdjustment: false,
@@ -292,12 +368,21 @@ describe('Succession export - Chronologie et cas particuliers', () => {
     });
 
     // Le forfait mobilier (5 % = 40 000 €) augmente la base taxable (présomption de meubles) → droits plus élevés
-    expect(analysis.step1?.droitsEnfants).toBeGreaterThan(analysisNoForfait.step1?.droitsEnfants ?? 0);
+    expect(analysis.step1?.droitsEnfants).toBeGreaterThan(
+      analysisNoForfait.step1?.droitsEnfants ?? 0,
+    );
 
     const snapshot = buildSuccessionFiscalSnapshot(null);
     const zeroFiscal = buildSuccessionAvFiscalAnalysis([], civil, [], [], snapshot);
     const zeroPer = buildSuccessionPerFiscalAnalysis([], civil, [], [], snapshot, new Date());
-    const zeroPrevoyance = buildSuccessionPrevoyanceFiscalAnalysis([], civil, [], [], snapshot, new Date());
+    const zeroPrevoyance = buildSuccessionPrevoyanceFiscalAnalysis(
+      [],
+      civil,
+      [],
+      [],
+      snapshot,
+      new Date(),
+    );
 
     const payload = buildSuccessionChainageExportPayload({
       displayUsesChainage: true,
@@ -321,30 +406,40 @@ describe('Succession export - Chronologie et cas particuliers', () => {
       null,
       THEME_COLORS.c1,
       'test',
-      payload
+      payload,
     );
 
     const zip = await JSZip.loadAsync(await blob.arrayBuffer());
-    const chronXml = await getSheetXmlByName(zip, 'Chronologie') ?? '';
+    const chronXml = (await getSheetXmlByName(zip, 'Chronologie')) ?? '';
 
     // Les droits step1 avec forfait mobilier sont bien reflétés dans l'export
     expect(chronXml).toContain(`<v>${analysis.step1!.droitsEnfants}</v>`);
   });
 
   it('P3-A — Smoke PPTX collatéral frère (célibataire sans enfants)', async () => {
-    const spec = buildSuccessionStudyDeck({
-      actifNetSuccession: 500_000,
-      totalDroits: 100_000,
-      tauxMoyenGlobal: 20,
-      heritiers: [
-        { lien: 'frere_soeur', partBrute: 500_000, abattement: 15_932, baseImposable: 484_068, droits: 100_000, tauxMoyen: 20 }
-      ],
-    }, THEME_COLORS);
+    const spec = buildSuccessionStudyDeck(
+      {
+        actifNetSuccession: 500_000,
+        totalDroits: 100_000,
+        tauxMoyenGlobal: 20,
+        heritiers: [
+          {
+            lien: 'frere_soeur',
+            partBrute: 500_000,
+            abattement: 15_932,
+            baseImposable: 484_068,
+            droits: 100_000,
+            tauxMoyen: 20,
+          },
+        ],
+      },
+      THEME_COLORS,
+    );
 
-    const annexSlide = spec.slides.find(s => s.type === 'succession-annex-table');
+    const annexSlide = spec.slides.find((s) => s.type === 'succession-annex-table');
     expect(annexSlide).toBeDefined();
     if (annexSlide?.type === 'succession-annex-table') {
-      const frereRow = annexSlide.steps[0]?.beneficiaries.find(b => b.label.includes('Frère'));
+      const frereRow = annexSlide.steps[0]?.beneficiaries.find((b) => b.label.includes('Frère'));
       expect(frereRow).toBeDefined();
       expect(frereRow?.droitsSuccession).toBe(100_000);
     }

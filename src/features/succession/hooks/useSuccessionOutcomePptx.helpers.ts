@@ -147,7 +147,8 @@ function buildDonationSummary(
   for (const entry of donationsContext) {
     if (entry.type === 'donation_partage' && entry.sourceDonationPartageActId) continue;
     const amount = getDonationDisplayAmount(entry);
-    const hasMeaningfulData = amount > 0 || Boolean(entry.date || entry.donateur || entry.donataire);
+    const hasMeaningfulData =
+      amount > 0 || Boolean(entry.date || entry.donateur || entry.donataire);
     if (!hasMeaningfulData) continue;
 
     const current = totals.get(entry.type) ?? { count: 0, total: 0 };
@@ -161,11 +162,12 @@ function buildDonationSummary(
       const current = totals.get(type);
       if (!current) return null;
 
-      const baseLabel = type === 'rapportable'
-        ? `${current.count} avance${current.count > 1 ? 's' : ''} de part successorale`
-        : type === 'hors_part'
-          ? `${current.count} donation${current.count > 1 ? 's' : ''} hors part`
-          : `${current.count} legs particulier${current.count > 1 ? 's' : ''}`;
+      const baseLabel =
+        type === 'rapportable'
+          ? `${current.count} avance${current.count > 1 ? 's' : ''} de part successorale`
+          : type === 'hors_part'
+            ? `${current.count} donation${current.count > 1 ? 's' : ''} hors part`
+            : `${current.count} legs particulier${current.count > 1 ? 's' : ''}`;
 
       return current.total > 0 ? `${baseLabel} (${fmtCurrency(current.total)})` : baseLabel;
     })
@@ -187,12 +189,16 @@ function buildDispositionSummaries(
   const conjointDetails: string[] = [];
 
   if (patrimonialContext.donationEntreEpouxActive) {
-    conjointDetails.push(`donation entre époux : ${optionLabel(DONATION_ENTRE_EPOUX_OPTIONS, patrimonialContext.donationEntreEpouxOption) ?? patrimonialContext.donationEntreEpouxOption}`);
+    conjointDetails.push(
+      `donation entre époux : ${optionLabel(DONATION_ENTRE_EPOUX_OPTIONS, patrimonialContext.donationEntreEpouxOption) ?? patrimonialContext.donationEntreEpouxOption}`,
+    );
   }
 
   const choixLegal = devolutionContext.choixLegalConjointSansDDV;
   if (choixLegal) {
-    conjointDetails.push(`choix du conjoint survivant : ${optionLabel(CHOIX_LEGAL_CONJOINT_OPTIONS, choixLegal) ?? choixLegal}`);
+    conjointDetails.push(
+      `choix du conjoint survivant : ${optionLabel(CHOIX_LEGAL_CONJOINT_OPTIONS, choixLegal) ?? choixLegal}`,
+    );
   }
 
   if (conjointDetails.length > 0) {
@@ -204,7 +210,9 @@ function buildDispositionSummaries(
     const testament = devolutionContext.testamentsBySide[side];
     if (!testament.active) continue;
     const label = optionLabel(DISPOSITION_TESTAMENTAIRE_OPTIONS, testament.dispositionType);
-    testaments.push(`${sideLabel(side, civilContext.situationMatrimoniale)} : ${label ?? 'Disposition active'}`);
+    testaments.push(
+      `${sideLabel(side, civilContext.situationMatrimoniale)} : ${label ?? 'Disposition active'}`,
+    );
   }
 
   if (testaments.length > 0) {
@@ -216,14 +224,20 @@ function buildDispositionSummaries(
     clauses.push('attribution intégrale au conjoint survivant');
   }
   if (
-    patrimonialContext.preciputMontant > 0
-    || patrimonialContext.preciputSelections.some((selection) => selection.enabled)
+    patrimonialContext.preciputMontant > 0 ||
+    patrimonialContext.preciputSelections.some((selection) => selection.enabled)
   ) {
-    const enabledSelections = patrimonialContext.preciputSelections.filter((selection) => selection.enabled).length;
+    const enabledSelections = patrimonialContext.preciputSelections.filter(
+      (selection) => selection.enabled,
+    ).length;
     if (patrimonialContext.preciputMontant > 0) {
-      clauses.push(`clause de préciput à hauteur de ${fmtCurrency(patrimonialContext.preciputMontant)}`);
+      clauses.push(
+        `clause de préciput à hauteur de ${fmtCurrency(patrimonialContext.preciputMontant)}`,
+      );
     } else if (enabledSelections > 0) {
-      clauses.push(`clause de préciput sur ${enabledSelections} bien${enabledSelections > 1 ? 's' : ''}`);
+      clauses.push(
+        `clause de préciput sur ${enabledSelections} bien${enabledSelections > 1 ? 's' : ''}`,
+      );
     }
   }
   if (patrimonialContext.stipulationContraireCU) {
@@ -240,23 +254,32 @@ function buildDispositionSummaries(
   }
 
   const usufruitSuccessifCount = [
-    ...donationsContext.filter((donation) => donation.avecReserveUsufruit && donation.usufruitSuccessif),
+    ...donationsContext.filter(
+      (donation) => donation.avecReserveUsufruit && donation.usufruitSuccessif,
+    ),
     ...donationPartageActs.filter((act) => act.avecReserveUsufruit && act.usufruitSuccessif),
   ].length;
   if (usufruitSuccessifCount > 0) {
-    dispositions.push(`Usufruit successif au conjoint/partenaire sur ${usufruitSuccessifCount} donation${usufruitSuccessifCount > 1 ? 's' : ''}`);
+    dispositions.push(
+      `Usufruit successif au conjoint/partenaire sur ${usufruitSuccessifCount} donation${usufruitSuccessifCount > 1 ? 's' : ''}`,
+    );
   }
 
   return dispositions;
 }
 
-function totalAnnexRow(rows: SuccessionAnnexExportBeneficiaryRow[]): SuccessionAnnexExportBeneficiaryRow {
+function totalAnnexRow(
+  rows: SuccessionAnnexExportBeneficiaryRow[],
+): SuccessionAnnexExportBeneficiaryRow {
   return {
     label: 'Total',
     capitauxDecesNets: rows.reduce((sum, row) => sum + row.capitauxDecesNets, 0),
     droitsAssuranceVie990I: rows.reduce((sum, row) => sum + row.droitsAssuranceVie990I, 0),
     droitsSuccession: rows.reduce((sum, row) => sum + row.droitsSuccession, 0),
-    transmissionNetteSuccession: rows.reduce((sum, row) => sum + row.transmissionNetteSuccession, 0),
+    transmissionNetteSuccession: rows.reduce(
+      (sum, row) => sum + row.transmissionNetteSuccession,
+      0,
+    ),
     isTotal: true,
   };
 }
@@ -270,16 +293,14 @@ function buildAnnexRowsForStep(
   const ids = new Map<string, { label: string; exonerated?: boolean }>();
 
   for (const row of transmissionRows) {
-    const brut = step === 'step1'
-      ? (row.step1Brut ?? 0)
-      : step === 'step2'
-        ? (row.step2Brut ?? 0)
-        : row.brut;
-    const droits = step === 'step1'
-      ? (row.step1Droits ?? 0)
-      : step === 'step2'
-        ? (row.step2Droits ?? 0)
-        : row.droits;
+    const brut =
+      step === 'step1' ? (row.step1Brut ?? 0) : step === 'step2' ? (row.step2Brut ?? 0) : row.brut;
+    const droits =
+      step === 'step1'
+        ? (row.step1Droits ?? 0)
+        : step === 'step2'
+          ? (row.step2Droits ?? 0)
+          : row.droits;
     if (brut > 0 || droits > 0) ids.set(row.id, { label: row.label, exonerated: row.exonerated });
   }
   for (const line of [...insurance990I, ...insurance757B]) {
@@ -291,22 +312,30 @@ function buildAnnexRowsForStep(
     const row = transmissionRows.find((candidate) => candidate.id === id);
     const ins990I = insurance990I.find((line) => line.id === id);
     const ins757B = insurance757B.find((line) => line.id === id);
-    const brut = step === 'step1'
-      ? (row?.step1Brut ?? 0)
-      : step === 'step2'
-        ? (row?.step2Brut ?? 0)
-        : (row?.brut ?? 0);
-    const droitsDmtg = step === 'step1'
-      ? (row?.step1Droits ?? 0)
-      : step === 'step2'
-        ? (row?.step2Droits ?? 0)
-        : (row?.droits ?? 0);
+    const brut =
+      step === 'step1'
+        ? (row?.step1Brut ?? 0)
+        : step === 'step2'
+          ? (row?.step2Brut ?? 0)
+          : (row?.brut ?? 0);
+    const droitsDmtg =
+      step === 'step1'
+        ? (row?.step1Droits ?? 0)
+        : step === 'step2'
+          ? (row?.step2Droits ?? 0)
+          : (row?.droits ?? 0);
     const capitauxDecesNets = (ins990I?.netTransmis ?? 0) + (ins757B?.capitalTransmis ?? 0);
     const droitsAssuranceVie990I = ins990I?.totalDroits ?? 0;
     const droitsSuccession = droitsDmtg + (ins757B?.totalDroits ?? 0);
     const transmissionNetteSuccession = brut + capitauxDecesNets - droitsSuccession;
 
-    if (brut === 0 && capitauxDecesNets === 0 && droitsAssuranceVie990I === 0 && droitsSuccession === 0) continue;
+    if (
+      brut === 0 &&
+      capitauxDecesNets === 0 &&
+      droitsAssuranceVie990I === 0 &&
+      droitsSuccession === 0
+    )
+      continue;
     rows.push({
       label,
       capitauxDecesNets,
@@ -317,7 +346,9 @@ function buildAnnexRowsForStep(
     });
   }
 
-  rows.sort((a, b) => (a.label === 'Conjoint survivant' ? -1 : b.label === 'Conjoint survivant' ? 1 : 0));
+  rows.sort((a, b) =>
+    a.label === 'Conjoint survivant' ? -1 : b.label === 'Conjoint survivant' ? 1 : 0,
+  );
   return rows;
 }
 
@@ -353,8 +384,18 @@ export function buildSuccessionAnnexBeneficiarySteps({
   secondDecedeLabel,
 }: BuildSuccessionAnnexBeneficiaryStepsInput): SuccessionAnnexExportStep[] {
   if (displayUsesChainage) {
-    const step1Rows = buildAnnexRowsForStep(transmissionRows, insurance990IStep1, insurance757BStep1, 'step1');
-    const step2Rows = buildAnnexRowsForStep(transmissionRows, insurance990IStep2, insurance757BStep2, 'step2');
+    const step1Rows = buildAnnexRowsForStep(
+      transmissionRows,
+      insurance990IStep1,
+      insurance757BStep1,
+      'step1',
+    );
+    const step2Rows = buildAnnexRowsForStep(
+      transmissionRows,
+      insurance990IStep2,
+      insurance757BStep2,
+      'step2',
+    );
     return [
       {
         title: `1er décès — ${firstDecedeLabel ?? 'Défunt 1'}`,
@@ -367,11 +408,18 @@ export function buildSuccessionAnnexBeneficiarySteps({
     ];
   }
 
-  const rows = buildAnnexRowsForStep(transmissionRows, insurance990IStep1, insurance757BStep1, 'direct');
-  return [{
-    title: 'Succession directe simulée',
-    beneficiaries: [...rows, totalAnnexRow(rows)],
-  }];
+  const rows = buildAnnexRowsForStep(
+    transmissionRows,
+    insurance990IStep1,
+    insurance757BStep1,
+    'direct',
+  );
+  return [
+    {
+      title: 'Succession directe simulée',
+      beneficiaries: [...rows, totalAnnexRow(rows)],
+    },
+  ];
 }
 
 export function buildSuccessionFamilyContextExport({
@@ -392,14 +440,16 @@ export function buildSuccessionFamilyContextExport({
   familyMembers: FamilyMember[];
 }): SuccessionFamilyContextExport {
   return {
-    situationLabel: optionLabel(SITUATION_OPTIONS, civilContext.situationMatrimoniale)
-      ?? civilContext.situationMatrimoniale,
+    situationLabel:
+      optionLabel(SITUATION_OPTIONS, civilContext.situationMatrimoniale) ??
+      civilContext.situationMatrimoniale,
     regimeLabel: civilContext.regimeMatrimonial
       ? REGIMES_MATRIMONIAUX[civilContext.regimeMatrimonial]?.label
       : undefined,
-    pacsConventionLabel: civilContext.situationMatrimoniale === 'pacse'
-      ? optionLabel(PACS_CONVENTION_OPTIONS, civilContext.pacsConvention)
-      : undefined,
+    pacsConventionLabel:
+      civilContext.situationMatrimoniale === 'pacse'
+        ? optionLabel(PACS_CONVENTION_OPTIONS, civilContext.pacsConvention)
+        : undefined,
     dispositions: buildDispositionSummaries(
       civilContext,
       devolutionContext,

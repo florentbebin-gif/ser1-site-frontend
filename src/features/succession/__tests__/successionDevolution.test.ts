@@ -16,7 +16,11 @@ describe('buildSuccessionDevolutionAnalysis', () => {
     expect(analysis.lines.some((line) => line.heritier === 'Conjoint survivant')).toBe(true);
     expect(analysis.lines.some((line) => line.droits.includes('hypothèse moteur'))).toBe(true);
     expect(analysis.lines.some((line) => line.montantEstime === 200000)).toBe(true);
-    expect(analysis.lines.every((line) => !line.heritier.includes('Option A') && !line.heritier.includes('Option B'))).toBe(true);
+    expect(
+      analysis.lines.every(
+        (line) => !line.heritier.includes('Option A') && !line.heritier.includes('Option B'),
+      ),
+    ).toBe(true);
   });
 
   it('gère conjoint + enfants non communs (1/4 PP)', () => {
@@ -27,7 +31,9 @@ describe('buildSuccessionDevolutionAnalysis', () => {
       600000,
     );
 
-    expect(analysis.lines.some((line) => line.droits.includes('1/4 en pleine propriété'))).toBe(true);
+    expect(analysis.lines.some((line) => line.droits.includes('1/4 en pleine propriété'))).toBe(
+      true,
+    );
     expect(analysis.lines.some((line) => line.heritier === 'Descendants')).toBe(true);
     expect(analysis.lines.some((line) => line.montantEstime === 150000)).toBe(true);
   });
@@ -96,7 +102,9 @@ describe('buildSuccessionDevolutionAnalysis', () => {
     expect(conjointLine?.droits).toContain('Usufruit');
     expect(descendantsLine?.montantEstime).toBe(300000);
     expect(descendantsLine?.droits).toContain('Nue-propriété');
-    expect(analysis.warnings.some((warning) => warning.includes('Choix légal du conjoint'))).toBe(true);
+    expect(analysis.warnings.some((warning) => warning.includes('Choix légal du conjoint'))).toBe(
+      true,
+    );
   });
 
   it('gère conjoint + enfants communs avec choix légal au quart en pleine propriété', () => {
@@ -110,7 +118,9 @@ describe('buildSuccessionDevolutionAnalysis', () => {
       800000,
     );
 
-    expect(analysis.lines.some((line) => line.droits.includes('art. 757 CC, choix légal'))).toBe(true);
+    expect(analysis.lines.some((line) => line.droits.includes('art. 757 CC, choix légal'))).toBe(
+      true,
+    );
     expect(analysis.lines.some((line) => line.montantEstime === 200000)).toBe(true);
   });
 
@@ -206,7 +216,11 @@ describe('buildSuccessionDevolutionAnalysis', () => {
     expect(analysis.nbEnfantsTotal).toBe(2);
     expect(analysis.reserve?.reserve).toBe('2/3');
     expect(analysis.lines.some((line) => line.droits.includes('représentation'))).toBe(true);
-    expect(analysis.warnings.some((warning) => warning.includes('Représentation successorale simplifiée'))).toBe(true);
+    expect(
+      analysis.warnings.some((warning) =>
+        warning.includes('Représentation successorale simplifiée'),
+      ),
+    ).toBe(true);
   });
 
   it('marié sans descendants, deux parents vivants — art. 757-1 CC (conjoint 1/2, parents 1/4 chacun)', () => {
@@ -357,5 +371,3 @@ describe('buildSuccessionDevolutionAnalysis', () => {
     expect(freresLine?.droits).toContain('2 collatéraux privilégiés');
   });
 });
-
-

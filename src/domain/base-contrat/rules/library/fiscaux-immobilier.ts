@@ -11,16 +11,21 @@ import type { ProductRules, Audience } from '../types';
 const PINEL_PINEL_PLUS: ProductRules = {
   constitution: [
     {
-      title: 'Réduction d\'IR (dispositif clôturé au 31/12/2024)',
+      title: "Réduction d'IR (dispositif clôturé au 31/12/2024)",
       bullets: [
-        'Pinel classique : réduction d\'IR selon la durée d\'engagement de location (6, 9 ou 12 ans).',
+        "Pinel classique : réduction d'IR selon la durée d'engagement de location (6, 9 ou 12 ans).",
         'Pinel+ : taux de réduction majorés si critères de qualité et de localisation renforcés.',
-        'Plafond d\'investissement : 300 000 €/an et 5 500 €/m².',
-        'Dispositif clôturé : plus d\'acquisition éligible depuis le 1er janvier 2025.',
+        "Plafond d'investissement : 300 000 €/an et 5 500 €/m².",
+        "Dispositif clôturé : plus d'acquisition éligible depuis le 1er janvier 2025.",
       ],
       tags: ['reduction_ir', 'plafond_300k', 'ferme_2025'],
       confidence: 'elevee',
-      sources: [{ label: 'Art. 199 novovicies CGI — Pinel', url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000049481248' }],
+      sources: [
+        {
+          label: 'Art. 199 novovicies CGI — Pinel',
+          url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000049481248',
+        },
+      ],
     },
   ],
   sortie: [
@@ -29,11 +34,16 @@ const PINEL_PINEL_PLUS: ProductRules = {
       bullets: [
         'Plus-value soumise au régime des plus-values immobilières des particuliers.',
         '{capitalGainIr} + {psGeneral} avec abattement progressif (exonération IR après 22 ans, PS après 30 ans).',
-        'Reprise de la réduction d\'IR si le bien est vendu avant la fin de l\'engagement.',
+        "Reprise de la réduction d'IR si le bien est vendu avant la fin de l'engagement.",
       ],
       tags: ['pv_immo', 'abattement_detention', 'reprise_reduction'],
       confidence: 'elevee',
-      sources: [{ label: 'Art. 150 U CGI — plus-values immobilières', url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000043655826' }],
+      sources: [
+        {
+          label: 'Art. 150 U CGI — plus-values immobilières',
+          url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000043655826',
+        },
+      ],
     },
   ],
   deces: [
@@ -41,12 +51,17 @@ const PINEL_PINEL_PLUS: ProductRules = {
       title: 'Succession',
       bullets: [
         'Le bien intègre la succession à sa valeur vénale.',
-        'L\'engagement de location est transmis aux héritiers (ou clôturé sans reprise si décès).',
+        "L'engagement de location est transmis aux héritiers (ou clôturé sans reprise si décès).",
         'DMTG selon le barème légal.',
       ],
       tags: ['dmtg_classique', 'transmission_engagement'],
       confidence: 'elevee',
-      sources: [{ label: 'Service-public.fr — Droits de succession', url: 'https://www.service-public.fr/particuliers/vosdroits/F35794' }],
+      sources: [
+        {
+          label: 'Service-public.fr — Droits de succession',
+          url: 'https://www.service-public.fr/particuliers/vosdroits/F35794',
+        },
+      ],
     },
   ],
 };
@@ -54,16 +69,21 @@ const PINEL_PINEL_PLUS: ProductRules = {
 const DENORMANDIE: ProductRules = {
   constitution: [
     {
-      title: 'Réduction d\'IR — Ancien à rénover',
+      title: "Réduction d'IR — Ancien à rénover",
       bullets: [
-        'Réduction d\'IR de 12 %, 18 % ou 21 % selon la durée d\'engagement (6, 9 ou 12 ans).',
-        'Conditions : bien situé dans une commune éligible, travaux de rénovation ≥ 25 % du coût total d\'opération.',
+        "Réduction d'IR de 12 %, 18 % ou 21 % selon la durée d'engagement (6, 9 ou 12 ans).",
+        "Conditions : bien situé dans une commune éligible, travaux de rénovation ≥ 25 % du coût total d'opération.",
         'Plafond identique au Pinel : 300 000 €/an et 5 500 €/m².',
         'À confirmer selon la nature exacte des travaux (amélioration de la performance énergétique ou modernisation).',
       ],
       tags: ['reduction_ir', 'renovation', 'plafond_300k'],
       confidence: 'moyenne',
-      sources: [{ label: 'Art. 199 novovicies CGI — Denormandie', url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000049481248' }],
+      sources: [
+        {
+          label: 'Art. 199 novovicies CGI — Denormandie',
+          url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000049481248',
+        },
+      ],
       dependencies: ['nature exacte des travaux', 'commune éligible'],
     },
   ],
@@ -73,22 +93,30 @@ const DENORMANDIE: ProductRules = {
       bullets: [
         'Plus-value soumise au régime des plus-values immobilières des particuliers ({capitalGainIr} + {psGeneral}).',
         'Abattements pour durée de détention applicables.',
-        'Reprise de la réduction d\'IR si cession avant la fin de l\'engagement.',
+        "Reprise de la réduction d'IR si cession avant la fin de l'engagement.",
       ],
       tags: ['pv_immo', 'abattement_detention', 'reprise_reduction'],
       confidence: 'elevee',
-      sources: [{ label: 'Art. 150 U CGI — plus-values immobilières', url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000043655826' }],
+      sources: [
+        {
+          label: 'Art. 150 U CGI — plus-values immobilières',
+          url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000043655826',
+        },
+      ],
     },
   ],
   deces: [
     {
       title: 'Succession',
-      bullets: [
-        'Bien intègre la succession à sa valeur vénale. DMTG selon le barème légal.',
-      ],
+      bullets: ['Bien intègre la succession à sa valeur vénale. DMTG selon le barème légal.'],
       tags: ['dmtg_classique'],
       confidence: 'elevee',
-      sources: [{ label: 'Service-public.fr — Droits de succession', url: 'https://www.service-public.fr/particuliers/vosdroits/F35794' }],
+      sources: [
+        {
+          label: 'Service-public.fr — Droits de succession',
+          url: 'https://www.service-public.fr/particuliers/vosdroits/F35794',
+        },
+      ],
     },
   ],
 };
@@ -96,16 +124,21 @@ const DENORMANDIE: ProductRules = {
 const MALRAUX: ProductRules = {
   constitution: [
     {
-      title: 'Réduction d\'IR — Restauration de patrimoine',
+      title: "Réduction d'IR — Restauration de patrimoine",
       bullets: [
-        'Réduction d\'IR de {malrauxReductionRates} des dépenses de travaux.',
+        "Réduction d'IR de {malrauxReductionRates} des dépenses de travaux.",
         'Plafond des travaux retenus : 400 000 € sur 4 années consécutives. Hors plafonnement global des niches fiscales.',
-        'Engagement de location de 9 ans à compter de l\'achèvement.',
-        'À confirmer selon l\'obtention de l\'AST validée par l\'ABF et la localisation en SPR.',
+        "Engagement de location de 9 ans à compter de l'achèvement.",
+        "À confirmer selon l'obtention de l'AST validée par l'ABF et la localisation en SPR.",
       ],
       tags: ['reduction_ir', 'hors_plafond_niches', 'patrimoine_historique'],
       confidence: 'moyenne',
-      sources: [{ label: 'Art. 199 tervicies CGI — Malraux', url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000037991558' }],
+      sources: [
+        {
+          label: 'Art. 199 tervicies CGI — Malraux',
+          url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000037991558',
+        },
+      ],
       dependencies: ['obtention AST validée par ABF', 'localisation en SPR avec PSMV ou PVAP'],
     },
   ],
@@ -123,12 +156,15 @@ const MALRAUX: ProductRules = {
   deces: [
     {
       title: 'Succession',
-      bullets: [
-        'Bien intègre la succession à sa valeur vénale. DMTG selon le barème légal.',
-      ],
+      bullets: ['Bien intègre la succession à sa valeur vénale. DMTG selon le barème légal.'],
       tags: ['dmtg_classique'],
       confidence: 'elevee',
-      sources: [{ label: 'Service-public.fr — Droits de succession', url: 'https://www.service-public.fr/particuliers/vosdroits/F35794' }],
+      sources: [
+        {
+          label: 'Service-public.fr — Droits de succession',
+          url: 'https://www.service-public.fr/particuliers/vosdroits/F35794',
+        },
+      ],
     },
   ],
 };
@@ -139,12 +175,17 @@ const MONUMENTS_HISTORIQUES: ProductRules = {
       title: 'Déduction des charges — Régime de faveur',
       bullets: [
         'Les charges foncières (travaux, entretien) sont déductibles du revenu global, hors plafonnement des niches fiscales.',
-        'Applicable aux immeubles classés ou inscrits à l\'inventaire des monuments historiques.',
-        'Dérogation pour les propriétaires occupants (pas d\'obligation de location).',
+        "Applicable aux immeubles classés ou inscrits à l'inventaire des monuments historiques.",
+        "Dérogation pour les propriétaires occupants (pas d'obligation de location).",
       ],
       tags: ['deduction_revenu_global', 'hors_plafond_niches', 'monument_classe'],
       confidence: 'elevee',
-      sources: [{ label: 'Art. 156 bis CGI — Monuments historiques', url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000006302398' }],
+      sources: [
+        {
+          label: 'Art. 156 bis CGI — Monuments historiques',
+          url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000006302398',
+        },
+      ],
     },
   ],
   sortie: [
@@ -162,12 +203,17 @@ const MONUMENTS_HISTORIQUES: ProductRules = {
     {
       title: 'Succession — Avantage DMTG',
       bullets: [
-        'Exonération de DMTG possible si le bien fait l\'objet d\'une convention avec l\'État (ouverture au public).',
+        "Exonération de DMTG possible si le bien fait l'objet d'une convention avec l'État (ouverture au public).",
         'Sans convention : intégration dans la succession à la valeur vénale, DMTG classiques.',
       ],
       tags: ['exoneration_dmtg_convention', 'dmtg_classique'],
       confidence: 'elevee',
-      sources: [{ label: 'Art. 795 A CGI — exonération DMTG monuments historiques', url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000006309968' }],
+      sources: [
+        {
+          label: 'Art. 795 A CGI — exonération DMTG monuments historiques',
+          url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000006309968',
+        },
+      ],
     },
   ],
 };
@@ -175,10 +221,10 @@ const MONUMENTS_HISTORIQUES: ProductRules = {
 const DISPOSITIF_GENERIQUE: ProductRules = {
   constitution: [
     {
-      title: 'Réduction ou déduction d\'IR',
+      title: "Réduction ou déduction d'IR",
       bullets: [
-        'Dispositif fiscal d\'investissement immobilier ouvrant droit à une réduction ou déduction fiscale.',
-        'Conditions spécifiques : zone géographique, durée d\'engagement, plafonds de loyers et de ressources locataires.',
+        "Dispositif fiscal d'investissement immobilier ouvrant droit à une réduction ou déduction fiscale.",
+        "Conditions spécifiques : zone géographique, durée d'engagement, plafonds de loyers et de ressources locataires.",
         'Consulter les textes en vigueur pour les règles détaillées de chaque dispositif.',
       ],
       tags: ['dispositif_fiscal_immo'],
@@ -191,11 +237,16 @@ const DISPOSITIF_GENERIQUE: ProductRules = {
       bullets: [
         'Plus-value soumise au régime des plus-values immobilières des particuliers.',
         'Abattements pour durée de détention applicables (exonération IR après 22 ans, PS après 30 ans).',
-        'Reprise de l\'avantage fiscal si cession avant la fin de l\'engagement.',
+        "Reprise de l'avantage fiscal si cession avant la fin de l'engagement.",
       ],
       tags: ['pv_immo', 'abattement_detention', 'reprise_avantage'],
       confidence: 'elevee',
-      sources: [{ label: 'Art. 150 U CGI — plus-values immobilières', url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000043655826' }],
+      sources: [
+        {
+          label: 'Art. 150 U CGI — plus-values immobilières',
+          url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000043655826',
+        },
+      ],
     },
   ],
   deces: [
@@ -207,7 +258,12 @@ const DISPOSITIF_GENERIQUE: ProductRules = {
       ],
       tags: ['dmtg_classique'],
       confidence: 'elevee',
-      sources: [{ label: 'Service-public.fr — Droits de succession', url: 'https://www.service-public.fr/particuliers/vosdroits/F35794' }],
+      sources: [
+        {
+          label: 'Service-public.fr — Droits de succession',
+          url: 'https://www.service-public.fr/particuliers/vosdroits/F35794',
+        },
+      ],
     },
   ],
 };

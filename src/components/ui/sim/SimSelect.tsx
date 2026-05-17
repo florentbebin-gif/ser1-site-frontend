@@ -115,13 +115,17 @@ export function SimSelect({
     align === 'left' ? 'sim-select-wrapper--left' : '',
     open ? 'is-open' : '',
     className ?? '',
-  ].filter(Boolean).join(' ');
+  ]
+    .filter(Boolean)
+    .join(' ');
 
   const triggerClass = [
     'sim-field__select-trigger',
     open ? 'is-open' : '',
     forced ? 'is-forced' : '',
-  ].filter(Boolean).join(' ');
+  ]
+    .filter(Boolean)
+    .join(' ');
 
   return (
     <div ref={ref} className={wrapperClass} style={style}>
@@ -130,7 +134,9 @@ export function SimSelect({
         ref={triggerRef}
         className={triggerClass}
         disabled={disabled}
-        onClick={() => { if (!forced) setOpen((v) => !v); }}
+        onClick={() => {
+          if (!forced) setOpen((v) => !v);
+        }}
         onKeyDown={(event) => {
           if (clearable && value && (event.key === 'Delete' || event.key === 'Backspace')) {
             event.preventDefault();
@@ -143,7 +149,9 @@ export function SimSelect({
         aria-label={ariaLabel}
         data-testid={testId}
       >
-        <span className={`sim-field__select-value${!selected && placeholder ? ' sim-field__select-value--placeholder' : ''}`}>
+        <span
+          className={`sim-field__select-value${!selected && placeholder ? ' sim-field__select-value--placeholder' : ''}`}
+        >
           {selected?.label ?? placeholder ?? ''}
         </span>
         <svg
@@ -162,39 +170,42 @@ export function SimSelect({
           />
         </svg>
       </button>
-      {open && createPortal(
-        <ul
-          ref={dropdownRef}
-          role="listbox"
-          aria-label="Options"
-          className="sim-field__dropdown"
-          style={dropdownStyle}
-        >
-          {options.map((o) => (
-            <li
-              key={o.value}
-              role="option"
-              aria-selected={o.value === value}
-              className={[
-                'sim-field__option',
-                o.value === value ? 'is-selected' : '',
-                o.disabled ? 'is-disabled' : '',
-              ].filter(Boolean).join(' ')}
-              onMouseDown={() => {
-                if (o.disabled) return;
-                onChange(o.value);
-                setOpen(false);
-              }}
-            >
-              {o.label}
-              {o.description && (
-                <span className="sim-field__option-description">{o.description}</span>
-              )}
-            </li>
-          ))}
-        </ul>,
-        document.body,
-      )}
+      {open &&
+        createPortal(
+          <ul
+            ref={dropdownRef}
+            role="listbox"
+            aria-label="Options"
+            className="sim-field__dropdown"
+            style={dropdownStyle}
+          >
+            {options.map((o) => (
+              <li
+                key={o.value}
+                role="option"
+                aria-selected={o.value === value}
+                className={[
+                  'sim-field__option',
+                  o.value === value ? 'is-selected' : '',
+                  o.disabled ? 'is-disabled' : '',
+                ]
+                  .filter(Boolean)
+                  .join(' ')}
+                onMouseDown={() => {
+                  if (o.disabled) return;
+                  onChange(o.value);
+                  setOpen(false);
+                }}
+              >
+                {o.label}
+                {o.description && (
+                  <span className="sim-field__option-description">{o.description}</span>
+                )}
+              </li>
+            ))}
+          </ul>,
+          document.body,
+        )}
     </div>
   );
 }

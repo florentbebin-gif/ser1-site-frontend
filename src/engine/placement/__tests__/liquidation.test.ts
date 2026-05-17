@@ -5,16 +5,29 @@ import { DEFAULT_FISCAL_PARAMS } from '../shared';
 describe('calculFiscaliteRetrait', () => {
   it('AV < 8 ans : applique le PFU par défaut', () => {
     const result = calculFiscaliteRetrait(
-      { envelope: 'AV', montantRetrait: 10000, partGains: 3000, partCapital: 7000, anneeOuverture: 4 },
+      {
+        envelope: 'AV',
+        montantRetrait: 10000,
+        partGains: 3000,
+        partCapital: 7000,
+        anneeOuverture: 4,
+      },
       DEFAULT_FISCAL_PARAMS,
     );
     expect(result.fiscaliteTotal).toBeGreaterThan(0);
     expect(result.retraitNet).toBeLessThan(10000);
   });
 
-  it('AV >= 8 ans : applique l\'abattement avant taxation', () => {
+  it("AV >= 8 ans : applique l'abattement avant taxation", () => {
     const result = calculFiscaliteRetrait(
-      { envelope: 'AV', montantRetrait: 10000, partGains: 3000, partCapital: 7000, anneeOuverture: 8, situation: 'single' },
+      {
+        envelope: 'AV',
+        montantRetrait: 10000,
+        partGains: 3000,
+        partCapital: 7000,
+        anneeOuverture: 8,
+        situation: 'single',
+      },
       DEFAULT_FISCAL_PARAMS,
     );
     // Avec abattement 4600 (single) sur 3000 de gains → gains nets = 0 → IR sur gains ≈ 0

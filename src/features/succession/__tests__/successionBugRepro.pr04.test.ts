@@ -52,7 +52,9 @@ describe('Reproductions ciblées des anomalies succession', () => {
     expect(analysis.step1?.partConjoint).toBe(400_000);
     expect(analysis.step1?.partEnfants).toBe(600_000);
     expect(analysis.totalDroits).toBe(76_388);
-    expect(analysis.warnings.some((warning) => warning.includes('usufruit total valorise'))).toBe(true);
+    expect(analysis.warnings.some((warning) => warning.includes('usufruit total valorise'))).toBe(
+      true,
+    );
   });
 
   it('BUG-9/3.4: DDV mixte ne reproduit pas un total a 0 avec dates de naissance valides', () => {
@@ -125,7 +127,11 @@ describe('Reproductions ciblées des anomalies succession', () => {
     expect(analysis.step1?.partConjoint).toBe(250_000);
     expect(analysis.step1?.partEnfants).toBe(750_000);
     expect(analysis.totalDroits).toBeGreaterThan(0);
-    expect(analysis.warnings.some((warning) => warning.includes('date de naissance du conjoint survivant manquante'))).toBe(true);
+    expect(
+      analysis.warnings.some((warning) =>
+        warning.includes('date de naissance du conjoint survivant manquante'),
+      ),
+    ).toBe(true);
   });
 
   it("BUG-10/5.3-5.6: le parseur conserve versementsApres70 lorsqu'ils sont saisis", () => {
@@ -147,15 +153,17 @@ describe('Reproductions ciblées des anomalies succession', () => {
       [],
       [],
       [],
-      [{
-        id: 'av-1',
-        typeContrat: 'standard',
-        souscripteur: 'epoux1',
-        assure: 'epoux1',
-        clauseBeneficiaire: 'CUSTOM:E1:100',
-        capitauxDeces: 300_000,
-        versementsApres70: 300_000,
-      }],
+      [
+        {
+          id: 'av-1',
+          typeContrat: 'standard',
+          souscripteur: 'epoux1',
+          assure: 'epoux1',
+          clauseBeneficiaire: 'CUSTOM:E1:100',
+          capitauxDeces: 300_000,
+          versementsApres70: 300_000,
+        },
+      ],
       [],
       [],
       [],
@@ -171,15 +179,17 @@ describe('Reproductions ciblées des anomalies succession', () => {
   it('BUG-10/5.3-5.6: le moteur AV calcule bien une base taxable 757B non nulle', () => {
     const snapshot = buildSuccessionFiscalSnapshot(null);
     const analysis = buildSuccessionAvFiscalAnalysis(
-      [{
-        id: 'av-1',
-        typeContrat: 'standard',
-        souscripteur: 'epoux1',
-        assure: 'epoux1',
-        clauseBeneficiaire: 'CUSTOM:E1:100',
-        capitauxDeces: 300_000,
-        versementsApres70: 300_000,
-      }],
+      [
+        {
+          id: 'av-1',
+          typeContrat: 'standard',
+          souscripteur: 'epoux1',
+          assure: 'epoux1',
+          clauseBeneficiaire: 'CUSTOM:E1:100',
+          capitauxDeces: 300_000,
+          versementsApres70: 300_000,
+        },
+      ],
       makeCivil({
         situationMatrimoniale: 'celibataire',
         regimeMatrimonial: null,
@@ -246,7 +256,10 @@ describe('Reproductions ciblées des anomalies succession', () => {
       actifNetSuccession: 800_000,
     });
 
-    expect(analysis.transmissionRows.map((row) => row.label)).toEqual(['Conjoint survivant', 'Parent 1']);
+    expect(analysis.transmissionRows.map((row) => row.label)).toEqual([
+      'Conjoint survivant',
+      'Parent 1',
+    ]);
     expect(analysis.heirs).toHaveLength(2);
     expect(analysis.result).not.toBeNull();
   });
@@ -298,15 +311,17 @@ describe('Reproductions ciblées des anomalies succession', () => {
   it('BUG-8: AV 2M / 1 enfant / tout avant 70 ans - droits 990I = 498594', () => {
     const snapshot = buildSuccessionFiscalSnapshot(null);
     const analysis = buildSuccessionAvFiscalAnalysis(
-      [{
-        id: 'av-1',
-        typeContrat: 'standard',
-        souscripteur: 'epoux1',
-        assure: 'epoux1',
-        clauseBeneficiaire: 'CUSTOM:E1:100',
-        capitauxDeces: 2_000_000,
-        versementsApres70: 0,
-      }],
+      [
+        {
+          id: 'av-1',
+          typeContrat: 'standard',
+          souscripteur: 'epoux1',
+          assure: 'epoux1',
+          clauseBeneficiaire: 'CUSTOM:E1:100',
+          capitauxDeces: 2_000_000,
+          versementsApres70: 0,
+        },
+      ],
       makeCivil({ situationMatrimoniale: 'celibataire' }),
       [{ id: 'E1', rattachement: 'epoux1' as const }],
       [],

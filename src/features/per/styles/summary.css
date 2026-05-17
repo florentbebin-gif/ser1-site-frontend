@@ -50,7 +50,7 @@
 .per-summary-primary-metric {
   padding: 18px;
   border-radius: 12px;
-  background: color-mix(in srgb, var(--color-c4) 40%, #FFFFFF);
+  background: color-mix(in srgb, var(--color-c4) 40%, #ffffff);
 }
 
 .per-summary-primary-label {
@@ -250,4 +250,3 @@
 .per-plafond-block {
   margin-bottom: 1rem;
 }
-

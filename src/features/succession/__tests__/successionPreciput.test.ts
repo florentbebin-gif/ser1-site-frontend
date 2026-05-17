@@ -65,64 +65,77 @@ describe('successionPreciput helpers', () => {
   });
 
   it('syncs, clamps, and deduplicates targeted preciput selections', () => {
-    const synced = syncSuccessionPreciputSelections([{
-      id: 'prec-1',
-      sourceType: 'asset',
-      sourceId: 'asset-1',
-      labelSnapshot: 'Ancien libelle',
-      pocket: 'communaute',
-      amount: 500000,
-      enabled: true,
-    }, {
-      id: 'prec-2',
-      sourceType: 'asset',
-      sourceId: 'asset-1',
-      labelSnapshot: 'Doublon',
-      pocket: 'communaute',
-      amount: 1000,
-      enabled: true,
-    }, {
-      id: 'prec-3',
-      sourceType: 'groupement_foncier',
-      sourceId: 'gf-inexistant',
-      labelSnapshot: 'Stale',
-      pocket: 'communaute',
-      amount: 1000,
-      enabled: true,
-    }], [{
-      key: 'asset:asset-1',
-      sourceType: 'asset',
-      sourceId: 'asset-1',
-      label: 'Maison familiale',
-      pocket: 'communaute',
-      maxAmount: 300000,
-      isResidencePrincipale: false,
-    }]);
+    const synced = syncSuccessionPreciputSelections(
+      [
+        {
+          id: 'prec-1',
+          sourceType: 'asset',
+          sourceId: 'asset-1',
+          labelSnapshot: 'Ancien libelle',
+          pocket: 'communaute',
+          amount: 500000,
+          enabled: true,
+        },
+        {
+          id: 'prec-2',
+          sourceType: 'asset',
+          sourceId: 'asset-1',
+          labelSnapshot: 'Doublon',
+          pocket: 'communaute',
+          amount: 1000,
+          enabled: true,
+        },
+        {
+          id: 'prec-3',
+          sourceType: 'groupement_foncier',
+          sourceId: 'gf-inexistant',
+          labelSnapshot: 'Stale',
+          pocket: 'communaute',
+          amount: 1000,
+          enabled: true,
+        },
+      ],
+      [
+        {
+          key: 'asset:asset-1',
+          sourceType: 'asset',
+          sourceId: 'asset-1',
+          label: 'Maison familiale',
+          pocket: 'communaute',
+          maxAmount: 300000,
+          isResidencePrincipale: false,
+        },
+      ],
+    );
 
-    expect(synced).toEqual([{
-      id: 'prec-1',
-      sourceType: 'asset',
-      sourceId: 'asset-1',
-      labelSnapshot: 'Maison familiale',
-      pocket: 'communaute',
-      amount: 300000,
-      enabled: true,
-    }]);
+    expect(synced).toEqual([
+      {
+        id: 'prec-1',
+        sourceType: 'asset',
+        sourceId: 'asset-1',
+        labelSnapshot: 'Maison familiale',
+        pocket: 'communaute',
+        amount: 300000,
+        enabled: true,
+      },
+    ]);
   });
 
   it('falls back to the global preciput when no valid targeted selection remains', () => {
     const resolved = resolveSuccessionPreciputApplication({
       patrimonial: {
         preciputMode: 'cible',
-        preciputSelections: [{
-          id: 'prec-1',
-          sourceType: 'asset',
-          sourceId: 'asset-inexistant',
-          labelSnapshot: 'Stale',
-          pocket: 'communaute',
-          amount: 50000,
-          enabled: true,
-        }],
+        preciputSelections: [
+          {
+            id: 'prec-1',
+            sourceType: 'asset',
+            sourceId: 'asset-inexistant',
+            labelSnapshot: 'Stale',
+            pocket: 'communaute',
+            amount: 50000,
+            enabled: true,
+          },
+        ],
         preciputMontant: 12000,
       },
       candidates: [],

@@ -77,7 +77,9 @@ function currentDateLong(): string {
 }
 
 function advisorMeta(advisor?: PerTransfertAdvisorInfo): string {
-  return advisor?.name ? `${advisor.name}\nConseiller en gestion de patrimoine` : 'Conseiller en gestion de patrimoine';
+  return advisor?.name
+    ? `${advisor.name}\nConseiller en gestion de patrimoine`
+    : 'Conseiller en gestion de patrimoine';
 }
 
 function content(title: string, subtitle: string, body: string): ContentSlideSpec {
@@ -87,16 +89,27 @@ function content(title: string, subtitle: string, body: string): ContentSlideSpe
 function cumulativeRent(annualRent: number, annualRate: number, years: number): number {
   let total = 0;
   for (let index = 0; index < Math.max(0, years); index += 1) {
-    total += Math.max(0, annualRent) * ((1 + annualRate) ** index);
+    total += Math.max(0, annualRent) * (1 + annualRate) ** index;
   }
   return total;
 }
 
-function buildSynthesisSlide(input: PerTransfertInput, result: PerTransfertResult): PerTransfertSynthesisSlideSpec {
+function buildSynthesisSlide(
+  input: PerTransfertInput,
+  result: PerTransfertResult,
+): PerTransfertSynthesisSlideSpec {
   const short = result.capitalExit.shortHorizon;
   const long = result.capitalExit.longHorizon;
-  const newPerCumulShort = cumulativeRent(result.newPerFiscal.netAnnualRent, input.projection.newRentRevaluationRate, short.years);
-  const newPerCumulLong = cumulativeRent(result.newPerFiscal.netAnnualRent, input.projection.newRentRevaluationRate, long.years);
+  const newPerCumulShort = cumulativeRent(
+    result.newPerFiscal.netAnnualRent,
+    input.projection.newRentRevaluationRate,
+    short.years,
+  );
+  const newPerCumulLong = cumulativeRent(
+    result.newPerFiscal.netAnnualRent,
+    input.projection.newRentRevaluationRate,
+    long.years,
+  );
   const keep = result.keepScenario.currentRent;
 
   return {
@@ -126,19 +139,26 @@ function buildSynthesisSlide(input: PerTransfertInput, result: PerTransfertResul
         label: 'Capital projeté à la retraite',
         keepScenario: euro(result.keepScenario.capitalAtLiquidation),
         transferScenario: euro(result.capitalAtLiquidation),
-        difference: signedEuro(result.capitalAtLiquidation - result.keepScenario.capitalAtLiquidation),
+        difference: signedEuro(
+          result.capitalAtLiquidation - result.keepScenario.capitalAtLiquidation,
+        ),
       },
       {
         label: `Cumul net ${short.horizonAge} ans`,
         keepScenario: euro(keep.cumulativeToShortHorizon),
         transferScenario: euro(Math.max(newPerCumulShort, short.cumulativeNetWithdrawals)),
-        difference: signedEuro(Math.max(newPerCumulShort, short.cumulativeNetWithdrawals) - keep.cumulativeToShortHorizon),
+        difference: signedEuro(
+          Math.max(newPerCumulShort, short.cumulativeNetWithdrawals) -
+            keep.cumulativeToShortHorizon,
+        ),
       },
       {
         label: `Cumul net ${long.horizonAge} ans`,
         keepScenario: euro(keep.cumulativeToLongHorizon),
         transferScenario: euro(Math.max(newPerCumulLong, long.cumulativeNetWithdrawals)),
-        difference: signedEuro(Math.max(newPerCumulLong, long.cumulativeNetWithdrawals) - keep.cumulativeToLongHorizon),
+        difference: signedEuro(
+          Math.max(newPerCumulLong, long.cumulativeNetWithdrawals) - keep.cumulativeToLongHorizon,
+        ),
       },
       {
         label: 'Capital unique',
@@ -165,7 +185,8 @@ function buildSynthesisSlide(input: PerTransfertInput, result: PerTransfertResul
         difference: '-',
       },
     ],
-    legalNote: '*En cas de sortie en capital d’un PER, les intérêts sont fiscalisés selon les paramètres fiscaux chargés dans SER1.',
+    legalNote:
+      '*En cas de sortie en capital d’un PER, les intérêts sont fiscalisés selon les paramètres fiscaux chargés dans SER1.',
   };
 }
 
@@ -175,7 +196,8 @@ function buildAuditSlide(contract: BaseCgRetraiteContract): PerTransfertAuditCon
     title: 'Audit complet du contrat actuel',
     subtitle: `${contract.compagnie} - ${contract.nomContrat}`,
     contract,
-    legalNote: 'Base CG indicative : vérifier auprès de la compagnie les Conditions Générales, notices et avenants applicables avant recommandation.',
+    legalNote:
+      'Base CG indicative : vérifier auprès de la compagnie les Conditions Générales, notices et avenants applicables avant recommandation.',
   };
 }
 
@@ -195,9 +217,10 @@ export function buildPerTransfertStudyDeck(
     : null;
   const short = result.capitalExit.shortHorizon;
   const long = result.capitalExit.longHorizon;
-  const warningText = result.warnings.length > 0
-    ? result.warnings.join('\n')
-    : 'Aucun point bloquant détecté dans les hypothèses saisies.';
+  const warningText =
+    result.warnings.length > 0
+      ? result.warnings.join('\n')
+      : 'Aucun point bloquant détecté dans les hypothèses saisies.';
 
   return {
     cover: {
@@ -325,11 +348,7 @@ export function buildPerTransfertStudyDeck(
           ? 'Le contrat sélectionné relève du modèle en points. SER1 utilise les points saisis lorsqu’ils sont disponibles ; sinon, le capital net est converti en points à partir de la valeur d’acquisition et du coefficient d’âge.'
           : 'Le contrat sélectionné n’est pas traité comme un contrat en points dans cette simulation.',
       ),
-      content(
-        'Points de vigilance',
-        'Éléments à valider avant recommandation finale',
-        warningText,
-      ),
+      content('Points de vigilance', 'Éléments à valider avant recommandation finale', warningText),
       content(
         'Conclusion de travail',
         'Décision à documenter dans le devoir de conseil',

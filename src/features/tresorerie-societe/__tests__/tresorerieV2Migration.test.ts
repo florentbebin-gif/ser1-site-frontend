@@ -145,29 +145,33 @@ describe('migration trésorerie v3', () => {
         treasuryInitial: 120000,
         annualStructureCosts: 2500,
         reducedCorporateTaxEligible: true,
-        associates: [{
-          id: 'associe-1',
-          label: 'Associé historique',
-          ownershipLots: [{ right: 'pleine_propriete', capitalPct: 80, economicRightsPct: 80 }],
-          roles: ['associe_sans_statut'],
-          cca: {
-            currentBalance: 30000,
-            exceptionalContributions: [],
-            annualContribution: { amount: 6000, startYear: 2028, endYear: 2030 },
-            remunerationRate: 0,
+        associates: [
+          {
+            id: 'associe-1',
+            label: 'Associé historique',
+            ownershipLots: [{ right: 'pleine_propriete', capitalPct: 80, economicRightsPct: 80 }],
+            roles: ['associe_sans_statut'],
+            cca: {
+              currentBalance: 30000,
+              exceptionalContributions: [],
+              annualContribution: { amount: 6000, startYear: 2028, endYear: 2030 },
+              remunerationRate: 0,
+            },
+            remuneration: { source: 'holding', loadedAnnualCost: 0, socialChargeRate: 0 },
           },
-          remuneration: { source: 'holding', loadedAnnualCost: 0, socialChargeRate: 0 },
-        }],
+        ],
         loans: [],
-        subsidiaries: [{
-          id: 'filiale-1',
-          label: 'Filiale historique',
-          holdingOwnershipPct: 70,
-          motherDaughterEligible: true,
-          fiscalIntegrationEstimateEnabled: false,
-          servicesSchedule: [{ amount: 10000, startYear: 2028 }],
-          dividendsSchedule: [{ amount: 15000, startYear: 2028 }],
-        }],
+        subsidiaries: [
+          {
+            id: 'filiale-1',
+            label: 'Filiale historique',
+            holdingOwnershipPct: 70,
+            motherDaughterEligible: true,
+            fiscalIntegrationEstimateEnabled: false,
+            servicesSchedule: [{ amount: 10000, startYear: 2028 }],
+            dividendsSchedule: [{ amount: 15000, startYear: 2028 }],
+          },
+        ],
       },
       allocationMatrix: {
         sweepThreshold: 50000,
@@ -234,16 +238,18 @@ describe('migration trésorerie v3', () => {
       foyer: legacyV4.foyer,
       allocationMatrix: {
         sweepThreshold: 50_000,
-        pockets: [{
-          id: 'legacy',
-          kind: 'distribution',
-          durationYears: 3,
-          annualReturnRate: 0.03,
-          enjoymentDelayMonths: 0,
-          initialAllocationPct: 0,
-          annualAllocationPct: 100,
-          repeatAtTerm: false,
-        }],
+        pockets: [
+          {
+            id: 'legacy',
+            kind: 'distribution',
+            durationYears: 3,
+            annualReturnRate: 0.03,
+            enjoymentDelayMonths: 0,
+            initialAllocationPct: 0,
+            annualAllocationPct: 100,
+            repeatAtTerm: false,
+          },
+        ],
       },
     } as any;
 
@@ -290,7 +296,9 @@ describe('migration trésorerie v3', () => {
 
     expect(v4.company.projectionStartYear).toBe(2026);
     expect(v4.foyer).toEqual({ selectedAssociateId: 'associe-1' });
-    expect(v4.company.associates.map(associate => associate.profile?.projectionStartYear)).toEqual([2026, 2026]);
+    expect(
+      v4.company.associates.map((associate) => associate.profile?.projectionStartYear),
+    ).toEqual([2026, 2026]);
   });
 
   it('migre une rémunération V4 vers deux paliers de revenus V5', () => {
@@ -300,17 +308,19 @@ describe('migration trésorerie v3', () => {
       company: {
         ...v4.company,
         projectionStartYear: 2026,
-        associates: [{
-          ...v4.company.associates[0],
-          remuneration: {
-            source: 'holding',
-            loadedAnnualCost: 80_000,
-            socialChargeRate: 0.30,
-            startYear: 2026,
-            endYear: 2030,
-            annualNeedAfterStop: 40_000,
+        associates: [
+          {
+            ...v4.company.associates[0],
+            remuneration: {
+              source: 'holding',
+              loadedAnnualCost: 80_000,
+              socialChargeRate: 0.3,
+              startYear: 2026,
+              endYear: 2030,
+              annualNeedAfterStop: 40_000,
+            },
           },
-        }],
+        ],
       },
     });
 
@@ -322,7 +332,7 @@ describe('migration trésorerie v3', () => {
         source: 'holding',
         subsidiaryId: undefined,
         loadedAnnualCost: 80_000,
-        socialChargeRate: 0.30,
+        socialChargeRate: 0.3,
         annualNetIncomeNeed: 0,
         useCcaForCompletion: true,
       },
@@ -349,29 +359,33 @@ describe('migration trésorerie v3', () => {
       company: {
         ...v4.company,
         projectionStartYear: 2028,
-        associates: [{
-          ...v4.company.associates[0],
-          profile: v4.company.associates[0].profile
-            ? { ...v4.company.associates[0].profile, annualIncomeNeed: 0 }
-            : undefined,
-          remuneration: {
-            source: 'holding',
-            loadedAnnualCost: 0,
-            socialChargeRate: 0,
+        associates: [
+          {
+            ...v4.company.associates[0],
+            profile: v4.company.associates[0].profile
+              ? { ...v4.company.associates[0].profile, annualIncomeNeed: 0 }
+              : undefined,
+            remuneration: {
+              source: 'holding',
+              loadedAnnualCost: 0,
+              socialChargeRate: 0,
+            },
           },
-        }],
+        ],
       },
     });
 
-    expect(v5.company.associates[0].revenuePhases).toEqual([{
-      id: 'phase-default',
-      startYear: 2028,
-      source: 'none',
-      loadedAnnualCost: 0,
-      socialChargeRate: 0,
-      annualNetIncomeNeed: 0,
-      useCcaForCompletion: true,
-    }]);
+    expect(v5.company.associates[0].revenuePhases).toEqual([
+      {
+        id: 'phase-default',
+        startYear: 2028,
+        source: 'none',
+        loadedAnnualCost: 0,
+        socialChargeRate: 0,
+        annualNetIncomeNeed: 0,
+        useCcaForCompletion: true,
+      },
+    ]);
   });
 
   it('conserve un état V5 déjà normalisé', () => {
@@ -389,35 +403,37 @@ describe('migration trésorerie v3', () => {
         ...v5.company,
         projectionStartYear: 2026,
         legalReserveInitial: undefined,
-        associates: [{
-          ...associate,
-          cca: {
-            currentBalance: 10_000,
-            remunerationRate: 0.04,
-            annualContribution: { amount: 6_000, startYear: 2027, endYear: 2033 },
-            exceptionalContributions: [{ amount: 25_000, year: 2029 }],
+        associates: [
+          {
+            ...associate,
+            cca: {
+              currentBalance: 10_000,
+              remunerationRate: 0.04,
+              annualContribution: { amount: 6_000, startYear: 2027, endYear: 2033 },
+              exceptionalContributions: [{ amount: 25_000, year: 2029 }],
+            },
+            revenuePhases: [
+              {
+                id: 'phase-1',
+                startYear: 2026,
+                source: 'holding',
+                loadedAnnualCost: 80_000,
+                socialChargeRate: 0.3,
+                annualNetIncomeNeed: 0,
+                useCcaForCompletion: true,
+              },
+              {
+                id: 'phase-2',
+                startYear: 2031,
+                source: 'none',
+                loadedAnnualCost: 0,
+                socialChargeRate: 0,
+                annualNetIncomeNeed: 42_000,
+                useCcaForCompletion: false,
+              },
+            ],
           },
-          revenuePhases: [
-            {
-              id: 'phase-1',
-              startYear: 2026,
-              source: 'holding',
-              loadedAnnualCost: 80_000,
-              socialChargeRate: 0.30,
-              annualNetIncomeNeed: 0,
-              useCcaForCompletion: true,
-            },
-            {
-              id: 'phase-2',
-              startYear: 2031,
-              source: 'none',
-              loadedAnnualCost: 0,
-              socialChargeRate: 0,
-              annualNetIncomeNeed: 42_000,
-              useCcaForCompletion: false,
-            },
-          ],
-        }],
+        ],
       },
     });
 

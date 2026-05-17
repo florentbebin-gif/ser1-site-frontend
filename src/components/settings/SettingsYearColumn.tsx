@@ -22,9 +22,7 @@ export default function SettingsYearColumn({
 }: SettingsYearColumnProps): React.ReactElement {
   return (
     <div className={isRight ? 'tax-two-cols-right' : ''}>
-      <div style={{ fontWeight: 600, marginBottom: 6 }}>
-        {yearLabel}
-      </div>
+      <div style={{ fontWeight: 600, marginBottom: 6 }}>{yearLabel}</div>
       {children}
     </div>
   );

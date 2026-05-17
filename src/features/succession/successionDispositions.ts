@@ -1,8 +1,4 @@
-import type {
-  FamilyMember,
-  SituationMatrimoniale,
-  SuccessionEnfant,
-} from './successionDraft';
+import type { FamilyMember, SituationMatrimoniale, SuccessionEnfant } from './successionDraft';
 
 function isCoupleSituation(situation: SituationMatrimoniale): boolean {
   return situation === 'marie' || situation === 'pacse' || situation === 'concubinage';

@@ -1,14 +1,14 @@
 /**
  * Credit Synthesis Slide Builder (Slide 3)
- * 
+ *
  * Premium visual layout for Credit simulation:
  * - HERO metric: Coût total du crédit (central, impossible to miss)
  * - 4 KPI cards: Capital, Durée, Mensualité, Taux
  * - Visual: Split bar showing Capital vs Coût total
- * 
+ *
  * Design: White background, generous spacing, institutional look
  * Readable in 3 seconds - hierarchy: HERO > KPIs > Visual
- * 
+ *
  * IMPORTANT: Uses standard SER1 template (title, subtitle, accent line, footer)
  * All visual elements MUST stay within CONTENT_ZONE (below subtitle, above footer)
  */
@@ -35,16 +35,16 @@ import type { BusinessIconName } from '../icons/addBusinessIcon';
 export interface CreditSynthesisData {
   capitalEmprunte: number;
   dureeMois: number;
-  tauxNominal: number;       // taux annuel %
-  tauxAssurance: number;     // taux annuel %
+  tauxNominal: number; // taux annuel %
+  tauxAssurance: number; // taux annuel %
   mensualiteHorsAssurance: number;
   mensualiteTotale: number;
   coutTotalInterets: number;
   coutTotalAssurance: number;
-  coutTotalCredit: number;   // intérêts + assurance
+  coutTotalCredit: number; // intérêts + assurance
   creditType: 'amortissable' | 'infine';
   assuranceMode: 'CI' | 'CRD';
-  startYM?: string;              // YYYY-MM — date de début du prêt
+  startYM?: string; // YYYY-MM — date de début du prêt
   assuranceDecesByYear?: number[]; // capital décès par année (mode expert uniquement)
 }
 
@@ -56,7 +56,7 @@ const CONTENT_TOP_Y = COORDS_CONTENT.content.y; // 2.3754
 
 // ============================================================================
 // LAYOUT CONSTANTS (inches) - PREMIUM DESIGN
-// 
+//
 // ZONE ALLOCATION:
 // - KPIs:       Y 2.70 → 3.85 (1.15") - 4 columns with icons, labels, values
 // - GAP:        Y 3.85 → 4.10 (0.25") - breathing room
@@ -72,36 +72,36 @@ const LAYOUT = {
   marginX: COORDS_CONTENT.margin.x, // 0.9167
   contentWidth: COORDS_CONTENT.margin.w, // 11.5
   slideWidth: SLIDE_SIZE.width, // 13.3333
-  
+
   // ===== SECTION 1: KPIs (4 columns) =====
   kpi: {
     iconSize: 0.48,
-    iconY: CONTENT_TOP_Y + VERTICAL_SHIFT,           // 2.70
-    labelY: CONTENT_TOP_Y + VERTICAL_SHIFT + 0.54,   // 3.24
-    valueY: CONTENT_TOP_Y + VERTICAL_SHIFT + 0.78,   // 3.48
+    iconY: CONTENT_TOP_Y + VERTICAL_SHIFT, // 2.70
+    labelY: CONTENT_TOP_Y + VERTICAL_SHIFT + 0.54, // 3.24
+    valueY: CONTENT_TOP_Y + VERTICAL_SHIFT + 0.78, // 3.48
     colWidth: 2.8,
     colSpacing: 0.18,
     sectionEndY: CONTENT_TOP_Y + VERTICAL_SHIFT + 1.15, // 3.85
   },
-  
+
   // ===== SECTION 2: HERO - Coût total du crédit =====
   hero: {
-    y: CONTENT_TOP_Y + VERTICAL_SHIFT + 1.40,        // 4.10
+    y: CONTENT_TOP_Y + VERTICAL_SHIFT + 1.4, // 4.10
     labelHeight: 0.28,
     valueHeight: 0.52,
     subLabelHeight: 0.24,
-    lineY: CONTENT_TOP_Y + VERTICAL_SHIFT + 2.50,    // 5.20
-    sectionEndY: CONTENT_TOP_Y + VERTICAL_SHIFT + 2.60, // 5.30
+    lineY: CONTENT_TOP_Y + VERTICAL_SHIFT + 2.5, // 5.20
+    sectionEndY: CONTENT_TOP_Y + VERTICAL_SHIFT + 2.6, // 5.30
   },
-  
+
   // ===== SECTION 3: Visual Bar (Capital vs Coût) =====
   bar: {
-    y: CONTENT_TOP_Y + VERTICAL_SHIFT + 2.80,        // 5.50
+    y: CONTENT_TOP_Y + VERTICAL_SHIFT + 2.8, // 5.50
     height: 0.38,
-    legendY: CONTENT_TOP_Y + VERTICAL_SHIFT + 3.25,  // 5.95
+    legendY: CONTENT_TOP_Y + VERTICAL_SHIFT + 3.25, // 5.95
     legendHeight: 0.22,
     marginX: 1.5,
-    sectionEndY: CONTENT_TOP_Y + VERTICAL_SHIFT + 3.50, // 6.20
+    sectionEndY: CONTENT_TOP_Y + VERTICAL_SHIFT + 3.5, // 6.20
   },
 } as const;
 
@@ -148,9 +148,9 @@ function getRelativeLuminance(hexColor: string): number {
   const r = parseInt(hex.substring(0, 2), 16) / 255;
   const g = parseInt(hex.substring(2, 4), 16) / 255;
   const b = parseInt(hex.substring(4, 6), 16) / 255;
-  
-  const toLinear = (c: number) => c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
-  
+
+  const toLinear = (c: number) => (c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4));
+
   return 0.2126 * toLinear(r) + 0.7152 * toLinear(g) + 0.0722 * toLinear(b);
 }
 
@@ -192,18 +192,24 @@ export function buildCreditSynthesis(
   data: CreditSynthesisData,
   theme: PptxThemeRoles,
   ctx: ExportContext,
-  slideIndex: number
+  slideIndex: number,
 ): void {
   const slide = pptx.addSlide({ masterName: MASTER_NAMES.CONTENT });
-  
+
   const slideWidth = SLIDE_SIZE.width;
-  
+
   // ========== STANDARD HEADER (from design system) ==========
-  
+
   // Title (H1, ALL CAPS, LEFT-ALIGNED)
   // Add header (title + accent line + subtitle) with text-based positioning
-  addHeader(slide, 'Synthèse de votre financement', 'Principaux indicateurs de votre crédit', theme, 'content');
-  
+  addHeader(
+    slide,
+    'Synthèse de votre financement',
+    'Principaux indicateurs de votre crédit',
+    theme,
+    'content',
+  );
+
   // ========== SECTION 1: 4 KPI COLUMNS ==========
   const kpiData: Array<{
     icon: BusinessIconName;
@@ -226,9 +232,10 @@ export function buildCreditSynthesis(
       icon: 'cheque',
       label: 'Mensualité totale',
       value: euro(data.mensualiteTotale),
-      subValue: data.coutTotalAssurance > 0
-        ? `dont ${euro(data.mensualiteTotale - data.mensualiteHorsAssurance)} assurance`
-        : undefined,
+      subValue:
+        data.coutTotalAssurance > 0
+          ? `dont ${euro(data.mensualiteTotale - data.mensualiteHorsAssurance)} assurance`
+          : undefined,
     },
     {
       icon: 'percent',
@@ -237,22 +244,28 @@ export function buildCreditSynthesis(
       subValue: data.tauxAssurance > 0 ? `+ ${pct(data.tauxAssurance)} assurance` : undefined,
     },
   ];
-  
+
   const totalKpiWidth = LAYOUT.kpi.colWidth * 4 + LAYOUT.kpi.colSpacing * 3;
   const kpiStartX = (slideWidth - totalKpiWidth) / 2;
-  
+
   kpiData.forEach((kpi, idx) => {
     const colX = kpiStartX + idx * (LAYOUT.kpi.colWidth + LAYOUT.kpi.colSpacing);
     const centerX = colX + LAYOUT.kpi.colWidth / 2;
-    
+
     // Icon (accent role — aligned with multi-loan slides)
-    addBusinessIconToSlide(slide, kpi.icon, {
-      x: centerX - LAYOUT.kpi.iconSize / 2,
-      y: LAYOUT.kpi.iconY,
-      w: LAYOUT.kpi.iconSize,
-      h: LAYOUT.kpi.iconSize,
-    }, theme, 'accent');
-    
+    addBusinessIconToSlide(
+      slide,
+      kpi.icon,
+      {
+        x: centerX - LAYOUT.kpi.iconSize / 2,
+        y: LAYOUT.kpi.iconY,
+        w: LAYOUT.kpi.iconSize,
+        h: LAYOUT.kpi.iconSize,
+      },
+      theme,
+      'accent',
+    );
+
     // Label (sentence case, gray)
     addTextFr(slide, kpi.label, {
       x: colX,
@@ -265,13 +278,13 @@ export function buildCreditSynthesis(
       align: 'center',
       valign: 'middle',
     });
-    
+
     // Main value
     addTextFr(slide, kpi.value, {
       x: colX,
       y: LAYOUT.kpi.valueY,
       w: LAYOUT.kpi.colWidth,
-      h: 0.30,
+      h: 0.3,
       fontSize: 15,
       fontFace: TYPO.fontFace,
       color: theme.textMain.replace('#', ''),
@@ -279,14 +292,14 @@ export function buildCreditSynthesis(
       align: 'center',
       valign: 'middle',
     });
-    
+
     // Sub-value (if present)
     if (kpi.subValue) {
       addTextFr(slide, kpi.subValue, {
         x: colX,
-        y: LAYOUT.kpi.valueY + 0.30,
+        y: LAYOUT.kpi.valueY + 0.3,
         w: LAYOUT.kpi.colWidth,
-        h: 0.20,
+        h: 0.2,
         fontSize: 8,
         fontFace: TYPO.fontFace,
         color: theme.textBody.replace('#', ''),
@@ -296,7 +309,7 @@ export function buildCreditSynthesis(
       });
     }
   });
-  
+
   // ========== DATES DÉBUT / FIN (sous les KPIs, dans le gap) ==========
   const dateDebut = ymToDisplay(data.startYM);
   const dateFin = ymEnd(data.startYM, data.dureeMois);
@@ -327,7 +340,7 @@ export function buildCreditSynthesis(
     align: 'center',
     valign: 'middle',
   });
-  
+
   // Hero value - VERY LARGE (32pt), BOLD = impossible to miss
   addTextFr(slide, euro(data.coutTotalCredit), {
     x: LAYOUT.marginX,
@@ -341,11 +354,12 @@ export function buildCreditSynthesis(
     align: 'center',
     valign: 'middle',
   });
-  
+
   // Breakdown under hero (intérêts + assurance) — assurance conditionnelle si > 0
-  const breakdownText = data.coutTotalAssurance > 0
-    ? `(${euro(data.coutTotalInterets)} intérêts + ${euro(data.coutTotalAssurance)} assurance)`
-    : `(${euro(data.coutTotalInterets)} intérêts)`;
+  const breakdownText =
+    data.coutTotalAssurance > 0
+      ? `(${euro(data.coutTotalInterets)} intérêts + ${euro(data.coutTotalAssurance)} assurance)`
+      : `(${euro(data.coutTotalInterets)} intérêts)`;
   addTextFr(slide, breakdownText, {
     x: LAYOUT.marginX,
     y: LAYOUT.hero.y + LAYOUT.hero.labelHeight + LAYOUT.hero.valueHeight,
@@ -358,7 +372,7 @@ export function buildCreditSynthesis(
     align: 'center',
     valign: 'top',
   });
-  
+
   // Decorative accent line below hero
   slide.addShape('line', {
     x: slideWidth / 2 - 1.8,
@@ -367,21 +381,21 @@ export function buildCreditSynthesis(
     h: 0,
     line: { color: theme.accent.replace('#', ''), width: 1.5 },
   });
-  
+
   // ========== SECTION 3: Visual Bar - Capital vs Coût Total ==========
   // Shows "Total remboursé" split into Capital (what you borrowed) and Coût (what it costs)
-  
+
   const totalRembourse = data.capitalEmprunte + data.coutTotalCredit;
   const capitalRatio = data.capitalEmprunte / totalRembourse;
   const coutRatio = data.coutTotalCredit / totalRembourse;
-  
+
   const barWidth = slideWidth - LAYOUT.bar.marginX * 2;
   const capitalBarWidth = barWidth * capitalRatio;
   const coutBarWidth = barWidth * coutRatio;
-  
+
   const capitalColor = getBarColor('capital', theme);
   const coutColor = getBarColor('interets', theme);
-  
+
   // Capital segment (left)
   slide.addShape('rect', {
     x: LAYOUT.bar.marginX,
@@ -391,7 +405,7 @@ export function buildCreditSynthesis(
     fill: { color: capitalColor },
     line: { color: capitalColor, width: 0 },
   });
-  
+
   // Coût segment (right)
   slide.addShape('rect', {
     x: LAYOUT.bar.marginX + capitalBarWidth,
@@ -401,11 +415,11 @@ export function buildCreditSynthesis(
     fill: { color: coutColor },
     line: { color: coutColor, width: 0 },
   });
-  
+
   // Labels inside bar segments
   const capitalTextColor = getTextColorForBackground(capitalColor, theme);
   const coutTextColor = getTextColorForBackground(coutColor, theme);
-  
+
   // Capital label (if segment wide enough)
   if (capitalBarWidth > 1.5) {
     addTextFr(slide, `Capital : ${euro(data.capitalEmprunte)}`, {
@@ -421,7 +435,7 @@ export function buildCreditSynthesis(
       valign: 'middle',
     });
   }
-  
+
   // Coût label (if segment wide enough)
   if (coutBarWidth > 1.5) {
     addTextFr(slide, `Coût : ${euro(data.coutTotalCredit)}`, {
@@ -437,41 +451,56 @@ export function buildCreditSynthesis(
       valign: 'middle',
     });
   }
-  
+
   // ========== SECTION 4: Capitaux décès — style tick compact (mode expert uniquement) ==========
   // N'affiche que si au moins une valeur > 0 (simple mode → tableau vide → skip)
-  if (data.assuranceDecesByYear && data.assuranceDecesByYear.some(v => v > 0)) {
+  if (data.assuranceDecesByYear && data.assuranceDecesByYear.some((v) => v > 0)) {
     const histYears = data.assuranceDecesByYear;
     // Démarre juste après la barre (fin barre = LAYOUT.bar.y + LAYOUT.bar.height)
     const histStartY = LAYOUT.bar.y + LAYOUT.bar.height + 0.04; // ~5.92
-    const histZoneX  = LAYOUT.bar.marginX;
-    const histZoneW  = slideWidth - LAYOUT.bar.marginX * 2;
-    const tickCount  = histYears.length;
-    const tickGap    = 0.008;
-    const tickW      = (histZoneW - (tickCount - 1) * tickGap) / Math.max(tickCount, 1);
-    const tickH      = 0.18;
+    const histZoneX = LAYOUT.bar.marginX;
+    const histZoneW = slideWidth - LAYOUT.bar.marginX * 2;
+    const tickCount = histYears.length;
+    const tickGap = 0.008;
+    const tickW = (histZoneW - (tickCount - 1) * tickGap) / Math.max(tickCount, 1);
+    const tickH = 0.18;
     const panelColor = roleColor(theme, 'panelBorder');
-    const bodyColor  = roleColor(theme, 'textBody');
+    const bodyColor = roleColor(theme, 'textBody');
 
     // Label gauche au-dessus
     addTextFr(slide, 'Capital décès assuré (par an)', {
-      x: LAYOUT.bar.marginX, y: histStartY,
-      w: LAYOUT.contentWidth, h: 0.14,
-      fontSize: 7, italic: true, color: bodyColor,
-      fontFace: TYPO.fontFace, align: 'left', valign: 'middle',
+      x: LAYOUT.bar.marginX,
+      y: histStartY,
+      w: LAYOUT.contentWidth,
+      h: 0.14,
+      fontSize: 7,
+      italic: true,
+      color: bodyColor,
+      fontFace: TYPO.fontFace,
+      align: 'left',
+      valign: 'middle',
     });
 
     // Tick bars + valeurs en dessous
     histYears.forEach((val, i) => {
       const tickX = histZoneX + i * (tickW + tickGap);
       slide.addShape('rect', {
-        x: tickX, y: histStartY + 0.16, w: tickW, h: tickH,
+        x: tickX,
+        y: histStartY + 0.16,
+        w: tickW,
+        h: tickH,
         fill: { color: panelColor },
         line: { color: panelColor, width: 0 },
       });
       addTextFr(slide, fmtEuroShort(val > 0 ? val : 0), {
-        x: tickX, y: histStartY + 0.16 + tickH + 0.02, w: tickW, h: 0.10,
-        fontSize: 5, color: bodyColor, fontFace: TYPO.fontFace, align: 'center',
+        x: tickX,
+        y: histStartY + 0.16 + tickH + 0.02,
+        w: tickW,
+        h: 0.1,
+        fontSize: 5,
+        color: bodyColor,
+        fontFace: TYPO.fontFace,
+        align: 'center',
       });
     });
   }

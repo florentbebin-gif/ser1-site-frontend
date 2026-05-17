@@ -289,14 +289,16 @@ describe('Succession PPTX Export', () => {
       'succession-hypotheses',
     ]);
 
-    const familySlide = spec.slides.find((slide) =>
-      (slide as { type?: string }).type === 'succession-family-context',
-    ) as {
-      situationLabel?: string;
-      regimeLabel?: string;
-      dispositions?: string[];
-      filiation?: { nodes: Array<{ label: string }> };
-    } | undefined;
+    const familySlide = spec.slides.find(
+      (slide) => (slide as { type?: string }).type === 'succession-family-context',
+    ) as
+      | {
+          situationLabel?: string;
+          regimeLabel?: string;
+          dispositions?: string[];
+          filiation?: { nodes: Array<{ label: string }> };
+        }
+      | undefined;
 
     expect(familySlide?.situationLabel).toBe('Marié(e)');
     expect(familySlide?.regimeLabel).toContain('Séparation');
@@ -331,26 +333,28 @@ describe('Succession PPTX Export', () => {
           tauxMoyen: 10,
         },
       ],
-      annexBeneficiarySteps: [{
-        title: 'Succession directe simulée',
-        beneficiaries: [
-          {
-            label: 'Enfant 1',
-            capitauxDecesNets: 120000,
-            droitsAssuranceVie990I: 15000,
-            droitsSuccession: 25000,
-            transmissionNetteSuccession: 295000,
-          },
-          {
-            label: 'Total',
-            capitauxDecesNets: 120000,
-            droitsAssuranceVie990I: 15000,
-            droitsSuccession: 25000,
-            transmissionNetteSuccession: 295000,
-            isTotal: true,
-          },
-        ],
-      }],
+      annexBeneficiarySteps: [
+        {
+          title: 'Succession directe simulée',
+          beneficiaries: [
+            {
+              label: 'Enfant 1',
+              capitauxDecesNets: 120000,
+              droitsAssuranceVie990I: 15000,
+              droitsSuccession: 25000,
+              transmissionNetteSuccession: 295000,
+            },
+            {
+              label: 'Total',
+              capitauxDecesNets: 120000,
+              droitsAssuranceVie990I: 15000,
+              droitsSuccession: 25000,
+              transmissionNetteSuccession: 295000,
+              isTotal: true,
+            },
+          ],
+        },
+      ],
     };
 
     const spec = buildSuccessionStudyDeck(data, THEME_COLORS);

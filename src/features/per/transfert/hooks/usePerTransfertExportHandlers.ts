@@ -39,36 +39,40 @@ export function usePerTransfertExportHandlers({
 }: UsePerTransfertExportHandlersInput) {
   const [exportLoading, setExportLoading] = useState(false);
 
-  const exportOptions = useMemo<ExportOption[]>(() => [
-    {
-      label: 'PowerPoint étude',
-      disabled: state.capitalAcquis <= 0,
-      tooltip: state.capitalAcquis <= 0 ? 'Renseigner le capital acquis avant export.' : undefined,
-      onClick: async () => {
-        setExportLoading(true);
-        try {
-          const { exportPerTransfertPptx } = await import('@/pptx/exports/perTransfertExport');
-          await exportPerTransfertPptx(
-            {
-              input,
-              result,
-              selectedContract,
-            },
-            themeColors,
-            {
-              logoUrl,
-              logoPlacement,
-            },
-          );
-        } catch (error) {
-          console.error('[PER Transfert] Export PPTX impossible', error);
-          alert("Impossible de générer l'export PowerPoint.");
-        } finally {
-          setExportLoading(false);
-        }
+  const exportOptions = useMemo<ExportOption[]>(
+    () => [
+      {
+        label: 'PowerPoint étude',
+        disabled: state.capitalAcquis <= 0,
+        tooltip:
+          state.capitalAcquis <= 0 ? 'Renseigner le capital acquis avant export.' : undefined,
+        onClick: async () => {
+          setExportLoading(true);
+          try {
+            const { exportPerTransfertPptx } = await import('@/pptx/exports/perTransfertExport');
+            await exportPerTransfertPptx(
+              {
+                input,
+                result,
+                selectedContract,
+              },
+              themeColors,
+              {
+                logoUrl,
+                logoPlacement,
+              },
+            );
+          } catch (error) {
+            console.error('[PER Transfert] Export PPTX impossible', error);
+            alert("Impossible de générer l'export PowerPoint.");
+          } finally {
+            setExportLoading(false);
+          }
+        },
       },
-    },
-  ], [input, logoPlacement, logoUrl, result, selectedContract, state.capitalAcquis, themeColors]);
+    ],
+    [input, logoPlacement, logoUrl, result, selectedContract, state.capitalAcquis, themeColors],
+  );
 
   return { exportOptions, exportLoading };
 }

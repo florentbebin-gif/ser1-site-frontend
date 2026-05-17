@@ -76,7 +76,9 @@
   font-family: inherit;
   background: white;
   color: var(--color-c10);
-  transition: border-color 0.2s, box-shadow 0.2s;
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s;
 }
 
 .signalement-form input:focus,

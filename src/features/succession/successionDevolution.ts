@@ -45,7 +45,10 @@ export interface SuccessionDevolutionAnalysis {
 }
 
 interface SuccessionDevolutionBuildOptions {
-  patrimonial?: Pick<SuccessionPatrimonialContext, 'donationEntreEpouxActive' | 'donationEntreEpouxOption'>;
+  patrimonial?: Pick<
+    SuccessionPatrimonialContext,
+    'donationEntreEpouxActive' | 'donationEntreEpouxOption'
+  >;
   simulatedDeceased?: 'epoux1' | 'epoux2';
   referenceDate?: Date;
 }
@@ -69,12 +72,11 @@ function normalizeLabel(value: string): string {
     .toLowerCase();
 }
 
-function findLineAmount(
-  lines: SuccessionDevolutionLine[],
-  ...labels: string[]
-): number {
+function findLineAmount(lines: SuccessionDevolutionLine[], ...labels: string[]): number {
   const normalizedLabels = labels.map(normalizeLabel);
-  const line = lines.find((candidate) => normalizedLabels.includes(normalizeLabel(candidate.heritier)));
+  const line = lines.find((candidate) =>
+    normalizedLabels.includes(normalizeLabel(candidate.heritier)),
+  );
   return asAmount(line?.montantEstime, 0);
 }
 
@@ -92,9 +94,10 @@ function getDescendantsLine(
 ): string {
   if (nbBranches <= 0) return `${availablePct.toFixed(0)}% en pleine propriété`;
   const perBranch = availablePct / nbBranches;
-  const representationHint = representedBranchLabels.length > 0
-    ? `, représentation de ${representedBranchLabels.join(', ')}`
-    : '';
+  const representationHint =
+    representedBranchLabels.length > 0
+      ? `, représentation de ${representedBranchLabels.join(', ')}`
+      : '';
   return `${availablePct.toFixed(0)}% en pleine propriété (${perBranch.toFixed(2)}% par branche${representationHint})`;
 }
 
@@ -105,7 +108,9 @@ function addAscendantsCollaterauxLines(
   masseReference: number,
   simulatedDeceased: 'epoux1' | 'epoux2',
 ): void {
-  const sideMembers = familyMembers.filter((member) => !member.branch || member.branch === simulatedDeceased);
+  const sideMembers = familyMembers.filter(
+    (member) => !member.branch || member.branch === simulatedDeceased,
+  );
   const nbParents = sideMembers.filter((member) => member.type === 'parent').length;
   const nbFreresSoeurs = sideMembers.filter((member) => member.type === 'frere_soeur').length;
 
@@ -115,17 +120,27 @@ function addAscendantsCollaterauxLines(
       droits: 'Ordres 3 et 4 : ascendants ordinaires, collatéraux ordinaires (non modélisés)',
       montantEstime: null,
     });
-    warnings.push('Ordres successoraux 3 et 4 non modélisés : ajoutez les membres de la famille pour affiner.');
+    warnings.push(
+      'Ordres successoraux 3 et 4 non modélisés : ajoutez les membres de la famille pour affiner.',
+    );
     return;
   }
 
   if (nbParents >= 2 && nbFreresSoeurs === 0) {
-    lines.push({ heritier: 'Père et mère', droits: '1/2 chacun (art. 736 CC)', montantEstime: masseReference });
+    lines.push({
+      heritier: 'Père et mère',
+      droits: '1/2 chacun (art. 736 CC)',
+      montantEstime: masseReference,
+    });
     return;
   }
 
   if (nbParents === 1 && nbFreresSoeurs === 0) {
-    lines.push({ heritier: 'Ascendant survivant', droits: 'Totalité (art. 736 CC)', montantEstime: masseReference });
+    lines.push({
+      heritier: 'Ascendant survivant',
+      droits: 'Totalité (art. 736 CC)',
+      montantEstime: masseReference,
+    });
     return;
   }
 
@@ -141,7 +156,11 @@ function addAscendantsCollaterauxLines(
 
   if (nbParents >= 2) {
     const label = `${nbFreresSoeurs} ${nbFreresSoeurs > 1 ? 'collatéraux privilégiés' : 'collatéral privilégié'}`;
-    lines.push({ heritier: 'Père et mère', droits: '1/4 chacun (art. 738 CC)', montantEstime: masseReference * 0.5 });
+    lines.push({
+      heritier: 'Père et mère',
+      droits: '1/4 chacun (art. 738 CC)',
+      montantEstime: masseReference * 0.5,
+    });
     lines.push({
       heritier: 'Frères et sœurs',
       droits: `1/2 à parts égales — ${label} (art. 738 CC)`,
@@ -151,7 +170,11 @@ function addAscendantsCollaterauxLines(
   }
 
   const label = `${nbFreresSoeurs} ${nbFreresSoeurs > 1 ? 'collatéraux privilégiés' : 'collatéral privilégié'}`;
-  lines.push({ heritier: 'Ascendant survivant', droits: '1/4 (art. 738 CC)', montantEstime: masseReference * 0.25 });
+  lines.push({
+    heritier: 'Ascendant survivant',
+    droits: '1/4 (art. 738 CC)',
+    montantEstime: masseReference * 0.25,
+  });
   lines.push({
     heritier: 'Frères et sœurs',
     droits: `3/4 à parts égales — ${label} (art. 738 CC)`,
@@ -265,17 +288,23 @@ export function buildSuccessionDevolutionAnalysis(
     ),
   );
   const deceasedWithoutRepresentation = enfantsContext.filter(
-    (enfant) => enfant.deceased && !descendantRecipients.some((recipient) => recipient.branchId === enfant.id),
+    (enfant) =>
+      enfant.deceased &&
+      !descendantRecipients.some((recipient) => recipient.branchId === enfant.id),
   );
 
   if (nbEnfantsNonCommunsRaw > nbEnfantsTotal) {
     warnings.push('Enfants non communs plafonnés au nombre total de branches descendantes.');
   }
   if (representedBranchLabels.length > 0) {
-    warnings.push(`Représentation successorale simplifiée prise en compte pour ${representedBranchLabels.join(', ')}.`);
+    warnings.push(
+      `Représentation successorale simplifiée prise en compte pour ${representedBranchLabels.join(', ')}.`,
+    );
   }
   if (deceasedWithoutRepresentation.length > 0) {
-    warnings.push('Enfant décédé sans descendant représentant: non compté dans la dévolution simplifiée.');
+    warnings.push(
+      'Enfant décédé sans descendant représentant: non compté dans la dévolution simplifiée.',
+    );
   }
 
   if (civil.situationMatrimoniale === 'marie') {
@@ -332,9 +361,10 @@ export function buildSuccessionDevolutionAnalysis(
           });
           warnings.push(...legalSpouseValuation.warnings);
         } else {
-          const conjointRights = context.choixLegalConjointSansDDV === 'quart_pp'
-            ? '1/4 en pleine propriété (art. 757 CC, choix légal du conjoint)'
-            : '1/4 en pleine propriété (hypothèse moteur)';
+          const conjointRights =
+            context.choixLegalConjointSansDDV === 'quart_pp'
+              ? '1/4 en pleine propriété (art. 757 CC, choix légal du conjoint)'
+              : '1/4 en pleine propriété (hypothèse moteur)';
           lines.push({
             heritier: 'Conjoint survivant',
             droits: conjointRights,
@@ -349,11 +379,15 @@ export function buildSuccessionDevolutionAnalysis(
       }
     } else {
       const nbParents = familyMembers.filter(
-        (member) => member.type === 'parent' && (!member.branch || member.branch === simulatedDeceased),
+        (member) =>
+          member.type === 'parent' && (!member.branch || member.branch === simulatedDeceased),
       ).length;
-      const effectiveParents = nbParents > 0
-        ? nbParents
-        : (getAscendantsSurvivantsForSide(context, simulatedDeceased) ? 1 : 0);
+      const effectiveParents =
+        nbParents > 0
+          ? nbParents
+          : getAscendantsSurvivantsForSide(context, simulatedDeceased)
+            ? 1
+            : 0;
       if (effectiveParents >= 2) {
         lines.push({
           heritier: 'Conjoint survivant',
@@ -387,7 +421,11 @@ export function buildSuccessionDevolutionAnalysis(
   } else if (civil.situationMatrimoniale === 'pacse') {
     warnings.push('PACS: pas de vocation successorale légale automatique sans testament.');
     if (!hasActiveTestamentForSide(context, simulatedDeceased)) {
-      lines.push({ heritier: 'Partenaire pacsé', droits: 'Aucun droit successoral légal', montantEstime: 0 });
+      lines.push({
+        heritier: 'Partenaire pacsé',
+        droits: 'Aucun droit successoral légal',
+        montantEstime: 0,
+      });
     }
     if (nbEnfantsTotal > 0) {
       lines.push({
@@ -396,12 +434,22 @@ export function buildSuccessionDevolutionAnalysis(
         montantEstime: masseReference,
       });
     } else {
-      addAscendantsCollaterauxLines(lines, warnings, familyMembers, masseReference, simulatedDeceased);
+      addAscendantsCollaterauxLines(
+        lines,
+        warnings,
+        familyMembers,
+        masseReference,
+        simulatedDeceased,
+      );
     }
   } else if (civil.situationMatrimoniale === 'concubinage') {
     warnings.push('Concubinage: pas de vocation successorale légale du concubin.');
     if (!hasActiveTestamentForSide(context, simulatedDeceased)) {
-      lines.push({ heritier: 'Concubin', droits: 'Aucun droit successoral légal', montantEstime: 0 });
+      lines.push({
+        heritier: 'Concubin',
+        droits: 'Aucun droit successoral légal',
+        montantEstime: 0,
+      });
     }
     if (nbEnfantsTotal > 0) {
       lines.push({
@@ -410,7 +458,13 @@ export function buildSuccessionDevolutionAnalysis(
         montantEstime: masseReference,
       });
     } else {
-      addAscendantsCollaterauxLines(lines, warnings, familyMembers, masseReference, simulatedDeceased);
+      addAscendantsCollaterauxLines(
+        lines,
+        warnings,
+        familyMembers,
+        masseReference,
+        simulatedDeceased,
+      );
     }
   } else {
     if (nbEnfantsTotal > 0) {
@@ -420,13 +474,18 @@ export function buildSuccessionDevolutionAnalysis(
         montantEstime: masseReference,
       });
     } else {
-      addAscendantsCollaterauxLines(lines, warnings, familyMembers, masseReference, simulatedDeceased);
+      addAscendantsCollaterauxLines(
+        lines,
+        warnings,
+        familyMembers,
+        masseReference,
+        simulatedDeceased,
+      );
     }
   }
 
-  const protectedAmount = civil.situationMatrimoniale === 'marie'
-    ? findLineAmount(lines, 'Conjoint survivant')
-    : 0;
+  const protectedAmount =
+    civil.situationMatrimoniale === 'marie' ? findLineAmount(lines, 'Conjoint survivant') : 0;
   const testamentDistribution = addTestamentLines(
     lines,
     warnings,

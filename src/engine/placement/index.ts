@@ -1,7 +1,4 @@
-export {
-  ENVELOPES,
-  ENVELOPE_LABELS,
-} from './shared';
+export { ENVELOPES, ENVELOPE_LABELS } from './shared';
 
 export { extractFiscalParams } from './fiscalParams';
 export { simulateEpargne } from './epargne';

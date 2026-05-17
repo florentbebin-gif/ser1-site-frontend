@@ -32,8 +32,10 @@ const DECES_DANS_X_ANS_VALUES = [0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50] as co
 function normalizeQuotePair(
   quoteEpoux1Pct: number,
   quoteEpoux2Pct: number,
-  fallback: Pick<SuccessionSocieteAcquetsConfig, 'quoteEpoux1Pct' | 'quoteEpoux2Pct'> =
-    DEFAULT_SUCCESSION_SOCIETE_ACQUETS_CONFIG,
+  fallback: Pick<
+    SuccessionSocieteAcquetsConfig,
+    'quoteEpoux1Pct' | 'quoteEpoux2Pct'
+  > = DEFAULT_SUCCESSION_SOCIETE_ACQUETS_CONFIG,
 ): Pick<SuccessionSocieteAcquetsConfig, 'quoteEpoux1Pct' | 'quoteEpoux2Pct'> {
   const total = quoteEpoux1Pct + quoteEpoux2Pct;
   if (total <= 0) {
@@ -51,7 +53,9 @@ function normalizeQuotePair(
   };
 }
 
-export function parseParticipationAcquetsConfig(raw: unknown): SuccessionParticipationAcquetsConfig {
+export function parseParticipationAcquetsConfig(
+  raw: unknown,
+): SuccessionParticipationAcquetsConfig {
   const rawConfig = isObject(raw) ? raw : {};
   const normalizedQuotes = normalizeQuotePair(
     asPercent(
@@ -66,10 +70,7 @@ export function parseParticipationAcquetsConfig(raw: unknown): SuccessionPartici
   );
 
   return {
-    active: asBoolean(
-      rawConfig.active,
-      DEFAULT_SUCCESSION_PARTICIPATION_ACQUETS_CONFIG.active,
-    ),
+    active: asBoolean(rawConfig.active, DEFAULT_SUCCESSION_PARTICIPATION_ACQUETS_CONFIG.active),
     useCurrentAssetsAsFinalPatrimony: asBoolean(
       rawConfig.useCurrentAssetsAsFinalPatrimony,
       DEFAULT_SUCCESSION_PARTICIPATION_ACQUETS_CONFIG.useCurrentAssetsAsFinalPatrimony,
@@ -130,18 +131,19 @@ export function parsePreciputSelections(raw: unknown): SuccessionPreciputSelecti
     .filter((item): item is Record<string, unknown> => isObject(item))
     .map((item, idx) => {
       if (
-        !isSuccessionPreciputSelectionSourceType(item.sourceType)
-        || typeof item.sourceId !== 'string'
-        || item.sourceId.trim().length === 0
-        || !isAssetPocket(item.pocket)
+        !isSuccessionPreciputSelectionSourceType(item.sourceType) ||
+        typeof item.sourceId !== 'string' ||
+        item.sourceId.trim().length === 0 ||
+        !isAssetPocket(item.pocket)
       ) {
         return null;
       }
 
       return {
-        id: typeof item.id === 'string' && item.id.trim().length > 0
-          ? item.id.trim()
-          : `prec-${idx + 1}`,
+        id:
+          typeof item.id === 'string' && item.id.trim().length > 0
+            ? item.id.trim()
+            : `prec-${idx + 1}`,
         sourceType: item.sourceType,
         sourceId: item.sourceId.trim(),
         labelSnapshot: normalizeOptionalString(item.labelSnapshot) ?? `Selection ${idx + 1}`,
@@ -158,17 +160,18 @@ export function parseInterMassClaims(raw: unknown): SuccessionInterMassClaim[] {
     .filter((item): item is Record<string, unknown> => isObject(item))
     .map<SuccessionInterMassClaim | null>((item, idx) => {
       if (
-        !isSuccessionInterMassClaimKind(item.kind)
-        || !isAssetPocket(item.fromPocket)
-        || !isAssetPocket(item.toPocket)
+        !isSuccessionInterMassClaimKind(item.kind) ||
+        !isAssetPocket(item.fromPocket) ||
+        !isAssetPocket(item.toPocket)
       ) {
         return null;
       }
 
       const claim: SuccessionInterMassClaim = {
-        id: typeof item.id === 'string' && item.id.trim().length > 0
-          ? item.id.trim()
-          : `claim-${idx + 1}`,
+        id:
+          typeof item.id === 'string' && item.id.trim().length > 0
+            ? item.id.trim()
+            : `claim-${idx + 1}`,
         kind: item.kind,
         fromPocket: item.fromPocket,
         toPocket: item.toPocket,
@@ -198,7 +201,10 @@ export function parseTestamentConfig(raw: unknown): SuccessionTestamentConfig {
   const particularLegacies: SuccessionParticularLegacyEntry[] = particularLegaciesRaw
     .filter((item): item is Record<string, unknown> => isObject(item))
     .map((item, idx) => ({
-      id: typeof item.id === 'string' && item.id.trim().length > 0 ? item.id.trim() : `leg-${idx + 1}`,
+      id:
+        typeof item.id === 'string' && item.id.trim().length > 0
+          ? item.id.trim()
+          : `leg-${idx + 1}`,
       beneficiaryRef: isSuccessionBeneficiaryRef(item.beneficiaryRef) ? item.beneficiaryRef : null,
       amount: asAmount(item.amount, 0),
       label: normalizeOptionalString(item.label),
@@ -221,6 +227,6 @@ export function parseDecesDansXAns(
   raw: unknown,
 ): typeof DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT.decesDansXAns {
   return DECES_DANS_X_ANS_VALUES.includes(raw as (typeof DECES_DANS_X_ANS_VALUES)[number])
-    ? raw as typeof DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT.decesDansXAns
+    ? (raw as typeof DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT.decesDansXAns)
     : DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT.decesDansXAns;
 }

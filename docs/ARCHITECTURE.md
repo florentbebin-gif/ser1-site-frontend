@@ -1,16 +1,20 @@
 # ARCHITECTURE (source de vérité)
 
 ## But
+
 Expliquer **comment le repo est organisé** et où modifier quoi (frontend, engine, exports, Supabase, thèmes).
 
 ## Audience
+
 Dev qui doit intervenir sur une feature, un export, un thème, ou Supabase.
 
 ## Ce que ce doc couvre / ne couvre pas
+
 - ✅ Couvre : carte des dossiers, points d’entrée, flux principaux, conventions clés (SaaS).
 - ❌ Ne couvre pas : procédures de debug/opérations (voir `docs/RUNBOOK.md`).
 
 ## Sommaire
+
 - [Stack](#stack)
 - [Structure du repo](#structure-du-repo)
 - [Points d’entrée & flux](#points-dentrée--flux)
@@ -22,6 +26,7 @@ Dev qui doit intervenir sur une feature, un export, un thème, ou Supabase.
 ---
 
 ## Stack
+
 - React 18 + Vite 5 + TypeScript strict
 - Supabase (Auth/DB/Storage/Edge Functions)
 - Exports : PptxGenJS + JSZip (PPTX), OOXML via JSZip (XLSX)
@@ -32,7 +37,9 @@ Dev qui doit intervenir sur une feature, un export, un thème, ou Supabase.
 ---
 
 ## Structure du repo
+
 Repères (domain-first) :
+
 - `src/engine/` : calculs métier purs (zéro React).
 - `src/features/` : features UI (state, composants, handlers export).
 - `src/pages/` : shells légers (Home, Login, SettingsShell) + `pages/settings/*` (sous-pages settings).
@@ -44,13 +51,16 @@ Repères (domain-first) :
 - `supabase/` : edge functions + migrations.
 
 Conventions clés :
+
 - Nouveau code : TS/TSX.
 - Fichiers `500-800` lignes = dette surveillée. Acceptable temporairement si le fichier reste mono-rôle et lisible.
 - Fichiers `>800` lignes = découpage obligatoire au prochain chantier qui touche le fichier.
 - Garde-fous d'architecture : `npm run check:arch` (dependency-cruiser, config `.dependency-cruiser.cjs`) — bloquant en CI. Règles : engine/domain sans React ni features, features sans pages, imports cross-features via `index.ts` uniquement.
 
 ### Règle "god file"
+
 Un fichier long n'est pas automatiquement prioritaire. Un vrai "god file" devient prioritaire s'il mélange au moins 2 responsabilités parmi :
+
 - orchestration UI / state / effects React
 - persistence, réseau, ou I/O
 - helpers métier ou transformations de données
@@ -61,28 +71,31 @@ Objectif : découper d'abord les fichiers qui mélangent plusieurs responsabilit
 
 ### Exceptions documentées
 
-| Classe | Décision | Notes |
-|-------|----------|-------|
-| CSS feature-scoped | Exempt par défaut | A surveiller, mais pas de découpage imposé tant que le fichier reste purement CSS et rattaché à une même surface. |
-| Constantes / données pures | Exempt | Exemple : tables de référence, defaults, catalogues. Réévaluer si le fichier mélange rendering ou helpers. |
-| Mono-algorithme | Exempt en zone `500-800` | Exemple : moteur ou calcul dense mais cohérent. Découper seulement si plusieurs sous-domaines émergent. |
-| Scripts outils | Exempt | Ne pas refactorer uniquement pour satisfaire une limite de lignes. |
-| Migrations SQL | Exempt | Ne jamais réécrire l'historique pour satisfaire une règle de taille. |
+| Classe                     | Décision                 | Notes                                                                                                             |
+| -------------------------- | ------------------------ | ----------------------------------------------------------------------------------------------------------------- |
+| CSS feature-scoped         | Exempt par défaut        | A surveiller, mais pas de découpage imposé tant que le fichier reste purement CSS et rattaché à une même surface. |
+| Constantes / données pures | Exempt                   | Exemple : tables de référence, defaults, catalogues. Réévaluer si le fichier mélange rendering ou helpers.        |
+| Mono-algorithme            | Exempt en zone `500-800` | Exemple : moteur ou calcul dense mais cohérent. Découper seulement si plusieurs sous-domaines émergent.           |
+| Scripts outils             | Exempt                   | Ne pas refactorer uniquement pour satisfaire une limite de lignes.                                                |
+| Migrations SQL             | Exempt                   | Ne jamais réécrire l'historique pour satisfaire une règle de taille.                                              |
 
 ### Conventions historiques — `legacy/`, `__spike__`, `_raw`
 
 Ces noms de dossiers sont des marqueurs historiques de refactor ou de prototypage, pas des patterns actifs du repo.
 
 **Statut au 2026-03-12** :
+
 - aucun dossier `legacy`, `__spike__` ou `_raw` n'est présent sous `src/`
 - les mentions résiduelles dans la doc ou l'historique Git doivent être lues comme historiques
 
 **Règles** :
+
 - ne pas réintroduire ces dossiers dans `src/`
 - si un spike temporaire est nécessaire, le garder hors runtime prod puis le supprimer ou l'intégrer avant merge
 - avant toute suppression ou promotion de code historique, fournir une preuve d'usage (`rg`, chaîne d'import, route ou script)
 
 **Vérification** :
+
 ```powershell
 Get-ChildItem src -Recurse -Directory |
   Where-Object { $_.Name -in @('legacy','__spike__','_raw') }
@@ -90,12 +103,15 @@ Get-ChildItem src -Recurse -Directory |
 ```
 
 **Dette active liée à cette zone** :
+
 - Aucune dette `@deprecated` active dans `src/engine/` au dernier contrôle (`rg "@deprecated" src/engine` doit retourner vide).
 
 ---
 
 ## Points d’entrée & flux
+
 ### Routing
+
 - `src/routes/appRoutes.ts` (APP_ROUTES) : source de vérité des routes + metadata topbar (`contextLabel`, `topbar`).
 - `src/App.tsx` : rendu JSX des routes via `APP_ROUTES.map()`. Résolution topbar via `getRouteMetadata(pathname)`.
 - `src/components/layout/AppLayout.tsx` : topbar data-driven (reçoit `routeMeta`, plus de flags hardcodés).
@@ -103,30 +119,30 @@ Get-ChildItem src -Recurse -Directory |
 #### Routes Map (actuel)
 
 Source (preuves) :
+
 - Définitions des routes : `src/routes/appRoutes.ts` (APP_ROUTES)
 - Rendu `<Routes>` : `src/App.tsx` (`APP_ROUTES.map(...)`)
 
-
-| Route | Accès | Composant (runtime) | Fichier / provenance |
-|------|-------|----------------------|----------------------|
-| `/login` | public | `Login` | `src/pages/Login.tsx` (import direct) |
-| `/forgot-password` | public | `ForgotPassword` | `src/pages/ForgotPassword.tsx` (import direct) |
-| `/set-password` | public | `SetPassword` | `src/pages/SetPassword.tsx` (import direct) |
-| `/reset-password` | public | `SetPassword` | `src/pages/SetPassword.tsx` (import direct) |
-| `/` | privé | `Home` | `src/pages/Home.tsx` (import direct) |
-| `/audit` | privé + lazy | `AuditWizard` | `src/features/audit/AuditWizard.tsx` (exporté via `src/features/audit/index.ts`) — workflow actif hors `/sim/*`, avec draft de session, `ExportMenu` partagé et export PPTX isolé dans `src/features/audit/export/exportAudit.ts` |
-| `/strategy` | privé + lazy | `StrategyPage` | `src/pages/StrategyPage.tsx` (lazy) — workflow actif dépendant d'un draft d'audit, avec `SimFieldShell` pour la saisie produit et export PPTX isolé dans `src/features/strategy/export/exportStrategy.ts` |
-| `/sim/placement` | privé + lazy | `Placement` | `src/features/placement/PlacementPage.tsx` (exporté via `src/features/placement/index.ts`) |
-| `/sim/credit` | privé + lazy | `Credit` | `src/features/credit/Credit.tsx` (exporté via `src/features/credit/index.ts`) |
-| `/sim/succession` | privé + lazy | `SuccessionSimulator` | `src/features/succession/SuccessionSimulator.tsx` (exporté via `src/features/succession/index.ts`) |
-| `/sim/per` | privé + lazy | `PerHome` | `src/features/per/PerHome.tsx` |
-| `/sim/per/potentiel` | privé + lazy | `PerPotentielSimulator` | `src/features/per/components/potentiel/PerPotentielSimulator.tsx` |
-| `/sim/per/transfert` | privé + lazy | `PerTransfertSimulator` | `src/features/per/transfert/PerTransfertSimulator.tsx` (réexporté par `src/features/per/transfert/index.ts`, puis `src/features/per/index.ts`) |
-| `/sim/epargne-salariale` | privé + lazy | `UpcomingSimulatorPage` | `src/pages/UpcomingSimulatorPage.tsx` (lazy) |
-| `/sim/tresorerie-societe` | privé + lazy | `TresorerieSocietePage` | `src/features/tresorerie-societe/TresorerieSocietePage.tsx` (lazy) |
-| `/sim/prevoyance` | privé + lazy | `UpcomingSimulatorPage` | `src/pages/UpcomingSimulatorPage.tsx` (lazy) |
-| `/sim/ir` | privé + lazy | `Ir` | `src/features/ir/IrPage.tsx` (exporté via `src/features/ir/index.ts`) |
-| `/settings/*` | privé + lazy | `SettingsShell` | `src/pages/SettingsShell.tsx` (lazy) |
+| Route                     | Accès        | Composant (runtime)     | Fichier / provenance                                                                                                                                                                                                              |
+| ------------------------- | ------------ | ----------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `/login`                  | public       | `Login`                 | `src/pages/Login.tsx` (import direct)                                                                                                                                                                                             |
+| `/forgot-password`        | public       | `ForgotPassword`        | `src/pages/ForgotPassword.tsx` (import direct)                                                                                                                                                                                    |
+| `/set-password`           | public       | `SetPassword`           | `src/pages/SetPassword.tsx` (import direct)                                                                                                                                                                                       |
+| `/reset-password`         | public       | `SetPassword`           | `src/pages/SetPassword.tsx` (import direct)                                                                                                                                                                                       |
+| `/`                       | privé        | `Home`                  | `src/pages/Home.tsx` (import direct)                                                                                                                                                                                              |
+| `/audit`                  | privé + lazy | `AuditWizard`           | `src/features/audit/AuditWizard.tsx` (exporté via `src/features/audit/index.ts`) — workflow actif hors `/sim/*`, avec draft de session, `ExportMenu` partagé et export PPTX isolé dans `src/features/audit/export/exportAudit.ts` |
+| `/strategy`               | privé + lazy | `StrategyPage`          | `src/pages/StrategyPage.tsx` (lazy) — workflow actif dépendant d'un draft d'audit, avec `SimFieldShell` pour la saisie produit et export PPTX isolé dans `src/features/strategy/export/exportStrategy.ts`                         |
+| `/sim/placement`          | privé + lazy | `Placement`             | `src/features/placement/PlacementPage.tsx` (exporté via `src/features/placement/index.ts`)                                                                                                                                        |
+| `/sim/credit`             | privé + lazy | `Credit`                | `src/features/credit/Credit.tsx` (exporté via `src/features/credit/index.ts`)                                                                                                                                                     |
+| `/sim/succession`         | privé + lazy | `SuccessionSimulator`   | `src/features/succession/SuccessionSimulator.tsx` (exporté via `src/features/succession/index.ts`)                                                                                                                                |
+| `/sim/per`                | privé + lazy | `PerHome`               | `src/features/per/PerHome.tsx`                                                                                                                                                                                                    |
+| `/sim/per/potentiel`      | privé + lazy | `PerPotentielSimulator` | `src/features/per/components/potentiel/PerPotentielSimulator.tsx`                                                                                                                                                                 |
+| `/sim/per/transfert`      | privé + lazy | `PerTransfertSimulator` | `src/features/per/transfert/PerTransfertSimulator.tsx` (réexporté par `src/features/per/transfert/index.ts`, puis `src/features/per/index.ts`)                                                                                    |
+| `/sim/epargne-salariale`  | privé + lazy | `UpcomingSimulatorPage` | `src/pages/UpcomingSimulatorPage.tsx` (lazy)                                                                                                                                                                                      |
+| `/sim/tresorerie-societe` | privé + lazy | `TresorerieSocietePage` | `src/features/tresorerie-societe/TresorerieSocietePage.tsx` (lazy)                                                                                                                                                                |
+| `/sim/prevoyance`         | privé + lazy | `UpcomingSimulatorPage` | `src/pages/UpcomingSimulatorPage.tsx` (lazy)                                                                                                                                                                                      |
+| `/sim/ir`                 | privé + lazy | `Ir`                    | `src/features/ir/IrPage.tsx` (exporté via `src/features/ir/index.ts`)                                                                                                                                                             |
+| `/settings/*`             | privé + lazy | `SettingsShell`         | `src/pages/SettingsShell.tsx` (lazy)                                                                                                                                                                                              |
 
 Vérification (commandes) :
 
@@ -142,25 +158,31 @@ rg -n "APP_ROUTES\\.map" src/App.tsx
 ```
 
 ### Bootstrap auth → thème
+
 - `src/main.tsx` → `AuthProvider` → `ThemeProvider` → `App`.
 
 ### Settings (admin)
+
 - Navigation settings : `src/routes/settingsRoutes.ts` (source unique).
 - Pages : `src/pages/settings/*`.
 
 ---
 
 ## Supabase: données, RLS, edge functions
+
 ### Règle SaaS
+
 - **Branding = multi-tenant** (cabinets, profiles).
 - **Règles fiscales + catalogue produits = GLOBAL** (pas de `cabinet_id`).
 
 ### Sécurité / RLS
+
 - Rôle admin via `app_metadata.role`.
 - SQL helper : `public.is_admin()`.
 - Interdit : policies basées sur `user_metadata`.
 
 Tables repères (haut niveau) :
+
 - `profiles` (multi-tenant) : `cabinet_id`.
 - `cabinets` (tenant) : `default_theme_id`, `logo_id`.
 - `themes` : presets/système.
@@ -170,6 +192,7 @@ Tables repères (haut niveau) :
 - Admin (service_role uniquement) : `admin_accounts`, `admin_action_audit`.
 
 ### Edge Function `admin`
+
 - Source : `supabase/functions/admin/index.ts`.
 - Contrat action : query `?action=...` ou body `{ action: "..." }`.
 
@@ -181,6 +204,7 @@ L'admin est **global** (pas de multi-tenant sur cette surface). Deux prérequis 
 2. Ligne active dans `public.admin_accounts` (`status='active'`, pas expiré)
 
 **`is_admin()` vs `is_admin(uid)`** :
+
 - `is_admin()` sans param : lit le JWT courant (`app_metadata`) — safe en RLS, pas de round-trip DB.
 - `is_admin(uid)` avec param : lit `profiles.role` (miroir SQL) — utilisé en RLS pour les tables nécessitant une vérification par uuid d'un tiers.
 
@@ -188,16 +212,17 @@ L'admin est **global** (pas de multi-tenant sur cette surface). Deux prérequis 
 
 **Tables admin** (accessibles service_role uniquement, RLS activee avec policies explicites `TO service_role`) :
 
-| Table | Rôle |
-|-------|------|
-| `admin_accounts` | Allowlist des comptes admin (owner, dev_admin, e2e) avec expiration. RLS activee, policy `admin_accounts_service_role_only`. |
-| `admin_action_audit` | Journal des mutations admin (request_id, action, cible, statut). RLS activee, policies `admin_action_audit_service_role_*`. |
+| Table                | Rôle                                                                                                                         |
+| -------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| `admin_accounts`     | Allowlist des comptes admin (owner, dev_admin, e2e) avec expiration. RLS activee, policy `admin_accounts_service_role_only`. |
+| `admin_action_audit` | Journal des mutations admin (request*id, action, cible, statut). RLS activee, policies `admin_action_audit_service_role*\*`. |
 
 **Audit** : chaque mutation admin (create/update/delete cabinet, theme, user, issue) insère une ligne dans `admin_action_audit` via `recordAdminAction()` (`lib/audit.ts`). Fire-and-forget : un échec d'audit ne bloque jamais la réponse principale.
 
 Voir `docs/RUNBOOK.md` § "Gouvernance admin — admin_accounts" pour le cycle de vie opérationnel.
 
 ### Migrations
+
 - Source de vérité : `supabase/migrations/`.
 
 ### Sécurité & observabilité
@@ -205,6 +230,7 @@ Voir `docs/RUNBOOK.md` § "Gouvernance admin — admin_accounts" pour le cycle d
 > Migré depuis `docs/GOUVERNANCE.md` — ces règles relèvent de l'architecture, pas de l'UI.
 
 #### Autorisation
+
 - Interdit : utiliser `user_metadata` pour des décisions d'autorisation.
 - Autorisé : `app_metadata.role` uniquement (frontend + edge + RLS).
 - **Source unique** : `app_metadata.role` est la seule source de vérité pour le rôle auth. `user_metadata.role` ne doit jamais être écrit ni lu pour une décision d'autorisation. `profiles.role` est un miroir SQL maintenu par le backend (nécessaire pour `is_admin(uid)` en RLS), pas une source à consommer directement côté frontend.
@@ -219,6 +245,7 @@ Le flag `window.__SER1_E2E = true` permet aux tests Playwright de contourner l'a
 - **Usage autorisé** : smoke tests Playwright uniquement (test de rendu, navigation). Interdit pour simuler des droits admin réels ou tester des flows qui font des appels `/api/admin`.
 
 #### Logs
+
 - Zéro PII (email, nom, montants, RFR, patrimoine, etc.).
 - Zéro métriques métier (compteurs de simulations, montants calculés, types produits utilisés).
 - En prod : `console.log/debug/info/trace` interdits (ESLint).
@@ -226,6 +253,7 @@ Le flag `window.__SER1_E2E = true` permet aux tests Playwright de contourner l'a
 ---
 
 ## Thème & branding
+
 - ThemeProvider : `src/settings/ThemeProvider.tsx`.
 - Presets : `src/settings/presets.ts`.
 - Tokens UI : `src/settings/theme.ts` + `src/styles/index.css`.
@@ -233,9 +261,11 @@ Le flag `window.__SER1_E2E = true` permet aux tests Playwright de contourner l'a
 Règles fonctionnelles : voir `docs/GOUVERNANCE.md`.
 
 ### Standard UI des simulateurs `/sim/*`
+
 Source normative : section **"Norme des pages `/sim/*` (baseline `/sim/credit`)"** dans `docs/GOUVERNANCE.md`.
 
 Implémentation de référence :
+
 - Orchestrateur : `src/features/credit/Credit.tsx`
 - Styles de page simulateur : `src/styles/sim/index.css`
 - Styles premium partagés : `src/styles/premium-shared.css`
@@ -245,6 +275,7 @@ Implémentation de référence :
 - Les boutons optionnels de filtres/sous-sections doivent démarrer inactifs par défaut, puis activer explicitement les blocs associés.
 
 ### Mode utilisateur `/sim/*` (contrat)
+
 Décision produit : `docs/mode-simplifie-expert.md`.
 
 - Source de vérité globale : `ui_settings.mode` via `useUserMode` (`src/settings/userMode.ts`).
@@ -257,6 +288,7 @@ Décision produit : `docs/mode-simplifie-expert.md`.
 - Un simulateur sans décision produit simplifiée reste explicitement `expertOnly`. C'est le statut de `/sim/tresorerie-societe` tant que son parcours rendez-vous simplifié n'est pas défini.
 
 ### Thème V5 (3 modes)
+
 Source de vérité : DB (`ui_settings`).
 
 - `cabinet` : branding du cabinet
@@ -264,13 +296,16 @@ Source de vérité : DB (`ui_settings`).
 - `my` : `my_palette`
 
 Invariants (à ne pas casser) :
+
 - Un preset ne modifie jamais `my_palette`.
 - `localStorage` sert uniquement d'anti-flash (miroir), pas de source de vérité.
 
 ---
 
 ## Exports (PPTX/Excel)
+
 ### PPTX
+
 - Orchestrateur : `src/pptx/export/exportStudyDeck.ts`.
 - Design system : `src/pptx/designSystem/serenity.ts`.
 - Slides : `src/pptx/slides/`.
@@ -278,12 +313,14 @@ Invariants (à ne pas casser) :
 - Adaptateurs historiques encore actifs : `src/features/audit/export/exportAudit.ts` adapte `src/pptx/auditPptx.ts` et `src/features/strategy/export/exportStrategy.ts` adapte `src/pptx/strategyPptx.ts` derrière les features ; les composants UI n'importent plus directement ces générateurs.
 
 Assets statiques (images) :
+
 - Chapitres PPTX : `public/pptx/chapters/ch-01.png` .. `ch-09.png` (bibliothèque).
 - Conserver la nomenclature à 2 chiffres et le format PNG.
 - Objectif : préserver la qualité de rendu PPTX (ratio/coins/anti-artefacts).
 - Sélection par simulateur via `pickChapterImage(simId, ordinal)` dans `serenity.ts`.
 
 Budgets (guideline, non bloquant) :
+
 - Cible : <= 1.2 Mo / image ; alerte : > 1.6 Mo / image
 - Cible : <= 9 Mo total ; alerte : > 12 Mo total
 
@@ -299,9 +336,11 @@ Get-ChildItem public\pptx\chapters\ch-*.png -File |
 ```
 
 ### Excel
+
 - Builder OOXML : `src/utils/export/xlsxBuilder.ts`.
 
 ### Traçabilité exports
+
 - Fingerprint : `src/utils/export/exportFingerprint.ts`.
 
 Objectif : hasher un manifest déterministe (pas le binaire) pour limiter les variations non métier.
@@ -322,6 +361,7 @@ Source applicative : `src/data/basecg/catalog.static.ts` (snapshot statique Type
 UI : `/settings/base-contrat-retraite`, déclarée dans `src/routes/settingsRoutes.ts`. La lecture est accessible aux utilisateurs authentifiés ; les actions de création, modification, suppression et synchronisation restent réservées aux admins via l'UI et les protections Supabase/RLS.
 
 Overlays Supabase :
+
 - `base_cg_retraite_overrides` : corrections et enrichissements admin des contrats du snapshot.
 - `base_cg_retraite_documents` : métadonnées et liens de documents associés aux contrats.
 
@@ -335,23 +375,23 @@ Les corrections vivantes passent par la page settings/admin et les overlays Supa
 
 ### Taxonomie (5 catalogKind)
 
-| catalogKind | Description | Exemples |
-|-------------|-------------|----------|
-| **wrapper** | Enveloppes/Supports fiscaux (où l'actif est logé) | Assurance-vie, PEA, CTO, PER, PEE, SCI |
-| **asset** | Actifs détenables en direct (quoi) | Immo locatif, Résidence principale, Titres vifs, SCPI, Liquidités |
-| **liability** | Passif/Dettes (crucial pour actif net) | Crédit amortissable, Prêt in fine, Lombard |
-| **tax_overlay** | Surcouches fiscales (applicables sur un asset) | Pinel, Malraux, Déficit foncier |
-| **protection** | Prévoyance/Assurances (calculables) | Prévoyance individuelle, Assurance emprunteur |
+| catalogKind     | Description                                       | Exemples                                                          |
+| --------------- | ------------------------------------------------- | ----------------------------------------------------------------- |
+| **wrapper**     | Enveloppes/Supports fiscaux (où l'actif est logé) | Assurance-vie, PEA, CTO, PER, PEE, SCI                            |
+| **asset**       | Actifs détenables en direct (quoi)                | Immo locatif, Résidence principale, Titres vifs, SCPI, Liquidités |
+| **liability**   | Passif/Dettes (crucial pour actif net)            | Crédit amortissable, Prêt in fine, Lombard                        |
+| **tax_overlay** | Surcouches fiscales (applicables sur un asset)    | Pinel, Malraux, Déficit foncier                                   |
+| **protection**  | Prévoyance/Assurances (calculables)               | Prévoyance individuelle, Assurance emprunteur                     |
 
 ### Blocs de règles par catalogKind
 
-| catalogKind | Blocs disponibles (exemples) |
-|-------------|-----------------------------|
-| **wrapper** | DMTG droit commun, PS fonds €, PFU, Art. 990I/757B |
-| **asset** | PV immobilières, Revenus fonciers, BIC meublé, IFI |
-| **liability** | Déductibilité IFI, Passif successoral |
-| **tax_overlay** | Réduction IR dispositif, Déficit foncier reportable |
-| **protection** | Primes déductibles, Rentes invalidité, Capital décès |
+| catalogKind     | Blocs disponibles (exemples)                         |
+| --------------- | ---------------------------------------------------- |
+| **wrapper**     | DMTG droit commun, PS fonds €, PFU, Art. 990I/757B   |
+| **asset**       | PV immobilières, Revenus fonciers, BIC meublé, IFI   |
+| **liability**   | Déductibilité IFI, Passif successoral                |
+| **tax_overlay** | Réduction IR dispositif, Déficit foncier reportable  |
+| **protection**  | Primes déductibles, Rentes invalidité, Capital décès |
 
 ### Vérification
 
@@ -379,15 +419,15 @@ rg "export const CATALOG" src/domain/base-contrat/catalog.ts
 
 ### Pages settings existantes
 
-| Route | Composant | Table Supabase | Périmètre |
-|-------|-----------|----------------|-----------|
-| `/settings` | `Settings` | — | Généraux (placeholder) |
-| `/settings/impots` | `SettingsImpots` | `tax_settings` | Barème IR (2 ans), PFU part IR, CEHR/CDHR, IS |
-| `/settings/prelevements` | `SettingsPrelevements` | `ps_settings` | PS patrimoine (cas général + régime d'exception), cotisations retraite, seuils RFR (CSG/CRDS/CASA) |
-| `/settings/base-contrat` | `BaseContrat` | `base_contrat_overrides` | Référentiel produits (read-only 3 colonnes + toggles admin) |
-| `/settings/base-contrat-retraite` | `BaseCgRetraite` | `base_cg_retraite_overrides`, `base_cg_retraite_documents` | Base CG retraite : snapshot statique TypeScript + corrections et documents admin |
-| `/settings/comptes` | `SettingsComptes` | `profiles` | Comptes utilisateurs par cabinet (admin only) |
-| `/settings/dmtg-succession` | `SettingsDmtgSuccession` | `tax_settings`, `fiscality_settings` | Éditeur unique DMTG successions + donations + AV décès |
+| Route                             | Composant                | Table Supabase                                             | Périmètre                                                                                          |
+| --------------------------------- | ------------------------ | ---------------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
+| `/settings`                       | `Settings`               | —                                                          | Généraux (placeholder)                                                                             |
+| `/settings/impots`                | `SettingsImpots`         | `tax_settings`                                             | Barème IR (2 ans), PFU part IR, CEHR/CDHR, IS                                                      |
+| `/settings/prelevements`          | `SettingsPrelevements`   | `ps_settings`                                              | PS patrimoine (cas général + régime d'exception), cotisations retraite, seuils RFR (CSG/CRDS/CASA) |
+| `/settings/base-contrat`          | `BaseContrat`            | `base_contrat_overrides`                                   | Référentiel produits (read-only 3 colonnes + toggles admin)                                        |
+| `/settings/base-contrat-retraite` | `BaseCgRetraite`         | `base_cg_retraite_overrides`, `base_cg_retraite_documents` | Base CG retraite : snapshot statique TypeScript + corrections et documents admin                   |
+| `/settings/comptes`               | `SettingsComptes`        | `profiles`                                                 | Comptes utilisateurs par cabinet (admin only)                                                      |
+| `/settings/dmtg-succession`       | `SettingsDmtgSuccession` | `tax_settings`, `fiscality_settings`                       | Éditeur unique DMTG successions + donations + AV décès                                             |
 
 Source unique des routes : `src/routes/settingsRoutes.ts`.
 Shell de navigation : `src/pages/SettingsShell.tsx` (rendu dynamique des onglets, filtre `adminOnly`).
@@ -396,14 +436,14 @@ Shell de navigation : `src/pages/SettingsShell.tsx` (rendu dynamique des onglets
 
 ### Tables Supabase (singletons, `id = 1`)
 
-| Table | Périmètre | RLS lecture | RLS écriture |
-|-------|-----------|-------------|--------------|
-| `tax_settings` | IR barème (N et N-1), PFU part IR, CEHR/CDHR, IS, DMTG barèmes+abattements | Auth | Admin |
-| `ps_settings` | PS patrimoine (cas général + régime d'exception), cotisations retraite par tranche, seuils RFR (1/2/3 parts) | Auth | Admin |
-| `fiscality_settings` | Règles par enveloppe (AV, PER, PEA, CTO, dividendes…) — taux, abattements, seuils | Auth | Admin |
-| `pass_history` | Historique PASS annuel administré dans Settings > Prelevements (multi-lignes, clé `year`) | Auth | Admin |
-| `base_contrat_settings` | Singleton de config catalogue présent dans le schéma, non consommé par le runtime courant | Auth | Admin |
-| `base_contrat_overrides` | Clôture/réouverture produit + note admin + statut de revue juridique (uuid per product) | Admin | Admin |
+| Table                    | Périmètre                                                                                                    | RLS lecture | RLS écriture |
+| ------------------------ | ------------------------------------------------------------------------------------------------------------ | ----------- | ------------ |
+| `tax_settings`           | IR barème (N et N-1), PFU part IR, CEHR/CDHR, IS, DMTG barèmes+abattements                                   | Auth        | Admin        |
+| `ps_settings`            | PS patrimoine (cas général + régime d'exception), cotisations retraite par tranche, seuils RFR (1/2/3 parts) | Auth        | Admin        |
+| `fiscality_settings`     | Règles par enveloppe (AV, PER, PEA, CTO, dividendes…) — taux, abattements, seuils                            | Auth        | Admin        |
+| `pass_history`           | Historique PASS annuel administré dans Settings > Prelevements (multi-lignes, clé `year`)                    | Auth        | Admin        |
+| `base_contrat_settings`  | Singleton de config catalogue présent dans le schéma, non consommé par le runtime courant                    | Auth        | Admin        |
+| `base_contrat_overrides` | Clôture/réouverture produit + note admin + statut de revue juridique (uuid per product)                      | Admin       | Admin        |
 
 Schéma complet : `supabase/migrations/20260210214352_remote_commit.sql`.
 
@@ -465,26 +505,26 @@ Tous les simulateurs consomment les paramètres fiscaux via ce hook. Il expose u
 
 #### Deux modes
 
-| Mode | Usage | Comportement |
-|------|-------|--------------|
-| `strict: true` | IR, Succession | Attend Supabase avant de retourner — bloque sur un écran de chargement si Supabase est lent |
-| `strict: false` (défaut) | Placement, Stratégie | Stale-while-revalidate — retourne cache/défauts immédiatement, rafraîchit en arrière-plan |
+| Mode                     | Usage                | Comportement                                                                                |
+| ------------------------ | -------------------- | ------------------------------------------------------------------------------------------- |
+| `strict: true`           | IR, Succession       | Attend Supabase avant de retourner — bloque sur un écran de chargement si Supabase est lent |
+| `strict: false` (défaut) | Placement, Stratégie | Stale-while-revalidate — retourne cache/défauts immédiatement, rafraîchit en arrière-plan   |
 
 #### Clés normalisées exposées
 
 ```ts
-fiscalContext.irScaleCurrent          // barème IR année courante
-fiscalContext.irScalePrevious         // barème IR année précédente
-fiscalContext.pfuRateIR               // taux IR PFU
-fiscalContext.psRateGeneral           // taux PS patrimoine cas général
-fiscalContext.psRateException         // taux PS patrimoine régime d'exception
-fiscalContext.dmtgScaleLigneDirecte   // barème DMTG ligne directe
-fiscalContext.dmtgAbattementEnfant    // abattement ligne directe
-fiscalContext.dmtgSettings            // objet DMTG complet { ligneDirecte, frereSoeur, neveuNiece, autre }
-fiscalContext.passHistoryByYear       // historique PASS runtime (source: public.pass_history)
-fiscalContext._raw_tax                // brut tax_settings (usage exceptionnel)
-fiscalContext._raw_ps                 // brut ps_settings
-fiscalContext._raw_fiscality          // brut fiscality_settings
+fiscalContext.irScaleCurrent; // barème IR année courante
+fiscalContext.irScalePrevious; // barème IR année précédente
+fiscalContext.pfuRateIR; // taux IR PFU
+fiscalContext.psRateGeneral; // taux PS patrimoine cas général
+fiscalContext.psRateException; // taux PS patrimoine régime d'exception
+fiscalContext.dmtgScaleLigneDirecte; // barème DMTG ligne directe
+fiscalContext.dmtgAbattementEnfant; // abattement ligne directe
+fiscalContext.dmtgSettings; // objet DMTG complet { ligneDirecte, frereSoeur, neveuNiece, autre }
+fiscalContext.passHistoryByYear; // historique PASS runtime (source: public.pass_history)
+fiscalContext._raw_tax; // brut tax_settings (usage exceptionnel)
+fiscalContext._raw_ps; // brut ps_settings
+fiscalContext._raw_fiscality; // brut fiscality_settings
 ```
 
 #### Invalidation
@@ -502,6 +542,7 @@ Le simulateur Placement suit la chaîne standard : `Supabase` → `fiscalSetting
 #### Adaptateur Base-Contrat
 
 Le référentiel Base-Contrat reste pur côté domaine :
+
 - `src/domain/base-contrat/rules/fiscalLabels.ts` construit des libellés fiscaux à partir d'un contexte fourni.
 - `getRules(productId, audience, context?)` rend les placeholders fiscaux avec ces libellés.
 - `src/pages/settings/BaseContrat.tsx` est le seul point qui branche `useFiscalContext()` sur ce rendu.
@@ -523,11 +564,11 @@ Les fichiers `src/domain/base-contrat/**` ne doivent pas importer React, Supabas
 
 **Fichiers** :
 
-| Rôle | Fichier |
-|------|---------|
-| Calcul du fingerprint | `src/utils/export/exportFingerprint.ts` (`fingerprintSettingsData`) |
-| Comparaison au chargement | `src/App.tsx` (lignes 169–183) |
-| Migration snapshot v3→v4 | `src/reporting/snapshot/snapshotMigrations.ts` |
+| Rôle                      | Fichier                                                             |
+| ------------------------- | ------------------------------------------------------------------- |
+| Calcul du fingerprint     | `src/utils/export/exportFingerprint.ts` (`fingerprintSettingsData`) |
+| Comparaison au chargement | `src/App.tsx` (lignes 169–183)                                      |
+| Migration snapshot v3→v4  | `src/reporting/snapshot/snapshotMigrations.ts`                      |
 
 ---
 
@@ -535,33 +576,33 @@ Les fichiers `src/domain/base-contrat/**` ne doivent pas importer React, Supabas
 
 #### Taux vivants (Supabase, modifiables admin, susceptibles de changer à chaque PLF)
 
-| Catégorie | Paramètres | Table | Référence légale |
-|-----------|-----------|-------|-----------------|
-| **IR** | Barème 5 tranches (seuils + taux), abattement DOM | `tax_settings` | Art. 197 CGI |
-| **PFU** | Taux IR du PFU. La part PS est dérivée depuis `ps_settings` | `tax_settings` | Art. 200 A CGI |
-| **CEHR/CDHR** | Seuils (500 k€, 1 M€) + taux (3 %, 4 %) | `tax_settings` | Art. 223 sexies CGI |
-| **IS** | Taux réduit 15 % (seuil 42 500 €), taux normal 25 % | `tax_settings` | Art. 219 CGI |
-| **DMTG successions** | Barèmes par lien de parenté + abattements | `tax_settings` | Art. 777 & 779 CGI |
-| **DMTG donations** | Abattements spécifiques donation (31 865 €, 80 724 €…) | *(non implémenté — futur PLF)* | Art. 779, 790 E/F/G CGI |
-| **Assurance-vie** | Abattements 990 I / 757 B et barème forfaitaire décès | `fiscality_settings` | Art. 990 I & 757 B CGI |
-| **PS patrimoine** | Taux cas général + taux régime d'exception + CSG déductible | `ps_settings` | Art. L136-6 CSS |
-| **Seuils RFR** | Par nombre de parts (CSG taux réduit, CRDS exo) | `ps_settings` | Art. L136-8 CSS |
-| **PASS** | Historique PASS annuel administre dans Settings et charge via `public.pass_history` | `pass_history` | Art. D612-5 CSS |
+| Catégorie            | Paramètres                                                                          | Table                          | Référence légale        |
+| -------------------- | ----------------------------------------------------------------------------------- | ------------------------------ | ----------------------- |
+| **IR**               | Barème 5 tranches (seuils + taux), abattement DOM                                   | `tax_settings`                 | Art. 197 CGI            |
+| **PFU**              | Taux IR du PFU. La part PS est dérivée depuis `ps_settings`                         | `tax_settings`                 | Art. 200 A CGI          |
+| **CEHR/CDHR**        | Seuils (500 k€, 1 M€) + taux (3 %, 4 %)                                             | `tax_settings`                 | Art. 223 sexies CGI     |
+| **IS**               | Taux réduit 15 % (seuil 42 500 €), taux normal 25 %                                 | `tax_settings`                 | Art. 219 CGI            |
+| **DMTG successions** | Barèmes par lien de parenté + abattements                                           | `tax_settings`                 | Art. 777 & 779 CGI      |
+| **DMTG donations**   | Abattements spécifiques donation (31 865 €, 80 724 €…)                              | _(non implémenté — futur PLF)_ | Art. 779, 790 E/F/G CGI |
+| **Assurance-vie**    | Abattements 990 I / 757 B et barème forfaitaire décès                               | `fiscality_settings`           | Art. 990 I & 757 B CGI  |
+| **PS patrimoine**    | Taux cas général + taux régime d'exception + CSG déductible                         | `ps_settings`                  | Art. L136-6 CSS         |
+| **Seuils RFR**       | Par nombre de parts (CSG taux réduit, CRDS exo)                                     | `ps_settings`                  | Art. L136-8 CSS         |
+| **PASS**             | Historique PASS annuel administre dans Settings et charge via `public.pass_history` | `pass_history`                 | Art. D612-5 CSS         |
 
 #### Règles structurelles (logique moteur, Code civil ou loi ordinaire)
 
-| Règle | Source | Stabilité |
-|-------|--------|-----------|
-| Réserve héréditaire (1/2, 2/3, 3/4 selon nbre d'enfants) | Art. 912-913 Code civil | Très stable |
-| Exonération conjoint survivant (succession) | Art. 796-0 bis CGI (loi TEPA 2007) | Stable |
-| Exonération partenaire PACS (succession) | Art. 796-0 bis CGI | Stable |
-| Délai de rappel fiscal : 15 ans | Art. 784 CGI | Stable (était 10 ans avant 2012) |
-| Assurance-vie hors succession (primes < 70 ans) | Art. L132-12 Code assurances + 990 I CGI | Stable (principe) |
-| Représentation successorale (enfant prédécédé) | Art. 751 Code civil | Très stable |
-| Rapport civil (sans limite de temps) | Art. 843 Code civil | Stable |
-| Régimes matrimoniaux (définitions actif successoral) | Art. 1400, 1536, 1526, 1569 Code civil | Très stable |
-| Usufruit légal conjoint survivant | Art. 757 Code civil | Stable |
-| Barème nue-propriété / usufruit | Art. 669 CGI | Modifiable PLF |
+| Règle                                                    | Source                                   | Stabilité                        |
+| -------------------------------------------------------- | ---------------------------------------- | -------------------------------- |
+| Réserve héréditaire (1/2, 2/3, 3/4 selon nbre d'enfants) | Art. 912-913 Code civil                  | Très stable                      |
+| Exonération conjoint survivant (succession)              | Art. 796-0 bis CGI (loi TEPA 2007)       | Stable                           |
+| Exonération partenaire PACS (succession)                 | Art. 796-0 bis CGI                       | Stable                           |
+| Délai de rappel fiscal : 15 ans                          | Art. 784 CGI                             | Stable (était 10 ans avant 2012) |
+| Assurance-vie hors succession (primes < 70 ans)          | Art. L132-12 Code assurances + 990 I CGI | Stable (principe)                |
+| Représentation successorale (enfant prédécédé)           | Art. 751 Code civil                      | Très stable                      |
+| Rapport civil (sans limite de temps)                     | Art. 843 Code civil                      | Stable                           |
+| Régimes matrimoniaux (définitions actif successoral)     | Art. 1400, 1536, 1526, 1569 Code civil   | Très stable                      |
+| Usufruit légal conjoint survivant                        | Art. 757 Code civil                      | Stable                           |
+| Barème nue-propriété / usufruit                          | Art. 669 CGI                             | Modifiable PLF                   |
 
 ---
 
@@ -574,20 +615,20 @@ Les fichiers `src/domain/base-contrat/**` ne doivent pas importer React, Supabas
 
 ### Fichiers clés
 
-| Rôle | Fichier |
-|------|---------|
-| Source des routes settings | `src/routes/settingsRoutes.ts` |
-| Valeurs par défaut 3 tables | `src/constants/settingsDefaults.ts` |
-| Shell settings (nav + rendu) | `src/pages/SettingsShell.tsx` |
-| Pages settings | `src/pages/settings/` |
-| Cache + fetch Supabase | `src/utils/cache/fiscalSettingsCache.ts` |
-| **Hook unifié dossier fiscal** | **`src/hooks/useFiscalContext.ts`** |
-| Hook simulateur placement | `src/hooks/usePlacementSettings.ts` |
-| Extraction params normalisés | `src/engine/placement/fiscalParams.ts` |
-| Params Placement par défaut | `src/engine/placement/shared.ts` (`DEFAULT_FISCAL_PARAMS`, dérivé de `settingsDefaults.ts`) |
-| Libellés fiscaux Base-Contrat | `src/domain/base-contrat/rules/fiscalLabels.ts` |
-| Profil fiscal par enveloppe | `src/domain/base-contrat/rules/fiscalProfile.ts` |
-| Migration snapshot (v4 + identity) | `src/reporting/snapshot/snapshotMigrations.ts` |
+| Rôle                               | Fichier                                                                                     |
+| ---------------------------------- | ------------------------------------------------------------------------------------------- |
+| Source des routes settings         | `src/routes/settingsRoutes.ts`                                                              |
+| Valeurs par défaut 3 tables        | `src/constants/settingsDefaults.ts`                                                         |
+| Shell settings (nav + rendu)       | `src/pages/SettingsShell.tsx`                                                               |
+| Pages settings                     | `src/pages/settings/`                                                                       |
+| Cache + fetch Supabase             | `src/utils/cache/fiscalSettingsCache.ts`                                                    |
+| **Hook unifié dossier fiscal**     | **`src/hooks/useFiscalContext.ts`**                                                         |
+| Hook simulateur placement          | `src/hooks/usePlacementSettings.ts`                                                         |
+| Extraction params normalisés       | `src/engine/placement/fiscalParams.ts`                                                      |
+| Params Placement par défaut        | `src/engine/placement/shared.ts` (`DEFAULT_FISCAL_PARAMS`, dérivé de `settingsDefaults.ts`) |
+| Libellés fiscaux Base-Contrat      | `src/domain/base-contrat/rules/fiscalLabels.ts`                                             |
+| Profil fiscal par enveloppe        | `src/domain/base-contrat/rules/fiscalProfile.ts`                                            |
+| Migration snapshot (v4 + identity) | `src/reporting/snapshot/snapshotMigrations.ts`                                              |
 
 ---
 
@@ -595,14 +636,16 @@ Les fichiers `src/domain/base-contrat/**` ne doivent pas importer React, Supabas
 
 Cette section fixe comment ajouter une page, une route ou une feature sans creer de nouveau pattern implicite.
 
-### 1) Ajouter un nouveau simulateur /sim/*
+### 1) Ajouter un nouveau simulateur /sim/\*
 
 #### Regle
+
 - Toute nouvelle route simulateur vit dans `APP_ROUTES` dans `src/routes/appRoutes.ts`.
 - Le chemin canonique est toujours `/sim/<slug>`.
 - Les routes courtes historiques (`/<slug>`) ne sont pas déclarées : le seul chemin public d'un simulateur est `/sim/<slug>`.
 
 #### Structure cible
+
 - API publique de feature : `src/features/<slug>/index.ts`
 - `src/routes/` et les autres features importent uniquement cette API publique, jamais les fichiers internes de la feature.
 - Page ou orchestrateur : `src/features/<slug>/<Feature>Page.tsx` ou composant equivalent exporte par `index.ts`.
@@ -614,6 +657,7 @@ Cette section fixe comment ajouter une page, une route ou une feature sans creer
   - `__tests__/`
 
 #### Contrats obligatoires
+
 - Le calcul metier reste dans `src/engine/` si le simulateur introduit une vraie logique de calcul.
 - La route doit declarer un `contextLabel` et une `topbar` coherents avec `APP_ROUTES`.
 - Si le simulateur supporte le reset page, declarer un `resetKey`.
@@ -623,12 +667,14 @@ Cette section fixe comment ajouter une page, une route ou une feature sans creer
 - Aucun `SimulatorAdapter` runtime commun n'est requis par defaut : le contrat est l'API publique de feature + les garde-fous d'architecture.
 
 #### Si le simulateur n'est pas pret
+
 - Utiliser `UpcomingSimulatorPage` tant que le simulateur n'a pas un contrat UI ou metier stable.
 - Ne pas livrer une page `/sim/*` demi-finie avec architecture definitive implicite.
 
-### 2) Ajouter une nouvelle page /settings/*
+### 2) Ajouter une nouvelle page /settings/\*
 
 #### Regle
+
 - La source unique des sous-pages settings est `src/routes/settingsRoutes.ts`.
 - Toute nouvelle page settings doit etre declaree dans `SETTINGS_ROUTES` avec :
   - `key`
@@ -639,11 +685,13 @@ Cette section fixe comment ajouter une page, une route ou une feature sans creer
   - `adminOnly` si necessaire
 
 #### Emplacement
+
 - Composant de page : `src/pages/settings/<PageName>.tsx`
 - Navigation et rendu : `src/pages/SettingsShell.tsx`
 - Mapping URL actif : helpers dans `src/routes/settingsRoutes.ts`
 
 #### Contrats obligatoires
+
 - Ne pas creer une navigation settings parallele hors `SettingsShell`.
 - Si une page sensible est `adminOnly` en front, verifier aussi l'enforcement backend/RLS.
 - Si une route settings remplace une ancienne route, documenter le mapping de migration et vérifier l'absence de redirect runtime non voulu.
@@ -651,10 +699,12 @@ Cette section fixe comment ajouter une page, une route ou une feature sans creer
 ### 3) Organiser une feature de simulateur
 
 #### Regle
+
 - Une feature regroupe uniquement ce qui lui appartient vraiment.
 - Les composants partages vivent hors feature seulement s'ils sont reemployes par plusieurs domaines.
 
 #### Repartition recommandee
+
 - `src/engine/` : calcul pur, zero React
 - `src/features/<slug>/` : UI, state, orchestration, exports lies a la feature
 - `src/features/<slug>/index.ts` : API publique de la feature, seule surface importable depuis `src/routes/` ou une autre feature
@@ -663,12 +713,14 @@ Cette section fixe comment ajouter une page, une route ou une feature sans creer
 - `src/pages/` : shells et pages transverses, pas la logique metier d'un simulateur
 
 #### Interdits
+
 - Calcul fiscal dans un composant React
 - Import CSS cross-feature depuis une autre feature
 - Nouveau dossier `legacy/`, `__spike__` ou `_raw` en prod
 - Fichier "god component" si un decoupage simple composant/hook suffit
 
 ### 4) Checklist minimale avant merge
+
 - Route ou page ajoutee a la bonne source de verite (`APP_ROUTES` ou `SETTINGS_ROUTES`)
 - Pour une route `/sim/*`, `npm test -- src/routes` doit valider le contrat `APP_ROUTES`.
 - Les imports publics de features restent vérifiés par `npm run check:arch` (`routes-no-feature-internals`).
@@ -682,6 +734,7 @@ Cette section fixe comment ajouter une page, une route ou une feature sans creer
 ---
 
 ## Références
+
 - Gouvernance UI/couleurs/thème : `docs/GOUVERNANCE.md`
 - Gouvernance exports PPTX/XLSX : `docs/GOUVERNANCE_EXPORTS.md`
 - Runbook debug + edge + migrations : `docs/RUNBOOK.md`

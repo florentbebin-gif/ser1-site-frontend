@@ -23,7 +23,10 @@ export default function SettingsShell(): React.ReactElement {
   const tabRefs = useRef<Record<string, HTMLButtonElement | null>>({});
 
   useEffect(() => {
-    if (typeof window !== 'undefined' && window.location.pathname.startsWith('/settings/fiscalites')) {
+    if (
+      typeof window !== 'undefined' &&
+      window.location.pathname.startsWith('/settings/fiscalites')
+    ) {
       window.history.replaceState({}, '', '/settings/base-contrat');
     }
   }, []);
@@ -39,10 +42,7 @@ export default function SettingsShell(): React.ReactElement {
     return () => window.removeEventListener('popstate', handlePopState);
   }, []);
 
-  const visibleTabs = useMemo(
-    () => getVisibleSettingsRoutes(isAdmin),
-    [isAdmin],
-  );
+  const visibleTabs = useMemo(() => getVisibleSettingsRoutes(isAdmin), [isAdmin]);
 
   const activeComponent = useMemo(() => {
     const routes: SettingsRouteEntry[] = SETTINGS_ROUTES;
@@ -65,7 +65,10 @@ export default function SettingsShell(): React.ReactElement {
     if (!element) return;
 
     const scrollAmount = 200;
-    element.scrollBy({ left: direction === 'left' ? -scrollAmount : scrollAmount, behavior: 'smooth' });
+    element.scrollBy({
+      left: direction === 'left' ? -scrollAmount : scrollAmount,
+      behavior: 'smooth',
+    });
   };
 
   useEffect(() => {
@@ -114,7 +117,11 @@ export default function SettingsShell(): React.ReactElement {
                     onClick={() => {
                       setActiveTab(tab.key);
                       if (typeof window !== 'undefined') {
-                        window.history.replaceState({}, '', `/settings${tab.path ? `/${tab.path}` : ''}`);
+                        window.history.replaceState(
+                          {},
+                          '',
+                          `/settings${tab.path ? `/${tab.path}` : ''}`,
+                        );
                       }
                       window.setTimeout(() => {
                         tabRefs.current[tab.key]?.scrollIntoView({

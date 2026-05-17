@@ -45,7 +45,6 @@
   font-weight: 500;
 }
 
-
 .ir-row-title td {
   background: transparent;
   font-weight: 600;
@@ -87,7 +86,7 @@
 }
 
 .ir-table-input--readonly input[type='text'] {
-  background: #FFFFFF;
+  background: #ffffff;
 }
 
 /* SÃ©parateur estompÃ© dans les cartes de synthÃ¨se (GOUVERNANCE.md Â§4) */

@@ -81,7 +81,17 @@ export function IrIncomeSection({
         <div className="ir-income-card__header-row">
           <div className="ir-income-card__title sim-card__title sim-card__title-row">
             <div className="ir-section-icon-wrapper sim-card__icon">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.8"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
+              >
                 <rect x="3" y="3" width="18" height="18" rx="2" />
                 <line x1="3" y1="9" x2="21" y2="9" />
                 <line x1="3" y1="15" x2="21" y2="15" />
@@ -90,7 +100,11 @@ export function IrIncomeSection({
             </div>
             Revenus imposables
           </div>
-          <div className="ir-income-filters" role="group" aria-label="Filtres des lignes de revenus imposables">
+          <div
+            className="ir-income-filters"
+            role="group"
+            aria-label="Filtres des lignes de revenus imposables"
+          >
             <button
               type="button"
               className={`ir-income-filter-btn${showTnsRows ? ' is-active' : ''}`}
@@ -120,10 +134,15 @@ export function IrIncomeSection({
             </button>
           </div>
         </div>
-        <p className="ir-income-card__subtitle">Renseignez vos sources de revenus par catégorie pour affiner le calcul</p>
+        <p className="ir-income-card__subtitle">
+          Renseignez vos sources de revenus par catégorie pour affiner le calcul
+        </p>
       </div>
       <div className="ir-card-divider sim-divider" />
-      <table className={`ir-table ${status === 'single' ? 'ir-table-single' : ''}`} aria-label="Revenus imposables">
+      <table
+        className={`ir-table ${status === 'single' ? 'ir-table-single' : ''}`}
+        aria-label="Revenus imposables"
+      >
         <colgroup>
           <col style={{ width: '40%' }} />
           <col style={{ width: '30%' }} />
@@ -137,7 +156,11 @@ export function IrIncomeSection({
           </tr>
         </thead>
         <tbody>
-          <tr className="ir-divider-row"><td colSpan={3}><div className="ir-divider-row__inner" /></td></tr>
+          <tr className="ir-divider-row">
+            <td colSpan={3}>
+              <div className="ir-divider-row__inner" />
+            </td>
+          </tr>
           <tr data-testid="ir-salary-row">
             <td>Traitements et salaires</td>
             <td>
@@ -179,9 +202,7 @@ export function IrIncomeSection({
                 <IrSelect
                   style={{ flex: 1 }}
                   value={realMode.d1}
-                  onChange={(v) =>
-                    setRealModeState((m) => ({ ...m, d1: v as typeof realMode.d1 }))
-                  }
+                  onChange={(v) => setRealModeState((m) => ({ ...m, d1: v as typeof realMode.d1 }))}
                   options={[
                     { value: 'reels', label: 'FR' },
                     { value: 'abat10', label: '10%' },
@@ -210,9 +231,7 @@ export function IrIncomeSection({
                 <IrSelect
                   style={{ flex: 1 }}
                   value={realMode.d2}
-                  onChange={(v) =>
-                    setRealModeState((m) => ({ ...m, d2: v as typeof realMode.d2 }))
-                  }
+                  onChange={(v) => setRealModeState((m) => ({ ...m, d2: v as typeof realMode.d2 }))}
                   options={[
                     { value: 'reels', label: 'FR' },
                     { value: 'abat10', label: '10%' },
@@ -237,7 +256,11 @@ export function IrIncomeSection({
               </div>
             </td>
           </tr>
-          <tr className="ir-divider-row"><td colSpan={3}><div className="ir-divider-row__inner" /></td></tr>
+          <tr className="ir-divider-row">
+            <td colSpan={3}>
+              <div className="ir-divider-row__inner" />
+            </td>
+          </tr>
           {showTnsRows && (
             <tr>
               <td>BIC‑BNC‑BA imposables</td>
@@ -271,7 +294,11 @@ export function IrIncomeSection({
             </td>
           </tr>
           {(showPensionRows || showFoncierRow || isExpert) && (
-            <tr className="ir-divider-row"><td colSpan={3}><div className="ir-divider-row__inner" /></td></tr>
+            <tr className="ir-divider-row">
+              <td colSpan={3}>
+                <div className="ir-divider-row__inner" />
+              </td>
+            </tr>
           )}
 
           {showPensionRows && (
@@ -301,7 +328,11 @@ export function IrIncomeSection({
           )}
 
           {showPensionRows && (showFoncierRow || isExpert) && (
-            <tr className="ir-divider-row"><td colSpan={3}><div className="ir-divider-row__inner" /></td></tr>
+            <tr className="ir-divider-row">
+              <td colSpan={3}>
+                <div className="ir-divider-row__inner" />
+              </td>
+            </tr>
           )}
 
           {showFoncierRow && (
@@ -321,7 +352,11 @@ export function IrIncomeSection({
           {isExpert && (
             <>
               {showFoncierRow && (
-                <tr className="ir-divider-row"><td colSpan={3}><div className="ir-divider-row__inner" /></td></tr>
+                <tr className="ir-divider-row">
+                  <td colSpan={3}>
+                    <div className="ir-divider-row__inner" />
+                  </td>
+                </tr>
               )}
               <tr>
                 <td>RCM soumis aux PS a {fmtPct(psGeneralRate)} %</td>
@@ -354,7 +389,11 @@ export function IrIncomeSection({
                   />
                 </td>
               </tr>
-              <tr className="ir-divider-row"><td colSpan={3}><div className="ir-divider-row__inner" /></td></tr>
+              <tr className="ir-divider-row">
+                <td colSpan={3}>
+                  <div className="ir-divider-row__inner" />
+                </td>
+              </tr>
               <tr className="ir-row-title">
                 <td>Déductions (pensions alimentaires, etc.)</td>
                 <td colSpan={2}>

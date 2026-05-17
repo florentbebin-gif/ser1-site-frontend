@@ -14,22 +14,27 @@ export default function StepPassif({ dossier, updateDossier }: StepProps) {
       <button
         type="button"
         className="premium-btn"
-        onClick={() => updateDossier({
-          passif: {
-            ...passif,
-            emprunts: [...passif.emprunts, {
-              id: crypto.randomUUID(),
-              libelle: '',
-              type: 'immobilier',
-              capitalInitial: 0,
-              capitalRestantDu: 0,
-              mensualite: 0,
-              tauxInteret: 0,
-              dateDebut: '',
-              dateFin: '',
-            }],
-          },
-        })}
+        onClick={() =>
+          updateDossier({
+            passif: {
+              ...passif,
+              emprunts: [
+                ...passif.emprunts,
+                {
+                  id: crypto.randomUUID(),
+                  libelle: '',
+                  type: 'immobilier',
+                  capitalInitial: 0,
+                  capitalRestantDu: 0,
+                  mensualite: 0,
+                  tauxInteret: 0,
+                  dateDebut: '',
+                  dateFin: '',
+                },
+              ],
+            },
+          })
+        }
       >
         + Ajouter un emprunt
       </button>
@@ -56,7 +61,10 @@ export default function StepPassif({ dossier, updateDossier }: StepProps) {
               value={emprunt.capitalRestantDu}
               onChange={(e) => {
                 const newEmprunts = [...passif.emprunts];
-                newEmprunts[idx] = { ...emprunt, capitalRestantDu: parseFloat(e.target.value) || 0 };
+                newEmprunts[idx] = {
+                  ...emprunt,
+                  capitalRestantDu: parseFloat(e.target.value) || 0,
+                };
                 updateDossier({ passif: { ...passif, emprunts: newEmprunts } });
               }}
             />

@@ -130,11 +130,10 @@
   border: none;
   border-bottom: 1px solid transparent;
   border-radius: 4px;
-  background: var(--sim-input-bg, color-mix(in srgb, var(--color-c8) 18%, #FFFFFF));
+  background: var(--sim-input-bg, color-mix(in srgb, var(--color-c8) 18%, #ffffff));
   color: var(--color-c10);
   font-family: inherit;
   font-size: 12px;
   text-align: right;
   outline: none;
 }
-

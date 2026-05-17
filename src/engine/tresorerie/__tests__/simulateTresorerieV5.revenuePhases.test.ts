@@ -9,12 +9,12 @@ const PARAMS: TresoFiscalParams = {
   motherDaughterStandardQpfcRate: 0.05,
   motherDaughterGroupQpfcRate: 0.01,
   participationDisposalQpfcRate: 0.12,
-  pfuRateIR: 0.10,
+  pfuRateIR: 0.1,
   psRate: 0.15,
   pfuTotal: 0.25,
   dividendesAbattement: 0,
   irScale: [],
-  tnsDividendBasePct: 0.10,
+  tnsDividendBasePct: 0.1,
 };
 
 function baseV5(): TresoInputsV5 {
@@ -38,35 +38,39 @@ function baseV5(): TresoInputsV5 {
         workingCapitalRequirement: 0,
       },
       reducedCorporateTaxEligible: true,
-      associates: [{
-        id: 'associe-us',
-        label: 'Associé 1',
-        kind: 'pp',
-        profile: {
-          currentAge: 50,
-          retirementAge: 90,
-          annualIncomeNeed: 0,
-          projectionStartYear: 2026,
+      associates: [
+        {
+          id: 'associe-us',
+          label: 'Associé 1',
+          kind: 'pp',
+          profile: {
+            currentAge: 50,
+            retirementAge: 90,
+            annualIncomeNeed: 0,
+            projectionStartYear: 2026,
+          },
+          ownershipLots: [{ right: 'pleine_propriete', capitalPct: 100, economicRightsPct: 100 }],
+          roles: ['associe_sans_statut'],
+          cca: {
+            currentBalance: 0,
+            exceptionalContributions: [],
+            annualContribution: { amount: 0, startYear: 2026 },
+            remunerationRate: 0,
+          },
+          revenuePhases: [
+            {
+              id: 'phase-1',
+              label: 'Rémunération holding',
+              startYear: 2026,
+              source: 'holding',
+              loadedAnnualCost: 80_000,
+              socialChargeRate: 0.25,
+              annualNetIncomeNeed: 0,
+              useCcaForCompletion: true,
+            },
+          ],
         },
-        ownershipLots: [{ right: 'pleine_propriete', capitalPct: 100, economicRightsPct: 100 }],
-        roles: ['associe_sans_statut'],
-        cca: {
-          currentBalance: 0,
-          exceptionalContributions: [],
-          annualContribution: { amount: 0, startYear: 2026 },
-          remunerationRate: 0,
-        },
-        revenuePhases: [{
-          id: 'phase-1',
-          label: 'Rémunération holding',
-          startYear: 2026,
-          source: 'holding',
-          loadedAnnualCost: 80_000,
-          socialChargeRate: 0.25,
-          annualNetIncomeNeed: 0,
-          useCcaForCompletion: true,
-        }],
-      }],
+      ],
       loans: [],
       subsidiaries: [],
     },
@@ -142,15 +146,17 @@ describe('simulateTresorerie — paliers de revenus V5', () => {
       annualContribution: { amount: 0, startYear: 2026 },
       remunerationRate: 0,
     };
-    inputs.company.associates[0].revenuePhases = [{
-      id: 'phase-cca',
-      startYear: 2026,
-      source: 'none',
-      loadedAnnualCost: 0,
-      socialChargeRate: 0,
-      annualNetIncomeNeed: 8_000,
-      useCcaForCompletion: true,
-    }];
+    inputs.company.associates[0].revenuePhases = [
+      {
+        id: 'phase-cca',
+        startYear: 2026,
+        source: 'none',
+        loadedAnnualCost: 0,
+        socialChargeRate: 0,
+        annualNetIncomeNeed: 8_000,
+        useCcaForCompletion: true,
+      },
+    ];
 
     const rows = simulateTresorerieV2(inputs, PARAMS, 1);
 
@@ -167,15 +173,17 @@ describe('simulateTresorerie — paliers de revenus V5', () => {
       annualContribution: { amount: 0, startYear: 2026 },
       remunerationRate: 0,
     };
-    inputs.company.associates[0].revenuePhases = [{
-      id: 'phase-dividendes',
-      startYear: 2026,
-      source: 'none',
-      loadedAnnualCost: 0,
-      socialChargeRate: 0,
-      annualNetIncomeNeed: 9_000,
-      useCcaForCompletion: false,
-    }];
+    inputs.company.associates[0].revenuePhases = [
+      {
+        id: 'phase-dividendes',
+        startYear: 2026,
+        source: 'none',
+        loadedAnnualCost: 0,
+        socialChargeRate: 0,
+        annualNetIncomeNeed: 9_000,
+        useCcaForCompletion: false,
+      },
+    ];
 
     const rows = simulateTresorerieV2(inputs, PARAMS, 1);
 

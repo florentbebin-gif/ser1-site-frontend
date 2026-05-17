@@ -1,9 +1,9 @@
 /**
  * PowerPoint Theme Builder
- * 
+ *
  * Injects a proper clrScheme (color scheme) into the PPTX file
  * so that user's 10 colors appear in PowerPoint's theme color palette.
- * 
+ *
  * PptxGenJS doesn't natively support full theme color injection,
  * so we patch the generated PPTX (which is a ZIP file) after generation.
  */
@@ -35,7 +35,7 @@ function hexToOoxml(hex: string): string {
 
 /**
  * Generate the theme1.xml content with custom color scheme
- * 
+ *
  * PowerPoint theme slots:
  * - dk1: Dark 1 (usually black/dark text)
  * - lt1: Light 1 (usually white/light background)
@@ -44,7 +44,7 @@ function hexToOoxml(hex: string): string {
  * - accent1-6: Accent colors
  * - hlink: Hyperlink color
  * - folHlink: Followed hyperlink color
- * 
+ *
  * We map our 10 colors as:
  * - c1 → dk2 (primary brand color, often dark)
  * - c2 → accent1
@@ -157,7 +157,7 @@ function generateThemeXml(colors: ThemeColors, themeName: string = 'Serenity'): 
 
 /**
  * Inject custom theme colors into a PPTX blob
- * 
+ *
  * @param pptxBlob - Original PPTX blob from PptxGenJS
  * @param colors - Theme colors (c1-c10)
  * @param themeName - Name for the theme
@@ -166,18 +166,18 @@ function generateThemeXml(colors: ThemeColors, themeName: string = 'Serenity'): 
 export async function injectThemeColors(
   pptxBlob: Blob,
   colors: ThemeColors,
-  themeName: string = 'Serenity'
+  themeName: string = 'Serenity',
 ): Promise<Blob> {
   try {
     // Load the PPTX as a ZIP
     const zip = await JSZip.loadAsync(pptxBlob);
-    
+
     // Generate new theme XML with our colors
     const themeXml = generateThemeXml(colors, themeName);
-    
+
     // Replace the theme file
     zip.file('ppt/theme/theme1.xml', themeXml);
-    
+
     // Generate the modified PPTX
     const modifiedBlob = await zip.generateAsync({
       type: 'blob',
@@ -185,7 +185,7 @@ export async function injectThemeColors(
       compression: 'DEFLATE',
       compressionOptions: { level: 9 },
     });
-    
+
     return modifiedBlob;
   } catch (error) {
     console.error('[ThemeBuilder] Failed to inject theme colors:', error);

@@ -29,9 +29,7 @@ export default function SettingsSectionCard({
   return (
     <section className="settings-premium-card" style={style}>
       <header className="settings-premium-header settings-premium-header--row">
-        <div className="settings-action-icon">
-          {icon}
-        </div>
+        <div className="settings-action-icon">{icon}</div>
         <div className="settings-action-text settings-premium-header__body">
           <div>
             <h3 className="settings-premium-title settings-premium-title--flush">{title}</h3>

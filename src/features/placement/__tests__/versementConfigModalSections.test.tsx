@@ -55,13 +55,15 @@ describe('VersementPonctuelsSection', () => {
   it('keeps the standard allocation display and aligned labels for ponctual payments', () => {
     const markup = renderToStaticMarkup(
       <VersementPonctuelsSection
-        ponctuels={[{
-          annee: 5,
-          montant: 0,
-          fraisEntree: 0.02,
-          pctCapitalisation: 100,
-          pctDistribution: 0,
-        }]}
+        ponctuels={[
+          {
+            annee: 5,
+            montant: 0,
+            fraisEntree: 0.02,
+            pctCapitalisation: 100,
+            pctDistribution: 0,
+          },
+        ]}
         dureeEpargne={10}
         isSCPI={false}
         onAddPonctuel={noop}

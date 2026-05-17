@@ -61,15 +61,10 @@ export default function SeuilsYearPeriod({
 }: SeuilsYearPeriodProps): React.ReactElement {
   return (
     <>
-      <div className="income-tax-year-label">
-        {yearLabel}
-      </div>
+      <div className="income-tax-year-label">{yearLabel}</div>
 
       {REGION_SECTIONS.map((region) => (
-        <div
-          className="income-tax-block income-tax-block--mb12"
-          key={`${yearKey}-${region.key}`}
-        >
+        <div className="income-tax-block income-tax-block--mb12" key={`${yearKey}-${region.key}`}>
           <div className="income-tax-block-title">{region.label}</div>
           <div className="income-tax-block-body">
             {THRESHOLD_FIELDS.map((field) => (

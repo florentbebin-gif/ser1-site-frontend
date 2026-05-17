@@ -120,19 +120,21 @@ function normalizePonctuel(
   ponctuel: VersementPonctuelInput | null | undefined,
   fallback: VersementEntry,
 ): VersementPonctuel {
-  const pctCapi = typeof ponctuel?.pctCapitalisation === 'number'
-    ? ponctuel.pctCapitalisation
-    : fallback.pctCapitalisation;
-  const pctDistrib = typeof ponctuel?.pctDistribution === 'number'
-    ? ponctuel.pctDistribution
-    : fallback.pctDistribution;
+  const pctCapi =
+    typeof ponctuel?.pctCapitalisation === 'number'
+      ? ponctuel.pctCapitalisation
+      : fallback.pctCapitalisation;
+  const pctDistrib =
+    typeof ponctuel?.pctDistribution === 'number'
+      ? ponctuel.pctDistribution
+      : fallback.pctDistribution;
 
   return {
     annee: Math.max(1, ponctuel?.annee ?? 1),
     montant: ponctuel?.montant ?? 0,
     fraisEntree: ponctuel?.fraisEntree ?? fallback.fraisEntree,
     pctCapitalisation: Math.max(0, Math.min(100, pctCapi ?? 0)),
-    pctDistribution: Math.max(0, Math.min(100, pctDistrib ?? (100 - (pctCapi ?? 0)))),
+    pctDistribution: Math.max(0, Math.min(100, pctDistrib ?? 100 - (pctCapi ?? 0))),
   };
 }
 

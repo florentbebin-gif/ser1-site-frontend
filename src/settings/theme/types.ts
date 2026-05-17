@@ -56,7 +56,10 @@ export interface ThemeContextValue {
   themeMode: ThemeMode;
   presetId: string | null;
   myPalette: ThemeColors | null;
-  applyThemeMode: (_mode: ThemeMode, _presetId?: string) => Promise<{ success: boolean; error?: string }>;
+  applyThemeMode: (
+    _mode: ThemeMode,
+    _presetId?: string,
+  ) => Promise<{ success: boolean; error?: string }>;
   saveMyPalette: (_colors: ThemeColors) => Promise<{ success: boolean; error?: string }>;
   // Compat legacy (dérivés)
   themeSource: ThemeSource;
@@ -64,7 +67,10 @@ export interface ThemeContextValue {
   customPalette: ThemeColors | null;
   selectedThemeRef: string;
   setSelectedThemeRef: (_ref: string) => void;
-  saveThemeToUiSettings: (_colors: ThemeColors, _themeName?: string) => Promise<{ success: boolean; error?: string }>;
+  saveThemeToUiSettings: (
+    _colors: ThemeColors,
+    _themeName?: string,
+  ) => Promise<{ success: boolean; error?: string }>;
   saveCustomPalette: (_colors: ThemeColors) => Promise<{ success: boolean; error?: string }>;
 }
 

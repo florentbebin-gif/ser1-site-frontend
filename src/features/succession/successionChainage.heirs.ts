@@ -44,8 +44,15 @@ export function buildDetailedDescendantHeirs(
 ): DetailedChainHeir[] {
   if (nbBranches <= 0 || actifTransmis <= 0) return [];
 
-  const recipients = buildSuccessionDescendantRecipientsForDeceased(enfantsContext, familyMembers, deceased);
-  const abattementOverrides = buildRepresentationAbattementOverrides(recipients, dmtgSettings.ligneDirecte.abattement);
+  const recipients = buildSuccessionDescendantRecipientsForDeceased(
+    enfantsContext,
+    familyMembers,
+    deceased,
+  );
+  const abattementOverrides = buildRepresentationAbattementOverrides(
+    recipients,
+    dmtgSettings.ligneDirecte.abattement,
+  );
   const branchCount = Math.max(
     1,
     countEffectiveDescendantBranchesForDeceased(enfantsContext, familyMembers, deceased),
@@ -54,25 +61,25 @@ export function buildDetailedDescendantHeirs(
   return recipients.length === 0
     ? buildFallbackBranchBeneficiaries(actifTransmis, nbBranches)
     : (() => {
-      const partParBranche = actifTransmis / branchCount;
-      const recipientsByBranch = recipients.reduce((map, recipient) => {
-        const branchRecipients = map.get(recipient.branchId) ?? [];
-        branchRecipients.push(recipient);
-        map.set(recipient.branchId, branchRecipients);
-        return map;
-      }, new Map<string, typeof recipients>());
+        const partParBranche = actifTransmis / branchCount;
+        const recipientsByBranch = recipients.reduce((map, recipient) => {
+          const branchRecipients = map.get(recipient.branchId) ?? [];
+          branchRecipients.push(recipient);
+          map.set(recipient.branchId, branchRecipients);
+          return map;
+        }, new Map<string, typeof recipients>());
 
-      return Array.from(recipientsByBranch.values()).flatMap((branchRecipients) => {
-        const partParRecipient = partParBranche / branchRecipients.length;
-        return branchRecipients.map((recipient) => ({
-          id: recipient.id,
-          label: recipient.label,
-          lien: recipient.lien,
-          partSuccession: partParRecipient,
-          abattementOverride: abattementOverrides.get(recipient.id),
-        }));
-      });
-    })();
+        return Array.from(recipientsByBranch.values()).flatMap((branchRecipients) => {
+          const partParRecipient = partParBranche / branchRecipients.length;
+          return branchRecipients.map((recipient) => ({
+            id: recipient.id,
+            label: recipient.label,
+            lien: recipient.lien,
+            partSuccession: partParRecipient,
+            abattementOverride: abattementOverrides.get(recipient.id),
+          }));
+        });
+      })();
 }
 
 export function buildDetailedSiblingHeirs(
@@ -118,15 +125,18 @@ export function computeTransmissionForHeirs(
   actifTransmis: number,
   detailedHeirs: DetailedChainHeir[],
   dmtgSettings: DmtgSettings,
-): { droits: number; beneficiaries: Array<{
-  id: string;
-  label: string;
-  lien: LienParente;
-  brut: number;
+): {
   droits: number;
-  net: number;
-  exonerated?: boolean;
-}> } {
+  beneficiaries: Array<{
+    id: string;
+    label: string;
+    lien: LienParente;
+    brut: number;
+    droits: number;
+    net: number;
+    exonerated?: boolean;
+  }>;
+} {
   if (actifTransmis <= 0 || detailedHeirs.length === 0) {
     return { droits: 0, beneficiaries: [] };
   }

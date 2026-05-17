@@ -60,7 +60,10 @@ export function getSuccessionPocketLabel(pocket: SuccessionAssetPocket): string 
   return 'Indivision concubinage';
 }
 
-export function cloneSuccessionInterMassClaimsSummaryAdjustments(): Record<SuccessionAssetPocket, number> {
+export function cloneSuccessionInterMassClaimsSummaryAdjustments(): Record<
+  SuccessionAssetPocket,
+  number
+> {
   return { ...EMPTY_POCKET_ADJUSTMENTS };
 }
 

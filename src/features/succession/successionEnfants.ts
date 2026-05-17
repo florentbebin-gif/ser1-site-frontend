@@ -27,7 +27,9 @@ export function buildRepresentationAbattementOverrides(
   }, new Map<string, SuccessionDescendantRecipient[]>());
 
   recipientsByBranch.forEach((branchRecipients) => {
-    const representedRecipients = branchRecipients.filter((recipient) => recipient.lien === 'petit_enfant');
+    const representedRecipients = branchRecipients.filter(
+      (recipient) => recipient.lien === 'petit_enfant',
+    );
     if (representedRecipients.length === 0) return;
 
     const allowanceByRecipient = branchAllowance / representedRecipients.length;
@@ -69,7 +71,9 @@ export function getPetitEnfantsRepresentants(
   parentEnfantId: string,
   familyMembers: FamilyMember[],
 ): FamilyMember[] {
-  return familyMembers.filter((member) => member.type === 'petit_enfant' && member.parentEnfantId === parentEnfantId);
+  return familyMembers.filter(
+    (member) => member.type === 'petit_enfant' && member.parentEnfantId === parentEnfantId,
+  );
 }
 
 export function countEffectiveDescendantBranches(
@@ -96,10 +100,13 @@ export function getRelevantSuccessionFamilyMembers(
   familyMembers: FamilyMember[],
   deceased: SuccessionDeceasedSide,
 ): FamilyMember[] {
-  const relevantEnfantIds = new Set(getRelevantSuccessionEnfants(enfants, deceased).map((enfant) => enfant.id));
+  const relevantEnfantIds = new Set(
+    getRelevantSuccessionEnfants(enfants, deceased).map((enfant) => enfant.id),
+  );
   return familyMembers.filter(
-    (member) => member.type !== 'petit_enfant'
-      || (member.parentEnfantId && relevantEnfantIds.has(member.parentEnfantId)),
+    (member) =>
+      member.type !== 'petit_enfant' ||
+      (member.parentEnfantId && relevantEnfantIds.has(member.parentEnfantId)),
   );
 }
 
@@ -123,13 +130,15 @@ export function buildSuccessionDescendantRecipients(
     const branchLabel = labelMap?.get(enfant.id) ?? getEnfantNodeLabel(index, enfant.deceased);
 
     if (!enfant.deceased) {
-      return [{
-        id: enfant.id,
-        label: enfant.prenom ?? branchLabel,
-        lien: 'enfant' as const,
-        branchId: enfant.id,
-        branchLabel,
-      }];
+      return [
+        {
+          id: enfant.id,
+          label: enfant.prenom ?? branchLabel,
+          lien: 'enfant' as const,
+          branchId: enfant.id,
+          branchLabel,
+        },
+      ];
     }
 
     return getPetitEnfantsRepresentants(enfant.id, familyMembers).map((member, petitIdx) => ({
@@ -158,20 +167,23 @@ export function buildSuccessionDescendantRecipientsForDeceased(
 export function getEnfantRattachementOptions(
   situation: SituationMatrimoniale,
 ): Array<{ value: SuccessionEnfantRattachement; label: string }> {
-  if (situation === 'marie') return [
-    { value: 'commun', label: 'Enfant commun' },
-    { value: 'epoux1', label: "Enfant de l'époux 1" },
-    { value: 'epoux2', label: "Enfant de l'époux 2" },
-  ];
-  if (situation === 'pacse' || situation === 'concubinage') return [
-    { value: 'commun', label: 'Enfant commun' },
-    { value: 'epoux1', label: 'Enfant du partenaire 1' },
-    { value: 'epoux2', label: 'Enfant du partenaire 2' },
-  ];
-  if (situation === 'divorce') return [
-    { value: 'epoux1', label: 'Enfant du/de la défunt(e)' },
-    { value: 'commun', label: 'Enfant commun (ex-couple)' },
-    { value: 'epoux2', label: "Enfant de l'ex-conjoint(e)" },
-  ];
+  if (situation === 'marie')
+    return [
+      { value: 'commun', label: 'Enfant commun' },
+      { value: 'epoux1', label: "Enfant de l'époux 1" },
+      { value: 'epoux2', label: "Enfant de l'époux 2" },
+    ];
+  if (situation === 'pacse' || situation === 'concubinage')
+    return [
+      { value: 'commun', label: 'Enfant commun' },
+      { value: 'epoux1', label: 'Enfant du partenaire 1' },
+      { value: 'epoux2', label: 'Enfant du partenaire 2' },
+    ];
+  if (situation === 'divorce')
+    return [
+      { value: 'epoux1', label: 'Enfant du/de la défunt(e)' },
+      { value: 'commun', label: 'Enfant commun (ex-couple)' },
+      { value: 'epoux2', label: "Enfant de l'ex-conjoint(e)" },
+    ];
   return [{ value: 'epoux1', label: 'Enfant du/de la défunt(e)' }];
 }

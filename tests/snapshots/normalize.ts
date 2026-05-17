@@ -18,7 +18,11 @@ export function normalizeForSnapshot<T>(input: T): T {
         x[k] = '<DATE>';
         continue;
       }
-      if (k.toLowerCase().includes('uuid') || k.toLowerCase().includes('requestid') || k === 'rid') {
+      if (
+        k.toLowerCase().includes('uuid') ||
+        k.toLowerCase().includes('requestid') ||
+        k === 'rid'
+      ) {
         x[k] = '<ID>';
         continue;
       }

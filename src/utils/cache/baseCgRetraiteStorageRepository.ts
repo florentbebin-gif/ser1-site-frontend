@@ -1,9 +1,6 @@
 import type { BaseCgRetraiteDocument } from '@/data/basecg';
 import { supabase } from '@/supabaseClient';
-import {
-  DOCUMENTS_BUCKET,
-  SIGNED_URL_TTL_SECONDS,
-} from './baseCgRetraiteRepository.constants';
+import { DOCUMENTS_BUCKET, SIGNED_URL_TTL_SECONDS } from './baseCgRetraiteRepository.constants';
 
 export async function createBaseCgRetraiteDocumentDownloadUrl(
   document: BaseCgRetraiteDocument,
@@ -11,8 +8,7 @@ export async function createBaseCgRetraiteDocumentDownloadUrl(
   if (document.sourceUrl) return document.sourceUrl;
   if (!document.storagePath) return null;
 
-  const { data, error } = await supabase
-    .storage
+  const { data, error } = await supabase.storage
     .from(DOCUMENTS_BUCKET)
     .createSignedUrl(document.storagePath, SIGNED_URL_TTL_SECONDS);
 
@@ -60,8 +56,7 @@ export async function uploadBaseCgRetraitePdf(
     throw new Error('Le fichier doit être un PDF (application/pdf).');
   }
 
-  const { error } = await supabase
-    .storage
+  const { error } = await supabase.storage
     .from(DOCUMENTS_BUCKET)
     .upload(input.storagePath, input.file, {
       cacheControl: '3600',

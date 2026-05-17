@@ -25,8 +25,10 @@ export function isMissingSupabaseTableError(
 ): boolean {
   if (!error) return false;
   const message = error.message ?? '';
-  return error.code === '42P01'
-    || message.includes('does not exist')
-    || message.includes('Could not find the table')
-    || message.includes('schema cache');
+  return (
+    error.code === '42P01' ||
+    message.includes('does not exist') ||
+    message.includes('Could not find the table') ||
+    message.includes('schema cache')
+  );
 }

@@ -29,15 +29,23 @@ const CONTENT_BOTTOM_Y = COORDS_FOOTER.date.y - 0.15;
 const GRID = {
   marginX: 1.2,
   gapX: 0.35,
-  gapY: 0.30,
+  gapY: 0.3,
   cols: 2,
   rows: 2,
-  get totalW() { return 13.3333 - 2 * this.marginX; },
-  get cardW() { return (this.totalW - this.gapX) / this.cols; },
-  topY: CONTENT_TOP_Y + 0.10,
-  get availableH() { return CONTENT_BOTTOM_Y - this.topY - 0.10; },
-  get cardH() { return (this.availableH - this.gapY) / this.rows; },
-  iconSize: 0.30,
+  get totalW() {
+    return 13.3333 - 2 * this.marginX;
+  },
+  get cardW() {
+    return (this.totalW - this.gapX) / this.cols;
+  },
+  topY: CONTENT_TOP_Y + 0.1,
+  get availableH() {
+    return CONTENT_BOTTOM_Y - this.topY - 0.1;
+  },
+  get cardH() {
+    return (this.availableH - this.gapY) / this.rows;
+  },
+  iconSize: 0.3,
   iconPadding: 0.18,
   titleH: 0.28,
   bodyPadTop: 0.06,
@@ -98,7 +106,7 @@ export function buildPlacementHypotheses(
     addTextFr(slide, section.title, {
       x: cardX + GRID.iconPadding + GRID.iconSize + 0.12,
       y: cardY + GRID.iconPadding,
-      w: GRID.cardW - GRID.iconPadding - GRID.iconSize - 0.30,
+      w: GRID.cardW - GRID.iconPadding - GRID.iconSize - 0.3,
       h: GRID.titleH,
       fontSize: TYPO.sizes.bodySmall,
       bold: true,

@@ -19,14 +19,54 @@ const MINIMAL_CONFIG = {
 };
 
 const MINIMAL_EPARGNE_ROWS = [
-  { annee: 1, versementNet: 14700, capitalDebut: 0, gainsAnnee: 220, capitalFin: 14920, effortReel: 15000, economieIR: 0 },
-  { annee: 2, versementNet: 4900, capitalDebut: 14920, gainsAnnee: 520, capitalFin: 20340, effortReel: 20000, economieIR: 0 },
-  { annee: 3, versementNet: 4900, capitalDebut: 20340, gainsAnnee: 750, capitalFin: 25990, effortReel: 25000, economieIR: 0 },
+  {
+    annee: 1,
+    versementNet: 14700,
+    capitalDebut: 0,
+    gainsAnnee: 220,
+    capitalFin: 14920,
+    effortReel: 15000,
+    economieIR: 0,
+  },
+  {
+    annee: 2,
+    versementNet: 4900,
+    capitalDebut: 14920,
+    gainsAnnee: 520,
+    capitalFin: 20340,
+    effortReel: 20000,
+    economieIR: 0,
+  },
+  {
+    annee: 3,
+    versementNet: 4900,
+    capitalDebut: 20340,
+    gainsAnnee: 750,
+    capitalFin: 25990,
+    effortReel: 25000,
+    economieIR: 0,
+  },
 ];
 
 const MINIMAL_LIQUIDATION_ROWS = [
-  { annee: 1, capitalDebut: 150000, gainsAnnee: 4500, retraitBrut: 10000, fiscaliteTotal: 1000, retraitNet: 9000, capitalFin: 144500 },
-  { annee: 2, capitalDebut: 144500, gainsAnnee: 4335, retraitBrut: 10000, fiscaliteTotal: 900, retraitNet: 9100, capitalFin: 138835 },
+  {
+    annee: 1,
+    capitalDebut: 150000,
+    gainsAnnee: 4500,
+    retraitBrut: 10000,
+    fiscaliteTotal: 1000,
+    retraitNet: 9000,
+    capitalFin: 144500,
+  },
+  {
+    annee: 2,
+    capitalDebut: 144500,
+    gainsAnnee: 4335,
+    retraitBrut: 10000,
+    fiscaliteTotal: 900,
+    retraitNet: 9100,
+    capitalFin: 138835,
+  },
 ];
 
 const MINIMAL_PRODUCT = {
@@ -77,8 +117,19 @@ const MINIMAL_DATA = {
     envelopeLabel: 'PER',
     epargne: { ...MINIMAL_PRODUCT.epargne, capitalAcquis: 140000, cumulEconomieIR: 4500 },
     liquidation: { ...MINIMAL_PRODUCT.liquidation, cumulRetraitsNets: 75000, cumulFiscalite: 7000 },
-    transmission: { ...MINIMAL_PRODUCT.transmission, capitalTransmisNet: 85000, taxe: 4000, regime: 'DMTG' },
-    totaux: { effortReel: 95500, revenusNetsLiquidation: 75000, fiscaliteTotale: 11000, capitalTransmisNet: 85000, revenusNetsTotal: 75000 },
+    transmission: {
+      ...MINIMAL_PRODUCT.transmission,
+      capitalTransmisNet: 85000,
+      taxe: 4000,
+      regime: 'DMTG',
+    },
+    totaux: {
+      effortReel: 95500,
+      revenusNetsLiquidation: 75000,
+      fiscaliteTotale: 11000,
+      capitalTransmisNet: 85000,
+      revenusNetsTotal: 75000,
+    },
     config: { ...MINIMAL_CONFIG, tmi: 0.11 },
     epargneRows: MINIMAL_EPARGNE_ROWS,
     liquidationRows: MINIMAL_LIQUIDATION_ROWS,
@@ -144,13 +195,13 @@ describe('snapshots/placement: PPTX deck spec', () => {
     // Params present on épargne detail
     expect(details[0].produit1.params).toBeDefined();
     expect(details[0].produit1.params!.length).toBeGreaterThan(0);
-    expect(details[0].produit1.params!.some(p => p.includes('TMI'))).toBe(true);
+    expect(details[0].produit1.params!.some((p) => p.includes('TMI'))).toBe(true);
 
     // Liquidation detail has params and flowBar
     if (details[1]?.type !== 'placement-detail') return;
     expect(details[1].title).toBe('Phase Liquidation');
     expect(details[1].produit1.params).toBeDefined();
-    expect(details[1].produit1.params!.some(p => p.includes('barème IR'))).toBe(true);
+    expect(details[1].produit1.params!.some((p) => p.includes('barème IR'))).toBe(true);
     expect(details[1].produit1.flowBar).toBeDefined();
     expect(details[1].produit1.flowBar!.net).toBe(80000);
     expect(details[1].produit1.flowBar!.tax).toBe(5000);
@@ -161,7 +212,7 @@ describe('snapshots/placement: PPTX deck spec', () => {
     if (details[2]?.type !== 'placement-detail') return;
     expect(details[2].title).toBe('Phase Transmission');
     expect(details[2].produit1.params).toBeDefined();
-    expect(details[2].produit1.params!.some(p => p.includes('décès'))).toBe(true);
+    expect(details[2].produit1.params!.some((p) => p.includes('décès'))).toBe(true);
     expect(details[2].produit1.flowBar).toBeDefined();
     expect(details[2].produit1.flowBar!.net).toBe(90000);
     expect(details[2].produit1.flowBar!.tax).toBe(3000);
@@ -188,7 +239,10 @@ describe('snapshots/placement: PPTX deck spec', () => {
     expect(projections.length).toBe(4); // 2 products × 2 phases
 
     const epargneP1 = projections.find(
-      (s) => s.type === 'placement-projection' && (s as any).phase === 'epargne' && (s as any).productIndex === 1,
+      (s) =>
+        s.type === 'placement-projection' &&
+        (s as any).phase === 'epargne' &&
+        (s as any).productIndex === 1,
     );
     expect(epargneP1).toBeDefined();
     if (epargneP1?.type !== 'placement-projection') return;
@@ -196,7 +250,10 @@ describe('snapshots/placement: PPTX deck spec', () => {
     expect((epargneP1 as any).yearsForPage).toEqual([1, 2, 3]);
 
     const liqP2 = projections.find(
-      (s) => s.type === 'placement-projection' && (s as any).phase === 'liquidation' && (s as any).productIndex === 2,
+      (s) =>
+        s.type === 'placement-projection' &&
+        (s as any).phase === 'liquidation' &&
+        (s as any).productIndex === 2,
     );
     expect(liqP2).toBeDefined();
     if (liqP2?.type !== 'placement-projection') return;
@@ -214,7 +271,15 @@ describe('snapshots/placement: PPTX deck spec', () => {
     // 3 rows de liquidation → in range → deathYearIndex=3
     const liquidationRows3 = [
       ...MINIMAL_LIQUIDATION_ROWS,
-      { annee: 3, capitalDebut: 130000, gainsAnnee: 3900, retraitBrut: 10000, fiscaliteTotal: 800, retraitNet: 9200, capitalFin: 124100 },
+      {
+        annee: 3,
+        capitalDebut: 130000,
+        gainsAnnee: 3900,
+        retraitBrut: 10000,
+        fiscaliteTotal: 800,
+        retraitNet: 9200,
+        capitalFin: 124100,
+      },
     ];
     const data = {
       ...MINIMAL_DATA,

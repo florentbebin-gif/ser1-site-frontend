@@ -6,7 +6,10 @@
  */
 
 import type PptxGenJS from 'pptxgenjs';
-import { getBusinessIconDataUri, type BusinessIconName } from '../../icons/business/businessIconLibrary';
+import {
+  getBusinessIconDataUri,
+  type BusinessIconName,
+} from '../../icons/business/businessIconLibrary';
 import type { PptxThemeRoles, IconPlacement } from '../theme/types';
 import { roleColor, addTextFr } from '../designSystem/serenity';
 
@@ -14,10 +17,7 @@ export type { BusinessIconName, IconPlacement };
 
 type IconColorRole = 'accent' | 'textMain' | 'textBody' | 'white';
 
-function getColorForRole(
-  themeOrColor: PptxThemeRoles | string,
-  role: IconColorRole
-): string {
+function getColorForRole(themeOrColor: PptxThemeRoles | string, role: IconColorRole): string {
   if (typeof themeOrColor === 'string') {
     return themeOrColor;
   }
@@ -44,7 +44,7 @@ export function addBusinessIconToSlide(
   iconName: BusinessIconName,
   placement: { x: number; y: number; w: number; h: number },
   themeOrColor: PptxThemeRoles | string,
-  colorRole: IconColorRole = 'textBody'
+  colorRole: IconColorRole = 'textBody',
 ): void {
   const color = getColorForRole(themeOrColor, colorRole);
 
@@ -66,9 +66,10 @@ export function addBusinessIconToSlide(
       w: placement.w,
       h: placement.h,
       fontSize: 10,
-      color: typeof themeOrColor === 'string'
-        ? color.replace('#', '')
-        : roleColor(themeOrColor, 'textBody'),
+      color:
+        typeof themeOrColor === 'string'
+          ? color.replace('#', '')
+          : roleColor(themeOrColor, 'textBody'),
       align: 'center',
       valign: 'middle',
     });
@@ -81,7 +82,7 @@ export function addBusinessIconToSlide(
 export function addBusinessIconsToSlide(
   slide: PptxGenJS.Slide,
   icons: IconPlacement[],
-  theme: PptxThemeRoles
+  theme: PptxThemeRoles,
 ): void {
   for (const icon of icons) {
     addBusinessIconToSlide(
@@ -89,7 +90,7 @@ export function addBusinessIconsToSlide(
       icon.name,
       { x: icon.x, y: icon.y, w: icon.w, h: icon.h },
       theme,
-      icon.colorRole || 'textBody'
+      icon.colorRole || 'textBody',
     );
   }
 }

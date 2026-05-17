@@ -134,13 +134,16 @@
   padding: 10px 12px;
   border: 1px solid var(--color-c8);
   border-radius: 8px;
-  background: color-mix(in srgb, var(--color-c7) 86%, #FFFFFF);
-  transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+  background: color-mix(in srgb, var(--color-c7) 86%, #ffffff);
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s,
+    background 0.2s;
 }
 
 .pl-roi-compare__card.is-winner {
   border-color: var(--color-c2);
-  background: #FFFFFF;
+  background: #ffffff;
   box-shadow: 0 2px 8px rgba(112, 155, 139, 0.12);
 }
 
@@ -175,7 +178,7 @@
 
 .pl-indicator--product1 {
   background: var(--color-c2);
-  color: #FFFFFF;
+  color: #ffffff;
 }
 
 .pl-indicator--product2 {
@@ -349,4 +352,3 @@
   margin-top: 8px;
   color: var(--color-c1);
 }
-

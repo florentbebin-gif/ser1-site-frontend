@@ -9,6 +9,7 @@ description: Travail PPTX pour SER1. Priorité au code d'export versionné plut�
 Utiliser ce skill pour les demandes liées aux exports PowerPoint ou à un fichier `.pptx`.
 
 Dans SER1, le flux principal est le code :
+
 - contrat produit : `docs/GOUVERNANCE_EXPORTS.md`
 - orchestrateur : `src/pptx/export/exportStudyDeck.ts`
 - design system : `src/pptx/designSystem/serenity.ts`

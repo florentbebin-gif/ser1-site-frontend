@@ -62,12 +62,7 @@ const minimalResults = {
 
 describe('Placement Excel Export', () => {
   it('generates a valid XLSX blob (PK header)', async () => {
-    const blob = await buildPlacementXlsxBlob(
-      DEFAULT_STATE,
-      minimalResults,
-      THEME.c1,
-      THEME.c7,
-    );
+    const blob = await buildPlacementXlsxBlob(DEFAULT_STATE, minimalResults, THEME.c1, THEME.c7);
 
     expect(blob).toBeInstanceOf(Blob);
     expect(blob.size).toBeGreaterThan(0);

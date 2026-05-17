@@ -30,18 +30,19 @@ function drawSection(
 ): void {
   const { theme } = ctx;
   const gapX = 0.28;
-  const gapY = 0.30;
+  const gapY = 0.3;
   const cardW = (CONTENT_W - gapX) / 2;
   const cardH = (BOTTOM_Y - TOP_Y - gapY) / 2;
   const x = MARGIN_X + (index % 2) * (cardW + gapX);
   const y = TOP_Y + Math.floor(index / 2) * (cardH + gapY);
-  const headerColor = index === 0
-    ? roleColor(theme, 'accent')
-    : index === 1
-      ? theme.colors.color5.replace('#', '')
-      : index === 2
-        ? theme.colors.color8.replace('#', '')
-        : theme.colors.color2.replace('#', '');
+  const headerColor =
+    index === 0
+      ? roleColor(theme, 'accent')
+      : index === 1
+        ? theme.colors.color5.replace('#', '')
+        : index === 2
+          ? theme.colors.color8.replace('#', '')
+          : theme.colors.color2.replace('#', '');
   const headerTextColor = index === 2 ? roleColor(theme, 'textMain') : WHITE;
 
   slide.addShape('roundRect', {
@@ -51,7 +52,7 @@ function drawSection(
     h: cardH,
     fill: { color: headerColor },
     line: { color: headerColor, width: 0 },
-    rectRadius: 0.10,
+    rectRadius: 0.1,
     shadow: {
       type: SHADOW_PARAMS.type,
       angle: SHADOW_PARAMS.angle,
@@ -69,15 +70,21 @@ function drawSection(
     fill: { color: WHITE },
     line: { color: WHITE, width: 0 },
   });
-  addBusinessIconToSlide(slide, section.iconKey, {
-    x: x + 0.18,
-    y: y + 0.14,
-    w: 0.26,
-    h: 0.26,
-  }, theme, index === 2 ? 'accent' : 'white');
+  addBusinessIconToSlide(
+    slide,
+    section.iconKey,
+    {
+      x: x + 0.18,
+      y: y + 0.14,
+      w: 0.26,
+      h: 0.26,
+    },
+    theme,
+    index === 2 ? 'accent' : 'white',
+  );
   addTextFr(slide, section.title, {
     x: x + 0.54,
-    y: y + 0.10,
+    y: y + 0.1,
     w: cardW - 0.72,
     h: 0.34,
     fontSize: 11.5,
@@ -85,7 +92,7 @@ function drawSection(
     color: headerTextColor,
     valign: 'middle',
   });
-  addTextFr(slide, section.items.map(item => `• ${item}`).join('\n'), {
+  addTextFr(slide, section.items.map((item) => `• ${item}`).join('\n'), {
     x: x + 0.22,
     y: y + 0.72,
     w: cardW - 0.44,

@@ -164,12 +164,33 @@ export default [
   // without carrying the same review signal as orchestration or business-flow files.
   {
     files: [
+      'src/data/basecg/catalog.static.ts',
       'src/constants/settingsDefaults.ts',
       'src/domain/base-contrat/catalog.ts',
       'src/domain/base-contrat/rules/library/immobilier.ts',
       'src/domain/base-contrat/rules/library/retraite.ts',
       'src/domain/base-contrat/rules/library/valeurs-mobilieres.ts',
+      'src/data/mortality/tgf05.generated.ts',
+      'src/data/mortality/tgh05.generated.ts',
+      'src/data/mortality/tpg93.generated.ts',
       'src/pptx/designSystem/serenity.ts',
+    ],
+    rules: {
+      'max-lines': 'off',
+    },
+  },
+  // Fichiers historiques déjà volumineux : la baseline Prettier ne doit pas
+  // mélanger découpage fonctionnel et normalisation mécanique.
+  {
+    files: [
+      'src/engine/per/transfert/compute.ts',
+      'src/engine/tresorerie/__tests__/simulateTresorerieV2.test.ts',
+      'src/engine/tresorerie/__tests__/simulateTresorerieV3.test.ts',
+      'src/features/succession/__tests__/successionChainage.test.ts',
+      'src/features/succession/export/successionXlsx.ts',
+      'src/features/succession/successionChainage.helpers.ts',
+      'src/features/tresorerie-societe/components/timeline/TresoRevenuePhaseModal.tsx',
+      'src/features/tresorerie-societe/export/tresorerieExcelExport.ts',
     ],
     rules: {
       'max-lines': 'off',

@@ -69,20 +69,25 @@ export function buildTresorerieSynthesis(
 
   const plotX = MARGIN_X + 2.58;
   const plotW = 7.35;
-  const axisY = TOP_Y + 1.80;
+  const axisY = TOP_Y + 1.8;
   const topMaxH = 1.34;
   const bottomMaxH = 0.86;
   const bottomY = axisY + bottomMaxH + 0.22;
-  const series = spec.series.length > 0 ? spec.series : [{
-    year: spec.rangeStartYear,
-    investmentValue: 0,
-    ccaBalance: 0,
-    dividendRevenue: 0,
-  }];
-  const maxInvestment = Math.max(1, ...series.map(item => item.investmentValue));
+  const series =
+    spec.series.length > 0
+      ? spec.series
+      : [
+          {
+            year: spec.rangeStartYear,
+            investmentValue: 0,
+            ccaBalance: 0,
+            dividendRevenue: 0,
+          },
+        ];
+  const maxInvestment = Math.max(1, ...series.map((item) => item.investmentValue));
   const maxIncomeRelay = Math.max(
     1,
-    ...series.map(item => Math.max(item.ccaBalance, item.dividendRevenue)),
+    ...series.map((item) => Math.max(item.ccaBalance, item.dividendRevenue)),
   );
   const barGap = 0.025;
   const barW = Math.max(0.045, (plotW - barGap * (series.length - 1)) / series.length);
@@ -99,7 +104,7 @@ export function buildTresorerieSynthesis(
   });
   addTextFr(slide, spec.chartLabels.incomeRelay, {
     x: MARGIN_X + 0.08,
-    y: axisY + 0.10,
+    y: axisY + 0.1,
     w: 2.28,
     h: 0.48,
     fontSize: 10.5,
@@ -111,7 +116,7 @@ export function buildTresorerieSynthesis(
   slide.addShape('line', {
     x: MARGIN_X + 0.16,
     y: axisY,
-    w: CONTENT_W - 1.80,
+    w: CONTENT_W - 1.8,
     h: 0,
     line: { color: textMain, width: 1.8, endArrowType: 'triangle' } as PptxGenJS.ShapeLineProps,
   });
@@ -161,7 +166,7 @@ export function buildTresorerieSynthesis(
     x: plotX - 0.62,
     y: axisY + 0.12,
     w: 0.54,
-    h: 0.20,
+    h: 0.2,
     fontSize: 8.5,
     bold: true,
     color: textBody,
@@ -181,7 +186,7 @@ export function buildTresorerieSynthesis(
     });
     slide.addShape('ellipse', {
       x: markerX - 0.17,
-      y: TOP_Y + 0.40,
+      y: TOP_Y + 0.4,
       w: 0.34,
       h: 0.34,
       fill: { color: main },
@@ -199,9 +204,9 @@ export function buildTresorerieSynthesis(
     });
     addTextFr(slide, spec.triggerMarker.label, {
       x: markerTextX,
-      y: TOP_Y + 0.10,
+      y: TOP_Y + 0.1,
       w: 1.56,
-      h: 0.20,
+      h: 0.2,
       fontSize: 8.8,
       bold: true,
       color: textMain,
@@ -221,16 +226,22 @@ export function buildTresorerieSynthesis(
     });
   }
 
-  addBusinessIconToSlide(slide, 'money', {
-    x: MARGIN_X + CONTENT_W - 1.18,
-    y: axisY - 0.58,
-    w: 0.62,
-    h: 0.62,
-  }, theme, 'accent');
+  addBusinessIconToSlide(
+    slide,
+    'money',
+    {
+      x: MARGIN_X + CONTENT_W - 1.18,
+      y: axisY - 0.58,
+      w: 0.62,
+      h: 0.62,
+    },
+    theme,
+    'accent',
+  );
   addTextFr(slide, `Horizon ${spec.milestones.horizon.year}`, {
     x: MARGIN_X + CONTENT_W - 1.72,
     y: axisY + 0.06,
-    w: 1.70,
+    w: 1.7,
     h: 0.22,
     fontSize: 8.6,
     italic: true,
@@ -252,10 +263,11 @@ export function buildTresorerieSynthesis(
   });
 
   const flowY = TOP_Y + 3.58;
-  const flowH = 0.70;
+  const flowH = 0.7;
   const flowGap = 0.12;
   const visiblePockets = spec.pocketTimeline.slice(0, 4);
-  const laneW = (CONTENT_W - flowGap * (visiblePockets.length - 1)) / Math.max(1, visiblePockets.length);
+  const laneW =
+    (CONTENT_W - flowGap * (visiblePockets.length - 1)) / Math.max(1, visiblePockets.length);
 
   visiblePockets.forEach((pocket, index) => {
     const x = MARGIN_X + index * (laneW + flowGap);
@@ -270,12 +282,18 @@ export function buildTresorerieSynthesis(
       line: { color: fill, width: 0 },
       rectRadius: 0.08,
     });
-    addBusinessIconToSlide(slide, pocket.iconKey, {
-      x: x + 0.16,
-      y: flowY + 0.15,
-      w: 0.36,
-      h: 0.36,
-    }, theme, textColor === WHITE ? 'white' : 'textMain');
+    addBusinessIconToSlide(
+      slide,
+      pocket.iconKey,
+      {
+        x: x + 0.16,
+        y: flowY + 0.15,
+        w: 0.36,
+        h: 0.36,
+      },
+      theme,
+      textColor === WHITE ? 'white' : 'textMain',
+    );
     addTextFr(slide, pocket.label, {
       x: x + 0.62,
       y: flowY + 0.08,
@@ -328,8 +346,8 @@ export function buildTresorerieSynthesis(
     addTextFr(slide, spec.cashFlows.annualContributionLabel, {
       x: MARGIN_X + 0.06,
       y: bottomY + 0.04,
-      w: 3.10,
-      h: 0.20,
+      w: 3.1,
+      h: 0.2,
       fontSize: 8.6,
       italic: true,
       color: textBody,

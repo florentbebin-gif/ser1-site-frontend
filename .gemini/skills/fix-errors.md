@@ -29,18 +29,18 @@ Identifier quelles étapes échouent :
 
 Résoudre dans cet ordre (chaque étape débloque la suivante) :
 
-| Ordre | Check | Commande | Action typique |
-|---|---|---|---|
-| 1 | lint | `npm run lint` | ESLint --fix, puis corrections manuelles |
-| 2 | fiscal-hardcode | `npm run check:fiscal-hardcode` | Remplacer valeurs par `settingsDefaults` |
-| 3 | css-colors | `npm run check:css-colors` | Remplacer couleurs hardcodées par CSS vars |
-| 4 | theme-sync | `npm run check:theme-sync` | Synchroniser les tokens de thème |
-| 5 | no-js | `npm run check:no-js` | Renommer `.js/.jsx` → `.ts/.tsx` |
-| 6 | arch | `npm run check:arch` | Corriger imports (dependency-cruiser) |
-| 7 | circular | `npm run check:circular` | Extraire types partagés, inverser dépendances |
-| 8 | typecheck | `npm run typecheck` | Corriger les erreurs TypeScript |
-| 9 | test | `npm test` | Corriger les tests ou le code source |
-| 10 | build | `npm run build` | Corriger les erreurs Vite |
+| Ordre | Check           | Commande                        | Action typique                                |
+| ----- | --------------- | ------------------------------- | --------------------------------------------- |
+| 1     | lint            | `npm run lint`                  | ESLint --fix, puis corrections manuelles      |
+| 2     | fiscal-hardcode | `npm run check:fiscal-hardcode` | Remplacer valeurs par `settingsDefaults`      |
+| 3     | css-colors      | `npm run check:css-colors`      | Remplacer couleurs hardcodées par CSS vars    |
+| 4     | theme-sync      | `npm run check:theme-sync`      | Synchroniser les tokens de thème              |
+| 5     | no-js           | `npm run check:no-js`           | Renommer `.js/.jsx` → `.ts/.tsx`              |
+| 6     | arch            | `npm run check:arch`            | Corriger imports (dependency-cruiser)         |
+| 7     | circular        | `npm run check:circular`        | Extraire types partagés, inverser dépendances |
+| 8     | typecheck       | `npm run typecheck`             | Corriger les erreurs TypeScript               |
+| 9     | test            | `npm test`                      | Corriger les tests ou le code source          |
+| 10    | build           | `npm run build`                 | Corriger les erreurs Vite                     |
 
 ### 3. Vérification par étape
 
@@ -67,12 +67,12 @@ Toutes les étapes doivent passer.
 
 ## Fichiers à lire si nécessaire
 
-| Type d'erreur | Fichiers à lire |
-|---|---|
+| Type d'erreur   | Fichiers à lire                                          |
+| --------------- | -------------------------------------------------------- |
 | fiscal-hardcode | `src/constants/settingsDefaults.ts`, fichiers incriminés |
-| arch | `.dependency-cruiser.cjs` |
-| typecheck | Fichiers avec erreurs TypeScript |
-| test | Fichiers de test échoués + code testé |
+| arch            | `.dependency-cruiser.cjs`                                |
+| typecheck       | Fichiers avec erreurs TypeScript                         |
+| test            | Fichiers de test échoués + code testé                    |
 
 ---
 

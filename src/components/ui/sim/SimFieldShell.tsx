@@ -35,12 +35,12 @@ export function SimFieldShell({
         </label>
       ) : null}
 
-      <div className={joinClasses('sim-field__row', rowClassName)}>
-        {children}
-      </div>
+      <div className={joinClasses('sim-field__row', rowClassName)}>{children}</div>
 
       {error ? (
-        <span className="sim-field__error" role="alert">{error}</span>
+        <span className="sim-field__error" role="alert">
+          {error}
+        </span>
       ) : null}
       {!error && hint ? <span className="sim-field__hint">{hint}</span> : null}
     </div>

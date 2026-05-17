@@ -45,9 +45,23 @@ export function ScForfaitMobilierSection({
         <h3 className="sc-asset-section__title">Forfait mobilier</h3>
         <div className="sc-asset-section__actions">
           {!showForfaitMobilier ? (
-            <button type="button" className="sc-member-add-icon-btn" onClick={() => onUpdatePatrimonialField('forfaitMobilierMode', 'auto')} aria-label="Configurer le forfait mobilier">+</button>
+            <button
+              type="button"
+              className="sc-member-add-icon-btn"
+              onClick={() => onUpdatePatrimonialField('forfaitMobilierMode', 'auto')}
+              aria-label="Configurer le forfait mobilier"
+            >
+              +
+            </button>
           ) : (
-            <button type="button" className="sc-child-remove-btn" onClick={() => onUpdatePatrimonialField('forfaitMobilierMode', 'off')} aria-label="Désactiver le forfait mobilier">&#10005;</button>
+            <button
+              type="button"
+              className="sc-child-remove-btn"
+              onClick={() => onUpdatePatrimonialField('forfaitMobilierMode', 'off')}
+              aria-label="Désactiver le forfait mobilier"
+            >
+              &#10005;
+            </button>
           )}
         </div>
       </div>
@@ -74,7 +88,9 @@ export function ScForfaitMobilierSection({
                   min={0}
                   max={100}
                   value={forfaitMobilierPct}
-                  onChange={(e) => onUpdatePatrimonialField('forfaitMobilierPct', Number(e.target.value) || 0)}
+                  onChange={(e) =>
+                    onUpdatePatrimonialField('forfaitMobilierPct', Number(e.target.value) || 0)
+                  }
                 />
               </div>
             ) : (

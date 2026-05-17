@@ -3,17 +3,24 @@ import type { PerPotentielResult } from '@/engine/per';
 import type { FiscalContext } from '@/hooks/useFiscalContext';
 import type { LogoPlacement } from '@/pptx/theme/types';
 import type { ThemeColors } from '@/settings/theme';
-import { exportPerPotentielExcel, type PerPotentielExcelState } from '../export/perPotentielExcelExport';
+import {
+  exportPerPotentielExcel,
+  type PerPotentielExcelState,
+} from '../export/perPotentielExcelExport';
 import { getPerWorkflowYears } from '../utils/perWorkflowYears';
-import { shouldUseProjectionForCalculation, type PerProjectionScopeStep } from '../utils/perProjectionScope';
+import {
+  shouldUseProjectionForCalculation,
+  type PerProjectionScopeStep,
+} from '../utils/perProjectionScope';
 
-type ProjectionAwarePerState = PerPotentielExcelState & Partial<{
-  step: number;
-  projectionSituationFamiliale: 'celibataire' | 'marie';
-  projectionNombreParts: number;
-  projectionIsole: boolean;
-  projectionMutualisationConjoints: boolean;
-}>;
+type ProjectionAwarePerState = PerPotentielExcelState &
+  Partial<{
+    step: number;
+    projectionSituationFamiliale: 'celibataire' | 'marie';
+    projectionNombreParts: number;
+    projectionIsole: boolean;
+    projectionMutualisationConjoints: boolean;
+  }>;
 
 interface UsePerPotentielExportHandlersParams {
   state: ProjectionAwarePerState;
@@ -56,7 +63,7 @@ function resolvePassReference(passHistory: Record<number, number>, anneeRef: num
     .filter((year) => Number.isFinite(year) && year <= anneeRef)
     .sort((left, right) => right - left)[0];
 
-  return fallbackYear != null ? passHistory[fallbackYear] ?? 0 : 0;
+  return fallbackYear != null ? (passHistory[fallbackYear] ?? 0) : 0;
 }
 
 export function usePerPotentielExportHandlers({
@@ -115,7 +122,9 @@ export function usePerPotentielExportHandlers({
           anneeRef,
           passReference: resolvePassReference(fiscalContext.passHistoryByYear, anneeRef),
           irScale: usesPreviousScale ? fiscalContext.irScalePrevious : fiscalContext.irScaleCurrent,
-          irScaleLabel: usesPreviousScale ? fiscalContext.irPreviousYearLabel : fiscalContext.irCurrentYearLabel,
+          irScaleLabel: usesPreviousScale
+            ? fiscalContext.irPreviousYearLabel
+            : fiscalContext.irCurrentYearLabel,
         },
         pptxColors,
         {

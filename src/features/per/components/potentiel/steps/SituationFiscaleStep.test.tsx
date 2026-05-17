@@ -48,12 +48,7 @@ const baseProps = {
 
 describe('SituationFiscaleStep', () => {
   it('renders foyer, revenus and versements in order without number of parts in the foyer', () => {
-    const html = renderToStaticMarkup(
-      <SituationFiscaleStep
-        showFoyerCard
-        {...baseProps}
-      />,
-    );
+    const html = renderToStaticMarkup(<SituationFiscaleStep showFoyerCard {...baseProps} />);
 
     expect(html).not.toContain('Nombre de parts calcul');
     expect(html).not.toContain('Aperçu fiscal');
@@ -66,16 +61,13 @@ describe('SituationFiscaleStep', () => {
 
   it('renders mutualisation des plafonds inside the versements block for couples', () => {
     const html = renderToStaticMarkup(
-      <SituationFiscaleStep
-        showFoyerCard
-        {...baseProps}
-        situationFamiliale="marie"
-        isCouple
-      />,
+      <SituationFiscaleStep showFoyerCard {...baseProps} situationFamiliale="marie" isCouple />,
     );
 
     expect(html).toContain('Mutualisation des plafonds (case 6QR)');
-    expect(html.indexOf('Versements retraite')).toBeLessThan(html.indexOf('Mutualisation des plafonds (case 6QR)'));
+    expect(html.indexOf('Versements retraite')).toBeLessThan(
+      html.indexOf('Mutualisation des plafonds (case 6QR)'),
+    );
   });
 
   it('renders the conditional revenu rows from the toggles and filters', () => {
@@ -102,11 +94,7 @@ describe('SituationFiscaleStep', () => {
 
   it('peut masquer les revenus imposables sans masquer les versements retraite', () => {
     const html = renderToStaticMarkup(
-      <SituationFiscaleStep
-        showFoyerCard={false}
-        {...baseProps}
-        showIncomeCard={false}
-      />,
+      <SituationFiscaleStep showFoyerCard={false} {...baseProps} showIncomeCard={false} />,
     );
 
     expect(html).not.toContain('Revenus imposables');
@@ -130,20 +118,24 @@ describe('SituationFiscaleStep', () => {
   });
 
   it('builds a global TNS toggle patch for the whole foyer', () => {
-    expect(buildTnsFoyerTogglePatches({
-      isCouple: true,
-      declarant1: baseDeclarant,
-      declarant2: baseDeclarant,
-    })).toEqual([
+    expect(
+      buildTnsFoyerTogglePatches({
+        isCouple: true,
+        declarant1: baseDeclarant,
+        declarant2: baseDeclarant,
+      }),
+    ).toEqual([
       { decl: 1, patch: { statutTns: true } },
       { decl: 2, patch: { statutTns: true } },
     ]);
 
-    expect(buildTnsFoyerTogglePatches({
-      isCouple: true,
-      declarant1: { ...baseDeclarant, statutTns: false },
-      declarant2: { ...baseDeclarant, statutTns: true, bic: 50_000 },
-    })).toEqual([
+    expect(
+      buildTnsFoyerTogglePatches({
+        isCouple: true,
+        declarant1: { ...baseDeclarant, statutTns: false },
+        declarant2: { ...baseDeclarant, statutTns: true, bic: 50_000 },
+      }),
+    ).toEqual([
       {
         decl: 1,
         patch: {

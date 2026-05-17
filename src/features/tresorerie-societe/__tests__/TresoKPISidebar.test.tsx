@@ -48,28 +48,32 @@ const INPUTS: TresoInputsV2 = {
     reducedCorporateTaxEligible: true,
     associates: [],
     loans: [],
-    subsidiaries: [{
-      id: 'filiale-1',
-      label: 'Filiale',
-      holdingOwnershipPct: 80,
-      motherDaughterEligible: true,
-      fiscalIntegrationEstimateEnabled: false,
-      servicesSchedule: [],
-      dividendsSchedule: [{ amount: 18000, startYear: 2026 }],
-    }],
+    subsidiaries: [
+      {
+        id: 'filiale-1',
+        label: 'Filiale',
+        holdingOwnershipPct: 80,
+        motherDaughterEligible: true,
+        fiscalIntegrationEstimateEnabled: false,
+        servicesSchedule: [],
+        dividendsSchedule: [{ amount: 18000, startYear: 2026 }],
+      },
+    ],
   },
   allocationMatrix: {
     sweepThreshold: 50000,
-    pockets: [{
-      id: 'capitalisation-1',
-      kind: 'capitalisation',
-      durationYears: 8,
-      annualReturnRate: 0.035,
-      enjoymentDelayMonths: 0,
-      initialAllocationPct: 100,
-      annualAllocationPct: 100,
-      repeatAtTerm: false,
-    }],
+    pockets: [
+      {
+        id: 'capitalisation-1',
+        kind: 'capitalisation',
+        durationYears: 8,
+        annualReturnRate: 0.035,
+        enjoymentDelayMonths: 0,
+        initialAllocationPct: 100,
+        annualAllocationPct: 100,
+        repeatAtTerm: false,
+      },
+    ],
   },
 };
 
@@ -120,10 +124,7 @@ describe('TresoKPISidebar', () => {
 
   it('affiche le CCA remboursé quand aucun CCA ne reste dû', () => {
     const html = renderToStaticMarkup(
-      <TresoKPISidebar
-        kpis={{ ...KPIS, ccaRestantFinHorizon: 0 }}
-        inputs={INPUTS}
-      />,
+      <TresoKPISidebar kpis={{ ...KPIS, ccaRestantFinHorizon: 0 }} inputs={INPUTS} />,
     );
 
     expect(html).toContain('CCA remboursé');

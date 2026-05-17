@@ -23,13 +23,19 @@ export function PerTransfertAttentionPoints({
       <h4>Points d’attention</h4>
       <ul>
         {points.map((point) => (
-          <li key={`${point.label}-${point.detail}`} className={`per-transfert-attention__item per-transfert-attention__item--${point.level}`}>
+          <li
+            key={`${point.label}-${point.detail}`}
+            className={`per-transfert-attention__item per-transfert-attention__item--${point.level}`}
+          >
             <strong>{point.label}</strong>
             <span>{point.detail}</span>
           </li>
         ))}
         {extraWarnings.map((warning) => (
-          <li key={warning} className="per-transfert-attention__item per-transfert-attention__item--warning">
+          <li
+            key={warning}
+            className="per-transfert-attention__item per-transfert-attention__item--warning"
+          >
             <strong>Point moteur</strong>
             <span>{warning}</span>
           </li>

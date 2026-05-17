@@ -22,17 +22,17 @@ import { revokeAllTrackedObjectURLs } from '../utils/export/createTrackedObjectU
 
 // ---------- Config ----------
 
-const HEARTBEAT_INTERVAL_MS = 30_000;           // 30 secondes
-const INACTIVITY_TIMEOUT_MS = 60 * 60 * 1_000;  // 1 heure
-const GRACE_PERIOD_MS = 3 * 60 * 1_000;         // 3 min (dans la fourchette 2-5 min)
-const WARNING_BEFORE_MS = 5 * 60 * 1_000;       // Avertissement 5 min avant expiration
+const HEARTBEAT_INTERVAL_MS = 30_000; // 30 secondes
+const INACTIVITY_TIMEOUT_MS = 60 * 60 * 1_000; // 1 heure
+const GRACE_PERIOD_MS = 3 * 60 * 1_000; // 3 min (dans la fourchette 2-5 min)
+const WARNING_BEFORE_MS = 5 * 60 * 1_000; // Avertissement 5 min avant expiration
 
 // Événements qui reset le timer d'inactivité
 const ACTIVITY_EVENTS = [
-  'keydown',      // saisie formulaire
-  'mousedown',    // clic CTA, navigation
-  'scroll',       // navigation scroll
-  'touchstart',   // mobile
+  'keydown', // saisie formulaire
+  'mousedown', // clic CTA, navigation
+  'scroll', // navigation scroll
+  'touchstart', // mobile
 ] as const;
 
 // ---------- Types ----------
@@ -127,7 +127,9 @@ export function useSessionTTL(): SessionTTLState {
     checkSession();
 
     // Écouter les changements d'auth
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
       hasSessionRef.current = !!session;
       if (session) {
         // Nouvelle session → reset tout
@@ -191,7 +193,9 @@ export function useSessionTTL(): SessionTTLState {
       }
     };
 
-    ACTIVITY_EVENTS.forEach((evt) => document.addEventListener(evt, handleActivity, { passive: true }));
+    ACTIVITY_EVENTS.forEach((evt) =>
+      document.addEventListener(evt, handleActivity, { passive: true }),
+    );
 
     return () => {
       clearInterval(heartbeatId);

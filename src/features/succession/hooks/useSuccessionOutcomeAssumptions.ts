@@ -59,20 +59,23 @@ export function useSuccessionOutcomeAssumptions({
   donationsContext,
 }: UseSuccessionOutcomeAssumptionsInput) {
   const totalActifsLiquidation = useMemo(
-    () => Math.max(
-      0,
-      liquidationContext.actifEpoux1 + liquidationContext.actifEpoux2 + liquidationContext.actifCommun,
-    ),
+    () =>
+      Math.max(
+        0,
+        liquidationContext.actifEpoux1 +
+          liquidationContext.actifEpoux2 +
+          liquidationContext.actifCommun,
+      ),
     [liquidationContext],
   );
 
-  const canExportSimplified = shouldRenderSuccessionComputationSections && (
-    displayActifNetSuccession > 0
-    || totalActifsLiquidation > 0
-    || assuranceVieTotals.capitaux > 0
-    || perTotals.capitaux > 0
-    || prevoyanceTotals.capitaux > 0
-  );
+  const canExportSimplified =
+    shouldRenderSuccessionComputationSections &&
+    (displayActifNetSuccession > 0 ||
+      totalActifsLiquidation > 0 ||
+      assuranceVieTotals.capitaux > 0 ||
+      perTotals.capitaux > 0 ||
+      prevoyanceTotals.capitaux > 0);
   const canExportCurrentMode = canExport && canExportSimplified;
 
   const attentions = useMemo(() => {
@@ -107,26 +110,31 @@ export function useSuccessionOutcomeAssumptions({
     prevoyanceFiscalAnalysis.warnings,
   ]);
 
-  const assumptions = useMemo(() => buildSuccessionAssumptions({
-    fiscalSnapshot,
-    attentions,
-    hasInterMassClaims: (chainageAnalysis.interMassClaims?.totalAppliedAmount ?? 0) > 0,
-    hasAffectedLiabilities: (chainageAnalysis.affectedLiabilities?.totalAmount ?? 0) > 0,
-    hasDonationsPartage: patrimonialAnalysis.donationsPartagees > 0,
-    hasUsufruitSuccessif: (
-      usufruitSuccessifAnalysis.transmissions.length > 0
-      || donationsContext.some((donation) => donation.avecReserveUsufruit && donation.usufruitSuccessif)
-    ),
-    usufruitSuccessifAnalysis,
-  }), [
-    fiscalSnapshot,
-    attentions,
-    chainageAnalysis.interMassClaims?.totalAppliedAmount,
-    chainageAnalysis.affectedLiabilities?.totalAmount,
-    patrimonialAnalysis.donationsPartagees,
-    usufruitSuccessifAnalysis,
-    donationsContext,
-  ]);
+  const assumptions = useMemo(
+    () =>
+      buildSuccessionAssumptions({
+        fiscalSnapshot,
+        attentions,
+        hasInterMassClaims: (chainageAnalysis.interMassClaims?.totalAppliedAmount ?? 0) > 0,
+        hasAffectedLiabilities: (chainageAnalysis.affectedLiabilities?.totalAmount ?? 0) > 0,
+        hasDonationsPartage: patrimonialAnalysis.donationsPartagees > 0,
+        hasUsufruitSuccessif:
+          usufruitSuccessifAnalysis.transmissions.length > 0 ||
+          donationsContext.some(
+            (donation) => donation.avecReserveUsufruit && donation.usufruitSuccessif,
+          ),
+        usufruitSuccessifAnalysis,
+      }),
+    [
+      fiscalSnapshot,
+      attentions,
+      chainageAnalysis.interMassClaims?.totalAppliedAmount,
+      chainageAnalysis.affectedLiabilities?.totalAmount,
+      patrimonialAnalysis.donationsPartagees,
+      usufruitSuccessifAnalysis,
+      donationsContext,
+    ],
+  );
 
   return {
     totalActifsLiquidation,

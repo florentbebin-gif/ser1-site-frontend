@@ -91,7 +91,9 @@ describe('TresoPlacementSection', () => {
     render(<TresoPlacementSection inputs={INPUTS as any} onChange={() => {}} />);
 
     expect(screen.queryByRole('button', { name: 'Placement unique' })).not.toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: 'Stratégie multi-poches' })).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole('button', { name: 'Stratégie multi-poches' }),
+    ).not.toBeInTheDocument();
     expect(screen.queryByText(/Mode déduit/i)).not.toBeInTheDocument();
     expect(screen.queryByText(/^Investi :/i)).not.toBeInTheDocument();
     expect(screen.queryByText(/^Compte bancaire :/i)).not.toBeInTheDocument();
@@ -99,17 +101,30 @@ describe('TresoPlacementSection', () => {
     expect(screen.getByText('Trésorerie initiale')).toBeInTheDocument();
     expect(screen.getByText('Banque protégée')).toBeInTheDocument();
     expect(screen.getByText('Disponible sur compte bancaire')).toBeInTheDocument();
-    expect(screen.queryByText(/Le balayage place uniquement la trésorerie/i)).not.toBeInTheDocument();
+    expect(
+      screen.queryByText(/Le balayage place uniquement la trésorerie/i),
+    ).not.toBeInTheDocument();
     expect(screen.getByRole('group', { name: /Compte bancaire/i })).toBeInTheDocument();
     expect(screen.getByText('0 %')).toBeInTheDocument();
-    expect(within(screen.getByRole('group', { name: /Court terme/i }))
-      .getByRole('button', { name: /Paramétrer Court terme/i })).toBeInTheDocument();
-    expect(within(screen.getByRole('group', { name: /Moyen terme/i }))
-      .getByRole('button', { name: /Paramétrer Moyen terme/i })).toBeInTheDocument();
-    expect(within(screen.getByRole('group', { name: /Long terme/i }))
-      .getByRole('button', { name: /Paramétrer Long terme/i })).toBeInTheDocument();
+    expect(
+      within(screen.getByRole('group', { name: /Court terme/i })).getByRole('button', {
+        name: /Paramétrer Court terme/i,
+      }),
+    ).toBeInTheDocument();
+    expect(
+      within(screen.getByRole('group', { name: /Moyen terme/i })).getByRole('button', {
+        name: /Paramétrer Moyen terme/i,
+      }),
+    ).toBeInTheDocument();
+    expect(
+      within(screen.getByRole('group', { name: /Long terme/i })).getByRole('button', {
+        name: /Paramétrer Long terme/i,
+      }),
+    ).toBeInTheDocument();
     expect(screen.getByText('4 %')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /Paramétrer Court terme/i })).toHaveTextContent('52 000 €');
+    expect(screen.getByRole('button', { name: /Paramétrer Court terme/i })).toHaveTextContent(
+      '52 000 €',
+    );
   });
 
   it('affiche une barre empilée de répartition initiale en euros', () => {
@@ -127,11 +142,19 @@ describe('TresoPlacementSection', () => {
     render(<TresoPlacementSection inputs={balancedInputs as any} onChange={vi.fn()} />);
 
     const stack = screen.getByLabelText('Répartition de la trésorerie initiale');
-    expect(within(stack).getByRole('button', { name: /Compte bancaire libre : 26[\s\u202f]000 €/i })).toBeDisabled();
-    expect(within(stack).getByRole('button', { name: /Solde minimum \+ BFR : 35[\s\u202f]000 €/i })).toBeDisabled();
-    expect(within(stack).getByRole('button', { name: /Court terme : 19[\s\u202f]500 €/i })).toBeInTheDocument();
+    expect(
+      within(stack).getByRole('button', { name: /Compte bancaire libre : 26[\s\u202f]000 €/i }),
+    ).toBeDisabled();
+    expect(
+      within(stack).getByRole('button', { name: /Solde minimum \+ BFR : 35[\s\u202f]000 €/i }),
+    ).toBeDisabled();
+    expect(
+      within(stack).getByRole('button', { name: /Court terme : 19[\s\u202f]500 €/i }),
+    ).toBeInTheDocument();
 
-    fireEvent.click(within(stack).getByRole('button', { name: /Court terme : 19[\s\u202f]500 €/i }));
+    fireEvent.click(
+      within(stack).getByRole('button', { name: /Court terme : 19[\s\u202f]500 €/i }),
+    );
     expect(screen.getByText('Paramétrer la poche')).toBeInTheDocument();
   });
 
@@ -139,11 +162,13 @@ describe('TresoPlacementSection', () => {
     render(
       <TresoPlacementSection
         inputs={INPUTS as any}
-        projectionRows={[{
-          year: 3,
-          alerteTresorerieBancaireInsuffisante: true,
-          deficitTresorerieBancaire: 12000,
-        } as any]}
+        projectionRows={[
+          {
+            year: 3,
+            alerteTresorerieBancaireInsuffisante: true,
+            deficitTresorerieBancaire: 12000,
+          } as any,
+        ]}
         onChange={() => {}}
       />,
     );
@@ -163,7 +188,9 @@ describe('TresoPlacementSection', () => {
     expect(screen.getByDisplayValue('4')).toBeInTheDocument();
     expect(screen.queryByLabelText(/Ordre de consommation/i)).not.toBeInTheDocument();
     expect(screen.queryByLabelText(/Destination au terme/i)).not.toBeInTheDocument();
-    expect(screen.getByText(/Au terme, le produit revient sur le compte bancaire/i)).toBeInTheDocument();
+    expect(
+      screen.getByText(/Au terme, le produit revient sur le compte bancaire/i),
+    ).toBeInTheDocument();
   });
 
   it('supprime une poche depuis la modale', () => {
@@ -173,14 +200,16 @@ describe('TresoPlacementSection', () => {
     fireEvent.click(screen.getByRole('button', { name: /Paramétrer Long terme/i }));
     fireEvent.click(screen.getByRole('button', { name: /Supprimer la poche/i }));
 
-    expect(onChange).toHaveBeenCalledWith(expect.objectContaining({
-      allocationMatrix: expect.objectContaining({
-        pockets: [
-          expect.objectContaining({ id: 'poche-1' }),
-          expect.objectContaining({ id: 'poche-2' }),
-        ],
+    expect(onChange).toHaveBeenCalledWith(
+      expect.objectContaining({
+        allocationMatrix: expect.objectContaining({
+          pockets: [
+            expect.objectContaining({ id: 'poche-1' }),
+            expect.objectContaining({ id: 'poche-2' }),
+          ],
+        }),
       }),
-    }));
+    );
   });
 
   it('supprime la dernière poche depuis la modale', () => {
@@ -197,11 +226,13 @@ describe('TresoPlacementSection', () => {
     fireEvent.click(screen.getByRole('button', { name: /Paramétrer Court terme/i }));
     fireEvent.click(screen.getByRole('button', { name: /Supprimer la poche/i }));
 
-    expect(onChange).toHaveBeenCalledWith(expect.objectContaining({
-      allocationMatrix: expect.objectContaining({
-        pockets: [],
+    expect(onChange).toHaveBeenCalledWith(
+      expect.objectContaining({
+        allocationMatrix: expect.objectContaining({
+          pockets: [],
+        }),
       }),
-    }));
+    );
   });
 
   it('autorise la suppression de la dernière poche et crée une nouvelle poche depuis l’état vide', () => {
@@ -216,16 +247,22 @@ describe('TresoPlacementSection', () => {
 
     render(<TresoPlacementSection inputs={emptyInputs as any} onChange={onChange} />);
 
-    expect(screen.getByRole('button', {
-      name: /Aucun placement, trésorerie sur compte bancaire : 100[\s\u202f]000 €/i,
-    })).toBeDisabled();
-    expect(screen.getByText('Trésorerie conservée sur compte bancaire, sans rendement')).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', {
+        name: /Aucun placement, trésorerie sur compte bancaire : 100[\s\u202f]000 €/i,
+      }),
+    ).toBeDisabled();
+    expect(
+      screen.getByText('Trésorerie conservée sur compte bancaire, sans rendement'),
+    ).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: /Ajouter une poche court terme/i }));
 
-    expect(onChange).toHaveBeenCalledWith(expect.objectContaining({
-      allocationMatrix: expect.objectContaining({
-        pockets: [expect.objectContaining({ id: 'poche-1' })],
+    expect(onChange).toHaveBeenCalledWith(
+      expect.objectContaining({
+        allocationMatrix: expect.objectContaining({
+          pockets: [expect.objectContaining({ id: 'poche-1' })],
+        }),
       }),
-    }));
+    );
   });
 });

@@ -27,7 +27,12 @@ describe('buildSuccessionChainageAnalysis - patrimonial flows', () => {
 
     const withoutPreciput = buildSuccessionChainageAnalysis({
       civil: makeCivil({}),
-      liquidation: makeLiquidation({ actifEpoux1: 0, actifEpoux2: 200000, actifCommun: 500000, nbEnfants: 2 }),
+      liquidation: makeLiquidation({
+        actifEpoux1: 0,
+        actifEpoux2: 200000,
+        actifCommun: 500000,
+        nbEnfants: 2,
+      }),
       regimeUsed: 'communaute_legale',
       order: 'epoux1',
       dmtgSettings: DEFAULT_DMTG,
@@ -43,7 +48,12 @@ describe('buildSuccessionChainageAnalysis - patrimonial flows', () => {
 
     const withPreciput = buildSuccessionChainageAnalysis({
       civil: makeCivil({}),
-      liquidation: makeLiquidation({ actifEpoux1: 0, actifEpoux2: 200000, actifCommun: 500000, nbEnfants: 2 }),
+      liquidation: makeLiquidation({
+        actifEpoux1: 0,
+        actifEpoux2: 200000,
+        actifCommun: 500000,
+        nbEnfants: 2,
+      }),
       regimeUsed: 'communaute_legale',
       order: 'epoux1',
       dmtgSettings: DEFAULT_DMTG,
@@ -71,7 +81,12 @@ describe('buildSuccessionChainageAnalysis - patrimonial flows', () => {
   it('prioritizes targeted preciput selections over the global fallback amount', () => {
     const analysis = buildSuccessionChainageAnalysis({
       civil: makeCivil({}),
-      liquidation: makeLiquidation({ actifEpoux1: 100000, actifEpoux2: 200000, actifCommun: 200000, nbEnfants: 2 }),
+      liquidation: makeLiquidation({
+        actifEpoux1: 100000,
+        actifEpoux2: 200000,
+        actifCommun: 200000,
+        nbEnfants: 2,
+      }),
       regimeUsed: 'communaute_legale',
       order: 'epoux1',
       dmtgSettings: DEFAULT_DMTG,
@@ -86,15 +101,17 @@ describe('buildSuccessionChainageAnalysis - patrimonial flows', () => {
         donationEntreEpouxOption: 'pleine_propriete_quotite',
         preciputMode: 'cible',
         preciputMontant: 10000,
-        preciputSelections: [{
-          id: 'prec-1',
-          sourceType: 'asset',
-          sourceId: 'asset-comm-1',
-          labelSnapshot: 'Portefeuille titres',
-          pocket: 'communaute',
-          amount: 80000,
-          enabled: true,
-        }],
+        preciputSelections: [
+          {
+            id: 'prec-1',
+            sourceType: 'asset',
+            sourceId: 'asset-comm-1',
+            labelSnapshot: 'Portefeuille titres',
+            pocket: 'communaute',
+            amount: 80000,
+            enabled: true,
+          },
+        ],
       },
       assetEntries: [
         {
@@ -161,7 +178,12 @@ describe('buildSuccessionChainageAnalysis - patrimonial flows', () => {
     };
     const baseInput = {
       civil: makeCivil({}),
-      liquidation: makeLiquidation({ actifEpoux1: 0, actifEpoux2: 0, actifCommun: 300000, nbEnfants: 2 }),
+      liquidation: makeLiquidation({
+        actifEpoux1: 0,
+        actifEpoux2: 0,
+        actifCommun: 300000,
+        nbEnfants: 2,
+      }),
       regimeUsed: 'communaute_legale' as const,
       order: 'epoux1' as const,
       dmtgSettings: DMTG_SANS_ABATTEMENT_LIGNE_DIRECTE,
@@ -176,24 +198,28 @@ describe('buildSuccessionChainageAnalysis - patrimonial flows', () => {
         donationEntreEpouxOption: 'pleine_propriete_quotite' as const,
         preciputMode: 'cible' as const,
         preciputMontant: 0,
-        preciputSelections: [{
-          id: 'prec-rp',
-          sourceType: 'asset' as const,
-          sourceId: 'asset-rp',
-          labelSnapshot: RESIDENCE_PRINCIPALE_SUBCATEGORY,
-          pocket: 'communaute' as const,
-          amount: 100000,
-          enabled: true,
-        }],
+        preciputSelections: [
+          {
+            id: 'prec-rp',
+            sourceType: 'asset' as const,
+            sourceId: 'asset-rp',
+            labelSnapshot: RESIDENCE_PRINCIPALE_SUBCATEGORY,
+            pocket: 'communaute' as const,
+            amount: 100000,
+            enabled: true,
+          },
+        ],
       },
-      assetEntries: [{
-        id: 'asset-rp',
-        pocket: 'communaute' as const,
-        category: 'immobilier' as const,
-        subCategory: RESIDENCE_PRINCIPALE_SUBCATEGORY,
-        amount: 300000,
-        label: RESIDENCE_PRINCIPALE_SUBCATEGORY,
-      }],
+      assetEntries: [
+        {
+          id: 'asset-rp',
+          pocket: 'communaute' as const,
+          category: 'immobilier' as const,
+          subCategory: RESIDENCE_PRINCIPALE_SUBCATEGORY,
+          amount: 300000,
+          label: RESIDENCE_PRINCIPALE_SUBCATEGORY,
+        },
+      ],
       groupementFoncierEntries: [],
       transmissionBasis,
     };
@@ -214,14 +240,21 @@ describe('buildSuccessionChainageAnalysis - patrimonial flows', () => {
     expect(withAbatement.step1?.actifTransmis).toBe(100000);
     expect(withoutAbatement.step1?.droitsEnfants).toBe(3888);
     expect(withAbatement.step1?.droitsEnfants).toBe(2482);
-    expect(withAbatement.step1?.droitsEnfants).toBeLessThan(withoutAbatement.step1?.droitsEnfants ?? 0);
+    expect(withAbatement.step1?.droitsEnfants).toBeLessThan(
+      withoutAbatement.step1?.droitsEnfants ?? 0,
+    );
     expect(withAbatement.step2?.droitsEnfants).toBe(withoutAbatement.step2?.droitsEnfants);
   });
 
   it('falls back to the global preciput amount when targeted selections are no longer compatible', () => {
     const analysis = buildSuccessionChainageAnalysis({
       civil: makeCivil({}),
-      liquidation: makeLiquidation({ actifEpoux1: 100000, actifEpoux2: 200000, actifCommun: 200000, nbEnfants: 2 }),
+      liquidation: makeLiquidation({
+        actifEpoux1: 100000,
+        actifEpoux2: 200000,
+        actifCommun: 200000,
+        nbEnfants: 2,
+      }),
       regimeUsed: 'communaute_legale',
       order: 'epoux1',
       dmtgSettings: DEFAULT_DMTG,
@@ -236,35 +269,46 @@ describe('buildSuccessionChainageAnalysis - patrimonial flows', () => {
         donationEntreEpouxOption: 'pleine_propriete_quotite',
         preciputMode: 'cible',
         preciputMontant: 30000,
-        preciputSelections: [{
-          id: 'prec-1',
-          sourceType: 'asset',
-          sourceId: 'asset-introuvable',
-          labelSnapshot: 'Bien supprime',
-          pocket: 'communaute',
-          amount: 80000,
-          enabled: true,
-        }],
+        preciputSelections: [
+          {
+            id: 'prec-1',
+            sourceType: 'asset',
+            sourceId: 'asset-introuvable',
+            labelSnapshot: 'Bien supprime',
+            pocket: 'communaute',
+            amount: 80000,
+            enabled: true,
+          },
+        ],
       },
-      assetEntries: [{
-        id: 'asset-comm-2',
-        pocket: 'communaute',
-        category: 'financier',
-        subCategory: 'Tresorerie',
-        amount: 120000,
-      }],
+      assetEntries: [
+        {
+          id: 'asset-comm-2',
+          pocket: 'communaute',
+          category: 'financier',
+          subCategory: 'Tresorerie',
+          amount: 120000,
+        },
+      ],
       groupementFoncierEntries: [],
     });
 
     expect(analysis.step1?.actifTransmis).toBe(185000);
     expect(analysis.step2?.actifTransmis).toBe(361250);
-    expect(analysis.warnings.some((warning) => warning.includes('repli sur le montant global'))).toBe(true);
+    expect(
+      analysis.warnings.some((warning) => warning.includes('repli sur le montant global')),
+    ).toBe(true);
   });
 
   it('reinjects survivor insurance inflows into step 2 estate', () => {
     const baseInput = {
       civil: makeCivil({ regimeMatrimonial: 'separation_biens' }),
-      liquidation: makeLiquidation({ actifEpoux1: 500000, actifEpoux2: 200000, actifCommun: 0, nbEnfants: 2 }),
+      liquidation: makeLiquidation({
+        actifEpoux1: 500000,
+        actifEpoux2: 200000,
+        actifCommun: 0,
+        nbEnfants: 2,
+      }),
       regimeUsed: 'separation_biens' as const,
       order: 'epoux1' as const,
       dmtgSettings: DEFAULT_DMTG,
@@ -286,23 +330,32 @@ describe('buildSuccessionChainageAnalysis - patrimonial flows', () => {
 
     expect(withoutInflows.step2?.actifTransmis).toBe(325000);
     expect(withInflows.step2?.actifTransmis).toBe(405000);
-    expect(withInflows.warnings.some((warning) => warning.includes('capitaux assurances nets recycles'))).toBe(true);
+    expect(
+      withInflows.warnings.some((warning) => warning.includes('capitaux assurances nets recycles')),
+    ).toBe(true);
   });
 
   it('integrates donation recall into step 1 heir rights for the matching donor and donee', () => {
-    const donations: SuccessionDonationEntry[] = [{
-      id: 'don-1',
-      type: 'rapportable',
-      montant: 100000,
-      valeurDonation: 150000,
-      date: '2020-06',
-      donateur: 'epoux1',
-      donataire: 'E1',
-    }];
+    const donations: SuccessionDonationEntry[] = [
+      {
+        id: 'don-1',
+        type: 'rapportable',
+        montant: 100000,
+        valeurDonation: 150000,
+        date: '2020-06',
+        donateur: 'epoux1',
+        donataire: 'E1',
+      },
+    ];
 
     const withoutRecall = buildSuccessionChainageAnalysis({
       civil: makeCivil({ regimeMatrimonial: 'separation_biens' }),
-      liquidation: makeLiquidation({ actifEpoux1: 500000, actifEpoux2: 200000, actifCommun: 0, nbEnfants: 1 }),
+      liquidation: makeLiquidation({
+        actifEpoux1: 500000,
+        actifEpoux2: 200000,
+        actifCommun: 0,
+        nbEnfants: 1,
+      }),
       regimeUsed: 'separation_biens',
       order: 'epoux1',
       dmtgSettings: DEFAULT_DMTG,
@@ -312,7 +365,12 @@ describe('buildSuccessionChainageAnalysis - patrimonial flows', () => {
     });
     const withRecall = buildSuccessionChainageAnalysis({
       civil: makeCivil({ regimeMatrimonial: 'separation_biens' }),
-      liquidation: makeLiquidation({ actifEpoux1: 500000, actifEpoux2: 200000, actifCommun: 0, nbEnfants: 1 }),
+      liquidation: makeLiquidation({
+        actifEpoux1: 500000,
+        actifEpoux2: 200000,
+        actifCommun: 0,
+        nbEnfants: 1,
+      }),
       regimeUsed: 'separation_biens',
       order: 'epoux1',
       dmtgSettings: DEFAULT_DMTG,
@@ -323,17 +381,26 @@ describe('buildSuccessionChainageAnalysis - patrimonial flows', () => {
       donationSettings: DONATION_SETTINGS,
     });
 
-    const childWithoutRecall = withoutRecall.step1?.beneficiaries.find((beneficiary) => beneficiary.id === 'E1');
-    const childWithRecall = withRecall.step1?.beneficiaries.find((beneficiary) => beneficiary.id === 'E1');
+    const childWithoutRecall = withoutRecall.step1?.beneficiaries.find(
+      (beneficiary) => beneficiary.id === 'E1',
+    );
+    const childWithRecall = withRecall.step1?.beneficiaries.find(
+      (beneficiary) => beneficiary.id === 'E1',
+    );
 
     expect(childWithoutRecall?.droits).toBeGreaterThan(0);
-    expect((childWithRecall?.droits ?? 0)).toBeGreaterThan(childWithoutRecall?.droits ?? 0);
+    expect(childWithRecall?.droits ?? 0).toBeGreaterThan(childWithoutRecall?.droits ?? 0);
   });
 
   it('ignores at step 2 a testament still aimed at the already deceased spouse', () => {
     const analysis = buildSuccessionChainageAnalysis({
       civil: makeCivil({ regimeMatrimonial: 'separation_biens' }),
-      liquidation: makeLiquidation({ actifEpoux1: 300000, actifEpoux2: 250000, actifCommun: 0, nbEnfants: 1 }),
+      liquidation: makeLiquidation({
+        actifEpoux1: 300000,
+        actifEpoux2: 250000,
+        actifCommun: 0,
+        nbEnfants: 1,
+      }),
       regimeUsed: 'separation_biens',
       order: 'epoux1',
       dmtgSettings: DEFAULT_DMTG,
@@ -352,7 +419,11 @@ describe('buildSuccessionChainageAnalysis - patrimonial flows', () => {
       }),
     });
 
-    expect(analysis.step2?.beneficiaries.some((beneficiary) => beneficiary.id === 'conjoint')).toBe(false);
-    expect(analysis.warnings.some((warning) => warning.includes('deja decede ignore au second deces'))).toBe(true);
+    expect(analysis.step2?.beneficiaries.some((beneficiary) => beneficiary.id === 'conjoint')).toBe(
+      false,
+    );
+    expect(
+      analysis.warnings.some((warning) => warning.includes('deja decede ignore au second deces')),
+    ).toBe(true);
   });
 });

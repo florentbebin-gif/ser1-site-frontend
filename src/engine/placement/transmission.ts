@@ -28,11 +28,14 @@ export function calculTransmission(
   } = params;
 
   const fp = { ...DEFAULT_FISCAL_PARAMS, ...fiscalParams };
-  const dmtgTauxChoisi = fp.dmtgTauxChoisi || 0.20;
-  const psGeneral = typeof fp.psGeneral === 'number' ? fp.psGeneral : DEFAULT_FISCAL_PARAMS.psGeneral;
-  const psException = typeof fp.psException === 'number' ? fp.psException : DEFAULT_FISCAL_PARAMS.psException;
+  const dmtgTauxChoisi = fp.dmtgTauxChoisi || 0.2;
+  const psGeneral =
+    typeof fp.psGeneral === 'number' ? fp.psGeneral : DEFAULT_FISCAL_PARAMS.psGeneral;
+  const psException =
+    typeof fp.psException === 'number' ? fp.psException : DEFAULT_FISCAL_PARAMS.psException;
 
-  const effectiveNbBeneficiaires = beneficiaryType === 'conjoint' ? 1 : Math.max(1, nbBeneficiaires || 1);
+  const effectiveNbBeneficiaires =
+    beneficiaryType === 'conjoint' ? 1 : Math.max(1, nbBeneficiaires || 1);
 
   let taxeDmtg = 0;
   let taxeForfaitaire = 0;

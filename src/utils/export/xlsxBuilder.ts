@@ -58,19 +58,27 @@ const normalizeCell = (cell: XlsxCell | XlsxCellValue): XlsxCell => {
   return { v: cell as XlsxCellValue };
 };
 
-const normalizeCellValueForFingerprint = (value: XlsxCellValue): string | number | boolean | null => {
-  if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') return value;
+const normalizeCellValueForFingerprint = (
+  value: XlsxCellValue,
+): string | number | boolean | null => {
+  if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean')
+    return value;
   return null;
 };
 
 const buildSheetFingerprintSummary = (sheet: XlsxSheet) => {
   const rowCount = sheet.rows.length;
   const colCount = sheet.rows.reduce((max, row) => Math.max(max, row.length), 0);
-  const candidateRows = [0, 1, Math.floor(rowCount / 2), rowCount - 2, rowCount - 1]
-    .filter((index) => index >= 0 && index < rowCount);
+  const candidateRows = [0, 1, Math.floor(rowCount / 2), rowCount - 2, rowCount - 1].filter(
+    (index) => index >= 0 && index < rowCount,
+  );
   const uniqueRows = Array.from(new Set(candidateRows));
 
-  const keyCells: Array<{ ref: string; value: string | number | boolean | null; style: string | null }> = [];
+  const keyCells: Array<{
+    ref: string;
+    value: string | number | boolean | null;
+    style: string | null;
+  }> = [];
   for (const rowIndex of uniqueRows) {
     const row = sheet.rows[rowIndex] || [];
     const maxCols = Math.min(row.length, 10);
@@ -105,7 +113,11 @@ const columnLetter = (index: number) => {
   return s;
 };
 
-const buildStylesXml = (headerFill: string, headerText: string, sectionFill: string) => `<?xml version="1.0" encoding="UTF-8"?>
+const buildStylesXml = (
+  headerFill: string,
+  headerText: string,
+  sectionFill: string,
+) => `<?xml version="1.0" encoding="UTF-8"?>
 <styleSheet xmlns="${XMLNS_MAIN}">
   <numFmts count="2">
     <numFmt numFmtId="${NUMFMT_MONEY}" formatCode="#\\,##0 &quot;€&quot;"/>
@@ -156,7 +168,7 @@ const buildWorksheetXml = (sheet: XlsxSheet, _sheetIndex: number) => {
           const cell = normalizeCell(rawCell);
           const col = columnLetter(cellIndex + 1);
           const ref = `${col}${rowNumber}`;
-          const styleId = cell.style ? STYLE_MAP[cell.style] ?? 0 : 0;
+          const styleId = cell.style ? (STYLE_MAP[cell.style] ?? 0) : 0;
           const value = cell.v ?? '';
 
           if (typeof value === 'number' && Number.isFinite(value)) {
@@ -190,7 +202,10 @@ const buildWorkbookXml = (sheets: XlsxSheet[]) => `<?xml version="1.0" encoding=
 <workbook xmlns="${XMLNS_MAIN}" xmlns:r="${XMLNS_RELS}">
   <sheets>
     ${sheets
-      .map((sheet, idx) => `<sheet name="${escapeXml(sheet.name)}" sheetId="${idx + 1}" r:id="rId${idx + 1}"/>`)
+      .map(
+        (sheet, idx) =>
+          `<sheet name="${escapeXml(sheet.name)}" sheetId="${idx + 1}" r:id="rId${idx + 1}"/>`,
+      )
       .join('')}
   </sheets>
 </workbook>`;
@@ -198,8 +213,9 @@ const buildWorkbookXml = (sheets: XlsxSheet[]) => `<?xml version="1.0" encoding=
 const buildWorkbookRelsXml = (sheetCount: number) => `<?xml version="1.0" encoding="UTF-8"?>
 <Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
   ${Array.from({ length: sheetCount })
-    .map((_, idx) =>
-      `<Relationship Id="rId${idx + 1}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet${idx + 1}.xml"/>`
+    .map(
+      (_, idx) =>
+        `<Relationship Id="rId${idx + 1}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet${idx + 1}.xml"/>`,
     )
     .join('')}
   <Relationship Id="rId${sheetCount + 1}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/>
@@ -217,8 +233,9 @@ const buildContentTypesXml = (sheetCount: number) => `<?xml version="1.0" encodi
   <Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>
   <Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/>
   ${Array.from({ length: sheetCount })
-    .map((_, idx) =>
-      `<Override PartName="/xl/worksheets/sheet${idx + 1}.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>`
+    .map(
+      (_, idx) =>
+        `<Override PartName="/xl/worksheets/sheet${idx + 1}.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>`,
     )
     .join('')}
 </Types>`;

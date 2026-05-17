@@ -42,7 +42,9 @@ function buildDonationPartageLotsFromEntry(
   entry?: SuccessionDonationEntry,
 ): SuccessionDonationPartageLot[] {
   const livingChildren = enfants.filter((enfant) => !enfant.deceased);
-  const hasSelectedChild = Boolean(entry?.donataire && livingChildren.some((enfant) => enfant.id === entry.donataire));
+  const hasSelectedChild = Boolean(
+    entry?.donataire && livingChildren.some((enfant) => enfant.id === entry.donataire),
+  );
   return livingChildren.map((enfant) => {
     const selected = hasSelectedChild ? entry?.donataire === enfant.id : true;
     const lot: SuccessionDonationPartageLot = {
@@ -68,36 +70,46 @@ export function useSuccessionDonationPartageHandlers({
     DEFAULT_SUCCESSION_DONATION_PARTAGE_ACTS,
   );
   const [showDonationPartageModal, setShowDonationPartageModal] = useState(false);
-  const [donationPartageDraft, setDonationPartageDraft] = useState<SuccessionDonationPartageAct | null>(null);
-  const [donationPartageSourceEntryId, setDonationPartageSourceEntryId] = useState<string | null>(null);
+  const [donationPartageDraft, setDonationPartageDraft] =
+    useState<SuccessionDonationPartageAct | null>(null);
+  const [donationPartageSourceEntryId, setDonationPartageSourceEntryId] = useState<string | null>(
+    null,
+  );
 
-  const openDonationPartageAct = useCallback((actId: string) => {
-    const act = donationPartageActs.find((entry) => entry.id === actId);
-    if (!act) return;
-    setDonationPartageDraft(cloneDonationPartageAct(act));
-    setDonationPartageSourceEntryId(null);
-    setShowDonationPartageModal(true);
-  }, [donationPartageActs]);
+  const openDonationPartageAct = useCallback(
+    (actId: string) => {
+      const act = donationPartageActs.find((entry) => entry.id === actId);
+      if (!act) return;
+      setDonationPartageDraft(cloneDonationPartageAct(act));
+      setDonationPartageSourceEntryId(null);
+      setShowDonationPartageModal(true);
+    },
+    [donationPartageActs],
+  );
 
-  const openDonationPartageFromEntry = useCallback((entryId: string) => {
-    const entry = donationsContext.find((donation) => donation.id === entryId);
-    const donateur = isPrimarySideValue(entry?.donateur) ? entry.donateur : chainOrder;
-    const draft: SuccessionDonationPartageAct = {
-      id: createDonationPartageActId(),
-      date: entry?.date,
-      donateur,
-      avecReserveUsufruit: Boolean(entry?.avecReserveUsufruit),
-      usufruitSuccessif: Boolean(entry?.usufruitSuccessif && entry?.avecReserveUsufruit),
-      usufruitSuccessifBeneficiaire: entry?.usufruitSuccessif && entry?.avecReserveUsufruit
-        ? (entry.usufruitSuccessifBeneficiaire ?? otherPrimarySide(donateur))
-        : undefined,
-      lots: buildDonationPartageLotsFromEntry(enfantsContext, entry),
-      soultes: [],
-    };
-    setDonationPartageDraft(draft);
-    setDonationPartageSourceEntryId(entryId);
-    setShowDonationPartageModal(true);
-  }, [chainOrder, donationsContext, enfantsContext]);
+  const openDonationPartageFromEntry = useCallback(
+    (entryId: string) => {
+      const entry = donationsContext.find((donation) => donation.id === entryId);
+      const donateur = isPrimarySideValue(entry?.donateur) ? entry.donateur : chainOrder;
+      const draft: SuccessionDonationPartageAct = {
+        id: createDonationPartageActId(),
+        date: entry?.date,
+        donateur,
+        avecReserveUsufruit: Boolean(entry?.avecReserveUsufruit),
+        usufruitSuccessif: Boolean(entry?.usufruitSuccessif && entry?.avecReserveUsufruit),
+        usufruitSuccessifBeneficiaire:
+          entry?.usufruitSuccessif && entry?.avecReserveUsufruit
+            ? (entry.usufruitSuccessifBeneficiaire ?? otherPrimarySide(donateur))
+            : undefined,
+        lots: buildDonationPartageLotsFromEntry(enfantsContext, entry),
+        soultes: [],
+      };
+      setDonationPartageDraft(draft);
+      setDonationPartageSourceEntryId(entryId);
+      setShowDonationPartageModal(true);
+    },
+    [chainOrder, donationsContext, enfantsContext],
+  );
 
   const closeDonationPartageModal = useCallback(() => {
     setShowDonationPartageModal(false);
@@ -115,7 +127,9 @@ export function useSuccessionDonationPartageHandlers({
         : [...prev, donationPartageDraft];
     });
     if (donationPartageSourceEntryId) {
-      setDonationsContext((prev) => prev.filter((entry) => entry.id !== donationPartageSourceEntryId));
+      setDonationsContext((prev) =>
+        prev.filter((entry) => entry.id !== donationPartageSourceEntryId),
+      );
     }
     closeDonationPartageModal();
   }, [
@@ -126,10 +140,13 @@ export function useSuccessionDonationPartageHandlers({
     setDonationsContext,
   ]);
 
-  const removeDonationPartageAct = useCallback((actId: string) => {
-    setDonationPartageActs((prev) => prev.filter((act) => act.id !== actId));
-    if (donationPartageDraft?.id === actId) closeDonationPartageModal();
-  }, [closeDonationPartageModal, donationPartageDraft?.id]);
+  const removeDonationPartageAct = useCallback(
+    (actId: string) => {
+      setDonationPartageActs((prev) => prev.filter((act) => act.id !== actId));
+      if (donationPartageDraft?.id === actId) closeDonationPartageModal();
+    },
+    [closeDonationPartageModal, donationPartageDraft?.id],
+  );
 
   return {
     donationPartageActs,

@@ -18,9 +18,9 @@ import { MASTER_NAMES } from '../template/loadBaseTemplate';
 const GEO = {
   gridX: 0.92,
   gridY: 2.14,
-  gridW: 11.50,
+  gridW: 11.5,
   gridH: 4.66,
-  gap: 0.20,
+  gap: 0.2,
   leftW: 4.34,
 } as const;
 
@@ -33,10 +33,12 @@ type PositionedHypothesesGroup = HypothesesGroup & {
 function getGroups(spec: SuccessionHypothesesSlideSpec): HypothesesGroup[] {
   const groups = spec.groups?.filter((group) => group.items.length > 0) ?? [];
   if (groups.length > 0) return groups;
-  return [{
-    title: 'Cadre de calcul',
-    items: spec.items,
-  }];
+  return [
+    {
+      title: 'Cadre de calcul',
+      items: spec.items,
+    },
+  ];
 }
 
 function estimateGroupDensity(group: HypothesesGroup): number {
@@ -120,7 +122,10 @@ export function buildSuccessionHypothesesLayout(
   ];
 }
 
-function bodyFontSize(group: HypothesesGroup, emphasis: PositionedHypothesesGroup['emphasis']): number {
+function bodyFontSize(
+  group: HypothesesGroup,
+  emphasis: PositionedHypothesesGroup['emphasis'],
+): number {
   const density = estimateGroupDensity(group);
   if (emphasis === 'compact') {
     if (density > 8) return 6.2;

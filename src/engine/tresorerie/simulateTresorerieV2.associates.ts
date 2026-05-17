@@ -4,11 +4,7 @@ import {
   isRevenuePhaseV6,
 } from './revenuePhases';
 import { isCivilYearBeforeOrEqual } from './simulateTresorerieV2.helpers';
-import type {
-  CcaScheduleInput,
-  RuntimeAssociateInput,
-  RuntimeCompanyInput,
-} from './types';
+import type { CcaScheduleInput, RuntimeAssociateInput, RuntimeCompanyInput } from './types';
 
 function getLegacyCcaSchedule(cca: RuntimeAssociateInput['cca']): CcaScheduleInput | undefined {
   return cca && 'annualContribution' in cca ? cca : undefined;
@@ -19,18 +15,23 @@ export function getIncomeStatement(company: RuntimeCompanyInput): {
   annualStructureCosts: number;
   workingCapitalRequirement: number;
 } {
-  return company.incomeStatement ?? {
-    annualRevenue: 0,
-    annualStructureCosts: company.annualStructureCosts,
-    workingCapitalRequirement: 0,
-  };
+  return (
+    company.incomeStatement ?? {
+      annualRevenue: 0,
+      annualStructureCosts: company.annualStructureCosts,
+      workingCapitalRequirement: 0,
+    }
+  );
 }
 
 export function getInitialCcaBalance(associate: RuntimeAssociateInput): number {
   return Math.max(0, associate.cca?.currentBalance ?? 0);
 }
 
-export function getAnnualCcaContribution(associate: RuntimeAssociateInput, anneeCivile: number): number {
+export function getAnnualCcaContribution(
+  associate: RuntimeAssociateInput,
+  anneeCivile: number,
+): number {
   const phase = getAssociateRevenuePhaseForYear(associate, anneeCivile);
   if (isRevenuePhaseV6(phase)) {
     const annual = phase.ccaContribution.annual;
@@ -46,7 +47,10 @@ export function getAnnualCcaContribution(associate: RuntimeAssociateInput, annee
   return isActive ? Math.max(0, contribution.amount) : 0;
 }
 
-export function getExceptionalCcaContribution(associate: RuntimeAssociateInput, anneeCivile: number): number {
+export function getExceptionalCcaContribution(
+  associate: RuntimeAssociateInput,
+  anneeCivile: number,
+): number {
   const phase = getAssociateRevenuePhaseForYear(associate, anneeCivile);
   if (isRevenuePhaseV6(phase)) {
     const exceptional = phase.ccaContribution.exceptional;
@@ -55,9 +59,11 @@ export function getExceptionalCcaContribution(associate: RuntimeAssociateInput, 
       : 0;
   }
 
-  return getLegacyCcaSchedule(associate.cca)?.exceptionalContributions
-    .filter(contribution => contribution.year === anneeCivile)
-    .reduce((sum, contribution) => sum + Math.max(0, contribution.amount), 0) ?? 0;
+  return (
+    getLegacyCcaSchedule(associate.cca)
+      ?.exceptionalContributions.filter((contribution) => contribution.year === anneeCivile)
+      .reduce((sum, contribution) => sum + Math.max(0, contribution.amount), 0) ?? 0
+  );
 }
 
 export function getAssociateRemunerationForYear(
@@ -70,7 +76,8 @@ export function getAssociateRemunerationForYear(
       const remuneration = phase.remuneration;
       const loadedAnnualCost = Math.max(0, remuneration.loadedAnnualCost);
       return {
-        holdingCost: remuneration.enabled && remuneration.source === 'holding' ? loadedAnnualCost : 0,
+        holdingCost:
+          remuneration.enabled && remuneration.source === 'holding' ? loadedAnnualCost : 0,
         netRevenue: computeNetRevenue(phase),
       };
     }

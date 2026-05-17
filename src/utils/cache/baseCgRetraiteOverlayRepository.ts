@@ -37,24 +37,31 @@ export function readBaseCgRetraiteOverlay(): BaseCgRetraiteOverlay {
 
 export function writeBaseCgRetraiteOverlay(overlay: BaseCgRetraiteOverlay): void {
   if (typeof localStorage === 'undefined') return;
-  localStorage.setItem(STORAGE_KEY, JSON.stringify({
-    ...overlay,
-    updatedAt: new Date().toISOString(),
-  }));
+  localStorage.setItem(
+    STORAGE_KEY,
+    JSON.stringify({
+      ...overlay,
+      updatedAt: new Date().toISOString(),
+    }),
+  );
 }
 
 export function mergeBaseCgRetraiteOverlay(
   overlay: BaseCgRetraiteOverlay,
 ): BaseCgRetraiteContract[] {
   const deletedIds = new Set(overlay.deletedIds);
-  const base = BASECG_CATALOG
-    .filter((contract) => !deletedIds.has(contract.id))
-    .map((contract) => overlay.upserts[contract.id] ?? contract);
+  const base = BASECG_CATALOG.filter((contract) => !deletedIds.has(contract.id)).map(
+    (contract) => overlay.upserts[contract.id] ?? contract,
+  );
   const baseIds = new Set(BASECG_CATALOG.map((contract) => contract.id));
-  const created = Object.values(overlay.upserts)
-    .filter((contract) => !baseIds.has(contract.id) && !deletedIds.has(contract.id));
+  const created = Object.values(overlay.upserts).filter(
+    (contract) => !baseIds.has(contract.id) && !deletedIds.has(contract.id),
+  );
 
-  return [...base, ...created].sort((left, right) => (
-    `${left.compagnie} ${left.nomContrat}`.localeCompare(`${right.compagnie} ${right.nomContrat}`, 'fr-FR')
-  ));
+  return [...base, ...created].sort((left, right) =>
+    `${left.compagnie} ${left.nomContrat}`.localeCompare(
+      `${right.compagnie} ${right.nomContrat}`,
+      'fr-FR',
+    ),
+  );
 }

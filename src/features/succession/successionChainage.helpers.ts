@@ -194,7 +194,9 @@ function getStepWarnings(
   if (branchCount > 0) return [];
   const allRecipients = buildSuccessionDescendantRecipients(enfantsContext, familyMembers);
   if (allRecipients.length === 0) return [];
-  return [`${stepLabel}: aucun descendant du defunt de cette etape n'est eligible dans la branche retenue.`];
+  return [
+    `${stepLabel}: aucun descendant du defunt de cette etape n'est eligible dans la branche retenue.`,
+  ];
 }
 
 export function buildEmptyAnalysis(
@@ -239,7 +241,8 @@ function getStepTestamentConfig(
   deceased: SuccessionDeceasedSide,
   deadCounterpart: SuccessionDeceasedSide | null,
 ): { testament: SuccessionTestamentConfig; warnings: string[] } {
-  const testamentBase = input.devolution?.testamentsBySide[deceased] ?? getInactiveTestamentConfig();
+  const testamentBase =
+    input.devolution?.testamentsBySide[deceased] ?? getInactiveTestamentConfig();
   const testament = cloneSuccessionTestamentConfig(testamentBase);
   const warnings: string[] = [];
 
@@ -254,14 +257,18 @@ function getStepTestamentConfig(
       (entry) => entry.beneficiaryRef !== blockedPrincipalRef,
     );
     if (testament.particularLegacies.length < initialLength) {
-      warnings.push('Legs particulier en faveur du conjoint ou partenaire deja decede ignore au second deces.');
+      warnings.push(
+        'Legs particulier en faveur du conjoint ou partenaire deja decede ignore au second deces.',
+      );
     }
     return { testament, warnings };
   }
 
   if (testament.beneficiaryRef === blockedPrincipalRef) {
     testament.beneficiaryRef = null;
-    warnings.push('Beneficiaire testamentaire conjoint ou partenaire deja decede ignore au second deces.');
+    warnings.push(
+      'Beneficiaire testamentaire conjoint ou partenaire deja decede ignore au second deces.',
+    );
   }
 
   return { testament, warnings };
@@ -272,13 +279,15 @@ function buildLegalPartnerHeirs(
   amount: number,
 ): DetailedChainHeir[] {
   if (civil.situationMatrimoniale !== 'marie' || amount <= 0) return [];
-  return [{
-    id: 'conjoint',
-    label: 'Conjoint survivant',
-    lien: 'conjoint',
-    partSuccession: amount,
-    exonerated: true,
-  }];
+  return [
+    {
+      id: 'conjoint',
+      label: 'Conjoint survivant',
+      lien: 'conjoint',
+      partSuccession: amount,
+      exonerated: true,
+    },
+  ];
 }
 
 function buildParentHeirs(
@@ -338,10 +347,13 @@ export function computeStepTransmission(
     }),
   );
 
-  const isUniversalDisposition = testamentDistribution?.dispositionType === 'legs_universel'
-    || testamentDistribution?.dispositionType === 'legs_titre_universel';
+  const isUniversalDisposition =
+    testamentDistribution?.dispositionType === 'legs_universel' ||
+    testamentDistribution?.dispositionType === 'legs_titre_universel';
   const testamentConjointAmount = isUniversalDisposition
-    ? testamentHeirs.filter((heir) => heir.id === 'conjoint').reduce((sum, heir) => sum + heir.partSuccession, 0)
+    ? testamentHeirs
+        .filter((heir) => heir.id === 'conjoint')
+        .reduce((sum, heir) => sum + heir.partSuccession, 0)
     : 0;
   const descendantBranchCount = countEffectiveDescendantBranchesForDeceased(
     input.enfantsContext ?? [],
@@ -372,9 +384,14 @@ export function computeStepTransmission(
       input.enfantsContext ?? [],
       input.familyMembers ?? [],
     );
-    const detailedSiblingHeirsAdj = descendantBranchCount === 0
-      ? buildDetailedSiblingHeirs(descendantsResidualAmountAdj, deceased, input.familyMembers ?? [])
-      : [];
+    const detailedSiblingHeirsAdj =
+      descendantBranchCount === 0
+        ? buildDetailedSiblingHeirs(
+            descendantsResidualAmountAdj,
+            deceased,
+            input.familyMembers ?? [],
+          )
+        : [];
     const detailedHeirs = mergeDetailedHeirs([
       ...legalPartnerHeirsAdjusted,
       ...parentHeirs,
@@ -384,14 +401,13 @@ export function computeStepTransmission(
     ]);
     const detailedHeirsWithTaxableBasis = input.transmissionBasis
       ? assignBeneficiaryTaxableBasis(detailedHeirs, estateTaxableBasis, {
-        forfaitMobilierMode: input.forfaitMobilierMode ?? 'off',
-        forfaitMobilierPct: input.forfaitMobilierPct ?? 0,
-        forfaitMobilierMontant: input.forfaitMobilierMontant ?? 0,
-      })
+          forfaitMobilierMode: input.forfaitMobilierMode ?? 'off',
+          forfaitMobilierPct: input.forfaitMobilierPct ?? 0,
+          forfaitMobilierMontant: input.forfaitMobilierMontant ?? 0,
+        })
       : detailedHeirs;
-    const donateurDateNaissanceEarly = deceased === 'epoux1'
-      ? input.civil.dateNaissanceEpoux1
-      : input.civil.dateNaissanceEpoux2;
+    const donateurDateNaissanceEarly =
+      deceased === 'epoux1' ? input.civil.dateNaissanceEpoux1 : input.civil.dateNaissanceEpoux2;
     const donationRecallResultEarly = applySuccessionDonationRecallToHeirs({
       heirs: detailedHeirsWithTaxableBasis,
       donations: input.donations,
@@ -401,7 +417,9 @@ export function computeStepTransmission(
       referenceDate: input.referenceDate,
       donateurDateNaissance: donateurDateNaissanceEarly,
     });
-    const donationRecallWarningsEarly = buildDonationRecallWarningMessages(donationRecallResultEarly.warnings);
+    const donationRecallWarningsEarly = buildDonationRecallWarningMessages(
+      donationRecallResultEarly.warnings,
+    );
     const { droits, beneficiaries } = computeTransmissionForHeirs(
       estateAmount,
       donationRecallResultEarly.heirs,
@@ -442,9 +460,10 @@ export function computeStepTransmission(
     input.enfantsContext ?? [],
     input.familyMembers ?? [],
   );
-  const detailedSiblingHeirs = descendantBranchCount === 0
-    ? buildDetailedSiblingHeirs(descendantsResidualAmount, deceased, input.familyMembers ?? [])
-    : [];
+  const detailedSiblingHeirs =
+    descendantBranchCount === 0
+      ? buildDetailedSiblingHeirs(descendantsResidualAmount, deceased, input.familyMembers ?? [])
+      : [];
   const detailedHeirs = mergeDetailedHeirs([
     ...legalPartnerHeirs,
     ...parentHeirs,
@@ -454,14 +473,13 @@ export function computeStepTransmission(
   ]);
   const detailedHeirsWithTaxableBasis = input.transmissionBasis
     ? assignBeneficiaryTaxableBasis(detailedHeirs, estateTaxableBasis, {
-      forfaitMobilierMode: input.forfaitMobilierMode ?? 'off',
-      forfaitMobilierPct: input.forfaitMobilierPct ?? 0,
-      forfaitMobilierMontant: input.forfaitMobilierMontant ?? 0,
-    })
+        forfaitMobilierMode: input.forfaitMobilierMode ?? 'off',
+        forfaitMobilierPct: input.forfaitMobilierPct ?? 0,
+        forfaitMobilierMontant: input.forfaitMobilierMontant ?? 0,
+      })
     : detailedHeirs;
-  const donateurDateNaissance = deceased === 'epoux1'
-    ? input.civil.dateNaissanceEpoux1
-    : input.civil.dateNaissanceEpoux2;
+  const donateurDateNaissance =
+    deceased === 'epoux1' ? input.civil.dateNaissanceEpoux1 : input.civil.dateNaissanceEpoux2;
   const donationRecallResult = applySuccessionDonationRecallToHeirs({
     heirs: detailedHeirsWithTaxableBasis,
     donations: input.donations,
@@ -517,5 +535,11 @@ export function getStepEligibilityWarnings(
   deceased: SuccessionDeceasedSide,
   hasAllocatedBeneficiaries = false,
 ): string[] {
-  return getStepWarnings(stepLabel, enfantsContext, familyMembers, deceased, hasAllocatedBeneficiaries);
+  return getStepWarnings(
+    stepLabel,
+    enfantsContext,
+    familyMembers,
+    deceased,
+    hasAllocatedBeneficiaries,
+  );
 }

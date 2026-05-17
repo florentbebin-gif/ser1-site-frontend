@@ -41,7 +41,11 @@ export function simulateComplete(
   transmissionParams: SimulateCompleteTransmissionParams,
   fiscalParams: FiscalParams,
 ): SimulateCompleteResult {
-  const epargne = simulateEpargne(product as Parameters<typeof simulateEpargne>[0], client, fiscalParams);
+  const epargne = simulateEpargne(
+    product as Parameters<typeof simulateEpargne>[0],
+    client,
+    fiscalParams,
+  );
 
   const ageAuDeces = transmissionParams.ageAuDeces || 90;
   const ageActuel = client.ageActuel || 45;
@@ -59,8 +63,14 @@ export function simulateComplete(
       capitalDecesTheoriqueAuDeces = ligneAuDeces.capitalDecesTheorique || 0;
       capitalDecesDegressifAuDeces = ligneAuDeces.capitalDecesDegressif || 0;
 
-      if (product.envelope === ENVELOPES.PER && (product.versementConfig as Record<string, unknown>)?.annuel) {
-        const annuelCfg = (product.versementConfig as Record<string, unknown>).annuel as Record<string, unknown>;
+      if (
+        product.envelope === ENVELOPES.PER &&
+        (product.versementConfig as Record<string, unknown>)?.annuel
+      ) {
+        const annuelCfg = (product.versementConfig as Record<string, unknown>).annuel as Record<
+          string,
+          unknown
+        >;
         if ((annuelCfg?.garantieBonneFin as Record<string, unknown>)?.active) {
           capitalAuDeces += capitalDecesTheoriqueAuDeces + capitalDecesDegressifAuDeces;
         }
@@ -70,22 +80,24 @@ export function simulateComplete(
     }
   }
 
-  let liquidation: ReturnType<typeof simulateLiquidation> | {
-    duree: number;
-    ageFinEpargne: number;
-    ageAuDeces: number;
-    rows: never[];
-    capitalRestant: number;
-    capitalRestantAuDeces: number;
-    cumulRetraitsBruts: number;
-    cumulRetraitsNets: number;
-    cumulRetraitsNetsAuDeces: number;
-    cumulFiscalite: number;
-    cumulFiscaliteAuDeces: number;
-    revenuAnnuelMoyenNet: number;
-    envelope?: string;
-    mode?: string;
-  };
+  let liquidation:
+    | ReturnType<typeof simulateLiquidation>
+    | {
+        duree: number;
+        ageFinEpargne: number;
+        ageAuDeces: number;
+        rows: never[];
+        capitalRestant: number;
+        capitalRestantAuDeces: number;
+        cumulRetraitsBruts: number;
+        cumulRetraitsNets: number;
+        cumulRetraitsNetsAuDeces: number;
+        cumulFiscalite: number;
+        cumulFiscaliteAuDeces: number;
+        revenuAnnuelMoyenNet: number;
+        envelope?: string;
+        mode?: string;
+      };
 
   if (decesEnPhaseEpargne) {
     liquidation = {
@@ -103,31 +115,39 @@ export function simulateComplete(
       revenuAnnuelMoyenNet: 0,
     };
   } else {
-    liquidation = simulateLiquidation(epargne, liquidationParams, client, fiscalParams, transmissionParams);
+    liquidation = simulateLiquidation(
+      epargne,
+      liquidationParams,
+      client,
+      fiscalParams,
+      transmissionParams,
+    );
   }
 
   const capitalTransmis = decesEnPhaseEpargne ? capitalAuDeces : liquidation.capitalRestantAuDeces;
 
-  const transmission = calculTransmission({
-    envelope: product.envelope,
-    capitalTransmis,
-    cumulVersements: epargne.cumulVersements,
-    ageAuDeces: transmissionParams.ageAuDeces,
-    agePremierVersement: transmissionParams.agePremierVersement || (client.ageActuel || 45),
-    nbBeneficiaires: transmissionParams.nbBeneficiaires || 1,
-    beneficiaryType: transmissionParams.beneficiaryType,
-    perBancaire: product.perBancaire || false,
-  }, fiscalParams);
+  const transmission = calculTransmission(
+    {
+      envelope: product.envelope,
+      capitalTransmis,
+      cumulVersements: epargne.cumulVersements,
+      ageAuDeces: transmissionParams.ageAuDeces,
+      agePremierVersement: transmissionParams.agePremierVersement || client.ageActuel || 45,
+      nbBeneficiaires: transmissionParams.nbBeneficiaires || 1,
+      beneficiaryType: transmissionParams.beneficiaryType,
+      perBancaire: product.perBancaire || false,
+    },
+    fiscalParams,
+  );
 
   const effortTotal = round2(
-    epargne.cumulVersements
-    - epargne.cumulEconomieIR
-    + epargne.cumulRevenusNetsPercus,
+    epargne.cumulVersements - epargne.cumulEconomieIR + epargne.cumulRevenusNetsPercus,
   );
 
   return {
     envelope: product.envelope,
-    envelopeLabel: (ENVELOPE_LABELS as Record<string, string>)[product.envelope] || product.envelope,
+    envelopeLabel:
+      (ENVELOPE_LABELS as Record<string, string>)[product.envelope] || product.envelope,
 
     epargne: {
       duree: epargne.dureeEpargne,

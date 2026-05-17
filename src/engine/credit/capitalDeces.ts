@@ -1,15 +1,15 @@
 /**
  * Capital Décès Calculator
- * 
+ *
  * Source de vérité unique pour le calcul des capitaux décès (assurance décès)
  * Utilisé par UI (Credit.tsx) et exports (Excel/PPTX) pour garantir la cohérence
  */
 
 export interface LoanParams {
   capital: number;
-  tauxAssur: number;  // taux annuel en % (ex: 0.30)
+  tauxAssur: number; // taux annuel en % (ex: 0.30)
   assurMode: 'CI' | 'CRD';
-  quotite?: number;   // 0..1, défaut 1 (100%). Réduit capital décès et prime assurance
+  quotite?: number; // 0..1, défaut 1 (100%). Réduit capital décès et prime assurance
 }
 
 export interface ScheduleRow {
@@ -19,8 +19,8 @@ export interface ScheduleRow {
   amort: number;
   mensu: number;
   mensuTotal: number;
-  crd: number;  // CRD fin de période
-  assuranceDeces: number;  // Capital décès calculé (toujours défini)
+  crd: number; // CRD fin de période
+  assuranceDeces: number; // Capital décès calculé (toujours défini)
 }
 
 export interface ScheduleRowInput {
@@ -35,15 +35,12 @@ export interface ScheduleRowInput {
 
 /**
  * Calcule le capital décès pour une période donnée selon la règle métier
- * 
+ *
  * @param params - Paramètres du prêt (inclut quotité optionnelle)
  * @param crdDebut - CRD début de période (row.crd + row.amort)
  * @returns Capital décès pour la période (ajusté par quotité)
  */
-export function computeCapitalDecesPeriod(
-  params: LoanParams,
-  crdDebut: number
-): number {
+export function computeCapitalDecesPeriod(params: LoanParams, crdDebut: number): number {
   // Si taux d'assurance <= 0 → capital décès = 0
   if (params.tauxAssur <= 0) {
     return 0;
@@ -63,14 +60,14 @@ export function computeCapitalDecesPeriod(
 
 /**
  * Calcule l'échéancier complet des capitaux décès pour un prêt
- * 
+ *
  * @param params - Paramètres du prêt
  * @param schedule - Échéancier du prêt (sans capitaux décès)
  * @returns Échéancier avec capitaux décès calculés
  */
 export function computeCapitalDecesSchedule(
   params: LoanParams,
-  schedule: ScheduleRowInput[]
+  schedule: ScheduleRowInput[],
 ): ScheduleRow[] {
   return schedule.map((row) => {
     // CRD début = CRD fin de la période + amortissement de la période
@@ -81,28 +78,26 @@ export function computeCapitalDecesSchedule(
 
     return {
       ...row,
-      assuranceDeces
+      assuranceDeces,
     };
   });
 }
 
 /**
  * Agrège les capitaux décès de plusieurs prêts pour l'échéancier global
- * 
+ *
  * @param loansSchedules - Échéanciers par prêt (avec capitaux décès déjà calculés)
  * @returns Échéancier global avec capitaux décès agrégés
  */
-export function aggregateCapitalDecesGlobal(
-  loansSchedules: ScheduleRow[][]
-): number[] {
-  const maxLength = Math.max(...loansSchedules.map(s => s.length));
+export function aggregateCapitalDecesGlobal(loansSchedules: ScheduleRow[][]): number[] {
+  const maxLength = Math.max(...loansSchedules.map((s) => s.length));
   const globalCapitalDeces: number[] = [];
 
   for (let period = 0; period < maxLength; period++) {
     let sum = 0;
-    
+
     // Somme des capitaux décès de tous les prêts pour cette période
-    loansSchedules.forEach(schedule => {
+    loansSchedules.forEach((schedule) => {
       const row = schedule[period];
       if (row && row.assuranceDeces) {
         sum += row.assuranceDeces;
@@ -118,16 +113,16 @@ export function aggregateCapitalDecesGlobal(
 /**
  * Calcule les capitaux décès pour l'échéancier global directement
  * (version optimisée qui évite de recalculer chaque prêt)
- * 
+ *
  * @param allLoansParams - Paramètres de tous les prêts
  * @param allSchedules - Échéanciers bruts de tous les prêts
  * @returns Échéancier global avec capitaux décès
  */
 export function computeGlobalCapitalDecesSchedule(
   allLoansParams: LoanParams[],
-  allSchedules: Array<Array<ScheduleRowInput | null>>
+  allSchedules: Array<Array<ScheduleRowInput | null>>,
 ): ScheduleRow[] {
-  const maxLength = Math.max(...allSchedules.map(s => s.length));
+  const maxLength = Math.max(...allSchedules.map((s) => s.length));
   const globalSchedule: ScheduleRow[] = [];
 
   // Ensuite, agréger par période
@@ -141,7 +136,7 @@ export function computeGlobalCapitalDecesSchedule(
       mensu: 0,
       mensuTotal: 0,
       crd: 0,
-      assuranceDeces: 0  // Initialisé à 0 pour éviter undefined
+      assuranceDeces: 0, // Initialisé à 0 pour éviter undefined
     };
 
     // Sommer les valeurs de tous les prêts pour cette période
@@ -153,7 +148,7 @@ export function computeGlobalCapitalDecesSchedule(
 
       const assuranceDeces = computeCapitalDecesPeriod(
         allLoansParams[idx],
-        (row.crd || 0) + (row.amort || 0)
+        (row.crd || 0) + (row.amort || 0),
       );
 
       aggregated.interet += row.interet;

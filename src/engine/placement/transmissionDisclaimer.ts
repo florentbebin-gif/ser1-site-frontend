@@ -4,7 +4,11 @@ export function computeDmtgConsumptionRatio(assietteTotale: number, trancheWidth
   return assietteTotale / trancheWidth;
 }
 
-export function shouldShowDmtgDisclaimer(assietteTotale: number, trancheWidth: number, threshold = 0.5): boolean {
+export function shouldShowDmtgDisclaimer(
+  assietteTotale: number,
+  trancheWidth: number,
+  threshold = 0.5,
+): boolean {
   const ratio = computeDmtgConsumptionRatio(assietteTotale, trancheWidth);
   if (ratio === 0) return false;
   return ratio > threshold;

@@ -84,52 +84,69 @@ export function parseSuccessionDraftPayload(raw: string): ParsedSuccessionDraftP
       dateNaissanceEpoux2: normalizeOptionalDate(civilRaw.dateNaissanceEpoux2),
     };
 
-    const liquidationRaw = version !== 1 && isObject(payload.liquidation) ? payload.liquidation : {};
+    const liquidationRaw =
+      version !== 1 && isObject(payload.liquidation) ? payload.liquidation : {};
     const liquidation = {
-      actifEpoux1: asAmount(liquidationRaw.actifEpoux1, DEFAULT_SUCCESSION_LIQUIDATION_CONTEXT.actifEpoux1),
-      actifEpoux2: asAmount(liquidationRaw.actifEpoux2, DEFAULT_SUCCESSION_LIQUIDATION_CONTEXT.actifEpoux2),
-      actifCommun: asAmount(liquidationRaw.actifCommun, DEFAULT_SUCCESSION_LIQUIDATION_CONTEXT.actifCommun),
-      nbEnfants: asChildrenCount(liquidationRaw.nbEnfants, DEFAULT_SUCCESSION_LIQUIDATION_CONTEXT.nbEnfants),
+      actifEpoux1: asAmount(
+        liquidationRaw.actifEpoux1,
+        DEFAULT_SUCCESSION_LIQUIDATION_CONTEXT.actifEpoux1,
+      ),
+      actifEpoux2: asAmount(
+        liquidationRaw.actifEpoux2,
+        DEFAULT_SUCCESSION_LIQUIDATION_CONTEXT.actifEpoux2,
+      ),
+      actifCommun: asAmount(
+        liquidationRaw.actifCommun,
+        DEFAULT_SUCCESSION_LIQUIDATION_CONTEXT.actifCommun,
+      ),
+      nbEnfants: asChildrenCount(
+        liquidationRaw.nbEnfants,
+        DEFAULT_SUCCESSION_LIQUIDATION_CONTEXT.nbEnfants,
+      ),
     };
 
     const devolutionRaw = version >= 3 && isObject(payload.devolution) ? payload.devolution : {};
     const legacyEpoux1Testament = getLegacyTestamentConfig(devolutionRaw);
-    const parsedTestamentsBySide = version >= 16 && isObject(devolutionRaw.testamentsBySide)
-      ? {
-        epoux1: parseTestamentConfig(devolutionRaw.testamentsBySide.epoux1),
-        epoux2: parseTestamentConfig(devolutionRaw.testamentsBySide.epoux2),
-      }
-      : {
-        epoux1: legacyEpoux1Testament,
-        epoux2: {
-          ...DEFAULT_SUCCESSION_TESTAMENT_CONFIG,
-          particularLegacies: [],
-        },
-      };
-    const parsedAscendantsBySide = version >= 16 && isObject(devolutionRaw.ascendantsSurvivantsBySide)
-      ? {
-        epoux1: asBoolean(
-          devolutionRaw.ascendantsSurvivantsBySide.epoux1,
-          DEFAULT_SUCCESSION_DEVOLUTION_CONTEXT.ascendantsSurvivantsBySide.epoux1,
-        ),
-        epoux2: asBoolean(
-          devolutionRaw.ascendantsSurvivantsBySide.epoux2,
-          DEFAULT_SUCCESSION_DEVOLUTION_CONTEXT.ascendantsSurvivantsBySide.epoux2,
-        ),
-      }
-      : {
-        epoux1: asBoolean(
-          devolutionRaw.ascendantsSurvivants,
-          DEFAULT_SUCCESSION_DEVOLUTION_CONTEXT.ascendantsSurvivantsBySide.epoux1,
-        ),
-        epoux2: DEFAULT_SUCCESSION_DEVOLUTION_CONTEXT.ascendantsSurvivantsBySide.epoux2,
-      };
+    const parsedTestamentsBySide =
+      version >= 16 && isObject(devolutionRaw.testamentsBySide)
+        ? {
+            epoux1: parseTestamentConfig(devolutionRaw.testamentsBySide.epoux1),
+            epoux2: parseTestamentConfig(devolutionRaw.testamentsBySide.epoux2),
+          }
+        : {
+            epoux1: legacyEpoux1Testament,
+            epoux2: {
+              ...DEFAULT_SUCCESSION_TESTAMENT_CONFIG,
+              particularLegacies: [],
+            },
+          };
+    const parsedAscendantsBySide =
+      version >= 16 && isObject(devolutionRaw.ascendantsSurvivantsBySide)
+        ? {
+            epoux1: asBoolean(
+              devolutionRaw.ascendantsSurvivantsBySide.epoux1,
+              DEFAULT_SUCCESSION_DEVOLUTION_CONTEXT.ascendantsSurvivantsBySide.epoux1,
+            ),
+            epoux2: asBoolean(
+              devolutionRaw.ascendantsSurvivantsBySide.epoux2,
+              DEFAULT_SUCCESSION_DEVOLUTION_CONTEXT.ascendantsSurvivantsBySide.epoux2,
+            ),
+          }
+        : {
+            epoux1: asBoolean(
+              devolutionRaw.ascendantsSurvivants,
+              DEFAULT_SUCCESSION_DEVOLUTION_CONTEXT.ascendantsSurvivantsBySide.epoux1,
+            ),
+            epoux2: DEFAULT_SUCCESSION_DEVOLUTION_CONTEXT.ascendantsSurvivantsBySide.epoux2,
+          };
     const devolutionBase: SuccessionDevolutionContext = {
       nbEnfantsNonCommuns: asChildrenCount(
         devolutionRaw.nbEnfantsNonCommuns,
         DEFAULT_SUCCESSION_DEVOLUTION_CONTEXT.nbEnfantsNonCommuns,
       ),
-      choixLegalConjointSansDDV: isChoixLegalConjointSansDDV(devolutionRaw.choixLegalConjointSansDDV)
+      choixLegalConjointSansDDV: isChoixLegalConjointSansDDV(
+        devolutionRaw.choixLegalConjointSansDDV,
+      )
         ? devolutionRaw.choixLegalConjointSansDDV
         : DEFAULT_SUCCESSION_DEVOLUTION_CONTEXT.choixLegalConjointSansDDV,
       testamentsBySide: {
@@ -171,29 +188,33 @@ export function parseSuccessionDraftPayload(raw: string): ParsedSuccessionDraftP
       donationEntreEpouxOption: isDonationEntreEpouxOption(patrimonialRaw.donationEntreEpouxOption)
         ? patrimonialRaw.donationEntreEpouxOption
         : DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT.donationEntreEpouxOption,
-      stipulationContraireCU: version >= 25
-        ? asBoolean(
-          patrimonialRaw.stipulationContraireCU,
-          DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT.stipulationContraireCU,
-        )
-        : DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT.stipulationContraireCU,
+      stipulationContraireCU:
+        version >= 25
+          ? asBoolean(
+              patrimonialRaw.stipulationContraireCU,
+              DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT.stipulationContraireCU,
+            )
+          : DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT.stipulationContraireCU,
       societeAcquets: parseSocieteAcquetsConfig(
         patrimonialRaw.societeAcquets,
         version,
         civil.regimeMatrimonial,
       ),
-      participationAcquets: version >= 24
-        ? parseParticipationAcquetsConfig(patrimonialRaw.participationAcquets)
-        : DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT.participationAcquets,
+      participationAcquets:
+        version >= 24
+          ? parseParticipationAcquetsConfig(patrimonialRaw.participationAcquets)
+          : DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT.participationAcquets,
       preciputMode: isSuccessionPreciputMode(patrimonialRaw.preciputMode)
         ? patrimonialRaw.preciputMode
         : DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT.preciputMode,
-      preciputSelections: version >= 23
-        ? parsePreciputSelections(patrimonialRaw.preciputSelections)
-        : DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT.preciputSelections,
-      interMassClaims: version >= 26
-        ? parseInterMassClaims(patrimonialRaw.interMassClaims)
-        : DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT.interMassClaims,
+      preciputSelections:
+        version >= 23
+          ? parsePreciputSelections(patrimonialRaw.preciputSelections)
+          : DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT.preciputSelections,
+      interMassClaims:
+        version >= 26
+          ? parseInterMassClaims(patrimonialRaw.interMassClaims)
+          : DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT.interMassClaims,
       preciputMontant: asAmount(
         patrimonialRaw.preciputMontant,
         DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT.preciputMontant,
@@ -208,11 +229,12 @@ export function parseSuccessionDraftPayload(raw: string): ParsedSuccessionDraftP
           ? 100
           : DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT.attributionBiensCommunsPct,
       ),
-      forfaitMobilierMode: version >= 18
-        ? parsedForfaitMobilierMode
-        : (parsedForfaitMobilierMode === 'pct' || parsedForfaitMobilierMode === 'montant'
+      forfaitMobilierMode:
+        version >= 18
           ? parsedForfaitMobilierMode
-          : 'off'),
+          : parsedForfaitMobilierMode === 'pct' || parsedForfaitMobilierMode === 'montant'
+            ? parsedForfaitMobilierMode
+            : 'off',
       forfaitMobilierPct: asAmount(
         patrimonialRaw.forfaitMobilierPct,
         DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT.forfaitMobilierPct,
@@ -228,31 +250,30 @@ export function parseSuccessionDraftPayload(raw: string): ParsedSuccessionDraftP
       decesDansXAns: parseDecesDansXAns(version >= 17 ? patrimonialRaw.decesDansXAns : 0),
     };
 
-    const enfants = version >= 5 && Array.isArray(payload.enfants)
-      ? payload.enfants
-        .filter((item): item is Record<string, unknown> => isObject(item))
-        .map((item, idx) => ({
-          id: typeof item.id === 'string' && item.id.trim().length > 0 ? item.id.trim() : `E${idx + 1}`,
-          prenom: normalizePrenom(item.prenom),
-          rattachement: isEnfantRattachement(item.rattachement) ? item.rattachement : 'commun',
-          deceased: asBoolean(item.deceased, false) || undefined,
-        }))
-      : deriveLegacyEnfants(liquidation, devolutionBase);
+    const enfants =
+      version >= 5 && Array.isArray(payload.enfants)
+        ? payload.enfants
+            .filter((item): item is Record<string, unknown> => isObject(item))
+            .map((item, idx) => ({
+              id:
+                typeof item.id === 'string' && item.id.trim().length > 0
+                  ? item.id.trim()
+                  : `E${idx + 1}`,
+              prenom: normalizePrenom(item.prenom),
+              rattachement: isEnfantRattachement(item.rattachement) ? item.rattachement : 'commun',
+              deceased: asBoolean(item.deceased, false) || undefined,
+            }))
+        : deriveLegacyEnfants(liquidation, devolutionBase);
 
     const familyMembers = version >= 7 ? parseFamilyMembers(payload.familyMembers) : [];
-    const parsedDonations = version >= 9 && Array.isArray(payload.donations)
-      ? parseDonations(payload.donations)
-      : deriveLegacyDonations(patrimonial);
-    const { donations: donationsWithoutLegacies, particularLegaciesBySide } = collectLegacyParticularLegacies(
-      parsedDonations,
-      civil,
-      enfants,
-      familyMembers,
-    );
-    const {
-      donations,
-      donationPartageActs: legacyDonationPartageActs,
-    } = extractLegacyDonationPartageActs(donationsWithoutLegacies);
+    const parsedDonations =
+      version >= 9 && Array.isArray(payload.donations)
+        ? parseDonations(payload.donations)
+        : deriveLegacyDonations(patrimonial);
+    const { donations: donationsWithoutLegacies, particularLegaciesBySide } =
+      collectLegacyParticularLegacies(parsedDonations, civil, enfants, familyMembers);
+    const { donations, donationPartageActs: legacyDonationPartageActs } =
+      extractLegacyDonationPartageActs(donationsWithoutLegacies);
     const donationPartageActs = [
       ...(version >= 28 ? parseDonationPartageActs(payload.donationPartageActs) : []),
       ...legacyDonationPartageActs,
@@ -278,16 +299,19 @@ export function parseSuccessionDraftPayload(raw: string): ParsedSuccessionDraftP
       },
     };
 
-    const assetEntries = version >= 10 && Array.isArray(payload.assetEntries)
-      ? parseAssetEntries(payload.assetEntries, civil)
-      : deriveLegacyAssetEntries(liquidation, civil.situationMatrimoniale);
+    const assetEntries =
+      version >= 10 && Array.isArray(payload.assetEntries)
+        ? parseAssetEntries(payload.assetEntries, civil)
+        : deriveLegacyAssetEntries(liquidation, civil.situationMatrimoniale);
 
-    const assuranceVieEntries = version >= 10 && Array.isArray(payload.assuranceVieEntries)
-      ? parseAssuranceVieEntries(payload.assuranceVieEntries)
-      : DEFAULT_SUCCESSION_ASSURANCE_VIE;
-    const perEntries = version >= 17 && Array.isArray(payload.perEntries)
-      ? parsePerEntries(payload.perEntries)
-      : DEFAULT_SUCCESSION_PER;
+    const assuranceVieEntries =
+      version >= 10 && Array.isArray(payload.assuranceVieEntries)
+        ? parseAssuranceVieEntries(payload.assuranceVieEntries)
+        : DEFAULT_SUCCESSION_ASSURANCE_VIE;
+    const perEntries =
+      version >= 17 && Array.isArray(payload.perEntries)
+        ? parsePerEntries(payload.perEntries)
+        : DEFAULT_SUCCESSION_PER;
 
     return {
       form: {
@@ -309,16 +333,17 @@ export function parseSuccessionDraftPayload(raw: string): ParsedSuccessionDraftP
         payload.groupementFoncierEntries,
         civil,
       ),
-      prevoyanceDecesEntries: version >= 18 && Array.isArray(payload.prevoyanceDecesEntries)
-        ? parsePrevoyanceDecesEntries(payload.prevoyanceDecesEntries)
-        : [],
+      prevoyanceDecesEntries:
+        version >= 18 && Array.isArray(payload.prevoyanceDecesEntries)
+          ? parsePrevoyanceDecesEntries(payload.prevoyanceDecesEntries)
+          : [],
       ui: isObject(payload.ui)
         ? {
-          chainOrder: isPrimarySide(payload.ui.chainOrder) ? payload.ui.chainOrder : 'epoux1',
-        }
+            chainOrder: isPrimarySide(payload.ui.chainOrder) ? payload.ui.chainOrder : 'epoux1',
+          }
         : {
-          chainOrder: 'epoux1',
-        },
+            chainOrder: 'epoux1',
+          },
     };
   } catch {
     return null;

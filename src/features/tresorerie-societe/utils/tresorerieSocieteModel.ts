@@ -28,7 +28,9 @@ export {
 };
 
 export function getAllocationHorizonLabel(horizon: AllocationPocketHorizon | undefined): string {
-  return ALLOCATION_HORIZON_OPTIONS.find(option => option.value === horizon)?.label ?? 'Moyen terme';
+  return (
+    ALLOCATION_HORIZON_OPTIONS.find((option) => option.value === horizon)?.label ?? 'Moyen terme'
+  );
 }
 
 export function getCompanyKind(company: RuntimeCompanyInput): CompanyKind {
@@ -77,7 +79,10 @@ function defaultOwnershipLot(): OwnershipLotInput {
   return { right: 'pleine_propriete', capitalPct: 0, economicRightsPct: 0 };
 }
 
-function getOwnershipFieldTotal(associate: RuntimeAssociateInput, field: OwnershipPctField): number {
+function getOwnershipFieldTotal(
+  associate: RuntimeAssociateInput,
+  field: OwnershipPctField,
+): number {
   return associate.ownershipLots.reduce((sum, lot) => sum + clampPct(lot[field]), 0);
 }
 
@@ -88,7 +93,7 @@ function scaleOwnershipField<T extends RuntimeAssociateInput>(
 ): T {
   return {
     ...associate,
-    ownershipLots: associate.ownershipLots.map(lot => ({
+    ownershipLots: associate.ownershipLots.map((lot) => ({
       ...lot,
       [field]: roundPct(clampPct(lot[field]) * ratio),
     })),
@@ -96,14 +101,15 @@ function scaleOwnershipField<T extends RuntimeAssociateInput>(
 }
 
 function syncFullOwnershipLots<T extends RuntimeAssociateInput>(associates: T[]): T[] {
-  return associates.map(associate => ({
-    ...associate,
-    ownershipLots: associate.ownershipLots.map(lot =>
-      lot.right === 'pleine_propriete'
-        ? { ...lot, economicRightsPct: lot.capitalPct }
-        : lot,
-    ),
-  } as T));
+  return associates.map(
+    (associate) =>
+      ({
+        ...associate,
+        ownershipLots: associate.ownershipLots.map((lot) =>
+          lot.right === 'pleine_propriete' ? { ...lot, economicRightsPct: lot.capitalPct } : lot,
+        ),
+      }) as T,
+  );
 }
 
 function rebalanceOwnershipField<T extends RuntimeAssociateInput>(
@@ -111,19 +117,22 @@ function rebalanceOwnershipField<T extends RuntimeAssociateInput>(
   associateId: string,
   field: OwnershipPctField,
 ): T[] {
-  const selected = associates.find(associate => associate.id === associateId);
+  const selected = associates.find((associate) => associate.id === associateId);
   if (!selected) return associates;
 
   const selectedTotal = getOwnershipFieldTotal(selected, field);
   if (selectedTotal >= 100) {
-    return associates.map(associate =>
+    return associates.map((associate) =>
       associate.id === associateId
         ? scaleOwnershipField(associate, field, 100 / selectedTotal)
         : scaleOwnershipField(associate, field, 0),
     );
   }
 
-  const total = associates.reduce((sum, associate) => sum + getOwnershipFieldTotal(associate, field), 0);
+  const total = associates.reduce(
+    (sum, associate) => sum + getOwnershipFieldTotal(associate, field),
+    0,
+  );
   if (total <= 100) return associates;
 
   const remainingPct = 100 - selectedTotal;
@@ -131,7 +140,7 @@ function rebalanceOwnershipField<T extends RuntimeAssociateInput>(
   if (otherTotal <= 0) return associates;
   const ratio = remainingPct / otherTotal;
 
-  return associates.map(associate =>
+  return associates.map((associate) =>
     associate.id === associateId ? associate : scaleOwnershipField(associate, field, ratio),
   );
 }
@@ -149,18 +158,16 @@ export function updateAssociateOwnershipLots<T extends RuntimeAssociateInput>(
   associateId: string,
   nextLots: OwnershipLotInput[],
 ): T[] {
-  const sanitizedLots: OwnershipLotInput[] = (nextLots.length === 0
-    ? [defaultOwnershipLot()]
-    : nextLots
-  ).map(lot => {
+  const sanitizedLots: OwnershipLotInput[] = (
+    nextLots.length === 0 ? [defaultOwnershipLot()] : nextLots
+  ).map((lot) => {
     const capitalPct = clampPct(lot.capitalPct);
-    const economicRightsPct = lot.right === 'pleine_propriete'
-      ? capitalPct
-      : clampPct(lot.economicRightsPct);
+    const economicRightsPct =
+      lot.right === 'pleine_propriete' ? capitalPct : clampPct(lot.economicRightsPct);
     return { ...lot, capitalPct, economicRightsPct };
   });
 
-  const patched = associates.map(associate =>
+  const patched = associates.map((associate) =>
     associate.id === associateId
       ? ({ ...associate, ownershipLots: sanitizedLots } as T)
       : associate,
@@ -181,7 +188,7 @@ export function updateAssociateOwnershipLots<T extends RuntimeAssociateInput>(
  */
 export function getPlainPropertyCapitalPct(associate: RuntimeAssociateInput): number {
   return associate.ownershipLots
-    .filter(lot => lot.right === 'pleine_propriete')
+    .filter((lot) => lot.right === 'pleine_propriete')
     .reduce((sum, lot) => sum + clampPct(lot.capitalPct), 0);
 }
 
@@ -190,8 +197,8 @@ export function getPlainPropertyCapitalPct(associate: RuntimeAssociateInput): nu
  * Sert au défaut de la checkbox société sur l'attribution des réserves.
  */
 export function hasDemembrement(associates: RuntimeAssociateInput[]): boolean {
-  return associates.some(associate =>
-    associate.ownershipLots.some(lot => lot.right !== 'pleine_propriete'),
+  return associates.some((associate) =>
+    associate.ownershipLots.some((lot) => lot.right !== 'pleine_propriete'),
   );
 }
 
@@ -201,18 +208,19 @@ export function updateAssociateOwnershipLot<T extends RuntimeAssociateInput>(
   lotPatch: Partial<OwnershipLotInput>,
 ): T[] {
   const fieldsToRebalance = new Set<OwnershipPctField>();
-  const patched = associates.map(associate => {
+  const patched = associates.map((associate) => {
     if (associate.id !== associateId) return associate;
     const [firstLot = defaultOwnershipLot(), ...otherLots] = associate.ownershipLots;
     const right = lotPatch.right ?? firstLot.right;
     const capitalPct = hasOwn(lotPatch, 'capitalPct')
       ? clampPct(lotPatch.capitalPct)
       : firstLot.capitalPct;
-    const economicRightsPct = right === 'pleine_propriete'
-      ? capitalPct
-      : hasOwn(lotPatch, 'economicRightsPct')
-        ? clampPct(lotPatch.economicRightsPct)
-        : firstLot.economicRightsPct;
+    const economicRightsPct =
+      right === 'pleine_propriete'
+        ? capitalPct
+        : hasOwn(lotPatch, 'economicRightsPct')
+          ? clampPct(lotPatch.economicRightsPct)
+          : firstLot.economicRightsPct;
     if (hasOwn(lotPatch, 'capitalPct')) fieldsToRebalance.add('capitalPct');
     if (hasOwn(lotPatch, 'economicRightsPct') || right === 'pleine_propriete') {
       fieldsToRebalance.add('economicRightsPct');
@@ -228,9 +236,10 @@ export function updateAssociateOwnershipLot<T extends RuntimeAssociateInput>(
   });
 
   const rebalanced = OWNERSHIP_PCT_FIELDS.reduce(
-    (nextAssociates, field) => fieldsToRebalance.has(field)
-      ? rebalanceOwnershipField(nextAssociates, associateId, field)
-      : nextAssociates,
+    (nextAssociates, field) =>
+      fieldsToRebalance.has(field)
+        ? rebalanceOwnershipField(nextAssociates, associateId, field)
+        : nextAssociates,
     patched,
   );
   return syncFullOwnershipLots(rebalanced);
@@ -238,7 +247,7 @@ export function updateAssociateOwnershipLot<T extends RuntimeAssociateInput>(
 
 function getNextPocketIndex(pockets: AllocationPocketInput[]): number {
   let index = pockets.length + 1;
-  const existingIds = new Set(pockets.map(pocket => pocket.id));
+  const existingIds = new Set(pockets.map((pocket) => pocket.id));
   while (existingIds.has(`poche-${index}`)) index += 1;
   return index;
 }

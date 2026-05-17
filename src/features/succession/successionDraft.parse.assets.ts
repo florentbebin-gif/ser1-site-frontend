@@ -39,7 +39,10 @@ export function parseAssetEntries(
       if (!location || !isAssetCategory(item.category)) return null;
 
       const asset: SuccessionAssetDetailEntry = {
-        id: typeof item.id === 'string' && item.id.trim().length > 0 ? item.id.trim() : `asset-${idx + 1}`,
+        id:
+          typeof item.id === 'string' && item.id.trim().length > 0
+            ? item.id.trim()
+            : `asset-${idx + 1}`,
         pocket: location.pocket,
         category: item.category,
         subCategory: normalizeOptionalString(item.subCategory) ?? 'Saisie libre',
@@ -51,9 +54,7 @@ export function parseAssetEntries(
       asset.legalNature = isSuccessionAssetLegalNature(item.legalNature)
         ? item.legalNature
         : 'non_qualifie';
-      asset.origin = isSuccessionAssetOrigin(item.origin)
-        ? item.origin
-        : 'non_precise';
+      asset.origin = isSuccessionAssetOrigin(item.origin) ? item.origin : 'non_precise';
       asset.meubleImmeubleLegal = isSuccessionMeubleImmeubleLegal(item.meubleImmeubleLegal)
         ? item.meubleImmeubleLegal
         : 'non_qualifie';
@@ -84,7 +85,10 @@ export function parseGroupementFoncierEntries(
       if (!location || !isGroupementFoncierType(item.type)) return null;
 
       const entry: SuccessionGroupementFoncierEntry = {
-        id: typeof item.id === 'string' && item.id.trim().length > 0 ? item.id.trim() : `gf-${idx + 1}`,
+        id:
+          typeof item.id === 'string' && item.id.trim().length > 0
+            ? item.id.trim()
+            : `gf-${idx + 1}`,
         type: item.type as GroupementFoncierType,
         pocket: location.pocket,
         valeurTotale: asAmount(item.valeurTotale, 0),
@@ -110,15 +114,18 @@ export function parseAssuranceVieEntries(
       const assure = item.assure;
 
       if (
-        !isAssuranceVieContractType(item.typeContrat)
-        || !isPersonParty(souscripteur)
-        || !isPersonParty(assure)
+        !isAssuranceVieContractType(item.typeContrat) ||
+        !isPersonParty(souscripteur) ||
+        !isPersonParty(assure)
       ) {
         return null;
       }
 
       const entry: SuccessionAssuranceVieEntry = {
-        id: typeof item.id === 'string' && item.id.trim().length > 0 ? item.id.trim() : `av-${idx + 1}`,
+        id:
+          typeof item.id === 'string' && item.id.trim().length > 0
+            ? item.id.trim()
+            : `av-${idx + 1}`,
         typeContrat: item.typeContrat,
         souscripteur,
         assure,
@@ -150,7 +157,10 @@ export function parsePerEntries(rawPerEntries: unknown): SuccessionPerEntry[] {
       }
 
       const entry: SuccessionPerEntry = {
-        id: typeof item.id === 'string' && item.id.trim().length > 0 ? item.id.trim() : `per-${idx + 1}`,
+        id:
+          typeof item.id === 'string' && item.id.trim().length > 0
+            ? item.id.trim()
+            : `per-${idx + 1}`,
         typeContrat: item.typeContrat,
         assure,
         capitauxDeces: asAmount(item.capitauxDeces, 0),
@@ -182,7 +192,10 @@ export function parsePrevoyanceDecesEntries(
       }
 
       const entry: SuccessionPrevoyanceDecesEntry = {
-        id: typeof item.id === 'string' && item.id.trim().length > 0 ? item.id.trim() : `pv-${idx + 1}`,
+        id:
+          typeof item.id === 'string' && item.id.trim().length > 0
+            ? item.id.trim()
+            : `pv-${idx + 1}`,
         souscripteur,
         assure,
         capitalDeces: asAmount(item.capitalDeces, 0),

@@ -1,6 +1,7 @@
 import type { BaseCgPhaseEpargne } from './types';
 
-const MISSING_VALUE_PATTERN = /^(?:-|n\/a|na|nc|n\.c\.|non communiqué|non communique|non renseigné|non renseigne|à compléter|a compléter)$/i;
+const MISSING_VALUE_PATTERN =
+  /^(?:-|n\/a|na|nc|n\.c\.|non communiqué|non communique|non renseigné|non renseigne|à compléter|a compléter)$/i;
 const PERCENT_PATTERN = /(\d+(?:[,.]\d+)?)\s*%/g;
 
 type BaseCgRetraiteValue = string | number | null;
@@ -43,15 +44,20 @@ function hasUcMarker(value: string): boolean {
   return /\buc\b|unites?\s+de\s+compte|\(uc\)/.test(value);
 }
 
-function classifyGestionFee(text: string, start: number, end: number): { euro: boolean; uc: boolean } {
+function classifyGestionFee(
+  text: string,
+  start: number,
+  end: number,
+): { euro: boolean; uc: boolean } {
   const normalized = normalizeSearchText(text);
-  const segmentStart = Math.max(
-    normalized.lastIndexOf('\n', start - 1),
-    normalized.lastIndexOf(';', start - 1),
-    normalized.lastIndexOf('/', start - 1),
-    normalized.lastIndexOf(' - ', start - 1),
-    normalized.lastIndexOf(' – ', start - 1),
-  ) + 1;
+  const segmentStart =
+    Math.max(
+      normalized.lastIndexOf('\n', start - 1),
+      normalized.lastIndexOf(';', start - 1),
+      normalized.lastIndexOf('/', start - 1),
+      normalized.lastIndexOf(' - ', start - 1),
+      normalized.lastIndexOf(' – ', start - 1),
+    ) + 1;
   const segmentEndCandidates = [
     normalized.indexOf('\n', end),
     normalized.indexOf(';', end),
@@ -59,14 +65,16 @@ function classifyGestionFee(text: string, start: number, end: number): { euro: b
     normalized.indexOf(' - ', end),
     normalized.indexOf(' – ', end),
   ].filter((index) => index >= 0);
-  const segmentEnd = segmentEndCandidates.length > 0 ? Math.min(...segmentEndCandidates) : normalized.length;
+  const segmentEnd =
+    segmentEndCandidates.length > 0 ? Math.min(...segmentEndCandidates) : normalized.length;
   const segment = normalized.slice(segmentStart, segmentEnd);
   // Tronquer la fenêtre after au prochain `%` pour ne pas capturer le marqueur du taux suivant
   // (ex : pour "0,65%€0,96%UC", éviter que le 1er taux récupère le "uc" du second).
   const nextPercentIndex = normalized.indexOf('%', end);
-  const afterEnd = nextPercentIndex >= 0
-    ? Math.min(segmentEnd, end + 28, nextPercentIndex)
-    : Math.min(segmentEnd, end + 28);
+  const afterEnd =
+    nextPercentIndex >= 0
+      ? Math.min(segmentEnd, end + 28, nextPercentIndex)
+      : Math.min(segmentEnd, end + 28);
   const after = normalized.slice(end, afterEnd);
 
   // On classifie uniquement avec ce qui SUIT le taux (le marqueur euro/UC est toujours après).
@@ -76,8 +84,9 @@ function classifyGestionFee(text: string, start: number, end: number): { euro: b
   const euro = afterHasEuro || (!afterHasUc && hasEuroMarker(segment));
   const uc = afterHasUc || (!afterHasEuro && hasUcMarker(segment));
   // Détecte un cas "uc et €" / "€ et UC" dans la même fenêtre after → taux commun aux deux.
-  const both = /^\s*[([]?\s*uc\b[^\n;/]*(?:€|euro|fonds)/.test(after)
-    || /^\s*[([]?\s*(?:€|euro|fonds)[^\n;/]*\buc\b/.test(after);
+  const both =
+    /^\s*[([]?\s*uc\b[^\n;/]*(?:€|euro|fonds)/.test(after) ||
+    /^\s*[([]?\s*(?:€|euro|fonds)[^\n;/]*\buc\b/.test(after);
 
   return {
     euro: euro || both,
@@ -130,8 +139,20 @@ function splitGestionFeesFromText(value: string): GestionFeesSplit | null {
     const normalized = normalizeSearchText(text);
     const onlyUc = hasUcMarker(normalized) && !hasEuroMarker(normalized);
     const onlyEuro = hasEuroMarker(normalized) && !hasUcMarker(normalized);
-    if (onlyUc) return { fraisGestionFondsEuro: null, fraisGestionUc: value, extras: [], bothAssignedFromSameMatch: false };
-    if (onlyEuro) return { fraisGestionFondsEuro: value, fraisGestionUc: null, extras: [], bothAssignedFromSameMatch: false };
+    if (onlyUc)
+      return {
+        fraisGestionFondsEuro: null,
+        fraisGestionUc: value,
+        extras: [],
+        bothAssignedFromSameMatch: false,
+      };
+    if (onlyEuro)
+      return {
+        fraisGestionFondsEuro: value,
+        fraisGestionUc: null,
+        extras: [],
+        bothAssignedFromSameMatch: false,
+      };
   }
 
   return null;
@@ -181,9 +202,11 @@ export function formatBaseCgRetraiteValue(value: string | number | null | undefi
 }
 
 export function normalizeBaseCgRetraiteGestionFees(
-  phaseEpargne:
-    & Pick<BaseCgPhaseEpargne, 'fraisGestion' | 'fraisGestionFondsEuro' | 'fraisGestionUc'>
-    & Partial<Pick<BaseCgPhaseEpargne, 'nombreFonds'>>,
+  phaseEpargne: Pick<
+    BaseCgPhaseEpargne,
+    'fraisGestion' | 'fraisGestionFondsEuro' | 'fraisGestionUc'
+  > &
+    Partial<Pick<BaseCgPhaseEpargne, 'nombreFonds'>>,
 ): Pick<BaseCgPhaseEpargne, 'fraisGestionFondsEuro' | 'fraisGestionUc'> {
   const fallback = phaseEpargne.fraisGestion;
   const splitFallback = typeof fallback === 'string' ? splitGestionFeesFromText(fallback) : null;
@@ -223,11 +246,11 @@ export function normalizeBaseCgRetraiteGestionFees(
   // et que FG€/FG UC viennent de matches DISTINCTS (donc pas un "1% UC et €" commun),
   // on concatène les segments à FG UC pour conserver l'information CGP.
   if (
-    splitFallback
-    && splitFallback.extras.length > 0
-    && !splitFallback.bothAssignedFromSameMatch
-    && !hasExplicitUc
-    && !isMonosupport
+    splitFallback &&
+    splitFallback.extras.length > 0 &&
+    !splitFallback.bothAssignedFromSameMatch &&
+    !hasExplicitUc &&
+    !isMonosupport
   ) {
     const baseLabel = formatRateForConcat(fraisGestionUc);
     const extrasJoined = splitFallback.extras.join(' / ');

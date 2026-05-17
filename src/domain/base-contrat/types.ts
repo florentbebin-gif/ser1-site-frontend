@@ -4,12 +4,7 @@
  * Types minimaux nécessaires au pivot catalogue hardcodé.
  */
 
-export type CatalogKind =
-  | 'wrapper'
-  | 'asset'
-  | 'liability'
-  | 'tax_overlay'
-  | 'protection';
+export type CatalogKind = 'wrapper' | 'asset' | 'liability' | 'tax_overlay' | 'protection';
 
 export type GrandeFamille =
   | 'Épargne Assurance'

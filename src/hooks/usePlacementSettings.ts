@@ -43,9 +43,11 @@ function buildTmiOptionsFromBareme(bareme: TaxScale): PlacementTmiOption[] {
   const uniqueRates = Array.from(
     new Set(
       bareme
-        .map((tranche: TaxBracket) => (typeof tranche.rate === 'number' ? tranche.rate / 100 : null))
-        .filter((rate): rate is number => rate !== null && !Number.isNaN(rate))
-    )
+        .map((tranche: TaxBracket) =>
+          typeof tranche.rate === 'number' ? tranche.rate / 100 : null,
+        )
+        .filter((rate): rate is number => rate !== null && !Number.isNaN(rate)),
+    ),
   ).sort((a, b) => a - b);
 
   return buildTmiOptionsFromRates(uniqueRates);

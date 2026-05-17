@@ -53,12 +53,14 @@
   background: var(--color-c8);
   cursor: pointer;
   padding: 0;
-  transition: background 0.2s ease, box-shadow 0.2s ease;
+  transition:
+    background 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
 .pl-toggle__switch:focus-visible {
   outline: none;
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-c4) 65%, #FFFFFF);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-c4) 65%, #ffffff);
 }
 
 .pl-toggle__switch.is-active {
@@ -72,7 +74,7 @@
   width: 18px;
   height: 18px;
   border-radius: 50%;
-  background: #FFFFFF;
+  background: #ffffff;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
   transition: transform 0.2s ease;
   pointer-events: none;
@@ -120,7 +122,11 @@
   width: 100%;
   padding: 10px 14px;
   border-color: var(--color-c5);
-  transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s, background 0.2s;
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s,
+    transform 0.2s,
+    background 0.2s;
 }
 
 .pl-btn--config:hover {
@@ -142,4 +148,3 @@
   font-weight: 500;
   color: var(--color-c1);
 }
-

@@ -1,5 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { capOutgoingTransferFeeRate, defaultOutgoingTransferFeeRate } from '../utils/transferFeeCap';
+import {
+  capOutgoingTransferFeeRate,
+  defaultOutgoingTransferFeeRate,
+} from '../utils/transferFeeCap';
 
 describe('capOutgoingTransferFeeRate', () => {
   const today = new Date('2026-05-16T12:00:00.000Z');

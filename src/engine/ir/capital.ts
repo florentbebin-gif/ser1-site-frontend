@@ -21,7 +21,11 @@ interface PfuIrInput {
   taxSettings?: TaxSettingsWithPfu | null;
 }
 
-export function computeCapitalBases({ capWithPs, capWithoutPs, modeCap }: CapitalBasesInput): CapitalBasesResult {
+export function computeCapitalBases({
+  capWithPs,
+  capWithoutPs,
+  modeCap,
+}: CapitalBasesInput): CapitalBasesResult {
   const capWithPsNum = Number(capWithPs) || 0;
   const capWithoutPsNum = Number(capWithoutPs) || 0;
   const capTotal = capWithPsNum + capWithoutPsNum;
@@ -42,9 +46,10 @@ export function computePfuIr({ capitalBasePfu, yearKey, taxSettings }: PfuIrInpu
   const base = Number(capitalBasePfu) || 0;
   if (base <= 0) return 0;
 
-  const fallbackYearKey = yearKey in DEFAULT_TAX_SETTINGS.pfu
-    ? yearKey as keyof typeof DEFAULT_TAX_SETTINGS.pfu
-    : 'current';
+  const fallbackYearKey =
+    yearKey in DEFAULT_TAX_SETTINGS.pfu
+      ? (yearKey as keyof typeof DEFAULT_TAX_SETTINGS.pfu)
+      : 'current';
   const fallbackRateIR = DEFAULT_TAX_SETTINGS.pfu[fallbackYearKey].rateIR;
   const pfuCfg = taxSettings?.pfu?.[yearKey] ?? null;
   const pfuRateIR = Number.isFinite(Number(pfuCfg?.rateIR))

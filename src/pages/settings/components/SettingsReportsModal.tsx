@@ -56,7 +56,9 @@ export default function SettingsReportsModal({
                   <span className="report-modal-subtitle">{selectedReportUser.email}</span>
                 )}
               </div>
-              <button className="report-modal-close" onClick={onClose} type="button">X</button>
+              <button className="report-modal-close" onClick={onClose} type="button">
+                X
+              </button>
             </div>
 
             <div className="report-modal-content">
@@ -82,12 +84,18 @@ export default function SettingsReportsModal({
                         <td className="report-page-cell">{report.page || '-'}</td>
                         <td className="report-title-cell">{report.title || 'Sans titre'}</td>
                         <td>
-                          <span className={`report-status ${report.admin_read_at ? 'read' : 'unread'}`}>
+                          <span
+                            className={`report-status ${report.admin_read_at ? 'read' : 'unread'}`}
+                          >
                             {report.admin_read_at ? 'Lu' : 'Non lu'}
                           </span>
                         </td>
                         <td>
-                          <button className="report-view-btn" onClick={() => onSelectReport(report)} type="button">
+                          <button
+                            className="report-view-btn"
+                            onClick={() => onSelectReport(report)}
+                            type="button"
+                          >
                             Voir
                           </button>
                         </td>
@@ -100,11 +108,17 @@ export default function SettingsReportsModal({
 
             <div className="report-modal-actions">
               {userReports.length > 0 && (
-                <button className="danger" onClick={() => onDeleteAllReports(selectedReportUser?.id)} type="button">
+                <button
+                  className="danger"
+                  onClick={() => onDeleteAllReports(selectedReportUser?.id)}
+                  type="button"
+                >
                   Supprimer tout l'historique
                 </button>
               )}
-              <button onClick={onClose} type="button">Fermer</button>
+              <button onClick={onClose} type="button">
+                Fermer
+              </button>
             </div>
           </>
         ) : (
@@ -116,7 +130,9 @@ export default function SettingsReportsModal({
                 </button>
                 <h3>Détail du signalement</h3>
               </div>
-              <button className="report-modal-close" onClick={onClose} type="button">X</button>
+              <button className="report-modal-close" onClick={onClose} type="button">
+                X
+              </button>
             </div>
 
             <div className="report-modal-content">
@@ -133,7 +149,9 @@ export default function SettingsReportsModal({
                 </div>
                 <div className="report-detail-field">
                   <span className="report-detail-label">Statut :</span>
-                  <span className={`report-status ${selectedReport.admin_read_at ? 'read' : 'unread'}`}>
+                  <span
+                    className={`report-status ${selectedReport.admin_read_at ? 'read' : 'unread'}`}
+                  >
                     {selectedReport.admin_read_at ? 'Lu' : 'Non lu'}
                   </span>
                 </div>
@@ -160,10 +178,16 @@ export default function SettingsReportsModal({
                   Marquer comme lu
                 </button>
               )}
-              <button className="danger" onClick={() => onDeleteReport(selectedReport.id)} type="button">
+              <button
+                className="danger"
+                onClick={() => onDeleteReport(selectedReport.id)}
+                type="button"
+              >
                 Supprimer
               </button>
-              <button onClick={onBackToList} type="button">Retour à la liste</button>
+              <button onClick={onBackToList} type="button">
+                Retour à la liste
+              </button>
             </div>
           </>
         )}

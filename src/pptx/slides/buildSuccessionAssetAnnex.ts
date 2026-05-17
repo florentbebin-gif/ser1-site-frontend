@@ -37,17 +37,11 @@ function lightenColor(hex: string, factor: number): string {
   return `${toHex(newR)}${toHex(newG)}${toHex(newB)}`;
 }
 
-function cell(
-  text: string,
-  options: PptxGenJS.TableCellProps,
-): PptxGenJS.TableCell {
+function cell(text: string, options: PptxGenJS.TableCellProps): PptxGenJS.TableCell {
   return { text, options: { fontFace: TYPO.fontFace, valign: 'middle', ...options } };
 }
 
-function buildRow(
-  row: SuccessionAssetAnnexRow,
-  textBody: string,
-): PptxGenJS.TableRow {
+function buildRow(row: SuccessionAssetAnnexRow, textBody: string): PptxGenJS.TableRow {
   const base = { fontSize: 8.5 as const, color: textBody };
   return [
     cell(row.label, { ...base, align: 'left' }),
@@ -85,13 +79,15 @@ export function buildSuccessionAssetAnnex(
       fill: { color: accentFill },
       align: 'left',
     }),
-    ...spec.columns.map((column) => cell(column.label, {
-      bold: true,
-      fontSize: 9,
-      color: white,
-      fill: { color: accentFill },
-      align: 'right',
-    })),
+    ...spec.columns.map((column) =>
+      cell(column.label, {
+        bold: true,
+        fontSize: 9,
+        color: white,
+        fill: { color: accentFill },
+        align: 'right',
+      }),
+    ),
   ];
 
   const introRow: PptxGenJS.TableRow = [
@@ -102,10 +98,12 @@ export function buildSuccessionAssetAnnex(
       fill: { color: sectionFill },
       align: 'left',
     }),
-    ...spec.columns.map(() => cell('', {
-      fontSize: 8.5,
-      fill: { color: sectionFill },
-    })),
+    ...spec.columns.map(() =>
+      cell('', {
+        fontSize: 8.5,
+        fill: { color: sectionFill },
+      }),
+    ),
   ];
 
   const tableRows: PptxGenJS.TableRow[] = [

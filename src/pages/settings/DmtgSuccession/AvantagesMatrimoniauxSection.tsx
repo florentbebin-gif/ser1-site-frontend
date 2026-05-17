@@ -33,23 +33,19 @@ export default function AvantagesMatrimoniauxSection({
         <span className="settings-premium-title settings-premium-title--flush">
           Avantages matrimoniaux
         </span>
-        <span className="fisc-acc-chevron">
-          {isOpen ? 'v' : '>'}
-        </span>
+        <span className="fisc-acc-chevron">{isOpen ? 'v' : '>'}</span>
       </button>
 
       {isOpen && (
         <div className="fisc-acc-body">
           <p className="dmtg-intro">
-            Clauses de contrat de mariage influençant la liquidation civile avant calcul des droits de succession.
-            Ces éléments doivent être qualifiés avant tout calcul DMTG.
+            Clauses de contrat de mariage influençant la liquidation civile avant calcul des droits
+            de succession. Ces éléments doivent être qualifiés avant tout calcul DMTG.
           </p>
 
           {avantages.map((item) => (
             <div key={item.id} className="income-tax-block dmtg-block--mb12">
-              <div className="dmtg-block-title">
-                {item.label}
-              </div>
+              <div className="dmtg-block-title">{item.label}</div>
               <p className="dmtg-desc--mb6">
                 <strong className="dmtg-strong">Définition :</strong> {item.definition}
               </p>
@@ -59,31 +55,30 @@ export default function AvantagesMatrimoniauxSection({
               <div className="dmtg-desc--mb6">
                 <strong className="dmtg-strong">Champs minimaux :</strong>
                 <ul className="dmtg-list">
-                  {item.minimumFields.map((field) => <li key={field}>{field}</li>)}
+                  {item.minimumFields.map((field) => (
+                    <li key={field}>{field}</li>
+                  ))}
                 </ul>
               </div>
-              <p className="dmtg-note--flush">
-                Références : {item.legalRefs}
-              </p>
+              <p className="dmtg-note--flush">Références : {item.legalRefs}</p>
             </div>
           ))}
 
           <div className="income-tax-block dmtg-block--mt4">
-            <div className="dmtg-block-title">
-              Vigilances juridiques
-            </div>
+            <div className="dmtg-block-title">Vigilances juridiques</div>
             <ul className="dmtg-list--vigilances">
               <li className="dmtg-list-item--mb4">
                 Les avantages matrimoniaux ne sont en principe pas qualifiés de donations.
                 Références : C. civ. art. 1516, 1525, 1527.
               </li>
               <li className="dmtg-list-item--mb4">
-                En présence d’enfants non communs, l’excédent au-delà de la quotité entre époux peut être réduit.
-                Références : C. civ. art. 1527 et 1094-1.
+                En présence d’enfants non communs, l’excédent au-delà de la quotité entre époux peut
+                être réduit. Références : C. civ. art. 1527 et 1094-1.
               </li>
               <li>
-                En cas de divorce, les avantages à effet différé sont révoqués de plein droit sauf volonté contraire.
-                Référence : C. civ. art. 265 (version en vigueur depuis le 2 juin 2024).
+                En cas de divorce, les avantages à effet différé sont révoqués de plein droit sauf
+                volonté contraire. Référence : C. civ. art. 265 (version en vigueur depuis le 2 juin
+                2024).
               </li>
             </ul>
           </div>

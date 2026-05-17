@@ -13,10 +13,7 @@ import { useSessionTTL } from './hooks/useSessionTTL';
 import { useExportGuard } from './hooks/useExportGuard';
 import { setTrackBlobUrlHandler } from './utils/export/createTrackedObjectURL';
 import { AppLayout } from './components/layout/AppLayout';
-import {
-  SessionGuardContext,
-  type SessionGuardContextValue,
-} from './auth';
+import { SessionGuardContext, type SessionGuardContextValue } from './auth';
 
 type NotificationType = 'info' | 'success' | 'error';
 
@@ -37,14 +34,16 @@ interface FiscalIdentityCurrent {
 
 // Fallback UI for lazy-loaded routes
 const PageLoader = (): React.ReactElement => (
-  <div style={{ 
-    display: 'flex', 
-    alignItems: 'center', 
-    justifyContent: 'center', 
-    height: '100vh',
-    color: 'var(--color-c9)',
-    fontSize: '14px'
-  }}>
+  <div
+    style={{
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      height: '100vh',
+      color: 'var(--color-c9)',
+      fontSize: '14px',
+    }}
+  >
     Chargement...
   </div>
 );
@@ -53,17 +52,13 @@ const PageLoader = (): React.ReactElement => (
 // This prevents FOUC (Flash of Unstyled Content) on route navigation
 const LazyRoute = ({ children }: LazyRouteProps): React.ReactElement => {
   const { themeReady } = useTheme();
-  
+
   // Block render until CSS variables are applied
   if (!themeReady) {
     return <PageLoader />;
   }
-  
-  return (
-    <Suspense fallback={<PageLoader />}>
-      {children}
-    </Suspense>
-  );
+
+  return <Suspense fallback={<PageLoader />}>{children}</Suspense>;
 };
 
 export default function App(): React.ReactElement {
@@ -75,20 +70,23 @@ export default function App(): React.ReactElement {
   const { fiscalContext, meta: fiscalMeta } = useFiscalContext();
 
   // Identité fiscale : hashes stables + updated_at pour les 3 tables
-  const fiscalIdentity = React.useMemo<FiscalIdentityCurrent>(() => ({
-    tax: {
-      updatedAt: fiscalMeta.taxUpdatedAt,
-      hash: fingerprintSettingsData(fiscalContext._raw_tax),
-    },
-    ps: {
-      updatedAt: fiscalMeta.psUpdatedAt,
-      hash: fingerprintSettingsData(fiscalContext._raw_ps),
-    },
-    fiscality: {
-      updatedAt: fiscalMeta.fiscalityUpdatedAt,
-      hash: fingerprintSettingsData(fiscalContext._raw_fiscality),
-    },
-  }), [fiscalContext, fiscalMeta]);
+  const fiscalIdentity = React.useMemo<FiscalIdentityCurrent>(
+    () => ({
+      tax: {
+        updatedAt: fiscalMeta.taxUpdatedAt,
+        hash: fingerprintSettingsData(fiscalContext._raw_tax),
+      },
+      ps: {
+        updatedAt: fiscalMeta.psUpdatedAt,
+        hash: fingerprintSettingsData(fiscalContext._raw_ps),
+      },
+      fiscality: {
+        updatedAt: fiscalMeta.fiscalityUpdatedAt,
+        hash: fingerprintSettingsData(fiscalContext._raw_fiscality),
+      },
+    }),
+    [fiscalContext, fiscalMeta],
+  );
 
   // P0-06: Session TTL (heartbeat 30s, grâce 3min, inactivité 1h)
   const { sessionExpired, minutesRemaining, warningVisible, resetInactivity } = useSessionTTL();
@@ -112,8 +110,10 @@ export default function App(): React.ReactElement {
       'ser1:loadedFilename',
       'ser1:lastSavedFilename',
     ];
-    oldKeys.forEach(key => {
-      try { localStorage.removeItem(key); } catch {}
+    oldKeys.forEach((key) => {
+      try {
+        localStorage.removeItem(key);
+      } catch {}
     });
 
     // Initialisation robuste de la session
@@ -122,20 +122,31 @@ export default function App(): React.ReactElement {
         // eslint-disable-next-line no-console
         console.debug('[App] initSession:start');
       }
-      const { data: { session } } = await supabase.auth.getSession();
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
       if (DEBUG_AUTH) {
         // eslint-disable-next-line no-console
-        console.debug('[App] initSession:done', { hasSession: !!session, userId: session?.user?.id });
+        console.debug('[App] initSession:done', {
+          hasSession: !!session,
+          userId: session?.user?.id,
+        });
       }
       setSession(session);
     }
     initSession();
 
     // Écoute les changements d'auth
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, s) => {
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, s) => {
       if (DEBUG_AUTH) {
         // eslint-disable-next-line no-console
-        console.debug('[App] onAuthStateChange', { event: _event, hasSession: !!s, userId: s?.user?.id });
+        console.debug('[App] onAuthStateChange', {
+          event: _event,
+          hasSession: !!s,
+          userId: s?.user?.id,
+        });
       }
       setSession(s);
     });
@@ -185,7 +196,8 @@ export default function App(): React.ReactElement {
         const mismatch =
           (loaded.tax.hash != null && loaded.tax.hash !== fiscalIdentity.tax.hash) ||
           (loaded.ps.hash != null && loaded.ps.hash !== fiscalIdentity.ps.hash) ||
-          (loaded.fiscality.hash != null && loaded.fiscality.hash !== fiscalIdentity.fiscality.hash);
+          (loaded.fiscality.hash != null &&
+            loaded.fiscality.hash !== fiscalIdentity.fiscality.hash);
         if (mismatch) {
           setTimeout(() => {
             showNotification(
@@ -203,7 +215,7 @@ export default function App(): React.ReactElement {
   // Reset global avec confirmation
   const handleGlobalReset = useCallback(() => {
     const confirmed = window.confirm(
-      'Êtes-vous sûr de vouloir réinitialiser tous les simulateurs ?\n\nCette action effacera toutes les données saisies (Audit, Placement, Crédit, IR, Stratégie).\n\nLes paramètres de l\'application ne seront pas affectés.'
+      "Êtes-vous sûr de vouloir réinitialiser tous les simulateurs ?\n\nCette action effacera toutes les données saisies (Audit, Placement, Crédit, IR, Stratégie).\n\nLes paramètres de l'application ne seront pas affectés.",
     );
     if (confirmed) {
       triggerGlobalReset();
@@ -216,9 +228,15 @@ export default function App(): React.ReactElement {
   const path = window.location.pathname;
   const routeMeta = getRouteMetadata(path);
 
-  const sessionGuardValue = React.useMemo<SessionGuardContextValue>(() => ({
-    sessionExpired, canExport, trackBlobUrl, resetInactivity,
-  }), [sessionExpired, canExport, trackBlobUrl, resetInactivity]);
+  const sessionGuardValue = React.useMemo<SessionGuardContextValue>(
+    () => ({
+      sessionExpired,
+      canExport,
+      trackBlobUrl,
+      resetInactivity,
+    }),
+    [sessionExpired, canExport, trackBlobUrl, resetInactivity],
+  );
 
   const renderRouteEntry = (entry: AppRouteEntry): React.ReactElement => {
     const Component = entry.component;
@@ -236,17 +254,10 @@ export default function App(): React.ReactElement {
 
     const element = <Component {...mergedProps} />;
     const maybeLazy = entry.lazy ? <LazyRoute>{element}</LazyRoute> : element;
-    const maybePrivate = entry.access === 'private'
-      ? <PrivateRoute>{maybeLazy}</PrivateRoute>
-      : maybeLazy;
+    const maybePrivate =
+      entry.access === 'private' ? <PrivateRoute>{maybeLazy}</PrivateRoute> : maybeLazy;
 
-    return (
-      <Route
-        key={entry.path}
-        path={entry.path}
-        element={maybePrivate}
-      />
-    );
+    return <Route key={entry.path} path={entry.path} element={maybePrivate} />;
   };
 
   return (
@@ -271,12 +282,8 @@ export default function App(): React.ReactElement {
           onPageReset: triggerPageReset,
         }}
       >
-        <Routes>
-          {APP_ROUTES.map(renderRouteEntry)}
-        </Routes>
+        <Routes>{APP_ROUTES.map(renderRouteEntry)}</Routes>
       </AppLayout>
-
     </SessionGuardContext.Provider>
   );
 }
-

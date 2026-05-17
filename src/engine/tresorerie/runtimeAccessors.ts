@@ -1,8 +1,4 @@
-import type {
-  AssociateProfileInput,
-  RuntimeAssociateInput,
-  TresoInputsRuntime,
-} from './types';
+import type { AssociateProfileInput, RuntimeAssociateInput, TresoInputsRuntime } from './types';
 
 export function getSelectedAssociateId(inputs: TresoInputsRuntime): string {
   return 'selectedAssociateId' in inputs
@@ -10,10 +6,14 @@ export function getSelectedAssociateId(inputs: TresoInputsRuntime): string {
     : inputs.foyer.selectedAssociateId;
 }
 
-export function getSelectedAssociate(inputs: TresoInputsRuntime): RuntimeAssociateInput | undefined {
+export function getSelectedAssociate(
+  inputs: TresoInputsRuntime,
+): RuntimeAssociateInput | undefined {
   const selectedId = getSelectedAssociateId(inputs);
-  return inputs.company.associates.find(associate => associate.id === selectedId)
-    ?? inputs.company.associates[0];
+  return (
+    inputs.company.associates.find((associate) => associate.id === selectedId) ??
+    inputs.company.associates[0]
+  );
 }
 
 export function getAssociateProfile(

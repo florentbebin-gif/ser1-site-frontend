@@ -1,8 +1,5 @@
 import { calculateSuccession, getAbattement, type LienParente } from '../../engine/succession';
-import type {
-  SuccessionAvFiscalAnalysis,
-  SuccessionAvFiscalLine,
-} from './successionAvFiscal';
+import type { SuccessionAvFiscalAnalysis, SuccessionAvFiscalLine } from './successionAvFiscal';
 import type { SuccessionFiscalSnapshot } from './successionFiscalContext';
 import type { SuccessionPerFiscalAnalysis } from './successionPerFiscal';
 import type {
@@ -94,11 +91,13 @@ function compute757BTax(
 
   return calculateSuccession({
     actifNetSuccession: taxableBase,
-    heritiers: [{
-      lien,
-      partSuccession: taxableBase,
-      ...(abattementResiduel != null ? { abattementOverride: abattementResiduel } : {}),
-    }],
+    heritiers: [
+      {
+        lien,
+        partSuccession: taxableBase,
+        ...(abattementResiduel != null ? { abattementOverride: abattementResiduel } : {}),
+      },
+    ],
     dmtgSettings: snapshot.dmtgSettings,
   }).result.totalDroits;
 }
@@ -198,7 +197,9 @@ function mergePrevoyanceLines(
   return Array.from(merged.values()).sort((a, b) => b.capitalTransmis - a.capitalTransmis);
 }
 
-function cloneAvAnalysis<TAnalysis extends SuccessionAvFiscalAnalysis>(analysis: TAnalysis): TAnalysis {
+function cloneAvAnalysis<TAnalysis extends SuccessionAvFiscalAnalysis>(
+  analysis: TAnalysis,
+): TAnalysis {
   return {
     ...analysis,
     lines: analysis.lines.map((line) => ({ ...line })),
@@ -314,13 +315,19 @@ function applyCombined990I(
       return;
     }
 
-    const weightedRatio = totalBase > 0
-      ? entries.reduce((sum, entry) => sum + entry.before70Base * entry.allowance990IRatio, 0) / totalBase
-      : 1;
-    const effectiveAllowance = snapshot.avDeces.primesApres1998.allowancePerBeneficiary
-      * Math.max(0, Math.min(1, weightedRatio));
+    const weightedRatio =
+      totalBase > 0
+        ? entries.reduce((sum, entry) => sum + entry.before70Base * entry.allowance990IRatio, 0) /
+          totalBase
+        : 1;
+    const effectiveAllowance =
+      snapshot.avDeces.primesApres1998.allowancePerBeneficiary *
+      Math.max(0, Math.min(1, weightedRatio));
     const totalTaxable = Math.max(0, totalBase - effectiveAllowance);
-    const taxableAllocations = allocateExact(totalTaxable, entries.map((entry) => entry.before70Base));
+    const taxableAllocations = allocateExact(
+      totalTaxable,
+      entries.map((entry) => entry.before70Base),
+    );
     const droitsAllocations = allocateRounded(
       compute990ITax(totalTaxable, snapshot),
       taxableAllocations,
@@ -365,13 +372,17 @@ function applyCombined757B(
       return;
     }
 
-    const allowanceShare = totalTaxableGross > 0
-      ? snapshot.avDeces.apres70ans.globalAllowance * (row.totalBase / totalTaxableGross)
-      : 0;
+    const allowanceShare =
+      totalTaxableGross > 0
+        ? snapshot.avDeces.apres70ans.globalAllowance * (row.totalBase / totalTaxableGross)
+        : 0;
     const totalTaxable = Math.max(0, row.totalBase - allowanceShare);
     const estateUsage = estateAllowanceUsage?.[row.id];
     const abattementResiduel = estateUsage != null ? estateUsage.abattementResiduel : undefined;
-    const taxableAllocations = allocateExact(totalTaxable, row.entries.map((entry) => entry.after70Base));
+    const taxableAllocations = allocateExact(
+      totalTaxable,
+      row.entries.map((entry) => entry.after70Base),
+    );
     const droitsAllocations = allocateRounded(
       compute757BTax(totalTaxable, row.lien, snapshot, abattementResiduel),
       taxableAllocations,
@@ -393,7 +404,9 @@ function refreshAvLine(line: SuccessionAvFiscalLine): SuccessionAvFiscalLine {
   };
 }
 
-function refreshPrevoyanceLine(line: SuccessionPrevoyanceFiscalLine): SuccessionPrevoyanceFiscalLine {
+function refreshPrevoyanceLine(
+  line: SuccessionPrevoyanceFiscalLine,
+): SuccessionPrevoyanceFiscalLine {
   const totalDroits = line.droits990I + line.droits757B;
   return {
     ...line,
@@ -402,7 +415,9 @@ function refreshPrevoyanceLine(line: SuccessionPrevoyanceFiscalLine): Succession
   };
 }
 
-function recomputeAvAnalysis<TAnalysis extends SuccessionAvFiscalAnalysis>(analysis: TAnalysis): TAnalysis {
+function recomputeAvAnalysis<TAnalysis extends SuccessionAvFiscalAnalysis>(
+  analysis: TAnalysis,
+): TAnalysis {
   const epoux1Lines = analysis.byAssure.epoux1.lines.map(refreshAvLine);
   const epoux2Lines = analysis.byAssure.epoux2.lines.map(refreshAvLine);
   const epoux1Droits = epoux1Lines.reduce((sum, line) => sum + line.totalDroits, 0);

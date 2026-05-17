@@ -17,9 +17,7 @@ export interface BaseCgRetraiteDocumentRow {
   uploaded_at?: string | null;
 }
 
-function normalizeBaseCgRetraiteDocument(
-  row: BaseCgRetraiteDocumentRow,
-): BaseCgRetraiteDocument {
+function normalizeBaseCgRetraiteDocument(row: BaseCgRetraiteDocumentRow): BaseCgRetraiteDocument {
   return {
     id: row.id,
     label: row.label,
@@ -67,9 +65,7 @@ export function groupBaseCgRetraiteDocuments(
   return grouped;
 }
 
-export async function syncBaseCgRetraiteDocuments(
-  contract: BaseCgRetraiteContract,
-): Promise<void> {
+export async function syncBaseCgRetraiteDocuments(contract: BaseCgRetraiteContract): Promise<void> {
   const documents = contract.documents ?? [];
   // Diff-based sync : on UPSERT d'abord puis on supprime les ids absents du nouveau set.
   // Évite l'état intermédiaire "documents supprimés mais pas re-uploadés" en cas d'erreur réseau.
@@ -78,27 +74,26 @@ export async function syncBaseCgRetraiteDocuments(
     .select('id')
     .eq('contract_id', contract.id);
   if (existingResult.error) {
-    throw new Error(`[baseCgRetraiteRepository] read documents error: ${existingResult.error.message}`);
+    throw new Error(
+      `[baseCgRetraiteRepository] read documents error: ${existingResult.error.message}`,
+    );
   }
   const existingIds = new Set((existingResult.data ?? []).map((row) => row.id as string));
   const nextIds = new Set(documents.map((document) => document.id));
   const toDelete = Array.from(existingIds).filter((id) => !nextIds.has(id));
 
   if (documents.length > 0) {
-    const { error } = await supabase
-      .from(DOCUMENTS_TABLE)
-      .upsert(
-        documents.map((document) => baseCgRetraiteDocumentToRow(contract.id, document)),
-        { onConflict: 'id' },
-      );
-    if (error) throw new Error(`[baseCgRetraiteRepository] upsert documents error: ${error.message}`);
+    const { error } = await supabase.from(DOCUMENTS_TABLE).upsert(
+      documents.map((document) => baseCgRetraiteDocumentToRow(contract.id, document)),
+      { onConflict: 'id' },
+    );
+    if (error)
+      throw new Error(`[baseCgRetraiteRepository] upsert documents error: ${error.message}`);
   }
 
   if (toDelete.length > 0) {
-    const { error } = await supabase
-      .from(DOCUMENTS_TABLE)
-      .delete()
-      .in('id', toDelete);
-    if (error) throw new Error(`[baseCgRetraiteRepository] delete documents error: ${error.message}`);
+    const { error } = await supabase.from(DOCUMENTS_TABLE).delete().in('id', toDelete);
+    if (error)
+      throw new Error(`[baseCgRetraiteRepository] delete documents error: ${error.message}`);
   }
 }

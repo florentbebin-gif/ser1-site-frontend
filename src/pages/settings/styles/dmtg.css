@@ -39,19 +39,33 @@
   color: var(--color-c1);
   white-space: nowrap;
 }
-.dmtg-badge--communautaire { background-color: var(--color-c4); }
-.dmtg-badge--separatiste   { background-color: var(--color-c6); }
+.dmtg-badge--communautaire {
+  background-color: var(--color-c4);
+}
+.dmtg-badge--separatiste {
+  background-color: var(--color-c6);
+}
 
 /* Espacement des blocs income-tax-block */
-.dmtg-block--mb12 { margin-bottom: 12px; }
-.dmtg-block--mb16 { margin-bottom: 16px; }
-.dmtg-block--mt4  { margin-top: 4px; }
+.dmtg-block--mb12 {
+  margin-bottom: 12px;
+}
+.dmtg-block--mb16 {
+  margin-bottom: 16px;
+}
+.dmtg-block--mt4 {
+  margin-top: 4px;
+}
 
 /* Indentation intérieure */
-.dmtg-indent { padding-left: 8px; }
+.dmtg-indent {
+  padding-left: 8px;
+}
 
 /* Ligne de champ avec marge basse */
-.dmtg-field-row--mb8 { margin-bottom: 8px; }
+.dmtg-field-row--mb8 {
+  margin-bottom: 8px;
+}
 
 /* Messages d'erreur de champ */
 .dmtg-field-error {
@@ -66,10 +80,14 @@
 }
 
 /* Tableau avec décalage haut */
-.dmtg-table--mt8 { margin-top: 8px; }
+.dmtg-table--mt8 {
+  margin-top: 8px;
+}
 
 /* Colonne alignée à gauche */
-.dmtg-col-left { text-align: left; }
+.dmtg-col-left {
+  text-align: left;
+}
 
 /* Grille 2 colonnes (avantages / limites des régimes) */
 .dmtg-grid-2col {
@@ -90,7 +108,9 @@
   color: var(--color-c9);
   font-size: 13px;
 }
-.dmtg-list-item--mb4 { margin-bottom: 4px; }
+.dmtg-list-item--mb4 {
+  margin-bottom: 4px;
+}
 
 /* Textes secondaires 13px */
 .dmtg-desc {
@@ -134,8 +154,12 @@
 }
 
 /* Éléments forts dans les descriptions */
-.dmtg-strong            { color: var(--color-c1); }
-.dmtg-strong--secondary { color: var(--color-c9); }
+.dmtg-strong {
+  color: var(--color-c1);
+}
+.dmtg-strong--secondary {
+  color: var(--color-c9);
+}
 
 /* Sous-titre de sous-section (barème, etc.) */
 .dmtg-subsection-title {
@@ -143,7 +167,11 @@
   font-weight: 600;
   margin-bottom: 4px;
 }
-.dmtg-subsection--mt12 { margin-top: 12px; }
+.dmtg-subsection--mt12 {
+  margin-top: 12px;
+}
 
 /* Input conditions (largeur fixe) */
-.dmtg-input-conditions { width: 280px; }
+.dmtg-input-conditions {
+  width: 280px;
+}

@@ -32,11 +32,13 @@ export function buildSuccessionSurvivorEconomicInflows({
   prevoyanceFiscalAnalysis: SuccessionPrevoyanceFiscalAnalysis;
 }): Record<'epoux1' | 'epoux2', number> {
   return {
-    epoux1: sumSurvivingSpouseInflows(avFiscalAnalysis, 'epoux1')
-      + sumSurvivingSpouseInflows(perFiscalAnalysis, 'epoux1')
-      + sumSurvivingSpouseInflows(prevoyanceFiscalAnalysis, 'epoux1'),
-    epoux2: sumSurvivingSpouseInflows(avFiscalAnalysis, 'epoux2')
-      + sumSurvivingSpouseInflows(perFiscalAnalysis, 'epoux2')
-      + sumSurvivingSpouseInflows(prevoyanceFiscalAnalysis, 'epoux2'),
+    epoux1:
+      sumSurvivingSpouseInflows(avFiscalAnalysis, 'epoux1') +
+      sumSurvivingSpouseInflows(perFiscalAnalysis, 'epoux1') +
+      sumSurvivingSpouseInflows(prevoyanceFiscalAnalysis, 'epoux1'),
+    epoux2:
+      sumSurvivingSpouseInflows(avFiscalAnalysis, 'epoux2') +
+      sumSurvivingSpouseInflows(perFiscalAnalysis, 'epoux2') +
+      sumSurvivingSpouseInflows(prevoyanceFiscalAnalysis, 'epoux2'),
   };
 }

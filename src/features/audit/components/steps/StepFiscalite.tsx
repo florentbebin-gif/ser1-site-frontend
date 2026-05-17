@@ -19,12 +19,14 @@ export default function StepFiscalite({ dossier, updateDossier }: StepProps) {
           <input
             type="number"
             value={situationFiscale.anneeReference}
-            onChange={(e) => updateDossier({
-              situationFiscale: {
-                ...situationFiscale,
-                anneeReference: parseInt(e.target.value) || new Date().getFullYear() - 1,
-              },
-            })}
+            onChange={(e) =>
+              updateDossier({
+                situationFiscale: {
+                  ...situationFiscale,
+                  anneeReference: parseInt(e.target.value) || new Date().getFullYear() - 1,
+                },
+              })
+            }
           />
         </div>
         <div className="audit-form-row">
@@ -32,12 +34,14 @@ export default function StepFiscalite({ dossier, updateDossier }: StepProps) {
           <input
             type="number"
             value={situationFiscale.revenuFiscalReference}
-            onChange={(e) => updateDossier({
-              situationFiscale: {
-                ...situationFiscale,
-                revenuFiscalReference: parseFloat(e.target.value) || 0,
-              },
-            })}
+            onChange={(e) =>
+              updateDossier({
+                situationFiscale: {
+                  ...situationFiscale,
+                  revenuFiscalReference: parseFloat(e.target.value) || 0,
+                },
+              })
+            }
           />
         </div>
         <div className="audit-form-row">
@@ -47,12 +51,14 @@ export default function StepFiscalite({ dossier, updateDossier }: StepProps) {
             step="0.5"
             min="1"
             value={situationFiscale.nombreParts}
-            onChange={(e) => updateDossier({
-              situationFiscale: {
-                ...situationFiscale,
-                nombreParts: parseFloat(e.target.value) || 1,
-              },
-            })}
+            onChange={(e) =>
+              updateDossier({
+                situationFiscale: {
+                  ...situationFiscale,
+                  nombreParts: parseFloat(e.target.value) || 1,
+                },
+              })
+            }
           />
         </div>
         <div className="audit-form-row">
@@ -60,27 +66,33 @@ export default function StepFiscalite({ dossier, updateDossier }: StepProps) {
           <input
             type="number"
             value={situationFiscale.impotRevenu}
-            onChange={(e) => updateDossier({
-              situationFiscale: {
-                ...situationFiscale,
-                impotRevenu: parseFloat(e.target.value) || 0,
-              },
-            })}
+            onChange={(e) =>
+              updateDossier({
+                situationFiscale: {
+                  ...situationFiscale,
+                  impotRevenu: parseFloat(e.target.value) || 0,
+                },
+              })
+            }
           />
         </div>
         <div className="audit-form-row">
           <label>TMI (%)</label>
           <select
             value={situationFiscale.tmi}
-            onChange={(e) => updateDossier({
-              situationFiscale: {
-                ...situationFiscale,
-                tmi: parseInt(e.target.value) || 0,
-              },
-            })}
+            onChange={(e) =>
+              updateDossier({
+                situationFiscale: {
+                  ...situationFiscale,
+                  tmi: parseInt(e.target.value) || 0,
+                },
+              })
+            }
           >
             {TMI_OPTIONS.map((rate) => (
-              <option key={rate} value={rate}>{rate}%</option>
+              <option key={rate} value={rate}>
+                {rate}%
+              </option>
             ))}
           </select>
         </div>
@@ -93,12 +105,14 @@ export default function StepFiscalite({ dossier, updateDossier }: StepProps) {
           <input
             type="number"
             value={situationFiscale.ifi || 0}
-            onChange={(e) => updateDossier({
-              situationFiscale: {
-                ...situationFiscale,
-                ifi: parseFloat(e.target.value) || 0,
-              },
-            })}
+            onChange={(e) =>
+              updateDossier({
+                situationFiscale: {
+                  ...situationFiscale,
+                  ifi: parseFloat(e.target.value) || 0,
+                },
+              })
+            }
           />
         </div>
       </div>

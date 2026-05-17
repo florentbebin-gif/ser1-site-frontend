@@ -19,9 +19,9 @@ export type SettingsRef = `$ref:${'tax_settings' | 'ps_settings'}.${string}`;
 // Source (official reference, admin-only visibility)
 // ---------------------------------------------------------------------------
 export interface OfficialSource {
-  label: string;           // e.g. "CGI Art. 125-0 A"
-  url?: string;            // e.g. legifrance URL
-  note?: string;           // free text
+  label: string; // e.g. "CGI Art. 125-0 A"
+  url?: string; // e.g. legifrance URL
+  note?: string; // free text
 }
 
 // ---------------------------------------------------------------------------
@@ -37,13 +37,13 @@ export type ProductNature =
   | 'Autres';
 
 export interface Product {
-  key: string;             // stable slug, e.g. "assuranceVie" — immutable after creation
-  label: string;           // display label, e.g. "Assurance-vie"
+  key: string; // stable slug, e.g. "assuranceVie" — immutable after creation
+  label: string; // display label, e.g. "Assurance-vie"
   holders: ProductHolders; // PP = personne physique, PM = personne morale
-  nature: ProductNature;   // catégorie fonctionnelle
+  nature: ProductNature; // catégorie fonctionnelle
   isActive: boolean;
   sortOrder: number;
-  closedDate?: string;     // ISO date — set when product is closed
+  closedDate?: string; // ISO date — set when product is closed
   /** @deprecated kept for backward compat with existing data */
   category?: 'PP' | 'PM';
 }
@@ -52,8 +52,8 @@ export interface Product {
 // Ruleset per product
 // ---------------------------------------------------------------------------
 export interface Ruleset {
-  effectiveDate: string;   // ISO date, e.g. "2025-01-01"
-  rules: Record<string, unknown>;  // product-specific rule tree
+  effectiveDate: string; // ISO date, e.g. "2025-01-01"
+  rules: Record<string, unknown>; // product-specific rule tree
   sources: OfficialSource[];
 }
 
@@ -61,9 +61,9 @@ export interface Ruleset {
 // History entry (auto-generated on save)
 // ---------------------------------------------------------------------------
 export interface HistoryEntry {
-  savedAt: string;         // ISO timestamp
-  savedBy: string;         // email or user id
-  diff?: string;           // human-readable diff summary
+  savedAt: string; // ISO timestamp
+  savedBy: string; // email or user id
+  diff?: string; // human-readable diff summary
 }
 
 // ---------------------------------------------------------------------------

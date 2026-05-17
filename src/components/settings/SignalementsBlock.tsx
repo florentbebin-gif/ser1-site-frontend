@@ -47,7 +47,11 @@ export default function SignalementsBlock(): React.ReactElement {
 
     if (!title.trim() || !page) return;
 
-    const success = await submitReport({ title: title.trim(), description: description.trim(), page });
+    const success = await submitReport({
+      title: title.trim(),
+      description: description.trim(),
+      page,
+    });
     if (success) {
       setTitle('');
       setDescription('');
@@ -70,8 +74,8 @@ export default function SignalementsBlock(): React.ReactElement {
       <div className="signalements-section">
         <h4 className="signalements-section-title">Signaler un problème</h4>
         <p className="signalements-intro">
-          Vous avez rencontré un bug ou souhaitez suggérer une amélioration ?
-          Décrivez le problème ci-dessous.
+          Vous avez rencontré un bug ou souhaitez suggérer une amélioration ? Décrivez le problème
+          ci-dessous.
         </p>
 
         <form onSubmit={handleSubmit} className="signalement-form">
@@ -111,7 +115,9 @@ export default function SignalementsBlock(): React.ReactElement {
             <textarea
               id="report-description"
               value={description}
-              onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setDescription(e.target.value)}
+              onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
+                setDescription(e.target.value)
+              }
               placeholder="Décrivez le problème en détail : étapes, comportement attendu et observé..."
               disabled={submitting}
               rows={4}
@@ -119,7 +125,9 @@ export default function SignalementsBlock(): React.ReactElement {
           </div>
 
           {submitError && <div className="alert alert-error">{submitError}</div>}
-          {submitSuccess && <div className="alert alert-success">Signalement envoyé avec succès !</div>}
+          {submitSuccess && (
+            <div className="alert alert-success">Signalement envoyé avec succès !</div>
+          )}
 
           <button type="submit" disabled={submitting} className="btn-submit">
             {submitting ? 'Envoi...' : 'Envoyer le signalement'}

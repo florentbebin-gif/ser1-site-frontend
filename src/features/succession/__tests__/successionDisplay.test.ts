@@ -59,7 +59,9 @@ describe('buildSuccessionDirectDisplayAnalysis', () => {
     expect(analysis.transmissionRows).toHaveLength(2);
     expect(analysis.transmissionRows[0]).toMatchObject({ id: 'E1', label: 'E1' });
     expect(analysis.transmissionRows[1]).toMatchObject({ id: 'E2', label: 'E2' });
-    expect(analysis.transmissionRows.reduce((sum, row) => sum + row.droits, 0)).toBe(expected.totalDroits);
+    expect(analysis.transmissionRows.reduce((sum, row) => sum + row.droits, 0)).toBe(
+      expected.totalDroits,
+    );
   });
 
   it("ignore l'enfant propre du partenaire oppose dans le deces PACS simule", () => {
@@ -239,13 +241,20 @@ describe('buildSuccessionDirectDisplayAnalysis', () => {
       { lien: 'petit_enfant', partSuccession: 150000, abattementOverride: 50000 },
       { lien: 'petit_enfant', partSuccession: 150000, abattementOverride: 50000 },
     ]);
-    expect(analysis.result?.detailHeritiers.map((detail) => detail.abattement)).toEqual([100000, 50000, 50000]);
-    expect(analysis.result?.detailHeritiers.map((detail) => detail.droits)).toEqual([38194, 18194, 18194]);
+    expect(analysis.result?.detailHeritiers.map((detail) => detail.abattement)).toEqual([
+      100000, 50000, 50000,
+    ]);
+    expect(analysis.result?.detailHeritiers.map((detail) => detail.droits)).toEqual([
+      38194, 18194, 18194,
+    ]);
     expect(analysis.result?.totalDroits).toBe(74582);
   });
 
   it('retient le max entre la part legale et le legs universel au conjoint marie (max, pas cumul)', () => {
-    const civil = makeCivil({ situationMatrimoniale: 'marie', regimeMatrimonial: 'communaute_legale' });
+    const civil = makeCivil({
+      situationMatrimoniale: 'marie',
+      regimeMatrimonial: 'communaute_legale',
+    });
     const devolutionContext = makeDevolution({
       testamentsBySide: {
         epoux1: {
@@ -326,7 +335,10 @@ describe('buildSuccessionDirectDisplayAnalysis', () => {
     expect(devolution.lines.some((line) => line.heritier === 'Frères et sœurs')).toBe(true);
     expect(analysis.heirs).toHaveLength(2);
     expect(analysis.transmissionRows).toHaveLength(2);
-    expect(analysis.transmissionRows.map((row) => row.label)).toEqual(['Frere / soeur 1', 'Frere / soeur 2']);
+    expect(analysis.transmissionRows.map((row) => row.label)).toEqual([
+      'Frere / soeur 1',
+      'Frere / soeur 2',
+    ]);
     expect(analysis.result?.totalDroits).toBeGreaterThan(0);
   });
 
@@ -362,15 +374,17 @@ describe('buildSuccessionDirectDisplayAnalysis', () => {
       familyMembers: [],
       order: 'epoux1',
       actifNetSuccession: 200000,
-      donationsContext: [{
-        id: 'don-1',
-        type: 'rapportable',
-        montant: 100000,
-        valeurDonation: 150000,
-        date: '2020-06',
-        donateur: 'epoux1',
-        donataire: 'E1',
-      }],
+      donationsContext: [
+        {
+          id: 'don-1',
+          type: 'rapportable',
+          montant: 100000,
+          valeurDonation: 150000,
+          date: '2020-06',
+          donateur: 'epoux1',
+          donataire: 'E1',
+        },
+      ],
       donationSettings: DONATION_SETTINGS,
       referenceDate: new Date('2026-01-01T00:00:00Z'),
     });
@@ -450,6 +464,8 @@ describe('buildSuccessionDirectDisplayAnalysis', () => {
     expect(withAbatement.transmissionRows[0]?.brut).toBe(400000);
     expect(withoutAbatement.result?.totalDroits).toBe(58194);
     expect(withAbatement.result?.totalDroits).toBe(42194);
-    expect(withAbatement.result?.totalDroits).toBeLessThan(withoutAbatement.result?.totalDroits ?? 0);
+    expect(withAbatement.result?.totalDroits).toBeLessThan(
+      withoutAbatement.result?.totalDroits ?? 0,
+    );
   });
 });

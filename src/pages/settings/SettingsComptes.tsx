@@ -51,8 +51,8 @@ export default function SettingsComptes() {
     void usersHook.fetchUsers('effect');
     void cabinetsHook.fetchCabinets();
     void themesHook.fetchThemes();
-  // fetchUsers/fetchCabinets/fetchThemes are stable (useCallback with empty or stable deps)
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // fetchUsers/fetchCabinets/fetchThemes are stable (useCallback with empty or stable deps)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isAdmin, authLoading, location.key, DEBUG_COMPTES_REFRESH]);
 
   if (!isAdmin) {
@@ -80,7 +80,9 @@ export default function SettingsComptes() {
     <div className="settings-comptes">
       <UserInfoBanner />
 
-      {error && <div className="settings-feedback-message settings-feedback-message--error">{error}</div>}
+      {error && (
+        <div className="settings-feedback-message settings-feedback-message--error">{error}</div>
+      )}
 
       {usersHook.loading ? (
         <p>Chargement...</p>

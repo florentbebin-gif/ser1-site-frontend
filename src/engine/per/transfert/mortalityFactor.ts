@@ -28,10 +28,14 @@ function getGenerationKey(table: MortalityTable, birthYear: number): string {
   if (table.type !== 'generation') return '';
   const key = String(birthYear);
   if (table.generations[key]) return key;
-  const generations = Object.keys(table.generations).map(Number).sort((left, right) => left - right);
-  const closest = generations.reduce((best, candidate) => (
-    Math.abs(candidate - birthYear) < Math.abs(best - birthYear) ? candidate : best
-  ), generations[0]);
+  const generations = Object.keys(table.generations)
+    .map(Number)
+    .sort((left, right) => left - right);
+  const closest = generations.reduce(
+    (best, candidate) =>
+      Math.abs(candidate - birthYear) < Math.abs(best - birthYear) ? candidate : best,
+    generations[0],
+  );
   return String(closest);
 }
 
@@ -105,17 +109,22 @@ export function computeAnnuityFactor(input: ComputeAnnuityFactorInput): number {
   for (let period = 1; period <= periods; period += 1) {
     const timingOffset = input.paymentTiming === 'advance' ? 1 : 0;
     const periodYears = Math.max(0, (period - timingOffset) / frequency);
-    const guaranteed = input.guaranteedAnnuities.enabled
-      && periodYears <= input.guaranteedAnnuities.years;
+    const guaranteed =
+      input.guaranteedAnnuities.enabled && periodYears <= input.guaranteedAnnuities.years;
     const probability = guaranteed
       ? 1
-      : paymentProbability(periodYears, insuredSeries, input.insured.liquidationAge, input.reversion);
-    const temporaryMultiplier = input.temporaryIncrease.enabled
-      && periodYears <= input.temporaryIncrease.years
-      ? 1 + input.temporaryIncrease.increaseRate
-      : 1;
+      : paymentProbability(
+          periodYears,
+          insuredSeries,
+          input.insured.liquidationAge,
+          input.reversion,
+        );
+    const temporaryMultiplier =
+      input.temporaryIncrease.enabled && periodYears <= input.temporaryIncrease.years
+        ? 1 + input.temporaryIncrease.increaseRate
+        : 1;
     const discount = discountBase > 0 ? discountBase ** -periodYears : 1;
-    factor += discount * probability * temporaryMultiplier / frequency;
+    factor += (discount * probability * temporaryMultiplier) / frequency;
   }
 
   return factor;

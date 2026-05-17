@@ -39,14 +39,15 @@ function rangesOverlap(
 }
 
 export function isSubPhaseActive(phase: AssociateRevenuePhaseInputV6, key: SubPhaseKey): boolean {
-  if (key === 'remuneration') return phase.remuneration.enabled && phase.remuneration.source !== 'none';
+  if (key === 'remuneration')
+    return phase.remuneration.enabled && phase.remuneration.source !== 'none';
   if (key === 'distribution') return phase.distribution.enabled;
   if (key === 'ccaContribution') return phase.ccaContribution.enabled;
   return phase.ccaRepayment.enabled;
 }
 
 function subPhaseLabel(key: SubPhaseKey): string {
-  return SUB_PHASE_NAV.find(item => item.key === key)?.label ?? key;
+  return SUB_PHASE_NAV.find((item) => item.key === key)?.label ?? key;
 }
 
 export function findOverlappingPaliers(
@@ -55,10 +56,9 @@ export function findOverlappingPaliers(
 ): string[] {
   return SUB_PHASE_NAV.flatMap(({ key }) => {
     if (!isSubPhaseActive(draft, key)) return [];
-    const conflict = phases.find(phase =>
-      phase.id !== draft.id &&
-      isSubPhaseActive(phase, key) &&
-      rangesOverlap(draft, phase),
+    const conflict = phases.find(
+      (phase) =>
+        phase.id !== draft.id && isSubPhaseActive(phase, key) && rangesOverlap(draft, phase),
     );
     if (!conflict) return [];
     return [

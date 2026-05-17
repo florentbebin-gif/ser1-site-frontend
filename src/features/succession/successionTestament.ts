@@ -66,7 +66,9 @@ export function createSuccessionParticularLegacyEntry(
   };
 }
 
-export function cloneSuccessionTestamentConfig(config: SuccessionTestamentConfig): SuccessionTestamentConfig {
+export function cloneSuccessionTestamentConfig(
+  config: SuccessionTestamentConfig,
+): SuccessionTestamentConfig {
   return {
     ...config,
     particularLegacies: config.particularLegacies.map((entry) => ({ ...entry })),
@@ -123,7 +125,9 @@ function asAmount(value: unknown): number {
 function formatPercent(value: number): string {
   if (!Number.isFinite(value)) return '0';
   const rounded = Math.round(value * 100) / 100;
-  return Number.isInteger(rounded) ? String(rounded) : rounded.toFixed(2).replace(/0+$/, '').replace(/\.$/, '');
+  return Number.isInteger(rounded)
+    ? String(rounded)
+    : rounded.toFixed(2).replace(/0+$/, '').replace(/\.$/, '');
 }
 
 export function getQuotiteDisponiblePctForSide(
@@ -131,9 +135,11 @@ export function getQuotiteDisponiblePctForSide(
   familyMembers: FamilyMember[],
   side: SuccessionPrimarySide,
 ): number {
-  return getQuotiteDisponibleRatio(
-    countEffectiveDescendantBranchesForDeceased(enfants, familyMembers, side),
-  ) * 100;
+  return (
+    getQuotiteDisponibleRatio(
+      countEffectiveDescendantBranchesForDeceased(enfants, familyMembers, side),
+    ) * 100
+  );
 }
 
 export function getReserveHintForSide(
@@ -143,7 +149,7 @@ export function getReserveHintForSide(
 ): string | null {
   const branchCount = countEffectiveDescendantBranchesForDeceased(enfants, familyMembers, side);
   if (branchCount <= 0) return null;
-  const reservePct = 100 - (getQuotiteDisponibleRatio(branchCount) * 100);
+  const reservePct = 100 - getQuotiteDisponibleRatio(branchCount) * 100;
   return `reservataire - min. ${formatPercent(reservePct / branchCount)} %`;
 }
 
@@ -151,10 +157,7 @@ function isCoupleSituation(situation: SituationMatrimoniale): boolean {
   return situation === 'marie' || situation === 'pacse' || situation === 'concubinage';
 }
 
-function getPersonLabel(
-  situation: SituationMatrimoniale,
-  side: SuccessionPrimarySide,
-): string {
+function getPersonLabel(situation: SituationMatrimoniale, side: SuccessionPrimarySide): string {
   if (situation === 'marie') return side === 'epoux1' ? 'Epoux 1' : 'Epoux 2';
   if (situation === 'pacse') return side === 'epoux1' ? 'Partenaire 1' : 'Partenaire 2';
   if (situation === 'concubinage') return side === 'epoux1' ? 'Personne 1' : 'Personne 2';
@@ -205,14 +208,13 @@ export function getTestamentCardTitle(
   return getPersonLabel(situation, side);
 }
 
-function getBranchLabel(
-  situation: SituationMatrimoniale,
-  branch: SuccessionPrimarySide,
-): string {
+function getBranchLabel(situation: SituationMatrimoniale, branch: SuccessionPrimarySide): string {
   if (situation === 'marie') return branch === 'epoux1' ? 'cote Epoux 1' : 'cote Epoux 2';
   if (situation === 'pacse') return branch === 'epoux1' ? 'cote Partenaire 1' : 'cote Partenaire 2';
-  if (situation === 'concubinage') return branch === 'epoux1' ? 'cote Personne 1' : 'cote Personne 2';
-  if (situation === 'divorce') return branch === 'epoux1' ? 'cote Defunt(e)' : "cote Ex-conjoint(e)";
+  if (situation === 'concubinage')
+    return branch === 'epoux1' ? 'cote Personne 1' : 'cote Personne 2';
+  if (situation === 'divorce')
+    return branch === 'epoux1' ? 'cote Defunt(e)' : 'cote Ex-conjoint(e)';
   return 'cote Defunt(e)';
 }
 
@@ -232,7 +234,8 @@ function getFamilyMemberLabel(
   const baseLabel = getFamilyMemberTypeLabel(member.type);
   if (member.type === 'petit_enfant' && member.parentEnfantId) {
     const parentIndex = enfants.findIndex((enfant) => enfant.id === member.parentEnfantId);
-    if (parentIndex >= 0) return `${baseLabel} (branche ${getEnfantParentLabel(enfants[parentIndex], parentIndex)})`;
+    if (parentIndex >= 0)
+      return `${baseLabel} (branche ${getEnfantParentLabel(enfants[parentIndex], parentIndex)})`;
   }
   if (member.branch) return `${baseLabel} (${getBranchLabel(situation, member.branch)})`;
   return baseLabel;
@@ -320,7 +323,9 @@ function clampTestamentAmount(
   const normalizedRequested = asAmount(requestedAmount);
   const normalizedPlafond = asAmount(plafondTestament);
   if (normalizedRequested <= normalizedPlafond) return normalizedRequested;
-  warnings.push('Montant testamentaire saisi au-delà de la part redistribuable retenue par le moteur: plafonnement appliqué.');
+  warnings.push(
+    'Montant testamentaire saisi au-delà de la part redistribuable retenue par le moteur: plafonnement appliqué.',
+  );
   return normalizedPlafond;
 }
 
@@ -330,12 +335,19 @@ export function computeTestamentDistribution(
   const { testament } = input;
   if (!testament.active) return null;
 
-  const warnings: string[] = ['Testament actif: valider les clauses exactes et leur articulation avec la réserve héréditaire.'];
-  const plafondLegal = asAmount(input.masseReference)
-    * getQuotiteDisponibleRatio(countEffectiveDescendantBranchesForDeceased(input.enfants, input.familyMembers, input.side));
+  const warnings: string[] = [
+    'Testament actif: valider les clauses exactes et leur articulation avec la réserve héréditaire.',
+  ];
+  const plafondLegal =
+    asAmount(input.masseReference) *
+    getQuotiteDisponibleRatio(
+      countEffectiveDescendantBranchesForDeceased(input.enfants, input.familyMembers, input.side),
+    );
   const plafondTestament = Math.min(
     plafondLegal,
-    input.maxAvailableAmount == null ? asAmount(input.masseReference) : asAmount(input.maxAvailableAmount),
+    input.maxAvailableAmount == null
+      ? asAmount(input.masseReference)
+      : asAmount(input.maxAvailableAmount),
   );
 
   if (!testament.dispositionType) {
@@ -362,7 +374,9 @@ export function computeTestamentDistribution(
     const requestedAmount = entries.reduce((sum, entry) => sum + entry.amount, 0);
 
     if (requestedAmount <= 0) {
-      warnings.push('Legs particuliers selectionnes sans montant: renseignez la valeur des biens legues.');
+      warnings.push(
+        'Legs particuliers selectionnes sans montant: renseignez la valeur des biens legues.',
+      );
       return {
         dispositionType: testament.dispositionType,
         beneficiaries,
@@ -387,7 +401,9 @@ export function computeTestamentDistribution(
         input.familyMembers,
       );
       if (!resolved) {
-        warnings.push('Un beneficiaire de legs particulier est introuvable dans le contexte familial.');
+        warnings.push(
+          'Un beneficiaire de legs particulier est introuvable dans le contexte familial.',
+        );
         return;
       }
       appendDistributionBeneficiary(beneficiaries, resolved, entry.amount * ratio);
@@ -398,7 +414,10 @@ export function computeTestamentDistribution(
       beneficiaries,
       plafondTestament,
       requestedAmount,
-      distributedAmount: beneficiaries.reduce((sum, beneficiary) => sum + beneficiary.partSuccession, 0),
+      distributedAmount: beneficiaries.reduce(
+        (sum, beneficiary) => sum + beneficiary.partSuccession,
+        0,
+      ),
       warnings,
     };
   }
@@ -433,11 +452,14 @@ export function computeTestamentDistribution(
     };
   }
 
-  const requestedAmount = testament.dispositionType === 'legs_universel'
-    ? asAmount(input.masseReference)
-    : asAmount(input.masseReference) * (Math.min(100, Math.max(0, testament.quotePartPct)) / 100);
+  const requestedAmount =
+    testament.dispositionType === 'legs_universel'
+      ? asAmount(input.masseReference)
+      : asAmount(input.masseReference) * (Math.min(100, Math.max(0, testament.quotePartPct)) / 100);
   if (testament.dispositionType === 'legs_titre_universel' && requestedAmount <= 0) {
-    warnings.push('Quote-part de legs a titre universel nulle: renseignez un pourcentage pertinent.');
+    warnings.push(
+      'Quote-part de legs a titre universel nulle: renseignez un pourcentage pertinent.',
+    );
   }
 
   const distributedAmount = clampTestamentAmount(requestedAmount, plafondTestament, warnings);
@@ -461,29 +483,34 @@ export function buildTestamentBeneficiaryOptions(
 ): SuccessionTestamentBeneficiaryOption[] {
   const options: SuccessionTestamentBeneficiaryOption[] = [];
   const reserveHint = getReserveHintForSide(enfants, familyMembers, side);
-  const relevantEnfantIds = new Set(getRelevantSuccessionEnfants(enfants, side).map((enfant) => enfant.id));
+  const relevantEnfantIds = new Set(
+    getRelevantSuccessionEnfants(enfants, side).map((enfant) => enfant.id),
+  );
 
   if (isCoupleSituation(situation)) {
     const counterpart = getCounterpartSide(side);
     options.push({
       value: `principal:${counterpart}`,
       label: getPersonLabel(situation, counterpart),
-      description: situation === 'marie'
-        ? 'Conjoint survivant'
-        : situation === 'pacse'
-          ? 'Partenaire survivant'
-          : 'Autre membre du couple',
+      description:
+        situation === 'marie'
+          ? 'Conjoint survivant'
+          : situation === 'pacse'
+            ? 'Partenaire survivant'
+            : 'Autre membre du couple',
     });
   }
 
   enfants.forEach((enfant, index) => {
-    const reserveSuffix = relevantEnfantIds.has(enfant.id) && reserveHint ? ` - ${reserveHint}` : '';
+    const reserveSuffix =
+      relevantEnfantIds.has(enfant.id) && reserveHint ? ` - ${reserveHint}` : '';
     options.push({
       value: `enfant:${enfant.id}`,
       label: `${getEnfantParentLabel(enfant, index)}${reserveSuffix}`,
-      description: relevantEnfantIds.has(enfant.id) && reserveHint
-        ? 'Descendant avec reserve hereditaire'
-        : 'Enfant declare dans le contexte familial',
+      description:
+        relevantEnfantIds.has(enfant.id) && reserveHint
+          ? 'Descendant avec reserve hereditaire'
+          : 'Enfant declare dans le contexte familial',
     });
   });
 

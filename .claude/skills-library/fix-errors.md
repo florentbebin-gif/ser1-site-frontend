@@ -7,9 +7,11 @@ description: Systematically fix all errors from npm run check — auto-triggered
 ## Process
 
 ### 1. Diagnose
+
 Run `npm run check` and capture full output. Identify which checks fail.
 
 ### 2. Fix in dependency order
+
 Resolve errors following this sequence (each step may unblock the next):
 
 1. **lint** (`npm run lint`) — Fix ESLint errors. Use `--fix` for auto-fixable ones first.
@@ -24,10 +26,13 @@ Resolve errors following this sequence (each step may unblock the next):
 10. **build** (`npm run build`) — Fix Vite build errors.
 
 ### 3. Verify each step
+
 After fixing a category, re-run that specific check to confirm it passes before moving on.
 
 ### 4. Final verification
+
 Run `npm run check` end-to-end. All checks must pass.
 
 ### 5. Report
+
 List each error found, what was changed, and confirmation of resolution.

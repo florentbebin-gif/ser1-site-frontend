@@ -2,10 +2,7 @@ import { useState } from 'react';
 import type { CompareResult } from '@/engine/placement/types';
 import { InputEuro, InputNumber, Toggle } from './PlacementFormControls';
 import { SimSelect } from '@/components/ui/sim';
-import type {
-  PlacementLiquidationState,
-  PlacementSimulatorState,
-} from '../utils/normalizers';
+import type { PlacementLiquidationState, PlacementSimulatorState } from '../utils/normalizers';
 import { PlacementLiquidationDetailsTable } from './PlacementLiquidationDetailsTable';
 
 interface PlacementLiquidationSectionProps {
@@ -35,10 +32,10 @@ export function PlacementLiquidationSection({
   produit2,
   compareEnabled,
 }: PlacementLiquidationSectionProps) {
-  const showOptionBareme = isExpert && (
-    (produit1 && ['CTO', 'AV', 'PEA'].includes(produit1.envelope))
-    || (compareEnabled && produit2 && ['CTO', 'AV', 'PEA'].includes(produit2.envelope))
-  );
+  const showOptionBareme =
+    isExpert &&
+    ((produit1 && ['CTO', 'AV', 'PEA'].includes(produit1.envelope)) ||
+      (compareEnabled && produit2 && ['CTO', 'AV', 'PEA'].includes(produit2.envelope)));
 
   const [table1Open, setTable1Open] = useState(false);
   const [table2Open, setTable2Open] = useState(false);
@@ -62,10 +59,12 @@ export function PlacementLiquidationSection({
                 forced={!isExpert}
                 options={[
                   { value: 'epuiser', label: 'Épuiser sur N années' },
-                  ...(isExpert ? [
-                    { value: 'mensualite', label: 'Mensualité cible' },
-                    { value: 'unique', label: 'Retrait unique' },
-                  ] : []),
+                  ...(isExpert
+                    ? [
+                        { value: 'mensualite', label: 'Mensualité cible' },
+                        { value: 'unique', label: 'Retrait unique' },
+                      ]
+                    : []),
                 ]}
               />
             </td>
@@ -118,7 +117,9 @@ export function PlacementLiquidationSection({
                 {produit1 && ['CTO', 'AV', 'PEA'].includes(produit1.envelope) ? (
                   <Toggle
                     checked={produit1OptionBaremeIR}
-                    onChange={(value) => updateProductOption(0, 'liquidation.optionBaremeIR', value)}
+                    onChange={(value) =>
+                      updateProductOption(0, 'liquidation.optionBaremeIR', value)
+                    }
                     ariaLabel={`Activer l’option au barème IR en liquidation pour ${produit1.envelopeLabel}`}
                   />
                 ) : (
@@ -130,7 +131,9 @@ export function PlacementLiquidationSection({
                   {produit2 && ['CTO', 'AV', 'PEA'].includes(produit2.envelope) ? (
                     <Toggle
                       checked={produit2OptionBaremeIR}
-                      onChange={(value) => updateProductOption(1, 'liquidation.optionBaremeIR', value)}
+                      onChange={(value) =>
+                        updateProductOption(1, 'liquidation.optionBaremeIR', value)
+                      }
                       ariaLabel={`Activer l’option au barème IR en liquidation pour ${produit2.envelopeLabel}`}
                     />
                   ) : (
@@ -172,8 +175,8 @@ export function PlacementLiquidationSection({
               product={produit1}
               showAllColumns={showAllColumns}
               showCapitalDecesColumn={Boolean(
-                produit1.envelope === 'PER'
-                && state.products[0].versementConfig?.annuel?.garantieBonneFin?.active
+                produit1.envelope === 'PER' &&
+                state.products[0].versementConfig?.annuel?.garantieBonneFin?.active,
               )}
               onOpenChange={setTable1Open}
             />
@@ -183,8 +186,8 @@ export function PlacementLiquidationSection({
               product={produit2}
               showAllColumns={showAllColumns}
               showCapitalDecesColumn={Boolean(
-                produit2.envelope === 'PER'
-                && state.products[1].versementConfig?.annuel?.garantieBonneFin?.active
+                produit2.envelope === 'PER' &&
+                state.products[1].versementConfig?.annuel?.garantieBonneFin?.active,
               )}
               onOpenChange={setTable2Open}
             />

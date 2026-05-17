@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest';
 
-import { computePerTransfert, type PerTransfertFiscalAssumptions, type PerTransfertInput } from '../index';
+import {
+  computePerTransfert,
+  type PerTransfertFiscalAssumptions,
+  type PerTransfertInput,
+} from '../index';
 
 const fiscalAssumptions: PerTransfertFiscalAssumptions = {
   rvtoTaxableFractionByAge: [
@@ -19,7 +23,9 @@ const fiscalAssumptions: PerTransfertFiscalAssumptions = {
   smallAnnuityCapitalExitFlatTaxAbatementRate: 0.1,
 };
 
-function makeInput(overrides: Partial<PerTransfertInput> & Record<string, unknown> = {}): PerTransfertInput {
+function makeInput(
+  overrides: Partial<PerTransfertInput> & Record<string, unknown> = {},
+): PerTransfertInput {
   return {
     productType: 'PER',
     originalContractType: 'MADELIN',
@@ -74,7 +80,11 @@ function makeInput(overrides: Partial<PerTransfertInput> & Record<string, unknow
   };
 }
 
-function expectClosePercent(actual: number | undefined, expected: number, toleranceRate: number): void {
+function expectClosePercent(
+  actual: number | undefined,
+  expected: number,
+  toleranceRate: number,
+): void {
   expect(actual).toBeDefined();
   expect(Math.abs((actual ?? 0) - expected)).toBeLessThanOrEqual(expected * toleranceRate);
 }
@@ -92,54 +102,62 @@ describe('computePerTransfert', () => {
   });
 
   it('neutralise le taux technique positif sur PER/PERP', () => {
-    const result = computePerTransfert(makeInput({
-      annuityOptions: {
-        ...makeInput().annuityOptions,
-        technicalRate: 0.01,
-      },
-    }));
+    const result = computePerTransfert(
+      makeInput({
+        annuityOptions: {
+          ...makeInput().annuityOptions,
+          technicalRate: 0.01,
+        },
+      }),
+    );
 
-    expect(result.warnings).toContain('Le taux technique positif est neutralise pour un PER/PERP dans le moteur.');
+    expect(result.warnings).toContain(
+      'Le taux technique positif est neutralise pour un PER/PERP dans le moteur.',
+    );
   });
 
   it('conserve la rente du releve comme rente brute a la liquidation', () => {
-    const result = computePerTransfert(makeInput({
-      renteActuelleAnnuelleBrute: 3_000,
-      insured: {
-        sex: 'F',
-        birthYear: 1980,
-        currentAge: 60,
-        liquidationAge: 64,
-      },
-      projection: {
-        ...makeInput().projection,
-        currentRentRevaluationRate: 0.01,
-      },
-    }));
+    const result = computePerTransfert(
+      makeInput({
+        renteActuelleAnnuelleBrute: 3_000,
+        insured: {
+          sex: 'F',
+          birthYear: 1980,
+          currentAge: 60,
+          liquidationAge: 64,
+        },
+        projection: {
+          ...makeInput().projection,
+          currentRentRevaluationRate: 0.01,
+        },
+      }),
+    );
 
     expect(result.currentRent.grossAnnualRent).toBe(3_000);
   });
 
   it('calcule les sorties capital nettes C1 selon les golden Excel G11 a G14', () => {
-    const result = computePerTransfert(makeInput({
-      capitalAcquis: 100_000,
-      interetsAcquis: 0,
-      renteActuelleAnnuelleBrute: 3_000,
-      insured: {
-        sex: 'F',
-        birthYear: 1980,
-        currentAge: 64,
-        liquidationAge: 64,
-      },
-      tmiRetraite: 0.3,
-      projection: {
-        ...makeInput().projection,
-        transferFeeRate: 0,
-        performanceUntilRetirementRate: 0,
-        capitalExitRevaluationRate: 0.03,
-        capitalShareRate: 1,
-      },
-    }));
+    const result = computePerTransfert(
+      makeInput({
+        capitalAcquis: 100_000,
+        interetsAcquis: 0,
+        renteActuelleAnnuelleBrute: 3_000,
+        insured: {
+          sex: 'F',
+          birthYear: 1980,
+          currentAge: 64,
+          liquidationAge: 64,
+        },
+        tmiRetraite: 0.3,
+        projection: {
+          ...makeInput().projection,
+          transferFeeRate: 0,
+          performanceUntilRetirementRate: 0,
+          capitalExitRevaluationRate: 0.03,
+          capitalShareRate: 1,
+        },
+      }),
+    );
     const capitalExit = result.capitalExit as typeof result.capitalExit & {
       unique?: { netIRPS: number };
       withoutWithdrawalToLongHorizon?: number;
@@ -165,28 +183,37 @@ describe('computePerTransfert', () => {
   });
 
   it('applique les frais d entree du nouveau PER apres les frais sortants', () => {
-    const result = computePerTransfert(makeInput({
-      capitalAcquis: 100_000,
-      projection: {
-        ...makeInput().projection,
-        transferFeeRate: 0.05,
-        newPerEntryFeeRate: 0.02,
-      } as PerTransfertInput['projection'] & { newPerEntryFeeRate: number },
-    }));
+    const result = computePerTransfert(
+      makeInput({
+        capitalAcquis: 100_000,
+        projection: {
+          ...makeInput().projection,
+          transferFeeRate: 0.05,
+          newPerEntryFeeRate: 0.02,
+        } as PerTransfertInput['projection'] & { newPerEntryFeeRate: number },
+      }),
+    );
 
     expect(result.capitalAfterTransfer).toBeCloseTo(93_100);
   });
 
   it('expose un scenario conserver distinct avec la rente du releve non revalorisee avant liquidation', () => {
-    const result = computePerTransfert(makeInput({
-      renteActuelleAnnuelleBrute: 3_000,
-      projection: {
-        ...makeInput().projection,
-        currentRentRevaluationRate: 0.03,
-        currentContractPerformanceUntilRetirementRate: 0.02,
-      } as PerTransfertInput['projection'] & { currentContractPerformanceUntilRetirementRate: number },
-    })) as ReturnType<typeof computePerTransfert> & {
-      keepScenario?: { capitalAtLiquidation: number; currentRent: { grossAnnualRent: number; netMonthly: number } };
+    const result = computePerTransfert(
+      makeInput({
+        renteActuelleAnnuelleBrute: 3_000,
+        projection: {
+          ...makeInput().projection,
+          currentRentRevaluationRate: 0.03,
+          currentContractPerformanceUntilRetirementRate: 0.02,
+        } as PerTransfertInput['projection'] & {
+          currentContractPerformanceUntilRetirementRate: number;
+        },
+      }),
+    ) as ReturnType<typeof computePerTransfert> & {
+      keepScenario?: {
+        capitalAtLiquidation: number;
+        currentRent: { grossAnnualRent: number; netMonthly: number };
+      };
     };
 
     expect(result.keepScenario).toBeDefined();
@@ -196,64 +223,82 @@ describe('computePerTransfert', () => {
   });
 
   it('capitalise le versement annuel actuel uniquement dans le scenario conserver', () => {
-    const base = computePerTransfert(makeInput({
-      projection: {
-        ...makeInput().projection,
-        transferFeeRate: 0,
-        performanceUntilRetirementRate: 0,
-        currentContractPerformanceUntilRetirementRate: 0.02,
-      } as PerTransfertInput['projection'] & { currentContractPerformanceUntilRetirementRate: number },
-    })) as ReturnType<typeof computePerTransfert> & {
+    const base = computePerTransfert(
+      makeInput({
+        projection: {
+          ...makeInput().projection,
+          transferFeeRate: 0,
+          performanceUntilRetirementRate: 0,
+          currentContractPerformanceUntilRetirementRate: 0.02,
+        } as PerTransfertInput['projection'] & {
+          currentContractPerformanceUntilRetirementRate: number;
+        },
+      }),
+    ) as ReturnType<typeof computePerTransfert> & {
       keepScenario?: { capitalAtLiquidation: number };
     };
-    const withPayment = computePerTransfert(makeInput({
-      annualCurrentPayment: 1_200,
-      projection: {
-        ...makeInput().projection,
-        transferFeeRate: 0,
-        performanceUntilRetirementRate: 0,
-        currentContractPerformanceUntilRetirementRate: 0.02,
-      } as PerTransfertInput['projection'] & { currentContractPerformanceUntilRetirementRate: number },
-    })) as ReturnType<typeof computePerTransfert> & {
+    const withPayment = computePerTransfert(
+      makeInput({
+        annualCurrentPayment: 1_200,
+        projection: {
+          ...makeInput().projection,
+          transferFeeRate: 0,
+          performanceUntilRetirementRate: 0,
+          currentContractPerformanceUntilRetirementRate: 0.02,
+        } as PerTransfertInput['projection'] & {
+          currentContractPerformanceUntilRetirementRate: number;
+        },
+      }),
+    ) as ReturnType<typeof computePerTransfert> & {
       keepScenario?: { capitalAtLiquidation: number };
     };
 
     expect(withPayment.capitalAfterTransfer).toBe(base.capitalAfterTransfer);
-    expect(withPayment.keepScenario?.capitalAtLiquidation).toBeGreaterThan(base.keepScenario?.capitalAtLiquidation ?? 0);
+    expect(withPayment.keepScenario?.capitalAtLiquidation).toBeGreaterThan(
+      base.keepScenario?.capitalAtLiquidation ?? 0,
+    );
   });
 
   it('capitalise le versement annuel nouveau PER uniquement dans le scénario transférer', () => {
-    const base = computePerTransfert(makeInput({
-      projection: {
-        ...makeInput().projection,
-        transferFeeRate: 0,
-        performanceUntilRetirementRate: 0.02,
-      },
-    }));
-    const withPayment = computePerTransfert(makeInput({
-      projection: {
-        ...makeInput().projection,
-        transferFeeRate: 0,
-        performanceUntilRetirementRate: 0.02,
-        newPerAnnualPayment: 1_200,
-      } as PerTransfertInput['projection'] & { newPerAnnualPayment: number },
-    }));
+    const base = computePerTransfert(
+      makeInput({
+        projection: {
+          ...makeInput().projection,
+          transferFeeRate: 0,
+          performanceUntilRetirementRate: 0.02,
+        },
+      }),
+    );
+    const withPayment = computePerTransfert(
+      makeInput({
+        projection: {
+          ...makeInput().projection,
+          transferFeeRate: 0,
+          performanceUntilRetirementRate: 0.02,
+          newPerAnnualPayment: 1_200,
+        } as PerTransfertInput['projection'] & { newPerAnnualPayment: number },
+      }),
+    );
 
-    expect(withPayment.keepScenario.capitalAtLiquidation).toBeCloseTo(base.keepScenario.capitalAtLiquidation);
+    expect(withPayment.keepScenario.capitalAtLiquidation).toBeCloseTo(
+      base.keepScenario.capitalAtLiquidation,
+    );
     expect(withPayment.capitalAtLiquidation).toBeGreaterThan(base.capitalAtLiquidation);
   });
 
   it('force la sortie capital a zero sur le compartiment C3 hors petite rente', () => {
-    const result = computePerTransfert(makeInput({
-      originalContractType: 'ARTICLE83',
-      targetCompartment: 'C3',
-      capitalAcquis: 200_000,
-      renteActuelleAnnuelleBrute: 6_000,
-      projection: {
-        ...makeInput().projection,
-        capitalShareRate: 1,
-      },
-    }));
+    const result = computePerTransfert(
+      makeInput({
+        originalContractType: 'ARTICLE83',
+        targetCompartment: 'C3',
+        capitalAcquis: 200_000,
+        renteActuelleAnnuelleBrute: 6_000,
+        projection: {
+          ...makeInput().projection,
+          capitalShareRate: 1,
+        },
+      }),
+    );
 
     expect(result.compartment).toBe('C3');
     expect(result.capitalExit.shareRate).toBe(0);
@@ -261,69 +306,91 @@ describe('computePerTransfert', () => {
   });
 
   it('fiscalise le capital C3 petite rente comme un PER transféré et conserve les alias historiques', () => {
-    const result = computePerTransfert(makeInput({
-      originalContractType: 'ARTICLE83',
-      targetCompartment: 'C3',
-      capitalAcquis: 10_000,
-      interetsAcquis: 1_000,
-      renteActuelleAnnuelleBrute: 300,
-      projection: {
-        ...makeInput().projection,
-        transferFeeRate: 0,
-        performanceUntilRetirementRate: 0,
-        capitalShareRate: 1,
-      },
-    }));
+    const result = computePerTransfert(
+      makeInput({
+        originalContractType: 'ARTICLE83',
+        targetCompartment: 'C3',
+        capitalAcquis: 10_000,
+        interetsAcquis: 1_000,
+        renteActuelleAnnuelleBrute: 300,
+        projection: {
+          ...makeInput().projection,
+          transferFeeRate: 0,
+          performanceUntilRetirementRate: 0,
+          capitalShareRate: 1,
+        },
+      }),
+    );
 
     expect(result.smallAnnuityCapitalExitEligible).toBe(true);
     expect(result.capitalExit.unique.available).toBe(true);
     expect(result.capitalExit.unique.incomeTax).toBeCloseTo(1_118);
     expect(result.capitalExit.unique.socialContributions).toBeCloseTo(186);
-    expect(result.capitalExit.unique.netOfSocialContributions).toBe(result.capitalExit.unique.netPS);
+    expect(result.capitalExit.unique.netOfSocialContributions).toBe(
+      result.capitalExit.unique.netPS,
+    );
     expect(result.capitalExit.unique.netOfAllTaxes).toBe(result.capitalExit.unique.netIRPS);
     expect(result.currentRent.fiscal.grossAnnualRent).toBeGreaterThan(0);
-    expect(result.currentRent.fiscal.netOfSocialContributions).toBeGreaterThan(result.currentRent.fiscal.netOfAllTaxes);
+    expect(result.currentRent.fiscal.netOfSocialContributions).toBeGreaterThan(
+      result.currentRent.fiscal.netOfAllTaxes,
+    );
     expect(result.currentRent.fiscal.netAnnualRent).toBe(result.currentRent.fiscal.netOfAllTaxes);
   });
 
   it('agrège plusieurs poches Préfon sans reclassement automatique C0 vers C1', () => {
-    const result = computePerTransfert(makeInput({
-      productType: 'PER_POINTS',
-      originalContractType: 'PER_POINTS',
-      targetCompartment: 'C0',
-      capitalAcquis: 10_000,
-      interetsAcquis: 0,
-      renteActuelleAnnuelleBrute: 300,
-      projection: {
-        ...makeInput().projection,
-        transferFeeRate: 0,
-        performanceUntilRetirementRate: 0,
-        capitalShareRate: 0,
-      },
-      prefon: {
-        enabled: true,
-        points: 0,
-        acquisitionAge: 60,
-        params: {
-          millesime: 2025,
-          valeurAcquisition: 2,
-          valeurService: 0.1,
-          fraisVersementRate: 0,
-          fraisTransfertRate: 0,
-          coefAcquisitionByAge: { 60: 1 },
-          coefLiquidationByAge: { 64: 1 },
-          sourceLabel: 'test',
+    const result = computePerTransfert(
+      makeInput({
+        productType: 'PER_POINTS',
+        originalContractType: 'PER_POINTS',
+        targetCompartment: 'C0',
+        capitalAcquis: 10_000,
+        interetsAcquis: 0,
+        renteActuelleAnnuelleBrute: 300,
+        projection: {
+          ...makeInput().projection,
+          transferFeeRate: 0,
+          performanceUntilRetirementRate: 0,
+          capitalShareRate: 0,
         },
-        pockets: [
-          { compartment: 'C0', points: 1_000, capitalAmount: 0, transferValuePerPoint: 0, serviceValue: 0.1 },
-          { compartment: 'C2', points: 500, capitalAmount: 0, transferValuePerPoint: 0, serviceValue: 0.1 },
-        ],
-      },
-    }));
+        prefon: {
+          enabled: true,
+          points: 0,
+          acquisitionAge: 60,
+          params: {
+            millesime: 2025,
+            valeurAcquisition: 2,
+            valeurService: 0.1,
+            fraisVersementRate: 0,
+            fraisTransfertRate: 0,
+            coefAcquisitionByAge: { 60: 1 },
+            coefLiquidationByAge: { 64: 1 },
+            sourceLabel: 'test',
+          },
+          pockets: [
+            {
+              compartment: 'C0',
+              points: 1_000,
+              capitalAmount: 0,
+              transferValuePerPoint: 0,
+              serviceValue: 0.1,
+            },
+            {
+              compartment: 'C2',
+              points: 500,
+              capitalAmount: 0,
+              transferValuePerPoint: 0,
+              serviceValue: 0.1,
+            },
+          ],
+        },
+      }),
+    );
 
     expect(result.compartment).toBe('C1');
     expect(result.keepScenario.currentRent.grossAnnualRent).toBeCloseTo(150);
-    expect(result.warnings).not.toContain('Compartiment Préfon C0 historique ramené en C1 lors du transfert.');
+    expect(result.warnings).not.toContain(
+      'Compartiment Préfon C0 historique ramené en C1 lors du transfert.',
+    );
     expect(result.prefon?.allRente.totalRenteBrute).toBeCloseTo(150);
     expect(result.prefon?.maxCapital.totalRenteBrute).toBeCloseTo(80);
     expect(result.prefon?.maxCapital.totalCapital).toBeCloseTo(1_400);
@@ -340,22 +407,27 @@ describe('computePerTransfert', () => {
       reversionEnabled: true,
       reversionRate: 0.6,
     } satisfies PerTransfertInput['currentRentOptions'];
-    const withYoungSpouse = computePerTransfert(makeInput({
-      currentRentOptions: {
-        ...baseManualOptions,
-        spouseBirthYear: 2000,
-        spouseAgeAtLiquidation: 24,
-      } as unknown as PerTransfertInput['currentRentOptions'],
-    }));
-    const withOlderSpouse = computePerTransfert(makeInput({
-      currentRentOptions: {
-        ...baseManualOptions,
-        spouseBirthYear: 1940,
-        spouseAgeAtLiquidation: 84,
-      } as unknown as PerTransfertInput['currentRentOptions'],
-    }));
+    const withYoungSpouse = computePerTransfert(
+      makeInput({
+        currentRentOptions: {
+          ...baseManualOptions,
+          spouseBirthYear: 2000,
+          spouseAgeAtLiquidation: 24,
+        } as unknown as PerTransfertInput['currentRentOptions'],
+      }),
+    );
+    const withOlderSpouse = computePerTransfert(
+      makeInput({
+        currentRentOptions: {
+          ...baseManualOptions,
+          spouseBirthYear: 1940,
+          spouseAgeAtLiquidation: 84,
+        } as unknown as PerTransfertInput['currentRentOptions'],
+      }),
+    );
 
-    expect(withOlderSpouse.keepScenario.currentRent.grossAnnualRent)
-      .toBeGreaterThan(withYoungSpouse.keepScenario.currentRent.grossAnnualRent);
+    expect(withOlderSpouse.keepScenario.currentRent.grossAnnualRent).toBeGreaterThan(
+      withYoungSpouse.keepScenario.currentRent.grossAnnualRent,
+    );
   });
 });

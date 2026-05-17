@@ -66,7 +66,9 @@ vi.mock('../../../components/ui/sim/SimPageShell', () => ({
     ({ actions, children, error, notice, pageTestId }: any) => (
       <div data-testid={pageTestId}>
         {actions ? <div data-testid="sim-header-actions">{actions}</div> : null}
-        {error ? <div data-testid="page-error">{error}</div> : (
+        {error ? (
+          <div data-testid="page-error">{error}</div>
+        ) : (
           <>
             {notice ? <div data-testid="sim-notice">{notice}</div> : null}
             {children}
@@ -77,7 +79,7 @@ vi.mock('../../../components/ui/sim/SimPageShell', () => ({
     {
       Main: ({ children }: any) => <div data-slot="main">{children}</div>,
       Side: ({ children }: any) => <div data-slot="side">{children}</div>,
-    }
+    },
   ),
 }));
 
@@ -132,46 +134,52 @@ const DEFAULT_INPUTS_V6 = {
       workingCapitalRequirement: 0,
     },
     reducedCorporateTaxEligible: true,
-    associates: [{
-      id: 'associe-1',
-      label: 'Associé 1',
-      kind: 'pp' as const,
-      profile: {
-        currentAge: 50,
-        retirementAge: 65,
-        annualIncomeNeed: 30000,
-        projectionStartYear: 2025,
+    associates: [
+      {
+        id: 'associe-1',
+        label: 'Associé 1',
+        kind: 'pp' as const,
+        profile: {
+          currentAge: 50,
+          retirementAge: 65,
+          annualIncomeNeed: 30000,
+          projectionStartYear: 2025,
+        },
+        ownershipLots: [
+          { right: 'pleine_propriete' as const, capitalPct: 100, economicRightsPct: 100 },
+        ],
+        roles: ['associe_sans_statut' as const],
+        cca: {
+          currentBalance: 0,
+          remunerationRate: 0,
+        },
+        revenuePhases: [
+          {
+            id: 'phase-default',
+            startYear: 2025,
+            endYear: 2039,
+            remuneration: {
+              enabled: false,
+              source: 'none' as const,
+              loadedAnnualCost: 0,
+              socialChargeRate: 0,
+            },
+            distribution: {
+              enabled: true,
+              annualNetIncomeNeed: 30000,
+              dividendsStrategy: 'max_treso' as const,
+            },
+            ccaContribution: {
+              enabled: false,
+            },
+            ccaRepayment: {
+              enabled: true,
+              strategy: 'max_treso' as const,
+            },
+          },
+        ],
       },
-      ownershipLots: [{ right: 'pleine_propriete' as const, capitalPct: 100, economicRightsPct: 100 }],
-      roles: ['associe_sans_statut' as const],
-      cca: {
-        currentBalance: 0,
-        remunerationRate: 0,
-      },
-      revenuePhases: [{
-        id: 'phase-default',
-        startYear: 2025,
-        endYear: 2039,
-        remuneration: {
-          enabled: false,
-          source: 'none' as const,
-          loadedAnnualCost: 0,
-          socialChargeRate: 0,
-        },
-        distribution: {
-          enabled: true,
-          annualNetIncomeNeed: 30000,
-          dividendsStrategy: 'max_treso' as const,
-        },
-        ccaContribution: {
-          enabled: false,
-        },
-        ccaRepayment: {
-          enabled: true,
-          strategy: 'max_treso' as const,
-        },
-      }],
-    }],
+    ],
     loans: [],
     subsidiaries: [],
   },
@@ -256,7 +264,7 @@ describe('TresorerieSocietePage', () => {
     expect(html).toBeTruthy();
   });
 
-  it('retourne vide avant l\'hydration (hydrated=false)', () => {
+  it("retourne vide avant l'hydration (hydrated=false)", () => {
     mockUseTresoState.mockReturnValue(makeStateReturn({ hydrated: false }));
     const html = renderToStaticMarkup(<TresorerieSocietePage />);
     expect(html).toBe('');
@@ -273,19 +281,21 @@ describe('TresorerieSocietePage', () => {
   });
 
   it('masque le parcours et l’allocation tant que la société n’est pas complétée', () => {
-    mockUseTresoState.mockReturnValue(makeStateReturn({
-      state: {
-        inputsV6: {
-          ...DEFAULT_INPUTS_V6,
-          company: {
-            ...DEFAULT_INPUTS_V6.company,
-            label: '',
+    mockUseTresoState.mockReturnValue(
+      makeStateReturn({
+        state: {
+          inputsV6: {
+            ...DEFAULT_INPUTS_V6,
+            company: {
+              ...DEFAULT_INPUTS_V6.company,
+              label: '',
+            },
           },
+          projectionVisible: false,
+          projectionMode: 'resume' as const,
         },
-        projectionVisible: false,
-        projectionMode: 'resume' as const,
-      },
-    }));
+      }),
+    );
 
     const html = renderToStaticMarkup(<TresorerieSocietePage />);
 
@@ -297,22 +307,26 @@ describe('TresorerieSocietePage', () => {
   });
 
   it('masque les blocs avancés pour une personne morale sélectionnée', () => {
-    mockUseTresoState.mockReturnValue(makeStateReturn({
-      state: {
-        inputsV6: {
-          ...DEFAULT_INPUTS_V6,
-          company: {
-            ...DEFAULT_INPUTS_V6.company,
-            associates: [{
-              ...DEFAULT_INPUTS_V6.company.associates[0],
-              kind: 'pm' as const,
-            }],
+    mockUseTresoState.mockReturnValue(
+      makeStateReturn({
+        state: {
+          inputsV6: {
+            ...DEFAULT_INPUTS_V6,
+            company: {
+              ...DEFAULT_INPUTS_V6.company,
+              associates: [
+                {
+                  ...DEFAULT_INPUTS_V6.company.associates[0],
+                  kind: 'pm' as const,
+                },
+              ],
+            },
           },
+          projectionVisible: false,
+          projectionMode: 'resume' as const,
         },
-        projectionVisible: false,
-        projectionMode: 'resume' as const,
-      },
-    }));
+      }),
+    );
 
     const html = renderToStaticMarkup(<TresorerieSocietePage />);
 
@@ -324,24 +338,28 @@ describe('TresorerieSocietePage', () => {
   });
 
   it('masque les blocs avancés si les détentions dépassent 100 %', () => {
-    mockUseTresoState.mockReturnValue(makeStateReturn({
-      state: {
-        inputsV6: {
-          ...DEFAULT_INPUTS_V6,
-          company: {
-            ...DEFAULT_INPUTS_V6.company,
-            associates: [
-              {
-                ...DEFAULT_INPUTS_V6.company.associates[0],
-                ownershipLots: [{ right: 'pleine_propriete' as const, capitalPct: 110, economicRightsPct: 110 }],
-              },
-            ],
+    mockUseTresoState.mockReturnValue(
+      makeStateReturn({
+        state: {
+          inputsV6: {
+            ...DEFAULT_INPUTS_V6,
+            company: {
+              ...DEFAULT_INPUTS_V6.company,
+              associates: [
+                {
+                  ...DEFAULT_INPUTS_V6.company.associates[0],
+                  ownershipLots: [
+                    { right: 'pleine_propriete' as const, capitalPct: 110, economicRightsPct: 110 },
+                  ],
+                },
+              ],
+            },
           },
+          projectionVisible: false,
+          projectionMode: 'resume' as const,
         },
-        projectionVisible: false,
-        projectionMode: 'resume' as const,
-      },
-    }));
+      }),
+    );
     mockUseTresoCalc.mockReturnValue({
       ...makeCalcReturn(),
       simulationError: 'Détention capital supérieure à 100 %.',
@@ -387,9 +405,11 @@ describe('TresorerieSocietePage', () => {
     renderToStaticMarkup(<TresorerieSocietePage />);
 
     expect(mockUseTresoCalc).toHaveBeenCalledWith(DEFAULT_INPUTS_V6);
-    expect(mockUseTresoExports).toHaveBeenCalledWith(expect.objectContaining({
-      inputs: DEFAULT_INPUTS_V6,
-    }));
+    expect(mockUseTresoExports).toHaveBeenCalledWith(
+      expect.objectContaining({
+        inputs: DEFAULT_INPUTS_V6,
+      }),
+    );
   });
 
   it('conserve l’interface quand la simulation signale une erreur métier', () => {
@@ -414,13 +434,15 @@ describe('TresorerieSocietePage', () => {
     });
 
     it('est visible quand projectionVisible=true', () => {
-      mockUseTresoState.mockReturnValue(makeStateReturn({
-        state: {
-          inputsV6: DEFAULT_INPUTS_V6,
-          projectionVisible: true,
-          projectionMode: 'resume' as const,
-        },
-      }));
+      mockUseTresoState.mockReturnValue(
+        makeStateReturn({
+          state: {
+            inputsV6: DEFAULT_INPUTS_V6,
+            projectionVisible: true,
+            projectionMode: 'resume' as const,
+          },
+        }),
+      );
       const html = renderToStaticMarkup(<TresorerieSocietePage />);
       expect(html).toContain('data-testid="projection-drawer"');
       expect(html).toContain('aria-expanded="true"');

@@ -36,11 +36,7 @@ import {
   getEconomicPct,
   getSelectedAssociate,
 } from '../utils/tresorerieSocieteModel';
-import {
-  getPhaseEndYear,
-  type RevenuePhaseInput,
-  sortPhases,
-} from '../utils/revenuePhases';
+import { getPhaseEndYear, type RevenuePhaseInput, sortPhases } from '../utils/revenuePhases';
 import { getTresoRevenueSourceLabel } from '../utils/tresorerieRevenueLabels';
 import {
   fmtPct,
@@ -61,7 +57,9 @@ import {
 
 const PROJECTION_PAGE_SIZE = 8;
 
-function getAssociateRevenuePhases(associate: RuntimeAssociateInput | undefined): RevenuePhaseInput[] {
+function getAssociateRevenuePhases(
+  associate: RuntimeAssociateInput | undefined,
+): RevenuePhaseInput[] {
   const phases = (associate as { revenuePhases?: RevenuePhaseInput[] } | undefined)?.revenuePhases;
   return Array.isArray(phases) ? sortPhases(phases) : [];
 }
@@ -76,29 +74,50 @@ function getAvailableTreasury(row: TresoProjectionRow, protectedCash: number): n
   return row.tresorerieDisponible ?? Math.max(0, getBankEnd(row) - protectedCash);
 }
 
-function buildProjectionRows(
-  rows: TresoProjectionRow[],
-  inputs: TresoInputsRuntime,
-) {
+function buildProjectionRows(rows: TresoProjectionRow[], inputs: TresoInputsRuntime) {
   const protectedCash = getProtectedCash(inputs);
   return [
-    { label: "Compte bancaire en début d'année", values: rows.map(row => row.tresorerieBanqueDebut ?? row.tresorerieDebut) },
-    { label: 'Solde protégé sur compte bancaire', values: rows.map(row => row.soldeMinimumCompteBancaire ?? getMinimumBankBalance(inputs)) },
-    { label: 'Besoin en fonds de roulement protégé', values: rows.map(row => row.bfr ?? getWorkingCapitalRequirement(inputs)) },
-    { label: 'Liquidité disponible sur compte bancaire', values: rows.map(row => getAvailableTreasury(row, protectedCash)) },
-    { label: 'Versements vers les poches de placement', values: rows.map(row => row.montantBalayeAnnuel ?? 0) },
-    { label: 'Capital investi — poche distribution', values: rows.map(row => row.capitalDistrib) },
-    { label: 'Valeur investie — poche capitalisation', values: rows.map(row => row.valeurCapi) },
-    { label: 'Revenus des filiales', values: rows.map(row => row.dividendesFiliales) },
-    { label: 'Charges sociales TNS estimées', values: rows.map(row =>
-      row.revenusParAssocie.reduce((sum, revenu) => sum + revenu.tnsSocialCharges, 0),
-    ) },
-    { label: 'Impôt sur les sociétés', values: rows.map(row => row.is) },
-    { label: 'Résultat net comptable', values: rows.map(row => row.resultatNetComptable) },
-    { label: 'Total revenus nets associés', values: rows.map(row => row.revenusNets) },
-    { label: 'Écart annuel avec le besoin de revenus', values: rows.map(row => row.deltaBesoin) },
-    { label: "Compte bancaire en fin d'année", values: rows.map(row => getBankEnd(row)) },
-    { label: "Trésorerie consolidée en fin d'année", values: rows.map(row => getBankEnd(row) + row.capitalDistrib + row.valeurCapi) },
+    {
+      label: "Compte bancaire en début d'année",
+      values: rows.map((row) => row.tresorerieBanqueDebut ?? row.tresorerieDebut),
+    },
+    {
+      label: 'Solde protégé sur compte bancaire',
+      values: rows.map((row) => row.soldeMinimumCompteBancaire ?? getMinimumBankBalance(inputs)),
+    },
+    {
+      label: 'Besoin en fonds de roulement protégé',
+      values: rows.map((row) => row.bfr ?? getWorkingCapitalRequirement(inputs)),
+    },
+    {
+      label: 'Liquidité disponible sur compte bancaire',
+      values: rows.map((row) => getAvailableTreasury(row, protectedCash)),
+    },
+    {
+      label: 'Versements vers les poches de placement',
+      values: rows.map((row) => row.montantBalayeAnnuel ?? 0),
+    },
+    {
+      label: 'Capital investi — poche distribution',
+      values: rows.map((row) => row.capitalDistrib),
+    },
+    { label: 'Valeur investie — poche capitalisation', values: rows.map((row) => row.valeurCapi) },
+    { label: 'Revenus des filiales', values: rows.map((row) => row.dividendesFiliales) },
+    {
+      label: 'Charges sociales TNS estimées',
+      values: rows.map((row) =>
+        row.revenusParAssocie.reduce((sum, revenu) => sum + revenu.tnsSocialCharges, 0),
+      ),
+    },
+    { label: 'Impôt sur les sociétés', values: rows.map((row) => row.is) },
+    { label: 'Résultat net comptable', values: rows.map((row) => row.resultatNetComptable) },
+    { label: 'Total revenus nets associés', values: rows.map((row) => row.revenusNets) },
+    { label: 'Écart annuel avec le besoin de revenus', values: rows.map((row) => row.deltaBesoin) },
+    { label: "Compte bancaire en fin d'année", values: rows.map((row) => getBankEnd(row)) },
+    {
+      label: "Trésorerie consolidée en fin d'année",
+      values: rows.map((row) => getBankEnd(row) + row.capitalDistrib + row.valeurCapi),
+    },
   ];
 }
 
@@ -109,7 +128,9 @@ export function getTresoReadiness(inputs: TresoInputsRuntime): {
 } {
   const associate = getSelectedAssociate(inputs);
   const profile = getAssociateProfile(inputs, associate);
-  const hasCompanyConfigured = Boolean(inputs.company.legalForm && inputs.company.associates.length > 0);
+  const hasCompanyConfigured = Boolean(
+    inputs.company.legalForm && inputs.company.associates.length > 0,
+  );
   const hasAssociateWithAge = Boolean(associate && profile.currentAge > 0);
   return {
     hasCompanyConfigured,
@@ -157,49 +178,54 @@ function buildTimelineSegments(
   const profile = getAssociateProfile(inputs, associate);
   const horizonYear = profile.projectionStartYear + Math.max(rows.length - 1, 0);
 
-  return phases.map(phase => {
-    const startYear = phase.startYear;
-    const endYear = Math.min(getPhaseEndYear(phase, phases, horizonYear), horizonYear);
-    const rowsInPhase = rows.filter(row => {
-      const civilYear = getCivilYear(inputs, row);
-      return civilYear >= startYear && civilYear <= endYear;
-    });
-    const sums = new Map<string, {
-      kind: TresorerieTimelineSlideSpec['segments'][number]['sources'][number]['kind'];
-      label: string;
-      iconKey: BusinessIconName;
-      sum: number;
-    }>();
+  return phases
+    .map((phase) => {
+      const startYear = phase.startYear;
+      const endYear = Math.min(getPhaseEndYear(phase, phases, horizonYear), horizonYear);
+      const rowsInPhase = rows.filter((row) => {
+        const civilYear = getCivilYear(inputs, row);
+        return civilYear >= startYear && civilYear <= endYear;
+      });
+      const sums = new Map<
+        string,
+        {
+          kind: TresorerieTimelineSlideSpec['segments'][number]['sources'][number]['kind'];
+          label: string;
+          iconKey: BusinessIconName;
+          sum: number;
+        }
+      >();
 
-    rowsInPhase.forEach(row => {
-      row.revenusParAssocie
-        .filter(revenu => !associate || revenu.associateId === associate.id)
-        .forEach(revenu => {
-          const mapped = mapRevenueSource(revenu.source);
-          if (!mapped) return;
-          const existing = sums.get(mapped.kind) ?? { ...mapped, sum: 0 };
-          existing.sum += positiveAmount(revenu.netRevenue);
-          sums.set(mapped.kind, existing);
-        });
-    });
+      rowsInPhase.forEach((row) => {
+        row.revenusParAssocie
+          .filter((revenu) => !associate || revenu.associateId === associate.id)
+          .forEach((revenu) => {
+            const mapped = mapRevenueSource(revenu.source);
+            if (!mapped) return;
+            const existing = sums.get(mapped.kind) ?? { ...mapped, sum: 0 };
+            existing.sum += positiveAmount(revenu.netRevenue);
+            sums.set(mapped.kind, existing);
+          });
+      });
 
-    const duration = Math.max(1, rowsInPhase.length || endYear - startYear + 1);
-    const sources = Array.from(sums.values())
-      .map(source => ({
-        kind: source.kind,
-        label: source.label,
-        annualNetAmount: source.sum / duration,
-        iconKey: source.iconKey,
-      }))
-      .filter(source => source.annualNetAmount > 0);
+      const duration = Math.max(1, rowsInPhase.length || endYear - startYear + 1);
+      const sources = Array.from(sums.values())
+        .map((source) => ({
+          kind: source.kind,
+          label: source.label,
+          annualNetAmount: source.sum / duration,
+          iconKey: source.iconKey,
+        }))
+        .filter((source) => source.annualNetAmount > 0);
 
-    return {
-      startYear,
-      endYear,
-      label: compactPhaseLabel(phaseLabel(phase), startYear, endYear),
-      sources,
-    };
-  }).filter(segment => segment.endYear >= segment.startYear && segment.sources.length > 0);
+      return {
+        startYear,
+        endYear,
+        label: compactPhaseLabel(phaseLabel(phase), startYear, endYear),
+        sources,
+      };
+    })
+    .filter((segment) => segment.endYear >= segment.startYear && segment.sources.length > 0);
 }
 
 function buildAssociateHighlights(
@@ -208,10 +234,10 @@ function buildAssociateHighlights(
   const selectedAssociate = getSelectedAssociate(inputs);
   const associates = [
     ...(selectedAssociate ? [selectedAssociate] : []),
-    ...inputs.company.associates.filter(associate => associate.id !== selectedAssociate?.id),
+    ...inputs.company.associates.filter((associate) => associate.id !== selectedAssociate?.id),
   ].slice(0, 2);
 
-  return associates.map(associate => {
+  return associates.map((associate) => {
     const profile = getAssociateProfile(inputs, associate);
     return {
       label: associate.label,
@@ -244,7 +270,7 @@ function buildAllocationCards(
     label: pocket.label?.trim() || `Poche ${index + 1}`,
     iconKey: horizonIcon(pocket.horizon),
     horizonLabel: getAllocationHorizonLabel(pocket.horizon),
-    initialAmount: allocatableBase * positiveAmount(pocket.initialAllocationPct) / 100,
+    initialAmount: (allocatableBase * positiveAmount(pocket.initialAllocationPct)) / 100,
     initialAllocationPct: positiveAmount(pocket.initialAllocationPct),
     annualAllocationPct: positiveAmount(pocket.annualAllocationPct),
     durationYears: positiveAmount(pocket.durationYears),
@@ -282,9 +308,8 @@ export function buildTresorerieStudyDeck(
   const profile = getAssociateProfile(inputs, selectedAssociate);
   const readiness = getTresoReadiness(inputs);
   const dateStr = new Date().toLocaleDateString('fr-FR', { year: 'numeric', month: 'long' });
-  const typeLabel = inputs.company.creationType === 'existante'
-    ? 'Société existante'
-    : 'Société à créer';
+  const typeLabel =
+    inputs.company.creationType === 'existante' ? 'Société existante' : 'Société à créer';
   const projectionStartYear = profile.projectionStartYear;
   const horizonYears = rows.length;
   const rangeEndYear = projectionStartYear + Math.max(0, horizonYears - 1);
@@ -340,7 +365,10 @@ export function buildTresorerieStudyDeck(
           0,
         ),
         loansCount: inputs.company.loans.length,
-        loansTotalPrincipal: inputs.company.loans.reduce((sum, loan) => sum + positiveAmount(loan.principal), 0),
+        loansTotalPrincipal: inputs.company.loans.reduce(
+          (sum, loan) => sum + positiveAmount(loan.principal),
+          0,
+        ),
         projectionStartYear,
         horizonYears,
       },
@@ -355,15 +383,21 @@ export function buildTresorerieStudyDeck(
       rangeStartYear: projectionStartYear,
       rangeEndYear,
       associateLabel: selectedAssociate?.label ?? 'Associé',
-      totalNetSum: rows.reduce((sum, row) => sum + row.revenusParAssocie
-        .filter(revenu => !selectedAssociate || revenu.associateId === selectedAssociate.id)
-        .reduce((innerSum, revenu) => innerSum + positiveAmount(revenu.netRevenue), 0), 0),
-      retirementYear: profile.currentAge > 0 && profile.retirementAge > profile.currentAge
-        ? profile.projectionStartYear + (profile.retirementAge - profile.currentAge)
-        : undefined,
+      totalNetSum: rows.reduce(
+        (sum, row) =>
+          sum +
+          row.revenusParAssocie
+            .filter((revenu) => !selectedAssociate || revenu.associateId === selectedAssociate.id)
+            .reduce((innerSum, revenu) => innerSum + positiveAmount(revenu.netRevenue), 0),
+        0,
+      ),
+      retirementYear:
+        profile.currentAge > 0 && profile.retirementAge > profile.currentAge
+          ? profile.projectionStartYear + (profile.retirementAge - profile.currentAge)
+          : undefined,
       tailSegment: (() => {
         if (timelineSegments.length === 0) return undefined;
-        const lastEnd = Math.max(...timelineSegments.map(s => s.endYear));
+        const lastEnd = Math.max(...timelineSegments.map((s) => s.endYear));
         if (lastEnd >= rangeEndYear) return undefined;
         return {
           startYear: lastEnd + 1,

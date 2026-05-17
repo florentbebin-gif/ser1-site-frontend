@@ -43,7 +43,9 @@ export function IrAmountInput({
         style={style}
         className="sim-field__control"
       />
-      <span className="ir-table-input__unit sim-field__unit" aria-hidden="true">€</span>
+      <span className="ir-table-input__unit sim-field__unit" aria-hidden="true">
+        €
+      </span>
     </SimFieldShell>
   );
 }

@@ -37,10 +37,9 @@ interface ProductiveMonthsParams {
  * Le cycle couvrant le début de l'année civile est identifié et son
  * intersection avec [debutJouissance, finCycle[ ∩ [debutAnnée, finAnnée[ est calculée.
  */
-export function computeProductiveMonthsByCivilYear(
-  params: ProductiveMonthsParams,
-): number {
-  const { dateSouscription, delaiJouissanceMois, dureeMois, repetitionAuTerme, anneeCivile } = params;
+export function computeProductiveMonthsByCivilYear(params: ProductiveMonthsParams): number {
+  const { dateSouscription, delaiJouissanceMois, dureeMois, repetitionAuTerme, anneeCivile } =
+    params;
 
   if (dureeMois <= 0) return 0;
 
@@ -59,9 +58,7 @@ export function computeProductiveMonthsByCivilYear(
   if (repetitionAuTerme) {
     // Identifier le cycle qui couvre le début de l'année civile
     const offsetDebutAnnee = moisDebutAnneeAbs - moisSouscriptionAbs;
-    const currentCycleIndex = offsetDebutAnnee <= 0
-      ? 0
-      : Math.floor(offsetDebutAnnee / dureeMois);
+    const currentCycleIndex = offsetDebutAnnee <= 0 ? 0 : Math.floor(offsetDebutAnnee / dureeMois);
 
     const moisDebutCycle = moisSouscriptionAbs + currentCycleIndex * dureeMois;
     moisDebutJouissanceAbs = moisDebutCycle + delaiJouissanceMois;
@@ -177,7 +174,14 @@ export function calculCapitalisationAnnuel(
   const plusValueLatente = Math.max(0, valeurCapiApres - state.capitalInvesti);
   const isLatentCapi = plusValueLatente * tauxISEffectif;
 
-  return { capitalCapi, valeurCapiApres, gainCapiN, isLatentCapi, rachatEffectue: isExitYear, montantRachatCapi };
+  return {
+    capitalCapi,
+    valeurCapiApres,
+    gainCapiN,
+    isLatentCapi,
+    rachatEffectue: isExitYear,
+    montantRachatCapi,
+  };
 }
 
 /**
@@ -193,8 +197,10 @@ export function calculISRachatCapitalisation(params: {
   tauxISEffectif: number;
 }): { isEffectif: number; montantNet: number } {
   const { montantRachat, valeurActuelle, capitalInvesti, tauxISEffectif } = params;
-  if (montantRachat <= 0 || valeurActuelle <= 0) return { isEffectif: 0, montantNet: montantRachat };
-  const gainProrata = montantRachat * (Math.max(0, valeurActuelle - capitalInvesti) / valeurActuelle);
+  if (montantRachat <= 0 || valeurActuelle <= 0)
+    return { isEffectif: 0, montantNet: montantRachat };
+  const gainProrata =
+    montantRachat * (Math.max(0, valeurActuelle - capitalInvesti) / valeurActuelle);
   const isEffectif = gainProrata * tauxISEffectif;
   return { isEffectif, montantNet: montantRachat - isEffectif };
 }

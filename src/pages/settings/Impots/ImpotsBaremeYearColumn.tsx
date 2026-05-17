@@ -60,12 +60,7 @@ interface UpdateField {
 }
 
 interface UpdateIncomeScale {
-  (
-    which: IncomeScaleKey,
-    index: number,
-    key: ScaleFieldKey,
-    value: string | number | null,
-  ): void;
+  (which: IncomeScaleKey, index: number, key: ScaleFieldKey, value: string | number | null): void;
 }
 
 interface BaremeNumberFieldProps {
@@ -183,9 +178,7 @@ export function ImpotsBaremeYearColumn({
         <input
           type="text"
           value={yearLabel ?? ''}
-          onChange={(event) =>
-            updateField(['incomeTax', yearLabelKey], event.target.value)
-          }
+          onChange={(event) => updateField(['incomeTax', yearLabelKey], event.target.value)}
           disabled={!isAdmin}
           style={{ width: 220, textAlign: 'left' }}
           placeholder={placeholder}
@@ -203,9 +196,7 @@ export function ImpotsBaremeYearColumn({
 
       <div className="income-tax-extra">
         <div className="income-tax-block">
-          <div className="income-tax-block-title">
-            {'Plafond du quotient familial'}
-          </div>
+          <div className="income-tax-block-title">{'Plafond du quotient familial'}</div>
           {quotientFields.map(({ key, label }) => (
             <BaremeNumberField
               key={key}
@@ -249,9 +240,7 @@ export function ImpotsBaremeYearColumn({
         </div>
 
         <div className="income-tax-block">
-          <div className="income-tax-block-title">
-            {'Abattement 10\u00a0% pensions retraite'}
-          </div>
+          <div className="income-tax-block-title">{'Abattement 10\u00a0% pensions retraite'}</div>
           {abatFields.map(({ key, label }) => (
             <BaremeNumberField
               key={key}

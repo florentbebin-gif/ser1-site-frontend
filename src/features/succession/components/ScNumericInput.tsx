@@ -37,13 +37,16 @@ export function ScNumericInput({
     }
   }, [numericValue, focused]);
 
-  const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    const raw = e.target.value;
-    setDisplay(raw);
-    const parsed = parseClean(raw);
-    const clamped = Math.max(min ?? -Infinity, Math.min(max ?? Infinity, parsed));
-    onChange(clamped);
-  }, [onChange, min, max]);
+  const handleChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const raw = e.target.value;
+      setDisplay(raw);
+      const parsed = parseClean(raw);
+      const clamped = Math.max(min ?? -Infinity, Math.min(max ?? Infinity, parsed));
+      onChange(clamped);
+    },
+    [onChange, min, max],
+  );
 
   const handleFocus = useCallback(() => {
     setFocused(true);

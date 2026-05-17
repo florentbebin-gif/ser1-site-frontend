@@ -1,5 +1,10 @@
 import type PptxGenJS from 'pptxgenjs';
-import type { ExportContext, PerProjectionRow, PerProjectionTableSlideSpec, PerSimulationRow } from '../theme/types';
+import type {
+  ExportContext,
+  PerProjectionRow,
+  PerProjectionTableSlideSpec,
+  PerSimulationRow,
+} from '../theme/types';
 import {
   RADIUS,
   TYPO,
@@ -17,7 +22,7 @@ const GEO = {
   panelW: 9.0,
   panelH: 4.45,
   rowH: 0.26,
-  sectionH: 0.30,
+  sectionH: 0.3,
 } as const;
 
 function euro(value: number): string {
@@ -51,10 +56,10 @@ function drawSectionHeader(
     line: { color: roleColor(theme, 'accent'), transparency: 100 },
   });
   addTextFr(slide, label, {
-    x: GEO.panelX + 0.40,
+    x: GEO.panelX + 0.4,
     y: y + 0.04,
-    w: GEO.panelW - 0.80,
-    h: 0.20,
+    w: GEO.panelW - 0.8,
+    h: 0.2,
     fontSize: 9,
     color: roleColor(theme, 'textMain'),
     bold: true,
@@ -71,15 +76,15 @@ function drawRows(
   ctx: ExportContext,
 ): number {
   const { theme } = ctx;
-  const labelW = isCouple ? 4.20 : 5.95;
-  const valueW = isCouple ? 1.80 : 2.20;
+  const labelW = isCouple ? 4.2 : 5.95;
+  const valueW = isCouple ? 1.8 : 2.2;
   const d1X = GEO.panelX + 0.52 + labelW;
   const d2X = d1X + valueW + 0.35;
 
   if (isCouple) {
     addTextFr(slide, 'D1', {
       x: d1X,
-      y: yStart - 0.20,
+      y: yStart - 0.2,
       w: valueW,
       h: 0.16,
       fontSize: 8,
@@ -89,7 +94,7 @@ function drawRows(
     });
     addTextFr(slide, 'D2', {
       x: d2X,
-      y: yStart - 0.20,
+      y: yStart - 0.2,
       w: valueW,
       h: 0.16,
       fontSize: 8,
@@ -103,9 +108,9 @@ function drawRows(
     const y = yStart + index * GEO.rowH;
     if (index % 2 === 1) {
       slide.addShape('rect', {
-        x: GEO.panelX + 0.30,
+        x: GEO.panelX + 0.3,
         y: y + 0.02,
-        w: GEO.panelW - 0.60,
+        w: GEO.panelW - 0.6,
         h: GEO.rowH - 0.04,
         fill: { color: roleColor(theme, 'panelBorder'), transparency: 76 },
         line: { color: roleColor(theme, 'panelBorder'), transparency: 100 },
@@ -172,7 +177,11 @@ export function buildPerProjectionTable(
   const { theme } = ctx;
 
   addHeader(slide, spec.title, spec.subtitle, theme, 'content', 21, TYPO.sizes.h2);
-  addCardPanelWithShadow(slide, { x: GEO.panelX, y: GEO.panelY, w: GEO.panelW, h: GEO.panelH }, theme);
+  addCardPanelWithShadow(
+    slide,
+    { x: GEO.panelX, y: GEO.panelY, w: GEO.panelW, h: GEO.panelH },
+    theme,
+  );
 
   let y = GEO.panelY + 0.35;
   drawSectionHeader(slide, 'Cases 2042 à reporter', y, ctx);
@@ -183,7 +192,7 @@ export function buildPerProjectionTable(
 
   if (spec.simulationRows && spec.simulationRows.length > 0 && y < GEO.panelY + GEO.panelH - 0.72) {
     drawSectionHeader(slide, 'Impact du versement envisagé', y, ctx);
-    drawSimulationRows(slide, spec.simulationRows, y + GEO.sectionH + 0.20, ctx);
+    drawSimulationRows(slide, spec.simulationRows, y + GEO.sectionH + 0.2, ctx);
   }
 
   addFooter(slide, ctx, slideIndex, 'onLight');

@@ -1,7 +1,10 @@
 import { round2 } from './shared';
 import type { CompareResult, SimulateCompleteResult } from './types';
 
-export function compareProducts(result1: SimulateCompleteResult, result2: SimulateCompleteResult): CompareResult {
+export function compareProducts(
+  result1: SimulateCompleteResult,
+  result2: SimulateCompleteResult,
+): CompareResult {
   const delta = (a: number, b: number): number => round2(a - b);
 
   return {
@@ -12,13 +15,28 @@ export function compareProducts(result1: SimulateCompleteResult, result2: Simula
       effortTotal: delta(result1.totaux.effortTotal, result2.totaux.effortTotal),
       economieIR: delta(result1.totaux.economieIRTotal, result2.totaux.economieIRTotal),
       capitalAcquis: delta(result1.epargne.capitalAcquis, result2.epargne.capitalAcquis),
-      revenusNetsLiquidation: delta(result1.totaux.revenusNetsLiquidation, result2.totaux.revenusNetsLiquidation),
+      revenusNetsLiquidation: delta(
+        result1.totaux.revenusNetsLiquidation,
+        result2.totaux.revenusNetsLiquidation,
+      ),
       fiscaliteTotale: delta(result1.totaux.fiscaliteTotale, result2.totaux.fiscaliteTotale),
-      capitalTransmisNet: delta(result1.totaux.capitalTransmisNet, result2.totaux.capitalTransmisNet),
+      capitalTransmisNet: delta(
+        result1.totaux.capitalTransmisNet,
+        result2.totaux.capitalTransmisNet,
+      ),
     },
 
-    meilleurEffort: result1.totaux.effortTotal <= result2.totaux.effortTotal ? result1.envelope : result2.envelope,
-    meilleurRevenus: result1.totaux.revenusNetsLiquidation >= result2.totaux.revenusNetsLiquidation ? result1.envelope : result2.envelope,
-    meilleurTransmission: result1.totaux.capitalTransmisNet >= result2.totaux.capitalTransmisNet ? result1.envelope : result2.envelope,
+    meilleurEffort:
+      result1.totaux.effortTotal <= result2.totaux.effortTotal
+        ? result1.envelope
+        : result2.envelope,
+    meilleurRevenus:
+      result1.totaux.revenusNetsLiquidation >= result2.totaux.revenusNetsLiquidation
+        ? result1.envelope
+        : result2.envelope,
+    meilleurTransmission:
+      result1.totaux.capitalTransmisNet >= result2.totaux.capitalTransmisNet
+        ? result1.envelope
+        : result2.envelope,
   };
 }

@@ -126,7 +126,14 @@ export interface Passif {
 // Fiscalité
 export interface RevenuCategorie {
   id: string;
-  categorie: 'salaires' | 'tns' | 'fonciers' | 'capitaux_mobiliers' | 'plus_values' | 'pensions' | 'autres';
+  categorie:
+    | 'salaires'
+    | 'tns'
+    | 'fonciers'
+    | 'capitaux_mobiliers'
+    | 'plus_values'
+    | 'pensions'
+    | 'autres';
   montantBrut: number;
   montantNet: number;
   beneficiaire: 'mr' | 'mme' | 'foyer';

@@ -1,11 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { DEFAULT_DMTG } from '../../../engine/civil';
 import { buildSuccessionChainageAnalysis } from '../successionChainage';
-import {
-  makeCivil,
-  makeDevolution,
-  makeLiquidation,
-} from './successionBugRepro.helpers';
+import { makeCivil, makeDevolution, makeLiquidation } from './successionBugRepro.helpers';
 
 describe('V3 â€” red tests (Lot 0) â€” will be converted to it() when fixed', () => {
   // â”€â”€ BUG 2: CU attribution 50% should not return 100% of patrimoine â”€â”€
@@ -191,7 +187,7 @@ describe('V3 â€” red tests (Lot 0) â€” will be converted to it() when 
   // - PR-G : applicable=true pour PACS *avec testament*, le partenaire
   //   pacsé bénéficiant de l'exonération CGI 796-0 bis sur la part léguée.
   //   Sans testament le mode direct reste retenu.
-  it('BUG-3: PACS avec testament au partenaire chaîne et applique l\'exonération', () => {
+  it("BUG-3: PACS avec testament au partenaire chaîne et applique l'exonération", () => {
     const analysis = buildSuccessionChainageAnalysis({
       civil: makeCivil({
         situationMatrimoniale: 'pacse',

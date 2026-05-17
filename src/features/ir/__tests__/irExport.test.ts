@@ -33,7 +33,7 @@ describe('IR PPTX Export', () => {
         childrenCount: 1,
         location: 'metropole',
         bracketsDetails: [
-          { label: '0% jusqu\'à 11 294 €', base: 11294, rate: 0, tax: 0 },
+          { label: "0% jusqu'à 11 294 €", base: 11294, rate: 0, tax: 0 },
           { label: '11% de 11 294 à 28 797 €', base: 17503, rate: 11, tax: 1925.33 },
         ],
       },
@@ -78,8 +78,18 @@ describe('IR Excel Export', () => {
         {
           name: 'Détails calculs',
           rows: [
-            [cell('Poste', 'sHeader'), cell('Base', 'sHeader'), cell('Taux', 'sHeader'), cell('Impôt', 'sHeader')],
-            [cell('11% de 11 294 à 28 797 €', 'sText'), cell(17503, 'sMoney'), cell(0.11, 'sPercent'), cell(1925.33, 'sMoney')],
+            [
+              cell('Poste', 'sHeader'),
+              cell('Base', 'sHeader'),
+              cell('Taux', 'sHeader'),
+              cell('Impôt', 'sHeader'),
+            ],
+            [
+              cell('11% de 11 294 à 28 797 €', 'sText'),
+              cell(17503, 'sMoney'),
+              cell(0.11, 'sPercent'),
+              cell(1925.33, 'sMoney'),
+            ],
           ],
           columnWidths: [36, 18, 14, 18],
         },

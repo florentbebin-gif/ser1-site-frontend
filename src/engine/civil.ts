@@ -30,7 +30,8 @@ export const REGIMES_MATRIMONIAUX: Record<RegimeMatrimonial, RegimeInfo> = {
     id: 'communaute_legale',
     label: 'Communauté réduite aux acquêts (Légal depuis 1966)',
     category: 'communautaire',
-    description: 'Régime légal par défaut depuis 1966. Les biens acquis pendant le mariage sont communs.',
+    description:
+      'Régime légal par défaut depuis 1966. Les biens acquis pendant le mariage sont communs.',
     avantages: [
       'Protection du conjoint survivant',
       'Mutualisation des acquêts',
@@ -49,11 +50,11 @@ export const REGIMES_MATRIMONIAUX: Record<RegimeMatrimonial, RegimeInfo> = {
     description: 'Tous les biens sont communs, quelle que soit leur origine.',
     avantages: [
       'Protection maximale du conjoint survivant',
-      'Clause d\'attribution intégrale possible',
+      "Clause d'attribution intégrale possible",
       'Simplicité de la liquidation',
     ],
     limites: [
-      'Les enfants d\'un premier lit peuvent être lésés',
+      "Les enfants d'un premier lit peuvent être lésés",
       'Fiscalité successorale potentiellement plus lourde pour les enfants',
       'Pas de protection des biens propres',
     ],
@@ -63,13 +64,8 @@ export const REGIMES_MATRIMONIAUX: Record<RegimeMatrimonial, RegimeInfo> = {
     label: 'Communauté de meubles et acquêts (Légal avant 1966)',
     category: 'communautaire',
     description: 'Ancien régime légal (avant 1966). Les meubles et acquêts sont communs.',
-    avantages: [
-      'Régime simple historiquement',
-    ],
-    limites: [
-      'Régime obsolète',
-      'Distinction meuble/immeuble complexe',
-    ],
+    avantages: ['Régime simple historiquement'],
+    limites: ['Régime obsolète', 'Distinction meuble/immeuble complexe'],
   },
   separation_biens: {
     id: 'separation_biens',
@@ -91,7 +87,8 @@ export const REGIMES_MATRIMONIAUX: Record<RegimeMatrimonial, RegimeInfo> = {
     id: 'participation_acquets',
     label: 'Participation aux acquêts',
     category: 'separatiste',
-    description: 'Fonctionne comme une séparation de biens pendant le mariage, avec partage des acquêts à la dissolution.',
+    description:
+      'Fonctionne comme une séparation de biens pendant le mariage, avec partage des acquêts à la dissolution.',
     avantages: [
       'Indépendance pendant le mariage',
       'Partage équitable à la dissolution',
@@ -105,9 +102,10 @@ export const REGIMES_MATRIMONIAUX: Record<RegimeMatrimonial, RegimeInfo> = {
   },
   separation_biens_societe_acquets: {
     id: 'separation_biens_societe_acquets',
-    label: 'Séparation de biens avec société d\'acquêts',
+    label: "Séparation de biens avec société d'acquêts",
     category: 'separatiste',
-    description: 'Régime hybride combinant séparation de biens et société d\'acquêts sur des biens choisis contractuellement.',
+    description:
+      "Régime hybride combinant séparation de biens et société d'acquêts sur des biens choisis contractuellement.",
     avantages: [
       'Indépendance patrimoniale préservée',
       'Mise en commun sélective de certains biens',

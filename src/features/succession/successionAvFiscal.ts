@@ -9,10 +9,7 @@ import type { SuccessionFiscalSnapshot } from './successionFiscalContext';
 import { getEnfantParentLabel } from './successionEnfants';
 import { getClausePreset } from './successionClauseOptions';
 import { mergeSuccessionAvFiscalLines } from './successionAvFiscal.helpers';
-import {
-  buildClauseShares,
-  type AvBeneficiaryTarget,
-} from './successionAvBeneficiaries';
+import { buildClauseShares, type AvBeneficiaryTarget } from './successionAvBeneficiaries';
 import { getUsufruitRateFromAge } from './successionUsufruit';
 
 interface SideAnalysis {
@@ -61,10 +58,7 @@ function asAmount(value: unknown): number {
   return Math.max(0, num);
 }
 
-function compute990ITax(
-  taxableBase: number,
-  snapshot: SuccessionFiscalSnapshot,
-): number {
+function compute990ITax(taxableBase: number, snapshot: SuccessionFiscalSnapshot): number {
   if (taxableBase <= 0) return 0;
   const brackets = snapshot.avDeces.primesApres1998.brackets;
   let previousCeiling = 0;
@@ -105,13 +99,22 @@ function buildSideAnalysis(
 ): SideAnalysis {
   const warnings: string[] = [];
   const before70ByBeneficiary = new Map<string, { target: AvBeneficiaryTarget; amount: number }>();
-  const before70TaxableByBeneficiary = new Map<string, { target: AvBeneficiaryTarget; amount: number }>();
+  const before70TaxableByBeneficiary = new Map<
+    string,
+    { target: AvBeneficiaryTarget; amount: number }
+  >();
   const after70ByBeneficiary = new Map<string, { target: AvBeneficiaryTarget; amount: number }>();
-  const after70TaxableByBeneficiary = new Map<string, { target: AvBeneficiaryTarget; amount: number }>();
+  const after70TaxableByBeneficiary = new Map<
+    string,
+    { target: AvBeneficiaryTarget; amount: number }
+  >();
 
   entries.forEach((entry) => {
     const capitauxDeces = asAmount(entry.capitauxDeces);
-    const versementsAvant13101998 = Math.min(capitauxDeces, asAmount(entry.versementsAvant13101998));
+    const versementsAvant13101998 = Math.min(
+      capitauxDeces,
+      asAmount(entry.versementsAvant13101998),
+    );
     const versementsApres70Gross = Math.min(capitauxDeces, asAmount(entry.versementsApres70));
     const baseImposableGlobale = Math.max(0, capitauxDeces - versementsAvant13101998);
     const versementsApres70Taxables = Math.min(versementsApres70Gross, baseImposableGlobale);
@@ -123,10 +126,14 @@ function buildSideAnalysis(
     }
 
     if ((entry.versementsAvant13101998 ?? 0) > entry.capitauxDeces) {
-      warnings.push("Assurance-vie: versements avant le 13/10/1998 plafonnes aux capitaux deces saisis.");
+      warnings.push(
+        'Assurance-vie: versements avant le 13/10/1998 plafonnes aux capitaux deces saisis.',
+      );
     }
     if (versementsAvant13101998 + versementsApres70Gross > capitauxDeces) {
-      warnings.push("Assurance-vie: cumul versements avant le 13/10/1998 + apres 70 ans incoherent, base taxable apres 70 ans capee automatiquement.");
+      warnings.push(
+        'Assurance-vie: cumul versements avant le 13/10/1998 + apres 70 ans incoherent, base taxable apres 70 ans capee automatiquement.',
+      );
     }
 
     // Clause démembrée : ventilation art. 669 CGI
@@ -135,7 +142,8 @@ function buildSideAnalysis(
         const tauxUsufruit = getUsufruitRateFromAge(entry.ageUsufruitier);
         const tauxNuProp = 1 - tauxUsufruit;
         const preset = getClausePreset(entry.clauseBeneficiaire);
-        const isConjointLike = civil.situationMatrimoniale === 'marie' || civil.situationMatrimoniale === 'pacse';
+        const isConjointLike =
+          civil.situationMatrimoniale === 'marie' || civil.situationMatrimoniale === 'pacse';
 
         if (preset === 'conjoint_enfants' && isConjointLike) {
           warnings.push(
@@ -157,16 +165,32 @@ function buildSideAnalysis(
           const conjointApres70Taxable = versementsApres70Taxables * tauxUsufruit;
           const beforeConjoint = before70ByBeneficiary.get(conjointId);
           if (beforeConjoint) beforeConjoint.amount += conjointAvant70;
-          else before70ByBeneficiary.set(conjointId, { target: conjointTarget, amount: conjointAvant70 });
+          else
+            before70ByBeneficiary.set(conjointId, {
+              target: conjointTarget,
+              amount: conjointAvant70,
+            });
           const beforeConjointTaxable = before70TaxableByBeneficiary.get(conjointId);
           if (beforeConjointTaxable) beforeConjointTaxable.amount += conjointAvant70Taxable;
-          else before70TaxableByBeneficiary.set(conjointId, { target: conjointTarget, amount: conjointAvant70Taxable });
+          else
+            before70TaxableByBeneficiary.set(conjointId, {
+              target: conjointTarget,
+              amount: conjointAvant70Taxable,
+            });
           const afterConjoint = after70ByBeneficiary.get(conjointId);
           if (afterConjoint) afterConjoint.amount += conjointApres70;
-          else after70ByBeneficiary.set(conjointId, { target: conjointTarget, amount: conjointApres70 });
+          else
+            after70ByBeneficiary.set(conjointId, {
+              target: conjointTarget,
+              amount: conjointApres70,
+            });
           const afterConjointTaxable = after70TaxableByBeneficiary.get(conjointId);
           if (afterConjointTaxable) afterConjointTaxable.amount += conjointApres70Taxable;
-          else after70TaxableByBeneficiary.set(conjointId, { target: conjointTarget, amount: conjointApres70Taxable });
+          else
+            after70TaxableByBeneficiary.set(conjointId, {
+              target: conjointTarget,
+              amount: conjointApres70Taxable,
+            });
 
           // Nu-propriété → enfants (parts égales parmi enfants vivants)
           const livingChildren = enfants
@@ -190,23 +214,37 @@ function buildSideAnalysis(
               const childApres70Taxable = versementsApres70Taxables * ratioPerChild;
               const beforeChild = before70ByBeneficiary.get(enfant.id);
               if (beforeChild) beforeChild.amount += childAvant70;
-              else before70ByBeneficiary.set(enfant.id, { target: childTarget, amount: childAvant70 });
+              else
+                before70ByBeneficiary.set(enfant.id, { target: childTarget, amount: childAvant70 });
               const beforeChildTaxable = before70TaxableByBeneficiary.get(enfant.id);
               if (beforeChildTaxable) beforeChildTaxable.amount += childAvant70Taxable;
-              else before70TaxableByBeneficiary.set(enfant.id, { target: childTarget, amount: childAvant70Taxable });
+              else
+                before70TaxableByBeneficiary.set(enfant.id, {
+                  target: childTarget,
+                  amount: childAvant70Taxable,
+                });
               const afterChild = after70ByBeneficiary.get(enfant.id);
               if (afterChild) afterChild.amount += childApres70;
-              else after70ByBeneficiary.set(enfant.id, { target: childTarget, amount: childApres70 });
+              else
+                after70ByBeneficiary.set(enfant.id, { target: childTarget, amount: childApres70 });
               const afterChildTaxable = after70TaxableByBeneficiary.get(enfant.id);
               if (afterChildTaxable) afterChildTaxable.amount += childApres70Taxable;
-              else after70TaxableByBeneficiary.set(enfant.id, { target: childTarget, amount: childApres70Taxable });
+              else
+                after70TaxableByBeneficiary.set(enfant.id, {
+                  target: childTarget,
+                  amount: childApres70Taxable,
+                });
             });
           }
           return;
         }
-        warnings.push('Clause démembrée avec clause non standard: ventilation art. 669 non appliquée, traitement simplifié.');
+        warnings.push(
+          'Clause démembrée avec clause non standard: ventilation art. 669 non appliquée, traitement simplifié.',
+        );
       } else {
-        warnings.push('Clause démembrée: saisissez l\'âge de l\'usufruitier pour appliquer la ventilation art. 669 CGI.');
+        warnings.push(
+          "Clause démembrée: saisissez l'âge de l'usufruitier pour appliquer la ventilation art. 669 CGI.",
+        );
       }
     }
 
@@ -227,14 +265,19 @@ function buildSideAnalysis(
       else before70ByBeneficiary.set(share.id, { target: share, amount: before70Amount });
       const beforeTaxableRow = before70TaxableByBeneficiary.get(share.id);
       if (beforeTaxableRow) beforeTaxableRow.amount += before70TaxableAmount;
-      else before70TaxableByBeneficiary.set(share.id, { target: share, amount: before70TaxableAmount });
+      else
+        before70TaxableByBeneficiary.set(share.id, {
+          target: share,
+          amount: before70TaxableAmount,
+        });
 
       const afterRow = after70ByBeneficiary.get(share.id);
       if (afterRow) afterRow.amount += after70Amount;
       else after70ByBeneficiary.set(share.id, { target: share, amount: after70Amount });
       const afterTaxableRow = after70TaxableByBeneficiary.get(share.id);
       if (afterTaxableRow) afterTaxableRow.amount += after70TaxableAmount;
-      else after70TaxableByBeneficiary.set(share.id, { target: share, amount: after70TaxableAmount });
+      else
+        after70TaxableByBeneficiary.set(share.id, { target: share, amount: after70TaxableAmount });
     });
   });
 
@@ -262,19 +305,17 @@ function buildSideAnalysis(
     const base990IGross = before70TaxableRow?.amount ?? 0;
     const capitauxApres70 = after70Row?.amount ?? 0;
     const base757BGross = after70TaxableRow?.amount ?? 0;
-    const allowance990I = snapshot.avDeces.primesApres1998.allowancePerBeneficiary
-      * Math.max(0, Math.min(1, target.allowance990IRatio ?? 1));
-    const taxable990I = target.isExempt
-      ? 0
-      : Math.max(0, base990IGross - allowance990I);
+    const allowance990I =
+      snapshot.avDeces.primesApres1998.allowancePerBeneficiary *
+      Math.max(0, Math.min(1, target.allowance990IRatio ?? 1));
+    const taxable990I = target.isExempt ? 0 : Math.max(0, base990IGross - allowance990I);
     const droits990I = target.isExempt ? 0 : compute990ITax(taxable990I, snapshot);
 
-    const allowanceShare = !target.isExempt && totalAfter70TaxableGross > 0
-      ? globalAllowance * (base757BGross / totalAfter70TaxableGross)
-      : 0;
-    const taxable757B = target.isExempt
-      ? 0
-      : Math.max(0, base757BGross - allowanceShare);
+    const allowanceShare =
+      !target.isExempt && totalAfter70TaxableGross > 0
+        ? globalAllowance * (base757BGross / totalAfter70TaxableGross)
+        : 0;
+    const taxable757B = target.isExempt ? 0 : Math.max(0, base757BGross - allowanceShare);
     const droits757B = target.isExempt ? 0 : compute757BTax(taxable757B, target.lien, snapshot);
     const totalDroits = droits990I + droits757B;
 
@@ -292,7 +333,9 @@ function buildSideAnalysis(
       droits757B,
       totalDroits,
       netTransmis: Math.max(0, capitauxAvant70 + capitauxApres70 - totalDroits),
-      ...(target.allowance990IRatio != null ? { allowance990IRatio: target.allowance990IRatio } : {}),
+      ...(target.allowance990IRatio != null
+        ? { allowance990IRatio: target.allowance990IRatio }
+        : {}),
       ...(target.isExempt && target.allowance990IRatio != null ? { isUsufruitDemembre: true } : {}),
     };
   });
@@ -329,13 +372,17 @@ export function buildSuccessionAvFiscalAnalysis(
 
   const totalCapitauxDeces = sideEpoux1.totalCapitauxDeces + sideEpoux2.totalCapitauxDeces;
   const totalDroits = sideEpoux1.totalDroits + sideEpoux2.totalDroits;
-  const warnings = Array.from(new Set([
-    ...sideEpoux1.warnings,
-    ...sideEpoux2.warnings,
-    ...(entries.length > 0
-      ? ['Assurance-vie décès: ventilation fiscale simplifiée à partir de la clause bénéficiaire et des montants saisis.']
-      : []),
-  ]));
+  const warnings = Array.from(
+    new Set([
+      ...sideEpoux1.warnings,
+      ...sideEpoux2.warnings,
+      ...(entries.length > 0
+        ? [
+            'Assurance-vie décès: ventilation fiscale simplifiée à partir de la clause bénéficiaire et des montants saisis.',
+          ]
+        : []),
+    ]),
+  );
 
   return {
     totalCapitauxDeces,

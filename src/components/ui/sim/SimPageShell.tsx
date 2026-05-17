@@ -54,7 +54,10 @@ function createSlot<P extends SimPageShellSharedSlotProps>(
 
 const SimPageShellMain = createSlot<SimPageShellSharedSlotProps>('main', 'SimPageShell.Main');
 const SimPageShellSide = createSlot<SimPageShellSideProps>('side', 'SimPageShell.Side');
-const SimPageShellSection = createSlot<SimPageShellSharedSlotProps>('section', 'SimPageShell.Section');
+const SimPageShellSection = createSlot<SimPageShellSharedSlotProps>(
+  'section',
+  'SimPageShell.Section',
+);
 
 function isSlotElement<P extends SimPageShellSharedSlotProps>(
   node: ReactNode,
@@ -116,7 +119,10 @@ function renderStatusBlock(
   className?: string,
 ) {
   return (
-    <div className={joinClasses('premium-card', 'sim-state-card', className)} data-testid={statusTestId}>
+    <div
+      className={joinClasses('premium-card', 'sim-state-card', className)}
+      data-testid={statusTestId}
+    >
       {content}
     </div>
   );
@@ -147,21 +153,27 @@ function SimPageShellRoot({
 
   let statusNode: ReactNode = null;
   if (error) {
-    statusNode = errorContent
-      ? <div data-testid={statusTestId}>{errorContent}</div>
-      : renderStatusBlock(error, statusTestId, 'sim-state-card--error');
+    statusNode = errorContent ? (
+      <div data-testid={statusTestId}>{errorContent}</div>
+    ) : (
+      renderStatusBlock(error, statusTestId, 'sim-state-card--error')
+    );
   } else if (loading) {
-    statusNode = loadingContent
-      ? <div data-testid={statusTestId}>{loadingContent}</div>
-      : renderStatusBlock('Chargement…', statusTestId);
+    statusNode = loadingContent ? (
+      <div data-testid={statusTestId}>{loadingContent}</div>
+    ) : (
+      renderStatusBlock('Chargement…', statusTestId)
+    );
   }
 
   return (
     <div className={joinClasses('sim-page', pageClassName)} data-testid={pageTestId}>
       <header className="premium-header sim-header sim-header--stacked" data-testid={headerTestId}>
-        <h1 className="premium-title" data-testid={titleTestId}>{title}</h1>
+        <h1 className="premium-title" data-testid={titleTestId}>
+          {title}
+        </h1>
 
-        {(subtitle || actions) ? (
+        {subtitle || actions ? (
           <div className="sim-header__subtitle-row">
             {subtitle ? <p className="premium-subtitle">{subtitle}</p> : <div />}
             {actions ? <div className="sim-header__actions">{actions}</div> : null}
@@ -171,31 +183,37 @@ function SimPageShellRoot({
         {nav ? <nav className="sim-header__nav">{nav}</nav> : null}
       </header>
 
-      {shouldRenderStatus ? statusNode : (
+      {shouldRenderStatus ? (
+        statusNode
+      ) : (
         <>
           {notice ? <div className="sim-notice">{notice}</div> : null}
           {controls ? <div className="sim-controls-row">{controls}</div> : null}
 
           {hasGrid ? (
-            <main className={joinClasses(
-              'sim-grid',
-              !side && 'sim-grid--single',
-              side && mobileSideFirst && 'sim-grid--side-first-mobile',
-            )}
+            <main
+              className={joinClasses(
+                'sim-grid',
+                !side && 'sim-grid--single',
+                side && mobileSideFirst && 'sim-grid--side-first-mobile',
+              )}
             >
               {main ? (
-                <section className={joinClasses('sim-grid__col', 'sim-grid__col--main', main.className)}>
+                <section
+                  className={joinClasses('sim-grid__col', 'sim-grid__col--main', main.className)}
+                >
                   {main.children}
                 </section>
               ) : null}
 
               {side ? (
-                <aside className={joinClasses(
-                  'sim-grid__col',
-                  'sim-grid__col--side',
-                  side.sticky !== false && 'sim-grid__col--sticky',
-                  side.className,
-                )}
+                <aside
+                  className={joinClasses(
+                    'sim-grid__col',
+                    'sim-grid__col--side',
+                    side.sticky !== false && 'sim-grid__col--sticky',
+                    side.className,
+                  )}
                 >
                   {side.children}
                 </aside>

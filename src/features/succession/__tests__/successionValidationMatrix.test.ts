@@ -173,7 +173,11 @@ describe('succession validation matrix', () => {
       familyMembers: [],
     });
 
-    expect(analysis.step1?.beneficiaries.map((beneficiary) => beneficiary.id)).toEqual(['conjoint', 'E1', 'E2']);
+    expect(analysis.step1?.beneficiaries.map((beneficiary) => beneficiary.id)).toEqual([
+      'conjoint',
+      'E1',
+      'E2',
+    ]);
     expect(analysis.step2?.beneficiaries.map((beneficiary) => beneficiary.id)).toEqual(['E1']);
   });
 

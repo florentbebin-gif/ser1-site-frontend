@@ -17,7 +17,11 @@ export const Standard: Story = {
   args: {
     title: 'Simulateur crédit',
     subtitle: 'Saisie dense avec colonne de synthèse',
-    actions: <button type="button" className="premium-button">Exporter</button>,
+    actions: (
+      <button type="button" className="premium-button">
+        Exporter
+      </button>
+    ),
     notice: <p>Hypothèses mises à jour pour la projection courante.</p>,
     children: (
       <>

@@ -88,7 +88,7 @@ export function buildTresorerieAllocationCards(
   ];
   const summaryY = CONTENT_TOP_Y + 0.02;
   const summaryGap = 0.16;
-  const summaryH = 0.50;
+  const summaryH = 0.5;
   const summaryW = (CONTENT_W - summaryGap * 2) / 3;
   summaryParts.forEach((item, index) => {
     const x = MARGIN_X + index * (summaryW + summaryGap);
@@ -124,14 +124,14 @@ export function buildTresorerieAllocationCards(
   });
 
   // ── Donut chart à gauche ──────────────────────────────────────────────
-  const donutX = MARGIN_X + 0.10;
+  const donutX = MARGIN_X + 0.1;
   const donutY = CONTENT_TOP_Y + 0.72;
   const donutSize = 3.66;
 
   if (cards.length > 0 && !saturated) {
-    const labels = cards.map(card => card.label);
-    const values = cards.map(card => card.initialAllocationPct);
-    const chartColors = cards.map(card => horizonColors[horizonFromLabel(card.horizonLabel)]);
+    const labels = cards.map((card) => card.label);
+    const values = cards.map((card) => card.initialAllocationPct);
+    const chartColors = cards.map((card) => horizonColors[horizonFromLabel(card.horizonLabel)]);
 
     slide.addChart(
       pptx.ChartType.doughnut,
@@ -167,9 +167,9 @@ export function buildTresorerieAllocationCards(
     const centerX = donutX + donutSize / 2;
     const centerY = donutY + donutSize / 2;
     addTextFr(slide, 'Disponible', {
-      x: centerX - 1.10,
-      y: centerY - 0.50,
-      w: 2.20,
+      x: centerX - 1.1,
+      y: centerY - 0.5,
+      w: 2.2,
       h: 0.24,
       fontSize: 10.5,
       italic: true,
@@ -178,10 +178,10 @@ export function buildTresorerieAllocationCards(
       valign: 'middle',
     });
     addTextFr(slide, euro(spec.allocatableBase), {
-      x: centerX - 1.30,
-      y: centerY - 0.20,
-      w: 2.60,
-      h: 0.50,
+      x: centerX - 1.3,
+      y: centerY - 0.2,
+      w: 2.6,
+      h: 0.5,
       fontSize: 20,
       bold: true,
       color: textMain,
@@ -189,10 +189,10 @@ export function buildTresorerieAllocationCards(
       valign: 'middle',
     });
     addTextFr(slide, 'pour l’allocation', {
-      x: centerX - 1.10,
+      x: centerX - 1.1,
       y: centerY + 0.32,
-      w: 2.20,
-      h: 0.20,
+      w: 2.2,
+      h: 0.2,
       fontSize: 9,
       italic: true,
       color: textMain,
@@ -212,21 +212,21 @@ export function buildTresorerieAllocationCards(
     const centerX = donutX + donutSize / 2;
     const centerY = donutY + donutSize / 2;
     addTextFr(slide, saturated ? 'Banque protégée saturée' : 'Aucune poche configurée', {
-      x: centerX - 1.60,
-      y: centerY - 0.20,
-      w: 3.20,
-      h: 0.40,
+      x: centerX - 1.6,
+      y: centerY - 0.2,
+      w: 3.2,
+      h: 0.4,
       fontSize: 12,
       bold: true,
       color: textMain,
       align: 'center',
       valign: 'middle',
     });
-    addTextFr(slide, "L’excédent de trésorerie reste sur le compte bancaire", {
-      x: centerX - 1.80,
+    addTextFr(slide, 'L’excédent de trésorerie reste sur le compte bancaire', {
+      x: centerX - 1.8,
       y: centerY + 0.24,
-      w: 3.60,
-      h: 0.30,
+      w: 3.6,
+      h: 0.3,
       fontSize: 9.5,
       italic: true,
       color: textMain,
@@ -236,16 +236,16 @@ export function buildTresorerieAllocationCards(
   }
 
   // ── Cards à droite ───────────────────────────────────────────────────
-  const cardsX = MARGIN_X + donutSize + 0.40;
-  const cardsW = CONTENT_W - donutSize - 0.40;
-  const cardsTopY = CONTENT_TOP_Y + 0.70;
-  const cardsAreaH = donutSize + 0.10;
+  const cardsX = MARGIN_X + donutSize + 0.4;
+  const cardsW = CONTENT_W - donutSize - 0.4;
+  const cardsTopY = CONTENT_TOP_Y + 0.7;
+  const cardsAreaH = donutSize + 0.1;
 
   const cardCount = Math.max(1, cards.length);
   const cols = cardCount <= 3 ? 1 : 2;
   const rows = Math.ceil(cardCount / cols);
-  const gapX = 0.20;
-  const gapY = 0.20;
+  const gapX = 0.2;
+  const gapY = 0.2;
   const cardW = (cardsW - gapX * (cols - 1)) / cols;
   const cardH = (cardsAreaH - gapY * (rows - 1)) / rows;
 
@@ -257,7 +257,7 @@ export function buildTresorerieAllocationCards(
     const horizon = horizonFromLabel(card.horizonLabel);
     const horizonColor = horizonColors[horizon];
     const headerTextColor = contrastText(horizonColor);
-    const headerH = 0.40;
+    const headerH = 0.4;
 
     // Card colorée pleine
     slide.addShape('roundRect', {
@@ -300,17 +300,23 @@ export function buildTresorerieAllocationCards(
 
     // Corps : icône + montant + métriques
     const bodyY = y + headerH + 0.08;
-    addBusinessIconToSlide(slide, card.iconKey, {
-      x: x + 0.18,
-      y: bodyY + 0.06,
-      w: 0.46,
-      h: 0.46,
-    }, theme, 'textMain');
+    addBusinessIconToSlide(
+      slide,
+      card.iconKey,
+      {
+        x: x + 0.18,
+        y: bodyY + 0.06,
+        w: 0.46,
+        h: 0.46,
+      },
+      theme,
+      'textMain',
+    );
     addTextFr(slide, card.horizonLabel, {
       x: x + 0.74,
       y: bodyY + 0.02,
-      w: cardW - 0.90,
-      h: 0.20,
+      w: cardW - 0.9,
+      h: 0.2,
       fontSize: 9,
       italic: true,
       color: textMain,
@@ -319,7 +325,7 @@ export function buildTresorerieAllocationCards(
     addTextFr(slide, euro(card.initialAmount), {
       x: x + 0.74,
       y: bodyY + 0.22,
-      w: cardW - 0.90,
+      w: cardW - 0.9,
       h: 0.34,
       fontSize: 17,
       bold: true,
