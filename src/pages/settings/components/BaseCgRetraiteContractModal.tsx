@@ -56,16 +56,22 @@ function makeBaseCgDocument(): BaseCgRetraiteDocument {
 
 interface Props {
   contract: BaseCgRetraiteContract;
+  initialTab?: ContractModalTab;
   onClose: () => void;
   onSave: (_contract: BaseCgRetraiteContract) => void;
 }
 
-export function BaseCgRetraiteContractModal({ contract, onClose, onSave }: Props) {
+export function BaseCgRetraiteContractModal({
+  contract,
+  initialTab = 'identity',
+  onClose,
+  onSave,
+}: Props) {
   const [draft, setDraft] = useState<BaseCgRetraiteContract>(() => ({
     ...contract,
     documents: contract.documents ?? [],
   }));
-  const [activeTab, setActiveTab] = useState<ContractModalTab>('identity');
+  const [activeTab, setActiveTab] = useState<ContractModalTab>(initialTab);
   const [uploadingDocId, setUploadingDocId] = useState<string | null>(null);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const modalId = useId();
