@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useEffect } from 'react';
-import { formatIntegerInput } from '@/utils/formatNumber';
+import { formatIntegerInput } from '@/utils/numbers';
 
 const fmtThousands = formatIntegerInput;
 

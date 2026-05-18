@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from 'react';
-import { formatIntegerInput } from '@/utils/formatNumber';
+import { formatIntegerInput } from '@/utils/numbers';
 
 interface PerAmountInputProps {
   value: number;

@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import '@/styles/sim/index.css';
 import '../styles/index.css';
 import { onResetEvent, storageKeyFor } from '../../../utils/reset';
-import { toNumber } from '../../../utils/number';
+import { toNumber } from '../../../utils/numbers';
 import { computeIrResult as computeIrResultEngine } from '../../../engine/ir/compute';
 import { useFiscalContext } from '../../../hooks/useFiscalContext';
 import { DEFAULT_PS_SETTINGS, DEFAULT_TAX_SETTINGS } from '../../../constants/settingsDefaults';

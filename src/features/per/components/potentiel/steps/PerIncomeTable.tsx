@@ -3,7 +3,7 @@ import { SimFieldShell } from '@/components/ui/sim';
 import { SimSelect } from '@/components/ui/sim/SimSelect';
 import { computeAbattement10 } from '../../../../../engine/ir/abattement10';
 import type { DeclarantRevenus } from '../../../../../engine/per';
-import { formatInteger } from '../../../../../utils/formatNumber';
+import { formatInteger } from '../../../../../utils/numbers';
 import type { PerDeclarantPatch } from '../../../hooks/usePerPotentiel';
 import { PerAmountInput } from '../../shared/PerAmountInput';
 
