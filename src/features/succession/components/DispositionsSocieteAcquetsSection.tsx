@@ -3,6 +3,7 @@ import { OUI_NON_OPTIONS } from '../successionSimulator.constants';
 import type { DispositionsDraftState } from '../successionSimulator.helpers';
 import { DispositionsPreciputConfigurator } from './DispositionsPreciputConfigurator';
 import type { DispositionsPreciputConfiguratorProps } from './DispositionsPreciputConfigurator';
+import { clampPercentage } from './dispositions.helpers';
 import { ScSelect, type ScSelectOption } from './ScSelect';
 
 const SOCIETE_ACQUETS_LIQUIDATION_OPTIONS: ScSelectOption[] = [
@@ -14,10 +15,6 @@ interface DispositionsSocieteAcquetsSectionProps {
   dispositionsDraft: DispositionsDraftState;
   setDispositionsDraft: Dispatch<SetStateAction<DispositionsDraftState>>;
   preciputConfiguratorProps: Omit<DispositionsPreciputConfiguratorProps, 'title' | 'globalHint'>;
-}
-
-function clampPercentage(value: string): number {
-  return Math.min(100, Math.max(0, Number(value) || 0));
 }
 
 export function DispositionsSocieteAcquetsSection({

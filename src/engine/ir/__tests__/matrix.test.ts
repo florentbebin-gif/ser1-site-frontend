@@ -145,14 +145,19 @@ describe('engine/ir matrice de cas fiscaux', () => {
   });
 
   it('conserve quatre parts pour un couple avec trois enfants', () => {
-    const result = computeIr({
+    const coupleSansEnfant = computeIr({
+      incomes: { d1: { salaries: 45_000 }, d2: { salaries: 45_000 } },
+      status: 'couple',
+      parts: 2,
+    });
+    const coupleTroisEnfants = computeIr({
       incomes: { d1: { salaries: 45_000 }, d2: { salaries: 45_000 } },
       status: 'couple',
       parts: 4,
     });
 
-    expect(result.partsNb).toBe(4);
-    expect(result.irNet).toBeGreaterThanOrEqual(0);
+    expect(coupleTroisEnfants.partsNb).toBe(4);
+    expect(coupleTroisEnfants.irNet).toBeLessThan(coupleSansEnfant.irNet);
   });
 
   it('valorise la demi-part parent isolé avec un enfant', () => {
@@ -201,13 +206,26 @@ describe('engine/ir matrice de cas fiscaux', () => {
   });
 
   it('déclenche la CEHR couple uniquement au-dessus du seuil', () => {
+    const firstCoupleBracket = DEFAULT_TAX_SETTINGS.cehr.current.couple[0];
+    expect(firstCoupleBracket).toBeDefined();
+    if (!firstCoupleBracket) {
+      throw new Error('Barème CEHR couple courant manquant.');
+    }
+    const thresholdByDeclarant = Number(firstCoupleBracket.from) / 2;
+
     const underThreshold = computeIr({
-      incomes: { d1: { salaries: 249_500 }, d2: { salaries: 249_500 } },
+      incomes: {
+        d1: { salaries: thresholdByDeclarant - 500 },
+        d2: { salaries: thresholdByDeclarant - 500 },
+      },
       status: 'couple',
       parts: 2,
     });
     const overThreshold = computeIr({
-      incomes: { d1: { salaries: 250_500 }, d2: { salaries: 250_500 } },
+      incomes: {
+        d1: { salaries: thresholdByDeclarant + 500 },
+        d2: { salaries: thresholdByDeclarant + 500 },
+      },
       status: 'couple',
       parts: 2,
     });

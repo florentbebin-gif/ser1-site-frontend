@@ -13,6 +13,7 @@ import {
 import { DispositionsInterMassClaimsSection } from './DispositionsInterMassClaimsSection';
 import { DispositionsParticipationAcquetsSection } from './DispositionsParticipationAcquetsSection';
 import { DispositionsSocieteAcquetsSection } from './DispositionsSocieteAcquetsSection';
+import { clampPercentage } from './dispositions.helpers';
 import { ScSelect } from './ScSelect';
 
 interface DispositionsCommonSectionProps {
@@ -37,10 +38,6 @@ interface DispositionsCommonSectionProps {
   ) => void;
   onRemoveInterMassClaim: (claimId: string) => void;
   preciputConfiguratorProps: Omit<DispositionsPreciputConfiguratorProps, 'title' | 'globalHint'>;
-}
-
-function clampPercentage(value: string): number {
-  return Math.min(100, Math.max(0, Number(value) || 0));
 }
 
 export function DispositionsCommonSection({

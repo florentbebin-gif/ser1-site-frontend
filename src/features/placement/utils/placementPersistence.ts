@@ -103,7 +103,7 @@ export async function savePlacementState(
       try {
         const picker = window.showSaveFilePicker;
         if (typeof picker !== 'function') {
-          throw new Error('File System Access API indisponible');
+          throw new Error("API d'accès au système de fichiers indisponible");
         }
         const handle = await picker({
           suggestedName: filename,
@@ -148,7 +148,7 @@ async function pickFileForLoad() {
     try {
       const picker = window.showOpenFilePicker;
       if (typeof picker !== 'function') {
-        throw new Error('File System Access API indisponible');
+        throw new Error("API d'accès au système de fichiers indisponible");
       }
       const handles = await picker({
         multiple: false,

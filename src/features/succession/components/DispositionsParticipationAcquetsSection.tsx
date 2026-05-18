@@ -1,16 +1,13 @@
 import type { Dispatch, SetStateAction } from 'react';
 import { OUI_NON_OPTIONS } from '../successionSimulator.constants';
 import type { DispositionsDraftState } from '../successionSimulator.helpers';
+import { clampPercentage } from './dispositions.helpers';
 import { ScNumericInput } from './ScNumericInput';
 import { ScSelect } from './ScSelect';
 
 interface DispositionsParticipationAcquetsSectionProps {
   dispositionsDraft: DispositionsDraftState;
   setDispositionsDraft: Dispatch<SetStateAction<DispositionsDraftState>>;
-}
-
-function clampPercentage(value: string): number {
-  return Math.min(100, Math.max(0, Number(value) || 0));
 }
 
 export function DispositionsParticipationAcquetsSection({

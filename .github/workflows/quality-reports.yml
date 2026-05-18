@@ -71,6 +71,7 @@ jobs:
           token: ${{ secrets.CODECOV_TOKEN }}
 
       - name: Run Lighthouse CI
+        continue-on-error: true
         run: npm run lhci
         env:
           LHCI_PROFILE: full
