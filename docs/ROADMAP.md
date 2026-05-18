@@ -37,9 +37,13 @@ Objectif : rendre l'outil utilisable en rendez-vous sans intimider, tout en gard
 
 ## PR-P2-01 - Décision produit : cadre simplifié / expert
 
-Statut : `spec`
+Statut : `partiellement livré`
 
 Travaux :
+
+Livré : cadre produit documenté dans `docs/mode-simplifie-expert.md` et conventions d'intégration dans `docs/GOUVERNANCE.md`.
+
+Reste :
 
 - Finaliser la matrice visible en simplifié vs expert par simulateur.
 - Donner des exemples validés sur `/sim/credit`, `/sim/ir` et `/sim/succession`.
@@ -47,40 +51,55 @@ Travaux :
 
 ## PR-P2-02 - Infrastructure modes
 
-Statut : `spec`
+Statut : `livré, à durcir par simulateur`
 
 Travaux :
 
-- Brancher progressivement les helpers d'affichage (`ExpertOnly`, `SimpleOnly`, niveau de détail`) dans les simulateurs.
-- Garantir que l'infrastructure n'altère pas les calculs.
-- Conserver le mode global `ui_settings.mode` comme source de vérité, avec override local non persistant.
+Livré : `useUserMode`, `ModeToggle`, `ExpertOnly`/`SimpleOnly`, persistance `ui_settings.mode` et override local non persistant.
+
+Reste :
+
+- Auditer chaque simulateur pour vérifier que les champs masqués en simplifié sont bien neutralisés côté moteur quand la gouvernance le demande.
+- Conserver la preuve par tests pour chaque déploiement de mode.
 
 ## PR-P2-03 - Déploiement modes sur IR + Succession
 
-Statut : `spec`
+Statut : `partiellement livré`
 
 Travaux :
 
-- Appliquer le mode simplifié aux simulateurs les plus sensibles.
-- Garder les champs calculatoires indispensables disponibles côté moteur.
-- Vérifier que les exports restent cohérents.
+Livré : `/sim/ir` et `/sim/succession` consomment `useUserMode` avec override local.
+
+Reste :
+
+- Finaliser la matrice des champs simplifiés/expert.
+- Vérifier et documenter explicitement la cohérence des exports après neutralisation des champs experts.
 
 ## PR-P2-04 - Déploiement modes sur Placement + Crédit
 
-Statut : `spec`
+Statut : `partiellement livré`
 
 Travaux :
 
-- Réduire la densité des formulaires sans casser les hypothèses avancées.
+Livré : `/sim/placement` et `/sim/credit` consomment `useUserMode` avec override local, et Crédit neutralise déjà des hypothèses expertes côté calcul.
+
+Reste :
+
+- Terminer la réduction de densité des formulaires Placement.
 - Conserver les exports et snapshots compatibles.
 
 ## PR-P2-05 - Déploiement modes sur PER + Stratégie
 
-Statut : `spec`
+Statut : `partiellement livré`
 
 Travaux :
 
-- Harmoniser le mode avec les workflows en étapes.
+Livré : `/sim/per`, `/sim/per/transfert` et le potentiel PER consomment `useUserMode` avec override local.
+
+Reste :
+
+- Harmoniser les workflows en étapes PER en mode simplifié.
+- Déployer ou confirmer le périmètre du mode sur Stratégie.
 - Clarifier la place des explications produit.
 
 ---
@@ -91,23 +110,49 @@ Objectif : mieux différencier les enveloppes PER et produire une guidance fisca
 
 ## PR-P3-01 - Spécification métier PER
 
-- Définir les enveloppes, historiques, transferts et limites de calcul.
+Statut : `partiellement livré`
+
+Livré : transfert PER et Base CG retraite sont disponibles dans `/sim/per/transfert`.
+
+Reste :
+
+- Compléter la guidance fiscale transversale et les limites de calcul non couvertes par le transfert.
 
 ## PR-P3-02 - Modèle de données PER
 
-- Structurer enveloppes, versements, transferts et validation.
+Statut : `livré pour transfert`
+
+Livré : `src/data/base-cg-retraite/**` et `src/engine/per/transfert/**` structurent les contrats, compartiments et hypothèses de transfert.
+
+Reste :
+
+- Étendre le modèle uniquement si les recommandations PER hors transfert l'exigent.
 
 ## PR-P3-03 - Moteur PER : transferts multi-enveloppes
 
-- Calculer impacts fiscaux et projections.
+Statut : `livré pour transfert`
+
+Livré : moteur `computePerTransfert` et route `/sim/per/transfert`.
+
+Reste :
+
+- Ajouter des recommandations fiscales au-delà du scénario transfert si le besoin produit est confirmé.
 
 ## PR-P3-04 - Recommandations PER
+
+Statut : `à faire`
 
 - Guider l'utilisation des enveloppes et le report IR.
 
 ## PR-P3-05 - Exports PER enrichis
 
-- Mettre à jour PPTX / Excel avec les nouvelles enveloppes.
+Statut : `partiellement livré`
+
+Livré : exports du simulateur transfert PER.
+
+Reste :
+
+- Harmoniser PPTX / Excel avec les recommandations PER restantes.
 
 ---
 
