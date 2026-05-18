@@ -35,8 +35,9 @@ export default function StepActifs({ dossier, updateDossier }: StepProps) {
       {actifs.map((actif, idx) => (
         <div key={actif.id} className="audit-form-card">
           <div className="audit-form-row">
-            <label>Libellé</label>
+            <label htmlFor={`audit-actif-libelle-${actif.id}`}>Libellé</label>
             <input
+              id={`audit-actif-libelle-${actif.id}`}
               type="text"
               value={actif.libelle}
               onChange={(e) => {
@@ -48,8 +49,9 @@ export default function StepActifs({ dossier, updateDossier }: StepProps) {
             />
           </div>
           <div className="audit-form-row">
-            <label>Valeur (€)</label>
+            <label htmlFor={`audit-actif-valeur-${actif.id}`}>Valeur (€)</label>
             <input
+              id={`audit-actif-valeur-${actif.id}`}
               type="number"
               value={actif.valeur}
               onChange={(e) => {
@@ -60,8 +62,9 @@ export default function StepActifs({ dossier, updateDossier }: StepProps) {
             />
           </div>
           <div className="audit-form-row">
-            <label>Propriétaire</label>
+            <label htmlFor={`audit-actif-proprietaire-${actif.id}`}>Propriétaire</label>
             <select
+              id={`audit-actif-proprietaire-${actif.id}`}
               value={actif.proprietaire}
               onChange={(e) => {
                 const newActifs = [...actifs];

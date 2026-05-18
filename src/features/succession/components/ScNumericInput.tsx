@@ -9,6 +9,7 @@ const parseClean = (raw: string): number => {
 };
 
 interface ScNumericInputProps {
+  id?: string;
   value: number | string;
   onChange: (value: number) => void;
   min?: number;
@@ -19,6 +20,7 @@ interface ScNumericInputProps {
 }
 
 export function ScNumericInput({
+  id,
   value,
   onChange,
   min,
@@ -60,6 +62,7 @@ export function ScNumericInput({
 
   return (
     <input
+      id={id}
       type="text"
       inputMode="numeric"
       value={display}

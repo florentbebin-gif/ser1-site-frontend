@@ -35,7 +35,7 @@ function isMissingReviewColumnsError(error: { message?: string } | null): boolea
 }
 
 export async function getBaseContratOverrides(): Promise<OverrideMap> {
-  if (isFresh()) return _cache!;
+  if (isFresh() && _cache !== null) return _cache;
 
   let data: Array<Partial<BaseContratOverride>> | null = null;
   let error: { message: string } | null = null;

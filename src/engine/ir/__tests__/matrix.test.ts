@@ -123,4 +123,114 @@ describe('engine/ir matrice de cas fiscaux', () => {
     expect(dom.domAbatementAmount).toBeGreaterThan(0);
     expect(dom.irNet).toBeLessThan(metropole.irNet);
   });
+
+  it('applique la décote sur un IR brut éligible', () => {
+    const result = computeIr({
+      incomes: { d1: { salaries: 28_000 } },
+    });
+
+    expect(result.decote).toBeGreaterThan(0);
+    expect(result.irNet).toBeLessThan(result.irAfterQf);
+  });
+
+  it('plafonne l’avantage de quotient familial sur un revenu élevé', () => {
+    const result = computeIr({
+      incomes: { d1: { salaries: 250_000 } },
+      status: 'single',
+      parts: 4,
+    });
+
+    expect(result.qfAdvantage).toBeGreaterThan(0);
+    expect(result.qfIsCapped).toBe(true);
+  });
+
+  it('conserve quatre parts pour un couple avec trois enfants', () => {
+    const coupleSansEnfant = computeIr({
+      incomes: { d1: { salaries: 45_000 }, d2: { salaries: 45_000 } },
+      status: 'couple',
+      parts: 2,
+    });
+    const coupleTroisEnfants = computeIr({
+      incomes: { d1: { salaries: 45_000 }, d2: { salaries: 45_000 } },
+      status: 'couple',
+      parts: 4,
+    });
+
+    expect(coupleTroisEnfants.partsNb).toBe(4);
+    expect(coupleTroisEnfants.irNet).toBeLessThan(coupleSansEnfant.irNet);
+  });
+
+  it('valorise la demi-part parent isolé avec un enfant', () => {
+    const single = computeIr({
+      incomes: { d1: { salaries: 42_000 } },
+      status: 'single',
+      parts: 1,
+    });
+    const isolatedParent = computeIr({
+      incomes: { d1: { salaries: 42_000 } },
+      status: 'single',
+      isIsolated: true,
+      parts: 2,
+    });
+
+    expect(isolatedParent.partsNb).toBe(2);
+    expect(isolatedParent.qfAdvantage).toBeGreaterThan(0);
+    expect(isolatedParent.irNet).toBeLessThan(single.irNet);
+  });
+
+  it('agrège salaire, foncier et capital au barème avec prélèvements sociaux', () => {
+    const result = computeIr({
+      incomes: {
+        d1: { salaries: 50_000 },
+        fonciersFoyer: 5_000,
+        capital: { withPs: 10_000 },
+      },
+      capitalMode: 'bareme',
+    });
+
+    expect(result.totalIncome).toBe(61_000);
+    expect(result.psFoncier).toBeGreaterThan(0);
+    expect(result.psDividends).toBeGreaterThan(0);
+    expect(result.totalTax).toBeGreaterThan(result.irNet);
+  });
+
+  it('neutralise le PFU et les PS sur une moins-value de capital', () => {
+    const result = computeIr({
+      incomes: { d1: { salaries: 0 }, capital: { withPs: -10_000 } },
+      capitalMode: 'pfu',
+    });
+
+    expect(result.pfuIr).toBe(0);
+    expect(result.psDividends).toBe(0);
+    expect(result.totalTax).toBe(0);
+  });
+
+  it('déclenche la CEHR couple uniquement au-dessus du seuil', () => {
+    const firstCoupleBracket = DEFAULT_TAX_SETTINGS.cehr.current.couple[0];
+    expect(firstCoupleBracket).toBeDefined();
+    if (!firstCoupleBracket) {
+      throw new Error('Barème CEHR couple courant manquant.');
+    }
+    const thresholdByDeclarant = Number(firstCoupleBracket.from) / 2;
+
+    const underThreshold = computeIr({
+      incomes: {
+        d1: { salaries: thresholdByDeclarant - 500 },
+        d2: { salaries: thresholdByDeclarant - 500 },
+      },
+      status: 'couple',
+      parts: 2,
+    });
+    const overThreshold = computeIr({
+      incomes: {
+        d1: { salaries: thresholdByDeclarant + 500 },
+        d2: { salaries: thresholdByDeclarant + 500 },
+      },
+      status: 'couple',
+      parts: 2,
+    });
+
+    expect(underThreshold.cehr).toBe(0);
+    expect(overThreshold.cehr).toBeGreaterThan(0);
+  });
 });

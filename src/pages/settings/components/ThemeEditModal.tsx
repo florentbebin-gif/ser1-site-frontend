@@ -120,8 +120,11 @@ export default function ThemeEditModal({
             </div>
           )}
           <div className="settings-modal-field">
-            <label className="settings-modal-label">Nom du thème *</label>
+            <label className="settings-modal-label" htmlFor="theme-name">
+              Nom du thème *
+            </label>
             <input
+              id="theme-name"
               type="text"
               value={form.name}
               onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
@@ -132,7 +135,7 @@ export default function ThemeEditModal({
             />
           </div>
           <div className="settings-modal-field">
-            <label className="settings-modal-label">Palette (10 couleurs)</label>
+            <div className="settings-modal-label">Palette (10 couleurs)</div>
             <p className="theme-palette-help">Survolez C1 à C10 pour voir la norme d’usage.</p>
             <div className="theme-palette-grid">
               {colorFields.map(({ key, token, help }) => {

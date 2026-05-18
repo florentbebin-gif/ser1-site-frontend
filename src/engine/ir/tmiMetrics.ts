@@ -257,7 +257,8 @@ export function computeTmiMetrics(revenuImposable: number, params: TmiParams): T
   const rateCache = new Map<number, number>();
   const getRate = (r: number): number => {
     const key = Math.max(0, Math.floor(Number(r) || 0));
-    if (rateCache.has(key)) return rateCache.get(key)!;
+    const cached = rateCache.get(key);
+    if (cached !== undefined) return cached;
     const v = computeMarginalRate(key, params);
     rateCache.set(key, v);
     return v;

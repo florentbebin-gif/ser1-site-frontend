@@ -65,12 +65,14 @@ export function DispositionsPreciputConfigurator({
   const hasSelectableCandidate = preciputCandidateOptions.some(
     (option) => option.value !== '' && !option.disabled,
   );
+  const fieldIdPrefix = title.includes('société') ? 'sc-preciput-societe-acquets' : 'sc-preciput';
 
   return (
     <>
       <div className="sc-field">
-        <label>Mode de préciput</label>
+        <label htmlFor={`${fieldIdPrefix}-mode`}>Mode de préciput</label>
         <ScSelect
+          id={`${fieldIdPrefix}-mode`}
           value={dispositionsDraft.preciputMode}
           onChange={(value) =>
             setDispositionsDraft((prev) => ({
@@ -93,10 +95,11 @@ export function DispositionsPreciputConfigurator({
       </div>
 
       <div className="sc-field">
-        <label>
+        <label htmlFor={`${fieldIdPrefix}-montant`}>
           {dispositionsDraft.preciputMode === 'cible' ? `${title} de repli (EUR)` : title}
         </label>
         <ScNumericInput
+          id={`${fieldIdPrefix}-montant`}
           value={dispositionsDraft.preciputMontant || 0}
           min={0}
           onChange={(value) =>
@@ -116,8 +119,9 @@ export function DispositionsPreciputConfigurator({
       {dispositionsDraft.preciputMode === 'cible' && (
         <>
           <div className="sc-field">
-            <label>Ajouter un bien au préciput ciblé</label>
+            <label htmlFor={`${fieldIdPrefix}-candidat`}>Ajouter un bien au préciput ciblé</label>
             <ScSelect
+              id={`${fieldIdPrefix}-candidat`}
               value={pendingPreciputCandidateKey}
               onChange={(value) => onAddPreciputSelection(value)}
               options={preciputCandidateOptions}
@@ -160,8 +164,11 @@ export function DispositionsPreciputConfigurator({
 
                     <div className="sc-preciput-item__grid">
                       <div className="sc-field">
-                        <label>Sélection active</label>
+                        <label htmlFor={`sc-preciput-selection-active-${selection.id}`}>
+                          Sélection active
+                        </label>
                         <ScSelect
+                          id={`sc-preciput-selection-active-${selection.id}`}
                           value={selection.enabled ? 'oui' : 'non'}
                           onChange={(value) =>
                             onUpdatePreciputSelection(selection.id, 'enabled', value === 'oui')
@@ -171,8 +178,11 @@ export function DispositionsPreciputConfigurator({
                       </div>
 
                       <div className="sc-field">
-                        <label>Montant ciblé (EUR)</label>
+                        <label htmlFor={`sc-preciput-selection-amount-${selection.id}`}>
+                          Montant ciblé (EUR)
+                        </label>
                         <ScNumericInput
+                          id={`sc-preciput-selection-amount-${selection.id}`}
                           value={selection.amount}
                           min={0}
                           onChange={(value) =>

@@ -101,7 +101,11 @@ export async function savePlacementState(
 
     if (hasFileSystemAccess()) {
       try {
-        const handle = await window.showSaveFilePicker!({
+        const picker = window.showSaveFilePicker;
+        if (typeof picker !== 'function') {
+          throw new Error("API d'accès au système de fichiers indisponible");
+        }
+        const handle = await picker({
           suggestedName: filename,
           types: [
             {
@@ -142,7 +146,11 @@ export async function savePlacementState(
 async function pickFileForLoad() {
   if (hasFileSystemAccess()) {
     try {
-      const [handle] = await window.showOpenFilePicker!({
+      const picker = window.showOpenFilePicker;
+      if (typeof picker !== 'function') {
+        throw new Error("API d'accès au système de fichiers indisponible");
+      }
+      const handles = await picker({
         multiple: false,
         types: [
           {
@@ -151,6 +159,7 @@ async function pickFileForLoad() {
           },
         ],
       });
+      const handle = handles[0];
       if (!handle) return null;
       const file = await handle.getFile();
       return file;

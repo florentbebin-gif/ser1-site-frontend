@@ -87,6 +87,18 @@
   gap: 12px;
 }
 
+.audit-objectifs-fieldset {
+  padding: 0;
+  margin: 0;
+  border: 0;
+}
+
+.audit-objectifs-fieldset legend {
+  margin-bottom: 10px;
+  color: var(--color-c9);
+  font-size: 14px;
+}
+
 .audit-objectif-card {
   display: flex;
   align-items: center;

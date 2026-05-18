@@ -153,10 +153,11 @@ export function calculatePerPotentiel(input: PerPotentielInput): PerPotentielRes
       severity: 'warning',
     });
   }
-  if ((deductionFlow163Q.declarant2?.cotisationsNonDeductibles ?? 0) > 0) {
+  const declarant2DeductionFlow = deductionFlow163Q.declarant2;
+  if (declarant2DeductionFlow && declarant2DeductionFlow.cotisationsNonDeductibles > 0) {
     warnings.push({
       code: 'PER_163Q_IR_NON_DEDUCTIBLE_D2',
-      message: `Une fraction des versements 163 quatervicies / PERP du déclarant 2 (${deductionFlow163Q.declarant2!.cotisationsNonDeductibles.toLocaleString('fr-FR')} €) n'est pas retenue pour l'IR courant.`,
+      message: `Une fraction des versements 163 quatervicies / PERP du déclarant 2 (${declarant2DeductionFlow.cotisationsNonDeductibles.toLocaleString('fr-FR')} €) n'est pas retenue pour l'IR courant.`,
       severity: 'warning',
     });
   }
@@ -185,17 +186,18 @@ export function calculatePerPotentiel(input: PerPotentielInput): PerPotentielRes
     abat10RetCfg,
   });
 
-  const projectedPlafondD2 = adjustedSituation.declarant2
-    ? computeProjectedPlafond163Q({
-        revenuSource: adjustedSituation.declarant2,
-        cotisationSource: activeDeclarant2!,
-        avisIr: avisIr2,
-        reduction2042: (declaration2042.case6QT ?? 0) + (declaration2042.case6OT ?? 0),
-        pass,
-        abat10SalCfg,
-        abat10RetCfg,
-      })
-    : undefined;
+  const projectedPlafondD2 =
+    adjustedSituation.declarant2 && activeDeclarant2
+      ? computeProjectedPlafond163Q({
+          revenuSource: adjustedSituation.declarant2,
+          cotisationSource: activeDeclarant2,
+          avisIr: avisIr2,
+          reduction2042: (declaration2042.case6QT ?? 0) + (declaration2042.case6OT ?? 0),
+          pass,
+          abat10SalCfg,
+          abat10RetCfg,
+        })
+      : undefined;
 
   const projectionAvisSuivant = computeProjectionAvis({
     avisIr,

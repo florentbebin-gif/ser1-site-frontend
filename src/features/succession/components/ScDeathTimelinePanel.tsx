@@ -174,8 +174,9 @@ export default function ScDeathTimelinePanel({
         <>
           <div className="sc-card__divider sc-card__divider--tight" />
           <div className="sc-field sc-field--timeline-select">
-            <label>Horizon du deces simule</label>
+            <label htmlFor="sc-death-timeline-horizon">Horizon du deces simule</label>
             <ScSelect
+              id="sc-death-timeline-horizon"
               value={String(decesDansXAns)}
               onChange={(value) =>
                 onChangeDecesDansXAns(Number(value) as ScDeathTimelinePanelProps['decesDansXAns'])

@@ -106,7 +106,8 @@
   gap: 4px;
 }
 
-.sc-field label {
+.sc-field label,
+.sc-field-label {
   color: var(--color-c9);
   font-size: 12px;
 }

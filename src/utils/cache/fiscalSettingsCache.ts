@@ -160,7 +160,8 @@ function hydrateFromStorage(): boolean {
 
 // --- Chargement depuis Supabase (avec timeout) ---
 async function fetchFromSupabase(kind: CacheKind): Promise<void> {
-  if (cache.inflight[kind]) return cache.inflight[kind]!;
+  const inflight = cache.inflight[kind];
+  if (inflight) return inflight;
   const promise = (async (): Promise<void> => {
     try {
       let res;

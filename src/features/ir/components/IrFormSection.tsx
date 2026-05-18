@@ -65,8 +65,9 @@ export function IrFormSection({
         <div className="ir-card-divider sim-divider" />
         <div className="ir-guide-card__grid">
           <div className="ir-field premium-field" data-testid="ir-situation-field">
-            <label>Situation familiale</label>
+            <label htmlFor="ir-situation-select">Situation familiale</label>
             <IrSelect
+              id="ir-situation-select"
               value={status ?? ''}
               placeholder="Sélectionner une situation…"
               testId="ir-situation-select"

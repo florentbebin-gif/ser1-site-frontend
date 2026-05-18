@@ -57,8 +57,9 @@ export default function PrevoyanceModal({
     >
       <div className="sc-assurance-vie-grid sc-assurance-vie-grid--premium">
         <div className="sc-field">
-          <label>Assuré</label>
+          <label htmlFor="sc-prevoyance-assure">Assuré</label>
           <ScSelect
+            id="sc-prevoyance-assure"
             className="sc-assurance-vie-select"
             value={entry.assure}
             onChange={(value) => onUpdate('assure', value)}
@@ -66,8 +67,9 @@ export default function PrevoyanceModal({
           />
         </div>
         <div className="sc-field">
-          <label>Capital décès (€)</label>
+          <label htmlFor="sc-prevoyance-capital-deces">Capital décès (€)</label>
           <ScNumericInput
+            id="sc-prevoyance-capital-deces"
             value={entry.capitalDeces || 0}
             min={0}
             onChange={(val) => onUpdate('capitalDeces', val)}
@@ -75,8 +77,9 @@ export default function PrevoyanceModal({
           />
         </div>
         <div className="sc-field">
-          <label>Dernière prime versée (€)</label>
+          <label htmlFor="sc-prevoyance-derniere-prime">Dernière prime versée (€)</label>
           <ScNumericInput
+            id="sc-prevoyance-derniere-prime"
             value={entry.dernierePrime || 0}
             min={0}
             onChange={(val) => onUpdate('dernierePrime', val)}
@@ -84,7 +87,7 @@ export default function PrevoyanceModal({
           />
         </div>
         <div className="sc-field">
-          <label>Régime fiscal</label>
+          <div className="sc-field-label">Régime fiscal</div>
           <div className="sc-read-only-field">
             <span>{regimeLabel}</span>
             {regimeWarning && (
@@ -96,8 +99,9 @@ export default function PrevoyanceModal({
       <div className="sc-assurance-vie-contract__section">
         <p className="sc-assurance-vie-contract__section-title">Clause bénéficiaire</p>
         <div className="sc-field sc-field--full">
-          <label>Clause bénéficiaire</label>
+          <label htmlFor="sc-prevoyance-clause-beneficiaire">Clause bénéficiaire</label>
           <ScSelect
+            id="sc-prevoyance-clause-beneficiaire"
             className="sc-assurance-vie-select"
             value={entry.clauseBeneficiaire ?? clauseOptions[0]?.value ?? ''}
             onChange={(value) => onUpdate('clauseBeneficiaire', value)}

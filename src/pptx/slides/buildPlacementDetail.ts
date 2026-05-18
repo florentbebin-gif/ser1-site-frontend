@@ -400,13 +400,15 @@ function drawDetailPanel(
   }
 
   // --- Flow bar (optional, slides 5-6) or Gain bar (slide 4 épargne) ---
-  const hasFlowBar = !!data.flowBar;
-  const hasGainBar = !hasFlowBar && !!data.gainBar;
+  const flowBar = data.flowBar;
+  const gainBar = !flowBar ? data.gainBar : undefined;
+  const hasFlowBar = !!flowBar;
+  const hasGainBar = !!gainBar;
   const flowBarTopY = heroTopY + PANEL.heroH + 0.05;
-  if (hasFlowBar) {
-    drawFlowBar(slide, data.flowBar!, panelX, panelW, flowBarTopY, cleanColor, theme);
-  } else if (hasGainBar) {
-    drawGainBar(slide, data.gainBar!, panelX, panelW, flowBarTopY, cleanColor, theme);
+  if (flowBar) {
+    drawFlowBar(slide, flowBar, panelX, panelW, flowBarTopY, cleanColor, theme);
+  } else if (gainBar) {
+    drawGainBar(slide, gainBar, panelX, panelW, flowBarTopY, cleanColor, theme);
   }
 
   // --- Supporting metrics (metrics[1..]) ---

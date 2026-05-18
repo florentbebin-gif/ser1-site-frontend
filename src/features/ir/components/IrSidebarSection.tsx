@@ -103,8 +103,9 @@ export function IrSidebarSection({
     <div className="ir-right">
       <div className="ir-controls-sticky">
         <div className="ir-field">
-          <label>Barème</label>
+          <label htmlFor="ir-bareme-select">Barème</label>
           <IrSelect
+            id="ir-bareme-select"
             value={yearKey}
             onChange={(value) => setYearKey(value as IrSidebarSectionProps['yearKey'])}
             options={[
@@ -117,8 +118,9 @@ export function IrSidebarSection({
           />
         </div>
         <div className="ir-field">
-          <label>Résidence</label>
+          <label htmlFor="ir-residence-select">Résidence</label>
           <IrSelect
+            id="ir-residence-select"
             value={location}
             onChange={(value) => setLocation(value as IrSidebarSectionProps['location'])}
             options={[

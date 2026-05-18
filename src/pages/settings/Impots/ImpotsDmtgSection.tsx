@@ -123,8 +123,9 @@ export default function ImpotsDmtgSection({
                 </div>
                 <div style={{ paddingLeft: 8 }}>
                   <div className="settings-field-row" style={{ marginBottom: 12 }}>
-                    <label>{labelAbattement}</label>
+                    <label htmlFor={`impots-dmtg-${key}-abattement`}>{labelAbattement}</label>
                     <input
+                      id={`impots-dmtg-${key}-abattement`}
                       type="number"
                       value={numberOrEmpty(category.abattement)}
                       onChange={(event: React.ChangeEvent<HTMLInputElement>) =>

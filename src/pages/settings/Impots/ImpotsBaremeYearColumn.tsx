@@ -1,4 +1,4 @@
-import type { ChangeEvent, ReactElement } from 'react';
+import { useId, type ChangeEvent, type ReactElement } from 'react';
 import SettingsTable from '@/components/settings/SettingsTable';
 import { numberOrEmpty } from '@/components/settings/settingsHelpers';
 
@@ -137,10 +137,13 @@ function BaremeNumberField({
   unit = '\u20ac',
   step,
 }: BaremeNumberFieldProps): ReactElement {
+  const inputId = useId();
+
   return (
     <div className="settings-field-row">
-      <label>{label}</label>
+      <label htmlFor={inputId}>{label}</label>
       <input
+        id={inputId}
         type="number"
         step={step}
         value={numberOrEmpty(value)}
@@ -170,12 +173,16 @@ export function ImpotsBaremeYearColumn({
   const abat10 = incomeTax.abat10[periodKey];
   const retirees = incomeTax.abat10[retireesKey];
   const columnClassName = ['income-tax-col', className].filter(Boolean).join(' ');
+  const yearLabelInputId = `impots-bareme-label-${yearLabelKey}`;
 
   return (
     <div className={columnClassName}>
       <div className="settings-field-row" style={{ marginBottom: 10 }}>
-        <label style={{ fontWeight: 600 }}>{'Bar\u00e8me'}</label>
+        <label htmlFor={yearLabelInputId} style={{ fontWeight: 600 }}>
+          {'Bar\u00e8me'}
+        </label>
         <input
+          id={yearLabelInputId}
           type="text"
           value={yearLabel ?? ''}
           onChange={(event) => updateField(['incomeTax', yearLabelKey], event.target.value)}

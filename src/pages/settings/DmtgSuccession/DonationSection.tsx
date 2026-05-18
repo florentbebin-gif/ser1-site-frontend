@@ -50,8 +50,9 @@ export default function DonationSection({
             <div className="dmtg-block-title">Rappel fiscal</div>
             <div className="dmtg-indent">
               <div className="settings-field-row">
-                <label>Durée du rappel fiscal</label>
+                <label htmlFor="donation-rappel-fiscal-annees">Durée du rappel fiscal</label>
                 <input
+                  id="donation-rappel-fiscal-annees"
                   type="number"
                   value={numberOrEmpty(donation.rappelFiscalAnnees)}
                   onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
@@ -71,8 +72,9 @@ export default function DonationSection({
             <div className="dmtg-block-title">Don familial de sommes d'argent (art. 790 G)</div>
             <div className="dmtg-indent">
               <div className="settings-field-row dmtg-field-row--mb8">
-                <label>Montant exonéré</label>
+                <label htmlFor="donation-don-familial-montant">Montant exonéré</label>
                 <input
+                  id="donation-don-familial-montant"
                   type="number"
                   value={numberOrEmpty(donation.donFamilial790G.montant)}
                   onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
@@ -86,8 +88,9 @@ export default function DonationSection({
                 <span>EUR</span>
               </div>
               <div className="settings-field-row">
-                <label>Conditions</label>
+                <label htmlFor="donation-don-familial-conditions">Conditions</label>
                 <input
+                  id="donation-don-familial-conditions"
                   type="text"
                   className="dmtg-input-conditions"
                   value={donation.donFamilial790G.conditions}

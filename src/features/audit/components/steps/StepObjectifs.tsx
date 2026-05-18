@@ -31,21 +31,24 @@ export default function StepObjectifs({ dossier, updateDossier }: StepProps) {
       <h2>Objectifs client</h2>
       <p className="audit-form-hint">Sélectionnez les objectifs prioritaires du client.</p>
 
-      <div className="audit-objectifs-grid">
-        {allObjectifs.map((objectif) => (
-          <label
-            key={objectif}
-            className={`audit-objectif-card ${objectifs.includes(objectif) ? 'selected' : ''}`}
-          >
-            <input
-              type="checkbox"
-              checked={objectifs.includes(objectif)}
-              onChange={() => toggleObjectif(objectif)}
-            />
-            <span>{OBJECTIFS_CLIENT_LABELS[objectif]}</span>
-          </label>
-        ))}
-      </div>
+      <fieldset className="audit-objectifs-fieldset">
+        <legend>Objectifs prioritaires</legend>
+        <div className="audit-objectifs-grid">
+          {allObjectifs.map((objectif) => (
+            <label
+              key={objectif}
+              className={`audit-objectif-card ${objectifs.includes(objectif) ? 'selected' : ''}`}
+            >
+              <input
+                type="checkbox"
+                checked={objectifs.includes(objectif)}
+                onChange={() => toggleObjectif(objectif)}
+              />
+              <span>{OBJECTIFS_CLIENT_LABELS[objectif]}</span>
+            </label>
+          ))}
+        </div>
+      </fieldset>
     </div>
   );
 }

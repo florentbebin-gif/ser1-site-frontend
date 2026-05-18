@@ -52,8 +52,9 @@ export default function ForgotPassword(): React.ReactElement {
         <div className="login-card">
           <h2 className="card-title">Mot de passe oublié</h2>
           <form onSubmit={handleSend} className="form-grid">
-            <label>Adresse e-mail</label>
+            <label htmlFor="forgot-password-email">Adresse e-mail</label>
             <input
+              id="forgot-password-email"
               type="email"
               placeholder="vous@exemple.com"
               value={email}

@@ -72,8 +72,9 @@ export default function AssetLegalQualificationModal({
     >
       <div className="sc-assurance-vie-grid sc-assurance-vie-grid--premium">
         <div className="sc-field">
-          <label>Qualification juridique</label>
+          <label htmlFor="sc-asset-legal-nature">Qualification juridique</label>
           <ScSelect
+            id="sc-asset-legal-nature"
             className="sc-assurance-vie-select"
             value={legalNature}
             onChange={(v) => setLegalNature(v as SuccessionAssetLegalNature)}
@@ -81,8 +82,9 @@ export default function AssetLegalQualificationModal({
           />
         </div>
         <div className="sc-field">
-          <label>Origine</label>
+          <label htmlFor="sc-asset-origin">Origine</label>
           <ScSelect
+            id="sc-asset-origin"
             className="sc-assurance-vie-select"
             value={origin}
             onChange={(v) => setOrigin(v as SuccessionAssetOrigin)}
@@ -90,8 +92,9 @@ export default function AssetLegalQualificationModal({
           />
         </div>
         <div className="sc-field">
-          <label>Meuble / immeuble</label>
+          <label htmlFor="sc-asset-meuble-immeuble">Meuble / immeuble</label>
           <ScSelect
+            id="sc-asset-meuble-immeuble"
             className="sc-assurance-vie-select"
             value={meubleImmeubleLegal}
             onChange={(v) => setMeubleImmeubleLegal(v as SuccessionMeubleImmeubleLegal)}
