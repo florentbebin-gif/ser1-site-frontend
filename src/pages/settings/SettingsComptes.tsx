@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation } from 'react-router';
 import { DEBUG_AUTH } from '@/supabaseClient';
 import { isDebugEnabled } from '@/utils/debugFlags';
 import { useUserRole } from '@/auth/useUserRole';

@@ -59,7 +59,7 @@ Object.defineProperty(globalThis.window, 'localStorage', { value: localStorageMo
 
 // Mock navigate
 const navigateMock = vi.fn();
-vi.mock('react-router-dom', () => ({
+vi.mock('react-router', () => ({
   useNavigate: () => navigateMock,
 }));
 

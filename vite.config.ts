@@ -30,7 +30,7 @@ export default defineConfig(({ mode }) => {
       rollupOptions: {
         output: {
           manualChunks: {
-            'react-vendor': ['react', 'react-dom', 'react-router-dom'],
+            'react-vendor': ['react', 'react-dom', 'react-router'],
             'supabase-vendor': ['@supabase/supabase-js'],
             'validation-vendor': ['zod'],
           },
