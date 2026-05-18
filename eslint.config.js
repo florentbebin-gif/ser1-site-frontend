@@ -146,6 +146,17 @@ export default [
     },
   },
   {
+    files: ['api/**/*.{ts,js}'],
+    languageOptions: {
+      globals: {
+        ...globals.node,
+      },
+    },
+    rules: {
+      'no-console': 'off',
+    },
+  },
+  {
     files: ['*.cjs'],
     languageOptions: {
       sourceType: 'commonjs',
