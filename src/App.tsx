@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback, Suspense } from 'react';
 import type { Session } from '@supabase/supabase-js';
-import { Routes, Route, useNavigate } from 'react-router-dom';
+import { Routes, Route, useNavigate } from 'react-router';
 import { supabase, DEBUG_AUTH } from './supabaseClient';
 import { PrivateRoute } from './auth';
 import { useTheme } from './settings/ThemeProvider';

@@ -30,10 +30,22 @@ export default defineConfig(({ mode }) => {
       rollupOptions: {
         output: {
           manualChunks: {
-            'react-vendor': ['react', 'react-dom', 'react-router-dom'],
+            'react-vendor': ['react', 'react-dom', 'react-router'],
             'supabase-vendor': ['@supabase/supabase-js'],
             'validation-vendor': ['zod'],
           },
+        },
+        onwarn(warning, defaultHandler) {
+          const moduleId = warning.id ?? warning.message;
+          const isReactRouterUseClientWarning =
+            warning.code === 'MODULE_LEVEL_DIRECTIVE' &&
+            /node_modules[\\/]react-router[\\/]/.test(moduleId);
+
+          if (isReactRouterUseClientWarning) {
+            return;
+          }
+
+          defaultHandler(warning);
         },
       },
     },

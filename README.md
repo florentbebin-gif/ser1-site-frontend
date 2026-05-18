@@ -2,7 +2,7 @@
 
 Application web pour CGP : audit patrimonial, stratégie guidée, simulateurs IR, Succession, Placement, Crédit, PER et Trésorerie société, exports PPTX/Excel.
 
-Stack : React 18 + Vite 5 + TypeScript + Supabase (Auth/DB/Storage/Edge Functions).
+Stack : React 18 + React Router 7 + Vite 5 + TypeScript + Supabase (Auth/DB/Storage/Edge Functions).
 
 ## Documentation
 
@@ -81,7 +81,7 @@ npm run check:unused  # depcheck avec ignore explicite de supabase et dependency
 
 ## Repère "où changer quoi" (code)
 
-- Routing : `src/routes/appRoutes.ts` (APP_ROUTES) + `src/routes/settingsRoutes.ts` (settings) + rendu dans `src/App.tsx`
+- Routing : React Router 7 en mode déclaratif, `src/routes/appRoutes.ts` (APP_ROUTES) + `src/routes/settingsRoutes.ts` (settings) + rendu dans `src/App.tsx`
 - Auth : `src/auth/`
 - Theme : `src/settings/ThemeProvider.tsx`, `src/settings/presets.ts`
 - Styles globaux : `src/styles/index.css`, `src/styles/app/`, `src/styles/premium-shared.css`
