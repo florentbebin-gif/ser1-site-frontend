@@ -35,6 +35,18 @@ export default defineConfig(({ mode }) => {
             'validation-vendor': ['zod'],
           },
         },
+        onwarn(warning, defaultHandler) {
+          const moduleId = warning.id ?? warning.message;
+          const isReactRouterUseClientWarning =
+            warning.code === 'MODULE_LEVEL_DIRECTIVE' &&
+            /node_modules[\\/]react-router[\\/]/.test(moduleId);
+
+          if (isReactRouterUseClientWarning) {
+            return;
+          }
+
+          defaultHandler(warning);
+        },
       },
     },
     resolve: {
