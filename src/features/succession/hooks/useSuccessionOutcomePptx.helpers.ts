@@ -1,4 +1,4 @@
-import { REGIMES_MATRIMONIAUX } from '../../../engine/civil';
+import { REGIMES_MATRIMONIAUX } from '../../../engine/succession/civil';
 import {
   CHOIX_LEGAL_CONJOINT_OPTIONS,
   DISPOSITION_TESTAMENTAIRE_OPTIONS,

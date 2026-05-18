@@ -1,5 +1,5 @@
 import type { Dispatch, SetStateAction } from 'react';
-import { REGIMES_MATRIMONIAUX } from '../../../engine/civil';
+import { REGIMES_MATRIMONIAUX } from '../../../engine/succession/civil';
 import type { DEFAULT_SUCCESSION_CIVIL_CONTEXT } from '../successionDraft';
 import {
   type FamilyMember,

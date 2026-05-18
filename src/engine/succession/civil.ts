@@ -2,7 +2,7 @@
  * Module Civil - référentiel des régimes matrimoniaux et paramètres DMTG.
  */
 
-import { DEFAULT_TAX_SETTINGS } from '../constants/settingsDefaults';
+import { DEFAULT_TAX_SETTINGS } from '../../constants/settingsDefaults';
 
 // Types pour la situation civile
 export type RegimeMatrimonial =

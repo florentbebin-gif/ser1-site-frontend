@@ -1,4 +1,4 @@
-import type { DmtgSettings } from '../../engine/civil';
+import type { DmtgSettings } from '../../engine/succession/civil';
 import { calculateSuccession } from '../../engine/succession';
 import type {
   SuccessionCivilContext,

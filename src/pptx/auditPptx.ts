@@ -16,7 +16,7 @@ import PptxGenJS from 'pptxgenjs';
 import type { ThemeColors } from '../settings/ThemeProvider';
 import { DEFAULT_COLORS } from '../settings/ThemeProvider';
 import type { DossierAudit } from '../features/audit/types';
-import { REGIMES_MATRIMONIAUX } from '../engine/civil';
+import { REGIMES_MATRIMONIAUX } from '../engine/succession/civil';
 import { calculatePredecesSenarios } from '../engine/succession';
 
 // Type pour les lignes de tableau (compatible PptxGenJS)

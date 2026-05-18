@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { DEFAULT_DMTG } from '../../../engine/civil';
+import { DEFAULT_DMTG } from '../../../engine/succession/civil';
 import { calculateSuccession, type HeritiersInput } from '../../../engine/succession';
 import { buildSuccessionAvFiscalAnalysis } from '../successionAvFiscal';
 import type { SuccessionDevolutionAnalysis } from '../successionDevolution';

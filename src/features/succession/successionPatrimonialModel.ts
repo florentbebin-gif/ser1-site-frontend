@@ -8,7 +8,7 @@
  * remains only for simplified balances and legacy draft migration.
  */
 
-import type { RegimeMatrimonial } from '../../engine/civil';
+import type { RegimeMatrimonial } from '../../engine/succession/civil';
 
 export type SuccessionPersonParty = 'epoux1' | 'epoux2';
 export type SuccessionLegacyAssetOwner = SuccessionPersonParty | 'commun';
