@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import type { BaseCgRetraiteContract } from '@/data/basecg';
+import type { BaseCgRetraiteContract } from '@/data/base-cg-retraite';
 import { buildPerTransfertAttentionPoints } from '../utils/attentionPoints';
 
 interface PerTransfertAttentionPointsProps {

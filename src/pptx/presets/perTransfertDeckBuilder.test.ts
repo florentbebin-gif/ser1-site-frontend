@@ -14,7 +14,7 @@ import {
 } from '@/engine/per';
 import { DEFAULT_COLORS } from '@/settings/theme';
 import type { PerTransfertSynthesisSlideSpec } from '../theme/types';
-import type { BaseCgRetraiteContract } from '@/data/basecg';
+import type { BaseCgRetraiteContract } from '@/data/base-cg-retraite';
 
 const theme: PerTransfertUiSettingsForPptx = DEFAULT_COLORS;
 

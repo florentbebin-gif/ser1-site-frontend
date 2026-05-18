@@ -1,10 +1,10 @@
-import type { BaseCgRetraiteContract } from '@/data/basecg';
+import type { BaseCgRetraiteContract } from '@/data/base-cg-retraite';
 import {
   formatBaseCgRetraiteRateField,
   formatBaseCgRetraiteValue,
   hasBaseCgRetraiteValue,
   normalizeBaseCgRetraiteGestionFees,
-} from '@/data/basecg';
+} from '@/data/base-cg-retraite';
 
 interface ContractAuditCardsProps {
   contract: BaseCgRetraiteContract | null;

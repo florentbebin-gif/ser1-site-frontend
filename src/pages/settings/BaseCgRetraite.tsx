@@ -5,7 +5,7 @@ import {
   BASE_CG_RETRAITE_LEGAL_NOTICE,
   type BaseCgRetraiteContract,
   type BaseCgRetraiteDocument,
-} from '@/data/basecg';
+} from '@/data/base-cg-retraite';
 import {
   bulkUpsertBaseCgRetraiteCatalog,
   createBaseCgRetraiteDocumentDownloadUrl,

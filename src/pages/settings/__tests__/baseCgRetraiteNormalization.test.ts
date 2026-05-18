@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { BASECG_CATALOG } from '@/data/basecg';
+import { BASECG_CATALOG } from '@/data/base-cg-retraite';
 import {
   formatBaseCgRetraiteRateField,
   normalizeBaseCgRetraiteGestionFees,

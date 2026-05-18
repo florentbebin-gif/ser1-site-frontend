@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { BASECG_CATALOG, isPointsContract } from '@/data/basecg';
-import type { BaseCgRetraiteContract } from '@/data/basecg';
+import { BASECG_CATALOG, isPointsContract } from '@/data/base-cg-retraite';
+import type { BaseCgRetraiteContract } from '@/data/base-cg-retraite';
 
 function makeContract(overrides: Partial<BaseCgRetraiteContract>): BaseCgRetraiteContract {
   const base = BASECG_CATALOG[0];

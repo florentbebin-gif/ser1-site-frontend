@@ -18,7 +18,7 @@ import type {
   PerTransfertFiscalResult,
   PerTransfertResult,
 } from '@/engine/per';
-import type { BaseCgRetraiteContract } from '@/data/basecg';
+import type { BaseCgRetraiteContract } from '@/data/base-cg-retraite';
 
 // ——— Tests composants purs ———
 

@@ -1,5 +1,8 @@
-import type { BaseCgRetraiteContract } from '@/data/basecg';
-import { hasBaseCgRetraiteValue, normalizeBaseCgRetraiteGestionFees } from '@/data/basecg';
+import type { BaseCgRetraiteContract } from '@/data/base-cg-retraite';
+import {
+  hasBaseCgRetraiteValue,
+  normalizeBaseCgRetraiteGestionFees,
+} from '@/data/base-cg-retraite';
 
 const INCOMPLETE_THRESHOLD = 3;
 

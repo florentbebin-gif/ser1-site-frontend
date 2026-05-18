@@ -356,7 +356,7 @@ UI : `/settings/base-contrat` est une vue read-only à 3 colonnes (Constitution 
 
 ### Base CG retraite
 
-Source applicative : `src/data/basecg/catalog.static.ts` (snapshot statique TypeScript). Le classeur historique n'est plus une source runtime et ne doit pas être requis pour démarrer, tester ou builder l'application.
+Source applicative : `src/data/base-cg-retraite/catalog.static.ts` (snapshot statique TypeScript). Le classeur historique n'est plus une source runtime et ne doit pas être requis pour démarrer, tester ou builder l'application.
 
 UI : `/settings/base-contrat-retraite`, déclarée dans `src/routes/settingsRoutes.ts`. La lecture est accessible aux utilisateurs authentifiés ; les actions de création, modification, suppression et synchronisation restent réservées aux admins via l'UI et les protections Supabase/RLS.
 

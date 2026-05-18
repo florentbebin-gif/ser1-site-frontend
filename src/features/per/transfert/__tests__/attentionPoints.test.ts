@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { BaseCgRetraiteContract } from '@/data/basecg';
+import type { BaseCgRetraiteContract } from '@/data/base-cg-retraite';
 import { buildPerTransfertAttentionPoints } from '../utils/attentionPoints';
 
 function makeContract(overrides: Partial<BaseCgRetraiteContract> = {}): BaseCgRetraiteContract {

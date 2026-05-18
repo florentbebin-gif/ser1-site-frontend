@@ -1,5 +1,5 @@
 import { SimModalShell } from '@/components/ui/sim';
-import { TYPE_LABELS, type BaseCgRetraiteContractType } from '@/data/basecg';
+import { TYPE_LABELS, type BaseCgRetraiteContractType } from '@/data/base-cg-retraite';
 import { TRANSFER_RULES_BY_TYPE } from '../constants/regulations';
 
 interface TransferRulesInfoModalProps {

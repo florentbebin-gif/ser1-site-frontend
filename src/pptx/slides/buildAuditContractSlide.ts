@@ -1,5 +1,8 @@
 import type PptxGenJS from 'pptxgenjs';
-import { formatBaseCgRetraiteRateField, normalizeBaseCgRetraiteGestionFees } from '@/data/basecg';
+import {
+  formatBaseCgRetraiteRateField,
+  normalizeBaseCgRetraiteGestionFees,
+} from '@/data/base-cg-retraite';
 import type { ExportContext, PerTransfertAuditContractSlideSpec } from '../theme/types';
 import { MASTER_NAMES } from '../template/loadBaseTemplate';
 import { SLIDE_SIZE, TYPO, addFooter, addHeader, addTextFr } from '../designSystem/serenity';

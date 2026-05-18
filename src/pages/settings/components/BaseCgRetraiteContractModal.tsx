@@ -10,7 +10,7 @@ import {
   normalizeBaseCgRetraiteGestionFees,
   type BaseCgRetraiteContract,
   type BaseCgRetraiteDocument,
-} from '@/data/basecg';
+} from '@/data/base-cg-retraite';
 import {
   buildBaseCgRetraiteStoragePath,
   uploadBaseCgRetraitePdf,

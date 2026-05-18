@@ -1,4 +1,4 @@
-import type { BaseCgRetraiteContractType, PerTransfertCompartment } from '@/data/basecg';
+import type { BaseCgRetraiteContractType, PerTransfertCompartment } from '@/data/base-cg-retraite';
 
 const COMPARTMENT_BY_CONTRACT: Record<BaseCgRetraiteContractType, PerTransfertCompartment> = {
   PERIN: 'C1',

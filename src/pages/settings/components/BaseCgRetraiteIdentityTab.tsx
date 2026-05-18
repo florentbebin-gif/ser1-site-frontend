@@ -1,4 +1,4 @@
-import type { BaseCgRetraiteContract, BaseCgRetraiteContractType } from '@/data/basecg';
+import type { BaseCgRetraiteContract, BaseCgRetraiteContractType } from '@/data/base-cg-retraite';
 import {
   COMPARTMENT_LABELS,
   COMPARTMENT_OPTIONS,

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { BASE_CG_RETRAITE_LEGAL_NOTICE } from '@/data/basecg';
+import { BASE_CG_RETRAITE_LEGAL_NOTICE } from '@/data/base-cg-retraite';
 
 export function PerTransfertHypotheses() {
   const [open, setOpen] = useState(false);

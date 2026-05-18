@@ -1,4 +1,4 @@
-import type { BaseCgRetraiteContractType } from '@/data/basecg';
+import type { BaseCgRetraiteContractType } from '@/data/base-cg-retraite';
 
 const LEGACY_TRANSFER_TYPES = new Set<BaseCgRetraiteContractType>([
   'PERP',

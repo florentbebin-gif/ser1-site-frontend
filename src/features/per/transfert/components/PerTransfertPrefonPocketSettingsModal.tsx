@@ -1,5 +1,5 @@
 import { SimModalShell } from '@/components/ui/sim';
-import type { BaseCgRetraitePrefonPocket } from '@/data/basecg';
+import type { BaseCgRetraitePrefonPocket } from '@/data/base-cg-retraite';
 import {
   PerTransfertIntegerField,
   PerTransfertMoneyField,

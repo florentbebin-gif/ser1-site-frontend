@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import type { ExportOption } from '@/components/export/exportTypes';
 import type { LogoPlacement } from '@/pptx/theme/types';
-import type { BaseCgRetraiteContract } from '@/data/basecg';
+import type { BaseCgRetraiteContract } from '@/data/base-cg-retraite';
 import type { PerTransfertInput, PerTransfertResult } from '@/engine/per';
 import type { PerTransfertFormState } from './usePerTransfertSimulator';
 

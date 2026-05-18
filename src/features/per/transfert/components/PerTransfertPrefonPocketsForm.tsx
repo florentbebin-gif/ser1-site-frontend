@@ -4,7 +4,7 @@ import {
   PREFON_USER_2026_SERVICE_VALUE,
   type BaseCgRetraitePrefonPocket,
   type PerTransfertCompartment,
-} from '@/data/basecg';
+} from '@/data/base-cg-retraite';
 import {
   PerTransfertDecimalMoneyField,
   PerTransfertIntegerField,

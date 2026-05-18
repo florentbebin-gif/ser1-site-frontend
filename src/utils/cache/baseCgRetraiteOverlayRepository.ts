@@ -1,5 +1,5 @@
-import { BASECG_CATALOG, BASECG_VERSION } from '@/data/basecg';
-import type { BaseCgRetraiteContract } from '@/data/basecg';
+import { BASECG_CATALOG, BASECG_VERSION } from '@/data/base-cg-retraite';
+import type { BaseCgRetraiteContract } from '@/data/base-cg-retraite';
 import { STORAGE_KEY } from './baseCgRetraiteRepository.constants';
 
 export interface BaseCgRetraiteOverlay {
