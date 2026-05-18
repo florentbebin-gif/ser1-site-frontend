@@ -29,10 +29,26 @@ export default defineConfig(({ mode }) => {
       cssCodeSplit: false,
       rollupOptions: {
         output: {
-          manualChunks: {
-            'react-vendor': ['react', 'react-dom', 'react-router'],
-            'supabase-vendor': ['@supabase/supabase-js'],
-            'validation-vendor': ['zod'],
+          manualChunks(id) {
+            const normalizedId = id.replace(/\\/g, '/');
+
+            if (
+              normalizedId.includes('/node_modules/react/') ||
+              normalizedId.includes('/node_modules/react-dom/') ||
+              normalizedId.includes('/node_modules/react-router/')
+            ) {
+              return 'react-vendor';
+            }
+
+            if (normalizedId.includes('/node_modules/@supabase/supabase-js/')) {
+              return 'supabase-vendor';
+            }
+
+            if (normalizedId.includes('/node_modules/zod/')) {
+              return 'validation-vendor';
+            }
+
+            return undefined;
           },
         },
         onwarn(warning, defaultHandler) {
