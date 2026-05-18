@@ -11,7 +11,7 @@
 
 import { lazy, type ComponentType } from 'react';
 
-const Settings = lazy(() => import('../pages/Settings'));
+const SettingsGeneral = lazy(() => import('../pages/settings/SettingsGeneral'));
 const SettingsImpots = lazy(() => import('../pages/settings/SettingsImpots'));
 const SettingsPrelevements = lazy(() => import('../pages/settings/SettingsPrelevements'));
 const SettingsBaseContrats = lazy(() => import('../pages/settings/BaseContrat'));
@@ -34,7 +34,7 @@ export const SETTINGS_ROUTES: SettingsRouteEntry[] = [
     label: 'G\u00e9n\u00e9raux',
     path: '',
     urlPath: '/settings',
-    component: Settings,
+    component: SettingsGeneral,
   },
   {
     key: 'impots',
