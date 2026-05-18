@@ -1,0 +1,407 @@
+/* ─── Matrice d’allocation ────────────────────────────────────────────────── */
+
+.ts-placement-overview {
+  display: grid;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.ts-placement-overview__kpis {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.ts-placement-overview__kpis > span {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+  padding: 9px 10px;
+  background: var(--color-c7);
+  border: 1px solid var(--color-c8);
+  border-radius: 8px;
+}
+
+.ts-placement-overview__kpis small {
+  color: var(--color-c9);
+  font-size: 11px;
+}
+
+.ts-placement-overview__kpis strong {
+  justify-self: center;
+  color: var(--color-c1);
+  font-size: 14px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+}
+
+.ts-placement-overview__edit-value {
+  display: inline-flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 3px;
+  min-width: 0;
+  white-space: nowrap;
+}
+
+.ts-placement-overview__input {
+  width: min(100%, 9ch);
+  min-width: 0;
+  padding: 0 1px 1px;
+  border: 0;
+  border-bottom: 1px solid transparent;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+  outline: none;
+}
+
+.ts-placement-overview__input:hover,
+.ts-placement-overview__input:focus {
+  border-bottom-color: var(--color-c2);
+}
+
+.ts-placement-overview__unit {
+  color: var(--color-c9);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.ts-treasury-stack-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.ts-treasury-stack-card__header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.ts-treasury-stack-card__header strong {
+  color: var(--color-c1);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.ts-treasury-stack-card__header span {
+  color: var(--color-c9);
+  font-size: 11px;
+}
+
+.ts-treasury-stack {
+  display: flex;
+  width: 100%;
+  min-height: 46px;
+  overflow: hidden;
+  background: var(--color-c7);
+  border: 1px solid var(--color-c8);
+  border-radius: 8px;
+}
+
+.ts-treasury-stack__segment {
+  appearance: none;
+  display: flex;
+  min-width: 5px;
+  flex-direction: column;
+  justify-content: center;
+  gap: 2px;
+  padding: 6px 8px;
+  border: 0;
+  border-right: 1px solid color-mix(in srgb, var(--color-c8) 80%, #fff);
+  color: var(--color-c1);
+  cursor: default;
+  font-family: inherit;
+  text-align: left;
+  font-variant-numeric: tabular-nums;
+}
+
+.ts-treasury-stack__segment:not(:disabled) {
+  cursor: pointer;
+}
+
+.ts-treasury-stack__segment:last-child {
+  border-right: 0;
+}
+
+.ts-treasury-stack__segment span,
+.ts-treasury-stack__segment strong {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ts-treasury-stack__segment span {
+  font-size: 10px;
+  color: var(--color-c9);
+}
+
+.ts-treasury-stack__segment strong {
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.ts-treasury-stack__segment:focus-visible {
+  outline: 2px solid var(--color-c3);
+  outline-offset: -2px;
+}
+
+.ts-treasury-stack__segment--bank {
+  background: var(--color-c8);
+}
+
+.ts-treasury-stack__segment--protected {
+  background: repeating-linear-gradient(
+    45deg,
+    color-mix(in srgb, var(--color-c8) 55%, #fff) 0,
+    color-mix(in srgb, var(--color-c8) 55%, #fff) 5px,
+    #fff 5px,
+    #fff 10px
+  );
+}
+
+.ts-treasury-stack__segment--court_terme {
+  background: color-mix(in srgb, var(--color-c3) 30%, #fff);
+}
+
+.ts-treasury-stack__segment--moyen_terme {
+  background: color-mix(in srgb, var(--color-c4) 38%, #fff);
+}
+
+.ts-treasury-stack__segment--long_terme {
+  background: color-mix(in srgb, var(--color-c5) 30%, #fff);
+}
+
+.ts-pocket-board {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  margin: 14px 0;
+}
+
+.ts-pocket-column {
+  min-width: 0;
+  padding: 10px;
+  background: var(--color-c7);
+  border: 1px solid var(--color-c8);
+  border-radius: 8px;
+}
+
+.ts-pocket-column__header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 8px;
+  padding-bottom: 7px;
+  border-bottom: 1px solid var(--color-c8);
+}
+
+.ts-pocket-column__header h3 {
+  margin: 0;
+  color: var(--color-c1);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.ts-pocket-column__header span,
+.ts-pocket-column__empty {
+  color: var(--color-c9);
+  font-size: 10px;
+}
+
+.ts-pocket-column__items {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.ts-pocket-column__item {
+  appearance: none;
+  min-width: 0;
+  padding: 8px;
+  background: #fff;
+  border: 1px solid var(--color-c8);
+  border-radius: 6px;
+  cursor: pointer;
+  text-align: left;
+}
+
+.ts-pocket-column__item:hover,
+.ts-pocket-column__item:focus-visible {
+  border-color: var(--color-c3);
+  outline: none;
+}
+
+.ts-pocket-column__item strong,
+.ts-pocket-column__item small,
+.ts-pocket-column__item span:not(.ts-pocket-column__item-head) {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ts-pocket-column__item-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.ts-pocket-column__item strong {
+  color: var(--color-c1);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.ts-pocket-column__item em {
+  color: var(--color-c3);
+  flex: 0 0 auto;
+  font-size: 11px;
+  font-style: normal;
+  font-weight: 700;
+}
+
+.ts-pocket-column__item small,
+.ts-pocket-column__item span {
+  color: var(--color-c2);
+  font-size: 10px;
+  margin-top: 2px;
+}
+
+.ts-pocket-column__item span {
+  color: var(--color-c9);
+}
+
+.ts-pocket-column__empty {
+  appearance: none;
+  width: 100%;
+  margin: 10px 0 2px;
+  padding: 8px;
+  background: transparent;
+  border: 1px dashed var(--color-c8);
+  border-radius: 6px;
+  cursor: pointer;
+  text-align: center;
+}
+
+.ts-bank-pocket {
+  display: grid;
+  gap: 4px;
+  padding: 8px;
+  background: #fff;
+  border: 1px solid var(--color-c8);
+  border-radius: 6px;
+}
+
+.ts-bank-pocket strong {
+  color: var(--color-c1);
+  font-size: 12px;
+}
+
+.ts-bank-pocket small,
+.ts-bank-pocket span {
+  color: var(--color-c9);
+  font-size: 10px;
+}
+
+.ts-pocket-modal-summary {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.ts-pocket-modal-summary span {
+  padding: 8px;
+  background: var(--color-c7);
+  border: 1px solid var(--color-c8);
+  border-radius: 6px;
+  color: var(--color-c1);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.ts-matrix-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.ts-matrix-actions span {
+  color: var(--color-c9);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}
+
+.ts-danger-btn {
+  border: 1px solid var(--color-c1);
+  border-radius: 6px;
+  background: #fff;
+  color: var(--color-c1);
+  cursor: pointer;
+  font-size: 12px;
+  padding: 8px 10px;
+}
+
+.ts-danger-btn:hover,
+.ts-danger-btn:focus-visible {
+  background: color-mix(in srgb, var(--color-c1) 8%, #fff);
+  outline: none;
+}
+
+.ts-primary-btn {
+  padding: 8px 20px;
+  background: var(--color-c1);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+
+.ts-primary-btn:hover:not(:disabled) {
+  opacity: 0.88;
+}
+
+.ts-primary-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.ts-secondary-btn {
+  padding: 8px 20px;
+  background: transparent;
+  color: var(--color-c1);
+  border: 1.5px solid var(--color-c1);
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.ts-secondary-btn:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--color-c1) 8%, transparent);
+}
+
+.ts-secondary-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.ts-matrix-actions .is-warning {
+  color: var(--color-warning-text, #e67e22);
+  font-weight: 600;
+}
