@@ -27,7 +27,7 @@ Dev qui doit intervenir sur une feature, un export, un thème, ou Supabase.
 
 ## Stack
 
-- React 18 + Vite 5 + TypeScript strict
+- React 18 + React Router 7 + Vite 5 + TypeScript strict
 - Supabase (Auth/DB/Storage/Edge Functions)
 - Exports : PptxGenJS + JSZip (PPTX), OOXML via JSZip (XLSX)
 - Tests : Vitest (+ Playwright E2E), coverage V8 ciblée `src/engine/**`
@@ -115,6 +115,7 @@ Get-ChildItem src -Recurse -Directory |
 
 - `src/routes/appRoutes.ts` (APP_ROUTES) : source de vérité des routes + metadata topbar (`contextLabel`, `topbar`).
 - `src/App.tsx` : rendu JSX des routes via `APP_ROUTES.map()`. Résolution topbar via `getRouteMetadata(pathname)`.
+- React Router 7 reste utilisé en mode déclaratif (`BrowserRouter`, `<Routes>`, `<Route>`), avec imports depuis `react-router`.
 - `src/components/layout/AppLayout.tsx` : topbar data-driven (reçoit `routeMeta`, plus de flags hardcodés).
 
 #### Routes Map (actuel)
