@@ -1,6 +1,6 @@
 /* eslint-disable no-console */
+/* global Deno */
 
-import { serve } from 'https://deno.land/std@0.177.0/http/server.ts'
 import { getCorsHeaders } from './cors.ts'
 import {
   buildAdminPrincipal,
@@ -38,7 +38,7 @@ const adminActionHandlers: Record<string, AdminActionHandler> = {
   ...systemActionHandlers,
 }
 
-serve(async (req: Request) => {
+Deno.serve(async (req: Request) => {
   const reqStart = Date.now()
   const requestId = req.headers.get('x-request-id') || crypto.randomUUID()
   const origin = req.headers.get('origin') ?? 'unknown'

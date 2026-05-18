@@ -1,4 +1,5 @@
-import { assertEquals, assert } from 'https://deno.land/std@0.177.0/testing/asserts.ts'
+/* global Deno */
+import { assert, assertEquals } from '@std/assert'
 import { getCorsHeaders, resolveAllowedOrigin, getAllowedOriginsSnapshot } from './cors.ts'
 
 Deno.test('resolveAllowedOrigin allows configured origins', () => {

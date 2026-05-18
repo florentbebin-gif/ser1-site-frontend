@@ -1,5 +1,5 @@
 /* global Deno */
-import { assertEquals } from 'https://deno.land/std@0.177.0/testing/asserts.ts'
+import { assertEquals } from '@std/assert'
 import { validateAdminAccount } from './auth.ts'
 
 // --- validateAdminAccount (pure, no DB) ---
