@@ -2,7 +2,7 @@
 
 Application web pour CGP : audit patrimonial, stratégie guidée, simulateurs IR, Succession, Placement, Crédit, PER et Trésorerie société, exports PPTX/Excel.
 
-Stack : React 18 + React Router 7 + Vite 5 + TypeScript + Supabase (Auth/DB/Storage/Edge Functions).
+Stack : React 19 + React Router 7 + Vite 8 + TypeScript 6 + Supabase (Auth/DB/Storage/Edge Functions).
 
 ## Documentation
 
@@ -29,13 +29,22 @@ Guidance agent / repo automation :
 
 Prérequis :
 
-- Node.js 22.x (voir `package.json > engines`)
+- Node.js 22.22.1 (voir `package.json > engines`)
+- npm 11.12.0 (`packageManager` + `engine-strict=true`)
 - (Optionnel) Docker Desktop pour Supabase en local
 
 ```powershell
 npm install
 npm run dev
 ```
+
+## Versions supportées
+
+- Runtime frontend : React 19, React Router 7 en mode déclaratif, Vite 8.
+- Typage et qualité : TypeScript 6, ESLint 9, Stylelint 17.
+- Runtime local/CI : Node 22.22.1, npm 11.12.0.
+- Supabase : `@supabase/supabase-js` 2.106.x, CLI Supabase 2.100.x, Edge Function admin en Deno 2 autonome.
+- ESLint 10 est volontairement différé tant que `eslint-plugin-react` et `eslint-plugin-jsx-a11y` ne déclarent pas sa compatibilité.
 
 ## Variables d'environnement
 
