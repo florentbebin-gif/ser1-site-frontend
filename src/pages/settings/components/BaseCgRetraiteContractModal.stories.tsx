@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { BASECG_CATALOG, type BaseCgRetraiteContract } from '@/data/basecg';
+import { BASECG_CATALOG, type BaseCgRetraiteContract } from '@/data/base-cg-retraite';
 import { BaseCgRetraiteContractModal } from './BaseCgRetraiteContractModal';
 import '../styles/base-cg-retraite.css';
 import '../styles/premium.css';

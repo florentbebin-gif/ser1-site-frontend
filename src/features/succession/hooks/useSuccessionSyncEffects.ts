@@ -22,7 +22,7 @@ import type {
   SuccessionPrevoyanceDecesEntry,
   FamilyMember,
 } from '../successionDraft';
-import type { RegimeMatrimonial } from '../../../engine/civil';
+import type { RegimeMatrimonial } from '../../../engine/succession/civil';
 import { normalizeResidencePrincipaleAssetEntries } from '../successionAssetValuation';
 import { resolveSuccessionAssetLocation } from '../successionPatrimonialModel';
 

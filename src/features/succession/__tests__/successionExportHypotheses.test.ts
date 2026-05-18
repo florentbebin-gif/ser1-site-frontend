@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { buildSuccessionStudyDeck } from '@/pptx/presets/successionDeckBuilder';
 import { buildSuccessionHypothesesLayout } from '@/pptx/slides/buildSuccessionHypotheses';
 import { DEFAULT_COLORS } from '@/settings/theme';
-import { DEFAULT_DMTG } from '../../../engine/civil';
+import { DEFAULT_DMTG } from '../../../engine/succession/civil';
 import { buildSuccessionAvFiscalAnalysis } from '../successionAvFiscal';
 import { buildSuccessionChainageAnalysis } from '../successionChainage';
 import { buildSuccessionFiscalSnapshot } from '../successionFiscalContext';

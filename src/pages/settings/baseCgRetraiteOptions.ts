@@ -1,5 +1,5 @@
-import type { BaseCgRetraiteContractType, PerTransfertCompartment } from '@/data/basecg';
-import { TYPE_LABELS, COMPARTMENT_LABELS } from '@/data/basecg';
+import type { BaseCgRetraiteContractType, PerTransfertCompartment } from '@/data/base-cg-retraite';
+import { TYPE_LABELS, COMPARTMENT_LABELS } from '@/data/base-cg-retraite';
 
 export const TYPE_OPTIONS = Object.keys(TYPE_LABELS) as BaseCgRetraiteContractType[];
 

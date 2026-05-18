@@ -13,7 +13,7 @@ import {
   type LienParente,
   type HeritiersInput,
 } from '../../../engine/succession';
-import type { DmtgSettings } from '../../../engine/civil';
+import type { DmtgSettings } from '../../../engine/succession/civil';
 import type { CalcResult } from '../../../engine/types';
 import type { PersistedSuccessionForm } from '../successionDraft.types';
 

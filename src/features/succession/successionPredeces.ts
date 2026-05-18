@@ -2,7 +2,7 @@ import {
   REGIMES_MATRIMONIAUX,
   type DmtgSettings,
   type RegimeMatrimonial,
-} from '../../engine/civil';
+} from '../../engine/succession/civil';
 import { calculatePredecesSenarios, type PredecesScenariosResult } from '../../engine/succession';
 import type { CalcResult } from '../../engine/types';
 import {

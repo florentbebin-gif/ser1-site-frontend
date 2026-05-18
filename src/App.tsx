@@ -8,7 +8,10 @@ import { APP_ROUTES, getRouteMetadata, type AppRouteEntry } from './routes/appRo
 import { triggerPageReset, triggerGlobalReset } from './utils/reset';
 import { saveGlobalState, loadGlobalStateWithDialog } from './reporting/snapshot';
 import { useFiscalContext } from './hooks/useFiscalContext';
-import { fingerprintSettingsData } from './utils/export/exportFingerprint';
+import {
+  buildFiscalIdentityCurrent,
+  type FiscalIdentityCurrent,
+} from './utils/fiscalSettingsFingerprints';
 import { useSessionTTL } from './hooks/useSessionTTL';
 import { useExportGuard } from './hooks/useExportGuard';
 import { setTrackBlobUrlHandler } from './utils/export/createTrackedObjectURL';
@@ -24,12 +27,6 @@ interface NotificationState {
 
 interface LazyRouteProps {
   children: React.ReactNode;
-}
-
-interface FiscalIdentityCurrent {
-  tax: { updatedAt: string | null; hash: string };
-  ps: { updatedAt: string | null; hash: string };
-  fiscality: { updatedAt: string | null; hash: string };
 }
 
 // Fallback UI for lazy-loaded routes
@@ -71,20 +68,7 @@ export default function App(): React.ReactElement {
 
   // Identité fiscale : hashes stables + updated_at pour les 3 tables
   const fiscalIdentity = React.useMemo<FiscalIdentityCurrent>(
-    () => ({
-      tax: {
-        updatedAt: fiscalMeta.taxUpdatedAt,
-        hash: fingerprintSettingsData(fiscalContext._raw_tax),
-      },
-      ps: {
-        updatedAt: fiscalMeta.psUpdatedAt,
-        hash: fingerprintSettingsData(fiscalContext._raw_ps),
-      },
-      fiscality: {
-        updatedAt: fiscalMeta.fiscalityUpdatedAt,
-        hash: fingerprintSettingsData(fiscalContext._raw_fiscality),
-      },
-    }),
+    () => buildFiscalIdentityCurrent(fiscalContext, fiscalMeta),
     [fiscalContext, fiscalMeta],
   );
 

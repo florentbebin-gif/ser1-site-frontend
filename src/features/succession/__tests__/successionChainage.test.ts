@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { DEFAULT_DMTG } from '../../../engine/civil';
+import { DEFAULT_DMTG } from '../../../engine/succession/civil';
 import { buildSuccessionChainageAnalysis } from '../successionChainage';
 import { computeSuccessionAssetValuation } from '../successionAssetValuation';
 import { makeCivil, makeDevolution, makeLiquidation } from './successionChainage.test.helpers';

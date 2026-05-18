@@ -1,0 +1,227 @@
+/* ─── Bouton projection ────────────────────────────────────────────────────── */
+
+.ts-projection-btn-row {
+  margin: 16px 0 8px;
+  text-align: center;
+}
+
+.ts-projection-btn {
+  padding: 8px 20px;
+  background: #fff;
+  border: 1px solid var(--color-c8);
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--color-c2);
+  cursor: pointer;
+  transition:
+    background 0.15s,
+    border-color 0.15s;
+}
+
+.ts-projection-btn:hover {
+  background: color-mix(in srgb, var(--color-c4) 20%, #fff);
+  border-color: var(--color-c3);
+}
+
+/* ─── Projection drawer ────────────────────────────────────────────────────── */
+
+.ts-drawer {
+  background: #fff;
+  border: 1px solid var(--color-c8);
+  border-radius: 8px;
+  margin-bottom: 16px;
+  overflow: hidden;
+}
+
+.ts-drawer__empty {
+  padding: 16px;
+  text-align: center;
+  color: var(--color-c9);
+  font-size: 13px;
+}
+
+.ts-drawer__controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--color-c8);
+  background: var(--color-c7);
+}
+
+.ts-drawer__mode-toggle {
+  display: flex;
+  gap: 4px;
+}
+
+.ts-drawer__associate-filter {
+  width: min(240px, 100%);
+}
+
+.ts-drawer__mode-btn {
+  padding: 4px 14px;
+  border: 1px solid var(--color-c8);
+  border-radius: 4px;
+  background: #fff;
+  font-size: 12px;
+  color: var(--color-c1);
+  cursor: pointer;
+  transition: background 0.1s;
+}
+
+.ts-drawer__mode-btn.is-active {
+  background: var(--color-c2);
+  color: #fff;
+  border-color: var(--color-c2);
+}
+
+.ts-drawer__table-wrapper {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.ts-scroll-x,
+.ts-drawer__table-wrapper {
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in srgb, var(--color-c5) 70%, var(--color-c8)) var(--color-c7);
+}
+
+.ts-scroll-x::-webkit-scrollbar,
+.ts-drawer__table-wrapper::-webkit-scrollbar {
+  height: 9px;
+}
+
+.ts-scroll-x::-webkit-scrollbar-track,
+.ts-drawer__table-wrapper::-webkit-scrollbar-track {
+  background: var(--color-c7);
+  border-radius: 999px;
+}
+
+.ts-scroll-x::-webkit-scrollbar-thumb,
+.ts-drawer__table-wrapper::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--color-c5) 70%, var(--color-c8));
+  border: 2px solid var(--color-c7);
+  border-radius: 999px;
+}
+
+.ts-projection-table {
+  border-collapse: collapse;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  min-width: 100%;
+  white-space: nowrap;
+}
+
+.ts-proj-th {
+  padding: 6px 10px;
+  background: var(--color-c7);
+  border-bottom: 1px solid var(--color-c8);
+  text-align: right;
+  font-weight: 600;
+  color: var(--color-c1);
+  font-size: 11px;
+  min-width: 80px;
+}
+
+.ts-proj-th--label {
+  text-align: left;
+  min-width: 200px;
+  position: sticky;
+  left: 0;
+  background: var(--color-c7);
+  z-index: 1;
+}
+
+.ts-proj-th--retraite {
+  background: color-mix(in srgb, var(--color-c3) 12%, var(--color-c7));
+}
+
+.ts-proj-th__year {
+  font-weight: 600;
+}
+
+.ts-proj-th__age {
+  font-weight: 400;
+  font-size: 10px;
+  color: var(--color-c9);
+}
+
+.ts-proj-td {
+  padding: 5px 10px;
+  border-bottom: 1px solid var(--color-c8);
+  text-align: right;
+  color: var(--color-c10);
+}
+
+.ts-proj-td--label {
+  text-align: left;
+  color: var(--color-c9);
+  font-size: 11px;
+  position: sticky;
+  left: 0;
+  background: #fff;
+  z-index: 1;
+}
+
+.ts-proj-row--italic .ts-proj-td--label {
+  font-style: italic;
+  color: var(--color-c9);
+}
+
+.ts-proj-row--italic .ts-proj-td {
+  font-style: italic;
+  color: var(--color-c9);
+}
+
+.ts-proj-td--warning {
+  color: var(--color-c1);
+  font-weight: 600;
+}
+
+.ts-proj-group-row__cell {
+  position: sticky;
+  left: 0;
+  z-index: 2;
+  padding: 7px 10px;
+  background: color-mix(in srgb, var(--color-c1) 8%, #fff);
+  border-top: 1px solid var(--color-c8);
+  border-bottom: 1px solid var(--color-c8);
+  color: var(--color-c1);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0;
+  text-align: left;
+}
+
+.ts-proj-row--subtotal .ts-proj-td {
+  background: color-mix(in srgb, var(--color-c7) 60%, #fff);
+  color: var(--color-c1);
+  font-weight: 600;
+}
+
+.ts-proj-row--total .ts-proj-td {
+  background: color-mix(in srgb, var(--color-c3) 10%, #fff);
+  color: var(--color-c1);
+  font-weight: 700;
+}
+
+.ts-proj-td__badge {
+  display: inline-block;
+  margin-left: 4px;
+  font-size: 10px;
+  color: var(--color-c9);
+  background: var(--color-c7);
+  padding: 1px 4px;
+  border-radius: 3px;
+  font-style: normal;
+}
+
+.ts-drawer__note {
+  padding: 8px 14px;
+  font-size: 11px;
+  color: var(--color-c9);
+  border-top: 1px solid var(--color-c8);
+  background: var(--color-c7);
+}

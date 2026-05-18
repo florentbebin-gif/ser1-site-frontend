@@ -2,10 +2,10 @@ import type {
   BaseCgRetraiteContractType,
   PerTransfertCompartment,
   PrefonPointsParams,
-} from '@/data/basecg';
+} from '@/data/base-cg-retraite';
 import type { MortalityTableCode } from '@/data/mortality';
 
-export type { PerTransfertCompartment } from '@/data/basecg';
+export type { PerTransfertCompartment } from '@/data/base-cg-retraite';
 
 export type PerTransfertProductType =
   | 'PER'

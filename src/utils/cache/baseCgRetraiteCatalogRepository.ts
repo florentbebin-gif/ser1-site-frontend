@@ -1,5 +1,5 @@
-import { BASECG_CATALOG } from '@/data/basecg';
-import type { BaseCgRetraiteContract } from '@/data/basecg';
+import { BASECG_CATALOG } from '@/data/base-cg-retraite';
+import type { BaseCgRetraiteContract } from '@/data/base-cg-retraite';
 import { supabase } from '@/supabaseClient';
 import {
   DOCUMENTS_SELECT,

@@ -1,0 +1,95 @@
+/* ─── Champs de saisie ─────────────────────────────────────────────────────── */
+
+.ts-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.ts-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.ts-field__row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.ts-field__row--note-below {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  column-gap: 4px;
+  row-gap: 4px;
+}
+
+.ts-field__row--note-below .ts-field-note {
+  grid-column: 1 / -1;
+  justify-self: stretch;
+  align-self: auto;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  text-align: right;
+}
+
+.ts-unit {
+  min-width: 28px;
+  color: var(--color-c9);
+  font-size: 12px;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.ts-toggle-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--color-c1);
+  cursor: pointer;
+}
+
+.ts-toggle-label input[type='checkbox'] {
+  accent-color: var(--color-c2);
+  width: 15px;
+  height: 15px;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+
+/* Input texte aligné à gauche (libellé libre) */
+.ts-input-left {
+  text-align: left !important;
+}
+
+/* Input type month */
+.ts-input-month {
+  text-align: left !important;
+  padding-left: 6px;
+}
+
+/* ─── Avertissements ───────────────────────────────────────────────────────── */
+
+.ts-warning {
+  margin-top: 10px;
+  padding: 8px 12px;
+  background: color-mix(in srgb, var(--color-warning-text, #e67e22) 8%, #fff);
+  border-left: 3px solid var(--color-warning-text, #e67e22);
+  border-radius: 0 6px 6px 0;
+  font-size: 12px;
+  color: var(--color-c1);
+}
+
+.ts-note--info {
+  padding: 8px 12px;
+  background: color-mix(in srgb, var(--color-c4) 20%, #fff);
+  border-left: 3px solid var(--color-c3);
+  border-radius: 0 6px 6px 0;
+  font-size: 12px;
+  color: var(--color-c9);
+  margin-bottom: 12px;
+}

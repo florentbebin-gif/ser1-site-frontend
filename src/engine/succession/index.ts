@@ -5,8 +5,8 @@
  * Ce module fournit des estimations paramétrables avec warnings appropriés.
  */
 
-import { mkResult, mkRuleVersion, addValidationWarning } from './helpers';
-import type { CalcResult, Warning } from './types';
+import { mkResult, mkRuleVersion, addValidationWarning } from '../helpers';
+import type { CalcResult, Warning } from '../types';
 import { DEFAULT_DMTG } from './civil';
 import type { DmtgSettings, DmtgScaleItem } from './civil';
 

@@ -1,0 +1,356 @@
+/* ─── Timeline associé ─────────────────────────────────────────────────────── */
+
+.ts-timeline-section {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.ts-timeline-content {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.ts-timeline-empty {
+  border: 1px dashed var(--color-c8);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--color-c7) 76%, #fff);
+  padding: 18px;
+  display: grid;
+  gap: 8px;
+  justify-items: start;
+}
+
+.ts-timeline-empty strong {
+  color: var(--color-c10);
+  font-size: 14px;
+}
+
+.ts-timeline-empty p {
+  margin: 0;
+  color: var(--color-c9);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.ts-timeline-settings-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.ts-timeline-year,
+.ts-timeline-horizon-row {
+  min-width: 0;
+}
+
+.ts-timeline-track-outer {
+  overflow-x: auto;
+  padding: 8px;
+  background: transparent;
+  border: none;
+}
+
+.ts-timeline-track-outer--compact {
+  overflow-x: hidden;
+  padding: 0;
+}
+
+.ts-timeline-track {
+  border: 1px solid var(--color-c8);
+  border-radius: 8px;
+  background: #fff;
+  padding: 12px 16px;
+  min-width: max-content;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+
+.ts-timeline-track--compact {
+  padding: 8px;
+  min-width: 0;
+  box-shadow: none;
+}
+
+.ts-timeline-track svg {
+  display: block;
+  width: auto;
+  max-width: none;
+}
+
+.ts-timeline-track__age-axis {
+  stroke: var(--color-c8);
+  stroke-width: 1.4;
+  stroke-dasharray: 4 5;
+}
+
+.ts-timeline-track__tick {
+  stroke: color-mix(in srgb, var(--color-c8) 70%, transparent);
+  stroke-width: 1;
+}
+
+.ts-timeline-track__year,
+.ts-timeline-track__age {
+  fill: var(--color-c9);
+  font-size: 13px;
+}
+
+.ts-timeline-track__age {
+  font-size: 11px;
+}
+
+.ts-timeline-track__pattern-line {
+  stroke: color-mix(in srgb, var(--color-c8) 72%, #fff);
+  stroke-width: 1;
+}
+
+.ts-timeline-track__palier {
+  cursor: pointer;
+  outline: none;
+}
+
+.ts-timeline-track__palier:focus-visible .ts-timeline-track__palier-bg {
+  stroke: var(--color-c3);
+  stroke-width: 2;
+}
+
+.ts-timeline-track__palier:hover .ts-timeline-track__palier-bg {
+  stroke: var(--color-c3);
+  filter: drop-shadow(0 2px 5px rgba(0, 0, 0, 0.1));
+}
+
+.ts-timeline-track__palier-bg {
+  fill: #fff;
+  stroke: var(--color-c8);
+  stroke-width: 1;
+  transition:
+    stroke 0.15s,
+    filter 0.15s;
+}
+
+.ts-timeline-track__palier-label {
+  fill: var(--color-c9);
+  font-size: 11px;
+  font-weight: 600;
+  pointer-events: none;
+}
+
+.ts-timeline-track__subphase {
+  stroke-width: 1;
+  pointer-events: none;
+}
+
+.ts-timeline-track__subphase--remuneration {
+  fill: color-mix(in srgb, var(--color-c3) 22%, #fff);
+  stroke: var(--color-c3);
+}
+
+.ts-timeline-track__subphase--distribution {
+  fill: color-mix(in srgb, var(--color-c4) 22%, #fff);
+  stroke: var(--color-c4);
+}
+
+.ts-timeline-track__subphase--cca_contribution {
+  fill: color-mix(in srgb, var(--color-c5) 22%, #fff);
+  stroke: var(--color-c5);
+}
+
+.ts-timeline-track__subphase--cca_repayment {
+  fill: color-mix(in srgb, var(--color-c6) 22%, #fff);
+  stroke: var(--color-c6);
+}
+
+.ts-timeline-track__subphase.is-disabled {
+  fill: #fff;
+  stroke: color-mix(in srgb, var(--color-c8) 82%, #fff);
+  stroke-dasharray: 4 3;
+}
+
+.ts-timeline-track__subphase.has-none-mode {
+  fill: color-mix(in srgb, var(--color-c8) 32%, #fff);
+  stroke: var(--color-c8);
+}
+
+.ts-timeline-track__subphase.is-subsidiary-source {
+  stroke-width: 2;
+}
+
+.ts-timeline-track__subphase-hatch {
+  pointer-events: none;
+}
+
+.ts-timeline-track__subphase-label {
+  fill: var(--color-c10);
+  font-size: 10px;
+  font-weight: 600;
+  pointer-events: none;
+}
+
+.ts-timeline-track__subphase-mode {
+  fill: var(--color-c9);
+  font-size: 8.5px;
+  font-weight: 700;
+  pointer-events: none;
+}
+
+.ts-timeline-track__legend-label {
+  fill: var(--color-c9);
+  font-size: 11px;
+}
+
+.ts-timeline-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.ts-timeline-list {
+  display: grid;
+  gap: 8px;
+}
+
+.ts-timeline-list__item {
+  border: 1px solid var(--color-c8);
+  border-radius: 8px;
+  background: #fff;
+  color: var(--color-c10);
+  padding: 10px 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.ts-timeline-list__item:hover,
+.ts-timeline-list__item:focus-visible {
+  border-color: var(--color-c3);
+}
+
+.ts-timeline-list__item span {
+  display: grid;
+  gap: 2px;
+}
+
+.ts-timeline-list__item small {
+  color: var(--color-c9);
+  font-size: 11px;
+}
+
+.ts-phase-source {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.ts-phase-source-title {
+  margin: 10px 0 8px;
+  color: var(--color-c9);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.ts-phase-source__choice {
+  border: 1px solid var(--color-c8);
+  border-radius: 8px;
+  padding: 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--color-c10);
+  font-size: 12px;
+  background: #fff;
+}
+
+.ts-phase-source__choice--button {
+  width: 100%;
+  cursor: pointer;
+  justify-content: space-between;
+  font-family: inherit;
+  text-align: left;
+}
+
+.ts-phase-source__choice--button:hover,
+.ts-phase-source__choice--button:focus-visible {
+  border-color: var(--color-c3);
+  background: color-mix(in srgb, var(--color-c4) 20%, #fff);
+}
+
+.ts-phase-source__choice--button small {
+  color: var(--color-c9);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.ts-phase-modal-layout {
+  display: grid;
+  grid-template-columns: 220px minmax(0, 1fr);
+  gap: 16px;
+  align-items: start;
+}
+
+.ts-phase-modal-nav {
+  position: sticky;
+  top: 0;
+  display: grid;
+  gap: 8px;
+}
+
+.ts-phase-modal-nav button {
+  border: 1px solid var(--color-c8);
+  border-radius: 8px;
+  background: #fff;
+  color: var(--color-c9);
+  cursor: pointer;
+  padding: 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  text-align: left;
+  font-size: 12px;
+}
+
+.ts-phase-modal-nav button.is-active {
+  border-color: var(--color-c3);
+  background: color-mix(in srgb, var(--color-c4) 20%, #fff);
+  color: var(--color-c1);
+  font-weight: 600;
+}
+
+.ts-phase-modal-panel {
+  min-width: 0;
+  display: grid;
+  gap: 12px;
+}
+
+.ts-phase-net {
+  border: 1px solid var(--color-c8);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--color-c7) 70%, #fff);
+  padding: 10px;
+  display: grid;
+  gap: 4px;
+}
+
+.ts-phase-net span {
+  color: var(--color-c9);
+  font-size: 11px;
+}
+
+.ts-phase-net strong {
+  color: var(--color-c10);
+  font-size: 16px;
+}
+
+.ts-phase-modal__footer-inner {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.ts-phase-modal__footer-actions {
+  display: flex;
+  gap: 8px;
+}

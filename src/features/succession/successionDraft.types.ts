@@ -1,4 +1,4 @@
-import type { RegimeMatrimonial } from '../../engine/civil';
+import type { RegimeMatrimonial } from '../../engine/succession/civil';
 import type { LienParente } from '../../engine/succession';
 import type { SuccessionAssetPocket, SuccessionPersonParty } from './successionPatrimonialModel';
 

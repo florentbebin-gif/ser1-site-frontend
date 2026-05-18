@@ -1,5 +1,5 @@
 import { calculateSuccession, type LienParente } from '../../engine/succession';
-import type { DmtgSettings } from '../../engine/civil';
+import type { DmtgSettings } from '../../engine/succession/civil';
 import type { SuccessionDonationSettings } from './successionFiscalContext';
 import type { SuccessionDonationEntry, SuccessionPrimarySide } from './successionDraft';
 import { getBareOwnershipRateFromAge, getAgeAtReferenceDate } from './successionUsufruit';

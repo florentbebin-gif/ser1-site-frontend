@@ -1,4 +1,4 @@
-import { DEFAULT_DMTG } from '../../../engine/civil';
+import { DEFAULT_DMTG } from '../../../engine/succession/civil';
 import type { FamilyMember, SuccessionEnfant } from '../successionDraft';
 
 export const DMTG_SETTINGS = DEFAULT_DMTG;

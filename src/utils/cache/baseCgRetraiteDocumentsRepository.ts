@@ -1,4 +1,4 @@
-import type { BaseCgRetraiteContract, BaseCgRetraiteDocument } from '@/data/basecg';
+import type { BaseCgRetraiteContract, BaseCgRetraiteDocument } from '@/data/base-cg-retraite';
 import { supabase } from '@/supabaseClient';
 import { DOCUMENTS_TABLE } from './baseCgRetraiteRepository.constants';
 

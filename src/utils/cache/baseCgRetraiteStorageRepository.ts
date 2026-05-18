@@ -1,4 +1,4 @@
-import type { BaseCgRetraiteDocument } from '@/data/basecg';
+import type { BaseCgRetraiteDocument } from '@/data/base-cg-retraite';
 import { supabase } from '@/supabaseClient';
 import { DOCUMENTS_BUCKET, SIGNED_URL_TTL_SECONDS } from './baseCgRetraiteRepository.constants';
 

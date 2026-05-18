@@ -4,7 +4,7 @@ import {
   DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT,
   DEFAULT_SUCCESSION_SOCIETE_ACQUETS_CONFIG,
 } from './successionDraft';
-import type { RegimeMatrimonial } from '../../engine/civil';
+import type { RegimeMatrimonial } from '../../engine/succession/civil';
 import type {
   FamilyBranch,
   FamilyMember,

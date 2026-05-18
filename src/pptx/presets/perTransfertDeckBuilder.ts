@@ -1,9 +1,9 @@
-import type { BaseCgRetraiteContract } from '@/data/basecg';
+import type { BaseCgRetraiteContract } from '@/data/base-cg-retraite';
 import {
   BASE_CG_RETRAITE_LEGAL_NOTICE,
   formatBaseCgRetraiteRateField,
   normalizeBaseCgRetraiteGestionFees,
-} from '@/data/basecg';
+} from '@/data/base-cg-retraite';
 import type { PerTransfertInput, PerTransfertResult } from '@/engine/per';
 import type {
   ContentSlideSpec,

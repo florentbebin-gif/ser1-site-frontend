@@ -1,4 +1,4 @@
-import type { BaseCgRetraiteDocument } from '@/data/basecg';
+import type { BaseCgRetraiteDocument } from '@/data/base-cg-retraite';
 
 function updateText(value: string): string | null {
   return value.trim() ? value : null;

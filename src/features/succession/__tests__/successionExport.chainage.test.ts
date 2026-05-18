@@ -3,7 +3,7 @@
  */
 
 import { describe, expect, it } from 'vitest';
-import { DEFAULT_DMTG } from '../../../engine/civil';
+import { DEFAULT_DMTG } from '../../../engine/succession/civil';
 import { buildSuccessionStudyDeck } from '../../../pptx/presets/successionDeckBuilder';
 import { buildSuccessionAvFiscalAnalysis } from '../successionAvFiscal';
 import { buildSuccessionChainageAnalysis } from '../successionChainage';

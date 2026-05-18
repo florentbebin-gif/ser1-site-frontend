@@ -1,3 +1,10 @@
 {
-  "imports": {}
+  "imports": {},
+  "lock": {
+    "path": "./deno.lock",
+    "frozen": true
+  },
+  "compilerOptions": {
+    "lib": ["deno.window"]
+  }
 }

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { BaseCgRetraiteContract } from '@/data/basecg';
+import type { BaseCgRetraiteContract } from '@/data/base-cg-retraite';
 import { isRetraiteContractIncomplete } from '../utils/retirementContractCompleteness';
 
 function makeContract(overrides: Partial<BaseCgRetraiteContract> = {}): BaseCgRetraiteContract {

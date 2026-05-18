@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { PREFON_2025 } from '@/data/basecg';
+import { PREFON_2025 } from '@/data/base-cg-retraite';
 import { computePrefonRente } from '../pointsMortality';
 
 describe('computePrefonRente', () => {

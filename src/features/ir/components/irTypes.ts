@@ -1,6 +1,6 @@
 import type { Dispatch, SetStateAction } from 'react';
 import type { BracketDetail, CdhrDetails } from '@/engine/ir/types';
-import type { FiscalContext } from '@/hooks/useFiscalContext';
+import type { IrTaxSettings } from '../utils/irFiscalSettings';
 import type { IncomeFilters, IrIncomes } from '../utils/incomeFilters';
 
 export type IrYearKey = 'current' | 'previous';
@@ -52,7 +52,6 @@ export interface IrComputedResult {
   bracketsDetails?: BracketDetail[];
 }
 
-export type IrTaxSettings = FiscalContext['_raw_tax'];
 export type IrScaleRow = IrTaxSettings['incomeTax']['scaleCurrent'][number];
 export type IrSidebarTaxSettings = {
   incomeTax?: {

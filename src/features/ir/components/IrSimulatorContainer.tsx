@@ -2,9 +2,10 @@ import { useEffect, useMemo, useState } from 'react';
 import '@/styles/sim/index.css';
 import '../styles/index.css';
 import { onResetEvent, storageKeyFor } from '../../../utils/reset';
-import { toNumber } from '../../../utils/number';
+import { toNumber } from '../../../utils/numbers';
 import { computeIrResult as computeIrResultEngine } from '../../../engine/ir/compute';
 import { useFiscalContext } from '../../../hooks/useFiscalContext';
+import { deriveIrFiscalSettings } from '../utils/irFiscalSettings';
 import { DEFAULT_PS_SETTINGS, DEFAULT_TAX_SETTINGS } from '../../../constants/settingsDefaults';
 import { useTheme } from '../../../settings/ThemeProvider';
 import { useUserMode, type UserMode } from '../../../settings/userMode';
@@ -96,8 +97,7 @@ export default function IrSimulatorContainer() {
   const toggleMode = () => setLocalMode(isExpert ? 'simplifie' : 'expert');
 
   const { fiscalContext, loading: settingsLoading } = useFiscalContext({ strict: true });
-  const taxSettings = fiscalContext._raw_tax;
-  const psSettings = fiscalContext._raw_ps;
+  const { taxSettings, psSettings } = deriveIrFiscalSettings(fiscalContext);
 
   const [yearKey, setYearKey] = useState<IrYearKey>('current');
   const [status, setStatus] = useState<IrStatus | null>(null);

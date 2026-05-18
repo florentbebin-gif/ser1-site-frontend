@@ -1,4 +1,4 @@
-import type { DmtgSettings } from '../../engine/civil';
+import type { DmtgSettings } from '../../engine/succession/civil';
 import type { LienParente } from '../../engine/succession';
 import type {
   FamilyMember,

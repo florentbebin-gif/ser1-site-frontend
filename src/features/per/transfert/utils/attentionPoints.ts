@@ -1,5 +1,5 @@
-import type { BaseCgRetraiteContract } from '@/data/basecg';
-import { formatBaseCgRetraiteRateField, hasBaseCgRetraiteValue } from '@/data/basecg';
+import type { BaseCgRetraiteContract } from '@/data/base-cg-retraite';
+import { formatBaseCgRetraiteRateField, hasBaseCgRetraiteValue } from '@/data/base-cg-retraite';
 
 export type PerTransfertAttentionLevel = 'high' | 'medium' | 'neutral';
 

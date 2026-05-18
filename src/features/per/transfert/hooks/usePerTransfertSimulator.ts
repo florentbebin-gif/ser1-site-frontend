@@ -3,9 +3,9 @@ import type {
   BaseCgRetraiteContract,
   BaseCgRetraiteContractType,
   BaseCgRetraitePrefonPocket,
-} from '@/data/basecg';
-import { isPointsContract } from '@/data/basecg';
-import { PREFON_USER_2026_SERVICE_VALUE } from '@/data/basecg';
+} from '@/data/base-cg-retraite';
+import { isPointsContract } from '@/data/base-cg-retraite';
+import { PREFON_USER_2026_SERVICE_VALUE } from '@/data/base-cg-retraite';
 import { getBaseCgRetraiteCatalog } from '@/utils/cache/baseCgRetraiteRepository';
 import { onResetEvent, storageKeyFor } from '@/utils/reset';
 import {

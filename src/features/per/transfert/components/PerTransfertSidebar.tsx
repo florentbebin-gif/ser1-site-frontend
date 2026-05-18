@@ -6,7 +6,7 @@ import {
   TYPE_LABELS,
   type BaseCgRetraiteContract,
   type BaseCgRetraiteContractType,
-} from '@/data/basecg';
+} from '@/data/base-cg-retraite';
 import type {
   PerTransfertCapitalFiscalResult,
   PerTransfertCapitalHorizon,

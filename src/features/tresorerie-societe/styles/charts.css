@@ -1,0 +1,175 @@
+/* ─── Associé actif / graphes compacts ─────────────────────────────────────── */
+
+.ts-associate-insights {
+  border-left: 3px solid var(--color-c5);
+  margin-bottom: 20px;
+}
+
+.ts-associate-hero {
+  display: grid;
+  grid-template-columns: 72px minmax(0, 1fr);
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 14px;
+}
+
+.ts-associate-donut {
+  width: 72px;
+  height: 72px;
+  transform: rotate(-90deg);
+}
+
+.ts-associate-donut__base,
+.ts-associate-donut__empty,
+.ts-associate-donut__segment {
+  fill: none;
+  stroke-width: 10;
+}
+
+.ts-associate-donut__base {
+  stroke: var(--color-c7);
+}
+
+.ts-associate-donut__empty {
+  stroke: var(--color-c8);
+}
+
+.ts-associate-donut__segment {
+  stroke-linecap: round;
+}
+
+.ts-associate-donut__segment--remuneration {
+  stroke: var(--color-c3);
+}
+
+.ts-associate-donut__segment--cca {
+  stroke: var(--color-c5);
+}
+
+.ts-associate-donut__segment--dividendes {
+  stroke: var(--color-c6);
+}
+
+.ts-associate-hero__text {
+  display: grid;
+  gap: 2px;
+}
+
+.ts-associate-hero__text span,
+.ts-associate-hero__text small {
+  color: var(--color-c9);
+  font-size: 11px;
+}
+
+.ts-associate-hero__text small {
+  line-height: 1.25;
+}
+
+.ts-associate-hero__text strong {
+  color: var(--color-c1);
+  font-size: 24px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.ts-associate-coverage {
+  align-self: start;
+  border-radius: 999px;
+  padding: 2px 7px;
+  color: var(--color-c1);
+  font-size: 10px;
+  font-style: normal;
+  font-weight: 700;
+}
+
+.ts-associate-coverage.is-total {
+  background: color-mix(in srgb, var(--color-c5) 26%, #fff);
+}
+
+.ts-associate-coverage.is-partial {
+  background: color-mix(in srgb, var(--color-warning-bg, #fff4df) 84%, #fff);
+  color: var(--color-warning-text, #e67e22);
+}
+
+.ts-associate-legend {
+  display: grid;
+  gap: 7px;
+  margin-bottom: 14px;
+}
+
+.ts-associate-legend__item {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 7px;
+  color: var(--color-c9);
+  font-size: 11px;
+}
+
+.ts-associate-legend__item strong {
+  color: var(--color-c1);
+  font-variant-numeric: tabular-nums;
+}
+
+.ts-associate-legend__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: var(--color-c8);
+}
+
+.ts-associate-legend__dot--remuneration {
+  background: var(--color-c3);
+}
+
+.ts-associate-legend__dot--cca {
+  background: var(--color-c5);
+}
+
+.ts-associate-legend__dot--dividendes {
+  background: var(--color-c6);
+}
+
+.ts-associate-kpis {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.ts-associate-kpis div {
+  border: 1px solid var(--color-c8);
+  border-radius: 8px;
+  background: var(--color-c7);
+  padding: 8px;
+}
+
+.ts-associate-kpis span {
+  display: block;
+  color: var(--color-c9);
+  font-size: 10px;
+  margin-bottom: 2px;
+}
+
+.ts-associate-kpis strong {
+  display: block;
+  color: var(--color-c1);
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
+}
+
+.ts-associate-kpi-note {
+  display: block;
+  margin-top: 4px;
+  color: var(--color-c9);
+  font-size: 10px;
+  line-height: 1.25;
+  font-variant-numeric: tabular-nums;
+}
+
+.ts-associate-kpis .is-warning strong {
+  color: var(--color-warning-text, #e67e22);
+}
+
+.ts-associate-kpis .is-positive strong {
+  color: var(--color-c3);
+}

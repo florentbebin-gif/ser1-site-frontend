@@ -6,8 +6,7 @@ import { validateAdminAccount } from './auth.ts'
 
 Deno.test('validateAdminAccount: null → not_found', () => {
   const result = validateAdminAccount(null)
-  assertEquals(result.valid, false)
-  if (!result.valid) assertEquals(result.reason, 'not_found')
+  assertEquals(result, { valid: false, reason: 'not_found' })
 })
 
 Deno.test('validateAdminAccount: status disabled → disabled', () => {
@@ -16,8 +15,7 @@ Deno.test('validateAdminAccount: status disabled → disabled', () => {
     status: 'disabled',
     expires_at: null,
   })
-  assertEquals(result.valid, false)
-  if (!result.valid) assertEquals(result.reason, 'disabled')
+  assertEquals(result, { valid: false, reason: 'disabled' })
 })
 
 Deno.test('validateAdminAccount: expires_at in the past → expired', () => {
@@ -26,8 +24,7 @@ Deno.test('validateAdminAccount: expires_at in the past → expired', () => {
     status: 'active',
     expires_at: '2020-01-01T00:00:00Z',
   })
-  assertEquals(result.valid, false)
-  if (!result.valid) assertEquals(result.reason, 'expired')
+  assertEquals(result, { valid: false, reason: 'expired' })
 })
 
 Deno.test('validateAdminAccount: expires_at in the future → valid', () => {

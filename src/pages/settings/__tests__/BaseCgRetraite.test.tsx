@@ -5,7 +5,7 @@ import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import BaseCgRetraite from '../BaseCgRetraite';
-import type { BaseCgRetraiteContract } from '@/data/basecg';
+import type { BaseCgRetraiteContract } from '@/data/base-cg-retraite';
 
 const getBaseCgRetraiteCatalogMock = vi.fn();
 const upsertBaseCgRetraiteContractMock = vi.fn();

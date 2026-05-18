@@ -3,7 +3,7 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { calculateSuccession, calculatePredecesSenarios, getAbattement } from '../succession';
+import { calculateSuccession, calculatePredecesSenarios, getAbattement } from '..';
 import { DEFAULT_DMTG } from '../civil';
 
 describe('Succession Module', () => {

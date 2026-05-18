@@ -27,6 +27,7 @@ docs/api/
 
 # Local tools / refs (do not commit)
 .windsurf/
+.gemini/
 
 # Office exports / docs (do not commit)
 **/*.pptx

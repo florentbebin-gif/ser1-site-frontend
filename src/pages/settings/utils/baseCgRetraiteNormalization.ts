@@ -3,4 +3,4 @@ export {
   formatBaseCgRetraiteValue,
   hasBaseCgRetraiteValue,
   normalizeBaseCgRetraiteGestionFees,
-} from '@/data/basecg';
+} from '@/data/base-cg-retraite';

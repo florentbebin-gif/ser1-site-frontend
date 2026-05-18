@@ -2,7 +2,7 @@
  * Placement formatters.
  */
 
-import { formatInteger } from '@/utils/formatNumber';
+import { formatInteger } from '@/utils/numbers';
 
 type NumericLike = number | string | null | undefined;
 

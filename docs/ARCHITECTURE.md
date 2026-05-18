@@ -41,6 +41,7 @@ Dev qui doit intervenir sur une feature, un export, un thème, ou Supabase.
 Repères (domain-first) :
 
 - `src/engine/` : calculs métier purs (zéro React).
+  - `src/engine/succession/` : moteur succession et helpers civils. L'entrée publique reste `@/engine/succession`; les helpers civils se consomment via `@/engine/succession/civil`.
 - `src/features/` : features UI (state, composants, handlers export).
 - `src/pages/` : shells légers (Home, Login, SettingsShell) + `pages/settings/*` (sous-pages settings).
 - `src/styles/app/` : chrome applicatif global (topbar, chips, états shell).
@@ -195,6 +196,7 @@ Tables repères (haut niveau) :
 
 - Source : `supabase/functions/admin/index.ts`.
 - Contrat action : query `?action=...` ou body `{ action: "..." }`.
+- Périmètre Deno autonome : `supabase/functions/admin/deno.json` + `supabase/functions/admin/deno.lock`. Le lock racine est interdit ; `npm run test:deno` s'exécute depuis ce dossier avec `--frozen=true`.
 
 ### Admin : sécurité multicouche
 
@@ -356,7 +358,7 @@ UI : `/settings/base-contrat` est une vue read-only à 3 colonnes (Constitution 
 
 ### Base CG retraite
 
-Source applicative : `src/data/basecg/catalog.static.ts` (snapshot statique TypeScript). Le classeur historique n'est plus une source runtime et ne doit pas être requis pour démarrer, tester ou builder l'application.
+Source applicative : `src/data/base-cg-retraite/catalog.static.ts` (snapshot statique TypeScript). Le classeur historique n'est plus une source runtime et ne doit pas être requis pour démarrer, tester ou builder l'application.
 
 UI : `/settings/base-contrat-retraite`, déclarée dans `src/routes/settingsRoutes.ts`. La lecture est accessible aux utilisateurs authentifiés ; les actions de création, modification, suppression et synchronisation restent réservées aux admins via l'UI et les protections Supabase/RLS.
 
@@ -522,10 +524,21 @@ fiscalContext.dmtgScaleLigneDirecte; // barème DMTG ligne directe
 fiscalContext.dmtgAbattementEnfant; // abattement ligne directe
 fiscalContext.dmtgSettings; // objet DMTG complet { ligneDirecte, frereSoeur, neveuNiece, autre }
 fiscalContext.passHistoryByYear; // historique PASS runtime (source: public.pass_history)
-fiscalContext._raw_tax; // brut tax_settings (usage exceptionnel)
-fiscalContext._raw_ps; // brut ps_settings
-fiscalContext._raw_fiscality; // brut fiscality_settings
+fiscalContext._raw_tax; // brut tax_settings, réservé aux adaptateurs nommés
+fiscalContext._raw_ps; // brut ps_settings, réservé aux adaptateurs nommés
+fiscalContext._raw_fiscality; // brut fiscality_settings, réservé aux adaptateurs nommés
 ```
+
+Les clés `_raw_*` sont une échappatoire d'adaptateur, pas une API feature courante. Elles sont autorisées uniquement dans `src/hooks/useFiscalContext.ts`, les adaptateurs fiscaux nommés, les helpers de fingerprint fiscal et les tests. La garde `npm run check:raw-fiscal-usage` bloque toute consommation dispersée dans les composants, hooks métier ou moteurs.
+
+Adaptateurs connus :
+
+- `src/features/ir/utils/irFiscalSettings.ts`
+- `src/features/per/fiscal/perPotentielFiscalAdapter.ts`
+- `src/features/tresorerie-societe/hooks/tresorerieFiscalParams.ts`
+- `src/features/placement/hooks/usePlacementSettings.ts`
+- `src/features/succession/successionFiscalContext.ts`
+- `src/domain/base-contrat/rules/fiscalLabels.ts`
 
 #### Invalidation
 
@@ -567,7 +580,8 @@ Les fichiers `src/domain/base-contrat/**` ne doivent pas importer React, Supabas
 | Rôle                      | Fichier                                                             |
 | ------------------------- | ------------------------------------------------------------------- |
 | Calcul du fingerprint     | `src/utils/export/exportFingerprint.ts` (`fingerprintSettingsData`) |
-| Comparaison au chargement | `src/App.tsx` (lignes 169–183)                                      |
+| Adaptateur fingerprint    | `src/utils/fiscalSettingsFingerprints.ts`                           |
+| Comparaison au chargement | `src/App.tsx`                                                       |
 | Migration snapshot v3→v4  | `src/reporting/snapshot/snapshotMigrations.ts`                      |
 
 ---

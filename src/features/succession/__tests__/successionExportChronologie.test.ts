@@ -6,7 +6,7 @@ import { exportSuccessionXlsx } from '../export/successionXlsx';
 import { buildSuccessionStudyDeck } from '@/pptx/presets/successionDeckBuilder';
 import { DEFAULT_COLORS } from '@/settings/theme';
 import { makeCivil, makeLiquidation } from './fixtures';
-import { DEFAULT_DMTG } from '../../../engine/civil';
+import { DEFAULT_DMTG } from '../../../engine/succession/civil';
 import { buildSuccessionFiscalSnapshot } from '../successionFiscalContext';
 import { buildSuccessionAvFiscalAnalysis } from '../successionAvFiscal';
 import { buildSuccessionPerFiscalAnalysis } from '../successionPerFiscal';

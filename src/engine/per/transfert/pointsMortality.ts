@@ -1,4 +1,4 @@
-import type { PrefonPointsParams } from '@/data/basecg';
+import type { PrefonPointsParams } from '@/data/base-cg-retraite';
 
 interface PrefonRenteInput {
   params: PrefonPointsParams;

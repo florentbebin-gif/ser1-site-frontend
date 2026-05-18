@@ -35,10 +35,10 @@ Note securite : `admin_accounts` et `admin_action_audit` doivent rester `service
 ## Checks du repo
 
 - Check complet :
-  - `npm run check` (lint + **check:fiscal-hardcode** + **check:settings-rls** + **check:arch** + **check:circular** + **check:unused** + CSS/theme + typecheck + tests + build)
+  - `npm run check` (lint + **check:raw-fiscal-usage** + **check:fiscal-hardcode** + **check:settings-rls** + **check:arch** + **check:circular** + **check:unused** + CSS/theme + typecheck + tests + build)
 
 En CI, c'est le gate principal.
-Le workflow GitHub Actions exécute aussi `npm run check:pre-merge`, `npm run test:deno`, `npm run lint:repo` et `npm run typecheck:tests`.
+Le workflow GitHub Actions exécute aussi `npm run check:pre-merge`, `npm run test:deno`, `npm run lint:repo`, `npm run typecheck:tests` et `npm run typecheck:node`.
 Les contrôles `audit:prod`, `coverage`, `build:storybook` et `lhci` sont informatifs au démarrage : ils produisent des warnings CI, pas un blocage merge.
 
 - Garde d'architecture uniquement :
@@ -75,6 +75,14 @@ Commande : `npm run check:fiscal-hardcode` (ou inclus dans `npm run check`).
 1. Mettre à jour la valeur dans `settingsDefaults.ts` (défaut code) ET dans Supabase via la page settings concernée (`/settings/impots`, `/settings/prelevements` ou `/settings/dmtg-succession`).
 2. Si le pattern `FORBIDDEN_VALUES` dans `check-no-hardcoded-fiscal-values.mjs` référence l'ancienne valeur, mettre à jour le pattern pour correspondre à la nouvelle valeur légale.
 
+### Sous-step : `check:raw-fiscal-usage`
+
+Commande : `npm run check:raw-fiscal-usage` (ou inclus dans `npm run check`).
+
+**Ce que ça vérifie** : les clés `fiscalContext._raw_tax`, `fiscalContext._raw_ps` et `fiscalContext._raw_fiscality` ne sont consommées que dans `useFiscalContext`, les adaptateurs fiscaux nommés, le fingerprint fiscal et les tests.
+
+**Si la garde échoue** : déplacer l'accès brut dans un adaptateur dédié, exposer une donnée nommée au composant/hook consommateur, puis ajouter le fichier à l'allowlist stricte seulement si ce rôle d'adaptateur est explicite.
+
 ---
 
 ## Scripts versionnés
@@ -82,9 +90,11 @@ Commande : `npm run check:fiscal-hardcode` (ou inclus dans `npm run check`).
 Ces scripts sont conservés dans le repo car ils servent au gate CI, à l'outillage opérateur ou aux contrôles ponctuels. Ne pas les supprimer sans preuve d'inutilité.
 
 - `scripts/check-no-hardcoded-fiscal-values.mjs` : garde fiscal-hardcode incluse dans `npm run check`.
+- `scripts/check-raw-fiscal-usage.mjs` : garde d'accès aux paramètres fiscaux bruts incluse dans `npm run check`.
 - `scripts/check-no-hardcoded-css-theme-colors.mjs` : garde couleurs thème incluse dans `npm run check`.
 - `scripts/check-theme-sync.mjs` : vérifie l'alignement des tokens thème.
 - `scripts/check-css-structure.mjs` : vérifie les contrats d'import CSS.
+- `scripts/check-no-js.mjs` : bloque les fichiers `.js/.jsx` runtime sous `src/` et `api/`.
 - `scripts/pre-merge-check.ps1` : gate local PowerShell avant merge.
 - `scripts/scan-unicode.mjs` : contrôle ponctuel des caractères invisibles ou bidi dans `src`, `tests` et `supabase`.
 - `scripts/audit-css-usage.mjs` : audit ponctuel de l'usage CSS.
@@ -182,6 +192,7 @@ npm run check:pre-merge
 npm run test:deno
 npm run lint:repo
 npm run typecheck:tests
+npm run typecheck:node
 npm run coverage
 npm run build:storybook
 npm run lhci
@@ -190,7 +201,7 @@ npm run audit:prod
 
 Statut des gates :
 
-- Bloquants : `npm run check`, `check:pre-merge`, `test:deno`, `lint:repo`, `typecheck:tests`.
+- Bloquants : `npm run check`, `check:pre-merge`, `test:deno`, `lint:repo`, `typecheck:tests`, `typecheck:node`.
 - Informatifs au premier rollout : `audit:prod`, `coverage`, `build:storybook`, `lhci`.
 
 Coverage :
@@ -398,7 +409,9 @@ supabase functions invoke admin `
 
 Contrat API : `supabase/functions/admin/index.ts`.
 
-Notes CORS : en prod, l'app passe par un proxy Vercel (`api/admin.js`).
+Périmètre Deno : la fonction admin porte son propre `deno.json` et son propre `deno.lock` dans `supabase/functions/admin/`. Les tests se lancent via `npm run test:deno`, depuis ce dossier, avec lock gelé.
+
+Notes CORS : en prod, l'app passe par un proxy Vercel (`api/admin.ts`).
 
 ---
 

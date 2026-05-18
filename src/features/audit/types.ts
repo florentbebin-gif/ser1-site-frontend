@@ -2,7 +2,7 @@
  * Types pour l'Audit Patrimonial
  */
 
-import type { RegimeMatrimonial } from '../../engine/civil';
+import type { RegimeMatrimonial } from '../../engine/succession/civil';
 
 // Situation familiale
 export interface PersonInfo {

@@ -3,7 +3,7 @@ import {
   type HeritiersInput,
   type SuccessionResult,
 } from '../../engine/succession';
-import type { DmtgSettings } from '../../engine/civil';
+import type { DmtgSettings } from '../../engine/succession/civil';
 import type {
   FamilyMember,
   SuccessionCivilContext,

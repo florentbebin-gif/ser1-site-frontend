@@ -1,5 +1,5 @@
 import React from 'react';
-import { REGIMES_MATRIMONIAUX, REGIMES_ORDER, type RegimeInfo } from '@/engine/civil';
+import { REGIMES_MATRIMONIAUX, REGIMES_ORDER, type RegimeInfo } from '@/engine/succession/civil';
 import { SITUATIONS_FAMILIALES_SUCCESSION } from './dmtgReferenceData';
 
 interface SituationFamiliale {

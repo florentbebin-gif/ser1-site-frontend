@@ -146,6 +146,17 @@ export default [
     },
   },
   {
+    files: ['api/**/*.{ts,js}'],
+    languageOptions: {
+      globals: {
+        ...globals.node,
+      },
+    },
+    rules: {
+      'no-console': 'off',
+    },
+  },
+  {
     files: ['*.cjs'],
     languageOptions: {
       sourceType: 'commonjs',
@@ -161,7 +172,7 @@ export default [
   // without carrying the same review signal as orchestration or business-flow files.
   {
     files: [
-      'src/data/basecg/catalog.static.ts',
+      'src/data/base-cg-retraite/catalog.static.ts',
       'src/constants/settingsDefaults.ts',
       'src/domain/base-contrat/catalog.ts',
       'src/domain/base-contrat/rules/library/immobilier.ts',

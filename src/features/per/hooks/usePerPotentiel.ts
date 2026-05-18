@@ -15,6 +15,7 @@ import type {
   PerHistoricalBasis,
 } from '@/engine/per';
 import type { FiscalContext } from '@/hooks/useFiscalContext';
+import { derivePerPotentielFiscalSettings } from '../fiscal/perPotentielFiscalAdapter';
 import { getAvisReferenceYears, getPerWorkflowYears } from '../utils/perWorkflowYears';
 import { hasAvisIrDeclarant } from '../utils/perAvisIrPlafonds';
 import type { PerChildDraft } from '../utils/perParts';
@@ -362,6 +363,7 @@ export function usePerPotentiel(
         useProjection &&
         !state.needsCurrentYearEstimate &&
         hasAvisIrDeclarant(avisOverride?.avisIr2 ?? state.avisIr2);
+      const fiscalSettings = derivePerPotentielFiscalSettings(fiscalContext);
 
       return {
         mode: state.mode,
@@ -383,9 +385,9 @@ export function usePerPotentiel(
         mutualisationConjoints: useProjection
           ? state.projectionMutualisationConjoints
           : state.mutualisationConjoints,
-        passHistory: fiscalContext.passHistoryByYear,
-        taxSettings: fiscalContext._raw_tax,
-        psSettings: fiscalContext._raw_ps,
+        passHistory: fiscalSettings.passHistory,
+        taxSettings: fiscalSettings.taxSettings,
+        psSettings: fiscalSettings.psSettings,
       };
     },
     [state, years, fiscalContext],

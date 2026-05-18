@@ -8,8 +8,8 @@ import { useFiscalContext } from '@/hooks/useFiscalContext';
 import { useUserMode } from '@/settings/userMode';
 import { resolveEffectiveUserMode } from '@/settings/userModeDisplay';
 import { useTheme } from '@/settings/ThemeProvider';
-import type { BaseCgRetraiteContractType } from '@/data/basecg';
-import { isPointsContract, TYPE_LABELS } from '@/data/basecg';
+import type { BaseCgRetraiteContractType } from '@/data/base-cg-retraite';
+import { isPointsContract, TYPE_LABELS } from '@/data/base-cg-retraite';
 import { usePerTransfertSimulator } from './hooks/usePerTransfertSimulator';
 import { usePerTransfertExportHandlers } from './hooks/usePerTransfertExportHandlers';
 import {
