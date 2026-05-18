@@ -88,6 +88,9 @@ jobs:
       - name: Typecheck tests and tooling
         run: npm run typecheck:tests
 
+      - name: Typecheck Node/Vercel tooling
+        run: npm run typecheck:node
+
       - name: Run admin function tests (Deno)
         run: npm run test:deno
 
