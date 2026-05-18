@@ -22,7 +22,7 @@ export interface UserRoleState {
   isLoading: boolean;
 }
 
-function isE2EMode(): boolean {
+export function isE2EMode(): boolean {
   if (typeof window === 'undefined') return false;
   // Actif uniquement en dev local ou en run E2E CI explicite (VITE_E2E=true)
   // En prod (ni DEV, ni VITE_E2E=true) : toujours inactif, même si __SER1_E2E est présent

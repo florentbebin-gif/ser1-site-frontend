@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import type { User } from '@supabase/supabase-js';
 import { DEBUG_AUTH, supabase } from '@/supabaseClient';
+import { isE2EMode } from '@/auth/useUserRole';
 
 export interface UseSettingsUserResult {
   user: User | null;
@@ -9,11 +10,19 @@ export interface UseSettingsUserResult {
 
 export function useSettingsUser(): UseSettingsUserResult {
   const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(() => !isE2EMode());
 
   useEffect(() => {
     let mounted = true;
     let timeoutId: ReturnType<typeof setTimeout> | undefined;
+
+    if (isE2EMode()) {
+      setUser(null);
+      setLoading(false);
+      return () => {
+        mounted = false;
+      };
+    }
 
     async function loadUser() {
       try {
