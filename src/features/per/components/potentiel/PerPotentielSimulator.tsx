@@ -12,6 +12,7 @@ import { resolveEffectiveUserMode } from '../../../../settings/userModeDisplay';
 import { useTheme } from '../../../../settings/ThemeProvider';
 import '@/styles/sim/index.css';
 import { onResetEvent } from '../../../../utils/reset';
+import { derivePerPotentielFiscalSettings } from '../../fiscal/perPotentielFiscalAdapter';
 import { usePerPotentiel, type WizardStep } from '../../hooks/usePerPotentiel';
 import { usePerPotentielExportHandlers } from '../../hooks/usePerPotentielExportHandlers';
 import { hasAvisIrDeclarant, sumAvisIrPlafonds } from '../../utils/perAvisIrPlafonds';
@@ -19,7 +20,7 @@ import { getPerWorkflowYears } from '../../utils/perWorkflowYears';
 import ModeStep from './steps/ModeStep';
 import AvisIrStep from './steps/AvisIrStep';
 import SituationFiscaleStep from './steps/SituationFiscaleStep';
-import type { PerAbattementConfig, PerIncomeFilters } from './steps/PerIncomeTable';
+import type { PerIncomeFilters } from './steps/PerIncomeTable';
 import { PerHypotheses } from './PerHypotheses';
 import { PerPotentielContextSidebar } from './PerPotentielContextSidebar';
 import '../../styles/index.css';
@@ -187,9 +188,8 @@ export default function PerPotentielSimulator(): React.ReactElement {
     state.mode === 'versement-n' &&
     (state.historicalBasis === 'current-avis' ? state.step >= 3 : state.step >= 4);
   const activeIsCouple = usesProjectionFoyer ? versementNIsCouple : revenusIsCouple;
-  const abat10CfgRoot = fiscalContext._raw_tax?.incomeTax?.abat10 ?? {};
-  const abat10SalCfgCurrent: PerAbattementConfig = abat10CfgRoot.current ?? {};
-  const abat10RetCfgCurrent: PerAbattementConfig = abat10CfgRoot.retireesCurrent ?? {};
+  const { abat10SalCfgCurrent, abat10RetCfgCurrent } =
+    derivePerPotentielFiscalSettings(fiscalContext);
   const isRevenusStep =
     state.step === 3 &&
     (state.mode === 'declaration-n1' ||
