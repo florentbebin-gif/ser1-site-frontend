@@ -15,7 +15,7 @@
     "lint:css": "stylelint \"src/**/*.css\"",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:deno": "deno test supabase/functions/admin/lib/auth_test.ts supabase/functions/admin/lib/loaders_test.ts supabase/functions/admin/cors_test.ts --allow-net --allow-env --deny-import=esm.sh:443,raw.esm.sh:443 --frozen=true",
+    "test:deno": "cd supabase/functions/admin && deno test lib/auth_test.ts lib/loaders_test.ts cors_test.ts --allow-net --allow-env --deny-import=esm.sh:443,raw.esm.sh:443 --frozen=true",
     "typecheck": "tsc --noEmit",
     "typecheck:tests": "tsc --noEmit -p tsconfig.tests.json",
     "coverage": "vitest run --coverage",
