@@ -40,6 +40,56 @@ interface AdminAccountRow {
   account_kind: string
 }
 
+interface AuthListUsersParams {
+  page?: number
+  perPage?: number
+}
+
+interface AuthListUsersResult {
+  data: { users: AuthUser[] } | null
+  error: unknown | null
+}
+
+interface AuthAdminListUsersClient {
+  listUsers(params?: AuthListUsersParams): Promise<AuthListUsersResult>
+}
+
+export const AUTH_USERS_PER_PAGE = 1000
+
+function toError(error: unknown): Error {
+  if (error instanceof Error) return error
+  if (
+    typeof error === 'object' &&
+    error !== null &&
+    'message' in error &&
+    typeof error.message === 'string'
+  ) {
+    return new Error(error.message)
+  }
+  return new Error(String(error))
+}
+
+export async function fetchAllAuthUsers(
+  adminAuth: AuthAdminListUsersClient,
+  perPage = AUTH_USERS_PER_PAGE,
+): Promise<AuthUser[]> {
+  const allUsers: AuthUser[] = []
+  let page = 1
+
+  while (true) {
+    const { data, error } = await adminAuth.listUsers({ page, perPage })
+    if (error) throw toError(error)
+
+    const pageUsers = data?.users ?? []
+    allUsers.push(...pageUsers)
+
+    if (pageUsers.length < perPage) break
+    page++
+  }
+
+  return allUsers
+}
+
 const updateUserRole: AdminActionHandler = async (ctx) => {
   // SÉCURITÉ : action réservée au propriétaire (owner) uniquement
   if (ctx.principal.accountKind !== 'owner') {
@@ -86,12 +136,42 @@ const updateUserRole: AdminActionHandler = async (ctx) => {
 }
 
 const listUsers: AdminActionHandler = async (ctx) => {
-  const { data: users, error } = await ctx.supabase.auth.admin.listUsers()
-  if (error) throw error
+  const authUsers = await fetchAllAuthUsers(ctx.supabase.auth.admin)
+
+  // Joindre admin_accounts pour exposer account_kind et filtrer les comptes e2e
+  const { data: adminRows } = await ctx.supabase
+    .from('admin_accounts')
+    .select('user_id, account_kind')
+
+  const adminMap = new Map((adminRows ?? []).map((r: AdminAccountRow) => [r.user_id, r.account_kind]))
+  const includeTest = (ctx.payload.include_test_accounts as boolean | undefined) ?? false
+
+  const visibleUsers = authUsers.filter((user: AuthUser) => {
+    const kind = adminMap.get(user.id) ?? null
+    if (!includeTest && kind === 'e2e') return false
+    return true
+  })
+
+  if (visibleUsers.length === 0) {
+    return jsonResponse({ users: [] }, ctx.responseHeaders)
+  }
+
+  const userIds = visibleUsers.map((user: AuthUser) => user.id)
+  const { data: profiles, error: profilesError } = await ctx.supabase
+    .from('profiles')
+    .select('id, cabinet_id')
+    .in('id', userIds)
+
+  if (profilesError) {
+    console.warn('[admin:list_users] profiles query error:', profilesError.message)
+  }
+
+  const cabinetByUserId = new Map((profiles ?? []).map((profile: ProfileRow) => [profile.id, profile.cabinet_id]))
 
   const { data: reports, error: reportsError } = await ctx.supabase
     .from('issue_reports')
     .select('user_id, created_at, admin_read_at, id')
+    .in('user_id', userIds)
 
   if (reportsError) {
     console.warn('[admin:list_users] Reports query error:', reportsError.message)
@@ -123,47 +203,20 @@ const listUsers: AdminActionHandler = async (ctx) => {
     return acc
   }, {})
 
-  const userIds = users.users.map((user: AuthUser) => user.id)
-  const { data: profiles, error: profilesError } = await ctx.supabase
-    .from('profiles')
-    .select('id, cabinet_id')
-    .in('id', userIds)
-
-  if (profilesError) {
-    console.warn('[admin:list_users] profiles query error:', profilesError.message)
-  }
-
-  const cabinetByUserId = new Map((profiles ?? []).map((profile: ProfileRow) => [profile.id, profile.cabinet_id]))
-
-  // Joindre admin_accounts pour exposer account_kind et filtrer les comptes e2e
-  const { data: adminRows } = await ctx.supabase
-    .from('admin_accounts')
-    .select('user_id, account_kind')
-
-  const adminMap = new Map((adminRows ?? []).map((r: AdminAccountRow) => [r.user_id, r.account_kind]))
-
-  const includeTest = (ctx.payload.include_test_accounts as boolean | undefined) ?? false
-
-  const usersWithReports = users.users
-    .filter((user: AuthUser) => {
-      const kind = adminMap.get(user.id) ?? null
-      if (!includeTest && kind === 'e2e') return false
-      return true
-    })
-    .map((user: AuthUser) => ({
-      id: user.id,
-      email: user.email,
-      created_at: user.created_at,
-      last_sign_in_at: user.last_sign_in_at,
-      role: (user.app_metadata?.role as string | undefined) || 'user',
-      cabinet_id: cabinetByUserId.get(user.id) ?? null,
-      account_kind: adminMap.get(user.id) ?? null,
-      is_test_account: adminMap.get(user.id) === 'e2e',
-      total_reports: reportStats[user.id]?.total_reports || 0,
-      unread_reports: reportStats[user.id]?.unread_reports || 0,
-      latest_report_id: reportStats[user.id]?.latest_report_id || null,
-      latest_report_is_unread: reportStats[user.id]?.latest_report_is_unread || false,
-    }))
+  const usersWithReports = visibleUsers.map((user: AuthUser) => ({
+    id: user.id,
+    email: user.email,
+    created_at: user.created_at,
+    last_sign_in_at: user.last_sign_in_at,
+    role: (user.app_metadata?.role as string | undefined) || 'user',
+    cabinet_id: cabinetByUserId.get(user.id) ?? null,
+    account_kind: adminMap.get(user.id) ?? null,
+    is_test_account: adminMap.get(user.id) === 'e2e',
+    total_reports: reportStats[user.id]?.total_reports || 0,
+    unread_reports: reportStats[user.id]?.unread_reports || 0,
+    latest_report_id: reportStats[user.id]?.latest_report_id || null,
+    latest_report_is_unread: reportStats[user.id]?.latest_report_is_unread || false,
+  }))
 
   return jsonResponse({ users: usersWithReports }, ctx.responseHeaders)
 }
