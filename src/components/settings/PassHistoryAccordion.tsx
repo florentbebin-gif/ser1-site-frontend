@@ -1,5 +1,6 @@
 import React from 'react';
 import { usePassHistory } from '@/hooks/settings/usePassHistory';
+import SettingsTitleWithIcon from './SettingsTitleWithIcon';
 import { numberOrEmpty } from './settingsHelpers';
 
 interface PassHistoryAccordionProps {
@@ -22,15 +23,18 @@ export default function PassHistoryAccordion({
     <div className="fisc-acc-item">
       <button
         type="button"
-        className="fisc-acc-header"
+        className="fisc-acc-header fisc-acc-header--with-icon"
         id="prelev-header-pass"
         aria-expanded={isOpen}
         aria-controls="prelev-panel-pass"
         onClick={onToggle}
       >
-        <span className="settings-premium-title settings-premium-title--flush">
+        <SettingsTitleWithIcon
+          icon="calendar-clock"
+          className="settings-premium-title settings-premium-title--flush"
+        >
           Historique du PASS (8 valeurs)
-        </span>
+        </SettingsTitleWithIcon>
         <span className="fisc-acc-chevron">{isOpen ? 'v' : '>'}</span>
       </button>
 
@@ -49,14 +53,14 @@ export default function PassHistoryAccordion({
                 <thead>
                   <tr>
                     <th>Année</th>
-                    <th className="taux-col">PASS (EUR)</th>
+                    <th className="settings-table-amount-col">PASS (EUR)</th>
                   </tr>
                 </thead>
                 <tbody>
                   {rows.map((row, idx) => (
                     <tr key={row.year}>
                       <td>{row.year}</td>
-                      <td className="taux-col">
+                      <td className="settings-table-amount-col">
                         <input
                           type="number"
                           value={numberOrEmpty(row.pass_amount)}

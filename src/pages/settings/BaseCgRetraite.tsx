@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useUserRole } from '@/auth/useUserRole';
 import { UserInfoBanner } from '@/components/UserInfoBanner';
+import SettingsTitleWithIcon from '@/components/settings/SettingsTitleWithIcon';
 import {
   BASE_CG_RETRAITE_LEGAL_NOTICE,
   type BaseCgRetraiteContract,
@@ -13,8 +14,10 @@ import {
   getBaseCgRetraiteCatalog,
   upsertBaseCgRetraiteContract,
 } from '@/utils/cache/baseCgRetraiteRepository';
-import { COMPARTMENT_LABELS, TYPE_LABELS, TYPE_OPTIONS } from './baseCgRetraiteOptions';
+import { TYPE_LABELS, TYPE_OPTIONS } from './baseCgRetraiteOptions';
+import BaseCgRetraiteContractCards from './components/BaseCgRetraiteContractCards';
 import { BaseCgRetraiteContractModal } from './components/BaseCgRetraiteContractModal';
+import CompanyLogo from './components/CompanyLogo';
 import { isRetraiteContractIncomplete } from './utils/retirementContractCompleteness';
 import './styles/base-cg-retraite.css';
 
@@ -225,7 +228,9 @@ export default function BaseCgRetraite() {
 
       <section className="settings-premium-card base-cg-header-card">
         <div>
-          <h2 className="settings-premium-title">Base CG retraite</h2>
+          <h2 className="settings-premium-title">
+            <SettingsTitleWithIcon icon="file-text">Base CG retraite</SettingsTitleWithIcon>
+          </h2>
           <p className="settings-premium-subtitle">
             {headerStatsLabel(catalog.length, configuredCount, cgAvailableCount)}
           </p>
@@ -274,7 +279,7 @@ export default function BaseCgRetraite() {
         </select>
       </div>
 
-      <div className="settings-premium-card base-cg-table-card">
+      <div className="settings-premium-card base-cg-catalog-card">
         {loading ? (
           <p>Chargement...</p>
         ) : groupedByCompagnie.length === 0 ? (
@@ -291,7 +296,10 @@ export default function BaseCgRetraite() {
                     className="fisc-acc-header base-cg-company__header"
                     onClick={() => setOpenCompagnie(isOpen ? null : compagnie)}
                   >
-                    <span className="base-cg-company__title">{compagnie}</span>
+                    <span className="base-cg-company__identity">
+                      <CompanyLogo company={compagnie} />
+                      <span className="base-cg-company__title">{compagnie}</span>
+                    </span>
                     <span className="base-cg-company__badges">
                       <span className="base-cg-badge">
                         {contracts.length} contrat{contracts.length > 1 ? 's' : ''}
@@ -307,81 +315,14 @@ export default function BaseCgRetraite() {
 
                   {isOpen ? (
                     <div className="fisc-acc-body base-cg-company__body">
-                      <table className="base-cg-table">
-                        <thead>
-                          <tr>
-                            <th>Contrat</th>
-                            <th>Type</th>
-                            <th>Compartiment</th>
-                            <th>Table rente</th>
-                            <th>CG</th>
-                            {isAdmin ? <th>Actions</th> : null}
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {contracts.map((contract) => {
-                            const incomplete = isRetraiteContractIncomplete(contract);
-                            const document = firstCgDocument(contract);
-                            return (
-                              <tr key={contract.id}>
-                                <td>
-                                  <span className="base-cg-contract-name">
-                                    <span className="base-cg-contract-name__label">
-                                      {contract.nomContrat}
-                                    </span>
-                                    {incomplete ? (
-                                      <span className="base-cg-badge base-cg-badge--incomplete">
-                                        À compléter
-                                      </span>
-                                    ) : null}
-                                  </span>
-                                </td>
-                                <td>{TYPE_LABELS[contract.typeContrat]}</td>
-                                <td>
-                                  {contract.perCompartment
-                                    ? COMPARTMENT_LABELS[contract.perCompartment]
-                                    : '-'}
-                                </td>
-                                <td>
-                                  {contract.phaseLiquidation.tableConversionRente ?? 'A compléter'}
-                                </td>
-                                <td>
-                                  {document ? (
-                                    <div className="base-cg-document-download">
-                                      <button
-                                        type="button"
-                                        className="base-cg-document-download__button"
-                                        onClick={() => handleDownload(document)}
-                                      >
-                                        Télécharger CG
-                                      </button>
-                                      {document.versionLabel ? (
-                                        <span className="base-cg-document-download__version">
-                                          Ref : {document.versionLabel}
-                                        </span>
-                                      ) : null}
-                                    </div>
-                                  ) : (
-                                    <span className="base-cg-muted">Non disponible</span>
-                                  )}
-                                </td>
-                                {isAdmin ? (
-                                  <td>
-                                    <div className="base-cg-row-actions">
-                                      <button type="button" onClick={() => setEditing(contract)}>
-                                        Modifier
-                                      </button>
-                                      <button type="button" onClick={() => handleDelete(contract)}>
-                                        Supprimer
-                                      </button>
-                                    </div>
-                                  </td>
-                                ) : null}
-                              </tr>
-                            );
-                          })}
-                        </tbody>
-                      </table>
+                      <BaseCgRetraiteContractCards
+                        compagnie={compagnie}
+                        contracts={contracts}
+                        isAdmin={isAdmin}
+                        onEdit={setEditing}
+                        onDelete={handleDelete}
+                        onDownload={handleDownload}
+                      />
                     </div>
                   ) : null}
                 </div>

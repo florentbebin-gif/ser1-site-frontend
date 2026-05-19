@@ -1,4 +1,5 @@
 import React from 'react';
+import SettingsTitleWithIcon from '@/components/settings/SettingsTitleWithIcon';
 import { LIBERALITES_REFERENCE } from './dmtgReferenceData';
 
 interface LiberaliteReference {
@@ -27,11 +28,16 @@ export default function LiberalitesSection({
     <div className="fisc-acc-item">
       <button
         type="button"
-        className="fisc-acc-header"
+        className="fisc-acc-header fisc-acc-header--with-icon"
         aria-expanded={isOpen}
         onClick={() => setOpenSection(isOpen ? null : 'liberalites')}
       >
-        <span className="settings-premium-title settings-premium-title--flush">Libéralités</span>
+        <SettingsTitleWithIcon
+          icon="hand-heart"
+          className="settings-premium-title settings-premium-title--flush"
+        >
+          Libéralités
+        </SettingsTitleWithIcon>
         <span className="fisc-acc-chevron">{isOpen ? 'v' : '>'}</span>
       </button>
 

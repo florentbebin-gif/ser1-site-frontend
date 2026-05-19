@@ -1,4 +1,5 @@
 import React from 'react';
+import SettingsTitleWithIcon from '@/components/settings/SettingsTitleWithIcon';
 import { RESERVE_HEREDITAIRE, DROITS_CONJOINT } from './dmtgReferenceData';
 
 interface ReserveHereditaireRow {
@@ -29,13 +30,16 @@ export default function ReserveCivilSection({
     <div className="fisc-acc-item">
       <button
         type="button"
-        className="fisc-acc-header"
+        className="fisc-acc-header fisc-acc-header--with-icon"
         aria-expanded={isOpen}
         onClick={() => setOpenSection(isOpen ? null : 'reserve')}
       >
-        <span className="settings-premium-title settings-premium-title--flush">
+        <SettingsTitleWithIcon
+          icon="balance"
+          className="settings-premium-title settings-premium-title--flush"
+        >
           Réserve héréditaire & droits du conjoint
-        </span>
+        </SettingsTitleWithIcon>
         <span className="fisc-acc-chevron">{isOpen ? 'v' : '>'}</span>
       </button>
 

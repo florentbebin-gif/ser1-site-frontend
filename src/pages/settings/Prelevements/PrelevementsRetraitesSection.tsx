@@ -1,4 +1,5 @@
 import React from 'react';
+import SettingsTitleWithIcon from '@/components/settings/SettingsTitleWithIcon';
 import SettingsTable from '@/components/settings/SettingsTable';
 
 type YearKey = 'current' | 'previous';
@@ -69,15 +70,18 @@ export default function PrelevementsRetraitesSection({
     <div className="fisc-acc-item">
       <button
         type="button"
-        className="fisc-acc-header"
+        className="fisc-acc-header fisc-acc-header--with-icon"
         id="prelev-header-retraites"
         aria-expanded={isOpen}
         aria-controls="prelev-panel-retraites"
         onClick={() => setOpenSection(isOpen ? null : 'retraites')}
       >
-        <span className="settings-premium-title settings-premium-title--flush">
+        <SettingsTitleWithIcon
+          icon="umbrella"
+          className="settings-premium-title settings-premium-title--flush"
+        >
           Prélèvements sociaux - pensions de retraite
-        </span>
+        </SettingsTitleWithIcon>
         <span className="fisc-acc-chevron">{isOpen ? 'v' : '>'}</span>
       </button>
 

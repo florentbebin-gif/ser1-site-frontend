@@ -1,4 +1,9 @@
-import { BASECG_CATALOG, BASECG_VERSION } from '@/data/base-cg-retraite';
+import {
+  BASECG_CATALOG,
+  BASECG_VERSION,
+  isRemovedBaseCgRetraiteContract,
+  normalizeBaseCgRetraiteContractCompany,
+} from '@/data/base-cg-retraite';
 import type { BaseCgRetraiteContract } from '@/data/base-cg-retraite';
 import { STORAGE_KEY } from './baseCgRetraiteRepository.constants';
 
@@ -50,13 +55,14 @@ export function mergeBaseCgRetraiteOverlay(
   overlay: BaseCgRetraiteOverlay,
 ): BaseCgRetraiteContract[] {
   const deletedIds = new Set(overlay.deletedIds);
-  const base = BASECG_CATALOG.filter((contract) => !deletedIds.has(contract.id)).map(
-    (contract) => overlay.upserts[contract.id] ?? contract,
+  const base = BASECG_CATALOG.filter((contract) => !deletedIds.has(contract.id)).map((contract) =>
+    normalizeBaseCgRetraiteContractCompany(overlay.upserts[contract.id] ?? contract),
   );
   const baseIds = new Set(BASECG_CATALOG.map((contract) => contract.id));
-  const created = Object.values(overlay.upserts).filter(
-    (contract) => !baseIds.has(contract.id) && !deletedIds.has(contract.id),
-  );
+  const created = Object.values(overlay.upserts)
+    .filter((contract) => !baseIds.has(contract.id) && !deletedIds.has(contract.id))
+    .map((contract) => normalizeBaseCgRetraiteContractCompany(contract))
+    .filter((contract) => !isRemovedBaseCgRetraiteContract(contract));
 
   return [...base, ...created].sort((left, right) =>
     `${left.compagnie} ${left.nomContrat}`.localeCompare(

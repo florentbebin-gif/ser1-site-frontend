@@ -10,6 +10,9 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useUserRole } from '@/auth/useUserRole';
 import { UserInfoBanner } from '@/components/UserInfoBanner';
+import SettingsTitleWithIcon, {
+  type SettingsTitleIconName,
+} from '@/components/settings/SettingsTitleWithIcon';
 import './styles/base-contrat.css';
 import { CATALOG } from '@/domain/base-contrat/catalog';
 import type { CatalogProduct } from '@/domain/base-contrat/catalog';
@@ -185,6 +188,24 @@ function formatClosedCount(count: number): string {
   return `${count} clôturé${count > 1 ? 's' : ''}`;
 }
 
+const FAMILY_ICON_BY_NAME: Record<string, SettingsTitleIconName> = {
+  'Épargne Assurance': 'shield',
+  'Assurance prévoyance': 'umbrella',
+  'Épargne bancaire': 'wallet',
+  'Valeurs mobilières': 'trending-up',
+  'Immobilier direct': 'home',
+  'Immobilier indirect': 'layers',
+  'Non coté/PE': 'briefcase',
+  'Créances/Droits': 'file-signature',
+  'Dispositifs fiscaux immobilier': 'map-pin',
+  'Retraite & épargne salariale': 'calendar-clock',
+  Autres: 'sparkles',
+};
+
+function getFamilyIcon(famille: string): SettingsTitleIconName {
+  return FAMILY_ICON_BY_NAME[famille] ?? 'sparkles';
+}
+
 export default function BaseContrat() {
   const { isAdmin } = useUserRole();
   const { fiscalContext } = useFiscalContext();
@@ -269,7 +290,9 @@ export default function BaseContrat() {
         <section className="settings-premium-card base-contrat-header-card">
           <div className="base-contrat-header">
             <div className="base-contrat-header__copy">
-              <h2 className="settings-premium-title">Référentiel contrats</h2>
+              <h2 className="settings-premium-title">
+                <SettingsTitleWithIcon icon="book">Référentiel contrats</SettingsTitleWithIcon>
+              </h2>
               <p className="settings-premium-subtitle">
                 {CATALOG.length} produits - {activeCount} ouverts - {closedCount} clôturés
               </p>
@@ -342,12 +365,15 @@ export default function BaseContrat() {
               <div key={famille} className="fisc-acc-item base-contrat-family">
                 <button
                   type="button"
-                  className="fisc-acc-header base-contrat-family__header"
+                  className="fisc-acc-header fisc-acc-header--with-icon base-contrat-family__header"
                   onClick={() => setOpenFamilyId(isFamilyOpen ? null : famille)}
                 >
-                  <span className="settings-premium-title settings-premium-title--flush base-contrat-family__title">
+                  <SettingsTitleWithIcon
+                    icon={getFamilyIcon(famille)}
+                    className="settings-premium-title settings-premium-title--flush base-contrat-family__title"
+                  >
                     {famille}
-                  </span>
+                  </SettingsTitleWithIcon>
                   <span className="base-contrat-family__badges">
                     <span className="base-contrat-badge">{formatOpenCount(openInFamily)}</span>
                     {closedInFamily > 0 && (

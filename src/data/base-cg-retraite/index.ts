@@ -4,8 +4,11 @@ export {
   BASECG_VERSION,
   findBaseCgContractById,
   isPointsContract,
+  isRemovedBaseCgRetraiteContract,
   listBaseCgCompagnies,
   listBaseCgTypes,
+  normalizeBaseCgRetraiteCompanyName,
+  normalizeBaseCgRetraiteContractCompany,
 } from './catalog';
 export {
   PREFON_2025,

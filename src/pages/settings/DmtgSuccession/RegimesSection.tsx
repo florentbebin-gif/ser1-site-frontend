@@ -1,4 +1,5 @@
 import React from 'react';
+import SettingsTitleWithIcon from '@/components/settings/SettingsTitleWithIcon';
 import { REGIMES_MATRIMONIAUX, REGIMES_ORDER, type RegimeInfo } from '@/engine/succession/civil';
 import { SITUATIONS_FAMILIALES_SUCCESSION } from './dmtgReferenceData';
 
@@ -26,13 +27,16 @@ export default function RegimesSection({
     <div className="fisc-acc-item">
       <button
         type="button"
-        className="fisc-acc-header"
+        className="fisc-acc-header fisc-acc-header--with-icon"
         aria-expanded={isOpen}
         onClick={() => setOpenSection(isOpen ? null : 'regimes')}
       >
-        <span className="settings-premium-title settings-premium-title--flush">
+        <SettingsTitleWithIcon
+          icon="rings"
+          className="settings-premium-title settings-premium-title--flush"
+        >
           Régimes matrimoniaux & PACS
-        </span>
+        </SettingsTitleWithIcon>
         <span className="fisc-acc-chevron">{isOpen ? 'v' : '>'}</span>
       </button>
 

@@ -16,6 +16,28 @@ const POINTS_CONTRACT_IDS = new Set(
   ),
 );
 
+const BASECG_COMPANY_RENAME_MAP: Record<string, string> = {
+  CREDIT_DU_NORD: 'SOCIETE_GENERALE',
+  EPSENS: 'MALAKOFF_HUMANIS',
+  GO_EPARGNE: 'EPARTIM',
+  LPA: 'LPA_PREVOYANCE',
+  MNRA: 'GARANCE',
+  PRIMONIAL: 'ORADEA',
+  SMA: 'SMA_BTP',
+};
+
+const BASECG_REMOVED_CONTRACT_IDS = new Set([
+  'primonial-madelin-gestion-privee-promadelin-35',
+  'primonial-madelin-cardif-retraite-professionnels-patrimoine-management-et-associes-36',
+]);
+
+const BASECG_REMOVED_CONTRACT_SOURCE_IDS = new Set(['Contrat N°35', 'Contrat N°36']);
+
+const BASECG_REMOVED_CONTRACT_NAMES = new Set([
+  'MADELIN- GESTION PRIVEE PROMADELIN',
+  'MADELIN- CARDIF RETRAITE PROFESSIONNELS ( PATRIMOINE MANAGEMENT ET ASSOCIES)',
+]);
+
 function resolveStaticCompartment(contract: BaseCgRetraiteContract): PerTransfertCompartment {
   if (contract.perCompartment) return contract.perCompartment;
   if (/non d[eé]duit/i.test(contract.nomContrat)) return 'C1_BIS';
@@ -24,11 +46,34 @@ function resolveStaticCompartment(contract: BaseCgRetraiteContract): PerTransfer
   return 'C1';
 }
 
-export const BASECG_CATALOG: BaseCgRetraiteContract[] = STATIC_BASECG_CATALOG.map((contract) => ({
-  ...contract,
-  perCompartment: resolveStaticCompartment(contract),
-  pointsParams: POINTS_CONTRACT_IDS.has(contract.id) ? PREFON_2025 : null,
-}));
+export function normalizeBaseCgRetraiteCompanyName(company: string): string {
+  return BASECG_COMPANY_RENAME_MAP[company] ?? company;
+}
+
+export function normalizeBaseCgRetraiteContractCompany(
+  contract: BaseCgRetraiteContract,
+): BaseCgRetraiteContract {
+  const compagnie = normalizeBaseCgRetraiteCompanyName(contract.compagnie);
+  return compagnie === contract.compagnie ? contract : { ...contract, compagnie };
+}
+
+export function isRemovedBaseCgRetraiteContract(
+  contract: Pick<BaseCgRetraiteContract, 'id' | 'sourceId' | 'nomContrat'>,
+): boolean {
+  return (
+    BASECG_REMOVED_CONTRACT_IDS.has(contract.id) ||
+    BASECG_REMOVED_CONTRACT_SOURCE_IDS.has(contract.sourceId) ||
+    BASECG_REMOVED_CONTRACT_NAMES.has(contract.nomContrat)
+  );
+}
+
+export const BASECG_CATALOG: BaseCgRetraiteContract[] = STATIC_BASECG_CATALOG.map((contract) =>
+  normalizeBaseCgRetraiteContractCompany({
+    ...contract,
+    perCompartment: resolveStaticCompartment(contract),
+    pointsParams: POINTS_CONTRACT_IDS.has(contract.id) ? PREFON_2025 : null,
+  }),
+);
 
 export { BASECG_CONTRACT_COUNT, BASECG_VERSION };
 

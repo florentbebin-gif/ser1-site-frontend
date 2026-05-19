@@ -1,4 +1,5 @@
 import React from 'react';
+import SettingsTitleWithIcon from '@/components/settings/SettingsTitleWithIcon';
 import { numberOrEmpty } from '@/components/settings/settingsHelpers';
 import SettingsTable from '@/components/settings/SettingsTable';
 
@@ -50,13 +51,16 @@ export default function AvDecesSection({
     <div className="fisc-acc-item">
       <button
         type="button"
-        className="fisc-acc-header"
+        className="fisc-acc-header fisc-acc-header--with-icon"
         aria-expanded={isOpen}
         onClick={() => setOpenSection(isOpen ? null : 'avDeces')}
       >
-        <span className="settings-premium-title settings-premium-title--flush">
+        <SettingsTitleWithIcon
+          icon="shield"
+          className="settings-premium-title settings-premium-title--flush"
+        >
           Assurance-vie décès (990 I / 757 B)
-        </span>
+        </SettingsTitleWithIcon>
         <span className="fisc-acc-chevron">{isOpen ? 'v' : '>'}</span>
       </button>
 

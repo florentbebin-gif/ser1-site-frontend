@@ -1,4 +1,5 @@
 import React from 'react';
+import SettingsTitleWithIcon from '@/components/settings/SettingsTitleWithIcon';
 import SettingsTable from '@/components/settings/SettingsTable';
 import { numberOrEmpty } from '@/components/settings/settingsHelpers';
 
@@ -82,15 +83,18 @@ export default function ImpotsDmtgSection({
     <div className="fisc-acc-item">
       <button
         type="button"
-        className="fisc-acc-header"
+        className="fisc-acc-header fisc-acc-header--with-icon"
         id="impots-header-dmtg"
         aria-expanded={isOpen}
         aria-controls="impots-panel-dmtg"
         onClick={() => setOpenSection(isOpen ? null : 'dmtg')}
       >
-        <span className="settings-premium-title settings-premium-title--flush">
+        <SettingsTitleWithIcon
+          icon="file-signature"
+          className="settings-premium-title settings-premium-title--flush"
+        >
           Droits de mutation à titre gratuit (DMTG)
-        </span>
+        </SettingsTitleWithIcon>
         <span className="fisc-acc-chevron">{isOpen ? 'v' : '>'}</span>
       </button>
 

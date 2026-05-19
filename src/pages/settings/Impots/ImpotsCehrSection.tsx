@@ -1,4 +1,5 @@
 import React from 'react';
+import SettingsTitleWithIcon from '@/components/settings/SettingsTitleWithIcon';
 import SettingsYearColumn from '@/components/settings/SettingsYearColumn';
 import SettingsFieldRow from '@/components/settings/SettingsFieldRow';
 import { numberOrEmpty } from '@/components/settings/settingsHelpers';
@@ -63,13 +64,18 @@ export default function ImpotsCehrSection({
     <div className="fisc-acc-item">
       <button
         type="button"
-        className="fisc-acc-header"
+        className="fisc-acc-header fisc-acc-header--with-icon"
         id="impots-header-cehr"
         aria-expanded={isOpen}
         aria-controls="impots-panel-cehr"
         onClick={() => setOpenSection(isOpen ? null : 'cehr')}
       >
-        <span className="settings-premium-title settings-premium-title--flush">CEHR / CDHR</span>
+        <SettingsTitleWithIcon
+          icon="trending-up"
+          className="settings-premium-title settings-premium-title--flush"
+        >
+          CEHR / CDHR
+        </SettingsTitleWithIcon>
         <span className="fisc-acc-chevron">{isOpen ? 'v' : '>'}</span>
       </button>
 

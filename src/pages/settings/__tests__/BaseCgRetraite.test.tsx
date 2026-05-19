@@ -310,6 +310,18 @@ describe('BaseCgRetraite', () => {
     expect(screen.getByText('À compléter')).toBeInTheDocument();
   });
 
+  it('présente les contrats ouverts en cartes denses avec logo compagnie', async () => {
+    render(<BaseCgRetraite />);
+
+    expect(await screen.findByTestId('company-logo-abeille')).toBeInTheDocument();
+
+    const contractCard = await screen.findByTestId('base-cg-contract-card-test-contract');
+    expect(contractCard).toHaveTextContent('MADELIN- ABEILLE RETRAITE MADELIN');
+    expect(contractCard).toHaveTextContent('Madelin');
+    expect(contractCard).toHaveTextContent('C1 (déductible)');
+    expect(contractCard).toHaveTextContent('TGH05 ou TGF05');
+  });
+
   it('permet à l’admin de renseigner une CG avec version et chemin storage', async () => {
     await openModal();
     await userEvent.click(screen.getByRole('tab', { name: 'Documents' }));
