@@ -49,7 +49,6 @@ export default function SettingsShell(): React.ReactElement {
     return routes.find((tab) => tab.key === activeTab) ?? routes[0] ?? null;
   }, [activeTab]);
   const activeComponent = activeRoute?.component ?? null;
-  const isWide = activeRoute?.wide === true;
 
   const checkScroll = (): void => {
     const element = scrollRef.current;
@@ -89,8 +88,8 @@ export default function SettingsShell(): React.ReactElement {
   const ActiveComponent = activeComponent;
 
   return (
-    <div className={`settings-page${isWide ? ' settings-page--wide' : ''}`}>
-      <div className={`settings-shell__card${isWide ? ' settings-shell__card--wide' : ''}`}>
+    <div className="settings-page">
+      <div className="settings-shell__card">
         <div className="settings-shell__title">Paramètres</div>
 
         <nav className="settings-tab-nav" aria-label="Paramètres">
