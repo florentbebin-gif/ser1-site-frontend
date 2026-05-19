@@ -16,6 +16,10 @@ interface SettingsSectionCardProps {
   actions?: React.ReactNode;
   children: React.ReactNode;
   style?: React.CSSProperties;
+  collapsible?: boolean;
+  defaultOpen?: boolean;
+  titleId?: string;
+  panelId?: string;
 }
 
 export default function SettingsSectionCard({
@@ -25,20 +29,68 @@ export default function SettingsSectionCard({
   actions,
   children,
   style,
+  collapsible = false,
+  defaultOpen = true,
+  titleId,
+  panelId,
 }: SettingsSectionCardProps): React.ReactElement {
+  const generatedId = React.useId();
+  const [isOpen, setIsOpen] = React.useState(defaultOpen);
+  const headingId = titleId ?? `${generatedId}-title`;
+  const contentId = panelId ?? `${generatedId}-panel`;
+
   return (
     <section className="settings-premium-card" style={style}>
       <header className="settings-premium-header settings-premium-header--row">
         <div className="settings-action-icon">{icon}</div>
         <div className="settings-action-text settings-premium-header__body">
           <div>
-            <h3 className="settings-premium-title settings-premium-title--flush">{title}</h3>
+            <h3 id={headingId} className="settings-premium-title settings-premium-title--flush">
+              {title}
+            </h3>
             {subtitle && <p className="settings-premium-subtitle">{subtitle}</p>}
           </div>
-          {actions && <div className="settings-premium-actions">{actions}</div>}
+          {(actions || collapsible) && (
+            <div className="settings-premium-actions">
+              {actions}
+              {collapsible && (
+                <button
+                  className="settings-section-collapse-btn"
+                  type="button"
+                  aria-expanded={isOpen}
+                  aria-controls={contentId}
+                  aria-label={`${isOpen ? 'Replier' : 'Afficher'} la section ${title}`}
+                  onClick={() => setIsOpen((current) => !current)}
+                >
+                  <svg
+                    viewBox="0 0 24 24"
+                    width="16"
+                    height="16"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    aria-hidden="true"
+                  >
+                    <path d={isOpen ? 'M18 15 12 9 6 15' : 'M6 9l6 6 6-6'} />
+                  </svg>
+                </button>
+              )}
+            </div>
+          )}
         </div>
       </header>
-      {children}
+      {(!collapsible || isOpen) && (
+        <div
+          id={contentId}
+          className="settings-section-panel"
+          role={collapsible ? 'region' : undefined}
+          aria-labelledby={collapsible ? headingId : undefined}
+        >
+          {children}
+        </div>
+      )}
     </section>
   );
 }

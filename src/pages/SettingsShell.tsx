@@ -44,11 +44,11 @@ export default function SettingsShell(): React.ReactElement {
 
   const visibleTabs = useMemo(() => getVisibleSettingsRoutes(isAdmin), [isAdmin]);
 
-  const activeComponent = useMemo(() => {
+  const activeRoute = useMemo(() => {
     const routes: SettingsRouteEntry[] = SETTINGS_ROUTES;
-    const found = routes.find((tab) => tab.key === activeTab);
-    return found?.component ?? routes[0]?.component ?? null;
+    return routes.find((tab) => tab.key === activeTab) ?? routes[0] ?? null;
   }, [activeTab]);
+  const activeComponent = activeRoute?.component ?? null;
 
   const checkScroll = (): void => {
     const element = scrollRef.current;
