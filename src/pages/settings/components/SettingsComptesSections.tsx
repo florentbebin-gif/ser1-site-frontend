@@ -1,5 +1,6 @@
 import React from 'react';
 import SettingsSectionCard from '@/components/settings/SettingsSectionCard';
+import { SettingsUsersSearchToolbar } from './SettingsUsersSearchToolbar';
 
 interface CabinetSummary {
   id: string;
@@ -177,6 +178,8 @@ export function SettingsCabinetsSection({
       title={`Cabinets (${cabinets.length})`}
       subtitle="Gestion des cabinets et de leur thème associé."
       icon={<CabinetsIcon />}
+      collapsible
+      defaultOpen={false}
       actions={
         <button
           className="chip admin-section-chip"
@@ -251,6 +254,8 @@ export function SettingsThemesSection({
         title={`Thèmes globaux (${themes.length})`}
         subtitle="Palettes de couleurs appliquées aux cabinets."
         icon={<ThemesIcon />}
+        collapsible
+        defaultOpen={false}
         actions={
           <button
             className="chip admin-section-chip"
@@ -345,12 +350,21 @@ export function SettingsUsersSection({
   onResetPassword,
   onDeleteUser,
 }: SettingsUsersSectionProps): React.ReactElement {
+  const [searchEmail, setSearchEmail] = React.useState('');
+  const normalizedSearch = searchEmail.trim().toLowerCase();
+  const filteredUsers = React.useMemo(() => {
+    if (!normalizedSearch) return users;
+    return users.filter((user) => user.email.toLowerCase().includes(normalizedSearch));
+  }, [normalizedSearch, users]);
+
   return (
     <div className="settings-section-card--mt">
       <SettingsSectionCard
         title={`Utilisateurs (${users.length})`}
         subtitle="Comptes, rôles et affectation aux cabinets."
         icon={<UsersIcon />}
+        collapsible
+        defaultOpen
         actions={
           <>
             <button
@@ -374,6 +388,12 @@ export function SettingsUsersSection({
           </>
         }
       >
+        <SettingsUsersSearchToolbar
+          searchEmail={searchEmail}
+          visibleCount={filteredUsers.length}
+          totalCount={users.length}
+          onSearchEmailChange={setSearchEmail}
+        />
         <div className="users-table">
           <table>
             <thead>
@@ -396,77 +416,85 @@ export function SettingsUsersSection({
               </tr>
             </thead>
             <tbody>
-              {users.map((user) => (
-                <tr key={user.id}>
-                  <td className="col-email">{user.email}</td>
-                  <td>
-                    <span className={`role-badge ${user.role}`}>{user.role}</span>
-                  </td>
-                  <td>
-                    <select
-                      value={user.cabinet_id || ''}
-                      onChange={(event: React.ChangeEvent<HTMLSelectElement>) => {
-                        onAssignUserCabinet(user.id, event.target.value);
-                      }}
-                      disabled={actionLoading}
-                      aria-label="Assigner un cabinet"
-                    >
-                      <option value="">- Aucun -</option>
-                      {cabinets.map((cabinet) => (
-                        <option key={cabinet.id} value={cabinet.id}>
-                          {cabinet.name}
-                        </option>
-                      ))}
-                    </select>
-                  </td>
-                  <td className="col-date">{formatUserDate(user.created_at)}</td>
-                  <td className="col-last-login">
-                    {user.last_sign_in_at ? formatUserDate(user.last_sign_in_at) : 'Jamais'}
-                  </td>
-                  <td>
-                    {user.total_reports > 0 ? (
-                      <button
-                        type="button"
-                        className="report-badge-container"
-                        onClick={() => onViewReports(user.id, user.email)}
-                        title={`${user.total_reports} signalement${user.total_reports > 1 ? 's' : ''}${user.unread_reports > 0 ? ` dont ${user.unread_reports} non lu${user.unread_reports > 1 ? 's' : ''}` : ''}`}
-                      >
-                        <span
-                          className={`report-badge ${user.unread_reports > 0 ? 'has-unread' : 'all-read'}`}
-                        >
-                          {user.total_reports}
-                          {user.unread_reports > 0 && <span className="unread-dot" />}
-                        </span>
-                      </button>
-                    ) : (
-                      <span className="no-reports">-</span>
-                    )}
-                  </td>
-                  <td className="actionsCell">
-                    <div className="actionsContainer">
-                      <button
-                        onClick={() => onResetPassword(user.id, user.email)}
-                        title="Envoyer un e-mail de réinitialisation"
-                        aria-label="Envoyer un e-mail de réinitialisation"
-                        type="button"
-                      >
-                        Réinit.
-                      </button>
-                      {user.role !== 'admin' && (
-                        <button
-                          onClick={() => onDeleteUser(user.id, user.email)}
-                          className="danger"
-                          title="Supprimer l'utilisateur"
-                          aria-label="Supprimer l'utilisateur"
-                          type="button"
-                        >
-                          Suppr.
-                        </button>
-                      )}
-                    </div>
+              {filteredUsers.length === 0 ? (
+                <tr>
+                  <td colSpan={7} className="users-table-empty">
+                    Aucun utilisateur ne correspond à la recherche.
                   </td>
                 </tr>
-              ))}
+              ) : (
+                filteredUsers.map((user) => (
+                  <tr key={user.id}>
+                    <td className="col-email">{user.email}</td>
+                    <td>
+                      <span className={`role-badge ${user.role}`}>{user.role}</span>
+                    </td>
+                    <td>
+                      <select
+                        value={user.cabinet_id || ''}
+                        onChange={(event: React.ChangeEvent<HTMLSelectElement>) => {
+                          onAssignUserCabinet(user.id, event.target.value);
+                        }}
+                        disabled={actionLoading}
+                        aria-label="Assigner un cabinet"
+                      >
+                        <option value="">- Aucun -</option>
+                        {cabinets.map((cabinet) => (
+                          <option key={cabinet.id} value={cabinet.id}>
+                            {cabinet.name}
+                          </option>
+                        ))}
+                      </select>
+                    </td>
+                    <td className="col-date">{formatUserDate(user.created_at)}</td>
+                    <td className="col-last-login">
+                      {user.last_sign_in_at ? formatUserDate(user.last_sign_in_at) : 'Jamais'}
+                    </td>
+                    <td>
+                      {user.total_reports > 0 ? (
+                        <button
+                          type="button"
+                          className="report-badge-container"
+                          onClick={() => onViewReports(user.id, user.email)}
+                          title={`${user.total_reports} signalement${user.total_reports > 1 ? 's' : ''}${user.unread_reports > 0 ? ` dont ${user.unread_reports} non lu${user.unread_reports > 1 ? 's' : ''}` : ''}`}
+                        >
+                          <span
+                            className={`report-badge ${user.unread_reports > 0 ? 'has-unread' : 'all-read'}`}
+                          >
+                            {user.total_reports}
+                            {user.unread_reports > 0 && <span className="unread-dot" />}
+                          </span>
+                        </button>
+                      ) : (
+                        <span className="no-reports">-</span>
+                      )}
+                    </td>
+                    <td className="actionsCell">
+                      <div className="actionsContainer">
+                        <button
+                          onClick={() => onResetPassword(user.id, user.email)}
+                          title="Envoyer un e-mail de réinitialisation"
+                          aria-label="Envoyer un e-mail de réinitialisation"
+                          type="button"
+                        >
+                          Réinit.
+                        </button>
+                        {user.role !== 'admin' && (
+                          <button
+                            onClick={() => onDeleteUser(user.id, user.email)}
+                            className="danger"
+                            title="Supprimer l'utilisateur"
+                            aria-label="Supprimer l'utilisateur"
+                            type="button"
+                          >
+                            Suppr.
+                          </button>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>
