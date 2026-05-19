@@ -30,7 +30,7 @@ Guidance agent / repo automation :
 Prérequis :
 
 - Node.js 22.22.1 (voir `package.json > engines`)
-- npm 11.12.0 (`packageManager` + `engine-strict=true`)
+- npm 11.12.0 (`packageManager` + `engine-strict=true` ; `engines.npm` accepte aussi npm 10.9.7+ pour l'empaquetage interne Vercel)
 - (Optionnel) Docker Desktop pour Supabase en local
 
 ```powershell
@@ -42,7 +42,7 @@ npm run dev
 
 - Runtime frontend : React 19, React Router 7 en mode déclaratif, Vite 8.
 - Typage et qualité : TypeScript 6, ESLint 9, Stylelint 17.
-- Runtime local/CI/Vercel : Node 22.22.1, npm 11.12.0 (`vercel.json` force `npx npm@11.12.0 ci` pour les previews).
+- Runtime local/CI : Node 22.22.1, npm 11.12.0. Vercel utilise `npx npm@11.12.0 ci` pour l'installation preview, puis peut empaqueter les fonctions avec npm 10.9.7+.
 - Supabase : `@supabase/supabase-js` 2.106.x, CLI Supabase 2.100.x, Edge Function admin en Deno 2 autonome.
 - ESLint 10 est volontairement différé tant que `eslint-plugin-react` et `eslint-plugin-jsx-a11y` ne déclarent pas sa compatibilité.
 
