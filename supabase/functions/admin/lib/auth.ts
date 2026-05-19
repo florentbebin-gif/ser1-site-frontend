@@ -1,6 +1,6 @@
 /* global Deno */
-import { createClient } from 'npm:@supabase/supabase-js@2.95.3'
-import type { SupabaseClient, User } from 'npm:@supabase/supabase-js@2.95.3'
+import { createClient } from '@supabase/supabase-js'
+import type { SupabaseClient, User } from '@supabase/supabase-js'
 
 export type { SupabaseClient, User }
 

@@ -27,8 +27,11 @@ Dev qui doit intervenir sur une feature, un export, un thème, ou Supabase.
 
 ## Stack
 
-- React 18 + React Router 7 + Vite 5 + TypeScript strict
-- Supabase (Auth/DB/Storage/Edge Functions)
+- React 19 + React Router 7 + Vite 8 + TypeScript 6 strict
+- Node 22.22.1 + npm 11.12.0 (`packageManager` + `engine-strict=true` ; `engines.npm >=10.9.7` pour couvrir l'empaquetage interne Vercel)
+- Supabase (Auth/DB/Storage/Edge Functions) : `@supabase/supabase-js` 2.106.x, CLI Supabase 2.100.x
+- Edge Function admin : Deno 2 autonome (`deno.json` import map + `deno.lock` gelé)
+- ESLint 9 ; ESLint 10 est différé tant que `eslint-plugin-react` et `eslint-plugin-jsx-a11y` ne déclarent pas sa compatibilité.
 - Exports : PptxGenJS + JSZip (PPTX), OOXML via JSZip (XLSX)
 - Tests : Vitest (+ Playwright E2E), coverage V8 ciblée `src/engine/**`
 - Observabilité : Sentry + Web Vitals en opt-in (`VITE_SENTRY_DSN`)
@@ -197,7 +200,7 @@ Tables repères (haut niveau) :
 
 - Source : `supabase/functions/admin/index.ts`.
 - Contrat action : query `?action=...` ou body `{ action: "..." }`.
-- Périmètre Deno autonome : `supabase/functions/admin/deno.json` + `supabase/functions/admin/deno.lock`. Le lock racine est interdit ; `npm run test:deno` s'exécute depuis ce dossier avec `--frozen=true`.
+- Périmètre Deno 2 autonome : `supabase/functions/admin/deno.json` + `supabase/functions/admin/deno.lock`. Le lock racine est interdit ; les imports Deno passent par l'import map (`@std/assert`, `@supabase/supabase-js`) et `npm run test:deno` s'exécute depuis ce dossier avec `--frozen=true`.
 
 ### Admin : sécurité multicouche
 

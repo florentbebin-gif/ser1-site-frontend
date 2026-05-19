@@ -196,7 +196,6 @@ export default [
       'src/engine/tresorerie/__tests__/simulateTresorerieV3.test.ts',
       'src/features/succession/__tests__/successionChainage.test.ts',
       'src/features/succession/export/successionXlsx.ts',
-      'src/features/succession/successionChainage.helpers.ts',
       'src/features/tresorerie-societe/components/timeline/TresoRevenuePhaseModal.tsx',
       'src/features/tresorerie-societe/export/tresorerieExcelExport.ts',
     ],
@@ -210,7 +209,6 @@ export default [
       'src/settings/theme.ts',
       'src/pptx/theme/getPptxThemeFromUiSettings.ts',
       'src/settings/theme/paletteGenerator.ts',
-      'src/pages/Settings.tsx', // Définitions des thèmes prédéfinis
       'src/components/ui/SessionExpiredBanner.tsx', // Fallback colors (session expired = no theme)
     ],
     rules: {
