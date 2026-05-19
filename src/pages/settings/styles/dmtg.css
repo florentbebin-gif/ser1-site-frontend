@@ -66,6 +66,16 @@
 .dmtg-field-row--mb8 {
   margin-bottom: 8px;
 }
+.dmtg-field-row--conditions {
+  align-items: flex-start;
+}
+.dmtg-field-row--conditions label {
+  flex: 0 0 140px;
+  padding-top: 4px;
+}
+.dmtg-field-row--conditions span {
+  flex: 0 0 26px;
+}
 
 /* Messages d'erreur de champ */
 .dmtg-field-error {
@@ -171,7 +181,31 @@
   margin-top: 12px;
 }
 
-/* Input conditions (largeur fixe) */
-.dmtg-input-conditions {
-  width: 280px;
+/* Input conditions (texte libre) */
+.settings-field-row .dmtg-input-conditions {
+  flex: 1 1 360px;
+  width: min(100%, 520px);
+  min-width: 280px;
+  max-width: 520px;
+  text-align: left;
+}
+
+@media (max-width: 768px) {
+  .dmtg-field-row--conditions {
+    flex-wrap: wrap;
+  }
+
+  .dmtg-field-row--conditions label,
+  .settings-field-row .dmtg-input-conditions {
+    flex-basis: 100%;
+  }
+
+  .settings-field-row .dmtg-input-conditions {
+    min-width: 0;
+    max-width: none;
+  }
+
+  .dmtg-field-row--conditions span {
+    display: none;
+  }
 }

@@ -359,8 +359,35 @@
   height: 16px;
 }
 
+.settings-action-icon--compact {
+  width: 28px;
+  height: 28px;
+  border-radius: 7px;
+}
+
 .settings-action-text {
   flex: 1;
+}
+
+.settings-title-with-icon {
+  display: inline-flex;
+  min-width: 0;
+  align-items: center;
+  gap: 10px;
+  vertical-align: middle;
+}
+
+.settings-title-with-icon__text {
+  min-width: 0;
+}
+
+.fisc-acc-header--with-icon {
+  gap: 12px;
+}
+
+.fisc-acc-header--with-icon .settings-title-with-icon {
+  flex: 1 1 auto;
+  text-align: left;
 }
 
 .settings-action-card .settings-premium-title {

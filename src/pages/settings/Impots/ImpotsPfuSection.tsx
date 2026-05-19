@@ -1,4 +1,5 @@
 import React from 'react';
+import SettingsTitleWithIcon from '@/components/settings/SettingsTitleWithIcon';
 import SettingsYearColumn from '@/components/settings/SettingsYearColumn';
 import SettingsFieldRow from '@/components/settings/SettingsFieldRow';
 
@@ -55,13 +56,18 @@ export default function ImpotsPfuSection({
     <div className="fisc-acc-item">
       <button
         type="button"
-        className="fisc-acc-header"
+        className="fisc-acc-header fisc-acc-header--with-icon"
         id="impots-header-pfu"
         aria-expanded={isOpen}
         aria-controls="impots-panel-pfu"
         onClick={() => setOpenSection(isOpen ? null : 'pfu')}
       >
-        <span className="settings-premium-title settings-premium-title--flush">PFU</span>
+        <SettingsTitleWithIcon
+          icon="percent"
+          className="settings-premium-title settings-premium-title--flush"
+        >
+          PFU
+        </SettingsTitleWithIcon>
         <span className="fisc-acc-chevron">{isOpen ? 'v' : '>'}</span>
       </button>
 

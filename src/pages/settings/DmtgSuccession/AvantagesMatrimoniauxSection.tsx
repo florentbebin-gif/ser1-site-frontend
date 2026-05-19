@@ -1,4 +1,5 @@
 import React from 'react';
+import SettingsTitleWithIcon from '@/components/settings/SettingsTitleWithIcon';
 import { AVANTAGES_MATRIMONIAUX_REFERENCE } from './dmtgReferenceData';
 
 interface AvantageMatrimonialReference {
@@ -26,13 +27,16 @@ export default function AvantagesMatrimoniauxSection({
     <div className="fisc-acc-item">
       <button
         type="button"
-        className="fisc-acc-header"
+        className="fisc-acc-header fisc-acc-header--with-icon"
         aria-expanded={isOpen}
         onClick={() => setOpenSection(isOpen ? null : 'avantagesMatrimoniaux')}
       >
-        <span className="settings-premium-title settings-premium-title--flush">
+        <SettingsTitleWithIcon
+          icon="sparkles"
+          className="settings-premium-title settings-premium-title--flush"
+        >
           Avantages matrimoniaux
-        </span>
+        </SettingsTitleWithIcon>
         <span className="fisc-acc-chevron">{isOpen ? 'v' : '>'}</span>
       </button>
 

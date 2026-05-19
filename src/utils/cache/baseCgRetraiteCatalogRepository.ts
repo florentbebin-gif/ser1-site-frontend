@@ -1,4 +1,8 @@
-import { BASECG_CATALOG } from '@/data/base-cg-retraite';
+import {
+  BASECG_CATALOG,
+  isRemovedBaseCgRetraiteContract,
+  normalizeBaseCgRetraiteContractCompany,
+} from '@/data/base-cg-retraite';
 import type { BaseCgRetraiteContract } from '@/data/base-cg-retraite';
 import { supabase } from '@/supabaseClient';
 import {
@@ -55,7 +59,7 @@ function mergeContractData(
     },
   } as BaseCgRetraiteContract;
 
-  return merged;
+  return normalizeBaseCgRetraiteContractCompany(merged);
 }
 
 function mergeSupabaseRows(
@@ -81,7 +85,7 @@ function mergeSupabaseRows(
   for (const override of overrideRows) {
     if (baseIds.has(override.contract_id) || override.is_deleted) continue;
     const contract = mergeContractData(undefined, override);
-    if (!contract) continue;
+    if (!contract || isRemovedBaseCgRetraiteContract(contract)) continue;
     merged.push({
       ...contract,
       documents: documentsByContract.get(contract.id) ?? contract.documents ?? [],

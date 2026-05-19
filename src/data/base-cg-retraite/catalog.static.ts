@@ -5,7 +5,7 @@
 import type { BaseCgRetraiteContract } from './types';
 
 export const BASECG_VERSION = '2025-01-base-cg-retraite';
-export const BASECG_CONTRACT_COUNT = 395;
+export const BASECG_CONTRACT_COUNT = 393;
 
 export const BASECG_CATALOG = [
   {
@@ -1073,7 +1073,7 @@ export const BASECG_CATALOG = [
   {
     id: 'sma-perin-per-individuel-smavie-31',
     sourceId: 'Contrat N°31',
-    compagnie: 'SMA',
+    compagnie: 'SMA_BTP',
     nomContrat: 'PERIN- PER INDIVIDUEL SMAVIE',
     typeContrat: 'PERIN',
     phaseEpargne: {
@@ -1212,80 +1212,9 @@ export const BASECG_CATALOG = [
     },
   },
   {
-    id: 'primonial-madelin-gestion-privee-promadelin-35',
-    sourceId: 'Contrat N°35',
-    compagnie: 'PRIMONIAL',
-    nomContrat: 'MADELIN- GESTION PRIVEE PROMADELIN',
-    typeContrat: 'MADELIN',
-    phaseEpargne: {
-      dateCommercialisation: 'De 2020 à NC',
-      nombreFonds: 140,
-      repartitionUcEuro: null,
-      rendementFondsEuro: 'NC',
-      fraisVersements: 0.05,
-      fraisGestion: '0,54%€\n1%UC',
-      fraisArbitrage: '1er gratuit puis 1%+15€',
-      fraisTransfertSortant: '3% avant 10 ans sinon 0%',
-      fraisTransfertSortantRate: 0.03,
-      clauseBeneficiaire: 'Standard\n(Rente viagère ou rente temporaire)',
-      garantiesComplementaires:
-        'Sur option : \nPlancher décès\nExo cotisations\nBonne fin\nTable de mortalité',
-    },
-    phaseLiquidation: {
-      ageLimiteLiquidation: '70 ans',
-      sortieCapitalRetraite: 'Non',
-      fractionnementCapital: 'Non',
-      rachatLibre: 'Non',
-      tableConversionRente: 'En vigueur\n(TGF05)',
-      tableGarantieAdhesion: 'En option',
-      tauxTechnique: "Au choix 0% ou celui de l'assureur",
-      fraisArrerages: 0.03,
-      fraisArreragesRate: 0.03,
-      annuitesGaranties: 'Oui sur option',
-      reversionPossible: 'Oui sur option (60% ou 100%)',
-      reversionIncluse: 'Non',
-      renteEstimee: null,
-    },
-  },
-  {
-    id: 'primonial-madelin-cardif-retraite-professionnels-patrimoine-management-et-associes-36',
-    sourceId: 'Contrat N°36',
-    compagnie: 'PRIMONIAL',
-    nomContrat: 'MADELIN- CARDIF RETRAITE PROFESSIONNELS ( PATRIMOINE MANAGEMENT ET ASSOCIES)',
-    typeContrat: 'MADELIN',
-    phaseEpargne: {
-      dateCommercialisation: 'De 2009 à 2011',
-      nombreFonds: 262,
-      repartitionUcEuro: null,
-      rendementFondsEuro: 'NC',
-      fraisVersements: 0.0475,
-      fraisGestion: '0,7%€\n0,96%UC',
-      fraisArbitrage: 0.01,
-      fraisTransfertSortant: '2% avant 10 ans sinon 0%',
-      fraisTransfertSortantRate: 0.02,
-      clauseBeneficiaire: 'Standard\n(Rente viagère)',
-      garantiesComplementaires: 'Inclus : \nPlancher décès\nSur option :\nTable garantie',
-    },
-    phaseLiquidation: {
-      ageLimiteLiquidation: '75 ans',
-      sortieCapitalRetraite: 'Non',
-      fractionnementCapital: 'Non',
-      rachatLibre: 'Non',
-      tableConversionRente: 'TGH05 ou TGF05',
-      tableGarantieAdhesion: 'En option',
-      tauxTechnique: "Celui de l'assureur",
-      fraisArrerages: 0.03,
-      fraisArreragesRate: 0.03,
-      annuitesGaranties: 'Oui sur option',
-      reversionPossible: 'Oui sur option (20% à 100%)',
-      reversionIncluse: 'Non',
-      renteEstimee: null,
-    },
-  },
-  {
     id: 'primonial-perin-primoper-37',
     sourceId: 'Contrat N°37',
-    compagnie: 'PRIMONIAL',
+    compagnie: 'ORADEA',
     nomContrat: 'PERIN- PRIMOPER',
     typeContrat: 'PERIN',
     phaseEpargne: {
@@ -1742,7 +1671,7 @@ export const BASECG_CATALOG = [
   {
     id: 'mnra-madelin-aria-groupe-aria-evolution-50',
     sourceId: 'Contrat N°50',
-    compagnie: 'MNRA',
+    compagnie: 'GARANCE',
     nomContrat: 'MADELIN- ARIA GROUPE / ARIA EVOLUTION',
     typeContrat: 'MADELIN',
     phaseEpargne: {
@@ -3293,7 +3222,7 @@ export const BASECG_CATALOG = [
   {
     id: 'lpa-madelin-avocapi-94',
     sourceId: 'Contrat N°94',
-    compagnie: 'LPA',
+    compagnie: 'LPA_PREVOYANCE',
     nomContrat: 'MADELIN- AVOCAPI',
     typeContrat: 'MADELIN',
     phaseEpargne: {
@@ -4555,7 +4484,7 @@ export const BASECG_CATALOG = [
   {
     id: 'go-epargne-perco-just-go-130',
     sourceId: 'Contrat N°130',
-    compagnie: 'GO_EPARGNE',
+    compagnie: 'EPARTIM',
     nomContrat: 'PERCO- JUST GO',
     typeContrat: 'PERCO',
     phaseEpargne: {
@@ -7091,7 +7020,7 @@ export const BASECG_CATALOG = [
   {
     id: 'epsens-perco-offre-sur-mesure-epsens-202',
     sourceId: 'Contrat N°202',
-    compagnie: 'EPSENS',
+    compagnie: 'MALAKOFF_HUMANIS',
     nomContrat: 'PERCO- OFFRE SUR MESURE EPSENS',
     typeContrat: 'PERCO',
     phaseEpargne: {
@@ -8036,7 +7965,7 @@ export const BASECG_CATALOG = [
   {
     id: 'credit-du-nord-perp-antarius-perp-229',
     sourceId: 'Contrat N°229',
-    compagnie: 'CREDIT_DU_NORD',
+    compagnie: 'SOCIETE_GENERALE',
     nomContrat: 'PERP- ANTARIUS PERP',
     typeContrat: 'PERP',
     phaseEpargne: {
@@ -8071,7 +8000,7 @@ export const BASECG_CATALOG = [
   {
     id: 'credit-du-nord-madelin-antarius-retraite-madelin-230',
     sourceId: 'Contrat N°230',
-    compagnie: 'CREDIT_DU_NORD',
+    compagnie: 'SOCIETE_GENERALE',
     nomContrat: 'MADELIN- ANTARIUS RETRAITE « MADELIN »',
     typeContrat: 'MADELIN',
     phaseEpargne: {
@@ -8106,7 +8035,7 @@ export const BASECG_CATALOG = [
   {
     id: 'credit-du-nord-perin-antarius-perin-231',
     sourceId: 'Contrat N°231',
-    compagnie: 'CREDIT_DU_NORD',
+    compagnie: 'SOCIETE_GENERALE',
     nomContrat: 'PERIN- ANTARIUS PERin',
     typeContrat: 'PERIN',
     phaseEpargne: {

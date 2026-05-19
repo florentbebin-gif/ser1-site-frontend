@@ -1,4 +1,5 @@
 import React from 'react';
+import SettingsTitleWithIcon from '@/components/settings/SettingsTitleWithIcon';
 import SettingsTable from '@/components/settings/SettingsTable';
 import SettingsYearColumn from '@/components/settings/SettingsYearColumn';
 
@@ -61,15 +62,18 @@ export default function ImpotsAbattementDomSection({
     <div className="fisc-acc-item">
       <button
         type="button"
-        className="fisc-acc-header"
+        className="fisc-acc-header fisc-acc-header--with-icon"
         id="impots-header-dom"
         aria-expanded={isOpen}
         aria-controls="impots-panel-dom"
         onClick={() => setOpenSection(isOpen ? null : 'dom')}
       >
-        <span className="settings-premium-title settings-premium-title--flush">
+        <SettingsTitleWithIcon
+          icon="map-pin"
+          className="settings-premium-title settings-premium-title--flush"
+        >
           Abattement DOM sur l’IR (barème)
-        </span>
+        </SettingsTitleWithIcon>
         <span className="fisc-acc-chevron">{isOpen ? 'v' : '>'}</span>
       </button>
 

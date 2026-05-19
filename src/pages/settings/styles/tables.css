@@ -54,6 +54,17 @@
   text-align: right;
 }
 
+.settings-table th.settings-table-amount-col,
+.settings-table td.settings-table-amount-col {
+  width: 160px;
+  text-align: right;
+}
+
+.settings-table td.settings-table-amount-col input {
+  width: 140px;
+  text-align: right;
+}
+
 .settings-field-row {
   display: flex;
   align-items: center;

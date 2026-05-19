@@ -1,4 +1,5 @@
 import React from 'react';
+import SettingsTitleWithIcon from '@/components/settings/SettingsTitleWithIcon';
 import SeuilsYearPeriod from './SeuilsYearPeriod';
 
 interface LabelsProps {
@@ -38,15 +39,18 @@ export default function PrelevementsSeuilsSection({
     <div className="fisc-acc-item">
       <button
         type="button"
-        className="fisc-acc-header"
+        className="fisc-acc-header fisc-acc-header--with-icon"
         id="prelev-header-seuils"
         aria-expanded={isOpen}
         aria-controls="prelev-panel-seuils"
         onClick={() => setOpenSection(isOpen ? null : 'seuils')}
       >
-        <span className="settings-premium-title settings-premium-title--flush">
+        <SettingsTitleWithIcon
+          icon="filter"
+          className="settings-premium-title settings-premium-title--flush"
+        >
           Seuils de revenus pour la CSG, la CRDS et la CASA (RFR)
-        </span>
+        </SettingsTitleWithIcon>
         <span className="fisc-acc-chevron">{isOpen ? 'v' : '>'}</span>
       </button>
 

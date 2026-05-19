@@ -1,4 +1,5 @@
 import React from 'react';
+import SettingsTitleWithIcon from '@/components/settings/SettingsTitleWithIcon';
 import SettingsYearColumn from '@/components/settings/SettingsYearColumn';
 import SettingsFieldRow from '@/components/settings/SettingsFieldRow';
 import { validateQpfcRate } from '../validators/isValidators';
@@ -59,15 +60,18 @@ export default function ImpotsISSection({
     <div className="fisc-acc-item">
       <button
         type="button"
-        className="fisc-acc-header"
+        className="fisc-acc-header fisc-acc-header--with-icon"
         id="impots-header-is"
         aria-expanded={isOpen}
         aria-controls="impots-panel-is"
         onClick={() => setOpenSection(isOpen ? null : 'is')}
       >
-        <span className="settings-premium-title settings-premium-title--flush">
+        <SettingsTitleWithIcon
+          icon="building"
+          className="settings-premium-title settings-premium-title--flush"
+        >
           Impôt sur les sociétés
-        </span>
+        </SettingsTitleWithIcon>
         <span className="fisc-acc-chevron">{isOpen ? 'v' : '>'}</span>
       </button>
 

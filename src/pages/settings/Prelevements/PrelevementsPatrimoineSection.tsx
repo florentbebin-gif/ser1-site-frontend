@@ -1,4 +1,5 @@
 import React from 'react';
+import SettingsTitleWithIcon from '@/components/settings/SettingsTitleWithIcon';
 import SettingsYearColumn from '@/components/settings/SettingsYearColumn';
 import SettingsFieldRow from '@/components/settings/SettingsFieldRow';
 
@@ -41,15 +42,18 @@ export default function PrelevementsPatrimoineSection({
     <div className="fisc-acc-item">
       <button
         type="button"
-        className="fisc-acc-header"
+        className="fisc-acc-header fisc-acc-header--with-icon"
         id="prelev-header-patrimoine"
         aria-expanded={isOpen}
         aria-controls="prelev-panel-patrimoine"
         onClick={() => setOpenSection(isOpen ? null : 'patrimoine')}
       >
-        <span className="settings-premium-title settings-premium-title--flush">
+        <SettingsTitleWithIcon
+          icon="wallet"
+          className="settings-premium-title settings-premium-title--flush"
+        >
           Prélèvements sociaux - patrimoine et capital
-        </span>
+        </SettingsTitleWithIcon>
         <span className="fisc-acc-chevron">{isOpen ? 'v' : '>'}</span>
       </button>
 

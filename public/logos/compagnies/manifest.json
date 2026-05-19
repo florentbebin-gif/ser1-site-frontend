@@ -1,0 +1,417 @@
+{
+  "retrievedAt": "2026-05-20",
+  "policy": "Logo ajouté uniquement si la source est officielle ou si la page Wikimedia identifie clairement l’entité. Les autres compagnies utilisent la pastille fallback CompanyLogo. Les fichiers peuvent être SVG, PNG, JPG, JPEG ou WEBP, sans redessin ni déformation du logo.",
+  "items": [
+    {
+      "company": "ABEILLE",
+      "slug": "abeille",
+      "file": "abeille.svg",
+      "status": "verified",
+      "sourceType": "official",
+      "sourceUrl": "https://static.abeille-assurances.fr/static/core/v.4.4.0/images/logo/abeille-assurances-logo-mobile.svg"
+    },
+    {
+      "company": "AFER",
+      "slug": "afer",
+      "file": "afer.png",
+      "status": "verified",
+      "sourceType": "official",
+      "sourceUrl": "https://www.afer.fr/content/uploads/2019/01/logo-afer.jpg",
+      "note": "Source officielle JPEG convertie en PNG sans altération visuelle."
+    },
+    {
+      "company": "AG2R_LA_MONDIALE",
+      "slug": "ag2r-la-mondiale",
+      "file": "ag2r-la-mondiale.svg",
+      "status": "verified",
+      "sourceType": "wikimedia",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:AG2R_La_Mondiale_logo.svg"
+    },
+    {
+      "company": "AGEAS",
+      "slug": "ageas",
+      "file": "ageas.svg",
+      "status": "verified",
+      "sourceType": "wikimedia",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Ageas.svg"
+    },
+    {
+      "company": "AGIPI",
+      "slug": "agipi",
+      "file": "agipi.png",
+      "status": "verified",
+      "sourceType": "official",
+      "sourceUrl": "https://www.agipi.com/wp-content/uploads/2023/02/logo-agipi-transparent.png"
+    },
+    {
+      "company": "ALLIANZ",
+      "slug": "allianz",
+      "file": "allianz.svg",
+      "status": "verified",
+      "sourceType": "wikimedia",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Allianz.svg"
+    },
+    {
+      "company": "ALPTIS",
+      "slug": "alptis",
+      "file": "alptis.svg",
+      "status": "verified",
+      "sourceType": "official",
+      "sourceUrl": "https://www.alptis.org/app/themes/alptis/library/images/logo-alptis-50ans.svg"
+    },
+    {
+      "company": "APICIL",
+      "slug": "apicil",
+      "file": "apicil.png",
+      "status": "verified",
+      "sourceType": "wikimedia",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Logotype_Groupe_APICIL.png",
+      "note": "Le site officiel bloque l’extraction directe ; source Wikimedia téléversée par APICIL."
+    },
+    {
+      "company": "APRIL",
+      "slug": "april",
+      "file": "april.svg",
+      "status": "verified",
+      "sourceType": "official",
+      "sourceUrl": "https://assets.april.fr/prismic/April_logo-u.svg"
+    },
+    {
+      "company": "AREAS",
+      "slug": "areas",
+      "file": "areas.svg",
+      "status": "verified",
+      "sourceType": "official",
+      "sourceUrl": "https://www.areas.fr/medias/images/logo_areas_assurances_vectoriel.svg"
+    },
+    {
+      "company": "AXA",
+      "slug": "axa",
+      "file": "axa.svg",
+      "status": "verified",
+      "sourceType": "wikimedia",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:AXA_Logo.svg",
+      "note": "Taille d’image réduite dans CompanyLogo pour éviter le débordement visuel.",
+      "displayOverrides": {
+        "scale": 62
+      }
+    },
+    {
+      "company": "BANQUE_POPULAIRE",
+      "slug": "banque-populaire",
+      "file": "banque-populaire.png",
+      "status": "verified",
+      "sourceType": "official",
+      "sourceUrl": "https://www.img.banquepopulaire.fr/app/uploads/sites/5/2020/01/16160230/logo-BP-scaled-1.png"
+    },
+    {
+      "company": "BNP",
+      "slug": "bnp",
+      "file": "bnp.svg",
+      "status": "verified",
+      "sourceType": "wikimedia",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:BNP_Paribas_logo.svg"
+    },
+    {
+      "company": "CAISSE_D_EPARGNE",
+      "slug": "caisse-d-epargne",
+      "file": "caisse-d-epargne.svg",
+      "status": "verified",
+      "sourceType": "wikimedia",
+      "sourceUrl": "https://fr.wikipedia.org/wiki/Fichier:Logo_Caisse_d%27%C3%89pargne_-_2021.svg"
+    },
+    {
+      "company": "CARDIF",
+      "slug": "cardif",
+      "file": "cardif.svg",
+      "status": "verified",
+      "sourceType": "official",
+      "sourceUrl": "https://www.cardif.fr/documents/9413226/9414821/cardif-logo.svg"
+    },
+    {
+      "company": "CREDIT_AGRICOLE",
+      "slug": "credit-agricole",
+      "file": "credit-agricole.svg",
+      "status": "verified",
+      "sourceType": "wikimedia",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Cr%C3%A9dit_Agricole_logo_2017.svg"
+    },
+    {
+      "company": "CREDIT_MUTUEL",
+      "slug": "credit-mutuel",
+      "file": "credit-mutuel.svg",
+      "status": "verified",
+      "sourceType": "wikimedia",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Cr%C3%A9dit_Mutuel_2022_logo.svg"
+    },
+    {
+      "company": "EPARTIM",
+      "slug": "epartim",
+      "file": "epartim.svg",
+      "status": "verified",
+      "sourceType": "official",
+      "sourceUrl": "https://www.epartim.fr/app/uploads/2025/10/logo_epartim.svg",
+      "note": "GO Epargne Entreprise a pour dénomination commerciale EPARTIM dans les mentions légales epartim."
+    },
+    {
+      "company": "EPSOR",
+      "slug": "epsor",
+      "file": "epsor.svg",
+      "status": "verified",
+      "sourceType": "official",
+      "sourceUrl": "https://www.epsor.fr/",
+      "note": "SVG inline extrait du footer officiel Epsor."
+    },
+    {
+      "company": "ERES",
+      "slug": "eres",
+      "file": "eres.png",
+      "status": "verified",
+      "sourceType": "official",
+      "sourceUrl": "https://www.eres-group.com/wp-content/uploads/2022/10/Logo-Eres.png"
+    },
+    {
+      "company": "GAN",
+      "slug": "gan",
+      "file": "gan.png",
+      "status": "verified",
+      "sourceType": "official",
+      "sourceUrl": "https://www.ganprevoyance.fr/img/logo-gan-prevoyance.png"
+    },
+    {
+      "company": "GARANCE",
+      "slug": "garance",
+      "file": "garance.svg",
+      "status": "verified",
+      "sourceType": "official",
+      "sourceUrl": "https://www.garance.com/app/uploads/2024/02/GARANCE_LOGO_BLANC.svg",
+      "note": "MNRA devient Garance selon l’historique officiel Garance.",
+      "displayOverrides": {
+        "scale": 72,
+        "background": "c1"
+      }
+    },
+    {
+      "company": "GENERALI",
+      "slug": "generali",
+      "file": "generali.svg",
+      "status": "verified",
+      "sourceType": "wikimedia",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Generali_wordmark_logo.svg"
+    },
+    {
+      "company": "GROUPAMA",
+      "slug": "groupama",
+      "file": "groupama.svg",
+      "status": "verified",
+      "sourceType": "wikimedia",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Groupama_logo.svg"
+    },
+    {
+      "company": "HARMONIE_MUTUELLE",
+      "slug": "harmonie-mutuelle",
+      "file": "harmonie-mutuelle.svg",
+      "status": "verified",
+      "sourceType": "official",
+      "sourceUrl": "https://www.harmonie-mutuelle.fr/sites/default/files/2022-10/logo-hm-v2.svg"
+    },
+    {
+      "company": "HSBC",
+      "slug": "hsbc",
+      "file": "hsbc.svg",
+      "status": "verified",
+      "sourceType": "wikimedia",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:HSBC_logo_(2018).svg"
+    },
+    {
+      "company": "LA_BANQUE_POSTALE",
+      "slug": "la-banque-postale",
+      "file": "la-banque-postale.svg",
+      "status": "verified",
+      "sourceType": "wikimedia",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Logo_La_Banque_postale_2022.svg"
+    },
+    {
+      "company": "LA_MEDICALE",
+      "slug": "la-medicale",
+      "file": "la-medicale.png",
+      "status": "verified",
+      "sourceType": "official",
+      "sourceUrl": "https://www.lamedicale.fr/var/camed/storage/images/_aliases/site_logo/7/5/3/0/357-7-fre-FR/c5caf1531eaf-CMJN-La-medicale-Couleur_Plan-de-travail-1.png"
+    },
+    {
+      "company": "LCL",
+      "slug": "lcl",
+      "file": "lcl.svg",
+      "status": "verified",
+      "sourceType": "official",
+      "sourceUrl": "https://portail-lcl-web.cdn.prismic.io/portail-lcl-web/aT_T5HNYClf9oLp0_LCL_MARQUE_LETTRAGE_PUB_170x165.svg"
+    },
+    {
+      "company": "LPA_PREVOYANCE",
+      "slug": "lpa-prevoyance",
+      "file": "lpa-prevoyance.png",
+      "status": "verified",
+      "sourceType": "official",
+      "sourceUrl": "https://www.laprevoyance.org/images/logo-header-lpa.png",
+      "note": "Logo officiel blanc sur fond transparent ; la pastille utilise un fond sombre de thème pour rester lisible.",
+      "displayOverrides": {
+        "background": "c1"
+      }
+    },
+    {
+      "company": "MAAF",
+      "slug": "maaf",
+      "file": "maaf.svg",
+      "status": "verified",
+      "sourceType": "wikimedia",
+      "sourceUrl": "https://fr.wikipedia.org/wiki/Fichier:Logo_MAAF_2007.svg"
+    },
+    {
+      "company": "MACIF",
+      "slug": "macif",
+      "file": "macif.svg",
+      "status": "verified",
+      "sourceType": "wikimedia",
+      "sourceUrl": "https://fr.wikipedia.org/wiki/Fichier:Logo_Macif.svg"
+    },
+    {
+      "company": "MACSF",
+      "slug": "macsf",
+      "file": "macsf.svg",
+      "status": "verified",
+      "sourceType": "official",
+      "sourceUrl": "https://www.macsf.fr/build/sitevitrine/img/MACSF_Logo_rvb.svg"
+    },
+    {
+      "company": "MAIF",
+      "slug": "maif",
+      "file": "maif.svg",
+      "status": "verified",
+      "sourceType": "wikimedia",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Logo_Maif_2019.svg"
+    },
+    {
+      "company": "MALAKOFF_HUMANIS",
+      "slug": "malakoff-humanis",
+      "file": "malakoff-humanis.png",
+      "status": "verified",
+      "sourceType": "official",
+      "sourceUrl": "https://newsroom.malakoffhumanis.com/photos/logo-malakoff-humanis-46b5-63a59.html",
+      "note": "EPSENS devient Malakoff Humanis Épargne en 2025 selon Malakoff Humanis Épargne."
+    },
+    {
+      "company": "MAPA",
+      "slug": "mapa",
+      "file": "mapa.svg",
+      "status": "verified",
+      "sourceType": "official",
+      "sourceUrl": "https://www.mapa-assurances.fr/images/Logo.svg"
+    },
+    {
+      "company": "MATMUT",
+      "slug": "matmut",
+      "file": "matmut.svg",
+      "status": "verified",
+      "sourceType": "official",
+      "sourceUrl": "https://www.matmut.fr/images/accueil/logo_matmut.svg"
+    },
+    {
+      "company": "MEDICIS",
+      "slug": "medicis",
+      "file": "medicis.webp",
+      "status": "verified",
+      "sourceType": "official",
+      "sourceUrl": "https://www.mutuelle-medicis.com/wp-content/uploads/2024/06/logo_medicis.webp"
+    },
+    {
+      "company": "MMA",
+      "slug": "mma",
+      "file": "mma.svg",
+      "status": "verified",
+      "sourceType": "official",
+      "sourceUrl": "https://www.mma.fr/files/live/sites/mmafr/files/home-page/logo-mma.svg"
+    },
+    {
+      "company": "NORTIA",
+      "slug": "nortia",
+      "file": "nortia.svg",
+      "status": "verified",
+      "sourceType": "official",
+      "sourceUrl": "https://www.nortia.fr/app/uploads/2022/04/logo.svg"
+    },
+    {
+      "company": "ORADEA",
+      "slug": "oradea",
+      "file": "oradea.svg",
+      "status": "verified",
+      "sourceType": "official",
+      "sourceUrl": "https://www.oradeavie.fr/fileadmin/user_upload/logos/2026_oradeavie_fr.svg"
+    },
+    {
+      "company": "PREFON",
+      "slug": "prefon",
+      "file": "prefon.png",
+      "status": "verified",
+      "sourceType": "official",
+      "sourceUrl": "https://www.prefon.fr/assets/templates/site-produits/scss/images/logo-prefon-seul.png"
+    },
+    {
+      "company": "PREVOIR",
+      "slug": "prevoir",
+      "file": "prevoir.svg",
+      "status": "verified",
+      "sourceType": "official",
+      "sourceUrl": "https://www.prevoir.com/Areas/SitePrevoir/content-imgs/logo/logo.svg"
+    },
+    {
+      "company": "PRO_BTP",
+      "slug": "pro-btp",
+      "file": "pro-btp.svg",
+      "status": "verified",
+      "sourceType": "official",
+      "sourceUrl": "https://www.probtp.com/files/live/sites/probtp/files/media/images/homes/logo-probtp.svg"
+    },
+    {
+      "company": "SMA_BTP",
+      "slug": "sma-btp",
+      "file": "sma-btp.png",
+      "status": "verified",
+      "sourceType": "official",
+      "sourceUrl": "https://www.smabtp.fr/sma/upload/docs/image/png/2023-01/logo-smabtp-header_2023-01-14_11-19-37_494.png",
+      "note": "SMABTP devient la marque commune aux sociétés SMABTP, SMAvie BTP et SMA SA."
+    },
+    {
+      "company": "SOCIETE_GENERALE",
+      "slug": "societe-generale",
+      "file": "societe-generale.svg",
+      "status": "verified",
+      "sourceType": "wikimedia",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Logo-SG-Soci%C3%A9t%C3%A9-G%C3%A9n%C3%A9rale.svg"
+    },
+    {
+      "company": "SWISSLIFE",
+      "slug": "swisslife",
+      "file": "swisslife.svg",
+      "status": "verified",
+      "sourceType": "wikimedia",
+      "sourceUrl": "https://en.wikipedia.org/wiki/File:Swiss_Life.svg"
+    },
+    {
+      "company": "UFF",
+      "slug": "uff",
+      "file": "uff.svg",
+      "status": "verified",
+      "sourceType": "official",
+      "sourceUrl": "https://www.uff.net/sites/default/themes/uff/assets/images/structure/uff.svg"
+    },
+    {
+      "company": "UMR",
+      "slug": "umr",
+      "file": "umr.png",
+      "status": "verified",
+      "sourceType": "official",
+      "sourceUrl": "https://www.umr-retraite.fr/themes/umr/assets/img/logo/logo.png"
+    }
+  ]
+}

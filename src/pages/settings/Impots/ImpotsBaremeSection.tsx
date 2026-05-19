@@ -1,4 +1,5 @@
 import type { Dispatch, ReactElement, SetStateAction } from 'react';
+import SettingsTitleWithIcon from '@/components/settings/SettingsTitleWithIcon';
 import {
   ImpotsBaremeYearColumn,
   type IncomeScaleKey,
@@ -34,15 +35,18 @@ export default function ImpotsBaremeSection({
     <div className="fisc-acc-item">
       <button
         type="button"
-        className="fisc-acc-header"
+        className="fisc-acc-header fisc-acc-header--with-icon"
         id="impots-header-bareme"
         aria-expanded={isOpen}
         aria-controls="impots-panel-bareme"
         onClick={() => setOpenSection(isOpen ? null : 'bareme')}
       >
-        <span className="settings-premium-title settings-premium-title--flush">
+        <SettingsTitleWithIcon
+          icon="balance"
+          className="settings-premium-title settings-premium-title--flush"
+        >
           {'Bar\u00e8me de l\u2019imp\u00f4t sur le revenu'}
-        </span>
+        </SettingsTitleWithIcon>
         <span className="fisc-acc-chevron">{isOpen ? '\u25be' : '\u25b8'}</span>
       </button>
 

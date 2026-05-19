@@ -1,4 +1,5 @@
 import React from 'react';
+import SettingsTitleWithIcon from '@/components/settings/SettingsTitleWithIcon';
 import { numberOrEmpty } from '@/components/settings/settingsHelpers';
 
 interface DonationSettings {
@@ -30,13 +31,16 @@ export default function DonationSection({
     <div className="fisc-acc-item">
       <button
         type="button"
-        className="fisc-acc-header"
+        className="fisc-acc-header fisc-acc-header--with-icon"
         aria-expanded={isOpen}
         onClick={() => setOpenSection(isOpen ? null : 'donation')}
       >
-        <span className="settings-premium-title settings-premium-title--flush">
+        <SettingsTitleWithIcon
+          icon="gift"
+          className="settings-premium-title settings-premium-title--flush"
+        >
           Donation & rappel fiscal
-        </span>
+        </SettingsTitleWithIcon>
         <span className="fisc-acc-chevron">{isOpen ? 'v' : '>'}</span>
       </button>
 
@@ -87,7 +91,7 @@ export default function DonationSection({
                 />
                 <span>EUR</span>
               </div>
-              <div className="settings-field-row">
+              <div className="settings-field-row dmtg-field-row--conditions">
                 <label htmlFor="donation-don-familial-conditions">Conditions</label>
                 <input
                   id="donation-don-familial-conditions"
