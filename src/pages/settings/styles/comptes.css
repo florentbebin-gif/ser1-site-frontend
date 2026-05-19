@@ -23,13 +23,20 @@
 
 .users-table {
   width: 100%;
-  border-collapse: collapse;
   background: #ffffff;
   border-radius: 12px;
-  overflow: hidden;
+  overflow-x: auto;
+  overflow-y: hidden;
   font-size: 13px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
   border: 1px solid var(--color-c8);
+}
+
+.users-table table {
+  width: 100%;
+  min-width: 792px;
+  border-collapse: collapse;
+  table-layout: fixed;
 }
 
 .users-table th,
@@ -37,13 +44,38 @@
   padding: 12px;
   text-align: left;
   border-bottom: 1px solid var(--color-c8);
+  box-sizing: border-box;
+  vertical-align: middle;
+}
+
+.users-table th.col-email,
+.users-table td.col-email {
+  width: 232px;
+  min-width: 232px;
+  max-width: 232px;
+}
+
+.users-table td.col-email {
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+}
+
+.users-table th:nth-child(2),
+.users-table td:nth-child(2) {
+  width: 72px;
+  text-align: center;
+}
+
+.users-table th:nth-child(3),
+.users-table td:nth-child(3) {
+  width: 150px;
 }
 
 .users-table th.col-signalements,
 .users-table td:nth-child(6) {
-  width: 70px;
-  min-width: 70px;
-  max-width: 70px;
+  width: 62px;
+  min-width: 62px;
+  max-width: 62px;
   text-align: center;
   padding: 12px 6px;
 }
@@ -51,6 +83,39 @@
 .users-table th.col-signalements {
   font-size: 11px;
   line-height: 1.2;
+}
+
+.users-table th.col-date,
+.users-table td.col-date,
+.users-table th.col-last-login,
+.users-table td.col-last-login {
+  width: 70px;
+  min-width: 70px;
+  max-width: 70px;
+  padding-right: 6px;
+  padding-left: 6px;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.users-table th.col-date,
+.users-table th.col-last-login {
+  font-size: 11px;
+  line-height: 1.15;
+}
+
+.users-table th.col-actions,
+.users-table td.actionsCell {
+  width: 136px;
+  min-width: 136px;
+  max-width: 136px;
+  padding-right: 8px;
+  padding-left: 8px;
+  text-align: right;
+}
+
+.users-table th.col-actions {
+  text-align: center;
 }
 
 .users-table th {
@@ -68,6 +133,9 @@
 }
 
 .users-table select {
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
   padding: 6px 10px;
   border: 1px solid var(--color-c8);
   border-radius: 4px;
@@ -75,7 +143,6 @@
   background-color: #ffffff;
   color: var(--color-c10);
   cursor: pointer;
-  min-width: 120px;
 }
 
 .users-table select:focus {
@@ -170,11 +237,11 @@
   justify-content: flex-end;
   flex-wrap: nowrap;
   gap: 6px;
-  min-width: 0;
+  min-width: max-content;
 }
 
 .users-table .actionsCell button {
-  padding: 6px 10px;
+  padding: 6px 8px;
   border: 1px solid var(--color-c8);
   border-radius: 6px;
   background: var(--color-c7);

@@ -27,6 +27,16 @@ interface UserSummary {
   unread_reports: number;
 }
 
+const USER_DATE_FORMATTER = new Intl.DateTimeFormat('fr-FR', {
+  day: '2-digit',
+  month: '2-digit',
+  year: '2-digit',
+});
+
+function formatUserDate(value: string): string {
+  return USER_DATE_FORMATTER.format(new Date(value));
+}
+
 function CabinetsIcon(): React.ReactElement {
   return (
     <svg
@@ -368,23 +378,27 @@ export function SettingsUsersSection({
           <table>
             <thead>
               <tr>
-                <th>Email</th>
+                <th className="col-email">Email</th>
                 <th>Rôle</th>
                 <th>Cabinet</th>
-                <th>Créé le</th>
-                <th>Dernière connexion</th>
+                <th className="col-date">Créé le</th>
+                <th className="col-last-login">
+                  Dernière
+                  <br />
+                  connexion
+                </th>
                 <th className="col-signalements">
                   Signale-
                   <br />
                   ments
                 </th>
-                <th>Actions</th>
+                <th className="col-actions">Actions</th>
               </tr>
             </thead>
             <tbody>
               {users.map((user) => (
                 <tr key={user.id}>
-                  <td>{user.email}</td>
+                  <td className="col-email">{user.email}</td>
                   <td>
                     <span className={`role-badge ${user.role}`}>{user.role}</span>
                   </td>
@@ -405,11 +419,9 @@ export function SettingsUsersSection({
                       ))}
                     </select>
                   </td>
-                  <td>{new Date(user.created_at).toLocaleDateString('fr-FR')}</td>
-                  <td>
-                    {user.last_sign_in_at
-                      ? new Date(user.last_sign_in_at).toLocaleDateString('fr-FR')
-                      : 'Jamais'}
+                  <td className="col-date">{formatUserDate(user.created_at)}</td>
+                  <td className="col-last-login">
+                    {user.last_sign_in_at ? formatUserDate(user.last_sign_in_at) : 'Jamais'}
                   </td>
                   <td>
                     {user.total_reports > 0 ? (
