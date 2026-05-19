@@ -42,7 +42,7 @@ npm run dev
 
 - Runtime frontend : React 19, React Router 7 en mode déclaratif, Vite 8.
 - Typage et qualité : TypeScript 6, ESLint 9, Stylelint 17.
-- Runtime local/CI : Node 22.22.1, npm 11.12.0.
+- Runtime local/CI/Vercel : Node 22.22.1, npm 11.12.0 (`vercel.json` force `npx npm@11.12.0 ci` pour les previews).
 - Supabase : `@supabase/supabase-js` 2.106.x, CLI Supabase 2.100.x, Edge Function admin en Deno 2 autonome.
 - ESLint 10 est volontairement différé tant que `eslint-plugin-react` et `eslint-plugin-jsx-a11y` ne déclarent pas sa compatibilité.
 

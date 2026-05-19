@@ -233,6 +233,8 @@ Typedoc :
 
 Si le projet est relié à Vercel via GitHub, chaque PR doit produire une preview Vercel.
 
+Les previews utilisent l'`installCommand` de `vercel.json` (`npx npm@11.12.0 ci`) afin de respecter `engine-strict=true`, même si l'image Vercel fournit npm 10 par défaut.
+
 Checklist de review preview :
 
 1. Ouvrir l'URL de preview attachée à la PR.

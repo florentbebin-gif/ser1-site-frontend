@@ -1,6 +1,7 @@
 {
   "framework": "vite",
   "devCommand": "vite --port 3000",
+  "installCommand": "npx npm@11.12.0 ci",
   "buildCommand": "vite build",
   "outputDirectory": "dist",
   "headers": [
