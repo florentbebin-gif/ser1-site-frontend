@@ -235,6 +235,12 @@ Si le projet est relié à Vercel via GitHub, chaque PR doit produire une previe
 
 Les previews utilisent l'`installCommand` de `vercel.json` (`npx npm@11.12.0 ci`) pour l'installation applicative. Vercel peut ensuite empaqueter les fonctions API avec son npm interne 10.9.7+ ; la plage `engines.npm` l'autorise, tandis que dev/CI restent calés sur npm 11.12.0.
 
+Si le connecteur Vercel de Codex répond `token_expired`, reconnecter l'app Vercel depuis Codex. En attendant, inspecter les logs avec la CLI :
+
+```powershell
+npx vercel inspect <deployment-id> --logs
+```
+
 Checklist de review preview :
 
 1. Ouvrir l'URL de preview attachée à la PR.
@@ -388,8 +394,19 @@ Note : la table est accessible service_role uniquement (RLS activee, policies ex
 
 ### Déployer
 
+Déploiement recommandé : GitHub Actions → `Deploy Supabase Functions` → `Run workflow` → `admin`.
+
+Secrets GitHub Actions requis :
+
+- `SUPABASE_ACCESS_TOKEN` : token Supabase dédié au déploiement.
+- `SUPABASE_PROJECT_REF` : référence projet Supabase (`xnpbxrqkzgimiugqtago` pour SER1-Simulator).
+
+Le workflow exécute `npm run test:deno`, vérifie la présence des secrets, liste les fonctions déployées, déploie `admin`, puis reliste les fonctions. Après toute PR qui modifie `supabase/functions/admin/**`, lancer ce workflow depuis `main`.
+
+Commande de secours locale :
+
 ```powershell
-npx supabase functions deploy admin --project-ref <ref>
+npx supabase functions deploy admin --project-ref xnpbxrqkzgimiugqtago
 ```
 
 ### Tester
