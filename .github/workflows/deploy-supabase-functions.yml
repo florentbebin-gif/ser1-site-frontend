@@ -65,6 +65,38 @@ jobs:
             exit 1
           fi
 
+      - name: Prepare linked Supabase project
+        env:
+          SUPABASE_PROJECT_REF: ${{ secrets.SUPABASE_PROJECT_REF }}
+        run: |
+          mkdir -p supabase/.temp
+          printf "%s" "$SUPABASE_PROJECT_REF" > supabase/.temp/project-ref
+
+      - name: Verify usable admin allowlist
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+        run: |
+          cat > /tmp/verify-admin-allowlist.sql <<'SQL'
+          do $$
+          declare
+            usable_admins integer;
+          begin
+            select count(*)
+              into usable_admins
+            from public.admin_accounts a
+            join auth.users u on u.id = a.user_id
+            where a.status = 'active'
+              and (a.expires_at is null or a.expires_at > now())
+              and coalesce(u.raw_app_meta_data->>'role', 'user') = 'admin';
+
+            if usable_admins = 0 then
+              raise exception 'No usable admin account: add an active admin user to public.admin_accounts before deploying admin Edge Function';
+            end if;
+          end
+          $$;
+          SQL
+          npx supabase db query --linked --file /tmp/verify-admin-allowlist.sql
+
       - name: List deployed functions before deploy
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}

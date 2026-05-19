@@ -401,7 +401,7 @@ Secrets GitHub Actions requis :
 - `SUPABASE_ACCESS_TOKEN` : token Supabase dédié au déploiement.
 - `SUPABASE_PROJECT_REF` : référence projet Supabase (`xnpbxrqkzgimiugqtago` pour SER1-Simulator).
 
-Le workflow exécute `npm run test:deno`, vérifie la présence des secrets, liste les fonctions déployées, déploie `admin`, puis reliste les fonctions. Après toute PR qui modifie `supabase/functions/admin/**`, lancer ce workflow depuis `main`.
+Le workflow exécute `npm run test:deno`, vérifie la présence des secrets, vérifie qu'au moins un compte `app_metadata.role='admin'` est actif dans `public.admin_accounts`, liste les fonctions déployées, déploie `admin`, puis reliste les fonctions. Après toute PR qui modifie `supabase/functions/admin/**`, lancer ce workflow depuis `main`.
 
 Commande de secours locale :
 
