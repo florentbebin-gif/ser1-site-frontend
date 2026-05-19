@@ -35,7 +35,7 @@ export function useAdminCabinets(onError: (msg: string) => void) {
       setCabinetsLoading(true);
       onError('');
       await adminClient.deleteCabinet(cabinet.id);
-      void fetchCabinets();
+      await fetchCabinets();
     } catch (err) {
       onError(err instanceof Error ? err.message : 'Erreur inconnue.');
     } finally {

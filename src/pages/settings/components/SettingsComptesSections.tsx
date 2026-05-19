@@ -1,6 +1,11 @@
 import React from 'react';
 import SettingsSectionCard from '@/components/settings/SettingsSectionCard';
 import { SettingsUsersSearchToolbar } from './SettingsUsersSearchToolbar';
+import {
+  ALL_CABINETS_FILTER,
+  filterAdminUsersByDirectory,
+  type CabinetFilterId,
+} from '../utils/adminUsersDirectory';
 
 interface CabinetSummary {
   id: string;
@@ -330,6 +335,7 @@ export function SettingsThemesSection({
 interface SettingsUsersSectionProps {
   users: UserSummary[];
   cabinets: CabinetSummary[];
+  cabinetFilter?: CabinetFilterId;
   actionLoading: boolean;
   onCreateUser: () => void;
   onRefresh: () => void;
@@ -342,6 +348,7 @@ interface SettingsUsersSectionProps {
 export function SettingsUsersSection({
   users,
   cabinets,
+  cabinetFilter = ALL_CABINETS_FILTER,
   actionLoading,
   onCreateUser,
   onRefresh,
@@ -351,11 +358,9 @@ export function SettingsUsersSection({
   onDeleteUser,
 }: SettingsUsersSectionProps): React.ReactElement {
   const [searchEmail, setSearchEmail] = React.useState('');
-  const normalizedSearch = searchEmail.trim().toLowerCase();
   const filteredUsers = React.useMemo(() => {
-    if (!normalizedSearch) return users;
-    return users.filter((user) => user.email.toLowerCase().includes(normalizedSearch));
-  }, [normalizedSearch, users]);
+    return filterAdminUsersByDirectory(users, { searchEmail, cabinetFilter });
+  }, [cabinetFilter, searchEmail, users]);
 
   return (
     <div className="settings-section-card--mt">

@@ -52,7 +52,7 @@ export function useAdminUsers(onError: (msg: string) => void) {
       setActionLoading(true);
       onError('');
       await adminClient.assignUserCabinet({ userId, cabinetId: cabinetId || null });
-      void fetchUsers('assign_user_cabinet');
+      await fetchUsers('assign_user_cabinet');
     } catch (err) {
       onError(err instanceof Error ? err.message : 'Erreur inconnue.');
     } finally {
@@ -66,7 +66,7 @@ export function useAdminUsers(onError: (msg: string) => void) {
       setActionLoading(true);
       onError('');
       await adminClient.deleteUser(userId);
-      void fetchUsers('delete_user');
+      await fetchUsers('delete_user');
     } catch (err) {
       onError(err instanceof Error ? err.message : 'Erreur inconnue.');
     } finally {

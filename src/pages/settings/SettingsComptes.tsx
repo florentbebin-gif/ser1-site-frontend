@@ -1,10 +1,11 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useLocation } from 'react-router';
 import { DEBUG_AUTH } from '@/supabaseClient';
 import { isDebugEnabled } from '@/utils/debugFlags';
 import { useUserRole } from '@/auth/useUserRole';
 import { UserInfoBanner } from '@/components/UserInfoBanner';
 import CabinetEditModal from '@/pages/settings/components/CabinetEditModal';
+import { CabinetFilterRail } from '@/pages/settings/components/CabinetFilterRail';
 import {
   SettingsCabinetsSection,
   SettingsThemesSection,
@@ -17,6 +18,12 @@ import { useAdminCabinets } from './hooks/useAdminCabinets';
 import { useAdminReports } from './hooks/useAdminReports';
 import { useAdminThemes } from './hooks/useAdminThemes';
 import { useAdminUsers } from './hooks/useAdminUsers';
+import {
+  ALL_CABINETS_FILTER,
+  NO_CABINET_FILTER,
+  buildCabinetFilterItems,
+  type CabinetFilterId,
+} from './utils/adminUsersDirectory';
 import './styles/comptes.css';
 
 export default function SettingsComptes() {
@@ -24,12 +31,27 @@ export default function SettingsComptes() {
   const location = useLocation();
   const [error, setError] = useState('');
   const [showUserModal, setShowUserModal] = useState(false);
+  const [selectedCabinetFilter, setSelectedCabinetFilter] =
+    useState<CabinetFilterId>(ALL_CABINETS_FILTER);
   const DEBUG_COMPTES_REFRESH = isDebugEnabled('comptes');
 
   const usersHook = useAdminUsers(setError);
   const cabinetsHook = useAdminCabinets(setError);
   const themesHook = useAdminThemes(setError);
   const reportsHook = useAdminReports(setError, usersHook.fetchUsers);
+
+  const refreshUsersAndCabinets = async (reason: string) => {
+    await Promise.all([usersHook.fetchUsers(reason), cabinetsHook.fetchCabinets()]);
+  };
+
+  const cabinetFilterItems = useMemo(
+    () =>
+      buildCabinetFilterItems({
+        users: usersHook.users,
+        cabinets: cabinetsHook.cabinets,
+      }),
+    [cabinetsHook.cabinets, usersHook.users],
+  );
 
   useEffect(() => {
     if (authLoading) {
@@ -54,6 +76,16 @@ export default function SettingsComptes() {
     // fetchUsers/fetchCabinets/fetchThemes are stable (useCallback with empty or stable deps)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isAdmin, authLoading, location.key, DEBUG_COMPTES_REFRESH]);
+
+  useEffect(() => {
+    if (selectedCabinetFilter === ALL_CABINETS_FILTER) return;
+    const filterStillExists =
+      selectedCabinetFilter === NO_CABINET_FILTER ||
+      cabinetsHook.cabinets.some((cabinet) => cabinet.id === selectedCabinetFilter);
+    if (!filterStillExists || cabinetsHook.cabinets.length === 0) {
+      setSelectedCabinetFilter(ALL_CABINETS_FILTER);
+    }
+  }, [cabinetsHook.cabinets, selectedCabinetFilter]);
 
   if (!isAdmin) {
     return (
@@ -87,34 +119,54 @@ export default function SettingsComptes() {
       {usersHook.loading ? (
         <p>Chargement...</p>
       ) : (
-        <div className="admin-content">
-          <SettingsCabinetsSection
-            cabinets={cabinetsHook.cabinets}
-            cabinetsLoading={cabinetsHook.cabinetsLoading}
-            onCreateCabinet={() => cabinetsHook.openCabinetModal()}
-            onEditCabinet={cabinetsHook.openCabinetModal}
-            onDeleteCabinet={cabinetsHook.handleDeleteCabinet}
-          />
+        <div className="settings-comptes__directory-layout">
+          {cabinetsHook.cabinets.length > 0 && (
+            <CabinetFilterRail
+              items={cabinetFilterItems}
+              selectedFilter={selectedCabinetFilter}
+              onSelectFilter={setSelectedCabinetFilter}
+            />
+          )}
 
-          <SettingsThemesSection
-            themes={themesHook.themes}
-            themesLoading={themesHook.themesLoading}
-            onCreateTheme={() => themesHook.openThemeModal()}
-            onEditTheme={themesHook.openThemeModal}
-            onDeleteTheme={themesHook.handleDeleteTheme}
-          />
+          <div className="admin-content settings-comptes__main">
+            <SettingsUsersSection
+              users={usersHook.users}
+              cabinets={cabinetsHook.cabinets}
+              cabinetFilter={selectedCabinetFilter}
+              actionLoading={usersHook.actionLoading}
+              onCreateUser={() => setShowUserModal(true)}
+              onRefresh={() => void refreshUsersAndCabinets('manual')}
+              onAssignUserCabinet={async (userId, cabinetId) => {
+                await usersHook.handleAssignUserCabinet(userId, cabinetId);
+                void cabinetsHook.fetchCabinets();
+              }}
+              onViewReports={reportsHook.handleViewReports}
+              onResetPassword={usersHook.handleResetPassword}
+              onDeleteUser={async (userId, email) => {
+                await usersHook.handleDeleteUser(userId, email);
+                void cabinetsHook.fetchCabinets();
+              }}
+            />
 
-          <SettingsUsersSection
-            users={usersHook.users}
-            cabinets={cabinetsHook.cabinets}
-            actionLoading={usersHook.actionLoading}
-            onCreateUser={() => setShowUserModal(true)}
-            onRefresh={() => void usersHook.fetchUsers('manual')}
-            onAssignUserCabinet={usersHook.handleAssignUserCabinet}
-            onViewReports={reportsHook.handleViewReports}
-            onResetPassword={usersHook.handleResetPassword}
-            onDeleteUser={usersHook.handleDeleteUser}
-          />
+            <SettingsCabinetsSection
+              cabinets={cabinetsHook.cabinets}
+              cabinetsLoading={cabinetsHook.cabinetsLoading}
+              onCreateCabinet={() => cabinetsHook.openCabinetModal()}
+              onEditCabinet={cabinetsHook.openCabinetModal}
+              onDeleteCabinet={async (cabinet) => {
+                await cabinetsHook.handleDeleteCabinet(cabinet);
+                void usersHook.fetchUsers('delete_cabinet');
+              }}
+            />
+
+            <SettingsThemesSection
+              themes={themesHook.themes}
+              themesLoading={themesHook.themesLoading}
+              onCreateTheme={() => themesHook.openThemeModal()}
+              onEditTheme={themesHook.openThemeModal}
+              onDeleteTheme={themesHook.handleDeleteTheme}
+            />
+          </div>
         </div>
       )}
 
@@ -123,7 +175,7 @@ export default function SettingsComptes() {
           cabinet={cabinetsHook.editingCabinet}
           themes={themesHook.themes}
           onClose={cabinetsHook.closeCabinetModal}
-          onSuccess={cabinetsHook.fetchCabinets}
+          onSuccess={() => void refreshUsersAndCabinets('save_cabinet')}
         />
       )}
 
@@ -140,7 +192,7 @@ export default function SettingsComptes() {
           cabinetOptions={cabinetOptions}
           cabinetsLoading={cabinetsHook.cabinetsLoading}
           onClose={() => setShowUserModal(false)}
-          onSuccess={() => void usersHook.fetchUsers('create_user_invite')}
+          onSuccess={() => void refreshUsersAndCabinets('create_user_invite')}
         />
       )}
 

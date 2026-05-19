@@ -44,11 +44,12 @@ export default function SettingsShell(): React.ReactElement {
 
   const visibleTabs = useMemo(() => getVisibleSettingsRoutes(isAdmin), [isAdmin]);
 
-  const activeComponent = useMemo(() => {
+  const activeRoute = useMemo(() => {
     const routes: SettingsRouteEntry[] = SETTINGS_ROUTES;
-    const found = routes.find((tab) => tab.key === activeTab);
-    return found?.component ?? routes[0]?.component ?? null;
+    return routes.find((tab) => tab.key === activeTab) ?? routes[0] ?? null;
   }, [activeTab]);
+  const activeComponent = activeRoute?.component ?? null;
+  const isWide = activeRoute?.wide === true;
 
   const checkScroll = (): void => {
     const element = scrollRef.current;
@@ -88,8 +89,8 @@ export default function SettingsShell(): React.ReactElement {
   const ActiveComponent = activeComponent;
 
   return (
-    <div className="settings-page">
-      <div className="settings-shell__card">
+    <div className={`settings-page${isWide ? ' settings-page--wide' : ''}`}>
+      <div className={`settings-shell__card${isWide ? ' settings-shell__card--wide' : ''}`}>
         <div className="settings-shell__title">Paramètres</div>
 
         <nav className="settings-tab-nav" aria-label="Paramètres">

@@ -21,6 +21,100 @@
   gap: 20px;
 }
 
+.settings-comptes__directory-layout {
+  display: grid;
+  grid-template-columns: 220px minmax(0, 1fr);
+  align-items: start;
+  gap: 20px;
+}
+
+.settings-comptes__main {
+  min-width: 0;
+}
+
+.cabinet-filter-rail {
+  position: sticky;
+  top: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px;
+  border: 1px solid var(--color-c8);
+  border-radius: 8px;
+  background: #ffffff;
+}
+
+.cabinet-filter-rail__title {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--color-c10);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.cabinet-filter-rail__list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.cabinet-filter-rail__item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  width: 100%;
+  min-height: 34px;
+  padding: 7px 10px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--color-c10);
+  cursor: pointer;
+  font: inherit;
+  font-size: 13px;
+  text-align: left;
+}
+
+.cabinet-filter-rail__item:hover {
+  background: var(--color-c7);
+  border-color: var(--color-c8);
+}
+
+.cabinet-filter-rail__item:focus-visible {
+  outline: 2px solid var(--color-c2);
+  outline-offset: 2px;
+}
+
+.cabinet-filter-rail__item.is-selected {
+  background: var(--color-c4);
+  border-color: var(--color-c2);
+  color: var(--color-c1);
+}
+
+.cabinet-filter-rail__label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cabinet-filter-rail__count {
+  min-width: 28px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--color-c7);
+  color: var(--color-c9);
+  font-size: 11px;
+  font-weight: 700;
+  text-align: center;
+}
+
+.cabinet-filter-rail__item.is-selected .cabinet-filter-rail__count {
+  background: #ffffff;
+  color: var(--color-c1);
+}
+
 .users-table {
   width: 100%;
   background: #ffffff;
@@ -652,5 +746,28 @@
 
   .theme-palette-grid {
     grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 1100px) {
+  .settings-comptes__directory-layout {
+    display: block;
+  }
+
+  .cabinet-filter-rail {
+    position: static;
+    margin-bottom: 16px;
+  }
+
+  .cabinet-filter-rail__list {
+    flex-direction: row;
+    overflow-x: auto;
+    padding-bottom: 2px;
+  }
+
+  .cabinet-filter-rail__item {
+    flex: 0 0 auto;
+    width: auto;
+    min-width: 132px;
   }
 }

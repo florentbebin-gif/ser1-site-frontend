@@ -26,6 +26,7 @@ export interface SettingsRouteEntry {
   urlPath: string;
   component: ComponentType;
   adminOnly?: boolean;
+  wide?: boolean;
 }
 
 export const SETTINGS_ROUTES: SettingsRouteEntry[] = [
@@ -78,6 +79,7 @@ export const SETTINGS_ROUTES: SettingsRouteEntry[] = [
     urlPath: '/settings/comptes',
     component: SettingsComptes,
     adminOnly: true,
+    wide: true,
   },
 ];
 

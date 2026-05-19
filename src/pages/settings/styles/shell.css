@@ -4,6 +4,10 @@
   padding: 0 20px;
 }
 
+.settings-page--wide {
+  max-width: 1280px;
+}
+
 .settings-shell__card {
   max-width: 1050px;
   background: #ffffff;
@@ -11,6 +15,10 @@
   border-radius: var(--radius);
   padding: 28px;
   box-shadow: 0 4px 14px var(--color-c9);
+}
+
+.settings-shell__card--wide {
+  max-width: none;
 }
 
 .settings-shell__card section {
