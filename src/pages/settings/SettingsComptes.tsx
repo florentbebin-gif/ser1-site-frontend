@@ -90,7 +90,7 @@ export default function SettingsComptes() {
   if (!isAdmin) {
     return (
       <div className="settings-comptes__state">
-        <p>Vous n'avez pas les droits administrateurs pour acceder a cette page.</p>
+        <p>Vous n'avez pas les droits administrateurs pour accéder à cette page.</p>
       </div>
     );
   }

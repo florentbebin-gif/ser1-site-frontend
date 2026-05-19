@@ -9,6 +9,7 @@ import {
   SettingsThemesSection,
   SettingsUsersSection,
 } from '../components/SettingsComptesSections';
+import { NO_CABINET_FILTER, type CabinetFilterId } from '../utils/adminUsersDirectory';
 
 const CABINETS = [
   { id: 'cabinet-laplace', name: 'Laplace', themes: { name: 'Thème Laplace' } },
@@ -48,18 +49,31 @@ const USERS = [
   },
 ];
 
-function renderUsersSection() {
+function renderUsersSection({
+  cabinetFilter,
+  onAssignUserCabinet = vi.fn(),
+  onViewReports = vi.fn(),
+  onResetPassword = vi.fn(),
+  onDeleteUser = vi.fn(),
+}: {
+  cabinetFilter?: CabinetFilterId;
+  onAssignUserCabinet?: (userId: string, cabinetId: string) => void;
+  onViewReports?: (userId: string, email: string) => void;
+  onResetPassword?: (userId: string, email: string) => void;
+  onDeleteUser?: (userId: string, email: string) => void;
+} = {}) {
   return render(
     <SettingsUsersSection
       users={USERS}
       cabinets={CABINETS}
+      cabinetFilter={cabinetFilter}
       actionLoading={false}
       onCreateUser={vi.fn()}
       onRefresh={vi.fn()}
-      onAssignUserCabinet={vi.fn()}
-      onViewReports={vi.fn()}
-      onResetPassword={vi.fn()}
-      onDeleteUser={vi.fn()}
+      onAssignUserCabinet={onAssignUserCabinet}
+      onViewReports={onViewReports}
+      onResetPassword={onResetPassword}
+      onDeleteUser={onDeleteUser}
     />,
   );
 }
@@ -82,6 +96,61 @@ describe('SettingsComptesSections', () => {
 
     expect(screen.getByText('3 / 3 utilisateurs')).toBeInTheDocument();
     expect(screen.getByText('client@example.com')).toBeInTheDocument();
+
+    await user.type(input, 'client@example.com');
+
+    expect(screen.getByText('1 / 3 utilisateurs')).toBeInTheDocument();
+    expect(screen.getByText('client@example.com')).toBeInTheDocument();
+    expect(screen.queryByText('florent.bebin@orange.fr')).not.toBeInTheDocument();
+  });
+
+  it('combine recherche email et filtre cabinet', async () => {
+    const user = userEvent.setup();
+    renderUsersSection({ cabinetFilter: 'cabinet-mako' });
+
+    expect(screen.getByText('1 / 3 utilisateurs')).toBeInTheDocument();
+    expect(screen.getByText('florent.bebin@orange.fr')).toBeInTheDocument();
+    expect(screen.queryByText('client@example.com')).not.toBeInTheDocument();
+
+    await user.type(screen.getByLabelText('Rechercher par email'), 'client');
+
+    expect(screen.getByText('0 / 3 utilisateurs')).toBeInTheDocument();
+    expect(screen.getByText('Aucun utilisateur ne correspond à la recherche.')).toBeInTheDocument();
+  });
+
+  it('filtre les utilisateurs sans cabinet', () => {
+    renderUsersSection({ cabinetFilter: NO_CABINET_FILTER });
+
+    expect(screen.getByText('1 / 3 utilisateurs')).toBeInTheDocument();
+    expect(screen.getByText('sans-cabinet@example.com')).toBeInTheDocument();
+    expect(screen.queryByText('client@example.com')).not.toBeInTheDocument();
+  });
+
+  it('conserve les handlers reset suppression assignation et signalements', async () => {
+    const user = userEvent.setup();
+    const onAssignUserCabinet = vi.fn();
+    const onViewReports = vi.fn();
+    const onResetPassword = vi.fn();
+    const onDeleteUser = vi.fn();
+
+    renderUsersSection({
+      onAssignUserCabinet,
+      onViewReports,
+      onResetPassword,
+      onDeleteUser,
+    });
+
+    await user.selectOptions(screen.getAllByLabelText('Assigner un cabinet')[0], 'cabinet-mako');
+    await user.click(
+      screen.getAllByRole('button', { name: 'Envoyer un e-mail de réinitialisation' })[0],
+    );
+    await user.click(screen.getAllByRole('button', { name: "Supprimer l'utilisateur" })[0]);
+    await user.click(screen.getByTitle('1 signalement'));
+
+    expect(onAssignUserCabinet).toHaveBeenCalledWith('user-1', 'cabinet-mako');
+    expect(onResetPassword).toHaveBeenCalledWith('user-1', 'client@example.com');
+    expect(onDeleteUser).toHaveBeenCalledWith('user-1', 'client@example.com');
+    expect(onViewReports).toHaveBeenCalledWith('user-2', 'florent.bebin@orange.fr');
   });
 
   it('ouvre les utilisateurs par defaut et replie cabinets et themes', async () => {
