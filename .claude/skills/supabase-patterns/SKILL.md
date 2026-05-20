@@ -1,9 +1,11 @@
 ---
-description: Rules for Supabase interactions and settings admin pages
-globs:
-  - src/pages/settings/**
-  - src/settings/**
-  - supabase/**
+name: supabase-patterns
+description: "Appliquer automatiquement les patterns Supabase SER1 quand une tâche touche auth, RLS, migrations, edge functions, admin Supabase, src/pages/settings, src/settings ou les interactions Supabase. Vérifier les zones d'import autorisées, app_metadata.role et les garde-fous admin."
+user-invocable: false
+paths:
+  - 'src/pages/settings/**'
+  - 'src/settings/**'
+  - 'supabase/**'
 ---
 
 # Supabase Patterns

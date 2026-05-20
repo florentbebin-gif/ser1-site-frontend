@@ -1,9 +1,11 @@
 ---
-description: Rules for fiscal engine code and fiscal hooks — prevents hardcoded values and enforces the fiscal data flow
-globs:
-  - src/engine/**
-  - src/features/**/use*.ts
-  - src/constants/settingsDefaults.ts
+name: fiscal-engine
+description: 'Appliquer automatiquement les règles SER1 de moteur fiscal et hooks fiscaux quand une tâche touche src/engine/, IR, succession, PS, PFU, settingsDefaults, useFiscalContext ou des valeurs fiscales révisables. Empêcher les hardcodes et préserver la chaîne Supabase → fiscalSettingsCache → useFiscalContext → settingsDefaults.'
+user-invocable: false
+paths:
+  - 'src/engine/**'
+  - 'src/features/**/use*.ts'
+  - 'src/constants/settingsDefaults.ts'
 ---
 
 # Fiscal Engine Rules

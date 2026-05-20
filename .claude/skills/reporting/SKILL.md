@@ -1,7 +1,9 @@
 ---
-description: Rules for snapshot IO, schema and migrations in src/reporting/
-globs:
-  - src/reporting/**
+name: reporting
+description: 'Appliquer automatiquement les règles SER1 de reporting et snapshots quand une tâche touche src/reporting/, les fichiers .ser1, snapshotSchema, snapshotMigrations, snapshotIO ou les migrations de schéma/fingerprint fiscal.'
+user-invocable: false
+paths:
+  - 'src/reporting/**'
 ---
 
 # Reporting & Snapshot Rules

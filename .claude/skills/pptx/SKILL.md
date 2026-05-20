@@ -1,5 +1,7 @@
 ---
-description: Travail PPTX pour SER1. Priorité au code d'export versionné plutôt qu'aux scripts office absents.
+name: pptx
+description: "Traiter automatiquement les demandes SER1 liées aux exports PowerPoint, fichiers .pptx, decks, slides ou livrables client PPTX. Prioriser le code d'export versionné src/pptx et les wrappers feature plutôt qu'une édition manuelle."
+user-invocable: false
 ---
 
 # PPTX

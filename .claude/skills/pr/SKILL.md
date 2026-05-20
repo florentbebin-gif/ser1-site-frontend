@@ -1,3 +1,9 @@
+---
+name: pr
+description: "Préparer automatiquement une pull request SER1 quand l'utilisateur demande de publier, pousser, ouvrir une PR, finaliser une branche ou préparer la description de PR. Exiger npm run check vert et le template GitHub réel."
+user-invocable: false
+---
+
 Créer une pull request SER1.
 
 1. `npm run check` — doit passer intégralement.

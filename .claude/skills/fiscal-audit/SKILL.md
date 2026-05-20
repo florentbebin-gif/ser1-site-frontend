@@ -1,3 +1,9 @@
+---
+name: fiscal-audit
+description: "Auditer automatiquement l'alignement des valeurs fiscales SER1 quand une tâche mentionne hardcodes fiscaux, check:fiscal-hardcode, fiscalité, paramètres Supabase, settingsDefaults, useFiscalContext ou cohérence des taux et abattements."
+user-invocable: false
+---
+
 Audit fiscal value alignment across the codebase.
 
 ## Steps

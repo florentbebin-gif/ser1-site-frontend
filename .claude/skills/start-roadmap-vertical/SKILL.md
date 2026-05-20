@@ -1,5 +1,7 @@
 ---
-description: Auto-déclenché au démarrage d'une nouvelle verticale roadmap SER1 (P3 PER multi-enveloppes, P4 scan documentaire, P5 rôles admin, P6 analyse premium, P7 stratégie, P8 catalogue cabinet). Force une procédure stricte avec gates obligatoires : brief produit → décision données → décision infra → décision UI/mode → modèle TS → test golden → code → docs → PR. Bloque tant que l'étape précédente n'est pas validée.
+name: start-roadmap-vertical
+description: 'Démarrer automatiquement une nouvelle verticale roadmap SER1 large (P3 PER multi-enveloppes, P4 scan documentaire, P5 rôles admin, P6 analyse premium, P7 stratégie, P8 catalogue cabinet). Forcer brief produit, décisions données/infra/UI, modèle TS, tests golden, code, docs et PR avant exécution.'
+user-invocable: false
 ---
 
 # Start Roadmap Vertical
@@ -51,7 +53,7 @@ Si le brief est plus long, demander au product de réduire. Un brief illisible =
 - Indices nécessaires sur les nouvelles tables.
 - Impact cache : `fiscalSettingsCache` ou autre cache à invalider ?
 
-Référence obligatoire : `.claude/rules-library/supabase-patterns.md`.
+Référence obligatoire : `.claude/skills/supabase-patterns/SKILL.md`.
 
 Refuser de continuer si une nouvelle table est introduite sans plan RLS.
 

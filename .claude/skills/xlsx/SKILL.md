@@ -1,5 +1,7 @@
 ---
-description: Travail XLSX/CSV pour SER1. Priorité aux builders d'export versionnés et aux tests.
+name: xlsx
+description: "Traiter automatiquement les demandes SER1 liées aux fichiers .xlsx, .xlsm, .csv, .tsv ou aux exports Excel. Prioriser les builders d'export versionnés, les snapshots/tests concernés et la validation du fichier généré."
+user-invocable: false
 ---
 
 # XLSX / CSV
