@@ -258,6 +258,14 @@
   padding-left: 18px;
 }
 
+.per-transfert-contract-audit__documents-note {
+  margin: 10px 0 0;
+  color: var(--color-c9);
+  font-size: 11px;
+  font-style: italic;
+  line-height: 1.45;
+}
+
 .per-transfert-empty-analysis {
   color: var(--color-c9);
   font-size: 13px;

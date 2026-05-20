@@ -61,7 +61,7 @@ export function PerTransfertSimulator() {
   const [annuitySettingsOpen, setAnnuitySettingsOpen] = useState(false);
   const [feesModalOpen, setFeesModalOpen] = useState(false);
   const [revaluationModalOpen, setRevaluationModalOpen] = useState(false);
-  const [auditExpanded, setAuditExpanded] = useState(false);
+  const [auditExpanded, setAuditExpanded] = useState(true);
   const [transferRulesOpen, setTransferRulesOpen] = useState(false);
   const [infoModal, setInfoModal] = useState<PerTransfertInfoKind | null>(null);
   const [prefonPocketSettingsIndex, setPrefonPocketSettingsIndex] = useState<number | null>(null);
@@ -217,7 +217,7 @@ export function PerTransfertSimulator() {
 
               <Panel
                 title="Audit Base CG"
-                subtitle="Grille devoir de conseil issue du référentiel : frais, garanties, options de rente et conditions de sortie."
+                subtitle="Grille indicative d’aide au devoir de conseil : frais, garanties, options de rente et conditions de sortie."
                 headerActions={
                   <Link to="/settings/base-contrat-retraite" className="per-transfert-base-cg-link">
                     Base CG
@@ -228,8 +228,9 @@ export function PerTransfertSimulator() {
                 onToggleExpand={() => setAuditExpanded((current) => !current)}
               >
                 <p className="per-transfert-audit-disclaimer">
-                  Base CG indicative : confirmer auprès de la compagnie les Conditions Générales,
-                  notices et avenants applicables avant recommandation.
+                  Base CG indicative : aide interne au devoir de conseil, sans validation assureur.
+                  Vérifier auprès de la compagnie les Conditions Générales, notices et avenants
+                  officiels applicables avant recommandation.
                 </p>
                 <ContractAuditCards contract={selectedContract} />
               </Panel>

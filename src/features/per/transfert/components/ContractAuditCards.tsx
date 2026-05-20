@@ -1,5 +1,6 @@
 import type { BaseCgRetraiteContract } from '@/data/base-cg-retraite';
 import {
+  formatBaseCgRetraiteDocumentNotice,
   formatBaseCgRetraiteRateField,
   formatBaseCgRetraiteValue,
   hasBaseCgRetraiteValue,
@@ -200,14 +201,18 @@ export function ContractAuditCards({ contract }: ContractAuditCardsProps) {
               <li key={document.id}>
                 {document.sourceUrl ? (
                   <a href={document.sourceUrl} target="_blank" rel="noreferrer">
-                    {document.label}
+                    {formatBaseCgRetraiteDocumentNotice(document)}
                   </a>
                 ) : (
-                  document.label
+                  formatBaseCgRetraiteDocumentNotice(document)
                 )}
               </li>
             ))}
           </ul>
+          <p className="per-transfert-contract-audit__documents-note">
+            Il faut vérifier auprès de la compagnie la version officielle applicable avant
+            recommandation.
+          </p>
         </section>
       ) : null}
     </div>

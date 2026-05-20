@@ -16,6 +16,13 @@ export {
   PREFON_USER_2026_SOURCE_LABEL,
 } from './prefon';
 export { BASE_CG_RETRAITE_LEGAL_NOTICE } from './legal';
+export {
+  formatBaseCgRetraiteDocumentNotice,
+  formatBaseCgRetraiteDocumentsNotice,
+  getBaseCgRetraiteDocumentAccessLabel,
+  getBaseCgRetraiteDocumentTypeLabel,
+  getBaseCgRetraiteDocumentVersionLabel,
+} from './documentLabels';
 export { TYPE_LABELS, COMPARTMENT_LABELS } from './labels';
 
 export {

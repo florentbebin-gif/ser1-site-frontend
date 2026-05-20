@@ -109,6 +109,16 @@ const selectedContract: BaseCgRetraiteContract = {
     reversionIncluse: 'Non',
     renteEstimee: null,
   },
+  documents: [
+    {
+      id: 'doc-abeille',
+      label: 'Conditions générales Abeille',
+      type: 'conditions_generales',
+      status: 'uploaded',
+      versionLabel: 'V6369O 06/2025',
+      storagePath: 'abeille/retraite-madelin/v6369o-06-2025.pdf',
+    },
+  ],
 };
 
 function normalizeText(value: string): string {
@@ -184,6 +194,9 @@ describe('buildPerTransfertStudyDeck', () => {
     expect(auditSlide).toBeDefined();
     expect(JSON.stringify(auditSlide)).toContain('ABEILLE');
     expect(JSON.stringify(auditSlide)).toContain('MADELIN- ABEILLE RETRAITE MADELIN');
+    expect(JSON.stringify(auditSlide)).toContain('documentNotice');
+    expect(JSON.stringify(auditSlide)).toContain('V6369O 06/2025');
+    expect(JSON.stringify(auditSlide)).toContain('PDF importé - accès authentifié SER1');
   });
 
   it('couvre juridiquement l’usage indicatif de la Base CG dans le deck', () => {
@@ -197,13 +210,15 @@ describe('buildPerTransfertStudyDeck', () => {
     );
 
     expect(spec.end.legalText).toContain('Base CG');
-    expect(spec.end.legalText).toContain('titre indicatif');
+    expect(spec.end.legalText).toContain('indicative');
+    expect(spec.end.legalText).toContain('non garanties');
     expect(spec.end.legalText).toContain('compagnie');
 
     const auditSlide = spec.slides.find(
       (slide) => (slide as { type: string }).type === 'per-transfert-audit-contract',
     );
     expect(JSON.stringify(auditSlide)).toContain('vérifier auprès de la compagnie');
+    expect(JSON.stringify(auditSlide)).toContain('Conditions générales - Version : V6369O 06/2025');
   });
 
   it('n ajoute pas de slide audit quand aucun contrat Base CG n est selectionne', () => {

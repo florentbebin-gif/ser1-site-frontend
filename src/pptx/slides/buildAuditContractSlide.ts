@@ -146,6 +146,28 @@ export function buildAuditContractSlide(
     });
   });
 
+  if (spec.documentNotice) {
+    slide.addShape('rect', {
+      x: TABLE_X,
+      y: SLIDE_SIZE.height - 1.16,
+      w: SLIDE_SIZE.width - TABLE_X * 2,
+      h: 0.32,
+      fill: { color: (theme.colors.color7 ?? theme.panelBg).replace('#', '') },
+      line: { color: theme.panelBorder.replace('#', ''), width: 0.4 },
+    });
+    addTextFr(slide, spec.documentNotice, {
+      x: TABLE_X + 0.1,
+      y: SLIDE_SIZE.height - 1.08,
+      w: SLIDE_SIZE.width - TABLE_X * 2 - 0.2,
+      h: 0.16,
+      fontSize: 7.2,
+      fontFace: TYPO.fontFace,
+      bold: true,
+      color: theme.textMain.replace('#', ''),
+      fit: 'shrink',
+    });
+  }
+
   if (spec.legalNote) {
     addTextFr(slide, spec.legalNote, {
       x: TABLE_X,
