@@ -266,6 +266,25 @@ describe('BaseCgRetraite', () => {
     });
   });
 
+  it('permet de saisir une décimale française en modification', async () => {
+    const user = userEvent.setup();
+    await openModal();
+    await user.click(screen.getByRole('tab', { name: 'Phase épargne' }));
+
+    const versementsInput = screen.getByLabelText('Frais sur versements');
+    await user.clear(versementsInput);
+    await user.type(versementsInput, '4,5');
+
+    expect(versementsInput).toHaveValue('4,5');
+
+    await user.click(screen.getByRole('button', { name: 'Enregistrer' }));
+
+    await waitFor(() => {
+      const saved = upsertBaseCgRetraiteContractMock.mock.calls[0]?.[0] as BaseCgRetraiteContract;
+      expect(saved.phaseEpargne.fraisVersements).toBeCloseTo(0.045);
+    });
+  });
+
   it('persiste une édition de l’onglet phase liquidation', async () => {
     await openModal();
     await userEvent.click(screen.getByRole('tab', { name: 'Phase liquidation' }));
@@ -273,6 +292,28 @@ describe('BaseCgRetraite', () => {
     await userEvent.clear(screen.getByLabelText('Taux frais sur arrérages'));
     await userEvent.type(screen.getByLabelText('Taux frais sur arrérages'), '4.5');
     await userEvent.click(screen.getByRole('button', { name: 'Enregistrer' }));
+
+    await waitFor(() => {
+      const saved = upsertBaseCgRetraiteContractMock.mock.calls[0]?.[0] as BaseCgRetraiteContract;
+      expect(saved.phaseLiquidation.fraisArreragesRate).toBeCloseTo(0.045);
+      expect(saved.phaseLiquidation.fraisArrerages).toBe('4,5 %');
+    });
+  });
+
+  it('permet de saisir une décimale française en ajout', async () => {
+    const user = userEvent.setup();
+    render(<BaseCgRetraite />);
+
+    await user.click(await screen.findByRole('button', { name: 'Ajouter' }));
+    expect(screen.getByRole('dialog', { name: 'Ajouter un contrat' })).toBeInTheDocument();
+    await user.click(screen.getByRole('tab', { name: 'Phase liquidation' }));
+
+    const arreragesInput = screen.getByLabelText('Taux frais sur arrérages');
+    await user.type(arreragesInput, '4,5');
+
+    expect(arreragesInput).toHaveValue('4,5');
+
+    await user.click(screen.getByRole('button', { name: 'Enregistrer' }));
 
     await waitFor(() => {
       const saved = upsertBaseCgRetraiteContractMock.mock.calls[0]?.[0] as BaseCgRetraiteContract;

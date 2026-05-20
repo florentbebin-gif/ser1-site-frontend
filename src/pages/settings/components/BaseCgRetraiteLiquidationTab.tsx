@@ -1,13 +1,5 @@
 import type { BaseCgRetraiteContract } from '@/data/base-cg-retraite';
-import {
-  commitRate,
-  formatFieldValue,
-  formatRateLabel,
-  formatRatePercent,
-  parseRatePercent,
-  rateInputValue,
-  updateText,
-} from './baseCgRetraiteModalUtils';
+import { formatFieldValue, rateInputValue, updateText } from './baseCgRetraiteModalUtils';
 
 type LiquidationSetter = <K extends keyof BaseCgRetraiteContract['phaseLiquidation']>(
   _key: K,
@@ -78,18 +70,21 @@ export function BaseCgRetraiteLiquidationTab({ draft, onLiquidationChange }: Pro
         Taux technique
         <input
           value={rateInputValue(draft.phaseLiquidation.tauxTechnique)}
-          onChange={(event) => onLiquidationChange('tauxTechnique', commitRate(event.target.value))}
+          onChange={(event) => onLiquidationChange('tauxTechnique', updateText(event.target.value))}
         />
       </label>
       <label>
         Taux frais sur arrérages
         <input
-          type="number"
-          value={formatRatePercent(draft.phaseLiquidation.fraisArreragesRate)}
+          inputMode="decimal"
+          value={rateInputValue(
+            draft.phaseLiquidation.fraisArrerages ?? draft.phaseLiquidation.fraisArreragesRate,
+          )}
           onChange={(event) => {
-            const rate = parseRatePercent(event.target.value);
-            onLiquidationChange('fraisArreragesRate', rate);
-            onLiquidationChange('fraisArrerages', formatRateLabel(rate));
+            onLiquidationChange('fraisArrerages', updateText(event.target.value));
+            if (!event.target.value.trim()) {
+              onLiquidationChange('fraisArreragesRate', null);
+            }
           }}
         />
       </label>
