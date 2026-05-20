@@ -1,11 +1,7 @@
 import type { BaseCgRetraiteContract } from '@/data/base-cg-retraite';
 import {
-  commitRate,
   formatFieldValue,
-  formatRateLabel,
-  formatRatePercent,
   parseOptionalInteger,
-  parseRatePercent,
   rateInputValue,
   updateText,
 } from './baseCgRetraiteModalUtils';
@@ -65,7 +61,7 @@ export function BaseCgRetraiteEpargneTab({ draft, gestionFees, onEpargneChange }
         <input
           value={rateInputValue(draft.phaseEpargne.rendementFondsEuro)}
           onChange={(event) =>
-            onEpargneChange('rendementFondsEuro', commitRate(event.target.value))
+            onEpargneChange('rendementFondsEuro', updateText(event.target.value))
           }
           placeholder="Ex : 3,5 % avant le 31/12/2016"
         />
@@ -79,14 +75,14 @@ export function BaseCgRetraiteEpargneTab({ draft, gestionFees, onEpargneChange }
         Fonds € garantis
         <input
           value={rateInputValue(draft.phaseEpargne.fondsEuroGarantis)}
-          onChange={(event) => onEpargneChange('fondsEuroGarantis', commitRate(event.target.value))}
+          onChange={(event) => onEpargneChange('fondsEuroGarantis', updateText(event.target.value))}
         />
       </label>
       <label>
         Frais sur versements
         <input
           value={rateInputValue(draft.phaseEpargne.fraisVersements)}
-          onChange={(event) => onEpargneChange('fraisVersements', commitRate(event.target.value))}
+          onChange={(event) => onEpargneChange('fraisVersements', updateText(event.target.value))}
         />
       </label>
       <label>
@@ -94,7 +90,7 @@ export function BaseCgRetraiteEpargneTab({ draft, gestionFees, onEpargneChange }
         <input
           value={rateInputValue(gestionFees.fraisGestionFondsEuro)}
           onChange={(event) =>
-            onEpargneChange('fraisGestionFondsEuro', commitRate(event.target.value))
+            onEpargneChange('fraisGestionFondsEuro', updateText(event.target.value))
           }
         />
       </label>
@@ -102,25 +98,29 @@ export function BaseCgRetraiteEpargneTab({ draft, gestionFees, onEpargneChange }
         Frais gestion UC
         <input
           value={rateInputValue(gestionFees.fraisGestionUc)}
-          onChange={(event) => onEpargneChange('fraisGestionUc', commitRate(event.target.value))}
+          onChange={(event) => onEpargneChange('fraisGestionUc', updateText(event.target.value))}
         />
       </label>
       <label>
         Frais d'arbitrage
         <input
           value={rateInputValue(draft.phaseEpargne.fraisArbitrage)}
-          onChange={(event) => onEpargneChange('fraisArbitrage', commitRate(event.target.value))}
+          onChange={(event) => onEpargneChange('fraisArbitrage', updateText(event.target.value))}
         />
       </label>
       <label>
         Taux frais transfert sortant
         <input
-          type="number"
-          value={formatRatePercent(draft.phaseEpargne.fraisTransfertSortantRate)}
+          inputMode="decimal"
+          value={rateInputValue(
+            draft.phaseEpargne.fraisTransfertSortant ??
+              draft.phaseEpargne.fraisTransfertSortantRate,
+          )}
           onChange={(event) => {
-            const rate = parseRatePercent(event.target.value);
-            onEpargneChange('fraisTransfertSortantRate', rate);
-            onEpargneChange('fraisTransfertSortant', formatRateLabel(rate));
+            onEpargneChange('fraisTransfertSortant', updateText(event.target.value));
+            if (!event.target.value.trim()) {
+              onEpargneChange('fraisTransfertSortantRate', null);
+            }
           }}
         />
       </label>

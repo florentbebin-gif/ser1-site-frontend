@@ -19,7 +19,7 @@ import { BaseCgRetraiteDocumentsTab } from './BaseCgRetraiteDocumentsTab';
 import { BaseCgRetraiteEpargneTab } from './BaseCgRetraiteEpargneTab';
 import { BaseCgRetraiteIdentityTab } from './BaseCgRetraiteIdentityTab';
 import { BaseCgRetraiteLiquidationTab } from './BaseCgRetraiteLiquidationTab';
-import { generateId } from './baseCgRetraiteModalUtils';
+import { generateId, normalizeBaseCgRetraiteContractDraft } from './baseCgRetraiteModalUtils';
 
 type ContractModalTab = 'identity' | 'epargne' | 'liquidation' | 'documents';
 
@@ -383,7 +383,11 @@ export function BaseCgRetraiteContractModal({
           <button type="button" onClick={onClose}>
             Annuler
           </button>
-          <button type="button" className="chip" onClick={() => onSave(draft)}>
+          <button
+            type="button"
+            className="chip"
+            onClick={() => onSave(normalizeBaseCgRetraiteContractDraft(draft))}
+          >
             Enregistrer
           </button>
         </div>

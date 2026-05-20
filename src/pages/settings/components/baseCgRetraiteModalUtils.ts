@@ -1,15 +1,7 @@
+import type { BaseCgRetraiteContract } from '@/data/base-cg-retraite';
+
 export function updateText(value: string): string | null {
   return value.trim() ? value : null;
-}
-
-export function parseRatePercent(value: string): number | null {
-  if (!value.trim()) return null;
-  const parsed = Number(value.replace(',', '.'));
-  return Number.isFinite(parsed) ? parsed / 100 : null;
-}
-
-export function formatRatePercent(rate: number | null | undefined): string {
-  return typeof rate === 'number' && Number.isFinite(rate) ? String(rate * 100) : '';
 }
 
 export function formatRateLabel(rate: number | null): string | null {
@@ -35,6 +27,74 @@ export function commitRate(value: string): string | number | null {
   // Si la saisie est un nombre pur, on stocke en décimal (0.0065). Sinon on conserve le texte (rare).
   if (Number.isFinite(parsed)) return parsed / 100;
   return value.trim();
+}
+
+function normalizeRateDraft(value: string | number | null | undefined): string | number | null {
+  if (typeof value === 'string') return commitRate(value);
+  return value ?? null;
+}
+
+function normalizeRatePair(
+  labelValue: string | number | null | undefined,
+  rateValue: number | null | undefined,
+): { label: string | number | null; rate: number | null } {
+  if ((labelValue === null || labelValue === undefined) && typeof rateValue === 'number') {
+    return {
+      label: formatRateLabel(rateValue),
+      rate: rateValue,
+    };
+  }
+  const committed = normalizeRateDraft(labelValue);
+  if (typeof committed === 'number') {
+    return {
+      label: formatRateLabel(committed),
+      rate: committed,
+    };
+  }
+  if (committed === null) {
+    return {
+      label: null,
+      rate: null,
+    };
+  }
+  return {
+    label: committed,
+    rate: rateValue ?? null,
+  };
+}
+
+export function normalizeBaseCgRetraiteContractDraft(
+  contract: BaseCgRetraiteContract,
+): BaseCgRetraiteContract {
+  const transferFees = normalizeRatePair(
+    contract.phaseEpargne.fraisTransfertSortant,
+    contract.phaseEpargne.fraisTransfertSortantRate,
+  );
+  const arreragesFees = normalizeRatePair(
+    contract.phaseLiquidation.fraisArrerages,
+    contract.phaseLiquidation.fraisArreragesRate,
+  );
+
+  return {
+    ...contract,
+    phaseEpargne: {
+      ...contract.phaseEpargne,
+      rendementFondsEuro: normalizeRateDraft(contract.phaseEpargne.rendementFondsEuro),
+      fondsEuroGarantis: normalizeRateDraft(contract.phaseEpargne.fondsEuroGarantis),
+      fraisVersements: normalizeRateDraft(contract.phaseEpargne.fraisVersements),
+      fraisGestionFondsEuro: normalizeRateDraft(contract.phaseEpargne.fraisGestionFondsEuro),
+      fraisGestionUc: normalizeRateDraft(contract.phaseEpargne.fraisGestionUc),
+      fraisArbitrage: normalizeRateDraft(contract.phaseEpargne.fraisArbitrage),
+      fraisTransfertSortant: transferFees.label,
+      fraisTransfertSortantRate: transferFees.rate,
+    },
+    phaseLiquidation: {
+      ...contract.phaseLiquidation,
+      tauxTechnique: normalizeRateDraft(contract.phaseLiquidation.tauxTechnique),
+      fraisArrerages: arreragesFees.label,
+      fraisArreragesRate: arreragesFees.rate,
+    },
+  };
 }
 
 export function formatFieldValue(value: string | number | null | undefined): string {
