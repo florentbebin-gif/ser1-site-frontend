@@ -57,6 +57,10 @@ describe('remapping des compagnies Base CG retraite', () => {
     expect(normalizeBaseCgRetraiteCompanyName('GO_EPARGNE')).toBe('EPARTIM');
     expect(normalizeBaseCgRetraiteCompanyName('CREDIT_DU_NORD')).toBe('SOCIETE_GENERALE');
     expect(normalizeBaseCgRetraiteCompanyName('PRIMONIAL')).toBe('ORADEA');
+    expect(normalizeBaseCgRetraiteCompanyName('AVIVA')).toBe('ABEILLE');
+    expect(normalizeBaseCgRetraiteCompanyName('LA_MONDIALE')).toBe('AG2R_LA_MONDIALE');
+    expect(normalizeBaseCgRetraiteCompanyName('QUATREM')).toBe('MALAKOFF_HUMANIS');
+    expect(normalizeBaseCgRetraiteCompanyName('BPO')).toBe('BANQUE_POPULAIRE');
     expect(normalizeBaseCgRetraiteContractCompany(staleOverride).compagnie).toBe(
       'MALAKOFF_HUMANIS',
     );
