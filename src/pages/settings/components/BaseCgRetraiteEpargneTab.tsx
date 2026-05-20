@@ -1,10 +1,5 @@
 import type { BaseCgRetraiteContract } from '@/data/base-cg-retraite';
-import {
-  formatFieldValue,
-  parseOptionalInteger,
-  rateInputValue,
-  updateText,
-} from './baseCgRetraiteModalUtils';
+import { formatFieldValue, rateInputValue, updateText } from './baseCgRetraiteModalUtils';
 
 type EpargneSetter = <K extends keyof BaseCgRetraiteContract['phaseEpargne']>(
   _key: K,
@@ -40,23 +35,6 @@ export function BaseCgRetraiteEpargneTab({ draft, gestionFees, onEpargneChange }
         />
       </label>
       <label>
-        Nombre d'UC
-        <input
-          inputMode="numeric"
-          value={formatFieldValue(draft.phaseEpargne.nombreSupportsUc)}
-          onChange={(event) =>
-            onEpargneChange('nombreSupportsUc', parseOptionalInteger(event.target.value))
-          }
-        />
-      </label>
-      <label>
-        Répartition UC / fonds €
-        <input
-          value={draft.phaseEpargne.repartitionUcEuro ?? ''}
-          onChange={(event) => onEpargneChange('repartitionUcEuro', updateText(event.target.value))}
-        />
-      </label>
-      <label>
         TMG du contrat (fonds €)
         <input
           value={rateInputValue(draft.phaseEpargne.rendementFondsEuro)}
@@ -70,13 +48,6 @@ export function BaseCgRetraiteEpargneTab({ draft, gestionFees, onEpargneChange }
           l'arrêté du 24 juillet 2018 (préparation loi PACTE). Les TMG anciens restent acquis aux
           versements antérieurs à la date de cessation.
         </small>
-      </label>
-      <label>
-        Fonds € garantis
-        <input
-          value={rateInputValue(draft.phaseEpargne.fondsEuroGarantis)}
-          onChange={(event) => onEpargneChange('fondsEuroGarantis', updateText(event.target.value))}
-        />
       </label>
       <label>
         Frais sur versements

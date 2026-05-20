@@ -453,4 +453,23 @@ describe('BaseCgRetraite', () => {
     expect(screen.getByLabelText('Frais gestion UC')).toHaveValue('0,96 %');
     expect(screen.getByLabelText('Frais sur versements')).toHaveValue('5 %');
   });
+
+  it('retire les champs UC non maintenus des modales contrat', async () => {
+    const user = userEvent.setup();
+    await openModal();
+    await user.click(screen.getByRole('tab', { name: 'Phase épargne' }));
+
+    expect(screen.queryByLabelText("Nombre d'UC")).not.toBeInTheDocument();
+    expect(screen.queryByLabelText('Répartition UC / fonds €')).not.toBeInTheDocument();
+    expect(screen.queryByLabelText('Fonds € garantis')).not.toBeInTheDocument();
+    expect(screen.getByLabelText('Frais gestion fonds €')).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Annuler' }));
+    await user.click(await screen.findByRole('button', { name: 'Ajouter' }));
+    await user.click(screen.getByRole('tab', { name: 'Phase épargne' }));
+
+    expect(screen.queryByLabelText("Nombre d'UC")).not.toBeInTheDocument();
+    expect(screen.queryByLabelText('Répartition UC / fonds €')).not.toBeInTheDocument();
+    expect(screen.queryByLabelText('Fonds € garantis')).not.toBeInTheDocument();
+  });
 });

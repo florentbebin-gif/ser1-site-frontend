@@ -48,6 +48,18 @@ describe('remapping des compagnies Base CG retraite', () => {
     ).toBe(false);
   });
 
+  it('retire le PERP Préfon historique remplacé par le PER Préfon', () => {
+    expect(getContractBySourceId('Contrat N°41')).toBeUndefined();
+    expect(getContractBySourceId('Contrat N°42')?.nomContrat).toBe('PERIN- PER PREFON RETRAITE');
+    expect(
+      isRemovedBaseCgRetraiteContract({
+        id: 'prefon-perp-prefon-retraite-41',
+        sourceId: 'Contrat N°41',
+        nomContrat: 'PERP- PREFON-RETRAITE',
+      }),
+    ).toBe(true);
+  });
+
   it('normalise aussi les anciennes valeurs provenant d’un override', () => {
     const staleOverride = {
       ...getContractBySourceId('Contrat N°202')!,
