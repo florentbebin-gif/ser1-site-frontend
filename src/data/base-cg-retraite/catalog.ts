@@ -31,15 +31,21 @@ const BASECG_COMPANY_RENAME_MAP: Record<string, string> = {
 };
 
 const BASECG_REMOVED_CONTRACT_IDS = new Set([
+  'prefon-perp-prefon-retraite-41',
   'primonial-madelin-gestion-privee-promadelin-35',
   'primonial-madelin-cardif-retraite-professionnels-patrimoine-management-et-associes-36',
 ]);
 
-const BASECG_REMOVED_CONTRACT_SOURCE_IDS = new Set(['Contrat N°35', 'Contrat N°36']);
+const BASECG_REMOVED_CONTRACT_SOURCE_IDS = new Set([
+  'Contrat N°35',
+  'Contrat N°36',
+  'Contrat N°41',
+]);
 
 const BASECG_REMOVED_CONTRACT_NAMES = new Set([
   'MADELIN- GESTION PRIVEE PROMADELIN',
   'MADELIN- CARDIF RETRAITE PROFESSIONNELS ( PATRIMOINE MANAGEMENT ET ASSOCIES)',
+  'PERP- PREFON-RETRAITE',
 ]);
 
 function resolveStaticCompartment(contract: BaseCgRetraiteContract): PerTransfertCompartment {
@@ -71,7 +77,9 @@ export function isRemovedBaseCgRetraiteContract(
   );
 }
 
-export const BASECG_CATALOG: BaseCgRetraiteContract[] = STATIC_BASECG_CATALOG.map((contract) =>
+export const BASECG_CATALOG: BaseCgRetraiteContract[] = STATIC_BASECG_CATALOG.filter(
+  (contract) => !isRemovedBaseCgRetraiteContract(contract),
+).map((contract) =>
   normalizeBaseCgRetraiteContractCompany({
     ...contract,
     perCompartment: resolveStaticCompartment(contract),

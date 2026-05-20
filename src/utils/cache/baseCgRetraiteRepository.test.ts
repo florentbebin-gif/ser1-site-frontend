@@ -62,6 +62,29 @@ describe('baseCgRetraiteRepository', () => {
                       is_deleted: false,
                       updated_at: '2026-05-16T00:00:00.000Z',
                     },
+                    {
+                      contract_id: 'ag2r-la-mondiale-madelin-retraite-agricole-373',
+                      contract_data: {
+                        id: 'ag2r-la-mondiale-madelin-retraite-agricole-373',
+                        nomContrat: 'MADELIN- MONDIALE RETRAITE AGRICOLE',
+                      },
+                      is_deleted: false,
+                      updated_at: '2026-05-20T00:04:00.000Z',
+                    },
+                    {
+                      contract_id: 'abeille-perin-abeille-retraite-plurielle-394',
+                      contract_data: {
+                        id: 'abeille-perin-abeille-retraite-plurielle-394',
+                        phaseEpargne: {
+                          fraisGestionFondsEuro: 0.01,
+                        },
+                        phaseLiquidation: {
+                          ageLimiteLiquidation: '80 ans',
+                        },
+                      },
+                      is_deleted: false,
+                      updated_at: '2026-05-20T00:04:00.000Z',
+                    },
                   ]
                 : [
                     {
@@ -76,6 +99,19 @@ describe('baseCgRetraiteRepository', () => {
                       mime: 'application/pdf',
                       bytes: 462558,
                       uploaded_at: '2026-05-16T00:00:00.000Z',
+                    },
+                    {
+                      id: 'abeille-perin-abeille-retraite-plurielle-394-conditions_generales-v6369o-06-2025-b3e85939',
+                      contract_id: 'abeille-perin-abeille-retraite-plurielle-394',
+                      label: 'Conditions générales PERIN- ABEILLE RETRAITE PLURIELLE',
+                      document_type: 'conditions_generales',
+                      status: 'uploaded',
+                      version_label: 'V6369O 06/2025',
+                      storage_path: 'abeille/perin-abeille-retraite-plurielle/v6369o-06-2025.pdf',
+                      file_name: 'v6369o-06-2025.pdf',
+                      mime: 'application/pdf',
+                      bytes: 1212380,
+                      uploaded_at: '2026-05-20T00:04:00.000Z',
                     },
                   ],
             error: null,
@@ -99,6 +135,22 @@ describe('baseCgRetraiteRepository', () => {
         bytes: 462558,
       }),
     ]);
+    expect(
+      catalog.find((contract) => contract.id === 'ag2r-la-mondiale-madelin-retraite-agricole-373')
+        ?.nomContrat,
+    ).toBe('MADELIN- MONDIALE RETRAITE AGRICOLE');
+    const abeilleRetraitePlurielle = catalog.find(
+      (contract) => contract.id === 'abeille-perin-abeille-retraite-plurielle-394',
+    );
+    expect(abeilleRetraitePlurielle?.phaseEpargne.fraisGestionFondsEuro).toBe(0.01);
+    expect(abeilleRetraitePlurielle?.phaseLiquidation.ageLimiteLiquidation).toBe('80 ans');
+    expect(abeilleRetraitePlurielle?.documents).toContainEqual(
+      expect.objectContaining({
+        id: 'abeille-perin-abeille-retraite-plurielle-394-conditions_generales-v6369o-06-2025-b3e85939',
+        versionLabel: 'V6369O 06/2025',
+        storagePath: 'abeille/perin-abeille-retraite-plurielle/v6369o-06-2025.pdf',
+      }),
+    );
   });
 
   it('sauvegarde un contrat en override Supabase sans ses documents', async () => {
