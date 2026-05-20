@@ -133,7 +133,7 @@ describe('BaseCgRetraite', () => {
       await screen.findByText('2 contrats disponibles - 1 contrat paramétré - 1 CG disponible'),
     ).toBeInTheDocument();
     expect(screen.queryByText(/extraction/i)).not.toBeInTheDocument();
-    expect(screen.queryByText(/version/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/version technique/i)).not.toBeInTheDocument();
   });
 
   it('réserve les actions de gestion aux admins et supprime le bouton réinitialiser', async () => {
@@ -400,7 +400,7 @@ describe('BaseCgRetraite', () => {
     });
   });
 
-  it('met en avant les noms de contrats et le lien de téléchargement CG', async () => {
+  it('met en avant les noms de contrats et la traçabilité du document CG', async () => {
     getBaseCgRetraiteCatalogMock.mockResolvedValueOnce([
       {
         ...contract,
@@ -423,8 +423,32 @@ describe('BaseCgRetraite', () => {
     expect(contractName).toHaveClass('base-cg-contract-name__label');
     expect(screen.queryByText('Contrat N°386')).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Télécharger CG' })).toBeInTheDocument();
-    expect(screen.getByText('Ref : 13124 – 09.2019')).toBeInTheDocument();
+    expect(screen.getByText('Version : 13124 – 09.2019')).toBeInTheDocument();
+    expect(screen.getByText('PDF importé - accès authentifié SER1')).toBeInTheDocument();
+    expect(screen.queryByText(/Ref :/)).not.toBeInTheDocument();
     expect(screen.queryByText(/Notice SwissLife PER Individuel/)).not.toBeInTheDocument();
+  });
+
+  it('signale les documents CG sans version renseignée', async () => {
+    getBaseCgRetraiteCatalogMock.mockResolvedValueOnce([
+      {
+        ...contract,
+        documents: [
+          {
+            id: 'doc-no-version',
+            label: 'Conditions générales sans version',
+            type: 'conditions_generales',
+            status: 'linked',
+            sourceUrl: 'https://example.invalid/cg.pdf',
+          },
+        ],
+      },
+    ]);
+
+    render(<BaseCgRetraite />);
+
+    expect(await screen.findByText('Version à renseigner')).toBeInTheDocument();
+    expect(screen.getByText('Lien externe')).toBeInTheDocument();
   });
 
   it('affiche la mention de limites de la Base CG', async () => {
@@ -432,6 +456,8 @@ describe('BaseCgRetraite', () => {
 
     expect(await screen.findByText('Limites de la Base CG')).toBeInTheDocument();
     expect(screen.getByText(/à titre indicatif/i)).toBeInTheDocument();
+    expect(screen.getByText(/aide interne/i)).toBeInTheDocument();
+    expect(screen.getByText(/non contractuelle/i)).toBeInTheDocument();
   });
 
   it('masque le frais de gestion général et affiche les taux en pourcentage', async () => {

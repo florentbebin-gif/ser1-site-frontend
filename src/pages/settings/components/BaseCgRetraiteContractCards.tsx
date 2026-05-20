@@ -1,5 +1,9 @@
 import { SettingsIcon } from '@/components/settings/SettingsTitleWithIcon';
 import type { BaseCgRetraiteContract, BaseCgRetraiteDocument } from '@/data/base-cg-retraite';
+import {
+  getBaseCgRetraiteDocumentAccessLabel,
+  getBaseCgRetraiteDocumentVersionLabel,
+} from '@/data/base-cg-retraite';
 import type { ReactElement } from 'react';
 import { COMPARTMENT_LABELS, TYPE_LABELS } from '../baseCgRetraiteOptions';
 import { isRetraiteContractIncomplete } from '../utils/retirementContractCompleteness';
@@ -99,11 +103,12 @@ export default function BaseCgRetraiteContractCards({
                     </svg>
                     Télécharger CG
                   </button>
-                  {document.versionLabel ? (
-                    <span className="base-cg-document-download__version">
-                      Ref : {document.versionLabel}
-                    </span>
-                  ) : null}
+                  <span className="base-cg-document-download__version">
+                    {getBaseCgRetraiteDocumentVersionLabel(document)}
+                  </span>
+                  <span className="base-cg-document-download__status">
+                    {getBaseCgRetraiteDocumentAccessLabel(document)}
+                  </span>
                 </div>
               ) : (
                 <span className="base-cg-muted">CG non disponible</span>

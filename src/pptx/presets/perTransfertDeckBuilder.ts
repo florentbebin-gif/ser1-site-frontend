@@ -1,6 +1,7 @@
 import type { BaseCgRetraiteContract } from '@/data/base-cg-retraite';
 import {
   BASE_CG_RETRAITE_LEGAL_NOTICE,
+  formatBaseCgRetraiteDocumentsNotice,
   formatBaseCgRetraiteRateField,
   normalizeBaseCgRetraiteGestionFees,
 } from '@/data/base-cg-retraite';
@@ -40,7 +41,7 @@ export interface PerTransfertAdvisorInfo {
 
 const LEGAL_TEXT = `Document établi à titre strictement indicatif et dépourvu de valeur contractuelle. Il a été élaboré sur la base des informations communiquées, du référentiel contrat disponible et des paramètres fiscaux chargés dans SER1 à la date de génération.
 
-${BASE_CG_RETRAITE_LEGAL_NOTICE} La dernière version des Conditions Générales doit être confirmée auprès de la compagnie.`;
+${BASE_CG_RETRAITE_LEGAL_NOTICE}`;
 
 function euro(value: number): string {
   return new Intl.NumberFormat('fr-FR', {
@@ -196,8 +197,9 @@ function buildAuditSlide(contract: BaseCgRetraiteContract): PerTransfertAuditCon
     title: 'Audit complet du contrat actuel',
     subtitle: `${contract.compagnie} - ${contract.nomContrat}`,
     contract,
+    documentNotice: formatBaseCgRetraiteDocumentsNotice(contract.documents),
     legalNote:
-      'Base CG indicative : vérifier auprès de la compagnie les Conditions Générales, notices et avenants applicables avant recommandation.',
+      'Base CG indicative : vérifier auprès de la compagnie les Conditions Générales, notices et avenants officiels applicables avant recommandation.',
   };
 }
 

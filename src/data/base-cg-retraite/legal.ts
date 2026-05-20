@@ -1,2 +1,2 @@
 export const BASE_CG_RETRAITE_LEGAL_NOTICE =
-  'Base CG fournie à titre indicatif. Les informations contractuelles ne sont garanties ni exhaustives, ni exactes, ni à jour. L’utilisateur doit vérifier les conditions générales, notices et avenants applicables auprès de la compagnie avant toute recommandation.';
+  'Base CG indicative fournie à titre indicatif comme aide interne au devoir de conseil, non contractuelle. Les informations contractuelles sont non garanties, non exhaustives, potentiellement inexactes ou non à jour. Elles ne remplacent pas les Conditions Générales, notices et avenants officiels applicables au client. L’utilisateur doit vérifier la version applicable auprès de la compagnie avant toute recommandation.';

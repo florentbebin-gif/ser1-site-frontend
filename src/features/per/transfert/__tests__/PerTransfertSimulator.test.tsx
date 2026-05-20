@@ -5,7 +5,9 @@ import type { ComponentType } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import '@testing-library/jest-dom/vitest';
 import { render, screen } from '@testing-library/react';
+import { MemoryRouter } from 'react-router';
 import userEvent from '@testing-library/user-event';
+import { PerTransfertSimulator } from '../PerTransfertSimulator';
 import { PerTransfertWizardSteps } from '../components/PerTransfertWizardSteps';
 import { ContractAuditCards } from '../components/ContractAuditCards';
 import { PerTransfertSidebar } from '../components/PerTransfertSidebar';
@@ -19,6 +21,38 @@ import type {
   PerTransfertResult,
 } from '@/engine/per';
 import type { BaseCgRetraiteContract } from '@/data/base-cg-retraite';
+
+const getBaseCgRetraiteCatalogMock = vi.hoisted(() => vi.fn());
+const setUserModeMock = vi.hoisted(() => vi.fn());
+
+vi.mock('@/utils/cache/baseCgRetraiteRepository', () => ({
+  getBaseCgRetraiteCatalog: () => getBaseCgRetraiteCatalogMock(),
+}));
+
+vi.mock('@/hooks/useFiscalContext', () => ({
+  useFiscalContext: () => ({
+    loading: false,
+    error: null,
+    fiscalContext: {
+      irScaleCurrent: [{ rate: 0 }],
+      rvtoTaxableFractionByAge: [{ label: 'test', ageMaxInclusive: null, fraction: 0 }],
+      pfuRateIR: 0,
+      psRateGeneral: 0,
+      psRateRenteInterests: 0,
+      psRateRenteCapitalCASA: 0,
+      abat10Rate: 0,
+      psRateRetirementDefault: 0,
+      smallAnnuityMonthlyCapitalExitThreshold: 1,
+      smallAnnuityAnnualCapitalExitThreshold: 1,
+      smallAnnuityCapitalExitFlatTaxRate: 0,
+      smallAnnuityCapitalExitFlatTaxAbatementRate: 0,
+    },
+  }),
+}));
+
+vi.mock('@/settings/userMode', () => ({
+  useUserMode: () => ({ mode: 'simplifie', setMode: setUserModeMock, isLoading: false }),
+}));
 
 // ——— Tests composants purs ———
 
@@ -313,7 +347,16 @@ describe('ContractAuditCards', () => {
         reversionIncluse: 'Non',
         renteEstimee: 3200,
       },
-      documents: [],
+      documents: [
+        {
+          id: 'doc-audit',
+          label: 'Conditions générales Retraite Test',
+          type: 'conditions_generales',
+          status: 'uploaded',
+          versionLabel: 'V6369O 06/2025',
+          storagePath: 'test/retraite-test/v6369o-06-2025.pdf',
+        },
+      ],
     };
 
     const html = renderToStaticMarkup(<ContractAuditCards contract={contract} />);
@@ -325,6 +368,10 @@ describe('ContractAuditCards', () => {
     expect(html).toContain('Rente estimée');
     expect(html).toContain('0,45 %');
     expect(html).toContain('Modalités en cas de décès');
+    expect(html).toContain(
+      'Conditions générales - Version : V6369O 06/2025 - PDF importé - accès authentifié SER1',
+    );
+    expect(html).toContain('vérifier auprès de la compagnie');
     expect(html).not.toContain('Clause bénéficiaire');
   });
 
@@ -414,7 +461,30 @@ describe('PerTransfertHypotheses', () => {
     render(<PerTransfertHypotheses />);
     await userEvent.click(screen.getByRole('button', { name: /Hypothèses et limites/ }));
 
-    expect(screen.getByText(/Base CG fournie à titre indicatif/i)).toBeInTheDocument();
+    expect(
+      screen.getByText(/Base CG indicative.*aide interne au devoir de conseil/i),
+    ).toBeInTheDocument();
     expect(screen.getByText(/se rapprocher de la compagnie/i)).toBeInTheDocument();
+  });
+});
+
+describe('PerTransfertSimulator', () => {
+  it('affiche l’audit Base CG ouvert avec sa réserve et son lien settings', async () => {
+    getBaseCgRetraiteCatalogMock.mockResolvedValueOnce([]);
+
+    render(
+      <MemoryRouter>
+        <PerTransfertSimulator />
+      </MemoryRouter>,
+    );
+
+    expect(
+      await screen.findByText(/Base CG indicative.*aide interne au devoir de conseil/i),
+    ).toBeInTheDocument();
+    expect(screen.getByText(/vérifier.*compagnie/i)).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Base CG' })).toHaveAttribute(
+      'href',
+      '/settings/base-contrat-retraite',
+    );
   });
 });
