@@ -20,10 +20,9 @@ Guidance agent / repo automation :
 
 - `AGENTS.md` — règles comportementales agent (source unique, lu par tous les outils)
 - `CLAUDE.md` — workflows automatiques Claude Code (référence AGENTS.md, pas de duplication)
-- `.claude/rules/` — règles auto-chargées de base
-- `.claude/rules-library/` — règles spécialisées à lire selon la tâche (`fiscal-engine`, `reporting`, `supabase-patterns`)
-- `.claude/commands/` — commandes réutilisables (check, pr, fiscal-audit)
-- `.claude/skills-library/` — skills spécialisés (clean-code, fix-errors, exports)
+- `.claude/rules/` — règles auto-chargées de base pour Claude Code
+- `.claude/skills/` — skills Claude Code projet auto-découvrables, model-invoked, non manuels
+- `$CODEX_HOME/skills` ou `~/.codex/skills` — skills Codex locaux optionnels, non versionnés ici (`ser1-*` si installés)
 
 ## Quickstart
 

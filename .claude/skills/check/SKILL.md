@@ -1,3 +1,9 @@
+---
+name: check
+description: "Lancer et corriger automatiquement le quality gate SER1 quand l'utilisateur demande une validation complète, une préparation avant commit/PR, ou quand une implémentation doit être vérifiée par npm run check."
+user-invocable: false
+---
+
 Lancer le quality gate complet et corriger les erreurs.
 
 1. `npm run check`

@@ -1,5 +1,7 @@
 ---
-description: Systematically fix all errors from npm run check — auto-triggered when npm run check fails. Runs the full CI pipeline and resolves failures in dependency order.
+name: fix-errors
+description: "Corriger automatiquement les échecs de npm run check ou de CI SER1. Diagnostiquer le quality gate complet, résoudre les erreurs dans l'ordre lint, fiscal-hardcode, css-colors, theme-sync, no-js, arch, circular, typecheck, tests, build, puis relancer."
+user-invocable: false
 ---
 
 # Fix Errors

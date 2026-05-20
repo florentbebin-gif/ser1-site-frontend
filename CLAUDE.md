@@ -14,15 +14,20 @@
 - **Exports / PPTX / Excel** → `docs/GOUVERNANCE_EXPORTS.md`
 - **Workflow git / PR / conventions humains** → `.github/CONTRIBUTING.md`
 
-## Ressources spécifiques Claude Code (auto-chargées)
+## Ressources spécifiques Claude Code
 
 - `.claude/rules/base.md` — environnement & langue
 - `.claude/rules/component-structure.md` — structure composants React
-- `.claude/commands/` — commandes invocables (`/check`, `/pr`, `/fiscal-audit`)
+- `.claude/skills/` — skills projet auto-découvrables, chargés par Claude selon le contexte
 
-## Ressources à lire à la demande (non auto-chargées)
+Ces ressources sont propres à Claude Code. Codex dispose de ses propres skills dans
+`$CODEX_HOME/skills` ou `~/.codex/skills` et ne doit pas remplacer ce workflow Claude.
 
-- `.claude/rules-library/fiscal-engine.md` — moteur fiscal → si la tâche touche calculs IR/succession/PS/PFU
-- `.claude/rules-library/supabase-patterns.md` — patterns Supabase → si la tâche touche auth/RLS/migrations/admin
-- `.claude/rules-library/reporting.md` — snapshot IO et schéma → si la tâche touche `src/reporting/`
-- `.claude/skills-library/` — skills exports et qualité → voir `AGENTS.md` pour les déclencheurs
+## Invocation des skills
+
+Les skills dans `.claude/skills/<nom>/SKILL.md` doivent être invoqués automatiquement par Claude
+Code à partir de leur `description` et, quand présent, de leurs `paths`. Ils sont masqués du menu
+manuel avec `user-invocable: false` : l'utilisateur n'a pas à taper de commande pour les activer.
+
+Voir `AGENTS.md` pour la table des déclencheurs : fiscal, Supabase, reporting, check, PR, exports,
+succession, roadmap et clean-code.

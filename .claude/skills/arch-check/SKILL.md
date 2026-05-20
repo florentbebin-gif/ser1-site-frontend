@@ -1,5 +1,7 @@
 ---
-description: Vérifie les boundaries architecturales SER1 avant toute PR — auto-déclenché avant un merge ou après ajout de fichiers dans src/. Contrôle les imports croisés, la séparation engine/feature/page, les appels Supabase, les CSS cross-feature, et la taille des fichiers.
+name: arch-check
+description: 'Vérifier les boundaries architecturales SER1 automatiquement avant PR, avant merge, après ajout de fichiers dans src/, ou quand une tâche touche imports, séparation engine/feature/page, appels Supabase, CSS cross-feature ou taille des fichiers.'
+user-invocable: false
 ---
 
 # Arch Check

@@ -1,6 +1,11 @@
 ---
 name: succession-review
-description: Audit complet du simulateur succession — auto-déclenché après toute modification dans src/features/succession/ ou src/engine/succession*. Vérifie le wiring fiscal, la cohérence avec la matrice de périmètre, les golden tests et la taille des fichiers.
+description: 'Auditer automatiquement tout chantier touchant src/features/succession/, src/engine/succession* ou les exports succession. Vérifier wiring fiscal, matrice de périmètre, valeurs hardcodées, golden tests, cohérence UI/XLSX/PPTX et taille des fichiers.'
+user-invocable: false
+paths:
+  - 'src/features/succession/**'
+  - 'src/engine/succession/**'
+  - 'src/engine/succession*'
 ---
 
 # Succession Review
@@ -44,7 +49,7 @@ Vérifier les clés normalisées utilisées :
 rg "fiscalContext\." src/features/succession/ -n --glob "*.ts" --glob "*.tsx"
 ```
 
-Les clés autorisées : `dmtgScaleLigneDirecte`, `dmtgAbattementEnfant`, `dmtgSettings`, `psRateGlobal`, `pfuRateIR`, `irScaleCurrent`.
+Les clés autorisées : `dmtgScaleLigneDirecte`, `dmtgAbattementEnfant`, `dmtgSettings`, `psRateGeneral`, `pfuRateIR`, `irScaleCurrent`.
 Toute autre clé `fiscalContext.xxx` doit être justifiée.
 
 ### 2. Valeurs fiscales hardcodées

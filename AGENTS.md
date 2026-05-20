@@ -3,7 +3,7 @@
 ## Contexte
 
 Simulateurs fiscaux CGP (IR, Succession, Placement, Crédit, PER, Stratégie).
-Stack : React 18 + Vite + TypeScript strict + Supabase.
+Stack : React 19 + React Router 7 + Vite 8 + TypeScript 6 strict + Supabase.
 Terminal : Windows/PowerShell — pas de commandes macOS/Linux.
 CI gate : `npm run check` — doit passer avant tout commit.
 
@@ -43,28 +43,59 @@ Le LLM doit optimiser leur utilisation : déléguer uniquement des tâches indé
    par commits et PR. Seules les docs structurantes permanentes sont versionnées ;
    tout artefact régénérable doit rester gitignored et produit par script.
 
-## Charger selon la tâche
+## Charger automatiquement selon la tâche
 
-| Si la tâche touche…                                                                    | Lire                                               |
-| -------------------------------------------------------------------------------------- | -------------------------------------------------- |
-| CSS, UI, thème, couleurs, pages `/sim/*`                                               | `docs/GOUVERNANCE.md`                              |
-| Architecture, structure, flux, Supabase                                                | `docs/ARCHITECTURE.md`                             |
-| Règles métier fiscales, périmètre simulateurs                                          | `docs/METIER.md`                                   |
-| Exports PPTX / Excel                                                                   | `docs/GOUVERNANCE_EXPORTS.md`                      |
-| Calculs `src/engine/`, IR, succession, PS, PFU                                         | `.claude/rules-library/fiscal-engine.md`           |
-| Auth, RLS, migrations, admin Supabase                                                  | `.claude/rules-library/supabase-patterns.md`       |
-| Snapshot, `src/reporting/`                                                             | `.claude/rules-library/reporting.md`               |
-| `src/domain/base-contrat/` (catalogue, règles)                                         | `docs/ARCHITECTURE.md` § Base-Contrat              |
-| Debug `npm run check` en échec                                                         | `.claude/skills-library/fix-errors.md`             |
-| Review avant PR, ajout de fichier dans `src/`                                          | `.claude/skills-library/arch-check.md`             |
-| Modification dans `src/features/succession/`                                           | `.claude/skills-library/succession-review.md`      |
-| Démarrage nouvelle verticale roadmap (P3 PER, P4 scan, P5 rôles, P6, P7, P8 catalogue) | `.claude/skills-library/start-roadmap-vertical.md` |
-| Après implémentation / refactor                                                        | `.claude/skills-library/clean-code.md`             |
-| Fichiers `.docx`                                                                       | `.claude/skills-library/docx.md`                   |
-| Fichiers `.pdf`                                                                        | `.claude/skills-library/pdf.md`                    |
-| Fichiers `.pptx`                                                                       | `.claude/skills-library/pptx.md`                   |
-| Fichiers `.xlsx`, `.csv`, `.tsv`                                                       | `.claude/skills-library/xlsx.md`                   |
-| Git workflow, PR, conventions humains                                                  | `.github/CONTRIBUTING.md`                          |
+Les règles métier et docs structurantes ci-dessous sont communes à tous les assistants. Les skills
+d'exécution restent propres à chaque outil : Claude Code charge automatiquement ses skills projet
+dans `.claude/skills/<nom>/SKILL.md`, Codex charge automatiquement ses propres skills installés.
+Ne pas demander de commande manuelle à l'utilisateur pour activer un skill.
+
+| Si la tâche touche…                            | Lire                                  |
+| ---------------------------------------------- | ------------------------------------- |
+| CSS, UI, thème, couleurs, pages `/sim/*`       | `docs/GOUVERNANCE.md`                 |
+| Architecture, structure, flux, Supabase        | `docs/ARCHITECTURE.md`                |
+| Règles métier fiscales, périmètre simulateurs  | `docs/METIER.md`                      |
+| Exports PPTX / Excel                           | `docs/GOUVERNANCE_EXPORTS.md`         |
+| `src/domain/base-contrat/` (catalogue, règles) | `docs/ARCHITECTURE.md` § Base-Contrat |
+| Git workflow, PR, conventions humains          | `.github/CONTRIBUTING.md`             |
+
+### Skills automatiques par assistant
+
+Claude Code :
+
+Les skills Claude Code sont des skills projet auto-découvrables, model-invoked, et masqués du menu
+manuel via `user-invocable: false`. Les anciens dossiers de bibliothèques et commandes Claude ne
+sont plus le flux de référence.
+
+| Si la tâche touche…                                                                    | Utiliser                                         |
+| -------------------------------------------------------------------------------------- | ------------------------------------------------ |
+| Calculs `src/engine/`, IR, succession, PS, PFU                                         | `.claude/skills/fiscal-engine/SKILL.md`          |
+| Auth, RLS, migrations, admin Supabase                                                  | `.claude/skills/supabase-patterns/SKILL.md`      |
+| Snapshot, `src/reporting/`                                                             | `.claude/skills/reporting/SKILL.md`              |
+| Validation complète avant commit ou livraison                                          | `.claude/skills/check/SKILL.md`                  |
+| Debug `npm run check` en échec                                                         | `.claude/skills/fix-errors/SKILL.md`             |
+| Audit fiscal ciblé hardcodes / chaîne fiscale                                          | `.claude/skills/fiscal-audit/SKILL.md`           |
+| Review avant PR, ajout de fichier dans `src/`                                          | `.claude/skills/arch-check/SKILL.md`             |
+| Préparation PR                                                                         | `.claude/skills/pr/SKILL.md`                     |
+| Modification dans `src/features/succession/`                                           | `.claude/skills/succession-review/SKILL.md`      |
+| Démarrage nouvelle verticale roadmap (P3 PER, P4 scan, P5 rôles, P6, P7, P8 catalogue) | `.claude/skills/start-roadmap-vertical/SKILL.md` |
+| Après implémentation / refactor                                                        | `.claude/skills/clean-code/SKILL.md`             |
+| Fichiers `.docx`                                                                       | `.claude/skills/docx/SKILL.md`                   |
+| Fichiers `.pdf`                                                                        | `.claude/skills/pdf/SKILL.md`                    |
+| Fichiers `.pptx`                                                                       | `.claude/skills/pptx/SKILL.md`                   |
+| Fichiers `.xlsx`, `.csv`, `.tsv`                                                       | `.claude/skills/xlsx/SKILL.md`                   |
+
+Codex :
+
+- Utiliser les skills Codex SER1 installés quand disponibles : `ser1-repo-navigation`,
+  `ser1-proof-first`, `ser1-ui-v5-polish`, `ser1-fiscal-chain`,
+  `ser1-supabase-rls`, `ser1-reporting-exports`, `ser1-per-base-contrat`,
+  `ser1-check-fix`.
+- Utiliser les skills Codex système/plugin pertinents (`xlsx`, Documents, Presentations,
+  Browser, Superpowers, etc.) selon la tâche.
+- Ne pas traiter `.claude/skills/*` comme des skills Codex natifs ; ce sont des skills Claude Code.
+  Les lire seulement si l'utilisateur le demande explicitement ou si aucun skill Codex équivalent
+  n'est disponible et que le contexte SER1 l'exige.
 
 > Ne charger un fichier que si la tâche le justifie directement.
 

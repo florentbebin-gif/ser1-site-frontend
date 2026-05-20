@@ -1,5 +1,7 @@
 ---
-description: Travail ponctuel sur fichiers Word pour SER1. Ne référence aucun script absent du repo.
+name: docx
+description: "Traiter automatiquement les demandes SER1 portant directement sur un fichier .docx ou Word : inspection, modification ponctuelle, méthode utilisée, et cohérence avec les générateurs applicatifs quand le livrable vient de l'app."
+user-invocable: false
 ---
 
 # DOCX

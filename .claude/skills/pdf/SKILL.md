@@ -1,5 +1,7 @@
 ---
-description: Travail ponctuel sur PDF pour SER1. Analyse documentaire sans dépendre de scripts absents.
+name: pdf
+description: "Traiter automatiquement les demandes SER1 portant directement sur un fichier .pdf : inspection, extraction, validation visuelle ou contrôle indirect d'export, sans dépendre de scripts absents."
+user-invocable: false
 ---
 
 # PDF

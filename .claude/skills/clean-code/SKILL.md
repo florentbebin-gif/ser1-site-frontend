@@ -1,5 +1,7 @@
 ---
-description: Post-implementation clean code review — auto-triggered after implementing a feature, fixing a bug, or refactoring code. Verify file sizes, structure, and quality standards.
+name: clean-code
+description: 'Relire automatiquement la qualité du code après implémentation, correction de bug ou refactor SER1. Vérifier tailles de fichiers, responsabilités, conventions, logs, TODO/FIXME, imports et validation.'
+user-invocable: false
 ---
 
 # Clean Code Review
