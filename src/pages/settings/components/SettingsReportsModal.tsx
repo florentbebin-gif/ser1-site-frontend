@@ -1,4 +1,6 @@
 import React from 'react';
+import { createIssueReportAttachmentSignedUrl } from '@/settings/admin/issueReportAttachments';
+import { normalizeIssueReportAttachments, type IssueAttachment } from '@/settings/issueReports';
 
 interface ReportUser {
   id?: string;
@@ -8,11 +10,11 @@ interface ReportUser {
 interface SettingsReport {
   id: string;
   created_at: string;
-  page?: string | null;
   title?: string | null;
   description?: string | null;
   admin_read_at?: string | null;
   meta?: Record<string, unknown> | null;
+  attachments?: IssueAttachment[] | null;
 }
 
 interface SettingsReportsModalProps {
@@ -42,7 +44,22 @@ export default function SettingsReportsModal({
   onMarkAsRead,
   onDeleteReport,
 }: SettingsReportsModalProps): React.ReactElement | null {
+  const [downloadError, setDownloadError] = React.useState('');
   if (!show) return null;
+  const selectedAttachments = normalizeIssueReportAttachments(selectedReport?.attachments);
+  const context =
+    typeof selectedReport?.meta?.context === 'string' ? selectedReport.meta.context : null;
+  const contextLabel = context === 'base_cg_retraite' ? 'Base CG retraite' : null;
+
+  const handleDownloadAttachment = async (attachment: IssueAttachment): Promise<void> => {
+    try {
+      setDownloadError('');
+      const url = await createIssueReportAttachmentSignedUrl(attachment.storagePath);
+      window.open(url, '_blank', 'noopener,noreferrer');
+    } catch (error) {
+      setDownloadError(error instanceof Error ? error.message : 'Téléchargement impossible.');
+    }
+  };
 
   return (
     <div className="report-modal-overlay">
@@ -71,7 +88,6 @@ export default function SettingsReportsModal({
                   <thead>
                     <tr>
                       <th>Date</th>
-                      <th>Page</th>
                       <th>Titre</th>
                       <th>Statut</th>
                       <th>Action</th>
@@ -81,7 +97,6 @@ export default function SettingsReportsModal({
                     {userReports.map((report) => (
                       <tr key={report.id} className={report.admin_read_at ? 'read' : 'unread'}>
                         <td>{new Date(report.created_at).toLocaleDateString('fr-FR')}</td>
-                        <td className="report-page-cell">{report.page || '-'}</td>
                         <td className="report-title-cell">{report.title || 'Sans titre'}</td>
                         <td>
                           <span
@@ -144,10 +159,6 @@ export default function SettingsReportsModal({
                   </span>
                 </div>
                 <div className="report-detail-field">
-                  <span className="report-detail-label">Page :</span>
-                  <span className="report-detail-value">{selectedReport.page || '-'}</span>
-                </div>
-                <div className="report-detail-field">
                   <span className="report-detail-label">Statut :</span>
                   <span
                     className={`report-status ${selectedReport.admin_read_at ? 'read' : 'unread'}`}
@@ -158,11 +169,33 @@ export default function SettingsReportsModal({
               </div>
 
               <div className="report-detail-section">
+                {contextLabel ? <span className="report-context-chip">{contextLabel}</span> : null}
                 <h4>{selectedReport.title || 'Sans titre'}</h4>
                 <div className="report-description-box">
                   {selectedReport.description || 'Aucune description fournie.'}
                 </div>
               </div>
+
+              {selectedAttachments.length > 0 ? (
+                <div className="report-detail-section">
+                  <h4>Pièces jointes</h4>
+                  <div className="report-attachments-list">
+                    {selectedAttachments.map((attachment) => (
+                      <div key={attachment.storagePath} className="report-attachment-row">
+                        <span>{attachment.fileName}</span>
+                        <button
+                          type="button"
+                          className="report-view-btn"
+                          onClick={() => void handleDownloadAttachment(attachment)}
+                        >
+                          Télécharger {attachment.fileName}
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                  {downloadError ? <p className="report-download-error">{downloadError}</p> : null}
+                </div>
+              ) : null}
 
               {selectedReport.meta && Object.keys(selectedReport.meta).length > 0 && (
                 <details className="report-detail-metadata">

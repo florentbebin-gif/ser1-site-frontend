@@ -15,6 +15,7 @@ import {
   upsertBaseCgRetraiteContract,
 } from '@/utils/cache/baseCgRetraiteRepository';
 import { TYPE_LABELS, TYPE_OPTIONS } from './baseCgRetraiteOptions';
+import BaseCgRetraiteAssistanceModal from './components/BaseCgRetraiteAssistanceModal';
 import BaseCgRetraiteContractCards from './components/BaseCgRetraiteContractCards';
 import { BaseCgRetraiteContractModal } from './components/BaseCgRetraiteContractModal';
 import CompanyLogo from './components/CompanyLogo';
@@ -111,6 +112,7 @@ export default function BaseCgRetraite() {
   const [initialAccordionApplied, setInitialAccordionApplied] = useState(false);
   const [bulkSaving, setBulkSaving] = useState(false);
   const [bulkStatus, setBulkStatus] = useState<string | null>(null);
+  const [showAssistanceModal, setShowAssistanceModal] = useState(false);
 
   const reload = () => {
     setLoading(true);
@@ -235,25 +237,34 @@ export default function BaseCgRetraite() {
             {headerStatsLabel(catalog.length, configuredCount, cgAvailableCount)}
           </p>
         </div>
-        {isAdmin ? (
-          <div className="base-cg-header-actions">
-            <button
-              type="button"
-              className="base-cg-button base-cg-button--primary"
-              onClick={handleBulkSave}
-              disabled={bulkSaving}
-            >
-              {bulkSaving ? 'Sauvegarde…' : 'Enregistrer la base CG retraite'}
-            </button>
-            <button
-              type="button"
-              className="base-cg-button"
-              onClick={() => setEditing(createEmptyContract())}
-            >
-              Ajouter
-            </button>
-          </div>
-        ) : null}
+        <div className="base-cg-header-actions">
+          <button
+            type="button"
+            className="base-cg-button base-cg-button--assistance"
+            onClick={() => setShowAssistanceModal(true)}
+          >
+            Assistance & Suggestions
+          </button>
+          {isAdmin ? (
+            <>
+              <button
+                type="button"
+                className="base-cg-button base-cg-button--primary"
+                onClick={handleBulkSave}
+                disabled={bulkSaving}
+              >
+                {bulkSaving ? 'Sauvegarde…' : 'Enregistrer la base CG retraite'}
+              </button>
+              <button
+                type="button"
+                className="base-cg-button"
+                onClick={() => setEditing(createEmptyContract())}
+              >
+                Ajouter
+              </button>
+            </>
+          ) : null}
+        </div>
       </section>
 
       {bulkStatus ? (
@@ -343,6 +354,9 @@ export default function BaseCgRetraite() {
           onClose={() => setEditing(null)}
           onSave={handleSave}
         />
+      ) : null}
+      {showAssistanceModal ? (
+        <BaseCgRetraiteAssistanceModal onClose={() => setShowAssistanceModal(false)} />
       ) : null}
     </div>
   );

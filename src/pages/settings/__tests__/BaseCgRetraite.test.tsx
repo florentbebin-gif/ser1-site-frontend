@@ -139,6 +139,9 @@ describe('BaseCgRetraite', () => {
   it('réserve les actions de gestion aux admins et supprime le bouton réinitialiser', async () => {
     const { unmount } = render(<BaseCgRetraite />);
 
+    expect(
+      await screen.findByRole('button', { name: 'Assistance & Suggestions' }),
+    ).toBeInTheDocument();
     expect(await screen.findByRole('button', { name: 'Ajouter' })).toBeInTheDocument();
     expect(await screen.findByRole('button', { name: 'Modifier' })).toBeInTheDocument();
     expect(await screen.findByRole('button', { name: 'Supprimer' })).toBeInTheDocument();
@@ -154,6 +157,7 @@ describe('BaseCgRetraite', () => {
     render(<BaseCgRetraite />);
 
     expect(await screen.findByText('MADELIN- ABEILLE RETRAITE MADELIN')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Assistance & Suggestions' })).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Ajouter' })).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Modifier' })).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Supprimer' })).not.toBeInTheDocument();

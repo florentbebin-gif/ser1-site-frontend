@@ -1,17 +1,7 @@
 import React, { useState } from 'react';
 import { useSignalements } from '@/hooks/settings/useSignalements';
+import { validateIssueAttachmentFile, type IssueAttachmentKind } from '@/settings/issueReports';
 import './SignalementsBlock.css';
-
-const REPORT_PAGE_OPTIONS = [
-  { value: '', label: 'Sélectionner une page...' },
-  { value: 'ir', label: 'Simulateur IR' },
-  { value: 'credit', label: 'Simulateur Crédit' },
-  { value: 'placement', label: 'Simulateur Placement' },
-  { value: 'audit', label: 'Audit Patrimonial' },
-  { value: 'strategy', label: 'Stratégie' },
-  { value: 'settings', label: 'Paramètres' },
-  { value: 'other', label: 'Autre' },
-];
 
 const REPORT_STATUS_LABELS: Record<string, string> = {
   new: 'Nouveau',
@@ -20,17 +10,15 @@ const REPORT_STATUS_LABELS: Record<string, string> = {
   closed: 'Fermé',
 };
 
-const getPageLabel = (value: string): string => {
-  const page = REPORT_PAGE_OPTIONS.find((option) => option.value === value);
-  return page?.label || value;
-};
-
 const getStatusLabel = (status: string): string => REPORT_STATUS_LABELS[status] || status;
 
 export default function SignalementsBlock(): React.ReactElement {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
-  const [page, setPage] = useState('');
+  const [pdfAttachment, setPdfAttachment] = useState<File | null>(null);
+  const [imageAttachment, setImageAttachment] = useState<File | null>(null);
+  const [attachmentError, setAttachmentError] = useState('');
+  const [fileInputResetKey, setFileInputResetKey] = useState(0);
 
   const {
     reports,
@@ -42,20 +30,49 @@ export default function SignalementsBlock(): React.ReactElement {
     submitReport,
   } = useSignalements();
 
+  const handleFileChange = (
+    e: React.ChangeEvent<HTMLInputElement>,
+    expectedKind: IssueAttachmentKind,
+  ): void => {
+    const file = e.currentTarget.files?.[0] ?? null;
+    setAttachmentError('');
+
+    if (!file) {
+      if (expectedKind === 'pdf') setPdfAttachment(null);
+      else setImageAttachment(null);
+      return;
+    }
+
+    try {
+      validateIssueAttachmentFile(file, expectedKind);
+      if (expectedKind === 'pdf') setPdfAttachment(file);
+      else setImageAttachment(file);
+    } catch (error) {
+      if (expectedKind === 'pdf') setPdfAttachment(null);
+      else setImageAttachment(null);
+      e.currentTarget.value = '';
+      setAttachmentError(error instanceof Error ? error.message : 'Pièce jointe invalide.');
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>): Promise<void> => {
     e.preventDefault();
 
-    if (!title.trim() || !page) return;
+    if (!title.trim() || attachmentError) return;
 
     const success = await submitReport({
       title: title.trim(),
       description: description.trim(),
-      page,
+      pdfAttachment,
+      imageAttachment,
     });
     if (success) {
       setTitle('');
       setDescription('');
-      setPage('');
+      setPdfAttachment(null);
+      setImageAttachment(null);
+      setAttachmentError('');
+      setFileInputResetKey((value) => value + 1);
     }
   };
 
@@ -79,23 +96,6 @@ export default function SignalementsBlock(): React.ReactElement {
         </p>
 
         <form onSubmit={handleSubmit} className="signalement-form">
-          <div className="form-group">
-            <label htmlFor="report-page">Page concernée *</label>
-            <select
-              id="report-page"
-              value={page}
-              onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setPage(e.target.value)}
-              disabled={submitting}
-              required
-            >
-              {REPORT_PAGE_OPTIONS.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
-          </div>
-
           <div className="form-group">
             <label htmlFor="report-title">Titre *</label>
             <input
@@ -124,6 +124,39 @@ export default function SignalementsBlock(): React.ReactElement {
             />
           </div>
 
+          <div className="signalement-files">
+            <div className="form-group form-group--file">
+              <label htmlFor="report-pdf">PDF (facultatif)</label>
+              <input
+                key={`report-pdf-${fileInputResetKey}`}
+                id="report-pdf"
+                type="file"
+                accept="application/pdf"
+                disabled={submitting}
+                onChange={(e) => handleFileChange(e, 'pdf')}
+              />
+              {pdfAttachment ? (
+                <span className="signalement-file-name">{pdfAttachment.name}</span>
+              ) : null}
+            </div>
+
+            <div className="form-group form-group--file">
+              <label htmlFor="report-image">Image ou capture d'écran (facultatif)</label>
+              <input
+                key={`report-image-${fileInputResetKey}`}
+                id="report-image"
+                type="file"
+                accept="image/png,image/jpeg,image/webp"
+                disabled={submitting}
+                onChange={(e) => handleFileChange(e, 'image')}
+              />
+              {imageAttachment ? (
+                <span className="signalement-file-name">{imageAttachment.name}</span>
+              ) : null}
+            </div>
+          </div>
+
+          {attachmentError && <div className="alert alert-error">{attachmentError}</div>}
           {submitError && <div className="alert alert-error">{submitError}</div>}
           {submitSuccess && (
             <div className="alert alert-success">Signalement envoyé avec succès !</div>
@@ -155,9 +188,17 @@ export default function SignalementsBlock(): React.ReactElement {
                   </span>
                 </div>
                 <div className="report-meta">
-                  <span>{getPageLabel(report.page)}</span>
-                  <span className="report-meta-separator">•</span>
                   <span>{formatDate(report.created_at)}</span>
+                  {report.attachments.length > 0 ? (
+                    <>
+                      <span className="report-meta-separator">•</span>
+                      <span>
+                        {report.attachments.length} pièce
+                        {report.attachments.length > 1 ? 's' : ''} jointe
+                        {report.attachments.length > 1 ? 's' : ''}
+                      </span>
+                    </>
+                  ) : null}
                 </div>
               </div>
             ))}

@@ -7,6 +7,7 @@
  */
 
 import { invokeAdmin } from './invokeAdmin';
+import type { IssueAttachment } from '@/settings/issueReports';
 
 // ─── Types publics ────────────────────────────────────────────────────
 
@@ -45,11 +46,11 @@ export interface ThemeRecord {
 export interface ReportRecord {
   id: string;
   created_at: string;
-  page?: string | null;
   title?: string | null;
   description?: string | null;
   admin_read_at?: string | null;
   meta?: Record<string, unknown> | null;
+  attachments?: IssueAttachment[] | null;
 }
 
 export interface LogoRecord {

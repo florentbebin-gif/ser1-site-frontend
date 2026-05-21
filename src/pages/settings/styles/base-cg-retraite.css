@@ -52,6 +52,17 @@
   color: var(--color-c9);
 }
 
+.base-cg-button--assistance {
+  border-color: var(--color-c2);
+  background: var(--color-c2);
+  color: #ffffff;
+}
+
+.base-cg-button--assistance:hover:not(:disabled) {
+  border-color: var(--color-c1);
+  background: color-mix(in srgb, var(--color-c2) 82%, var(--color-c1));
+}
+
 .base-cg-filters {
   display: flex;
   gap: 12px;
@@ -448,6 +459,14 @@
   padding: 18px;
 }
 
+.base-cg-assistance-modal {
+  width: min(640px, 100%);
+}
+
+.base-cg-assistance-modal__body {
+  grid-template-columns: 1fr;
+}
+
 .base-cg-modal__tabs {
   display: flex;
   gap: 6px;
@@ -485,6 +504,33 @@
 .base-cg-modal select {
   min-height: 36px;
   padding: 0 10px;
+}
+
+.base-cg-modal input[type='file'] {
+  padding: 7px;
+  background: var(--color-c7);
+}
+
+.base-cg-modal input[type='file']::file-selector-button {
+  min-height: 30px;
+  margin-right: 10px;
+  border: 1px solid var(--color-c3);
+  border-radius: 6px;
+  background: var(--color-c3);
+  color: #ffffff;
+  cursor: pointer;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 0 12px;
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease;
+}
+
+.base-cg-modal input[type='file']::file-selector-button:hover {
+  border-color: var(--color-c2);
+  background: var(--color-c2);
 }
 
 .base-cg-modal textarea {
