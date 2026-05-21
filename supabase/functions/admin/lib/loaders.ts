@@ -38,6 +38,7 @@ export interface IssueReportRow {
   user_id: string
   created_at: string
   admin_read_at: string | null
+  attachments?: unknown
   [key: string]: unknown
 }
 

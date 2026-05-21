@@ -5,6 +5,42 @@ import {
 } from '../lib/http.ts'
 import { loadIssueReportOrThrow } from '../lib/loaders.ts'
 import { recordAdminAction } from '../lib/audit.ts'
+import type { SupabaseClient } from '../lib/auth.ts'
+
+const ISSUE_REPORTS_BUCKET = 'issue-reports'
+
+interface IssueReportWithAttachments {
+  attachments?: unknown
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null
+}
+
+export function collectIssueAttachmentStoragePaths(
+  reports: IssueReportWithAttachments | IssueReportWithAttachments[] | null | undefined,
+): string[] {
+  const rows = Array.isArray(reports) ? reports : reports ? [reports] : []
+  const paths = rows.flatMap((report) => {
+    if (!Array.isArray(report.attachments)) return []
+    return report.attachments.flatMap((attachment) => {
+      if (!isRecord(attachment)) return []
+      const storagePath = attachment.storagePath
+      return typeof storagePath === 'string' && storagePath.length > 0 ? [storagePath] : []
+    })
+  })
+
+  return Array.from(new Set(paths))
+}
+
+async function removeIssueAttachmentObjects(
+  supabase: SupabaseClient,
+  storagePaths: string[],
+): Promise<void> {
+  if (storagePaths.length === 0) return
+  const { error } = await supabase.storage.from(ISSUE_REPORTS_BUCKET).remove(storagePaths)
+  if (error) throw error
+}
 
 const listIssueCounts: AdminActionHandler = async (ctx) => {
   const { data: reports, error } = await ctx.supabase
@@ -87,7 +123,11 @@ const markIssueRead: AdminActionHandler = async (ctx) => {
     return errorResponse('ID signalement requis', ctx.responseHeaders, 400)
   }
 
-  await loadIssueReportOrThrow(ctx.supabase, reportId)
+  const report = await loadIssueReportOrThrow(ctx.supabase, reportId)
+  await removeIssueAttachmentObjects(
+    ctx.supabase,
+    collectIssueAttachmentStoragePaths(report),
+  )
 
   const { error } = await ctx.supabase
     .from('issue_reports')
@@ -167,8 +207,13 @@ const deleteAllIssuesForUser: AdminActionHandler = async (ctx) => {
 
   const { data: reportsToDelete } = await ctx.supabase
     .from('issue_reports')
-    .select('id')
+    .select('id, attachments')
     .eq('user_id', userId)
+
+  await removeIssueAttachmentObjects(
+    ctx.supabase,
+    collectIssueAttachmentStoragePaths(reportsToDelete),
+  )
 
   const { error } = await ctx.supabase
     .from('issue_reports')

@@ -59,6 +59,46 @@
   gap: 6px;
 }
 
+.signalement-files {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.signalement-form .form-group--file {
+  padding: 10px 12px;
+  border: 1px solid var(--color-c8);
+  border-radius: 6px;
+  background: #ffffff;
+}
+
+.signalement-form .form-group--file input[type='file'] {
+  padding: 7px;
+  background: var(--color-c7);
+}
+
+.signalement-form .form-group--file input[type='file']::file-selector-button {
+  min-height: 30px;
+  margin-right: 10px;
+  border: 1px solid var(--color-c3);
+  border-radius: 6px;
+  background: var(--color-c3);
+  color: #ffffff;
+  cursor: pointer;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 0 12px;
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease;
+}
+
+.signalement-form .form-group--file input[type='file']::file-selector-button:hover {
+  border-color: var(--color-c2);
+  background: var(--color-c2);
+}
+
 .signalement-form label {
   font-size: 12px;
   font-weight: 600;
@@ -100,6 +140,13 @@
 .signalement-form textarea {
   resize: vertical;
   min-height: 80px;
+}
+
+.signalement-file-name {
+  color: var(--color-c9);
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.35;
 }
 
 /* Alertes - Utilisation de variables neutres au lieu de couleurs hardcodées */
@@ -228,4 +275,10 @@
 
 .report-meta-separator {
   color: var(--color-c8);
+}
+
+@media (max-width: 720px) {
+  .signalement-files {
+    grid-template-columns: 1fr;
+  }
 }

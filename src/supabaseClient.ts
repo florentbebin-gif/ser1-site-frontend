@@ -57,6 +57,8 @@ interface MockSupabaseClient {
       getPublicUrl: () => { data: { publicUrl: string } };
       upload: () => Promise<MockStorageErrorResult>;
       download: () => Promise<MockStorageErrorResult>;
+      remove: () => Promise<MockStorageErrorResult>;
+      createSignedUrl: () => Promise<{ data: { signedUrl: string } | null; error: null }>;
     };
   };
 }
@@ -87,6 +89,8 @@ const mockSupabase: MockSupabaseClient = {
       getPublicUrl: () => ({ data: { publicUrl: '' } }),
       upload: async () => ({ data: null, error: { message: 'Supabase not configured' } }),
       download: async () => ({ data: null, error: { message: 'Supabase not configured' } }),
+      remove: async () => ({ data: null, error: { message: 'Supabase not configured' } }),
+      createSignedUrl: async () => ({ data: { signedUrl: '' }, error: null }),
     }),
   },
 };
