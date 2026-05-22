@@ -12,6 +12,33 @@ Piloter la trajectoire SER1 vers un outil premium, simple et fiable pour le cons
 > Cette roadmap ne contient que ce qui reste à faire.
 > Les chantiers livrés sont tracés par commits et PR, pas par blocs `done` détaillés.
 
+## Trajectoire 2026
+
+Positionnement : SER1 est une plateforme de chiffrage patrimonial fiable, explicable et exportable. La cible produit prioritaire est le **dirigeant patrimonial 360°** : IR, société, PER, succession et prévoyance dans une chaîne fiscale cohérente. Cette cible reste roadmappée : la prévoyance n'est pas encore construite et reste portée par `PR-P6-03`.
+
+Aucun pilote payant ne démarre avant le socle commercialisation complet. Ce socle est strictement time-boxé, en MVP :
+
+- rôles et utilisateurs simples ;
+- branding cabinet limité à logo + couleurs dans les exports ;
+- dossiers clients durables ;
+- page conformité de base sécurité / RLS / hébergement ;
+- onboarding minimal.
+
+La facturation in-app ne fait pas partie du socle pré-pilote : les 5 à 15 premiers pilotes restent facturés manuellement.
+
+Principe tarifaire durable : forfait fixe en 3 paliers fonctionnels, aucune facturation au token. Les seuils commerciaux, montants et plafonds chiffrés restent hors repo.
+
+Ordre d'exécution, sans créer de nouvelle phase :
+
+1. Socle commercialisation — gate du premier pilote payant.
+2. P6 — analyse patrimoniale durcie (audit, livrables client-ready), hors `PR-P6-03`.
+3. P4 — scan documentaire IA Mistral, qui préremplit l'analyse patrimoniale.
+4. P7 — stratégie avancée durcie.
+5. `PR-P6-03` prévoyance.
+6. P8 catalogue.
+
+L'analyse patrimoniale passe avant le scan IA : la saisie manuelle est la base, le LLM n'est qu'un booster qui préremplit l'AP. P4 ne peut pas avancer tant que l'AP manuelle n'est pas opérationnelle.
+
 ## Principes non négociables
 
 1. Une seule source de vérité pour les chiffres fiscaux : `Supabase → fiscalSettingsCache.ts → useFiscalContext.ts → settingsDefaults.ts`.
@@ -160,17 +187,29 @@ Reste :
 
 Objectif : préremplir l'analyse patrimoniale depuis des documents, avec relecture humaine.
 
+Parcours fiable commercialement : OCR + guide documentaire + JSON strict + score de confiance + `sourceRef` + validation CGP. Le LLM reste un booster ; la base est la saisie manuelle de l'analyse patrimoniale, qui doit être opérationnelle avant P4.
+
+Plan détaillé : [`docs/PLAN_IA_DOCUMENTAIRE_SER1.md`](./PLAN_IA_DOCUMENTAIRE_SER1.md) (cadrage fournisseur Mistral, dev SER1 en 10 phases, conformité RGPD A-G, calendrier, coûts).
+
+Runbook opérationnel Mistral : [`docs/RUNBOOK_MISTRAL_SER1.md`](./RUNBOOK_MISTRAL_SER1.md) (admin.mistral.ai, console.mistral.ai, clés API, limites, OCR, Files, Batches, ZDR).
+
+P4 V1 déverrouille uniquement l'IA Mistral du palier Basic. Les paliers Pro et Premium attendent la V2 multi-modèles documentée dans le plan IA, après validation qualité et conformité fournisseur.
+
 ## PR-P4-01 - Décision infra + confidentialité
 
 - Décider stockage, durée de conservation, extraction et journalisation.
+- Couvert par le Lot 1 du plan détaillé et par `docs/RUNBOOK_MISTRAL_SER1.md` : compte Mistral pay-as-you-go, DPA, ZDR, limites, clés API, registre RGPD initial.
 
 ## PR-P4-02 - Prototype extraction minimale
 
 - Dépôt document, extraction structurée, validation manuelle.
+- Créer le guide de lecture documentaire SER1 : champs attendus, mapping SER1, statuts de confiance et validations obligatoires par type de document.
+- Couvert par les Lots 2, 3 et 4 du plan détaillé.
 
 ## PR-P4-03 - Intégration analyse patrimoniale
 
 - Réinjecter les données validées dans le workflow audit.
+- Couvert par les Lots 5 et 6 du plan détaillé (moteurs SER1, assistant, PPTX, pilote cabinet).
 
 ---
 
@@ -178,9 +217,12 @@ Objectif : préremplir l'analyse patrimoniale depuis des documents, avec relectu
 
 Objectif : renforcer l'exploitation multi-cabinet.
 
+P5 porte le bloc central du socle commercialisation pré-pilote. Le périmètre doit rester MVP : suffisamment fiable pour des cabinets pilotes, sans gold-plating.
+
 ## PR-P5-01 - Multi-rôles
 
 - Dépasser le booléen `is_admin` et cadrer les droits.
+- Livrer un modèle simple, exploitable pour pilote.
 
 ## PR-P5-02 - Gestion utilisateurs
 
@@ -189,10 +231,24 @@ Objectif : renforcer l'exploitation multi-cabinet.
 ## PR-P5-03 - Branding complet
 
 - Couleurs cabinet et logo dans les exports.
+- Pour le socle pré-pilote, limiter à logo + couleurs dans les livrables.
+
+## PR-P5-04 - Dossiers clients durables
+
+- Sauvegarder les dossiers clients de manière durable, sans dépendre uniquement d'une session locale.
+- Assurer la reprise du dossier pour audit, stratégie et exports.
+
+## PR-P5-05 - Page conformité de base et onboarding
+
+- Publier une page conformité de base : sécurité, RLS, hébergement et limites de responsabilité.
+- Ajouter un onboarding minimal pour les cabinets pilotes.
+- Le volet IA fournisseur / DPA / ZDR / pseudonymisation enrichit cette page à la livraison de P4.
 
 ---
 
 # P6 - Analyse patrimoniale premium + livrables
+
+Objectif : transformer les simulateurs stabilisés en livrables client-ready, sans rendre la valeur centrale dépendante d'un LLM.
 
 ## PR-P6-01 - Audit patrimonial PPTX stable
 
@@ -209,6 +265,8 @@ Objectif : renforcer l'exploitation multi-cabinet.
 ---
 
 # P7 - Stratégie avancée + société fine
+
+Objectif : durcir la chaîne audit → stratégie → export, avec des scénarios comparables et des résultats cohérents avec les moteurs SER1.
 
 ## PR-P7-01 - Moteur de scénarios
 
@@ -248,4 +306,4 @@ Objectif : éviter que `catalog.ts` devienne bloquant si un cabinet veut personn
 - Base-Contrat : `src/domain/base-contrat/**`
 - Exports : `src/pptx/**` + `src/utils/export/xlsxBuilder.ts`
 - Snapshots `.ser1` : `src/reporting/snapshot/**`
-- Docs structurantes : `docs/{ARCHITECTURE,METIER,RUNBOOK,GOUVERNANCE,GOUVERNANCE_EXPORTS}.md`
+- Docs structurantes : `docs/{ARCHITECTURE,METIER,RUNBOOK,RUNBOOK_MISTRAL_SER1,GOUVERNANCE,GOUVERNANCE_EXPORTS}.md`

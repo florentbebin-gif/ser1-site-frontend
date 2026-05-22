@@ -7,6 +7,14 @@ Stack : React 19 + React Router 7 + Vite 8 + TypeScript 6 strict + Supabase.
 Terminal : Windows/PowerShell — pas de commandes macOS/Linux.
 CI gate : `npm run check` — doit passer avant tout commit.
 
+## Phase projet
+
+L'app n'est pas encore commercialisée — elle est en phase de construction, sans utilisateurs en production.
+
+- **Pas de legacy défensif** — pas de shim de rétrocompatibilité, pas de flag de feature, pas de double chemin ancien/nouveau. Remplacer franchement plutôt que faire coexister.
+- **Pas de code mort gardé « au cas où »** — supprimer les anciennes implémentations remplacées, les exports devenus inutiles, les types obsolètes, plutôt que de les marquer `@deprecated`.
+- **Mais pas de régression** — avant de remplacer, vérifier les usages (`rg`), faire tourner `npm run check`, ne pas casser un simulateur, un export ou la chaîne fiscale existante.
+
 ## Posture développeur expérimenté (priorité absolue)
 
 Agir en développeur senior à chaque plan et chaque implémentation.
