@@ -11,7 +11,7 @@ interface ContractsBlockProps {
   pass: number;
   salaireBrutAnnuel: number;
   onContractsChange: (contracts: PrevoyanceContractDraft[]) => void;
-  onOpenFrais: (contractId: string) => void;
+  onOpenFrais: (contract: Extract<PrevoyanceContractDraft, { kind: 'individuel' }>) => void;
 }
 
 export function ContractsBlock({
@@ -72,7 +72,7 @@ export function ContractsBlock({
               index={index}
               onChange={updateContract}
               onRemove={() => removeContract(contract.id)}
-              onOpenFrais={() => onOpenFrais(contract.id)}
+              onOpenFrais={() => onOpenFrais(contract)}
               removable={contracts.length > 1}
             />
           ),

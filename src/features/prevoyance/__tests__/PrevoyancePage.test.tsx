@@ -192,4 +192,28 @@ describe('PrevoyancePage', () => {
       ).toHaveLength(2);
     });
   });
+
+  it('ouvre la modale d’estimation des frais professionnels', async () => {
+    const user = userEvent.setup();
+    render(<PrevoyancePage />);
+
+    await screen.findByText('Contrats entreprise');
+    await user.click(screen.getByRole('radio', { name: 'TNS / libéral' }));
+    expect(await screen.findByText('Contrats individuels')).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getAllByLabelText(/Nom du contrat/i)).toHaveLength(1);
+    });
+    await user.click(screen.getByRole('button', { name: /Estimer depuis un compte de résultat/i }));
+
+    expect(
+      await screen.findByText('Estimation à partir des charges du compte de résultat.'),
+    ).toBeInTheDocument();
+    expect(screen.getByText('Achats et charges externes')).toBeInTheDocument();
+    expect(screen.getByText('Loyers et crédit-bail')).toBeInTheDocument();
+    expect(screen.getByText('Assurances')).toBeInTheDocument();
+    expect(screen.getByText('Salaires et charges')).toBeInTheDocument();
+    expect(screen.getByText('Dotations aux amortissements')).toBeInTheDocument();
+    expect(screen.getByText('Frais bancaires')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Retenir ce montant' })).toBeInTheDocument();
+  });
 });

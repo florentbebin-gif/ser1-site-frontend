@@ -110,11 +110,9 @@ export default function PrevoyancePage() {
     setSituation((prev) => ({ ...prev, ...patch }));
   };
 
-  const openFraisModal = (contractId: string) => {
-    const contract = contracts.find((item) => item.id === contractId && item.kind === 'individuel');
-    if (!contract || contract.kind !== 'individuel') return;
+  const openFraisModal = (contract: Extract<PrevoyanceContractDraft, { kind: 'individuel' }>) => {
     setFraisModal({
-      contractId,
+      contractId: contract.id,
       chargesExternes: Math.round(contract.fraisPro.amount * 0.35),
       loyers: Math.round(contract.fraisPro.amount * 0.25),
       assurances: Math.round(contract.fraisPro.amount * 0.1),
@@ -137,49 +135,53 @@ export default function PrevoyancePage() {
   };
 
   return (
-    <SimPageShell
-      title="Prévoyance"
-      subtitle="Protection arrêt de travail, invalidité, décès et frais professionnels."
-      loading={loading}
-      loadingContent={<div className="premium-card sim-state-card">Chargement des régimes...</div>}
-      pageClassName="prevoyance-page"
-      pageTestId="prevoyance-page"
-      mobileSideFirst
-      actions={<ExportMenu options={exportOptions} loading={exportLoading} />}
-    >
-      <SimPageShell.Main>
-        <SituationBlock
-          situation={situation}
-          regimes={regimes}
-          selectedRegime={selectedRegime}
-          kind={kind}
-          onChange={updateSituation}
-        />
+    <>
+      <SimPageShell
+        title="Prévoyance"
+        subtitle="Protection arrêt de travail, invalidité, décès et frais professionnels."
+        loading={loading}
+        loadingContent={
+          <div className="premium-card sim-state-card">Chargement des régimes...</div>
+        }
+        pageClassName="prevoyance-page"
+        pageTestId="prevoyance-page"
+        mobileSideFirst
+        actions={<ExportMenu options={exportOptions} loading={exportLoading} />}
+      >
+        <SimPageShell.Main>
+          <SituationBlock
+            situation={situation}
+            regimes={regimes}
+            selectedRegime={selectedRegime}
+            kind={kind}
+            onChange={updateSituation}
+          />
 
-        <ContractsBlock
-          kind={kind}
-          contracts={visibleContracts}
-          annualBase={annualBase}
-          pass={pass}
-          salaireBrutAnnuel={situation.salaireBrutAnnuel}
-          onContractsChange={setContracts}
-          onOpenFrais={openFraisModal}
-        />
-      </SimPageShell.Main>
+          <ContractsBlock
+            kind={kind}
+            contracts={visibleContracts}
+            annualBase={annualBase}
+            pass={pass}
+            salaireBrutAnnuel={situation.salaireBrutAnnuel}
+            onContractsChange={setContracts}
+            onOpenFrais={openFraisModal}
+          />
+        </SimPageShell.Main>
 
-      <SimPageShell.Side>
-        <Sidebar
-          kind={kind}
-          regime={selectedRegime}
-          maintien={maintienLegal}
-          contracts={visibleContracts}
-          annualBase={annualBase}
-          referenceAnnual={referenceAnnual}
-          pass={pass}
-          salaireBrutAnnuel={situation.salaireBrutAnnuel}
-          ancienneteYears={situation.ancienneteYears}
-        />
-      </SimPageShell.Side>
+        <SimPageShell.Side>
+          <Sidebar
+            kind={kind}
+            regime={selectedRegime}
+            maintien={maintienLegal}
+            contracts={visibleContracts}
+            annualBase={annualBase}
+            referenceAnnual={referenceAnnual}
+            pass={pass}
+            salaireBrutAnnuel={situation.salaireBrutAnnuel}
+            ancienneteYears={situation.ancienneteYears}
+          />
+        </SimPageShell.Side>
+      </SimPageShell>
 
       {fraisModal ? (
         <FraisProModal
@@ -189,6 +191,6 @@ export default function PrevoyancePage() {
           onChange={(patch) => setFraisModal((prev) => (prev ? { ...prev, ...patch } : prev))}
         />
       ) : null}
-    </SimPageShell>
+    </>
   );
 }
