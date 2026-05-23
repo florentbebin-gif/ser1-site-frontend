@@ -200,51 +200,118 @@
   gap: 12px;
 }
 
-.prevoyance-bar-row {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.prevoyance-bar-row__label,
 .prevoyance-side-note {
   color: var(--color-c9);
   font-size: 12px;
 }
 
-.prevoyance-stacked-bar {
+.prevoyance-mini-chart {
   display: grid;
-  grid-auto-flow: column;
-  grid-auto-columns: minmax(0, 1fr);
-  min-height: 44px;
-  overflow: hidden;
-  border: 1px solid var(--color-c8);
-  border-radius: 8px;
+  gap: 10px;
+  min-width: 0;
 }
 
-.prevoyance-stacked-bar__segment {
-  display: flex;
-  align-items: center;
-  justify-content: center;
+.prevoyance-mini-chart__bars {
+  display: grid;
+  grid-auto-columns: minmax(42px, 1fr);
+  grid-auto-flow: column;
+  gap: 8px;
   min-width: 0;
-  padding: 6px;
-  color: var(--color-c10);
-  font-size: 11px;
-  font-weight: 700;
-  line-height: 1.25;
+  overflow-x: auto;
+  padding-bottom: 2px;
+}
+
+.prevoyance-mini-chart__item {
+  display: grid;
+  gap: 6px;
+  min-width: 42px;
   text-align: center;
 }
 
-.prevoyance-stacked-bar__segment--ro {
-  background: var(--color-c4);
+.prevoyance-mini-chart__track {
+  position: relative;
+  display: flex;
+  width: 100%;
+  height: 92px;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border: 1px solid var(--color-c8);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--color-c8) 45%, var(--color-c7));
+  color: var(--color-c10);
+  font-size: 11px;
+  font-weight: 700;
 }
 
-.prevoyance-stacked-bar__segment--maintien {
-  background: color-mix(in srgb, var(--color-c5) 18%, var(--color-c7));
+.prevoyance-mini-chart__track strong {
+  position: relative;
+  z-index: 1;
 }
 
-.prevoyance-stacked-bar__segment--contrat {
-  background: color-mix(in srgb, var(--color-c3) 18%, var(--color-c7));
+.prevoyance-mini-chart__stack {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column-reverse;
+}
+
+.prevoyance-mini-chart__segment {
+  display: block;
+  height: var(--prevoyance-segment-height);
+  min-height: 0;
+}
+
+.prevoyance-mini-chart__segment--reference,
+.prevoyance-mini-chart__segment--ro {
+  background: var(--color-c1);
+}
+
+.prevoyance-mini-chart__segment--maintien {
+  background: color-mix(in srgb, var(--color-c2) 46%, var(--color-c7));
+}
+
+.prevoyance-mini-chart__segment--contrat {
+  background: color-mix(in srgb, var(--color-c5) 64%, var(--color-c7));
+}
+
+.prevoyance-mini-chart__label {
+  color: var(--color-c9);
+  font-size: 10px;
+  line-height: 1.2;
+  min-height: 24px;
+}
+
+.prevoyance-mini-chart__legend {
+  display: grid;
+  gap: 6px;
+  color: var(--color-c9);
+  font-size: 11px;
+}
+
+.prevoyance-mini-chart__legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.prevoyance-mini-chart__dot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+}
+
+.prevoyance-mini-chart__dot--ro {
+  background: var(--color-c1);
+}
+
+.prevoyance-mini-chart__dot--maintien {
+  background: color-mix(in srgb, var(--color-c2) 46%, var(--color-c7));
+}
+
+.prevoyance-mini-chart__dot--contrat {
+  background: color-mix(in srgb, var(--color-c5) 64%, var(--color-c7));
 }
 
 .prevoyance-threshold,

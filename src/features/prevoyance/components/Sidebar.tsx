@@ -1,5 +1,7 @@
 import type { CSSProperties } from 'react';
 import {
+  buildArretCoverageBars,
+  buildInvaliditeCoverageBars,
   computeCollectiveAssietteBase,
   computeDecesCapitalFromContract,
   computeTranchesFromPass,
@@ -14,33 +16,53 @@ import type {
 import { TARGET_DECES_MULTIPLE } from '../constants';
 import { euro, pct } from '../formatters';
 
-function CoverageBar({
-  label,
-  roLabel,
-  maintienLabel,
-  contractLabel,
-  collective,
+function MiniCoverageChart({
+  bars,
+  showMaintien,
 }: {
-  label: string;
-  roLabel: string;
-  maintienLabel?: string;
-  contractLabel: string;
-  collective: boolean;
+  bars: ReturnType<typeof buildArretCoverageBars>;
+  showMaintien: boolean;
 }) {
   return (
-    <div className="prevoyance-bar-row">
-      <div className="prevoyance-bar-row__label">{label}</div>
-      <div className="prevoyance-stacked-bar" aria-label={label}>
-        <span className="prevoyance-stacked-bar__segment prevoyance-stacked-bar__segment--ro">
-          {roLabel}
+    <div className="prevoyance-mini-chart">
+      <div className="prevoyance-mini-chart__bars">
+        {bars.map((bar) => (
+          <div key={bar.key} className="prevoyance-mini-chart__item">
+            <div className="prevoyance-mini-chart__track" aria-label={bar.label}>
+              <div className="prevoyance-mini-chart__stack">
+                {bar.segments.map((segment) => (
+                  <span
+                    key={`${bar.key}-${segment.kind}`}
+                    className={`prevoyance-mini-chart__segment prevoyance-mini-chart__segment--${segment.kind}`}
+                    style={
+                      {
+                        '--prevoyance-segment-height': `${Math.min(100, segment.valuePct)}%`,
+                      } as CSSProperties
+                    }
+                    title={`${segment.label} : ${pct(segment.valuePct)}`}
+                  />
+                ))}
+              </div>
+              <strong>{pct(bar.totalPct)}</strong>
+            </div>
+            <span className="prevoyance-mini-chart__label">{bar.label}</span>
+          </div>
+        ))}
+      </div>
+      <div className="prevoyance-mini-chart__legend">
+        <span>
+          <i className="prevoyance-mini-chart__dot prevoyance-mini-chart__dot--ro" />
+          Régime obligatoire
         </span>
-        {collective ? (
-          <span className="prevoyance-stacked-bar__segment prevoyance-stacked-bar__segment--maintien">
-            {maintienLabel ?? 'Maintien'}
+        {showMaintien ? (
+          <span>
+            <i className="prevoyance-mini-chart__dot prevoyance-mini-chart__dot--maintien" />
+            Maintien employeur
           </span>
         ) : null}
-        <span className="prevoyance-stacked-bar__segment prevoyance-stacked-bar__segment--contrat">
-          {contractLabel}
+        <span>
+          <i className="prevoyance-mini-chart__dot prevoyance-mini-chart__dot--contrat" />
+          Contrats de prévoyance
         </span>
       </div>
     </div>
@@ -73,6 +95,7 @@ export function Sidebar({
   maintien,
   contracts,
   annualBase,
+  referenceAnnual,
   pass,
   salaireBrutAnnuel,
   ancienneteYears,
@@ -82,6 +105,7 @@ export function Sidebar({
   maintien: PrevoyanceMaintienEmployeurSettings | null;
   contracts: PrevoyanceContractDraft[];
   annualBase: number;
+  referenceAnnual: number;
   pass: number;
   salaireBrutAnnuel: number;
   ancienneteYears: number;
@@ -96,31 +120,21 @@ export function Sidebar({
     (contract): contract is Extract<PrevoyanceContractDraft, { kind: 'individuel' }> =>
       contract.kind === 'individuel',
   );
-  const contractArretLabel =
-    kind === 'collectif'
-      ? `${pct(Math.max(...collectiveContracts.map((contract) => contract.arret.salairePct), 0))} salaire`
-      : `${euro(
-          individualContracts.reduce(
-            (sum, contract) => sum + (contract.arret.paliers[0]?.amount ?? 0),
-            0,
-          ),
-        )}/j`;
-  const contractInvaliditeLabel =
-    kind === 'collectif'
-      ? `${pct(
-          Math.max(
-            ...collectiveContracts.flatMap((contract) =>
-              contract.invalidite.paliers.map((palier) => palier.salairePct),
-            ),
-            0,
-          ),
-        )} salaire`
-      : euro(
-          individualContracts.reduce(
-            (sum, contract) => sum + (contract.invalidite.paliers[0]?.amount ?? 0),
-            0,
-          ),
-        );
+  const arretBars = buildArretCoverageBars({
+    regime,
+    contracts,
+    kind,
+    maintienPalier,
+    referenceAnnual,
+    salaireBrutAnnuel,
+  });
+  const invaliditeBars = buildInvaliditeCoverageBars({
+    regime,
+    contracts,
+    kind,
+    referenceAnnual,
+    salaireBrutAnnuel,
+  });
   const assietteBase = collectiveContracts[0]
     ? computeCollectiveAssietteBase(collectiveContracts[0].assiette, tranches)
     : salaireBrutAnnuel;
@@ -147,48 +161,12 @@ export function Sidebar({
     <div className="prevoyance-sidebar">
       <section className="premium-card prevoyance-side-card">
         <h2>Arrêt de travail</h2>
-        <CoverageBar
-          label="0 à 30 jours"
-          roLabel={regime?.data.arret.paliers[0]?.amount.label ?? 'RO'}
-          maintienLabel={
-            maintienPalier ? `${pct(maintienPalier.firstPeriodRate)} employeur` : 'Pas de maintien'
-          }
-          contractLabel={contractArretLabel}
-          collective={kind === 'collectif'}
-        />
-        <CoverageBar
-          label="30 à 365 jours"
-          roLabel={regime?.data.arret.paliers[0]?.amount.label ?? 'RO'}
-          maintienLabel={
-            maintienPalier
-              ? `${maintienPalier.secondPeriodDays} j à ${pct(maintienPalier.secondPeriodRate)}`
-              : 'Pas de maintien'
-          }
-          contractLabel={contractArretLabel}
-          collective={kind === 'collectif'}
-        />
-        <CoverageBar
-          label="365 à 1095 jours"
-          roLabel={regime?.data.arret.paliers[0]?.amount.label ?? 'RO'}
-          contractLabel={contractArretLabel}
-          collective={false}
-        />
+        <MiniCoverageChart bars={arretBars} showMaintien={kind === 'collectif'} />
       </section>
 
       <section className="premium-card prevoyance-side-card">
         <h2>Invalidité</h2>
-        {(regime?.data.invalidite.paliers ?? []).slice(0, 3).map((palier) => (
-          <div
-            key={`${palier.fromRate}-${palier.toRate ?? 'plus'}`}
-            className="prevoyance-threshold"
-          >
-            <span>
-              {palier.fromRate} % à {palier.toRate ?? '+'} %
-            </span>
-            <strong>{palier.amount.label ?? 'RO'}</strong>
-          </div>
-        ))}
-        <div className="prevoyance-side-note">Contrats : {contractInvaliditeLabel}</div>
+        <MiniCoverageChart bars={invaliditeBars} showMaintien={false} />
       </section>
 
       <section className="premium-card prevoyance-side-card">

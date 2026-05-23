@@ -156,6 +156,7 @@ export default function PrevoyancePage() {
           maintien={maintienLegal}
           contracts={visibleContracts}
           annualBase={annualBase}
+          referenceAnnual={kind === 'collectif' ? situation.salaireNetImposable : annualBase}
           pass={pass}
           salaireBrutAnnuel={situation.salaireBrutAnnuel}
           ancienneteYears={situation.ancienneteYears}
