@@ -3,7 +3,9 @@ import { describe, expect, it } from 'vitest';
 import {
   capArretDuration,
   buildArretCoverageBars,
+  buildArretEuroChart,
   buildInvaliditeCoverageBars,
+  buildInvaliditePctChart,
   computeCollectiveAssietteBase,
   computeDecesCapitalFromContract,
   computeTranchesFromPass,
@@ -12,6 +14,8 @@ import {
   findArretPalierForRange,
   PREVOYANCE_MAX_ARRET_DURATION_DAYS,
   selectMaintienEmployeurPalier,
+  splitIntoSubPeriods,
+  unionBoundaries,
 } from '../helpers';
 import type {
   PrevoyanceContractDraft,
@@ -155,6 +159,96 @@ describe('helpers prévoyance', () => {
     expect(findArretPalierForRange(paliers, 120, 200)?.label).toBe('Après franchise');
   });
 
+  it('calcule l’union des bornes arrêt et les sous-périodes contiguës', () => {
+    const paliers = [
+      { from: 0, to: 3 },
+      { from: 4, to: 1095 },
+      { from: 0, to: 7 },
+      { from: 8, to: 90 },
+      { from: 91, to: 1095 },
+    ];
+
+    expect(unionBoundaries(paliers)).toEqual([0, 3, 4, 7, 8, 90, 91, 1095]);
+    expect(splitIntoSubPeriods(paliers)).toEqual([
+      { from: 0, to: 3 },
+      { from: 4, to: 7 },
+      { from: 8, to: 90 },
+      { from: 91, to: 1095 },
+    ]);
+  });
+
+  it('construit le graphique arrêt en euros journaliers', () => {
+    const individuel: PrevoyanceContractDraft = {
+      id: 'ind-1',
+      name: 'Individuel',
+      kind: 'individuel',
+      indemnisation: 'forfaitaire',
+      arret: {
+        franchises: { accident: 0, hospitalisation: 0, maladie: 0 },
+        paliers: [
+          { fromDay: 0, toDay: 7, amount: 20 },
+          { fromDay: 8, toDay: 90, amount: 90 },
+          { fromDay: 91, toDay: 1095, amount: 120 },
+        ],
+      },
+      invalidite: { paliers: [] },
+      deces: {
+        capital: 0,
+        doublementAccident: false,
+        doubleEffet: false,
+        renteConjoint: 0,
+        renteEducation: 0,
+      },
+      fraisPro: { enabled: false, franchiseDays: 0, amount: 0, maxDurationYears: 1 },
+      cotisation: { montantAnnuel: 0, dontMadelin: 0 },
+    };
+    const chart = buildArretEuroChart({
+      regime: {
+        code: 'ssi',
+        label: 'SSI',
+        caisse: 'SSI',
+        population: 'tns',
+        defaultContractKind: 'individuel',
+        year: 2026,
+        data: {
+          arret: {
+            carences: { maladie: 3, accident: 0, hospitalisation: 0 },
+            maxDurationDays: 1095,
+            paliers: [
+              {
+                fromDay: 4,
+                toDay: 1095,
+                label: 'IJ',
+                amount: { mode: 'fixed_eur_day', value: 40, label: '40 €/j' },
+              },
+            ],
+          },
+          invalidite: { paliers: [] },
+          deces: {
+            capital: { mode: 'formula', value: null },
+            doublementAccident: false,
+            doubleEffet: false,
+          },
+          cotisations: { mode: 'none', value: null },
+        },
+        sources: { fiche: 'test', pagesPdf: [], noteValidation: 'test' },
+      },
+      contracts: [individuel],
+      kind: 'individuel',
+      maintienPalier: null,
+      referenceAnnual: 36_500,
+      salaireBrutAnnuel: 0,
+    });
+
+    expect(chart.reference).toBe(100);
+    expect(chart.periods.map((period) => [period.from, period.to, period.totalEuro])).toEqual([
+      [0, 3, 20],
+      [4, 7, 60],
+      [8, 90, 130],
+      [91, 1095, 160],
+    ]);
+  });
+
   it('construit les fenêtres arrêt depuis la carence quand le RO a un seul palier', () => {
     const bars = buildArretCoverageBars({
       regime: {
@@ -273,5 +367,46 @@ describe('helpers prévoyance', () => {
     });
 
     expect(bars.map((bar) => bar.label)).toEqual(['Net perçu', '16 %', '33 %']);
+  });
+
+  it('construit le graphique invalidité en pourcentage du revenu cible', () => {
+    const individuel: PrevoyanceContractDraft = {
+      id: 'ind-1',
+      name: 'Individuel',
+      kind: 'individuel',
+      indemnisation: 'forfaitaire',
+      arret: {
+        franchises: { accident: 0, hospitalisation: 0, maladie: 0 },
+        paliers: [],
+      },
+      invalidite: {
+        paliers: [
+          { fromRate: 16, toRate: 65, mode: 'fixed', referenceAmount: 0, amount: 12_000 },
+          { fromRate: 66, toRate: null, mode: 'fixed', referenceAmount: 0, amount: 24_000 },
+        ],
+      },
+      deces: {
+        capital: 0,
+        doublementAccident: false,
+        doubleEffet: false,
+        renteConjoint: 0,
+        renteEducation: 0,
+      },
+      fraisPro: { enabled: false, franchiseDays: 0, amount: 0, maxDurationYears: 1 },
+      cotisation: { montantAnnuel: 0, dontMadelin: 0 },
+    };
+    const chart = buildInvaliditePctChart({
+      regime: null,
+      contracts: [individuel],
+      kind: 'individuel',
+      referenceAnnual: 48_000,
+      salaireBrutAnnuel: 0,
+    });
+
+    expect(chart.reference).toBe(100);
+    expect(chart.paliers.map((palier) => [palier.rate, palier.contratPct])).toEqual([
+      [16, 25],
+      [66, 50],
+    ]);
   });
 });

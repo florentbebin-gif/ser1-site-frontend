@@ -125,7 +125,8 @@ describe('PrevoyancePage', () => {
 
     expect(await screen.findByText('Contrats entreprise')).toBeInTheDocument();
     expect(screen.queryByText('Frais professionnels')).not.toBeInTheDocument();
-    expect(screen.getAllByText(/employeur/i).length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Régime obligatoire').length).toBeGreaterThan(0);
+    expect(screen.queryByText(/Maintien employeur/i)).toBeNull();
   });
 
   it('bascule en TNS et permet trois contrats en colonnes', async () => {

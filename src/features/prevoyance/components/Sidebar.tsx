@@ -1,7 +1,7 @@
 import type { CSSProperties } from 'react';
 import {
-  buildArretCoverageBars,
-  buildInvaliditeCoverageBars,
+  buildArretEuroChart,
+  buildInvaliditePctChart,
   computeCollectiveAssietteBase,
   computeDecesCapitalFromContract,
   computeTranchesFromPass,
@@ -16,55 +16,128 @@ import type {
 import { TARGET_DECES_MULTIPLE } from '../constants';
 import { euro, pct } from '../formatters';
 
-function MiniCoverageChart({
-  bars,
-  showMaintien,
-}: {
-  bars: ReturnType<typeof buildArretCoverageBars>;
-  showMaintien: boolean;
-}) {
+function segmentHeight(value: number, reference: number): string {
+  if (reference <= 0) return '0%';
+  return `${Math.min(100, Math.max(0, (value / reference) * 100))}%`;
+}
+
+function MiniArretEuroChart({ chart }: { chart: ReturnType<typeof buildArretEuroChart> }) {
   return (
     <div className="prevoyance-mini-chart">
       <div className="prevoyance-mini-chart__bars">
-        {bars.map((bar) => (
-          <div key={bar.key} className="prevoyance-mini-chart__item">
-            <div className="prevoyance-mini-chart__track" aria-label={bar.label}>
-              <div className="prevoyance-mini-chart__stack">
-                {bar.segments.map((segment) => (
-                  <span
-                    key={`${bar.key}-${segment.kind}`}
-                    className={`prevoyance-mini-chart__segment prevoyance-mini-chart__segment--${segment.kind}`}
-                    style={
-                      {
-                        '--prevoyance-segment-height': `${Math.min(100, segment.valuePct)}%`,
-                      } as CSSProperties
-                    }
-                    title={`${segment.label} : ${pct(segment.valuePct)}`}
-                  />
-                ))}
-              </div>
-              <strong>{pct(bar.totalPct)}</strong>
+        <div className="prevoyance-mini-chart__item">
+          <strong className="prevoyance-mini-chart__value">{euro(chart.reference)}/j</strong>
+          <div className="prevoyance-mini-chart__track" aria-label="Revenu actuel">
+            <div className="prevoyance-mini-chart__stack">
+              <span
+                className="prevoyance-mini-chart__segment prevoyance-mini-chart__segment--reference"
+                style={{ '--prevoyance-segment-height': '100%' } as CSSProperties}
+              />
             </div>
-            <span className="prevoyance-mini-chart__label">{bar.label}</span>
+          </div>
+          <span className="prevoyance-mini-chart__label">Revenu actuel</span>
+        </div>
+        {chart.periods.map((period) => (
+          <div key={`${period.from}-${period.to}`} className="prevoyance-mini-chart__item">
+            <strong className="prevoyance-mini-chart__value">{euro(period.totalEuro)}/j</strong>
+            <div
+              className="prevoyance-mini-chart__track"
+              aria-label={`De ${period.from} à ${period.to} jours`}
+            >
+              <div className="prevoyance-mini-chart__stack">
+                <span
+                  className="prevoyance-mini-chart__segment prevoyance-mini-chart__segment--ro"
+                  style={
+                    {
+                      '--prevoyance-segment-height': segmentHeight(period.roEuro, chart.reference),
+                    } as CSSProperties
+                  }
+                  title={`Régime obligatoire : ${euro(period.roEuro)}/j`}
+                />
+                <span
+                  className="prevoyance-mini-chart__segment prevoyance-mini-chart__segment--contrat"
+                  style={
+                    {
+                      '--prevoyance-segment-height': segmentHeight(
+                        period.contratEuro,
+                        chart.reference,
+                      ),
+                    } as CSSProperties
+                  }
+                  title={`Contrats de prévoyance : ${euro(period.contratEuro)}/j`}
+                />
+              </div>
+            </div>
+            <span className="prevoyance-mini-chart__label">
+              De {period.from} à {period.to} j
+            </span>
           </div>
         ))}
       </div>
-      <div className="prevoyance-mini-chart__legend">
-        <span>
-          <i className="prevoyance-mini-chart__dot prevoyance-mini-chart__dot--ro" />
-          Régime obligatoire
-        </span>
-        {showMaintien ? (
-          <span>
-            <i className="prevoyance-mini-chart__dot prevoyance-mini-chart__dot--maintien" />
-            Maintien employeur
-          </span>
-        ) : null}
-        <span>
-          <i className="prevoyance-mini-chart__dot prevoyance-mini-chart__dot--contrat" />
-          Contrats de prévoyance
-        </span>
+      <MiniChartLegend />
+    </div>
+  );
+}
+
+function MiniInvaliditePctChart({ chart }: { chart: ReturnType<typeof buildInvaliditePctChart> }) {
+  return (
+    <div className="prevoyance-mini-chart">
+      <div className="prevoyance-mini-chart__bars">
+        <div className="prevoyance-mini-chart__item">
+          <strong className="prevoyance-mini-chart__value">100 %</strong>
+          <div className="prevoyance-mini-chart__track" aria-label="Revenu actuel">
+            <div className="prevoyance-mini-chart__stack">
+              <span
+                className="prevoyance-mini-chart__segment prevoyance-mini-chart__segment--reference"
+                style={{ '--prevoyance-segment-height': '100%' } as CSSProperties}
+              />
+            </div>
+          </div>
+          <span className="prevoyance-mini-chart__label">Revenu actuel</span>
+        </div>
+        {chart.paliers.map((palier) => (
+          <div key={palier.rate} className="prevoyance-mini-chart__item">
+            <strong className="prevoyance-mini-chart__value">{pct(palier.totalPct)}</strong>
+            <div className="prevoyance-mini-chart__track" aria-label={`${palier.rate} %`}>
+              <div className="prevoyance-mini-chart__stack">
+                <span
+                  className="prevoyance-mini-chart__segment prevoyance-mini-chart__segment--ro"
+                  style={{ '--prevoyance-segment-height': `${palier.roPct}%` } as CSSProperties}
+                  title={`Régime obligatoire : ${pct(palier.roPct)}`}
+                />
+                <span
+                  className="prevoyance-mini-chart__segment prevoyance-mini-chart__segment--contrat"
+                  style={
+                    { '--prevoyance-segment-height': `${palier.contratPct}%` } as CSSProperties
+                  }
+                  title={`Contrats de prévoyance : ${pct(palier.contratPct)}`}
+                />
+              </div>
+            </div>
+            <span className="prevoyance-mini-chart__label">{palier.rate} %</span>
+          </div>
+        ))}
       </div>
+      <MiniChartLegend />
+    </div>
+  );
+}
+
+function MiniChartLegend() {
+  return (
+    <div className="prevoyance-mini-chart__legend">
+      <span>
+        <i className="prevoyance-mini-chart__dot prevoyance-mini-chart__dot--reference" />
+        Revenu actuel
+      </span>
+      <span>
+        <i className="prevoyance-mini-chart__dot prevoyance-mini-chart__dot--ro" />
+        Régime obligatoire
+      </span>
+      <span>
+        <i className="prevoyance-mini-chart__dot prevoyance-mini-chart__dot--contrat" />
+        Contrats de prévoyance
+      </span>
     </div>
   );
 }
@@ -120,7 +193,7 @@ export function Sidebar({
     (contract): contract is Extract<PrevoyanceContractDraft, { kind: 'individuel' }> =>
       contract.kind === 'individuel',
   );
-  const arretBars = buildArretCoverageBars({
+  const arretChart = buildArretEuroChart({
     regime,
     contracts,
     kind,
@@ -128,7 +201,7 @@ export function Sidebar({
     referenceAnnual,
     salaireBrutAnnuel,
   });
-  const invaliditeBars = buildInvaliditeCoverageBars({
+  const invaliditeChart = buildInvaliditePctChart({
     regime,
     contracts,
     kind,
@@ -161,12 +234,12 @@ export function Sidebar({
     <div className="prevoyance-sidebar">
       <section className="premium-card prevoyance-side-card">
         <h2>Arrêt de travail</h2>
-        <MiniCoverageChart bars={arretBars} showMaintien={kind === 'collectif'} />
+        <MiniArretEuroChart chart={arretChart} />
       </section>
 
       <section className="premium-card prevoyance-side-card">
         <h2>Invalidité</h2>
-        <MiniCoverageChart bars={invaliditeBars} showMaintien={false} />
+        <MiniInvaliditePctChart chart={invaliditeChart} />
       </section>
 
       <section className="premium-card prevoyance-side-card">
