@@ -20,16 +20,16 @@ Expliquer ce que SER1 couvre aujourd'hui, ce qui est deja exploitable, et les li
 
 ### Simulateurs disponibles
 
-| Surface                   | Statut     | Role metier principal                                                                                            |
-| ------------------------- | ---------- | ---------------------------------------------------------------------------------------------------------------- |
-| `/sim/ir`                 | disponible | Estimer IR, TMI, CEHR et effets des revenus/charges du foyer                                                     |
-| `/sim/placement`          | disponible | Comparer 2 enveloppes / produits sur epargne, liquidation et transmission                                        |
-| `/sim/credit`             | disponible | Simuler echeanciers, assurance et lissage de 1 a 3 prets                                                         |
-| `/sim/succession`         | disponible | Estimer droits de succession et fournir des analyses civiles/patrimoniales guidees                               |
-| `/sim/per`                | disponible | Hub PER avec contrôle du potentiel épargne retraite et transfert vers nouveau PER                                |
-| `/sim/epargne-salariale`  | upcoming   | non documente metier ici tant que non stabilise                                                                  |
-| `/sim/tresorerie-societe` | disponible | Projeter une société IS patrimoniale, ses CCA, filiales, emprunts, allocations de trésorerie et revenus associés |
-| `/sim/prevoyance`         | upcoming   | non documente metier ici tant que non stabilise                                                                  |
+| Surface                   | Statut     | Role metier principal                                                                                                          |
+| ------------------------- | ---------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| `/sim/ir`                 | disponible | Estimer IR, TMI, CEHR et effets des revenus/charges du foyer                                                                   |
+| `/sim/placement`          | disponible | Comparer 2 enveloppes / produits sur epargne, liquidation et transmission                                                      |
+| `/sim/credit`             | disponible | Simuler echeanciers, assurance et lissage de 1 a 3 prets                                                                       |
+| `/sim/succession`         | disponible | Estimer droits de succession et fournir des analyses civiles/patrimoniales guidees                                             |
+| `/sim/per`                | disponible | Hub PER avec contrôle du potentiel épargne retraite et transfert vers nouveau PER                                              |
+| `/sim/epargne-salariale`  | upcoming   | non documente metier ici tant que non stabilise                                                                                |
+| `/sim/tresorerie-societe` | disponible | Projeter une société IS patrimoniale, ses CCA, filiales, emprunts, allocations de trésorerie et revenus associés               |
+| `/sim/prevoyance`         | actif UI   | V1 sans moteur fiscal : situation, régime obligatoire paramétrable, contrats individuels/collectifs et synthèses de couverture |
 
 ### Workflows actifs hors simulateurs
 

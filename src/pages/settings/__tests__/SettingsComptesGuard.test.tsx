@@ -33,6 +33,12 @@ describe('SettingsComptes garde admin', () => {
     expect(getVisibleSettingsRoutes(false).some((route) => route.key === 'comptes')).toBe(false);
   });
 
+  it('masque la route Prévoyance régimes pour les non-admins', () => {
+    expect(getVisibleSettingsRoutes(false).some((route) => route.key === 'prevoyanceRegimes')).toBe(
+      false,
+    );
+  });
+
   it("refuse l'acces direct a la page pour un non-admin", () => {
     useUserRoleMock.mockReturnValue({ isAdmin: false, isLoading: false });
 

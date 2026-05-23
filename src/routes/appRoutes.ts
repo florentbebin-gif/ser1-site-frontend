@@ -92,6 +92,7 @@ const TresorerieSocietePage = lazy(() =>
     default: TresorerieSocietePage,
   })),
 );
+const PrevoyancePage = lazy(() => import('../features/prevoyance'));
 const StrategyPage = lazy(() => import('../pages/StrategyPage'));
 const SettingsShell = lazy(() => import('../pages/SettingsShell'));
 
@@ -225,14 +226,10 @@ export const APP_ROUTES: AppRouteEntry[] = [
     kind: 'route',
     access: 'private',
     path: '/sim/prevoyance',
-    component: UpcomingSimulatorPage,
+    component: PrevoyancePage,
     lazy: true,
     contextLabel: 'Prévoyance',
-    topbar: SIM_TOPBAR,
-    props: {
-      title: 'Prévoyance',
-      subtitle: 'Ce simulateur premium sera bientôt disponible.',
-    },
+    topbar: { ...SIM_TOPBAR, resetKey: 'prevoyance' },
   },
   {
     kind: 'route',

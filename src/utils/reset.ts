@@ -70,6 +70,7 @@ export function triggerGlobalReset(): void {
     'per-potentiel',
     'per-transfert',
     'tresorerie-societe',
+    'prevoyance',
   ];
 
   simulators.forEach((simId) => {
