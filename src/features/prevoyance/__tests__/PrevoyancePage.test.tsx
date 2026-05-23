@@ -164,5 +164,31 @@ describe('PrevoyancePage', () => {
 
     await user.click(screen.getAllByRole('button', { name: /Découper les périodes/i })[0]);
     expect(await screen.findByText('Découper l’arrêt de travail')).toBeInTheDocument();
+    expect(screen.getByText('Cliquez × pour retirer une période.')).toBeInTheDocument();
+  });
+
+  it('permet de supprimer un palier invalidité ajouté', async () => {
+    const user = userEvent.setup();
+    render(<PrevoyancePage />);
+
+    await screen.findByText('Contrats entreprise');
+    await user.click(screen.getByRole('radio', { name: 'TNS / libéral' }));
+    await user.click(
+      await screen.findByRole('button', {
+        name: 'Ajouter un palier invalidité au contrat 1',
+      }),
+    );
+
+    expect(screen.getAllByRole('button', { name: /Supprimer le palier invalidité/i })).toHaveLength(
+      3,
+    );
+
+    await user.click(screen.getAllByRole('button', { name: /Supprimer le palier invalidité/i })[0]);
+
+    await waitFor(() => {
+      expect(
+        screen.getAllByRole('button', { name: /Supprimer le palier invalidité/i }),
+      ).toHaveLength(2);
+    });
   });
 });

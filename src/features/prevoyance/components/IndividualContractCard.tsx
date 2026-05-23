@@ -66,6 +66,16 @@ export function IndividualContractCard({
       },
     });
   };
+  const removeInvaliditePalier = (palierIndex: number) => {
+    if (contract.invalidite.paliers.length <= 1) return;
+    update({
+      invalidite: {
+        paliers: contract.invalidite.paliers.filter(
+          (_, currentIndex) => currentIndex !== palierIndex,
+        ),
+      },
+    });
+  };
 
   return (
     <article className="prevoyance-contract">
@@ -228,6 +238,18 @@ export function IndividualContractCard({
             key={`${palierIndex}-${palier.fromRate}-${palier.toRate ?? 'plus'}`}
             className="prevoyance-invalidite-row"
           >
+            {contract.invalidite.paliers.length > 1 ? (
+              <div className="prevoyance-invalidite-row__actions">
+                <button
+                  type="button"
+                  className="prevoyance-icon-button prevoyance-icon-button--compact"
+                  onClick={() => removeInvaliditePalier(palierIndex)}
+                  aria-label={`Supprimer le palier invalidité ${palierIndex + 1}`}
+                >
+                  ×
+                </button>
+              </div>
+            ) : null}
             <div className="prevoyance-form-grid prevoyance-form-grid--two">
               <SimFieldShell label="Déclenchement">
                 <NumberInput

@@ -131,6 +131,7 @@ export function ArretPeriodsModal({ paliers, onClose, onApply }: ArretPeriodsMod
           </div>
         ))}
       </div>
+      <p className="prevoyance-side-note">Cliquez × pour retirer une période.</p>
     </SimModalShell>
   );
 }
