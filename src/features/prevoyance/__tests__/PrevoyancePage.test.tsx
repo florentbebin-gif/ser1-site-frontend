@@ -144,4 +144,25 @@ describe('PrevoyancePage', () => {
       expect(screen.getAllByLabelText(/Nom du contrat/i)).toHaveLength(3);
     });
   });
+
+  it('borne les contrats à trois et ouvre le découpage arrêt', async () => {
+    const user = userEvent.setup();
+    render(<PrevoyancePage />);
+
+    await screen.findByText('Contrats entreprise');
+    await user.click(screen.getByRole('radio', { name: 'TNS / libéral' }));
+    expect(await screen.findByText('De 0 à 1095 j')).toBeInTheDocument();
+    expect(screen.getByText('Taux / 66 × rente')).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Ajouter' }));
+    await user.click(screen.getByRole('button', { name: 'Ajouter' }));
+    await user.click(screen.getByRole('button', { name: 'Ajouter' }));
+
+    await waitFor(() => {
+      expect(screen.getAllByLabelText(/Nom du contrat/i)).toHaveLength(3);
+    });
+
+    await user.click(screen.getAllByRole('button', { name: /Découper les périodes/i })[0]);
+    expect(await screen.findByText('Découper l’arrêt de travail')).toBeInTheDocument();
+  });
 });

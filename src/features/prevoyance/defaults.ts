@@ -45,8 +45,8 @@ export function createDefaultContract(
       arret: { salairePct: 80 },
       invalidite: {
         paliers: [
-          { fromRate: 33, salairePct: 50 },
-          { fromRate: 66, salairePct: 80 },
+          { fromRate: 33, toRate: 65, mode: 'proportional_66', referencePct: 80, salairePct: 50 },
+          { fromRate: 66, toRate: null, mode: 'fixed', referencePct: 80, salairePct: 80 },
         ],
       },
       deces: {
@@ -70,15 +70,24 @@ export function createDefaultContract(
     indemnisation: 'indemnitaire',
     arret: {
       franchises: { accident: 0, hospitalisation: 0, maladie: 7 },
-      paliers: [
-        { fromDay: 8, toDay: 90, amount: Math.round(annualBase / 365) },
-        { fromDay: 91, toDay: 1095, amount: Math.round(annualBase / 730) },
-      ],
+      paliers: [{ fromDay: 0, toDay: 1095, amount: Math.round(annualBase / 365) }],
     },
     invalidite: {
       paliers: [
-        { fromRate: 33, amount: Math.round(annualBase * 0.3) },
-        { fromRate: 66, amount: Math.round(annualBase * 0.6) },
+        {
+          fromRate: 16,
+          toRate: 65,
+          mode: 'proportional_66',
+          referenceAmount: Math.round(annualBase * 0.6),
+          amount: Math.round(annualBase * 0.6),
+        },
+        {
+          fromRate: 66,
+          toRate: null,
+          mode: 'fixed',
+          referenceAmount: Math.round(annualBase * 0.6),
+          amount: Math.round(annualBase * 0.6),
+        },
       ],
     },
     deces: {

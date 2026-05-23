@@ -335,6 +335,23 @@ function findInvaliditePalier<T extends { fromRate: number; toRate?: number | nu
   );
 }
 
+export function computeInvaliditePalierAmount(
+  palier: PrevoyanceContractDraft['invalidite']['paliers'][number],
+  rate: number,
+): number {
+  if ('amount' in palier) {
+    if (palier.mode === 'proportional_66') {
+      return Math.round(Math.max(0, palier.referenceAmount) * (Math.max(0, rate) / 66));
+    }
+    return palier.amount;
+  }
+
+  if (palier.mode === 'proportional_66') {
+    return Math.max(0, palier.referencePct ?? palier.salairePct) * (Math.max(0, rate) / 66);
+  }
+  return palier.salairePct;
+}
+
 export function buildInvaliditeCoverageBars({
   regime,
   contracts,
@@ -376,7 +393,8 @@ export function buildInvaliditeCoverageBars({
                 )
                 .reduce((sum, contract) => {
                   const palier = findInvaliditePalier(contract.invalidite.paliers, threshold);
-                  return sum + Math.max(0, salaireBrutAnnuel) * ((palier?.salairePct ?? 0) / 100);
+                  const salairePct = palier ? computeInvaliditePalierAmount(palier, threshold) : 0;
+                  return sum + Math.max(0, salaireBrutAnnuel) * (salairePct / 100);
                 }, 0),
               referenceAnnual,
             )
@@ -390,7 +408,7 @@ export function buildInvaliditeCoverageBars({
                 )
                 .reduce((sum, contract) => {
                   const palier = findInvaliditePalier(contract.invalidite.paliers, threshold);
-                  return sum + (palier?.amount ?? 0);
+                  return sum + (palier ? computeInvaliditePalierAmount(palier, threshold) : 0);
                 }, 0),
               referenceAnnual,
             );

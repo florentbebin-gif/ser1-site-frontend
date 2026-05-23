@@ -1,5 +1,8 @@
+import { useState } from 'react';
 import { SimSegmentedControl, SimSelect } from '@/components/ui/sim';
 import type { PrevoyanceContractDraft } from '@/domain/prevoyance/types';
+import { computeInvaliditePalierAmount } from '@/domain/prevoyance/helpers';
+import { ArretPeriodsModal } from './ArretPeriodsModal';
 import { NumberInput, SimFieldShell } from './FormPrimitives';
 
 interface IndividualContractCardProps {
@@ -19,6 +22,7 @@ export function IndividualContractCard({
   onOpenFrais,
   removable,
 }: IndividualContractCardProps) {
+  const [showArretPeriodsModal, setShowArretPeriodsModal] = useState(false);
   const update = (patch: Partial<typeof contract>) => onChange({ ...contract, ...patch });
   const updateArretPalier = (palierIndex: number, amount: number) => {
     update({
@@ -30,12 +34,35 @@ export function IndividualContractCard({
       },
     });
   };
-  const updateInvaliditePalier = (palierIndex: number, amount: number) => {
+  const updateInvaliditePalier = (
+    palierIndex: number,
+    patch: Partial<(typeof contract.invalidite.paliers)[number]>,
+  ) => {
     update({
       invalidite: {
         paliers: contract.invalidite.paliers.map((palier, currentIndex) =>
-          currentIndex === palierIndex ? { ...palier, amount } : palier,
+          currentIndex === palierIndex ? { ...palier, ...patch } : palier,
         ),
+      },
+    });
+  };
+  const addInvaliditePalier = () => {
+    if (contract.invalidite.paliers.length >= 3) return;
+    update({
+      invalidite: {
+        paliers: [
+          ...contract.invalidite.paliers,
+          {
+            fromRate: 66,
+            toRate: null,
+            mode: 'fixed',
+            referenceAmount:
+              contract.invalidite.paliers[contract.invalidite.paliers.length - 1]
+                ?.referenceAmount ?? 0,
+            amount:
+              contract.invalidite.paliers[contract.invalidite.paliers.length - 1]?.amount ?? 0,
+          },
+        ],
       },
     });
   };
@@ -71,7 +98,17 @@ export function IndividualContractCard({
       </div>
 
       <div className="prevoyance-mini-section">
-        <span>Arrêt de travail</span>
+        <div className="prevoyance-mini-section__header">
+          <span>Arrêt de travail</span>
+          <button
+            type="button"
+            className="prevoyance-icon-button prevoyance-icon-button--compact"
+            onClick={() => setShowArretPeriodsModal(true)}
+            aria-label={`Découper les périodes d’arrêt du contrat ${index + 1}`}
+          >
+            +
+          </button>
+        </div>
         <div className="prevoyance-form-grid prevoyance-form-grid--three">
           <SimFieldShell label="Acc.">
             <NumberInput
@@ -132,7 +169,7 @@ export function IndividualContractCard({
 
       <div className="prevoyance-mini-section">
         <span>Frais professionnels</span>
-        <div className="prevoyance-form-grid prevoyance-form-grid--three">
+        <div className="prevoyance-form-grid prevoyance-frais-inline-grid">
           <SimFieldShell label="Franchise">
             <NumberInput
               value={contract.fraisPro.franchiseDays}
@@ -174,15 +211,81 @@ export function IndividualContractCard({
       </div>
 
       <div className="prevoyance-mini-section">
-        <span>Invalidité</span>
+        <div className="prevoyance-mini-section__header">
+          <span>Invalidité</span>
+          <button
+            type="button"
+            className="prevoyance-icon-button prevoyance-icon-button--compact"
+            onClick={addInvaliditePalier}
+            aria-label={`Ajouter un palier invalidité au contrat ${index + 1}`}
+            disabled={contract.invalidite.paliers.length >= 3}
+          >
+            +
+          </button>
+        </div>
         {contract.invalidite.paliers.map((palier, palierIndex) => (
-          <SimFieldShell key={palier.fromRate} label={`Dès ${palier.fromRate} %`}>
-            <NumberInput
-              value={palier.amount}
-              onChange={(amount) => updateInvaliditePalier(palierIndex, amount)}
-              suffix="€/an"
-            />
-          </SimFieldShell>
+          <div
+            key={`${palierIndex}-${palier.fromRate}-${palier.toRate ?? 'plus'}`}
+            className="prevoyance-invalidite-row"
+          >
+            <div className="prevoyance-form-grid prevoyance-form-grid--two">
+              <SimFieldShell label="Déclenchement">
+                <NumberInput
+                  value={palier.fromRate}
+                  onChange={(fromRate) => updateInvaliditePalier(palierIndex, { fromRate })}
+                  suffix="%"
+                />
+              </SimFieldShell>
+              <SimFieldShell label="Jusqu’à">
+                <NumberInput
+                  value={palier.toRate ?? 100}
+                  onChange={(toRate) =>
+                    updateInvaliditePalier(palierIndex, {
+                      toRate: toRate >= 100 ? null : toRate,
+                    })
+                  }
+                  suffix="%"
+                />
+              </SimFieldShell>
+            </div>
+            <SimFieldShell label="Formule">
+              <SimSelect
+                value={palier.mode}
+                onChange={(mode) =>
+                  updateInvaliditePalier(palierIndex, {
+                    mode: mode as (typeof palier)['mode'],
+                  })
+                }
+                options={[
+                  { value: 'fixed', label: 'Montant fixe' },
+                  { value: 'proportional_66', label: 'Taux / 66 × rente' },
+                ]}
+              />
+            </SimFieldShell>
+            {palier.mode === 'proportional_66' ? (
+              <SimFieldShell label="Rente référence">
+                <NumberInput
+                  value={palier.referenceAmount}
+                  onChange={(referenceAmount) =>
+                    updateInvaliditePalier(palierIndex, { referenceAmount })
+                  }
+                  suffix="€/an"
+                />
+              </SimFieldShell>
+            ) : (
+              <SimFieldShell label="Montant versé">
+                <NumberInput
+                  value={palier.amount}
+                  onChange={(amount) => updateInvaliditePalier(palierIndex, { amount })}
+                  suffix="€/an"
+                />
+              </SimFieldShell>
+            )}
+            <div className="prevoyance-side-note">
+              Affiché à {palier.fromRate} % :{' '}
+              {computeInvaliditePalierAmount(palier, palier.fromRate).toLocaleString('fr-FR')} €/an
+            </div>
+          </div>
         ))}
       </div>
 
@@ -261,6 +364,14 @@ export function IndividualContractCard({
           Madelin
         </label>
       </div>
+
+      {showArretPeriodsModal ? (
+        <ArretPeriodsModal
+          paliers={contract.arret.paliers}
+          onClose={() => setShowArretPeriodsModal(false)}
+          onApply={(paliers) => update({ arret: { ...contract.arret, paliers } })}
+        />
+      ) : null}
     </article>
   );
 }

@@ -136,6 +136,12 @@
   font-size: 18px;
 }
 
+.prevoyance-icon-button--compact {
+  width: 28px;
+  min-height: 28px;
+  font-size: 16px;
+}
+
 .prevoyance-add-button {
   background: var(--color-c3);
   border-color: var(--color-c3);
@@ -164,11 +170,36 @@
   padding-top: 12px;
 }
 
+.prevoyance-mini-section__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
 .prevoyance-mini-section > span,
+.prevoyance-mini-section__header > span,
 .prevoyance-assiette-chip {
   color: var(--color-c1);
   font-size: 12px;
   font-weight: 700;
+}
+
+.prevoyance-frais-inline-grid {
+  grid-template-columns:
+    minmax(78px, 0.85fr)
+    minmax(96px, 1.15fr)
+    minmax(86px, 1fr);
+  gap: 10px;
+}
+
+.prevoyance-invalidite-row {
+  display: grid;
+  gap: 8px;
+  border: 1px solid var(--color-c8);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--color-c7) 70%, var(--color-c4));
+  padding: 8px;
 }
 
 .prevoyance-assiette-chip {
@@ -398,6 +429,33 @@
   gap: 12px;
 }
 
+.prevoyance-periods-modal {
+  width: min(720px, calc(100vw - 32px));
+}
+
+.prevoyance-periods-modal__toolbar {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.prevoyance-periods-modal__list {
+  display: grid;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.prevoyance-period-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(120px, 1.2fr) 32px;
+  gap: 10px;
+  align-items: end;
+}
+
+.prevoyance-modal-error {
+  color: var(--color-error-text);
+  font-size: 12px;
+}
+
 @media (max-width: 1100px) {
   .prevoyance-contract-grid {
     grid-template-columns: repeat(3, minmax(240px, 1fr));
@@ -415,8 +473,13 @@
 @media (max-width: 820px) {
   .prevoyance-form-grid--two,
   .prevoyance-form-grid--three,
+  .prevoyance-frais-inline-grid,
   .prevoyance-regime-picker,
   .prevoyance-frais-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .prevoyance-period-row {
     grid-template-columns: 1fr;
   }
 

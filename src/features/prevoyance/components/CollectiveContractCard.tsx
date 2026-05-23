@@ -30,11 +30,14 @@ export function CollectiveContractCard({
   const tranches = computeTranchesFromPass(salaireBrutAnnuel, pass);
   const assietteBase = computeCollectiveAssietteBase(contract.assiette, tranches);
   const update = (patch: Partial<typeof contract>) => onChange({ ...contract, ...patch });
-  const updateInvaliditePalier = (palierIndex: number, salairePct: number) => {
+  const updateInvaliditePalier = (
+    palierIndex: number,
+    patch: Partial<(typeof contract.invalidite.paliers)[number]>,
+  ) => {
     update({
       invalidite: {
         paliers: contract.invalidite.paliers.map((palier, currentIndex) =>
-          currentIndex === palierIndex ? { ...palier, salairePct } : palier,
+          currentIndex === palierIndex ? { ...palier, ...patch } : palier,
         ),
       },
     });
@@ -91,13 +94,38 @@ export function CollectiveContractCard({
       <div className="prevoyance-mini-section">
         <span>Invalidité</span>
         {contract.invalidite.paliers.map((palier, palierIndex) => (
-          <SimFieldShell key={palier.fromRate} label={`Dès ${palier.fromRate} %`}>
-            <NumberInput
-              value={palier.salairePct}
-              onChange={(salairePct) => updateInvaliditePalier(palierIndex, salairePct)}
-              suffix="%"
-            />
-          </SimFieldShell>
+          <div
+            key={`${palierIndex}-${palier.fromRate}-${palier.toRate ?? 'plus'}`}
+            className="prevoyance-invalidite-row"
+          >
+            <div className="prevoyance-form-grid prevoyance-form-grid--two">
+              <SimFieldShell label="Déclenchement">
+                <NumberInput
+                  value={palier.fromRate}
+                  onChange={(fromRate) => updateInvaliditePalier(palierIndex, { fromRate })}
+                  suffix="%"
+                />
+              </SimFieldShell>
+              <SimFieldShell label="Jusqu’à">
+                <NumberInput
+                  value={palier.toRate ?? 100}
+                  onChange={(toRate) =>
+                    updateInvaliditePalier(palierIndex, {
+                      toRate: toRate >= 100 ? null : toRate,
+                    })
+                  }
+                  suffix="%"
+                />
+              </SimFieldShell>
+            </div>
+            <SimFieldShell label="% salaire brut">
+              <NumberInput
+                value={palier.salairePct}
+                onChange={(salairePct) => updateInvaliditePalier(palierIndex, { salairePct })}
+                suffix="%"
+              />
+            </SimFieldShell>
+          </div>
         ))}
       </div>
 

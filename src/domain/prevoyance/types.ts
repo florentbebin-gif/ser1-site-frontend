@@ -137,6 +137,9 @@ export interface PrevoyanceArretPalierDraft {
 
 export interface PrevoyanceInvaliditePalierDraft {
   fromRate: number;
+  toRate: number | null;
+  mode: 'fixed' | 'proportional_66';
+  referenceAmount: number;
   amount: number;
 }
 
@@ -191,6 +194,9 @@ export type PrevoyanceContractDraft =
       invalidite: {
         paliers: Array<{
           fromRate: number;
+          toRate?: number | null;
+          mode?: 'fixed' | 'proportional_66';
+          referencePct?: number;
           salairePct: number;
         }>;
       };
