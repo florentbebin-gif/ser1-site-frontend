@@ -57,3 +57,7 @@ docs/audit-*.generated.md
 docs/veille-base-contrat.md
 .vercel
 .env*.local
+
+# Extractions locales (Mémento PDF -> JSON), scripts locaux non versionnés
+extraction/
+scripts/_local/

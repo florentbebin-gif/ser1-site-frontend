@@ -31,6 +31,7 @@ import { useSuccessionDerivedValues } from './hooks/useSuccessionDerivedValues';
 import { useSuccessionDonationPartageHandlers } from './hooks/useSuccessionDonationPartageHandlers';
 import { useSuccessionExportHandlers } from './hooks/useSuccessionExportHandlers';
 import { useSuccessionSimulatorHandlers } from './hooks/useSuccessionSimulatorHandlers';
+import { importPrevoyanceEntriesFromStorage } from './prevoyanceImport';
 import {
   SuccessionFamilyOverview,
   SuccessionHypotheses,
@@ -331,6 +332,21 @@ export default function SuccessionSimulator() {
     setActifNet(derived.displayActifNetSuccession);
   }, [derived.displayActifNetSuccession, setActifNet]);
 
+  const importPrevoyanceFromSimulator = () => {
+    const defaultParty = derived.assuranceViePartyOptions[0]?.value ?? 'epoux1';
+    const result = importPrevoyanceEntriesFromStorage({
+      existingEntries: prevoyanceDecesEntries,
+      souscripteur: defaultParty,
+      assure: defaultParty,
+    });
+
+    setPrevoyanceDecesEntries(result.entries);
+    if (result.foundDraft) {
+      setShowPrevoyanceModal(false);
+      setPrevoyanceDraft(null);
+    }
+  };
+
   const successionPageSectionsProps = {
     derived,
     isExpert,
@@ -499,6 +515,7 @@ export default function SuccessionSimulator() {
         onClosePrevoyance={closePrevoyanceModal}
         onValidatePrevoyance={validatePrevoyanceModal}
         onUpdatePrevoyanceContract={updatePrevoyanceDraft}
+        onImportPrevoyanceFromSimulator={importPrevoyanceFromSimulator}
         onCloseDonationPartage={closeDonationPartageModal}
         onValidateDonationPartage={validateDonationPartageModal}
         onUpdateDonationPartageDraft={setDonationPartageDraft}

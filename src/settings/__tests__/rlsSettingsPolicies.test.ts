@@ -27,7 +27,13 @@ describe('policies RLS settings Base-Contrat / DMTG', () => {
     };
 
     expect(report.ok).toBe(true);
-    for (const table of ['tax_settings', 'fiscality_settings', 'base_contrat_overrides']) {
+    for (const table of [
+      'tax_settings',
+      'fiscality_settings',
+      'base_contrat_overrides',
+      'prevoyance_regime_settings',
+      'prevoyance_maintien_employeur_settings',
+    ]) {
       expect(report.tables?.[table]?.rlsEnabled).toBe(true);
       expect(report.tables?.[table]?.expectedRead).toBe(true);
       expect(report.tables?.[table]?.expectedWrites).toBe(true);

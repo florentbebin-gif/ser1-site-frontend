@@ -18,6 +18,7 @@ const SettingsBaseContrats = lazy(() => import('../pages/settings/BaseContrat'))
 const SettingsBaseCgRetraite = lazy(() => import('../pages/settings/BaseCgRetraite'));
 const SettingsComptes = lazy(() => import('../pages/settings/SettingsComptes'));
 const SettingsDmtgSuccession = lazy(() => import('../pages/settings/SettingsDmtgSuccession'));
+const SettingsPrevoyanceRegimes = lazy(() => import('../pages/settings/PrevoyanceRegimes'));
 
 export interface SettingsRouteEntry {
   key: string;
@@ -72,6 +73,14 @@ export const SETTINGS_ROUTES: SettingsRouteEntry[] = [
     component: SettingsDmtgSuccession,
   },
   {
+    key: 'prevoyanceRegimes',
+    label: 'Prévoyance — régimes',
+    path: 'prevoyance-regimes',
+    urlPath: '/settings/prevoyance-regimes',
+    component: SettingsPrevoyanceRegimes,
+    adminOnly: true,
+  },
+  {
     key: 'comptes',
     label: 'Comptes',
     path: 'comptes',
@@ -88,6 +97,7 @@ export function getActiveSettingsKey(pathname: string): string {
   if (pathname.startsWith('/settings/base-contrat-retraite')) return 'baseCgRetraite';
   if (pathname.startsWith('/settings/base-contrat')) return 'baseContrats';
   if (pathname.startsWith('/settings/dmtg-succession')) return 'dmtgSuccession';
+  if (pathname.startsWith('/settings/prevoyance-regimes')) return 'prevoyanceRegimes';
   if (pathname.startsWith('/settings/comptes')) return 'comptes';
   return 'general';
 }

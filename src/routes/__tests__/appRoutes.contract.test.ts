@@ -9,10 +9,11 @@ const ACTIVE_SIMULATOR_PATHS = new Set([
   '/sim/per/potentiel',
   '/sim/per/transfert',
   '/sim/tresorerie-societe',
+  '/sim/prevoyance',
   '/sim/ir',
 ]);
 
-const HUBS_OR_PLACEHOLDERS = new Set(['/sim/per', '/sim/epargne-salariale', '/sim/prevoyance']);
+const HUBS_OR_PLACEHOLDERS = new Set(['/sim/per', '/sim/epargne-salariale']);
 
 const routePaths = new Set(APP_ROUTES.map((route) => route.path));
 

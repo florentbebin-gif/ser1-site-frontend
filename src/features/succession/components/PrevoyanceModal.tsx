@@ -12,6 +12,7 @@ interface PrevoyanceModalProps {
   onClose: () => void;
   onValidate: () => void;
   onUpdate: (_field: keyof SuccessionPrevoyanceDecesEntry, _value: string | number) => void;
+  onImportFromSimulator?: () => void;
 }
 
 export default function PrevoyanceModal({
@@ -23,6 +24,7 @@ export default function PrevoyanceModal({
   onClose,
   onValidate,
   onUpdate,
+  onImportFromSimulator,
 }: PrevoyanceModalProps) {
   return (
     <SimModalShell
@@ -38,6 +40,15 @@ export default function PrevoyanceModal({
       closeClassName="sc-member-modal__close"
       footer={
         <>
+          {onImportFromSimulator ? (
+            <button
+              type="button"
+              className="sc-member-modal__btn sc-member-modal__btn--secondary"
+              onClick={onImportFromSimulator}
+            >
+              Importer depuis le simulateur Prévoyance
+            </button>
+          ) : null}
           <button
             type="button"
             className="sc-member-modal__btn sc-member-modal__btn--secondary"

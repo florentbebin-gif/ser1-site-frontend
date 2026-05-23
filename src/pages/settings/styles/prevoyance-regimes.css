@@ -1,0 +1,271 @@
+.prevoyance-settings-page {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  margin-top: 16px;
+}
+
+.prevoyance-settings-header-card {
+  margin-bottom: 0;
+}
+
+.prevoyance-settings-header,
+.prevoyance-settings-toolbar,
+.prevoyance-settings-regime__header,
+.prevoyance-settings-regime__footer,
+.prevoyance-settings-kpis {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.prevoyance-settings-header,
+.prevoyance-settings-regime__header,
+.prevoyance-settings-regime__footer {
+  justify-content: space-between;
+}
+
+.prevoyance-settings-header {
+  flex-wrap: wrap;
+}
+
+.prevoyance-settings-kpis {
+  flex-wrap: wrap;
+}
+
+.prevoyance-settings-kpis span,
+.prevoyance-settings-badge {
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+  padding: 0 10px;
+  border: 1px solid var(--color-c8);
+  border-radius: 999px;
+  background: var(--color-c7);
+  color: var(--color-c10);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.prevoyance-settings-badge--muted {
+  background: var(--color-c4);
+  color: var(--color-c9);
+}
+
+.prevoyance-settings-toolbar {
+  flex-wrap: wrap;
+}
+
+.prevoyance-settings-toolbar .prevoyance-settings-input {
+  flex: 1 1 320px;
+}
+
+.prevoyance-settings-input,
+.prevoyance-settings-textarea {
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid var(--color-c8);
+  border-radius: 6px;
+  background: var(--color-c7);
+  color: var(--color-c10);
+  font: inherit;
+  font-size: 13px;
+}
+
+.prevoyance-settings-input {
+  min-height: 38px;
+  padding: 0 12px;
+}
+
+.prevoyance-settings-textarea {
+  min-height: 260px;
+  padding: 10px 12px;
+  font-family: var(--font-mono, monospace);
+  line-height: 1.45;
+  resize: vertical;
+}
+
+.prevoyance-settings-input:focus,
+.prevoyance-settings-textarea:focus {
+  outline: none;
+  border-color: var(--color-c2);
+  box-shadow: 0 0 0 3px var(--color-c4);
+}
+
+.prevoyance-settings-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.prevoyance-settings-state,
+.prevoyance-settings-regime {
+  color: var(--color-c9);
+}
+
+.prevoyance-settings-regime {
+  overflow: hidden;
+  border: 1px solid var(--color-c8);
+  border-radius: 8px;
+  background: var(--color-c7);
+  box-shadow: var(--shadow-sm);
+}
+
+.prevoyance-settings-regime__header {
+  width: 100%;
+  border: 0;
+  background: transparent;
+  color: var(--color-c10);
+  cursor: pointer;
+  font: inherit;
+  padding: 14px 16px;
+  text-align: left;
+}
+
+.prevoyance-settings-regime__header > span:first-child {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.prevoyance-settings-regime__header strong {
+  color: var(--color-c1);
+  font-size: 15px;
+}
+
+.prevoyance-settings-regime__header span span {
+  color: var(--color-c9);
+  font-size: 12px;
+}
+
+.prevoyance-settings-regime__meta {
+  display: inline-flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.prevoyance-settings-regime__body {
+  border-top: 1px solid var(--color-c8);
+  padding: 16px;
+}
+
+.prevoyance-settings-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.prevoyance-settings-column {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 10px;
+  border: 1px solid var(--color-c8);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--color-c7) 70%, var(--color-c4));
+  padding: 12px;
+}
+
+.prevoyance-settings-column__title {
+  color: var(--color-c1);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.prevoyance-settings-column p {
+  margin: 0;
+  color: var(--color-c10);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.prevoyance-settings-column dl {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+}
+
+.prevoyance-settings-column dl div {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px;
+  align-items: baseline;
+}
+
+.prevoyance-settings-column dt,
+.prevoyance-settings-column dd {
+  margin: 0;
+  font-size: 12px;
+}
+
+.prevoyance-settings-column dt {
+  color: var(--color-c9);
+}
+
+.prevoyance-settings-column dd {
+  color: var(--color-c10);
+  font-weight: 600;
+  text-align: right;
+}
+
+.prevoyance-settings-regime__footer {
+  margin-top: 14px;
+  color: var(--color-c9);
+  font-size: 12px;
+}
+
+.prevoyance-settings-modal {
+  width: min(1040px, calc(100vw - 32px));
+}
+
+.prevoyance-settings-modal__grid,
+.prevoyance-settings-modal__json-grid {
+  display: grid;
+  gap: 12px;
+}
+
+.prevoyance-settings-modal__grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin-bottom: 14px;
+}
+
+.prevoyance-settings-modal__json-grid {
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 0.8fr);
+}
+
+.prevoyance-settings-modal label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  color: var(--color-c9);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.prevoyance-settings-modal__error {
+  color: var(--color-c1);
+  font-size: 12px;
+}
+
+@media (max-width: 1100px) {
+  .prevoyance-settings-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 760px) {
+  .prevoyance-settings-grid,
+  .prevoyance-settings-modal__grid,
+  .prevoyance-settings-modal__json-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .prevoyance-settings-regime__header,
+  .prevoyance-settings-regime__footer {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}

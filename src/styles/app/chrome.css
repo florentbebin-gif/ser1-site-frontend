@@ -7,6 +7,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 12px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
 }
 
@@ -14,6 +15,7 @@
   font-size: 18px;
   display: flex;
   align-items: center;
+  min-width: 0;
 }
 
 .brand-name {
@@ -32,11 +34,17 @@
   font-weight: 400;
   color: var(--color-c7);
   font-size: 17px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .top-actions {
   display: flex;
+  flex-wrap: wrap;
   gap: 12px;
+  justify-content: flex-end;
+  min-width: 0;
 }
 
 .topbar .icon {
@@ -83,4 +91,20 @@
 .sim-header__actions .chip:disabled {
   background: rgba(255, 255, 255, 0.4);
   opacity: 0.6;
+}
+
+@media (max-width: 640px) {
+  .topbar {
+    align-items: flex-start;
+    padding: 10px 16px;
+  }
+
+  .brandbar {
+    flex: 1 1 130px;
+  }
+
+  .top-actions {
+    flex: 0 1 174px;
+    gap: 6px;
+  }
 }

@@ -38,6 +38,16 @@ const TARGETS = {
     readMustUseAdmin: false,
     writesMustUseAdmin: true,
   },
+  prevoyance_regime_settings: {
+    read: 'authenticated',
+    readMustUseAdmin: false,
+    writesMustUseAdmin: true,
+  },
+  prevoyance_maintien_employeur_settings: {
+    read: 'authenticated',
+    readMustUseAdmin: false,
+    writesMustUseAdmin: true,
+  },
 };
 
 function normalizeSql(sql) {
