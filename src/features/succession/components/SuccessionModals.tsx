@@ -83,6 +83,7 @@ interface SuccessionModalsProps {
     _field: keyof SuccessionPrevoyanceDecesEntry,
     _value: string | number,
   ) => void;
+  onImportPrevoyanceFromSimulator: () => void;
   onCloseDonationPartage: () => void;
   onValidateDonationPartage: () => void;
   onUpdateDonationPartageDraft: Dispatch<SetStateAction<SuccessionDonationPartageAct | null>>;
@@ -128,6 +129,7 @@ export function SuccessionModals({
   onClosePrevoyance,
   onValidatePrevoyance,
   onUpdatePrevoyanceContract,
+  onImportPrevoyanceFromSimulator,
   onCloseDonationPartage,
   onValidateDonationPartage,
   onUpdateDonationPartageDraft,
@@ -208,6 +210,7 @@ export function SuccessionModals({
           onClose={onClosePrevoyance}
           onValidate={onValidatePrevoyance}
           onUpdate={onUpdatePrevoyanceContract}
+          onImportFromSimulator={onImportPrevoyanceFromSimulator}
         />
       )}
 
