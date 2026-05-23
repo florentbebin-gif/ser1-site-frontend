@@ -2,56 +2,18 @@ import { useEffect, useState } from 'react';
 import '@/styles/sim/index.css';
 import './styles/index.css';
 import { SimPageShell } from '@/components/ui/sim';
+import { PREVOYANCE_MAINTIEN_LEGAL_CODE } from '@/domain/prevoyance/constants';
 import { deriveContractKindFromRegime, resolveContractKind } from '@/domain/prevoyance/helpers';
-import type {
-  PrevoyanceContractDraft,
-  PrevoyanceMaintienEmployeurSettings,
-  PrevoyanceRegimeSettings,
-  PrevoyanceSituationDraft,
-} from '@/domain/prevoyance/types';
+import type { PrevoyanceContractDraft, PrevoyanceSituationDraft } from '@/domain/prevoyance/types';
 import { useFiscalContext } from '@/hooks/useFiscalContext';
-import { storageKeyFor, onResetEvent } from '@/utils/reset';
-import {
-  getPrevoyanceMaintienEmployeurSettings,
-  getPrevoyanceRegimeSettings,
-} from '@/utils/cache/prevoyanceSettingsCache';
+import { usePrevoyanceSettings } from '@/hooks/usePrevoyanceSettings';
+import { onResetEvent } from '@/utils/reset';
 import { ContractsBlock } from './components/ContractsBlock';
 import { FraisProModal } from './components/FraisProModal';
 import { Sidebar } from './components/Sidebar';
 import { SituationBlock } from './components/SituationBlock';
-import {
-  createDefaultContract,
-  DEFAULT_SITUATION,
-  type FraisProModalState,
-  type PersistedPrevoyanceState,
-} from './defaults';
-
-const STORE_KEY = storageKeyFor('prevoyance');
-
-function usePrevoyanceSettings() {
-  const [regimes, setRegimes] = useState<PrevoyanceRegimeSettings[]>([]);
-  const [maintien, setMaintien] = useState<PrevoyanceMaintienEmployeurSettings[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    let mounted = true;
-    Promise.all([getPrevoyanceRegimeSettings(), getPrevoyanceMaintienEmployeurSettings()])
-      .then(([nextRegimes, nextMaintien]) => {
-        if (!mounted) return;
-        setRegimes(nextRegimes);
-        setMaintien(nextMaintien);
-      })
-      .finally(() => {
-        if (mounted) setLoading(false);
-      });
-
-    return () => {
-      mounted = false;
-    };
-  }, []);
-
-  return { regimes, maintien, loading };
-}
+import { createDefaultContract, DEFAULT_SITUATION, type FraisProModalState } from './defaults';
+import { PREVOYANCE_STORAGE_KEY, parsePersistedPrevoyanceState } from './persistence';
 
 function resolvePass(passHistoryByYear: Record<number, number>): number {
   const currentYear = new Date().getFullYear();
@@ -72,19 +34,15 @@ export default function PrevoyancePage() {
   const selectedRegime = regimes.find((regime) => regime.code === situation.regimeCode) ?? null;
   const kind = resolveContractKind(selectedRegime, situation.kindOverride);
   const annualBase = kind === 'collectif' ? situation.salaireBrutAnnuel : situation.revenuImposable;
-  const maintienLegal = maintien[0] ?? null;
+  const maintienLegal =
+    maintien.find((item) => item.code === PREVOYANCE_MAINTIEN_LEGAL_CODE) ?? null;
   const visibleContracts = contracts.filter((contract) => contract.kind === kind);
 
   useEffect(() => {
-    try {
-      const raw = sessionStorage.getItem(STORE_KEY);
-      if (raw) {
-        const persisted = JSON.parse(raw) as PersistedPrevoyanceState;
-        setSituation({ ...DEFAULT_SITUATION, ...persisted.situation });
-        if (persisted.contracts?.length) setContracts(persisted.contracts.slice(0, 3));
-      }
-    } catch {
-      // ignore
+    const persisted = parsePersistedPrevoyanceState(sessionStorage.getItem(PREVOYANCE_STORAGE_KEY));
+    if (persisted) {
+      setSituation({ ...DEFAULT_SITUATION, ...persisted.situation });
+      if (persisted.contracts?.length) setContracts(persisted.contracts.slice(0, 3));
     }
     setHydrated(true);
   }, []);
@@ -107,7 +65,7 @@ export default function PrevoyancePage() {
   useEffect(() => {
     if (!hydrated) return;
     try {
-      sessionStorage.setItem(STORE_KEY, JSON.stringify({ situation, contracts }));
+      sessionStorage.setItem(PREVOYANCE_STORAGE_KEY, JSON.stringify({ situation, contracts }));
     } catch {
       // ignore
     }
@@ -122,7 +80,7 @@ export default function PrevoyancePage() {
         createDefaultContract(deriveContractKindFromRegime(firstRegime), 1, annualBase),
       ]);
       try {
-        sessionStorage.removeItem(STORE_KEY);
+        sessionStorage.removeItem(PREVOYANCE_STORAGE_KEY);
       } catch {
         // ignore
       }

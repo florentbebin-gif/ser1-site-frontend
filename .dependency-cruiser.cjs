@@ -30,6 +30,7 @@ const FEATURES = [
   'ir',
   'per',
   'placement',
+  'prevoyance',
   'strategy',
   'succession',
   'tresorerie-societe',

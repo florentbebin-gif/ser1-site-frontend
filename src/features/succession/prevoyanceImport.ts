@@ -1,6 +1,8 @@
-import type { SuccessionPrevoyanceDecesEntry } from '@/features/succession/successionDraft.types';
-import type { PrevoyanceContractDraft } from '@/domain/prevoyance/types';
-import { computeDecesCapitalFromContract } from '@/domain/prevoyance/helpers';
+import {
+  computeDecesCapitalFromContract,
+  type PrevoyanceContractDraft,
+} from '@/features/prevoyance';
+import type { SuccessionPrevoyanceDecesEntry } from './successionDraft.types';
 
 interface PrevoyanceSuccessionAdapterInput {
   contract: PrevoyanceContractDraft;

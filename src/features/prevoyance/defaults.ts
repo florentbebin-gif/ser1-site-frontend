@@ -5,11 +5,6 @@ import type {
   PrevoyanceSituationDraft,
 } from '@/domain/prevoyance/types';
 
-export interface PersistedPrevoyanceState {
-  situation?: Partial<PrevoyanceSituationDraft>;
-  contracts?: PrevoyanceContractDraft[];
-}
-
 export interface FraisProModalState {
   contractId: string;
   chargesExternes: number;

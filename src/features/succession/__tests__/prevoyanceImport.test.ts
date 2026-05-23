@@ -1,9 +1,8 @@
 import { describe, expect, it } from 'vitest';
+import type { PrevoyanceContractDraft } from '@/features/prevoyance';
+import { buildPrevoyanceSuccessionEntry } from '../prevoyanceImport';
 
-import { buildPrevoyanceSuccessionEntry } from '../adapters/successionAdapter';
-import type { PrevoyanceContractDraft } from '@/domain/prevoyance/types';
-
-describe('adaptateur prévoyance vers succession', () => {
+describe('import prévoyance dans succession', () => {
   it('transforme un contrat décès individuel en entrée succession', () => {
     const contract: PrevoyanceContractDraft = {
       id: 'ind-1',

@@ -3,6 +3,7 @@ import { useUserRole } from '@/auth/useUserRole';
 import { UserInfoBanner } from '@/components/UserInfoBanner';
 import SettingsTitleWithIcon from '@/components/settings/SettingsTitleWithIcon';
 import { SimModalShell } from '@/components/ui/sim';
+import { PREVOYANCE_MAINTIEN_LEGAL_CODE } from '@/domain/prevoyance/constants';
 import {
   formatPrevoyanceSchemaError,
   prevoyanceMaintienEmployeurSettingsSchema,
@@ -14,9 +15,8 @@ import type {
   PrevoyanceMaintienEmployeurSettings,
   PrevoyanceRegimeSettings,
 } from '@/domain/prevoyance/types';
+import { usePrevoyanceSettings } from '@/hooks/usePrevoyanceSettings';
 import {
-  getPrevoyanceMaintienEmployeurSettings,
-  getPrevoyanceRegimeSettings,
   upsertPrevoyanceMaintienEmployeurSettings,
   upsertPrevoyanceRegimeSettings,
 } from '@/utils/cache/prevoyanceSettingsCache';
@@ -375,27 +375,16 @@ function EditModal({
 
 export default function PrevoyanceRegimes() {
   const { isAdmin } = useUserRole();
-  const [regimes, setRegimes] = useState<PrevoyanceRegimeSettings[]>([]);
-  const [maintien, setMaintien] = useState<PrevoyanceMaintienEmployeurSettings[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { regimes, maintien, loading, reload } = usePrevoyanceSettings();
   const [search, setSearch] = useState('');
   const [openCode, setOpenCode] = useState<string | null>(null);
   const [editorTarget, setEditorTarget] = useState<EditorTarget | null>(null);
-
-  const reload = () => {
-    setLoading(true);
-    Promise.all([getPrevoyanceRegimeSettings(), getPrevoyanceMaintienEmployeurSettings()])
-      .then(([nextRegimes, nextMaintien]) => {
-        setRegimes(nextRegimes);
-        setMaintien(nextMaintien);
-        setOpenCode((current) => current ?? nextRegimes[0]?.code ?? null);
-      })
-      .finally(() => setLoading(false));
-  };
+  const maintienLegal =
+    maintien.find((item) => item.code === PREVOYANCE_MAINTIEN_LEGAL_CODE) ?? null;
 
   useEffect(() => {
-    reload();
-  }, []);
+    setOpenCode((current) => current ?? regimes[0]?.code ?? null);
+  }, [regimes]);
 
   const filteredRegimes = useMemo(() => {
     const needle = search.trim().toLowerCase();
@@ -436,13 +425,12 @@ export default function PrevoyanceRegimes() {
           placeholder="Rechercher un régime, une caisse ou un code"
           className="prevoyance-settings-input"
         />
-        {maintien[0] && isAdmin ? (
+        {maintienLegal && isAdmin ? (
           <button
             type="button"
             className="settings-action-button"
             onClick={() => {
-              const firstMaintien = maintien[0];
-              if (firstMaintien) setEditorTarget({ type: 'maintien', value: firstMaintien });
+              setEditorTarget({ type: 'maintien', value: maintienLegal });
             }}
           >
             Maintien employeur

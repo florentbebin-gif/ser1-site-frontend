@@ -4,6 +4,7 @@ import '@testing-library/jest-dom/vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { PREVOYANCE_MAINTIEN_LEGAL_CODE } from '@/domain/prevoyance/constants';
 import type {
   PrevoyanceMaintienEmployeurSettings,
   PrevoyanceRegimeSettings,
@@ -80,7 +81,7 @@ const regimes: PrevoyanceRegimeSettings[] = [
 
 const maintien: PrevoyanceMaintienEmployeurSettings[] = [
   {
-    code: 'code-travail',
+    code: PREVOYANCE_MAINTIEN_LEGAL_CODE,
     label: 'Code du travail',
     year: 2026,
     data: {
