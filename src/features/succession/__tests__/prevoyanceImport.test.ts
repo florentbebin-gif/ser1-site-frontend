@@ -23,7 +23,7 @@ describe('import prévoyance dans succession', () => {
       renteEducation: 0,
     },
     fraisPro: { enabled: false, franchiseDays: 0, amount: 0, maxDurationYears: 1 },
-    cotisation: { montantAnnuel: 1_200, madelin: true },
+    cotisation: { montantAnnuel: 1_200, dontMadelin: 1_200 },
   };
 
   const collectifContract: PrevoyanceContractDraft = {

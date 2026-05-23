@@ -179,7 +179,7 @@ export type PrevoyanceContractDraft =
       fraisPro: PrevoyanceFraisProDraft;
       cotisation: {
         montantAnnuel: number;
-        madelin: boolean;
+        dontMadelin: number;
       };
     }
   | {

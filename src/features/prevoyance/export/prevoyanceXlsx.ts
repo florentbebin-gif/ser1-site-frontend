@@ -105,11 +105,18 @@ function buildCoverageSheet(data: PrevoyanceExportData): XlsxSheet {
 }
 
 function buildCotisationsSheet(data: PrevoyanceExportData): XlsxSheet {
-  const rows: XlsxSheet['rows'] = [[h('Contrat'), h('Cotisation')]];
+  const rows: XlsxSheet['rows'] = [
+    [h('Contrat'), h('Cotisation annuelle'), h('dont Madelin'), h('Détail')],
+  ];
   for (const contract of data.contracts) {
-    rows.push([text(contract.name), text(contract.cotisationSummary)]);
+    rows.push([
+      text(contract.name),
+      money(contract.cotisationAnnual),
+      money(contract.cotisationDontMadelin),
+      text(contract.cotisationSummary),
+    ]);
   }
-  return { name: 'Cotisations', rows, columnWidths: [24, 48] };
+  return { name: 'Cotisations', rows, columnWidths: [24, 20, 18, 48] };
 }
 
 function buildHypothesesSheet(data: PrevoyanceExportData): XlsxSheet {

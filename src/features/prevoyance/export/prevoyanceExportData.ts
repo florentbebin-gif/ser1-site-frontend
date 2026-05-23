@@ -39,6 +39,8 @@ export interface PrevoyanceExportContract {
   decesSummary: string;
   fraisProAmount: number;
   fraisProSummary: string;
+  cotisationAnnual: number;
+  cotisationDontMadelin: number;
   cotisationSummary: string;
 }
 
@@ -109,7 +111,7 @@ function formatCotisation(contract: PrevoyanceContractDraft): string {
   if (contract.kind === 'collectif') {
     return `${contract.cotisation.tauxPctSalaire}% du salaire, employeur ${contract.cotisation.repartition.employeur}% / salarié ${contract.cotisation.repartition.salarie}%`;
   }
-  return `${contract.cotisation.montantAnnuel} € / an, ${contract.cotisation.madelin ? 'Madelin' : 'non Madelin'}`;
+  return `${contract.cotisation.montantAnnuel} € / an, dont ${contract.cotisation.dontMadelin} € Madelin`;
 }
 
 function formatFraisPro(contract: PrevoyanceContractDraft): { amount: number; summary: string } {
@@ -171,6 +173,11 @@ export function buildPrevoyanceExportData({
         decesSummary: formatDeces(contract, annualBase),
         fraisProAmount: frais.amount,
         fraisProSummary: frais.summary,
+        cotisationAnnual:
+          contract.kind === 'individuel'
+            ? contract.cotisation.montantAnnuel
+            : Math.round(annualBase * (contract.cotisation.tauxPctSalaire / 100)),
+        cotisationDontMadelin: contract.kind === 'individuel' ? contract.cotisation.dontMadelin : 0,
         cotisationSummary: formatCotisation(contract),
       };
     }),

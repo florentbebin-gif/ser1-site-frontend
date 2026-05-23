@@ -32,7 +32,9 @@ const exportData: PrevoyanceExportData = {
       decesSummary: 'Capital 240000 €',
       fraisProAmount: 36_000,
       fraisProSummary: '36000 €, franchise 30 j, durée 1 an(s)',
-      cotisationSummary: '1800 € / an, Madelin',
+      cotisationAnnual: 1_800,
+      cotisationDontMadelin: 1_200,
+      cotisationSummary: '1800 € / an, dont 1200 € Madelin',
     },
   ],
   coverage: {

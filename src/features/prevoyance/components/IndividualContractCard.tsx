@@ -23,6 +23,7 @@ export function IndividualContractCard({
   removable,
 }: IndividualContractCardProps) {
   const [showArretPeriodsModal, setShowArretPeriodsModal] = useState(false);
+  const [madelinClamped, setMadelinClamped] = useState(false);
   const update = (patch: Partial<typeof contract>) => onChange({ ...contract, ...patch });
   const updateArretPalier = (palierIndex: number, amount: number) => {
     update({
@@ -369,22 +370,38 @@ export function IndividualContractCard({
         <SimFieldShell label="Annuel">
           <NumberInput
             value={contract.cotisation.montantAnnuel}
-            onChange={(montantAnnuel) =>
-              update({ cotisation: { ...contract.cotisation, montantAnnuel } })
-            }
+            onChange={(montantAnnuel) => {
+              setMadelinClamped(contract.cotisation.dontMadelin > montantAnnuel);
+              update({
+                cotisation: {
+                  montantAnnuel,
+                  dontMadelin: Math.min(contract.cotisation.dontMadelin, montantAnnuel),
+                },
+              });
+            }}
             suffix="€"
           />
         </SimFieldShell>
-        <label className="prevoyance-check">
-          <input
-            type="checkbox"
-            checked={contract.cotisation.madelin}
-            onChange={(event) =>
-              update({ cotisation: { ...contract.cotisation, madelin: event.target.checked } })
-            }
+        <SimFieldShell label="dont Madelin">
+          <NumberInput
+            value={contract.cotisation.dontMadelin}
+            onChange={(dontMadelin) => {
+              setMadelinClamped(dontMadelin > contract.cotisation.montantAnnuel);
+              update({
+                cotisation: {
+                  ...contract.cotisation,
+                  dontMadelin: Math.min(dontMadelin, contract.cotisation.montantAnnuel),
+                },
+              });
+            }}
+            suffix="€"
           />
-          Madelin
-        </label>
+        </SimFieldShell>
+        {madelinClamped ? (
+          <span className="prevoyance-side-note">
+            Le montant Madelin est plafonné à la cotisation annuelle.
+          </span>
+        ) : null}
       </div>
 
       {showArretPeriodsModal ? (

@@ -63,6 +63,8 @@ export function createDefaultContract(
     };
   }
 
+  const montantAnnuel = Math.round(annualBase * 0.018);
+
   return {
     id,
     name: `Contrat ${index}`,
@@ -104,8 +106,8 @@ export function createDefaultContract(
       maxDurationYears: 1,
     },
     cotisation: {
-      montantAnnuel: Math.round(annualBase * 0.018),
-      madelin: true,
+      montantAnnuel,
+      dontMadelin: montantAnnuel,
     },
   };
 }
