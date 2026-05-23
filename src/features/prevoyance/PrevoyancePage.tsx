@@ -1,18 +1,21 @@
 import { useEffect, useState } from 'react';
 import '@/styles/sim/index.css';
 import './styles/index.css';
+import { ExportMenu } from '@/components/ExportMenu';
 import { SimPageShell } from '@/components/ui/sim';
 import { PREVOYANCE_MAINTIEN_LEGAL_CODE } from '@/domain/prevoyance/constants';
 import { deriveContractKindFromRegime, resolveContractKind } from '@/domain/prevoyance/helpers';
 import type { PrevoyanceContractDraft, PrevoyanceSituationDraft } from '@/domain/prevoyance/types';
 import { useFiscalContext } from '@/hooks/useFiscalContext';
 import { usePrevoyanceSettings } from '@/hooks/usePrevoyanceSettings';
+import { useTheme } from '@/settings/ThemeProvider';
 import { onResetEvent } from '@/utils/reset';
 import { ContractsBlock } from './components/ContractsBlock';
 import { FraisProModal } from './components/FraisProModal';
 import { Sidebar } from './components/Sidebar';
 import { SituationBlock } from './components/SituationBlock';
 import { createDefaultContract, DEFAULT_SITUATION, type FraisProModalState } from './defaults';
+import { usePrevoyanceExportHandlers } from './hooks/usePrevoyanceExportHandlers';
 import { PREVOYANCE_STORAGE_KEY, parsePersistedPrevoyanceState } from './persistence';
 
 function resolvePass(passHistoryByYear: Record<number, number>): number {
@@ -24,6 +27,7 @@ function resolvePass(passHistoryByYear: Record<number, number>): number {
 export default function PrevoyancePage() {
   const { fiscalContext } = useFiscalContext();
   const { regimes, maintien, loading } = usePrevoyanceSettings();
+  const { pptxColors, cabinetLogo, logoPlacement } = useTheme();
   const pass = resolvePass(fiscalContext.passHistoryByYear);
 
   const [situation, setSituation] = useState<PrevoyanceSituationDraft>(DEFAULT_SITUATION);
@@ -34,9 +38,22 @@ export default function PrevoyancePage() {
   const selectedRegime = regimes.find((regime) => regime.code === situation.regimeCode) ?? null;
   const kind = resolveContractKind(selectedRegime, situation.kindOverride);
   const annualBase = kind === 'collectif' ? situation.salaireBrutAnnuel : situation.revenuImposable;
+  const referenceAnnual = kind === 'collectif' ? situation.salaireNetImposable : annualBase;
   const maintienLegal =
     maintien.find((item) => item.code === PREVOYANCE_MAINTIEN_LEGAL_CODE) ?? null;
   const visibleContracts = contracts.filter((contract) => contract.kind === kind);
+  const { exportOptions, exportLoading } = usePrevoyanceExportHandlers({
+    situation,
+    kind,
+    regime: selectedRegime,
+    maintien: maintienLegal,
+    contracts: visibleContracts,
+    annualBase,
+    referenceAnnual,
+    themeColors: pptxColors,
+    cabinetLogo,
+    logoPlacement,
+  });
 
   useEffect(() => {
     const persisted = parsePersistedPrevoyanceState(sessionStorage.getItem(PREVOYANCE_STORAGE_KEY));
@@ -128,6 +145,7 @@ export default function PrevoyancePage() {
       pageClassName="prevoyance-page"
       pageTestId="prevoyance-page"
       mobileSideFirst
+      actions={<ExportMenu options={exportOptions} loading={exportLoading} />}
     >
       <SimPageShell.Main>
         <SituationBlock
@@ -156,7 +174,7 @@ export default function PrevoyancePage() {
           maintien={maintienLegal}
           contracts={visibleContracts}
           annualBase={annualBase}
-          referenceAnnual={kind === 'collectif' ? situation.salaireNetImposable : annualBase}
+          referenceAnnual={referenceAnnual}
           pass={pass}
           salaireBrutAnnuel={situation.salaireBrutAnnuel}
           ancienneteYears={situation.ancienneteYears}
