@@ -16,6 +16,8 @@ interface CollectiveContractCardProps {
   onChange: (next: PrevoyanceContractDraft) => void;
   onRemove: () => void;
   removable: boolean;
+  hasConjoint: boolean;
+  hasChildren: boolean;
 }
 
 export function CollectiveContractCard({
@@ -26,6 +28,8 @@ export function CollectiveContractCard({
   onChange,
   onRemove,
   removable,
+  hasConjoint,
+  hasChildren,
 }: CollectiveContractCardProps) {
   const tranches = computeTranchesFromPass(salaireBrutAnnuel, pass);
   const assietteBase = computeCollectiveAssietteBase(contract.assiette, tranches);
@@ -150,35 +154,41 @@ export function CollectiveContractCard({
           />
           Doublement accident
         </label>
-        <label className="prevoyance-check">
-          <input
-            type="checkbox"
-            checked={contract.deces.doubleEffet}
-            onChange={(event) =>
-              update({ deces: { ...contract.deces, doubleEffet: event.target.checked } })
-            }
-          />
-          Double effet
-        </label>
+        {hasChildren ? (
+          <label className="prevoyance-check">
+            <input
+              type="checkbox"
+              checked={contract.deces.doubleEffet}
+              onChange={(event) =>
+                update({ deces: { ...contract.deces, doubleEffet: event.target.checked } })
+              }
+            />
+            Double effet
+          </label>
+        ) : null}
         <div className="prevoyance-form-grid prevoyance-form-grid--two">
-          <SimFieldShell label="Rente conjoint">
-            <NumberInput
-              value={contract.deces.renteConjointPct}
-              onChange={(renteConjointPct) =>
-                update({ deces: { ...contract.deces, renteConjointPct } })
-              }
-              suffix="%"
-            />
-          </SimFieldShell>
-          <SimFieldShell label="Rente éducation">
-            <NumberInput
-              value={contract.deces.renteEducationPct}
-              onChange={(renteEducationPct) =>
-                update({ deces: { ...contract.deces, renteEducationPct } })
-              }
-              suffix="%"
-            />
-          </SimFieldShell>
+          {hasConjoint ? (
+            <SimFieldShell label="Rente conjoint">
+              <NumberInput
+                value={contract.deces.renteConjointPct}
+                onChange={(renteConjointPct) =>
+                  update({ deces: { ...contract.deces, renteConjointPct } })
+                }
+                suffix="%"
+              />
+            </SimFieldShell>
+          ) : null}
+          {hasChildren ? (
+            <SimFieldShell label="Rente éducation">
+              <NumberInput
+                value={contract.deces.renteEducationPct}
+                onChange={(renteEducationPct) =>
+                  update({ deces: { ...contract.deces, renteEducationPct } })
+                }
+                suffix="%"
+              />
+            </SimFieldShell>
+          ) : null}
         </div>
       </div>
 

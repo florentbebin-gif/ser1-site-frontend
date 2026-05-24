@@ -1,6 +1,12 @@
 import type { SimSelectOption } from '@/components/ui/sim';
+import type { PrevoyanceDeathTargetDraft } from '@/domain/prevoyance/types';
 
 export const TARGET_DECES_MULTIPLE = 3;
+export const DEFAULT_DEATH_TARGET: PrevoyanceDeathTargetDraft = {
+  mode: 'multiple',
+  multiple: TARGET_DECES_MULTIPLE,
+  manualAmount: 0,
+};
 
 export const FAMILY_OPTIONS: SimSelectOption[] = [
   { value: 'celibataire', label: 'Célibataire' },

@@ -1,20 +1,23 @@
-import type { CSSProperties } from 'react';
+import type { CSSProperties, ReactNode } from 'react';
 import {
   buildArretEuroChart,
   buildInvaliditePctChart,
   computeCollectiveAssietteBase,
   computeDecesCapitalFromContract,
+  computeRegimeDecesCapital,
   computeTranchesFromPass,
   selectMaintienEmployeurPalier,
 } from '@/domain/prevoyance/helpers';
 import type {
+  PrevoyanceContractAggregationMode,
   PrevoyanceContractDraft,
   PrevoyanceContractKind,
+  PrevoyanceDeathTargetDraft,
   PrevoyanceMaintienEmployeurSettings,
   PrevoyanceRegimeSettings,
 } from '@/domain/prevoyance/types';
-import { TARGET_DECES_MULTIPLE } from '../constants';
 import { euro, pct } from '../formatters';
+import { NumberInput, SectionIcon, SimFieldShell, type SectionIconName } from './FormPrimitives';
 
 function segmentHeight(value: number, reference: number): string {
   if (reference <= 0) return '0%';
@@ -45,15 +48,38 @@ function MiniArretEuroChart({ chart }: { chart: ReturnType<typeof buildArretEuro
               aria-label={`De ${period.from} à ${period.to} jours`}
             >
               <div className="prevoyance-mini-chart__stack">
-                <span
-                  className="prevoyance-mini-chart__segment prevoyance-mini-chart__segment--ro"
-                  style={
-                    {
-                      '--prevoyance-segment-height': segmentHeight(period.roEuro, chart.reference),
-                    } as CSSProperties
-                  }
-                  title={`Régime obligatoire : ${euro(period.roEuro)}/j`}
-                />
+                {period.roSegments.length > 1 ? (
+                  period.roSegments.map((segment, index) => (
+                    <span
+                      key={segment.code}
+                      className="prevoyance-mini-chart__segment prevoyance-mini-chart__segment--ro"
+                      style={
+                        {
+                          '--prevoyance-segment-height': segmentHeight(
+                            segment.euro,
+                            chart.reference,
+                          ),
+                          '--prevoyance-segment-fill':
+                            index % 2 === 0 ? 'var(--color-c3)' : 'var(--color-c6)',
+                        } as CSSProperties
+                      }
+                      title={`${segment.label} : ${euro(segment.euro)}/j`}
+                    />
+                  ))
+                ) : (
+                  <span
+                    className="prevoyance-mini-chart__segment prevoyance-mini-chart__segment--ro"
+                    style={
+                      {
+                        '--prevoyance-segment-height': segmentHeight(
+                          period.roEuro,
+                          chart.reference,
+                        ),
+                      } as CSSProperties
+                    }
+                    title={`Régime obligatoire : ${euro(period.roEuro)}/j`}
+                  />
+                )}
                 <span
                   className="prevoyance-mini-chart__segment prevoyance-mini-chart__segment--contrat"
                   style={
@@ -100,11 +126,28 @@ function MiniInvaliditePctChart({ chart }: { chart: ReturnType<typeof buildInval
             <strong className="prevoyance-mini-chart__value">{pct(palier.totalPct)}</strong>
             <div className="prevoyance-mini-chart__track" aria-label={`${palier.rate} %`}>
               <div className="prevoyance-mini-chart__stack">
-                <span
-                  className="prevoyance-mini-chart__segment prevoyance-mini-chart__segment--ro"
-                  style={{ '--prevoyance-segment-height': `${palier.roPct}%` } as CSSProperties}
-                  title={`Régime obligatoire : ${pct(palier.roPct)}`}
-                />
+                {palier.roSegments.length > 1 ? (
+                  palier.roSegments.map((segment, index) => (
+                    <span
+                      key={segment.code}
+                      className="prevoyance-mini-chart__segment prevoyance-mini-chart__segment--ro"
+                      style={
+                        {
+                          '--prevoyance-segment-height': `${segment.pct}%`,
+                          '--prevoyance-segment-fill':
+                            index % 2 === 0 ? 'var(--color-c3)' : 'var(--color-c6)',
+                        } as CSSProperties
+                      }
+                      title={`${segment.label} : ${pct(segment.pct)}`}
+                    />
+                  ))
+                ) : (
+                  <span
+                    className="prevoyance-mini-chart__segment prevoyance-mini-chart__segment--ro"
+                    style={{ '--prevoyance-segment-height': `${palier.roPct}%` } as CSSProperties}
+                    title={`Régime obligatoire : ${pct(palier.roPct)}`}
+                  />
+                )}
                 <span
                   className="prevoyance-mini-chart__segment prevoyance-mini-chart__segment--contrat"
                   style={
@@ -142,6 +185,29 @@ function MiniChartLegend() {
   );
 }
 
+function SideCard({
+  title,
+  icon,
+  children,
+}: {
+  title: string;
+  icon: SectionIconName;
+  children: ReactNode;
+}) {
+  return (
+    <section className="premium-card premium-card--guide sim-card--guide prevoyance-side-card">
+      <div className="sim-card__header sim-card__header--bleed prevoyance-side-card__header">
+        <div className="sim-card__icon sim-card__icon--sm">
+          <SectionIcon name={icon} />
+        </div>
+        <h2>{title}</h2>
+      </div>
+      <div className="sim-divider sim-divider--tight" />
+      {children}
+    </section>
+  );
+}
+
 function Donut({ value, target, label }: { value: number; target: number; label: string }) {
   const ratio = target > 0 ? Math.min(1, value / target) : 0;
   const deg = Math.round(ratio * 360);
@@ -164,24 +230,34 @@ function Donut({ value, target, label }: { value: number; target: number; label:
 
 export function Sidebar({
   kind,
-  regime,
+  regimeStack,
   maintien,
   contracts,
+  contractAggregationMode,
+  deathTarget,
+  onDeathTargetChange,
   annualBase,
   referenceAnnual,
   pass,
   salaireBrutAnnuel,
   ancienneteYears,
+  hasConjoint,
+  hasChildren,
 }: {
   kind: PrevoyanceContractKind;
-  regime: PrevoyanceRegimeSettings | null;
+  regimeStack: PrevoyanceRegimeSettings[];
   maintien: PrevoyanceMaintienEmployeurSettings | null;
   contracts: PrevoyanceContractDraft[];
+  contractAggregationMode: PrevoyanceContractAggregationMode;
+  deathTarget: PrevoyanceDeathTargetDraft;
+  onDeathTargetChange: (deathTarget: PrevoyanceDeathTargetDraft) => void;
   annualBase: number;
   referenceAnnual: number;
   pass: number;
   salaireBrutAnnuel: number;
   ancienneteYears: number;
+  hasConjoint: boolean;
+  hasChildren: boolean;
 }) {
   const tranches = computeTranchesFromPass(salaireBrutAnnuel, pass);
   const maintienPalier = selectMaintienEmployeurPalier(ancienneteYears, maintien);
@@ -194,25 +270,30 @@ export function Sidebar({
       contract.kind === 'individuel',
   );
   const arretChart = buildArretEuroChart({
-    regime,
+    regimeStack,
     contracts,
     kind,
+    contractAggregationMode,
     maintienPalier,
     referenceAnnual,
     salaireBrutAnnuel,
   });
   const invaliditeChart = buildInvaliditePctChart({
-    regime,
+    regimeStack,
     contracts,
     kind,
+    contractAggregationMode,
     referenceAnnual,
     salaireBrutAnnuel,
   });
   const assietteBase = collectiveContracts[0]
     ? computeCollectiveAssietteBase(collectiveContracts[0].assiette, tranches)
     : salaireBrutAnnuel;
-  const decesTarget = annualBase * TARGET_DECES_MULTIPLE;
-  const decesCovered = contracts.reduce(
+  const decesTarget =
+    deathTarget.mode === 'manual' && deathTarget.manualAmount > 0
+      ? deathTarget.manualAmount
+      : referenceAnnual * deathTarget.multiple;
+  const privateDecesCovered = contracts.reduce(
     (sum, contract) =>
       sum +
       computeDecesCapitalFromContract(
@@ -221,6 +302,12 @@ export function Sidebar({
       ),
     0,
   );
+  const regimeDecesCovered = computeRegimeDecesCapital(
+    regimeStack,
+    referenceAnnual,
+    salaireBrutAnnuel,
+  );
+  const decesCovered = regimeDecesCovered + privateDecesCovered;
   const fraisEstimated = individualContracts.reduce(
     (sum, contract) => sum + contract.fraisPro.amount,
     0,
@@ -232,40 +319,81 @@ export function Sidebar({
 
   return (
     <div className="prevoyance-sidebar">
-      <section className="premium-card prevoyance-side-card">
-        <h2>Arrêt de travail</h2>
+      <SideCard title="Arrêt de travail" icon="arret">
         <MiniArretEuroChart chart={arretChart} />
-      </section>
+      </SideCard>
 
-      <section className="premium-card prevoyance-side-card">
-        <h2>Invalidité</h2>
+      <SideCard title="Invalidité" icon="invalidite">
         <MiniInvaliditePctChart chart={invaliditeChart} />
-      </section>
+      </SideCard>
 
-      <section className="premium-card prevoyance-side-card">
-        <h2>Décès</h2>
-        <Donut value={decesCovered} target={decesTarget} label={`cible ${euro(decesTarget)}`} />
+      <SideCard title="Décès" icon="deces">
+        <div className="prevoyance-death-target">
+          <div className="prevoyance-death-target__presets">
+            {[1, 3, 5].map((multiple) => (
+              <button
+                key={multiple}
+                type="button"
+                className={
+                  deathTarget.mode === 'multiple' && deathTarget.multiple === multiple
+                    ? 'prevoyance-death-target__preset is-active'
+                    : 'prevoyance-death-target__preset'
+                }
+                onClick={() =>
+                  onDeathTargetChange({
+                    ...deathTarget,
+                    mode: 'multiple',
+                    multiple: multiple as 1 | 3 | 5,
+                  })
+                }
+              >
+                {multiple} an{multiple > 1 ? 's' : ''}
+              </button>
+            ))}
+          </div>
+          <SimFieldShell label="Besoin à couvrir">
+            <NumberInput
+              value={deathTarget.manualAmount}
+              onChange={(manualAmount) =>
+                onDeathTargetChange({ ...deathTarget, mode: 'manual', manualAmount })
+              }
+              suffix="€"
+            />
+          </SimFieldShell>
+        </div>
+        <Donut value={decesCovered} target={decesTarget} label={`objectif ${euro(decesTarget)}`} />
+        {regimeDecesCovered > 0 ? (
+          <div className="prevoyance-rente-line">
+            <span>Régime obligatoire</span>
+            <strong>{euro(regimeDecesCovered)}</strong>
+          </div>
+        ) : null}
         {contracts.map((contract) => (
           <div key={contract.id} className="prevoyance-rente-line">
             <span>{contract.name}</span>
             <strong>
               {contract.kind === 'collectif'
-                ? `${pct(contract.deces.renteConjointPct)} conjoint · ${pct(
-                    contract.deces.renteEducationPct,
-                  )} éducation`
-                : `${euro(contract.deces.renteConjoint)} conjoint · ${euro(
-                    contract.deces.renteEducation,
-                  )} éducation`}
+                ? [
+                    hasConjoint ? `${pct(contract.deces.renteConjointPct)} conjoint` : null,
+                    hasChildren ? `${pct(contract.deces.renteEducationPct)} éducation` : null,
+                  ]
+                    .filter(Boolean)
+                    .join(' · ') || euro(computeDecesCapitalFromContract(contract, assietteBase))
+                : [
+                    hasConjoint ? `${euro(contract.deces.renteConjoint)} conjoint` : null,
+                    hasChildren ? `${euro(contract.deces.renteEducation)} éducation` : null,
+                  ]
+                    .filter(Boolean)
+                    .join(' · ') || euro(computeDecesCapitalFromContract(contract, annualBase))}
             </strong>
           </div>
         ))}
-      </section>
+      </SideCard>
 
       {kind === 'individuel' ? (
-        <section className="premium-card prevoyance-side-card">
-          <h2>Frais professionnels</h2>
+        <SideCard title="Frais professionnels" icon="frais">
           <Donut value={fraisCovered} target={fraisEstimated} label="couverts" />
-        </section>
+        </SideCard>
       ) : null}
     </div>
   );

@@ -2,6 +2,20 @@ import { describe, expect, it } from 'vitest';
 import { parsePersistedPrevoyanceState } from '../persistence';
 
 describe('persistence Prévoyance', () => {
+  it('conserve le mode de contrats et l’objectif décès persistés', () => {
+    const parsed = parsePersistedPrevoyanceState(
+      JSON.stringify({
+        contractAggregationMode: 'cumulate',
+        deathTarget: { mode: 'manual', multiple: 5, manualAmount: 420_000 },
+      }),
+    );
+
+    expect(parsed).toMatchObject({
+      contractAggregationMode: 'cumulate',
+      deathTarget: { mode: 'manual', multiple: 5, manualAmount: 420_000 },
+    });
+  });
+
   it('convertit un ancien booléen Madelin en montant déductible', () => {
     const parsed = parsePersistedPrevoyanceState(
       JSON.stringify({

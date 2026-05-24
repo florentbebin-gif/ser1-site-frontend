@@ -11,35 +11,35 @@ import { NumberInput, SectionCard, SimFieldShell } from './FormPrimitives';
 export function SituationBlock({
   situation,
   regimes,
-  selectedRegime,
   kind,
   onChange,
 }: {
   situation: PrevoyanceSituationDraft;
   regimes: PrevoyanceRegimeSettings[];
-  selectedRegime: PrevoyanceRegimeSettings | null;
   kind: PrevoyanceContractKind;
   onChange: (patch: Partial<PrevoyanceSituationDraft>) => void;
 }) {
   const regimeOptions: SimSelectOption[] = regimes.map((regime) => ({
     value: regime.code,
     label: regime.label,
-    description: regime.caisse,
+    description: regime.label
+      .toLocaleLowerCase('fr-FR')
+      .includes(regime.caisse.toLocaleLowerCase('fr-FR'))
+      ? undefined
+      : regime.caisse,
   }));
 
   return (
     <SectionCard
       title="Situation"
-      subtitle={
-        selectedRegime
-          ? `${selectedRegime.caisse} · ${kind === 'collectif' ? 'contrat entreprise' : 'contrat individuel'}`
-          : 'Régime obligatoire à sélectionner'
-      }
+      subtitle="Choix du régime obligatoire et des ayants droit"
+      icon="situation"
     >
       <div className="prevoyance-form-grid prevoyance-form-grid--three">
         <SimFieldShell label="Date de naissance">
           <input
             type="date"
+            aria-label="Date de naissance"
             value={situation.birthDate}
             onChange={(event) => onChange({ birthDate: event.target.value })}
             className="sim-field__control"

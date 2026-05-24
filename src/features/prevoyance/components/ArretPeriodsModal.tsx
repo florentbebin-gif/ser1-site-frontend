@@ -97,7 +97,7 @@ export function ArretPeriodsModal({ paliers, onClose, onApply }: ArretPeriodsMod
       </div>
       <div className="prevoyance-periods-modal__list">
         {draft.map((palier, index) => (
-          <div key={`${index}-${palier.fromDay}-${palier.toDay}`} className="prevoyance-period-row">
+          <div key={index} className="prevoyance-period-row">
             <SimFieldShell label="Début">
               <NumberInput
                 value={palier.fromDay}

@@ -12,6 +12,8 @@ interface IndividualContractCardProps {
   onRemove: () => void;
   onOpenFrais: () => void;
   removable: boolean;
+  hasConjoint: boolean;
+  hasChildren: boolean;
 }
 
 export function IndividualContractCard({
@@ -21,6 +23,8 @@ export function IndividualContractCard({
   onRemove,
   onOpenFrais,
   removable,
+  hasConjoint,
+  hasChildren,
 }: IndividualContractCardProps) {
   const [showArretPeriodsModal, setShowArretPeriodsModal] = useState(false);
   const [madelinClamped, setMadelinClamped] = useState(false);
@@ -333,35 +337,43 @@ export function IndividualContractCard({
           />
           Doublement accident
         </label>
-        <label className="prevoyance-check">
-          <input
-            type="checkbox"
-            checked={contract.deces.doubleEffet}
-            onChange={(event) =>
-              update({
-                deces: { ...contract.deces, doubleEffet: event.target.checked },
-              })
-            }
-          />
-          Double effet
-        </label>
-        <div className="prevoyance-form-grid prevoyance-form-grid--two">
-          <SimFieldShell label="Rente conjoint">
-            <NumberInput
-              value={contract.deces.renteConjoint}
-              onChange={(renteConjoint) => update({ deces: { ...contract.deces, renteConjoint } })}
-              suffix="€/an"
-            />
-          </SimFieldShell>
-          <SimFieldShell label="Rente éducation">
-            <NumberInput
-              value={contract.deces.renteEducation}
-              onChange={(renteEducation) =>
-                update({ deces: { ...contract.deces, renteEducation } })
+        {hasChildren ? (
+          <label className="prevoyance-check">
+            <input
+              type="checkbox"
+              checked={contract.deces.doubleEffet}
+              onChange={(event) =>
+                update({
+                  deces: { ...contract.deces, doubleEffet: event.target.checked },
+                })
               }
-              suffix="€/an"
             />
-          </SimFieldShell>
+            Double effet
+          </label>
+        ) : null}
+        <div className="prevoyance-form-grid prevoyance-form-grid--two">
+          {hasConjoint ? (
+            <SimFieldShell label="Rente conjoint">
+              <NumberInput
+                value={contract.deces.renteConjoint}
+                onChange={(renteConjoint) =>
+                  update({ deces: { ...contract.deces, renteConjoint } })
+                }
+                suffix="€/an"
+              />
+            </SimFieldShell>
+          ) : null}
+          {hasChildren ? (
+            <SimFieldShell label="Rente éducation">
+              <NumberInput
+                value={contract.deces.renteEducation}
+                onChange={(renteEducation) =>
+                  update({ deces: { ...contract.deces, renteEducation } })
+                }
+                suffix="€/an"
+              />
+            </SimFieldShell>
+          ) : null}
         </div>
       </div>
 
