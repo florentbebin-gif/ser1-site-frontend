@@ -4,17 +4,21 @@ import {
   buildInvaliditePctChart,
   computeCollectiveAssietteBase,
   computeDecesCapitalFromContract,
+  computeRegimeDecesCapital,
   computeTranchesFromPass,
   selectMaintienEmployeurPalier,
 } from '@/domain/prevoyance/helpers';
 import type {
+  PrevoyanceContractAggregationMode,
   PrevoyanceContractDraft,
   PrevoyanceContractKind,
+  PrevoyanceDeathTargetDraft,
   PrevoyanceMaintienEmployeurSettings,
   PrevoyanceRegimeSettings,
 } from '@/domain/prevoyance/types';
-import { TARGET_DECES_MULTIPLE } from '../constants';
 import { euro, pct } from '../formatters';
+import { TARGET_DECES_MULTIPLE } from '../constants';
+import { NumberInput, SideCard } from './FormPrimitives';
 
 function segmentHeight(value: number, reference: number): string {
   if (reference <= 0) return '0%';
@@ -45,15 +49,38 @@ function MiniArretEuroChart({ chart }: { chart: ReturnType<typeof buildArretEuro
               aria-label={`De ${period.from} à ${period.to} jours`}
             >
               <div className="prevoyance-mini-chart__stack">
-                <span
-                  className="prevoyance-mini-chart__segment prevoyance-mini-chart__segment--ro"
-                  style={
-                    {
-                      '--prevoyance-segment-height': segmentHeight(period.roEuro, chart.reference),
-                    } as CSSProperties
-                  }
-                  title={`Régime obligatoire : ${euro(period.roEuro)}/j`}
-                />
+                {period.roSegments.length > 1 ? (
+                  period.roSegments.map((segment, index) => (
+                    <span
+                      key={segment.code}
+                      className="prevoyance-mini-chart__segment prevoyance-mini-chart__segment--ro"
+                      style={
+                        {
+                          '--prevoyance-segment-height': segmentHeight(
+                            segment.euro,
+                            chart.reference,
+                          ),
+                          '--prevoyance-segment-fill':
+                            index % 2 === 0 ? 'var(--color-c3)' : 'var(--color-c6)',
+                        } as CSSProperties
+                      }
+                      title={`${segment.label} : ${euro(segment.euro)}/j`}
+                    />
+                  ))
+                ) : (
+                  <span
+                    className="prevoyance-mini-chart__segment prevoyance-mini-chart__segment--ro"
+                    style={
+                      {
+                        '--prevoyance-segment-height': segmentHeight(
+                          period.roEuro,
+                          chart.reference,
+                        ),
+                      } as CSSProperties
+                    }
+                    title={`Régime obligatoire : ${euro(period.roEuro)}/j`}
+                  />
+                )}
                 <span
                   className="prevoyance-mini-chart__segment prevoyance-mini-chart__segment--contrat"
                   style={
@@ -74,7 +101,6 @@ function MiniArretEuroChart({ chart }: { chart: ReturnType<typeof buildArretEuro
           </div>
         ))}
       </div>
-      <MiniChartLegend />
     </div>
   );
 }
@@ -100,11 +126,28 @@ function MiniInvaliditePctChart({ chart }: { chart: ReturnType<typeof buildInval
             <strong className="prevoyance-mini-chart__value">{pct(palier.totalPct)}</strong>
             <div className="prevoyance-mini-chart__track" aria-label={`${palier.rate} %`}>
               <div className="prevoyance-mini-chart__stack">
-                <span
-                  className="prevoyance-mini-chart__segment prevoyance-mini-chart__segment--ro"
-                  style={{ '--prevoyance-segment-height': `${palier.roPct}%` } as CSSProperties}
-                  title={`Régime obligatoire : ${pct(palier.roPct)}`}
-                />
+                {palier.roSegments.length > 1 ? (
+                  palier.roSegments.map((segment, index) => (
+                    <span
+                      key={segment.code}
+                      className="prevoyance-mini-chart__segment prevoyance-mini-chart__segment--ro"
+                      style={
+                        {
+                          '--prevoyance-segment-height': `${segment.pct}%`,
+                          '--prevoyance-segment-fill':
+                            index % 2 === 0 ? 'var(--color-c3)' : 'var(--color-c6)',
+                        } as CSSProperties
+                      }
+                      title={`${segment.label} : ${pct(segment.pct)}`}
+                    />
+                  ))
+                ) : (
+                  <span
+                    className="prevoyance-mini-chart__segment prevoyance-mini-chart__segment--ro"
+                    style={{ '--prevoyance-segment-height': `${palier.roPct}%` } as CSSProperties}
+                    title={`Régime obligatoire : ${pct(palier.roPct)}`}
+                  />
+                )}
                 <span
                   className="prevoyance-mini-chart__segment prevoyance-mini-chart__segment--contrat"
                   style={
@@ -118,7 +161,6 @@ function MiniInvaliditePctChart({ chart }: { chart: ReturnType<typeof buildInval
           </div>
         ))}
       </div>
-      <MiniChartLegend />
     </div>
   );
 }
@@ -128,25 +170,39 @@ function MiniChartLegend() {
     <div className="prevoyance-mini-chart__legend">
       <span>
         <i className="prevoyance-mini-chart__dot prevoyance-mini-chart__dot--reference" />
-        Revenu actuel
+        Revenu
       </span>
       <span>
         <i className="prevoyance-mini-chart__dot prevoyance-mini-chart__dot--ro" />
-        Régime obligatoire
+        RO
       </span>
       <span>
         <i className="prevoyance-mini-chart__dot prevoyance-mini-chart__dot--contrat" />
-        Contrats de prévoyance
+        Contrats
       </span>
     </div>
   );
 }
 
-function Donut({ value, target, label }: { value: number; target: number; label: string }) {
+function Donut({
+  value,
+  target,
+  label,
+  compact = false,
+}: {
+  value: number;
+  target: number;
+  label: string;
+  compact?: boolean;
+}) {
   const ratio = target > 0 ? Math.min(1, value / target) : 0;
   const deg = Math.round(ratio * 360);
   return (
-    <div className="prevoyance-donut-wrap">
+    <div
+      className={
+        compact ? 'prevoyance-donut-wrap prevoyance-donut-wrap--compact' : 'prevoyance-donut-wrap'
+      }
+    >
       <div
         className="prevoyance-donut"
         style={{ '--prevoyance-donut-deg': `${deg}deg` } as CSSProperties}
@@ -162,26 +218,104 @@ function Donut({ value, target, label }: { value: number; target: number; label:
   );
 }
 
+function MiniDonut({ value, target, label }: { value: number; target: number; label: string }) {
+  const ratio = target > 0 ? Math.min(1, value / target) : 0;
+  const deg = Math.round(ratio * 360);
+  return (
+    <div
+      className="prevoyance-mini-donut"
+      style={{ '--prevoyance-donut-deg': `${deg}deg` } as CSSProperties}
+      aria-label={label}
+    >
+      <span>{pct(ratio * 100)}</span>
+    </div>
+  );
+}
+
+function DeathTargetControl({
+  deathTarget,
+  onDeathTargetChange,
+  defaultAmount,
+}: {
+  deathTarget: PrevoyanceDeathTargetDraft;
+  onDeathTargetChange: (deathTarget: PrevoyanceDeathTargetDraft) => void;
+  defaultAmount: number;
+}) {
+  const displayedAmount =
+    deathTarget.mode === 'manual' && deathTarget.manualAmount > 0
+      ? deathTarget.manualAmount
+      : defaultAmount;
+
+  return (
+    <div className="prevoyance-death-target">
+      <div className="prevoyance-death-target__top">
+        <div className="prevoyance-death-target__manual">
+          <span title="Besoin à couvrir">Besoin</span>
+          <span className="prevoyance-death-target__manual-input">
+            <NumberInput
+              value={displayedAmount}
+              onChange={(manualAmount) =>
+                onDeathTargetChange(
+                  manualAmount > 0
+                    ? { ...deathTarget, mode: 'manual', manualAmount }
+                    : {
+                        ...deathTarget,
+                        mode: 'multiple',
+                        multiple: TARGET_DECES_MULTIPLE,
+                        manualAmount: 0,
+                      },
+                )
+              }
+              suffix="€"
+              ariaLabel="Besoin à couvrir"
+            />
+          </span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function computeCotisationAnnual(
+  contract: PrevoyanceContractDraft,
+  salaireBrutAnnuel: number,
+): number {
+  if (contract.kind === 'individuel') return contract.cotisation.montantAnnuel;
+  return Math.round(salaireBrutAnnuel * (contract.cotisation.tauxPctSalaire / 100));
+}
+
 export function Sidebar({
   kind,
-  regime,
+  regimeStack,
   maintien,
   contracts,
+  contractAggregationMode,
+  deathTarget,
+  onDeathTargetChange,
   annualBase,
   referenceAnnual,
   pass,
   salaireBrutAnnuel,
   ancienneteYears,
+  hasConjoint,
+  hasChildren,
+  fraisGenerauxAssiette,
 }: {
   kind: PrevoyanceContractKind;
-  regime: PrevoyanceRegimeSettings | null;
+  regimeStack: PrevoyanceRegimeSettings[];
   maintien: PrevoyanceMaintienEmployeurSettings | null;
   contracts: PrevoyanceContractDraft[];
+  contractAggregationMode: PrevoyanceContractAggregationMode;
+  deathTarget: PrevoyanceDeathTargetDraft;
+  onDeathTargetChange: (deathTarget: PrevoyanceDeathTargetDraft) => void;
   annualBase: number;
   referenceAnnual: number;
   pass: number;
   salaireBrutAnnuel: number;
   ancienneteYears: number;
+  hasConjoint: boolean;
+  hasChildren: boolean;
+  fraisGenerauxAssiette: number;
 }) {
   const tranches = computeTranchesFromPass(salaireBrutAnnuel, pass);
   const maintienPalier = selectMaintienEmployeurPalier(ancienneteYears, maintien);
@@ -194,25 +328,30 @@ export function Sidebar({
       contract.kind === 'individuel',
   );
   const arretChart = buildArretEuroChart({
-    regime,
+    regimeStack,
     contracts,
     kind,
+    contractAggregationMode,
     maintienPalier,
     referenceAnnual,
     salaireBrutAnnuel,
   });
   const invaliditeChart = buildInvaliditePctChart({
-    regime,
+    regimeStack,
     contracts,
     kind,
+    contractAggregationMode,
     referenceAnnual,
     salaireBrutAnnuel,
   });
   const assietteBase = collectiveContracts[0]
     ? computeCollectiveAssietteBase(collectiveContracts[0].assiette, tranches)
     : salaireBrutAnnuel;
-  const decesTarget = annualBase * TARGET_DECES_MULTIPLE;
-  const decesCovered = contracts.reduce(
+  const decesTarget =
+    deathTarget.mode === 'manual' && deathTarget.manualAmount > 0
+      ? deathTarget.manualAmount
+      : referenceAnnual * TARGET_DECES_MULTIPLE;
+  const privateDecesCovered = contracts.reduce(
     (sum, contract) =>
       sum +
       computeDecesCapitalFromContract(
@@ -221,52 +360,128 @@ export function Sidebar({
       ),
     0,
   );
-  const fraisEstimated = individualContracts.reduce(
+  const regimeDecesCovered = computeRegimeDecesCapital(
+    regimeStack,
+    referenceAnnual,
+    salaireBrutAnnuel,
+  );
+  const decesCovered = regimeDecesCovered + privateDecesCovered;
+  const fraisCovered = individualContracts.reduce(
     (sum, contract) => sum + contract.fraisPro.amount,
     0,
   );
-  const fraisCovered = individualContracts.reduce(
-    (sum, contract) => sum + (contract.fraisPro.enabled ? contract.fraisPro.amount : 0),
+  const cotisationAnnual = contracts.reduce(
+    (sum, contract) => sum + computeCotisationAnnual(contract, salaireBrutAnnuel),
     0,
   );
+  const cotisationDetail =
+    kind === 'collectif'
+      ? (() => {
+          const collectiveTotal = collectiveContracts.reduce(
+            (sum, contract) => sum + computeCotisationAnnual(contract, salaireBrutAnnuel),
+            0,
+          );
+          if (collectiveTotal <= 0) return 'Employeur 0 % · salarié 0 %';
+          const employeur = collectiveContracts.reduce((sum, contract) => {
+            const amount = computeCotisationAnnual(contract, salaireBrutAnnuel);
+            return sum + amount * (contract.cotisation.repartition.employeur / 100);
+          }, 0);
+          const employeurPct = (employeur / collectiveTotal) * 100;
+          return `Employeur ${pct(employeurPct)} · salarié ${pct(100 - employeurPct)}`;
+        })()
+      : `dont Madelin ${euro(
+          individualContracts.reduce((sum, contract) => sum + contract.cotisation.dontMadelin, 0),
+        )}`;
+  const cotisationTitle =
+    contractAggregationMode === 'compare' ? 'Contrat affiché' : 'Cumul contrats';
 
   return (
     <div className="prevoyance-sidebar">
-      <section className="premium-card prevoyance-side-card">
-        <h2>Arrêt de travail</h2>
+      <SideCard title="Arrêt de travail" icon="arret" actions={<MiniChartLegend />}>
         <MiniArretEuroChart chart={arretChart} />
-      </section>
-
-      <section className="premium-card prevoyance-side-card">
-        <h2>Invalidité</h2>
-        <MiniInvaliditePctChart chart={invaliditeChart} />
-      </section>
-
-      <section className="premium-card prevoyance-side-card">
-        <h2>Décès</h2>
-        <Donut value={decesCovered} target={decesTarget} label={`cible ${euro(decesTarget)}`} />
-        {contracts.map((contract) => (
-          <div key={contract.id} className="prevoyance-rente-line">
-            <span>{contract.name}</span>
-            <strong>
-              {contract.kind === 'collectif'
-                ? `${pct(contract.deces.renteConjointPct)} conjoint · ${pct(
-                    contract.deces.renteEducationPct,
-                  )} éducation`
-                : `${euro(contract.deces.renteConjoint)} conjoint · ${euro(
-                    contract.deces.renteEducation,
-                  )} éducation`}
-            </strong>
+        {kind === 'individuel' ? (
+          <div className="prevoyance-frais-inline-kpi">
+            <MiniDonut value={fraisCovered} target={fraisGenerauxAssiette} label="frais généraux" />
+            <div>
+              <span>Frais généraux couverts</span>
+              <strong>{euro(fraisCovered)} couverts</strong>
+              <small>
+                {fraisGenerauxAssiette > 0
+                  ? `Assiette ${euro(fraisGenerauxAssiette)}`
+                  : 'Assiette à estimer'}
+              </small>
+            </div>
           </div>
-        ))}
-      </section>
+        ) : null}
+      </SideCard>
 
-      {kind === 'individuel' ? (
-        <section className="premium-card prevoyance-side-card">
-          <h2>Frais professionnels</h2>
-          <Donut value={fraisCovered} target={fraisEstimated} label="couverts" />
-        </section>
-      ) : null}
+      <SideCard title="Invalidité" icon="invalidite" actions={<MiniChartLegend />}>
+        <MiniInvaliditePctChart chart={invaliditeChart} />
+      </SideCard>
+
+      <SideCard
+        title="Décès"
+        icon="deces"
+        actions={
+          <DeathTargetControl
+            deathTarget={deathTarget}
+            onDeathTargetChange={onDeathTargetChange}
+            defaultAmount={referenceAnnual * TARGET_DECES_MULTIPLE}
+          />
+        }
+      >
+        <Donut value={decesCovered} target={decesTarget} label={`objectif ${euro(decesTarget)}`} />
+        {regimeDecesCovered > 0 ? (
+          <div className="prevoyance-rente-line">
+            <span>Régime obligatoire</span>
+            <strong>{euro(regimeDecesCovered)}</strong>
+          </div>
+        ) : null}
+        {contracts.map((contract) => {
+          const capital = computeDecesCapitalFromContract(
+            contract,
+            contract.kind === 'collectif' ? assietteBase : annualBase,
+          );
+          const deathRows: Array<[string, string]> = [
+            [`${contract.name} · Capital`, euro(capital)],
+            hasConjoint
+              ? [
+                  'Rente conjoint',
+                  contract.kind === 'collectif'
+                    ? pct(contract.deces.renteConjointPct)
+                    : euro(contract.deces.renteConjoint),
+                ]
+              : null,
+            hasChildren
+              ? [
+                  'Rente éducation',
+                  contract.kind === 'collectif'
+                    ? pct(contract.deces.renteEducationPct)
+                    : euro(contract.deces.renteEducation),
+                ]
+              : null,
+          ].filter((row): row is [string, string] => row !== null);
+
+          return (
+            <div key={contract.id} className="prevoyance-deces-contract">
+              {deathRows.map(([label, value]) => (
+                <div key={label} className="prevoyance-rente-line prevoyance-rente-line--sub">
+                  <span>{label}</span>
+                  <strong>{value}</strong>
+                </div>
+              ))}
+            </div>
+          );
+        })}
+      </SideCard>
+
+      <SideCard title="Cotisation" icon="contracts" compact>
+        <div className="prevoyance-cotisation-kpi">
+          <span>{cotisationTitle}</span>
+          <strong>{euro(cotisationAnnual)}/an</strong>
+          <small>{cotisationDetail}</small>
+        </div>
+      </SideCard>
     </div>
   );
 }

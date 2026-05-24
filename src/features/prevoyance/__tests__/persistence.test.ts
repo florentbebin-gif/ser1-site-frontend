@@ -2,6 +2,29 @@ import { describe, expect, it } from 'vitest';
 import { parsePersistedPrevoyanceState } from '../persistence';
 
 describe('persistence Prévoyance', () => {
+  it('conserve le mode de contrats et l’objectif décès persistés', () => {
+    const parsed = parsePersistedPrevoyanceState(
+      JSON.stringify({
+        contractAggregationMode: 'cumulate',
+        deathTarget: { mode: 'manual', multiple: 5, manualAmount: 420_000 },
+        fraisGenerauxEstimate: {
+          loyers: 12_000,
+          chargesExternes: 8_000,
+          assurances: 2_000,
+          salaires: 30_000,
+          amortissements: 3_000,
+          fraisBancaires: 1_000,
+        },
+      }),
+    );
+
+    expect(parsed).toMatchObject({
+      contractAggregationMode: 'cumulate',
+      deathTarget: { mode: 'manual', multiple: 5, manualAmount: 420_000 },
+      fraisGenerauxEstimate: { loyers: 12_000, salaires: 30_000 },
+    });
+  });
+
   it('convertit un ancien booléen Madelin en montant déductible', () => {
     const parsed = parsePersistedPrevoyanceState(
       JSON.stringify({
@@ -28,8 +51,12 @@ describe('persistence Prévoyance', () => {
     );
 
     expect(parsed?.contracts?.[0]).toMatchObject({
+      invalidite: { indemnisation: 'forfaitaire' },
       cotisation: { montantAnnuel: 1_500, dontMadelin: 1_500 },
     });
+    expect(
+      parsed?.contracts?.[0]?.kind === 'individuel' ? parsed.contracts[0].fraisPro : null,
+    ).not.toHaveProperty('enabled');
   });
 
   it('plafonne la part Madelin persistée à la cotisation annuelle', () => {
@@ -59,6 +86,13 @@ describe('persistence Prévoyance', () => {
 
     expect(parsed?.contracts?.[0]).toMatchObject({
       cotisation: { montantAnnuel: 1_500, dontMadelin: 1_500 },
+    });
+    expect(
+      parsed?.contracts?.[0]?.kind === 'individuel' ? parsed.contracts[0].fraisPro : null,
+    ).toEqual({
+      franchiseDays: 0,
+      amount: 0,
+      maxDurationYears: 1,
     });
   });
 });

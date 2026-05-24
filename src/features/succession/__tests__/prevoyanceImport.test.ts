@@ -8,13 +8,13 @@ import {
 import type { SuccessionPrevoyanceDecesEntry } from '../successionDraft.types';
 
 describe('import prévoyance dans succession', () => {
-  const individuelContract: PrevoyanceContractDraft = {
+  const individuelContract: Extract<PrevoyanceContractDraft, { kind: 'individuel' }> = {
     id: 'ind-1',
     name: 'Individuel',
     kind: 'individuel',
     indemnisation: 'forfaitaire',
     arret: { franchises: { accident: 0, hospitalisation: 0, maladie: 0 }, paliers: [] },
-    invalidite: { paliers: [] },
+    invalidite: { indemnisation: 'forfaitaire', paliers: [] },
     deces: {
       capital: 150_000,
       doublementAccident: false,
@@ -22,11 +22,11 @@ describe('import prévoyance dans succession', () => {
       renteConjoint: 0,
       renteEducation: 0,
     },
-    fraisPro: { enabled: false, franchiseDays: 0, amount: 0, maxDurationYears: 1 },
+    fraisPro: { franchiseDays: 0, amount: 0, maxDurationYears: 1 },
     cotisation: { montantAnnuel: 1_200, dontMadelin: 1_200 },
   };
 
-  const collectifContract: PrevoyanceContractDraft = {
+  const collectifContract: Extract<PrevoyanceContractDraft, { kind: 'collectif' }> = {
     id: 'col-1',
     name: 'Collectif',
     kind: 'collectif',

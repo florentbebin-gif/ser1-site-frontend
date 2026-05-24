@@ -3,8 +3,10 @@ import type { ExportOption } from '@/components/export/exportTypes';
 import type { LogoPlacement } from '@/pptx/theme/types';
 import type { ThemeColors } from '@/settings/theme';
 import type {
+  PrevoyanceContractAggregationMode,
   PrevoyanceContractDraft,
   PrevoyanceContractKind,
+  PrevoyanceDeathTargetDraft,
   PrevoyanceMaintienEmployeurSettings,
   PrevoyanceRegimeSettings,
   PrevoyanceSituationDraft,
@@ -16,11 +18,14 @@ import { exportPrevoyanceXlsx } from '../export/prevoyanceXlsx';
 interface UsePrevoyanceExportHandlersInput {
   situation: PrevoyanceSituationDraft;
   kind: PrevoyanceContractKind;
-  regime: PrevoyanceRegimeSettings | null;
+  regimeStack: PrevoyanceRegimeSettings[];
   maintien: PrevoyanceMaintienEmployeurSettings | null;
   contracts: PrevoyanceContractDraft[];
+  contractAggregationMode: PrevoyanceContractAggregationMode;
+  deathTarget: PrevoyanceDeathTargetDraft;
   annualBase: number;
   referenceAnnual: number;
+  fraisGenerauxAssiette: number;
   themeColors: ThemeColors;
   cabinetLogo?: string;
   logoPlacement?: LogoPlacement;
@@ -29,11 +34,14 @@ interface UsePrevoyanceExportHandlersInput {
 export function usePrevoyanceExportHandlers({
   situation,
   kind,
-  regime,
+  regimeStack,
   maintien,
   contracts,
+  contractAggregationMode,
+  deathTarget,
   annualBase,
   referenceAnnual,
+  fraisGenerauxAssiette,
   themeColors,
   cabinetLogo,
   logoPlacement,
@@ -45,13 +53,27 @@ export function usePrevoyanceExportHandlers({
       buildPrevoyanceExportData({
         situation,
         kind,
-        regime,
+        regimeStack,
         maintien,
         contracts,
+        contractAggregationMode,
+        deathTarget,
         annualBase,
         referenceAnnual,
+        fraisGenerauxAssiette,
       }),
-    [annualBase, contracts, kind, maintien, referenceAnnual, regime, situation],
+    [
+      annualBase,
+      contractAggregationMode,
+      contracts,
+      deathTarget,
+      fraisGenerauxAssiette,
+      kind,
+      maintien,
+      referenceAnnual,
+      regimeStack,
+      situation,
+    ],
   );
 
   const handleExportPptx = useCallback(async () => {

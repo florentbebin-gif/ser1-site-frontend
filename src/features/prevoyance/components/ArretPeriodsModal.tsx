@@ -34,16 +34,46 @@ function validatePaliers(paliers: PrevoyanceArretPalierDraft[]): string {
   return '';
 }
 
+function clampDay(value: number): number {
+  return Math.min(PREVOYANCE_MAX_ARRET_DURATION_DAYS, Math.max(0, Math.round(value || 0)));
+}
+
 export function ArretPeriodsModal({ paliers, onClose, onApply }: ArretPeriodsModalProps) {
   const [draft, setDraft] = useState(() => sortPaliers(paliers));
   const [error, setError] = useState('');
 
   const updatePalier = (index: number, patch: Partial<PrevoyanceArretPalierDraft>) => {
-    setDraft((prev) =>
-      prev.map((palier, currentIndex) =>
-        currentIndex === index ? { ...palier, ...patch } : palier,
-      ),
-    );
+    setDraft((prev) => {
+      const next = prev.map((palier) => ({ ...palier }));
+      const current = next[index];
+      if (!current) return prev;
+
+      if (patch.amount !== undefined) {
+        current.amount = patch.amount;
+      }
+
+      if (patch.fromDay !== undefined) {
+        const previous = next[index - 1];
+        const minFromDay = previous ? 1 : 0;
+        const fromDay =
+          index === 0 ? 0 : Math.min(Math.max(clampDay(patch.fromDay), minFromDay), current.toDay);
+        current.fromDay = fromDay;
+        if (previous) previous.toDay = fromDay - 1;
+      }
+
+      if (patch.toDay !== undefined) {
+        const following = next[index + 1];
+        const maxToDay = following ? following.toDay - 1 : PREVOYANCE_MAX_ARRET_DURATION_DAYS;
+        const toDay =
+          index === next.length - 1
+            ? PREVOYANCE_MAX_ARRET_DURATION_DAYS
+            : Math.max(current.fromDay, Math.min(clampDay(patch.toDay), maxToDay));
+        current.toDay = toDay;
+        if (following) following.fromDay = toDay + 1;
+      }
+
+      return next;
+    });
   };
 
   const splitLastPalier = () => {
@@ -61,7 +91,25 @@ export function ArretPeriodsModal({ paliers, onClose, onApply }: ArretPeriodsMod
   };
 
   const removePalier = (index: number) => {
-    setDraft((prev) => prev.filter((_, currentIndex) => currentIndex !== index));
+    setDraft((prev) => {
+      if (prev.length <= 1) return prev;
+      const next = prev.map((palier) => ({ ...palier }));
+      const removed = next[index];
+      if (!removed) return prev;
+      next.splice(index, 1);
+
+      if (index === 0 && next[0]) {
+        next[0].fromDay = 0;
+      } else if (index >= next.length) {
+        const last = next[next.length - 1];
+        if (last) last.toDay = PREVOYANCE_MAX_ARRET_DURATION_DAYS;
+      } else {
+        const previous = next[index - 1];
+        if (previous) previous.toDay = removed.toDay;
+      }
+
+      return next;
+    });
   };
 
   const apply = () => {
@@ -91,45 +139,58 @@ export function ArretPeriodsModal({ paliers, onClose, onApply }: ArretPeriodsMod
       }
     >
       <div className="prevoyance-periods-modal__toolbar">
-        <button type="button" className="prevoyance-add-button" onClick={splitLastPalier}>
+        <button
+          type="button"
+          className="sim-modal-btn sim-modal-btn--ghost prevoyance-periods-modal__add"
+          onClick={splitLastPalier}
+        >
           + Ajouter une période
         </button>
       </div>
+      <p className="prevoyance-periods-modal__hint">
+        Ajuster un début recale la période précédente ; ajuster une fin recale la période suivante.
+      </p>
       <div className="prevoyance-periods-modal__list">
-        {draft.map((palier, index) => (
-          <div key={`${index}-${palier.fromDay}-${palier.toDay}`} className="prevoyance-period-row">
-            <SimFieldShell label="Début">
-              <NumberInput
-                value={palier.fromDay}
-                onChange={(fromDay) => updatePalier(index, { fromDay })}
-                suffix="j"
-              />
-            </SimFieldShell>
-            <SimFieldShell label="Fin">
-              <NumberInput
-                value={palier.toDay}
-                onChange={(toDay) => updatePalier(index, { toDay })}
-                suffix="j"
-              />
-            </SimFieldShell>
-            <SimFieldShell label="Montant">
-              <NumberInput
-                value={palier.amount}
-                onChange={(amount) => updatePalier(index, { amount })}
-                suffix="€/j"
-              />
-            </SimFieldShell>
-            <button
-              type="button"
-              className="prevoyance-icon-button"
-              onClick={() => removePalier(index)}
-              aria-label={`Supprimer la période ${index + 1}`}
-              disabled={draft.length === 1}
-            >
-              ×
-            </button>
-          </div>
-        ))}
+        {draft.map((palier, index) => {
+          const isLastPalier = index === draft.length - 1;
+
+          return (
+            <div key={index} className="prevoyance-period-row">
+              <SimFieldShell label="Début">
+                <NumberInput
+                  value={palier.fromDay}
+                  onChange={(fromDay) => updatePalier(index, { fromDay })}
+                  suffix="j"
+                />
+              </SimFieldShell>
+              <SimFieldShell label="Fin">
+                <NumberInput
+                  value={palier.toDay}
+                  onChange={(toDay) => updatePalier(index, { toDay })}
+                  suffix="j"
+                  disabled={isLastPalier}
+                  title={isLastPalier ? 'Verrouillée à 1 095 jours' : undefined}
+                />
+              </SimFieldShell>
+              <SimFieldShell label="Montant">
+                <NumberInput
+                  value={palier.amount}
+                  onChange={(amount) => updatePalier(index, { amount })}
+                  suffix="€/j"
+                />
+              </SimFieldShell>
+              <button
+                type="button"
+                className="prevoyance-icon-button"
+                onClick={() => removePalier(index)}
+                aria-label={`Supprimer la période ${index + 1}`}
+                disabled={draft.length === 1}
+              >
+                ×
+              </button>
+            </div>
+          );
+        })}
       </div>
       <p className="prevoyance-side-note">Cliquez × pour retirer une période.</p>
     </SimModalShell>

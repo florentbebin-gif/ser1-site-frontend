@@ -5,6 +5,7 @@ import type {
   PrevoyanceRegimeSettings,
   PrevoyanceTranches,
 } from './types';
+import { annualValueFromAmountRule, normalizeRegimeStack } from './coverageShared';
 import { PREVOYANCE_MAX_ARRET_DURATION_DAYS } from './constants';
 
 export const SALAIRE_NET_BRUT_ESTIMATION_RATE = 0.8;
@@ -24,11 +25,20 @@ export function deriveContractKindFromRegime(
   return regime.population === 'salarie' ? 'collectif' : 'individuel';
 }
 
-export function resolveContractKind(
-  regime: Pick<PrevoyanceRegimeSettings, 'population' | 'defaultContractKind'> | null | undefined,
-  override?: PrevoyanceContractKind | null,
-): PrevoyanceContractKind {
-  return override ?? deriveContractKindFromRegime(regime);
+export function resolveRegimeStack(
+  selectedRegime: PrevoyanceRegimeSettings | null | undefined,
+  allRegimes: PrevoyanceRegimeSettings[],
+): PrevoyanceRegimeSettings[] {
+  if (!selectedRegime) return [];
+  const componentCodes = selectedRegime.data.composition?.componentCodes ?? [];
+  if (componentCodes.length === 0) return [selectedRegime];
+
+  const byCode = new Map(allRegimes.map((regime) => [regime.code, regime]));
+  const stack = componentCodes
+    .map((code) => byCode.get(code) ?? (code === selectedRegime.code ? selectedRegime : null))
+    .filter((regime): regime is PrevoyanceRegimeSettings => regime !== null);
+
+  return normalizeRegimeStack(stack.length ? stack : [selectedRegime]);
 }
 
 export function computeTranchesFromPass(
@@ -88,6 +98,19 @@ export function computeDecesCapitalFromContract(
 ): number {
   if (contract.kind === 'individuel') return contract.deces.capital;
   return Math.round(Math.max(0, annualBase) * (Math.max(0, contract.deces.salairePct) / 100));
+}
+
+export function computeRegimeDecesCapital(
+  regimeStack: PrevoyanceRegimeSettings[] | null | undefined,
+  referenceAnnual: number,
+  salaireBrutAnnuel: number,
+): number {
+  return normalizeRegimeStack(regimeStack).reduce(
+    (sum, regime) =>
+      sum +
+      annualValueFromAmountRule(regime.data.deces.capital, referenceAnnual, salaireBrutAnnuel),
+    0,
+  );
 }
 
 export function clampContractCount<T>(contracts: T[]): T[] {

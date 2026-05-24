@@ -3,9 +3,18 @@ import '@/styles/sim/index.css';
 import './styles/index.css';
 import { ExportMenu } from '@/components/ExportMenu';
 import { SimPageShell } from '@/components/ui/sim';
-import { PREVOYANCE_MAINTIEN_LEGAL_CODE } from '@/domain/prevoyance/constants';
-import { deriveContractKindFromRegime, resolveContractKind } from '@/domain/prevoyance/helpers';
-import type { PrevoyanceContractDraft, PrevoyanceSituationDraft } from '@/domain/prevoyance/types';
+import {
+  PREVOYANCE_DEFAULT_REGIME_CODE,
+  PREVOYANCE_MAINTIEN_LEGAL_CODE,
+} from '@/domain/prevoyance/constants';
+import { deriveContractKindFromRegime, resolveRegimeStack } from '@/domain/prevoyance/helpers';
+import type {
+  PrevoyanceContractAggregationMode,
+  PrevoyanceContractDraft,
+  PrevoyanceDeathTargetDraft,
+  PrevoyanceRegimeSettings,
+  PrevoyanceSituationDraft,
+} from '@/domain/prevoyance/types';
 import { useFiscalContext } from '@/hooks/useFiscalContext';
 import { usePrevoyanceSettings } from '@/hooks/usePrevoyanceSettings';
 import { useTheme } from '@/settings/ThemeProvider';
@@ -14,14 +23,28 @@ import { ContractsBlock } from './components/ContractsBlock';
 import { FraisProModal } from './components/FraisProModal';
 import { Sidebar } from './components/Sidebar';
 import { SituationBlock } from './components/SituationBlock';
-import { createDefaultContract, DEFAULT_SITUATION, type FraisProModalState } from './defaults';
+import {
+  createDefaultContract,
+  DEFAULT_FRAIS_GENERAUX_ESTIMATE,
+  DEFAULT_SITUATION,
+  type FraisGenerauxEstimateState,
+} from './defaults';
 import { usePrevoyanceExportHandlers } from './hooks/usePrevoyanceExportHandlers';
 import { PREVOYANCE_STORAGE_KEY, parsePersistedPrevoyanceState } from './persistence';
+import { DEFAULT_DEATH_TARGET } from './constants';
 
 function resolvePass(passHistoryByYear: Record<number, number>): number {
   const currentYear = new Date().getFullYear();
   const latestYear = Math.max(...Object.keys(passHistoryByYear).map(Number));
   return passHistoryByYear[currentYear] ?? passHistoryByYear[latestYear] ?? 0;
+}
+
+function resolveDefaultRegime(
+  regimes: PrevoyanceRegimeSettings[],
+): PrevoyanceRegimeSettings | null {
+  return (
+    regimes.find((regime) => regime.code === PREVOYANCE_DEFAULT_REGIME_CODE) ?? regimes[0] ?? null
+  );
 }
 
 export default function PrevoyancePage() {
@@ -32,24 +55,43 @@ export default function PrevoyancePage() {
 
   const [situation, setSituation] = useState<PrevoyanceSituationDraft>(DEFAULT_SITUATION);
   const [contracts, setContracts] = useState<PrevoyanceContractDraft[]>([]);
+  const [contractAggregationMode, setContractAggregationMode] =
+    useState<PrevoyanceContractAggregationMode>('compare');
+  const [deathTarget, setDeathTarget] = useState<PrevoyanceDeathTargetDraft>(DEFAULT_DEATH_TARGET);
   const [hydrated, setHydrated] = useState(false);
-  const [fraisModal, setFraisModal] = useState<FraisProModalState | null>(null);
+  const [fraisModalOpen, setFraisModalOpen] = useState(false);
+  const [fraisGenerauxEstimate, setFraisGenerauxEstimate] = useState<FraisGenerauxEstimateState>(
+    DEFAULT_FRAIS_GENERAUX_ESTIMATE,
+  );
 
   const selectedRegime = regimes.find((regime) => regime.code === situation.regimeCode) ?? null;
-  const kind = resolveContractKind(selectedRegime, situation.kindOverride);
+  const regimeStack = resolveRegimeStack(selectedRegime, regimes);
+  const kind = deriveContractKindFromRegime(selectedRegime);
   const annualBase = kind === 'collectif' ? situation.salaireBrutAnnuel : situation.revenuImposable;
   const referenceAnnual = kind === 'collectif' ? situation.salaireNetImposable : annualBase;
   const maintienLegal =
     maintien.find((item) => item.code === PREVOYANCE_MAINTIEN_LEGAL_CODE) ?? null;
   const visibleContracts = contracts.filter((contract) => contract.kind === kind);
+  const hasBirthDate = Boolean(situation.birthDate);
+  const hasConjoint = ['couple', 'marie', 'pacs'].includes(situation.familyStatus);
+  const hasChildren = situation.childrenCount > 0;
+  const sidebarContracts =
+    contractAggregationMode === 'compare' ? visibleContracts.slice(0, 1) : visibleContracts;
+  const fraisGenerauxAssiette = Object.values(fraisGenerauxEstimate).reduce(
+    (sum, amount) => sum + amount,
+    0,
+  );
   const { exportOptions, exportLoading } = usePrevoyanceExportHandlers({
     situation,
     kind,
-    regime: selectedRegime,
+    regimeStack,
     maintien: maintienLegal,
     contracts: visibleContracts,
+    contractAggregationMode,
+    deathTarget,
     annualBase,
     referenceAnnual,
+    fraisGenerauxAssiette,
     themeColors: pptxColors,
     cabinetLogo,
     logoPlacement,
@@ -60,14 +102,23 @@ export default function PrevoyancePage() {
     if (persisted) {
       setSituation({ ...DEFAULT_SITUATION, ...persisted.situation });
       if (persisted.contracts?.length) setContracts(persisted.contracts.slice(0, 3));
+      if (persisted.contractAggregationMode) {
+        setContractAggregationMode(persisted.contractAggregationMode);
+      }
+      if (persisted.deathTarget) setDeathTarget(persisted.deathTarget);
+      if (persisted.fraisGenerauxEstimate) {
+        setFraisGenerauxEstimate(persisted.fraisGenerauxEstimate);
+      }
     }
     setHydrated(true);
   }, []);
 
   useEffect(() => {
-    const firstRegime = regimes[0];
-    if (!situation.regimeCode && firstRegime) {
-      setSituation((prev) => ({ ...prev, regimeCode: firstRegime.code }));
+    if (regimes.length === 0) return;
+    if (regimes.some((regime) => regime.code === situation.regimeCode)) return;
+    const defaultRegime = resolveDefaultRegime(regimes);
+    if (defaultRegime) {
+      setSituation((prev) => ({ ...prev, regimeCode: defaultRegime.code }));
     }
   }, [regimes, situation.regimeCode]);
 
@@ -82,20 +133,32 @@ export default function PrevoyancePage() {
   useEffect(() => {
     if (!hydrated) return;
     try {
-      sessionStorage.setItem(PREVOYANCE_STORAGE_KEY, JSON.stringify({ situation, contracts }));
+      sessionStorage.setItem(
+        PREVOYANCE_STORAGE_KEY,
+        JSON.stringify({
+          situation,
+          contracts,
+          contractAggregationMode,
+          deathTarget,
+          fraisGenerauxEstimate,
+        }),
+      );
     } catch {
       // ignore
     }
-  }, [contracts, hydrated, situation]);
+  }, [contractAggregationMode, contracts, deathTarget, fraisGenerauxEstimate, hydrated, situation]);
 
   useEffect(() => {
     const off = onResetEvent(({ simId }: { simId?: string }) => {
       if (simId && simId !== 'prevoyance') return;
-      const firstRegime = regimes[0] ?? null;
-      setSituation({ ...DEFAULT_SITUATION, regimeCode: firstRegime?.code ?? '' });
+      const defaultRegime = resolveDefaultRegime(regimes);
+      setSituation({ ...DEFAULT_SITUATION, regimeCode: defaultRegime?.code ?? '' });
       setContracts([
-        createDefaultContract(deriveContractKindFromRegime(firstRegime), 1, annualBase),
+        createDefaultContract(deriveContractKindFromRegime(defaultRegime), 1, annualBase),
       ]);
+      setContractAggregationMode('compare');
+      setDeathTarget(DEFAULT_DEATH_TARGET);
+      setFraisGenerauxEstimate(DEFAULT_FRAIS_GENERAUX_ESTIMATE);
       try {
         sessionStorage.removeItem(PREVOYANCE_STORAGE_KEY);
       } catch {
@@ -110,35 +173,15 @@ export default function PrevoyancePage() {
     setSituation((prev) => ({ ...prev, ...patch }));
   };
 
-  const openFraisModal = (contract: Extract<PrevoyanceContractDraft, { kind: 'individuel' }>) => {
-    setFraisModal({
-      contractId: contract.id,
-      chargesExternes: Math.round(contract.fraisPro.amount * 0.35),
-      loyers: Math.round(contract.fraisPro.amount * 0.25),
-      assurances: Math.round(contract.fraisPro.amount * 0.1),
-      salaires: Math.round(contract.fraisPro.amount * 0.2),
-      amortissements: Math.round(contract.fraisPro.amount * 0.07),
-      fraisBancaires: Math.round(contract.fraisPro.amount * 0.03),
-    });
-  };
-
-  const applyFraisRecommendation = (amount: number) => {
-    if (!fraisModal) return;
-    setContracts((prev) =>
-      prev.map((contract) =>
-        contract.id === fraisModal.contractId && contract.kind === 'individuel'
-          ? { ...contract, fraisPro: { ...contract.fraisPro, amount } }
-          : contract,
-      ),
-    );
-    setFraisModal(null);
+  const openFraisModal = () => {
+    setFraisModalOpen(true);
   };
 
   return (
     <>
       <SimPageShell
         title="Prévoyance"
-        subtitle="Protection arrêt de travail, invalidité, décès et frais professionnels."
+        subtitle="Protection arrêt de travail, invalidité, décès et frais généraux."
         loading={loading}
         loadingContent={
           <div className="premium-card sim-state-card">Chargement des régimes...</div>
@@ -152,43 +195,54 @@ export default function PrevoyancePage() {
           <SituationBlock
             situation={situation}
             regimes={regimes}
-            selectedRegime={selectedRegime}
             kind={kind}
             onChange={updateSituation}
           />
 
-          <ContractsBlock
-            kind={kind}
-            contracts={visibleContracts}
-            annualBase={annualBase}
-            pass={pass}
-            salaireBrutAnnuel={situation.salaireBrutAnnuel}
-            onContractsChange={setContracts}
-            onOpenFrais={openFraisModal}
-          />
+          {hasBirthDate ? (
+            <ContractsBlock
+              kind={kind}
+              contracts={visibleContracts}
+              contractAggregationMode={contractAggregationMode}
+              annualBase={annualBase}
+              pass={pass}
+              salaireBrutAnnuel={situation.salaireBrutAnnuel}
+              hasConjoint={hasConjoint}
+              hasChildren={hasChildren}
+              onContractsChange={setContracts}
+              onContractAggregationModeChange={setContractAggregationMode}
+              onOpenFrais={openFraisModal}
+            />
+          ) : null}
         </SimPageShell.Main>
 
         <SimPageShell.Side>
           <Sidebar
             kind={kind}
-            regime={selectedRegime}
+            regimeStack={regimeStack}
             maintien={maintienLegal}
-            contracts={visibleContracts}
+            contracts={sidebarContracts}
+            contractAggregationMode={contractAggregationMode}
+            deathTarget={deathTarget}
+            onDeathTargetChange={setDeathTarget}
             annualBase={annualBase}
             referenceAnnual={referenceAnnual}
             pass={pass}
             salaireBrutAnnuel={situation.salaireBrutAnnuel}
             ancienneteYears={situation.ancienneteYears}
+            hasConjoint={hasConjoint}
+            hasChildren={hasChildren}
+            fraisGenerauxAssiette={fraisGenerauxAssiette}
           />
         </SimPageShell.Side>
       </SimPageShell>
 
-      {fraisModal ? (
+      {fraisModalOpen ? (
         <FraisProModal
-          state={fraisModal}
-          onClose={() => setFraisModal(null)}
-          onApply={applyFraisRecommendation}
-          onChange={(patch) => setFraisModal((prev) => (prev ? { ...prev, ...patch } : prev))}
+          state={fraisGenerauxEstimate}
+          onClose={() => setFraisModalOpen(false)}
+          onValidate={() => setFraisModalOpen(false)}
+          onChange={(patch) => setFraisGenerauxEstimate((prev) => ({ ...prev, ...patch }))}
         />
       ) : null}
     </>

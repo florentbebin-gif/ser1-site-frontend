@@ -93,6 +93,12 @@ const cotisationsSchema = z
   })
   .strict();
 
+const compositionSchema = z
+  .object({
+    componentCodes: z.array(z.string().min(1)).min(1),
+  })
+  .strict();
+
 export const prevoyanceSourcesSchema = z
   .object({
     fiche: z.string().min(1),
@@ -107,6 +113,7 @@ export const prevoyanceRegimeDataSchema = z
     invalidite: invaliditeSchema,
     deces: decesSchema,
     cotisations: cotisationsSchema,
+    composition: compositionSchema.optional(),
   })
   .strict();
 

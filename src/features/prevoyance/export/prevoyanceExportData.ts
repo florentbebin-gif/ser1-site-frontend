@@ -2,12 +2,15 @@ import {
   buildArretCoverageBars,
   buildInvaliditeCoverageBars,
   computeDecesCapitalFromContract,
+  computeRegimeDecesCapital,
   selectMaintienEmployeurPalier,
   type PrevoyanceCoverageBar,
 } from '@/domain/prevoyance/helpers';
 import type {
+  PrevoyanceContractAggregationMode,
   PrevoyanceContractDraft,
   PrevoyanceContractKind,
+  PrevoyanceDeathTargetDraft,
   PrevoyanceMaintienEmployeurSettings,
   PrevoyanceRegimeSettings,
   PrevoyanceSituationDraft,
@@ -26,6 +29,12 @@ export interface PrevoyanceExportSituation {
   ancienneteYears: number;
   annualBase: number;
   referenceAnnual: number;
+}
+
+export interface PrevoyanceExportRegime {
+  code: string;
+  label: string;
+  caisse: string;
 }
 
 export interface PrevoyanceExportContract {
@@ -48,6 +57,8 @@ export interface PrevoyanceExportCoverage {
   arret: PrevoyanceCoverageBar[];
   invalidite: PrevoyanceCoverageBar[];
   decesTarget: number;
+  decesRegimeCapital: number;
+  decesPrivateCapital: number;
   decesCapital: number;
   fraisProEstimated: number;
   fraisProCovered: number;
@@ -55,7 +66,9 @@ export interface PrevoyanceExportCoverage {
 
 export interface PrevoyanceExportData {
   situation: PrevoyanceExportSituation;
+  regimeStack: PrevoyanceExportRegime[];
   contracts: PrevoyanceExportContract[];
+  contractAggregationMode: PrevoyanceContractAggregationMode;
   coverage: PrevoyanceExportCoverage;
   assumptions: string[];
 }
@@ -63,16 +76,24 @@ export interface PrevoyanceExportData {
 interface BuildPrevoyanceExportDataInput {
   situation: PrevoyanceSituationDraft;
   kind: PrevoyanceContractKind;
-  regime: PrevoyanceRegimeSettings | null;
+  regimeStack: PrevoyanceRegimeSettings[];
   maintien: PrevoyanceMaintienEmployeurSettings | null;
   contracts: PrevoyanceContractDraft[];
+  contractAggregationMode: PrevoyanceContractAggregationMode;
+  deathTarget: PrevoyanceDeathTargetDraft;
   annualBase: number;
   referenceAnnual: number;
+  fraisGenerauxAssiette: number;
 }
 
 function formatArret(contract: PrevoyanceContractDraft): string {
   if (contract.kind === 'collectif') {
-    return `${contract.arret.salairePct}% du salaire brut`;
+    const paliers = contract.arret.paliers?.length
+      ? contract.arret.paliers
+      : [{ fromDay: 0, toDay: null, salairePct: contract.arret.salairePct }];
+    return paliers
+      .map((palier) => `${palier.fromDay}-${palier.toDay ?? '+'} j : ${palier.salairePct}%`)
+      .join(' ; ');
   }
   return contract.arret.paliers
     .map((palier) => `${palier.fromDay}-${palier.toDay} j : ${palier.amount} €/j`)
@@ -116,30 +137,45 @@ function formatCotisation(contract: PrevoyanceContractDraft): string {
 
 function formatFraisPro(contract: PrevoyanceContractDraft): { amount: number; summary: string } {
   if (contract.kind === 'collectif') return { amount: 0, summary: 'Non applicable salarié' };
-  if (!contract.fraisPro.enabled) return { amount: 0, summary: 'Non couvert' };
+  const amount = Math.max(0, contract.fraisPro.amount);
+  if (amount === 0) return { amount: 0, summary: 'Non couvert' };
   return {
-    amount: contract.fraisPro.amount,
-    summary: `${contract.fraisPro.amount} €, franchise ${contract.fraisPro.franchiseDays} j, durée ${contract.fraisPro.maxDurationYears} an(s)`,
+    amount,
+    summary: `${amount} €, franchise ${contract.fraisPro.franchiseDays} j, durée ${contract.fraisPro.maxDurationYears} an(s)`,
   };
 }
 
 export function buildPrevoyanceExportData({
   situation,
   kind,
-  regime,
+  regimeStack,
   maintien,
   contracts,
+  contractAggregationMode,
+  deathTarget,
   annualBase,
   referenceAnnual,
+  fraisGenerauxAssiette,
 }: BuildPrevoyanceExportDataInput): PrevoyanceExportData {
   const maintienPalier =
     kind === 'collectif'
       ? selectMaintienEmployeurPalier(situation.ancienneteYears, maintien)
       : null;
-  const decesCapital = contracts.reduce(
+  const coverageContracts =
+    contractAggregationMode === 'compare' ? contracts.slice(0, 1) : contracts;
+  const regimeDecesCapital = computeRegimeDecesCapital(
+    regimeStack,
+    referenceAnnual,
+    situation.salaireBrutAnnuel,
+  );
+  const privateDecesCapital = coverageContracts.reduce(
     (sum, contract) => sum + computeDecesCapitalFromContract(contract, annualBase),
     0,
   );
+  const decesTarget =
+    deathTarget.mode === 'manual' && deathTarget.manualAmount > 0
+      ? deathTarget.manualAmount
+      : referenceAnnual * TARGET_DECES_MULTIPLE;
   const fraisProCovered = contracts.reduce((sum, contract) => {
     const frais = formatFraisPro(contract);
     return sum + frais.amount;
@@ -149,7 +185,8 @@ export function buildPrevoyanceExportData({
     situation: {
       kind,
       kindLabel: kind === 'collectif' ? 'Salarié collectif' : 'TNS / libéral',
-      regimeLabel: regime?.label ?? 'Régime non sélectionné',
+      regimeLabel:
+        regimeStack.map((regime) => regime.label).join(' + ') || 'Régime non sélectionné',
       familyStatus: situation.familyStatus,
       childrenCount: situation.childrenCount,
       revenuImposable: situation.revenuImposable,
@@ -159,6 +196,12 @@ export function buildPrevoyanceExportData({
       annualBase,
       referenceAnnual,
     },
+    regimeStack: regimeStack.map((regime) => ({
+      code: regime.code,
+      label: regime.label,
+      caisse: regime.caisse,
+    })),
+    contractAggregationMode,
     contracts: contracts.map((contract) => {
       const frais = formatFraisPro(contract);
       return {
@@ -166,7 +209,9 @@ export function buildPrevoyanceExportData({
         name: contract.name,
         kind: contract.kind,
         indemnisationLabel:
-          contract.kind === 'individuel' ? contract.indemnisation : 'contrat collectif',
+          contract.kind === 'individuel'
+            ? `Arrêt ${contract.indemnisation} · Invalidité ${contract.invalidite.indemnisation}`
+            : 'contrat collectif',
         arretSummary: formatArret(contract),
         invaliditeSummary: formatInvalidite(contract),
         decesCapital: computeDecesCapitalFromContract(contract, annualBase),
@@ -183,23 +228,27 @@ export function buildPrevoyanceExportData({
     }),
     coverage: {
       arret: buildArretCoverageBars({
-        regime,
-        contracts,
+        regimeStack,
+        contracts: coverageContracts,
         kind,
+        contractAggregationMode,
         maintienPalier,
         referenceAnnual,
         salaireBrutAnnuel: situation.salaireBrutAnnuel,
       }),
       invalidite: buildInvaliditeCoverageBars({
-        regime,
-        contracts,
+        regimeStack,
+        contracts: coverageContracts,
         kind,
+        contractAggregationMode,
         referenceAnnual,
         salaireBrutAnnuel: situation.salaireBrutAnnuel,
       }),
-      decesTarget: referenceAnnual * TARGET_DECES_MULTIPLE,
-      decesCapital,
-      fraisProEstimated: kind === 'individuel' ? fraisProCovered : 0,
+      decesTarget,
+      decesRegimeCapital: regimeDecesCapital,
+      decesPrivateCapital: privateDecesCapital,
+      decesCapital: regimeDecesCapital + privateDecesCapital,
+      fraisProEstimated: kind === 'individuel' ? fraisGenerauxAssiette : 0,
       fraisProCovered,
     },
     assumptions: [

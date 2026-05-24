@@ -1,4 +1,4 @@
-import { SimSegmentedControl, SimSelect, type SimSelectOption } from '@/components/ui/sim';
+import { SimSelect, type SimSelectOption } from '@/components/ui/sim';
 import { estimateSalaireNetFromBrut } from '@/domain/prevoyance/helpers';
 import type {
   PrevoyanceContractKind,
@@ -8,38 +8,54 @@ import type {
 import { FAMILY_OPTIONS } from '../constants';
 import { NumberInput, SectionCard, SimFieldShell } from './FormPrimitives';
 
+function normalizeRegimeLabel(value: string): string {
+  return value
+    .toLocaleLowerCase('fr-FR')
+    .normalize('NFD')
+    .replace(/\p{Diacritic}/gu, '')
+    .replace(/[^a-z0-9]+/g, ' ')
+    .trim();
+}
+
+function shouldShowCaisseDescription(label: string, caisse: string): boolean {
+  const normalizedLabel = normalizeRegimeLabel(label);
+  const normalizedCaisse = normalizeRegimeLabel(caisse);
+  const caisseTokens = normalizedCaisse.split(' ').filter((token) => token.length > 1);
+  const mainCaisseToken = caisseTokens[0] ?? normalizedCaisse;
+
+  return !normalizedLabel.includes(normalizedCaisse) && !normalizedLabel.includes(mainCaisseToken);
+}
+
 export function SituationBlock({
   situation,
   regimes,
-  selectedRegime,
   kind,
   onChange,
 }: {
   situation: PrevoyanceSituationDraft;
   regimes: PrevoyanceRegimeSettings[];
-  selectedRegime: PrevoyanceRegimeSettings | null;
   kind: PrevoyanceContractKind;
   onChange: (patch: Partial<PrevoyanceSituationDraft>) => void;
 }) {
   const regimeOptions: SimSelectOption[] = regimes.map((regime) => ({
     value: regime.code,
     label: regime.label,
-    description: regime.caisse,
+    description: shouldShowCaisseDescription(regime.label, regime.caisse)
+      ? regime.caisse
+      : undefined,
   }));
 
   return (
     <SectionCard
       title="Situation"
-      subtitle={
-        selectedRegime
-          ? `${selectedRegime.caisse} · ${kind === 'collectif' ? 'contrat entreprise' : 'contrat individuel'}`
-          : 'Régime obligatoire à sélectionner'
-      }
+      subtitle="Choix du régime obligatoire et des ayants droit"
+      icon="situation"
     >
       <div className="prevoyance-form-grid prevoyance-form-grid--three">
         <SimFieldShell label="Date de naissance">
           <input
             type="date"
+            aria-label="Date de naissance"
             value={situation.birthDate}
             onChange={(event) => onChange({ birthDate: event.target.value })}
             className="sim-field__control"
@@ -59,6 +75,7 @@ export function SituationBlock({
           <NumberInput
             value={situation.childrenCount}
             onChange={(childrenCount) => onChange({ childrenCount })}
+            ariaLabel="Enfants"
           />
         </SimFieldShell>
       </div>
@@ -67,22 +84,10 @@ export function SituationBlock({
         <SimFieldShell label="Régime obligatoire de prévoyance">
           <SimSelect
             value={situation.regimeCode}
-            onChange={(regimeCode) => onChange({ regimeCode, kindOverride: null })}
+            onChange={(regimeCode) => onChange({ regimeCode })}
             options={regimeOptions}
             placeholder="Sélectionner"
             align="left"
-          />
-        </SimFieldShell>
-        <SimFieldShell label="Parcours">
-          <SimSegmentedControl
-            value={kind}
-            onChange={(value) => onChange({ kindOverride: value })}
-            ariaLabel="Type de contrat prévoyance"
-            size="sm"
-            options={[
-              { value: 'collectif', label: 'Salarié' },
-              { value: 'individuel', label: 'TNS / libéral' },
-            ]}
           />
         </SimFieldShell>
       </div>
@@ -99,6 +104,7 @@ export function SituationBlock({
                 })
               }
               suffix="€"
+              ariaLabel="Salaire brut annuel"
             />
           </SimFieldShell>
           <SimFieldShell label="Salaire net imposable">
@@ -106,6 +112,7 @@ export function SituationBlock({
               value={situation.salaireNetImposable}
               onChange={(salaireNetImposable) => onChange({ salaireNetImposable })}
               suffix="€"
+              ariaLabel="Salaire net imposable"
             />
           </SimFieldShell>
           <SimFieldShell label="Ancienneté">
@@ -113,6 +120,7 @@ export function SituationBlock({
               value={situation.ancienneteYears}
               onChange={(ancienneteYears) => onChange({ ancienneteYears })}
               suffix="ans"
+              ariaLabel="Ancienneté"
             />
           </SimFieldShell>
         </div>
@@ -123,6 +131,7 @@ export function SituationBlock({
               value={situation.revenuImposable}
               onChange={(revenuImposable) => onChange({ revenuImposable })}
               suffix="€"
+              ariaLabel="Revenu imposable à couvrir"
             />
           </SimFieldShell>
         </div>

@@ -1,14 +1,38 @@
-import type { PrevoyanceContractDraft, PrevoyanceSituationDraft } from '@/domain/prevoyance/types';
+import type {
+  PrevoyanceContractAggregationMode,
+  PrevoyanceContractDraft,
+  PrevoyanceDeathTargetDraft,
+  PrevoyanceFraisProDraft,
+  PrevoyanceIndemnisation,
+  PrevoyanceInvaliditePalierDraft,
+  PrevoyanceSituationDraft,
+} from '@/domain/prevoyance/types';
 import { storageKeyFor } from '@/utils/reset';
+import {
+  DEFAULT_FRAIS_GENERAUX_ESTIMATE,
+  type FraisGenerauxEstimateState,
+  type FraisGenerauxNumericKey,
+} from './defaults';
 
 export const PREVOYANCE_STORAGE_KEY = storageKeyFor('prevoyance');
 
 export interface PersistedPrevoyanceState {
   situation?: Partial<PrevoyanceSituationDraft>;
   contracts?: PrevoyanceContractDraft[];
+  contractAggregationMode?: PrevoyanceContractAggregationMode;
+  deathTarget?: PrevoyanceDeathTargetDraft;
+  fraisGenerauxEstimate?: FraisGenerauxEstimateState;
 }
 
-type LegacyIndividualContract = Extract<PrevoyanceContractDraft, { kind: 'individuel' }> & {
+type LegacyIndividualContract = Omit<
+  Extract<PrevoyanceContractDraft, { kind: 'individuel' }>,
+  'invalidite' | 'cotisation' | 'fraisPro'
+> & {
+  invalidite: {
+    indemnisation?: PrevoyanceIndemnisation;
+    paliers: PrevoyanceInvaliditePalierDraft[];
+  };
+  fraisPro?: Partial<PrevoyanceFraisProDraft>;
   cotisation: {
     montantAnnuel: number;
     dontMadelin?: number;
@@ -18,6 +42,15 @@ type LegacyIndividualContract = Extract<PrevoyanceContractDraft, { kind: 'indivi
 
 function clampDontMadelin(dontMadelin: number, montantAnnuel: number): number {
   return Math.min(Math.max(0, Number(dontMadelin) || 0), Math.max(0, Number(montantAnnuel) || 0));
+}
+
+function normalizeFraisPro(value: LegacyIndividualContract['fraisPro']): PrevoyanceFraisProDraft {
+  const maxDurationYears = Number(value?.maxDurationYears);
+  return {
+    franchiseDays: Math.max(0, Number(value?.franchiseDays) || 0),
+    amount: Math.max(0, Number(value?.amount) || 0),
+    maxDurationYears: maxDurationYears === 2 || maxDurationYears === 3 ? maxDurationYears : 1,
+  };
 }
 
 function normalizeContract(contract: unknown): PrevoyanceContractDraft | null {
@@ -37,11 +70,41 @@ function normalizeContract(contract: unknown): PrevoyanceContractDraft | null {
 
   return {
     ...legacy,
+    invalidite: {
+      ...legacy.invalidite,
+      indemnisation: legacy.invalidite?.indemnisation ?? legacy.indemnisation,
+      paliers: legacy.invalidite?.paliers ?? [],
+    },
+    fraisPro: normalizeFraisPro(legacy.fraisPro),
     cotisation: {
       montantAnnuel,
       dontMadelin: clampDontMadelin(rawDontMadelin, montantAnnuel),
     },
   };
+}
+
+function normalizeAggregationMode(value: unknown): PrevoyanceContractAggregationMode {
+  return value === 'cumulate' ? 'cumulate' : 'compare';
+}
+
+function normalizeDeathTarget(value: unknown): PrevoyanceDeathTargetDraft | undefined {
+  if (!value || typeof value !== 'object') return undefined;
+  const draft = value as Partial<PrevoyanceDeathTargetDraft>;
+  const multiple = draft.multiple === 1 || draft.multiple === 5 ? draft.multiple : 3;
+  return {
+    mode: draft.mode === 'manual' ? 'manual' : 'multiple',
+    multiple,
+    manualAmount: Math.max(0, Number(draft.manualAmount) || 0),
+  };
+}
+
+function normalizeFraisGenerauxEstimate(value: unknown): FraisGenerauxEstimateState | undefined {
+  if (!value || typeof value !== 'object') return undefined;
+  const draft = value as Partial<Record<FraisGenerauxNumericKey, unknown>>;
+  return (Object.keys(DEFAULT_FRAIS_GENERAUX_ESTIMATE) as FraisGenerauxNumericKey[]).reduce(
+    (acc, key) => ({ ...acc, [key]: Math.max(0, Number(draft[key]) || 0) }),
+    { ...DEFAULT_FRAIS_GENERAUX_ESTIMATE },
+  );
 }
 
 export function parsePersistedPrevoyanceState(raw: string | null): PersistedPrevoyanceState | null {
@@ -55,6 +118,9 @@ export function parsePersistedPrevoyanceState(raw: string | null): PersistedPrev
             .map(normalizeContract)
             .filter((contract): contract is PrevoyanceContractDraft => contract !== null)
         : [],
+      contractAggregationMode: normalizeAggregationMode(parsed.contractAggregationMode),
+      deathTarget: normalizeDeathTarget(parsed.deathTarget),
+      fraisGenerauxEstimate: normalizeFraisGenerauxEstimate(parsed.fraisGenerauxEstimate),
     };
   } catch {
     return null;

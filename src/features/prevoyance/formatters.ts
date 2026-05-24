@@ -9,5 +9,8 @@ export function pct(value: number): string {
 }
 
 export function numberValue(value: unknown): number {
-  return Math.max(0, Number(value) || 0);
+  const normalized = String(value ?? '')
+    .replace(/\s/g, '')
+    .replace(',', '.');
+  return Math.max(0, Number(normalized) || 0);
 }

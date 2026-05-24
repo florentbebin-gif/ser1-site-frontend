@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 
 import '@testing-library/jest-dom/vitest';
-import { render, screen, waitFor } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { PREVOYANCE_MAINTIEN_LEGAL_CODE } from '@/domain/prevoyance/constants';
@@ -9,6 +9,7 @@ import type {
   PrevoyanceMaintienEmployeurSettings,
   PrevoyanceRegimeSettings,
 } from '@/domain/prevoyance/types';
+import { triggerPageReset } from '@/utils/reset';
 import PrevoyancePage from '../PrevoyancePage';
 
 const baseData: PrevoyanceRegimeSettings['data'] = {
@@ -59,7 +60,7 @@ const sources = {
 const regimes: PrevoyanceRegimeSettings[] = [
   {
     code: 'salarie-cpam',
-    label: 'Salarié CPAM',
+    label: 'Salarié secteur privé — CPAM',
     caisse: 'CPAM',
     population: 'salarie',
     defaultContractKind: 'collectif',
@@ -68,11 +69,21 @@ const regimes: PrevoyanceRegimeSettings[] = [
     sources,
   },
   {
-    code: 'ssi',
-    label: 'SSI',
+    code: 'ssi-artisan-commercant',
+    label: 'Artisan / commerçant — SSI',
     caisse: 'SSI',
     population: 'tns',
     defaultContractKind: 'individuel',
+    year: 2026,
+    data: baseData,
+    sources,
+  },
+  {
+    code: 'salarie-msa',
+    label: 'Salarié agricole — MSA',
+    caisse: 'MSA salariés',
+    population: 'salarie',
+    defaultContractKind: 'collectif',
     year: 2026,
     data: baseData,
     sources,
@@ -120,29 +131,85 @@ describe('PrevoyancePage', () => {
     sessionStorage.clear();
   });
 
-  it('affiche le parcours salarié sans frais professionnels', async () => {
-    render(<PrevoyancePage />);
+  async function saisirDateNaissance(user: ReturnType<typeof userEvent.setup>) {
+    await user.type(await screen.findByLabelText('Date de naissance'), '1980-01-01');
+    await screen.findByText('Garanties souscrites hors régime obligatoire');
+  }
 
-    expect(await screen.findByText('Contrats entreprise')).toBeInTheDocument();
-    expect(screen.queryByText('Frais professionnels')).not.toBeInTheDocument();
-    expect(screen.getAllByText('Régime obligatoire').length).toBeGreaterThan(0);
-    expect(screen.queryByText(/Maintien employeur/i)).toBeNull();
-  });
+  async function choisirRegime(user: ReturnType<typeof userEvent.setup>, optionName: RegExp) {
+    await user.click(await screen.findByRole('button', { name: /Artisan \/ commerçant|Salarié/i }));
+    await user.click(await screen.findByRole('option', { name: optionName }));
+  }
 
-  it('bascule en TNS et permet trois contrats en colonnes', async () => {
+  it('affiche le parcours salarié sans frais généraux', async () => {
     const user = userEvent.setup();
     render(<PrevoyancePage />);
 
-    await screen.findByText('Contrats entreprise');
-    await user.click(screen.getByRole('radio', { name: 'TNS / libéral' }));
-    expect(await screen.findByText('Contrats individuels')).toBeInTheDocument();
-    expect(screen.getAllByText('Frais professionnels').length).toBeGreaterThan(0);
+    expect(
+      await screen.findByText('Choix du régime obligatoire et des ayants droit'),
+    ).toBeInTheDocument();
+    expect(screen.getByLabelText('Enfants')).toHaveValue(null);
+    expect(screen.queryByText('Parcours')).toBeNull();
+    expect(screen.queryByRole('radio', { name: 'Salarié' })).toBeNull();
+    await waitFor(() =>
+      expect(
+        screen.getByRole('button', { name: /Artisan \/ commerçant — SSI/i }),
+      ).toBeInTheDocument(),
+    );
+    expect(screen.getByLabelText('Revenu imposable à couvrir')).toHaveValue('');
+    await choisirRegime(user, /Salarié secteur privé — CPAM/i);
+    await waitFor(() => expect(screen.getByLabelText('Salaire brut annuel')).toHaveValue(''));
+    expect(
+      screen.queryByText('Garanties souscrites hors régime obligatoire'),
+    ).not.toBeInTheDocument();
+    await saisirDateNaissance(user);
+    expect(screen.getByText('Comparer')).toBeInTheDocument();
+    expect(screen.queryByText('Frais généraux')).toBeNull();
+    expect(screen.getByRole('heading', { name: 'Cotisation' })).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: /Modifier Contrat 1/i }));
+    expect(screen.queryByRole('button', { name: 'Frais généraux' })).toBeNull();
+    expect(screen.getByRole('button', { name: 'Acte juridique' })).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: 'Ajouter une période arrêt de travail au contrat 1' }),
+    ).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Invalidité' }));
+    expect(
+      screen.getByRole('button', { name: 'Ajouter un seuil invalidité au contrat 1' }),
+    ).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Acte juridique' }));
+    expect(screen.getAllByText('Acte juridique').length).toBeGreaterThan(0);
+    await user.click(screen.getByRole('button', { name: 'Terminer' }));
+    await user.click(screen.getByRole('button', { name: /Salarié secteur privé — CPAM/i }));
+    expect(screen.getByText('Salarié agricole — MSA')).toBeInTheDocument();
+    expect(screen.queryByText('MSA salariés')).not.toBeInTheDocument();
+    expect(screen.getAllByText('RO').length).toBeGreaterThan(0);
+    expect(screen.queryByText(/Maintien employeur/i)).toBeNull();
+    act(() => {
+      triggerPageReset('prevoyance');
+    });
+    await waitFor(() =>
+      expect(
+        screen.getByRole('button', { name: /Artisan \/ commerçant — SSI/i }),
+      ).toBeInTheDocument(),
+    );
+    expect(screen.getByLabelText('Revenu imposable à couvrir')).toBeInTheDocument();
+  });
 
-    await user.click(screen.getByRole('button', { name: 'Ajouter' }));
-    await user.click(screen.getByRole('button', { name: 'Ajouter' }));
+  it('charge le parcours TNS par défaut et permet trois contrats en cartes compactes', async () => {
+    const user = userEvent.setup();
+    render(<PrevoyancePage />);
+
+    await saisirDateNaissance(user);
+    expect((await screen.findAllByText('Frais généraux')).length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Frais généraux').length).toBeGreaterThan(0);
+
+    await user.click(screen.getByRole('button', { name: 'Ajouter un contrat' }));
+    await user.click(await screen.findByRole('button', { name: 'Terminer' }));
+    await user.click(screen.getByRole('button', { name: 'Ajouter un contrat' }));
+    await user.click(await screen.findByRole('button', { name: 'Terminer' }));
 
     await waitFor(() => {
-      expect(screen.getAllByLabelText(/Nom du contrat/i)).toHaveLength(3);
+      expect(screen.getAllByRole('heading', { name: /Contrat [123]/i })).toHaveLength(3);
     });
   });
 
@@ -150,30 +217,74 @@ describe('PrevoyancePage', () => {
     const user = userEvent.setup();
     render(<PrevoyancePage />);
 
-    await screen.findByText('Contrats entreprise');
-    await user.click(screen.getByRole('radio', { name: 'TNS / libéral' }));
-    expect(await screen.findByText('De 0 à 1095 j')).toBeInTheDocument();
-    expect(screen.getByText('Taux / 66 × rente')).toBeInTheDocument();
+    await saisirDateNaissance(user);
+    expect(await screen.findByRole('heading', { name: 'Contrat 1' })).toBeInTheDocument();
 
-    await user.click(screen.getByRole('button', { name: 'Ajouter' }));
-    await user.click(screen.getByRole('button', { name: 'Ajouter' }));
-    await user.click(screen.getByRole('button', { name: 'Ajouter' }));
+    await user.click(screen.getByRole('button', { name: 'Ajouter un contrat' }));
+    await user.click(await screen.findByRole('button', { name: 'Terminer' }));
+    await user.click(screen.getByRole('button', { name: 'Ajouter un contrat' }));
+    await user.click(await screen.findByRole('button', { name: 'Terminer' }));
 
     await waitFor(() => {
-      expect(screen.getAllByLabelText(/Nom du contrat/i)).toHaveLength(3);
+      expect(screen.getAllByRole('heading', { name: /Contrat [123]/i })).toHaveLength(3);
     });
 
+    await user.click(screen.getAllByRole('button', { name: /Modifier Contrat/i })[0]);
+    expect(screen.queryByText('Cotisation annuelle')).toBeNull();
+    expect(screen.getByLabelText('Franchise accident')).toHaveValue(0);
+    expect(screen.getByLabelText('Franchise hospitalisation')).toHaveValue(0);
+    expect(screen.getByLabelText('Franchise maladie')).toHaveValue(0);
+    await user.click(screen.getByRole('button', { name: 'Cotisation' }));
+    expect(screen.getByText('Cotisation annuelle')).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Arrêt de travail' }));
     await user.click(screen.getAllByRole('button', { name: /Découper les périodes/i })[0]);
     expect(await screen.findByText('Découper l’arrêt de travail')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Ajouter une période/i })).toHaveClass(
+      'sim-modal-btn--ghost',
+    );
     expect(screen.getByText('Cliquez × pour retirer une période.')).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: /Ajouter une période/i }));
+    const periodInputs = document.querySelectorAll<HTMLInputElement>(
+      '.prevoyance-period-row input',
+    );
+    expect(periodInputs).toHaveLength(6);
+
+    fireEvent.change(periodInputs[1], { target: { value: '90' } });
+    expect(periodInputs[3]).toHaveValue(91);
+
+    fireEvent.change(periodInputs[3], { target: { value: '31' } });
+    expect(periodInputs[1]).toHaveValue(30);
+
+    await user.click(screen.getByRole('button', { name: /Ajouter une période/i }));
+    const threePeriodInputs = document.querySelectorAll<HTMLInputElement>(
+      '.prevoyance-period-row input',
+    );
+    expect(threePeriodInputs).toHaveLength(9);
+
+    fireEvent.change(threePeriodInputs[6] as HTMLInputElement, { target: { value: '3' } });
+    expect(threePeriodInputs[6]).toHaveValue(3);
+
+    fireEvent.change(threePeriodInputs[6] as HTMLInputElement, { target: { value: '365' } });
+    expect(threePeriodInputs[4]).toHaveValue(364);
+    expect(threePeriodInputs[6]).toHaveValue(365);
+    expect(threePeriodInputs[7]).toHaveValue(1095);
+    expect(threePeriodInputs[7]).toBeDisabled();
+    expect(threePeriodInputs[7]).toHaveAttribute('title', 'Verrouillée à 1 095 jours');
   });
 
   it('permet de supprimer un palier invalidité ajouté', async () => {
     const user = userEvent.setup();
     render(<PrevoyancePage />);
 
-    await screen.findByText('Contrats entreprise');
-    await user.click(screen.getByRole('radio', { name: 'TNS / libéral' }));
+    await saisirDateNaissance(user);
+    await user.click(screen.getByRole('button', { name: /Modifier Contrat 1/i }));
+    await user.click(await screen.findByRole('button', { name: 'Invalidité' }));
+    await user.click(screen.getByRole('radio', { name: 'Forfaitaire' }));
+    expect(screen.getByRole('radio', { name: 'Forfaitaire' })).toHaveAttribute(
+      'aria-checked',
+      'true',
+    );
     await user.click(
       await screen.findByRole('button', {
         name: 'Ajouter un palier invalidité au contrat 1',
@@ -181,39 +292,112 @@ describe('PrevoyancePage', () => {
     );
 
     expect(screen.getAllByRole('button', { name: /Supprimer le palier invalidité/i })).toHaveLength(
-      3,
+      2,
     );
 
     await user.click(screen.getAllByRole('button', { name: /Supprimer le palier invalidité/i })[0]);
 
     await waitFor(() => {
-      expect(
-        screen.getAllByRole('button', { name: /Supprimer le palier invalidité/i }),
-      ).toHaveLength(2);
+      expect(screen.queryByRole('button', { name: /Supprimer le palier invalidité/i })).toBeNull();
     });
+
+    await user.click(screen.getByRole('button', { name: 'Arrêt de travail' }));
+    expect(screen.getByRole('radio', { name: 'Indemnitaire' })).toHaveAttribute(
+      'aria-checked',
+      'true',
+    );
   });
 
-  it('ouvre la modale d’estimation des frais professionnels', async () => {
+  it('ouvre la modale d’estimation des frais généraux sans écraser la garantie', async () => {
     const user = userEvent.setup();
     render(<PrevoyancePage />);
 
-    await screen.findByText('Contrats entreprise');
-    await user.click(screen.getByRole('radio', { name: 'TNS / libéral' }));
-    expect(await screen.findByText('Contrats individuels')).toBeInTheDocument();
-    await waitFor(() => {
-      expect(screen.getAllByLabelText(/Nom du contrat/i)).toHaveLength(1);
+    await saisirDateNaissance(user);
+    expect((await screen.findAllByText('Frais généraux')).length).toBeGreaterThan(0);
+    await user.click(screen.getByRole('button', { name: /Modifier Contrat 1/i }));
+    await user.click(await screen.findByRole('button', { name: 'Frais généraux' }));
+    expect(screen.queryByRole('radio', { name: 'Indemnitaire' })).toBeNull();
+    expect(screen.queryByRole('radio', { name: 'Forfaitaire' })).toBeNull();
+    fireEvent.change(screen.getByLabelText('Montant mensuel frais généraux'), {
+      target: { value: '12000' },
     });
-    await user.click(screen.getByRole('button', { name: /Estimer depuis un compte de résultat/i }));
+    await user.click(
+      screen.getByRole('button', { name: /Estimer l’assiette depuis un compte de résultat/i }),
+    );
 
     expect(
-      await screen.findByText('Estimation à partir des charges du compte de résultat.'),
+      await screen.findByText(
+        'Estimation de l’assiette de charges permanentes à maintenir pendant l’arrêt du dirigeant.',
+      ),
     ).toBeInTheDocument();
-    expect(screen.getByText('Achats et charges externes')).toBeInTheDocument();
-    expect(screen.getByText('Loyers et crédit-bail')).toBeInTheDocument();
-    expect(screen.getByText('Assurances')).toBeInTheDocument();
-    expect(screen.getByText('Salaires et charges')).toBeInTheDocument();
-    expect(screen.getByText('Dotations aux amortissements')).toBeInTheDocument();
-    expect(screen.getByText('Frais bancaires')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Retenir ce montant' })).toBeInTheDocument();
+    expect(screen.getByText('Locaux, matériel et véhicules')).toBeInTheDocument();
+    expect(screen.getByText('Exploitation et gestion courante')).toBeInTheDocument();
+    expect(screen.getByText('Personnel et remplacement')).toBeInTheDocument();
+    expect(screen.getByText('Assurances, cotisations et taxes')).toBeInTheDocument();
+    expect(screen.getByText('Frais financiers')).toBeInTheDocument();
+    expect(screen.getByText('Amortissements et pertes prévues')).toBeInTheDocument();
+    expect(screen.getByText(/Comptes indicatifs : 612, 613/)).toBeInTheDocument();
+    fireEvent.change(screen.getByLabelText('Locaux, matériel et véhicules'), {
+      target: { value: '5000' },
+    });
+    expect(screen.getByRole('button', { name: 'Valider' })).toHaveClass('sim-modal-btn--primary');
+    await user.click(screen.getByRole('button', { name: 'Valider' }));
+    expect(screen.getByLabelText('Montant mensuel frais généraux')).toHaveValue('12\u202f000');
+
+    await user.click(screen.getByRole('button', { name: 'Terminer' }));
+    await user.click(screen.getByRole('button', { name: 'Ajouter un contrat' }));
+    await user.click(await screen.findByRole('button', { name: 'Frais généraux' }));
+    await user.click(
+      screen.getByRole('button', { name: /Estimer l’assiette depuis un compte de résultat/i }),
+    );
+    expect(await screen.findByLabelText('Locaux, matériel et véhicules')).toHaveValue('5\u202f000');
+  });
+
+  it('affiche les grands montants dans le besoin décès', async () => {
+    const user = userEvent.setup();
+    render(<PrevoyancePage />);
+
+    await saisirDateNaissance(user);
+    fireEvent.change(screen.getByLabelText('Revenu imposable à couvrir'), {
+      target: { value: '80000' },
+    });
+    const besoinInput = screen.getByLabelText('Besoin à couvrir');
+    expect(screen.queryByRole('button', { name: 'x1' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'x3' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'x5' })).toBeNull();
+    expect(besoinInput).toHaveValue('240\u202f000');
+    fireEvent.change(besoinInput, { target: { value: '99999999' } });
+
+    expect(besoinInput).toHaveValue('99\u202f999\u202f999');
+  });
+
+  it('affiche le capital décès même avec les rentes conjoint et éducation', async () => {
+    const user = userEvent.setup();
+    render(<PrevoyancePage />);
+
+    await user.click(await screen.findByRole('button', { name: 'Célibataire' }));
+    await user.click(await screen.findByRole('option', { name: 'Marié' }));
+    fireEvent.change(screen.getByLabelText('Enfants'), { target: { value: '2' } });
+    await saisirDateNaissance(user);
+    await user.click(screen.getByRole('button', { name: /Modifier Contrat 1/i }));
+    await user.click(await screen.findByRole('button', { name: 'Décès' }));
+    const decesInputs = document.querySelectorAll<HTMLInputElement>(
+      '.prevoyance-mini-section .sim-field__control',
+    );
+    fireEvent.change(decesInputs[0] as HTMLInputElement, { target: { value: '250000' } });
+    fireEvent.change(decesInputs[1] as HTMLInputElement, { target: { value: '12000' } });
+    fireEvent.change(decesInputs[2] as HTMLInputElement, { target: { value: '8000' } });
+    await user.click(screen.getByRole('button', { name: 'Terminer' }));
+
+    const decesCard = screen.getByRole('heading', { name: 'Décès' }).closest('section');
+    expect(decesCard).not.toBeNull();
+    const deces = within(decesCard as HTMLElement);
+    const decesText = decesCard?.textContent?.replace(/\s/g, ' ') ?? '';
+    expect(decesText).toContain('Contrat 1 · Capital');
+    expect(decesText).toContain('250 000 €');
+    expect(deces.getByText('Rente conjoint')).toBeInTheDocument();
+    expect(decesText).toContain('12 000 €');
+    expect(deces.getByText('Rente éducation')).toBeInTheDocument();
+    expect(decesText).toContain('8 000 €');
   });
 });

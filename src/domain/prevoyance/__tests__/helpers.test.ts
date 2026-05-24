@@ -108,7 +108,7 @@ describe('helpers prévoyance', () => {
         franchises: { accident: 0, hospitalisation: 0, maladie: 0 },
         paliers: [],
       },
-      invalidite: { paliers: [] },
+      invalidite: { indemnisation: 'forfaitaire', paliers: [] },
       deces: {
         capital: 120_000,
         doublementAccident: false,
@@ -116,7 +116,7 @@ describe('helpers prévoyance', () => {
         renteConjoint: 0,
         renteEducation: 0,
       },
-      fraisPro: { enabled: false, franchiseDays: 0, amount: 0, maxDurationYears: 1 },
+      fraisPro: { franchiseDays: 0, amount: 0, maxDurationYears: 1 },
       cotisation: { montantAnnuel: 900, dontMadelin: 900 },
     };
     const collectif: PrevoyanceContractDraft = {
@@ -191,7 +191,7 @@ describe('helpers prévoyance', () => {
           { fromDay: 91, toDay: 1095, amount: 120 },
         ],
       },
-      invalidite: { paliers: [] },
+      invalidite: { indemnisation: 'forfaitaire', paliers: [] },
       deces: {
         capital: 0,
         doublementAccident: false,
@@ -199,40 +199,42 @@ describe('helpers prévoyance', () => {
         renteConjoint: 0,
         renteEducation: 0,
       },
-      fraisPro: { enabled: false, franchiseDays: 0, amount: 0, maxDurationYears: 1 },
+      fraisPro: { franchiseDays: 0, amount: 0, maxDurationYears: 1 },
       cotisation: { montantAnnuel: 0, dontMadelin: 0 },
     };
     const chart = buildArretEuroChart({
-      regime: {
-        code: 'ssi',
-        label: 'SSI',
-        caisse: 'SSI',
-        population: 'tns',
-        defaultContractKind: 'individuel',
-        year: 2026,
-        data: {
-          arret: {
-            carences: { maladie: 3, accident: 0, hospitalisation: 0 },
-            maxDurationDays: 1095,
-            paliers: [
-              {
-                fromDay: 4,
-                toDay: 1095,
-                label: 'IJ',
-                amount: { mode: 'fixed_eur_day', value: 40, label: '40 €/j' },
-              },
-            ],
+      regimeStack: [
+        {
+          code: 'ssi',
+          label: 'SSI',
+          caisse: 'SSI',
+          population: 'tns',
+          defaultContractKind: 'individuel',
+          year: 2026,
+          data: {
+            arret: {
+              carences: { maladie: 3, accident: 0, hospitalisation: 0 },
+              maxDurationDays: 1095,
+              paliers: [
+                {
+                  fromDay: 4,
+                  toDay: 1095,
+                  label: 'IJ',
+                  amount: { mode: 'fixed_eur_day', value: 40, label: '40 €/j' },
+                },
+              ],
+            },
+            invalidite: { paliers: [] },
+            deces: {
+              capital: { mode: 'formula', value: null },
+              doublementAccident: false,
+              doubleEffet: false,
+            },
+            cotisations: { mode: 'none', value: null },
           },
-          invalidite: { paliers: [] },
-          deces: {
-            capital: { mode: 'formula', value: null },
-            doublementAccident: false,
-            doubleEffet: false,
-          },
-          cotisations: { mode: 'none', value: null },
+          sources: { fiche: 'test', pagesPdf: [], noteValidation: 'test' },
         },
-        sources: { fiche: 'test', pagesPdf: [], noteValidation: 'test' },
-      },
+      ],
       contracts: [individuel],
       kind: 'individuel',
       maintienPalier: null,
@@ -251,36 +253,38 @@ describe('helpers prévoyance', () => {
 
   it('construit les fenêtres arrêt depuis la carence quand le RO a un seul palier', () => {
     const bars = buildArretCoverageBars({
-      regime: {
-        code: 'carpimko',
-        label: 'CARPIMKO',
-        caisse: 'CARPIMKO',
-        population: 'liberal',
-        defaultContractKind: 'individuel',
-        year: 2026,
-        data: {
-          arret: {
-            carences: { maladie: 90, accident: 90, hospitalisation: 90 },
-            maxDurationDays: 1095,
-            paliers: [
-              {
-                fromDay: 91,
-                toDay: 1095,
-                label: 'IJ CARPIMKO',
-                amount: { mode: 'fixed_eur_day', value: 55, label: '55 €/j' },
-              },
-            ],
+      regimeStack: [
+        {
+          code: 'carpimko',
+          label: 'CARPIMKO',
+          caisse: 'CARPIMKO',
+          population: 'liberal',
+          defaultContractKind: 'individuel',
+          year: 2026,
+          data: {
+            arret: {
+              carences: { maladie: 90, accident: 90, hospitalisation: 90 },
+              maxDurationDays: 1095,
+              paliers: [
+                {
+                  fromDay: 91,
+                  toDay: 1095,
+                  label: 'IJ CARPIMKO',
+                  amount: { mode: 'fixed_eur_day', value: 55, label: '55 €/j' },
+                },
+              ],
+            },
+            invalidite: { paliers: [] },
+            deces: {
+              capital: { mode: 'formula', value: null },
+              doublementAccident: false,
+              doubleEffet: false,
+            },
+            cotisations: { mode: 'none', value: null },
           },
-          invalidite: { paliers: [] },
-          deces: {
-            capital: { mode: 'formula', value: null },
-            doublementAccident: false,
-            doubleEffet: false,
-          },
-          cotisations: { mode: 'none', value: null },
+          sources: { fiche: 'test', pagesPdf: [], noteValidation: 'test' },
         },
-        sources: { fiche: 'test', pagesPdf: [], noteValidation: 'test' },
-      },
+      ],
       contracts: [],
       kind: 'individuel',
       maintienPalier: null,
@@ -298,7 +302,7 @@ describe('helpers prévoyance', () => {
 
   it('affiche une seule fenêtre arrêt quand aucun palier RO n’est renseigné', () => {
     const bars = buildArretCoverageBars({
-      regime: null,
+      regimeStack: [],
       contracts: [],
       kind: 'individuel',
       maintienPalier: null,
@@ -328,38 +332,40 @@ describe('helpers prévoyance', () => {
       cotisation: { tauxPctSalaire: 1, repartition: { employeur: 50, salarie: 50 } },
     };
     const bars = buildInvaliditeCoverageBars({
-      regime: {
-        code: 'salarie',
-        label: 'Salarié',
-        caisse: 'CPAM',
-        population: 'salarie',
-        defaultContractKind: 'collectif',
-        year: 2026,
-        data: {
-          arret: {
-            carences: { maladie: 3, accident: 0, hospitalisation: 0 },
-            maxDurationDays: 1095,
-            paliers: [],
+      regimeStack: [
+        {
+          code: 'salarie',
+          label: 'Salarié',
+          caisse: 'CPAM',
+          population: 'salarie',
+          defaultContractKind: 'collectif',
+          year: 2026,
+          data: {
+            arret: {
+              carences: { maladie: 3, accident: 0, hospitalisation: 0 },
+              maxDurationDays: 1095,
+              paliers: [],
+            },
+            invalidite: {
+              paliers: [
+                {
+                  fromRate: 33,
+                  toRate: 66,
+                  label: 'Catégorie 1',
+                  amount: { mode: 'percent_salary', value: 30, label: '30 %' },
+                },
+              ],
+            },
+            deces: {
+              capital: { mode: 'formula', value: null },
+              doublementAccident: false,
+              doubleEffet: false,
+            },
+            cotisations: { mode: 'none', value: null },
           },
-          invalidite: {
-            paliers: [
-              {
-                fromRate: 33,
-                toRate: 66,
-                label: 'Catégorie 1',
-                amount: { mode: 'percent_salary', value: 30, label: '30 %' },
-              },
-            ],
-          },
-          deces: {
-            capital: { mode: 'formula', value: null },
-            doublementAccident: false,
-            doubleEffet: false,
-          },
-          cotisations: { mode: 'none', value: null },
+          sources: { fiche: 'test', pagesPdf: [], noteValidation: 'test' },
         },
-        sources: { fiche: 'test', pagesPdf: [], noteValidation: 'test' },
-      },
+      ],
       contracts: [collectif],
       kind: 'collectif',
       referenceAnnual: 40_000,
@@ -380,6 +386,7 @@ describe('helpers prévoyance', () => {
         paliers: [],
       },
       invalidite: {
+        indemnisation: 'forfaitaire',
         paliers: [
           { fromRate: 16, toRate: 65, mode: 'fixed', referenceAmount: 0, amount: 12_000 },
           { fromRate: 66, toRate: null, mode: 'fixed', referenceAmount: 0, amount: 24_000 },
@@ -392,11 +399,11 @@ describe('helpers prévoyance', () => {
         renteConjoint: 0,
         renteEducation: 0,
       },
-      fraisPro: { enabled: false, franchiseDays: 0, amount: 0, maxDurationYears: 1 },
+      fraisPro: { franchiseDays: 0, amount: 0, maxDurationYears: 1 },
       cotisation: { montantAnnuel: 0, dontMadelin: 0 },
     };
     const chart = buildInvaliditePctChart({
-      regime: null,
+      regimeStack: [],
       contracts: [individuel],
       kind: 'individuel',
       referenceAnnual: 48_000,
