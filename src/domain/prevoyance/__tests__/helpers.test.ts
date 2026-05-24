@@ -126,7 +126,7 @@ describe('helpers prévoyance', () => {
       acteJuridique: 'due',
       assiette: 'TA-TB',
       arret: { salairePct: 80 },
-      invalidite: { indemnisation: 'forfaitaire', paliers: [] },
+      invalidite: { paliers: [] },
       deces: {
         salairePct: 300,
         doublementAccident: true,
@@ -191,7 +191,7 @@ describe('helpers prévoyance', () => {
           { fromDay: 91, toDay: 1095, amount: 120 },
         ],
       },
-      invalidite: { paliers: [] },
+      invalidite: { indemnisation: 'forfaitaire', paliers: [] },
       deces: {
         capital: 0,
         doublementAccident: false,
