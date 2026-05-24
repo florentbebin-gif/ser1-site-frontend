@@ -49,7 +49,9 @@ export interface InvaliditeCoverageInput {
 }
 
 export type PrevoyanceMaintienPalier =
-  | PrevoyanceMaintienEmployeurSettings['data']['maintienEmployeur']['paliers'][number]
+  | (PrevoyanceMaintienEmployeurSettings['data']['maintienEmployeur']['paliers'][number] & {
+      carenceDays: number;
+    })
   | null;
 
 export function clampPct(value: number): number {
@@ -84,28 +86,80 @@ export function percentOfReference(valueAnnual: number, referenceAnnual: number)
   return clampPct((valueAnnual / referenceAnnual) * 100);
 }
 
-export function buildMaintienSegment(
+export function maintienRateForDay(
   fromDay: number,
   maintienPalier: PrevoyanceMaintienPalier,
-): PrevoyanceCoverageSegment | null {
+): number | null {
   if (!maintienPalier) return null;
+  if (fromDay <= maintienPalier.carenceDays) return null;
+
+  const maintainedDay = fromDay - maintienPalier.carenceDays;
   const firstEnd = maintienPalier.firstPeriodDays;
-  const secondEnd = maintienPalier.firstPeriodDays + maintienPalier.secondPeriodDays;
-  if (fromDay <= firstEnd) {
-    return {
-      kind: 'maintien',
-      label: 'Maintien employeur',
-      valuePct: clampPct(maintienPalier.firstPeriodRate),
-    };
-  }
-  if (fromDay <= secondEnd) {
-    return {
-      kind: 'maintien',
-      label: 'Maintien employeur',
-      valuePct: clampPct(maintienPalier.secondPeriodRate),
-    };
-  }
+  const secondEnd = firstEnd + maintienPalier.secondPeriodDays;
+  if (maintainedDay <= firstEnd) return clampPct(maintienPalier.firstPeriodRate);
+  if (maintainedDay <= secondEnd) return clampPct(maintienPalier.secondPeriodRate);
   return null;
+}
+
+export function maintienRanges(maintienPalier: PrevoyanceMaintienPalier): PrevoyanceRangeLike[] {
+  if (!maintienPalier) return [];
+  const carenceEnd = maintienPalier.carenceDays;
+  const firstStart = carenceEnd + 1;
+  const firstEnd = carenceEnd + maintienPalier.firstPeriodDays;
+  const secondStart = firstEnd + 1;
+  const secondEnd = firstEnd + maintienPalier.secondPeriodDays;
+
+  return [
+    ...(carenceEnd > 0 ? [{ fromDay: 0, toDay: carenceEnd }] : []),
+    ...(firstStart <= firstEnd ? [{ fromDay: firstStart, toDay: firstEnd }] : []),
+    ...(secondStart <= secondEnd ? [{ fromDay: secondStart, toDay: secondEnd }] : []),
+  ];
+}
+
+export function computeMaintienEmployeurEuro({
+  fromDay,
+  maintienPalier,
+  roEuro,
+  salaireBrutAnnuel,
+}: {
+  fromDay: number;
+  maintienPalier: PrevoyanceMaintienPalier;
+  roEuro: number;
+  salaireBrutAnnuel: number;
+}): number {
+  const rate = maintienRateForDay(fromDay, maintienPalier);
+  if (rate === null) return 0;
+  const salaireBrutJournalier = Math.max(0, salaireBrutAnnuel) / 365;
+  const cibleMaintien = salaireBrutJournalier * (rate / 100);
+  return Math.max(0, cibleMaintien - Math.max(0, roEuro));
+}
+
+export function buildMaintienSegment({
+  fromDay,
+  maintienPalier,
+  roEuro,
+  referenceAnnual,
+  salaireBrutAnnuel,
+}: {
+  fromDay: number;
+  maintienPalier: PrevoyanceMaintienPalier;
+  roEuro: number;
+  referenceAnnual: number;
+  salaireBrutAnnuel: number;
+}): PrevoyanceCoverageSegment | null {
+  const maintienEuro = computeMaintienEmployeurEuro({
+    fromDay,
+    maintienPalier,
+    roEuro,
+    salaireBrutAnnuel,
+  });
+  if (maintienEuro <= 0) return null;
+
+  return {
+    kind: 'maintien',
+    label: 'Maintien employeur',
+    valuePct: percentOfReference(maintienEuro * 365, referenceAnnual),
+  };
 }
 
 export function findInvaliditePalier<T extends { fromRate: number; toRate?: number | null }>(

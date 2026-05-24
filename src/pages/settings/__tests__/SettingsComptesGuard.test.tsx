@@ -33,9 +33,9 @@ describe('SettingsComptes garde admin', () => {
     expect(getVisibleSettingsRoutes(false).some((route) => route.key === 'comptes')).toBe(false);
   });
 
-  it('masque la route Prévoyance régimes pour les non-admins', () => {
+  it('affiche la route Prévoyance régimes aux non-admins en consultation', () => {
     expect(getVisibleSettingsRoutes(false).some((route) => route.key === 'prevoyanceRegimes')).toBe(
-      false,
+      true,
     );
   });
 

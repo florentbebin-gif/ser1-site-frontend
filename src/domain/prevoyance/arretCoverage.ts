@@ -7,7 +7,9 @@ import type {
 import {
   buildMaintienSegment,
   clampPct,
+  computeMaintienEmployeurEuro,
   dailyValueFromAmountRule,
+  maintienRanges,
   normalizeRegimeStack,
   percentOfReference,
   type ArretCoverageInput,
@@ -23,6 +25,7 @@ export interface PrevoyanceArretEuroPeriod {
   to: number;
   roSegments: Array<{ code: string; label: string; euro: number }>;
   roEuro: number;
+  maintienEuro: number;
   contratEuro: number;
   totalEuro: number;
 }
@@ -146,6 +149,8 @@ function buildSinglePalierArretWindows(regime: PrevoyanceRegimeSettings): Array<
 function buildArretWindows(
   regimeStack: PrevoyanceRegimeSettings[],
   contracts: PrevoyanceContractDraft[],
+  maintienPalier: ArretCoverageInput['maintienPalier'],
+  kind: ArretCoverageInput['kind'],
 ): Array<[number, number]> {
   const max = capArretDay(
     Math.max(
@@ -154,10 +159,8 @@ function buildArretWindows(
     ),
   );
   const regimePaliers = regimeStack.flatMap((regime) => regime.data.arret.paliers);
-  if (regimePaliers.length === 0) return [[0, max]];
-  if (regimeStack.length === 1 && regimePaliers.length === 1) {
-    return buildSinglePalierArretWindows(regimeStack[0] as PrevoyanceRegimeSettings);
-  }
+  const maintienRangeList = kind === 'collectif' ? maintienRanges(maintienPalier) : [];
+  if (regimePaliers.length === 0 && maintienRangeList.length === 0) return [[0, max]];
 
   const ranges = new Map<string, [number, number]>();
   const addRange = (fromDay: number, toDay: number | null) => {
@@ -168,11 +171,17 @@ function buildArretWindows(
     ranges.set(`${range[0]}-${range[1]}`, range);
   };
 
-  regimeStack.forEach((regime) => {
-    regime.data.arret.paliers.forEach((palier) => addRange(palier.fromDay, palier.toDay));
-    const carence = regime.data.arret.carences.maladie;
-    if (carence > 0) addRange(0, carence);
-  });
+  if (regimeStack.length === 1 && regimePaliers.length === 1) {
+    buildSinglePalierArretWindows(regimeStack[0] as PrevoyanceRegimeSettings).forEach(
+      ([fromDay, toDay]) => addRange(fromDay, toDay),
+    );
+  } else {
+    regimeStack.forEach((regime) => {
+      regime.data.arret.paliers.forEach((palier) => addRange(palier.fromDay, palier.toDay));
+      const carence = regime.data.arret.carences.maladie;
+      if (carence > 0) addRange(0, carence);
+    });
+  }
   contracts.forEach((contract) => {
     if (contract.kind === 'individuel') {
       contract.arret.paliers.forEach((palier) => addRange(palier.fromDay, palier.toDay));
@@ -180,6 +189,9 @@ function buildArretWindows(
       collectiveArretPaliers(contract).forEach((palier) => addRange(palier.fromDay, palier.toDay));
     }
   });
+  maintienRangeList.forEach((range) =>
+    addRange(Number(range.fromDay ?? range.from ?? 0), Number(range.toDay ?? range.to ?? max)),
+  );
 
   const windows = Array.from(ranges.values()).sort((a, b) => a[0] - b[0] || a[1] - b[1]);
   return windows.length ? windows : [[0, max]];
@@ -204,7 +216,7 @@ export function buildArretCoverageBars({
     },
   ];
 
-  const windows = buildArretWindows(regimeStack, contracts);
+  const windows = buildArretWindows(regimeStack, contracts, maintienPalier, kind);
   windows.forEach(([fromDay, toDay]) => {
     const roSegments = buildRegimeArretSegments({
       regimeStack,
@@ -226,8 +238,17 @@ export function buildArretCoverageBars({
             roEuro: (referenceAnnual / 365) * (roPct / 100),
             contractAggregationMode,
           });
+    const roEuro = roSegments.reduce((sum, segment) => sum + segment.euro, 0);
     const maintienSegment =
-      kind === 'collectif' ? buildMaintienSegment(fromDay, maintienPalier) : null;
+      kind === 'collectif'
+        ? buildMaintienSegment({
+            fromDay,
+            maintienPalier,
+            roEuro,
+            referenceAnnual,
+            salaireBrutAnnuel,
+          })
+        : null;
     const segments: PrevoyanceCoverageSegment[] = roSegments.map((segment) => ({
       kind: 'ro',
       label: segment.label,
@@ -330,6 +351,7 @@ export function buildArretEuroChart({
             toDay: palier.toDay,
           })),
     ),
+    ...(kind === 'collectif' ? maintienRanges(maintienPalier) : []),
   ];
   const periods = splitIntoSubPeriods(rangePaliers, unionBoundaries(rangePaliers));
   const reference = Math.max(0, referenceAnnual) / 365;
@@ -347,7 +369,6 @@ export function buildArretEuroChart({
         maintienPalier,
         referenceAnnual,
         salaireBrutAnnuel,
-        reference,
       }),
     ),
   };
@@ -363,11 +384,9 @@ function buildArretEuroPeriod({
   maintienPalier,
   referenceAnnual,
   salaireBrutAnnuel,
-  reference,
 }: ArretCoverageInput & {
   from: number;
   to: number;
-  reference: number;
 }): PrevoyanceArretEuroPeriod {
   const regimeStack = normalizeRegimeStack(inputRegimeStack);
   const roSegments = buildRegimeArretSegments({
@@ -377,10 +396,16 @@ function buildArretEuroPeriod({
     referenceAnnual,
     salaireBrutAnnuel,
   });
-  const maintienSegment = kind === 'collectif' ? buildMaintienSegment(from, maintienPalier) : null;
-  const roEuro =
-    roSegments.reduce((sum, segment) => sum + segment.euro, 0) +
-    (maintienSegment ? reference * (maintienSegment.valuePct / 100) : 0);
+  const roEuro = roSegments.reduce((sum, segment) => sum + segment.euro, 0);
+  const maintienEuro =
+    kind === 'collectif'
+      ? computeMaintienEmployeurEuro({
+          fromDay: from,
+          maintienPalier,
+          roEuro,
+          salaireBrutAnnuel,
+        })
+      : 0;
   const contratEuro =
     kind === 'collectif'
       ? contracts.reduce((sum, contract) => {
@@ -411,8 +436,9 @@ function buildArretEuroPeriod({
       euro: Math.round(segment.euro),
     })),
     roEuro: Math.round(roEuro),
+    maintienEuro: Math.round(maintienEuro),
     contratEuro: Math.round(contratEuro),
-    totalEuro: Math.round(roEuro + contratEuro),
+    totalEuro: Math.round(roEuro + maintienEuro + contratEuro),
   };
 }
 

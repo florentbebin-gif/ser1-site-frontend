@@ -1,6 +1,21 @@
 import { describe, expect, it } from 'vitest';
 import { prevoyanceRegimeSettingsSchema } from '../schema';
 
+function sources(organisme: string, titre: string, url: string, valeursCouvertes: string[]) {
+  return {
+    references: [
+      {
+        organisme,
+        titre,
+        url,
+        dateConsultation: '2026-05-24',
+        valeursCouvertes,
+        confiance: 'haute' as const,
+      },
+    ],
+  };
+}
+
 const goldenRegimes = [
   {
     code: 'salarie-cpam',
@@ -70,7 +85,7 @@ const goldenRegimes = [
               mode: 'percent_salary',
               value: 50,
               unit: '% du salaire + majoration tierce personne',
-              label: 'Cat 3 : 19 517,28 € min / 39 487,56 € max 2026',
+              label: 'Cat 3 : 19 641 € min / 39 611,28 € max 2026',
             },
             category: '3',
           },
@@ -110,12 +125,12 @@ const goldenRegimes = [
         ],
       },
     },
-    sources: {
-      fiche: 'Mémento 2026 — Fiche 33',
-      pagesPdf: [115, 116, 117],
-      noteValidation:
-        "Extraction LLM 2026-05-23, à relire métier avant migration v2. Migration SQL v2 générée le 2026-05-23 depuis l'extraction Mémento ; validation métier humaine requise avant usage conseil.",
-    },
+    sources: sources(
+      'Ameli',
+      'Invalidité, arrêt maladie et capital décès',
+      'https://www.ameli.fr/assure/remboursements/pensions-allocations-rentes/invalidite',
+      ['arret', 'invalidite', 'deces', 'cotisations'],
+    ),
   },
   {
     code: 'ssi-artisan-commercant',
@@ -139,9 +154,9 @@ const goldenRegimes = [
             label: 'IJ SSI — 1/730 revenu moyen 3 ans plafonné PASS',
             amount: {
               mode: 'fixed_eur_day',
-              value: 65.83,
+              value: 65.84,
               unit: '€/jour max',
-              label: 'Max 65,83 €/j 2026 — Min 26,33 €/j (cotisation min)',
+              label: 'Max 65,84 €/j 2026 — Min 26,33 €/j (cotisation min)',
             },
           },
         ],
@@ -161,7 +176,7 @@ const goldenRegimes = [
               mode: 'percent_income',
               value: 30,
               unit: '% revenu annuel moyen 10 meilleures années',
-              label: '6 312,12 € min / 14 130 € max 2026',
+              label: '6 362,52 € min / 14 418 € max 2026',
             },
             category: 'PIPM',
           },
@@ -172,7 +187,7 @@ const goldenRegimes = [
             amount: {
               mode: 'percent_income',
               value: 50,
-              label: '8 892,84 € min / 23 550 € max 2026',
+              label: '8 964 € min / 24 030 € max 2026',
             },
             category: 'PITD',
           },
@@ -183,7 +198,7 @@ const goldenRegimes = [
             amount: {
               mode: 'percent_income',
               value: 50,
-              label: '24 350,40 € min / 39 007,56 € max 2026',
+              label: '24 545,28 € min / 39 611,28 € max 2026',
             },
             category: 'PITD+MTP',
           },
@@ -214,12 +229,12 @@ const goldenRegimes = [
         ],
       },
     },
-    sources: {
-      fiche: 'Mémento 2026 — Fiche 34',
-      pagesPdf: [118, 119, 120],
-      noteValidation:
-        "Extraction LLM 2026-05-23, à relire métier. Migration SQL v2 générée le 2026-05-23 depuis l'extraction Mémento ; validation métier humaine requise avant usage conseil.",
-    },
+    sources: sources(
+      'Ameli',
+      'Indépendant : indemnités journalières et invalidité',
+      'https://www.ameli.fr/assure/remboursements/indemnites-journalieres/arret-maladie-independants',
+      ['arret', 'invalidite', 'deces', 'cotisations'],
+    ),
   },
   {
     code: 'carmf',
@@ -355,12 +370,12 @@ const goldenRegimes = [
         ],
       },
     },
-    sources: {
-      fiche: 'Mémento 2026 — Fiche 38',
-      pagesPdf: [128, 129, 130],
-      noteValidation:
-        "Extraction LLM 2026-05-23. Migration SQL v2 générée le 2026-05-23 depuis l'extraction Mémento ; validation métier humaine requise avant usage conseil.",
-    },
+    sources: sources('CARMF', 'Régime invalidité décès 2026', 'https://www.carmf.fr', [
+      'arret',
+      'invalidite',
+      'deces',
+      'cotisations',
+    ]),
   },
   {
     code: 'cnbf',
@@ -450,17 +465,17 @@ const goldenRegimes = [
         ],
       },
     },
-    sources: {
-      fiche: 'Mémento 2026 — Fiche 47',
-      pagesPdf: [150, 151],
-      noteValidation:
-        "Extraction LLM 2026-05-23. Migration SQL v2 générée le 2026-05-23 depuis l'extraction Mémento ; validation métier humaine requise avant usage conseil.",
-    },
+    sources: sources('CNBF', 'Prévoyance avocat 2026', 'https://www.cnbf.fr', [
+      'arret',
+      'invalidite',
+      'deces',
+      'cotisations',
+    ]),
   },
 ] as const;
 
 describe('seed prévoyance 2026 golden', () => {
-  it('valide quatre régimes représentatifs extraits du Mémento', () => {
+  it('valide quatre régimes représentatifs sourcés', () => {
     for (const regime of goldenRegimes) {
       const parsed = prevoyanceRegimeSettingsSchema.safeParse(regime);
       expect(parsed.success, regime.code).toBe(true);

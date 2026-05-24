@@ -63,10 +63,31 @@ const maintien: PrevoyanceMaintienEmployeurSettings = {
     },
   },
   sources: {
-    fiche: 'Code du travail',
-    pagesPdf: [1],
-    noteValidation: 'Cas de test.',
+    references: [
+      {
+        organisme: 'Service-Public',
+        titre: 'Arrêt maladie : indemnités journalières versées au salarié',
+        url: 'https://www.service-public.gouv.fr/particuliers/vosdroits/F3053',
+        dateConsultation: '2026-05-24',
+        valeursCouvertes: ['maintien_employeur'],
+        confiance: 'haute',
+      },
+    ],
+    noteAdmin: 'Cas de test.',
   },
+};
+
+const testSources: PrevoyanceRegimeSettings['sources'] = {
+  references: [
+    {
+      organisme: 'Source de test',
+      titre: 'Barème de test',
+      url: 'https://example.test/prevoyance',
+      dateConsultation: '2026-05-24',
+      valeursCouvertes: ['test'],
+      confiance: 'haute',
+    },
+  ],
 };
 
 describe('helpers prévoyance', () => {
@@ -87,6 +108,7 @@ describe('helpers prévoyance', () => {
 
   it('sélectionne le maintien employeur selon l’ancienneté', () => {
     expect(selectMaintienEmployeurPalier(0, maintien)).toBeNull();
+    expect(selectMaintienEmployeurPalier(1, maintien)?.carenceDays).toBe(7);
     expect(selectMaintienEmployeurPalier(1, maintien)?.firstPeriodDays).toBe(30);
     expect(selectMaintienEmployeurPalier(5, maintien)?.secondPeriodDays).toBe(30);
     expect(selectMaintienEmployeurPalier(10, maintien)?.firstPeriodDays).toBe(40);
@@ -232,7 +254,7 @@ describe('helpers prévoyance', () => {
             },
             cotisations: { mode: 'none', value: null },
           },
-          sources: { fiche: 'test', pagesPdf: [], noteValidation: 'test' },
+          sources: testSources,
         },
       ],
       contracts: [individuel],
@@ -282,7 +304,7 @@ describe('helpers prévoyance', () => {
             },
             cotisations: { mode: 'none', value: null },
           },
-          sources: { fiche: 'test', pagesPdf: [], noteValidation: 'test' },
+          sources: testSources,
         },
       ],
       contracts: [],
@@ -363,7 +385,7 @@ describe('helpers prévoyance', () => {
             },
             cotisations: { mode: 'none', value: null },
           },
-          sources: { fiche: 'test', pagesPdf: [], noteValidation: 'test' },
+          sources: testSources,
         },
       ],
       contracts: [collectif],

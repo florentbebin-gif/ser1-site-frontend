@@ -80,9 +80,13 @@
 .prevoyance-settings-textarea {
   min-height: 260px;
   padding: 10px 12px;
-  font-family: var(--font-mono, monospace);
   line-height: 1.45;
   resize: vertical;
+}
+
+.prevoyance-settings-textarea--compact {
+  min-height: 72px;
+  font-family: inherit;
 }
 
 .prevoyance-settings-input:focus,
@@ -122,7 +126,14 @@
   text-align: left;
 }
 
-.prevoyance-settings-regime__header > span:first-child {
+.prevoyance-settings-regime__heading {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 10px;
+}
+
+.prevoyance-settings-regime__heading > span:last-child {
   display: flex;
   min-width: 0;
   flex-direction: column;
@@ -153,7 +164,7 @@
 
 .prevoyance-settings-grid {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 12px;
 }
 
@@ -217,12 +228,42 @@
   font-size: 12px;
 }
 
+.prevoyance-settings-sources {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.prevoyance-settings-sources li {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.prevoyance-settings-sources a {
+  color: var(--color-c1);
+  font-size: 12px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.prevoyance-settings-sources span,
+.prevoyance-settings-sources small {
+  color: var(--color-c9);
+  font-size: 11px;
+  line-height: 1.35;
+}
+
 .prevoyance-settings-modal {
   width: min(1040px, calc(100vw - 32px));
 }
 
 .prevoyance-settings-modal__grid,
-.prevoyance-settings-modal__json-grid {
+.prevoyance-settings-form-grid {
   display: grid;
   gap: 12px;
 }
@@ -232,8 +273,8 @@
   margin-bottom: 14px;
 }
 
-.prevoyance-settings-modal__json-grid {
-  grid-template-columns: minmax(0, 1.2fr) minmax(0, 0.8fr);
+.prevoyance-settings-form-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
 .prevoyance-settings-modal label {
@@ -250,6 +291,56 @@
   font-size: 12px;
 }
 
+.prevoyance-settings-modal__sections,
+.prevoyance-settings-palier-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.prevoyance-settings-form-section,
+.prevoyance-settings-palier-card,
+.prevoyance-settings-source-card {
+  border: 1px solid var(--color-c8);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--color-c7) 82%, var(--color-c4));
+  padding: 12px;
+}
+
+.prevoyance-settings-form-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.prevoyance-settings-form-section h3 {
+  margin: 0;
+  color: var(--color-c1);
+  font-size: 14px;
+}
+
+.prevoyance-settings-amount-editor {
+  display: grid;
+  grid-template-columns: minmax(130px, 0.7fr) minmax(90px, 0.45fr) minmax(180px, 1.2fr);
+  gap: 10px;
+}
+
+.prevoyance-settings-check-row,
+.prevoyance-settings-source-card__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.prevoyance-settings-check-row label {
+  flex-direction: row;
+  align-items: center;
+  color: var(--color-c10);
+  font-weight: 600;
+}
+
 @media (max-width: 1100px) {
   .prevoyance-settings-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -259,7 +350,8 @@
 @media (max-width: 760px) {
   .prevoyance-settings-grid,
   .prevoyance-settings-modal__grid,
-  .prevoyance-settings-modal__json-grid {
+  .prevoyance-settings-form-grid,
+  .prevoyance-settings-amount-editor {
     grid-template-columns: 1fr;
   }
 

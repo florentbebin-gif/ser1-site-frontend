@@ -43,9 +43,17 @@ const baseData = {
 };
 
 const sources = {
-  fiche: 'Mémento 2026',
-  pagesPdf: [1, 2],
-  noteValidation: 'Valeur à double valider avant livraison métier.',
+  references: [
+    {
+      organisme: 'Service-Public',
+      titre: 'Arrêt maladie : indemnités journalières versées au salarié',
+      url: 'https://www.service-public.gouv.fr/particuliers/vosdroits/F3053',
+      dateConsultation: '2026-05-24',
+      valeursCouvertes: ['arret.carences.maladie', 'maintien_employeur'],
+      confiance: 'haute',
+    },
+  ],
+  noteAdmin: 'Valeur à double valider avant livraison métier.',
 };
 
 describe('schémas prévoyance JSONB', () => {
@@ -89,6 +97,25 @@ describe('schémas prévoyance JSONB', () => {
     });
 
     expect(parsed.success).toBe(true);
+  });
+
+  it('refuse les anciennes sources non structurées', () => {
+    const parsed = prevoyanceRegimeSettingsSchema.safeParse({
+      code: 'salarie-cpam',
+      label: 'Salarié secteur privé — CPAM',
+      caisse: 'CPAM',
+      population: 'salarie',
+      defaultContractKind: 'collectif',
+      year: 2026,
+      data: baseData,
+      sources: {
+        fiche: 'Ancienne fiche',
+        pagesPdf: [1],
+        noteValidation: 'Ancien format.',
+      },
+    });
+
+    expect(parsed.success).toBe(false);
   });
 
   it('valide le bloc maintien employeur légal', () => {

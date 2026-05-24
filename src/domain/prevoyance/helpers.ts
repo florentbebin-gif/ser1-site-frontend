@@ -74,12 +74,14 @@ export function selectMaintienEmployeurPalier(
   if (!maintien || ancienneteYears < maintien.minAncienneteYears) return null;
 
   return (
-    maintien.paliers.find((palier) => {
-      const afterStart = ancienneteYears >= palier.fromAncienneteYears;
-      const beforeEnd =
-        palier.toAncienneteYears === null || ancienneteYears <= palier.toAncienneteYears;
-      return afterStart && beforeEnd;
-    }) ?? null
+    maintien.paliers
+      .map((palier) => ({ ...palier, carenceDays: maintien.carenceDays }))
+      .find((palier) => {
+        const afterStart = ancienneteYears >= palier.fromAncienneteYears;
+        const beforeEnd =
+          palier.toAncienneteYears === null || ancienneteYears <= palier.toAncienneteYears;
+        return afterStart && beforeEnd;
+      }) ?? null
   );
 }
 

@@ -78,7 +78,6 @@ export const SETTINGS_ROUTES: SettingsRouteEntry[] = [
     path: 'prevoyance-regimes',
     urlPath: '/settings/prevoyance-regimes',
     component: SettingsPrevoyanceRegimes,
-    adminOnly: true,
   },
   {
     key: 'comptes',
