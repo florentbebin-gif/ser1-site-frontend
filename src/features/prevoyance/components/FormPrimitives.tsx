@@ -80,15 +80,17 @@ export function NumberInput({
   suffix,
   min,
   ariaLabel,
+  showZero = false,
 }: {
   value: number;
   onChange: (value: number) => void;
   suffix?: string;
   min?: number;
   ariaLabel?: string;
+  showZero?: boolean;
 }) {
   const isEuro = suffix?.includes('€') ?? false;
-  const hasValue = Number.isFinite(value) && value > 0;
+  const hasValue = Number.isFinite(value) && (value > 0 || showZero);
   return (
     <>
       <input

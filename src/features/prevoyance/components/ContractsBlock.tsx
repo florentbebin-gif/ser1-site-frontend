@@ -16,13 +16,14 @@ import { CollectiveContractCard } from './CollectiveContractCard';
 import { IndividualContractCard } from './IndividualContractCard';
 import { SectionCard } from './FormPrimitives';
 
-type ContractEditorSection = 'arret' | 'frais' | 'invalidite' | 'deces';
+type ContractEditorSection = 'arret' | 'frais' | 'invalidite' | 'deces' | 'cotisation';
 
 const EDITOR_SECTIONS: Array<{ id: ContractEditorSection; label: string }> = [
   { id: 'arret', label: 'Arrêt de travail' },
   { id: 'frais', label: 'Frais professionnels' },
   { id: 'invalidite', label: 'Invalidité' },
   { id: 'deces', label: 'Décès' },
+  { id: 'cotisation', label: 'Cotisation' },
 ];
 
 function PencilIcon() {

@@ -8,7 +8,7 @@ import { ACTE_OPTIONS, ASSIETTE_OPTIONS } from '../constants';
 import { euro } from '../formatters';
 import { NumberInput, SimFieldShell } from './FormPrimitives';
 
-type ContractEditorSection = 'arret' | 'frais' | 'invalidite' | 'deces';
+type ContractEditorSection = 'arret' | 'frais' | 'invalidite' | 'deces' | 'cotisation';
 
 interface CollectiveContractCardProps {
   contract: Extract<PrevoyanceContractDraft, { kind: 'collectif' }>;
@@ -71,15 +71,6 @@ export function CollectiveContractCard({
               value={contract.assiette}
               onChange={(assiette) => update({ assiette: assiette as PrevoyanceAssiette })}
               options={ASSIETTE_OPTIONS}
-            />
-          </SimFieldShell>
-          <SimFieldShell label="Cotisation">
-            <NumberInput
-              value={contract.cotisation.tauxPctSalaire}
-              onChange={(tauxPctSalaire) =>
-                update({ cotisation: { ...contract.cotisation, tauxPctSalaire } })
-              }
-              suffix="%"
             />
           </SimFieldShell>
           <div className="prevoyance-assiette-chip">Base retenue {euro(assietteBase)}</div>
@@ -204,6 +195,54 @@ export function CollectiveContractCard({
               </SimFieldShell>
             ) : null}
           </div>
+        </div>
+      ) : null}
+
+      {activeSection === 'cotisation' ? (
+        <div className="prevoyance-mini-section">
+          <span>Cotisation</span>
+          <div className="prevoyance-form-grid prevoyance-form-grid--three">
+            <SimFieldShell label="Taux salaire">
+              <NumberInput
+                value={contract.cotisation.tauxPctSalaire}
+                onChange={(tauxPctSalaire) =>
+                  update({ cotisation: { ...contract.cotisation, tauxPctSalaire } })
+                }
+                suffix="%"
+              />
+            </SimFieldShell>
+            <SimFieldShell label="Part employeur">
+              <NumberInput
+                value={contract.cotisation.repartition.employeur}
+                onChange={(employeur) =>
+                  update({
+                    cotisation: {
+                      ...contract.cotisation,
+                      repartition: { ...contract.cotisation.repartition, employeur },
+                    },
+                  })
+                }
+                suffix="%"
+              />
+            </SimFieldShell>
+            <SimFieldShell label="Part salarié">
+              <NumberInput
+                value={contract.cotisation.repartition.salarie}
+                onChange={(salarie) =>
+                  update({
+                    cotisation: {
+                      ...contract.cotisation,
+                      repartition: { ...contract.cotisation.repartition, salarie },
+                    },
+                  })
+                }
+                suffix="%"
+              />
+            </SimFieldShell>
+          </div>
+          <span className="prevoyance-side-note">
+            Base de calcul retenue : {euro(assietteBase)}
+          </span>
         </div>
       ) : null}
     </article>

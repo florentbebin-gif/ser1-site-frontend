@@ -5,7 +5,7 @@ import type { PrevoyanceContractDraft } from '@/domain/prevoyance/types';
 import { ArretPeriodsModal } from './ArretPeriodsModal';
 import { NumberInput, SimFieldShell } from './FormPrimitives';
 
-type ContractEditorSection = 'arret' | 'frais' | 'invalidite' | 'deces';
+type ContractEditorSection = 'arret' | 'frais' | 'invalidite' | 'deces' | 'cotisation';
 
 interface IndividualContractCardProps {
   contract: Extract<PrevoyanceContractDraft, { kind: 'individuel' }>;
@@ -94,43 +94,6 @@ export function IndividualContractCard({
           aria-label={`Nom du contrat ${index + 1}`}
           className="prevoyance-contract__title-input"
         />
-        <div className="prevoyance-contract-editor__base-grid">
-          <SimFieldShell label="Cotisation annuelle">
-            <NumberInput
-              value={contract.cotisation.montantAnnuel}
-              onChange={(montantAnnuel) => {
-                setMadelinClamped(contract.cotisation.dontMadelin > montantAnnuel);
-                update({
-                  cotisation: {
-                    montantAnnuel,
-                    dontMadelin: Math.min(contract.cotisation.dontMadelin, montantAnnuel),
-                  },
-                });
-              }}
-              suffix="€"
-            />
-          </SimFieldShell>
-          <SimFieldShell label="dont Madelin">
-            <NumberInput
-              value={contract.cotisation.dontMadelin}
-              onChange={(dontMadelin) => {
-                setMadelinClamped(dontMadelin > contract.cotisation.montantAnnuel);
-                update({
-                  cotisation: {
-                    ...contract.cotisation,
-                    dontMadelin: Math.min(dontMadelin, contract.cotisation.montantAnnuel),
-                  },
-                });
-              }}
-              suffix="€"
-            />
-          </SimFieldShell>
-        </div>
-        {madelinClamped ? (
-          <span className="prevoyance-side-note">
-            Le montant Madelin est plafonné à la cotisation annuelle.
-          </span>
-        ) : null}
       </div>
 
       {activeSection === 'arret' ? (
@@ -169,6 +132,8 @@ export function IndividualContractCard({
                   })
                 }
                 suffix="j"
+                showZero
+                ariaLabel="Franchise accident"
               />
             </SimFieldShell>
             <SimFieldShell label="Hospi.">
@@ -183,6 +148,8 @@ export function IndividualContractCard({
                   })
                 }
                 suffix="j"
+                showZero
+                ariaLabel="Franchise hospitalisation"
               />
             </SimFieldShell>
             <SimFieldShell label="Maladie">
@@ -197,6 +164,8 @@ export function IndividualContractCard({
                   })
                 }
                 suffix="j"
+                showZero
+                ariaLabel="Franchise maladie"
               />
             </SimFieldShell>
           </div>
@@ -428,6 +397,49 @@ export function IndividualContractCard({
               </SimFieldShell>
             ) : null}
           </div>
+        </div>
+      ) : null}
+
+      {activeSection === 'cotisation' ? (
+        <div className="prevoyance-mini-section">
+          <span>Cotisation</span>
+          <div className="prevoyance-form-grid prevoyance-form-grid--two">
+            <SimFieldShell label="Cotisation annuelle">
+              <NumberInput
+                value={contract.cotisation.montantAnnuel}
+                onChange={(montantAnnuel) => {
+                  setMadelinClamped(contract.cotisation.dontMadelin > montantAnnuel);
+                  update({
+                    cotisation: {
+                      montantAnnuel,
+                      dontMadelin: Math.min(contract.cotisation.dontMadelin, montantAnnuel),
+                    },
+                  });
+                }}
+                suffix="€"
+              />
+            </SimFieldShell>
+            <SimFieldShell label="dont Madelin">
+              <NumberInput
+                value={contract.cotisation.dontMadelin}
+                onChange={(dontMadelin) => {
+                  setMadelinClamped(dontMadelin > contract.cotisation.montantAnnuel);
+                  update({
+                    cotisation: {
+                      ...contract.cotisation,
+                      dontMadelin: Math.min(dontMadelin, contract.cotisation.montantAnnuel),
+                    },
+                  });
+                }}
+                suffix="€"
+              />
+            </SimFieldShell>
+          </div>
+          {madelinClamped ? (
+            <span className="prevoyance-side-note">
+              Le montant Madelin est plafonné à la cotisation annuelle.
+            </span>
+          ) : null}
         </div>
       ) : null}
 

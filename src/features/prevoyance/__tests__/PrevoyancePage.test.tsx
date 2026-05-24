@@ -150,6 +150,7 @@ describe('PrevoyancePage', () => {
     await saisirDateNaissance(user);
     expect(screen.getByText('Comparer')).toBeInTheDocument();
     expect(screen.getByText('Non applicable')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Cotisation' })).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: /Salarié CPAM/i }));
     expect(screen.getByText('Salarié agricole — MSA')).toBeInTheDocument();
     expect(screen.queryByText('MSA salariés')).not.toBeInTheDocument();
@@ -194,6 +195,13 @@ describe('PrevoyancePage', () => {
     });
 
     await user.click(screen.getAllByRole('button', { name: /Modifier Contrat/i })[0]);
+    expect(screen.queryByText('Cotisation annuelle')).toBeNull();
+    expect(screen.getByLabelText('Franchise accident')).toHaveValue(0);
+    expect(screen.getByLabelText('Franchise hospitalisation')).toHaveValue(0);
+    expect(screen.getByLabelText('Franchise maladie')).toHaveValue(0);
+    await user.click(screen.getByRole('button', { name: 'Cotisation' }));
+    expect(screen.getByText('Cotisation annuelle')).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Arrêt de travail' }));
     await user.click(screen.getAllByRole('button', { name: /Découper les périodes/i })[0]);
     expect(await screen.findByText('Découper l’arrêt de travail')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /Ajouter une période/i })).toHaveClass(

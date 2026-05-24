@@ -100,7 +100,6 @@ function MiniArretEuroChart({ chart }: { chart: ReturnType<typeof buildArretEuro
           </div>
         ))}
       </div>
-      <MiniChartLegend />
     </div>
   );
 }
@@ -161,7 +160,6 @@ function MiniInvaliditePctChart({ chart }: { chart: ReturnType<typeof buildInval
           </div>
         ))}
       </div>
-      <MiniChartLegend />
     </div>
   );
 }
@@ -189,20 +187,33 @@ function SideCard({
   title,
   icon,
   children,
+  actions,
+  compact = false,
 }: {
   title: string;
   icon: SectionIconName;
   children: ReactNode;
+  actions?: ReactNode;
+  compact?: boolean;
 }) {
   return (
-    <section className="premium-card premium-card--guide sim-card--guide prevoyance-side-card">
+    <section
+      className={
+        compact
+          ? 'premium-card premium-card--guide sim-card--guide prevoyance-side-card prevoyance-side-card--compact'
+          : 'premium-card premium-card--guide sim-card--guide prevoyance-side-card'
+      }
+    >
       <div className="sim-card__header sim-card__header--bleed prevoyance-side-card__header">
-        <h2 className="sim-card__title sim-card__title-row">
-          <span className="sim-card__icon sim-card__icon--sm">
-            <SectionIcon name={icon} size={13} />
-          </span>
-          <span>{title}</span>
-        </h2>
+        <div className="prevoyance-side-card__title-row">
+          <h2 className="sim-card__title sim-card__title-row">
+            <span className="sim-card__icon sim-card__icon--sm">
+              <SectionIcon name={icon} size={13} />
+            </span>
+            <span>{title}</span>
+          </h2>
+          {actions ? <div className="prevoyance-side-card__actions">{actions}</div> : null}
+        </div>
       </div>
       <div className="sim-divider sim-divider--tight" />
       {children}
@@ -210,11 +221,25 @@ function SideCard({
   );
 }
 
-function Donut({ value, target, label }: { value: number; target: number; label: string }) {
+function Donut({
+  value,
+  target,
+  label,
+  compact = false,
+}: {
+  value: number;
+  target: number;
+  label: string;
+  compact?: boolean;
+}) {
   const ratio = target > 0 ? Math.min(1, value / target) : 0;
   const deg = Math.round(ratio * 360);
   return (
-    <div className="prevoyance-donut-wrap">
+    <div
+      className={
+        compact ? 'prevoyance-donut-wrap prevoyance-donut-wrap--compact' : 'prevoyance-donut-wrap'
+      }
+    >
       <div
         className="prevoyance-donut"
         style={{ '--prevoyance-donut-deg': `${deg}deg` } as CSSProperties}
@@ -228,6 +253,64 @@ function Donut({ value, target, label }: { value: number; target: number; label:
       </div>
     </div>
   );
+}
+
+function DeathTargetControl({
+  deathTarget,
+  onDeathTargetChange,
+}: {
+  deathTarget: PrevoyanceDeathTargetDraft;
+  onDeathTargetChange: (deathTarget: PrevoyanceDeathTargetDraft) => void;
+}) {
+  return (
+    <div className="prevoyance-death-target">
+      <div className="prevoyance-death-target__top">
+        <div className="prevoyance-death-target__presets">
+          {[1, 3, 5].map((multiple) => (
+            <button
+              key={multiple}
+              type="button"
+              className={
+                deathTarget.mode === 'multiple' && deathTarget.multiple === multiple
+                  ? 'prevoyance-death-target__preset is-active'
+                  : 'prevoyance-death-target__preset'
+              }
+              onClick={() =>
+                onDeathTargetChange({
+                  ...deathTarget,
+                  mode: 'multiple',
+                  multiple: multiple as 1 | 3 | 5,
+                })
+              }
+            >
+              x{multiple}
+            </button>
+          ))}
+        </div>
+        <div className="prevoyance-death-target__manual">
+          <span title="Besoin à couvrir">Besoin</span>
+          <span className="prevoyance-death-target__manual-input">
+            <NumberInput
+              value={deathTarget.manualAmount}
+              onChange={(manualAmount) =>
+                onDeathTargetChange({ ...deathTarget, mode: 'manual', manualAmount })
+              }
+              suffix="€"
+              ariaLabel="Besoin à couvrir"
+            />
+          </span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function computeCotisationAnnual(
+  contract: PrevoyanceContractDraft,
+  salaireBrutAnnuel: number,
+): number {
+  if (contract.kind === 'individuel') return contract.cotisation.montantAnnuel;
+  return Math.round(salaireBrutAnnuel * (contract.cotisation.tauxPctSalaire / 100));
 }
 
 export function Sidebar({
@@ -318,57 +401,39 @@ export function Sidebar({
     (sum, contract) => sum + (contract.fraisPro.enabled ? contract.fraisPro.amount : 0),
     0,
   );
+  const cotisationAnnual = contracts.reduce(
+    (sum, contract) => sum + computeCotisationAnnual(contract, salaireBrutAnnuel),
+    0,
+  );
+  const cotisationTitle =
+    contractAggregationMode === 'compare' ? 'Contrat affiché' : 'Cumul contrats';
 
   return (
     <div className="prevoyance-sidebar">
-      <SideCard title="Arrêt de travail" icon="arret">
+      <SideCard title="Arrêt de travail" icon="arret" actions={<MiniChartLegend />}>
         <MiniArretEuroChart chart={arretChart} />
+        {kind === 'individuel' ? (
+          <div className="prevoyance-frais-inline-kpi">
+            <Donut value={fraisCovered} target={fraisEstimated} label="frais pro" compact />
+            <div>
+              <span>Frais professionnels couverts</span>
+              <strong>{euro(fraisCovered)} couverts</strong>
+            </div>
+          </div>
+        ) : null}
       </SideCard>
 
-      <SideCard title="Invalidité" icon="invalidite">
+      <SideCard title="Invalidité" icon="invalidite" actions={<MiniChartLegend />}>
         <MiniInvaliditePctChart chart={invaliditeChart} />
       </SideCard>
 
-      <SideCard title="Décès" icon="deces">
-        <div className="prevoyance-death-target">
-          <div className="prevoyance-death-target__top">
-            <div className="prevoyance-death-target__presets">
-              {[1, 3, 5].map((multiple) => (
-                <button
-                  key={multiple}
-                  type="button"
-                  className={
-                    deathTarget.mode === 'multiple' && deathTarget.multiple === multiple
-                      ? 'prevoyance-death-target__preset is-active'
-                      : 'prevoyance-death-target__preset'
-                  }
-                  onClick={() =>
-                    onDeathTargetChange({
-                      ...deathTarget,
-                      mode: 'multiple',
-                      multiple: multiple as 1 | 3 | 5,
-                    })
-                  }
-                >
-                  x{multiple}
-                </button>
-              ))}
-            </div>
-            <div className="prevoyance-death-target__manual">
-              <span title="Besoin à couvrir">Besoin</span>
-              <span className="prevoyance-death-target__manual-input">
-                <NumberInput
-                  value={deathTarget.manualAmount}
-                  onChange={(manualAmount) =>
-                    onDeathTargetChange({ ...deathTarget, mode: 'manual', manualAmount })
-                  }
-                  suffix="€"
-                  ariaLabel="Besoin à couvrir"
-                />
-              </span>
-            </div>
-          </div>
-        </div>
+      <SideCard
+        title="Décès"
+        icon="deces"
+        actions={
+          <DeathTargetControl deathTarget={deathTarget} onDeathTargetChange={onDeathTargetChange} />
+        }
+      >
         <Donut value={decesCovered} target={decesTarget} label={`objectif ${euro(decesTarget)}`} />
         {regimeDecesCovered > 0 ? (
           <div className="prevoyance-rente-line">
@@ -398,11 +463,12 @@ export function Sidebar({
         ))}
       </SideCard>
 
-      {kind === 'individuel' ? (
-        <SideCard title="Frais professionnels" icon="frais">
-          <Donut value={fraisCovered} target={fraisEstimated} label="couverts" />
-        </SideCard>
-      ) : null}
+      <SideCard title="Cotisation" icon="contracts" compact>
+        <div className="prevoyance-cotisation-kpi">
+          <span>{cotisationTitle}</span>
+          <strong>{euro(cotisationAnnual)}/an</strong>
+        </div>
+      </SideCard>
     </div>
   );
 }
