@@ -4,8 +4,7 @@ import type {
   PrevoyanceSituationDraft,
 } from '@/domain/prevoyance/types';
 
-export interface FraisProModalState {
-  contractId: string;
+export interface FraisGenerauxEstimateState {
   chargesExternes: number;
   loyers: number;
   assurances: number;
@@ -14,7 +13,16 @@ export interface FraisProModalState {
   fraisBancaires: number;
 }
 
-export type FraisProNumericKey = Exclude<keyof FraisProModalState, 'contractId'>;
+export type FraisGenerauxNumericKey = keyof FraisGenerauxEstimateState;
+
+export const DEFAULT_FRAIS_GENERAUX_ESTIMATE: FraisGenerauxEstimateState = {
+  chargesExternes: 0,
+  loyers: 0,
+  assurances: 0,
+  salaires: 0,
+  amortissements: 0,
+  fraisBancaires: 0,
+};
 
 export const DEFAULT_SITUATION: PrevoyanceSituationDraft = {
   birthDate: '',

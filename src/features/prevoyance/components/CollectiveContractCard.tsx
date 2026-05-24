@@ -92,10 +92,10 @@ export function CollectiveContractCard({
 
       {activeSection === 'frais' ? (
         <div className="prevoyance-mini-section">
-          <span>Frais professionnels</span>
+          <span>Frais généraux</span>
           <p className="prevoyance-side-note">
-            Les frais professionnels ne sont pas une garantie modélisée pour un contrat collectif
-            dans ce simulateur.
+            Les frais généraux ne sont pas une garantie modélisée pour un contrat collectif dans ce
+            simulateur.
           </p>
         </div>
       ) : null}

@@ -51,7 +51,7 @@ function buildContractsSheet(data: PrevoyanceExportData): XlsxSheet {
       h('Arrêt de travail'),
       h('Invalidité'),
       h('Capital décès'),
-      h('Frais professionnels'),
+      h('Frais généraux'),
     ],
   ];
 
@@ -97,9 +97,9 @@ function buildCoverageSheet(data: PrevoyanceExportData): XlsxSheet {
   rows.push(['Cible décès', money(data.coverage.decesTarget), '', '']);
   rows.push(['Capital décès couvert', money(data.coverage.decesCapital), '', '']);
   rows.push([]);
-  rows.push([sec('Frais professionnels'), sec(''), sec(''), sec('')]);
-  rows.push(['Frais estimés', money(data.coverage.fraisProEstimated), '', '']);
-  rows.push(['Frais couverts', money(data.coverage.fraisProCovered), '', '']);
+  rows.push([sec('Frais généraux'), sec(''), sec(''), sec('')]);
+  rows.push(['Assiette estimée', money(data.coverage.fraisProEstimated), '', '']);
+  rows.push(['Frais généraux couverts', money(data.coverage.fraisProCovered), '', '']);
 
   return { name: 'Couverture', rows, columnWidths: [26, 20, 22, 18] };
 }

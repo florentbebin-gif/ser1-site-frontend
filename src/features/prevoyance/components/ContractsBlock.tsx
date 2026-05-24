@@ -20,7 +20,7 @@ type ContractEditorSection = 'arret' | 'frais' | 'invalidite' | 'deces' | 'cotis
 
 const EDITOR_SECTIONS: Array<{ id: ContractEditorSection; label: string }> = [
   { id: 'arret', label: 'Arrêt de travail' },
-  { id: 'frais', label: 'Frais professionnels' },
+  { id: 'frais', label: 'Frais généraux' },
   { id: 'invalidite', label: 'Invalidité' },
   { id: 'deces', label: 'Décès' },
   { id: 'cotisation', label: 'Cotisation' },
@@ -277,7 +277,7 @@ export function ContractsBlock({
                 <dd>{getArretSummary(contract, salaireBrutAnnuel)}</dd>
               </div>
               <div>
-                <dt>Frais professionnels</dt>
+                <dt>Frais généraux</dt>
                 <dd>{getFraisSummary(contract)}</dd>
               </div>
               <div>

@@ -186,7 +186,7 @@ export function IndividualContractCard({
 
       {activeSection === 'frais' ? (
         <div className="prevoyance-mini-section">
-          <span>Frais professionnels</span>
+          <span>Frais généraux</span>
           <div className="prevoyance-form-grid prevoyance-frais-inline-grid">
             <SimFieldShell label="Franchise">
               <NumberInput
@@ -202,6 +202,7 @@ export function IndividualContractCard({
                 value={contract.fraisPro.amount}
                 onChange={(amount) => update({ fraisPro: { ...contract.fraisPro, amount } })}
                 suffix="€"
+                ariaLabel="Montant frais généraux"
               />
             </SimFieldShell>
             <SimFieldShell label="Durée max">
@@ -224,7 +225,7 @@ export function IndividualContractCard({
             </SimFieldShell>
           </div>
           <button type="button" className="prevoyance-link-button" onClick={onOpenFrais}>
-            Estimer depuis un compte de résultat
+            Estimer l’assiette depuis un compte de résultat
           </button>
         </div>
       ) : null}

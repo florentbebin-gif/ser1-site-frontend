@@ -7,12 +7,21 @@ describe('persistence Prévoyance', () => {
       JSON.stringify({
         contractAggregationMode: 'cumulate',
         deathTarget: { mode: 'manual', multiple: 5, manualAmount: 420_000 },
+        fraisGenerauxEstimate: {
+          loyers: 12_000,
+          chargesExternes: 8_000,
+          assurances: 2_000,
+          salaires: 30_000,
+          amortissements: 3_000,
+          fraisBancaires: 1_000,
+        },
       }),
     );
 
     expect(parsed).toMatchObject({
       contractAggregationMode: 'cumulate',
       deathTarget: { mode: 'manual', multiple: 5, manualAmount: 420_000 },
+      fraisGenerauxEstimate: { loyers: 12_000, salaires: 30_000 },
     });
   });
 

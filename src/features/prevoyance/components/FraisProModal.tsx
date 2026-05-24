@@ -1,10 +1,10 @@
 import { SimModalShell } from '@/components/ui/sim';
-import type { FraisProModalState, FraisProNumericKey } from '../defaults';
+import type { FraisGenerauxEstimateState, FraisGenerauxNumericKey } from '../defaults';
 import { euro } from '../formatters';
 import { NumberInput, SimFieldShell } from './FormPrimitives';
 
 const FRAIS_PRO_CATEGORIES: Array<{
-  key: FraisProNumericKey;
+  key: FraisGenerauxNumericKey;
   label: string;
   description: string;
   accounts: string;
@@ -55,13 +55,13 @@ const FRAIS_PRO_CATEGORIES: Array<{
 export function FraisProModal({
   state,
   onClose,
-  onApply,
+  onValidate,
   onChange,
 }: {
-  state: FraisProModalState;
+  state: FraisGenerauxEstimateState;
   onClose: () => void;
-  onApply: (amount: number) => void;
-  onChange: (patch: Partial<FraisProModalState>) => void;
+  onValidate: () => void;
+  onChange: (patch: Partial<FraisGenerauxEstimateState>) => void;
 }) {
   const total =
     state.chargesExternes +
@@ -73,21 +73,21 @@ export function FraisProModal({
 
   return (
     <SimModalShell
-      title="Frais professionnels"
-      subtitle="Estimation des charges permanentes à maintenir pendant l’arrêt du dirigeant."
+      title="Frais généraux"
+      subtitle="Estimation de l’assiette de charges permanentes à maintenir pendant l’arrêt du dirigeant."
       onClose={onClose}
       modalClassName="prevoyance-frais-modal"
       footer={
         <>
           <span className="prevoyance-frais-modal__total">
-            Total recommandé : <strong>{euro(total)}</strong>
+            Assiette estimée : <strong>{euro(total)}</strong>
           </span>
           <button
             type="button"
             className="sim-modal-btn sim-modal-btn--primary"
-            onClick={() => onApply(total)}
+            onClick={onValidate}
           >
-            Retenir ce montant
+            Valider
           </button>
         </>
       }
@@ -96,7 +96,8 @@ export function FraisProModal({
         <strong>À relever dans le compte de résultat ou le grand livre.</strong>
         <span>
           Additionnez les charges récurrentes et incompressibles qui continuent même si l’activité
-          baisse pendant l’incapacité temporaire.
+          baisse pendant l’incapacité temporaire. Cette assiette n’écrase pas la garantie saisie
+          dans le contrat.
         </span>
       </div>
       <div className="prevoyance-frais-grid">
@@ -107,6 +108,7 @@ export function FraisProModal({
                 value={Number(state[category.key]) || 0}
                 onChange={(value) => onChange({ [category.key]: value })}
                 suffix="€"
+                ariaLabel={category.label}
               />
             </SimFieldShell>
             <p>{category.description}</p>

@@ -25,6 +25,7 @@ interface UsePrevoyanceExportHandlersInput {
   deathTarget: PrevoyanceDeathTargetDraft;
   annualBase: number;
   referenceAnnual: number;
+  fraisGenerauxAssiette: number;
   themeColors: ThemeColors;
   cabinetLogo?: string;
   logoPlacement?: LogoPlacement;
@@ -40,6 +41,7 @@ export function usePrevoyanceExportHandlers({
   deathTarget,
   annualBase,
   referenceAnnual,
+  fraisGenerauxAssiette,
   themeColors,
   cabinetLogo,
   logoPlacement,
@@ -58,12 +60,14 @@ export function usePrevoyanceExportHandlers({
         deathTarget,
         annualBase,
         referenceAnnual,
+        fraisGenerauxAssiette,
       }),
     [
       annualBase,
       contractAggregationMode,
       contracts,
       deathTarget,
+      fraisGenerauxAssiette,
       kind,
       maintien,
       referenceAnnual,

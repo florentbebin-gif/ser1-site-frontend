@@ -7,6 +7,11 @@ import type {
   PrevoyanceSituationDraft,
 } from '@/domain/prevoyance/types';
 import { storageKeyFor } from '@/utils/reset';
+import {
+  DEFAULT_FRAIS_GENERAUX_ESTIMATE,
+  type FraisGenerauxEstimateState,
+  type FraisGenerauxNumericKey,
+} from './defaults';
 
 export const PREVOYANCE_STORAGE_KEY = storageKeyFor('prevoyance');
 
@@ -15,6 +20,7 @@ export interface PersistedPrevoyanceState {
   contracts?: PrevoyanceContractDraft[];
   contractAggregationMode?: PrevoyanceContractAggregationMode;
   deathTarget?: PrevoyanceDeathTargetDraft;
+  fraisGenerauxEstimate?: FraisGenerauxEstimateState;
 }
 
 type LegacyIndividualContract = Omit<
@@ -80,6 +86,15 @@ function normalizeDeathTarget(value: unknown): PrevoyanceDeathTargetDraft | unde
   };
 }
 
+function normalizeFraisGenerauxEstimate(value: unknown): FraisGenerauxEstimateState | undefined {
+  if (!value || typeof value !== 'object') return undefined;
+  const draft = value as Partial<Record<FraisGenerauxNumericKey, unknown>>;
+  return (Object.keys(DEFAULT_FRAIS_GENERAUX_ESTIMATE) as FraisGenerauxNumericKey[]).reduce(
+    (acc, key) => ({ ...acc, [key]: Math.max(0, Number(draft[key]) || 0) }),
+    { ...DEFAULT_FRAIS_GENERAUX_ESTIMATE },
+  );
+}
+
 export function parsePersistedPrevoyanceState(raw: string | null): PersistedPrevoyanceState | null {
   if (!raw) return null;
   try {
@@ -93,6 +108,7 @@ export function parsePersistedPrevoyanceState(raw: string | null): PersistedPrev
         : [],
       contractAggregationMode: normalizeAggregationMode(parsed.contractAggregationMode),
       deathTarget: normalizeDeathTarget(parsed.deathTarget),
+      fraisGenerauxEstimate: normalizeFraisGenerauxEstimate(parsed.fraisGenerauxEstimate),
     };
   } catch {
     return null;

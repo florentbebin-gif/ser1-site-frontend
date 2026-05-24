@@ -125,7 +125,7 @@ function buildContractsSlide(data: PrevoyanceDeckData): PrevoyanceContractsTable
       values: data.contracts.map((contract) => contract.arretSummary),
     },
     {
-      label: 'Frais professionnels',
+      label: 'Frais généraux',
       values: data.contracts.map((contract) => contract.fraisProSummary),
     },
     {

@@ -255,6 +255,20 @@ function Donut({
   );
 }
 
+function MiniDonut({ value, target, label }: { value: number; target: number; label: string }) {
+  const ratio = target > 0 ? Math.min(1, value / target) : 0;
+  const deg = Math.round(ratio * 360);
+  return (
+    <div
+      className="prevoyance-mini-donut"
+      style={{ '--prevoyance-donut-deg': `${deg}deg` } as CSSProperties}
+      aria-label={label}
+    >
+      <span>{pct(ratio * 100)}</span>
+    </div>
+  );
+}
+
 function DeathTargetControl({
   deathTarget,
   onDeathTargetChange,
@@ -328,6 +342,7 @@ export function Sidebar({
   ancienneteYears,
   hasConjoint,
   hasChildren,
+  fraisGenerauxAssiette,
 }: {
   kind: PrevoyanceContractKind;
   regimeStack: PrevoyanceRegimeSettings[];
@@ -343,6 +358,7 @@ export function Sidebar({
   ancienneteYears: number;
   hasConjoint: boolean;
   hasChildren: boolean;
+  fraisGenerauxAssiette: number;
 }) {
   const tranches = computeTranchesFromPass(salaireBrutAnnuel, pass);
   const maintienPalier = selectMaintienEmployeurPalier(ancienneteYears, maintien);
@@ -393,10 +409,6 @@ export function Sidebar({
     salaireBrutAnnuel,
   );
   const decesCovered = regimeDecesCovered + privateDecesCovered;
-  const fraisEstimated = individualContracts.reduce(
-    (sum, contract) => sum + contract.fraisPro.amount,
-    0,
-  );
   const fraisCovered = individualContracts.reduce(
     (sum, contract) => sum + (contract.fraisPro.enabled ? contract.fraisPro.amount : 0),
     0,
@@ -414,10 +426,15 @@ export function Sidebar({
         <MiniArretEuroChart chart={arretChart} />
         {kind === 'individuel' ? (
           <div className="prevoyance-frais-inline-kpi">
-            <Donut value={fraisCovered} target={fraisEstimated} label="frais pro" compact />
+            <MiniDonut value={fraisCovered} target={fraisGenerauxAssiette} label="frais généraux" />
             <div>
-              <span>Frais professionnels couverts</span>
+              <span>Frais généraux couverts</span>
               <strong>{euro(fraisCovered)} couverts</strong>
+              <small>
+                {fraisGenerauxAssiette > 0
+                  ? `Assiette ${euro(fraisGenerauxAssiette)}`
+                  : 'Assiette à estimer'}
+              </small>
             </div>
           </div>
         ) : null}

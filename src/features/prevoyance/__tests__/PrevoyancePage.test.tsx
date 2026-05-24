@@ -135,7 +135,7 @@ describe('PrevoyancePage', () => {
     await screen.findByText('Garanties souscrites hors régime obligatoire');
   }
 
-  it('affiche le parcours salarié sans frais professionnels', async () => {
+  it('affiche le parcours salarié sans frais généraux', async () => {
     const user = userEvent.setup();
     render(<PrevoyancePage />);
 
@@ -164,8 +164,8 @@ describe('PrevoyancePage', () => {
 
     await saisirDateNaissance(user);
     await user.click(screen.getByRole('radio', { name: 'TNS / libéral' }));
-    expect((await screen.findAllByText('Frais professionnels')).length).toBeGreaterThan(0);
-    expect(screen.getAllByText('Frais professionnels').length).toBeGreaterThan(0);
+    expect((await screen.findAllByText('Frais généraux')).length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Frais généraux').length).toBeGreaterThan(0);
 
     await user.click(screen.getByRole('button', { name: 'Ajouter un contrat' }));
     await user.click(await screen.findByRole('button', { name: 'Terminer' }));
@@ -258,22 +258,27 @@ describe('PrevoyancePage', () => {
     );
   });
 
-  it('ouvre la modale d’estimation des frais professionnels', async () => {
+  it('ouvre la modale d’estimation des frais généraux sans écraser la garantie', async () => {
     const user = userEvent.setup();
     render(<PrevoyancePage />);
 
     await saisirDateNaissance(user);
     await user.click(screen.getByRole('radio', { name: 'TNS / libéral' }));
-    expect((await screen.findAllByText('Frais professionnels')).length).toBeGreaterThan(0);
+    expect((await screen.findAllByText('Frais généraux')).length).toBeGreaterThan(0);
     await user.click(screen.getByRole('button', { name: /Modifier Contrat 1/i }));
-    await user.click(await screen.findByRole('button', { name: 'Frais professionnels' }));
+    await user.click(await screen.findByRole('button', { name: 'Frais généraux' }));
     expect(screen.queryByRole('radio', { name: 'Indemnitaire' })).toBeNull();
     expect(screen.queryByRole('radio', { name: 'Forfaitaire' })).toBeNull();
-    await user.click(screen.getByRole('button', { name: /Estimer depuis un compte de résultat/i }));
+    fireEvent.change(screen.getByLabelText('Montant frais généraux'), {
+      target: { value: '12000' },
+    });
+    await user.click(
+      screen.getByRole('button', { name: /Estimer l’assiette depuis un compte de résultat/i }),
+    );
 
     expect(
       await screen.findByText(
-        'Estimation des charges permanentes à maintenir pendant l’arrêt du dirigeant.',
+        'Estimation de l’assiette de charges permanentes à maintenir pendant l’arrêt du dirigeant.',
       ),
     ).toBeInTheDocument();
     expect(screen.getByText('Locaux, matériel et véhicules')).toBeInTheDocument();
@@ -283,9 +288,20 @@ describe('PrevoyancePage', () => {
     expect(screen.getByText('Frais financiers')).toBeInTheDocument();
     expect(screen.getByText('Amortissements et pertes prévues')).toBeInTheDocument();
     expect(screen.getByText(/Comptes indicatifs : 612, 613/)).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Retenir ce montant' })).toHaveClass(
-      'sim-modal-btn--primary',
+    fireEvent.change(screen.getByLabelText('Locaux, matériel et véhicules'), {
+      target: { value: '5000' },
+    });
+    expect(screen.getByRole('button', { name: 'Valider' })).toHaveClass('sim-modal-btn--primary');
+    await user.click(screen.getByRole('button', { name: 'Valider' }));
+    expect(screen.getByLabelText('Montant frais généraux')).toHaveValue('12\u202f000');
+
+    await user.click(screen.getByRole('button', { name: 'Terminer' }));
+    await user.click(screen.getByRole('button', { name: 'Ajouter un contrat' }));
+    await user.click(await screen.findByRole('button', { name: 'Frais généraux' }));
+    await user.click(
+      screen.getByRole('button', { name: /Estimer l’assiette depuis un compte de résultat/i }),
     );
+    expect(await screen.findByLabelText('Locaux, matériel et véhicules')).toHaveValue('5\u202f000');
   });
 
   it('affiche les grands montants dans le besoin décès', async () => {

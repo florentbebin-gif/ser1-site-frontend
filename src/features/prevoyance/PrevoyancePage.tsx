@@ -23,7 +23,12 @@ import { ContractsBlock } from './components/ContractsBlock';
 import { FraisProModal } from './components/FraisProModal';
 import { Sidebar } from './components/Sidebar';
 import { SituationBlock } from './components/SituationBlock';
-import { createDefaultContract, DEFAULT_SITUATION, type FraisProModalState } from './defaults';
+import {
+  createDefaultContract,
+  DEFAULT_FRAIS_GENERAUX_ESTIMATE,
+  DEFAULT_SITUATION,
+  type FraisGenerauxEstimateState,
+} from './defaults';
 import { usePrevoyanceExportHandlers } from './hooks/usePrevoyanceExportHandlers';
 import { PREVOYANCE_STORAGE_KEY, parsePersistedPrevoyanceState } from './persistence';
 import { DEFAULT_DEATH_TARGET } from './constants';
@@ -46,7 +51,10 @@ export default function PrevoyancePage() {
     useState<PrevoyanceContractAggregationMode>('compare');
   const [deathTarget, setDeathTarget] = useState<PrevoyanceDeathTargetDraft>(DEFAULT_DEATH_TARGET);
   const [hydrated, setHydrated] = useState(false);
-  const [fraisModal, setFraisModal] = useState<FraisProModalState | null>(null);
+  const [fraisModalOpen, setFraisModalOpen] = useState(false);
+  const [fraisGenerauxEstimate, setFraisGenerauxEstimate] = useState<FraisGenerauxEstimateState>(
+    DEFAULT_FRAIS_GENERAUX_ESTIMATE,
+  );
 
   const selectedRegime = regimes.find((regime) => regime.code === situation.regimeCode) ?? null;
   const regimeStack = resolveRegimeStack(selectedRegime, regimes);
@@ -61,6 +69,10 @@ export default function PrevoyancePage() {
   const hasChildren = situation.childrenCount > 0;
   const sidebarContracts =
     contractAggregationMode === 'compare' ? visibleContracts.slice(0, 1) : visibleContracts;
+  const fraisGenerauxAssiette = Object.values(fraisGenerauxEstimate).reduce(
+    (sum, amount) => sum + amount,
+    0,
+  );
   const { exportOptions, exportLoading } = usePrevoyanceExportHandlers({
     situation,
     kind,
@@ -71,6 +83,7 @@ export default function PrevoyancePage() {
     deathTarget,
     annualBase,
     referenceAnnual,
+    fraisGenerauxAssiette,
     themeColors: pptxColors,
     cabinetLogo,
     logoPlacement,
@@ -85,6 +98,9 @@ export default function PrevoyancePage() {
         setContractAggregationMode(persisted.contractAggregationMode);
       }
       if (persisted.deathTarget) setDeathTarget(persisted.deathTarget);
+      if (persisted.fraisGenerauxEstimate) {
+        setFraisGenerauxEstimate(persisted.fraisGenerauxEstimate);
+      }
     }
     setHydrated(true);
   }, []);
@@ -109,12 +125,18 @@ export default function PrevoyancePage() {
     try {
       sessionStorage.setItem(
         PREVOYANCE_STORAGE_KEY,
-        JSON.stringify({ situation, contracts, contractAggregationMode, deathTarget }),
+        JSON.stringify({
+          situation,
+          contracts,
+          contractAggregationMode,
+          deathTarget,
+          fraisGenerauxEstimate,
+        }),
       );
     } catch {
       // ignore
     }
-  }, [contractAggregationMode, contracts, deathTarget, hydrated, situation]);
+  }, [contractAggregationMode, contracts, deathTarget, fraisGenerauxEstimate, hydrated, situation]);
 
   useEffect(() => {
     const off = onResetEvent(({ simId }: { simId?: string }) => {
@@ -126,6 +148,7 @@ export default function PrevoyancePage() {
       ]);
       setContractAggregationMode('compare');
       setDeathTarget(DEFAULT_DEATH_TARGET);
+      setFraisGenerauxEstimate(DEFAULT_FRAIS_GENERAUX_ESTIMATE);
       try {
         sessionStorage.removeItem(PREVOYANCE_STORAGE_KEY);
       } catch {
@@ -140,35 +163,15 @@ export default function PrevoyancePage() {
     setSituation((prev) => ({ ...prev, ...patch }));
   };
 
-  const openFraisModal = (contract: Extract<PrevoyanceContractDraft, { kind: 'individuel' }>) => {
-    setFraisModal({
-      contractId: contract.id,
-      chargesExternes: Math.round(contract.fraisPro.amount * 0.35),
-      loyers: Math.round(contract.fraisPro.amount * 0.25),
-      assurances: Math.round(contract.fraisPro.amount * 0.1),
-      salaires: Math.round(contract.fraisPro.amount * 0.2),
-      amortissements: Math.round(contract.fraisPro.amount * 0.07),
-      fraisBancaires: Math.round(contract.fraisPro.amount * 0.03),
-    });
-  };
-
-  const applyFraisRecommendation = (amount: number) => {
-    if (!fraisModal) return;
-    setContracts((prev) =>
-      prev.map((contract) =>
-        contract.id === fraisModal.contractId && contract.kind === 'individuel'
-          ? { ...contract, fraisPro: { ...contract.fraisPro, amount } }
-          : contract,
-      ),
-    );
-    setFraisModal(null);
+  const openFraisModal = () => {
+    setFraisModalOpen(true);
   };
 
   return (
     <>
       <SimPageShell
         title="Prévoyance"
-        subtitle="Protection arrêt de travail, invalidité, décès et frais professionnels."
+        subtitle="Protection arrêt de travail, invalidité, décès et frais généraux."
         loading={loading}
         loadingContent={
           <div className="premium-card sim-state-card">Chargement des régimes...</div>
@@ -219,16 +222,17 @@ export default function PrevoyancePage() {
             ancienneteYears={situation.ancienneteYears}
             hasConjoint={hasConjoint}
             hasChildren={hasChildren}
+            fraisGenerauxAssiette={fraisGenerauxAssiette}
           />
         </SimPageShell.Side>
       </SimPageShell>
 
-      {fraisModal ? (
+      {fraisModalOpen ? (
         <FraisProModal
-          state={fraisModal}
-          onClose={() => setFraisModal(null)}
-          onApply={applyFraisRecommendation}
-          onChange={(patch) => setFraisModal((prev) => (prev ? { ...prev, ...patch } : prev))}
+          state={fraisGenerauxEstimate}
+          onClose={() => setFraisModalOpen(false)}
+          onValidate={() => setFraisModalOpen(false)}
+          onChange={(patch) => setFraisGenerauxEstimate((prev) => ({ ...prev, ...patch }))}
         />
       ) : null}
     </>

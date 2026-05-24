@@ -82,6 +82,7 @@ interface BuildPrevoyanceExportDataInput {
   deathTarget: PrevoyanceDeathTargetDraft;
   annualBase: number;
   referenceAnnual: number;
+  fraisGenerauxAssiette: number;
 }
 
 function formatArret(contract: PrevoyanceContractDraft): string {
@@ -147,6 +148,7 @@ export function buildPrevoyanceExportData({
   deathTarget,
   annualBase,
   referenceAnnual,
+  fraisGenerauxAssiette,
 }: BuildPrevoyanceExportDataInput): PrevoyanceExportData {
   const maintienPalier =
     kind === 'collectif'
@@ -239,7 +241,7 @@ export function buildPrevoyanceExportData({
       decesRegimeCapital: regimeDecesCapital,
       decesPrivateCapital: privateDecesCapital,
       decesCapital: regimeDecesCapital + privateDecesCapital,
-      fraisProEstimated: kind === 'individuel' ? fraisProCovered : 0,
+      fraisProEstimated: kind === 'individuel' ? fraisGenerauxAssiette : 0,
       fraisProCovered,
     },
     assumptions: [
