@@ -2,6 +2,8 @@ import type {
   PrevoyanceContractAggregationMode,
   PrevoyanceContractDraft,
   PrevoyanceDeathTargetDraft,
+  PrevoyanceIndemnisation,
+  PrevoyanceInvaliditePalierDraft,
   PrevoyanceSituationDraft,
 } from '@/domain/prevoyance/types';
 import { storageKeyFor } from '@/utils/reset';
@@ -15,7 +17,14 @@ export interface PersistedPrevoyanceState {
   deathTarget?: PrevoyanceDeathTargetDraft;
 }
 
-type LegacyIndividualContract = Extract<PrevoyanceContractDraft, { kind: 'individuel' }> & {
+type LegacyIndividualContract = Omit<
+  Extract<PrevoyanceContractDraft, { kind: 'individuel' }>,
+  'invalidite' | 'cotisation'
+> & {
+  invalidite: {
+    indemnisation?: PrevoyanceIndemnisation;
+    paliers: PrevoyanceInvaliditePalierDraft[];
+  };
   cotisation: {
     montantAnnuel: number;
     dontMadelin?: number;
@@ -44,6 +53,11 @@ function normalizeContract(contract: unknown): PrevoyanceContractDraft | null {
 
   return {
     ...legacy,
+    invalidite: {
+      ...legacy.invalidite,
+      indemnisation: legacy.invalidite?.indemnisation ?? legacy.indemnisation,
+      paliers: legacy.invalidite?.paliers ?? [],
+    },
     cotisation: {
       montantAnnuel,
       dontMadelin: clampDontMadelin(rawDontMadelin, montantAnnuel),

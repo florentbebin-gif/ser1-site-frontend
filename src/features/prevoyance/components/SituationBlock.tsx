@@ -75,6 +75,7 @@ export function SituationBlock({
           <NumberInput
             value={situation.childrenCount}
             onChange={(childrenCount) => onChange({ childrenCount })}
+            ariaLabel="Enfants"
           />
         </SimFieldShell>
       </div>
@@ -115,6 +116,7 @@ export function SituationBlock({
                 })
               }
               suffix="€"
+              ariaLabel="Salaire brut annuel"
             />
           </SimFieldShell>
           <SimFieldShell label="Salaire net imposable">
@@ -122,6 +124,7 @@ export function SituationBlock({
               value={situation.salaireNetImposable}
               onChange={(salaireNetImposable) => onChange({ salaireNetImposable })}
               suffix="€"
+              ariaLabel="Salaire net imposable"
             />
           </SimFieldShell>
           <SimFieldShell label="Ancienneté">
@@ -129,6 +132,7 @@ export function SituationBlock({
               value={situation.ancienneteYears}
               onChange={(ancienneteYears) => onChange({ ancienneteYears })}
               suffix="ans"
+              ariaLabel="Ancienneté"
             />
           </SimFieldShell>
         </div>
@@ -139,6 +143,7 @@ export function SituationBlock({
               value={situation.revenuImposable}
               onChange={(revenuImposable) => onChange({ revenuImposable })}
               suffix="€"
+              ariaLabel="Revenu imposable à couvrir"
             />
           </SimFieldShell>
         </div>

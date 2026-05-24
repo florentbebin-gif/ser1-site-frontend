@@ -17,7 +17,7 @@ import type {
   PrevoyanceRegimeSettings,
 } from '@/domain/prevoyance/types';
 import { euro, pct } from '../formatters';
-import { NumberInput, SectionIcon, SimFieldShell, type SectionIconName } from './FormPrimitives';
+import { NumberInput, SectionIcon, type SectionIconName } from './FormPrimitives';
 
 function segmentHeight(value: number, reference: number): string {
   if (reference <= 0) return '0%';
@@ -171,15 +171,15 @@ function MiniChartLegend() {
     <div className="prevoyance-mini-chart__legend">
       <span>
         <i className="prevoyance-mini-chart__dot prevoyance-mini-chart__dot--reference" />
-        Revenu actuel
+        Revenu
       </span>
       <span>
         <i className="prevoyance-mini-chart__dot prevoyance-mini-chart__dot--ro" />
-        Régime obligatoire
+        RO
       </span>
       <span>
         <i className="prevoyance-mini-chart__dot prevoyance-mini-chart__dot--contrat" />
-        Contrats de prévoyance
+        Contrats
       </span>
     </div>
   );
@@ -332,7 +332,6 @@ export function Sidebar({
       <SideCard title="Décès" icon="deces">
         <div className="prevoyance-death-target">
           <div className="prevoyance-death-target__top">
-            <span>Objectif</span>
             <div className="prevoyance-death-target__presets">
               {[1, 3, 5].map((multiple) => (
                 <button
@@ -355,16 +354,20 @@ export function Sidebar({
                 </button>
               ))}
             </div>
+            <div className="prevoyance-death-target__manual">
+              <span title="Besoin à couvrir">Besoin</span>
+              <span className="prevoyance-death-target__manual-input">
+                <NumberInput
+                  value={deathTarget.manualAmount}
+                  onChange={(manualAmount) =>
+                    onDeathTargetChange({ ...deathTarget, mode: 'manual', manualAmount })
+                  }
+                  suffix="€"
+                  ariaLabel="Besoin à couvrir"
+                />
+              </span>
+            </div>
           </div>
-          <SimFieldShell label="Besoin à couvrir">
-            <NumberInput
-              value={deathTarget.manualAmount}
-              onChange={(manualAmount) =>
-                onDeathTargetChange({ ...deathTarget, mode: 'manual', manualAmount })
-              }
-              suffix="€"
-            />
-          </SimFieldShell>
         </div>
         <Donut value={decesCovered} target={decesTarget} label={`objectif ${euro(decesTarget)}`} />
         {regimeDecesCovered > 0 ? (

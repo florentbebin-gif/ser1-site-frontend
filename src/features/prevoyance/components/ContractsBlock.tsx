@@ -132,7 +132,10 @@ function getDecesSummary(
 }
 
 function contractModeLabel(contract: PrevoyanceContractDraft): string {
-  if (contract.kind === 'individuel') return contract.indemnisation;
+  if (contract.kind === 'individuel') {
+    if (contract.indemnisation === contract.invalidite.indemnisation) return contract.indemnisation;
+    return `Arrêt ${contract.indemnisation} · Invalidité ${contract.invalidite.indemnisation}`;
+  }
   return `Entreprise · ${contract.assiette}`;
 }
 

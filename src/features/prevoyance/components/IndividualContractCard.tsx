@@ -45,6 +45,7 @@ export function IndividualContractCard({
   ) => {
     update({
       invalidite: {
+        ...contract.invalidite,
         paliers: contract.invalidite.paliers.map((palier, currentIndex) =>
           currentIndex === palierIndex ? { ...palier, ...patch } : palier,
         ),
@@ -55,10 +56,11 @@ export function IndividualContractCard({
     if (contract.invalidite.paliers.length >= 3) return;
     update({
       invalidite: {
+        ...contract.invalidite,
         paliers: [
           ...contract.invalidite.paliers,
           {
-            fromRate: 66,
+            fromRate: 0,
             toRate: null,
             mode: 'fixed',
             referenceAmount:
@@ -75,6 +77,7 @@ export function IndividualContractCard({
     if (contract.invalidite.paliers.length <= 1) return;
     update({
       invalidite: {
+        ...contract.invalidite,
         paliers: contract.invalidite.paliers.filter(
           (_, currentIndex) => currentIndex !== palierIndex,
         ),
@@ -92,19 +95,6 @@ export function IndividualContractCard({
           className="prevoyance-contract__title-input"
         />
         <div className="prevoyance-contract-editor__base-grid">
-          <div className="prevoyance-mini-section prevoyance-mini-section--flat">
-            <span>Base</span>
-            <SimSegmentedControl
-              value={contract.indemnisation}
-              onChange={(indemnisation) => update({ indemnisation })}
-              ariaLabel={`Mode indemnisation contrat ${index + 1}`}
-              size="sm"
-              options={[
-                { value: 'indemnitaire', label: 'Indemnitaire' },
-                { value: 'forfaitaire', label: 'Forfaitaire' },
-              ]}
-            />
-          </div>
           <SimFieldShell label="Cotisation annuelle">
             <NumberInput
               value={contract.cotisation.montantAnnuel}
@@ -156,6 +146,16 @@ export function IndividualContractCard({
               +
             </button>
           </div>
+          <SimSegmentedControl
+            value={contract.indemnisation}
+            onChange={(indemnisation) => update({ indemnisation })}
+            ariaLabel={`Mode indemnisation arrêt du contrat ${index + 1}`}
+            size="sm"
+            options={[
+              { value: 'indemnitaire', label: 'Indemnitaire' },
+              { value: 'forfaitaire', label: 'Forfaitaire' },
+            ]}
+          />
           <div className="prevoyance-form-grid prevoyance-form-grid--three">
             <SimFieldShell label="Acc.">
               <NumberInput
@@ -274,11 +274,25 @@ export function IndividualContractCard({
               +
             </button>
           </div>
+          <SimSegmentedControl
+            value={contract.invalidite.indemnisation}
+            onChange={(indemnisation) =>
+              update({
+                invalidite: {
+                  ...contract.invalidite,
+                  indemnisation,
+                },
+              })
+            }
+            ariaLabel={`Mode indemnisation invalidité du contrat ${index + 1}`}
+            size="sm"
+            options={[
+              { value: 'indemnitaire', label: 'Indemnitaire' },
+              { value: 'forfaitaire', label: 'Forfaitaire' },
+            ]}
+          />
           {contract.invalidite.paliers.map((palier, palierIndex) => (
-            <div
-              key={`${palierIndex}-${palier.fromRate}-${palier.toRate ?? 'plus'}`}
-              className="prevoyance-invalidite-row"
-            >
+            <div key={palierIndex} className="prevoyance-invalidite-row">
               {contract.invalidite.paliers.length > 1 ? (
                 <div className="prevoyance-invalidite-row__actions">
                   <button
@@ -291,7 +305,7 @@ export function IndividualContractCard({
                   </button>
                 </div>
               ) : null}
-              <div className="prevoyance-form-grid prevoyance-form-grid--two">
+              <div className="prevoyance-invalidite-row__grid">
                 <SimFieldShell label="Déclenchement">
                   <NumberInput
                     value={palier.fromRate}
@@ -301,53 +315,53 @@ export function IndividualContractCard({
                 </SimFieldShell>
                 <SimFieldShell label="Jusqu’à">
                   <NumberInput
-                    value={palier.toRate ?? 100}
+                    value={palier.toRate ?? 0}
                     onChange={(toRate) =>
                       updateInvaliditePalier(palierIndex, {
-                        toRate: toRate >= 100 ? null : toRate,
+                        toRate: toRate <= 0 || toRate >= 100 ? null : toRate,
                       })
                     }
                     suffix="%"
                   />
                 </SimFieldShell>
-              </div>
-              <SimFieldShell label="Formule">
-                <SimSelect
-                  value={palier.mode}
-                  onChange={(mode) =>
-                    updateInvaliditePalier(palierIndex, {
-                      mode: mode as (typeof palier)['mode'],
-                    })
-                  }
-                  options={[
-                    { value: 'fixed', label: 'Montant fixe' },
-                    { value: 'proportional_66', label: 'Taux / 66 × rente' },
-                  ]}
-                />
-              </SimFieldShell>
-              {palier.mode === 'proportional_66' ? (
-                <SimFieldShell label="Rente référence">
-                  <NumberInput
-                    value={palier.referenceAmount}
-                    onChange={(referenceAmount) =>
-                      updateInvaliditePalier(palierIndex, { referenceAmount })
+                <SimFieldShell label="Formule">
+                  <SimSelect
+                    value={palier.mode}
+                    onChange={(mode) =>
+                      updateInvaliditePalier(palierIndex, {
+                        mode: mode as (typeof palier)['mode'],
+                      })
                     }
-                    suffix="€/an"
+                    options={[
+                      { value: 'fixed', label: 'Montant fixe' },
+                      { value: 'proportional_66', label: 'Taux / 66 × rente' },
+                    ]}
                   />
                 </SimFieldShell>
-              ) : (
-                <SimFieldShell label="Montant versé">
-                  <NumberInput
-                    value={palier.amount}
-                    onChange={(amount) => updateInvaliditePalier(palierIndex, { amount })}
-                    suffix="€/an"
-                  />
-                </SimFieldShell>
-              )}
-              <div className="prevoyance-side-note">
-                Affiché à {palier.fromRate} % :{' '}
-                {computeInvaliditePalierAmount(palier, palier.fromRate).toLocaleString('fr-FR')}{' '}
-                €/an
+                {palier.mode === 'proportional_66' ? (
+                  <SimFieldShell label="Rente référence">
+                    <NumberInput
+                      value={palier.referenceAmount}
+                      onChange={(referenceAmount) =>
+                        updateInvaliditePalier(palierIndex, { referenceAmount })
+                      }
+                      suffix="€/an"
+                    />
+                  </SimFieldShell>
+                ) : (
+                  <SimFieldShell label="Montant versé">
+                    <NumberInput
+                      value={palier.amount}
+                      onChange={(amount) => updateInvaliditePalier(palierIndex, { amount })}
+                      suffix="€/an"
+                    />
+                  </SimFieldShell>
+                )}
+                <div className="prevoyance-side-note prevoyance-invalidite-row__note">
+                  Affiché à {palier.fromRate} % :{' '}
+                  {computeInvaliditePalierAmount(palier, palier.fromRate).toLocaleString('fr-FR')}{' '}
+                  €/an
+                </div>
               </div>
             </div>
           ))}

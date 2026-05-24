@@ -51,7 +51,7 @@ function individualContract(
       franchises: { accident: 0, hospitalisation: 0, maladie: 0 },
       paliers: [{ fromDay: 0, toDay: 1095, amount }],
     },
-    invalidite: { paliers: [] },
+    invalidite: { indemnisation, paliers: [] },
     deces: {
       capital: 0,
       doublementAccident: false,

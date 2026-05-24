@@ -142,6 +142,8 @@ describe('PrevoyancePage', () => {
     expect(
       await screen.findByText('Choix du régime obligatoire et des ayants droit'),
     ).toBeInTheDocument();
+    expect(screen.getByLabelText('Enfants')).toHaveValue(null);
+    await waitFor(() => expect(screen.getByLabelText('Salaire brut annuel')).toHaveValue(''));
     expect(
       screen.queryByText('Garanties souscrites hors régime obligatoire'),
     ).not.toBeInTheDocument();
@@ -151,7 +153,7 @@ describe('PrevoyancePage', () => {
     await user.click(screen.getByRole('button', { name: /Salarié CPAM/i }));
     expect(screen.getByText('Salarié agricole — MSA')).toBeInTheDocument();
     expect(screen.queryByText('MSA salariés')).not.toBeInTheDocument();
-    expect(screen.getAllByText('Régime obligatoire').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('RO').length).toBeGreaterThan(0);
     expect(screen.queryByText(/Maintien employeur/i)).toBeNull();
   });
 
@@ -205,6 +207,11 @@ describe('PrevoyancePage', () => {
     await user.click(screen.getByRole('radio', { name: 'TNS / libéral' }));
     await user.click(screen.getByRole('button', { name: /Modifier Contrat 1/i }));
     await user.click(await screen.findByRole('button', { name: 'Invalidité' }));
+    await user.click(screen.getByRole('radio', { name: 'Forfaitaire' }));
+    expect(screen.getByRole('radio', { name: 'Forfaitaire' })).toHaveAttribute(
+      'aria-checked',
+      'true',
+    );
     await user.click(
       await screen.findByRole('button', {
         name: 'Ajouter un palier invalidité au contrat 1',
@@ -212,16 +219,20 @@ describe('PrevoyancePage', () => {
     );
 
     expect(screen.getAllByRole('button', { name: /Supprimer le palier invalidité/i })).toHaveLength(
-      3,
+      2,
     );
 
     await user.click(screen.getAllByRole('button', { name: /Supprimer le palier invalidité/i })[0]);
 
     await waitFor(() => {
-      expect(
-        screen.getAllByRole('button', { name: /Supprimer le palier invalidité/i }),
-      ).toHaveLength(2);
+      expect(screen.queryByRole('button', { name: /Supprimer le palier invalidité/i })).toBeNull();
     });
+
+    await user.click(screen.getByRole('button', { name: 'Arrêt de travail' }));
+    expect(screen.getByRole('radio', { name: 'Indemnitaire' })).toHaveAttribute(
+      'aria-checked',
+      'true',
+    );
   });
 
   it('ouvre la modale d’estimation des frais professionnels', async () => {
@@ -233,6 +244,8 @@ describe('PrevoyancePage', () => {
     expect((await screen.findAllByText('Frais professionnels')).length).toBeGreaterThan(0);
     await user.click(screen.getByRole('button', { name: /Modifier Contrat 1/i }));
     await user.click(await screen.findByRole('button', { name: 'Frais professionnels' }));
+    expect(screen.queryByRole('radio', { name: 'Indemnitaire' })).toBeNull();
+    expect(screen.queryByRole('radio', { name: 'Forfaitaire' })).toBeNull();
     await user.click(screen.getByRole('button', { name: /Estimer depuis un compte de résultat/i }));
 
     expect(

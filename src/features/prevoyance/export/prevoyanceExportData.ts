@@ -200,7 +200,9 @@ export function buildPrevoyanceExportData({
         name: contract.name,
         kind: contract.kind,
         indemnisationLabel:
-          contract.kind === 'individuel' ? contract.indemnisation : 'contrat collectif',
+          contract.kind === 'individuel'
+            ? `Arrêt ${contract.indemnisation} · Invalidité ${contract.invalidite.indemnisation}`
+            : 'contrat collectif',
         arretSummary: formatArret(contract),
         invaliditeSummary: formatInvalidite(contract),
         decesCapital: computeDecesCapitalFromContract(contract, annualBase),

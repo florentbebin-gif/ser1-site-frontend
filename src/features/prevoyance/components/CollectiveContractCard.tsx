@@ -113,11 +113,8 @@ export function CollectiveContractCard({
         <div className="prevoyance-mini-section">
           <span>Invalidité</span>
           {contract.invalidite.paliers.map((palier, palierIndex) => (
-            <div
-              key={`${palierIndex}-${palier.fromRate}-${palier.toRate ?? 'plus'}`}
-              className="prevoyance-invalidite-row"
-            >
-              <div className="prevoyance-form-grid prevoyance-form-grid--two">
+            <div key={palierIndex} className="prevoyance-invalidite-row">
+              <div className="prevoyance-invalidite-row__grid">
                 <SimFieldShell label="Déclenchement">
                   <NumberInput
                     value={palier.fromRate}
@@ -127,23 +124,23 @@ export function CollectiveContractCard({
                 </SimFieldShell>
                 <SimFieldShell label="Jusqu’à">
                   <NumberInput
-                    value={palier.toRate ?? 100}
+                    value={palier.toRate ?? 0}
                     onChange={(toRate) =>
                       updateInvaliditePalier(palierIndex, {
-                        toRate: toRate >= 100 ? null : toRate,
+                        toRate: toRate <= 0 || toRate >= 100 ? null : toRate,
                       })
                     }
                     suffix="%"
                   />
                 </SimFieldShell>
+                <SimFieldShell label="% salaire brut">
+                  <NumberInput
+                    value={palier.salairePct}
+                    onChange={(salairePct) => updateInvaliditePalier(palierIndex, { salairePct })}
+                    suffix="%"
+                  />
+                </SimFieldShell>
               </div>
-              <SimFieldShell label="% salaire brut">
-                <NumberInput
-                  value={palier.salairePct}
-                  onChange={(salairePct) => updateInvaliditePalier(palierIndex, { salairePct })}
-                  suffix="%"
-                />
-              </SimFieldShell>
             </div>
           ))}
         </div>

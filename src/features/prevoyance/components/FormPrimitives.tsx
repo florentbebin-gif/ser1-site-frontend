@@ -79,22 +79,26 @@ export function NumberInput({
   onChange,
   suffix,
   min,
+  ariaLabel,
 }: {
   value: number;
   onChange: (value: number) => void;
   suffix?: string;
   min?: number;
+  ariaLabel?: string;
 }) {
   const isEuro = suffix?.includes('€') ?? false;
+  const hasValue = Number.isFinite(value) && value > 0;
   return (
     <>
       <input
         type={isEuro ? 'text' : 'number'}
         inputMode={isEuro ? 'numeric' : undefined}
         min={min ?? 0}
-        value={isEuro ? formatIntegerInput(value) : Number.isFinite(value) ? value : 0}
+        value={hasValue ? (isEuro ? formatIntegerInput(value) : value) : ''}
         onChange={(event) => onChange(numberValue(event.target.value))}
         className="sim-field__control"
+        aria-label={ariaLabel}
       />
       {suffix ? <span className="sim-field__unit">{suffix}</span> : null}
     </>

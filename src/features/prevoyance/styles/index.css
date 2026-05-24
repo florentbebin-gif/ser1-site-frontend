@@ -309,16 +309,28 @@
 
 .prevoyance-invalidite-row {
   display: grid;
-  gap: 8px;
+  gap: 6px;
   border: 1px solid var(--color-c8);
   border-radius: 8px;
   background: color-mix(in srgb, var(--color-c7) 70%, var(--color-c4));
-  padding: 8px;
+  padding: 7px;
 }
 
 .prevoyance-invalidite-row__actions {
   display: flex;
   justify-content: flex-end;
+}
+
+.prevoyance-invalidite-row__grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  align-items: end;
+}
+
+.prevoyance-invalidite-row__note {
+  align-self: end;
+  padding-bottom: 8px;
 }
 
 .prevoyance-assiette-chip {
@@ -446,27 +458,33 @@
 
 .prevoyance-mini-chart__legend {
   display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
+  flex-wrap: nowrap;
+  gap: 5px;
+  align-items: center;
+  justify-content: center;
   color: var(--color-c9);
-  font-size: 11px;
+  font-size: 10px;
+  min-width: 0;
 }
 
 .prevoyance-mini-chart__legend span {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 4px;
+  min-width: 0;
   border: 1px solid var(--color-c8);
   border-radius: 999px;
   background: color-mix(in srgb, var(--color-c7) 80%, var(--color-c4));
-  padding: 4px 8px;
+  padding: 3px 6px;
+  white-space: nowrap;
 }
 
 .prevoyance-mini-chart__dot {
   display: inline-block;
-  width: 10px;
-  height: 10px;
+  width: 8px;
+  height: 8px;
   border-radius: 3px;
+  flex: 0 0 auto;
 }
 
 .prevoyance-threshold,
@@ -507,8 +525,8 @@
 .prevoyance-death-target__top {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 10px;
+  gap: 6px;
+  min-width: 0;
 }
 
 .prevoyance-death-target__top > span {
@@ -520,7 +538,7 @@
 .prevoyance-death-target__presets {
   display: inline-flex;
   gap: 4px;
-  margin-left: auto;
+  flex: 0 0 auto;
 }
 
 .prevoyance-death-target__preset {
@@ -544,6 +562,38 @@
   font-weight: 700;
 }
 
+.prevoyance-death-target__manual {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  min-width: 0;
+  margin-left: auto;
+  color: var(--color-c9);
+  font-size: 10px;
+  white-space: nowrap;
+}
+
+.prevoyance-death-target__manual-input {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  width: 74px;
+  min-width: 0;
+}
+
+.prevoyance-death-target__manual-input .sim-field__control {
+  min-height: 22px;
+  width: 54px;
+  padding: 2px 4px;
+  text-align: right;
+}
+
+.prevoyance-death-target__manual-input .sim-field__unit {
+  font-size: 10px;
+  min-width: auto;
+  margin-left: 0;
+}
+
 .prevoyance-donut {
   display: grid;
   width: 88px;
@@ -565,7 +615,7 @@
   position: absolute;
   inset: 14px;
   border-radius: 50%;
-  background: var(--color-c7);
+  background: var(--color-surface, #ffffff);
 }
 
 .prevoyance-donut span {
@@ -716,6 +766,7 @@
   .prevoyance-frais-inline-grid,
   .prevoyance-regime-picker,
   .prevoyance-frais-grid,
+  .prevoyance-invalidite-row__grid,
   .prevoyance-contract-editor__base-grid,
   .prevoyance-contract-editor__base-grid--collective {
     grid-template-columns: 1fr;

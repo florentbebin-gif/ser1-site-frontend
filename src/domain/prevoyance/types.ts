@@ -178,6 +178,7 @@ export type PrevoyanceContractDraft =
         paliers: PrevoyanceArretPalierDraft[];
       };
       invalidite: {
+        indemnisation: PrevoyanceIndemnisation;
         paliers: PrevoyanceInvaliditePalierDraft[];
       };
       deces: PrevoyanceDecesDraft;

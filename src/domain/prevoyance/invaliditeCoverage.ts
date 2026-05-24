@@ -79,7 +79,7 @@ function individualInvaliditePct(
     const palier = findInvaliditePalier(contract.invalidite.paliers, threshold);
     const amount = palier ? computeInvaliditePalierAmount(palier, threshold) : 0;
     return {
-      indemnisation: contract.indemnisation,
+      indemnisation: contract.invalidite.indemnisation,
       pct: percentOfReference(amount, referenceAnnual),
     };
   });

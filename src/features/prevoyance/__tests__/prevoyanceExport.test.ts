@@ -33,7 +33,7 @@ const exportData: PrevoyanceExportData = {
       id: 'contrat-1',
       name: 'Contrat 1',
       kind: 'individuel',
-      indemnisationLabel: 'forfaitaire',
+      indemnisationLabel: 'Arrêt forfaitaire · Invalidité forfaitaire',
       arretSummary: '0-1095 j : 180 €/j',
       invaliditeSummary: '33-66% : taux/66 x 30000 €',
       decesCapital: 240_000,

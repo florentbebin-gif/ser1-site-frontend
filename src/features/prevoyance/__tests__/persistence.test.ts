@@ -42,6 +42,7 @@ describe('persistence Prévoyance', () => {
     );
 
     expect(parsed?.contracts?.[0]).toMatchObject({
+      invalidite: { indemnisation: 'forfaitaire' },
       cotisation: { montantAnnuel: 1_500, dontMadelin: 1_500 },
     });
   });
