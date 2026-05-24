@@ -197,10 +197,12 @@ function SideCard({
   return (
     <section className="premium-card premium-card--guide sim-card--guide prevoyance-side-card">
       <div className="sim-card__header sim-card__header--bleed prevoyance-side-card__header">
-        <div className="sim-card__icon sim-card__icon--sm">
-          <SectionIcon name={icon} />
-        </div>
-        <h2>{title}</h2>
+        <h2 className="sim-card__title sim-card__title-row">
+          <span className="sim-card__icon sim-card__icon--sm">
+            <SectionIcon name={icon} size={13} />
+          </span>
+          <span>{title}</span>
+        </h2>
       </div>
       <div className="sim-divider sim-divider--tight" />
       {children}
