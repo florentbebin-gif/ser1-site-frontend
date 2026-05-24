@@ -33,10 +33,10 @@ Expliquer ce que SER1 couvre aujourd'hui, ce qui est deja exploitable, et les li
 
 ### Workflows actifs hors simulateurs
 
-| Surface     | Statut                   | Role metier principal                                                                                                                       |
-| ----------- | ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------- |
-| `/audit`    | actif, workflow prive P6 | Constituer un dossier patrimonial guide, persiste en session, exportable, et servant d'entree a `strategy`                                  |
-| `/strategy` | actif, workflow prive P7 | Produire des recommandations et projections a partir du draft audit courant, sans etre encore traite comme un simulateur `/sim/*` stabilise |
+| Surface     | Statut                   | Role metier principal                                                                                                                                                  |
+| ----------- | ------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `/audit`    | actif, workflow prive P6 | Constituer un dossier patrimonial guide, persiste en session, exportable, et servant d'entree a `strategy`                                                             |
+| `/strategy` | actif, workflow prive P7 | Produire des scénarios comparatifs et projections à partir du draft audit courant, avec validation CGP, sans être encore traité comme un simulateur `/sim/*` stabilisé |
 
 ### Regle de lecture
 
@@ -45,7 +45,7 @@ Expliquer ce que SER1 couvre aujourd'hui, ce qui est deja exploitable, et les li
 - Les taux, baremes et abattements modifiables vivent dans les settings et sont consommes par les simulateurs via le dossier fiscal unifie.
 - Les workflows `/audit` et `/strategy` sont actifs en runtime, mais ils restent des surfaces de travail guidees distinctes des simulateurs metier stabilises.
 - `/audit` porte la trajectoire P6 : dossier guide, export PPTX isolé dans la feature via `src/features/audit/export/exportAudit.ts`, et réutilisation attendue par la suite dans `strategy`.
-- `/strategy` porte la trajectoire P7 : recommandations et scénarios à partir du draft audit courant, avec export PPTX isolé dans `src/features/strategy/export/exportStrategy.ts`.
+- `/strategy` porte la trajectoire P7 : situation actuelle vs scénarios de réorientation patrimoniale, recommandations calculées par SER1 à partir de données validées, validation CGP et export PPTX isolé dans `src/features/strategy/export/exportStrategy.ts`.
 
 ## 1) IR
 

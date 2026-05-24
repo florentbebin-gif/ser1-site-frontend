@@ -82,6 +82,17 @@ Principes : épuré, lisible, respirant.
 - Tables : zebra `C7/WHITE`, borders C8, padding confortable.
 - Aide contextuelle champ : `SimInfoButton` uniquement, intégré dans le label du champ via `SimFieldShell label={ReactNode}`. Un lien ou bouton texte "Info" / "Comprendre" éloigné du champ est un écart UX.
 
+### Home — entrée scan documentaire IA
+
+- La Home garde la hiérarchie : `AUDIT & STRATÉGIE` en entrée métier principale, puis `SIMULATEURS` en bloc secondaire.
+- Le scan documentaire IA n'est pas un simulateur. Il prépare un dossier d'audit ; il doit donc être placé dans le bloc `AUDIT & STRATÉGIE`, avant le séparateur et avant la section `SIMULATEURS`.
+- Pattern cible desktop : deux actions dans le bloc central, de même famille visuelle que `hero-tile` :
+  - `Nouvelle stratégie` / audit manuel ;
+  - `Préparer un dossier par documents` / scan IA.
+- Si une seule action doit rester dominante, garder `Nouvelle stratégie` en premier et afficher le scan IA comme action secondaire alignée ou empilée sous la première, sans descendre dans la grille des simulateurs.
+- Le libellé public doit éviter "chat IA" ou "assistant". Préférer `Scan documentaire`, `Préparer un dossier par documents` ou `Traitement documentaire IA`.
+- Le flux ouvert par cette action doit afficher une revue guidée : documents, extraction, champs proposés, sources, score de confiance, actions `Valider`, `Corriger`, `Ignorer`, `Demander pièce complémentaire`. Pas de zone de chat libre CGP ↔ LLM.
+
 ### Modales
 
 - Overlay : `rgba(0,0,0,0.5)` (seul rgba autorisé).

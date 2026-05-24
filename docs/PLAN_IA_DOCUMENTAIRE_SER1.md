@@ -2,7 +2,7 @@
 
 > Date de cadrage : 2026-05-22
 >
-> Objectif : construire dans SER1 un parcours d'analyse patrimoniale assistée par IA, avec lecture documentaire, validation ciblée par le CGP, calculs SER1 déterministes, génération PPTX existante et dossier de conformité RGPD exploitable commercialement.
+> Objectif : construire dans SER1 un parcours d'analyse patrimoniale assistée par IA, avec lecture documentaire, complétion contrôlée de l'UX, validation ciblée par le CGP, calculs SER1 déterministes, génération PPTX existante et dossier de conformité RGPD exploitable commercialement.
 >
 > Ce plan est l'explosion détaillée du **P4 — Scan documentaire** de `docs/ROADMAP.md`.
 >
@@ -15,12 +15,15 @@
 La trajectoire recommandée est une **souveraineté contractuelle et applicative** pour la V1 :
 
 - SER1 reste la source de vérité du dossier, des calculs et du livrable.
-- Mistral AI Studio sert de fournisseur OCR + extraction structurée, sous DPA et avec demande Zero Data Retention (ZDR).
-- Les moteurs SER1 restent déterministes : l'IA prépare les entrées, pose des questions et rédige, mais ne remplace jamais les calculs.
+- Mistral AI Studio sert de fournisseur technique OCR + extraction structurée, sous DPA et avec demande Zero Data Retention (ZDR).
+- Au sens AI Act, SER1 assume le statut de fournisseur du système d'IA applicatif SER1 à risque limité ; Mistral est fournisseur du modèle GPAI / service OCR sous-jacent et le cabinet CGP est déployeur.
+- Les moteurs SER1 restent déterministes : l'IA prépare les entrées et les points de validation, mais ne remplace jamais les calculs.
+- La stratégie comparative P7 reste calculée par SER1 : situation actuelle vs scénario réorienté, hypothèses explicites, écarts chiffrés et validation CGP.
+- Les LLM ne rédigent pas l'étude client, ne produisent pas la recommandation finale et ne dialoguent pas librement avec le CGP. L'étude est générée par les calculateurs, règles, templates PPTX / Excel et textes contrôlés SER1.
 - Le CGP ne valide pas une grande table exhaustive : il valide seulement les points critiques, incertains ou contradictoires.
 - Les données envoyées aux appels LLM post-OCR sont pseudonymisées autant que possible.
 
-Point de vigilance : si Mistral OCR est utilisé, les documents bruts sont envoyés à Mistral pour l'OCR. La pseudonymisation intervient surtout après l'OCR, pour les appels d'analyse, de stratégie et de rédaction. Ce point doit être assumé contractuellement, pas masqué.
+Point de vigilance : si Mistral OCR est utilisé, les documents bruts sont envoyés à Mistral pour l'OCR. La pseudonymisation intervient surtout après l'OCR, pour les appels de structuration, complétion UX et détection d'incertitudes. Ce point doit être assumé contractuellement, pas masqué.
 
 ---
 
@@ -30,7 +33,7 @@ Point de vigilance : si Mistral OCR est utilisé, les documents bruts sont envoy
 
 | Offre Mistral                                | Usage                                                                           | Quand l'activer                                     |
 | -------------------------------------------- | ------------------------------------------------------------------------------- | --------------------------------------------------- |
-| **API pay-as-you-go** (`console.mistral.ai`) | Socle backend SER1 : OCR + extraction + chat                                    | Jour 1, c'est le socle technique                    |
+| **API pay-as-you-go** (`console.mistral.ai`) | Socle backend SER1 : OCR + extraction + complétion UX contrôlée                 | Jour 1, c'est le socle technique                    |
 | Le Chat Free / Pro perso                     | Tests internes équipe SER1                                                      | Optionnel, hors socle technique                     |
 | Le Chat Team                                 | Chat interne équipe avec espace partagé                                         | Pas nécessaire pour SER1                            |
 | **Mistral AI Studio Enterprise**             | ZDR contractualisé si nécessaire, SLA, support prioritaire, négociation directe | Bascule prévue au passage en production commerciale |
@@ -56,8 +59,7 @@ Ne pas confondre « abonnement Le Chat » (interface utilisateur) et « compte A
 | --------------------- | ------------------------------------- | ------------------------------------------------------------------------------------------------- |
 | OCR                   | `mistral-ocr-latest`                  | Lire PDF, images, scans, tableaux et restituer texte, tables, métadonnées et scores de confiance. |
 | Extraction structurée | Mistral Large 3 ou Mistral Medium 3.5 | Transformer les sorties OCR en JSON patrimonial sourcé, avec schéma strict.                       |
-| Questions CGP         | Mistral Large 3 ou Mistral Medium 3.5 | Poser uniquement les questions utiles pour lever les incertitudes et objectifs client.            |
-| Synthèse stratégie    | Mistral Large 3                       | Rédiger une analyse à partir des données validées et des sorties moteurs SER1.                    |
+| Points à valider      | Mistral Large 3 ou Mistral Medium 3.5 | Produire des questions fermées ou semi-fermées pour lever les incertitudes documentaires.         |
 | Mode économique       | Mistral Medium 3.5                    | Alternative pour extraction ou brouillons quand le coût doit être réduit.                         |
 
 Décision de départ : utiliser un seul fournisseur IA en V1 pour limiter la complexité DPA, logs, sécurité et support. Une architecture multi-fournisseur pourra être ajoutée plus tard uniquement si le contrôle qualité l'impose.
@@ -70,13 +72,13 @@ Paliers fonctionnels prévus :
 
 - Basic : Mistral seul.
 - Pro : Mistral + GPT-5.2.
-- Premium : Mistral + GPT-5.2 + Opus 4.7.
+- Premium : Mistral + GPT-5.2 (mêmes fournisseurs que Pro, quota IA élargi et fonctionnalités avancées). Aucun troisième fournisseur LLM n'est ajouté en V2 pour contenir la complexité réglementaire (DPA, SCC, AIPD par fournisseur).
 
 Aucun montant de prix ni pourcentage de plafond n'est versionné dans cette documentation. Les seuils commerciaux et limites chiffrées restent dans la documentation commerciale hors repo.
 
 La V2 multi-modèles est conditionnée à trois prérequis :
 
-- évals qualité prouvant que l'écart avec Mistral apporte une valeur réelle ;
+- évals qualité prouvant que l'écart avec Mistral apporte une valeur réelle sur extraction, complétion UX et réduction d'erreurs ;
 - DPA, ZDR et qualification RGPD obtenus pour les fournisseurs concernés ;
 - routage, logs et plafonds prêts côté SER1.
 
@@ -84,7 +86,7 @@ Risque : si la conformité des fournisseurs US échoue, les paliers Pro et Premi
 
 ### Règle d'or premium
 
-Aucun modèle premium ne peut être appelé avant pseudonymisation, validation JSON, score de complexité calculé par SER1, estimation du coût et vérification qu'un modèle moins cher ne suffit pas.
+Aucun modèle premium ne peut être appelé avant pseudonymisation, validation JSON, score de complexité calculé par SER1, estimation du coût et vérification qu'un modèle moins cher ne suffit pas. Le score de complexité est déterministe : type de document, faible confiance OCR, contradictions, présence de donation, démembrement, clause bénéficiaire, société, régime matrimonial complexe ou volume documentaire.
 
 ### Plafonds de consommation IA
 
@@ -96,13 +98,13 @@ Couche 1 — plafond par dossier dans le pipeline :
 - raisonnement plafonné ;
 - cache OCR par hash document ;
 - validation déterministe ;
-- gestion stricte du contexte du chat ;
+- pas de chat libre utilisateur ;
 - aucun dossier seul ne peut s'emballer.
 
 Couche 2 — plafond mensuel par utilisateur :
 
 - le dossier en cours se termine, même si le plafond est atteint pendant l'analyse ;
-- après épuisement, scan documentaire, assistant chat et synthèse IA sont coupés jusqu'au reset mensuel ;
+- après épuisement, scan documentaire, complétion IA et validation guidée enrichie sont coupés jusqu'au reset mensuel ;
 - simulateurs déterministes, saisie manuelle et exports PPTX / XLSX restent disponibles ;
 - le plafond couvre tout le coût fournisseur IA : OCR et inférence ;
 - la jauge est visible en unités métier, pas en tokens ni en pourcentage interne ;
@@ -126,7 +128,7 @@ flowchart LR
   E --> F["Validation ciblée CGP"]
   F --> G["Dossier patrimonial validé"]
   G --> H["Moteurs SER1"]
-  H --> I["Assistant stratégie"]
+  H --> I["Étude automatique SER1"]
   I --> J["PPTX SER1"]
 ```
 
@@ -262,12 +264,12 @@ Construire l'écran qui fait gagner du temps au CGP.
 
 ### Phase 6 — Pseudonymisation et appels LLM post-OCR
 
-Ajouter une couche de défense avant les appels d'analyse et de stratégie. Voir le § « Pseudonymisation — implémentation concrète » ci-après pour le détail technique.
+Ajouter une couche de défense avant les appels de structuration et de complétion UX. Voir le § « Pseudonymisation — implémentation concrète » ci-après pour le détail technique.
 
 1. Pseudonymiser les noms, adresses, emails, téléphones, numéros fiscaux, SIREN, NIR et identifiants documentaires quand ils ne sont pas utiles au raisonnement.
 2. Conserver la table de correspondance uniquement dans SER1.
-3. Envoyer au LLM de stratégie un dossier réduit : données patrimoniales validées, objectifs, contraintes, résultats moteurs.
-4. Ne pas envoyer les documents bruts au LLM de stratégie si l'OCR et l'extraction ont déjà produit les sources nécessaires.
+3. Envoyer au LLM de complétion un dossier réduit : texte OCR utile, champs candidats, sources, scores, contraintes de schéma et valeurs déjà connues.
+4. Ne pas envoyer les documents bruts aux modèles de complétion si l'OCR et l'extraction ont déjà produit les sources nécessaires.
 5. Ne pas présenter cette pseudonymisation comme une anonymisation RGPD : elle réduit le risque, mais les données restent personnelles.
 
 ### Phase 7 — Intégration moteurs SER1
@@ -287,33 +289,34 @@ Faire utiliser SER1 par l'IA, pas l'inverse.
    - trésorerie société ;
    - génération d'hypothèses PPTX.
 6. Le LLM ne reçoit pas le droit de modifier les résultats moteur.
-7. Chaque recommandation doit citer le calcul SER1 ou la donnée validée qui la justifie.
+7. Chaque piste stratégique doit citer le calcul SER1, la donnée validée ou l'hypothèse explicite qui la justifie.
+8. La comparaison stratégique doit distinguer au minimum : situation actuelle, scénario réorienté, gains / pertes de valorisation, effets de transmission, protection, revenus, liquidité, fiscalité et limites.
 
-### Phase 8 — Chat CGP dans SER1
+### Phase 8 — Validation guidée CGP sans chat libre
 
-Brancher un assistant utile, sobre et contrôlé.
+Remplacer le chat par une revue structurée des champs préremplis et des points à confirmer.
 
-1. Ajouter un chat rattaché au dossier patrimonial.
-2. L'assistant peut :
-   - expliquer les points manquants ;
-   - demander les objectifs du client ;
-   - proposer des hypothèses ;
-   - lancer les outils de calcul SER1 ;
-   - préparer une stratégie.
-3. L'assistant ne peut pas :
-   - finaliser l'étude sans validation CGP ;
-   - inventer un document ;
-   - remplacer une valeur validée ;
-   - contourner un point de validation obligatoire.
-4. Les questions doivent être courtes et actionnables :
-   - objectif de transmission ;
-   - horizon ;
-   - besoin de revenus ;
-   - tolérance au risque ;
-   - priorité fiscale ;
-   - contrainte familiale ;
-   - niveau de liquidité souhaité.
-5. Les réponses du CGP deviennent des données de dossier avec trace d'origine « déclaration CGP ».
+1. Ne pas ajouter de chat libre CGP ↔ LLM en V1.
+2. Afficher une file de validation rattachée au dossier patrimonial :
+   - champs proposés ;
+   - source document / page / extrait ;
+   - score de confiance ;
+   - raison de l'incertitude ;
+   - proposition de valeur normalisée ;
+   - action attendue du CGP.
+3. Actions autorisées :
+   - `Valider` ;
+   - `Corriger` ;
+   - `Ignorer` ;
+   - `Demander pièce complémentaire` ;
+   - `Marquer comme non applicable`.
+4. Questions autorisées : fermées ou semi-fermées, générées depuis un schéma SER1 et une liste de catégories métier. Exemple : objectif de transmission, horizon, besoin de revenus, tolérance au risque, priorité fiscale, contrainte familiale, liquidité souhaitée.
+5. Interdictions :
+   - zone de saisie libre envoyée directement au LLM ;
+   - réponse conversationnelle du LLM au CGP ;
+   - recommandation patrimoniale générée par LLM ;
+   - étude ou texte client rédigé par LLM.
+6. Les réponses du CGP deviennent des données de dossier avec trace d'origine « déclaration CGP ».
 
 ### Phase 9 — Génération PPTX
 
@@ -367,11 +370,12 @@ Formaliser les rôles avant la production.
 Préparer le cadre client.
 
 1. Ajouter une clause dans le mandat CGP (voir § « Modèles juridiques »).
-2. Expliquer que le cabinet utilise SER1 et un fournisseur IA encadré contractuellement pour assister l'analyse patrimoniale.
+2. Expliquer que le cabinet utilise SER1 et un fournisseur IA encadré contractuellement pour lire les documents, structurer les données et préremplir l'UX de validation.
 3. Indiquer que le traitement repose sur l'exécution du mandat ou l'intérêt légitime documenté, selon validation juridique.
 4. Prévoir une option d'opposition ou de traitement sans IA pour un dossier donné.
-5. Ne pas promettre que « rien ne sort » si Mistral OCR est utilisé.
-6. Promettre plutôt : traitement encadré, DPA, ZDR demandée ou active, chiffrement, accès limité, journalisation, suppression possible.
+5. Indiquer que les LLM ne rédigent pas l'étude finale et ne dialoguent pas librement avec le CGP dans SER1 V1.
+6. Ne pas promettre que « rien ne sort » si Mistral OCR est utilisé.
+7. Promettre plutôt : traitement encadré, DPA, ZDR demandée ou active, chiffrement, accès limité, journalisation, suppression possible.
 
 ### Phase C — DPA et sous-traitance
 
@@ -385,6 +389,7 @@ Construire le dossier contractuel.
 6. Prévoir une clause de suppression et restitution des données.
 7. Prévoir une clause d'audit documentaire raisonnable.
 8. Tenir un registre des versions contractuelles acceptées.
+9. Pour la V2 multi-modèles, répéter ces preuves pour chaque fournisseur avant activation : DPA, rétention, opt-out entraînement, ZDR ou équivalent, localisation, sous-traitants, transferts et procédure d'incident.
 
 ### Phase D — Registre RGPD article 30
 
@@ -393,7 +398,7 @@ Documenter le traitement.
 1. Finalité : assistance à l'analyse patrimoniale et génération d'une étude.
 2. Catégories de personnes : clients finaux, conjoint, enfants, associés, bénéficiaires, dirigeants.
 3. Catégories de données : identité, famille, patrimoine, fiscalité, revenus, dettes, contrats, actes juridiques, données sociétaires.
-4. Destinataires : utilisateurs autorisés du cabinet, SER1, Mistral AI selon contrat.
+4. Destinataires : utilisateurs autorisés du cabinet, SER1, Mistral AI selon contrat ; fournisseurs V2 uniquement s'ils sont activés et documentés.
 5. Durées de conservation : définir par type de donnée.
 6. Mesures de sécurité : chiffrement, RLS, accès rôle, URL signées, logs sans PII, suppression complète.
 7. Transferts hors UE : documenter selon le contrat Mistral et les sous-traitants effectifs.
@@ -407,10 +412,10 @@ Faire une analyse de risques avant production.
 2. Mesure : validation humaine obligatoire sur points critiques.
 3. Risque : document client envoyé à un fournisseur IA.
 4. Mesure : DPA, ZDR, minimisation, rétention limitée, fournisseur unique.
-5. Risque : hallucination de stratégie.
-6. Mesure : recommandations liées aux sources et aux calculs SER1.
+5. Risque : hallucination de complétion ou champ mal prérempli.
+6. Mesure : sources obligatoires, scores de confiance, règles de blocage, validation CGP journalisée, escalade modèle déterministe sur dossiers complexes.
 7. Risque : fuite via logs.
-8. Mesure : interdiction PII dans logs, rédaction automatique, tests.
+8. Mesure : interdiction PII dans logs, masquage automatique, tests.
 9. Risque : erreur de droits entre cabinets.
 10. Mesure : RLS cabinet, tests multi-tenant, chemins Storage cloisonnés.
 11. Risque : documents conservés trop longtemps.
@@ -422,10 +427,11 @@ Formaliser le rôle du CGP.
 
 1. SER1 fournit une aide à l'analyse, pas une décision autonome.
 2. Le CGP valide les données critiques avant génération finale.
-3. La validation est journalisée.
-4. Le PPTX final doit indiquer les hypothèses et limites pertinentes.
-5. Les corrections du CGP priment sur les extractions IA.
-6. Un dossier non validé reste en brouillon.
+3. Le CGP valide aussi le scénario stratégique retenu, les hypothèses modifiées, les pistes rejetées et les limites conservées.
+4. La validation est journalisée.
+5. Le PPTX final doit indiquer les hypothèses et limites pertinentes.
+6. Les corrections du CGP priment sur les extractions IA.
+7. Un dossier non validé reste en brouillon.
 
 ### Phase G — Page conformité SER1
 
@@ -493,15 +499,15 @@ Livrable : SER1 produit un JSON patrimonial sourcé, sans valeur non justifiée.
 
 Livrable : le CGP contrôle vite ce qui compte vraiment.
 
-### Lot 5 — Moteurs et assistant
+### Lot 5 — Moteurs et étude automatique
 
 1. Mapper le dossier validé vers les entrées moteurs.
 2. Lancer les calculs SER1.
-3. Construire le chat de questions objectifs.
-4. Générer une stratégie brouillon.
-5. Afficher les calculs justifiant les recommandations.
+3. Construire les questions objectifs sous forme de champs structurés, sans chat libre.
+4. Générer l'étude automatique depuis les calculateurs, templates et textes contrôlés SER1.
+5. Afficher les calculs justifiant les recommandations ou pistes retenues.
 
-Livrable : l'assistant travaille sur les calculs SER1, pas sur une intuition libre.
+Livrable : l'étude est produite par SER1 à partir des données validées, pas par un LLM.
 
 ### Lot 6 — PPTX et pilote cabinet
 
@@ -526,7 +532,7 @@ Hypothèse : 1 dev référent + Codex / Claude Code en assistance + 1 revue juri
 | Semaines 2-3  | Lot 2 — Prototype documentaire           | Upload + OCR fonctionnel sur 1 document                                       |
 | Semaines 4-5  | Lot 3 — Extraction sourcée               | JSON patrimonial V1 avec sources                                              |
 | Semaine 6     | Lot 4 — UX validation CGP                | Écran « X prêts / Y à confirmer » utilisable                                  |
-| Semaines 7-8  | Lot 5 — Moteurs + assistant              | Calculs SER1 branchés, stratégie brouillon                                    |
+| Semaines 7-8  | Lot 5 — Moteurs + étude automatique      | Calculs SER1 branchés, étude automatique SER1                                 |
 | Semaines 9-10 | Lot 6 — PPTX + pilote                    | Étude PPTX générée sur 10 dossiers pilotes                                    |
 
 Jalons clés :
@@ -631,12 +637,12 @@ Mistral indique que ZDR peut être demandé dans AI Studio, avec validation par 
 - Basculer l'extraction sur Mistral Medium 3.5 au lieu de Large 3.
 - Cache OCR par hash document (un document re-uploadé n'est pas re-OCRisé).
 - Structured output / JSON schema pour réduire les sorties inutiles et les erreurs.
-- Validation déterministe avant audit LLM.
+- Validation déterministe avant escalade LLM.
 - Prompt caching quand le fournisseur le permet.
 - Batch API si le traitement n'est pas temps réel.
 - Plafonnement reasoning / output.
 - Plafond de coût par dossier.
-- Opus jamais systématique.
+- Pas d'escalade au-delà de GPT-5.2 en V2 ; aucun troisième fournisseur LLM ajouté sans nouveau cadrage AI Act + RGPD.
 - Plafond mensuel SER1 par utilisateur avec dégradation gracieuse des fonctions IA.
 
 **Recommandation V1** : démarrer pay-as-you-go avec ZDR demandée. Basculer Enterprise dès le passage en production commerciale ou si un cabinet pilote l'exige contractuellement.
@@ -741,7 +747,7 @@ Si Microsoft Presidio (open source, service Python séparé) est jugé trop lour
 >
 > Après la lecture OCR, les données personnelles identifiantes (nom, adresse, identifiants fiscaux et bancaires) sont remplacées par des codes neutres avant les analyses par intelligence artificielle générative qui ne nécessitent pas le document brut. Le cabinet et SER1 n'envoient aucun feedback contenant des données client et n'activent aucun usage des données client pour l'entraînement des modèles. Cette garantie doit être confirmée par le contrat fournisseur applicable.
 >
-> Le cabinet conserve la maîtrise des recommandations finales, qui s'appuient sur les calculs déterministes de SER1 et sur la validation humaine des points sensibles (régime matrimonial, donations, démembrement, clauses bénéficiaires, etc.).
+> Le cabinet conserve la maîtrise des recommandations finales. Les stratégies comparatives s'appuient sur les calculs déterministes de SER1, les hypothèses validées et la validation humaine des points sensibles (régime matrimonial, donations, démembrement, clauses bénéficiaires, objectifs client, arbitrages de protection, transmission, revenus et liquidité, etc.).
 >
 > Vous pouvez à tout moment demander :
 >
@@ -847,13 +853,13 @@ Leviers de maîtrise :
 
 - modèles économiques pour le gros du travail ;
 - structured output / JSON schema ;
-- validation déterministe avant audit LLM ;
+- validation déterministe avant escalade LLM ;
 - prompt caching quand disponible ;
 - batch si le traitement n'est pas temps réel ;
 - plafonnement reasoning / output ;
 - cache OCR par hash document ;
 - plafond de coût par dossier ;
-- Opus jamais systématique.
+- Pas d'escalade au-delà de GPT-5.2 en V2 ; aucun troisième fournisseur LLM ajouté sans nouveau cadrage AI Act + RGPD.
 
 ### Principe tarifaire durable
 
@@ -861,7 +867,7 @@ SER1 retient un forfait fixe en 3 paliers fonctionnels, sans facturation au toke
 
 - Basic : IA Mistral seule quand P4 V1 est livré.
 - Pro : Mistral + GPT-5.2 quand la V2 multi-modèles est validée.
-- Premium : Mistral + GPT-5.2 + Opus 4.7 quand la V2 multi-modèles est validée.
+- Premium : Mistral + GPT-5.2 quand la V2 multi-modèles est validée, avec quota IA élargi et fonctionnalités avancées par rapport à Pro. Aucun troisième fournisseur LLM n'est ajouté en V2 : tout ajout (Anthropic, Google, autre) exige un nouveau cadrage AI Act + RGPD complet.
 
 Les paliers Pro et Premium ne sont déverrouillés que si les évals qualité et la conformité fournisseur valident l'usage des modèles concernés.
 
@@ -876,7 +882,8 @@ L'enjeu n'est pas de refacturer l'IA à l'usage ; c'est de construire une expér
 La V1 est acceptable seulement si :
 
 - aucune donnée critique n'est auto-validée sans source ;
-- aucune recommandation ne repose sur une valeur non validée ;
+- aucune recommandation ne repose sur une valeur non validée, une hypothèse implicite ou une sortie IA non contrôlée ;
+- chaque scénario stratégique est comparable à la situation actuelle et relié aux calculs SER1 ;
 - les contradictions documentaires sont remontées ;
 - les corrections CGP sont tracées ;
 - le PPTX reprend les hypothèses utiles ;

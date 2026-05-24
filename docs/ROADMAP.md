@@ -22,6 +22,7 @@ Aucun pilote payant ne démarre avant le socle commercialisation complet. Ce soc
 - branding cabinet limité à logo + couleurs dans les exports ;
 - dossiers clients durables ;
 - page conformité de base sécurité / RLS / hébergement ;
+- engagement volontaire AI Act SER1, auto-déclaratif, couplé à la page conformité ;
 - onboarding minimal.
 
 La facturation in-app ne fait pas partie du socle pré-pilote : les 5 à 15 premiers pilotes restent facturés manuellement.
@@ -37,7 +38,7 @@ Ordre d'exécution, sans créer de nouvelle phase :
 5. `PR-P6-03` prévoyance.
 6. P8 catalogue.
 
-L'analyse patrimoniale passe avant le scan IA : la saisie manuelle est la base, le LLM n'est qu'un booster qui préremplit l'AP. P4 ne peut pas avancer tant que l'AP manuelle n'est pas opérationnelle.
+L'analyse patrimoniale passe avant le scan IA : la saisie manuelle est la base, le LLM n'est qu'un booster qui préremplit l'AP. P4 ne peut pas avancer tant que l'AP manuelle n'est pas opérationnelle. P7 ne doit jamais transformer le LLM en conseiller autonome : SER1 calcule les scénarios, le CGP arbitre et valide. Aucun chat libre CGP ↔ LLM n'est prévu dans la V1.
 
 ## Principes non négociables
 
@@ -187,13 +188,15 @@ Reste :
 
 Objectif : préremplir l'analyse patrimoniale depuis des documents, avec relecture humaine.
 
-Parcours fiable commercialement : OCR + guide documentaire + JSON strict + score de confiance + `sourceRef` + validation CGP. Le LLM reste un booster ; la base est la saisie manuelle de l'analyse patrimoniale, qui doit être opérationnelle avant P4.
+Parcours fiable commercialement : OCR + guide documentaire + JSON strict + score de confiance + `sourceRef` + validation CGP. Le LLM reste un moteur de complétion contrôlée : il lit, structure et préremplit l'UX, mais ne dialogue pas librement avec le CGP et ne rédige pas l'étude. La base reste la saisie manuelle de l'analyse patrimoniale, qui doit être opérationnelle avant P4.
+
+Intégration Home cible : le scan documentaire IA est une entrée de dossier rattachée à `AUDIT & STRATÉGIE`, pas un simulateur. Sur la Home, ajouter une action « Préparer un dossier par documents » dans le bloc central, avant le séparateur et avant `SIMULATEURS`. Ne pas la placer sous les simulateurs : elle prépare l'audit, elle ne calcule pas un module fiscal autonome.
 
 Plan détaillé : [`docs/PLAN_IA_DOCUMENTAIRE_SER1.md`](./PLAN_IA_DOCUMENTAIRE_SER1.md) (cadrage fournisseur Mistral, dev SER1 en 10 phases, conformité RGPD A-G, calendrier, coûts).
 
 Runbook opérationnel Mistral : [`docs/RUNBOOK_MISTRAL_SER1.md`](./RUNBOOK_MISTRAL_SER1.md) (admin.mistral.ai, console.mistral.ai, clés API, limites, OCR, Files, Batches, ZDR).
 
-P4 V1 déverrouille uniquement l'IA Mistral du palier Basic. Les paliers Pro et Premium attendent la V2 multi-modèles documentée dans le plan IA, après validation qualité et conformité fournisseur.
+P4 V1 déverrouille uniquement l'IA Mistral du palier Basic. Les paliers Pro et Premium attendent la V2 multi-modèles documentée dans le plan IA, après validation qualité et conformité fournisseur. L'escalade Mistral -> GPT-5.2 est une escalade qualité d'extraction / complétion déclenchée par règles SER1 déterministes, jamais un routage décidé par le LLM. SER1 plafonne volontairement la V2 à deux fournisseurs (Mistral + GPT-5.2) pour contenir la complexité réglementaire ; tout troisième fournisseur LLM exige un nouveau cadrage AI Act et RGPD complet.
 
 ## PR-P4-01 - Décision infra + confidentialité
 
@@ -209,7 +212,7 @@ P4 V1 déverrouille uniquement l'IA Mistral du palier Basic. Les paliers Pro et 
 ## PR-P4-03 - Intégration analyse patrimoniale
 
 - Réinjecter les données validées dans le workflow audit.
-- Couvert par les Lots 5 et 6 du plan détaillé (moteurs SER1, assistant, PPTX, pilote cabinet).
+- Couvert par les Lots 5 et 6 du plan détaillé (moteurs SER1, étude automatique, PPTX, pilote cabinet).
 
 ---
 
@@ -243,6 +246,33 @@ P5 porte le bloc central du socle commercialisation pré-pilote. Le périmètre 
 - Publier une page conformité de base : sécurité, RLS, hébergement et limites de responsabilité.
 - Ajouter un onboarding minimal pour les cabinets pilotes.
 - Le volet IA fournisseur / DPA / ZDR / pseudonymisation enrichit cette page à la livraison de P4.
+- Intègre l'engagement volontaire AI Act SER1 produit par `PR-P5-06`.
+
+## PR-P5-06 - Conformité AI Act et engagement volontaire
+
+Statut : `à faire`
+
+Périmètre validé :
+
+- France uniquement.
+- SER1 assume le statut de fournisseur du système d'IA applicatif SER1 à risque limité : orchestration Mistral, prompts, extraction structurée, préremplissage, validation guidée, UX et exports sous marque SER1.
+- Mistral reste fournisseur du modèle GPAI / service OCR sous-jacent ; le cabinet CGP est déployeur.
+- Les moteurs fiscaux déterministes (`src/engine/**`), les règles métier SER1 et les recommandations algorithmiques hors LLM sont explicitement exclus du périmètre AI Act, sauf si une évolution introduit une inférence IA dans leur décision.
+- Cible : afficher un engagement volontaire AI Act SER1, auto-déclaratif, au-delà du minimum réglementaire. Ne pas parler de label ou de certification officielle tant qu'aucun cadre externe n'est retenu.
+- Échéance : couplé à `PR-P5-05`, livré avant le premier pilote payant.
+
+Travaux :
+
+- Produire le cadrage juridique (`docs/AI_ACT_CADRAGE.md`) : table obligation × article × échéance × statut SER1, en s'appuyant sur le règlement (UE) 2024/1689 et les guidances CNIL.
+- Inventorier les systèmes IA SER1 (section dédiée dans `docs/AI_ACT_CADRAGE.md`) et justifier la classification de risque limité, rôle SER1 fournisseur applicatif, Mistral fournisseur modèle / OCR, cabinet CGP déployeur.
+- Décliner la transparence art. 50 en éléments UI (section dédiée dans `docs/AI_ACT_CADRAGE.md`) : mention « assisté par IA », marquage des champs préremplis, badge exports PPTX / Excel.
+- Documenter les obligations techniques (section dédiée dans `docs/AI_ACT_CADRAGE.md`) : journalisation, suivi qualité, AI literacy SER1 + CGP, registre IA interne, prompts versionnés, limites d'usage, gestion incidents.
+- Intégrer le résultat dans la page conformité `PR-P5-05`, dans les CGU et dans le footer / onboarding cabinet.
+- Préparer le rendu UI de l'engagement volontaire AI Act SER1 (page conformité, footer, onboarding).
+
+Articulation avec P4 :
+
+- Si P4 n'est pas livré avant le premier pilote, l'engagement se réduit à la déclaration « pas de système IA en production » ; les livrables documentaires restent prêts et sont activés à la livraison du scan Mistral.
 
 ---
 
@@ -268,9 +298,16 @@ Objectif : transformer les simulateurs stabilisés en livrables client-ready, sa
 
 Objectif : durcir la chaîne audit → stratégie → export, avec des scénarios comparables et des résultats cohérents avec les moteurs SER1.
 
+Doctrine P7 : le CGP décrit les objectifs client, SER1 construit des scénarios comparatifs et les moteurs déterministes chiffrent les effets. L'IA peut aider à repérer des incohérences documentaires en amont, mais elle ne décide pas la recommandation finale.
+
+Le livrable client est généré par les calculateurs et templates SER1 à partir des données validées dans l'app web. Les LLM ne rédigent pas l'étude et ne disposent pas d'un chat libre avec le CGP.
+
 ## PR-P7-01 - Moteur de scénarios
 
-- Comparer baseline et recommandations.
+- Comparer la situation actuelle et un ou plusieurs scénarios de réorientation patrimoniale.
+- Afficher les écarts de valorisation, transmission, fiscalité, revenus, protection, liquidité et limites.
+- Exiger que chaque recommandation ou piste stratégique renvoie à une donnée validée, une hypothèse explicite ou un calcul SER1.
+- Journaliser la validation CGP : scénario retenu, hypothèses modifiées, pistes rejetées et limites conservées.
 
 ## PR-P7-02 - Société fine
 
