@@ -51,10 +51,17 @@ const baseData: PrevoyanceRegimeSettings['data'] = {
   cotisations: { mode: 'none', value: null },
 };
 
-const sources = {
-  fiche: 'Mémento 2026',
-  pagesPdf: [1],
-  noteValidation: 'Test',
+const sources: PrevoyanceRegimeSettings['sources'] = {
+  references: [
+    {
+      organisme: 'Source de test',
+      titre: 'Barème de test',
+      url: 'https://example.test/prevoyance',
+      dateConsultation: '2026-05-24',
+      valeursCouvertes: ['test'],
+      confiance: 'haute',
+    },
+  ],
 };
 
 const regimes: PrevoyanceRegimeSettings[] = [
@@ -183,7 +190,7 @@ describe('PrevoyancePage', () => {
     expect(screen.getByText('Salarié agricole — MSA')).toBeInTheDocument();
     expect(screen.queryByText('MSA salariés')).not.toBeInTheDocument();
     expect(screen.getAllByText('RO').length).toBeGreaterThan(0);
-    expect(screen.queryByText(/Maintien employeur/i)).toBeNull();
+    expect(screen.getByText('empl')).toBeInTheDocument();
     act(() => {
       triggerPageReset('prevoyance');
     });

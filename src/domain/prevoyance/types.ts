@@ -73,10 +73,25 @@ export interface PrevoyanceRegimeComposition {
   componentCodes: string[];
 }
 
+export type PrevoyanceSourceConfidence = 'haute' | 'moyenne' | 'faible';
+
+export interface PrevoyanceSourceReference {
+  organisme: string;
+  titre: string;
+  url: string;
+  datePublication?: string;
+  dateConsultation: string;
+  rubrique?: string;
+  articleCode?: string;
+  pagePdf?: number;
+  valeursCouvertes: string[];
+  confiance: PrevoyanceSourceConfidence;
+  noteAdmin?: string;
+}
+
 export interface PrevoyanceSources {
-  fiche: string;
-  pagesPdf: number[];
-  noteValidation: string;
+  references: PrevoyanceSourceReference[];
+  noteAdmin?: string;
 }
 
 export interface PrevoyanceRegimeData {

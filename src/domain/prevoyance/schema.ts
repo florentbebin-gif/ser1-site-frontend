@@ -101,9 +101,26 @@ const compositionSchema = z
 
 export const prevoyanceSourcesSchema = z
   .object({
-    fiche: z.string().min(1),
-    pagesPdf: z.array(z.number().int().positive()),
-    noteValidation: z.string().min(1),
+    references: z
+      .array(
+        z
+          .object({
+            organisme: z.string().min(1),
+            titre: z.string().min(1),
+            url: z.url(),
+            datePublication: z.string().min(1).optional(),
+            dateConsultation: z.string().min(1),
+            rubrique: z.string().min(1).optional(),
+            articleCode: z.string().min(1).optional(),
+            pagePdf: z.number().int().positive().optional(),
+            valeursCouvertes: z.array(z.string().min(1)).min(1),
+            confiance: z.enum(['haute', 'moyenne', 'faible']),
+            noteAdmin: z.string().min(1).optional(),
+          })
+          .strict(),
+      )
+      .min(1),
+    noteAdmin: z.string().min(1).optional(),
   })
   .strict();
 

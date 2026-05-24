@@ -81,6 +81,20 @@ function MiniArretEuroChart({ chart }: { chart: ReturnType<typeof buildArretEuro
                     title={`Régime obligatoire : ${euro(period.roEuro)}/j`}
                   />
                 )}
+                {period.maintienEuro > 0 ? (
+                  <span
+                    className="prevoyance-mini-chart__segment prevoyance-mini-chart__segment--maintien"
+                    style={
+                      {
+                        '--prevoyance-segment-height': segmentHeight(
+                          period.maintienEuro,
+                          chart.reference,
+                        ),
+                      } as CSSProperties
+                    }
+                    title={`Maintien employeur : ${euro(period.maintienEuro)}/j`}
+                  />
+                ) : null}
                 <span
                   className="prevoyance-mini-chart__segment prevoyance-mini-chart__segment--contrat"
                   style={
@@ -165,7 +179,7 @@ function MiniInvaliditePctChart({ chart }: { chart: ReturnType<typeof buildInval
   );
 }
 
-function MiniChartLegend() {
+function MiniChartLegend({ showMaintien = false }: { showMaintien?: boolean }) {
   return (
     <div className="prevoyance-mini-chart__legend">
       <span>
@@ -176,6 +190,12 @@ function MiniChartLegend() {
         <i className="prevoyance-mini-chart__dot prevoyance-mini-chart__dot--ro" />
         RO
       </span>
+      {showMaintien ? (
+        <span>
+          <i className="prevoyance-mini-chart__dot prevoyance-mini-chart__dot--maintien" />
+          empl
+        </span>
+      ) : null}
       <span>
         <i className="prevoyance-mini-chart__dot prevoyance-mini-chart__dot--contrat" />
         Contrats
@@ -397,7 +417,7 @@ export function Sidebar({
 
   return (
     <div className="prevoyance-sidebar">
-      <SideCard title="Arrêt de travail" icon="arret" actions={<MiniChartLegend />}>
+      <SideCard title="Arrêt de travail" icon="arret" actions={<MiniChartLegend showMaintien />}>
         <MiniArretEuroChart chart={arretChart} />
         {kind === 'individuel' ? (
           <div className="prevoyance-frais-inline-kpi">

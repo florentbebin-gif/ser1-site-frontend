@@ -33,7 +33,18 @@ function regime(
       cotisations: { mode: 'none', value: null },
       ...data,
     },
-    sources: { fiche: 'test', pagesPdf: [], noteValidation: 'test' },
+    sources: {
+      references: [
+        {
+          organisme: 'Test',
+          titre: 'Référence de test',
+          url: 'https://example.com/prevoyance-test',
+          dateConsultation: '2026-05-24',
+          valeursCouvertes: ['test'],
+          confiance: 'haute',
+        },
+      ],
+    },
   };
 }
 

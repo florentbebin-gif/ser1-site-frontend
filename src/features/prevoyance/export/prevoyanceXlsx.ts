@@ -72,36 +72,53 @@ function buildContractsSheet(data: PrevoyanceExportData): XlsxSheet {
 
 function buildCoverageSheet(data: PrevoyanceExportData): XlsxSheet {
   const rows: XlsxSheet['rows'] = [
-    [sec('Arrêt de travail'), sec(''), sec(''), sec('')],
-    [h('Période'), h('Couverture totale'), h('Régime obligatoire'), h('Contrats')],
+    [sec('Arrêt de travail'), sec(''), sec(''), sec(''), sec('')],
+    [
+      h('Période'),
+      h('Couverture totale'),
+      h('Régime obligatoire'),
+      h('Maintien employeur'),
+      h('Contrats'),
+    ],
   ];
 
   for (const bar of data.coverage.arret) {
-    const ro = bar.segments.find((segment) => segment.kind === 'ro')?.valuePct ?? 0;
-    const contrat = bar.segments.find((segment) => segment.kind === 'contrat')?.valuePct ?? 0;
-    rows.push([text(bar.label), pct(bar.totalPct), pct(ro), pct(contrat)]);
+    const ro = bar.segments
+      .filter((segment) => segment.kind === 'ro')
+      .reduce((sum, segment) => sum + segment.valuePct, 0);
+    const maintien = bar.segments
+      .filter((segment) => segment.kind === 'maintien')
+      .reduce((sum, segment) => sum + segment.valuePct, 0);
+    const contrat = bar.segments
+      .filter((segment) => segment.kind === 'contrat')
+      .reduce((sum, segment) => sum + segment.valuePct, 0);
+    rows.push([text(bar.label), pct(bar.totalPct), pct(ro), pct(maintien), pct(contrat)]);
   }
 
   rows.push([]);
-  rows.push([sec('Invalidité'), sec(''), sec(''), sec('')]);
-  rows.push([h('Seuil'), h('Couverture totale'), h('Régime obligatoire'), h('Contrats')]);
+  rows.push([sec('Invalidité'), sec(''), sec(''), sec(''), sec('')]);
+  rows.push([h('Seuil'), h('Couverture totale'), h('Régime obligatoire'), h('Contrats'), sec('')]);
 
   for (const bar of data.coverage.invalidite) {
-    const ro = bar.segments.find((segment) => segment.kind === 'ro')?.valuePct ?? 0;
-    const contrat = bar.segments.find((segment) => segment.kind === 'contrat')?.valuePct ?? 0;
-    rows.push([text(bar.label), pct(bar.totalPct), pct(ro), pct(contrat)]);
+    const ro = bar.segments
+      .filter((segment) => segment.kind === 'ro')
+      .reduce((sum, segment) => sum + segment.valuePct, 0);
+    const contrat = bar.segments
+      .filter((segment) => segment.kind === 'contrat')
+      .reduce((sum, segment) => sum + segment.valuePct, 0);
+    rows.push([text(bar.label), pct(bar.totalPct), pct(ro), pct(contrat), '']);
   }
 
   rows.push([]);
-  rows.push([sec('Décès'), sec(''), sec(''), sec('')]);
-  rows.push(['Cible décès', money(data.coverage.decesTarget), '', '']);
-  rows.push(['Capital décès couvert', money(data.coverage.decesCapital), '', '']);
+  rows.push([sec('Décès'), sec(''), sec(''), sec(''), sec('')]);
+  rows.push(['Cible décès', money(data.coverage.decesTarget), '', '', '']);
+  rows.push(['Capital décès couvert', money(data.coverage.decesCapital), '', '', '']);
   rows.push([]);
-  rows.push([sec('Frais généraux'), sec(''), sec(''), sec('')]);
-  rows.push(['Assiette estimée', money(data.coverage.fraisProEstimated), '', '']);
-  rows.push(['Frais généraux couverts', money(data.coverage.fraisProCovered), '', '']);
+  rows.push([sec('Frais généraux'), sec(''), sec(''), sec(''), sec('')]);
+  rows.push(['Assiette estimée', money(data.coverage.fraisProEstimated), '', '', '']);
+  rows.push(['Frais généraux couverts', money(data.coverage.fraisProCovered), '', '', '']);
 
-  return { name: 'Couverture', rows, columnWidths: [26, 20, 22, 18] };
+  return { name: 'Couverture', rows, columnWidths: [26, 20, 22, 22, 18] };
 }
 
 function buildCotisationsSheet(data: PrevoyanceExportData): XlsxSheet {

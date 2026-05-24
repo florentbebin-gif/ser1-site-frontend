@@ -1,5 +1,5 @@
 -- Seed 2026 : régimes obligatoires de prévoyance.
--- Les montants RO précis doivent rester validés métier depuis le Mémento avant usage conseil.
+-- Les montants RO précis doivent rester validés métier depuis les sources officielles avant usage conseil.
 
 WITH regimes (
   code,
@@ -249,7 +249,7 @@ SELECT
         )
       ),
       'notes',
-      jsonb_build_array('À contrôler contre la fiche Mémento 2026 de la caisse avant diffusion.')
+      jsonb_build_array('À contrôler contre la source officielle de la caisse avant diffusion.')
     ),
     'invalidite',
     jsonb_build_object(
@@ -313,9 +313,18 @@ SELECT
     )
   ),
   jsonb_build_object(
-    'fiche', 'Mémento 2026',
-    'pagesPdf', to_jsonb(pdf_pages),
-    'noteValidation', 'Seed préparatoire : extraction à relire et valider manuellement avant usage métier.'
+    'references',
+    jsonb_build_array(
+      jsonb_build_object(
+        'organisme', caisse,
+        'titre', 'Référentiel prévoyance 2026 à vérifier auprès de la caisse',
+        'url', 'https://www.service-public.fr/particuliers/vosdroits/F3053',
+        'dateConsultation', '2026-05-24',
+        'valeursCouvertes', jsonb_build_array('arret', 'invalidite', 'deces', 'cotisations'),
+        'confiance', 'faible',
+        'noteAdmin', 'Seed préparatoire : remplacer par la source officielle de chaque caisse.'
+      )
+    )
   )
 FROM regimes
 ON CONFLICT (code) DO UPDATE SET
@@ -407,9 +416,20 @@ VALUES (
     )
   ),
   jsonb_build_object(
-    'fiche', 'Code du travail',
-    'pagesPdf', jsonb_build_array(),
-    'noteValidation', 'Barème légal de mensualisation à relire avant livraison métier.'
+    'references',
+    jsonb_build_array(
+      jsonb_build_object(
+        'organisme', 'Service-Public.fr',
+        'titre', 'Arrêt maladie salarié : maintien employeur',
+        'url', 'https://www.service-public.fr/particuliers/vosdroits/F3053',
+        'dateConsultation', '2026-05-24',
+        'rubrique', 'Maintien du salaire par l''employeur',
+        'articleCode', 'Code du travail',
+        'valeursCouvertes', jsonb_build_array('maintien_employeur'),
+        'confiance', 'haute'
+      )
+    ),
+    'noteAdmin', 'Barème légal de mensualisation à relire avant livraison métier.'
   )
 )
 ON CONFLICT (code) DO UPDATE SET

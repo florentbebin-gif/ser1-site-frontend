@@ -60,9 +60,10 @@ const exportData: PrevoyanceExportData = {
       {
         key: '0-1095',
         label: '0 à 1095 j',
-        totalPct: 82,
+        totalPct: 102,
         segments: [
           { kind: 'ro', label: 'Régime obligatoire', valuePct: 12 },
+          { kind: 'maintien', label: 'Maintien employeur', valuePct: 20 },
           { kind: 'contrat', label: 'Contrats de prévoyance', valuePct: 70 },
         ],
       },
@@ -111,6 +112,13 @@ describe('exports Prévoyance', () => {
     ]);
 
     const blob = await buildPrevoyanceXlsxBlob(exportData, DEFAULT_COLORS.c1, DEFAULT_COLORS.c7);
+    expect(sheets[2]?.rows[1]).toEqual([
+      { v: 'Période', style: 'sHeader' },
+      { v: 'Couverture totale', style: 'sHeader' },
+      { v: 'Régime obligatoire', style: 'sHeader' },
+      { v: 'Maintien employeur', style: 'sHeader' },
+      { v: 'Contrats', style: 'sHeader' },
+    ]);
     expect(blob.size).toBeGreaterThan(0);
     await expect(validateXlsxBlob(blob)).resolves.toBe(true);
 

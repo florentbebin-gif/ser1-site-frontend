@@ -2,55 +2,22 @@ import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import { useUserRole } from '@/auth/useUserRole';
 import { UserInfoBanner } from '@/components/UserInfoBanner';
 import SettingsTitleWithIcon from '@/components/settings/SettingsTitleWithIcon';
-import { SimModalShell } from '@/components/ui/sim';
 import { PREVOYANCE_MAINTIEN_LEGAL_CODE } from '@/domain/prevoyance/constants';
-import {
-  formatPrevoyanceSchemaError,
-  prevoyanceMaintienEmployeurSettingsSchema,
-  prevoyanceRegimeDataSchema,
-  prevoyanceRegimeSettingsSchema,
-  prevoyanceSourcesSchema,
-} from '@/domain/prevoyance/schema';
 import type {
-  PrevoyanceMaintienEmployeurSettings,
+  PrevoyanceRegimeData,
   PrevoyanceRegimeSettings,
+  PrevoyanceSources,
 } from '@/domain/prevoyance/types';
 import { usePrevoyanceSettings } from '@/hooks/usePrevoyanceSettings';
-import {
-  upsertPrevoyanceMaintienEmployeurSettings,
-  upsertPrevoyanceRegimeSettings,
-} from '@/utils/cache/prevoyanceSettingsCache';
+import { EditModal, type EditorTarget } from './PrevoyanceRegimesEditModal';
 import './styles/prevoyance-regimes.css';
 
-type EditorTarget =
-  | { type: 'regime'; value: PrevoyanceRegimeSettings }
-  | { type: 'maintien'; value: PrevoyanceMaintienEmployeurSettings };
-
-interface EditorState {
-  code: string;
-  label: string;
-  caisse: string;
-  population: PrevoyanceRegimeSettings['population'];
-  defaultContractKind: PrevoyanceRegimeSettings['defaultContractKind'];
-  year: string;
-  dataJson: string;
-  sourcesJson: string;
-}
-
-const POPULATION_OPTIONS: Array<PrevoyanceRegimeSettings['population']> = [
-  'salarie',
-  'tns',
-  'liberal',
-  'exploitant_agricole',
-  'avocat',
-];
-
-function toJson(value: unknown): string {
-  return JSON.stringify(value, null, 2);
-}
-
-function parseJson(raw: string): unknown {
-  return raw.trim() ? JSON.parse(raw) : {};
+function formatEuro(value: number): string {
+  return new Intl.NumberFormat('fr-FR', {
+    style: 'currency',
+    currency: 'EUR',
+    maximumFractionDigits: 2,
+  }).format(value);
 }
 
 function formatRegimeType(regime: PrevoyanceRegimeSettings): string {
@@ -63,6 +30,22 @@ function formatAmountLabel(value: { label?: string; value?: number | null } | nu
   if (!value) return 'Non prévu';
   if (value.label) return value.label;
   return value.value === null || value.value === undefined ? 'Formule régime' : `${value.value}`;
+}
+
+function formatCotisationLabel(cotisations: PrevoyanceRegimeData['cotisations']): string {
+  if (cotisations.notes?.[0]) return cotisations.notes[0];
+  if (cotisations.mode === 'none') return 'Aucune cotisation obligatoire renseignée.';
+  if (cotisations.value === null) return 'Cotisation calculée selon formule caisse.';
+  if (cotisations.mode === 'fixed_eur') return `Forfait ${formatEuro(cotisations.value)}`;
+  return `${cotisations.value}% de l'assiette documentée.`;
+}
+
+function sourceSummary(sources: PrevoyanceSources): string {
+  if (sources.references.length === 0) return 'Références à compléter';
+  return sources.references
+    .slice(0, 2)
+    .map((reference) => `${reference.organisme} - ${reference.titre}`)
+    .join(', ');
 }
 
 function RegimeColumn({ title, children }: { title: string; children: ReactNode }) {
@@ -89,6 +72,8 @@ function RegimePanel({
 }) {
   const firstArret = regime.data.arret.paliers[0];
   const firstInvalidite = regime.data.invalidite.paliers[1] ?? regime.data.invalidite.paliers[0];
+  const sourceFooter =
+    canEdit && regime.sources.noteAdmin ? regime.sources.noteAdmin : sourceSummary(regime.sources);
 
   return (
     <article className="prevoyance-settings-regime">
@@ -98,9 +83,12 @@ function RegimePanel({
         onClick={onToggle}
         aria-expanded={isOpen}
       >
-        <span>
-          <strong>{regime.label}</strong>
-          <span>{regime.caisse}</span>
+        <span className="prevoyance-settings-regime__heading">
+          <span className="fisc-acc-chevron">{isOpen ? 'v' : '>'}</span>
+          <span>
+            <strong>{regime.label}</strong>
+            <span>{regime.caisse}</span>
+          </span>
         </span>
         <span className="prevoyance-settings-regime__meta">
           <span className="prevoyance-settings-badge">{formatRegimeType(regime)}</span>
@@ -152,25 +140,48 @@ function RegimePanel({
                 </div>
               </dl>
             </RegimeColumn>
-            <RegimeColumn title="Cotisations & maintien">
-              <p>{regime.data.cotisations.notes?.[0] ?? 'Cotisations non documentées.'}</p>
+            <RegimeColumn title="Cotisations">
+              <p>{formatCotisationLabel(regime.data.cotisations)}</p>
               <dl>
-                <div>
-                  <dt>Mode</dt>
-                  <dd>{regime.data.cotisations.mode}</dd>
-                </div>
-                <div>
-                  <dt>Source</dt>
-                  <dd>{regime.sources.fiche}</dd>
-                </div>
+                {regime.data.cotisations.assiette ? (
+                  <div>
+                    <dt>Assiette</dt>
+                    <dd>{regime.data.cotisations.assiette}</dd>
+                  </div>
+                ) : null}
+                {regime.data.cotisations.repartition ? (
+                  <div>
+                    <dt>Répartition</dt>
+                    <dd>
+                      {regime.data.cotisations.repartition.employeur}% /{' '}
+                      {regime.data.cotisations.repartition.salarie}%
+                    </dd>
+                  </div>
+                ) : null}
               </dl>
+            </RegimeColumn>
+            <RegimeColumn title="Références">
+              <ul className="prevoyance-settings-sources">
+                {regime.sources.references.slice(0, 3).map((reference) => (
+                  <li key={`${reference.organisme}-${reference.titre}-${reference.url}`}>
+                    <a href={reference.url} target="_blank" rel="noreferrer">
+                      {reference.organisme}
+                    </a>
+                    <span>{reference.titre}</span>
+                    <small>
+                      {reference.rubrique ? `${reference.rubrique} - ` : ''}
+                      consulté le {reference.dateConsultation}
+                    </small>
+                  </li>
+                ))}
+              </ul>
             </RegimeColumn>
           </div>
 
           <div className="prevoyance-settings-regime__footer">
-            <span>{regime.sources.noteValidation}</span>
+            <span>{sourceFooter}</span>
             {canEdit ? (
-              <button type="button" className="settings-action-button" onClick={onEdit}>
+              <button type="button" className="settings-action-btn" onClick={onEdit}>
                 Modifier
               </button>
             ) : null}
@@ -178,198 +189,6 @@ function RegimePanel({
         </div>
       ) : null}
     </article>
-  );
-}
-
-function createEditorState(target: EditorTarget): EditorState {
-  const base = target.value;
-  return {
-    code: base.code,
-    label: base.label,
-    caisse: target.type === 'regime' ? target.value.caisse : '',
-    population: target.type === 'regime' ? target.value.population : 'salarie',
-    defaultContractKind: target.type === 'regime' ? target.value.defaultContractKind : 'collectif',
-    year: String(base.year),
-    dataJson: toJson(base.data),
-    sourcesJson: toJson(base.sources),
-  };
-}
-
-function EditModal({
-  target,
-  onClose,
-  onSaved,
-}: {
-  target: EditorTarget;
-  onClose: () => void;
-  onSaved: () => void;
-}) {
-  const [state, setState] = useState<EditorState>(() => createEditorState(target));
-  const [error, setError] = useState('');
-  const [saving, setSaving] = useState(false);
-
-  const setField = <K extends keyof EditorState>(key: K, value: EditorState[K]) => {
-    setState((prev) => ({ ...prev, [key]: value }));
-  };
-
-  const save = async () => {
-    setError('');
-    setSaving(true);
-    try {
-      const data = parseJson(state.dataJson);
-      const sources = parseJson(state.sourcesJson);
-      const sourceParse = prevoyanceSourcesSchema.safeParse(sources);
-      if (!sourceParse.success) {
-        setError(formatPrevoyanceSchemaError(sourceParse));
-        return;
-      }
-
-      if (target.type === 'regime') {
-        const dataParse = prevoyanceRegimeDataSchema.safeParse(data);
-        if (!dataParse.success) {
-          setError(formatPrevoyanceSchemaError(dataParse));
-          return;
-        }
-        const payload = prevoyanceRegimeSettingsSchema.parse({
-          code: state.code,
-          label: state.label,
-          caisse: state.caisse,
-          population: state.population,
-          defaultContractKind: state.defaultContractKind,
-          year: Number(state.year),
-          data: dataParse.data,
-          sources: sourceParse.data,
-        });
-        await upsertPrevoyanceRegimeSettings(payload);
-      } else {
-        const payload = prevoyanceMaintienEmployeurSettingsSchema.parse({
-          code: state.code,
-          label: state.label,
-          year: Number(state.year),
-          data,
-          sources: sourceParse.data,
-        });
-        await upsertPrevoyanceMaintienEmployeurSettings(payload);
-      }
-
-      onSaved();
-      onClose();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Enregistrement impossible.');
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  return (
-    <SimModalShell
-      title={target.type === 'regime' ? 'Modifier le régime' : 'Modifier le maintien employeur'}
-      subtitle="Les clés JSON restent sans accents pour conserver des requêtes Supabase lisibles."
-      onClose={onClose}
-      modalClassName="prevoyance-settings-modal"
-      footer={
-        <>
-          {error ? <span className="prevoyance-settings-modal__error">{error}</span> : <span />}
-          <button type="button" className="settings-action-button" onClick={save} disabled={saving}>
-            {saving ? 'Enregistrement...' : 'Enregistrer'}
-          </button>
-        </>
-      }
-    >
-      <div className="prevoyance-settings-modal__grid">
-        <label>
-          Code
-          <input
-            value={state.code}
-            onChange={(event) => setField('code', event.target.value)}
-            className="prevoyance-settings-input"
-          />
-        </label>
-        <label>
-          Libellé
-          <input
-            value={state.label}
-            onChange={(event) => setField('label', event.target.value)}
-            className="prevoyance-settings-input"
-          />
-        </label>
-        <label>
-          Année
-          <input
-            value={state.year}
-            onChange={(event) => setField('year', event.target.value)}
-            className="prevoyance-settings-input"
-            inputMode="numeric"
-          />
-        </label>
-
-        {target.type === 'regime' ? (
-          <>
-            <label>
-              Caisse
-              <input
-                value={state.caisse}
-                onChange={(event) => setField('caisse', event.target.value)}
-                className="prevoyance-settings-input"
-              />
-            </label>
-            <label>
-              Population
-              <select
-                value={state.population}
-                onChange={(event) =>
-                  setField('population', event.target.value as EditorState['population'])
-                }
-                className="prevoyance-settings-input"
-              >
-                {POPULATION_OPTIONS.map((population) => (
-                  <option key={population} value={population}>
-                    {population}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <label>
-              Type contrat
-              <select
-                value={state.defaultContractKind}
-                onChange={(event) =>
-                  setField(
-                    'defaultContractKind',
-                    event.target.value as EditorState['defaultContractKind'],
-                  )
-                }
-                className="prevoyance-settings-input"
-              >
-                <option value="collectif">collectif</option>
-                <option value="individuel">individuel</option>
-              </select>
-            </label>
-          </>
-        ) : null}
-      </div>
-
-      <div className="prevoyance-settings-modal__json-grid">
-        <label>
-          Données RO / maintien
-          <textarea
-            value={state.dataJson}
-            onChange={(event) => setField('dataJson', event.target.value)}
-            className="prevoyance-settings-textarea"
-            spellCheck={false}
-          />
-        </label>
-        <label>
-          Sources
-          <textarea
-            value={state.sourcesJson}
-            onChange={(event) => setField('sourcesJson', event.target.value)}
-            className="prevoyance-settings-textarea"
-            spellCheck={false}
-          />
-        </label>
-      </div>
-    </SimModalShell>
   );
 }
 
@@ -428,7 +247,7 @@ export default function PrevoyanceRegimes() {
         {maintienLegal && isAdmin ? (
           <button
             type="button"
-            className="settings-action-button"
+            className="settings-action-btn"
             onClick={() => {
               setEditorTarget({ type: 'maintien', value: maintienLegal });
             }}

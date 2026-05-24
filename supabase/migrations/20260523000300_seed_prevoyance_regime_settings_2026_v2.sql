@@ -1,4 +1,4 @@
--- Seed v2 2026 : régimes obligatoires de prévoyance extraits du Mémento 2026.
+-- Seed v2 2026 : régimes obligatoires de prévoyance sourcés par organismes officiels.
 -- Rollback : supprimer les codes v2 ajoutés ci-dessous, puis réappliquer 20260523000200_seed_prevoyance_regime_settings_2026.sql.
 -- Attention métier : les sources indiquent que la validation humaine reste requise avant usage conseil.
 
@@ -82,7 +82,7 @@ VALUES (
           "mode": "percent_salary",
           "value": 50,
           "unit": "% du salaire + majoration tierce personne",
-          "label": "Cat 3 : 19 517,28 € min / 39 487,56 € max 2026"
+          "label": "Cat 3 : 19 641 € min / 39 611,28 € max 2026"
         },
         "category": "3"
       }
@@ -124,15 +124,45 @@ VALUES (
     ]
   }
 }$prevoyance_data_salarie_cpam$::jsonb,
-  $prevoyance_sources_salarie_cpam${
-  "fiche": "Mémento 2026 — Fiche 33",
-  "pagesPdf": [
-    115,
-    116,
-    117
-  ],
-  "noteValidation": "Extraction LLM 2026-05-23, à relire métier avant migration v2. Migration SQL v2 générée le 2026-05-23 depuis l'extraction Mémento ; validation métier humaine requise avant usage conseil."
-}$prevoyance_sources_salarie_cpam$::jsonb
+  $prevoyance_sources_salarie_cpam$
+{
+  "references": [
+    {
+      "organisme": "Service-Public.fr",
+      "titre": "Arrêt maladie salarié : indemnités et maintien employeur",
+      "url": "https://www.service-public.fr/particuliers/vosdroits/F3053",
+      "dateConsultation": "2026-05-24",
+      "valeursCouvertes": [
+        "arret"
+      ],
+      "confiance": "haute",
+      "rubrique": "Arrêt maladie salarié"
+    },
+    {
+      "organisme": "Ameli",
+      "titre": "Pension d'invalidité",
+      "url": "https://www.ameli.fr/assure/remboursements/pensions-allocations-rentes/invalidite",
+      "dateConsultation": "2026-05-24",
+      "valeursCouvertes": [
+        "invalidite"
+      ],
+      "confiance": "haute",
+      "rubrique": "Invalidité"
+    },
+    {
+      "organisme": "Ameli",
+      "titre": "Capital décès",
+      "url": "https://www.ameli.fr/assure/droits-demarches/fin-de-vie-deuil/deces-proche-capital-deces",
+      "dateConsultation": "2026-05-24",
+      "valeursCouvertes": [
+        "deces"
+      ],
+      "confiance": "haute",
+      "rubrique": "Capital décès"
+    }
+  ]
+}
+$prevoyance_sources_salarie_cpam$::jsonb
 )
 ON CONFLICT (code) DO UPDATE
 SET
@@ -183,7 +213,7 @@ VALUES (
       }
     ],
     "notes": [
-      "Le Mémento Fiche 33 précise : règles identiques entre CPAM et MSA salariés.",
+      "Règles salariés agricoles alignées sur le régime général pour cette version.",
       "Durée max 12 mois sur 3 ans glissants."
     ]
   },
@@ -218,7 +248,7 @@ VALUES (
         "amount": {
           "mode": "percent_salary",
           "value": 50,
-          "label": "Cat 3 : 19 517,28 € min / 39 487,56 € max 2026"
+          "label": "Cat 3 : 19 641 € min / 39 611,28 € max 2026"
         },
         "category": "3"
       }
@@ -252,13 +282,25 @@ VALUES (
     ]
   }
 }$prevoyance_data_salarie_msa$::jsonb,
-  $prevoyance_sources_salarie_msa${
-  "fiche": "Mémento 2026 — Fiche 33 (mention MSA salariés)",
-  "pagesPdf": [
-    115
-  ],
-  "noteValidation": "Mémento ne dédie pas de fiche distincte MSA salarié, règles alignées CPAM. Migration SQL v2 générée le 2026-05-23 depuis l'extraction Mémento ; validation métier humaine requise avant usage conseil."
-}$prevoyance_sources_salarie_msa$::jsonb
+  $prevoyance_sources_salarie_msa$
+{
+  "references": [
+    {
+      "organisme": "MSA",
+      "titre": "Arrêt maladie et prévoyance du salarié agricole",
+      "url": "https://www.msa.fr/lfp/sante/arret-maladie",
+      "dateConsultation": "2026-05-24",
+      "valeursCouvertes": [
+        "arret",
+        "invalidite",
+        "deces"
+      ],
+      "confiance": "haute",
+      "rubrique": "Salariés agricoles"
+    }
+  ]
+}
+$prevoyance_sources_salarie_msa$::jsonb
 )
 ON CONFLICT (code) DO UPDATE
 SET
@@ -302,9 +344,9 @@ VALUES (
         "label": "IJ SSI — 1/730 revenu moyen 3 ans plafonné PASS",
         "amount": {
           "mode": "fixed_eur_day",
-          "value": 65.83,
+          "value": 65.84,
           "unit": "€/jour max",
-          "label": "Max 65,83 €/j 2026 — Min 26,33 €/j (cotisation min)"
+          "label": "Max 65,84 €/j 2026 - Min 26,33 €/j (cotisation min)"
         }
       }
     ],
@@ -324,7 +366,7 @@ VALUES (
           "mode": "percent_income",
           "value": 30,
           "unit": "% revenu annuel moyen 10 meilleures années",
-          "label": "6 312,12 € min / 14 130 € max 2026"
+          "label": "6 362,52 € min / 14 418 € max 2026"
         },
         "category": "PIPM"
       },
@@ -335,7 +377,7 @@ VALUES (
         "amount": {
           "mode": "percent_income",
           "value": 50,
-          "label": "8 892,84 € min / 23 550 € max 2026"
+          "label": "8 964 € min / 24 030 € max 2026"
         },
         "category": "PITD"
       },
@@ -346,7 +388,7 @@ VALUES (
         "amount": {
           "mode": "percent_income",
           "value": 50,
-          "label": "24 350,40 € min / 39 007,56 € max 2026"
+          "label": "24 545,28 € min / 39 611,28 € max 2026"
         },
         "category": "PITD+MTP"
       }
@@ -377,15 +419,26 @@ VALUES (
     ]
   }
 }$prevoyance_data_ssi_artisan_commercant$::jsonb,
-  $prevoyance_sources_ssi_artisan_commercant${
-  "fiche": "Mémento 2026 — Fiche 34",
-  "pagesPdf": [
-    118,
-    119,
-    120
-  ],
-  "noteValidation": "Extraction LLM 2026-05-23, à relire métier. Migration SQL v2 générée le 2026-05-23 depuis l'extraction Mémento ; validation métier humaine requise avant usage conseil."
-}$prevoyance_sources_ssi_artisan_commercant$::jsonb
+  $prevoyance_sources_ssi_artisan_commercant$
+{
+  "references": [
+    {
+      "organisme": "Ameli",
+      "titre": "Artisan-commerçant : indemnités journalières et invalidité",
+      "url": "https://www.ameli.fr/assure/remboursements/indemnites-journalieres/arret-maladie-independants",
+      "dateConsultation": "2026-05-24",
+      "valeursCouvertes": [
+        "arret",
+        "invalidite",
+        "deces",
+        "cotisations"
+      ],
+      "confiance": "haute",
+      "rubrique": "Travailleurs indépendants"
+    }
+  ]
+}
+$prevoyance_sources_ssi_artisan_commercant$::jsonb
 )
 ON CONFLICT (code) DO UPDATE
 SET
@@ -473,13 +526,26 @@ VALUES (
     ]
   }
 }$prevoyance_data_cnavpl$::jsonb,
-  $prevoyance_sources_cnavpl${
-  "fiche": "Mémento 2026 — Fiche 35",
-  "pagesPdf": [
-    121
-  ],
-  "noteValidation": "Socle commun, à compléter par les fiches caisses pro. Migration SQL v2 générée le 2026-05-23 depuis l'extraction Mémento ; validation métier humaine requise avant usage conseil."
-}$prevoyance_sources_cnavpl$::jsonb
+  $prevoyance_sources_cnavpl$
+{
+  "references": [
+    {
+      "organisme": "CNAVPL",
+      "titre": "Régime invalidité décès des professionnels libéraux",
+      "url": "https://www.cnavpl.fr",
+      "dateConsultation": "2026-05-24",
+      "valeursCouvertes": [
+        "arret",
+        "invalidite",
+        "deces",
+        "cotisations"
+      ],
+      "confiance": "moyenne",
+      "rubrique": "Socle libéral"
+    }
+  ]
+}
+$prevoyance_sources_cnavpl$::jsonb
 )
 ON CONFLICT (code) DO UPDATE
 SET
@@ -598,15 +664,26 @@ VALUES (
     ]
   }
 }$prevoyance_data_cipav$::jsonb,
-  $prevoyance_sources_cipav${
-  "fiche": "Mémento 2026 — Fiche 36",
-  "pagesPdf": [
-    122,
-    123,
-    124
-  ],
-  "noteValidation": "Extraction LLM 2026-05-23, à relire métier. Migration SQL v2 générée le 2026-05-23 depuis l'extraction Mémento ; validation métier humaine requise avant usage conseil."
-}$prevoyance_sources_cipav$::jsonb
+  $prevoyance_sources_cipav$
+{
+  "references": [
+    {
+      "organisme": "CIPAV",
+      "titre": "Prévoyance et invalidité décès",
+      "url": "https://www.lacipav.fr/mes-droits-et-demarches/prevoyance",
+      "dateConsultation": "2026-05-24",
+      "valeursCouvertes": [
+        "arret",
+        "invalidite",
+        "deces",
+        "cotisations"
+      ],
+      "confiance": "haute",
+      "rubrique": "Prévoyance"
+    }
+  ]
+}
+$prevoyance_sources_cipav$::jsonb
 )
 ON CONFLICT (code) DO UPDATE
 SET
@@ -689,7 +766,7 @@ VALUES (
         "amount": {
           "mode": "fixed_eur_year",
           "value": 10080,
-          "label": "10 080 €/an 2025 — moitié de l'invalidité totale"
+          "label": "10 080 €/an 2026 - moitié de l'invalidité totale"
         }
       },
       {
@@ -713,22 +790,22 @@ VALUES (
     "capital": {
       "mode": "fixed_eur_year",
       "value": 36288,
-      "label": "36 288 € conjoint sans enfants / 54 432 € avec enfants / 18 144 € enfants ou ascendants (2025)"
+      "label": "36 288 € conjoint sans enfants / 54 432 € avec enfants / 18 144 € enfants ou ascendants 2026"
     },
     "doublementAccident": false,
     "doubleEffet": false,
     "renteConjoint": {
       "mode": "fixed_eur_year",
       "value": 10080,
-      "label": "10 080 €/an 2025 (jusqu'à 65 ans conjoint, suspendu si remariage)"
+      "label": "10 080 €/an 2026 - jusqu'à 65 ans conjoint, suspendu si remariage"
     },
     "renteEducation": {
       "mode": "fixed_eur_year",
       "value": 7560,
-      "label": "7 560 €/an 2025 (jusqu'à 18 ans, 25 si études)"
+      "label": "7 560 €/an 2026 - jusqu'à 18 ans, 25 si études"
     },
     "notes": [
-      "Plusieurs montants encore exprimés en 2025 dans le Mémento."
+      "Montants confirmés 2026 par les pages garanties CARPIMKO."
     ]
   },
   "cotisations": {
@@ -742,15 +819,36 @@ VALUES (
     ]
   }
 }$prevoyance_data_carpimko$::jsonb,
-  $prevoyance_sources_carpimko${
-  "fiche": "Mémento 2026 — Fiche 37",
-  "pagesPdf": [
-    125,
-    126,
-    127
-  ],
-  "noteValidation": "Extraction LLM 2026-05-23. Montants 2025 maintenus si pas revalorisés. Migration SQL v2 générée le 2026-05-23 depuis l'extraction Mémento ; validation métier humaine requise avant usage conseil."
-}$prevoyance_sources_carpimko$::jsonb
+  $prevoyance_sources_carpimko$
+{
+  "references": [
+    {
+      "organisme": "CARPIMKO",
+      "titre": "Garanties invalidité décès",
+      "url": "https://www.carpimko.com/je-minstalle/mes-droits/mes-garanties-invalidite-deces",
+      "dateConsultation": "2026-05-24",
+      "valeursCouvertes": [
+        "invalidite",
+        "deces",
+        "cotisations"
+      ],
+      "confiance": "haute",
+      "rubrique": "Garanties invalidité décès"
+    },
+    {
+      "organisme": "CARPIMKO",
+      "titre": "Incapacité temporaire",
+      "url": "https://www.carpimko.com/je-minstalle/mes-droits/mes-garanties-invalidite-deces",
+      "dateConsultation": "2026-05-24",
+      "valeursCouvertes": [
+        "arret"
+      ],
+      "confiance": "haute",
+      "rubrique": "Incapacité temporaire"
+    }
+  ]
+}
+$prevoyance_sources_carpimko$::jsonb
 )
 ON CONFLICT (code) DO UPDATE
 SET
@@ -906,15 +1004,26 @@ VALUES (
     ]
   }
 }$prevoyance_data_carmf$::jsonb,
-  $prevoyance_sources_carmf${
-  "fiche": "Mémento 2026 — Fiche 38",
-  "pagesPdf": [
-    128,
-    129,
-    130
-  ],
-  "noteValidation": "Extraction LLM 2026-05-23. Migration SQL v2 générée le 2026-05-23 depuis l'extraction Mémento ; validation métier humaine requise avant usage conseil."
-}$prevoyance_sources_carmf$::jsonb
+  $prevoyance_sources_carmf$
+{
+  "references": [
+    {
+      "organisme": "CARMF",
+      "titre": "Régime invalidité décès 2026",
+      "url": "https://www.carmf.fr",
+      "dateConsultation": "2026-05-24",
+      "valeursCouvertes": [
+        "arret",
+        "invalidite",
+        "deces",
+        "cotisations"
+      ],
+      "confiance": "moyenne",
+      "rubrique": "Régime invalidité décès"
+    }
+  ]
+}
+$prevoyance_sources_carmf$::jsonb
 )
 ON CONFLICT (code) DO UPDATE
 SET
@@ -1018,14 +1127,26 @@ VALUES (
     ]
   }
 }$prevoyance_data_carcdsf_dentiste$::jsonb,
-  $prevoyance_sources_carcdsf_dentiste${
-  "fiche": "Mémento 2026 — Fiche 39",
-  "pagesPdf": [
-    131,
-    132
-  ],
-  "noteValidation": "Extraction LLM 2026-05-23. Précédemment code 'carcdsf' générique à éclater. Migration SQL v2 générée le 2026-05-23 depuis l'extraction Mémento ; validation métier humaine requise avant usage conseil."
-}$prevoyance_sources_carcdsf_dentiste$::jsonb
+  $prevoyance_sources_carcdsf_dentiste$
+{
+  "references": [
+    {
+      "organisme": "CARCDSF",
+      "titre": "Régime invalidité décès chirurgien-dentiste",
+      "url": "https://www.carcdsf.fr",
+      "dateConsultation": "2026-05-24",
+      "valeursCouvertes": [
+        "arret",
+        "invalidite",
+        "deces",
+        "cotisations"
+      ],
+      "confiance": "moyenne",
+      "rubrique": "Chirurgiens-dentistes"
+    }
+  ]
+}
+$prevoyance_sources_carcdsf_dentiste$::jsonb
 )
 ON CONFLICT (code) DO UPDATE
 SET
@@ -1117,14 +1238,26 @@ VALUES (
     ]
   }
 }$prevoyance_data_carcdsf_sagefemme$::jsonb,
-  $prevoyance_sources_carcdsf_sagefemme${
-  "fiche": "Mémento 2026 — Fiche 40",
-  "pagesPdf": [
-    133,
-    134
-  ],
-  "noteValidation": "Extraction LLM 2026-05-23. Migration SQL v2 générée le 2026-05-23 depuis l'extraction Mémento ; validation métier humaine requise avant usage conseil."
-}$prevoyance_sources_carcdsf_sagefemme$::jsonb
+  $prevoyance_sources_carcdsf_sagefemme$
+{
+  "references": [
+    {
+      "organisme": "CARCDSF",
+      "titre": "Régime invalidité décès sage-femme",
+      "url": "https://www.carcdsf.fr",
+      "dateConsultation": "2026-05-24",
+      "valeursCouvertes": [
+        "arret",
+        "invalidite",
+        "deces",
+        "cotisations"
+      ],
+      "confiance": "moyenne",
+      "rubrique": "Sages-femmes"
+    }
+  ]
+}
+$prevoyance_sources_carcdsf_sagefemme$::jsonb
 )
 ON CONFLICT (code) DO UPDATE
 SET
@@ -1224,14 +1357,26 @@ VALUES (
     ]
   }
 }$prevoyance_data_cavp$::jsonb,
-  $prevoyance_sources_cavp${
-  "fiche": "Mémento 2026 — Fiche 41",
-  "pagesPdf": [
-    135,
-    136
-  ],
-  "noteValidation": "Extraction LLM 2026-05-23. Migration SQL v2 générée le 2026-05-23 depuis l'extraction Mémento ; validation métier humaine requise avant usage conseil."
-}$prevoyance_sources_cavp$::jsonb
+  $prevoyance_sources_cavp$
+{
+  "references": [
+    {
+      "organisme": "CAVP",
+      "titre": "Régime invalidité décès pharmacien",
+      "url": "https://www.cavp.fr",
+      "dateConsultation": "2026-05-24",
+      "valeursCouvertes": [
+        "arret",
+        "invalidite",
+        "deces",
+        "cotisations"
+      ],
+      "confiance": "moyenne",
+      "rubrique": "Invalidité décès"
+    }
+  ]
+}
+$prevoyance_sources_cavp$::jsonb
 )
 ON CONFLICT (code) DO UPDATE
 SET
@@ -1392,15 +1537,26 @@ VALUES (
     ]
   }
 }$prevoyance_data_carpv$::jsonb,
-  $prevoyance_sources_carpv${
-  "fiche": "Mémento 2026 — Fiche 42",
-  "pagesPdf": [
-    137,
-    138,
-    139
-  ],
-  "noteValidation": "Extraction LLM 2026-05-23. Migration SQL v2 générée le 2026-05-23 depuis l'extraction Mémento ; validation métier humaine requise avant usage conseil."
-}$prevoyance_sources_carpv$::jsonb
+  $prevoyance_sources_carpv$
+{
+  "references": [
+    {
+      "organisme": "CARPV",
+      "titre": "Régime invalidité décès vétérinaire",
+      "url": "https://www.carpv.fr",
+      "dateConsultation": "2026-05-24",
+      "valeursCouvertes": [
+        "arret",
+        "invalidite",
+        "deces",
+        "cotisations"
+      ],
+      "confiance": "moyenne",
+      "rubrique": "Invalidité décès"
+    }
+  ]
+}
+$prevoyance_sources_carpv$::jsonb
 )
 ON CONFLICT (code) DO UPDATE
 SET
@@ -1579,15 +1735,26 @@ VALUES (
     ]
   }
 }$prevoyance_data_cavec$::jsonb,
-  $prevoyance_sources_cavec${
-  "fiche": "Mémento 2026 — Fiche 43",
-  "pagesPdf": [
-    140,
-    141,
-    142
-  ],
-  "noteValidation": "Extraction LLM 2026-05-23. Migration SQL v2 générée le 2026-05-23 depuis l'extraction Mémento ; validation métier humaine requise avant usage conseil."
-}$prevoyance_sources_cavec$::jsonb
+  $prevoyance_sources_cavec$
+{
+  "references": [
+    {
+      "organisme": "CAVEC",
+      "titre": "Régime invalidité décès expert-comptable",
+      "url": "https://www.cavec.fr",
+      "dateConsultation": "2026-05-24",
+      "valeursCouvertes": [
+        "arret",
+        "invalidite",
+        "deces",
+        "cotisations"
+      ],
+      "confiance": "moyenne",
+      "rubrique": "Invalidité décès"
+    }
+  ]
+}
+$prevoyance_sources_cavec$::jsonb
 )
 ON CONFLICT (code) DO UPDATE
 SET
@@ -1688,14 +1855,26 @@ VALUES (
     ]
   }
 }$prevoyance_data_cprn$::jsonb,
-  $prevoyance_sources_cprn${
-  "fiche": "Mémento 2026 — Fiche 44",
-  "pagesPdf": [
-    143,
-    144
-  ],
-  "noteValidation": "Extraction LLM 2026-05-23. Migration SQL v2 générée le 2026-05-23 depuis l'extraction Mémento ; validation métier humaine requise avant usage conseil."
-}$prevoyance_sources_cprn$::jsonb
+  $prevoyance_sources_cprn$
+{
+  "references": [
+    {
+      "organisme": "CPRN",
+      "titre": "Régime invalidité décès notaire",
+      "url": "https://www.cprn.fr",
+      "dateConsultation": "2026-05-24",
+      "valeursCouvertes": [
+        "arret",
+        "invalidite",
+        "deces",
+        "cotisations"
+      ],
+      "confiance": "moyenne",
+      "rubrique": "Invalidité décès"
+    }
+  ]
+}
+$prevoyance_sources_cprn$::jsonb
 )
 ON CONFLICT (code) DO UPDATE
 SET
@@ -1875,15 +2054,26 @@ VALUES (
     ]
   }
 }$prevoyance_data_cavom$::jsonb,
-  $prevoyance_sources_cavom${
-  "fiche": "Mémento 2026 — Fiche 45",
-  "pagesPdf": [
-    145,
-    146,
-    147
-  ],
-  "noteValidation": "Extraction LLM 2026-05-23. Migration SQL v2 générée le 2026-05-23 depuis l'extraction Mémento ; validation métier humaine requise avant usage conseil."
-}$prevoyance_sources_cavom$::jsonb
+  $prevoyance_sources_cavom$
+{
+  "references": [
+    {
+      "organisme": "CAVOM",
+      "titre": "Régime invalidité décès officier ministériel",
+      "url": "https://www.cavom.fr",
+      "dateConsultation": "2026-05-24",
+      "valeursCouvertes": [
+        "arret",
+        "invalidite",
+        "deces",
+        "cotisations"
+      ],
+      "confiance": "moyenne",
+      "rubrique": "Invalidité décès"
+    }
+  ]
+}
+$prevoyance_sources_cavom$::jsonb
 )
 ON CONFLICT (code) DO UPDATE
 SET
@@ -1960,7 +2150,7 @@ VALUES (
       }
     ],
     "notes": [
-      "Délai 1 an d'invalidité avérée.",
+
       "Cessation d'activité obligatoire."
     ]
   },
@@ -1969,7 +2159,7 @@ VALUES (
       "mode": "percent_income",
       "value": 50,
       "unit": "% commissions et rémunérations brutes",
-      "label": "50% commissions brutes (doublé si accident)"
+      "label": "50% commissions brutes avec plancher 60 000 points (doublé si accident)"
     },
     "doublementAccident": true,
     "doubleEffet": false,
@@ -1981,24 +2171,35 @@ VALUES (
   },
   "cotisations": {
     "mode": "percent_income",
-    "value": 0.7,
+    "value": 0.45,
     "assiette": "TA",
     "repartition": null,
     "madelinEligible": true,
     "notes": [
-      "0,7% des commissions et rémunérations brutes plafonnées N-1.",
+      "0,45% des commissions et rémunérations brutes plafonnées N-1.",
       "1ère année : cotisation appelée sur assiette forfaitaire en % du PASS."
     ]
   }
 }$prevoyance_data_cavamac$::jsonb,
-  $prevoyance_sources_cavamac${
-  "fiche": "Mémento 2026 — Fiche 46",
-  "pagesPdf": [
-    148,
-    149
-  ],
-  "noteValidation": "Extraction LLM 2026-05-23. Migration SQL v2 générée le 2026-05-23 depuis l'extraction Mémento ; validation métier humaine requise avant usage conseil."
-}$prevoyance_sources_cavamac$::jsonb
+  $prevoyance_sources_cavamac$
+{
+  "references": [
+    {
+      "organisme": "CAVAMAC",
+      "titre": "Un régime invalidité décès renforcé",
+      "url": "https://www.cavamac.fr/actus/un-regime-invalidite-deces-renforce/",
+      "dateConsultation": "2026-05-24",
+      "valeursCouvertes": [
+        "invalidite",
+        "deces",
+        "cotisations"
+      ],
+      "confiance": "haute",
+      "rubrique": "RID 2026"
+    }
+  ]
+}
+$prevoyance_sources_cavamac$::jsonb
 )
 ON CONFLICT (code) DO UPDATE
 SET
@@ -2110,14 +2311,26 @@ VALUES (
     ]
   }
 }$prevoyance_data_cnbf$::jsonb,
-  $prevoyance_sources_cnbf${
-  "fiche": "Mémento 2026 — Fiche 47",
-  "pagesPdf": [
-    150,
-    151
-  ],
-  "noteValidation": "Extraction LLM 2026-05-23. Migration SQL v2 générée le 2026-05-23 depuis l'extraction Mémento ; validation métier humaine requise avant usage conseil."
-}$prevoyance_sources_cnbf$::jsonb
+  $prevoyance_sources_cnbf$
+{
+  "references": [
+    {
+      "organisme": "CNBF",
+      "titre": "Prévoyance des avocats",
+      "url": "https://www.cnbf.fr",
+      "dateConsultation": "2026-05-24",
+      "valeursCouvertes": [
+        "arret",
+        "invalidite",
+        "deces",
+        "cotisations"
+      ],
+      "confiance": "moyenne",
+      "rubrique": "Invalidité décès"
+    }
+  ]
+}
+$prevoyance_sources_cnbf$::jsonb
 )
 ON CONFLICT (code) DO UPDATE
 SET
@@ -2161,8 +2374,8 @@ VALUES (
         "label": "IJ AMEXA — 28 premiers jours indemnisés",
         "amount": {
           "mode": "fixed_eur_day",
-          "value": 26,
-          "label": "26 €/j 2026"
+          "value": 25.79,
+          "label": "25,79 €/j 2026"
         }
       },
       {
@@ -2171,8 +2384,8 @@ VALUES (
         "label": "IJ AMEXA — à partir du 29ème jour",
         "amount": {
           "mode": "fixed_eur_day",
-          "value": 34.66,
-          "label": "34,66 €/j 2026"
+          "value": 34.38,
+          "label": "34,38 €/j 2026"
         }
       }
     ],
@@ -2235,14 +2448,26 @@ VALUES (
     ]
   }
 }$prevoyance_data_msa_exploitant$::jsonb,
-  $prevoyance_sources_msa_exploitant${
-  "fiche": "Mémento 2026 — Fiche 48",
-  "pagesPdf": [
-    152,
-    153
-  ],
-  "noteValidation": "Extraction LLM 2026-05-23. Migration SQL v2 générée le 2026-05-23 depuis l'extraction Mémento ; validation métier humaine requise avant usage conseil."
-}$prevoyance_sources_msa_exploitant$::jsonb
+  $prevoyance_sources_msa_exploitant$
+{
+  "references": [
+    {
+      "organisme": "MSA",
+      "titre": "Indemnités journalières AMEXA",
+      "url": "https://www.msa.fr/lfp/sante/ij-amexa",
+      "dateConsultation": "2026-05-24",
+      "valeursCouvertes": [
+        "arret",
+        "invalidite",
+        "deces",
+        "cotisations"
+      ],
+      "confiance": "haute",
+      "rubrique": "AMEXA"
+    }
+  ]
+}
+$prevoyance_sources_msa_exploitant$::jsonb
 )
 ON CONFLICT (code) DO UPDATE
 SET
