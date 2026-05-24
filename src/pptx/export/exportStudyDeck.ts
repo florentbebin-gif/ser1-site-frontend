@@ -33,6 +33,8 @@ import type {
   PerProjectionTableSlideSpec,
   PerTransfertAuditContractSlideSpec,
   PerTransfertSynthesisSlideSpec,
+  PrevoyanceContractsTableSlideSpec,
+  PrevoyanceRoChartSlideSpec,
   TresorerieAllocationCardsSlideSpec,
   TresorerieAllocationMatrixSlideSpec,
   TresorerieFlowMechanismSlideSpec,
@@ -70,6 +72,10 @@ import { buildPerPlafond3Col } from '../slides/buildPerPlafond3Col';
 import { buildPerProjectionTable } from '../slides/buildPerProjectionTable';
 import { buildAuditContractSlide } from '../slides/buildAuditContractSlide';
 import { buildPerTransfertSynthesis } from '../slides/buildPerTransfertSynthesis';
+import {
+  buildPrevoyanceContractsTable,
+  buildPrevoyanceRoChart,
+} from '../slides/buildPrevoyanceSlides';
 import { buildTresorerieSchema } from '../slides/buildTresorerieSchema';
 import { buildTresorerieTimeline } from '../slides/buildTresorerieTimeline';
 import { buildTresorerieFlowMechanism } from '../slides/buildTresorerieFlowMechanism';
@@ -460,6 +466,15 @@ export async function exportStudyDeck(
       buildAuditContractSlide(
         pptx,
         slideSpec as PerTransfertAuditContractSlideSpec,
+        ctx,
+        slideIndex,
+      );
+    } else if (slideSpec.type === 'prevoyance-ro-chart') {
+      buildPrevoyanceRoChart(pptx, slideSpec as PrevoyanceRoChartSlideSpec, ctx, slideIndex);
+    } else if (slideSpec.type === 'prevoyance-contracts-table') {
+      buildPrevoyanceContractsTable(
+        pptx,
+        slideSpec as PrevoyanceContractsTableSlideSpec,
         ctx,
         slideIndex,
       );

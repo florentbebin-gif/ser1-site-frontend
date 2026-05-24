@@ -20,6 +20,14 @@ const exportData: PrevoyanceExportData = {
     annualBase: 80_000,
     referenceAnnual: 80_000,
   },
+  regimeStack: [
+    {
+      code: 'ssi-artisan-commercant',
+      label: 'SSI artisan commerçant',
+      caisse: 'SSI',
+    },
+  ],
+  contractAggregationMode: 'compare',
   contracts: [
     {
       id: 'contrat-1',
@@ -67,6 +75,8 @@ const exportData: PrevoyanceExportData = {
       },
     ],
     decesTarget: 240_000,
+    decesRegimeCapital: 9_612,
+    decesPrivateCapital: 240_000,
     decesCapital: 240_000,
     fraisProEstimated: 36_000,
     fraisProCovered: 36_000,
@@ -80,7 +90,9 @@ describe('exports Prévoyance', () => {
 
     expect(deck.cover.title).toBe('Simulation Prévoyance');
     expect(deck.slides.map((slide) => slide.type)).toContain('chapter');
-    expect(deck.slides.filter((slide) => slide.type === 'content')).toHaveLength(5);
+    expect(deck.slides.map((slide) => slide.type)).toContain('prevoyance-ro-chart');
+    expect(deck.slides.map((slide) => slide.type)).toContain('prevoyance-contracts-table');
+    expect(deck.slides).toHaveLength(3);
     expect(deck.end.type).toBe('end');
   });
 

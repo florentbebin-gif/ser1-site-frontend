@@ -26,6 +26,7 @@ import type {
   PerTransfertAuditContractSlideSpec,
   PerTransfertSynthesisSlideSpec,
 } from './perTransfert';
+import type { PrevoyanceContractsTableSlideSpec, PrevoyanceRoChartSlideSpec } from './prevoyance';
 import type {
   SuccessionAnnexTableSlideSpec,
   SuccessionAssetAnnexSlideSpec,
@@ -73,6 +74,8 @@ export type StudyDeckSpec = {
     | PerProjectionTableSlideSpec
     | PerTransfertSynthesisSlideSpec
     | PerTransfertAuditContractSlideSpec
+    | PrevoyanceRoChartSlideSpec
+    | PrevoyanceContractsTableSlideSpec
     | TresorerieSchemaSlideSpec
     | TresorerieTimelineSlideSpec
     | TresorerieFlowMechanismSlideSpec

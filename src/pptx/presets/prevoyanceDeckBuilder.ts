@@ -1,7 +1,8 @@
 import type {
   ChapterSlideSpec,
-  ContentSlideSpec,
   LogoPlacement,
+  PrevoyanceContractsTableSlideSpec,
+  PrevoyanceRoChartSlideSpec,
   StudyDeckSpec,
 } from '../theme/types';
 import { pickChapterImage } from '../designSystem/serenity';
@@ -31,18 +32,36 @@ interface PrevoyanceDeckData {
     referenceAnnual: number;
     ancienneteYears: number;
   };
+  regimeStack: Array<{
+    code: string;
+    label: string;
+    caisse: string;
+  }>;
   contracts: Array<{
     name: string;
     indemnisationLabel: string;
     arretSummary: string;
     invaliditeSummary: string;
     decesSummary: string;
+    fraisProSummary: string;
     cotisationSummary: string;
   }>;
+  contractAggregationMode: 'compare' | 'cumulate';
   coverage: {
-    arret: Array<{ label: string; totalPct: number }>;
-    invalidite: Array<{ label: string; totalPct: number }>;
+    arret: Array<{
+      key: string;
+      label: string;
+      totalPct: number;
+      segments: Array<{ kind: string; label: string; valuePct: number }>;
+    }>;
+    invalidite: Array<{
+      key: string;
+      label: string;
+      totalPct: number;
+      segments: Array<{ kind: string; label: string; valuePct: number }>;
+    }>;
     decesTarget: number;
+    decesRegimeCapital: number;
     decesCapital: number;
     fraisProCovered: number;
     fraisProEstimated: number;
@@ -60,59 +79,84 @@ const fmtMoney = (value: number): string =>
     maximumFractionDigits: 0,
   }).format(value);
 
-const fmtPct = (value: number): string =>
-  `${new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 1 }).format(value)} %`;
-
-function buildSituationBody(data: PrevoyanceDeckData): string {
-  const s = data.situation;
-  return [
-    `Parcours : ${s.kindLabel}`,
-    `Régime obligatoire : ${s.regimeLabel}`,
-    `Situation familiale : ${s.familyStatus}, ${s.childrenCount} enfant(s)`,
-    `Revenu cible : ${fmtMoney(s.referenceAnnual)}`,
-    s.kind === 'collectif'
-      ? `Salaire brut : ${fmtMoney(s.salaireBrutAnnuel)} ; ancienneté : ${s.ancienneteYears} an(s)`
-      : `Revenu imposable à couvrir : ${fmtMoney(s.revenuImposable)}`,
-  ].join('\n');
+function roRows(
+  rows: PrevoyanceDeckData['coverage']['arret'],
+): PrevoyanceRoChartSlideSpec['arretRows'] {
+  return rows
+    .filter((row) => row.key !== 'net-percu')
+    .map((row) => {
+      const segments = row.segments
+        .filter((segment) => segment.kind === 'ro' || segment.kind === 'maintien')
+        .map((segment) => ({ label: segment.label, valuePct: segment.valuePct }));
+      return {
+        label: row.label,
+        segments,
+        totalPct: Math.min(
+          100,
+          segments.reduce((sum, segment) => sum + segment.valuePct, 0),
+        ),
+      };
+    });
 }
 
-function buildContractsBody(data: PrevoyanceDeckData): string {
-  if (data.contracts.length === 0) return 'Aucun contrat de prévoyance renseigné.';
-  return data.contracts
-    .map(
-      (contract) =>
-        `${contract.name} — ${contract.indemnisationLabel}\nArrêt : ${contract.arretSummary}\nInvalidité : ${contract.invaliditeSummary}\nDécès : ${contract.decesSummary}`,
-    )
-    .join('\n\n');
+function buildRoSlide(data: PrevoyanceDeckData): PrevoyanceRoChartSlideSpec {
+  return {
+    type: 'prevoyance-ro-chart',
+    title: 'Régime obligatoire',
+    subtitle: 'Couverture seule, hors contrats privés',
+    regimeLabels: data.regimeStack.length
+      ? data.regimeStack.map((regime) => regime.label)
+      : [data.situation.regimeLabel],
+    arretRows: roRows(data.coverage.arret),
+    invaliditeRows: roRows(data.coverage.invalidite),
+    decesCapitalLabel: fmtMoney(data.coverage.decesRegimeCapital),
+  };
 }
 
-function buildCoverageBody(data: PrevoyanceDeckData): string {
-  const arret = data.coverage.arret
-    .map((bar) => `${bar.label} : ${fmtPct(bar.totalPct)} du revenu cible`)
-    .join('\n');
-  const invalidite = data.coverage.invalidite
-    .map((bar) => `${bar.label} : ${fmtPct(bar.totalPct)} du revenu cible`)
-    .join('\n');
-  return [`Arrêt de travail`, arret, '', `Invalidité`, invalidite].join('\n');
-}
+function buildContractsSlide(data: PrevoyanceDeckData): PrevoyanceContractsTableSlideSpec {
+  const columns = data.contracts.slice(0, 3).map((contract) => contract.name);
+  const rows = [
+    {
+      label: 'Cotisation annuelle',
+      values: data.contracts.map((contract) => contract.cotisationSummary),
+    },
+    {
+      label: 'Arrêt de travail',
+      values: data.contracts.map((contract) => contract.arretSummary),
+    },
+    {
+      label: 'Frais professionnels',
+      values: data.contracts.map((contract) => contract.fraisProSummary),
+    },
+    {
+      label: 'Invalidité',
+      values: data.contracts.map((contract) => contract.invaliditeSummary),
+    },
+    {
+      label: 'Capital décès',
+      values: data.contracts.map((contract) => contract.decesSummary),
+    },
+    {
+      label: 'Objectif décès',
+      values: data.contracts.map(() => fmtMoney(data.coverage.decesTarget)),
+    },
+    {
+      label: 'Couverture cumulée affichée',
+      values: data.contracts.map(() => fmtMoney(data.coverage.decesCapital)),
+    },
+  ];
 
-function buildDecesBody(data: PrevoyanceDeckData): string {
-  const frais =
-    data.situation.kind === 'individuel'
-      ? `Frais professionnels couverts : ${fmtMoney(data.coverage.fraisProCovered)} pour ${fmtMoney(data.coverage.fraisProEstimated)} estimés.`
-      : 'Frais professionnels : non applicable au parcours salarié collectif.';
-  return [
-    `Objectif indicatif : ${fmtMoney(data.coverage.decesTarget)}`,
-    `Capital décès couvert : ${fmtMoney(data.coverage.decesCapital)}`,
-    frais,
-    '',
-    'Cotisations',
-    ...data.contracts.map((contract) => `${contract.name} : ${contract.cotisationSummary}`),
-  ].join('\n');
-}
-
-function content(title: string, subtitle: string, body: string): ContentSlideSpec {
-  return { type: 'content', title, subtitle, body };
+  return {
+    type: 'prevoyance-contracts-table',
+    title: 'Synthèse contrats',
+    subtitle: 'Comparaison des garanties privées saisies',
+    modeLabel:
+      data.contractAggregationMode === 'cumulate'
+        ? 'Mode cumul : indemnitaire après RO, forfaitaire en relais, décès cumulé.'
+        : 'Mode comparaison : chaque contrat conserve sa logique propre.',
+    columns,
+    rows,
+  };
 }
 
 export function buildPrevoyanceStudyDeck(
@@ -144,18 +188,7 @@ export function buildPrevoyanceStudyDeck(
       leftMeta: dateStr,
       rightMeta: data.situation.kindLabel,
     },
-    slides: [
-      chapter,
-      content('Situation', 'Données retenues pour la simulation', buildSituationBody(data)),
-      content('Contrats', 'Garanties saisies', buildContractsBody(data)),
-      content('Couverture', 'Arrêt de travail et invalidité', buildCoverageBody(data)),
-      content(
-        'Décès et cotisations',
-        'Capitaux, frais professionnels et coût',
-        buildDecesBody(data),
-      ),
-      content('Hypothèses', 'Limites de lecture', data.assumptions.join('\n')),
-    ],
+    slides: [chapter, buildRoSlide(data), buildContractsSlide(data)],
     end: { type: 'end', legalText: LEGAL_TEXT },
   };
 }
