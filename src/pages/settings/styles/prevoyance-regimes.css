@@ -1,7 +1,4 @@
 .prevoyance-settings-page {
-  display: flex;
-  flex-direction: column;
-  gap: 18px;
   margin-top: 16px;
 }
 
@@ -9,55 +6,121 @@
   margin-bottom: 0;
 }
 
-.prevoyance-settings-header,
-.prevoyance-settings-toolbar,
-.prevoyance-settings-regime__header,
-.prevoyance-settings-regime__footer,
-.prevoyance-settings-kpis {
+.prevoyance-settings-header__aside,
+.prevoyance-settings-regime__actions {
   display: flex;
   align-items: center;
   gap: 12px;
-}
-
-.prevoyance-settings-header,
-.prevoyance-settings-regime__header,
-.prevoyance-settings-regime__footer {
-  justify-content: space-between;
-}
-
-.prevoyance-settings-header {
   flex-wrap: wrap;
 }
 
-.prevoyance-settings-kpis {
-  flex-wrap: wrap;
-}
-
-.prevoyance-settings-kpis span,
-.prevoyance-settings-badge {
-  display: inline-flex;
-  align-items: center;
-  min-height: 24px;
-  padding: 0 10px;
-  border: 1px solid var(--color-c8);
-  border-radius: 999px;
-  background: var(--color-c7);
+.prevoyance-settings-regime__header {
   color: var(--color-c10);
-  font-size: 12px;
-  font-weight: 600;
 }
 
-.prevoyance-settings-badge--muted {
-  background: var(--color-c4);
+.prevoyance-settings-regime__heading {
+  display: flex;
+  min-width: 0;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: 3px;
+  text-align: left;
+}
+
+.prevoyance-settings-regime__heading strong {
+  color: var(--color-c10);
+  font-size: 15px;
+}
+
+.prevoyance-settings-regime__heading span {
+  color: var(--color-c9);
+  font-size: 12px;
+}
+
+.prevoyance-settings-regime__meta {
+  flex: 0 0 auto;
+}
+
+.prevoyance-settings-regime__body {
+  background: #ffffff;
+  padding-top: 14px;
+}
+
+.prevoyance-settings-rules {
+  padding-top: 18px;
+}
+
+.prevoyance-settings-main-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(300px, 1fr));
+  gap: 18px;
+  align-items: start;
+}
+
+.prevoyance-settings-main-grid .settings-reference-phase {
+  min-width: 0;
+}
+
+.prevoyance-settings-rules .settings-reference-rule-card,
+.prevoyance-settings-rules .settings-reference-empty-card {
+  margin-bottom: 12px;
+  padding: 14px 16px;
+}
+
+.prevoyance-settings-rules .settings-reference-rule-card__title,
+.prevoyance-settings-rules .settings-reference-empty-card__title {
+  margin-bottom: 8px;
+}
+
+.prevoyance-settings-rules .settings-reference-rule-card__list {
+  line-height: 1.6;
+}
+
+.prevoyance-settings-rules .settings-reference-rule-card__list li + li {
+  margin-top: 6px;
+}
+
+.prevoyance-settings-meta-block {
+  margin-top: 18px;
+}
+
+.prevoyance-settings-meta-card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.prevoyance-settings-meta-card__section {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  color: var(--color-c9);
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+.prevoyance-settings-source-list {
+  padding-left: 16px;
+}
+
+.prevoyance-settings-covered-values {
   color: var(--color-c9);
 }
 
-.prevoyance-settings-toolbar {
-  flex-wrap: wrap;
+.prevoyance-settings-covered-values strong {
+  color: var(--color-c10);
 }
 
-.prevoyance-settings-toolbar .prevoyance-settings-input {
-  flex: 1 1 320px;
+.prevoyance-settings-regime__actions {
+  justify-content: flex-end;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--color-c8);
+}
+
+.prevoyance-settings-state {
+  margin-bottom: 0;
+  color: var(--color-c9);
 }
 
 .prevoyance-settings-input,
@@ -94,168 +157,6 @@
   outline: none;
   border-color: var(--color-c2);
   box-shadow: 0 0 0 3px var(--color-c4);
-}
-
-.prevoyance-settings-list {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.prevoyance-settings-state,
-.prevoyance-settings-regime {
-  color: var(--color-c9);
-}
-
-.prevoyance-settings-regime {
-  overflow: hidden;
-  border: 1px solid var(--color-c8);
-  border-radius: 8px;
-  background: var(--color-c7);
-  box-shadow: var(--shadow-sm);
-}
-
-.prevoyance-settings-regime__header {
-  width: 100%;
-  border: 0;
-  background: transparent;
-  color: var(--color-c10);
-  cursor: pointer;
-  font: inherit;
-  padding: 14px 16px;
-  text-align: left;
-}
-
-.prevoyance-settings-regime__heading {
-  display: flex;
-  min-width: 0;
-  align-items: center;
-  gap: 10px;
-}
-
-.prevoyance-settings-regime__heading > span:last-child {
-  display: flex;
-  min-width: 0;
-  flex-direction: column;
-  gap: 3px;
-}
-
-.prevoyance-settings-regime__header strong {
-  color: var(--color-c1);
-  font-size: 15px;
-}
-
-.prevoyance-settings-regime__header span span {
-  color: var(--color-c9);
-  font-size: 12px;
-}
-
-.prevoyance-settings-regime__meta {
-  display: inline-flex;
-  flex-wrap: wrap;
-  justify-content: flex-end;
-  gap: 8px;
-}
-
-.prevoyance-settings-regime__body {
-  border-top: 1px solid var(--color-c8);
-  padding: 16px;
-}
-
-.prevoyance-settings-grid {
-  display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
-  gap: 12px;
-}
-
-.prevoyance-settings-column {
-  display: flex;
-  min-width: 0;
-  flex-direction: column;
-  gap: 10px;
-  border: 1px solid var(--color-c8);
-  border-radius: 8px;
-  background: color-mix(in srgb, var(--color-c7) 70%, var(--color-c4));
-  padding: 12px;
-}
-
-.prevoyance-settings-column__title {
-  color: var(--color-c1);
-  font-size: 13px;
-  font-weight: 700;
-}
-
-.prevoyance-settings-column p {
-  margin: 0;
-  color: var(--color-c10);
-  font-size: 12px;
-  line-height: 1.45;
-}
-
-.prevoyance-settings-column dl {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  margin: 0;
-}
-
-.prevoyance-settings-column dl div {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  gap: 8px;
-  align-items: baseline;
-}
-
-.prevoyance-settings-column dt,
-.prevoyance-settings-column dd {
-  margin: 0;
-  font-size: 12px;
-}
-
-.prevoyance-settings-column dt {
-  color: var(--color-c9);
-}
-
-.prevoyance-settings-column dd {
-  color: var(--color-c10);
-  font-weight: 600;
-  text-align: right;
-}
-
-.prevoyance-settings-regime__footer {
-  margin-top: 14px;
-  color: var(--color-c9);
-  font-size: 12px;
-}
-
-.prevoyance-settings-sources {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.prevoyance-settings-sources li {
-  display: flex;
-  min-width: 0;
-  flex-direction: column;
-  gap: 3px;
-}
-
-.prevoyance-settings-sources a {
-  color: var(--color-c1);
-  font-size: 12px;
-  font-weight: 700;
-  text-decoration: none;
-}
-
-.prevoyance-settings-sources span,
-.prevoyance-settings-sources small {
-  color: var(--color-c9);
-  font-size: 11px;
-  line-height: 1.35;
 }
 
 .prevoyance-settings-modal {
@@ -341,23 +242,22 @@
   font-weight: 600;
 }
 
-@media (max-width: 1100px) {
-  .prevoyance-settings-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+@media (max-width: 1180px) {
+  .prevoyance-settings-main-grid {
+    grid-template-columns: 1fr;
   }
 }
 
 @media (max-width: 760px) {
-  .prevoyance-settings-grid,
+  .prevoyance-settings-header__aside,
+  .prevoyance-settings-regime__header,
+  .prevoyance-settings-regime__actions {
+    align-items: flex-start;
+  }
+
   .prevoyance-settings-modal__grid,
   .prevoyance-settings-form-grid,
   .prevoyance-settings-amount-editor {
     grid-template-columns: 1fr;
-  }
-
-  .prevoyance-settings-regime__header,
-  .prevoyance-settings-regime__footer {
-    align-items: flex-start;
-    flex-direction: column;
   }
 }

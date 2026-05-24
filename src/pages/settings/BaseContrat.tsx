@@ -77,22 +77,24 @@ function useOverrides() {
 
 function RuleBlockCard({ block, showAdminMeta }: { block: RuleBlock; showAdminMeta: boolean }) {
   return (
-    <div className="base-contrat-rule-card">
-      <div className="base-contrat-rule-card__title">{block.title}</div>
-      <ul className="base-contrat-rule-card__list">
+    <div className="settings-reference-rule-card">
+      <div className="settings-reference-rule-card__title">{block.title}</div>
+      <ul className="settings-reference-rule-card__list">
         {block.bullets.map((bullet, index) => (
           <li key={index}>{bullet}</li>
         ))}
       </ul>
       {showAdminMeta && (
-        <div className="base-contrat-rule-meta" aria-label="Métadonnées admin">
-          <span className={`base-contrat-confidence base-contrat-confidence--${block.confidence}`}>
+        <div className="settings-reference-rule-meta" aria-label="Métadonnées admin">
+          <span
+            className={`settings-reference-confidence settings-reference-confidence--${block.confidence}`}
+          >
             Confiance {block.confidence}
           </span>
           {block.dependencies && block.dependencies.length > 0 && (
-            <div className="base-contrat-rule-meta__group">
-              <span className="base-contrat-rule-meta__label">Dépendances</span>
-              <ul className="base-contrat-rule-meta__list">
+            <div className="settings-reference-rule-meta__group">
+              <span className="settings-reference-rule-meta__label">Dépendances</span>
+              <ul className="settings-reference-rule-meta__list">
                 {block.dependencies.map((dependency) => (
                   <li key={dependency}>{dependency}</li>
                 ))}
@@ -100,9 +102,9 @@ function RuleBlockCard({ block, showAdminMeta }: { block: RuleBlock; showAdminMe
             </div>
           )}
           {block.sources && block.sources.length > 0 && (
-            <div className="base-contrat-rule-meta__group">
-              <span className="base-contrat-rule-meta__label">Sources</span>
-              <ul className="base-contrat-rule-meta__list">
+            <div className="settings-reference-rule-meta__group">
+              <span className="settings-reference-rule-meta__label">Sources</span>
+              <ul className="settings-reference-rule-meta__list">
                 {block.sources.map((source) => (
                   <li key={`${source.label}-${source.url}`}>
                     <a href={source.url} target="_blank" rel="noreferrer">
@@ -121,9 +123,9 @@ function RuleBlockCard({ block, showAdminMeta }: { block: RuleBlock; showAdminMe
 
 function EmptyRuleCard() {
   return (
-    <div className="base-contrat-empty-card">
-      <div className="base-contrat-empty-card__title">Aucune règle renseignée</div>
-      <div className="base-contrat-empty-card__body">
+    <div className="settings-reference-empty-card">
+      <div className="settings-reference-empty-card__title">Aucune règle renseignée</div>
+      <div className="settings-reference-empty-card__body">
         Ce produit ne possède pas de règles fiscales spécifiques pour cette phase.
       </div>
     </div>
@@ -140,8 +142,10 @@ function PhaseColumn({
   showAdminMeta: boolean;
 }) {
   return (
-    <div className="base-contrat-phase">
-      <div className={`base-contrat-phase__title base-contrat-phase__title--${phaseKey}`}>
+    <div className="settings-reference-phase">
+      <div
+        className={`settings-reference-phase__title settings-reference-phase__title--${phaseKey}`}
+      >
         {PHASE_LABELS[phaseKey]}
       </div>
       {blocks.length === 0 ? (
@@ -165,8 +169,8 @@ function RulesPanel({
   showAdminMeta: boolean;
 }) {
   return (
-    <div className={`base-contrat-rules${closed ? ' base-contrat-rules--closed' : ''}`}>
-      <div className="base-contrat-rules__grid">
+    <div className={`settings-reference-rules${closed ? ' settings-reference-rules--closed' : ''}`}>
+      <div className="settings-reference-rules__grid">
         {(['constitution', 'sortie', 'deces'] as const).map((phaseKey) => (
           <PhaseColumn
             key={phaseKey}
@@ -286,10 +290,10 @@ export default function BaseContrat() {
     <div className="base-contrat-page">
       <UserInfoBanner />
 
-      <div className="base-contrat-stack">
+      <div className="settings-stack settings-stack--spacious">
         <section className="settings-premium-card base-contrat-header-card">
-          <div className="base-contrat-header">
-            <div className="base-contrat-header__copy">
+          <div className="settings-reference-header">
+            <div className="settings-reference-header__copy">
               <h2 className="settings-premium-title">
                 <SettingsTitleWithIcon icon="book">Référentiel contrats</SettingsTitleWithIcon>
               </h2>
@@ -313,16 +317,16 @@ export default function BaseContrat() {
           </div>
         </section>
 
-        <div className="base-contrat-filters">
+        <div className="settings-reference-filters">
           <input
-            className="base-contrat-filters__field"
+            className="settings-reference-field"
             type="search"
             value={searchQuery}
             onChange={(event) => setSearchQuery(event.target.value)}
             placeholder="Rechercher un produit"
           />
           <select
-            className="base-contrat-filters__field"
+            className="settings-reference-field"
             value={filterFamille}
             onChange={(event) => setFilterFamille(event.target.value)}
           >
@@ -336,7 +340,7 @@ export default function BaseContrat() {
           {(searchQuery || filterFamille) && (
             <button
               type="button"
-              className="base-contrat-filters__reset"
+              className="settings-reference-reset"
               onClick={() => {
                 setSearchQuery('');
                 setFilterFamille('');
@@ -374,10 +378,12 @@ export default function BaseContrat() {
                   >
                     {famille}
                   </SettingsTitleWithIcon>
-                  <span className="base-contrat-family__badges">
-                    <span className="base-contrat-badge">{formatOpenCount(openInFamily)}</span>
+                  <span className="settings-reference-badges">
+                    <span className="settings-reference-badge">
+                      {formatOpenCount(openInFamily)}
+                    </span>
                     {closedInFamily > 0 && (
-                      <span className="base-contrat-badge base-contrat-badge--muted">
+                      <span className="settings-reference-badge settings-reference-badge--muted">
                         {formatClosedCount(closedInFamily)}
                       </span>
                     )}
@@ -411,19 +417,19 @@ export default function BaseContrat() {
                               <span className="base-contrat-product__header-main">
                                 <span className="base-contrat-product__label">{product.label}</span>
                                 {hasNoRules && (
-                                  <span className="base-contrat-badge base-contrat-badge--muted">
+                                  <span className="settings-reference-badge settings-reference-badge--muted">
                                     Aucune règle
                                   </span>
                                 )}
                                 {closed && (
-                                  <span className="base-contrat-badge base-contrat-badge--warning">
+                                  <span className="settings-reference-badge settings-reference-badge--warning">
                                     Clôturé{' '}
                                     {override?.closed_date ? `le ${override.closed_date}` : ''}
                                   </span>
                                 )}
                                 {isAdmin && override && reviewStatus !== 'ok' && (
                                   <span
-                                    className={`base-contrat-badge base-contrat-badge--review base-contrat-badge--review-${reviewStatus}`}
+                                    className={`settings-reference-badge settings-reference-badge--review settings-reference-badge--review-${reviewStatus}`}
                                   >
                                     {BASE_CONTRAT_REVIEW_STATUS_LABELS[reviewStatus]}
                                   </span>
@@ -431,11 +437,11 @@ export default function BaseContrat() {
                               </span>
                               <span className="fisc-acc-chevron">{isProductOpen ? 'v' : '>'}</span>
                             </button>
-                            <span className="base-contrat-product__header-actions">
+                            <span className="settings-reference-admin-actions base-contrat-product__header-actions">
                               {isAdmin && (
                                 <button
                                   type="button"
-                                  className="base-contrat-admin-action"
+                                  className="settings-reference-admin-action"
                                   onClick={(event) => {
                                     event.stopPropagation();
                                     setOverrideTarget(product);
