@@ -12,13 +12,13 @@ SER1 doit utiliser **Mistral AI Studio API** pour les vrais dossiers clients, ja
 
 - `admin.mistral.ai` : gouvernance organisation, abonnement, facturation, limites, clés API, workspaces, confidentialité.
 - `console.mistral.ai` : espace développeur pour tester Document AI, Playground, Batches, Agents, Files.
-- SER1 V1 : backend SER1 -> API Mistral -> résultats stockés dans SER1 -> validation CGP -> moteurs SER1 -> PPTX.
+- SER1 V1 : backend SER1 -> API Mistral -> résultats stockés dans SER1 -> validation CGP -> moteurs SER1 -> étude automatique SER1 -> PPTX.
 - Le Chat : prototypage interne uniquement, sans documents clients réels tant que le cadre conformité n'est pas validé.
 - Workflows Mistral : à surveiller, mais pas dépendance V1 pour les dossiers clients.
 
-Doctrine V1 : Mistral lit et extrait ; SER1 stocke, contrôle, valide, calcule et restitue.
+Doctrine V1 : Mistral lit et extrait ; SER1 stocke, contrôle, valide, calcule et restitue. Aucun chat libre CGP ↔ LLM n'est prévu dans l'app V1.
 
-Frontière : ce runbook couvre la V1 Mistral-only. La V2 multi-modèles relève d'un orchestrateur SER1 séparé ; Mistral ne décide jamais du routage modèle et SER1 orchestre lui-même.
+Frontière : ce runbook couvre la V1 Mistral-only. La V2 multi-modèles relève d'un orchestrateur SER1 séparé, **plafonné à deux fournisseurs (Mistral + GPT-5.2)** pour contenir la complexité réglementaire (DPA, SCC, AIPD, registre par fournisseur). Mistral ne décide jamais du routage modèle ; SER1 orchestre lui-même selon des règles déterministes. Aucun troisième fournisseur LLM n'est ajouté en V2 — détail dans `docs/AI_ACT_CADRAGE.md` (sections « Transferts internationaux et escalade multi-fournisseurs » et « Inventaire des systèmes IA SER1 »).
 
 ---
 
@@ -129,7 +129,7 @@ SER1 doit également tracer ses propres plafonds :
 - raison d'appel ;
 - statut DPA / ZDR pertinent.
 
-Si le plafond IA est épuisé, le scan documentaire, le chat IA et la synthèse IA sont coupés jusqu'au reset. Les simulateurs déterministes, la saisie manuelle et les exports PPTX / XLSX restent disponibles.
+Si le plafond IA est épuisé, le scan documentaire, la complétion IA et la validation guidée enrichie sont coupés jusqu'au reset. Les simulateurs déterministes, la saisie manuelle et les exports PPTX / XLSX restent disponibles.
 
 ### Étape 3 — Régler Le Chat
 
@@ -522,10 +522,11 @@ Pas de code applicatif.
 - Contradictions.
 - Écran "X prêts / Y à confirmer".
 
-### PR 6 — Moteurs SER1 + PPTX
+### PR 6 — Moteurs SER1 + étude automatique + PPTX
 
 - Mapping dossier validé -> moteurs SER1.
-- Assistant de questions objectifs.
+- Questions objectifs structurées.
+- Étude automatique produite par les calculateurs et templates SER1.
 - Génération PPTX avec hypothèses et limites.
 
 ---

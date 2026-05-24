@@ -149,6 +149,8 @@ Source (preuves) :
 | `/sim/ir`                 | privé + lazy | `Ir`                    | `src/features/ir/IrPage.tsx` (exporté via `src/features/ir/index.ts`)                                                                                                                                                             |
 | `/settings/*`             | privé + lazy | `SettingsShell`         | `src/pages/SettingsShell.tsx` (lazy)                                                                                                                                                                                              |
 
+Trajectoire P4 : le scan documentaire IA doit rester rattaché à l'audit, pas aux simulateurs. La route cible sera une surface privée hors `/sim/*`, par exemple `/audit/documents` ou une étape interne de `/audit`, avec accès depuis la Home dans le bloc `AUDIT & STRATÉGIE`. Ne pas créer `/sim/ia` ni ajouter le scan dans la grille des simulateurs.
+
 Vérification (commandes) :
 
 ```powershell
