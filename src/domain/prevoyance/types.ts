@@ -196,6 +196,11 @@ export type PrevoyanceContractDraft =
       assiette: PrevoyanceAssiette;
       arret: {
         salairePct: number;
+        paliers?: Array<{
+          fromDay: number;
+          toDay: number | null;
+          salairePct: number;
+        }>;
       };
       invalidite: {
         paliers: Array<{

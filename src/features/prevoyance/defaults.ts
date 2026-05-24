@@ -49,7 +49,7 @@ export function createDefaultContract(
       kind,
       acteJuridique: 'due',
       assiette: 'TA-TB',
-      arret: { salairePct: 0 },
+      arret: { salairePct: 0, paliers: [{ fromDay: 0, toDay: 1095, salairePct: 0 }] },
       invalidite: {
         paliers: [{ fromRate: 0, toRate: null, mode: 'fixed', referencePct: 0, salairePct: 0 }],
       },

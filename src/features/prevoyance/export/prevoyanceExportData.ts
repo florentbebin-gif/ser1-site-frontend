@@ -15,6 +15,7 @@ import type {
   PrevoyanceRegimeSettings,
   PrevoyanceSituationDraft,
 } from '@/domain/prevoyance/types';
+import { TARGET_DECES_MULTIPLE } from '../constants';
 
 export interface PrevoyanceExportSituation {
   kind: PrevoyanceContractKind;
@@ -87,7 +88,12 @@ interface BuildPrevoyanceExportDataInput {
 
 function formatArret(contract: PrevoyanceContractDraft): string {
   if (contract.kind === 'collectif') {
-    return `${contract.arret.salairePct}% du salaire brut`;
+    const paliers = contract.arret.paliers?.length
+      ? contract.arret.paliers
+      : [{ fromDay: 0, toDay: null, salairePct: contract.arret.salairePct }];
+    return paliers
+      .map((palier) => `${palier.fromDay}-${palier.toDay ?? '+'} j : ${palier.salairePct}%`)
+      .join(' ; ');
   }
   return contract.arret.paliers
     .map((palier) => `${palier.fromDay}-${palier.toDay} j : ${palier.amount} €/j`)
@@ -168,7 +174,7 @@ export function buildPrevoyanceExportData({
   const decesTarget =
     deathTarget.mode === 'manual' && deathTarget.manualAmount > 0
       ? deathTarget.manualAmount
-      : referenceAnnual * deathTarget.multiple;
+      : referenceAnnual * TARGET_DECES_MULTIPLE;
   const fraisProCovered = contracts.reduce((sum, contract) => {
     const frais = formatFraisPro(contract);
     return sum + frais.amount;

@@ -4,6 +4,7 @@ import {
   computeCollectiveAssietteBase,
   computeInvaliditePalierAmount,
   computeTranchesFromPass,
+  PREVOYANCE_MAX_ARRET_DURATION_DAYS,
 } from '@/domain/prevoyance/helpers';
 import type {
   PrevoyanceContractAggregationMode,
@@ -16,14 +17,28 @@ import { CollectiveContractCard } from './CollectiveContractCard';
 import { IndividualContractCard } from './IndividualContractCard';
 import { SectionCard } from './FormPrimitives';
 
-type ContractEditorSection = 'arret' | 'frais' | 'invalidite' | 'deces' | 'cotisation';
+type ContractEditorSection =
+  | 'arret'
+  | 'frais'
+  | 'invalidite'
+  | 'deces'
+  | 'cotisation'
+  | 'juridique';
 
-const EDITOR_SECTIONS: Array<{ id: ContractEditorSection; label: string }> = [
+const INDIVIDUAL_EDITOR_SECTIONS: Array<{ id: ContractEditorSection; label: string }> = [
   { id: 'arret', label: 'Arrêt de travail' },
   { id: 'frais', label: 'Frais généraux' },
   { id: 'invalidite', label: 'Invalidité' },
   { id: 'deces', label: 'Décès' },
   { id: 'cotisation', label: 'Cotisation' },
+];
+
+const COLLECTIVE_EDITOR_SECTIONS: Array<{ id: ContractEditorSection; label: string }> = [
+  { id: 'arret', label: 'Arrêt de travail' },
+  { id: 'invalidite', label: 'Invalidité' },
+  { id: 'deces', label: 'Décès' },
+  { id: 'cotisation', label: 'Cotisation' },
+  { id: 'juridique', label: 'Acte juridique' },
 ];
 
 function PencilIcon() {
@@ -86,7 +101,14 @@ function arretPalierDuration(
 
 function getArretSummary(contract: PrevoyanceContractDraft, salaireBrutAnnuel: number): string {
   if (contract.kind === 'collectif') {
-    return `${euro(Math.round((salaireBrutAnnuel * contract.arret.salairePct) / 100 / 12))}/mois`;
+    const palier =
+      [...(contract.arret.paliers?.length ? contract.arret.paliers : [])].sort(
+        (a, b) =>
+          Math.max(0, (b.toDay ?? PREVOYANCE_MAX_ARRET_DURATION_DAYS) - b.fromDay) -
+          Math.max(0, (a.toDay ?? PREVOYANCE_MAX_ARRET_DURATION_DAYS) - a.fromDay),
+      )[0] ?? null;
+    const pct = palier?.salairePct ?? contract.arret.salairePct;
+    return `${euro(Math.round((salaireBrutAnnuel * pct) / 100 / 12))}/mois`;
   }
 
   const palier =
@@ -96,8 +118,9 @@ function getArretSummary(contract: PrevoyanceContractDraft, salaireBrutAnnuel: n
   return `${euro(palier?.amount ?? 0)}/j`;
 }
 
-function getFraisSummary(contract: PrevoyanceContractDraft): string {
-  if (contract.kind === 'collectif') return 'Non applicable';
+function getFraisSummary(
+  contract: Extract<PrevoyanceContractDraft, { kind: 'individuel' }>,
+): string {
   if (!contract.fraisPro.enabled) return 'Non activés';
   return `${euro(contract.fraisPro.amount)}/mois`;
 }
@@ -170,6 +193,8 @@ export function ContractsBlock({
   const [editingContractId, setEditingContractId] = useState<string | null>(null);
   const [activeEditorSection, setActiveEditorSection] = useState<ContractEditorSection>('arret');
   const editingContract = contracts.find((contract) => contract.id === editingContractId) ?? null;
+  const editorSections =
+    editingContract?.kind === 'collectif' ? COLLECTIVE_EDITOR_SECTIONS : INDIVIDUAL_EDITOR_SECTIONS;
 
   const openContractEditor = (contractId: string) => {
     setActiveEditorSection('arret');
@@ -276,10 +301,12 @@ export function ContractsBlock({
                 <dt>Arrêt de travail</dt>
                 <dd>{getArretSummary(contract, salaireBrutAnnuel)}</dd>
               </div>
-              <div>
-                <dt>Frais généraux</dt>
-                <dd>{getFraisSummary(contract)}</dd>
-              </div>
+              {contract.kind === 'individuel' ? (
+                <div>
+                  <dt>Frais généraux</dt>
+                  <dd>{getFraisSummary(contract)}</dd>
+                </div>
+              ) : null}
               <div>
                 <dt>Invalidité</dt>
                 <dd>{getInvaliditeSummary(contract, salaireBrutAnnuel)}</dd>
@@ -312,7 +339,7 @@ export function ContractsBlock({
         >
           <div className="prevoyance-contract-modal__layout">
             <nav className="prevoyance-contract-modal__nav" aria-label="Garanties du contrat">
-              {EDITOR_SECTIONS.map((section) => (
+              {editorSections.map((section) => (
                 <button
                   key={section.id}
                   type="button"

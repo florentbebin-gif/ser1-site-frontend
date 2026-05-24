@@ -17,6 +17,7 @@ import type {
   PrevoyanceRegimeSettings,
 } from '@/domain/prevoyance/types';
 import { euro, pct } from '../formatters';
+import { TARGET_DECES_MULTIPLE } from '../constants';
 import { NumberInput, SectionIcon, type SectionIconName } from './FormPrimitives';
 
 function segmentHeight(value: number, reference: number): string {
@@ -272,42 +273,36 @@ function MiniDonut({ value, target, label }: { value: number; target: number; la
 function DeathTargetControl({
   deathTarget,
   onDeathTargetChange,
+  defaultAmount,
 }: {
   deathTarget: PrevoyanceDeathTargetDraft;
   onDeathTargetChange: (deathTarget: PrevoyanceDeathTargetDraft) => void;
+  defaultAmount: number;
 }) {
+  const displayedAmount =
+    deathTarget.mode === 'manual' && deathTarget.manualAmount > 0
+      ? deathTarget.manualAmount
+      : defaultAmount;
+
   return (
     <div className="prevoyance-death-target">
       <div className="prevoyance-death-target__top">
-        <div className="prevoyance-death-target__presets">
-          {[1, 3, 5].map((multiple) => (
-            <button
-              key={multiple}
-              type="button"
-              className={
-                deathTarget.mode === 'multiple' && deathTarget.multiple === multiple
-                  ? 'prevoyance-death-target__preset is-active'
-                  : 'prevoyance-death-target__preset'
-              }
-              onClick={() =>
-                onDeathTargetChange({
-                  ...deathTarget,
-                  mode: 'multiple',
-                  multiple: multiple as 1 | 3 | 5,
-                })
-              }
-            >
-              x{multiple}
-            </button>
-          ))}
-        </div>
         <div className="prevoyance-death-target__manual">
           <span title="Besoin à couvrir">Besoin</span>
           <span className="prevoyance-death-target__manual-input">
             <NumberInput
-              value={deathTarget.manualAmount}
+              value={displayedAmount}
               onChange={(manualAmount) =>
-                onDeathTargetChange({ ...deathTarget, mode: 'manual', manualAmount })
+                onDeathTargetChange(
+                  manualAmount > 0
+                    ? { ...deathTarget, mode: 'manual', manualAmount }
+                    : {
+                        ...deathTarget,
+                        mode: 'multiple',
+                        multiple: TARGET_DECES_MULTIPLE,
+                        manualAmount: 0,
+                      },
+                )
               }
               suffix="€"
               ariaLabel="Besoin à couvrir"
@@ -393,7 +388,7 @@ export function Sidebar({
   const decesTarget =
     deathTarget.mode === 'manual' && deathTarget.manualAmount > 0
       ? deathTarget.manualAmount
-      : referenceAnnual * deathTarget.multiple;
+      : referenceAnnual * TARGET_DECES_MULTIPLE;
   const privateDecesCovered = contracts.reduce(
     (sum, contract) =>
       sum +
@@ -417,6 +412,24 @@ export function Sidebar({
     (sum, contract) => sum + computeCotisationAnnual(contract, salaireBrutAnnuel),
     0,
   );
+  const cotisationDetail =
+    kind === 'collectif'
+      ? (() => {
+          const collectiveTotal = collectiveContracts.reduce(
+            (sum, contract) => sum + computeCotisationAnnual(contract, salaireBrutAnnuel),
+            0,
+          );
+          if (collectiveTotal <= 0) return 'Employeur 0 % · salarié 0 %';
+          const employeur = collectiveContracts.reduce((sum, contract) => {
+            const amount = computeCotisationAnnual(contract, salaireBrutAnnuel);
+            return sum + amount * (contract.cotisation.repartition.employeur / 100);
+          }, 0);
+          const employeurPct = (employeur / collectiveTotal) * 100;
+          return `Employeur ${pct(employeurPct)} · salarié ${pct(100 - employeurPct)}`;
+        })()
+      : `dont Madelin ${euro(
+          individualContracts.reduce((sum, contract) => sum + contract.cotisation.dontMadelin, 0),
+        )}`;
   const cotisationTitle =
     contractAggregationMode === 'compare' ? 'Contrat affiché' : 'Cumul contrats';
 
@@ -448,7 +461,11 @@ export function Sidebar({
         title="Décès"
         icon="deces"
         actions={
-          <DeathTargetControl deathTarget={deathTarget} onDeathTargetChange={onDeathTargetChange} />
+          <DeathTargetControl
+            deathTarget={deathTarget}
+            onDeathTargetChange={onDeathTargetChange}
+            defaultAmount={referenceAnnual * TARGET_DECES_MULTIPLE}
+          />
         }
       >
         <Donut value={decesCovered} target={decesTarget} label={`objectif ${euro(decesTarget)}`} />
@@ -484,6 +501,7 @@ export function Sidebar({
         <div className="prevoyance-cotisation-kpi">
           <span>{cotisationTitle}</span>
           <strong>{euro(cotisationAnnual)}/an</strong>
+          <small>{cotisationDetail}</small>
         </div>
       </SideCard>
     </div>

@@ -2,13 +2,20 @@ import { SimSelect } from '@/components/ui/sim';
 import {
   computeCollectiveAssietteBase,
   computeTranchesFromPass,
+  PREVOYANCE_MAX_ARRET_DURATION_DAYS,
 } from '@/domain/prevoyance/helpers';
 import type { PrevoyanceAssiette, PrevoyanceContractDraft } from '@/domain/prevoyance/types';
 import { ACTE_OPTIONS, ASSIETTE_OPTIONS } from '../constants';
 import { euro } from '../formatters';
 import { NumberInput, SimFieldShell } from './FormPrimitives';
 
-type ContractEditorSection = 'arret' | 'frais' | 'invalidite' | 'deces' | 'cotisation';
+type ContractEditorSection =
+  | 'arret'
+  | 'frais'
+  | 'invalidite'
+  | 'deces'
+  | 'cotisation'
+  | 'juridique';
 
 interface CollectiveContractCardProps {
   contract: Extract<PrevoyanceContractDraft, { kind: 'collectif' }>;
@@ -33,7 +40,63 @@ export function CollectiveContractCard({
 }: CollectiveContractCardProps) {
   const tranches = computeTranchesFromPass(salaireBrutAnnuel, pass);
   const assietteBase = computeCollectiveAssietteBase(contract.assiette, tranches);
+  const arretPaliers = contract.arret.paliers?.length
+    ? contract.arret.paliers
+    : [
+        {
+          fromDay: 0,
+          toDay: PREVOYANCE_MAX_ARRET_DURATION_DAYS,
+          salairePct: contract.arret.salairePct,
+        },
+      ];
   const update = (patch: Partial<typeof contract>) => onChange({ ...contract, ...patch });
+  const updateArretPaliers = (paliers: typeof arretPaliers) => {
+    update({
+      arret: {
+        ...contract.arret,
+        salairePct: paliers[0]?.salairePct ?? contract.arret.salairePct,
+        paliers,
+      },
+    });
+  };
+  const updateArretPalier = (
+    palierIndex: number,
+    patch: Partial<(typeof arretPaliers)[number]>,
+  ) => {
+    updateArretPaliers(
+      arretPaliers.map((palier, currentIndex) =>
+        currentIndex === palierIndex ? { ...palier, ...patch } : palier,
+      ),
+    );
+  };
+  const addArretPalier = () => {
+    if (arretPaliers.length >= 3) return;
+    const last = arretPaliers[arretPaliers.length - 1] ?? {
+      fromDay: 0,
+      toDay: PREVOYANCE_MAX_ARRET_DURATION_DAYS,
+      salairePct: 0,
+    };
+    if (arretPaliers.length === 1 && (last.toDay ?? PREVOYANCE_MAX_ARRET_DURATION_DAYS) >= 1095) {
+      updateArretPaliers([
+        { ...last, toDay: 365 },
+        { fromDay: 366, toDay: PREVOYANCE_MAX_ARRET_DURATION_DAYS, salairePct: last.salairePct },
+      ]);
+      return;
+    }
+    const fromDay = Math.min(PREVOYANCE_MAX_ARRET_DURATION_DAYS, (last.toDay ?? last.fromDay) + 1);
+    updateArretPaliers([
+      ...arretPaliers,
+      {
+        fromDay,
+        toDay: PREVOYANCE_MAX_ARRET_DURATION_DAYS,
+        salairePct: last.salairePct,
+      },
+    ]);
+  };
+  const removeArretPalier = (palierIndex: number) => {
+    if (arretPaliers.length <= 1) return;
+    updateArretPaliers(arretPaliers.filter((_, currentIndex) => currentIndex !== palierIndex));
+  };
   const updateInvaliditePalier = (
     palierIndex: number,
     patch: Partial<(typeof contract.invalidite.paliers)[number]>,
@@ -42,6 +105,34 @@ export function CollectiveContractCard({
       invalidite: {
         paliers: contract.invalidite.paliers.map((palier, currentIndex) =>
           currentIndex === palierIndex ? { ...palier, ...patch } : palier,
+        ),
+      },
+    });
+  };
+  const addInvaliditePalier = () => {
+    if (contract.invalidite.paliers.length >= 3) return;
+    const last = contract.invalidite.paliers[contract.invalidite.paliers.length - 1];
+    update({
+      invalidite: {
+        paliers: [
+          ...contract.invalidite.paliers,
+          {
+            fromRate: last?.toRate ? Math.min(100, last.toRate + 1) : 66,
+            toRate: null,
+            mode: last?.mode ?? 'fixed',
+            referencePct: last?.referencePct,
+            salairePct: last?.salairePct ?? 0,
+          },
+        ],
+      },
+    });
+  };
+  const removeInvaliditePalier = (palierIndex: number) => {
+    if (contract.invalidite.paliers.length <= 1) return;
+    update({
+      invalidite: {
+        paliers: contract.invalidite.paliers.filter(
+          (_, currentIndex) => currentIndex !== palierIndex,
         ),
       },
     });
@@ -57,15 +148,6 @@ export function CollectiveContractCard({
           className="prevoyance-contract__title-input"
         />
         <div className="prevoyance-contract-editor__base-grid prevoyance-contract-editor__base-grid--collective">
-          <SimFieldShell label="Acte juridique">
-            <SimSelect
-              value={contract.acteJuridique}
-              onChange={(acteJuridique) =>
-                update({ acteJuridique: acteJuridique as typeof contract.acteJuridique })
-              }
-              options={ACTE_OPTIONS}
-            />
-          </SimFieldShell>
           <SimFieldShell label="Assiette couverte">
             <SimSelect
               value={contract.assiette}
@@ -79,32 +161,93 @@ export function CollectiveContractCard({
 
       {activeSection === 'arret' ? (
         <div className="prevoyance-mini-section">
-          <span>Arrêt de travail</span>
-          <SimFieldShell label="% salaire brut">
-            <NumberInput
-              value={contract.arret.salairePct}
-              onChange={(salairePct) => update({ arret: { salairePct } })}
-              suffix="%"
-            />
-          </SimFieldShell>
-        </div>
-      ) : null}
-
-      {activeSection === 'frais' ? (
-        <div className="prevoyance-mini-section">
-          <span>Frais généraux</span>
-          <p className="prevoyance-side-note">
-            Les frais généraux ne sont pas une garantie modélisée pour un contrat collectif dans ce
-            simulateur.
-          </p>
+          <div className="prevoyance-mini-section__header">
+            <span>Arrêt de travail</span>
+            <button
+              type="button"
+              className="prevoyance-icon-button prevoyance-icon-button--compact"
+              onClick={addArretPalier}
+              aria-label={`Ajouter une période arrêt de travail au contrat ${index + 1}`}
+              disabled={arretPaliers.length >= 3}
+            >
+              +
+            </button>
+          </div>
+          {arretPaliers.map((palier, palierIndex) => (
+            <div key={palierIndex} className="prevoyance-invalidite-row">
+              {arretPaliers.length > 1 ? (
+                <div className="prevoyance-invalidite-row__actions">
+                  <button
+                    type="button"
+                    className="prevoyance-icon-button prevoyance-icon-button--compact"
+                    onClick={() => removeArretPalier(palierIndex)}
+                    aria-label={`Supprimer la période arrêt de travail ${palierIndex + 1}`}
+                  >
+                    ×
+                  </button>
+                </div>
+              ) : null}
+              <div className="prevoyance-invalidite-row__grid">
+                <SimFieldShell label="Début">
+                  <NumberInput
+                    value={palier.fromDay}
+                    onChange={(fromDay) => updateArretPalier(palierIndex, { fromDay })}
+                    suffix="j"
+                    showZero
+                  />
+                </SimFieldShell>
+                <SimFieldShell label="Fin">
+                  <NumberInput
+                    value={palier.toDay ?? PREVOYANCE_MAX_ARRET_DURATION_DAYS}
+                    onChange={(toDay) =>
+                      updateArretPalier(palierIndex, {
+                        toDay: toDay >= PREVOYANCE_MAX_ARRET_DURATION_DAYS ? null : toDay,
+                      })
+                    }
+                    suffix="j"
+                  />
+                </SimFieldShell>
+                <SimFieldShell label="% salaire brut">
+                  <NumberInput
+                    value={palier.salairePct}
+                    onChange={(salairePct) => updateArretPalier(palierIndex, { salairePct })}
+                    suffix="%"
+                  />
+                </SimFieldShell>
+              </div>
+            </div>
+          ))}
         </div>
       ) : null}
 
       {activeSection === 'invalidite' ? (
         <div className="prevoyance-mini-section">
-          <span>Invalidité</span>
+          <div className="prevoyance-mini-section__header">
+            <span>Invalidité</span>
+            <button
+              type="button"
+              className="prevoyance-icon-button prevoyance-icon-button--compact"
+              onClick={addInvaliditePalier}
+              aria-label={`Ajouter un seuil invalidité au contrat ${index + 1}`}
+              disabled={contract.invalidite.paliers.length >= 3}
+            >
+              +
+            </button>
+          </div>
           {contract.invalidite.paliers.map((palier, palierIndex) => (
             <div key={palierIndex} className="prevoyance-invalidite-row">
+              {contract.invalidite.paliers.length > 1 ? (
+                <div className="prevoyance-invalidite-row__actions">
+                  <button
+                    type="button"
+                    className="prevoyance-icon-button prevoyance-icon-button--compact"
+                    onClick={() => removeInvaliditePalier(palierIndex)}
+                    aria-label={`Supprimer le seuil invalidité ${palierIndex + 1}`}
+                  >
+                    ×
+                  </button>
+                </div>
+              ) : null}
               <div className="prevoyance-invalidite-row__grid">
                 <SimFieldShell label="Déclenchement">
                   <NumberInput
@@ -243,6 +386,21 @@ export function CollectiveContractCard({
           <span className="prevoyance-side-note">
             Base de calcul retenue : {euro(assietteBase)}
           </span>
+        </div>
+      ) : null}
+
+      {activeSection === 'juridique' ? (
+        <div className="prevoyance-mini-section">
+          <span>Acte juridique</span>
+          <SimFieldShell label="Acte juridique">
+            <SimSelect
+              value={contract.acteJuridique}
+              onChange={(acteJuridique) =>
+                update({ acteJuridique: acteJuridique as typeof contract.acteJuridique })
+              }
+              options={ACTE_OPTIONS}
+            />
+          </SimFieldShell>
         </div>
       ) : null}
     </article>

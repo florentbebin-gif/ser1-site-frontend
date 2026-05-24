@@ -56,6 +56,18 @@ function contractArretPaliers(contract: Extract<PrevoyanceContractDraft, { kind:
   }));
 }
 
+function collectiveArretPaliers(contract: Extract<PrevoyanceContractDraft, { kind: 'collectif' }>) {
+  return contract.arret.paliers?.length
+    ? contract.arret.paliers
+    : [
+        {
+          fromDay: 0,
+          toDay: PREVOYANCE_MAX_ARRET_DURATION_DAYS,
+          salairePct: contract.arret.salairePct,
+        },
+      ];
+}
+
 export function unionBoundaries(paliers: PrevoyanceRangeLike[]): number[] {
   if (paliers.length === 0) return [0, PREVOYANCE_MAX_ARRET_DURATION_DAYS];
   const boundaries = new Set<number>([0, PREVOYANCE_MAX_ARRET_DURATION_DAYS]);
@@ -164,6 +176,8 @@ function buildArretWindows(
   contracts.forEach((contract) => {
     if (contract.kind === 'individuel') {
       contract.arret.paliers.forEach((palier) => addRange(palier.fromDay, palier.toDay));
+    } else {
+      collectiveArretPaliers(contract).forEach((palier) => addRange(palier.fromDay, palier.toDay));
     }
   });
 
@@ -202,7 +216,7 @@ export function buildArretCoverageBars({
     const roPct = roSegments.reduce((sum, segment) => sum + segment.valuePct, 0);
     const contratPct =
       kind === 'collectif'
-        ? buildCollectiveArretPct(contracts, salaireBrutAnnuel, referenceAnnual)
+        ? buildCollectiveArretPct(contracts, fromDay, toDay, salaireBrutAnnuel, referenceAnnual)
         : buildIndividualArretPct({
             contracts,
             fromDay,
@@ -237,6 +251,8 @@ export function buildArretCoverageBars({
 
 function buildCollectiveArretPct(
   contracts: PrevoyanceContractDraft[],
+  fromDay: number,
+  toDay: number,
   salaireBrutAnnuel: number,
   referenceAnnual: number,
 ): number {
@@ -247,11 +263,28 @@ function buildCollectiveArretPct(
           contract.kind === 'collectif',
       )
       .reduce(
-        (sum, contract) => sum + Math.max(0, salaireBrutAnnuel) * (contract.arret.salairePct / 100),
+        (sum, contract) =>
+          sum +
+          Math.max(0, salaireBrutAnnuel) *
+            (findCollectiveArretPctForRange(contract, fromDay, toDay) / 100),
         0,
       ),
     referenceAnnual,
   );
+}
+
+function findCollectiveArretPctForRange(
+  contract: Extract<PrevoyanceContractDraft, { kind: 'collectif' }>,
+  fromDay: number,
+  toDay: number,
+): number {
+  const from = capArretDay(fromDay);
+  const to = capArretDay(toDay);
+  const palier = collectiveArretPaliers(contract).find((item) => {
+    const palierTo = capArretDay(item.toDay ?? PREVOYANCE_MAX_ARRET_DURATION_DAYS);
+    return item.fromDay <= to && palierTo >= from;
+  });
+  return palier?.salairePct ?? contract.arret.salairePct;
 }
 
 function buildIndividualArretPct(input: {
@@ -292,7 +325,10 @@ export function buildArretEuroChart({
             fromDay: palier.fromDay,
             toDay: palier.toDay,
           }))
-        : [],
+        : collectiveArretPaliers(contract).map((palier) => ({
+            fromDay: palier.fromDay,
+            toDay: palier.toDay,
+          })),
     ),
   ];
   const periods = splitIntoSubPeriods(rangePaliers, unionBoundaries(rangePaliers));
@@ -349,7 +385,12 @@ function buildArretEuroPeriod({
     kind === 'collectif'
       ? contracts.reduce((sum, contract) => {
           if (contract.kind !== 'collectif') return sum;
-          return sum + (Math.max(0, salaireBrutAnnuel) * (contract.arret.salairePct / 100)) / 365;
+          return (
+            sum +
+            (Math.max(0, salaireBrutAnnuel) *
+              (findCollectiveArretPctForRange(contract, from, to) / 100)) /
+              365
+          );
         }, 0)
       : buildIndividualArretEuro({
           contracts,

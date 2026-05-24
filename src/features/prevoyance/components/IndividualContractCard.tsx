@@ -5,7 +5,13 @@ import type { PrevoyanceContractDraft } from '@/domain/prevoyance/types';
 import { ArretPeriodsModal } from './ArretPeriodsModal';
 import { NumberInput, SimFieldShell } from './FormPrimitives';
 
-type ContractEditorSection = 'arret' | 'frais' | 'invalidite' | 'deces' | 'cotisation';
+type ContractEditorSection =
+  | 'arret'
+  | 'frais'
+  | 'invalidite'
+  | 'deces'
+  | 'cotisation'
+  | 'juridique';
 
 interface IndividualContractCardProps {
   contract: Extract<PrevoyanceContractDraft, { kind: 'individuel' }>;
@@ -197,12 +203,12 @@ export function IndividualContractCard({
                 suffix="j"
               />
             </SimFieldShell>
-            <SimFieldShell label="Montant">
+            <SimFieldShell label="Montant mensuel">
               <NumberInput
                 value={contract.fraisPro.amount}
                 onChange={(amount) => update({ fraisPro: { ...contract.fraisPro, amount } })}
-                suffix="€"
-                ariaLabel="Montant frais généraux"
+                suffix="€/mois"
+                ariaLabel="Montant mensuel frais généraux"
               />
             </SimFieldShell>
             <SimFieldShell label="Durée max">
