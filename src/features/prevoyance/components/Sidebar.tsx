@@ -331,27 +331,30 @@ export function Sidebar({
 
       <SideCard title="Décès" icon="deces">
         <div className="prevoyance-death-target">
-          <div className="prevoyance-death-target__presets">
-            {[1, 3, 5].map((multiple) => (
-              <button
-                key={multiple}
-                type="button"
-                className={
-                  deathTarget.mode === 'multiple' && deathTarget.multiple === multiple
-                    ? 'prevoyance-death-target__preset is-active'
-                    : 'prevoyance-death-target__preset'
-                }
-                onClick={() =>
-                  onDeathTargetChange({
-                    ...deathTarget,
-                    mode: 'multiple',
-                    multiple: multiple as 1 | 3 | 5,
-                  })
-                }
-              >
-                {multiple} an{multiple > 1 ? 's' : ''}
-              </button>
-            ))}
+          <div className="prevoyance-death-target__top">
+            <span>Objectif</span>
+            <div className="prevoyance-death-target__presets">
+              {[1, 3, 5].map((multiple) => (
+                <button
+                  key={multiple}
+                  type="button"
+                  className={
+                    deathTarget.mode === 'multiple' && deathTarget.multiple === multiple
+                      ? 'prevoyance-death-target__preset is-active'
+                      : 'prevoyance-death-target__preset'
+                  }
+                  onClick={() =>
+                    onDeathTargetChange({
+                      ...deathTarget,
+                      mode: 'multiple',
+                      multiple: multiple as 1 | 3 | 5,
+                    })
+                  }
+                >
+                  x{multiple}
+                </button>
+              ))}
+            </div>
           </div>
           <SimFieldShell label="Besoin à couvrir">
             <NumberInput

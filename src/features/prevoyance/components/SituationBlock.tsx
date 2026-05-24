@@ -8,6 +8,24 @@ import type {
 import { FAMILY_OPTIONS } from '../constants';
 import { NumberInput, SectionCard, SimFieldShell } from './FormPrimitives';
 
+function normalizeRegimeLabel(value: string): string {
+  return value
+    .toLocaleLowerCase('fr-FR')
+    .normalize('NFD')
+    .replace(/\p{Diacritic}/gu, '')
+    .replace(/[^a-z0-9]+/g, ' ')
+    .trim();
+}
+
+function shouldShowCaisseDescription(label: string, caisse: string): boolean {
+  const normalizedLabel = normalizeRegimeLabel(label);
+  const normalizedCaisse = normalizeRegimeLabel(caisse);
+  const caisseTokens = normalizedCaisse.split(' ').filter((token) => token.length > 1);
+  const mainCaisseToken = caisseTokens[0] ?? normalizedCaisse;
+
+  return !normalizedLabel.includes(normalizedCaisse) && !normalizedLabel.includes(mainCaisseToken);
+}
+
 export function SituationBlock({
   situation,
   regimes,
@@ -22,11 +40,9 @@ export function SituationBlock({
   const regimeOptions: SimSelectOption[] = regimes.map((regime) => ({
     value: regime.code,
     label: regime.label,
-    description: regime.label
-      .toLocaleLowerCase('fr-FR')
-      .includes(regime.caisse.toLocaleLowerCase('fr-FR'))
-      ? undefined
-      : regime.caisse,
+    description: shouldShowCaisseDescription(regime.label, regime.caisse)
+      ? regime.caisse
+      : undefined,
   }));
 
   return (

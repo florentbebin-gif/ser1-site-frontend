@@ -91,11 +91,19 @@
 
 .prevoyance-contract-summary {
   display: grid;
-  gap: 12px;
+  gap: 10px;
   border: 1px solid var(--color-c8);
   border-radius: 8px;
   background: color-mix(in srgb, var(--color-c7) 86%, var(--color-c4));
   padding: 12px;
+}
+
+.prevoyance-contract-summary__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  min-width: 0;
 }
 
 .prevoyance-contract-summary h3,
@@ -115,24 +123,38 @@
   font-size: 12px;
 }
 
-.prevoyance-contract-summary dl {
+.prevoyance-contract-summary__rows {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 8px;
+  gap: 0;
   margin: 0;
 }
 
+.prevoyance-contract-summary__rows div {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) max-content;
+  gap: 10px;
+  align-items: baseline;
+  border-top: 1px solid color-mix(in srgb, var(--color-c8) 70%, transparent);
+  padding: 7px 0;
+}
+
+.prevoyance-contract-summary__rows div:first-child {
+  border-top: none;
+}
+
 .prevoyance-contract-summary dd {
-  margin: 2px 0 0;
+  margin: 0;
   color: var(--color-c10);
   font-size: 12px;
   font-weight: 700;
+  text-align: right;
+  white-space: nowrap;
 }
 
 .prevoyance-contract-summary__actions {
   display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
+  gap: 4px;
+  flex-shrink: 0;
 }
 
 .prevoyance-contract {
@@ -168,7 +190,8 @@
 }
 
 .prevoyance-icon-button,
-.prevoyance-add-button,
+.prevoyance-add-icon-button,
+.prevoyance-summary-icon-button,
 .prevoyance-link-button {
   display: inline-flex;
   align-items: center;
@@ -196,16 +219,48 @@
   font-size: 16px;
 }
 
-.prevoyance-add-button {
+.prevoyance-add-icon-button {
+  width: 32px;
+  min-height: 32px;
   background: var(--color-c3);
   border-color: var(--color-c3);
   color: var(--color-c7);
+  font-size: 20px;
   font-weight: 700;
+  padding: 0;
 }
 
-.prevoyance-add-button:disabled {
+.prevoyance-summary-icon-button {
+  width: 24px;
+  min-height: 24px;
+  padding: 0;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--color-c9);
+}
+
+.prevoyance-summary-icon-button--remove {
+  color: var(--color-c9);
+  font-size: 14px;
+}
+
+.prevoyance-add-icon-button:hover:not(:disabled),
+.prevoyance-summary-icon-button:hover:not(:disabled),
+.prevoyance-icon-button:hover:not(:disabled) {
+  background: var(--color-c8);
+  color: var(--color-c1);
+}
+
+.prevoyance-add-icon-button:hover:not(:disabled) {
+  background: var(--color-c2);
+  border-color: var(--color-c2);
+  color: var(--color-c7);
+}
+
+.prevoyance-add-icon-button:disabled,
+.prevoyance-summary-icon-button:disabled {
   cursor: not-allowed;
-  opacity: 0.55;
+  opacity: 0.42;
 }
 
 .prevoyance-link-button {
@@ -222,6 +277,11 @@
   gap: 10px;
   border-top: 1px solid var(--color-c8);
   padding-top: 12px;
+}
+
+.prevoyance-mini-section--flat {
+  border-top: 0;
+  padding-top: 0;
 }
 
 .prevoyance-mini-section__header {
@@ -441,24 +501,40 @@
 
 .prevoyance-death-target {
   display: grid;
+  gap: 8px;
+}
+
+.prevoyance-death-target__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   gap: 10px;
 }
 
+.prevoyance-death-target__top > span {
+  color: var(--color-c1);
+  font-size: 12px;
+  font-weight: 700;
+}
+
 .prevoyance-death-target__presets {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 8px;
+  display: inline-flex;
+  gap: 4px;
+  margin-left: auto;
 }
 
 .prevoyance-death-target__preset {
   border: 1px solid var(--color-c8);
-  border-radius: 999px;
-  background: var(--color-c7);
+  border-radius: 5px;
+  background: transparent;
   color: var(--color-c9);
   cursor: pointer;
   font: inherit;
-  font-size: 12px;
-  min-height: 30px;
+  font-size: 11px;
+  font-weight: 700;
+  min-height: 22px;
+  min-width: 28px;
+  padding: 0 6px;
 }
 
 .prevoyance-death-target__preset.is-active {
@@ -527,23 +603,80 @@
 }
 
 .prevoyance-contract-modal {
-  width: min(860px, calc(100vw - 32px));
+  width: min(980px, calc(100vw - 32px));
+  min-height: 560px;
 }
 
-.prevoyance-contract-modal__steps {
+.prevoyance-contract-modal__body {
+  padding: 20px;
+}
+
+.prevoyance-contract-modal__layout {
+  display: grid;
+  grid-template-columns: 190px minmax(0, 1fr);
+  gap: 18px;
+  min-height: 0;
+}
+
+.prevoyance-contract-modal__nav {
   display: flex;
-  flex-wrap: wrap;
+  flex-direction: column;
   gap: 8px;
-  margin-bottom: 12px;
+  min-width: 0;
+  padding-right: 16px;
+  border-right: 1px solid color-mix(in srgb, var(--color-c8) 72%, var(--color-c7));
 }
 
-.prevoyance-contract-modal__steps span {
-  border: 1px solid var(--color-c8);
-  border-radius: 999px;
-  background: color-mix(in srgb, var(--color-c7) 82%, var(--color-c4));
+.prevoyance-contract-modal__nav-item {
+  min-height: 36px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: transparent;
   color: var(--color-c9);
-  font-size: 11px;
-  padding: 4px 9px;
+  cursor: pointer;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 0 10px;
+  text-align: left;
+}
+
+.prevoyance-contract-modal__nav-item:hover,
+.prevoyance-contract-modal__nav-item:focus-visible {
+  border-color: var(--color-c8);
+  color: var(--color-c1);
+}
+
+.prevoyance-contract-modal__nav-item.is-active {
+  border-color: color-mix(in srgb, var(--color-c3) 44%, var(--color-c8));
+  background: color-mix(in srgb, var(--color-c4) 55%, var(--color-c7));
+  color: var(--color-c1);
+}
+
+.prevoyance-contract-modal__panel {
+  min-width: 0;
+}
+
+.prevoyance-contract-editor {
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--color-c7) 42%, #ffffff);
+  --sim-input-bg: #ffffff;
+}
+
+.prevoyance-contract-editor__top {
+  display: grid;
+  gap: 12px;
+}
+
+.prevoyance-contract-editor__base-grid {
+  display: grid;
+  grid-template-columns: minmax(180px, 1fr) minmax(130px, 0.75fr) minmax(130px, 0.75fr);
+  gap: 12px;
+  align-items: end;
+}
+
+.prevoyance-contract-editor__base-grid--collective {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
 .prevoyance-periods-modal__toolbar {
@@ -582,8 +715,31 @@
   .prevoyance-form-grid--three,
   .prevoyance-frais-inline-grid,
   .prevoyance-regime-picker,
-  .prevoyance-frais-grid {
+  .prevoyance-frais-grid,
+  .prevoyance-contract-editor__base-grid,
+  .prevoyance-contract-editor__base-grid--collective {
     grid-template-columns: 1fr;
+  }
+
+  .prevoyance-contract-modal {
+    min-height: 0;
+  }
+
+  .prevoyance-contract-modal__layout {
+    grid-template-columns: 1fr;
+  }
+
+  .prevoyance-contract-modal__nav {
+    flex-direction: row;
+    overflow-x: auto;
+    padding-right: 0;
+    padding-bottom: 10px;
+    border-right: 0;
+    border-bottom: 1px solid color-mix(in srgb, var(--color-c8) 72%, var(--color-c7));
+  }
+
+  .prevoyance-contract-modal__nav-item {
+    flex: 0 0 auto;
   }
 
   .prevoyance-period-row {

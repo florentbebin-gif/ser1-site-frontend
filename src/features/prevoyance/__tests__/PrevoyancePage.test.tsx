@@ -77,6 +77,16 @@ const regimes: PrevoyanceRegimeSettings[] = [
     data: baseData,
     sources,
   },
+  {
+    code: 'salarie-msa',
+    label: 'Salarié agricole — MSA',
+    caisse: 'MSA salariés',
+    population: 'salarie',
+    defaultContractKind: 'collectif',
+    year: 2026,
+    data: baseData,
+    sources,
+  },
 ];
 
 const maintien: PrevoyanceMaintienEmployeurSettings[] = [
@@ -122,7 +132,7 @@ describe('PrevoyancePage', () => {
 
   async function saisirDateNaissance(user: ReturnType<typeof userEvent.setup>) {
     await user.type(await screen.findByLabelText('Date de naissance'), '1980-01-01');
-    await screen.findByText('Garanties privées à comparer ou à cumuler');
+    await screen.findByText('Garanties souscrites hors régime obligatoire');
   }
 
   it('affiche le parcours salarié sans frais professionnels', async () => {
@@ -132,10 +142,15 @@ describe('PrevoyancePage', () => {
     expect(
       await screen.findByText('Choix du régime obligatoire et des ayants droit'),
     ).toBeInTheDocument();
-    expect(screen.queryByText('Garanties privées à comparer ou à cumuler')).not.toBeInTheDocument();
+    expect(
+      screen.queryByText('Garanties souscrites hors régime obligatoire'),
+    ).not.toBeInTheDocument();
     await saisirDateNaissance(user);
     expect(screen.getByText('Comparer')).toBeInTheDocument();
-    expect(screen.queryByText('Frais professionnels')).not.toBeInTheDocument();
+    expect(screen.getByText('Non applicable')).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: /Salarié CPAM/i }));
+    expect(screen.getByText('Salarié agricole — MSA')).toBeInTheDocument();
+    expect(screen.queryByText('MSA salariés')).not.toBeInTheDocument();
     expect(screen.getAllByText('Régime obligatoire').length).toBeGreaterThan(0);
     expect(screen.queryByText(/Maintien employeur/i)).toBeNull();
   });
@@ -146,12 +161,12 @@ describe('PrevoyancePage', () => {
 
     await saisirDateNaissance(user);
     await user.click(screen.getByRole('radio', { name: 'TNS / libéral' }));
-    expect(await screen.findByText('Frais professionnels')).toBeInTheDocument();
+    expect((await screen.findAllByText('Frais professionnels')).length).toBeGreaterThan(0);
     expect(screen.getAllByText('Frais professionnels').length).toBeGreaterThan(0);
 
-    await user.click(screen.getByRole('button', { name: 'Ajouter' }));
+    await user.click(screen.getByRole('button', { name: 'Ajouter un contrat' }));
     await user.click(await screen.findByRole('button', { name: 'Terminer' }));
-    await user.click(screen.getByRole('button', { name: 'Ajouter' }));
+    await user.click(screen.getByRole('button', { name: 'Ajouter un contrat' }));
     await user.click(await screen.findByRole('button', { name: 'Terminer' }));
 
     await waitFor(() => {
@@ -167,17 +182,16 @@ describe('PrevoyancePage', () => {
     await user.click(screen.getByRole('radio', { name: 'TNS / libéral' }));
     expect(await screen.findByRole('heading', { name: 'Contrat 1' })).toBeInTheDocument();
 
-    await user.click(screen.getByRole('button', { name: 'Ajouter' }));
+    await user.click(screen.getByRole('button', { name: 'Ajouter un contrat' }));
     await user.click(await screen.findByRole('button', { name: 'Terminer' }));
-    await user.click(screen.getByRole('button', { name: 'Ajouter' }));
+    await user.click(screen.getByRole('button', { name: 'Ajouter un contrat' }));
     await user.click(await screen.findByRole('button', { name: 'Terminer' }));
 
     await waitFor(() => {
       expect(screen.getAllByRole('heading', { name: /Contrat [123]/i })).toHaveLength(3);
     });
 
-    await user.click(screen.getAllByRole('button', { name: 'Modifier' })[0]);
-    expect(await screen.findByText('Taux / 66 × rente')).toBeInTheDocument();
+    await user.click(screen.getAllByRole('button', { name: /Modifier Contrat/i })[0]);
     await user.click(screen.getAllByRole('button', { name: /Découper les périodes/i })[0]);
     expect(await screen.findByText('Découper l’arrêt de travail')).toBeInTheDocument();
     expect(screen.getByText('Cliquez × pour retirer une période.')).toBeInTheDocument();
@@ -189,7 +203,8 @@ describe('PrevoyancePage', () => {
 
     await saisirDateNaissance(user);
     await user.click(screen.getByRole('radio', { name: 'TNS / libéral' }));
-    await user.click(screen.getByRole('button', { name: 'Modifier' }));
+    await user.click(screen.getByRole('button', { name: /Modifier Contrat 1/i }));
+    await user.click(await screen.findByRole('button', { name: 'Invalidité' }));
     await user.click(
       await screen.findByRole('button', {
         name: 'Ajouter un palier invalidité au contrat 1',
@@ -215,8 +230,9 @@ describe('PrevoyancePage', () => {
 
     await saisirDateNaissance(user);
     await user.click(screen.getByRole('radio', { name: 'TNS / libéral' }));
-    expect(await screen.findByText('Frais professionnels')).toBeInTheDocument();
-    await user.click(screen.getByRole('button', { name: 'Modifier' }));
+    expect((await screen.findAllByText('Frais professionnels')).length).toBeGreaterThan(0);
+    await user.click(screen.getByRole('button', { name: /Modifier Contrat 1/i }));
+    await user.click(await screen.findByRole('button', { name: 'Frais professionnels' }));
     await user.click(screen.getByRole('button', { name: /Estimer depuis un compte de résultat/i }));
 
     expect(
