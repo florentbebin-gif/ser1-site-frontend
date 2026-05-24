@@ -29,7 +29,6 @@ export const DEFAULT_SITUATION: PrevoyanceSituationDraft = {
   familyStatus: 'celibataire',
   childrenCount: 0,
   regimeCode: '',
-  kindOverride: null,
   revenuImposable: 0,
   salaireBrutAnnuel: 0,
   salaireNetImposable: 0,

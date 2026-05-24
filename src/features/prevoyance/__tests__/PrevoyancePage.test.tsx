@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 
 import '@testing-library/jest-dom/vitest';
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { PREVOYANCE_MAINTIEN_LEGAL_CODE } from '@/domain/prevoyance/constants';
@@ -9,6 +9,7 @@ import type {
   PrevoyanceMaintienEmployeurSettings,
   PrevoyanceRegimeSettings,
 } from '@/domain/prevoyance/types';
+import { triggerPageReset } from '@/utils/reset';
 import PrevoyancePage from '../PrevoyancePage';
 
 const baseData: PrevoyanceRegimeSettings['data'] = {
@@ -59,7 +60,7 @@ const sources = {
 const regimes: PrevoyanceRegimeSettings[] = [
   {
     code: 'salarie-cpam',
-    label: 'Salarié CPAM',
+    label: 'Salarié secteur privé — CPAM',
     caisse: 'CPAM',
     population: 'salarie',
     defaultContractKind: 'collectif',
@@ -68,8 +69,8 @@ const regimes: PrevoyanceRegimeSettings[] = [
     sources,
   },
   {
-    code: 'ssi',
-    label: 'SSI',
+    code: 'ssi-artisan-commercant',
+    label: 'Artisan / commerçant — SSI',
     caisse: 'SSI',
     population: 'tns',
     defaultContractKind: 'individuel',
@@ -135,6 +136,11 @@ describe('PrevoyancePage', () => {
     await screen.findByText('Garanties souscrites hors régime obligatoire');
   }
 
+  async function choisirRegime(user: ReturnType<typeof userEvent.setup>, optionName: RegExp) {
+    await user.click(await screen.findByRole('button', { name: /Artisan \/ commerçant|Salarié/i }));
+    await user.click(await screen.findByRole('option', { name: optionName }));
+  }
+
   it('affiche le parcours salarié sans frais généraux', async () => {
     const user = userEvent.setup();
     render(<PrevoyancePage />);
@@ -143,6 +149,15 @@ describe('PrevoyancePage', () => {
       await screen.findByText('Choix du régime obligatoire et des ayants droit'),
     ).toBeInTheDocument();
     expect(screen.getByLabelText('Enfants')).toHaveValue(null);
+    expect(screen.queryByText('Parcours')).toBeNull();
+    expect(screen.queryByRole('radio', { name: 'Salarié' })).toBeNull();
+    await waitFor(() =>
+      expect(
+        screen.getByRole('button', { name: /Artisan \/ commerçant — SSI/i }),
+      ).toBeInTheDocument(),
+    );
+    expect(screen.getByLabelText('Revenu imposable à couvrir')).toHaveValue('');
+    await choisirRegime(user, /Salarié secteur privé — CPAM/i);
     await waitFor(() => expect(screen.getByLabelText('Salaire brut annuel')).toHaveValue(''));
     expect(
       screen.queryByText('Garanties souscrites hors régime obligatoire'),
@@ -164,19 +179,27 @@ describe('PrevoyancePage', () => {
     await user.click(screen.getByRole('button', { name: 'Acte juridique' }));
     expect(screen.getAllByText('Acte juridique').length).toBeGreaterThan(0);
     await user.click(screen.getByRole('button', { name: 'Terminer' }));
-    await user.click(screen.getByRole('button', { name: /Salarié CPAM/i }));
+    await user.click(screen.getByRole('button', { name: /Salarié secteur privé — CPAM/i }));
     expect(screen.getByText('Salarié agricole — MSA')).toBeInTheDocument();
     expect(screen.queryByText('MSA salariés')).not.toBeInTheDocument();
     expect(screen.getAllByText('RO').length).toBeGreaterThan(0);
     expect(screen.queryByText(/Maintien employeur/i)).toBeNull();
+    act(() => {
+      triggerPageReset('prevoyance');
+    });
+    await waitFor(() =>
+      expect(
+        screen.getByRole('button', { name: /Artisan \/ commerçant — SSI/i }),
+      ).toBeInTheDocument(),
+    );
+    expect(screen.getByLabelText('Revenu imposable à couvrir')).toBeInTheDocument();
   });
 
-  it('bascule en TNS et permet trois contrats en cartes compactes', async () => {
+  it('charge le parcours TNS par défaut et permet trois contrats en cartes compactes', async () => {
     const user = userEvent.setup();
     render(<PrevoyancePage />);
 
     await saisirDateNaissance(user);
-    await user.click(screen.getByRole('radio', { name: 'TNS / libéral' }));
     expect((await screen.findAllByText('Frais généraux')).length).toBeGreaterThan(0);
     expect(screen.getAllByText('Frais généraux').length).toBeGreaterThan(0);
 
@@ -195,7 +218,6 @@ describe('PrevoyancePage', () => {
     render(<PrevoyancePage />);
 
     await saisirDateNaissance(user);
-    await user.click(screen.getByRole('radio', { name: 'TNS / libéral' }));
     expect(await screen.findByRole('heading', { name: 'Contrat 1' })).toBeInTheDocument();
 
     await user.click(screen.getByRole('button', { name: 'Ajouter un contrat' }));
@@ -253,7 +275,6 @@ describe('PrevoyancePage', () => {
     render(<PrevoyancePage />);
 
     await saisirDateNaissance(user);
-    await user.click(screen.getByRole('radio', { name: 'TNS / libéral' }));
     await user.click(screen.getByRole('button', { name: /Modifier Contrat 1/i }));
     await user.click(await screen.findByRole('button', { name: 'Invalidité' }));
     await user.click(screen.getByRole('radio', { name: 'Forfaitaire' }));
@@ -289,7 +310,6 @@ describe('PrevoyancePage', () => {
     render(<PrevoyancePage />);
 
     await saisirDateNaissance(user);
-    await user.click(screen.getByRole('radio', { name: 'TNS / libéral' }));
     expect((await screen.findAllByText('Frais généraux')).length).toBeGreaterThan(0);
     await user.click(screen.getByRole('button', { name: /Modifier Contrat 1/i }));
     await user.click(await screen.findByRole('button', { name: 'Frais généraux' }));
@@ -335,7 +355,6 @@ describe('PrevoyancePage', () => {
     render(<PrevoyancePage />);
 
     await saisirDateNaissance(user);
-    await user.click(screen.getByRole('radio', { name: 'TNS / libéral' }));
     fireEvent.change(screen.getByLabelText('Revenu imposable à couvrir'), {
       target: { value: '80000' },
     });

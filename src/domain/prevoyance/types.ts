@@ -127,7 +127,6 @@ export interface PrevoyanceSituationDraft {
   familyStatus: 'celibataire' | 'couple' | 'marie' | 'pacs' | 'divorce' | 'veuf';
   childrenCount: number;
   regimeCode: string;
-  kindOverride?: PrevoyanceContractKind | null;
   revenuImposable: number;
   salaireBrutAnnuel: number;
   salaireNetImposable: number;

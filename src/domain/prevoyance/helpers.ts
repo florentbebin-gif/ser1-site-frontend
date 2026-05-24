@@ -25,13 +25,6 @@ export function deriveContractKindFromRegime(
   return regime.population === 'salarie' ? 'collectif' : 'individuel';
 }
 
-export function resolveContractKind(
-  regime: Pick<PrevoyanceRegimeSettings, 'population' | 'defaultContractKind'> | null | undefined,
-  override?: PrevoyanceContractKind | null,
-): PrevoyanceContractKind {
-  return override ?? deriveContractKindFromRegime(regime);
-}
-
 export function resolveRegimeStack(
   selectedRegime: PrevoyanceRegimeSettings | null | undefined,
   allRegimes: PrevoyanceRegimeSettings[],

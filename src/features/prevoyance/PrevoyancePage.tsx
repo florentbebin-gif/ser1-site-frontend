@@ -3,16 +3,16 @@ import '@/styles/sim/index.css';
 import './styles/index.css';
 import { ExportMenu } from '@/components/ExportMenu';
 import { SimPageShell } from '@/components/ui/sim';
-import { PREVOYANCE_MAINTIEN_LEGAL_CODE } from '@/domain/prevoyance/constants';
 import {
-  deriveContractKindFromRegime,
-  resolveContractKind,
-  resolveRegimeStack,
-} from '@/domain/prevoyance/helpers';
+  PREVOYANCE_DEFAULT_REGIME_CODE,
+  PREVOYANCE_MAINTIEN_LEGAL_CODE,
+} from '@/domain/prevoyance/constants';
+import { deriveContractKindFromRegime, resolveRegimeStack } from '@/domain/prevoyance/helpers';
 import type {
   PrevoyanceContractAggregationMode,
   PrevoyanceContractDraft,
   PrevoyanceDeathTargetDraft,
+  PrevoyanceRegimeSettings,
   PrevoyanceSituationDraft,
 } from '@/domain/prevoyance/types';
 import { useFiscalContext } from '@/hooks/useFiscalContext';
@@ -39,6 +39,14 @@ function resolvePass(passHistoryByYear: Record<number, number>): number {
   return passHistoryByYear[currentYear] ?? passHistoryByYear[latestYear] ?? 0;
 }
 
+function resolveDefaultRegime(
+  regimes: PrevoyanceRegimeSettings[],
+): PrevoyanceRegimeSettings | null {
+  return (
+    regimes.find((regime) => regime.code === PREVOYANCE_DEFAULT_REGIME_CODE) ?? regimes[0] ?? null
+  );
+}
+
 export default function PrevoyancePage() {
   const { fiscalContext } = useFiscalContext();
   const { regimes, maintien, loading } = usePrevoyanceSettings();
@@ -58,7 +66,7 @@ export default function PrevoyancePage() {
 
   const selectedRegime = regimes.find((regime) => regime.code === situation.regimeCode) ?? null;
   const regimeStack = resolveRegimeStack(selectedRegime, regimes);
-  const kind = resolveContractKind(selectedRegime, situation.kindOverride);
+  const kind = deriveContractKindFromRegime(selectedRegime);
   const annualBase = kind === 'collectif' ? situation.salaireBrutAnnuel : situation.revenuImposable;
   const referenceAnnual = kind === 'collectif' ? situation.salaireNetImposable : annualBase;
   const maintienLegal =
@@ -106,9 +114,11 @@ export default function PrevoyancePage() {
   }, []);
 
   useEffect(() => {
-    const firstRegime = regimes[0];
-    if (!situation.regimeCode && firstRegime) {
-      setSituation((prev) => ({ ...prev, regimeCode: firstRegime.code }));
+    if (regimes.length === 0) return;
+    if (regimes.some((regime) => regime.code === situation.regimeCode)) return;
+    const defaultRegime = resolveDefaultRegime(regimes);
+    if (defaultRegime) {
+      setSituation((prev) => ({ ...prev, regimeCode: defaultRegime.code }));
     }
   }, [regimes, situation.regimeCode]);
 
@@ -141,10 +151,10 @@ export default function PrevoyancePage() {
   useEffect(() => {
     const off = onResetEvent(({ simId }: { simId?: string }) => {
       if (simId && simId !== 'prevoyance') return;
-      const firstRegime = regimes[0] ?? null;
-      setSituation({ ...DEFAULT_SITUATION, regimeCode: firstRegime?.code ?? '' });
+      const defaultRegime = resolveDefaultRegime(regimes);
+      setSituation({ ...DEFAULT_SITUATION, regimeCode: defaultRegime?.code ?? '' });
       setContracts([
-        createDefaultContract(deriveContractKindFromRegime(firstRegime), 1, annualBase),
+        createDefaultContract(deriveContractKindFromRegime(defaultRegime), 1, annualBase),
       ]);
       setContractAggregationMode('compare');
       setDeathTarget(DEFAULT_DEATH_TARGET);

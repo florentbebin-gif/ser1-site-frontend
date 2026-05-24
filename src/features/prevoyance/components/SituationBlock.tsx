@@ -1,4 +1,4 @@
-import { SimSegmentedControl, SimSelect, type SimSelectOption } from '@/components/ui/sim';
+import { SimSelect, type SimSelectOption } from '@/components/ui/sim';
 import { estimateSalaireNetFromBrut } from '@/domain/prevoyance/helpers';
 import type {
   PrevoyanceContractKind,
@@ -84,22 +84,10 @@ export function SituationBlock({
         <SimFieldShell label="Régime obligatoire de prévoyance">
           <SimSelect
             value={situation.regimeCode}
-            onChange={(regimeCode) => onChange({ regimeCode, kindOverride: null })}
+            onChange={(regimeCode) => onChange({ regimeCode })}
             options={regimeOptions}
             placeholder="Sélectionner"
             align="left"
-          />
-        </SimFieldShell>
-        <SimFieldShell label="Parcours">
-          <SimSegmentedControl
-            value={kind}
-            onChange={(value) => onChange({ kindOverride: value })}
-            ariaLabel="Type de contrat prévoyance"
-            size="sm"
-            options={[
-              { value: 'collectif', label: 'Salarié' },
-              { value: 'individuel', label: 'TNS / libéral' },
-            ]}
           />
         </SimFieldShell>
       </div>
