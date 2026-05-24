@@ -1,5 +1,6 @@
 import type {
   PrevoyanceAmountRule,
+  PrevoyanceContractAggregationMode,
   PrevoyanceContractDraft,
   PrevoyanceContractKind,
   PrevoyanceMaintienEmployeurSettings,
@@ -29,18 +30,20 @@ export interface PrevoyanceRangeLike {
 }
 
 export interface ArretCoverageInput {
-  regime: PrevoyanceRegimeSettings | null;
+  regimeStack?: PrevoyanceRegimeSettings[];
   contracts: PrevoyanceContractDraft[];
   kind: PrevoyanceContractKind;
+  contractAggregationMode?: PrevoyanceContractAggregationMode;
   maintienPalier: PrevoyanceMaintienPalier;
   referenceAnnual: number;
   salaireBrutAnnuel: number;
 }
 
 export interface InvaliditeCoverageInput {
-  regime: PrevoyanceRegimeSettings | null;
+  regimeStack?: PrevoyanceRegimeSettings[];
   contracts: PrevoyanceContractDraft[];
   kind: PrevoyanceContractKind;
+  contractAggregationMode?: PrevoyanceContractAggregationMode;
   referenceAnnual: number;
   salaireBrutAnnuel: number;
 }
@@ -135,4 +138,16 @@ export function computeInvaliditePalierAmount(
     return Math.max(0, palier.referencePct ?? palier.salairePct) * (Math.max(0, rate) / 66);
   }
   return palier.salairePct;
+}
+
+export function normalizeRegimeStack(
+  regimeStack: PrevoyanceRegimeSettings[] | null | undefined,
+): PrevoyanceRegimeSettings[] {
+  if (!Array.isArray(regimeStack)) return [];
+  const seen = new Set<string>();
+  return regimeStack.filter((regime) => {
+    if (!regime || seen.has(regime.code)) return false;
+    seen.add(regime.code);
+    return true;
+  });
 }

@@ -82,6 +82,15 @@ describe('schémas prévoyance JSONB', () => {
     expect(parsed.success).toBe(false);
   });
 
+  it('valide une composition de régimes obligatoires dans le JSONB data', () => {
+    const parsed = prevoyanceRegimeDataSchema.safeParse({
+      ...baseData,
+      composition: { componentCodes: ['cnavpl', 'cavamac'] },
+    });
+
+    expect(parsed.success).toBe(true);
+  });
+
   it('valide le bloc maintien employeur légal', () => {
     const parsed = maintienEmployeurDataSchema.safeParse({
       maintienEmployeur: {

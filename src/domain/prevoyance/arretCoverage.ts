@@ -5,10 +5,10 @@ import type {
   PrevoyanceRegimeSettings,
 } from './types';
 import {
-  annualValueFromAmountRule,
   buildMaintienSegment,
   clampPct,
   dailyValueFromAmountRule,
+  normalizeRegimeStack,
   percentOfReference,
   type ArretCoverageInput,
   type PrevoyanceCoverageBar,
@@ -21,6 +21,7 @@ export type { PrevoyanceRangeLike } from './coverageShared';
 export interface PrevoyanceArretEuroPeriod {
   from: number;
   to: number;
+  roSegments: Array<{ code: string; label: string; euro: number }>;
   roEuro: number;
   contratEuro: number;
   totalEuro: number;
@@ -131,13 +132,20 @@ function buildSinglePalierArretWindows(regime: PrevoyanceRegimeSettings): Array<
 }
 
 function buildArretWindows(
-  regime: PrevoyanceRegimeSettings | null,
+  regimeStack: PrevoyanceRegimeSettings[],
   contracts: PrevoyanceContractDraft[],
 ): Array<[number, number]> {
-  const max = capArretDay(regime?.data.arret.maxDurationDays ?? PREVOYANCE_MAX_ARRET_DURATION_DAYS);
-  const regimePaliers = regime?.data.arret.paliers ?? [];
+  const max = capArretDay(
+    Math.max(
+      ...regimeStack.map((regime) => regime.data.arret.maxDurationDays),
+      PREVOYANCE_MAX_ARRET_DURATION_DAYS,
+    ),
+  );
+  const regimePaliers = regimeStack.flatMap((regime) => regime.data.arret.paliers);
   if (regimePaliers.length === 0) return [[0, max]];
-  if (regime && regimePaliers.length === 1) return buildSinglePalierArretWindows(regime);
+  if (regimeStack.length === 1 && regimePaliers.length === 1) {
+    return buildSinglePalierArretWindows(regimeStack[0] as PrevoyanceRegimeSettings);
+  }
 
   const ranges = new Map<string, [number, number]>();
   const addRange = (fromDay: number, toDay: number | null) => {
@@ -148,7 +156,11 @@ function buildArretWindows(
     ranges.set(`${range[0]}-${range[1]}`, range);
   };
 
-  regimePaliers.forEach((palier) => addRange(palier.fromDay, palier.toDay));
+  regimeStack.forEach((regime) => {
+    regime.data.arret.paliers.forEach((palier) => addRange(palier.fromDay, palier.toDay));
+    const carence = regime.data.arret.carences.maladie;
+    if (carence > 0) addRange(0, carence);
+  });
   contracts.forEach((contract) => {
     if (contract.kind === 'individuel') {
       contract.arret.paliers.forEach((palier) => addRange(palier.fromDay, palier.toDay));
@@ -160,13 +172,15 @@ function buildArretWindows(
 }
 
 export function buildArretCoverageBars({
-  regime,
+  regimeStack: inputRegimeStack,
   contracts,
   kind,
+  contractAggregationMode = 'compare',
   maintienPalier,
   referenceAnnual,
   salaireBrutAnnuel,
 }: ArretCoverageInput): PrevoyanceCoverageBar[] {
+  const regimeStack = normalizeRegimeStack(inputRegimeStack);
   const bars: PrevoyanceCoverageBar[] = [
     {
       key: 'net-percu',
@@ -176,24 +190,38 @@ export function buildArretCoverageBars({
     },
   ];
 
-  const windows = buildArretWindows(regime, contracts);
+  const windows = buildArretWindows(regimeStack, contracts);
   windows.forEach(([fromDay, toDay]) => {
-    const roPalier = regime
-      ? findArretPalierForRange(regime.data.arret.paliers, fromDay, toDay)
-      : null;
-    const roPct = percentOfReference(
-      annualValueFromAmountRule(roPalier?.amount, referenceAnnual, salaireBrutAnnuel),
+    const roSegments = buildRegimeArretSegments({
+      regimeStack,
+      from: fromDay,
+      to: toDay,
       referenceAnnual,
-    );
+      salaireBrutAnnuel,
+    });
+    const roPct = roSegments.reduce((sum, segment) => sum + segment.valuePct, 0);
     const contratPct =
       kind === 'collectif'
         ? buildCollectiveArretPct(contracts, salaireBrutAnnuel, referenceAnnual)
-        : buildIndividualArretPct(contracts, fromDay, toDay, referenceAnnual, salaireBrutAnnuel);
+        : buildIndividualArretPct({
+            contracts,
+            fromDay,
+            toDay,
+            referenceAnnual,
+            salaireBrutAnnuel,
+            roEuro: (referenceAnnual / 365) * (roPct / 100),
+            contractAggregationMode,
+          });
     const maintienSegment =
       kind === 'collectif' ? buildMaintienSegment(fromDay, maintienPalier) : null;
-    const segments: PrevoyanceCoverageSegment[] = [
-      { kind: 'ro', label: roPalier?.amount.label ?? 'Régime obligatoire', valuePct: roPct },
-    ];
+    const segments: PrevoyanceCoverageSegment[] = roSegments.map((segment) => ({
+      kind: 'ro',
+      label: segment.label,
+      valuePct: segment.valuePct,
+    }));
+    if (segments.length === 0) {
+      segments.push({ kind: 'ro', label: 'Régime obligatoire', valuePct: 0 });
+    }
     if (maintienSegment) segments.push(maintienSegment);
     segments.push({ kind: 'contrat', label: 'Contrats de prévoyance', valuePct: contratPct });
     bars.push({
@@ -226,40 +254,38 @@ function buildCollectiveArretPct(
   );
 }
 
-function buildIndividualArretPct(
-  contracts: PrevoyanceContractDraft[],
-  fromDay: number,
-  toDay: number,
-  referenceAnnual: number,
-  salaireBrutAnnuel: number,
-): number {
-  return percentOfReference(
-    contracts
-      .filter(
-        (contract): contract is Extract<PrevoyanceContractDraft, { kind: 'individuel' }> =>
-          contract.kind === 'individuel',
-      )
-      .reduce((sum, contract) => {
-        const palier = findArretPalierForRange(contractArretPaliers(contract), fromDay, toDay);
-        return sum + annualValueFromAmountRule(palier?.amount, referenceAnnual, salaireBrutAnnuel);
-      }, 0),
-    referenceAnnual,
-  );
+function buildIndividualArretPct(input: {
+  contracts: PrevoyanceContractDraft[];
+  fromDay: number;
+  toDay: number;
+  referenceAnnual: number;
+  salaireBrutAnnuel: number;
+  roEuro: number;
+  contractAggregationMode: NonNullable<ArretCoverageInput['contractAggregationMode']>;
+}): number {
+  return percentOfReference(buildIndividualArretEuro(input) * 365, input.referenceAnnual);
 }
 
 export function buildArretEuroChart({
-  regime,
+  regimeStack: inputRegimeStack,
   contracts,
   kind,
+  contractAggregationMode = 'compare',
   maintienPalier,
   referenceAnnual,
   salaireBrutAnnuel,
 }: ArretCoverageInput): PrevoyanceArretEuroChart {
+  const regimeStack = normalizeRegimeStack(inputRegimeStack);
   const rangePaliers: PrevoyanceRangeLike[] = [
-    ...(regime?.data.arret.paliers ?? []).map((palier) => ({
-      fromDay: palier.fromDay,
-      toDay: palier.toDay,
-    })),
+    ...regimeStack.flatMap((regime) => [
+      ...regime.data.arret.paliers.map((palier) => ({
+        fromDay: palier.fromDay,
+        toDay: palier.toDay,
+      })),
+      ...(regime.data.arret.carences.maladie > 0
+        ? [{ fromDay: 0, toDay: regime.data.arret.carences.maladie }]
+        : []),
+    ]),
     ...contracts.flatMap((contract) =>
       contract.kind === 'individuel'
         ? contract.arret.paliers.map((palier) => ({
@@ -278,9 +304,10 @@ export function buildArretEuroChart({
       buildArretEuroPeriod({
         from,
         to,
-        regime,
+        regimeStack,
         contracts,
         kind,
+        contractAggregationMode,
         maintienPalier,
         referenceAnnual,
         salaireBrutAnnuel,
@@ -293,9 +320,10 @@ export function buildArretEuroChart({
 function buildArretEuroPeriod({
   from,
   to,
-  regime,
+  regimeStack: inputRegimeStack,
   contracts,
   kind,
+  contractAggregationMode = 'compare',
   maintienPalier,
   referenceAnnual,
   salaireBrutAnnuel,
@@ -305,24 +333,110 @@ function buildArretEuroPeriod({
   to: number;
   reference: number;
 }): PrevoyanceArretEuroPeriod {
-  const roPalier = regime ? findArretPalierForRange(regime.data.arret.paliers, from, to) : null;
+  const regimeStack = normalizeRegimeStack(inputRegimeStack);
+  const roSegments = buildRegimeArretSegments({
+    regimeStack,
+    from,
+    to,
+    referenceAnnual,
+    salaireBrutAnnuel,
+  });
   const maintienSegment = kind === 'collectif' ? buildMaintienSegment(from, maintienPalier) : null;
   const roEuro =
-    dailyValueFromAmountRule(roPalier?.amount, referenceAnnual, salaireBrutAnnuel) +
+    roSegments.reduce((sum, segment) => sum + segment.euro, 0) +
     (maintienSegment ? reference * (maintienSegment.valuePct / 100) : 0);
-  const contratEuro = contracts.reduce((sum, contract) => {
-    if (contract.kind === 'collectif') {
-      return sum + (Math.max(0, salaireBrutAnnuel) * (contract.arret.salairePct / 100)) / 365;
-    }
-    const palier = findArretPalierForRange(contractArretPaliers(contract), from, to);
-    return sum + dailyValueFromAmountRule(palier?.amount, referenceAnnual, salaireBrutAnnuel);
-  }, 0);
+  const contratEuro =
+    kind === 'collectif'
+      ? contracts.reduce((sum, contract) => {
+          if (contract.kind !== 'collectif') return sum;
+          return sum + (Math.max(0, salaireBrutAnnuel) * (contract.arret.salairePct / 100)) / 365;
+        }, 0)
+      : buildIndividualArretEuro({
+          contracts,
+          fromDay: from,
+          toDay: to,
+          referenceAnnual,
+          salaireBrutAnnuel,
+          roEuro,
+          contractAggregationMode,
+        });
 
   return {
     from,
     to,
+    roSegments: roSegments.map((segment) => ({
+      code: segment.code,
+      label: segment.label,
+      euro: Math.round(segment.euro),
+    })),
     roEuro: Math.round(roEuro),
     contratEuro: Math.round(contratEuro),
     totalEuro: Math.round(roEuro + contratEuro),
   };
+}
+
+function buildRegimeArretSegments({
+  regimeStack,
+  from,
+  to,
+  referenceAnnual,
+  salaireBrutAnnuel,
+}: {
+  regimeStack: PrevoyanceRegimeSettings[];
+  from: number;
+  to: number;
+  referenceAnnual: number;
+  salaireBrutAnnuel: number;
+}): Array<{ code: string; label: string; euro: number; valuePct: number }> {
+  return regimeStack.map((regime) => {
+    const roPalier = findArretPalierForRange(regime.data.arret.paliers, from, to);
+    const euro = dailyValueFromAmountRule(roPalier?.amount, referenceAnnual, salaireBrutAnnuel);
+    return {
+      code: regime.code,
+      label: roPalier?.amount.label ?? regime.caisse,
+      euro,
+      valuePct: percentOfReference(euro * 365, referenceAnnual),
+    };
+  });
+}
+
+function buildIndividualArretEuro({
+  contracts,
+  fromDay,
+  toDay,
+  referenceAnnual,
+  salaireBrutAnnuel,
+  roEuro,
+  contractAggregationMode,
+}: {
+  contracts: PrevoyanceContractDraft[];
+  fromDay: number;
+  toDay: number;
+  referenceAnnual: number;
+  salaireBrutAnnuel: number;
+  roEuro: number;
+  contractAggregationMode: NonNullable<ArretCoverageInput['contractAggregationMode']>;
+}): number {
+  const individualContracts = contracts.filter(
+    (contract): contract is Extract<PrevoyanceContractDraft, { kind: 'individuel' }> =>
+      contract.kind === 'individuel',
+  );
+  const selectedContracts =
+    contractAggregationMode === 'compare' ? individualContracts.slice(0, 1) : individualContracts;
+  const values = selectedContracts.map((contract) => {
+    const palier = findArretPalierForRange(contractArretPaliers(contract), fromDay, toDay);
+    const daily = dailyValueFromAmountRule(palier?.amount, referenceAnnual, salaireBrutAnnuel);
+    return { indemnisation: contract.indemnisation, daily };
+  });
+  const forfaitaireEuro = values
+    .filter((value) => value.indemnisation === 'forfaitaire')
+    .reduce((sum, value) => sum + value.daily, 0);
+  const indemnitaireEuro = Math.max(
+    0,
+    ...values.filter((value) => value.indemnisation === 'indemnitaire').map((value) => value.daily),
+  );
+  const referenceDaily = Math.max(0, referenceAnnual) / 365;
+  const indemnitaireRelais = Math.min(indemnitaireEuro, Math.max(0, referenceDaily - roEuro));
+
+  return forfaitaireEuro + indemnitaireRelais;
 }

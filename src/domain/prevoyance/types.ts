@@ -69,6 +69,10 @@ export interface PrevoyanceCotisationsSettings {
   notes?: string[];
 }
 
+export interface PrevoyanceRegimeComposition {
+  componentCodes: string[];
+}
+
 export interface PrevoyanceSources {
   fiche: string;
   pagesPdf: number[];
@@ -80,6 +84,7 @@ export interface PrevoyanceRegimeData {
   invalidite: PrevoyanceInvaliditeSettings;
   deces: PrevoyanceDecesSettings;
   cotisations: PrevoyanceCotisationsSettings;
+  composition?: PrevoyanceRegimeComposition;
 }
 
 export interface PrevoyanceRegimeSettings {
@@ -221,4 +226,12 @@ export interface PrevoyanceTranches {
   tb: number;
   tc: number;
   totalRetenu: number;
+}
+
+export type PrevoyanceContractAggregationMode = 'compare' | 'cumulate';
+
+export interface PrevoyanceDeathTargetDraft {
+  mode: 'multiple' | 'manual';
+  multiple: 1 | 3 | 5;
+  manualAmount: number;
 }
