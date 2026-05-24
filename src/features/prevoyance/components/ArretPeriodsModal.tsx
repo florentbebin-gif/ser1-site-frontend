@@ -151,40 +151,46 @@ export function ArretPeriodsModal({ paliers, onClose, onApply }: ArretPeriodsMod
         Ajuster un début recale la période précédente ; ajuster une fin recale la période suivante.
       </p>
       <div className="prevoyance-periods-modal__list">
-        {draft.map((palier, index) => (
-          <div key={index} className="prevoyance-period-row">
-            <SimFieldShell label="Début">
-              <NumberInput
-                value={palier.fromDay}
-                onChange={(fromDay) => updatePalier(index, { fromDay })}
-                suffix="j"
-              />
-            </SimFieldShell>
-            <SimFieldShell label="Fin">
-              <NumberInput
-                value={palier.toDay}
-                onChange={(toDay) => updatePalier(index, { toDay })}
-                suffix="j"
-              />
-            </SimFieldShell>
-            <SimFieldShell label="Montant">
-              <NumberInput
-                value={palier.amount}
-                onChange={(amount) => updatePalier(index, { amount })}
-                suffix="€/j"
-              />
-            </SimFieldShell>
-            <button
-              type="button"
-              className="prevoyance-icon-button"
-              onClick={() => removePalier(index)}
-              aria-label={`Supprimer la période ${index + 1}`}
-              disabled={draft.length === 1}
-            >
-              ×
-            </button>
-          </div>
-        ))}
+        {draft.map((palier, index) => {
+          const isLastPalier = index === draft.length - 1;
+
+          return (
+            <div key={index} className="prevoyance-period-row">
+              <SimFieldShell label="Début">
+                <NumberInput
+                  value={palier.fromDay}
+                  onChange={(fromDay) => updatePalier(index, { fromDay })}
+                  suffix="j"
+                />
+              </SimFieldShell>
+              <SimFieldShell label="Fin">
+                <NumberInput
+                  value={palier.toDay}
+                  onChange={(toDay) => updatePalier(index, { toDay })}
+                  suffix="j"
+                  disabled={isLastPalier}
+                  title={isLastPalier ? 'Verrouillée à 1 095 jours' : undefined}
+                />
+              </SimFieldShell>
+              <SimFieldShell label="Montant">
+                <NumberInput
+                  value={palier.amount}
+                  onChange={(amount) => updatePalier(index, { amount })}
+                  suffix="€/j"
+                />
+              </SimFieldShell>
+              <button
+                type="button"
+                className="prevoyance-icon-button"
+                onClick={() => removePalier(index)}
+                aria-label={`Supprimer la période ${index + 1}`}
+                disabled={draft.length === 1}
+              >
+                ×
+              </button>
+            </div>
+          );
+        })}
       </div>
       <p className="prevoyance-side-note">Cliquez × pour retirer une période.</p>
     </SimModalShell>

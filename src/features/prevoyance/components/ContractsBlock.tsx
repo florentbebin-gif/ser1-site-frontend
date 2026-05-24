@@ -121,7 +121,6 @@ function getArretSummary(contract: PrevoyanceContractDraft, salaireBrutAnnuel: n
 function getFraisSummary(
   contract: Extract<PrevoyanceContractDraft, { kind: 'individuel' }>,
 ): string {
-  if (!contract.fraisPro.enabled) return 'Non activés';
   return `${euro(contract.fraisPro.amount)}/mois`;
 }
 

@@ -52,6 +52,7 @@ supabase/storage/base-cg-retraite-cg/**
 
 # Audit temporaires
 _audit/
+audit-visuel-simulateurs.md
 docs/audit-*.md
 docs/audit-*.generated.md
 docs/veille-base-contrat.md

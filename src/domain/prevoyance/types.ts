@@ -156,7 +156,6 @@ export interface PrevoyanceDecesDraft {
 }
 
 export interface PrevoyanceFraisProDraft {
-  enabled: boolean;
   franchiseDays: number;
   amount: number;
   maxDurationYears: 1 | 2 | 3;

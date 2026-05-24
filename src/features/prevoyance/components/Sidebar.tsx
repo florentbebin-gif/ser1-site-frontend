@@ -1,4 +1,4 @@
-import type { CSSProperties, ReactNode } from 'react';
+import type { CSSProperties } from 'react';
 import {
   buildArretEuroChart,
   buildInvaliditePctChart,
@@ -18,7 +18,7 @@ import type {
 } from '@/domain/prevoyance/types';
 import { euro, pct } from '../formatters';
 import { TARGET_DECES_MULTIPLE } from '../constants';
-import { NumberInput, SectionIcon, type SectionIconName } from './FormPrimitives';
+import { NumberInput, SideCard } from './FormPrimitives';
 
 function segmentHeight(value: number, reference: number): string {
   if (reference <= 0) return '0%';
@@ -181,44 +181,6 @@ function MiniChartLegend() {
         Contrats
       </span>
     </div>
-  );
-}
-
-function SideCard({
-  title,
-  icon,
-  children,
-  actions,
-  compact = false,
-}: {
-  title: string;
-  icon: SectionIconName;
-  children: ReactNode;
-  actions?: ReactNode;
-  compact?: boolean;
-}) {
-  return (
-    <section
-      className={
-        compact
-          ? 'premium-card premium-card--guide sim-card--guide prevoyance-side-card prevoyance-side-card--compact'
-          : 'premium-card premium-card--guide sim-card--guide prevoyance-side-card'
-      }
-    >
-      <div className="sim-card__header sim-card__header--bleed prevoyance-side-card__header">
-        <div className="prevoyance-side-card__title-row">
-          <h2 className="sim-card__title sim-card__title-row">
-            <span className="sim-card__icon sim-card__icon--sm">
-              <SectionIcon name={icon} size={13} />
-            </span>
-            <span>{title}</span>
-          </h2>
-          {actions ? <div className="prevoyance-side-card__actions">{actions}</div> : null}
-        </div>
-      </div>
-      <div className="sim-divider sim-divider--tight" />
-      {children}
-    </section>
   );
 }
 
@@ -405,7 +367,7 @@ export function Sidebar({
   );
   const decesCovered = regimeDecesCovered + privateDecesCovered;
   const fraisCovered = individualContracts.reduce(
-    (sum, contract) => sum + (contract.fraisPro.enabled ? contract.fraisPro.amount : 0),
+    (sum, contract) => sum + contract.fraisPro.amount,
     0,
   );
   const cotisationAnnual = contracts.reduce(
@@ -475,26 +437,42 @@ export function Sidebar({
             <strong>{euro(regimeDecesCovered)}</strong>
           </div>
         ) : null}
-        {contracts.map((contract) => (
-          <div key={contract.id} className="prevoyance-rente-line">
-            <span>{contract.name}</span>
-            <strong>
-              {contract.kind === 'collectif'
-                ? [
-                    hasConjoint ? `${pct(contract.deces.renteConjointPct)} conjoint` : null,
-                    hasChildren ? `${pct(contract.deces.renteEducationPct)} éducation` : null,
-                  ]
-                    .filter(Boolean)
-                    .join(' · ') || euro(computeDecesCapitalFromContract(contract, assietteBase))
-                : [
-                    hasConjoint ? `${euro(contract.deces.renteConjoint)} conjoint` : null,
-                    hasChildren ? `${euro(contract.deces.renteEducation)} éducation` : null,
-                  ]
-                    .filter(Boolean)
-                    .join(' · ') || euro(computeDecesCapitalFromContract(contract, annualBase))}
-            </strong>
-          </div>
-        ))}
+        {contracts.map((contract) => {
+          const capital = computeDecesCapitalFromContract(
+            contract,
+            contract.kind === 'collectif' ? assietteBase : annualBase,
+          );
+          const deathRows: Array<[string, string]> = [
+            [`${contract.name} · Capital`, euro(capital)],
+            hasConjoint
+              ? [
+                  'Rente conjoint',
+                  contract.kind === 'collectif'
+                    ? pct(contract.deces.renteConjointPct)
+                    : euro(contract.deces.renteConjoint),
+                ]
+              : null,
+            hasChildren
+              ? [
+                  'Rente éducation',
+                  contract.kind === 'collectif'
+                    ? pct(contract.deces.renteEducationPct)
+                    : euro(contract.deces.renteEducation),
+                ]
+              : null,
+          ].filter((row): row is [string, string] => row !== null);
+
+          return (
+            <div key={contract.id} className="prevoyance-deces-contract">
+              {deathRows.map(([label, value]) => (
+                <div key={label} className="prevoyance-rente-line prevoyance-rente-line--sub">
+                  <span>{label}</span>
+                  <strong>{value}</strong>
+                </div>
+              ))}
+            </div>
+          );
+        })}
       </SideCard>
 
       <SideCard title="Cotisation" icon="contracts" compact>

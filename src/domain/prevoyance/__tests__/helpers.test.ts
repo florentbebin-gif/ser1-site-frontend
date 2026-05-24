@@ -116,7 +116,7 @@ describe('helpers prévoyance', () => {
         renteConjoint: 0,
         renteEducation: 0,
       },
-      fraisPro: { enabled: false, franchiseDays: 0, amount: 0, maxDurationYears: 1 },
+      fraisPro: { franchiseDays: 0, amount: 0, maxDurationYears: 1 },
       cotisation: { montantAnnuel: 900, dontMadelin: 900 },
     };
     const collectif: PrevoyanceContractDraft = {
@@ -199,7 +199,7 @@ describe('helpers prévoyance', () => {
         renteConjoint: 0,
         renteEducation: 0,
       },
-      fraisPro: { enabled: false, franchiseDays: 0, amount: 0, maxDurationYears: 1 },
+      fraisPro: { franchiseDays: 0, amount: 0, maxDurationYears: 1 },
       cotisation: { montantAnnuel: 0, dontMadelin: 0 },
     };
     const chart = buildArretEuroChart({
@@ -399,7 +399,7 @@ describe('helpers prévoyance', () => {
         renteConjoint: 0,
         renteEducation: 0,
       },
-      fraisPro: { enabled: false, franchiseDays: 0, amount: 0, maxDurationYears: 1 },
+      fraisPro: { franchiseDays: 0, amount: 0, maxDurationYears: 1 },
       cotisation: { montantAnnuel: 0, dontMadelin: 0 },
     };
     const chart = buildInvaliditePctChart({

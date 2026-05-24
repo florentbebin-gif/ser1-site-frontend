@@ -2,6 +2,7 @@ import type {
   PrevoyanceContractAggregationMode,
   PrevoyanceContractDraft,
   PrevoyanceDeathTargetDraft,
+  PrevoyanceFraisProDraft,
   PrevoyanceIndemnisation,
   PrevoyanceInvaliditePalierDraft,
   PrevoyanceSituationDraft,
@@ -25,12 +26,13 @@ export interface PersistedPrevoyanceState {
 
 type LegacyIndividualContract = Omit<
   Extract<PrevoyanceContractDraft, { kind: 'individuel' }>,
-  'invalidite' | 'cotisation'
+  'invalidite' | 'cotisation' | 'fraisPro'
 > & {
   invalidite: {
     indemnisation?: PrevoyanceIndemnisation;
     paliers: PrevoyanceInvaliditePalierDraft[];
   };
+  fraisPro?: Partial<PrevoyanceFraisProDraft>;
   cotisation: {
     montantAnnuel: number;
     dontMadelin?: number;
@@ -40,6 +42,15 @@ type LegacyIndividualContract = Omit<
 
 function clampDontMadelin(dontMadelin: number, montantAnnuel: number): number {
   return Math.min(Math.max(0, Number(dontMadelin) || 0), Math.max(0, Number(montantAnnuel) || 0));
+}
+
+function normalizeFraisPro(value: LegacyIndividualContract['fraisPro']): PrevoyanceFraisProDraft {
+  const maxDurationYears = Number(value?.maxDurationYears);
+  return {
+    franchiseDays: Math.max(0, Number(value?.franchiseDays) || 0),
+    amount: Math.max(0, Number(value?.amount) || 0),
+    maxDurationYears: maxDurationYears === 2 || maxDurationYears === 3 ? maxDurationYears : 1,
+  };
 }
 
 function normalizeContract(contract: unknown): PrevoyanceContractDraft | null {
@@ -64,6 +75,7 @@ function normalizeContract(contract: unknown): PrevoyanceContractDraft | null {
       indemnisation: legacy.invalidite?.indemnisation ?? legacy.indemnisation,
       paliers: legacy.invalidite?.paliers ?? [],
     },
+    fraisPro: normalizeFraisPro(legacy.fraisPro),
     cotisation: {
       montantAnnuel,
       dontMadelin: clampDontMadelin(rawDontMadelin, montantAnnuel),

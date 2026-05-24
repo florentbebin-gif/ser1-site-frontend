@@ -137,10 +137,11 @@ function formatCotisation(contract: PrevoyanceContractDraft): string {
 
 function formatFraisPro(contract: PrevoyanceContractDraft): { amount: number; summary: string } {
   if (contract.kind === 'collectif') return { amount: 0, summary: 'Non applicable salarié' };
-  if (!contract.fraisPro.enabled) return { amount: 0, summary: 'Non couvert' };
+  const amount = Math.max(0, contract.fraisPro.amount);
+  if (amount === 0) return { amount: 0, summary: 'Non couvert' };
   return {
-    amount: contract.fraisPro.amount,
-    summary: `${contract.fraisPro.amount} €, franchise ${contract.fraisPro.franchiseDays} j, durée ${contract.fraisPro.maxDurationYears} an(s)`,
+    amount,
+    summary: `${amount} €, franchise ${contract.fraisPro.franchiseDays} j, durée ${contract.fraisPro.maxDurationYears} an(s)`,
   };
 }
 

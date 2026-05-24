@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 
 import '@testing-library/jest-dom/vitest';
-import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { PREVOYANCE_MAINTIEN_LEGAL_CODE } from '@/domain/prevoyance/constants';
@@ -268,6 +268,9 @@ describe('PrevoyancePage', () => {
     fireEvent.change(threePeriodInputs[6] as HTMLInputElement, { target: { value: '365' } });
     expect(threePeriodInputs[4]).toHaveValue(364);
     expect(threePeriodInputs[6]).toHaveValue(365);
+    expect(threePeriodInputs[7]).toHaveValue(1095);
+    expect(threePeriodInputs[7]).toBeDisabled();
+    expect(threePeriodInputs[7]).toHaveAttribute('title', 'Verrouillée à 1 095 jours');
   });
 
   it('permet de supprimer un palier invalidité ajouté', async () => {
@@ -366,5 +369,35 @@ describe('PrevoyancePage', () => {
     fireEvent.change(besoinInput, { target: { value: '99999999' } });
 
     expect(besoinInput).toHaveValue('99\u202f999\u202f999');
+  });
+
+  it('affiche le capital décès même avec les rentes conjoint et éducation', async () => {
+    const user = userEvent.setup();
+    render(<PrevoyancePage />);
+
+    await user.click(await screen.findByRole('button', { name: 'Célibataire' }));
+    await user.click(await screen.findByRole('option', { name: 'Marié' }));
+    fireEvent.change(screen.getByLabelText('Enfants'), { target: { value: '2' } });
+    await saisirDateNaissance(user);
+    await user.click(screen.getByRole('button', { name: /Modifier Contrat 1/i }));
+    await user.click(await screen.findByRole('button', { name: 'Décès' }));
+    const decesInputs = document.querySelectorAll<HTMLInputElement>(
+      '.prevoyance-mini-section .sim-field__control',
+    );
+    fireEvent.change(decesInputs[0] as HTMLInputElement, { target: { value: '250000' } });
+    fireEvent.change(decesInputs[1] as HTMLInputElement, { target: { value: '12000' } });
+    fireEvent.change(decesInputs[2] as HTMLInputElement, { target: { value: '8000' } });
+    await user.click(screen.getByRole('button', { name: 'Terminer' }));
+
+    const decesCard = screen.getByRole('heading', { name: 'Décès' }).closest('section');
+    expect(decesCard).not.toBeNull();
+    const deces = within(decesCard as HTMLElement);
+    const decesText = decesCard?.textContent?.replace(/\s/g, ' ') ?? '';
+    expect(decesText).toContain('Contrat 1 · Capital');
+    expect(decesText).toContain('250 000 €');
+    expect(deces.getByText('Rente conjoint')).toBeInTheDocument();
+    expect(decesText).toContain('12 000 €');
+    expect(deces.getByText('Rente éducation')).toBeInTheDocument();
+    expect(decesText).toContain('8 000 €');
   });
 });

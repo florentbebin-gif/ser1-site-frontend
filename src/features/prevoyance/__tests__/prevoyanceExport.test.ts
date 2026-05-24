@@ -3,7 +3,11 @@ import { describe, expect, it } from 'vitest';
 import { DEFAULT_COLORS } from '@/settings/theme';
 import { buildPrevoyanceStudyDeck } from '@/pptx/presets/prevoyanceDeckBuilder';
 import { buildPrevoyanceXlsxBlob, buildPrevoyanceXlsxSheets } from '../export/prevoyanceXlsx';
-import type { PrevoyanceExportData } from '../export/prevoyanceExportData';
+import type { PrevoyanceContractDraft } from '@/domain/prevoyance/types';
+import {
+  buildPrevoyanceExportData,
+  type PrevoyanceExportData,
+} from '../export/prevoyanceExportData';
 import { validateXlsxBlob } from '@/utils/export/xlsxBuilder';
 
 const exportData: PrevoyanceExportData = {
@@ -113,5 +117,50 @@ describe('exports Prévoyance', () => {
     const zip = await JSZip.loadAsync(await blob.arrayBuffer());
     expect(zip.file('xl/workbook.xml')).toBeTruthy();
     expect(zip.file('xl/worksheets/sheet5.xml')).toBeTruthy();
+  });
+
+  it('calcule les frais généraux depuis le montant sans dépendre d’un toggle caché', () => {
+    const contract = {
+      id: 'contrat-1',
+      name: 'Contrat 1',
+      kind: 'individuel',
+      indemnisation: 'forfaitaire',
+      arret: { franchises: { accident: 0, hospitalisation: 0, maladie: 0 }, paliers: [] },
+      invalidite: { indemnisation: 'forfaitaire', paliers: [] },
+      deces: {
+        capital: 0,
+        doublementAccident: false,
+        doubleEffet: false,
+        renteConjoint: 0,
+        renteEducation: 0,
+      },
+      fraisPro: { franchiseDays: 15, amount: 12_000, maxDurationYears: 1 },
+      cotisation: { montantAnnuel: 0, dontMadelin: 0 },
+    } satisfies PrevoyanceContractDraft;
+
+    const data = buildPrevoyanceExportData({
+      situation: {
+        birthDate: '1980-01-01',
+        familyStatus: 'celibataire',
+        childrenCount: 0,
+        regimeCode: 'ssi-artisan-commercant',
+        revenuImposable: 80_000,
+        salaireBrutAnnuel: 0,
+        salaireNetImposable: 0,
+        ancienneteYears: 0,
+      },
+      kind: 'individuel',
+      regimeStack: [],
+      maintien: null,
+      contracts: [contract],
+      contractAggregationMode: 'compare',
+      deathTarget: { mode: 'multiple', multiple: 3, manualAmount: 0 },
+      annualBase: 80_000,
+      referenceAnnual: 80_000,
+      fraisGenerauxAssiette: 24_000,
+    });
+
+    expect(data.coverage.fraisProCovered).toBe(12_000);
+    expect(data.contracts[0]?.fraisProAmount).toBe(12_000);
   });
 });

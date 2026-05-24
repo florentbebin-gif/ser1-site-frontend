@@ -543,6 +543,21 @@
   text-align: right;
 }
 
+.prevoyance-deces-contract {
+  display: grid;
+  gap: 4px;
+}
+
+.prevoyance-deces-contract + .prevoyance-deces-contract {
+  padding-top: 6px;
+  border-top: 1px solid color-mix(in srgb, var(--color-c8) 72%, transparent);
+}
+
+.prevoyance-rente-line--sub {
+  padding: 2px 0;
+  border-bottom: 0;
+}
+
 .prevoyance-donut-wrap {
   display: grid;
   grid-template-columns: 78px minmax(0, 1fr);

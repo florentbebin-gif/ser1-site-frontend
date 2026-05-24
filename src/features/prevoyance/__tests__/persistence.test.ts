@@ -54,6 +54,9 @@ describe('persistence Prévoyance', () => {
       invalidite: { indemnisation: 'forfaitaire' },
       cotisation: { montantAnnuel: 1_500, dontMadelin: 1_500 },
     });
+    expect(
+      parsed?.contracts?.[0]?.kind === 'individuel' ? parsed.contracts[0].fraisPro : null,
+    ).not.toHaveProperty('enabled');
   });
 
   it('plafonne la part Madelin persistée à la cotisation annuelle', () => {
@@ -83,6 +86,13 @@ describe('persistence Prévoyance', () => {
 
     expect(parsed?.contracts?.[0]).toMatchObject({
       cotisation: { montantAnnuel: 1_500, dontMadelin: 1_500 },
+    });
+    expect(
+      parsed?.contracts?.[0]?.kind === 'individuel' ? parsed.contracts[0].fraisPro : null,
+    ).toEqual({
+      franchiseDays: 0,
+      amount: 0,
+      maxDurationYears: 1,
     });
   });
 });

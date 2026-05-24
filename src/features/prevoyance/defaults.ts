@@ -95,7 +95,6 @@ export function createDefaultContract(
       renteEducation: 0,
     },
     fraisPro: {
-      enabled: true,
       franchiseDays: 0,
       amount: 0,
       maxDurationYears: 1,
