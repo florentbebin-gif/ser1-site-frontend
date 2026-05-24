@@ -233,6 +233,19 @@ describe('PrevoyancePage', () => {
 
     fireEvent.change(periodInputs[3], { target: { value: '31' } });
     expect(periodInputs[1]).toHaveValue(30);
+
+    await user.click(screen.getByRole('button', { name: /Ajouter une période/i }));
+    const threePeriodInputs = document.querySelectorAll<HTMLInputElement>(
+      '.prevoyance-period-row input',
+    );
+    expect(threePeriodInputs).toHaveLength(9);
+
+    fireEvent.change(threePeriodInputs[6] as HTMLInputElement, { target: { value: '3' } });
+    expect(threePeriodInputs[6]).toHaveValue(3);
+
+    fireEvent.change(threePeriodInputs[6] as HTMLInputElement, { target: { value: '365' } });
+    expect(threePeriodInputs[4]).toHaveValue(364);
+    expect(threePeriodInputs[6]).toHaveValue(365);
   });
 
   it('permet de supprimer un palier invalidité ajouté', async () => {

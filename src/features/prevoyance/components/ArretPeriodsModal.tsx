@@ -54,7 +54,7 @@ export function ArretPeriodsModal({ paliers, onClose, onApply }: ArretPeriodsMod
 
       if (patch.fromDay !== undefined) {
         const previous = next[index - 1];
-        const minFromDay = previous ? previous.fromDay + 1 : 0;
+        const minFromDay = previous ? 1 : 0;
         const fromDay =
           index === 0 ? 0 : Math.min(Math.max(clampDay(patch.fromDay), minFromDay), current.toDay);
         current.fromDay = fromDay;
