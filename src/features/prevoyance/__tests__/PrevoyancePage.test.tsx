@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 
 import '@testing-library/jest-dom/vitest';
-import { render, screen, waitFor } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { PREVOYANCE_MAINTIEN_LEGAL_CODE } from '@/domain/prevoyance/constants';
@@ -196,7 +196,22 @@ describe('PrevoyancePage', () => {
     await user.click(screen.getAllByRole('button', { name: /Modifier Contrat/i })[0]);
     await user.click(screen.getAllByRole('button', { name: /Découper les périodes/i })[0]);
     expect(await screen.findByText('Découper l’arrêt de travail')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Ajouter une période/i })).toHaveClass(
+      'sim-modal-btn--ghost',
+    );
     expect(screen.getByText('Cliquez × pour retirer une période.')).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: /Ajouter une période/i }));
+    const periodInputs = document.querySelectorAll<HTMLInputElement>(
+      '.prevoyance-period-row input',
+    );
+    expect(periodInputs).toHaveLength(6);
+
+    fireEvent.change(periodInputs[1], { target: { value: '90' } });
+    expect(periodInputs[3]).toHaveValue(91);
+
+    fireEvent.change(periodInputs[3], { target: { value: '31' } });
+    expect(periodInputs[1]).toHaveValue(30);
   });
 
   it('permet de supprimer un palier invalidité ajouté', async () => {
@@ -249,14 +264,30 @@ describe('PrevoyancePage', () => {
     await user.click(screen.getByRole('button', { name: /Estimer depuis un compte de résultat/i }));
 
     expect(
-      await screen.findByText('Estimation à partir des charges du compte de résultat.'),
+      await screen.findByText(
+        'Estimation des charges permanentes à maintenir pendant l’arrêt du dirigeant.',
+      ),
     ).toBeInTheDocument();
-    expect(screen.getByText('Achats et charges externes')).toBeInTheDocument();
-    expect(screen.getByText('Loyers et crédit-bail')).toBeInTheDocument();
-    expect(screen.getByText('Assurances')).toBeInTheDocument();
-    expect(screen.getByText('Salaires et charges')).toBeInTheDocument();
-    expect(screen.getByText('Dotations aux amortissements')).toBeInTheDocument();
-    expect(screen.getByText('Frais bancaires')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Retenir ce montant' })).toBeInTheDocument();
+    expect(screen.getByText('Locaux, matériel et véhicules')).toBeInTheDocument();
+    expect(screen.getByText('Exploitation et gestion courante')).toBeInTheDocument();
+    expect(screen.getByText('Personnel et remplacement')).toBeInTheDocument();
+    expect(screen.getByText('Assurances, cotisations et taxes')).toBeInTheDocument();
+    expect(screen.getByText('Frais financiers')).toBeInTheDocument();
+    expect(screen.getByText('Amortissements et pertes prévues')).toBeInTheDocument();
+    expect(screen.getByText(/Comptes indicatifs : 612, 613/)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Retenir ce montant' })).toHaveClass(
+      'sim-modal-btn--primary',
+    );
+  });
+
+  it('affiche les grands montants dans le besoin décès', async () => {
+    const user = userEvent.setup();
+    render(<PrevoyancePage />);
+
+    await saisirDateNaissance(user);
+    const besoinInput = screen.getByLabelText('Besoin à couvrir');
+    fireEvent.change(besoinInput, { target: { value: '99999999' } });
+
+    expect(besoinInput).toHaveValue('99\u202f999\u202f999');
   });
 });

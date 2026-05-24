@@ -577,13 +577,13 @@
   display: inline-flex;
   align-items: center;
   gap: 3px;
-  width: 74px;
+  width: 112px;
   min-width: 0;
 }
 
 .prevoyance-death-target__manual-input .sim-field__control {
   min-height: 22px;
-  width: 54px;
+  width: 94px;
   padding: 2px 4px;
   text-align: right;
 }
@@ -639,13 +639,61 @@
 }
 
 .prevoyance-frais-modal {
-  width: min(760px, calc(100vw - 32px));
+  width: min(900px, calc(100vw - 32px));
+}
+
+.prevoyance-frais-modal__intro {
+  display: grid;
+  gap: 4px;
+  border: 1px solid var(--color-c8);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--color-c7) 72%, var(--color-c4));
+  color: var(--color-c9);
+  font-size: 12px;
+  padding: 10px 12px;
+}
+
+.prevoyance-frais-modal__intro strong {
+  color: var(--color-c1);
+  font-size: 13px;
+}
+
+.prevoyance-frais-modal__total {
+  color: var(--color-c9);
+  font-size: 13px;
+}
+
+.prevoyance-frais-modal__total strong {
+  color: var(--color-c1);
 }
 
 .prevoyance-frais-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 12px;
+  margin-top: 12px;
+}
+
+.prevoyance-frais-category {
+  display: grid;
+  gap: 6px;
+  border: 1px solid var(--color-c8);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--color-c7) 48%, #ffffff);
+  padding: 10px;
+}
+
+.prevoyance-frais-category p {
+  margin: 0;
+  color: var(--color-c9);
+  font-size: 11px;
+  line-height: 1.35;
+}
+
+.prevoyance-frais-category > span {
+  color: var(--color-c1);
+  font-size: 10px;
+  font-weight: 700;
 }
 
 .prevoyance-periods-modal {
@@ -732,6 +780,17 @@
 .prevoyance-periods-modal__toolbar {
   display: flex;
   justify-content: flex-end;
+}
+
+.prevoyance-periods-modal__add {
+  border-color: color-mix(in srgb, var(--color-c2) 42%, var(--color-c8));
+  color: var(--color-c2);
+}
+
+.prevoyance-periods-modal__hint {
+  margin: 10px 0 0;
+  color: var(--color-c9);
+  font-size: 12px;
 }
 
 .prevoyance-periods-modal__list {
