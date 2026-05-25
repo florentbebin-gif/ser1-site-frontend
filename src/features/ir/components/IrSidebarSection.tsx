@@ -1,3 +1,4 @@
+import { SimMetric } from '@/components/ui/sim';
 import { IconBarChart } from '@/icons/ui';
 import type { IrSidebarSectionProps } from './irTypes';
 import { IrSelect } from './IrSelect';
@@ -156,15 +157,22 @@ export function IrSidebarSection({
               })}
             </div>
 
-            <div className="ir-tmi-rows" data-testid="ir-tmi-rows">
-              <div className="ir-tmi-row" data-testid="ir-tmi-row">
-                <span>TMI</span>
-                <span data-testid="ir-tmi-value">{result ? `${result.tmiRate || 0} %` : '-'}</span>
-              </div>
-              <div className="ir-tmi-row" data-testid="ir-irnet-row">
-                <span>Impôt sur le revenu</span>
-                <span data-testid="ir-irnet-value">{result ? euro0(result.irNet || 0) : '-'}</span>
-              </div>
+            <div className="ir-tmi-metrics" data-testid="ir-tmi-rows">
+              <SimMetric
+                variant="secondary"
+                label="TMI"
+                value={<span data-testid="ir-tmi-value">{result ? result.tmiRate || 0 : '-'}</span>}
+                unit={result ? '%' : undefined}
+              />
+              <SimMetric
+                variant="hero"
+                label="Impôt sur le revenu"
+                value={
+                  <span data-testid="ir-irnet-value">
+                    {result ? euro0(result.irNet || 0) : '-'}
+                  </span>
+                }
+              />
             </div>
 
             <div className="ir-tmi-sub">

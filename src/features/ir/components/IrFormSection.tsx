@@ -1,4 +1,5 @@
-import { IconClose, IconPlus, IconUsers } from '@/icons/ui';
+import { SimActionButton } from '@/components/ui/sim';
+import { IconUsers } from '@/icons/ui';
 import { IrSelect } from './IrSelect';
 import type { IrFormSectionProps } from './irTypes';
 import { IrIncomeSection } from './IrIncomeSection';
@@ -96,14 +97,12 @@ export function IrFormSection({
           </div>
 
           <div className="ir-children-zone">
-            <button
-              type="button"
-              className="ir-child-add-btn"
+            <SimActionButton
+              variant="add"
+              mode="text"
+              label="Ajouter un enfant"
               onClick={() => setChildren((c) => [...c, { id: Date.now(), mode: 'charge' }])}
-            >
-              <IconPlus />
-              Ajouter un enfant
-            </button>
+            />
             <div className="ir-children-list">
               {children.map((child, idx) => (
                 <div key={child.id} className="ir-child-row">
@@ -123,14 +122,13 @@ export function IrFormSection({
                       { value: 'shared', label: 'Garde alternée' },
                     ]}
                   />
-                  <button
-                    type="button"
-                    className="ir-child-remove-btn"
+                  <SimActionButton
+                    variant="close"
+                    mode="icon"
+                    label="Supprimer"
                     onClick={() => setChildren((list) => list.filter((c) => c.id !== child.id))}
-                    aria-label={`Supprimer enfant ${idx + 1}`}
-                  >
-                    <IconClose />
-                  </button>
+                    ariaLabel={`Supprimer enfant ${idx + 1}`}
+                  />
                 </div>
               ))}
             </div>

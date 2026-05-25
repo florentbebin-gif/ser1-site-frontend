@@ -58,4 +58,13 @@ describe('IrSidebarSection', () => {
     expect(html).toContain('data-testid="ir-summary-card"');
     expect(html).toContain('Nombre de parts');
   });
+
+  it('rend les indicateurs clefs avec la primitive métrique partagée', () => {
+    const html = renderSidebar();
+
+    expect(html).toContain('sim-metric--secondary');
+    expect(html).toContain('sim-metric--hero');
+    expect(html).toContain('data-testid="ir-tmi-value"');
+    expect(html).toContain('data-testid="ir-irnet-value"');
+  });
 });

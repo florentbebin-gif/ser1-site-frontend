@@ -107,4 +107,15 @@ describe('filtres de revenus IrFormSection', () => {
     expect(html).not.toContain('placeholder="0 €"');
     expect(html).toContain('ir-table-input__unit');
   });
+
+  it('rend les actions enfants avec la primitive partagée', () => {
+    const html = renderSection({
+      children: [{ id: 1, mode: 'charge' }],
+    });
+
+    expect(html).toContain('sim-action-btn--add');
+    expect(html).toContain('Ajouter un enfant');
+    expect(html).toContain('sim-action-btn--close');
+    expect(html).toContain('aria-label="Supprimer enfant 1"');
+  });
 });

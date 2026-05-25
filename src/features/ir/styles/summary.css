@@ -39,24 +39,11 @@
   font-weight: 600;
 }
 
-.ir-tmi-rows {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.ir-tmi-row {
-  display: flex;
-  justify-content: space-between;
-}
-
-.ir-tmi-row span:first-child {
-  color: var(--color-c9);
-}
-
-.ir-tmi-row span:last-child {
-  font-weight: 600;
-  font-variant-numeric: tabular-nums;
+.ir-tmi-metrics {
+  display: grid;
+  grid-template-columns: minmax(0, 0.72fr) minmax(0, 1.28fr);
+  gap: 10px;
+  align-items: end;
 }
 
 .ir-tmi-sub {

@@ -12,8 +12,7 @@ import { useUserMode, type UserMode } from '../../../settings/userMode';
 import { resolveEffectiveUserMode } from '../../../settings/userModeDisplay';
 import { ExportMenu } from '../../../components/ExportMenu';
 import { ModeToggle } from '../../../components/ModeToggle';
-import { SimPageShell } from '@/components/ui/sim';
-import { IconChevronDown } from '@/icons/ui';
+import { SimDisclosureButton, SimPageShell } from '@/components/ui/sim';
 import {
   computeAbattement10,
   computeEffectiveParts,
@@ -461,26 +460,24 @@ export default function IrSimulatorContainer() {
             <div className="ir-detail-card premium-card" data-testid="ir-detail-accordion">
               <div className="ir-detail-header">
                 <h3 className="ir-detail-title">D&eacute;tail du calcul</h3>
-                <button
-                  type="button"
-                  className="ir-detail-toggle"
-                  aria-expanded={showDetails}
-                  onClick={() => setShowDetails((value) => !value)}
+                <SimDisclosureButton
+                  expanded={showDetails}
+                  onToggle={() => setShowDetails((value) => !value)}
+                  labelClosed="Afficher"
+                  labelOpen="Masquer"
+                  controls="ir-detail-panel"
                   data-testid="ir-detail-toggle"
-                >
-                  {showDetails ? 'Masquer' : 'Afficher'}
-                  <IconChevronDown
-                    className={`ir-detail-chevron${showDetails ? ' is-open' : ''}`}
-                  />
-                </button>
+                />
               </div>
               {showDetails && (
-                <IrDetailsSection
-                  result={result}
-                  euro0={euro0}
-                  fmtPct={fmtPct}
-                  pfuRateIR={pfuRateIR}
-                />
+                <div id="ir-detail-panel">
+                  <IrDetailsSection
+                    result={result}
+                    euro0={euro0}
+                    fmtPct={fmtPct}
+                    pfuRateIR={pfuRateIR}
+                  />
+                </div>
               )}
             </div>
           )}

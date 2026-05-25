@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { IconChevronDown } from '@/icons/ui';
+import { SimDisclosureButton } from '@/components/ui/sim';
 
 interface IrDisclaimerProps {
   isIsolated: boolean;
@@ -10,18 +10,17 @@ export function IrDisclaimer({ isIsolated }: IrDisclaimerProps) {
 
   return (
     <div className="ir-hypotheses">
-      <button
-        type="button"
+      <SimDisclosureButton
+        expanded={isOpen}
+        onToggle={() => setIsOpen((open) => !open)}
         className="ir-hypotheses__toggle"
-        onClick={() => setIsOpen((o) => !o)}
-        aria-expanded={isOpen}
+        labelClosed="Hypothèses et limites"
+        labelOpen="Hypothèses et limites"
+        controls="ir-hypotheses-panel"
         data-testid="ir-hypotheses-toggle"
-      >
-        <span className="ir-hypotheses__title">Hypothèses et limites</span>
-        <IconChevronDown className={`ir-hypotheses__chevron${isOpen ? ' is-open' : ''}`} />
-      </button>
+      />
       {isOpen && (
-        <ul>
+        <ul id="ir-hypotheses-panel">
           <li>
             RCM au barème : abattement forfaitaire de 40&nbsp;% sur l&apos;assiette IR (simplifié).
           </li>
