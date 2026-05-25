@@ -1,4 +1,5 @@
 import { SimAmountInputEuro } from '@/components/ui/sim';
+import { IconLayers } from '@/icons/ui';
 import type {
   SuccessionAssetCategory,
   SuccessionAssetDetailEntry,
@@ -124,21 +125,7 @@ export default function ScAssetsPassifsCard({
       <header className="sc-card__header sim-card__header sim-card__header--bleed">
         <div className="sc-card__title-row sim-card__title sim-card__title-row">
           <div className="sim-card__icon">
-            <svg
-              width="14"
-              height="14"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.8"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              aria-hidden="true"
-            >
-              <polygon points="12 2 2 7 12 12 22 7 12 2" />
-              <polyline points="2 17 12 22 22 17" />
-              <polyline points="2 12 12 17 22 12" />
-            </svg>
+            <IconLayers />
           </div>
           <h2 className="sc-card__title">Actifs / Passifs</h2>
         </div>

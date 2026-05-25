@@ -1,4 +1,5 @@
 import { SimAmountInputEuro } from '@/components/ui/sim';
+import { IconGift } from '@/icons/ui';
 import type { SuccessionDonationEntry, SuccessionDonationPartageAct } from '../successionDraft';
 import { summarizeDonationPartageActs } from '../successionDonationPartage';
 import { DONATION_TYPE_OPTIONS } from '../successionSimulator.constants';
@@ -48,23 +49,7 @@ export default function ScDonationsCard({
       <header className="sc-card__header sim-card__header sim-card__header--bleed">
         <div className="sc-card__title-row sim-card__title sim-card__title-row">
           <div className="sim-card__icon">
-            <svg
-              width="14"
-              height="14"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.8"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              aria-hidden="true"
-            >
-              <polyline points="20 12 20 22 4 22 4 12" />
-              <rect x="2" y="7" width="20" height="5" />
-              <line x1="12" y1="22" x2="12" y2="7" />
-              <path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z" />
-              <path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z" />
-            </svg>
+            <IconGift />
           </div>
           <h2 className="sc-card__title">Donations</h2>
         </div>

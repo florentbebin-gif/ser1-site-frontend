@@ -9,9 +9,12 @@ import {
   IconClose,
   IconDownload,
   IconDuplicate,
+  IconGift,
   IconInfo,
   IconLayers,
+  IconNetwork,
   IconPencil,
+  IconPieChart,
   IconPlus,
   IconUsers,
 } from './index';
@@ -25,11 +28,14 @@ const newIcons: Array<[string, IconComponent]> = [
   ['IconChevronUp', IconChevronUp],
   ['IconPlus', IconPlus],
   ['IconDuplicate', IconDuplicate],
+  ['IconGift', IconGift],
   ['IconInfo', IconInfo],
   ['IconDownload', IconDownload],
   ['IconCalendar', IconCalendar],
   ['IconUsers', IconUsers],
   ['IconLayers', IconLayers],
+  ['IconNetwork', IconNetwork],
+  ['IconPieChart', IconPieChart],
   ['IconBarChart', IconBarChart],
 ];
 

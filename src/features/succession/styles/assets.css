@@ -77,6 +77,11 @@
   flex-shrink: 0;
 }
 
+.sc-open-btn > svg {
+  width: 13px;
+  height: 13px;
+}
+
 .sc-open-btn:hover {
   background: var(--color-c8);
   color: var(--color-c1);

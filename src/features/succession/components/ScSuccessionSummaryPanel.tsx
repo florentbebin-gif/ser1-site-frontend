@@ -1,3 +1,4 @@
+import { IconPieChart } from '@/icons/ui';
 import { fmt } from '../successionSimulator.helpers';
 import {
   getSuccessionInterMassClaimKindLabel,
@@ -136,20 +137,7 @@ export default function ScSuccessionSummaryPanel({
     <div className="premium-card sc-summary-card sim-summary-card sim-summary-card--secondary sc-hero-card sc-hero-card--secondary">
       <div className="sc-summary-title-row">
         <div className="sim-card__icon">
-          <svg
-            width="14"
-            height="14"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="1.8"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            aria-hidden="true"
-          >
-            <path d="M21.21 15.89A10 10 0 1 1 8 2.83" />
-            <path d="M22 12A10 10 0 0 0 12 2v10z" />
-          </svg>
+          <IconPieChart />
         </div>
         <h2 className="sc-summary-title">Synthèse successorale</h2>
       </div>
