@@ -9,7 +9,7 @@ export interface SimDisclosureButtonProps extends Omit<
   onToggle: () => void;
   labelOpen?: string;
   labelClosed?: string;
-  controls?: string;
+  controls: string;
 }
 
 function cx(...classes: Array<string | false | undefined>) {

@@ -131,7 +131,6 @@ export function SimAmountInputBase({
           if (readOnly || disabled) return;
           const nextRaw = event.target.value;
           setRaw(nextRaw);
-          commitRawValue(nextRaw);
         }}
       />
       {unit ? <span className={joinClasses('sim-field__unit', unitClassName)}>{unit}</span> : null}
