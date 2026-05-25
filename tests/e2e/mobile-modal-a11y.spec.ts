@@ -7,11 +7,13 @@ test.describe('Modales mobiles simulateurs', () => {
     await page.setViewportSize({ width: 390, height: 900 });
     await page.goto('/sim/per/transfert');
 
-    await page.getByRole('button', { name: 'Personnaliser le calcul de rente' }).click();
+    const trigger = page.getByRole('button', { name: 'Personnaliser le calcul de rente' });
+    await trigger.click();
     const modal = page.getByRole('dialog', { name: /Calcul de rente personnalisé/i });
 
     await expect(modal).toBeVisible();
     await expect(modal).toHaveCSS('border-radius', /14px 14px 0px 0px/);
+    await expect(page.locator('body')).toHaveCSS('overflow', 'hidden');
 
     const box = await modal.boundingBox();
     expect(box, 'modale visible').not.toBeNull();
@@ -27,5 +29,16 @@ test.describe('Modales mobiles simulateurs', () => {
       );
       expect(insideModal).toBe(true);
     }
+
+    await page.keyboard.press('Shift+Tab');
+    const insideModalAfterReverseTab = await modal.evaluate((element) =>
+      element.contains(document.activeElement),
+    );
+    expect(insideModalAfterReverseTab).toBe(true);
+
+    await page.keyboard.press('Escape');
+    await expect(modal).toBeHidden();
+    await expect(trigger).toBeFocused();
+    await expect(page.locator('body')).not.toHaveCSS('overflow', 'hidden');
   });
 });

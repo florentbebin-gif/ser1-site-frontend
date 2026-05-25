@@ -112,6 +112,7 @@ describe('SimDisclosureButton', () => {
         onToggle={vi.fn()}
         labelClosed="Afficher le detail"
         labelOpen="Masquer le detail"
+        controls="disclosure-panel-closed"
       />,
     );
 
@@ -126,6 +127,7 @@ describe('SimDisclosureButton', () => {
         onToggle={vi.fn()}
         labelClosed="Afficher"
         labelOpen="Masquer"
+        controls="disclosure-panel-open"
       />,
     );
 
@@ -156,6 +158,7 @@ describe('SimDisclosureButton', () => {
         onToggle={onToggle}
         labelClosed="Afficher"
         labelOpen="Masquer"
+        controls="disclosure-panel-click"
       />,
     );
 

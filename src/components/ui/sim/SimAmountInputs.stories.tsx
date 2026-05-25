@@ -42,4 +42,13 @@ export default meta;
 
 type Story = StoryObj<typeof meta>;
 
-export const Primitives: Story = {};
+export const Primitives: Story = {
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Les variantes euro, pourcentage et numérique partagent SimAmountInputBase pour conserver le même cycle saisie, formatage et validation.',
+      },
+    },
+  },
+};

@@ -2,6 +2,9 @@ import { useEffect, useId, useRef, type ReactNode } from 'react';
 
 export type SimModalMobileVariant = 'bottom-sheet' | 'fullscreen';
 
+let bodyScrollLockCount = 0;
+let previousBodyOverflow = '';
+
 export interface SimModalShellProps {
   title: ReactNode;
   subtitle?: ReactNode;
@@ -38,6 +41,23 @@ function CloseIcon() {
   );
 }
 
+function lockBodyScroll() {
+  if (bodyScrollLockCount === 0) {
+    previousBodyOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+  }
+
+  bodyScrollLockCount += 1;
+
+  return () => {
+    bodyScrollLockCount = Math.max(0, bodyScrollLockCount - 1);
+    if (bodyScrollLockCount === 0) {
+      document.body.style.overflow = previousBodyOverflow;
+      previousBodyOverflow = '';
+    }
+  };
+}
+
 export function SimModalShell({
   title,
   subtitle,
@@ -64,6 +84,8 @@ export function SimModalShell({
   const generatedTitleId = useId();
   const resolvedTitleId = titleId ?? generatedTitleId;
   const modalRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => lockBodyScroll(), []);
 
   useEffect(() => {
     const modal = modalRef.current;
