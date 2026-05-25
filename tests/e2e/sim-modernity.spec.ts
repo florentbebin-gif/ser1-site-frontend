@@ -26,4 +26,17 @@ test.describe('Modernité simulateurs', () => {
     await expect(action).toBeFocused();
     await expect(action).toHaveCSS('box-shadow', /rgb/);
   });
+
+  test('ouvre et ferme un terme du glossaire avec Echap', async ({ page }) => {
+    await page.goto('/settings/design-system');
+
+    const pfu = page.getByRole('button', { name: 'Définition : PFU' }).first();
+    await pfu.click();
+
+    const tooltip = page.getByRole('tooltip').filter({ hasText: 'Prélèvement forfaitaire unique' });
+    await expect(tooltip).toBeVisible();
+
+    await page.keyboard.press('Escape');
+    await expect(tooltip).toBeHidden();
+  });
 });

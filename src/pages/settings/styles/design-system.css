@@ -57,6 +57,12 @@
   gap: var(--space-3);
 }
 
+.settings-design-system__glossary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: var(--space-3);
+}
+
 .settings-design-system__ui-card {
   display: grid;
   align-content: start;
@@ -120,7 +126,8 @@
 }
 
 .settings-design-system__icon-item figcaption,
-.settings-design-system__placeholder {
+.settings-design-system__placeholder,
+.settings-design-system__glossary-description {
   margin: 0;
   color: var(--color-c9);
   font-size: var(--font-size-sm);

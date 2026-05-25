@@ -1,4 +1,5 @@
-import { SimMetric } from '@/components/ui/sim';
+import { SimMetric, SimTooltip } from '@/components/ui/sim';
+import { CGP_GLOSSARY } from '@/constants/cgpGlossary';
 import { IconPieChart } from '@/icons/ui';
 import { fmt } from '../successionSimulator.helpers';
 import {
@@ -405,11 +406,20 @@ export default function ScSuccessionSummaryPanel({
               <p className="sc-summary-note sc-summary-note--muted">{synthHypothese}</p>
             )}
             <p className="sc-summary-note sc-summary-note--muted">
-              {displayUsesChainage
-                ? 'Cumul 2 décès - droits DMTG descendants, conjoint exonéré.'
-                : isPacsed
-                  ? "Succession directe du partenaire simulé - le PACS n'ouvre pas de droit successoral automatique sans testament."
-                  : 'Succession directe simulée.'}
+              {displayUsesChainage ? (
+                <>
+                  Cumul 2 décès - droits{' '}
+                  <SimTooltip
+                    label={CGP_GLOSSARY.dmtg.label}
+                    description={CGP_GLOSSARY.dmtg.description}
+                  />{' '}
+                  descendants, conjoint exonéré.
+                </>
+              ) : isPacsed ? (
+                "Succession directe du partenaire simulé - le PACS n'ouvre pas de droit successoral automatique sans testament."
+              ) : (
+                'Succession directe simulée.'
+              )}
             </p>
           </div>
         </>

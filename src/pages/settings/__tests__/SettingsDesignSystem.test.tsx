@@ -27,5 +27,7 @@ describe('SettingsDesignSystem', () => {
     expect(screen.getByRole('heading', { name: 'Modernité' })).toBeInTheDocument();
     expect(container.querySelector('.sim-skeleton-card')).toBeInTheDocument();
     expect(container.querySelector('.sim-skeleton-kpi')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Glossaire' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Définition : PFU' })).toBeInTheDocument();
   });
 });

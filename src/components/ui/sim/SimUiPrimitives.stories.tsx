@@ -5,6 +5,7 @@ import { SimDisclosureButton } from './SimDisclosureButton';
 import { SimMetric } from './SimMetric';
 import { SimModalSectionNav } from './SimModalSectionNav';
 import { SimSkeletonCard, SimSkeletonKpi, SimSkeletonText } from './SimSkeleton';
+import { SimTooltip } from './SimTooltip';
 
 const navSections = [
   { id: 'identite', label: 'Identité', controls: 'story-identite' },
@@ -75,6 +76,13 @@ function SimUiPrimitivesPreview() {
           <SimSkeletonKpi />
         </div>
         <SimSkeletonText lines={3} />
+      </section>
+
+      <section className="premium-card" style={{ display: 'grid', gap: 'var(--space-3)' }}>
+        <h3 className="sim-card__title">Glossaire</h3>
+        <p className="sim-card__subtitle">
+          Fiscalité dividendes <SimTooltip label="PFU" description="Définition courte du PFU." />.
+        </p>
       </section>
     </div>
   );

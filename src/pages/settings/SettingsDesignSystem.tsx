@@ -11,7 +11,9 @@ import {
   SimSkeletonCard,
   SimSkeletonKpi,
   SimSkeletonText,
+  SimTooltip,
 } from '@/components/ui/sim';
+import { CGP_GLOSSARY_ENTRIES } from '@/constants/cgpGlossary';
 import {
   IconBarChart,
   IconCalendar,
@@ -204,6 +206,19 @@ function DesignSystemModernityPreview() {
   );
 }
 
+function DesignSystemGlossaryPreview() {
+  return (
+    <div className="settings-design-system__glossary-grid">
+      {CGP_GLOSSARY_ENTRIES.map((entry) => (
+        <article className="settings-design-system__ui-card" key={entry.id}>
+          <SimTooltip label={entry.label} description={entry.description} />
+          <p className="settings-design-system__glossary-description">{entry.description}</p>
+        </article>
+      ))}
+    </div>
+  );
+}
+
 export default function SettingsDesignSystem() {
   return (
     <div className="settings-design-system" data-testid="settings-design-system">
@@ -262,6 +277,11 @@ export default function SettingsDesignSystem() {
       <section className="settings-premium-card settings-design-system__section">
         <h3 className="settings-design-system__title">Modernité</h3>
         <DesignSystemModernityPreview />
+      </section>
+
+      <section className="settings-premium-card settings-design-system__section">
+        <h3 className="settings-design-system__title">Glossaire</h3>
+        <DesignSystemGlossaryPreview />
       </section>
     </div>
   );

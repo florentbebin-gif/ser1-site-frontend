@@ -1,4 +1,5 @@
-import { SimMetric } from '@/components/ui/sim';
+import { SimMetric, SimTooltip } from '@/components/ui/sim';
+import { CGP_GLOSSARY } from '@/constants/cgpGlossary';
 import { IconBarChart } from '@/icons/ui';
 import type { IrSidebarSectionProps } from './irTypes';
 import { IrSelect } from './IrSelect';
@@ -160,7 +161,12 @@ export function IrSidebarSection({
             <div className="ir-tmi-metrics" data-testid="ir-tmi-rows">
               <SimMetric
                 variant="secondary"
-                label="TMI"
+                label={
+                  <SimTooltip
+                    label={CGP_GLOSSARY.tmi.label}
+                    description={CGP_GLOSSARY.tmi.description}
+                  />
+                }
                 value={<span data-testid="ir-tmi-value">{result ? result.tmiRate || 0 : '-'}</span>}
                 unit={result ? '%' : undefined}
               />
@@ -231,7 +237,13 @@ export function IrSidebarSection({
                 <span>{euro0(result.irNet || 0)}</span>
               </div>
               <div className="ir-summary-row">
-                <span>PFU {fmtPct(pfuRateIR)} %</span>
+                <span className="sim-tooltip-inline">
+                  <SimTooltip
+                    label={CGP_GLOSSARY.pfu.label}
+                    description={CGP_GLOSSARY.pfu.description}
+                  />{' '}
+                  {fmtPct(pfuRateIR)} %
+                </span>
                 <span>{euro0(result.pfuIr || 0)}</span>
               </div>
               {isExpert && (

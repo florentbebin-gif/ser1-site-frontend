@@ -21,3 +21,5 @@ export { SimSelect } from './SimSelect';
 export type { SimSelectOption, SimSelectProps } from './SimSelect';
 export { SimSkeletonCard, SimSkeletonKpi, SimSkeletonText } from './SimSkeleton';
 export type { SimSkeletonTextProps } from './SimSkeleton';
+export { SimTooltip } from './SimTooltip';
+export type { SimTooltipProps } from './SimTooltip';

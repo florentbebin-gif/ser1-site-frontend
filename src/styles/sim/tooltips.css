@@ -1,0 +1,71 @@
+.sim-tooltip,
+.sim-tooltip-inline {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.sim-tooltip {
+  position: relative;
+  vertical-align: baseline;
+}
+
+.sim-tooltip__trigger {
+  min-height: var(--space-5);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-1);
+  border: 1px solid var(--color-c8);
+  border-radius: var(--radius-full);
+  background: var(--color-c7);
+  color: var(--color-c2);
+  cursor: pointer;
+  font: inherit;
+  font-size: inherit;
+  font-weight: var(--font-weight-semibold);
+  line-height: 1;
+  padding: 0 var(--space-2);
+  transition:
+    background var(--transition-base) var(--easing-standard),
+    border-color var(--transition-base) var(--easing-standard),
+    color var(--transition-base) var(--easing-standard);
+}
+
+.sim-tooltip__trigger:hover,
+.sim-tooltip__trigger:focus-visible {
+  background: color-mix(in srgb, var(--color-c4) 35%, #ffffff);
+  border-color: var(--color-c3);
+  color: var(--color-c1);
+}
+
+.sim-tooltip__icon {
+  width: var(--space-3);
+  height: var(--space-3);
+  flex-shrink: 0;
+}
+
+.sim-tooltip__panel {
+  position: absolute;
+  z-index: 1300;
+  bottom: calc(100% + var(--space-2));
+  left: 0;
+  display: none;
+  width: min(280px, calc(100vw - var(--space-6)));
+  margin: 0;
+  padding: var(--space-3);
+  border: 1px solid var(--color-c8);
+  border-radius: var(--radius-md);
+  background: #ffffff;
+  box-shadow: var(--shadow-md);
+  color: var(--color-c10);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-regular);
+  line-height: var(--line-height-base);
+  text-align: left;
+}
+
+.sim-tooltip__panel:popover-open,
+.sim-tooltip__panel[data-open='true'] {
+  display: block;
+}

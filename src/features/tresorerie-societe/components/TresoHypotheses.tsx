@@ -6,7 +6,8 @@
  */
 
 import { useState } from 'react';
-import { SimDisclosureButton } from '@/components/ui/sim';
+import { SimDisclosureButton, SimTooltip } from '@/components/ui/sim';
+import { CGP_GLOSSARY } from '@/constants/cgpGlossary';
 
 export function TresoHypotheses() {
   const [open, setOpen] = useState(false);
@@ -114,8 +115,13 @@ export function TresoHypotheses() {
             <h3 className="ts-hyp-title">Dividendes et PFU</h3>
             <ul className="ts-hyp-list">
               <li>
-                V1 : fiscalité dividendes PFU uniquement (taux IR + prélèvements sociaux lus depuis
-                les paramètres fiscaux). Option barème IR avec abattement 40 % hors scope V1.
+                V1 : fiscalité dividendes{' '}
+                <SimTooltip
+                  label={CGP_GLOSSARY.pfu.label}
+                  description={CGP_GLOSSARY.pfu.description}
+                />{' '}
+                uniquement (taux IR + prélèvements sociaux lus depuis les paramètres fiscaux).
+                Option barème IR avec abattement 40 % hors scope V1.
               </li>
               <li>
                 Convention Option A : les dividendes sortent en brut unique dans les flux

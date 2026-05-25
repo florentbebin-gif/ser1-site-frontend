@@ -9,6 +9,7 @@ import { SimDisclosureButton } from './SimDisclosureButton';
 import { SimMetric } from './SimMetric';
 import { SimModalSectionNav } from './SimModalSectionNav';
 import { SimSkeletonCard, SimSkeletonKpi, SimSkeletonText } from './SimSkeleton';
+import { SimTooltip } from './SimTooltip';
 
 describe('SimActionButton', () => {
   it('rend une action texte avec son libelle visible', () => {
@@ -279,5 +280,30 @@ describe('SimSkeleton', () => {
     expect(card).toContain('sim-skeleton-card__body');
     expect(kpi).toContain('sim-skeleton-kpi');
     expect(kpi).toContain('sim-skeleton-kpi__value');
+  });
+});
+
+describe('SimTooltip', () => {
+  it('ouvre le panneau au clic avec aria-describedby', () => {
+    render(<SimTooltip label="PFU" description="Définition du PFU." />);
+
+    const trigger = screen.getByRole('button', { name: 'Définition : PFU' });
+
+    expect(trigger).toHaveAttribute('aria-expanded', 'false');
+    fireEvent.click(trigger);
+
+    expect(trigger).toHaveAttribute('aria-expanded', 'true');
+    expect(trigger).toHaveAttribute('aria-describedby');
+    expect(screen.getByRole('tooltip', { hidden: true })).toHaveTextContent('Définition du PFU.');
+  });
+
+  it('ferme le panneau avec la touche Echap', () => {
+    render(<SimTooltip label="TMI" description="Définition du TMI." />);
+
+    const trigger = screen.getByRole('button', { name: 'Définition : TMI' });
+    fireEvent.click(trigger);
+    fireEvent.keyDown(document, { key: 'Escape' });
+
+    expect(trigger).toHaveAttribute('aria-expanded', 'false');
   });
 });

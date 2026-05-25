@@ -1,5 +1,7 @@
 import { DEFAULT_PS_SETTINGS } from '@/constants/settingsDefaults';
+import { CGP_GLOSSARY } from '@/constants/cgpGlossary';
 import type { CompareResult } from '@/engine/placement/types';
+import { SimSelect, SimTooltip } from '@/components/ui/sim';
 import { euro, formatPsMontant } from '../utils/formatters';
 import type {
   DmtgOption,
@@ -8,7 +10,6 @@ import type {
 } from '../utils/normalizers';
 import { BENEFICIARY_OPTIONS } from '../utils/normalizers';
 import { PlacementNumberField } from './PlacementAmountControls';
-import { SimSelect } from '@/components/ui/sim';
 
 interface PlacementTransmissionSectionProps {
   state: PlacementSimulatorState;
@@ -106,7 +107,16 @@ export function PlacementTransmissionSection({
             )}
 
             <tr>
-              <td>Tranche DMTG estimée</td>
+              <td>
+                <span className="sim-tooltip-inline">
+                  Tranche
+                  <SimTooltip
+                    label={CGP_GLOSSARY.dmtg.label}
+                    description={CGP_GLOSSARY.dmtg.description}
+                  />
+                  estimée
+                </span>
+              </td>
               <td colSpan={2}>
                 <SimSelect
                   value={String(state.transmission.dmtgTaux ?? '')}

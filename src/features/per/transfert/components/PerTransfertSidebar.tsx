@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import type { ReactNode } from 'react';
-import { SimAmountInputNumeric, SimInfoButton, SimMetric } from '@/components/ui/sim';
+import { SimAmountInputNumeric, SimInfoButton, SimMetric, SimTooltip } from '@/components/ui/sim';
+import { CGP_GLOSSARY } from '@/constants/cgpGlossary';
 import {
   TYPE_LABELS,
   type BaseCgRetraiteContract,
@@ -298,7 +299,16 @@ function CapitalMetrics({
     <div className="per-transfert-compare2__kpis">
       <KpiRow label="Brut" value={euro(fiscal.capital)} />
       <KpiRow label="Net de PS" value={euro(fiscal.netOfSocialContributions)} muted />
-      <KpiRow label="Net de PS + IR/PFU" value={euro(fiscal.netOfAllTaxes)} highlighted />
+      <KpiRow
+        label={
+          <span className="sim-tooltip-inline">
+            Net de PS + IR/
+            <SimTooltip label={CGP_GLOSSARY.pfu.label} description={CGP_GLOSSARY.pfu.description} />
+          </span>
+        }
+        value={euro(fiscal.netOfAllTaxes)}
+        highlighted
+      />
       <KpiRow
         label={
           <span className="per-transfert-compare2__info-label">
