@@ -90,6 +90,8 @@ describe('ScSuccessionSummaryPanel', () => {
     );
 
     expect(markup).toContain('Transmission par bénéf');
+    expect(markup).toContain('sim-status-badge--optimal');
+    expect(markup).toContain('Lecture directe');
     expect(markup).toContain('Capitaux décès nets');
     expect(markup).toContain('Transmission nette');
     expect(markup).toContain('Enfant 1');

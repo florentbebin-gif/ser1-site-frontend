@@ -23,6 +23,22 @@ describe('CreditSummaryCard', () => {
     expect(html).toContain('data-testid="credit-mensu-totale-avec-ass"');
   });
 
+  it('rend le badge hors assurance et les deltas de lissage', () => {
+    const html = renderToStaticMarkup(
+      <CreditSummaryCard
+        synthese={{ ...synthese, diffDureesMois: 6 }}
+        isAnnual={false}
+        lisserPret1
+        isExpert={false}
+        lissageCoutDelta={1200}
+      />,
+    );
+
+    expect(html).toContain('sim-status-badge--info');
+    expect(html).toContain('Hors assurance');
+    expect(html).toContain('sim-delta--positive');
+  });
+
   it('rend le donut avec les classes de matrice couleurs', () => {
     const html = renderToStaticMarkup(<SummaryDonut capital={160000} interets={18000} />);
 

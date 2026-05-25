@@ -5,7 +5,13 @@
 import { euro0 } from '../utils/creditFormatters';
 import type { CreditSummaryCardProps, SummaryDonutProps } from '../types';
 import { IconBarChart } from '@/icons/ui';
-import { SimKpiReference, SimMetric, SimSparkline } from '@/components/ui/sim';
+import {
+  SimDelta,
+  SimKpiReference,
+  SimMetric,
+  SimSparkline,
+  SimStatusBadge,
+} from '@/components/ui/sim';
 
 const DONUT_R = 27;
 const DONUT_CX = 34;
@@ -131,7 +137,11 @@ export function CreditSummaryCard({
               + {euro0(primeAssMensuelle * factor)} {assLabel} ass.
             </div>
           )}
-          {!isExpert && <div className="cv-summary__badge">Hors assurance</div>}
+          {!isExpert && (
+            <SimStatusBadge variant="info" className="cv-summary__status-badge">
+              Hors assurance
+            </SimStatusBadge>
+          )}
         </div>
         <SummaryDonut capital={capitalEmprunte} interets={totalInterets} />
       </div>
@@ -172,8 +182,7 @@ export function CreditSummaryCard({
                   {diffDureesMois > 0 ? 'Durée allongée' : 'Durée réduite'}
                 </span>
                 <span className="cv-summary__row-value">
-                  {diffDureesMois > 0 ? '+' : ''}
-                  {diffDureesMois} mois
+                  <SimDelta value={diffDureesMois} unit="mois" precision={0} />
                 </span>
               </div>
             )}
@@ -182,7 +191,9 @@ export function CreditSummaryCard({
                 <span className="cv-summary__row-label">
                   {lissageCoutDelta > 0 ? 'Coût supplémentaire' : 'Économie du lissage'}
                 </span>
-                <span className="cv-summary__row-value">{euro0(Math.abs(lissageCoutDelta))}</span>
+                <span className="cv-summary__row-value">
+                  <SimDelta value={lissageCoutDelta} formatValue={euro0} />
+                </span>
               </div>
             )}
           </div>

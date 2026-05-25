@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { SimActionButton } from './SimActionButton';
+import { SimDelta } from './SimDelta';
 import { SimDisclosureButton } from './SimDisclosureButton';
 import { SimEmptyState } from './SimEmptyState';
 import { SimKpiReference } from './SimKpiReference';
@@ -8,6 +9,7 @@ import { SimMetric } from './SimMetric';
 import { SimModalSectionNav } from './SimModalSectionNav';
 import { SimSkeletonCard, SimSkeletonKpi, SimSkeletonText } from './SimSkeleton';
 import { SimSparkline } from './SimSparkline';
+import { SimStatusBadge } from './SimStatusBadge';
 import { SimTooltip } from './SimTooltip';
 
 const navSections = [
@@ -64,6 +66,19 @@ function SimUiPrimitivesPreview() {
               </span>
             }
           />
+        </div>
+      </section>
+
+      <section className="premium-card" style={{ display: 'grid', gap: 'var(--space-3)' }}>
+        <h3 className="sim-card__title">Statuts et écarts</h3>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--space-2)' }}>
+          <SimStatusBadge variant="optimal">Optimal</SimStatusBadge>
+          <SimStatusBadge variant="attention">À revoir</SimStatusBadge>
+          <SimStatusBadge variant="info">Info</SimStatusBadge>
+        </div>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--space-3)' }}>
+          <SimDelta value={4.8} unit="%" />
+          <SimDelta value={-1200} formatValue={(value) => `${value.toLocaleString('fr-FR')} €`} />
         </div>
       </section>
 

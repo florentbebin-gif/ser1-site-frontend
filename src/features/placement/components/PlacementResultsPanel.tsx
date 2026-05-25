@@ -1,6 +1,12 @@
 import type { ReactNode } from 'react';
 import { TimelineBar } from '@/components/TimelineBar';
-import { SimKpiReference, SimMetric, SimSparkline } from '@/components/ui/sim';
+import {
+  SimDelta,
+  SimKpiReference,
+  SimMetric,
+  SimSparkline,
+  SimStatusBadge,
+} from '@/components/ui/sim';
 import { IconBarChart } from '@/icons/ui';
 import { shortEuro } from '../utils/formatters';
 import type { PlacementSimulatorState } from '../utils/normalizers';
@@ -105,6 +111,9 @@ export function PlacementResultsPanel({
                                   .replace('PER individuel déductible', 'PER individuel')
                                   .replace('PER individuel deductible', 'PER individuel')}
                           </div>
+                          {meilleurProduit === 1 ? (
+                            <SimStatusBadge variant="optimal">Meilleur ROI</SimStatusBadge>
+                          ) : null}
                           <div className="pl-roi-compare__ratio">x {roi1.toFixed(2)}</div>
                         </div>
 
@@ -120,10 +129,19 @@ export function PlacementResultsPanel({
                                     .replace('PER individuel déductible', 'PER individuel')
                                     .replace('PER individuel deductible', 'PER individuel')}
                             </div>
+                            {meilleurProduit === 2 ? (
+                              <SimStatusBadge variant="optimal">Meilleur ROI</SimStatusBadge>
+                            ) : null}
                             <div className="pl-roi-compare__ratio">x {roi2.toFixed(2)}</div>
                           </div>
                         )}
                       </div>
+                      {compareEnabled && produit2 ? (
+                        <div className="pl-roi-compare__delta">
+                          <span>Écart ROI</span>
+                          <SimDelta value={roi1 - roi2} precision={2} unit="x" />
+                        </div>
+                      ) : null}
                     </div>
 
                     {compareEnabled && produit2 ? (

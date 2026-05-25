@@ -85,3 +85,69 @@
   letter-spacing: 0;
   line-height: var(--line-height-base);
 }
+
+.sim-status-badge {
+  --sim-status-color: var(--color-c9);
+
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  width: fit-content;
+  min-width: 0;
+  border: 1px solid color-mix(in srgb, var(--sim-status-color) 48%, var(--color-c8));
+  border-radius: var(--radius-full);
+  background: color-mix(in srgb, var(--sim-status-color) 14%, #ffffff);
+  color: var(--color-c1);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: 0;
+  line-height: var(--line-height-base);
+  padding: var(--space-1) var(--space-2);
+}
+
+.sim-status-badge--optimal {
+  --sim-status-color: var(--color-c3);
+}
+
+.sim-status-badge--attention {
+  --sim-status-color: var(--color-c6);
+}
+
+.sim-status-badge--info {
+  --sim-status-color: var(--color-c9);
+}
+
+.sim-status-badge__dot {
+  width: var(--space-2);
+  height: var(--space-2);
+  flex: 0 0 auto;
+  border-radius: var(--radius-full);
+  background: var(--sim-status-color);
+}
+
+.sim-status-badge__label {
+  min-width: 0;
+}
+
+.sim-delta {
+  display: inline-flex;
+  align-items: baseline;
+  gap: var(--space-1);
+  color: var(--color-c9);
+  font-size: var(--font-size-sm);
+  font-variant-numeric: tabular-nums;
+  font-weight: var(--font-weight-semibold);
+  line-height: var(--line-height-base);
+}
+
+.sim-delta--positive {
+  color: var(--color-c1);
+}
+
+.sim-delta--negative {
+  color: var(--color-c1);
+}
+
+.sim-delta--neutral {
+  color: var(--color-c9);
+}

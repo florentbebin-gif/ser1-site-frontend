@@ -6,6 +6,7 @@ import {
   SimKpiReference,
   SimMetric,
   SimSparkline,
+  SimStatusBadge,
   SimTooltip,
 } from '@/components/ui/sim';
 import { CGP_GLOSSARY } from '@/constants/cgpGlossary';
@@ -277,6 +278,7 @@ function ScenarioCard({
       <header>
         <h5>{title}</h5>
         <p>{subtitle}</p>
+        {highlighted ? <SimStatusBadge variant="optimal">Scénario cible</SimStatusBadge> : null}
       </header>
       {children}
     </article>

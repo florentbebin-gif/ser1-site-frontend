@@ -1,4 +1,10 @@
-import { SimKpiReference, SimMetric, SimSparkline, SimTooltip } from '@/components/ui/sim';
+import {
+  SimKpiReference,
+  SimMetric,
+  SimSparkline,
+  SimStatusBadge,
+  SimTooltip,
+} from '@/components/ui/sim';
 import { CGP_GLOSSARY } from '@/constants/cgpGlossary';
 import { IconPieChart } from '@/icons/ui';
 import { fmt } from '../successionSimulator.helpers';
@@ -146,6 +152,9 @@ export default function ScSuccessionSummaryPanel({
           <IconPieChart />
         </div>
         <h2 className="sc-summary-title">Synthèse successorale</h2>
+        <SimStatusBadge variant={displayUsesChainage ? 'info' : 'optimal'}>
+          {displayUsesChainage ? 'Chaînage actif' : 'Lecture directe'}
+        </SimStatusBadge>
       </div>
       <div className="sc-card__divider sc-card__divider--tight sim-divider sim-divider--tight" />
       <div className="sc-synth-hero">

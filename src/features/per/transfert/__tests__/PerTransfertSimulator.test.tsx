@@ -257,6 +257,8 @@ describe('PerTransfertSidebar', () => {
     expect(html).toContain('Capital fractionné long');
     expect(html).toContain('Net de PS + IR');
     expect(html).toContain('sim-metric--inline');
+    expect(html).toContain('sim-status-badge--optimal');
+    expect(html).toContain('Scénario cible');
     expect(html).toContain('Points d’attention');
     expect(html).not.toContain('per-transfert-compare2__row');
     expect(html).not.toContain('Rente nette mensuelle');

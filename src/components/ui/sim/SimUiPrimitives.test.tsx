@@ -12,6 +12,8 @@ import { SimMetric } from './SimMetric';
 import { SimModalSectionNav } from './SimModalSectionNav';
 import { SimSkeletonCard, SimSkeletonKpi, SimSkeletonText } from './SimSkeleton';
 import { SimSparkline } from './SimSparkline';
+import { SimDelta } from './SimDelta';
+import { SimStatusBadge } from './SimStatusBadge';
 import { SimTooltip } from './SimTooltip';
 
 vi.mock('@/hooks/useFiscalContext', () => ({
@@ -395,5 +397,48 @@ describe('SimKpiReference', () => {
     expect(html).toContain('123 456 €');
     expect(html).toContain('PER retraite');
     expect(html).toContain('IS 21 %');
+  });
+});
+
+describe('SimStatusBadge', () => {
+  it('rend un badge optimal avec libelle visible', () => {
+    const html = renderToStaticMarkup(<SimStatusBadge variant="optimal">Optimal</SimStatusBadge>);
+
+    expect(html).toContain('sim-status-badge--optimal');
+    expect(html).toContain('Optimal');
+  });
+
+  it('rend les variantes attention et info', () => {
+    const html = renderToStaticMarkup(
+      <>
+        <SimStatusBadge variant="attention">À revoir</SimStatusBadge>
+        <SimStatusBadge variant="info">Info</SimStatusBadge>
+      </>,
+    );
+
+    expect(html).toContain('sim-status-badge--attention');
+    expect(html).toContain('sim-status-badge--info');
+    expect(html).toContain('À revoir');
+  });
+});
+
+describe('SimDelta', () => {
+  it('rend le signe positif, la valeur et l unité', () => {
+    const html = renderToStaticMarkup(<SimDelta value={12.5} unit="%" />);
+
+    expect(html).toContain('sim-delta--positive');
+    expect(html).toContain('sim-delta__sign">+</span>');
+    expect(html).toContain('12,5');
+    expect(html).toContain('%');
+  });
+
+  it('rend un delta negatif avec formateur de valeur', () => {
+    const html = renderToStaticMarkup(
+      <SimDelta value={-4800} formatValue={(value) => `${value.toLocaleString('fr-FR')} €`} />,
+    );
+
+    expect(html).toContain('sim-delta--negative');
+    expect(html).toContain('sim-delta__sign">−</span>');
+    expect(html).toContain('4 800 €');
   });
 });

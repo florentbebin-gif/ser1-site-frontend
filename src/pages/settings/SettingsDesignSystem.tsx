@@ -5,6 +5,7 @@ import {
   SimAmountInputNumeric,
   SimAmountInputPercent,
   SimActionButton,
+  SimDelta,
   SimDisclosureButton,
   SimKpiReference,
   SimMetric,
@@ -13,6 +14,7 @@ import {
   SimSkeletonKpi,
   SimSkeletonText,
   SimSparkline,
+  SimStatusBadge,
   SimTooltip,
 } from '@/components/ui/sim';
 import { CGP_GLOSSARY_ENTRIES } from '@/constants/cgpGlossary';
@@ -183,8 +185,13 @@ function DesignSystemUiPreview() {
           label="Avancement"
           value="42"
           unit="%"
-          delta={<span>+2 pts</span>}
+          delta={<SimDelta value={2} unit="pts" precision={0} />}
         />
+        <div className="settings-design-system__action-row">
+          <SimStatusBadge variant="optimal">Optimal</SimStatusBadge>
+          <SimStatusBadge variant="attention">À revoir</SimStatusBadge>
+          <SimStatusBadge variant="info">Info</SimStatusBadge>
+        </div>
       </article>
 
       <article className="settings-design-system__ui-card">

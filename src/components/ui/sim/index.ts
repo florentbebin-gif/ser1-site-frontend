@@ -7,6 +7,8 @@ export type { SimAmountInputNumericProps } from './SimAmountInputNumeric';
 export { SimAmountInputPercent } from './SimAmountInputPercent';
 export type { SimAmountInputPercentProps } from './SimAmountInputPercent';
 export { SimDisclosureButton } from './SimDisclosureButton';
+export { SimDelta } from './SimDelta';
+export type { SimDeltaProps } from './SimDelta';
 export { SimEmptyState } from './SimEmptyState';
 export type { SimEmptyStateIllustration, SimEmptyStateProps } from './SimEmptyState';
 export { SimFieldShell } from './SimFieldShell';
@@ -27,5 +29,7 @@ export { SimSkeletonCard, SimSkeletonKpi, SimSkeletonText } from './SimSkeleton'
 export type { SimSkeletonTextProps } from './SimSkeleton';
 export { SimSparkline } from './SimSparkline';
 export type { SimSparklineProps } from './SimSparkline';
+export { SimStatusBadge } from './SimStatusBadge';
+export type { SimStatusBadgeProps, SimStatusBadgeVariant } from './SimStatusBadge';
 export { SimTooltip } from './SimTooltip';
 export type { SimTooltipProps } from './SimTooltip';
