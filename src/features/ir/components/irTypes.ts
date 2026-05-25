@@ -63,7 +63,6 @@ export type IrSidebarScaleRow = Pick<IrScaleRow, 'rate'>;
 export type IrStateSetter<T> = Dispatch<SetStateAction<T>>;
 export type IrMoneyFormatter = (_value: number) => string;
 export type IrPercentFormatter = (_value: number) => string;
-export type IrInputMoneyFormatter = (_value: number | null | undefined) => string;
 
 export interface IrFormSectionProps {
   status: IrStatus | null;
@@ -74,7 +73,6 @@ export interface IrFormSectionProps {
   setParts: IrStateSetter<number>;
   incomes: IrIncomes;
   updateIncome: (_who: IrIncomeTarget, _field: string, _value: number) => void;
-  formatMoneyInput: IrInputMoneyFormatter;
   realMode: IrRealMode;
   setRealModeState: IrStateSetter<IrRealMode>;
   realExpenses: IrRealExpenses;

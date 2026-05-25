@@ -81,12 +81,6 @@ const DEFAULT_INCOMES: IrIncomes = {
   fonciersFoyer: 0,
 };
 
-const formatMoneyInput = (value: number | null | undefined): string => {
-  const roundedValue = Math.round(Number(value) || 0);
-  if (!roundedValue) return '';
-  return roundedValue.toLocaleString('fr-FR');
-};
-
 export default function IrSimulatorContainer() {
   const { colors, cabinetLogo, logoPlacement, pptxColors } = useTheme();
 
@@ -415,7 +409,6 @@ export default function IrSimulatorContainer() {
           setParts={setParts}
           incomes={incomes}
           updateIncome={updateIncome}
-          formatMoneyInput={formatMoneyInput}
           realMode={realMode}
           setRealModeState={setRealMode}
           realExpenses={realExpenses}

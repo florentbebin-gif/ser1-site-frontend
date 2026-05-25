@@ -11,7 +11,6 @@ export function IrFormSection({
   setParts,
   incomes,
   updateIncome,
-  formatMoneyInput,
   realMode,
   setRealModeState,
   realExpenses,
@@ -184,7 +183,6 @@ export function IrFormSection({
         setIncomes={setIncomes}
         incomes={incomes}
         updateIncome={updateIncome}
-        formatMoneyInput={formatMoneyInput}
         realMode={realMode}
         setRealModeState={setRealModeState}
         realExpenses={realExpenses}
