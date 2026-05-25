@@ -14,6 +14,7 @@ export interface SimAmountInputPublicProps {
   id?: string;
   value: number;
   onChange: (_value: number) => void;
+  onEmpty?: () => void;
   label?: ReactNode;
   hint?: ReactNode;
   error?: ReactNode;
@@ -55,6 +56,7 @@ export function SimAmountInputBase({
   id,
   value,
   onChange,
+  onEmpty,
   label,
   hint,
   error,
@@ -86,6 +88,11 @@ export function SimAmountInputBase({
   const resolvedAriaLabel = ariaLabelAttribute ?? ariaLabel;
 
   const commitRawValue = (nextRaw: string) => {
+    if (nextRaw.trim() === '' && onEmpty) {
+      onEmpty();
+      return;
+    }
+
     const parsed = parseValue(nextRaw);
     const normalized = normalizeValue ? normalizeValue(parsed) : parsed;
     onChange(clampNumber(normalized, min, max));

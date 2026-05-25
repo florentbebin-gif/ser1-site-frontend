@@ -1,6 +1,7 @@
 import type { PlacementTmiOption } from '@/hooks/usePlacementSettings';
 import type { PlacementClient } from '../utils/normalizers';
-import { InputNumber, Select } from './PlacementFormControls';
+import { InputNumber } from './PlacementFormControls';
+import { PlacementSelect as Select } from './PlacementSelect';
 
 interface PlacementClientProfileSectionProps {
   client: PlacementClient;

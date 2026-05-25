@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import type { CompareResult } from '@/engine/placement/types';
-import { InputEuro, InputNumber, Toggle } from './PlacementFormControls';
+import { InputEuro, InputNumber } from './PlacementFormControls';
+import { PlacementToggle as Toggle } from './PlacementToggle';
 import { SimSelect } from '@/components/ui/sim';
 import type { PlacementLiquidationState, PlacementSimulatorState } from '../utils/normalizers';
 import { PlacementLiquidationDetailsTable } from './PlacementLiquidationDetailsTable';

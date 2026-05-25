@@ -169,6 +169,7 @@
 
 .vcm__ponctuel-cell .pl-field,
 .vcm__ponctuel-cell .pl-input,
+.vcm__ponctuel-cell .vcm__mini-field,
 .vcm__ponctuel-cell .vcm__mini-input-wrap {
   width: 100%;
   min-width: 0;

@@ -8,7 +8,8 @@ import type {
   PlacementSimulatorState,
 } from '../utils/normalizers';
 import type { PlacementTableProduct } from '../utils/tableHelpers';
-import { InputNumber, Toggle } from './PlacementFormControls';
+import { InputNumber } from './PlacementFormControls';
+import { PlacementToggle as Toggle } from './PlacementToggle';
 import { CollapsibleTable } from './PlacementTables';
 
 interface PlacementEpargneSectionProps {

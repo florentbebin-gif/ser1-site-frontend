@@ -180,6 +180,24 @@ describe('SimAmountInputNumeric', () => {
     expect(onChange).toHaveBeenLastCalledWith(2.25);
   });
 
+  it('signale une saisie vidée quand le consommateur accepte null', () => {
+    const onEmpty = vi.fn();
+    render(
+      <SimAmountInputNumeric
+        value={4}
+        onChange={vi.fn()}
+        onEmpty={onEmpty}
+        aria-label="Nombre de parts"
+      />,
+    );
+
+    fireEvent.change(screen.getByRole('textbox', { name: 'Nombre de parts' }), {
+      target: { value: '' },
+    });
+
+    expect(onEmpty).toHaveBeenCalledOnce();
+  });
+
   it('affiche une précision décimale configurée', () => {
     render(
       <SimAmountInputNumeric

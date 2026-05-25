@@ -8,8 +8,7 @@ import {
   type VersementOption,
   type VersementPonctuel,
 } from '@/engine/placement/versementConfig';
-import { SimSelect } from '@/components/ui/sim';
-import { fmt } from '../utils/formatters';
+import { SimAmountInputEuro, SimAmountInputPercent, SimSelect } from '@/components/ui/sim';
 import { InputEuro, InputNumber, InputPct } from './PlacementFormControls';
 import { AllocationSlider } from './PlacementTables';
 
@@ -456,37 +455,32 @@ export function VersementPonctuelsSection({
               </div>
 
               <div className="vcm__ponctuel-cell">
-                <div className="vcm__mini-input-wrap">
-                  <input
-                    type="text"
-                    inputMode="numeric"
-                    value={fmt(ponctuel.montant)}
-                    onChange={(event) => {
-                      const clean = event.target.value.replace(/\D/g, '').slice(0, 9);
-                      onUpdatePonctuel(index, 'montant', clean === '' ? 0 : Number(clean));
-                    }}
-                    className="vcm__mini-input"
-                    aria-label="Montant"
-                  />
-                  <span className="vcm__mini-unit">€</span>
-                </div>
+                <SimAmountInputEuro
+                  value={ponctuel.montant}
+                  ariaLabel="Montant"
+                  className="vcm__mini-input"
+                  fieldClassName="vcm__mini-field"
+                  rowClassName="vcm__mini-input-wrap"
+                  unitClassName="vcm__mini-unit"
+                  onChange={(value) => onUpdatePonctuel(index, 'montant', value)}
+                />
               </div>
 
               {!isSCPI && (
                 <div className="vcm__ponctuel-cell">
-                  <div className="vcm__mini-input-wrap">
-                    <input
-                      type="number"
-                      step="0.1"
-                      value={(ponctuel.fraisEntree * 100).toFixed(1)}
-                      onChange={(event) =>
-                        onUpdatePonctuel(index, 'fraisEntree', Number(event.target.value) / 100)
-                      }
-                      className="vcm__mini-input"
-                      aria-label="Frais d'entrée (%)"
-                    />
-                    <span className="vcm__mini-unit">%</span>
-                  </div>
+                  <SimAmountInputPercent
+                    value={ponctuel.fraisEntree * 100}
+                    ariaLabel="Frais d'entrée (%)"
+                    min={0}
+                    max={100}
+                    className="vcm__mini-input"
+                    fieldClassName="vcm__mini-field"
+                    rowClassName="vcm__mini-input-wrap"
+                    unitClassName="vcm__mini-unit"
+                    minimumFractionDigits={1}
+                    maximumFractionDigits={1}
+                    onChange={(value) => onUpdatePonctuel(index, 'fraisEntree', value / 100)}
+                  />
                 </div>
               )}
 

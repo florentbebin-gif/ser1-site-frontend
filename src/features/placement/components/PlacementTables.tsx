@@ -3,6 +3,7 @@
  */
 
 import React, { useEffect, useRef, useState } from 'react';
+import { SimAmountInputPercent } from '@/components/ui/sim';
 
 interface CollapsibleTableProps<Row> {
   title: string;
@@ -174,29 +175,31 @@ export function AllocationSlider({
           ) : (
             <>
               <div className="pl-alloc-value">
-                <input
-                  type="number"
-                  min="0"
-                  max="100"
+                <SimAmountInputPercent
                   value={pctCapi}
-                  onChange={(event) => handleCapiChange(Number(event.target.value))}
+                  min={0}
+                  max={100}
                   className="pl-alloc-input"
+                  fieldClassName="pl-alloc-input-field"
+                  rowClassName="pl-alloc-input-row"
+                  unitClassName="pl-alloc-input-unit"
                   disabled={disabled}
+                  onChange={handleCapiChange}
                 />
-                <span>%</span>
               </div>
 
               <div className="pl-alloc-value">
-                <input
-                  type="number"
-                  min="0"
-                  max="100"
+                <SimAmountInputPercent
                   value={pctDistrib}
-                  onChange={(event) => handleCapiChange(100 - Number(event.target.value))}
+                  min={0}
+                  max={100}
                   className="pl-alloc-input"
+                  fieldClassName="pl-alloc-input-field"
+                  rowClassName="pl-alloc-input-row"
+                  unitClassName="pl-alloc-input-unit"
                   disabled={disabled}
+                  onChange={(value) => handleCapiChange(100 - value)}
                 />
-                <span>%</span>
               </div>
             </>
           )}

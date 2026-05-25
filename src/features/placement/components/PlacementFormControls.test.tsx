@@ -1,9 +1,10 @@
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it, vi } from 'vitest';
-import { InputNumber, InputPct, Select } from './PlacementFormControls';
+import { InputNumber, InputPct } from './PlacementFormControls';
+import { PlacementSelect as Select } from './PlacementSelect';
 
 describe('contrôles de formulaire Placement', () => {
-  it('keeps the shared row wrapper on numeric fields', () => {
+  it('conserve la ligne partagée sur les champs numériques', () => {
     const html = renderToStaticMarkup(
       <InputNumber label="Âge actuel" value={42} onChange={vi.fn()} unit="ans" />,
     );
@@ -13,14 +14,14 @@ describe('contrôles de formulaire Placement', () => {
     expect(html).toContain('sim-field__unit');
   });
 
-  it('renders percent inputs with the shared field control class', () => {
+  it('rend les pourcentages avec la classe de champ partagée', () => {
     const html = renderToStaticMarkup(<InputPct label="Taux" value={0.15} onChange={vi.fn()} />);
 
     expect(html).toContain('sim-field__control');
     expect(html).toContain('sim-field__unit');
   });
 
-  it('renders SimSelect inside the shared shell', () => {
+  it('rend SimSelect dans le shell partagé', () => {
     const html = renderToStaticMarkup(
       <Select
         label="Situation"
