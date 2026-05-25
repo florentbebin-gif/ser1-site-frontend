@@ -18,8 +18,11 @@ export type { SimKpiReferenceKind, SimKpiReferenceProps } from './SimKpiReferenc
 export { SimMetric } from './SimMetric';
 export type { SimMetricProps } from './SimMetric';
 export { SimModalShell } from './SimModalShell';
+export type { SimModalMobileVariant, SimModalShellProps } from './SimModalShell';
 export { SimModalSectionNav } from './SimModalSectionNav';
 export type { SimModalSectionNavItem, SimModalSectionNavProps } from './SimModalSectionNav';
+export { SimMobileStickyActions } from './SimMobileStickyActions';
+export type { SimMobileStickyActionsProps } from './SimMobileStickyActions';
 export { SimPageShell } from './SimPageShell';
 export { SimSegmentedControl } from './SimSegmentedControl';
 export type { SimSegmentedOption } from './SimSegmentedControl';

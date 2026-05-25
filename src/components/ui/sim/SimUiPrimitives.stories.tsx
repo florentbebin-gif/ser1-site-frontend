@@ -6,6 +6,7 @@ import { SimDisclosureButton } from './SimDisclosureButton';
 import { SimEmptyState } from './SimEmptyState';
 import { SimKpiReference } from './SimKpiReference';
 import { SimMetric } from './SimMetric';
+import { SimMobileStickyActions } from './SimMobileStickyActions';
 import { SimModalSectionNav } from './SimModalSectionNav';
 import { SimSkeletonCard, SimSkeletonKpi, SimSkeletonText } from './SimSkeleton';
 import { SimSparkline } from './SimSparkline';
@@ -90,6 +91,14 @@ function SimUiPrimitivesPreview() {
           ariaLabel="Rubriques de démonstration"
           onChange={setActiveSection}
         />
+        <SimMobileStickyActions ariaLabel="Actions mobiles de démonstration">
+          <button type="button" className="sim-modal-btn sim-modal-btn--ghost">
+            Annuler
+          </button>
+          <button type="button" className="sim-modal-btn sim-modal-btn--primary">
+            Valider
+          </button>
+        </SimMobileStickyActions>
       </section>
 
       <section className="premium-card" style={{ display: 'grid', gap: 'var(--space-3)' }}>

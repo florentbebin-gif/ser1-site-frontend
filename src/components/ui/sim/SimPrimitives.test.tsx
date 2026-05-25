@@ -1,6 +1,7 @@
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it, vi } from 'vitest';
 import { SimFieldShell } from './SimFieldShell';
+import { SimMobileStickyActions } from './SimMobileStickyActions';
 import { SimModalShell } from './SimModalShell';
 
 describe('SimFieldShell', () => {
@@ -54,6 +55,8 @@ describe('SimModalShell', () => {
     );
 
     expect(html).toContain('sim-modal-overlay');
+    expect(html).toContain('sim-modal-overlay--bottom-sheet');
+    expect(html).toContain('sim-modal--bottom-sheet');
     expect(html).toContain('role="dialog"');
     expect(html).toContain('aria-modal="true"');
     expect(html).toContain('aria-labelledby=');
@@ -64,5 +67,32 @@ describe('SimModalShell', () => {
     expect(html).toContain('sim-modal__footer');
     expect(html).toContain('Valider');
     expect(html).toContain('Contenu');
+  });
+
+  it('permet le variant mobile fullscreen', () => {
+    const html = renderToStaticMarkup(
+      <SimModalShell title="Plein écran" mobileVariant="fullscreen">
+        <p>Contenu</p>
+      </SimModalShell>,
+    );
+
+    expect(html).toContain('sim-modal-overlay--fullscreen');
+    expect(html).toContain('sim-modal--fullscreen');
+  });
+});
+
+describe('SimMobileStickyActions', () => {
+  it('rend un groupe d actions sticky mobile', () => {
+    const html = renderToStaticMarkup(
+      <SimMobileStickyActions ariaLabel="Actions de validation">
+        <button type="button">Annuler</button>
+        <button type="button">Valider</button>
+      </SimMobileStickyActions>,
+    );
+
+    expect(html).toContain('sim-mobile-sticky-actions');
+    expect(html).toContain('role="group"');
+    expect(html).toContain('aria-label="Actions de validation"');
+    expect(html).toContain('Valider');
   });
 });

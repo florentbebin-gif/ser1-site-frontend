@@ -10,6 +10,7 @@ import {
   SimKpiReference,
   SimMetric,
   SimModalSectionNav,
+  SimMobileStickyActions,
   SimSegmentedControl,
   SimSkeletonCard,
   SimSkeletonKpi,
@@ -221,6 +222,14 @@ function DesignSystemUiPreview() {
           ariaLabel="Rubriques de modale"
           onChange={setActiveSection}
         />
+        <SimMobileStickyActions ariaLabel="Actions mobiles de démonstration">
+          <button type="button" className="sim-modal-btn sim-modal-btn--ghost">
+            Annuler
+          </button>
+          <button type="button" className="sim-modal-btn sim-modal-btn--primary">
+            Valider
+          </button>
+        </SimMobileStickyActions>
       </article>
     </div>
   );
