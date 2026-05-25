@@ -11,10 +11,6 @@
   );
 }
 
-.sc-hero-card--secondary {
-  border-left-color: var(--color-c2);
-}
-
 .sc-hero-header {
   display: flex;
   justify-content: space-between;
