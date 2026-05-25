@@ -77,7 +77,7 @@
   width: 12px;
   height: 12px;
   flex: 0 0 auto;
-  transition: transform 0.2s ease;
+  transition: transform var(--transition-base) var(--easing-standard);
 }
 
 .sim-hypotheses__chevron.is-open {
@@ -127,4 +127,18 @@
 
 .sim-disclosure-btn.is-open .sim-disclosure-btn__chevron {
   transform: rotate(180deg);
+}
+
+.sim-info-btn:focus-visible,
+.sim-action-btn:focus-visible,
+.sim-modal-btn:focus-visible,
+.sim-field__control:focus-visible,
+.sim-field__select-trigger:focus-visible,
+.sim-segmented__option:focus-visible,
+.sim-modal__close:focus-visible,
+.sim-modal-section-nav__item:focus-visible,
+.sim-hypotheses__toggle:focus-visible,
+.sim-disclosure-btn:focus-visible {
+  outline: 0;
+  box-shadow: var(--focus-ring);
 }

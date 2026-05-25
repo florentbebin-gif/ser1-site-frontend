@@ -20,9 +20,9 @@
   cursor: pointer;
   white-space: nowrap;
   transition:
-    background 0.15s ease,
-    color 0.15s ease,
-    box-shadow 0.15s ease;
+    background var(--transition-base) var(--easing-standard),
+    color var(--transition-base) var(--easing-standard),
+    box-shadow var(--transition-base) var(--easing-standard);
 }
 
 .sim-segmented__option:hover,

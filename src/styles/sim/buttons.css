@@ -16,6 +16,10 @@
   font-weight: 800;
   line-height: 1;
   padding: 0;
+  transition:
+    background var(--transition-base) var(--easing-standard),
+    border-color var(--transition-base) var(--easing-standard),
+    color var(--transition-base) var(--easing-standard);
 }
 
 .sim-info-btn:hover,
@@ -41,9 +45,9 @@
   font-weight: var(--font-weight-semibold);
   line-height: 1;
   transition:
-    background var(--transition-fast),
-    border-color var(--transition-fast),
-    color var(--transition-fast);
+    background var(--transition-base) var(--easing-standard),
+    border-color var(--transition-base) var(--easing-standard),
+    color var(--transition-base) var(--easing-standard);
 }
 
 .sim-action-btn--text {
@@ -90,6 +94,10 @@
   font-size: 13px;
   font-weight: 700;
   padding: 0 14px;
+  transition:
+    background var(--transition-base) var(--easing-standard),
+    border-color var(--transition-base) var(--easing-standard),
+    color var(--transition-base) var(--easing-standard);
 }
 
 .sim-modal-btn--ghost {

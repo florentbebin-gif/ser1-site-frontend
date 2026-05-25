@@ -89,9 +89,9 @@
   color: var(--color-c9);
   cursor: pointer;
   transition:
-    background 0.2s,
-    border-color 0.2s,
-    color 0.2s;
+    background var(--transition-base) var(--easing-standard),
+    border-color var(--transition-base) var(--easing-standard),
+    color var(--transition-base) var(--easing-standard);
 }
 
 .sim-modal__close:hover {
@@ -134,6 +134,10 @@
   font-weight: var(--font-weight-semibold);
   padding: 0 var(--space-3);
   text-align: left;
+  transition:
+    background var(--transition-base) var(--easing-standard),
+    border-color var(--transition-base) var(--easing-standard),
+    color var(--transition-base) var(--easing-standard);
 }
 
 .sim-modal-section-nav__item:hover:not(:disabled),

@@ -1,4 +1,5 @@
 import { Children, Fragment, isValidElement, type ReactElement, type ReactNode } from 'react';
+import { SimSkeletonCard, SimSkeletonKpi } from './SimSkeleton';
 
 type SimPageShellSlotName = 'main' | 'side' | 'section';
 
@@ -117,13 +118,28 @@ function renderStatusBlock(
   content: ReactNode,
   statusTestId: string | undefined,
   className?: string,
+  ariaLabel?: string,
 ) {
   return (
     <div
       className={joinClasses('premium-card', 'sim-state-card', className)}
       data-testid={statusTestId}
+      role={ariaLabel ? 'status' : undefined}
+      aria-label={ariaLabel}
     >
       {content}
+    </div>
+  );
+}
+
+function SimPageShellLoadingContent() {
+  return (
+    <div className="sim-page-skeleton">
+      <SimSkeletonCard />
+      <div className="sim-page-skeleton__metrics">
+        <SimSkeletonKpi />
+        <SimSkeletonKpi />
+      </div>
     </div>
   );
 }
@@ -162,7 +178,12 @@ function SimPageShellRoot({
     statusNode = loadingContent ? (
       <div data-testid={statusTestId}>{loadingContent}</div>
     ) : (
-      renderStatusBlock('Chargement…', statusTestId)
+      renderStatusBlock(
+        <SimPageShellLoadingContent />,
+        statusTestId,
+        'sim-state-card--loading',
+        'Chargement…',
+      )
     );
   }
 

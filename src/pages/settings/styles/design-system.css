@@ -51,6 +51,12 @@
   gap: var(--space-3);
 }
 
+.settings-design-system__modernity-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: var(--space-3);
+}
+
 .settings-design-system__ui-card {
   display: grid;
   align-content: start;

@@ -1,0 +1,115 @@
+.sim-skeleton {
+  display: block;
+  border-radius: var(--radius-sm);
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--color-c8) 64%, var(--color-c7)),
+    color-mix(in srgb, var(--color-c4) 44%, var(--color-c7)),
+    color-mix(in srgb, var(--color-c8) 64%, var(--color-c7))
+  );
+  background-size: 200% 100%;
+  animation: sim-skeleton-pulse 1.4s var(--easing-standard) infinite;
+}
+
+.sim-skeleton-text {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.sim-skeleton--text {
+  width: 100%;
+  height: var(--space-3);
+}
+
+.sim-skeleton-text .sim-skeleton--text:nth-child(2) {
+  width: 86%;
+}
+
+.sim-skeleton-text .sim-skeleton--text:nth-child(3) {
+  width: 64%;
+}
+
+.sim-skeleton-card {
+  display: grid;
+  gap: var(--space-4);
+  padding: var(--space-4);
+  border: 1px solid var(--color-c8);
+  border-radius: var(--radius-md);
+  background: var(--color-c7);
+}
+
+.sim-skeleton-card__title {
+  width: 42%;
+  height: var(--space-4);
+}
+
+.sim-skeleton-card__body {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.sim-skeleton-card__body .sim-skeleton--text:nth-child(2) {
+  width: 78%;
+}
+
+.sim-skeleton-card__body .sim-skeleton--text:nth-child(3) {
+  width: 58%;
+}
+
+.sim-skeleton-kpi {
+  display: grid;
+  gap: var(--space-2);
+  min-height: calc(var(--space-8) + var(--space-6));
+  padding: var(--space-4);
+  border: 1px solid var(--color-c8);
+  border-radius: var(--radius-md);
+  background: var(--color-c7);
+}
+
+.sim-skeleton-kpi__label {
+  width: 56%;
+  height: var(--space-2);
+}
+
+.sim-skeleton-kpi__value {
+  width: 72%;
+  height: var(--space-6);
+}
+
+.sim-skeleton-kpi__note {
+  width: 44%;
+  height: var(--space-2);
+}
+
+.sim-state-card--loading {
+  align-items: stretch;
+}
+
+.sim-page-skeleton {
+  display: grid;
+  width: 100%;
+  gap: var(--space-4);
+}
+
+.sim-page-skeleton__metrics {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(calc(var(--space-8) * 3), 1fr));
+  gap: var(--space-3);
+}
+
+@keyframes sim-skeleton-pulse {
+  from {
+    background-position: 200% 0;
+  }
+
+  to {
+    background-position: -200% 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sim-skeleton {
+    animation: none;
+    background-position: 0 0;
+  }
+}

@@ -8,6 +8,7 @@ import { SimActionButton } from './SimActionButton';
 import { SimDisclosureButton } from './SimDisclosureButton';
 import { SimMetric } from './SimMetric';
 import { SimModalSectionNav } from './SimModalSectionNav';
+import { SimSkeletonCard, SimSkeletonKpi, SimSkeletonText } from './SimSkeleton';
 
 describe('SimActionButton', () => {
   it('rend une action texte avec son libelle visible', () => {
@@ -258,5 +259,25 @@ describe('SimModalSectionNav', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Identité' }));
 
     expect(onChange).not.toHaveBeenCalled();
+  });
+});
+
+describe('SimSkeleton', () => {
+  it('rend des lignes de squelette sans contenu accessible', () => {
+    const html = renderToStaticMarkup(<SimSkeletonText lines={3} />);
+
+    expect(html).toContain('aria-hidden="true"');
+    expect(html).toContain('sim-skeleton-text');
+    expect(html.match(/sim-skeleton--text/g)).toHaveLength(3);
+  });
+
+  it('rend les variantes carte et KPI', () => {
+    const card = renderToStaticMarkup(<SimSkeletonCard />);
+    const kpi = renderToStaticMarkup(<SimSkeletonKpi />);
+
+    expect(card).toContain('sim-skeleton-card');
+    expect(card).toContain('sim-skeleton-card__body');
+    expect(kpi).toContain('sim-skeleton-kpi');
+    expect(kpi).toContain('sim-skeleton-kpi__value');
   });
 });

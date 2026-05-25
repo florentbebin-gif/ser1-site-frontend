@@ -4,6 +4,7 @@ import { SimActionButton } from './SimActionButton';
 import { SimDisclosureButton } from './SimDisclosureButton';
 import { SimMetric } from './SimMetric';
 import { SimModalSectionNav } from './SimModalSectionNav';
+import { SimSkeletonCard, SimSkeletonKpi, SimSkeletonText } from './SimSkeleton';
 
 const navSections = [
   { id: 'identite', label: 'Identité', controls: 'story-identite' },
@@ -65,6 +66,15 @@ function SimUiPrimitivesPreview() {
           ariaLabel="Rubriques de démonstration"
           onChange={setActiveSection}
         />
+      </section>
+
+      <section className="premium-card" style={{ display: 'grid', gap: 'var(--space-3)' }}>
+        <h3 className="sim-card__title">Squelettes</h3>
+        <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: 'var(--space-4)' }}>
+          <SimSkeletonCard />
+          <SimSkeletonKpi />
+        </div>
+        <SimSkeletonText lines={3} />
       </section>
     </div>
   );

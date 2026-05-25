@@ -7,7 +7,7 @@ import SettingsDesignSystem from '../SettingsDesignSystem';
 
 describe('SettingsDesignSystem', () => {
   it('affiche les sections runtime initiales du design system', () => {
-    render(<SettingsDesignSystem />);
+    const { container } = render(<SettingsDesignSystem />);
 
     expect(screen.getByTestId('settings-design-system')).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'Tokens' })).toBeInTheDocument();
@@ -24,6 +24,8 @@ describe('SettingsDesignSystem', () => {
     expect(screen.getByRole('button', { name: 'Ajouter une ligne' })).toBeInTheDocument();
     expect(screen.getByText('Impôt estimé')).toBeInTheDocument();
     expect(screen.getByLabelText('Rubriques de modale')).toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: 'Modernité et densité' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Modernité' })).toBeInTheDocument();
+    expect(container.querySelector('.sim-skeleton-card')).toBeInTheDocument();
+    expect(container.querySelector('.sim-skeleton-kpi')).toBeInTheDocument();
   });
 });

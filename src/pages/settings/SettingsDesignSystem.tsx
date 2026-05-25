@@ -8,6 +8,9 @@ import {
   SimDisclosureButton,
   SimMetric,
   SimModalSectionNav,
+  SimSkeletonCard,
+  SimSkeletonKpi,
+  SimSkeletonText,
 } from '@/components/ui/sim';
 import {
   IconBarChart,
@@ -180,6 +183,27 @@ function DesignSystemUiPreview() {
   );
 }
 
+function DesignSystemModernityPreview() {
+  return (
+    <div className="settings-design-system__modernity-grid">
+      <article className="settings-design-system__ui-card">
+        <h4>Squelette page</h4>
+        <SimSkeletonCard />
+      </article>
+
+      <article className="settings-design-system__ui-card">
+        <h4>Squelette KPI</h4>
+        <SimSkeletonKpi />
+      </article>
+
+      <article className="settings-design-system__ui-card">
+        <h4>Texte en attente</h4>
+        <SimSkeletonText lines={3} />
+      </article>
+    </div>
+  );
+}
+
 export default function SettingsDesignSystem() {
   return (
     <div className="settings-design-system" data-testid="settings-design-system">
@@ -236,10 +260,8 @@ export default function SettingsDesignSystem() {
       </section>
 
       <section className="settings-premium-card settings-design-system__section">
-        <h3 className="settings-design-system__title">Modernité et densité</h3>
-        <p className="settings-design-system__placeholder">
-          Section réservée aux composants C24 à C28.
-        </p>
+        <h3 className="settings-design-system__title">Modernité</h3>
+        <DesignSystemModernityPreview />
       </section>
     </div>
   );
