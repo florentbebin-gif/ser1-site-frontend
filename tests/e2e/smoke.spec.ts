@@ -42,6 +42,7 @@ test.describe('Smoke Tests - Surfaces stables', () => {
     expect(formBoxBeforeSummary).not.toBeNull();
 
     await page.getByTestId('credit-capital-input').fill('200000');
+    await page.getByTestId('credit-capital-input').blur();
     await expect(page.getByTestId('credit-summary-card')).toBeVisible();
 
     const formBoxAfterSummary = await form.boundingBox();
