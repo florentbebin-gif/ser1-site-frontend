@@ -1,11 +1,12 @@
 .settings-design-system {
   display: grid;
-  gap: var(--space-5);
+  gap: var(--space-3);
+  max-width: 1180px;
 }
 
 .settings-design-system__section {
   display: grid;
-  gap: var(--space-4);
+  gap: var(--space-3);
 }
 
 .settings-design-system__stack {
@@ -16,9 +17,25 @@
 .settings-design-system__title {
   margin: 0;
   color: var(--color-c1);
-  font-size: var(--font-size-xl);
+  font-size: var(--font-size-lg);
   font-weight: var(--font-weight-semibold);
   line-height: var(--line-height-tight);
+}
+
+.settings-design-system__hero-copy {
+  gap: var(--space-1);
+}
+
+.settings-design-system__hero-title {
+  font-size: var(--font-size-xl);
+}
+
+.settings-design-system__note,
+.settings-design-system__info-text {
+  margin: 0;
+  color: var(--color-c9);
+  font-size: var(--font-size-sm);
+  line-height: var(--line-height-base);
 }
 
 .settings-design-system .settings-premium-subtitle,
@@ -107,9 +124,9 @@
 .settings-design-system__ui-card {
   display: grid;
   align-content: start;
-  gap: var(--space-3);
-  min-height: calc(var(--space-8) * 3);
-  padding: var(--space-4);
+  gap: var(--space-2);
+  min-height: calc(var(--space-8) * 2.5);
+  padding: var(--space-3);
   border: 1px solid var(--color-c8);
   border-radius: var(--radius-md);
   background: var(--color-c7);

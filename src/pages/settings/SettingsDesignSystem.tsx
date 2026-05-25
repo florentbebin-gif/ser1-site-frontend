@@ -1,5 +1,6 @@
 import { useState, type ReactNode } from 'react';
 import '@/styles/sim/index.css';
+import SettingsTitleWithIcon from '@/components/settings/SettingsTitleWithIcon';
 import {
   SimAmountInputEuro,
   SimAmountInputNumeric,
@@ -9,6 +10,7 @@ import {
   SimDelta,
   SimDisclosureButton,
   SimEmptyState,
+  SimInfoButton,
   SimKpiReference,
   SimMetric,
   SimModalSectionNav,
@@ -391,16 +393,26 @@ function DesignSystemGlossaryPreview() {
 }
 
 export default function SettingsDesignSystem() {
+  const [infoOpen, setInfoOpen] = useState(false);
+
   return (
     <main className="settings-design-system" data-testid="settings-design-system">
       <section className="settings-premium-card">
         <header className="settings-premium-header">
-          <div className="settings-action-text">
-            <h1 className="settings-premium-title">Design system simulateurs</h1>
+          <div className="settings-action-text settings-design-system__hero-copy">
+            <h1 className="settings-premium-title settings-design-system__hero-title">
+              <SettingsTitleWithIcon icon="sparkles">
+                Design system simulateurs
+              </SettingsTitleWithIcon>
+            </h1>
             <p className="settings-premium-subtitle">
               Référence runtime complète des fondations SIM SER1 2026.
             </p>
           </div>
+          <SimInfoButton
+            ariaLabel="Informations sur la page design system"
+            onClick={() => setInfoOpen(true)}
+          />
         </header>
       </section>
 
@@ -437,6 +449,10 @@ export default function SettingsDesignSystem() {
 
       <section className="settings-premium-card settings-design-system__section">
         <h2 className="settings-design-system__title">Primitives inputs</h2>
+        <p className="settings-design-system__note">
+          Les variantes euro, pourcentage et numérique partagent SimAmountInputBase pour conserver
+          le même cycle de saisie, formatage et validation.
+        </p>
         <DesignSystemInputPreview />
       </section>
 
@@ -464,6 +480,29 @@ export default function SettingsDesignSystem() {
         <h2 className="settings-design-system__title">Glossaire</h2>
         <DesignSystemGlossaryPreview />
       </section>
+
+      {infoOpen ? (
+        <SimModalShell
+          title="À quoi sert cette page ?"
+          subtitle="Aide admin"
+          onClose={() => setInfoOpen(false)}
+          footer={
+            <button
+              type="button"
+              className="sim-modal-btn sim-modal-btn--primary"
+              onClick={() => setInfoOpen(false)}
+            >
+              Compris
+            </button>
+          }
+        >
+          <p className="settings-design-system__info-text">
+            Cette page permet de vérifier rapidement les composants communs des simulateurs :
+            champs, boutons, modales, tableaux, états et affichages mobiles. Elle sert de référence
+            pour garder les pages sim/* cohérentes après une évolution du design system.
+          </p>
+        </SimModalShell>
+      ) : null}
     </main>
   );
 }
