@@ -3,7 +3,7 @@ import '@/styles/sim/index.css';
 import './styles/index.css';
 import { ExportMenu } from '@/components/ExportMenu';
 import { ModeToggle } from '@/components/ModeToggle';
-import { SimPageShell } from '@/components/ui/sim';
+import { SimEmptyState, SimPageShell } from '@/components/ui/sim';
 import {
   PREVOYANCE_DEFAULT_REGIME_CODE,
   PREVOYANCE_MAINTIEN_LEGAL_CODE,
@@ -246,11 +246,14 @@ export default function PrevoyancePage() {
               fraisGenerauxAssiette={fraisGenerauxAssiette}
             />
           ) : (
-            <div className="premium-card sim-summary-card sim-sidebar-empty-state">
-              <h2>Synthèse</h2>
-              <p>Renseignez la date de naissance pour afficher la synthèse de garanties.</p>
-              <span>La couverture arrêt, invalidité, décès et cotisation apparaîtra ici.</span>
-            </div>
+            <SimEmptyState
+              illustration="docs"
+              title="Synthèse"
+              description="Renseignez la date de naissance pour afficher la synthèse de garanties."
+              cta={
+                <span>La couverture arrêt, invalidité, décès et cotisation apparaîtra ici.</span>
+              }
+            />
           )}
         </SimPageShell.Side>
 

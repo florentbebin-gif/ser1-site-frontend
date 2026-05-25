@@ -2,6 +2,7 @@ import { useState } from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { SimActionButton } from './SimActionButton';
 import { SimDisclosureButton } from './SimDisclosureButton';
+import { SimEmptyState } from './SimEmptyState';
 import { SimMetric } from './SimMetric';
 import { SimModalSectionNav } from './SimModalSectionNav';
 import { SimSkeletonCard, SimSkeletonKpi, SimSkeletonText } from './SimSkeleton';
@@ -84,6 +85,12 @@ function SimUiPrimitivesPreview() {
           Fiscalité dividendes <SimTooltip label="PFU" description="Définition courte du PFU." />.
         </p>
       </section>
+
+      <SimEmptyState
+        illustration="chart"
+        title="Synthèse indisponible"
+        description="Complétez les hypothèses pour afficher les indicateurs."
+      />
     </div>
   );
 }

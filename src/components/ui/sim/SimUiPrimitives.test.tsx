@@ -6,6 +6,7 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it, vi } from 'vitest';
 import { SimActionButton } from './SimActionButton';
 import { SimDisclosureButton } from './SimDisclosureButton';
+import { SimEmptyState } from './SimEmptyState';
 import { SimMetric } from './SimMetric';
 import { SimModalSectionNav } from './SimModalSectionNav';
 import { SimSkeletonCard, SimSkeletonKpi, SimSkeletonText } from './SimSkeleton';
@@ -305,5 +306,24 @@ describe('SimTooltip', () => {
     fireEvent.keyDown(document, { key: 'Escape' });
 
     expect(trigger).toHaveAttribute('aria-expanded', 'false');
+  });
+});
+
+describe('SimEmptyState', () => {
+  it('rend un état vide illustré avec titre, description et action', () => {
+    const html = renderToStaticMarkup(
+      <SimEmptyState
+        illustration="chart"
+        title="Aucune synthèse"
+        description="Complétez les champs pour afficher les indicateurs."
+        cta={<button type="button">Compléter</button>}
+      />,
+    );
+
+    expect(html).toContain('sim-empty-state');
+    expect(html).toContain('sim-empty-state__illustration');
+    expect(html).toContain('Aucune synthèse');
+    expect(html).toContain('Complétez les champs');
+    expect(html).toContain('Compléter');
   });
 });

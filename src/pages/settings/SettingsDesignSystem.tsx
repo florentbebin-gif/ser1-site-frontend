@@ -22,6 +22,9 @@ import {
   IconClose,
   IconDownload,
   IconDuplicate,
+  IconEmptyChart,
+  IconEmptyDocs,
+  IconEmptyTable,
   IconFolder,
   IconHome,
   IconInfo,
@@ -90,6 +93,9 @@ const icons = [
   ['Utilisateurs', IconUsers],
   ['Couches', IconLayers],
   ['Graphique', IconBarChart],
+  ['État vide tableau', IconEmptyTable],
+  ['État vide graphique', IconEmptyChart],
+  ['État vide documents', IconEmptyDocs],
 ] as const;
 
 function DesignSystemInputPreview() {

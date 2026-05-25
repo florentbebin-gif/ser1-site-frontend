@@ -7,6 +7,8 @@ export type { SimAmountInputNumericProps } from './SimAmountInputNumeric';
 export { SimAmountInputPercent } from './SimAmountInputPercent';
 export type { SimAmountInputPercentProps } from './SimAmountInputPercent';
 export { SimDisclosureButton } from './SimDisclosureButton';
+export { SimEmptyState } from './SimEmptyState';
+export type { SimEmptyStateIllustration, SimEmptyStateProps } from './SimEmptyState';
 export { SimFieldShell } from './SimFieldShell';
 export { SimInfoButton } from './SimInfoButton';
 export { SimMetric } from './SimMetric';

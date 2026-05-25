@@ -12,7 +12,7 @@ import './styles/index.css';
 import { useCallback, useState } from 'react';
 import { ExportMenu } from '../../components/ExportMenu';
 import { ModeToggle } from '../../components/ModeToggle';
-import { SimDisclosureButton } from '../../components/ui/sim';
+import { SimDisclosureButton, SimEmptyState } from '../../components/ui/sim';
 import { SimPageShell } from '../../components/ui/sim/SimPageShell';
 import { useTheme } from '../../settings/ThemeProvider';
 import { useTresorerieState } from './hooks/useTresorerieState';
@@ -153,11 +153,14 @@ export default function TresorerieSocietePage() {
             <TresoKPISidebar kpis={kpis} inputs={state.inputsV6} />
           </>
         ) : (
-          <div className="premium-card sim-summary-card sim-sidebar-empty-state">
-            <h2>Synthèse</h2>
-            <p>Complétez la société et l’associé personne physique pour afficher la synthèse.</p>
-            <span>Les repères de trésorerie, revenu cible et CCA seront calculés ensuite.</span>
-          </div>
+          <SimEmptyState
+            illustration="chart"
+            title="Synthèse"
+            description="Complétez la société et l’associé personne physique pour afficher la synthèse."
+            cta={
+              <span>Les repères de trésorerie, revenu cible et CCA seront calculés ensuite.</span>
+            }
+          />
         )}
       </SimPageShell.Side>
     </SimPageShell>

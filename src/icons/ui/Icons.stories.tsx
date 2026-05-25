@@ -14,6 +14,9 @@ import {
   IconClose,
   IconDownload,
   IconDuplicate,
+  IconEmptyChart,
+  IconEmptyDocs,
+  IconEmptyTable,
   IconFileText,
   IconFolder,
   IconGift,
@@ -70,6 +73,9 @@ const iconEntries = [
   ['Jauge', IconGauge],
   ['Bouclier', IconShield],
   ['Transfert', IconTransfer],
+  ['État vide tableau', IconEmptyTable],
+  ['État vide graphique', IconEmptyChart],
+  ['État vide documents', IconEmptyDocs],
 ] as const;
 
 const styles = {

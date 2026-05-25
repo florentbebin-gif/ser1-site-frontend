@@ -15,6 +15,9 @@ import {
   IconClose,
   IconDownload,
   IconDuplicate,
+  IconEmptyChart,
+  IconEmptyDocs,
+  IconEmptyTable,
   IconFileText,
   IconGift,
   IconGauge,
@@ -63,6 +66,12 @@ const newIcons: Array<[string, IconComponent]> = [
   ['IconTransfer', IconTransfer],
 ];
 
+const emptyIcons: Array<[string, IconComponent]> = [
+  ['IconEmptyTable', IconEmptyTable],
+  ['IconEmptyChart', IconEmptyChart],
+  ['IconEmptyDocs', IconEmptyDocs],
+];
+
 describe('catalogue icônes UI', () => {
   it.each(newIcons)('%s respecte le contrat SVG partagé', (_name, Icon) => {
     const html = renderToStaticMarkup(createElement(Icon, { className: 'test-icon' }));
@@ -72,5 +81,14 @@ describe('catalogue icônes UI', () => {
     expect(html).toContain('aria-hidden="true"');
     expect(html).toContain('stroke="currentColor"');
     expect(html).toContain('stroke-width="1.8"');
+  });
+
+  it.each(emptyIcons)('%s respecte le contrat illustration vide', (_name, Icon) => {
+    const html = renderToStaticMarkup(createElement(Icon, { className: 'test-icon' }));
+
+    expect(html).toContain('class="test-icon"');
+    expect(html).toContain('viewBox="0 0 60 60"');
+    expect(html).toContain('aria-hidden="true"');
+    expect(html).toContain('stroke="currentColor"');
   });
 });
