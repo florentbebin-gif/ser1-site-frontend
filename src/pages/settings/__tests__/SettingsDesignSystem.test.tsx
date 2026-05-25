@@ -22,11 +22,25 @@ describe('SettingsDesignSystem', () => {
     expect(screen.getByLabelText('Nombre libre')).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'Primitives UI' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Ajouter une ligne' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'États actions' })).toBeInTheDocument();
+    expect(screen.getByText('Extrait actions')).toBeInTheDocument();
+    expect(screen.getByText('Extrait modale')).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: 'Ouvrir la modale bottom-sheet' }),
+    ).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Données CGP' })).toBeInTheDocument();
     expect(screen.getByText('Impôt estimé')).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: 'Masquer Projection repliable (3 lignes)' }),
+    ).toBeInTheDocument();
     expect(screen.getByLabelText('Rubriques de modale')).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'Modernité' })).toBeInTheDocument();
     expect(container.querySelector('.sim-skeleton-card')).toBeInTheDocument();
     expect(container.querySelector('.sim-skeleton-kpi')).toBeInTheDocument();
+    expect(container.querySelector('.sim-empty-state')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Mobile 390' })).toBeInTheDocument();
+    expect(screen.getByLabelText('Mobile 390')).toBeInTheDocument();
+    expect(screen.getByText('Extrait mobile')).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'Glossaire' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Définition : PFU' })).toBeInTheDocument();
   });
