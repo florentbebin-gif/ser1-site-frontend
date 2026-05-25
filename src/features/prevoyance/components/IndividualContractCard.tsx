@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { SimSegmentedControl, SimSelect } from '@/components/ui/sim';
+import { SimActionButton, SimSegmentedControl, SimSelect } from '@/components/ui/sim';
 import { computeInvaliditePalierAmount } from '@/domain/prevoyance/helpers';
 import type { PrevoyanceContractDraft } from '@/domain/prevoyance/types';
 import { ArretPeriodsModal } from './ArretPeriodsModal';
@@ -106,14 +106,14 @@ export function IndividualContractCard({
         <div className="prevoyance-mini-section">
           <div className="prevoyance-mini-section__header">
             <span>Arrêt de travail</span>
-            <button
-              type="button"
+            <SimActionButton
+              variant="add"
+              mode="icon"
+              label="Découper"
               className="prevoyance-icon-button prevoyance-icon-button--compact"
               onClick={() => setShowArretPeriodsModal(true)}
-              aria-label={`Découper les périodes d’arrêt du contrat ${index + 1}`}
-            >
-              +
-            </button>
+              ariaLabel={`Découper les périodes d’arrêt du contrat ${index + 1}`}
+            />
           </div>
           <SimSegmentedControl
             value={contract.indemnisation}
@@ -230,9 +230,13 @@ export function IndividualContractCard({
               />
             </SimFieldShell>
           </div>
-          <button type="button" className="prevoyance-link-button" onClick={onOpenFrais}>
-            Estimer l’assiette depuis un compte de résultat
-          </button>
+          <SimActionButton
+            variant="edit"
+            mode="text"
+            label="Estimer l’assiette depuis un compte de résultat"
+            className="prevoyance-link-button"
+            onClick={onOpenFrais}
+          />
         </div>
       ) : null}
 
@@ -240,15 +244,15 @@ export function IndividualContractCard({
         <div className="prevoyance-mini-section">
           <div className="prevoyance-mini-section__header">
             <span>Invalidité</span>
-            <button
-              type="button"
+            <SimActionButton
+              variant="add"
+              mode="icon"
+              label="Ajouter"
               className="prevoyance-icon-button prevoyance-icon-button--compact"
               onClick={addInvaliditePalier}
-              aria-label={`Ajouter un palier invalidité au contrat ${index + 1}`}
+              ariaLabel={`Ajouter un palier invalidité au contrat ${index + 1}`}
               disabled={contract.invalidite.paliers.length >= 3}
-            >
-              +
-            </button>
+            />
           </div>
           <SimSegmentedControl
             value={contract.invalidite.indemnisation}
@@ -271,14 +275,14 @@ export function IndividualContractCard({
             <div key={palierIndex} className="prevoyance-invalidite-row">
               {contract.invalidite.paliers.length > 1 ? (
                 <div className="prevoyance-invalidite-row__actions">
-                  <button
-                    type="button"
+                  <SimActionButton
+                    variant="delete"
+                    mode="icon"
+                    label="Supprimer"
                     className="prevoyance-icon-button prevoyance-icon-button--compact"
                     onClick={() => removeInvaliditePalier(palierIndex)}
-                    aria-label={`Supprimer le palier invalidité ${palierIndex + 1}`}
-                  >
-                    ×
-                  </button>
+                    ariaLabel={`Supprimer le palier invalidité ${palierIndex + 1}`}
+                  />
                 </div>
               ) : null}
               <div className="prevoyance-invalidite-row__grid">

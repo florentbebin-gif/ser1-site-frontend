@@ -574,13 +574,13 @@
 
 .prevoyance-donut-wrap {
   display: grid;
-  grid-template-columns: 78px minmax(0, 1fr);
+  grid-template-columns: 64px minmax(0, 1fr);
   gap: 12px;
   align-items: center;
 }
 
 .prevoyance-donut-wrap--compact {
-  grid-template-columns: 54px minmax(0, 1fr);
+  grid-template-columns: 48px minmax(0, 1fr);
   gap: 10px;
 }
 
@@ -635,7 +635,7 @@
 
 .prevoyance-donut {
   display: grid;
-  width: 76px;
+  width: 64px;
   aspect-ratio: 1;
   place-items: center;
   border-radius: 50%;
@@ -650,20 +650,20 @@
 }
 
 .prevoyance-donut-wrap--compact .prevoyance-donut {
-  width: 54px;
+  width: 48px;
   font-size: 10px;
 }
 
 .prevoyance-donut::after {
   content: '';
   position: absolute;
-  inset: 12px;
+  inset: 10px;
   border-radius: 50%;
   background: var(--color-surface, #ffffff);
 }
 
 .prevoyance-donut-wrap--compact .prevoyance-donut::after {
-  inset: 9px;
+  inset: 8px;
 }
 
 .prevoyance-donut span {
@@ -696,7 +696,7 @@
 
 .prevoyance-frais-inline-kpi {
   display: grid;
-  grid-template-columns: 54px minmax(0, 1fr);
+  grid-template-columns: 48px minmax(0, 1fr);
   gap: 10px;
   align-items: center;
   border-top: 1px solid var(--color-c8);
@@ -705,7 +705,7 @@
 
 .prevoyance-mini-donut {
   display: grid;
-  width: 54px;
+  width: 48px;
   aspect-ratio: 1;
   place-items: center;
   border-radius: 50%;
@@ -722,7 +722,7 @@
 .prevoyance-mini-donut::after {
   content: '';
   position: absolute;
-  inset: 9px;
+  inset: 8px;
   border-radius: 50%;
   background: var(--color-surface, #ffffff);
 }
@@ -732,25 +732,8 @@
   z-index: 1;
 }
 
-.prevoyance-frais-inline-kpi > div {
-  display: grid;
-  gap: 2px;
+.prevoyance-frais-inline-kpi .sim-metric {
   min-width: 0;
-}
-
-.prevoyance-frais-inline-kpi span {
-  color: var(--color-c9);
-  font-size: 11px;
-}
-
-.prevoyance-frais-inline-kpi strong {
-  color: var(--color-c1);
-  font-size: 12px;
-}
-
-.prevoyance-frais-inline-kpi small {
-  color: var(--color-c9);
-  font-size: 10px;
 }
 
 .prevoyance-frais-modal {
@@ -894,23 +877,7 @@
 }
 
 .prevoyance-cotisation-kpi {
-  display: grid;
-  gap: 4px;
-}
-
-.prevoyance-cotisation-kpi span {
-  color: var(--color-c9);
-  font-size: 11px;
-}
-
-.prevoyance-cotisation-kpi strong {
-  color: var(--color-c1);
-  font-size: 18px;
-}
-
-.prevoyance-cotisation-kpi small {
-  color: var(--color-c9);
-  font-size: 10px;
+  min-width: 0;
 }
 
 .prevoyance-periods-modal__toolbar {

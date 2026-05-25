@@ -1,6 +1,5 @@
 import { useState } from 'react';
-import { SimModalShell, SimSegmentedControl } from '@/components/ui/sim';
-import { IconClose, IconDuplicate, IconPencil } from '@/icons/ui';
+import { SimActionButton, SimModalShell, SimSegmentedControl } from '@/components/ui/sim';
 import {
   computeCollectiveAssietteBase,
   computeInvaliditePalierAmount,
@@ -177,16 +176,16 @@ export function ContractsBlock({
       subtitle="Garanties souscrites hors régime obligatoire"
       icon="contracts"
       actions={
-        <button
-          type="button"
+        <SimActionButton
+          variant="add"
+          mode="icon"
+          label="Ajouter"
           className="prevoyance-add-icon-button"
           onClick={addContract}
           disabled={contracts.length >= 3}
-          aria-label="Ajouter un contrat"
+          ariaLabel="Ajouter un contrat"
           title="Ajouter un contrat"
-        >
-          +
-        </button>
+        />
       }
     >
       <div className="prevoyance-contract-mode">
@@ -213,35 +212,35 @@ export function ContractsBlock({
                 <p>{contractModeLabel(contract)}</p>
               </div>
               <div className="prevoyance-contract-summary__actions">
-                <button
-                  type="button"
+                <SimActionButton
+                  variant="edit"
+                  mode="icon"
+                  label="Modifier"
                   className="prevoyance-summary-icon-button"
                   onClick={() => openContractEditor(contract.id)}
-                  aria-label={`Modifier ${contract.name}`}
+                  ariaLabel={`Modifier ${contract.name}`}
                   title={`Modifier ${contract.name}`}
-                >
-                  <IconPencil />
-                </button>
-                <button
-                  type="button"
+                />
+                <SimActionButton
+                  variant="duplicate"
+                  mode="icon"
+                  label="Dupliquer"
                   className="prevoyance-summary-icon-button"
                   onClick={() => duplicateContract(contract)}
                   disabled={contracts.length >= 3}
-                  aria-label={`Dupliquer ${contract.name}`}
+                  ariaLabel={`Dupliquer ${contract.name}`}
                   title={`Dupliquer ${contract.name}`}
-                >
-                  <IconDuplicate />
-                </button>
-                <button
-                  type="button"
+                />
+                <SimActionButton
+                  variant="delete"
+                  mode="icon"
+                  label="Supprimer"
                   className="prevoyance-summary-icon-button prevoyance-summary-icon-button--remove"
                   onClick={() => removeContract(contract.id)}
                   disabled={contracts.length <= 1}
-                  aria-label={`Supprimer ${contract.name}`}
+                  ariaLabel={`Supprimer ${contract.name}`}
                   title={`Supprimer ${contract.name}`}
-                >
-                  <IconClose />
-                </button>
+                />
               </div>
             </div>
             <dl className="prevoyance-contract-summary__rows">

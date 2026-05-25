@@ -1,23 +1,22 @@
 import { useState } from 'react';
-import { IconChevronDown } from '@/icons/ui';
+import { SimDisclosureButton } from '@/components/ui/sim';
 
 export function PrevoyanceHypotheses() {
   const [open, setOpen] = useState(false);
 
   return (
     <div className="sim-hypotheses prevoyance-hypotheses">
-      <button
-        type="button"
+      <SimDisclosureButton
+        expanded={open}
+        onToggle={() => setOpen((value) => !value)}
         className="sim-hypotheses__toggle"
-        onClick={() => setOpen((value) => !value)}
-        aria-expanded={open}
-      >
-        <span className="sim-hypotheses__label">HYPOTHÈSES ET LIMITES</span>
-        <IconChevronDown className={`sim-hypotheses__chevron${open ? ' is-open' : ''}`} />
-      </button>
+        labelClosed="Hypothèses et limites"
+        labelOpen="Hypothèses et limites"
+        controls="prevoyance-hypotheses-panel"
+      />
 
       {open ? (
-        <ul className="sim-hypotheses__body">
+        <ul id="prevoyance-hypotheses-panel" className="sim-hypotheses__body">
           <li>Les garanties du régime obligatoire proviennent des paramètres Prévoyance.</li>
           <li>
             Les contrats saisis représentent des hypothèses de couverture et doivent être rapprochés

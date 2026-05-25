@@ -182,11 +182,11 @@ describe('PrevoyancePage', () => {
     expect(screen.getByRole('button', { name: 'Acte juridique' })).toBeInTheDocument();
     expect(
       screen.getByRole('button', { name: 'Ajouter une période arrêt de travail au contrat 1' }),
-    ).toBeInTheDocument();
+    ).toHaveClass('sim-action-btn--add');
     await user.click(screen.getByRole('button', { name: 'Invalidité' }));
     expect(
       screen.getByRole('button', { name: 'Ajouter un seuil invalidité au contrat 1' }),
-    ).toBeInTheDocument();
+    ).toHaveClass('sim-action-btn--add');
     await user.click(screen.getByRole('button', { name: 'Acte juridique' }));
     expect(screen.getAllByText('Acte juridique').length).toBeGreaterThan(0);
     await user.click(screen.getByRole('button', { name: 'Terminer' }));
@@ -219,6 +219,9 @@ describe('PrevoyancePage', () => {
       'aria-expanded',
       'false',
     );
+    expect(screen.getByRole('button', { name: /Hypothèses et limites/i })).toHaveClass(
+      'sim-disclosure-btn',
+    );
   });
 
   it('charge le parcours TNS par défaut et permet trois contrats en cartes compactes', async () => {
@@ -228,6 +231,19 @@ describe('PrevoyancePage', () => {
     await saisirDateNaissance(user);
     expect((await screen.findAllByText('Frais généraux')).length).toBeGreaterThan(0);
     expect(screen.getAllByText('Frais généraux').length).toBeGreaterThan(0);
+    expect(screen.getByRole('button', { name: 'Ajouter un contrat' })).toHaveClass(
+      'sim-action-btn--add',
+    );
+    expect(screen.getByRole('button', { name: /Modifier Contrat 1/i })).toHaveClass(
+      'sim-action-btn--edit',
+    );
+    expect(screen.getByRole('button', { name: /Dupliquer Contrat 1/i })).toHaveClass(
+      'sim-action-btn--duplicate',
+    );
+    expect(screen.getByRole('button', { name: /Supprimer Contrat 1/i })).toHaveClass(
+      'sim-action-btn--delete',
+    );
+    expect(document.querySelectorAll('.prevoyance-sidebar .sim-metric').length).toBeGreaterThan(1);
 
     await user.click(screen.getByRole('button', { name: 'Ajouter un contrat' }));
     await user.click(await screen.findByRole('button', { name: 'Terminer' }));
@@ -266,9 +282,11 @@ describe('PrevoyancePage', () => {
     await user.click(screen.getAllByRole('button', { name: /Découper les périodes/i })[0]);
     expect(await screen.findByText('Découper l’arrêt de travail')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /Ajouter une période/i })).toHaveClass(
-      'sim-modal-btn--ghost',
+      'sim-action-btn--add',
     );
-    expect(screen.getByText('Cliquez × pour retirer une période.')).toBeInTheDocument();
+    expect(
+      screen.getByText('Utilisez le bouton supprimer pour retirer une période.'),
+    ).toBeInTheDocument();
 
     await user.click(screen.getByRole('button', { name: /Ajouter une période/i }));
     const periodInputs = document.querySelectorAll<HTMLInputElement>(
@@ -320,6 +338,9 @@ describe('PrevoyancePage', () => {
     expect(screen.getAllByRole('button', { name: /Supprimer le palier invalidité/i })).toHaveLength(
       2,
     );
+    expect(
+      screen.getAllByRole('button', { name: /Supprimer le palier invalidité/i })[0],
+    ).toHaveClass('sim-action-btn--delete');
 
     await user.click(screen.getAllByRole('button', { name: /Supprimer le palier invalidité/i })[0]);
 

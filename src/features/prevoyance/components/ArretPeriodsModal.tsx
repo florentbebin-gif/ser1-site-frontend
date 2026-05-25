@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { SimModalShell } from '@/components/ui/sim';
+import { SimActionButton, SimModalShell } from '@/components/ui/sim';
 import { PREVOYANCE_MAX_ARRET_DURATION_DAYS } from '@/domain/prevoyance/helpers';
 import type { PrevoyanceArretPalierDraft } from '@/domain/prevoyance/types';
 import { NumberInput, SimFieldShell } from './FormPrimitives';
@@ -139,13 +139,13 @@ export function ArretPeriodsModal({ paliers, onClose, onApply }: ArretPeriodsMod
       }
     >
       <div className="prevoyance-periods-modal__toolbar">
-        <button
-          type="button"
-          className="sim-modal-btn sim-modal-btn--ghost prevoyance-periods-modal__add"
+        <SimActionButton
+          variant="add"
+          mode="text"
+          label="Ajouter une période"
+          className="prevoyance-periods-modal__add"
           onClick={splitLastPalier}
-        >
-          + Ajouter une période
-        </button>
+        />
       </div>
       <p className="prevoyance-periods-modal__hint">
         Ajuster un début recale la période précédente ; ajuster une fin recale la période suivante.
@@ -179,20 +179,20 @@ export function ArretPeriodsModal({ paliers, onClose, onApply }: ArretPeriodsMod
                   suffix="€/j"
                 />
               </SimFieldShell>
-              <button
-                type="button"
+              <SimActionButton
+                variant="delete"
+                mode="icon"
+                label="Supprimer"
                 className="prevoyance-icon-button"
                 onClick={() => removePalier(index)}
-                aria-label={`Supprimer la période ${index + 1}`}
+                ariaLabel={`Supprimer la période ${index + 1}`}
                 disabled={draft.length === 1}
-              >
-                ×
-              </button>
+              />
             </div>
           );
         })}
       </div>
-      <p className="prevoyance-side-note">Cliquez × pour retirer une période.</p>
+      <p className="prevoyance-side-note">Utilisez le bouton supprimer pour retirer une période.</p>
     </SimModalShell>
   );
 }
