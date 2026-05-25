@@ -1,4 +1,4 @@
-import { SimInfoButton } from '@/components/ui/sim';
+import { SimActionButton, SimInfoButton } from '@/components/ui/sim';
 import {
   COMPARTMENT_LABELS,
   PREFON_USER_2026_SERVICE_VALUE,
@@ -86,14 +86,13 @@ export function PerTransfertPrefonPocketsForm({
           >
             <legend>
               Poche {index + 1}
-              <button
-                type="button"
-                className="per-transfert-prefon-pockets__settings"
+              <SimActionButton
+                variant="edit"
+                mode="text"
+                label="Paramètres de la poche"
                 onClick={() => onOpenPocketSettings(index)}
-                aria-label={`Paramètres de la poche ${index + 1}`}
-              >
-                Paramètres de la poche
-              </button>
+                ariaLabel={`Paramètres de la poche ${index + 1}`}
+              />
             </legend>
             <PerTransfertSelectField
               label="Compartiment"
@@ -115,22 +114,20 @@ export function PerTransfertPrefonPocketsForm({
               onChange={(value) => updatePocket(index, { serviceValue: value })}
               min={0}
             />
-            <button
-              type="button"
-              className="per-transfert-prefon-pockets__remove"
+            <SimActionButton
+              variant="delete"
+              mode="text"
+              label="Supprimer"
               onClick={() => removePocket(index)}
               disabled={rows.length <= 1}
-              aria-label={`Supprimer la poche ${index + 1}`}
-            >
-              Supprimer
-            </button>
+              ariaLabel={`Supprimer la poche ${index + 1}`}
+              danger
+            />
           </fieldset>
         ))}
       </div>
 
-      <button type="button" className="per-transfert-secondary-button" onClick={addPocket}>
-        + Ajouter une poche
-      </button>
+      <SimActionButton variant="add" mode="text" label="Ajouter une poche" onClick={addPocket} />
     </section>
   );
 }

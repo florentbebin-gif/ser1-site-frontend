@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import type { ReactNode } from 'react';
-import { SimAmountInputNumeric, SimInfoButton } from '@/components/ui/sim';
+import { SimAmountInputNumeric, SimInfoButton, SimMetric } from '@/components/ui/sim';
 import {
   TYPE_LABELS,
   type BaseCgRetraiteContract,
@@ -277,11 +277,11 @@ function ScenarioCard({
 
 function RentMetrics({ fiscal }: { fiscal: PerTransfertFiscalResult }) {
   return (
-    <dl className="per-transfert-compare2__kpis">
+    <div className="per-transfert-compare2__kpis">
       <KpiRow label={`Brut (${fiscal.family})`} value={euro(fiscal.grossAnnualRent)} />
       <KpiRow label="Net de PS" value={euro(fiscal.netOfSocialContributions)} muted />
       <KpiRow label="Net de PS + IR" value={euro(fiscal.netOfAllTaxes)} highlighted />
-    </dl>
+    </div>
   );
 }
 
@@ -295,7 +295,7 @@ function CapitalMetrics({
   if (!fiscal?.available)
     return <Unavailable label="Capital unique non disponible pour ce dispositif." />;
   return (
-    <dl className="per-transfert-compare2__kpis">
+    <div className="per-transfert-compare2__kpis">
       <KpiRow label="Brut" value={euro(fiscal.capital)} />
       <KpiRow label="Net de PS" value={euro(fiscal.netOfSocialContributions)} muted />
       <KpiRow label="Net de PS + IR/PFU" value={euro(fiscal.netOfAllTaxes)} highlighted />
@@ -311,7 +311,7 @@ function CapitalMetrics({
         }
         value={euro(fiscal.netOfAllTaxesWithQuotient)}
       />
-    </dl>
+    </div>
   );
 }
 
@@ -325,7 +325,7 @@ function HorizonMetrics({
   if (!horizon || horizon.annualWithdrawal <= 0)
     return <Unavailable label="Capital fractionné non disponible pour ce dispositif." />;
   return (
-    <dl className="per-transfert-compare2__kpis">
+    <div className="per-transfert-compare2__kpis">
       <KpiRow
         label={
           <span className="per-transfert-compare2__info-label">
@@ -344,7 +344,7 @@ function HorizonMetrics({
         value={euro(horizon.cumulativeNetWithdrawals)}
         highlighted
       />
-    </dl>
+    </div>
   );
 }
 
@@ -364,12 +364,12 @@ function KpiRow({
   highlighted?: boolean;
 }) {
   return (
-    <div
-      className={`per-transfert-compare2__row${muted ? ' is-muted' : ''}${highlighted ? ' is-highlighted' : ''}`}
-    >
-      <dt>{label}</dt>
-      <dd>{value}</dd>
-    </div>
+    <SimMetric
+      variant="inline"
+      label={label}
+      value={value}
+      className={`per-transfert-compare2__metric${muted ? ' is-muted' : ''}${highlighted ? ' is-highlighted' : ''}`}
+    />
   );
 }
 

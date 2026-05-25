@@ -1,24 +1,25 @@
 import { useState } from 'react';
+import { SimDisclosureButton } from '@/components/ui/sim';
 import { BASE_CG_RETRAITE_LEGAL_NOTICE } from '@/data/base-cg-retraite';
-import { IconChevronDown } from '@/icons/ui';
+
+const HYPOTHESES_ID = 'per-transfert-hypotheses-list';
 
 export function PerTransfertHypotheses() {
   const [open, setOpen] = useState(false);
 
   return (
     <section className="per-transfert-hypotheses">
-      <button
-        type="button"
+      <SimDisclosureButton
+        expanded={open}
+        onToggle={() => setOpen((current) => !current)}
+        labelClosed="Afficher les hypothèses et limites"
+        labelOpen="Masquer les hypothèses et limites"
+        controls={HYPOTHESES_ID}
         className="per-transfert-hypotheses__toggle"
-        onClick={() => setOpen((current) => !current)}
-        aria-expanded={open}
-      >
-        <span className="per-transfert-hypotheses__title">HYPOTHÈSES ET LIMITES</span>
-        <IconChevronDown className={`per-transfert-hypotheses__chevron${open ? ' is-open' : ''}`} />
-      </button>
+      />
 
       {open ? (
-        <ul className="per-transfert-hypotheses__list">
+        <ul className="per-transfert-hypotheses__list" id={HYPOTHESES_ID}>
           <li>
             Le scénario Conserver maintient le contrat actuel avec les performances, versements et
             revalorisations saisis.

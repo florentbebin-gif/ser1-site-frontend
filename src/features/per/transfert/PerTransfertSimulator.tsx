@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 import { Link } from 'react-router';
 import { ExportMenu } from '@/components/ExportMenu';
 import { ModeToggle } from '@/components/ModeToggle';
-import { SimInfoButton, SimPageShell } from '@/components/ui/sim';
+import { SimActionButton, SimInfoButton, SimPageShell } from '@/components/ui/sim';
 import type { SimSelectOption } from '@/components/ui/sim';
 import { useFiscalContext } from '@/hooks/useFiscalContext';
 import { useUserMode } from '@/settings/userMode';
@@ -339,13 +339,12 @@ export function PerTransfertSimulator() {
 
                 {state.typeContrat !== 'PER_POINTS' ? (
                   <div className="per-transfert-inline-actions">
-                    <button
-                      type="button"
-                      className="per-transfert-secondary-button"
+                    <SimActionButton
+                      variant="edit"
+                      mode="text"
+                      label="Personnaliser le calcul de rente"
                       onClick={() => setRentModalOpen(true)}
-                    >
-                      Personnaliser le calcul de rente
-                    </button>
+                    />
                   </div>
                 ) : null}
 
@@ -404,13 +403,12 @@ export function PerTransfertSimulator() {
               title="Nouveau PER"
               subtitle="Hypothèse de transfert immédiat, projection jusqu’à la retraite et modalités de sortie."
               headerActions={
-                <button
-                  type="button"
-                  className="per-transfert-secondary-button"
+                <SimActionButton
+                  variant="edit"
+                  mode="text"
+                  label="Paramètres rente"
                   onClick={() => setAnnuitySettingsOpen(true)}
-                >
-                  Paramètres rente
-                </button>
+                />
               }
             >
               <FieldGrid>

@@ -256,7 +256,9 @@ describe('PerTransfertSidebar', () => {
     expect(html).toContain('Capital fractionné court');
     expect(html).toContain('Capital fractionné long');
     expect(html).toContain('Net de PS + IR');
+    expect(html).toContain('sim-metric--inline');
     expect(html).toContain('Points d’attention');
+    expect(html).not.toContain('per-transfert-compare2__row');
     expect(html).not.toContain('Rente nette mensuelle');
     expect(html).not.toContain('/mois');
   });
@@ -470,6 +472,12 @@ describe('PerTransfertPrefonPocketsForm', () => {
 
     expect(html).toContain('Valeur de service du point');
     expect(html).toContain('Paramètres de la poche');
+    expect(html).toContain('sim-action-btn--edit');
+    expect(html).toContain('sim-action-btn--delete');
+    expect(html).toContain('sim-action-btn--add');
+    expect(html).not.toContain('per-transfert-prefon-pockets__settings');
+    expect(html).not.toContain('per-transfert-prefon-pockets__remove');
+    expect(html).not.toContain('per-transfert-secondary-button');
     expect(html).not.toContain('Valeur transfert nette par point');
     expect(html).not.toContain('Valeur de transfert globale');
   });
@@ -478,7 +486,12 @@ describe('PerTransfertPrefonPocketsForm', () => {
 describe('PerTransfertHypotheses', () => {
   it('mentionne la vérification obligatoire des informations Base CG auprès de la compagnie', async () => {
     render(<PerTransfertHypotheses />);
-    await userEvent.click(screen.getByRole('button', { name: /HYPOTHÈSES ET LIMITES/ }));
+    const toggle = screen.getByRole('button', { name: /Afficher les hypothèses et limites/i });
+
+    expect(toggle).toHaveClass('sim-disclosure-btn');
+    expect(toggle).toHaveAttribute('aria-controls', 'per-transfert-hypotheses-list');
+
+    await userEvent.click(toggle);
 
     expect(
       screen.getByText(/Base CG indicative.*aide interne au devoir de conseil/i),
@@ -500,6 +513,12 @@ describe('PerTransfertSimulator', () => {
     expect(
       await screen.findByText(/Base CG indicative.*aide interne au devoir de conseil/i),
     ).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Personnaliser le calcul de rente/i })).toHaveClass(
+      'sim-action-btn--edit',
+    );
+    expect(
+      screen.getByRole('button', { name: /Personnaliser le calcul de rente/i }),
+    ).not.toHaveClass('per-transfert-secondary-button');
     expect(screen.getByText(/vérifier.*compagnie/i)).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Base CG' })).toHaveAttribute(
       'href',
