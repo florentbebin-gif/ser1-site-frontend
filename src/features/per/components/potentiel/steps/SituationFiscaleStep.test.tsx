@@ -55,6 +55,8 @@ describe('SituationFiscaleStep', () => {
     expect(html.indexOf('Situation familiale')).toBeLessThan(html.indexOf('Revenus imposables'));
     expect(html.indexOf('Revenus imposables')).toBeLessThan(html.indexOf('Versements retraite'));
     expect(html).toContain('Ajouter un enfant');
+    expect(html).toContain('sim-action-btn--add');
+    expect(html).toContain('sim-action-btn--delete');
     expect(html).not.toContain('Mutualisation des plafonds (case 6QR)');
     expect(html).toContain('per-checkbox-label--isole');
   });
@@ -115,6 +117,8 @@ describe('SituationFiscaleStep', () => {
     expect(html).toContain('contribue à 6QS / 6QT');
     expect(html).toContain('nécessaire pour le calcul de l');
     expect(html).toContain('Afficher le détail des enveloppes Madelin 154 bis');
+    expect(html).toContain('sim-action-btn--edit');
+    expect(html).not.toContain('per-info-btn');
   });
 
   it('builds a global TNS toggle patch for the whole foyer', () => {

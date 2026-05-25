@@ -1,4 +1,5 @@
 import React from 'react';
+import { SimMetric } from '@/components/ui/sim';
 import { IconBarChart, IconFileText, IconPieChart } from '@/icons/ui';
 import type { PerPotentielResult } from '../../../../engine/per';
 import type { WizardStep } from '../../hooks/usePerPotentiel';
@@ -43,10 +44,13 @@ function HeroDeclarantPair({
       className={`per-potentiel-declarant-pair${compact ? ' per-potentiel-declarant-pair--compact' : ''}`}
     >
       {items.map((item) => (
-        <div key={item.label} className="per-potentiel-declarant-metric">
-          <span className="per-potentiel-declarant-metric__label">{item.label}</span>
-          <strong className="per-potentiel-declarant-metric__value">{item.value}</strong>
-        </div>
+        <SimMetric
+          key={item.label}
+          variant="secondary"
+          className="per-potentiel-declarant-metric"
+          label={item.label}
+          value={item.value}
+        />
       ))}
     </div>
   );
@@ -54,10 +58,12 @@ function HeroDeclarantPair({
 
 function SecondaryMetric({ label, value }: { label: string; value: string }): React.ReactElement {
   return (
-    <div className="per-potentiel-secondary-metric">
-      <span className="per-potentiel-secondary-metric__label">{label}</span>
-      <strong className="per-potentiel-secondary-metric__value">{value}</strong>
-    </div>
+    <SimMetric
+      variant="secondary"
+      className="per-potentiel-secondary-metric"
+      label={label}
+      value={value}
+    />
   );
 }
 
@@ -294,12 +300,12 @@ export function PerPotentielContextSidebar({
               <div className="sim-divider sim-divider--tight" />
 
               <div className="per-sidebar-hero">
-                <div className="per-sidebar-hero__left">
-                  <div className="per-sidebar-hero__label">IR estimé</div>
-                  <div className="per-sidebar-hero__value">
-                    {fmtCurrency(result.situationFiscale.irEstime)}
-                  </div>
-                </div>
+                <SimMetric
+                  variant="hero"
+                  className="per-sidebar-hero__metric"
+                  label="IR estimé"
+                  value={fmtCurrency(result.situationFiscale.irEstime)}
+                />
                 <div className="per-potentiel-mini-kpis-row">
                   <SecondaryMetric label="TMI" value={fmtPercent(result.situationFiscale.tmi)} />
                   <SecondaryMetric
@@ -337,12 +343,12 @@ export function PerPotentielContextSidebar({
                 <div className="sim-divider sim-divider--tight" />
 
                 <div className="per-sidebar-hero">
-                  <div className="per-sidebar-hero__left">
-                    <div className="per-sidebar-hero__label">IR estimé</div>
-                    <div className="per-sidebar-hero__value">
-                      {fmtCurrency(result.situationFiscale.irEstime)}
-                    </div>
-                  </div>
+                  <SimMetric
+                    variant="hero"
+                    className="per-sidebar-hero__metric"
+                    label="IR estimé"
+                    value={fmtCurrency(result.situationFiscale.irEstime)}
+                  />
                   <div className="per-potentiel-mini-kpis-row">
                     <SecondaryMetric label="TMI" value={fmtPercent(result.situationFiscale.tmi)} />
                     <SecondaryMetric

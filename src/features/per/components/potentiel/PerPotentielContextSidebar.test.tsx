@@ -166,8 +166,11 @@ describe('PerPotentielContextSidebar', () => {
     expect(html).toContain('Déclarant 1');
     expect(html).toContain('Déclarant 2');
     expect(html).toContain('Enveloppes Madelin N');
+    expect(html).toContain('sim-metric--hero');
+    expect(html).toContain('sim-metric--secondary');
     expect(html).toContain(fmtCurrency(999));
     expect(html).toContain(fmtCurrency(888));
+    expect(html).not.toContain('per-potentiel-declarant-metric__label');
     expect(html).not.toContain('D1 15 %');
     expect(html).not.toContain('D1 10 %');
     expect(html).not.toContain('D2 15 %');

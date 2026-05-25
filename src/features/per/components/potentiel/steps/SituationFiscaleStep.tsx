@@ -3,8 +3,7 @@
  */
 
 import React, { useState } from 'react';
-import { SimAmountInputEuro, SimSelect } from '@/components/ui/sim';
-import { IconClose, IconPlus } from '@/icons/ui';
+import { SimActionButton, SimAmountInputEuro, SimSelect } from '@/components/ui/sim';
 import type { DeclarantRevenus, PlafondMadelinDetail } from '../../../../../engine/per';
 import type { PerDeclarantPatch } from '../../../hooks/usePerPotentiel';
 import type { PerChildDraft } from '../../../utils/perParts';
@@ -169,10 +168,13 @@ export default function SituationFiscaleStep({
             </div>
 
             <div className="per-children-zone">
-              <button type="button" className="per-child-add-btn" onClick={onAddChild}>
-                <IconPlus />
-                Ajouter un enfant
-              </button>
+              <SimActionButton
+                variant="add"
+                mode="text"
+                label="Ajouter un enfant"
+                className="per-child-add-action"
+                onClick={onAddChild}
+              />
               {children.length > 0 && (
                 <div className="per-children-list">
                   {children.map((child, index) => (
@@ -189,14 +191,15 @@ export default function SituationFiscaleStep({
                         ]}
                         className="per-child-row__select"
                       />
-                      <button
-                        type="button"
-                        className="per-child-remove-btn"
+                      <SimActionButton
+                        variant="delete"
+                        mode="icon"
+                        label={`Supprimer enfant ${index + 1}`}
+                        ariaLabel={`Supprimer enfant ${index + 1}`}
+                        className="per-child-remove-action"
+                        danger
                         onClick={() => onRemoveChild(child.id)}
-                        aria-label={`Supprimer enfant ${index + 1}`}
-                      >
-                        <IconClose />
-                      </button>
+                      />
                     </div>
                   ))}
                 </div>
@@ -242,14 +245,14 @@ export default function SituationFiscaleStep({
                   <span className="per-contribution-table-label__text">
                     {row.label}
                     {row.infoAction && (
-                      <button
-                        type="button"
-                        className="per-info-btn"
+                      <SimActionButton
+                        variant="edit"
+                        mode="icon"
+                        label="Détail Madelin"
+                        ariaLabel="Afficher le détail des enveloppes Madelin 154 bis"
+                        className="per-contribution-info-action"
                         onClick={() => setShowMadelinInfo(true)}
-                        aria-label="Afficher le détail des enveloppes Madelin 154 bis"
-                      >
-                        i
-                      </button>
+                      />
                     )}
                   </span>
                   <small>{row.note}</small>

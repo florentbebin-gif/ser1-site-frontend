@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { IconChevronDown } from '@/icons/ui';
+import { SimDisclosureButton } from '@/components/ui/sim';
 
 const PER_ASSUMPTIONS: string[] = [
   "Plafonds de déduction calculés selon l'art. 163 quatervicies du CGI.",
@@ -17,17 +17,16 @@ export function PerHypotheses() {
 
   return (
     <div className="per-hypotheses">
-      <button
-        type="button"
+      <SimDisclosureButton
+        expanded={open}
+        onToggle={() => setOpen((prev) => !prev)}
+        labelOpen="Hypothèses et limites"
+        labelClosed="Hypothèses et limites"
+        controls="per-hypotheses-list"
         className="per-hypotheses__toggle"
-        onClick={() => setOpen((prev) => !prev)}
-        aria-expanded={open}
-      >
-        <span className="per-hypotheses__title">HYPOTHÈSES ET LIMITES</span>
-        <IconChevronDown className={`per-hypotheses__chevron${open ? ' is-open' : ''}`} />
-      </button>
+      />
       {open && (
-        <ul className="per-hypotheses__list">
+        <ul id="per-hypotheses-list" className="per-hypotheses__list">
           {PER_ASSUMPTIONS.map((assumption, index) => (
             <li key={`per-hyp-${index}`}>{assumption}</li>
           ))}
