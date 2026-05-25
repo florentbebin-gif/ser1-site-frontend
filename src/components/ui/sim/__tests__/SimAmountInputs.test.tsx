@@ -37,6 +37,12 @@ describe('helpers numériques de saisie', () => {
   it('formate un pourcentage avec virgule française sans zéros inutiles', () => {
     expect(formatPercentInput(2.5)).toBe('2,5');
   });
+
+  it('peut conserver des décimales fixes quand un simulateur en a besoin', () => {
+    expect(formatPercentInput(2.5, { minimumFractionDigits: 2, maximumFractionDigits: 2 })).toBe(
+      '2,50',
+    );
+  });
 });
 
 describe('SimAmountInputEuro', () => {
@@ -172,6 +178,20 @@ describe('SimAmountInputNumeric', () => {
 
     expect(input).toHaveAttribute('inputmode', 'decimal');
     expect(onChange).toHaveBeenLastCalledWith(2.25);
+  });
+
+  it('affiche une précision décimale configurée', () => {
+    render(
+      <SimAmountInputNumeric
+        value={2.2}
+        onChange={vi.fn()}
+        minimumFractionDigits={4}
+        maximumFractionDigits={4}
+        aria-label="Valeur du point"
+      />,
+    );
+
+    expect(screen.getByRole('textbox', { name: 'Valeur du point' })).toHaveValue('2,2000');
   });
 
   it('respecte disabled et enterKeyHint personnalisé', () => {

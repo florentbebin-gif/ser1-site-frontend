@@ -28,6 +28,10 @@ export interface SimAmountInputPublicProps {
   unit?: string;
   enterKeyHint?: SimAmountInputEnterKeyHint;
   className?: string;
+  fieldClassName?: string;
+  labelClassName?: string;
+  rowClassName?: string;
+  unitClassName?: string;
 }
 
 interface SimAmountInputBaseProps extends SimAmountInputPublicProps {
@@ -65,6 +69,10 @@ export function SimAmountInputBase({
   unit,
   enterKeyHint = 'next',
   className,
+  fieldClassName,
+  labelClassName,
+  rowClassName,
+  unitClassName,
   inputMode,
   parseValue,
   formatValue,
@@ -84,7 +92,15 @@ export function SimAmountInputBase({
   };
 
   return (
-    <SimFieldShell label={label} hint={hint} error={error} controlId={controlId}>
+    <SimFieldShell
+      label={label}
+      hint={hint}
+      error={error}
+      controlId={controlId}
+      className={fieldClassName}
+      labelClassName={labelClassName}
+      rowClassName={rowClassName}
+    >
       <input
         id={controlId}
         type="text"
@@ -111,7 +127,7 @@ export function SimAmountInputBase({
           commitRawValue(nextRaw);
         }}
       />
-      {unit ? <span className="sim-field__unit">{unit}</span> : null}
+      {unit ? <span className={joinClasses('sim-field__unit', unitClassName)}>{unit}</span> : null}
     </SimFieldShell>
   );
 }

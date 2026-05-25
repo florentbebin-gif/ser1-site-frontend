@@ -3,11 +3,10 @@
  */
 
 import React, { useState } from 'react';
-import { SimSelect } from '@/components/ui/sim/SimSelect';
+import { SimAmountInputEuro, SimSelect } from '@/components/ui/sim';
 import type { DeclarantRevenus, PlafondMadelinDetail } from '../../../../../engine/per';
 import type { PerDeclarantPatch } from '../../../hooks/usePerPotentiel';
 import type { PerChildDraft } from '../../../utils/perParts';
-import { PerAmountInput } from '../../shared/PerAmountInput';
 import { PerMadelinInfoModal } from '../PerMadelinInfoModal';
 import {
   PerIncomeTable,
@@ -282,10 +281,11 @@ export default function SituationFiscaleStep({
                 </div>
                 <div className="per-contribution-table-cell">
                   <span className="per-contribution-mobile-label">Déclarant 1</span>
-                  <PerAmountInput
+                  <SimAmountInputEuro
                     value={declarant1[row.key]}
                     ariaLabel={`${row.label} déclarant 1`}
                     className="per-contribution-input"
+                    unit=""
                     disabled={Boolean(row.tnsOnly && !declarant1.statutTns)}
                     onChange={(value) => onUpdateDeclarant(1, { [row.key]: value })}
                   />
@@ -293,10 +293,11 @@ export default function SituationFiscaleStep({
                 {isCouple && (
                   <div className="per-contribution-table-cell">
                     <span className="per-contribution-mobile-label">Déclarant 2</span>
-                    <PerAmountInput
+                    <SimAmountInputEuro
                       value={declarant2[row.key]}
                       ariaLabel={`${row.label} déclarant 2`}
                       className="per-contribution-input"
+                      unit=""
                       disabled={Boolean(row.tnsOnly && !declarant2.statutTns)}
                       onChange={(value) => onUpdateDeclarant(2, { [row.key]: value })}
                     />

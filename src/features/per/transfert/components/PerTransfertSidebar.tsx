@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import type { ReactNode } from 'react';
-import { SimInfoButton } from '@/components/ui/sim';
+import { SimAmountInputNumeric, SimInfoButton } from '@/components/ui/sim';
 import {
   TYPE_LABELS,
   type BaseCgRetraiteContract,
@@ -37,6 +37,11 @@ const euroFormat = new Intl.NumberFormat('fr-FR', {
 });
 
 const euro = (value: number) => euroFormat.format(Math.round(Number.isFinite(value) ? value : 0));
+
+function normalizeHorizonAge(value: number, fallback: number): number {
+  const nextValue = Number.isFinite(value) && value > 0 ? value : fallback;
+  return Math.min(100, Math.max(60, Math.round(nextValue)));
+}
 
 const COMPARTMENT_SHORT_LABELS: Record<PerTransfertResult['compartment'], string> = {
   C0: 'C0',
@@ -170,32 +175,18 @@ export function PerTransfertSidebar({
       <section className="per-transfert-horizons-inline" aria-label="Horizons de projection">
         <h4>Horizons projection</h4>
         <div className="per-transfert-horizons-inline__inputs">
-          <label>
-            Court
-            <input
-              type="number"
-              min={60}
-              max={100}
-              step={1}
-              value={horizonAgeShort}
-              onChange={(event) =>
-                onHorizonChange(Math.round(Number(event.target.value) || 80), horizonAgeLong)
-              }
-            />
-          </label>
-          <label>
-            Long
-            <input
-              type="number"
-              min={60}
-              max={100}
-              step={1}
-              value={horizonAgeLong}
-              onChange={(event) =>
-                onHorizonChange(horizonAgeShort, Math.round(Number(event.target.value) || 90))
-              }
-            />
-          </label>
+          <SimAmountInputNumeric
+            label="Court"
+            value={horizonAgeShort}
+            unit="ans"
+            onChange={(value) => onHorizonChange(normalizeHorizonAge(value, 80), horizonAgeLong)}
+          />
+          <SimAmountInputNumeric
+            label="Long"
+            value={horizonAgeLong}
+            unit="ans"
+            onChange={(value) => onHorizonChange(horizonAgeShort, normalizeHorizonAge(value, 90))}
+          />
         </div>
       </section>
 

@@ -6,6 +6,11 @@
 
 type NumericLike = number | string | null | undefined;
 
+interface DecimalInputFormatOptions {
+  minimumFractionDigits?: number;
+  maximumFractionDigits?: number;
+}
+
 export function toNumber(value: unknown, fallback: number = 0): number {
   if (typeof value === 'number') return Number.isFinite(value) ? value : fallback;
   if (value === null || value === undefined) return fallback;
@@ -68,11 +73,17 @@ export function parsePercentInput(value: unknown, fallback: number = 0): number 
   return parseDecimalInput(value, fallback);
 }
 
-export const formatDecimalInput = (value: NumericLike): string => {
+export const formatDecimalInput = (
+  value: NumericLike,
+  options: DecimalInputFormatOptions = {},
+): string => {
   const numericValue = toNumber(value, 0);
+  const minimumFractionDigits = options.minimumFractionDigits ?? 0;
+  const maximumFractionDigits = Math.max(minimumFractionDigits, options.maximumFractionDigits ?? 6);
+
   return numericValue === 0
     ? ''
-    : numericValue.toLocaleString('fr-FR', { maximumFractionDigits: 6 });
+    : numericValue.toLocaleString('fr-FR', { minimumFractionDigits, maximumFractionDigits });
 };
 
 export const formatPercentInput = formatDecimalInput;

@@ -646,8 +646,7 @@
   width: 100%;
 }
 
-.per-table-input input[type='text'],
-.per-table-input input[type='number'] {
+.per-table-input input[type='text'] {
   flex: 1 1 auto;
   min-width: 0;
 }

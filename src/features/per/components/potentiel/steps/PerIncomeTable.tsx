@@ -1,11 +1,9 @@
 import React from 'react';
-import { SimFieldShell } from '@/components/ui/sim';
-import { SimSelect } from '@/components/ui/sim/SimSelect';
+import { SimAmountInputEuro, SimFieldShell, SimSelect } from '@/components/ui/sim';
 import { computeAbattement10 } from '../../../../../engine/ir/abattement10';
 import type { DeclarantRevenus } from '../../../../../engine/per';
 import { formatInteger } from '../../../../../utils/numbers';
 import type { PerDeclarantPatch } from '../../../hooks/usePerPotentiel';
-import { PerAmountInput } from '../../shared/PerAmountInput';
 
 export type PerIncomeFilters = {
   pension: boolean;
@@ -158,18 +156,16 @@ function PerTableAmountInput({
   disabled?: boolean;
 }): React.ReactElement {
   return (
-    <SimFieldShell className="per-table-input" rowClassName="per-table-input__row">
-      <PerAmountInput
-        value={value}
-        ariaLabel={ariaLabel}
-        className="per-table-input__control"
-        disabled={disabled}
-        onChange={onChange}
-      />
-      <span className="per-table-input__unit sim-field__unit" aria-hidden="true">
-        €
-      </span>
-    </SimFieldShell>
+    <SimAmountInputEuro
+      value={value}
+      ariaLabel={ariaLabel}
+      fieldClassName="per-table-input"
+      rowClassName="per-table-input__row"
+      className="per-table-input__control"
+      unitClassName="per-table-input__unit"
+      disabled={disabled}
+      onChange={onChange}
+    />
   );
 }
 

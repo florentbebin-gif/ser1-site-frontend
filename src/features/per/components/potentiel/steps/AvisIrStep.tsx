@@ -3,9 +3,9 @@
  */
 
 import React from 'react';
+import { SimAmountInputEuro } from '@/components/ui/sim';
 import type { AvisIrPlafonds, PerHistoricalBasis } from '../../../../../engine/per';
 import { getAvisReferenceYears, type PerWorkflowYears } from '../../../utils/perWorkflowYears';
-import { PerAmountInput } from '../../shared/PerAmountInput';
 
 interface AvisIrStepProps {
   avisIr: AvisIrPlafonds | null;
@@ -113,20 +113,22 @@ export default function AvisIrStep({
               {row.operator}
             </div>
             <div className="per-avis-matrix-cell" data-column-label="Déclarant 1" role="cell">
-              <PerAmountInput
+              <SimAmountInputEuro
                 value={valuesD1[row.key]}
                 ariaLabel={`${row.label} - Déclarant 1`}
                 className="per-avis-matrix-input"
+                unit=""
                 onChange={(value) =>
                   onUpdate({ [row.key]: value, anneeRef: avisContext.incomeYear }, 1)
                 }
               />
             </div>
             <div className="per-avis-matrix-cell" data-column-label="Déclarant 2" role="cell">
-              <PerAmountInput
+              <SimAmountInputEuro
                 value={valuesD2[row.key]}
                 ariaLabel={`${row.label} - Déclarant 2`}
                 className="per-avis-matrix-input"
+                unit=""
                 onChange={(value) =>
                   onUpdate({ [row.key]: value, anneeRef: avisContext.incomeYear }, 2)
                 }
