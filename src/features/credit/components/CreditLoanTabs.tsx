@@ -3,6 +3,7 @@
  */
 
 import type { CreditLoanTabsProps } from '../types';
+import { SimActionButton } from '@/components/ui/sim';
 
 export function CreditLoanTabs({
   activeTab,
@@ -63,17 +64,17 @@ export function CreditLoanTabs({
                 )}
               </button>
               {showRemove && (
-                <button
-                  type="button"
+                <SimActionButton
+                  variant="close"
+                  mode="icon"
+                  label="Supprimer"
                   className="cv-tabs__tab-remove"
-                  aria-label={`Supprimer ${tab.label}`}
+                  ariaLabel={`Supprimer ${tab.label}`}
                   data-testid={`credit-tab-remove-${tab.idx}`}
                   onClick={() => {
                     tab.idx === 1 ? onRemovePret2() : onRemovePret3();
                   }}
-                >
-                  ×
-                </button>
+                />
               )}
             </div>
           );

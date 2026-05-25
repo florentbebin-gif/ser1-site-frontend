@@ -122,6 +122,9 @@ describe('TresoPlacementSection', () => {
       }),
     ).toBeInTheDocument();
     expect(screen.getByText('4 %')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Ajouter une poche' })).toHaveClass(
+      'sim-action-btn--add',
+    );
     expect(screen.getByRole('button', { name: /Paramétrer Court terme/i })).toHaveTextContent(
       '52 000 €',
     );
@@ -198,6 +201,10 @@ describe('TresoPlacementSection', () => {
     render(<TresoPlacementSection inputs={INPUTS as any} onChange={onChange} />);
 
     fireEvent.click(screen.getByRole('button', { name: /Paramétrer Long terme/i }));
+    expect(screen.getByRole('button', { name: /Supprimer la poche/i })).toHaveClass(
+      'sim-modal-btn--ghost',
+    );
+    expect(screen.getByRole('button', { name: 'Fermer' })).toHaveClass('sim-modal-btn--ghost');
     fireEvent.click(screen.getByRole('button', { name: /Supprimer la poche/i }));
 
     expect(onChange).toHaveBeenCalledWith(
@@ -255,6 +262,9 @@ describe('TresoPlacementSection', () => {
     expect(
       screen.getByText('Trésorerie conservée sur compte bancaire, sans rendement'),
     ).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Ajouter une poche court terme/i })).toHaveClass(
+      'sim-action-btn--add',
+    );
     fireEvent.click(screen.getByRole('button', { name: /Ajouter une poche court terme/i }));
 
     expect(onChange).toHaveBeenCalledWith(

@@ -1,3 +1,13 @@
+import {
+  SimKpiReference,
+  SimMetric,
+  SimCollapsibleTable,
+  SimSparkline,
+  SimStatusBadge,
+  SimTooltip,
+} from '@/components/ui/sim';
+import { CGP_GLOSSARY } from '@/constants/cgpGlossary';
+import { IconPieChart } from '@/icons/ui';
 import { fmt } from '../successionSimulator.helpers';
 import {
   getSuccessionInterMassClaimKindLabel,
@@ -131,38 +141,37 @@ export default function ScSuccessionSummaryPanel({
   const step2TotalTransmis = displayUsesChainage
     ? unifiedBlocks.reduce((s, b) => s + (b.step2TransmissionNette ?? 0), 0)
     : 0;
+  const syntheseAssietteLabel =
+    synthDonutTransmis > 0
+      ? `sur ${fmt(synthDonutTransmis)} ${displayUsesChainage ? 'cumulés' : 'transmis'}`
+      : null;
 
   return (
     <div className="premium-card sc-summary-card sim-summary-card sim-summary-card--secondary sc-hero-card sc-hero-card--secondary">
       <div className="sc-summary-title-row">
         <div className="sim-card__icon">
-          <svg
-            width="14"
-            height="14"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="1.8"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            aria-hidden="true"
-          >
-            <path d="M21.21 15.89A10 10 0 1 1 8 2.83" />
-            <path d="M22 12A10 10 0 0 0 12 2v10z" />
-          </svg>
+          <IconPieChart />
         </div>
         <h2 className="sc-summary-title">Synthèse successorale</h2>
+        <SimStatusBadge variant={displayUsesChainage ? 'info' : 'optimal'}>
+          {displayUsesChainage ? 'Chaînage actif' : 'Lecture directe'}
+        </SimStatusBadge>
       </div>
       <div className="sc-card__divider sc-card__divider--tight sim-divider sim-divider--tight" />
       <div className="sc-synth-hero">
         <div className="sc-synth-hero__left">
-          <div className="sc-synth-hero__label">Coût de transmission estimé</div>
-          <div className="sc-synth-hero__value">{fmt(derivedTotalDroits)}</div>
-          {synthDonutTransmis > 0 && (
-            <div className="sc-synth-hero__sub">
-              sur {fmt(synthDonutTransmis)} {displayUsesChainage ? 'cumules' : 'transmis'}
-            </div>
-          )}
+          <SimMetric
+            variant="hero"
+            label="Coût de transmission estimé"
+            value={fmt(derivedTotalDroits)}
+            note={
+              <span className="sim-kpi-note">
+                {syntheseAssietteLabel ? <span>{syntheseAssietteLabel}</span> : null}
+                <SimSparkline />
+                <SimKpiReference kind="dmtg" />
+              </span>
+            }
+          />
         </div>
         <ScDonut
           transmis={Math.max(0, synthDonutTransmis - derivedTotalDroits)}
@@ -171,34 +180,30 @@ export default function ScSuccessionSummaryPanel({
       </div>
       <div className="sc-card__divider sc-card__divider--tight" />
       <div className="sc-synth-kpis">
-        <div className="sc-synth-kpi">
-          <span className="sc-synth-kpi__label">
-            {displayUsesChainage ? 'Cumul transmis au 1er décès' : 'Patrimoine transmis'}
-          </span>
-          <strong className="sc-synth-kpi__value">
-            {fmt(displayUsesChainage ? step1TotalTransmis : synthDonutTransmis)}
-          </strong>
-        </div>
-        <div className="sc-synth-kpi">
-          <span className="sc-synth-kpi__label">
-            {displayUsesChainage ? 'Cumul transmis au 2ème décès' : 'Coût cumulé'}
-          </span>
-          <strong className="sc-synth-kpi__value">
-            {fmt(displayUsesChainage ? step2TotalTransmis : derivedTotalDroits)}
-          </strong>
-        </div>
-        <div className="sc-synth-kpi">
-          <span className="sc-synth-kpi__label">
-            {displayUsesChainage ? 'Coût 1er décès' : 'Coût décès simulé'}
-          </span>
-          <strong className="sc-synth-kpi__value">{fmt(firstCost)}</strong>
-        </div>
-        <div className="sc-synth-kpi">
-          <span className="sc-synth-kpi__label">
-            {displayUsesChainage ? 'Coût 2e décès' : 'Net transmis'}
-          </span>
-          <strong className="sc-synth-kpi__value">{fmt(secondValue)}</strong>
-        </div>
+        <SimMetric
+          variant="secondary"
+          className="sc-synth-kpi"
+          label={displayUsesChainage ? 'Cumul transmis au 1er décès' : 'Patrimoine transmis'}
+          value={fmt(displayUsesChainage ? step1TotalTransmis : synthDonutTransmis)}
+        />
+        <SimMetric
+          variant="secondary"
+          className="sc-synth-kpi"
+          label={displayUsesChainage ? 'Cumul transmis au 2ème décès' : 'Coût cumulé'}
+          value={fmt(displayUsesChainage ? step2TotalTransmis : derivedTotalDroits)}
+        />
+        <SimMetric
+          variant="secondary"
+          className="sc-synth-kpi"
+          label={displayUsesChainage ? 'Coût 1er décès' : 'Coût décès simulé'}
+          value={fmt(firstCost)}
+        />
+        <SimMetric
+          variant="secondary"
+          className="sc-synth-kpi"
+          label={displayUsesChainage ? 'Coût 2e décès' : 'Net transmis'}
+          value={fmt(secondValue)}
+        />
       </div>
       {displayUsesChainage && societeAcquets && societeAcquets.totalValue > 0 && (
         <>
@@ -354,57 +359,65 @@ export default function ScSuccessionSummaryPanel({
       {unifiedBlocks.length > 0 && (
         <>
           <div className="sc-card__divider sc-card__divider--tight" />
-          <div className="sc-synth-section-title">Transmission par bénéficiaire</div>
-          <div
-            className={`sc-unified-grid${displayUsesChainage ? ' sc-unified-grid--chainage' : ''}`}
+          <SimCollapsibleTable
+            title="Transmission par bénéficiaire"
+            defaultOpen
+            rowCount={unifiedBlocks.length}
+            className="sc-unified-collapsible"
           >
-            <div className="sc-unified-grid__head">
-              <span />
-              {displayUsesChainage && <span>1er décès</span>}
-              {displayUsesChainage && <span>2e décès</span>}
-              <span>Total</span>
-            </div>
-            {unifiedBlocks.map((block) => (
-              <div key={block.id} className="sc-unified-block">
-                <div className="sc-unified-row--name">
-                  <span>{block.label}</span>
-                  {displayUsesChainage && <span>{fmt(block.step1Brut ?? 0)}</span>}
-                  {displayUsesChainage && (
-                    <span>{block.isConjoint ? '—' : fmt(block.step2Brut ?? 0)}</span>
-                  )}
-                  <span>{fmt(block.brut)}</span>
-                </div>
-                {block.capitauxDecesNets > 0 && (
-                  <div className="sc-unified-row--sub">
-                    <span>Capitaux décès nets</span>
-                    {displayUsesChainage && <span>{fmt(block.step1CapitauxDecesNets ?? 0)}</span>}
-                    {displayUsesChainage && (
-                      <span>{block.isConjoint ? '—' : fmt(block.step2CapitauxDecesNets ?? 0)}</span>
-                    )}
-                    <span>{fmt(block.capitauxDecesNets)}</span>
-                  </div>
-                )}
-                <div className="sc-unified-row--sub">
-                  <span>Droits</span>
-                  {displayUsesChainage && (
-                    <span>{block.exonerated ? 'Exonéré' : fmt(block.step1Droits ?? 0)}</span>
-                  )}
-                  {displayUsesChainage && (
-                    <span>{block.isConjoint ? '—' : fmt(block.step2Droits ?? 0)}</span>
-                  )}
-                  <span>{block.exonerated ? 'Exonéré' : fmt(block.droits)}</span>
-                </div>
-                <div className="sc-unified-row--net">
-                  <span>Transmission nette</span>
-                  {displayUsesChainage && <span>{fmt(block.step1TransmissionNette ?? 0)}</span>}
-                  {displayUsesChainage && (
-                    <span>{block.isConjoint ? '—' : fmt(block.step2TransmissionNette ?? 0)}</span>
-                  )}
-                  <span>{fmt(block.transmissionNette)}</span>
-                </div>
+            <div
+              className={`sc-unified-grid${displayUsesChainage ? ' sc-unified-grid--chainage' : ''}`}
+            >
+              <div className="sc-unified-grid__head">
+                <span />
+                {displayUsesChainage && <span>1er décès</span>}
+                {displayUsesChainage && <span>2e décès</span>}
+                <span>Total</span>
               </div>
-            ))}
-          </div>
+              {unifiedBlocks.map((block) => (
+                <div key={block.id} className="sc-unified-block">
+                  <div className="sc-unified-row--name">
+                    <span>{block.label}</span>
+                    {displayUsesChainage && <span>{fmt(block.step1Brut ?? 0)}</span>}
+                    {displayUsesChainage && (
+                      <span>{block.isConjoint ? '—' : fmt(block.step2Brut ?? 0)}</span>
+                    )}
+                    <span>{fmt(block.brut)}</span>
+                  </div>
+                  {block.capitauxDecesNets > 0 && (
+                    <div className="sc-unified-row--sub">
+                      <span>Capitaux décès nets</span>
+                      {displayUsesChainage && <span>{fmt(block.step1CapitauxDecesNets ?? 0)}</span>}
+                      {displayUsesChainage && (
+                        <span>
+                          {block.isConjoint ? '—' : fmt(block.step2CapitauxDecesNets ?? 0)}
+                        </span>
+                      )}
+                      <span>{fmt(block.capitauxDecesNets)}</span>
+                    </div>
+                  )}
+                  <div className="sc-unified-row--sub">
+                    <span>Droits</span>
+                    {displayUsesChainage && (
+                      <span>{block.exonerated ? 'Exonéré' : fmt(block.step1Droits ?? 0)}</span>
+                    )}
+                    {displayUsesChainage && (
+                      <span>{block.isConjoint ? '—' : fmt(block.step2Droits ?? 0)}</span>
+                    )}
+                    <span>{block.exonerated ? 'Exonéré' : fmt(block.droits)}</span>
+                  </div>
+                  <div className="sc-unified-row--net">
+                    <span>Transmission nette</span>
+                    {displayUsesChainage && <span>{fmt(block.step1TransmissionNette ?? 0)}</span>}
+                    {displayUsesChainage && (
+                      <span>{block.isConjoint ? '—' : fmt(block.step2TransmissionNette ?? 0)}</span>
+                    )}
+                    <span>{fmt(block.transmissionNette)}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </SimCollapsibleTable>
         </>
       )}
       {(synthHypothese || unifiedBlocks.length > 0) && (
@@ -415,11 +428,20 @@ export default function ScSuccessionSummaryPanel({
               <p className="sc-summary-note sc-summary-note--muted">{synthHypothese}</p>
             )}
             <p className="sc-summary-note sc-summary-note--muted">
-              {displayUsesChainage
-                ? 'Cumul 2 décès - droits DMTG descendants, conjoint exonéré.'
-                : isPacsed
-                  ? "Succession directe du partenaire simulé - le PACS n'ouvre pas de droit successoral automatique sans testament."
-                  : 'Succession directe simulée.'}
+              {displayUsesChainage ? (
+                <>
+                  Cumul 2 décès - droits{' '}
+                  <SimTooltip
+                    label={CGP_GLOSSARY.dmtg.label}
+                    description={CGP_GLOSSARY.dmtg.description}
+                  />{' '}
+                  descendants, conjoint exonéré.
+                </>
+              ) : isPacsed ? (
+                "Succession directe du partenaire simulé - le PACS n'ouvre pas de droit successoral automatique sans testament."
+              ) : (
+                'Succession directe simulée.'
+              )}
             </p>
           </div>
         </>

@@ -44,7 +44,7 @@ export const Standard: Story = {
 
 export const Chargement: Story = {
   args: {
-    title: 'Simulateur succession',
+    title: 'Succession',
     subtitle: 'Chargement des hypothèses fiscales',
     loading: true,
   },

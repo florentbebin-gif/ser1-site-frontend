@@ -75,25 +75,8 @@
   min-width: 0;
 }
 
-.sc-synth-hero__label {
-  font-size: 11px;
-  font-weight: 500;
-  color: color-mix(in srgb, var(--color-c9) 60%, var(--color-c10));
-  margin-bottom: 4px;
-}
-
-.sc-synth-hero__value {
-  font-size: 26px;
-  font-weight: 700;
-  color: var(--color-c1);
-  font-variant-numeric: tabular-nums;
-  line-height: 1.1;
-}
-
-.sc-synth-hero__sub {
-  font-size: 11px;
-  color: var(--color-c9);
-  margin-top: 3px;
+.sc-synth-hero .sim-metric {
+  min-width: 0;
 }
 
 .sc-synth-donut {
@@ -120,20 +103,6 @@
   flex-direction: column;
   gap: 3px;
   min-width: 0;
-}
-
-.sc-synth-kpi__label {
-  font-size: 10px;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: var(--color-c9);
-}
-
-.sc-synth-kpi__value {
-  color: var(--color-c1);
-  font-size: 15px;
-  font-weight: 600;
-  font-variant-numeric: tabular-nums;
 }
 
 .sc-synth-section-title {
@@ -291,29 +260,15 @@
   align-items: center;
   justify-content: space-between;
   width: 100%;
-  background: none;
   border: none;
+  background: transparent;
   padding: 0;
   cursor: pointer;
   gap: 8px;
-}
-
-.sc-hypotheses__title {
-  font-size: 12px;
   font-weight: 600;
-  color: var(--color-c9);
   text-transform: uppercase;
   letter-spacing: 0.8px;
-}
-
-.sc-hypotheses__chevron {
   color: var(--color-c9);
-  flex-shrink: 0;
-  transition: transform 0.2s;
-}
-
-.sc-hypotheses__chevron.is-open {
-  transform: rotate(180deg);
 }
 
 .sc-hypotheses ul {
@@ -341,6 +296,24 @@
   display: flex;
   flex-direction: column;
   gap: 0;
+}
+
+.sc-unified-collapsible {
+  margin-bottom: 0;
+}
+
+.sc-unified-collapsible .sim-collapsible-table__toggle {
+  padding-inline: 0;
+  border: 0;
+  color: var(--color-c1);
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.sc-unified-collapsible .sim-collapsible-table__toggle:hover {
+  background: transparent;
+  color: var(--color-c2);
 }
 
 .sc-unified-grid__head {

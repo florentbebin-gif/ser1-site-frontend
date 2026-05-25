@@ -12,7 +12,7 @@ import { useUserMode, type UserMode } from '../../../settings/userMode';
 import { resolveEffectiveUserMode } from '../../../settings/userModeDisplay';
 import { ExportMenu } from '../../../components/ExportMenu';
 import { ModeToggle } from '../../../components/ModeToggle';
-import { SimPageShell } from '@/components/ui/sim';
+import { SimCollapsibleTable, SimPageShell } from '@/components/ui/sim';
 import {
   computeAbattement10,
   computeEffectiveParts,
@@ -79,12 +79,6 @@ const DEFAULT_INCOMES: IrIncomes = {
   d2: { salaries: 0, associes62: 0, pensions: 0, bic: 0, fonciers: 0, autres: 0 },
   capital: { withPs: 0, withoutPs: 0 },
   fonciersFoyer: 0,
-};
-
-const formatMoneyInput = (value: number | null | undefined): string => {
-  const roundedValue = Math.round(Number(value) || 0);
-  if (!roundedValue) return '';
-  return roundedValue.toLocaleString('fr-FR');
 };
 
 export default function IrSimulatorContainer() {
@@ -369,7 +363,7 @@ export default function IrSimulatorContainer() {
   if (settingsLoading) {
     return (
       <SimPageShell
-        title="Simulateur d'imp&ocirc;t sur le revenu"
+        title="Impôt sur le revenu"
         subtitle="Estimez votre imp&ocirc;t sur le revenu et vos pr&eacute;l&egrave;vements sociaux."
         pageTestId="ir-page"
         headerTestId="ir-header"
@@ -387,12 +381,11 @@ export default function IrSimulatorContainer() {
 
   return (
     <SimPageShell
-      title="Simulateur d'imp&ocirc;t sur le revenu"
+      title="Impôt sur le revenu"
       subtitle="Estimez votre imp&ocirc;t sur le revenu et vos pr&eacute;l&egrave;vements sociaux."
       pageTestId="ir-page"
       headerTestId="ir-header"
       titleTestId="ir-title"
-      mobileSideFirst
       actions={
         <>
           <ModeToggle value={isExpert} onChange={() => toggleMode()} testId="ir-mode-btn" />
@@ -416,7 +409,6 @@ export default function IrSimulatorContainer() {
           setParts={setParts}
           incomes={incomes}
           updateIncome={updateIncome}
-          formatMoneyInput={formatMoneyInput}
           realMode={realMode}
           setRealModeState={setRealMode}
           realExpenses={realExpenses}
@@ -465,42 +457,25 @@ export default function IrSimulatorContainer() {
       <SimPageShell.Section>
         <>
           {result && (
-            <div className="ir-detail-card premium-card" data-testid="ir-detail-accordion">
-              <div className="ir-detail-header">
-                <h3 className="ir-detail-title">D&eacute;tail du calcul</h3>
-                <button
-                  type="button"
-                  className="ir-detail-toggle"
-                  aria-expanded={showDetails}
-                  onClick={() => setShowDetails((value) => !value)}
-                  data-testid="ir-detail-toggle"
-                >
-                  {showDetails ? 'Masquer' : 'Afficher'}
-                  <svg
-                    width="12"
-                    height="12"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    className={`ir-detail-chevron${showDetails ? ' is-open' : ''}`}
-                    aria-hidden="true"
-                  >
-                    <polyline points="6 9 12 15 18 9" />
-                  </svg>
-                </button>
-              </div>
-              {showDetails && (
-                <IrDetailsSection
-                  result={result}
-                  euro0={euro0}
-                  fmtPct={fmtPct}
-                  pfuRateIR={pfuRateIR}
-                />
-              )}
-            </div>
+            <SimCollapsibleTable
+              title="Détail du calcul"
+              open={showDetails}
+              onOpenChange={setShowDetails}
+              labelClosed="Afficher"
+              labelOpen="Masquer"
+              controlsId="ir-detail-panel"
+              className="ir-detail-card premium-card"
+              toggleClassName="ir-detail-toggle"
+              testId="ir-detail-accordion"
+              toggleTestId="ir-detail-toggle"
+            >
+              <IrDetailsSection
+                result={result}
+                euro0={euro0}
+                fmtPct={fmtPct}
+                pfuRateIR={pfuRateIR}
+              />
+            </SimCollapsibleTable>
           )}
 
           <IrDisclaimer isIsolated={isIsolated} />

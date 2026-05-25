@@ -58,6 +58,12 @@
   color: var(--color-c2);
 }
 
+.sim-modal__icon > svg {
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0;
+}
+
 .sim-modal__title {
   margin: 0;
   color: var(--color-c1);
@@ -83,9 +89,9 @@
   color: var(--color-c9);
   cursor: pointer;
   transition:
-    background 0.2s,
-    border-color 0.2s,
-    color 0.2s;
+    background var(--transition-base) var(--easing-standard),
+    border-color var(--transition-base) var(--easing-standard),
+    color var(--transition-base) var(--easing-standard);
 }
 
 .sim-modal__close:hover {
@@ -110,6 +116,55 @@
   border-top: 1px solid var(--color-c8);
 }
 
+.sim-mobile-sticky-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.sim-modal-section-nav {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.sim-modal-section-nav__item {
+  min-height: 36px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--color-c9);
+  cursor: pointer;
+  font: inherit;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  padding: 0 var(--space-3);
+  text-align: left;
+  transition:
+    background var(--transition-base) var(--easing-standard),
+    border-color var(--transition-base) var(--easing-standard),
+    color var(--transition-base) var(--easing-standard);
+}
+
+.sim-modal-section-nav__item:hover:not(:disabled),
+.sim-modal-section-nav__item:focus-visible:not(:disabled) {
+  border-color: var(--color-c8);
+  color: var(--color-c1);
+}
+
+.sim-modal-section-nav__item.is-active {
+  border-color: color-mix(in srgb, var(--color-c3) 44%, var(--color-c8));
+  background: color-mix(in srgb, var(--color-c4) 55%, var(--color-c7));
+  color: var(--color-c1);
+}
+
+.sim-modal-section-nav__item:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
 @media (max-width: 900px) {
   .sim-modal-overlay {
     padding: 12px;
@@ -124,5 +179,60 @@
   .sim-modal__footer {
     padding-left: 16px;
     padding-right: 16px;
+  }
+}
+
+@media (max-width: 600px) {
+  .sim-modal-overlay--bottom-sheet {
+    align-items: flex-end;
+    padding: 0;
+  }
+
+  .sim-modal-overlay--fullscreen {
+    align-items: stretch;
+    padding: 0;
+  }
+
+  .sim-modal--bottom-sheet {
+    max-height: 85vh;
+    border-radius: 14px 14px 0 0;
+  }
+
+  .sim-modal--fullscreen {
+    min-height: 100vh;
+    max-height: 100vh;
+    border-radius: 0;
+  }
+
+  .sim-modal__header {
+    padding: var(--space-4);
+  }
+
+  .sim-modal__body {
+    padding: var(--space-4);
+  }
+
+  .sim-modal__footer {
+    padding: var(--space-3) var(--space-4) var(--space-4);
+  }
+
+  .sim-modal__close {
+    min-width: calc(var(--space-5) + var(--space-6));
+    width: calc(var(--space-5) + var(--space-6));
+    height: calc(var(--space-5) + var(--space-6));
+  }
+
+  .sim-mobile-sticky-actions {
+    position: sticky;
+    bottom: 0;
+    z-index: 2;
+    margin: var(--space-4) calc(var(--space-4) * -1) calc(var(--space-4) * -1);
+    padding: var(--space-3) var(--space-4) var(--space-4);
+    border-top: 1px solid var(--color-c8);
+    background: color-mix(in srgb, var(--color-c7) 94%, #ffffff);
+  }
+
+  .sim-mobile-sticky-actions > * {
+    flex: 1 1 auto;
   }
 }

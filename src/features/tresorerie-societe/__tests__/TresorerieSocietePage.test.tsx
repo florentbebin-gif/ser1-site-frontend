@@ -95,6 +95,14 @@ vi.mock('../../../components/ExportMenu', () => ({
   ),
 }));
 
+vi.mock('../../../components/ModeToggle', () => ({
+  ModeToggle: ({ disabled, disabledReason }: any) => (
+    <button type="button" data-testid="mode-toggle" disabled={disabled} title={disabledReason}>
+      Mode expert
+    </button>
+  ),
+}));
+
 vi.mock('../../../settings/ThemeProvider', () => ({
   useTheme: () => ({
     colors: mockThemeColors,
@@ -304,6 +312,7 @@ describe('TresorerieSocietePage', () => {
     expect(html).not.toContain('data-testid="placement-section"');
     expect(html).not.toContain('data-testid="associate-insights"');
     expect(html).not.toContain('data-testid="kpi-sidebar"');
+    expect(html).toContain('Complétez la société et l’associé personne physique');
   });
 
   it('masque les blocs avancés pour une personne morale sélectionnée', () => {
@@ -397,8 +406,20 @@ describe('TresorerieSocietePage', () => {
 
     expect(html).toContain('data-testid="sim-header-actions"');
     expect(html).toContain('data-testid="export-menu"');
+    expect(html).toContain('data-testid="mode-toggle"');
+    expect(html).toContain('disabled=""');
+    expect(html).toContain('le parcours simplifié reste à définir');
     expect(html).toContain('Excel');
     expect(html).toContain('PowerPoint');
+  });
+
+  it('utilise des libellés d’accordéon sans flèches texte', () => {
+    const html = renderToStaticMarkup(<TresorerieSocietePage />);
+
+    expect(html).toContain('Voir la projection comptable');
+    expect(html).toContain('sim-disclosure-btn');
+    expect(html).toContain('aria-controls="ts-projection-drawer"');
+    expect(html).not.toContain('▼ Voir la projection comptable');
   });
 
   it('branche calculs et exports sur inputsV6, sans state legacy runtime', () => {
@@ -445,6 +466,7 @@ describe('TresorerieSocietePage', () => {
       );
       const html = renderToStaticMarkup(<TresorerieSocietePage />);
       expect(html).toContain('data-testid="projection-drawer"');
+      expect(html).toContain('id="ts-projection-drawer"');
       expect(html).toContain('aria-expanded="true"');
     });
   });

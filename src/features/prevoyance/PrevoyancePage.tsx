@@ -2,7 +2,8 @@ import { useEffect, useState } from 'react';
 import '@/styles/sim/index.css';
 import './styles/index.css';
 import { ExportMenu } from '@/components/ExportMenu';
-import { SimPageShell } from '@/components/ui/sim';
+import { ModeToggle } from '@/components/ModeToggle';
+import { SimEmptyState, SimPageShell } from '@/components/ui/sim';
 import {
   PREVOYANCE_DEFAULT_REGIME_CODE,
   PREVOYANCE_MAINTIEN_LEGAL_CODE,
@@ -21,6 +22,7 @@ import { useTheme } from '@/settings/ThemeProvider';
 import { onResetEvent } from '@/utils/reset';
 import { ContractsBlock } from './components/ContractsBlock';
 import { FraisProModal } from './components/FraisProModal';
+import { PrevoyanceHypotheses } from './components/PrevoyanceHypotheses';
 import { Sidebar } from './components/Sidebar';
 import { SituationBlock } from './components/SituationBlock';
 import {
@@ -188,8 +190,16 @@ export default function PrevoyancePage() {
         }
         pageClassName="prevoyance-page"
         pageTestId="prevoyance-page"
-        mobileSideFirst
-        actions={<ExportMenu options={exportOptions} loading={exportLoading} />}
+        actions={
+          <>
+            <ModeToggle
+              value
+              disabled
+              disabledReason="Mode expert affiché comme repère : le parcours simplifié reste à définir."
+            />
+            <ExportMenu options={exportOptions} loading={exportLoading} />
+          </>
+        }
       >
         <SimPageShell.Main>
           <SituationBlock
@@ -217,24 +227,39 @@ export default function PrevoyancePage() {
         </SimPageShell.Main>
 
         <SimPageShell.Side>
-          <Sidebar
-            kind={kind}
-            regimeStack={regimeStack}
-            maintien={maintienLegal}
-            contracts={sidebarContracts}
-            contractAggregationMode={contractAggregationMode}
-            deathTarget={deathTarget}
-            onDeathTargetChange={setDeathTarget}
-            annualBase={annualBase}
-            referenceAnnual={referenceAnnual}
-            pass={pass}
-            salaireBrutAnnuel={situation.salaireBrutAnnuel}
-            ancienneteYears={situation.ancienneteYears}
-            hasConjoint={hasConjoint}
-            hasChildren={hasChildren}
-            fraisGenerauxAssiette={fraisGenerauxAssiette}
-          />
+          {hasBirthDate ? (
+            <Sidebar
+              kind={kind}
+              regimeStack={regimeStack}
+              maintien={maintienLegal}
+              contracts={sidebarContracts}
+              contractAggregationMode={contractAggregationMode}
+              deathTarget={deathTarget}
+              onDeathTargetChange={setDeathTarget}
+              annualBase={annualBase}
+              referenceAnnual={referenceAnnual}
+              pass={pass}
+              salaireBrutAnnuel={situation.salaireBrutAnnuel}
+              ancienneteYears={situation.ancienneteYears}
+              hasConjoint={hasConjoint}
+              hasChildren={hasChildren}
+              fraisGenerauxAssiette={fraisGenerauxAssiette}
+            />
+          ) : (
+            <SimEmptyState
+              illustration="docs"
+              title="Synthèse"
+              description="Renseignez la date de naissance pour afficher la synthèse de garanties."
+              cta={
+                <span>La couverture arrêt, invalidité, décès et cotisation apparaîtra ici.</span>
+              }
+            />
+          )}
         </SimPageShell.Side>
+
+        <SimPageShell.Section>
+          <PrevoyanceHypotheses />
+        </SimPageShell.Section>
       </SimPageShell>
 
       {fraisModalOpen ? (

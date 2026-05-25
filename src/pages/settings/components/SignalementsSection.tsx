@@ -45,10 +45,9 @@ export function SignalementsSection() {
             strokeWidth="2"
             strokeLinecap="round"
             strokeLinejoin="round"
-            style={{
-              transform: showSignalements ? 'rotate(180deg)' : 'none',
-              transition: 'transform 0.2s ease',
-            }}
+            className={
+              showSignalements ? 'settings-chevron settings-chevron--open' : 'settings-chevron'
+            }
           >
             <polyline points="6 9 12 15 18 9" />
           </svg>

@@ -9,6 +9,7 @@
 
 import React from 'react';
 import { useNavigate } from 'react-router';
+import { IconChevronRight, IconGauge, IconTransfer } from '@/icons/ui';
 import './styles/index.css';
 
 interface SimCard {
@@ -62,7 +63,7 @@ export default function PerHome(): React.ReactElement {
                     <span className="per-home-tile-title">{sim.title}</span>
                   </div>
                   <div className="per-home-tile-chevron" aria-hidden="true">
-                    <IconChevronSmall />
+                    <IconChevronRight />
                   </div>
                 </div>
               </button>
@@ -71,60 +72,5 @@ export default function PerHome(): React.ReactElement {
         </div>
       </section>
     </div>
-  );
-}
-
-function IconGauge(): React.ReactElement {
-  return (
-    <svg
-      width="18"
-      height="18"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.6"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="M12 13l3-3" />
-      <path d="M20 14A8 8 0 1 0 4 14" />
-      <path d="M12 21v-3" />
-    </svg>
-  );
-}
-
-function IconTransfer(): React.ReactElement {
-  return (
-    <svg
-      width="18"
-      height="18"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.6"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="M7 10l-3 3 3 3" />
-      <path d="M17 14l3-3-3-3" />
-      <path d="M4 13h16" />
-    </svg>
-  );
-}
-
-function IconChevronSmall(): React.ReactElement {
-  return (
-    <svg
-      width="16"
-      height="16"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="M9 18l6-6-6-6" />
-    </svg>
   );
 }

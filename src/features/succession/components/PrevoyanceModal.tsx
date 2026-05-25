@@ -1,6 +1,5 @@
-import { SimModalShell } from '@/components/ui/sim';
+import { SimAmountInputEuro, SimModalShell } from '@/components/ui/sim';
 import type { SuccessionPersonParty, SuccessionPrevoyanceDecesEntry } from '../successionDraft';
-import { ScNumericInput } from './ScNumericInput';
 import { ScSelect } from './ScSelect';
 
 interface PrevoyanceModalProps {
@@ -43,22 +42,18 @@ export default function PrevoyanceModal({
           {onImportFromSimulator ? (
             <button
               type="button"
-              className="sc-member-modal__btn sc-member-modal__btn--secondary"
+              className="sim-modal-btn sim-modal-btn--ghost"
               onClick={onImportFromSimulator}
             >
               Importer depuis le simulateur Prévoyance
             </button>
           ) : null}
-          <button
-            type="button"
-            className="sc-member-modal__btn sc-member-modal__btn--secondary"
-            onClick={onClose}
-          >
+          <button type="button" className="sim-modal-btn sim-modal-btn--ghost" onClick={onClose}>
             Annuler
           </button>
           <button
             type="button"
-            className="sc-member-modal__btn sc-member-modal__btn--primary"
+            className="sim-modal-btn sim-modal-btn--primary"
             onClick={onValidate}
           >
             Valider
@@ -78,8 +73,8 @@ export default function PrevoyanceModal({
           />
         </div>
         <div className="sc-field">
-          <label htmlFor="sc-prevoyance-capital-deces">Capital décès (€)</label>
-          <ScNumericInput
+          <label htmlFor="sc-prevoyance-capital-deces">Capital décès</label>
+          <SimAmountInputEuro
             id="sc-prevoyance-capital-deces"
             value={entry.capitalDeces || 0}
             min={0}
@@ -88,8 +83,8 @@ export default function PrevoyanceModal({
           />
         </div>
         <div className="sc-field">
-          <label htmlFor="sc-prevoyance-derniere-prime">Dernière prime versée (€)</label>
-          <ScNumericInput
+          <label htmlFor="sc-prevoyance-derniere-prime">Dernière prime versée</label>
+          <SimAmountInputEuro
             id="sc-prevoyance-derniere-prime"
             value={entry.dernierePrime || 0}
             min={0}

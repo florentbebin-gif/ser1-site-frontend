@@ -22,7 +22,7 @@ const baseChainageAnalysis = {
 
 function extractKpiValue(markup: string, label: string): string | undefined {
   const matches = markup.matchAll(
-    /<span class="sc-synth-kpi__label">([^<]+)<\/span><strong class="sc-synth-kpi__value">([^<]+)<\/strong>/g,
+    /<span class="sim-metric__label">([^<]+)<\/span><div class="sim-metric__value-row"><strong class="sim-metric__value">([^<]+)<\/strong>/g,
   );
   for (const match of matches) {
     if (match[1] === label) return match[2];
@@ -90,6 +90,8 @@ describe('ScSuccessionSummaryPanel', () => {
     );
 
     expect(markup).toContain('Transmission par bénéf');
+    expect(markup).toContain('sim-status-badge--optimal');
+    expect(markup).toContain('Lecture directe');
     expect(markup).toContain('Capitaux décès nets');
     expect(markup).toContain('Transmission nette');
     expect(markup).toContain('Enfant 1');

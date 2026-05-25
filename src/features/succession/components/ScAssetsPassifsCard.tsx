@@ -1,3 +1,5 @@
+import { SimAmountInputEuro } from '@/components/ui/sim';
+import { IconLayers } from '@/icons/ui';
 import type {
   SuccessionAssetCategory,
   SuccessionAssetDetailEntry,
@@ -12,7 +14,6 @@ import type {
   SuccessionPersonParty,
 } from '../successionDraft';
 import { ScAssetsSummary } from './ScAssetsPassifsExtras';
-import { ScNumericInput } from './ScNumericInput';
 import { ScAssetsPassifsExpertSection } from './ScAssetsPassifsExpertSection';
 import { getActifNetLabel, type ScAssetsOwnerFlags } from './ScAssetsPassifs.shared';
 
@@ -124,21 +125,7 @@ export default function ScAssetsPassifsCard({
       <header className="sc-card__header sim-card__header sim-card__header--bleed">
         <div className="sc-card__title-row sim-card__title sim-card__title-row">
           <div className="sim-card__icon">
-            <svg
-              width="14"
-              height="14"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.8"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              aria-hidden="true"
-            >
-              <polygon points="12 2 2 7 12 12 22 7 12 2" />
-              <polyline points="2 17 12 22 22 17" />
-              <polyline points="2 12 12 17 22 12" />
-            </svg>
+            <IconLayers />
           </div>
           <h2 className="sc-card__title">Actifs / Passifs</h2>
         </div>
@@ -205,8 +192,9 @@ export default function ScAssetsPassifsCard({
             <div className="sc-balance-grid__label">Actifs</div>
             {assetOwnerOptions.map((option) => (
               <div key={`actifs-${option.value}`} className="sc-field">
-                <label>{option.label} (€)</label>
-                <ScNumericInput
+                <label htmlFor={`sc-balance-actifs-${option.value}`}>{option.label}</label>
+                <SimAmountInputEuro
+                  id={`sc-balance-actifs-${option.value}`}
                   value={assetBreakdown.actifs[option.value] || 0}
                   min={0}
                   onChange={(value) => onSetSimplifiedBalanceField('actifs', option.value, value)}
@@ -223,8 +211,9 @@ export default function ScAssetsPassifsCard({
             <div className="sc-balance-grid__label">Passifs</div>
             {assetOwnerOptions.map((option) => (
               <div key={`passifs-${option.value}`} className="sc-field">
-                <label>{option.label} (€)</label>
-                <ScNumericInput
+                <label htmlFor={`sc-balance-passifs-${option.value}`}>{option.label}</label>
+                <SimAmountInputEuro
+                  id={`sc-balance-passifs-${option.value}`}
                   value={assetBreakdown.passifs[option.value] || 0}
                   min={0}
                   onChange={(value) => onSetSimplifiedBalanceField('passifs', option.value, value)}

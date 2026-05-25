@@ -60,6 +60,18 @@
   flex-shrink: 0;
 }
 
+.cv-donut__track {
+  stroke: var(--color-c8);
+}
+
+.cv-donut__capital {
+  stroke: var(--color-c3);
+}
+
+.cv-donut__interest {
+  stroke: var(--color-c6);
+}
+
 /* KPI zone â€” montant Ã  gauche, donut Ã  droite */
 .cv-summary__kpi-zone {
   display: flex;
@@ -68,19 +80,8 @@
   padding: 4px 0 14px;
 }
 
-.cv-summary__kpi-label-small {
-  font-size: 11px;
-  font-weight: 500;
-  color: color-mix(in srgb, var(--color-c9) 60%, var(--color-c10));
-  margin-bottom: 6px;
-}
-
-.cv-summary__kpi-main-value {
-  font-size: 30px;
-  font-weight: 700;
-  color: var(--color-c1);
-  font-variant-numeric: tabular-nums;
-  line-height: 1.1;
+.cv-summary__kpi-zone .sim-metric {
+  min-width: 0;
 }
 
 .cv-summary__kpi-assurance {
@@ -91,16 +92,8 @@
   font-variant-numeric: tabular-nums;
 }
 
-/* Badge "Hors assurance" (simplifiÃ© uniquement) */
-.cv-summary__badge {
-  display: inline-block;
-  margin-top: 8px;
-  padding: 3px 9px;
-  border-radius: 999px;
-  border: 1px solid var(--color-c8);
-  background: var(--color-c7);
-  font-size: 11px;
-  color: var(--color-c9);
+.cv-summary__status-badge {
+  margin-top: var(--space-2);
 }
 
 /* SÃ©parateur entre KPI et lignes de coÃ»t â€” gradient symÃ©trique (style settings) */
@@ -173,13 +166,4 @@
   background: #ffffff;
   border: 1px solid var(--color-c8);
   box-shadow: 0 6px 28px rgba(0, 0, 0, 0.07);
-}
-
-.cv-total-mensu__value {
-  font-size: 28px;
-  font-weight: 700;
-  color: var(--color-c1);
-  font-variant-numeric: tabular-nums;
-  line-height: 1.15;
-  margin: 4px 0;
 }

@@ -1,112 +1,8 @@
 /**
- * Placement Table Components - CollapsibleTable et AllocationSlider
+ * Placement Table Components - AllocationSlider
  */
 
-import React, { useEffect, useRef, useState } from 'react';
-
-interface CollapsibleTableProps<Row> {
-  title: string;
-  rows: Row[] | null | undefined;
-  columns: string[];
-  renderRow: (_row: Row, _index: number) => React.ReactElement;
-  onOpenChange?: (_open: boolean) => void;
-}
-
-function ChevronIcon({ open }: { open: boolean }) {
-  return (
-    <svg
-      className={`pl-collapsible__chevron${open ? ' is-open' : ''}`}
-      width="16"
-      height="16"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.8"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-    >
-      <path d="m6 9 6 6 6-6" />
-    </svg>
-  );
-}
-
-export function CollapsibleTable<Row>({
-  title,
-  rows,
-  columns,
-  renderRow,
-  onOpenChange,
-}: CollapsibleTableProps<Row>) {
-  const [open, setOpen] = useState(false);
-  const scrollRef = useRef<HTMLDivElement>(null);
-  const topRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (!open) return;
-    const wrap = scrollRef.current;
-    const top = topRef.current;
-    if (!wrap || !top) return;
-    const spacer = top.firstElementChild as HTMLElement;
-    if (spacer) spacer.style.width = `${wrap.scrollWidth}px`;
-    const onTop = () => {
-      wrap.scrollLeft = top.scrollLeft;
-    };
-    const onWrap = () => {
-      top.scrollLeft = wrap.scrollLeft;
-    };
-    top.addEventListener('scroll', onTop);
-    wrap.addEventListener('scroll', onWrap);
-    return () => {
-      top.removeEventListener('scroll', onTop);
-      wrap.removeEventListener('scroll', onWrap);
-    };
-  }, [open]);
-
-  if (!rows || rows.length === 0) return null;
-
-  const handleToggle = () => {
-    const next = !open;
-    setOpen(next);
-    onOpenChange?.(next);
-  };
-
-  return (
-    <div className="pl-collapsible">
-      <button
-        type="button"
-        className="pl-collapsible__toggle"
-        onClick={handleToggle}
-        aria-expanded={open}
-      >
-        <span>
-          {title} ({rows.length} années)
-        </span>
-        <ChevronIcon open={open} />
-      </button>
-
-      {open && (
-        <>
-          <div ref={topRef} className="pl-table-top-scroll">
-            <div />
-          </div>
-          <div ref={scrollRef} className="pl-table-scroll-wrap">
-            <table className="pl-ir-table pl-detail-table">
-              <thead>
-                <tr>
-                  {columns.map((column, index) => (
-                    <th key={index}>{column}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>{rows.map((row, index) => renderRow(row, index))}</tbody>
-            </table>
-          </div>
-        </>
-      )}
-    </div>
-  );
-}
+import { SimAmountInputPercent } from '@/components/ui/sim';
 
 interface AllocationSliderProps {
   pctCapi: number;
@@ -174,29 +70,31 @@ export function AllocationSlider({
           ) : (
             <>
               <div className="pl-alloc-value">
-                <input
-                  type="number"
-                  min="0"
-                  max="100"
+                <SimAmountInputPercent
                   value={pctCapi}
-                  onChange={(event) => handleCapiChange(Number(event.target.value))}
+                  min={0}
+                  max={100}
                   className="pl-alloc-input"
+                  fieldClassName="pl-alloc-input-field"
+                  rowClassName="pl-alloc-input-row"
+                  unitClassName="pl-alloc-input-unit"
                   disabled={disabled}
+                  onChange={handleCapiChange}
                 />
-                <span>%</span>
               </div>
 
               <div className="pl-alloc-value">
-                <input
-                  type="number"
-                  min="0"
-                  max="100"
+                <SimAmountInputPercent
                   value={pctDistrib}
-                  onChange={(event) => handleCapiChange(100 - Number(event.target.value))}
+                  min={0}
+                  max={100}
                   className="pl-alloc-input"
+                  fieldClassName="pl-alloc-input-field"
+                  rowClassName="pl-alloc-input-row"
+                  unitClassName="pl-alloc-input-unit"
                   disabled={disabled}
+                  onChange={(value) => handleCapiChange(100 - value)}
                 />
-                <span>%</span>
               </div>
             </>
           )}

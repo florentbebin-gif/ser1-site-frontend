@@ -6,6 +6,7 @@ import jsxA11yPlugin from 'eslint-plugin-jsx-a11y';
 import tsParser from '@typescript-eslint/parser';
 import tsPlugin from '@typescript-eslint/eslint-plugin';
 import ser1ColorsPlugin from './tools/eslint-plugin-ser1-colors/index.js';
+import ser1TokensPlugin from './tools/eslint-plugin-ser1-tokens/index.js';
 
 export default [
   js.configs.recommended,
@@ -30,6 +31,7 @@ export default [
       'react-hooks': reactHooksPlugin,
       'jsx-a11y': jsxA11yPlugin,
       'ser1-colors': ser1ColorsPlugin,
+      'ser1-tokens': ser1TokensPlugin,
     },
     rules: {
       'no-unused-vars': ['warn', { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }],
@@ -44,6 +46,11 @@ export default [
       // Color governance rules (strict mode)
       'ser1-colors/no-hardcoded-colors': 'error',
       'ser1-colors/use-semantic-colors': 'error',
+      // Design token governance rules (strict mode)
+      'ser1-tokens/no-hardcoded-spacing': ['error', { allowlist: [] }],
+      'ser1-tokens/no-hardcoded-radius': ['error', { allowlist: [] }],
+      'ser1-tokens/no-hardcoded-font-size': ['error', { allowlist: [] }],
+      'ser1-tokens/no-hardcoded-transition': ['error', { allowlist: [] }],
       // God-file detection (PR-D Phase 5A)
       'max-lines': ['warn', { max: 500, skipBlankLines: true, skipComments: true }],
     },
@@ -216,6 +223,12 @@ export default [
     },
   },
   {
-    ignores: ['dist/**', 'node_modules/**', '*.config.js', 'tools/eslint-plugin-ser1-colors/**'],
+    ignores: [
+      'dist/**',
+      'node_modules/**',
+      '*.config.js',
+      'tools/eslint-plugin-ser1-colors/**',
+      'tools/eslint-plugin-ser1-tokens/**',
+    ],
   },
 ];

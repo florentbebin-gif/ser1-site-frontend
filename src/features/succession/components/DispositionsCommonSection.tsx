@@ -1,4 +1,5 @@
 import type { Dispatch, SetStateAction } from 'react';
+import { SimAmountInputPercent } from '@/components/ui/sim';
 import type { SuccessionAssetPocket, SuccessionDonationEntreEpouxOption } from '../successionDraft';
 import type { DispositionsDraftState } from '../successionSimulator.helpers';
 import {
@@ -16,7 +17,10 @@ import { DispositionsSocieteAcquetsSection } from './DispositionsSocieteAcquetsS
 import { clampPercentage } from './dispositions.helpers';
 import { ScSelect } from './ScSelect';
 
+export type DispositionsCommonPanel = 'all' | 'transmission' | 'claims' | 'preciput';
+
 interface DispositionsCommonSectionProps {
+  panel?: DispositionsCommonPanel;
   dispositionsDraft: DispositionsDraftState;
   setDispositionsDraft: Dispatch<SetStateAction<DispositionsDraftState>>;
   showSharedTransmissionPct: boolean;
@@ -41,6 +45,7 @@ interface DispositionsCommonSectionProps {
 }
 
 export function DispositionsCommonSection({
+  panel = 'all',
   dispositionsDraft,
   setDispositionsDraft,
   showSharedTransmissionPct,
@@ -59,25 +64,30 @@ export function DispositionsCommonSection({
   onRemoveInterMassClaim,
   preciputConfiguratorProps,
 }: DispositionsCommonSectionProps) {
+  const showTransmission = panel === 'all' || panel === 'transmission';
+  const showClaims = panel === 'all' || panel === 'claims';
+  const showPreciput = panel === 'all' || panel === 'preciput';
+
   return (
-    <div className="sc-dispositions-modal__section sc-dispositions-modal__section--common">
-      {showSharedTransmissionPct && (
+    <div
+      className={`sc-dispositions-modal__section sc-dispositions-modal__section--common sc-dispositions-modal__section--${panel}`}
+    >
+      {showTransmission && showSharedTransmissionPct && (
         <div className="sc-field">
           <label htmlFor="sc-dispositions-attribution-biens-communs">
             {isPacsIndivision
               ? 'Part indivise transmise au survivant (%)'
               : 'Attribution des biens communs au survivant (%)'}
           </label>
-          <input
+          <SimAmountInputPercent
             id="sc-dispositions-attribution-biens-communs"
-            type="number"
             min={0}
             max={100}
             value={dispositionsDraft.attributionBiensCommunsPct}
-            onChange={(e) =>
+            onChange={(value) =>
               setDispositionsDraft((prev) => ({
                 ...prev,
-                attributionBiensCommunsPct: clampPercentage(e.target.value),
+                attributionBiensCommunsPct: clampPercentage(String(value)),
               }))
             }
           />
@@ -87,7 +97,7 @@ export function DispositionsCommonSection({
         </div>
       )}
 
-      {showDonationEntreEpoux && (
+      {showTransmission && showDonationEntreEpoux && (
         <div className="sc-field">
           <label htmlFor="sc-dispositions-donation-entre-epoux">Donation entre époux</label>
           <ScSelect
@@ -104,7 +114,7 @@ export function DispositionsCommonSection({
         </div>
       )}
 
-      {showDonationEntreEpoux && dispositionsDraft.donationEntreEpouxActive && (
+      {showTransmission && showDonationEntreEpoux && dispositionsDraft.donationEntreEpouxActive && (
         <div className="sc-field">
           <label htmlFor="sc-dispositions-donation-option">Type de donation entre époux</label>
           <ScSelect
@@ -131,7 +141,8 @@ export function DispositionsCommonSection({
         </div>
       )}
 
-      {showDonationEntreEpoux &&
+      {showTransmission &&
+        showDonationEntreEpoux &&
         !dispositionsDraft.donationEntreEpouxActive &&
         nbDescendantBranches > 0 && (
           <div className="sc-field">
@@ -164,7 +175,7 @@ export function DispositionsCommonSection({
           </div>
         )}
 
-      {isCommunauteUniverselleRegime && (
+      {showTransmission && isCommunauteUniverselleRegime && (
         <div className="sc-field">
           <label htmlFor="sc-dispositions-stipulation-cu">
             Stipulation contraire en communauté universelle
@@ -187,7 +198,7 @@ export function DispositionsCommonSection({
         </div>
       )}
 
-      {isCommunauteMeublesAcquetsRegime && (
+      {showTransmission && isCommunauteMeublesAcquetsRegime && (
         <div className="sc-field">
           <div className="sc-field-label">Qualification meuble / immeuble pour CMA</div>
           <p className="sc-hint sc-hint--compact">
@@ -198,22 +209,24 @@ export function DispositionsCommonSection({
         </div>
       )}
 
-      {isParticipationAcquetsRegime && (
+      {showTransmission && isParticipationAcquetsRegime && (
         <DispositionsParticipationAcquetsSection
           dispositionsDraft={dispositionsDraft}
           setDispositionsDraft={setDispositionsDraft}
         />
       )}
 
-      <DispositionsInterMassClaimsSection
-        dispositionsDraft={dispositionsDraft}
-        interMassClaimPocketOptions={interMassClaimPocketOptions}
-        onAddInterMassClaim={onAddInterMassClaim}
-        onUpdateInterMassClaim={onUpdateInterMassClaim}
-        onRemoveInterMassClaim={onRemoveInterMassClaim}
-      />
+      {showClaims && (
+        <DispositionsInterMassClaimsSection
+          dispositionsDraft={dispositionsDraft}
+          interMassClaimPocketOptions={interMassClaimPocketOptions}
+          onAddInterMassClaim={onAddInterMassClaim}
+          onUpdateInterMassClaim={onUpdateInterMassClaim}
+          onRemoveInterMassClaim={onRemoveInterMassClaim}
+        />
+      )}
 
-      {isCommunityRegime && (
+      {showPreciput && isCommunityRegime && (
         <DispositionsPreciputConfigurator
           {...preciputConfiguratorProps}
           title="Clause de préciput (EUR)"
@@ -221,7 +234,7 @@ export function DispositionsCommonSection({
         />
       )}
 
-      {isSocieteAcquetsRegime && (
+      {showPreciput && isSocieteAcquetsRegime && (
         <DispositionsSocieteAcquetsSection
           dispositionsDraft={dispositionsDraft}
           setDispositionsDraft={setDispositionsDraft}

@@ -121,7 +121,7 @@ function buildScenario(input: ScenarioInput) {
 
 function extractSummaryKpiValue(markup: string, label: string): string | undefined {
   const matches = markup.matchAll(
-    /<span class="sc-synth-kpi__label">([^<]+)<\/span><strong class="sc-synth-kpi__value">([^<]+)<\/strong>/g,
+    /<span class="sim-metric__label">([^<]+)<\/span><div class="sim-metric__value-row"><strong class="sim-metric__value">([^<]+)<\/strong>/g,
   );
   for (const match of matches) {
     if (match[1] === label) return match[2];
@@ -130,12 +130,14 @@ function extractSummaryKpiValue(markup: string, label: string): string | undefin
 }
 
 function extractSummaryHeroValue(markup: string): string | undefined {
-  return markup.match(/<div class="sc-synth-hero__value">([^<]+)<\/div>/)?.[1];
+  return markup.match(
+    /<span class="sim-metric__label">Coût de transmission estimé<\/span><div class="sim-metric__value-row"><strong class="sim-metric__value">([^<]+)<\/strong>/,
+  )?.[1];
 }
 
 function extractChronologyTotal(markup: string): string | undefined {
   return markup.match(
-    /<div class="sc-chrono-total"><span>Total cumule des droits<\/span><strong>([^<]+)<\/strong><\/div>/,
+    /<div class="sc-chrono-total"><span>Total cumulé des droits<\/span><strong>([^<]+)<\/strong><\/div>/,
   )?.[1];
 }
 

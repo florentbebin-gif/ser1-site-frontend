@@ -6,6 +6,8 @@ interface ModeToggleProps {
   value?: boolean;
   onChange?: (_isExpert: boolean) => void;
   testId?: string;
+  disabled?: boolean;
+  disabledReason?: string;
 }
 
 interface ModeToggleViewProps {
@@ -13,6 +15,8 @@ interface ModeToggleViewProps {
   isLoading?: boolean;
   onToggle?: () => void;
   testId?: string;
+  disabled?: boolean;
+  disabledReason?: string;
 }
 
 export function ModeToggleView({
@@ -20,6 +24,8 @@ export function ModeToggleView({
   isLoading = false,
   onToggle,
   testId,
+  disabled = false,
+  disabledReason,
 }: ModeToggleViewProps): React.ReactElement {
   if (isLoading) {
     return (
@@ -35,10 +41,19 @@ export function ModeToggleView({
       <span className="mode-toggle-label">Mode expert</span>
       <button
         type="button"
-        className={`mode-toggle-pill ${isExpert ? 'mode-toggle-pill--active' : ''}`}
-        onClick={onToggle}
+        className={[
+          'mode-toggle-pill',
+          isExpert ? 'mode-toggle-pill--active' : '',
+          disabled ? 'mode-toggle-pill--disabled' : '',
+        ]
+          .filter(Boolean)
+          .join(' ')}
+        onClick={disabled ? undefined : onToggle}
         aria-pressed={isExpert}
-        aria-label="Activer le mode expert"
+        aria-disabled={disabled ? 'true' : undefined}
+        aria-label={disabled ? 'Mode expert indisponible' : 'Activer le mode expert'}
+        disabled={disabled}
+        title={disabled ? disabledReason : undefined}
       >
         <span className="mode-toggle-pill__knob" />
       </button>
@@ -46,13 +61,20 @@ export function ModeToggleView({
   );
 }
 
-export function ModeToggle({ value, onChange, testId }: ModeToggleProps = {}): React.ReactElement {
+export function ModeToggle({
+  value,
+  onChange,
+  testId,
+  disabled = false,
+  disabledReason,
+}: ModeToggleProps = {}): React.ReactElement {
   const { mode: userMode, setMode: setUserMode, isLoading } = useUserMode();
 
   const isControlled = value !== undefined;
   const isExpert = isControlled ? value : userMode === 'expert';
 
   const handleToggle = (): void => {
+    if (disabled) return;
     if (isControlled && onChange) {
       onChange(!isExpert);
     } else {
@@ -66,6 +88,8 @@ export function ModeToggle({ value, onChange, testId }: ModeToggleProps = {}): R
       isLoading={!isControlled && isLoading}
       onToggle={handleToggle}
       testId={testId}
+      disabled={disabled}
+      disabledReason={disabledReason}
     />
   );
 }

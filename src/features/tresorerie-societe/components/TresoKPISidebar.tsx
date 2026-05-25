@@ -2,6 +2,8 @@
  * TresoKPISidebar.tsx — Synthèse courte de la projection holding.
  */
 
+import type { ReactNode } from 'react';
+import { SimKpiReference, SimMetric, SimSparkline } from '@/components/ui/sim';
 import type { TresoKPIs } from '../hooks/useTresorerieCalculations';
 import type { TresoInputsRuntime } from '../../../engine/tresorerie/types';
 
@@ -24,16 +26,18 @@ interface KpiCardProps {
   label: string;
   value: string;
   tone?: 'neutral' | 'warning' | 'positive';
-  note?: string;
+  note?: ReactNode;
 }
 
 function KpiCard({ label, value, tone = 'neutral', note }: KpiCardProps) {
   return (
-    <div className={`ts-kpi-card ts-kpi-card--${tone}`}>
-      <span>{label}</span>
-      <strong>{value}</strong>
-      {note ? <small>{note}</small> : null}
-    </div>
+    <SimMetric
+      variant="secondary"
+      className={`ts-kpi-metric ts-kpi-metric--${tone}`}
+      label={label}
+      value={value}
+      note={note}
+    />
   );
 }
 
@@ -105,7 +109,7 @@ export function TresoKPISidebar({ kpis }: Props) {
           Renseignez les paramètres pour afficher la projection.
         </p>
       ) : (
-        <div className="ts-kpi-card-grid">
+        <div className="ts-kpi-metric-grid">
           <KpiCard
             label="Trésorerie sur horizon"
             value={tresorerieCard.value}
@@ -125,7 +129,11 @@ export function TresoKPISidebar({ kpis }: Props) {
             value={fmtPercent(kpis.performanceMoyenneTresorerie)}
             note="Trésorerie placée"
           />
-          <KpiCard label="IS total décaissé" value={fmtEuro(kpis.isTotalDecaisse)} />
+          <KpiCard
+            label="IS total décaissé"
+            value={fmtEuro(kpis.isTotalDecaisse)}
+            note={<TresoKpiReference />}
+          />
           <KpiCard
             label="Compte bancaire fin horizon"
             value={fmtEuro(kpis.compteBancaireFinHorizon)}
@@ -145,5 +153,14 @@ export function TresoKPISidebar({ kpis }: Props) {
         </div>
       )}
     </div>
+  );
+}
+
+function TresoKpiReference() {
+  return (
+    <span className="sim-kpi-note">
+      <SimSparkline />
+      <SimKpiReference kind="is" />
+    </span>
   );
 }

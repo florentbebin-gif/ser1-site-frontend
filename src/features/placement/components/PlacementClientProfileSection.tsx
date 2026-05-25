@@ -1,32 +1,13 @@
+import { IconUsers } from '@/icons/ui';
 import type { PlacementTmiOption } from '@/hooks/usePlacementSettings';
 import type { PlacementClient } from '../utils/normalizers';
-import { InputNumber, Select } from './PlacementFormControls';
+import { PlacementNumberField } from './PlacementAmountControls';
+import { PlacementSelect as Select } from './PlacementSelect';
 
 interface PlacementClientProfileSectionProps {
   client: PlacementClient;
   tmiOptions: PlacementTmiOption[];
   setClient: (_patch: Partial<PlacementClient>) => void;
-}
-
-function UsersIcon() {
-  return (
-    <svg
-      width="20"
-      height="20"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.8"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-    >
-      <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
-      <circle cx="9" cy="7" r="4" />
-      <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
-      <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-    </svg>
-  );
 }
 
 export function PlacementClientProfileSection({
@@ -39,7 +20,7 @@ export function PlacementClientProfileSection({
       <div className="pl-client-card__header sim-card__header sim-card__header--bleed">
         <div className="pl-client-card__title sim-card__title sim-card__title-row">
           <div className="sim-card__icon">
-            <UsersIcon />
+            <IconUsers />
           </div>
           <span>Profil client</span>
         </div>
@@ -51,7 +32,7 @@ export function PlacementClientProfileSection({
       <div className="sim-divider" />
 
       <div className="pl-topgrid premium-grid-4">
-        <InputNumber
+        <PlacementNumberField
           label="Âge actuel"
           value={client.ageActuel}
           onChange={(value) => setClient({ ageActuel: value ?? null })}

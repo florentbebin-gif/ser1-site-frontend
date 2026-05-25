@@ -3,6 +3,8 @@
  */
 
 import { useEffect, useState } from 'react';
+import { IconBuilding } from '@/icons/ui';
+import { SimActionButton } from '@/components/ui/sim';
 import { SimFieldShell } from '../../../components/ui/sim/SimFieldShell';
 import { SimModalShell } from '../../../components/ui/sim/SimModalShell';
 import { SimSelect } from '../../../components/ui/sim/SimSelect';
@@ -126,21 +128,22 @@ export function TresoSocieteSection({ inputs, onChange, onAssociateModalOpenerCh
             <div className="ts-associate-card__header">
               <strong>{associate.label || `Associé ${index + 1}`}</strong>
               <div className="ts-card-actions">
-                <button
-                  type="button"
-                  className="ts-text-btn"
+                <SimActionButton
+                  variant="edit"
+                  mode="text"
+                  label="Paramétrer"
+                  ariaLabel={`Paramétrer ${associate.label || `associé ${index + 1}`}`}
                   onClick={() => setAssociateModalId(associate.id)}
-                >
-                  Paramétrer
-                </button>
-                <button
-                  type="button"
-                  className="ts-text-btn"
+                />
+                <SimActionButton
+                  variant="delete"
+                  mode="text"
+                  label="Supprimer"
+                  ariaLabel={`Supprimer ${associate.label || `associé ${index + 1}`}`}
+                  danger
                   disabled={company.associates.length <= 1}
                   onClick={() => removeAssociate(associate.id)}
-                >
-                  Supprimer
-                </button>
+                />
               </div>
             </div>
             <div className="ts-modal-grid ts-modal-grid--two">
@@ -170,9 +173,13 @@ export function TresoSocieteSection({ inputs, onChange, onAssociateModalOpenerCh
         );
       })}
 
-      <button type="button" className="ts-text-btn" onClick={addAssociate}>
-        Ajouter un associé
-      </button>
+      <SimActionButton
+        variant="add"
+        mode="text"
+        label="Ajouter un associé"
+        className="ts-inline-action"
+        onClick={addAssociate}
+      />
     </div>
   );
 
@@ -262,23 +269,7 @@ export function TresoSocieteSection({ inputs, onChange, onAssociateModalOpenerCh
     <div className="premium-card ts-section">
       <div className="ts-section__header">
         <span className="sim-card__icon">
-          <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-            <rect
-              x="2"
-              y="7"
-              width="12"
-              height="8"
-              rx="1"
-              stroke="currentColor"
-              strokeWidth="1.5"
-            />
-            <path
-              d="M5 7V5a3 3 0 016 0v2"
-              stroke="currentColor"
-              strokeWidth="1.5"
-              strokeLinecap="round"
-            />
-          </svg>
+          <IconBuilding />
         </span>
         <div>
           <h2 className="ts-section__title">Société</h2>

@@ -1,20 +1,12 @@
-import { useEffect, useState } from 'react';
 import type { ReactNode } from 'react';
-import { SimFieldShell, SimSelect } from '@/components/ui/sim';
+import {
+  SimAmountInputEuro,
+  SimAmountInputNumeric,
+  SimAmountInputPercent,
+  SimFieldShell,
+  SimSelect,
+} from '@/components/ui/sim';
 import type { SimSelectOption } from '@/components/ui/sim';
-import { PerAmountInput } from '@/features/per/components/shared/PerAmountInput';
-
-interface NumberFieldProps {
-  label: ReactNode;
-  ariaLabel?: string;
-  value: number;
-  onChange: (_value: number) => void;
-  min?: number;
-  max?: number;
-  step?: number;
-  suffix?: string;
-  hint?: string;
-}
 
 interface MoneyFieldProps {
   label: ReactNode;
@@ -69,35 +61,6 @@ interface SelectFieldProps {
   clearable?: boolean;
 }
 
-function parseFrenchNumber(value: string): number {
-  const parsed = Number(value.replace(/\s/g, '').replace(',', '.'));
-  return Number.isFinite(parsed) ? parsed : 0;
-}
-
-function formatRateFr(value: number): string {
-  return Number.isFinite(value)
-    ? value.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
-    : '0,00';
-}
-
-function formatDecimalFr(value: number, decimals: number): string {
-  return Number.isFinite(value)
-    ? value.toLocaleString('fr-FR', {
-        minimumFractionDigits: decimals,
-        maximumFractionDigits: decimals,
-      })
-    : (0).toLocaleString('fr-FR', {
-        minimumFractionDigits: decimals,
-        maximumFractionDigits: decimals,
-      });
-}
-
-function clamp(value: number, min?: number, max?: number): number {
-  const floor = min ?? Number.NEGATIVE_INFINITY;
-  const ceiling = max ?? Number.POSITIVE_INFINITY;
-  return Math.min(ceiling, Math.max(floor, value));
-}
-
 function ariaText(label: ReactNode, ariaLabel?: string): string {
   return ariaLabel ?? (typeof label === 'string' ? label : 'Champ PER transfert');
 }
@@ -111,15 +74,15 @@ export function PerTransfertMoneyField({
   min = 0,
 }: MoneyFieldProps) {
   return (
-    <SimFieldShell label={label} hint={hint}>
-      <PerAmountInput
-        value={value}
-        onChange={onChange}
-        ariaLabel={ariaText(label, ariaLabel)}
-        min={min}
-      />
-      <span className="per-transfert-field-suffix">€</span>
-    </SimFieldShell>
+    <SimAmountInputEuro
+      label={label}
+      hint={hint}
+      value={value}
+      onChange={onChange}
+      ariaLabel={ariaText(label, ariaLabel)}
+      min={min}
+      unitClassName="per-transfert-field-suffix"
+    />
   );
 }
 
@@ -132,31 +95,19 @@ export function PerTransfertDecimalMoneyField({
   min = 0,
   decimals = 4,
 }: DecimalMoneyFieldProps) {
-  const [text, setText] = useState(formatDecimalFr(value, decimals));
-
-  useEffect(() => {
-    setText(formatDecimalFr(value, decimals));
-  }, [decimals, value]);
-
-  function commit(nextText = text) {
-    const nextValue = clamp(parseFrenchNumber(nextText), min);
-    setText(formatDecimalFr(nextValue, decimals));
-    onChange(nextValue);
-  }
-
   return (
-    <SimFieldShell label={label} hint={hint}>
-      <input
-        className="sim-field__control"
-        type="text"
-        inputMode="decimal"
-        value={text}
-        aria-label={ariaText(label, ariaLabel)}
-        onChange={(event) => setText(event.target.value)}
-        onBlur={() => commit()}
-      />
-      <span className="per-transfert-field-suffix">€</span>
-    </SimFieldShell>
+    <SimAmountInputNumeric
+      label={label}
+      hint={hint}
+      value={value}
+      onChange={onChange}
+      ariaLabel={ariaText(label, ariaLabel)}
+      min={min}
+      unit="€"
+      unitClassName="per-transfert-field-suffix"
+      minimumFractionDigits={decimals}
+      maximumFractionDigits={decimals}
+    />
   );
 }
 
@@ -170,31 +121,20 @@ export function PerTransfertRateField({
   suffix = '%',
   hint,
 }: RateFieldProps) {
-  const [text, setText] = useState(formatRateFr(value));
-
-  useEffect(() => {
-    setText(formatRateFr(value));
-  }, [value]);
-
-  function commit(nextText = text) {
-    const nextValue = clamp(parseFrenchNumber(nextText), min, max);
-    setText(formatRateFr(nextValue));
-    onChange(nextValue);
-  }
-
   return (
-    <SimFieldShell label={label} hint={hint}>
-      <input
-        className="sim-field__control"
-        type="text"
-        inputMode="decimal"
-        value={text}
-        aria-label={ariaText(label, ariaLabel)}
-        onChange={(event) => setText(event.target.value)}
-        onBlur={() => commit()}
-      />
-      <span className="per-transfert-field-suffix">{suffix}</span>
-    </SimFieldShell>
+    <SimAmountInputPercent
+      label={label}
+      hint={hint}
+      value={value}
+      onChange={onChange}
+      ariaLabel={ariaText(label, ariaLabel)}
+      min={min}
+      max={max}
+      unit={suffix}
+      unitClassName="per-transfert-field-suffix"
+      minimumFractionDigits={2}
+      maximumFractionDigits={2}
+    />
   );
 }
 
@@ -209,49 +149,17 @@ export function PerTransfertIntegerField({
   hint,
 }: IntegerFieldProps) {
   return (
-    <SimFieldShell label={label} hint={hint}>
-      <input
-        className="sim-field__control"
-        type="number"
-        inputMode="numeric"
-        min={min}
-        max={max}
-        step={1}
-        value={Number.isFinite(value) ? value : 0}
-        aria-label={ariaText(label, ariaLabel)}
-        onChange={(event) => onChange(Math.round(Number(event.target.value) || 0))}
-      />
-      {suffix ? <span className="per-transfert-field-suffix">{suffix}</span> : null}
-    </SimFieldShell>
-  );
-}
-
-export function PerTransfertNumberField({
-  label,
-  ariaLabel,
-  value,
-  onChange,
-  min,
-  max,
-  step = 1,
-  suffix,
-  hint,
-}: NumberFieldProps) {
-  return (
-    <SimFieldShell label={label} hint={hint}>
-      <input
-        className="sim-field__control"
-        type="number"
-        inputMode="decimal"
-        min={min}
-        max={max}
-        step={step}
-        value={Number.isFinite(value) ? value : 0}
-        aria-label={ariaText(label, ariaLabel)}
-        onChange={(event) => onChange(Number(event.target.value))}
-      />
-      {suffix ? <span className="per-transfert-field-suffix">{suffix}</span> : null}
-    </SimFieldShell>
+    <SimAmountInputNumeric
+      label={label}
+      hint={hint}
+      value={value}
+      ariaLabel={ariaText(label, ariaLabel)}
+      min={min}
+      max={max}
+      unit={suffix}
+      unitClassName="per-transfert-field-suffix"
+      onChange={(nextValue) => onChange(Math.round(nextValue))}
+    />
   );
 }
 

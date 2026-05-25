@@ -1,4 +1,5 @@
 import { useCallback, useMemo, useState } from 'react';
+import { SimActionButton, SimAmountInputEuro, SimAmountInputPercent } from '@/components/ui/sim';
 import type {
   SuccessionAssetCategory,
   SuccessionAssetDetailEntry,
@@ -24,7 +25,6 @@ import {
 import { fmt } from '../successionSimulator.helpers';
 import AssetLegalQualificationModal from './AssetLegalQualificationModal';
 import { ScAssetsSummary, ScForfaitMobilierSection } from './ScAssetsPassifsExtras';
-import { ScNumericInput } from './ScNumericInput';
 import { ScSelect } from './ScSelect';
 import { buildSubCategoryOptions } from './ScAssetsPassifs.shared';
 
@@ -69,28 +69,15 @@ interface ScAssetsPassifsExpertSectionProps {
 
 function EditRowButton({ label, onClick }: { label: string; onClick: () => void }) {
   return (
-    <button
-      type="button"
+    <SimActionButton
+      variant="edit"
+      mode="icon"
+      label="Modifier"
       className="sc-open-btn"
       onClick={onClick}
       title={label}
-      aria-label={label}
-    >
-      <svg
-        width="13"
-        height="13"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        aria-hidden="true"
-      >
-        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
-        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
-      </svg>
-    </button>
+      ariaLabel={label}
+    />
   );
 }
 
@@ -174,14 +161,15 @@ export function ScAssetsPassifsExpertSection({
               <div className="sc-asset-section__header">
                 <h3 className="sc-asset-section__title">{category.label}</h3>
                 <div className="sc-asset-section__actions">
-                  <button
-                    type="button"
+                  <SimActionButton
+                    variant="add"
+                    mode="icon"
+                    label="Ajouter"
                     className="sc-member-add-icon-btn"
                     onClick={() => onAddAssetEntry(category.value)}
+                    ariaLabel="Ajouter une ligne"
                     title="Ajouter une ligne"
-                  >
-                    +
-                  </button>
+                  />
                 </div>
               </div>
 
@@ -217,8 +205,8 @@ export function ScAssetsPassifsExpertSection({
                           />
                         </div>
                         <div className="sc-field">
-                          <label htmlFor={`sc-asset-amount-${entry.id}`}>Montant (€)</label>
-                          <ScNumericInput
+                          <label htmlFor={`sc-asset-amount-${entry.id}`}>Montant</label>
+                          <SimAmountInputEuro
                             id={`sc-asset-amount-${entry.id}`}
                             value={entry.amount || 0}
                             min={0}
@@ -232,14 +220,15 @@ export function ScAssetsPassifsExpertSection({
                               onClick={() => setLegalModalEntryId(entry.id)}
                             />
                           )}
-                          <button
-                            type="button"
+                          <SimActionButton
+                            variant="delete"
+                            mode="icon"
+                            label="Supprimer"
                             className="sc-remove-btn"
                             onClick={() => onRemoveAssetEntry(entry.id)}
                             title="Supprimer cette ligne"
-                          >
-                            &#10005;
-                          </button>
+                            ariaLabel="Supprimer cette ligne"
+                          />
                         </div>
                       </div>
                       {entry.pocket === 'indivision_separatiste' && (
@@ -247,7 +236,7 @@ export function ScAssetsPassifsExpertSection({
                           <label htmlFor={`sc-asset-quote-epoux1-${entry.id}`}>
                             Quote-part Époux 1 (%)
                           </label>
-                          <ScNumericInput
+                          <SimAmountInputPercent
                             id={`sc-asset-quote-epoux1-${entry.id}`}
                             value={entry.quotePartEpoux1Pct ?? 50}
                             min={0}
@@ -321,10 +310,8 @@ export function ScAssetsPassifsExpertSection({
                             />
                           </div>
                           <div className="sc-field">
-                            <label htmlFor={`sc-gf-valeur-totale-${entry.id}`}>
-                              Valeur totale (€)
-                            </label>
-                            <ScNumericInput
+                            <label htmlFor={`sc-gf-valeur-totale-${entry.id}`}>Valeur totale</label>
+                            <SimAmountInputEuro
                               id={`sc-gf-valeur-totale-${entry.id}`}
                               value={entry.valeurTotale || 0}
                               min={0}
@@ -333,21 +320,22 @@ export function ScAssetsPassifsExpertSection({
                               }
                             />
                           </div>
-                          <button
-                            type="button"
+                          <SimActionButton
+                            variant="delete"
+                            mode="icon"
+                            label="Supprimer"
                             className="sc-remove-btn"
                             onClick={() => onRemoveGroupementFoncierEntry(entry.id)}
                             title="Supprimer cette ligne"
-                          >
-                            &#10005;
-                          </button>
+                            ariaLabel="Supprimer cette ligne"
+                          />
                         </div>
                         {entry.pocket === 'indivision_separatiste' && (
                           <div className="sc-field sc-field--full sc-asset-row__suboption">
                             <label htmlFor={`sc-gf-quote-epoux1-${entry.id}`}>
                               Quote-part Époux 1 (%)
                             </label>
-                            <ScNumericInput
+                            <SimAmountInputPercent
                               id={`sc-gf-quote-epoux1-${entry.id}`}
                               value={entry.quotePartEpoux1Pct ?? 50}
                               min={0}
@@ -398,14 +386,15 @@ export function ScAssetsPassifsExpertSection({
                           label="Modifier ce contrat"
                           onClick={() => onOpenPrevoyanceModal(entry.id)}
                         />
-                        <button
-                          type="button"
+                        <SimActionButton
+                          variant="delete"
+                          mode="icon"
+                          label="Supprimer"
                           className="sc-remove-btn"
                           onClick={() => onRemovePrevoyanceDecesEntry(entry.id)}
                           title="Supprimer cette ligne"
-                        >
-                          &#10005;
-                        </button>
+                          ariaLabel="Supprimer cette ligne"
+                        />
                       </div>
                     </div>
                   ))}
@@ -432,14 +421,15 @@ export function ScAssetsPassifsExpertSection({
                           label="Modifier ce contrat"
                           onClick={() => onOpenAssuranceVieModal(entry.id)}
                         />
-                        <button
-                          type="button"
+                        <SimActionButton
+                          variant="delete"
+                          mode="icon"
+                          label="Supprimer"
                           className="sc-remove-btn"
                           onClick={() => onRemoveAssuranceVieEntry(entry.id)}
                           title="Supprimer cette ligne"
-                        >
-                          &#10005;
-                        </button>
+                          ariaLabel="Supprimer cette ligne"
+                        />
                       </div>
                     </div>
                   ))}
@@ -466,14 +456,15 @@ export function ScAssetsPassifsExpertSection({
                           label="Modifier ce contrat"
                           onClick={() => onOpenPerModal(entry.id)}
                         />
-                        <button
-                          type="button"
+                        <SimActionButton
+                          variant="delete"
+                          mode="icon"
+                          label="Supprimer"
                           className="sc-remove-btn"
                           onClick={() => onRemovePerEntry(entry.id)}
                           title="Supprimer cette ligne"
-                        >
-                          &#10005;
-                        </button>
+                          ariaLabel="Supprimer cette ligne"
+                        />
                       </div>
                     </div>
                   ))}

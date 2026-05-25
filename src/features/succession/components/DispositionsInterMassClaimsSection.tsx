@@ -1,3 +1,4 @@
+import { SimActionButton, SimAmountInputEuro } from '@/components/ui/sim';
 import type { SuccessionAssetPocket } from '../successionDraft';
 import type { DispositionsDraftState } from '../successionSimulator.helpers';
 import {
@@ -5,7 +6,6 @@ import {
   getSuccessionPocketLabel,
 } from '../successionInterMassClaims';
 import { OUI_NON_OPTIONS } from '../successionSimulator.constants';
-import { ScNumericInput } from './ScNumericInput';
 import { ScSelect, type ScSelectOption } from './ScSelect';
 
 const INTER_MASS_CLAIM_KIND_OPTIONS: ScSelectOption[] = [
@@ -57,14 +57,14 @@ export function DispositionsInterMassClaimsSection({
                     {getSuccessionPocketLabel(claim.toPocket)}
                   </p>
                 </div>
-                <button
-                  type="button"
+                <SimActionButton
+                  variant="delete"
+                  mode="icon"
+                  label="Supprimer"
                   className="sc-remove-btn sc-remove-btn--quiet"
                   onClick={() => onRemoveInterMassClaim(claim.id)}
-                  aria-label="Supprimer l'écriture entre masses"
-                >
-                  Supprimer
-                </button>
+                  ariaLabel="Supprimer l'écriture entre masses"
+                />
               </div>
 
               <div className="sc-preciput-item__grid">
@@ -107,8 +107,8 @@ export function DispositionsInterMassClaimsSection({
                   />
                 </div>
                 <div className="sc-field">
-                  <label htmlFor={`sc-inter-mass-amount-${claim.id}`}>Montant (EUR)</label>
-                  <ScNumericInput
+                  <label htmlFor={`sc-inter-mass-amount-${claim.id}`}>Montant</label>
+                  <SimAmountInputEuro
                     id={`sc-inter-mass-amount-${claim.id}`}
                     value={claim.amount}
                     min={0}
@@ -132,9 +132,13 @@ export function DispositionsInterMassClaimsSection({
         </div>
       )}
 
-      <button type="button" className="sc-child-add-btn" onClick={onAddInterMassClaim}>
-        + Ajouter une écriture entre masses
-      </button>
+      <SimActionButton
+        variant="add"
+        mode="text"
+        label="Ajouter une écriture entre masses"
+        className="sc-child-add-btn"
+        onClick={onAddInterMassClaim}
+      />
     </>
   );
 }

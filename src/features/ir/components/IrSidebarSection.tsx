@@ -1,3 +1,6 @@
+import { SimKpiReference, SimMetric, SimSparkline, SimTooltip } from '@/components/ui/sim';
+import { CGP_GLOSSARY } from '@/constants/cgpGlossary';
+import { IconBarChart } from '@/icons/ui';
 import type { IrSidebarSectionProps } from './irTypes';
 import { IrSelect } from './IrSelect';
 
@@ -137,21 +140,7 @@ export function IrSidebarSection({
           <div className="ir-tmi-card premium-card sim-summary-card" data-testid="ir-results-card">
             <div className="ir-tmi-header" data-testid="ir-results-header">
               <div className="ir-section-icon-wrapper">
-                <svg
-                  width="13"
-                  height="13"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="1.8"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  aria-hidden="true"
-                >
-                  <line x1="12" y1="20" x2="12" y2="10" />
-                  <line x1="18" y1="20" x2="18" y2="4" />
-                  <line x1="6" y1="20" x2="6" y2="16" />
-                </svg>
+                <IconBarChart />
               </div>
               Estimation IR
             </div>
@@ -169,15 +158,33 @@ export function IrSidebarSection({
               })}
             </div>
 
-            <div className="ir-tmi-rows" data-testid="ir-tmi-rows">
-              <div className="ir-tmi-row" data-testid="ir-tmi-row">
-                <span>TMI</span>
-                <span data-testid="ir-tmi-value">{result ? `${result.tmiRate || 0} %` : '-'}</span>
-              </div>
-              <div className="ir-tmi-row" data-testid="ir-irnet-row">
-                <span>Impôt sur le revenu</span>
-                <span data-testid="ir-irnet-value">{result ? euro0(result.irNet || 0) : '-'}</span>
-              </div>
+            <div className="ir-tmi-metrics" data-testid="ir-tmi-rows">
+              <SimMetric
+                variant="secondary"
+                label={
+                  <SimTooltip
+                    label={CGP_GLOSSARY.tmi.label}
+                    description={CGP_GLOSSARY.tmi.description}
+                  />
+                }
+                value={<span data-testid="ir-tmi-value">{result ? result.tmiRate || 0 : '-'}</span>}
+                unit={result ? '%' : undefined}
+              />
+              <SimMetric
+                variant="hero"
+                label="Impôt sur le revenu"
+                value={
+                  <span data-testid="ir-irnet-value">
+                    {result ? euro0(result.irNet || 0) : '-'}
+                  </span>
+                }
+                note={
+                  <span className="sim-kpi-note">
+                    <SimSparkline />
+                    <SimKpiReference kind="ir" />
+                  </span>
+                }
+              />
             </div>
 
             <div className="ir-tmi-sub">
@@ -236,7 +243,13 @@ export function IrSidebarSection({
                 <span>{euro0(result.irNet || 0)}</span>
               </div>
               <div className="ir-summary-row">
-                <span>PFU {fmtPct(pfuRateIR)} %</span>
+                <span className="sim-tooltip-inline">
+                  <SimTooltip
+                    label={CGP_GLOSSARY.pfu.label}
+                    description={CGP_GLOSSARY.pfu.description}
+                  />{' '}
+                  {fmtPct(pfuRateIR)} %
+                </span>
                 <span>{euro0(result.pfuIr || 0)}</span>
               </div>
               {isExpert && (

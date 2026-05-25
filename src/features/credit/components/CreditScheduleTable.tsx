@@ -2,7 +2,8 @@
  * CreditScheduleTable.tsx - Tableau échéancier (mensuel ou annuel)
  */
 
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
+import { SimCollapsibleTable } from '@/components/ui/sim';
 import { euro0, addMonths, labelMonthFR } from '../utils/creditFormatters';
 import type { CreditScheduleRow, CreditScheduleTableProps } from '../types';
 
@@ -76,8 +77,6 @@ export function CreditScheduleTable({
   defaultCollapsed = false,
   hideInsurance = false,
 }: CreditScheduleTableProps) {
-  const [collapsed, setCollapsed] = useState(defaultCollapsed);
-
   const displayRows = useMemo<Array<AnnualScheduleRow | MonthlyScheduleRow>>(() => {
     if (!rows || rows.length === 0) return [];
     if (isAnnual) return aggregateAnnual(rows, startYM);
@@ -92,79 +91,54 @@ export function CreditScheduleTable({
 
   return (
     <div className="cv-schedule" data-testid="credit-schedule">
-      <div className="cv-schedule__header">
-        <h3 className="cv-schedule__title">
-          {title || `Échéancier ${isAnnual ? 'annuel' : 'mensuel'}`}
-        </h3>
-        <button
-          type="button"
-          className="cv-schedule__toggle"
-          onClick={() => setCollapsed(!collapsed)}
-          aria-expanded={!collapsed}
-        >
-          {collapsed ? 'Afficher' : 'Masquer'}
-          <svg
-            width="12"
-            height="12"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            className={`cv-schedule__chevron ${collapsed ? '' : 'is-open'}`}
-          >
-            <polyline points="6 9 12 15 18 9" />
-          </svg>
-        </button>
-      </div>
-
-      {!collapsed && (
-        <div className="cv-schedule__scroll">
-          <table className="cv-table">
-            <thead>
-              <tr>
-                <th className="cv-table__th">Période</th>
-                <th className="cv-table__th cv-table__th--right">Intérêts</th>
-                {!hideInsurance && <th className="cv-table__th cv-table__th--right">Assurance</th>}
-                <th className="cv-table__th cv-table__th--right">Amort.</th>
-                <th className="cv-table__th cv-table__th--right">
-                  {isAnnual ? 'Annuité' : 'Mensualité'}
-                </th>
-                <th className="cv-table__th cv-table__th--right">CRD</th>
+      <SimCollapsibleTable
+        title={title || `Échéancier ${isAnnual ? 'annuel' : 'mensuel'}`}
+        rowCount={displayRows.length}
+        defaultOpen={!defaultCollapsed}
+        scrollClassName="cv-schedule__scroll"
+        rowCountLabel={(count) => `${count} ${isAnnual ? 'années' : 'échéances'}`}
+      >
+        <table className="cv-table">
+          <thead>
+            <tr>
+              <th className="cv-table__th">Période</th>
+              <th className="cv-table__th cv-table__th--right">Intérêts</th>
+              {!hideInsurance && <th className="cv-table__th cv-table__th--right">Assurance</th>}
+              <th className="cv-table__th cv-table__th--right">Amort.</th>
+              <th className="cv-table__th cv-table__th--right">
+                {isAnnual ? 'Annuité' : 'Mensualité'}
+              </th>
+              <th className="cv-table__th cv-table__th--right">CRD</th>
+              {!hideInsurance && (
+                <th className="cv-table__th cv-table__th--right">Capital décès</th>
+              )}
+            </tr>
+          </thead>
+          <tbody>
+            {displayRows.map((row, index) => (
+              <tr key={index} className="cv-table__row">
+                <td className="cv-table__td">
+                  {isMonthlyScheduleRow(row) ? row.period : row.year}
+                </td>
+                <td className="cv-table__td cv-table__td--right">{euro0(row.interet ?? 0)}</td>
                 {!hideInsurance && (
-                  <th className="cv-table__th cv-table__th--right">Capital décès</th>
+                  <td className="cv-table__td cv-table__td--right">{euro0(row.assurance ?? 0)}</td>
+                )}
+                <td className="cv-table__td cv-table__td--right">{euro0(row.amort ?? 0)}</td>
+                <td className="cv-table__td cv-table__td--right cv-table__td--bold">
+                  {euro0(row.mensuTotal ?? 0)}
+                </td>
+                <td className="cv-table__td cv-table__td--right">{euro0(row.crd ?? 0)}</td>
+                {!hideInsurance && (
+                  <td className="cv-table__td cv-table__td--right">
+                    {row.assuranceDeces ? euro0(row.assuranceDeces) : '—'}
+                  </td>
                 )}
               </tr>
-            </thead>
-            <tbody>
-              {displayRows.map((row, index) => (
-                <tr key={index} className="cv-table__row">
-                  <td className="cv-table__td">
-                    {isMonthlyScheduleRow(row) ? row.period : row.year}
-                  </td>
-                  <td className="cv-table__td cv-table__td--right">{euro0(row.interet ?? 0)}</td>
-                  {!hideInsurance && (
-                    <td className="cv-table__td cv-table__td--right">
-                      {euro0(row.assurance ?? 0)}
-                    </td>
-                  )}
-                  <td className="cv-table__td cv-table__td--right">{euro0(row.amort ?? 0)}</td>
-                  <td className="cv-table__td cv-table__td--right cv-table__td--bold">
-                    {euro0(row.mensuTotal ?? 0)}
-                  </td>
-                  <td className="cv-table__td cv-table__td--right">{euro0(row.crd ?? 0)}</td>
-                  {!hideInsurance && (
-                    <td className="cv-table__td cv-table__td--right">
-                      {row.assuranceDeces ? euro0(row.assuranceDeces) : '—'}
-                    </td>
-                  )}
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
+            ))}
+          </tbody>
+        </table>
+      </SimCollapsibleTable>
     </div>
   );
 }

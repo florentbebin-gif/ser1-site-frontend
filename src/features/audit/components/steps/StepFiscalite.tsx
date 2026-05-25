@@ -1,4 +1,5 @@
 import { DEFAULT_TAX_SETTINGS } from '../../../../constants/settingsDefaults';
+import { AuditEuroField, AuditNumberField } from './AuditNumberFields';
 import type { StepProps } from './types';
 
 const TMI_OPTIONS = Array.from(
@@ -14,72 +15,60 @@ export default function StepFiscalite({ dossier, updateDossier }: StepProps) {
 
       <div className="audit-form-section">
         <h3>Impôt sur le revenu</h3>
-        <div className="audit-form-row">
-          <label htmlFor="audit-fiscalite-annee-reference">Année de référence</label>
-          <input
-            id="audit-fiscalite-annee-reference"
-            type="number"
-            value={situationFiscale.anneeReference}
-            onChange={(e) =>
-              updateDossier({
-                situationFiscale: {
-                  ...situationFiscale,
-                  anneeReference: parseInt(e.target.value) || new Date().getFullYear() - 1,
-                },
-              })
-            }
-          />
-        </div>
-        <div className="audit-form-row">
-          <label htmlFor="audit-fiscalite-rfr">Revenu fiscal de référence (€)</label>
-          <input
-            id="audit-fiscalite-rfr"
-            type="number"
-            value={situationFiscale.revenuFiscalReference}
-            onChange={(e) =>
-              updateDossier({
-                situationFiscale: {
-                  ...situationFiscale,
-                  revenuFiscalReference: parseFloat(e.target.value) || 0,
-                },
-              })
-            }
-          />
-        </div>
-        <div className="audit-form-row">
-          <label htmlFor="audit-fiscalite-nombre-parts">Nombre de parts</label>
-          <input
-            id="audit-fiscalite-nombre-parts"
-            type="number"
-            step="0.5"
-            min="1"
-            value={situationFiscale.nombreParts}
-            onChange={(e) =>
-              updateDossier({
-                situationFiscale: {
-                  ...situationFiscale,
-                  nombreParts: parseFloat(e.target.value) || 1,
-                },
-              })
-            }
-          />
-        </div>
-        <div className="audit-form-row">
-          <label htmlFor="audit-fiscalite-ir">Impôt sur le revenu (€)</label>
-          <input
-            id="audit-fiscalite-ir"
-            type="number"
-            value={situationFiscale.impotRevenu}
-            onChange={(e) =>
-              updateDossier({
-                situationFiscale: {
-                  ...situationFiscale,
-                  impotRevenu: parseFloat(e.target.value) || 0,
-                },
-              })
-            }
-          />
-        </div>
+        <AuditNumberField
+          id="audit-fiscalite-annee-reference"
+          label="Année de référence"
+          value={situationFiscale.anneeReference}
+          integer
+          onChange={(anneeReference) =>
+            updateDossier({
+              situationFiscale: {
+                ...situationFiscale,
+                anneeReference: anneeReference || new Date().getFullYear() - 1,
+              },
+            })
+          }
+        />
+        <AuditEuroField
+          id="audit-fiscalite-rfr"
+          label="Revenu fiscal de référence (€)"
+          value={situationFiscale.revenuFiscalReference}
+          onChange={(revenuFiscalReference) =>
+            updateDossier({
+              situationFiscale: {
+                ...situationFiscale,
+                revenuFiscalReference,
+              },
+            })
+          }
+        />
+        <AuditNumberField
+          id="audit-fiscalite-nombre-parts"
+          label="Nombre de parts"
+          value={situationFiscale.nombreParts}
+          min={1}
+          onChange={(nombreParts) =>
+            updateDossier({
+              situationFiscale: {
+                ...situationFiscale,
+                nombreParts: nombreParts || 1,
+              },
+            })
+          }
+        />
+        <AuditEuroField
+          id="audit-fiscalite-ir"
+          label="Impôt sur le revenu (€)"
+          value={situationFiscale.impotRevenu}
+          onChange={(impotRevenu) =>
+            updateDossier({
+              situationFiscale: {
+                ...situationFiscale,
+                impotRevenu,
+              },
+            })
+          }
+        />
         <div className="audit-form-row">
           <label htmlFor="audit-fiscalite-tmi">TMI (%)</label>
           <select
@@ -105,22 +94,19 @@ export default function StepFiscalite({ dossier, updateDossier }: StepProps) {
 
       <div className="audit-form-section">
         <h3>Autres impôts</h3>
-        <div className="audit-form-row">
-          <label htmlFor="audit-fiscalite-ifi">IFI (€)</label>
-          <input
-            id="audit-fiscalite-ifi"
-            type="number"
-            value={situationFiscale.ifi || 0}
-            onChange={(e) =>
-              updateDossier({
-                situationFiscale: {
-                  ...situationFiscale,
-                  ifi: parseFloat(e.target.value) || 0,
-                },
-              })
-            }
-          />
-        </div>
+        <AuditEuroField
+          id="audit-fiscalite-ifi"
+          label="IFI (€)"
+          value={situationFiscale.ifi || 0}
+          onChange={(ifi) =>
+            updateDossier({
+              situationFiscale: {
+                ...situationFiscale,
+                ifi,
+              },
+            })
+          }
+        />
       </div>
     </div>
   );

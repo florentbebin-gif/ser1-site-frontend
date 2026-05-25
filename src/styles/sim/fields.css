@@ -34,8 +34,8 @@
   font-size: 13px;
   text-align: right;
   transition:
-    border-color 0.2s,
-    background-color 0.15s;
+    border-color var(--transition-base) var(--easing-standard),
+    background-color var(--transition-base) var(--easing-standard);
   outline: none;
 }
 
@@ -118,10 +118,12 @@
   position: absolute;
   right: 8px;
   top: 50%;
+  width: 10px;
+  height: 10px;
   transform: translateY(-50%);
   color: var(--color-c9);
   pointer-events: none;
-  transition: transform 0.18s ease;
+  transition: transform var(--transition-base) var(--easing-standard);
 }
 
 .sim-select-wrapper.is-open .sim-field__select-arrow {
@@ -156,7 +158,7 @@
   font-size: 13px;
   text-align: right;
   cursor: pointer;
-  transition: background-color 0.12s;
+  transition: background-color var(--transition-base) var(--easing-standard);
 }
 
 .sim-field__option:hover {
@@ -207,4 +209,24 @@
   color: var(--color-c9);
   cursor: not-allowed;
   pointer-events: none;
+}
+
+@media (max-width: 600px) {
+  .sim-field__control,
+  .sim-field__select-trigger {
+    min-height: calc(var(--space-5) + var(--space-6));
+    height: auto;
+    padding-block: var(--space-2);
+  }
+
+  .sim-field__unit {
+    min-height: calc(var(--space-5) + var(--space-6));
+    display: inline-flex;
+    align-items: center;
+  }
+
+  .sim-field__option {
+    min-height: calc(var(--space-5) + var(--space-6));
+    justify-content: center;
+  }
 }

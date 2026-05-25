@@ -1,3 +1,5 @@
+import { SimActionButton } from '@/components/ui/sim';
+
 export function TresoTimelineEmptyState() {
   const openSociety = () => {
     window.dispatchEvent(new CustomEvent('ts:open-society-panel', { detail: 'identite' }));
@@ -10,9 +12,12 @@ export function TresoTimelineEmptyState() {
         Le parcours devient disponible dès que la société et l’âge de l’associé personne physique
         sont renseignés.
       </p>
-      <button type="button" className="ts-secondary-btn" onClick={openSociety}>
-        Compléter la société
-      </button>
+      <SimActionButton
+        variant="edit"
+        mode="text"
+        label="Compléter la société"
+        onClick={openSociety}
+      />
     </div>
   );
 }

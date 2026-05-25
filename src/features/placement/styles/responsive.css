@@ -30,13 +30,13 @@
 }
 
 @media (max-width: 420px) {
-  .pl-kpi-val,
-  .pl-kpi-label {
+  .pl-kpi-metric .sim-metric__label,
+  .pl-kpi-metric .sim-metric__value {
     font-size: 11px;
   }
 
-  .pl-kpi-val--total,
-  .pl-kpi-label--total {
+  .pl-kpi-metric--total .sim-metric__label,
+  .pl-kpi-metric--total .sim-metric__value {
     font-size: 12px;
   }
 }

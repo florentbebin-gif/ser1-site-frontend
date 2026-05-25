@@ -1,4 +1,5 @@
 import type { Dispatch, SetStateAction } from 'react';
+import { SimAmountInputPercent } from '@/components/ui/sim';
 import { OUI_NON_OPTIONS } from '../successionSimulator.constants';
 import type { DispositionsDraftState } from '../successionSimulator.helpers';
 import { DispositionsPreciputConfigurator } from './DispositionsPreciputConfigurator';
@@ -80,14 +81,13 @@ export function DispositionsSocieteAcquetsSection({
             <label htmlFor="sc-dispositions-societe-acquets-quote-epoux1">
               Quote Époux 1 dans la société d&apos;acquets (%)
             </label>
-            <input
+            <SimAmountInputPercent
               id="sc-dispositions-societe-acquets-quote-epoux1"
-              type="number"
               min={0}
               max={100}
               value={dispositionsDraft.societeAcquets.quoteEpoux1Pct}
-              onChange={(e) => {
-                const quoteEpoux1Pct = clampPercentage(e.target.value);
+              onChange={(value) => {
+                const quoteEpoux1Pct = clampPercentage(String(value));
                 updateSocieteAcquets((current) => ({
                   ...current,
                   quoteEpoux1Pct,
@@ -101,14 +101,13 @@ export function DispositionsSocieteAcquetsSection({
             <label htmlFor="sc-dispositions-societe-acquets-quote-epoux2">
               Quote Époux 2 dans la société d&apos;acquets (%)
             </label>
-            <input
+            <SimAmountInputPercent
               id="sc-dispositions-societe-acquets-quote-epoux2"
-              type="number"
               min={0}
               max={100}
               value={dispositionsDraft.societeAcquets.quoteEpoux2Pct}
-              onChange={(e) => {
-                const quoteEpoux2Pct = clampPercentage(e.target.value);
+              onChange={(value) => {
+                const quoteEpoux2Pct = clampPercentage(String(value));
                 updateSocieteAcquets((current) => ({
                   ...current,
                   quoteEpoux1Pct: 100 - quoteEpoux2Pct,
@@ -126,16 +125,15 @@ export function DispositionsSocieteAcquetsSection({
               <label htmlFor="sc-dispositions-societe-acquets-attribution-survivant">
                 Attribution préalable au survivant (%)
               </label>
-              <input
+              <SimAmountInputPercent
                 id="sc-dispositions-societe-acquets-attribution-survivant"
-                type="number"
                 min={0}
                 max={100}
                 value={dispositionsDraft.societeAcquets.attributionSurvivantPct}
-                onChange={(e) =>
+                onChange={(value) =>
                   updateSocieteAcquets((current) => ({
                     ...current,
-                    attributionSurvivantPct: clampPercentage(e.target.value),
+                    attributionSurvivantPct: clampPercentage(String(value)),
                   }))
                 }
               />

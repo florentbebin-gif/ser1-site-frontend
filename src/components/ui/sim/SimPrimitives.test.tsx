@@ -1,6 +1,8 @@
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it, vi } from 'vitest';
+import { SimCollapsibleTable } from './SimCollapsibleTable';
 import { SimFieldShell } from './SimFieldShell';
+import { SimMobileStickyActions } from './SimMobileStickyActions';
 import { SimModalShell } from './SimModalShell';
 
 describe('SimFieldShell', () => {
@@ -54,6 +56,11 @@ describe('SimModalShell', () => {
     );
 
     expect(html).toContain('sim-modal-overlay');
+    expect(html).toContain('sim-modal-overlay--bottom-sheet');
+    expect(html).toContain('sim-modal--bottom-sheet');
+    expect(html).toContain('role="dialog"');
+    expect(html).toContain('aria-modal="true"');
+    expect(html).toContain('aria-labelledby=');
     expect(html).toContain('sim-modal__header');
     expect(html).toContain('Configurer');
     expect(html).toContain('Paramètres avancés');
@@ -61,5 +68,75 @@ describe('SimModalShell', () => {
     expect(html).toContain('sim-modal__footer');
     expect(html).toContain('Valider');
     expect(html).toContain('Contenu');
+  });
+
+  it('permet le variant mobile fullscreen', () => {
+    const html = renderToStaticMarkup(
+      <SimModalShell title="Plein écran" mobileVariant="fullscreen">
+        <p>Contenu</p>
+      </SimModalShell>,
+    );
+
+    expect(html).toContain('sim-modal-overlay--fullscreen');
+    expect(html).toContain('sim-modal--fullscreen');
+  });
+});
+
+describe('SimMobileStickyActions', () => {
+  it('rend un groupe d actions sticky mobile', () => {
+    const html = renderToStaticMarkup(
+      <SimMobileStickyActions ariaLabel="Actions de validation">
+        <button type="button">Annuler</button>
+        <button type="button">Valider</button>
+      </SimMobileStickyActions>,
+    );
+
+    expect(html).toContain('sim-mobile-sticky-actions');
+    expect(html).toContain('role="group"');
+    expect(html).toContain('aria-label="Actions de validation"');
+    expect(html).toContain('Valider');
+  });
+});
+
+describe('SimCollapsibleTable', () => {
+  it('utilise le bouton disclosure partagé pour ouvrir le détail', () => {
+    const html = renderToStaticMarkup(
+      <SimCollapsibleTable
+        title="Détail assurance-vie"
+        rows={[{ year: 1 }]}
+        columns={['Année']}
+        renderRow={(row) => (
+          <tr>
+            <td>{row.year}</td>
+          </tr>
+        )}
+      />,
+    );
+
+    expect(html).toContain('sim-disclosure-btn');
+    expect(html).toContain('sim-collapsible-table__toggle');
+    expect(html).toContain('Afficher Détail assurance-vie');
+    expect(html).not.toContain('pl-collapsible__chevron');
+  });
+
+  it('rend le contenu contrôlé avec les ids de test', () => {
+    const html = renderToStaticMarkup(
+      <SimCollapsibleTable
+        title="Projection comptable"
+        open
+        labelOpen="Masquer"
+        labelClosed="Afficher"
+        controlsId="projection-panel"
+        testId="projection-accordion"
+        toggleTestId="projection-toggle"
+      >
+        <p>Détail annuel</p>
+      </SimCollapsibleTable>,
+    );
+
+    expect(html).toContain('data-testid="projection-accordion"');
+    expect(html).toContain('data-testid="projection-toggle"');
+    expect(html).toContain('aria-controls="projection-panel"');
+    expect(html).toContain('Détail annuel');
   });
 });

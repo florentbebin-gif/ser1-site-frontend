@@ -1,8 +1,16 @@
 import { useState } from 'react';
 import type { ReactNode } from 'react';
-import { SimInfoButton } from '@/components/ui/sim';
 import {
-  COMPARTMENT_LABELS,
+  SimAmountInputNumeric,
+  SimInfoButton,
+  SimKpiReference,
+  SimMetric,
+  SimSparkline,
+  SimStatusBadge,
+  SimTooltip,
+} from '@/components/ui/sim';
+import { CGP_GLOSSARY } from '@/constants/cgpGlossary';
+import {
   TYPE_LABELS,
   type BaseCgRetraiteContract,
   type BaseCgRetraiteContractType,
@@ -38,6 +46,19 @@ const euroFormat = new Intl.NumberFormat('fr-FR', {
 });
 
 const euro = (value: number) => euroFormat.format(Math.round(Number.isFinite(value) ? value : 0));
+
+function normalizeHorizonAge(value: number, fallback: number): number {
+  const nextValue = Number.isFinite(value) && value > 0 ? value : fallback;
+  return Math.min(100, Math.max(60, Math.round(nextValue)));
+}
+
+const COMPARTMENT_SHORT_LABELS: Record<PerTransfertResult['compartment'], string> = {
+  C0: 'C0',
+  C1: 'C1',
+  C1_BIS: 'C1 bis',
+  C2: 'C2',
+  C3: 'C3',
+};
 
 export function PerTransfertSidebar({
   result,
@@ -163,32 +184,18 @@ export function PerTransfertSidebar({
       <section className="per-transfert-horizons-inline" aria-label="Horizons de projection">
         <h4>Horizons projection</h4>
         <div className="per-transfert-horizons-inline__inputs">
-          <label>
-            Court
-            <input
-              type="number"
-              min={60}
-              max={100}
-              step={1}
-              value={horizonAgeShort}
-              onChange={(event) =>
-                onHorizonChange(Math.round(Number(event.target.value) || 80), horizonAgeLong)
-              }
-            />
-          </label>
-          <label>
-            Long
-            <input
-              type="number"
-              min={60}
-              max={100}
-              step={1}
-              value={horizonAgeLong}
-              onChange={(event) =>
-                onHorizonChange(horizonAgeShort, Math.round(Number(event.target.value) || 90))
-              }
-            />
-          </label>
+          <SimAmountInputNumeric
+            label="Court"
+            value={horizonAgeShort}
+            unit="ans"
+            onChange={(value) => onHorizonChange(normalizeHorizonAge(value, 80), horizonAgeLong)}
+          />
+          <SimAmountInputNumeric
+            label="Long"
+            value={horizonAgeLong}
+            unit="ans"
+            onChange={(value) => onHorizonChange(horizonAgeShort, normalizeHorizonAge(value, 90))}
+          />
         </div>
       </section>
 
@@ -271,6 +278,7 @@ function ScenarioCard({
       <header>
         <h5>{title}</h5>
         <p>{subtitle}</p>
+        {highlighted ? <SimStatusBadge variant="optimal">Scénario cible</SimStatusBadge> : null}
       </header>
       {children}
     </article>
@@ -279,11 +287,11 @@ function ScenarioCard({
 
 function RentMetrics({ fiscal }: { fiscal: PerTransfertFiscalResult }) {
   return (
-    <dl className="per-transfert-compare2__kpis">
+    <div className="per-transfert-compare2__kpis">
       <KpiRow label={`Brut (${fiscal.family})`} value={euro(fiscal.grossAnnualRent)} />
       <KpiRow label="Net de PS" value={euro(fiscal.netOfSocialContributions)} muted />
       <KpiRow label="Net de PS + IR" value={euro(fiscal.netOfAllTaxes)} highlighted />
-    </dl>
+    </div>
   );
 }
 
@@ -297,10 +305,19 @@ function CapitalMetrics({
   if (!fiscal?.available)
     return <Unavailable label="Capital unique non disponible pour ce dispositif." />;
   return (
-    <dl className="per-transfert-compare2__kpis">
+    <div className="per-transfert-compare2__kpis">
       <KpiRow label="Brut" value={euro(fiscal.capital)} />
       <KpiRow label="Net de PS" value={euro(fiscal.netOfSocialContributions)} muted />
-      <KpiRow label="Net de PS + IR/PFU" value={euro(fiscal.netOfAllTaxes)} highlighted />
+      <KpiRow
+        label={
+          <span className="sim-tooltip-inline">
+            Net de PS + IR/
+            <SimTooltip label={CGP_GLOSSARY.pfu.label} description={CGP_GLOSSARY.pfu.description} />
+          </span>
+        }
+        value={euro(fiscal.netOfAllTaxes)}
+        highlighted
+      />
       <KpiRow
         label={
           <span className="per-transfert-compare2__info-label">
@@ -313,7 +330,7 @@ function CapitalMetrics({
         }
         value={euro(fiscal.netOfAllTaxesWithQuotient)}
       />
-    </dl>
+    </div>
   );
 }
 
@@ -327,7 +344,7 @@ function HorizonMetrics({
   if (!horizon || horizon.annualWithdrawal <= 0)
     return <Unavailable label="Capital fractionné non disponible pour ce dispositif." />;
   return (
-    <dl className="per-transfert-compare2__kpis">
+    <div className="per-transfert-compare2__kpis">
       <KpiRow
         label={
           <span className="per-transfert-compare2__info-label">
@@ -346,7 +363,7 @@ function HorizonMetrics({
         value={euro(horizon.cumulativeNetWithdrawals)}
         highlighted
       />
-    </dl>
+    </div>
   );
 }
 
@@ -366,12 +383,22 @@ function KpiRow({
   highlighted?: boolean;
 }) {
   return (
-    <div
-      className={`per-transfert-compare2__row${muted ? ' is-muted' : ''}${highlighted ? ' is-highlighted' : ''}`}
-    >
-      <dt>{label}</dt>
-      <dd>{value}</dd>
-    </div>
+    <SimMetric
+      variant="inline"
+      label={label}
+      value={value}
+      className={`per-transfert-compare2__metric${muted ? ' is-muted' : ''}${highlighted ? ' is-highlighted' : ''}`}
+      note={highlighted ? <PerKpiReference /> : undefined}
+    />
+  );
+}
+
+function PerKpiReference() {
+  return (
+    <span className="sim-kpi-note">
+      <SimSparkline />
+      <SimKpiReference kind="per" />
+    </span>
   );
 }
 
@@ -386,7 +413,7 @@ function CompartmentMiniBar({ active }: { active: PerTransfertResult['compartmen
             key={segment}
             className={`per-transfert-mini-bar__segment${segment === active ? ' is-active' : ''}`}
           >
-            {COMPARTMENT_LABELS[segment].split(' ')[0]}
+            {COMPARTMENT_SHORT_LABELS[segment]}
           </span>
         ))}
       </div>

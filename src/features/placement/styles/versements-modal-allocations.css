@@ -110,6 +110,20 @@
   font-size: 12px;
 }
 
+.pl-alloc-input-field {
+  min-width: 0;
+}
+
+.pl-alloc-input-row {
+  gap: 4px;
+}
+
+.pl-alloc-input-unit {
+  min-width: auto;
+  margin-left: 0;
+  font-size: 12px;
+}
+
 .vcm__mini-input-wrap {
   display: flex;
   align-items: center;

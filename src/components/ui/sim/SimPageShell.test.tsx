@@ -113,7 +113,26 @@ describe('SimPageShell', () => {
 
     expect(html).toContain('data-testid="status"');
     expect(html).toContain('Chargement…');
+    expect(html).toContain('sim-page-skeleton');
+    expect(html).toContain('sim-skeleton-card');
+    expect(html).toContain('sim-skeleton-kpi');
     expect(html).not.toContain('Contenu masque');
+  });
+
+  it('preserves custom loading content', () => {
+    const html = renderToStaticMarkup(
+      <SimPageShell
+        title="Chargement custom"
+        loading
+        loadingContent={<div className="custom-loading">Chargement custom</div>}
+        statusTestId="status"
+      />,
+    );
+
+    expect(html).toContain('data-testid="status"');
+    expect(html).toContain('class="custom-loading"');
+    expect(html).toContain('Chargement custom');
+    expect(html).not.toContain('sim-page-skeleton');
   });
 
   it('renders the error state before loading and preserves custom content', () => {

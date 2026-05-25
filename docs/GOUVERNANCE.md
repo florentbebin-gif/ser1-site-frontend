@@ -98,6 +98,7 @@ Principes : épuré, lisible, respirant.
 - Overlay : `rgba(0,0,0,0.5)` (seul rgba autorisé).
 - Panel : `#FFFFFF`, centré, `shadow` subtil.
 - Modales `/sim/*` : utiliser `SimModalShell` et ses slots (`title`, `subtitle`, `children`, `footer`), sauf exception documentée.
+- Accessibilité modale : `SimModalShell` doit porter `role="dialog"`, `aria-modal="true"` et `aria-labelledby` relié au titre visible.
 - Footer : les boutons d'action sont passés via la prop `footer`, alignés à droite, avec les classes partagées `sim-modal-btn--ghost` et `sim-modal-btn--primary`.
 - **Scroll obligatoire** : toute modale dont le contenu peut croître (liste dynamique, formulaire à n entrées) doit appliquer le patron suivant :
   - `max-height: calc(100vh - 40px)` + `display: flex; flex-direction: column` sur le container `.modal`
@@ -141,6 +142,7 @@ Le repo reste en CSS global classique, mais la propriété des styles est désor
 ### Source de vérité & périmètre
 
 - Baseline obligatoire : `src/features/credit/Credit.tsx` + `src/features/credit/styles/index.css`.
+- Baseline produit cible : **SIM SER1 2026 hybride**. Elle conserve les repères éprouvés `/sim/credit` et `/sim/ir`, mais impose des états vides utiles, des actions header stables (`Mode expert`, `Exporter`) et un ordre mobile orienté saisie.
 - Layout partagé : `src/styles/sim/index.css`.
 - Implémentation page-level de référence : `src/components/ui/sim/SimPageShell.tsx`.
 - Styles premium partagés : `src/styles/premium-shared.css`.
@@ -205,6 +207,7 @@ Cette checklist est le contrat minimum pour créer, modifier ou auditer une page
 #### Sidebar, KPI et graphiques
 
 - La colonne droite contient la synthèse, pas de formulaire principal.
+- Si les prérequis de calcul ne sont pas renseignés, la colonne droite affiche un état vide utile via le pattern partagé `.sim-sidebar-empty-state`, plutôt que des KPI à zéro ou une colonne vide.
 - Un KPI principal : label 11px, valeur 26-30px, `font-variant-numeric: tabular-nums`, unité explicite (`/an`, `%`, `€`) et cohérente avec les tableaux/export.
 - Les KPI secondaires sont courts, en grille 2x2 ou stack dense.
 - Les alertes métier ou "points d'attention" doivent être non verbeuses : libellé fort + détail d'une ligne maximum, avec état neutre si rien n'est détecté.
@@ -263,7 +266,8 @@ Pour une demande du type "trouve les écarts de normes sur `/sim/tresorerie-soci
 
 - Colonne droite sticky pour les blocs de synthèse (`position: sticky; top: 80px`) sur desktop.
 - **Variante `/sim/ir`** : les contrôles (Barème, Résidence) sont non-sticky et défilent avec la page ; les cartes de résultats sont enveloppées dans un wrapper `.ir-results-sticky` sticky. Justification : quand l'utilisateur remplit une longue colonne gauche, les chiffres clés restent visibles en permanence.
-- Sur mobile (`max-width: 900px`), passer en mono-colonne, désactiver sticky.
+- Sur mobile (`max-width: 900px`), passer en mono-colonne, désactiver sticky et afficher la saisie avant la synthèse par défaut.
+- Exception mobile : `mobileSideFirst` reste possible uniquement si la page justifie explicitement que la synthèse est utile avant la saisie.
 
 #### Interdit
 
@@ -349,6 +353,7 @@ Pour une demande du type "trouve les écarts de normes sur `/sim/tresorerie-soci
   - Fond off-white : `color-mix(in srgb, C8 18%, #FFFFFF)`.
   - Base visuelle : `border-bottom: 1px solid transparent`, hover `C8`, focus `C2`.
   - Alignement texte : `text-align: right` sur **tous** les inputs et selects de `/sim/*`, y compris les selects de navigation (Barème, Situation familiale, Résidence, etc.).
+  - Exception selects longs : `text-align: left` est accepté pour des libellés métier longs si la page le documente et garde le même composant partagé (`SimSelect` ou trigger équivalent).
   - Placeholder numérique : afficher uniquement la valeur (`0`, `0,00`) dans le champ ; l'unité (`€`, `%`, `mois`, etc.) est rendue en suffixe visuel à côté du champ, pas dans le placeholder.
   - Couleur des placeholders : `C9` sur tous les inputs `/sim/*`.
 - Selects natifs simulateur : même fond off-white + border-bottom + `text-align: right` (pas de select natif navigateur brut).
@@ -773,19 +778,21 @@ Boutons modale : utiliser les classes partagées de `src/styles/sim/buttons.css`
 **Statut** : baseline partagée.
 **Preuves** : `src/components/ui/sim/SimModalShell.tsx` · `src/styles/sim/modals.css` · `src/styles/sim/buttons.css`.
 
-#### 16e) Responsive « synthèse d'abord »
+#### 16e) Responsive « saisie d'abord »
 
-À `max-width: 900px`, la colonne de synthèse droite remonte **au-dessus** du formulaire via `order: -1` :
+À `max-width: 900px`, la colonne de saisie reste **au-dessus** de la synthèse par défaut. L'utilisateur renseigne d'abord les prérequis ; la synthèse affiche ensuite un état vide utile ou les KPI calculés.
 
 ```css
 @media (max-width: 900px) {
   .{feature}-grid { grid-template-columns: 1fr; }
-  .{feature}-right { position: static; order: -1; }
+  .{feature}-right { position: static; }
 }
 ```
 
-**Statut** : baseline partagée.
-**Preuves** : `src/features/ir/styles/index.css`, `src/features/credit/styles/index.css`, `src/features/placement/styles/index.css`, `src/features/succession/styles/index.css`.
+La remontée de la synthèse via `order: -1` ou `mobileSideFirst` devient une exception documentée, pas la norme.
+
+**Statut** : baseline partagée SIM SER1 2026.
+**Preuves** : `src/components/ui/sim/SimPageShell.tsx`, `src/styles/sim/surfaces.css`.
 
 #### 16f) Boutons — Catalogue consolidé
 

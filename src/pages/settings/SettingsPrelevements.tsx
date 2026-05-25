@@ -293,7 +293,7 @@ export default function SettingsPrelevements() {
                 Erreurs de validation ({Object.keys(psErrors).length}) - corrigez avant de
                 sauvegarder :
               </strong>
-              <ul style={{ margin: '4px 0 0', paddingLeft: 20, fontSize: 13 }}>
+              <ul className="settings-error-list">
                 {Object.entries(psErrors).map(([key, msg]) => (
                   <li key={key}>
                     {key} : {msg}

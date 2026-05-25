@@ -8,9 +8,17 @@ import {
   type VersementOption,
   type VersementPonctuel,
 } from '@/engine/placement/versementConfig';
-import { SimSelect } from '@/components/ui/sim';
-import { fmt } from '../utils/formatters';
-import { InputEuro, InputNumber, InputPct } from './PlacementFormControls';
+import {
+  SimActionButton,
+  SimAmountInputEuro,
+  SimAmountInputPercent,
+  SimSelect,
+} from '@/components/ui/sim';
+import {
+  PlacementEuroField,
+  PlacementNumberField,
+  PlacementPercentField,
+} from './PlacementAmountControls';
 import { AllocationSlider } from './PlacementTables';
 
 interface VersementSectionShellProps {
@@ -76,13 +84,13 @@ export function VersementInitialSection({
     <VersementSectionShell step="1" title="Versement initial">
       <div className="vcm__card">
         <div className="vcm__row">
-          <InputEuro
+          <PlacementEuroField
             label="Montant"
             value={initial.montant}
             onChange={(value) => onUpdateInitial('montant', value)}
           />
           {!isSCPI && (
-            <InputPct
+            <PlacementPercentField
               label="Frais d'entrée"
               value={initial.fraisEntree}
               onChange={(value) => onUpdateInitial('fraisEntree', value)}
@@ -108,7 +116,7 @@ export function VersementInitialSection({
                 />
               </div>
               {deductionInitiale.mode === 'montant' && (
-                <InputEuro
+                <PlacementEuroField
                   label="Économie IR"
                   value={deductionInitiale.montant}
                   onChange={(val) => onUpdateDeductionInitiale({ mode: 'montant', montant: val })}
@@ -136,7 +144,7 @@ export function VersementInitialSection({
               <div className="vcm__suboption-header">
                 <span className="vcm__badge vcm__badge--capi">Capitalisation</span>
               </div>
-              <InputPct
+              <PlacementPercentField
                 label="Rendement annuel net de FG"
                 value={capitalisation.rendementAnnuel}
                 onChange={(value) => onUpdateCapitalisation('rendementAnnuel', value)}
@@ -153,13 +161,13 @@ export function VersementInitialSection({
               <div className="vcm__row">
                 {/* Rendement annuel net de FG — masqué pour SCPI en mode simplifié */}
                 {(isExpert || !isSCPI) && (
-                  <InputPct
+                  <PlacementPercentField
                     label="Rendement annuel net de FG"
                     value={distribution.rendementAnnuel}
                     onChange={(value) => onUpdateDistribution('rendementAnnuel', value)}
                   />
                 )}
-                <InputPct
+                <PlacementPercentField
                   label={isSCPI ? 'Taux de loyers net de FG' : 'Taux de distribution net de FG'}
                   value={distribution.tauxDistribution}
                   onChange={(value) => onUpdateDistribution('tauxDistribution', value)}
@@ -169,7 +177,7 @@ export function VersementInitialSection({
               {(isExpert || !isSCPI) && (
                 <div className="vcm__row">
                   {!isSCPI ? (
-                    <InputNumber
+                    <PlacementNumberField
                       label="Durée du produit"
                       value={distribution.dureeProduit || ''}
                       onChange={(value) => onUpdateDistribution('dureeProduit', value || null)}
@@ -181,7 +189,7 @@ export function VersementInitialSection({
                     <div />
                   )}
                   {/* Délai de jouissance — masqué pour SCPI en mode simplifié */}
-                  <InputNumber
+                  <PlacementNumberField
                     label="Délai de jouissance"
                     value={distribution.delaiJouissance}
                     onChange={(value) => onUpdateDistribution('delaiJouissance', value ?? 0)}
@@ -279,17 +287,16 @@ export function VersementAnnualSection({
       <VersementSectionShell
         step="2"
         title="Versement annuel"
-        action={
-          <button type="button" className="vcm__add-btn" onClick={onAddAnnual}>
-            + Ajouter
-          </button>
-        }
+        action={<SimActionButton variant="add" mode="text" label="Ajouter" onClick={onAddAnnual} />}
       >
         <div className="vcm__empty">
-          <p>Aucun versement annuel configure</p>
-          <button type="button" className="vcm__add-btn vcm__add-btn--large" onClick={onAddAnnual}>
-            + Ajouter un versement annuel
-          </button>
+          <p>Aucun versement annuel configuré</p>
+          <SimActionButton
+            variant="add"
+            mode="text"
+            label="Ajouter un versement annuel"
+            onClick={onAddAnnual}
+          />
         </div>
       </VersementSectionShell>
     );
@@ -300,24 +307,24 @@ export function VersementAnnualSection({
       step="2"
       title="Versement annuel"
       action={
-        <button
-          type="button"
-          className="vcm__add-btn vcm__add-btn--secondary"
+        <SimActionButton
+          variant="delete"
+          mode="text"
+          label="Supprimer"
           onClick={onRemoveAnnual}
-        >
-          Supprimer
-        </button>
+          danger
+        />
       }
     >
       <div className="vcm__card">
         <div className="vcm__row vcm__row--4cols">
-          <InputEuro
+          <PlacementEuroField
             label="Montant"
             value={annuel.montant}
             onChange={(value) => onUpdateAnnuel('montant', value)}
           />
           {!isSCPI && (
-            <InputPct
+            <PlacementPercentField
               label="Frais d'entrée"
               value={annuel.fraisEntree}
               onChange={(value) => onUpdateAnnuel('fraisEntree', value)}
@@ -350,7 +357,7 @@ export function VersementAnnualSection({
                 <span>Garantie de bonne fin</span>
               </label>
               {annuel.garantieBonneFin.active ? (
-                <InputPct
+                <PlacementPercentField
                   label="Coût annuel"
                   value={annuel.garantieBonneFin.cout}
                   onChange={(value) => onUpdateAnnuelOption('garantieBonneFin', 'cout', value)}
@@ -371,7 +378,7 @@ export function VersementAnnualSection({
                 <span>Exonération des cotisations</span>
               </label>
               {annuel.exonerationCotisations.active ? (
-                <InputPct
+                <PlacementPercentField
                   label="Coût annuel"
                   value={annuel.exonerationCotisations.cout}
                   onChange={(value) =>
@@ -399,7 +406,6 @@ interface VersementPonctuelsSectionProps {
   ) => void;
   onUpdatePonctuelAlloc: (_index: number, _capi: number, _distrib: number) => void;
   onRemovePonctuel: (_index: number) => void;
-  RemoveIcon: () => JSX.Element;
 }
 
 export function VersementPonctuelsSection({
@@ -410,28 +416,22 @@ export function VersementPonctuelsSection({
   onUpdatePonctuel,
   onUpdatePonctuelAlloc,
   onRemovePonctuel,
-  RemoveIcon,
 }: VersementPonctuelsSectionProps) {
   return (
     <VersementSectionShell
       step="3"
       title="Versements ponctuels"
-      action={
-        <button type="button" className="vcm__add-btn" onClick={onAddPonctuel}>
-          + Ajouter
-        </button>
-      }
+      action={<SimActionButton variant="add" mode="text" label="Ajouter" onClick={onAddPonctuel} />}
     >
       {ponctuels.length === 0 ? (
         <div className="vcm__empty">
           <p>Aucun versement ponctuel configuré</p>
-          <button
-            type="button"
-            className="vcm__add-btn vcm__add-btn--large"
+          <SimActionButton
+            variant="add"
+            mode="text"
+            label="Ajouter un versement"
             onClick={onAddPonctuel}
-          >
-            + Ajouter un versement
-          </button>
+          />
         </div>
       ) : (
         <div className={`vcm__ponctuels${isSCPI ? ' vcm__ponctuels--scpi' : ''}`}>
@@ -446,7 +446,7 @@ export function VersementPonctuelsSection({
           {ponctuels.map((ponctuel, index) => (
             <div key={index} className="vcm__ponctuel-row">
               <div className="vcm__ponctuel-cell">
-                <InputNumber
+                <PlacementNumberField
                   value={ponctuel.annee}
                   onChange={(value) => onUpdatePonctuel(index, 'annee', value ?? 1)}
                   min={1}
@@ -456,37 +456,32 @@ export function VersementPonctuelsSection({
               </div>
 
               <div className="vcm__ponctuel-cell">
-                <div className="vcm__mini-input-wrap">
-                  <input
-                    type="text"
-                    inputMode="numeric"
-                    value={fmt(ponctuel.montant)}
-                    onChange={(event) => {
-                      const clean = event.target.value.replace(/\D/g, '').slice(0, 9);
-                      onUpdatePonctuel(index, 'montant', clean === '' ? 0 : Number(clean));
-                    }}
-                    className="vcm__mini-input"
-                    aria-label="Montant"
-                  />
-                  <span className="vcm__mini-unit">€</span>
-                </div>
+                <SimAmountInputEuro
+                  value={ponctuel.montant}
+                  ariaLabel="Montant"
+                  className="vcm__mini-input"
+                  fieldClassName="vcm__mini-field"
+                  rowClassName="vcm__mini-input-wrap"
+                  unitClassName="vcm__mini-unit"
+                  onChange={(value) => onUpdatePonctuel(index, 'montant', value)}
+                />
               </div>
 
               {!isSCPI && (
                 <div className="vcm__ponctuel-cell">
-                  <div className="vcm__mini-input-wrap">
-                    <input
-                      type="number"
-                      step="0.1"
-                      value={(ponctuel.fraisEntree * 100).toFixed(1)}
-                      onChange={(event) =>
-                        onUpdatePonctuel(index, 'fraisEntree', Number(event.target.value) / 100)
-                      }
-                      className="vcm__mini-input"
-                      aria-label="Frais d'entrée (%)"
-                    />
-                    <span className="vcm__mini-unit">%</span>
-                  </div>
+                  <SimAmountInputPercent
+                    value={ponctuel.fraisEntree * 100}
+                    ariaLabel="Frais d'entrée (%)"
+                    min={0}
+                    max={100}
+                    className="vcm__mini-input"
+                    fieldClassName="vcm__mini-field"
+                    rowClassName="vcm__mini-input-wrap"
+                    unitClassName="vcm__mini-unit"
+                    minimumFractionDigits={1}
+                    maximumFractionDigits={1}
+                    onChange={(value) => onUpdatePonctuel(index, 'fraisEntree', value / 100)}
+                  />
                 </div>
               )}
 
@@ -505,14 +500,14 @@ export function VersementPonctuelsSection({
               </div>
 
               <div className="vcm__ponctuel-cell">
-                <button
-                  type="button"
-                  className="vcm__remove-btn"
+                <SimActionButton
+                  variant="delete"
+                  mode="icon"
+                  label="Supprimer"
                   onClick={() => onRemovePonctuel(index)}
-                  aria-label={`Supprimer le versement ponctuel ${index + 1}`}
-                >
-                  <RemoveIcon />
-                </button>
+                  ariaLabel={`Supprimer le versement ponctuel ${index + 1}`}
+                  danger
+                />
               </div>
             </div>
           ))}

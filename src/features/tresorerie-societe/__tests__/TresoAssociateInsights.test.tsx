@@ -150,7 +150,8 @@ describe('TresoAssociateInsights', () => {
     expect(html).toContain('Remboursement CCA');
     expect(html).toContain('Dividendes nets de PFU');
     expect(html).toContain('-5');
-    expect(html).toContain('is-warning');
+    expect(html).toContain('sim-metric');
+    expect(html).toContain('ts-associate-kpi--warning');
     expect(html).not.toContain('charges sociales');
   });
 
@@ -170,7 +171,7 @@ describe('TresoAssociateInsights', () => {
 
     expect(html).toContain('Couverture totale');
     expect(html).toContain('+5');
-    expect(html).toContain('is-positive');
+    expect(html).toContain('ts-associate-kpi--positive');
   });
 
   it('affiche la moyenne annuelle des revenus récupérés comme une note secondaire', () => {
@@ -178,7 +179,8 @@ describe('TresoAssociateInsights', () => {
 
     expect(html).toContain('Revenus servis période');
     expect(html).toContain('Moyenne annuelle servie');
-    expect(html).toContain('ts-associate-kpi-note');
+    expect(html).toContain('sim-metric__note');
+    expect(html).not.toContain('ts-associate-kpi-note');
     expect(html).not.toContain('moyenne ');
   });
 

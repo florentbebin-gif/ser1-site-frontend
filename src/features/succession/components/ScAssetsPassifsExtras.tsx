@@ -1,6 +1,6 @@
+import { SimActionButton, SimAmountInputEuro, SimAmountInputPercent } from '@/components/ui/sim';
 import type { SuccessionLegacyAssetOwner } from '../successionDraft';
 import { fmt } from '../successionSimulator.helpers';
-import { ScNumericInput } from './ScNumericInput';
 import { ScSelect } from './ScSelect';
 
 export function ScAssetsSummary({
@@ -45,23 +45,23 @@ export function ScForfaitMobilierSection({
         <h3 className="sc-asset-section__title">Forfait mobilier</h3>
         <div className="sc-asset-section__actions">
           {!showForfaitMobilier ? (
-            <button
-              type="button"
+            <SimActionButton
+              variant="add"
+              mode="icon"
+              label="Configurer"
               className="sc-member-add-icon-btn"
               onClick={() => onUpdatePatrimonialField('forfaitMobilierMode', 'auto')}
-              aria-label="Configurer le forfait mobilier"
-            >
-              +
-            </button>
+              ariaLabel="Configurer le forfait mobilier"
+            />
           ) : (
-            <button
-              type="button"
+            <SimActionButton
+              variant="delete"
+              mode="icon"
+              label="Désactiver"
               className="sc-child-remove-btn"
               onClick={() => onUpdatePatrimonialField('forfaitMobilierMode', 'off')}
-              aria-label="Désactiver le forfait mobilier"
-            >
-              &#10005;
-            </button>
+              ariaLabel="Désactiver le forfait mobilier"
+            />
           )}
         </div>
       </div>
@@ -83,27 +83,29 @@ export function ScForfaitMobilierSection({
             </div>
             {forfaitMobilierMode === 'pct' ? (
               <div className="sc-field">
-                <label htmlFor="sc-forfait-mobilier-pct">Pourcentage (%)</label>
-                <input
+                <label htmlFor="sc-forfait-mobilier-pct">Pourcentage</label>
+                <SimAmountInputPercent
                   id="sc-forfait-mobilier-pct"
-                  type="number"
                   min={0}
                   max={100}
                   value={forfaitMobilierPct}
-                  onChange={(e) =>
-                    onUpdatePatrimonialField('forfaitMobilierPct', Number(e.target.value) || 0)
-                  }
+                  onChange={(value) => onUpdatePatrimonialField('forfaitMobilierPct', value)}
                 />
               </div>
             ) : (
               <div className="sc-field">
-                <label htmlFor="sc-forfait-mobilier-pct-auto">Pourcentage (%)</label>
-                <input id="sc-forfait-mobilier-pct-auto" type="number" value={5} disabled />
+                <label htmlFor="sc-forfait-mobilier-pct-auto">Pourcentage</label>
+                <SimAmountInputPercent
+                  id="sc-forfait-mobilier-pct-auto"
+                  value={5}
+                  onChange={(value) => onUpdatePatrimonialField('forfaitMobilierPct', value)}
+                  disabled
+                />
               </div>
             )}
             <div className="sc-field">
-              <label htmlFor="sc-forfait-mobilier-montant">Montant fixe (€)</label>
-              <ScNumericInput
+              <label htmlFor="sc-forfait-mobilier-montant">Montant fixe</label>
+              <SimAmountInputEuro
                 id="sc-forfait-mobilier-montant"
                 value={forfaitMobilierMode === 'montant' ? forfaitMobilierMontant : 0}
                 min={0}

@@ -3,6 +3,8 @@
  */
 
 import { useState } from 'react';
+import { SimActionButton } from '@/components/ui/sim';
+import { IconBarChart } from '@/icons/ui';
 import type {
   AllocationPocketHorizon,
   AllocationPocketInput,
@@ -96,15 +98,7 @@ export function TresoPlacementSection({ inputs, projectionRows = [], onChange }:
     <div className="premium-card ts-section">
       <div className="ts-section__header">
         <span className="sim-card__icon">
-          <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-            <path
-              d="M2 12L6 8l3 3 5-7"
-              stroke="currentColor"
-              strokeWidth="1.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
+          <IconBarChart />
         </span>
         <div>
           <h2 className="ts-section__title">Allocation trésorerie société</h2>
@@ -146,15 +140,14 @@ export function TresoPlacementSection({ inputs, projectionRows = [], onChange }:
 
       <div className="ts-matrix-actions">
         {pockets.length > 0 && (
-          <button
-            type="button"
-            className="ts-text-btn"
+          <SimActionButton
+            variant="add"
+            mode="text"
+            label="Ajouter une poche"
             disabled={matrix.pockets.length >= 5}
             title={matrix.pockets.length >= 5 ? 'Maximum 5 poches' : undefined}
             onClick={() => addPocket()}
-          >
-            Ajouter une poche
-          </button>
+          />
         )}
         <span className={totalInitialPct <= 100 ? '' : 'is-warning'}>
           Répartition de l’allocation initiale : {totalInitialPct} %

@@ -3,6 +3,7 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
 import {
   SuccessionFamilyOverview,
+  SuccessionHypotheses,
   SuccessionPageContent,
   SuccessionPageSidebar,
 } from '../components/SuccessionPageSections';
@@ -151,7 +152,7 @@ describe('SuccessionPageSections', () => {
     expect(markup).not.toContain('Actifs / Passifs');
     expect(markup).not.toContain('Donations');
     expect(markup).not.toContain('Synthèse successorale');
-    expect(markup).not.toContain('Chronologie des deces');
+    expect(markup).not.toContain('Chronologie des décès');
     expect(markup).not.toContain('sim-grid__col');
   });
 
@@ -169,7 +170,18 @@ describe('SuccessionPageSections', () => {
     expect(markup).toContain('Actifs / Passifs');
     expect(markup).toContain('Donations');
     expect(markup).toContain('Synthèse successorale');
-    expect(markup).toContain('Chronologie des deces');
+    expect(markup).toContain('Chronologie des décès');
+    expect(markup).toContain('sim-metric--hero');
     expect(markup).not.toContain('sim-grid__col');
+  });
+
+  it('affiche les hypothèses avec la primitive disclosure commune', () => {
+    const markup = renderToStaticMarkup(
+      <SuccessionHypotheses hypothesesOpen={false} assumptions={[]} onToggle={() => {}} />,
+    );
+
+    expect(markup).toContain('sim-disclosure-btn');
+    expect(markup).toContain('Hypothèses et limites');
+    expect(markup).not.toContain('Hypotheses et limites');
   });
 });

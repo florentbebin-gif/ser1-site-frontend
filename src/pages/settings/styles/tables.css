@@ -78,11 +78,11 @@
 }
 
 .settings-field-row--spaced {
-  margin-bottom: 8px;
+  margin-bottom: var(--space-3);
 }
 
 .settings-field-row--spaced-lg {
-  margin-bottom: 10px;
+  margin-bottom: var(--space-3);
 }
 
 .settings-field-row label {
@@ -124,6 +124,11 @@
 .tax-two-cols-right {
   border-left: 1px solid var(--color-c8);
   padding-left: 24px;
+}
+
+.settings-year-column-label {
+  font-weight: 600;
+  margin-bottom: var(--space-2);
 }
 
 .fisc-accordion {
@@ -182,6 +187,10 @@
   margin-bottom: 8px;
 }
 
+.fisc-intro--loose {
+  margin-bottom: var(--space-4);
+}
+
 .fisc-section-title {
   font-size: 14px;
   font-weight: 700;
@@ -206,6 +215,10 @@
   margin-bottom: 12px;
 }
 
+.income-tax-block--spaced {
+  margin-bottom: var(--space-6);
+}
+
 .income-tax-block--mt12 {
   margin-top: 12px;
 }
@@ -218,12 +231,16 @@
 }
 
 .income-tax-block-body {
-  padding-left: 8px;
+  padding-left: var(--space-2);
 }
 
 .income-tax-year-label {
   font-weight: 600;
-  margin-bottom: 8px;
+}
+
+.income-tax-year-input {
+  width: min(100%, calc(var(--space-8) * 4 + var(--space-6) + var(--space-1)));
+  text-align: left;
 }
 
 .fisc-section-error {

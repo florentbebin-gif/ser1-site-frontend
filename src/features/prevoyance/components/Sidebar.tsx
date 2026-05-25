@@ -1,4 +1,5 @@
 import type { CSSProperties } from 'react';
+import { SimMetric } from '@/components/ui/sim';
 import {
   buildArretEuroChart,
   buildInvaliditePctChart,
@@ -422,15 +423,16 @@ export function Sidebar({
         {kind === 'individuel' ? (
           <div className="prevoyance-frais-inline-kpi">
             <MiniDonut value={fraisCovered} target={fraisGenerauxAssiette} label="frais généraux" />
-            <div>
-              <span>Frais généraux couverts</span>
-              <strong>{euro(fraisCovered)} couverts</strong>
-              <small>
-                {fraisGenerauxAssiette > 0
+            <SimMetric
+              variant="secondary"
+              label="Frais généraux couverts"
+              value={euro(fraisCovered)}
+              note={
+                fraisGenerauxAssiette > 0
                   ? `Assiette ${euro(fraisGenerauxAssiette)}`
-                  : 'Assiette à estimer'}
-              </small>
-            </div>
+                  : 'Assiette à estimer'
+              }
+            />
           </div>
         ) : null}
       </SideCard>
@@ -496,11 +498,13 @@ export function Sidebar({
       </SideCard>
 
       <SideCard title="Cotisation" icon="contracts" compact>
-        <div className="prevoyance-cotisation-kpi">
-          <span>{cotisationTitle}</span>
-          <strong>{euro(cotisationAnnual)}/an</strong>
-          <small>{cotisationDetail}</small>
-        </div>
+        <SimMetric
+          variant="secondary"
+          className="prevoyance-cotisation-kpi"
+          label={cotisationTitle}
+          value={`${euro(cotisationAnnual)}/an`}
+          note={cotisationDetail}
+        />
       </SideCard>
     </div>
   );

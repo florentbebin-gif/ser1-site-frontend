@@ -1,5 +1,7 @@
 import { DEFAULT_PS_SETTINGS } from '@/constants/settingsDefaults';
+import { CGP_GLOSSARY } from '@/constants/cgpGlossary';
 import type { CompareResult } from '@/engine/placement/types';
+import { SimSelect, SimTooltip } from '@/components/ui/sim';
 import { euro, formatPsMontant } from '../utils/formatters';
 import type {
   DmtgOption,
@@ -7,8 +9,7 @@ import type {
   PlacementTransmissionState,
 } from '../utils/normalizers';
 import { BENEFICIARY_OPTIONS } from '../utils/normalizers';
-import { InputNumber } from './PlacementFormControls';
-import { SimSelect } from '@/components/ui/sim';
+import { PlacementNumberField } from './PlacementAmountControls';
 
 interface PlacementTransmissionSectionProps {
   state: PlacementSimulatorState;
@@ -50,7 +51,7 @@ export function PlacementTransmissionSection({
               <td>Âge au décès (simulation)</td>
               <td colSpan={2}>
                 <div className="pl-field-container pl-field-container--end">
-                  <InputNumber
+                  <PlacementNumberField
                     value={state.transmission.ageAuDeces}
                     onChange={(value) => setTransmission({ ageAuDeces: value ?? 0 })}
                     unit="ans"
@@ -94,7 +95,7 @@ export function PlacementTransmissionSection({
               <tr>
                 <td>Nombre de bénéficiaires</td>
                 <td colSpan={2}>
-                  <InputNumber
+                  <PlacementNumberField
                     value={state.transmission.nbBeneficiaires}
                     onChange={(value) => setTransmission({ nbBeneficiaires: value ?? 1 })}
                     min={1}
@@ -106,7 +107,16 @@ export function PlacementTransmissionSection({
             )}
 
             <tr>
-              <td>Tranche DMTG estimée</td>
+              <td>
+                <span className="sim-tooltip-inline">
+                  Tranche
+                  <SimTooltip
+                    label={CGP_GLOSSARY.dmtg.label}
+                    description={CGP_GLOSSARY.dmtg.description}
+                  />
+                  estimée
+                </span>
+              </td>
               <td colSpan={2}>
                 <SimSelect
                   value={String(state.transmission.dmtgTaux ?? '')}

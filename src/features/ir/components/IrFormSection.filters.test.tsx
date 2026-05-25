@@ -24,7 +24,6 @@ const baseProps = {
     fonciersFoyer: 4200,
   },
   updateIncome: vi.fn(),
-  formatMoneyInput: (v: number | null | undefined) => String(v || ''),
   realMode: { d1: 'abat10', d2: 'abat10' },
   setRealModeState: vi.fn(),
   realExpenses: { d1: 0, d2: 0 },
@@ -54,8 +53,8 @@ function renderSection(overrides: Partial<IrFormSectionProps> = {}) {
   return renderToStaticMarkup(<IrFormSection {...baseProps} {...overrides} />);
 }
 
-describe('IrFormSection income filters UI', () => {
-  it('renders the three filter buttons in simplified and expert mode', () => {
+describe('filtres de revenus IrFormSection', () => {
+  it('rend les trois boutons de filtre en mode simplifié et expert', () => {
     const expertHtml = renderSection({ isExpert: true });
     const simplifiedHtml = renderSection({ isExpert: false });
 
@@ -107,5 +106,16 @@ describe('IrFormSection income filters UI', () => {
     expect(html).toContain('placeholder="0"');
     expect(html).not.toContain('placeholder="0 €"');
     expect(html).toContain('ir-table-input__unit');
+  });
+
+  it('rend les actions enfants avec la primitive partagée', () => {
+    const html = renderSection({
+      children: [{ id: 1, mode: 'charge' }],
+    });
+
+    expect(html).toContain('sim-action-btn--add');
+    expect(html).toContain('Ajouter un enfant');
+    expect(html).toContain('sim-action-btn--close');
+    expect(html).toContain('aria-label="Supprimer enfant 1"');
   });
 });

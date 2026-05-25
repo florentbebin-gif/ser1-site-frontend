@@ -3,7 +3,7 @@
  *
  * Structure : SimPageShell avec colonne gauche (saisie) + colonne droite sticky (KPIs).
  * Section basse : projection comptable (drawer), hypothèses.
- * Mode expertOnly tant que le parcours simplifié produit n'est pas défini.
+ * Repère Mode expert affiché ; le parcours simplifié produit reste à définir.
  */
 
 import '@/styles/sim/index.css';
@@ -11,6 +11,8 @@ import './styles/index.css';
 
 import { useCallback, useState } from 'react';
 import { ExportMenu } from '../../components/ExportMenu';
+import { ModeToggle } from '../../components/ModeToggle';
+import { SimCollapsibleTable, SimEmptyState } from '../../components/ui/sim';
 import { SimPageShell } from '../../components/ui/sim/SimPageShell';
 import { useTheme } from '../../settings/ThemeProvider';
 import { useTresorerieState } from './hooks/useTresorerieState';
@@ -76,7 +78,16 @@ export default function TresorerieSocietePage() {
           </p>
         ) : undefined
       }
-      actions={<ExportMenu options={exportOptions} loading={exportLoading} />}
+      actions={
+        <>
+          <ModeToggle
+            value
+            disabled
+            disabledReason="Mode expert affiché comme repère : le parcours simplifié reste à définir."
+          />
+          <ExportMenu options={exportOptions} loading={exportLoading} />
+        </>
+      }
     >
       <SimPageShell.Main>
         {/* Bloc 1 — Société */}
@@ -104,23 +115,18 @@ export default function TresorerieSocietePage() {
           </>
         ) : null}
 
-        {/* Bouton projection */}
-        <div className="ts-projection-btn-row">
-          <button
-            type="button"
-            className="ts-projection-btn"
-            onClick={() => setProjectionVisible(!state.projectionVisible)}
-            aria-expanded={state.projectionVisible}
-            data-testid="ts-open-projection"
-          >
-            {state.projectionVisible
-              ? '▲ Masquer la projection comptable'
-              : '▼ Voir la projection comptable'}
-          </button>
-        </div>
-
-        {/* Projection comptable (ouverte) */}
-        {state.projectionVisible && (
+        <SimCollapsibleTable
+          title="projection comptable"
+          open={state.projectionVisible}
+          onOpenChange={setProjectionVisible}
+          labelOpen="Masquer la projection comptable"
+          labelClosed="Voir la projection comptable"
+          controlsId="ts-projection-drawer"
+          className="ts-projection-collapsible"
+          toggleClassName="ts-projection-disclosure"
+          toggleTestId="ts-open-projection"
+          rowCount={rows.length}
+        >
           <TresoProjectionDrawer
             rows={rows}
             mode={state.projectionMode}
@@ -129,7 +135,7 @@ export default function TresorerieSocietePage() {
             ageRetraite={activeProfile.retirementAge}
             anneeCivileDebut={activeProfile.projectionStartYear}
           />
-        )}
+        </SimCollapsibleTable>
 
         {/* Hypothèses */}
         <TresoHypotheses />
@@ -141,7 +147,16 @@ export default function TresorerieSocietePage() {
             <TresoAssociateInsights inputs={state.inputsV6} rows={rows} />
             <TresoKPISidebar kpis={kpis} inputs={state.inputsV6} />
           </>
-        ) : null}
+        ) : (
+          <SimEmptyState
+            illustration="chart"
+            title="Synthèse"
+            description="Complétez la société et l’associé personne physique pour afficher la synthèse."
+            cta={
+              <span>Les repères de trésorerie, revenu cible et CCA seront calculés ensuite.</span>
+            }
+          />
+        )}
       </SimPageShell.Side>
     </SimPageShell>
   );

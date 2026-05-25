@@ -1,3 +1,4 @@
+import { SimActionButton } from '@/components/ui/sim';
 import { SimFieldShell } from '@/components/ui/sim/SimFieldShell';
 import type { AmountScheduleInput, SubsidiaryInput } from '@/engine/tresorerie/types';
 import { fmtEuroInput, parseEuroInput, parseNumberInput } from '../../utils/tresorerieFormatters';
@@ -64,15 +65,14 @@ function ScheduleRows({
     <>
       <div className="ts-schedule-editor__header">
         <strong>{title}</strong>
-        <button
-          type="button"
-          className="ts-text-btn"
+        <SimActionButton
+          variant="add"
+          mode="text"
+          label={addLabel}
           onClick={() =>
             onSchedulesChange([...schedules, buildNextSchedule(schedules, projectionYear)])
           }
-        >
-          {addLabel}
-        </button>
+        />
       </div>
       {schedules.map((schedule, index) => (
         <div key={`${kind}-${index}`} className="ts-schedule-row">
@@ -116,16 +116,17 @@ function ScheduleRows({
               }
             />
           </SimFieldShell>
-          <button
-            type="button"
-            className="ts-text-btn"
+          <SimActionButton
+            variant="delete"
+            mode="text"
+            label="Supprimer"
+            ariaLabel={`Supprimer le palier ${index + 1} ${title.toLowerCase()}`}
+            danger
             disabled={schedules.length <= 1}
             onClick={() =>
               onSchedulesChange(schedules.filter((_, scheduleIndex) => scheduleIndex !== index))
             }
-          >
-            Supprimer
-          </button>
+          />
         </div>
       ))}
     </>

@@ -1,4 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { SimActionButton, SimCollapsibleTable } from '@/components/ui/sim';
+import { IconChevronDown } from '@/icons/ui';
 import { ENVELOPE_LABELS } from '@/engine/placement';
 import type { CompareResult } from '@/engine/placement/types';
 import { shortEuro } from '../utils/formatters';
@@ -8,8 +10,8 @@ import type {
   PlacementSimulatorState,
 } from '../utils/normalizers';
 import type { PlacementTableProduct } from '../utils/tableHelpers';
-import { InputNumber, Toggle } from './PlacementFormControls';
-import { CollapsibleTable } from './PlacementTables';
+import { PlacementNumberField } from './PlacementAmountControls';
+import { PlacementToggle as Toggle } from './PlacementToggle';
 
 interface PlacementEpargneSectionProps {
   state: PlacementSimulatorState;
@@ -87,17 +89,7 @@ function EnvelopePillSelect({ envelope, colorClass, onSelect }: EnvelopePillSele
         aria-expanded={open}
       >
         {ALL_ENVELOPE_LABELS[envelope] ?? envelope}
-        <svg
-          width="10"
-          height="10"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          aria-hidden="true"
-        >
-          <path d="m6 9 6 6 6-6" />
-        </svg>
+        <IconChevronDown className="pl-envelope-pill__chevron" />
       </button>
       {open && (
         <div className="pl-envelope-menu" role="listbox">
@@ -119,25 +111,6 @@ function EnvelopePillSelect({ envelope, colorClass, onSelect }: EnvelopePillSele
         </div>
       )}
     </div>
-  );
-}
-
-function SettingsIcon() {
-  return (
-    <svg
-      width="18"
-      height="18"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.8"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-    >
-      <circle cx="12" cy="12" r="3" />
-      <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 8.92 4a1.65 1.65 0 0 0 1-1.51V2a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9c.17.51.66.96 1.2 1H21a2 2 0 0 1 0 4h-.09c-.54.04-1.03.49-1.51 1Z" />
-    </svg>
   );
 }
 
@@ -205,28 +178,27 @@ export function PlacementEpargneSection({
                     colorClass="pl-collabel--product2"
                     onSelect={(env) => setProduct(1, { envelope: env })}
                   />
-                  <button
-                    type="button"
-                    className="pl-remove-product-btn"
+                  <SimActionButton
+                    variant="delete"
+                    mode="icon"
+                    label="Retirer le 2e placement"
                     onClick={() => setCompareEnabled(false)}
-                    aria-label="Retirer le 2e placement"
+                    ariaLabel="Retirer le 2e placement"
                     title="Retirer le 2e placement"
-                  >
-                    ×
-                  </button>
+                    danger
+                  />
                 </div>
               </th>
             ) : (
               <th className="pl-colhead pl-colhead--add" aria-label="Ajouter un 2e placement">
-                <button
-                  type="button"
-                  className="pl-add-product-btn"
+                <SimActionButton
+                  variant="add"
+                  mode="icon"
+                  label="Ajouter un 2e placement"
                   onClick={() => setCompareEnabled(true)}
-                  aria-label="Ajouter un 2e placement"
+                  ariaLabel="Ajouter un 2e placement"
                   title="Ajouter un 2e placement"
-                >
-                  +
-                </button>
+                />
               </th>
             )}
           </tr>
@@ -238,7 +210,7 @@ export function PlacementEpargneSection({
             {(compareEnabled ? state.products : state.products.slice(0, 1)).map(
               (product, index) => (
                 <td key={index}>
-                  <InputNumber
+                  <PlacementNumberField
                     value={product.dureeEpargne}
                     onChange={(value) => setProduct(index, { dureeEpargne: value ?? 1 })}
                     unit="ans"
@@ -281,22 +253,18 @@ export function PlacementEpargneSection({
             {(compareEnabled ? state.products : state.products.slice(0, 1)).map(
               (product, index) => (
                 <td key={index}>
-                  <button
-                    type="button"
-                    className="pl-btn pl-btn--config"
+                  <SimActionButton
+                    variant="edit"
+                    mode="text"
+                    label={formatVersementConfigSummary(
+                      product.versementConfig.initial.montant,
+                      product.versementConfig.annuel.montant,
+                    )}
+                    ariaLabel={`Paramétrer les versements du produit ${index + 1}`}
+                    className="pl-config-action"
                     onClick={() => setModalOpen(index)}
                     data-testid={`placement-config-product-${index + 1}`}
-                  >
-                    <span className="pl-btn__icon">
-                      <SettingsIcon />
-                    </span>
-                    <span className="pl-btn__summary">
-                      {formatVersementConfigSummary(
-                        product.versementConfig.initial.montant,
-                        product.versementConfig.annuel.montant,
-                      )}
-                    </span>
-                  </button>
+                  />
                 </td>
               ),
             )}
@@ -330,11 +298,13 @@ export function PlacementEpargneSection({
 
           {produit1 && (
             <div className="pl-details-scroll">
-              <CollapsibleTable
+              <SimCollapsibleTable
                 title={`Détail ${produit1.envelopeLabel}`}
                 rows={detailRows1}
                 columns={columnsProduit1}
                 renderRow={renderEpargneRow(produit1, columnsProduit1)}
+                tableClassName="pl-ir-table pl-detail-table"
+                rowCountLabel={(count) => `${count} années`}
                 onOpenChange={setTable1Open}
               />
             </div>
@@ -342,11 +312,13 @@ export function PlacementEpargneSection({
 
           {compareEnabled && produit2 && (
             <div className="pl-details-scroll">
-              <CollapsibleTable
+              <SimCollapsibleTable
                 title={`Détail ${produit2.envelopeLabel}`}
                 rows={detailRows2}
                 columns={columnsProduit2}
                 renderRow={renderEpargneRow(produit2, columnsProduit2)}
+                tableClassName="pl-ir-table pl-detail-table"
+                rowCountLabel={(count) => `${count} années`}
                 onOpenChange={setTable2Open}
               />
             </div>

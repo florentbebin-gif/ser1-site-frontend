@@ -172,6 +172,7 @@ describe('ScAssetsPassifsCard', () => {
     const markup = renderToStaticMarkup(<ScAssetsPassifsCard {...props} />);
 
     expect(markup).toContain('Modifier la qualification juridique');
+    expect(markup).toContain('sim-action-btn--edit');
   });
 
   it('renders only the add icon for the financier section (no dedicated AV/PER buttons)', () => {
@@ -188,7 +189,32 @@ describe('ScAssetsPassifsCard', () => {
 
     expect(markup).not.toContain('+ Assurance vie');
     expect(markup).not.toContain('+ PER assurance');
-    expect(markup).toContain('title="Ajouter une ligne"');
+    expect(markup).toContain('aria-label="Ajouter une ligne"');
+    expect(markup).toContain('sim-action-btn--add');
+  });
+
+  it('rend les suppressions patrimoniales avec la primitive action', () => {
+    const props = buildBaseProps();
+    props.assetEntriesByCategory = [
+      {
+        value: 'immobilier',
+        label: 'Biens immobiliers',
+        entries: [
+          {
+            id: 'asset-1',
+            pocket: 'epoux1',
+            category: 'immobilier',
+            subCategory: 'Residence secondaire',
+            amount: 250000,
+          },
+        ],
+      },
+    ];
+
+    const markup = renderToStaticMarkup(<ScAssetsPassifsCard {...props} />);
+
+    expect(markup).toContain('sim-action-btn--delete');
+    expect(markup).toContain('aria-label="Supprimer cette ligne"');
   });
 
   it('keeps the forfait mobilier hidden until it is explicitly added', () => {

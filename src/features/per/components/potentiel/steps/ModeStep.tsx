@@ -3,6 +3,7 @@
  */
 
 import React from 'react';
+import { IconActivity, IconFileText } from '@/icons/ui';
 import type { PerHistoricalBasis } from '../../../../../engine/per';
 import type { PerMode } from '../../../hooks/usePerPotentiel';
 import type { PerWorkflowYears } from '../../../utils/perWorkflowYears';
@@ -50,19 +51,7 @@ export default function ModeStep({
           <div className="per-mode-step-header sim-card__header--bleed">
             <div className="sim-card__title-row">
               <div className="sim-card__icon">
-                <svg
-                  width="14"
-                  height="14"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="1.8"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  aria-hidden="true"
-                >
-                  <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
-                </svg>
+                <IconActivity />
               </div>
               <h3 className="sim-card__title">Parcours simplifié</h3>
             </div>
@@ -88,20 +77,7 @@ export default function ModeStep({
           <div className="per-mode-docs-header sim-card__header--bleed">
             <div className="sim-card__title-row">
               <div className="sim-card__icon">
-                <svg
-                  width="14"
-                  height="14"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="1.8"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  aria-hidden="true"
-                >
-                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                  <polyline points="14 2 14 8 20 8" />
-                </svg>
+                <IconFileText />
               </div>
               <h3 className="sim-card__title">Documents nécessaires</h3>
             </div>
@@ -148,19 +124,7 @@ export default function ModeStep({
         <div className="per-mode-step-header sim-card__header--bleed">
           <div className="sim-card__title-row">
             <div className="sim-card__icon">
-              <svg
-                width="14"
-                height="14"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.8"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                aria-hidden="true"
-              >
-                <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
-              </svg>
+              <IconActivity />
             </div>
             <h3 className="sim-card__title">Choix du parcours</h3>
           </div>
@@ -188,20 +152,7 @@ export default function ModeStep({
           <div className="per-mode-docs-header sim-card__header--bleed">
             <div className="sim-card__title-row">
               <div className="sim-card__icon">
-                <svg
-                  width="14"
-                  height="14"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="1.8"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  aria-hidden="true"
-                >
-                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                  <polyline points="14 2 14 8 20 8" />
-                </svg>
+                <IconFileText />
               </div>
               <h3 className="sim-card__title">Documents nécessaires</h3>
             </div>

@@ -2,6 +2,7 @@ import type {
   AllocationPocketHorizon,
   AllocationPocketInput,
 } from '../../../../engine/tresorerie/types';
+import { SimActionButton } from '@/components/ui/sim';
 import { getAllocationHorizonLabel } from '../../utils/tresorerieSocieteModel';
 import { getAllocationPocketLabel } from '../../utils/tresorerieV2Migration';
 import { fmtEuroInput, fmtRateInput } from '../../utils/tresorerieFormatters';
@@ -90,13 +91,13 @@ export function TresoPocketBoard({
               ))}
             </div>
           ) : (
-            <button
-              type="button"
+            <SimActionButton
+              variant="add"
+              mode="text"
+              label={`Ajouter une poche ${column.label.toLowerCase()}`}
               className="ts-pocket-column__empty"
               onClick={() => onAddPocket(column.value)}
-            >
-              + Ajouter une poche {column.label.toLowerCase()}
-            </button>
+            />
           )}
         </section>
       ))}

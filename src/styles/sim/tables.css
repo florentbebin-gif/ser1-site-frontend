@@ -1,0 +1,75 @@
+.sim-collapsible-table {
+  margin-bottom: var(--space-3);
+}
+
+.sim-collapsible-table__toggle {
+  width: 100%;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--color-c8);
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--color-c9);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  cursor: pointer;
+  text-align: left;
+  transition:
+    background var(--transition-fast),
+    color var(--transition-fast),
+    border-color var(--transition-fast);
+}
+
+.sim-collapsible-table__toggle:hover {
+  background: var(--color-c7);
+  color: var(--color-c1);
+  border-color: var(--color-c5);
+}
+
+.sim-collapsible-table__toggle .sim-disclosure-btn__chevron {
+  width: var(--space-4);
+  height: var(--space-4);
+}
+
+.sim-collapsible-table__panel {
+  margin-top: var(--space-2);
+}
+
+.sim-collapsible-table__top-scroll {
+  overflow-x: auto;
+  overflow-y: hidden;
+  height: 6px;
+  margin-bottom: var(--space-1);
+}
+
+.sim-collapsible-table__top-scroll > div {
+  height: 1px;
+}
+
+.sim-collapsible-table__scroll {
+  overflow-x: auto;
+  overflow-y: visible;
+}
+
+.sim-collapsible-table__top-scroll::-webkit-scrollbar,
+.sim-collapsible-table__scroll::-webkit-scrollbar {
+  height: 4px;
+}
+
+.sim-collapsible-table__top-scroll::-webkit-scrollbar-track,
+.sim-collapsible-table__scroll::-webkit-scrollbar-track {
+  background: var(--color-c8);
+  border-radius: var(--radius-sm);
+}
+
+.sim-collapsible-table__top-scroll::-webkit-scrollbar-thumb,
+.sim-collapsible-table__scroll::-webkit-scrollbar-thumb {
+  background: var(--color-c5);
+  border-radius: var(--radius-sm);
+}
+
+.sim-collapsible-table__table {
+  width: 100%;
+  border-collapse: collapse;
+}

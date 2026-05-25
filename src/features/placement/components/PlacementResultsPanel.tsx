@@ -1,4 +1,13 @@
+import type { ReactNode } from 'react';
 import { TimelineBar } from '@/components/TimelineBar';
+import {
+  SimDelta,
+  SimKpiReference,
+  SimMetric,
+  SimSparkline,
+  SimStatusBadge,
+} from '@/components/ui/sim';
+import { IconBarChart } from '@/icons/ui';
 import { shortEuro } from '../utils/formatters';
 import type { PlacementSimulatorState } from '../utils/normalizers';
 import type { PlacementUiResults } from '../utils/placementUiResults';
@@ -10,25 +19,11 @@ interface PlacementResultsPanelProps {
   state: PlacementSimulatorState;
 }
 
-function BarChartIcon() {
-  return (
-    <svg
-      width="20"
-      height="20"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.8"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-    >
-      <path d="M12 20V10" />
-      <path d="M18 20V4" />
-      <path d="M6 20v-6" />
-    </svg>
-  );
-}
+const EFFORT_TOTAL_LABEL = (
+  <span title="Versements sur la période - économies d'impôt + revenus nets perçus sur la période">
+    Effort total
+  </span>
+);
 
 export function PlacementResultsPanel({
   loading,
@@ -47,7 +42,7 @@ export function PlacementResultsPanel({
     >
       <div className="pl-synthesis-title-row">
         <div className="sim-card__icon">
-          <BarChartIcon />
+          <IconBarChart />
         </div>
         <h3 className="pl-summary-title">{compareEnabled ? 'Synthèse comparative' : 'Synthèse'}</h3>
       </div>
@@ -116,6 +111,9 @@ export function PlacementResultsPanel({
                                   .replace('PER individuel déductible', 'PER individuel')
                                   .replace('PER individuel deductible', 'PER individuel')}
                           </div>
+                          {meilleurProduit === 1 ? (
+                            <SimStatusBadge variant="optimal">Meilleur ROI</SimStatusBadge>
+                          ) : null}
                           <div className="pl-roi-compare__ratio">x {roi1.toFixed(2)}</div>
                         </div>
 
@@ -131,94 +129,108 @@ export function PlacementResultsPanel({
                                     .replace('PER individuel déductible', 'PER individuel')
                                     .replace('PER individuel deductible', 'PER individuel')}
                             </div>
+                            {meilleurProduit === 2 ? (
+                              <SimStatusBadge variant="optimal">Meilleur ROI</SimStatusBadge>
+                            ) : null}
                             <div className="pl-roi-compare__ratio">x {roi2.toFixed(2)}</div>
                           </div>
                         )}
                       </div>
+                      {compareEnabled && produit2 ? (
+                        <div className="pl-roi-compare__delta">
+                          <span>Écart ROI</span>
+                          <SimDelta value={roi1 - roi2} precision={2} unit="x" />
+                        </div>
+                      ) : null}
                     </div>
 
                     {compareEnabled && produit2 ? (
                       <div className="pl-kpi-compare">
-                        <div className="pl-kpi-val pl-kpi-val--left">
-                          {shortEuro(produit1.totaux.effortTotal)}
-                        </div>
-                        <div
-                          className="pl-kpi-label"
-                          title="Versements sur la période - économies d'impôt + revenus nets perçus sur la période"
-                        >
-                          Effort total
-                        </div>
-                        <div className="pl-kpi-val pl-kpi-val--right">
-                          {shortEuro(produit2.totaux.effortTotal)}
-                        </div>
+                        <KpiCompareMetric
+                          side="left"
+                          label={EFFORT_TOTAL_LABEL}
+                          value={shortEuro(produit1.totaux.effortTotal)}
+                        />
+                        <KpiCompareMetric
+                          side="right"
+                          label="Effort total"
+                          value={shortEuro(produit2.totaux.effortTotal)}
+                        />
 
-                        <div className="pl-kpi-val pl-kpi-val--left">
-                          {shortEuro(produit1.epargne.capitalAcquis)}
-                        </div>
-                        <div className="pl-kpi-label">Capital acquis</div>
-                        <div className="pl-kpi-val pl-kpi-val--right">
-                          {shortEuro(produit2.epargne.capitalAcquis)}
-                        </div>
+                        <KpiCompareMetric
+                          side="left"
+                          label="Capital acquis"
+                          value={shortEuro(produit1.epargne.capitalAcquis)}
+                        />
+                        <KpiCompareMetric
+                          side="right"
+                          label="Capital acquis"
+                          value={shortEuro(produit2.epargne.capitalAcquis)}
+                        />
 
-                        <div className="pl-kpi-val pl-kpi-val--left">
-                          {shortEuro(produit1.totaux.revenusNetsLiquidation)}
-                        </div>
-                        <div className="pl-kpi-label">Revenus nets</div>
-                        <div className="pl-kpi-val pl-kpi-val--right">
-                          {shortEuro(produit2.totaux.revenusNetsLiquidation)}
-                        </div>
+                        <KpiCompareMetric
+                          side="left"
+                          label="Revenus nets"
+                          value={shortEuro(produit1.totaux.revenusNetsLiquidation)}
+                        />
+                        <KpiCompareMetric
+                          side="right"
+                          label="Revenus nets"
+                          value={shortEuro(produit2.totaux.revenusNetsLiquidation)}
+                        />
 
-                        <div className="pl-kpi-val pl-kpi-val--left">
-                          {shortEuro(produit1.totaux.capitalTransmisNet)}
-                        </div>
-                        <div className="pl-kpi-label">Transmis net</div>
-                        <div className="pl-kpi-val pl-kpi-val--right">
-                          {shortEuro(produit2.totaux.capitalTransmisNet)}
-                        </div>
+                        <KpiCompareMetric
+                          side="left"
+                          label="Transmis net"
+                          value={shortEuro(produit1.totaux.capitalTransmisNet)}
+                        />
+                        <KpiCompareMetric
+                          side="right"
+                          label="Transmis net"
+                          value={shortEuro(produit2.totaux.capitalTransmisNet)}
+                        />
 
                         <div className="pl-kpi-compare__separator" />
 
-                        <div className="pl-kpi-val pl-kpi-val--left pl-kpi-val--total">
-                          {shortEuro(totalGains1)}
-                        </div>
-                        <div className="pl-kpi-label pl-kpi-label--total">Total récupéré</div>
-                        <div className="pl-kpi-val pl-kpi-val--right pl-kpi-val--total">
-                          {shortEuro(totalGains2)}
-                        </div>
+                        <KpiCompareMetric
+                          side="left"
+                          label="Total récupéré"
+                          value={shortEuro(totalGains1)}
+                          total
+                        />
+                        <KpiCompareMetric
+                          side="right"
+                          label="Total récupéré"
+                          value={shortEuro(totalGains2)}
+                          total
+                        />
                       </div>
                     ) : (
                       <div className="pl-kpi-compare pl-kpi-compare--single">
-                        <div
-                          className="pl-kpi-label"
-                          title="Versements sur la période - économies d'impôt + revenus nets perçus sur la période"
-                        >
-                          Effort total
-                        </div>
-                        <div className="pl-kpi-val pl-kpi-val--single">
-                          {shortEuro(produit1.totaux.effortTotal)}
-                        </div>
-
-                        <div className="pl-kpi-label">Capital acquis</div>
-                        <div className="pl-kpi-val pl-kpi-val--single">
-                          {shortEuro(produit1.epargne.capitalAcquis)}
-                        </div>
-
-                        <div className="pl-kpi-label">Revenus nets</div>
-                        <div className="pl-kpi-val pl-kpi-val--single">
-                          {shortEuro(produit1.totaux.revenusNetsLiquidation)}
-                        </div>
-
-                        <div className="pl-kpi-label">Transmis net</div>
-                        <div className="pl-kpi-val pl-kpi-val--single">
-                          {shortEuro(produit1.totaux.capitalTransmisNet)}
-                        </div>
+                        <KpiSingleMetric
+                          label={EFFORT_TOTAL_LABEL}
+                          value={shortEuro(produit1.totaux.effortTotal)}
+                        />
+                        <KpiSingleMetric
+                          label="Capital acquis"
+                          value={shortEuro(produit1.epargne.capitalAcquis)}
+                        />
+                        <KpiSingleMetric
+                          label="Revenus nets"
+                          value={shortEuro(produit1.totaux.revenusNetsLiquidation)}
+                        />
+                        <KpiSingleMetric
+                          label="Transmis net"
+                          value={shortEuro(produit1.totaux.capitalTransmisNet)}
+                        />
 
                         <div className="pl-kpi-compare__separator" />
 
-                        <div className="pl-kpi-label pl-kpi-label--total">Total récupéré</div>
-                        <div className="pl-kpi-val pl-kpi-val--single pl-kpi-val--total">
-                          {shortEuro(totalGains1)}
-                        </div>
+                        <KpiSingleMetric
+                          label="Total récupéré"
+                          value={shortEuro(totalGains1)}
+                          total
+                        />
                       </div>
                     )}
                   </>
@@ -229,5 +241,56 @@ export function PlacementResultsPanel({
         })()
       )}
     </div>
+  );
+}
+
+function KpiCompareMetric({
+  side,
+  label,
+  value,
+  total = false,
+}: {
+  side: 'left' | 'right';
+  label: ReactNode;
+  value: string;
+  total?: boolean;
+}) {
+  return (
+    <SimMetric
+      variant="inline"
+      label={label}
+      value={value}
+      className={`pl-kpi-metric pl-kpi-metric--${side}${total ? ' pl-kpi-metric--total' : ''}`}
+      note={total ? <PlacementKpiReference /> : undefined}
+    />
+  );
+}
+
+function KpiSingleMetric({
+  label,
+  value,
+  total = false,
+}: {
+  label: ReactNode;
+  value: string;
+  total?: boolean;
+}) {
+  return (
+    <SimMetric
+      variant="inline"
+      label={label}
+      value={value}
+      className={`pl-kpi-metric pl-kpi-metric--single${total ? ' pl-kpi-metric--total' : ''}`}
+      note={total ? <PlacementKpiReference /> : undefined}
+    />
+  );
+}
+
+function PlacementKpiReference() {
+  return (
+    <span className="sim-kpi-note">
+      <SimSparkline />
+      <SimKpiReference kind="pfu" />
+    </span>
   );
 }

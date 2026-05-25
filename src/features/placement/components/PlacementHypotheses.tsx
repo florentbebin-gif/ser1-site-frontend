@@ -1,34 +1,23 @@
 import { useState } from 'react';
+import { SimDisclosureButton } from '@/components/ui/sim';
+
+const HYPOTHESES_ID = 'placement-hypotheses-list';
 
 export function PlacementHypotheses() {
   const [open, setOpen] = useState(false);
   return (
     <div className="pl-hypotheses">
-      <button
-        type="button"
+      <SimDisclosureButton
+        expanded={open}
+        onToggle={() => setOpen((v) => !v)}
+        labelClosed="Afficher les hypothèses et limites"
+        labelOpen="Masquer les hypothèses et limites"
+        controls={HYPOTHESES_ID}
         className="pl-hypotheses__toggle"
-        onClick={() => setOpen((v) => !v)}
-        aria-expanded={open}
         data-testid="placement-hypotheses-toggle"
-      >
-        <span className="pl-hypotheses__title">Hypothèses et limites</span>
-        <svg
-          width="12"
-          height="12"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          className={`pl-hypotheses__chevron${open ? ' is-open' : ''}`}
-          aria-hidden="true"
-        >
-          <polyline points="6 9 12 15 18 9" />
-        </svg>
-      </button>
+      />
       {open && (
-        <ul>
+        <ul id={HYPOTHESES_ID}>
           <li>Les résultats sont indicatifs et ne constituent pas un conseil en investissement.</li>
           <li>
             Les rendements (capitalisation, distribution, liquidation) sont supposés constants sur

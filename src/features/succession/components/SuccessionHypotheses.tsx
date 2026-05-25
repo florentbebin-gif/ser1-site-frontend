@@ -1,3 +1,5 @@
+import { SimDisclosureButton } from '@/components/ui/sim';
+
 interface SuccessionHypothesesProps {
   hypothesesOpen: boolean;
   assumptions: string[];
@@ -11,31 +13,17 @@ export function SuccessionHypotheses({
 }: SuccessionHypothesesProps) {
   return (
     <div className="sc-hypotheses">
-      <button
-        type="button"
+      <SimDisclosureButton
+        expanded={hypothesesOpen}
+        onToggle={onToggle}
         className="sc-hypotheses__toggle"
-        onClick={onToggle}
-        aria-expanded={hypothesesOpen}
+        labelClosed="Hypothèses et limites"
+        labelOpen="Hypothèses et limites"
+        controls="succession-hypotheses-panel"
         data-testid="succession-hypotheses-toggle"
-      >
-        <span className="sc-hypotheses__title">Hypotheses et limites</span>
-        <svg
-          width="12"
-          height="12"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          className={`sc-hypotheses__chevron${hypothesesOpen ? ' is-open' : ''}`}
-          aria-hidden="true"
-        >
-          <polyline points="6 9 12 15 18 9" />
-        </svg>
-      </button>
+      />
       {hypothesesOpen && (
-        <ul>
+        <ul id="succession-hypotheses-panel">
           {assumptions.map((assumption, index) => (
             <li key={`assumption-${index}`}>{assumption}</li>
           ))}

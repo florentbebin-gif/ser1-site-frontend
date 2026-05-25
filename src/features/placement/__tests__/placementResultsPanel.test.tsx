@@ -162,6 +162,13 @@ describe('PlacementResultsPanel', () => {
     expect(markup).toContain(
       'Versements sur la période - économies d&#x27;impôt + revenus nets perçus sur la période',
     );
+    expect(markup).toContain('sim-metric--inline');
+    expect(markup).toContain('sim-status-badge--optimal');
+    expect(markup).toContain('Meilleur ROI');
+    expect(markup).toContain('sim-delta--positive');
+    expect(markup).toContain('Écart ROI');
+    expect(markup).not.toContain('pl-kpi-val');
+    expect(markup).not.toContain('pl-kpi-label');
     expect(markup).not.toContain(shortEuro(88000));
   });
 });

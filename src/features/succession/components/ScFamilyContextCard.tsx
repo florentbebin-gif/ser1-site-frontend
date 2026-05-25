@@ -1,4 +1,6 @@
 import type { Dispatch, SetStateAction } from 'react';
+import { SimActionButton } from '@/components/ui/sim';
+import { IconUsers } from '@/icons/ui';
 import { REGIMES_MATRIMONIAUX } from '../../../engine/succession/civil';
 import type { DEFAULT_SUCCESSION_CIVIL_CONTEXT } from '../successionDraft';
 import {
@@ -54,22 +56,7 @@ export default function ScFamilyContextCard({
       <header className="sc-card__header sim-card__header sim-card__header--bleed">
         <div className="sc-card__title-row sim-card__title sim-card__title-row">
           <div className="sim-card__icon">
-            <svg
-              width="14"
-              height="14"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.8"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              aria-hidden="true"
-            >
-              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
-              <circle cx="9" cy="7" r="4" />
-              <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
-              <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-            </svg>
+            <IconUsers />
           </div>
           <h2 className="sc-card__title">Contexte familial</h2>
         </div>
@@ -159,8 +146,10 @@ export default function ScFamilyContextCard({
             </div>
           )}
           <div className="sc-dispositions-trigger">
-            <button
-              type="button"
+            <SimActionButton
+              variant="edit"
+              mode="text"
+              label="Dispositions"
               className="sc-child-add-btn"
               onClick={onOpenDispositions}
               disabled={!canOpenDispositionsModal}
@@ -169,9 +158,7 @@ export default function ScFamilyContextCard({
                   ? 'Merci de renseigner un contexte familial au préalable'
                   : undefined
               }
-            >
-              + Dispositions
-            </button>
+            />
             {!canOpenDispositionsModal && (
               <p className="sc-hint sc-hint--compact">
                 Merci de renseigner un contexte familial au préalable.
@@ -182,22 +169,22 @@ export default function ScFamilyContextCard({
 
         <div className="sc-children-zone">
           <div className="sc-children-actions">
-            <button
-              type="button"
+            <SimActionButton
+              variant="add"
+              mode="text"
+              label="Ajouter un enfant"
               className="sc-child-add-btn sc-child-add-btn--prominent"
               onClick={onAddEnfant}
-            >
-              + Ajouter un enfant
-            </button>
-            <button
-              type="button"
+            />
+            <SimActionButton
+              variant="add"
+              mode="icon"
+              label="Ajouter"
               className="sc-member-add-icon-btn"
               onClick={onToggleAddMemberPanel}
-              aria-label="Ajouter un membre de la famille"
+              ariaLabel="Ajouter un membre de la famille"
               title="Ajouter un membre"
-            >
-              +
-            </button>
+            />
           </div>
 
           {enfantsContext.length === 0 && familyMembers.length === 0 ? (
@@ -238,14 +225,14 @@ export default function ScFamilyContextCard({
                         />
                         †
                       </label>
-                      <button
-                        type="button"
+                      <SimActionButton
+                        variant="delete"
+                        mode="icon"
+                        label="Supprimer"
                         className="sc-child-remove-btn"
                         onClick={() => onRemoveEnfant(enfant.id)}
-                        aria-label={`Supprimer enfant ${idx + 1}`}
-                      >
-                        ✕
-                      </button>
+                        ariaLabel={`Supprimer enfant ${idx + 1}`}
+                      />
                     </div>
                   ))}
                 </div>
@@ -258,14 +245,14 @@ export default function ScFamilyContextCard({
                       <span className="sc-member-chip__label">
                         {labelMember(member, enfantsContext)}
                       </span>
-                      <button
-                        type="button"
+                      <SimActionButton
+                        variant="delete"
+                        mode="icon"
+                        label="Supprimer"
                         className="sc-child-remove-btn"
                         onClick={() => onRemoveFamilyMember(member.id)}
-                        aria-label={`Supprimer ${labelMember(member, enfantsContext)}`}
-                      >
-                        ✕
-                      </button>
+                        ariaLabel={`Supprimer ${labelMember(member, enfantsContext)}`}
+                      />
                     </div>
                   ))}
                 </div>

@@ -1,4 +1,6 @@
 import React from 'react';
+import { SimMetric } from '@/components/ui/sim';
+import { IconBarChart, IconFileText, IconPieChart } from '@/icons/ui';
 import type { PerPotentielResult } from '../../../../engine/per';
 import type { WizardStep } from '../../hooks/usePerPotentiel';
 
@@ -42,10 +44,13 @@ function HeroDeclarantPair({
       className={`per-potentiel-declarant-pair${compact ? ' per-potentiel-declarant-pair--compact' : ''}`}
     >
       {items.map((item) => (
-        <div key={item.label} className="per-potentiel-declarant-metric">
-          <span className="per-potentiel-declarant-metric__label">{item.label}</span>
-          <strong className="per-potentiel-declarant-metric__value">{item.value}</strong>
-        </div>
+        <SimMetric
+          key={item.label}
+          variant="secondary"
+          className="per-potentiel-declarant-metric"
+          label={item.label}
+          value={item.value}
+        />
       ))}
     </div>
   );
@@ -53,10 +58,12 @@ function HeroDeclarantPair({
 
 function SecondaryMetric({ label, value }: { label: string; value: string }): React.ReactElement {
   return (
-    <div className="per-potentiel-secondary-metric">
-      <span className="per-potentiel-secondary-metric__label">{label}</span>
-      <strong className="per-potentiel-secondary-metric__value">{value}</strong>
-    </div>
+    <SimMetric
+      variant="secondary"
+      className="per-potentiel-secondary-metric"
+      label={label}
+      value={value}
+    />
   );
 }
 
@@ -235,20 +242,7 @@ export function PerPotentielContextSidebar({
       <div className="premium-card per-potentiel-context-card sim-summary-card">
         <div className="sim-card__title-row">
           <div className="sim-card__icon">
-            <svg
-              width="13"
-              height="13"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.8"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              aria-hidden="true"
-            >
-              <path d="M21.21 15.89A10 10 0 1 1 8 2.83" />
-              <path d="M22 12A10 10 0 0 0 12 2v10z" />
-            </svg>
+            <IconPieChart />
           </div>
           <h3 className="sim-card__title">Potentiel</h3>
         </div>
@@ -299,33 +293,19 @@ export function PerPotentielContextSidebar({
             <div className="premium-card per-potentiel-context-card sim-summary-card sim-summary-card--secondary">
               <div className="sim-card__title-row">
                 <div className="sim-card__icon">
-                  <svg
-                    width="13"
-                    height="13"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="1.8"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    aria-hidden="true"
-                  >
-                    <line x1="12" y1="20" x2="12" y2="10" />
-                    <line x1="18" y1="20" x2="18" y2="4" />
-                    <line x1="6" y1="20" x2="6" y2="16" />
-                  </svg>
+                  <IconBarChart />
                 </div>
                 <h3 className="sim-card__title">{fiscalPreviewTitle}</h3>
               </div>
               <div className="sim-divider sim-divider--tight" />
 
               <div className="per-sidebar-hero">
-                <div className="per-sidebar-hero__left">
-                  <div className="per-sidebar-hero__label">IR estimé</div>
-                  <div className="per-sidebar-hero__value">
-                    {fmtCurrency(result.situationFiscale.irEstime)}
-                  </div>
-                </div>
+                <SimMetric
+                  variant="hero"
+                  className="per-sidebar-hero__metric"
+                  label="IR estimé"
+                  value={fmtCurrency(result.situationFiscale.irEstime)}
+                />
                 <div className="per-potentiel-mini-kpis-row">
                   <SecondaryMetric label="TMI" value={fmtPercent(result.situationFiscale.tmi)} />
                   <SecondaryMetric
@@ -356,33 +336,19 @@ export function PerPotentielContextSidebar({
               <div className="premium-card per-potentiel-context-card sim-summary-card sim-summary-card--secondary">
                 <div className="sim-card__title-row">
                   <div className="sim-card__icon">
-                    <svg
-                      width="13"
-                      height="13"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="1.8"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      aria-hidden="true"
-                    >
-                      <line x1="12" y1="20" x2="12" y2="10" />
-                      <line x1="18" y1="20" x2="18" y2="4" />
-                      <line x1="6" y1="20" x2="6" y2="16" />
-                    </svg>
+                    <IconBarChart />
                   </div>
                   <h3 className="sim-card__title">{fiscalPreviewTitle}</h3>
                 </div>
                 <div className="sim-divider sim-divider--tight" />
 
                 <div className="per-sidebar-hero">
-                  <div className="per-sidebar-hero__left">
-                    <div className="per-sidebar-hero__label">IR estimé</div>
-                    <div className="per-sidebar-hero__value">
-                      {fmtCurrency(result.situationFiscale.irEstime)}
-                    </div>
-                  </div>
+                  <SimMetric
+                    variant="hero"
+                    className="per-sidebar-hero__metric"
+                    label="IR estimé"
+                    value={fmtCurrency(result.situationFiscale.irEstime)}
+                  />
                   <div className="per-potentiel-mini-kpis-row">
                     <SecondaryMetric label="TMI" value={fmtPercent(result.situationFiscale.tmi)} />
                     <SecondaryMetric
@@ -404,22 +370,7 @@ export function PerPotentielContextSidebar({
               <div className="premium-card per-potentiel-context-card sim-summary-card sim-summary-card--secondary">
                 <div className="sim-card__title-row">
                   <div className="sim-card__icon">
-                    <svg
-                      width="13"
-                      height="13"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="1.8"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      aria-hidden="true"
-                    >
-                      <path d="M3 7h18" />
-                      <path d="M6 11h12" />
-                      <path d="M8 15h8" />
-                      <path d="M5 3h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2Z" />
-                    </svg>
+                    <IconFileText />
                   </div>
                   <h3 className="sim-card__title">{projectionPreviewTitle}</h3>
                 </div>

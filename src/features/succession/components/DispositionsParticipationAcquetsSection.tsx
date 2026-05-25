@@ -1,8 +1,8 @@
 import type { Dispatch, SetStateAction } from 'react';
+import { SimAmountInputEuro, SimAmountInputPercent } from '@/components/ui/sim';
 import { OUI_NON_OPTIONS } from '../successionSimulator.constants';
 import type { DispositionsDraftState } from '../successionSimulator.helpers';
 import { clampPercentage } from './dispositions.helpers';
-import { ScNumericInput } from './ScNumericInput';
 import { ScSelect } from './ScSelect';
 
 interface DispositionsParticipationAcquetsSectionProps {
@@ -73,9 +73,9 @@ export function DispositionsParticipationAcquetsSection({
 
           <div className="sc-field">
             <label htmlFor="sc-dispositions-participation-originaire-epoux1">
-              Patrimoine originaire Époux 1 (EUR)
+              Patrimoine originaire Époux 1
             </label>
-            <ScNumericInput
+            <SimAmountInputEuro
               id="sc-dispositions-participation-originaire-epoux1"
               value={dispositionsDraft.participationAcquets.patrimoineOriginaireEpoux1 || 0}
               min={0}
@@ -90,9 +90,9 @@ export function DispositionsParticipationAcquetsSection({
 
           <div className="sc-field">
             <label htmlFor="sc-dispositions-participation-originaire-epoux2">
-              Patrimoine originaire Époux 2 (EUR)
+              Patrimoine originaire Époux 2
             </label>
-            <ScNumericInput
+            <SimAmountInputEuro
               id="sc-dispositions-participation-originaire-epoux2"
               value={dispositionsDraft.participationAcquets.patrimoineOriginaireEpoux2 || 0}
               min={0}
@@ -109,9 +109,9 @@ export function DispositionsParticipationAcquetsSection({
             <>
               <div className="sc-field">
                 <label htmlFor="sc-dispositions-participation-final-epoux1">
-                  Patrimoine final Époux 1 (EUR)
+                  Patrimoine final Époux 1
                 </label>
-                <ScNumericInput
+                <SimAmountInputEuro
                   id="sc-dispositions-participation-final-epoux1"
                   value={dispositionsDraft.participationAcquets.patrimoineFinalEpoux1 || 0}
                   min={0}
@@ -126,9 +126,9 @@ export function DispositionsParticipationAcquetsSection({
 
               <div className="sc-field">
                 <label htmlFor="sc-dispositions-participation-final-epoux2">
-                  Patrimoine final Époux 2 (EUR)
+                  Patrimoine final Époux 2
                 </label>
-                <ScNumericInput
+                <SimAmountInputEuro
                   id="sc-dispositions-participation-final-epoux2"
                   value={dispositionsDraft.participationAcquets.patrimoineFinalEpoux2 || 0}
                   min={0}
@@ -147,14 +147,13 @@ export function DispositionsParticipationAcquetsSection({
             <label htmlFor="sc-dispositions-participation-quote-epoux1">
               Quote de créance Époux 1 (%)
             </label>
-            <input
+            <SimAmountInputPercent
               id="sc-dispositions-participation-quote-epoux1"
-              type="number"
               min={0}
               max={100}
               value={dispositionsDraft.participationAcquets.quoteEpoux1Pct}
-              onChange={(e) => {
-                const quoteEpoux1Pct = clampPercentage(e.target.value);
+              onChange={(value) => {
+                const quoteEpoux1Pct = clampPercentage(String(value));
                 updateParticipationAcquets((current) => ({
                   ...current,
                   quoteEpoux1Pct,
@@ -168,14 +167,13 @@ export function DispositionsParticipationAcquetsSection({
             <label htmlFor="sc-dispositions-participation-quote-epoux2">
               Quote de créance Époux 2 (%)
             </label>
-            <input
+            <SimAmountInputPercent
               id="sc-dispositions-participation-quote-epoux2"
-              type="number"
               min={0}
               max={100}
               value={dispositionsDraft.participationAcquets.quoteEpoux2Pct}
-              onChange={(e) => {
-                const quoteEpoux2Pct = clampPercentage(e.target.value);
+              onChange={(value) => {
+                const quoteEpoux2Pct = clampPercentage(String(value));
                 updateParticipationAcquets((current) => ({
                   ...current,
                   quoteEpoux1Pct: 100 - quoteEpoux2Pct,

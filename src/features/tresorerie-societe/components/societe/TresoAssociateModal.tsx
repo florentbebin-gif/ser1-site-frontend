@@ -1,4 +1,5 @@
 import { useState, type KeyboardEvent } from 'react';
+import { SimActionButton } from '@/components/ui/sim';
 import { SimFieldShell } from '@/components/ui/sim/SimFieldShell';
 import { SimModalShell } from '@/components/ui/sim/SimModalShell';
 import { SimSelect } from '@/components/ui/sim/SimSelect';
@@ -236,26 +237,27 @@ export function TresoAssociateModal({
                     )}
 
                     {lots.length > 1 && (
-                      <button
-                        type="button"
-                        className="ts-text-btn ts-ownership-lot__remove"
+                      <SimActionButton
+                        variant="delete"
+                        mode="text"
+                        label="Supprimer"
+                        className="ts-ownership-lot__remove"
+                        danger
                         onClick={() => removeLot(index)}
-                        aria-label={`Supprimer le lot ${index + 1}`}
-                      >
-                        Supprimer
-                      </button>
+                        ariaLabel={`Supprimer le lot ${index + 1}`}
+                      />
                     )}
                   </div>
                 ))}
 
                 {availableRights.length > 0 && (
-                  <button
-                    type="button"
-                    className="ts-text-btn ts-ownership-lots__add"
+                  <SimActionButton
+                    variant="add"
+                    mode="text"
+                    label="Ajouter un lot de détention"
+                    className="ts-ownership-lots__add"
                     onClick={addLot}
-                  >
-                    + Ajouter un lot de détention
-                  </button>
+                  />
                 )}
               </div>
 

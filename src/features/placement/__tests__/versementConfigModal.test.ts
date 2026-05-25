@@ -1,9 +1,12 @@
+import { createElement } from 'react';
+import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
 import { DEFAULT_ANNUEL } from '@/engine/placement/versementConfig';
 import {
   buildNeutralAnnualState,
   computeVersementSectionVisibility,
   seedAnnualSection,
+  VersementConfigModal,
 } from '../components/VersementConfigModal';
 
 describe('VersementConfigModal helpers', () => {
@@ -66,5 +69,32 @@ describe('VersementConfigModal helpers', () => {
         distributionStrategy: 'reinvestir_capi',
       }).showCapiBlock,
     ).toBe(true);
+  });
+
+  it('affiche les textes visibles de la modale avec les accents français', () => {
+    const html = renderToStaticMarkup(
+      createElement(VersementConfigModal, {
+        envelope: 'AV',
+        dureeEpargne: 10,
+        isExpert: false,
+        onSave: () => {},
+        onClose: () => {},
+      }),
+    );
+
+    expect(html).toContain('data-testid="placement-versements-modal"');
+    expect(html).toContain('role="dialog"');
+    expect(html).toContain('aria-modal="true"');
+    expect(html).toContain('aria-labelledby=');
+    expect(html).toContain('Paramétrage des versements');
+    expect(html).toContain('Hypothèse : investissement 100 % unités de compte');
+    expect(html).toContain('prélèvements sociaux');
+    expect(html).toContain('sim-modal-btn--ghost');
+    expect(html).toContain('sim-modal-btn--primary');
+    expect(html).not.toContain('vcm__btn');
+    expect(html).not.toContain('Parametrage');
+    expect(html).not.toContain('Hypothese');
+    expect(html).not.toContain('unites');
+    expect(html).not.toContain('prelevements');
   });
 });

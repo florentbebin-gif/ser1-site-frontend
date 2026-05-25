@@ -1,0 +1,153 @@
+/* Metriques partagees /sim/* */
+
+.sim-metric {
+  display: grid;
+  gap: var(--space-1);
+  min-width: 0;
+}
+
+.sim-metric__label {
+  color: var(--color-c9);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0;
+  line-height: var(--line-height-base);
+}
+
+.sim-metric__value-row {
+  display: inline-flex;
+  align-items: baseline;
+  gap: var(--space-1);
+  min-width: 0;
+}
+
+.sim-metric__value {
+  color: var(--color-c1);
+  font-variant-numeric: tabular-nums;
+  line-height: var(--line-height-tight);
+}
+
+.sim-metric__unit,
+.sim-metric__note,
+.sim-metric__delta {
+  color: var(--color-c9);
+  font-size: var(--font-size-sm);
+  line-height: var(--line-height-base);
+}
+
+.sim-metric__delta {
+  color: var(--color-c3);
+  font-weight: var(--font-weight-semibold);
+}
+
+.sim-metric--hero .sim-metric__value {
+  font-size: var(--font-size-3xl);
+  font-weight: var(--font-weight-bold);
+}
+
+.sim-metric--secondary .sim-metric__value {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+}
+
+.sim-metric--inline {
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: baseline;
+  gap: var(--space-2);
+}
+
+.sim-metric--inline .sim-metric__value {
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-semibold);
+}
+
+.sim-metric--inline .sim-metric__note,
+.sim-metric--inline .sim-metric__delta {
+  grid-column: 1 / -1;
+}
+
+.sim-kpi-note {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.sim-sparkline {
+  color: var(--color-c3);
+  flex: 0 0 auto;
+}
+
+.sim-kpi-reference {
+  color: var(--color-c9);
+  font-size: 11px;
+  font-weight: var(--font-weight-medium);
+  letter-spacing: 0;
+  line-height: var(--line-height-base);
+}
+
+.sim-status-badge {
+  --sim-status-color: var(--color-c9);
+
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  width: fit-content;
+  min-width: 0;
+  border: 1px solid color-mix(in srgb, var(--sim-status-color) 48%, var(--color-c8));
+  border-radius: var(--radius-full);
+  background: color-mix(in srgb, var(--sim-status-color) 14%, #ffffff);
+  color: var(--color-c1);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: 0;
+  line-height: var(--line-height-base);
+  padding: var(--space-1) var(--space-2);
+}
+
+.sim-status-badge--optimal {
+  --sim-status-color: var(--color-c3);
+}
+
+.sim-status-badge--attention {
+  --sim-status-color: var(--color-c6);
+}
+
+.sim-status-badge--info {
+  --sim-status-color: var(--color-c9);
+}
+
+.sim-status-badge__dot {
+  width: var(--space-2);
+  height: var(--space-2);
+  flex: 0 0 auto;
+  border-radius: var(--radius-full);
+  background: var(--sim-status-color);
+}
+
+.sim-status-badge__label {
+  min-width: 0;
+}
+
+.sim-delta {
+  display: inline-flex;
+  align-items: baseline;
+  gap: var(--space-1);
+  color: var(--color-c9);
+  font-size: var(--font-size-sm);
+  font-variant-numeric: tabular-nums;
+  font-weight: var(--font-weight-semibold);
+  line-height: var(--line-height-base);
+}
+
+.sim-delta--positive {
+  color: var(--color-c1);
+}
+
+.sim-delta--negative {
+  color: var(--color-c1);
+}
+
+.sim-delta--neutral {
+  color: var(--color-c9);
+}

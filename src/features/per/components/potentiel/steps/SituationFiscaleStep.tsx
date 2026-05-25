@@ -3,11 +3,15 @@
  */
 
 import React, { useState } from 'react';
-import { SimSelect } from '@/components/ui/sim/SimSelect';
+import {
+  SimActionButton,
+  SimAmountInputEuro,
+  SimCollapsibleTable,
+  SimSelect,
+} from '@/components/ui/sim';
 import type { DeclarantRevenus, PlafondMadelinDetail } from '../../../../../engine/per';
 import type { PerDeclarantPatch } from '../../../hooks/usePerPotentiel';
 import type { PerChildDraft } from '../../../utils/perParts';
-import { PerAmountInput } from '../../shared/PerAmountInput';
 import { PerMadelinInfoModal } from '../PerMadelinInfoModal';
 import {
   PerIncomeTable,
@@ -130,6 +134,9 @@ export default function SituationFiscaleStep({
       tnsOnly: true,
     },
   ];
+  const visibleContributionRows = contributionRows.filter(
+    (row) => !row.tnsOnly || showTnsContributionRows,
+  );
 
   return (
     <div className="per-step per-step--situation">
@@ -169,23 +176,13 @@ export default function SituationFiscaleStep({
             </div>
 
             <div className="per-children-zone">
-              <button type="button" className="per-child-add-btn" onClick={onAddChild}>
-                <svg
-                  width="12"
-                  height="12"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  aria-hidden="true"
-                >
-                  <line x1="12" y1="5" x2="12" y2="19" />
-                  <line x1="5" y1="12" x2="19" y2="12" />
-                </svg>
-                Ajouter un enfant
-              </button>
+              <SimActionButton
+                variant="add"
+                mode="text"
+                label="Ajouter un enfant"
+                className="per-child-add-action"
+                onClick={onAddChild}
+              />
               {children.length > 0 && (
                 <div className="per-children-list">
                   {children.map((child, index) => (
@@ -202,27 +199,15 @@ export default function SituationFiscaleStep({
                         ]}
                         className="per-child-row__select"
                       />
-                      <button
-                        type="button"
-                        className="per-child-remove-btn"
+                      <SimActionButton
+                        variant="delete"
+                        mode="icon"
+                        label={`Supprimer enfant ${index + 1}`}
+                        ariaLabel={`Supprimer enfant ${index + 1}`}
+                        className="per-child-remove-action"
+                        danger
                         onClick={() => onRemoveChild(child.id)}
-                        aria-label={`Supprimer enfant ${index + 1}`}
-                      >
-                        <svg
-                          width="14"
-                          height="14"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          aria-hidden="true"
-                        >
-                          <line x1="18" y1="6" x2="6" y2="18" />
-                          <line x1="6" y1="6" x2="18" y2="18" />
-                        </svg>
-                      </button>
+                      />
                     </div>
                   ))}
                 </div>
@@ -253,39 +238,43 @@ export default function SituationFiscaleStep({
           icon="versements"
         />
 
-        <div className={`per-contribution-table ${isCouple ? 'is-couple' : ''}`}>
-          <div className="per-contribution-table-head per-contribution-table-head--label">
-            Catégorie
-          </div>
-          <div className="per-contribution-table-head">Déclarant 1</div>
-          {isCouple && <div className="per-contribution-table-head">Déclarant 2</div>}
+        <SimCollapsibleTable
+          title="Versements retraite"
+          defaultOpen
+          rowCount={visibleContributionRows.length}
+        >
+          <div className={`per-contribution-table ${isCouple ? 'is-couple' : ''}`}>
+            <div className="per-contribution-table-head per-contribution-table-head--label">
+              Catégorie
+            </div>
+            <div className="per-contribution-table-head">Déclarant 1</div>
+            {isCouple && <div className="per-contribution-table-head">Déclarant 2</div>}
 
-          {contributionRows
-            .filter((row) => !row.tnsOnly || showTnsContributionRows)
-            .map((row) => (
+            {visibleContributionRows.map((row) => (
               <React.Fragment key={row.key}>
                 <div className="per-contribution-table-label">
                   <span className="per-contribution-table-label__text">
                     {row.label}
                     {row.infoAction && (
-                      <button
-                        type="button"
-                        className="per-info-btn"
+                      <SimActionButton
+                        variant="edit"
+                        mode="icon"
+                        label="Détail Madelin"
+                        ariaLabel="Afficher le détail des enveloppes Madelin 154 bis"
+                        className="per-contribution-info-action"
                         onClick={() => setShowMadelinInfo(true)}
-                        aria-label="Afficher le détail des enveloppes Madelin 154 bis"
-                      >
-                        i
-                      </button>
+                      />
                     )}
                   </span>
                   <small>{row.note}</small>
                 </div>
                 <div className="per-contribution-table-cell">
                   <span className="per-contribution-mobile-label">Déclarant 1</span>
-                  <PerAmountInput
+                  <SimAmountInputEuro
                     value={declarant1[row.key]}
                     ariaLabel={`${row.label} déclarant 1`}
                     className="per-contribution-input"
+                    unit=""
                     disabled={Boolean(row.tnsOnly && !declarant1.statutTns)}
                     onChange={(value) => onUpdateDeclarant(1, { [row.key]: value })}
                   />
@@ -293,10 +282,11 @@ export default function SituationFiscaleStep({
                 {isCouple && (
                   <div className="per-contribution-table-cell">
                     <span className="per-contribution-mobile-label">Déclarant 2</span>
-                    <PerAmountInput
+                    <SimAmountInputEuro
                       value={declarant2[row.key]}
                       ariaLabel={`${row.label} déclarant 2`}
                       className="per-contribution-input"
+                      unit=""
                       disabled={Boolean(row.tnsOnly && !declarant2.statutTns)}
                       onChange={(value) => onUpdateDeclarant(2, { [row.key]: value })}
                     />
@@ -304,7 +294,8 @@ export default function SituationFiscaleStep({
                 )}
               </React.Fragment>
             ))}
-        </div>
+          </div>
+        </SimCollapsibleTable>
 
         {isCouple && (
           <label className="per-toggle-label per-toggle-label--panel per-contribution-toggle">

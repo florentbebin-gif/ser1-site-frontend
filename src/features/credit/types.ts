@@ -183,7 +183,6 @@ export interface CreditLoanFormProps {
 export interface SummaryDonutProps {
   capital: number;
   interets: number;
-  capitalColor?: string;
 }
 
 export interface CreditSummaryCardProps {
@@ -207,46 +206,6 @@ export interface CreditScheduleTableProps {
   title?: string;
   defaultCollapsed?: boolean;
   hideInsurance?: boolean;
-}
-
-export interface InputEuroProps {
-  label?: string;
-  value: number;
-  onChange: (_value: number) => void;
-  disabled?: boolean;
-  hint?: string;
-  error?: string;
-  testId?: string;
-  dataTestId?: string;
-  onBlur?: () => void;
-  highlight?: boolean;
-}
-
-export interface InputPctProps {
-  label?: string;
-  rawValue?: string;
-  onBlur?: (_value: number) => void;
-  disabled?: boolean;
-  hint?: string;
-  error?: string;
-  testId?: string;
-  placeholder?: string;
-  highlight?: boolean;
-}
-
-export interface InputNumberProps {
-  label?: string;
-  value: number;
-  onChange: (_value: number) => void;
-  unit?: string;
-  min?: number;
-  max?: number;
-  disabled?: boolean;
-  hint?: string;
-  error?: string;
-  testId?: string;
-  onBlur?: () => void;
-  highlight?: boolean;
 }
 
 export interface InputMonthProps {

@@ -3,19 +3,34 @@
  */
 
 import { useEffect, useRef, useState } from 'react';
-import type { ChangeEvent, KeyboardEvent } from 'react';
-import { SimFieldShell } from '@/components/ui/sim';
-import { parseCapital, parseTaux, formatTauxInput } from '../utils/creditFormatters';
-import type {
-  InputEuroProps,
-  InputMonthProps,
-  InputNumberProps,
-  InputPctProps,
-  SelectProps,
-  ToggleProps,
-} from '../types';
+import type { KeyboardEvent } from 'react';
+import {
+  SimAmountInputEuro,
+  SimAmountInputNumeric,
+  SimAmountInputPercent,
+  SimFieldShell,
+} from '@/components/ui/sim';
+import { IconChevronDown } from '@/icons/ui';
+import { parseDecimalInput } from '@/utils/numbers';
+import type { InputMonthProps, SelectProps, ToggleProps } from '../types';
 
-export function InputEuro({
+function creditControlClass(error?: string, highlight = false): string {
+  return `sim-field__control${error ? ' sim-field__control--error' : ''}${highlight ? ' sim-field__control--guide' : ''}`;
+}
+
+interface CreditEuroFieldProps {
+  label?: string;
+  value: number;
+  onChange: (_value: number) => void;
+  disabled?: boolean;
+  hint?: string;
+  error?: string;
+  testId?: string;
+  dataTestId?: string;
+  highlight?: boolean;
+}
+
+export function CreditEuroField({
   label,
   value,
   onChange,
@@ -24,95 +39,83 @@ export function InputEuro({
   error,
   testId,
   dataTestId,
-  onBlur,
   highlight = false,
-}: InputEuroProps) {
-  const fmt = (num: number) => Math.round(Number(num) || 0).toLocaleString('fr-FR');
-
-  const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
-    onChange(parseCapital(event.target.value));
-  };
-
+}: CreditEuroFieldProps) {
   return (
-    <SimFieldShell
+    <SimAmountInputEuro
       label={label}
       hint={hint}
       error={error}
-      className="ci-field"
+      fieldClassName="ci-field"
       rowClassName="ci-field-row"
-    >
-      <input
-        type="text"
-        inputMode="numeric"
-        disabled={disabled}
-        value={fmt(value)}
-        onChange={handleChange}
-        data-testid={dataTestId || testId}
-        aria-invalid={!!error}
-        className={`sim-field__control${error ? ' sim-field__control--error' : ''}${highlight ? ' sim-field__control--guide' : ''}`}
-        onBlur={onBlur}
-      />
-      <span className="ci-unit sim-field__unit">€</span>
-    </SimFieldShell>
+      unitClassName="ci-unit"
+      className={creditControlClass(error, highlight)}
+      value={value}
+      onChange={onChange}
+      disabled={disabled}
+      testId={dataTestId || testId}
+    />
   );
 }
 
-export function InputPct({
+interface CreditPercentFieldProps {
+  label?: string;
+  rawValue?: string;
+  onChange?: (_value: number) => void;
+  disabled?: boolean;
+  hint?: string;
+  error?: string;
+  testId?: string;
+  placeholder?: string;
+  highlight?: boolean;
+}
+
+export function CreditPercentField({
   label,
   rawValue,
-  onBlur,
+  onChange,
   disabled = false,
   hint,
   error,
   testId,
   placeholder = '0,00',
   highlight = false,
-}: InputPctProps) {
-  const [local, setLocal] = useState(rawValue || '');
-  const [focused, setFocused] = useState(false);
-
-  useEffect(() => {
-    if (!focused) setLocal(rawValue || '');
-  }, [rawValue, focused]);
-
-  const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
-    setLocal(formatTauxInput(event.target.value));
-  };
-
-  const handleBlur = () => {
-    setFocused(false);
-    const num = parseTaux(local);
-    setLocal(num.toFixed(2).replace('.', ','));
-    onBlur?.(num);
-  };
-
+}: CreditPercentFieldProps) {
   return (
-    <SimFieldShell
+    <SimAmountInputPercent
       label={label}
       hint={hint}
       error={error}
-      testId={testId}
-      className="ci-field"
+      fieldClassName="ci-field"
       rowClassName="ci-field-row"
-    >
-      <input
-        type="text"
-        inputMode="decimal"
-        disabled={disabled}
-        value={local}
-        placeholder={placeholder}
-        onChange={handleChange}
-        onFocus={() => setFocused(true)}
-        onBlur={handleBlur}
-        aria-invalid={!!error}
-        className={`sim-field__control${error ? ' sim-field__control--error' : ''}${highlight ? ' sim-field__control--guide' : ''}`}
-      />
-      <span className="ci-unit sim-field__unit">%</span>
-    </SimFieldShell>
+      unitClassName="ci-unit"
+      className={creditControlClass(error, highlight)}
+      value={parseDecimalInput(rawValue, 0)}
+      onChange={(nextValue) => onChange?.(nextValue)}
+      disabled={disabled}
+      placeholder={placeholder}
+      testId={testId}
+      minimumFractionDigits={2}
+      maximumFractionDigits={2}
+    />
   );
 }
 
-export function InputNumber({
+interface CreditNumberFieldProps {
+  label?: string;
+  value: number;
+  onChange: (_value: number) => void;
+  unit?: string;
+  min?: number;
+  max?: number;
+  disabled?: boolean;
+  hint?: string;
+  error?: string;
+  testId?: string;
+  highlight?: boolean;
+}
+
+export function CreditNumberField({
   label,
   value,
   onChange,
@@ -123,36 +126,25 @@ export function InputNumber({
   hint,
   error,
   testId,
-  onBlur,
   highlight = false,
-}: InputNumberProps) {
-  const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
-    const raw = event.target.value.replace(/\D/g, '').slice(0, 3);
-    const num = Math.min(max, Math.max(min, parseInt(raw, 10) || 0));
-    onChange(num);
-  };
-
+}: CreditNumberFieldProps) {
   return (
-    <SimFieldShell
+    <SimAmountInputNumeric
       label={label}
       hint={hint}
       error={error}
-      testId={testId}
-      className="ci-field"
+      fieldClassName="ci-field"
       rowClassName="ci-field-row"
-    >
-      <input
-        type="text"
-        inputMode="numeric"
-        disabled={disabled}
-        value={String(value || 0)}
-        onChange={handleChange}
-        aria-invalid={!!error}
-        className={`sim-field__control${error ? ' sim-field__control--error' : ''}${highlight ? ' sim-field__control--guide' : ''}`}
-        onBlur={onBlur}
-      />
-      {unit && <span className="ci-unit sim-field__unit">{unit}</span>}
-    </SimFieldShell>
+      unitClassName="ci-unit"
+      className={creditControlClass(error, highlight)}
+      value={value || 0}
+      onChange={(nextValue) => onChange(Math.round(nextValue))}
+      unit={unit}
+      min={min}
+      max={max}
+      disabled={disabled}
+      testId={testId}
+    />
   );
 }
 
@@ -248,21 +240,7 @@ export function Select<TValue extends string | number>({
           className={`sim-field__select-trigger${isOpen ? ' is-open' : ''}${error ? ' sim-field__control--error' : ''}`}
         >
           <span className="sim-field__select-value">{selectedOption?.label ?? ''}</span>
-          <svg
-            className="sim-field__select-arrow"
-            width="10"
-            height="6"
-            viewBox="0 0 10 6"
-            aria-hidden="true"
-          >
-            <path
-              d="M1 1l4 4 4-4"
-              stroke="currentColor"
-              strokeWidth="1.5"
-              fill="none"
-              strokeLinecap="round"
-            />
-          </svg>
+          <IconChevronDown className="sim-field__select-arrow" />
         </button>
 
         {isOpen && (

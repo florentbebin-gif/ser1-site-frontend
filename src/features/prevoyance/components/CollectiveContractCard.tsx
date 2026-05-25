@@ -1,4 +1,4 @@
-import { SimSelect } from '@/components/ui/sim';
+import { SimActionButton, SimSelect } from '@/components/ui/sim';
 import {
   computeCollectiveAssietteBase,
   computeTranchesFromPass,
@@ -163,28 +163,28 @@ export function CollectiveContractCard({
         <div className="prevoyance-mini-section">
           <div className="prevoyance-mini-section__header">
             <span>Arrêt de travail</span>
-            <button
-              type="button"
+            <SimActionButton
+              variant="add"
+              mode="icon"
+              label="Ajouter"
               className="prevoyance-icon-button prevoyance-icon-button--compact"
               onClick={addArretPalier}
-              aria-label={`Ajouter une période arrêt de travail au contrat ${index + 1}`}
+              ariaLabel={`Ajouter une période arrêt de travail au contrat ${index + 1}`}
               disabled={arretPaliers.length >= 3}
-            >
-              +
-            </button>
+            />
           </div>
           {arretPaliers.map((palier, palierIndex) => (
             <div key={palierIndex} className="prevoyance-invalidite-row">
               {arretPaliers.length > 1 ? (
                 <div className="prevoyance-invalidite-row__actions">
-                  <button
-                    type="button"
+                  <SimActionButton
+                    variant="delete"
+                    mode="icon"
+                    label="Supprimer"
                     className="prevoyance-icon-button prevoyance-icon-button--compact"
                     onClick={() => removeArretPalier(palierIndex)}
-                    aria-label={`Supprimer la période arrêt de travail ${palierIndex + 1}`}
-                  >
-                    ×
-                  </button>
+                    ariaLabel={`Supprimer la période arrêt de travail ${palierIndex + 1}`}
+                  />
                 </div>
               ) : null}
               <div className="prevoyance-invalidite-row__grid">
@@ -224,28 +224,28 @@ export function CollectiveContractCard({
         <div className="prevoyance-mini-section">
           <div className="prevoyance-mini-section__header">
             <span>Invalidité</span>
-            <button
-              type="button"
+            <SimActionButton
+              variant="add"
+              mode="icon"
+              label="Ajouter"
               className="prevoyance-icon-button prevoyance-icon-button--compact"
               onClick={addInvaliditePalier}
-              aria-label={`Ajouter un seuil invalidité au contrat ${index + 1}`}
+              ariaLabel={`Ajouter un seuil invalidité au contrat ${index + 1}`}
               disabled={contract.invalidite.paliers.length >= 3}
-            >
-              +
-            </button>
+            />
           </div>
           {contract.invalidite.paliers.map((palier, palierIndex) => (
             <div key={palierIndex} className="prevoyance-invalidite-row">
               {contract.invalidite.paliers.length > 1 ? (
                 <div className="prevoyance-invalidite-row__actions">
-                  <button
-                    type="button"
+                  <SimActionButton
+                    variant="delete"
+                    mode="icon"
+                    label="Supprimer"
                     className="prevoyance-icon-button prevoyance-icon-button--compact"
                     onClick={() => removeInvaliditePalier(palierIndex)}
-                    aria-label={`Supprimer le seuil invalidité ${palierIndex + 1}`}
-                  >
-                    ×
-                  </button>
+                    ariaLabel={`Supprimer le seuil invalidité ${palierIndex + 1}`}
+                  />
                 </div>
               ) : null}
               <div className="prevoyance-invalidite-row__grid">

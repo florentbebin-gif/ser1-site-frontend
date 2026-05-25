@@ -1,5 +1,6 @@
+import { SimAmountInputEuro } from '@/components/ui/sim';
+import { IconTable } from '@/icons/ui';
 import { IrSelect } from './IrSelect';
-import { IrAmountInput, parseIntegerInput } from './IrAmountInput';
 import type { IrFormSectionProps } from './irTypes';
 
 type IrIncomeSectionProps = Pick<
@@ -8,7 +9,6 @@ type IrIncomeSectionProps = Pick<
   | 'setIncomes'
   | 'incomes'
   | 'updateIncome'
-  | 'formatMoneyInput'
   | 'realMode'
   | 'setRealModeState'
   | 'realExpenses'
@@ -32,12 +32,39 @@ type IrIncomeSectionProps = Pick<
   | 'setIncomeFilters'
 >;
 
+interface IrEuroFieldProps {
+  value: number;
+  onChange?: (_value: number) => void;
+  readOnly?: boolean;
+  testId?: string;
+  className?: string;
+}
+
+function IrEuroField({
+  value,
+  onChange = () => {},
+  readOnly = false,
+  testId,
+  className,
+}: IrEuroFieldProps) {
+  return (
+    <SimAmountInputEuro
+      value={value}
+      onChange={onChange}
+      readOnly={readOnly}
+      testId={testId}
+      fieldClassName={`ir-table-input${className ? ` ${className}` : ''}`}
+      rowClassName="ir-table-input__row"
+      unitClassName="ir-table-input__unit"
+    />
+  );
+}
+
 export function IrIncomeSection({
   status,
   setIncomes,
   incomes,
   updateIncome,
-  formatMoneyInput,
   realMode,
   setRealModeState,
   realExpenses,
@@ -81,22 +108,7 @@ export function IrIncomeSection({
         <div className="ir-income-card__header-row">
           <div className="ir-income-card__title sim-card__title sim-card__title-row">
             <div className="ir-section-icon-wrapper sim-card__icon">
-              <svg
-                width="14"
-                height="14"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.8"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                aria-hidden="true"
-              >
-                <rect x="3" y="3" width="18" height="18" rx="2" />
-                <line x1="3" y1="9" x2="21" y2="9" />
-                <line x1="3" y1="15" x2="21" y2="15" />
-                <line x1="12" y1="3" x2="12" y2="21" />
-              </svg>
+              <IconTable />
             </div>
             Revenus imposables
           </div>
@@ -164,17 +176,17 @@ export function IrIncomeSection({
           <tr data-testid="ir-salary-row">
             <td>Traitements et salaires</td>
             <td>
-              <IrAmountInput
+              <IrEuroField
                 testId="ir-salary-d1-input"
-                value={formatMoneyInput(incomes.d1.salaries)}
-                onChange={(e) => updateIncome('d1', 'salaries', parseIntegerInput(e))}
+                value={incomes.d1.salaries ?? 0}
+                onChange={(value) => updateIncome('d1', 'salaries', value)}
               />
             </td>
             <td>
-              <IrAmountInput
+              <IrEuroField
                 testId="ir-salary-d2-input"
-                value={formatMoneyInput(incomes.d2.salaries)}
-                onChange={(e) => updateIncome('d2', 'salaries', parseIntegerInput(e))}
+                value={incomes.d2.salaries ?? 0}
+                onChange={(value) => updateIncome('d2', 'salaries', value)}
               />
             </td>
           </tr>
@@ -182,15 +194,15 @@ export function IrIncomeSection({
             <tr>
               <td>Revenus des associés / gérants</td>
               <td>
-                <IrAmountInput
-                  value={formatMoneyInput(incomes.d1.associes62)}
-                  onChange={(e) => updateIncome('d1', 'associes62', parseIntegerInput(e))}
+                <IrEuroField
+                  value={incomes.d1.associes62 ?? 0}
+                  onChange={(value) => updateIncome('d1', 'associes62', value)}
                 />
               </td>
               <td>
-                <IrAmountInput
-                  value={formatMoneyInput(incomes.d2.associes62)}
-                  onChange={(e) => updateIncome('d2', 'associes62', parseIntegerInput(e))}
+                <IrEuroField
+                  value={incomes.d2.associes62 ?? 0}
+                  onChange={(value) => updateIncome('d2', 'associes62', value)}
                 />
               </td>
             </tr>
@@ -209,20 +221,14 @@ export function IrIncomeSection({
                   ]}
                 />
                 {realMode.d1 === 'reels' ? (
-                  <IrAmountInput
-                    style={{ flex: 1 }}
-                    value={formatMoneyInput(realExpenses.d1)}
+                  <IrEuroField
+                    value={realExpenses.d1}
                     onChange={(e) => {
-                      setRealExpensesState((r) => ({ ...r, d1: parseIntegerInput(e) }));
+                      setRealExpensesState((r) => ({ ...r, d1: e }));
                     }}
                   />
                 ) : (
-                  <IrAmountInput
-                    style={{ flex: 1 }}
-                    className="ir-table-input--readonly"
-                    readOnly
-                    value={formatMoneyInput(abat10SalD1)}
-                  />
+                  <IrEuroField className="ir-table-input--readonly" readOnly value={abat10SalD1} />
                 )}
               </div>
             </td>
@@ -238,20 +244,14 @@ export function IrIncomeSection({
                   ]}
                 />
                 {realMode.d2 === 'reels' ? (
-                  <IrAmountInput
-                    style={{ flex: 1 }}
-                    value={formatMoneyInput(realExpenses.d2)}
+                  <IrEuroField
+                    value={realExpenses.d2}
                     onChange={(e) => {
-                      setRealExpensesState((r) => ({ ...r, d2: parseIntegerInput(e) }));
+                      setRealExpensesState((r) => ({ ...r, d2: e }));
                     }}
                   />
                 ) : (
-                  <IrAmountInput
-                    style={{ flex: 1 }}
-                    className="ir-table-input--readonly"
-                    readOnly
-                    value={formatMoneyInput(abat10SalD2)}
-                  />
+                  <IrEuroField className="ir-table-input--readonly" readOnly value={abat10SalD2} />
                 )}
               </div>
             </td>
@@ -265,15 +265,15 @@ export function IrIncomeSection({
             <tr>
               <td>BIC‑BNC‑BA imposables</td>
               <td>
-                <IrAmountInput
-                  value={formatMoneyInput(incomes.d1.bic)}
-                  onChange={(e) => updateIncome('d1', 'bic', parseIntegerInput(e))}
+                <IrEuroField
+                  value={incomes.d1.bic ?? 0}
+                  onChange={(value) => updateIncome('d1', 'bic', value)}
                 />
               </td>
               <td>
-                <IrAmountInput
-                  value={formatMoneyInput(incomes.d2.bic)}
-                  onChange={(e) => updateIncome('d2', 'bic', parseIntegerInput(e))}
+                <IrEuroField
+                  value={incomes.d2.bic ?? 0}
+                  onChange={(value) => updateIncome('d2', 'bic', value)}
                 />
               </td>
             </tr>
@@ -281,15 +281,15 @@ export function IrIncomeSection({
           <tr>
             <td>Autres revenus imposables</td>
             <td>
-              <IrAmountInput
-                value={formatMoneyInput(incomes.d1.autres)}
-                onChange={(e) => updateIncome('d1', 'autres', parseIntegerInput(e))}
+              <IrEuroField
+                value={incomes.d1.autres ?? 0}
+                onChange={(value) => updateIncome('d1', 'autres', value)}
               />
             </td>
             <td>
-              <IrAmountInput
-                value={formatMoneyInput(incomes.d2.autres)}
-                onChange={(e) => updateIncome('d2', 'autres', parseIntegerInput(e))}
+              <IrEuroField
+                value={incomes.d2.autres ?? 0}
+                onChange={(value) => updateIncome('d2', 'autres', value)}
               />
             </td>
           </tr>
@@ -306,15 +306,15 @@ export function IrIncomeSection({
               <tr>
                 <td>Pensions, retraites et rentes</td>
                 <td>
-                  <IrAmountInput
-                    value={formatMoneyInput(incomes.d1.pensions)}
-                    onChange={(e) => updateIncome('d1', 'pensions', parseIntegerInput(e))}
+                  <IrEuroField
+                    value={incomes.d1.pensions ?? 0}
+                    onChange={(value) => updateIncome('d1', 'pensions', value)}
                   />
                 </td>
                 <td>
-                  <IrAmountInput
-                    value={formatMoneyInput(incomes.d2.pensions)}
-                    onChange={(e) => updateIncome('d2', 'pensions', parseIntegerInput(e))}
+                  <IrEuroField
+                    value={incomes.d2.pensions ?? 0}
+                    onChange={(value) => updateIncome('d2', 'pensions', value)}
                   />
                 </td>
               </tr>
@@ -339,10 +339,10 @@ export function IrIncomeSection({
             <tr>
               <td>Revenus fonciers nets (PS a {fmtPct(psExceptionRate)} %)</td>
               <td colSpan={2}>
-                <IrAmountInput
-                  value={formatMoneyInput(incomes.fonciersFoyer || 0)}
+                <IrEuroField
+                  value={incomes.fonciersFoyer || 0}
                   onChange={(e) => {
-                    setIncomes((prev) => ({ ...prev, fonciersFoyer: parseIntegerInput(e) }));
+                    setIncomes((prev) => ({ ...prev, fonciersFoyer: e }));
                   }}
                 />
               </td>
@@ -361,18 +361,18 @@ export function IrIncomeSection({
               <tr>
                 <td>RCM soumis aux PS a {fmtPct(psGeneralRate)} %</td>
                 <td colSpan={2}>
-                  <IrAmountInput
-                    value={formatMoneyInput(incomes.capital?.withPs || 0)}
-                    onChange={(e) => updateIncome('capital', 'withPs', parseIntegerInput(e))}
+                  <IrEuroField
+                    value={incomes.capital?.withPs || 0}
+                    onChange={(value) => updateIncome('capital', 'withPs', value)}
                   />
                 </td>
               </tr>
               <tr>
                 <td>RCM non soumis aux PS</td>
                 <td colSpan={2}>
-                  <IrAmountInput
-                    value={formatMoneyInput(incomes.capital?.withoutPs || 0)}
-                    onChange={(e) => updateIncome('capital', 'withoutPs', parseIntegerInput(e))}
+                  <IrEuroField
+                    value={incomes.capital?.withoutPs || 0}
+                    onChange={(value) => updateIncome('capital', 'withoutPs', value)}
                   />
                 </td>
               </tr>
@@ -397,19 +397,13 @@ export function IrIncomeSection({
               <tr className="ir-row-title">
                 <td>Déductions (pensions alimentaires, etc.)</td>
                 <td colSpan={2}>
-                  <IrAmountInput
-                    value={formatMoneyInput(deductions)}
-                    onChange={(e) => setDeductions(parseIntegerInput(e))}
-                  />
+                  <IrEuroField value={deductions} onChange={(value) => setDeductions(value)} />
                 </td>
               </tr>
               <tr className="ir-row-title">
                 <td>Réductions / crédits d&apos;impôt</td>
                 <td colSpan={2}>
-                  <IrAmountInput
-                    value={formatMoneyInput(credits)}
-                    onChange={(e) => setCredits(parseIntegerInput(e))}
-                  />
+                  <IrEuroField value={credits} onChange={(value) => setCredits(value)} />
                 </td>
               </tr>
             </>

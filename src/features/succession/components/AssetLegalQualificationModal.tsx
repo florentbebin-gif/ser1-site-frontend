@@ -53,16 +53,12 @@ export default function AssetLegalQualificationModal({
       closeClassName="sc-member-modal__close"
       footer={
         <>
-          <button
-            type="button"
-            className="sc-member-modal__btn sc-member-modal__btn--secondary"
-            onClick={onClose}
-          >
+          <button type="button" className="sim-modal-btn sim-modal-btn--ghost" onClick={onClose}>
             Annuler
           </button>
           <button
             type="button"
-            className="sc-member-modal__btn sc-member-modal__btn--primary"
+            className="sim-modal-btn sim-modal-btn--primary"
             onClick={() => onSave(entry.id, { legalNature, origin, meubleImmeubleLegal })}
           >
             Valider

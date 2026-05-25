@@ -6,23 +6,25 @@
  */
 
 import { useState } from 'react';
+import { SimDisclosureButton, SimTooltip } from '@/components/ui/sim';
+import { CGP_GLOSSARY } from '@/constants/cgpGlossary';
 
 export function TresoHypotheses() {
   const [open, setOpen] = useState(false);
 
   return (
     <div className="ts-hypotheses">
-      <button
-        type="button"
+      <SimDisclosureButton
+        expanded={open}
+        onToggle={() => setOpen((v) => !v)}
         className="ts-hypotheses__toggle"
-        onClick={() => setOpen((v) => !v)}
-        aria-expanded={open}
-      >
-        {open ? '▼' : '▶'} Hypothèses et limites de la simulation
-      </button>
+        labelClosed="Hypothèses et limites"
+        labelOpen="Hypothèses et limites"
+        controls="ts-hypotheses-body"
+      />
 
       {open && (
-        <div className="ts-hypotheses__body">
+        <div id="ts-hypotheses-body" className="ts-hypotheses__body">
           <section className="ts-hyp-section">
             <h3 className="ts-hyp-title">Fiscalité IS</h3>
             <ul className="ts-hyp-list">
@@ -113,8 +115,13 @@ export function TresoHypotheses() {
             <h3 className="ts-hyp-title">Dividendes et PFU</h3>
             <ul className="ts-hyp-list">
               <li>
-                V1 : fiscalité dividendes PFU uniquement (taux IR + prélèvements sociaux lus depuis
-                les paramètres fiscaux). Option barème IR avec abattement 40 % hors scope V1.
+                V1 : fiscalité dividendes{' '}
+                <SimTooltip
+                  label={CGP_GLOSSARY.pfu.label}
+                  description={CGP_GLOSSARY.pfu.description}
+                />{' '}
+                uniquement (taux IR + prélèvements sociaux lus depuis les paramètres fiscaux).
+                Option barème IR avec abattement 40 % hors scope V1.
               </li>
               <li>
                 Convention Option A : les dividendes sortent en brut unique dans les flux

@@ -1,3 +1,4 @@
+import { IconSliders } from '@/icons/ui';
 import { CreditLoanForm } from './CreditLoanForm';
 import { Toggle } from './CreditInputs';
 import type { CreditCalcResult, CreditLoan, CreditRawLoanValues, CreditState } from '../types';
@@ -34,23 +35,7 @@ export function CreditLoanInputPanel({
           <header className="cv-loan-card__header sim-card__header sim-card__header--bleed">
             <h2 className="cv-loan-card__title sim-card__title sim-card__title-row">
               <span className="sim-card__icon sim-card__icon--lg">
-                <svg
-                  className="cv-loan-card__icon"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  aria-hidden="true"
-                >
-                  <line x1="4" y1="6" x2="20" y2="6" />
-                  <line x1="4" y1="12" x2="20" y2="12" />
-                  <line x1="4" y1="18" x2="20" y2="18" />
-                  <circle cx="9" cy="6" r="2" fill="currentColor" stroke="none" />
-                  <circle cx="15" cy="12" r="2" fill="currentColor" stroke="none" />
-                  <circle cx="9" cy="18" r="2" fill="currentColor" stroke="none" />
-                </svg>
+                <IconSliders className="cv-loan-card__icon" />
               </span>
               Paramètres du prêt
             </h2>

@@ -1,4 +1,9 @@
-import { SimModalShell } from '@/components/ui/sim';
+import {
+  SimAmountInputEuro,
+  SimAmountInputNumeric,
+  SimAmountInputPercent,
+  SimModalShell,
+} from '@/components/ui/sim';
 import type {
   FamilyMember,
   SuccessionAssuranceVieContractType,
@@ -19,7 +24,6 @@ import {
   parseCustomClause,
   serializeCustomClause,
 } from '../successionClauseOptions';
-import { ScNumericInput } from './ScNumericInput';
 import { ScSelect } from './ScSelect';
 
 interface PerModalProps {
@@ -59,16 +63,12 @@ export default function PerModal({
       closeClassName="sc-member-modal__close"
       footer={
         <>
-          <button
-            type="button"
-            className="sc-member-modal__btn sc-member-modal__btn--secondary"
-            onClick={onClose}
-          >
+          <button type="button" className="sim-modal-btn sim-modal-btn--ghost" onClick={onClose}>
             Annuler
           </button>
           <button
             type="button"
-            className="sc-member-modal__btn sc-member-modal__btn--primary"
+            className="sim-modal-btn sim-modal-btn--primary"
             onClick={onValidate}
           >
             Valider
@@ -92,14 +92,14 @@ export default function PerModal({
         {entry.typeContrat === 'demembree' && (
           <div className="sc-field">
             <label htmlFor="sc-per-age-usufruitier">Âge de l&apos;usufruitier</label>
-            <input
+            <SimAmountInputNumeric
               id="sc-per-age-usufruitier"
-              type="number"
-              min={1}
+              unit="ans"
+              min={0}
               max={120}
-              value={entry.ageUsufruitier ?? ''}
-              onChange={(e) =>
-                onUpdate('ageUsufruitier', e.target.value ? Number(e.target.value) : undefined)
+              value={entry.ageUsufruitier ?? 0}
+              onChange={(value) =>
+                onUpdate('ageUsufruitier', value > 0 ? Math.round(value) : undefined)
               }
               placeholder="ex. 68"
             />
@@ -167,27 +167,25 @@ export default function PerModal({
                 return (
                   <div key={id} className="sc-clause-custom-row">
                     <span className="sc-clause-custom-row__label">{label}</span>
-                    <input
-                      type="number"
+                    <SimAmountInputPercent
                       aria-label={`Répartition ${label}`}
                       min={0}
                       max={100}
-                      value={parts[id] || ''}
-                      onChange={(e) => {
-                        const newParts = { ...parts, [id]: Number(e.target.value) || 0 };
+                      value={parts[id] || 0}
+                      onChange={(value) => {
+                        const newParts = { ...parts, [id]: value };
                         onUpdate('clauseBeneficiaire', serializeCustomClause(newParts));
                       }}
                       placeholder="0"
                     />
-                    <span className="sc-clause-custom-row__unit">%</span>
                   </div>
                 );
               })}
             </div>
           )}
           <div className="sc-field">
-            <label htmlFor="sc-per-capitaux-deces">Capitaux décès (€)</label>
-            <ScNumericInput
+            <label htmlFor="sc-per-capitaux-deces">Capitaux décès</label>
+            <SimAmountInputEuro
               id="sc-per-capitaux-deces"
               value={entry.capitauxDeces || 0}
               min={0}

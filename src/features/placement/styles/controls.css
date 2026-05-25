@@ -101,50 +101,7 @@
   color: var(--color-c9);
 }
 
-.pl-btn {
-  border: 1px solid var(--color-c8);
-  border-radius: 8px;
-  background: var(--color-c7);
-  font-size: 13px;
-  cursor: pointer;
-}
-
-.pl-btn:disabled {
-  opacity: 0.55;
-  cursor: not-allowed;
-}
-
-.pl-btn--config {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
+.pl-config-action {
   width: 100%;
-  padding: 10px 14px;
-  border-color: var(--color-c5);
-  transition:
-    border-color 0.2s,
-    box-shadow 0.2s,
-    transform 0.2s,
-    background 0.2s;
-}
-
-.pl-btn--config:hover {
-  background: var(--color-c6);
-  border-color: var(--color-c4);
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
-  transform: translateY(-1px);
-}
-
-.pl-btn__icon {
-  display: inline-flex;
-  align-items: center;
   justify-content: center;
-  color: var(--color-c2);
-}
-
-.pl-btn__summary {
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--color-c1);
 }
