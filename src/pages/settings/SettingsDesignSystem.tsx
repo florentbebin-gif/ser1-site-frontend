@@ -36,6 +36,8 @@ import {
   tokenGroups,
   type PrimitiveState,
 } from './designSystemCatalog';
+import { SettingsDesignSystemInfoModal } from './SettingsDesignSystemInfoModal';
+import { SettingsDesignSystemTokenSample } from './SettingsDesignSystemTokenSample';
 
 const ignoreNumberChange = (_value: number) => {};
 
@@ -425,7 +427,7 @@ export default function SettingsDesignSystem() {
               <div className="settings-design-system__token-grid">
                 {group.tokens.map((token) => (
                   <div className="settings-design-system__token" key={token}>
-                    <span className="settings-design-system__token-sample" />
+                    <SettingsDesignSystemTokenSample kind={group.kind} token={token} />
                     <code>{token}</code>
                   </div>
                 ))}
@@ -481,28 +483,7 @@ export default function SettingsDesignSystem() {
         <DesignSystemGlossaryPreview />
       </section>
 
-      {infoOpen ? (
-        <SimModalShell
-          title="À quoi sert cette page ?"
-          subtitle="Aide admin"
-          onClose={() => setInfoOpen(false)}
-          footer={
-            <button
-              type="button"
-              className="sim-modal-btn sim-modal-btn--primary"
-              onClick={() => setInfoOpen(false)}
-            >
-              Compris
-            </button>
-          }
-        >
-          <p className="settings-design-system__info-text">
-            Cette page permet de vérifier rapidement les composants communs des simulateurs :
-            champs, boutons, modales, tableaux, états et affichages mobiles. Elle sert de référence
-            pour garder les pages sim/* cohérentes après une évolution du design system.
-          </p>
-        </SimModalShell>
-      ) : null}
+      {infoOpen ? <SettingsDesignSystemInfoModal onClose={() => setInfoOpen(false)} /> : null}
     </main>
   );
 }

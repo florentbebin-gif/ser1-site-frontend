@@ -48,4 +48,17 @@ describe('SettingsDesignSystem', () => {
     expect(screen.getByRole('heading', { name: 'Glossaire' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Définition : PFU' })).toBeInTheDocument();
   });
+
+  it('rend les aperçus de tokens avec leur valeur réelle', () => {
+    const { container } = render(<SettingsDesignSystem />);
+
+    const spaceSample = container.querySelector('[data-token-sample="--space-1"]');
+    const radiusSample = container.querySelector('[data-token-sample="--radius-full"]');
+
+    expect(spaceSample).toHaveStyle({
+      width: 'var(--space-1)',
+      height: 'var(--space-1)',
+    });
+    expect(radiusSample).toHaveStyle({ borderRadius: 'var(--radius-full)' });
+  });
 });
