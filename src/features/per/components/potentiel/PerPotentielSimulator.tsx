@@ -4,6 +4,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { IconFileText } from '@/icons/ui';
+import { SimAuditTrail } from '@/components/ui/sim';
 import type { PerHistoricalBasis } from '../../../../engine/per';
 import { ExportMenu } from '../../../../components/ExportMenu';
 import { ModeToggle } from '../../../../components/ModeToggle';
@@ -135,6 +136,7 @@ export default function PerPotentielSimulator(): React.ReactElement {
     return (
       <div className="sim-page per-potentiel-page">
         <p className="per-potentiel-loading">Chargement des paramètres fiscaux...</p>
+        <SimAuditTrail />
       </div>
     );
   }
@@ -143,6 +145,7 @@ export default function PerPotentielSimulator(): React.ReactElement {
     return (
       <div className="sim-page per-potentiel-page">
         <p className="per-potentiel-error">Erreur : {error}</p>
+        <SimAuditTrail />
       </div>
     );
   }
@@ -442,6 +445,7 @@ export default function PerPotentielSimulator(): React.ReactElement {
       </div>
 
       <PerHypotheses />
+      <SimAuditTrail />
     </div>
   );
 }

@@ -251,7 +251,7 @@ const plugin = {
     recommended: {
       plugins: ['ser1-tokens'],
       rules: Object.fromEntries(
-        Object.keys(rules).map((ruleName) => [`ser1-tokens/${ruleName}`, 'warn']),
+        Object.keys(rules).map((ruleName) => [`ser1-tokens/${ruleName}`, 'error']),
       ),
     },
   },

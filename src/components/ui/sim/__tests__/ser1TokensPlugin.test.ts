@@ -25,7 +25,7 @@ function verify(code: string, ruleName: string, options: Record<string, unknown>
           'ser1-tokens': ser1TokensPlugin,
         },
         rules: {
-          [`ser1-tokens/${ruleName}`]: ['warn', options],
+          [`ser1-tokens/${ruleName}`]: ['error', options],
         },
       },
     ],
@@ -34,14 +34,14 @@ function verify(code: string, ruleName: string, options: Record<string, unknown>
 }
 
 describe('eslint-plugin-ser1-tokens', () => {
-  it('émet un avertissement sur un espacement inline hardcodé', () => {
+  it('émet une erreur sur un espacement inline hardcodé', () => {
     const messages = verify(
       'const Demo = () => <div style={{ padding: 12 }} />;',
       'no-hardcoded-spacing',
     );
 
     expect(messages).toHaveLength(1);
-    expect(messages[0]?.severity).toBe(1);
+    expect(messages[0]?.severity).toBe(2);
     expect(messages[0]?.ruleId).toBe('ser1-tokens/no-hardcoded-spacing');
   });
 

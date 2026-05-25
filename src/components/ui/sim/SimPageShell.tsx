@@ -1,4 +1,5 @@
 import { Children, Fragment, isValidElement, type ReactElement, type ReactNode } from 'react';
+import { SimAuditTrail } from './SimAuditTrail';
 import { SimSkeletonCard, SimSkeletonKpi } from './SimSkeleton';
 
 type SimPageShellSlotName = 'main' | 'side' | 'section';
@@ -252,6 +253,7 @@ function SimPageShellRoot({
           ))}
         </>
       )}
+      <SimAuditTrail />
     </div>
   );
 }

@@ -105,7 +105,7 @@ export default function ImpotsDmtgSection({
           role="region"
           aria-labelledby="impots-header-dmtg"
         >
-          <p style={{ fontSize: 13, color: 'var(--color-c9)', marginBottom: 16 }}>
+          <p className="fisc-intro fisc-intro--loose">
             Barèmes applicables aux successions et donations selon le lien de parenté. Utilisés par
             le simulateur de placement pour la phase de transmission.
           </p>
@@ -114,19 +114,10 @@ export default function ImpotsDmtgSection({
             const category = dmtg[key];
 
             return (
-              <div key={key} className="income-tax-block" style={{ marginBottom: 24 }}>
-                <div
-                  className="income-tax-block-title"
-                  style={{
-                    color: 'var(--color-c1)',
-                    fontWeight: 600,
-                    fontSize: 15,
-                  }}
-                >
-                  {title}
-                </div>
-                <div style={{ paddingLeft: 8 }}>
-                  <div className="settings-field-row" style={{ marginBottom: 12 }}>
+              <div key={key} className="income-tax-block income-tax-block--spaced">
+                <div className="income-tax-block-title income-tax-block-title--accent">{title}</div>
+                <div className="income-tax-block-body">
+                  <div className="settings-field-row settings-field-row--spaced">
                     <label htmlFor={`impots-dmtg-${key}-abattement`}>{labelAbattement}</label>
                     <input
                       id={`impots-dmtg-${key}-abattement`}

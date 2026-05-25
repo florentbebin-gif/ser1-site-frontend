@@ -177,8 +177,8 @@ export function ImpotsBaremeYearColumn({
 
   return (
     <div className={columnClassName}>
-      <div className="settings-field-row" style={{ marginBottom: 10 }}>
-        <label htmlFor={yearLabelInputId} style={{ fontWeight: 600 }}>
+      <div className="settings-field-row settings-field-row--spaced-lg">
+        <label className="income-tax-year-label" htmlFor={yearLabelInputId}>
           {'Bar\u00e8me'}
         </label>
         <input
@@ -187,7 +187,7 @@ export function ImpotsBaremeYearColumn({
           value={yearLabel ?? ''}
           onChange={(event) => updateField(['incomeTax', yearLabelKey], event.target.value)}
           disabled={!isAdmin}
-          style={{ width: 220, textAlign: 'left' }}
+          className="income-tax-year-input"
           placeholder={placeholder}
         />
       </div>

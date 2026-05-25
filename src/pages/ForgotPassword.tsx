@@ -28,7 +28,7 @@ export default function ForgotPassword(): React.ReactElement {
           </div>
           <div className="login-card">
             <h2 className="card-title">E-mail envoyé</h2>
-            <p style={{ margin: '12px 0' }}>
+            <p className="login-message">
               Si cette adresse existe, un lien vient d’être envoyé à <strong>{email}</strong>.
             </p>
             <Link to="/login" className="btn">

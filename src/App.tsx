@@ -38,7 +38,7 @@ const PageLoader = (): React.ReactElement => (
       justifyContent: 'center',
       height: '100vh',
       color: 'var(--color-c9)',
-      fontSize: '14px',
+      fontSize: 'var(--font-size-md)',
     }}
   >
     Chargement...

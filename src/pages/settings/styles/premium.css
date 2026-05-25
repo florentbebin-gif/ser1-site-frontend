@@ -434,6 +434,14 @@
   height: 14px;
 }
 
+.settings-chevron {
+  transition: transform var(--transition-base) var(--easing-standard);
+}
+
+.settings-chevron--open {
+  transform: rotate(180deg);
+}
+
 .settings-action-content {
   margin-top: 16px;
   padding-top: 16px;

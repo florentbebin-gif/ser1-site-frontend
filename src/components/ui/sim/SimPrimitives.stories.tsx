@@ -13,7 +13,7 @@ function SimPrimitivesPreview() {
   const [mode, setMode] = useState('simplifie');
 
   return (
-    <div className="premium-card" style={{ width: 360 }}>
+    <div className="premium-card" style={{ width: 'calc(var(--space-8) * 7 + var(--space-6))' }}>
       <SimFieldShell
         label="Mode local"
         hint="Override non persistant pour le simulateur courant."

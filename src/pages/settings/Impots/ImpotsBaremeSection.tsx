@@ -57,7 +57,7 @@ export default function ImpotsBaremeSection({
           role="region"
           aria-labelledby="impots-header-bareme"
         >
-          <p style={{ fontSize: 13, color: 'var(--color-c9)', marginBottom: 8 }}>
+          <p className="fisc-intro fisc-intro--compact">
             {
               'Bar\u00e8me progressif par tranches (taux et retraitement) pour le bar\u00e8me actuel et celui de l\u2019ann\u00e9e pr\u00e9c\u00e9dente.'
             }

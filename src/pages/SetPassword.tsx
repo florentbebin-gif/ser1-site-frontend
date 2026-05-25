@@ -95,7 +95,7 @@ export default function SetPassword(): React.ReactElement {
           </div>
           <div className="login-card">
             <h2 className="card-title">Mot de passe défini !</h2>
-            <p style={{ margin: '12px 0', textAlign: 'center' }}>
+            <p className="login-message login-message--center">
               Votre mot de passe a été défini avec succès.
               <br />
               Vous allez être redirigé vers la page de connexion...
@@ -126,7 +126,7 @@ export default function SetPassword(): React.ReactElement {
             <div className="alert error">
               {error}
               {error.includes('expire') || error.includes('invalide') ? (
-                <div style={{ fontSize: '0.9em', marginTop: '8px' }}>
+                <div className="login-inline-note">
                   Redirection automatique vers la page de mot de passe oublié...
                 </div>
               ) : null}
@@ -159,7 +159,7 @@ export default function SetPassword(): React.ReactElement {
             </button>
           </form>
 
-          <div style={{ marginTop: '16px', textAlign: 'center' }}>
+          <div className="login-card-actions">
             <button className="btn-link" onClick={() => navigate('/forgot-password')} type="button">
               Renvoyer un e-mail de réinitialisation
             </button>

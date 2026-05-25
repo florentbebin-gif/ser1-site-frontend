@@ -7,7 +7,6 @@ import tsParser from '@typescript-eslint/parser';
 import tsPlugin from '@typescript-eslint/eslint-plugin';
 import ser1ColorsPlugin from './tools/eslint-plugin-ser1-colors/index.js';
 import ser1TokensPlugin from './tools/eslint-plugin-ser1-tokens/index.js';
-import ser1TokensBaseline from './tools/eslint-plugin-ser1-tokens/baseline.js';
 
 export default [
   js.configs.recommended,
@@ -47,23 +46,11 @@ export default [
       // Color governance rules (strict mode)
       'ser1-colors/no-hardcoded-colors': 'error',
       'ser1-colors/use-semantic-colors': 'error',
-      // Design token governance rules (baseline mode, warn until C33)
-      'ser1-tokens/no-hardcoded-spacing': [
-        'warn',
-        { allowlist: ser1TokensBaseline['no-hardcoded-spacing'] },
-      ],
-      'ser1-tokens/no-hardcoded-radius': [
-        'warn',
-        { allowlist: ser1TokensBaseline['no-hardcoded-radius'] },
-      ],
-      'ser1-tokens/no-hardcoded-font-size': [
-        'warn',
-        { allowlist: ser1TokensBaseline['no-hardcoded-font-size'] },
-      ],
-      'ser1-tokens/no-hardcoded-transition': [
-        'warn',
-        { allowlist: ser1TokensBaseline['no-hardcoded-transition'] },
-      ],
+      // Design token governance rules (strict mode)
+      'ser1-tokens/no-hardcoded-spacing': ['error', { allowlist: [] }],
+      'ser1-tokens/no-hardcoded-radius': ['error', { allowlist: [] }],
+      'ser1-tokens/no-hardcoded-font-size': ['error', { allowlist: [] }],
+      'ser1-tokens/no-hardcoded-transition': ['error', { allowlist: [] }],
       // God-file detection (PR-D Phase 5A)
       'max-lines': ['warn', { max: 500, skipBlankLines: true, skipComments: true }],
     },
