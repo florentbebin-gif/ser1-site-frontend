@@ -21,6 +21,9 @@ describe('SettingsDesignSystem', () => {
     expect(screen.getByLabelText('Taux décimal')).toBeInTheDocument();
     expect(screen.getByLabelText('Nombre libre')).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'Primitives UI' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Ajouter une ligne' })).toBeInTheDocument();
+    expect(screen.getByText('Impôt estimé')).toBeInTheDocument();
+    expect(screen.getByLabelText('Rubriques de modale')).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'Modernité et densité' })).toBeInTheDocument();
   });
 });

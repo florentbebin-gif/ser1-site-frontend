@@ -116,6 +116,43 @@
   border-top: 1px solid var(--color-c8);
 }
 
+.sim-modal-section-nav {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.sim-modal-section-nav__item {
+  min-height: 36px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--color-c9);
+  cursor: pointer;
+  font: inherit;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  padding: 0 var(--space-3);
+  text-align: left;
+}
+
+.sim-modal-section-nav__item:hover:not(:disabled),
+.sim-modal-section-nav__item:focus-visible:not(:disabled) {
+  border-color: var(--color-c8);
+  color: var(--color-c1);
+}
+
+.sim-modal-section-nav__item.is-active {
+  border-color: color-mix(in srgb, var(--color-c3) 44%, var(--color-c8));
+  background: color-mix(in srgb, var(--color-c4) 55%, var(--color-c7));
+  color: var(--color-c1);
+}
+
+.sim-modal-section-nav__item:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
 @media (max-width: 900px) {
   .sim-modal-overlay {
     padding: 12px;

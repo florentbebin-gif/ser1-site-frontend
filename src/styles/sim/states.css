@@ -94,3 +94,37 @@
   line-height: 1.55;
   padding: 14px 18px 14px 30px;
 }
+
+.sim-disclosure-btn {
+  min-height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  border: 1px solid var(--color-c8);
+  border-radius: var(--radius-md);
+  background: var(--color-c7);
+  color: var(--color-c9);
+  cursor: pointer;
+  font: inherit;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  padding: 0 var(--space-3);
+}
+
+.sim-disclosure-btn:hover,
+.sim-disclosure-btn:focus-visible {
+  background: color-mix(in srgb, var(--color-c4) 20%, var(--color-c7));
+  color: var(--color-c1);
+}
+
+.sim-disclosure-btn__chevron {
+  width: 12px;
+  height: 12px;
+  flex-shrink: 0;
+  transition: transform var(--transition-fast) var(--easing-standard);
+}
+
+.sim-disclosure-btn.is-open .sim-disclosure-btn__chevron {
+  transform: rotate(180deg);
+}

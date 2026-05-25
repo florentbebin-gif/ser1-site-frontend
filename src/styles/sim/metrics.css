@@ -1,0 +1,67 @@
+/* Metriques partagees /sim/* */
+
+.sim-metric {
+  display: grid;
+  gap: var(--space-1);
+  min-width: 0;
+}
+
+.sim-metric__label {
+  color: var(--color-c9);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0;
+  line-height: var(--line-height-base);
+}
+
+.sim-metric__value-row {
+  display: inline-flex;
+  align-items: baseline;
+  gap: var(--space-1);
+  min-width: 0;
+}
+
+.sim-metric__value {
+  color: var(--color-c1);
+  font-variant-numeric: tabular-nums;
+  line-height: var(--line-height-tight);
+}
+
+.sim-metric__unit,
+.sim-metric__note,
+.sim-metric__delta {
+  color: var(--color-c9);
+  font-size: var(--font-size-sm);
+  line-height: var(--line-height-base);
+}
+
+.sim-metric__delta {
+  color: var(--color-c3);
+  font-weight: var(--font-weight-semibold);
+}
+
+.sim-metric--hero .sim-metric__value {
+  font-size: var(--font-size-3xl);
+  font-weight: var(--font-weight-bold);
+}
+
+.sim-metric--secondary .sim-metric__value {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+}
+
+.sim-metric--inline {
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: baseline;
+  gap: var(--space-2);
+}
+
+.sim-metric--inline .sim-metric__value {
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-semibold);
+}
+
+.sim-metric--inline .sim-metric__note,
+.sim-metric--inline .sim-metric__delta {
+  grid-column: 1 / -1;
+}

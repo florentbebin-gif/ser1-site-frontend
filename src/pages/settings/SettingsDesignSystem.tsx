@@ -1,8 +1,13 @@
 import { useState } from 'react';
+import '@/styles/sim/index.css';
 import {
   SimAmountInputEuro,
   SimAmountInputNumeric,
   SimAmountInputPercent,
+  SimActionButton,
+  SimDisclosureButton,
+  SimMetric,
+  SimModalSectionNav,
 } from '@/components/ui/sim';
 import {
   IconBarChart,
@@ -108,6 +113,73 @@ function DesignSystemInputPreview() {
   );
 }
 
+function DesignSystemUiPreview() {
+  const [detailsOpen, setDetailsOpen] = useState(false);
+  const [activeSection, setActiveSection] = useState('identite');
+
+  return (
+    <div className="settings-design-system__ui-grid">
+      <article className="settings-design-system__ui-card">
+        <h4>Actions</h4>
+        <div className="settings-design-system__action-row">
+          <SimActionButton variant="add" mode="text" label="Ajouter une ligne" />
+          <SimActionButton variant="edit" mode="icon" label="Modifier" ariaLabel="Modifier" />
+          <SimActionButton
+            variant="duplicate"
+            mode="icon"
+            label="Dupliquer"
+            ariaLabel="Dupliquer"
+          />
+          <SimActionButton
+            variant="delete"
+            mode="icon"
+            label="Supprimer"
+            ariaLabel="Supprimer"
+            danger
+          />
+        </div>
+      </article>
+
+      <article className="settings-design-system__ui-card">
+        <h4>Disclosure</h4>
+        <SimDisclosureButton
+          expanded={detailsOpen}
+          onToggle={() => setDetailsOpen((open) => !open)}
+          labelClosed="Afficher le détail"
+          labelOpen="Masquer le détail"
+          controls="settings-design-system-ui-detail"
+        />
+      </article>
+
+      <article className="settings-design-system__ui-card">
+        <h4>Métriques</h4>
+        <SimMetric variant="hero" label="Impôt estimé" value="12 400" unit="€" note="Simulation" />
+        <SimMetric
+          variant="secondary"
+          label="Avancement"
+          value="42"
+          unit="%"
+          delta={<span>+2 pts</span>}
+        />
+      </article>
+
+      <article className="settings-design-system__ui-card">
+        <h4>Navigation modale</h4>
+        <SimModalSectionNav
+          sections={[
+            { id: 'identite', label: 'Identité', controls: 'settings-ui-identite' },
+            { id: 'revenus', label: 'Revenus', controls: 'settings-ui-revenus' },
+            { id: 'sortie', label: 'Sortie', controls: 'settings-ui-sortie' },
+          ]}
+          activeId={activeSection}
+          ariaLabel="Rubriques de modale"
+          onChange={setActiveSection}
+        />
+      </article>
+    </div>
+  );
+}
+
 export default function SettingsDesignSystem() {
   return (
     <div className="settings-design-system" data-testid="settings-design-system">
@@ -160,7 +232,7 @@ export default function SettingsDesignSystem() {
 
       <section className="settings-premium-card settings-design-system__section">
         <h3 className="settings-design-system__title">Primitives UI</h3>
-        <p className="settings-design-system__placeholder">Section réservée aux primitives C17.</p>
+        <DesignSystemUiPreview />
       </section>
 
       <section className="settings-premium-card settings-design-system__section">
