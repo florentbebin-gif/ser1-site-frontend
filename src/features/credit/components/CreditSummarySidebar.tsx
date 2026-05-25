@@ -1,4 +1,5 @@
 import { IconLayers } from '@/icons/ui';
+import { SimMetric } from '@/components/ui/sim';
 import { euro0 } from '../utils/creditFormatters';
 import { CreditSummaryCard, SummaryDonut } from './CreditSummaryCard';
 import type { CreditCalcResult, CreditSynthesis } from '../types';
@@ -47,12 +48,11 @@ export function CreditSummarySidebar({
 
           <div className="cv-summary__kpi-zone">
             <div>
-              <div className="cv-summary__kpi-label-small">
-                {isAnnual ? 'Annuité totale hors ass.' : 'Mensualité totale hors ass.'}
-              </div>
-              <div className="cv-total-mensu__value">
-                {euro0(calc.synthese.mensualiteTotaleM1 * (isAnnual ? 12 : 1))}
-              </div>
+              <SimMetric
+                variant="hero"
+                label={isAnnual ? 'Annuité totale hors ass.' : 'Mensualité totale hors ass.'}
+                value={euro0(calc.synthese.mensualiteTotaleM1 * (isAnnual ? 12 : 1))}
+              />
               {isExpert && calc.synthese.primeAssMensuelle > 0 && (
                 <div className="cv-summary__kpi-assurance">
                   + {euro0(calc.synthese.primeAssMensuelle * (isAnnual ? 12 : 1))}{' '}
@@ -63,7 +63,6 @@ export function CreditSummarySidebar({
             <SummaryDonut
               capital={calc.synthese.capitalEmprunte}
               interets={calc.synthese.totalInterets}
-              capitalColor="var(--color-c5)"
             />
           </div>
 

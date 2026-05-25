@@ -183,7 +183,6 @@ export interface CreditLoanFormProps {
 export interface SummaryDonutProps {
   capital: number;
   interets: number;
-  capitalColor?: string;
 }
 
 export interface CreditSummaryCardProps {

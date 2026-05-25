@@ -5,28 +5,25 @@
 import { euro0 } from '../utils/creditFormatters';
 import type { CreditSummaryCardProps, SummaryDonutProps } from '../types';
 import { IconBarChart } from '@/icons/ui';
+import { SimMetric } from '@/components/ui/sim';
 
 const DONUT_R = 27;
 const DONUT_CX = 34;
 const DONUT_CY = 34;
 const DONUT_CIRCUMFERENCE = 2 * Math.PI * DONUT_R;
 
-export function SummaryDonut({
-  capital,
-  interets,
-  capitalColor = 'var(--color-c2)',
-}: SummaryDonutProps) {
+export function SummaryDonut({ capital, interets }: SummaryDonutProps) {
   const total = capital + interets;
 
   if (total <= 0) {
     return (
       <svg width="68" height="68" viewBox="0 0 68 68" className="cv-donut" aria-hidden="true">
         <circle
+          className="cv-donut__track"
           cx={DONUT_CX}
           cy={DONUT_CY}
           r={DONUT_R}
           fill="none"
-          stroke="var(--color-c8)"
           strokeWidth="9"
         />
       </svg>
@@ -46,30 +43,30 @@ export function SummaryDonut({
       style={{ transform: 'rotate(-90deg)' }}
     >
       <circle
+        className="cv-donut__track"
         cx={DONUT_CX}
         cy={DONUT_CY}
         r={DONUT_R}
         fill="none"
-        stroke="var(--color-c8)"
         strokeWidth="9"
       />
       <circle
+        className="cv-donut__capital"
         cx={DONUT_CX}
         cy={DONUT_CY}
         r={DONUT_R}
         fill="none"
-        stroke={capitalColor}
         strokeWidth="9"
         strokeDasharray={`${capitalLen} ${DONUT_CIRCUMFERENCE}`}
         strokeDashoffset="0"
         strokeLinecap="butt"
       />
       <circle
+        className="cv-donut__interest"
         cx={DONUT_CX}
         cy={DONUT_CY}
         r={DONUT_R}
         fill="none"
-        stroke="var(--color-c6)"
         strokeWidth="9"
         strokeDasharray={`${interetsLen} ${DONUT_CIRCUMFERENCE}`}
         strokeDashoffset={`${-capitalLen}`}
@@ -114,10 +111,15 @@ export function CreditSummaryCard({
 
       <div className="cv-summary__kpi-zone">
         <div>
-          <div className="cv-summary__kpi-label-small">{kpiLabel}</div>
-          <div className="cv-summary__kpi-main-value" data-testid="credit-mensu-totale-avec-ass">
-            {euro0(mensualiteTotaleM1 * factor)}
-          </div>
+          <SimMetric
+            variant="hero"
+            label={kpiLabel}
+            value={
+              <span data-testid="credit-mensu-totale-avec-ass">
+                {euro0(mensualiteTotaleM1 * factor)}
+              </span>
+            }
+          />
           {isExpert && primeAssMensuelle > 0 && (
             <div className="cv-summary__kpi-assurance">
               + {euro0(primeAssMensuelle * factor)} {assLabel} ass.

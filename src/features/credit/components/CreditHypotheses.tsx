@@ -1,4 +1,4 @@
-import { IconChevronDown } from '@/icons/ui';
+import { SimDisclosureButton } from '@/components/ui/sim';
 
 interface CreditHypothesesProps {
   hypothesesOpen: boolean;
@@ -8,18 +8,17 @@ interface CreditHypothesesProps {
 export function CreditHypotheses({ hypothesesOpen, onToggle }: CreditHypothesesProps) {
   return (
     <div className="cv-hypotheses">
-      <button
-        type="button"
+      <SimDisclosureButton
+        expanded={hypothesesOpen}
+        onToggle={onToggle}
         className="cv-hypotheses__toggle"
-        onClick={onToggle}
-        aria-expanded={hypothesesOpen}
+        labelClosed="Hypothèses et limites"
+        labelOpen="Hypothèses et limites"
+        controls="credit-hypotheses-panel"
         data-testid="credit-hypotheses-toggle"
-      >
-        <span className="cv-hypotheses__title">Hypothèses et limites</span>
-        <IconChevronDown className={`cv-hypotheses__chevron${hypothesesOpen ? ' is-open' : ''}`} />
-      </button>
+      />
       {hypothesesOpen && (
-        <ul>
+        <ul id="credit-hypotheses-panel">
           <li>Les résultats sont indicatifs et ne constituent pas une offre de prêt.</li>
           <li>Le calcul suppose un taux fixe sur toute la durée du prêt.</li>
           <li>

@@ -153,25 +153,15 @@
   margin-bottom: -2px; /* chevauche la ligne C8 du ::after */
 }
 
-.cv-tabs__tab-remove {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 16px;
-  height: 16px;
-  border-radius: 50%;
-  border: none;
-  background: transparent;
-  color: var(--color-c9);
-  font-size: 14px;
-  line-height: 1;
-  cursor: pointer;
+.cv-tabs__tab-remove.sim-action-btn {
+  width: 28px;
+  min-height: 28px;
+  border-radius: var(--radius-full);
   opacity: 0;
   transition:
     opacity 0.15s,
     background 0.15s,
     color 0.15s;
-  padding: 0;
   margin-left: -8px; /* recouvre lÃ©gÃ¨rement le padding-right du tab */
   margin-right: 4px;
   position: relative;
@@ -183,14 +173,7 @@
   opacity: 1;
 }
 
-.cv-tabs__tab-remove:hover {
-  background: var(--color-c8);
-  color: var(--color-c1);
-}
-
-.cv-tabs__tab-remove:focus-visible {
-  outline: 2px solid var(--color-c2);
-  outline-offset: 1px;
+.cv-tabs__tab-remove.sim-action-btn:focus-visible {
   opacity: 1;
 }
 

@@ -2,8 +2,8 @@
  * CreditScheduleTable.tsx - Tableau échéancier (mensuel ou annuel)
  */
 
-import { useMemo, useState } from 'react';
-import { IconChevronDown } from '@/icons/ui';
+import { useId, useMemo, useState } from 'react';
+import { SimDisclosureButton } from '@/components/ui/sim';
 import { euro0, addMonths, labelMonthFR } from '../utils/creditFormatters';
 import type { CreditScheduleRow, CreditScheduleTableProps } from '../types';
 
@@ -78,6 +78,7 @@ export function CreditScheduleTable({
   hideInsurance = false,
 }: CreditScheduleTableProps) {
   const [collapsed, setCollapsed] = useState(defaultCollapsed);
+  const schedulePanelId = useId();
 
   const displayRows = useMemo<Array<AnnualScheduleRow | MonthlyScheduleRow>>(() => {
     if (!rows || rows.length === 0) return [];
@@ -97,19 +98,17 @@ export function CreditScheduleTable({
         <h3 className="cv-schedule__title">
           {title || `Échéancier ${isAnnual ? 'annuel' : 'mensuel'}`}
         </h3>
-        <button
-          type="button"
-          className="cv-schedule__toggle"
-          onClick={() => setCollapsed(!collapsed)}
-          aria-expanded={!collapsed}
-        >
-          {collapsed ? 'Afficher' : 'Masquer'}
-          <IconChevronDown className={`cv-schedule__chevron ${collapsed ? '' : 'is-open'}`} />
-        </button>
+        <SimDisclosureButton
+          expanded={!collapsed}
+          onToggle={() => setCollapsed(!collapsed)}
+          labelClosed="Afficher"
+          labelOpen="Masquer"
+          controls={schedulePanelId}
+        />
       </div>
 
       {!collapsed && (
-        <div className="cv-schedule__scroll">
+        <div className="cv-schedule__scroll" id={schedulePanelId}>
           <table className="cv-table">
             <thead>
               <tr>
