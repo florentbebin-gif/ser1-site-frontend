@@ -10,6 +10,7 @@ import {
   SimKpiReference,
   SimMetric,
   SimModalSectionNav,
+  SimSegmentedControl,
   SimSkeletonCard,
   SimSkeletonKpi,
   SimSkeletonText,
@@ -131,6 +132,7 @@ function DesignSystemInputPreview() {
 function DesignSystemUiPreview() {
   const [detailsOpen, setDetailsOpen] = useState(false);
   const [activeSection, setActiveSection] = useState('identite');
+  const [period, setPeriod] = useState<'mensuel' | 'annuel'>('mensuel');
 
   return (
     <div className="settings-design-system__ui-grid">
@@ -163,6 +165,19 @@ function DesignSystemUiPreview() {
           labelClosed="Afficher le détail"
           labelOpen="Masquer le détail"
           controls="settings-design-system-ui-detail"
+        />
+      </article>
+
+      <article className="settings-design-system__ui-card">
+        <h4>Contrôle segmenté</h4>
+        <SimSegmentedControl
+          value={period}
+          onChange={setPeriod}
+          ariaLabel="Période de démonstration"
+          options={[
+            { value: 'mensuel', label: 'Mensuel' },
+            { value: 'annuel', label: 'Annuel' },
+          ]}
         />
       </article>
 

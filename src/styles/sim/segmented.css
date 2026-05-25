@@ -40,3 +40,15 @@
   padding: 4px 10px;
   font-size: 11px;
 }
+
+@media (max-width: 600px) {
+  .sim-segmented__option {
+    min-height: calc(var(--space-5) + var(--space-6));
+    padding-block: 0;
+  }
+
+  .sim-segmented--sm .sim-segmented__option {
+    min-height: calc(var(--space-5) + var(--space-6));
+    padding-block: 0;
+  }
+}

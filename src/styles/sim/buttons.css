@@ -122,3 +122,20 @@
   background: var(--color-c2);
   border-color: var(--color-c2);
 }
+
+@media (max-width: 600px) {
+  .sim-action-btn,
+  .sim-modal-btn {
+    min-height: calc(var(--space-5) + var(--space-6));
+  }
+
+  .sim-action-btn--icon,
+  .sim-info-btn {
+    min-width: calc(var(--space-5) + var(--space-6));
+    width: calc(var(--space-5) + var(--space-6));
+  }
+
+  .sim-info-btn {
+    height: calc(var(--space-5) + var(--space-6));
+  }
+}

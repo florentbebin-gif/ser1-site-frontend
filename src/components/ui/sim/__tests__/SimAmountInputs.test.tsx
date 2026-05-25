@@ -115,6 +115,10 @@ describe('SimAmountInputPercent', () => {
       'inputmode',
       'decimal',
     );
+    expect(screen.getByRole('textbox', { name: 'Rendement' })).toHaveAttribute(
+      'enterkeyhint',
+      'next',
+    );
   });
 
   it('convertit une saisie avec virgule en nombre décimal', () => {
@@ -177,6 +181,7 @@ describe('SimAmountInputNumeric', () => {
     fireEvent.change(input, { target: { value: '2,25' } });
 
     expect(input).toHaveAttribute('inputmode', 'decimal');
+    expect(input).toHaveAttribute('enterkeyhint', 'next');
     expect(onChange).toHaveBeenLastCalledWith(2.25);
   });
 
