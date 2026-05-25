@@ -1,6 +1,13 @@
 import { useState } from 'react';
 import type { ReactNode } from 'react';
-import { SimAmountInputNumeric, SimInfoButton, SimMetric, SimTooltip } from '@/components/ui/sim';
+import {
+  SimAmountInputNumeric,
+  SimInfoButton,
+  SimKpiReference,
+  SimMetric,
+  SimSparkline,
+  SimTooltip,
+} from '@/components/ui/sim';
 import { CGP_GLOSSARY } from '@/constants/cgpGlossary';
 import {
   TYPE_LABELS,
@@ -379,7 +386,17 @@ function KpiRow({
       label={label}
       value={value}
       className={`per-transfert-compare2__metric${muted ? ' is-muted' : ''}${highlighted ? ' is-highlighted' : ''}`}
+      note={highlighted ? <PerKpiReference /> : undefined}
     />
+  );
+}
+
+function PerKpiReference() {
+  return (
+    <span className="sim-kpi-note">
+      <SimSparkline />
+      <SimKpiReference kind="per" />
+    </span>
   );
 }
 

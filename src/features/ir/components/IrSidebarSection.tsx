@@ -1,4 +1,4 @@
-import { SimMetric, SimTooltip } from '@/components/ui/sim';
+import { SimKpiReference, SimMetric, SimSparkline, SimTooltip } from '@/components/ui/sim';
 import { CGP_GLOSSARY } from '@/constants/cgpGlossary';
 import { IconBarChart } from '@/icons/ui';
 import type { IrSidebarSectionProps } from './irTypes';
@@ -176,6 +176,12 @@ export function IrSidebarSection({
                 value={
                   <span data-testid="ir-irnet-value">
                     {result ? euro0(result.irNet || 0) : '-'}
+                  </span>
+                }
+                note={
+                  <span className="sim-kpi-note">
+                    <SimSparkline />
+                    <SimKpiReference kind="ir" />
                   </span>
                 }
               />

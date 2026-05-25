@@ -7,10 +7,39 @@ import { describe, expect, it, vi } from 'vitest';
 import { SimActionButton } from './SimActionButton';
 import { SimDisclosureButton } from './SimDisclosureButton';
 import { SimEmptyState } from './SimEmptyState';
+import { SimKpiReference } from './SimKpiReference';
 import { SimMetric } from './SimMetric';
 import { SimModalSectionNav } from './SimModalSectionNav';
 import { SimSkeletonCard, SimSkeletonKpi, SimSkeletonText } from './SimSkeleton';
+import { SimSparkline } from './SimSparkline';
 import { SimTooltip } from './SimTooltip';
+
+vi.mock('@/hooks/useFiscalContext', () => ({
+  useFiscalContext: () => ({
+    fiscalContext: {
+      _raw_tax: {
+        incomeTax: { currentYearLabel: 'IR test' },
+        pfu: { current: { rateIR: 7.4 } },
+        dmtg: { ligneDirecte: { abattement: 123456 } },
+        corporateTax: { current: { normalRate: 21, reducedRate: 9 } },
+      },
+      _raw_ps: {
+        labels: { currentYearLabel: 'PS test' },
+        patrimony: { current: { generalRate: 8.5 } },
+      },
+      _raw_fiscality: {
+        perIndividuel: {
+          rente: { pensionAbatementRatePercent: 6 },
+          sortieCapital: {
+            retraite: {
+              petiteRente: { monthlyThreshold: 234 },
+            },
+          },
+        },
+      },
+    },
+  }),
+}));
 
 describe('SimActionButton', () => {
   it('rend une action texte avec son libelle visible', () => {
@@ -325,5 +354,46 @@ describe('SimEmptyState', () => {
     expect(html).toContain('Aucune synthèse');
     expect(html).toContain('Complétez les champs');
     expect(html).toContain('Compléter');
+  });
+});
+
+describe('SimSparkline', () => {
+  it('rend une ligne SVG décorative en couleur courante', () => {
+    const html = renderToStaticMarkup(<SimSparkline />);
+
+    expect(html).toContain('width="60"');
+    expect(html).toContain('height="16"');
+    expect(html).toContain('aria-hidden="true"');
+    expect(html).toContain('currentColor');
+  });
+});
+
+describe('SimKpiReference', () => {
+  it('rend la référence IR depuis le contexte fiscal brut', () => {
+    const html = renderToStaticMarkup(<SimKpiReference kind="ir" />);
+
+    expect(html).toContain('Barème IR test');
+  });
+
+  it('rend une référence PFU et PS depuis le contexte fiscal brut', () => {
+    const html = renderToStaticMarkup(<SimKpiReference kind="pfu" />);
+
+    expect(html).toContain('PFU IR 7,4 %');
+    expect(html).toContain('PS 8,5 %');
+  });
+
+  it('rend les références DMTG, PER et IS', () => {
+    const html = renderToStaticMarkup(
+      <>
+        <SimKpiReference kind="dmtg" />
+        <SimKpiReference kind="per" />
+        <SimKpiReference kind="is" />
+      </>,
+    );
+
+    expect(html).toContain('DMTG ligne directe');
+    expect(html).toContain('123 456 €');
+    expect(html).toContain('PER retraite');
+    expect(html).toContain('IS 21 %');
   });
 });

@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import { TimelineBar } from '@/components/TimelineBar';
-import { SimMetric } from '@/components/ui/sim';
+import { SimKpiReference, SimMetric, SimSparkline } from '@/components/ui/sim';
 import { IconBarChart } from '@/icons/ui';
 import { shortEuro } from '../utils/formatters';
 import type { PlacementSimulatorState } from '../utils/normalizers';
@@ -243,6 +243,7 @@ function KpiCompareMetric({
       label={label}
       value={value}
       className={`pl-kpi-metric pl-kpi-metric--${side}${total ? ' pl-kpi-metric--total' : ''}`}
+      note={total ? <PlacementKpiReference /> : undefined}
     />
   );
 }
@@ -262,6 +263,16 @@ function KpiSingleMetric({
       label={label}
       value={value}
       className={`pl-kpi-metric pl-kpi-metric--single${total ? ' pl-kpi-metric--total' : ''}`}
+      note={total ? <PlacementKpiReference /> : undefined}
     />
+  );
+}
+
+function PlacementKpiReference() {
+  return (
+    <span className="sim-kpi-note">
+      <SimSparkline />
+      <SimKpiReference kind="pfu" />
+    </span>
   );
 }

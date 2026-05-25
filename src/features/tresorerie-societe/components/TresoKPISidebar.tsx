@@ -2,7 +2,8 @@
  * TresoKPISidebar.tsx — Synthèse courte de la projection holding.
  */
 
-import { SimMetric } from '@/components/ui/sim';
+import type { ReactNode } from 'react';
+import { SimKpiReference, SimMetric, SimSparkline } from '@/components/ui/sim';
 import type { TresoKPIs } from '../hooks/useTresorerieCalculations';
 import type { TresoInputsRuntime } from '../../../engine/tresorerie/types';
 
@@ -25,7 +26,7 @@ interface KpiCardProps {
   label: string;
   value: string;
   tone?: 'neutral' | 'warning' | 'positive';
-  note?: string;
+  note?: ReactNode;
 }
 
 function KpiCard({ label, value, tone = 'neutral', note }: KpiCardProps) {
@@ -128,7 +129,11 @@ export function TresoKPISidebar({ kpis }: Props) {
             value={fmtPercent(kpis.performanceMoyenneTresorerie)}
             note="Trésorerie placée"
           />
-          <KpiCard label="IS total décaissé" value={fmtEuro(kpis.isTotalDecaisse)} />
+          <KpiCard
+            label="IS total décaissé"
+            value={fmtEuro(kpis.isTotalDecaisse)}
+            note={<TresoKpiReference />}
+          />
           <KpiCard
             label="Compte bancaire fin horizon"
             value={fmtEuro(kpis.compteBancaireFinHorizon)}
@@ -148,5 +153,14 @@ export function TresoKPISidebar({ kpis }: Props) {
         </div>
       )}
     </div>
+  );
+}
+
+function TresoKpiReference() {
+  return (
+    <span className="sim-kpi-note">
+      <SimSparkline />
+      <SimKpiReference kind="is" />
+    </span>
   );
 }

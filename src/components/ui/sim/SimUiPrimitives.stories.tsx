@@ -3,9 +3,11 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import { SimActionButton } from './SimActionButton';
 import { SimDisclosureButton } from './SimDisclosureButton';
 import { SimEmptyState } from './SimEmptyState';
+import { SimKpiReference } from './SimKpiReference';
 import { SimMetric } from './SimMetric';
 import { SimModalSectionNav } from './SimModalSectionNav';
 import { SimSkeletonCard, SimSkeletonKpi, SimSkeletonText } from './SimSkeleton';
+import { SimSparkline } from './SimSparkline';
 import { SimTooltip } from './SimTooltip';
 
 const navSections = [
@@ -55,7 +57,12 @@ function SimUiPrimitivesPreview() {
             label="Gain fiscal"
             value="4 800"
             unit="€"
-            note="Simulation courante"
+            note={
+              <span className="sim-kpi-note">
+                <SimSparkline />
+                <SimKpiReference kind="pfu" />
+              </span>
+            }
           />
         </div>
       </section>

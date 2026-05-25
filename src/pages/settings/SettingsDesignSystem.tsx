@@ -6,11 +6,13 @@ import {
   SimAmountInputPercent,
   SimActionButton,
   SimDisclosureButton,
+  SimKpiReference,
   SimMetric,
   SimModalSectionNav,
   SimSkeletonCard,
   SimSkeletonKpi,
   SimSkeletonText,
+  SimSparkline,
   SimTooltip,
 } from '@/components/ui/sim';
 import { CGP_GLOSSARY_ENTRIES } from '@/constants/cgpGlossary';
@@ -164,7 +166,18 @@ function DesignSystemUiPreview() {
 
       <article className="settings-design-system__ui-card">
         <h4>Métriques</h4>
-        <SimMetric variant="hero" label="Impôt estimé" value="12 400" unit="€" note="Simulation" />
+        <SimMetric
+          variant="hero"
+          label="Impôt estimé"
+          value="12 400"
+          unit="€"
+          note={
+            <span className="sim-kpi-note">
+              <SimSparkline />
+              <SimKpiReference kind="ir" />
+            </span>
+          }
+        />
         <SimMetric
           variant="secondary"
           label="Avancement"

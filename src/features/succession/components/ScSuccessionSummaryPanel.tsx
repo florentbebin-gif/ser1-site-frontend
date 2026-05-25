@@ -1,4 +1,4 @@
-import { SimMetric, SimTooltip } from '@/components/ui/sim';
+import { SimKpiReference, SimMetric, SimSparkline, SimTooltip } from '@/components/ui/sim';
 import { CGP_GLOSSARY } from '@/constants/cgpGlossary';
 import { IconPieChart } from '@/icons/ui';
 import { fmt } from '../successionSimulator.helpers';
@@ -134,6 +134,10 @@ export default function ScSuccessionSummaryPanel({
   const step2TotalTransmis = displayUsesChainage
     ? unifiedBlocks.reduce((s, b) => s + (b.step2TransmissionNette ?? 0), 0)
     : 0;
+  const syntheseAssietteLabel =
+    synthDonutTransmis > 0
+      ? `sur ${fmt(synthDonutTransmis)} ${displayUsesChainage ? 'cumulés' : 'transmis'}`
+      : null;
 
   return (
     <div className="premium-card sc-summary-card sim-summary-card sim-summary-card--secondary sc-hero-card sc-hero-card--secondary">
@@ -151,11 +155,11 @@ export default function ScSuccessionSummaryPanel({
             label="Coût de transmission estimé"
             value={fmt(derivedTotalDroits)}
             note={
-              synthDonutTransmis > 0 ? (
-                <>
-                  sur {fmt(synthDonutTransmis)} {displayUsesChainage ? 'cumulés' : 'transmis'}
-                </>
-              ) : undefined
+              <span className="sim-kpi-note">
+                {syntheseAssietteLabel ? <span>{syntheseAssietteLabel}</span> : null}
+                <SimSparkline />
+                <SimKpiReference kind="dmtg" />
+              </span>
             }
           />
         </div>

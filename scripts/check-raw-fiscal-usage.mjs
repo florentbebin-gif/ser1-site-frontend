@@ -10,6 +10,7 @@ const ALLOWED_FILES = new Set(
     'src/hooks/useFiscalContext.ts',
     'src/hooks/usePlacementSettings.ts',
     'src/utils/fiscalSettingsFingerprints.ts',
+    'src/utils/fiscalKpiReferenceLabels.ts',
     'src/domain/base-contrat/rules/fiscalLabels.ts',
     'src/features/succession/successionFiscalContext.ts',
     'src/features/ir/utils/irFiscalSettings.ts',

@@ -5,7 +5,7 @@
 import { euro0 } from '../utils/creditFormatters';
 import type { CreditSummaryCardProps, SummaryDonutProps } from '../types';
 import { IconBarChart } from '@/icons/ui';
-import { SimMetric } from '@/components/ui/sim';
+import { SimKpiReference, SimMetric, SimSparkline } from '@/components/ui/sim';
 
 const DONUT_R = 27;
 const DONUT_CX = 34;
@@ -117,6 +117,12 @@ export function CreditSummaryCard({
             value={
               <span data-testid="credit-mensu-totale-avec-ass">
                 {euro0(mensualiteTotaleM1 * factor)}
+              </span>
+            }
+            note={
+              <span className="sim-kpi-note">
+                <SimSparkline />
+                <SimKpiReference kind="ir" />
               </span>
             }
           />
