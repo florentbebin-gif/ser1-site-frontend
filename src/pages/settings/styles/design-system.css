@@ -34,10 +34,15 @@
 }
 
 .settings-design-system__token-grid,
-.settings-design-system__icon-grid {
+.settings-design-system__icon-grid,
+.settings-design-system__input-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(128px, 1fr));
   gap: var(--space-3);
+}
+
+.settings-design-system__input-grid {
+  align-items: start;
 }
 
 .settings-design-system__token,

@@ -1,3 +1,9 @@
+import { useState } from 'react';
+import {
+  SimAmountInputEuro,
+  SimAmountInputNumeric,
+  SimAmountInputPercent,
+} from '@/components/ui/sim';
 import {
   IconBarChart,
   IconCalendar,
@@ -76,6 +82,32 @@ const icons = [
   ['Graphique', IconBarChart],
 ] as const;
 
+function DesignSystemInputPreview() {
+  const [montant, setMontant] = useState(250000);
+  const [taux, setTaux] = useState(4.5);
+  const [parts, setParts] = useState(2.5);
+
+  return (
+    <div className="settings-design-system__input-grid">
+      <SimAmountInputEuro label="Montant euro" value={montant} onChange={setMontant} min={0} />
+      <SimAmountInputPercent
+        label="Taux décimal"
+        value={taux}
+        onChange={setTaux}
+        min={0}
+        max={20}
+      />
+      <SimAmountInputNumeric
+        label="Nombre libre"
+        unit="parts"
+        value={parts}
+        onChange={setParts}
+        min={0}
+      />
+    </div>
+  );
+}
+
 export default function SettingsDesignSystem() {
   return (
     <div className="settings-design-system" data-testid="settings-design-system">
@@ -123,7 +155,7 @@ export default function SettingsDesignSystem() {
 
       <section className="settings-premium-card settings-design-system__section">
         <h3 className="settings-design-system__title">Primitives inputs</h3>
-        <p className="settings-design-system__placeholder">Section réservée aux primitives C06.</p>
+        <DesignSystemInputPreview />
       </section>
 
       <section className="settings-premium-card settings-design-system__section">

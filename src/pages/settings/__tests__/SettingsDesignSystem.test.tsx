@@ -17,6 +17,9 @@ describe('SettingsDesignSystem', () => {
     expect(screen.getByText('Modifier')).toBeInTheDocument();
     expect(screen.getByText('Graphique')).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'Primitives inputs' })).toBeInTheDocument();
+    expect(screen.getByLabelText('Montant euro')).toBeInTheDocument();
+    expect(screen.getByLabelText('Taux décimal')).toBeInTheDocument();
+    expect(screen.getByLabelText('Nombre libre')).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'Primitives UI' })).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'Modernité et densité' })).toBeInTheDocument();
   });
