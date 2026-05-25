@@ -1,3 +1,4 @@
+import { SimAmountInputEuro } from '@/components/ui/sim';
 import type { SuccessionAssetPocket } from '../successionDraft';
 import type { DispositionsDraftState } from '../successionSimulator.helpers';
 import {
@@ -5,7 +6,6 @@ import {
   getSuccessionPocketLabel,
 } from '../successionInterMassClaims';
 import { OUI_NON_OPTIONS } from '../successionSimulator.constants';
-import { ScNumericInput } from './ScNumericInput';
 import { ScSelect, type ScSelectOption } from './ScSelect';
 
 const INTER_MASS_CLAIM_KIND_OPTIONS: ScSelectOption[] = [
@@ -107,8 +107,8 @@ export function DispositionsInterMassClaimsSection({
                   />
                 </div>
                 <div className="sc-field">
-                  <label htmlFor={`sc-inter-mass-amount-${claim.id}`}>Montant (EUR)</label>
-                  <ScNumericInput
+                  <label htmlFor={`sc-inter-mass-amount-${claim.id}`}>Montant</label>
+                  <SimAmountInputEuro
                     id={`sc-inter-mass-amount-${claim.id}`}
                     value={claim.amount}
                     min={0}

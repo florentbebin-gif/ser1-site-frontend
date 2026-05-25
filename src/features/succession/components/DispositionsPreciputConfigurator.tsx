@@ -1,8 +1,8 @@
 import type { Dispatch, SetStateAction } from 'react';
+import { SimAmountInputEuro } from '@/components/ui/sim';
 import type { DispositionsDraftState } from '../successionSimulator.helpers';
 import type { SuccessionPreciputCandidate } from '../successionPreciput';
 import type { ScSelectOption } from './ScSelect';
-import { ScNumericInput } from './ScNumericInput';
 import { ScSelect } from './ScSelect';
 import { OUI_NON_OPTIONS } from '../successionSimulator.constants';
 
@@ -66,6 +66,7 @@ export function DispositionsPreciputConfigurator({
     (option) => option.value !== '' && !option.disabled,
   );
   const fieldIdPrefix = title.includes('société') ? 'sc-preciput-societe-acquets' : 'sc-preciput';
+  const amountLabel = title.replace(/\s*\(EUR\)/, '');
 
   return (
     <>
@@ -96,9 +97,9 @@ export function DispositionsPreciputConfigurator({
 
       <div className="sc-field">
         <label htmlFor={`${fieldIdPrefix}-montant`}>
-          {dispositionsDraft.preciputMode === 'cible' ? `${title} de repli (EUR)` : title}
+          {dispositionsDraft.preciputMode === 'cible' ? `${amountLabel} de repli` : amountLabel}
         </label>
-        <ScNumericInput
+        <SimAmountInputEuro
           id={`${fieldIdPrefix}-montant`}
           value={dispositionsDraft.preciputMontant || 0}
           min={0}
@@ -179,9 +180,9 @@ export function DispositionsPreciputConfigurator({
 
                       <div className="sc-field">
                         <label htmlFor={`sc-preciput-selection-amount-${selection.id}`}>
-                          Montant ciblé (EUR)
+                          Montant ciblé
                         </label>
-                        <ScNumericInput
+                        <SimAmountInputEuro
                           id={`sc-preciput-selection-amount-${selection.id}`}
                           value={selection.amount}
                           min={0}

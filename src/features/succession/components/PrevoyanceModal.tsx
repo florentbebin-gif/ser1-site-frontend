@@ -1,6 +1,5 @@
-import { SimModalShell } from '@/components/ui/sim';
+import { SimAmountInputEuro, SimModalShell } from '@/components/ui/sim';
 import type { SuccessionPersonParty, SuccessionPrevoyanceDecesEntry } from '../successionDraft';
-import { ScNumericInput } from './ScNumericInput';
 import { ScSelect } from './ScSelect';
 
 interface PrevoyanceModalProps {
@@ -78,8 +77,8 @@ export default function PrevoyanceModal({
           />
         </div>
         <div className="sc-field">
-          <label htmlFor="sc-prevoyance-capital-deces">Capital décès (€)</label>
-          <ScNumericInput
+          <label htmlFor="sc-prevoyance-capital-deces">Capital décès</label>
+          <SimAmountInputEuro
             id="sc-prevoyance-capital-deces"
             value={entry.capitalDeces || 0}
             min={0}
@@ -88,8 +87,8 @@ export default function PrevoyanceModal({
           />
         </div>
         <div className="sc-field">
-          <label htmlFor="sc-prevoyance-derniere-prime">Dernière prime versée (€)</label>
-          <ScNumericInput
+          <label htmlFor="sc-prevoyance-derniere-prime">Dernière prime versée</label>
+          <SimAmountInputEuro
             id="sc-prevoyance-derniere-prime"
             value={entry.dernierePrime || 0}
             min={0}

@@ -1,8 +1,8 @@
+import { SimAmountInputEuro } from '@/components/ui/sim';
 import type { SuccessionDonationEntry, SuccessionDonationPartageAct } from '../successionDraft';
 import { summarizeDonationPartageActs } from '../successionDonationPartage';
 import { DONATION_TYPE_OPTIONS } from '../successionSimulator.constants';
 import { fmt } from '../successionSimulator.helpers';
-import { ScNumericInput } from './ScNumericInput';
 import { ScSelect } from './ScSelect';
 
 interface ScDonationsCardProps {
@@ -181,10 +181,8 @@ export default function ScDonationsCard({
                     />
                   </div>
                   <div className="sc-field">
-                    <label htmlFor={`sc-donation-valeur-${entry.id}`}>
-                      Valeur à la donation (EUR)
-                    </label>
-                    <ScNumericInput
+                    <label htmlFor={`sc-donation-valeur-${entry.id}`}>Valeur à la donation</label>
+                    <SimAmountInputEuro
                       id={`sc-donation-valeur-${entry.id}`}
                       value={entry.valeurDonation ?? entry.montant ?? 0}
                       min={0}
@@ -193,9 +191,9 @@ export default function ScDonationsCard({
                   </div>
                   <div className="sc-field">
                     <label htmlFor={`sc-donation-valeur-actuelle-${entry.id}`}>
-                      Valeur actuelle (EUR)
+                      Valeur actuelle
                     </label>
-                    <ScNumericInput
+                    <SimAmountInputEuro
                       id={`sc-donation-valeur-actuelle-${entry.id}`}
                       value={entry.valeurActuelle || 0}
                       min={0}

@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { SimModalShell } from '@/components/ui/sim';
+import { SimAmountInputEuro, SimModalShell } from '@/components/ui/sim';
 import type {
   SituationMatrimoniale,
   SuccessionDonationPartageAct,
@@ -10,7 +10,6 @@ import type {
 } from '../successionDraft';
 import { createDonationPartageSoulteId, fmt } from '../successionSimulator.helpers';
 import { validateDonationPartageAct } from '../successionDonationPartage';
-import { ScNumericInput } from './ScNumericInput';
 import { ScSelect } from './ScSelect';
 
 interface DonationPartageModalProps {
@@ -269,10 +268,8 @@ export default function DonationPartageModal({
                   {label}
                 </label>
                 <div className="sc-field">
-                  <label htmlFor={`sc-donation-partage-lot-valeur-${lot.id}`}>
-                    Valeur acte (EUR)
-                  </label>
-                  <ScNumericInput
+                  <label htmlFor={`sc-donation-partage-lot-valeur-${lot.id}`}>Valeur acte</label>
+                  <SimAmountInputEuro
                     id={`sc-donation-partage-lot-valeur-${lot.id}`}
                     value={lot.valeur}
                     min={0}
@@ -281,9 +278,9 @@ export default function DonationPartageModal({
                 </div>
                 <div className="sc-field">
                   <label htmlFor={`sc-donation-partage-lot-valeur-actuelle-${lot.id}`}>
-                    Valeur actuelle (EUR)
+                    Valeur actuelle
                   </label>
-                  <ScNumericInput
+                  <SimAmountInputEuro
                     id={`sc-donation-partage-lot-valeur-actuelle-${lot.id}`}
                     value={lot.valeurActuelle ?? 0}
                     min={0}
@@ -329,10 +326,8 @@ export default function DonationPartageModal({
                 />
               </div>
               <div className="sc-field">
-                <label htmlFor={`sc-donation-partage-soulte-montant-${soulte.id}`}>
-                  Montant (EUR)
-                </label>
-                <ScNumericInput
+                <label htmlFor={`sc-donation-partage-soulte-montant-${soulte.id}`}>Montant</label>
+                <SimAmountInputEuro
                   id={`sc-donation-partage-soulte-montant-${soulte.id}`}
                   value={soulte.montant}
                   min={0}

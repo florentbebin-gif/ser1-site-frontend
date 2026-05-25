@@ -1,4 +1,5 @@
 import type { Dispatch, SetStateAction } from 'react';
+import { SimAmountInputEuro, SimAmountInputPercent } from '@/components/ui/sim';
 import {
   DEFAULT_SUCCESSION_TESTAMENT_CONFIG,
   type FamilyMember,
@@ -22,7 +23,6 @@ import {
 } from '../successionSimulator.constants';
 import type { DispositionsDraftState } from '../successionSimulator.helpers';
 import { clampPercentage } from './dispositions.helpers';
-import { ScNumericInput } from './ScNumericInput';
 import { ScSelect } from './ScSelect';
 
 interface DispositionsTestamentSectionProps {
@@ -190,16 +190,15 @@ export function DispositionsTestamentSection({
                           <label htmlFor={`sc-testament-quote-part-${side}`}>
                             Quote-part du legs à titre universel (%)
                           </label>
-                          <input
+                          <SimAmountInputPercent
                             id={`sc-testament-quote-part-${side}`}
-                            type="number"
                             min={0}
                             max={100}
                             value={testament.quotePartPct}
-                            onChange={(e) =>
+                            onChange={(value) =>
                               updateDispositionsTestament(side, (current) => ({
                                 ...current,
-                                quotePartPct: clampPercentage(e.target.value),
+                                quotePartPct: clampPercentage(String(value)),
                               }))
                             }
                             placeholder="Ex : 50"
@@ -234,7 +233,7 @@ export function DispositionsTestamentSection({
                               }
                               options={beneficiarySelectOptions}
                             />
-                            <ScNumericInput
+                            <SimAmountInputEuro
                               id={`sc-testament-particular-amount-${entry.id}`}
                               value={entry.amount || 0}
                               min={0}

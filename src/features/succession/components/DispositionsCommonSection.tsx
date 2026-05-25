@@ -1,4 +1,5 @@
 import type { Dispatch, SetStateAction } from 'react';
+import { SimAmountInputPercent } from '@/components/ui/sim';
 import type { SuccessionAssetPocket, SuccessionDonationEntreEpouxOption } from '../successionDraft';
 import type { DispositionsDraftState } from '../successionSimulator.helpers';
 import {
@@ -78,16 +79,15 @@ export function DispositionsCommonSection({
               ? 'Part indivise transmise au survivant (%)'
               : 'Attribution des biens communs au survivant (%)'}
           </label>
-          <input
+          <SimAmountInputPercent
             id="sc-dispositions-attribution-biens-communs"
-            type="number"
             min={0}
             max={100}
             value={dispositionsDraft.attributionBiensCommunsPct}
-            onChange={(e) =>
+            onChange={(value) =>
               setDispositionsDraft((prev) => ({
                 ...prev,
-                attributionBiensCommunsPct: clampPercentage(e.target.value),
+                attributionBiensCommunsPct: clampPercentage(String(value)),
               }))
             }
           />

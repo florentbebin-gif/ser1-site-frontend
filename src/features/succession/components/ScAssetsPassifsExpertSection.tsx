@@ -1,4 +1,5 @@
 import { useCallback, useMemo, useState } from 'react';
+import { SimAmountInputEuro, SimAmountInputPercent } from '@/components/ui/sim';
 import type {
   SuccessionAssetCategory,
   SuccessionAssetDetailEntry,
@@ -24,7 +25,6 @@ import {
 import { fmt } from '../successionSimulator.helpers';
 import AssetLegalQualificationModal from './AssetLegalQualificationModal';
 import { ScAssetsSummary, ScForfaitMobilierSection } from './ScAssetsPassifsExtras';
-import { ScNumericInput } from './ScNumericInput';
 import { ScSelect } from './ScSelect';
 import { buildSubCategoryOptions } from './ScAssetsPassifs.shared';
 
@@ -217,8 +217,8 @@ export function ScAssetsPassifsExpertSection({
                           />
                         </div>
                         <div className="sc-field">
-                          <label htmlFor={`sc-asset-amount-${entry.id}`}>Montant (€)</label>
-                          <ScNumericInput
+                          <label htmlFor={`sc-asset-amount-${entry.id}`}>Montant</label>
+                          <SimAmountInputEuro
                             id={`sc-asset-amount-${entry.id}`}
                             value={entry.amount || 0}
                             min={0}
@@ -247,7 +247,7 @@ export function ScAssetsPassifsExpertSection({
                           <label htmlFor={`sc-asset-quote-epoux1-${entry.id}`}>
                             Quote-part Époux 1 (%)
                           </label>
-                          <ScNumericInput
+                          <SimAmountInputPercent
                             id={`sc-asset-quote-epoux1-${entry.id}`}
                             value={entry.quotePartEpoux1Pct ?? 50}
                             min={0}
@@ -321,10 +321,8 @@ export function ScAssetsPassifsExpertSection({
                             />
                           </div>
                           <div className="sc-field">
-                            <label htmlFor={`sc-gf-valeur-totale-${entry.id}`}>
-                              Valeur totale (€)
-                            </label>
-                            <ScNumericInput
+                            <label htmlFor={`sc-gf-valeur-totale-${entry.id}`}>Valeur totale</label>
+                            <SimAmountInputEuro
                               id={`sc-gf-valeur-totale-${entry.id}`}
                               value={entry.valeurTotale || 0}
                               min={0}
@@ -347,7 +345,7 @@ export function ScAssetsPassifsExpertSection({
                             <label htmlFor={`sc-gf-quote-epoux1-${entry.id}`}>
                               Quote-part Époux 1 (%)
                             </label>
-                            <ScNumericInput
+                            <SimAmountInputPercent
                               id={`sc-gf-quote-epoux1-${entry.id}`}
                               value={entry.quotePartEpoux1Pct ?? 50}
                               min={0}

@@ -146,7 +146,7 @@
 
 .sc-clause-custom-row {
   display: grid;
-  grid-template-columns: 1fr 60px 20px;
+  grid-template-columns: 1fr minmax(96px, 120px);
   align-items: center;
   gap: 6px;
 }
@@ -156,7 +156,6 @@
   color: var(--color-c1);
 }
 
-.sc-clause-custom-row__unit {
-  font-size: 13px;
-  color: var(--color-c3);
+.sc-clause-custom-row .sim-field__unit {
+  min-width: auto;
 }

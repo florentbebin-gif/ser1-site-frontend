@@ -1,6 +1,6 @@
+import { SimAmountInputEuro, SimAmountInputPercent } from '@/components/ui/sim';
 import type { SuccessionLegacyAssetOwner } from '../successionDraft';
 import { fmt } from '../successionSimulator.helpers';
-import { ScNumericInput } from './ScNumericInput';
 import { ScSelect } from './ScSelect';
 
 export function ScAssetsSummary({
@@ -83,27 +83,29 @@ export function ScForfaitMobilierSection({
             </div>
             {forfaitMobilierMode === 'pct' ? (
               <div className="sc-field">
-                <label htmlFor="sc-forfait-mobilier-pct">Pourcentage (%)</label>
-                <input
+                <label htmlFor="sc-forfait-mobilier-pct">Pourcentage</label>
+                <SimAmountInputPercent
                   id="sc-forfait-mobilier-pct"
-                  type="number"
                   min={0}
                   max={100}
                   value={forfaitMobilierPct}
-                  onChange={(e) =>
-                    onUpdatePatrimonialField('forfaitMobilierPct', Number(e.target.value) || 0)
-                  }
+                  onChange={(value) => onUpdatePatrimonialField('forfaitMobilierPct', value)}
                 />
               </div>
             ) : (
               <div className="sc-field">
-                <label htmlFor="sc-forfait-mobilier-pct-auto">Pourcentage (%)</label>
-                <input id="sc-forfait-mobilier-pct-auto" type="number" value={5} disabled />
+                <label htmlFor="sc-forfait-mobilier-pct-auto">Pourcentage</label>
+                <SimAmountInputPercent
+                  id="sc-forfait-mobilier-pct-auto"
+                  value={5}
+                  onChange={(value) => onUpdatePatrimonialField('forfaitMobilierPct', value)}
+                  disabled
+                />
               </div>
             )}
             <div className="sc-field">
-              <label htmlFor="sc-forfait-mobilier-montant">Montant fixe (€)</label>
-              <ScNumericInput
+              <label htmlFor="sc-forfait-mobilier-montant">Montant fixe</label>
+              <SimAmountInputEuro
                 id="sc-forfait-mobilier-montant"
                 value={forfaitMobilierMode === 'montant' ? forfaitMobilierMontant : 0}
                 min={0}

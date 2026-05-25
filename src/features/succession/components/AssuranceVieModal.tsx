@@ -1,4 +1,9 @@
-import { SimModalShell } from '@/components/ui/sim';
+import {
+  SimAmountInputEuro,
+  SimAmountInputNumeric,
+  SimAmountInputPercent,
+  SimModalShell,
+} from '@/components/ui/sim';
 import type {
   FamilyMember,
   SuccessionAssuranceVieContractType,
@@ -19,7 +24,6 @@ import {
   parseCustomClause,
   serializeCustomClause,
 } from '../successionClauseOptions';
-import { ScNumericInput } from './ScNumericInput';
 import { ScSelect } from './ScSelect';
 
 interface AssuranceVieModalProps {
@@ -95,14 +99,14 @@ export default function AssuranceVieModal({
         {entry.typeContrat === 'demembree' && (
           <div className="sc-field">
             <label htmlFor="sc-assurance-vie-age-usufruitier">Âge de l&apos;usufruitier</label>
-            <input
+            <SimAmountInputNumeric
               id="sc-assurance-vie-age-usufruitier"
-              type="number"
-              min={1}
+              unit="ans"
+              min={0}
               max={120}
-              value={entry.ageUsufruitier ?? ''}
-              onChange={(e) =>
-                onUpdate('ageUsufruitier', e.target.value ? Number(e.target.value) : undefined)
+              value={entry.ageUsufruitier ?? 0}
+              onChange={(value) =>
+                onUpdate('ageUsufruitier', value > 0 ? Math.round(value) : undefined)
               }
               placeholder="ex. 68"
             />
@@ -180,27 +184,25 @@ export default function AssuranceVieModal({
                 return (
                   <div key={id} className="sc-clause-custom-row">
                     <span className="sc-clause-custom-row__label">{label}</span>
-                    <input
-                      type="number"
+                    <SimAmountInputPercent
                       aria-label={`Répartition ${label}`}
                       min={0}
                       max={100}
-                      value={parts[id] || ''}
-                      onChange={(e) => {
-                        const newParts = { ...parts, [id]: Number(e.target.value) || 0 };
+                      value={parts[id] || 0}
+                      onChange={(value) => {
+                        const newParts = { ...parts, [id]: value };
                         onUpdate('clauseBeneficiaire', serializeCustomClause(newParts));
                       }}
                       placeholder="0"
                     />
-                    <span className="sc-clause-custom-row__unit">%</span>
                   </div>
                 );
               })}
             </div>
           )}
           <div className="sc-field">
-            <label htmlFor="sc-assurance-vie-capitaux-deces">Capitaux décès (€)</label>
-            <ScNumericInput
+            <label htmlFor="sc-assurance-vie-capitaux-deces">Capitaux décès</label>
+            <SimAmountInputEuro
               id="sc-assurance-vie-capitaux-deces"
               value={entry.capitauxDeces || 0}
               min={0}
@@ -210,9 +212,9 @@ export default function AssuranceVieModal({
           </div>
           <div className="sc-field">
             <label htmlFor="sc-assurance-vie-versements-apres-70">
-              Dont versements après 70 ans — art. 757B (€)
+              Dont versements après 70 ans — art. 757B
             </label>
-            <ScNumericInput
+            <SimAmountInputEuro
               id="sc-assurance-vie-versements-apres-70"
               value={entry.versementsApres70 || 0}
               min={0}
@@ -222,9 +224,9 @@ export default function AssuranceVieModal({
           </div>
           <div className="sc-field">
             <label htmlFor="sc-assurance-vie-versements-avant-1998">
-              Dont versements avant le 13/10/1998 (EUR)
+              Dont versements avant le 13/10/1998
             </label>
-            <ScNumericInput
+            <SimAmountInputEuro
               id="sc-assurance-vie-versements-avant-1998"
               value={entry.versementsAvant13101998 || 0}
               min={0}
