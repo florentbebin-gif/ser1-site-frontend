@@ -266,19 +266,19 @@ export function TresoSocieteSection({ inputs, onChange, onAssociateModalOpenerCh
   };
 
   return (
-    <div className="premium-card ts-section">
-      <div className="ts-section__header">
+    <div className="premium-card premium-card--guide sim-card--guide ts-section">
+      <div className="ts-section__header sim-card__header sim-card__header--bleed">
         <span className="sim-card__icon">
           <IconBuilding />
         </span>
         <div>
-          <h2 className="ts-section__title">Société</h2>
-          <p className="ts-section__subtitle">
+          <h2 className="ts-section__title sim-card__title">Société</h2>
+          <p className="ts-section__subtitle sim-card__subtitle">
             Associés, société et filiales paramétrables depuis le schéma
           </p>
         </div>
       </div>
-      <div className="ts-section__divider" />
+      <div className="ts-section__divider sim-divider" />
 
       <TresoOrgChart
         company={company}

@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { SimActionButton, SimCollapsibleTable } from '@/components/ui/sim';
-import { IconChevronDown } from '@/icons/ui';
+import { IconChevronDown, IconLayers } from '@/icons/ui';
 import { ENVELOPE_LABELS } from '@/engine/placement';
 import type { CompareResult } from '@/engine/placement/types';
 import { shortEuro } from '../utils/formatters';
@@ -144,8 +144,19 @@ export function PlacementEpargneSection({
     (produit1Draft.envelope === 'CTO' || (compareEnabled && produit2Draft?.envelope === 'CTO'));
 
   return (
-    <div className="premium-card">
-      <div className="pl-card-title">Phase d'épargne</div>
+    <div className="premium-card premium-card--guide sim-card--guide">
+      <div className="pl-card-header sim-card__header sim-card__header--bleed">
+        <div className="pl-card-title-row sim-card__title-row">
+          <span className="sim-card__icon">
+            <IconLayers />
+          </span>
+          <h2 className="pl-card-title sim-card__title">Phase d'épargne</h2>
+        </div>
+        <p className="pl-card-subtitle sim-card__subtitle">
+          Paramètres de constitution, versements et options fiscales des placements.
+        </p>
+      </div>
+      <div className="sim-divider" />
 
       <table
         className={`pl-ir-table pl-table premium-table${!compareEnabled ? ' pl-table--single' : ''}`}

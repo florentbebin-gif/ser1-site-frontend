@@ -3,6 +3,7 @@ import type { CompareResult } from '@/engine/placement/types';
 import { PlacementEuroField, PlacementNumberField } from './PlacementAmountControls';
 import { PlacementToggle as Toggle } from './PlacementToggle';
 import { SimSelect } from '@/components/ui/sim';
+import { IconArrowLeftRight } from '@/icons/ui';
 import type { PlacementLiquidationState, PlacementSimulatorState } from '../utils/normalizers';
 import { PlacementLiquidationDetailsTable } from './PlacementLiquidationDetailsTable';
 
@@ -48,8 +49,19 @@ export function PlacementLiquidationSection({
   const produit2OptionBaremeIR = produit2Draft?.liquidation?.optionBaremeIR ?? false;
 
   return (
-    <div className="premium-card">
-      <div className="pl-card-title">Phase de liquidation</div>
+    <div className="premium-card premium-card--guide sim-card--guide">
+      <div className="pl-card-header sim-card__header sim-card__header--bleed">
+        <div className="pl-card-title-row sim-card__title-row">
+          <span className="sim-card__icon">
+            <IconArrowLeftRight />
+          </span>
+          <h2 className="pl-card-title sim-card__title">Phase de liquidation</h2>
+        </div>
+        <p className="pl-card-subtitle sim-card__subtitle">
+          Stratégie de sortie, retraits et fiscalité au barème.
+        </p>
+      </div>
+      <div className="sim-divider" />
 
       <table className="pl-ir-table pl-table premium-table">
         <tbody>

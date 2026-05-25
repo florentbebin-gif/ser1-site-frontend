@@ -7,18 +7,18 @@ interface CreditHypothesesProps {
 
 export function CreditHypotheses({ hypothesesOpen, onToggle }: CreditHypothesesProps) {
   return (
-    <div className="cv-hypotheses">
+    <div className="sim-hypotheses cv-hypotheses">
       <SimDisclosureButton
         expanded={hypothesesOpen}
         onToggle={onToggle}
-        className="cv-hypotheses__toggle"
+        className="sim-hypotheses__toggle"
         labelClosed="Hypothèses et limites"
         labelOpen="Hypothèses et limites"
         controls="credit-hypotheses-panel"
         data-testid="credit-hypotheses-toggle"
       />
       {hypothesesOpen && (
-        <ul id="credit-hypotheses-panel">
+        <ul id="credit-hypotheses-panel" className="sim-hypotheses__body">
           <li>Les résultats sont indicatifs et ne constituent pas une offre de prêt.</li>
           <li>Le calcul suppose un taux fixe sur toute la durée du prêt.</li>
           <li>

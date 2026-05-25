@@ -810,6 +810,21 @@ Règles communes : `font-family: inherit`, hover → C2 texte ou fond C7 selon v
 
 **Statut** : baseline partagée pour toutes les variantes sauf mention contraire.
 
+#### 16g) Cards de saisie simulateurs — contrat visuel vérifié
+
+Les blocs de saisie ou de décision métier dans `/sim/*` utilisent le contrat complet :
+`premium-card premium-card--guide sim-card--guide`.
+
+- `premium-card` fournit la surface, la bordure et le rythme interne.
+- `premium-card--guide` pose le liseré gauche commun.
+- `sim-card--guide` active les règles simulateurs, notamment les headers avec `sim-card__header--bleed`.
+
+Exceptions autorisées : cartes de synthèse (`sim-summary-card`), états (`sim-state-card`),
+cartes compactes (`premium-card-compact`) et cartes explicitement listées dans
+`scripts/check-sim-cards.mjs` quand elles ne sont pas des blocs de saisie.
+
+La règle est contrôlée par `npm run check:sim-cards`.
+
 ---
 
 ## Gouvernance couleurs (C1–C10)

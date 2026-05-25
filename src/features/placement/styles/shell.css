@@ -97,6 +97,7 @@
 }
 
 .pl-client-card__title,
+.pl-card-title-row,
 .pl-synthesis-title-row {
   display: flex;
   align-items: center;
@@ -115,6 +116,14 @@
   font-size: 15px;
   font-weight: 600;
   color: var(--color-c1);
+}
+
+.pl-card-header {
+  margin-bottom: 12px;
+}
+
+.pl-card-header .pl-card-title {
+  margin-bottom: 0;
 }
 
 .pl-summary-title {
