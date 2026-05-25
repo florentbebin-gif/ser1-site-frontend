@@ -1,3 +1,4 @@
+import { SimMetric } from '@/components/ui/sim';
 import { IconPieChart } from '@/icons/ui';
 import { fmt } from '../successionSimulator.helpers';
 import {
@@ -144,13 +145,18 @@ export default function ScSuccessionSummaryPanel({
       <div className="sc-card__divider sc-card__divider--tight sim-divider sim-divider--tight" />
       <div className="sc-synth-hero">
         <div className="sc-synth-hero__left">
-          <div className="sc-synth-hero__label">Coût de transmission estimé</div>
-          <div className="sc-synth-hero__value">{fmt(derivedTotalDroits)}</div>
-          {synthDonutTransmis > 0 && (
-            <div className="sc-synth-hero__sub">
-              sur {fmt(synthDonutTransmis)} {displayUsesChainage ? 'cumules' : 'transmis'}
-            </div>
-          )}
+          <SimMetric
+            variant="hero"
+            label="Coût de transmission estimé"
+            value={fmt(derivedTotalDroits)}
+            note={
+              synthDonutTransmis > 0 ? (
+                <>
+                  sur {fmt(synthDonutTransmis)} {displayUsesChainage ? 'cumulés' : 'transmis'}
+                </>
+              ) : undefined
+            }
+          />
         </div>
         <ScDonut
           transmis={Math.max(0, synthDonutTransmis - derivedTotalDroits)}
@@ -159,34 +165,30 @@ export default function ScSuccessionSummaryPanel({
       </div>
       <div className="sc-card__divider sc-card__divider--tight" />
       <div className="sc-synth-kpis">
-        <div className="sc-synth-kpi">
-          <span className="sc-synth-kpi__label">
-            {displayUsesChainage ? 'Cumul transmis au 1er décès' : 'Patrimoine transmis'}
-          </span>
-          <strong className="sc-synth-kpi__value">
-            {fmt(displayUsesChainage ? step1TotalTransmis : synthDonutTransmis)}
-          </strong>
-        </div>
-        <div className="sc-synth-kpi">
-          <span className="sc-synth-kpi__label">
-            {displayUsesChainage ? 'Cumul transmis au 2ème décès' : 'Coût cumulé'}
-          </span>
-          <strong className="sc-synth-kpi__value">
-            {fmt(displayUsesChainage ? step2TotalTransmis : derivedTotalDroits)}
-          </strong>
-        </div>
-        <div className="sc-synth-kpi">
-          <span className="sc-synth-kpi__label">
-            {displayUsesChainage ? 'Coût 1er décès' : 'Coût décès simulé'}
-          </span>
-          <strong className="sc-synth-kpi__value">{fmt(firstCost)}</strong>
-        </div>
-        <div className="sc-synth-kpi">
-          <span className="sc-synth-kpi__label">
-            {displayUsesChainage ? 'Coût 2e décès' : 'Net transmis'}
-          </span>
-          <strong className="sc-synth-kpi__value">{fmt(secondValue)}</strong>
-        </div>
+        <SimMetric
+          variant="secondary"
+          className="sc-synth-kpi"
+          label={displayUsesChainage ? 'Cumul transmis au 1er décès' : 'Patrimoine transmis'}
+          value={fmt(displayUsesChainage ? step1TotalTransmis : synthDonutTransmis)}
+        />
+        <SimMetric
+          variant="secondary"
+          className="sc-synth-kpi"
+          label={displayUsesChainage ? 'Cumul transmis au 2ème décès' : 'Coût cumulé'}
+          value={fmt(displayUsesChainage ? step2TotalTransmis : derivedTotalDroits)}
+        />
+        <SimMetric
+          variant="secondary"
+          className="sc-synth-kpi"
+          label={displayUsesChainage ? 'Coût 1er décès' : 'Coût décès simulé'}
+          value={fmt(firstCost)}
+        />
+        <SimMetric
+          variant="secondary"
+          className="sc-synth-kpi"
+          label={displayUsesChainage ? 'Coût 2e décès' : 'Net transmis'}
+          value={fmt(secondValue)}
+        />
       </div>
       {displayUsesChainage && societeAcquets && societeAcquets.totalValue > 0 && (
         <>

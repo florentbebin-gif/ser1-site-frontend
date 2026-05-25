@@ -1,4 +1,4 @@
-import { SimAmountInputEuro, SimAmountInputPercent } from '@/components/ui/sim';
+import { SimActionButton, SimAmountInputEuro, SimAmountInputPercent } from '@/components/ui/sim';
 import type { SuccessionLegacyAssetOwner } from '../successionDraft';
 import { fmt } from '../successionSimulator.helpers';
 import { ScSelect } from './ScSelect';
@@ -45,23 +45,23 @@ export function ScForfaitMobilierSection({
         <h3 className="sc-asset-section__title">Forfait mobilier</h3>
         <div className="sc-asset-section__actions">
           {!showForfaitMobilier ? (
-            <button
-              type="button"
+            <SimActionButton
+              variant="add"
+              mode="icon"
+              label="Configurer"
               className="sc-member-add-icon-btn"
               onClick={() => onUpdatePatrimonialField('forfaitMobilierMode', 'auto')}
-              aria-label="Configurer le forfait mobilier"
-            >
-              +
-            </button>
+              ariaLabel="Configurer le forfait mobilier"
+            />
           ) : (
-            <button
-              type="button"
+            <SimActionButton
+              variant="delete"
+              mode="icon"
+              label="Désactiver"
               className="sc-child-remove-btn"
               onClick={() => onUpdatePatrimonialField('forfaitMobilierMode', 'off')}
-              aria-label="Désactiver le forfait mobilier"
-            >
-              &#10005;
-            </button>
+              ariaLabel="Désactiver le forfait mobilier"
+            />
           )}
         </div>
       </div>

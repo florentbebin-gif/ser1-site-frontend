@@ -1,6 +1,5 @@
 import { useCallback, useMemo, useState } from 'react';
-import { SimAmountInputEuro, SimAmountInputPercent } from '@/components/ui/sim';
-import { IconPencil } from '@/icons/ui';
+import { SimActionButton, SimAmountInputEuro, SimAmountInputPercent } from '@/components/ui/sim';
 import type {
   SuccessionAssetCategory,
   SuccessionAssetDetailEntry,
@@ -70,15 +69,15 @@ interface ScAssetsPassifsExpertSectionProps {
 
 function EditRowButton({ label, onClick }: { label: string; onClick: () => void }) {
   return (
-    <button
-      type="button"
+    <SimActionButton
+      variant="edit"
+      mode="icon"
+      label="Modifier"
       className="sc-open-btn"
       onClick={onClick}
       title={label}
-      aria-label={label}
-    >
-      <IconPencil />
-    </button>
+      ariaLabel={label}
+    />
   );
 }
 
@@ -162,14 +161,15 @@ export function ScAssetsPassifsExpertSection({
               <div className="sc-asset-section__header">
                 <h3 className="sc-asset-section__title">{category.label}</h3>
                 <div className="sc-asset-section__actions">
-                  <button
-                    type="button"
+                  <SimActionButton
+                    variant="add"
+                    mode="icon"
+                    label="Ajouter"
                     className="sc-member-add-icon-btn"
                     onClick={() => onAddAssetEntry(category.value)}
+                    ariaLabel="Ajouter une ligne"
                     title="Ajouter une ligne"
-                  >
-                    +
-                  </button>
+                  />
                 </div>
               </div>
 
@@ -220,14 +220,15 @@ export function ScAssetsPassifsExpertSection({
                               onClick={() => setLegalModalEntryId(entry.id)}
                             />
                           )}
-                          <button
-                            type="button"
+                          <SimActionButton
+                            variant="delete"
+                            mode="icon"
+                            label="Supprimer"
                             className="sc-remove-btn"
                             onClick={() => onRemoveAssetEntry(entry.id)}
                             title="Supprimer cette ligne"
-                          >
-                            &#10005;
-                          </button>
+                            ariaLabel="Supprimer cette ligne"
+                          />
                         </div>
                       </div>
                       {entry.pocket === 'indivision_separatiste' && (
@@ -319,14 +320,15 @@ export function ScAssetsPassifsExpertSection({
                               }
                             />
                           </div>
-                          <button
-                            type="button"
+                          <SimActionButton
+                            variant="delete"
+                            mode="icon"
+                            label="Supprimer"
                             className="sc-remove-btn"
                             onClick={() => onRemoveGroupementFoncierEntry(entry.id)}
                             title="Supprimer cette ligne"
-                          >
-                            &#10005;
-                          </button>
+                            ariaLabel="Supprimer cette ligne"
+                          />
                         </div>
                         {entry.pocket === 'indivision_separatiste' && (
                           <div className="sc-field sc-field--full sc-asset-row__suboption">
@@ -384,14 +386,15 @@ export function ScAssetsPassifsExpertSection({
                           label="Modifier ce contrat"
                           onClick={() => onOpenPrevoyanceModal(entry.id)}
                         />
-                        <button
-                          type="button"
+                        <SimActionButton
+                          variant="delete"
+                          mode="icon"
+                          label="Supprimer"
                           className="sc-remove-btn"
                           onClick={() => onRemovePrevoyanceDecesEntry(entry.id)}
                           title="Supprimer cette ligne"
-                        >
-                          &#10005;
-                        </button>
+                          ariaLabel="Supprimer cette ligne"
+                        />
                       </div>
                     </div>
                   ))}
@@ -418,14 +421,15 @@ export function ScAssetsPassifsExpertSection({
                           label="Modifier ce contrat"
                           onClick={() => onOpenAssuranceVieModal(entry.id)}
                         />
-                        <button
-                          type="button"
+                        <SimActionButton
+                          variant="delete"
+                          mode="icon"
+                          label="Supprimer"
                           className="sc-remove-btn"
                           onClick={() => onRemoveAssuranceVieEntry(entry.id)}
                           title="Supprimer cette ligne"
-                        >
-                          &#10005;
-                        </button>
+                          ariaLabel="Supprimer cette ligne"
+                        />
                       </div>
                     </div>
                   ))}
@@ -452,14 +456,15 @@ export function ScAssetsPassifsExpertSection({
                           label="Modifier ce contrat"
                           onClick={() => onOpenPerModal(entry.id)}
                         />
-                        <button
-                          type="button"
+                        <SimActionButton
+                          variant="delete"
+                          mode="icon"
+                          label="Supprimer"
                           className="sc-remove-btn"
                           onClick={() => onRemovePerEntry(entry.id)}
                           title="Supprimer cette ligne"
-                        >
-                          &#10005;
-                        </button>
+                          ariaLabel="Supprimer cette ligne"
+                        />
                       </div>
                     </div>
                   ))}

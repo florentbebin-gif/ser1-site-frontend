@@ -50,6 +50,7 @@ describe('DispositionsModal', () => {
     expect(screen.getByRole('button', { name: 'Transmission' }).getAttribute('aria-current')).toBe(
       'step',
     );
+    expect(document.querySelector('.sim-modal-section-nav')).toBeTruthy();
     expect(screen.getByRole('button', { name: 'Récompenses / créances' })).toBeTruthy();
     expect(screen.getByRole('button', { name: 'Préciput' })).toBeTruthy();
     expect(screen.getByRole('button', { name: 'Testament' })).toBeTruthy();
@@ -62,5 +63,16 @@ describe('DispositionsModal', () => {
     );
     expect(screen.getByText('Testament actif')).toBeTruthy();
     expect(screen.queryByLabelText(/Attribution des biens communs/i)).toBeNull();
+  });
+
+  it('utilise les boutons de footer modaux partagés', () => {
+    renderDispositionsModal();
+
+    expect(screen.getByRole('button', { name: 'Annuler' }).className).toContain(
+      'sim-modal-btn--ghost',
+    );
+    expect(screen.getByRole('button', { name: 'Valider' }).className).toContain(
+      'sim-modal-btn--primary',
+    );
   });
 });

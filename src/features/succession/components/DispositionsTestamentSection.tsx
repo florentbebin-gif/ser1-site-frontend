@@ -1,5 +1,5 @@
 import type { Dispatch, SetStateAction } from 'react';
-import { SimAmountInputEuro, SimAmountInputPercent } from '@/components/ui/sim';
+import { SimActionButton, SimAmountInputEuro, SimAmountInputPercent } from '@/components/ui/sim';
 import {
   DEFAULT_SUCCESSION_TESTAMENT_CONFIG,
   type FamilyMember,
@@ -251,25 +251,25 @@ export function DispositionsTestamentSection({
                               }
                               placeholder="Libellé optionnel"
                             />
-                            <button
-                              type="button"
+                            <SimActionButton
+                              variant="delete"
+                              mode="icon"
+                              label="Supprimer"
                               className="sc-remove-btn sc-remove-btn--quiet"
                               onClick={() => onRemoveParticularLegacy(side, entry.id)}
                               title="Supprimer ce legs"
-                              aria-label="Supprimer ce legs"
-                            >
-                              Supprimer
-                            </button>
+                              ariaLabel="Supprimer ce legs"
+                            />
                           </div>
                         ))}
                       </div>
-                      <button
-                        type="button"
+                      <SimActionButton
+                        variant="add"
+                        mode="text"
+                        label="Ajouter un legs"
                         className="sc-child-add-btn"
                         onClick={() => onAddParticularLegacy(side)}
-                      >
-                        + Ajouter un legs
-                      </button>
+                      />
                     </div>
                   )}
 

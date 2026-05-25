@@ -1,4 +1,4 @@
-import { SimAmountInputEuro } from '@/components/ui/sim';
+import { SimActionButton, SimAmountInputEuro } from '@/components/ui/sim';
 import type { SuccessionAssetPocket } from '../successionDraft';
 import type { DispositionsDraftState } from '../successionSimulator.helpers';
 import {
@@ -57,14 +57,14 @@ export function DispositionsInterMassClaimsSection({
                     {getSuccessionPocketLabel(claim.toPocket)}
                   </p>
                 </div>
-                <button
-                  type="button"
+                <SimActionButton
+                  variant="delete"
+                  mode="icon"
+                  label="Supprimer"
                   className="sc-remove-btn sc-remove-btn--quiet"
                   onClick={() => onRemoveInterMassClaim(claim.id)}
-                  aria-label="Supprimer l'écriture entre masses"
-                >
-                  Supprimer
-                </button>
+                  ariaLabel="Supprimer l'écriture entre masses"
+                />
               </div>
 
               <div className="sc-preciput-item__grid">
@@ -132,9 +132,13 @@ export function DispositionsInterMassClaimsSection({
         </div>
       )}
 
-      <button type="button" className="sc-child-add-btn" onClick={onAddInterMassClaim}>
-        + Ajouter une écriture entre masses
-      </button>
+      <SimActionButton
+        variant="add"
+        mode="text"
+        label="Ajouter une écriture entre masses"
+        className="sc-child-add-btn"
+        onClick={onAddInterMassClaim}
+      />
     </>
   );
 }

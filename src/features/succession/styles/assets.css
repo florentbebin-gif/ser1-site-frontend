@@ -397,19 +397,8 @@
   height: 20px;
   border-radius: 999px;
   opacity: 0.5;
-  font-size: 0;
   background: color-mix(in srgb, var(--color-c7) 46%, #ffffff);
   border: 1px solid color-mix(in srgb, var(--color-c8) 70%, #ffffff);
-}
-
-.sc-remove-btn--quiet::before {
-  content: '+';
-  display: block;
-  font-size: 14px;
-  line-height: 1;
-  font-weight: 500;
-  color: currentColor;
-  transform: rotate(45deg);
 }
 
 .sc-remove-btn:hover {

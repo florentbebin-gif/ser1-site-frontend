@@ -1,5 +1,5 @@
 import type { Dispatch, SetStateAction } from 'react';
-import { SimAmountInputEuro } from '@/components/ui/sim';
+import { SimActionButton, SimAmountInputEuro } from '@/components/ui/sim';
 import type { DispositionsDraftState } from '../successionSimulator.helpers';
 import type { SuccessionPreciputCandidate } from '../successionPreciput';
 import type { ScSelectOption } from './ScSelect';
@@ -150,17 +150,17 @@ export function DispositionsPreciputConfigurator({
                           {preciputScopeLabel}.
                         </p>
                       </div>
-                      <button
-                        type="button"
+                      <SimActionButton
+                        variant="delete"
+                        mode="icon"
+                        label="Supprimer"
                         className="sc-remove-btn sc-remove-btn--quiet"
                         onClick={() => {
                           onRemovePreciputSelection(selection.id);
                           setPendingPreciputCandidateKey('');
                         }}
-                        aria-label="Supprimer la sélection de préciput"
-                      >
-                        Supprimer
-                      </button>
+                        ariaLabel="Supprimer la sélection de préciput"
+                      />
                     </div>
 
                     <div className="sc-preciput-item__grid">

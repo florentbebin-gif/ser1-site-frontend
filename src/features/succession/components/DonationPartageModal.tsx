@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { SimAmountInputEuro, SimModalShell } from '@/components/ui/sim';
+import { SimActionButton, SimAmountInputEuro, SimModalShell } from '@/components/ui/sim';
 import type {
   SituationMatrimoniale,
   SuccessionDonationPartageAct,
@@ -157,24 +157,16 @@ export default function DonationPartageModal({
       footer={
         <>
           {onDelete && (
-            <button
-              type="button"
-              className="sc-member-modal__btn sc-member-modal__btn--secondary"
-              onClick={onDelete}
-            >
+            <button type="button" className="sim-modal-btn sim-modal-btn--ghost" onClick={onDelete}>
               Supprimer
             </button>
           )}
-          <button
-            type="button"
-            className="sc-member-modal__btn sc-member-modal__btn--secondary"
-            onClick={onClose}
-          >
+          <button type="button" className="sim-modal-btn sim-modal-btn--ghost" onClick={onClose}>
             Annuler
           </button>
           <button
             type="button"
-            className="sc-member-modal__btn sc-member-modal__btn--primary"
+            className="sim-modal-btn sim-modal-btn--primary"
             onClick={onValidate}
             disabled={errors.length > 0}
           >
@@ -334,25 +326,25 @@ export default function DonationPartageModal({
                   onChange={(value) => updateSoulte(soulte.id, { montant: value })}
                 />
               </div>
-              <button
-                type="button"
+              <SimActionButton
+                variant="delete"
+                mode="icon"
+                label="Supprimer"
                 className="sc-remove-btn sc-remove-btn--quiet"
                 onClick={() => removeSoulte(soulte.id)}
-                aria-label="Supprimer cette soulte"
-              >
-                ×
-              </button>
+                ariaLabel="Supprimer cette soulte"
+              />
             </div>
           ))}
         </div>
-        <button
-          type="button"
+        <SimActionButton
+          variant="add"
+          mode="text"
+          label="Ajouter une soulte"
           className="sc-child-add-btn"
           onClick={addSoulte}
           disabled={childOptions.length < 2}
-        >
-          + Ajouter une soulte
-        </button>
+        />
       </section>
 
       {errors.length > 0 && (

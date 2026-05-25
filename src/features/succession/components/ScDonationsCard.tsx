@@ -1,4 +1,4 @@
-import { SimAmountInputEuro } from '@/components/ui/sim';
+import { SimActionButton, SimAmountInputEuro } from '@/components/ui/sim';
 import { IconGift } from '@/icons/ui';
 import type { SuccessionDonationEntry, SuccessionDonationPartageAct } from '../successionDraft';
 import { summarizeDonationPartageActs } from '../successionDonationPartage';
@@ -67,22 +67,22 @@ export default function ScDonationsCard({
                   </span>
                 </div>
                 <div className="sc-donation-card__actions">
-                  <button
-                    type="button"
+                  <SimActionButton
+                    variant="edit"
+                    mode="text"
+                    label="Modifier"
                     className="sc-child-add-btn"
                     onClick={() => onOpenDonationPartageAct(act.id)}
-                  >
-                    Modifier
-                  </button>
-                  <button
-                    type="button"
+                  />
+                  <SimActionButton
+                    variant="delete"
+                    mode="icon"
+                    label="Supprimer"
                     className="sc-remove-btn sc-remove-btn--quiet"
                     onClick={() => onRemoveDonationPartageAct(act.id)}
                     title="Supprimer cette donation-partage"
-                    aria-label="Supprimer cette donation-partage"
-                  >
-                    ×
-                  </button>
+                    ariaLabel="Supprimer cette donation-partage"
+                  />
                 </div>
               </div>
             </div>
@@ -104,15 +104,15 @@ export default function ScDonationsCard({
                     <strong className="sc-donation-card__title">Donation {idx + 1}</strong>
                     <span className="sc-donation-card__subtitle">{donationTypeLabel}</span>
                   </div>
-                  <button
-                    type="button"
+                  <SimActionButton
+                    variant="delete"
+                    mode="icon"
+                    label="Supprimer"
                     className="sc-remove-btn sc-remove-btn--quiet"
                     onClick={() => onRemoveDonationEntry(entry.id)}
                     title="Supprimer cette donation"
-                    aria-label="Supprimer cette donation"
-                  >
-                    ×
-                  </button>
+                    ariaLabel="Supprimer cette donation"
+                  />
                 </div>
                 <div className="sc-donation-grid">
                   <div className="sc-field sc-field--span-2">
@@ -240,9 +240,13 @@ export default function ScDonationsCard({
       )}
 
       <div className="sc-inline-actions">
-        <button type="button" className="sc-child-add-btn" onClick={onAddDonationEntry}>
-          + Ajouter une donation
-        </button>
+        <SimActionButton
+          variant="add"
+          mode="text"
+          label="Ajouter une donation"
+          className="sc-child-add-btn"
+          onClick={onAddDonationEntry}
+        />
       </div>
 
       <div className="sc-donations-totals">

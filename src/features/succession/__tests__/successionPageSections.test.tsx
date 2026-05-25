@@ -171,15 +171,17 @@ describe('SuccessionPageSections', () => {
     expect(markup).toContain('Donations');
     expect(markup).toContain('Synthèse successorale');
     expect(markup).toContain('Chronologie des décès');
+    expect(markup).toContain('sim-metric--hero');
     expect(markup).not.toContain('sim-grid__col');
   });
 
-  it('affiche le titre des hypothèses avec accents et casse commune simulateurs', () => {
+  it('affiche les hypothèses avec la primitive disclosure commune', () => {
     const markup = renderToStaticMarkup(
       <SuccessionHypotheses hypothesesOpen={false} assumptions={[]} onToggle={() => {}} />,
     );
 
-    expect(markup).toContain('HYPOTHÈSES ET LIMITES');
+    expect(markup).toContain('sim-disclosure-btn');
+    expect(markup).toContain('Hypothèses et limites');
     expect(markup).not.toContain('Hypotheses et limites');
   });
 });

@@ -1,5 +1,5 @@
 import { useMemo, useState, type Dispatch, type SetStateAction } from 'react';
-import { SimModalShell } from '@/components/ui/sim';
+import { SimModalSectionNav, SimModalShell } from '@/components/ui/sim';
 import type {
   FamilyMember,
   SituationMatrimoniale,
@@ -343,16 +343,12 @@ export default function DispositionsModal({
       closeClassName="sc-member-modal__close"
       footer={
         <>
-          <button
-            type="button"
-            className="sc-member-modal__btn sc-member-modal__btn--secondary"
-            onClick={onClose}
-          >
+          <button type="button" className="sim-modal-btn sim-modal-btn--ghost" onClick={onClose}>
             Annuler
           </button>
           <button
             type="button"
-            className="sc-member-modal__btn sc-member-modal__btn--primary"
+            className="sim-modal-btn sim-modal-btn--primary"
             onClick={onValidate}
           >
             Valider
@@ -361,22 +357,17 @@ export default function DispositionsModal({
       }
     >
       <div className="sc-dispositions-modal__layout">
-        <nav className="sc-dispositions-modal__nav" aria-label="Sections des dispositions">
-          {DISPOSITIONS_PANELS.map((panel) => (
-            <button
-              key={panel.id}
-              type="button"
-              className={`sc-dispositions-modal__nav-item${
-                activePanel === panel.id ? ' is-active' : ''
-              }`}
-              onClick={() => setActivePanel(panel.id)}
-              aria-current={activePanel === panel.id ? 'step' : undefined}
-              aria-controls={`sc-dispositions-panel-${panel.id}`}
-            >
-              {panel.label}
-            </button>
-          ))}
-        </nav>
+        <SimModalSectionNav
+          sections={DISPOSITIONS_PANELS.map((panel) => ({
+            id: panel.id,
+            label: panel.label,
+            controls: `sc-dispositions-panel-${panel.id}`,
+          }))}
+          activeId={activePanel}
+          ariaLabel="Sections des dispositions"
+          onChange={(id) => setActivePanel(id as DispositionsPanel)}
+          className="sc-dispositions-modal__nav"
+        />
 
         <div id={`sc-dispositions-panel-${activePanel}`} className="sc-dispositions-modal__panel">
           {activePanel === 'transmission' ? (
