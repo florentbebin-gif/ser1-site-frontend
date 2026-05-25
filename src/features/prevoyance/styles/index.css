@@ -1,9 +1,10 @@
 .prevoyance-page {
   max-width: 1320px;
-  --prevoyance-color-revenu: var(--color-c1);
-  --prevoyance-color-ro: var(--color-c3);
-  --prevoyance-color-maintien: var(--color-c2);
-  --prevoyance-color-contrat: color-mix(in srgb, var(--color-c5) 64%, var(--color-c7));
+  --prevoyance-color-revenu: var(--color-c3);
+  --prevoyance-color-ro: color-mix(in srgb, var(--color-c3) 62%, var(--color-c7));
+  --prevoyance-color-ro-alt: color-mix(in srgb, var(--color-c3) 42%, var(--color-c7));
+  --prevoyance-color-maintien: var(--color-c5);
+  --prevoyance-color-contrat: color-mix(in srgb, var(--color-c6) 70%, var(--color-c7));
   --prevoyance-color-text-on-dark: var(--color-c7);
   --prevoyance-color-text-on-light: var(--color-c10);
 }
@@ -480,6 +481,10 @@
   --prevoyance-segment-fill: var(--prevoyance-color-ro);
 
   background: var(--prevoyance-segment-fill);
+}
+
+.prevoyance-mini-chart__segment--ro-alt {
+  --prevoyance-segment-fill: var(--prevoyance-color-ro-alt);
 }
 
 .prevoyance-mini-chart__segment--maintien,
