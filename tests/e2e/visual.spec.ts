@@ -5,8 +5,8 @@ import { ROUTES } from './helpers/fixtures';
 type VisualPage = {
   slug: string;
   path: string;
-  ready: (page: Page) => Locator;
-  fill?: (page: Page) => Promise<void>;
+  ready: (_page: Page) => Locator;
+  fill?: (_page: Page) => Promise<void>;
 };
 
 const viewports = [
