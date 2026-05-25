@@ -203,6 +203,12 @@
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
 }
 
+.per-home-tile-icon > svg {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+}
+
 .per-home-tile-copy {
   flex: 1;
   min-width: 0;
@@ -244,6 +250,12 @@
   transition:
     opacity 0.2s,
     transform 0.2s;
+}
+
+.per-home-tile-chevron > svg {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
 }
 
 .per-home-tile:hover .per-home-tile-chevron {

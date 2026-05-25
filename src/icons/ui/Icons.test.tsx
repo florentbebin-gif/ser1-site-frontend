@@ -2,22 +2,32 @@ import { createElement, type ComponentType } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
 import {
+  IconActivity,
+  IconArrowLeftRight,
   IconBarChart,
+  IconBriefcase,
+  IconBuilding,
   IconCalendar,
   IconChevronDown,
+  IconChevronRight,
   IconChevronUp,
+  IconClock,
   IconClose,
   IconDownload,
   IconDuplicate,
+  IconFileText,
   IconGift,
+  IconGauge,
   IconInfo,
   IconLayers,
   IconNetwork,
   IconPencil,
   IconPieChart,
   IconPlus,
+  IconShield,
   IconSliders,
   IconTable,
+  IconTransfer,
   IconUsers,
 } from './index';
 
@@ -41,6 +51,16 @@ const newIcons: Array<[string, IconComponent]> = [
   ['IconBarChart', IconBarChart],
   ['IconSliders', IconSliders],
   ['IconTable', IconTable],
+  ['IconActivity', IconActivity],
+  ['IconArrowLeftRight', IconArrowLeftRight],
+  ['IconBriefcase', IconBriefcase],
+  ['IconBuilding', IconBuilding],
+  ['IconChevronRight', IconChevronRight],
+  ['IconClock', IconClock],
+  ['IconFileText', IconFileText],
+  ['IconGauge', IconGauge],
+  ['IconShield', IconShield],
+  ['IconTransfer', IconTransfer],
 ];
 
 describe('catalogue icônes UI', () => {

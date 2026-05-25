@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { BASE_CG_RETRAITE_LEGAL_NOTICE } from '@/data/base-cg-retraite';
+import { IconChevronDown } from '@/icons/ui';
 
 export function PerTransfertHypotheses() {
   const [open, setOpen] = useState(false);
@@ -13,13 +14,7 @@ export function PerTransfertHypotheses() {
         aria-expanded={open}
       >
         <span className="per-transfert-hypotheses__title">HYPOTHÈSES ET LIMITES</span>
-        <svg
-          viewBox="0 0 12 8"
-          className={`per-transfert-hypotheses__chevron${open ? ' is-open' : ''}`}
-          aria-hidden="true"
-        >
-          <path d="M1 1l5 5 5-5" stroke="currentColor" fill="none" strokeWidth="1.5" />
-        </svg>
+        <IconChevronDown className={`per-transfert-hypotheses__chevron${open ? ' is-open' : ''}`} />
       </button>
 
       {open ? (

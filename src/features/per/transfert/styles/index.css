@@ -772,7 +772,7 @@
 
 .per-transfert-hypotheses__chevron {
   width: 12px;
-  height: 8px;
+  height: 12px;
   color: var(--color-c9);
   transition: transform 0.2s;
 }

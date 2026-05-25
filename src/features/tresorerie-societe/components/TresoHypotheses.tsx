@@ -6,6 +6,7 @@
  */
 
 import { useState } from 'react';
+import { IconChevronDown } from '@/icons/ui';
 
 export function TresoHypotheses() {
   const [open, setOpen] = useState(false);
@@ -20,20 +21,7 @@ export function TresoHypotheses() {
         aria-expanded={open}
       >
         <span>HYPOTHÈSES ET LIMITES</span>
-        <svg
-          width="12"
-          height="12"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          className={chevronClass}
-          aria-hidden="true"
-        >
-          <polyline points="6 9 12 15 18 9" />
-        </svg>
+        <IconChevronDown className={chevronClass} />
       </button>
 
       {open && (

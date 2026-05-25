@@ -3,6 +3,7 @@
  */
 
 import { useState } from 'react';
+import { IconBarChart } from '@/icons/ui';
 import type {
   AllocationPocketHorizon,
   AllocationPocketInput,
@@ -96,15 +97,7 @@ export function TresoPlacementSection({ inputs, projectionRows = [], onChange }:
     <div className="premium-card ts-section">
       <div className="ts-section__header">
         <span className="sim-card__icon">
-          <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-            <path
-              d="M2 12L6 8l3 3 5-7"
-              stroke="currentColor"
-              strokeWidth="1.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
+          <IconBarChart />
         </span>
         <div>
           <h2 className="ts-section__title">Allocation trésorerie société</h2>

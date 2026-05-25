@@ -10,6 +10,7 @@ import '@/styles/sim/index.css';
 import './styles/index.css';
 
 import { useCallback, useState } from 'react';
+import { IconChevronDown } from '@/icons/ui';
 import { ExportMenu } from '../../components/ExportMenu';
 import { ModeToggle } from '../../components/ModeToggle';
 import { SimPageShell } from '../../components/ui/sim/SimPageShell';
@@ -127,20 +128,7 @@ export default function TresorerieSocietePage() {
             aria-expanded={state.projectionVisible}
             data-testid="ts-open-projection"
           >
-            <svg
-              width="13"
-              height="13"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className={projectionChevronClass}
-              aria-hidden="true"
-            >
-              <polyline points="6 9 12 15 18 9" />
-            </svg>
+            <IconChevronDown className={projectionChevronClass} />
             <span>
               {state.projectionVisible
                 ? 'Masquer la projection comptable'

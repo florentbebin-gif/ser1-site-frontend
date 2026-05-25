@@ -3,6 +3,7 @@
  */
 
 import React, { useEffect, useState } from 'react';
+import { IconFileText } from '@/icons/ui';
 import type { PerHistoricalBasis } from '../../../../engine/per';
 import { ExportMenu } from '../../../../components/ExportMenu';
 import { ModeToggle } from '../../../../components/ModeToggle';
@@ -277,20 +278,7 @@ export default function PerPotentielSimulator(): React.ReactElement {
               <div className="per-potentiel-stage-header sim-card__header sim-card__header--bleed">
                 <div className="sim-card__title-row">
                   <div className="sim-card__icon">
-                    <svg
-                      width="14"
-                      height="14"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="1.8"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      aria-hidden="true"
-                    >
-                      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                      <polyline points="14 2 14 8 20 8" />
-                    </svg>
+                    <IconFileText />
                   </div>
                   <h2 className="sim-card__title">{activeStep.title}</h2>
                 </div>

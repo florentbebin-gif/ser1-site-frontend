@@ -1,15 +1,23 @@
 import type { CSSProperties } from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import {
+  IconActivity,
+  IconArrowLeftRight,
   IconBarChart,
+  IconBriefcase,
+  IconBuilding,
   IconCalendar,
   IconChevronDown,
+  IconChevronRight,
   IconChevronUp,
+  IconClock,
   IconClose,
   IconDownload,
   IconDuplicate,
+  IconFileText,
   IconFolder,
   IconGift,
+  IconGauge,
   IconHome,
   IconInfo,
   IconLayers,
@@ -20,9 +28,11 @@ import {
   IconPlus,
   IconSave,
   IconSettings,
+  IconShield,
   IconSliders,
   IconTable,
   IconTrash,
+  IconTransfer,
   IconUsers,
 } from './index';
 
@@ -35,6 +45,7 @@ const iconEntries = [
   ['Modifier', IconPencil],
   ['Fermer', IconClose],
   ['Chevron bas', IconChevronDown],
+  ['Chevron droite', IconChevronRight],
   ['Chevron haut', IconChevronUp],
   ['Ajouter', IconPlus],
   ['Dupliquer', IconDuplicate],
@@ -50,6 +61,15 @@ const iconEntries = [
   ['Graphique', IconBarChart],
   ['Paramètres fins', IconSliders],
   ['Tableau', IconTable],
+  ['Activité', IconActivity],
+  ['Flèches', IconArrowLeftRight],
+  ['Mallette', IconBriefcase],
+  ['Bâtiment', IconBuilding],
+  ['Horloge', IconClock],
+  ['Document', IconFileText],
+  ['Jauge', IconGauge],
+  ['Bouclier', IconShield],
+  ['Transfert', IconTransfer],
 ] as const;
 
 const styles = {

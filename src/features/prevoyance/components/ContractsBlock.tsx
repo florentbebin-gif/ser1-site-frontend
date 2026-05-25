@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { SimModalShell, SimSegmentedControl } from '@/components/ui/sim';
+import { IconClose, IconDuplicate, IconPencil } from '@/icons/ui';
 import {
   computeCollectiveAssietteBase,
   computeInvaliditePalierAmount,
@@ -40,58 +41,6 @@ const COLLECTIVE_EDITOR_SECTIONS: Array<{ id: ContractEditorSection; label: stri
   { id: 'cotisation', label: 'Cotisation' },
   { id: 'juridique', label: 'Acte juridique' },
 ];
-
-function PencilIcon() {
-  return (
-    <svg width="13" height="13" viewBox="0 0 24 24" aria-hidden="true">
-      <path
-        d="M11 4H5a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2h13a2 2 0 0 0 2-2v-6"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      <path
-        d="M18.5 2.5a2.1 2.1 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5Z"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
-
-function DuplicateIcon() {
-  return (
-    <svg width="13" height="13" viewBox="0 0 24 24" aria-hidden="true">
-      <rect
-        x="8"
-        y="8"
-        width="12"
-        height="12"
-        rx="2"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-      />
-      <path
-        d="M4 16V6a2 2 0 0 1 2-2h10"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
-
-function CloseGlyph() {
-  return <span aria-hidden="true">×</span>;
-}
 
 function arretPalierDuration(
   palier: Extract<PrevoyanceContractDraft, { kind: 'individuel' }>['arret']['paliers'][number],
@@ -271,7 +220,7 @@ export function ContractsBlock({
                   aria-label={`Modifier ${contract.name}`}
                   title={`Modifier ${contract.name}`}
                 >
-                  <PencilIcon />
+                  <IconPencil />
                 </button>
                 <button
                   type="button"
@@ -281,7 +230,7 @@ export function ContractsBlock({
                   aria-label={`Dupliquer ${contract.name}`}
                   title={`Dupliquer ${contract.name}`}
                 >
-                  <DuplicateIcon />
+                  <IconDuplicate />
                 </button>
                 <button
                   type="button"
@@ -291,7 +240,7 @@ export function ContractsBlock({
                   aria-label={`Supprimer ${contract.name}`}
                   title={`Supprimer ${contract.name}`}
                 >
-                  <CloseGlyph />
+                  <IconClose />
                 </button>
               </div>
             </div>

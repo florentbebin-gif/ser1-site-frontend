@@ -1,5 +1,6 @@
 import React from 'react';
 import { SimAmountInputEuro, SimFieldShell, SimSelect } from '@/components/ui/sim';
+import { IconFileText, IconTable, IconUsers } from '@/icons/ui';
 import { computeAbattement10 } from '../../../../../engine/ir/abattement10';
 import type { DeclarantRevenus } from '../../../../../engine/per';
 import { formatInteger } from '../../../../../utils/numbers';
@@ -24,66 +25,9 @@ function formatReadonlyMoney(value: number): string {
 }
 
 function SectionIcon({ kind }: { kind: 'foyer' | 'revenus' | 'versements' }): React.ReactElement {
-  if (kind === 'foyer') {
-    return (
-      <svg
-        width="14"
-        height="14"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.8"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        aria-hidden="true"
-      >
-        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
-        <circle cx="9" cy="7" r="4" />
-        <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
-        <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-      </svg>
-    );
-  }
-
-  if (kind === 'revenus') {
-    return (
-      <svg
-        width="14"
-        height="14"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.8"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        aria-hidden="true"
-      >
-        <rect x="3" y="3" width="18" height="18" rx="2" />
-        <line x1="3" y1="9" x2="21" y2="9" />
-        <line x1="3" y1="15" x2="21" y2="15" />
-        <line x1="12" y1="3" x2="12" y2="21" />
-      </svg>
-    );
-  }
-
-  return (
-    <svg
-      width="14"
-      height="14"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.8"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-    >
-      <path d="M3 7h18" />
-      <path d="M6 11h12" />
-      <path d="M8 15h8" />
-      <path d="M5 3h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2Z" />
-    </svg>
-  );
+  if (kind === 'foyer') return <IconUsers />;
+  if (kind === 'revenus') return <IconTable />;
+  return <IconFileText />;
 }
 
 export function SectionHeader({

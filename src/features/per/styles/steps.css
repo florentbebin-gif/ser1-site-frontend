@@ -470,6 +470,12 @@
   justify-self: flex-start;
 }
 
+.per-child-add-btn > svg {
+  width: 12px;
+  height: 12px;
+  flex-shrink: 0;
+}
+
 .per-child-remove-btn {
   display: flex;
   align-items: center;
@@ -481,6 +487,12 @@
   color: var(--color-c9);
   cursor: pointer;
   transition: color 0.15s;
+}
+
+.per-child-remove-btn > svg {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
 }
 
 .per-child-add-btn:hover,

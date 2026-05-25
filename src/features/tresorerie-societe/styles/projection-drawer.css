@@ -28,6 +28,8 @@
 }
 
 .ts-accordion-chevron {
+  width: 13px;
+  height: 13px;
   flex: 0 0 auto;
   transition: transform 0.2s ease;
 }

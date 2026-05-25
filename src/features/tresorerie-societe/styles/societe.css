@@ -210,6 +210,12 @@
   cursor: pointer;
 }
 
+.ts-icon-btn > svg {
+  width: 15px;
+  height: 15px;
+  flex-shrink: 0;
+}
+
 .ts-icon-btn:hover {
   border-color: var(--color-c3);
   background: color-mix(in srgb, var(--color-c4) 18%, #fff);

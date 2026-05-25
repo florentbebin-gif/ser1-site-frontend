@@ -240,6 +240,12 @@
   color: var(--color-c9);
 }
 
+.prevoyance-summary-icon-button > svg {
+  width: 13px;
+  height: 13px;
+  flex-shrink: 0;
+}
+
 .prevoyance-summary-icon-button--remove {
   color: var(--color-c9);
   font-size: 14px;

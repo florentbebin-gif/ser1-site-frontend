@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { IconChevronDown } from '@/icons/ui';
 
 export function PrevoyanceHypotheses() {
   const [open, setOpen] = useState(false);
@@ -12,20 +13,7 @@ export function PrevoyanceHypotheses() {
         aria-expanded={open}
       >
         <span className="sim-hypotheses__label">HYPOTHÈSES ET LIMITES</span>
-        <svg
-          width="12"
-          height="12"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          className={`sim-hypotheses__chevron${open ? ' is-open' : ''}`}
-          aria-hidden="true"
-        >
-          <polyline points="6 9 12 15 18 9" />
-        </svg>
+        <IconChevronDown className={`sim-hypotheses__chevron${open ? ' is-open' : ''}`} />
       </button>
 
       {open ? (

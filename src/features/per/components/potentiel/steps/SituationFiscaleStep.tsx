@@ -4,6 +4,7 @@
 
 import React, { useState } from 'react';
 import { SimAmountInputEuro, SimSelect } from '@/components/ui/sim';
+import { IconClose, IconPlus } from '@/icons/ui';
 import type { DeclarantRevenus, PlafondMadelinDetail } from '../../../../../engine/per';
 import type { PerDeclarantPatch } from '../../../hooks/usePerPotentiel';
 import type { PerChildDraft } from '../../../utils/perParts';
@@ -169,20 +170,7 @@ export default function SituationFiscaleStep({
 
             <div className="per-children-zone">
               <button type="button" className="per-child-add-btn" onClick={onAddChild}>
-                <svg
-                  width="12"
-                  height="12"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  aria-hidden="true"
-                >
-                  <line x1="12" y1="5" x2="12" y2="19" />
-                  <line x1="5" y1="12" x2="19" y2="12" />
-                </svg>
+                <IconPlus />
                 Ajouter un enfant
               </button>
               {children.length > 0 && (
@@ -207,20 +195,7 @@ export default function SituationFiscaleStep({
                         onClick={() => onRemoveChild(child.id)}
                         aria-label={`Supprimer enfant ${index + 1}`}
                       >
-                        <svg
-                          width="14"
-                          height="14"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          aria-hidden="true"
-                        >
-                          <line x1="18" y1="6" x2="6" y2="18" />
-                          <line x1="6" y1="6" x2="18" y2="18" />
-                        </svg>
+                        <IconClose />
                       </button>
                     </div>
                   ))}

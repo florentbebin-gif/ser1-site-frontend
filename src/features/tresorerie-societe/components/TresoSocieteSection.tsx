@@ -3,6 +3,7 @@
  */
 
 import { useEffect, useState } from 'react';
+import { IconBuilding } from '@/icons/ui';
 import { SimFieldShell } from '../../../components/ui/sim/SimFieldShell';
 import { SimModalShell } from '../../../components/ui/sim/SimModalShell';
 import { SimSelect } from '../../../components/ui/sim/SimSelect';
@@ -262,23 +263,7 @@ export function TresoSocieteSection({ inputs, onChange, onAssociateModalOpenerCh
     <div className="premium-card ts-section">
       <div className="ts-section__header">
         <span className="sim-card__icon">
-          <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-            <rect
-              x="2"
-              y="7"
-              width="12"
-              height="8"
-              rx="1"
-              stroke="currentColor"
-              strokeWidth="1.5"
-            />
-            <path
-              d="M5 7V5a3 3 0 016 0v2"
-              stroke="currentColor"
-              strokeWidth="1.5"
-              strokeLinecap="round"
-            />
-          </svg>
+          <IconBuilding />
         </span>
         <div>
           <h2 className="ts-section__title">Société</h2>

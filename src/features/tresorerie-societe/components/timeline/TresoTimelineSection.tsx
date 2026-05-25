@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { IconArrowLeftRight, IconSettings } from '@/icons/ui';
 import type {
   AssociateInputV6,
   AssociateRevenuePhaseInputV6,
@@ -123,19 +124,7 @@ export function TresoTimelineSection({
     >
       <div className="ts-section__header">
         <span className="sim-card__icon">
-          <svg
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            aria-hidden="true"
-          >
-            <line x1="3" y1="12" x2="21" y2="12" />
-            <polyline points="8 8 3 12 8 16" />
-            <polyline points="16 8 21 12 16 16" />
-          </svg>
+          <IconArrowLeftRight />
         </span>
         <div>
           <h2 className="ts-section__title" id="ts-timeline-title">
@@ -152,19 +141,7 @@ export function TresoTimelineSection({
             aria-label="Paramétrer l’associé"
             onClick={() => onOpenAssociateModal?.(selectedAssociate.id)}
           >
-            <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-              <path
-                d="M8 5.5A2.5 2.5 0 108 10.5 2.5 2.5 0 008 5.5z"
-                stroke="currentColor"
-                strokeWidth="1.4"
-              />
-              <path
-                d="M8 1.5v2M8 12.5v2M3.4 3.4l1.4 1.4M11.2 11.2l1.4 1.4M1.5 8h2M12.5 8h2M3.4 12.6l1.4-1.4M11.2 4.8l1.4-1.4"
-                stroke="currentColor"
-                strokeWidth="1.4"
-                strokeLinecap="round"
-              />
-            </svg>
+            <IconSettings />
           </button>
         ) : null}
       </div>
