@@ -1,11 +1,11 @@
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it, vi } from 'vitest';
-import { InputEuro, Select } from './CreditInputs';
+import { CreditEuroField, Select } from './CreditInputs';
 
-describe('CreditInputs', () => {
-  it('keeps the data-testid on the capital input and applies shared field classes', () => {
+describe('champs crédit', () => {
+  it('conserve le data-testid du capital et applique les classes partagées', () => {
     const html = renderToStaticMarkup(
-      <InputEuro
+      <CreditEuroField
         label="Montant emprunté"
         value={200000}
         onChange={vi.fn()}
@@ -18,7 +18,7 @@ describe('CreditInputs', () => {
     expect(html).toContain('sim-field__unit');
   });
 
-  it('renders the custom select with shared dropdown classes', () => {
+  it('rend le select personnalisé avec les classes de liste partagées', () => {
     const html = renderToStaticMarkup(
       <Select
         label="Type"

@@ -18,11 +18,11 @@ type AmountProps = {
   onChange: (_value: number) => void;
 };
 
-export const InputEuro = ({ value, ...props }: AmountProps) => (
+export const PlacementEuroField = ({ value, ...props }: AmountProps) => (
   <SimAmountInputEuro {...inputClasses} {...props} value={value ?? 0} />
 );
 
-export const InputPct = ({ value, onChange, ...props }: AmountProps) => (
+export const PlacementPercentField = ({ value, onChange, ...props }: AmountProps) => (
   <SimAmountInputPercent
     {...inputClasses}
     {...props}
@@ -43,7 +43,12 @@ type NumberProps = {
   onChange: (_value: number | null) => void;
 };
 
-export const InputNumber = ({ value, onChange, inline = false, ...props }: NumberProps) => (
+export const PlacementNumberField = ({
+  value,
+  onChange,
+  inline = false,
+  ...props
+}: NumberProps) => (
   <SimAmountInputNumeric
     {...inputClasses}
     {...props}

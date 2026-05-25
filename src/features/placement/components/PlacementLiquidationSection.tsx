@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import type { CompareResult } from '@/engine/placement/types';
-import { InputEuro, InputNumber } from './PlacementFormControls';
+import { PlacementEuroField, PlacementNumberField } from './PlacementAmountControls';
 import { PlacementToggle as Toggle } from './PlacementToggle';
 import { SimSelect } from '@/components/ui/sim';
 import type { PlacementLiquidationState, PlacementSimulatorState } from '../utils/normalizers';
@@ -77,7 +77,7 @@ export function PlacementLiquidationSection({
             <tr>
               <td>Durée de liquidation</td>
               <td colSpan={2}>
-                <InputNumber
+                <PlacementNumberField
                   value={state.liquidation.duree}
                   onChange={(value) => setLiquidation({ duree: value ?? 1 })}
                   unit="ans"
@@ -93,7 +93,7 @@ export function PlacementLiquidationSection({
             <tr>
               <td>Mensualité cible</td>
               <td colSpan={2}>
-                <InputEuro
+                <PlacementEuroField
                   value={state.liquidation.mensualiteCible}
                   onChange={(value) => setLiquidation({ mensualiteCible: value })}
                 />
@@ -105,7 +105,7 @@ export function PlacementLiquidationSection({
             <tr>
               <td>Montant du retrait</td>
               <td colSpan={2}>
-                <InputEuro
+                <PlacementEuroField
                   value={state.liquidation.montantUnique}
                   onChange={(value) => setLiquidation({ montantUnique: value })}
                 />

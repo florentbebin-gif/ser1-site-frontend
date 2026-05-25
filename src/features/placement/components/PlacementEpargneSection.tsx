@@ -8,7 +8,7 @@ import type {
   PlacementSimulatorState,
 } from '../utils/normalizers';
 import type { PlacementTableProduct } from '../utils/tableHelpers';
-import { InputNumber } from './PlacementFormControls';
+import { PlacementNumberField } from './PlacementAmountControls';
 import { PlacementToggle as Toggle } from './PlacementToggle';
 import { CollapsibleTable } from './PlacementTables';
 
@@ -239,7 +239,7 @@ export function PlacementEpargneSection({
             {(compareEnabled ? state.products : state.products.slice(0, 1)).map(
               (product, index) => (
                 <td key={index}>
-                  <InputNumber
+                  <PlacementNumberField
                     value={product.dureeEpargne}
                     onChange={(value) => setProduct(index, { dureeEpargne: value ?? 1 })}
                     unit="ans"

@@ -7,7 +7,7 @@ import type {
   PlacementTransmissionState,
 } from '../utils/normalizers';
 import { BENEFICIARY_OPTIONS } from '../utils/normalizers';
-import { InputNumber } from './PlacementFormControls';
+import { PlacementNumberField } from './PlacementAmountControls';
 import { SimSelect } from '@/components/ui/sim';
 
 interface PlacementTransmissionSectionProps {
@@ -50,7 +50,7 @@ export function PlacementTransmissionSection({
               <td>Âge au décès (simulation)</td>
               <td colSpan={2}>
                 <div className="pl-field-container pl-field-container--end">
-                  <InputNumber
+                  <PlacementNumberField
                     value={state.transmission.ageAuDeces}
                     onChange={(value) => setTransmission({ ageAuDeces: value ?? 0 })}
                     unit="ans"
@@ -94,7 +94,7 @@ export function PlacementTransmissionSection({
               <tr>
                 <td>Nombre de bénéficiaires</td>
                 <td colSpan={2}>
-                  <InputNumber
+                  <PlacementNumberField
                     value={state.transmission.nbBeneficiaires}
                     onChange={(value) => setTransmission({ nbBeneficiaires: value ?? 1 })}
                     min={1}

@@ -6,7 +6,7 @@
  * - Settings-driven         -> hooks/usePlacementSettings.ts
  * - Formatters              -> placement/utils/formatters.ts
  * - Normalizers & constants -> placement/utils/normalizers.ts
- * - Input components        -> placement/components/PlacementFormControls.tsx
+ * - Champs de montant      -> placement/components/PlacementAmountControls.tsx
  * - Table components        -> placement/components/PlacementTables.tsx
  * - VersementConfigModal    -> placement/components/VersementConfigModal.tsx
  * - Excel export            -> placement/export/placementExcelExport.ts

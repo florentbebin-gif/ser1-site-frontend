@@ -2,7 +2,13 @@
  * CreditLoanForm.tsx - Formulaire de saisie d'un prêt (réutilisable)
  */
 
-import { InputEuro, InputPct, InputNumber, InputMonth, Select } from './CreditInputs';
+import {
+  CreditEuroField,
+  CreditNumberField,
+  CreditPercentField,
+  InputMonth,
+  Select,
+} from './CreditInputs';
 import type { CreditAssurMode, CreditLoanFormProps, CreditType } from '../types';
 
 export function CreditLoanForm({
@@ -24,14 +30,14 @@ export function CreditLoanForm({
     <div className="cv-loan-form" data-testid={`credit-form-pret${pretNum}`}>
       {/* Montant + Durée — toujours visibles */}
       <div className="cv-loan-form__grid">
-        <InputEuro
+        <CreditEuroField
           label="Montant emprunté"
           value={pretData.capital}
           onChange={(value) => onPatch({ capital: value })}
           testId={`credit-pret${pretNum}-capital`}
           dataTestId={pretNum === 0 ? 'credit-capital-input' : undefined}
         />
-        <InputNumber
+        <CreditNumberField
           label="Durée"
           value={pretData.duree}
           onChange={(value) => onPatch({ duree: value })}
@@ -45,10 +51,10 @@ export function CreditLoanForm({
       {/* Taux + Type + Date — 3 colonnes en expert, taux seul en simplifié */}
       {isExpert ? (
         <div className="cv-loan-form__grid--3 cv-loan-form__grid--stack-gap">
-          <InputPct
+          <CreditPercentField
             label="Taux annuel (crédit)"
             rawValue={raw?.taux || formatTauxRaw(pretData.taux)}
-            onBlur={(value) => onPatch({ taux: value })}
+            onChange={(value) => onPatch({ taux: value })}
             testId={`credit-pret${pretNum}-taux`}
           />
           <Select<CreditType>
@@ -69,10 +75,10 @@ export function CreditLoanForm({
           />
         </div>
       ) : (
-        <InputPct
+        <CreditPercentField
           label="Taux annuel (crédit)"
           rawValue={raw?.taux || formatTauxRaw(pretData.taux)}
-          onBlur={(value) => onPatch({ taux: value })}
+          onChange={(value) => onPatch({ taux: value })}
           testId={`credit-pret${pretNum}-taux`}
         />
       )}
@@ -96,13 +102,13 @@ export function CreditLoanForm({
                 ]}
                 testId={`credit-pret${pretNum}-assurmode`}
               />
-              <InputPct
+              <CreditPercentField
                 label="Taux annuel (assurance)"
                 rawValue={raw?.tauxAssur || formatTauxRaw(pretData.tauxAssur)}
-                onBlur={(value) => onPatch({ tauxAssur: value })}
+                onChange={(value) => onPatch({ tauxAssur: value })}
                 testId={`credit-pret${pretNum}-tauxassur`}
               />
-              <InputNumber
+              <CreditNumberField
                 label="Quotité assurée"
                 value={pretData.quotite}
                 onChange={(value) => onPatch({ quotite: value })}

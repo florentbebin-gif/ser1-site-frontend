@@ -1,6 +1,6 @@
 import type { PlacementTmiOption } from '@/hooks/usePlacementSettings';
 import type { PlacementClient } from '../utils/normalizers';
-import { InputNumber } from './PlacementFormControls';
+import { PlacementNumberField } from './PlacementAmountControls';
 import { PlacementSelect as Select } from './PlacementSelect';
 
 interface PlacementClientProfileSectionProps {
@@ -52,7 +52,7 @@ export function PlacementClientProfileSection({
       <div className="sim-divider" />
 
       <div className="pl-topgrid premium-grid-4">
-        <InputNumber
+        <PlacementNumberField
           label="Âge actuel"
           value={client.ageActuel}
           onChange={(value) => setClient({ ageActuel: value ?? null })}

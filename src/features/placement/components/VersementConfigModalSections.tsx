@@ -9,7 +9,11 @@ import {
   type VersementPonctuel,
 } from '@/engine/placement/versementConfig';
 import { SimAmountInputEuro, SimAmountInputPercent, SimSelect } from '@/components/ui/sim';
-import { InputEuro, InputNumber, InputPct } from './PlacementFormControls';
+import {
+  PlacementEuroField,
+  PlacementNumberField,
+  PlacementPercentField,
+} from './PlacementAmountControls';
 import { AllocationSlider } from './PlacementTables';
 
 interface VersementSectionShellProps {
@@ -75,13 +79,13 @@ export function VersementInitialSection({
     <VersementSectionShell step="1" title="Versement initial">
       <div className="vcm__card">
         <div className="vcm__row">
-          <InputEuro
+          <PlacementEuroField
             label="Montant"
             value={initial.montant}
             onChange={(value) => onUpdateInitial('montant', value)}
           />
           {!isSCPI && (
-            <InputPct
+            <PlacementPercentField
               label="Frais d'entrée"
               value={initial.fraisEntree}
               onChange={(value) => onUpdateInitial('fraisEntree', value)}
@@ -107,7 +111,7 @@ export function VersementInitialSection({
                 />
               </div>
               {deductionInitiale.mode === 'montant' && (
-                <InputEuro
+                <PlacementEuroField
                   label="Économie IR"
                   value={deductionInitiale.montant}
                   onChange={(val) => onUpdateDeductionInitiale({ mode: 'montant', montant: val })}
@@ -135,7 +139,7 @@ export function VersementInitialSection({
               <div className="vcm__suboption-header">
                 <span className="vcm__badge vcm__badge--capi">Capitalisation</span>
               </div>
-              <InputPct
+              <PlacementPercentField
                 label="Rendement annuel net de FG"
                 value={capitalisation.rendementAnnuel}
                 onChange={(value) => onUpdateCapitalisation('rendementAnnuel', value)}
@@ -152,13 +156,13 @@ export function VersementInitialSection({
               <div className="vcm__row">
                 {/* Rendement annuel net de FG — masqué pour SCPI en mode simplifié */}
                 {(isExpert || !isSCPI) && (
-                  <InputPct
+                  <PlacementPercentField
                     label="Rendement annuel net de FG"
                     value={distribution.rendementAnnuel}
                     onChange={(value) => onUpdateDistribution('rendementAnnuel', value)}
                   />
                 )}
-                <InputPct
+                <PlacementPercentField
                   label={isSCPI ? 'Taux de loyers net de FG' : 'Taux de distribution net de FG'}
                   value={distribution.tauxDistribution}
                   onChange={(value) => onUpdateDistribution('tauxDistribution', value)}
@@ -168,7 +172,7 @@ export function VersementInitialSection({
               {(isExpert || !isSCPI) && (
                 <div className="vcm__row">
                   {!isSCPI ? (
-                    <InputNumber
+                    <PlacementNumberField
                       label="Durée du produit"
                       value={distribution.dureeProduit || ''}
                       onChange={(value) => onUpdateDistribution('dureeProduit', value || null)}
@@ -180,7 +184,7 @@ export function VersementInitialSection({
                     <div />
                   )}
                   {/* Délai de jouissance — masqué pour SCPI en mode simplifié */}
-                  <InputNumber
+                  <PlacementNumberField
                     label="Délai de jouissance"
                     value={distribution.delaiJouissance}
                     onChange={(value) => onUpdateDistribution('delaiJouissance', value ?? 0)}
@@ -310,13 +314,13 @@ export function VersementAnnualSection({
     >
       <div className="vcm__card">
         <div className="vcm__row vcm__row--4cols">
-          <InputEuro
+          <PlacementEuroField
             label="Montant"
             value={annuel.montant}
             onChange={(value) => onUpdateAnnuel('montant', value)}
           />
           {!isSCPI && (
-            <InputPct
+            <PlacementPercentField
               label="Frais d'entrée"
               value={annuel.fraisEntree}
               onChange={(value) => onUpdateAnnuel('fraisEntree', value)}
@@ -349,7 +353,7 @@ export function VersementAnnualSection({
                 <span>Garantie de bonne fin</span>
               </label>
               {annuel.garantieBonneFin.active ? (
-                <InputPct
+                <PlacementPercentField
                   label="Coût annuel"
                   value={annuel.garantieBonneFin.cout}
                   onChange={(value) => onUpdateAnnuelOption('garantieBonneFin', 'cout', value)}
@@ -370,7 +374,7 @@ export function VersementAnnualSection({
                 <span>Exonération des cotisations</span>
               </label>
               {annuel.exonerationCotisations.active ? (
-                <InputPct
+                <PlacementPercentField
                   label="Coût annuel"
                   value={annuel.exonerationCotisations.cout}
                   onChange={(value) =>
@@ -445,7 +449,7 @@ export function VersementPonctuelsSection({
           {ponctuels.map((ponctuel, index) => (
             <div key={index} className="vcm__ponctuel-row">
               <div className="vcm__ponctuel-cell">
-                <InputNumber
+                <PlacementNumberField
                   value={ponctuel.annee}
                   onChange={(value) => onUpdatePonctuel(index, 'annee', value ?? 1)}
                   min={1}
