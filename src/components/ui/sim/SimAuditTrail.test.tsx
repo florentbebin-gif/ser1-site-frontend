@@ -18,7 +18,7 @@ describe('SimAuditTrail', () => {
 
     expect(html).toContain('Simulation calculée le 25/05/2026 14:32');
     expect(html).toContain('Barème IR 2026 (revenus 2025)');
-    expect(html).toContain('Source Bercy');
+    expect(html).toContain('Source : barème fiscal officiel');
   });
 
   it('accepte une source et une classe complémentaires', () => {

@@ -150,6 +150,19 @@ describe('SimDisclosureButton', () => {
     expect(html).toContain('aria-controls="panel-1"');
   });
 
+  it('peut être rendu sans panneau contrôlé explicite', () => {
+    const html = renderToStaticMarkup(
+      <SimDisclosureButton
+        expanded={false}
+        onToggle={vi.fn()}
+        labelClosed="Afficher"
+        labelOpen="Masquer"
+      />,
+    );
+
+    expect(html).not.toContain('aria-controls');
+  });
+
   it('declenche onToggle au clic', () => {
     const onToggle = vi.fn();
     render(

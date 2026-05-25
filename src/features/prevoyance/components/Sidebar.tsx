@@ -418,7 +418,11 @@ export function Sidebar({
 
   return (
     <div className="prevoyance-sidebar">
-      <SideCard title="Arrêt de travail" icon="arret" actions={<MiniChartLegend showMaintien />}>
+      <SideCard
+        title="Arrêt de travail"
+        icon="arret"
+        actions={<MiniChartLegend showMaintien={kind === 'collectif'} />}
+      >
         <MiniArretEuroChart chart={arretChart} />
         {kind === 'individuel' ? (
           <div className="prevoyance-frais-inline-kpi">

@@ -115,7 +115,7 @@ describe('filtres de revenus IrFormSection', () => {
 
     expect(html).toContain('sim-action-btn--add');
     expect(html).toContain('Ajouter un enfant');
-    expect(html).toContain('sim-action-btn--close');
+    expect(html).toContain('sim-action-btn--delete');
     expect(html).toContain('aria-label="Supprimer enfant 1"');
   });
 });

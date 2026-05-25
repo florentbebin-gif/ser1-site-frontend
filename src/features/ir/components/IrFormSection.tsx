@@ -123,7 +123,7 @@ export function IrFormSection({
                     ]}
                   />
                   <SimActionButton
-                    variant="close"
+                    variant="delete"
                     mode="icon"
                     label="Supprimer"
                     onClick={() => setChildren((list) => list.filter((c) => c.id !== child.id))}
