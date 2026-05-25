@@ -1,5 +1,6 @@
 import { useState, type ReactNode } from 'react';
 import '@/styles/sim/index.css';
+import SettingsTitleWithIcon from '@/components/settings/SettingsTitleWithIcon';
 import {
   SimAmountInputEuro,
   SimAmountInputNumeric,
@@ -9,6 +10,7 @@ import {
   SimDelta,
   SimDisclosureButton,
   SimEmptyState,
+  SimInfoButton,
   SimKpiReference,
   SimMetric,
   SimModalSectionNav,
@@ -34,6 +36,8 @@ import {
   tokenGroups,
   type PrimitiveState,
 } from './designSystemCatalog';
+import { SettingsDesignSystemInfoModal } from './SettingsDesignSystemInfoModal';
+import { SettingsDesignSystemTokenSample } from './SettingsDesignSystemTokenSample';
 
 const ignoreNumberChange = (_value: number) => {};
 
@@ -391,12 +395,22 @@ function DesignSystemGlossaryPreview() {
 }
 
 export default function SettingsDesignSystem() {
+  const [infoOpen, setInfoOpen] = useState(false);
+
   return (
     <main className="settings-design-system" data-testid="settings-design-system">
       <section className="settings-premium-card">
         <header className="settings-premium-header">
-          <div className="settings-action-text">
-            <h1 className="settings-premium-title">Design system simulateurs</h1>
+          <div className="settings-action-text settings-design-system__hero-copy">
+            <h1 className="settings-premium-title settings-design-system__hero-title">
+              <SettingsTitleWithIcon icon="sparkles">
+                Design system simulateurs
+              </SettingsTitleWithIcon>
+              <SimInfoButton
+                ariaLabel="Informations sur la page design system"
+                onClick={() => setInfoOpen(true)}
+              />
+            </h1>
             <p className="settings-premium-subtitle">
               Référence runtime complète des fondations SIM SER1 2026.
             </p>
@@ -413,7 +427,7 @@ export default function SettingsDesignSystem() {
               <div className="settings-design-system__token-grid">
                 {group.tokens.map((token) => (
                   <div className="settings-design-system__token" key={token}>
-                    <span className="settings-design-system__token-sample" />
+                    <SettingsDesignSystemTokenSample kind={group.kind} token={token} />
                     <code>{token}</code>
                   </div>
                 ))}
@@ -437,6 +451,10 @@ export default function SettingsDesignSystem() {
 
       <section className="settings-premium-card settings-design-system__section">
         <h2 className="settings-design-system__title">Primitives inputs</h2>
+        <p className="settings-design-system__note">
+          Les variantes euro, pourcentage et numérique partagent SimAmountInputBase pour conserver
+          le même cycle de saisie, formatage et validation.
+        </p>
         <DesignSystemInputPreview />
       </section>
 
@@ -464,6 +482,8 @@ export default function SettingsDesignSystem() {
         <h2 className="settings-design-system__title">Glossaire</h2>
         <DesignSystemGlossaryPreview />
       </section>
+
+      {infoOpen ? <SettingsDesignSystemInfoModal onClose={() => setInfoOpen(false)} /> : null}
     </main>
   );
 }

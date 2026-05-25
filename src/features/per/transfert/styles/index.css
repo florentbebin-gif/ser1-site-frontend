@@ -299,6 +299,16 @@
   border-left: 3px solid var(--color-c3);
 }
 
+.per-transfert-target-card,
+.per-transfert-controls-card {
+  display: grid;
+  gap: 14px;
+}
+
+.per-transfert-target-card {
+  border-left: 3px solid var(--color-c3);
+}
+
 .per-transfert-summary-panel__header {
   display: flex;
   align-items: flex-start;
@@ -441,26 +451,35 @@
 .per-transfert-mini-bar__track {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 2px;
-  overflow: hidden;
-  border-radius: 7px;
-  background: var(--color-c8);
+  gap: 4px;
+  padding: 4px;
+  border: 1px solid var(--color-c8);
+  border-radius: 10px;
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--color-c4) 48%, #ffffff),
+    #ffffff 72%
+  );
 }
 
 .per-transfert-mini-bar__segment {
   display: inline-flex;
-  min-height: 30px;
+  min-height: 34px;
   align-items: center;
   justify-content: center;
-  background: var(--color-c7);
+  border: 1px solid transparent;
+  border-radius: 7px;
+  background: #ffffff;
   color: var(--color-c9);
   font-size: 11px;
   font-weight: 800;
 }
 
 .per-transfert-mini-bar__segment.is-active {
+  border-color: color-mix(in srgb, var(--color-c3) 46%, var(--color-c8));
   background: var(--color-c3);
   color: #ffffff;
+  box-shadow: 0 6px 14px color-mix(in srgb, var(--color-c3) 20%, transparent);
 }
 
 .per-transfert-prefon-strategy {
@@ -675,40 +694,6 @@
   color: var(--color-c9);
   font-size: 11px;
   line-height: 1.35;
-}
-
-.per-transfert-hypotheses {
-  border: 1px solid var(--color-c8);
-  border-radius: 12px;
-  background: var(--color-c7);
-  padding: 14px 20px;
-}
-
-.per-transfert-hypotheses__toggle {
-  justify-content: space-between;
-  width: 100%;
-  border: 0;
-  background: transparent;
-  color: var(--color-c9);
-  font-size: 11px;
-  font-weight: 800;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  padding: 0;
-}
-
-.per-transfert-hypotheses__toggle:hover,
-.per-transfert-hypotheses__toggle:focus-visible {
-  background: transparent;
-  color: var(--color-c2);
-}
-
-.per-transfert-hypotheses__list {
-  margin: 12px 0 0;
-  padding-left: 18px;
-  color: var(--color-c9);
-  font-size: 12px;
-  line-height: 1.55;
 }
 
 .per-transfert-modal-list li {

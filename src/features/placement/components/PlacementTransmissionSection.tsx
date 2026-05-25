@@ -2,6 +2,7 @@ import { DEFAULT_PS_SETTINGS } from '@/constants/settingsDefaults';
 import { CGP_GLOSSARY } from '@/constants/cgpGlossary';
 import type { CompareResult } from '@/engine/placement/types';
 import { SimSelect, SimTooltip } from '@/components/ui/sim';
+import { IconGift } from '@/icons/ui';
 import { euro, formatPsMontant } from '../utils/formatters';
 import type {
   DmtgOption,
@@ -42,8 +43,19 @@ export function PlacementTransmissionSection({
 
   return (
     <>
-      <div className="premium-card">
-        <div className="pl-card-title">Transmission</div>
+      <div className="premium-card premium-card--guide sim-card--guide">
+        <div className="pl-card-header sim-card__header sim-card__header--bleed">
+          <div className="pl-card-title-row sim-card__title-row">
+            <span className="sim-card__icon">
+              <IconGift />
+            </span>
+            <h2 className="pl-card-title sim-card__title">Transmission</h2>
+          </div>
+          <p className="pl-card-subtitle sim-card__subtitle">
+            Hypothèses de bénéficiaires, DMTG et capital net transmis.
+          </p>
+        </div>
+        <div className="sim-divider" />
 
         <table className="pl-ir-table pl-table premium-table">
           <tbody>

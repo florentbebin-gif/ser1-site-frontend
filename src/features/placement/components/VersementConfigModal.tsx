@@ -3,7 +3,7 @@
  */
 
 import { useEffect, useState } from 'react';
-import { SimModalShell } from '@/components/ui/sim';
+import { SimMobileStickyActions, SimModalSectionNav, SimModalShell } from '@/components/ui/sim';
 import { IconLayers } from '@/icons/ui';
 import { ENVELOPE_LABELS } from '@/engine/placement';
 import { DEFAULT_ANNUEL, normalizeVersementConfig } from '@/engine/placement/versementConfig';
@@ -35,6 +35,7 @@ interface VersementConfigModalProps {
 
 type AnnualOptionName = 'garantieBonneFin' | 'exonerationCotisations';
 type AllocationConfig = Pick<VersementEntry, 'pctCapitalisation' | 'pctDistribution'>;
+type VersementModalSectionId = 'initial' | 'annuel' | 'ponctuels';
 
 const envelopeLabels = ENVELOPE_LABELS as Record<string, string>;
 
@@ -124,6 +125,7 @@ export function VersementConfigModal({
   const [hasAnnualSection, setHasAnnualSection] = useState<boolean>(() =>
     seedAnnualSection(normalizeVersementConfig(config ?? undefined).annuel, envelope === 'PER'),
   );
+  const [activeSection, setActiveSection] = useState<VersementModalSectionId>('initial');
 
   const isSCPI = envelope === 'SCPI';
   const isPER = envelope === 'PER';
@@ -149,6 +151,11 @@ export function VersementConfigModal({
       })),
     }));
   }, [isSCPI]);
+
+  useEffect(() => {
+    if (isExpert || activeSection !== 'ponctuels') return;
+    setActiveSection('initial');
+  }, [activeSection, isExpert]);
 
   const updateInitial = <K extends keyof VersementEntry>(field: K, value: VersementEntry[K]) => {
     setDraft((currentDraft) => ({
@@ -303,6 +310,86 @@ export function VersementConfigModal({
     ...draft,
     annuel: hasAnnualSection ? draft.annuel : buildNeutralAnnualState(isSCPI),
   };
+  const modalSections: Array<{ id: VersementModalSectionId; label: string; controls: string }> = [
+    { id: 'initial', label: 'Versement initial', controls: 'vcm-panel-initial' },
+    { id: 'annuel', label: 'Versement annuel', controls: 'vcm-panel-annuel' },
+  ];
+  if (isExpert) {
+    modalSections.push({
+      id: 'ponctuels',
+      label: 'Versements ponctuels',
+      controls: 'vcm-panel-ponctuels',
+    });
+  }
+  const saveConfig = () => onSave(isExpert ? configToSave : { ...configToSave, ponctuels: [] });
+  const renderActions = () => (
+    <>
+      <button type="button" className="sim-modal-btn sim-modal-btn--ghost" onClick={onClose}>
+        Annuler
+      </button>
+      <button type="button" className="sim-modal-btn sim-modal-btn--primary" onClick={saveConfig}>
+        Valider
+      </button>
+    </>
+  );
+  const renderActiveSection = () => {
+    switch (activeSection) {
+      case 'annuel':
+        return (
+          <div id="vcm-panel-annuel" className="vcm__panel">
+            <VersementAnnualSection
+              active={hasAnnualSection}
+              annuel={draft.annuel}
+              isPER={isPER}
+              isSCPI={isSCPI}
+              isExpert={isExpert}
+              onAddAnnual={addAnnual}
+              onRemoveAnnual={removeAnnual}
+              onUpdateAnnuel={updateAnnuel}
+              onUpdateAnnuelAlloc={updateAnnuelAlloc}
+              onUpdateAnnuelOption={updateAnnuelOption}
+            />
+          </div>
+        );
+      case 'ponctuels':
+        return isExpert ? (
+          <div id="vcm-panel-ponctuels" className="vcm__panel">
+            <VersementPonctuelsSection
+              ponctuels={draft.ponctuels}
+              dureeEpargne={dureeEpargne}
+              isSCPI={isSCPI}
+              onAddPonctuel={addPonctuel}
+              onUpdatePonctuel={updatePonctuel}
+              onUpdatePonctuelAlloc={updatePonctuelAlloc}
+              onRemovePonctuel={removePonctuel}
+            />
+          </div>
+        ) : null;
+      case 'initial':
+      default:
+        return (
+          <div id="vcm-panel-initial" className="vcm__panel">
+            <VersementInitialSection
+              initial={draft.initial}
+              capitalisation={draft.capitalisation}
+              distribution={draft.distribution}
+              isSCPI={isSCPI}
+              isCTO={isCTO}
+              isPER={isPER}
+              isExpert={isExpert}
+              showCapiBlock={showCapiBlock}
+              showDistribBlock={showDistribBlock}
+              onUpdateInitial={updateInitial}
+              onUpdateInitialAlloc={updateInitialAlloc}
+              onUpdateCapitalisation={updateCapitalisation}
+              onUpdateDistribution={updateDistribution}
+              deductionInitiale={draft.deductionInitiale}
+              onUpdateDeductionInitiale={updateDeductionInitiale}
+            />
+          </div>
+        );
+    }
+  };
 
   return (
     <SimModalShell
@@ -323,20 +410,7 @@ export function VersementConfigModal({
       closeClassName="vcm__close"
       modalTestId="placement-versements-modal"
       closeTestId="placement-versements-close"
-      footer={
-        <>
-          <button type="button" className="sim-modal-btn sim-modal-btn--ghost" onClick={onClose}>
-            Annuler
-          </button>
-          <button
-            type="button"
-            className="sim-modal-btn sim-modal-btn--primary"
-            onClick={() => onSave(isExpert ? configToSave : { ...configToSave, ponctuels: [] })}
-          >
-            Valider
-          </button>
-        </>
-      }
+      footer={renderActions()}
     >
       {isAV ? (
         <div className="vcm__hint vcm__hint--spaced">
@@ -344,48 +418,20 @@ export function VersementConfigModal({
         </div>
       ) : null}
 
-      <VersementInitialSection
-        initial={draft.initial}
-        capitalisation={draft.capitalisation}
-        distribution={draft.distribution}
-        isSCPI={isSCPI}
-        isCTO={isCTO}
-        isPER={isPER}
-        isExpert={isExpert}
-        showCapiBlock={showCapiBlock}
-        showDistribBlock={showDistribBlock}
-        onUpdateInitial={updateInitial}
-        onUpdateInitialAlloc={updateInitialAlloc}
-        onUpdateCapitalisation={updateCapitalisation}
-        onUpdateDistribution={updateDistribution}
-        deductionInitiale={draft.deductionInitiale}
-        onUpdateDeductionInitiale={updateDeductionInitiale}
-      />
-
-      <VersementAnnualSection
-        active={hasAnnualSection}
-        annuel={draft.annuel}
-        isPER={isPER}
-        isSCPI={isSCPI}
-        isExpert={isExpert}
-        onAddAnnual={addAnnual}
-        onRemoveAnnual={removeAnnual}
-        onUpdateAnnuel={updateAnnuel}
-        onUpdateAnnuelAlloc={updateAnnuelAlloc}
-        onUpdateAnnuelOption={updateAnnuelOption}
-      />
-
-      {isExpert && (
-        <VersementPonctuelsSection
-          ponctuels={draft.ponctuels}
-          dureeEpargne={dureeEpargne}
-          isSCPI={isSCPI}
-          onAddPonctuel={addPonctuel}
-          onUpdatePonctuel={updatePonctuel}
-          onUpdatePonctuelAlloc={updatePonctuelAlloc}
-          onRemovePonctuel={removePonctuel}
+      <div className="vcm__layout">
+        <SimModalSectionNav
+          sections={modalSections}
+          activeId={activeSection}
+          ariaLabel="Rubriques des versements"
+          className="vcm__nav"
+          onChange={(sectionId) => setActiveSection(sectionId as VersementModalSectionId)}
         />
-      )}
+        <div className="vcm__panels">{renderActiveSection()}</div>
+      </div>
+
+      <SimMobileStickyActions className="vcm__mobile-actions" ariaLabel="Actions de validation">
+        {renderActions()}
+      </SimMobileStickyActions>
     </SimModalShell>
   );
 }

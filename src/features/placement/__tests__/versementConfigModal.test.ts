@@ -87,6 +87,11 @@ describe('VersementConfigModal helpers', () => {
     expect(html).toContain('aria-modal="true"');
     expect(html).toContain('aria-labelledby=');
     expect(html).toContain('Paramétrage des versements');
+    expect(html).toContain('aria-label="Rubriques des versements"');
+    expect(html).toContain('Versement initial');
+    expect(html).toContain('Versement annuel');
+    expect(html).not.toContain('Versements ponctuels');
+    expect(html).toContain('vcm__mobile-actions');
     expect(html).toContain('Hypothèse : investissement 100 % unités de compte');
     expect(html).toContain('prélèvements sociaux');
     expect(html).toContain('sim-modal-btn--ghost');

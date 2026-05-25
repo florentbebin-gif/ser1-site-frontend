@@ -7,6 +7,25 @@
     padding: 16px;
   }
 
+  .vcm__layout {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+
+  .vcm__nav {
+    position: static;
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .vcm__footer {
+    display: none;
+  }
+
+  .vcm__mobile-actions {
+    display: flex;
+  }
+
   .vcm__row,
   .vcm__row--4cols {
     grid-template-columns: 1fr;

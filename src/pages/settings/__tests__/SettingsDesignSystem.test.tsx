@@ -10,6 +10,9 @@ describe('SettingsDesignSystem', () => {
     const { container } = render(<SettingsDesignSystem />);
 
     expect(screen.getByTestId('settings-design-system')).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: 'Informations sur la page design system' }),
+    ).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'Tokens' })).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'Icônes' })).toBeInTheDocument();
     expect(screen.getByText('--space-1')).toBeInTheDocument();
@@ -17,6 +20,7 @@ describe('SettingsDesignSystem', () => {
     expect(screen.getByText('Modifier')).toBeInTheDocument();
     expect(screen.getByText('Graphique')).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'Primitives inputs' })).toBeInTheDocument();
+    expect(screen.getByText(/partagent SimAmountInputBase/)).toBeInTheDocument();
     expect(screen.getByLabelText('Montant euro')).toBeInTheDocument();
     expect(screen.getByLabelText('Taux décimal')).toBeInTheDocument();
     expect(screen.getByLabelText('Nombre libre')).toBeInTheDocument();
@@ -43,5 +47,29 @@ describe('SettingsDesignSystem', () => {
     expect(screen.getByText('Extrait mobile')).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'Glossaire' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Définition : PFU' })).toBeInTheDocument();
+  });
+
+  it('rend les aperçus de tokens avec leur valeur réelle', () => {
+    const { container } = render(<SettingsDesignSystem />);
+
+    const spaceSample = container.querySelector('[data-token-sample="--space-1"]');
+    const radiusSample = container.querySelector('[data-token-sample="--radius-full"]');
+
+    expect(spaceSample).toHaveStyle({
+      width: 'var(--space-1)',
+      height: 'var(--space-1)',
+    });
+    expect(radiusSample).toHaveStyle({ borderRadius: 'var(--radius-full)' });
+  });
+
+  it('place le bouton d’information dans le titre de la page', () => {
+    render(<SettingsDesignSystem />);
+
+    const heading = screen.getByRole('heading', { name: /Design system simulateurs/ });
+    const infoButton = screen.getByRole('button', {
+      name: 'Informations sur la page design system',
+    });
+
+    expect(heading).toContainElement(infoButton);
   });
 });

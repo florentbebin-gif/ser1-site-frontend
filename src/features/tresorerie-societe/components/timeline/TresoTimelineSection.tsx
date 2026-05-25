@@ -119,18 +119,18 @@ export function TresoTimelineSection({
 
   return (
     <section
-      className="premium-card ts-section ts-timeline-section"
+      className="premium-card premium-card--guide sim-card--guide ts-section ts-timeline-section"
       aria-labelledby="ts-timeline-title"
     >
-      <div className="ts-section__header">
+      <div className="ts-section__header sim-card__header sim-card__header--bleed">
         <span className="sim-card__icon">
           <IconArrowLeftRight />
         </span>
-        <div>
-          <h2 className="ts-section__title" id="ts-timeline-title">
+        <div className="ts-section__header-text">
+          <h2 className="ts-section__title sim-card__title" id="ts-timeline-title">
             Parcours de revenus de l’associé
           </h2>
-          <p className="ts-section__subtitle">
+          <p className="ts-section__subtitle sim-card__subtitle">
             Phases de rémunération, objectifs nets et priorité CCA de l’associé sélectionné
           </p>
         </div>
@@ -145,7 +145,7 @@ export function TresoTimelineSection({
           />
         ) : null}
       </div>
-      <div className="ts-section__divider" />
+      <div className="ts-section__divider sim-divider" />
 
       {!selectedAssociate ? (
         <TresoTimelineEmptyState />

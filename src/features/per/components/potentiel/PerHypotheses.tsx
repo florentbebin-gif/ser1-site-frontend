@@ -16,17 +16,17 @@ export function PerHypotheses() {
   const [open, setOpen] = useState(false);
 
   return (
-    <div className="per-hypotheses">
+    <div className="sim-hypotheses per-hypotheses">
       <SimDisclosureButton
         expanded={open}
         onToggle={() => setOpen((prev) => !prev)}
         labelOpen="Hypothèses et limites"
         labelClosed="Hypothèses et limites"
         controls="per-hypotheses-list"
-        className="per-hypotheses__toggle"
+        className="sim-hypotheses__toggle"
       />
       {open && (
-        <ul id="per-hypotheses-list" className="per-hypotheses__list">
+        <ul id="per-hypotheses-list" className="sim-hypotheses__body">
           {PER_ASSUMPTIONS.map((assumption, index) => (
             <li key={`per-hyp-${index}`}>{assumption}</li>
           ))}

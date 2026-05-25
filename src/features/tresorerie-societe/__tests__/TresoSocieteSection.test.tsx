@@ -142,6 +142,8 @@ describe('TresoSocieteSection', () => {
     expect(screen.queryByText(/Trésorerie 150/)).not.toBeInTheDocument();
     expect(screen.queryByText(/Réserves 8/)).not.toBeInTheDocument();
     expect(screen.queryByText(/^CCA /)).not.toBeInTheDocument();
+    expect(document.querySelector('.ts-section__header')).toHaveClass('sim-card__header--bleed');
+    expect(document.querySelector('.ts-section__header-text')).toBeInTheDocument();
   });
 
   it('porte les pourcentages sur les liens du schéma, pas dans les blocs', () => {

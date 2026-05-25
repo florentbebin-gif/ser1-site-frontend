@@ -277,7 +277,7 @@ export default function PerPotentielSimulator(): React.ReactElement {
               simplifiedMode={isSimplified}
             />
           ) : (
-            <div className="premium-card premium-card--guide per-potentiel-stage">
+            <div className="premium-card premium-card--guide sim-card--guide per-potentiel-stage">
               <div className="per-potentiel-stage-header sim-card__header sim-card__header--bleed">
                 <div className="sim-card__title-row">
                   <div className="sim-card__icon">

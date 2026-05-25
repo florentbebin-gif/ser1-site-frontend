@@ -6,18 +6,18 @@ const HYPOTHESES_ID = 'placement-hypotheses-list';
 export function PlacementHypotheses() {
   const [open, setOpen] = useState(false);
   return (
-    <div className="pl-hypotheses">
+    <div className="sim-hypotheses pl-hypotheses">
       <SimDisclosureButton
         expanded={open}
         onToggle={() => setOpen((v) => !v)}
         labelClosed="Afficher les hypothèses et limites"
         labelOpen="Masquer les hypothèses et limites"
         controls={HYPOTHESES_ID}
-        className="pl-hypotheses__toggle"
+        className="sim-hypotheses__toggle"
         data-testid="placement-hypotheses-toggle"
       />
       {open && (
-        <ul id={HYPOTHESES_ID}>
+        <ul id={HYPOTHESES_ID} className="sim-hypotheses__body">
           <li>Les résultats sont indicatifs et ne constituent pas un conseil en investissement.</li>
           <li>
             Les rendements (capitalisation, distribution, liquidation) sont supposés constants sur

@@ -341,6 +341,40 @@ describe('SimTooltip', () => {
 
     expect(trigger).toHaveAttribute('aria-expanded', 'false');
   });
+
+  it('positionne le panneau près du déclencheur à l’ouverture', () => {
+    render(<SimTooltip label="IFI" description="Définition de l’IFI." />);
+
+    const trigger = screen.getByRole('button', { name: 'Définition : IFI' });
+    const panel = screen.getByRole('tooltip', { hidden: true });
+
+    vi.spyOn(trigger, 'getBoundingClientRect').mockReturnValue({
+      x: 40,
+      y: 20,
+      top: 20,
+      right: 120,
+      bottom: 52,
+      left: 40,
+      width: 80,
+      height: 32,
+      toJSON: () => ({}),
+    });
+    vi.spyOn(panel, 'getBoundingClientRect').mockReturnValue({
+      x: 0,
+      y: 0,
+      top: 0,
+      right: 320,
+      bottom: 120,
+      left: 0,
+      width: 320,
+      height: 120,
+      toJSON: () => ({}),
+    });
+
+    fireEvent.click(trigger);
+
+    expect(panel).toHaveStyle({ left: '40px', top: '56px' });
+  });
 });
 
 describe('SimEmptyState', () => {

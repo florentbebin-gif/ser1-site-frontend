@@ -95,17 +95,19 @@ export function TresoPlacementSection({ inputs, projectionRows = [], onChange }:
     : null;
 
   return (
-    <div className="premium-card ts-section">
-      <div className="ts-section__header">
+    <div className="premium-card premium-card--guide sim-card--guide ts-section">
+      <div className="ts-section__header sim-card__header sim-card__header--bleed">
         <span className="sim-card__icon">
           <IconBarChart />
         </span>
-        <div>
-          <h2 className="ts-section__title">Allocation trésorerie société</h2>
-          <p className="ts-section__subtitle">Compte bancaire pivot et placements par horizon</p>
+        <div className="ts-section__header-text">
+          <h2 className="ts-section__title sim-card__title">Allocation trésorerie société</h2>
+          <p className="ts-section__subtitle sim-card__subtitle">
+            Compte bancaire pivot et placements par horizon
+          </p>
         </div>
       </div>
-      <div className="ts-section__divider" />
+      <div className="ts-section__divider sim-divider" />
 
       <TresoPlacementOverview
         treasuryInitial={v2.company.treasuryInitial}

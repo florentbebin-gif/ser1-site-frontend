@@ -9,18 +9,18 @@ export function IrDisclaimer({ isIsolated }: IrDisclaimerProps) {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
-    <div className="ir-hypotheses">
+    <div className="sim-hypotheses ir-hypotheses">
       <SimDisclosureButton
         expanded={isOpen}
         onToggle={() => setIsOpen((open) => !open)}
-        className="ir-hypotheses__toggle"
+        className="sim-hypotheses__toggle"
         labelClosed="Hypothèses et limites"
         labelOpen="Hypothèses et limites"
         controls="ir-hypotheses-panel"
         data-testid="ir-hypotheses-toggle"
       />
       {isOpen && (
-        <ul id="ir-hypotheses-panel">
+        <ul id="ir-hypotheses-panel" className="sim-hypotheses__body">
           <li>
             RCM au barème : abattement forfaitaire de 40&nbsp;% sur l&apos;assiette IR (simplifié).
           </li>

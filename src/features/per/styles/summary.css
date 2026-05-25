@@ -107,7 +107,7 @@
 }
 
 .per-summary-simulation {
-  border-left: 3px solid var(--color-c5);
+  border-left: 3px solid var(--color-c3);
 }
 
 .per-summary-simulation-head {
@@ -165,7 +165,7 @@
 }
 
 .per-summary-breakdown-card {
-  border-left: 3px solid var(--color-c6);
+  border-left: 3px solid var(--color-c3);
 }
 
 .per-madelin-modal {
@@ -220,7 +220,7 @@
 }
 
 .per-summary-breakdown-row--highlight.is-alert {
-  border-left: 3px solid var(--color-c1);
+  border-left: 3px solid var(--color-c3);
 }
 
 .per-section-label {

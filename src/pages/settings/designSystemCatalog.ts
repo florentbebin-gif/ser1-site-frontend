@@ -24,6 +24,7 @@ import {
 } from '@/icons/ui';
 
 export type PrimitiveState = 'idle' | 'hover' | 'focus' | 'disabled';
+export type TokenGroupKind = 'space' | 'radius' | 'typo' | 'motion';
 type IconComponent = ComponentType<{ className?: string }>;
 
 export const primitiveStates: Array<{ state: PrimitiveState; label: string }> = [
@@ -36,6 +37,7 @@ export const primitiveStates: Array<{ state: PrimitiveState; label: string }> = 
 export const tokenGroups = [
   {
     title: 'Espacements',
+    kind: 'space',
     tokens: [
       '--space-1',
       '--space-2',
@@ -47,9 +49,14 @@ export const tokenGroups = [
       '--space-8',
     ],
   },
-  { title: 'Rayons', tokens: ['--radius-sm', '--radius-md', '--radius-lg', '--radius-full'] },
+  {
+    title: 'Rayons',
+    kind: 'radius',
+    tokens: ['--radius-sm', '--radius-md', '--radius-lg', '--radius-full'],
+  },
   {
     title: 'Typographie',
+    kind: 'typo',
     tokens: [
       '--font-size-xs',
       '--font-size-sm',
@@ -62,6 +69,7 @@ export const tokenGroups = [
   },
   {
     title: 'Mouvement',
+    kind: 'motion',
     tokens: ['--transition-fast', '--transition-base', '--transition-slow', '--easing-standard'],
   },
 ] as const;

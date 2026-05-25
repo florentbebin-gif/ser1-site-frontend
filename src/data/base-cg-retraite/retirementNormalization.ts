@@ -175,6 +175,13 @@ function formatRateForConcat(value: BaseCgRetraiteValue): string {
   return String(value);
 }
 
+function parseNumericRateText(value: string): number | null {
+  const text = normalizeText(value);
+  if (!/^[+-]?\d+(?:[,.]\d+)?$/.test(text)) return null;
+  const numericValue = Number(text.replace(',', '.'));
+  return Number.isFinite(numericValue) ? numericValue : null;
+}
+
 export function hasBaseCgRetraiteValue(value: unknown): boolean {
   if (value === null || value === undefined) return false;
   if (typeof value === 'number') return Number.isFinite(value);
@@ -189,6 +196,13 @@ export function formatBaseCgRetraiteRateField(value: string | number | null | un
     return `${new Intl.NumberFormat('fr-FR', {
       maximumFractionDigits: 3,
     }).format(value * 100)} %`;
+  }
+  const numericRateText = parseNumericRateText(value);
+  if (numericRateText !== null) {
+    const percentValue = Math.abs(numericRateText) <= 1 ? numericRateText * 100 : numericRateText;
+    return `${new Intl.NumberFormat('fr-FR', {
+      maximumFractionDigits: 3,
+    }).format(percentValue)} %`;
   }
   return String(value);
 }

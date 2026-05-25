@@ -84,8 +84,13 @@ export function SimModalShell({
   const generatedTitleId = useId();
   const resolvedTitleId = titleId ?? generatedTitleId;
   const modalRef = useRef<HTMLDivElement>(null);
+  const onCloseRef = useRef(onClose);
 
   useEffect(() => lockBodyScroll(), []);
+
+  useEffect(() => {
+    onCloseRef.current = onClose;
+  }, [onClose]);
 
   useEffect(() => {
     const modal = modalRef.current;
@@ -119,9 +124,9 @@ export function SimModalShell({
     const handleKeyDown = (event: KeyboardEvent) => {
       if (!isTopModal()) return;
 
-      if (event.key === 'Escape' && onClose) {
+      if (event.key === 'Escape' && onCloseRef.current) {
         event.preventDefault();
-        onClose();
+        onCloseRef.current();
         return;
       }
 
@@ -153,7 +158,7 @@ export function SimModalShell({
         previouslyFocused.focus();
       }
     };
-  }, [onClose]);
+  }, []);
 
   return (
     <div

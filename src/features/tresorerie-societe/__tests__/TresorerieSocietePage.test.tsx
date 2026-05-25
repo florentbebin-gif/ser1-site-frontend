@@ -79,6 +79,7 @@ vi.mock('../../../components/ui/sim/SimPageShell', () => ({
     {
       Main: ({ children }: any) => <div data-slot="main">{children}</div>,
       Side: ({ children }: any) => <div data-slot="side">{children}</div>,
+      Section: ({ children }: any) => <section data-slot="section">{children}</section>,
     },
   ),
 }));
@@ -397,6 +398,12 @@ describe('TresorerieSocietePage', () => {
   it('affiche les hypothèses', () => {
     const html = renderToStaticMarkup(<TresorerieSocietePage />);
     expect(html).toContain('data-testid="hypotheses"');
+  });
+
+  it('place les hypothèses dans le slot pleine largeur', () => {
+    const html = renderToStaticMarkup(<TresorerieSocietePage />);
+
+    expect(html).toContain('<section data-slot="section"><div data-testid="hypotheses"></div>');
   });
 
   it('branche les actions d’export Excel et PowerPoint dans le header', () => {

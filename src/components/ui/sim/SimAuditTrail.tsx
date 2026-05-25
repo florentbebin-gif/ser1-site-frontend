@@ -24,7 +24,7 @@ function formatAuditDate(date: Date): string {
 
 export function SimAuditTrail({
   calculatedAt,
-  sourceLabel = 'Source Bercy',
+  sourceLabel = 'Source : barème fiscal officiel',
   className,
 }: SimAuditTrailProps) {
   const { fiscalContext } = useFiscalContext({ strict: false });

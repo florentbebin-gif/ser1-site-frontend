@@ -47,8 +47,8 @@ export default function ModeStep({
   if (simplifiedMode) {
     return (
       <div className="per-step per-step--mode">
-        <div className="premium-card sim-card--guide per-mode-step-card">
-          <div className="per-mode-step-header sim-card__header--bleed">
+        <div className="premium-card premium-card--guide sim-card--guide per-mode-step-card">
+          <div className="per-mode-step-header sim-card__header sim-card__header--bleed">
             <div className="sim-card__title-row">
               <div className="sim-card__icon">
                 <IconActivity />
@@ -73,8 +73,8 @@ export default function ModeStep({
           </div>
         </div>
 
-        <div className="premium-card sim-card--guide per-mode-support-card">
-          <div className="per-mode-docs-header sim-card__header--bleed">
+        <div className="premium-card premium-card--guide sim-card--guide per-mode-support-card">
+          <div className="per-mode-docs-header sim-card__header sim-card__header--bleed">
             <div className="sim-card__title-row">
               <div className="sim-card__icon">
                 <IconFileText />
@@ -120,8 +120,8 @@ export default function ModeStep({
 
   return (
     <div className="per-step per-step--mode">
-      <div className="premium-card sim-card--guide per-mode-step-card">
-        <div className="per-mode-step-header sim-card__header--bleed">
+      <div className="premium-card premium-card--guide sim-card--guide per-mode-step-card">
+        <div className="per-mode-step-header sim-card__header sim-card__header--bleed">
           <div className="sim-card__title-row">
             <div className="sim-card__icon">
               <IconActivity />
@@ -148,8 +148,8 @@ export default function ModeStep({
       </div>
 
       {mode !== null && (
-        <div className="premium-card sim-card--guide per-mode-support-card">
-          <div className="per-mode-docs-header sim-card__header--bleed">
+        <div className="premium-card premium-card--guide sim-card--guide per-mode-support-card">
+          <div className="per-mode-docs-header sim-card__header sim-card__header--bleed">
             <div className="sim-card__title-row">
               <div className="sim-card__icon">
                 <IconFileText />

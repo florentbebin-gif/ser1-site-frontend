@@ -111,10 +111,10 @@ export function PlacementResultsPanel({
                                   .replace('PER individuel déductible', 'PER individuel')
                                   .replace('PER individuel deductible', 'PER individuel')}
                           </div>
+                          <div className="pl-roi-compare__ratio">x {roi1.toFixed(2)}</div>
                           {meilleurProduit === 1 ? (
                             <SimStatusBadge variant="optimal">Meilleur ROI</SimStatusBadge>
                           ) : null}
-                          <div className="pl-roi-compare__ratio">x {roi1.toFixed(2)}</div>
                         </div>
 
                         {compareEnabled && produit2 && (
@@ -129,10 +129,10 @@ export function PlacementResultsPanel({
                                     .replace('PER individuel déductible', 'PER individuel')
                                     .replace('PER individuel deductible', 'PER individuel')}
                             </div>
+                            <div className="pl-roi-compare__ratio">x {roi2.toFixed(2)}</div>
                             {meilleurProduit === 2 ? (
                               <SimStatusBadge variant="optimal">Meilleur ROI</SimStatusBadge>
                             ) : null}
-                            <div className="pl-roi-compare__ratio">x {roi2.toFixed(2)}</div>
                           </div>
                         )}
                       </div>

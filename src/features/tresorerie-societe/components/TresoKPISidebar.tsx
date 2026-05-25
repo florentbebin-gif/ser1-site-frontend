@@ -4,6 +4,7 @@
 
 import type { ReactNode } from 'react';
 import { SimKpiReference, SimMetric, SimSparkline } from '@/components/ui/sim';
+import { IconGauge } from '@/icons/ui';
 import type { TresoKPIs } from '../hooks/useTresorerieCalculations';
 import type { TresoInputsRuntime } from '../../../engine/tresorerie/types';
 
@@ -98,11 +99,18 @@ export function TresoKPISidebar({ kpis }: Props) {
 
   return (
     <div className="premium-card sim-summary-card ts-kpi-sidebar">
-      <div className="ts-kpi-sidebar__header">
-        <h2 className="ts-kpi-sidebar__title">Synthèse</h2>
-        <p className="ts-kpi-sidebar__subtitle">Repères clés pour lire la projection</p>
+      <div className="ts-kpi-sidebar__header sim-card__header sim-card__header--bleed">
+        <div className="ts-kpi-sidebar__title-row sim-card__title-row">
+          <span className="sim-card__icon sim-card__icon--sm">
+            <IconGauge />
+          </span>
+          <div className="ts-kpi-sidebar__title-text">
+            <h2 className="ts-kpi-sidebar__title">Synthèse</h2>
+            <p className="ts-kpi-sidebar__subtitle">Repères clés pour lire la projection</p>
+          </div>
+        </div>
       </div>
-      <div className="ts-kpi-sidebar__divider" />
+      <div className="ts-kpi-sidebar__divider sim-divider sim-divider--tight" />
 
       {!kpis.hasRows ? (
         <p className="ts-kpi-sidebar__empty">

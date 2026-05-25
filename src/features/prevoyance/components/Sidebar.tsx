@@ -20,10 +20,17 @@ import type {
 import { euro, pct } from '../formatters';
 import { TARGET_DECES_MULTIPLE } from '../constants';
 import { NumberInput, SideCard } from './FormPrimitives';
+import { MiniChartLegend } from './MiniChartLegend';
 
 function segmentHeight(value: number, reference: number): string {
   if (reference <= 0) return '0%';
   return `${Math.min(100, Math.max(0, (value / reference) * 100))}%`;
+}
+
+function roSegmentClassName(index: number): string {
+  return `prevoyance-mini-chart__segment prevoyance-mini-chart__segment--ro${
+    index % 2 === 1 ? ' prevoyance-mini-chart__segment--ro-alt' : ''
+  }`;
 }
 
 function MiniArretEuroChart({ chart }: { chart: ReturnType<typeof buildArretEuroChart> }) {
@@ -54,15 +61,13 @@ function MiniArretEuroChart({ chart }: { chart: ReturnType<typeof buildArretEuro
                   period.roSegments.map((segment, index) => (
                     <span
                       key={segment.code}
-                      className="prevoyance-mini-chart__segment prevoyance-mini-chart__segment--ro"
+                      className={roSegmentClassName(index)}
                       style={
                         {
                           '--prevoyance-segment-height': segmentHeight(
                             segment.euro,
                             chart.reference,
                           ),
-                          '--prevoyance-segment-fill':
-                            index % 2 === 0 ? 'var(--color-c3)' : 'var(--color-c6)',
                         } as CSSProperties
                       }
                       title={`${segment.label} : ${euro(segment.euro)}/j`}
@@ -145,12 +150,10 @@ function MiniInvaliditePctChart({ chart }: { chart: ReturnType<typeof buildInval
                   palier.roSegments.map((segment, index) => (
                     <span
                       key={segment.code}
-                      className="prevoyance-mini-chart__segment prevoyance-mini-chart__segment--ro"
+                      className={roSegmentClassName(index)}
                       style={
                         {
                           '--prevoyance-segment-height': `${segment.pct}%`,
-                          '--prevoyance-segment-fill':
-                            index % 2 === 0 ? 'var(--color-c3)' : 'var(--color-c6)',
                         } as CSSProperties
                       }
                       title={`${segment.label} : ${pct(segment.pct)}`}
@@ -176,31 +179,6 @@ function MiniInvaliditePctChart({ chart }: { chart: ReturnType<typeof buildInval
           </div>
         ))}
       </div>
-    </div>
-  );
-}
-
-function MiniChartLegend({ showMaintien = false }: { showMaintien?: boolean }) {
-  return (
-    <div className="prevoyance-mini-chart__legend">
-      <span>
-        <i className="prevoyance-mini-chart__dot prevoyance-mini-chart__dot--reference" />
-        Revenu
-      </span>
-      <span>
-        <i className="prevoyance-mini-chart__dot prevoyance-mini-chart__dot--ro" />
-        RO
-      </span>
-      {showMaintien ? (
-        <span>
-          <i className="prevoyance-mini-chart__dot prevoyance-mini-chart__dot--maintien" />
-          empl
-        </span>
-      ) : null}
-      <span>
-        <i className="prevoyance-mini-chart__dot prevoyance-mini-chart__dot--contrat" />
-        Contrats
-      </span>
     </div>
   );
 }
@@ -418,7 +396,11 @@ export function Sidebar({
 
   return (
     <div className="prevoyance-sidebar">
-      <SideCard title="Arrêt de travail" icon="arret" actions={<MiniChartLegend showMaintien />}>
+      <SideCard
+        title="Arrêt de travail"
+        icon="arret"
+        actions={<MiniChartLegend showMaintien={kind === 'collectif'} />}
+      >
         <MiniArretEuroChart chart={arretChart} />
         {kind === 'individuel' ? (
           <div className="prevoyance-frais-inline-kpi">

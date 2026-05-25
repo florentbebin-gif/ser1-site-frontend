@@ -75,7 +75,7 @@ export function FiliationOrgchart({
   const hasDeceasedChild = enfantsContext.some((enfant) => enfant.deceased);
 
   return (
-    <div className="premium-card sc-card sc-card--guide sim-card--guide sc-filiation-card">
+    <div className="premium-card premium-card--guide sc-card sc-card--guide sim-card--guide sc-filiation-card">
       <header className="sc-card__header sim-card__header sim-card__header--bleed">
         <div className="sc-card__title-row sim-card__title sim-card__title-row">
           <div className="sim-card__icon">

@@ -78,133 +78,139 @@ export function PerTransfertSidebar({
   const isPrefon = typeContrat === 'PER_POINTS';
 
   return (
-    <aside className="premium-card per-transfert-summary-panel sim-summary-card">
-      <CompartmentMiniBar active={result.compartment} />
-
-      <div className="per-transfert-summary-panel__header">
-        <div>
-          <h3>Synthèse</h3>
-          <p>Lecture CGP des sorties possibles, fiscalité incluse.</p>
+    <>
+      <aside className="premium-card per-transfert-summary-panel sim-summary-card">
+        <div className="per-transfert-summary-panel__header">
+          <div>
+            <h3>Synthèse</h3>
+            <p>Lecture CGP des sorties possibles, fiscalité incluse.</p>
+          </div>
         </div>
-      </div>
 
-      {isPrefon ? (
-        <div className="per-transfert-prefon-strategy" aria-label="Stratégie Préfon">
-          <button
-            type="button"
-            className={prefonStrategy === 'all_rente' ? 'is-active' : ''}
-            onClick={() => setPrefonStrategy('all_rente')}
-          >
-            Tout rente
-          </button>
-          <button
-            type="button"
-            className={prefonStrategy === 'max_capital' ? 'is-active' : ''}
-            onClick={() => setPrefonStrategy('max_capital')}
-          >
-            Max capital
-          </button>
-        </div>
-      ) : null}
+        {isPrefon ? (
+          <div className="per-transfert-prefon-strategy" aria-label="Stratégie Préfon">
+            <button
+              type="button"
+              className={prefonStrategy === 'all_rente' ? 'is-active' : ''}
+              onClick={() => setPrefonStrategy('all_rente')}
+            >
+              Tout rente
+            </button>
+            <button
+              type="button"
+              className={prefonStrategy === 'max_capital' ? 'is-active' : ''}
+              onClick={() => setPrefonStrategy('max_capital')}
+            >
+              Max capital
+            </button>
+          </div>
+        ) : null}
 
-      <div className="per-transfert-oppositions">
-        <OppositionSection
-          title="Rente"
-          currentTitle={selectedContract?.nomContrat ?? 'Contrat actuel'}
-          currentSubtitle={
-            selectedContract ? TYPE_LABELS[selectedContract.typeContrat] : 'Hypothèses du relevé'
-          }
-          newPerVisible={step2Done}
-          current={
-            <RentMetrics
-              fiscal={activePrefonStrategy?.fiscal ?? result.keepScenario.currentRent.fiscal}
-            />
-          }
-          transfer={<RentMetrics fiscal={result.newPerFiscal} />}
-        />
-
-        <OppositionSection
-          title="Capital unique"
-          currentTitle={selectedContract?.nomContrat ?? 'Contrat actuel'}
-          currentSubtitle="Choix à 100 % si autorisé"
-          newPerVisible={step2Done}
-          current={
-            <CapitalMetrics
-              fiscal={currentCapitalUnique(result, activePrefonStrategy, isPrefon)}
-              onOpenQuotientInfo={onOpenQuotientInfo}
-            />
-          }
-          transfer={
-            <CapitalMetrics
-              fiscal={result.capitalExit.unique}
-              onOpenQuotientInfo={onOpenQuotientInfo}
-            />
-          }
-        />
-
-        <OppositionSection
-          title="Capital fractionné court"
-          currentTitle={selectedContract?.nomContrat ?? 'Contrat actuel'}
-          currentSubtitle={`Horizon ${isPrefon ? '10 versements' : `${horizonAgeShort} ans`}`}
-          newPerVisible={step2Done}
-          current={
-            <HorizonMetrics
-              horizon={currentShortHorizon(result, activePrefonStrategy, isPrefon)}
-              onOpenFractionalInfo={onOpenFractionalInfo}
-            />
-          }
-          transfer={
-            <HorizonMetrics
-              horizon={result.capitalExit.shortHorizon}
-              onOpenFractionalInfo={onOpenFractionalInfo}
-            />
-          }
-        />
-
-        <OppositionSection
-          title="Capital fractionné long"
-          currentTitle={selectedContract?.nomContrat ?? 'Contrat actuel'}
-          currentSubtitle={`Horizon ${horizonAgeLong} ans`}
-          newPerVisible={step2Done}
-          current={
-            <HorizonMetrics
-              horizon={isPrefon ? null : (result.keepScenario.capitalExit?.longHorizon ?? null)}
-              onOpenFractionalInfo={onOpenFractionalInfo}
-            />
-          }
-          transfer={
-            <HorizonMetrics
-              horizon={result.capitalExit.longHorizon}
-              onOpenFractionalInfo={onOpenFractionalInfo}
-            />
-          }
-        />
-      </div>
-
-      <section className="per-transfert-horizons-inline" aria-label="Horizons de projection">
-        <h4>Horizons projection</h4>
-        <div className="per-transfert-horizons-inline__inputs">
-          <SimAmountInputNumeric
-            label="Court"
-            value={horizonAgeShort}
-            unit="ans"
-            onChange={(value) => onHorizonChange(normalizeHorizonAge(value, 80), horizonAgeLong)}
+        <div className="per-transfert-oppositions">
+          <OppositionSection
+            title="Rente"
+            currentTitle={selectedContract?.nomContrat ?? 'Contrat actuel'}
+            currentSubtitle={
+              selectedContract ? TYPE_LABELS[selectedContract.typeContrat] : 'Hypothèses du relevé'
+            }
+            newPerVisible={step2Done}
+            current={
+              <RentMetrics
+                fiscal={activePrefonStrategy?.fiscal ?? result.keepScenario.currentRent.fiscal}
+              />
+            }
+            transfer={<RentMetrics fiscal={result.newPerFiscal} />}
           />
-          <SimAmountInputNumeric
-            label="Long"
-            value={horizonAgeLong}
-            unit="ans"
-            onChange={(value) => onHorizonChange(horizonAgeShort, normalizeHorizonAge(value, 90))}
+
+          <OppositionSection
+            title="Capital unique"
+            currentTitle={selectedContract?.nomContrat ?? 'Contrat actuel'}
+            currentSubtitle="Choix à 100 % si autorisé"
+            newPerVisible={step2Done}
+            current={
+              <CapitalMetrics
+                fiscal={currentCapitalUnique(result, activePrefonStrategy, isPrefon)}
+                onOpenQuotientInfo={onOpenQuotientInfo}
+              />
+            }
+            transfer={
+              <CapitalMetrics
+                fiscal={result.capitalExit.unique}
+                onOpenQuotientInfo={onOpenQuotientInfo}
+              />
+            }
+          />
+
+          <OppositionSection
+            title="Capital fractionné court"
+            currentTitle={selectedContract?.nomContrat ?? 'Contrat actuel'}
+            currentSubtitle={`Horizon ${isPrefon ? '10 versements' : `${horizonAgeShort} ans`}`}
+            newPerVisible={step2Done}
+            current={
+              <HorizonMetrics
+                horizon={currentShortHorizon(result, activePrefonStrategy, isPrefon)}
+                onOpenFractionalInfo={onOpenFractionalInfo}
+              />
+            }
+            transfer={
+              <HorizonMetrics
+                horizon={result.capitalExit.shortHorizon}
+                onOpenFractionalInfo={onOpenFractionalInfo}
+              />
+            }
+          />
+
+          <OppositionSection
+            title="Capital fractionné long"
+            currentTitle={selectedContract?.nomContrat ?? 'Contrat actuel'}
+            currentSubtitle={`Horizon ${horizonAgeLong} ans`}
+            newPerVisible={step2Done}
+            current={
+              <HorizonMetrics
+                horizon={isPrefon ? null : (result.keepScenario.capitalExit?.longHorizon ?? null)}
+                onOpenFractionalInfo={onOpenFractionalInfo}
+              />
+            }
+            transfer={
+              <HorizonMetrics
+                horizon={result.capitalExit.longHorizon}
+                onOpenFractionalInfo={onOpenFractionalInfo}
+              />
+            }
           />
         </div>
-      </section>
+      </aside>
 
-      <PerTransfertAttentionPoints
-        contract={selectedContract}
-        subscriptionDate={subscriptionDate}
-        extraWarnings={result.warnings}
-      />
-    </aside>
+      <aside className="premium-card per-transfert-target-card sim-summary-card sim-summary-card--secondary">
+        <CompartmentMiniBar active={result.compartment} />
+      </aside>
+
+      <aside className="premium-card per-transfert-controls-card sim-summary-card sim-summary-card--secondary">
+        <section className="per-transfert-horizons-inline" aria-label="Horizons de projection">
+          <h4>Horizons projection</h4>
+          <div className="per-transfert-horizons-inline__inputs">
+            <SimAmountInputNumeric
+              label="Court"
+              value={horizonAgeShort}
+              unit="ans"
+              onChange={(value) => onHorizonChange(normalizeHorizonAge(value, 80), horizonAgeLong)}
+            />
+            <SimAmountInputNumeric
+              label="Long"
+              value={horizonAgeLong}
+              unit="ans"
+              onChange={(value) => onHorizonChange(horizonAgeShort, normalizeHorizonAge(value, 90))}
+            />
+          </div>
+        </section>
+
+        <PerTransfertAttentionPoints
+          contract={selectedContract}
+          subscriptionDate={subscriptionDate}
+          extraWarnings={result.warnings}
+        />
+      </aside>
+    </>
   );
 }
 

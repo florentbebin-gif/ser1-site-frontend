@@ -1,16 +1,15 @@
 /* ─── KPI Sidebar ──────────────────────────────────────────────────────────── */
 
-.ts-kpi-sidebar {
-  border-left: 3px solid var(--color-c3);
-  background-image: linear-gradient(
-    to bottom,
-    color-mix(in srgb, var(--color-c4) 18%, transparent),
-    transparent 20%
-  );
+.ts-kpi-sidebar__header {
+  margin-bottom: 0;
 }
 
-.ts-kpi-sidebar__header {
-  margin-bottom: 10px;
+.ts-kpi-sidebar__title-row {
+  align-items: flex-start;
+}
+
+.ts-kpi-sidebar__title-text {
+  min-width: 0;
 }
 
 .ts-kpi-sidebar__title {

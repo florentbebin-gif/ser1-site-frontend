@@ -38,11 +38,13 @@ export function CreditSummarySidebar({
 
       {calc.hasPretsAdditionnels && (
         <div className="cv-total-mensu sim-summary-card sim-summary-card--secondary">
-          <div className="cv-summary__title-row">
-            <div className="sim-card__icon sim-card__icon--sm">
-              <IconLayers />
+          <div className="cv-summary__header sim-card__header sim-card__header--bleed">
+            <div className="cv-summary__title-row sim-card__title-row">
+              <div className="sim-card__icon sim-card__icon--sm">
+                <IconLayers />
+              </div>
+              <div className="cv-summary__title">Synthèse des prêts</div>
             </div>
-            <div className="cv-summary__title">Synthèse des prêts</div>
           </div>
           <div className="cv-loan-card__divider cv-loan-card__divider--tight sim-divider sim-divider--tight" />
 

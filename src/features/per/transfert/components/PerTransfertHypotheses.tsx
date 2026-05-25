@@ -8,18 +8,18 @@ export function PerTransfertHypotheses() {
   const [open, setOpen] = useState(false);
 
   return (
-    <section className="per-transfert-hypotheses">
+    <section className="sim-hypotheses per-transfert-hypotheses">
       <SimDisclosureButton
         expanded={open}
         onToggle={() => setOpen((current) => !current)}
         labelClosed="Afficher les hypothèses et limites"
         labelOpen="Masquer les hypothèses et limites"
         controls={HYPOTHESES_ID}
-        className="per-transfert-hypotheses__toggle"
+        className="sim-hypotheses__toggle"
       />
 
       {open ? (
-        <ul className="per-transfert-hypotheses__list" id={HYPOTHESES_ID}>
+        <ul className="sim-hypotheses__body" id={HYPOTHESES_ID}>
           <li>
             Le scénario Conserver maintient le contrat actuel avec les performances, versements et
             revalorisations saisis.

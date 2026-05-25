@@ -13,18 +13,18 @@ export function TresoHypotheses() {
   const [open, setOpen] = useState(false);
 
   return (
-    <div className="ts-hypotheses">
+    <div className="sim-hypotheses ts-hypotheses">
       <SimDisclosureButton
         expanded={open}
         onToggle={() => setOpen((v) => !v)}
-        className="ts-hypotheses__toggle"
+        className="sim-hypotheses__toggle"
         labelClosed="Hypothèses et limites"
         labelOpen="Hypothèses et limites"
         controls="ts-hypotheses-body"
       />
 
       {open && (
-        <div id="ts-hypotheses-body" className="ts-hypotheses__body">
+        <div id="ts-hypotheses-body" className="sim-hypotheses__body ts-hypotheses__body">
           <section className="ts-hyp-section">
             <h3 className="ts-hyp-title">Fiscalité IS</h3>
             <ul className="ts-hyp-list">

@@ -61,13 +61,18 @@ describe('SimAmountInputEuro', () => {
     expect(input).toHaveValue('1000000');
   });
 
-  it('convertit un montant collé avec espaces en nombre entier', () => {
+  it('notifie le parent au blur avec un montant collé avec espaces', () => {
     const onChange = vi.fn();
     render(<SimAmountInputEuro value={0} onChange={onChange} aria-label="Capital" />);
 
-    fireEvent.change(screen.getByRole('textbox', { name: 'Capital' }), {
+    const input = screen.getByRole('textbox', { name: 'Capital' });
+    fireEvent.focus(input);
+    fireEvent.change(input, {
       target: { value: '1 000 000' },
     });
+
+    expect(onChange).not.toHaveBeenCalled();
+    fireEvent.blur(input);
 
     expect(onChange).toHaveBeenLastCalledWith(1000000);
   });
@@ -84,9 +89,12 @@ describe('SimAmountInputEuro', () => {
       />,
     );
 
-    fireEvent.change(screen.getByRole('textbox', { name: 'Capital' }), {
+    const input = screen.getByRole('textbox', { name: 'Capital' });
+    fireEvent.focus(input);
+    fireEvent.change(input, {
       target: { value: '999999' },
     });
+    fireEvent.blur(input);
 
     expect(onChange).toHaveBeenLastCalledWith(2000);
   });
@@ -121,13 +129,16 @@ describe('SimAmountInputPercent', () => {
     );
   });
 
-  it('convertit une saisie avec virgule en nombre décimal', () => {
+  it('convertit une saisie avec virgule en nombre décimal au blur', () => {
     const onChange = vi.fn();
     render(<SimAmountInputPercent value={0} onChange={onChange} aria-label="Rendement" />);
 
-    fireEvent.change(screen.getByRole('textbox', { name: 'Rendement' }), {
+    const input = screen.getByRole('textbox', { name: 'Rendement' });
+    fireEvent.focus(input);
+    fireEvent.change(input, {
       target: { value: '3,5' },
     });
+    fireEvent.blur(input);
 
     expect(onChange).toHaveBeenLastCalledWith(3.5);
   });
@@ -144,9 +155,12 @@ describe('SimAmountInputPercent', () => {
       />,
     );
 
-    fireEvent.change(screen.getByRole('textbox', { name: 'Rendement' }), {
+    const input = screen.getByRole('textbox', { name: 'Rendement' });
+    fireEvent.focus(input);
+    fireEvent.change(input, {
       target: { value: '8,5' },
     });
+    fireEvent.blur(input);
 
     expect(onChange).toHaveBeenLastCalledWith(5);
   });
@@ -178,7 +192,9 @@ describe('SimAmountInputNumeric', () => {
     );
 
     const input = screen.getByTestId('parts-input');
+    fireEvent.focus(input);
     fireEvent.change(input, { target: { value: '2,25' } });
+    fireEvent.blur(input);
 
     expect(input).toHaveAttribute('inputmode', 'decimal');
     expect(input).toHaveAttribute('enterkeyhint', 'next');
@@ -196,9 +212,14 @@ describe('SimAmountInputNumeric', () => {
       />,
     );
 
-    fireEvent.change(screen.getByRole('textbox', { name: 'Nombre de parts' }), {
+    const input = screen.getByRole('textbox', { name: 'Nombre de parts' });
+    fireEvent.focus(input);
+    fireEvent.change(input, {
       target: { value: '' },
     });
+
+    expect(onEmpty).not.toHaveBeenCalled();
+    fireEvent.blur(input);
 
     expect(onEmpty).toHaveBeenCalledOnce();
   });

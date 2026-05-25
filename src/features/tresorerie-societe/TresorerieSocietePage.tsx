@@ -136,9 +136,6 @@ export default function TresorerieSocietePage() {
             anneeCivileDebut={activeProfile.projectionStartYear}
           />
         </SimCollapsibleTable>
-
-        {/* Hypothèses */}
-        <TresoHypotheses />
       </SimPageShell.Main>
 
       <SimPageShell.Side sticky>
@@ -158,6 +155,10 @@ export default function TresorerieSocietePage() {
           />
         )}
       </SimPageShell.Side>
+
+      <SimPageShell.Section>
+        <TresoHypotheses />
+      </SimPageShell.Section>
     </SimPageShell>
   );
 }

@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
 import { CreditSummaryCard, SummaryDonut } from './CreditSummaryCard';
@@ -20,6 +21,8 @@ describe('CreditSummaryCard', () => {
     );
 
     expect(html).toContain('sim-metric--hero');
+    expect(html).toContain('cv-summary__header sim-card__header sim-card__header--bleed');
+    expect(html).toContain('cv-summary__title-row sim-card__title-row');
     expect(html).toContain('data-testid="credit-mensu-totale-avec-ass"');
   });
 
@@ -44,5 +47,12 @@ describe('CreditSummaryCard', () => {
 
     expect(html).toContain('cv-donut__capital');
     expect(html).toContain('cv-donut__interest');
+  });
+
+  it('conserve le liseré C3 visible sur les synthèses crédit', () => {
+    const css = readFileSync(new URL('../styles/summary.css', import.meta.url), 'utf8');
+
+    expect(css).toMatch(/\.cv-summary\s*\{[\s\S]*border-left: 3px solid var\(--color-c3\);/);
+    expect(css).toMatch(/\.cv-total-mensu\s*\{[\s\S]*border-left: 3px solid var\(--color-c3\);/);
   });
 });

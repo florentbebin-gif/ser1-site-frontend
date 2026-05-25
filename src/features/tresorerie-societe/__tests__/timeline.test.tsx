@@ -217,7 +217,10 @@ describe('TresoTimelineSection', () => {
     const onChange = vi.fn();
     render(<TresoTimelineSection inputs={cloneInputs()} onChange={onChange} />);
 
-    fireEvent.change(screen.getByLabelText('Horizon de projection'), { target: { value: '60' } });
+    const horizonInput = screen.getByLabelText('Horizon de projection');
+    fireEvent.change(horizonInput, { target: { value: '60' } });
+    expect(onChange).not.toHaveBeenCalled();
+    fireEvent.blur(horizonInput);
 
     expect(onChange).toHaveBeenCalledWith(
       expect.objectContaining({

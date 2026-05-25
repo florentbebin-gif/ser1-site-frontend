@@ -146,6 +146,10 @@ describe('TresoAssociateInsights', () => {
     expect(html).toContain('Revenus de l’associé');
     expect(html).toContain('Couverture du besoin moyen par source');
     expect(html).toContain('Couverture partielle');
+    expect(html).toContain('premium-card sim-summary-card ts-associate-insights');
+    expect(html).toContain('ts-kpi-sidebar__header sim-card__header sim-card__header--bleed');
+    expect(html).toContain('ts-kpi-sidebar__title-row sim-card__title-row');
+    expect(html).toContain('sim-card__icon');
     expect(html).toContain('Rémunération nette avant impôt');
     expect(html).toContain('Remboursement CCA');
     expect(html).toContain('Dividendes nets de PFU');

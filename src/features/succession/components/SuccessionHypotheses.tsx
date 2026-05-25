@@ -12,18 +12,18 @@ export function SuccessionHypotheses({
   onToggle,
 }: SuccessionHypothesesProps) {
   return (
-    <div className="sc-hypotheses">
+    <div className="sim-hypotheses sc-hypotheses">
       <SimDisclosureButton
         expanded={hypothesesOpen}
         onToggle={onToggle}
-        className="sc-hypotheses__toggle"
+        className="sim-hypotheses__toggle"
         labelClosed="Hypothèses et limites"
         labelOpen="Hypothèses et limites"
         controls="succession-hypotheses-panel"
         data-testid="succession-hypotheses-toggle"
       />
       {hypothesesOpen && (
-        <ul id="succession-hypotheses-panel">
+        <ul id="succession-hypotheses-panel" className="sim-hypotheses__body">
           {assumptions.map((assumption, index) => (
             <li key={`assumption-${index}`}>{assumption}</li>
           ))}
