@@ -10,9 +10,9 @@ import '@/styles/sim/index.css';
 import './styles/index.css';
 
 import { useCallback, useState } from 'react';
-import { IconChevronDown } from '@/icons/ui';
 import { ExportMenu } from '../../components/ExportMenu';
 import { ModeToggle } from '../../components/ModeToggle';
+import { SimDisclosureButton } from '../../components/ui/sim';
 import { SimPageShell } from '../../components/ui/sim/SimPageShell';
 import { useTheme } from '../../settings/ThemeProvider';
 import { useTresorerieState } from './hooks/useTresorerieState';
@@ -63,10 +63,6 @@ export default function TresorerieSocietePage() {
 
   // Garde anti-flash : ne pas rendre avant l'hydration sessionStorage
   if (!hydrated) return null;
-
-  const projectionChevronClass = state.projectionVisible
-    ? 'ts-accordion-chevron is-open'
-    : 'ts-accordion-chevron';
 
   return (
     <SimPageShell
@@ -120,33 +116,30 @@ export default function TresorerieSocietePage() {
         ) : null}
 
         {/* Bouton projection */}
-        <div className="ts-projection-btn-row">
-          <button
-            type="button"
-            className="ts-projection-btn"
-            onClick={() => setProjectionVisible(!state.projectionVisible)}
-            aria-expanded={state.projectionVisible}
+        <div className="ts-projection-disclosure-row">
+          <SimDisclosureButton
+            expanded={state.projectionVisible}
+            onToggle={() => setProjectionVisible(!state.projectionVisible)}
+            labelOpen="Masquer la projection comptable"
+            labelClosed="Voir la projection comptable"
+            controls="ts-projection-drawer"
+            className="ts-projection-disclosure"
             data-testid="ts-open-projection"
-          >
-            <IconChevronDown className={projectionChevronClass} />
-            <span>
-              {state.projectionVisible
-                ? 'Masquer la projection comptable'
-                : 'Voir la projection comptable'}
-            </span>
-          </button>
+          />
         </div>
 
         {/* Projection comptable (ouverte) */}
         {state.projectionVisible && (
-          <TresoProjectionDrawer
-            rows={rows}
-            mode={state.projectionMode}
-            onModeChange={setProjectionMode}
-            ageActuel={activeProfile.currentAge}
-            ageRetraite={activeProfile.retirementAge}
-            anneeCivileDebut={activeProfile.projectionStartYear}
-          />
+          <div id="ts-projection-drawer">
+            <TresoProjectionDrawer
+              rows={rows}
+              mode={state.projectionMode}
+              onModeChange={setProjectionMode}
+              ageActuel={activeProfile.currentAge}
+              ageRetraite={activeProfile.retirementAge}
+              anneeCivileDebut={activeProfile.projectionStartYear}
+            />
+          </div>
         )}
 
         {/* Hypothèses */}

@@ -77,8 +77,8 @@
 .ts-warning {
   margin-top: 10px;
   padding: 8px 12px;
-  background: color-mix(in srgb, var(--color-warning-text, #e67e22) 8%, #fff);
-  border-left: 3px solid var(--color-warning-text, #e67e22);
+  background: color-mix(in srgb, var(--color-c6) 8%, #fff);
+  border-left: 3px solid var(--color-c6);
   border-radius: 0 6px 6px 0;
   font-size: 12px;
   color: var(--color-c1);

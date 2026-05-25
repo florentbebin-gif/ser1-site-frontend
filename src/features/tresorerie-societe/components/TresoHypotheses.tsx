@@ -6,26 +6,24 @@
  */
 
 import { useState } from 'react';
-import { IconChevronDown } from '@/icons/ui';
+import { SimDisclosureButton } from '@/components/ui/sim';
 
 export function TresoHypotheses() {
   const [open, setOpen] = useState(false);
-  const chevronClass = open ? 'ts-hypotheses__chevron is-open' : 'ts-hypotheses__chevron';
 
   return (
     <div className="ts-hypotheses">
-      <button
-        type="button"
+      <SimDisclosureButton
+        expanded={open}
+        onToggle={() => setOpen((v) => !v)}
         className="ts-hypotheses__toggle"
-        onClick={() => setOpen((v) => !v)}
-        aria-expanded={open}
-      >
-        <span>HYPOTHÈSES ET LIMITES</span>
-        <IconChevronDown className={chevronClass} />
-      </button>
+        labelClosed="Hypothèses et limites"
+        labelOpen="Hypothèses et limites"
+        controls="ts-hypotheses-body"
+      />
 
       {open && (
-        <div className="ts-hypotheses__body">
+        <div id="ts-hypotheses-body" className="ts-hypotheses__body">
           <section className="ts-hyp-section">
             <h3 className="ts-hyp-title">Fiscalité IS</h3>
             <ul className="ts-hyp-list">

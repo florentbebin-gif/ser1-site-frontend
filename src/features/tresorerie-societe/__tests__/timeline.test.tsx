@@ -181,7 +181,9 @@ describe('TresoTimelineSection', () => {
     expect(screen.getByText('Parcours de revenus de l’associé')).toBeInTheDocument();
     expect(screen.getByText(/Compléter la société et l’associé/i)).toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole('button', { name: /Compléter la société/i }));
+    const completeSocietyButton = screen.getByRole('button', { name: /Compléter la société/i });
+    expect(completeSocietyButton).toHaveClass('sim-action-btn--edit');
+    fireEvent.click(completeSocietyButton);
     expect(openSociety).toHaveBeenCalledTimes(1);
     window.removeEventListener('ts:open-society-panel', openSociety);
   });
@@ -195,6 +197,12 @@ describe('TresoTimelineSection', () => {
     expect(screen.getByText(/Phases de rémunération/i)).toHaveClass('ts-section__subtitle');
     expect(document.querySelector('.sim-card__icon')).toBeInTheDocument();
     expect(document.querySelector('.ts-section__divider')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Paramétrer l’associé' })).toHaveClass(
+      'sim-action-btn--edit',
+    );
+    expect(screen.getByRole('button', { name: 'Ajouter un palier' })).toHaveClass(
+      'sim-action-btn--add',
+    );
   });
 
   it('permet d’allonger l’horizon de projection', () => {
@@ -312,6 +320,11 @@ describe('TresoTimelineSection', () => {
     expect(screen.getByText('Paramétrer le palier')).toBeInTheDocument();
     expect(screen.getByLabelText('Année de début')).toHaveDisplayValue('2026');
     expect(screen.getByLabelText('Année de fin')).toHaveDisplayValue('2030');
+    expect(screen.getByRole('button', { name: /Supprimer ce palier/i })).toHaveClass(
+      'sim-modal-btn--ghost',
+    );
+    expect(screen.getByRole('button', { name: 'Annuler' })).toHaveClass('sim-modal-btn--ghost');
+    expect(screen.getByRole('button', { name: 'Valider' })).toHaveClass('sim-modal-btn--primary');
     expect(
       screen.getByDisplayValue((value) => value.replace(/\s/g, '') === '80000'),
     ).toBeInTheDocument();

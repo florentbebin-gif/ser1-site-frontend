@@ -417,6 +417,8 @@ describe('TresorerieSocietePage', () => {
     const html = renderToStaticMarkup(<TresorerieSocietePage />);
 
     expect(html).toContain('Voir la projection comptable');
+    expect(html).toContain('sim-disclosure-btn');
+    expect(html).toContain('aria-controls="ts-projection-drawer"');
     expect(html).not.toContain('▼ Voir la projection comptable');
   });
 
@@ -464,6 +466,7 @@ describe('TresorerieSocietePage', () => {
       );
       const html = renderToStaticMarkup(<TresorerieSocietePage />);
       expect(html).toContain('data-testid="projection-drawer"');
+      expect(html).toContain('id="ts-projection-drawer"');
       expect(html).toContain('aria-expanded="true"');
     });
   });

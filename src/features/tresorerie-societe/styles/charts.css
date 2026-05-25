@@ -87,8 +87,8 @@
 }
 
 .ts-associate-coverage.is-partial {
-  background: color-mix(in srgb, var(--color-warning-bg, #fff4df) 84%, #fff);
-  color: var(--color-warning-text, #e67e22);
+  background: color-mix(in srgb, var(--color-c6) 14%, #fff);
+  color: var(--color-c1);
 }
 
 .ts-associate-legend {
@@ -136,40 +136,31 @@
   gap: 8px;
 }
 
-.ts-associate-kpis div {
+.ts-associate-kpi {
   border: 1px solid var(--color-c8);
   border-radius: 8px;
   background: var(--color-c7);
   padding: 8px;
 }
 
-.ts-associate-kpis span {
-  display: block;
-  color: var(--color-c9);
+.ts-associate-kpi .sim-metric__label {
   font-size: 10px;
-  margin-bottom: 2px;
 }
 
-.ts-associate-kpis strong {
-  display: block;
-  color: var(--color-c1);
+.ts-associate-kpi .sim-metric__value {
   font-size: 14px;
-  font-variant-numeric: tabular-nums;
 }
 
-.ts-associate-kpi-note {
-  display: block;
+.ts-associate-kpi .sim-metric__note {
   margin-top: 4px;
-  color: var(--color-c9);
   font-size: 10px;
   line-height: 1.25;
-  font-variant-numeric: tabular-nums;
 }
 
-.ts-associate-kpis .is-warning strong {
-  color: var(--color-warning-text, #e67e22);
+.ts-associate-kpi--warning .sim-metric__value {
+  color: var(--color-c6);
 }
 
-.ts-associate-kpis .is-positive strong {
+.ts-associate-kpi--positive .sim-metric__value {
   color: var(--color-c3);
 }

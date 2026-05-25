@@ -1,41 +1,15 @@
 /* ─── Bouton projection ────────────────────────────────────────────────────── */
 
-.ts-projection-btn-row {
+.ts-projection-disclosure-row {
+  display: flex;
+  justify-content: center;
   margin: 16px 0 8px;
-  text-align: center;
 }
 
-.ts-projection-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 20px;
+.ts-projection-disclosure {
   background: #fff;
-  border: 1px solid var(--color-c8);
-  border-radius: 6px;
-  font-size: 13px;
-  font-weight: 500;
   color: var(--color-c2);
-  cursor: pointer;
-  transition:
-    background 0.15s,
-    border-color 0.15s;
-}
-
-.ts-projection-btn:hover {
-  background: color-mix(in srgb, var(--color-c4) 20%, #fff);
-  border-color: var(--color-c3);
-}
-
-.ts-accordion-chevron {
-  width: 13px;
-  height: 13px;
-  flex: 0 0 auto;
-  transition: transform 0.2s ease;
-}
-
-.ts-accordion-chevron.is-open {
-  transform: rotate(180deg);
+  padding-inline: var(--space-5);
 }
 
 /* ─── Projection drawer ────────────────────────────────────────────────────── */

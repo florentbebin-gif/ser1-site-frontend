@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { IconSettings } from '@/icons/ui';
+import { SimActionButton } from '@/components/ui/sim';
 import { SimFieldShell } from '@/components/ui/sim/SimFieldShell';
 import { SimSelect } from '@/components/ui/sim/SimSelect';
 import { COMPANY_KIND_OPTIONS, LEGAL_FORM_OPTIONS } from '../../utils/tresorerieSocieteOptions';
@@ -29,14 +29,13 @@ export function TresoCompanyIdentityPanel({
       <div className="ts-identity-panel">
         <div className="ts-panel-toolbar">
           <span>Identité</span>
-          <button
-            type="button"
-            className="ts-icon-btn"
-            aria-label="Ouvrir les paramètres financiers de la société"
+          <SimActionButton
+            variant="edit"
+            mode="icon"
+            label="Ouvrir les paramètres financiers de la société"
+            ariaLabel="Ouvrir les paramètres financiers de la société"
             onClick={() => setFinancialsOpen(true)}
-          >
-            <IconSettings />
-          </button>
+          />
         </div>
 
         <div className="ts-modal-grid">

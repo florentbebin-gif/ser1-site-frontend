@@ -2,6 +2,7 @@
  * TresoKPISidebar.tsx — Synthèse courte de la projection holding.
  */
 
+import { SimMetric } from '@/components/ui/sim';
 import type { TresoKPIs } from '../hooks/useTresorerieCalculations';
 import type { TresoInputsRuntime } from '../../../engine/tresorerie/types';
 
@@ -29,11 +30,13 @@ interface KpiCardProps {
 
 function KpiCard({ label, value, tone = 'neutral', note }: KpiCardProps) {
   return (
-    <div className={`ts-kpi-card ts-kpi-card--${tone}`}>
-      <span>{label}</span>
-      <strong>{value}</strong>
-      {note ? <small>{note}</small> : null}
-    </div>
+    <SimMetric
+      variant="secondary"
+      className={`ts-kpi-metric ts-kpi-metric--${tone}`}
+      label={label}
+      value={value}
+      note={note}
+    />
   );
 }
 
@@ -105,7 +108,7 @@ export function TresoKPISidebar({ kpis }: Props) {
           Renseignez les paramètres pour afficher la projection.
         </p>
       ) : (
-        <div className="ts-kpi-card-grid">
+        <div className="ts-kpi-metric-grid">
           <KpiCard
             label="Trésorerie sur horizon"
             value={tresorerieCard.value}

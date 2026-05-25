@@ -1,12 +1,12 @@
 import { useEffect, useMemo, useState } from 'react';
-import { IconArrowLeftRight, IconSettings } from '@/icons/ui';
+import { IconArrowLeftRight } from '@/icons/ui';
 import type {
   AssociateInputV6,
   AssociateRevenuePhaseInputV6,
   CompanyInputV6,
   TresoInputsV6,
 } from '@/engine/tresorerie/types';
-import { SimAmountInputNumeric } from '@/components/ui/sim';
+import { SimActionButton, SimAmountInputNumeric } from '@/components/ui/sim';
 import { buildNextPhase, sortPhases } from '../../utils/revenuePhases';
 import { TresoRevenuePhaseModal } from './TresoRevenuePhaseModal';
 import { TresoTimelineEmptyState } from './TresoTimelineEmptyState';
@@ -135,14 +135,14 @@ export function TresoTimelineSection({
           </p>
         </div>
         {selectedAssociate ? (
-          <button
-            type="button"
-            className="ts-icon-btn ts-section__header-action"
-            aria-label="Paramétrer l’associé"
+          <SimActionButton
+            variant="edit"
+            mode="icon"
+            label="Paramétrer l’associé"
+            ariaLabel="Paramétrer l’associé"
+            className="ts-section__header-action"
             onClick={() => onOpenAssociateModal?.(selectedAssociate.id)}
-          >
-            <IconSettings />
-          </button>
+          />
         ) : null}
       </div>
       <div className="ts-section__divider" />
@@ -183,9 +183,12 @@ export function TresoTimelineSection({
           <TresoTimelineTrack layout={layout} onEditPhase={setEditingPhaseId} />
 
           <div className="ts-timeline-actions">
-            <button type="button" className="ts-text-btn" onClick={addRevenuePhase}>
-              Ajouter un palier
-            </button>
+            <SimActionButton
+              variant="add"
+              mode="text"
+              label="Ajouter un palier"
+              onClick={addRevenuePhase}
+            />
           </div>
 
           <TresoTimelinePhaseList phases={phases} onEditPhase={setEditingPhaseId} />

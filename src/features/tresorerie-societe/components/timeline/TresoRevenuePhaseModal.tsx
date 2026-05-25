@@ -205,19 +205,19 @@ export function TresoRevenuePhaseModal({
         <div className="ts-phase-modal__footer-inner" data-testid="ts-phase-modal-footer">
           <button
             type="button"
-            className="ts-danger-btn"
+            className="sim-modal-btn sim-modal-btn--ghost"
             onClick={onDelete}
             disabled={phases.length <= 1}
           >
             Supprimer ce palier
           </button>
           <div className="ts-phase-modal__footer-actions">
-            <button type="button" className="ts-text-btn" onClick={onClose}>
+            <button type="button" className="sim-modal-btn sim-modal-btn--ghost" onClick={onClose}>
               Annuler
             </button>
             <button
               type="button"
-              className="ts-primary-btn"
+              className="sim-modal-btn sim-modal-btn--primary"
               onClick={() => onSave(normalizePhaseForSave(draft))}
               disabled={!canSave}
             >

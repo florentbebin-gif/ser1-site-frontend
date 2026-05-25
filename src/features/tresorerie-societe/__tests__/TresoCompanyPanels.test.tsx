@@ -46,6 +46,8 @@ describe('TresoCompanyPanels', () => {
     expect(html).toContain('Intérêts déductibles');
     expect(html).toContain('Délai de jouissance');
     expect(html).toContain('Nature actif');
+    expect(html).toContain('sim-action-btn--delete');
+    expect(html).toContain('sim-action-btn--add');
   });
 
   it('affiche plusieurs filiales comme accès compact vers la modale dédiée', () => {
@@ -86,6 +88,9 @@ describe('TresoCompanyPanels', () => {
     expect(html).toContain('Filiale 1');
     expect(html).toContain('Filiale 2');
     expect(html).toContain('Paramétrer');
+    expect(html).toContain('sim-action-btn--edit');
+    expect(html).toContain('sim-action-btn--delete');
+    expect(html).toContain('sim-action-btn--add');
     expect(html).toContain('80 % détenu');
     expect(html).toContain('Cession 2030');
     expect(html).not.toContain('Prix de cession estimé');

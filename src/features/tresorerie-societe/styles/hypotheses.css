@@ -23,17 +23,6 @@
   color: var(--color-c9);
 }
 
-.ts-hypotheses__chevron {
-  width: 12px;
-  height: 12px;
-  flex: 0 0 auto;
-  transition: transform 0.2s ease;
-}
-
-.ts-hypotheses__chevron.is-open {
-  transform: rotate(180deg);
-}
-
 .ts-hypotheses__toggle:hover {
   background: color-mix(in srgb, var(--color-c4) 20%, var(--color-c7));
 }

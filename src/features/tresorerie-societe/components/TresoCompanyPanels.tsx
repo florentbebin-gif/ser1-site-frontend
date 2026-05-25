@@ -1,3 +1,4 @@
+import { SimActionButton } from '@/components/ui/sim';
 import { SimFieldShell } from '../../../components/ui/sim/SimFieldShell';
 import { SimSelect } from '../../../components/ui/sim/SimSelect';
 import type { CompanyLoanInput, SubsidiaryInput } from '../../../engine/tresorerie/types';
@@ -82,9 +83,14 @@ export function TresoCompanyLoansPanel({ loans, projectionStartYear, onChange }:
         <div key={loan.id} className="ts-associate-card">
           <div className="ts-associate-card__header">
             <strong>{loan.label || `Emprunt société ${index + 1}`}</strong>
-            <button type="button" className="ts-text-btn" onClick={() => removeLoan(loan.id)}>
-              Supprimer
-            </button>
+            <SimActionButton
+              variant="delete"
+              mode="text"
+              label="Supprimer"
+              ariaLabel={`Supprimer ${loan.label || `emprunt société ${index + 1}`}`}
+              danger
+              onClick={() => removeLoan(loan.id)}
+            />
           </div>
 
           <div className="ts-modal-grid">
@@ -236,13 +242,13 @@ export function TresoCompanyLoansPanel({ loans, projectionStartYear, onChange }:
         </div>
       ))}
 
-      <button
-        type="button"
-        className="ts-text-btn"
+      <SimActionButton
+        variant="add"
+        mode="text"
+        label="Ajouter un emprunt"
+        className="ts-inline-action"
         onClick={() => onChange([...loans, buildDefaultLoan(loans.length, projectionStartYear)])}
-      >
-        Ajouter un emprunt
-      </button>
+      />
     </div>
   );
 }
@@ -269,20 +275,21 @@ export function TresoCompanySubsidiariesPanel({
           <div className="ts-associate-card__header">
             <strong>{subsidiary.label || `Filiale ${index + 1}`}</strong>
             <div className="ts-card-actions">
-              <button
-                type="button"
-                className="ts-text-btn"
+              <SimActionButton
+                variant="edit"
+                mode="text"
+                label="Paramétrer"
+                ariaLabel={`Paramétrer ${subsidiary.label || `filiale ${index + 1}`}`}
                 onClick={() => onConfigure?.(subsidiary.id)}
-              >
-                Paramétrer
-              </button>
-              <button
-                type="button"
-                className="ts-text-btn"
+              />
+              <SimActionButton
+                variant="delete"
+                mode="text"
+                label="Supprimer"
+                ariaLabel={`Supprimer ${subsidiary.label || `filiale ${index + 1}`}`}
+                danger
                 onClick={() => removeSubsidiary(subsidiary.id)}
-              >
-                Supprimer
-              </button>
+              />
             </div>
           </div>
 
@@ -294,9 +301,13 @@ export function TresoCompanySubsidiariesPanel({
         </div>
       ))}
 
-      <button type="button" className="ts-text-btn" onClick={addSubsidiary}>
-        Ajouter une filiale
-      </button>
+      <SimActionButton
+        variant="add"
+        mode="text"
+        label="Ajouter une filiale"
+        className="ts-inline-action"
+        onClick={addSubsidiary}
+      />
     </div>
   );
 }

@@ -3,6 +3,7 @@
  */
 
 import type { TresoInputsRuntime, TresoProjectionRow } from '../../../engine/tresorerie/types';
+import { SimMetric } from '../../../components/ui/sim';
 import {
   buildTresoAssociateInsightViewModel,
   type TresoAssociateInsightSegment,
@@ -136,31 +137,35 @@ export function TresoAssociateInsights({ inputs, rows }: Props) {
           </div>
 
           <div className="ts-associate-kpis">
-            <div>
-              <span>Besoin moyen / an</span>
-              <strong>{fmtEuro(view.annualNeed)}</strong>
-            </div>
-            <div className={`is-${deltaStatus}`}>
-              <span>Écart moyen / an</span>
-              <strong>{fmtSignedEuro(view.deltaNeed)}</strong>
-            </div>
+            <SimMetric
+              variant="secondary"
+              className="ts-associate-kpi"
+              label="Besoin moyen / an"
+              value={fmtEuro(view.annualNeed)}
+            />
+            <SimMetric
+              variant="secondary"
+              className={`ts-associate-kpi ts-associate-kpi--${deltaStatus}`}
+              label="Écart moyen / an"
+              value={fmtSignedEuro(view.deltaNeed)}
+            />
           </div>
 
           <div className="ts-associate-kpis ts-associate-kpis--cca">
-            <div>
-              <span>Besoin total période</span>
-              <strong>{fmtEuro(view.needTotal)}</strong>
-              <small className="ts-associate-kpi-note">
-                Apport CCA : {fmtEuro(view.ccaTotalContribution)}
-              </small>
-            </div>
-            <div>
-              <span>Revenus servis période</span>
-              <strong>{fmtEuro(view.revenusTotalRecupere)}</strong>
-              <small className="ts-associate-kpi-note">
-                Moyenne annuelle servie : {fmtEuro(view.revenusMoyenAnnuel)}/an
-              </small>
-            </div>
+            <SimMetric
+              variant="secondary"
+              className="ts-associate-kpi"
+              label="Besoin total période"
+              value={fmtEuro(view.needTotal)}
+              note={`Apport CCA : ${fmtEuro(view.ccaTotalContribution)}`}
+            />
+            <SimMetric
+              variant="secondary"
+              className="ts-associate-kpi"
+              label="Revenus servis période"
+              value={fmtEuro(view.revenusTotalRecupere)}
+              note={`Moyenne annuelle servie : ${fmtEuro(view.revenusMoyenAnnuel)}/an`}
+            />
           </div>
         </>
       )}

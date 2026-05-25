@@ -208,7 +208,11 @@ describe('TresoSocieteSection', () => {
     expect(screen.queryByLabelText('Capital social')).not.toBeInTheDocument();
     expect(screen.getByLabelText('Type société')).toBeInTheDocument();
     expect(screen.getByText('Trésorerie initiale')).toBeInTheDocument();
-    fireEvent.click(screen.getByRole('button', { name: /paramètres financiers de la société/i }));
+    const financialSettingsButton = screen.getByRole('button', {
+      name: /paramètres financiers de la société/i,
+    });
+    expect(financialSettingsButton).toHaveClass('sim-action-btn--edit');
+    fireEvent.click(financialSettingsButton);
     expect(screen.getByText('Paramètres financiers')).toBeInTheDocument();
     expect(screen.getByText('Capital social')).toBeInTheDocument();
     expect(screen.getByText('Prime d’émission')).toBeInTheDocument();
@@ -238,6 +242,12 @@ describe('TresoSocieteSection', () => {
     expect(screen.queryByLabelText(/Ordre d’affichage/i)).not.toBeInTheDocument();
     expect(screen.getByText('Prestations annuelles vers la mère')).toBeInTheDocument();
     expect(screen.getByText('Dividendes annuels vers la mère')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Ajouter un palier de prestations/i })).toHaveClass(
+      'sim-action-btn--add',
+    );
+    expect(screen.getByRole('button', { name: /Supprimer le palier 1 prestations/i })).toHaveClass(
+      'sim-action-btn--delete',
+    );
     expect(screen.getByText('Trésorerie de la filiale')).toBeInTheDocument();
     expect(screen.getByText('BFR filiale')).toBeInTheDocument();
     expect(screen.getByText('Réserves distribuables')).toBeInTheDocument();
@@ -285,7 +295,11 @@ describe('TresoSocieteSection', () => {
     render(<TresoSocieteSection inputs={INPUTS} onChange={onChange} />);
 
     fireEvent.click(screen.getByRole('button', { name: /Paramétrer Filiale A/ }));
-    fireEvent.click(screen.getByRole('button', { name: /Ajouter un palier de dividendes/i }));
+    const addDividendsSchedule = screen.getByRole('button', {
+      name: /Ajouter un palier de dividendes/i,
+    });
+    expect(addDividendsSchedule).toHaveClass('sim-action-btn--add');
+    fireEvent.click(addDividendsSchedule);
 
     const nextInputs = onChange.mock.calls[onChange.mock.calls.length - 1]?.[0];
     expect(nextInputs.company.subsidiaries[0].dividendsSchedule).toHaveLength(2);
