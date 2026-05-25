@@ -61,4 +61,15 @@ describe('SettingsDesignSystem', () => {
     });
     expect(radiusSample).toHaveStyle({ borderRadius: 'var(--radius-full)' });
   });
+
+  it('place le bouton d’information dans le titre de la page', () => {
+    render(<SettingsDesignSystem />);
+
+    const heading = screen.getByRole('heading', { name: /Design system simulateurs/ });
+    const infoButton = screen.getByRole('button', {
+      name: 'Informations sur la page design system',
+    });
+
+    expect(heading).toContainElement(infoButton);
+  });
 });

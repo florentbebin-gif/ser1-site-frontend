@@ -406,15 +406,15 @@ export default function SettingsDesignSystem() {
               <SettingsTitleWithIcon icon="sparkles">
                 Design system simulateurs
               </SettingsTitleWithIcon>
+              <SimInfoButton
+                ariaLabel="Informations sur la page design system"
+                onClick={() => setInfoOpen(true)}
+              />
             </h1>
             <p className="settings-premium-subtitle">
               Référence runtime complète des fondations SIM SER1 2026.
             </p>
           </div>
-          <SimInfoButton
-            ariaLabel="Informations sur la page design system"
-            onClick={() => setInfoOpen(true)}
-          />
         </header>
       </section>
 
