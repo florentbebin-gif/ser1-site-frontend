@@ -5,6 +5,7 @@ import type { CreditScheduleRow } from '../types';
 
 const rows = [
   {
+    mois: 1,
     interet: 120,
     assurance: 20,
     amort: 800,
