@@ -10,6 +10,7 @@ import {
   SimAmountInputPercent,
   SimFieldShell,
 } from '@/components/ui/sim';
+import { IconChevronDown } from '@/icons/ui';
 import { parseDecimalInput } from '@/utils/numbers';
 import type { InputMonthProps, SelectProps, ToggleProps } from '../types';
 
@@ -239,21 +240,7 @@ export function Select<TValue extends string | number>({
           className={`sim-field__select-trigger${isOpen ? ' is-open' : ''}${error ? ' sim-field__control--error' : ''}`}
         >
           <span className="sim-field__select-value">{selectedOption?.label ?? ''}</span>
-          <svg
-            className="sim-field__select-arrow"
-            width="10"
-            height="6"
-            viewBox="0 0 10 6"
-            aria-hidden="true"
-          >
-            <path
-              d="M1 1l4 4 4-4"
-              stroke="currentColor"
-              strokeWidth="1.5"
-              fill="none"
-              strokeLinecap="round"
-            />
-          </svg>
+          <IconChevronDown className="sim-field__select-arrow" />
         </button>
 
         {isOpen && (

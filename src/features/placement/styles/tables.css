@@ -194,6 +194,11 @@
   gap: 4px;
 }
 
+.pl-envelope-pill__chevron {
+  width: 10px;
+  height: 10px;
+}
+
 .pl-collabel[aria-haspopup]:hover {
   filter: brightness(0.92);
 }

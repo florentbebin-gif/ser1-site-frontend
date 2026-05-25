@@ -28,6 +28,8 @@
 }
 
 .ir-hypotheses__chevron {
+  width: 12px;
+  height: 12px;
   color: var(--color-c9);
   flex-shrink: 0;
   transition: transform 0.2s;
@@ -95,6 +97,8 @@
 }
 
 .ir-detail-chevron {
+  width: 12px;
+  height: 12px;
   transition: transform 0.2s;
 }
 
@@ -185,6 +189,11 @@
   margin-top: 2px;
 }
 
+.ir-child-add-btn > svg {
+  width: 12px;
+  height: 12px;
+}
+
 .ir-child-add-btn:hover {
   color: var(--color-c1);
 }
@@ -206,6 +215,11 @@
   flex-shrink: 0;
   transition: color 0.15s;
   border-radius: 3px;
+}
+
+.ir-child-remove-btn > svg {
+  width: 14px;
+  height: 14px;
 }
 
 .ir-child-remove-btn:hover {

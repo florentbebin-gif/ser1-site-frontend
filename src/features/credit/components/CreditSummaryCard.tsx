@@ -4,6 +4,7 @@
 
 import { euro0 } from '../utils/creditFormatters';
 import type { CreditSummaryCardProps, SummaryDonutProps } from '../types';
+import { IconBarChart } from '@/icons/ui';
 
 const DONUT_R = 27;
 const DONUT_CX = 34;
@@ -104,21 +105,7 @@ export function CreditSummaryCard({
     <aside className="cv-summary sim-summary-card" data-testid="credit-summary-card">
       <div className="cv-summary__title-row">
         <div className="sim-card__icon sim-card__icon--sm">
-          <svg
-            width="13"
-            height="13"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="1.8"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            aria-hidden="true"
-          >
-            <line x1="12" y1="20" x2="12" y2="10" />
-            <line x1="18" y1="20" x2="18" y2="4" />
-            <line x1="6" y1="20" x2="6" y2="16" />
-          </svg>
+          <IconBarChart />
         </div>
         <div className="cv-summary__title">{loanLabel || 'Synthèse du prêt'}</div>
       </div>

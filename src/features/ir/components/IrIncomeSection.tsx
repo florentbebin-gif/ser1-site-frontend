@@ -1,4 +1,5 @@
 import { SimAmountInputEuro } from '@/components/ui/sim';
+import { IconTable } from '@/icons/ui';
 import { IrSelect } from './IrSelect';
 import type { IrFormSectionProps } from './irTypes';
 
@@ -107,22 +108,7 @@ export function IrIncomeSection({
         <div className="ir-income-card__header-row">
           <div className="ir-income-card__title sim-card__title sim-card__title-row">
             <div className="ir-section-icon-wrapper sim-card__icon">
-              <svg
-                width="14"
-                height="14"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.8"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                aria-hidden="true"
-              >
-                <rect x="3" y="3" width="18" height="18" rx="2" />
-                <line x1="3" y1="9" x2="21" y2="9" />
-                <line x1="3" y1="15" x2="21" y2="15" />
-                <line x1="12" y1="3" x2="12" y2="21" />
-              </svg>
+              <IconTable />
             </div>
             Revenus imposables
           </div>

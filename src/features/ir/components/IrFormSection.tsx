@@ -1,3 +1,4 @@
+import { IconClose, IconPlus, IconUsers } from '@/icons/ui';
 import { IrSelect } from './IrSelect';
 import type { IrFormSectionProps } from './irTypes';
 import { IrIncomeSection } from './IrIncomeSection';
@@ -41,22 +42,7 @@ export function IrFormSection({
         <div className="ir-situation-card__header sim-card__header sim-card__header--bleed">
           <div className="ir-situation-card__title sim-card__title sim-card__title-row">
             <div className="ir-section-icon-wrapper sim-card__icon">
-              <svg
-                width="14"
-                height="14"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.8"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                aria-hidden="true"
-              >
-                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
-                <circle cx="9" cy="7" r="4" />
-                <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
-                <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-              </svg>
+              <IconUsers />
             </div>
             Situation familiale
           </div>
@@ -115,20 +101,7 @@ export function IrFormSection({
               className="ir-child-add-btn"
               onClick={() => setChildren((c) => [...c, { id: Date.now(), mode: 'charge' }])}
             >
-              <svg
-                width="12"
-                height="12"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                aria-hidden="true"
-              >
-                <line x1="12" y1="5" x2="12" y2="19" />
-                <line x1="5" y1="12" x2="19" y2="12" />
-              </svg>
+              <IconPlus />
               Ajouter un enfant
             </button>
             <div className="ir-children-list">
@@ -156,20 +129,7 @@ export function IrFormSection({
                     onClick={() => setChildren((list) => list.filter((c) => c.id !== child.id))}
                     aria-label={`Supprimer enfant ${idx + 1}`}
                   >
-                    <svg
-                      width="14"
-                      height="14"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      aria-hidden="true"
-                    >
-                      <line x1="18" y1="6" x2="6" y2="18" />
-                      <line x1="6" y1="6" x2="18" y2="18" />
-                    </svg>
+                    <IconClose />
                   </button>
                 </div>
               ))}

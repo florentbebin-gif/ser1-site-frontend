@@ -118,6 +118,8 @@
   position: absolute;
   right: 8px;
   top: 50%;
+  width: 10px;
+  height: 10px;
   transform: translateY(-50%);
   color: var(--color-c9);
   pointer-events: none;

@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { IconChevronDown, IconSettings } from '@/icons/ui';
 import { ENVELOPE_LABELS } from '@/engine/placement';
 import type { CompareResult } from '@/engine/placement/types';
 import { shortEuro } from '../utils/formatters';
@@ -88,17 +89,7 @@ function EnvelopePillSelect({ envelope, colorClass, onSelect }: EnvelopePillSele
         aria-expanded={open}
       >
         {ALL_ENVELOPE_LABELS[envelope] ?? envelope}
-        <svg
-          width="10"
-          height="10"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          aria-hidden="true"
-        >
-          <path d="m6 9 6 6 6-6" />
-        </svg>
+        <IconChevronDown className="pl-envelope-pill__chevron" />
       </button>
       {open && (
         <div className="pl-envelope-menu" role="listbox">
@@ -120,25 +111,6 @@ function EnvelopePillSelect({ envelope, colorClass, onSelect }: EnvelopePillSele
         </div>
       )}
     </div>
-  );
-}
-
-function SettingsIcon() {
-  return (
-    <svg
-      width="18"
-      height="18"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.8"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-    >
-      <circle cx="12" cy="12" r="3" />
-      <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 8.92 4a1.65 1.65 0 0 0 1-1.51V2a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9c.17.51.66.96 1.2 1H21a2 2 0 0 1 0 4h-.09c-.54.04-1.03.49-1.51 1Z" />
-    </svg>
   );
 }
 
@@ -289,7 +261,7 @@ export function PlacementEpargneSection({
                     data-testid={`placement-config-product-${index + 1}`}
                   >
                     <span className="pl-btn__icon">
-                      <SettingsIcon />
+                      <IconSettings />
                     </span>
                     <span className="pl-btn__summary">
                       {formatVersementConfigSummary(

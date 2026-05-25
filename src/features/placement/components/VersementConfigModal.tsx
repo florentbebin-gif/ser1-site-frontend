@@ -4,6 +4,7 @@
 
 import { useEffect, useState } from 'react';
 import { SimModalShell } from '@/components/ui/sim';
+import { IconClose, IconLayers } from '@/icons/ui';
 import { ENVELOPE_LABELS } from '@/engine/placement';
 import { DEFAULT_ANNUEL, normalizeVersementConfig } from '@/engine/placement/versementConfig';
 import type {
@@ -36,6 +37,10 @@ type AnnualOptionName = 'garantieBonneFin' | 'exonerationCotisations';
 type AllocationConfig = Pick<VersementEntry, 'pctCapitalisation' | 'pctDistribution'>;
 
 const envelopeLabels = ENVELOPE_LABELS as Record<string, string>;
+
+function RemoveIcon() {
+  return <IconClose />;
+}
 
 function hasDistribution(allocation: AllocationConfig) {
   return (allocation.pctDistribution || 0) > 0;
@@ -107,45 +112,6 @@ export function computeVersementSectionVisibility({
     showCapiBlock,
     showDistribBlock,
   };
-}
-
-function LayersIcon() {
-  return (
-    <svg
-      width="22"
-      height="22"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.8"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-    >
-      <path d="m12 2 9 5-9 5-9-5 9-5Z" />
-      <path d="m3 12 9 5 9-5" />
-      <path d="m3 17 9 5 9-5" />
-    </svg>
-  );
-}
-
-function XIcon() {
-  return (
-    <svg
-      width="14"
-      height="14"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.8"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-    >
-      <path d="M18 6 6 18" />
-      <path d="m6 6 12 12" />
-    </svg>
-  );
 }
 
 export function VersementConfigModal({
@@ -346,7 +312,7 @@ export function VersementConfigModal({
     <SimModalShell
       title="Paramétrage des versements"
       subtitle={envelopeLabels[envelope]}
-      icon={<LayersIcon />}
+      icon={<IconLayers />}
       onClose={onClose}
       closeLabel="Fermer la modale"
       overlayClassName="vcm-overlay"
@@ -422,7 +388,7 @@ export function VersementConfigModal({
           onUpdatePonctuel={updatePonctuel}
           onUpdatePonctuelAlloc={updatePonctuelAlloc}
           onRemovePonctuel={removePonctuel}
-          RemoveIcon={XIcon}
+          RemoveIcon={RemoveIcon}
         />
       )}
     </SimModalShell>

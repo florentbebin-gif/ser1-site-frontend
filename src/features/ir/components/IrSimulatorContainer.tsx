@@ -13,6 +13,7 @@ import { resolveEffectiveUserMode } from '../../../settings/userModeDisplay';
 import { ExportMenu } from '../../../components/ExportMenu';
 import { ModeToggle } from '../../../components/ModeToggle';
 import { SimPageShell } from '@/components/ui/sim';
+import { IconChevronDown } from '@/icons/ui';
 import {
   computeAbattement10,
   computeEffectiveParts,
@@ -468,20 +469,9 @@ export default function IrSimulatorContainer() {
                   data-testid="ir-detail-toggle"
                 >
                   {showDetails ? 'Masquer' : 'Afficher'}
-                  <svg
-                    width="12"
-                    height="12"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
+                  <IconChevronDown
                     className={`ir-detail-chevron${showDetails ? ' is-open' : ''}`}
-                    aria-hidden="true"
-                  >
-                    <polyline points="6 9 12 15 18 9" />
-                  </svg>
+                  />
                 </button>
               </div>
               {showDetails && (

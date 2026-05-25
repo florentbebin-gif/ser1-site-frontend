@@ -18,4 +18,6 @@ export { IconNetwork } from './IconNetwork';
 export { IconPencil } from './IconPencil';
 export { IconPieChart } from './IconPieChart';
 export { IconPlus } from './IconPlus';
+export { IconSliders } from './IconSliders';
+export { IconTable } from './IconTable';
 export { IconUsers } from './IconUsers';

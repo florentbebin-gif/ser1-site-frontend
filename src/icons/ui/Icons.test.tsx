@@ -16,6 +16,8 @@ import {
   IconPencil,
   IconPieChart,
   IconPlus,
+  IconSliders,
+  IconTable,
   IconUsers,
 } from './index';
 
@@ -37,6 +39,8 @@ const newIcons: Array<[string, IconComponent]> = [
   ['IconNetwork', IconNetwork],
   ['IconPieChart', IconPieChart],
   ['IconBarChart', IconBarChart],
+  ['IconSliders', IconSliders],
+  ['IconTable', IconTable],
 ];
 
 describe('catalogue icônes UI', () => {

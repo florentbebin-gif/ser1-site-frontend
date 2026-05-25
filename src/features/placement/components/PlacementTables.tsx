@@ -4,6 +4,7 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import { SimAmountInputPercent } from '@/components/ui/sim';
+import { IconChevronDown } from '@/icons/ui';
 
 interface CollapsibleTableProps<Row> {
   title: string;
@@ -14,22 +15,7 @@ interface CollapsibleTableProps<Row> {
 }
 
 function ChevronIcon({ open }: { open: boolean }) {
-  return (
-    <svg
-      className={`pl-collapsible__chevron${open ? ' is-open' : ''}`}
-      width="16"
-      height="16"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.8"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-    >
-      <path d="m6 9 6 6 6-6" />
-    </svg>
-  );
+  return <IconChevronDown className={`pl-collapsible__chevron${open ? ' is-open' : ''}`} />;
 }
 
 export function CollapsibleTable<Row>({

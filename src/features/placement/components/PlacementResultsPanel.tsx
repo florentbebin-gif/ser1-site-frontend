@@ -1,4 +1,5 @@
 import { TimelineBar } from '@/components/TimelineBar';
+import { IconBarChart } from '@/icons/ui';
 import { shortEuro } from '../utils/formatters';
 import type { PlacementSimulatorState } from '../utils/normalizers';
 import type { PlacementUiResults } from '../utils/placementUiResults';
@@ -8,26 +9,6 @@ interface PlacementResultsPanelProps {
   hydrated: boolean;
   results: PlacementUiResults | null;
   state: PlacementSimulatorState;
-}
-
-function BarChartIcon() {
-  return (
-    <svg
-      width="20"
-      height="20"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.8"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-    >
-      <path d="M12 20V10" />
-      <path d="M18 20V4" />
-      <path d="M6 20v-6" />
-    </svg>
-  );
 }
 
 export function PlacementResultsPanel({
@@ -47,7 +28,7 @@ export function PlacementResultsPanel({
     >
       <div className="pl-synthesis-title-row">
         <div className="sim-card__icon">
-          <BarChartIcon />
+          <IconBarChart />
         </div>
         <h3 className="pl-summary-title">{compareEnabled ? 'Synthèse comparative' : 'Synthèse'}</h3>
       </div>

@@ -20,6 +20,8 @@ import {
   IconPlus,
   IconSave,
   IconSettings,
+  IconSliders,
+  IconTable,
   IconTrash,
   IconUsers,
 } from './index';
@@ -46,6 +48,8 @@ const iconEntries = [
   ['Donation', IconGift],
   ['Secteurs', IconPieChart],
   ['Graphique', IconBarChart],
+  ['Paramètres fins', IconSliders],
+  ['Tableau', IconTable],
 ] as const;
 
 const styles = {

@@ -119,6 +119,11 @@
   flex-shrink: 0;
 }
 
+.ir-section-icon-wrapper > svg {
+  width: 14px;
+  height: 14px;
+}
+
 /* Lignes sÃ©parateurs entre sections */
 .ir-divider-row td {
   padding: 0;

@@ -143,6 +143,11 @@
   color: var(--color-c2);
 }
 
+.pl-btn__icon > svg {
+  width: 18px;
+  height: 18px;
+}
+
 .pl-btn__summary {
   font-size: 13px;
   font-weight: 500;

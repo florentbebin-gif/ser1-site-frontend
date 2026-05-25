@@ -3,6 +3,7 @@
  */
 
 import { useMemo, useState } from 'react';
+import { IconChevronDown } from '@/icons/ui';
 import { euro0, addMonths, labelMonthFR } from '../utils/creditFormatters';
 import type { CreditScheduleRow, CreditScheduleTableProps } from '../types';
 
@@ -103,19 +104,7 @@ export function CreditScheduleTable({
           aria-expanded={!collapsed}
         >
           {collapsed ? 'Afficher' : 'Masquer'}
-          <svg
-            width="12"
-            height="12"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            className={`cv-schedule__chevron ${collapsed ? '' : 'is-open'}`}
-          >
-            <polyline points="6 9 12 15 18 9" />
-          </svg>
+          <IconChevronDown className={`cv-schedule__chevron ${collapsed ? '' : 'is-open'}`} />
         </button>
       </div>
 

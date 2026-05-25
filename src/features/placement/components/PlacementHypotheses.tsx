@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { IconChevronDown } from '@/icons/ui';
 
 export function PlacementHypotheses() {
   const [open, setOpen] = useState(false);
@@ -12,20 +13,7 @@ export function PlacementHypotheses() {
         data-testid="placement-hypotheses-toggle"
       >
         <span className="pl-hypotheses__title">Hypothèses et limites</span>
-        <svg
-          width="12"
-          height="12"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          className={`pl-hypotheses__chevron${open ? ' is-open' : ''}`}
-          aria-hidden="true"
-        >
-          <polyline points="6 9 12 15 18 9" />
-        </svg>
+        <IconChevronDown className={`pl-hypotheses__chevron${open ? ' is-open' : ''}`} />
       </button>
       {open && (
         <ul>
