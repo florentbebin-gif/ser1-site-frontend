@@ -2,10 +2,15 @@
  * StrategyBuilder - Interface de construction de stratégie
  */
 
-import React, { useId, useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ExportMenu } from '../../components/ExportMenu';
 import type { ExportOption } from '../../components/export/exportTypes';
-import { SimFieldShell, SimModalShell } from '../../components/ui/sim';
+import {
+  SimAmountInputEuro,
+  SimAmountInputNumeric,
+  SimAmountInputPercent,
+  SimModalShell,
+} from '../../components/ui/sim';
 import type { DossierAudit } from '../audit/types';
 import type { Strategie, ProduitConfig, ProduitType, Recommandation } from './types';
 import { createEmptyStrategie, PRODUIT_LABELS } from './types';
@@ -29,54 +34,42 @@ interface StrategyNumericFieldProps {
   label: string;
   value: number | undefined;
   unit?: string;
-  step?: number | string;
   fallbackValue: number;
   integer?: boolean;
   onChange: (value: number) => void;
-}
-
-function parseStrategyNumericValue(
-  rawValue: string,
-  fallbackValue: number,
-  integer = false,
-): number {
-  const parsedValue = integer ? Number.parseInt(rawValue, 10) : Number.parseFloat(rawValue);
-
-  return Number.isFinite(parsedValue) ? parsedValue : fallbackValue;
 }
 
 function StrategyNumericField({
   label,
   value,
   unit,
-  step,
   fallbackValue,
   integer = false,
   onChange,
 }: StrategyNumericFieldProps): React.ReactElement {
-  const controlId = useId();
+  const commonProps = {
+    label,
+    value: value ?? fallbackValue,
+    fieldClassName: 'strategy-field',
+    rowClassName: 'strategy-field__row',
+    className: 'strategy-field__control',
+    unitClassName: 'strategy-field__unit',
+  };
+
+  if (unit === '€') {
+    return <SimAmountInputEuro {...commonProps} onChange={onChange} />;
+  }
+
+  if (unit === '%') {
+    return <SimAmountInputPercent {...commonProps} onChange={onChange} />;
+  }
 
   return (
-    <SimFieldShell
-      label={label}
-      controlId={controlId}
-      className="strategy-field"
-      rowClassName="strategy-field__row"
-    >
-      <input
-        id={controlId}
-        type="number"
-        inputMode={integer ? 'numeric' : 'decimal'}
-        min="0"
-        step={step}
-        value={value ?? fallbackValue}
-        className="strategy-field__control sim-field__control"
-        onChange={(event) =>
-          onChange(parseStrategyNumericValue(event.target.value, fallbackValue, integer))
-        }
-      />
-      {unit ? <span className="strategy-field__unit sim-field__unit">{unit}</span> : null}
-    </SimFieldShell>
+    <SimAmountInputNumeric
+      {...commonProps}
+      unit={unit}
+      onChange={(nextValue) => onChange(integer ? Math.round(nextValue) : nextValue)}
+    />
   );
 }
 
@@ -313,7 +306,6 @@ export default function StrategyBuilder({ dossier }: StrategyBuilderProps): Reac
                   label="Rendement estimé"
                   value={produit.tauxRendementEstime}
                   unit="%"
-                  step="0.1"
                   fallbackValue={3}
                   onChange={(tauxRendementEstime) =>
                     handleUpdateProduit(produit.id, { tauxRendementEstime })

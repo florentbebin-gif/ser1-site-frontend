@@ -5,7 +5,7 @@ import type {
   CompanyInputV6,
   TresoInputsV6,
 } from '@/engine/tresorerie/types';
-import { SimFieldShell } from '@/components/ui/sim/SimFieldShell';
+import { SimAmountInputNumeric } from '@/components/ui/sim';
 import { buildNextPhase, sortPhases } from '../../utils/revenuePhases';
 import { TresoRevenuePhaseModal } from './TresoRevenuePhaseModal';
 import { TresoTimelineEmptyState } from './TresoTimelineEmptyState';
@@ -189,27 +189,17 @@ export function TresoTimelineSection({
             />
 
             <div className="ts-timeline-horizon-row">
-              <SimFieldShell
+              <SimAmountInputNumeric
                 label="Horizon de projection"
-                className="ts-field"
+                value={horizonYears}
+                min={5}
+                max={60}
+                unit="ans"
+                fieldClassName="ts-field"
                 rowClassName="ts-field__row"
-                controlId="ts-horizon-years"
-              >
-                <input
-                  id="ts-horizon-years"
-                  type="number"
-                  min={5}
-                  max={60}
-                  step={1}
-                  value={horizonYears}
-                  className="sim-field__control"
-                  onChange={(event) => {
-                    if (event.target.value === '') return;
-                    patchProjectionHorizonYears(Number(event.target.value));
-                  }}
-                />
-                <span className="sim-field__unit ts-unit">ans</span>
-              </SimFieldShell>
+                unitClassName="ts-unit"
+                onChange={(value) => patchProjectionHorizonYears(Math.round(value))}
+              />
             </div>
           </div>
 

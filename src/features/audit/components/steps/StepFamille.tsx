@@ -1,4 +1,5 @@
 import type { StepProps } from './types';
+import { AuditNumberField } from './AuditNumberFields';
 
 export default function StepFamille({ dossier, updateDossier }: StepProps) {
   const { situationFamiliale } = dossier;
@@ -152,32 +153,29 @@ export default function StepFamille({ dossier, updateDossier }: StepProps) {
           </div>
         )}
 
-        <div className="audit-form-row">
-          <label htmlFor="nombre-enfants">Nombre d'enfants</label>
-          <input
-            id="nombre-enfants"
-            type="number"
-            min="0"
-            value={situationFamiliale.enfants.length}
-            onChange={(e) => {
-              const count = parseInt(e.target.value) || 0;
-              const current = situationFamiliale.enfants;
-              let newEnfants = [...current];
+        <AuditNumberField
+          id="nombre-enfants"
+          label="Nombre d'enfants"
+          value={situationFamiliale.enfants.length}
+          min={0}
+          integer
+          onChange={(count) => {
+            const current = situationFamiliale.enfants;
+            let newEnfants = [...current];
 
-              if (count > current.length) {
-                for (let i = current.length; i < count; i += 1) {
-                  newEnfants.push({ prenom: '', dateNaissance: '', estCommun: true });
-                }
-              } else {
-                newEnfants = newEnfants.slice(0, count);
+            if (count > current.length) {
+              for (let i = current.length; i < count; i += 1) {
+                newEnfants.push({ prenom: '', dateNaissance: '', estCommun: true });
               }
+            } else {
+              newEnfants = newEnfants.slice(0, count);
+            }
 
-              updateDossier({
-                situationFamiliale: { ...situationFamiliale, enfants: newEnfants },
-              });
-            }}
-          />
-        </div>
+            updateDossier({
+              situationFamiliale: { ...situationFamiliale, enfants: newEnfants },
+            });
+          }}
+        />
       </div>
     </div>
   );

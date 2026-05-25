@@ -1,4 +1,5 @@
 import type { StepProps } from './types';
+import { AuditEuroField } from './AuditNumberFields';
 
 export default function StepCivil({ dossier, updateDossier }: StepProps) {
   const { situationCivile, situationFamiliale } = dossier;
@@ -81,21 +82,18 @@ export default function StepCivil({ dossier, updateDossier }: StepProps) {
         </button>
         {situationCivile.donations.map((donation, idx) => (
           <div key={donation.id} className="audit-form-card">
-            <div className="audit-form-row">
-              <label htmlFor={`audit-donation-montant-${donation.id}`}>Montant</label>
-              <input
-                id={`audit-donation-montant-${donation.id}`}
-                type="number"
-                value={donation.montant}
-                onChange={(e) => {
-                  const newDonations = [...situationCivile.donations];
-                  newDonations[idx] = { ...donation, montant: parseFloat(e.target.value) || 0 };
-                  updateDossier({
-                    situationCivile: { ...situationCivile, donations: newDonations },
-                  });
-                }}
-              />
-            </div>
+            <AuditEuroField
+              id={`audit-donation-montant-${donation.id}`}
+              label="Montant"
+              value={donation.montant}
+              onChange={(value) => {
+                const newDonations = [...situationCivile.donations];
+                newDonations[idx] = { ...donation, montant: value };
+                updateDossier({
+                  situationCivile: { ...situationCivile, donations: newDonations },
+                });
+              }}
+            />
             <div className="audit-form-row">
               <label htmlFor={`audit-donation-beneficiaire-${donation.id}`}>Bénéficiaire</label>
               <input

@@ -1,4 +1,5 @@
 import type { StepProps } from './types';
+import { AuditEuroField } from './AuditNumberFields';
 
 export default function StepActifs({ dossier, updateDossier }: StepProps) {
   const { actifs } = dossier;
@@ -48,19 +49,16 @@ export default function StepActifs({ dossier, updateDossier }: StepProps) {
               placeholder="Ex: Résidence principale"
             />
           </div>
-          <div className="audit-form-row">
-            <label htmlFor={`audit-actif-valeur-${actif.id}`}>Valeur (€)</label>
-            <input
-              id={`audit-actif-valeur-${actif.id}`}
-              type="number"
-              value={actif.valeur}
-              onChange={(e) => {
-                const newActifs = [...actifs];
-                newActifs[idx] = { ...actif, valeur: parseFloat(e.target.value) || 0 };
-                updateDossier({ actifs: newActifs });
-              }}
-            />
-          </div>
+          <AuditEuroField
+            id={`audit-actif-valeur-${actif.id}`}
+            label="Valeur (€)"
+            value={actif.valeur}
+            onChange={(value) => {
+              const newActifs = [...actifs];
+              newActifs[idx] = { ...actif, valeur: value };
+              updateDossier({ actifs: newActifs });
+            }}
+          />
           <div className="audit-form-row">
             <label htmlFor={`audit-actif-proprietaire-${actif.id}`}>Propriétaire</label>
             <select

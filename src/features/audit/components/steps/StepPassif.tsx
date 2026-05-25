@@ -1,4 +1,5 @@
 import type { StepProps } from './types';
+import { AuditEuroField } from './AuditNumberFields';
 
 export default function StepPassif({ dossier, updateDossier }: StepProps) {
   const { passif } = dossier;
@@ -55,35 +56,26 @@ export default function StepPassif({ dossier, updateDossier }: StepProps) {
               placeholder="Ex: Crédit résidence principale"
             />
           </div>
-          <div className="audit-form-row">
-            <label htmlFor={`audit-emprunt-crd-${emprunt.id}`}>Capital restant dû (€)</label>
-            <input
-              id={`audit-emprunt-crd-${emprunt.id}`}
-              type="number"
-              value={emprunt.capitalRestantDu}
-              onChange={(e) => {
-                const newEmprunts = [...passif.emprunts];
-                newEmprunts[idx] = {
-                  ...emprunt,
-                  capitalRestantDu: parseFloat(e.target.value) || 0,
-                };
-                updateDossier({ passif: { ...passif, emprunts: newEmprunts } });
-              }}
-            />
-          </div>
-          <div className="audit-form-row">
-            <label htmlFor={`audit-emprunt-mensualite-${emprunt.id}`}>Mensualité (€)</label>
-            <input
-              id={`audit-emprunt-mensualite-${emprunt.id}`}
-              type="number"
-              value={emprunt.mensualite}
-              onChange={(e) => {
-                const newEmprunts = [...passif.emprunts];
-                newEmprunts[idx] = { ...emprunt, mensualite: parseFloat(e.target.value) || 0 };
-                updateDossier({ passif: { ...passif, emprunts: newEmprunts } });
-              }}
-            />
-          </div>
+          <AuditEuroField
+            id={`audit-emprunt-crd-${emprunt.id}`}
+            label="Capital restant dû (€)"
+            value={emprunt.capitalRestantDu}
+            onChange={(value) => {
+              const newEmprunts = [...passif.emprunts];
+              newEmprunts[idx] = { ...emprunt, capitalRestantDu: value };
+              updateDossier({ passif: { ...passif, emprunts: newEmprunts } });
+            }}
+          />
+          <AuditEuroField
+            id={`audit-emprunt-mensualite-${emprunt.id}`}
+            label="Mensualité (€)"
+            value={emprunt.mensualite}
+            onChange={(value) => {
+              const newEmprunts = [...passif.emprunts];
+              newEmprunts[idx] = { ...emprunt, mensualite: value };
+              updateDossier({ passif: { ...passif, emprunts: newEmprunts } });
+            }}
+          />
           <div className="audit-form-row">
             <label htmlFor={`audit-emprunt-date-fin-${emprunt.id}`}>Date de fin</label>
             <input
