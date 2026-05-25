@@ -1,7 +1,7 @@
+import { SimCollapsibleTable } from '@/components/ui/sim';
 import type { LiquidationRow, SimulateCompleteResult } from '@/engine/placement/types';
 import { euro } from '../utils/formatters';
 import type { PlacementTableProduct } from '../utils/tableHelpers';
-import { CollapsibleTable } from './PlacementTables';
 import { buildColumns, getRelevantColumns } from '../utils/tableHelpers';
 
 type PlacementLiquidationDetailRow = LiquidationRow & {
@@ -34,7 +34,7 @@ export function PlacementLiquidationDetailsTable({
   );
 
   return (
-    <CollapsibleTable
+    <SimCollapsibleTable
       title={`Détail ${product.envelopeLabel}`}
       rows={detailRows}
       columns={getRelevantColumns(
@@ -42,6 +42,8 @@ export function PlacementLiquidationDetailsTable({
         buildColumns(product as PlacementTableProduct),
         showAllColumns,
       )}
+      tableClassName="pl-ir-table pl-detail-table"
+      rowCountLabel={(count) => `${count} années`}
       onOpenChange={onOpenChange}
       renderRow={(row: PlacementLiquidationDetailRow, index) => (
         <tr key={index} className={row.isAgeAuDeces ? 'pl-row-deces' : ''}>

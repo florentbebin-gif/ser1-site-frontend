@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { SimActionButton } from '@/components/ui/sim';
+import { SimActionButton, SimCollapsibleTable } from '@/components/ui/sim';
 import { IconChevronDown } from '@/icons/ui';
 import { ENVELOPE_LABELS } from '@/engine/placement';
 import type { CompareResult } from '@/engine/placement/types';
@@ -12,7 +12,6 @@ import type {
 import type { PlacementTableProduct } from '../utils/tableHelpers';
 import { PlacementNumberField } from './PlacementAmountControls';
 import { PlacementToggle as Toggle } from './PlacementToggle';
-import { CollapsibleTable } from './PlacementTables';
 
 interface PlacementEpargneSectionProps {
   state: PlacementSimulatorState;
@@ -299,11 +298,13 @@ export function PlacementEpargneSection({
 
           {produit1 && (
             <div className="pl-details-scroll">
-              <CollapsibleTable
+              <SimCollapsibleTable
                 title={`Détail ${produit1.envelopeLabel}`}
                 rows={detailRows1}
                 columns={columnsProduit1}
                 renderRow={renderEpargneRow(produit1, columnsProduit1)}
+                tableClassName="pl-ir-table pl-detail-table"
+                rowCountLabel={(count) => `${count} années`}
                 onOpenChange={setTable1Open}
               />
             </div>
@@ -311,11 +312,13 @@ export function PlacementEpargneSection({
 
           {compareEnabled && produit2 && (
             <div className="pl-details-scroll">
-              <CollapsibleTable
+              <SimCollapsibleTable
                 title={`Détail ${produit2.envelopeLabel}`}
                 rows={detailRows2}
                 columns={columnsProduit2}
                 renderRow={renderEpargneRow(produit2, columnsProduit2)}
+                tableClassName="pl-ir-table pl-detail-table"
+                rowCountLabel={(count) => `${count} années`}
                 onOpenChange={setTable2Open}
               />
             </div>

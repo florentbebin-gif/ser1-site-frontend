@@ -34,17 +34,8 @@
   margin-top: 8px;
 }
 
-.ir-detail-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.ir-detail-title {
-  font-size: 14px;
-  font-weight: 600;
+.ir-detail-toggle {
   color: var(--color-c1);
-  margin: 0;
 }
 
 /* Selects du tableau + enfants â€” pattern /sim/* (GOUVERNANCE.md Â§5) */

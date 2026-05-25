@@ -21,7 +21,7 @@ test.describe('Succession - dispositions and chronology', () => {
     await page.goto(ROUTES.succession);
     await expect(page.locator('body')).not.toContainText('Application error');
 
-    const dispositionsButton = page.getByRole('button', { name: '+ Dispositions' });
+    const dispositionsButton = page.getByRole('button', { name: 'Dispositions' });
     await expect(dispositionsButton).toBeDisabled();
 
     await selectSituation(page, /Mari/);

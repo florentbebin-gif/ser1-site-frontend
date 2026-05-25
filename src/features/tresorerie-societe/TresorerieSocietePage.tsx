@@ -12,7 +12,7 @@ import './styles/index.css';
 import { useCallback, useState } from 'react';
 import { ExportMenu } from '../../components/ExportMenu';
 import { ModeToggle } from '../../components/ModeToggle';
-import { SimDisclosureButton, SimEmptyState } from '../../components/ui/sim';
+import { SimCollapsibleTable, SimEmptyState } from '../../components/ui/sim';
 import { SimPageShell } from '../../components/ui/sim/SimPageShell';
 import { useTheme } from '../../settings/ThemeProvider';
 import { useTresorerieState } from './hooks/useTresorerieState';
@@ -115,32 +115,27 @@ export default function TresorerieSocietePage() {
           </>
         ) : null}
 
-        {/* Bouton projection */}
-        <div className="ts-projection-disclosure-row">
-          <SimDisclosureButton
-            expanded={state.projectionVisible}
-            onToggle={() => setProjectionVisible(!state.projectionVisible)}
-            labelOpen="Masquer la projection comptable"
-            labelClosed="Voir la projection comptable"
-            controls="ts-projection-drawer"
-            className="ts-projection-disclosure"
-            data-testid="ts-open-projection"
+        <SimCollapsibleTable
+          title="projection comptable"
+          open={state.projectionVisible}
+          onOpenChange={setProjectionVisible}
+          labelOpen="Masquer la projection comptable"
+          labelClosed="Voir la projection comptable"
+          controlsId="ts-projection-drawer"
+          className="ts-projection-collapsible"
+          toggleClassName="ts-projection-disclosure"
+          toggleTestId="ts-open-projection"
+          rowCount={rows.length}
+        >
+          <TresoProjectionDrawer
+            rows={rows}
+            mode={state.projectionMode}
+            onModeChange={setProjectionMode}
+            ageActuel={activeProfile.currentAge}
+            ageRetraite={activeProfile.retirementAge}
+            anneeCivileDebut={activeProfile.projectionStartYear}
           />
-        </div>
-
-        {/* Projection comptable (ouverte) */}
-        {state.projectionVisible && (
-          <div id="ts-projection-drawer">
-            <TresoProjectionDrawer
-              rows={rows}
-              mode={state.projectionMode}
-              onModeChange={setProjectionMode}
-              ageActuel={activeProfile.currentAge}
-              ageRetraite={activeProfile.retirementAge}
-              anneeCivileDebut={activeProfile.projectionStartYear}
-            />
-          </div>
-        )}
+        </SimCollapsibleTable>
 
         {/* Hypothèses */}
         <TresoHypotheses />

@@ -3,7 +3,12 @@
  */
 
 import React, { useState } from 'react';
-import { SimActionButton, SimAmountInputEuro, SimSelect } from '@/components/ui/sim';
+import {
+  SimActionButton,
+  SimAmountInputEuro,
+  SimCollapsibleTable,
+  SimSelect,
+} from '@/components/ui/sim';
 import type { DeclarantRevenus, PlafondMadelinDetail } from '../../../../../engine/per';
 import type { PerDeclarantPatch } from '../../../hooks/usePerPotentiel';
 import type { PerChildDraft } from '../../../utils/perParts';
@@ -129,6 +134,9 @@ export default function SituationFiscaleStep({
       tnsOnly: true,
     },
   ];
+  const visibleContributionRows = contributionRows.filter(
+    (row) => !row.tnsOnly || showTnsContributionRows,
+  );
 
   return (
     <div className="per-step per-step--situation">
@@ -230,16 +238,19 @@ export default function SituationFiscaleStep({
           icon="versements"
         />
 
-        <div className={`per-contribution-table ${isCouple ? 'is-couple' : ''}`}>
-          <div className="per-contribution-table-head per-contribution-table-head--label">
-            Catégorie
-          </div>
-          <div className="per-contribution-table-head">Déclarant 1</div>
-          {isCouple && <div className="per-contribution-table-head">Déclarant 2</div>}
+        <SimCollapsibleTable
+          title="Versements retraite"
+          defaultOpen
+          rowCount={visibleContributionRows.length}
+        >
+          <div className={`per-contribution-table ${isCouple ? 'is-couple' : ''}`}>
+            <div className="per-contribution-table-head per-contribution-table-head--label">
+              Catégorie
+            </div>
+            <div className="per-contribution-table-head">Déclarant 1</div>
+            {isCouple && <div className="per-contribution-table-head">Déclarant 2</div>}
 
-          {contributionRows
-            .filter((row) => !row.tnsOnly || showTnsContributionRows)
-            .map((row) => (
+            {visibleContributionRows.map((row) => (
               <React.Fragment key={row.key}>
                 <div className="per-contribution-table-label">
                   <span className="per-contribution-table-label__text">
@@ -283,7 +294,8 @@ export default function SituationFiscaleStep({
                 )}
               </React.Fragment>
             ))}
-        </div>
+          </div>
+        </SimCollapsibleTable>
 
         {isCouple && (
           <label className="per-toggle-label per-toggle-label--panel per-contribution-toggle">

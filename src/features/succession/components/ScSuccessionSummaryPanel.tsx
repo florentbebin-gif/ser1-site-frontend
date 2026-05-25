@@ -1,6 +1,7 @@
 import {
   SimKpiReference,
   SimMetric,
+  SimCollapsibleTable,
   SimSparkline,
   SimStatusBadge,
   SimTooltip,
@@ -358,57 +359,65 @@ export default function ScSuccessionSummaryPanel({
       {unifiedBlocks.length > 0 && (
         <>
           <div className="sc-card__divider sc-card__divider--tight" />
-          <div className="sc-synth-section-title">Transmission par bénéficiaire</div>
-          <div
-            className={`sc-unified-grid${displayUsesChainage ? ' sc-unified-grid--chainage' : ''}`}
+          <SimCollapsibleTable
+            title="Transmission par bénéficiaire"
+            defaultOpen
+            rowCount={unifiedBlocks.length}
+            className="sc-unified-collapsible"
           >
-            <div className="sc-unified-grid__head">
-              <span />
-              {displayUsesChainage && <span>1er décès</span>}
-              {displayUsesChainage && <span>2e décès</span>}
-              <span>Total</span>
-            </div>
-            {unifiedBlocks.map((block) => (
-              <div key={block.id} className="sc-unified-block">
-                <div className="sc-unified-row--name">
-                  <span>{block.label}</span>
-                  {displayUsesChainage && <span>{fmt(block.step1Brut ?? 0)}</span>}
-                  {displayUsesChainage && (
-                    <span>{block.isConjoint ? '—' : fmt(block.step2Brut ?? 0)}</span>
-                  )}
-                  <span>{fmt(block.brut)}</span>
-                </div>
-                {block.capitauxDecesNets > 0 && (
-                  <div className="sc-unified-row--sub">
-                    <span>Capitaux décès nets</span>
-                    {displayUsesChainage && <span>{fmt(block.step1CapitauxDecesNets ?? 0)}</span>}
-                    {displayUsesChainage && (
-                      <span>{block.isConjoint ? '—' : fmt(block.step2CapitauxDecesNets ?? 0)}</span>
-                    )}
-                    <span>{fmt(block.capitauxDecesNets)}</span>
-                  </div>
-                )}
-                <div className="sc-unified-row--sub">
-                  <span>Droits</span>
-                  {displayUsesChainage && (
-                    <span>{block.exonerated ? 'Exonéré' : fmt(block.step1Droits ?? 0)}</span>
-                  )}
-                  {displayUsesChainage && (
-                    <span>{block.isConjoint ? '—' : fmt(block.step2Droits ?? 0)}</span>
-                  )}
-                  <span>{block.exonerated ? 'Exonéré' : fmt(block.droits)}</span>
-                </div>
-                <div className="sc-unified-row--net">
-                  <span>Transmission nette</span>
-                  {displayUsesChainage && <span>{fmt(block.step1TransmissionNette ?? 0)}</span>}
-                  {displayUsesChainage && (
-                    <span>{block.isConjoint ? '—' : fmt(block.step2TransmissionNette ?? 0)}</span>
-                  )}
-                  <span>{fmt(block.transmissionNette)}</span>
-                </div>
+            <div
+              className={`sc-unified-grid${displayUsesChainage ? ' sc-unified-grid--chainage' : ''}`}
+            >
+              <div className="sc-unified-grid__head">
+                <span />
+                {displayUsesChainage && <span>1er décès</span>}
+                {displayUsesChainage && <span>2e décès</span>}
+                <span>Total</span>
               </div>
-            ))}
-          </div>
+              {unifiedBlocks.map((block) => (
+                <div key={block.id} className="sc-unified-block">
+                  <div className="sc-unified-row--name">
+                    <span>{block.label}</span>
+                    {displayUsesChainage && <span>{fmt(block.step1Brut ?? 0)}</span>}
+                    {displayUsesChainage && (
+                      <span>{block.isConjoint ? '—' : fmt(block.step2Brut ?? 0)}</span>
+                    )}
+                    <span>{fmt(block.brut)}</span>
+                  </div>
+                  {block.capitauxDecesNets > 0 && (
+                    <div className="sc-unified-row--sub">
+                      <span>Capitaux décès nets</span>
+                      {displayUsesChainage && <span>{fmt(block.step1CapitauxDecesNets ?? 0)}</span>}
+                      {displayUsesChainage && (
+                        <span>
+                          {block.isConjoint ? '—' : fmt(block.step2CapitauxDecesNets ?? 0)}
+                        </span>
+                      )}
+                      <span>{fmt(block.capitauxDecesNets)}</span>
+                    </div>
+                  )}
+                  <div className="sc-unified-row--sub">
+                    <span>Droits</span>
+                    {displayUsesChainage && (
+                      <span>{block.exonerated ? 'Exonéré' : fmt(block.step1Droits ?? 0)}</span>
+                    )}
+                    {displayUsesChainage && (
+                      <span>{block.isConjoint ? '—' : fmt(block.step2Droits ?? 0)}</span>
+                    )}
+                    <span>{block.exonerated ? 'Exonéré' : fmt(block.droits)}</span>
+                  </div>
+                  <div className="sc-unified-row--net">
+                    <span>Transmission nette</span>
+                    {displayUsesChainage && <span>{fmt(block.step1TransmissionNette ?? 0)}</span>}
+                    {displayUsesChainage && (
+                      <span>{block.isConjoint ? '—' : fmt(block.step2TransmissionNette ?? 0)}</span>
+                    )}
+                    <span>{fmt(block.transmissionNette)}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </SimCollapsibleTable>
         </>
       )}
       {(synthHypothese || unifiedBlocks.length > 0) && (

@@ -1,5 +1,6 @@
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it, vi } from 'vitest';
+import { SimCollapsibleTable } from './SimCollapsibleTable';
 import { SimFieldShell } from './SimFieldShell';
 import { SimMobileStickyActions } from './SimMobileStickyActions';
 import { SimModalShell } from './SimModalShell';
@@ -94,5 +95,48 @@ describe('SimMobileStickyActions', () => {
     expect(html).toContain('role="group"');
     expect(html).toContain('aria-label="Actions de validation"');
     expect(html).toContain('Valider');
+  });
+});
+
+describe('SimCollapsibleTable', () => {
+  it('utilise le bouton disclosure partagé pour ouvrir le détail', () => {
+    const html = renderToStaticMarkup(
+      <SimCollapsibleTable
+        title="Détail assurance-vie"
+        rows={[{ year: 1 }]}
+        columns={['Année']}
+        renderRow={(row) => (
+          <tr>
+            <td>{row.year}</td>
+          </tr>
+        )}
+      />,
+    );
+
+    expect(html).toContain('sim-disclosure-btn');
+    expect(html).toContain('sim-collapsible-table__toggle');
+    expect(html).toContain('Afficher Détail assurance-vie');
+    expect(html).not.toContain('pl-collapsible__chevron');
+  });
+
+  it('rend le contenu contrôlé avec les ids de test', () => {
+    const html = renderToStaticMarkup(
+      <SimCollapsibleTable
+        title="Projection comptable"
+        open
+        labelOpen="Masquer"
+        labelClosed="Afficher"
+        controlsId="projection-panel"
+        testId="projection-accordion"
+        toggleTestId="projection-toggle"
+      >
+        <p>Détail annuel</p>
+      </SimCollapsibleTable>,
+    );
+
+    expect(html).toContain('data-testid="projection-accordion"');
+    expect(html).toContain('data-testid="projection-toggle"');
+    expect(html).toContain('aria-controls="projection-panel"');
+    expect(html).toContain('Détail annuel');
   });
 });

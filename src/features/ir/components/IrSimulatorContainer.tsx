@@ -12,7 +12,7 @@ import { useUserMode, type UserMode } from '../../../settings/userMode';
 import { resolveEffectiveUserMode } from '../../../settings/userModeDisplay';
 import { ExportMenu } from '../../../components/ExportMenu';
 import { ModeToggle } from '../../../components/ModeToggle';
-import { SimDisclosureButton, SimPageShell } from '@/components/ui/sim';
+import { SimCollapsibleTable, SimPageShell } from '@/components/ui/sim';
 import {
   computeAbattement10,
   computeEffectiveParts,
@@ -457,29 +457,25 @@ export default function IrSimulatorContainer() {
       <SimPageShell.Section>
         <>
           {result && (
-            <div className="ir-detail-card premium-card" data-testid="ir-detail-accordion">
-              <div className="ir-detail-header">
-                <h3 className="ir-detail-title">D&eacute;tail du calcul</h3>
-                <SimDisclosureButton
-                  expanded={showDetails}
-                  onToggle={() => setShowDetails((value) => !value)}
-                  labelClosed="Afficher"
-                  labelOpen="Masquer"
-                  controls="ir-detail-panel"
-                  data-testid="ir-detail-toggle"
-                />
-              </div>
-              {showDetails && (
-                <div id="ir-detail-panel">
-                  <IrDetailsSection
-                    result={result}
-                    euro0={euro0}
-                    fmtPct={fmtPct}
-                    pfuRateIR={pfuRateIR}
-                  />
-                </div>
-              )}
-            </div>
+            <SimCollapsibleTable
+              title="Détail du calcul"
+              open={showDetails}
+              onOpenChange={setShowDetails}
+              labelClosed="Afficher"
+              labelOpen="Masquer"
+              controlsId="ir-detail-panel"
+              className="ir-detail-card premium-card"
+              toggleClassName="ir-detail-toggle"
+              testId="ir-detail-accordion"
+              toggleTestId="ir-detail-toggle"
+            >
+              <IrDetailsSection
+                result={result}
+                euro0={euro0}
+                fmtPct={fmtPct}
+                pfuRateIR={pfuRateIR}
+              />
+            </SimCollapsibleTable>
           )}
 
           <IrDisclaimer isIsolated={isIsolated} />

@@ -6,6 +6,8 @@ export { SimAmountInputNumeric } from './SimAmountInputNumeric';
 export type { SimAmountInputNumericProps } from './SimAmountInputNumeric';
 export { SimAmountInputPercent } from './SimAmountInputPercent';
 export type { SimAmountInputPercentProps } from './SimAmountInputPercent';
+export { SimCollapsibleTable } from './SimCollapsibleTable';
+export type { SimCollapsibleTableProps } from './SimCollapsibleTable';
 export { SimDisclosureButton } from './SimDisclosureButton';
 export { SimDelta } from './SimDelta';
 export type { SimDeltaProps } from './SimDelta';
