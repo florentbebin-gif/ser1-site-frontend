@@ -89,6 +89,9 @@ describe('VersementConfigModal helpers', () => {
     expect(html).toContain('Paramétrage des versements');
     expect(html).toContain('Hypothèse : investissement 100 % unités de compte');
     expect(html).toContain('prélèvements sociaux');
+    expect(html).toContain('sim-modal-btn--ghost');
+    expect(html).toContain('sim-modal-btn--primary');
+    expect(html).not.toContain('vcm__btn');
     expect(html).not.toContain('Parametrage');
     expect(html).not.toContain('Hypothese');
     expect(html).not.toContain('unites');

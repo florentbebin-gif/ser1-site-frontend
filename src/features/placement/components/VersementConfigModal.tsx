@@ -4,7 +4,7 @@
 
 import { useEffect, useState } from 'react';
 import { SimModalShell } from '@/components/ui/sim';
-import { IconClose, IconLayers } from '@/icons/ui';
+import { IconLayers } from '@/icons/ui';
 import { ENVELOPE_LABELS } from '@/engine/placement';
 import { DEFAULT_ANNUEL, normalizeVersementConfig } from '@/engine/placement/versementConfig';
 import type {
@@ -37,10 +37,6 @@ type AnnualOptionName = 'garantieBonneFin' | 'exonerationCotisations';
 type AllocationConfig = Pick<VersementEntry, 'pctCapitalisation' | 'pctDistribution'>;
 
 const envelopeLabels = ENVELOPE_LABELS as Record<string, string>;
-
-function RemoveIcon() {
-  return <IconClose />;
-}
 
 function hasDistribution(allocation: AllocationConfig) {
   return (allocation.pctDistribution || 0) > 0;
@@ -329,12 +325,12 @@ export function VersementConfigModal({
       closeTestId="placement-versements-close"
       footer={
         <>
-          <button type="button" className="vcm__btn vcm__btn--secondary" onClick={onClose}>
+          <button type="button" className="sim-modal-btn sim-modal-btn--ghost" onClick={onClose}>
             Annuler
           </button>
           <button
             type="button"
-            className="vcm__btn vcm__btn--primary"
+            className="sim-modal-btn sim-modal-btn--primary"
             onClick={() => onSave(isExpert ? configToSave : { ...configToSave, ponctuels: [] })}
           >
             Valider
@@ -388,7 +384,6 @@ export function VersementConfigModal({
           onUpdatePonctuel={updatePonctuel}
           onUpdatePonctuelAlloc={updatePonctuelAlloc}
           onRemovePonctuel={removePonctuel}
-          RemoveIcon={RemoveIcon}
         />
       )}
     </SimModalShell>

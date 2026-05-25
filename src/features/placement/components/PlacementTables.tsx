@@ -3,8 +3,7 @@
  */
 
 import React, { useEffect, useRef, useState } from 'react';
-import { SimAmountInputPercent } from '@/components/ui/sim';
-import { IconChevronDown } from '@/icons/ui';
+import { SimAmountInputPercent, SimDisclosureButton } from '@/components/ui/sim';
 
 interface CollapsibleTableProps<Row> {
   title: string;
@@ -12,10 +11,6 @@ interface CollapsibleTableProps<Row> {
   columns: string[];
   renderRow: (_row: Row, _index: number) => React.ReactElement;
   onOpenChange?: (_open: boolean) => void;
-}
-
-function ChevronIcon({ open }: { open: boolean }) {
-  return <IconChevronDown className={`pl-collapsible__chevron${open ? ' is-open' : ''}`} />;
 }
 
 export function CollapsibleTable<Row>({
@@ -60,17 +55,13 @@ export function CollapsibleTable<Row>({
 
   return (
     <div className="pl-collapsible">
-      <button
-        type="button"
+      <SimDisclosureButton
+        expanded={open}
+        onToggle={handleToggle}
+        labelClosed={`Afficher ${title} (${rows.length} années)`}
+        labelOpen={`Masquer ${title} (${rows.length} années)`}
         className="pl-collapsible__toggle"
-        onClick={handleToggle}
-        aria-expanded={open}
-      >
-        <span>
-          {title} ({rows.length} années)
-        </span>
-        <ChevronIcon open={open} />
-      </button>
+      />
 
       {open && (
         <>

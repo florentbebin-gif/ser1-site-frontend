@@ -7,7 +7,6 @@ import {
 } from '../components/VersementConfigModalSections';
 
 const noop = () => {};
-const RemoveIcon = () => <span>x</span>;
 
 describe('VersementAnnualSection', () => {
   it('renders an empty state when no annual section is configured', () => {
@@ -26,8 +25,10 @@ describe('VersementAnnualSection', () => {
       />,
     );
 
-    expect(markup).toContain('Aucun versement annuel configure');
-    expect(markup).toContain('+ Ajouter un versement annuel');
+    expect(markup).toContain('Aucun versement annuel configuré');
+    expect(markup).toContain('Ajouter un versement annuel');
+    expect(markup).toContain('sim-action-btn--add');
+    expect(markup).not.toContain('vcm__add-btn');
   });
 
   it('renders a remove action when the annual section is active', () => {
@@ -47,7 +48,9 @@ describe('VersementAnnualSection', () => {
     );
 
     expect(markup).toContain('Supprimer');
-    expect(markup).not.toContain('Aucun versement annuel configure');
+    expect(markup).toContain('sim-action-btn--delete');
+    expect(markup).not.toContain('vcm__add-btn--secondary');
+    expect(markup).not.toContain('Aucun versement annuel configuré');
   });
 });
 
@@ -70,7 +73,6 @@ describe('VersementPonctuelsSection', () => {
         onUpdatePonctuel={noop}
         onUpdatePonctuelAlloc={noop}
         onRemovePonctuel={noop}
-        RemoveIcon={RemoveIcon}
       />,
     );
 
@@ -80,6 +82,9 @@ describe('VersementPonctuelsSection', () => {
     expect(markup).toContain('Distribution');
     expect(markup).toContain('100%');
     expect(markup).toContain('0%');
+    expect(markup).toContain('sim-action-btn--add');
+    expect(markup).toContain('sim-action-btn--delete');
+    expect(markup).not.toContain('vcm__remove-btn');
     expect(markup).not.toContain('pl-alloc-slider--compact');
   });
 });

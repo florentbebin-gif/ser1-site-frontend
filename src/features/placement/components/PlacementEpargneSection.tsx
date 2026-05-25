@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { IconChevronDown, IconSettings } from '@/icons/ui';
+import { SimActionButton } from '@/components/ui/sim';
+import { IconChevronDown } from '@/icons/ui';
 import { ENVELOPE_LABELS } from '@/engine/placement';
 import type { CompareResult } from '@/engine/placement/types';
 import { shortEuro } from '../utils/formatters';
@@ -178,28 +179,27 @@ export function PlacementEpargneSection({
                     colorClass="pl-collabel--product2"
                     onSelect={(env) => setProduct(1, { envelope: env })}
                   />
-                  <button
-                    type="button"
-                    className="pl-remove-product-btn"
+                  <SimActionButton
+                    variant="delete"
+                    mode="icon"
+                    label="Retirer le 2e placement"
                     onClick={() => setCompareEnabled(false)}
-                    aria-label="Retirer le 2e placement"
+                    ariaLabel="Retirer le 2e placement"
                     title="Retirer le 2e placement"
-                  >
-                    ×
-                  </button>
+                    danger
+                  />
                 </div>
               </th>
             ) : (
               <th className="pl-colhead pl-colhead--add" aria-label="Ajouter un 2e placement">
-                <button
-                  type="button"
-                  className="pl-add-product-btn"
+                <SimActionButton
+                  variant="add"
+                  mode="icon"
+                  label="Ajouter un 2e placement"
                   onClick={() => setCompareEnabled(true)}
-                  aria-label="Ajouter un 2e placement"
+                  ariaLabel="Ajouter un 2e placement"
                   title="Ajouter un 2e placement"
-                >
-                  +
-                </button>
+                />
               </th>
             )}
           </tr>
@@ -254,22 +254,18 @@ export function PlacementEpargneSection({
             {(compareEnabled ? state.products : state.products.slice(0, 1)).map(
               (product, index) => (
                 <td key={index}>
-                  <button
-                    type="button"
-                    className="pl-btn pl-btn--config"
+                  <SimActionButton
+                    variant="edit"
+                    mode="text"
+                    label={formatVersementConfigSummary(
+                      product.versementConfig.initial.montant,
+                      product.versementConfig.annuel.montant,
+                    )}
+                    ariaLabel={`Paramétrer les versements du produit ${index + 1}`}
+                    className="pl-config-action"
                     onClick={() => setModalOpen(index)}
                     data-testid={`placement-config-product-${index + 1}`}
-                  >
-                    <span className="pl-btn__icon">
-                      <IconSettings />
-                    </span>
-                    <span className="pl-btn__summary">
-                      {formatVersementConfigSummary(
-                        product.versementConfig.initial.montant,
-                        product.versementConfig.annuel.montant,
-                      )}
-                    </span>
-                  </button>
+                  />
                 </td>
               ),
             )}

@@ -88,40 +88,8 @@
   margin: 0 0 12px;
 }
 
-.vcm__add-btn {
-  padding: 8px 16px;
-  border: 1px dashed var(--color-c2);
-  border-radius: 8px;
-  background: transparent;
-  color: var(--color-c2);
-  font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
-  transition:
-    background 0.2s,
-    color 0.2s,
-    border-style 0.2s;
-}
-
-.vcm__add-btn:hover {
-  border-style: solid;
-  background: color-mix(in srgb, var(--color-c4) 35%, #ffffff);
-}
-
-.vcm__add-btn--secondary {
-  border-style: solid;
-  border-color: var(--color-c8);
-  color: var(--color-c9);
-}
-
-.vcm__add-btn--secondary:hover {
-  border-color: var(--color-c5);
-  background: var(--color-c7);
-  color: var(--color-c1);
-}
-
-.vcm__add-btn--large {
-  padding: 12px 24px;
+.vcm__empty .sim-action-btn {
+  justify-self: center;
 }
 
 .vcm__ponctuels {
@@ -193,12 +161,9 @@
   font-weight: 600;
 }
 
-.vcm__remove-btn {
+.vcm__ponctuel-cell > .sim-action-btn--icon {
   width: 28px;
   height: 28px;
-  border: 1px solid var(--color-c8);
-  background: #ffffff;
-  color: var(--color-c9);
 }
 
 .vcm__footer {
@@ -207,37 +172,4 @@
   gap: 12px;
   padding: 18px 24px;
   border-top: 1px solid var(--color-c8);
-}
-
-.vcm__btn {
-  padding: 10px 22px;
-  border-radius: 8px;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  transition:
-    background 0.2s,
-    border-color 0.2s,
-    color 0.2s,
-    transform 0.2s;
-}
-
-.vcm__btn--secondary {
-  border: 1px solid var(--color-c8);
-  background: transparent;
-  color: var(--color-c9);
-}
-
-.vcm__btn--secondary:hover {
-  background: var(--color-c7);
-}
-
-.vcm__btn--primary {
-  border: none;
-  background: linear-gradient(135deg, var(--color-c2), var(--color-c1));
-  color: #ffffff;
-}
-
-.vcm__btn--primary:hover {
-  transform: translateY(-1px);
 }

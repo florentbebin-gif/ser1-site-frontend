@@ -162,6 +162,9 @@ describe('PlacementResultsPanel', () => {
     expect(markup).toContain(
       'Versements sur la période - économies d&#x27;impôt + revenus nets perçus sur la période',
     );
+    expect(markup).toContain('sim-metric--inline');
+    expect(markup).not.toContain('pl-kpi-val');
+    expect(markup).not.toContain('pl-kpi-label');
     expect(markup).not.toContain(shortEuro(88000));
   });
 });

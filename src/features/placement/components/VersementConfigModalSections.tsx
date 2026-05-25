@@ -8,7 +8,12 @@ import {
   type VersementOption,
   type VersementPonctuel,
 } from '@/engine/placement/versementConfig';
-import { SimAmountInputEuro, SimAmountInputPercent, SimSelect } from '@/components/ui/sim';
+import {
+  SimActionButton,
+  SimAmountInputEuro,
+  SimAmountInputPercent,
+  SimSelect,
+} from '@/components/ui/sim';
 import {
   PlacementEuroField,
   PlacementNumberField,
@@ -282,17 +287,16 @@ export function VersementAnnualSection({
       <VersementSectionShell
         step="2"
         title="Versement annuel"
-        action={
-          <button type="button" className="vcm__add-btn" onClick={onAddAnnual}>
-            + Ajouter
-          </button>
-        }
+        action={<SimActionButton variant="add" mode="text" label="Ajouter" onClick={onAddAnnual} />}
       >
         <div className="vcm__empty">
-          <p>Aucun versement annuel configure</p>
-          <button type="button" className="vcm__add-btn vcm__add-btn--large" onClick={onAddAnnual}>
-            + Ajouter un versement annuel
-          </button>
+          <p>Aucun versement annuel configuré</p>
+          <SimActionButton
+            variant="add"
+            mode="text"
+            label="Ajouter un versement annuel"
+            onClick={onAddAnnual}
+          />
         </div>
       </VersementSectionShell>
     );
@@ -303,13 +307,13 @@ export function VersementAnnualSection({
       step="2"
       title="Versement annuel"
       action={
-        <button
-          type="button"
-          className="vcm__add-btn vcm__add-btn--secondary"
+        <SimActionButton
+          variant="delete"
+          mode="text"
+          label="Supprimer"
           onClick={onRemoveAnnual}
-        >
-          Supprimer
-        </button>
+          danger
+        />
       }
     >
       <div className="vcm__card">
@@ -402,7 +406,6 @@ interface VersementPonctuelsSectionProps {
   ) => void;
   onUpdatePonctuelAlloc: (_index: number, _capi: number, _distrib: number) => void;
   onRemovePonctuel: (_index: number) => void;
-  RemoveIcon: () => JSX.Element;
 }
 
 export function VersementPonctuelsSection({
@@ -413,28 +416,22 @@ export function VersementPonctuelsSection({
   onUpdatePonctuel,
   onUpdatePonctuelAlloc,
   onRemovePonctuel,
-  RemoveIcon,
 }: VersementPonctuelsSectionProps) {
   return (
     <VersementSectionShell
       step="3"
       title="Versements ponctuels"
-      action={
-        <button type="button" className="vcm__add-btn" onClick={onAddPonctuel}>
-          + Ajouter
-        </button>
-      }
+      action={<SimActionButton variant="add" mode="text" label="Ajouter" onClick={onAddPonctuel} />}
     >
       {ponctuels.length === 0 ? (
         <div className="vcm__empty">
           <p>Aucun versement ponctuel configuré</p>
-          <button
-            type="button"
-            className="vcm__add-btn vcm__add-btn--large"
+          <SimActionButton
+            variant="add"
+            mode="text"
+            label="Ajouter un versement"
             onClick={onAddPonctuel}
-          >
-            + Ajouter un versement
-          </button>
+          />
         </div>
       ) : (
         <div className={`vcm__ponctuels${isSCPI ? ' vcm__ponctuels--scpi' : ''}`}>
@@ -503,14 +500,14 @@ export function VersementPonctuelsSection({
               </div>
 
               <div className="vcm__ponctuel-cell">
-                <button
-                  type="button"
-                  className="vcm__remove-btn"
+                <SimActionButton
+                  variant="delete"
+                  mode="icon"
+                  label="Supprimer"
                   onClick={() => onRemovePonctuel(index)}
-                  aria-label={`Supprimer le versement ponctuel ${index + 1}`}
-                >
-                  <RemoveIcon />
-                </button>
+                  ariaLabel={`Supprimer le versement ponctuel ${index + 1}`}
+                  danger
+                />
               </div>
             </div>
           ))}
