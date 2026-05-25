@@ -111,10 +111,10 @@ function TokensPreview() {
                 <div
                   style={{
                     ...previewStyles.sample,
-                    width: group.kind === 'space' ? token.preview : 48,
-                    height: group.kind === 'space' ? token.preview : 32,
-                    borderRadius: group.kind === 'radius' ? token.preview : 6,
-                    fontSize: group.kind === 'font' ? token.preview : 13,
+                    width: group.kind === 'space' ? token.preview : 'var(--space-8)',
+                    height: group.kind === 'space' ? token.preview : 'var(--space-7)',
+                    borderRadius: group.kind === 'radius' ? token.preview : 'var(--radius-md)',
+                    fontSize: group.kind === 'font' ? token.preview : 'var(--font-size-md)',
                     transition:
                       group.kind === 'motion'
                         ? `transform ${token.preview} var(--easing-standard)`
