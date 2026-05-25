@@ -271,7 +271,7 @@ export function TresoSocieteSection({ inputs, onChange, onAssociateModalOpenerCh
         <span className="sim-card__icon">
           <IconBuilding />
         </span>
-        <div>
+        <div className="ts-section__header-text">
           <h2 className="ts-section__title sim-card__title">Société</h2>
           <p className="ts-section__subtitle sim-card__subtitle">
             Associés, société et filiales paramétrables depuis le schéma

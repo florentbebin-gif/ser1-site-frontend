@@ -106,11 +106,13 @@ export function CreditSummaryCard({
 
   return (
     <aside className="cv-summary sim-summary-card" data-testid="credit-summary-card">
-      <div className="cv-summary__title-row">
-        <div className="sim-card__icon sim-card__icon--sm">
-          <IconBarChart />
+      <div className="cv-summary__header sim-card__header sim-card__header--bleed">
+        <div className="cv-summary__title-row sim-card__title-row">
+          <div className="sim-card__icon sim-card__icon--sm">
+            <IconBarChart />
+          </div>
+          <div className="cv-summary__title">{loanLabel || 'Synthèse du prêt'}</div>
         </div>
-        <div className="cv-summary__title">{loanLabel || 'Synthèse du prêt'}</div>
       </div>
 
       <div className="cv-loan-card__divider sim-divider" />

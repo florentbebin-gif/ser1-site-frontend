@@ -70,12 +70,12 @@
   margin-top: 0;
 }
 
-/* Supprime le border-bottom du titre "Options de lissage" â€” remplacÃ© par le divider dÃ©gradÃ©.
-   SpÃ©cificitÃ© double-classe pour surpasser .sim-section-title du socle partagÃ© /sim (chargÃ© aprÃ¨s) */
+.cv-lissage-card__header {
+  margin-bottom: 0;
+}
+
 .cv-lissage-card .cv-lissage-title {
-  border-bottom: none;
-  padding-bottom: 0;
-  margin-bottom: 14px; /* aligne l'espacement avec cv-summary__title */
+  margin-bottom: 0;
 }
 
 .cv-loan-form__section-title {

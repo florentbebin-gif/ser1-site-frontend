@@ -126,7 +126,7 @@ export function TresoTimelineSection({
         <span className="sim-card__icon">
           <IconArrowLeftRight />
         </span>
-        <div>
+        <div className="ts-section__header-text">
           <h2 className="ts-section__title sim-card__title" id="ts-timeline-title">
             Parcours de revenus de l’associé
           </h2>

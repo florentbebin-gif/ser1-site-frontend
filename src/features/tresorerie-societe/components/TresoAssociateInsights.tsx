@@ -4,6 +4,7 @@
 
 import type { TresoInputsRuntime, TresoProjectionRow } from '../../../engine/tresorerie/types';
 import { SimMetric } from '../../../components/ui/sim';
+import { IconUsers } from '../../../icons/ui';
 import {
   buildTresoAssociateInsightViewModel,
   type TresoAssociateInsightSegment,
@@ -96,12 +97,19 @@ export function TresoAssociateInsights({ inputs, rows }: Props) {
       : 'Année cible : revenus par source';
 
   return (
-    <div className="premium-card ts-associate-insights">
-      <div className="ts-kpi-sidebar__header">
-        <h2 className="ts-kpi-sidebar__title">Revenus de l’associé</h2>
-        <p className="ts-kpi-sidebar__subtitle">{subtitle}</p>
+    <div className="premium-card sim-summary-card ts-associate-insights">
+      <div className="ts-kpi-sidebar__header sim-card__header sim-card__header--bleed">
+        <div className="ts-kpi-sidebar__title-row sim-card__title-row">
+          <span className="sim-card__icon sim-card__icon--sm">
+            <IconUsers />
+          </span>
+          <div className="ts-kpi-sidebar__title-text">
+            <h2 className="ts-kpi-sidebar__title">Revenus de l’associé</h2>
+            <p className="ts-kpi-sidebar__subtitle">{subtitle}</p>
+          </div>
+        </div>
       </div>
-      <div className="ts-kpi-sidebar__divider" />
+      <div className="ts-kpi-sidebar__divider sim-divider sim-divider--tight" />
 
       {view.status === 'pm' ? (
         <p className="ts-kpi-sidebar__empty">

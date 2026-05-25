@@ -18,9 +18,7 @@ const ALLOWED_CLASS_FRAGMENTS = [
   'sim-state-card',
   'premium-card-compact',
   'ir-detail-card',
-  'cv-lissage-card',
   'per-madelin-modal-card',
-  'ts-associate-insights',
 ];
 
 const IGNORED_DIRS = new Set(['__tests__']);

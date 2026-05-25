@@ -88,6 +88,10 @@ describe('TresoKPISidebar', () => {
     expect(html).toContain('Compte bancaire fin horizon');
     expect(html).toContain('Déficit bancaire maximal');
     expect(html).toContain('CCA restant dû');
+    expect(html).toContain('premium-card sim-summary-card ts-kpi-sidebar');
+    expect(html).toContain('ts-kpi-sidebar__header sim-card__header sim-card__header--bleed');
+    expect(html).toContain('ts-kpi-sidebar__title-row sim-card__title-row');
+    expect(html).toContain('sim-card__icon');
     expect(html).toContain('sim-metric sim-metric--secondary');
     expect(html).not.toContain('class="ts-kpi-card');
     expect(html).not.toContain('IS latent capitalisation');

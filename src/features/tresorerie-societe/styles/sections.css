@@ -4,11 +4,16 @@
   margin-bottom: 20px;
 }
 
-.ts-section__header {
+.ts-section__header.sim-card__header {
   display: flex;
+  flex-direction: row;
   align-items: flex-start;
   gap: 10px;
   margin-bottom: 10px;
+}
+
+.ts-section__header-text {
+  min-width: 0;
 }
 
 .ts-section__header-action {

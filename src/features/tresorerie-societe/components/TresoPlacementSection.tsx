@@ -100,7 +100,7 @@ export function TresoPlacementSection({ inputs, projectionRows = [], onChange }:
         <span className="sim-card__icon">
           <IconBarChart />
         </span>
-        <div>
+        <div className="ts-section__header-text">
           <h2 className="ts-section__title sim-card__title">Allocation trésorerie société</h2>
           <p className="ts-section__subtitle sim-card__subtitle">
             Compte bancaire pivot et placements par horizon

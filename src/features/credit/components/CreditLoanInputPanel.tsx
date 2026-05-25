@@ -1,4 +1,4 @@
-import { IconSliders } from '@/icons/ui';
+import { IconArrowLeftRight, IconSliders } from '@/icons/ui';
 import { CreditLoanForm } from './CreditLoanForm';
 import { Toggle } from './CreditInputs';
 import type { CreditCalcResult, CreditLoan, CreditRawLoanValues, CreditState } from '../types';
@@ -61,8 +61,18 @@ export function CreditLoanInputPanel({
       </div>
 
       {calc.hasPretsAdditionnels && (
-        <div className="premium-card cv-lissage-card">
-          <div className="sim-section-title cv-lissage-title">Options de lissage</div>
+        <div className="premium-card premium-card--guide sim-card--guide cv-lissage-card">
+          <header className="cv-lissage-card__header sim-card__header sim-card__header--bleed">
+            <h2 className="cv-lissage-title sim-card__title sim-card__title-row">
+              <span className="sim-card__icon sim-card__icon--lg">
+                <IconArrowLeftRight className="cv-loan-card__icon" />
+              </span>
+              Options de lissage
+            </h2>
+            <p className="cv-lissage-subtitle sim-card__subtitle">
+              Pilotez le lissage du prêt principal quand plusieurs financements coexistent.
+            </p>
+          </header>
           <div className="cv-loan-card__divider cv-loan-card__divider--tight sim-divider sim-divider--tight" />
           <div className="cv-lissage">
             <Toggle
