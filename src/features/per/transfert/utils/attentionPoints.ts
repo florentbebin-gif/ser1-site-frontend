@@ -26,9 +26,14 @@ export function extractPercentValue(value: unknown): number | null {
   if (typeof value === 'number' && Number.isFinite(value)) return value;
   const text = asText(value).replace(',', '.');
   const match = text.match(/(-?\d+(?:\.\d+)?)\s*%/);
-  if (!match) return null;
-  const parsed = Number(match[1]);
-  return Number.isFinite(parsed) ? parsed / 100 : null;
+  if (match) {
+    const parsed = Number(match[1]);
+    return Number.isFinite(parsed) ? parsed / 100 : null;
+  }
+  if (!/^[+-]?\d+(?:\.\d+)?$/.test(text)) return null;
+  const parsed = Number(text);
+  if (!Number.isFinite(parsed)) return null;
+  return Math.abs(parsed) <= 1 ? parsed : parsed / 100;
 }
 
 function subscriptionYear(subscriptionDate?: string | null): number | null {
@@ -126,9 +131,12 @@ export function buildPerTransfertAttentionPoints(
     points.push({
       level: 'high',
       label: 'Taux technique garanti',
-      detail: hasBaseCgRetraiteValue(tauxTechnique)
-        ? asText(tauxTechnique)
-        : formatBaseCgRetraiteRateField(tauxTechniqueValue),
+      detail:
+        tauxTechniqueValue !== null && !hasGuaranteedWording(tauxTechnique)
+          ? formatBaseCgRetraiteRateField(tauxTechniqueValue)
+          : hasBaseCgRetraiteValue(tauxTechnique)
+            ? asText(tauxTechnique)
+            : formatBaseCgRetraiteRateField(tauxTechniqueValue),
     });
   }
 

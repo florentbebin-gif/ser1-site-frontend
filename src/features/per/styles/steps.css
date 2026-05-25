@@ -325,6 +325,10 @@
   box-sizing: border-box;
 }
 
+.per-contribution-section {
+  margin-top: 14px;
+}
+
 .per-situation-card.premium-card--guide,
 .per-income-table-card.premium-card--guide {
   overflow: visible;

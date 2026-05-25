@@ -1,5 +1,5 @@
 import React from 'react';
-import { SimMetric } from '@/components/ui/sim';
+import { SimMetric, SimSparkline } from '@/components/ui/sim';
 import { IconBarChart, IconFileText, IconPieChart } from '@/icons/ui';
 import type { PerPotentielResult } from '../../../../engine/per';
 import type { WizardStep } from '../../hooks/usePerPotentiel';
@@ -247,6 +247,12 @@ export function PerPotentielContextSidebar({
           <h3 className="sim-card__title">Potentiel</h3>
         </div>
         <div className="sim-divider" />
+        {showPotentielAvis && (
+          <div className="per-potentiel-visual" aria-hidden="true">
+            <SimSparkline className="per-potentiel-visual__sparkline" />
+            <span className="per-potentiel-visual__track" />
+          </div>
+        )}
         <div className="per-potentiel-context-list">
           {parcoursPills.length > 0 && (
             <div className="per-potentiel-context-item">

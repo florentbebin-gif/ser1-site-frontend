@@ -79,6 +79,8 @@ describe('baseCgRetraiteNormalization', () => {
 
   it('formate les décimaux de taux en pourcentage sans modifier les textes contractuels', () => {
     expect(formatBaseCgRetraiteRateField(0.0495)).toBe('4,95 %');
+    expect(formatBaseCgRetraiteRateField('0.02')).toBe('2 %');
+    expect(formatBaseCgRetraiteRateField('2,5')).toBe('2,5 %');
     expect(formatBaseCgRetraiteRateField('TMG 2 % selon millésime')).toBe(
       'TMG 2 % selon millésime',
     );

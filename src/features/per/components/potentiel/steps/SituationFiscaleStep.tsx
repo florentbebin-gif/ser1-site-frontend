@@ -3,12 +3,7 @@
  */
 
 import React, { useState } from 'react';
-import {
-  SimActionButton,
-  SimAmountInputEuro,
-  SimCollapsibleTable,
-  SimSelect,
-} from '@/components/ui/sim';
+import { SimActionButton, SimAmountInputEuro, SimSelect } from '@/components/ui/sim';
 import type { DeclarantRevenus, PlafondMadelinDetail } from '../../../../../engine/per';
 import type { PerDeclarantPatch } from '../../../hooks/usePerPotentiel';
 import type { PerChildDraft } from '../../../utils/perParts';
@@ -238,10 +233,10 @@ export default function SituationFiscaleStep({
           icon="versements"
         />
 
-        <SimCollapsibleTable
-          title="Versements retraite"
-          defaultOpen
-          rowCount={visibleContributionRows.length}
+        <div
+          className="per-contribution-section"
+          role="group"
+          aria-label="Détail des versements retraite"
         >
           <div className={`per-contribution-table ${isCouple ? 'is-couple' : ''}`}>
             <div className="per-contribution-table-head per-contribution-table-head--label">
@@ -295,7 +290,7 @@ export default function SituationFiscaleStep({
               </React.Fragment>
             ))}
           </div>
-        </SimCollapsibleTable>
+        </div>
 
         {isCouple && (
           <label className="per-toggle-label per-toggle-label--panel per-contribution-toggle">

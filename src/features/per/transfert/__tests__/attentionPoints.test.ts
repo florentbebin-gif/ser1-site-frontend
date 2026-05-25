@@ -84,4 +84,23 @@ describe('buildPerTransfertAttentionPoints', () => {
       }),
     ]);
   });
+
+  it('affiche le taux technique numérique en pourcentage', () => {
+    const points = buildPerTransfertAttentionPoints(
+      makeContract({
+        phaseLiquidation: {
+          ...makeContract().phaseLiquidation,
+          tauxTechnique: 0.02,
+        },
+      }),
+      { subscriptionDate: '2020-01-01' },
+    );
+
+    expect(points).toContainEqual(
+      expect.objectContaining({
+        label: 'Taux technique garanti',
+        detail: '2 %',
+      }),
+    );
+  });
 });
