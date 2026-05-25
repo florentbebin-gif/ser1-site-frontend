@@ -19,6 +19,7 @@ const SettingsBaseCgRetraite = lazy(() => import('../pages/settings/BaseCgRetrai
 const SettingsComptes = lazy(() => import('../pages/settings/SettingsComptes'));
 const SettingsDmtgSuccession = lazy(() => import('../pages/settings/SettingsDmtgSuccession'));
 const SettingsPrevoyanceRegimes = lazy(() => import('../pages/settings/PrevoyanceRegimes'));
+const SettingsDesignSystem = lazy(() => import('../pages/settings/SettingsDesignSystem'));
 
 export interface SettingsRouteEntry {
   key: string;
@@ -80,6 +81,14 @@ export const SETTINGS_ROUTES: SettingsRouteEntry[] = [
     component: SettingsPrevoyanceRegimes,
   },
   {
+    key: 'designSystem',
+    label: 'Design system',
+    path: 'design-system',
+    urlPath: '/settings/design-system',
+    component: SettingsDesignSystem,
+    adminOnly: true,
+  },
+  {
     key: 'comptes',
     label: 'Comptes',
     path: 'comptes',
@@ -97,6 +106,7 @@ export function getActiveSettingsKey(pathname: string): string {
   if (pathname.startsWith('/settings/base-contrat')) return 'baseContrats';
   if (pathname.startsWith('/settings/dmtg-succession')) return 'dmtgSuccession';
   if (pathname.startsWith('/settings/prevoyance-regimes')) return 'prevoyanceRegimes';
+  if (pathname.startsWith('/settings/design-system')) return 'designSystem';
   if (pathname.startsWith('/settings/comptes')) return 'comptes';
   return 'general';
 }

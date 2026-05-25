@@ -39,6 +39,13 @@ describe('SettingsComptes garde admin', () => {
     );
   });
 
+  it('masque la route Design system pour les non-admins', () => {
+    expect(getVisibleSettingsRoutes(false).some((route) => route.key === 'designSystem')).toBe(
+      false,
+    );
+    expect(getVisibleSettingsRoutes(true).some((route) => route.key === 'designSystem')).toBe(true);
+  });
+
   it("refuse l'acces direct a la page pour un non-admin", () => {
     useUserRoleMock.mockReturnValue({ isAdmin: false, isLoading: false });
 
