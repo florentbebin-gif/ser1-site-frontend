@@ -418,7 +418,7 @@ export default function SuccessionSimulator() {
   if (settingsLoading) {
     return (
       <SimPageShell
-        title="Simulateur succession"
+        title="Succession"
         subtitle="Estimez les impacts civils d'une succession à partir du contexte familial, du patrimoine et des dispositions saisies."
         pageClassName="sc-page"
         pageTestId="succession-page"
@@ -434,11 +434,10 @@ export default function SuccessionSimulator() {
   return (
     <>
       <SimPageShell
-        title="Simulateur succession"
+        title="Succession"
         subtitle="Estimez les impacts civils d'une succession à partir du contexte familial, du patrimoine et des dispositions saisies."
         pageClassName="sc-page"
         pageTestId="succession-page"
-        mobileSideFirst
         actions={
           <>
             <ModeToggle

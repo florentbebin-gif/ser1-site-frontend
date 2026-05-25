@@ -25,7 +25,7 @@ test.describe('Smoke Tests - Surfaces stables', () => {
     await page.goto(ROUTES.ir);
     await expect(page.locator('body')).not.toContainText('Application error');
     await expect(page.getByTestId('ir-page')).toBeVisible();
-    await expect(page.getByTestId('ir-title')).toContainText("Simulateur d'impôt sur le revenu");
+    await expect(page.getByTestId('ir-title')).toContainText('Impôt sur le revenu');
     await expect(page.getByTestId('ir-mode-btn')).toContainText('Mode expert');
   });
 
@@ -33,7 +33,7 @@ test.describe('Smoke Tests - Surfaces stables', () => {
     await page.goto(ROUTES.credit);
     await expect(page.locator('body')).not.toContainText('Application error');
     await expect(page.getByTestId('credit-page')).toBeVisible();
-    await expect(page.getByTestId('credit-title')).toContainText('Simulateur de crédit');
+    await expect(page.getByTestId('credit-title')).toContainText('Crédit');
 
     const form = page.getByTestId('credit-form-pret0');
     await expect(form).toBeVisible();
@@ -103,7 +103,7 @@ test.describe('Smoke Tests - Surfaces stables', () => {
     await page.goto(ROUTES.succession);
     await expect(page.locator('body')).not.toContainText('Application error');
     await expect(page.getByTestId('succession-page')).toBeVisible();
-    await expect(page.getByRole('heading', { name: 'Simulateur succession' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Succession' })).toBeVisible();
   });
 
   test('Settings charge et ouvre une sous-page stable', async ({ page }) => {

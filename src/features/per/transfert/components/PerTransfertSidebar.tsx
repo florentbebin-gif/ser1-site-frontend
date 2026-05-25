@@ -2,7 +2,6 @@ import { useState } from 'react';
 import type { ReactNode } from 'react';
 import { SimInfoButton } from '@/components/ui/sim';
 import {
-  COMPARTMENT_LABELS,
   TYPE_LABELS,
   type BaseCgRetraiteContract,
   type BaseCgRetraiteContractType,
@@ -38,6 +37,14 @@ const euroFormat = new Intl.NumberFormat('fr-FR', {
 });
 
 const euro = (value: number) => euroFormat.format(Math.round(Number.isFinite(value) ? value : 0));
+
+const COMPARTMENT_SHORT_LABELS: Record<PerTransfertResult['compartment'], string> = {
+  C0: 'C0',
+  C1: 'C1',
+  C1_BIS: 'C1 bis',
+  C2: 'C2',
+  C3: 'C3',
+};
 
 export function PerTransfertSidebar({
   result,
@@ -386,7 +393,7 @@ function CompartmentMiniBar({ active }: { active: PerTransfertResult['compartmen
             key={segment}
             className={`per-transfert-mini-bar__segment${segment === active ? ' is-active' : ''}`}
           >
-            {COMPARTMENT_LABELS[segment].split(' ')[0]}
+            {COMPARTMENT_SHORT_LABELS[segment]}
           </span>
         ))}
       </div>

@@ -370,7 +370,7 @@ export default function CreditV2() {
   if (!hydrated) {
     return (
       <SimPageShell
-        title="Simulateur de crédit"
+        title="Crédit"
         subtitle="Simulez les mensualités et le coût global du financement."
         pageClassName="cv-page"
         pageTestId="credit-page"
@@ -399,12 +399,11 @@ export default function CreditV2() {
 
   return (
     <SimPageShell
-      title="Simulateur de crédit"
+      title="Crédit"
       subtitle="Simulez les mensualités et le coût global du financement."
       pageClassName="cv-page"
       pageTestId="credit-page"
       titleTestId="credit-title"
-      mobileSideFirst
       actions={
         <>
           <ModeToggle value={isExpert} onChange={toggleMode} />

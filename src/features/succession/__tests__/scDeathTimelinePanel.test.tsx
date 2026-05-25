@@ -70,7 +70,7 @@ describe('ScDeathTimelinePanel', () => {
     const lastOption = DECES_DANS_X_ANS_OPTIONS[DECES_DANS_X_ANS_OPTIONS.length - 1];
 
     expect(lastOption?.value).toBe(50);
-    expect(markup).toContain('Horizon du deces simule');
+    expect(markup).toContain('Horizon du décès simulé');
     expect(markup).toContain('Dans 50 ans');
   });
 
@@ -79,8 +79,8 @@ describe('ScDeathTimelinePanel', () => {
       <ScDeathTimelinePanel {...buildProps()} showDeathHorizonControl={false} />,
     );
 
-    expect(markup).toContain('Chronologie des deces');
-    expect(markup).not.toContain('Horizon du deces simule');
+    expect(markup).toContain('Chronologie des décès');
+    expect(markup).not.toContain('Horizon du décès simulé');
   });
 
   it('hides the order toggle outside couple scenarios', () => {
@@ -132,7 +132,7 @@ describe('ScDeathTimelinePanel', () => {
 
     expect(markup).toContain('Projection autre assuré');
     expect(markup).toContain('Droits assurance-vie');
-    expect(markup).toContain('Total cumule des droits');
+    expect(markup).toContain('Total cumulé des droits');
     expect(markup).toContain('1 090');
   });
 
@@ -189,11 +189,11 @@ describe('ScDeathTimelinePanel', () => {
       />,
     );
 
-    expect(markup).toContain('part 1er deces');
+    expect(markup).toContain('part 1er décès');
     expect(markup).toContain('part survivant');
-    expect(markup).toContain('Preciput applique');
-    expect(markup).toContain('Creance de participation');
-    expect(markup).toContain('Creances entre masses appliquees');
+    expect(markup).toContain('Préciput appliqué');
+    expect(markup).toContain('Créance de participation');
+    expect(markup).toContain('Créances entre masses appliquées');
     expect(markup).toContain('Passif affecte rattache');
   });
 });

@@ -133,6 +133,10 @@ vi.mock('@/utils/cache/prevoyanceSettingsCache', () => ({
   getPrevoyanceMaintienEmployeurSettings: vi.fn(async () => maintien),
 }));
 
+vi.mock('@/settings/userMode', () => ({
+  useUserMode: () => ({ mode: 'simplifie', setMode: vi.fn(), isLoading: false }),
+}));
+
 describe('PrevoyancePage', () => {
   beforeEach(() => {
     sessionStorage.clear();
@@ -200,6 +204,21 @@ describe('PrevoyancePage', () => {
       ).toBeInTheDocument(),
     );
     expect(screen.getByLabelText('Revenu imposable à couvrir')).toBeInTheDocument();
+  });
+
+  it('affiche les repères header, un état vide utile et les hypothèses avant saisie complète', async () => {
+    render(<PrevoyancePage />);
+
+    expect(await screen.findByText('Mode expert')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /mode expert indisponible/i })).toBeDisabled();
+    expect(
+      screen.getByText('Renseignez la date de naissance pour afficher la synthèse de garanties.'),
+    ).toBeInTheDocument();
+    expect(screen.queryByRole('heading', { name: 'Arrêt de travail' })).toBeNull();
+    expect(screen.getByRole('button', { name: /HYPOTHÈSES ET LIMITES/i })).toHaveAttribute(
+      'aria-expanded',
+      'false',
+    );
   });
 
   it('charge le parcours TNS par défaut et permet trois contrats en cartes compactes', async () => {

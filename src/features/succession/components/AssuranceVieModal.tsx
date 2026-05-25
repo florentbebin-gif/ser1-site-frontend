@@ -232,8 +232,8 @@ export default function AssuranceVieModal({
               placeholder="Montant"
             />
             <p className="sc-hint sc-hint--compact sc-assurance-vie-contract__hint">
-              Cette part est exclue des bases 990 I et 757 B. Si le cumul avec les versements apres
-              70 ans depasse le capital, le moteur applique un cap avec warning.
+              Cette part est exclue des bases 990 I et 757 B. Si le cumul avec les versements après
+              70 ans dépasse le capital, le moteur applique un cap avec warning.
             </p>
           </div>
         </div>

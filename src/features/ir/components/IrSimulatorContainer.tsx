@@ -369,7 +369,7 @@ export default function IrSimulatorContainer() {
   if (settingsLoading) {
     return (
       <SimPageShell
-        title="Simulateur d'imp&ocirc;t sur le revenu"
+        title="Impôt sur le revenu"
         subtitle="Estimez votre imp&ocirc;t sur le revenu et vos pr&eacute;l&egrave;vements sociaux."
         pageTestId="ir-page"
         headerTestId="ir-header"
@@ -387,12 +387,11 @@ export default function IrSimulatorContainer() {
 
   return (
     <SimPageShell
-      title="Simulateur d'imp&ocirc;t sur le revenu"
+      title="Impôt sur le revenu"
       subtitle="Estimez votre imp&ocirc;t sur le revenu et vos pr&eacute;l&egrave;vements sociaux."
       pageTestId="ir-page"
       headerTestId="ir-header"
       titleTestId="ir-title"
-      mobileSideFirst
       actions={
         <>
           <ModeToggle value={isExpert} onChange={() => toggleMode()} testId="ir-mode-btn" />

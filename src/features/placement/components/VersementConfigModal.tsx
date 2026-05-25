@@ -1,8 +1,9 @@
 /**
- * VersementConfigModal - Modal de parametrage des versements
+ * VersementConfigModal - Modale de paramétrage des versements
  */
 
 import { useEffect, useState } from 'react';
+import { SimModalShell } from '@/components/ui/sim';
 import { ENVELOPE_LABELS } from '@/engine/placement';
 import { DEFAULT_ANNUEL, normalizeVersementConfig } from '@/engine/placement/versementConfig';
 import type {
@@ -342,84 +343,26 @@ export function VersementConfigModal({
   };
 
   return (
-    <div className="vcm-overlay sim-modal-overlay">
-      <div className="vcm sim-modal" data-testid="placement-versements-modal">
-        <div className="vcm__header sim-modal__header">
-          <div className="vcm__header-content sim-modal__header-content">
-            <div className="vcm__icon sim-modal__icon" aria-hidden="true">
-              <LayersIcon />
-            </div>
-            <div>
-              <h2 className="vcm__title sim-modal__title">Parametrage des versements</h2>
-              <p className="vcm__subtitle sim-modal__subtitle">{envelopeLabels[envelope]}</p>
-            </div>
-          </div>
-
-          <button
-            type="button"
-            className="vcm__close sim-modal__close"
-            onClick={onClose}
-            aria-label="Fermer la modale"
-            data-testid="placement-versements-close"
-          >
-            <XIcon />
-          </button>
-        </div>
-
-        <div className="vcm__body sim-modal__body">
-          {isAV ? (
-            <div className="vcm__hint vcm__hint--spaced">
-              Hypothese : investissement 100 % unites de compte - prelevements sociaux dus au
-              rachat.
-            </div>
-          ) : null}
-
-          <VersementInitialSection
-            initial={draft.initial}
-            capitalisation={draft.capitalisation}
-            distribution={draft.distribution}
-            isSCPI={isSCPI}
-            isCTO={isCTO}
-            isPER={isPER}
-            isExpert={isExpert}
-            showCapiBlock={showCapiBlock}
-            showDistribBlock={showDistribBlock}
-            onUpdateInitial={updateInitial}
-            onUpdateInitialAlloc={updateInitialAlloc}
-            onUpdateCapitalisation={updateCapitalisation}
-            onUpdateDistribution={updateDistribution}
-            deductionInitiale={draft.deductionInitiale}
-            onUpdateDeductionInitiale={updateDeductionInitiale}
-          />
-
-          <VersementAnnualSection
-            active={hasAnnualSection}
-            annuel={draft.annuel}
-            isPER={isPER}
-            isSCPI={isSCPI}
-            isExpert={isExpert}
-            onAddAnnual={addAnnual}
-            onRemoveAnnual={removeAnnual}
-            onUpdateAnnuel={updateAnnuel}
-            onUpdateAnnuelAlloc={updateAnnuelAlloc}
-            onUpdateAnnuelOption={updateAnnuelOption}
-          />
-
-          {isExpert && (
-            <VersementPonctuelsSection
-              ponctuels={draft.ponctuels}
-              dureeEpargne={dureeEpargne}
-              isSCPI={isSCPI}
-              onAddPonctuel={addPonctuel}
-              onUpdatePonctuel={updatePonctuel}
-              onUpdatePonctuelAlloc={updatePonctuelAlloc}
-              onRemovePonctuel={removePonctuel}
-              RemoveIcon={XIcon}
-            />
-          )}
-        </div>
-
-        <div className="vcm__footer sim-modal__footer">
+    <SimModalShell
+      title="Paramétrage des versements"
+      subtitle={envelopeLabels[envelope]}
+      icon={<LayersIcon />}
+      onClose={onClose}
+      closeLabel="Fermer la modale"
+      overlayClassName="vcm-overlay"
+      modalClassName="vcm"
+      headerClassName="vcm__header"
+      headerContentClassName="vcm__header-content"
+      iconClassName="vcm__icon"
+      titleClassName="vcm__title"
+      subtitleClassName="vcm__subtitle"
+      bodyClassName="vcm__body"
+      footerClassName="vcm__footer"
+      closeClassName="vcm__close"
+      modalTestId="placement-versements-modal"
+      closeTestId="placement-versements-close"
+      footer={
+        <>
           <button type="button" className="vcm__btn vcm__btn--secondary" onClick={onClose}>
             Annuler
           </button>
@@ -430,8 +373,58 @@ export function VersementConfigModal({
           >
             Valider
           </button>
+        </>
+      }
+    >
+      {isAV ? (
+        <div className="vcm__hint vcm__hint--spaced">
+          Hypothèse : investissement 100 % unités de compte - prélèvements sociaux dus au rachat.
         </div>
-      </div>
-    </div>
+      ) : null}
+
+      <VersementInitialSection
+        initial={draft.initial}
+        capitalisation={draft.capitalisation}
+        distribution={draft.distribution}
+        isSCPI={isSCPI}
+        isCTO={isCTO}
+        isPER={isPER}
+        isExpert={isExpert}
+        showCapiBlock={showCapiBlock}
+        showDistribBlock={showDistribBlock}
+        onUpdateInitial={updateInitial}
+        onUpdateInitialAlloc={updateInitialAlloc}
+        onUpdateCapitalisation={updateCapitalisation}
+        onUpdateDistribution={updateDistribution}
+        deductionInitiale={draft.deductionInitiale}
+        onUpdateDeductionInitiale={updateDeductionInitiale}
+      />
+
+      <VersementAnnualSection
+        active={hasAnnualSection}
+        annuel={draft.annuel}
+        isPER={isPER}
+        isSCPI={isSCPI}
+        isExpert={isExpert}
+        onAddAnnual={addAnnual}
+        onRemoveAnnual={removeAnnual}
+        onUpdateAnnuel={updateAnnuel}
+        onUpdateAnnuelAlloc={updateAnnuelAlloc}
+        onUpdateAnnuelOption={updateAnnuelOption}
+      />
+
+      {isExpert && (
+        <VersementPonctuelsSection
+          ponctuels={draft.ponctuels}
+          dureeEpargne={dureeEpargne}
+          isSCPI={isSCPI}
+          onAddPonctuel={addPonctuel}
+          onUpdatePonctuel={updatePonctuel}
+          onUpdatePonctuelAlloc={updatePonctuelAlloc}
+          onRemovePonctuel={removePonctuel}
+          RemoveIcon={XIcon}
+        />
+      )}
+    </SimModalShell>
   );
 }

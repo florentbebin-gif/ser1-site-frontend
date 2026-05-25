@@ -6,6 +6,9 @@
 }
 
 .ts-projection-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
   padding: 8px 20px;
   background: #fff;
   border: 1px solid var(--color-c8);
@@ -22,6 +25,15 @@
 .ts-projection-btn:hover {
   background: color-mix(in srgb, var(--color-c4) 20%, #fff);
   border-color: var(--color-c3);
+}
+
+.ts-accordion-chevron {
+  flex: 0 0 auto;
+  transition: transform 0.2s ease;
+}
+
+.ts-accordion-chevron.is-open {
+  transform: rotate(180deg);
 }
 
 /* ─── Projection drawer ────────────────────────────────────────────────────── */

@@ -9,6 +9,7 @@ import { useState } from 'react';
 
 export function TresoHypotheses() {
   const [open, setOpen] = useState(false);
+  const chevronClass = open ? 'ts-hypotheses__chevron is-open' : 'ts-hypotheses__chevron';
 
   return (
     <div className="ts-hypotheses">
@@ -18,7 +19,21 @@ export function TresoHypotheses() {
         onClick={() => setOpen((v) => !v)}
         aria-expanded={open}
       >
-        {open ? '▼' : '▶'} Hypothèses et limites de la simulation
+        <span>HYPOTHÈSES ET LIMITES</span>
+        <svg
+          width="12"
+          height="12"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          className={chevronClass}
+          aria-hidden="true"
+        >
+          <polyline points="6 9 12 15 18 9" />
+        </svg>
       </button>
 
       {open && (

@@ -3,7 +3,7 @@
  *
  * Structure : SimPageShell avec colonne gauche (saisie) + colonne droite sticky (KPIs).
  * Section basse : projection comptable (drawer), hypothèses.
- * Mode expertOnly tant que le parcours simplifié produit n'est pas défini.
+ * Repère Mode expert affiché ; le parcours simplifié produit reste à définir.
  */
 
 import '@/styles/sim/index.css';
@@ -11,6 +11,7 @@ import './styles/index.css';
 
 import { useCallback, useState } from 'react';
 import { ExportMenu } from '../../components/ExportMenu';
+import { ModeToggle } from '../../components/ModeToggle';
 import { SimPageShell } from '../../components/ui/sim/SimPageShell';
 import { useTheme } from '../../settings/ThemeProvider';
 import { useTresorerieState } from './hooks/useTresorerieState';
@@ -62,6 +63,10 @@ export default function TresorerieSocietePage() {
   // Garde anti-flash : ne pas rendre avant l'hydration sessionStorage
   if (!hydrated) return null;
 
+  const projectionChevronClass = state.projectionVisible
+    ? 'ts-accordion-chevron is-open'
+    : 'ts-accordion-chevron';
+
   return (
     <SimPageShell
       title="Trésorerie société"
@@ -76,7 +81,16 @@ export default function TresorerieSocietePage() {
           </p>
         ) : undefined
       }
-      actions={<ExportMenu options={exportOptions} loading={exportLoading} />}
+      actions={
+        <>
+          <ModeToggle
+            value
+            disabled
+            disabledReason="Mode expert affiché comme repère : le parcours simplifié reste à définir."
+          />
+          <ExportMenu options={exportOptions} loading={exportLoading} />
+        </>
+      }
     >
       <SimPageShell.Main>
         {/* Bloc 1 — Société */}
@@ -113,9 +127,25 @@ export default function TresorerieSocietePage() {
             aria-expanded={state.projectionVisible}
             data-testid="ts-open-projection"
           >
-            {state.projectionVisible
-              ? '▲ Masquer la projection comptable'
-              : '▼ Voir la projection comptable'}
+            <svg
+              width="13"
+              height="13"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className={projectionChevronClass}
+              aria-hidden="true"
+            >
+              <polyline points="6 9 12 15 18 9" />
+            </svg>
+            <span>
+              {state.projectionVisible
+                ? 'Masquer la projection comptable'
+                : 'Voir la projection comptable'}
+            </span>
           </button>
         </div>
 
@@ -141,7 +171,13 @@ export default function TresorerieSocietePage() {
             <TresoAssociateInsights inputs={state.inputsV6} rows={rows} />
             <TresoKPISidebar kpis={kpis} inputs={state.inputsV6} />
           </>
-        ) : null}
+        ) : (
+          <div className="premium-card sim-summary-card sim-sidebar-empty-state">
+            <h2>Synthèse</h2>
+            <p>Complétez la société et l’associé personne physique pour afficher la synthèse.</p>
+            <span>Les repères de trésorerie, revenu cible et CCA seront calculés ensuite.</span>
+          </div>
+        )}
       </SimPageShell.Side>
     </SimPageShell>
   );

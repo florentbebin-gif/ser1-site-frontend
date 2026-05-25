@@ -83,12 +83,11 @@ export default function PlacementSimulatorPage() {
   if (error) {
     return (
       <SimPageShell
-        title="Projeter un placement"
+        title="Placement"
         subtitle="Épargne → Liquidation → Transmission"
         pageClassName="pl-page"
         pageTestId="placement-page"
         titleTestId="placement-title"
-        mobileSideFirst
         actions={
           <>
             <ModeToggle value={isExpert} onChange={toggleMode} testId="placement-mode-btn" />
@@ -104,12 +103,11 @@ export default function PlacementSimulatorPage() {
   return (
     <>
       <SimPageShell
-        title="Projeter un placement"
+        title="Placement"
         subtitle="Épargne → Liquidation → Transmission"
         pageClassName="pl-page"
         pageTestId="placement-page"
         titleTestId="placement-title"
-        mobileSideFirst
         actions={
           <>
             <ModeToggle value={isExpert} onChange={toggleMode} testId="placement-mode-btn" />

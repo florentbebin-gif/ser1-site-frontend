@@ -19,15 +19,14 @@
 }
 
 @media (max-width: 980px) {
-  .sc-dispositions-modal__body {
+  .sc-dispositions-modal__layout {
     grid-template-columns: 1fr;
   }
 
-  .sc-dispositions-modal__section--testament {
-    padding-left: 0;
-    border-left: none;
-    border-top: 1px solid color-mix(in srgb, var(--color-c8) 72%, #ffffff);
-    padding-top: 18px;
+  .sc-dispositions-modal__nav {
+    position: static;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .sc-testament-grid {

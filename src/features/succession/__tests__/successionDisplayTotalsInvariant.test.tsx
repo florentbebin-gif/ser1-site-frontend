@@ -135,7 +135,7 @@ function extractSummaryHeroValue(markup: string): string | undefined {
 
 function extractChronologyTotal(markup: string): string | undefined {
   return markup.match(
-    /<div class="sc-chrono-total"><span>Total cumule des droits<\/span><strong>([^<]+)<\/strong><\/div>/,
+    /<div class="sc-chrono-total"><span>Total cumulé des droits<\/span><strong>([^<]+)<\/strong><\/div>/,
   )?.[1];
 }
 

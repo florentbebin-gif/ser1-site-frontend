@@ -22,7 +22,7 @@ export function PerHypotheses() {
         onClick={() => setOpen((prev) => !prev)}
         aria-expanded={open}
       >
-        <span className="per-hypotheses__title">Hypothèses et limites</span>
+        <span className="per-hypotheses__title">HYPOTHÈSES ET LIMITES</span>
         <svg
           width="12"
           height="12"

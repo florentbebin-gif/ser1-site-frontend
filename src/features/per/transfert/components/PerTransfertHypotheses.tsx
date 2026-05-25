@@ -12,7 +12,7 @@ export function PerTransfertHypotheses() {
         onClick={() => setOpen((current) => !current)}
         aria-expanded={open}
       >
-        <span className="per-transfert-hypotheses__title">Hypothèses et limites</span>
+        <span className="per-transfert-hypotheses__title">HYPOTHÈSES ET LIMITES</span>
         <svg
           viewBox="0 0 12 8"
           className={`per-transfert-hypotheses__chevron${open ? ' is-open' : ''}`}

@@ -18,7 +18,7 @@ export function SuccessionHypotheses({
         aria-expanded={hypothesesOpen}
         data-testid="succession-hypotheses-toggle"
       >
-        <span className="sc-hypotheses__title">Hypotheses et limites</span>
+        <span className="sc-hypotheses__title">HYPOTHÈSES ET LIMITES</span>
         <svg
           width="12"
           height="12"

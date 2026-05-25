@@ -26,6 +26,15 @@ import type { ScSelectOption } from './ScSelect';
 import { DispositionsCommonSection } from './DispositionsCommonSection';
 import { DispositionsTestamentSection } from './DispositionsTestamentSection';
 
+type DispositionsPanel = 'transmission' | 'claims' | 'preciput' | 'testament';
+
+const DISPOSITIONS_PANELS: Array<{ id: DispositionsPanel; label: string }> = [
+  { id: 'transmission', label: 'Transmission' },
+  { id: 'claims', label: 'Récompenses / créances' },
+  { id: 'preciput', label: 'Préciput' },
+  { id: 'testament', label: 'Testament' },
+];
+
 function formatPreciputAmount(value: number): string {
   return new Intl.NumberFormat('fr-FR', {
     style: 'currency',
@@ -107,6 +116,7 @@ export default function DispositionsModal({
   onValidate,
 }: DispositionsModalProps) {
   const [pendingPreciputCandidateKey, setPendingPreciputCandidateKey] = useState('');
+  const [activePanel, setActivePanel] = useState<DispositionsPanel>('transmission');
 
   const preciputEligiblePocket = useMemo(
     () =>
@@ -285,6 +295,40 @@ export default function DispositionsModal({
     }));
   };
 
+  const preciputConfiguratorProps = {
+    dispositionsDraft,
+    setDispositionsDraft,
+    pendingPreciputCandidateKey,
+    setPendingPreciputCandidateKey,
+    preciputCandidateOptions,
+    preciputCandidatesByKey,
+    preciputScopeLabel,
+    syncedPreciputSelections,
+    onAddPreciputSelection: addPreciputSelection,
+    onUpdatePreciputSelection: updatePreciputSelection,
+    onRemovePreciputSelection: removePreciputSelection,
+  };
+
+  const commonSectionProps = {
+    dispositionsDraft,
+    setDispositionsDraft,
+    showSharedTransmissionPct,
+    isPacsIndivision,
+    showDonationEntreEpoux,
+    nbDescendantBranches,
+    nbEnfantsNonCommuns,
+    isCommunityRegime,
+    isSocieteAcquetsRegime,
+    isParticipationAcquetsRegime,
+    isCommunauteUniverselleRegime,
+    isCommunauteMeublesAcquetsRegime,
+    interMassClaimPocketOptions: assetPocketOptions,
+    onAddInterMassClaim: addInterMassClaim,
+    onUpdateInterMassClaim: updateInterMassClaim,
+    onRemoveInterMassClaim: removeInterMassClaim,
+    preciputConfiguratorProps,
+  };
+
   return (
     <SimModalShell
       title="Dispositions particulières"
@@ -316,53 +360,56 @@ export default function DispositionsModal({
         </>
       }
     >
-      <DispositionsCommonSection
-        dispositionsDraft={dispositionsDraft}
-        setDispositionsDraft={setDispositionsDraft}
-        showSharedTransmissionPct={showSharedTransmissionPct}
-        isPacsIndivision={isPacsIndivision}
-        showDonationEntreEpoux={showDonationEntreEpoux}
-        nbDescendantBranches={nbDescendantBranches}
-        nbEnfantsNonCommuns={nbEnfantsNonCommuns}
-        isCommunityRegime={isCommunityRegime}
-        isSocieteAcquetsRegime={isSocieteAcquetsRegime}
-        isParticipationAcquetsRegime={isParticipationAcquetsRegime}
-        isCommunauteUniverselleRegime={isCommunauteUniverselleRegime}
-        isCommunauteMeublesAcquetsRegime={isCommunauteMeublesAcquetsRegime}
-        interMassClaimPocketOptions={assetPocketOptions}
-        onAddInterMassClaim={addInterMassClaim}
-        onUpdateInterMassClaim={updateInterMassClaim}
-        onRemoveInterMassClaim={removeInterMassClaim}
-        preciputConfiguratorProps={{
-          dispositionsDraft,
-          setDispositionsDraft,
-          pendingPreciputCandidateKey,
-          setPendingPreciputCandidateKey,
-          preciputCandidateOptions,
-          preciputCandidatesByKey,
-          preciputScopeLabel,
-          syncedPreciputSelections,
-          onAddPreciputSelection: addPreciputSelection,
-          onUpdatePreciputSelection: updatePreciputSelection,
-          onRemovePreciputSelection: removePreciputSelection,
-        }}
-      />
+      <div className="sc-dispositions-modal__layout">
+        <nav className="sc-dispositions-modal__nav" aria-label="Sections des dispositions">
+          {DISPOSITIONS_PANELS.map((panel) => (
+            <button
+              key={panel.id}
+              type="button"
+              className={`sc-dispositions-modal__nav-item${
+                activePanel === panel.id ? ' is-active' : ''
+              }`}
+              onClick={() => setActivePanel(panel.id)}
+              aria-current={activePanel === panel.id ? 'step' : undefined}
+              aria-controls={`sc-dispositions-panel-${panel.id}`}
+            >
+              {panel.label}
+            </button>
+          ))}
+        </nav>
 
-      <DispositionsTestamentSection
-        dispositionsDraft={dispositionsDraft}
-        setDispositionsDraft={setDispositionsDraft}
-        testamentSides={testamentSides}
-        testamentBeneficiaryOptionsBySide={testamentBeneficiaryOptionsBySide}
-        descendantBranchesBySide={descendantBranchesBySide}
-        enfantsContext={enfantsContext}
-        familyMembers={familyMembers}
-        civilSituation={civilSituation}
-        updateDispositionsTestament={updateDispositionsTestament}
-        getFirstTestamentBeneficiaryRef={getFirstTestamentBeneficiaryRef}
-        onAddParticularLegacy={onAddParticularLegacy}
-        onUpdateParticularLegacy={onUpdateParticularLegacy}
-        onRemoveParticularLegacy={onRemoveParticularLegacy}
-      />
+        <div id={`sc-dispositions-panel-${activePanel}`} className="sc-dispositions-modal__panel">
+          {activePanel === 'transmission' ? (
+            <DispositionsCommonSection panel="transmission" {...commonSectionProps} />
+          ) : null}
+
+          {activePanel === 'claims' ? (
+            <DispositionsCommonSection panel="claims" {...commonSectionProps} />
+          ) : null}
+
+          {activePanel === 'preciput' ? (
+            <DispositionsCommonSection panel="preciput" {...commonSectionProps} />
+          ) : null}
+
+          {activePanel === 'testament' ? (
+            <DispositionsTestamentSection
+              dispositionsDraft={dispositionsDraft}
+              setDispositionsDraft={setDispositionsDraft}
+              testamentSides={testamentSides}
+              testamentBeneficiaryOptionsBySide={testamentBeneficiaryOptionsBySide}
+              descendantBranchesBySide={descendantBranchesBySide}
+              enfantsContext={enfantsContext}
+              familyMembers={familyMembers}
+              civilSituation={civilSituation}
+              updateDispositionsTestament={updateDispositionsTestament}
+              getFirstTestamentBeneficiaryRef={getFirstTestamentBeneficiaryRef}
+              onAddParticularLegacy={onAddParticularLegacy}
+              onUpdateParticularLegacy={onUpdateParticularLegacy}
+              onRemoveParticularLegacy={onRemoveParticularLegacy}
+            />
+          ) : null}
+        </div>
+      </div>
     </SimModalShell>
   );
 }

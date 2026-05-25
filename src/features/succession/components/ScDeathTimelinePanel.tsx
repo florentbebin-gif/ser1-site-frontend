@@ -156,7 +156,7 @@ export default function ScDeathTimelinePanel({
               <line x1="3" y1="10" x2="21" y2="10" />
             </svg>
           </div>
-          <h2 className="sc-summary-title">Chronologie des deces</h2>
+          <h2 className="sc-summary-title">Chronologie des décès</h2>
         </div>
         {showOrderToggle && (
           <div className="sc-pill-toggle">
@@ -174,7 +174,7 @@ export default function ScDeathTimelinePanel({
         <>
           <div className="sc-card__divider sc-card__divider--tight" />
           <div className="sc-field sc-field--timeline-select">
-            <label htmlFor="sc-death-timeline-horizon">Horizon du deces simule</label>
+            <label htmlFor="sc-death-timeline-horizon">Horizon du décès simulé</label>
             <ScSelect
               id="sc-death-timeline-horizon"
               value={String(decesDansXAns)}
@@ -194,9 +194,9 @@ export default function ScDeathTimelinePanel({
         <div className="sc-chrono-list">
           <div className="sc-chrono-item">
             <div className="sc-chrono-item__header">
-              <strong className="sc-chrono-item__title">Etape 1</strong>
+              <strong className="sc-chrono-item__title">Étape 1</strong>
               <span className="sc-chrono-item__meta">
-                Deces {chainageAnalysis.firstDecedeLabel}
+                Décès {chainageAnalysis.firstDecedeLabel}
               </span>
             </div>
             <div className="sc-summary-row">
@@ -213,18 +213,18 @@ export default function ScDeathTimelinePanel({
             {societeAcquets && societeAcquets.totalValue > 0 && (
               <>
                 <div className="sc-summary-row">
-                  <span>Societe d'acquets - part 1er deces</span>
+                  <span>Société d'acquêts - part 1er décès</span>
                   <strong>{fmt(societeAcquets.firstEstateContribution)}</strong>
                 </div>
                 {societeAcquets.preciputAmount > 0 && (
                   <div className="sc-summary-row">
-                    <span>Preciput sur societe d'acquets</span>
+                    <span>Préciput sur société d'acquêts</span>
                     <strong>{fmt(societeAcquets.preciputAmount)}</strong>
                   </div>
                 )}
                 {societeAcquets.survivorAttributionAmount > 0 && (
                   <div className="sc-summary-row">
-                    <span>Attribution prealable au survivant</span>
+                    <span>Attribution préalable au survivant</span>
                     <strong>{fmt(societeAcquets.survivorAttributionAmount)}</strong>
                   </div>
                 )}
@@ -233,7 +233,7 @@ export default function ScDeathTimelinePanel({
             {preciput && preciput.appliedAmount > 0 && (
               <>
                 <div className="sc-summary-row">
-                  <span>Preciput applique</span>
+                  <span>Préciput appliqué</span>
                   <strong>{fmt(preciput.appliedAmount)}</strong>
                 </div>
                 {preciput.selections.map((selection) => (
@@ -246,14 +246,14 @@ export default function ScDeathTimelinePanel({
             )}
             {participationAcquets?.active && participationAcquets.creanceAmount > 0 && (
               <div className="sc-summary-row">
-                <span>Creance de participation</span>
+                <span>Créance de participation</span>
                 <strong>{fmt(participationAcquets.creanceAmount)}</strong>
               </div>
             )}
             {interMassClaims && interMassClaims.totalAppliedAmount > 0 && (
               <>
                 <div className="sc-summary-row">
-                  <span>Creances entre masses appliquees</span>
+                  <span>Créances entre masses appliquées</span>
                   <strong>{fmt(interMassClaims.totalAppliedAmount)}</strong>
                 </div>
                 {interMassClaims.claims
@@ -310,9 +310,9 @@ export default function ScDeathTimelinePanel({
 
           <div className="sc-chrono-item">
             <div className="sc-chrono-item__header">
-              <strong className="sc-chrono-item__title">Etape 2</strong>
+              <strong className="sc-chrono-item__title">Étape 2</strong>
               <span className="sc-chrono-item__meta">
-                Deces {chainageAnalysis.secondDecedeLabel}
+                Décès {chainageAnalysis.secondDecedeLabel}
               </span>
             </div>
             <div className="sc-summary-row">
@@ -328,7 +328,7 @@ export default function ScDeathTimelinePanel({
             </div>
             {societeAcquets && societeAcquets.totalValue > 0 && (
               <div className="sc-summary-row">
-                <span>Societe d'acquets - part survivant</span>
+                <span>Société d'acquêts - part survivant</span>
                 <strong>{fmt(societeAcquets.survivorShare)}</strong>
               </div>
             )}
@@ -363,13 +363,13 @@ export default function ScDeathTimelinePanel({
           </div>
 
           <div className="sc-chrono-total">
-            <span>Total cumule des droits</span>
+            <span>Total cumulé des droits</span>
             <strong>{fmt(displayTotals.droitsChronologie)}</strong>
           </div>
           {societeAcquets && societeAcquets.totalValue > 0 && (
             <div className="sc-chrono-total">
               <span>
-                Societe d'acquets{' '}
+                Société d'acquêts{' '}
                 {societeAcquets.liquidationMode === 'attribution_survivant'
                   ? '(attribution)'
                   : '(quotes)'}
@@ -387,7 +387,7 @@ export default function ScDeathTimelinePanel({
           )}
           {interMassClaims && interMassClaims.totalAppliedAmount > 0 && (
             <div className="sc-chrono-total">
-              <span>Creances entre masses</span>
+              <span>Créances entre masses</span>
               <strong>{fmt(interMassClaims.totalAppliedAmount)}</strong>
             </div>
           )}
@@ -404,7 +404,7 @@ export default function ScDeathTimelinePanel({
             <div className="sc-chrono-item__header">
               <strong className="sc-chrono-item__title">Succession directe</strong>
               <span className="sc-chrono-item__meta">
-                {isPacsed ? 'Deces du partenaire simule' : 'Deces du/de la defunt(e) simule(e)'}
+                {isPacsed ? 'Décès du partenaire simulé' : 'Décès du/de la défunt(e) simulé(e)'}
               </span>
             </div>
             <div className="sc-summary-row">
@@ -479,7 +479,7 @@ export default function ScDeathTimelinePanel({
             </div>
           )}
           <div className="sc-chrono-total">
-            <span>Total cumule des droits</span>
+            <span>Total cumulé des droits</span>
             <strong>{fmt(displayTotals.droitsChronologie)}</strong>
           </div>
         </div>

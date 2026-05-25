@@ -22,10 +22,6 @@
 }
 
 @media (max-width: 900px) {
-  .ts-kpi-sidebar {
-    order: -1;
-  }
-
   .ts-company-snapshot,
   .ts-pocket-board,
   .ts-associate-modal-layout,

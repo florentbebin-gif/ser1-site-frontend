@@ -157,7 +157,7 @@ export function PerTransfertSimulator() {
   return (
     <>
       <SimPageShell
-        title="Transfert épargne retraite"
+        title="PER — Transfert"
         subtitle="Auditer le contrat actuel, simuler le transfert immédiat vers un PER et comparer rente/capital."
         loading={loading || catalogLoading}
         error={error}
@@ -174,7 +174,6 @@ export function PerTransfertSimulator() {
           <PerTransfertWizardSteps step={step} step1Done={step1Done} onStepChange={setStep} />
         }
         pageClassName="per-transfert-page"
-        mobileSideFirst
       >
         <SimPageShell.Main>
           {step === 'contrat' ? (

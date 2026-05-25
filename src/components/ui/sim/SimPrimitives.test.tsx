@@ -54,6 +54,9 @@ describe('SimModalShell', () => {
     );
 
     expect(html).toContain('sim-modal-overlay');
+    expect(html).toContain('role="dialog"');
+    expect(html).toContain('aria-modal="true"');
+    expect(html).toContain('aria-labelledby=');
     expect(html).toContain('sim-modal__header');
     expect(html).toContain('Configurer');
     expect(html).toContain('Paramètres avancés');

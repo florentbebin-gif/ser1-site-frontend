@@ -9,6 +9,10 @@
 
 .ts-hypotheses__toggle {
   width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
   padding: 10px 14px;
   background: var(--color-c7);
   border: none;
@@ -17,6 +21,15 @@
   font-size: 12px;
   font-weight: 500;
   color: var(--color-c9);
+}
+
+.ts-hypotheses__chevron {
+  flex: 0 0 auto;
+  transition: transform 0.2s ease;
+}
+
+.ts-hypotheses__chevron.is-open {
+  transform: rotate(180deg);
 }
 
 .ts-hypotheses__toggle:hover {

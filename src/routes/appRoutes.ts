@@ -237,7 +237,7 @@ export const APP_ROUTES: AppRouteEntry[] = [
     path: '/sim/ir',
     component: Ir,
     lazy: true,
-    contextLabel: 'Impôt',
+    contextLabel: 'Impôt sur le revenu',
     topbar: { ...SIM_TOPBAR, resetKey: 'ir' },
   },
 

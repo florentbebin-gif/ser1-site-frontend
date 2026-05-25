@@ -280,6 +280,25 @@ describe('PerTransfertSidebar', () => {
     expect(html).toContain('Max capital');
     expect(html).toContain('Tout rente');
   });
+
+  it('affiche le segment C1 bis sans le réduire à C1', () => {
+    const html = renderToStaticMarkup(
+      <PerTransfertSidebar
+        result={makeResult({ compartment: 'C1_BIS' })}
+        selectedContract={null}
+        typeContrat="MADELIN"
+        subscriptionDate=""
+        step2Done
+        horizonAgeShort={80}
+        horizonAgeLong={90}
+        onHorizonChange={vi.fn()}
+        onOpenQuotientInfo={vi.fn()}
+        onOpenFractionalInfo={vi.fn()}
+      />,
+    );
+
+    expect(html).toContain('C1 bis');
+  });
 });
 
 describe('TransferRulesInfoModal', () => {
@@ -459,7 +478,7 @@ describe('PerTransfertPrefonPocketsForm', () => {
 describe('PerTransfertHypotheses', () => {
   it('mentionne la vérification obligatoire des informations Base CG auprès de la compagnie', async () => {
     render(<PerTransfertHypotheses />);
-    await userEvent.click(screen.getByRole('button', { name: /Hypothèses et limites/ }));
+    await userEvent.click(screen.getByRole('button', { name: /HYPOTHÈSES ET LIMITES/ }));
 
     expect(
       screen.getByText(/Base CG indicative.*aide interne au devoir de conseil/i),

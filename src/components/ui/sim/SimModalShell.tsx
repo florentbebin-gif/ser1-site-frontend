@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import { useId, type ReactNode } from 'react';
 
 interface SimModalShellProps {
   title: ReactNode;
@@ -18,6 +18,9 @@ interface SimModalShellProps {
   bodyClassName?: string;
   footerClassName?: string;
   closeClassName?: string;
+  titleId?: string;
+  modalTestId?: string;
+  closeTestId?: string;
 }
 
 function joinClasses(...classes: Array<string | false | null | undefined>) {
@@ -50,17 +53,31 @@ export function SimModalShell({
   bodyClassName,
   footerClassName,
   closeClassName,
+  titleId,
+  modalTestId,
+  closeTestId,
 }: SimModalShellProps) {
+  const generatedTitleId = useId();
+  const resolvedTitleId = titleId ?? generatedTitleId;
+
   return (
     <div className={joinClasses('sim-modal-overlay', overlayClassName)}>
-      <div className={joinClasses('sim-modal', modalClassName)}>
+      <div
+        className={joinClasses('sim-modal', modalClassName)}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={resolvedTitleId}
+        data-testid={modalTestId}
+      >
         <div className={joinClasses('sim-modal__header', headerClassName)}>
           <div className={joinClasses('sim-modal__header-content', headerContentClassName)}>
             {icon ? (
               <div className={joinClasses('sim-modal__icon', iconClassName)}>{icon}</div>
             ) : null}
             <div>
-              <h2 className={joinClasses('sim-modal__title', titleClassName)}>{title}</h2>
+              <h2 id={resolvedTitleId} className={joinClasses('sim-modal__title', titleClassName)}>
+                {title}
+              </h2>
               {subtitle ? (
                 <p className={joinClasses('sim-modal__subtitle', subtitleClassName)}>{subtitle}</p>
               ) : null}
@@ -73,6 +90,7 @@ export function SimModalShell({
               className={joinClasses('sim-modal__close', closeClassName)}
               onClick={onClose}
               aria-label={closeLabel}
+              data-testid={closeTestId}
             >
               <CloseIcon />
             </button>
