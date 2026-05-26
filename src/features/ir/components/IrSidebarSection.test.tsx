@@ -67,4 +67,13 @@ describe('IrSidebarSection', () => {
     expect(html).toContain('data-testid="ir-tmi-value"');
     expect(html).toContain('data-testid="ir-irnet-value"');
   });
+
+  it('affiche une synthèse en attente quand aucun revenu significatif n’est saisi', () => {
+    const html = renderSidebar({ hasSituation: false });
+
+    expect(html).toContain('Synthèse en attente');
+    expect(html).toContain('Renseignez au moins un revenu imposable');
+    expect(html).toContain('sim-empty-state--sidebar');
+    expect(html).not.toContain('data-testid="ir-results-card"');
+  });
 });

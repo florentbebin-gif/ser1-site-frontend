@@ -7,8 +7,9 @@ export function PerTransfertFraisInfoModal({ onClose }: { onClose: () => void })
       title="Frais de transfert sortant"
       subtitle="Règle à contrôler selon la famille du contrat"
       onClose={onClose}
+      bodyClassName="sim-info-modal-content"
     >
-      <ul className="per-transfert-modal-list">
+      <ul className="sim-info-modal-content__list">
         {TRANSFER_FEE_REGULATION_LINES.map((line) => (
           <li key={line.title}>
             <strong>{line.title}</strong>
@@ -16,7 +17,7 @@ export function PerTransfertFraisInfoModal({ onClose }: { onClose: () => void })
           </li>
         ))}
       </ul>
-      <p className="per-transfert-modal-note">
+      <p className="sim-info-modal-content__note">
         La valeur saisie dans le simulateur est appliquée au capital acquis avant le transfert.
       </p>
     </SimModalShell>

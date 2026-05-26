@@ -1,19 +1,6 @@
 ﻿/* ----------------------------------------
    SUMMARY CARD (sticky droite)
    ---------------------------------------- */
-/* Wrapper sticky colonne droite â€” solidarise summary + total-mensu */
-.cv-right-col {
-  gap: 12px;
-}
-
-.cv-right-col--placeholder {
-  visibility: hidden;
-}
-
-.cv-right-col__spacer {
-  min-height: 1px;
-}
-
 .cv-right-col--simple {
   align-self: stretch;
 }
@@ -105,7 +92,7 @@
   margin-top: var(--space-2);
 }
 
-/* SÃ©parateur entre KPI et lignes de coÃ»t â€” gradient symÃ©trique (style settings) */
+/* Séparateur entre KPI et lignes de coût. */
 .cv-summary__divider {
   margin: 4px 0 8px;
 }

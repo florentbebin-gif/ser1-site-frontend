@@ -117,8 +117,23 @@ describe('SituationFiscaleStep', () => {
     expect(html).toContain('contribue à 6QS / 6QT');
     expect(html).toContain('nécessaire pour le calcul de l');
     expect(html).toContain('Afficher le détail des enveloppes Madelin 154 bis');
-    expect(html).toContain('sim-action-btn--edit');
-    expect(html).not.toContain('per-info-btn');
+    expect(html).toContain('sim-info-btn');
+    expect(html).not.toContain('sim-action-btn--edit');
+  });
+
+  it('guide le parcours PER 154 bis quand TNS n’est pas actif', () => {
+    const html = renderToStaticMarkup(
+      <SituationFiscaleStep
+        {...baseProps}
+        variant="versements-n"
+        showFoyerCard={false}
+        showIncomeCard={false}
+      />,
+    );
+
+    expect(html).toContain('PER 154 bis');
+    expect(html).toContain('activez la projection de l’année en cours');
+    expect(html).toContain('activez TNS');
   });
 
   it('builds a global TNS toggle patch for the whole foyer', () => {

@@ -394,6 +394,20 @@ describe('SimEmptyState', () => {
     expect(html).toContain('Complétez les champs');
     expect(html).toContain('Compléter');
   });
+
+  it('rend une variante compacte pour les sidebars de synthèse', () => {
+    const html = renderToStaticMarkup(
+      <SimEmptyState
+        variant="sidebar"
+        illustration="docs"
+        title="Synthèse en attente"
+        description="Complétez les prérequis."
+      />,
+    );
+
+    expect(html).toContain('sim-empty-state--sidebar');
+    expect(html).toContain('Synthèse en attente');
+  });
 });
 
 describe('SimSparkline', () => {

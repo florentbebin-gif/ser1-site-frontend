@@ -148,7 +148,7 @@ export function CreditSummaryCard({
         <SummaryDonut capital={capitalEmprunte} interets={totalInterets} />
       </div>
 
-      <div className="cv-summary__divider sim-divider sim-divider--tight" />
+      <div className="cv-summary__divider sim-divider sim-divider--solid" />
 
       <div className="cv-summary__rows">
         {isExpert && (
@@ -176,7 +176,7 @@ export function CreditSummaryCard({
 
       {lisserPret1 && (diffDureesMois !== 0 || lissageCoutDelta !== 0) && (
         <>
-          <div className="cv-loan-card__divider cv-loan-card__divider--tight sim-divider sim-divider--tight" />
+          <div className="cv-loan-card__divider cv-loan-card__divider--tight sim-divider sim-divider--soft" />
           <div className="cv-summary__lissage-info">
             {diffDureesMois !== 0 && (
               <div className="cv-summary__row">

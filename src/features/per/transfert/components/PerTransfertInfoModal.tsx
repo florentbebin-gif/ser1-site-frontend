@@ -69,17 +69,16 @@ export function PerTransfertInfoModal({ kind, onClose }: PerTransfertInfoModalPr
       title={content.title}
       subtitle={content.subtitle}
       onClose={onClose}
+      bodyClassName="sim-info-modal-content"
       footer={
         <button type="button" className="sim-modal-btn sim-modal-btn--primary" onClick={onClose}>
           Compris
         </button>
       }
     >
-      <div className="per-transfert-modal-copy">
-        {content.body.map((paragraph) => (
-          <p key={paragraph}>{paragraph}</p>
-        ))}
-      </div>
+      {content.body.map((paragraph) => (
+        <p key={paragraph}>{paragraph}</p>
+      ))}
     </SimModalShell>
   );
 }

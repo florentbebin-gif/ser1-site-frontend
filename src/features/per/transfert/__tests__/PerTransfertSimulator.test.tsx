@@ -10,16 +10,12 @@ import userEvent from '@testing-library/user-event';
 import { PerTransfertSimulator } from '../PerTransfertSimulator';
 import { PerTransfertWizardSteps } from '../components/PerTransfertWizardSteps';
 import { ContractAuditCards } from '../components/ContractAuditCards';
-import { PerTransfertSidebar } from '../components/PerTransfertSidebar';
 import { PerTransfertHypotheses } from '../components/PerTransfertHypotheses';
 import { PerTransfertFraisInfoModal } from '../components/PerTransfertFraisInfoModal';
+import { PerTransfertInfoModal } from '../components/PerTransfertInfoModal';
 import { PerTransfertPrefonPocketsForm } from '../components/PerTransfertPrefonPocketsForm';
+import { RentRevaluationInfoModal } from '../components/RentRevaluationInfoModal';
 import { TransferRulesInfoModal } from '../components/TransferRulesInfoModal';
-import type {
-  PerTransfertCapitalFiscalResult,
-  PerTransfertFiscalResult,
-  PerTransfertResult,
-} from '@/engine/per';
 import type { BaseCgRetraiteContract } from '@/data/base-cg-retraite';
 
 const getBaseCgRetraiteCatalogMock = vi.hoisted(() => vi.fn());
@@ -94,223 +90,13 @@ describe('PerTransfertWizardSteps', () => {
   });
 });
 
-// ——— Résultat minimal pour la synthèse PER transfert ———
-
-function makeFiscalResult(
-  overrides: Partial<PerTransfertFiscalResult> = {},
-): PerTransfertFiscalResult {
-  const grossAnnualRent = overrides.grossAnnualRent ?? overrides.netAnnualRent ?? 0;
-  const socialContributions = overrides.socialContributions ?? 0;
-  const incomeTax = overrides.incomeTax ?? 0;
-  const netOfAllTaxes =
-    overrides.netOfAllTaxes ??
-    overrides.netAnnualRent ??
-    Math.max(0, grossAnnualRent - incomeTax - socialContributions);
-  return {
-    family: 'RVTG',
-    taxableFraction: 1,
-    taxableIncome: grossAnnualRent,
-    grossAnnualRent,
-    netOfSocialContributions:
-      overrides.netOfSocialContributions ?? Math.max(0, grossAnnualRent - socialContributions),
-    netOfAllTaxes,
-    incomeTax,
-    socialContributions,
-    netAnnualRent: netOfAllTaxes,
-    ...overrides,
-  };
-}
-
-function makeCapitalFiscalResult(
-  overrides: Partial<PerTransfertCapitalFiscalResult> = {},
-): PerTransfertCapitalFiscalResult {
-  const capital = overrides.capital ?? 0;
-  const socialContributions = overrides.socialContributions ?? 0;
-  const incomeTax = overrides.incomeTax ?? 0;
-  const netOfAllTaxes =
-    overrides.netOfAllTaxes ??
-    overrides.netIRPS ??
-    Math.max(0, capital - socialContributions - incomeTax);
-  const netOfSocialContributions =
-    overrides.netOfSocialContributions ??
-    overrides.netPS ??
-    Math.max(0, capital - socialContributions);
-  return {
-    available: false,
-    capital,
-    gains: 0,
-    netOfSocialContributions,
-    netOfAllTaxes,
-    netOfAllTaxesWithQuotient: overrides.netOfAllTaxesWithQuotient ?? netOfAllTaxes,
-    incomeTax,
-    incomeTaxAtBareme: overrides.incomeTaxAtBareme ?? incomeTax,
-    incomeTaxWithQuotient: overrides.incomeTaxWithQuotient ?? incomeTax,
-    socialContributions,
-    netPS: netOfSocialContributions,
-    netIRPS: netOfAllTaxes,
-    ...overrides,
-  };
-}
-
-function makeResult(overrides: Partial<PerTransfertResult> = {}): PerTransfertResult {
-  return {
-    compartment: 'C1',
-    currentConversionRate: 0.03,
-    capitalAfterTransfer: 97000,
-    capitalAtLiquidation: 110000,
-    currentRent: {
-      grossAnnualRent: 3000,
-      netAnnualRent: 2200,
-      fiscal: makeFiscalResult({
-        grossAnnualRent: 3000,
-        taxableIncome: 2700,
-        incomeTax: 810,
-        netAnnualRent: 2200,
-      }),
-      cumulativeToShortHorizon: 22000,
-      cumulativeToLongHorizon: 44000,
-    },
-    keepScenario: {
-      capitalAtLiquidation: 97000,
-      currentRent: {
-        grossAnnualRent: 3000,
-        netAnnualRent: 2200,
-        netMonthly: 2200 / 12,
-        fiscal: makeFiscalResult({
-          grossAnnualRent: 3000,
-          taxableIncome: 2700,
-          incomeTax: 810,
-          netAnnualRent: 2200,
-        }),
-        cumulativeToShortHorizon: 22000,
-        cumulativeToLongHorizon: 44000,
-      },
-    },
-    newPerRent: {
-      capitalNet: 110000,
-      annuityFactor: 15,
-      grossAnnualRent: 2800,
-      netAnnualRent: 2400,
-      monthlyRent: 200,
-      apparentRate: 0.025,
-    },
-    newPerFiscal: makeFiscalResult({
-      grossAnnualRent: 2800,
-      taxableIncome: 2520,
-      incomeTax: 756,
-      netAnnualRent: 2400,
-    }),
-    capitalExit: {
-      shareRate: 0,
-      capitalConvertedToRent: 110000,
-      capitalAvailableAtLiquidation: 0,
-      unique: makeCapitalFiscalResult(),
-      shortHorizon: {
-        horizonAge: 80,
-        years: 16,
-        annualWithdrawal: 0,
-        annualNetWithdrawal: 0,
-        cumulativeWithdrawals: 0,
-        cumulativeNetWithdrawals: 0,
-        residualCapital: 0,
-      },
-      longHorizon: {
-        horizonAge: 90,
-        years: 26,
-        annualWithdrawal: 0,
-        annualNetWithdrawal: 0,
-        cumulativeWithdrawals: 0,
-        cumulativeNetWithdrawals: 0,
-        residualCapital: 0,
-      },
-      withoutWithdrawalToLongHorizon: 0,
-    },
-    smallAnnuityCapitalExitEligible: false,
-    warnings: [],
-    ...overrides,
-  };
-}
-
-describe('PerTransfertSidebar', () => {
-  it('affiche quatre oppositions sans sélecteur de sortie', () => {
-    const html = renderToStaticMarkup(
-      <PerTransfertSidebar
-        result={makeResult()}
-        selectedContract={null}
-        typeContrat="MADELIN"
-        subscriptionDate=""
-        step2Done
-        horizonAgeShort={80}
-        horizonAgeLong={90}
-        onHorizonChange={vi.fn()}
-        onOpenQuotientInfo={vi.fn()}
-        onOpenFractionalInfo={vi.fn()}
-      />,
-    );
-
-    expect(html).not.toContain('Type de sortie à comparer');
-    expect(html).toContain('Contrat actuel');
-    expect(html).toContain('Nouveau PER');
-    expect(html).toContain('Rente');
-    expect(html).toContain('Capital unique');
-    expect(html).toContain('Capital fractionné court');
-    expect(html).toContain('Capital fractionné long');
-    expect(html).toContain('Net de PS + IR');
-    expect(html).toContain('sim-metric--inline');
-    expect(html).toContain('sim-status-badge--optimal');
-    expect(html).toContain('Scénario cible');
-    expect(html).toContain('Points d’attention');
-    expect(html).not.toContain('per-transfert-compare2__row');
-    expect(html).not.toContain('Rente nette mensuelle');
-    expect(html).not.toContain('/mois');
-  });
-
-  it('affiche la stratégie Max capital uniquement pour Préfon', () => {
-    const html = renderToStaticMarkup(
-      <PerTransfertSidebar
-        result={makeResult({ compartment: 'C1' })}
-        selectedContract={null}
-        typeContrat="PER_POINTS"
-        subscriptionDate=""
-        step2Done
-        horizonAgeShort={80}
-        horizonAgeLong={90}
-        onHorizonChange={vi.fn()}
-        onOpenQuotientInfo={vi.fn()}
-        onOpenFractionalInfo={vi.fn()}
-      />,
-    );
-
-    expect(html).toContain('Max capital');
-    expect(html).toContain('Tout rente');
-  });
-
-  it('affiche le segment C1 bis sans le réduire à C1', () => {
-    const html = renderToStaticMarkup(
-      <PerTransfertSidebar
-        result={makeResult({ compartment: 'C1_BIS' })}
-        selectedContract={null}
-        typeContrat="MADELIN"
-        subscriptionDate=""
-        step2Done
-        horizonAgeShort={80}
-        horizonAgeLong={90}
-        onHorizonChange={vi.fn()}
-        onOpenQuotientInfo={vi.fn()}
-        onOpenFractionalInfo={vi.fn()}
-      />,
-    );
-
-    expect(html).toContain('C1 bis');
-  });
-});
-
 describe('TransferRulesInfoModal', () => {
   it('détaille la limite PERCO/PERECO d’un transfert tous les trois ans', () => {
     const html = renderToStaticMarkup(<TransferRulesInfoModal onClose={vi.fn()} />);
 
     expect(html).toContain('L3334-1');
     expect(html).toContain('L224-1');
+    expect(html).toContain('sim-info-modal-content');
     expect(html).toContain('limite d’un transfert tous les trois ans');
     expect(html).toContain('PER d’entreprise collectif');
   });
@@ -321,11 +107,24 @@ describe('PerTransfertFraisInfoModal', () => {
     const html = renderToStaticMarkup(<PerTransfertFraisInfoModal onClose={vi.fn()} />);
 
     expect(html).toContain('PERP, Madelin, Article 83 vers un PER');
+    expect(html).toContain('sim-info-modal-content');
     expect(html).toContain('1 % des droits acquis');
     expect(html).toContain('10 ans');
     expect(html).toContain('D224-18');
     expect(html).toContain('souvent nuls');
     expect(html).not.toContain('Pas de plafond légal unique');
+  });
+});
+
+describe('Modales information PER transfert', () => {
+  it('partagent le style typographique des modales i', () => {
+    const quotePartHtml = renderToStaticMarkup(
+      <PerTransfertInfoModal kind="interestsQuotePart" onClose={vi.fn()} />,
+    );
+    const rentHtml = renderToStaticMarkup(<RentRevaluationInfoModal onClose={vi.fn()} />);
+
+    expect(quotePartHtml).toContain('sim-info-modal-content');
+    expect(rentHtml).toContain('sim-info-modal-content');
   });
 });
 
@@ -503,8 +302,9 @@ describe('PerTransfertHypotheses', () => {
 });
 
 describe('PerTransfertSimulator', () => {
-  it('affiche l’audit Base CG ouvert avec sa réserve et son lien settings', async () => {
+  it('guide l’arrivée avec le référencement seul avant de révéler les détails', async () => {
     getBaseCgRetraiteCatalogMock.mockResolvedValueOnce([]);
+    const user = userEvent.setup();
 
     render(
       <MemoryRouter>
@@ -512,19 +312,18 @@ describe('PerTransfertSimulator', () => {
       </MemoryRouter>,
     );
 
-    expect(
-      await screen.findByText(/Base CG indicative.*aide interne au devoir de conseil/i),
-    ).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /Personnaliser le calcul de rente/i })).toHaveClass(
-      'sim-action-btn--edit',
-    );
-    expect(
-      screen.getByRole('button', { name: /Personnaliser le calcul de rente/i }),
-    ).not.toHaveClass('per-transfert-secondary-button');
-    expect(screen.getByText(/vérifier.*compagnie/i)).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: 'Base CG' })).toHaveAttribute(
-      'href',
-      '/settings/base-contrat-retraite',
-    );
+    const manualButton = await screen.findByRole('button', { name: /Saisie manuelle/i });
+
+    expect(screen.getByText('Référencement')).toBeInTheDocument();
+    expect(screen.queryByText('Audit Base CG')).not.toBeInTheDocument();
+    expect(screen.queryByText('Relevé de situation')).not.toBeInTheDocument();
+    expect(screen.queryByText('Profil assuré')).not.toBeInTheDocument();
+    expect(screen.getByText('Synthèse en attente')).toBeInTheDocument();
+
+    await user.click(manualButton);
+
+    expect(screen.getByText('Relevé de situation')).toBeInTheDocument();
+    expect(screen.getByText('Profil assuré')).toBeInTheDocument();
+    expect(screen.queryByText('Audit Base CG')).not.toBeInTheDocument();
   });
 });

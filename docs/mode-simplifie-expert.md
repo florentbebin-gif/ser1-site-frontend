@@ -14,6 +14,7 @@ Le mode expert sert l'analyse : accès aux paramètres fins, aux détails de cal
 - Un simulateur peut proposer un override local, mais cet override reste non persistant.
 - Le toggle local ne doit jamais écrire dans `ui_settings`.
 - Le mode masque, replie ou réordonne l'interface ; il ne change jamais seul les hypothèses envoyées au moteur.
+- Le mode simplifié ne pré-sélectionne pas un parcours métier à la place de l'utilisateur ; il réduit la densité visible après un choix explicite.
 - Les exports et snapshots doivent rester cohérents avec les données réellement calculées, pas avec la densité d'affichage.
 - Périmètre du toggle : il pilote l'UX des simulateurs `/sim/*`. Les flux `/audit`, `/strategy` et le scan documentaire IA (à partir de P4) suivent leur propre progression guidée et ne sont pas pilotés par ce toggle ; voir `docs/AI_ACT_CADRAGE.md` pour la déclinaison UI / UX du scan IA.
 

@@ -136,33 +136,35 @@ export function IrFormSection({
         </div>
       </div>
 
-      <IrIncomeSection
-        status={status}
-        setIncomes={setIncomes}
-        incomes={incomes}
-        updateIncome={updateIncome}
-        realMode={realMode}
-        setRealModeState={setRealModeState}
-        realExpenses={realExpenses}
-        setRealExpensesState={setRealExpensesState}
-        abat10SalD1={abat10SalD1}
-        abat10SalD2={abat10SalD2}
-        psGeneralRate={psGeneralRate}
-        psExceptionRate={psExceptionRate}
-        fmtPct={fmtPct}
-        capitalMode={capitalMode}
-        setCapitalMode={setCapitalMode}
-        pfuRateIR={pfuRateIR}
-        deductions={deductions}
-        setDeductions={setDeductions}
-        credits={credits}
-        setCredits={setCredits}
-        abat10PensionsFoyer={abat10PensionsFoyer}
-        euro0={euro0}
-        isExpert={isExpert}
-        incomeFilters={incomeFilters}
-        setIncomeFilters={setIncomeFilters}
-      />
+      <div id="ir-revenus" data-sim-step-id="ir-revenus">
+        <IrIncomeSection
+          status={status}
+          setIncomes={setIncomes}
+          incomes={incomes}
+          updateIncome={updateIncome}
+          realMode={realMode}
+          setRealModeState={setRealModeState}
+          realExpenses={realExpenses}
+          setRealExpensesState={setRealExpensesState}
+          abat10SalD1={abat10SalD1}
+          abat10SalD2={abat10SalD2}
+          psGeneralRate={psGeneralRate}
+          psExceptionRate={psExceptionRate}
+          fmtPct={fmtPct}
+          capitalMode={capitalMode}
+          setCapitalMode={setCapitalMode}
+          pfuRateIR={pfuRateIR}
+          deductions={deductions}
+          setDeductions={setDeductions}
+          credits={credits}
+          setCredits={setCredits}
+          abat10PensionsFoyer={abat10PensionsFoyer}
+          euro0={euro0}
+          isExpert={isExpert}
+          incomeFilters={incomeFilters}
+          setIncomeFilters={setIncomeFilters}
+        />
+      </div>
     </div>
   );
 }

@@ -299,7 +299,7 @@
 }
 
 .sc-unified-block {
-  border-top: 1px solid color-mix(in srgb, var(--color-c8) 40%, transparent);
+  border-top: 1px solid var(--color-c8);
   padding: 6px 0;
 }
 
@@ -344,7 +344,7 @@
   font-weight: 600;
   font-size: 10px;
   color: color-mix(in srgb, var(--color-c9) 70%, transparent);
-  border-top: 1px dashed color-mix(in srgb, var(--color-c8) 35%, transparent);
+  border-top: 1px solid var(--color-c8);
   padding-top: 4px;
   margin-top: 2px;
 }

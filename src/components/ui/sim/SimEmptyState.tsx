@@ -8,6 +8,7 @@ export interface SimEmptyStateProps {
   title: ReactNode;
   description?: ReactNode;
   cta?: ReactNode;
+  variant?: 'page' | 'sidebar';
   className?: string;
 }
 
@@ -27,10 +28,19 @@ export function SimEmptyState({
   title,
   description,
   cta,
+  variant = 'page',
   className,
 }: SimEmptyStateProps) {
   return (
-    <div className={joinClasses('premium-card', 'sim-summary-card', 'sim-empty-state', className)}>
+    <div
+      className={joinClasses(
+        'premium-card',
+        'sim-summary-card',
+        'sim-empty-state',
+        variant === 'sidebar' && 'sim-empty-state--sidebar',
+        className,
+      )}
+    >
       <div className="sim-empty-state__illustration">{renderIllustration(illustration)}</div>
       <div className="sim-empty-state__content">
         <h2 className="sim-empty-state__title">{title}</h2>

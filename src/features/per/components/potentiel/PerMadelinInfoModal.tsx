@@ -79,11 +79,15 @@ export function PerMadelinInfoModal({
   return (
     <SimModalShell
       title="Détail du calcul Madelin 154 bis"
-      subtitle="Deux assiettes distinctes : versement (art. 41 DN bis = BIC + art.62 + cotisations Madelin) pour les enveloppes de l’année ; report 2042 (BOI-IR-BASE-20-50-20 §340 = BIC + art.62 bruts, sans abattement) pour la fraction reportable."
+      subtitle="Assiettes de calcul et enveloppes disponibles"
       onClose={onClose}
       modalClassName="per-madelin-modal"
-      bodyClassName="per-madelin-modal__body"
+      bodyClassName="sim-info-modal-content per-madelin-modal__body"
     >
+      <p className="sim-info-modal-content__lead">
+        Deux assiettes sont contrôlées : l’assiette de versement pour les enveloppes de l’année et
+        l’assiette de report 2042 pour la fraction reportable.
+      </p>
       <div className={`per-summary-breakdown-grid ${isCouple ? 'is-couple' : ''}`}>
         <MadelinDetailCard label="Déclarant 1" detail={declarant1} />
         {isCouple && <MadelinDetailCard label="Déclarant 2" detail={declarant2} />}

@@ -243,8 +243,8 @@ describe('PerPotentielContextSidebar', () => {
       />,
     );
 
-    expect(html).toContain('Plafond calculé');
-    expect(html).toContain('À déterminer');
+    expect(html).not.toContain('Plafond calculé');
+    expect(html).not.toContain('À déterminer');
     expect(html).not.toContain(fmtCurrency(2400));
     expect(html).not.toContain(fmtCurrency(1400));
   });

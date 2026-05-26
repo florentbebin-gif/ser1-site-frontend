@@ -174,7 +174,10 @@ describe('PrevoyancePage', () => {
       screen.queryByText('Garanties souscrites hors régime obligatoire'),
     ).not.toBeInTheDocument();
     await saisirDateNaissance(user);
-    expect(screen.getByText('Comparer')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Ajouter un contrat' })).toHaveClass(
+      'sim-action-btn--add',
+    );
+    expect(screen.queryByText('Comparer')).not.toBeInTheDocument();
     expect(screen.queryByText('Frais généraux')).toBeNull();
     expect(screen.getByRole('heading', { name: 'Cotisation' })).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: /Modifier Contrat 1/i }));
@@ -212,7 +215,9 @@ describe('PrevoyancePage', () => {
     expect(await screen.findByText('Mode expert')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /mode expert indisponible/i })).toBeDisabled();
     expect(
-      screen.getByText('Renseignez la date de naissance pour afficher la synthèse de garanties.'),
+      screen.getByText(
+        'Renseignez le régime et la date de naissance pour afficher la synthèse de garanties.',
+      ),
     ).toBeInTheDocument();
     expect(screen.queryByRole('heading', { name: 'Arrêt de travail' })).toBeNull();
     expect(screen.getByRole('button', { name: /HYPOTHÈSES ET LIMITES/i })).toHaveAttribute(
@@ -234,6 +239,7 @@ describe('PrevoyancePage', () => {
     expect(screen.getByRole('button', { name: 'Ajouter un contrat' })).toHaveClass(
       'sim-action-btn--add',
     );
+    expect(screen.queryByText('Comparer')).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: /Modifier Contrat 1/i })).toHaveClass(
       'sim-action-btn--edit',
     );
@@ -247,6 +253,8 @@ describe('PrevoyancePage', () => {
 
     await user.click(screen.getByRole('button', { name: 'Ajouter un contrat' }));
     await user.click(await screen.findByRole('button', { name: 'Terminer' }));
+    expect(screen.getByText('Comparer')).toBeInTheDocument();
+    expect(screen.getByText('Cumuler')).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Ajouter un contrat' }));
     await user.click(await screen.findByRole('button', { name: 'Terminer' }));
 

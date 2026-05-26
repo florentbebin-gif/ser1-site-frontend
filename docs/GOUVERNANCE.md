@@ -254,6 +254,7 @@ Pour une demande du type "trouve les écarts de normes sur `/sim/tresorerie-soci
 - Conteneur principal : `.sim-page` (`max-width: 1200px; margin: 0 auto; padding: 32px 24px 64px`).
 - Exception locale `/sim/credit` : `padding-top: 20px` via `.sim-page.cv2-page`.
 - Grille desktop : `grid-template-columns: 1.85fr 1fr; gap: 24px`.
+- Rythme vertical des colonnes : `SimPageShell.Main` / `.sim-grid__col--main` espace les blocs de page de `24px` ; `SimPageShell.Side` / `.sim-grid__col--side` espace les cards de synthèse de `16px`.
 - Même ratio pour la ligne de contrôles (tabs à gauche, toggle de vue à droite).
 - Structure minimale :
   1. Header (`h1` + sous-titre + actions)
@@ -273,6 +274,8 @@ Pour une demande du type "trouve les écarts de normes sur `/sim/tresorerie-soci
 
 - Introduire un troisième rail visuel persistant sur desktop.
 - Utiliser des largeurs fixes en px pour les colonnes principales.
+- Dépasser localement le `max-width: 1200px` de `.sim-page`.
+- Corriger l'espacement entre blocs par une série de marges locales de colonne ; enrichir le shell partagé sauf exception documentée en PR.
 
 ### 2) Header, titres et barre sous titre
 
@@ -824,6 +827,77 @@ cartes compactes (`premium-card-compact`) et cartes explicitement listées dans
 `scripts/check-sim-cards.mjs` quand elles ne sont pas des blocs de saisie.
 
 La règle est contrôlée par `npm run check:sim-cards`.
+
+#### 16h) Séparateurs simulateurs — règle d’usage
+
+Les pages `/sim/*` utilisent les séparateurs partagés de `src/styles/sim/dividers.css`.
+Une feature ne recrée pas de divider local si une variante partagée couvre le cas.
+
+- `sim-divider` : séparateur estompé épais, placé sous un titre de carte ou de panneau pour
+  installer la hiérarchie visuelle.
+- `sim-divider sim-divider--soft` : séparateur estompé fin, utilisé au milieu d’un bloc pour
+  séparer deux sous-parties sans créer une nouvelle carte.
+- `sim-divider sim-divider--tight` : alias compact conservé pour les usages existants ; pour du
+  nouveau code, préférer `sim-divider--soft`.
+- `sim-divider sim-divider--solid` : ligne fine pleine, utilisée en bas de bloc avant une
+  conclusion, un total, une annexe ou une zone de synthèse finale.
+
+La colonne de droite ne doit pas afficher de KPI à zéro quand les prérequis métier sont absents.
+Elle affiche soit rien quand la page a explicitement choisi une colonne désactivée, soit un seul
+`SimEmptyState` `variant="sidebar"` quand un repère d’attente aide l’utilisateur.
+
+#### 16i) État vide sidebar — règle d’usage
+
+Les simulateurs ne rendent pas de cartes KPI calculées tant que les prérequis essentiels de la
+page ne sont pas satisfaits. L’état d’attente autorisé dans une colonne de droite est
+`SimEmptyState variant="sidebar"` : un titre court, une phrase d’invitation métier, puis une micro
+prévisualisation optionnelle de ce qui apparaîtra après saisie.
+
+Le message doit aider à poursuivre la saisie sans recréer un onboarding lourd. Une page avec des
+onglets métier peut désactiver totalement la colonne droite si cela allège mieux la lecture, mais
+elle ne doit pas compenser par des KPI à zéro.
+
+#### 16j) Révélation progressive — règle d’usage
+
+Les informations d’une page `/sim/*` sont classées en trois niveaux :
+
+- Niveau 1 : saisie et décisions indispensables, visibles immédiatement.
+- Niveau 2 : synthèse, alertes et repères d’aide à la décision, visibles dès que calculables.
+- Niveau 3 : hypothèses, détails techniques, projections longues et annexes, repliés par défaut
+  sauf lorsqu’ils sont le cœur de la tâche courante.
+
+Un bouton de disclosure fermé doit annoncer ce qu’il contient : nombre de lignes, état, période ou
+objet métier quand l’information est disponible. Les scrolls internes dans les grandes cards sont
+évités ; on préfère replier, masquer ou révéler une section complète.
+
+#### 16k) Stepper visuel discret — règle d’usage
+
+`SimPageStepper` est une primitive optionnelle, désactivée par défaut sur les simulateurs tant
+qu'elle n'apporte pas un vrai repère métier. Les pages avec onglets métier natifs, comme Placement
+ou PER, ne dupliquent pas cette navigation.
+
+Quand il est utilisé, il sert de repère et de raccourci de scroll, pas de parcours forcé : aucun
+bouton global "Suivant" n’est ajouté. Il ne contient jamais `Synthèse`, `Hypothèses`, ni une annexe
+technique : ces zones ne sont pas des étapes métier. Le composant est sémantiquement un
+`<nav aria-label="Étapes du simulateur">` et l’étape courante porte `aria-current="step"`.
+
+Un menu vertical gauche persistant est interdit par défaut sur `/sim/*` : il ajoute un troisième
+rail de lecture et alourdit les pages. Une exception doit être prouvée par un besoin métier
+documenté en PR.
+
+#### 16l) Contrat UX simulateur
+
+Chaque page `/sim/*` qui consomme les primitives transverses expose un contrat `SimPageUXContract`
+via un hook dédié à sa feature. Ce contrat centralise :
+
+- les prérequis métier (`readiness`) ;
+- l’état de disponibilité de la synthèse (`synthesisReady`) ;
+- la cible de synthèse (`synthesisTargetId`) ;
+- les étapes de navigation optionnelles (`stepperSteps`), absentes par défaut ;
+- les sections métier adressables (`sections`).
+
+Le JSX de page consomme ce contrat pour brancher `SimViewSynthesisCTA`, les états vides et, si une
+page le justifie, `SimPageStepper`, afin d’éviter les règles divergentes d’un simulateur à l’autre.
 
 ---
 

@@ -6,7 +6,6 @@ import type {
 } from '@/engine/per';
 import type { PerChildDraft } from './perParts';
 import { getNextPerChildId, normalizePerChildren, normalizePerFoyer } from './perFoyerState';
-import { applyPerSimplifiedPreset } from './perSimplifiedMode';
 import { buildVisibleSteps } from './perVisibleSteps';
 
 export const PER_POTENTIEL_SESSION_KEY = 'ser1:sim:per:potentiel:v4';
@@ -71,9 +70,9 @@ export const EMPTY_DECLARANT: DeclarantRevenus = {
 
 export function normalizePerPotentielState(
   state: PerPotentielState,
-  options: PerPotentielStateOptions = {},
+  _options: PerPotentielStateOptions = {},
 ): PerPotentielState {
-  const baseState = options.simplifiedMode ? applyPerSimplifiedPreset(state) : state;
+  const baseState = state;
   const visibleSteps = buildVisibleSteps(
     baseState.mode,
     baseState.historicalBasis,

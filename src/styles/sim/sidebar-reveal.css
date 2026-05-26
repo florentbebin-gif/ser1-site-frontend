@@ -1,0 +1,23 @@
+/* Apparition sobre des synthèses /sim/* */
+
+.sim-sidebar-reveal {
+  animation: sim-sidebar-reveal var(--transition-base) var(--easing-standard);
+}
+
+@keyframes sim-sidebar-reveal {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sim-sidebar-reveal {
+    animation: none;
+  }
+}

@@ -6,7 +6,9 @@ import {
   SimMetric,
   SimSparkline,
   SimStatusBadge,
+  SimTooltip,
 } from '@/components/ui/sim';
+import { CGP_GLOSSARY } from '@/constants/cgpGlossary';
 import { IconBarChart } from '@/icons/ui';
 import { shortEuro } from '../utils/formatters';
 import type { PlacementSimulatorState } from '../utils/normalizers';
@@ -76,7 +78,7 @@ export function PlacementResultsPanel({
                 ageAuDeces={state.transmission.ageAuDeces}
               />
 
-              <div className="sim-divider" />
+              <div className="sim-divider sim-divider--soft" />
 
               {(() => {
                 const totalGains1 =
@@ -91,14 +93,25 @@ export function PlacementResultsPanel({
                   compareEnabled && produit2 && produit2.totaux.effortTotal > 0
                     ? totalGains2 / produit2.totaux.effortTotal
                     : 0;
-                const meilleurProduit = compareEnabled ? (roi1 > roi2 ? 1 : 2) : 1;
+                const meilleurProduit = compareEnabled
+                  ? Math.abs(roi1 - roi2) > 0.0001
+                    ? roi1 > roi2
+                      ? 1
+                      : 2
+                    : null
+                  : 1;
 
                 return (
                   <>
                     <div
                       className={`pl-roi-compare${!compareEnabled ? ' pl-roi-compare--single' : ''}`}
                     >
-                      <div className="pl-roi-compare__title">ROI</div>
+                      <div className="pl-roi-compare__title">
+                        <SimTooltip
+                          label={CGP_GLOSSARY.roi.label}
+                          description={CGP_GLOSSARY.roi.description}
+                        />
+                      </div>
                       <div className="pl-roi-compare__grid">
                         <div
                           className={`pl-roi-compare__card ${meilleurProduit === 1 ? 'is-winner' : ''}`}

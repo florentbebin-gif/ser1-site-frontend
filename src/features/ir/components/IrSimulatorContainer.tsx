@@ -12,7 +12,7 @@ import { useUserMode, type UserMode } from '../../../settings/userMode';
 import { resolveEffectiveUserMode } from '../../../settings/userModeDisplay';
 import { ExportMenu } from '../../../components/ExportMenu';
 import { ModeToggle } from '../../../components/ModeToggle';
-import { SimCollapsibleTable, SimPageShell } from '@/components/ui/sim';
+import { SimCollapsibleTable, SimPageShell, SimViewSynthesisCTA } from '@/components/ui/sim';
 import {
   computeAbattement10,
   computeEffectiveParts,
@@ -32,6 +32,7 @@ import { IrFormSection } from './IrFormSection';
 import { IrSidebarSection } from './IrSidebarSection';
 import { IrDetailsSection } from './IrDetailsSection';
 import { IrDisclaimer } from './IrDisclaimer';
+import { useIrPageUXContract } from '../hooks/useIrPageUXContract';
 import type {
   IrCapitalMode,
   IrChildDraft,
@@ -359,6 +360,8 @@ export default function IrSimulatorContainer() {
     pptxColors,
     setExportLoading,
   });
+  const synthesisReady = Boolean(status && result && showSummaryCard);
+  const pageUX = useIrPageUXContract({ synthesisReady });
 
   if (settingsLoading) {
     return (
@@ -400,86 +403,98 @@ export default function IrSimulatorContainer() {
       }
     >
       <SimPageShell.Main>
-        <IrFormSection
-          status={status}
-          setStatus={setStatus}
-          isIsolated={isIsolated}
-          setIsIsolated={setIsIsolated}
-          setIncomes={setIncomes}
-          setParts={setParts}
-          incomes={incomes}
-          updateIncome={updateIncome}
-          realMode={realMode}
-          setRealModeState={setRealMode}
-          realExpenses={realExpenses}
-          setRealExpensesState={setRealExpenses}
-          abat10SalD1={abat10SalD1}
-          abat10SalD2={abat10SalD2}
-          psGeneralRate={psGeneralRate}
-          psExceptionRate={psExceptionRate}
-          fmtPct={fmtPct}
-          capitalMode={capitalMode}
-          setCapitalMode={setCapitalMode}
-          pfuRateIR={pfuRateIR}
-          deductions={deductions}
-          setDeductions={setDeductions}
-          credits={credits}
-          setCredits={setCredits}
-          abat10PensionsFoyer={abat10PensionsFoyer}
-          euro0={euro0}
-          isExpert={isExpert}
-          children={children}
-          setChildren={setChildren}
-          incomeFilters={incomeFilters}
-          setIncomeFilters={setIncomeFilters}
+        <div id="ir-foyer" data-sim-step-id="ir-foyer">
+          <IrFormSection
+            status={status}
+            setStatus={setStatus}
+            isIsolated={isIsolated}
+            setIsIsolated={setIsIsolated}
+            setIncomes={setIncomes}
+            setParts={setParts}
+            incomes={incomes}
+            updateIncome={updateIncome}
+            realMode={realMode}
+            setRealModeState={setRealMode}
+            realExpenses={realExpenses}
+            setRealExpensesState={setRealExpenses}
+            abat10SalD1={abat10SalD1}
+            abat10SalD2={abat10SalD2}
+            psGeneralRate={psGeneralRate}
+            psExceptionRate={psExceptionRate}
+            fmtPct={fmtPct}
+            capitalMode={capitalMode}
+            setCapitalMode={setCapitalMode}
+            pfuRateIR={pfuRateIR}
+            deductions={deductions}
+            setDeductions={setDeductions}
+            credits={credits}
+            setCredits={setCredits}
+            abat10PensionsFoyer={abat10PensionsFoyer}
+            euro0={euro0}
+            isExpert={isExpert}
+            children={children}
+            setChildren={setChildren}
+            incomeFilters={incomeFilters}
+            setIncomeFilters={setIncomeFilters}
+          />
+        </div>
+        <SimViewSynthesisCTA
+          ready={synthesisReady}
+          targetId={pageUX.synthesisTargetId ?? 'ir-synthese'}
+          variant="floating"
+          hint="TMI, impôt net et imposition totale."
         />
       </SimPageShell.Main>
 
       <SimPageShell.Side sticky={false}>
-        <IrSidebarSection
-          yearKey={yearKey}
-          setYearKey={setYearKey}
-          taxSettings={taxSettings}
-          location={location}
-          setLocation={setLocation}
-          setParts={setParts}
-          tmiScale={tmiScale}
-          result={result}
-          euro0={euro0}
-          fmtPct={fmtPct}
-          pfuRateIR={pfuRateIR}
-          isExpert={isExpert}
-          showSummaryCard={showSummaryCard}
-          hasSituation={status !== null}
-        />
+        <div id="ir-synthese" className="sim-sidebar-reveal" data-sim-step-id="ir-synthese">
+          <IrSidebarSection
+            yearKey={yearKey}
+            setYearKey={setYearKey}
+            taxSettings={taxSettings}
+            location={location}
+            setLocation={setLocation}
+            setParts={setParts}
+            tmiScale={tmiScale}
+            result={result}
+            euro0={euro0}
+            fmtPct={fmtPct}
+            pfuRateIR={pfuRateIR}
+            isExpert={isExpert}
+            showSummaryCard={showSummaryCard}
+            hasSituation={synthesisReady}
+          />
+        </div>
       </SimPageShell.Side>
 
       <SimPageShell.Section>
-        <>
-          {result && (
-            <SimCollapsibleTable
-              title="Détail du calcul"
-              open={showDetails}
-              onOpenChange={setShowDetails}
-              labelClosed="Afficher"
-              labelOpen="Masquer"
-              controlsId="ir-detail-panel"
-              className="ir-detail-card premium-card"
-              toggleClassName="ir-detail-toggle"
-              testId="ir-detail-accordion"
-              toggleTestId="ir-detail-toggle"
-            >
-              <IrDetailsSection
-                result={result}
-                euro0={euro0}
-                fmtPct={fmtPct}
-                pfuRateIR={pfuRateIR}
-              />
-            </SimCollapsibleTable>
-          )}
+        <div id="ir-hypotheses" data-sim-step-id="ir-hypotheses">
+          <>
+            {result && (
+              <SimCollapsibleTable
+                title="Détail du calcul"
+                open={showDetails}
+                onOpenChange={setShowDetails}
+                labelClosed="Détail du calcul — barème, décote et contributions"
+                labelOpen="Masquer le détail du calcul"
+                controlsId="ir-detail-panel"
+                className="ir-detail-card premium-card"
+                toggleClassName="ir-detail-toggle"
+                testId="ir-detail-accordion"
+                toggleTestId="ir-detail-toggle"
+              >
+                <IrDetailsSection
+                  result={result}
+                  euro0={euro0}
+                  fmtPct={fmtPct}
+                  pfuRateIR={pfuRateIR}
+                />
+              </SimCollapsibleTable>
+            )}
 
-          <IrDisclaimer isIsolated={isIsolated} />
-        </>
+            <IrDisclaimer isIsolated={isIsolated} />
+          </>
+        </div>
       </SimPageShell.Section>
     </SimPageShell>
   );

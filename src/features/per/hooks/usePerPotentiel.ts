@@ -5,7 +5,7 @@
  * Persistence via sessionStorage.
  */
 
-import { useState, useCallback, useEffect, useMemo } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import { calculatePerPotentiel } from '@/engine/per';
 import type {
   PerPotentielInput,
@@ -23,7 +23,6 @@ import { shouldUseProjectionForCalculation } from '../utils/perProjectionScope';
 import { resolvePerCalculationYear } from '../utils/perCalculationYear';
 import { projectionToAvisIrPlafonds } from '../utils/perSyntheticAvis';
 import { buildVisibleSteps } from '../utils/perVisibleSteps';
-import { isPerSimplifiedPresetState } from '../utils/perSimplifiedMode';
 import {
   buildPerSituationInput,
   clearPerPotentielSession,
@@ -105,21 +104,6 @@ export function usePerPotentiel(
     },
     [simplifiedMode],
   );
-
-  useEffect(() => {
-    if (!simplifiedMode) {
-      return;
-    }
-
-    setState((previous) => {
-      const normalized = normalizePerPotentielState(previous, { simplifiedMode: true });
-      if (isPerSimplifiedPresetState(previous) && previous.step === normalized.step) {
-        return previous;
-      }
-      savePerPotentielSession(normalized);
-      return normalized;
-    });
-  }, [simplifiedMode]);
 
   const setMode = useCallback(
     (mode: PerMode) => {

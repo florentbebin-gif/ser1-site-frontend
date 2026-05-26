@@ -124,15 +124,14 @@
   height: 14px;
 }
 
-/* Lignes sÃ©parateurs entre sections */
+/* Lignes séparateurs entre sections */
 .ir-divider-row td {
   padding: 0;
   border-bottom: none;
 }
 
-.ir-divider-row__inner {
-  height: 2px;
-  background: linear-gradient(90deg, transparent, var(--color-c8), transparent);
+.ir-divider-row .sim-divider {
+  max-width: none;
   margin: 4px 8px;
 }
 

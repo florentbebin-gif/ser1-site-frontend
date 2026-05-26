@@ -70,8 +70,8 @@
 }
 
 .pl-colhead--add {
-  width: 44px;
-  min-width: 44px;
+  width: 220px;
+  min-width: 220px;
   text-align: right;
   vertical-align: middle;
 }
@@ -81,8 +81,9 @@
   flex-shrink: 0;
 }
 
-.pl-colhead--add .sim-action-btn--icon {
+.pl-colhead--add .sim-action-btn {
   margin-left: auto;
+  white-space: nowrap;
 }
 
 /* Mode projection 1 placement : table à 2 colonnes (libellé + valeur unique). */
@@ -103,8 +104,8 @@
 
 .pl-table--single th:nth-child(3),
 .pl-table--single td:nth-child(3) {
-  width: 44px;
-  min-width: 44px;
+  width: 220px;
+  min-width: 220px;
   padding-left: 4px;
 }
 
@@ -146,7 +147,19 @@
 
 .pl-envelope-pill-wrapper {
   position: relative;
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.pl-envelope-tooltip .sim-tooltip__label {
+  display: none;
+}
+
+.pl-envelope-tooltip .sim-tooltip__trigger {
+  min-width: 24px;
+  min-height: 24px;
+  padding: 0;
 }
 
 .pl-collabel[aria-haspopup] {

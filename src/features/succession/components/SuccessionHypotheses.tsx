@@ -17,8 +17,8 @@ export function SuccessionHypotheses({
         expanded={hypothesesOpen}
         onToggle={onToggle}
         className="sim-hypotheses__toggle"
-        labelClosed="Hypothèses et limites"
-        labelOpen="Hypothèses et limites"
+        labelClosed={`Hypothèses et limites — ${assumptions.length} repères succession`}
+        labelOpen="Masquer les hypothèses et limites"
         controls="succession-hypotheses-panel"
         data-testid="succession-hypotheses-toggle"
       />

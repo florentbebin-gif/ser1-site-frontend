@@ -16,7 +16,7 @@ import { ModeToggle } from '../../components/ModeToggle';
 import { useTheme } from '../../settings/ThemeProvider';
 import { useUserMode } from '../../settings/userMode';
 import { resolveEffectiveUserMode } from '../../settings/userModeDisplay';
-import { SimPageShell } from '@/components/ui/sim';
+import { SimEmptyState, SimPageShell, SimViewSynthesisCTA } from '@/components/ui/sim';
 import {
   createInitialCreditState,
   normalizeLoadedState,
@@ -27,6 +27,8 @@ import {
 } from './utils/creditNormalizers';
 import { useCreditCalculations } from './hooks/useCreditCalculations';
 import { useCreditExports } from './hooks/useCreditExports';
+import { useCreditPageUXContract } from './hooks/useCreditPageUXContract';
+import { getCreditActiveSynthesis, hasCreditSynthesis } from './utils/creditUxState';
 import { CreditControlsRow } from './components/CreditControlsRow';
 import { CreditHypotheses } from './components/CreditHypotheses';
 import { CreditLoanInputPanel } from './components/CreditLoanInputPanel';
@@ -341,10 +343,13 @@ export default function CreditV2() {
     calc.hasPretsAdditionnels,
   ]);
 
-  const activeSynthese =
-    isExpert && calc.hasPretsAdditionnels
-      ? perLoanSyntheses[activeTab] || calc.synthese
-      : calc.synthese;
+  const activeSynthese = getCreditActiveSynthesis({
+    isExpert,
+    hasAdditionalLoans: calc.hasPretsAdditionnels,
+    activeTab,
+    perLoanSyntheses,
+    totalSynthesis: calc.synthese,
+  });
 
   // -------------------------------------------------------------------------
   // EXPORTS
@@ -363,6 +368,9 @@ export default function CreditV2() {
     { label: 'PowerPoint', onClick: exportPowerPoint },
     { label: 'Excel', onClick: exportExcel },
   ];
+  const isAnnual = state.viewMode === 'annuel';
+  const showSummary = hasCreditSynthesis(activeSynthese);
+  const pageUX = useCreditPageUXContract({ synthesisReady: showSummary });
 
   // -------------------------------------------------------------------------
   // RENDU
@@ -386,9 +394,6 @@ export default function CreditV2() {
       />
     );
   }
-
-  const isAnnual = state.viewMode === 'annuel';
-  const showSummary = calc.synthese.capitalEmprunte > 0;
 
   const pretLookup = [
     { data: state.pret1, raw: rawValues.pret1, set: setPret1 },
@@ -427,33 +432,52 @@ export default function CreditV2() {
       }
     >
       <SimPageShell.Main>
-        <CreditLoanInputPanel
-          activeTab={activeTab}
-          activeLoan={activeLoan}
-          state={state}
-          isExpert={isExpert}
-          calc={calc}
-          setGlobal={setGlobal}
-          formatTauxRaw={formatTauxRaw}
+        <div id="credit-financement" data-sim-step-id="credit-financement">
+          <CreditLoanInputPanel
+            activeTab={activeTab}
+            activeLoan={activeLoan}
+            state={state}
+            isExpert={isExpert}
+            calc={calc}
+            setGlobal={setGlobal}
+            formatTauxRaw={formatTauxRaw}
+          />
+        </div>
+        <SimViewSynthesisCTA
+          ready={showSummary}
+          targetId={pageUX.synthesisTargetId ?? 'credit-synthese'}
+          variant="floating"
+          hint="Mensualité, coût total et échéancier prêts."
         />
       </SimPageShell.Main>
 
       <SimPageShell.Side
-        className={`cv-right-col${!isExpert ? ' cv-right-col--simple' : ''}${!showSummary ? ' cv-right-col--placeholder' : ''}`}
+        className={`cv-right-col${!isExpert ? ' cv-right-col--simple' : ''}`}
         sticky={showSummary}
       >
         {showSummary ? (
-          <CreditSummarySidebar
-            activeSynthese={activeSynthese}
-            isAnnual={isAnnual}
-            isExpert={isExpert}
-            activeTab={activeTab}
-            lisserPret1={state.lisserPret1}
-            lissageCoutDelta={lissageCoutDelta}
-            calc={calc}
-          />
+          <div
+            id="credit-synthese"
+            className="sim-sidebar-reveal"
+            data-sim-step-id="credit-synthese"
+          >
+            <CreditSummarySidebar
+              activeSynthese={activeSynthese}
+              isAnnual={isAnnual}
+              isExpert={isExpert}
+              activeTab={activeTab}
+              lisserPret1={state.lisserPret1}
+              lissageCoutDelta={lissageCoutDelta}
+              calc={calc}
+            />
+          </div>
         ) : (
-          <div className="cv-right-col__spacer" aria-hidden="true" />
+          <SimEmptyState
+            variant="sidebar"
+            illustration="chart"
+            title="Synthèse en attente"
+            description="Renseignez le montant emprunté et la durée pour afficher les mensualités et le coût global."
+          />
         )}
       </SimPageShell.Side>
 
@@ -469,10 +493,12 @@ export default function CreditV2() {
       )}
 
       <SimPageShell.Section>
-        <CreditHypotheses
-          hypothesesOpen={hypothesesOpen}
-          onToggle={() => setHypothesesOpen((open) => !open)}
-        />
+        <div id="credit-hypotheses" data-sim-step-id="credit-hypotheses">
+          <CreditHypotheses
+            hypothesesOpen={hypothesesOpen}
+            onToggle={() => setHypothesesOpen((open) => !open)}
+          />
+        </div>
       </SimPageShell.Section>
     </SimPageShell>
   );

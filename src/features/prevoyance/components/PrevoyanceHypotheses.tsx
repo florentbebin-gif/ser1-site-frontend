@@ -10,8 +10,8 @@ export function PrevoyanceHypotheses() {
         expanded={open}
         onToggle={() => setOpen((value) => !value)}
         className="sim-hypotheses__toggle"
-        labelClosed="Hypothèses et limites"
-        labelOpen="Hypothèses et limites"
+        labelClosed="Hypothèses et limites — 3 repères prévoyance"
+        labelOpen="Masquer les hypothèses et limites"
         controls="prevoyance-hypotheses-panel"
       />
 

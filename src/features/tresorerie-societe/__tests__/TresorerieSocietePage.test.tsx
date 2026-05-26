@@ -313,7 +313,9 @@ describe('TresorerieSocietePage', () => {
     expect(html).not.toContain('data-testid="placement-section"');
     expect(html).not.toContain('data-testid="associate-insights"');
     expect(html).not.toContain('data-testid="kpi-sidebar"');
-    expect(html).toContain('Complétez la société et l’associé personne physique');
+    expect(html).toContain(
+      'Complétez la société, l’associé personne physique et au moins une phase de revenus.',
+    );
   });
 
   it('masque les blocs avancés pour une personne morale sélectionnée', () => {
@@ -403,7 +405,8 @@ describe('TresorerieSocietePage', () => {
   it('place les hypothèses dans le slot pleine largeur', () => {
     const html = renderToStaticMarkup(<TresorerieSocietePage />);
 
-    expect(html).toContain('<section data-slot="section"><div data-testid="hypotheses"></div>');
+    expect(html).toContain('<section data-slot="section">');
+    expect(html).toContain('data-testid="hypotheses"');
   });
 
   it('branche les actions d’export Excel et PowerPoint dans le header', () => {

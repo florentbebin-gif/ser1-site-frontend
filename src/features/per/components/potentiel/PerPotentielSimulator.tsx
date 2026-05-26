@@ -4,7 +4,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { IconFileText } from '@/icons/ui';
-import { SimAuditTrail } from '@/components/ui/sim';
+import { SimAuditTrail, SimEmptyState } from '@/components/ui/sim';
 import type { PerHistoricalBasis } from '../../../../engine/per';
 import { ExportMenu } from '../../../../components/ExportMenu';
 import { ModeToggle } from '../../../../components/ModeToggle';
@@ -19,12 +19,14 @@ import { usePerPotentiel, type WizardStep } from '../../hooks/usePerPotentiel';
 import { usePerPotentielExportHandlers } from '../../hooks/usePerPotentielExportHandlers';
 import { hasAvisIrDeclarant, sumAvisIrPlafonds } from '../../utils/perAvisIrPlafonds';
 import { getPerWorkflowYears } from '../../utils/perWorkflowYears';
+import { hasPerPotentielSynthesisReady } from '../../utils/perPotentielReadiness';
 import ModeStep from './steps/ModeStep';
 import AvisIrStep from './steps/AvisIrStep';
 import SituationFiscaleStep from './steps/SituationFiscaleStep';
 import type { PerIncomeFilters } from './steps/PerIncomeTable';
 import { PerHypotheses } from './PerHypotheses';
 import { PerPotentielContextSidebar } from './PerPotentielContextSidebar';
+import { usePerPotentielPageUXContract } from './hooks/usePerPotentielPageUXContract';
 import '../../styles/index.css';
 
 type StepMeta = {
@@ -131,6 +133,8 @@ export default function PerPotentielSimulator(): React.ReactElement {
     logoPlacement,
     fiscalContext,
   });
+  const synthesisReady = hasPerPotentielSynthesisReady(state, result);
+  const pageUX = usePerPotentielPageUXContract({ synthesisReady });
 
   if (loading) {
     return (
@@ -425,7 +429,7 @@ export default function PerPotentielSimulator(): React.ReactElement {
           )}
         </main>
 
-        {state.mode !== null && (
+        {pageUX.synthesisReady ? (
           <aside className="per-potentiel-context sim-grid__col sim-grid__col--sticky">
             <PerPotentielContextSidebar
               step={state.step}
@@ -439,6 +443,15 @@ export default function PerPotentielSimulator(): React.ReactElement {
               totalAvisIrD1={totalAvisIrD1}
               totalAvisIrD2={totalAvisIrD2}
               result={result}
+            />
+          </aside>
+        ) : (
+          <aside className="per-potentiel-context sim-grid__col sim-grid__col--sticky">
+            <SimEmptyState
+              variant="sidebar"
+              illustration={pageUX.emptyState?.illustration ?? 'docs'}
+              title={pageUX.emptyState?.title ?? 'Synthèse en attente'}
+              description={pageUX.emptyState?.description}
             />
           </aside>
         )}

@@ -3,7 +3,13 @@
  */
 
 import React, { useState } from 'react';
-import { SimActionButton, SimAmountInputEuro, SimSelect } from '@/components/ui/sim';
+import {
+  SimActionButton,
+  SimAmountInputEuro,
+  SimInfoButton,
+  SimModalShell,
+  SimSelect,
+} from '@/components/ui/sim';
 import type { DeclarantRevenus, PlafondMadelinDetail } from '../../../../../engine/per';
 import type { PerDeclarantPatch } from '../../../hooks/usePerPotentiel';
 import type { PerChildDraft } from '../../../utils/perParts';
@@ -85,6 +91,7 @@ export default function SituationFiscaleStep({
   onUpdateDeclarants,
 }: SituationFiscaleStepProps): React.ReactElement {
   const [showMadelinInfo, setShowMadelinInfo] = useState(false);
+  const [versementsInfoOpen, setVersementsInfoOpen] = useState(false);
   const showTnsContributionRows = declarant1.statutTns || declarant2.statutTns;
   const contributionRows: {
     label: string;
@@ -229,9 +236,24 @@ export default function SituationFiscaleStep({
       <div className="premium-card premium-card--guide sim-card--guide per-contribution-card">
         <SectionHeader
           title="Versements retraite"
-          subtitle={`Renseignez les montants ${yearLabel} par déclarant pour chaque enveloppe de retraite.`}
           icon="versements"
+          actions={
+            <SimInfoButton
+              ariaLabel="Comprendre les versements retraite"
+              onClick={() => setVersementsInfoOpen(true)}
+            />
+          }
         />
+
+        {variant === 'versements-n' && !showTnsContributionRows ? (
+          <div className="per-tns-guide" role="note">
+            <strong>PER 154 bis</strong>
+            <span>
+              Pour saisir ce montant : activez la projection de l’année en cours, activez TNS,
+              renseignez un revenu TNS puis complétez la ligne PER 154 bis.
+            </span>
+          </div>
+        ) : null}
 
         <div
           className="per-contribution-section"
@@ -251,12 +273,8 @@ export default function SituationFiscaleStep({
                   <span className="per-contribution-table-label__text">
                     {row.label}
                     {row.infoAction && (
-                      <SimActionButton
-                        variant="edit"
-                        mode="icon"
-                        label="Détail Madelin"
+                      <SimInfoButton
                         ariaLabel="Afficher le détail des enveloppes Madelin 154 bis"
-                        className="per-contribution-info-action"
                         onClick={() => setShowMadelinInfo(true)}
                       />
                     )}
@@ -314,6 +332,20 @@ export default function SituationFiscaleStep({
           onClose={() => setShowMadelinInfo(false)}
         />
       )}
+
+      {versementsInfoOpen ? (
+        <SimModalShell
+          title="Versements retraite"
+          subtitle={`Aide de saisie ${yearLabel}`}
+          onClose={() => setVersementsInfoOpen(false)}
+          bodyClassName="sim-info-modal-content"
+        >
+          <p>
+            Saisissez les montants par déclarant et par enveloppe. Les lignes Madelin apparaissent
+            lorsque le profil TNS est activé dans les revenus imposables.
+          </p>
+        </SimModalShell>
+      ) : null}
     </div>
   );
 }

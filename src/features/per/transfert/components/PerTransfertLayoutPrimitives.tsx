@@ -78,7 +78,7 @@ export function Panel({
       </div>
       {!collapsible || expanded ? (
         <>
-          <div className="per-transfert-panel__divider" aria-hidden="true" />
+          <div className="sim-divider" aria-hidden="true" />
           {children}
         </>
       ) : null}

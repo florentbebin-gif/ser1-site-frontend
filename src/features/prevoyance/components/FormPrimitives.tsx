@@ -94,7 +94,7 @@ export function SectionCard({
         </div>
         {subtitle ? <p className="sim-card__subtitle">{subtitle}</p> : null}
       </div>
-      <div className="sim-divider" />
+      <div className="sim-divider sim-divider--soft prevoyance-card__divider" />
       {children}
     </section>
   );

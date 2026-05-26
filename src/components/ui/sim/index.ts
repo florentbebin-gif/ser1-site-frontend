@@ -28,6 +28,8 @@ export type { SimModalSectionNavItem, SimModalSectionNavProps } from './SimModal
 export { SimMobileStickyActions } from './SimMobileStickyActions';
 export type { SimMobileStickyActionsProps } from './SimMobileStickyActions';
 export { SimPageShell } from './SimPageShell';
+export { SimPageStepper } from './SimPageStepper';
+export type { SimPageStepperProps } from './SimPageStepper';
 export { SimSegmentedControl } from './SimSegmentedControl';
 export type { SimSegmentedOption } from './SimSegmentedControl';
 export { SimSelect } from './SimSelect';
@@ -40,3 +42,13 @@ export { SimStatusBadge } from './SimStatusBadge';
 export type { SimStatusBadgeProps, SimStatusBadgeVariant } from './SimStatusBadge';
 export { SimTooltip } from './SimTooltip';
 export type { SimTooltipProps } from './SimTooltip';
+export { SimViewSynthesisCTA } from './SimViewSynthesisCTA';
+export type { SimViewSynthesisCTAProps } from './SimViewSynthesisCTA';
+export type {
+  SimPageEmptyStateConfig,
+  SimPageReadiness,
+  SimPageSectionContract,
+  SimPageStep,
+  SimPageUXContract,
+} from './simPageUXContract';
+export { isSimPageReady } from './simPageUXContract';

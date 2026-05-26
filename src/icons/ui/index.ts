@@ -10,6 +10,7 @@ export { IconBarChart } from './IconBarChart';
 export { IconBriefcase } from './IconBriefcase';
 export { IconBuilding } from './IconBuilding';
 export { IconCalendar } from './IconCalendar';
+export { IconCheck } from './IconCheck';
 export { IconChevronDown } from './IconChevronDown';
 export { IconChevronRight } from './IconChevronRight';
 export { IconChevronUp } from './IconChevronUp';

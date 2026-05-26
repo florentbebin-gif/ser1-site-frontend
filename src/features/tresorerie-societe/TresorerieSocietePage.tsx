@@ -12,12 +12,13 @@ import './styles/index.css';
 import { useCallback, useState } from 'react';
 import { ExportMenu } from '../../components/ExportMenu';
 import { ModeToggle } from '../../components/ModeToggle';
-import { SimCollapsibleTable, SimEmptyState } from '../../components/ui/sim';
+import { SimCollapsibleTable, SimEmptyState, SimViewSynthesisCTA } from '../../components/ui/sim';
 import { SimPageShell } from '../../components/ui/sim/SimPageShell';
 import { useTheme } from '../../settings/ThemeProvider';
 import { useTresorerieState } from './hooks/useTresorerieState';
 import { useTresorerieCalculations } from './hooks/useTresorerieCalculations';
 import { useTresorerieExportHandlers } from './hooks/useTresorerieExportHandlers';
+import { useTresoreriePageUXContract } from './hooks/useTresoreriePageUXContract';
 import { TresoTimelineSection } from './components/timeline/TresoTimelineSection';
 import { TresoSocieteSection } from './components/TresoSocieteSection';
 import { TresoPlacementSection } from './components/TresoPlacementSection';
@@ -38,6 +39,7 @@ export default function TresorerieSocietePage() {
   const { colors: themeColors, pptxColors, cabinetLogo, logoPlacement } = useTheme();
   const activeProfile = getAssociateProfile(state.inputsV6, getSelectedAssociate(state.inputsV6));
   const readiness = getTresoReadiness(state.inputsV6);
+  const pageUX = useTresoreriePageUXContract({ readiness });
   const { rows, kpis, loading, error, simulationError } = useTresorerieCalculations(state.inputsV6);
   const { exportExcel, exportPptx, exportLoading, exportDisabled } = useTresorerieExportHandlers({
     rows,
@@ -91,29 +93,42 @@ export default function TresorerieSocietePage() {
     >
       <SimPageShell.Main>
         {/* Bloc 1 — Société */}
-        <TresoSocieteSection
-          inputs={state.inputsV6}
-          onChange={setInputsV6}
-          onAssociateModalOpenerChange={handleAssociateModalOpenerChange}
-        />
+        <div id="treso-societe" data-sim-step-id="treso-societe">
+          <TresoSocieteSection
+            inputs={state.inputsV6}
+            onChange={setInputsV6}
+            onAssociateModalOpenerChange={handleAssociateModalOpenerChange}
+          />
+        </div>
 
         {readiness.personalTimelineReady ? (
           <>
             {/* Bloc 2 — Parcours associé */}
-            <TresoTimelineSection
-              inputs={state.inputsV6}
-              onChange={setInputsV6}
-              onOpenAssociateModal={openAssociateModal ?? undefined}
-            />
+            <div id="treso-parcours" data-sim-step-id="treso-parcours">
+              <TresoTimelineSection
+                inputs={state.inputsV6}
+                onChange={setInputsV6}
+                onOpenAssociateModal={openAssociateModal ?? undefined}
+              />
+            </div>
 
             {/* Bloc 3 — Allocation société */}
-            <TresoPlacementSection
-              inputs={state.inputsV6}
-              projectionRows={rows}
-              onChange={setInputsV6}
-            />
+            <div id="treso-allocation" data-sim-step-id="treso-allocation">
+              <TresoPlacementSection
+                inputs={state.inputsV6}
+                projectionRows={rows}
+                onChange={setInputsV6}
+              />
+            </div>
           </>
         ) : null}
+
+        <SimViewSynthesisCTA
+          ready={readiness.synthesisReady}
+          targetId={pageUX.synthesisTargetId ?? 'treso-synthese'}
+          variant="floating"
+          hint="Revenu cible, CCA et repères de trésorerie."
+        />
 
         <SimCollapsibleTable
           title="projection comptable"
@@ -139,16 +154,17 @@ export default function TresorerieSocietePage() {
       </SimPageShell.Main>
 
       <SimPageShell.Side sticky>
-        {readiness.personalTimelineReady ? (
-          <>
+        {readiness.synthesisReady ? (
+          <div id="treso-synthese" className="sim-sidebar-reveal" data-sim-step-id="treso-synthese">
             <TresoAssociateInsights inputs={state.inputsV6} rows={rows} />
             <TresoKPISidebar kpis={kpis} inputs={state.inputsV6} />
-          </>
+          </div>
         ) : (
           <SimEmptyState
+            variant="sidebar"
             illustration="chart"
-            title="Synthèse"
-            description="Complétez la société et l’associé personne physique pour afficher la synthèse."
+            title="Synthèse en attente"
+            description="Complétez la société, l’associé personne physique et au moins une phase de revenus."
             cta={
               <span>Les repères de trésorerie, revenu cible et CCA seront calculés ensuite.</span>
             }
@@ -157,7 +173,9 @@ export default function TresorerieSocietePage() {
       </SimPageShell.Side>
 
       <SimPageShell.Section>
-        <TresoHypotheses />
+        <div id="treso-hypotheses" data-sim-step-id="treso-hypotheses">
+          <TresoHypotheses />
+        </div>
       </SimPageShell.Section>
     </SimPageShell>
   );

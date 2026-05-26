@@ -224,11 +224,12 @@ describe('PerPotentielSimulator', () => {
     mockUserModeState.mode = 'expert';
   });
 
-  it('passes declarant totals to the avis step and shows them in the right sidebar', () => {
+  it('passe les totaux déclarants à l’étape avis sans ouvrir la synthèse trop tôt', () => {
     const html = renderToStaticMarkup(<PerPotentielSimulator />);
 
     expect(html).toContain('Avis step 11000 / 7000');
-    expect(html).toContain('Sidebar contexte 11000 / 7000');
+    expect(html).toContain('Synthèse en attente');
+    expect(html).not.toContain('Sidebar contexte 11000 / 7000');
   });
 
   it('keeps the avis totals visible in the right sidebar on step 3', () => {

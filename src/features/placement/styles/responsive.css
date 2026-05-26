@@ -1,8 +1,4 @@
 @media (max-width: 900px) {
-  .pl-ir-right--placeholder {
-    display: none;
-  }
-
   .sim-header__subtitle-row,
   .pl-details-header {
     flex-direction: column;

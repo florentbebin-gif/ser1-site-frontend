@@ -63,29 +63,6 @@
   border-bottom-color: var(--color-c3);
 }
 
-.pl-ir-left,
-.pl-ir-right {
-  display: flex;
-  flex-direction: column;
-}
-
-.pl-ir-left {
-  gap: 20px;
-  min-width: 0;
-}
-
-.pl-ir-right {
-  min-width: 0;
-}
-
-.pl-ir-right--placeholder {
-  visibility: hidden;
-}
-
-.pl-ir-right__spacer {
-  min-height: 1px;
-}
-
 .pl-topgrid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));

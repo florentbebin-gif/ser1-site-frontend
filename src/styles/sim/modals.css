@@ -107,6 +107,57 @@
   padding: 24px;
 }
 
+.sim-info-modal-content {
+  display: grid;
+  gap: var(--space-3);
+  color: var(--color-c9);
+  font-size: var(--font-size-md);
+  line-height: var(--line-height-relaxed);
+}
+
+.sim-info-modal-content p,
+.sim-info-modal-content ul,
+.sim-info-modal-content ol {
+  margin: 0;
+}
+
+.sim-info-modal-content ul,
+.sim-info-modal-content ol {
+  display: grid;
+  gap: var(--space-2);
+  padding-left: var(--space-5);
+}
+
+.sim-info-modal-content strong {
+  color: var(--color-c1);
+  font-weight: var(--font-weight-semibold);
+}
+
+.sim-info-modal-content__lead {
+  margin: 0;
+  color: var(--color-c1);
+  font-size: var(--font-size-md);
+  line-height: var(--line-height-relaxed);
+}
+
+.sim-info-modal-content__list {
+  display: grid;
+  gap: var(--space-3);
+  margin: 0;
+  padding-left: var(--space-5);
+}
+
+.sim-info-modal-content__list li {
+  display: grid;
+  gap: var(--space-1);
+}
+
+.sim-info-modal-content__note {
+  color: var(--color-c9);
+  font-size: var(--font-size-sm);
+  line-height: var(--line-height-relaxed);
+}
+
 .sim-modal__footer {
   display: flex;
   align-items: center;

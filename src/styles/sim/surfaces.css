@@ -92,17 +92,6 @@
   border-left-color: var(--color-c3);
 }
 
-.sim-divider {
-  height: 2px;
-  max-width: 200px;
-  background: linear-gradient(90deg, transparent, var(--color-c8), transparent);
-  margin: 12px 0 14px;
-}
-
-.sim-divider--tight {
-  margin: 8px 0 10px;
-}
-
 .sim-controls-row {
   display: grid;
   grid-template-columns: minmax(0, 1.85fr) minmax(0, 1fr);
@@ -136,11 +125,16 @@
   min-width: 0;
   display: flex;
   flex-direction: column;
+  gap: 24px;
 }
 
 .sim-grid__col--main,
 .sim-grid__col--side {
   min-width: 0;
+}
+
+.sim-grid__col--side {
+  gap: 16px;
 }
 
 .sim-grid__col--sticky {

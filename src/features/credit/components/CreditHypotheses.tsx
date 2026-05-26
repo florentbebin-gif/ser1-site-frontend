@@ -12,8 +12,8 @@ export function CreditHypotheses({ hypothesesOpen, onToggle }: CreditHypothesesP
         expanded={hypothesesOpen}
         onToggle={onToggle}
         className="sim-hypotheses__toggle"
-        labelClosed="Hypothèses et limites"
-        labelOpen="Hypothèses et limites"
+        labelClosed="Hypothèses et limites — 4 repères crédit"
+        labelOpen="Masquer les hypothèses et limites"
         controls="credit-hypotheses-panel"
         data-testid="credit-hypotheses-toggle"
       />
