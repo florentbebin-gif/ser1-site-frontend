@@ -20,8 +20,8 @@ export function PerHypotheses() {
       <SimDisclosureButton
         expanded={open}
         onToggle={() => setOpen((prev) => !prev)}
-        labelOpen="Hypothèses et limites"
-        labelClosed="Hypothèses et limites"
+        labelOpen="Masquer les hypothèses et limites"
+        labelClosed={`Hypothèses et limites — ${PER_ASSUMPTIONS.length} repères PER`}
         controls="per-hypotheses-list"
         className="sim-hypotheses__toggle"
       />

@@ -14,8 +14,8 @@ export function IrDisclaimer({ isIsolated }: IrDisclaimerProps) {
         expanded={isOpen}
         onToggle={() => setIsOpen((open) => !open)}
         className="sim-hypotheses__toggle"
-        labelClosed="Hypothèses et limites"
-        labelOpen="Hypothèses et limites"
+        labelClosed={`Hypothèses et limites — ${isIsolated ? 5 : 4} repères fiscaux`}
+        labelOpen="Masquer les hypothèses et limites"
         controls="ir-hypotheses-panel"
         data-testid="ir-hypotheses-toggle"
       />

@@ -481,8 +481,8 @@ export default function IrSimulatorContainer() {
                 title="Détail du calcul"
                 open={showDetails}
                 onOpenChange={setShowDetails}
-                labelClosed="Afficher"
-                labelOpen="Masquer"
+                labelClosed="Détail du calcul — barème, décote et contributions"
+                labelOpen="Masquer le détail du calcul"
                 controlsId="ir-detail-panel"
                 className="ir-detail-card premium-card"
                 toggleClassName="ir-detail-toggle"

@@ -18,8 +18,8 @@ export function TresoHypotheses() {
         expanded={open}
         onToggle={() => setOpen((v) => !v)}
         className="sim-hypotheses__toggle"
-        labelClosed="Hypothèses et limites"
-        labelOpen="Hypothèses et limites"
+        labelClosed="Hypothèses et limites — 8 thèmes IS et trésorerie"
+        labelOpen="Masquer les hypothèses et limites"
         controls="ts-hypotheses-body"
       />
 

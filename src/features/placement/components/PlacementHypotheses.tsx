@@ -10,7 +10,7 @@ export function PlacementHypotheses() {
       <SimDisclosureButton
         expanded={open}
         onToggle={() => setOpen((v) => !v)}
-        labelClosed="Afficher les hypothèses et limites"
+        labelClosed="Afficher les hypothèses et limites — 6 repères placement"
         labelOpen="Masquer les hypothèses et limites"
         controls={HYPOTHESES_ID}
         className="sim-hypotheses__toggle"

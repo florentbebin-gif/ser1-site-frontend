@@ -12,7 +12,7 @@ export function PerTransfertHypotheses() {
       <SimDisclosureButton
         expanded={open}
         onToggle={() => setOpen((current) => !current)}
-        labelClosed="Afficher les hypothèses et limites"
+        labelClosed="Afficher les hypothèses et limites — 7 repères transfert"
         labelOpen="Masquer les hypothèses et limites"
         controls={HYPOTHESES_ID}
         className="sim-hypotheses__toggle"
