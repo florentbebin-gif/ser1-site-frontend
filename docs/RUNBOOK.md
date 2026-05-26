@@ -39,7 +39,8 @@ Note securite : `admin_accounts` et `admin_action_audit` doivent rester `service
 
 En CI, c'est le gate principal.
 Le workflow GitHub Actions exécute aussi `npm run check:pre-merge`, `npm run test:deno`, `npm run lint:repo`, `npm run typecheck:tests` et `npm run typecheck:node`.
-Les contrôles `audit:prod`, `coverage`, `build:storybook` et `lhci` sont informatifs au démarrage : ils produisent des warnings CI, pas un blocage merge.
+Le workflow GitHub Actions exécute aussi `npm run audit:prod`, sans `continue-on-error` : ce contrôle est donc bloquant.
+`coverage`, `build:storybook` et `lhci` restent des contrôles locaux/optionnels informatifs au démarrage.
 
 - Garde d'architecture uniquement :
   - `npm run check:arch` (dependency-cruiser, bloquant sur violation de frontière)
@@ -201,8 +202,8 @@ npm run audit:prod
 
 Statut des gates :
 
-- Bloquants : `npm run check`, `check:pre-merge`, `test:deno`, `lint:repo`, `typecheck:tests`, `typecheck:node`.
-- Informatifs au premier rollout : `audit:prod`, `coverage`, `build:storybook`, `lhci`.
+- Bloquants : `npm run check`, `check:pre-merge`, `test:deno`, `lint:repo`, `typecheck:tests`, `typecheck:node`, `audit:prod`.
+- Informatifs au premier rollout : `coverage`, `build:storybook`, `lhci`.
 
 Coverage :
 
