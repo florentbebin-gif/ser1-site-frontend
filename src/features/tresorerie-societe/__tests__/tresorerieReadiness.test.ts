@@ -7,10 +7,6 @@ const baseInputs: TresoInputsRuntime = {
   selectedAssociateId: 'associe-1',
   foyer: {
     selectedAssociateId: 'associe-1',
-    currentAge: 50,
-    retirementAge: 65,
-    annualIncomeNeed: 30000,
-    projectionStartYear: 2026,
   },
   company: {
     label: 'Holding',
@@ -93,7 +89,7 @@ describe('getTresoReadiness', () => {
                   dividendsStrategy: 'max_treso',
                 },
                 ccaContribution: { enabled: false },
-                ccaRepayment: { enabled: false },
+                ccaRepayment: { enabled: false, strategy: 'aucun' },
               },
             ],
           },
