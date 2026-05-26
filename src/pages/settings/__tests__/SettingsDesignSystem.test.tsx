@@ -26,7 +26,9 @@ describe('SettingsDesignSystem', () => {
     expect(screen.getByLabelText('Nombre libre')).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'Primitives UI' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Ajouter une ligne' })).toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: 'Navigation simulateur' })).toBeInTheDocument();
+    expect(
+      screen.getByRole('heading', { name: 'Navigation simulateur optionnelle' }),
+    ).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /Voir la synthèse/ })).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'États actions' })).toBeInTheDocument();
     expect(screen.getByText('Extrait actions')).toBeInTheDocument();

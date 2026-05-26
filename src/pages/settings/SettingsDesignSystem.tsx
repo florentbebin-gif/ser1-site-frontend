@@ -213,14 +213,17 @@ function DesignSystemUiPreview() {
         </article>
 
         <article className="settings-design-system__ui-card">
-          <h3>Navigation simulateur</h3>
+          <h3>Navigation simulateur optionnelle</h3>
           <SimPageStepper
             steps={[
-              { id: 'settings-demo-profil', label: 'Profil', status: 'done' },
-              { id: 'settings-demo-saisie', label: 'Saisie', status: 'current' },
-              { id: 'settings-demo-synthese', label: 'Synthèse' },
+              { id: 'settings-demo-societe', label: 'Société', status: 'done' },
+              { id: 'settings-demo-parcours', label: 'Parcours', status: 'current' },
+              { id: 'settings-demo-allocation', label: 'Allocation' },
             ]}
           />
+          <p className="settings-design-system__note">
+            Démo primitive uniquement : les simulateurs n’affichent pas ce repère par défaut.
+          </p>
           <SimViewSynthesisCTA
             ready
             targetId="settings-demo-synthese"

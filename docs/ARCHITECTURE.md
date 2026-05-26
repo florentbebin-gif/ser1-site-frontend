@@ -283,13 +283,13 @@ Implémentation de référence :
 - Hooks de contrat UX par page : `useCreditPageUXContract`, `useIrPageUXContract`,
   `useSuccessionPageUXContract`, `usePrevoyancePageUXContract`,
   `useTresoreriePageUXContract`, `usePlacementPageUXContract`
-- Navigation discrète : `src/components/ui/sim/SimPageStepper.tsx`
+- Navigation discrète optionnelle : `src/components/ui/sim/SimPageStepper.tsx`
 - CTA contextuel vers la synthèse : `src/components/ui/sim/SimViewSynthesisCTA.tsx`
 - États vides de synthèse : `src/components/ui/sim/SimEmptyState.tsx` avec `variant="sidebar"`
 - Séparateurs simulateurs : `src/styles/sim/dividers.css`
 - Pour toute nouvelle page `/sim/*`, appliquer la règle placeholder + unité de `docs/GOUVERNANCE.md` : placeholder numérique sans unité dans le champ, suffixe visuel hors champ, sauf si l'unité est déjà portée par un menu déroulant.
 - Les boutons optionnels de filtres/sous-sections doivent démarrer inactifs par défaut, puis activer explicitement les blocs associés.
-- Les pages sans onglets natifs exposent un `SimPageStepper` visuel, sans bouton global "Suivant".
+- `SimPageStepper` reste une primitive optionnelle de démonstration ou de page justifiée ; il n'est pas branché par défaut sur `/sim/*` et ne doit pas contenir `Synthèse` ou `Hypothèses`.
 - Les KPI de droite ne sont rendus qu’une fois les prérequis métier satisfaits ; avant cela, la page rend au plus un état d’attente sobre.
 
 ### Mode utilisateur `/sim/*` (contrat)

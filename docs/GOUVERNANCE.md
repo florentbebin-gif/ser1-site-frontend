@@ -254,6 +254,7 @@ Pour une demande du type "trouve les écarts de normes sur `/sim/tresorerie-soci
 - Conteneur principal : `.sim-page` (`max-width: 1200px; margin: 0 auto; padding: 32px 24px 64px`).
 - Exception locale `/sim/credit` : `padding-top: 20px` via `.sim-page.cv2-page`.
 - Grille desktop : `grid-template-columns: 1.85fr 1fr; gap: 24px`.
+- Rythme vertical des colonnes : `SimPageShell.Main` / `.sim-grid__col--main` espace les blocs de page de `24px` ; `SimPageShell.Side` / `.sim-grid__col--side` espace les cards de synthèse de `16px`.
 - Même ratio pour la ligne de contrôles (tabs à gauche, toggle de vue à droite).
 - Structure minimale :
   1. Header (`h1` + sous-titre + actions)
@@ -273,6 +274,8 @@ Pour une demande du type "trouve les écarts de normes sur `/sim/tresorerie-soci
 
 - Introduire un troisième rail visuel persistant sur desktop.
 - Utiliser des largeurs fixes en px pour les colonnes principales.
+- Dépasser localement le `max-width: 1200px` de `.sim-page`.
+- Corriger l'espacement entre blocs par une série de marges locales de colonne ; enrichir le shell partagé sauf exception documentée en PR.
 
 ### 2) Header, titres et barre sous titre
 
@@ -869,14 +872,18 @@ objet métier quand l’information est disponible. Les scrolls internes dans le
 
 #### 16k) Stepper visuel discret — règle d’usage
 
-Les pages sans onglets métier natifs peuvent afficher `SimPageStepper` sous le header. Il sert de
-repère et de raccourci de scroll, pas de parcours forcé : aucun bouton global "Suivant" n’est
-ajouté. Le composant est sémantiquement un `<nav aria-label="Étapes du simulateur">` et l’étape
-courante porte `aria-current="step"`.
+`SimPageStepper` est une primitive optionnelle, désactivée par défaut sur les simulateurs tant
+qu'elle n'apporte pas un vrai repère métier. Les pages avec onglets métier natifs, comme Placement
+ou PER, ne dupliquent pas cette navigation.
 
-Le stepper reste data-driven. Les libellés et états viennent du contrat UX de la page, pas du
-composant partagé. Les pages déjà structurées par onglets métier, comme Placement ou PER, ne
-dupliquent pas cette navigation.
+Quand il est utilisé, il sert de repère et de raccourci de scroll, pas de parcours forcé : aucun
+bouton global "Suivant" n’est ajouté. Il ne contient jamais `Synthèse`, `Hypothèses`, ni une annexe
+technique : ces zones ne sont pas des étapes métier. Le composant est sémantiquement un
+`<nav aria-label="Étapes du simulateur">` et l’étape courante porte `aria-current="step"`.
+
+Un menu vertical gauche persistant est interdit par défaut sur `/sim/*` : il ajoute un troisième
+rail de lecture et alourdit les pages. Une exception doit être prouvée par un besoin métier
+documenté en PR.
 
 #### 16l) Contrat UX simulateur
 
@@ -886,11 +893,11 @@ via un hook dédié à sa feature. Ce contrat centralise :
 - les prérequis métier (`readiness`) ;
 - l’état de disponibilité de la synthèse (`synthesisReady`) ;
 - la cible de synthèse (`synthesisTargetId`) ;
-- les étapes de navigation optionnelles (`stepperSteps`) ;
+- les étapes de navigation optionnelles (`stepperSteps`), absentes par défaut ;
 - les sections métier adressables (`sections`).
 
-Le JSX de page consomme ce contrat pour brancher `SimPageStepper`, `SimViewSynthesisCTA` et les
-états vides, afin d’éviter les règles divergentes d’un simulateur à l’autre.
+Le JSX de page consomme ce contrat pour brancher `SimViewSynthesisCTA`, les états vides et, si une
+page le justifie, `SimPageStepper`, afin d’éviter les règles divergentes d’un simulateur à l’autre.
 
 ---
 
