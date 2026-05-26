@@ -12,6 +12,7 @@ import type { BaseCgRetraiteContractType } from '@/data/base-cg-retraite';
 import { isPointsContract, TYPE_LABELS } from '@/data/base-cg-retraite';
 import { usePerTransfertSimulator } from './hooks/usePerTransfertSimulator';
 import { usePerTransfertExportHandlers } from './hooks/usePerTransfertExportHandlers';
+import { usePerTransfertPageUXContract } from './hooks/usePerTransfertPageUXContract';
 import {
   PerTransfertIntegerField,
   PerTransfertMoneyField,
@@ -73,13 +74,10 @@ export function PerTransfertSimulator() {
 
   const pointContractCapital =
     input.capitalAcquis > 0 || state.prefonPockets.some((pocket) => (pocket.points ?? 0) > 0);
-  const contractReady = Boolean(
-    selectedContract ||
-    state.contractId ||
-    input.capitalAcquis > 0 ||
-    state.renteActuelleAnnuelleBrute > 0 ||
-    pointContractCapital,
-  );
+  const pageUX = usePerTransfertPageUXContract({
+    selectedContract,
+    contractName: selectedContract?.nomContrat ?? state.contractId,
+  });
   const step1Done = Boolean(
     state.typeContrat &&
     (state.typeContrat === 'PER_POINTS'
@@ -457,7 +455,7 @@ export function PerTransfertSimulator() {
             typeContrat={state.typeContrat}
             subscriptionDate={state.subscriptionDate}
             step2Done={step === 'newper'}
-            contractReady={contractReady}
+            contractReady={pageUX.synthesisReady}
             horizonAgeShort={state.horizonAgeShort}
             horizonAgeLong={state.horizonAgeLong}
             onHorizonChange={(short, long) => {

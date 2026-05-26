@@ -3,6 +3,8 @@ import { describe, expect, it } from 'vitest';
 import type { SimPageUXContract } from '@/components/ui/sim';
 import { useCreditPageUXContract } from '../credit/hooks/useCreditPageUXContract';
 import { useIrPageUXContract } from '../ir/hooks/useIrPageUXContract';
+import { usePerPotentielPageUXContract } from '../per/components/potentiel/hooks/usePerPotentielPageUXContract';
+import { usePerTransfertPageUXContract } from '../per/transfert/hooks/usePerTransfertPageUXContract';
 import { usePlacementPageUXContract } from '../placement/hooks/usePlacementPageUXContract';
 import { usePrevoyancePageUXContract } from '../prevoyance/hooks/usePrevoyancePageUXContract';
 import { useSuccessionPageUXContract } from '../succession/hooks/useSuccessionPageUXContract';
@@ -27,6 +29,10 @@ describe('contrats UX simulateurs', () => {
       readContract(() => useCreditPageUXContract({ synthesisReady: false })),
       readContract(() => useIrPageUXContract({ synthesisReady: false })),
       readContract(() => usePlacementPageUXContract({ synthesisReady: false })),
+      readContract(() => usePerPotentielPageUXContract({ mode: null })),
+      readContract(() =>
+        usePerTransfertPageUXContract({ selectedContract: null, contractName: '' }),
+      ),
       readContract(() => usePrevoyancePageUXContract({ synthesisReady: false })),
       readContract(() =>
         useSuccessionPageUXContract({
@@ -71,5 +77,17 @@ describe('contrats UX simulateurs', () => {
       'credit-hypotheses',
     ]);
     expect(tresorerie.stepperSteps).toHaveLength(5);
+  });
+
+  it('ne duplique pas de stepper sur les pages PER déjà pilotées par onglets métier', () => {
+    const potentiel = readContract(() => usePerPotentielPageUXContract({ mode: 'versement-n' }));
+    const transfert = readContract(() =>
+      usePerTransfertPageUXContract({ selectedContract: null, contractName: 'Contrat client' }),
+    );
+
+    expect(potentiel.synthesisReady).toBe(true);
+    expect(transfert.synthesisReady).toBe(true);
+    expect(potentiel.stepperSteps).toBeUndefined();
+    expect(transfert.stepperSteps).toBeUndefined();
   });
 });

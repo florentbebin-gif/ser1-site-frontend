@@ -31,6 +31,7 @@ import { useSuccessionSimulatorHandlers } from './hooks/useSuccessionSimulatorHa
 import { importPrevoyanceEntriesFromStorage } from './prevoyanceImport';
 import { SuccessionModals } from './components/SuccessionPageSections';
 import { SuccessionSimulatorView } from './components/SuccessionSimulatorView';
+import { hasSuccessionPatrimoineSignificatif } from './utils/hasSuccessionPatrimoineSignificatif';
 import '@/styles/sim/index.css';
 import './styles/index.css';
 
@@ -404,13 +405,14 @@ export default function SuccessionSimulator() {
     onUpdatePatrimonialField: (field: string, value: unknown) =>
       setPatrimonialContext((prev) => ({ ...prev, [field]: value })),
   };
-  const hasSuccessionPatrimoineSignificatif =
-    derived.displayActifNetSuccession > 0 ||
-    assuranceVieEntries.some((entry) => entry.capitauxDeces > 0) ||
-    perEntries.some((entry) => entry.capitauxDeces > 0) ||
-    prevoyanceDecesEntries.some((entry) => entry.capitalDeces > 0);
+  const hasPatrimoineSignificatif = hasSuccessionPatrimoineSignificatif({
+    displayActifNetSuccession: derived.displayActifNetSuccession,
+    assuranceVieEntries,
+    perEntries,
+    prevoyanceDecesEntries,
+  });
   const successionSynthesisReady =
-    derived.shouldRenderSuccessionComputationSections && hasSuccessionPatrimoineSignificatif;
+    derived.shouldRenderSuccessionComputationSections && hasPatrimoineSignificatif;
 
   // ── Rendu ──────────────────────────────────────────────────────────────────
 

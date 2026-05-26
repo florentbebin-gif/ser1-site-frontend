@@ -25,6 +25,7 @@ import SituationFiscaleStep from './steps/SituationFiscaleStep';
 import type { PerIncomeFilters } from './steps/PerIncomeTable';
 import { PerHypotheses } from './PerHypotheses';
 import { PerPotentielContextSidebar } from './PerPotentielContextSidebar';
+import { usePerPotentielPageUXContract } from './hooks/usePerPotentielPageUXContract';
 import '../../styles/index.css';
 
 type StepMeta = {
@@ -131,6 +132,7 @@ export default function PerPotentielSimulator(): React.ReactElement {
     logoPlacement,
     fiscalContext,
   });
+  const pageUX = usePerPotentielPageUXContract({ mode: state.mode });
 
   if (loading) {
     return (
@@ -425,7 +427,7 @@ export default function PerPotentielSimulator(): React.ReactElement {
           )}
         </main>
 
-        {state.mode !== null ? (
+        {pageUX.synthesisReady ? (
           <aside className="per-potentiel-context sim-grid__col sim-grid__col--sticky">
             <PerPotentielContextSidebar
               step={state.step}
@@ -445,9 +447,9 @@ export default function PerPotentielSimulator(): React.ReactElement {
           <aside className="per-potentiel-context sim-grid__col sim-grid__col--sticky">
             <SimEmptyState
               variant="sidebar"
-              illustration="docs"
-              title="Synthèse en attente"
-              description="Choisissez un parcours pour afficher le potentiel et les contrôles fiscaux."
+              illustration={pageUX.emptyState?.illustration ?? 'docs'}
+              title={pageUX.emptyState?.title ?? 'Synthèse en attente'}
+              description={pageUX.emptyState?.description}
             />
           </aside>
         )}
