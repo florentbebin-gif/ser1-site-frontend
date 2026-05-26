@@ -4,13 +4,15 @@
  * Source unique de vérité pour les valeurs par défaut des trois tables de paramètres :
  *   - tax_settings   → DEFAULT_TAX_SETTINGS
  *   - ps_settings    → DEFAULT_PS_SETTINGS
- *   - fiscality_settings (V1 format) → DEFAULT_FISCALITY_SETTINGS
+ *   - fiscality_settings (V2 format) → DEFAULT_FISCALITY_SETTINGS
  *
  * Utilisé comme fallback quand Supabase ne répond pas, ET comme état initial
  * des pages Settings (SettingsImpots, SettingsPrelevements, BaseContrat).
  *
  * ⚠️  Ne jamais dupliquer ces objets ailleurs — toujours importer depuis ce fichier.
  */
+
+import type { FiscalitySettingsV2 } from '../utils/cache/fiscalitySettings';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // DEFAULT_TAX_SETTINGS
@@ -366,7 +368,7 @@ export const DEFAULT_PS_SETTINGS = {
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
-// DEFAULT_FISCALITY_SETTINGS  (V1 format — assuranceVie + perIndividuel)
+// DEFAULT_FISCALITY_SETTINGS  (V2 format — products + rulesetsByKey)
 // Source : tableau Excel PJ / BOFiP
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -389,224 +391,289 @@ export const DEFAULT_PASS_HISTORY: Record<number, number> = {
   2026: 48060,
 };
 
-export const DEFAULT_FISCALITY_SETTINGS = {
-  perIndividuel: {
-    epargne: {
-      plafond163Quatervicies: {
-        ratePercent: 10,
-        base: 'revenu imposable après abattement 10% (frais pro éventuels)',
-        minPassMultiple: 1,
-        maxPassMultiple: 8,
-        note: "Plafond = 10% des revenus imposables (après abattement 10% si applicable). Minimum = 10% d'1 PASS, maximum = 10% de 8 PASS.",
-      },
-      plafond154Bis: {
-        assiettePotentielle: {
-          base: 'assiette sociale (revenu imposable majoré des cotisations facultatives)',
-          part15: {
-            ratePercent: 15,
-            base: 'revenus - 1 PASS',
-            maxPassMultiple: 8,
-          },
-          part10: {
-            ratePercent: 10,
-            base: 'revenus (après abattement 10% si applicable) - composante plancher/plafond',
-            minPassMultiple: 1,
-            maxPassMultiple: 8,
-          },
-        },
-        assietteReportDeclaration: {
-          base: "recalcul sur revenu imposable (après abattement 10% si applicable) : on reporte uniquement le dépassement de l'enveloppe 15%",
-          note: "Assiette report = dépassement de l'enveloppe 15%, recalculé sur l'assiette 'revenu imposable après abattement 10%'.",
-        },
-        note: "Plafond 'Madelin' (154 bis) : 15% des revenus - 1 PASS (max 8 PASS) + 10% des revenus (max 8 PASS avec mini 10% PASS).",
-      },
+export const DEFAULT_PER_INDIVIDUEL_RULES = {
+  epargne: {
+    plafond163Quatervicies: {
+      ratePercent: 10,
+      base: 'revenu imposable après abattement 10% (frais pro éventuels)',
+      minPassMultiple: 1,
+      maxPassMultiple: 8,
+      note: "Plafond = 10% des revenus imposables (après abattement 10% si applicable). Minimum = 10% d'1 PASS, maximum = 10% de 8 PASS.",
     },
-
-    sortieCapital: {
-      pfu: {
-        irRatePercent: 12.8,
-        psRatePercent: 17.2,
-        allowBaremeIR: true,
-      },
-      retraite: {
-        petiteRente: {
-          monthlyThreshold: 110,
-          forfaitIrRatePercent: 7.5,
-          forfaitAbatementRatePercent: 10,
-          note: "Sortie en capital possible lorsque la rente mensuelle n'excède pas le seuil réglementaire ; option forfaitaire sous conditions pour les anciens contrats.",
+    plafond154Bis: {
+      assiettePotentielle: {
+        base: 'assiette sociale (revenu imposable majoré des cotisations facultatives)',
+        part15: {
+          ratePercent: 15,
+          base: 'revenus - 1 PASS',
+          maxPassMultiple: 8,
         },
-        deduits: {
-          versements: {
-            irMode: 'bareme',
-            note: 'Part versements déduits : imposable au barème IR (sans abattement).',
-          },
-          gains: {
-            mode: 'pfu',
-            note: 'Part gains : PFU (12,8% + 17,2%) par défaut, option barème pour la part IR possible.',
-          },
-        },
-        nonDeduits: {
-          versements: { irMode: 'exonere', note: "Part versements non déduits : exonérée d'IR." },
-          gains: {
-            mode: 'pfu',
-            note: 'Part gains : PFU (12,8% + 17,2%) par défaut, option barème pour la part IR possible.',
-          },
+        part10: {
+          ratePercent: 10,
+          base: 'revenus (après abattement 10% si applicable) - composante plancher/plafond',
+          minPassMultiple: 1,
+          maxPassMultiple: 8,
         },
       },
-      anticipation: {
-        achatRP: {
-          deduits: { versementsIR: 'bareme', gains: 'pfu' },
-          nonDeduits: { versementsIR: 'exonere', gains: 'pfu' },
-          note: 'Déblocage anticipé pour achat de résidence principale : logique proche de la sortie à la retraite.',
-        },
-        accidentsDeLaVie: {
-          note: "Déblocages anticipés 'accidents de la vie' : traitement fiscal à gérer au cas par cas (règles spécifiques, souvent exonérations).",
-        },
+      assietteReportDeclaration: {
+        base: "recalcul sur revenu imposable (après abattement 10% si applicable) : on reporte uniquement le dépassement de l'enveloppe 15%",
+        note: "Assiette report = dépassement de l'enveloppe 15%, recalculé sur l'assiette 'revenu imposable après abattement 10%'.",
       },
+      note: "Plafond 'Madelin' (154 bis) : 15% des revenus - 1 PASS (max 8 PASS) + 10% des revenus (max 8 PASS avec mini 10% PASS).",
     },
+  },
 
-    deces: {
-      perAssurantiel: {
-        allowancePerBeneficiary: 152500,
-        displayThresholdTotal: 852500,
-        taxableThresholdPart: 700000,
-        rates: [
-          { upToTotal: 852500, ratePercent: 20 },
-          { upToTotal: null, ratePercent: 31.25 },
-        ],
-        apres70ans: {
-          globalAllowance: 30500,
-          mode: 'dmtg',
-          note: 'Au-delà : DMTG (barème succession).',
-        },
-        note: 'PER assurantiel : transmission alignée assurance-vie (990 I / 757 B).',
-      },
-      perBancaire: {
-        mode: 'succession',
-        note: "PER bancaire : intégration à l'actif successoral (DMTG barème succession).",
-      },
+  sortieCapital: {
+    pfu: {
+      irRatePercent: 12.8,
+      psRatePercent: 17.2,
+      allowBaremeIR: true,
     },
-
-    rente: {
-      pensionAbatementRatePercent: 10,
-      rvtoTaxableFractionByAgeAtFirstPayment: [
-        { label: '< 50 ans', ageMaxInclusive: 49, fraction: 0.7 },
-        { label: '50 à 59 ans', ageMaxInclusive: 59, fraction: 0.5 },
-        { label: '60 à 69 ans', ageMaxInclusive: 69, fraction: 0.4 },
-        { label: '≥ 70 ans', ageMaxInclusive: null, fraction: 0.3 },
-      ],
+    retraite: {
+      petiteRente: {
+        monthlyThreshold: 110,
+        forfaitIrRatePercent: 7.5,
+        forfaitAbatementRatePercent: 10,
+        note: "Sortie en capital possible lorsque la rente mensuelle n'excède pas le seuil réglementaire ; option forfaitaire sous conditions pour les anciens contrats.",
+      },
       deduits: {
-        capitalQuotePart: {
-          irMode: 'bareme_sans_abattement_10',
-          psRatePercent: 0.3,
-          psLabel: 'CASA',
-          note: 'Quote-part capital : rente à titre gratuit, imposée au barème IR (sans abattement 10%). PS : CASA 0,3%.',
+        versements: {
+          irMode: 'bareme',
+          note: 'Part versements déduits : imposable au barème IR (sans abattement).',
         },
-        interestsQuotePart: {
-          irMode: 'rvto',
-          psRatePercent: 17.2,
-          note: "Quote-part intérêts : RVTO (fraction imposable selon âge). PS : 17,2% sur l'assiette après abattement RVTO.",
+        gains: {
+          mode: 'pfu',
+          note: 'Part gains : PFU (12,8% + 17,2%) par défaut, option barème pour la part IR possible.',
         },
       },
       nonDeduits: {
-        irMode: 'rvto',
-        psRatePercent: 17.2,
-        note: "Totalité de la rente : RVTO (fraction imposable selon âge). PS : 17,2% sur l'assiette après abattement RVTO.",
+        versements: { irMode: 'exonere', note: "Part versements non déduits : exonérée d'IR." },
+        gains: {
+          mode: 'pfu',
+          note: 'Part gains : PFU (12,8% + 17,2%) par défaut, option barème pour la part IR possible.',
+        },
+      },
+    },
+    anticipation: {
+      achatRP: {
+        deduits: { versementsIR: 'bareme', gains: 'pfu' },
+        nonDeduits: { versementsIR: 'exonere', gains: 'pfu' },
+        note: 'Déblocage anticipé pour achat de résidence principale : logique proche de la sortie à la retraite.',
+      },
+      accidentsDeLaVie: {
+        note: "Déblocages anticipés 'accidents de la vie' : traitement fiscal à gérer au cas par cas (règles spécifiques, souvent exonérations).",
       },
     },
   },
 
-  assuranceVie: {
-    epargne: {
-      versementDeductibleIR: false,
-      socialOnInterestsDuringAccumulation: {
-        psRatePercent: 17.2,
-        note: 'PS sur intérêts (fonds €) prélevés annuellement.',
-      },
-    },
-
-    retraitsCapital: {
-      baseImposable: 'interets',
-      psRatePercent: 17.2,
-
-      depuis2017: {
-        startDate: '2017-09-27',
-        moins8Ans: {
-          irRatePercent: 12.8,
-          allowBaremeIR: true,
-          label: '< 8 ans',
-        },
-        plus8Ans: {
-          label: '> 8 ans',
-          abattementAnnuel: {
-            single: 4600,
-            couple: 9200,
-          },
-          primesNettesSeuil: 150000,
-          irRateUnderThresholdPercent: 7.5,
-          irRateOverThresholdPercent: 12.8,
-          allowBaremeIR: true,
-        },
-      },
-
-      avant2017: {
-        endDate: '2017-09-26',
-        moins4Ans: { label: '< 4 ans', irRatePercent: 35, allowBaremeIR: true },
-        de4a8Ans: { label: '4 à 8 ans', irRatePercent: 15, allowBaremeIR: true },
-        plus8Ans: {
-          label: '> 8 ans',
-          abattementAnnuel: { single: 4600, couple: 9200 },
-          irRatePercent: 7.5,
-          allowBaremeIR: true,
-        },
-      },
-    },
-
-    deces: {
-      contratAvantDate: '1998-10-12',
-      contratApresDate: '1998-10-13',
-      agePivotPrimes: 70,
-
-      primesAvant1998: {
-        taxRatePercent: 0,
-        note: 'Contrats souscrits avant le 13/10/1998 : primes versées avant le 13/10/1998 exonérées.',
-      },
-
-      primesApres1998: {
-        allowancePerBeneficiary: 152500,
-        brackets: [
-          { upTo: 700000, ratePercent: 20 },
-          { upTo: null, ratePercent: 31.25 },
-        ],
-        note: 'Barème par bénéficiaire (990 I).',
-      },
-
+  deces: {
+    perAssurantiel: {
+      allowancePerBeneficiary: 152500,
+      displayThresholdTotal: 852500,
+      taxableThresholdPart: 700000,
+      rates: [
+        { upToTotal: 852500, ratePercent: 20 },
+        { upToTotal: null, ratePercent: 31.25 },
+      ],
       apres70ans: {
         globalAllowance: 30500,
-        taxationMode: 'dmtg',
-        note: 'Au-delà de 30 500 € (global), taxation aux DMTG (barème succession).',
+        mode: 'dmtg',
+        note: 'Au-delà : DMTG (barème succession).',
+      },
+      note: 'PER assurantiel : transmission alignée assurance-vie (990 I / 757 B).',
+    },
+    perBancaire: {
+      mode: 'succession',
+      note: "PER bancaire : intégration à l'actif successoral (DMTG barème succession).",
+    },
+  },
+
+  rente: {
+    pensionAbatementRatePercent: 10,
+    rvtoTaxableFractionByAgeAtFirstPayment: [
+      { label: '< 50 ans', ageMaxInclusive: 49, fraction: 0.7 },
+      { label: '50 à 59 ans', ageMaxInclusive: 59, fraction: 0.5 },
+      { label: '60 à 69 ans', ageMaxInclusive: 69, fraction: 0.4 },
+      { label: '≥ 70 ans', ageMaxInclusive: null, fraction: 0.3 },
+    ],
+    deduits: {
+      capitalQuotePart: {
+        irMode: 'bareme_sans_abattement_10',
+        psRatePercent: 0.3,
+        psLabel: 'CASA',
+        note: 'Quote-part capital : rente à titre gratuit, imposée au barème IR (sans abattement 10%). PS : CASA 0,3%.',
+      },
+      interestsQuotePart: {
+        irMode: 'rvto',
+        psRatePercent: 17.2,
+        note: "Quote-part intérêts : RVTO (fraction imposable selon âge). PS : 17,2% sur l'assiette après abattement RVTO.",
+      },
+    },
+    nonDeduits: {
+      irMode: 'rvto',
+      psRatePercent: 17.2,
+      note: "Totalité de la rente : RVTO (fraction imposable selon âge). PS : 17,2% sur l'assiette après abattement RVTO.",
+    },
+  },
+};
+
+export const DEFAULT_ASSURANCE_VIE_RULES = {
+  epargne: {
+    versementDeductibleIR: false,
+    socialOnInterestsDuringAccumulation: {
+      psRatePercent: 17.2,
+      note: 'PS sur intérêts (fonds €) prélevés annuellement.',
+    },
+  },
+
+  retraitsCapital: {
+    baseImposable: 'interets',
+    psRatePercent: 17.2,
+
+    depuis2017: {
+      startDate: '2017-09-27',
+      moins8Ans: {
+        irRatePercent: 12.8,
+        allowBaremeIR: true,
+        label: '< 8 ans',
+      },
+      plus8Ans: {
+        label: '> 8 ans',
+        abattementAnnuel: {
+          single: 4600,
+          couple: 9200,
+        },
+        primesNettesSeuil: 150000,
+        irRateUnderThresholdPercent: 7.5,
+        irRateOverThresholdPercent: 12.8,
+        allowBaremeIR: true,
       },
     },
 
-    rente: {
-      possible: true,
-      psRatePercent: 17.2,
-      taxableFractionByAgeAtLiquidation: [
-        { label: '< 60 ans', ageMaxInclusive: 59, fraction: 0.5 },
-        { label: '< 70 ans', ageMaxInclusive: 69, fraction: 0.4 },
-        { label: '≥ 70 ans', ageMaxInclusive: null, fraction: 0.3 },
-      ],
-      irMode: 'bareme',
-      notePs: "Les PS sont calculés sur l'assiette après abattement.",
-      noteCapitalOnDeath:
-        'Transmission des capitaux en cas de décès : non (sauf éventuelle réversion de la rente).',
+    avant2017: {
+      endDate: '2017-09-26',
+      moins4Ans: { label: '< 4 ans', irRatePercent: 35, allowBaremeIR: true },
+      de4a8Ans: { label: '4 à 8 ans', irRatePercent: 15, allowBaremeIR: true },
+      plus8Ans: {
+        label: '> 8 ans',
+        abattementAnnuel: { single: 4600, couple: 9200 },
+        irRatePercent: 7.5,
+        allowBaremeIR: true,
+      },
     },
   },
 
-  pea: {
-    ancienneteMinYears: 5,
+  deces: {
+    contratAvantDate: '1998-10-12',
+    contratApresDate: '1998-10-13',
+    agePivotPrimes: 70,
+
+    primesAvant1998: {
+      taxRatePercent: 0,
+      note: 'Contrats souscrits avant le 13/10/1998 : primes versées avant le 13/10/1998 exonérées.',
+    },
+
+    primesApres1998: {
+      allowancePerBeneficiary: 152500,
+      brackets: [
+        { upTo: 700000, ratePercent: 20 },
+        { upTo: null, ratePercent: 31.25 },
+      ],
+      note: 'Barème par bénéficiaire (990 I).',
+    },
+
+    apres70ans: {
+      globalAllowance: 30500,
+      taxationMode: 'dmtg',
+      note: 'Au-delà de 30 500 € (global), taxation aux DMTG (barème succession).',
+    },
+  },
+
+  rente: {
+    possible: true,
+    psRatePercent: 17.2,
+    taxableFractionByAgeAtLiquidation: [
+      { label: '< 60 ans', ageMaxInclusive: 59, fraction: 0.5 },
+      { label: '< 70 ans', ageMaxInclusive: 69, fraction: 0.4 },
+      { label: '≥ 70 ans', ageMaxInclusive: null, fraction: 0.3 },
+    ],
+    irMode: 'bareme',
+    notePs: "Les PS sont calculés sur l'assiette après abattement.",
+    noteCapitalOnDeath:
+      'Transmission des capitaux en cas de décès : non (sauf éventuelle réversion de la rente).',
   },
 };
+
+export const DEFAULT_PEA_RULES = {
+  ancienneteMinYears: 5,
+};
+
+export const DEFAULT_CTO_RULES = {
+  dividendes: {
+    abattementBaremePercent: 40,
+  },
+};
+
+export const DEFAULT_FISCALITY_SETTINGS = {
+  schemaVersion: 2 as const,
+  products: [
+    {
+      key: 'assuranceVie',
+      label: 'Assurance-vie',
+      holders: 'PP',
+      nature: 'Assurance',
+      isActive: true,
+      sortOrder: 1,
+    },
+    {
+      key: 'perIndividuel',
+      label: 'PER Individuel',
+      holders: 'PP',
+      nature: 'Assurance',
+      isActive: true,
+      sortOrder: 2,
+    },
+    {
+      key: 'cto',
+      label: 'Compte-titres ordinaire',
+      holders: 'PP+PM',
+      nature: 'Titres',
+      isActive: true,
+      sortOrder: 3,
+    },
+    {
+      key: 'pea',
+      label: "Plan d'Épargne en Actions",
+      holders: 'PP',
+      nature: 'Titres',
+      isActive: true,
+      sortOrder: 4,
+    },
+  ],
+  rulesetsByKey: {
+    assuranceVie: {
+      effectiveDate: '2025-01-01',
+      rules: DEFAULT_ASSURANCE_VIE_RULES,
+      sources: [],
+    },
+    perIndividuel: {
+      effectiveDate: '2025-01-01',
+      rules: DEFAULT_PER_INDIVIDUEL_RULES,
+      sources: [],
+    },
+    cto: {
+      effectiveDate: '2025-01-01',
+      rules: DEFAULT_CTO_RULES,
+      sources: [],
+    },
+    pea: {
+      effectiveDate: '2025-01-01',
+      rules: DEFAULT_PEA_RULES,
+      sources: [],
+    },
+  },
+  _history: [],
+} satisfies FiscalitySettingsV2;
 
 export const DEFAULT_BASE_CONTRAT_RULE_LABEL_SETTINGS = {
   capitalGains: {
@@ -634,5 +701,5 @@ export const DEFAULT_BASE_CONTRAT_RULE_LABEL_SETTINGS = {
     crdsRatePercent: 0.5,
   },
   rvtoTaxableFractionByAgeAtFirstPayment:
-    DEFAULT_FISCALITY_SETTINGS.perIndividuel.rente.rvtoTaxableFractionByAgeAtFirstPayment,
+    DEFAULT_PER_INDIVIDUEL_RULES.rente.rvtoTaxableFractionByAgeAtFirstPayment,
 };

@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import type {
+import {
   DEFAULT_FISCALITY_SETTINGS,
+  DEFAULT_ASSURANCE_VIE_RULES,
+} from '../../../constants/settingsDefaults';
+import type {
   DEFAULT_PS_SETTINGS,
   DEFAULT_TAX_SETTINGS,
 } from '../../../constants/settingsDefaults';
@@ -17,13 +20,23 @@ describe('buildBaseContratFiscalLabels', () => {
         patrimony: {},
       } as typeof DEFAULT_PS_SETTINGS,
       _raw_fiscality: {
-        assuranceVie: {
-          retraitsCapital: {
-            depuis2017: {},
-          },
-          deces: {
-            primesApres1998: {},
-            apres70ans: {},
+        ...DEFAULT_FISCALITY_SETTINGS,
+        rulesetsByKey: {
+          ...DEFAULT_FISCALITY_SETTINGS.rulesetsByKey,
+          assuranceVie: {
+            ...DEFAULT_FISCALITY_SETTINGS.rulesetsByKey.assuranceVie,
+            rules: {
+              ...DEFAULT_ASSURANCE_VIE_RULES,
+              retraitsCapital: {
+                ...DEFAULT_ASSURANCE_VIE_RULES.retraitsCapital,
+                depuis2017: {},
+              },
+              deces: {
+                ...DEFAULT_ASSURANCE_VIE_RULES.deces,
+                primesApres1998: {},
+                apres70ans: {},
+              },
+            },
           },
         },
       } as typeof DEFAULT_FISCALITY_SETTINGS,

@@ -12,10 +12,11 @@
  * - tax_settings
  * - ps_settings
  * - fiscality_settings
+ * - pass_history
  */
 
 import { supabase } from '../../supabaseClient';
-import { migrateV1toV2 } from './fiscalitySettingsMigrator';
+import { toFiscalitySettingsV2 } from './fiscalitySettingsAccess';
 import type { FiscalitySettingsV2 } from './fiscalitySettings';
 import {
   DEFAULT_TAX_SETTINGS,
@@ -49,8 +50,7 @@ export interface GetFiscalSettingsOptions {
 export interface GetFiscalSettingsResult {
   tax: typeof DEFAULT_TAX_SETTINGS;
   ps: typeof DEFAULT_PS_SETTINGS;
-  /** V2 format au runtime — les champs V1 (assuranceVie, perIndividuel) sont préservés pour compatibilité. */
-  fiscality: typeof DEFAULT_FISCALITY_SETTINGS;
+  fiscality: FiscalitySettingsV2;
   passHistory: Record<number, number>;
   loading: false;
   error: null;
@@ -60,8 +60,7 @@ export interface GetFiscalSettingsResult {
 export interface LoadFiscalSettingsStrictResult {
   tax: typeof DEFAULT_TAX_SETTINGS;
   ps: typeof DEFAULT_PS_SETTINGS;
-  /** V2 format au runtime — les champs V1 (assuranceVie, perIndividuel) sont préservés pour compatibilité. */
-  fiscality: typeof DEFAULT_FISCALITY_SETTINGS;
+  fiscality: FiscalitySettingsV2;
   passHistory: Record<number, number>;
   fromCache: boolean;
   error: string | null;
@@ -73,7 +72,6 @@ export interface LoadFiscalSettingsStrictResult {
 interface CacheState {
   tax: typeof DEFAULT_TAX_SETTINGS | null;
   ps: typeof DEFAULT_PS_SETTINGS | null;
-  /** Stocké en V2 (après migrateV1toV2). Les champs V1 sont préservés en legacy props. */
   fiscality: FiscalitySettingsV2 | null;
   passHistory: Record<number, number> | null;
   timestamp: number;
@@ -142,7 +140,7 @@ function hydrateFromStorage(): boolean {
     if (payload && typeof payload === 'object' && payload.timestamp) {
       cache.tax = payload.tax;
       cache.ps = payload.ps;
-      cache.fiscality = payload.fiscality ? migrateV1toV2(payload.fiscality) : null;
+      cache.fiscality = payload.fiscality ? toFiscalitySettingsV2(payload.fiscality) : null;
       cache.passHistory = payload.passHistory ?? null;
       cache.timestamp = payload.timestamp;
       cache.meta = payload.meta ?? {
@@ -218,7 +216,7 @@ async function fetchFromSupabase(kind: CacheKind): Promise<void> {
           cache.ps = res.data.data as typeof DEFAULT_PS_SETTINGS;
           cache.meta.psUpdatedAt = res.data.updated_at ?? null;
         } else {
-          cache.fiscality = migrateV1toV2(res.data.data);
+          cache.fiscality = toFiscalitySettingsV2(res.data.data);
           cache.meta.fiscalityUpdatedAt = res.data.updated_at ?? null;
         }
         cache.timestamp = Date.now();
@@ -244,7 +242,7 @@ export async function getFiscalSettings({
   const result: GetFiscalSettingsResult = {
     tax: DEFAULT_TAX_SETTINGS,
     ps: DEFAULT_PS_SETTINGS,
-    fiscality: DEFAULT_FISCALITY_SETTINGS,
+    fiscality: toFiscalitySettingsV2(DEFAULT_FISCALITY_SETTINGS),
     passHistory: DEFAULT_PASS_HISTORY,
     loading: false,
     error: null,
@@ -258,9 +256,7 @@ export async function getFiscalSettings({
       if (isCacheValid(kind)) {
         if (kind === 'tax' && cache.tax) result.tax = cache.tax;
         else if (kind === 'ps' && cache.ps) result.ps = cache.ps;
-        // fiscality: cast V2 → V1 shape (V2 preserves V1 legacy fields for consumers)
-        else if (kind === 'fiscality' && cache.fiscality)
-          result.fiscality = cache.fiscality as unknown as typeof DEFAULT_FISCALITY_SETTINGS;
+        else if (kind === 'fiscality' && cache.fiscality) result.fiscality = cache.fiscality;
         else if (kind === 'pass' && cache.passHistory) result.passHistory = cache.passHistory;
       }
     }
@@ -295,9 +291,7 @@ export async function loadFiscalSettingsStrict(): Promise<LoadFiscalSettingsStri
     return {
       tax: cache.tax ?? DEFAULT_TAX_SETTINGS,
       ps: cache.ps ?? DEFAULT_PS_SETTINGS,
-      // fiscality: cast V2 → V1 shape (V2 preserves V1 legacy fields for consumers)
-      fiscality: (cache.fiscality ??
-        DEFAULT_FISCALITY_SETTINGS) as unknown as typeof DEFAULT_FISCALITY_SETTINGS,
+      fiscality: cache.fiscality ?? toFiscalitySettingsV2(DEFAULT_FISCALITY_SETTINGS),
       passHistory: cache.passHistory ?? DEFAULT_PASS_HISTORY,
       fromCache: true,
       error: null,
@@ -318,9 +312,10 @@ export async function loadFiscalSettingsStrict(): Promise<LoadFiscalSettingsStri
   return {
     tax: isCacheValid('tax') && cache.tax ? cache.tax : DEFAULT_TAX_SETTINGS,
     ps: isCacheValid('ps') && cache.ps ? cache.ps : DEFAULT_PS_SETTINGS,
-    fiscality: (isCacheValid('fiscality') && cache.fiscality
-      ? cache.fiscality
-      : DEFAULT_FISCALITY_SETTINGS) as unknown as typeof DEFAULT_FISCALITY_SETTINGS,
+    fiscality:
+      isCacheValid('fiscality') && cache.fiscality
+        ? cache.fiscality
+        : toFiscalitySettingsV2(DEFAULT_FISCALITY_SETTINGS),
     passHistory:
       isCacheValid('pass') && cache.passHistory ? cache.passHistory : DEFAULT_PASS_HISTORY,
     fromCache: false,

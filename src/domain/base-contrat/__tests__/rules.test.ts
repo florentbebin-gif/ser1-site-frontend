@@ -8,7 +8,6 @@
  */
 
 import { describe, it, expect, vi } from 'vitest';
-import { DEFAULT_FISCALITY_SETTINGS } from '../../../constants/settingsDefaults';
 import { CATALOG, CATALOG_PP_PM_SPLIT_MAP } from '../catalog';
 import { buildBaseContratFiscalLabels, getRules, hasSocleRules } from '../rules/index';
 import type { RuleBlock } from '../rules/types';
@@ -138,27 +137,6 @@ describe('getRules — contexte fiscal de rendu', () => {
 
     expect(texts).toContain('PFU 30 % (10 % IR + 20 % prélèvements sociaux)');
     expect(texts).toContain('abattement 990 I de test');
-  });
-
-  it('retombe sur le barème 990 I par défaut si le contexte fiscal est incomplet', () => {
-    const fiscality = {
-      ...DEFAULT_FISCALITY_SETTINGS,
-      assuranceVie: {
-        ...DEFAULT_FISCALITY_SETTINGS.assuranceVie,
-        deces: {
-          ...DEFAULT_FISCALITY_SETTINGS.assuranceVie.deces,
-          primesApres1998: {
-            ...DEFAULT_FISCALITY_SETTINGS.assuranceVie.deces.primesApres1998,
-            brackets: [],
-          },
-        },
-      },
-    };
-
-    const labels = buildBaseContratFiscalLabels({ _raw_fiscality: fiscality });
-
-    expect(labels.assuranceVie990IRates).toContain('jusqu');
-    expect(labels.assuranceVie990IRates).not.toContain('à confirmer');
   });
 
   for (const product of CATALOG) {

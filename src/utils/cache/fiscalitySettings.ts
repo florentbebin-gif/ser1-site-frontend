@@ -5,7 +5,7 @@
  * - PFU / PS rates are NEVER stored here. They live in tax_settings and
  *   ps_settings respectively. Fields that previously duplicated those values
  *   now carry a `$ref` string pointing to the canonical table + path.
- * - The `schemaVersion` field distinguishes V1 (legacy flat) from V2.
+ * - The `schemaVersion` field is fixed to V2.
  * - `sources` are stored per-ruleset but NOT displayed to standard users.
  */
 
@@ -44,8 +44,6 @@ export interface Product {
   isActive: boolean;
   sortOrder: number;
   closedDate?: string; // ISO date — set when product is closed
-  /** @deprecated kept for backward compat with existing data */
-  category?: 'PP' | 'PM';
 }
 
 // ---------------------------------------------------------------------------
@@ -74,23 +72,6 @@ export interface FiscalitySettingsV2 {
   products: Product[];
   rulesetsByKey: Record<string, Ruleset>;
   _history?: HistoryEntry[];
-
-  // Legacy fields kept during transition so extractFiscalParams still works
-  // until the adapter is fully wired. They will be populated by the migrator.
-  assuranceVie?: Record<string, unknown>;
-  perIndividuel?: Record<string, unknown>;
-  dividendes?: Record<string, unknown>;
 }
 
-// ---------------------------------------------------------------------------
-// V1 schema (current production shape in fiscality_settings.data)
-// ---------------------------------------------------------------------------
-export interface FiscalitySettingsV1 {
-  schemaVersion?: undefined | 1;
-  assuranceVie?: Record<string, unknown>;
-  perIndividuel?: Record<string, unknown>;
-  dividendes?: Record<string, unknown>;
-  [key: string]: unknown;
-}
-
-export type FiscalitySettings = FiscalitySettingsV1 | FiscalitySettingsV2;
+export type FiscalitySettings = FiscalitySettingsV2;

@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { DEFAULT_FISCALITY_SETTINGS, DEFAULT_TAX_SETTINGS } from '@/constants/settingsDefaults';
+import {
+  DEFAULT_ASSURANCE_VIE_RULES,
+  DEFAULT_FISCALITY_SETTINGS,
+  DEFAULT_TAX_SETTINGS,
+} from '@/constants/settingsDefaults';
 import {
   normalizeDmtgTaxSettingsForLoad,
   validateDmtgFiscalityPayload,
@@ -63,13 +67,19 @@ describe('schéma DMTG settings', () => {
   it('refuse un payload fiscality_settings assurance-vie décès non canonique à l’écriture', () => {
     const payload = {
       ...DEFAULT_FISCALITY_SETTINGS,
-      assuranceVie: {
-        ...DEFAULT_FISCALITY_SETTINGS.assuranceVie,
-        deces: {
-          ...DEFAULT_FISCALITY_SETTINGS.assuranceVie.deces,
-          apres70ans: {
-            ...DEFAULT_FISCALITY_SETTINGS.assuranceVie.deces.apres70ans,
-            globalAllowance: null,
+      rulesetsByKey: {
+        ...DEFAULT_FISCALITY_SETTINGS.rulesetsByKey,
+        assuranceVie: {
+          ...DEFAULT_FISCALITY_SETTINGS.rulesetsByKey.assuranceVie,
+          rules: {
+            ...DEFAULT_ASSURANCE_VIE_RULES,
+            deces: {
+              ...DEFAULT_ASSURANCE_VIE_RULES.deces,
+              apres70ans: {
+                ...DEFAULT_ASSURANCE_VIE_RULES.deces.apres70ans,
+                globalAllowance: null,
+              },
+            },
           },
         },
       },

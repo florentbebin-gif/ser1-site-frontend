@@ -1,9 +1,11 @@
 import {
+  DEFAULT_ASSURANCE_VIE_RULES,
   DEFAULT_BASE_CONTRAT_RULE_LABEL_SETTINGS,
   DEFAULT_FISCALITY_SETTINGS,
   DEFAULT_PS_SETTINGS,
   DEFAULT_TAX_SETTINGS,
 } from '../../../constants/settingsDefaults';
+import type { FiscalitySettingsV2 } from '../../../utils/cache/fiscalitySettings';
 import type { BaseContratFiscalLabels } from './types';
 
 interface BaseContratFiscalLabelSettings {
@@ -13,7 +15,7 @@ interface BaseContratFiscalLabelSettings {
   dmtgAbattementEnfant?: number;
   _raw_tax?: typeof DEFAULT_TAX_SETTINGS;
   _raw_ps?: typeof DEFAULT_PS_SETTINGS;
-  _raw_fiscality?: typeof DEFAULT_FISCALITY_SETTINGS;
+  _raw_fiscality?: FiscalitySettingsV2;
 }
 
 const numberFormatter = new Intl.NumberFormat('fr-FR', {
@@ -40,6 +42,53 @@ function formatTaxableFractionsByAge(
     .join('. ');
 }
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+function getAssuranceVieRules(fiscality: FiscalitySettingsV2): typeof DEFAULT_ASSURANCE_VIE_RULES {
+  const rules = fiscality.rulesetsByKey.assuranceVie?.rules;
+  return isRecord(rules)
+    ? (rules as typeof DEFAULT_ASSURANCE_VIE_RULES)
+    : DEFAULT_ASSURANCE_VIE_RULES;
+}
+
+function resolveFiscalRefs(
+  obj: unknown,
+  taxSettings: Record<string, unknown> | null,
+  psSettings: Record<string, unknown> | null,
+): unknown {
+  if (obj === null || obj === undefined) return obj;
+  if (typeof obj === 'string' && obj.startsWith('$ref:')) {
+    const withoutPrefix = obj.slice(5);
+    const dotIndex = withoutPrefix.indexOf('.');
+    if (dotIndex === -1) return undefined;
+    const table = withoutPrefix.slice(0, dotIndex);
+    const source =
+      table === 'tax_settings' ? taxSettings : table === 'ps_settings' ? psSettings : null;
+    return source ? getByPath(source, withoutPrefix.slice(dotIndex + 1)) : undefined;
+  }
+  if (Array.isArray(obj))
+    return obj.map((item) => resolveFiscalRefs(item, taxSettings, psSettings));
+  if (!isRecord(obj)) return obj;
+
+  const resolved: Record<string, unknown> = {};
+  for (const [key, value] of Object.entries(obj)) {
+    resolved[key] = resolveFiscalRefs(value, taxSettings, psSettings);
+  }
+  return resolved;
+}
+
+function getByPath(obj: unknown, path: string): unknown {
+  const parts = path.split('.');
+  let current: unknown = obj;
+  for (const part of parts) {
+    if (!isRecord(current)) return undefined;
+    current = current[part];
+  }
+  return current;
+}
+
 export function buildBaseContratFiscalLabels(
   settings: BaseContratFiscalLabelSettings = {},
 ): BaseContratFiscalLabels {
@@ -59,8 +108,12 @@ export function buildBaseContratFiscalLabels(
     DEFAULT_PS_SETTINGS.patrimony.current.exceptionRate;
   const pfuRateTotal = pfuRateIR + psRateGeneral;
 
-  const defaultAssuranceVie = DEFAULT_FISCALITY_SETTINGS.assuranceVie;
-  const assuranceVie = fiscality.assuranceVie ?? defaultAssuranceVie;
+  const defaultAssuranceVie = DEFAULT_ASSURANCE_VIE_RULES;
+  const assuranceVie = resolveFiscalRefs(
+    getAssuranceVieRules(fiscality),
+    tax,
+    ps,
+  ) as typeof DEFAULT_ASSURANCE_VIE_RULES;
   const avRetraitsCapital = assuranceVie.retraitsCapital ?? defaultAssuranceVie.retraitsCapital;
   const avRetraitsDepuis2017 =
     avRetraitsCapital.depuis2017 ?? defaultAssuranceVie.retraitsCapital.depuis2017;
@@ -74,7 +127,7 @@ export function buildBaseContratFiscalLabels(
   const av990IBrackets =
     (avPrimesApres1998.brackets?.length ?? 0) >= 2
       ? avPrimesApres1998.brackets
-      : DEFAULT_FISCALITY_SETTINGS.assuranceVie.deces.primesApres1998.brackets;
+      : DEFAULT_ASSURANCE_VIE_RULES.deces.primesApres1998.brackets;
   const av990ITranche1 = av990IBrackets[0];
   const av990ITranche2 = av990IBrackets[1];
   const av990IAllowance =

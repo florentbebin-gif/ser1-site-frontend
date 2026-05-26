@@ -2,14 +2,13 @@
  * Snapshot baseline test for extractFiscalParams.
  *
  * This golden snapshot captures the exact output of extractFiscalParams()
- * when fed with the V1 fixtures (fiscalitySettings + psSettings).
- * Any future refactor (V2 migration, refs resolver, etc.) MUST produce
- * the same output to guarantee zero regression.
+ * when fed with the current V2 defaults and Supabase-shaped PS/tax fixtures.
+ * Any future refactor MUST produce the same output to guarantee zero regression.
  */
 
 import { describe, it, expect } from 'vitest';
+import { DEFAULT_FISCALITY_SETTINGS } from '../../constants/settingsDefaults';
 import { extractFiscalParams } from '../../engine/placement';
-import fiscalityV1 from './fixtures/fiscalitySettingsV1.json';
 import psV1 from './fixtures/psSettingsV1.json';
 import taxV1 from './fixtures/taxSettingsV1.json';
 
@@ -34,8 +33,8 @@ const EXPECTED_SNAPSHOT = {
 };
 
 describe('extractFiscalParams â€” golden snapshot', () => {
-  it('returns the expected params from V1 fixtures', () => {
-    const result = extractFiscalParams(fiscalityV1, psV1, taxV1);
+  it('returns the expected params from V2 defaults', () => {
+    const result = extractFiscalParams(DEFAULT_FISCALITY_SETTINGS, psV1, taxV1);
     expect(result).toEqual(EXPECTED_SNAPSHOT);
   });
 
