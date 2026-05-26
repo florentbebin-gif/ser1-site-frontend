@@ -162,10 +162,20 @@ function DesignSystemUiPreview() {
           <SimDisclosureButton
             expanded={detailsOpen}
             onToggle={() => setDetailsOpen((open) => !open)}
-            labelClosed="Afficher le détail"
-            labelOpen="Masquer le détail"
+            labelClosed="Afficher le détail — 14 années"
+            labelOpen="Masquer le détail — 14 années"
             controls="settings-design-system-ui-detail"
           />
+        </article>
+
+        <article className="settings-design-system__ui-card">
+          <h3>Barres séparatrices</h3>
+          <div className="sim-divider" />
+          <p className="settings-design-system__note">Sous-titre de carte</p>
+          <div className="sim-divider sim-divider--soft" />
+          <p className="settings-design-system__note">Séparation interne</p>
+          <div className="sim-divider sim-divider--solid" />
+          <p className="settings-design-system__note">Conclusion ou annexe</p>
         </article>
 
         <article className="settings-design-system__ui-card">
@@ -346,6 +356,12 @@ function DesignSystemModernityPreview() {
       <article className="settings-design-system__ui-card">
         <h3>Texte en attente</h3>
         <SimSkeletonText lines={3} />
+      </article>
+      <article className="settings-design-system__ui-card">
+        <h3>Transition vide rempli</h3>
+        <div className="sim-sidebar-reveal">
+          <SimMetric variant="secondary" label="Synthèse révélée" value="Prête" />
+        </div>
       </article>
       <article className="settings-design-system__ui-card">
         <h3>État vide</h3>

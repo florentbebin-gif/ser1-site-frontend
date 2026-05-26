@@ -14,6 +14,7 @@ import {
   SuccessionPageContent,
   SuccessionPageSidebar,
 } from './SuccessionPageSections';
+import { useSuccessionPageUXContract } from '../hooks/useSuccessionPageUXContract';
 
 type SuccessionPageSectionsProps = ComponentProps<typeof SuccessionPageContent>;
 type SuccessionDerivedValues = SuccessionPageSectionsProps['derived'];
@@ -45,6 +46,11 @@ export function SuccessionSimulatorView({
   hypothesesOpen,
   onToggleHypotheses,
 }: SuccessionSimulatorViewProps) {
+  const pageUX = useSuccessionPageUXContract({
+    computationSectionsReady: derived.shouldRenderSuccessionComputationSections,
+    synthesisReady: successionSynthesisReady,
+  });
+
   if (settingsLoading) {
     return (
       <SimPageShell
@@ -73,24 +79,7 @@ export function SuccessionSimulatorView({
           <ExportMenu options={exportOptions} loading={exportLoading} />
         </>
       }
-      nav={
-        <SimPageStepper
-          steps={[
-            { id: 'succession-famille', label: 'Famille' },
-            {
-              id: 'succession-patrimoine',
-              label: 'Patrimoine',
-              disabled: !derived.shouldRenderSuccessionComputationSections,
-            },
-            {
-              id: 'succession-synthese',
-              label: 'Synthèse',
-              disabled: !successionSynthesisReady,
-            },
-            { id: 'succession-hypotheses', label: 'Hypothèses' },
-          ]}
-        />
-      }
+      nav={pageUX.stepperSteps ? <SimPageStepper steps={pageUX.stepperSteps} /> : undefined}
       notice={
         <div
           id="succession-famille"
@@ -112,7 +101,8 @@ export function SuccessionSimulatorView({
             </div>
             <SimViewSynthesisCTA
               ready={successionSynthesisReady}
-              targetId="succession-synthese"
+              targetId={pageUX.synthesisTargetId ?? 'succession-synthese'}
+              variant="floating"
               hint="Droits, masse transmise et chronologie décès."
             />
           </SimPageShell.Main>

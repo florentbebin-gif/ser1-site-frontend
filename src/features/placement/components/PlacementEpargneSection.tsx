@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { SimActionButton, SimCollapsibleTable } from '@/components/ui/sim';
+import { SimActionButton, SimCollapsibleTable, SimTooltip } from '@/components/ui/sim';
+import { CGP_GLOSSARY } from '@/constants/cgpGlossary';
 import { IconChevronDown, IconLayers } from '@/icons/ui';
 import { ENVELOPE_LABELS } from '@/engine/placement';
 import type { CompareResult } from '@/engine/placement/types';
@@ -46,16 +47,32 @@ const ALL_ENVELOPE_LABELS: Record<string, string> = {
   PER_BANCAIRE_UI: 'PER bancaire (CTO)',
 };
 
+const ENVELOPE_GLOSSARY = {
+  AV: CGP_GLOSSARY.AV,
+  PER: CGP_GLOSSARY.PER,
+  PER_BANCAIRE_UI: CGP_GLOSSARY.PER_BANCAIRE,
+  PEA: CGP_GLOSSARY.PEA,
+  CTO: CGP_GLOSSARY.CTO,
+  SCPI: CGP_GLOSSARY.SCPI,
+} satisfies Partial<Record<string, (typeof CGP_GLOSSARY)[keyof typeof CGP_GLOSSARY]>>;
+
 export function formatVersementConfigSummary(
   initialMontant: number,
   annualMontant: number,
   formatter: (value: number) => string = shortEuro,
+  ponctuelTotal: number = 0,
 ) {
-  const initialSummary = formatter(initialMontant);
-  if (annualMontant > 0) {
-    return `${initialSummary} + ${formatter(annualMontant)}/an`;
+  if (initialMontant <= 0 && annualMontant <= 0 && ponctuelTotal <= 0) {
+    return 'Configurer les versements';
   }
-  return initialSummary;
+
+  return [
+    annualMontant > 0 ? `${formatter(annualMontant)}/an` : null,
+    initialMontant > 0 ? `${formatter(initialMontant)} initial` : null,
+    ponctuelTotal > 0 ? `${formatter(ponctuelTotal)} ponctuel` : null,
+  ]
+    .filter(Boolean)
+    .join(' · ');
 }
 
 interface EnvelopePillSelectProps {
@@ -67,6 +84,7 @@ interface EnvelopePillSelectProps {
 function EnvelopePillSelect({ envelope, colorClass, onSelect }: EnvelopePillSelectProps) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
+  const glossaryEntry = ENVELOPE_GLOSSARY[envelope as keyof typeof ENVELOPE_GLOSSARY];
 
   useEffect(() => {
     if (!open) return;
@@ -91,6 +109,14 @@ function EnvelopePillSelect({ envelope, colorClass, onSelect }: EnvelopePillSele
         {ALL_ENVELOPE_LABELS[envelope] ?? envelope}
         <IconChevronDown className="pl-envelope-pill__chevron" />
       </button>
+      {glossaryEntry ? (
+        <SimTooltip
+          className="pl-envelope-tooltip"
+          label={glossaryEntry.label}
+          description={glossaryEntry.description}
+          ariaLabel={`Définition ${glossaryEntry.label}`}
+        />
+      ) : null}
       {open && (
         <div className="pl-envelope-menu" role="listbox">
           {ALL_ENVELOPE_OPTIONS.map(([key, label]) => (
@@ -204,11 +230,11 @@ export function PlacementEpargneSection({
               <th className="pl-colhead pl-colhead--add" aria-label="Ajouter un 2e placement">
                 <SimActionButton
                   variant="add"
-                  mode="icon"
-                  label="Ajouter un 2e placement"
+                  mode="text"
+                  label="+ Comparer un autre placement"
                   onClick={() => setCompareEnabled(true)}
-                  ariaLabel="Ajouter un 2e placement"
-                  title="Ajouter un 2e placement"
+                  ariaLabel="Comparer un autre placement"
+                  title="Comparer un autre placement"
                 />
               </th>
             )}
@@ -270,6 +296,11 @@ export function PlacementEpargneSection({
                     label={formatVersementConfigSummary(
                       product.versementConfig.initial.montant,
                       product.versementConfig.annuel.montant,
+                      shortEuro,
+                      product.versementConfig.ponctuels?.reduce(
+                        (sum, versement) => sum + versement.montant,
+                        0,
+                      ) ?? 0,
                     )}
                     ariaLabel={`Paramétrer les versements du produit ${index + 1}`}
                     className="pl-config-action"

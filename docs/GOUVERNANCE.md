@@ -843,6 +843,55 @@ La colonne de droite ne doit pas afficher de KPI à zéro quand les prérequis m
 Elle affiche soit rien quand la page a explicitement choisi une colonne désactivée, soit un seul
 `SimEmptyState` `variant="sidebar"` quand un repère d’attente aide l’utilisateur.
 
+#### 16i) État vide sidebar — règle d’usage
+
+Les simulateurs ne rendent pas de cartes KPI calculées tant que les prérequis essentiels de la
+page ne sont pas satisfaits. L’état d’attente autorisé dans une colonne de droite est
+`SimEmptyState variant="sidebar"` : un titre court, une phrase d’invitation métier, puis une micro
+prévisualisation optionnelle de ce qui apparaîtra après saisie.
+
+Le message doit aider à poursuivre la saisie sans recréer un onboarding lourd. Une page avec des
+onglets métier peut désactiver totalement la colonne droite si cela allège mieux la lecture, mais
+elle ne doit pas compenser par des KPI à zéro.
+
+#### 16j) Révélation progressive — règle d’usage
+
+Les informations d’une page `/sim/*` sont classées en trois niveaux :
+
+- Niveau 1 : saisie et décisions indispensables, visibles immédiatement.
+- Niveau 2 : synthèse, alertes et repères d’aide à la décision, visibles dès que calculables.
+- Niveau 3 : hypothèses, détails techniques, projections longues et annexes, repliés par défaut
+  sauf lorsqu’ils sont le cœur de la tâche courante.
+
+Un bouton de disclosure fermé doit annoncer ce qu’il contient : nombre de lignes, état, période ou
+objet métier quand l’information est disponible. Les scrolls internes dans les grandes cards sont
+évités ; on préfère replier, masquer ou révéler une section complète.
+
+#### 16k) Stepper visuel discret — règle d’usage
+
+Les pages sans onglets métier natifs peuvent afficher `SimPageStepper` sous le header. Il sert de
+repère et de raccourci de scroll, pas de parcours forcé : aucun bouton global "Suivant" n’est
+ajouté. Le composant est sémantiquement un `<nav aria-label="Étapes du simulateur">` et l’étape
+courante porte `aria-current="step"`.
+
+Le stepper reste data-driven. Les libellés et états viennent du contrat UX de la page, pas du
+composant partagé. Les pages déjà structurées par onglets métier, comme Placement ou PER, ne
+dupliquent pas cette navigation.
+
+#### 16l) Contrat UX simulateur
+
+Chaque page `/sim/*` qui consomme les primitives transverses expose un contrat `SimPageUXContract`
+via un hook dédié à sa feature. Ce contrat centralise :
+
+- les prérequis métier (`readiness`) ;
+- l’état de disponibilité de la synthèse (`synthesisReady`) ;
+- la cible de synthèse (`synthesisTargetId`) ;
+- les étapes de navigation optionnelles (`stepperSteps`) ;
+- les sections métier adressables (`sections`).
+
+Le JSX de page consomme ce contrat pour brancher `SimPageStepper`, `SimViewSynthesisCTA` et les
+états vides, afin d’éviter les règles divergentes d’un simulateur à l’autre.
+
 ---
 
 ## Gouvernance couleurs (C1–C10)

@@ -582,9 +582,8 @@
   border-bottom: none;
 }
 
-.per-divider-row__inner {
-  height: 2px;
-  background: linear-gradient(90deg, transparent, var(--color-c8), transparent);
+.per-divider-row .sim-divider {
+  max-width: none;
   margin: 4px 8px;
 }
 

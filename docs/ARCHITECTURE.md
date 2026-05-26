@@ -280,6 +280,9 @@ Implémentation de référence :
 - Styles spécifiques crédit : `src/features/credit/styles/index.css`
 - Inputs/select/toggle : `src/features/credit/components/CreditInputs.tsx` + `src/features/credit/styles/fields.css`
 - Contrat UX partagé : `src/components/ui/sim/simPageUXContract.ts`
+- Hooks de contrat UX par page : `useCreditPageUXContract`, `useIrPageUXContract`,
+  `useSuccessionPageUXContract`, `usePrevoyancePageUXContract`,
+  `useTresoreriePageUXContract`, `usePlacementPageUXContract`
 - Navigation discrète : `src/components/ui/sim/SimPageStepper.tsx`
 - CTA contextuel vers la synthèse : `src/components/ui/sim/SimViewSynthesisCTA.tsx`
 - États vides de synthèse : `src/components/ui/sim/SimEmptyState.tsx` avec `variant="sidebar"`

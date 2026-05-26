@@ -116,6 +116,15 @@
   margin-left: auto;
 }
 
+.sim-view-synthesis-cta--floating {
+  position: fixed;
+  right: clamp(var(--space-4), 4vw, var(--space-8));
+  bottom: clamp(var(--space-4), 4vw, var(--space-8));
+  z-index: 20;
+  width: min(360px, calc(100vw - (var(--space-4) * 2)));
+  box-shadow: var(--shadow-md);
+}
+
 @media (max-width: 700px) {
   .sim-page-stepper {
     gap: 4px;
@@ -128,5 +137,15 @@
 
   .sim-page-stepper__separator {
     display: none;
+  }
+
+  .sim-page-stepper__item:not(.is-active) .sim-page-stepper__label {
+    display: none;
+  }
+
+  .sim-view-synthesis-cta--floating {
+    right: var(--space-3);
+    bottom: var(--space-3);
+    width: calc(100vw - (var(--space-3) * 2));
   }
 }

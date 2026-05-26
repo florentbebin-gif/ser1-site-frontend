@@ -23,6 +23,7 @@ import { useTheme } from '../../settings/ThemeProvider';
 import { useTresorerieState } from './hooks/useTresorerieState';
 import { useTresorerieCalculations } from './hooks/useTresorerieCalculations';
 import { useTresorerieExportHandlers } from './hooks/useTresorerieExportHandlers';
+import { useTresoreriePageUXContract } from './hooks/useTresoreriePageUXContract';
 import { TresoTimelineSection } from './components/timeline/TresoTimelineSection';
 import { TresoSocieteSection } from './components/TresoSocieteSection';
 import { TresoPlacementSection } from './components/TresoPlacementSection';
@@ -43,6 +44,7 @@ export default function TresorerieSocietePage() {
   const { colors: themeColors, pptxColors, cabinetLogo, logoPlacement } = useTheme();
   const activeProfile = getAssociateProfile(state.inputsV6, getSelectedAssociate(state.inputsV6));
   const readiness = getTresoReadiness(state.inputsV6);
+  const pageUX = useTresoreriePageUXContract({ readiness });
   const { rows, kpis, loading, error, simulationError } = useTresorerieCalculations(state.inputsV6);
   const { exportExcel, exportPptx, exportLoading, exportDisabled } = useTresorerieExportHandlers({
     rows,
@@ -93,29 +95,7 @@ export default function TresorerieSocietePage() {
           <ExportMenu options={exportOptions} loading={exportLoading} />
         </>
       }
-      nav={
-        <SimPageStepper
-          steps={[
-            { id: 'treso-societe', label: 'Société' },
-            {
-              id: 'treso-parcours',
-              label: 'Parcours',
-              disabled: !readiness.personalTimelineReady,
-            },
-            {
-              id: 'treso-allocation',
-              label: 'Allocation',
-              disabled: !readiness.personalTimelineReady,
-            },
-            {
-              id: 'treso-synthese',
-              label: 'Synthèse',
-              disabled: !readiness.synthesisReady,
-            },
-            { id: 'treso-hypotheses', label: 'Hypothèses' },
-          ]}
-        />
-      }
+      nav={pageUX.stepperSteps ? <SimPageStepper steps={pageUX.stepperSteps} /> : undefined}
     >
       <SimPageShell.Main>
         {/* Bloc 1 — Société */}
@@ -151,7 +131,8 @@ export default function TresorerieSocietePage() {
 
         <SimViewSynthesisCTA
           ready={readiness.synthesisReady}
-          targetId="treso-synthese"
+          targetId={pageUX.synthesisTargetId ?? 'treso-synthese'}
+          variant="floating"
           hint="Revenu cible, CCA et repères de trésorerie."
         />
 

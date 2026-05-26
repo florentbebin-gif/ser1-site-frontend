@@ -147,7 +147,7 @@ function DividerRow({ isCouple }: { isCouple: boolean }): React.ReactElement {
   return (
     <tr className="per-divider-row">
       <td colSpan={isCouple ? 3 : 2}>
-        <div className="per-divider-row__inner" />
+        <div className="sim-divider sim-divider--soft" />
       </td>
     </tr>
   );

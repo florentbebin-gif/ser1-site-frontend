@@ -30,6 +30,7 @@ import { PlacementInputsPanel } from './PlacementInputsPanel';
 import { PlacementHypotheses } from './PlacementHypotheses';
 import { PlacementResultsPanel } from './PlacementResultsPanel';
 import { usePlacementSimulatorController } from '../hooks/usePlacementSimulatorController';
+import { usePlacementPageUXContract } from '../hooks/usePlacementPageUXContract';
 import { hasPlacementSynthesisPrerequisites } from '../utils/placementReadiness';
 
 export default function PlacementSimulatorPage() {
@@ -80,6 +81,7 @@ export default function PlacementSimulatorPage() {
     { label: 'PowerPoint', onClick: exportPptx, disabled: !results?.produit1 },
   ];
   const showResults = hasPlacementSynthesisPrerequisites(state);
+  const pageUX = usePlacementPageUXContract({ synthesisReady: showResults });
 
   if (error) {
     return (
@@ -144,7 +146,8 @@ export default function PlacementSimulatorPage() {
           />
           <SimViewSynthesisCTA
             ready={showResults}
-            targetId="placement-synthese"
+            targetId={pageUX.synthesisTargetId ?? 'placement-synthese'}
+            variant="floating"
             hint="ROI, effort total et capital transmis net."
           />
         </SimPageShell.Main>

@@ -254,16 +254,6 @@
 }
 
 /* ----------------------------------------
-   DIVIDER PREMIUM
-   ---------------------------------------- */
-.premium-divider {
-  width: 100%;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, var(--color-c8), transparent);
-  margin: 32px 0;
-}
-
-/* ----------------------------------------
    RESPONSIVE
    ---------------------------------------- */
 @media (max-width: 900px) {

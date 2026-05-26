@@ -274,7 +274,7 @@ function OppositionSection({
           </ScenarioCard>
         ) : (
           <div className="per-transfert-compare2__placeholder">
-            Complétez l’onglet Nouveau PER pour afficher le scénario de transfert.
+            Sélectionnez un nouveau PER pour afficher le scénario de transfert.
           </div>
         )}
       </div>

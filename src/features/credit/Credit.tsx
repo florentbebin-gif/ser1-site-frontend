@@ -27,6 +27,7 @@ import {
 } from './utils/creditNormalizers';
 import { useCreditCalculations } from './hooks/useCreditCalculations';
 import { useCreditExports } from './hooks/useCreditExports';
+import { useCreditPageUXContract } from './hooks/useCreditPageUXContract';
 import { getCreditActiveSynthesis, hasCreditSynthesis } from './utils/creditUxState';
 import { CreditControlsRow } from './components/CreditControlsRow';
 import { CreditHypotheses } from './components/CreditHypotheses';
@@ -367,6 +368,9 @@ export default function CreditV2() {
     { label: 'PowerPoint', onClick: exportPowerPoint },
     { label: 'Excel', onClick: exportExcel },
   ];
+  const isAnnual = state.viewMode === 'annuel';
+  const showSummary = hasCreditSynthesis(activeSynthese);
+  const pageUX = useCreditPageUXContract({ synthesisReady: showSummary });
 
   // -------------------------------------------------------------------------
   // RENDU
@@ -390,9 +394,6 @@ export default function CreditV2() {
       />
     );
   }
-
-  const isAnnual = state.viewMode === 'annuel';
-  const showSummary = hasCreditSynthesis(activeSynthese);
 
   const pretLookup = [
     { data: state.pret1, raw: rawValues.pret1, set: setPret1 },
@@ -429,22 +430,7 @@ export default function CreditV2() {
           onChangeViewMode={(viewMode) => setGlobal({ viewMode })}
         />
       }
-      nav={
-        <SimPageStepper
-          steps={[
-            { id: 'credit-financement', label: 'Financement', status: 'current' },
-            {
-              id: 'credit-synthese',
-              label: 'Synthèse',
-              disabled: !showSummary,
-            },
-            {
-              id: 'credit-hypotheses',
-              label: 'Hypothèses',
-            },
-          ]}
-        />
-      }
+      nav={pageUX.stepperSteps ? <SimPageStepper steps={pageUX.stepperSteps} /> : undefined}
     >
       <SimPageShell.Main>
         <div id="credit-financement" data-sim-step-id="credit-financement">
@@ -460,7 +446,8 @@ export default function CreditV2() {
         </div>
         <SimViewSynthesisCTA
           ready={showSummary}
-          targetId="credit-synthese"
+          targetId={pageUX.synthesisTargetId ?? 'credit-synthese'}
+          variant="floating"
           hint="Mensualité, coût total et échéancier prêts."
         />
       </SimPageShell.Main>

@@ -425,6 +425,8 @@ describe('SimPageStepper', () => {
     );
 
     expect(html).toContain('sim-page-stepper');
+    expect(html).toContain('<nav');
+    expect(html).toContain('aria-label="Étapes du simulateur"');
     expect(html).toContain('aria-current="step"');
     expect(html).toContain('Profil');
     expect(html).toContain('disabled=""');
@@ -462,6 +464,14 @@ describe('SimViewSynthesisCTA', () => {
     expect(html).toContain('sim-view-synthesis-cta');
     expect(html).toContain('Voir la synthèse');
     expect(html).toContain('Indicateurs calculés');
+  });
+
+  it('supporte la variante flottante prévue pour les pages simulateurs', () => {
+    const html = renderToStaticMarkup(
+      <SimViewSynthesisCTA ready targetId="synthese" variant="floating" />,
+    );
+
+    expect(html).toContain('sim-view-synthesis-cta--floating');
   });
 });
 

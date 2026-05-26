@@ -37,6 +37,7 @@ import { IrFormSection } from './IrFormSection';
 import { IrSidebarSection } from './IrSidebarSection';
 import { IrDetailsSection } from './IrDetailsSection';
 import { IrDisclaimer } from './IrDisclaimer';
+import { useIrPageUXContract } from '../hooks/useIrPageUXContract';
 import type {
   IrCapitalMode,
   IrChildDraft,
@@ -365,6 +366,7 @@ export default function IrSimulatorContainer() {
     setExportLoading,
   });
   const synthesisReady = Boolean(status && result && showSummaryCard);
+  const pageUX = useIrPageUXContract({ synthesisReady });
 
   if (settingsLoading) {
     return (
@@ -404,16 +406,7 @@ export default function IrSimulatorContainer() {
           />
         </>
       }
-      nav={
-        <SimPageStepper
-          steps={[
-            { id: 'ir-foyer', label: 'Foyer' },
-            { id: 'ir-revenus', label: 'Revenus' },
-            { id: 'ir-synthese', label: 'Synthèse', disabled: !synthesisReady },
-            { id: 'ir-hypotheses', label: 'Hypothèses' },
-          ]}
-        />
-      }
+      nav={pageUX.stepperSteps ? <SimPageStepper steps={pageUX.stepperSteps} /> : undefined}
     >
       <SimPageShell.Main>
         <div id="ir-foyer" data-sim-step-id="ir-foyer">
@@ -453,7 +446,8 @@ export default function IrSimulatorContainer() {
         </div>
         <SimViewSynthesisCTA
           ready={synthesisReady}
-          targetId="ir-synthese"
+          targetId={pageUX.synthesisTargetId ?? 'ir-synthese'}
+          variant="floating"
           hint="TMI, impôt net et imposition totale."
         />
       </SimPageShell.Main>

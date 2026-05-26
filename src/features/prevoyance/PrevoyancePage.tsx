@@ -36,6 +36,7 @@ import {
   DEFAULT_SITUATION,
   type FraisGenerauxEstimateState,
 } from './defaults';
+import { usePrevoyancePageUXContract } from './hooks/usePrevoyancePageUXContract';
 import { usePrevoyanceExportHandlers } from './hooks/usePrevoyanceExportHandlers';
 import { PREVOYANCE_STORAGE_KEY, parsePersistedPrevoyanceState } from './persistence';
 import { DEFAULT_DEATH_TARGET } from './constants';
@@ -81,6 +82,7 @@ export default function PrevoyancePage() {
   const visibleContracts = contracts.filter((contract) => contract.kind === kind);
   const hasBirthDate = Boolean(situation.birthDate);
   const synthesisReady = hasBirthDate && Boolean(selectedRegime);
+  const pageUX = usePrevoyancePageUXContract({ synthesisReady });
   const hasConjoint = ['couple', 'marie', 'pacs'].includes(situation.familyStatus);
   const hasChildren = situation.childrenCount > 0;
   const sidebarContracts =
@@ -206,24 +208,7 @@ export default function PrevoyancePage() {
             <ExportMenu options={exportOptions} loading={exportLoading} />
           </>
         }
-        nav={
-          <SimPageStepper
-            steps={[
-              { id: 'prevoyance-situation', label: 'Situation' },
-              {
-                id: 'prevoyance-garanties',
-                label: 'Garanties',
-                disabled: !synthesisReady,
-              },
-              {
-                id: 'prevoyance-synthese',
-                label: 'Synthèse',
-                disabled: !synthesisReady,
-              },
-              { id: 'prevoyance-hypotheses', label: 'Hypothèses' },
-            ]}
-          />
-        }
+        nav={pageUX.stepperSteps ? <SimPageStepper steps={pageUX.stepperSteps} /> : undefined}
       >
         <SimPageShell.Main>
           <div id="prevoyance-situation" data-sim-step-id="prevoyance-situation">
@@ -255,7 +240,8 @@ export default function PrevoyancePage() {
 
           <SimViewSynthesisCTA
             ready={synthesisReady}
-            targetId="prevoyance-synthese"
+            targetId={pageUX.synthesisTargetId ?? 'prevoyance-synthese'}
+            variant="floating"
             hint="Régime obligatoire, garanties souscrites et besoin décès."
           />
         </SimPageShell.Main>

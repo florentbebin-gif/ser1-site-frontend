@@ -198,12 +198,14 @@ export function PerPotentielContextSidebar({
           label: 'Reliquat N',
           value: fmtCurrency(result.projectionAvisSuivant.declarant1.nonUtiliseN),
         },
-        {
-          label: 'Plafond calculé',
-          value: showProjectedPlafondCalcule
-            ? fmtCurrency(result.projectionAvisSuivant.declarant1.plafondCalculeN)
-            : 'À déterminer',
-        },
+        ...(showProjectedPlafondCalcule
+          ? [
+              {
+                label: 'Plafond calculé',
+                value: fmtCurrency(result.projectionAvisSuivant.declarant1.plafondCalculeN),
+              },
+            ]
+          : []),
         {
           label: 'Total',
           value: fmtCurrency(result.projectionAvisSuivant.declarant1.plafondTotal),
@@ -224,12 +226,14 @@ export function PerPotentielContextSidebar({
           label: 'Reliquat N',
           value: fmtCurrency(result.projectionAvisSuivant.declarant2.nonUtiliseN),
         },
-        {
-          label: 'Plafond calculé',
-          value: showProjectedPlafondCalcule
-            ? fmtCurrency(result.projectionAvisSuivant.declarant2.plafondCalculeN)
-            : 'À déterminer',
-        },
+        ...(showProjectedPlafondCalcule
+          ? [
+              {
+                label: 'Plafond calculé',
+                value: fmtCurrency(result.projectionAvisSuivant.declarant2.plafondCalculeN),
+              },
+            ]
+          : []),
         {
           label: 'Total',
           value: fmtCurrency(result.projectionAvisSuivant.declarant2.plafondTotal),
@@ -247,7 +251,7 @@ export function PerPotentielContextSidebar({
           <h3 className="sim-card__title">Potentiel</h3>
         </div>
         <div className="sim-divider" />
-        {showPotentielAvis && (
+        {showPotentielAvis && showLivePreview && (
           <div className="per-potentiel-visual" aria-hidden="true">
             <SimSparkline className="per-potentiel-visual__sparkline" />
             <span className="per-potentiel-visual__track" />

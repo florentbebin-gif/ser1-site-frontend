@@ -23,7 +23,7 @@ function scrollToTarget(step: SimPageStep) {
 
 export function SimPageStepper({
   steps,
-  ariaLabel = 'Progression du simulateur',
+  ariaLabel = 'Étapes du simulateur',
   defaultActiveId,
   className,
   onStepSelect,
@@ -67,7 +67,7 @@ export function SimPageStepper({
   if (!steps.length) return null;
 
   return (
-    <div className={joinClasses('sim-page-stepper', className)} aria-label={ariaLabel}>
+    <nav className={joinClasses('sim-page-stepper', className)} aria-label={ariaLabel}>
       {steps.map((step, index) => {
         const isActive = activeId === step.id;
         const status = step.status ?? (isActive ? 'current' : 'todo');
@@ -84,6 +84,7 @@ export function SimPageStepper({
             )}
             disabled={step.disabled}
             aria-current={isActive ? 'step' : undefined}
+            aria-label={step.label}
             onClick={() => {
               if (step.disabled) return;
               setActiveId(step.id);
@@ -101,6 +102,6 @@ export function SimPageStepper({
           </button>
         );
       })}
-    </div>
+    </nav>
   );
 }

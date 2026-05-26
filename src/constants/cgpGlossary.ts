@@ -71,6 +71,54 @@ export const CGP_GLOSSARY = {
     description:
       'Rapport entre les flux récupérés et l’effort total engagé, utile pour comparer deux stratégies patrimoniales.',
   },
+  AV: {
+    id: 'av',
+    label: 'Assurance-vie',
+    description:
+      'Enveloppe patrimoniale souple, utilisée pour combiner épargne, rachats programmés et transmission bénéficiaire.',
+  },
+  PER: {
+    id: 'per-placement',
+    label: 'PER',
+    description:
+      'Plan d’épargne retraite orienté sortie en capital ou en rente, avec une lecture dédiée de l’effort d’épargne.',
+  },
+  PER_BANCAIRE: {
+    id: 'per-bancaire',
+    label: 'PER bancaire',
+    description:
+      'PER logé sur un support de compte-titres, à comparer selon la stratégie de sortie et le profil investisseur.',
+  },
+  SCPI: {
+    id: 'scpi',
+    label: 'SCPI',
+    description:
+      'Parts immobilières de rendement, utiles pour générer des revenus réguliers avec une gestion mutualisée.',
+  },
+  PEA: {
+    id: 'pea',
+    label: 'PEA',
+    description:
+      'Enveloppe actions destinée à porter une stratégie long terme sur titres éligibles, avec une liquidité encadrée.',
+  },
+  MADELIN: {
+    id: 'madelin',
+    label: 'Madelin',
+    description:
+      'Ancienne enveloppe retraite des indépendants, à rapprocher des règles de transfert et de sortie retraite.',
+  },
+  CTO: {
+    id: 'cto',
+    label: 'Compte-titres',
+    description:
+      'Compte d’investissement flexible, sans plafond d’enveloppe, exposé à une fiscalité selon la nature des revenus.',
+  },
+  AUTRES: {
+    id: 'autres-enveloppes',
+    label: 'Autres enveloppes',
+    description:
+      'Support non standard à documenter dans le dossier client avant comparaison avec les enveloppes SER1 modélisées.',
+  },
   usufruit: {
     id: 'usufruit',
     label: 'Usufruit',

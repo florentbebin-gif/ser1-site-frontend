@@ -136,7 +136,7 @@
   grid-template-columns: minmax(0, 1fr) max-content;
   gap: 10px;
   align-items: baseline;
-  border-top: 1px solid color-mix(in srgb, var(--color-c8) 70%, transparent);
+  border-top: 1px solid var(--color-c8);
   padding: 7px 0;
 }
 
@@ -569,7 +569,7 @@
 
 .prevoyance-deces-contract + .prevoyance-deces-contract {
   padding-top: 6px;
-  border-top: 1px solid color-mix(in srgb, var(--color-c8) 72%, transparent);
+  border-top: 1px solid var(--color-c8);
 }
 
 .prevoyance-rente-line--sub {

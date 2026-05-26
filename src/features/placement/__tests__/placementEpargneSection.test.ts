@@ -11,12 +11,14 @@ const noop = () => {};
 describe('formatVersementConfigSummary', () => {
   const formatter = (value: number) => `${value}EUR`;
 
-  it('omits the annual suffix when no annual contribution is configured', () => {
-    expect(formatVersementConfigSummary(10000, 0, formatter)).toBe('10000EUR');
+  it('invite à configurer les versements quand aucun flux n’est saisi', () => {
+    expect(formatVersementConfigSummary(0, 0, formatter)).toBe('Configurer les versements');
   });
 
-  it('keeps the annual summary when annual contributions are configured', () => {
-    expect(formatVersementConfigSummary(10000, 1200, formatter)).toBe('10000EUR + 1200EUR/an');
+  it('résume les versements saisis dans un libellé compact', () => {
+    expect(formatVersementConfigSummary(10000, 1200, formatter, 500)).toBe(
+      '1200EUR/an · 10000EUR initial · 500EUR ponctuel',
+    );
   });
 
   it('utilise les actions partagées pour ajouter et paramétrer un placement', () => {
@@ -53,6 +55,9 @@ describe('formatVersementConfigSummary', () => {
 
     expect(markup).toContain('sim-action-btn--edit');
     expect(markup).toContain('sim-action-btn--add');
+    expect(markup).toContain('+ Comparer un autre placement');
+    expect(markup).toContain('1 k€/an');
+    expect(markup).toContain('10 k€ initial');
     expect(markup).not.toContain('pl-btn--config');
     expect(markup).not.toContain('pl-add-product-btn');
   });

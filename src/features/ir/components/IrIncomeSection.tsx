@@ -170,7 +170,7 @@ export function IrIncomeSection({
         <tbody>
           <tr className="ir-divider-row">
             <td colSpan={3}>
-              <div className="ir-divider-row__inner" />
+              <div className="sim-divider sim-divider--soft" />
             </td>
           </tr>
           <tr data-testid="ir-salary-row">
@@ -258,7 +258,7 @@ export function IrIncomeSection({
           </tr>
           <tr className="ir-divider-row">
             <td colSpan={3}>
-              <div className="ir-divider-row__inner" />
+              <div className="sim-divider sim-divider--soft" />
             </td>
           </tr>
           {showTnsRows && (
@@ -296,7 +296,7 @@ export function IrIncomeSection({
           {(showPensionRows || showFoncierRow || isExpert) && (
             <tr className="ir-divider-row">
               <td colSpan={3}>
-                <div className="ir-divider-row__inner" />
+                <div className="sim-divider sim-divider--soft" />
               </td>
             </tr>
           )}
@@ -330,7 +330,7 @@ export function IrIncomeSection({
           {showPensionRows && (showFoncierRow || isExpert) && (
             <tr className="ir-divider-row">
               <td colSpan={3}>
-                <div className="ir-divider-row__inner" />
+                <div className="sim-divider sim-divider--soft" />
               </td>
             </tr>
           )}
@@ -354,7 +354,7 @@ export function IrIncomeSection({
               {showFoncierRow && (
                 <tr className="ir-divider-row">
                   <td colSpan={3}>
-                    <div className="ir-divider-row__inner" />
+                    <div className="sim-divider sim-divider--soft" />
                   </td>
                 </tr>
               )}
@@ -391,7 +391,7 @@ export function IrIncomeSection({
               </tr>
               <tr className="ir-divider-row">
                 <td colSpan={3}>
-                  <div className="ir-divider-row__inner" />
+                  <div className="sim-divider sim-divider--soft" />
                 </td>
               </tr>
               <tr className="ir-row-title">
