@@ -11,17 +11,17 @@ export interface IrSynthesisData {
   irNet: number;
   taxablePerPart: number;
   bracketsDetails?: Array<{ label: string; base: number; rate: number; tax: number }>;
+  irScale?: Array<{ from: number; to: number | null; rate: number }>;
   tmiBaseGlobal?: number;
   tmiMarginGlobal?: number | null;
 }
 
-export const TMI_BRACKETS = [
-  { rate: 0, min: 0, max: 11_294, label: '0%' },
-  { rate: 11, min: 11_294, max: 28_797, label: '11%' },
-  { rate: 30, min: 28_797, max: 82_341, label: '30%' },
-  { rate: 41, min: 82_341, max: 177_106, label: '41%' },
-  { rate: 45, min: 177_106, max: Infinity, label: '45%' },
-] as const;
+export interface TmiBracket {
+  rate: number;
+  min: number;
+  max: number | null;
+  label: string;
+}
 
 const CONTENT_TOP_Y = COORDS_CONTENT.content.y;
 const VERTICAL_SHIFT = 0.4;
@@ -117,16 +117,6 @@ export const LAYOUT = {
   },
 } as const;
 
-export const TMI_WIDTHS = {
-  0: 1.0,
-  11: 1.5,
-  30: 3.5,
-  41: 5.0,
-  45: 5.5,
-} as const;
-
-export const TOTAL_WEIGHT = Object.values(TMI_WIDTHS).reduce((a, b) => a + b, 0);
-
 export function euro(n: number): string {
   return `${Math.round(n).toLocaleString('fr-FR')} €`;
 }
@@ -139,18 +129,44 @@ export function fmt2(n: number): string {
   return n.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
+export function buildTmiBrackets(
+  irScale: Array<{ from: number; to: number | null; rate: number }> | undefined,
+  fallbackRate: number,
+): TmiBracket[] {
+  const rows = (irScale ?? []).filter(
+    (row) => Number.isFinite(row.from) && Number.isFinite(row.rate),
+  );
+
+  if (rows.length === 0) {
+    return [{ rate: fallbackRate, min: 0, max: null, label: pct(fallbackRate) }];
+  }
+
+  return rows.map((row) => ({
+    rate: row.rate,
+    min: row.from,
+    max: row.to,
+    label: pct(row.rate),
+  }));
+}
+
+function findTmiBracket(brackets: TmiBracket[], tmiRate: number): TmiBracket | undefined {
+  return brackets.find((bracket) => Math.round(bracket.rate) === Math.round(tmiRate));
+}
+
 export function calculateMarginToNextTmi(
   taxablePerPart: number,
   tmiRate: number,
+  brackets: TmiBracket[],
 ): { margin: number; nextRate: number } | null {
-  const currentBracket = TMI_BRACKETS.find((bracket) => bracket.rate === tmiRate);
-  if (!currentBracket || currentBracket.max === Infinity) {
+  const currentBracket = findTmiBracket(brackets, tmiRate);
+  if (!currentBracket || currentBracket.max === null) {
     return null;
   }
 
   const margin = currentBracket.max - taxablePerPart;
-  const nextBracketIdx = TMI_BRACKETS.findIndex((bracket) => bracket.rate === tmiRate) + 1;
-  const nextBracket = TMI_BRACKETS[nextBracketIdx];
+  const nextBracketIdx =
+    brackets.findIndex((bracket) => Math.round(bracket.rate) === Math.round(tmiRate)) + 1;
+  const nextBracket = brackets[nextBracketIdx];
 
   if (margin <= 0 || !nextBracket) {
     return null;
@@ -163,11 +179,13 @@ export function getAmountInCurrentBracket(
   taxablePerPart: number,
   tmiRate: number,
   partsNb: number,
+  brackets: TmiBracket[],
 ): number {
-  const bracket = TMI_BRACKETS.find((item) => item.rate === tmiRate);
+  const bracket = findTmiBracket(brackets, tmiRate);
   if (!bracket) return 0;
 
-  const amountInBracketPerPart = Math.max(0, Math.min(taxablePerPart, bracket.max) - bracket.min);
+  const bracketMax = bracket.max ?? taxablePerPart;
+  const amountInBracketPerPart = Math.max(0, Math.min(taxablePerPart, bracketMax) - bracket.min);
   return amountInBracketPerPart * partsNb;
 }
 
@@ -176,6 +194,7 @@ export function getCursorPositionInBracket(
   tmiRate: number,
   tmiBaseGlobal?: number,
   tmiMarginGlobal?: number | null,
+  brackets: TmiBracket[] = [],
 ): number {
   if (
     tmiBaseGlobal !== undefined &&
@@ -190,11 +209,12 @@ export function getCursorPositionInBracket(
     }
   }
 
-  const bracket = TMI_BRACKETS.find((item) => item.rate === tmiRate);
+  const bracket = findTmiBracket(brackets, tmiRate);
   if (!bracket) return 0.5;
   if (taxablePerPart <= bracket.min) return 0.16;
 
-  const effectiveMax = bracket.max === Infinity ? 300_000 : bracket.max;
+  const effectiveMax =
+    bracket.max ?? Math.max(taxablePerPart, bracket.min + Math.max(Math.abs(bracket.min), 1));
   const bracketRange = effectiveMax - bracket.min;
   if (bracketRange <= 0) return 0.5;
 
@@ -202,21 +222,14 @@ export function getCursorPositionInBracket(
   return Math.min(1, positionInBracket / bracketRange);
 }
 
-export function getCursorXOffset(
-  positionRatio: number,
-  segmentWidth: number,
-  tmiRate: number,
-): number {
+export function getCursorXOffset(positionRatio: number, segmentWidth: number): number {
   const thirdWidth = segmentWidth / 3;
-  if (tmiRate === 45) {
-    return positionRatio < 0.5 ? -thirdWidth : 0;
-  }
   if (positionRatio < 0.33) return -thirdWidth;
   if (positionRatio > 0.66) return thirdWidth;
   return 0;
 }
 
-export function getBracketColor(rate: number, theme: PptxThemeRoles): string {
+export function getBracketColor(index: number, total: number, theme: PptxThemeRoles): string {
   const color4 = theme.colors.color4.replace('#', '');
   const color2 = theme.colors.color2.replace('#', '');
 
@@ -227,7 +240,7 @@ export function getBracketColor(rate: number, theme: PptxThemeRoles): string {
   const g2 = parseInt(color2.substring(2, 4), 16);
   const b2 = parseInt(color2.substring(4, 6), 16);
 
-  if (rate === 0) {
+  if (index === 0) {
     const mixR = Math.round(255 - (255 - r4) * 0.3);
     const mixG = Math.round(255 - (255 - g4) * 0.3);
     const mixB = Math.round(255 - (255 - b4) * 0.3);
@@ -235,14 +248,7 @@ export function getBracketColor(rate: number, theme: PptxThemeRoles): string {
     return `${toHex(mixR)}${toHex(mixG)}${toHex(mixB)}`;
   }
 
-  const progressMap: Record<number, number> = {
-    11: 0.0,
-    30: 0.4,
-    41: 0.7,
-    45: 1.0,
-  };
-
-  const t = progressMap[rate] ?? 0.5;
+  const t = total <= 2 ? 1 : Math.min(1, Math.max(0, (index - 1) / (total - 2)));
   const mixR = Math.round(r4 + (r2 - r4) * t);
   const mixG = Math.round(g4 + (g2 - g4) * t);
   const mixB = Math.round(b4 + (b2 - b4) * t);

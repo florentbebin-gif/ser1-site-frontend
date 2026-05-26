@@ -113,6 +113,8 @@ function buildFiscalBrackets(data: PerDeckData): {
     label: `${row.rate.toLocaleString('fr-FR')} %`,
     rate: row.rate,
     threshold: row.from,
+    min: row.from,
+    max: row.to,
   }));
   const active = brackets.find((row) => Math.round(row.rate) === activeRate);
 

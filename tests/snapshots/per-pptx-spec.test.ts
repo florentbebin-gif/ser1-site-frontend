@@ -98,6 +98,28 @@ describe('snapshots/per: PPTX deck spec', () => {
     expect(sanitized).toMatchSnapshot();
   });
 
+  it('transmet les bornes du barème IR au snapshot fiscal', () => {
+    const data = {
+      ...buildData(false),
+      irScale: [
+        { from: 0, to: 8_000, rate: 0, deduction: 0 },
+        { from: 8_000, to: 18_000, rate: 8, deduction: 640 },
+        { from: 18_000, to: null, rate: 26, deduction: 3_880 },
+      ],
+    };
+
+    const spec = buildPerStudyDeck(data, DEFAULT_COLORS);
+    const fiscalSlide = spec.slides.find((slide) => slide.type === 'per-fiscal-snapshot');
+
+    expect(fiscalSlide).toMatchObject({
+      brackets: [
+        { rate: 0, min: 0, max: 8_000 },
+        { rate: 8, min: 8_000, max: 18_000 },
+        { rate: 26, min: 18_000, max: null },
+      ],
+    });
+  });
+
   it('ajoute la slide Madelin lorsque le foyer comporte un TNS', () => {
     const spec = buildPerStudyDeck(buildData(true), DEFAULT_COLORS);
     const madelinSlides = spec.slides.filter(

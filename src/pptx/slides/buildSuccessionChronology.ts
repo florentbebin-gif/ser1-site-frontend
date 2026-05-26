@@ -27,7 +27,7 @@ const GEO = {
   rightX: 6.86,
   panelW: 5.55,
   singleX: 2.1,
-  singleW: 9.1,
+  singleW: 9 + 0.1,
   totalY: 6.18,
 } as const;
 

@@ -58,6 +58,8 @@ interface UseIrExportHandlersParams {
   cabinetLogo?: string | null;
   logoPlacement?: LogoPlacement;
   pptxColors: UiSettingsForPptx;
+  tmiScale: Array<{ from: number; to: number | null; rate: number; deduction?: number }>;
+  pfuRateIR: number;
   setExportLoading: Dispatch<SetStateAction<boolean>>;
 }
 
@@ -80,6 +82,8 @@ export function useIrExportHandlers({
   cabinetLogo,
   logoPlacement,
   pptxColors,
+  tmiScale,
+  pfuRateIR,
   setExportLoading,
 }: UseIrExportHandlersParams) {
   const exportExcel = useCallback(async () => {
@@ -332,6 +336,7 @@ export function useIrExportHandlers({
         tmiRate: result.tmiRate || 0,
         irNet: result.irNet || 0,
         pfuIr: result.pfuIr || 0,
+        pfuRateIR,
         cehr: result.cehr || 0,
         cdhr: result.cdhr || 0,
         psFoncier: result.psFoncier || 0,
@@ -339,6 +344,7 @@ export function useIrExportHandlers({
         psTotal: result.psTotal || 0,
         totalTax: result.totalTax || 0,
         bracketsDetails: result.bracketsDetails || [],
+        irScale: tmiScale,
         tmiBaseGlobal: result.tmiBaseGlobal,
         tmiMarginGlobal: result.tmiMarginGlobal ?? undefined,
         income1: activityIncomeD1,
@@ -365,6 +371,8 @@ export function useIrExportHandlers({
     status,
     location,
     pptxColors,
+    tmiScale,
+    pfuRateIR,
     cabinetLogo,
     logoPlacement,
     setExportLoading,

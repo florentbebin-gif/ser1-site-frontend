@@ -358,6 +358,8 @@ export default function IrSimulatorContainer() {
     cabinetLogo,
     logoPlacement,
     pptxColors,
+    tmiScale,
+    pfuRateIR,
     setExportLoading,
   });
   const synthesisReady = Boolean(status && result && showSummaryCard);

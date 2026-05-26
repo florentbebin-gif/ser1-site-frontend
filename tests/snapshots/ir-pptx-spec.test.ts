@@ -44,4 +44,33 @@ describe('snapshots/ir: PPTX deck spec', () => {
 
     expect(sanitized).toMatchSnapshot();
   });
+
+  it('transmet le PFU et le barème IR dynamiques aux slides fiscales', () => {
+    const irScale = [
+      { from: 0, to: 10_000, rate: 0, deduction: 0 },
+      { from: 10_000, to: 20_000, rate: 9, deduction: 900 },
+      { from: 20_000, to: null, rate: 27, deduction: 4_500 },
+    ];
+
+    const spec = buildIrStudyDeck(
+      {
+        taxableIncome: 62_000,
+        partsNb: 2,
+        taxablePerPart: 31_000,
+        tmiRate: 27,
+        irNet: 7_200,
+        totalTax: 8_100,
+        pfuIr: 900,
+        pfuRateIR: 9.9,
+        irScale,
+      } as Parameters<typeof buildIrStudyDeck>[0],
+      DEFAULT_COLORS,
+    );
+
+    const synthesis = spec.slides.find((slide) => slide.type === 'ir-synthesis');
+    const annexe = spec.slides.find((slide) => slide.type === 'ir-annexe');
+
+    expect((synthesis as { irScale?: unknown }).irScale).toEqual(irScale);
+    expect((annexe as { pfuRateIR?: number }).pfuRateIR).toBe(9.9);
+  });
 });

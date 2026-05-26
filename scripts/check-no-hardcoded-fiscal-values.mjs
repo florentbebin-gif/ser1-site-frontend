@@ -129,11 +129,16 @@ const SCAN_DIRS = [
   'src/features',
   'src/hooks',
   'src/pages/settings',
+  'src/pptx',
 ];
 
 // ─── Fichiers/répertoires autorisés (exclus du contrôle) ─────────────────────
 // 1. Source unique des valeurs fiscales par défaut
-const ALLOWED_EXACT = ['src/constants/settingsDefaults.ts'];
+const ALLOWED_EXACT = [
+  'src/constants/settingsDefaults.ts',
+  // Valeurs OOXML de gradient PowerPoint, sans lien fiscal.
+  'src/pptx/theme/themeBuilder.ts',
+];
 
 // 2. Répertoires de tests (toujours exclus)
 const ALLOWED_DIR_PATTERNS = [/__tests__[/\\]/];

@@ -13,6 +13,7 @@ export type IrSynthesisSlideSpec = {
   irNet: number;
   taxablePerPart: number;
   bracketsDetails?: Array<{ label: string; base: number; rate: number; tax: number }>;
+  irScale?: Array<{ from: number; to: number | null; rate: number }>;
 
   tmiBaseGlobal?: number;
   tmiMarginGlobal?: number | null;
@@ -31,6 +32,7 @@ export type IrAnnexeSlideSpec = {
   qfAdvantage?: number;
   creditsTotal?: number;
   pfuIr?: number;
+  pfuRateIR?: number;
   cehr?: number;
   cdhr?: number;
   psFoncier?: number;
