@@ -42,6 +42,7 @@ export const FiscalIdentitySchema = z
     tax: FiscalSettingEntrySchema.optional(),
     ps: FiscalSettingEntrySchema.optional(),
     fiscality: FiscalSettingEntrySchema.optional(),
+    pass: FiscalSettingEntrySchema.optional(),
   })
   .nullable()
   .optional();

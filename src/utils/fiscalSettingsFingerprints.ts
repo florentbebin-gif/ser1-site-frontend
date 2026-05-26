@@ -5,6 +5,7 @@ export interface FiscalIdentityCurrent {
   tax: { updatedAt: string | null; hash: string };
   ps: { updatedAt: string | null; hash: string };
   fiscality: { updatedAt: string | null; hash: string };
+  pass: { updatedAt: null; hash: string };
 }
 
 export interface FiscalIdentityMeta {
@@ -29,6 +30,10 @@ export function buildFiscalIdentityCurrent(
     fiscality: {
       updatedAt: fiscalMeta.fiscalityUpdatedAt,
       hash: fingerprintSettingsData(fiscalContext._raw_fiscality),
+    },
+    pass: {
+      updatedAt: null,
+      hash: fingerprintSettingsData(fiscalContext.passHistoryByYear),
     },
   };
 }
