@@ -174,7 +174,10 @@ describe('PrevoyancePage', () => {
       screen.queryByText('Garanties souscrites hors régime obligatoire'),
     ).not.toBeInTheDocument();
     await saisirDateNaissance(user);
-    expect(screen.getByText('Comparer')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Ajouter un contrat' })).toHaveClass(
+      'sim-action-btn--add',
+    );
+    expect(screen.queryByText('Comparer')).not.toBeInTheDocument();
     expect(screen.queryByText('Frais généraux')).toBeNull();
     expect(screen.getByRole('heading', { name: 'Cotisation' })).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: /Modifier Contrat 1/i }));
@@ -236,6 +239,7 @@ describe('PrevoyancePage', () => {
     expect(screen.getByRole('button', { name: 'Ajouter un contrat' })).toHaveClass(
       'sim-action-btn--add',
     );
+    expect(screen.queryByText('Comparer')).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: /Modifier Contrat 1/i })).toHaveClass(
       'sim-action-btn--edit',
     );
@@ -249,6 +253,8 @@ describe('PrevoyancePage', () => {
 
     await user.click(screen.getByRole('button', { name: 'Ajouter un contrat' }));
     await user.click(await screen.findByRole('button', { name: 'Terminer' }));
+    expect(screen.getByText('Comparer')).toBeInTheDocument();
+    expect(screen.getByText('Cumuler')).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Ajouter un contrat' }));
     await user.click(await screen.findByRole('button', { name: 'Terminer' }));
 

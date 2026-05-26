@@ -12,7 +12,9 @@ import { PerTransfertWizardSteps } from '../components/PerTransfertWizardSteps';
 import { ContractAuditCards } from '../components/ContractAuditCards';
 import { PerTransfertHypotheses } from '../components/PerTransfertHypotheses';
 import { PerTransfertFraisInfoModal } from '../components/PerTransfertFraisInfoModal';
+import { PerTransfertInfoModal } from '../components/PerTransfertInfoModal';
 import { PerTransfertPrefonPocketsForm } from '../components/PerTransfertPrefonPocketsForm';
+import { RentRevaluationInfoModal } from '../components/RentRevaluationInfoModal';
 import { TransferRulesInfoModal } from '../components/TransferRulesInfoModal';
 import type { BaseCgRetraiteContract } from '@/data/base-cg-retraite';
 
@@ -94,6 +96,7 @@ describe('TransferRulesInfoModal', () => {
 
     expect(html).toContain('L3334-1');
     expect(html).toContain('L224-1');
+    expect(html).toContain('sim-info-modal-content');
     expect(html).toContain('limite d’un transfert tous les trois ans');
     expect(html).toContain('PER d’entreprise collectif');
   });
@@ -104,11 +107,24 @@ describe('PerTransfertFraisInfoModal', () => {
     const html = renderToStaticMarkup(<PerTransfertFraisInfoModal onClose={vi.fn()} />);
 
     expect(html).toContain('PERP, Madelin, Article 83 vers un PER');
+    expect(html).toContain('sim-info-modal-content');
     expect(html).toContain('1 % des droits acquis');
     expect(html).toContain('10 ans');
     expect(html).toContain('D224-18');
     expect(html).toContain('souvent nuls');
     expect(html).not.toContain('Pas de plafond légal unique');
+  });
+});
+
+describe('Modales information PER transfert', () => {
+  it('partagent le style typographique des modales i', () => {
+    const quotePartHtml = renderToStaticMarkup(
+      <PerTransfertInfoModal kind="interestsQuotePart" onClose={vi.fn()} />,
+    );
+    const rentHtml = renderToStaticMarkup(<RentRevaluationInfoModal onClose={vi.fn()} />);
+
+    expect(quotePartHtml).toContain('sim-info-modal-content');
+    expect(rentHtml).toContain('sim-info-modal-content');
   });
 });
 

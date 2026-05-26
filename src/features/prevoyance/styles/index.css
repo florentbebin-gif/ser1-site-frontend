@@ -12,7 +12,7 @@
 .prevoyance-side-card {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 0;
 }
 
 .prevoyance-card + .prevoyance-card {
@@ -24,6 +24,11 @@
   display: flex;
   flex-direction: column;
   gap: 6px;
+}
+
+.prevoyance-card__divider {
+  margin-top: 8px;
+  margin-bottom: 12px;
 }
 
 .prevoyance-card__title-row {
@@ -191,7 +196,6 @@
 }
 
 .prevoyance-icon-button,
-.prevoyance-add-icon-button,
 .prevoyance-summary-icon-button,
 .prevoyance-link-button {
   display: inline-flex;
@@ -220,17 +224,6 @@
   font-size: 16px;
 }
 
-.prevoyance-add-icon-button {
-  width: 32px;
-  min-height: 32px;
-  background: var(--color-c3);
-  border-color: var(--color-c3);
-  color: var(--color-c7);
-  font-size: 20px;
-  font-weight: 700;
-  padding: 0;
-}
-
 .prevoyance-summary-icon-button {
   width: 24px;
   min-height: 24px;
@@ -251,20 +244,12 @@
   font-size: 14px;
 }
 
-.prevoyance-add-icon-button:hover:not(:disabled),
 .prevoyance-summary-icon-button:hover:not(:disabled),
 .prevoyance-icon-button:hover:not(:disabled) {
   background: var(--color-c8);
   color: var(--color-c1);
 }
 
-.prevoyance-add-icon-button:hover:not(:disabled) {
-  background: var(--color-c2);
-  border-color: var(--color-c2);
-  color: var(--color-c7);
-}
-
-.prevoyance-add-icon-button:disabled,
 .prevoyance-summary-icon-button:disabled {
   cursor: not-allowed;
   opacity: 0.42;

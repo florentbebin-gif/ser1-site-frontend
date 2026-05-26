@@ -241,8 +241,7 @@
 }
 
 .per-transfert-contract-audit__documents ul,
-.per-transfert-summary-panel__warnings,
-.per-transfert-modal-list {
+.per-transfert-summary-panel__warnings {
   margin: 0;
   padding-left: 18px;
 }
@@ -685,18 +684,7 @@
   line-height: 1.35;
 }
 
-.per-transfert-modal-list li {
-  margin-bottom: 10px;
-}
-
-.per-transfert-modal-list strong,
-.per-transfert-modal-list span {
-  display: block;
-}
-
-.per-transfert-modal-list span,
-.per-transfert-modal-note,
-.per-transfert-modal-copy {
+.per-transfert-modal-note {
   color: var(--color-c9);
   font-size: 13px;
   line-height: 1.5;

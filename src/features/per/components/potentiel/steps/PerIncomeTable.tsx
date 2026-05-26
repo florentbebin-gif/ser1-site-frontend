@@ -463,6 +463,7 @@ export function PerIncomeTable({
           title="Revenus imposables"
           subtitle="Aide de saisie PER"
           onClose={() => setRevenueInfoOpen(false)}
+          bodyClassName="sim-info-modal-content"
         >
           <p>
             Renseignez uniquement les catégories utiles au calcul du plafond PER. Le filtre TNS

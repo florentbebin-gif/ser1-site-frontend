@@ -10,6 +10,13 @@
   align-self: stretch;
 }
 
+.ir-left {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  margin-bottom: 0;
+}
+
 /* ContrÃ´les (BarÃ¨me + RÃ©sidence) â€” dÃ©filent avec la page */
 .ir-controls-sticky {
   display: grid;

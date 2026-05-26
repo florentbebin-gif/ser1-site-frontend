@@ -29,6 +29,9 @@ describe('PerMadelinInfoModal', () => {
     );
 
     expect(html).toContain('Aucune base TNS saisie');
+    expect(html).toContain('sim-info-modal-content');
+    expect(html).toContain('Assiettes de calcul et enveloppes disponibles');
+    expect(html).toContain('Deux assiettes sont contrôlées');
     expect(html).not.toContain('Assiette de versement');
     expect(html).not.toContain('Enveloppe 10 % commune');
     expect(html).not.toContain('0 €');

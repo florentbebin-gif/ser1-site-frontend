@@ -178,9 +178,8 @@ export function ContractsBlock({
       actions={
         <SimActionButton
           variant="add"
-          mode="icon"
-          label="Ajouter"
-          className="prevoyance-add-icon-button"
+          mode="text"
+          label="+ Ajouter un contrat"
           onClick={addContract}
           disabled={contracts.length >= 3}
           ariaLabel="Ajouter un contrat"
@@ -188,20 +187,22 @@ export function ContractsBlock({
         />
       }
     >
-      <div className="prevoyance-contract-mode">
-        <SimSegmentedControl
-          value={contractAggregationMode}
-          onChange={(value) =>
-            onContractAggregationModeChange(value as PrevoyanceContractAggregationMode)
-          }
-          ariaLabel="Mode de lecture des contrats de prévoyance"
-          size="sm"
-          options={[
-            { value: 'compare', label: 'Comparer' },
-            { value: 'cumulate', label: 'Cumuler' },
-          ]}
-        />
-      </div>
+      {contracts.length >= 2 ? (
+        <div className="prevoyance-contract-mode">
+          <SimSegmentedControl
+            value={contractAggregationMode}
+            onChange={(value) =>
+              onContractAggregationModeChange(value as PrevoyanceContractAggregationMode)
+            }
+            ariaLabel="Mode de lecture des contrats de prévoyance"
+            size="sm"
+            options={[
+              { value: 'compare', label: 'Comparer' },
+              { value: 'cumulate', label: 'Cumuler' },
+            ]}
+          />
+        </div>
+      ) : null}
 
       <div className="prevoyance-contract-summary-grid" data-count={contracts.length}>
         {contracts.map((contract) => (

@@ -338,6 +338,7 @@ export default function SituationFiscaleStep({
           title="Versements retraite"
           subtitle={`Aide de saisie ${yearLabel}`}
           onClose={() => setVersementsInfoOpen(false)}
+          bodyClassName="sim-info-modal-content"
         >
           <p>
             Saisissez les montants par déclarant et par enveloppe. Les lignes Madelin apparaissent
