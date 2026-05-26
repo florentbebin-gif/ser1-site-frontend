@@ -41,6 +41,7 @@ export interface CacheMeta {
   taxUpdatedAt: string | null;
   psUpdatedAt: string | null;
   fiscalityUpdatedAt: string | null;
+  passUpdatedAt: string | null;
 }
 
 export interface GetFiscalSettingsOptions {
@@ -53,7 +54,7 @@ export interface GetFiscalSettingsResult {
   fiscality: FiscalitySettingsV2;
   passHistory: Record<number, number>;
   loading: false;
-  error: null;
+  error: string | null;
   meta: CacheMeta;
 }
 
@@ -76,6 +77,7 @@ interface CacheState {
   passHistory: Record<number, number> | null;
   timestamp: number;
   inflight: Record<CacheKind, Promise<void> | null>;
+  errors: Record<CacheKind, string | null>;
   meta: CacheMeta;
 }
 
@@ -100,8 +102,9 @@ let cache: CacheState = {
   passHistory: null,
   timestamp: 0,
   inflight: { tax: null, ps: null, fiscality: null, pass: null },
+  errors: { tax: null, ps: null, fiscality: null, pass: null },
   // updated_at values from Supabase rows (ISO strings or null)
-  meta: { taxUpdatedAt: null, psUpdatedAt: null, fiscalityUpdatedAt: null },
+  meta: { taxUpdatedAt: null, psUpdatedAt: null, fiscalityUpdatedAt: null, passUpdatedAt: null },
 };
 
 function createTimeoutPromise(ms: number): Promise<never> {
@@ -147,6 +150,7 @@ function hydrateFromStorage(): boolean {
         taxUpdatedAt: null,
         psUpdatedAt: null,
         fiscalityUpdatedAt: null,
+        passUpdatedAt: null,
       };
       return true;
     }
@@ -154,6 +158,38 @@ function hydrateFromStorage(): boolean {
     // ignore parse errors
   }
   return false;
+}
+
+function getLatestUpdatedAt(rows: Array<{ updated_at?: unknown }>): string | null {
+  let latest: string | null = null;
+  let latestTime = Number.NEGATIVE_INFINITY;
+
+  for (const row of rows) {
+    if (typeof row.updated_at !== 'string') continue;
+    const time = Date.parse(row.updated_at);
+    if (Number.isNaN(time) || time <= latestTime) continue;
+    latest = row.updated_at;
+    latestTime = time;
+  }
+
+  return latest;
+}
+
+function toErrorMessage(error: unknown): string {
+  if (error instanceof Error) return error.message;
+  if (
+    typeof error === 'object' &&
+    error !== null &&
+    'message' in error &&
+    typeof error.message === 'string'
+  ) {
+    return error.message;
+  }
+  return 'Erreur chargement Supabase';
+}
+
+function getFirstCacheError(): string | null {
+  return cache.errors.tax ?? cache.errors.ps ?? cache.errors.fiscality ?? cache.errors.pass;
 }
 
 // --- Chargement depuis Supabase (avec timeout) ---
@@ -184,11 +220,16 @@ async function fetchFromSupabase(kind: CacheKind): Promise<void> {
           const passRes = await Promise.race([
             supabase
               .from('pass_history')
-              .select('year, pass_amount')
+              .select('year, pass_amount, updated_at')
               .order('year', { ascending: true }),
             createTimeoutPromise(SUPABASE_TIMEOUT),
           ]);
-          if (!passRes.error && passRes.data && passRes.data.length > 0) {
+          if (passRes.error) {
+            cache.errors.pass = toErrorMessage(passRes.error);
+            return;
+          }
+          cache.errors.pass = null;
+          if (passRes.data && passRes.data.length > 0) {
             const history: Record<number, number> = {};
             for (const row of passRes.data) {
               if (typeof row.year === 'number' && row.pass_amount != null) {
@@ -197,18 +238,25 @@ async function fetchFromSupabase(kind: CacheKind): Promise<void> {
             }
             if (Object.keys(history).length > 0) {
               cache.passHistory = history;
+              cache.meta.passUpdatedAt = getLatestUpdatedAt(passRes.data);
               cache.timestamp = Date.now();
               persistCache();
             }
           }
-        } catch {
+        } catch (error) {
+          cache.errors.pass = toErrorMessage(error);
           // pass_history fetch failed — keep fallback
         } finally {
           cache.inflight.pass = null;
         }
         return;
       }
-      if (!res.error && res.data && res.data.data) {
+      if (res.error) {
+        cache.errors[kind] = toErrorMessage(res.error);
+        return;
+      }
+      cache.errors[kind] = null;
+      if (res.data && res.data.data) {
         if (kind === 'tax') {
           cache.tax = res.data.data as typeof DEFAULT_TAX_SETTINGS;
           cache.meta.taxUpdatedAt = res.data.updated_at ?? null;
@@ -222,7 +270,8 @@ async function fetchFromSupabase(kind: CacheKind): Promise<void> {
         cache.timestamp = Date.now();
         persistCache();
       }
-    } catch {
+    } catch (error) {
+      cache.errors[kind] = toErrorMessage(error);
       // On ne met pas à jour le cache si erreur (timeout ou autre)
     } finally {
       cache.inflight[kind] = null;
@@ -245,7 +294,7 @@ export async function getFiscalSettings({
     fiscality: toFiscalitySettingsV2(DEFAULT_FISCALITY_SETTINGS),
     passHistory: DEFAULT_PASS_HISTORY,
     loading: false,
-    error: null,
+    error: getFirstCacheError(),
     meta: { ...cache.meta },
   };
 
@@ -306,8 +355,9 @@ export async function loadFiscalSettingsStrict(): Promise<LoadFiscalSettingsStri
       (['tax', 'ps', 'fiscality', 'pass'] as CacheKind[]).map((kind) => fetchFromSupabase(kind)),
     );
   } catch (e: unknown) {
-    fetchError = (e instanceof Error ? e.message : null) ?? 'Erreur chargement Supabase';
+    fetchError = toErrorMessage(e);
   }
+  fetchError = fetchError ?? getFirstCacheError();
 
   return {
     tax: isCacheValid('tax') && cache.tax ? cache.tax : DEFAULT_TAX_SETTINGS,

@@ -20,6 +20,7 @@ const META = {
   taxUpdatedAt: '2026-01-01T00:00:00.000Z',
   psUpdatedAt: '2026-01-02T00:00:00.000Z',
   fiscalityUpdatedAt: '2026-01-03T00:00:00.000Z',
+  passUpdatedAt: '2026-01-04T00:00:00.000Z',
 };
 
 describe('buildFiscalIdentityCurrent', () => {
@@ -30,7 +31,7 @@ describe('buildFiscalIdentityCurrent', () => {
     expect(identityA.tax).toEqual(identityB.tax);
     expect(identityA.ps).toEqual(identityB.ps);
     expect(identityA.fiscality).toEqual(identityB.fiscality);
-    expect(identityA.pass.updatedAt).toBeNull();
+    expect(identityA.pass.updatedAt).toBe('2026-01-04T00:00:00.000Z');
     expect(identityA.pass.hash).not.toBe(identityB.pass.hash);
   });
 });

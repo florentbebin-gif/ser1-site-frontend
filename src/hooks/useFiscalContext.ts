@@ -41,6 +41,8 @@ interface FiscalContextMeta {
   psUpdatedAt: string | null;
   /** updated_at Supabase pour fiscality_settings (ISO string ou null) */
   fiscalityUpdatedAt: string | null;
+  /** updated_at Supabase max connu pour pass_history (ISO string ou null) */
+  passUpdatedAt: string | null;
 }
 
 /**
@@ -295,6 +297,7 @@ export function useFiscalContext({
     taxUpdatedAt: null,
     psUpdatedAt: null,
     fiscalityUpdatedAt: null,
+    passUpdatedAt: null,
   });
 
   const applySettings = useCallback(
@@ -313,6 +316,7 @@ export function useFiscalContext({
         taxUpdatedAt: settingsMeta?.taxUpdatedAt ?? null,
         psUpdatedAt: settingsMeta?.psUpdatedAt ?? null,
         fiscalityUpdatedAt: settingsMeta?.fiscalityUpdatedAt ?? null,
+        passUpdatedAt: settingsMeta?.passUpdatedAt ?? null,
       });
     },
     [],

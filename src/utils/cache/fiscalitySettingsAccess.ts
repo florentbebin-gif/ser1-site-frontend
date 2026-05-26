@@ -2,10 +2,9 @@ import type {
   DEFAULT_ASSURANCE_VIE_RULES,
   DEFAULT_CTO_RULES,
   DEFAULT_PEA_RULES,
-  DEFAULT_PER_INDIVIDUEL_RULES} from '../../constants/settingsDefaults';
-import {
-  DEFAULT_FISCALITY_SETTINGS
+  DEFAULT_PER_INDIVIDUEL_RULES,
 } from '../../constants/settingsDefaults';
+import { DEFAULT_FISCALITY_SETTINGS } from '../../constants/settingsDefaults';
 import type { FiscalitySettingsV2, Product, Ruleset, SettingsRef } from './fiscalitySettings';
 
 export type FiscalityProductKey = 'assuranceVie' | 'perIndividuel' | 'cto' | 'pea';
@@ -36,6 +35,15 @@ const FALLBACK_PRODUCT: Product = {
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+export class InvalidFiscalitySettingsSchemaError extends Error {
+  constructor(schemaVersion: unknown) {
+    super(
+      `fiscality_settings doit être au schemaVersion 2 (reçu: ${String(schemaVersion ?? 'absent')}).`,
+    );
+    this.name = 'InvalidFiscalitySettingsSchemaError';
+  }
 }
 
 function asString(value: unknown, fallback: string): string {
@@ -95,11 +103,14 @@ function normalizeRulesets(value: unknown): Record<string, Ruleset> {
 }
 
 export function toFiscalitySettingsV2(data: unknown): FiscalitySettingsV2 {
-  if (data === DEFAULT_FISCALITY_SETTINGS) {
+  if (data == null || data === DEFAULT_FISCALITY_SETTINGS) {
     return DEFAULT_FISCALITY_V2;
   }
-  if (!isRecord(data) || data.schemaVersion !== 2) {
-    return DEFAULT_FISCALITY_V2;
+  if (!isRecord(data)) {
+    throw new InvalidFiscalitySettingsSchemaError(typeof data);
+  }
+  if (data.schemaVersion !== 2) {
+    throw new InvalidFiscalitySettingsSchemaError(data.schemaVersion);
   }
 
   return {

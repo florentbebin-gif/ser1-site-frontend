@@ -40,8 +40,14 @@ function mockFiscalTables(
   psResult: Promise<MaybeSingleResult> | MaybeSingleResult,
   fiscalityResult: Promise<MaybeSingleResult> | MaybeSingleResult,
   passResult:
-    | Promise<{ data: Array<{ year: number; pass_amount: number }>; error: unknown }>
-    | { data: Array<{ year: number; pass_amount: number }>; error: unknown },
+    | Promise<{
+        data: Array<{ year: number; pass_amount: number; updated_at?: string | null }>;
+        error: unknown;
+      }>
+    | {
+        data: Array<{ year: number; pass_amount: number; updated_at?: string | null }>;
+        error: unknown;
+      },
 ) {
   fromMock.mockImplementation((table: string) => {
     if (table === 'pass_history') {
@@ -106,7 +112,7 @@ describe('fiscalSettingsCache', () => {
     const ps = createDeferred<MaybeSingleResult>();
     const fiscality = createDeferred<MaybeSingleResult>();
     const pass = createDeferred<{
-      data: Array<{ year: number; pass_amount: number }>;
+      data: Array<{ year: number; pass_amount: number; updated_at?: string | null }>;
       error: null;
     }>();
     const supabaseTax = {
@@ -134,7 +140,13 @@ describe('fiscalSettingsCache', () => {
       data: { data: cache.DEFAULT_FISCALITY_SETTINGS, updated_at: null },
       error: null,
     });
-    pass.resolve({ data: [{ year: 2026, pass_amount: 48123 }], error: null });
+    pass.resolve({
+      data: [
+        { year: 2025, pass_amount: 47100, updated_at: '2026-05-17T00:00:00.000Z' },
+        { year: 2026, pass_amount: 48123, updated_at: '2026-05-19T00:00:00.000Z' },
+      ],
+      error: null,
+    });
 
     await vi.waitFor(() => {
       expect(localStorage.setItem).toHaveBeenCalledTimes(4);
@@ -143,8 +155,9 @@ describe('fiscalSettingsCache', () => {
     const second = await cache.getFiscalSettings();
 
     expect(second.tax.incomeTax.currentYearLabel).toBe('IR Supabase arrière-plan');
-    expect(second.passHistory).toEqual({ 2026: 48123 });
+    expect(second.passHistory).toEqual({ 2025: 47100, 2026: 48123 });
     expect(second.meta.taxUpdatedAt).toBe('2026-05-18T00:00:00.000Z');
+    expect(second.meta.passUpdatedAt).toBe('2026-05-19T00:00:00.000Z');
   });
 
   it('hydrate un cache localStorage valide', async () => {
@@ -170,6 +183,7 @@ describe('fiscalSettingsCache', () => {
           taxUpdatedAt: '2026-05-18T00:00:00.000Z',
           psUpdatedAt: null,
           fiscalityUpdatedAt: null,
+          passUpdatedAt: '2026-05-19T00:00:00.000Z',
         },
       }),
     );
@@ -185,6 +199,7 @@ describe('fiscalSettingsCache', () => {
     expect(result.tax.incomeTax.currentYearLabel).toBe('IR test cache');
     expect(result.passHistory).toEqual({ 2026: 48123 });
     expect(result.meta.taxUpdatedAt).toBe('2026-05-18T00:00:00.000Z');
+    expect(result.meta.passUpdatedAt).toBe('2026-05-19T00:00:00.000Z');
   });
 
   it('ignore un cache localStorage expiré', async () => {
@@ -242,7 +257,7 @@ describe('fiscalSettingsCache', () => {
     const ps = createDeferred<MaybeSingleResult>();
     const fiscality = createDeferred<MaybeSingleResult>();
     const pass = createDeferred<{
-      data: Array<{ year: number; pass_amount: number }>;
+      data: Array<{ year: number; pass_amount: number; updated_at?: string | null }>;
       error: null;
     }>();
     mockFiscalTables(tax.promise, ps.promise, fiscality.promise, pass.promise);
@@ -264,6 +279,24 @@ describe('fiscalSettingsCache', () => {
     pass.resolve({ data: [{ year: 2026, pass_amount: 48123 }], error: null });
 
     await expect(Promise.all([first, second])).resolves.toHaveLength(2);
+  });
+
+  it('remonte une erreur explicite si fiscality_settings persiste un payload non-V2', async () => {
+    const cache = await import('./fiscalSettingsCache');
+    mockFiscalTables(
+      { data: { data: cache.DEFAULT_TAX_SETTINGS, updated_at: null }, error: null },
+      { data: { data: cache.DEFAULT_PS_SETTINGS, updated_at: null }, error: null },
+      { data: { data: { schemaVersion: 1 }, updated_at: '2026-05-18T00:00:00.000Z' }, error: null },
+      {
+        data: [{ year: 2026, pass_amount: 48123, updated_at: '2026-05-19T00:00:00.000Z' }],
+        error: null,
+      },
+    );
+
+    const result = await cache.loadFiscalSettingsStrict();
+
+    expect(result.error).toMatch(/fiscality_settings doit être au schemaVersion 2/);
+    expect(result.fiscality).toBe(cache.DEFAULT_FISCALITY_SETTINGS);
   });
 
   it('invalide un kind et le recharge immédiatement', async () => {

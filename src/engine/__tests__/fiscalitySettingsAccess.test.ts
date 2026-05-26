@@ -52,10 +52,13 @@ describe('fiscalitySettingsAccess', () => {
     expect(normalized).not.toHaveProperty('dividendes');
   });
 
-  it('retombe sur le défaut V2 quand le payload n’est pas V2', () => {
+  it('retombe sur le défaut V2 uniquement en absence de payload', () => {
     expect(toFiscalitySettingsV2(null)).toEqual(DEFAULT_FISCALITY_SETTINGS);
-    expect(toFiscalitySettingsV2({})).toEqual(DEFAULT_FISCALITY_SETTINGS);
-    expect(toFiscalitySettingsV2({ schemaVersion: 1 })).toEqual(DEFAULT_FISCALITY_SETTINGS);
+  });
+
+  it('refuse explicitement un payload persisté non-V2', () => {
+    expect(() => toFiscalitySettingsV2({})).toThrow(/schemaVersion 2/);
+    expect(() => toFiscalitySettingsV2({ schemaVersion: 1 })).toThrow(/schemaVersion 2/);
   });
 
   it('résout les refs tax_settings et ps_settings', () => {
