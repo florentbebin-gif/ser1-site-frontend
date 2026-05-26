@@ -22,7 +22,6 @@ import {
 } from './useThemeCache';
 import {
   convertDbPaletteToThemeColors,
-  convertFromSettingsFormat,
   loadCabinetBrandingKey,
   loadCabinetLogo,
   loadCabinetThemeWithRetry,
@@ -47,10 +46,6 @@ interface UiSettingsRow {
   theme_mode?: string | null;
   preset_id?: string | null;
   my_palette?: Record<string, unknown> | null;
-  selected_theme_ref?: string | null;
-  custom_palette?: Record<string, unknown> | null;
-  active_palette?: Record<string, unknown> | null;
-  colors?: Record<string, string> | null;
   theme_name?: string | null;
 }
 
@@ -81,10 +76,6 @@ export interface ThemeSessionState {
   setPresetId: Dispatch<SetStateAction<string | null>>;
   myPalette: ThemeColors | null;
   setMyPalette: Dispatch<SetStateAction<ThemeColors | null>>;
-  customPalette: ThemeColors | null;
-  setCustomPalette: Dispatch<SetStateAction<ThemeColors | null>>;
-  selectedThemeRef: string;
-  setSelectedThemeRef: Dispatch<SetStateAction<string>>;
   cabinetColorsRef: MutableRefObject<ThemeColors | null | undefined>;
   cabinetBrandingKeyRef: MutableRefObject<string | null>;
   myPaletteRef: MutableRefObject<ThemeColors | null>;
@@ -120,8 +111,6 @@ export function useThemeSession({
   const [themeMode, setThemeMode] = useState<ThemeMode>('cabinet');
   const [presetId, setPresetId] = useState<string | null>(null);
   const [myPalette, setMyPalette] = useState<ThemeColors | null>(null);
-  const [customPalette, setCustomPalette] = useState<ThemeColors | null>(null);
-  const [selectedThemeRef, setSelectedThemeRef] = useState<string>('cabinet');
 
   const mountedRef = useRef<boolean>(true);
   const activeRequestIdRef = useRef<number>(0);
@@ -299,9 +288,7 @@ export function useThemeSession({
         try {
           const { data, error } = await supabase
             .from('ui_settings')
-            .select(
-              'theme_mode, preset_id, my_palette, selected_theme_ref, custom_palette, active_palette, colors',
-            )
+            .select('theme_mode, preset_id, my_palette')
             .eq('user_id', user.id)
             .maybeSingle();
           if (!error) {
@@ -332,16 +319,14 @@ export function useThemeSession({
           mode = uiSettings.theme_mode as ThemeMode;
           nextPresetId = uiSettings.preset_id || null;
         } else {
-          const legacySelectedThemeRef = uiSettings?.selected_theme_ref || 'cabinet';
-          mode = legacySelectedThemeRef === 'cabinet' ? 'cabinet' : 'my';
+          mode = 'cabinet';
         }
 
-        const rawMyPalette = uiSettings?.my_palette || uiSettings?.custom_palette;
+        const rawMyPalette = uiSettings?.my_palette;
         if (rawMyPalette) {
           const convertedMyPalette = convertDbPaletteToThemeColors(rawMyPalette);
           if (convertedMyPalette) {
             setMyPalette(convertedMyPalette);
-            setCustomPalette(convertedMyPalette);
           }
         }
 
@@ -380,13 +365,6 @@ export function useThemeSession({
                 source = 'preset';
               }
             }
-            if (source === 'default' && uiSettings?.active_palette) {
-              const activePalette = convertDbPaletteToThemeColors(uiSettings.active_palette);
-              if (activePalette) {
-                finalColors = activePalette;
-                source = 'active-palette-fallback';
-              }
-            }
             break;
 
           case 'my': {
@@ -396,20 +374,6 @@ export function useThemeSession({
             if (convertedMyPalette) {
               finalColors = convertedMyPalette;
               source = 'my-palette';
-            } else if (uiSettings?.active_palette) {
-              const activePalette = convertDbPaletteToThemeColors(uiSettings.active_palette);
-              if (activePalette) {
-                finalColors = activePalette;
-                source = 'active-palette-legacy';
-              }
-            } else if (uiSettings?.colors) {
-              finalColors = convertFromSettingsFormat(uiSettings.colors);
-              source = 'ui_settings-legacy';
-            } else if (user.user_metadata?.theme_colors) {
-              finalColors = convertFromSettingsFormat(
-                user.user_metadata.theme_colors as Record<string, string>,
-              );
-              source = 'user_metadata-legacy';
             }
             break;
           }
@@ -418,7 +382,6 @@ export function useThemeSession({
         setThemeMode(mode);
         setPresetId(nextPresetId);
         const derivedSource: ThemeSource = mode === 'cabinet' ? 'cabinet' : 'custom';
-        setSelectedThemeRef(mode === 'cabinet' ? 'cabinet' : 'custom');
         setThemeSource(derivedSource);
         writeThemeSourceToStorage(brandingKey, derivedSource);
 
@@ -429,10 +392,6 @@ export function useThemeSession({
           setColorsState(finalColors);
           applyColorsToCSSWithGuardRef.current(finalColors, user.id, source);
           saveThemeToCache(finalColors, user.id, derivedSource);
-        }
-
-        if (user.user_metadata?.cover_slide_url && mountedRef.current) {
-          setLogo(user.user_metadata.cover_slide_url as string);
         }
       } catch (error) {
         if (mountedRef.current && requestId === activeRequestIdRef.current) {
@@ -511,10 +470,6 @@ export function useThemeSession({
     setPresetId,
     myPalette,
     setMyPalette,
-    customPalette,
-    setCustomPalette,
-    selectedThemeRef,
-    setSelectedThemeRef,
     cabinetColorsRef,
     cabinetBrandingKeyRef,
     myPaletteRef,
