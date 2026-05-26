@@ -50,7 +50,7 @@ export default function SettingsGeneral() {
           </div>
         </header>
 
-        <div className="settings-premium-divider" />
+        <div className="settings-section-divider" />
 
         <ThemeSourceSection
           themeMode={palette.themeMode}
