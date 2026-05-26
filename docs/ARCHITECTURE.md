@@ -523,10 +523,10 @@ Tous les simulateurs consomment les paramètres fiscaux via ce hook. Il expose u
 
 #### Deux modes
 
-| Mode                     | Usage                | Comportement                                                                                |
-| ------------------------ | -------------------- | ------------------------------------------------------------------------------------------- |
-| `strict: true`           | IR, Succession       | Attend Supabase avant de retourner — bloque sur un écran de chargement si Supabase est lent |
-| `strict: false` (défaut) | Placement, Stratégie | Stale-while-revalidate — retourne cache/défauts immédiatement, rafraîchit en arrière-plan   |
+| Mode                     | Usage                | Comportement                                                                                                                                                                                              |
+| ------------------------ | -------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `strict: true`           | IR, Succession       | Attend Supabase avant de retourner — bloque sur un écran de chargement si Supabase est lent                                                                                                               |
+| `strict: false` (défaut) | Placement, Stratégie | Stale-while-revalidate — retourne cache/défauts immédiatement ; le fetch arrière-plan alimente le cache pour les appels suivants, sans garantir un second rendu au cold start hors invalidation explicite |
 
 #### Clés normalisées exposées
 
@@ -558,7 +558,7 @@ Adaptateurs connus :
 
 #### Invalidation
 
-L'admin sauvegarde → `invalidate(kind)` + `broadcastInvalidation(kind)` → événement `ser1:fiscal-settings-updated` → tous les `useFiscalContext` actifs se rafraîchissent.
+L'admin sauvegarde → `invalidate(kind)` + `broadcastInvalidation(kind)` → événement `ser1:fiscal-settings-updated` → tous les `useFiscalContext` actifs se rafraîchissent, y compris les consommateurs non stricts.
 
 #### Adaptateur Placement
 

@@ -6,7 +6,9 @@
  *
  * Deux modes :
  *  - strict: true  → attend Supabase avant de retourner (IR, Succession)
- *  - strict: false → stale-while-revalidate, retourne cache/defaults immédiatement (défaut)
+ *  - strict: false → stale-while-revalidate, retourne cache/defaults immédiatement (défaut).
+ *    Le fetch arrière-plan met le cache à jour pour les appels suivants, mais ne force pas
+ *    un re-render cold start hors invalidation explicite.
  *
  * Invalidation : écoute l'événement `ser1:fiscal-settings-updated` pour se rafraîchir.
  */
@@ -336,7 +338,8 @@ export function useFiscalContext({
           );
           if (result.error) setError(result.error);
         } else {
-          // Mode stale : retourne immédiatement cache/defaults
+          // Mode stale : retourne immédiatement cache/defaults. Le fetch background hydrate
+          // le cache pour le prochain appel, sans second rendu automatique au cold start.
           const result = await getFiscalSettings();
           if (!mounted) return;
           applySettings(

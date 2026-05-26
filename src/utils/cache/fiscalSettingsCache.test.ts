@@ -100,6 +100,53 @@ describe('fiscalSettingsCache', () => {
     expect(fromMock).toHaveBeenCalledWith('pass_history');
   });
 
+  it('alimente le cache en arrière-plan sans faire attendre le premier appel stale', async () => {
+    const cache = await import('./fiscalSettingsCache');
+    const tax = createDeferred<MaybeSingleResult>();
+    const ps = createDeferred<MaybeSingleResult>();
+    const fiscality = createDeferred<MaybeSingleResult>();
+    const pass = createDeferred<{
+      data: Array<{ year: number; pass_amount: number }>;
+      error: null;
+    }>();
+    const supabaseTax = {
+      ...cache.DEFAULT_TAX_SETTINGS,
+      incomeTax: {
+        ...cache.DEFAULT_TAX_SETTINGS.incomeTax,
+        currentYearLabel: 'IR Supabase arrière-plan',
+      },
+    };
+    mockFiscalTables(tax.promise, ps.promise, fiscality.promise, pass.promise);
+
+    const first = await cache.getFiscalSettings();
+
+    expect(first.tax).toBe(cache.DEFAULT_TAX_SETTINGS);
+    expect(first.ps).toBe(cache.DEFAULT_PS_SETTINGS);
+    expect(first.fiscality).toBe(cache.DEFAULT_FISCALITY_SETTINGS);
+    expect(first.passHistory).toBe(cache.DEFAULT_PASS_HISTORY);
+
+    tax.resolve({
+      data: { data: supabaseTax, updated_at: '2026-05-18T00:00:00.000Z' },
+      error: null,
+    });
+    ps.resolve({ data: { data: cache.DEFAULT_PS_SETTINGS, updated_at: null }, error: null });
+    fiscality.resolve({
+      data: { data: cache.DEFAULT_FISCALITY_SETTINGS, updated_at: null },
+      error: null,
+    });
+    pass.resolve({ data: [{ year: 2026, pass_amount: 48123 }], error: null });
+
+    await vi.waitFor(() => {
+      expect(localStorage.setItem).toHaveBeenCalledTimes(4);
+    });
+
+    const second = await cache.getFiscalSettings();
+
+    expect(second.tax.incomeTax.currentYearLabel).toBe('IR Supabase arrière-plan');
+    expect(second.passHistory).toEqual({ 2026: 48123 });
+    expect(second.meta.taxUpdatedAt).toBe('2026-05-18T00:00:00.000Z');
+  });
+
   it('hydrate un cache localStorage valide', async () => {
     vi.useFakeTimers();
     vi.setSystemTime(new Date('2026-05-18T12:00:00.000Z'));
