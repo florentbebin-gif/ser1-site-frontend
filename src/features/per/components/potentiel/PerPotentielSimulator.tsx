@@ -19,6 +19,7 @@ import { usePerPotentiel, type WizardStep } from '../../hooks/usePerPotentiel';
 import { usePerPotentielExportHandlers } from '../../hooks/usePerPotentielExportHandlers';
 import { hasAvisIrDeclarant, sumAvisIrPlafonds } from '../../utils/perAvisIrPlafonds';
 import { getPerWorkflowYears } from '../../utils/perWorkflowYears';
+import { hasPerPotentielSynthesisReady } from '../../utils/perPotentielReadiness';
 import ModeStep from './steps/ModeStep';
 import AvisIrStep from './steps/AvisIrStep';
 import SituationFiscaleStep from './steps/SituationFiscaleStep';
@@ -132,7 +133,8 @@ export default function PerPotentielSimulator(): React.ReactElement {
     logoPlacement,
     fiscalContext,
   });
-  const pageUX = usePerPotentielPageUXContract({ mode: state.mode });
+  const synthesisReady = hasPerPotentielSynthesisReady(state, result);
+  const pageUX = usePerPotentielPageUXContract({ synthesisReady });
 
   if (loading) {
     return (

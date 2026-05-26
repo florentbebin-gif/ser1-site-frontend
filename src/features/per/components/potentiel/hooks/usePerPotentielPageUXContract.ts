@@ -1,27 +1,24 @@
 import { useMemo } from 'react';
 import type { SimPageUXContract } from '@/components/ui/sim';
-import type { PerMode } from '../../../hooks/usePerPotentiel';
 
 interface PerPotentielPageUXContractInput {
-  mode: PerMode | null;
+  synthesisReady: boolean;
 }
 
 export function usePerPotentielPageUXContract({
-  mode,
+  synthesisReady,
 }: PerPotentielPageUXContractInput): SimPageUXContract {
-  const synthesisReady = mode !== null;
-
   return useMemo(
     () => ({
       readiness: {
         status: synthesisReady ? 'ready' : 'waiting',
-        reasons: synthesisReady ? undefined : ['mode'],
+        reasons: synthesisReady ? undefined : ['mode', 'inputs'],
       },
       emptyState: {
         illustration: 'docs',
         title: 'Synthèse en attente',
         description:
-          'Choisissez un parcours PER pour afficher le potentiel disponible et les contrôles fiscaux.',
+          'Choisissez un parcours PER puis renseignez les données utiles pour afficher le potentiel disponible.',
       },
       synthesisReady,
       synthesisTargetId: 'per-potentiel-synthese',

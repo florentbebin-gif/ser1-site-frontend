@@ -19,11 +19,11 @@ const handlers = {
 };
 
 describe('ModeStep', () => {
-  it('verrouille le parcours simplifié sur avis IR courant sans projection', () => {
+  it('ne préselectionne aucun parcours en mode simplifié', () => {
     const html = renderToStaticMarkup(
       <ModeStep
-        mode="versement-n"
-        historicalBasis="current-avis"
+        mode={null}
+        historicalBasis={null}
         needsCurrentYearEstimate={false}
         years={years}
         simplifiedMode
@@ -31,11 +31,10 @@ describe('ModeStep', () => {
       />,
     );
 
-    expect(html).toContain('Parcours simplifié');
     expect(html).toContain('Contrôle du potentiel avant versement');
-    expect(html).toContain('Avis IR 2026 disponible');
-    expect(html).toContain('Projection désactivée');
-    expect(html).not.toContain('Reporter dans la déclaration 2042');
+    expect(html).toContain('Reporter dans la déclaration 2042');
+    expect(html).not.toContain('per-mode-card--selected');
+    expect(html).not.toContain('Documents nécessaires');
     expect(html).not.toContain('mode-toggle-pill');
   });
 
