@@ -4,7 +4,7 @@ import {
   PREVOYANCE_STORAGE_KEY,
   type PrevoyanceContractDraft,
   type PersistedPrevoyanceState,
-} from '@/features/prevoyance';
+} from '@/domain/prevoyance';
 import type { SuccessionPrevoyanceDecesEntry } from './successionDraft.types';
 
 export const PREVOYANCE_IMPORT_ID_PREFIX = 'prevoyance-';
