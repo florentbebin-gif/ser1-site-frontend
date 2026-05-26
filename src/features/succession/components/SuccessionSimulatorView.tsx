@@ -1,12 +1,7 @@
 import type { ComponentProps } from 'react';
 import { ExportMenu } from '../../../components/ExportMenu';
 import { ModeToggle } from '../../../components/ModeToggle';
-import {
-  SimEmptyState,
-  SimPageShell,
-  SimPageStepper,
-  SimViewSynthesisCTA,
-} from '@/components/ui/sim';
+import { SimEmptyState, SimPageShell, SimViewSynthesisCTA } from '@/components/ui/sim';
 import type { ExportOption } from '../../../components/export/exportTypes';
 import {
   SuccessionFamilyOverview,
@@ -79,7 +74,6 @@ export function SuccessionSimulatorView({
           <ExportMenu options={exportOptions} loading={exportLoading} />
         </>
       }
-      nav={pageUX.stepperSteps ? <SimPageStepper steps={pageUX.stepperSteps} /> : undefined}
       notice={
         <div
           id="succession-famille"
@@ -95,7 +89,7 @@ export function SuccessionSimulatorView({
     >
       {derived.shouldRenderSuccessionComputationSections ? (
         <>
-          <SimPageShell.Main className="sc-left">
+          <SimPageShell.Main>
             <div id="succession-patrimoine" data-sim-step-id="succession-patrimoine">
               <SuccessionPageContent {...pageSectionsProps} />
             </div>
@@ -107,7 +101,7 @@ export function SuccessionSimulatorView({
             />
           </SimPageShell.Main>
 
-          <SimPageShell.Side className="sc-right">
+          <SimPageShell.Side>
             {successionSynthesisReady ? (
               <div
                 id="succession-synthese"

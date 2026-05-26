@@ -14,12 +14,6 @@ export function useIrPageUXContract({ synthesisReady }: IrPageUXContractInput): 
       },
       synthesisReady,
       synthesisTargetId: 'ir-synthese',
-      stepperSteps: [
-        { id: 'ir-foyer', label: 'Foyer' },
-        { id: 'ir-revenus', label: 'Revenus' },
-        { id: 'ir-synthese', label: 'Synthèse', disabled: !synthesisReady },
-        { id: 'ir-hypotheses', label: 'Hypothèses' },
-      ],
       sections: [
         { id: 'ir-foyer', label: 'Foyer', targetId: 'ir-foyer' },
         { id: 'ir-revenus', label: 'Revenus', targetId: 'ir-revenus' },

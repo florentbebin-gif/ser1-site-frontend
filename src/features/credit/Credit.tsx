@@ -16,7 +16,7 @@ import { ModeToggle } from '../../components/ModeToggle';
 import { useTheme } from '../../settings/ThemeProvider';
 import { useUserMode } from '../../settings/userMode';
 import { resolveEffectiveUserMode } from '../../settings/userModeDisplay';
-import { SimPageShell, SimPageStepper, SimViewSynthesisCTA } from '@/components/ui/sim';
+import { SimEmptyState, SimPageShell, SimViewSynthesisCTA } from '@/components/ui/sim';
 import {
   createInitialCreditState,
   normalizeLoadedState,
@@ -430,7 +430,6 @@ export default function CreditV2() {
           onChangeViewMode={(viewMode) => setGlobal({ viewMode })}
         />
       }
-      nav={pageUX.stepperSteps ? <SimPageStepper steps={pageUX.stepperSteps} /> : undefined}
     >
       <SimPageShell.Main>
         <div id="credit-financement" data-sim-step-id="credit-financement">
@@ -453,7 +452,7 @@ export default function CreditV2() {
       </SimPageShell.Main>
 
       <SimPageShell.Side
-        className={`cv-right-col${!isExpert ? ' cv-right-col--simple' : ''}${!showSummary ? ' cv-right-col--placeholder' : ''}`}
+        className={`cv-right-col${!isExpert ? ' cv-right-col--simple' : ''}`}
         sticky={showSummary}
       >
         {showSummary ? (
@@ -473,7 +472,12 @@ export default function CreditV2() {
             />
           </div>
         ) : (
-          <div className="cv-right-col__spacer" aria-hidden="true" />
+          <SimEmptyState
+            variant="sidebar"
+            illustration="chart"
+            title="Synthèse en attente"
+            description="Renseignez le montant emprunté et la durée pour afficher les mensualités et le coût global."
+          />
         )}
       </SimPageShell.Side>
 

@@ -16,11 +16,6 @@ export function useCreditPageUXContract({
       },
       synthesisReady,
       synthesisTargetId: 'credit-synthese',
-      stepperSteps: [
-        { id: 'credit-financement', label: 'Financement', status: 'current' },
-        { id: 'credit-synthese', label: 'Synthèse', disabled: !synthesisReady },
-        { id: 'credit-hypotheses', label: 'Hypothèses' },
-      ],
       sections: [
         { id: 'credit-financement', label: 'Financement', targetId: 'credit-financement' },
         { id: 'credit-synthese', label: 'Synthèse', targetId: 'credit-synthese' },

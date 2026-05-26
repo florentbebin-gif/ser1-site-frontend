@@ -1,5 +1,4 @@
 .prevoyance-page {
-  max-width: 1320px;
   --prevoyance-color-revenu: var(--color-c3);
   --prevoyance-color-ro: color-mix(in srgb, var(--color-c3) 62%, var(--color-c7));
   --prevoyance-color-ro-alt: color-mix(in srgb, var(--color-c3) 42%, var(--color-c7));
@@ -363,7 +362,7 @@
 .prevoyance-sidebar {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 16px;
 }
 
 .prevoyance-side-card {

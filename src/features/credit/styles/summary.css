@@ -1,19 +1,6 @@
 ﻿/* ----------------------------------------
    SUMMARY CARD (sticky droite)
    ---------------------------------------- */
-/* Wrapper sticky colonne droite â€” solidarise summary + total-mensu */
-.cv-right-col {
-  gap: 12px;
-}
-
-.cv-right-col--placeholder {
-  visibility: hidden;
-}
-
-.cv-right-col__spacer {
-  min-height: 1px;
-}
-
 .cv-right-col--simple {
   align-self: stretch;
 }

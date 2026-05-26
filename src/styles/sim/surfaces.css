@@ -125,11 +125,16 @@
   min-width: 0;
   display: flex;
   flex-direction: column;
+  gap: 24px;
 }
 
 .sim-grid__col--main,
 .sim-grid__col--side {
   min-width: 0;
+}
+
+.sim-grid__col--side {
+  gap: 16px;
 }
 
 .sim-grid__col--sticky {

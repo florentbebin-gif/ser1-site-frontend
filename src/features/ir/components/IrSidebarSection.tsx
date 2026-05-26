@@ -1,4 +1,10 @@
-import { SimKpiReference, SimMetric, SimSparkline, SimTooltip } from '@/components/ui/sim';
+import {
+  SimEmptyState,
+  SimKpiReference,
+  SimMetric,
+  SimSparkline,
+  SimTooltip,
+} from '@/components/ui/sim';
 import { CGP_GLOSSARY } from '@/constants/cgpGlossary';
 import { IconBarChart } from '@/icons/ui';
 import type { IrSidebarSectionProps } from './irTypes';
@@ -135,7 +141,7 @@ export function IrSidebarSection({
         </div>
       </div>
 
-      {hasSituation && (
+      {hasSituation ? (
         <div className="ir-results-sticky">
           <div className="ir-tmi-card premium-card sim-summary-card" data-testid="ir-results-card">
             <div className="ir-tmi-header" data-testid="ir-results-header">
@@ -285,6 +291,13 @@ export function IrSidebarSection({
             </div>
           )}
         </div>
+      ) : (
+        <SimEmptyState
+          variant="sidebar"
+          illustration="chart"
+          title="Synthèse en attente"
+          description="Renseignez au moins un revenu imposable pour afficher l’estimation IR et la TMI."
+        />
       )}
     </div>
   );

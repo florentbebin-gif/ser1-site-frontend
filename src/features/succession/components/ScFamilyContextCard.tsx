@@ -173,7 +173,6 @@ export default function ScFamilyContextCard({
               variant="add"
               mode="text"
               label="Ajouter un enfant"
-              className="sc-child-add-btn sc-child-add-btn--prominent"
               onClick={onAddEnfant}
             />
             <SimActionButton

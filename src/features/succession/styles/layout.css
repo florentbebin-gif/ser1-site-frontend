@@ -23,16 +23,6 @@
   margin-bottom: 8px;
 }
 
-.sc-left {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
-
-.sc-right {
-  gap: 14px;
-}
-
 .sc-card--guide {
   border-left: 3px solid var(--color-c3);
 }
@@ -234,11 +224,6 @@
   font-family: inherit;
   transition: color 0.15s;
   margin-top: 2px;
-}
-
-.sc-child-add-btn--prominent {
-  font-size: 13px;
-  font-weight: 600;
 }
 
 .sc-child-add-btn:hover {

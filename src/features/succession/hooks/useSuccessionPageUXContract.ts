@@ -7,7 +7,6 @@ interface SuccessionPageUXContractInput {
 }
 
 export function useSuccessionPageUXContract({
-  computationSectionsReady,
   synthesisReady,
 }: SuccessionPageUXContractInput): SimPageUXContract {
   return useMemo(
@@ -18,16 +17,6 @@ export function useSuccessionPageUXContract({
       },
       synthesisReady,
       synthesisTargetId: 'succession-synthese',
-      stepperSteps: [
-        { id: 'succession-famille', label: 'Famille' },
-        {
-          id: 'succession-patrimoine',
-          label: 'Patrimoine',
-          disabled: !computationSectionsReady,
-        },
-        { id: 'succession-synthese', label: 'Synthèse', disabled: !synthesisReady },
-        { id: 'succession-hypotheses', label: 'Hypothèses' },
-      ],
       sections: [
         { id: 'succession-famille', label: 'Famille', targetId: 'succession-famille' },
         { id: 'succession-patrimoine', label: 'Patrimoine', targetId: 'succession-patrimoine' },
@@ -35,6 +24,6 @@ export function useSuccessionPageUXContract({
         { id: 'succession-hypotheses', label: 'Hypothèses', targetId: 'succession-hypotheses' },
       ],
     }),
-    [computationSectionsReady, synthesisReady],
+    [synthesisReady],
   );
 }

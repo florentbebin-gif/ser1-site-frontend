@@ -29,7 +29,7 @@ describe('contrats UX simulateurs', () => {
       readContract(() => useCreditPageUXContract({ synthesisReady: false })),
       readContract(() => useIrPageUXContract({ synthesisReady: false })),
       readContract(() => usePlacementPageUXContract({ synthesisReady: false })),
-      readContract(() => usePerPotentielPageUXContract({ mode: null })),
+      readContract(() => usePerPotentielPageUXContract({ synthesisReady: false })),
       readContract(() =>
         usePerTransfertPageUXContract({ selectedContract: null, contractName: '' }),
       ),
@@ -57,8 +57,21 @@ describe('contrats UX simulateurs', () => {
     expect(contracts.every((contract) => contract.synthesisReady === false)).toBe(true);
   });
 
-  it('expose des étapes pour les pages sans onglets métier', () => {
+  it('ne publie pas de stepper global par défaut sur les simulateurs', () => {
     const credit = readContract(() => useCreditPageUXContract({ synthesisReady: true }));
+    const ir = readContract(() => useIrPageUXContract({ synthesisReady: true }));
+    const placement = readContract(() => usePlacementPageUXContract({ synthesisReady: true }));
+    const potentiel = readContract(() => usePerPotentielPageUXContract({ synthesisReady: true }));
+    const transfert = readContract(() =>
+      usePerTransfertPageUXContract({ selectedContract: null, contractName: 'Contrat client' }),
+    );
+    const prevoyance = readContract(() => usePrevoyancePageUXContract({ synthesisReady: true }));
+    const succession = readContract(() =>
+      useSuccessionPageUXContract({
+        computationSectionsReady: true,
+        synthesisReady: true,
+      }),
+    );
     const tresorerie = readContract(() =>
       useTresoreriePageUXContract({
         readiness: {
@@ -71,23 +84,10 @@ describe('contrats UX simulateurs', () => {
       }),
     );
 
-    expect(credit.stepperSteps?.map((step) => step.id)).toEqual([
-      'credit-financement',
-      'credit-synthese',
-      'credit-hypotheses',
-    ]);
-    expect(tresorerie.stepperSteps).toHaveLength(5);
-  });
-
-  it('ne duplique pas de stepper sur les pages PER déjà pilotées par onglets métier', () => {
-    const potentiel = readContract(() => usePerPotentielPageUXContract({ mode: 'versement-n' }));
-    const transfert = readContract(() =>
-      usePerTransfertPageUXContract({ selectedContract: null, contractName: 'Contrat client' }),
-    );
-
-    expect(potentiel.synthesisReady).toBe(true);
-    expect(transfert.synthesisReady).toBe(true);
-    expect(potentiel.stepperSteps).toBeUndefined();
-    expect(transfert.stepperSteps).toBeUndefined();
+    expect(
+      [credit, ir, placement, potentiel, transfert, prevoyance, succession, tresorerie].every(
+        (contract) => contract.stepperSteps === undefined,
+      ),
+    ).toBe(true);
   });
 });

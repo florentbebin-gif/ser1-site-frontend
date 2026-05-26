@@ -17,13 +17,6 @@ export function useTresoreriePageUXContract({
       },
       synthesisReady: readiness.synthesisReady,
       synthesisTargetId: 'treso-synthese',
-      stepperSteps: [
-        { id: 'treso-societe', label: 'Société' },
-        { id: 'treso-parcours', label: 'Parcours', disabled: !readiness.personalTimelineReady },
-        { id: 'treso-allocation', label: 'Allocation', disabled: !readiness.personalTimelineReady },
-        { id: 'treso-synthese', label: 'Synthèse', disabled: !readiness.synthesisReady },
-        { id: 'treso-hypotheses', label: 'Hypothèses' },
-      ],
       sections: [
         { id: 'treso-societe', label: 'Société', targetId: 'treso-societe' },
         { id: 'treso-parcours', label: 'Parcours', targetId: 'treso-parcours' },
@@ -32,6 +25,6 @@ export function useTresoreriePageUXContract({
         { id: 'treso-hypotheses', label: 'Hypothèses', targetId: 'treso-hypotheses' },
       ],
     }),
-    [readiness.personalTimelineReady, readiness.synthesisReady],
+    [readiness.synthesisReady],
   );
 }

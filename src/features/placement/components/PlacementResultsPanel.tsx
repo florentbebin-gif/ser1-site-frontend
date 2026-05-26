@@ -78,7 +78,7 @@ export function PlacementResultsPanel({
                 ageAuDeces={state.transmission.ageAuDeces}
               />
 
-              <div className="sim-divider" />
+              <div className="sim-divider sim-divider--soft" />
 
               {(() => {
                 const totalGains1 =

@@ -3,12 +3,7 @@ import '@/styles/sim/index.css';
 import './styles/index.css';
 import { ExportMenu } from '@/components/ExportMenu';
 import { ModeToggle } from '@/components/ModeToggle';
-import {
-  SimEmptyState,
-  SimPageShell,
-  SimPageStepper,
-  SimViewSynthesisCTA,
-} from '@/components/ui/sim';
+import { SimEmptyState, SimPageShell, SimViewSynthesisCTA } from '@/components/ui/sim';
 import {
   PREVOYANCE_DEFAULT_REGIME_CODE,
   PREVOYANCE_MAINTIEN_LEGAL_CODE,
@@ -208,7 +203,6 @@ export default function PrevoyancePage() {
             <ExportMenu options={exportOptions} loading={exportLoading} />
           </>
         }
-        nav={pageUX.stepperSteps ? <SimPageStepper steps={pageUX.stepperSteps} /> : undefined}
       >
         <SimPageShell.Main>
           <div id="prevoyance-situation" data-sim-step-id="prevoyance-situation">

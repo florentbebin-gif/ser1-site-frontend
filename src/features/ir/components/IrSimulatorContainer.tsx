@@ -12,12 +12,7 @@ import { useUserMode, type UserMode } from '../../../settings/userMode';
 import { resolveEffectiveUserMode } from '../../../settings/userModeDisplay';
 import { ExportMenu } from '../../../components/ExportMenu';
 import { ModeToggle } from '../../../components/ModeToggle';
-import {
-  SimCollapsibleTable,
-  SimPageShell,
-  SimPageStepper,
-  SimViewSynthesisCTA,
-} from '@/components/ui/sim';
+import { SimCollapsibleTable, SimPageShell, SimViewSynthesisCTA } from '@/components/ui/sim';
 import {
   computeAbattement10,
   computeEffectiveParts,
@@ -406,7 +401,6 @@ export default function IrSimulatorContainer() {
           />
         </>
       }
-      nav={pageUX.stepperSteps ? <SimPageStepper steps={pageUX.stepperSteps} /> : undefined}
     >
       <SimPageShell.Main>
         <div id="ir-foyer" data-sim-step-id="ir-foyer">

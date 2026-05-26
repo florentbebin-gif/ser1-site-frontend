@@ -3,16 +3,10 @@
 /* Ligne sous-titre + actions (ExportMenu Ã  droite) */
 /* Ligne sous-titre + actions — base dans .sim-header__subtitle-row (sim/headers.css) */
 
-.ir-left {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
 .ir-right {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 16px;
   align-self: stretch;
 }
 

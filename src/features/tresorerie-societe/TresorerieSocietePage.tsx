@@ -12,12 +12,7 @@ import './styles/index.css';
 import { useCallback, useState } from 'react';
 import { ExportMenu } from '../../components/ExportMenu';
 import { ModeToggle } from '../../components/ModeToggle';
-import {
-  SimCollapsibleTable,
-  SimEmptyState,
-  SimPageStepper,
-  SimViewSynthesisCTA,
-} from '../../components/ui/sim';
+import { SimCollapsibleTable, SimEmptyState, SimViewSynthesisCTA } from '../../components/ui/sim';
 import { SimPageShell } from '../../components/ui/sim/SimPageShell';
 import { useTheme } from '../../settings/ThemeProvider';
 import { useTresorerieState } from './hooks/useTresorerieState';
@@ -95,7 +90,6 @@ export default function TresorerieSocietePage() {
           <ExportMenu options={exportOptions} loading={exportLoading} />
         </>
       }
-      nav={pageUX.stepperSteps ? <SimPageStepper steps={pageUX.stepperSteps} /> : undefined}
     >
       <SimPageShell.Main>
         {/* Bloc 1 — Société */}

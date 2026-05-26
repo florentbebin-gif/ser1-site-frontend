@@ -119,7 +119,7 @@ export default function PlacementSimulatorPage() {
         }
         nav={<PlacementPhaseNav step={state.step} onStepChange={setStep} />}
       >
-        <SimPageShell.Main className="pl-ir-left">
+        <SimPageShell.Main>
           <PlacementInputsPanel
             state={state}
             isExpert={isExpert}
@@ -152,10 +152,7 @@ export default function PlacementSimulatorPage() {
           />
         </SimPageShell.Main>
 
-        <SimPageShell.Side
-          className={`pl-ir-right${!showResults ? ' pl-ir-right--placeholder' : ''}`}
-          sticky={showResults}
-        >
+        <SimPageShell.Side sticky={showResults}>
           {showResults ? (
             <div
               id="placement-synthese"

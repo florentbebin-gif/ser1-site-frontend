@@ -16,12 +16,6 @@ export function usePrevoyancePageUXContract({
       },
       synthesisReady,
       synthesisTargetId: 'prevoyance-synthese',
-      stepperSteps: [
-        { id: 'prevoyance-situation', label: 'Situation' },
-        { id: 'prevoyance-garanties', label: 'Garanties', disabled: !synthesisReady },
-        { id: 'prevoyance-synthese', label: 'Synthèse', disabled: !synthesisReady },
-        { id: 'prevoyance-hypotheses', label: 'Hypothèses' },
-      ],
       sections: [
         { id: 'prevoyance-situation', label: 'Situation', targetId: 'prevoyance-situation' },
         { id: 'prevoyance-garanties', label: 'Garanties', targetId: 'prevoyance-garanties' },
