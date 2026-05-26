@@ -21,19 +21,11 @@ import {
 import { PerTransfertWizardSteps } from './components/PerTransfertWizardSteps';
 import type { WizardStep } from './components/PerTransfertWizardSteps';
 import { ContractAuditCards } from './components/ContractAuditCards';
-import { PerTransfertCurrentRentModal } from './components/PerTransfertCurrentRentModal';
-import { PerTransfertFraisInfoModal } from './components/PerTransfertFraisInfoModal';
 import { PerTransfertHypotheses } from './components/PerTransfertHypotheses';
-import { RentRevaluationInfoModal } from './components/RentRevaluationInfoModal';
 import { PerTransfertSidebar } from './components/PerTransfertSidebar';
-import {
-  PerTransfertInfoModal,
-  type PerTransfertInfoKind,
-} from './components/PerTransfertInfoModal';
-import { TransferRulesInfoModal } from './components/TransferRulesInfoModal';
+import type { PerTransfertInfoKind } from './components/PerTransfertInfoModal';
 import { PerTransfertPrefonPocketsForm } from './components/PerTransfertPrefonPocketsForm';
-import { PerTransfertAnnuitySettingsModal } from './components/PerTransfertAnnuitySettingsModal';
-import { PerTransfertPrefonPocketSettingsModal } from './components/PerTransfertPrefonPocketSettingsModal';
+import { PerTransfertSimulatorModals } from './components/PerTransfertSimulatorModals';
 import {
   ConversionRateBadge,
   DateField,
@@ -81,6 +73,13 @@ export function PerTransfertSimulator() {
 
   const pointContractCapital =
     input.capitalAcquis > 0 || state.prefonPockets.some((pocket) => (pocket.points ?? 0) > 0);
+  const contractReady = Boolean(
+    selectedContract ||
+    state.contractId ||
+    input.capitalAcquis > 0 ||
+    state.renteActuelleAnnuelleBrute > 0 ||
+    pointContractCapital,
+  );
   const step1Done = Boolean(
     state.typeContrat &&
     (state.typeContrat === 'PER_POINTS'
@@ -458,6 +457,7 @@ export function PerTransfertSimulator() {
             typeContrat={state.typeContrat}
             subscriptionDate={state.subscriptionDate}
             step2Done={step === 'newper'}
+            contractReady={contractReady}
             horizonAgeShort={state.horizonAgeShort}
             horizonAgeLong={state.horizonAgeLong}
             onHorizonChange={(short, long) => {
@@ -474,47 +474,24 @@ export function PerTransfertSimulator() {
         </SimPageShell.Section>
       </SimPageShell>
 
-      {rentModalOpen ? (
-        <PerTransfertCurrentRentModal
-          state={state}
-          update={update}
-          onClose={() => setRentModalOpen(false)}
-        />
-      ) : null}
-      {feesModalOpen ? (
-        <PerTransfertFraisInfoModal onClose={() => setFeesModalOpen(false)} />
-      ) : null}
-      {revaluationModalOpen ? (
-        <RentRevaluationInfoModal onClose={() => setRevaluationModalOpen(false)} />
-      ) : null}
-      {annuitySettingsOpen ? (
-        <PerTransfertAnnuitySettingsModal
-          state={state}
-          update={update}
-          onClose={() => setAnnuitySettingsOpen(false)}
-        />
-      ) : null}
-      {prefonPocketSettingsIndex !== null && state.prefonPockets[prefonPocketSettingsIndex] ? (
-        <PerTransfertPrefonPocketSettingsModal
-          index={prefonPocketSettingsIndex}
-          pocket={state.prefonPockets[prefonPocketSettingsIndex]}
-          onChange={(index, updates) => {
-            update(
-              'prefonPockets',
-              state.prefonPockets.map((pocket, pocketIndex) =>
-                pocketIndex === index ? { ...pocket, ...updates } : pocket,
-              ),
-            );
-          }}
-          onClose={() => setPrefonPocketSettingsIndex(null)}
-        />
-      ) : null}
-      {transferRulesOpen ? (
-        <TransferRulesInfoModal onClose={() => setTransferRulesOpen(false)} />
-      ) : null}
-      {infoModal ? (
-        <PerTransfertInfoModal kind={infoModal} onClose={() => setInfoModal(null)} />
-      ) : null}
+      <PerTransfertSimulatorModals
+        state={state}
+        update={update}
+        rentModalOpen={rentModalOpen}
+        setRentModalOpen={setRentModalOpen}
+        feesModalOpen={feesModalOpen}
+        setFeesModalOpen={setFeesModalOpen}
+        revaluationModalOpen={revaluationModalOpen}
+        setRevaluationModalOpen={setRevaluationModalOpen}
+        annuitySettingsOpen={annuitySettingsOpen}
+        setAnnuitySettingsOpen={setAnnuitySettingsOpen}
+        transferRulesOpen={transferRulesOpen}
+        setTransferRulesOpen={setTransferRulesOpen}
+        infoModal={infoModal}
+        setInfoModal={setInfoModal}
+        prefonPocketSettingsIndex={prefonPocketSettingsIndex}
+        setPrefonPocketSettingsIndex={setPrefonPocketSettingsIndex}
+      />
     </>
   );
 }

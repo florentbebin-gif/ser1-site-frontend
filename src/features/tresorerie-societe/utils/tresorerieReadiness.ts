@@ -5,9 +5,14 @@ export interface TresoReadiness {
   selectedAssociate?: RuntimeAssociateInput;
   companyReady: boolean;
   personalTimelineReady: boolean;
+  synthesisReady: boolean;
   ownershipCapitalOverflow: boolean;
   ownershipEconomicOverflow: boolean;
 }
+
+type AssociateWithRevenuePhases = RuntimeAssociateInput & {
+  revenuePhases?: unknown[];
+};
 
 export function getTresoReadiness(inputs: TresoInputsRuntime): TresoReadiness {
   const { company } = inputs;
@@ -29,11 +34,15 @@ export function getTresoReadiness(inputs: TresoInputsRuntime): TresoReadiness {
     selectedAssociate?.kind === 'pp' &&
     (selectedAssociate.profile?.currentAge ?? 0) > 0,
   );
+  const revenuePhases = (selectedAssociate as AssociateWithRevenuePhases | undefined)
+    ?.revenuePhases;
+  const synthesisReady = Boolean(personalTimelineReady && (revenuePhases?.length ?? 0) > 0);
 
   return {
     selectedAssociate,
     companyReady,
     personalTimelineReady,
+    synthesisReady,
     ownershipCapitalOverflow,
     ownershipEconomicOverflow,
   };

@@ -65,6 +65,12 @@ export const CGP_GLOSSARY = {
     description:
       'Gain constaté entre une valeur de référence et une valeur de sortie, avant fiscalité éventuelle.',
   },
+  roi: {
+    id: 'roi',
+    label: 'ROI',
+    description:
+      'Rapport entre les flux récupérés et l’effort total engagé, utile pour comparer deux stratégies patrimoniales.',
+  },
   usufruit: {
     id: 'usufruit',
     label: 'Usufruit',

@@ -825,6 +825,24 @@ cartes compactes (`premium-card-compact`) et cartes explicitement listées dans
 
 La règle est contrôlée par `npm run check:sim-cards`.
 
+#### 16h) Séparateurs simulateurs — règle d’usage
+
+Les pages `/sim/*` utilisent les séparateurs partagés de `src/styles/sim/dividers.css`.
+Une feature ne recrée pas de divider local si une variante partagée couvre le cas.
+
+- `sim-divider` : séparateur estompé épais, placé sous un titre de carte ou de panneau pour
+  installer la hiérarchie visuelle.
+- `sim-divider sim-divider--soft` : séparateur estompé fin, utilisé au milieu d’un bloc pour
+  séparer deux sous-parties sans créer une nouvelle carte.
+- `sim-divider sim-divider--tight` : alias compact conservé pour les usages existants ; pour du
+  nouveau code, préférer `sim-divider--soft`.
+- `sim-divider sim-divider--solid` : ligne fine pleine, utilisée en bas de bloc avant une
+  conclusion, un total, une annexe ou une zone de synthèse finale.
+
+La colonne de droite ne doit pas afficher de KPI à zéro quand les prérequis métier sont absents.
+Elle affiche soit rien quand la page a explicitement choisi une colonne désactivée, soit un seul
+`SimEmptyState` `variant="sidebar"` quand un repère d’attente aide l’utilisateur.
+
 ---
 
 ## Gouvernance couleurs (C1–C10)

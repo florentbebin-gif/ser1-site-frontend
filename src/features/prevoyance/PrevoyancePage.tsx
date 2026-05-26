@@ -3,7 +3,12 @@ import '@/styles/sim/index.css';
 import './styles/index.css';
 import { ExportMenu } from '@/components/ExportMenu';
 import { ModeToggle } from '@/components/ModeToggle';
-import { SimEmptyState, SimPageShell } from '@/components/ui/sim';
+import {
+  SimEmptyState,
+  SimPageShell,
+  SimPageStepper,
+  SimViewSynthesisCTA,
+} from '@/components/ui/sim';
 import {
   PREVOYANCE_DEFAULT_REGIME_CODE,
   PREVOYANCE_MAINTIEN_LEGAL_CODE,
@@ -75,6 +80,7 @@ export default function PrevoyancePage() {
     maintien.find((item) => item.code === PREVOYANCE_MAINTIEN_LEGAL_CODE) ?? null;
   const visibleContracts = contracts.filter((contract) => contract.kind === kind);
   const hasBirthDate = Boolean(situation.birthDate);
+  const synthesisReady = hasBirthDate && Boolean(selectedRegime);
   const hasConjoint = ['couple', 'marie', 'pacs'].includes(situation.familyStatus);
   const hasChildren = situation.childrenCount > 0;
   const sidebarContracts =
@@ -200,56 +206,91 @@ export default function PrevoyancePage() {
             <ExportMenu options={exportOptions} loading={exportLoading} />
           </>
         }
+        nav={
+          <SimPageStepper
+            steps={[
+              { id: 'prevoyance-situation', label: 'Situation' },
+              {
+                id: 'prevoyance-garanties',
+                label: 'Garanties',
+                disabled: !synthesisReady,
+              },
+              {
+                id: 'prevoyance-synthese',
+                label: 'Synthèse',
+                disabled: !synthesisReady,
+              },
+              { id: 'prevoyance-hypotheses', label: 'Hypothèses' },
+            ]}
+          />
+        }
       >
         <SimPageShell.Main>
-          <SituationBlock
-            situation={situation}
-            regimes={regimes}
-            kind={kind}
-            onChange={updateSituation}
-          />
-
-          {hasBirthDate ? (
-            <ContractsBlock
+          <div id="prevoyance-situation" data-sim-step-id="prevoyance-situation">
+            <SituationBlock
+              situation={situation}
+              regimes={regimes}
               kind={kind}
-              contracts={visibleContracts}
-              contractAggregationMode={contractAggregationMode}
-              annualBase={annualBase}
-              pass={pass}
-              salaireBrutAnnuel={situation.salaireBrutAnnuel}
-              hasConjoint={hasConjoint}
-              hasChildren={hasChildren}
-              onContractsChange={setContracts}
-              onContractAggregationModeChange={setContractAggregationMode}
-              onOpenFrais={openFraisModal}
+              onChange={updateSituation}
             />
+          </div>
+
+          {synthesisReady ? (
+            <div id="prevoyance-garanties" data-sim-step-id="prevoyance-garanties">
+              <ContractsBlock
+                kind={kind}
+                contracts={visibleContracts}
+                contractAggregationMode={contractAggregationMode}
+                annualBase={annualBase}
+                pass={pass}
+                salaireBrutAnnuel={situation.salaireBrutAnnuel}
+                hasConjoint={hasConjoint}
+                hasChildren={hasChildren}
+                onContractsChange={setContracts}
+                onContractAggregationModeChange={setContractAggregationMode}
+                onOpenFrais={openFraisModal}
+              />
+            </div>
           ) : null}
+
+          <SimViewSynthesisCTA
+            ready={synthesisReady}
+            targetId="prevoyance-synthese"
+            hint="Régime obligatoire, garanties souscrites et besoin décès."
+          />
         </SimPageShell.Main>
 
         <SimPageShell.Side>
-          {hasBirthDate ? (
-            <Sidebar
-              kind={kind}
-              regimeStack={regimeStack}
-              maintien={maintienLegal}
-              contracts={sidebarContracts}
-              contractAggregationMode={contractAggregationMode}
-              deathTarget={deathTarget}
-              onDeathTargetChange={setDeathTarget}
-              annualBase={annualBase}
-              referenceAnnual={referenceAnnual}
-              pass={pass}
-              salaireBrutAnnuel={situation.salaireBrutAnnuel}
-              ancienneteYears={situation.ancienneteYears}
-              hasConjoint={hasConjoint}
-              hasChildren={hasChildren}
-              fraisGenerauxAssiette={fraisGenerauxAssiette}
-            />
+          {synthesisReady ? (
+            <div
+              id="prevoyance-synthese"
+              className="sim-sidebar-reveal"
+              data-sim-step-id="prevoyance-synthese"
+            >
+              <Sidebar
+                kind={kind}
+                regimeStack={regimeStack}
+                maintien={maintienLegal}
+                contracts={sidebarContracts}
+                contractAggregationMode={contractAggregationMode}
+                deathTarget={deathTarget}
+                onDeathTargetChange={setDeathTarget}
+                annualBase={annualBase}
+                referenceAnnual={referenceAnnual}
+                pass={pass}
+                salaireBrutAnnuel={situation.salaireBrutAnnuel}
+                ancienneteYears={situation.ancienneteYears}
+                hasConjoint={hasConjoint}
+                hasChildren={hasChildren}
+                fraisGenerauxAssiette={fraisGenerauxAssiette}
+              />
+            </div>
           ) : (
             <SimEmptyState
+              variant="sidebar"
               illustration="docs"
-              title="Synthèse"
-              description="Renseignez la date de naissance pour afficher la synthèse de garanties."
+              title="Synthèse en attente"
+              description="Renseignez le régime et la date de naissance pour afficher la synthèse de garanties."
               cta={
                 <span>La couverture arrêt, invalidité, décès et cotisation apparaîtra ici.</span>
               }
@@ -258,7 +299,9 @@ export default function PrevoyancePage() {
         </SimPageShell.Side>
 
         <SimPageShell.Section>
-          <PrevoyanceHypotheses />
+          <div id="prevoyance-hypotheses" data-sim-step-id="prevoyance-hypotheses">
+            <PrevoyanceHypotheses />
+          </div>
         </SimPageShell.Section>
       </SimPageShell>
 

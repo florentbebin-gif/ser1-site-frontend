@@ -4,7 +4,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { IconFileText } from '@/icons/ui';
-import { SimAuditTrail } from '@/components/ui/sim';
+import { SimAuditTrail, SimEmptyState } from '@/components/ui/sim';
 import type { PerHistoricalBasis } from '../../../../engine/per';
 import { ExportMenu } from '../../../../components/ExportMenu';
 import { ModeToggle } from '../../../../components/ModeToggle';
@@ -425,7 +425,7 @@ export default function PerPotentielSimulator(): React.ReactElement {
           )}
         </main>
 
-        {state.mode !== null && (
+        {state.mode !== null ? (
           <aside className="per-potentiel-context sim-grid__col sim-grid__col--sticky">
             <PerPotentielContextSidebar
               step={state.step}
@@ -439,6 +439,15 @@ export default function PerPotentielSimulator(): React.ReactElement {
               totalAvisIrD1={totalAvisIrD1}
               totalAvisIrD2={totalAvisIrD2}
               result={result}
+            />
+          </aside>
+        ) : (
+          <aside className="per-potentiel-context sim-grid__col sim-grid__col--sticky">
+            <SimEmptyState
+              variant="sidebar"
+              illustration="docs"
+              title="Synthèse en attente"
+              description="Choisissez un parcours pour afficher le potentiel et les contrôles fiscaux."
             />
           </aside>
         )}

@@ -46,7 +46,7 @@ export function CreditSummarySidebar({
               <div className="cv-summary__title">Synthèse des prêts</div>
             </div>
           </div>
-          <div className="cv-loan-card__divider cv-loan-card__divider--tight sim-divider sim-divider--tight" />
+          <div className="cv-loan-card__divider cv-loan-card__divider--tight sim-divider sim-divider--soft" />
 
           <div className="cv-summary__kpi-zone">
             <div>
@@ -68,7 +68,7 @@ export function CreditSummarySidebar({
             />
           </div>
 
-          <div className="cv-summary__divider sim-divider sim-divider--tight" />
+          <div className="cv-summary__divider sim-divider sim-divider--solid" />
           <div className="cv-summary__row cv-summary__row--total">
             <span className="cv-summary__row-label">Coût total des crédits</span>
             <span className="cv-summary__row-value cv-summary__row-value--highlight">

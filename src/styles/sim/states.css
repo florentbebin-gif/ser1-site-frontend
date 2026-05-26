@@ -110,6 +110,12 @@
   color: var(--color-c9);
 }
 
+.sim-empty-state--sidebar {
+  min-height: auto;
+  gap: var(--space-3);
+  padding: var(--space-4);
+}
+
 .sim-empty-state__illustration {
   width: calc(var(--space-8) + var(--space-3));
   height: calc(var(--space-8) + var(--space-3));
@@ -123,9 +129,20 @@
   color: var(--color-c3);
 }
 
+.sim-empty-state--sidebar .sim-empty-state__illustration {
+  width: var(--space-8);
+  height: var(--space-8);
+  border-radius: var(--radius-md);
+}
+
 .sim-empty-state__illustration > svg {
   width: calc(var(--space-8) + var(--space-3));
   height: calc(var(--space-8) + var(--space-3));
+}
+
+.sim-empty-state--sidebar .sim-empty-state__illustration > svg {
+  width: var(--space-8);
+  height: var(--space-8);
 }
 
 .sim-empty-state__content {

@@ -10,11 +10,13 @@ import { SimEmptyState } from './SimEmptyState';
 import { SimKpiReference } from './SimKpiReference';
 import { SimMetric } from './SimMetric';
 import { SimModalSectionNav } from './SimModalSectionNav';
+import { SimPageStepper } from './SimPageStepper';
 import { SimSkeletonCard, SimSkeletonKpi, SimSkeletonText } from './SimSkeleton';
 import { SimSparkline } from './SimSparkline';
 import { SimDelta } from './SimDelta';
 import { SimStatusBadge } from './SimStatusBadge';
 import { SimTooltip } from './SimTooltip';
+import { SimViewSynthesisCTA } from './SimViewSynthesisCTA';
 
 vi.mock('@/hooks/useFiscalContext', () => ({
   useFiscalContext: () => ({
@@ -393,6 +395,73 @@ describe('SimEmptyState', () => {
     expect(html).toContain('Aucune synthèse');
     expect(html).toContain('Complétez les champs');
     expect(html).toContain('Compléter');
+  });
+
+  it('rend une variante compacte pour les sidebars de synthèse', () => {
+    const html = renderToStaticMarkup(
+      <SimEmptyState
+        variant="sidebar"
+        illustration="docs"
+        title="Synthèse en attente"
+        description="Complétez les prérequis."
+      />,
+    );
+
+    expect(html).toContain('sim-empty-state--sidebar');
+    expect(html).toContain('Synthèse en attente');
+  });
+});
+
+describe('SimPageStepper', () => {
+  it('rend un fil de progression discret et accessible', () => {
+    const html = renderToStaticMarkup(
+      <SimPageStepper
+        steps={[
+          { id: 'profil', label: 'Profil', status: 'done' },
+          { id: 'saisie', label: 'Saisie', status: 'current' },
+          { id: 'synthese', label: 'Synthèse', disabled: true },
+        ]}
+      />,
+    );
+
+    expect(html).toContain('sim-page-stepper');
+    expect(html).toContain('aria-current="step"');
+    expect(html).toContain('Profil');
+    expect(html).toContain('disabled=""');
+  });
+
+  it('fait défiler vers la section ciblée au clic', () => {
+    const target = document.createElement('section');
+    target.id = 'sim-synthese';
+    target.scrollIntoView = vi.fn();
+    document.body.appendChild(target);
+
+    render(
+      <SimPageStepper steps={[{ id: 'synthese', label: 'Synthèse', targetId: 'sim-synthese' }]} />,
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: 'Synthèse' }));
+
+    expect(target.scrollIntoView).toHaveBeenCalledWith({ behavior: 'smooth', block: 'start' });
+    target.remove();
+  });
+});
+
+describe('SimViewSynthesisCTA', () => {
+  it('reste masqué tant que la synthèse n’est pas prête', () => {
+    const html = renderToStaticMarkup(<SimViewSynthesisCTA ready={false} targetId="synthese" />);
+
+    expect(html).toBe('');
+  });
+
+  it('rend un CTA contextuel vers la synthèse prête', () => {
+    const html = renderToStaticMarkup(
+      <SimViewSynthesisCTA ready targetId="synthese" hint="Indicateurs calculés" />,
+    );
+
+    expect(html).toContain('sim-view-synthesis-cta');
+    expect(html).toContain('Voir la synthèse');
+    expect(html).toContain('Indicateurs calculés');
   });
 });
 

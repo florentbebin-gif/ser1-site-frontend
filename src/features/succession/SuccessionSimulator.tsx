@@ -18,9 +18,6 @@ import { useUserMode } from '../../settings/userMode';
 import { resolveEffectiveUserMode } from '../../settings/userModeDisplay';
 import { SessionGuardContext } from '../../auth';
 import { useFiscalContext } from '../../hooks/useFiscalContext';
-import { ExportMenu } from '../../components/ExportMenu';
-import { ModeToggle } from '../../components/ModeToggle';
-import { SimPageShell } from '@/components/ui/sim';
 import { storageKeyFor } from '../../utils/reset';
 import { resolveSuccessionAssetLocation } from './successionDraft';
 import { buildSuccessionFiscalSnapshot } from './successionFiscalContext';
@@ -32,13 +29,8 @@ import { useSuccessionDonationPartageHandlers } from './hooks/useSuccessionDonat
 import { useSuccessionExportHandlers } from './hooks/useSuccessionExportHandlers';
 import { useSuccessionSimulatorHandlers } from './hooks/useSuccessionSimulatorHandlers';
 import { importPrevoyanceEntriesFromStorage } from './prevoyanceImport';
-import {
-  SuccessionFamilyOverview,
-  SuccessionHypotheses,
-  SuccessionModals,
-  SuccessionPageContent,
-  SuccessionPageSidebar,
-} from './components/SuccessionPageSections';
+import { SuccessionModals } from './components/SuccessionPageSections';
+import { SuccessionSimulatorView } from './components/SuccessionSimulatorView';
 import '@/styles/sim/index.css';
 import './styles/index.css';
 
@@ -412,118 +404,83 @@ export default function SuccessionSimulator() {
     onUpdatePatrimonialField: (field: string, value: unknown) =>
       setPatrimonialContext((prev) => ({ ...prev, [field]: value })),
   };
+  const hasSuccessionPatrimoineSignificatif =
+    derived.displayActifNetSuccession > 0 ||
+    assuranceVieEntries.some((entry) => entry.capitauxDeces > 0) ||
+    perEntries.some((entry) => entry.capitauxDeces > 0) ||
+    prevoyanceDecesEntries.some((entry) => entry.capitalDeces > 0);
+  const successionSynthesisReady =
+    derived.shouldRenderSuccessionComputationSections && hasSuccessionPatrimoineSignificatif;
 
   // ── Rendu ──────────────────────────────────────────────────────────────────
 
-  if (settingsLoading) {
-    return (
-      <SimPageShell
-        title="Succession"
-        subtitle="Estimez les impacts civils d'une succession à partir du contexte familial, du patrimoine et des dispositions saisies."
-        pageClassName="sc-page"
-        pageTestId="succession-page"
-        statusTestId="succession-settings-loading"
-        loading
-        loadingContent={
-          <div className="sc-settings-loading">Chargement des paramètres fiscaux…</div>
-        }
-      />
-    );
-  }
-
   return (
     <>
-      <SimPageShell
-        title="Succession"
-        subtitle="Estimez les impacts civils d'une succession à partir du contexte familial, du patrimoine et des dispositions saisies."
-        pageClassName="sc-page"
-        pageTestId="succession-page"
-        actions={
-          <>
-            <ModeToggle
-              value={isExpert}
-              onChange={() => setLocalMode(isExpert ? 'simplifie' : 'expert')}
-            />
-            <ExportMenu options={exportOptions} loading={exportLoading} />
-          </>
-        }
-        notice={
-          <div className="sc-page-notice">
-            {sessionExpired && (
-              <p className="sc-session-msg">Session expirée — reconnectez-vous pour exporter.</p>
-            )}
-            <SuccessionFamilyOverview {...successionPageSectionsProps} />
-          </div>
-        }
-      >
-        {derived.shouldRenderSuccessionComputationSections && (
-          <>
-            <SimPageShell.Main className="sc-left">
-              <SuccessionPageContent {...successionPageSectionsProps} />
-            </SimPageShell.Main>
-
-            <SimPageShell.Side className="sc-right">
-              <SuccessionPageSidebar {...successionPageSectionsProps} />
-            </SimPageShell.Side>
-          </>
-        )}
-
-        <SimPageShell.Section>
-          <SuccessionHypotheses
-            hypothesesOpen={hypothesesOpen}
-            assumptions={derived.assumptions}
-            onToggle={() => setHypothesesOpen((value) => !value)}
-          />
-        </SimPageShell.Section>
-      </SimPageShell>
-
-      <SuccessionModals
+      <SuccessionSimulatorView
+        settingsLoading={settingsLoading}
+        sessionExpired={sessionExpired}
+        isExpert={isExpert}
+        exportOptions={exportOptions}
+        exportLoading={exportLoading}
+        onToggleMode={() => setLocalMode(isExpert ? 'simplifie' : 'expert')}
+        pageSectionsProps={successionPageSectionsProps}
         derived={derived}
-        civilSituation={civilContext.situationMatrimoniale}
-        enfantsContext={enfantsContext}
-        familyMembers={familyMembers}
-        assetEntries={assetEntries}
-        groupementFoncierEntries={groupementFoncierEntries}
-        showDispositionsModal={showDispositionsModal}
-        dispositionsDraft={dispositionsDraft}
-        setDispositionsDraft={setDispositionsDraft}
-        showAssuranceVieModal={showAssuranceVieModal}
-        assuranceVieDraft={assuranceVieDraft}
-        showPerModal={showPerModal}
-        perDraft={perDraft}
-        showPrevoyanceModal={showPrevoyanceModal}
-        prevoyanceDraft={prevoyanceDraft}
-        showDonationPartageModal={showDonationPartageModal}
-        donationPartageDraft={donationPartageDraft}
-        showAddMemberPanel={showAddMemberPanel}
-        addMemberForm={addMemberForm}
-        setAddMemberForm={setAddMemberForm}
-        onUpdateDispositionsTestament={updateDispositionsTestament}
-        onGetFirstTestamentBeneficiaryRef={getFirstTestamentBeneficiaryRef}
-        onAddParticularLegacy={addDispositionsParticularLegacy}
-        onUpdateParticularLegacy={updateDispositionsParticularLegacy}
-        onRemoveParticularLegacy={removeDispositionsParticularLegacy}
-        onCloseDispositions={() => setShowDispositionsModal(false)}
-        onValidateDispositions={validateDispositionsModal}
-        onCloseAssuranceVie={closeAssuranceVieModal}
-        onValidateAssuranceVie={validateAssuranceVieModal}
-        onUpdateAssuranceVieContract={updateAssuranceVieDraft}
-        onClosePer={closePerModal}
-        onValidatePer={validatePerModal}
-        onUpdatePerContract={updatePerDraft}
-        onClosePrevoyance={closePrevoyanceModal}
-        onValidatePrevoyance={validatePrevoyanceModal}
-        onUpdatePrevoyanceContract={updatePrevoyanceDraft}
-        onImportPrevoyanceFromSimulator={importPrevoyanceFromSimulator}
-        onCloseDonationPartage={closeDonationPartageModal}
-        onValidateDonationPartage={validateDonationPartageModal}
-        onUpdateDonationPartageDraft={setDonationPartageDraft}
-        onDeleteDonationPartage={
-          donationPartageDraft ? () => removeDonationPartageAct(donationPartageDraft.id) : undefined
-        }
-        onCloseAddMemberPanel={() => setShowAddMemberPanel(false)}
-        onValidateAddMember={addFamilyMember}
+        successionSynthesisReady={successionSynthesisReady}
+        hypothesesOpen={hypothesesOpen}
+        onToggleHypotheses={() => setHypothesesOpen((value) => !value)}
       />
+
+      {!settingsLoading ? (
+        <SuccessionModals
+          derived={derived}
+          civilSituation={civilContext.situationMatrimoniale}
+          enfantsContext={enfantsContext}
+          familyMembers={familyMembers}
+          assetEntries={assetEntries}
+          groupementFoncierEntries={groupementFoncierEntries}
+          showDispositionsModal={showDispositionsModal}
+          dispositionsDraft={dispositionsDraft}
+          setDispositionsDraft={setDispositionsDraft}
+          showAssuranceVieModal={showAssuranceVieModal}
+          assuranceVieDraft={assuranceVieDraft}
+          showPerModal={showPerModal}
+          perDraft={perDraft}
+          showPrevoyanceModal={showPrevoyanceModal}
+          prevoyanceDraft={prevoyanceDraft}
+          showDonationPartageModal={showDonationPartageModal}
+          donationPartageDraft={donationPartageDraft}
+          showAddMemberPanel={showAddMemberPanel}
+          addMemberForm={addMemberForm}
+          setAddMemberForm={setAddMemberForm}
+          onUpdateDispositionsTestament={updateDispositionsTestament}
+          onGetFirstTestamentBeneficiaryRef={getFirstTestamentBeneficiaryRef}
+          onAddParticularLegacy={addDispositionsParticularLegacy}
+          onUpdateParticularLegacy={updateDispositionsParticularLegacy}
+          onRemoveParticularLegacy={removeDispositionsParticularLegacy}
+          onCloseDispositions={() => setShowDispositionsModal(false)}
+          onValidateDispositions={validateDispositionsModal}
+          onCloseAssuranceVie={closeAssuranceVieModal}
+          onValidateAssuranceVie={validateAssuranceVieModal}
+          onUpdateAssuranceVieContract={updateAssuranceVieDraft}
+          onClosePer={closePerModal}
+          onValidatePer={validatePerModal}
+          onUpdatePerContract={updatePerDraft}
+          onClosePrevoyance={closePrevoyanceModal}
+          onValidatePrevoyance={validatePrevoyanceModal}
+          onUpdatePrevoyanceContract={updatePrevoyanceDraft}
+          onImportPrevoyanceFromSimulator={importPrevoyanceFromSimulator}
+          onCloseDonationPartage={closeDonationPartageModal}
+          onValidateDonationPartage={validateDonationPartageModal}
+          onUpdateDonationPartageDraft={setDonationPartageDraft}
+          onDeleteDonationPartage={
+            donationPartageDraft
+              ? () => removeDonationPartageAct(donationPartageDraft.id)
+              : undefined
+          }
+          onCloseAddMemberPanel={() => setShowAddMemberPanel(false)}
+          onValidateAddMember={addFamilyMember}
+        />
+      ) : null}
     </>
   );
 }

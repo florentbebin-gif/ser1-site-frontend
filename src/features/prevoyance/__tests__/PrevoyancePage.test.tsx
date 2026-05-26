@@ -212,7 +212,9 @@ describe('PrevoyancePage', () => {
     expect(await screen.findByText('Mode expert')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /mode expert indisponible/i })).toBeDisabled();
     expect(
-      screen.getByText('Renseignez la date de naissance pour afficher la synthèse de garanties.'),
+      screen.getByText(
+        'Renseignez le régime et la date de naissance pour afficher la synthèse de garanties.',
+      ),
     ).toBeInTheDocument();
     expect(screen.queryByRole('heading', { name: 'Arrêt de travail' })).toBeNull();
     expect(screen.getByRole('button', { name: /HYPOTHÈSES ET LIMITES/i })).toHaveAttribute(

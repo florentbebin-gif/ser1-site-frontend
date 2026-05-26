@@ -1,5 +1,6 @@
 @import './layout.css';
 @import './surfaces.css';
+@import './dividers.css';
 @import './buttons.css';
 @import './fields.css';
 @import './modals.css';
@@ -8,6 +9,8 @@
 @import './tooltips.css';
 @import './segmented.css';
 @import './states.css';
+@import './stepper.css';
+@import './sidebar-reveal.css';
 @import './headers.css';
 @import './tables.css';
 @import './audit-trail.css';

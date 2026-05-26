@@ -16,6 +16,7 @@ import {
   SimModalSectionNav,
   SimModalShell,
   SimMobileStickyActions,
+  SimPageStepper,
   SimSegmentedControl,
   SimSelect,
   SimSkeletonCard,
@@ -24,6 +25,7 @@ import {
   SimSparkline,
   SimStatusBadge,
   SimTooltip,
+  SimViewSynthesisCTA,
 } from '@/components/ui/sim';
 import { CGP_GLOSSARY_ENTRIES } from '@/constants/cgpGlossary';
 import {
@@ -199,6 +201,22 @@ function DesignSystemUiPreview() {
             onClick={() => setModalOpen(true)}
           />
         </article>
+
+        <article className="settings-design-system__ui-card">
+          <h3>Navigation simulateur</h3>
+          <SimPageStepper
+            steps={[
+              { id: 'settings-demo-profil', label: 'Profil', status: 'done' },
+              { id: 'settings-demo-saisie', label: 'Saisie', status: 'current' },
+              { id: 'settings-demo-synthese', label: 'Synthèse' },
+            ]}
+          />
+          <SimViewSynthesisCTA
+            ready
+            targetId="settings-demo-synthese"
+            hint="Exemple de lien contextuel vers les KPI."
+          />
+        </article>
       </div>
 
       <article className="settings-design-system__ui-card">
@@ -332,8 +350,9 @@ function DesignSystemModernityPreview() {
       <article className="settings-design-system__ui-card">
         <h3>État vide</h3>
         <SimEmptyState
+          variant="sidebar"
           illustration="chart"
-          title="Synthèse indisponible"
+          title="Synthèse en attente"
           description="Complétez les hypothèses pour afficher les indicateurs."
           cta={<SimActionButton variant="add" mode="text" label="Compléter" />}
         />
@@ -412,7 +431,8 @@ export default function SettingsDesignSystem() {
               />
             </h1>
             <p className="settings-premium-subtitle">
-              Référence runtime complète des fondations SIM SER1 2026.
+              Référence runtime des fondations simulateurs : primitives, navigation, états vides et
+              conventions d’affichage.
             </p>
           </div>
         </header>

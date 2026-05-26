@@ -18,7 +18,7 @@
 import { useState } from 'react';
 import { ExportMenu } from '@/components/ExportMenu';
 import { ModeToggle } from '@/components/ModeToggle';
-import { SimPageShell } from '@/components/ui/sim';
+import { SimEmptyState, SimPageShell, SimViewSynthesisCTA } from '@/components/ui/sim';
 import { useUserMode, type UserMode } from '@/settings/userMode';
 import { resolveEffectiveUserMode } from '@/settings/userModeDisplay';
 import '@/styles/sim/index.css';
@@ -30,6 +30,7 @@ import { PlacementInputsPanel } from './PlacementInputsPanel';
 import { PlacementHypotheses } from './PlacementHypotheses';
 import { PlacementResultsPanel } from './PlacementResultsPanel';
 import { usePlacementSimulatorController } from '../hooks/usePlacementSimulatorController';
+import { hasPlacementSynthesisPrerequisites } from '../utils/placementReadiness';
 
 export default function PlacementSimulatorPage() {
   const { mode } = useUserMode();
@@ -78,7 +79,7 @@ export default function PlacementSimulatorPage() {
     { label: 'Excel', onClick: exportExcel, disabled: !results?.produit1 },
     { label: 'PowerPoint', onClick: exportPptx, disabled: !results?.produit1 },
   ];
-  const showResults = state.client.ageActuel !== null;
+  const showResults = hasPlacementSynthesisPrerequisites(state);
 
   if (error) {
     return (
@@ -141,6 +142,11 @@ export default function PlacementSimulatorPage() {
             selectedDmtgTrancheWidth={selectedDmtgTrancheWidth}
             psSettings={psSettings}
           />
+          <SimViewSynthesisCTA
+            ready={showResults}
+            targetId="placement-synthese"
+            hint="ROI, effort total et capital transmis net."
+          />
         </SimPageShell.Main>
 
         <SimPageShell.Side
@@ -148,14 +154,25 @@ export default function PlacementSimulatorPage() {
           sticky={showResults}
         >
           {showResults ? (
-            <PlacementResultsPanel
-              loading={loading}
-              hydrated={hydrated}
-              results={results}
-              state={state}
-            />
+            <div
+              id="placement-synthese"
+              className="sim-sidebar-reveal"
+              data-sim-step-id="placement-synthese"
+            >
+              <PlacementResultsPanel
+                loading={loading}
+                hydrated={hydrated}
+                results={results}
+                state={state}
+              />
+            </div>
           ) : (
-            <div className="pl-ir-right__spacer" aria-hidden="true" />
+            <SimEmptyState
+              variant="sidebar"
+              illustration="chart"
+              title="Synthèse en attente"
+              description="Renseignez l’âge du client et au moins un versement pour calculer les indicateurs."
+            />
           )}
         </SimPageShell.Side>
 

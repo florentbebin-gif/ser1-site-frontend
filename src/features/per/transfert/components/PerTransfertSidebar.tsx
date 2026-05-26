@@ -2,6 +2,7 @@ import { useState } from 'react';
 import type { ReactNode } from 'react';
 import {
   SimAmountInputNumeric,
+  SimEmptyState,
   SimInfoButton,
   SimKpiReference,
   SimMetric,
@@ -32,6 +33,7 @@ interface PerTransfertSidebarProps {
   typeContrat: BaseCgRetraiteContractType;
   subscriptionDate: string;
   step2Done: boolean;
+  contractReady?: boolean;
   horizonAgeShort: number;
   horizonAgeLong: number;
   onHorizonChange: (_short: number, _long: number) => void;
@@ -66,6 +68,7 @@ export function PerTransfertSidebar({
   typeContrat,
   subscriptionDate,
   step2Done,
+  contractReady = true,
   horizonAgeShort,
   horizonAgeLong,
   onHorizonChange,
@@ -76,6 +79,17 @@ export function PerTransfertSidebar({
   const activePrefonStrategy =
     prefonStrategy === 'max_capital' ? result.prefon?.maxCapital : result.prefon?.allRente;
   const isPrefon = typeContrat === 'PER_POINTS';
+
+  if (!contractReady) {
+    return (
+      <SimEmptyState
+        variant="sidebar"
+        illustration="docs"
+        title="Synthèse en attente"
+        description="Sélectionnez un contrat Base CG ou complétez le relevé pour afficher les scénarios."
+      />
+    );
+  }
 
   return (
     <>
