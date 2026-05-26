@@ -286,8 +286,9 @@ describe('PerTransfertHypotheses', () => {
 });
 
 describe('PerTransfertSimulator', () => {
-  it('affiche l’audit Base CG ouvert avec sa réserve et son lien settings', async () => {
+  it('guide l’arrivée avec le référencement seul avant de révéler les détails', async () => {
     getBaseCgRetraiteCatalogMock.mockResolvedValueOnce([]);
+    const user = userEvent.setup();
 
     render(
       <MemoryRouter>
@@ -295,19 +296,18 @@ describe('PerTransfertSimulator', () => {
       </MemoryRouter>,
     );
 
-    expect(
-      await screen.findByText(/Base CG indicative.*aide interne au devoir de conseil/i),
-    ).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /Personnaliser le calcul de rente/i })).toHaveClass(
-      'sim-action-btn--edit',
-    );
-    expect(
-      screen.getByRole('button', { name: /Personnaliser le calcul de rente/i }),
-    ).not.toHaveClass('per-transfert-secondary-button');
-    expect(screen.getByText(/vérifier.*compagnie/i)).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: 'Base CG' })).toHaveAttribute(
-      'href',
-      '/settings/base-contrat-retraite',
-    );
+    const manualButton = await screen.findByRole('button', { name: /Saisie manuelle/i });
+
+    expect(screen.getByText('Référencement')).toBeInTheDocument();
+    expect(screen.queryByText('Audit Base CG')).not.toBeInTheDocument();
+    expect(screen.queryByText('Relevé de situation')).not.toBeInTheDocument();
+    expect(screen.queryByText('Profil assuré')).not.toBeInTheDocument();
+    expect(screen.getByText('Synthèse en attente')).toBeInTheDocument();
+
+    await user.click(manualButton);
+
+    expect(screen.getByText('Relevé de situation')).toBeInTheDocument();
+    expect(screen.getByText('Profil assuré')).toBeInTheDocument();
+    expect(screen.queryByText('Audit Base CG')).not.toBeInTheDocument();
   });
 });

@@ -68,10 +68,6 @@
   gap: 16px;
 }
 
-.per-transfert-panel + .per-transfert-panel {
-  margin-top: 20px;
-}
-
 .per-transfert-panel__header h2 {
   margin: 0;
   color: var(--color-c1);
@@ -140,13 +136,6 @@
   font-size: 11px;
   font-style: italic;
   line-height: 1.45;
-}
-
-.per-transfert-panel__divider {
-  width: 200px;
-  max-width: 100%;
-  height: 2px;
-  background: linear-gradient(90deg, transparent, var(--color-c8), transparent);
 }
 
 .per-transfert-field-grid,
