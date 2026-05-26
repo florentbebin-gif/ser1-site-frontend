@@ -3,26 +3,11 @@ import type {
   PrevoyanceContractKind,
   PrevoyanceSituationDraft,
 } from '@/domain/prevoyance/types';
-
-export interface FraisGenerauxEstimateState {
-  chargesExternes: number;
-  loyers: number;
-  assurances: number;
-  salaires: number;
-  amortissements: number;
-  fraisBancaires: number;
-}
-
-export type FraisGenerauxNumericKey = keyof FraisGenerauxEstimateState;
-
-export const DEFAULT_FRAIS_GENERAUX_ESTIMATE: FraisGenerauxEstimateState = {
-  chargesExternes: 0,
-  loyers: 0,
-  assurances: 0,
-  salaires: 0,
-  amortissements: 0,
-  fraisBancaires: 0,
-};
+export {
+  DEFAULT_FRAIS_GENERAUX_ESTIMATE,
+  type FraisGenerauxEstimateState,
+  type FraisGenerauxNumericKey,
+} from '@/domain/prevoyance/persistence';
 
 export const DEFAULT_SITUATION: PrevoyanceSituationDraft = {
   birthDate: '',

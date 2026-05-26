@@ -6,7 +6,13 @@ import './styles/dmtg.css';
 import { invalidate, broadcastInvalidation } from '@/utils/cache/fiscalSettingsCache';
 import { UserInfoBanner } from '@/components/UserInfoBanner';
 
-import { DEFAULT_TAX_SETTINGS, DEFAULT_FISCALITY_SETTINGS } from '@/constants/settingsDefaults';
+import {
+  DEFAULT_ASSURANCE_VIE_RULES,
+  DEFAULT_FISCALITY_SETTINGS,
+  DEFAULT_TAX_SETTINGS,
+} from '@/constants/settingsDefaults';
+import { getFiscalityRules, toFiscalitySettingsV2 } from '@/utils/cache/fiscalitySettingsAccess';
+import type { FiscalitySettingsV2 } from '@/utils/cache/fiscalitySettings';
 
 import ImpotsDmtgSection from './Impots/ImpotsDmtgSection';
 import { validateDmtg, validateAvDeces, isValid } from './validators/dmtgValidators';
@@ -103,9 +109,9 @@ export default function SettingsDmtgSuccession() {
 
         const fiscalityRow = fiscRes.data?.[0];
         if (!fiscRes.error && fiscalityRow?.data) {
-          const fiscalityData = fiscalityRow.data;
+          const fiscalityData = toFiscalitySettingsV2(fiscalityRow.data);
           if (mounted) {
-            setFiscalitySettings((prev) => ({ ...prev, ...fiscalityData }));
+            setFiscalitySettings(fiscalityData as FiscalitySettings);
           }
         } else if (fiscRes.error && fiscRes.error.code !== 'PGRST116') {
           console.error('Erreur chargement fiscality_settings :', fiscRes.error);
@@ -184,7 +190,12 @@ export default function SettingsDmtgSuccession() {
   const updateAvDeces = (path: string[], value: AvDecesUpdateValue) => {
     setFiscalitySettings((prev) => {
       const clone = structuredClone(prev);
-      let obj = clone.assuranceVie.deces as NestedRecord;
+      const assuranceVieRuleset = clone.rulesetsByKey.assuranceVie;
+      assuranceVieRuleset.rules = {
+        ...DEFAULT_ASSURANCE_VIE_RULES,
+        ...assuranceVieRuleset.rules,
+      };
+      let obj = assuranceVieRuleset.rules.deces as NestedRecord;
       for (let i = 0; i < path.length - 1; i += 1) {
         const key = path[i];
         if (!key) continue;
@@ -200,8 +211,11 @@ export default function SettingsDmtgSuccession() {
 
   const dmtgErrors = useMemo(() => validateDmtg(taxSettings.dmtg), [taxSettings.dmtg]);
   const avDecesErrors = useMemo(
-    () => validateAvDeces(fiscalitySettings.assuranceVie?.deces),
-    [fiscalitySettings.assuranceVie?.deces],
+    () =>
+      validateAvDeces(
+        getFiscalityRules(fiscalitySettings as FiscalitySettingsV2, 'assuranceVie').deces,
+      ),
+    [fiscalitySettings],
   );
   const hasErrors = !isValid(dmtgErrors, avDecesErrors);
   const dmtgGoldenCheck = useMemo(
@@ -245,8 +259,9 @@ export default function SettingsDmtgSuccession() {
       }
 
       const existingTaxData = (existingTaxRes.data?.data as Partial<TaxSettings> | null) ?? {};
-      const existingFiscData =
-        (existingFiscRes.data?.data as Partial<FiscalitySettings> | null) ?? {};
+      const existingFiscData = toFiscalitySettingsV2(
+        (existingFiscRes.data?.data as unknown | null) ?? DEFAULT_FISCALITY_SETTINGS,
+      );
 
       // Pruning : retirer les champs donation obsolètes persistés en DB (ex: donManuel).
       const { donManuel: _donManuel, ...donationClean } = (taxSettings.donation ??
@@ -257,12 +272,26 @@ export default function SettingsDmtgSuccession() {
         dmtg: taxSettings.dmtg,
         donation: donationClean as TaxSettings['donation'],
       };
-      const fiscalityPayload: Partial<FiscalitySettings> = {
+      const currentAssuranceVieRules = getFiscalityRules(
+        fiscalitySettings as FiscalitySettingsV2,
+        'assuranceVie',
+      );
+      const existingAssuranceVieRuleset =
+        existingFiscData.rulesetsByKey.assuranceVie ??
+        DEFAULT_FISCALITY_SETTINGS.rulesetsByKey.assuranceVie;
+      const fiscalityPayload: FiscalitySettingsV2 = {
         ...existingFiscData,
-        assuranceVie: {
-          ...existingFiscData.assuranceVie,
-          ...fiscalitySettings.assuranceVie,
-          deces: fiscalitySettings.assuranceVie.deces,
+        schemaVersion: 2,
+        rulesetsByKey: {
+          ...existingFiscData.rulesetsByKey,
+          assuranceVie: {
+            ...existingAssuranceVieRuleset,
+            rules: {
+              ...getFiscalityRules(existingFiscData, 'assuranceVie'),
+              ...currentAssuranceVieRules,
+              deces: currentAssuranceVieRules.deces,
+            },
+          },
         },
       };
       const taxValidation = validateDmtgTaxPayload(taxPayload);
@@ -306,7 +335,8 @@ export default function SettingsDmtgSuccession() {
   const { dmtg } = taxSettings;
   const donation = { ...DEFAULT_DONATION, ...taxSettings.donation };
   const avDeces =
-    fiscalitySettings.assuranceVie?.deces || DEFAULT_FISCALITY_SETTINGS.assuranceVie.deces;
+    getFiscalityRules(fiscalitySettings as FiscalitySettingsV2, 'assuranceVie').deces ||
+    DEFAULT_ASSURANCE_VIE_RULES.deces;
 
   return (
     <div className="settings-stack settings-stack--offset">

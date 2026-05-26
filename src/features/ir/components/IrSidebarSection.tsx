@@ -8,7 +8,7 @@ import {
 import { CGP_GLOSSARY } from '@/constants/cgpGlossary';
 import { IconBarChart } from '@/icons/ui';
 import type { IrSidebarSectionProps } from './irTypes';
-import { IrSelect } from './IrSelect';
+import { SimSelect } from '@/components/ui/sim';
 
 const DONUT_R = 27;
 const DONUT_CX = 34;
@@ -113,7 +113,7 @@ export function IrSidebarSection({
       <div className="ir-controls-sticky">
         <div className="ir-field">
           <label htmlFor="ir-bareme-select">Barème</label>
-          <IrSelect
+          <SimSelect
             id="ir-bareme-select"
             value={yearKey}
             onChange={(value) => setYearKey(value as IrSidebarSectionProps['yearKey'])}
@@ -128,7 +128,7 @@ export function IrSidebarSection({
         </div>
         <div className="ir-field">
           <label htmlFor="ir-residence-select">Résidence</label>
-          <IrSelect
+          <SimSelect
             id="ir-residence-select"
             value={location}
             onChange={(value) => setLocation(value as IrSidebarSectionProps['location'])}

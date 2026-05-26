@@ -20,7 +20,6 @@ export function buildSimKpiReferenceLabel(
 ): string {
   const tax = fiscalContext._raw_tax;
   const ps = fiscalContext._raw_ps;
-  const fiscality = fiscalContext._raw_fiscality;
   const abat10RatePercent =
     typeof fiscalContext.abat10Rate === 'number' ? fiscalContext.abat10Rate * 100 : undefined;
 
@@ -42,9 +41,7 @@ export function buildSimKpiReferenceLabel(
         tax?.corporateTax?.current?.reducedRate ?? fiscalContext.corporateTax?.current?.reducedRate,
       )}`;
     case 'per':
-      return `PER retraite · abattement pension ${formatPercent(
-        fiscality?.perIndividuel?.rente?.pensionAbatementRatePercent ?? abat10RatePercent,
-      )}`;
+      return `PER retraite · abattement pension ${formatPercent(abat10RatePercent)}`;
     case 'ps':
       return `PS ${ps?.labels?.currentYearLabel ?? 'année courante'} · patrimoine ${formatPercent(
         ps?.patrimony?.current?.generalRate,

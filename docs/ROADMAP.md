@@ -14,7 +14,7 @@ Piloter la trajectoire SER1 vers un outil premium, simple et fiable pour le cons
 
 ## Trajectoire 2026
 
-Positionnement : SER1 est une plateforme de chiffrage patrimonial fiable, explicable et exportable. La cible produit prioritaire est le **dirigeant patrimonial 360°** : IR, société, PER, succession et prévoyance dans une chaîne fiscale cohérente. Cette cible reste roadmappée : la prévoyance n'est pas encore construite et reste portée par `PR-P6-03`.
+Positionnement : SER1 est une plateforme de chiffrage patrimonial fiable, explicable et exportable. La cible produit prioritaire est le **dirigeant patrimonial 360°** : IR, société, PER, succession et prévoyance dans une chaîne fiscale cohérente. Cette cible reste roadmappée : la prévoyance dispose d'une V1 partielle active (`/sim/prevoyance`) et son durcissement reste porté par `PR-P6-03`.
 
 Aucun pilote payant ne démarre avant le socle commercialisation complet. Ce socle est strictement time-boxé, en MVP :
 
@@ -35,7 +35,7 @@ Ordre d'exécution, sans créer de nouvelle phase :
 2. P6 — analyse patrimoniale durcie (audit, livrables client-ready), hors `PR-P6-03`.
 3. P4 — scan documentaire IA Mistral, qui préremplit l'analyse patrimoniale.
 4. P7 — stratégie avancée durcie.
-5. `PR-P6-03` prévoyance.
+5. `PR-P6-03` prévoyance (durcissement de la V1 partielle active).
 6. P8 catalogue.
 
 L'analyse patrimoniale passe avant le scan IA : la saisie manuelle est la base, le LLM n'est qu'un booster qui préremplit l'AP. P4 ne peut pas avancer tant que l'AP manuelle n'est pas opérationnelle. P7 ne doit jamais transformer le LLM en conseiller autonome : SER1 calcule les scénarios, le CGP arbitre et valide. Aucun chat libre CGP ↔ LLM n'est prévu dans la V1.
@@ -290,7 +290,8 @@ Objectif : transformer les simulateurs stabilisés en livrables client-ready, sa
 
 ## PR-P6-03 - Simulateur prévoyance
 
-- Spécifier si le périmètre produit est confirmé.
+- Partir de la V1 partielle active : UI/UX, régime obligatoire paramétrable, contrats individuels/collectifs et synthèses de couverture.
+- Compléter le périmètre produit confirmé : moteur, tests métier, exports et intégration plus fine à l'analyse patrimoniale.
 
 ---
 

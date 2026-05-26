@@ -19,9 +19,7 @@ import {
 import { MASTER_NAMES } from '../template/loadBaseTemplate';
 import {
   LAYOUT,
-  TMI_BRACKETS,
-  TMI_WIDTHS,
-  TOTAL_WEIGHT,
+  buildTmiBrackets,
   calculateMarginToNextTmi,
   euro,
   fmt2,
@@ -48,6 +46,14 @@ export function buildPerFiscalSnapshot(
   const safeTaxablePerPart = Number.isFinite(spec.taxablePerPart) ? spec.taxablePerPart : 0;
   const safeParts = spec.partsNb > 0 ? spec.partsNb : 1;
   const totalRevenu = spec.revenuImposableD1 + spec.revenuImposableD2;
+  const tmiBrackets = buildTmiBrackets(
+    spec.brackets.map((bracket) => ({
+      from: bracket.min,
+      to: bracket.max,
+      rate: bracket.rate,
+    })),
+    tmiPercent,
+  );
 
   addHeader(slide, spec.title, spec.subtitle, theme, 'content');
 
@@ -145,12 +151,11 @@ export function buildPerFiscalSnapshot(
   let activeSegmentCenterX = 0;
   let activeSegmentWidth = 0;
 
-  TMI_BRACKETS.forEach((bracket) => {
-    const isActive = bracket.rate === tmiPercent;
-    const bgColor = getBracketColor(bracket.rate, theme);
+  tmiBrackets.forEach((bracket, index) => {
+    const isActive = Math.round(bracket.rate) === Math.round(tmiPercent);
+    const bgColor = getBracketColor(index, tmiBrackets.length, theme);
 
-    const weight = TMI_WIDTHS[bracket.rate as keyof typeof TMI_WIDTHS] || 1;
-    const segmentWidth = (barWidth * weight) / TOTAL_WEIGHT;
+    const segmentWidth = barWidth / tmiBrackets.length;
     const gap = 0.02;
 
     if (isActive) {
@@ -195,8 +200,9 @@ export function buildPerFiscalSnapshot(
       tmiPercent,
       undefined,
       spec.montantDansLaTMI,
+      tmiBrackets,
     );
-    const xOffset = getCursorXOffset(positionRatio, activeSegmentWidth, tmiPercent);
+    const xOffset = getCursorXOffset(positionRatio, activeSegmentWidth);
     const cursorCenterX = activeSegmentCenterX + xOffset;
 
     slide.addShape('triangle', {
@@ -210,7 +216,12 @@ export function buildPerFiscalSnapshot(
   }
 
   // ========== CALLOUT "Montant des revenus dans cette TMI" ==========
-  const amountInTmi = getAmountInCurrentBracket(safeTaxablePerPart, tmiPercent, safeParts);
+  const amountInTmi = getAmountInCurrentBracket(
+    safeTaxablePerPart,
+    tmiPercent,
+    safeParts,
+    tmiBrackets,
+  );
 
   addTextFr(slide, `Montant des revenus dans cette TMI : ${euro(amountInTmi)}`, {
     x: LAYOUT.marginX,
@@ -260,7 +271,7 @@ export function buildPerFiscalSnapshot(
   });
 
   // ========== MARGIN INFO ==========
-  const nextTmiInfo = calculateMarginToNextTmi(safeTaxablePerPart, tmiPercent);
+  const nextTmiInfo = calculateMarginToNextTmi(safeTaxablePerPart, tmiPercent, tmiBrackets);
   const marginValue =
     spec.montantDansLaTMI > 0
       ? spec.montantDansLaTMI

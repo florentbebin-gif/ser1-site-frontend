@@ -6,13 +6,15 @@ import {
   toDecimalPercent,
 } from './shared';
 import type { FiscalParams } from './types';
+import { buildFiscalityEngineSettings } from '../../utils/cache/fiscalitySettingsAccess';
+import type { FiscalitySettingsV2 } from '../../utils/cache/fiscalitySettings';
 
 interface Bracket {
   ratePercent: number;
   upTo?: number | null;
 }
 
-interface FiscalitySettings {
+interface FlatFiscalitySettings {
   assuranceVie?: {
     retraitsCapital?: {
       depuis2017?: {
@@ -37,6 +39,8 @@ interface FiscalitySettings {
   pea?: { ancienneteMinYears?: number };
 }
 
+type FiscalitySettings = FlatFiscalitySettings | FiscalitySettingsV2;
+
 interface PsSettingsForExtract {
   patrimony?: {
     current?: {
@@ -54,6 +58,29 @@ interface TaxSettingsForExtract {
 
 let hasWarnedMissingFiscalParams = false;
 
+function hasRulesetsByKey(value: unknown): value is FiscalitySettingsV2 {
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    'schemaVersion' in value &&
+    (value as { schemaVersion?: unknown }).schemaVersion === 2 &&
+    'rulesetsByKey' in value
+  );
+}
+
+function normalizeFiscalitySettings(
+  fiscalitySettings: FiscalitySettings | null | undefined,
+  taxSettings: TaxSettingsForExtract | null | undefined,
+  psSettings: PsSettingsForExtract | null | undefined,
+): FlatFiscalitySettings | null | undefined {
+  if (!hasRulesetsByKey(fiscalitySettings)) return fiscalitySettings;
+  return buildFiscalityEngineSettings(
+    fiscalitySettings,
+    taxSettings as Record<string, unknown> | null,
+    psSettings as Record<string, unknown> | null,
+  ) as FlatFiscalitySettings;
+}
+
 function getParam(params: Record<string, number>, key: string): number {
   return params[key] ?? DEFAULT_FISCAL_PARAMS[key as keyof typeof DEFAULT_FISCAL_PARAMS] ?? 0;
 }
@@ -64,6 +91,11 @@ export function extractFiscalParams(
   taxSettings?: TaxSettingsForExtract | null,
 ): FiscalParams {
   const params: Record<string, number> = { ...DEFAULT_FISCAL_PARAMS };
+  const normalizedFiscality = normalizeFiscalitySettings(
+    fiscalitySettings,
+    taxSettings,
+    psSettings,
+  );
 
   if (psSettings?.patrimony?.current?.generalRate != null) {
     params.psGeneral = toDecimalPercent(psSettings.patrimony.current.generalRate);
@@ -81,7 +113,7 @@ export function extractFiscalParams(
     params.pfuTotal = roundDecimal(getParam(params, 'pfuIR') + getParam(params, 'pfuPS'));
   }
 
-  const av = fiscalitySettings?.assuranceVie;
+  const av = normalizedFiscality?.assuranceVie;
   if (av) {
     const retraitsCapital = av.retraitsCapital;
     const depuis2017 = retraitsCapital?.depuis2017;
@@ -110,11 +142,7 @@ export function extractFiscalParams(
       if (deces.primesApres1998.brackets?.[0]) {
         params.av990ITranche1Taux = toDecimalPercent(deces.primesApres1998.brackets[0].ratePercent);
         if (deces.primesApres1998.brackets[0].upTo) {
-          const upTo = deces.primesApres1998.brackets[0].upTo;
-          params.av990ITranche1Plafond =
-            upTo > getParam(params, 'av990IAbattement')
-              ? upTo - getParam(params, 'av990IAbattement')
-              : upTo;
+          params.av990ITranche1Plafond = deces.primesApres1998.brackets[0].upTo;
         }
       }
       if (deces.primesApres1998.brackets?.[1]) {
@@ -126,7 +154,7 @@ export function extractFiscalParams(
     }
   }
 
-  const dividendes = fiscalitySettings?.dividendes;
+  const dividendes = normalizedFiscality?.dividendes;
   if (dividendes?.abattementBaremePercent != null) {
     params.dividendesAbattementPercent = clamp(
       toDecimalPercent(dividendes.abattementBaremePercent),
@@ -135,8 +163,8 @@ export function extractFiscalParams(
     );
   }
 
-  if (fiscalitySettings?.pea?.ancienneteMinYears != null) {
-    params.peaAncienneteMin = fiscalitySettings.pea.ancienneteMinYears;
+  if (normalizedFiscality?.pea?.ancienneteMinYears != null) {
+    params.peaAncienneteMin = normalizedFiscality.pea.ancienneteMinYears;
   }
 
   const missingKeys: string[] = [];

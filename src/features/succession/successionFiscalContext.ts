@@ -1,5 +1,11 @@
-import { DEFAULT_FISCALITY_SETTINGS, DEFAULT_TAX_SETTINGS } from '../../constants/settingsDefaults';
+import {
+  DEFAULT_ASSURANCE_VIE_RULES,
+  DEFAULT_FISCALITY_SETTINGS,
+  DEFAULT_TAX_SETTINGS,
+} from '../../constants/settingsDefaults';
 import type { FiscalContext } from '../../hooks/useFiscalContext';
+import { getFiscalityRules } from '../../utils/cache/fiscalitySettingsAccess';
+import type { FiscalitySettingsV2 } from '../../utils/cache/fiscalitySettings';
 
 type DmtgSettings = typeof DEFAULT_TAX_SETTINGS.dmtg;
 type DonationSettings = typeof DEFAULT_TAX_SETTINGS.donation;
@@ -35,18 +41,16 @@ interface LooseTaxSettings extends Record<string, unknown> {
   donation?: Partial<DonationSettings>;
 }
 
-interface LooseFiscalitySettings extends Record<string, unknown> {
-  assuranceVie?: {
-    deces?: {
-      agePivotPrimes?: unknown;
-      primesApres1998?: {
-        allowancePerBeneficiary?: unknown;
-        brackets?: Array<{ upTo?: unknown; ratePercent?: unknown }>;
-      };
-      apres70ans?: {
-        globalAllowance?: unknown;
-        taxationMode?: unknown;
-      };
+interface LooseAssuranceVieRules extends Record<string, unknown> {
+  deces?: {
+    agePivotPrimes?: unknown;
+    primesApres1998?: {
+      allowancePerBeneficiary?: unknown;
+      brackets?: Array<{ upTo?: unknown; ratePercent?: unknown }>;
+    };
+    apres70ans?: {
+      globalAllowance?: unknown;
+      taxationMode?: unknown;
     };
   };
 }
@@ -82,13 +86,16 @@ export function buildSuccessionFiscalSnapshot(
   fiscalContext: FiscalContext | null | undefined,
 ): SuccessionFiscalSnapshot {
   const tax = (fiscalContext?._raw_tax ?? DEFAULT_TAX_SETTINGS) as LooseTaxSettings;
-  const fiscality = (fiscalContext?._raw_fiscality ??
-    DEFAULT_FISCALITY_SETTINGS) as LooseFiscalitySettings;
+  const fiscality = (fiscalContext?._raw_fiscality ?? DEFAULT_FISCALITY_SETTINGS) as
+    | FiscalitySettingsV2
+    | null
+    | undefined;
 
   const donationRaw = tax.donation;
-  const avDecesRaw = fiscality.assuranceVie?.deces;
+  const assuranceVieRules = getFiscalityRules(fiscality, 'assuranceVie') as LooseAssuranceVieRules;
+  const avDecesRaw = assuranceVieRules.deces;
 
-  const defaultAvDeces = DEFAULT_FISCALITY_SETTINGS.assuranceVie.deces;
+  const defaultAvDeces = DEFAULT_ASSURANCE_VIE_RULES.deces;
   const default990I = defaultAvDeces.primesApres1998;
   const default757B = defaultAvDeces.apres70ans;
 

@@ -6,7 +6,9 @@
  *
  * Deux modes :
  *  - strict: true  → attend Supabase avant de retourner (IR, Succession)
- *  - strict: false → stale-while-revalidate, retourne cache/defaults immédiatement (défaut)
+ *  - strict: false → stale-while-revalidate, retourne cache/defaults immédiatement (défaut).
+ *    Le fetch arrière-plan met le cache à jour pour les appels suivants, mais ne force pas
+ *    un re-render cold start hors invalidation explicite.
  *
  * Invalidation : écoute l'événement `ser1:fiscal-settings-updated` pour se rafraîchir.
  */
@@ -22,6 +24,9 @@ import {
   DEFAULT_PASS_HISTORY,
 } from '../utils/cache/fiscalSettingsCache';
 import type { CacheMeta } from '../utils/cache/fiscalSettingsCache';
+import { getFiscalityRules } from '../utils/cache/fiscalitySettingsAccess';
+import type { FiscalitySettingsV2 } from '../utils/cache/fiscalitySettings';
+import { DEFAULT_PER_INDIVIDUEL_RULES } from '../constants/settingsDefaults';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -36,6 +41,8 @@ interface FiscalContextMeta {
   psUpdatedAt: string | null;
   /** updated_at Supabase pour fiscality_settings (ISO string ou null) */
   fiscalityUpdatedAt: string | null;
+  /** updated_at Supabase max connu pour pass_history (ISO string ou null) */
+  passUpdatedAt: string | null;
 }
 
 /**
@@ -62,7 +69,7 @@ export interface FiscalContext {
   /** Taux PS patrimoine année courante - regime d'exception */
   psRateException: number;
   /** Fractions RVTO par âge au premier versement de rente */
-  rvtoTaxableFractionByAge: typeof DEFAULT_FISCALITY_SETTINGS.perIndividuel.rente.rvtoTaxableFractionByAgeAtFirstPayment;
+  rvtoTaxableFractionByAge: typeof DEFAULT_PER_INDIVIDUEL_RULES.rente.rvtoTaxableFractionByAgeAtFirstPayment;
   /** Taux PS sur la quote-part intérêts des rentes PER */
   psRateRenteInterests: number;
   /** Taux CASA sur la quote-part capital des rentes PER déductibles */
@@ -115,7 +122,7 @@ export interface FiscalContext {
   /** Données brutes ps_settings */
   _raw_ps: typeof DEFAULT_PS_SETTINGS;
   /** Données brutes fiscality_settings */
-  _raw_fiscality: typeof DEFAULT_FISCALITY_SETTINGS;
+  _raw_fiscality: FiscalitySettingsV2;
 }
 
 interface UseFiscalContextOptions {
@@ -132,7 +139,7 @@ interface UseFiscalContextResult {
 
 type TaxSettings = typeof DEFAULT_TAX_SETTINGS;
 type PsSettings = typeof DEFAULT_PS_SETTINGS;
-type FiscalitySettings = typeof DEFAULT_FISCALITY_SETTINGS;
+type FiscalitySettings = FiscalitySettingsV2;
 type LegacyDmtgSettings = TaxSettings['dmtg'] & {
   abattementLigneDirecte?: number;
   scale?: TaxSettings['dmtg']['ligneDirecte']['scale'];
@@ -157,11 +164,11 @@ function buildFiscalContext(
   passHistory?: Record<number, number>,
 ): FiscalContext {
   const dmtg: LegacyDmtgSettings = tax?.dmtg ?? DEFAULT_TAX_SETTINGS.dmtg;
-  const perRente =
-    fiscality?.perIndividuel?.rente ?? DEFAULT_FISCALITY_SETTINGS.perIndividuel.rente;
+  const perRules = getFiscalityRules(fiscality, 'perIndividuel');
+  const perRente = perRules.rente ?? DEFAULT_PER_INDIVIDUEL_RULES.rente;
   const petiteRente =
-    fiscality?.perIndividuel?.sortieCapital?.retraite?.petiteRente ??
-    DEFAULT_FISCALITY_SETTINGS.perIndividuel.sortieCapital.retraite.petiteRente;
+    perRules.sortieCapital?.retraite?.petiteRente ??
+    DEFAULT_PER_INDIVIDUEL_RULES.sortieCapital.retraite.petiteRente;
   const smallAnnuityMonthlyThreshold = petiteRente.monthlyThreshold;
 
   // Normalisation DMTG : supporte les deux anciennes structures (legacy + nouvelle)
@@ -187,18 +194,18 @@ function buildFiscalContext(
       ps?.patrimony?.current?.exceptionRate ?? DEFAULT_PS_SETTINGS.patrimony.current.exceptionRate,
     rvtoTaxableFractionByAge:
       perRente.rvtoTaxableFractionByAgeAtFirstPayment ??
-      DEFAULT_FISCALITY_SETTINGS.perIndividuel.rente.rvtoTaxableFractionByAgeAtFirstPayment,
+      DEFAULT_PER_INDIVIDUEL_RULES.rente.rvtoTaxableFractionByAgeAtFirstPayment,
     psRateRenteInterests: percentToRate(
       perRente.deduits?.interestsQuotePart?.psRatePercent ??
-        DEFAULT_FISCALITY_SETTINGS.perIndividuel.rente.deduits.interestsQuotePart.psRatePercent,
+        DEFAULT_PER_INDIVIDUEL_RULES.rente.deduits.interestsQuotePart.psRatePercent,
     ),
     psRateRenteCapitalCASA: percentToRate(
       perRente.deduits?.capitalQuotePart?.psRatePercent ??
-        DEFAULT_FISCALITY_SETTINGS.perIndividuel.rente.deduits.capitalQuotePart.psRatePercent,
+        DEFAULT_PER_INDIVIDUEL_RULES.rente.deduits.capitalQuotePart.psRatePercent,
     ),
     abat10Rate: percentToRate(
       perRente.pensionAbatementRatePercent ??
-        DEFAULT_FISCALITY_SETTINGS.perIndividuel.rente.pensionAbatementRatePercent,
+        DEFAULT_PER_INDIVIDUEL_RULES.rente.pensionAbatementRatePercent,
     ),
     abat10RetireesCurrent:
       tax?.incomeTax?.abat10?.retireesCurrent ??
@@ -210,13 +217,11 @@ function buildFiscalContext(
     smallAnnuityAnnualCapitalExitThreshold: smallAnnuityMonthlyThreshold * 12,
     smallAnnuityCapitalExitFlatTaxRate: percentToRate(
       petiteRente.forfaitIrRatePercent ??
-        DEFAULT_FISCALITY_SETTINGS.perIndividuel.sortieCapital.retraite.petiteRente
-          .forfaitIrRatePercent,
+        DEFAULT_PER_INDIVIDUEL_RULES.sortieCapital.retraite.petiteRente.forfaitIrRatePercent,
     ),
     smallAnnuityCapitalExitFlatTaxAbatementRate: percentToRate(
       petiteRente.forfaitAbatementRatePercent ??
-        DEFAULT_FISCALITY_SETTINGS.perIndividuel.sortieCapital.retraite.petiteRente
-          .forfaitAbatementRatePercent,
+        DEFAULT_PER_INDIVIDUEL_RULES.sortieCapital.retraite.petiteRente.forfaitAbatementRatePercent,
     ),
 
     // DMTG normalisé
@@ -292,6 +297,7 @@ export function useFiscalContext({
     taxUpdatedAt: null,
     psUpdatedAt: null,
     fiscalityUpdatedAt: null,
+    passUpdatedAt: null,
   });
 
   const applySettings = useCallback(
@@ -310,6 +316,7 @@ export function useFiscalContext({
         taxUpdatedAt: settingsMeta?.taxUpdatedAt ?? null,
         psUpdatedAt: settingsMeta?.psUpdatedAt ?? null,
         fiscalityUpdatedAt: settingsMeta?.fiscalityUpdatedAt ?? null,
+        passUpdatedAt: settingsMeta?.passUpdatedAt ?? null,
       });
     },
     [],
@@ -336,7 +343,8 @@ export function useFiscalContext({
           );
           if (result.error) setError(result.error);
         } else {
-          // Mode stale : retourne immédiatement cache/defaults
+          // Mode stale : retourne immédiatement cache/defaults. Le fetch background hydrate
+          // le cache pour le prochain appel, sans second rendu automatique au cold start.
           const result = await getFiscalSettings();
           if (!mounted) return;
           applySettings(

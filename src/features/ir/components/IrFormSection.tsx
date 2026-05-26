@@ -1,6 +1,6 @@
 import { SimActionButton } from '@/components/ui/sim';
 import { IconUsers } from '@/icons/ui';
-import { IrSelect } from './IrSelect';
+import { SimSelect } from '@/components/ui/sim';
 import type { IrFormSectionProps } from './irTypes';
 import { IrIncomeSection } from './IrIncomeSection';
 
@@ -52,7 +52,7 @@ export function IrFormSection({
         <div className="ir-guide-card__grid">
           <div className="ir-field premium-field" data-testid="ir-situation-field">
             <label htmlFor="ir-situation-select">Situation familiale</label>
-            <IrSelect
+            <SimSelect
               id="ir-situation-select"
               value={status ?? ''}
               placeholder="Sélectionner une situation…"
@@ -107,7 +107,7 @@ export function IrFormSection({
               {children.map((child, idx) => (
                 <div key={child.id} className="ir-child-row">
                   <span className="ir-child-row__label">E{idx + 1}</span>
-                  <IrSelect
+                  <SimSelect
                     style={{ flex: 1 }}
                     value={child.mode}
                     onChange={(v) =>

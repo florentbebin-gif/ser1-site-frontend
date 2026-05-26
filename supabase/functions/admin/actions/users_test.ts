@@ -196,3 +196,56 @@ Deno.test('list_users conserve la reponse users et exclut les comptes e2e', asyn
     { table: 'issue_reports', column: 'user_id', values: ['user-real'] },
   ])
 })
+
+Deno.test('update_user_role refuse un role inconnu avant toute mutation', async () => {
+  let authUpdateCalled = false
+  let profileUpsertCalled = false
+
+  const supabase = {
+    auth: {
+      admin: {
+        updateUserById: () => {
+          authUpdateCalled = true
+          return Promise.resolve({ error: null })
+        },
+        getUserById: () =>
+          Promise.resolve({
+            data: { user: { id: 'user-1', app_metadata: { role: 'user' } } },
+            error: null,
+          }),
+      },
+    },
+    from() {
+      return {
+        upsert: () => {
+          profileUpsertCalled = true
+          return Promise.resolve({ error: null })
+        },
+      }
+    },
+  }
+
+  const response = await userActionHandlers.update_user_role({
+    supabase,
+    payload: { userId: 'user-1', role: 'super-admin' },
+    principal: {
+      userId: 'owner-user',
+      role: 'admin',
+      accountKind: 'owner',
+      requestId: 'rid-role',
+    },
+    requestId: 'rid-role',
+    responseHeaders: {},
+    req: new Request('https://ser1.test/api/admin'),
+    origin: 'https://ser1.test',
+    hasAuthHeader: true,
+    reqStart: Date.now(),
+  } as unknown as AdminActionContext)
+
+  const body = await response.json()
+
+  assertEquals(response.status, 400)
+  assertEquals(body.error, 'Rôle invalide')
+  assertEquals(authUpdateCalled, false)
+  assertEquals(profileUpsertCalled, false)
+})

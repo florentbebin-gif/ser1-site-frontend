@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 import * as placementEngine from '../../../engine/placement';
 import {
   DEFAULT_FISCALITY_SETTINGS,
+  DEFAULT_PER_INDIVIDUEL_RULES,
   DEFAULT_PS_SETTINGS,
   DEFAULT_TAX_SETTINGS,
 } from '../../../constants/settingsDefaults';
@@ -18,12 +19,12 @@ function makeFiscalContext(overrides: Partial<FiscalContext>): FiscalContext {
     psRateGeneral: DEFAULT_PS_SETTINGS.patrimony.current.generalRate,
     psRateException: DEFAULT_PS_SETTINGS.patrimony.current.exceptionRate,
     rvtoTaxableFractionByAge:
-      DEFAULT_FISCALITY_SETTINGS.perIndividuel.rente.rvtoTaxableFractionByAgeAtFirstPayment,
+      DEFAULT_PER_INDIVIDUEL_RULES.rente.rvtoTaxableFractionByAgeAtFirstPayment,
     psRateRenteInterests:
-      DEFAULT_FISCALITY_SETTINGS.perIndividuel.rente.deduits.interestsQuotePart.psRatePercent / 100,
+      DEFAULT_PER_INDIVIDUEL_RULES.rente.deduits.interestsQuotePart.psRatePercent / 100,
     psRateRenteCapitalCASA:
-      DEFAULT_FISCALITY_SETTINGS.perIndividuel.rente.deduits.capitalQuotePart.psRatePercent / 100,
-    abat10Rate: DEFAULT_FISCALITY_SETTINGS.perIndividuel.rente.pensionAbatementRatePercent / 100,
+      DEFAULT_PER_INDIVIDUEL_RULES.rente.deduits.capitalQuotePart.psRatePercent / 100,
+    abat10Rate: DEFAULT_PER_INDIVIDUEL_RULES.rente.pensionAbatementRatePercent / 100,
     abat10RetireesCurrent: DEFAULT_TAX_SETTINGS.incomeTax.abat10.retireesCurrent,
     psRetirementBrackets: DEFAULT_PS_SETTINGS.retirement.current.brackets,
     psRateRetirementDefault:
@@ -31,16 +32,14 @@ function makeFiscalContext(overrides: Partial<FiscalContext>): FiscalContext {
         ...DEFAULT_PS_SETTINGS.retirement.current.brackets.map((bracket) => bracket.totalRate),
       ) / 100,
     smallAnnuityMonthlyCapitalExitThreshold:
-      DEFAULT_FISCALITY_SETTINGS.perIndividuel.sortieCapital.retraite.petiteRente.monthlyThreshold,
+      DEFAULT_PER_INDIVIDUEL_RULES.sortieCapital.retraite.petiteRente.monthlyThreshold,
     smallAnnuityAnnualCapitalExitThreshold:
-      DEFAULT_FISCALITY_SETTINGS.perIndividuel.sortieCapital.retraite.petiteRente.monthlyThreshold *
-      12,
+      DEFAULT_PER_INDIVIDUEL_RULES.sortieCapital.retraite.petiteRente.monthlyThreshold * 12,
     smallAnnuityCapitalExitFlatTaxRate:
-      DEFAULT_FISCALITY_SETTINGS.perIndividuel.sortieCapital.retraite.petiteRente
-        .forfaitIrRatePercent / 100,
+      DEFAULT_PER_INDIVIDUEL_RULES.sortieCapital.retraite.petiteRente.forfaitIrRatePercent / 100,
     smallAnnuityCapitalExitFlatTaxAbatementRate:
-      DEFAULT_FISCALITY_SETTINGS.perIndividuel.sortieCapital.retraite.petiteRente
-        .forfaitAbatementRatePercent / 100,
+      DEFAULT_PER_INDIVIDUEL_RULES.sortieCapital.retraite.petiteRente.forfaitAbatementRatePercent /
+      100,
     dmtgScaleLigneDirecte: DEFAULT_TAX_SETTINGS.dmtg.ligneDirecte.scale,
     dmtgAbattementEnfant: DEFAULT_TAX_SETTINGS.dmtg.ligneDirecte.abattement,
     dmtgSettings: DEFAULT_TAX_SETTINGS.dmtg,
@@ -93,7 +92,13 @@ describe('derivePlacementSettingsFromFiscalContext', () => {
   it('transmet les trois tables brutes a extractFiscalParams', () => {
     const rawFiscality = {
       ...DEFAULT_FISCALITY_SETTINGS,
-      dividendes: { abattementBaremePercent: 38 },
+      rulesetsByKey: {
+        ...DEFAULT_FISCALITY_SETTINGS.rulesetsByKey,
+        cto: {
+          ...DEFAULT_FISCALITY_SETTINGS.rulesetsByKey.cto,
+          rules: { dividendes: { abattementBaremePercent: 38 } },
+        },
+      },
     } as FiscalContext['_raw_fiscality'];
     const rawPs = {
       ...DEFAULT_PS_SETTINGS,

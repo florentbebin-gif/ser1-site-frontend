@@ -86,12 +86,11 @@ export default async function handler(req: AdminRequest, res: AdminResponse) {
   const authorization = asHeaderString(req.headers.authorization);
   const requestId = asHeaderString(req.headers['x-request-id']);
   const action = isRecord(req.body) && typeof req.body.action === 'string' ? req.body.action : '';
-  const apikeyPreview = apikey ? `${apikey.slice(0, 10)}...` : '(none)';
 
   console.log(
     `[api/admin] action=${action || '(no action)'} hasAuth=${Boolean(
       authorization,
-    )} apikey=${apikeyPreview} target=${targetUrl}`,
+    )} requestId=${requestId || '(none)'}`,
   );
 
   try {
@@ -114,7 +113,9 @@ export default async function handler(req: AdminRequest, res: AdminResponse) {
     const contentType = response.headers.get('content-type') || '';
     const data = await response.text();
     console.log(
-      `[api/admin] upstream status=${response.status} contentType=${contentType} bodyLen=${data.length}`,
+      `[api/admin] upstream status=${response.status} contentType=${contentType} bodyLen=${data.length} requestId=${
+        upstreamRequestId || requestId || '(none)'
+      }`,
     );
 
     res.status(response.status);

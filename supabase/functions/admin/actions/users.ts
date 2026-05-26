@@ -55,6 +55,7 @@ interface AuthAdminListUsersClient {
 }
 
 export const AUTH_USERS_PER_PAGE = 1000
+const ASSIGNABLE_ROLES = new Set(['admin', 'user'])
 
 function toError(error: unknown): Error {
   if (error instanceof Error) return error
@@ -101,6 +102,10 @@ const updateUserRole: AdminActionHandler = async (ctx) => {
 
   if (!userId || !role) {
     return errorResponse('ID utilisateur et rôle requis', ctx.responseHeaders, 400)
+  }
+
+  if (!ASSIGNABLE_ROLES.has(role)) {
+    return errorResponse('Rôle invalide', ctx.responseHeaders, 400)
   }
 
   const existing = await loadUserOrThrow(ctx.supabase, userId)

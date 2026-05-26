@@ -23,9 +23,7 @@ import {
 import { MASTER_NAMES } from '../template/loadBaseTemplate';
 import {
   LAYOUT,
-  TOTAL_WEIGHT,
-  TMI_BRACKETS,
-  TMI_WIDTHS,
+  buildTmiBrackets,
   calculateMarginToNextTmi,
   euro,
   fmt2,
@@ -55,6 +53,7 @@ export function buildIrSynthesis(
 
   const slideWidth = SLIDE_SIZE.width;
   const barWidth = slideWidth - LAYOUT.bar.marginX * 2;
+  const tmiBrackets = buildTmiBrackets(data.irScale, data.tmiRate);
 
   // ========== STANDARD HEADER (from design system) ==========
 
@@ -167,13 +166,11 @@ export function buildIrSynthesis(
   let activeSegmentCenterX = 0;
   let activeSegmentWidth = 0;
 
-  TMI_BRACKETS.forEach((bracket) => {
-    const isActive = bracket.rate === data.tmiRate;
-    const bgColor = getBracketColor(bracket.rate, theme);
+  tmiBrackets.forEach((bracket, index) => {
+    const isActive = Math.round(bracket.rate) === Math.round(data.tmiRate);
+    const bgColor = getBracketColor(index, tmiBrackets.length, theme);
 
-    // Calculate proportional width based on income range
-    const weight = TMI_WIDTHS[bracket.rate as keyof typeof TMI_WIDTHS] || 1;
-    const segmentWidth = (barWidth * weight) / TOTAL_WEIGHT;
+    const segmentWidth = barWidth / tmiBrackets.length;
     const gap = 0.02; // Tiny gap between segments
 
     // Track active segment for cursor positioning
@@ -223,8 +220,9 @@ export function buildIrSynthesis(
       data.tmiRate,
       data.tmiBaseGlobal,
       data.tmiMarginGlobal,
+      tmiBrackets,
     );
-    const xOffset = getCursorXOffset(positionRatio, activeSegmentWidth, data.tmiRate);
+    const xOffset = getCursorXOffset(positionRatio, activeSegmentWidth);
     const cursorCenterX = activeSegmentCenterX + xOffset;
 
     // Draw isoceles triangle pointing DOWN using 'triangle' shape
@@ -244,7 +242,7 @@ export function buildIrSynthesis(
   const amountInTmi =
     data.tmiBaseGlobal !== undefined && data.tmiBaseGlobal !== null
       ? data.tmiBaseGlobal
-      : getAmountInCurrentBracket(safeTaxablePerPart, data.tmiRate, data.partsNb);
+      : getAmountInCurrentBracket(safeTaxablePerPart, data.tmiRate, data.partsNb, tmiBrackets);
 
   addTextFr(slide, `Montant des revenus dans cette TMI : ${euro(amountInTmi)}`, {
     x: LAYOUT.marginX,
@@ -300,7 +298,7 @@ export function buildIrSynthesis(
 
   // ========== SECTION 5: MARGIN INFO - TERTIARY ==========
   // "Marge avant changement de TMI : X €" - uses tmiMarginGlobal from IR card, or fallback to calculated value
-  const nextTmiInfo = calculateMarginToNextTmi(safeTaxablePerPart, data.tmiRate);
+  const nextTmiInfo = calculateMarginToNextTmi(safeTaxablePerPart, data.tmiRate, tmiBrackets);
   const marginValue =
     data.tmiMarginGlobal !== undefined && data.tmiMarginGlobal !== null
       ? data.tmiMarginGlobal

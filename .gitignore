@@ -31,8 +31,10 @@ docs/api/
 
 # Office exports / docs (do not commit)
 **/*.pptx
+**/*.ppt
 **/*.xlsx
 **/*.xlsm
+**/*.xls
 
 # Vercel CLI cache
 .vercel/

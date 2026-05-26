@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { PREVOYANCE_STORAGE_KEY, type PrevoyanceContractDraft } from '@/features/prevoyance';
+import { PREVOYANCE_STORAGE_KEY, type PrevoyanceContractDraft } from '@/domain/prevoyance';
 import {
   buildPrevoyanceSuccessionEntry,
   importPrevoyanceEntriesFromStorage,

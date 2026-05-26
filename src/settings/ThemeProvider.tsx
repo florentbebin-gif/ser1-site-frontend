@@ -41,11 +41,6 @@ const DEFAULT_THEME_CONTEXT_VALUE: ThemeContextValue = {
   saveMyPalette: async () => ({ success: false, error: 'Not implemented' }),
   themeSource: 'cabinet',
   setThemeSource: (_source: ThemeSource) => {},
-  customPalette: null,
-  selectedThemeRef: 'cabinet',
-  setSelectedThemeRef: (_ref: string) => {},
-  saveThemeToUiSettings: async () => ({ success: false, error: 'Not implemented' }),
-  saveCustomPalette: async () => ({ success: false, error: 'Not implemented' }),
 };
 
 const noopApplyColors: ApplyColorsFn = () => {};
@@ -122,25 +117,22 @@ export function ThemeProvider({ children }: ThemeProviderProps): React.ReactElem
     initialApplyDone.current = true;
   }
 
-  const { setColors, applyThemeMode, saveMyPalette, saveCustomPalette, saveThemeToUiSettings } =
-    useThemeActions({
-      setColorsState: session.setColorsState,
-      setThemeMode: session.setThemeMode,
-      setPresetId: session.setPresetId,
-      setThemeSource: session.setThemeSource,
-      setMyPalette: session.setMyPalette,
-      setCustomPalette: session.setCustomPalette,
-      setSelectedThemeRef: session.setSelectedThemeRef,
-      cabinetColorsRef: session.cabinetColorsRef,
-      cabinetBrandingKeyRef: session.cabinetBrandingKeyRef,
-      ensureCabinetThemeFetch: session.ensureCabinetThemeFetch,
-      myPaletteRef: session.myPaletteRef,
-      themeModeRef: session.themeModeRef,
-      lastAppliedHashRef,
-      lastAppliedSourceRankRef,
-      lastAppliedUserIdRef,
-      applyColorsToCSSWithGuardRef,
-    });
+  const { setColors, applyThemeMode, saveMyPalette } = useThemeActions({
+    setColorsState: session.setColorsState,
+    setThemeMode: session.setThemeMode,
+    setPresetId: session.setPresetId,
+    setThemeSource: session.setThemeSource,
+    setMyPalette: session.setMyPalette,
+    cabinetColorsRef: session.cabinetColorsRef,
+    cabinetBrandingKeyRef: session.cabinetBrandingKeyRef,
+    ensureCabinetThemeFetch: session.ensureCabinetThemeFetch,
+    myPaletteRef: session.myPaletteRef,
+    themeModeRef: session.themeModeRef,
+    lastAppliedHashRef,
+    lastAppliedSourceRankRef,
+    lastAppliedUserIdRef,
+    applyColorsToCSSWithGuardRef,
+  });
 
   useThemeEvents({
     setOriginalColors: session.setOriginalColors,
@@ -172,11 +164,6 @@ export function ThemeProvider({ children }: ThemeProviderProps): React.ReactElem
         saveMyPalette,
         themeSource: session.themeSource,
         setThemeSource: session.setThemeSource,
-        customPalette: session.customPalette,
-        selectedThemeRef: session.selectedThemeRef,
-        setSelectedThemeRef: session.setSelectedThemeRef,
-        saveThemeToUiSettings,
-        saveCustomPalette,
       }}
     >
       {children}

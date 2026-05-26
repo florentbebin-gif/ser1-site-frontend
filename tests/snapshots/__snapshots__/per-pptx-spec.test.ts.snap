@@ -32,26 +32,36 @@ Toute reproduction, représentation, diffusion ou rediffusion, totale ou partiel
       "brackets": [
         {
           "label": "0 %",
+          "max": 11497,
+          "min": 0,
           "rate": 0,
           "threshold": 0,
         },
         {
           "label": "11 %",
+          "max": 29315,
+          "min": 11498,
           "rate": 11,
           "threshold": 11498,
         },
         {
           "label": "30 %",
+          "max": 83823,
+          "min": 29316,
           "rate": 30,
           "threshold": 29316,
         },
         {
           "label": "41 %",
+          "max": 180294,
+          "min": 83824,
           "rate": 41,
           "threshold": 83824,
         },
         {
           "label": "45 %",
+          "max": null,
+          "min": 180295,
           "rate": 45,
           "threshold": 180295,
         },

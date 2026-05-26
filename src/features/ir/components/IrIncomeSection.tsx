@@ -1,6 +1,6 @@
 import { SimAmountInputEuro } from '@/components/ui/sim';
 import { IconTable } from '@/icons/ui';
-import { IrSelect } from './IrSelect';
+import { SimSelect } from '@/components/ui/sim';
 import type { IrFormSectionProps } from './irTypes';
 
 type IrIncomeSectionProps = Pick<
@@ -211,7 +211,7 @@ export function IrIncomeSection({
             <td>Frais réels ou abattement 10 %</td>
             <td>
               <div className="ir-inline-field-row">
-                <IrSelect
+                <SimSelect
                   style={{ flex: 1 }}
                   value={realMode.d1}
                   onChange={(v) => setRealModeState((m) => ({ ...m, d1: v as typeof realMode.d1 }))}
@@ -234,7 +234,7 @@ export function IrIncomeSection({
             </td>
             <td>
               <div className="ir-inline-field-row">
-                <IrSelect
+                <SimSelect
                   style={{ flex: 1 }}
                   value={realMode.d2}
                   onChange={(v) => setRealModeState((m) => ({ ...m, d2: v as typeof realMode.d2 }))}
@@ -379,7 +379,7 @@ export function IrIncomeSection({
               <tr>
                 <td>Option d&apos;imposition des RCM</td>
                 <td colSpan={2}>
-                  <IrSelect
+                  <SimSelect
                     value={capitalMode}
                     onChange={(mode) => setCapitalMode(mode as IrFormSectionProps['capitalMode'])}
                     options={[

@@ -1,5 +1,6 @@
 import {
-  DEFAULT_FISCALITY_SETTINGS,
+  DEFAULT_ASSURANCE_VIE_RULES,
+  DEFAULT_PEA_RULES,
   DEFAULT_PS_SETTINGS,
   DEFAULT_TAX_SETTINGS,
 } from '../../constants/settingsDefaults';
@@ -29,9 +30,9 @@ export function roundDecimal(value: number): number {
   return Math.round(value * 1_000_000) / 1_000_000;
 }
 
-const avRetraitsDepuis2017 = DEFAULT_FISCALITY_SETTINGS.assuranceVie.retraitsCapital.depuis2017;
+const avRetraitsDepuis2017 = DEFAULT_ASSURANCE_VIE_RULES.retraitsCapital.depuis2017;
 const avPlus8Ans = avRetraitsDepuis2017.plus8Ans;
-const avDeces = DEFAULT_FISCALITY_SETTINGS.assuranceVie.deces;
+const avDeces = DEFAULT_ASSURANCE_VIE_RULES.deces;
 const av990IBrackets = avDeces.primesApres1998.brackets;
 const av990IAbattement = avDeces.primesApres1998.allowancePerBeneficiary;
 const pfuIR = toDecimalPercent(DEFAULT_TAX_SETTINGS.pfu.current.rateIR);
@@ -55,7 +56,7 @@ export const DEFAULT_FISCAL_PARAMS: Required<
   av990ITranche1Plafond: av990IBrackets[0]?.upTo ?? 0,
   av990ITranche2Taux: toDecimalPercent(av990IBrackets[1]?.ratePercent ?? 0),
   av757BAbattement: avDeces.apres70ans.globalAllowance,
-  peaAncienneteMin: DEFAULT_FISCALITY_SETTINGS.pea.ancienneteMinYears,
+  peaAncienneteMin: DEFAULT_PEA_RULES.ancienneteMinYears,
   dividendesAbattementPercent: toDecimalPercent(
     DEFAULT_TAX_SETTINGS.corporateTax.current.dividendsAbatementPct,
   ),

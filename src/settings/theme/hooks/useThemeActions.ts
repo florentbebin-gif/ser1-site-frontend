@@ -19,8 +19,6 @@ interface UseThemeActionsArgs {
   setPresetId: Dispatch<SetStateAction<string | null>>;
   setThemeSource: Dispatch<SetStateAction<ThemeSource>>;
   setMyPalette: Dispatch<SetStateAction<ThemeColors | null>>;
-  setCustomPalette: Dispatch<SetStateAction<ThemeColors | null>>;
-  setSelectedThemeRef: Dispatch<SetStateAction<string>>;
   cabinetColorsRef: MutableRefObject<ThemeColors | null | undefined>;
   cabinetBrandingKeyRef: MutableRefObject<string | null>;
   ensureCabinetThemeFetch: (
@@ -45,8 +43,6 @@ export function useThemeActions({
   setPresetId,
   setThemeSource,
   setMyPalette,
-  setCustomPalette,
-  setSelectedThemeRef,
   cabinetColorsRef,
   cabinetBrandingKeyRef,
   ensureCabinetThemeFetch,
@@ -60,8 +56,6 @@ export function useThemeActions({
   setColors: (_colors: ThemeColors) => void;
   applyThemeMode: (_mode: ThemeMode, _presetId?: string) => Promise<ThemeMutationResult>;
   saveMyPalette: (_colors: ThemeColors) => Promise<ThemeMutationResult>;
-  saveCustomPalette: (_colors: ThemeColors) => Promise<ThemeMutationResult>;
-  saveThemeToUiSettings: (_colors: ThemeColors, _themeRef?: string) => Promise<ThemeMutationResult>;
 } {
   const setColors = useCallback(
     (newColors: ThemeColors) => {
@@ -111,20 +105,6 @@ export function useThemeActions({
             user_id: user.id,
             theme_mode: mode,
             preset_id: mode === 'preset' ? presetId || null : null,
-            active_palette: colorsToApply,
-            selected_theme_ref: mode === 'cabinet' ? 'cabinet' : 'custom',
-            colors: {
-              color1: colorsToApply.c1,
-              color2: colorsToApply.c2,
-              color3: colorsToApply.c3,
-              color4: colorsToApply.c4,
-              color5: colorsToApply.c5,
-              color6: colorsToApply.c6,
-              color7: colorsToApply.c7,
-              color8: colorsToApply.c8,
-              color9: colorsToApply.c9,
-              color10: colorsToApply.c10,
-            },
           },
           { onConflict: 'user_id' },
         );
@@ -137,7 +117,6 @@ export function useThemeActions({
         setPresetId(mode === 'preset' ? presetId || null : null);
         const derivedSource: ThemeSource = mode === 'cabinet' ? 'cabinet' : 'custom';
         setThemeSource(derivedSource);
-        setSelectedThemeRef(mode === 'cabinet' ? 'cabinet' : 'custom');
         writeThemeSourceToStorage(cabinetBrandingKeyRef.current ?? null, derivedSource);
 
         lastAppliedSourceRankRef.current = 0;
@@ -162,7 +141,6 @@ export function useThemeActions({
       myPaletteRef,
       setColorsState,
       setPresetId,
-      setSelectedThemeRef,
       setThemeMode,
       setThemeSource,
     ],
@@ -182,13 +160,10 @@ export function useThemeActions({
         const upsertData: Record<string, unknown> = {
           user_id: user.id,
           my_palette: colors,
-          custom_palette: colors,
         };
 
         if (isMyMode) {
           upsertData.theme_mode = 'my';
-          upsertData.active_palette = colors;
-          upsertData.selected_theme_ref = 'custom';
         }
 
         const { error } = await supabase
@@ -200,7 +175,6 @@ export function useThemeActions({
         }
 
         setMyPalette(colors);
-        setCustomPalette(colors);
 
         if (isMyMode) {
           lastAppliedSourceRankRef.current = 0;
@@ -221,38 +195,14 @@ export function useThemeActions({
       lastAppliedHashRef,
       lastAppliedSourceRankRef,
       setColorsState,
-      setCustomPalette,
       setMyPalette,
       themeModeRef,
     ],
-  );
-
-  const saveCustomPalette = useCallback(
-    async (colors: ThemeColors): Promise<ThemeMutationResult> => {
-      const result = await saveMyPalette(colors);
-      if (result.success) {
-        await applyThemeMode('my');
-      }
-      return result;
-    },
-    [applyThemeMode, saveMyPalette],
-  );
-
-  const saveThemeToUiSettings = useCallback(
-    async (_colors: ThemeColors, themeRef?: string): Promise<ThemeMutationResult> => {
-      if (themeRef === 'cabinet') {
-        return applyThemeMode('cabinet');
-      }
-      return applyThemeMode('my');
-    },
-    [applyThemeMode],
   );
 
   return {
     setColors,
     applyThemeMode,
     saveMyPalette,
-    saveCustomPalette,
-    saveThemeToUiSettings,
   };
 }

@@ -36,6 +36,7 @@ export interface IrData {
 
   // Detailed breakdown
   pfuIr?: number;
+  pfuRateIR?: number;
   cehr?: number;
   cdhr?: number;
   psFoncier?: number;
@@ -52,6 +53,7 @@ export interface IrData {
   qfAdvantage?: number;
   creditsTotal?: number;
   bracketsDetails?: Array<{ label: string; base: number; rate: number; tax: number }>;
+  irScale?: Array<{ from: number; to: number | null; rate: number; deduction?: number }>;
 
   // TMI details (from IR card - exact values)
   tmiBaseGlobal?: number; // Montant des revenus dans cette TMI
@@ -168,6 +170,7 @@ export function buildIrStudyDeck(
       irNet: irData.irNet,
       taxablePerPart: irData.taxablePerPart,
       bracketsDetails: irData.bracketsDetails,
+      ...(irData.irScale ? { irScale: irData.irScale } : {}),
       // TMI details (exact values from IR card)
       tmiBaseGlobal: irData.tmiBaseGlobal,
       tmiMarginGlobal: irData.tmiMarginGlobal,
@@ -193,7 +196,8 @@ export function buildIrStudyDeck(
       decote: irData.decote,
       qfAdvantage: irData.qfAdvantage,
       creditsTotal: irData.creditsTotal,
-      pfuIr: irData.pfuIr, // PFU 12.8% sur revenus du capital
+      pfuIr: irData.pfuIr,
+      ...(irData.pfuRateIR !== undefined ? { pfuRateIR: irData.pfuRateIR } : {}),
       cehr: irData.cehr,
       cdhr: irData.cdhr,
       psFoncier: irData.psFoncier,

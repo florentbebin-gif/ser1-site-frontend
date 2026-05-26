@@ -92,9 +92,21 @@ const dmtgTaxPayloadSchema = z
 
 const dmtgFiscalityPayloadSchema = z
   .object({
-    assuranceVie: z
+    schemaVersion: z.literal(2),
+    products: z.array(z.unknown()).min(1),
+    rulesetsByKey: z
       .object({
-        deces: assuranceVieDecesSchema,
+        assuranceVie: z
+          .object({
+            effectiveDate: z.string(),
+            rules: z
+              .object({
+                deces: assuranceVieDecesSchema,
+              })
+              .passthrough(),
+            sources: z.array(z.unknown()),
+          })
+          .passthrough(),
       })
       .passthrough(),
   })

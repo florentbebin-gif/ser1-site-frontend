@@ -8,6 +8,8 @@ export type PerFiscalBracket = {
   label: string;
   rate: number;
   threshold: number | null;
+  min: number;
+  max: number | null;
 };
 
 export type PerFiscalSnapshotSlideSpec = {

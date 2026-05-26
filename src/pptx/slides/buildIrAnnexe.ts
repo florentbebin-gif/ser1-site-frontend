@@ -44,7 +44,8 @@ export interface IrAnnexeData {
   creditsTotal?: number;
 
   // PFU (Prélèvement Forfaitaire Unique)
-  pfuIr?: number; // 12.8% sur revenus du capital
+  pfuIr?: number;
+  pfuRateIR?: number;
 
   // Contributions
   cehr?: number;
@@ -211,9 +212,13 @@ function buildAnnexeProse(data: IrAnnexeData): Array<{ text: string; bold?: bool
   const hasPfuIr = pfuIr > 0;
 
   if (hasPfuIr) {
+    const pfuLabel =
+      data.pfuRateIR !== undefined && data.pfuRateIR !== null
+        ? `PFU ${pct(data.pfuRateIR)}`
+        : 'PFU';
     paragraphs.push([
       { text: 'Revenus du capital : ' },
-      { text: 'PFU 12,8%', bold: true },
+      { text: pfuLabel, bold: true },
       { text: ' de ' },
       { text: euro(pfuIr), bold: true },
       { text: ' (+ prélèvements sociaux sur le capital selon les paramètres en vigueur).' },

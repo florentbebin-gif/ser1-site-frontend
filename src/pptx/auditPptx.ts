@@ -224,7 +224,7 @@ export async function generateAuditPptx(options: AuditPptxOptions): Promise<void
   }
 
   // Abattements transmission
-  slideB.addText('Abattements transmission enfants : 100 000 € par enfant', {
+  slideB.addText('Abattements transmission enfants : selon les paramètres fiscaux en vigueur', {
     x: 0.5,
     y: 4.2,
     w: 9,

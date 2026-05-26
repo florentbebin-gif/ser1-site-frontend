@@ -66,7 +66,7 @@ export default function App(): React.ReactElement {
   // Dossier fiscal (mode stale) — pour construire l'identité fiscale lors des sauvegardes
   const { fiscalContext, meta: fiscalMeta } = useFiscalContext();
 
-  // Identité fiscale : hashes stables + updated_at pour les 3 tables
+  // Identité fiscale : hashes stables + updated_at pour les tables et l'historique PASS.
   const fiscalIdentity = React.useMemo<FiscalIdentityCurrent>(
     () => buildFiscalIdentityCurrent(fiscalContext, fiscalMeta),
     [fiscalContext, fiscalMeta],
@@ -181,7 +181,8 @@ export default function App(): React.ReactElement {
           (loaded.tax.hash != null && loaded.tax.hash !== fiscalIdentity.tax.hash) ||
           (loaded.ps.hash != null && loaded.ps.hash !== fiscalIdentity.ps.hash) ||
           (loaded.fiscality.hash != null &&
-            loaded.fiscality.hash !== fiscalIdentity.fiscality.hash);
+            loaded.fiscality.hash !== fiscalIdentity.fiscality.hash) ||
+          (loaded.pass?.hash != null && loaded.pass.hash !== fiscalIdentity.pass.hash);
         if (mismatch) {
           setTimeout(() => {
             showNotification(

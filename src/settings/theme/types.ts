@@ -61,17 +61,8 @@ export interface ThemeContextValue {
     _presetId?: string,
   ) => Promise<{ success: boolean; error?: string }>;
   saveMyPalette: (_colors: ThemeColors) => Promise<{ success: boolean; error?: string }>;
-  // Compat legacy (dérivés)
   themeSource: ThemeSource;
   setThemeSource: (_source: ThemeSource) => void;
-  customPalette: ThemeColors | null;
-  selectedThemeRef: string;
-  setSelectedThemeRef: (_ref: string) => void;
-  saveThemeToUiSettings: (
-    _colors: ThemeColors,
-    _themeName?: string,
-  ) => Promise<{ success: boolean; error?: string }>;
-  saveCustomPalette: (_colors: ThemeColors) => Promise<{ success: boolean; error?: string }>;
 }
 
 // ─── Provider props ──────────────────────────────────────────────────

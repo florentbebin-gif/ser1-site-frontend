@@ -12,10 +12,11 @@
  * - tax_settings
  * - ps_settings
  * - fiscality_settings
+ * - pass_history
  */
 
 import { supabase } from '../../supabaseClient';
-import { migrateV1toV2 } from './fiscalitySettingsMigrator';
+import { toFiscalitySettingsV2 } from './fiscalitySettingsAccess';
 import type { FiscalitySettingsV2 } from './fiscalitySettings';
 import {
   DEFAULT_TAX_SETTINGS,
@@ -40,6 +41,7 @@ export interface CacheMeta {
   taxUpdatedAt: string | null;
   psUpdatedAt: string | null;
   fiscalityUpdatedAt: string | null;
+  passUpdatedAt: string | null;
 }
 
 export interface GetFiscalSettingsOptions {
@@ -49,19 +51,17 @@ export interface GetFiscalSettingsOptions {
 export interface GetFiscalSettingsResult {
   tax: typeof DEFAULT_TAX_SETTINGS;
   ps: typeof DEFAULT_PS_SETTINGS;
-  /** V2 format au runtime — les champs V1 (assuranceVie, perIndividuel) sont préservés pour compatibilité. */
-  fiscality: typeof DEFAULT_FISCALITY_SETTINGS;
+  fiscality: FiscalitySettingsV2;
   passHistory: Record<number, number>;
   loading: false;
-  error: null;
+  error: string | null;
   meta: CacheMeta;
 }
 
 export interface LoadFiscalSettingsStrictResult {
   tax: typeof DEFAULT_TAX_SETTINGS;
   ps: typeof DEFAULT_PS_SETTINGS;
-  /** V2 format au runtime — les champs V1 (assuranceVie, perIndividuel) sont préservés pour compatibilité. */
-  fiscality: typeof DEFAULT_FISCALITY_SETTINGS;
+  fiscality: FiscalitySettingsV2;
   passHistory: Record<number, number>;
   fromCache: boolean;
   error: string | null;
@@ -73,11 +73,11 @@ export interface LoadFiscalSettingsStrictResult {
 interface CacheState {
   tax: typeof DEFAULT_TAX_SETTINGS | null;
   ps: typeof DEFAULT_PS_SETTINGS | null;
-  /** Stocké en V2 (après migrateV1toV2). Les champs V1 sont préservés en legacy props. */
   fiscality: FiscalitySettingsV2 | null;
   passHistory: Record<number, number> | null;
   timestamp: number;
   inflight: Record<CacheKind, Promise<void> | null>;
+  errors: Record<CacheKind, string | null>;
   meta: CacheMeta;
 }
 
@@ -102,8 +102,9 @@ let cache: CacheState = {
   passHistory: null,
   timestamp: 0,
   inflight: { tax: null, ps: null, fiscality: null, pass: null },
+  errors: { tax: null, ps: null, fiscality: null, pass: null },
   // updated_at values from Supabase rows (ISO strings or null)
-  meta: { taxUpdatedAt: null, psUpdatedAt: null, fiscalityUpdatedAt: null },
+  meta: { taxUpdatedAt: null, psUpdatedAt: null, fiscalityUpdatedAt: null, passUpdatedAt: null },
 };
 
 function createTimeoutPromise(ms: number): Promise<never> {
@@ -142,13 +143,14 @@ function hydrateFromStorage(): boolean {
     if (payload && typeof payload === 'object' && payload.timestamp) {
       cache.tax = payload.tax;
       cache.ps = payload.ps;
-      cache.fiscality = payload.fiscality ? migrateV1toV2(payload.fiscality) : null;
+      cache.fiscality = payload.fiscality ? toFiscalitySettingsV2(payload.fiscality) : null;
       cache.passHistory = payload.passHistory ?? null;
       cache.timestamp = payload.timestamp;
       cache.meta = payload.meta ?? {
         taxUpdatedAt: null,
         psUpdatedAt: null,
         fiscalityUpdatedAt: null,
+        passUpdatedAt: null,
       };
       return true;
     }
@@ -156,6 +158,38 @@ function hydrateFromStorage(): boolean {
     // ignore parse errors
   }
   return false;
+}
+
+function getLatestUpdatedAt(rows: Array<{ updated_at?: unknown }>): string | null {
+  let latest: string | null = null;
+  let latestTime = Number.NEGATIVE_INFINITY;
+
+  for (const row of rows) {
+    if (typeof row.updated_at !== 'string') continue;
+    const time = Date.parse(row.updated_at);
+    if (Number.isNaN(time) || time <= latestTime) continue;
+    latest = row.updated_at;
+    latestTime = time;
+  }
+
+  return latest;
+}
+
+function toErrorMessage(error: unknown): string {
+  if (error instanceof Error) return error.message;
+  if (
+    typeof error === 'object' &&
+    error !== null &&
+    'message' in error &&
+    typeof error.message === 'string'
+  ) {
+    return error.message;
+  }
+  return 'Erreur chargement Supabase';
+}
+
+function getFirstCacheError(): string | null {
+  return cache.errors.tax ?? cache.errors.ps ?? cache.errors.fiscality ?? cache.errors.pass;
 }
 
 // --- Chargement depuis Supabase (avec timeout) ---
@@ -186,11 +220,16 @@ async function fetchFromSupabase(kind: CacheKind): Promise<void> {
           const passRes = await Promise.race([
             supabase
               .from('pass_history')
-              .select('year, pass_amount')
+              .select('year, pass_amount, updated_at')
               .order('year', { ascending: true }),
             createTimeoutPromise(SUPABASE_TIMEOUT),
           ]);
-          if (!passRes.error && passRes.data && passRes.data.length > 0) {
+          if (passRes.error) {
+            cache.errors.pass = toErrorMessage(passRes.error);
+            return;
+          }
+          cache.errors.pass = null;
+          if (passRes.data && passRes.data.length > 0) {
             const history: Record<number, number> = {};
             for (const row of passRes.data) {
               if (typeof row.year === 'number' && row.pass_amount != null) {
@@ -199,18 +238,25 @@ async function fetchFromSupabase(kind: CacheKind): Promise<void> {
             }
             if (Object.keys(history).length > 0) {
               cache.passHistory = history;
+              cache.meta.passUpdatedAt = getLatestUpdatedAt(passRes.data);
               cache.timestamp = Date.now();
               persistCache();
             }
           }
-        } catch {
+        } catch (error) {
+          cache.errors.pass = toErrorMessage(error);
           // pass_history fetch failed — keep fallback
         } finally {
           cache.inflight.pass = null;
         }
         return;
       }
-      if (!res.error && res.data && res.data.data) {
+      if (res.error) {
+        cache.errors[kind] = toErrorMessage(res.error);
+        return;
+      }
+      cache.errors[kind] = null;
+      if (res.data && res.data.data) {
         if (kind === 'tax') {
           cache.tax = res.data.data as typeof DEFAULT_TAX_SETTINGS;
           cache.meta.taxUpdatedAt = res.data.updated_at ?? null;
@@ -218,13 +264,14 @@ async function fetchFromSupabase(kind: CacheKind): Promise<void> {
           cache.ps = res.data.data as typeof DEFAULT_PS_SETTINGS;
           cache.meta.psUpdatedAt = res.data.updated_at ?? null;
         } else {
-          cache.fiscality = migrateV1toV2(res.data.data);
+          cache.fiscality = toFiscalitySettingsV2(res.data.data);
           cache.meta.fiscalityUpdatedAt = res.data.updated_at ?? null;
         }
         cache.timestamp = Date.now();
         persistCache();
       }
-    } catch {
+    } catch (error) {
+      cache.errors[kind] = toErrorMessage(error);
       // On ne met pas à jour le cache si erreur (timeout ou autre)
     } finally {
       cache.inflight[kind] = null;
@@ -244,10 +291,10 @@ export async function getFiscalSettings({
   const result: GetFiscalSettingsResult = {
     tax: DEFAULT_TAX_SETTINGS,
     ps: DEFAULT_PS_SETTINGS,
-    fiscality: DEFAULT_FISCALITY_SETTINGS,
+    fiscality: toFiscalitySettingsV2(DEFAULT_FISCALITY_SETTINGS),
     passHistory: DEFAULT_PASS_HISTORY,
     loading: false,
-    error: null,
+    error: getFirstCacheError(),
     meta: { ...cache.meta },
   };
 
@@ -258,9 +305,7 @@ export async function getFiscalSettings({
       if (isCacheValid(kind)) {
         if (kind === 'tax' && cache.tax) result.tax = cache.tax;
         else if (kind === 'ps' && cache.ps) result.ps = cache.ps;
-        // fiscality: cast V2 → V1 shape (V2 preserves V1 legacy fields for consumers)
-        else if (kind === 'fiscality' && cache.fiscality)
-          result.fiscality = cache.fiscality as unknown as typeof DEFAULT_FISCALITY_SETTINGS;
+        else if (kind === 'fiscality' && cache.fiscality) result.fiscality = cache.fiscality;
         else if (kind === 'pass' && cache.passHistory) result.passHistory = cache.passHistory;
       }
     }
@@ -295,9 +340,7 @@ export async function loadFiscalSettingsStrict(): Promise<LoadFiscalSettingsStri
     return {
       tax: cache.tax ?? DEFAULT_TAX_SETTINGS,
       ps: cache.ps ?? DEFAULT_PS_SETTINGS,
-      // fiscality: cast V2 → V1 shape (V2 preserves V1 legacy fields for consumers)
-      fiscality: (cache.fiscality ??
-        DEFAULT_FISCALITY_SETTINGS) as unknown as typeof DEFAULT_FISCALITY_SETTINGS,
+      fiscality: cache.fiscality ?? toFiscalitySettingsV2(DEFAULT_FISCALITY_SETTINGS),
       passHistory: cache.passHistory ?? DEFAULT_PASS_HISTORY,
       fromCache: true,
       error: null,
@@ -312,15 +355,17 @@ export async function loadFiscalSettingsStrict(): Promise<LoadFiscalSettingsStri
       (['tax', 'ps', 'fiscality', 'pass'] as CacheKind[]).map((kind) => fetchFromSupabase(kind)),
     );
   } catch (e: unknown) {
-    fetchError = (e instanceof Error ? e.message : null) ?? 'Erreur chargement Supabase';
+    fetchError = toErrorMessage(e);
   }
+  fetchError = fetchError ?? getFirstCacheError();
 
   return {
     tax: isCacheValid('tax') && cache.tax ? cache.tax : DEFAULT_TAX_SETTINGS,
     ps: isCacheValid('ps') && cache.ps ? cache.ps : DEFAULT_PS_SETTINGS,
-    fiscality: (isCacheValid('fiscality') && cache.fiscality
-      ? cache.fiscality
-      : DEFAULT_FISCALITY_SETTINGS) as unknown as typeof DEFAULT_FISCALITY_SETTINGS,
+    fiscality:
+      isCacheValid('fiscality') && cache.fiscality
+        ? cache.fiscality
+        : toFiscalitySettingsV2(DEFAULT_FISCALITY_SETTINGS),
     passHistory:
       isCacheValid('pass') && cache.passHistory ? cache.passHistory : DEFAULT_PASS_HISTORY,
     fromCache: false,

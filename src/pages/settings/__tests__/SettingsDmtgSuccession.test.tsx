@@ -5,7 +5,11 @@ import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { UserRoleState } from '@/auth/useUserRole';
-import { DEFAULT_FISCALITY_SETTINGS, DEFAULT_TAX_SETTINGS } from '@/constants/settingsDefaults';
+import {
+  DEFAULT_ASSURANCE_VIE_RULES,
+  DEFAULT_FISCALITY_SETTINGS,
+  DEFAULT_TAX_SETTINGS,
+} from '@/constants/settingsDefaults';
 import SettingsDmtgSuccession from '../SettingsDmtgSuccession';
 
 let isAdmin = true;
@@ -189,13 +193,19 @@ describe('SettingsDmtgSuccession', () => {
   it('bloque une écriture non canonique avant Supabase', async () => {
     fiscalitySettingsData = {
       ...DEFAULT_FISCALITY_SETTINGS,
-      assuranceVie: {
-        ...DEFAULT_FISCALITY_SETTINGS.assuranceVie,
-        deces: {
-          ...DEFAULT_FISCALITY_SETTINGS.assuranceVie.deces,
-          apres70ans: {
-            ...DEFAULT_FISCALITY_SETTINGS.assuranceVie.deces.apres70ans,
-            globalAllowance: null,
+      rulesetsByKey: {
+        ...DEFAULT_FISCALITY_SETTINGS.rulesetsByKey,
+        assuranceVie: {
+          ...DEFAULT_FISCALITY_SETTINGS.rulesetsByKey.assuranceVie,
+          rules: {
+            ...DEFAULT_ASSURANCE_VIE_RULES,
+            deces: {
+              ...DEFAULT_ASSURANCE_VIE_RULES.deces,
+              apres70ans: {
+                ...DEFAULT_ASSURANCE_VIE_RULES.deces.apres70ans,
+                globalAllowance: null,
+              },
+            },
           },
         },
       },

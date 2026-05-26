@@ -523,10 +523,10 @@ Tous les simulateurs consomment les paramètres fiscaux via ce hook. Il expose u
 
 #### Deux modes
 
-| Mode                     | Usage                | Comportement                                                                                |
-| ------------------------ | -------------------- | ------------------------------------------------------------------------------------------- |
-| `strict: true`           | IR, Succession       | Attend Supabase avant de retourner — bloque sur un écran de chargement si Supabase est lent |
-| `strict: false` (défaut) | Placement, Stratégie | Stale-while-revalidate — retourne cache/défauts immédiatement, rafraîchit en arrière-plan   |
+| Mode                     | Usage                | Comportement                                                                                                                                                                                              |
+| ------------------------ | -------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `strict: true`           | IR, Succession       | Attend Supabase avant de retourner — bloque sur un écran de chargement si Supabase est lent                                                                                                               |
+| `strict: false` (défaut) | Placement, Stratégie | Stale-while-revalidate — retourne cache/défauts immédiatement ; le fetch arrière-plan alimente le cache pour les appels suivants, sans garantir un second rendu au cold start hors invalidation explicite |
 
 #### Clés normalisées exposées
 
@@ -558,7 +558,7 @@ Adaptateurs connus :
 
 #### Invalidation
 
-L'admin sauvegarde → `invalidate(kind)` + `broadcastInvalidation(kind)` → événement `ser1:fiscal-settings-updated` → tous les `useFiscalContext` actifs se rafraîchissent.
+L'admin sauvegarde → `invalidate(kind)` + `broadcastInvalidation(kind)` → événement `ser1:fiscal-settings-updated` → tous les `useFiscalContext` actifs se rafraîchissent, y compris les consommateurs non stricts.
 
 #### Adaptateur Placement
 
@@ -586,7 +586,7 @@ Les fichiers `src/domain/base-contrat/**` ne doivent pas importer React, Supabas
 
 **Mécanisme** (PR #162) :
 
-1. Au démarrage de l'app (`App.tsx`), `fingerprintSettingsData()` calcule un hash SHA-256 des 3 tables.
+1. Au démarrage de l'app (`App.tsx`), `fingerprintSettingsData()` calcule un hash SHA-256 des 3 singletons fiscaux et de `pass_history`.
 2. Ce fingerprint (`FiscalIdentity`) est stocké dans chaque `.ser1` sauvegardé (snapshot schéma v4).
 3. Au chargement d'un `.ser1`, le fingerprint sauvegardé est comparé au fingerprint courant.
 4. En cas de mismatch → notification "Attention : les paramètres fiscaux ont été mis à jour depuis la sauvegarde."
@@ -645,20 +645,20 @@ Les fichiers `src/domain/base-contrat/**` ne doivent pas importer React, Supabas
 
 ### Fichiers clés
 
-| Rôle                               | Fichier                                                                                     |
-| ---------------------------------- | ------------------------------------------------------------------------------------------- |
-| Source des routes settings         | `src/routes/settingsRoutes.ts`                                                              |
-| Valeurs par défaut 3 tables        | `src/constants/settingsDefaults.ts`                                                         |
-| Shell settings (nav + rendu)       | `src/pages/SettingsShell.tsx`                                                               |
-| Pages settings                     | `src/pages/settings/`                                                                       |
-| Cache + fetch Supabase             | `src/utils/cache/fiscalSettingsCache.ts`                                                    |
-| **Hook unifié dossier fiscal**     | **`src/hooks/useFiscalContext.ts`**                                                         |
-| Hook simulateur placement          | `src/hooks/usePlacementSettings.ts`                                                         |
-| Extraction params normalisés       | `src/engine/placement/fiscalParams.ts`                                                      |
-| Params Placement par défaut        | `src/engine/placement/shared.ts` (`DEFAULT_FISCAL_PARAMS`, dérivé de `settingsDefaults.ts`) |
-| Libellés fiscaux Base-Contrat      | `src/domain/base-contrat/rules/fiscalLabels.ts`                                             |
-| Profil fiscal par enveloppe        | `src/domain/base-contrat/rules/fiscalProfile.ts`                                            |
-| Migration snapshot (v4 + identity) | `src/reporting/snapshot/snapshotMigrations.ts`                                              |
+| Rôle                                        | Fichier                                                                                     |
+| ------------------------------------------- | ------------------------------------------------------------------------------------------- |
+| Source des routes settings                  | `src/routes/settingsRoutes.ts`                                                              |
+| Valeurs par défaut des 3 singletons fiscaux | `src/constants/settingsDefaults.ts`                                                         |
+| Shell settings (nav + rendu)                | `src/pages/SettingsShell.tsx`                                                               |
+| Pages settings                              | `src/pages/settings/`                                                                       |
+| Cache + fetch Supabase                      | `src/utils/cache/fiscalSettingsCache.ts`                                                    |
+| **Hook unifié dossier fiscal**              | **`src/hooks/useFiscalContext.ts`**                                                         |
+| Hook simulateur placement                   | `src/hooks/usePlacementSettings.ts`                                                         |
+| Extraction params normalisés                | `src/engine/placement/fiscalParams.ts`                                                      |
+| Params Placement par défaut                 | `src/engine/placement/shared.ts` (`DEFAULT_FISCAL_PARAMS`, dérivé de `settingsDefaults.ts`) |
+| Libellés fiscaux Base-Contrat               | `src/domain/base-contrat/rules/fiscalLabels.ts`                                             |
+| Profil fiscal par enveloppe                 | `src/domain/base-contrat/rules/fiscalProfile.ts`                                            |
+| Migration snapshot (v4 + identity)          | `src/reporting/snapshot/snapshotMigrations.ts`                                              |
 
 ---
 
