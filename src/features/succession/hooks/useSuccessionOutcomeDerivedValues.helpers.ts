@@ -1,4 +1,4 @@
-import type { RegimeMatrimonial } from '../../../engine/succession/civil';
+import type { RegimeMatrimonial } from '@/engine/succession/civil';
 import { DONATION_ENTRE_EPOUX_OPTIONS } from '../successionSimulator.constants';
 import type { SituationMatrimoniale, SuccessionPrimarySide } from '../successionDraft.types';
 import { getUsufruitValuationFromBirthDate } from '../successionUsufruit';

@@ -1,8 +1,8 @@
 import type { ComponentProps } from 'react';
-import { ExportMenu } from '../../../components/ExportMenu';
-import { ModeToggle } from '../../../components/ModeToggle';
+import { ExportMenu } from '@/components/ExportMenu';
+import { ModeToggle } from '@/components/ModeToggle';
 import { SimEmptyState, SimPageShell, SimViewSynthesisCTA } from '@/components/ui/sim';
-import type { ExportOption } from '../../../components/export/exportTypes';
+import type { ExportOption } from '@/components/export/exportTypes';
 import {
   SuccessionFamilyOverview,
   SuccessionHypotheses,

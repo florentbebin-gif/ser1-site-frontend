@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { onResetEvent } from '../../../utils/reset';
+import { onResetEvent } from '@/utils/reset';
 import {
   buildSuccessionDraftPayload,
   parseSuccessionDraftPayload,
