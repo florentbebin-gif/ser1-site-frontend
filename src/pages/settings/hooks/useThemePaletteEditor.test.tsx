@@ -26,7 +26,7 @@ describe('useThemePaletteEditor', () => {
       myPalette: DEFAULT_COLORS,
       applyThemeMode,
       saveMyPalette,
-    } as ReturnType<typeof useTheme>);
+    } as unknown as ReturnType<typeof useTheme>);
   });
 
   it('expose Cuivre tranché comme thème à dupliquer par défaut', () => {
@@ -70,7 +70,7 @@ describe('useThemePaletteEditor', () => {
       myPalette: null,
       applyThemeMode,
       saveMyPalette,
-    } as ReturnType<typeof useTheme>);
+    } as unknown as ReturnType<typeof useTheme>);
 
     const { result } = renderHook(() => useThemePaletteEditor());
 

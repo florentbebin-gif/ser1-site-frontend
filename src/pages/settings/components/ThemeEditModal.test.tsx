@@ -26,10 +26,11 @@ describe('ThemeEditModal', () => {
 
   it('crée un thème avec la palette Cuivre tranché par défaut', async () => {
     const user = userEvent.setup();
+    const cuivrePalette = { ...DEFAULT_COLORS };
     vi.mocked(adminClient.createTheme).mockResolvedValue({
       id: 'theme-cuivre',
       name: 'Cabinet cuivre',
-      palette: DEFAULT_COLORS,
+      palette: cuivrePalette,
       is_system: false,
     });
 
@@ -40,7 +41,7 @@ describe('ThemeEditModal', () => {
 
     expect(adminClient.createTheme).toHaveBeenCalledWith({
       name: 'Cabinet cuivre',
-      palette: DEFAULT_COLORS,
+      palette: cuivrePalette,
     });
   });
 });
