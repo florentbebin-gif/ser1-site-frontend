@@ -63,6 +63,7 @@ Conventions clés :
 - Fichiers `>800` lignes = découpage obligatoire au prochain chantier qui touche le fichier.
 - Garde-fous d'architecture : `npm run check:arch` (dependency-cruiser, config `.dependency-cruiser.cjs`) — bloquant en CI. Règles : engine/domain sans React ni features, features sans pages, reporting sans features, imports cross-features via `index.ts` uniquement.
 - Garde imports profonds : `npm run check:deep-imports` bloque tout nouveau `../../../` hors tests dans les imports TS/TSX/JS/JSX et CSS. La baseline hors tests est `0`; utiliser `@/` pour les imports cross-module.
+- Nomenclature métier : dans Succession, utiliser les noms explicites comme `AssuranceVie` pour les nouveaux modules métier ; éviter les abréviations ambiguës de type `Av`.
 
 ### Règle "god file"
 
