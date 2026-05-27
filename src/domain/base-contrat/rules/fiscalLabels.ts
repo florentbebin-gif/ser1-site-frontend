@@ -4,8 +4,8 @@ import {
   DEFAULT_FISCALITY_SETTINGS,
   DEFAULT_PS_SETTINGS,
   DEFAULT_TAX_SETTINGS,
-} from '../../../constants/settingsDefaults';
-import type { FiscalitySettingsV2 } from '../../../utils/cache/fiscalitySettings';
+} from '@/constants/settingsDefaults';
+import type { FiscalitySettingsV2 } from '@/utils/cache/fiscalitySettings';
 import type { BaseContratFiscalLabels } from './types';
 
 interface BaseContratFiscalLabelSettings {

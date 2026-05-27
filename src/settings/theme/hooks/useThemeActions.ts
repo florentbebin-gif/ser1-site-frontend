@@ -1,5 +1,5 @@
 import { useCallback, type Dispatch, type MutableRefObject, type SetStateAction } from 'react';
-import { supabase } from '../../../supabaseClient';
+import { supabase } from '@/supabaseClient';
 import { DEFAULT_COLORS, type ThemeColors } from '../../theme';
 import type { ThemeMode, ThemeSource } from '../types';
 import { resolvePresetColors } from '../../presets';

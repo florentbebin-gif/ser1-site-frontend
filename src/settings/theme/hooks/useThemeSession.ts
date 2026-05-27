@@ -7,10 +7,10 @@ import {
   type MutableRefObject,
   type SetStateAction,
 } from 'react';
-import { supabase } from '../../../supabaseClient';
+import { supabase } from '@/supabaseClient';
 import { DEFAULT_COLORS, type ThemeColors } from '../../theme';
 import type { ThemeMode, ThemeScope, ThemeSource } from '../types';
-import type { LogoPlacement } from '../../../pptx/theme/types';
+import type { LogoPlacement } from '@/pptx/theme/types';
 import { resolvePresetColors } from '../../presets';
 import {
   getThemeBootstrap,
