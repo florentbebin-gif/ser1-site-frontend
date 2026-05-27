@@ -1,8 +1,8 @@
 import { useCallback, type Dispatch, type SetStateAction } from 'react';
-import type { BracketDetail } from '../../../engine/ir/types';
-import type { IrData, UiSettingsForPptx } from '../../../pptx/presets/irDeckBuilder';
-import type { LogoPlacement } from '../../../pptx/theme/types';
-import type { XlsxCell, XlsxSheet } from '../../../utils/export/xlsxBuilder';
+import type { BracketDetail } from '@/engine/ir/types';
+import type { IrData, UiSettingsForPptx } from '@/pptx/presets/irDeckBuilder';
+import type { LogoPlacement } from '@/pptx/theme/types';
+import type { XlsxCell, XlsxSheet } from '@/utils/export/xlsxBuilder';
 import type { IrIncomes } from '../utils/incomeFilters';
 
 interface RealMode {
@@ -96,7 +96,7 @@ export function useIrExportHandlers({
       }
 
       const { buildXlsxBlob, downloadXlsx, validateXlsxBlob } =
-        await import('../../../utils/export/xlsxBuilder');
+        await import('@/utils/export/xlsxBuilder');
 
       const headerParams = [cell('Champ', 'sHeader'), cell('Valeur', 'sHeader')];
       const rowsParams: XlsxSheet['rows'] = [];
@@ -317,8 +317,8 @@ export function useIrExportHandlers({
     setExportLoading(true);
     try {
       const [{ buildIrStudyDeck }, { exportAndDownloadStudyDeck }] = await Promise.all([
-        import('../../../pptx/presets/irDeckBuilder'),
-        import('../../../pptx/export/exportStudyDeck'),
+        import('@/pptx/presets/irDeckBuilder'),
+        import('@/pptx/export/exportStudyDeck'),
       ]);
 
       const exportLogo = cabinetLogo || undefined;

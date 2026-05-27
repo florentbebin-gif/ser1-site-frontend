@@ -1,5 +1,8 @@
 import { calculateSuccession, getAbattement, type LienParente } from '../../engine/succession';
-import type { SuccessionAvFiscalAnalysis, SuccessionAvFiscalLine } from './successionAvFiscal';
+import type {
+  SuccessionAvFiscalAnalysis,
+  SuccessionAvFiscalLine,
+} from './successionAssuranceVieFiscal';
 import type { SuccessionFiscalSnapshot } from './successionFiscalContext';
 import type { SuccessionPerFiscalAnalysis } from './successionPerFiscal';
 import type {

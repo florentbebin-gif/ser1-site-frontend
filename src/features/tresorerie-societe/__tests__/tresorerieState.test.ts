@@ -5,8 +5,8 @@ import {
   DEFAULT_TRESO_INPUTS_V6,
   normalizeTresoreriePersistedState,
 } from '../hooks/useTresorerieState';
-import { buildTresoInputsV3FromLegacy } from '../utils/tresorerieV2Migration';
-import { storageKeyFor } from '../../../utils/reset';
+import { buildTresoInputsV3FromLegacy } from '@/engine/tresorerie/migrations/tresorerieV2Migration';
+import { storageKeyFor } from '@/utils/reset';
 
 const LEGACY_INPUTS: TresoInputs = {
   typeCreation: 'existante',

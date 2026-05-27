@@ -1,4 +1,4 @@
-import type { PerHistoricalBasis, PerYearKey } from '../../../engine/per';
+import type { PerHistoricalBasis, PerYearKey } from '@/engine/per';
 import type { PerWorkflowYears } from './perWorkflowYears';
 
 type PerCalculationMode = 'versement-n' | 'declaration-n1' | null;

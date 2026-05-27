@@ -2,7 +2,7 @@ import {
   buildSuccessionAvFiscalAnalysis,
   type SuccessionAvFiscalAnalysis,
   type SuccessionAvFiscalLine,
-} from './successionAvFiscal';
+} from './successionAssuranceVieFiscal';
 import type {
   FamilyMember,
   SuccessionAssuranceVieEntry,

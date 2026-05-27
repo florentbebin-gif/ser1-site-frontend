@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import type { UserMode } from '../../../settings/userMode';
+import type { UserMode } from '@/settings/userMode';
 import {
   DEFAULT_SUCCESSION_ASSET_DETAILS,
   DEFAULT_SUCCESSION_ASSURANCE_VIE,

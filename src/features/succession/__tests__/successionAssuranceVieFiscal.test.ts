@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { buildSuccessionAvFiscalAnalysis } from '../successionAvFiscal';
+import { buildSuccessionAvFiscalAnalysis } from '../successionAssuranceVieFiscal';
 import { buildSuccessionFiscalSnapshot } from '../successionFiscalContext';
 import type { SuccessionAssuranceVieEntry } from '../successionDraft';
 import { makeCivilMarie as makeCivil } from './fixtures';

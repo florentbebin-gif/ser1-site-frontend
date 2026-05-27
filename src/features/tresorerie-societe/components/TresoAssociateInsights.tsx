@@ -2,9 +2,9 @@
  * TresoAssociateInsights.tsx — Synthèse visuelle de l’associé actif.
  */
 
-import type { TresoInputsRuntime, TresoProjectionRow } from '../../../engine/tresorerie/types';
-import { SimMetric } from '../../../components/ui/sim';
-import { IconUsers } from '../../../icons/ui';
+import type { TresoInputsRuntime, TresoProjectionRow } from '@/engine/tresorerie/types';
+import { SimMetric } from '@/components/ui/sim';
+import { IconUsers } from '@/icons/ui';
 import {
   buildTresoAssociateInsightViewModel,
   type TresoAssociateInsightSegment,

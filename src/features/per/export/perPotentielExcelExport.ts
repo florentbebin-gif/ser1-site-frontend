@@ -1,6 +1,6 @@
-import type { PerPotentielResult } from '../../../engine/per';
-import { buildXlsxBlob, downloadXlsx, validateXlsxBlob } from '../../../utils/export/xlsxBuilder';
-import type { XlsxCell, XlsxSheet } from '../../../utils/export/xlsxBuilder';
+import type { PerPotentielResult } from '@/engine/per';
+import { buildXlsxBlob, downloadXlsx, validateXlsxBlob } from '@/utils/export/xlsxBuilder';
+import type { XlsxCell, XlsxSheet } from '@/utils/export/xlsxBuilder';
 
 export interface PerPotentielExcelState {
   mode: 'versement-n' | 'declaration-n1' | null;

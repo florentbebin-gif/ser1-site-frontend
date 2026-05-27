@@ -1,4 +1,4 @@
-import { DEFAULT_TAX_SETTINGS } from '../../../../constants/settingsDefaults';
+import { DEFAULT_TAX_SETTINGS } from '@/constants/settingsDefaults';
 import { AuditEuroField, AuditNumberField } from './AuditNumberFields';
 import type { StepProps } from './types';
 

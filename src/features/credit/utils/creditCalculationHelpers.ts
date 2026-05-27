@@ -1,4 +1,4 @@
-import type { LoanParams } from '../../../engine/credit/capitalDeces';
+import type { LoanParams } from '@/engine/credit/capitalDeces';
 import type {
   CreditLoan,
   CreditLoanParams,

@@ -3,11 +3,8 @@
  */
 
 import { useMemo, useState } from 'react';
-import { SimSelect } from '../../../components/ui/sim/SimSelect';
-import type {
-  TresoAssociateRevenueSource,
-  TresoProjectionRow,
-} from '../../../engine/tresorerie/types';
+import { SimSelect } from '@/components/ui/sim/SimSelect';
+import type { TresoAssociateRevenueSource, TresoProjectionRow } from '@/engine/tresorerie/types';
 import { getTresoRevenueSourceLabel } from '../utils/tresorerieRevenueLabels';
 
 interface Props {

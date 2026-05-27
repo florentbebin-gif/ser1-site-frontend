@@ -13,6 +13,7 @@
  *      — pas d'import de composants UI depuis l'extérieur
  *   8. UI : pas d'import direct de exportStudyDeck (passer par hooks/wrappers)
  *   9. Placement : pas d'import runtime direct de useFiscalContext
+ *   10. Reporting : pas d'import depuis features/ (migrations et snapshots restent purs)
  *
  * Résolution @/ : src/ (tsconfig paths + vite alias)
  *
@@ -147,6 +148,16 @@ module.exports = {
         'src/features/placement/ ne doit pas importer directement useFiscalContext en runtime — passer par usePlacementSettings pour conserver une seule entrée fiscale Placement',
       from: { path: '^src/features/placement/' },
       to: { path: '^src/hooks/useFiscalContext(\\.ts)?$' },
+    },
+
+    // ── 10. Reporting : snapshots et migrations ne dépendent pas des features ───────────
+    {
+      name: 'reporting-no-features',
+      severity: 'error',
+      comment:
+        'src/reporting/ doit rester indépendant de src/features/ — déplacer les migrations pures dans engine/ ou reporting/',
+      from: { path: '^src/reporting/' },
+      to: { path: '^src/features/' },
     },
   ],
 

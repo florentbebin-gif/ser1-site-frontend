@@ -1,24 +1,24 @@
 import { useEffect, useMemo, useState } from 'react';
 import '@/styles/sim/index.css';
 import '../styles/index.css';
-import { onResetEvent, storageKeyFor } from '../../../utils/reset';
-import { toNumber } from '../../../utils/numbers';
-import { computeIrResult as computeIrResultEngine } from '../../../engine/ir/compute';
-import { useFiscalContext } from '../../../hooks/useFiscalContext';
+import { onResetEvent, storageKeyFor } from '@/utils/reset';
+import { toNumber } from '@/utils/numbers';
+import { computeIrResult as computeIrResultEngine } from '@/engine/ir/compute';
+import { useFiscalContext } from '@/hooks/useFiscalContext';
 import { deriveIrFiscalSettings } from '../utils/irFiscalSettings';
-import { DEFAULT_PS_SETTINGS, DEFAULT_TAX_SETTINGS } from '../../../constants/settingsDefaults';
-import { useTheme } from '../../../settings/ThemeProvider';
-import { useUserMode, type UserMode } from '../../../settings/userMode';
-import { resolveEffectiveUserMode } from '../../../settings/userModeDisplay';
-import { ExportMenu } from '../../../components/ExportMenu';
-import { ModeToggle } from '../../../components/ModeToggle';
+import { DEFAULT_PS_SETTINGS, DEFAULT_TAX_SETTINGS } from '@/constants/settingsDefaults';
+import { useTheme } from '@/settings/ThemeProvider';
+import { useUserMode, type UserMode } from '@/settings/userMode';
+import { resolveEffectiveUserMode } from '@/settings/userModeDisplay';
+import { ExportMenu } from '@/components/ExportMenu';
+import { ModeToggle } from '@/components/ModeToggle';
 import { SimCollapsibleTable, SimPageShell, SimViewSynthesisCTA } from '@/components/ui/sim';
 import {
   computeAbattement10,
   computeEffectiveParts,
   computeExtraDeductions,
   countPersonsACharge,
-} from '../../../engine/ir/adjustments';
+} from '@/engine/ir/adjustments';
 import { useIrExportHandlers } from '../hooks/useIrExportHandlers';
 import {
   applyIncomeFilters,

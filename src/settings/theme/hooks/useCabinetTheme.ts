@@ -5,9 +5,9 @@
  */
 
 import type React from 'react';
-import { supabase } from '../../../supabaseClient';
+import { supabase } from '@/supabaseClient';
 import { DEFAULT_COLORS, type ThemeColors } from '../../theme';
-import type { LogoPlacement } from '../../../pptx/theme/types';
+import type { LogoPlacement } from '@/pptx/theme/types';
 
 // ─── Helpers de conversion ───────────────────────────────────────────
 

@@ -1,4 +1,4 @@
-import type { SuccessionAvFiscalAnalysis } from './successionAvFiscal';
+import type { SuccessionAvFiscalAnalysis } from './successionAssuranceVieFiscal';
 import type { SuccessionPerFiscalAnalysis } from './successionPerFiscal';
 import type { SuccessionPrevoyanceFiscalAnalysis } from './successionPrevoyanceFiscal';
 import type { SuccessionChainOrder } from './successionChainage';

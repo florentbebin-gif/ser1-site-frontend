@@ -8,7 +8,7 @@ import type {
 import type { SuccessionFiscalSnapshot } from './successionFiscalContext';
 import { getEnfantParentLabel } from './successionEnfants';
 import { getClausePreset } from './successionClauseOptions';
-import { mergeSuccessionAvFiscalLines } from './successionAvFiscal.helpers';
+import { mergeSuccessionAvFiscalLines } from './successionAssuranceVieFiscal.helpers';
 import { buildClauseShares, type AvBeneficiaryTarget } from './successionAvBeneficiaries';
 import { getUsufruitRateFromAge } from './successionUsufruit';
 

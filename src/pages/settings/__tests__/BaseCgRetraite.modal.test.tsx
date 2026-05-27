@@ -1,168 +1,21 @@
 // @vitest-environment jsdom
 
 import '@testing-library/jest-dom/vitest';
-import { render, screen, waitFor } from '@testing-library/react';
+import { screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
-import BaseCgRetraite from '../BaseCgRetraite';
+import { beforeEach, describe, expect, it } from 'vitest';
 import type { BaseCgRetraiteContract } from '@/data/base-cg-retraite';
+import {
+  contract,
+  getBaseCgRetraiteCatalogMock,
+  openModal,
+  renderBaseCgRetraite,
+  resetBaseCgRetraiteMocks,
+  upsertBaseCgRetraiteContractMock,
+} from './BaseCgRetraite.testUtils';
 
-const getBaseCgRetraiteCatalogMock = vi.fn();
-const upsertBaseCgRetraiteContractMock = vi.fn();
-const deleteBaseCgRetraiteContractMock = vi.fn();
-const createBaseCgRetraiteDocumentDownloadUrlMock = vi.fn();
-const useUserRoleMock = vi.fn();
-
-vi.mock('@/components/UserInfoBanner', () => ({
-  UserInfoBanner: () => <div data-testid="user-info-banner" />,
-}));
-
-vi.mock('@/auth/useUserRole', () => ({
-  useUserRole: () => useUserRoleMock(),
-}));
-
-vi.mock('@/utils/cache/baseCgRetraiteRepository', () => ({
-  getBaseCgRetraiteCatalog: () => getBaseCgRetraiteCatalogMock(),
-  upsertBaseCgRetraiteContract: (contract: BaseCgRetraiteContract) =>
-    upsertBaseCgRetraiteContractMock(contract),
-  deleteBaseCgRetraiteContract: (id: string) => deleteBaseCgRetraiteContractMock(id),
-  createBaseCgRetraiteDocumentDownloadUrl: (...args: unknown[]) =>
-    createBaseCgRetraiteDocumentDownloadUrlMock(...args),
-}));
-
-const contract: BaseCgRetraiteContract = {
-  id: 'test-contract',
-  sourceId: 'Contrat N°386',
-  compagnie: 'ABEILLE',
-  nomContrat: 'MADELIN- ABEILLE RETRAITE MADELIN',
-  typeContrat: 'MADELIN',
-  perCompartment: 'C1',
-  phaseEpargne: {
-    dateCommercialisation: 'De 2010 à 2017',
-    nombreFonds: 50,
-    repartitionUcEuro: null,
-    rendementFondsEuro: 'NC',
-    fraisVersements: 0.05,
-    fraisGestion: '1% (€) - 1,50% (UC)',
-    fraisArbitrage: '0,5%',
-    fraisTransfertSortant: 0,
-    fraisTransfertSortantRate: 0,
-    clauseBeneficiaire: 'Standard',
-    garantiesComplementaires: 'Plancher décès',
-  },
-  phaseLiquidation: {
-    ageLimiteLiquidation: 'NC',
-    sortieCapitalRetraite: 'Non',
-    fractionnementCapital: 'Non',
-    rachatLibre: 'Non',
-    tableConversionRente: 'TGH05 ou TGF05',
-    tableGarantieAdhesion: 'Oui',
-    tauxTechnique: 'NC',
-    fraisArrerages: 0.03,
-    fraisArreragesRate: 0.03,
-    annuitesGaranties: 'Oui sur option',
-    reversionPossible: 'Oui sur option',
-    reversionIncluse: 'Non',
-    renteEstimee: null,
-  },
-  documents: [],
-};
-
-async function openModal() {
-  render(<BaseCgRetraite />);
-  expect(await screen.findByText('MADELIN- ABEILLE RETRAITE MADELIN')).toBeInTheDocument();
-  await userEvent.click(await screen.findByRole('button', { name: 'Modifier' }));
-}
-
-describe('BaseCgRetraite', () => {
-  beforeEach(() => {
-    getBaseCgRetraiteCatalogMock.mockReset();
-    getBaseCgRetraiteCatalogMock.mockResolvedValue([contract]);
-    upsertBaseCgRetraiteContractMock.mockReset();
-    upsertBaseCgRetraiteContractMock.mockResolvedValue(undefined);
-    deleteBaseCgRetraiteContractMock.mockReset();
-    deleteBaseCgRetraiteContractMock.mockResolvedValue(undefined);
-    createBaseCgRetraiteDocumentDownloadUrlMock.mockReset();
-    createBaseCgRetraiteDocumentDownloadUrlMock.mockResolvedValue(
-      'https://signed.example.test/cg.pdf',
-    );
-    useUserRoleMock.mockReset();
-    useUserRoleMock.mockReturnValue({
-      role: 'admin',
-      user: null,
-      isAdmin: true,
-      isLoading: false,
-    });
-  });
-
-  it('affiche les compteurs disponibles, paramétrés et CG disponibles sans version technique', async () => {
-    const incompleteContract: BaseCgRetraiteContract = {
-      ...contract,
-      id: 'incomplete-contract',
-      nomContrat: 'Contrat incomplet',
-      phaseEpargne: {
-        ...contract.phaseEpargne,
-        dateCommercialisation: null,
-        fraisGestion: null,
-        fraisGestionFondsEuro: null,
-        fraisGestionUc: null,
-        clauseBeneficiaire: null,
-      },
-    };
-    const documentedContract: BaseCgRetraiteContract = {
-      ...contract,
-      documents: [
-        {
-          id: 'doc-swisslife',
-          label: 'Notice SwissLife PER Individuel',
-          type: 'notice_information',
-          status: 'uploaded',
-          versionLabel: '13124 – 09.2019',
-          storagePath: 'swisslife/swisslife-per-individuel/13124-09-2019.pdf',
-          fileName: '13124-09-2019.pdf',
-          mime: 'application/pdf',
-          bytes: 462558,
-        },
-      ],
-    };
-    getBaseCgRetraiteCatalogMock.mockResolvedValueOnce([documentedContract, incompleteContract]);
-
-    render(<BaseCgRetraite />);
-
-    expect(
-      await screen.findByText('2 contrats disponibles - 1 contrat paramétré - 1 CG disponible'),
-    ).toBeInTheDocument();
-    expect(screen.queryByText(/extraction/i)).not.toBeInTheDocument();
-    expect(screen.queryByText(/version technique/i)).not.toBeInTheDocument();
-  });
-
-  it('réserve les actions de gestion aux admins et supprime le bouton réinitialiser', async () => {
-    const { unmount } = render(<BaseCgRetraite />);
-
-    expect(
-      await screen.findByRole('button', { name: 'Assistance & Suggestions' }),
-    ).toBeInTheDocument();
-    expect(await screen.findByRole('button', { name: 'Ajouter' })).toBeInTheDocument();
-    expect(await screen.findByRole('button', { name: 'Modifier' })).toBeInTheDocument();
-    expect(await screen.findByRole('button', { name: 'Supprimer' })).toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: 'Réinitialiser' })).not.toBeInTheDocument();
-    unmount();
-
-    useUserRoleMock.mockReturnValue({
-      role: 'user',
-      user: null,
-      isAdmin: false,
-      isLoading: false,
-    });
-    render(<BaseCgRetraite />);
-
-    expect(await screen.findByText('MADELIN- ABEILLE RETRAITE MADELIN')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Assistance & Suggestions' })).toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: 'Ajouter' })).not.toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: 'Modifier' })).not.toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: 'Supprimer' })).not.toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: 'Réinitialiser' })).not.toBeInTheDocument();
-  });
+describe('BaseCgRetraite - modale', () => {
+  beforeEach(resetBaseCgRetraiteMocks);
 
   it('affiche la modale en 4 onglets', async () => {
     await openModal();
@@ -207,7 +60,7 @@ describe('BaseCgRetraite', () => {
 
   it('ferme la modale avec Escape et restitue le focus au déclencheur', async () => {
     const user = userEvent.setup();
-    render(<BaseCgRetraite />);
+    renderBaseCgRetraite();
     const editButton = await screen.findByRole('button', { name: 'Modifier' });
 
     await user.click(editButton);
@@ -306,7 +159,7 @@ describe('BaseCgRetraite', () => {
 
   it('permet de saisir une décimale française en ajout', async () => {
     const user = userEvent.setup();
-    render(<BaseCgRetraite />);
+    renderBaseCgRetraite();
 
     await user.click(await screen.findByRole('button', { name: 'Ajouter' }));
     expect(screen.getByRole('dialog', { name: 'Ajouter un contrat' })).toBeInTheDocument();
@@ -324,47 +177,6 @@ describe('BaseCgRetraite', () => {
       expect(saved.phaseLiquidation.fraisArreragesRate).toBeCloseTo(0.045);
       expect(saved.phaseLiquidation.fraisArrerages).toBe('4,5 %');
     });
-  });
-
-  it('organise les contrats en accordéons par compagnie avec indicateur incomplet', async () => {
-    const incompleteContract: BaseCgRetraiteContract = {
-      ...contract,
-      id: 'incomplete-contract',
-      compagnie: 'CARDIF',
-      nomContrat: 'Contrat incomplet',
-      phaseEpargne: {
-        ...contract.phaseEpargne,
-        dateCommercialisation: null,
-        fraisGestion: null,
-        fraisGestionFondsEuro: null,
-        fraisGestionUc: null,
-        clauseBeneficiaire: null,
-      },
-    };
-    getBaseCgRetraiteCatalogMock.mockResolvedValueOnce([contract, incompleteContract]);
-
-    render(<BaseCgRetraite />);
-
-    expect(await screen.findByRole('button', { name: /ABEILLE/ })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /CARDIF/ })).toBeInTheDocument();
-    expect(screen.getByText('1 à compléter')).toBeInTheDocument();
-
-    await userEvent.click(screen.getByRole('button', { name: /CARDIF/ }));
-
-    expect(screen.getByText('Contrat incomplet')).toBeInTheDocument();
-    expect(screen.getByText('À compléter')).toBeInTheDocument();
-  });
-
-  it('présente les contrats ouverts en cartes denses avec logo compagnie', async () => {
-    render(<BaseCgRetraite />);
-
-    expect(await screen.findByTestId('company-logo-abeille')).toBeInTheDocument();
-
-    const contractCard = await screen.findByTestId('base-cg-contract-card-test-contract');
-    expect(contractCard).toHaveTextContent('MADELIN- ABEILLE RETRAITE MADELIN');
-    expect(contractCard).toHaveTextContent('Madelin');
-    expect(contractCard).toHaveTextContent('C1 (déductible)');
-    expect(contractCard).toHaveTextContent('TGH05 ou TGF05');
   });
 
   it('permet à l’admin de renseigner une CG avec version et chemin storage', async () => {
@@ -402,66 +214,6 @@ describe('BaseCgRetraite', () => {
         }),
       );
     });
-  });
-
-  it('met en avant les noms de contrats et la traçabilité du document CG', async () => {
-    getBaseCgRetraiteCatalogMock.mockResolvedValueOnce([
-      {
-        ...contract,
-        documents: [
-          {
-            id: 'doc-swisslife',
-            label: 'Notice SwissLife PER Individuel',
-            type: 'notice_information',
-            status: 'uploaded',
-            versionLabel: '13124 – 09.2019',
-            storagePath: 'swisslife/swisslife-per-individuel/13124-09-2019.pdf',
-          },
-        ],
-      },
-    ]);
-
-    render(<BaseCgRetraite />);
-
-    const contractName = await screen.findByText('MADELIN- ABEILLE RETRAITE MADELIN');
-    expect(contractName).toHaveClass('base-cg-contract-name__label');
-    expect(screen.queryByText('Contrat N°386')).not.toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Télécharger CG' })).toBeInTheDocument();
-    expect(screen.getByText('Version : 13124 – 09.2019')).toBeInTheDocument();
-    expect(screen.getByText('PDF importé - accès authentifié SER1')).toBeInTheDocument();
-    expect(screen.queryByText(/Ref :/)).not.toBeInTheDocument();
-    expect(screen.queryByText(/Notice SwissLife PER Individuel/)).not.toBeInTheDocument();
-  });
-
-  it('signale les documents CG sans version renseignée', async () => {
-    getBaseCgRetraiteCatalogMock.mockResolvedValueOnce([
-      {
-        ...contract,
-        documents: [
-          {
-            id: 'doc-no-version',
-            label: 'Conditions générales sans version',
-            type: 'conditions_generales',
-            status: 'linked',
-            sourceUrl: 'https://example.invalid/cg.pdf',
-          },
-        ],
-      },
-    ]);
-
-    render(<BaseCgRetraite />);
-
-    expect(await screen.findByText('Version à renseigner')).toBeInTheDocument();
-    expect(screen.getByText('Lien externe')).toBeInTheDocument();
-  });
-
-  it('affiche la mention de limites de la Base CG', async () => {
-    render(<BaseCgRetraite />);
-
-    expect(await screen.findByText('Limites de la Base CG')).toBeInTheDocument();
-    expect(screen.getByText(/à titre indicatif/i)).toBeInTheDocument();
-    expect(screen.getByText(/aide interne/i)).toBeInTheDocument();
-    expect(screen.getByText(/non contractuelle/i)).toBeInTheDocument();
   });
 
   it('masque le frais de gestion général et affiche les taux en pourcentage', async () => {

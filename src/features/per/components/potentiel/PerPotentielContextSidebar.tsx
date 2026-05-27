@@ -1,7 +1,7 @@
 import React from 'react';
 import { SimMetric, SimSparkline } from '@/components/ui/sim';
 import { IconBarChart, IconFileText, IconPieChart } from '@/icons/ui';
-import type { PerPotentielResult } from '../../../../engine/per';
+import type { PerPotentielResult } from '@/engine/per';
 import type { WizardStep } from '../../hooks/usePerPotentiel';
 
 interface PerPotentielContextSidebarProps {

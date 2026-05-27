@@ -1,6 +1,6 @@
 import React from 'react';
 import { SimModalShell } from '@/components/ui/sim';
-import type { PlafondMadelinDetail } from '../../../../engine/per';
+import type { PlafondMadelinDetail } from '@/engine/per';
 
 interface PerMadelinInfoModalProps {
   declarant1?: PlafondMadelinDetail;

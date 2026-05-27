@@ -7,7 +7,7 @@
  */
 
 import type { DossierAudit } from '../../audit/types';
-import { DEFAULT_TAX_SETTINGS } from '../../../constants/settingsDefaults';
+import { DEFAULT_TAX_SETTINGS } from '@/constants/settingsDefaults';
 import type { Recommandation } from '../types';
 
 const TMI_PER_RECOMMANDATION = DEFAULT_TAX_SETTINGS.incomeTax.defaultTmiEpargneRate;

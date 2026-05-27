@@ -1,4 +1,4 @@
-import type { buildSuccessionAvFiscalAnalysis } from '../successionAvFiscal';
+import type { buildSuccessionAvFiscalAnalysis } from '../successionAssuranceVieFiscal';
 import type { SuccessionPrimarySide } from '../successionDraft.types';
 import type { buildSuccessionPerFiscalAnalysis } from '../successionPerFiscal';
 import type { buildSuccessionPrevoyanceFiscalAnalysis } from '../successionPrevoyanceFiscal';

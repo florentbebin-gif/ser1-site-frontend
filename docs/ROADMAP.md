@@ -38,6 +38,8 @@ Ordre d'exécution, sans créer de nouvelle phase :
 5. `PR-P6-03` prévoyance (durcissement de la V1 partielle active).
 6. P8 catalogue.
 
+P8 reste un chantier dédié : la Base CG retraite continue de s'appuyer sur son snapshot TypeScript et ses overlays Supabase existants tant que la migration catalogue en base n'est pas cadrée et livrée explicitement.
+
 L'analyse patrimoniale passe avant le scan IA : la saisie manuelle est la base, le LLM n'est qu'un booster qui préremplit l'AP. P4 ne peut pas avancer tant que l'AP manuelle n'est pas opérationnelle. P7 ne doit jamais transformer le LLM en conseiller autonome : SER1 calcule les scénarios, le CGP arbitre et valide. Aucun chat libre CGP ↔ LLM n'est prévu dans la V1.
 
 ## Principes non négociables
@@ -323,6 +325,8 @@ Le livrable client est généré par les calculateurs et templates SER1 à parti
 # P8 - Catalogue produits personnalisable
 
 Objectif : éviter que `catalog.ts` devienne bloquant si un cabinet veut personnaliser.
+
+Hors P8, ne pas introduire de double lecture statique/Supabase ni de chargement async du catalogue Base CG retraite. Le snapshot TypeScript reste la source applicative, complétée uniquement par les overlays admin déjà en place.
 
 ## PR-P8-01 - Étude catalogue en base
 

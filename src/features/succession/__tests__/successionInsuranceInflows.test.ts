@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { buildSuccessionSurvivorEconomicInflows } from '../successionInsuranceInflows';
-import type { SuccessionAvFiscalAnalysis } from '../successionAvFiscal';
+import type { SuccessionAvFiscalAnalysis } from '../successionAssuranceVieFiscal';
 import type { SuccessionPrevoyanceFiscalAnalysis } from '../successionPrevoyanceFiscal';
 
 function makeAvAnalysis(): SuccessionAvFiscalAnalysis {

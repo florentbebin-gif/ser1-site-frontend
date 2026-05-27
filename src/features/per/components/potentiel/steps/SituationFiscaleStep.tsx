@@ -10,9 +10,9 @@ import {
   SimModalShell,
   SimSelect,
 } from '@/components/ui/sim';
-import type { DeclarantRevenus, PlafondMadelinDetail } from '../../../../../engine/per';
-import type { PerDeclarantPatch } from '../../../hooks/usePerPotentiel';
-import type { PerChildDraft } from '../../../utils/perParts';
+import type { DeclarantRevenus, PlafondMadelinDetail } from '@/engine/per';
+import type { PerDeclarantPatch } from '@/features/per/hooks/usePerPotentiel';
+import type { PerChildDraft } from '@/features/per/utils/perParts';
 import { PerMadelinInfoModal } from '../PerMadelinInfoModal';
 import {
   PerIncomeTable,

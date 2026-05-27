@@ -1,5 +1,5 @@
-import { computeAutoPartsWithChildren } from '../../../engine/ir/parts';
-import type { IrChild } from '../../../engine/ir/types';
+import { computeAutoPartsWithChildren } from '@/engine/ir/parts';
+import type { IrChild } from '@/engine/ir/types';
 
 export interface PerChildDraft {
   id: number;

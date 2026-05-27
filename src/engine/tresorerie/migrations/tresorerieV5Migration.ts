@@ -4,7 +4,7 @@ import type {
   TresoInputsV4,
   TresoInputsV5,
 } from '@/engine/tresorerie/types';
-import { sortPhases } from './revenuePhases';
+import { sortPhases } from '../revenuePhases';
 
 type LegacyAssociateFields = {
   remunerationAnnualCost?: number;

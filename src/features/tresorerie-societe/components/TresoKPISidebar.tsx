@@ -6,7 +6,7 @@ import type { ReactNode } from 'react';
 import { SimKpiReference, SimMetric, SimSparkline } from '@/components/ui/sim';
 import { IconGauge } from '@/icons/ui';
 import type { TresoKPIs } from '../hooks/useTresorerieCalculations';
-import type { TresoInputsRuntime } from '../../../engine/tresorerie/types';
+import type { TresoInputsRuntime } from '@/engine/tresorerie/types';
 
 interface Props {
   kpis: TresoKPIs;

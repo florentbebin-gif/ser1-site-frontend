@@ -1,4 +1,4 @@
-import { buildSuccessionAvFiscalAnalysis } from './successionAvFiscal';
+import { buildSuccessionAvFiscalAnalysis } from './successionAssuranceVieFiscal';
 import type {
   FamilyMember,
   SuccessionAssuranceVieEntry,

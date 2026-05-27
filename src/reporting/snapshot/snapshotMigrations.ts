@@ -12,7 +12,7 @@
  */
 
 import { CURRENT_SNAPSHOT_VERSION, SNAPSHOT_APP, SNAPSHOT_KIND } from './snapshotSchema';
-import { buildTresoInputsV6FromV5 } from '@/features/tresorerie-societe/utils/tresorerieV2Migration';
+import { buildTresoInputsV6FromV5 } from '@/engine/tresorerie/migrations/tresorerieV2Migration';
 import type { TresoInputsV5 } from '@/engine/tresorerie/types';
 
 // ---------------------------------------------------------------------------

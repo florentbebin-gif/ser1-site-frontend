@@ -1,5 +1,5 @@
-import type { FiscalContext } from '../../../hooks/useFiscalContext';
-import type { PerHistoricalBasis } from '../../../engine/per';
+import type { FiscalContext } from '@/hooks/useFiscalContext';
+import type { PerHistoricalBasis } from '@/engine/per';
 
 interface ParsedYearLabel {
   taxYear: number;

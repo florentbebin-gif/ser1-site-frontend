@@ -13,6 +13,7 @@ npm run check      # Tous les checks (lint + check:fiscal-hardcode + check:arch 
 # ou individuellement :
 npm run lint       # ESLint - 0 erreur
 npm run check:arch # Garde-fous d'architecture dependency-cruiser - 0 violation
+npm run check:deep-imports # 0 import profond ../../../ hors tests
 npm run typecheck  # TypeScript - 0 erreur
 npm test           # Tous les tests passent
 npm run build      # Build Vite OK
@@ -90,6 +91,8 @@ Filet de sécurité : cron mensuel le 1er du mois à 09:00 UTC qui met la PR à 
 - **Imports** :
   - **`@/`** pour les imports cross-module / cross-feature (ex: `@/utils/`, `@/components/`)
   - **Chemins relatifs** (`./`, `../`) OK pour les imports locaux (même dossier ou sous-dossier)
+  - **`../../../` interdit hors tests** : `npm run check:deep-imports` garde une baseline à zéro pour les imports statiques, dynamiques et CSS.
+  - **`src/reporting/` n'importe jamais `src/features/`** : les migrations de snapshots et contrats reporting consomment les moteurs/domaines purs.
 
 ### Sécurité
 
@@ -147,11 +150,14 @@ Filet de sécurité : cron mensuel le 1er du mois à 09:00 UTC qui met la PR à 
   ```
 
 - **Chemins relatifs** : Uniquement pour imports locaux (même dossier ou sous-dossier)
+
   ```javascript
   // ✅ Correct - import local
   import { helper } from './utils';
   import { Input } from '../components/Input';
   ```
+
+- **Garde automatique** : `npm run check:deep-imports` scanne `.ts`, `.tsx`, `.js`, `.jsx` et `.css` hors tests. La baseline attendue est `0`; ne pas ajouter d'exception sans justification dans `docs/ARCHITECTURE.md`.
 
 ### Chaînes UI
 
@@ -163,6 +169,7 @@ Filet de sécurité : cron mensuel le 1er du mois à 09:00 UTC qui met la PR à 
 - [ ] `npm run check` passe (tous les checks)
 - [ ] `npm run lint` passe
 - [ ] `npm run check:arch` passe (0 violation d'architecture)
+- [ ] `npm run check:deep-imports` passe (0 import profond hors tests)
 - [ ] `npm run typecheck` passe (0 erreur)
 - [ ] `npm test` passe
 - [ ] `npm run build` passe

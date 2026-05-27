@@ -522,7 +522,7 @@ export const ASSURANCE_VIE_NOTARIAL_REFERENCES: AssuranceVieNotarialReference[] 
    * - Droits = 0 EUR.
    *
    * Le contexte civil doit etre marie pour que la clause "conjoint" soit
-   * resolue avec exoneration (cf. successionAvFiscal.findMember).
+   * resolue avec exoneration (cf. successionAssuranceVieFiscal.findMember).
    */
   {
     id: 'av-conjoint-100k-post-70-exonere',

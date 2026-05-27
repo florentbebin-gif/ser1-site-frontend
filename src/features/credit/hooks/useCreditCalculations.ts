@@ -16,8 +16,8 @@ import {
 import {
   computeCapitalDecesSchedule,
   computeGlobalCapitalDecesSchedule,
-} from '../../../engine/credit/capitalDeces';
-import type { ScheduleRowInput } from '../../../engine/credit/capitalDeces';
+} from '@/engine/credit/capitalDeces';
+import type { ScheduleRowInput } from '@/engine/credit/capitalDeces';
 import {
   mensualiteAmortissable,
   scheduleAmortissable,

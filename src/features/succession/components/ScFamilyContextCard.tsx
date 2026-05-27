@@ -1,7 +1,7 @@
 import type { Dispatch, SetStateAction } from 'react';
 import { SimActionButton } from '@/components/ui/sim';
 import { IconUsers } from '@/icons/ui';
-import { REGIMES_MATRIMONIAUX } from '../../../engine/succession/civil';
+import { REGIMES_MATRIMONIAUX } from '@/engine/succession/civil';
 import type { DEFAULT_SUCCESSION_CIVIL_CONTEXT } from '../successionDraft';
 import {
   type FamilyMember,

@@ -1,7 +1,7 @@
 import { SimActionButton } from '@/components/ui/sim';
-import { SimFieldShell } from '../../../components/ui/sim/SimFieldShell';
-import { SimSelect } from '../../../components/ui/sim/SimSelect';
-import type { CompanyLoanInput, SubsidiaryInput } from '../../../engine/tresorerie/types';
+import { SimFieldShell } from '@/components/ui/sim/SimFieldShell';
+import { SimSelect } from '@/components/ui/sim/SimSelect';
+import type { CompanyLoanInput, SubsidiaryInput } from '@/engine/tresorerie/types';
 import {
   fmtEuroInput,
   fmtRateInput,

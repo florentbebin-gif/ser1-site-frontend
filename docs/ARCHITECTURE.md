@@ -52,6 +52,8 @@ Repères (domain-first) :
 - `src/pages/settings/styles/` : domaine CSS partagé/settings.
 - `src/settings/` : thème, presets, ThemeProvider.
 - `src/pptx/` : pipeline PPTX (design system + slides + export).
+- `src/reporting/` : snapshots `.ser1`, migrations de snapshots et contrats de reporting. Ce périmètre dépend des moteurs/domaines purs, jamais des features UI.
+- `src/engine/tresorerie/migrations/` : migrations pures `TresoInputs` V1→V6. La chaîne reste ici sans isolation `legacy/` séparée ; la règle dependency-cruiser `tresorerie-legacy-restricted` est volontairement non ajoutée tant que les types legacy ne sont pas extraits. À reconsidérer si un chantier dédié les isole.
 - `supabase/` : edge functions + migrations.
 
 Conventions clés :
@@ -59,7 +61,9 @@ Conventions clés :
 - Nouveau code : TS/TSX.
 - Fichiers `500-800` lignes = dette surveillée. Acceptable temporairement si le fichier reste mono-rôle et lisible.
 - Fichiers `>800` lignes = découpage obligatoire au prochain chantier qui touche le fichier.
-- Garde-fous d'architecture : `npm run check:arch` (dependency-cruiser, config `.dependency-cruiser.cjs`) — bloquant en CI. Règles : engine/domain sans React ni features, features sans pages, imports cross-features via `index.ts` uniquement.
+- Garde-fous d'architecture : `npm run check:arch` (dependency-cruiser, config `.dependency-cruiser.cjs`) — bloquant en CI. Règles : engine/domain sans React ni features, features sans pages, reporting sans features, imports cross-features via `index.ts` uniquement.
+- Garde imports profonds : `npm run check:deep-imports` bloque tout nouveau `../../../` hors tests dans les imports TS/TSX/JS/JSX et CSS. La baseline hors tests est `0`; utiliser `@/` pour les imports cross-module.
+- Nomenclature métier : dans Succession, utiliser les noms explicites comme `AssuranceVie` pour les nouveaux modules métier ; éviter les abréviations ambiguës de type `Av`.
 
 ### Règle "god file"
 
@@ -384,6 +388,8 @@ Overlays Supabase :
 - `base_cg_retraite_documents` : métadonnées et liens de documents associés aux contrats.
 
 Les corrections vivantes passent par la page settings/admin et les overlays Supabase existants. Les fichiers Office de travail restent hors Git ; `npm run check:no-office-artifacts` bloque tout `.xls`, `.xlsx`, `.xlsm`, `.ppt` ou `.pptx` versionné par erreur.
+
+La migration du catalogue vers une source Supabase complète reste un chantier P8 dédié. Les PR hors P8 ne doivent pas introduire de double lecture statique/Supabase ni rendre le catalogue async sans cadrage produit et migration explicite.
 
 ### Gouvernance catalogue — assimilation
 
@@ -738,6 +744,7 @@ Cette section fixe comment ajouter une page, une route ou une feature sans creer
 - `src/engine/` : calcul pur, zero React
 - `src/features/<slug>/` : UI, state, orchestration, exports lies a la feature
 - `src/features/<slug>/index.ts` : API publique de la feature, seule surface importable depuis `src/routes/` ou une autre feature
+- `src/reporting/` : contrats de snapshot et migrations ; imports autorisés vers `src/engine/` ou `src/domain/`, pas vers `src/features/`
 - `src/components/` : composants transverses reutilises
 - `src/styles/` : styles partages, tokens, patterns communs
 - `src/pages/` : shells et pages transverses, pas la logique metier d'un simulateur
@@ -746,6 +753,8 @@ Cette section fixe comment ajouter une page, une route ou une feature sans creer
 
 - Calcul fiscal dans un composant React
 - Import CSS cross-feature depuis une autre feature
+- Import `../../../` hors tests : passer par `@/` pour tout cross-module
+- Import de `src/features/` depuis `src/reporting/`
 - Nouveau dossier `legacy/`, `__spike__` ou `_raw` en prod
 - Fichier "god component" si un decoupage simple composant/hook suffit
 
@@ -754,6 +763,7 @@ Cette section fixe comment ajouter une page, une route ou une feature sans creer
 - Route ou page ajoutee a la bonne source de verite (`APP_ROUTES` ou `SETTINGS_ROUTES`)
 - Pour une route `/sim/*`, `npm test -- src/routes` doit valider le contrat `APP_ROUTES`.
 - Les imports publics de features restent vérifiés par `npm run check:arch` (`routes-no-feature-internals`).
+- Les imports profonds hors tests restent à zéro via `npm run check:deep-imports`.
 - Docs pivots mises a jour si le contrat change
 - Test adapte au statut du sujet :
   - simulateur stable : smoke test ou test cible

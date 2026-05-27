@@ -7,16 +7,16 @@
  */
 
 import { useCallback, useEffect, useState } from 'react';
-import { storageKeyFor, onResetEvent } from '../../../utils/reset';
+import { storageKeyFor, onResetEvent } from '@/utils/reset';
 import type { TresoState, TresoPersistedState } from '../types';
-import type { TresoInputs, TresoInputsV2, TresoInputsV6 } from '../../../engine/tresorerie/types';
+import type { TresoInputs, TresoInputsV2, TresoInputsV6 } from '@/engine/tresorerie/types';
 import {
   buildTresoInputsV6FromLegacy,
   buildTresoInputsV6FromV2,
   buildTresoInputsV6FromV3,
   buildTresoInputsV6FromV4,
   buildTresoInputsV6FromV5,
-} from '../utils/tresorerieV2Migration';
+} from '@/engine/tresorerie/migrations/tresorerieV2Migration';
 
 // ─── Valeurs par défaut ───────────────────────────────────────────────────────
 

@@ -1,6 +1,6 @@
 import { useCallback } from 'react';
 import type { Dispatch, SetStateAction } from 'react';
-import type { RegimeMatrimonial } from '../../../engine/succession/civil';
+import type { RegimeMatrimonial } from '@/engine/succession/civil';
 import type {
   PacsConvention,
   SituationMatrimoniale,

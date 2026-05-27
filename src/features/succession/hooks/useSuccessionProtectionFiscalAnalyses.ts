@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { buildSuccessionAvFiscalAnalysis } from '../successionAvFiscal';
+import { buildSuccessionAvFiscalAnalysis } from '../successionAssuranceVieFiscal';
 import { buildSuccessionSurvivorEconomicInflows } from '../successionInsuranceInflows';
 import { buildSuccessionPerFiscalAnalysis } from '../successionPerFiscal';
 import { buildSuccessionPrevoyanceFiscalAnalysis } from '../successionPrevoyanceFiscal';

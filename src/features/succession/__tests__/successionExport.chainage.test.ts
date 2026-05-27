@@ -5,7 +5,7 @@
 import { describe, expect, it } from 'vitest';
 import { DEFAULT_DMTG } from '../../../engine/succession/civil';
 import { buildSuccessionStudyDeck } from '../../../pptx/presets/successionDeckBuilder';
-import { buildSuccessionAvFiscalAnalysis } from '../successionAvFiscal';
+import { buildSuccessionAvFiscalAnalysis } from '../successionAssuranceVieFiscal';
 import { buildSuccessionChainageAnalysis } from '../successionChainage';
 import { buildSuccessionFiscalSnapshot } from '../successionFiscalContext';
 import { buildSuccessionPerFiscalAnalysis } from '../successionPerFiscal';
