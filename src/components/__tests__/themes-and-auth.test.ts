@@ -76,18 +76,18 @@ describe('Thèmes - Mode Personnalisé automatique', () => {
     const mockSyncThemeColors = vi.fn();
 
     // État initial : thème prédéfini sélectionné
-    let selectedTheme = 'Thème Original';
+    let selectedTheme = 'Cuivre tranché';
     const colorsLegacy = {
-      color1: '#2B3E37',
-      color2: '#709B8B',
-      color3: '#9FBDB2',
-      color4: '#CFDED8',
-      color5: '#788781',
-      color6: '#CEC1B6',
-      color7: '#F5F3F0',
-      color8: '#D9D9D9',
-      color9: '#7F7F7F',
-      color10: '#000000',
+      color1: '#0E1426',
+      color2: '#1F3056',
+      color3: '#5B73A0',
+      color4: '#C6CFE2',
+      color5: '#475061',
+      color6: '#C2733A',
+      color7: '#F2EEE8',
+      color8: '#C9CCDA',
+      color9: '#424659',
+      color10: '#060A18',
     };
 
     // Simuler handleColorChange (logique extraite de Settings.jsx)
@@ -118,23 +118,23 @@ describe('Thèmes - Mode Personnalisé automatique', () => {
     expect(selectedTheme).toBe('Personnalisé');
   });
 
-  it('doit conserver les couleurs du preset original (immuable)', () => {
+  it('doit conserver les couleurs du preset de référence (immuable)', () => {
     // Simuler les presets immuables
     const PREDEFINED_THEMES = [
       {
-        id: 'ser1-classic',
-        name: 'Thème Original',
+        id: 'ser1-cuivre-tranche',
+        name: 'Cuivre tranché',
         colors: Object.freeze({
-          color1: '#2B3E37',
-          color2: '#709B8B',
-          color3: '#9FBDB2',
-          color4: '#CFDED8',
-          color5: '#788781',
-          color6: '#CEC1B6',
-          color7: '#F5F3F0',
-          color8: '#D9D9D9',
-          color9: '#7F7F7F',
-          color10: '#000000',
+          color1: '#0E1426',
+          color2: '#1F3056',
+          color3: '#5B73A0',
+          color4: '#C6CFE2',
+          color5: '#475061',
+          color6: '#C2733A',
+          color7: '#F2EEE8',
+          color8: '#C9CCDA',
+          color9: '#424659',
+          color10: '#060A18',
         }),
       },
     ];
@@ -160,17 +160,17 @@ describe('Thèmes - Mode Personnalisé automatique', () => {
     };
 
     // Action : sélectionner un thème prédéfini
-    handleThemeSelect('Thème Original');
+    handleThemeSelect('Cuivre tranché');
 
     // Vérifications
     expect(mockSetColorsLegacy).toHaveBeenCalledWith(
-      expect.objectContaining({ color1: '#2B3E37' }),
+      expect.objectContaining({ color1: '#0E1426' }),
     );
     expect(mockSetColorText).toHaveBeenCalled();
     expect(mockSyncThemeColors).toHaveBeenCalled();
 
-    // Vérifier que le preset original n'est pas modifié
-    expect(PREDEFINED_THEMES[0].colors.color1).toBe('#2B3E37');
+    // Vérifier que le preset de référence n'est pas modifié
+    expect(PREDEFINED_THEMES[0].colors.color1).toBe('#0E1426');
   });
 
   it('ne doit pas basculer sur "Personnalisé" si déjà "Personnalisé"', () => {

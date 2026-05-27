@@ -130,7 +130,7 @@ export default function ThemeEditModal({
               onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                 setForm((prev) => ({ ...prev, name: e.target.value }));
               }}
-              placeholder="Ex: Bleu patrimonial"
+              placeholder="Ex: Thème cabinet"
               className="settings-modal-control"
             />
           </div>

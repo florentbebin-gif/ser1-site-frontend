@@ -1,13 +1,19 @@
+import { SimActionButton } from '@/components/ui/sim';
 import {
   COLOR_FIELDS,
   type LegacyColorKey,
   type LegacyColors,
+  type ThemeCard,
 } from '../hooks/useThemePaletteEditor';
 
 interface ThemeColorsSectionProps {
   colorsLegacy: LegacyColors;
   colorText: LegacyColors;
   showAdvancedColors: boolean;
+  duplicateThemes: ThemeCard[];
+  duplicateThemeId: string;
+  onDuplicateThemeChange: (_themeId: string) => void;
+  onDuplicateTheme: () => void;
   onToggleAdvancedColors: () => void;
   onColorChange: (_key: LegacyColorKey, _value: string) => void;
 }
@@ -16,6 +22,10 @@ export function ThemeColorsSection({
   colorsLegacy,
   colorText,
   showAdvancedColors,
+  duplicateThemes,
+  duplicateThemeId,
+  onDuplicateThemeChange,
+  onDuplicateTheme,
   onToggleAdvancedColors,
   onColorChange,
 }: ThemeColorsSectionProps) {
@@ -24,8 +34,36 @@ export function ThemeColorsSection({
       <h3 className="settings-section-title">Couleurs de l'interface</h3>
       <p className="settings-premium-note">
         Modifiez la couleur principale (C1) pour adapter automatiquement toute la palette. Les
-        autres couleurs se calculent intelligemment à partir de celle-ci.
+        couleurs structurelles se calculent à partir de celle-ci ; C6 reste la signature cuivre.
       </p>
+      <div className="settings-theme-duplicate">
+        <label className="settings-theme-duplicate__label" htmlFor="theme-duplicate-source">
+          Thème à dupliquer
+        </label>
+        <div className="settings-theme-duplicate__controls">
+          <select
+            id="theme-duplicate-source"
+            className="settings-theme-duplicate__select"
+            value={duplicateThemeId}
+            onChange={(event) => onDuplicateThemeChange(event.target.value)}
+          >
+            {duplicateThemes.map((theme) => (
+              <option key={theme.id} value={theme.id}>
+                {theme.name}
+              </option>
+            ))}
+          </select>
+          <SimActionButton
+            variant="duplicate"
+            mode="icon"
+            label="Dupliquer"
+            ariaLabel="Dupliquer le thème choisi"
+            className="settings-theme-duplicate__button"
+            onClick={onDuplicateTheme}
+            disabled={duplicateThemes.length === 0}
+          />
+        </div>
+      </div>
 
       <div className="settings-colors-grid">
         <ColorRow

@@ -1,4 +1,5 @@
 // @vitest-environment jsdom
+/* eslint-disable ser1-colors/no-hardcoded-colors */
 
 import '@testing-library/jest-dom/vitest';
 import { render, screen } from '@testing-library/react';
@@ -153,7 +154,7 @@ describe('SettingsComptesSections', () => {
     expect(onViewReports).toHaveBeenCalledWith('user-2', 'florent.bebin@orange.fr');
   });
 
-  it('ouvre les utilisateurs par defaut et replie cabinets et themes', async () => {
+  it('ouvre les utilisateurs par défaut et replie cabinets et thèmes', async () => {
     const user = userEvent.setup();
 
     render(
@@ -197,5 +198,45 @@ describe('SettingsComptesSections', () => {
 
     expect(screen.getByText('Thème Laplace')).toBeInTheDocument();
     expect(screen.getByText('Thème SER1')).toBeInTheDocument();
+  });
+
+  it('affiche le thème système Cuivre tranché dans les thèmes globaux', async () => {
+    const user = userEvent.setup();
+
+    render(
+      <SettingsThemesSection
+        themes={[
+          {
+            id: 'theme-system',
+            name: 'Cuivre tranché',
+            palette: {
+              c1: '#0E1426',
+              c2: '#1F3056',
+              c3: '#5B73A0',
+              c4: '#C6CFE2',
+              c5: '#475061',
+              c6: '#C2733A',
+              c7: '#F2EEE8',
+              c8: '#C9CCDA',
+              c9: '#424659',
+              c10: '#060A18',
+            },
+            is_system: true,
+          },
+        ]}
+        themesLoading={false}
+        onCreateTheme={vi.fn()}
+        onEditTheme={vi.fn()}
+        onDeleteTheme={vi.fn()}
+      />,
+    );
+
+    await user.click(
+      screen.getByRole('button', { name: 'Afficher la section Thèmes globaux (1)' }),
+    );
+
+    expect(screen.getByText('Cuivre tranché')).toBeInTheDocument();
+    expect(screen.getByText('SYS')).toBeInTheDocument();
+    expect(screen.getByTitle('c1: #0E1426')).toBeInTheDocument();
   });
 });

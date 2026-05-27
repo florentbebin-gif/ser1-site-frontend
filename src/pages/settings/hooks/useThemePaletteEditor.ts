@@ -68,6 +68,7 @@ export function useThemePaletteEditor() {
   const [savingColors, setSavingColors] = useState(false);
   const [saveMessage, setSaveMessage] = useState('');
   const [showAdvancedColors, setShowAdvancedColors] = useState(false);
+  const [duplicateThemeId, setDuplicateThemeId] = useState(PREDEFINED_THEMES[0]?.id ?? '');
 
   useEffect(() => {
     if (!colors || themeLoading) return;
@@ -87,19 +88,21 @@ export function useThemePaletteEditor() {
     setColorText(legacyColors);
   }, [colors, themeLoading]);
 
+  const toThemeColors = (settingsColors: LegacyColors) => ({
+    c1: settingsColors.color1,
+    c2: settingsColors.color2,
+    c3: settingsColors.color3,
+    c4: settingsColors.color4,
+    c5: settingsColors.color5,
+    c6: settingsColors.color6,
+    c7: settingsColors.color7,
+    c8: settingsColors.color8,
+    c9: settingsColors.color9,
+    c10: settingsColors.color10,
+  });
+
   const syncThemeColors = (settingsColors: LegacyColors) => {
-    setColors({
-      c1: settingsColors.color1,
-      c2: settingsColors.color2,
-      c3: settingsColors.color3,
-      c4: settingsColors.color4,
-      c5: settingsColors.color5,
-      c6: settingsColors.color6,
-      c7: settingsColors.color7,
-      c8: settingsColors.color8,
-      c9: settingsColors.color9,
-      c10: settingsColors.color10,
-    });
+    setColors(toThemeColors(settingsColors));
   };
 
   const handleColorChange = (key: LegacyColorKey, value: string) => {
@@ -138,13 +141,24 @@ export function useThemePaletteEditor() {
     await applyThemeMode('my');
   };
 
+  const handleDuplicateThemeToMyTheme = (themeId: string = duplicateThemeId) => {
+    if (themeMode !== 'my') return;
+
+    const sourceTheme = PREDEFINED_THEMES.find((theme) => theme.id === themeId);
+    if (!sourceTheme) return;
+
+    const duplicatedColors = { ...sourceTheme.colors };
+    setDuplicateThemeId(sourceTheme.id);
+    setColorsLegacy(duplicatedColors);
+    setColorText(duplicatedColors);
+    syncThemeColors(duplicatedColors);
+    setSaveMessage(
+      `Palette du thème “${sourceTheme.name}” dupliquée. Enregistrez pour la conserver.`,
+    );
+  };
+
   const handleCustomSourceSelect = () => {
-    if (myPalette) {
-      void applyThemeMode('my');
-      return;
-    }
-    const firstPreset = PRESET_THEMES[0];
-    if (firstPreset) void applyThemeMode('preset', firstPreset.id);
+    void applyThemeMode('my');
   };
 
   const handleSaveMyPalette = async () => {
@@ -189,6 +203,8 @@ export function useThemePaletteEditor() {
     myPalette,
     colorsLegacy,
     colorText,
+    duplicateThemes: PREDEFINED_THEMES,
+    duplicateThemeId,
     savingColors,
     saveMessage,
     showAdvancedColors,
@@ -196,6 +212,8 @@ export function useThemePaletteEditor() {
     handleCustomSourceSelect,
     handlePresetSelect,
     handleMyThemeSelect,
+    handleDuplicateThemeToMyTheme,
+    setDuplicateThemeId,
     handleSaveMyPalette,
     handleColorChange,
     toggleAdvancedColors: () => setShowAdvancedColors((value) => !value),

@@ -95,6 +95,10 @@ export default function SettingsGeneral() {
             colorsLegacy={palette.colorsLegacy}
             colorText={palette.colorText}
             showAdvancedColors={palette.showAdvancedColors}
+            duplicateThemes={palette.duplicateThemes}
+            duplicateThemeId={palette.duplicateThemeId}
+            onDuplicateThemeChange={palette.setDuplicateThemeId}
+            onDuplicateTheme={() => palette.handleDuplicateThemeToMyTheme()}
             onToggleAdvancedColors={palette.toggleAdvancedColors}
             onColorChange={palette.handleColorChange}
           />

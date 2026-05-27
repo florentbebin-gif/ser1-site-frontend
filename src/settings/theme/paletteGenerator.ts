@@ -1,13 +1,13 @@
 /**
  * Palette generator utilities for Settings V3.1
  * - Generates coherent color palettes from a base color (c1)
- * - Maintains visual harmony with SER1 Classic reference palette
+ * - Maintient une harmonie visuelle avec la palette de référence SER1
  */
 
 import { DEFAULT_COLORS } from '../theme';
 
-// SER1 Classic reference palette (baseline for deltas)
-const SER1_CLASSIC = DEFAULT_COLORS;
+// Palette de référence SER1 pour calculer les écarts de génération.
+const SER1_REFERENCE = DEFAULT_COLORS;
 
 /**
  * Convert hex to HSL
@@ -88,7 +88,7 @@ function clamp(value: number, min: number, max: number): number {
 
 /**
  * Generate a complete palette from base color (c1)
- * Uses SER1 Classic deltas as reference, with safety clamps
+ * Uses SER1 reference deltas with safety clamps.
  * Returns palette in color1..color10 format for Settings.jsx compatibility
  */
 export function recalculatePaletteFromC1(baseC1: string): Record<string, string> {
@@ -111,7 +111,7 @@ export function recalculatePaletteFromC1(baseC1: string): Record<string, string>
   }
 
   const baseHsl = hexToHsl(normalizedHex);
-  const refHsl = hexToHsl(SER1_CLASSIC.c1);
+  const refHsl = hexToHsl(SER1_REFERENCE.c1);
 
   // Calculate deltas from reference
   const deltaH = baseHsl.h - refHsl.h;
@@ -129,14 +129,15 @@ export function recalculatePaletteFromC1(baseC1: string): Record<string, string>
 
   return {
     color1: normalizedHex,
-    color2: applyDelta(SER1_CLASSIC.c2, 0, 0.8, 0.9),
-    color3: applyDelta(SER1_CLASSIC.c3, 0, 0.6, 0.8),
-    color4: applyDelta(SER1_CLASSIC.c4, 0, 0.4, 0.7),
-    color5: applyDelta(SER1_CLASSIC.c5, 0, 0.9, 0.8),
-    color6: applyDelta(SER1_CLASSIC.c6, 0, 0.3, 0.6),
-    color7: applyDelta(SER1_CLASSIC.c7, 0, 0.2, 0.5),
-    color8: applyDelta(SER1_CLASSIC.c8, 0, 0.1, 0.4),
-    color9: applyDelta(SER1_CLASSIC.c9, 0, 0, 0.3),
-    color10: SER1_CLASSIC.c10, // Keep black stable
+    color2: applyDelta(SER1_REFERENCE.c2, 0, 0.8, 0.9),
+    color3: applyDelta(SER1_REFERENCE.c3, 0, 0.6, 0.8),
+    color4: applyDelta(SER1_REFERENCE.c4, 0, 0.4, 0.7),
+    color5: applyDelta(SER1_REFERENCE.c5, 0, 0.9, 0.8),
+    // C6 reste une signature chaude distincte, pas une déclinaison directe de C1.
+    color6: SER1_REFERENCE.c6,
+    color7: applyDelta(SER1_REFERENCE.c7, 0, 0.2, 0.5),
+    color8: applyDelta(SER1_REFERENCE.c8, 0, 0.1, 0.4),
+    color9: applyDelta(SER1_REFERENCE.c9, 0, 0, 0.3),
+    color10: SER1_REFERENCE.c10,
   };
 }

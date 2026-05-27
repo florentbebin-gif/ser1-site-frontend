@@ -1,4 +1,5 @@
 import type { ThemeColors } from '@/settings/theme';
+import { DEFAULT_COLORS } from '@/settings/theme';
 import type { ThemeMode } from '@/settings/theme/types';
 import { PREDEFINED_THEMES, type ThemeCard } from '../hooks/useThemePaletteEditor';
 
@@ -21,6 +22,8 @@ export function ThemeSourceSection({
   onMyThemeSelect,
   onPresetSelect,
 }: ThemeSourceSectionProps) {
+  const myThemePreview = myPalette ?? DEFAULT_COLORS;
+
   return (
     <div className="settings-premium-section">
       <h3 className="settings-section-title">Source du thème</h3>
@@ -49,7 +52,7 @@ export function ThemeSourceSection({
       {themeMode !== 'cabinet' && (
         <div className="settings-premium-section">
           <div className="settings-theme-cards">
-            {myPalette && (
+            {(myPalette || themeMode === 'my') && (
               <button
                 type="button"
                 className={`settings-theme-card ${themeMode === 'my' ? 'is-selected' : ''}`}
@@ -57,7 +60,7 @@ export function ThemeSourceSection({
                 aria-pressed={themeMode === 'my'}
               >
                 <div className="settings-theme-preview">
-                  {Object.values(myPalette)
+                  {Object.values(myThemePreview)
                     .slice(0, 5)
                     .map((color, index) => (
                       <div

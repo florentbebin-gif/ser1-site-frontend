@@ -567,7 +567,7 @@ describe('Exports Trésorerie société', () => {
     expect(slideXml).toContain('Trésorerie initiale');
     expect(slideXml).toContain('Banque protégée');
     expect(slideXml).toContain('Horizon');
-    expect(slideXml).toContain('788781');
+    expect(slideXml).toContain('475061');
     expect(slideXml).not.toContain('Paramètres société');
     expect(slideXml).not.toContain('Forme sociale');
     expect(slideXml).not.toContain('Type société');

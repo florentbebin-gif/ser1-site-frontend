@@ -19,7 +19,7 @@
 .login-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(44, 61, 56, 0.35); /* Garder cette teinte spécifique pour l'overlay login */
+  background: color-mix(in srgb, var(--color-c1) 35%, transparent);
   z-index: 1;
 }
 
@@ -115,7 +115,7 @@
 
 .form-grid input:focus {
   border-color: var(--color-c1);
-  box-shadow: 0 0 0 3px rgba(44, 61, 56, 0.12); /* Conserver rgba pour focus */
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-c1) 12%, transparent);
 }
 
 .btn {

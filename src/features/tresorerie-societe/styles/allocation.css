@@ -344,6 +344,6 @@
 }
 
 .ts-matrix-actions .is-warning {
-  color: var(--color-c6);
+  color: var(--color-warning-text);
   font-weight: 600;
 }
