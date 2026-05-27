@@ -2,7 +2,7 @@
  * Utilitaires de formatage pour le simulateur de crédit.
  */
 
-import { toNumber } from '../../../utils/numbers';
+import { toNumber } from '@/utils/numbers';
 import { formatInteger } from '@/utils/numbers';
 
 // ============================================================================

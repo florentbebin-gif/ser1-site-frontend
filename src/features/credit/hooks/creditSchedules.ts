@@ -1,10 +1,10 @@
-﻿import type { ScheduleRowInput } from '../../../engine/credit/capitalDeces';
+﻿import type { ScheduleRowInput } from '@/engine/credit/capitalDeces';
 import type { CreditAssurMode, CreditShiftedScheduleRow, CreditType } from '../types';
 import {
   mensualiteAmortissable,
   scheduleAmortissable as scheduleAmortissableEngine,
   scheduleInFine as scheduleInFineEngine,
-} from '../../../engine/credit/loanSchedule';
+} from '@/engine/credit/loanSchedule';
 
 // Réexport pour les consommateurs existants
 export { mensualiteAmortissable };

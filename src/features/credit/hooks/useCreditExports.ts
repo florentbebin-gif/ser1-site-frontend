@@ -119,7 +119,7 @@ export function useCreditExports({
     setExportLoading(true);
     try {
       const { buildXlsxBlob, downloadXlsx, validateXlsxBlob } =
-        await import('../../../utils/export/xlsxBuilder');
+        await import('@/utils/export/xlsxBuilder');
 
       const cell = (value: string | number, style: string) => ({ v: value, style });
 
@@ -339,8 +339,8 @@ export function useCreditExports({
     setExportLoading(true);
     try {
       const [{ buildCreditStudyDeck }, { exportAndDownloadStudyDeck }] = await Promise.all([
-        import('../../../pptx/presets/creditDeckBuilder'),
-        import('../../../pptx/export/exportStudyDeck'),
+        import('@/pptx/presets/creditDeckBuilder'),
+        import('@/pptx/export/exportStudyDeck'),
       ]);
 
       const exportLogo = cabinetLogo || undefined;
