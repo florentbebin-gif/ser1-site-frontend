@@ -312,7 +312,7 @@ describe('PrevoyancePage', () => {
     const user = userEvent.setup();
     render(<PrevoyancePage />);
 
-    await creerTroisContrats(user);
+    await saisirDateNaissance(user);
     await ouvrirDecoupageArret(user);
 
     await user.click(screen.getByRole('button', { name: /Ajouter une période/i }));
@@ -332,7 +332,7 @@ describe('PrevoyancePage', () => {
     const user = userEvent.setup();
     render(<PrevoyancePage />);
 
-    await creerTroisContrats(user);
+    await saisirDateNaissance(user);
     await ouvrirDecoupageArret(user);
     await user.click(screen.getByRole('button', { name: /Ajouter une période/i }));
 
