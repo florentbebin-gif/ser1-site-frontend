@@ -4,6 +4,8 @@
  * All coordinates in inches for 16:9 widescreen (13.3333" x 7.5")
  */
 
+import { DEBUG_PPTX } from '../../utils/debugFlags';
+
 // ============================================================================
 // SLIDE SIZE
 // ============================================================================
@@ -123,4 +125,4 @@ export const TEXT_GAPS = {
 } as const;
 
 /** Debug mode flag (set to true to visualize layout zones) */
-export const DEBUG_LAYOUT_ZONES = false;
+export const DEBUG_LAYOUT_ZONES = DEBUG_PPTX;
