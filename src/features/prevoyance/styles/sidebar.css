@@ -1,0 +1,338 @@
+.prevoyance-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.prevoyance-side-card {
+  gap: 10px;
+  padding: 14px 16px;
+}
+
+.prevoyance-side-card .sim-card__header--bleed {
+  margin: -14px -16px 0;
+  padding: 14px 16px 0;
+}
+
+.prevoyance-side-card--compact {
+  gap: 8px;
+  padding: 10px 14px;
+}
+
+.prevoyance-side-card--compact .sim-card__header--bleed {
+  margin: -10px -14px 0;
+  padding: 10px 14px 0;
+}
+
+.prevoyance-side-note {
+  color: var(--color-c9);
+  font-size: 12px;
+}
+
+.prevoyance-side-card__title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  min-width: 0;
+  width: 100%;
+}
+
+.prevoyance-side-card__actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  min-width: 0;
+  margin-left: auto;
+}
+
+.prevoyance-mini-chart {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+}
+
+.prevoyance-mini-chart__bars {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(56px, 1fr));
+  gap: 6px;
+  min-width: 0;
+  padding-bottom: 2px;
+}
+
+.prevoyance-mini-chart__item {
+  display: grid;
+  gap: 4px;
+  min-width: 42px;
+  text-align: center;
+}
+
+.prevoyance-mini-chart__value {
+  color: var(--color-c1);
+  font-size: 10px;
+  line-height: 1.2;
+  min-height: 18px;
+}
+
+.prevoyance-mini-chart__track {
+  position: relative;
+  display: flex;
+  width: 100%;
+  height: 44px;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border: 1px solid var(--color-c8);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--color-c8) 45%, var(--color-c7));
+  color: var(--prevoyance-color-text-on-light);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.prevoyance-mini-chart__track strong {
+  position: relative;
+  z-index: 1;
+}
+
+.prevoyance-mini-chart__stack {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column-reverse;
+}
+
+.prevoyance-mini-chart__segment {
+  display: block;
+  height: var(--prevoyance-segment-height);
+  min-height: 0;
+  background: var(--prevoyance-segment-fill);
+}
+
+.prevoyance-mini-chart__segment--reference,
+.prevoyance-mini-chart__dot--reference {
+  background: var(--prevoyance-color-revenu);
+}
+
+.prevoyance-mini-chart__segment--ro,
+.prevoyance-mini-chart__dot--ro {
+  --prevoyance-segment-fill: var(--prevoyance-color-ro);
+
+  background: var(--prevoyance-segment-fill);
+}
+
+.prevoyance-mini-chart__segment--ro-alt {
+  --prevoyance-segment-fill: var(--prevoyance-color-ro-alt);
+}
+
+.prevoyance-mini-chart__segment--maintien,
+.prevoyance-mini-chart__dot--maintien {
+  --prevoyance-segment-fill: var(--prevoyance-color-maintien);
+
+  background: var(--prevoyance-segment-fill);
+}
+
+.prevoyance-mini-chart__segment--contrat,
+.prevoyance-mini-chart__dot--contrat {
+  --prevoyance-segment-fill: var(--prevoyance-color-contrat);
+
+  background: var(--prevoyance-segment-fill);
+}
+
+.prevoyance-mini-chart__label {
+  color: var(--color-c9);
+  font-size: 10px;
+  line-height: 1.2;
+  min-height: 18px;
+}
+
+.prevoyance-mini-chart__legend {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 4px;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-c9);
+  font-size: 9px;
+  min-width: 0;
+}
+
+.prevoyance-mini-chart__legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+  border: 1px solid var(--color-c8);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--color-c7) 80%, var(--color-c4));
+  padding: 2px 5px;
+  white-space: nowrap;
+}
+
+.prevoyance-mini-chart__dot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 3px;
+  flex: 0 0 auto;
+}
+
+.prevoyance-threshold,
+.prevoyance-rente-line {
+  display: grid;
+  grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
+  gap: 8px;
+  align-items: baseline;
+  border-bottom: 1px solid var(--color-c8);
+  padding: 5px 0;
+}
+
+.prevoyance-threshold span,
+.prevoyance-rente-line span {
+  color: var(--color-c9);
+  font-size: 12px;
+}
+
+.prevoyance-threshold strong,
+.prevoyance-rente-line strong {
+  color: var(--color-c10);
+  font-size: 12px;
+  text-align: right;
+}
+
+.prevoyance-deces-contract {
+  display: grid;
+  gap: 4px;
+}
+
+.prevoyance-deces-contract + .prevoyance-deces-contract {
+  padding-top: 6px;
+  border-top: 1px solid var(--color-c8);
+}
+
+.prevoyance-rente-line--sub {
+  padding: 2px 0;
+  border-bottom: 0;
+}
+
+.prevoyance-donut-wrap {
+  display: grid;
+  grid-template-columns: 64px minmax(0, 1fr);
+  gap: 12px;
+  align-items: center;
+}
+
+.prevoyance-donut-wrap--compact {
+  grid-template-columns: 48px minmax(0, 1fr);
+  gap: 10px;
+}
+
+.prevoyance-death-target {
+  display: grid;
+  gap: 8px;
+}
+
+.prevoyance-death-target__top {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+.prevoyance-death-target__top > span {
+  color: var(--color-c1);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.prevoyance-death-target__manual {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  min-width: 0;
+  color: var(--color-c9);
+  font-size: 10px;
+  white-space: nowrap;
+}
+
+.prevoyance-death-target__manual-input {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  width: 112px;
+  min-width: 0;
+}
+
+.prevoyance-death-target__manual-input .sim-field__control {
+  min-height: 22px;
+  width: 94px;
+  padding: 2px 4px;
+  text-align: right;
+}
+
+.prevoyance-death-target__manual-input .sim-field__unit {
+  font-size: 10px;
+  min-width: auto;
+  margin-left: 0;
+}
+
+.prevoyance-donut {
+  display: grid;
+  width: 64px;
+  aspect-ratio: 1;
+  place-items: center;
+  border-radius: 50%;
+  background: conic-gradient(
+    var(--color-c3) var(--prevoyance-donut-deg),
+    var(--color-c8) var(--prevoyance-donut-deg)
+  );
+  color: var(--color-c1);
+  font-size: 12px;
+  font-weight: 800;
+  position: relative;
+}
+
+.prevoyance-donut-wrap--compact .prevoyance-donut {
+  width: 48px;
+  font-size: 10px;
+}
+
+.prevoyance-donut::after {
+  content: '';
+  position: absolute;
+  inset: 10px;
+  border-radius: 50%;
+  background: var(--color-surface, #ffffff);
+}
+
+.prevoyance-donut-wrap--compact .prevoyance-donut::after {
+  inset: 8px;
+}
+
+.prevoyance-donut span {
+  position: relative;
+  z-index: 1;
+}
+
+.prevoyance-donut-wrap strong,
+.prevoyance-donut-wrap span {
+  display: block;
+}
+
+.prevoyance-donut-wrap strong {
+  color: var(--color-c1);
+  font-size: 16px;
+}
+
+.prevoyance-donut-wrap--compact strong {
+  font-size: 12px;
+}
+
+.prevoyance-donut-wrap span {
+  color: var(--color-c9);
+  font-size: 12px;
+}
+
+.prevoyance-donut-wrap--compact span {
+  font-size: 10px;
+}
