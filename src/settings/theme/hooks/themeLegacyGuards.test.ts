@@ -7,6 +7,7 @@ const blockedColumns = [
   ['custom', 'palette'].join('_'),
   ['active', 'palette'].join('_'),
   ['theme', 'colors'].join('_'),
+  ['theme', 'name'].join('_'),
   ['cover', 'slide', 'url'].join('_'),
 ];
 
@@ -22,7 +23,7 @@ describe('theme V5 data contract', () => {
       expect(source).not.toContain(column);
     }
     expect(source).not.toContain(['user', 'metadata'].join('_'));
-    expect(source).toContain('theme_mode, preset_id, my_palette');
+    expect(source).toContain('theme_mode, preset_id, my_palette, theme_scope');
   });
 
   it('ne réécrit plus les anciennes colonnes thème dans les actions', () => {

@@ -193,7 +193,7 @@ Tables repères (haut niveau) :
 - `profiles` (multi-tenant) : `cabinet_id`.
 - `cabinets` (tenant) : `default_theme_id`, `logo_id`.
 - `themes` : presets/système.
-- `ui_settings` : préférences user (`theme_mode`, `preset_id`, `my_palette`).
+- `ui_settings` : préférences user (`theme_mode`, `preset_id`, `my_palette`, `theme_scope`).
 - Settings GLOBAUX : `tax_settings`, `ps_settings`, `fiscality_settings`.
 - Référentiel contrats (Base-Contrat) : `base_contrat_overrides`.
 - Admin (service_role uniquement) : `admin_accounts`, `admin_action_audit`.
