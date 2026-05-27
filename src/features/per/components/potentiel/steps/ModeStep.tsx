@@ -5,9 +5,9 @@
 import React, { useState } from 'react';
 import { SimInfoButton, SimModalShell } from '@/components/ui/sim';
 import { IconActivity, IconFileText } from '@/icons/ui';
-import type { PerHistoricalBasis } from '../../../../../engine/per';
-import type { PerMode } from '../../../hooks/usePerPotentiel';
-import type { PerWorkflowYears } from '../../../utils/perWorkflowYears';
+import type { PerHistoricalBasis } from '@/engine/per';
+import type { PerMode } from '@/features/per/hooks/usePerPotentiel';
+import type { PerWorkflowYears } from '@/features/per/utils/perWorkflowYears';
 
 interface ModeStepProps {
   mode: PerMode | null;

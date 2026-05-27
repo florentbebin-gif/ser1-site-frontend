@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import type { PlafondMadelinDetail } from '../../../../engine/per';
+import type { PlafondMadelinDetail } from '@/engine/per';
 import { PerMadelinInfoModal } from './PerMadelinInfoModal';
 import '../../styles/index.css';
 

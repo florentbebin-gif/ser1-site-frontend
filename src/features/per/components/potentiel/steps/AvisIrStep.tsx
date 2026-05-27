@@ -4,8 +4,11 @@
 
 import React from 'react';
 import { SimAmountInputEuro } from '@/components/ui/sim';
-import type { AvisIrPlafonds, PerHistoricalBasis } from '../../../../../engine/per';
-import { getAvisReferenceYears, type PerWorkflowYears } from '../../../utils/perWorkflowYears';
+import type { AvisIrPlafonds, PerHistoricalBasis } from '@/engine/per';
+import {
+  getAvisReferenceYears,
+  type PerWorkflowYears,
+} from '@/features/per/utils/perWorkflowYears';
 
 interface AvisIrStepProps {
   avisIr: AvisIrPlafonds | null;

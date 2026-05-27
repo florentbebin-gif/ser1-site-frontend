@@ -7,10 +7,10 @@ import {
   SimSelect,
 } from '@/components/ui/sim';
 import { IconFileText, IconTable, IconUsers } from '@/icons/ui';
-import { computeAbattement10 } from '../../../../../engine/ir/abattement10';
-import type { DeclarantRevenus } from '../../../../../engine/per';
-import { formatInteger } from '../../../../../utils/numbers';
-import type { PerDeclarantPatch } from '../../../hooks/usePerPotentiel';
+import { computeAbattement10 } from '@/engine/ir/abattement10';
+import type { DeclarantRevenus } from '@/engine/per';
+import { formatInteger } from '@/utils/numbers';
+import type { PerDeclarantPatch } from '@/features/per/hooks/usePerPotentiel';
 
 export type PerIncomeFilters = {
   pension: boolean;

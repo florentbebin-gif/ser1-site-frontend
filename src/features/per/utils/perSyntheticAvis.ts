@@ -1,4 +1,4 @@
-import type { AvisIrPlafonds, PerProjectionAvisDetail } from '../../../engine/per';
+import type { AvisIrPlafonds, PerProjectionAvisDetail } from '@/engine/per';
 
 export function projectionToAvisIrPlafonds(
   projection: PerProjectionAvisDetail,
