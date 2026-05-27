@@ -4,9 +4,13 @@ import path from 'node:path';
 
 const ROOT = process.cwd();
 const SRC_DIR = path.join(ROOT, 'src');
-const BASELINE = 109;
-const SOURCE_EXTENSIONS = new Set(['.js', '.jsx', '.ts', '.tsx']);
-const DEEP_IMPORT_PATTERN = /\bfrom\s+['"]\.\.\/\.\.\/\.\.\//;
+const BASELINE = 0;
+const SOURCE_EXTENSIONS = new Set(['.css', '.js', '.jsx', '.ts', '.tsx']);
+const DEEP_IMPORT_PATTERNS = [
+  /\bfrom\s+['"]\.\.\/\.\.\/\.\.\//,
+  /\bimport\s*\(\s*['"]\.\.\/\.\.\/\.\.\//,
+  /@import\s+['"]\.\.\/\.\.\/\.\.\//,
+];
 
 function normalizePath(filePath) {
   return filePath.replaceAll(path.sep, '/');
@@ -47,17 +51,17 @@ for (const file of walk(SRC_DIR)) {
   const lines = source.split(/\r?\n/);
 
   lines.forEach((line, index) => {
-    if (!DEEP_IMPORT_PATTERN.test(line)) return;
+    if (!DEEP_IMPORT_PATTERNS.some((pattern) => pattern.test(line))) return;
     findings.push({ file: relativePath, line: index + 1, importLine: line.trim() });
   });
 }
 
-if (findings.length > BASELINE) {
+if (findings.length !== BASELINE) {
   console.error(
-    `check:deep-imports ❌ ${findings.length} imports ../../../ hors tests, baseline autorisée ${BASELINE}.`,
+    `check:deep-imports ❌ ${findings.length} imports ../../../ hors tests, baseline attendue ${BASELINE}.`,
   );
-  console.error('Utiliser @/ pour les nouveaux imports cross-module au-delà de 2 niveaux.');
-  findings.slice(BASELINE).forEach((finding) => {
+  console.error('Utiliser @/ pour les imports cross-module au-delà de 2 niveaux.');
+  findings.forEach((finding) => {
     console.error(`- ${finding.file}:${finding.line} ${finding.importLine}`);
   });
   process.exit(1);
