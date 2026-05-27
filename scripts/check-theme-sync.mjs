@@ -43,7 +43,7 @@ function readIndexCss() {
   return colors;
 }
 
-/** Parse a JS/TS object block like "c1: '#2B3E37', c2: ..." into { c1: '#2B3E37', ... } */
+/** Parse a JS/TS object block like "c1: '#0E1426', c2: ..." into { c1: '#0E1426', ... } */
 function parseColorBlock(block) {
   const colors = {};
   const re = /(c\d+):\s*['"]?(#[0-9A-Fa-f]{3,8})['"]?/g;

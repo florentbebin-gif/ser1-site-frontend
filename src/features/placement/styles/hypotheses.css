@@ -79,7 +79,7 @@
 .pl-roi-compare__card.is-winner {
   border-color: var(--color-c2);
   background: #ffffff;
-  box-shadow: 0 2px 8px rgba(112, 155, 139, 0.12);
+  box-shadow: 0 2px 8px color-mix(in srgb, var(--color-c2) 12%, transparent);
 }
 
 .pl-roi-compare__product-indicator {

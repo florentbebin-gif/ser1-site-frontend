@@ -6,7 +6,7 @@
   bottom: 24px;
   right: 24px;
   z-index: 9999;
-  background: #996600; /* couleur statut alerte — hors palette C1-C10 */
+  background: var(--color-warning-text);
   color: #ffffff;
   padding: 12px 20px;
   border-radius: 8px;

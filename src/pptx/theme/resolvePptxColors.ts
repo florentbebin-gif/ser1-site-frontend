@@ -8,10 +8,10 @@
 import { DEFAULT_COLORS, type ThemeColors } from '../../settings/theme';
 
 /**
- * SER1 Classic colors - fallback for ui-only mode
+ * Couleurs SER1 par défaut - fallback pour le mode ui-only
  * Uses DEFAULT_COLORS from centralized theme settings
  */
-export const SER1_CLASSIC_COLORS: ThemeColors = { ...DEFAULT_COLORS };
+export const SER1_DEFAULT_PPTX_COLORS: ThemeColors = { ...DEFAULT_COLORS };
 
 /**
  * Resolve PPTX colors based on cabinet colors, theme scope, and original theme
@@ -20,12 +20,12 @@ export const SER1_CLASSIC_COLORS: ThemeColors = { ...DEFAULT_COLORS };
  * - Si cabinetColors disponible → TOUJOURS utiliser cabinetColors (R2)
  * - Sinon (sans cabinet):
  *   - Si themeScope === 'all' → utiliser webColors (custom user)
- *   - Sinon → utiliser originalColors (Thème Original DB) ou fallback SER1_CLASSIC
+ *   - Sinon → utiliser originalColors (thème de référence DB) ou DEFAULT_COLORS
  *
  * @param webColors - Current web theme colors (custom user colors)
  * @param themeScope - Theme scope ('all' = UI+PPTX, 'ui-only' = UI only)
  * @param cabinetColors - Cabinet colors loaded at login (null if no cabinet)
- * @param originalColors - Thème Original from DB (null if not loaded)
+ * @param originalColors - Thème de référence from DB (null if not loaded)
  * @returns Colors to use for PPTX export
  */
 export function resolvePptxColors(
@@ -45,7 +45,7 @@ export function resolvePptxColors(
     return webColors;
   }
 
-  // PRIORITÉ 3: themeScope = 'ui-only' → utiliser Thème Original (R1)
+  // PRIORITÉ 3: themeScope = 'ui-only' → utiliser le thème de référence (R1)
   if (originalColors) {
     return originalColors;
   }
@@ -77,5 +77,5 @@ export function getPptxColorRoles(colors: ThemeColors) {
 export default {
   resolvePptxColors,
   getPptxColorRoles,
-  SER1_CLASSIC_COLORS,
+  SER1_DEFAULT_PPTX_COLORS,
 };

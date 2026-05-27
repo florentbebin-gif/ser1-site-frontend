@@ -32,16 +32,16 @@
    *   les fichiers concernés — elles ne font pas partie de la palette thème C1-C10
    * - rgba() pour les ombres et overlays : autorisé
    */
-  --color-c1: #2b3e37;
-  --color-c2: #709b8b;
-  --color-c3: #9fbdb2;
-  --color-c4: #cfded8;
-  --color-c5: #788781;
-  --color-c6: #cec1b6;
-  --color-c7: #f5f3f0;
-  --color-c8: #d9d9d9;
-  --color-c9: #7f7f7f;
-  --color-c10: #000000;
+  --color-c1: #0e1426;
+  --color-c2: #1f3056;
+  --color-c3: #5b73a0;
+  --color-c4: #c6cfe2;
+  --color-c5: #475061;
+  --color-c6: #c2733a;
+  --color-c7: #f2eee8;
+  --color-c8: #c9ccda;
+  --color-c9: #424659;
+  --color-c10: #060a18;
 
   /* Tokens de fondation SIM SER1 2026 */
   --space-1: 4px;
@@ -85,7 +85,7 @@
   --color-error-text: var(--color-c10);
   --color-warning-bg: var(--color-c7);
   --color-warning-border: var(--color-c8);
-  --color-warning-text: var(--color-c10);
+  --color-warning-text: #996600;
 
   --radius: 12px;
   --sim-input-bg-default: color-mix(in srgb, var(--color-c8) 18%, #ffffff);

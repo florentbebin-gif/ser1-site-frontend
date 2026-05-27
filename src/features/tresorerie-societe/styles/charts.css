@@ -157,7 +157,7 @@
 }
 
 .ts-associate-kpi--warning .sim-metric__value {
-  color: var(--color-c6);
+  color: var(--color-warning-text);
 }
 
 .ts-associate-kpi--positive .sim-metric__value {

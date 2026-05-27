@@ -137,7 +137,7 @@ export function getPptxThemeFromUiSettings(
     if (!isValidHexColor(colors[key])) {
       throw new Error(
         `PPTX Theme Error: Missing or invalid ${key}. ` +
-          `Expected hex color (e.g., #2B3E37), got: ${colors[key]}`,
+          `Expected hex color (e.g., #0E1426), got: ${colors[key]}`,
       );
     }
   }
