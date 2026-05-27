@@ -53,6 +53,7 @@ Repères (domain-first) :
 - `src/settings/` : thème, presets, ThemeProvider.
 - `src/pptx/` : pipeline PPTX (design system + slides + export).
 - `src/reporting/` : snapshots `.ser1`, migrations de snapshots et contrats de reporting. Ce périmètre dépend des moteurs/domaines purs, jamais des features UI.
+- `src/engine/tresorerie/migrations/` : migrations pures `TresoInputs` V1→V6. La chaîne reste ici sans isolation `legacy/` séparée ; la règle dependency-cruiser `tresorerie-legacy-restricted` est volontairement non ajoutée tant que les types legacy ne sont pas extraits. À reconsidérer si un chantier dédié les isole.
 - `supabase/` : edge functions + migrations.
 
 Conventions clés :
