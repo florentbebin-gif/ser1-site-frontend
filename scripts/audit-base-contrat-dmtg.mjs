@@ -110,10 +110,15 @@ function compileDomainRuntime() {
         importsNotUsedAsValues: ts.ImportsNotUsedAsValues.Remove,
       },
     });
-    const outputText = compiled.outputText.replace(
-      /require\(["']\.\.\/\.\.\/\.\.\/constants\/settingsDefaults["']\)/g,
-      "require('../constants/settingsDefaults')",
-    );
+    const outputText = compiled.outputText
+      .replace(
+        /require\(["']\.\.\/\.\.\/\.\.\/constants\/settingsDefaults["']\)/g,
+        "require('../constants/settingsDefaults')",
+      )
+      .replace(
+        /require\(["']@\/constants\/settingsDefaults["']\)/g,
+        "require('../constants/settingsDefaults')",
+      );
     fs.writeFileSync(outFile, outputText);
   }
 
