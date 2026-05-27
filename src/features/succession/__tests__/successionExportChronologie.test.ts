@@ -8,7 +8,7 @@ import { DEFAULT_COLORS } from '@/settings/theme';
 import { makeCivil, makeLiquidation } from './fixtures';
 import { DEFAULT_DMTG } from '../../../engine/succession/civil';
 import { buildSuccessionFiscalSnapshot } from '../successionFiscalContext';
-import { buildSuccessionAvFiscalAnalysis } from '../successionAvFiscal';
+import { buildSuccessionAvFiscalAnalysis } from '../successionAssuranceVieFiscal';
 import { buildSuccessionPerFiscalAnalysis } from '../successionPerFiscal';
 import { buildSuccessionPrevoyanceFiscalAnalysis } from '../successionPrevoyanceFiscal';
 

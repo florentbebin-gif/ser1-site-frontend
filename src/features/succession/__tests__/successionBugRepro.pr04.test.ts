@@ -5,7 +5,7 @@ import {
   DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT,
   parseSuccessionDraftPayload,
 } from '../successionDraft';
-import { buildSuccessionAvFiscalAnalysis } from '../successionAvFiscal';
+import { buildSuccessionAvFiscalAnalysis } from '../successionAssuranceVieFiscal';
 import { buildSuccessionChainageAnalysis } from '../successionChainage';
 import { buildSuccessionDevolutionAnalysis } from '../successionDevolution';
 import { buildSuccessionFiscalSnapshot } from '../successionFiscalContext';

@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import type { buildSuccessionAvFiscalAnalysis } from '../successionAvFiscal';
+import type { buildSuccessionAvFiscalAnalysis } from '../successionAssuranceVieFiscal';
 import type { buildSuccessionChainageAnalysis } from '../successionChainage';
 import type { buildSuccessionDevolutionAnalysis } from '../successionDevolution';
 import type { buildSuccessionDirectDisplayAnalysis } from '../successionDisplay';

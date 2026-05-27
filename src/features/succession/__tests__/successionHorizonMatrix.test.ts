@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { DEFAULT_DMTG } from '../../../engine/succession/civil';
 import { applySuccessionDonationRecallToHeirs } from '../successionDonationRecall';
-import { buildSuccessionAvFiscalAnalysis } from '../successionAvFiscal';
+import { buildSuccessionAvFiscalAnalysis } from '../successionAssuranceVieFiscal';
 import { buildSuccessionPerFiscalAnalysis } from '../successionPerFiscal';
 import { buildSuccessionPrevoyanceFiscalAnalysis } from '../successionPrevoyanceFiscal';
 import { buildSuccessionFiscalSnapshot } from '../successionFiscalContext';
@@ -151,7 +151,7 @@ describe('matrice horizon décès succession', () => {
    *   de l'age de l'assure a la date de deces simulee (cf. successionPerFiscal.ts:55,
    *   successionPrevoyanceFiscal.ts).
    * - AV : `versementsApres70` est saisi statiquement par l'utilisateur dans le
-   *   draft (cf. successionAvFiscal.ts:294 utilise versementsApres70Gross saisi).
+   *   draft (cf. successionAssuranceVieFiscal.ts utilise versementsApres70Gross saisi).
    *   L'horizon de deces simule n'a donc aucun effet sur la ventilation 990 I /
    *   757 B d'un contrat AV. Le test ci-dessous fige cet invariant.
    */
