@@ -152,6 +152,42 @@ describe('PrevoyancePage', () => {
     await user.click(await screen.findByRole('option', { name: optionName }));
   }
 
+  async function ajouterContrat(user: ReturnType<typeof userEvent.setup>) {
+    await user.click(screen.getByRole('button', { name: 'Ajouter un contrat' }));
+    await user.click(await screen.findByRole('button', { name: 'Terminer' }));
+  }
+
+  async function creerTroisContrats(user: ReturnType<typeof userEvent.setup>) {
+    await saisirDateNaissance(user);
+    expect(await screen.findByRole('heading', { name: 'Contrat 1' })).toBeInTheDocument();
+
+    await ajouterContrat(user);
+    await ajouterContrat(user);
+
+    await waitFor(() => {
+      expect(screen.getAllByRole('heading', { name: /Contrat [123]/i })).toHaveLength(3);
+    });
+  }
+
+  async function ouvrirDecoupageArret(user: ReturnType<typeof userEvent.setup>) {
+    await user.click(screen.getAllByRole('button', { name: /Modifier Contrat/i })[0]);
+    expect(screen.queryByText('Cotisation annuelle')).toBeNull();
+    expect(screen.getByLabelText('Franchise accident')).toHaveValue(0);
+    expect(screen.getByLabelText('Franchise hospitalisation')).toHaveValue(0);
+    expect(screen.getByLabelText('Franchise maladie')).toHaveValue(0);
+    await user.click(screen.getByRole('button', { name: 'Cotisation' }));
+    expect(screen.getByText('Cotisation annuelle')).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Arrêt de travail' }));
+    await user.click(screen.getAllByRole('button', { name: /Découper les périodes/i })[0]);
+    expect(await screen.findByText('Découper l’arrêt de travail')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Ajouter une période/i })).toHaveClass(
+      'sim-action-btn--add',
+    );
+    expect(
+      screen.getByText('Utilisez le bouton supprimer pour retirer une période.'),
+    ).toBeInTheDocument();
+  }
+
   it('affiche le parcours salarié sans frais généraux', async () => {
     const user = userEvent.setup();
     render(<PrevoyancePage />);
@@ -263,38 +299,21 @@ describe('PrevoyancePage', () => {
     });
   });
 
-  it('borne les contrats à trois et ouvre le découpage arrêt', async () => {
+  it('borne les contrats à trois', async () => {
     const user = userEvent.setup();
     render(<PrevoyancePage />);
 
-    await saisirDateNaissance(user);
-    expect(await screen.findByRole('heading', { name: 'Contrat 1' })).toBeInTheDocument();
+    await creerTroisContrats(user);
 
-    await user.click(screen.getByRole('button', { name: 'Ajouter un contrat' }));
-    await user.click(await screen.findByRole('button', { name: 'Terminer' }));
-    await user.click(screen.getByRole('button', { name: 'Ajouter un contrat' }));
-    await user.click(await screen.findByRole('button', { name: 'Terminer' }));
+    expect(screen.getByRole('button', { name: 'Ajouter un contrat' })).toBeDisabled();
+  });
 
-    await waitFor(() => {
-      expect(screen.getAllByRole('heading', { name: /Contrat [123]/i })).toHaveLength(3);
-    });
+  it('ouvre le découpage arrêt depuis l’édition du contrat', async () => {
+    const user = userEvent.setup();
+    render(<PrevoyancePage />);
 
-    await user.click(screen.getAllByRole('button', { name: /Modifier Contrat/i })[0]);
-    expect(screen.queryByText('Cotisation annuelle')).toBeNull();
-    expect(screen.getByLabelText('Franchise accident')).toHaveValue(0);
-    expect(screen.getByLabelText('Franchise hospitalisation')).toHaveValue(0);
-    expect(screen.getByLabelText('Franchise maladie')).toHaveValue(0);
-    await user.click(screen.getByRole('button', { name: 'Cotisation' }));
-    expect(screen.getByText('Cotisation annuelle')).toBeInTheDocument();
-    await user.click(screen.getByRole('button', { name: 'Arrêt de travail' }));
-    await user.click(screen.getAllByRole('button', { name: /Découper les périodes/i })[0]);
-    expect(await screen.findByText('Découper l’arrêt de travail')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /Ajouter une période/i })).toHaveClass(
-      'sim-action-btn--add',
-    );
-    expect(
-      screen.getByText('Utilisez le bouton supprimer pour retirer une période.'),
-    ).toBeInTheDocument();
+    await creerTroisContrats(user);
+    await ouvrirDecoupageArret(user);
 
     await user.click(screen.getByRole('button', { name: /Ajouter une période/i }));
     const periodInputs = document.querySelectorAll<HTMLInputElement>(
@@ -307,6 +326,15 @@ describe('PrevoyancePage', () => {
 
     fireEvent.change(periodInputs[3], { target: { value: '31' } });
     expect(periodInputs[1]).toHaveValue(30);
+  });
+
+  it('verrouille la dernière période arrêt à 1 095 jours', async () => {
+    const user = userEvent.setup();
+    render(<PrevoyancePage />);
+
+    await creerTroisContrats(user);
+    await ouvrirDecoupageArret(user);
+    await user.click(screen.getByRole('button', { name: /Ajouter une période/i }));
 
     await user.click(screen.getByRole('button', { name: /Ajouter une période/i }));
     const threePeriodInputs = document.querySelectorAll<HTMLInputElement>(
