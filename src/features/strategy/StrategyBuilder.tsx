@@ -21,6 +21,7 @@ import {
   compareScenarios,
 } from './utils/calculations';
 import { useFiscalContext } from '../../hooks/useFiscalContext';
+import { useTheme } from '../../settings/ThemeProvider';
 import type { ComparaisonScenarios } from './types';
 import { exportStrategyPptx } from './export/exportStrategy';
 import { onResetEvent } from '../../utils/reset';
@@ -75,6 +76,7 @@ function StrategyNumericField({
 
 export default function StrategyBuilder({ dossier }: StrategyBuilderProps): React.ReactElement {
   const { fiscalContext } = useFiscalContext();
+  const { colors } = useTheme();
   const [strategie, setStrategie] = useState<Strategie>(() => createEmptyStrategie(dossier.id));
   const [recommandations, setRecommandations] = useState<Recommandation[]>([]);
   const [comparaison, setComparaison] = useState<ComparaisonScenarios | null>(null);
@@ -148,10 +150,10 @@ export default function StrategyBuilder({ dossier }: StrategyBuilderProps): Reac
   };
 
   const handleExportPptx = async () => {
-    if (!comparaison) return;
+    if (!comparaison || strategie.produitsSelectionnes.length === 0) return;
     try {
       setIsExportingPptx(true);
-      await exportStrategyPptx({ dossier, strategie, comparaison });
+      await exportStrategyPptx({ dossier, strategie, comparaison, colors });
     } catch (error) {
       console.error('Erreur export PPTX:', error);
       alert("Erreur lors de l'export PPTX");
@@ -164,8 +166,11 @@ export default function StrategyBuilder({ dossier }: StrategyBuilderProps): Reac
     {
       label: 'PowerPoint (.pptx)',
       onClick: handleExportPptx,
-      disabled: isExportingPptx || !comparaison,
-      tooltip: !comparaison ? 'Ajoutez au moins un produit avant d’exporter.' : undefined,
+      disabled: isExportingPptx || !comparaison || strategie.produitsSelectionnes.length === 0,
+      tooltip:
+        !comparaison || strategie.produitsSelectionnes.length === 0
+          ? 'Ajoutez au moins un produit avant d’exporter.'
+          : undefined,
     },
   ];
   const baselineProjectionFinale = comparaison
