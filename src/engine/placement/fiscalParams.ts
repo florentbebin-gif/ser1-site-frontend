@@ -40,6 +40,7 @@ interface FlatFiscalitySettings {
 }
 
 type FiscalitySettings = FlatFiscalitySettings | FiscalitySettingsV2;
+type NumericFiscalParamKey = keyof typeof DEFAULT_FISCAL_PARAMS;
 
 interface PsSettingsForExtract {
   patrimony?: {
@@ -57,6 +58,7 @@ interface TaxSettingsForExtract {
 }
 
 let hasWarnedMissingFiscalParams = false;
+const REQUIRED_FISCAL_PARAM_KEYS = REQUIRED_NUMERIC_FISCAL_KEYS as readonly NumericFiscalParamKey[];
 
 function hasRulesetsByKey(value: unknown): value is FiscalitySettingsV2 {
   return (
@@ -81,8 +83,9 @@ function normalizeFiscalitySettings(
   ) as FlatFiscalitySettings;
 }
 
-function getParam(params: Record<string, number>, key: string): number {
-  return params[key] ?? DEFAULT_FISCAL_PARAMS[key as keyof typeof DEFAULT_FISCAL_PARAMS] ?? 0;
+function getParam(params: Partial<Record<NumericFiscalParamKey, number>>, key: string): number {
+  const fiscalKey = key as NumericFiscalParamKey;
+  return params[fiscalKey] ?? DEFAULT_FISCAL_PARAMS[fiscalKey] ?? 0;
 }
 
 export function extractFiscalParams(
@@ -90,7 +93,7 @@ export function extractFiscalParams(
   psSettings: PsSettingsForExtract | null | undefined,
   taxSettings?: TaxSettingsForExtract | null,
 ): FiscalParams {
-  const params: Record<string, number> = { ...DEFAULT_FISCAL_PARAMS };
+  const params: Record<NumericFiscalParamKey, number> = { ...DEFAULT_FISCAL_PARAMS };
   const normalizedFiscality = normalizeFiscalitySettings(
     fiscalitySettings,
     taxSettings,
@@ -168,7 +171,7 @@ export function extractFiscalParams(
   }
 
   const missingKeys: string[] = [];
-  for (const key of REQUIRED_NUMERIC_FISCAL_KEYS) {
+  for (const key of REQUIRED_FISCAL_PARAM_KEYS) {
     const value = params[key];
     if (typeof value !== 'number' || Number.isNaN(value)) {
       params[key] = getParam(DEFAULT_FISCAL_PARAMS, key);
@@ -186,5 +189,5 @@ export function extractFiscalParams(
     hasWarnedMissingFiscalParams = true;
   }
 
-  return params as unknown as FiscalParams;
+  return params;
 }

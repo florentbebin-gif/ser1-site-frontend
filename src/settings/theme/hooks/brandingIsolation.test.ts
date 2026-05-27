@@ -138,4 +138,35 @@ describe('P0-03 branding isolation', () => {
     expect(pptxB).toEqual(cabinetB);
     expect(pptxA).not.toEqual(pptxB);
   });
+
+  it('retombe sur le thème de référence pour les exports PPTX quand themeScope vaut ui-only', () => {
+    const webColors = {
+      c1: '#010101',
+      c2: '#020202',
+      c3: '#030303',
+      c4: '#040404',
+      c5: '#050505',
+      c6: '#060606',
+      c7: '#070707',
+      c8: '#080808',
+      c9: '#090909',
+      c10: '#101010',
+    };
+    const originalColors = {
+      c1: '#A10101',
+      c2: '#A20202',
+      c3: '#A30303',
+      c4: '#A40404',
+      c5: '#A50505',
+      c6: '#A60606',
+      c7: '#A70707',
+      c8: '#A80808',
+      c9: '#A90909',
+      c10: '#AA1010',
+    };
+
+    const pptxColors = resolvePptxColors(webColors, 'ui-only', null, originalColors);
+
+    expect(pptxColors).toEqual(originalColors);
+  });
 });

@@ -1,4 +1,3 @@
-/* eslint-disable max-lines */
 import JSZip from 'jszip';
 import PptxGenJS from 'pptxgenjs';
 import { describe, expect, it } from 'vitest';

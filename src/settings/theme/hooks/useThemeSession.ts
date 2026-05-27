@@ -46,7 +46,7 @@ interface UiSettingsRow {
   theme_mode?: string | null;
   preset_id?: string | null;
   my_palette?: Record<string, unknown> | null;
-  theme_name?: string | null;
+  theme_scope?: string | null;
 }
 
 const CABINET_BRANDING_KEY_BY_USER_PREFIX = 'ser1_cabinet_branding_key_';
@@ -248,6 +248,7 @@ export function useThemeSession({
         setCabinetBrandingKey(null);
         setLogo(undefined);
         setCabinetLogo(undefined);
+        setThemeScope('all');
         setIsLoading(false);
         return;
       }
@@ -288,7 +289,7 @@ export function useThemeSession({
         try {
           const { data, error } = await supabase
             .from('ui_settings')
-            .select('theme_mode, preset_id, my_palette')
+            .select('theme_mode, preset_id, my_palette, theme_scope')
             .eq('user_id', user.id)
             .maybeSingle();
           if (!error) {
@@ -321,6 +322,8 @@ export function useThemeSession({
         } else {
           mode = 'cabinet';
         }
+
+        setThemeScope(uiSettings?.theme_scope === 'ui-only' ? 'ui-only' : 'all');
 
         const rawMyPalette = uiSettings?.my_palette;
         if (rawMyPalette) {
@@ -415,35 +418,6 @@ export function useThemeSession({
     lastAppliedHashRef,
     lastAppliedSourceRankRef,
   ]);
-
-  useEffect(() => {
-    async function loadThemeScope(): Promise<void> {
-      try {
-        const {
-          data: { user },
-        } = await supabase.auth.getUser();
-        if (user) {
-          const { data: uiSettings, error } = await supabase
-            .from('ui_settings')
-            .select('theme_name')
-            .eq('user_id', user.id)
-            .maybeSingle();
-
-          if (!error && uiSettings?.theme_name) {
-            if (uiSettings.theme_name.includes('ui-only')) {
-              setThemeScope('ui-only');
-            } else {
-              setThemeScope('all');
-            }
-          }
-        }
-      } catch (error) {
-        console.error('[ThemeProvider] Error loading theme scope:', error);
-      }
-    }
-
-    void loadThemeScope();
-  }, []);
 
   return {
     themeBootstrap,

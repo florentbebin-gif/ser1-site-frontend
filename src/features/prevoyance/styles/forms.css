@@ -1,0 +1,23 @@
+.prevoyance-form-grid {
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+}
+
+.prevoyance-form-grid--one {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.prevoyance-form-grid--two {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.prevoyance-form-grid--three {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.prevoyance-regime-picker {
+  grid-template-columns: minmax(0, 1fr);
+  gap: 12px;
+  align-items: end;
+}

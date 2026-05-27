@@ -210,6 +210,21 @@ export default [
       'max-lines': 'off',
     },
   },
+  // Dette acceptée issue de l'audit post-PR #517 : split au prochain chantier
+  // touchant chaque fichier, sans mélanger cette PR avec six refactors métier.
+  {
+    files: [
+      'src/features/tresorerie-societe/__tests__/tresorerieExport.test.ts',
+      'src/pptx/export/exportStudyDeck.ts',
+      'src/domain/base-contrat/__tests__/rules.test.ts',
+      'src/pptx/slides/buildPlacementDetail.ts',
+      'src/engine/tresorerie/types.ts',
+      'src/features/succession/__tests__/fixtures/notarialReferences.ts',
+    ],
+    rules: {
+      'max-lines': 'off',
+    },
+  },
   // Source of truth files - colors are defined here
   {
     files: [

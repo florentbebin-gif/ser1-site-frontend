@@ -1,0 +1,118 @@
+.prevoyance-periods-modal {
+  width: min(720px, calc(100vw - 32px));
+}
+
+.prevoyance-contract-modal {
+  width: min(980px, calc(100vw - 32px));
+  min-height: 560px;
+}
+
+.prevoyance-contract-modal__body {
+  padding: 20px;
+}
+
+.prevoyance-contract-modal__layout {
+  display: grid;
+  grid-template-columns: 190px minmax(0, 1fr);
+  gap: 18px;
+  min-height: 0;
+}
+
+.prevoyance-contract-modal__nav {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+  padding-right: 16px;
+  border-right: 1px solid color-mix(in srgb, var(--color-c8) 72%, var(--color-c7));
+}
+
+.prevoyance-contract-modal__nav-item {
+  min-height: 36px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--color-c9);
+  cursor: pointer;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 0 10px;
+  text-align: left;
+}
+
+.prevoyance-contract-modal__nav-item:hover,
+.prevoyance-contract-modal__nav-item:focus-visible {
+  border-color: var(--color-c8);
+  color: var(--color-c1);
+}
+
+.prevoyance-contract-modal__nav-item.is-active {
+  border-color: color-mix(in srgb, var(--color-c3) 44%, var(--color-c8));
+  background: color-mix(in srgb, var(--color-c4) 55%, var(--color-c7));
+  color: var(--color-c1);
+}
+
+.prevoyance-contract-modal__panel {
+  min-width: 0;
+}
+
+.prevoyance-contract-editor {
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--color-c7) 42%, #ffffff);
+  --sim-input-bg: #ffffff;
+}
+
+.prevoyance-contract-editor__top {
+  display: grid;
+  gap: 12px;
+}
+
+.prevoyance-contract-editor__base-grid {
+  display: grid;
+  grid-template-columns: minmax(180px, 1fr) minmax(130px, 0.75fr) minmax(130px, 0.75fr);
+  gap: 12px;
+  align-items: end;
+}
+
+.prevoyance-contract-editor__base-grid--collective {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.prevoyance-cotisation-kpi {
+  min-width: 0;
+}
+
+.prevoyance-periods-modal__toolbar {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.prevoyance-periods-modal__add {
+  border-color: color-mix(in srgb, var(--color-c2) 42%, var(--color-c8));
+  color: var(--color-c2);
+}
+
+.prevoyance-periods-modal__hint {
+  margin: 10px 0 0;
+  color: var(--color-c9);
+  font-size: 12px;
+}
+
+.prevoyance-periods-modal__list {
+  display: grid;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.prevoyance-period-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(120px, 1.2fr) 32px;
+  gap: 10px;
+  align-items: end;
+}
+
+.prevoyance-modal-error {
+  color: var(--color-error-text);
+  font-size: 12px;
+}

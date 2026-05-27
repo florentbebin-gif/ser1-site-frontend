@@ -1,0 +1,52 @@
+.prevoyance-page {
+  --prevoyance-color-revenu: var(--color-c3);
+  --prevoyance-color-ro: color-mix(in srgb, var(--color-c3) 62%, var(--color-c7));
+  --prevoyance-color-ro-alt: color-mix(in srgb, var(--color-c3) 42%, var(--color-c7));
+  --prevoyance-color-maintien: var(--color-c5);
+  --prevoyance-color-contrat: color-mix(in srgb, var(--color-c6) 70%, var(--color-c7));
+  --prevoyance-color-text-on-dark: var(--color-c7);
+  --prevoyance-color-text-on-light: var(--color-c10);
+}
+
+.prevoyance-card,
+.prevoyance-side-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.prevoyance-card + .prevoyance-card {
+  margin-top: 18px;
+}
+
+.prevoyance-card__header,
+.prevoyance-side-card__header {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.prevoyance-card__divider {
+  margin-top: 8px;
+  margin-bottom: 12px;
+}
+
+.prevoyance-card__title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-width: 0;
+  width: 100%;
+}
+
+.prevoyance-card__title-row .sim-card__title {
+  min-width: 0;
+}
+
+.prevoyance-card__actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+}
