@@ -124,12 +124,6 @@ function buildSubsidiaries(input: TresoInputs): SubsidiaryInput[] {
   ];
 }
 
-export function getAllocationPocketLabel(pocket: AllocationPocketInput): string {
-  if (pocket.label?.trim()) return pocket.label.trim();
-  const kindLabel = pocket.kind === 'distribution' ? 'Distribution' : 'Capitalisation';
-  return `${kindLabel} ${pocket.durationYears} ans`;
-}
-
 export function buildTresoInputsV2FromLegacy(input: TresoInputs): TresoInputsV2 {
   const projectionStartYear = input.anneeCivileDebut ?? currentYear();
   const legacyPlacementAmount =

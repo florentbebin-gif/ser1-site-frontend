@@ -6,7 +6,7 @@ import {
   ALLOCATION_HORIZON_OPTIONS,
   ALLOCATION_KIND_OPTIONS,
 } from '../utils/tresorerieSocieteOptions';
-import { getAllocationPocketLabel } from '../utils/tresorerieV2Migration';
+import { getAllocationPocketLabel } from '@/engine/tresorerie/allocationLabels';
 import {
   fmtEuroInput,
   fmtRateInput,

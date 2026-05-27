@@ -8,8 +8,8 @@ import {
   buildTresoInputsV4FromV3,
   buildTresoInputsV3FromLegacy,
   buildTresoInputsV3FromV2,
-  getAllocationPocketLabel,
-} from '../utils/tresorerieV2Migration';
+} from '@/engine/tresorerie/migrations/tresorerieV2Migration';
+import { getAllocationPocketLabel } from '@/engine/tresorerie/allocationLabels';
 
 const LEGACY_INPUTS: TresoInputs = {
   typeCreation: 'existante',

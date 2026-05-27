@@ -6,7 +6,7 @@ import type {
   TresoInputsV5,
   TresoInputsV6,
 } from '@/engine/tresorerie/types';
-import { sortPhases } from './revenuePhases';
+import { sortPhases } from '../revenuePhases';
 
 function currentYear(): number {
   return new Date().getFullYear();

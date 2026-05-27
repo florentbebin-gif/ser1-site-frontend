@@ -1,5 +1,5 @@
-import type { AllocationPocketInput } from '../../../../engine/tresorerie/types';
-import { getAllocationPocketLabel } from '../../utils/tresorerieV2Migration';
+import type { AllocationPocketInput } from '@/engine/tresorerie/types';
+import { getAllocationPocketLabel } from '@/engine/tresorerie/allocationLabels';
 import { fmtEuroInput, parseEuroInput } from '../../utils/tresorerieFormatters';
 import { TresoTreasuryStackBar, type TresoTreasuryStackSegment } from './TresoTreasuryStackBar';
 
