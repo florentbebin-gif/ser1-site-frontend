@@ -11,9 +11,9 @@ import {
   addFamilySlide,
   addFiscalSlide,
   addPassifSlide,
-  addRecommendationsSlide,
   addSuccessionSlide,
 } from './slides';
+import { addRecommendationsSlide } from './recommendations';
 import type { AuditPptxOptions } from './types';
 
 /**
