@@ -14,8 +14,6 @@ export interface VersementInitialInput extends Partial<VersementEntry> {
   tauxRendementCapi?: number | null;
   tauxRendementDistrib?: number | null;
   tauxDistribution?: number | null;
-  strategie?: string | null;
-  reinvestirVers?: string | null;
 }
 
 export interface VersementAnnuel extends VersementEntry {
@@ -164,17 +162,6 @@ export function normalizeVersementConfig(config: VersementConfigInput = {}): Ver
   }
   if (typeof config.initial?.tauxDistribution === 'number') {
     distribution.tauxDistribution = config.initial.tauxDistribution;
-  }
-
-  const legacyStrategie = config.initial?.strategie;
-  if (legacyStrategie === 'apprehender') {
-    distribution.strategie = 'apprehender';
-  } else if (legacyStrategie === 'reinvestir') {
-    distribution.strategie = 'reinvestir_capi';
-  }
-
-  if (config.initial?.reinvestirVers === 'distribution') {
-    distribution.reinvestirVersAuTerme = 'distribution';
   }
 
   const ponctuels = Array.isArray(config.ponctuels)
