@@ -10,8 +10,8 @@ import type {
   AllocationPocketInput,
   TresoInputsV6,
   TresoProjectionRow,
-} from '../../../engine/tresorerie/types';
-import { normalizeAllocationPockets } from '../../../engine/tresorerie/allocationPockets';
+} from '@/engine/tresorerie/types';
+import { normalizeAllocationPockets } from '@/engine/tresorerie/allocationPockets';
 import { TresoPocketModal } from './TresoPocketModal';
 import { ALLOCATION_HORIZON_OPTIONS } from '../utils/tresorerieSocieteOptions';
 import { buildDefaultPocket } from '../utils/tresorerieSocieteModel';

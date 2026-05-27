@@ -8,17 +8,17 @@
  */
 
 import { useMemo } from 'react';
-import { useFiscalContext } from '../../../hooks/useFiscalContext';
+import { useFiscalContext } from '@/hooks/useFiscalContext';
 import {
   simulateTresorerieV2,
   TresoSimulationInputError,
-} from '../../../engine/tresorerie/simulateTresorerieV2';
+} from '@/engine/tresorerie/simulateTresorerieV2';
 import type {
   TresoInputsRuntime,
   TresoFiscalParams,
   TresoProjectionRow,
-} from '../../../engine/tresorerie/types';
-import { getAssociateAnnualIncomeNeedForYear } from '../../../engine/tresorerie/revenuePhases';
+} from '@/engine/tresorerie/types';
+import { getAssociateAnnualIncomeNeedForYear } from '@/engine/tresorerie/revenuePhases';
 import { getAssociateProfile, getSelectedAssociate } from '../utils/tresorerieSocieteModel';
 import { normalizeProjectionHorizonYears } from '../utils/projectionHorizon';
 import { buildTresoFiscalParamsFromContext } from './tresorerieFiscalParams';

@@ -5,16 +5,16 @@
 import { useEffect, useState } from 'react';
 import { IconBuilding } from '@/icons/ui';
 import { SimActionButton } from '@/components/ui/sim';
-import { SimFieldShell } from '../../../components/ui/sim/SimFieldShell';
-import { SimModalShell } from '../../../components/ui/sim/SimModalShell';
-import { SimSelect } from '../../../components/ui/sim/SimSelect';
+import { SimFieldShell } from '@/components/ui/sim/SimFieldShell';
+import { SimModalShell } from '@/components/ui/sim/SimModalShell';
+import { SimSelect } from '@/components/ui/sim/SimSelect';
 import type {
   AssociateKind,
   CompanyInputV6,
   AssociateInputV6,
   OwnershipRight,
   TresoInputsV6,
-} from '../../../engine/tresorerie/types';
+} from '@/engine/tresorerie/types';
 import { TresoCompanyLoansPanel, TresoCompanySubsidiariesPanel } from './TresoCompanyPanels';
 import { TresoAssociateModal } from './societe/TresoAssociateModal';
 import { TresoCompanyIdentityPanel } from './societe/TresoCompanyIdentityPanel';
