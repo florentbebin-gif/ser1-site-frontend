@@ -74,7 +74,7 @@ export default [
         'warn',
         { argsIgnorePattern: '^_', varsIgnorePattern: '^_', ignoreRestSiblings: true },
       ],
-      '@typescript-eslint/no-explicit-any': 'warn',
+      '@typescript-eslint/no-explicit-any': 'error',
       // Enforce import type for type-only imports (PR-4)
       '@typescript-eslint/consistent-type-imports': [
         'error',
@@ -112,7 +112,11 @@ export default [
     },
   },
   {
-    files: ['**/*.test.{js,ts,jsx,tsx}'],
+    files: [
+      '**/*.test.{js,ts,jsx,tsx}',
+      '**/__tests__/**/*.{js,ts,jsx,tsx}',
+      'tests/**/*.{js,ts,jsx,tsx}',
+    ],
     rules: {
       'no-console': 'off',
       '@typescript-eslint/no-explicit-any': 'off',

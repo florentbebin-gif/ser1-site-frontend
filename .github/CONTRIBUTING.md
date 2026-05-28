@@ -115,6 +115,7 @@ Filet de sécurité : cron mensuel le 1er du mois à 09:00 UTC qui met la PR à 
 - Exemple : `import { ThemeColors } from './theme'` ✓  
   Pas : `import { ThemeColors } from './ThemeProvider'` ✗ (sauf si ré-exporté)
 - `allowJs: true` dans `tsconfig` ne change pas la règle repo : pas de nouveau `.js/.jsx` dans `src/`
+- `any` explicite interdit hors tests : `@typescript-eslint/no-explicit-any` est en erreur. Utiliser un type précis ou `unknown` avec narrowing réel ; ne pas remplacer par `unknown` pour masquer un contournement.
 
 ### TODO/FIXME
 

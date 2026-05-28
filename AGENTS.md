@@ -74,7 +74,8 @@ Le LLM doit optimiser leur utilisation : déléguer uniquement des tâches indé
   `check:supabase-migrations`).
 - Ne jamais ajouter une dette en baseline sans justification explicite dans la PR.
 - Ne jamais utiliser `@ts-ignore`, `@ts-expect-error`, `@ts-nocheck` ou `any`
-  pour contourner un problème.
+  pour contourner un problème. ESLint bloque les `any` explicites hors tests ;
+  une exception doit rester locale, typée par narrowing et justifiée dans la PR.
 - Ne jamais modifier la CI sans prouver que chaque ancien check reste couvert.
 - Ne jamais créer de fichier ou dossier `legacy`, `old`, `backup`, `tmp`,
   `deprecated` ou `generated` sans règle claire, génération reproductible ou

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { DEFAULT_DMTG } from '@/engine/succession/civil';
 import { buildSuccessionChainageAnalysis } from '../successionChainage';
-import { makeCivil, makeDevolution, makeLiquidation } from './successionChainage.test.helpers';
+import { makeCivil, makeLiquidation } from './successionChainage.test.helpers';
 
 describe('buildSuccessionChainageAnalysis', () => {
   it('returns an applicable chainage with total rights', () => {
