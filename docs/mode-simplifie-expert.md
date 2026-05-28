@@ -41,11 +41,11 @@ Le mode expert affiche :
 
 ## Exceptions
 
-Un simulateur peut rester `expertOnly` si son parcours simplifié n'est pas défini.
+Un simulateur peut rester `expertOnly` lorsqu'une décision produit dédiée est nécessaire avant de simplifier un parcours structurant.
 
 Exception active :
 
-- `/sim/tresorerie-societe` reste `expertOnly` tant que le parcours rendez-vous simplifié société / associé / allocation n'est pas validé.
+- `/sim/tresorerie-societe` est `expertOnly` temporaire et volontaire dans cette PR. Le mode simplifié n'est pas livré ici, car le parcours société / associé / allocation pilote des hypothèses structurantes de détention, revenus, CCA et trésorerie. Le chantier roadmap `PR-P2-06 - Parcours simplifié trésorerie société` porte la définition et la livraison de cette exception.
 
 Une exception doit être documentée dans `docs/ARCHITECTURE.md` ou dans la doc métier du simulateur concerné.
 

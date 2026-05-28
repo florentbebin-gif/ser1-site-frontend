@@ -319,7 +319,7 @@ Décision produit : `docs/mode-simplifie-expert.md`.
 - Les boutons locaux additionnels de page (filtres, catégories masquables) ne doivent pas être initialisés comme actifs par défaut sans règle produit documentée.
 - Helpers d'affichage : `src/settings/userModeDisplay.tsx` expose `resolveEffectiveUserMode`, `DetailLevel`, `ExpertOnly` et `SimpleOnly`.
 - Le mode simplifié masque ou replie de l'UI ; il ne doit jamais changer seul les hypothèses calculatoires envoyées au moteur.
-- Un simulateur sans décision produit simplifiée reste explicitement `expertOnly`. C'est le statut de `/sim/tresorerie-societe` tant que son parcours rendez-vous simplifié n'est pas défini.
+- Un simulateur sans décision produit simplifiée reste explicitement `expertOnly`. `/sim/tresorerie-societe` est `expertOnly` temporaire et volontaire dans cette PR : le mode simplifié n'est pas livré ici, car le parcours société / associé / allocation exige une décision produit dédiée suivie par `PR-P2-06`.
 
 ### Thème V5 (3 modes)
 

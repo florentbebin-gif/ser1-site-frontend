@@ -418,7 +418,7 @@ describe('TresorerieSocietePage', () => {
     expect(html).toContain('data-testid="export-menu"');
     expect(html).toContain('data-testid="mode-toggle"');
     expect(html).toContain('disabled=""');
-    expect(html).toContain('le parcours simplifié reste à définir');
+    expect(html).toContain('PR-P2-06');
     expect(html).toContain('Excel');
     expect(html).toContain('PowerPoint');
   });

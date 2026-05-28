@@ -484,6 +484,10 @@ Le simulateur `/sim/tresorerie-societe` projette une société soumise à l’IS
 
 Source de vérité runtime : `TresoInputsV6`. Les formats V1→V5 restent confinés aux types de compatibilité `src/engine/tresorerie/migrations/compatTypes.ts` et aux migrations moteur ; les features manipulent `TresoInputsV6` ou un état persisté `unknown` converti par `migrateUnknownTresorerieInputsToV6(unknown)`.
 
+### Statut UX
+
+`/sim/tresorerie-societe` est `expertOnly` temporaire et volontaire dans cette PR. Le mode simplifié n'est pas livré ici, car le parcours société / associé / allocation porte des choix structurants sur la détention, les revenus, les CCA et la trésorerie. Le chantier roadmap `PR-P2-06 - Parcours simplifié trésorerie société` décidera la matrice simplifié / expert et les tests de non-régression associés.
+
 ### Périmètre calculé
 
 - Société à créer ou existante : capital social, réserves, trésorerie, frais annuels, associés et droits économiques.

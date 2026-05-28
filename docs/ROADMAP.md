@@ -77,7 +77,10 @@ Reste :
 
 - Finaliser la matrice visible en simplifié vs expert par simulateur.
 - Donner des exemples validés sur `/sim/credit`, `/sim/ir` et `/sim/succession`.
-- Documenter les exceptions `expertOnly`, notamment `/sim/tresorerie-societe` tant que son parcours simplifié n'est pas défini.
+
+Décision active :
+
+- `/sim/tresorerie-societe` n'est pas un oubli roadmap : la verticale reste `expertOnly` temporaire et volontaire dans cette PR. Le retrait de cette exception est porté par `PR-P2-06`.
 
 ## PR-P2-02 - Infrastructure modes
 
@@ -131,6 +134,25 @@ Reste :
 - Harmoniser les workflows en étapes PER en mode simplifié.
 - Déployer ou confirmer le périmètre du mode sur Stratégie.
 - Clarifier la place des explications produit.
+
+## PR-P2-06 - Parcours simplifié trésorerie société
+
+Statut : `à planifier`
+
+Priorité : `P2`
+
+Décision actuelle : `/sim/tresorerie-societe` reste `expertOnly` temporaire et volontaire dans cette PR.
+
+Raison métier : le parcours société / associé / allocation structure les hypothèses de détention, de revenus, de CCA et de trésorerie. Le simplifier sans décision produit dédiée risquerait de masquer des choix qui changent la projection et les exports.
+
+Objectif : définir puis livrer le parcours rendez-vous simplifié de trésorerie société, avec matrice champs visibles / champs experts, valeurs par défaut explicites, cohérence moteur et parité exports.
+
+Critères de sortie :
+
+- matrice simplifié / expert validée pour Société, Associé, Allocation et Projection ;
+- tests prouvant que le changement de mode ne modifie pas seul les entrées moteur ;
+- exports PPTX / Excel cohérents avec les données calculées ;
+- docs `ARCHITECTURE`, `METIER` et `mode-simplifie-expert` alignées avec le statut livré.
 
 ---
 
