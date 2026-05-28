@@ -6,7 +6,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import AuditWizard from '../AuditWizard';
 import { exportDossierToFile, importDossierFromFile } from '../utils/storage';
 
-vi.mock('../../../settings/ThemeProvider', () => ({
+vi.mock('@/settings/ThemeProvider', () => ({
   useTheme: () => ({
     colors: {},
   }),

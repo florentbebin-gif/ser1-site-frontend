@@ -1,13 +1,13 @@
 import { describe, expect, it, vi } from 'vitest';
-import * as placementEngine from '../../../engine/placement';
+import * as placementEngine from '@/engine/placement';
 import {
   DEFAULT_FISCALITY_SETTINGS,
   DEFAULT_PER_INDIVIDUEL_RULES,
   DEFAULT_PS_SETTINGS,
   DEFAULT_TAX_SETTINGS,
-} from '../../../constants/settingsDefaults';
-import type { FiscalContext } from '../../../hooks/useFiscalContext';
-import { derivePlacementSettingsFromFiscalContext } from '../../../hooks/usePlacementSettings';
+} from '@/constants/settingsDefaults';
+import type { FiscalContext } from '@/hooks/useFiscalContext';
+import { derivePlacementSettingsFromFiscalContext } from '@/hooks/usePlacementSettings';
 
 function makeFiscalContext(overrides: Partial<FiscalContext>): FiscalContext {
   return {

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { DEFAULT_DMTG } from '../../../engine/succession/civil';
+import { DEFAULT_DMTG } from '@/engine/succession/civil';
 import type { SuccessionDonationEntry } from '../successionDraft';
 import { buildSuccessionChainageAnalysis } from '../successionChainage';
 import { RESIDENCE_PRINCIPALE_SUBCATEGORY } from '../successionSimulator.constants';

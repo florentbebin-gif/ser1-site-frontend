@@ -1,5 +1,5 @@
-import type { buildSuccessionStudyDeck } from '../../../pptx/presets/successionDeckBuilder';
-import { DEFAULT_COLORS } from '../../../settings/theme';
+import type { buildSuccessionStudyDeck } from '@/pptx/presets/successionDeckBuilder';
+import { DEFAULT_COLORS } from '@/settings/theme';
 
 export const THEME_COLORS = DEFAULT_COLORS;
 

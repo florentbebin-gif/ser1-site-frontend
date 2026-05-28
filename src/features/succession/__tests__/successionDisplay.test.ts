@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { DEFAULT_DMTG } from '../../../engine/succession/civil';
-import { calculateSuccession } from '../../../engine/succession';
+import { DEFAULT_DMTG } from '@/engine/succession/civil';
+import { calculateSuccession } from '@/engine/succession';
 import { buildSuccessionDevolutionAnalysis } from '../successionDevolution';
 import {
   buildSuccessionDirectDisplayAnalysis,

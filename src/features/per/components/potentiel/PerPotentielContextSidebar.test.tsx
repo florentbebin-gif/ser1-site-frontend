@@ -1,6 +1,6 @@
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
-import type { PerPotentielResult } from '../../../../engine/per';
+import type { PerPotentielResult } from '@/engine/per';
 import { PerPotentielContextSidebar } from './PerPotentielContextSidebar';
 
 const fmtCurrency = (value: number): string =>

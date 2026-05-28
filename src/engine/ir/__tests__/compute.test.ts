@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { computeIrResult } from '../compute';
-import { DEFAULT_TAX_SETTINGS, DEFAULT_PS_SETTINGS } from '../../../constants/settingsDefaults';
+import { DEFAULT_TAX_SETTINGS, DEFAULT_PS_SETTINGS } from '@/constants/settingsDefaults';
 
 // Revenus vides (célibataire, aucun revenu)
 const ZERO_INCOMES = {

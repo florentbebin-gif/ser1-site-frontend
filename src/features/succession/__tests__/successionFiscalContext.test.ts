@@ -5,8 +5,8 @@ import {
   DEFAULT_PER_INDIVIDUEL_RULES,
   DEFAULT_PS_SETTINGS,
   DEFAULT_TAX_SETTINGS,
-} from '../../../constants/settingsDefaults';
-import type { FiscalContext } from '../../../hooks/useFiscalContext';
+} from '@/constants/settingsDefaults';
+import type { FiscalContext } from '@/hooks/useFiscalContext';
 import { buildSuccessionFiscalSnapshot } from '../successionFiscalContext';
 
 function makeFiscalContext(overrides: Partial<FiscalContext>): FiscalContext {

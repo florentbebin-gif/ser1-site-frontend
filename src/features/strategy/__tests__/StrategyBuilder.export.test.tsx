@@ -19,11 +19,11 @@ vi.mock('../export/exportStrategy', () => ({
   exportStrategyPptx: vi.fn().mockResolvedValue(undefined),
 }));
 
-vi.mock('../../../hooks/useFiscalContext', () => ({
+vi.mock('@/hooks/useFiscalContext', () => ({
   useFiscalContext: () => ({ fiscalContext: null }),
 }));
 
-vi.mock('../../../settings/ThemeProvider', () => ({
+vi.mock('@/settings/ThemeProvider', () => ({
   useTheme: () => ({
     colors: TEST_COLORS,
   }),

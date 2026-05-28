@@ -11,7 +11,7 @@ import {
   readThemeSourceFromStorage,
   writeThemeSourceToStorage,
 } from '../themeSourceStorage';
-import { resolvePptxColors } from '../../../pptx/theme/resolvePptxColors';
+import { resolvePptxColors } from '@/pptx/theme/resolvePptxColors';
 
 type StorageMap = Map<string, string>;
 

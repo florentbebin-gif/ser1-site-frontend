@@ -61,7 +61,7 @@ vi.mock('../components/TresoHypotheses', () => ({
   TresoHypotheses: () => <div data-testid="hypotheses" />,
 }));
 
-vi.mock('../../../components/ui/sim/SimPageShell', () => ({
+vi.mock('@/components/ui/sim/SimPageShell', () => ({
   SimPageShell: Object.assign(
     ({ actions, children, error, notice, pageTestId }: any) => (
       <div data-testid={pageTestId}>
@@ -84,7 +84,7 @@ vi.mock('../../../components/ui/sim/SimPageShell', () => ({
   ),
 }));
 
-vi.mock('../../../components/ExportMenu', () => ({
+vi.mock('@/components/ExportMenu', () => ({
   ExportMenu: ({ options, loading }: any) => (
     <div data-testid="export-menu" data-loading={loading ? 'true' : 'false'}>
       {options.map((option: any) => (
@@ -96,7 +96,7 @@ vi.mock('../../../components/ExportMenu', () => ({
   ),
 }));
 
-vi.mock('../../../components/ModeToggle', () => ({
+vi.mock('@/components/ModeToggle', () => ({
   ModeToggle: ({ disabled, disabledReason }: any) => (
     <button type="button" data-testid="mode-toggle" disabled={disabled} title={disabledReason}>
       Mode expert
@@ -104,7 +104,7 @@ vi.mock('../../../components/ModeToggle', () => ({
   ),
 }));
 
-vi.mock('../../../settings/ThemeProvider', () => ({
+vi.mock('@/settings/ThemeProvider', () => ({
   useTheme: () => ({
     colors: mockThemeColors,
     pptxColors: mockThemeColors,

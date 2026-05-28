@@ -1,7 +1,7 @@
 import type { ComponentProps } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
-import type { CompareResult } from '../../../engine/placement/types';
+import type { CompareResult } from '@/engine/placement/types';
 import { PlacementResultsPanel } from '../components/PlacementResultsPanel';
 import { shortEuro } from '../utils/formatters';
 

@@ -11,7 +11,7 @@ import {
 import type { DossierAudit } from '../../audit/types';
 import { createEmptyDossier } from '../../audit/types';
 import type { ProduitConfig } from '../types';
-import { DEFAULT_TAX_SETTINGS } from '../../../constants/settingsDefaults';
+import { DEFAULT_TAX_SETTINGS } from '@/constants/settingsDefaults';
 
 function createTestDossier(): DossierAudit {
   const base = createEmptyDossier();

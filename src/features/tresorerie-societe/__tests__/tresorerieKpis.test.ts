@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { simulateTresorerieV2 } from '../../../engine/tresorerie/simulateTresorerieV2';
-import { migrateUnknownTresorerieInputsToV6 } from '../../../engine/tresorerie/migrations/tresorerieV2Migration';
-import type { TresoFiscalParams, TresoInputsV6 } from '../../../engine/tresorerie/types';
+import { simulateTresorerieV2 } from '@/engine/tresorerie/simulateTresorerieV2';
+import { migrateUnknownTresorerieInputsToV6 } from '@/engine/tresorerie/migrations/tresorerieV2Migration';
+import type { TresoFiscalParams, TresoInputsV6 } from '@/engine/tresorerie/types';
 
 const PARAMS: TresoFiscalParams = {
   isNormalRate: 0.25,

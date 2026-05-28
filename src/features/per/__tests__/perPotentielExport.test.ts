@@ -1,14 +1,14 @@
 import JSZip from 'jszip';
 import { describe, expect, it } from 'vitest';
-import { calculatePerPotentiel } from '../../../engine/per';
+import { calculatePerPotentiel } from '@/engine/per';
 import {
   DEFAULT_PASS_HISTORY,
   DEFAULT_PS_SETTINGS,
   DEFAULT_TAX_SETTINGS,
-} from '../../../constants/settingsDefaults';
-import { DEFAULT_COLORS } from '../../../settings/theme';
+} from '@/constants/settingsDefaults';
+import { DEFAULT_COLORS } from '@/settings/theme';
 import { buildPerPotentielXlsxBlob } from '../export/perPotentielExcelExport';
-import { buildPerStudyDeck } from '../../../pptx/presets/perDeckBuilder';
+import { buildPerStudyDeck } from '@/pptx/presets/perDeckBuilder';
 
 const THEME_COLORS = DEFAULT_COLORS;
 

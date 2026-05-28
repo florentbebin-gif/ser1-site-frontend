@@ -6,7 +6,7 @@ import userEvent from '@testing-library/user-event';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import ModeStep from './ModeStep';
-import type { PerWorkflowYears } from '../../../utils/perWorkflowYears';
+import type { PerWorkflowYears } from '@/features/per/utils/perWorkflowYears';
 
 const years: PerWorkflowYears = {
   currentTaxLabel: '2026 (revenus 2025)',

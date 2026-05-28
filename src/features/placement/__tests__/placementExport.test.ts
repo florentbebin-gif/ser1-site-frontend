@@ -7,8 +7,8 @@
 import { describe, it, expect } from 'vitest';
 import { buildPlacementXlsxBlob } from '../export/placementExcelExport';
 import { DEFAULT_STATE } from '../utils/normalizers';
-import { DEFAULT_COLORS } from '../../../settings/theme';
-import type { CompareResult } from '../../../engine/placement/types';
+import { DEFAULT_COLORS } from '@/settings/theme';
+import type { CompareResult } from '@/engine/placement/types';
 
 const THEME = DEFAULT_COLORS;
 

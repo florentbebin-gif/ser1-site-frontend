@@ -4,7 +4,7 @@ import {
   DEFAULT_PASS_HISTORY,
   DEFAULT_PS_SETTINGS,
   DEFAULT_TAX_SETTINGS,
-} from '../../../constants/settingsDefaults';
+} from '@/constants/settingsDefaults';
 import type { AvisIrPlafonds, DeclarantRevenus, PerPotentielInput } from '../types';
 
 function makeDeclarant(overrides: Partial<DeclarantRevenus> = {}): DeclarantRevenus {
