@@ -13,7 +13,7 @@ import type {
   TresoInputsV3,
   TresoInputsV4,
   TresoInputsV5,
-} from '@/engine/tresorerie/legacy/types';
+} from '@/engine/tresorerie/migrations/compatTypes';
 import { buildTresoInputsV5FromV4 as buildTresoInputsV5FromV4Internal } from './tresorerieV5Migration';
 import { buildTresoInputsV6FromV5 as buildTresoInputsV6FromV5Internal } from './tresorerieV6Migration';
 

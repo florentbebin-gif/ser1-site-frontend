@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { migrateUnknownTresorerieInputsToV6 } from '../migrations/tresorerieV2Migration';
 import { simulateTresorerieV2 } from '../simulateTresorerieV2';
 import type { TresoFiscalParams } from '../types';
-import type { TresoInputsV3 } from '../legacy/types';
+import type { TresoInputsV3 } from '../migrations/compatTypes';
 
 const PARAMS: TresoFiscalParams = {
   isNormalRate: 0.25,

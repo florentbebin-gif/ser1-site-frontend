@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { TresoInputs } from '@/engine/tresorerie/legacy/types';
+import type { TresoInputs } from '@/engine/tresorerie/migrations/compatTypes';
 import type { TresoProjectionRow } from '@/engine/tresorerie/types';
 import {
   buildTresoInputsV5FromV4,
