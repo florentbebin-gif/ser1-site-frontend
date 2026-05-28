@@ -6,3 +6,4 @@ export { calculFiscaliteRetrait, simulateLiquidation } from './liquidation';
 export { calculTransmission } from './transmission';
 export { simulateComplete } from './simulateComplete';
 export { compareProducts } from './compare';
+export { computePlacementRoi } from './metrics';

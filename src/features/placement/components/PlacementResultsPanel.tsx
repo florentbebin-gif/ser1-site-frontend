@@ -9,6 +9,7 @@ import {
   SimTooltip,
 } from '@/components/ui/sim';
 import { CGP_GLOSSARY } from '@/constants/cgpGlossary';
+import { computePlacementRoi } from '@/engine/placement';
 import { IconBarChart } from '@/icons/ui';
 import { shortEuro } from '../utils/formatters';
 import type { PlacementSimulatorState } from '../utils/normalizers';
@@ -87,12 +88,8 @@ export function PlacementResultsPanel({
                   compareEnabled && produit2
                     ? produit2.totaux.revenusNetsLiquidation + produit2.totaux.capitalTransmisNet
                     : 0;
-                const roi1 =
-                  produit1.totaux.effortTotal > 0 ? totalGains1 / produit1.totaux.effortTotal : 0;
-                const roi2 =
-                  compareEnabled && produit2 && produit2.totaux.effortTotal > 0
-                    ? totalGains2 / produit2.totaux.effortTotal
-                    : 0;
+                const roi1 = computePlacementRoi(produit1.totaux);
+                const roi2 = compareEnabled && produit2 ? computePlacementRoi(produit2.totaux) : 0;
                 const meilleurProduit = compareEnabled
                   ? Math.abs(roi1 - roi2) > 0.0001
                     ? roi1 > roi2

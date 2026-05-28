@@ -126,6 +126,7 @@ export function usePlacementExportHandlers({
             regime: p.transmission.regime,
           },
           totaux: {
+            effortTotal: p.totaux.effortTotal,
             effortReel: p.totaux.effortReel,
             revenusNetsEpargne: p.totaux.revenusNetsEpargne,
             revenusNetsLiquidation: p.totaux.revenusNetsLiquidation,
