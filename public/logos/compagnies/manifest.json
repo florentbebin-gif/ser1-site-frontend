@@ -333,6 +333,15 @@
       "sourceUrl": "https://www.mma.fr/files/live/sites/mmafr/files/home-page/logo-mma.svg"
     },
     {
+      "company": "MUTEX",
+      "slug": "mutex",
+      "file": "mutex.svg",
+      "status": "verified",
+      "sourceType": "official",
+      "sourceUrl": "https://www.mutex.fr/app/themes/default/assets/images/sprite-582e652313.svg",
+      "note": "Logo extrait du sprite officiel Mutex utilisé sur le site institutionnel mutex.fr."
+    },
+    {
       "company": "NORTIA",
       "slug": "nortia",
       "file": "nortia.svg",
@@ -373,8 +382,8 @@
       "sourceUrl": "https://www.probtp.com/files/live/sites/probtp/files/media/images/homes/logo-probtp.svg"
     },
     {
-      "company": "SMA_BTP",
-      "slug": "sma-btp",
+      "company": "SMABTP",
+      "slug": "smabtp",
       "file": "sma-btp.png",
       "status": "verified",
       "sourceType": "official",

@@ -14,7 +14,7 @@ describe('CompanyLogo', () => {
     expect(slugifyCompanyForLogo('Crédit Agricole')).toBe('credit-agricole');
     expect(slugifyCompanyForLogo('La Banque Postale')).toBe('la-banque-postale');
     expect(slugifyCompanyForLogo('LPA_PREVOYANCE')).toBe('lpa-prevoyance');
-    expect(slugifyCompanyForLogo('SMA_BTP')).toBe('sma-btp');
+    expect(slugifyCompanyForLogo('SMABTP')).toBe('smabtp');
   });
 
   it('rend le logo public avec un texte alternatif explicite et son extension', () => {
@@ -44,6 +44,20 @@ describe('CompanyLogo', () => {
     expect(screen.getByRole('img', { name: 'Logo UFF' })).toHaveAttribute(
       'src',
       '/logos/compagnies/uff.svg',
+    );
+
+    rerender(<CompanyLogo company="MUTEX" />);
+
+    expect(screen.getByRole('img', { name: 'Logo MUTEX' })).toHaveAttribute(
+      'src',
+      '/logos/compagnies/mutex.svg',
+    );
+
+    rerender(<CompanyLogo company="SMABTP" />);
+
+    expect(screen.getByRole('img', { name: 'Logo SMABTP' })).toHaveAttribute(
+      'src',
+      '/logos/compagnies/sma-btp.png',
     );
   });
 

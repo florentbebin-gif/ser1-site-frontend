@@ -15,7 +15,8 @@ const BASECG_COMPANY_RENAME_MAP: Record<string, string> = {
   MNRA: 'GARANCE',
   PRIMONIAL: 'ORADEA',
   QUATREM: 'MALAKOFF_HUMANIS',
-  SMA: 'SMA_BTP',
+  SMA: 'SMABTP',
+  SMA_BTP: 'SMABTP',
 };
 
 const BASECG_REMOVED_CONTRACT_IDS = new Set([

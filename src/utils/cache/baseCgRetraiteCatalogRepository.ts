@@ -1,4 +1,7 @@
-import type { BaseCgRetraiteContract } from '@/data/base-cg-retraite';
+import {
+  normalizeBaseCgRetraiteContractCompany,
+  type BaseCgRetraiteContract,
+} from '@/data/base-cg-retraite';
 import { supabase } from '@/supabaseClient';
 import {
   CONTRACTS_SELECT,
@@ -25,6 +28,40 @@ interface BaseCgRetraiteContractRow {
   is_deleted: boolean;
   updated_at?: string | null;
 }
+
+const EMPTY_PHASE_EPARGNE: BaseCgRetraiteContract['phaseEpargne'] = {
+  dateCommercialisation: null,
+  nombreFonds: null,
+  nombreSupportsUc: null,
+  repartitionUcEuro: null,
+  rendementFondsEuro: null,
+  fondsEuroGarantis: null,
+  fraisVersements: null,
+  fraisGestion: null,
+  fraisGestionFondsEuro: null,
+  fraisGestionUc: null,
+  fraisArbitrage: null,
+  fraisTransfertSortant: null,
+  fraisTransfertSortantRate: null,
+  clauseBeneficiaire: null,
+  garantiesComplementaires: null,
+};
+
+const EMPTY_PHASE_LIQUIDATION: BaseCgRetraiteContract['phaseLiquidation'] = {
+  ageLimiteLiquidation: null,
+  sortieCapitalRetraite: null,
+  fractionnementCapital: null,
+  rachatLibre: null,
+  tableConversionRente: null,
+  tableGarantieAdhesion: null,
+  tauxTechnique: null,
+  fraisArrerages: null,
+  fraisArreragesRate: null,
+  annuitesGaranties: null,
+  reversionPossible: null,
+  reversionIncluse: null,
+  renteEstimee: null,
+};
 
 export class BaseCgRetraiteCatalogUnavailableError extends Error {
   constructor(message: string) {
@@ -64,7 +101,7 @@ function mergeSupabaseRows(
     .filter((row) => !row.is_deleted)
     .map((row) => {
       const data = row.contract_data ?? ({} as BaseCgRetraiteContract);
-      return {
+      const contract = {
         ...data,
         id: row.contract_id,
         sourceId: row.source_id,
@@ -72,8 +109,17 @@ function mergeSupabaseRows(
         nomContrat: row.contract_name,
         typeContrat: row.contract_type,
         perCompartment: row.per_compartment ?? data.perCompartment ?? null,
+        phaseEpargne: {
+          ...EMPTY_PHASE_EPARGNE,
+          ...(data.phaseEpargne ?? {}),
+        },
+        phaseLiquidation: {
+          ...EMPTY_PHASE_LIQUIDATION,
+          ...(data.phaseLiquidation ?? {}),
+        },
         documents: documentsByContract.get(row.contract_id) ?? data.documents ?? [],
       } satisfies BaseCgRetraiteContract;
+      return normalizeBaseCgRetraiteContractCompany(contract);
     })
     .sort((left, right) =>
       `${left.compagnie} ${left.nomContrat}`.localeCompare(

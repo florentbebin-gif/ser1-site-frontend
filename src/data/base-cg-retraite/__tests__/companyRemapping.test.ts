@@ -52,7 +52,8 @@ describe('remapping des compagnies Base CG retraite', () => {
     expect(normalizeBaseCgRetraiteCompanyName('GO_EPARGNE')).toBe('EPARTIM');
     expect(normalizeBaseCgRetraiteCompanyName('LPA')).toBe('LPA_PREVOYANCE');
     expect(normalizeBaseCgRetraiteCompanyName('MNRA')).toBe('GARANCE');
-    expect(normalizeBaseCgRetraiteCompanyName('SMA')).toBe('SMA_BTP');
+    expect(normalizeBaseCgRetraiteCompanyName('SMA')).toBe('SMABTP');
+    expect(normalizeBaseCgRetraiteCompanyName('SMA_BTP')).toBe('SMABTP');
     expect(normalizeBaseCgRetraiteCompanyName('CREDIT_DU_NORD')).toBe('SOCIETE_GENERALE');
     expect(normalizeBaseCgRetraiteCompanyName('PRIMONIAL')).toBe('ORADEA');
   });

@@ -198,6 +198,20 @@ const allMigrations = fs
   .map((file) => fs.readFileSync(path.join(MIGRATIONS_DIR, file), 'utf8'))
   .join('\n');
 const allSql = normalizeSql(allMigrations);
+for (const functionName of [
+  'set_base_cg_retraite_contract_row_hash',
+  'refresh_base_cg_retraite_catalog_meta',
+  'refresh_base_cg_retraite_catalog_meta_trigger',
+]) {
+  assert(
+    new RegExp(
+      String.raw`REVOKE EXECUTE ON FUNCTION public\.${functionName}\s*\(\s*\)\s+FROM PUBLIC\s*,\s*anon\s*,\s*authenticated`,
+      'i',
+    ).test(allSql),
+    `REVOKE EXECUTE anon/authenticated absent: ${functionName}`,
+  );
+}
+
 const BASE_CG_GRANTS = [
   { table: 'base_cg_retraite_contracts', writesAllowed: true },
   { table: 'base_cg_retraite_catalog_meta', writesAllowed: false },

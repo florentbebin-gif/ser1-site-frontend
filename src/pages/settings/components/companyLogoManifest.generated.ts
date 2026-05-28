@@ -138,6 +138,9 @@ export const COMPANY_LOGO_ASSETS = {
   mma: {
     file: 'mma.svg',
   },
+  mutex: {
+    file: 'mutex.svg',
+  },
   nortia: {
     file: 'nortia.svg',
   },
@@ -153,7 +156,7 @@ export const COMPANY_LOGO_ASSETS = {
   'pro-btp': {
     file: 'pro-btp.svg',
   },
-  'sma-btp': {
+  smabtp: {
     file: 'sma-btp.png',
   },
   'societe-generale': {

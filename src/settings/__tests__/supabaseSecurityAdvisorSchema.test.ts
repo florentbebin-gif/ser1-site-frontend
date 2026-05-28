@@ -43,6 +43,19 @@ describe('advisor securite Supabase', () => {
     expect(sql).toMatch(
       /revoke\s+execute\s+on\s+function\s+public\.get_settings_version\s*\(\s*\)\s+from\s+public\s*,\s*anon\s*,\s*authenticated/i,
     );
+
+    for (const functionName of [
+      'set_base_cg_retraite_contract_row_hash',
+      'refresh_base_cg_retraite_catalog_meta',
+      'refresh_base_cg_retraite_catalog_meta_trigger',
+    ]) {
+      expect(sql).toMatch(
+        new RegExp(
+          String.raw`revoke\s+execute\s+on\s+function\s+public\.${functionName}\s*\(\s*\)\s+from\s+public\s*,\s*anon\s*,\s*authenticated`,
+          'i',
+        ),
+      );
+    }
   });
 
   it('reserve la maintenance PASS aux admins cote client', () => {
