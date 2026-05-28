@@ -29,7 +29,14 @@ jobs:
           REPO: ${{ github.repository }}
         run: |
           since="$(date -u -d '7 days ago' +'%Y-%m-%dT%H:%M:%SZ')"
-          runs="$(gh api "repos/${REPO}/actions/workflows/quality-reports.yml/runs" -f branch=main -f created=">=${since}" -f per_page=100)"
+          if ! runs="$(gh api --method GET "repos/${REPO}/actions/workflows/quality-reports.yml/runs" -f branch=main -f created=">=${since}" -f per_page=100)"; then
+            {
+              echo "### Quality reports — stabilité 7 jours"
+              echo ""
+              echo "- Rapport indisponible : l'appel GitHub Actions API a échoué."
+            } >> "${GITHUB_STEP_SUMMARY}"
+            exit 0
+          fi
           total="$(echo "${runs}" | jq '.workflow_runs | length')"
           success="$(echo "${runs}" | jq '[.workflow_runs[] | select(.conclusion == "success")] | length')"
           failure="$(echo "${runs}" | jq '[.workflow_runs[] | select(.conclusion == "failure" or .conclusion == "timed_out" or .conclusion == "cancelled")] | length')"
