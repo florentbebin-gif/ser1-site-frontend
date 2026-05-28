@@ -58,8 +58,7 @@ Principes : épuré, lisible, respirant.
 - Utiliser systématiquement les composants partagés qui implémentent déjà ce formatage : `InputEuro` (Placement/Credit), `IrAmountInput` (IR). Ne pas créer de `<input type="number">` brut pour des montants €.
 - Exceptions acceptées (pas de formatage nécessaire) : âges, durées (années/mois), pourcentages (0–100 %), champs admin Settings (tableau de saisie du barème, montants de référence).
 - **Anti-pattern** : `<input type="number" value={montant} />` pour un montant € → affiche "1000000" au lieu de "1 000 000", mauvaise lisibilité utilisateur.
-- Références implémentées : `InputEuro` dans `PlacementFormControls.tsx` (Placement), `CreditInputs.tsx` (Credit), `IrAmountInput` dans `IrFormSection.tsx` (IR).
-- Références **non encore migrées** (acceptable temporairement) : champs € dans modales Succession (`AssuranceVieModal`, `ScDonationsCard`, `ScAssetsPassifsCard`), champs ponctuel dans `VersementConfigModalSections.tsx`.
+- Références implémentées : `InputEuro` dans `PlacementFormControls.tsx` (Placement), `CreditInputs.tsx` (Credit), `IrAmountInput` dans `IrFormSection.tsx` (IR), `SimAmountInputEuro` dans les modales Succession (`AssuranceVieModal`, `ScDonationsCard`, `ScAssetsPassifsCard`) et `PlacementEuroField` / `SimAmountInputEuro` dans les sections de `VersementConfigModalSections.tsx`.
 
 ### Taux et pourcentages (règle critique)
 
