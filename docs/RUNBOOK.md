@@ -48,7 +48,8 @@ Scripts ponctuels documentés :
 - `npm run audit:base-contrat-dmtg` : audit manuel ciblé Base-Contrat/DMTG, hors CI.
 - `npm run audit:css-usage` et `npm run audit:unicode` : diagnostics manuels de nettoyage, hors CI.
 - `npm run snapshot:sim` : capture visuelle locale, hors CI tant que le résultat n'est pas exploité comme gate.
-- `npm run report:large-files` : rapport manuel ; le gate bloquant reste `npm run check:large-files-baseline`.
+- `npm run report:large-files` : rapport manuel des fichiers `src` à 400+ lignes avec décision, catégorie et plafond de baseline.
+- `npm run check:large-files-baseline` : gate bloquant. Il refuse tout fichier `src/**/*.ts(x)` au-delà de 500 lignes sans entrée structurée dans `scripts/baselines/large-files.json`, toute entrée sans justification, toute entrée devenue inutile et toute croissance au-delà du `maxLines` figé.
 
 - Garde d'architecture uniquement :
   - `npm run check:arch` (dependency-cruiser, bloquant sur violation de frontière)

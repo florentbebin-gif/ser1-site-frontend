@@ -60,12 +60,12 @@ Repères (domain-first) :
 Conventions clés :
 
 - Nouveau code : TS/TSX.
-- Fichiers `500-800` lignes = dette surveillée. Acceptable temporairement si le fichier reste mono-rôle et lisible.
-- Fichiers `>800` lignes = découpage obligatoire au prochain chantier qui touche le fichier.
+- Fichiers `500-800` lignes = dette surveillée. Acceptable temporairement si le fichier reste mono-rôle et lisible, avec justification dans `scripts/baselines/large-files.json`.
+- Fichiers `>800` lignes = découpage prioritaire sauf fichier généré ou source de données explicitement justifiée dans `scripts/baselines/large-files.json`.
 - Garde-fous d'architecture : `npm run check:arch` (dependency-cruiser, config `.dependency-cruiser.cjs`) — bloquant en CI. Règles : engine/domain sans React ni features, features sans pages, reporting sans features, imports cross-features via `index.ts` uniquement.
 - Garde imports profonds : `npm run check:deep-imports` bloque tout nouveau `../../../` hors tests dans les imports TS/TSX/JS/JSX et CSS. La baseline hors tests est `0`; utiliser `@/` pour les imports cross-module.
 - Garde fichiers orphelins : `npm run check:orphan-source-files` vérifie l'atteignabilité des sources applicatives depuis les entrypoints explicites.
-- Garde fichiers longs : `npm run check:large-files-baseline` bloque les nouveaux fichiers `src/**/*.ts(x)` au-delà de 500 lignes sauf exemption ESLint documentée.
+- Garde fichiers longs : `npm run check:large-files-baseline` bloque tout fichier `src/**/*.ts(x)` au-delà de 500 lignes sans entrée structurée dans `scripts/baselines/large-files.json`, toute entrée sans justification, toute entrée devenue inutile et toute croissance au-delà du `maxLines` figé.
 - Garde routes/docs : `npm run check:routes-doc-sync` vérifie que les routes déclarées dans `src/routes` apparaissent dans ce document.
 - Garde Supabase : `npm run check:supabase-rls`, `npm run check:storage-policies` et `npm run check:supabase-migrations` vérifient le périmètre RLS/Storage/migrations explicitement classé.
 - Garde exports : `npm run check:export-parity` vérifie les métriques partagées UI/export ; `npm run check:pptx-images` vérifie le budget des images de chapitres.
@@ -786,7 +786,7 @@ Cette section fixe comment ajouter une page, une route ou une feature sans creer
 - Test adapte au statut du sujet :
   - simulateur stable : smoke test ou test cible
   - simulateur upcoming : au minimum ouverture de route / rendu attendu
-- `npm run report:large-files` fournit une baseline informative des fichiers `src` à 400+ lignes ; ce rapport ne remplace pas le gate strict `max-lines` d'ESLint.
+- `npm run report:large-files` liste les fichiers `src` à 400+ lignes avec décision, catégorie et plafond de baseline. Le gate bloquant reste `npm run check:large-files-baseline`, qui empêche les nouveaux gros fichiers et la croissance silencieuse.
 - Aucun nouveau pattern structurel implicite non documente
 
 ---

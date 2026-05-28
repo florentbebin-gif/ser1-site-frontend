@@ -6,6 +6,7 @@ import eslintConfig from '../eslint.config.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const SRC_DIR = path.join(ROOT, 'src');
+const BASELINE_PATH = path.join(ROOT, 'scripts', 'baselines', 'large-files.json');
 const MIN_LINES = 400;
 const MAX_LINES = 500;
 const EXTENSIONS = new Set(['.ts', '.tsx']);
@@ -26,6 +27,10 @@ function getMaxLinesExemptions() {
       .filter((pattern) => pattern.startsWith('src/') && EXTENSIONS.has(path.extname(pattern)))
       .map(normalizePath),
   );
+}
+
+async function loadBaseline() {
+  return JSON.parse(await readFile(BASELINE_PATH, 'utf8'));
 }
 
 async function listSourceFiles(directory) {
@@ -55,6 +60,7 @@ function countPhysicalLines(source) {
 }
 
 const maxLinesExemptions = getMaxLinesExemptions();
+const baseline = await loadBaseline();
 const sourceFiles = await listSourceFiles(SRC_DIR);
 const rows = await Promise.all(
   sourceFiles.map(async (absolutePath) => {
@@ -67,6 +73,9 @@ const rows = await Promise.all(
       lines,
       gapTo500: MAX_LINES - lines,
       maxLinesExempt: maxLinesExemptions.has(relativePath),
+      baselineDecision: baseline[relativePath]?.decision ?? '',
+      baselineCategory: baseline[relativePath]?.category ?? '',
+      baselineMax: baseline[relativePath]?.maxLines ?? '',
     };
   }),
 );
@@ -75,8 +84,12 @@ const largeFiles = rows
   .filter((row) => row.lines >= MIN_LINES)
   .sort((a, b) => b.lines - a.lines || a.path.localeCompare(b.path));
 
-console.log('path\tlines\tgap_to_500\tmax_lines_exempt');
+console.log(
+  'path\tlines\tgap_to_500\tmax_lines_exempt\tbaseline_decision\tbaseline_category\tbaseline_max',
+);
 
 for (const row of largeFiles) {
-  console.log(`${row.path}\t${row.lines}\t${row.gapTo500}\t${row.maxLinesExempt}`);
+  console.log(
+    `${row.path}\t${row.lines}\t${row.gapTo500}\t${row.maxLinesExempt}\t${row.baselineDecision}\t${row.baselineCategory}\t${row.baselineMax}`,
+  );
 }
