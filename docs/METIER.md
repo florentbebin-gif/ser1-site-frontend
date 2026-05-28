@@ -218,7 +218,7 @@ Supports robustes du périmètre actuel :
 | Sujet                                                              | Preuves principales                                                                                                                                                              |
 | ------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Succession directe avec enfants / conjoint / parents / fratrie     | `successionDisplay.test.ts`, `successionValidationMatrix.test.ts`, `successionGoldenScenarios.test.ts`                                                                           |
-| DMTG par lien de parenté et exonération conjoint / partenaire PACS | `src/engine/succession.ts`, `successionFiscalContext.test.ts`, CGI art. 777, 779, 796-0 bis                                                                                      |
+| DMTG par lien de parenté et exonération conjoint / partenaire PACS | `src/engine/succession/index.ts`, `successionFiscalContext.test.ts`, CGI art. 777, 779, 796-0 bis                                                                                |
 | PACS sans testament                                                | `successionDevolution.test.ts`, `successionValidationMatrix.test.ts`, `successionChainage.pacsApplicability.test.ts`                                                             |
 | PACS avec testament partenaire                                     | `successionDisplay.test.ts`, `successionValidationMatrix.test.ts`, `successionChainage.pacsApplicability.test.ts`                                                                |
 | Assurance-vie 990 I / 757 B, clauses simples                       | `successionGoldenScenarios.test.ts`, `successionDeathInsuranceAllowances.test.ts`, BOFiP BOI-ENR-DMTG-10-10-20-20                                                                |
@@ -482,7 +482,7 @@ En mode simplifié, seuls Montant, Durée et Taux annuel sont affichés.
 
 Le simulateur `/sim/tresorerie-societe` projette une société soumise à l’IS dans un parcours guidé : Société, Foyer, Allocation trésorerie société, Projection.
 
-Source de vérité runtime : `TresoInputsV6`. Les formats V1→V5 restent confinés à `src/engine/tresorerie/legacy/**` et aux migrations moteur ; les features manipulent `TresoInputsV6` ou un état persisté `unknown` converti par `migrateUnknownTresorerieInputsToV6(unknown)`.
+Source de vérité runtime : `TresoInputsV6`. Les formats V1→V5 restent confinés aux types de compatibilité `src/engine/tresorerie/migrations/compatTypes.ts` et aux migrations moteur ; les features manipulent `TresoInputsV6` ou un état persisté `unknown` converti par `migrateUnknownTresorerieInputsToV6(unknown)`.
 
 ### Périmètre calculé
 
