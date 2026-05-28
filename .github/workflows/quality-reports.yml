@@ -29,7 +29,7 @@ jobs:
           REPO: ${{ github.repository }}
         run: |
           since="$(date -u -d '7 days ago' +'%Y-%m-%dT%H:%M:%SZ')"
-          if ! runs="$(gh api --method GET "repos/${REPO}/actions/workflows/quality-reports.yml/runs" -f branch=main -f created=">=${since}" -f per_page=100)"; then
+          if ! runs="$(gh api --method GET "repos/${REPO}/actions/runs" -f branch=main -f created=">=${since}" -f per_page=100)"; then
             {
               echo "### Quality reports — stabilité 7 jours"
               echo ""
@@ -37,9 +37,10 @@ jobs:
             } >> "${GITHUB_STEP_SUMMARY}"
             exit 0
           fi
-          total="$(echo "${runs}" | jq '.workflow_runs | length')"
-          success="$(echo "${runs}" | jq '[.workflow_runs[] | select(.conclusion == "success")] | length')"
-          failure="$(echo "${runs}" | jq '[.workflow_runs[] | select(.conclusion == "failure" or .conclusion == "timed_out" or .conclusion == "cancelled")] | length')"
+          quality_runs="$(echo "${runs}" | jq '[.workflow_runs[] | select(.name == "Quality reports")]')"
+          total="$(echo "${quality_runs}" | jq 'length')"
+          success="$(echo "${quality_runs}" | jq '[.[] | select(.conclusion == "success")] | length')"
+          failure="$(echo "${quality_runs}" | jq '[.[] | select(.conclusion == "failure" or .conclusion == "timed_out" or .conclusion == "cancelled")] | length')"
           {
             echo "### Quality reports — stabilité 7 jours"
             echo ""

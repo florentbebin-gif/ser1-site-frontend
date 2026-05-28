@@ -254,6 +254,65 @@ describe('baseCgRetraiteRepository', () => {
     ]);
   });
 
+  it('complète les contrats Supabase partiels pour éviter un crash de la page settings', async () => {
+    mockCatalogFetch({
+      contractRows: [
+        createContractRow({
+          contract_id: 'generali-madelin-la-retraite-94-153',
+          source_id: 'Contrat N°153',
+          company: 'GENERALI',
+          contract_name: 'MADELIN- La retraite 94',
+          contract_type: 'MADELIN',
+          per_compartment: 'C1',
+          contract_data: {
+            id: 'generali-madelin-la-retraite-94-153',
+          },
+        }),
+      ],
+    });
+
+    const { getBaseCgRetraiteCatalog } = await import('./baseCgRetraiteRepository');
+    const catalog = await getBaseCgRetraiteCatalog();
+    const contract = catalog[0];
+
+    expect(contract).toEqual(
+      expect.objectContaining({
+        id: 'generali-madelin-la-retraite-94-153',
+        sourceId: 'Contrat N°153',
+        compagnie: 'GENERALI',
+        nomContrat: 'MADELIN- La retraite 94',
+        typeContrat: 'MADELIN',
+        perCompartment: 'C1',
+      }),
+    );
+    expect(contract?.phaseEpargne.fraisGestion).toBeNull();
+    expect(contract?.phaseEpargne.fraisGestionFondsEuro).toBeNull();
+    expect(contract?.phaseLiquidation.fraisArrerages).toBeNull();
+  });
+
+  it('normalise les anciens noms de compagnies persistés dans Supabase', async () => {
+    mockCatalogFetch({
+      contractRows: [
+        createContractRow({
+          contract_id: 'sma-perin-per-individuel-smavie-31',
+          company: 'SMA',
+          contract_name: 'PERIN- PER INDIVIDUEL SMAVIE',
+          contract_data: {
+            ...(createContractRow().contract_data as Record<string, unknown>),
+            id: 'sma-perin-per-individuel-smavie-31',
+            compagnie: 'SMA',
+            nomContrat: 'PERIN- PER INDIVIDUEL SMAVIE',
+          },
+        }),
+      ],
+    });
+
+    const { getBaseCgRetraiteCatalog } = await import('./baseCgRetraiteRepository');
+    const catalog = await getBaseCgRetraiteCatalog();
+
+    expect(catalog[0]?.compagnie).toBe('SMABTP');
+  });
+
   it('remonte une erreur typée quand la table canonique Supabase manque', async () => {
     mockCatalogFetch({
       contractRows: [],
