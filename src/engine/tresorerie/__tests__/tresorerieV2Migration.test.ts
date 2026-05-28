@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import type { TresoInputs, TresoProjectionRow } from '@/engine/tresorerie/types';
+import type { TresoInputs } from '@/engine/tresorerie/legacy/types';
+import type { TresoProjectionRow } from '@/engine/tresorerie/types';
 import {
   buildTresoInputsV5FromV4,
   buildTresoInputsV6FromV5,
@@ -341,7 +342,7 @@ describe('migration trésorerie v3', () => {
         startYear: 2031,
         source: 'none',
         loadedAnnualCost: 0,
-        socialChargeRate: 0,
+        socialChargeRate: 0.3,
         annualNetIncomeNeed: 42_000,
         useCcaForCompletion: true,
       },
@@ -449,8 +450,8 @@ describe('migration trésorerie v3', () => {
         startYear: 2026,
         endYear: 2030,
         remuneration: expect.objectContaining({ enabled: true, source: 'holding' }),
-        distribution: expect.objectContaining({ enabled: false, dividendsStrategy: 'max_treso' }),
-        ccaRepayment: expect.objectContaining({ enabled: true, strategy: 'max_treso' }),
+        distribution: expect.objectContaining({ enabled: false, dividendsStrategy: 'aucun' }),
+        ccaRepayment: expect.objectContaining({ enabled: false, strategy: 'aucun' }),
         ccaContribution: {
           enabled: true,
           annual: { amount: 6_000, startYear: 2027, endYear: 2030 },
@@ -465,9 +466,14 @@ describe('migration trésorerie v3', () => {
         distribution: expect.objectContaining({
           enabled: true,
           annualNetIncomeNeed: 42_000,
-          dividendsStrategy: 'max_treso',
+          dividendsStrategy: 'montant_cible',
+          dividendsTargetAmountNet: 42_000,
         }),
-        ccaRepayment: expect.objectContaining({ enabled: false, strategy: 'max_treso' }),
+        ccaRepayment: expect.objectContaining({
+          enabled: false,
+          strategy: 'montant_cible',
+          targetAmount: 42_000,
+        }),
         ccaContribution: {
           enabled: true,
           annual: { amount: 6_000, startYear: 2031, endYear: 2033 },

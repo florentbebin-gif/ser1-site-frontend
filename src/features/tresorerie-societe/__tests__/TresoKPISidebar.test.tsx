@@ -1,6 +1,6 @@
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
-import type { TresoInputsV2 } from '@/engine/tresorerie/types';
+import type { TresoInputsV6 } from '@/engine/tresorerie/types';
 import type { TresoKPIs } from '../hooks/useTresorerieCalculations';
 import { TresoKPISidebar } from '../components/TresoKPISidebar';
 
@@ -28,14 +28,11 @@ const KPIS: TresoKPIs = {
   anneeRetraiteIndex: 2,
 };
 
-const INPUTS: TresoInputsV2 = {
-  version: 2,
+const INPUTS: TresoInputsV6 = {
+  version: 6,
+  selectedAssociateId: 'associe-1',
   foyer: {
     selectedAssociateId: 'associe-1',
-    currentAge: 50,
-    retirementAge: 62,
-    annualIncomeNeed: 24000,
-    projectionStartYear: 2026,
   },
   company: {
     creationType: 'existante',
@@ -46,7 +43,26 @@ const INPUTS: TresoInputsV2 = {
     treasuryInitial: 150000,
     annualStructureCosts: 3000,
     reducedCorporateTaxEligible: true,
-    associates: [],
+    associates: [
+      {
+        id: 'associe-1',
+        label: 'Associé 1',
+        kind: 'pp',
+        profile: {
+          currentAge: 50,
+          retirementAge: 62,
+          annualIncomeNeed: 24000,
+          projectionStartYear: 2026,
+        },
+        ownershipLots: [{ right: 'pleine_propriete', capitalPct: 100, economicRightsPct: 100 }],
+        roles: ['associe_sans_statut'],
+        cca: {
+          currentBalance: 0,
+          remunerationRate: 0,
+        },
+        revenuePhases: [],
+      },
+    ],
     loans: [],
     subsidiaries: [
       {

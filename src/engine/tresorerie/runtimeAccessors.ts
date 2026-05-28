@@ -1,14 +1,10 @@
-import type { AssociateProfileInput, RuntimeAssociateInput, TresoInputsRuntime } from './types';
+import type { AssociateProfileInput, RuntimeAssociateInput, TresoInputsV6 } from './types';
 
-export function getSelectedAssociateId(inputs: TresoInputsRuntime): string {
-  return 'selectedAssociateId' in inputs
-    ? inputs.selectedAssociateId
-    : inputs.foyer.selectedAssociateId;
+export function getSelectedAssociateId(inputs: TresoInputsV6): string {
+  return inputs.selectedAssociateId || inputs.foyer.selectedAssociateId;
 }
 
-export function getSelectedAssociate(
-  inputs: TresoInputsRuntime,
-): RuntimeAssociateInput | undefined {
+export function getSelectedAssociate(inputs: TresoInputsV6): RuntimeAssociateInput | undefined {
   const selectedId = getSelectedAssociateId(inputs);
   return (
     inputs.company.associates.find((associate) => associate.id === selectedId) ??
@@ -17,7 +13,7 @@ export function getSelectedAssociate(
 }
 
 export function getAssociateProfile(
-  inputs: TresoInputsRuntime,
+  inputs: TresoInputsV6,
   associate: RuntimeAssociateInput | undefined = getSelectedAssociate(inputs),
 ): AssociateProfileInput {
   const projectionStartYear = inputs.company.projectionStartYear ?? new Date().getFullYear();

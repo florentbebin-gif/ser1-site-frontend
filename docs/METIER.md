@@ -408,7 +408,7 @@ La surface `/sim/per` est un hub avec deux parcours actifs. `Controle du potenti
 - mutualisation des plafonds entre conjoints
 - arbitrage IR delegue au moteur fiscal du repo
 - PASS lu via la chaine fiscale standard (`public.pass_history` -> cache -> `useFiscalContext` -> fallback defaults)
-- transfert PER avec Base CG retraite statique + overlays Supabase admin
+- transfert PER avec Base CG retraite canonique Supabase (`base_cg_retraite_contracts` + documents), erreur explicite si le catalogue est indisponible
 - liquidation PER : rente, capital unique, capital fractionne, fiscalite brut / net de PS / net de PS et IR quand applicable
 
 ### Limites connues
@@ -482,7 +482,7 @@ En mode simplifié, seuls Montant, Durée et Taux annuel sont affichés.
 
 Le simulateur `/sim/tresorerie-societe` projette une société soumise à l’IS dans un parcours guidé : Société, Foyer, Allocation trésorerie société, Projection.
 
-Source de vérité runtime : `TresoInputsV2`. L’ancien modèle `TresoInputs` est accepté uniquement pour migrer les anciennes sessions au chargement.
+Source de vérité runtime : `TresoInputsV6`. Les formats V1→V5 restent confinés à `src/engine/tresorerie/legacy/**` et aux migrations moteur ; les features manipulent `TresoInputsV6` ou un état persisté `unknown` converti par `migrateUnknownTresorerieInputsToV6(unknown)`.
 
 ### Périmètre calculé
 

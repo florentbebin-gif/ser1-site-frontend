@@ -1,5 +1,4 @@
 import { describe, expect, it } from 'vitest';
-import { BASECG_CATALOG } from '@/data/base-cg-retraite';
 import {
   formatBaseCgRetraiteRateField,
   normalizeBaseCgRetraiteGestionFees,
@@ -63,18 +62,17 @@ describe('baseCgRetraiteNormalization', () => {
     expect(formatBaseCgRetraiteRateField(normalized.fraisGestionUc)).toBe('1 %');
   });
 
-  it('ventile les frais mixtes fonds euros / UC présents dans le catalogue statique', () => {
-    const mixedContracts = BASECG_CATALOG.filter((contract) => {
-      const value = contract.phaseEpargne.fraisGestion;
-      return typeof value === 'string' && value.includes('€') && /\bUC\b/i.test(value);
-    });
+  it('ventile les frais mixtes fonds euros / UC issus de la Base CG canonique', () => {
+    const phaseEpargne = {
+      fraisGestion: '0,65%€\n0,96%UC',
+      fraisGestionFondsEuro: null,
+      fraisGestionUc: null,
+    };
 
-    expect(mixedContracts.length).toBeGreaterThan(0);
-    for (const contract of mixedContracts) {
-      const normalized = normalizeBaseCgRetraiteGestionFees(contract.phaseEpargne);
-      expect(normalized.fraisGestionFondsEuro).not.toBe(contract.phaseEpargne.fraisGestion);
-      expect(normalized.fraisGestionUc).not.toBe(contract.phaseEpargne.fraisGestion);
-    }
+    const normalized = normalizeBaseCgRetraiteGestionFees(phaseEpargne);
+
+    expect(normalized.fraisGestionFondsEuro).not.toBe(phaseEpargne.fraisGestion);
+    expect(normalized.fraisGestionUc).not.toBe(phaseEpargne.fraisGestion);
   });
 
   it('formate les décimaux de taux en pourcentage sans modifier les textes contractuels', () => {

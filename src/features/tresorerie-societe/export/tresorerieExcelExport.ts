@@ -19,10 +19,9 @@ import type { XlsxCell, XlsxSheet } from '@/utils/export/xlsxBuilder';
 import type {
   AmountScheduleInput,
   AllocationPocketHorizon,
-  CcaScheduleInput,
   RuntimeAssociateInput,
   SubsidiaryInput,
-  TresoInputsRuntime,
+  TresoInputsV6,
   TresoProjectionRow,
 } from '@/engine/tresorerie/types';
 import type { TresoKPIs } from '../hooks/useTresorerieCalculations';
@@ -62,11 +61,6 @@ function sourceLabel(source: string): string {
   if (source === 'fiscalite') return 'Fiscalité';
   return source;
 }
-
-function getLegacyCcaSchedule(associate: RuntimeAssociateInput): CcaScheduleInput | undefined {
-  return associate.cca && 'annualContribution' in associate.cca ? associate.cca : undefined;
-}
-
 // ─── Libellés UI premium (jamais les labels Excel bruts) ─────────────────────
 
 interface ProjectionSerie {
@@ -158,7 +152,7 @@ const RESUME_SERIES: ProjectionSerie[] = [
 function buildProjectionSheet(
   rows: TresoProjectionRow[],
   kpis: TresoKPIs,
-  inputs: TresoInputsRuntime,
+  inputs: TresoInputsV6,
 ): XlsxSheet {
   if (rows.length === 0) {
     return {
@@ -175,15 +169,13 @@ function buildProjectionSheet(
     0,
   );
   const ccaAnnualTotal = inputs.company.associates.reduce((sum, associate) => {
-    const legacyAnnual = getLegacyCcaSchedule(associate)?.annualContribution.amount ?? 0;
     const phaseAnnual = getAssociateRevenuePhases(associate)
       .filter(isRevenuePhaseV6)
       .reduce((phaseSum, phase) => phaseSum + (phase.ccaContribution.annual?.amount ?? 0), 0);
-    return sum + legacyAnnual + phaseAnnual;
+    return sum + phaseAnnual;
   }, 0);
   const maxContributionEndYear = inputs.company.associates.reduce<number | undefined>(
     (max, associate) => {
-      const legacyEndYear = getLegacyCcaSchedule(associate)?.annualContribution.endYear;
       const phaseEndYear = getAssociateRevenuePhases(associate)
         .filter(isRevenuePhaseV6)
         .reduce<number | undefined>((phaseMax, phase) => {
@@ -191,13 +183,7 @@ function buildProjectionSheet(
           if (endYear == null) return phaseMax;
           return phaseMax == null ? endYear : Math.max(phaseMax, endYear);
         }, undefined);
-      const endYear =
-        legacyEndYear == null
-          ? phaseEndYear
-          : phaseEndYear == null
-            ? legacyEndYear
-            : Math.max(legacyEndYear, phaseEndYear);
-      return endYear == null ? max : max == null ? endYear : Math.max(max, endYear);
+      return phaseEndYear == null ? max : max == null ? phaseEndYear : Math.max(max, phaseEndYear);
     },
     undefined,
   );
@@ -279,10 +265,7 @@ function buildProjectionSheet(
   };
 }
 
-function buildAssociateRevenueSheet(
-  rows: TresoProjectionRow[],
-  inputs: TresoInputsRuntime,
-): XlsxSheet {
+function buildAssociateRevenueSheet(rows: TresoProjectionRow[], inputs: TresoInputsV6): XlsxSheet {
   if (rows.length === 0) {
     return {
       name: 'Revenus associés',
@@ -356,7 +339,7 @@ function phaseCcaStrategyLabel(phase: RevenuePhaseInput): string {
     : 'Sans remboursement CCA';
 }
 
-function buildRevenuePhaseRows(company: TresoInputsRuntime['company']): XlsxCell[][] {
+function buildRevenuePhaseRows(company: TresoInputsV6['company']): XlsxCell[][] {
   const horizonYear = (company.projectionStartYear ?? new Date().getFullYear()) + 14;
   const rows = company.associates.flatMap((associate) => {
     const phases = getAssociateRevenuePhases(associate);
@@ -427,7 +410,7 @@ function disposalRows(subsidiaries: SubsidiaryInput[]): XlsxCell[][] {
     : [[txt('Aucune cession prévue'), txt(''), txt(''), txt(''), txt(''), txt(''), txt('')]];
 }
 
-function buildStructureSheet(inputs: TresoInputsRuntime): XlsxSheet {
+function buildStructureSheet(inputs: TresoInputsV6): XlsxSheet {
   const company = inputs.company;
   const incomeStatement = company.incomeStatement ?? {
     annualRevenue: 0,
@@ -665,7 +648,7 @@ function buildHypothesesSheet(): XlsxSheet {
 export async function buildTresorerieXlsxBlob(
   rows: TresoProjectionRow[],
   kpis: TresoKPIs,
-  inputs: TresoInputsRuntime,
+  inputs: TresoInputsV6,
   headerFill?: string,
   sectionFill?: string,
 ): Promise<Blob> {
@@ -688,7 +671,7 @@ export async function buildTresorerieXlsxBlob(
 export async function exportTresorerieExcel(
   rows: TresoProjectionRow[],
   kpis: TresoKPIs,
-  inputs: TresoInputsRuntime,
+  inputs: TresoInputsV6,
   headerFill?: string,
   sectionFill?: string,
 ): Promise<void> {

@@ -1,21 +1,47 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { BASECG_CATALOG, type BaseCgRetraiteContract } from '@/data/base-cg-retraite';
+import { PREFON_2025, type BaseCgRetraiteContract } from '@/data/base-cg-retraite';
 import { BaseCgRetraiteContractModal } from './BaseCgRetraiteContractModal';
 import '../styles/base-cg-retraite.css';
 import '../styles/premium.css';
 import '../styles/modals.css';
 
 function getReferenceContract(): BaseCgRetraiteContract {
-  const contract =
-    BASECG_CATALOG.find((item) => item.id === 'prefon-perin-per-prefon-retraite-42') ??
-    BASECG_CATALOG[0];
-
-  if (!contract) {
-    throw new Error('Catalogue Base CG retraite vide.');
-  }
-
   return {
-    ...contract,
+    id: 'storybook-prefon-perin',
+    sourceId: 'Storybook',
+    compagnie: 'PREFON',
+    nomContrat: 'PER Préfon retraite',
+    typeContrat: 'PER_POINTS',
+    perCompartment: 'C1',
+    pointsParams: PREFON_2025,
+    phaseEpargne: {
+      dateCommercialisation: 'Ouvert',
+      nombreFonds: 1,
+      repartitionUcEuro: 'Système par points',
+      rendementFondsEuro: 'Points Préfon',
+      fraisVersements: 0,
+      fraisGestion: 0,
+      fraisArbitrage: 0,
+      fraisTransfertSortant: 0,
+      fraisTransfertSortantRate: 0,
+      clauseBeneficiaire: 'Standard',
+      garantiesComplementaires: 'Selon notice',
+    },
+    phaseLiquidation: {
+      ageLimiteLiquidation: 'NC',
+      sortieCapitalRetraite: 'Selon compartiment',
+      fractionnementCapital: 'NC',
+      rachatLibre: 'NC',
+      tableConversionRente: 'Points Préfon',
+      tableGarantieAdhesion: 'NC',
+      tauxTechnique: 'NC',
+      fraisArrerages: 0,
+      fraisArreragesRate: 0,
+      annuitesGaranties: 'Selon option',
+      reversionPossible: 'Oui',
+      reversionIncluse: 'Non',
+      renteEstimee: null,
+    },
     documents: [
       {
         id: 'storybook-conditions-generales',

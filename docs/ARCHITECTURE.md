@@ -53,7 +53,8 @@ Repères (domain-first) :
 - `src/settings/` : thème, presets, ThemeProvider.
 - `src/pptx/` : pipeline PPTX (design system + slides + export).
 - `src/reporting/` : snapshots `.ser1`, migrations de snapshots et contrats de reporting. Ce périmètre dépend des moteurs/domaines purs, jamais des features UI.
-- `src/engine/tresorerie/migrations/` : migrations pures `TresoInputs` V1→V6. La chaîne reste ici sans isolation `legacy/` séparée ; la règle dependency-cruiser `tresorerie-legacy-restricted` est volontairement non ajoutée tant que les types legacy ne sont pas extraits. À reconsidérer si un chantier dédié les isole.
+- `src/engine/tresorerie/legacy/` : types historiques V1→V5, réservés aux migrations et tests moteur.
+- `src/engine/tresorerie/migrations/` : adaptateurs purs vers `TresoInputsV6`, dont `migrateUnknownTresorerieInputsToV6(unknown)`.
 - `supabase/` : edge functions + migrations.
 
 Conventions clés :
@@ -61,8 +62,12 @@ Conventions clés :
 - Nouveau code : TS/TSX.
 - Fichiers `500-800` lignes = dette surveillée. Acceptable temporairement si le fichier reste mono-rôle et lisible.
 - Fichiers `>800` lignes = découpage obligatoire au prochain chantier qui touche le fichier.
-- Garde-fous d'architecture : `npm run check:arch` (dependency-cruiser, config `.dependency-cruiser.cjs`) — bloquant en CI. Règles : engine/domain sans React ni features, features sans pages, reporting sans features, imports cross-features via `index.ts` uniquement.
+- Garde-fous d'architecture : `npm run check:arch` (dependency-cruiser, config `.dependency-cruiser.cjs`) — bloquant en CI. Règles : engine/domain sans React ni features, features sans pages, reporting sans features, imports cross-features via `index.ts` uniquement, `tresorerie-legacy-restricted` pour empêcher `src/features/tresorerie-societe` d'importer `src/engine/tresorerie/legacy/**`.
 - Garde imports profonds : `npm run check:deep-imports` bloque tout nouveau `../../../` hors tests dans les imports TS/TSX/JS/JSX et CSS. La baseline hors tests est `0`; utiliser `@/` pour les imports cross-module.
+- Garde fichiers orphelins : `npm run check:orphan-source-files` vérifie l'atteignabilité des sources applicatives depuis les entrypoints explicites.
+- Garde fichiers longs : `npm run check:large-files-baseline` bloque les nouveaux fichiers `src/**/*.ts(x)` au-delà de 500 lignes sauf exemption ESLint documentée.
+- Garde routes/docs : `npm run check:routes-doc-sync` vérifie que les routes déclarées dans `src/routes` apparaissent dans ce document.
+- Coverage moteur : `npm run coverage` porte des seuils sur `src/engine/**` uniquement ; l'UI/features suit une trajectoire séparée.
 - Nomenclature métier : dans Succession, utiliser les noms explicites comme `AssuranceVie` pour les nouveaux modules métier ; éviter les abréviations ambiguës de type `Av`.
 
 ### Règle "god file"
@@ -91,14 +96,16 @@ Objectif : découper d'abord les fichiers qui mélangent plusieurs responsabilit
 
 Ces noms de dossiers sont des marqueurs historiques de refactor ou de prototypage, pas des patterns actifs du repo.
 
-**Statut au 2026-03-12** :
+**Statut au 2026-05-28** :
 
-- aucun dossier `legacy`, `__spike__` ou `_raw` n'est présent sous `src/`
-- les mentions résiduelles dans la doc ou l'historique Git doivent être lues comme historiques
+- `src/engine/tresorerie/legacy/**` est le seul dossier `legacy` autorisé sous `src/` ; il contient les types historiques V1→V5 consommés par les migrations moteur.
+- aucun dossier `__spike__` ou `_raw` n'est présent sous `src/`
+- les autres mentions résiduelles dans la doc ou l'historique Git doivent être lues comme historiques
 
 **Règles** :
 
-- ne pas réintroduire ces dossiers dans `src/`
+- ne pas réintroduire ces dossiers dans `src/` hors `src/engine/tresorerie/legacy/**`
+- `npm run check:naming-conventions` bloque les nouveaux dossiers `legacy`, `__spike__` ou `_raw` non autorisés sous `src/`
 - si un spike temporaire est nécessaire, le garder hors runtime prod puis le supprimer ou l'intégrer avant merge
 - avant toute suppression ou promotion de code historique, fournir une preuve d'usage (`rg`, chaîne d'import, route ou script)
 
@@ -106,7 +113,10 @@ Ces noms de dossiers sont des marqueurs historiques de refactor ou de prototypag
 
 ```powershell
 Get-ChildItem src -Recurse -Directory |
-  Where-Object { $_.Name -in @('legacy','__spike__','_raw') }
+  Where-Object {
+    $_.Name -in @('__spike__','_raw') -or
+    ($_.Name -eq 'legacy' -and $_.FullName -notlike '*src\engine\tresorerie\legacy')
+  }
 # → doit retourner vide
 ```
 
@@ -378,18 +388,19 @@ UI : `/settings/base-contrat` est une vue read-only à 3 colonnes (Constitution 
 
 ### Base CG retraite
 
-Source applicative : `src/data/base-cg-retraite/catalog.static.ts` (snapshot statique TypeScript). Le classeur historique n'est plus une source runtime et ne doit pas être requis pour démarrer, tester ou builder l'application.
+Source applicative : `public.base_cg_retraite_contracts` + `public.base_cg_retraite_documents`, lus par `src/utils/cache/baseCgRetraiteRepository.ts`. Le catalogue TypeScript statique n'est plus une source runtime.
 
-UI : `/settings/base-contrat-retraite`, déclarée dans `src/routes/settingsRoutes.ts`. La lecture est accessible aux utilisateurs authentifiés ; les actions de création, modification, suppression et synchronisation restent réservées aux admins via l'UI et les protections Supabase/RLS.
+UI : `/settings/base-contrat-retraite`, déclarée dans `src/routes/settingsRoutes.ts`. La lecture est accessible aux utilisateurs authentifiés ; les actions de création, modification et suppression restent réservées aux admins via l'UI et les protections Supabase/RLS.
 
-Overlays Supabase :
+Tables Supabase :
 
-- `base_cg_retraite_overrides` : corrections et enrichissements admin des contrats du snapshot.
+- `base_cg_retraite_contracts` : contrats canoniques avec colonnes structurées (`source_id`, `company`, `contract_name`, `contract_type`, `per_compartment`), `contract_data`, `row_hash`, `is_deleted`.
+- `base_cg_retraite_catalog_meta` : `schema_version`, counts et `canonical_hash` global recalculés par triggers SQL après backfill, soft-delete et modifications admin contrats/documents.
 - `base_cg_retraite_documents` : métadonnées et liens de documents associés aux contrats.
 
-Les corrections vivantes passent par la page settings/admin et les overlays Supabase existants. Les fichiers Office de travail restent hors Git ; `npm run check:no-office-artifacts` bloque tout `.xls`, `.xlsx`, `.xlsm`, `.ppt` ou `.pptx` versionné par erreur.
+La suppression admin d'un contrat est un soft-delete (`is_deleted = true`) ; les lectures runtime filtrent `is_deleted = false` et les documents sont conservés. L'ancienne table `base_cg_retraite_overrides` n'est plus lue par l'app, mais n'est pas supprimée dans la migration canonique pour garder une fenêtre de validation distante et rollback. Si Supabase est indisponible ou si la migration canonique manque, PER et Settings affichent une erreur explicite au lieu de calculer sur un catalogue vide.
 
-La migration du catalogue vers une source Supabase complète reste un chantier P8 dédié. Les PR hors P8 ne doivent pas introduire de double lecture statique/Supabase ni rendre le catalogue async sans cadrage produit et migration explicite.
+Les fichiers Office de travail restent hors Git ; `npm run check:no-office-artifacts` bloque tout `.xls`, `.xlsx`, `.xlsm`, `.ppt` ou `.pptx` versionné par erreur.
 
 ### Gouvernance catalogue — assimilation
 
@@ -443,15 +454,17 @@ rg "export const CATALOG" src/domain/base-contrat/catalog.ts
 
 ### Pages settings existantes
 
-| Route                             | Composant                | Table Supabase                                             | Périmètre                                                                                          |
-| --------------------------------- | ------------------------ | ---------------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
-| `/settings`                       | `Settings`               | —                                                          | Généraux (placeholder)                                                                             |
-| `/settings/impots`                | `SettingsImpots`         | `tax_settings`                                             | Barème IR (2 ans), PFU part IR, CEHR/CDHR, IS                                                      |
-| `/settings/prelevements`          | `SettingsPrelevements`   | `ps_settings`                                              | PS patrimoine (cas général + régime d'exception), cotisations retraite, seuils RFR (CSG/CRDS/CASA) |
-| `/settings/base-contrat`          | `BaseContrat`            | `base_contrat_overrides`                                   | Référentiel produits (read-only 3 colonnes + toggles admin)                                        |
-| `/settings/base-contrat-retraite` | `BaseCgRetraite`         | `base_cg_retraite_overrides`, `base_cg_retraite_documents` | Base CG retraite : snapshot statique TypeScript + corrections et documents admin                   |
-| `/settings/comptes`               | `SettingsComptes`        | `profiles`                                                 | Comptes utilisateurs par cabinet (admin only)                                                      |
-| `/settings/dmtg-succession`       | `SettingsDmtgSuccession` | `tax_settings`, `fiscality_settings`                       | Éditeur unique DMTG successions + donations + AV décès                                             |
+| Route                             | Composant                | Table Supabase                                                                                   | Périmètre                                                                                          |
+| --------------------------------- | ------------------------ | ------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------- |
+| `/settings`                       | `Settings`               | —                                                                                                | Généraux (placeholder)                                                                             |
+| `/settings/impots`                | `SettingsImpots`         | `tax_settings`                                                                                   | Barème IR (2 ans), PFU part IR, CEHR/CDHR, IS                                                      |
+| `/settings/prelevements`          | `SettingsPrelevements`   | `ps_settings`                                                                                    | PS patrimoine (cas général + régime d'exception), cotisations retraite, seuils RFR (CSG/CRDS/CASA) |
+| `/settings/base-contrat`          | `BaseContrat`            | `base_contrat_overrides`                                                                         | Référentiel produits (read-only 3 colonnes + toggles admin)                                        |
+| `/settings/base-contrat-retraite` | `BaseCgRetraite`         | `base_cg_retraite_contracts`, `base_cg_retraite_documents` (`base_cg_retraite_catalog_meta` ops) | Base CG retraite canonique Supabase + documents admin                                              |
+| `/settings/prevoyance-regimes`    | `PrevoyanceRegimes`      | `prevoyance_regime_settings`, `prevoyance_maintien_employeur_settings`                           | Réglages Prévoyance V1                                                                             |
+| `/settings/design-system`         | `SettingsDesignSystem`   | —                                                                                                | Audit visuel interne admin                                                                         |
+| `/settings/comptes`               | `SettingsComptes`        | `profiles`                                                                                       | Comptes utilisateurs par cabinet (admin only)                                                      |
+| `/settings/dmtg-succession`       | `SettingsDmtgSuccession` | `tax_settings`, `fiscality_settings`                                                             | Éditeur unique DMTG successions + donations + AV décès                                             |
 
 Source unique des routes : `src/routes/settingsRoutes.ts`.
 Shell de navigation : `src/pages/SettingsShell.tsx` (rendu dynamique des onglets, filtre `adminOnly`).
@@ -460,14 +473,17 @@ Shell de navigation : `src/pages/SettingsShell.tsx` (rendu dynamique des onglets
 
 ### Tables Supabase (singletons, `id = 1`)
 
-| Table                    | Périmètre                                                                                                    | RLS lecture | RLS écriture |
-| ------------------------ | ------------------------------------------------------------------------------------------------------------ | ----------- | ------------ |
-| `tax_settings`           | IR barème (N et N-1), PFU part IR, CEHR/CDHR, IS, DMTG barèmes+abattements                                   | Auth        | Admin        |
-| `ps_settings`            | PS patrimoine (cas général + régime d'exception), cotisations retraite par tranche, seuils RFR (1/2/3 parts) | Auth        | Admin        |
-| `fiscality_settings`     | Règles par enveloppe (AV, PER, PEA, CTO, dividendes…) — taux, abattements, seuils                            | Auth        | Admin        |
-| `pass_history`           | Historique PASS annuel administré dans Settings > Prelevements (multi-lignes, clé `year`)                    | Auth        | Admin        |
-| `base_contrat_settings`  | Singleton de config catalogue présent dans le schéma, non consommé par le runtime courant                    | Auth        | Admin        |
-| `base_contrat_overrides` | Clôture/réouverture produit + note admin + statut de revue juridique (uuid per product)                      | Admin       | Admin        |
+| Table                           | Périmètre                                                                                                    | RLS lecture | RLS écriture |
+| ------------------------------- | ------------------------------------------------------------------------------------------------------------ | ----------- | ------------ |
+| `tax_settings`                  | IR barème (N et N-1), PFU part IR, CEHR/CDHR, IS, DMTG barèmes+abattements                                   | Auth        | Admin        |
+| `ps_settings`                   | PS patrimoine (cas général + régime d'exception), cotisations retraite par tranche, seuils RFR (1/2/3 parts) | Auth        | Admin        |
+| `fiscality_settings`            | Règles par enveloppe (AV, PER, PEA, CTO, dividendes…) — taux, abattements, seuils                            | Auth        | Admin        |
+| `pass_history`                  | Historique PASS annuel administré dans Settings > Prelevements (multi-lignes, clé `year`)                    | Auth        | Admin        |
+| `base_contrat_settings`         | Singleton de config catalogue présent dans le schéma, non consommé par le runtime courant                    | Auth        | Admin        |
+| `base_contrat_overrides`        | Clôture/réouverture produit + note admin + statut de revue juridique (uuid per product)                      | Admin       | Admin        |
+| `base_cg_retraite_contracts`    | Catalogue canonique Base CG retraite, soft-delete, hash par contrat                                          | Auth        | Admin        |
+| `base_cg_retraite_catalog_meta` | Version, counts et hash global du catalogue Base CG retraite                                                 | Auth        | Triggers SQL |
+| `base_cg_retraite_documents`    | Documents Base CG retraite liés aux contrats canoniques                                                      | Auth        | Admin        |
 
 Schéma complet : `supabase/migrations/20260210214352_remote_commit.sql`.
 

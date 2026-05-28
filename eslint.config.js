@@ -179,7 +179,6 @@ export default [
   // without carrying the same review signal as orchestration or business-flow files.
   {
     files: [
-      'src/data/base-cg-retraite/catalog.static.ts',
       'src/constants/settingsDefaults.ts',
       'src/domain/base-contrat/catalog.ts',
       'src/domain/base-contrat/rules/library/immobilier.ts',
@@ -215,6 +214,7 @@ export default [
   {
     files: [
       'src/features/tresorerie-societe/__tests__/tresorerieExport.test.ts',
+      'src/features/per/transfert/PerTransfertSimulator.tsx',
       'src/pptx/export/exportStudyDeck.ts',
       'src/domain/base-contrat/__tests__/rules.test.ts',
       'src/pptx/slides/buildPlacementDetail.ts',

@@ -22,7 +22,7 @@ import type {
   AllocationPocketInput,
   RuntimeAssociateInput,
   TresoAssociateRevenueSource,
-  TresoInputsRuntime,
+  TresoInputsV6,
   TresoProjectionRow,
 } from '@/engine/tresorerie/types';
 import { pickChapterImage } from '@/pptx/designSystem/serenity';
@@ -63,8 +63,7 @@ function getAssociateRevenuePhases(
   const phases = (associate as { revenuePhases?: RevenuePhaseInput[] } | undefined)?.revenuePhases;
   return Array.isArray(phases) ? sortPhases(phases) : [];
 }
-
-function getCivilYear(inputs: TresoInputsRuntime, row: TresoProjectionRow): number {
+function getCivilYear(inputs: TresoInputsV6, row: TresoProjectionRow): number {
   const associate = getSelectedAssociate(inputs);
   const profile = getAssociateProfile(inputs, associate);
   return profile.projectionStartYear + row.year - 1;
@@ -74,7 +73,7 @@ function getAvailableTreasury(row: TresoProjectionRow, protectedCash: number): n
   return row.tresorerieDisponible ?? Math.max(0, getBankEnd(row) - protectedCash);
 }
 
-function buildProjectionRows(rows: TresoProjectionRow[], inputs: TresoInputsRuntime) {
+function buildProjectionRows(rows: TresoProjectionRow[], inputs: TresoInputsV6) {
   const protectedCash = getProtectedCash(inputs);
   return [
     {
@@ -121,7 +120,7 @@ function buildProjectionRows(rows: TresoProjectionRow[], inputs: TresoInputsRunt
   ];
 }
 
-export function getTresoReadiness(inputs: TresoInputsRuntime): {
+export function getTresoReadiness(inputs: TresoInputsV6): {
   hasCompanyConfigured: boolean;
   hasAssociateWithAge: boolean;
   isReady: boolean;
@@ -171,7 +170,7 @@ function mapRevenueSource(source: TresoAssociateRevenueSource): {
 
 function buildTimelineSegments(
   rows: TresoProjectionRow[],
-  inputs: TresoInputsRuntime,
+  inputs: TresoInputsV6,
   associate: RuntimeAssociateInput | undefined,
 ): TresorerieTimelineSlideSpec['segments'] {
   const phases = getAssociateRevenuePhases(associate);
@@ -229,7 +228,7 @@ function buildTimelineSegments(
 }
 
 function buildAssociateHighlights(
-  inputs: TresoInputsRuntime,
+  inputs: TresoInputsV6,
 ): TresorerieSchemaSlideSpec['associateHighlights'] {
   const selectedAssociate = getSelectedAssociate(inputs);
   const associates = [
@@ -256,9 +255,7 @@ function horizonIcon(horizon: AllocationPocketHorizon | undefined): BusinessIcon
   return 'balance';
 }
 
-function buildAllocationCards(
-  inputs: TresoInputsRuntime,
-): TresorerieAllocationCardsSlideSpec | null {
+function buildAllocationCards(inputs: TresoInputsV6): TresorerieAllocationCardsSlideSpec | null {
   const pockets = inputs.allocationMatrix.pockets;
   if (pockets.length === 0) return null;
 
@@ -293,7 +290,7 @@ function buildAllocationCards(
 export interface TresorerieDeckData {
   rows: TresoProjectionRow[];
   kpis: TresoKPIs;
-  inputs: TresoInputsRuntime;
+  inputs: TresoInputsV6;
   clientName?: string;
 }
 

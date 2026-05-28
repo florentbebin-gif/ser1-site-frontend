@@ -4,10 +4,28 @@ import {
   isRevenuePhaseV6,
 } from './revenuePhases';
 import { isCivilYearBeforeOrEqual } from './simulateTresorerieV2.helpers';
-import type { CcaScheduleInput, RuntimeAssociateInput, RuntimeCompanyInput } from './types';
+import type {
+  AssociateRemunerationInput,
+  CcaScheduleInput,
+  RuntimeAssociateInput,
+  RuntimeCompanyInput,
+} from './types';
 
-function getLegacyCcaSchedule(cca: RuntimeAssociateInput['cca']): CcaScheduleInput | undefined {
-  return cca && 'annualContribution' in cca ? cca : undefined;
+type AssociateWithHistoricalFields = RuntimeAssociateInput & {
+  cca?: CcaScheduleInput;
+  remuneration?: AssociateRemunerationInput;
+};
+
+function getHistoricalCcaSchedule(cca: unknown): CcaScheduleInput | undefined {
+  return cca && typeof cca === 'object' && 'annualContribution' in cca
+    ? (cca as CcaScheduleInput)
+    : undefined;
+}
+
+function getHistoricalRemuneration(
+  associate: RuntimeAssociateInput,
+): AssociateRemunerationInput | undefined {
+  return (associate as AssociateWithHistoricalFields).remuneration;
 }
 
 export function getIncomeStatement(company: RuntimeCompanyInput): {
@@ -39,7 +57,7 @@ export function getAnnualCcaContribution(
     return Math.max(0, annual.amount);
   }
 
-  const contribution = getLegacyCcaSchedule(associate.cca)?.annualContribution;
+  const contribution = getHistoricalCcaSchedule(associate.cca)?.annualContribution;
   if (!contribution) return 0;
   const isActive =
     anneeCivile >= contribution.startYear &&
@@ -60,7 +78,7 @@ export function getExceptionalCcaContribution(
   }
 
   return (
-    getLegacyCcaSchedule(associate.cca)
+    getHistoricalCcaSchedule(associate.cca)
       ?.exceptionalContributions.filter((contribution) => contribution.year === anneeCivile)
       .reduce((sum, contribution) => sum + Math.max(0, contribution.amount), 0) ?? 0
   );
@@ -89,7 +107,7 @@ export function getAssociateRemunerationForYear(
     };
   }
 
-  const remuneration = associate.remuneration;
+  const remuneration = getHistoricalRemuneration(associate);
   if (!remuneration) return { holdingCost: 0, netRevenue: 0 };
   const startsBeforeOrDuringYear =
     remuneration.startYear == null || anneeCivile >= remuneration.startYear;

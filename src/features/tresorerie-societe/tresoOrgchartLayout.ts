@@ -1,7 +1,8 @@
 import type {
+  CompanyKind,
+  LegalForm,
+  OwnershipLotInput,
   OwnershipRight,
-  RuntimeAssociateInput,
-  RuntimeCompanyInput,
   SubsidiaryInput,
 } from '@/engine/tresorerie/types';
 import {
@@ -16,13 +17,27 @@ function ownershipRightCode(right: OwnershipRight): string {
   return 'PP';
 }
 
+type OrgAssociate = {
+  id: string;
+  label: string;
+  ownershipLots: OwnershipLotInput[];
+};
+
+type OrgCompany = {
+  label?: string;
+  legalForm: LegalForm;
+  companyKind?: CompanyKind;
+  associates: OrgAssociate[];
+  subsidiaries: SubsidiaryInput[];
+};
+
 /**
  * Construit le badge meta de l'associé à partir de ses lots de détention.
  * Cas mono-lot : « PP », « US » ou « NP ».
  * Cas multi-lots (ex. 10 % PP + 90 % US) : concaténation des lots significatifs,
  * tronquée à 24 caractères pour rester lisible dans le nœud SVG.
  */
-function buildAssociateMeta(associate: RuntimeAssociateInput): string {
+function buildAssociateMeta(associate: OrgAssociate): string {
   const lots = associate.ownershipLots ?? [];
   if (lots.length === 0) return 'PP';
 
@@ -170,7 +185,7 @@ function buildSubsidiaryTree(
   };
 }
 
-function getOwnershipPct(company: RuntimeCompanyInput, nodeId: string): number {
+function getOwnershipPct(company: OrgCompany, nodeId: string): number {
   const subsidiary = company.subsidiaries.find((candidate) => candidate.id === nodeId);
   return subsidiary?.ownershipPct ?? subsidiary?.holdingOwnershipPct ?? 0;
 }
@@ -201,7 +216,7 @@ function buildEdge(params: { from: TresoOrgNode; to: TresoOrgNode; label: string
 }
 
 export function computeTresoOrgchartLayout(
-  company: RuntimeCompanyInput,
+  company: OrgCompany,
   selectedAssociateId?: string,
 ): TresoOrgchartLayout {
   const associates = company.associates;
@@ -240,7 +255,9 @@ export function computeTresoOrgchartLayout(
     id: 'societe',
     label: company.label?.trim() || 'Société',
     meta: `Forme sociale : ${company.legalForm.toUpperCase()}`,
-    detail: `Type société : ${getCompanyKindCode(company)}`,
+    detail: `Type société : ${getCompanyKindCode(
+      company as Parameters<typeof getCompanyKindCode>[0],
+    )}`,
     kind: 'company',
     x: center - TRESO_ORG_NODE_WIDTH / 2,
     y: companyY,
@@ -260,7 +277,11 @@ export function computeTresoOrgchartLayout(
     const from = nodeMap.get(associate.id);
     const to = nodeMap.get('societe');
     if (!from || !to) return;
-    const relation = buildEdge({ from, to, label: fmtPct(getCapitalPct(associate)) });
+    const relation = buildEdge({
+      from,
+      to,
+      label: fmtPct(getCapitalPct(associate as Parameters<typeof getCapitalPct>[0])),
+    });
     edges.push(relation.edge);
     labels.push(relation.label);
   });
@@ -294,6 +315,6 @@ export function getTresoOrgchartNodeLabel(node: TresoOrgNode): string {
   return `Paramétrer ${node.label}`;
 }
 
-export function getTresoOrgchartCompanyKindLabel(company: RuntimeCompanyInput): string {
-  return getCompanyKindLabel(company);
+export function getTresoOrgchartCompanyKindLabel(company: OrgCompany): string {
+  return getCompanyKindLabel(company as Parameters<typeof getCompanyKindLabel>[0]);
 }

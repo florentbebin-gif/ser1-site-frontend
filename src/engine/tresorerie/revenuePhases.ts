@@ -1,4 +1,5 @@
 import type {
+  AssociateRemunerationInput,
   AssociateRevenuePhaseInput,
   AssociateRevenuePhaseInputV6,
   RuntimeAssociateInput,
@@ -6,6 +7,9 @@ import type {
 
 export type PhaseIdFactory = () => string;
 export type RevenuePhaseInput = AssociateRevenuePhaseInput | AssociateRevenuePhaseInputV6;
+type AssociateWithHistoricalRemuneration = RuntimeAssociateInput & {
+  remuneration?: AssociateRemunerationInput;
+};
 
 function clampRate(value: number): number {
   if (!Number.isFinite(value)) return 0;
@@ -60,6 +64,12 @@ function getAssociateRevenuePhases(associate: RuntimeAssociateInput): RevenuePha
   return Array.isArray(phases) ? phases : [];
 }
 
+function getHistoricalRemuneration(
+  associate: RuntimeAssociateInput,
+): AssociateRemunerationInput | undefined {
+  return (associate as AssociateWithHistoricalRemuneration).remuneration;
+}
+
 export function getAssociateRevenuePhaseForYear(
   associate: RuntimeAssociateInput,
   anneeCivile: number,
@@ -80,7 +90,7 @@ export function getAssociateAnnualIncomeNeedForYear(
       : positiveAmount(phase.annualNetIncomeNeed);
   }
 
-  const remuneration = associate.remuneration;
+  const remuneration = getHistoricalRemuneration(associate);
   if (
     remuneration?.endYear != null &&
     anneeCivile > remuneration.endYear &&
@@ -103,7 +113,7 @@ export function hasAssociateAnnualIncomeNeedForYear(
       : positiveAmount(phase.annualNetIncomeNeed) > 0;
   }
 
-  const remuneration = associate.remuneration;
+  const remuneration = getHistoricalRemuneration(associate);
   return (
     fallbackNeedActive ||
     (remuneration?.endYear != null &&

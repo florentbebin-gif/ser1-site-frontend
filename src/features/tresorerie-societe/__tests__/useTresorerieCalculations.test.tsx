@@ -3,11 +3,8 @@
 import '@testing-library/jest-dom/vitest';
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
-import type {
-  TresoInputsRuntime,
-  TresoInputsV3,
-  TresoInputsV5,
-} from '../../../engine/tresorerie/types';
+import { migrateUnknownTresorerieInputsToV6 } from '../../../engine/tresorerie/migrations/tresorerieV2Migration';
+import type { TresoInputsV6 } from '../../../engine/tresorerie/types';
 import { useTresorerieCalculations } from '../hooks/useTresorerieCalculations';
 
 vi.mock('../../../hooks/useFiscalContext', () => ({
@@ -42,8 +39,16 @@ vi.mock('../../../hooks/useFiscalContext', () => ({
   }),
 }));
 
-function baseInputs(): TresoInputsV3 {
-  return {
+function toCurrentInputs(input: unknown): TresoInputsV6 {
+  const migrated = migrateUnknownTresorerieInputsToV6(input);
+  if (!migrated) {
+    throw new Error('Fixture Trésorerie historique invalide');
+  }
+  return migrated;
+}
+
+function historicalInputsWithInvalidCapital(): TresoInputsV6 {
+  return toCurrentInputs({
     version: 3,
     selectedAssociateId: 'associe-1',
     foyer: {
@@ -97,10 +102,10 @@ function baseInputs(): TresoInputsV3 {
       sweepThreshold: 0,
       pockets: [],
     },
-  };
+  });
 }
 
-function CalculationProbe({ inputs }: { inputs: TresoInputsRuntime }) {
+function CalculationProbe({ inputs }: { inputs: TresoInputsV6 }) {
   const result = useTresorerieCalculations(inputs);
   return (
     <>
@@ -112,8 +117,8 @@ function CalculationProbe({ inputs }: { inputs: TresoInputsRuntime }) {
   );
 }
 
-function baseInputsV5(): TresoInputsV5 {
-  return {
+function historicalInputsWithCcaPhase(): TresoInputsV6 {
+  return toCurrentInputs({
     version: 5,
     selectedAssociateId: 'associe-1',
     foyer: { selectedAssociateId: 'associe-1' },
@@ -174,12 +179,12 @@ function baseInputsV5(): TresoInputsV5 {
       minimumBankBalance: 0,
       pockets: [],
     },
-  };
+  });
 }
 
 describe('useTresorerieCalculations', () => {
   it('expose les erreurs de validation moteur sans bloquer la page', () => {
-    render(<CalculationProbe inputs={baseInputs()} />);
+    render(<CalculationProbe inputs={historicalInputsWithInvalidCapital()} />);
 
     expect(screen.getByTestId('calculation-error').textContent).toBe('');
     expect(screen.getByTestId('simulation-error').textContent).toContain(
@@ -188,13 +193,13 @@ describe('useTresorerieCalculations', () => {
   });
 
   it('calcule la durée CCA avec le besoin annuel du palier actif V5', () => {
-    render(<CalculationProbe inputs={baseInputsV5()} />);
+    render(<CalculationProbe inputs={historicalInputsWithCcaPhase()} />);
 
     expect(screen.getByTestId('duree-cca').textContent).toBe('3');
   });
 
   it('utilise l’horizon de projection partagé pour la projection comptable', () => {
-    const inputs = baseInputsV5();
+    const inputs = historicalInputsWithCcaPhase();
     inputs.company.projectionHorizonYears = 60;
 
     render(<CalculationProbe inputs={inputs} />);

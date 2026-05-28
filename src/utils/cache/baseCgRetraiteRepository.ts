@@ -1,17 +1,10 @@
 import type { BaseCgRetraiteContract } from '@/data/base-cg-retraite';
 import {
-  bulkUpsertBaseCgRetraiteCatalog,
   deleteBaseCgRetraiteSupabaseContract,
   fetchBaseCgRetraiteSupabaseCatalog,
   upsertBaseCgRetraiteSupabaseContract,
-  type BulkSyncResult,
+  BaseCgRetraiteCatalogUnavailableError,
 } from './baseCgRetraiteCatalogRepository';
-import {
-  mergeBaseCgRetraiteOverlay,
-  readBaseCgRetraiteOverlay,
-  writeBaseCgRetraiteOverlay,
-  type BaseCgRetraiteOverlay,
-} from './baseCgRetraiteOverlayRepository';
 import {
   buildBaseCgRetraiteStoragePath,
   createBaseCgRetraiteDocumentDownloadUrl,
@@ -20,27 +13,17 @@ import {
   type BaseCgRetraitePdfUploadResult,
 } from './baseCgRetraiteStorageRepository';
 
-export type {
-  BaseCgRetraiteOverlay,
-  BaseCgRetraitePdfUploadInput,
-  BaseCgRetraitePdfUploadResult,
-  BulkSyncResult,
-};
+export type { BaseCgRetraitePdfUploadInput, BaseCgRetraitePdfUploadResult };
 
 export {
+  BaseCgRetraiteCatalogUnavailableError,
   buildBaseCgRetraiteStoragePath,
-  bulkUpsertBaseCgRetraiteCatalog,
   createBaseCgRetraiteDocumentDownloadUrl,
   uploadBaseCgRetraitePdf,
 };
 
 export async function getBaseCgRetraiteCatalog(): Promise<BaseCgRetraiteContract[]> {
-  const supabaseCatalog = await fetchBaseCgRetraiteSupabaseCatalog();
-  return supabaseCatalog ?? mergeBaseCgRetraiteOverlay(readBaseCgRetraiteOverlay());
-}
-
-export async function getBaseCgRetraiteOverlay(): Promise<BaseCgRetraiteOverlay> {
-  return readBaseCgRetraiteOverlay();
+  return fetchBaseCgRetraiteSupabaseCatalog();
 }
 
 export async function upsertBaseCgRetraiteContract(
@@ -48,29 +31,15 @@ export async function upsertBaseCgRetraiteContract(
 ): Promise<void> {
   const savedInSupabase = await upsertBaseCgRetraiteSupabaseContract(contract);
   if (savedInSupabase) return;
-
-  const overlay = readBaseCgRetraiteOverlay();
-  const deletedIds = overlay.deletedIds.filter((id) => id !== contract.id);
-  writeBaseCgRetraiteOverlay({
-    ...overlay,
-    deletedIds,
-    upserts: {
-      ...overlay.upserts,
-      [contract.id]: contract,
-    },
-  });
+  throw new BaseCgRetraiteCatalogUnavailableError(
+    'Sauvegarde impossible : table Supabase Base CG retraite absente.',
+  );
 }
 
 export async function deleteBaseCgRetraiteContract(id: string): Promise<void> {
   const deletedInSupabase = await deleteBaseCgRetraiteSupabaseContract(id);
   if (deletedInSupabase) return;
-
-  const overlay = readBaseCgRetraiteOverlay();
-  const upserts = { ...overlay.upserts };
-  delete upserts[id];
-  writeBaseCgRetraiteOverlay({
-    ...overlay,
-    upserts,
-    deletedIds: Array.from(new Set([...overlay.deletedIds, id])),
-  });
+  throw new BaseCgRetraiteCatalogUnavailableError(
+    'Suppression impossible : table Supabase Base CG retraite absente.',
+  );
 }

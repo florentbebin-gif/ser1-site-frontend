@@ -201,17 +201,24 @@ export function usePerTransfertSimulator(fiscalContext: FiscalContext) {
   const [state, setState] = useState<PerTransfertFormState>(() => hydrateState());
   const [catalog, setCatalog] = useState<BaseCgRetraiteContract[]>([]);
   const [catalogLoading, setCatalogLoading] = useState(true);
+  const [catalogError, setCatalogError] = useState<string | null>(null);
 
   useEffect(() => {
     let mounted = true;
+    setCatalogError(null);
     getBaseCgRetraiteCatalog()
       .then((contracts) => {
         if (!mounted) return;
         setCatalog(contracts);
         setCatalogLoading(false);
       })
-      .catch(() => {
-        if (mounted) setCatalogLoading(false);
+      .catch((error: unknown) => {
+        if (!mounted) return;
+        setCatalog([]);
+        setCatalogError(
+          error instanceof Error ? error.message : 'Catalogue Base CG retraite indisponible.',
+        );
+        setCatalogLoading(false);
       });
     return () => {
       mounted = false;
@@ -449,6 +456,7 @@ export function usePerTransfertSimulator(fiscalContext: FiscalContext) {
     applyContract,
     catalog,
     catalogLoading,
+    catalogError,
     selectedContract,
     result,
     input,

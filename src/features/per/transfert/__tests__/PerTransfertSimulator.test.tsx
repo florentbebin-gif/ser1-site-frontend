@@ -2,7 +2,7 @@
 
 import { renderToStaticMarkup } from 'react-dom/server';
 import type { ComponentType } from 'react';
-import { describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import '@testing-library/jest-dom/vitest';
 import { render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router';
@@ -49,6 +49,11 @@ vi.mock('@/hooks/useFiscalContext', () => ({
 vi.mock('@/settings/userMode', () => ({
   useUserMode: () => ({ mode: 'simplifie', setMode: setUserModeMock, isLoading: false }),
 }));
+
+beforeEach(() => {
+  getBaseCgRetraiteCatalogMock.mockReset();
+  getBaseCgRetraiteCatalogMock.mockResolvedValue([]);
+});
 
 // ——— Tests composants purs ———
 
@@ -325,5 +330,22 @@ describe('PerTransfertSimulator', () => {
     expect(screen.getByText('Relevé de situation')).toBeInTheDocument();
     expect(screen.getByText('Profil assuré')).toBeInTheDocument();
     expect(screen.queryByText('Audit Base CG')).not.toBeInTheDocument();
+  });
+
+  it('signale clairement une indisponibilité du catalogue Base CG', async () => {
+    getBaseCgRetraiteCatalogMock.mockRejectedValueOnce(
+      new Error('Catalogue Base CG retraite indisponible : migration Supabase canonique absente.'),
+    );
+
+    render(
+      <MemoryRouter>
+        <PerTransfertSimulator />
+      </MemoryRouter>,
+    );
+
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      'Catalogue Base CG retraite indisponible',
+    );
+    expect(screen.getByRole('button', { name: /Saisie manuelle/i })).toBeInTheDocument();
   });
 });

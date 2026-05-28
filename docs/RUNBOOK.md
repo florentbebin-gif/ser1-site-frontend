@@ -276,6 +276,29 @@ Synchroniser le schéma distant (si besoin) :
 supabase db remote commit --linked
 ```
 
+### Base CG retraite — push distant encadré
+
+La Base CG retraite canonique touche `base_cg_retraite_contracts`, `base_cg_retraite_catalog_meta` et `base_cg_retraite_documents`. Elle ne supprime pas `base_cg_retraite_overrides` dans la même vague : l'ancienne table reste disponible pour rollback tant que la parité distante n'a pas été contrôlée. La PR ne modifie pas Storage ; si une migration ultérieure touche `storage.buckets` ou les objets du bucket privé, faire un inventaire/backup Storage séparé avant le push.
+
+Avant tout `db push --linked`, produire des dumps locaux non versionnés dans `.tmp/` et vérifier le plan :
+
+```powershell
+New-Item -ItemType Directory -Force .tmp | Out-Null
+npx supabase db dump --linked --schema public --data-only --use-copy --file .tmp/base-cg-before-push-data.sql
+npx supabase db push --dry-run --linked
+```
+
+Après validation locale et dry-run, pousser puis contrôler les counts et les hashes. La ligne `base_cg_retraite_catalog_meta` est aussi recalculée par triggers SQL après les modifications admin de contrats/documents :
+
+```powershell
+npx supabase db push --linked
+npx supabase db query --linked "select catalog_key, schema_version, contract_count, document_count, points_contract_count, canonical_hash from public.base_cg_retraite_catalog_meta where catalog_key = 'base-cg-retraite';"
+npx supabase db query --linked "select count(*) as active_contracts from public.base_cg_retraite_contracts where is_deleted is false;"
+npx supabase db query --linked "select count(*) as documents_without_contract from public.base_cg_retraite_documents d left join public.base_cg_retraite_contracts c on c.contract_id = d.contract_id where c.contract_id is null;"
+```
+
+Rollback de cette PR : revert code, l'ancienne table `base_cg_retraite_overrides` est encore présente. La suppression éventuelle de cette table doit faire l'objet d'une migration ultérieure après contrôle distant des counts/hash/orphelins, avec migration inverse locale ou restauration depuis les dumps `.tmp/`.
+
 ---
 
 ## Gouvernance admin — `admin_accounts`

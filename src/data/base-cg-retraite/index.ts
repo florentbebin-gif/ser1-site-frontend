@@ -1,7 +1,4 @@
 export {
-  BASECG_CATALOG,
-  BASECG_CONTRACT_COUNT,
-  BASECG_VERSION,
   findBaseCgContractById,
   isPointsContract,
   isRemovedBaseCgRetraiteContract,
@@ -9,6 +6,7 @@ export {
   listBaseCgTypes,
   normalizeBaseCgRetraiteCompanyName,
   normalizeBaseCgRetraiteContractCompany,
+  resolveBaseCgRetraiteCompartment,
 } from './catalog';
 export {
   PREFON_2025,

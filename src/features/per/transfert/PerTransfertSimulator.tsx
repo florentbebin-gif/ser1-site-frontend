@@ -61,8 +61,17 @@ export function PerTransfertSimulator() {
   const [prefonPocketSettingsIndex, setPrefonPocketSettingsIndex] = useState<number | null>(null);
 
   const simulator = usePerTransfertSimulator(fiscalContext);
-  const { state, update, applyContract, catalog, catalogLoading, selectedContract, result, input } =
-    simulator;
+  const {
+    state,
+    update,
+    applyContract,
+    catalog,
+    catalogLoading,
+    catalogError,
+    selectedContract,
+    result,
+    input,
+  } = simulator;
   const { exportOptions, exportLoading } = usePerTransfertExportHandlers({
     state,
     result,
@@ -181,6 +190,11 @@ export function PerTransfertSimulator() {
                 title="Référencement"
                 subtitle="Choisissez le contrat dans la Base CG, puis contrôlez les informations essentielles."
               >
+                {catalogError ? (
+                  <p role="alert" className="per-transfert-audit-disclaimer">
+                    Catalogue Base CG retraite indisponible : {catalogError}
+                  </p>
+                ) : null}
                 <FieldGrid>
                   <PerTransfertSelectField
                     label={

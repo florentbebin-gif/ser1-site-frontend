@@ -1,20 +1,8 @@
-import {
-  BASECG_CATALOG as STATIC_BASECG_CATALOG,
-  BASECG_CONTRACT_COUNT,
-  BASECG_VERSION,
-} from './catalog.static';
-import { PREFON_2025 } from './prefon';
 import type {
   BaseCgRetraiteContract,
   BaseCgRetraiteContractType,
   PerTransfertCompartment,
 } from './types';
-
-const POINTS_CONTRACT_IDS = new Set(
-  STATIC_BASECG_CATALOG.filter((contract) => contract.typeContrat === 'PER_POINTS').map(
-    (contract) => contract.id,
-  ),
-);
 
 const BASECG_COMPANY_RENAME_MAP: Record<string, string> = {
   AVIVA: 'ABEILLE',
@@ -48,7 +36,9 @@ const BASECG_REMOVED_CONTRACT_NAMES = new Set([
   'PERP- PREFON-RETRAITE',
 ]);
 
-function resolveStaticCompartment(contract: BaseCgRetraiteContract): PerTransfertCompartment {
+export function resolveBaseCgRetraiteCompartment(
+  contract: Pick<BaseCgRetraiteContract, 'perCompartment' | 'nomContrat' | 'typeContrat'>,
+): PerTransfertCompartment {
   if (contract.perCompartment) return contract.perCompartment;
   if (/non d[eé]duit/i.test(contract.nomContrat)) return 'C1_BIS';
   if (contract.typeContrat === 'ARTICLE83' || contract.typeContrat === 'PEROB') return 'C3';
@@ -77,27 +67,13 @@ export function isRemovedBaseCgRetraiteContract(
   );
 }
 
-export const BASECG_CATALOG: BaseCgRetraiteContract[] = STATIC_BASECG_CATALOG.filter(
-  (contract) => !isRemovedBaseCgRetraiteContract(contract),
-).map((contract) =>
-  normalizeBaseCgRetraiteContractCompany({
-    ...contract,
-    perCompartment: resolveStaticCompartment(contract),
-    pointsParams: POINTS_CONTRACT_IDS.has(contract.id) ? PREFON_2025 : null,
-  }),
-);
-
-export { BASECG_CONTRACT_COUNT, BASECG_VERSION };
-
-export function listBaseCgTypes(
-  catalog: BaseCgRetraiteContract[] = BASECG_CATALOG,
-): BaseCgRetraiteContractType[] {
+export function listBaseCgTypes(catalog: BaseCgRetraiteContract[]): BaseCgRetraiteContractType[] {
   return Array.from(new Set(catalog.map((contract) => contract.typeContrat))).sort();
 }
 
 export function listBaseCgCompagnies(
   typeContrat: BaseCgRetraiteContractType | '',
-  catalog: BaseCgRetraiteContract[] = BASECG_CATALOG,
+  catalog: BaseCgRetraiteContract[],
 ): string[] {
   return Array.from(
     new Set(
@@ -110,7 +86,7 @@ export function listBaseCgCompagnies(
 
 export function findBaseCgContractById(
   id: string,
-  catalog: BaseCgRetraiteContract[] = BASECG_CATALOG,
+  catalog: BaseCgRetraiteContract[],
 ): BaseCgRetraiteContract | null {
   return catalog.find((contract) => contract.id === id) ?? null;
 }

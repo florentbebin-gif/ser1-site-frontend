@@ -41,7 +41,7 @@ import {
 import type {
   RuntimeAssociateInput,
   TresoFiscalParams,
-  TresoInputsRuntime,
+  TresoInputsV6,
   TresoProjectionRow,
 } from './types';
 
@@ -70,7 +70,7 @@ function validateOwnershipTotals(associates: RuntimeAssociateInput[]): void {
 }
 
 export function simulateTresorerieV2(
-  v2: TresoInputsRuntime,
+  v2: TresoInputsV6,
   params: TresoFiscalParams,
   horizonAns: number,
 ): TresoProjectionRow[] {
@@ -341,7 +341,7 @@ export function simulateTresorerieV2(
       const activePhase = getAssociateRevenuePhaseForYear(associate, anneeCivile);
       const manualRate = isRevenuePhaseV6(activePhase)
         ? activePhase.remuneration.socialChargeRate
-        : (activePhase?.socialChargeRate ?? associate.remuneration?.socialChargeRate ?? 0);
+        : ((activePhase as { socialChargeRate?: number } | undefined)?.socialChargeRate ?? 0);
       if (manualRate <= 0) return;
       const grossDividends = grossDividendsByAssociate.get(associate.id) ?? 0;
       const ccaAtStart = ccaBalanceDebut.get(associate.id) ?? 0;

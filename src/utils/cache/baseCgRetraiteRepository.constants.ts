@@ -1,10 +1,20 @@
-export const STORAGE_KEY = 'ser1:basecg-retraite:v1';
-export const OVERRIDES_TABLE = 'base_cg_retraite_overrides';
+export const CONTRACTS_TABLE = 'base_cg_retraite_contracts';
 export const DOCUMENTS_TABLE = 'base_cg_retraite_documents';
 export const DOCUMENTS_BUCKET = 'base-cg-retraite-cg';
 // 5 minutes : confort de copie-colle, reste sécurisé (bucket privé, URL non re-distribuable).
 export const SIGNED_URL_TTL_SECONDS = 300;
-export const OVERRIDES_SELECT = 'contract_id, contract_data, is_deleted, updated_at';
+export const CONTRACTS_SELECT = [
+  'contract_id',
+  'source_id',
+  'company',
+  'contract_name',
+  'contract_type',
+  'per_compartment',
+  'contract_data',
+  'row_hash',
+  'is_deleted',
+  'updated_at',
+].join(', ');
 export const DOCUMENTS_SELECT = [
   'id',
   'contract_id',

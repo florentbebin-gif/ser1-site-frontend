@@ -432,7 +432,7 @@ describe('TresorerieSocietePage', () => {
     expect(html).not.toContain('▼ Voir la projection comptable');
   });
 
-  it('branche calculs et exports sur inputsV6, sans state legacy runtime', () => {
+  it('branche calculs et exports sur inputsV6, sans ancien state runtime', () => {
     renderToStaticMarkup(<TresorerieSocietePage />);
 
     expect(mockUseTresoCalc).toHaveBeenCalledWith(DEFAULT_INPUTS_V6);

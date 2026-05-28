@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
+import { migrateUnknownTresorerieInputsToV6 } from '../migrations/tresorerieV2Migration';
 import { simulateTresorerieV2 } from '../simulateTresorerieV2';
-import type { TresoFiscalParams, TresoInputsV3 } from '../types';
+import type { TresoFiscalParams } from '../types';
+import type { TresoInputsV3 } from '../legacy/types';
 
 const PARAMS: TresoFiscalParams = {
   isNormalRate: 0.25,
@@ -16,6 +18,14 @@ const PARAMS: TresoFiscalParams = {
   irScale: [],
   tnsDividendBasePct: 0.1,
 };
+
+function simulateCurrent(input: unknown, params: TresoFiscalParams, horizon: number) {
+  const current = migrateUnknownTresorerieInputsToV6(input);
+  if (!current) {
+    throw new Error('Fixture Trésorerie historique invalide');
+  }
+  return simulateTresorerieV2(current, params, horizon);
+}
 
 function baseV3(): TresoInputsV3 {
   return {
@@ -124,7 +134,7 @@ describe('simulateTresorerie — compte bancaire pivot', () => {
       ],
     };
 
-    const rows = simulateTresorerieV2(inputs, PARAMS, 10);
+    const rows = simulateCurrent(inputs, PARAMS, 10);
 
     rows.forEach((row) => {
       if ((row.tresorerieBanqueFin ?? 0) < 50_000) {
@@ -162,7 +172,7 @@ describe('simulateTresorerie — compte bancaire pivot', () => {
       },
     ];
 
-    const rows = simulateTresorerieV2(inputs, PARAMS, 1);
+    const rows = simulateCurrent(inputs, PARAMS, 1);
 
     expect(rows[0].cessionFilialesQuotePartTaxable).toBe(60_000);
     expect(rows[0].quotePartTaxable).toBe(60_000);

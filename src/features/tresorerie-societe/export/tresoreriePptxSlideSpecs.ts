@@ -6,7 +6,7 @@ import type {
   TresorerieParametersAnnexSlideSpec,
   TresorerieSynthesisSlideSpec,
 } from '@/pptx/theme/types';
-import type { TresoInputsRuntime, TresoProjectionRow } from '@/engine/tresorerie/types';
+import type { TresoInputsV6, TresoProjectionRow } from '@/engine/tresorerie/types';
 import type { TresoKPIs } from '../hooks/useTresorerieCalculations';
 import {
   getAllocationHorizonLabel,
@@ -56,7 +56,7 @@ function sumSelectedRevenue(
 
 function buildTriggerMarker(
   rows: TresoProjectionRow[],
-  inputs: TresoInputsRuntime,
+  inputs: TresoInputsV6,
 ): TresorerieSynthesisSlideSpec['triggerMarker'] {
   const selectedAssociate = getSelectedAssociate(inputs);
   const profile = getAssociateProfile(inputs, selectedAssociate);
@@ -91,7 +91,7 @@ function getPocketTone(
 }
 
 function buildPocketTimeline(
-  inputs: TresoInputsRuntime,
+  inputs: TresoInputsV6,
   projectionStartYear: number,
   rangeEndYear: number,
 ): TresorerieSynthesisSlideSpec['pocketTimeline'] {
@@ -134,14 +134,19 @@ function buildPocketTimeline(
 
 function buildCashFlows(
   rows: TresoProjectionRow[],
-  inputs: TresoInputsRuntime,
+  inputs: TresoInputsV6,
 ): TresorerieSynthesisSlideSpec['cashFlows'] {
   const selectedAssociate = getSelectedAssociate(inputs);
   const associateId = selectedAssociate?.id;
   const annualContribution =
-    selectedAssociate?.cca && 'annualContribution' in selectedAssociate.cca
-      ? positiveAmount(selectedAssociate.cca.annualContribution.amount)
-      : 0;
+    selectedAssociate?.revenuePhases.reduce(
+      (sum, phase) =>
+        sum +
+        (phase.ccaContribution?.enabled
+          ? positiveAmount(phase.ccaContribution.annual?.amount ?? 0)
+          : 0),
+      0,
+    ) ?? 0;
   const firstCcaAmount = rows
     .map((row) => sumSelectedRevenue(row, associateId, 'cca'))
     .find((amount) => amount > 0);
@@ -174,7 +179,7 @@ function getSelectedDividendNetRevenue(
 export function buildSynthesisSlide(
   rows: TresoProjectionRow[],
   _kpis: TresoKPIs,
-  inputs: TresoInputsRuntime,
+  inputs: TresoInputsV6,
   rangeEndYear: number,
 ): TresorerieSynthesisSlideSpec {
   const consolidatedEnd = getConsolidatedTreasuryEnd(rows);
@@ -215,7 +220,7 @@ export function buildSynthesisSlide(
 }
 
 export function buildFlowMechanismSlide(
-  inputs: TresoInputsRuntime,
+  inputs: TresoInputsV6,
   kpis: TresoKPIs,
 ): TresorerieFlowMechanismSlideSpec {
   const ccaInitialTotal = inputs.company.associates.reduce(
@@ -270,7 +275,7 @@ export function buildFlowMechanismSlide(
 }
 
 export function buildParametersAnnexSlide(
-  inputs: TresoInputsRuntime,
+  inputs: TresoInputsV6,
   projectionStartYear: number,
   horizonYears: number,
 ): TresorerieParametersAnnexSlideSpec {
@@ -402,7 +407,6 @@ export const HYPOTHESES_SLIDE: TresorerieHypothesesSlideSpec = {
     },
   ],
 };
-
 export const ALLOCATION_MATRIX_SLIDE: TresorerieAllocationMatrixSlideSpec = {
   type: 'treso-allocation-matrix',
   title: 'Lecture des poches de placement',

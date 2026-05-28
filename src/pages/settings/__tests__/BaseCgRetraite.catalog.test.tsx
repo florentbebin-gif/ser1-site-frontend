@@ -57,6 +57,19 @@ describe('BaseCgRetraite - catalogue', () => {
     expect(screen.queryByText(/version technique/i)).not.toBeInTheDocument();
   });
 
+  it('affiche explicitement une indisponibilité catalogue au lieu de masquer l’erreur', async () => {
+    getBaseCgRetraiteCatalogMock.mockRejectedValueOnce(
+      new Error('Catalogue Base CG retraite indisponible : migration Supabase canonique absente.'),
+    );
+
+    renderBaseCgRetraite();
+
+    expect(await screen.findByRole('alert')).toHaveTextContent('Catalogue indisponible');
+    expect(
+      screen.getByText(/Catalogue Base CG retraite indisponible\. Vérifier la connexion Supabase/i),
+    ).toBeInTheDocument();
+  });
+
   it('réserve les actions de gestion aux admins et supprime le bouton réinitialiser', async () => {
     const { unmount } = renderBaseCgRetraite();
 

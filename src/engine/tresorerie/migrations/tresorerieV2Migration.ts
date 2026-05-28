@@ -5,13 +5,15 @@ import type {
   CompanyLoanInput,
   DistributionPocketInput,
   SubsidiaryInput,
+  TresoInputsV6,
+} from '@/engine/tresorerie/types';
+import type {
   TresoInputs,
   TresoInputsV2,
   TresoInputsV3,
   TresoInputsV4,
   TresoInputsV5,
-  TresoInputsV6,
-} from '@/engine/tresorerie/types';
+} from '@/engine/tresorerie/legacy/types';
 import { buildTresoInputsV5FromV4 as buildTresoInputsV5FromV4Internal } from './tresorerieV5Migration';
 import { buildTresoInputsV6FromV5 as buildTresoInputsV6FromV5Internal } from './tresorerieV6Migration';
 
@@ -471,4 +473,28 @@ export function buildTresoInputsV6FromV2(input: TresoInputsV2): TresoInputsV6 {
 
 export function buildTresoInputsV6FromLegacy(input: TresoInputs): TresoInputsV6 {
   return buildTresoInputsV6FromV4(buildTresoInputsV4FromLegacy(input));
+}
+
+function isObject(value: unknown): value is Record<string, unknown> {
+  return Boolean(value && typeof value === 'object');
+}
+
+function hasVersion(value: unknown, version: number): boolean {
+  return isObject(value) && value.version === version;
+}
+
+export function migrateUnknownTresorerieInputsToV6(input: unknown): TresoInputsV6 | null {
+  if (!isObject(input)) return null;
+  if (hasVersion(input, 6)) return input as unknown as TresoInputsV6;
+  if (hasVersion(input, 5)) return buildTresoInputsV6FromV5(input as unknown as TresoInputsV5);
+  if (hasVersion(input, 4)) return buildTresoInputsV6FromV4(input as unknown as TresoInputsV4);
+  if (hasVersion(input, 3)) return buildTresoInputsV6FromV3(input as unknown as TresoInputsV3);
+  if (hasVersion(input, 2)) return buildTresoInputsV6FromV2(input as unknown as TresoInputsV2);
+
+  const embeddedV2 = input.v2;
+  if (hasVersion(embeddedV2, 2)) {
+    return buildTresoInputsV6FromV2(embeddedV2 as unknown as TresoInputsV2);
+  }
+
+  return buildTresoInputsV6FromLegacy(input as unknown as TresoInputs);
 }
