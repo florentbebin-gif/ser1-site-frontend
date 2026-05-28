@@ -15,6 +15,7 @@ export {
 } from './fiscaliteRente';
 export { computeAnnuityFactor, resolveMortalityTableFromContractLabel } from './mortalityFactor';
 export { computePrefonRente } from './pointsMortality';
+export { computeCumulativeRent } from './rentProjection';
 export type {
   PerTransfertAnnuityOptions,
   PerTransfertAnnuityResult,
