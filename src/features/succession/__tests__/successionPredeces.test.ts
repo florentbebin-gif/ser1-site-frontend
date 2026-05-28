@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { DEFAULT_DMTG } from '../../../engine/succession/civil';
+import { DEFAULT_DMTG } from '@/engine/succession/civil';
 import { buildSuccessionPredecesAnalysis } from '../successionPredeces';
 import { makeCivilMarie as makeCivil } from './fixtures';
 

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { buildSuccessionStudyDeck } from '../../../pptx/presets/successionDeckBuilder';
-import { DEFAULT_COLORS } from '../../../settings/theme';
+import { buildSuccessionStudyDeck } from '@/pptx/presets/successionDeckBuilder';
+import { DEFAULT_COLORS } from '@/settings/theme';
 
 const THEME_COLORS = DEFAULT_COLORS;
 

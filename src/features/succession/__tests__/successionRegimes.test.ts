@@ -18,7 +18,7 @@
  */
 
 import { describe, expect, it } from 'vitest';
-import { DEFAULT_DMTG } from '../../../engine/succession/civil';
+import { DEFAULT_DMTG } from '@/engine/succession/civil';
 import type { SuccessionLiquidationContext } from '../successionDraft';
 import { buildSuccessionChainageAnalysis } from '../successionChainage';
 import { computeFirstEstate } from '../successionChainageEstateSplit';

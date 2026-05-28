@@ -3,7 +3,7 @@
  *
  * Structure : SimPageShell avec colonne gauche (saisie) + colonne droite sticky (KPIs).
  * Section basse : projection comptable (drawer), hypothèses.
- * Repère Mode expert affiché ; le parcours simplifié produit reste à définir.
+ * Mode expertOnly temporaire ; parcours simplifié suivi par PR-P2-06.
  */
 
 import '@/styles/sim/index.css';
@@ -85,7 +85,7 @@ export default function TresorerieSocietePage() {
           <ModeToggle
             value
             disabled
-            disabledReason="Mode expert affiché comme repère : le parcours simplifié reste à définir."
+            disabledReason="Mode expert uniquement temporaire : parcours simplifié trésorerie société suivi par PR-P2-06."
           />
           <ExportMenu options={exportOptions} loading={exportLoading} />
         </>

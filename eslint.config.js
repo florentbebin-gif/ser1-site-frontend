@@ -74,7 +74,7 @@ export default [
         'warn',
         { argsIgnorePattern: '^_', varsIgnorePattern: '^_', ignoreRestSiblings: true },
       ],
-      '@typescript-eslint/no-explicit-any': 'warn',
+      '@typescript-eslint/no-explicit-any': 'error',
       // Enforce import type for type-only imports (PR-4)
       '@typescript-eslint/consistent-type-imports': [
         'error',
@@ -112,7 +112,11 @@ export default [
     },
   },
   {
-    files: ['**/*.test.{js,ts,jsx,tsx}'],
+    files: [
+      '**/*.test.{js,ts,jsx,tsx}',
+      '**/__tests__/**/*.{js,ts,jsx,tsx}',
+      'tests/**/*.{js,ts,jsx,tsx}',
+    ],
     rules: {
       'no-console': 'off',
       '@typescript-eslint/no-explicit-any': 'off',
@@ -182,7 +186,6 @@ export default [
       'src/constants/settingsDefaults.ts',
       'src/domain/base-contrat/catalog.ts',
       'src/domain/base-contrat/rules/library/immobilier.ts',
-      'src/domain/base-contrat/rules/library/retraite.ts',
       'src/domain/base-contrat/rules/library/valeurs-mobilieres.ts',
       'src/data/mortality/tgf05.generated.ts',
       'src/data/mortality/tgh05.generated.ts',
@@ -200,7 +203,6 @@ export default [
       'src/engine/per/transfert/compute.ts',
       'src/engine/tresorerie/__tests__/simulateTresorerieV2.test.ts',
       'src/engine/tresorerie/__tests__/simulateTresorerieV3.test.ts',
-      'src/features/succession/__tests__/successionChainage.test.ts',
       'src/features/succession/export/successionXlsx.ts',
       'src/features/tresorerie-societe/components/timeline/TresoRevenuePhaseModal.tsx',
       'src/features/tresorerie-societe/export/tresorerieExcelExport.ts',
@@ -213,7 +215,6 @@ export default [
   // touchant chaque fichier, sans mélanger cette PR avec six refactors métier.
   {
     files: [
-      'src/features/tresorerie-societe/__tests__/tresorerieExport.test.ts',
       'src/features/per/transfert/PerTransfertSimulator.tsx',
       'src/pptx/export/exportStudyDeck.ts',
       'src/domain/base-contrat/__tests__/rules.test.ts',

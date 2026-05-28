@@ -4,6 +4,7 @@ import { computeCapitalFiscal } from './fiscaliteCapital';
 import { computeRentFiscal, computeSmallAnnuityEligibility } from './fiscaliteRente';
 import { resolvePerCompartiment } from './compartimentMapping';
 import { computePrefonRente } from './pointsMortality';
+import { computeCumulativeRent } from './rentProjection';
 import type {
   PerTransfertAnnuityOptions,
   PerTransfertCapitalFiscalResult,
@@ -25,11 +26,6 @@ function yearsUntilRetirement(currentAge: number, liquidationAge: number): numbe
   return Math.max(0, Math.floor(liquidationAge - currentAge));
 }
 
-function compoundRent(annualRent: number, annualRate: number, years: number): number {
-  if (years <= 0) return positive(annualRent);
-  return positive(annualRent) * (1 + annualRate) ** years;
-}
-
 function projectCapitalWithAnnualPayment(
   capital: number,
   annualRate: number,
@@ -48,14 +44,6 @@ function projectCapitalWithAnnualPayment(
   if (payment === 0) return projectedCapital;
   if (annualRate === 0) return projectedCapital + payment * duration;
   return projectedCapital + payment * (((1 + annualRate) ** duration - 1) / annualRate);
-}
-
-function cumulativeRent(annualRent: number, annualRate: number, years: number): number {
-  let total = 0;
-  for (let index = 0; index < Math.max(0, years); index += 1) {
-    total += compoundRent(annualRent, annualRate, index);
-  }
-  return total;
 }
 
 function withWarnings(input: PerTransfertInput): string[] {
@@ -475,12 +463,12 @@ export function computePerTransfert(input: PerTransfertInput): PerTransfertResul
       grossAnnualRent: currentRentAtLiquidation,
       netAnnualRent: currentRentFiscal.netAnnualRent,
       fiscal: currentRentFiscal,
-      cumulativeToShortHorizon: cumulativeRent(
+      cumulativeToShortHorizon: computeCumulativeRent(
         currentRentFiscal.netAnnualRent,
         input.projection.currentRentRevaluationRate,
         shortHorizon.years,
       ),
-      cumulativeToLongHorizon: cumulativeRent(
+      cumulativeToLongHorizon: computeCumulativeRent(
         currentRentFiscal.netAnnualRent,
         input.projection.currentRentRevaluationRate,
         longHorizon.years,
@@ -493,12 +481,12 @@ export function computePerTransfert(input: PerTransfertInput): PerTransfertResul
         netAnnualRent: currentRentFiscal.netAnnualRent,
         netMonthly: currentRentFiscal.netAnnualRent / 12,
         fiscal: currentRentFiscal,
-        cumulativeToShortHorizon: cumulativeRent(
+        cumulativeToShortHorizon: computeCumulativeRent(
           currentRentFiscal.netAnnualRent,
           input.projection.currentRentRevaluationRate,
           shortHorizon.years,
         ),
-        cumulativeToLongHorizon: cumulativeRent(
+        cumulativeToLongHorizon: computeCumulativeRent(
           currentRentFiscal.netAnnualRent,
           input.projection.currentRentRevaluationRate,
           longHorizon.years,

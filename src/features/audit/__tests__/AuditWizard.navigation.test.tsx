@@ -5,7 +5,7 @@ import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import AuditWizard from '../AuditWizard';
 
-vi.mock('../../../settings/ThemeProvider', () => ({
+vi.mock('@/settings/ThemeProvider', () => ({
   useTheme: () => ({
     colors: {},
   }),

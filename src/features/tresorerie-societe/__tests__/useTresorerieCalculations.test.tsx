@@ -3,11 +3,11 @@
 import '@testing-library/jest-dom/vitest';
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
-import { migrateUnknownTresorerieInputsToV6 } from '../../../engine/tresorerie/migrations/tresorerieV2Migration';
-import type { TresoInputsV6 } from '../../../engine/tresorerie/types';
+import { migrateUnknownTresorerieInputsToV6 } from '@/engine/tresorerie/migrations/tresorerieV2Migration';
+import type { TresoInputsV6 } from '@/engine/tresorerie/types';
 import { useTresorerieCalculations } from '../hooks/useTresorerieCalculations';
 
-vi.mock('../../../hooks/useFiscalContext', () => ({
+vi.mock('@/hooks/useFiscalContext', () => ({
   useFiscalContext: () => ({
     fiscalContext: {
       pfuRateIR: 12.8,

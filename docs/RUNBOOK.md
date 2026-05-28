@@ -35,12 +35,21 @@ Note securite : `admin_accounts` et `admin_action_audit` doivent rester `service
 ## Checks du repo
 
 - Check complet :
-  - `npm run check` (lint + **check:raw-fiscal-usage** + **check:fiscal-hardcode** + **check:settings-rls** + **check:arch** + **check:circular** + **check:unused** + CSS/theme + typecheck + tests + build)
+  - `npm run check` lance les familles `check:static`, `check:architecture`, `check:fiscal`, `check:supabase`, `check:exports`, `check:baselines`, `check:types`, `check:tests` et `check:build`.
+  - Ancienne correspondance : lint/CSS/theme/no-js/no-console/no-office/routes/naming/unused → `check:static`; dependency-cruiser/circular/orphans/imports profonds → `check:architecture`; hardcodes fiscaux/raw fiscal → `check:fiscal`; Base-CG/RLS/Storage/migrations → `check:supabase`; parité exports/images PPTX → `check:exports`; fichiers longs → `check:baselines`; TypeScript/tests/build → `check:types`/`check:tests`/`check:build`.
 
 En CI, c'est le gate principal.
-Le workflow GitHub Actions exécute aussi `npm run check:pre-merge`, `npm run test:deno`, `npm run lint:repo`, `npm run typecheck:tests` et `npm run typecheck:node`.
+Le workflow GitHub Actions exécute les familles en jobs séparés, puis `npm run check:pre-merge`, `npm run test:deno`, `npm run lint:repo`, `npm run typecheck:tests` et `npm run typecheck:node`.
 Le workflow GitHub Actions exécute aussi `npm run audit:prod`, sans `continue-on-error` : ce contrôle est donc bloquant.
-`coverage`, `build:storybook` et `lhci` restent des contrôles locaux/optionnels informatifs au démarrage.
+`coverage`, `build:storybook` et `lhci` restent des contrôles locaux/optionnels informatifs.
+
+Scripts ponctuels documentés :
+
+- `npm run audit:base-contrat-dmtg` : audit manuel ciblé Base-Contrat/DMTG, hors CI.
+- `npm run audit:css-usage` et `npm run audit:unicode` : diagnostics manuels de nettoyage, hors CI.
+- `npm run snapshot:sim` : capture visuelle locale, hors CI tant que le résultat n'est pas exploité comme gate.
+- `npm run report:large-files` : rapport manuel des fichiers `src` à 400+ lignes avec décision, catégorie et plafond de baseline.
+- `npm run check:large-files-baseline` : gate bloquant. Il refuse tout fichier `src/**/*.ts(x)` au-delà de 500 lignes sans entrée structurée dans `scripts/baselines/large-files.json`, toute entrée sans justification, toute entrée devenue inutile et toute croissance au-delà du `maxLines` figé.
 
 - Garde d'architecture uniquement :
   - `npm run check:arch` (dependency-cruiser, bloquant sur violation de frontière)
@@ -213,8 +222,10 @@ Coverage :
 Lighthouse CI :
 
 - Config : `lighthouserc.cjs`.
-- Routes surveillées au démarrage : `/`, `/login` et les simulateurs clés (`/sim/ir`, `/sim/credit`, `/sim/succession`, `/sim/placement`, `/sim/per`) sur le build preview local.
-- Les budgets sont en warning tant que la baseline n'est pas stabilisée.
+- Profils : `LHCI_PROFILE=smoke` pour un contrôle léger, `LHCI_PROFILE=full` pour le cron ou le manuel.
+- Routes full : `/login`, `/sim/ir`, `/sim/placement`, `/sim/per`, `/sim/per/transfert`, `/sim/tresorerie-societe`, `/sim/prevoyance`, `/sim/credit`, `/sim/succession`.
+- `/settings/*` est exclu tant que la surface utile dépend d'un état auth/admin non initialisé par LHCI.
+- Les assertions restent en warning : Lighthouse est informatif et ne bloque pas une PR.
 
 Storybook :
 

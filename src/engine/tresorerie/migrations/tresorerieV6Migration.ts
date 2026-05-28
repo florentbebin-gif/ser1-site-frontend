@@ -5,7 +5,7 @@ import type {
   CompanyInputV6,
   TresoInputsV6,
 } from '@/engine/tresorerie/types';
-import type { TresoInputsV5 } from '@/engine/tresorerie/legacy/types';
+import type { TresoInputsV5 } from '@/engine/tresorerie/migrations/compatTypes';
 import { sortPhases } from '../revenuePhases';
 
 function currentYear(): number {

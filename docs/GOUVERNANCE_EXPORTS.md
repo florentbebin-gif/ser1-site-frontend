@@ -72,12 +72,12 @@ Un deck Serenity suit toujours cette chaîne :
 | Fonte            | `Arial` uniquement                                                           |
 | Coordonnées      | En pouces depuis `serenity.ts`                                               |
 | Données          | Issues du state du simulateur ; pas de recalcul métier dans le slide builder |
-| Calculs dérivés  | Autorisés uniquement dans le deck builder                                    |
+| Calculs dérivés  | Autorisés uniquement via helper engine/domain ou test de parité UI/export    |
 | Fiscalité        | Jamais de valeur fiscale hardcodée                                           |
 | Header / Footer  | Toujours via les helpers partagés                                            |
 | Images chapitres | Toujours via `pickChapterImage(simId, ordinal)`                              |
 | Wrapper          | Obligatoire entre la feature et la génération réelle                         |
-| Tests            | Au minimum un smoke export par simulateur                                    |
+| Tests            | Smoke export + parité pour toute métrique partagée UI/export                 |
 
 ### Marquage IA des exports — conditionnel à la livraison P4
 
@@ -98,6 +98,7 @@ Cohérence : la règle matérialise la bonne pratique art. 50 § 2 et l'engageme
 - Toute page `/sim/*` qui affiche un bloc `Hypothèses et limites` doit reprendre ces hypothèses dans le deck, soit dans une slide dédiée, soit dans une annexe clairement identifiée.
 - Les limites juridiques, référentiels indicatifs, CG non garanties, fallbacks et simplifications visibles dans l'UI doivent être présents dans l'étude remise au client.
 - Interdit : corriger un disclaimer dans la page web sans mettre à jour le PPTX correspondant quand l'export existe.
+- Interdit : dupliquer une formule financière dans `src/pptx/**` si une métrique identique existe dans l'UI ou l'engine. Ajouter ou mettre à jour `npm run check:export-parity`.
 
 ### Slides de synthèse
 
@@ -139,6 +140,7 @@ Cohérence : la règle matérialise la bonne pratique art. 50 § 2 et l'engageme
   - cible `<= 1.2 Mo` par image
   - alerte `> 1.6 Mo`
   - cible `<= 9 Mo` au total
+- Vérification : `npm run check:pptx-images`.
 
 ### Carte des fichiers PPTX
 

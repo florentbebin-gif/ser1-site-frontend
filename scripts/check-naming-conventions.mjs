@@ -8,7 +8,7 @@ import process from 'node:process';
 const ROOT = process.cwd();
 const SCANNED_DIRS = ['src'];
 const EXTENSIONS = new Set(['.ts', '.tsx']);
-const LEGACY_DIRECTORY_ALLOWLIST = new Set(['src/engine/tresorerie/legacy']);
+const LEGACY_DIRECTORY_ALLOWLIST = new Map();
 const FORBIDDEN_DIRECTORY_NAMES = new Set(['__spike__', '_raw']);
 const FORBIDDEN_PATTERNS = [
   {
@@ -58,7 +58,9 @@ while (directoriesToVisit.length > 0) {
     directoriesToVisit.push(fullPath);
 
     if (entry.name === 'legacy' && !LEGACY_DIRECTORY_ALLOWLIST.has(relativePath)) {
-      violations.push(`${relativePath}: dossier legacy interdit hors src/engine/tresorerie/legacy`);
+      violations.push(
+        `${relativePath}: dossier legacy interdit ; isoler la compatibilite dans migrations/compat avec preuve d'usage`,
+      );
     }
     if (FORBIDDEN_DIRECTORY_NAMES.has(entry.name)) {
       violations.push(`${relativePath}: dossier temporaire interdit dans src`);

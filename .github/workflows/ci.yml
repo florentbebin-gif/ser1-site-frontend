@@ -13,46 +13,65 @@ on:
 permissions:
   contents: read
 
-jobs:
-  test-and-build:
-    runs-on: ubuntu-22.04
-    timeout-minutes: 15
+env:
+  VITE_SUPABASE_URL: https://placeholder.supabase.co
+  VITE_SUPABASE_ANON_KEY: placeholder-key-for-build
 
-    strategy:
-      fail-fast: true
+jobs:
+  pre-merge-guard:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 5
 
     steps:
       - name: Checkout
         uses: actions/checkout@v6
 
-      - name: 'Guard: forbid committed env files'
+      - name: Guard forbidden env files
         shell: bash
         run: |
           set -euo pipefail
-          shopt -s nullglob
-
-          # Allowed template
           allow='.env.example'
-
-          # Fail if any .env* file exists in the repo root checkout (except .env.example)
           for f in .env .env.*; do
             if [[ "$f" == "$allow" ]]; then
               continue
             fi
             if [[ -f "$f" ]]; then
               echo "ERROR: forbidden env file present in repo checkout: $f" >&2
-              echo "Use .env.local locally (gitignored) and keep only .env.example in the repo." >&2
               exit 1
             fi
           done
-
-          # Fail if any forbidden env file is tracked by git
           tracked_env_files=$(git ls-files -- '.env' '.env.*' | grep -v '^\.env\.example$' || true)
           if [[ -n "$tracked_env_files" ]]; then
             echo "ERROR: forbidden env file(s) tracked by git:" >&2
             echo "$tracked_env_files" >&2
             exit 1
           fi
+
+      - name: Run pre-merge guard
+        shell: pwsh
+        run: ./scripts/pre-merge-check.ps1
+
+  quality-family:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 15
+
+    strategy:
+      fail-fast: true
+      matrix:
+        family:
+          - static
+          - architecture
+          - fiscal
+          - supabase
+          - exports
+          - baselines
+          - types
+          - tests
+          - build
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
 
       - name: Setup Node.js
         uses: actions/setup-node@v6
@@ -65,34 +84,72 @@ jobs:
           npm install -g npm@11.12.0
           npm --version
 
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run check family
+        run: npm run check:${{ matrix.family }}
+
+  repo-tooling:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 15
+
+    strategy:
+      fail-fast: true
+      matrix:
+        command:
+          - lint:repo
+          - typecheck:tests
+          - typecheck:node
+          - audit:prod
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: '22.22.1'
+          cache: 'npm'
+
+      - name: Pin npm version
+        run: |
+          npm install -g npm@11.12.0
+          npm --version
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run tooling command
+        run: npm run ${{ matrix.command }}
+
+  deno-admin:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: '22.22.1'
+          cache: 'npm'
+
       - name: Setup Deno
         uses: denoland/setup-deno@v2
         with:
           deno-version: v2.x
 
+      - name: Pin npm version
+        run: |
+          npm install -g npm@11.12.0
+          npm --version
+
       - name: Install dependencies
         run: npm ci
 
-      - name: Run pre-merge guard
-        run: npm run check:pre-merge
-
-      - name: Run all checks
-        run: npm run check
-        env:
-          VITE_SUPABASE_URL: https://placeholder.supabase.co
-          VITE_SUPABASE_ANON_KEY: placeholder-key-for-build
-
-      - name: Run repo lint
-        run: npm run lint:repo
-
-      - name: Typecheck tests and tooling
-        run: npm run typecheck:tests
-
-      - name: Typecheck Node/Vercel tooling
-        run: npm run typecheck:node
-
-      - name: Run admin function tests (Deno)
+      - name: Run admin function tests
         run: npm run test:deno
-
-      - name: Run production audit
-        run: npm run audit:prod

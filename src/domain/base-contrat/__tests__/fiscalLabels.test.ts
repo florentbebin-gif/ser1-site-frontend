@@ -2,11 +2,8 @@ import { describe, expect, it } from 'vitest';
 import {
   DEFAULT_FISCALITY_SETTINGS,
   DEFAULT_ASSURANCE_VIE_RULES,
-} from '../../../constants/settingsDefaults';
-import type {
-  DEFAULT_PS_SETTINGS,
-  DEFAULT_TAX_SETTINGS,
-} from '../../../constants/settingsDefaults';
+} from '@/constants/settingsDefaults';
+import type { DEFAULT_PS_SETTINGS, DEFAULT_TAX_SETTINGS } from '@/constants/settingsDefaults';
 import { buildBaseContratFiscalLabels } from '../rules';
 
 describe('buildBaseContratFiscalLabels', () => {

@@ -9,11 +9,14 @@ git pull
 git checkout -b feature/nom-clair
 
 # 2. Quality Gates (obligatoires avant commit)
-npm run check      # Tous les checks (lint + check:fiscal-hardcode + check:arch + typecheck + test + build)
+npm run check      # Toutes les familles bloquantes locales
 # ou individuellement :
 npm run lint       # ESLint - 0 erreur
 npm run check:arch # Garde-fous d'architecture dependency-cruiser - 0 violation
 npm run check:deep-imports # 0 import profond ../../../ hors tests
+npm run check:supabase-rls # RLS public explicite
+npm run check:storage-policies # Policies Storage utilisées
+npm run check:export-parity # Parité métriques UI/export
 npm run typecheck  # TypeScript - 0 erreur
 npm test           # Tous les tests passent
 npm run build      # Build Vite OK
@@ -26,6 +29,7 @@ powershell -ExecutionPolicy Bypass -File .\scripts\pre-merge-check.ps1
 # 3. Analyses optionnelles
 npm run check:circular  # Détection dépendances circulaires
 npm run check:unused    # Rapport dépendances inutilisées (avec ignore des faux positifs connus)
+npm run lhci            # Lighthouse informatif, non bloquant
 npm run analyze         # Visualisation bundle
 npm run test:e2e        # Tests E2E Playwright
 
@@ -111,6 +115,7 @@ Filet de sécurité : cron mensuel le 1er du mois à 09:00 UTC qui met la PR à 
 - Exemple : `import { ThemeColors } from './theme'` ✓  
   Pas : `import { ThemeColors } from './ThemeProvider'` ✗ (sauf si ré-exporté)
 - `allowJs: true` dans `tsconfig` ne change pas la règle repo : pas de nouveau `.js/.jsx` dans `src/`
+- `any` explicite interdit hors tests : `@typescript-eslint/no-explicit-any` est en erreur. Utiliser un type précis ou `unknown` avec narrowing réel ; ne pas remplacer par `unknown` pour masquer un contournement.
 
 ### TODO/FIXME
 

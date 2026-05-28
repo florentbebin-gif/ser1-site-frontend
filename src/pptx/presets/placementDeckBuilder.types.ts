@@ -57,6 +57,7 @@ export interface PlacementProductData {
     regime: string;
   };
   totaux: {
+    effortTotal: number;
     effortReel: number;
     revenusNetsLiquidation: number;
     fiscaliteTotale: number;

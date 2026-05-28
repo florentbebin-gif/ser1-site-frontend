@@ -1,4 +1,4 @@
-import type { HeritiersInput, LienParente } from '../../../../engine/succession';
+import type { HeritiersInput, LienParente } from '@/engine/succession';
 import type {
   FamilyMember,
   SuccessionAssuranceVieEntry,

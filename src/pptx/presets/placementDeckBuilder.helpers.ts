@@ -10,6 +10,7 @@ import type {
   PlacementProjectionSlideSpec,
   BusinessIconName,
 } from '../theme/types';
+import { computePlacementRoi } from '@/engine/placement';
 import { paginateYears } from '../slides/buildPlacementProjection';
 import type {
   PlacementData,
@@ -43,8 +44,7 @@ const STRATEGIE_LABELS: Record<string, string> = {
 // ============================================================================
 
 export function computeRoi(p: PlacementProductData): number {
-  const totalGains = p.totaux.revenusNetsLiquidation + p.totaux.capitalTransmisNet;
-  return p.totaux.effortReel > 0 ? totalGains / p.totaux.effortReel : 0;
+  return computePlacementRoi(p.totaux);
 }
 
 // ============================================================================
@@ -114,7 +114,7 @@ export function buildTransmissionParams(data: PlacementData): string[] {
 function buildProductKpis(p: PlacementProductData) {
   return {
     envelopeLabel: p.envelopeLabel,
-    effortTotal: p.totaux.effortReel,
+    effortTotal: p.totaux.effortTotal,
     capitalAcquis: p.epargne.capitalAcquis,
     revenusNets: p.totaux.revenusNetsLiquidation,
     transmissionNette: p.totaux.capitalTransmisNet,

@@ -18,6 +18,7 @@ export { computeProjectionAvis } from './perProjectionAvis';
 export {
   computeAnnuityConversion,
   computeAnnuityFactor,
+  computeCumulativeRent,
   computePerTransfert,
   computePrefonRente,
   resolveMortalityTableFromContractLabel,

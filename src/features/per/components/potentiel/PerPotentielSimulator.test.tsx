@@ -6,7 +6,7 @@ const mockUserModeState = vi.hoisted(() => ({
   mode: 'expert' as 'expert' | 'simplifie',
 }));
 
-vi.mock('../../../../hooks/useFiscalContext', () => ({
+vi.mock('@/hooks/useFiscalContext', () => ({
   useFiscalContext: () => ({
     fiscalContext: {
       irCurrentYearLabel: '2026 (revenus 2025)',
@@ -20,7 +20,7 @@ vi.mock('../../../../hooks/useFiscalContext', () => ({
   }),
 }));
 
-vi.mock('../../../../settings/ThemeProvider', () => ({
+vi.mock('@/settings/ThemeProvider', () => ({
   useTheme: () => ({
     pptxColors: {},
     cabinetLogo: null,
@@ -28,7 +28,7 @@ vi.mock('../../../../settings/ThemeProvider', () => ({
   }),
 }));
 
-vi.mock('../../../../settings/userMode', () => ({
+vi.mock('@/settings/userMode', () => ({
   useUserMode: () => ({
     mode: mockUserModeState.mode,
   }),
@@ -46,11 +46,11 @@ vi.mock('../../hooks/usePerPotentielExportHandlers', () => ({
   }),
 }));
 
-vi.mock('../../../../components/ExportMenu', () => ({
+vi.mock('@/components/ExportMenu', () => ({
   ExportMenu: () => <div>Export menu</div>,
 }));
 
-vi.mock('../../../../components/ModeToggle', () => ({
+vi.mock('@/components/ModeToggle', () => ({
   ModeToggle: () => <div>Mode toggle</div>,
 }));
 

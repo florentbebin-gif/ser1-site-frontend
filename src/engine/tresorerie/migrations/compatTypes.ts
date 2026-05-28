@@ -12,6 +12,9 @@ import type {
   TresoInputsV6,
 } from '../types';
 
+// Types historiques V2-V5 conservés uniquement pour migrer les sauvegardes
+// locales et drafts vers `TresoInputsV6`. Ne pas les réutiliser dans le runtime.
+
 export interface TresoInputsV2 {
   version: 2;
   foyer: FoyerInput;

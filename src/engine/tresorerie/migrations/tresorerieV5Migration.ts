@@ -1,5 +1,5 @@
 import type { AssociateInput, AssociateRevenuePhaseInput } from '@/engine/tresorerie/types';
-import type { TresoInputsV4, TresoInputsV5 } from '@/engine/tresorerie/legacy/types';
+import type { TresoInputsV4, TresoInputsV5 } from '@/engine/tresorerie/migrations/compatTypes';
 import { sortPhases } from '../revenuePhases';
 
 type LegacyAssociateFields = {

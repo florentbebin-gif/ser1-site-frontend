@@ -4,7 +4,7 @@
 
 import JSZip from 'jszip';
 import { describe, expect, it } from 'vitest';
-import { calculateSuccession } from '../../../engine/succession';
+import { calculateSuccession } from '@/engine/succession';
 import { exportSuccessionXlsx } from '../export/successionXlsx';
 import { THEME_COLORS } from './successionExport.fixtures';
 import { buildSuccessionFiscalSnapshot } from '../successionFiscalContext';

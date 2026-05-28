@@ -5,9 +5,9 @@ import { act, renderHook } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { CreditCalcResult, CreditScheduleRow, CreditState } from '../types';
 import { useCreditExports } from '../hooks/useCreditExports';
-import { DEFAULT_COLORS } from '../../../settings/theme';
-import type { StudyDeckSpec } from '../../../pptx/theme/types';
-import type * as XlsxBuilder from '../../../utils/export/xlsxBuilder';
+import { DEFAULT_COLORS } from '@/settings/theme';
+import type { StudyDeckSpec } from '@/pptx/theme/types';
+import type * as XlsxBuilder from '@/utils/export/xlsxBuilder';
 
 const xlsxMocks = vi.hoisted(() => ({
   downloadXlsx: vi.fn(),
@@ -17,7 +17,7 @@ const pptxMocks = vi.hoisted(() => ({
   exportAndDownloadStudyDeck: vi.fn().mockResolvedValue(undefined),
 }));
 
-vi.mock('../../../utils/export/xlsxBuilder', async (importOriginal) => {
+vi.mock('@/utils/export/xlsxBuilder', async (importOriginal) => {
   const actual = (await importOriginal()) as typeof XlsxBuilder;
 
   return {
@@ -26,7 +26,7 @@ vi.mock('../../../utils/export/xlsxBuilder', async (importOriginal) => {
   };
 });
 
-vi.mock('../../../pptx/export/exportStudyDeck', () => ({
+vi.mock('@/pptx/export/exportStudyDeck', () => ({
   exportAndDownloadStudyDeck: pptxMocks.exportAndDownloadStudyDeck,
 }));
 

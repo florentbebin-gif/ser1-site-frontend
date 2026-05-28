@@ -1,4 +1,4 @@
-import { DEFAULT_DMTG } from '../../../engine/succession/civil';
+import { DEFAULT_DMTG } from '@/engine/succession/civil';
 import type {
   SuccessionCivilContext,
   SuccessionDevolutionContext,

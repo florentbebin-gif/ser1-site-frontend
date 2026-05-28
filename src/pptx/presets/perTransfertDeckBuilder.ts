@@ -5,7 +5,11 @@ import {
   formatBaseCgRetraiteRateField,
   normalizeBaseCgRetraiteGestionFees,
 } from '@/data/base-cg-retraite';
-import type { PerTransfertInput, PerTransfertResult } from '@/engine/per';
+import {
+  computeCumulativeRent,
+  type PerTransfertInput,
+  type PerTransfertResult,
+} from '@/engine/per';
 import type {
   ContentSlideSpec,
   LogoPlacement,
@@ -87,26 +91,18 @@ function content(title: string, subtitle: string, body: string): ContentSlideSpe
   return { type: 'content', title, subtitle, body };
 }
 
-function cumulativeRent(annualRent: number, annualRate: number, years: number): number {
-  let total = 0;
-  for (let index = 0; index < Math.max(0, years); index += 1) {
-    total += Math.max(0, annualRent) * (1 + annualRate) ** index;
-  }
-  return total;
-}
-
 function buildSynthesisSlide(
   input: PerTransfertInput,
   result: PerTransfertResult,
 ): PerTransfertSynthesisSlideSpec {
   const short = result.capitalExit.shortHorizon;
   const long = result.capitalExit.longHorizon;
-  const newPerCumulShort = cumulativeRent(
+  const newPerCumulShort = computeCumulativeRent(
     result.newPerFiscal.netAnnualRent,
     input.projection.newRentRevaluationRate,
     short.years,
   );
-  const newPerCumulLong = cumulativeRent(
+  const newPerCumulLong = computeCumulativeRent(
     result.newPerFiscal.netAnnualRent,
     input.projection.newRentRevaluationRate,
     long.years,

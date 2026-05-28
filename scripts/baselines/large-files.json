@@ -1,16 +1,212 @@
 {
-  "src/features/per/transfert/PerTransfertSimulator.tsx": 530,
-  "src/engine/tresorerie/simulateTresorerieV2.helpers.ts": 529,
-  "src/pages/settings/SettingsDesignSystem.tsx": 528,
-  "src/features/placement/components/VersementConfigModalSections.tsx": 518,
-  "src/features/succession/hooks/useSuccessionOutcomeDerivedValues.ts": 517,
-  "src/features/succession/successionDevolution.ts": 510,
-  "src/domain/prevoyance/arretCoverage.ts": 509,
-  "src/features/succession/filiationOrgchartLayout.ts": 509,
-  "src/pages/settings/components/SettingsComptesSections.tsx": 509,
-  "src/features/succession/components/ScAssetsPassifsExpertSection.tsx": 506,
-  "src/features/credit/Credit.tsx": 505,
-  "src/features/succession/successionDeathInsuranceAllowances.ts": 504,
-  "src/features/ir/components/IrSimulatorContainer.tsx": 503,
-  "src/features/succession/hooks/useSuccessionDerivedValues.ts": 501
+  "src/data/mortality/tgf05.generated.ts": {
+    "maxLines": 1017,
+    "category": "generated",
+    "decision": "generated-fixture",
+    "justification": "Table mortalité générée, non éditée manuellement.",
+    "nextAction": "Régénérer via script de données si la source change ; ne pas augmenter manuellement."
+  },
+  "src/data/mortality/tgh05.generated.ts": {
+    "maxLines": 1005,
+    "category": "generated",
+    "decision": "generated-fixture",
+    "justification": "Table mortalité générée, non éditée manuellement.",
+    "nextAction": "Régénérer via script de données si la source change ; ne pas augmenter manuellement."
+  },
+  "src/data/mortality/tpg93.generated.ts": {
+    "maxLines": 860,
+    "category": "generated",
+    "decision": "generated-fixture",
+    "justification": "Table mortalité générée, non éditée manuellement.",
+    "nextAction": "Régénérer via script de données si la source change ; ne pas augmenter manuellement."
+  },
+  "src/constants/settingsDefaults.ts": {
+    "maxLines": 705,
+    "category": "source-of-truth",
+    "decision": "cas-particulier",
+    "justification": "Défauts fiscaux/settings centralisés ; la taille évite la duplication de constantes dispersées.",
+    "nextAction": "Déplacer seulement par domaine si un nouveau bloc dépasse sa responsabilité."
+  },
+  "src/domain/base-contrat/catalog.ts": {
+    "maxLines": 686,
+    "category": "source-of-truth",
+    "decision": "cas-particulier",
+    "justification": "Catalogue Base-Contrat structuré ; fichier de données métier central.",
+    "nextAction": "Extraire par famille uniquement lors du prochain chantier catalogue."
+  },
+  "src/features/tresorerie-societe/export/tresorerieExcelExport.ts": {
+    "maxLines": 681,
+    "category": "export-builder",
+    "decision": "a-reporter-explicitement",
+    "justification": "Builder Excel Trésorerie société encore mono-livrable ; split à faire sans changer les onglets.",
+    "nextAction": "Extraire helpers de feuilles au prochain chantier export Trésorerie."
+  },
+  "src/domain/base-contrat/rules/library/valeurs-mobilieres.ts": {
+    "maxLines": 680,
+    "category": "source-of-truth",
+    "decision": "cas-particulier",
+    "justification": "Famille de règles Base-Contrat cohérente et isolée.",
+    "nextAction": "Découper par sous-famille si une modification métier ajoute une nouvelle responsabilité."
+  },
+  "src/domain/base-contrat/rules/library/immobilier.ts": {
+    "maxLines": 646,
+    "category": "source-of-truth",
+    "decision": "cas-particulier",
+    "justification": "Famille de règles Base-Contrat cohérente et isolée.",
+    "nextAction": "Découper par sous-famille si une modification métier ajoute une nouvelle responsabilité."
+  },
+  "src/features/succession/export/successionXlsx.ts": {
+    "maxLines": 608,
+    "category": "export-builder",
+    "decision": "a-reporter-explicitement",
+    "justification": "Builder Excel Succession mono-livrable ; refactor séparé requis pour préserver les onglets.",
+    "nextAction": "Extraire les sections de feuille au prochain chantier export Succession."
+  },
+  "src/pptx/export/exportStudyDeck.ts": {
+    "maxLines": 598,
+    "category": "export-builder",
+    "decision": "a-reporter-explicitement",
+    "justification": "Pipeline PPTX central ; découpage risqué sans audit de tous les decks.",
+    "nextAction": "Extraire les étapes renderer/writer lors du prochain chantier PPTX transverse."
+  },
+  "src/domain/base-contrat/__tests__/rules.test.ts": {
+    "maxLines": 586,
+    "category": "test-contract",
+    "decision": "acceptable-temporairement",
+    "justification": "Suite contrat catalogue globale vérifiant toutes les familles Base-Contrat.",
+    "nextAction": "Découper par politique de règles si elle dépasse la baseline ou si une famille est refactorée."
+  },
+  "src/pptx/slides/buildPlacementDetail.ts": {
+    "maxLines": 577,
+    "category": "export-builder",
+    "decision": "a-reporter-explicitement",
+    "justification": "Builder de slide dense mais limité au détail Placement.",
+    "nextAction": "Extraire les blocs métriques/flows au prochain chantier PPTX Placement."
+  },
+  "src/engine/tresorerie/__tests__/simulateTresorerieV2.test.ts": {
+    "maxLines": 573,
+    "category": "test-contract",
+    "decision": "acceptable-temporairement",
+    "justification": "Golden tests du format historique V2 conservé pour migrations/compatibilité.",
+    "nextAction": "Découper seulement avec la migration des fixtures V2."
+  },
+  "src/engine/tresorerie/__tests__/simulateTresorerieV3.test.ts": {
+    "maxLines": 569,
+    "category": "test-contract",
+    "decision": "acceptable-temporairement",
+    "justification": "Golden tests du format historique V3 conservé pour migrations/compatibilité.",
+    "nextAction": "Découper seulement avec la migration des fixtures V3."
+  },
+  "src/features/tresorerie-societe/components/timeline/TresoRevenuePhaseModal.tsx": {
+    "maxLines": 559,
+    "category": "orchestrator",
+    "decision": "a-reporter-explicitement",
+    "justification": "Modal métier revenus associés, volontairement conservée entière pour éviter un refactor UX risqué.",
+    "nextAction": "Extraire les sous-panneaux rémunération/distribution/CCA au prochain chantier revenus associés."
+  },
+  "src/features/succession/__tests__/fixtures/notarialReferences.ts": {
+    "maxLines": 555,
+    "category": "fixture",
+    "decision": "generated-fixture",
+    "justification": "Fixture de références notariales vérifiées, non runtime.",
+    "nextAction": "Découper par thème uniquement si de nouvelles références sont ajoutées."
+  },
+  "src/features/per/transfert/PerTransfertSimulator.tsx": {
+    "maxLines": 530,
+    "category": "orchestrator",
+    "decision": "acceptable-temporairement",
+    "justification": "Orchestrateur page PER transfert, mono-parcours et proche du seuil.",
+    "nextAction": "Extraire les panneaux de step lors du prochain chantier UX PER transfert."
+  },
+  "src/engine/tresorerie/simulateTresorerieV2.helpers.ts": {
+    "maxLines": 529,
+    "category": "domain-helper",
+    "decision": "acceptable-temporairement",
+    "justification": "Helpers moteur Trésorerie V2 cohérents avec le simulateur et proches du seuil.",
+    "nextAction": "Extraire par famille calculatoire seulement avec tests moteur dédiés."
+  },
+  "src/pages/settings/SettingsDesignSystem.tsx": {
+    "maxLines": 528,
+    "category": "design-system-catalog",
+    "decision": "cas-particulier",
+    "justification": "Page catalogue interne du design system, pas un flux métier.",
+    "nextAction": "Extraire des previews si une nouvelle section dépasse la baseline."
+  },
+  "src/engine/per/transfert/compute.ts": {
+    "maxLines": 520,
+    "category": "domain-engine",
+    "decision": "acceptable-temporairement",
+    "justification": "Calcul PER transfert centralisé, mono-moteur et déjà testé.",
+    "nextAction": "Découper par phase calculatoire lors du prochain chantier PER moteur."
+  },
+  "src/features/succession/hooks/useSuccessionOutcomeDerivedValues.ts": {
+    "maxLines": 517,
+    "category": "domain-hook",
+    "decision": "acceptable-temporairement",
+    "justification": "Hook dérivé Succession mono-responsabilité, juste au-dessus du seuil.",
+    "nextAction": "Extraire helpers si une nouvelle métrique étend la responsabilité."
+  },
+  "src/features/succession/successionDevolution.ts": {
+    "maxLines": 510,
+    "category": "domain-engine",
+    "decision": "acceptable-temporairement",
+    "justification": "Moteur dévolution Succession cohérent, juste au-dessus du seuil.",
+    "nextAction": "Découper par branche successorale lors du prochain chantier dévolution."
+  },
+  "src/domain/prevoyance/arretCoverage.ts": {
+    "maxLines": 509,
+    "category": "domain-engine",
+    "decision": "acceptable-temporairement",
+    "justification": "Calcul arrêt/prévoyance cohérent, juste au-dessus du seuil.",
+    "nextAction": "Extraire les règles par garantie si le périmètre prévoyance s’étend."
+  },
+  "src/engine/tresorerie/types.ts": {
+    "maxLines": 509,
+    "category": "types-contract",
+    "decision": "cas-particulier",
+    "justification": "Contrat de types Trésorerie V6 central, utile pour éviter les types divergents.",
+    "nextAction": "Fractionner par sous-domaine uniquement avec migration d’imports contrôlée."
+  },
+  "src/features/succession/filiationOrgchartLayout.ts": {
+    "maxLines": 509,
+    "category": "domain-helper",
+    "decision": "acceptable-temporairement",
+    "justification": "Layout filiation isolé, algorithmique et proche du seuil.",
+    "nextAction": "Extraire mesures/placement si un nouveau rendu est ajouté."
+  },
+  "src/features/succession/components/ScAssetsPassifsExpertSection.tsx": {
+    "maxLines": 506,
+    "category": "orchestrator",
+    "decision": "a-reporter-explicitement",
+    "justification": "Section expert patrimoniale dense ; split UI séparé nécessaire pour éviter une régression Succession.",
+    "nextAction": "Extraire actifs, groupements fonciers et capitaux décès au prochain chantier Succession UI."
+  },
+  "src/features/credit/Credit.tsx": {
+    "maxLines": 505,
+    "category": "orchestrator",
+    "decision": "acceptable-temporairement",
+    "justification": "Orchestrateur Crédit mono-page, proche du seuil.",
+    "nextAction": "Extraire orchestration export ou schedule si une nouvelle responsabilité arrive."
+  },
+  "src/features/succession/successionDeathInsuranceAllowances.ts": {
+    "maxLines": 504,
+    "category": "domain-engine",
+    "decision": "acceptable-temporairement",
+    "justification": "Règles assurance décès Succession cohérentes, juste au-dessus du seuil.",
+    "nextAction": "Découper par régime fiscal si de nouvelles règles sont ajoutées."
+  },
+  "src/features/ir/components/IrSimulatorContainer.tsx": {
+    "maxLines": 503,
+    "category": "orchestrator",
+    "decision": "acceptable-temporairement",
+    "justification": "Orchestrateur IR mono-page, proche du seuil.",
+    "nextAction": "Extraire persistance ou exports si une nouvelle responsabilité arrive."
+  },
+  "src/features/succession/hooks/useSuccessionDerivedValues.ts": {
+    "maxLines": 501,
+    "category": "domain-hook",
+    "decision": "acceptable-temporairement",
+    "justification": "Hook dérivé Succession mono-responsabilité, à 1 ligne du seuil.",
+    "nextAction": "Extraire helpers si une nouvelle métrique étend la responsabilité."
+  }
 }

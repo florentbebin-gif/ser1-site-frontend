@@ -51,6 +51,64 @@ Le LLM doit optimiser leur utilisation : déléguer uniquement des tâches indé
    par commits et PR. Seules les docs structurantes permanentes sont versionnées ;
    tout artefact régénérable doit rester gitignored et produit par script.
 
+## Avant de modifier SER1
+
+- Lire le fichier structurant adapté au périmètre (`docs/ARCHITECTURE.md`,
+  `docs/METIER.md`, `docs/GOUVERNANCE_EXPORTS.md`, `docs/RUNBOOK.md`,
+  `.github/CONTRIBUTING.md`) avant de proposer ou modifier.
+- Prouver les usages avec `rg` avant toute suppression, déplacement ou affirmation
+  de code mort, RLS OK, Storage OK ou compatibilité supprimable.
+- Identifier le garde-fou à mettre à jour en même temps que le code :
+  fiscal, export, Supabase/RLS/Storage, migrations, CI, baseline ou docs.
+- Pour une nouvelle verticale roadmap, vérifier systématiquement routes, docs,
+  tests, exports, Supabase/RLS, fiscal settings et CI.
+
+## Interdictions fortes
+
+- Ne jamais introduire de valeur fiscale hardcodée hors source fiscale officielle
+  ou settings centralisés.
+- Ne jamais ajouter de calcul métier dans `src/pptx`, exports PPTX ou Excel,
+  sans helper engine/domain validé ou test de parité.
+- Ne jamais modifier Supabase, RLS ou Storage sans mettre à jour les checks
+  associés (`check:supabase-rls`, `check:storage-policies`,
+  `check:supabase-migrations`).
+- Ne jamais ajouter une dette en baseline sans justification explicite dans la PR.
+- Ne jamais utiliser `@ts-ignore`, `@ts-expect-error`, `@ts-nocheck` ou `any`
+  pour contourner un problème. ESLint bloque les `any` explicites hors tests ;
+  une exception doit rester locale, typée par narrowing et justifiée dans la PR.
+- Ne jamais modifier la CI sans prouver que chaque ancien check reste couvert.
+- Ne jamais créer de fichier ou dossier `legacy`, `old`, `backup`, `tmp`,
+  `deprecated` ou `generated` sans règle claire, génération reproductible ou
+  allowlist documentée.
+- Ne jamais dupliquer une règle fiscale dans l'UI ou les exports.
+
+## Exceptions autorisées uniquement avec preuve
+
+- Compatibilité ancien format : autorisée seulement si un draft, export,
+  sauvegarde locale ou format utilisateur encore supporté le nécessite. Isoler
+  dans un fichier de migration/compatibilité, documenter le périmètre et garder
+  un test de compatibilité.
+- Baseline ou allowlist : autorisée seulement si elle explique pourquoi
+  l'exception existe, pourquoi elle est acceptable et comment empêcher sa
+  croissance.
+- Fichier généré : autorisé seulement avec source génératrice, commande de
+  vérification et commentaire `@generated` ou équivalent.
+- Exception architecturale : documenter la raison dans les docs structurantes et
+  dans l'allowlist/check concerné.
+- Nouveau script de check : documenter utilité, commande, périmètre et niveau
+  bloquant ou informatif.
+
+## Checklist avant fin de tâche IA
+
+- Les chemins ajoutés aux docs/scripts sont relatifs au repo, jamais locaux.
+- Les tests/checks ciblés du périmètre ont été lancés et les résultats notés.
+- `npm run check` est lancé avant commit ou l'impossibilité est expliquée.
+- Aucun hardcode fiscal, contournement TypeScript, baseline facile ou legacy
+  ambigu n'a été ajouté.
+- Toute modification export a un test de parité ou une justification explicite.
+- Toute modification Supabase/RLS/Storage/migration met à jour le check associé.
+- Les docs ne promettent que des comportements et scripts réellement présents.
+
 ## Charger automatiquement selon la tâche
 
 Les règles métier et docs structurantes ci-dessous sont communes à tous les assistants. Les skills

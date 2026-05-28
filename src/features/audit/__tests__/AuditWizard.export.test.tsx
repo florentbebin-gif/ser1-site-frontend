@@ -18,7 +18,7 @@ vi.mock('../export/exportAudit', () => ({
   exportAuditPptx: vi.fn().mockResolvedValue(undefined),
 }));
 
-vi.mock('../../../settings/ThemeProvider', () => ({
+vi.mock('@/settings/ThemeProvider', () => ({
   useTheme: () => ({
     colors: TEST_COLORS,
   }),

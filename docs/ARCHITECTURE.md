@@ -53,20 +53,23 @@ Repères (domain-first) :
 - `src/settings/` : thème, presets, ThemeProvider.
 - `src/pptx/` : pipeline PPTX (design system + slides + export).
 - `src/reporting/` : snapshots `.ser1`, migrations de snapshots et contrats de reporting. Ce périmètre dépend des moteurs/domaines purs, jamais des features UI.
-- `src/engine/tresorerie/legacy/` : types historiques V1→V5, réservés aux migrations et tests moteur.
+- `src/engine/tresorerie/migrations/compatTypes.ts` : types historiques V1→V5, réservés aux migrations et tests moteur.
 - `src/engine/tresorerie/migrations/` : adaptateurs purs vers `TresoInputsV6`, dont `migrateUnknownTresorerieInputsToV6(unknown)`.
 - `supabase/` : edge functions + migrations.
 
 Conventions clés :
 
 - Nouveau code : TS/TSX.
-- Fichiers `500-800` lignes = dette surveillée. Acceptable temporairement si le fichier reste mono-rôle et lisible.
-- Fichiers `>800` lignes = découpage obligatoire au prochain chantier qui touche le fichier.
-- Garde-fous d'architecture : `npm run check:arch` (dependency-cruiser, config `.dependency-cruiser.cjs`) — bloquant en CI. Règles : engine/domain sans React ni features, features sans pages, reporting sans features, imports cross-features via `index.ts` uniquement, `tresorerie-legacy-restricted` pour empêcher `src/features/tresorerie-societe` d'importer `src/engine/tresorerie/legacy/**`.
+- Fichiers `500-800` lignes = dette surveillée. Acceptable temporairement si le fichier reste mono-rôle et lisible, avec justification dans `scripts/baselines/large-files.json`.
+- Fichiers `>800` lignes = découpage prioritaire sauf fichier généré ou source de données explicitement justifiée dans `scripts/baselines/large-files.json`.
+- Garde-fous d'architecture : `npm run check:arch` (dependency-cruiser, config `.dependency-cruiser.cjs`) — bloquant en CI. Règles : engine/domain sans React ni features, features sans pages, reporting sans features, imports cross-features via `index.ts` uniquement.
 - Garde imports profonds : `npm run check:deep-imports` bloque tout nouveau `../../../` hors tests dans les imports TS/TSX/JS/JSX et CSS. La baseline hors tests est `0`; utiliser `@/` pour les imports cross-module.
 - Garde fichiers orphelins : `npm run check:orphan-source-files` vérifie l'atteignabilité des sources applicatives depuis les entrypoints explicites.
-- Garde fichiers longs : `npm run check:large-files-baseline` bloque les nouveaux fichiers `src/**/*.ts(x)` au-delà de 500 lignes sauf exemption ESLint documentée.
+- Garde fichiers longs : `npm run check:large-files-baseline` bloque tout fichier `src/**/*.ts(x)` au-delà de 500 lignes sans entrée structurée dans `scripts/baselines/large-files.json`, toute entrée sans justification, toute entrée devenue inutile et toute croissance au-delà du `maxLines` figé.
 - Garde routes/docs : `npm run check:routes-doc-sync` vérifie que les routes déclarées dans `src/routes` apparaissent dans ce document.
+- Garde Supabase : `npm run check:supabase-rls`, `npm run check:storage-policies` et `npm run check:supabase-migrations` vérifient le périmètre RLS/Storage/migrations explicitement classé.
+- Garde exports : `npm run check:export-parity` vérifie les métriques partagées UI/export ; `npm run check:pptx-images` vérifie le budget des images de chapitres.
+- Familles CI : `npm run check` regroupe `check:static`, `check:architecture`, `check:fiscal`, `check:supabase`, `check:exports`, `check:baselines`, `check:types`, `check:tests` et `check:build`.
 - Coverage moteur : `npm run coverage` porte des seuils sur `src/engine/**` uniquement ; l'UI/features suit une trajectoire séparée.
 - Nomenclature métier : dans Succession, utiliser les noms explicites comme `AssuranceVie` pour les nouveaux modules métier ; éviter les abréviations ambiguës de type `Av`.
 
@@ -98,14 +101,14 @@ Ces noms de dossiers sont des marqueurs historiques de refactor ou de prototypag
 
 **Statut au 2026-05-28** :
 
-- `src/engine/tresorerie/legacy/**` est le seul dossier `legacy` autorisé sous `src/` ; il contient les types historiques V1→V5 consommés par les migrations moteur.
+- Aucun dossier `legacy` n'est autorisé sous `src/`. La compatibilité des anciens formats Trésorerie V1→V5 est isolée dans `src/engine/tresorerie/migrations/compatTypes.ts`, consommée uniquement par les migrations et leurs tests.
 - aucun dossier `__spike__` ou `_raw` n'est présent sous `src/`
 - les autres mentions résiduelles dans la doc ou l'historique Git doivent être lues comme historiques
 
 **Règles** :
 
-- ne pas réintroduire ces dossiers dans `src/` hors `src/engine/tresorerie/legacy/**`
-- `npm run check:naming-conventions` bloque les nouveaux dossiers `legacy`, `__spike__` ou `_raw` non autorisés sous `src/`
+- ne pas réintroduire ces dossiers dans `src/`
+- `npm run check:naming-conventions` bloque les nouveaux dossiers `legacy`, `__spike__` ou `_raw` sous `src/`
 - si un spike temporaire est nécessaire, le garder hors runtime prod puis le supprimer ou l'intégrer avant merge
 - avant toute suppression ou promotion de code historique, fournir une preuve d'usage (`rg`, chaîne d'import, route ou script)
 
@@ -114,8 +117,7 @@ Ces noms de dossiers sont des marqueurs historiques de refactor ou de prototypag
 ```powershell
 Get-ChildItem src -Recurse -Directory |
   Where-Object {
-    $_.Name -in @('__spike__','_raw') -or
-    ($_.Name -eq 'legacy' -and $_.FullName -notlike '*src\engine\tresorerie\legacy')
+    $_.Name -in @('legacy','__spike__','_raw')
   }
 # → doit retourner vide
 ```
@@ -317,7 +319,7 @@ Décision produit : `docs/mode-simplifie-expert.md`.
 - Les boutons locaux additionnels de page (filtres, catégories masquables) ne doivent pas être initialisés comme actifs par défaut sans règle produit documentée.
 - Helpers d'affichage : `src/settings/userModeDisplay.tsx` expose `resolveEffectiveUserMode`, `DetailLevel`, `ExpertOnly` et `SimpleOnly`.
 - Le mode simplifié masque ou replie de l'UI ; il ne doit jamais changer seul les hypothèses calculatoires envoyées au moteur.
-- Un simulateur sans décision produit simplifiée reste explicitement `expertOnly`. C'est le statut de `/sim/tresorerie-societe` tant que son parcours rendez-vous simplifié n'est pas défini.
+- Un simulateur sans décision produit simplifiée reste explicitement `expertOnly`. `/sim/tresorerie-societe` est `expertOnly` temporaire et volontaire dans cette PR : le mode simplifié n'est pas livré ici, car le parcours société / associé / allocation exige une décision produit dédiée suivie par `PR-P2-06`.
 
 ### Thème V5 (3 modes)
 
@@ -784,7 +786,7 @@ Cette section fixe comment ajouter une page, une route ou une feature sans creer
 - Test adapte au statut du sujet :
   - simulateur stable : smoke test ou test cible
   - simulateur upcoming : au minimum ouverture de route / rendu attendu
-- `npm run report:large-files` fournit une baseline informative des fichiers `src` à 400+ lignes ; ce rapport ne remplace pas le gate strict `max-lines` d'ESLint.
+- `npm run report:large-files` liste les fichiers `src` à 400+ lignes avec décision, catégorie et plafond de baseline. Le gate bloquant reste `npm run check:large-files-baseline`, qui empêche les nouveaux gros fichiers et la croissance silencieuse.
 - Aucun nouveau pattern structurel implicite non documente
 
 ---

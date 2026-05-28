@@ -88,6 +88,7 @@ const MINIMAL_PRODUCT = {
     regime: 'Article 990 I',
   },
   totaux: {
+    effortTotal: 100000,
     effortReel: 100000,
     revenusNetsLiquidation: 80000,
     fiscaliteTotale: 8000,
@@ -124,6 +125,7 @@ const MINIMAL_DATA = {
       regime: 'DMTG',
     },
     totaux: {
+      effortTotal: 95500,
       effortReel: 95500,
       revenusNetsLiquidation: 75000,
       fiscaliteTotale: 11000,

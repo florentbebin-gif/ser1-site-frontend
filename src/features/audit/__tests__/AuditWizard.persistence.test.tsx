@@ -7,7 +7,7 @@ import { triggerPageReset } from '@/utils/reset';
 import AuditWizard from '../AuditWizard';
 import { createEmptyDossier } from '../types';
 
-vi.mock('../../../settings/ThemeProvider', () => ({
+vi.mock('@/settings/ThemeProvider', () => ({
   useTheme: () => ({
     colors: {},
   }),

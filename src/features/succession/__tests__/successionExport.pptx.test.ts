@@ -3,8 +3,8 @@
  */
 
 import { describe, expect, it } from 'vitest';
-import { calculateSuccession } from '../../../engine/succession';
-import { buildSuccessionStudyDeck } from '../../../pptx/presets/successionDeckBuilder';
+import { calculateSuccession } from '@/engine/succession';
+import { buildSuccessionStudyDeck } from '@/pptx/presets/successionDeckBuilder';
 import { THEME_COLORS, type SuccessionStudyData } from './successionExport.fixtures';
 
 describe('Succession PPTX Export', () => {
