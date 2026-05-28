@@ -190,7 +190,6 @@ export default [
       'src/data/mortality/tgf05.generated.ts',
       'src/data/mortality/tgh05.generated.ts',
       'src/data/mortality/tpg93.generated.ts',
-      'src/pptx/designSystem/serenity.ts',
     ],
     rules: {
       'max-lines': 'off',
