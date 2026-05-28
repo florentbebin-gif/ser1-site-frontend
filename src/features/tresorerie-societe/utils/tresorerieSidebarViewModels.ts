@@ -1,5 +1,5 @@
 import { getAssociateAnnualIncomeNeedForYear } from '@/engine/tresorerie/revenuePhases';
-import type { TresoInputsRuntime, TresoProjectionRow } from '@/engine/tresorerie/types';
+import type { TresoInputsV6, TresoProjectionRow } from '@/engine/tresorerie/types';
 import {
   getAssociateProfile,
   getSelectedAssociate,
@@ -12,7 +12,6 @@ export interface TresoAssociateInsightSegment {
   label: string;
   value: number;
 }
-
 export interface TresoAssociateInsightViewModel {
   status: 'ready' | 'empty' | 'pm';
   associateLabel: string;
@@ -110,7 +109,7 @@ function formatPeriodLabel(firstYear: number, lastYear: number): string {
 }
 
 export function buildTresoAssociateInsightViewModel(
-  inputs: TresoInputsRuntime,
+  inputs: TresoInputsV6,
   rows: TresoProjectionRow[],
 ): TresoAssociateInsightViewModel {
   const selectedAssociate = getSelectedAssociate(inputs);

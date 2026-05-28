@@ -1,4 +1,4 @@
-import type { RuntimeAssociateInput, TresoInputsRuntime } from '@/engine/tresorerie/types';
+import type { RuntimeAssociateInput, TresoInputsV6 } from '@/engine/tresorerie/types';
 import { getOwnershipTotals, getSelectedAssociate } from './tresorerieSocieteModel';
 
 export interface TresoReadiness {
@@ -9,12 +9,11 @@ export interface TresoReadiness {
   ownershipCapitalOverflow: boolean;
   ownershipEconomicOverflow: boolean;
 }
-
 type AssociateWithRevenuePhases = RuntimeAssociateInput & {
   revenuePhases?: unknown[];
 };
 
-export function getTresoReadiness(inputs: TresoInputsRuntime): TresoReadiness {
+export function getTresoReadiness(inputs: TresoInputsV6): TresoReadiness {
   const { company } = inputs;
   const selectedAssociate = getSelectedAssociate(inputs);
   const ownershipTotals = getOwnershipTotals(company.associates);

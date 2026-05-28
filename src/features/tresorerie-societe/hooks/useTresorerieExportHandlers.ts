@@ -1,20 +1,19 @@
 import { useCallback, useState } from 'react';
 import type { LogoPlacement } from '@/pptx/theme/types';
 import type { ThemeColors } from '@/settings/theme';
-import type { TresoInputsRuntime, TresoProjectionRow } from '@/engine/tresorerie/types';
+import type { TresoInputsV6, TresoProjectionRow } from '@/engine/tresorerie/types';
 import type { TresoKPIs } from './useTresorerieCalculations';
 import { exportTresorerieExcel } from '../export/tresorerieExcelExport';
 
 interface UseTresorerieExportHandlersParams {
   rows: TresoProjectionRow[];
   kpis: TresoKPIs;
-  inputs: TresoInputsRuntime;
+  inputs: TresoInputsV6;
   themeColors: ThemeColors;
   pptxColors: ThemeColors;
   cabinetLogo?: string;
   logoPlacement?: LogoPlacement;
 }
-
 export function useTresorerieExportHandlers({
   rows,
   kpis,

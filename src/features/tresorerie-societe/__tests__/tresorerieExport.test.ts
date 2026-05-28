@@ -15,7 +15,8 @@ import type {
 } from '@/pptx/theme/types';
 import { DEFAULT_COLORS } from '@/settings/theme';
 import { fingerprintPptxExport } from '@/utils/export/exportFingerprint';
-import type { TresoProjectionRow } from '@/engine/tresorerie/types';
+import { migrateUnknownTresorerieInputsToV6 } from '@/engine/tresorerie/migrations/tresorerieV2Migration';
+import type { TresoInputsV6, TresoProjectionRow } from '@/engine/tresorerie/types';
 import type { TresoKPIs } from '../hooks/useTresorerieCalculations';
 import { buildTresorerieXlsxBlob } from '../export/tresorerieExcelExport';
 import { buildTresorerieStudyDeck } from '../export/tresoreriePptxWrapper';
@@ -44,8 +45,16 @@ const KPIS: TresoKPIs = {
   anneeRetraiteIndex: 12,
 };
 
-const INPUTS = {
-  version: 3,
+function toCurrentInputs(input: unknown): TresoInputsV6 {
+  const migrated = migrateUnknownTresorerieInputsToV6(input);
+  if (!migrated) {
+    throw new Error('Fixture Trésorerie export invalide');
+  }
+  return migrated;
+}
+
+const INPUTS = toCurrentInputs({
+  version: 5,
   selectedAssociateId: 'associe-1',
   foyer: {
     selectedAssociateId: 'associe-1',
@@ -168,10 +177,12 @@ const INPUTS = {
       },
     ],
   },
-} as any;
+});
 
 function makeRow(year: number): TresoProjectionRow {
-  const retirementOffset = INPUTS.foyer.retirementAge - INPUTS.foyer.currentAge;
+  const profile = INPUTS.company.associates[0].profile;
+  if (!profile) throw new Error('Fixture Trésorerie export sans profil associé');
+  const retirementOffset = profile.retirementAge - profile.currentAge;
   const activeYears = Math.max(1, retirementOffset);
   const isRemuneration = year <= 5;
   const revenusParAssocie = [
@@ -233,7 +244,7 @@ function makeRow(year: number): TresoProjectionRow {
     annuiteCreditIS: 0,
     revenusActifFinance: 0,
     revenusNets,
-    deltaBesoin: revenusNets - INPUTS.foyer.annualIncomeNeed,
+    deltaBesoin: revenusNets - (profile.annualIncomeNeed ?? 0),
     revenusParAssocie,
     tresorerieDebut: 15000 + year * 1000,
     tresorerieFin: 16000 + year * 1000,

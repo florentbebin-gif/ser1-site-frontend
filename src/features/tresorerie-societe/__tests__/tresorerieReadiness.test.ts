@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { getTresoReadiness } from '../utils/tresorerieReadiness';
-import type { TresoInputsRuntime } from '@/engine/tresorerie/types';
+import type { TresoInputsV6 } from '@/engine/tresorerie/types';
 
-const baseInputs: TresoInputsRuntime = {
+const baseInputs: TresoInputsV6 = {
   version: 6,
   selectedAssociateId: 'associe-1',
   foyer: {

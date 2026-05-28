@@ -133,7 +133,13 @@ describe('revenuePhases', () => {
       ],
     } as Partial<AssociateInput>);
 
-    expect(getAssociateAnnualIncomeNeedForYear(withPhases, 30_000, 2032)).toBe(42_000);
+    expect(
+      getAssociateAnnualIncomeNeedForYear(
+        withPhases as Parameters<typeof getAssociateAnnualIncomeNeedForYear>[0],
+        30_000,
+        2032,
+      ),
+    ).toBe(42_000);
 
     const withLegacyStop = associate({
       remuneration: {
@@ -144,7 +150,19 @@ describe('revenuePhases', () => {
         annualNeedAfterStop: 36_000,
       },
     });
-    expect(getAssociateAnnualIncomeNeedForYear(withLegacyStop, 30_000, 2031)).toBe(36_000);
-    expect(getAssociateAnnualIncomeNeedForYear(associate(), 30_000, 2031)).toBe(30_000);
+    expect(
+      getAssociateAnnualIncomeNeedForYear(
+        withLegacyStop as Parameters<typeof getAssociateAnnualIncomeNeedForYear>[0],
+        30_000,
+        2031,
+      ),
+    ).toBe(36_000);
+    expect(
+      getAssociateAnnualIncomeNeedForYear(
+        associate() as Parameters<typeof getAssociateAnnualIncomeNeedForYear>[0],
+        30_000,
+        2031,
+      ),
+    ).toBe(30_000);
   });
 });

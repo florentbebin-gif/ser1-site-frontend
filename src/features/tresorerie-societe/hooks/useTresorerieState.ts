@@ -9,18 +9,12 @@
 import { useCallback, useEffect, useState } from 'react';
 import { storageKeyFor, onResetEvent } from '@/utils/reset';
 import type { TresoState, TresoPersistedState } from '../types';
-import type { TresoInputs, TresoInputsV2, TresoInputsV6 } from '@/engine/tresorerie/types';
-import {
-  buildTresoInputsV6FromLegacy,
-  buildTresoInputsV6FromV2,
-  buildTresoInputsV6FromV3,
-  buildTresoInputsV6FromV4,
-  buildTresoInputsV6FromV5,
-} from '@/engine/tresorerie/migrations/tresorerieV2Migration';
+import type { TresoInputsV6 } from '@/engine/tresorerie/types';
+import { migrateUnknownTresorerieInputsToV6 } from '@/engine/tresorerie/migrations/tresorerieV2Migration';
 
 // ─── Valeurs par défaut ───────────────────────────────────────────────────────
 
-const DEFAULT_TRESO_INPUTS_LEGACY: TresoInputs = {
+const DEFAULT_TRESO_INPUTS_COMPAT = {
   typeCreation: 'newco',
   ageActuel: 50,
   ageRetraite: 65,
@@ -39,7 +33,7 @@ const DEFAULT_TRESO_INPUTS_LEGACY: TresoInputs = {
   holding: undefined,
 };
 
-const BLANK_TRESO_INPUTS_LEGACY: TresoInputs = {
+const BLANK_TRESO_INPUTS_COMPAT = {
   typeCreation: 'newco',
   ageActuel: 0,
   ageRetraite: 0,
@@ -58,8 +52,9 @@ const BLANK_TRESO_INPUTS_LEGACY: TresoInputs = {
   holding: undefined,
 };
 
-export const DEFAULT_TRESO_INPUTS_V6: TresoInputsV6 =
-  buildTresoInputsV6FromLegacy(BLANK_TRESO_INPUTS_LEGACY);
+export const DEFAULT_TRESO_INPUTS_V6: TresoInputsV6 = migrateUnknownTresorerieInputsToV6(
+  BLANK_TRESO_INPUTS_COMPAT,
+) as TresoInputsV6;
 
 const DEFAULT_STATE: TresoState = {
   inputsV6: DEFAULT_TRESO_INPUTS_V6,
@@ -72,19 +67,17 @@ const STORE_KEY = storageKeyFor('tresorerie-societe');
 // ─── Normalisation chargement ─────────────────────────────────────────────────
 
 export function normalizeTresoreriePersistedState(raw: TresoPersistedState): TresoState {
-  const legacyInputs: TresoInputs = {
-    ...DEFAULT_TRESO_INPUTS_LEGACY,
-    ...(raw.inputs ?? {}),
-  };
-  const legacyWithEmbeddedV2 = raw.inputs as (TresoInputs & { v2?: TresoInputsV2 }) | undefined;
   const inputsV6 =
     raw.inputsV6 ??
-    (raw.inputsV5 ? buildTresoInputsV6FromV5(raw.inputsV5) : undefined) ??
-    (raw.inputsV4 ? buildTresoInputsV6FromV4(raw.inputsV4) : undefined) ??
-    (raw.inputsV3 ? buildTresoInputsV6FromV3(raw.inputsV3) : undefined) ??
-    (raw.inputsV2 ? buildTresoInputsV6FromV2(raw.inputsV2) : undefined) ??
-    (legacyWithEmbeddedV2?.v2 ? buildTresoInputsV6FromV2(legacyWithEmbeddedV2.v2) : undefined) ??
-    buildTresoInputsV6FromLegacy(legacyInputs);
+    migrateUnknownTresorerieInputsToV6(raw.inputsV5) ??
+    migrateUnknownTresorerieInputsToV6(raw.inputsV4) ??
+    migrateUnknownTresorerieInputsToV6(raw.inputsV3) ??
+    migrateUnknownTresorerieInputsToV6(raw.inputsV2) ??
+    migrateUnknownTresorerieInputsToV6({
+      ...DEFAULT_TRESO_INPUTS_COMPAT,
+      ...(typeof raw.inputs === 'object' && raw.inputs ? raw.inputs : {}),
+    }) ??
+    DEFAULT_TRESO_INPUTS_V6;
   return {
     inputsV6,
     projectionVisible: false,

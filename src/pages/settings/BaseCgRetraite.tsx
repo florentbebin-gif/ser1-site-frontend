@@ -8,7 +8,6 @@ import {
   type BaseCgRetraiteDocument,
 } from '@/data/base-cg-retraite';
 import {
-  bulkUpsertBaseCgRetraiteCatalog,
   createBaseCgRetraiteDocumentDownloadUrl,
   deleteBaseCgRetraiteContract,
   getBaseCgRetraiteCatalog,
@@ -110,18 +109,24 @@ export default function BaseCgRetraite() {
   const [editing, setEditing] = useState<BaseCgRetraiteContract | null>(null);
   const [openCompagnie, setOpenCompagnie] = useState<string | null>(null);
   const [initialAccordionApplied, setInitialAccordionApplied] = useState(false);
-  const [bulkSaving, setBulkSaving] = useState(false);
-  const [bulkStatus, setBulkStatus] = useState<string | null>(null);
+  const [catalogError, setCatalogError] = useState<string | null>(null);
   const [showAssistanceModal, setShowAssistanceModal] = useState(false);
 
   const reload = () => {
     setLoading(true);
+    setCatalogError(null);
     getBaseCgRetraiteCatalog()
       .then((contracts) => {
         setCatalog(contracts);
         setLoading(false);
       })
-      .catch(() => setLoading(false));
+      .catch((error: unknown) => {
+        setCatalog([]);
+        setCatalogError(
+          error instanceof Error ? error.message : 'Catalogue Base CG retraite indisponible.',
+        );
+        setLoading(false);
+      });
   };
 
   useEffect(() => {
@@ -187,34 +192,6 @@ export default function BaseCgRetraite() {
     window.open(url, '_blank', 'noopener,noreferrer');
   }
 
-  async function handleBulkSave() {
-    if (!isAdmin || bulkSaving) return;
-    if (
-      !window.confirm(
-        "Sauvegarder l'ensemble du catalogue Base CG retraite dans Supabase ? Cette opération met à jour les overrides admin.",
-      )
-    ) {
-      return;
-    }
-    setBulkSaving(true);
-    setBulkStatus('Sauvegarde en cours…');
-    try {
-      const result = await bulkUpsertBaseCgRetraiteCatalog();
-      if (result.errors.length > 0) {
-        setBulkStatus(
-          `Sauvegarde partielle : ${result.upserted} ok, ${result.skipped} en échec — ${result.errors[0]?.message ?? ''}`,
-        );
-      } else {
-        setBulkStatus(`${result.upserted} contrats synchronisés avec Supabase.`);
-      }
-      reload();
-    } catch (error) {
-      setBulkStatus(error instanceof Error ? error.message : 'Sauvegarde impossible.');
-    } finally {
-      setBulkSaving(false);
-    }
-  }
-
   const configuredCount = useMemo(
     () => catalog.filter((contract) => !isRetraiteContractIncomplete(contract)).length,
     [catalog],
@@ -246,30 +223,20 @@ export default function BaseCgRetraite() {
             Assistance & Suggestions
           </button>
           {isAdmin ? (
-            <>
-              <button
-                type="button"
-                className="base-cg-button base-cg-button--primary"
-                onClick={handleBulkSave}
-                disabled={bulkSaving}
-              >
-                {bulkSaving ? 'Sauvegarde…' : 'Enregistrer la base CG retraite'}
-              </button>
-              <button
-                type="button"
-                className="base-cg-button"
-                onClick={() => setEditing(createEmptyContract())}
-              >
-                Ajouter
-              </button>
-            </>
+            <button
+              type="button"
+              className="base-cg-button"
+              onClick={() => setEditing(createEmptyContract())}
+            >
+              Ajouter
+            </button>
           ) : null}
         </div>
       </section>
 
-      {bulkStatus ? (
-        <div className="base-cg-bulk-status" role="status">
-          {bulkStatus}
+      {catalogError ? (
+        <div className="base-cg-bulk-status" role="alert">
+          Catalogue indisponible : {catalogError}
         </div>
       ) : null}
 
@@ -293,6 +260,8 @@ export default function BaseCgRetraite() {
       <div className="settings-premium-card base-cg-catalog-card">
         {loading ? (
           <p>Chargement...</p>
+        ) : catalogError ? (
+          <p>Catalogue Base CG retraite indisponible. Vérifier la connexion Supabase.</p>
         ) : groupedByCompagnie.length === 0 ? (
           <p>Aucun contrat ne correspond aux filtres.</p>
         ) : (

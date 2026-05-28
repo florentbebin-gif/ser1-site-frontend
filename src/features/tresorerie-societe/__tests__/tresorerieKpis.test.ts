@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { simulateTresorerieV2 } from '../../../engine/tresorerie/simulateTresorerieV2';
-import type { TresoFiscalParams, TresoInputsV2 } from '../../../engine/tresorerie/types';
+import { migrateUnknownTresorerieInputsToV6 } from '../../../engine/tresorerie/migrations/tresorerieV2Migration';
+import type { TresoFiscalParams, TresoInputsV6 } from '../../../engine/tresorerie/types';
 
 const PARAMS: TresoFiscalParams = {
   isNormalRate: 0.25,
@@ -15,7 +16,15 @@ const PARAMS: TresoFiscalParams = {
   irScale: [],
 };
 
-const BASE: TresoInputsV2 = {
+function toCurrentInputs(input: unknown): TresoInputsV6 {
+  const migrated = migrateUnknownTresorerieInputsToV6(input);
+  if (!migrated) {
+    throw new Error('Fixture Trésorerie historique invalide');
+  }
+  return migrated;
+}
+
+const BASE: TresoInputsV6 = toCurrentInputs({
   version: 2,
   foyer: {
     selectedAssociateId: 'associe-1',
@@ -56,7 +65,7 @@ const BASE: TresoInputsV2 = {
     sweepThreshold: 0,
     pockets: [],
   },
-};
+});
 
 describe('Trésorerie société IS — projection moteur v2 et KPIs', () => {
   describe('structure de la projection', () => {
@@ -140,9 +149,6 @@ describe('Trésorerie société IS — projection moteur v2 et KPIs', () => {
           ...BASE,
           foyer: {
             ...BASE.foyer,
-            currentAge: 65,
-            retirementAge: 65,
-            annualIncomeNeed: 50000,
           },
           company: {
             ...BASE.company,
@@ -153,8 +159,37 @@ describe('Trésorerie société IS — projection moteur v2 et KPIs', () => {
                 retirementAge: 65,
                 annualIncomeNeed: 50000,
                 projectionStartYear:
-                  BASE.company.projectionStartYear ?? BASE.foyer.projectionStartYear,
+                  BASE.company.projectionStartYear ??
+                  associate.profile?.projectionStartYear ??
+                  2025,
               },
+              revenuePhases: [
+                {
+                  id: 'phase-besoin',
+                  startYear:
+                    BASE.company.projectionStartYear ??
+                    associate.profile?.projectionStartYear ??
+                    2025,
+                  endYear:
+                    BASE.company.projectionStartYear ??
+                    associate.profile?.projectionStartYear ??
+                    2025,
+                  remuneration: {
+                    enabled: false,
+                    source: 'none',
+                    loadedAnnualCost: 0,
+                    socialChargeRate: 0,
+                  },
+                  distribution: {
+                    enabled: true,
+                    annualNetIncomeNeed: 50000,
+                    dividendsStrategy: 'montant_cible',
+                    dividendsTargetAmountNet: 50000,
+                  },
+                  ccaContribution: { enabled: false },
+                  ccaRepayment: { enabled: false, strategy: 'aucun' },
+                },
+              ],
             })),
           },
         },

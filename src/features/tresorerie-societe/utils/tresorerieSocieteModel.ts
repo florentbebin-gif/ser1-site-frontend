@@ -19,6 +19,11 @@ import {
   COMPANY_KIND_LABELS,
 } from './tresorerieSocieteOptions';
 
+type OwnershipAssociate = {
+  id: string;
+  ownershipLots: OwnershipLotInput[];
+};
+
 export {
   getAssociateProfile,
   getCapitalPct,
@@ -45,14 +50,14 @@ export function getCompanyKindCode(company: RuntimeCompanyInput): string {
   return COMPANY_KIND_CODES[getCompanyKind(company)];
 }
 
-export function getOwnershipTotals(associates: RuntimeAssociateInput[]): {
+export function getOwnershipTotals(associates: OwnershipAssociate[]): {
   capitalPct: number;
   economicRightsPct: number;
 } {
   return associates.reduce(
     (sum, associate) => ({
-      capitalPct: sum.capitalPct + getCapitalPct(associate),
-      economicRightsPct: sum.economicRightsPct + getEconomicPct(associate),
+      capitalPct: sum.capitalPct + getCapitalPct(associate as RuntimeAssociateInput),
+      economicRightsPct: sum.economicRightsPct + getEconomicPct(associate as RuntimeAssociateInput),
     }),
     { capitalPct: 0, economicRightsPct: 0 },
   );
@@ -79,14 +84,11 @@ function defaultOwnershipLot(): OwnershipLotInput {
   return { right: 'pleine_propriete', capitalPct: 0, economicRightsPct: 0 };
 }
 
-function getOwnershipFieldTotal(
-  associate: RuntimeAssociateInput,
-  field: OwnershipPctField,
-): number {
+function getOwnershipFieldTotal(associate: OwnershipAssociate, field: OwnershipPctField): number {
   return associate.ownershipLots.reduce((sum, lot) => sum + clampPct(lot[field]), 0);
 }
 
-function scaleOwnershipField<T extends RuntimeAssociateInput>(
+function scaleOwnershipField<T extends OwnershipAssociate>(
   associate: T,
   field: OwnershipPctField,
   ratio: number,
@@ -100,7 +102,7 @@ function scaleOwnershipField<T extends RuntimeAssociateInput>(
   } as T;
 }
 
-function syncFullOwnershipLots<T extends RuntimeAssociateInput>(associates: T[]): T[] {
+function syncFullOwnershipLots<T extends OwnershipAssociate>(associates: T[]): T[] {
   return associates.map(
     (associate) =>
       ({
@@ -112,7 +114,7 @@ function syncFullOwnershipLots<T extends RuntimeAssociateInput>(associates: T[])
   );
 }
 
-function rebalanceOwnershipField<T extends RuntimeAssociateInput>(
+function rebalanceOwnershipField<T extends OwnershipAssociate>(
   associates: T[],
   associateId: string,
   field: OwnershipPctField,
@@ -153,7 +155,7 @@ function rebalanceOwnershipField<T extends RuntimeAssociateInput>(
  * Utilisé par la modale associé pour gérer la détention démembrée multi-lots
  * (ex. associé 1 = 10 % PP + 90 % US).
  */
-export function updateAssociateOwnershipLots<T extends RuntimeAssociateInput>(
+export function updateAssociateOwnershipLots<T extends OwnershipAssociate>(
   associates: T[],
   associateId: string,
   nextLots: OwnershipLotInput[],
@@ -186,7 +188,7 @@ export function updateAssociateOwnershipLots<T extends RuntimeAssociateInput>(
  * quand la checkbox « réserves démembrées appréhendées par l'usufruitier »
  * est décochée.
  */
-export function getPlainPropertyCapitalPct(associate: RuntimeAssociateInput): number {
+export function getPlainPropertyCapitalPct(associate: OwnershipAssociate): number {
   return associate.ownershipLots
     .filter((lot) => lot.right === 'pleine_propriete')
     .reduce((sum, lot) => sum + clampPct(lot.capitalPct), 0);
@@ -196,13 +198,13 @@ export function getPlainPropertyCapitalPct(associate: RuntimeAssociateInput): nu
  * Détecte si la société comporte au moins un lot démembré (usufruit ou nue-propriété).
  * Sert au défaut de la checkbox société sur l'attribution des réserves.
  */
-export function hasDemembrement(associates: RuntimeAssociateInput[]): boolean {
+export function hasDemembrement(associates: OwnershipAssociate[]): boolean {
   return associates.some((associate) =>
     associate.ownershipLots.some((lot) => lot.right !== 'pleine_propriete'),
   );
 }
 
-export function updateAssociateOwnershipLot<T extends RuntimeAssociateInput>(
+export function updateAssociateOwnershipLot<T extends OwnershipAssociate>(
   associates: T[],
   associateId: string,
   lotPatch: Partial<OwnershipLotInput>,

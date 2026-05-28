@@ -1,14 +1,13 @@
 import { describe, expect, it } from 'vitest';
-import type { TresoInputs, TresoInputsV6 } from '@/engine/tresorerie/types';
+import type { TresoInputsV6 } from '@/engine/tresorerie/types';
 import type { TresoPersistedState } from '../types';
 import {
   DEFAULT_TRESO_INPUTS_V6,
   normalizeTresoreriePersistedState,
 } from '../hooks/useTresorerieState';
-import { buildTresoInputsV3FromLegacy } from '@/engine/tresorerie/migrations/tresorerieV2Migration';
 import { storageKeyFor } from '@/utils/reset';
 
-const LEGACY_INPUTS: TresoInputs = {
+const HISTORICAL_INPUTS = {
   typeCreation: 'existante',
   ageActuel: 52,
   ageRetraite: 64,
@@ -28,6 +27,65 @@ const LEGACY_INPUTS: TresoInputs = {
     repetitionAuTerme: true,
   },
 };
+
+function historicalStructuredInputs(currentAge = 48): unknown {
+  return {
+    version: 3,
+    selectedAssociateId: 'associe-1',
+    foyer: {
+      selectedAssociateId: 'associe-1',
+      currentAge,
+      retirementAge: 64,
+      annualIncomeNeed: 42_000,
+      projectionStartYear: 2027,
+    },
+    company: {
+      projectionStartYear: 2027,
+      creationType: 'existante',
+      legalForm: 'sas',
+      companyKind: 'holding_patrimoniale',
+      shareCapital: 0,
+      sharePremium: 0,
+      reservesInitial: 220_000,
+      treasuryInitial: 150_000,
+      annualStructureCosts: 4_500,
+      incomeStatement: {
+        annualRevenue: 0,
+        annualStructureCosts: 4_500,
+        workingCapitalRequirement: 0,
+      },
+      reducedCorporateTaxEligible: true,
+      associates: [
+        {
+          id: 'associe-1',
+          label: 'Associé 1',
+          kind: 'pp',
+          profile: {
+            currentAge,
+            retirementAge: 64,
+            annualIncomeNeed: 42_000,
+            projectionStartYear: 2027,
+          },
+          ownershipLots: [{ right: 'pleine_propriete', capitalPct: 100, economicRightsPct: 100 }],
+          roles: ['associe_sans_statut'],
+          cca: {
+            currentBalance: 80_000,
+            exceptionalContributions: [],
+            annualContribution: { amount: 12_000, startYear: 2027, endYear: 2036 },
+            remunerationRate: 0,
+          },
+          remuneration: { source: 'holding', loadedAnnualCost: 0, socialChargeRate: 0 },
+        },
+      ],
+      loans: [],
+      subsidiaries: [],
+    },
+    allocationMatrix: {
+      sweepThreshold: 0,
+      pockets: [],
+    },
+  };
+}
 
 describe('useTresorerieState — source de vérité v6', () => {
   function expectRevenuePhasesInvariant(inputs: TresoInputsV6) {
@@ -68,8 +126,8 @@ describe('useTresorerieState — source de vérité v6', () => {
     ).toBe(0);
   });
 
-  it('migre une ancienne session legacy vers inputsV6 puis abandonne inputs', () => {
-    const state = normalizeTresoreriePersistedState({ inputs: LEGACY_INPUTS });
+  it('migre une ancienne session historique vers inputsV6 puis abandonne inputs', () => {
+    const state = normalizeTresoreriePersistedState({ inputs: HISTORICAL_INPUTS });
 
     expect(state.inputsV6.version).toBe(6);
     expectRevenuePhasesInvariant(state.inputsV6);
@@ -83,13 +141,9 @@ describe('useTresorerieState — source de vérité v6', () => {
   });
 
   it('migre inputsV3 quand une session contient plusieurs formats sans inputsV4', () => {
-    const inputsV3 = buildTresoInputsV3FromLegacy({
-      ...LEGACY_INPUTS,
-      ageActuel: 48,
-    });
     const persisted: TresoPersistedState = {
-      inputs: LEGACY_INPUTS,
-      inputsV3,
+      inputs: HISTORICAL_INPUTS,
+      inputsV3: historicalStructuredInputs(48),
     };
 
     const state = normalizeTresoreriePersistedState(persisted);

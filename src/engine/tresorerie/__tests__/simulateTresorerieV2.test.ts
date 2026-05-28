@@ -1,12 +1,8 @@
 import { describe, expect, it } from 'vitest';
+import { migrateUnknownTresorerieInputsToV6 } from '../migrations/tresorerieV2Migration';
 import { simulateTresorerieV2 } from '../simulateTresorerieV2';
-import type {
-  AllocationMatrixInput,
-  CompanyInput,
-  FoyerInput,
-  TresoFiscalParams,
-  TresoInputsV2,
-} from '../types';
+import type { AllocationMatrixInput, CompanyInput, FoyerInput, TresoFiscalParams } from '../types';
+import type { TresoInputsV2 } from '../legacy/types';
 
 const PARAMS: TresoFiscalParams = {
   isNormalRate: 0.25,
@@ -27,6 +23,14 @@ interface V2Overrides {
   foyer?: Partial<FoyerInput>;
   company?: Partial<CompanyInput>;
   allocationMatrix?: Partial<AllocationMatrixInput>;
+}
+
+function simulateCurrent(input: unknown, params: TresoFiscalParams, horizon: number) {
+  const current = migrateUnknownTresorerieInputsToV6(input);
+  if (!current) {
+    throw new Error('Fixture Trésorerie historique invalide');
+  }
+  return simulateTresorerieV2(current, params, horizon);
 }
 
 function baseV2(overrides: V2Overrides = {}): TresoInputsV2 {
@@ -115,7 +119,7 @@ function baseV2(overrides: V2Overrides = {}): TresoInputsV2 {
 
 describe('simulateTresorerie — modèle société v2', () => {
   it('affecte les dividendes à l’usufruitier et pas au nu-propriétaire', () => {
-    const rows = simulateTresorerieV2(
+    const rows = simulateCurrent(
       baseV2({
         foyer: { annualIncomeNeed: 7_500 },
         company: { reservesInitial: 20_000 },
@@ -135,7 +139,7 @@ describe('simulateTresorerie — modèle société v2', () => {
   });
 
   it('constitue le CCA initial et annuel par associé puis rembourse le créancier déclaré', () => {
-    const rows = simulateTresorerieV2(
+    const rows = simulateCurrent(
       baseV2({
         foyer: { annualIncomeNeed: 8_000 },
         company: {
@@ -179,7 +183,7 @@ describe('simulateTresorerie — modèle société v2', () => {
   });
 
   it('soumet toute la base au taux normal quand l’IS réduit est décoché', () => {
-    const rows = simulateTresorerieV2(
+    const rows = simulateCurrent(
       baseV2({
         company: {
           reducedCorporateTaxEligible: false,
@@ -205,7 +209,7 @@ describe('simulateTresorerie — modèle société v2', () => {
   });
 
   it('agrège les emprunts société, y compris un emprunt existant et son actif financé', () => {
-    const rows = simulateTresorerieV2(
+    const rows = simulateCurrent(
       baseV2({
         company: {
           loans: [
@@ -247,7 +251,7 @@ describe('simulateTresorerie — modèle société v2', () => {
   });
 
   it('traite les filiales, la quote-part mère-fille et l’intégration estimée comme options distinctes', () => {
-    const rows = simulateTresorerieV2(
+    const rows = simulateCurrent(
       baseV2({
         company: {
           subsidiaries: [
@@ -283,7 +287,7 @@ describe('simulateTresorerie — modèle société v2', () => {
   });
 
   it('paye les charges sociales TNS en N+1 sur les dividendes au-dessus du seuil', () => {
-    const rows = simulateTresorerieV2(
+    const rows = simulateCurrent(
       baseV2({
         foyer: { annualIncomeNeed: 24_000 },
         company: {
@@ -327,7 +331,7 @@ describe('simulateTresorerie — modèle société v2', () => {
   });
 
   it('applique le régime standard en auto quand la durée de détention n’est pas prouvée', () => {
-    const rows = simulateTresorerieV2(
+    const rows = simulateCurrent(
       baseV2({
         company: {
           subsidiaries: [
@@ -360,7 +364,7 @@ describe('simulateTresorerie — modèle société v2', () => {
   });
 
   it('compense les plus et moins-values long terme avant d’appliquer la quote-part taxable', () => {
-    const rows = simulateTresorerieV2(
+    const rows = simulateCurrent(
       baseV2({
         company: {
           subsidiaries: [
@@ -411,7 +415,7 @@ describe('simulateTresorerie — modèle société v2', () => {
   });
 
   it('balaye la trésorerie disponible en fin d’exercice sans produire de revenus sur l’exercice écoulé', () => {
-    const rows = simulateTresorerieV2(
+    const rows = simulateCurrent(
       baseV2({
         company: {
           treasuryInitial: 50_000,
@@ -454,7 +458,7 @@ describe('simulateTresorerie — modèle société v2', () => {
   });
 
   it('force le réinvestissement dans la même poche quand la répétition au terme est active', () => {
-    const rows = simulateTresorerieV2(
+    const rows = simulateCurrent(
       baseV2({
         company: {
           treasuryInitial: 20_000,
@@ -505,7 +509,7 @@ describe('simulateTresorerie — modèle société v2', () => {
       },
     });
 
-    const rows = simulateTresorerieV2(inputs, PARAMS, 1);
+    const rows = simulateCurrent(inputs, PARAMS, 1);
 
     expect(rows[0].capitalDistrib).toBe(40_000);
     expect(rows[0].revenuDistrib).toBe(2_000);
@@ -514,7 +518,7 @@ describe('simulateTresorerie — modèle société v2', () => {
   });
 
   it('normalise les allocations initiales et annuelles au-delà de 100 %', () => {
-    const rows = simulateTresorerieV2(
+    const rows = simulateCurrent(
       baseV2({
         company: {
           treasuryInitial: 100_000,

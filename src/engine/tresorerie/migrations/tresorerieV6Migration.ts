@@ -3,9 +3,9 @@ import type {
   AssociateRevenuePhaseInputV6,
   AssociateInputV6,
   CompanyInputV6,
-  TresoInputsV5,
   TresoInputsV6,
 } from '@/engine/tresorerie/types';
+import type { TresoInputsV5 } from '@/engine/tresorerie/legacy/types';
 import { sortPhases } from '../revenuePhases';
 
 function currentYear(): number {
@@ -19,13 +19,17 @@ function getV5PhaseEndYear(
   horizonYears: number,
 ): number {
   const next = phases[index + 1];
-  return next ? next.startYear - 1 : projectionStartYear + horizonYears - 1;
+  const phaseStartYear = phases[index]?.startYear ?? projectionStartYear;
+  const fallbackEndYear = projectionStartYear + horizonYears - 1;
+  return next ? next.startYear - 1 : Math.max(phaseStartYear, fallbackEndYear);
 }
 
 function phaseV5ToV6(
   phase: AssociateRevenuePhaseInput,
   endYear: number,
 ): AssociateRevenuePhaseInputV6 {
+  const annualNetIncomeNeed = Math.max(0, phase.annualNetIncomeNeed);
+  const shouldTargetIncome = annualNetIncomeNeed > 0;
   return {
     id: phase.id,
     startYear: phase.startYear,
@@ -39,16 +43,18 @@ function phaseV5ToV6(
       socialChargeRate: Math.max(0, Math.min(phase.socialChargeRate, 1)),
     },
     distribution: {
-      enabled: Math.max(0, phase.annualNetIncomeNeed) > 0,
-      annualNetIncomeNeed: Math.max(0, phase.annualNetIncomeNeed),
-      dividendsStrategy: 'max_treso',
+      enabled: shouldTargetIncome,
+      annualNetIncomeNeed,
+      dividendsStrategy: shouldTargetIncome ? 'montant_cible' : 'aucun',
+      dividendsTargetAmountNet: shouldTargetIncome ? annualNetIncomeNeed : undefined,
     },
     ccaContribution: {
       enabled: false,
     },
     ccaRepayment: {
-      enabled: phase.useCcaForCompletion === true,
-      strategy: 'max_treso',
+      enabled: phase.useCcaForCompletion === true && shouldTargetIncome,
+      strategy: shouldTargetIncome ? 'montant_cible' : 'aucun',
+      targetAmount: shouldTargetIncome ? annualNetIncomeNeed : undefined,
     },
   };
 }
@@ -62,8 +68,15 @@ function attachAnnualCcaContribution(
   const intersectionStart = Math.max(startYear, phase.startYear);
   const intersectionEnd = Math.min(endYear, phase.endYear);
   if (intersectionStart > intersectionEnd) return phase;
+  const phaseOnlyCarriesCca =
+    !phase.remuneration.enabled &&
+    !phase.distribution.enabled &&
+    !phase.ccaRepayment.enabled &&
+    !phase.ccaContribution.enabled;
   return {
     ...phase,
+    startYear: phaseOnlyCarriesCca ? intersectionStart : phase.startYear,
+    endYear: phaseOnlyCarriesCca ? intersectionEnd : phase.endYear,
     ccaContribution: {
       ...phase.ccaContribution,
       enabled: true,

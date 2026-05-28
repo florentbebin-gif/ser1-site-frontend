@@ -2,7 +2,7 @@
  * TresoAssociateInsights.tsx — Synthèse visuelle de l’associé actif.
  */
 
-import type { TresoInputsRuntime, TresoProjectionRow } from '@/engine/tresorerie/types';
+import type { TresoInputsV6, TresoProjectionRow } from '@/engine/tresorerie/types';
 import { SimMetric } from '@/components/ui/sim';
 import { IconUsers } from '@/icons/ui';
 import {
@@ -11,10 +11,9 @@ import {
 } from '../utils/tresorerieSidebarViewModels';
 
 interface Props {
-  inputs: TresoInputsRuntime;
+  inputs: TresoInputsV6;
   rows: TresoProjectionRow[];
 }
-
 function fmtEuro(n: number): string {
   return `${Math.round(n || 0).toLocaleString('fr-FR')} €`;
 }

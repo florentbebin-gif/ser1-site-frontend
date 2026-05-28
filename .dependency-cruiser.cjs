@@ -14,6 +14,7 @@
  *   8. UI : pas d'import direct de exportStudyDeck (passer par hooks/wrappers)
  *   9. Placement : pas d'import runtime direct de useFiscalContext
  *   10. Reporting : pas d'import depuis features/ (migrations et snapshots restent purs)
+ *   11. Trésorerie : features/ ne doit pas importer le périmètre legacy moteur
  *
  * Résolution @/ : src/ (tsconfig paths + vite alias)
  *
@@ -158,6 +159,16 @@ module.exports = {
         'src/reporting/ doit rester indépendant de src/features/ — déplacer les migrations pures dans engine/ ou reporting/',
       from: { path: '^src/reporting/' },
       to: { path: '^src/features/' },
+    },
+
+    // ── 11. Trésorerie : le legacy V1-V5 reste confiné au moteur ─────────────────────
+    {
+      name: 'tresorerie-legacy-restricted',
+      severity: 'error',
+      comment:
+        'src/features/tresorerie-societe/ manipule TresoInputsV6 ou unknown migré, jamais src/engine/tresorerie/legacy/**',
+      from: { path: '^src/features/tresorerie-societe/' },
+      to: { path: '^src/engine/tresorerie/legacy/' },
     },
   ],
 

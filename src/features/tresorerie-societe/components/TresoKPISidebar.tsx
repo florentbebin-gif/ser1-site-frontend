@@ -6,13 +6,12 @@ import type { ReactNode } from 'react';
 import { SimKpiReference, SimMetric, SimSparkline } from '@/components/ui/sim';
 import { IconGauge } from '@/icons/ui';
 import type { TresoKPIs } from '../hooks/useTresorerieCalculations';
-import type { TresoInputsRuntime } from '@/engine/tresorerie/types';
+import type { TresoInputsV6 } from '@/engine/tresorerie/types';
 
 interface Props {
   kpis: TresoKPIs;
-  inputs: TresoInputsRuntime;
+  inputs: TresoInputsV6;
 }
-
 function fmtEuro(n: number): string {
   return `${Math.round(n).toLocaleString('fr-FR')} €`;
 }

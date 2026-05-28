@@ -12,8 +12,7 @@
  */
 
 import { CURRENT_SNAPSHOT_VERSION, SNAPSHOT_APP, SNAPSHOT_KIND } from './snapshotSchema';
-import { buildTresoInputsV6FromV5 } from '@/engine/tresorerie/migrations/tresorerieV2Migration';
-import type { TresoInputsV5 } from '@/engine/tresorerie/types';
+import { migrateUnknownTresorerieInputsToV6 } from '@/engine/tresorerie/migrations/tresorerieV2Migration';
 
 // ---------------------------------------------------------------------------
 // Migration type
@@ -28,12 +27,22 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 function migrateTresorerieSocieteSim(sim: unknown): unknown {
   if (!isRecord(sim)) return sim;
   if (isRecord(sim.inputsV6)) return sim;
-  if (!isRecord(sim.inputsV5) || sim.inputsV5.version !== 5) return sim;
+  const migratedInputs = migrateUnknownTresorerieInputsToV6(
+    sim.inputsV5 ?? sim.inputsV4 ?? sim.inputsV3 ?? sim.inputsV2 ?? sim.inputs,
+  );
+  if (!migratedInputs) return sim;
 
-  const { inputsV5: _legacyInputsV5, ...rest } = sim;
+  const {
+    inputsV5: _inputsV5,
+    inputsV4: _inputsV4,
+    inputsV3: _inputsV3,
+    inputsV2: _inputsV2,
+    inputs: _inputs,
+    ...rest
+  } = sim;
   return {
     ...rest,
-    inputsV6: buildTresoInputsV6FromV5(sim.inputsV5 as unknown as TresoInputsV5),
+    inputsV6: migratedInputs,
   };
 }
 

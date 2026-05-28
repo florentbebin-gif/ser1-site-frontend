@@ -1,0 +1,16 @@
+{
+  "src/features/per/transfert/PerTransfertSimulator.tsx": 530,
+  "src/engine/tresorerie/simulateTresorerieV2.helpers.ts": 529,
+  "src/pages/settings/SettingsDesignSystem.tsx": 528,
+  "src/features/placement/components/VersementConfigModalSections.tsx": 518,
+  "src/features/succession/hooks/useSuccessionOutcomeDerivedValues.ts": 517,
+  "src/features/succession/successionDevolution.ts": 510,
+  "src/domain/prevoyance/arretCoverage.ts": 509,
+  "src/features/succession/filiationOrgchartLayout.ts": 509,
+  "src/pages/settings/components/SettingsComptesSections.tsx": 509,
+  "src/features/succession/components/ScAssetsPassifsExpertSection.tsx": 506,
+  "src/features/credit/Credit.tsx": 505,
+  "src/features/succession/successionDeathInsuranceAllowances.ts": 504,
+  "src/features/ir/components/IrSimulatorContainer.tsx": 503,
+  "src/features/succession/hooks/useSuccessionDerivedValues.ts": 501
+}

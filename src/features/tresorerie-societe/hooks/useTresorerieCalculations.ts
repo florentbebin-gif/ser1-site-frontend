@@ -14,7 +14,7 @@ import {
   TresoSimulationInputError,
 } from '@/engine/tresorerie/simulateTresorerieV2';
 import type {
-  TresoInputsRuntime,
+  TresoInputsV6,
   TresoFiscalParams,
   TresoProjectionRow,
 } from '@/engine/tresorerie/types';
@@ -72,7 +72,6 @@ export interface TresoKPIs {
   /** Année de départ en retraite (index 1-based dans rows) */
   anneeRetraiteIndex: number | null;
 }
-
 // ─── Résultat du hook ─────────────────────────────────────────────────────────
 
 export interface TresoCalculationsResult {
@@ -91,7 +90,7 @@ interface SimulationState {
   simulationError: string | null;
 }
 
-export function useTresorerieCalculations(inputs: TresoInputsRuntime): TresoCalculationsResult {
+export function useTresorerieCalculations(inputs: TresoInputsV6): TresoCalculationsResult {
   const { fiscalContext, loading, error } = useFiscalContext({ strict: false });
 
   // ── Construction des TresoFiscalParams depuis la chaîne fiscale ──────────

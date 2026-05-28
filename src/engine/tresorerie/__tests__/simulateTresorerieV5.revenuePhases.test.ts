@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
+import { migrateUnknownTresorerieInputsToV6 } from '../migrations/tresorerieV2Migration';
 import { simulateTresorerieV2 } from '../simulateTresorerieV2';
-import type { TresoFiscalParams, TresoInputsV5 } from '../types';
+import type { TresoFiscalParams } from '../types';
+import type { TresoInputsV5 } from '../legacy/types';
 
 const PARAMS: TresoFiscalParams = {
   isNormalRate: 0.25,
@@ -16,6 +18,14 @@ const PARAMS: TresoFiscalParams = {
   irScale: [],
   tnsDividendBasePct: 0.1,
 };
+
+function simulateCurrent(input: unknown, params: TresoFiscalParams, horizon: number) {
+  const current = migrateUnknownTresorerieInputsToV6(input);
+  if (!current) {
+    throw new Error('Fixture Trésorerie historique invalide');
+  }
+  return simulateTresorerieV2(current, params, horizon);
+}
 
 function baseV5(): TresoInputsV5 {
   return {
@@ -120,7 +130,7 @@ describe('simulateTresorerie — paliers de revenus V5', () => {
     ];
     inputs.company.reservesInitial = 100_000;
 
-    const rows = simulateTresorerieV2(inputs, PARAMS, 5);
+    const rows = simulateCurrent(inputs, PARAMS, 5);
 
     expect(rows[0]).toMatchObject({
       phaseIdActive: 'phase-holding',
@@ -158,7 +168,7 @@ describe('simulateTresorerie — paliers de revenus V5', () => {
       },
     ];
 
-    const rows = simulateTresorerieV2(inputs, PARAMS, 1);
+    const rows = simulateCurrent(inputs, PARAMS, 1);
 
     expect(rows[0].retraitsCCA).toBe(8_000);
     expect(rows[0].dividendesAssociesBruts).toBe(0);
@@ -185,7 +195,7 @@ describe('simulateTresorerie — paliers de revenus V5', () => {
       },
     ];
 
-    const rows = simulateTresorerieV2(inputs, PARAMS, 1);
+    const rows = simulateCurrent(inputs, PARAMS, 1);
 
     expect(rows[0].retraitsCCA).toBe(0);
     expect(rows[0].dividendesAssociesBruts).toBeCloseTo(12_000, 2);

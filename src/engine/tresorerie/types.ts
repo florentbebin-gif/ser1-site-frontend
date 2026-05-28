@@ -1,8 +1,7 @@
 /**
  * types.ts — Types du moteur trésorerie société IS
  *
- * TresoInputs     : entrées legacy du simulateur (migration/compatibilité)
- * TresoInputsV2   : source de vérité du runtime Trésorerie société
+ * TresoInputsV6   : source de vérité du runtime Trésorerie société
  * TresoFiscalParams : paramètres fiscaux typés construits par useTresorerieCalculations
  * TresoProjectionRow : ligne de la projection annuelle produite par simulateTresorerieV2
  *
@@ -391,74 +390,16 @@ export interface CompanyInputV6 extends Omit<CompanyInputV5, 'associates'> {
   legalReserveInitial?: number;
 }
 
-export interface TresoInputsV2 {
-  version: 2;
-  foyer: FoyerInput;
-  company: CompanyInput;
+export interface TresoInputsV6 {
+  version: 6;
+  foyer: RuntimeFoyerInput;
+  selectedAssociateId: string;
+  company: CompanyInputV6;
   allocationMatrix: AllocationMatrixInput;
 }
 
-export interface TresoInputsV3 extends Omit<TresoInputsV2, 'version'> {
-  version: 3;
-  selectedAssociateId: string;
-}
-
-export interface TresoInputsV4 extends Omit<TresoInputsV3, 'version' | 'foyer'> {
-  version: 4;
-  foyer: RuntimeFoyerInput;
-}
-
-export interface TresoInputsV5 extends Omit<TresoInputsV4, 'version' | 'company'> {
-  version: 5;
-  company: CompanyInputV5;
-}
-
-export interface TresoInputsV6 extends Omit<TresoInputsV5, 'version' | 'company'> {
-  version: 6;
-  company: CompanyInputV6;
-}
-
-export type TresoInputsRuntime =
-  | TresoInputsV2
-  | TresoInputsV3
-  | TresoInputsV4
-  | TresoInputsV5
-  | TresoInputsV6;
-export type RuntimeAssociateInput = AssociateInput | AssociateInputV5 | AssociateInputV6;
-export type RuntimeCompanyInput = CompanyInput | CompanyInputV5 | CompanyInputV6;
-
-// ─── Entrées legacy du simulateur (migration/compatibilité) ───────────────────
-
-export interface TresoInputs {
-  // Société
-  typeCreation: 'newco' | 'existante';
-  ageActuel: number;
-  ageRetraite: number;
-  besoinsRetraiteAnnuels: number;
-  fraisStructureAnnuels: number;
-
-  // CCA
-  ccaInitial: number;
-  apportAnnuelCCA: number;
-  dureeActiveAns: number;
-
-  // Société existante — soldes initiaux
-  tresorerieInitiale?: number;
-  reservesInitiales?: number;
-  /** Année civile de début de la projection (ex : 2025). Défaut : année en cours. */
-  anneeCivileDebut?: number;
-
-  // Poches
-  distribution?: DistributionPocketInput;
-  capitalisation?: CapitalisationPocketInput;
-
-  // Crédits
-  creditIS?: CreditIsPocketInput;
-  creditIR?: CreditIrPocketInput;
-
-  // Holding
-  holding?: HoldingParticipationInput;
-}
+export type RuntimeAssociateInput = AssociateInputV6;
+export type RuntimeCompanyInput = CompanyInputV6;
 
 // ─── Ligne de projection annuelle ────────────────────────────────────────────
 

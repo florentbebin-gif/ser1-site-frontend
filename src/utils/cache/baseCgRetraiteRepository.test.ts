@@ -20,6 +20,86 @@ vi.mock('../../supabaseClient', () => ({
   },
 }));
 
+function createContractRow(overrides: Record<string, unknown> = {}) {
+  return {
+    contract_id: 'swisslife-perin-swisslife-per-individuel-24',
+    source_id: 'Contrat N°24',
+    company: 'SWISSLIFE',
+    contract_name: 'PERIN- SWISSLIFE PER INDIVIDUEL MAJ',
+    contract_type: 'PERIN',
+    per_compartment: 'C1',
+    contract_data: {
+      id: 'swisslife-perin-swisslife-per-individuel-24',
+      sourceId: 'Contrat N°24',
+      compagnie: 'SWISSLIFE',
+      nomContrat: 'PERIN- SWISSLIFE PER INDIVIDUEL MAJ',
+      typeContrat: 'PERIN',
+      perCompartment: 'C1',
+      phaseEpargne: {
+        dateCommercialisation: null,
+        nombreFonds: null,
+        repartitionUcEuro: null,
+        rendementFondsEuro: null,
+        fraisVersements: null,
+        fraisGestion: null,
+        fraisArbitrage: null,
+        fraisTransfertSortant: null,
+        fraisTransfertSortantRate: null,
+        clauseBeneficiaire: null,
+        garantiesComplementaires: null,
+      },
+      phaseLiquidation: {
+        ageLimiteLiquidation: null,
+        sortieCapitalRetraite: null,
+        fractionnementCapital: null,
+        rachatLibre: null,
+        tableConversionRente: null,
+        tableGarantieAdhesion: null,
+        tauxTechnique: null,
+        fraisArrerages: null,
+        fraisArreragesRate: null,
+        annuitesGaranties: null,
+        reversionPossible: null,
+        reversionIncluse: null,
+        renteEstimee: null,
+      },
+    },
+    row_hash: 'row-hash',
+    is_deleted: false,
+    updated_at: '2026-05-16T00:00:00.000Z',
+    ...overrides,
+  };
+}
+
+function mockCatalogFetch({
+  contractRows,
+  documentRows = [],
+  contractError = null,
+  documentError = null,
+}: {
+  contractRows: unknown[];
+  documentRows?: unknown[];
+  contractError?: unknown;
+  documentError?: unknown;
+}) {
+  fromMock.mockImplementation((table: string) => ({
+    select: () => ({
+      eq: () => ({
+        order: () =>
+          Promise.resolve({
+            data: contractRows,
+            error: contractError,
+          }),
+      }),
+      order: () =>
+        Promise.resolve({
+          data: table === 'base_cg_retraite_documents' ? documentRows : [],
+          error: table === 'base_cg_retraite_documents' ? documentError : null,
+        }),
+    }),
+  }));
+}
+
 describe('baseCgRetraiteRepository', () => {
   beforeEach(() => {
     vi.resetModules();
@@ -46,47 +126,69 @@ describe('baseCgRetraiteRepository', () => {
     });
   });
 
-  it('merge les overrides et documents Supabase avec le catalogue statique', async () => {
+  it('lit le catalogue canonique Supabase avec les documents authentifiés', async () => {
     fromMock.mockImplementation((table: string) => ({
       select: () => ({
+        eq: () => ({
+          order: () =>
+            Promise.resolve({
+              data: [
+                {
+                  contract_id: 'swisslife-perin-swisslife-per-individuel-24',
+                  source_id: 'Contrat N°24',
+                  company: 'SWISSLIFE',
+                  contract_name: 'PERIN- SWISSLIFE PER INDIVIDUEL MAJ',
+                  contract_type: 'PERIN',
+                  per_compartment: 'C1',
+                  contract_data: {
+                    id: 'swisslife-perin-swisslife-per-individuel-24',
+                    sourceId: 'Contrat N°24',
+                    compagnie: 'SWISSLIFE',
+                    nomContrat: 'PERIN- SWISSLIFE PER INDIVIDUEL MAJ',
+                    typeContrat: 'PERIN',
+                    perCompartment: 'C1',
+                    phaseEpargne: {
+                      dateCommercialisation: null,
+                      nombreFonds: null,
+                      repartitionUcEuro: null,
+                      rendementFondsEuro: null,
+                      fraisVersements: null,
+                      fraisGestion: null,
+                      fraisArbitrage: null,
+                      fraisTransfertSortant: null,
+                      fraisTransfertSortantRate: null,
+                      clauseBeneficiaire: null,
+                      garantiesComplementaires: null,
+                    },
+                    phaseLiquidation: {
+                      ageLimiteLiquidation: null,
+                      sortieCapitalRetraite: null,
+                      fractionnementCapital: null,
+                      rachatLibre: null,
+                      tableConversionRente: null,
+                      tableGarantieAdhesion: null,
+                      tauxTechnique: null,
+                      fraisArrerages: null,
+                      fraisArreragesRate: null,
+                      annuitesGaranties: null,
+                      reversionPossible: null,
+                      reversionIncluse: null,
+                      renteEstimee: null,
+                    },
+                  },
+                  row_hash: 'row-hash',
+                  is_deleted: false,
+                  updated_at: '2026-05-16T00:00:00.000Z',
+                },
+              ],
+              error: null,
+            }),
+        }),
         order: () =>
           Promise.resolve({
             data:
-              table === 'base_cg_retraite_overrides'
+              table === 'base_cg_retraite_documents'
                 ? [
-                    {
-                      contract_id: 'swisslife-perin-swisslife-per-individuel-24',
-                      contract_data: {
-                        nomContrat: 'PERIN- SWISSLIFE PER INDIVIDUEL MAJ',
-                      },
-                      is_deleted: false,
-                      updated_at: '2026-05-16T00:00:00.000Z',
-                    },
-                    {
-                      contract_id: 'ag2r-la-mondiale-madelin-retraite-agricole-373',
-                      contract_data: {
-                        id: 'ag2r-la-mondiale-madelin-retraite-agricole-373',
-                        nomContrat: 'MADELIN- MONDIALE RETRAITE AGRICOLE',
-                      },
-                      is_deleted: false,
-                      updated_at: '2026-05-20T00:04:00.000Z',
-                    },
-                    {
-                      contract_id: 'abeille-perin-abeille-retraite-plurielle-394',
-                      contract_data: {
-                        id: 'abeille-perin-abeille-retraite-plurielle-394',
-                        phaseEpargne: {
-                          fraisGestionFondsEuro: 0.01,
-                        },
-                        phaseLiquidation: {
-                          ageLimiteLiquidation: '80 ans',
-                        },
-                      },
-                      is_deleted: false,
-                      updated_at: '2026-05-20T00:04:00.000Z',
-                    },
-                  ]
-                : [
                     {
                       id: 'doc-swisslife',
                       contract_id: 'swisslife-perin-swisslife-per-individuel-24',
@@ -100,20 +202,8 @@ describe('baseCgRetraiteRepository', () => {
                       bytes: 462558,
                       uploaded_at: '2026-05-16T00:00:00.000Z',
                     },
-                    {
-                      id: 'abeille-perin-abeille-retraite-plurielle-394-conditions_generales-v6369o-06-2025-b3e85939',
-                      contract_id: 'abeille-perin-abeille-retraite-plurielle-394',
-                      label: 'Conditions générales PERIN- ABEILLE RETRAITE PLURIELLE',
-                      document_type: 'conditions_generales',
-                      status: 'uploaded',
-                      version_label: 'V6369O 06/2025',
-                      storage_path: 'abeille/perin-abeille-retraite-plurielle/v6369o-06-2025.pdf',
-                      file_name: 'v6369o-06-2025.pdf',
-                      mime: 'application/pdf',
-                      bytes: 1212380,
-                      uploaded_at: '2026-05-20T00:04:00.000Z',
-                    },
-                  ],
+                  ]
+                : [],
             error: null,
           }),
       }),
@@ -135,28 +225,56 @@ describe('baseCgRetraiteRepository', () => {
         bytes: 462558,
       }),
     ]);
-    expect(
-      catalog.find((contract) => contract.id === 'ag2r-la-mondiale-madelin-retraite-agricole-373')
-        ?.nomContrat,
-    ).toBe('MADELIN- MONDIALE RETRAITE AGRICOLE');
-    const abeilleRetraitePlurielle = catalog.find(
-      (contract) => contract.id === 'abeille-perin-abeille-retraite-plurielle-394',
-    );
-    expect(abeilleRetraitePlurielle?.phaseEpargne.fraisGestionFondsEuro).toBe(0.01);
-    expect(abeilleRetraitePlurielle?.phaseLiquidation.ageLimiteLiquidation).toBe('80 ans');
-    expect(abeilleRetraitePlurielle?.documents).toContainEqual(
-      expect.objectContaining({
-        id: 'abeille-perin-abeille-retraite-plurielle-394-conditions_generales-v6369o-06-2025-b3e85939',
-        versionLabel: 'V6369O 06/2025',
-        storagePath: 'abeille/perin-abeille-retraite-plurielle/v6369o-06-2025.pdf',
-      }),
+    expect(fromMock).toHaveBeenCalledWith('base_cg_retraite_contracts');
+  });
+
+  it('ignore explicitement les contrats soft-deleted renvoyés par Supabase', async () => {
+    const deletedData = {
+      ...(createContractRow().contract_data as Record<string, unknown>),
+      id: 'contract-deleted',
+      nomContrat: 'Contrat supprimé',
+    };
+    mockCatalogFetch({
+      contractRows: [
+        createContractRow(),
+        createContractRow({
+          contract_id: 'contract-deleted',
+          contract_name: 'Contrat supprimé',
+          contract_data: deletedData,
+          is_deleted: true,
+        }),
+      ],
+    });
+
+    const { getBaseCgRetraiteCatalog } = await import('./baseCgRetraiteRepository');
+    const catalog = await getBaseCgRetraiteCatalog();
+
+    expect(catalog.map((contract) => contract.id)).toEqual([
+      'swisslife-perin-swisslife-per-individuel-24',
+    ]);
+  });
+
+  it('remonte une erreur typée quand la table canonique Supabase manque', async () => {
+    mockCatalogFetch({
+      contractRows: [],
+      contractError: {
+        code: '42P01',
+        message: 'relation "base_cg_retraite_contracts" does not exist',
+      },
+    });
+
+    const { BaseCgRetraiteCatalogUnavailableError, getBaseCgRetraiteCatalog } =
+      await import('./baseCgRetraiteRepository');
+
+    await expect(getBaseCgRetraiteCatalog()).rejects.toBeInstanceOf(
+      BaseCgRetraiteCatalogUnavailableError,
     );
   });
 
-  it('sauvegarde un contrat en override Supabase sans ses documents', async () => {
+  it('sauvegarde un contrat canonique Supabase sans ses documents', async () => {
     const { upsertBaseCgRetraiteContract } = await import('./baseCgRetraiteRepository');
 
-    await upsertBaseCgRetraiteContract({
+    const contract: Parameters<typeof upsertBaseCgRetraiteContract>[0] = {
       id: 'contract-test',
       sourceId: 'Contrat test',
       compagnie: 'Test',
@@ -200,12 +318,19 @@ describe('baseCgRetraiteRepository', () => {
           storagePath: 'test/cg.pdf',
         },
       ],
-    });
+    };
 
-    expect(fromMock).toHaveBeenCalledWith('base_cg_retraite_overrides');
+    await upsertBaseCgRetraiteContract(contract);
+
+    expect(fromMock).toHaveBeenCalledWith('base_cg_retraite_contracts');
     expect(upsertMock).toHaveBeenCalledWith(
       expect.objectContaining({
         contract_id: 'contract-test',
+        source_id: 'Contrat test',
+        company: 'Test',
+        contract_name: 'Contrat Test',
+        contract_type: 'PERIN',
+        per_compartment: 'C1',
         is_deleted: false,
         contract_data: expect.not.objectContaining({
           documents: expect.anything(),
@@ -213,6 +338,20 @@ describe('baseCgRetraiteRepository', () => {
       }),
       { onConflict: 'contract_id' },
     );
+    expect(upsertMock.mock.calls[0]?.[0]).not.toHaveProperty('row_hash');
+  });
+
+  it('supprime un contrat par soft-delete canonique', async () => {
+    const { deleteBaseCgRetraiteContract } = await import('./baseCgRetraiteRepository');
+
+    await deleteBaseCgRetraiteContract('contract-test');
+
+    expect(fromMock).toHaveBeenCalledWith('base_cg_retraite_contracts');
+    expect(updateMock).toHaveBeenCalledWith({
+      is_deleted: true,
+      updated_at: expect.any(String),
+    });
+    expect(eqMock).toHaveBeenCalledWith('contract_id', 'contract-test');
   });
 
   it('crée une URL signée pour un document stocké en bucket privé', async () => {

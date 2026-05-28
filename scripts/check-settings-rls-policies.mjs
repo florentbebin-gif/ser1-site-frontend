@@ -28,10 +28,15 @@ const TARGETS = {
     readMustUseAdmin: true,
     writesMustUseAdmin: true,
   },
-  base_cg_retraite_overrides: {
+  base_cg_retraite_contracts: {
     read: 'authenticated',
     readMustUseAdmin: false,
     writesMustUseAdmin: true,
+  },
+  base_cg_retraite_catalog_meta: {
+    read: 'authenticated',
+    readMustUseAdmin: false,
+    writesForbidden: true,
   },
   base_cg_retraite_documents: {
     read: 'authenticated',
@@ -192,12 +197,15 @@ function summarizeTable(table, target, tableState) {
       (target.readMustUseAdmin ? policy.usesAdmin : !policy.usesAdmin),
   );
 
-  const expectedWrites = Object.values(writePolicies).every((candidates) =>
-    candidates.some(
-      (policy) =>
-        roleAllowsAuthenticated(policy) && (!target.writesMustUseAdmin || policy.usesAdmin),
-    ),
-  );
+  const writePolicyList = Object.values(writePolicies).flat();
+  const expectedWrites = target.writesForbidden
+    ? writePolicyList.length === 0
+    : Object.values(writePolicies).every((candidates) =>
+        candidates.some(
+          (policy) =>
+            roleAllowsAuthenticated(policy) && (!target.writesMustUseAdmin || policy.usesAdmin),
+        ),
+      );
 
   const evidence = [
     tableState.rlsEvidence && {
@@ -218,7 +226,13 @@ function summarizeTable(table, target, tableState) {
   const failures = [];
   if (!tableState.rlsEnabled) failures.push(`${table}: RLS non activee dans les migrations`);
   if (!expectedRead) failures.push(`${table}: policy de lecture attendue absente (${target.read})`);
-  if (!expectedWrites) failures.push(`${table}: policies insert/update/delete admin absentes`);
+  if (!expectedWrites) {
+    failures.push(
+      target.writesForbidden
+        ? `${table}: policies insert/update/delete interdites presentes`
+        : `${table}: policies insert/update/delete admin absentes`,
+    );
+  }
 
   return {
     table,
@@ -255,7 +269,10 @@ if (process.argv.includes('--json')) {
 } else if (report.ok) {
   console.log('check:settings-rls ✅');
   for (const table of Object.values(report.tables)) {
-    console.log(`- ${table.table}: RLS active, lecture attendue, écritures admin`);
+    const writeLabel = TARGETS[table.table]?.writesForbidden
+      ? 'écritures client interdites'
+      : 'écritures admin';
+    console.log(`- ${table.table}: RLS active, lecture attendue, ${writeLabel}`);
   }
 } else {
   console.error('check:settings-rls ❌');

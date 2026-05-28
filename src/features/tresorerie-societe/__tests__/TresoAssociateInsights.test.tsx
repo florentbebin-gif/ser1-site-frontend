@@ -1,10 +1,10 @@
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
-import type { TresoInputsV5, TresoProjectionRow } from '@/engine/tresorerie/types';
+import type { TresoInputsV6, TresoProjectionRow } from '@/engine/tresorerie/types';
 import { TresoAssociateInsights } from '../components/TresoAssociateInsights';
 
-const INPUTS: TresoInputsV5 = {
-  version: 5,
+const INPUTS: TresoInputsV6 = {
+  version: 6,
   selectedAssociateId: 'associe-1',
   foyer: { selectedAssociateId: 'associe-1' },
   company: {
@@ -39,19 +39,26 @@ const INPUTS: TresoInputsV5 = {
         roles: ['associe_sans_statut'],
         cca: {
           currentBalance: 0,
-          exceptionalContributions: [],
-          annualContribution: { amount: 0, startYear: 2026 },
           remunerationRate: 0,
         },
         revenuePhases: [
           {
             id: 'phase-besoin',
             startYear: 2026,
-            source: 'none',
-            loadedAnnualCost: 0,
-            socialChargeRate: 0,
-            annualNetIncomeNeed: 50_000,
-            useCcaForCompletion: true,
+            endYear: 2040,
+            remuneration: {
+              enabled: false,
+              source: 'none',
+              loadedAnnualCost: 0,
+              socialChargeRate: 0,
+            },
+            distribution: {
+              enabled: true,
+              annualNetIncomeNeed: 50_000,
+              dividendsStrategy: 'max_treso',
+            },
+            ccaContribution: { enabled: false },
+            ccaRepayment: { enabled: true, strategy: 'max_treso' },
           },
         ],
       },
@@ -195,20 +202,39 @@ describe('TresoAssociateInsights', () => {
       {
         id: 'phase-longue',
         startYear: 2026,
-        source: 'none',
-        loadedAnnualCost: 0,
-        socialChargeRate: 0,
-        annualNetIncomeNeed: 1_000_000,
-        useCcaForCompletion: true,
+        endYear: 2028,
+        remuneration: {
+          enabled: false,
+          source: 'none',
+          loadedAnnualCost: 0,
+          socialChargeRate: 0,
+        },
+        distribution: {
+          enabled: true,
+          annualNetIncomeNeed: 1_000_000,
+          dividendsStrategy: 'montant_cible',
+          dividendsTargetAmountNet: 1_000_000,
+        },
+        ccaContribution: { enabled: false },
+        ccaRepayment: { enabled: true, strategy: 'montant_cible', targetAmount: 1_000_000 },
       },
       {
         id: 'phase-stop',
         startYear: 2029,
-        source: 'none',
-        loadedAnnualCost: 0,
-        socialChargeRate: 0,
-        annualNetIncomeNeed: 0,
-        useCcaForCompletion: true,
+        endYear: 2040,
+        remuneration: {
+          enabled: false,
+          source: 'none',
+          loadedAnnualCost: 0,
+          socialChargeRate: 0,
+        },
+        distribution: {
+          enabled: false,
+          annualNetIncomeNeed: 0,
+          dividendsStrategy: 'aucun',
+        },
+        ccaContribution: { enabled: false },
+        ccaRepayment: { enabled: false, strategy: 'aucun' },
       },
     ];
 
