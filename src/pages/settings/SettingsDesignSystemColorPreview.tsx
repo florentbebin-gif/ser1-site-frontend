@@ -79,7 +79,7 @@ export function SettingsDesignSystemColorPreview() {
                 <span
                   aria-hidden="true"
                   className="settings-design-system__color-swatch"
-                  style={{ '--settings-color-swatch': `var(--color-${key})` } satisfies SwatchStyle}
+                  style={{ '--settings-color-swatch': `var(--color-${key})` } as SwatchStyle}
                 />
                 <div>
                   <strong>{guide.token}</strong>
@@ -121,7 +121,7 @@ export function SettingsDesignSystemColorPreview() {
                       {
                         '--settings-contrast-fg': `var(--color-${check.foreground})`,
                         '--settings-contrast-bg': `var(--color-${check.background})`,
-                      } satisfies SwatchStyle
+                      } as SwatchStyle
                     }
                   >
                     Aa
