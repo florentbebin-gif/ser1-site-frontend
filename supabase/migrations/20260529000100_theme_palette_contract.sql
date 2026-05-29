@@ -41,3 +41,17 @@ begin
       invalid_ui_settings_count;
   end if;
 end $$;
+
+alter table public.themes
+  add constraint themes_palette_contract_check
+  check (public.is_theme_palette(palette)) not valid;
+
+alter table public.themes
+  validate constraint themes_palette_contract_check;
+
+alter table public.ui_settings
+  add constraint ui_settings_my_palette_contract_check
+  check (my_palette is null or public.is_theme_palette(my_palette)) not valid;
+
+alter table public.ui_settings
+  validate constraint ui_settings_my_palette_contract_check;

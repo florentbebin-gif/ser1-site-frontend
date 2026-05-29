@@ -26,4 +26,20 @@ describe('migration contrat palettes theme', () => {
     );
     expect(sql).toMatch(/raise\s+exception[\s\S]*themes=%[\s\S]*ui_settings=%/i);
   });
+
+  it('ajoute les contraintes themes et ui_settings apres le pre-check', () => {
+    const sql = readThemePaletteMigration();
+    const precheckIndex = sql.indexOf('invalid_themes_count');
+    const themeConstraintIndex = sql.indexOf('themes_palette_contract_check');
+    const uiConstraintIndex = sql.indexOf('ui_settings_my_palette_contract_check');
+
+    expect(themeConstraintIndex).toBeGreaterThan(precheckIndex);
+    expect(uiConstraintIndex).toBeGreaterThan(precheckIndex);
+    expect(sql).toMatch(
+      /alter\s+table\s+public\.themes[\s\S]*add\s+constraint\s+themes_palette_contract_check[\s\S]*check\s*\(\s*public\.is_theme_palette\(palette\)\s*\)/i,
+    );
+    expect(sql).toMatch(
+      /alter\s+table\s+public\.ui_settings[\s\S]*add\s+constraint\s+ui_settings_my_palette_contract_check[\s\S]*my_palette\s+is\s+null[\s\S]*public\.is_theme_palette\(my_palette\)/i,
+    );
+  });
 });
