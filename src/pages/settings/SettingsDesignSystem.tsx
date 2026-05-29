@@ -24,10 +24,8 @@ import {
   SimSkeletonText,
   SimSparkline,
   SimStatusBadge,
-  SimTooltip,
   SimViewSynthesisCTA,
 } from '@/components/ui/sim';
-import { CGP_GLOSSARY_ENTRIES } from '@/constants/cgpGlossary';
 import {
   icons,
   modalSections,
@@ -38,6 +36,9 @@ import {
   tokenGroups,
   type PrimitiveState,
 } from './designSystemCatalog';
+import { SettingsDesignSystemCodeSnippet } from './SettingsDesignSystemCodeSnippet';
+import { SettingsDesignSystemColorPreview } from './SettingsDesignSystemColorPreview';
+import { SettingsDesignSystemGlossaryPreview } from './SettingsDesignSystemGlossaryPreview';
 import { SettingsDesignSystemInfoModal } from './SettingsDesignSystemInfoModal';
 import { SettingsDesignSystemTokenSample } from './SettingsDesignSystemTokenSample';
 
@@ -59,15 +60,6 @@ function StateCell({
       <span className="settings-design-system__state-label">{label}</span>
       {children}
     </div>
-  );
-}
-
-function CodeSnippet({ label, children }: { label: string; children: string }) {
-  return (
-    <figure className="settings-design-system__snippet">
-      <figcaption>{label}</figcaption>
-      <textarea aria-label={label} readOnly rows={children.split('\n').length} value={children} />
-    </figure>
   );
 }
 
@@ -122,7 +114,9 @@ function DesignSystemInputPreview() {
         </div>
       </article>
 
-      <CodeSnippet label="Extrait inputs">{snippets.inputs}</CodeSnippet>
+      <SettingsDesignSystemCodeSnippet label="Extrait inputs">
+        {snippets.inputs}
+      </SettingsDesignSystemCodeSnippet>
     </div>
   );
 }
@@ -249,8 +243,12 @@ function DesignSystemUiPreview() {
       </article>
 
       <div className="settings-design-system__snippet-grid">
-        <CodeSnippet label="Extrait actions">{snippets.actions}</CodeSnippet>
-        <CodeSnippet label="Extrait modale">{snippets.modal}</CodeSnippet>
+        <SettingsDesignSystemCodeSnippet label="Extrait actions">
+          {snippets.actions}
+        </SettingsDesignSystemCodeSnippet>
+        <SettingsDesignSystemCodeSnippet label="Extrait modale">
+          {snippets.modal}
+        </SettingsDesignSystemCodeSnippet>
       </div>
 
       {modalOpen ? (
@@ -340,7 +338,9 @@ function DesignSystemDataPreview() {
           />
         </article>
       </div>
-      <CodeSnippet label="Extrait données">{snippets.data}</CodeSnippet>
+      <SettingsDesignSystemCodeSnippet label="Extrait données">
+        {snippets.data}
+      </SettingsDesignSystemCodeSnippet>
     </div>
   );
 }
@@ -414,20 +414,9 @@ function DesignSystemMobilePreview() {
           </SimMobileStickyActions>
         </div>
       </div>
-      <CodeSnippet label="Extrait mobile">{snippets.mobile}</CodeSnippet>
-    </div>
-  );
-}
-
-function DesignSystemGlossaryPreview() {
-  return (
-    <div className="settings-design-system__glossary-grid">
-      {CGP_GLOSSARY_ENTRIES.map((entry) => (
-        <article className="settings-design-system__ui-card" key={entry.id}>
-          <SimTooltip label={entry.label} description={entry.description} />
-          <p className="settings-design-system__glossary-description">{entry.description}</p>
-        </article>
-      ))}
+      <SettingsDesignSystemCodeSnippet label="Extrait mobile">
+        {snippets.mobile}
+      </SettingsDesignSystemCodeSnippet>
     </div>
   );
 }
@@ -477,6 +466,14 @@ export default function SettingsDesignSystem() {
       </section>
 
       <section className="settings-premium-card settings-design-system__section">
+        <h2 className="settings-design-system__title">Couleurs runtime</h2>
+        <p className="settings-design-system__note">
+          La palette live vient de C1-C10 ; les alias sont dérivés et changent avec le thème actif.
+        </p>
+        <SettingsDesignSystemColorPreview />
+      </section>
+
+      <section className="settings-premium-card settings-design-system__section">
         <h2 className="settings-design-system__title">Icônes</h2>
         <div className="settings-design-system__icon-grid" aria-label="Catalogue icônes UI">
           {icons.map(([label, Icon]) => (
@@ -519,7 +516,7 @@ export default function SettingsDesignSystem() {
 
       <section className="settings-premium-card settings-design-system__section">
         <h2 className="settings-design-system__title">Glossaire</h2>
-        <DesignSystemGlossaryPreview />
+        <SettingsDesignSystemGlossaryPreview />
       </section>
 
       {infoOpen ? <SettingsDesignSystemInfoModal onClose={() => setInfoOpen(false)} /> : null}

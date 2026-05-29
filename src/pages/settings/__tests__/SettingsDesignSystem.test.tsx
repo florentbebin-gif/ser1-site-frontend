@@ -14,6 +14,23 @@ describe('SettingsDesignSystem', () => {
       screen.getByRole('button', { name: 'Informations sur la page design system' }),
     ).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'Tokens' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Palette C1-C10' })).toBeInTheDocument();
+    expect(screen.getByText('C1')).toBeInTheDocument();
+    expect(screen.getAllByText(/Ancrage/).length).toBeGreaterThan(0);
+    expect(screen.getByRole('heading', { name: 'Alias sémantiques' })).toBeInTheDocument();
+    expect(screen.getByText('--surface-page')).toBeInTheDocument();
+    expect(screen.getByText('--action-primary')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Contrastes informatifs' })).toBeInTheDocument();
+    expect(screen.getAllByText(/AA|A verifier/).length).toBeGreaterThan(0);
+    expect(screen.getByRole('heading', { name: 'Usages couleurs' })).toBeInTheDocument();
+    expect(screen.getByText(/Autorisé/)).toBeInTheDocument();
+    expect(screen.getByText(/Interdit/)).toBeInTheDocument();
+    expect(
+      screen.getByRole('heading', { name: 'Settings UI vs Simulator UI' }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole('heading', { name: 'Composants manquants ou non canoniques' }),
+    ).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'Icônes' })).toBeInTheDocument();
     expect(screen.getByText('--space-1')).toBeInTheDocument();
     expect(screen.getByText('--transition-base')).toBeInTheDocument();
