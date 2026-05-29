@@ -17,6 +17,7 @@
 .ci-field-row {
   display: flex;
   align-items: center;
+  gap: 6px;
 }
 
 /* ----------------------------------------
@@ -36,8 +37,9 @@
 .ci-unit {
   font-size: 13px;
   color: var(--color-c9);
-  min-width: 24px;
-  margin-left: 6px;
+  min-width: 28px;
+  margin-left: 0;
+  text-align: left;
 }
 
 /* ----------------------------------------
@@ -97,10 +99,14 @@
   width: 18px;
   height: 18px;
   border-radius: 50%;
-  background: #ffffff;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  background: var(--surface-card);
+  box-shadow: 0 1px 3px color-mix(in srgb, var(--color-c10) 20%, transparent);
   transition: transform 0.2s ease;
   pointer-events: none;
+}
+
+.cv-select--error .sim-field__select-trigger {
+  border-bottom-color: var(--color-c1);
 }
 
 .ci-toggle__switch.is-active .ci-toggle__knob {

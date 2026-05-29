@@ -218,12 +218,12 @@ export interface InputMonthProps {
   testId?: string;
 }
 
-export interface SelectOption<TValue extends string | number = string> {
+export interface SelectOption<TValue extends string = string> {
   value: TValue;
   label: string;
 }
 
-export interface SelectProps<TValue extends string | number = string> {
+export interface SelectProps<TValue extends string = string> {
   label?: string;
   value: TValue;
   onChange: (_value: TValue) => void;

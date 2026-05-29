@@ -2,15 +2,13 @@
  * CreditInputs.tsx - Composants de saisie réutilisables pour le simulateur de crédit
  */
 
-import { useEffect, useRef, useState } from 'react';
-import type { KeyboardEvent } from 'react';
 import {
   SimAmountInputEuro,
   SimAmountInputNumeric,
   SimAmountInputPercent,
   SimFieldShell,
+  SimSelect,
 } from '@/components/ui/sim';
-import { IconChevronDown } from '@/icons/ui';
 import { parseDecimalInput } from '@/utils/numbers';
 import type { InputMonthProps, SelectProps, ToggleProps } from '../types';
 
@@ -171,7 +169,7 @@ export function InputMonth({
   );
 }
 
-export function Select<TValue extends string | number>({
+export function Select<TValue extends string>({
   label,
   value,
   onChange,
@@ -181,45 +179,6 @@ export function Select<TValue extends string | number>({
   error,
   testId,
 }: SelectProps<TValue>) {
-  const [isOpen, setIsOpen] = useState(false);
-  const containerRef = useRef<HTMLDivElement | null>(null);
-
-  useEffect(() => {
-    if (!isOpen) return undefined;
-    const handleMouseDown = (event: MouseEvent) => {
-      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
-        setIsOpen(false);
-      }
-    };
-    document.addEventListener('mousedown', handleMouseDown);
-    return () => document.removeEventListener('mousedown', handleMouseDown);
-  }, [isOpen]);
-
-  const selectedOption = options.find((option) => option.value === value);
-
-  const handleKeyDown = (event: KeyboardEvent<HTMLButtonElement>) => {
-    if (disabled) return;
-    const index = options.findIndex((option) => option.value === value);
-    if (event.key === 'Enter' || event.key === ' ') {
-      event.preventDefault();
-      setIsOpen((prev) => !prev);
-    } else if (event.key === 'Escape') {
-      setIsOpen(false);
-    } else if (event.key === 'ArrowDown') {
-      event.preventDefault();
-      if (!isOpen) {
-        setIsOpen(true);
-        return;
-      }
-      const nextOption = options[index + 1];
-      if (index < options.length - 1 && nextOption) onChange(nextOption.value);
-    } else if (event.key === 'ArrowUp') {
-      event.preventDefault();
-      const previousOption = options[index - 1];
-      if (index > 0 && previousOption) onChange(previousOption.value);
-    }
-  };
-
   return (
     <SimFieldShell
       label={label}
@@ -229,40 +188,15 @@ export function Select<TValue extends string | number>({
       className="ci-field"
       rowClassName="ci-field-row"
     >
-      <div ref={containerRef} className={`sim-select-wrapper${isOpen ? ' is-open' : ''}`}>
-        <button
-          type="button"
-          disabled={disabled}
-          onClick={() => setIsOpen((prev) => !prev)}
-          onKeyDown={handleKeyDown}
-          aria-haspopup="listbox"
-          aria-expanded={isOpen}
-          className={`sim-field__select-trigger${isOpen ? ' is-open' : ''}${error ? ' sim-field__control--error' : ''}`}
-        >
-          <span className="sim-field__select-value">{selectedOption?.label ?? ''}</span>
-          <IconChevronDown className="sim-field__select-arrow" />
-        </button>
-
-        {isOpen && (
-          <ul role="listbox" aria-label="Options" className="sim-field__dropdown">
-            {options.map((option) => (
-              <li
-                key={String(option.value)}
-                role="option"
-                aria-selected={option.value === value}
-                className={`sim-field__option${option.value === value ? ' is-selected' : ''}`}
-                onMouseDown={(event) => {
-                  event.preventDefault();
-                  onChange(option.value);
-                  setIsOpen(false);
-                }}
-              >
-                {option.label}
-              </li>
-            ))}
-          </ul>
-        )}
-      </div>
+      <SimSelect
+        value={value}
+        onChange={(nextValue) => onChange(nextValue as TValue)}
+        options={options}
+        disabled={disabled}
+        testId={testId}
+        className={error ? 'cv-select cv-select--error' : 'cv-select'}
+        ariaLabel={label}
+      />
     </SimFieldShell>
   );
 }
