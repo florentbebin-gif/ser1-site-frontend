@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useId, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 
 export interface SimSelectOption {
@@ -40,10 +40,63 @@ export function SimSelect({
   clearable = false,
 }: SimSelectProps) {
   const [open, setOpen] = useState(false);
+  const [activeIndex, setActiveIndex] = useState(-1);
   const ref = useRef<HTMLDivElement | null>(null);
   const triggerRef = useRef<HTMLButtonElement | null>(null);
   const dropdownRef = useRef<HTMLUListElement | null>(null);
   const [dropdownStyle, setDropdownStyle] = useState<React.CSSProperties>({});
+  const generatedId = useId();
+  const triggerId = id ?? `sim-select-${generatedId}`;
+  const listboxId = `${triggerId}-listbox`;
+
+  const selectedIndex = options.findIndex((option) => option.value === value);
+
+  const findEnabledIndex = useCallback(
+    (fromIndex: number, direction: 1 | -1) => {
+      if (options.length === 0) return -1;
+      for (let step = 1; step <= options.length; step += 1) {
+        const index = (fromIndex + direction * step + options.length) % options.length;
+        if (!options[index]?.disabled) return index;
+      }
+      return -1;
+    },
+    [options],
+  );
+
+  const initialActiveIndex = useCallback(
+    (direction: 1 | -1 = 1) => {
+      const baseIndex =
+        selectedIndex >= 0 && !options[selectedIndex]?.disabled ? selectedIndex : -1;
+      if (baseIndex >= 0) return baseIndex;
+      return findEnabledIndex(direction === 1 ? -1 : 0, direction);
+    },
+    [findEnabledIndex, options, selectedIndex],
+  );
+
+  const closeMenu = useCallback(() => {
+    setOpen(false);
+    setActiveIndex(-1);
+  }, []);
+
+  const openMenu = useCallback(
+    (direction: 1 | -1 = 1) => {
+      if (forced || disabled) return;
+      setActiveIndex(initialActiveIndex(direction));
+      setOpen(true);
+    },
+    [disabled, forced, initialActiveIndex],
+  );
+
+  const selectOption = useCallback(
+    (index: number) => {
+      const option = options[index];
+      if (!option || option.disabled) return;
+      onChange(option.value);
+      closeMenu();
+      triggerRef.current?.focus();
+    },
+    [closeMenu, onChange, options],
+  );
 
   const updateDropdownPosition = useCallback(() => {
     const trigger = triggerRef.current;
@@ -80,11 +133,11 @@ export function SimSelect({
     const onDown = (e: MouseEvent) => {
       const target = e.target as Node;
       if (ref.current?.contains(target) || dropdownRef.current?.contains(target)) return;
-      setOpen(false);
+      closeMenu();
     };
     document.addEventListener('mousedown', onDown);
     return () => document.removeEventListener('mousedown', onDown);
-  }, [open]);
+  }, [closeMenu, open]);
 
   useEffect(() => {
     if (!open) return;
@@ -104,11 +157,14 @@ export function SimSelect({
   useEffect(() => {
     if (!open) return;
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setOpen(false);
+      if (e.key === 'Escape') {
+        closeMenu();
+        triggerRef.current?.focus();
+      }
     };
     document.addEventListener('keydown', onKey);
     return () => document.removeEventListener('keydown', onKey);
-  }, [open]);
+  }, [closeMenu, open]);
 
   const selected = options.find((o) => o.value === value);
 
@@ -132,23 +188,64 @@ export function SimSelect({
   return (
     <div ref={ref} className={wrapperClass} style={style}>
       <button
-        id={id}
+        id={triggerId}
         type="button"
         ref={triggerRef}
         className={triggerClass}
         disabled={disabled}
         onClick={() => {
-          if (!forced) setOpen((v) => !v);
+          if (forced) return;
+          if (open) {
+            closeMenu();
+          } else {
+            openMenu();
+          }
         }}
         onKeyDown={(event) => {
           if (clearable && value && (event.key === 'Delete' || event.key === 'Backspace')) {
             event.preventDefault();
             onChange('');
-            setOpen(false);
+            closeMenu();
+            return;
+          }
+
+          if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+            event.preventDefault();
+            const direction = event.key === 'ArrowDown' ? 1 : -1;
+            if (!open) {
+              const base = selectedIndex >= 0 ? selectedIndex : direction === 1 ? -1 : 0;
+              setActiveIndex(findEnabledIndex(base, direction));
+              setOpen(true);
+              return;
+            }
+            setActiveIndex((current) =>
+              findEnabledIndex(current >= 0 ? current : selectedIndex, direction),
+            );
+            return;
+          }
+
+          if (event.key === 'Enter') {
+            if (open) {
+              event.preventDefault();
+              selectOption(activeIndex);
+            } else if (!forced) {
+              event.preventDefault();
+              openMenu();
+            }
+            return;
+          }
+
+          if (event.key === 'Escape' && open) {
+            event.preventDefault();
+            closeMenu();
           }
         }}
         aria-haspopup="listbox"
         aria-expanded={open}
+        aria-controls={listboxId}
+        aria-activedescendant={
+          open && activeIndex >= 0 ? `${listboxId}-option-${activeIndex}` : undefined
+        }
         aria-label={ariaLabel}
         data-testid={testId}
       >
@@ -176,28 +273,33 @@ export function SimSelect({
       {open &&
         createPortal(
           <ul
+            id={listboxId}
             ref={dropdownRef}
             role="listbox"
-            aria-label="Options"
+            aria-label={ariaLabel ?? placeholder ?? 'Options'}
             className="sim-field__dropdown"
             style={dropdownStyle}
           >
-            {options.map((o) => (
+            {options.map((o, index) => (
               <li
+                id={`${listboxId}-option-${index}`}
                 key={o.value}
                 role="option"
                 aria-selected={o.value === value}
+                aria-disabled={o.disabled || undefined}
                 className={[
                   'sim-field__option',
                   o.value === value ? 'is-selected' : '',
+                  index === activeIndex ? 'is-active' : '',
                   o.disabled ? 'is-disabled' : '',
                 ]
                   .filter(Boolean)
                   .join(' ')}
+                onMouseEnter={() => {
+                  if (!o.disabled) setActiveIndex(index);
+                }}
                 onMouseDown={() => {
-                  if (o.disabled) return;
-                  onChange(o.value);
-                  setOpen(false);
+                  selectOption(index);
                 }}
               >
                 {o.label}
