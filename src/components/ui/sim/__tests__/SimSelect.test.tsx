@@ -82,4 +82,26 @@ describe('SimSelect', () => {
     expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
     expect(trigger).toHaveFocus();
   });
+
+  it('ne s ouvre pas au clavier quand forced est actif', async () => {
+    const onChange = vi.fn();
+    const user = userEvent.setup();
+    render(
+      <SimSelect
+        value="a"
+        onChange={onChange}
+        options={KEYBOARD_OPTIONS}
+        ariaLabel="Nom du contrat"
+        forced
+      />,
+    );
+
+    const trigger = screen.getByRole('button', { name: 'Nom du contrat' });
+    trigger.focus();
+    await user.keyboard('{ArrowDown}');
+
+    expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
+    expect(trigger).toHaveAttribute('aria-expanded', 'false');
+    expect(onChange).not.toHaveBeenCalled();
+  });
 });

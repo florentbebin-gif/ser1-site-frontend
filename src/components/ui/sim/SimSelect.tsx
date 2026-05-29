@@ -202,6 +202,21 @@ export function SimSelect({
           }
         }}
         onKeyDown={(event) => {
+          if (forced || disabled) {
+            if (
+              event.key === 'Delete' ||
+              event.key === 'Backspace' ||
+              event.key === 'ArrowDown' ||
+              event.key === 'ArrowUp' ||
+              event.key === 'Enter' ||
+              event.key === 'Escape' ||
+              event.key === ' '
+            ) {
+              event.preventDefault();
+            }
+            return;
+          }
+
           if (clearable && value && (event.key === 'Delete' || event.key === 'Backspace')) {
             event.preventDefault();
             onChange('');

@@ -45,6 +45,10 @@ Utiliser les alias pour le code applicatif nouveau :
 - etats : `--state-success`, `--state-warning`, `--state-danger`, `--state-info` ;
 - systeme : `--overlay-modal`, `--focus-ring-color`, `--focus-ring`.
 
+Les etats semantiques restent themables : `--state-warning` derive de C6. Ne pas ajouter de
+warning hex local, meme pour garantir un contraste ponctuel ; dans ce cas, corriger la palette ou
+afficher le contraste dans le showroom.
+
 `--focus-ring` reste un token compose de box-shadow. Ne pas le remplacer par une couleur simple.
 Si un composant a seulement besoin de la couleur, utiliser `--focus-ring-color`.
 

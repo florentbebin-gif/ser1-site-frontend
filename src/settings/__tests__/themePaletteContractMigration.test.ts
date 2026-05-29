@@ -20,11 +20,21 @@ describe('migration contrat palettes theme', () => {
     const sql = readThemePaletteMigration();
 
     expect(sql).toMatch(/create\s+or\s+replace\s+function\s+public\.is_theme_palette/i);
-    expect(sql).toMatch(/from\s+public\.themes[\s\S]*not\s+public\.is_theme_palette\(palette\)/i);
-    expect(sql).toMatch(
-      /from\s+public\.ui_settings[\s\S]*my_palette\s+is\s+not\s+null[\s\S]*not\s+public\.is_theme_palette\(my_palette\)/i,
-    );
+    expect(sql).toMatch(/from\s+public\.themes/i);
+    expect(sql).toMatch(/my_palette\s+as\s+palette[\s\S]*from\s+public\.ui_settings/i);
     expect(sql).toMatch(/raise\s+exception[\s\S]*themes=%[\s\S]*ui_settings=%/i);
+  });
+
+  it('liste les lignes invalides avec table id champ et raison', () => {
+    const sql = readThemePaletteMigration();
+
+    expect(sql).toMatch(
+      /jsonb_build_object\([\s\S]*'table'[\s\S]*'id'[\s\S]*'champ'[\s\S]*'raison'/i,
+    );
+    expect(sql).toMatch(/lignes invalides=%/i);
+    expect(sql).toMatch(/cle manquante/i);
+    expect(sql).toMatch(/cle extra/i);
+    expect(sql).toMatch(/hex invalide/i);
   });
 
   it('ajoute les contraintes themes et ui_settings apres le pre-check', () => {
