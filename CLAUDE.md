@@ -8,7 +8,7 @@
 
 ## À lire selon le contexte de la tâche
 
-- **UI / thème / couleurs** → `docs/GOUVERNANCE.md`
+- **UI / thème / couleurs** → `docs/DESIGN.md` puis `docs/GOUVERNANCE.md`
 - **Métier / simulateurs / règles fiscales** → `docs/METIER.md`
 - **Structure / refactor / archi** → `docs/ARCHITECTURE.md`
 - **Exports / PPTX / Excel** → `docs/GOUVERNANCE_EXPORTS.md`

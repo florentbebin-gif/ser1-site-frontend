@@ -3,6 +3,8 @@
 ## But
 
 Définir **les règles non négociables** pour garder une UI premium et un theming web cohérent.
+Le contrat opérationnel court à appliquer en premier est `docs/DESIGN.md` ; ce document conserve
+les détails de gouvernance, preuves historiques, audits et exceptions.
 
 ## Audience
 
