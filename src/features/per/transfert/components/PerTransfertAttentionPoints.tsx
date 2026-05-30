@@ -6,12 +6,14 @@ interface PerTransfertAttentionPointsProps {
   contract: BaseCgRetraiteContract | null;
   subscriptionDate: string;
   extraWarnings?: string[];
+  showTitle?: boolean;
 }
 
 export function PerTransfertAttentionPoints({
   contract,
   subscriptionDate,
   extraWarnings = [],
+  showTitle = true,
 }: PerTransfertAttentionPointsProps) {
   const points = useMemo(
     () => buildPerTransfertAttentionPoints(contract, { subscriptionDate }),
@@ -20,7 +22,7 @@ export function PerTransfertAttentionPoints({
 
   return (
     <section className="per-transfert-attention" aria-label="Points d’attention">
-      <h4>Points d’attention</h4>
+      {showTitle ? <h4>Points d’attention</h4> : null}
       <ul>
         {points.map((point) => (
           <li

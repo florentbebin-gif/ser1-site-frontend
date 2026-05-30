@@ -68,6 +68,19 @@
   gap: 16px;
 }
 
+.per-transfert-panel__content {
+  display: grid;
+  gap: 16px;
+}
+
+.per-transfert-panel__content[hidden] {
+  display: none;
+}
+
+.per-transfert-sidebar-panel {
+  gap: 14px;
+}
+
 .per-transfert-panel__header h2 {
   margin: 0;
   color: var(--color-c1);
@@ -128,6 +141,12 @@
 .per-transfert-base-cg-link:hover {
   background: var(--color-c7);
   color: var(--color-c3);
+}
+
+.per-transfert-panel__toggle:focus-visible,
+.per-transfert-base-cg-link:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
 }
 
 .per-transfert-audit-disclaimer {
@@ -284,16 +303,6 @@
 .per-transfert-summary-panel {
   display: grid;
   gap: 16px;
-  border-left: 3px solid var(--color-c3);
-}
-
-.per-transfert-target-card,
-.per-transfert-controls-card {
-  display: grid;
-  gap: 14px;
-}
-
-.per-transfert-target-card {
   border-left: 3px solid var(--color-c3);
 }
 

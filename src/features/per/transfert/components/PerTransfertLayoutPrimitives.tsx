@@ -1,3 +1,4 @@
+import { useId } from 'react';
 import type { ReactNode } from 'react';
 import { SimFieldShell } from '@/components/ui/sim';
 
@@ -37,6 +38,9 @@ export function Panel({
   title,
   subtitle,
   headerActions,
+  className,
+  contentClassName,
+  contentId,
   collapsible = false,
   expanded = true,
   onToggleExpand,
@@ -45,17 +49,27 @@ export function Panel({
   title: string;
   subtitle: string;
   headerActions?: ReactNode;
+  className?: string;
+  contentClassName?: string;
+  contentId?: string;
   collapsible?: boolean;
   expanded?: boolean;
   onToggleExpand?: () => void;
   children: ReactNode;
 }) {
+  const generatedId = useId();
+  const titleId = `${generatedId}-title`;
+  const regionId = contentId ?? `${generatedId}-content`;
+  const isContentHidden = collapsible && !expanded;
+
   return (
-    <section className="premium-card premium-card--guide sim-card--guide per-transfert-panel">
+    <section
+      className={`premium-card premium-card--guide sim-card--guide per-transfert-panel${className ? ` ${className}` : ''}`}
+    >
       <div className="sim-card__header--bleed per-transfert-panel__header">
         <div className="per-transfert-panel__header-row">
           <div>
-            <h2>{title}</h2>
+            <h2 id={titleId}>{title}</h2>
             <p>{subtitle}</p>
           </div>
           {headerActions || collapsible ? (
@@ -67,6 +81,7 @@ export function Panel({
                   className="per-transfert-panel__toggle"
                   onClick={onToggleExpand}
                   aria-expanded={expanded}
+                  aria-controls={regionId}
                   aria-label={expanded ? `Replier ${title}` : `Déplier ${title}`}
                 >
                   {expanded ? '−' : '+'}
@@ -76,12 +91,16 @@ export function Panel({
           ) : null}
         </div>
       </div>
-      {!collapsible || expanded ? (
-        <>
-          <div className="sim-divider" aria-hidden="true" />
-          {children}
-        </>
-      ) : null}
+      <div
+        id={regionId}
+        className={`per-transfert-panel__content${contentClassName ? ` ${contentClassName}` : ''}`}
+        role={collapsible ? 'region' : undefined}
+        aria-labelledby={collapsible ? titleId : undefined}
+        hidden={isContentHidden}
+      >
+        <div className="sim-divider" aria-hidden="true" />
+        {children}
+      </div>
     </section>
   );
 }
