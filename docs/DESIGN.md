@@ -131,6 +131,9 @@ Simulator UI :
 
 Ne pas importer une convention settings dans un simulateur pour aller plus vite. Ne pas faire du
 showroom `/settings/design-system` une exception visuelle : il doit montrer les styles reels.
+Le showroom est compose de sections extraites dans `src/pages/settings/designSystem/`. Toute
+nouvelle demo = nouveau fichier section + son test dedie ; ne pas reinjecter de preview inline dans
+`SettingsDesignSystem.tsx`.
 
 ## Composants canoniques
 

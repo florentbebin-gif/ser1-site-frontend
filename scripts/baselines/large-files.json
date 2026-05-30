@@ -125,13 +125,6 @@
     "justification": "Helpers moteur Trésorerie V2 cohérents avec le simulateur et proches du seuil.",
     "nextAction": "Extraire par famille calculatoire seulement avec tests moteur dédiés."
   },
-  "src/pages/settings/SettingsDesignSystem.tsx": {
-    "maxLines": 528,
-    "category": "design-system-catalog",
-    "decision": "cas-particulier",
-    "justification": "Page catalogue interne du design system, pas un flux métier.",
-    "nextAction": "Extraire des previews si une nouvelle section dépasse la baseline."
-  },
   "src/engine/per/transfert/compute.ts": {
     "maxLines": 520,
     "category": "domain-engine",
