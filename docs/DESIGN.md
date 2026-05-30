@@ -29,11 +29,17 @@ Sources runtime :
 - C9 : texte secondaire et meta.
 - C10 : texte primaire a contraste maximal.
 
-C1-C10 sont configurables par l'utilisateur et restent la source palette, pas l'API de
-consommation UI. Toute couleur runtime consommee par l'interface applicative doit passer par un
-alias semantique, jamais par un hex local ni par un `var(--color-c*)` direct dans le code nouveau ou
-modifie. Les C1-C10 directs sont reserves aux sources theme, aux declarations d'alias, au showroom
-qui explique la palette, aux tests de contrat et aux migrations/presets.
+C1-C10 sont configurables par l'utilisateur et restent la source palette. Toute couleur runtime est
+un token : aucun litteral hex/rgb/hsl n'est autorise dans le code applicatif hors allowlist
+versionnee par `tools/ser1-color-policy.mjs`. Les alias semantiques sont la cible de consommation
+UI.
+
+`var(--color-c4)`, `var(--color-c5)` et `var(--color-c6)` directs sont interdits dans le runtime :
+utiliser `--surface-active`, `--data-secondary`, `--accent-signature` ou `--state-warning`.
+Les `var(--color-c1)`, `var(--color-c2)`, `var(--color-c3)`, `var(--color-c7)`, `var(--color-c8)`,
+`var(--color-c9)` et `var(--color-c10)` directs restent toleres aujourd'hui, mais doivent migrer
+vers les alias au fil des modifications. C'est cette migration progressive qui conditionne le
+dark-mode-ready.
 
 Quand C1 change dans un theme personnalise, la palette est recalculee par les helpers theme
 existants ; les alias CSS suivent automatiquement car ils referencent `var(--color-c*)` ou
@@ -163,8 +169,8 @@ sur les styles `Sim*` plutot qu'une nouvelle famille CSS.
 1. Lire `docs/DESIGN.md` et `docs/GOUVERNANCE.md`.
 2. Prouver route, imports et styles existants par `rg`.
 3. Pour `/sim/*`, partir de `SimPageShell` et des primitives `Sim*`.
-4. Utiliser les alias semantiques pour l'UI ; C1-C10 seulement dans les sources theme, alias,
-   showroom, tests de contrat ou migrations.
+4. Utiliser les alias semantiques pour l'UI ; ne jamais ajouter de litteral hex/rgb/hsl runtime,
+   ni de `var(--color-c4/c5/c6)` direct.
 5. Prevoir etats vide, loading, erreur, disabled.
 6. Formater euros, pourcentages, taux, dates et unites selon ce document.
 7. Verifier clavier, focus, labels, modales Escape.
