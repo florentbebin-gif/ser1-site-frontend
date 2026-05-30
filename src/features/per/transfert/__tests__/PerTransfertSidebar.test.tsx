@@ -1,11 +1,18 @@
+// @vitest-environment jsdom
+import '@testing-library/jest-dom/vitest';
+import type { ComponentProps } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
-import { describe, expect, it, vi } from 'vitest';
+import { cleanup, render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { PerTransfertSidebar } from '../components/PerTransfertSidebar';
 import type {
   PerTransfertCapitalFiscalResult,
   PerTransfertFiscalResult,
   PerTransfertResult,
 } from '@/engine/per';
+
+type PerTransfertSidebarProps = ComponentProps<typeof PerTransfertSidebar>;
 
 function makeFiscalResult(
   overrides: Partial<PerTransfertFiscalResult> = {},
@@ -144,23 +151,72 @@ function makeResult(overrides: Partial<PerTransfertResult> = {}): PerTransfertRe
   };
 }
 
+function makeSidebarProps(overrides: Partial<PerTransfertSidebarProps> = {}) {
+  return {
+    result: makeResult(),
+    selectedContract: null,
+    typeContrat: 'MADELIN',
+    subscriptionDate: '',
+    step2Done: true,
+    contractReady: true,
+    horizonAgeShort: 80,
+    horizonAgeLong: 90,
+    onHorizonChange: vi.fn(),
+    onOpenQuotientInfo: vi.fn(),
+    onOpenFractionalInfo: vi.fn(),
+    ...overrides,
+  } satisfies PerTransfertSidebarProps;
+}
+
+function renderSidebar(overrides: Partial<PerTransfertSidebarProps> = {}) {
+  return render(<PerTransfertSidebar {...makeSidebarProps(overrides)} />);
+}
+
+function renderSidebarMarkup(overrides: Partial<PerTransfertSidebarProps> = {}) {
+  return renderToStaticMarkup(<PerTransfertSidebar {...makeSidebarProps(overrides)} />);
+}
+
+function mockCompactViewport(matches: boolean) {
+  const matchMedia = vi.fn((query: string): MediaQueryList => {
+    return {
+      matches,
+      media: query,
+      onchange: null,
+      addListener: vi.fn(),
+      removeListener: vi.fn(),
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+      dispatchEvent: vi.fn(() => true),
+    };
+  });
+  Object.defineProperty(window, 'matchMedia', {
+    configurable: true,
+    writable: true,
+    value: matchMedia,
+  });
+  return matchMedia;
+}
+
+function getControlledRegion(button: HTMLElement) {
+  const regionId = button.getAttribute('aria-controls');
+  expect(regionId).toBeTruthy();
+  const region = document.getElementById(regionId as string);
+  expect(region).not.toBeNull();
+  return region as HTMLElement;
+}
+
+afterEach(() => {
+  cleanup();
+  vi.restoreAllMocks();
+  Reflect.deleteProperty(window, 'matchMedia');
+});
+
 describe('PerTransfertSidebar', () => {
   it('affiche un état d’attente sobre quand aucun contrat n’est prêt', () => {
-    const html = renderToStaticMarkup(
-      <PerTransfertSidebar
-        result={makeResult()}
-        selectedContract={null}
-        typeContrat="MADELIN"
-        subscriptionDate=""
-        step2Done={false}
-        contractReady={false}
-        horizonAgeShort={80}
-        horizonAgeLong={90}
-        onHorizonChange={vi.fn()}
-        onOpenQuotientInfo={vi.fn()}
-        onOpenFractionalInfo={vi.fn()}
-      />,
-    );
+    const html = renderSidebarMarkup({
+      step2Done: false,
+      contractReady: false,
+    });
 
     expect(html).toContain('Synthèse en attente');
     expect(html).toContain('sim-empty-state--sidebar');
@@ -169,21 +225,7 @@ describe('PerTransfertSidebar', () => {
   });
 
   it('affiche quatre oppositions sans sélecteur de sortie', () => {
-    const html = renderToStaticMarkup(
-      <PerTransfertSidebar
-        result={makeResult()}
-        selectedContract={null}
-        typeContrat="MADELIN"
-        subscriptionDate=""
-        step2Done
-        contractReady
-        horizonAgeShort={80}
-        horizonAgeLong={90}
-        onHorizonChange={vi.fn()}
-        onOpenQuotientInfo={vi.fn()}
-        onOpenFractionalInfo={vi.fn()}
-      />,
-    );
+    const html = renderSidebarMarkup();
 
     expect(html).not.toContain('Type de sortie à comparer');
     expect(html).toContain('Contrat actuel');
@@ -203,43 +245,85 @@ describe('PerTransfertSidebar', () => {
   });
 
   it('affiche la stratégie Max capital uniquement pour Préfon', () => {
-    const html = renderToStaticMarkup(
-      <PerTransfertSidebar
-        result={makeResult({ compartment: 'C1' })}
-        selectedContract={null}
-        typeContrat="PER_POINTS"
-        subscriptionDate=""
-        step2Done
-        contractReady
-        horizonAgeShort={80}
-        horizonAgeLong={90}
-        onHorizonChange={vi.fn()}
-        onOpenQuotientInfo={vi.fn()}
-        onOpenFractionalInfo={vi.fn()}
-      />,
-    );
+    const html = renderSidebarMarkup({
+      result: makeResult({ compartment: 'C1' }),
+      typeContrat: 'PER_POINTS',
+    });
 
     expect(html).toContain('Max capital');
     expect(html).toContain('Tout rente');
   });
 
   it('affiche le segment C1 bis sans le réduire à C1', () => {
-    const html = renderToStaticMarkup(
-      <PerTransfertSidebar
-        result={makeResult({ compartment: 'C1_BIS' })}
-        selectedContract={null}
-        typeContrat="MADELIN"
-        subscriptionDate=""
-        step2Done
-        contractReady
-        horizonAgeShort={80}
-        horizonAgeLong={90}
-        onHorizonChange={vi.fn()}
-        onOpenQuotientInfo={vi.fn()}
-        onOpenFractionalInfo={vi.fn()}
-      />,
-    );
+    const html = renderSidebarMarkup({
+      result: makeResult({ compartment: 'C1_BIS' }),
+    });
 
     expect(html).toContain('C1 bis');
+  });
+
+  it('ouvre les blocs secondaires par défaut en desktop', () => {
+    const matchMedia = mockCompactViewport(false);
+    renderSidebar();
+
+    expect(matchMedia).toHaveBeenCalledWith('(max-width: 1024px)');
+    for (const title of ['Compartiment cible', 'Horizons projection', 'Points d’attention']) {
+      const button = screen.getByRole('button', { name: `Replier ${title}` });
+      const region = getControlledRegion(button);
+
+      expect(button).toHaveAttribute('aria-expanded', 'true');
+      expect(region).toHaveAttribute('role', 'region');
+      expect(region).not.toHaveAttribute('hidden');
+    }
+  });
+
+  it('replie les blocs secondaires par défaut en mobile et tablette', () => {
+    mockCompactViewport(true);
+    renderSidebar();
+
+    expect(screen.getByRole('heading', { name: 'Synthèse' })).toBeInTheDocument();
+    for (const title of ['Compartiment cible', 'Horizons projection', 'Points d’attention']) {
+      const button = screen.getByRole('button', { name: `Déplier ${title}` });
+      const region = getControlledRegion(button);
+
+      expect(button).toHaveAttribute('aria-expanded', 'false');
+      expect(region).toHaveAttribute('role', 'region');
+      expect(region).toHaveAttribute('hidden');
+    }
+  });
+
+  it('déplie un bloc secondaire au clic en gardant aria-controls cohérent', async () => {
+    const user = userEvent.setup();
+    mockCompactViewport(true);
+    renderSidebar();
+
+    const button = screen.getByRole('button', { name: 'Déplier Horizons projection' });
+    const region = getControlledRegion(button);
+
+    expect(region).toHaveAttribute('hidden');
+    await user.click(button);
+
+    expect(button).toHaveAttribute('aria-expanded', 'true');
+    expect(region).not.toHaveAttribute('hidden');
+    expect(screen.getByLabelText('Court')).toBeInTheDocument();
+    expect(screen.getByLabelText('Long')).toBeInTheDocument();
+  });
+
+  it('déplie et replie un bloc secondaire au clavier avec Entrée et Espace', async () => {
+    const user = userEvent.setup();
+    mockCompactViewport(true);
+    renderSidebar();
+
+    const button = screen.getByRole('button', { name: 'Déplier Compartiment cible' });
+    const region = getControlledRegion(button);
+
+    button.focus();
+    await user.keyboard('{Enter}');
+    expect(button).toHaveAttribute('aria-expanded', 'true');
+    expect(region).not.toHaveAttribute('hidden');
+
+    await user.keyboard(' ');
+    expect(button).toHaveAttribute('aria-expanded', 'false');
+    expect(region).toHaveAttribute('hidden');
   });
 });
