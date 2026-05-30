@@ -18,6 +18,8 @@ vi.mock('@/hooks/useFiscalContext', () => ({
 }));
 
 describe('SettingsDesignSystem', () => {
+  // Le showroom agrège toutes les sections de démonstration ; sous charge CI jsdom,
+  // le montage peut dépasser le timeout Vitest par défaut sans boucle asynchrone.
   it('rend la page showroom comme assembleur et les marqueurs de sections', () => {
     const { container } = render(<SettingsDesignSystem />);
 
@@ -64,5 +66,5 @@ describe('SettingsDesignSystem', () => {
     expect(screen.getByText('Mobile 390')).toBeInTheDocument();
     expect(screen.getByText('Glossaire')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Définition : PFU' })).toBeInTheDocument();
-  });
+  }, 20_000);
 });
