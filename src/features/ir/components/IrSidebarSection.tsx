@@ -71,7 +71,7 @@ function IrTaxDonut({ revenus, imposition }: IrTaxDonutProps) {
         cy={DONUT_CY}
         r={DONUT_R}
         fill="none"
-        stroke="var(--color-c5)"
+        stroke="var(--data-secondary)"
         strokeWidth="9"
         strokeDasharray={`${revenusLen} ${DONUT_CIRCUMFERENCE}`}
         strokeDashoffset="0"
@@ -82,7 +82,7 @@ function IrTaxDonut({ revenus, imposition }: IrTaxDonutProps) {
         cy={DONUT_CY}
         r={DONUT_R}
         fill="none"
-        stroke="var(--color-c6)"
+        stroke="var(--accent-signature)"
         strokeWidth="9"
         strokeDasharray={`${impositionLen} ${DONUT_CIRCUMFERENCE}`}
         strokeDashoffset={`${-revenusLen}`}

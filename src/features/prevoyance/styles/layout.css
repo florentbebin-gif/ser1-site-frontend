@@ -2,8 +2,8 @@
   --prevoyance-color-revenu: var(--color-c3);
   --prevoyance-color-ro: color-mix(in srgb, var(--color-c3) 62%, var(--color-c7));
   --prevoyance-color-ro-alt: color-mix(in srgb, var(--color-c3) 42%, var(--color-c7));
-  --prevoyance-color-maintien: var(--color-c5);
-  --prevoyance-color-contrat: color-mix(in srgb, var(--color-c6) 70%, var(--color-c7));
+  --prevoyance-color-maintien: var(--data-secondary);
+  --prevoyance-color-contrat: color-mix(in srgb, var(--accent-signature) 70%, var(--color-c7));
   --prevoyance-color-text-on-dark: var(--color-c7);
   --prevoyance-color-text-on-light: var(--color-c10);
 }

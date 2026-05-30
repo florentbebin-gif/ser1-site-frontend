@@ -17,10 +17,10 @@
   left: 20px;
   width: 180px;
   padding: 14px 16px;
-  background: #fff;
+  background: var(--surface-card);
   border: 1px solid var(--color-c8);
   border-radius: 8px;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.03);
+  box-shadow: 0 1px 4px color-mix(in srgb, var(--shadow-color) 3%, transparent);
   z-index: 10;
 }
 
@@ -68,10 +68,10 @@
   left: 20px;
   width: 180px;
   padding: 14px 16px;
-  background: #fff;
+  background: var(--surface-card);
   border: 1px solid var(--color-c8);
   border-radius: 8px;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.03);
+  box-shadow: 0 1px 4px color-mix(in srgb, var(--shadow-color) 3%, transparent);
   z-index: 10;
 }
 
@@ -129,12 +129,12 @@
   max-width: 420px;
   margin: 0 auto;
   padding: 24px 32px;
-  background: #fff;
+  background: var(--surface-card);
   border: 1px solid var(--color-c8);
   border-radius: 12px;
   text-decoration: none;
   color: var(--color-c1);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 4px 20px color-mix(in srgb, var(--shadow-color) 6%, transparent);
   transition:
     box-shadow 0.2s,
     border-color 0.2s,
@@ -143,7 +143,7 @@
 
 .hero-tile:hover {
   border-color: var(--color-c3);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 8px 32px color-mix(in srgb, var(--shadow-color) 10%, transparent);
   transform: translateY(-2px);
 }
 
@@ -217,11 +217,11 @@
 }
 
 .tools-card {
-  background: #fff;
+  background: var(--surface-card);
   border: 1px solid var(--color-c8);
   border-radius: 12px;
   padding: 16px;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
+  box-shadow: 0 2px 12px color-mix(in srgb, var(--shadow-color) 4%, transparent);
 }
 
 .tools-grid {
@@ -238,7 +238,7 @@
   border-radius: 10px;
   text-decoration: none;
   color: var(--color-c1);
-  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.03);
+  box-shadow: 0 1px 6px color-mix(in srgb, var(--shadow-color) 3%, transparent);
   transition:
     border-color 0.2s,
     box-shadow 0.2s,
@@ -247,7 +247,7 @@
 
 .tool-tile:hover {
   border-color: var(--color-c3);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 4px 16px color-mix(in srgb, var(--shadow-color) 8%, transparent);
   transform: translateY(-1px);
 }
 
@@ -263,11 +263,11 @@
   justify-content: center;
   width: 30px;
   height: 30px;
-  background: #fff;
+  background: var(--surface-card);
   border-radius: 6px;
   color: var(--color-c2);
   flex-shrink: 0;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 1px 3px color-mix(in srgb, var(--shadow-color) 6%, transparent);
 }
 
 .tool-tile-title {

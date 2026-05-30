@@ -9,7 +9,7 @@
   height: 32px;
   min-height: 32px;
   margin-inline: auto;
-  background: #fff;
+  background: var(--surface-card);
   color: var(--color-c2);
   padding-block: 0;
   padding-inline: var(--space-5);
@@ -18,7 +18,7 @@
 /* ─── Projection drawer ────────────────────────────────────────────────────── */
 
 .ts-drawer {
-  background: #fff;
+  background: var(--surface-card);
   border: 1px solid var(--color-c8);
   border-radius: 8px;
   margin-bottom: 16px;
@@ -55,7 +55,7 @@
   padding: 4px 14px;
   border: 1px solid var(--color-c8);
   border-radius: 4px;
-  background: #fff;
+  background: var(--surface-card);
   font-size: 12px;
   color: var(--color-c1);
   cursor: pointer;
@@ -64,7 +64,7 @@
 
 .ts-drawer__mode-btn.is-active {
   background: var(--color-c2);
-  color: #fff;
+  color: var(--text-on-action);
   border-color: var(--color-c2);
 }
 
@@ -76,7 +76,7 @@
 .ts-scroll-x,
 .ts-drawer__table-wrapper {
   scrollbar-width: thin;
-  scrollbar-color: color-mix(in srgb, var(--color-c5) 70%, var(--color-c8)) var(--color-c7);
+  scrollbar-color: color-mix(in srgb, var(--data-secondary) 70%, var(--color-c8)) var(--color-c7);
 }
 
 .ts-scroll-x::-webkit-scrollbar,
@@ -92,7 +92,7 @@
 
 .ts-scroll-x::-webkit-scrollbar-thumb,
 .ts-drawer__table-wrapper::-webkit-scrollbar-thumb {
-  background: color-mix(in srgb, var(--color-c5) 70%, var(--color-c8));
+  background: color-mix(in srgb, var(--data-secondary) 70%, var(--color-c8));
   border: 2px solid var(--color-c7);
   border-radius: 999px;
 }
@@ -152,7 +152,7 @@
   font-size: 11px;
   position: sticky;
   left: 0;
-  background: #fff;
+  background: var(--surface-card);
   z-index: 1;
 }
 
@@ -176,7 +176,7 @@
   left: 0;
   z-index: 2;
   padding: 7px 10px;
-  background: color-mix(in srgb, var(--color-c1) 8%, #fff);
+  background: color-mix(in srgb, var(--color-c1) 8%, var(--surface-card));
   border-top: 1px solid var(--color-c8);
   border-bottom: 1px solid var(--color-c8);
   color: var(--color-c1);
@@ -187,13 +187,13 @@
 }
 
 .ts-proj-row--subtotal .ts-proj-td {
-  background: color-mix(in srgb, var(--color-c7) 60%, #fff);
+  background: color-mix(in srgb, var(--color-c7) 60%, var(--surface-card));
   color: var(--color-c1);
   font-weight: 600;
 }
 
 .ts-proj-row--total .ts-proj-td {
-  background: color-mix(in srgb, var(--color-c3) 10%, #fff);
+  background: color-mix(in srgb, var(--color-c3) 10%, var(--surface-card));
   color: var(--color-c1);
   font-weight: 700;
 }

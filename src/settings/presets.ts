@@ -5,8 +5,6 @@
  * utilisé en DB (colonne preset_id) et un objet `colors` au format ThemeColors.
  */
 
-/* eslint-disable ser1-colors/no-hardcoded-colors -- Presets définissent les valeurs de référence des palettes */
-
 import type { ThemeColors } from './theme';
 
 export interface PresetTheme {

@@ -89,7 +89,7 @@
 
 /* Actif : C4 (référence Home — ModeToggle) */
 .ci-toggle__switch.is-active {
-  background: var(--color-c4);
+  background: var(--surface-active);
 }
 
 .ci-toggle__knob {

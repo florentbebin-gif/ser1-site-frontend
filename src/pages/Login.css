@@ -44,8 +44,8 @@
 
 /* Titre gauche */
 .login-title {
-  color: #fff;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.25);
+  color: var(--text-on-action);
+  text-shadow: 0 2px 4px color-mix(in srgb, var(--shadow-color) 25%, transparent);
   max-width: 800px;
 }
 
@@ -54,7 +54,7 @@
   font-weight: 800;
   line-height: 1.05;
   margin: 0 0 10px 0;
-  border-bottom: 5px solid var(--color-c6);
+  border-bottom: 5px solid var(--accent-signature);
   display: inline-block;
   padding-bottom: 8px;
 }
@@ -77,11 +77,11 @@
 /* Carte de connexion */
 .login-card {
   width: min(92vw, 420px);
-  background: #ffffffee; /* légère transparence */
+  background: color-mix(in srgb, var(--surface-card) 93%, transparent); /* légère transparence */
   border-radius: 14px;
   padding: 32px 28px;
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.22);
-  border: 1px solid rgba(0, 0, 0, 0.08);
+  box-shadow: 0 8px 30px color-mix(in srgb, var(--shadow-color) 22%, transparent);
+  border: 1px solid color-mix(in srgb, var(--shadow-color) 8%, transparent);
   justify-self: center;
   backdrop-filter: blur(4px);
 }
@@ -120,7 +120,7 @@
 
 .btn {
   background: var(--color-c1);
-  color: #fff;
+  color: var(--text-on-action);
   border: none;
   padding: 10px 16px;
   border-radius: 12px;
@@ -157,7 +157,7 @@
   width: 100%;
   max-width: 100%;
   font-size: 13px;
-  color: var(--color-c5);
+  color: var(--data-secondary);
   text-align: center;
   line-height: 1.3;
 }

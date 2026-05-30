@@ -50,7 +50,7 @@ function nodeStyle(
     };
   }
   if (kind === 'enfant_commun') {
-    return { fill: 'var(--color-c6)', rx: 8 };
+    return { fill: 'var(--accent-signature)', rx: 8 };
   }
   return { fill: 'var(--color-c7)', stroke: 'var(--color-c8)', strokeWidth: 0.75, rx: 8 };
 }
@@ -136,8 +136,8 @@ export function FiliationOrgchart({
                   style={{
                     filter:
                       node.kind === 'epoux'
-                        ? 'drop-shadow(0 2px 6px rgba(0,0,0,0.14))'
-                        : 'drop-shadow(0 1px 3px rgba(0,0,0,0.07))',
+                        ? 'drop-shadow(0 2px 6px color-mix(in srgb, var(--shadow-color) 14%, transparent))'
+                        : 'drop-shadow(0 1px 3px color-mix(in srgb, var(--shadow-color) 7%, transparent))',
                   }}
                 >
                   <rect

@@ -1,5 +1,4 @@
 // @vitest-environment jsdom
-/* eslint-disable ser1-colors/no-hardcoded-colors -- Fixtures de thème déterministes pour vérifier le payload PPTX. */
 import '@testing-library/jest-dom/vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';

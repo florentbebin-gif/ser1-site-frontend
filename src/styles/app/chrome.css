@@ -8,7 +8,7 @@
   justify-content: space-between;
   align-items: center;
   gap: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
+  box-shadow: 0 2px 8px color-mix(in srgb, var(--shadow-color) 18%, transparent);
 }
 
 .brandbar {
@@ -63,20 +63,20 @@
 .topbar .chip,
 .top-actions .chip,
 .sim-header__actions .chip {
-  background: rgba(255, 255, 255, 0.6);
+  background: color-mix(in srgb, var(--surface-card) 60%, transparent);
   border-radius: 8px;
 }
 
 .topbar .chip:hover:not(:disabled),
 .top-actions .chip:hover:not(:disabled),
 .sim-header__actions .chip:hover:not(:disabled) {
-  background: rgba(255, 255, 255, 0.75);
+  background: color-mix(in srgb, var(--surface-card) 75%, transparent);
 }
 
 .topbar .chip:active:not(:disabled),
 .top-actions .chip:active:not(:disabled),
 .sim-header__actions .chip:active:not(:disabled) {
-  background: rgba(255, 255, 255, 0.85);
+  background: color-mix(in srgb, var(--surface-card) 85%, transparent);
 }
 
 .topbar .chip:focus-visible,
@@ -89,7 +89,7 @@
 .topbar .chip:disabled,
 .top-actions .chip:disabled,
 .sim-header__actions .chip:disabled {
-  background: rgba(255, 255, 255, 0.4);
+  background: color-mix(in srgb, var(--surface-card) 40%, transparent);
   opacity: 0.6;
 }
 

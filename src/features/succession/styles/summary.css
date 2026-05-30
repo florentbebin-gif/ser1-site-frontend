@@ -6,7 +6,7 @@
   overflow: hidden;
   background-image: linear-gradient(
     to bottom,
-    color-mix(in srgb, var(--color-c4) 18%, transparent) 0%,
+    color-mix(in srgb, var(--surface-active) 18%, transparent) 0%,
     transparent 20%
   );
 }
@@ -24,7 +24,7 @@
   align-items: center;
   border: 1px solid var(--color-c8);
   border-radius: 999px;
-  background: color-mix(in srgb, var(--color-c7) 78%, #ffffff);
+  background: color-mix(in srgb, var(--color-c7) 78%, var(--surface-card));
   flex-shrink: 0;
   padding: 2px;
 }
@@ -47,12 +47,12 @@
 
 .sc-pill-toggle__btn.is-active {
   background: var(--color-c2);
-  color: #ffffff;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12);
+  color: var(--text-on-action);
+  box-shadow: 0 1px 2px color-mix(in srgb, var(--shadow-color) 12%, transparent);
 }
 
 .sc-pill-toggle__btn:not(.is-active):hover {
-  background: color-mix(in srgb, var(--color-c8) 45%, #ffffff);
+  background: color-mix(in srgb, var(--color-c8) 45%, var(--surface-card));
 }
 
 /* Hero synthèse - donut + KPI */

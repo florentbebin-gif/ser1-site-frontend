@@ -35,6 +35,7 @@ const semanticAliases = [
   { token: '--state-danger', source: 'var(--color-c1)', usage: 'Danger' },
   { token: '--state-info', source: 'var(--color-c3)', usage: 'Information' },
   { token: '--overlay-modal', source: 'color-mix(C10, transparent)', usage: 'Overlay' },
+  { token: '--shadow-color', source: 'var(--color-c10)', usage: 'Ombres' },
   { token: '--focus-ring-color', source: 'var(--color-c3)', usage: 'Focus visible' },
 ] as const;
 

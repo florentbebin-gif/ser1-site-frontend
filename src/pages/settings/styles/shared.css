@@ -47,7 +47,7 @@
   font-size: 13px;
   border: 1px solid var(--color-c8);
   border-radius: 6px;
-  background: #ffffff;
+  background: var(--surface-card);
   color: var(--color-c10);
 }
 
@@ -67,7 +67,7 @@
 .settings-reference-field:focus {
   outline: none;
   border-color: var(--color-c2);
-  box-shadow: 0 0 0 3px var(--color-c4);
+  box-shadow: 0 0 0 3px var(--surface-active);
 }
 
 .settings-reference-reset {
@@ -103,16 +103,16 @@
 }
 
 .settings-reference-badge--muted {
-  background: #ffffff;
+  background: var(--surface-card);
   color: var(--color-c9);
 }
 
 .settings-reference-badge--warning {
-  background: var(--color-c6);
+  background: var(--accent-signature);
 }
 
 .settings-reference-badge--review {
-  background: #ffffff;
+  background: var(--surface-card);
   border-color: var(--color-c2);
 }
 
@@ -121,7 +121,7 @@
 }
 
 .settings-reference-badge--review-obsolescence_a_confirmer {
-  color: var(--color-c5);
+  color: var(--data-secondary);
 }
 
 .settings-reference-admin-actions {
@@ -138,7 +138,7 @@
   padding: 0 10px;
   border: 1px solid var(--color-c8);
   border-radius: 6px;
-  background: #ffffff;
+  background: var(--surface-card);
   color: var(--color-c9);
   font: inherit;
   font-size: 11px;
@@ -202,7 +202,7 @@
   margin-bottom: 8px;
   border: 1px solid var(--color-c8);
   border-radius: 10px;
-  background: #ffffff;
+  background: var(--surface-card);
   padding: 12px 14px;
 }
 
@@ -252,7 +252,7 @@
 
 .settings-reference-confidence--moyenne,
 .settings-reference-confidence--faible {
-  background: var(--color-c6);
+  background: var(--accent-signature);
 }
 
 .settings-reference-rule-meta__group {

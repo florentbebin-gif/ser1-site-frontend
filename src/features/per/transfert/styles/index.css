@@ -104,7 +104,7 @@
   justify-content: center;
   border: 1px solid var(--color-c8);
   border-radius: 999px;
-  background: #ffffff;
+  background: var(--surface-card);
   color: var(--color-c9);
   cursor: pointer;
   font: inherit;
@@ -169,7 +169,7 @@
   gap: 6px;
   border: 1px solid color-mix(in srgb, var(--color-c3) 25%, var(--color-c8));
   border-radius: 999px;
-  background: color-mix(in srgb, var(--color-c3) 8%, #ffffff);
+  background: color-mix(in srgb, var(--color-c3) 8%, var(--surface-card));
   color: var(--color-c9);
   font-size: 11px;
   font-weight: 600;
@@ -195,7 +195,7 @@
 .per-transfert-points-panel {
   border: 1px solid var(--color-c8);
   border-radius: 8px;
-  background: #ffffff;
+  background: var(--surface-card);
   padding: 14px;
 }
 
@@ -359,13 +359,13 @@
 .per-transfert-compare2__placeholder {
   border: 1px solid var(--color-c8);
   border-radius: 8px;
-  background: #ffffff;
+  background: var(--surface-card);
   padding: 12px;
 }
 
 .per-transfert-compare2__card.is-highlighted {
   border-color: color-mix(in srgb, var(--color-c3) 45%, var(--color-c8));
-  background: color-mix(in srgb, var(--color-c3) 6%, #ffffff);
+  background: color-mix(in srgb, var(--color-c3) 6%, var(--surface-card));
 }
 
 .per-transfert-compare2__card header h4,
@@ -445,8 +445,8 @@
   border-radius: 10px;
   background: linear-gradient(
     135deg,
-    color-mix(in srgb, var(--color-c4) 48%, #ffffff),
-    #ffffff 72%
+    color-mix(in srgb, var(--surface-active) 48%, var(--surface-card)),
+    var(--surface-card) 72%
   );
 }
 
@@ -457,7 +457,7 @@
   justify-content: center;
   border: 1px solid transparent;
   border-radius: 7px;
-  background: #ffffff;
+  background: var(--surface-card);
   color: var(--color-c9);
   font-size: 11px;
   font-weight: 800;
@@ -466,7 +466,7 @@
 .per-transfert-mini-bar__segment.is-active {
   border-color: color-mix(in srgb, var(--color-c3) 46%, var(--color-c8));
   background: var(--color-c3);
-  color: #ffffff;
+  color: var(--text-on-action);
   box-shadow: 0 6px 14px color-mix(in srgb, var(--color-c3) 20%, transparent);
 }
 
@@ -480,7 +480,7 @@
   min-height: 30px;
   border: 1px solid var(--color-c8);
   border-radius: 8px;
-  background: #ffffff;
+  background: var(--surface-card);
   color: var(--color-c9);
   cursor: pointer;
   font: inherit;
@@ -490,7 +490,7 @@
 
 .per-transfert-prefon-strategy button.is-active {
   border-color: var(--color-c3);
-  background: color-mix(in srgb, var(--color-c3) 8%, #ffffff);
+  background: color-mix(in srgb, var(--color-c3) 8%, var(--surface-card));
   color: var(--color-c3);
 }
 
@@ -518,7 +518,7 @@
   min-width: 0;
   border: 1px solid var(--color-c8);
   border-radius: 6px;
-  background: #ffffff;
+  background: var(--surface-card);
   color: var(--color-c10);
   font: inherit;
   font-size: 13px;
@@ -568,7 +568,7 @@
   margin: 0;
   border: 1px solid var(--color-c8);
   border-radius: 8px;
-  background: #ffffff;
+  background: var(--surface-card);
   padding: 12px;
 }
 
@@ -604,7 +604,7 @@
   gap: 4px;
   border: 1px solid var(--color-c8);
   border-radius: 8px;
-  background: #ffffff;
+  background: var(--surface-card);
   padding: 12px;
 }
 
@@ -630,9 +630,9 @@
 .per-transfert-attention {
   display: grid;
   gap: 8px;
-  border: 1px solid color-mix(in srgb, var(--color-c6) 30%, var(--color-c8));
+  border: 1px solid color-mix(in srgb, var(--accent-signature) 30%, var(--color-c8));
   border-radius: 8px;
-  background: color-mix(in srgb, var(--color-c6) 10%, #ffffff);
+  background: color-mix(in srgb, var(--accent-signature) 10%, var(--surface-card));
   padding: 12px 14px;
 }
 
@@ -661,11 +661,11 @@
 }
 
 .per-transfert-attention__item--high {
-  border-left-color: var(--color-c6);
+  border-left-color: var(--accent-signature);
 }
 
 .per-transfert-attention__item--medium {
-  border-left-color: var(--color-c5);
+  border-left-color: var(--data-secondary);
 }
 
 .per-transfert-attention__item--neutral {

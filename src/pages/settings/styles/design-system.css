@@ -168,7 +168,7 @@
 
 .settings-design-system__state-cell--hover .sim-action-btn:not(:disabled),
 .settings-design-system__state-cell--hover .sim-disclosure-btn:not(:disabled) {
-  background: color-mix(in srgb, var(--color-c4) 24%, #ffffff);
+  background: color-mix(in srgb, var(--surface-active) 24%, var(--surface-card));
 }
 
 .settings-design-system__state-cell--hover .sim-field__control:not(:disabled),
@@ -284,14 +284,14 @@
   min-height: var(--space-1);
   border: 1px solid color-mix(in srgb, var(--color-c3) 45%, var(--color-c8));
   border-radius: var(--radius-sm);
-  background: color-mix(in srgb, var(--color-c4) 68%, #ffffff);
+  background: color-mix(in srgb, var(--surface-active) 68%, var(--surface-card));
 }
 
 .settings-design-system__token-sample--radius {
   width: var(--space-8);
   height: var(--space-8);
   border: 1px solid var(--border-default);
-  background: color-mix(in srgb, var(--color-c4) 68%, #ffffff);
+  background: color-mix(in srgb, var(--surface-active) 68%, var(--surface-card));
 }
 
 .settings-design-system__token-sample--typo {
@@ -308,7 +308,7 @@
   overflow: hidden;
   border: 1px solid var(--border-default);
   border-radius: var(--radius-full);
-  background: color-mix(in srgb, var(--color-c4) 40%, #ffffff);
+  background: color-mix(in srgb, var(--surface-active) 40%, var(--surface-card));
 }
 
 .settings-design-system__token-sample--motion::before,
@@ -332,7 +332,7 @@
 
 .settings-design-system__token-motion-dot--linear {
   top: 35%;
-  background: var(--color-c5);
+  background: var(--data-secondary);
   animation-timing-function: linear;
 }
 

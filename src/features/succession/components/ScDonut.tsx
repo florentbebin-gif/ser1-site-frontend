@@ -30,7 +30,7 @@ export default function ScDonut({ transmis, droits }: { transmis: number; droits
         cy={34}
         r={SC_DONUT_R}
         fill="none"
-        stroke="var(--color-c5)"
+        stroke="var(--data-secondary)"
         strokeWidth="9"
         strokeDasharray={`${netLen} ${SC_DONUT_CIRC}`}
         strokeDashoffset="0"
@@ -41,7 +41,7 @@ export default function ScDonut({ transmis, droits }: { transmis: number; droits
         cy={34}
         r={SC_DONUT_R}
         fill="none"
-        stroke="var(--color-c6)"
+        stroke="var(--accent-signature)"
         strokeWidth="9"
         strokeDasharray={`${droitsLen} ${SC_DONUT_CIRC}`}
         strokeDashoffset={`${-netLen}`}

@@ -4,15 +4,15 @@
   --status-success-bg: var(--color-c3);
   --status-success-border: var(--color-c2);
   --status-success-text: var(--color-c1);
-  --status-error-bg: var(--color-c6);
+  --status-error-bg: var(--accent-signature);
   --status-error-border: var(--color-c8);
-  --status-error-text: var(--color-c5);
+  --status-error-text: var(--data-secondary);
   --status-warning-bg: var(--color-warning-bg);
   --status-warning-border: var(--color-warning-border);
   --status-warning-text: var(--color-warning-text);
-  --status-info-bg: var(--color-c4);
+  --status-info-bg: var(--surface-active);
   --status-info-border: var(--color-c3);
-  --status-info-text: var(--color-c5);
+  --status-info-text: var(--data-secondary);
 }
 
 .ser1-notification {

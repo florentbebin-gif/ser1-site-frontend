@@ -27,7 +27,7 @@
 .sim-page-stepper__item:focus-visible,
 .sim-page-stepper__item.is-active {
   border-color: var(--color-c8);
-  background: color-mix(in srgb, var(--color-c4) 20%, transparent);
+  background: color-mix(in srgb, var(--surface-active) 20%, transparent);
   color: var(--color-c1);
 }
 
@@ -84,7 +84,7 @@
 
 .sim-view-synthesis-cta:hover,
 .sim-view-synthesis-cta:focus-visible {
-  background: color-mix(in srgb, var(--color-c4) 24%, var(--color-c7));
+  background: color-mix(in srgb, var(--surface-active) 24%, var(--color-c7));
   box-shadow: var(--shadow-sm);
 }
 

@@ -31,7 +31,7 @@
 }
 
 .sim-segmented__option.is-active {
-  background: #ffffff;
+  background: var(--surface-card);
   color: var(--color-c3);
   box-shadow: 0 1px 3px color-mix(in srgb, var(--color-c1) 12%, transparent);
 }

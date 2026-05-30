@@ -4,7 +4,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
+  background: var(--overlay-modal);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -12,7 +12,7 @@
 }
 
 .report-modal {
-  background: #ffffff;
+  background: var(--surface-card);
   border-radius: 12px;
   padding: 24px;
   max-width: 800px;
@@ -20,8 +20,8 @@
   max-height: 85vh;
   overflow-y: auto;
   box-shadow:
-    0 20px 60px rgba(0, 0, 0, 0.15),
-    0 8px 25px rgba(0, 0, 0, 0.1);
+    0 20px 60px color-mix(in srgb, var(--shadow-color) 15%, transparent),
+    0 8px 25px color-mix(in srgb, var(--shadow-color) 10%, transparent);
 }
 
 .report-modal--sm {
@@ -67,7 +67,7 @@
   min-height: 36px;
   padding: 8px 12px;
   border-radius: 6px;
-  background: var(--color-c6);
+  background: var(--accent-signature);
   color: var(--color-c10);
   border: 1px solid var(--color-c8);
   cursor: pointer;
@@ -76,7 +76,7 @@
 }
 
 .report-modal-close:hover {
-  background: var(--color-c5);
+  background: var(--data-secondary);
 }
 
 .report-modal-content {
@@ -116,7 +116,7 @@
 }
 
 .report-modal-actions button:hover {
-  background: var(--color-c6);
+  background: var(--accent-signature);
 }
 
 .report-modal-actions button.danger {
@@ -127,7 +127,7 @@
 
 .report-modal-actions button.danger:hover {
   background: var(--color-error-border);
-  color: #ffffff;
+  color: var(--text-on-action);
 }
 
 .reports-table {
@@ -173,13 +173,13 @@
 }
 
 .report-status.read {
-  background: #ffffff;
+  background: var(--surface-card);
   border: 1px solid var(--color-c8);
   color: var(--color-c9);
 }
 
 .report-status.unread {
-  background: rgba(var(--color-c2-rgb, 112, 155, 139), 0.12);
+  background: color-mix(in srgb, var(--action-primary) 12%, transparent);
   border: 1px solid var(--color-c2);
   color: var(--color-c2);
 }
@@ -193,7 +193,7 @@
   padding: 8px 12px;
   border-radius: 6px;
   border: 1px solid var(--color-c8);
-  background: #ffffff;
+  background: var(--surface-card);
   color: var(--color-c10);
   cursor: pointer;
   font-size: 13px;
@@ -206,7 +206,7 @@
 .report-view-btn:hover,
 .report-back-btn:hover {
   background: var(--color-c7);
-  border-color: var(--color-c5);
+  border-color: var(--data-secondary);
 }
 
 .report-title-cell {
@@ -217,7 +217,7 @@
   display: flex;
   flex-wrap: wrap;
   gap: 16px;
-  background: var(--color-c6);
+  background: var(--accent-signature);
   padding: 16px;
   border-radius: 8px;
   margin-bottom: 16px;
@@ -271,7 +271,7 @@
   padding: 10px 12px;
   border: 1px solid var(--color-c8);
   border-radius: 6px;
-  background: #ffffff;
+  background: var(--surface-card);
   color: var(--color-c10);
   font-size: 13px;
 }
@@ -285,7 +285,7 @@
   padding: 16px;
   border: 1px solid var(--color-c8);
   border-radius: 8px;
-  background: #ffffff;
+  background: var(--surface-card);
   line-height: 1.6;
 }
 
@@ -298,7 +298,7 @@
 }
 
 .report-detail-metadata pre {
-  background: var(--color-c6);
+  background: var(--accent-signature);
   padding: 16px;
   border-radius: 8px;
   overflow-x: auto;
@@ -326,14 +326,14 @@
   border: 1px solid var(--color-c8);
   border-radius: 6px;
   font-size: 14px;
-  background: #ffffff;
+  background: var(--surface-card);
   color: var(--color-c10);
 }
 
 .settings-modal-control:focus {
   outline: none;
   border-color: var(--color-c2);
-  box-shadow: 0 0 0 3px var(--color-c4);
+  box-shadow: 0 0 0 3px var(--surface-active);
 }
 
 .settings-modal-message {
@@ -394,8 +394,8 @@
 }
 
 .settings-modal-placement-button.is-active {
-  border-color: var(--color-c4);
-  background: var(--color-c4);
+  border-color: var(--surface-active);
+  background: var(--surface-active);
   color: var(--color-c1);
 }
 

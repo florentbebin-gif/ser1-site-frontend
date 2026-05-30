@@ -24,7 +24,7 @@
 .sim-collapsible-table__toggle:hover {
   background: var(--color-c7);
   color: var(--color-c1);
-  border-color: var(--color-c5);
+  border-color: var(--data-secondary);
 }
 
 .sim-collapsible-table__toggle .sim-disclosure-btn__chevron {
@@ -65,7 +65,7 @@
 
 .sim-collapsible-table__top-scroll::-webkit-scrollbar-thumb,
 .sim-collapsible-table__scroll::-webkit-scrollbar-thumb {
-  background: var(--color-c5);
+  background: var(--data-secondary);
   border-radius: var(--radius-sm);
 }
 

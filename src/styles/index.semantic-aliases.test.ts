@@ -26,6 +26,7 @@ const semanticAliases = [
   '--state-danger',
   '--state-info',
   '--overlay-modal',
+  '--shadow-color',
   '--focus-ring-color',
 ] as const;
 

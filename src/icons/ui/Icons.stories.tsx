@@ -94,7 +94,7 @@ const styles = {
     padding: 'var(--space-3)',
     border: '1px solid var(--color-c8)',
     borderRadius: 'var(--radius-md)',
-    background: '#fff',
+    background: 'var(--surface-card)',
   },
   icon: {
     width: 'var(--space-6)',

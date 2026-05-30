@@ -16,7 +16,7 @@
   border: 1px solid var(--color-c8);
   border-radius: 10px;
   overflow: hidden;
-  background: #ffffff;
+  background: var(--surface-card);
 }
 
 .base-contrat-toggle__button {
@@ -39,7 +39,7 @@
 
 .base-contrat-toggle__button.is-active {
   background: var(--color-c3);
-  color: #ffffff;
+  color: var(--text-on-action);
 }
 
 .base-contrat-empty-state {
@@ -49,7 +49,7 @@
 }
 
 .base-contrat-family__header {
-  background: #ffffff;
+  background: var(--surface-card);
 }
 
 .base-contrat-family__title {
@@ -62,7 +62,7 @@
 
 .base-contrat-product {
   border-top: 1px solid var(--color-c8);
-  background: #ffffff;
+  background: var(--surface-card);
 }
 
 .base-contrat-product__header {
@@ -83,7 +83,7 @@
 }
 
 .base-contrat-product__header:hover {
-  background: var(--color-c6);
+  background: var(--accent-signature);
 }
 
 .base-contrat-product__header.is-closed {
@@ -124,7 +124,7 @@
 
 .base-contrat-product__body {
   padding: 0 16px 16px;
-  background: #ffffff;
+  background: var(--surface-card);
 }
 
 .base-contrat-note {
@@ -156,7 +156,7 @@
 }
 
 .base-contrat-review__status--obsolescence_a_confirmer {
-  color: var(--color-c5);
+  color: var(--data-secondary);
 }
 
 .base-contrat-review__line {

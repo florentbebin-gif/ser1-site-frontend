@@ -1,5 +1,4 @@
 // @vitest-environment jsdom
-/* eslint-disable ser1-colors/no-hardcoded-colors */
 
 import '@testing-library/jest-dom/vitest';
 import { render, screen } from '@testing-library/react';

@@ -69,6 +69,7 @@
   --state-danger: var(--color-c1);
   --state-info: var(--color-c3);
   --overlay-modal: color-mix(in srgb, var(--color-c10) 58%, transparent);
+  --shadow-color: var(--color-c10);
   --focus-ring-color: var(--color-c3);
 
   /* Tokens de fondation SIM SER1 2026 */

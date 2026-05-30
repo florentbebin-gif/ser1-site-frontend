@@ -96,7 +96,7 @@
   min-width: 0;
   border: 1px solid color-mix(in srgb, var(--sim-status-color) 48%, var(--color-c8));
   border-radius: var(--radius-full);
-  background: color-mix(in srgb, var(--sim-status-color) 14%, #ffffff);
+  background: color-mix(in srgb, var(--sim-status-color) 14%, var(--surface-card));
   color: var(--color-c1);
   font-size: var(--font-size-xs);
   font-weight: var(--font-weight-semibold);
@@ -110,7 +110,7 @@
 }
 
 .sim-status-badge--attention {
-  --sim-status-color: var(--color-c6);
+  --sim-status-color: var(--accent-signature);
 }
 
 .sim-status-badge--info {

@@ -1,7 +1,7 @@
 ﻿.sc-donation-card {
-  border: 1px solid color-mix(in srgb, var(--color-c8) 88%, #ffffff);
+  border: 1px solid color-mix(in srgb, var(--color-c8) 88%, var(--surface-card));
   border-radius: 10px;
-  background: #ffffff;
+  background: var(--surface-card);
   padding: 10px 12px;
   overflow: hidden;
   box-shadow: 0 1px 0 color-mix(in srgb, var(--color-c8) 55%, transparent);
@@ -14,7 +14,7 @@
   gap: 8px;
   margin-bottom: 8px;
   padding-bottom: 8px;
-  border-bottom: 1px solid color-mix(in srgb, var(--color-c8) 72%, #ffffff);
+  border-bottom: 1px solid color-mix(in srgb, var(--color-c8) 72%, var(--surface-card));
 }
 
 .sc-donation-card__actions {
@@ -98,7 +98,10 @@
   border-radius: 4px;
   border: none;
   border-bottom: 1px solid transparent;
-  background-color: var(--sim-input-bg, color-mix(in srgb, var(--color-c8) 18%, #ffffff));
+  background-color: var(
+    --sim-input-bg,
+    color-mix(in srgb, var(--color-c8) 18%, var(--surface-card))
+  );
   font-size: 13px;
   color: var(--color-c10);
   font-family: inherit;
@@ -179,7 +182,7 @@
 }
 
 .sc-donation-toggle.is-active {
-  background: color-mix(in srgb, var(--color-c3) 22%, #ffffff);
+  background: color-mix(in srgb, var(--color-c3) 22%, var(--surface-card));
   border-color: color-mix(in srgb, var(--color-c3) 55%, var(--color-c8));
   color: var(--color-c1);
 }
@@ -203,7 +206,7 @@
 }
 
 .sc-donation-card--partage {
-  background: color-mix(in srgb, var(--color-c3) 8%, #ffffff);
+  background: color-mix(in srgb, var(--color-c3) 8%, var(--surface-card));
 }
 
 .sc-donation-partage-modal {
@@ -273,9 +276,9 @@
   flex-direction: column;
   gap: 4px;
   padding: 8px 10px;
-  border: 1px solid color-mix(in srgb, var(--color-c6) 42%, #ffffff);
+  border: 1px solid color-mix(in srgb, var(--accent-signature) 42%, var(--surface-card));
   border-radius: 6px;
-  background: color-mix(in srgb, var(--color-c6) 8%, #ffffff);
+  background: color-mix(in srgb, var(--accent-signature) 8%, var(--surface-card));
   color: var(--color-c10);
   font-size: 12px;
 }

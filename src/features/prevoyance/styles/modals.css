@@ -49,7 +49,7 @@
 
 .prevoyance-contract-modal__nav-item.is-active {
   border-color: color-mix(in srgb, var(--color-c3) 44%, var(--color-c8));
-  background: color-mix(in srgb, var(--color-c4) 55%, var(--color-c7));
+  background: color-mix(in srgb, var(--surface-active) 55%, var(--color-c7));
   color: var(--color-c1);
 }
 
@@ -59,8 +59,8 @@
 
 .prevoyance-contract-editor {
   border-radius: 12px;
-  background: color-mix(in srgb, var(--color-c7) 42%, #ffffff);
-  --sim-input-bg: #ffffff;
+  background: color-mix(in srgb, var(--color-c7) 42%, var(--surface-card));
+  --sim-input-bg: var(--surface-card);
 }
 
 .prevoyance-contract-editor__top {

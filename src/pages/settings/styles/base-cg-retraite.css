@@ -29,7 +29,7 @@
   min-height: 34px;
   border: 1px solid var(--color-c8);
   border-radius: 6px;
-  background: #ffffff;
+  background: var(--surface-card);
   color: var(--color-c10);
   cursor: pointer;
   font: inherit;
@@ -40,7 +40,7 @@
 
 .base-cg-button {
   background: var(--color-c3);
-  color: #ffffff;
+  color: var(--text-on-action);
 }
 
 .base-cg-row-actions__danger {
@@ -48,14 +48,14 @@
 }
 
 .base-cg-button--ghost {
-  background: #ffffff;
+  background: var(--surface-card);
   color: var(--color-c9);
 }
 
 .base-cg-button--assistance {
   border-color: var(--color-c2);
   background: var(--color-c2);
-  color: #ffffff;
+  color: var(--text-on-action);
 }
 
 .base-cg-button--assistance:hover:not(:disabled) {
@@ -76,7 +76,7 @@
 .base-cg-modal textarea {
   border: 1px solid var(--color-c8);
   border-radius: 6px;
-  background: #ffffff;
+  background: var(--surface-card);
   color: var(--color-c10);
   font: inherit;
   font-size: 13px;
@@ -161,7 +161,7 @@
   min-height: 22px;
   border: 1px solid var(--color-c8);
   border-radius: 999px;
-  background: #ffffff;
+  background: var(--surface-card);
   color: var(--color-c9);
   font-size: 11px;
   font-weight: 800;
@@ -179,7 +179,7 @@
   overflow: hidden;
   border: 1px solid var(--color-c8);
   border-radius: 999px;
-  background: #ffffff;
+  background: var(--surface-card);
   box-shadow: var(--shadow-md);
 }
 
@@ -202,19 +202,19 @@
 }
 
 .company-logo--bg-c4 {
-  background: var(--color-c4);
+  background: var(--surface-active);
 }
 
 .company-logo--bg-c5 {
-  background: var(--color-c5);
+  background: var(--data-secondary);
 }
 
 .company-logo--bg-c6 {
-  background: var(--color-c6);
+  background: var(--accent-signature);
 }
 
 .company-logo--fallback {
-  color: #ffffff;
+  color: var(--text-on-action);
   font-size: calc(var(--company-logo-size, 36px) * 0.42);
   font-weight: 800;
   line-height: 1;
@@ -233,23 +233,23 @@
 }
 
 .company-logo--c4 {
-  background: var(--color-c4);
+  background: var(--surface-active);
   color: var(--color-c1);
 }
 
 .company-logo--c5 {
-  background: var(--color-c5);
+  background: var(--data-secondary);
 }
 
 .company-logo--c6 {
-  background: var(--color-c6);
+  background: var(--accent-signature);
   color: var(--color-c1);
 }
 
 .base-cg-badge--warning,
 .base-cg-badge--incomplete {
-  border-color: color-mix(in srgb, var(--color-c6) 35%, var(--color-c8));
-  background: color-mix(in srgb, var(--color-c6) 12%, #ffffff);
+  border-color: color-mix(in srgb, var(--accent-signature) 35%, var(--color-c8));
+  background: color-mix(in srgb, var(--accent-signature) 12%, var(--surface-card));
   color: var(--color-c1);
 }
 
@@ -266,7 +266,7 @@
   padding: 14px 16px;
   border: 1px solid var(--color-c8);
   border-radius: 10px;
-  background: #ffffff;
+  background: var(--surface-card);
   transition:
     border-color 0.15s ease,
     background-color 0.15s ease,
@@ -274,13 +274,13 @@
 }
 
 .base-cg-contract-card:hover {
-  border-color: var(--color-c5);
-  background: color-mix(in srgb, var(--color-c3) 4%, #ffffff);
+  border-color: var(--data-secondary);
+  background: color-mix(in srgb, var(--color-c3) 4%, var(--surface-card));
   box-shadow: var(--shadow-sm);
 }
 
 .base-cg-contract-card.is-incomplete {
-  border-left: 3px solid var(--color-c6);
+  border-left: 3px solid var(--accent-signature);
 }
 
 .base-cg-contract-card__main {
@@ -356,7 +356,7 @@
   min-height: 28px;
   border: 1px solid color-mix(in srgb, var(--color-c3) 32%, var(--color-c8));
   border-radius: 999px;
-  background: color-mix(in srgb, var(--color-c3) 8%, #ffffff);
+  background: color-mix(in srgb, var(--color-c3) 8%, var(--surface-card));
   color: var(--color-c1);
   cursor: pointer;
   font: inherit;
@@ -367,7 +367,7 @@
 
 .base-cg-document-download__button:hover {
   background: var(--color-c3);
-  color: #ffffff;
+  color: var(--text-on-action);
 }
 
 .base-cg-document-download__version,
@@ -409,7 +409,7 @@
   z-index: 1000;
   display: grid;
   place-items: center;
-  background: rgba(0, 0, 0, 0.35);
+  background: var(--overlay-modal);
   padding: 20px;
 }
 
@@ -418,7 +418,7 @@
   max-height: calc(100vh - 40px);
   overflow: auto;
   border-radius: 8px;
-  background: #ffffff;
+  background: var(--surface-card);
   box-shadow: var(--shadow-lg);
 }
 
@@ -517,7 +517,7 @@
   border: 1px solid var(--color-c3);
   border-radius: 6px;
   background: var(--color-c3);
-  color: #ffffff;
+  color: var(--text-on-action);
   cursor: pointer;
   font: inherit;
   font-size: 12px;
@@ -554,7 +554,7 @@
 .base-cg-button--primary {
   background: var(--color-c3);
   border-color: var(--color-c3);
-  color: #ffffff;
+  color: var(--text-on-action);
 }
 
 .base-cg-button--primary:hover:not(:disabled) {
@@ -573,7 +573,7 @@
   padding: 10px 14px;
   border: 1px solid var(--color-c8);
   border-radius: 8px;
-  background: color-mix(in srgb, var(--color-c3) 6%, #ffffff);
+  background: color-mix(in srgb, var(--color-c3) 6%, var(--surface-card));
   color: var(--color-c10);
   font-size: 12px;
   line-height: 1.4;
@@ -645,9 +645,9 @@
 .base-cg-documents__error {
   margin: 0;
   padding: 10px 12px;
-  border: 1px solid var(--color-c6);
+  border: 1px solid var(--accent-signature);
   border-radius: 6px;
-  background: color-mix(in srgb, var(--color-c6) 12%, #ffffff);
+  background: color-mix(in srgb, var(--accent-signature) 12%, var(--surface-card));
   color: var(--color-c10);
   font-size: 12px;
   line-height: 1.45;
