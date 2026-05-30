@@ -2,6 +2,7 @@ import React, { useMemo, useState } from 'react';
 import { adminClient } from '@/settings/admin/adminClient';
 import { COLOR_USAGE_GUIDELINES } from '@/settings/theme/colorUsageGuidelines';
 import { DEFAULT_COLORS } from '@/settings/theme';
+import SettingsModalShell from './SettingsModalShell';
 
 type ThemePalette = Record<string, string>;
 
@@ -100,85 +101,12 @@ export default function ThemeEditModal({
   };
 
   return (
-    <div className="report-modal-overlay">
-      <div className="report-modal report-modal--md">
-        <div className="report-modal-header">
-          <h3>{theme ? 'Modifier le thème' : 'Nouveau thème'}</h3>
-          <button className="report-modal-close" onClick={onClose} type="button">
-            X
-          </button>
-        </div>
-        <div className="report-modal-content">
-          {error && (
-            <div className="settings-feedback-panel settings-feedback-panel--error settings-modal-message">
-              {error}
-            </div>
-          )}
-          {theme?.is_system && (
-            <div className="settings-feedback-panel settings-feedback-panel--info settings-modal-message">
-              Thème système : modifiable mais non supprimable.
-            </div>
-          )}
-          <div className="settings-modal-field">
-            <label className="settings-modal-label" htmlFor="theme-name">
-              Nom du thème *
-            </label>
-            <input
-              id="theme-name"
-              type="text"
-              value={form.name}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                setForm((prev) => ({ ...prev, name: e.target.value }));
-              }}
-              placeholder="Ex: Thème cabinet"
-              className="settings-modal-control"
-            />
-          </div>
-          <div className="settings-modal-field">
-            <div className="settings-modal-label">Palette (10 couleurs)</div>
-            <p className="theme-palette-help">Survolez C1 à C10 pour voir la norme d’usage.</p>
-            <div className="theme-palette-grid">
-              {colorFields.map(({ key, token, help }) => {
-                const tooltipId = `theme-color-help-${key}`;
-                const colorValue = form.palette[key] || defaultPalette[key];
-
-                return (
-                  <div key={key} className="theme-palette-item">
-                    <span className="theme-palette-token-wrap">
-                      <button
-                        type="button"
-                        className="theme-palette-token"
-                        aria-describedby={tooltipId}
-                      >
-                        {token}
-                      </button>
-                      <span id={tooltipId} role="tooltip" className="theme-palette-tooltip">
-                        {help}
-                      </span>
-                    </span>
-                    <input
-                      type="color"
-                      value={colorValue}
-                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                        handleThemePaletteChange(key, e.target.value);
-                      }}
-                      className="settings-modal-color-picker"
-                    />
-                    <input
-                      type="text"
-                      value={colorValue}
-                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                        handleThemePaletteChange(key, e.target.value);
-                      }}
-                      className="settings-modal-token-input"
-                    />
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        </div>
-        <div className="report-modal-actions">
+    <SettingsModalShell
+      title={theme ? 'Modifier le thème' : 'Nouveau thème'}
+      onClose={onClose}
+      size="md"
+      footer={
+        <>
           <button onClick={onClose} type="button">
             Annuler
           </button>
@@ -192,8 +120,77 @@ export default function ThemeEditModal({
           >
             {saving ? 'Enregistrement...' : 'Enregistrer'}
           </button>
+        </>
+      }
+    >
+      {error && (
+        <div className="settings-feedback-panel settings-feedback-panel--error settings-modal-message">
+          {error}
+        </div>
+      )}
+      {theme?.is_system && (
+        <div className="settings-feedback-panel settings-feedback-panel--info settings-modal-message">
+          Thème système : modifiable mais non supprimable.
+        </div>
+      )}
+      <div className="settings-modal-field">
+        <label className="settings-modal-label" htmlFor="theme-name">
+          Nom du thème *
+        </label>
+        <input
+          id="theme-name"
+          type="text"
+          value={form.name}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+            setForm((prev) => ({ ...prev, name: e.target.value }));
+          }}
+          placeholder="Ex: Thème cabinet"
+          className="settings-modal-control"
+        />
+      </div>
+      <div className="settings-modal-field">
+        <div className="settings-modal-label">Palette (10 couleurs)</div>
+        <p className="theme-palette-help">Survolez C1 à C10 pour voir la norme d’usage.</p>
+        <div className="theme-palette-grid">
+          {colorFields.map(({ key, token, help }) => {
+            const tooltipId = `theme-color-help-${key}`;
+            const colorValue = form.palette[key] || defaultPalette[key];
+
+            return (
+              <div key={key} className="theme-palette-item">
+                <span className="theme-palette-token-wrap">
+                  <button
+                    type="button"
+                    className="theme-palette-token"
+                    aria-describedby={tooltipId}
+                  >
+                    {token}
+                  </button>
+                  <span id={tooltipId} role="tooltip" className="theme-palette-tooltip">
+                    {help}
+                  </span>
+                </span>
+                <input
+                  type="color"
+                  value={colorValue}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                    handleThemePaletteChange(key, e.target.value);
+                  }}
+                  className="settings-modal-color-picker"
+                />
+                <input
+                  type="text"
+                  value={colorValue}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                    handleThemePaletteChange(key, e.target.value);
+                  }}
+                  className="settings-modal-token-input"
+                />
+              </div>
+            );
+          })}
         </div>
       </div>
-    </div>
+    </SettingsModalShell>
   );
 }

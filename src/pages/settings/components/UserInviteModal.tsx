@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { adminClient } from '@/settings/admin/adminClient';
+import SettingsModalShell from './SettingsModalShell';
 
 interface CabinetOption {
   value: string;
@@ -49,55 +50,12 @@ export default function UserInviteModal({
   };
 
   return (
-    <div className="report-modal-overlay">
-      <div className="report-modal report-modal--sm">
-        <div className="report-modal-header">
-          <h3>Nouvel utilisateur</h3>
-          <button className="report-modal-close" onClick={onClose} type="button">
-            X
-          </button>
-        </div>
-        <div className="report-modal-content">
-          {error && (
-            <div className="settings-feedback-panel settings-feedback-panel--error settings-modal-message">
-              {error}
-            </div>
-          )}
-          <div className="settings-modal-field">
-            <label className="settings-modal-label" htmlFor="invite-email">
-              Email *
-            </label>
-            <input
-              id="invite-email"
-              type="email"
-              value={email}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEmail(e.target.value)}
-              placeholder="utilisateur@exemple.com"
-              disabled={submitting}
-              className="settings-modal-control"
-            />
-          </div>
-          <div className="settings-modal-field">
-            <label className="settings-modal-label" htmlFor="invite-cabinet-select">
-              Cabinet (optionnel)
-            </label>
-            <select
-              id="invite-cabinet-select"
-              value={cabinetId}
-              onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setCabinetId(e.target.value)}
-              disabled={submitting || cabinetsLoading}
-              className="settings-modal-control"
-            >
-              <option value="">-- Aucun cabinet --</option>
-              {cabinetOptions.map((cabinet) => (
-                <option key={cabinet.value} value={cabinet.value}>
-                  {cabinet.label}
-                </option>
-              ))}
-            </select>
-          </div>
-        </div>
-        <div className="report-modal-actions">
+    <SettingsModalShell
+      title="Nouvel utilisateur"
+      onClose={onClose}
+      size="sm"
+      footer={
+        <>
           <button onClick={onClose} disabled={submitting} type="button">
             Annuler
           </button>
@@ -111,8 +69,47 @@ export default function UserInviteModal({
           >
             {submitting ? 'Envoi...' : 'Inviter'}
           </button>
+        </>
+      }
+    >
+      {error && (
+        <div className="settings-feedback-panel settings-feedback-panel--error settings-modal-message">
+          {error}
         </div>
+      )}
+      <div className="settings-modal-field">
+        <label className="settings-modal-label" htmlFor="invite-email">
+          Email *
+        </label>
+        <input
+          id="invite-email"
+          type="email"
+          value={email}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEmail(e.target.value)}
+          placeholder="utilisateur@exemple.com"
+          disabled={submitting}
+          className="settings-modal-control"
+        />
       </div>
-    </div>
+      <div className="settings-modal-field">
+        <label className="settings-modal-label" htmlFor="invite-cabinet-select">
+          Cabinet (optionnel)
+        </label>
+        <select
+          id="invite-cabinet-select"
+          value={cabinetId}
+          onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setCabinetId(e.target.value)}
+          disabled={submitting || cabinetsLoading}
+          className="settings-modal-control"
+        >
+          <option value="">-- Aucun cabinet --</option>
+          {cabinetOptions.map((cabinet) => (
+            <option key={cabinet.value} value={cabinet.value}>
+              {cabinet.label}
+            </option>
+          ))}
+        </select>
+      </div>
+    </SettingsModalShell>
   );
 }

@@ -118,7 +118,7 @@ wrappers locaux qui les deleguent. Ne pas ajouter de `<input type="number">` bru
 Settings UI :
 
 - pages admin, denses, orientees gestion ;
-- composants `SettingsSectionCard`, `SettingsTable`, modales settings existantes ;
+- composants `SettingsSectionCard`, `SettingsTable`, `SettingsModalShell` pour les modales admin ;
 - champs natifs autorises pour saisies de baremes/admin quand le check l'autorise ;
 - objectif : edition fiable, lisibilite de tables, actions admin.
 

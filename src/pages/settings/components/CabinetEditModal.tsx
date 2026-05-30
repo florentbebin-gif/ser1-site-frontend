@@ -1,6 +1,7 @@
 import React, { useRef, useState } from 'react';
 import { adminClient } from '@/settings/admin/adminClient';
 import { getLogoPublicUrl, uploadLogoWithDedup } from '@/settings/admin/logoUpload';
+import SettingsModalShell from './SettingsModalShell';
 
 interface ThemeOption {
   id: string;
@@ -153,132 +154,12 @@ export default function CabinetEditModal({
   };
 
   return (
-    <div className="report-modal-overlay">
-      <div className="report-modal report-modal--sm">
-        <div className="report-modal-header">
-          <h3>{cabinet ? 'Modifier le cabinet' : 'Nouveau cabinet'}</h3>
-          <button className="report-modal-close" onClick={onClose} type="button">
-            X
-          </button>
-        </div>
-        <div className="report-modal-content">
-          {error && (
-            <div className="settings-feedback-panel settings-feedback-panel--error settings-modal-message">
-              {error}
-            </div>
-          )}
-          <div className="settings-modal-field">
-            <label className="settings-modal-label" htmlFor="cabinet-name">
-              Nom du cabinet *
-            </label>
-            <input
-              id="cabinet-name"
-              type="text"
-              value={form.name}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                setForm((prev) => ({ ...prev, name: e.target.value }));
-              }}
-              placeholder="Ex: Cabinet Dupont"
-              className="settings-modal-control"
-            />
-          </div>
-          <div className="settings-modal-field">
-            <label className="settings-modal-label" htmlFor="cabinet-theme-select">
-              Theme par defaut
-            </label>
-            <select
-              id="cabinet-theme-select"
-              value={form.default_theme_id}
-              onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
-                setForm((prev) => ({ ...prev, default_theme_id: e.target.value }));
-              }}
-              className="settings-modal-control"
-            >
-              <option value="">-- Aucun theme --</option>
-              {themes.map((theme) => (
-                <option key={theme.id} value={theme.id}>
-                  {theme.name}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div className="settings-modal-field">
-            <label className="settings-modal-label" htmlFor="cabinet-logo">
-              Logo du cabinet
-            </label>
-            <div className="settings-modal-file-row">
-              <button type="button" onClick={() => inputRef.current?.click()} className="chip">
-                Choisir une image...
-              </button>
-              <span className="settings-modal-hint">
-                {logoFile ? logoFile.name : logoPreview ? 'Logo selectionne' : 'Aucun fichier'}
-              </span>
-              <input
-                id="cabinet-logo"
-                ref={inputRef}
-                type="file"
-                accept="image/png,image/jpeg"
-                onChange={handleLogoFileChange}
-                className="settings-modal-file-input--hidden"
-                aria-label="Logo du cabinet"
-              />
-            </div>
-            {logoPreview && (
-              <div className="settings-modal-preview">
-                <img src={logoPreview} alt="Apercu logo" className="settings-modal-preview-image" />
-                <button
-                  type="button"
-                  onClick={() => {
-                    setLogoPreview(null);
-                    setLogoFile(null);
-                    setForm((prev) => ({ ...prev, logo_id: '' }));
-                  }}
-                  className="icon-btn danger"
-                  title="Supprimer le logo"
-                  aria-label="Supprimer le logo"
-                >
-                  <svg
-                    viewBox="0 0 24 24"
-                    width="16"
-                    height="16"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <polyline points="3 6 5 6 21 6" />
-                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
-                  </svg>
-                </button>
-              </div>
-            )}
-            {logoUploading && (
-              <p className="settings-modal-hint settings-modal-hint--compact">Upload en cours...</p>
-            )}
-          </div>
-          <div className="settings-modal-field">
-            <div className="settings-modal-label">Position du logo</div>
-            <div className="settings-modal-grid-3">
-              {LOGO_PLACEMENT_OPTIONS.map((position) => (
-                <button
-                  key={position.key}
-                  type="button"
-                  onClick={() => {
-                    setForm((prev) => ({ ...prev, logo_placement: position.key }));
-                  }}
-                  className={`settings-modal-placement-button${form.logo_placement === position.key ? ' is-active' : ''}`}
-                >
-                  {position.label}
-                </button>
-              ))}
-            </div>
-            <p className="settings-modal-hint settings-modal-hint--compact">
-              Le logo ne sera jamais positionne sur la zone titre de la slide.
-            </p>
-          </div>
-        </div>
-        <div className="report-modal-actions">
+    <SettingsModalShell
+      title={cabinet ? 'Modifier le cabinet' : 'Nouveau cabinet'}
+      onClose={onClose}
+      size="sm"
+      footer={
+        <>
           <button onClick={onClose} type="button">
             Annuler
           </button>
@@ -292,8 +173,124 @@ export default function CabinetEditModal({
           >
             {saving ? 'Enregistrement...' : 'Enregistrer'}
           </button>
+        </>
+      }
+    >
+      {error && (
+        <div className="settings-feedback-panel settings-feedback-panel--error settings-modal-message">
+          {error}
         </div>
+      )}
+      <div className="settings-modal-field">
+        <label className="settings-modal-label" htmlFor="cabinet-name">
+          Nom du cabinet *
+        </label>
+        <input
+          id="cabinet-name"
+          type="text"
+          value={form.name}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+            setForm((prev) => ({ ...prev, name: e.target.value }));
+          }}
+          placeholder="Ex: Cabinet Dupont"
+          className="settings-modal-control"
+        />
       </div>
-    </div>
+      <div className="settings-modal-field">
+        <label className="settings-modal-label" htmlFor="cabinet-theme-select">
+          Theme par defaut
+        </label>
+        <select
+          id="cabinet-theme-select"
+          value={form.default_theme_id}
+          onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
+            setForm((prev) => ({ ...prev, default_theme_id: e.target.value }));
+          }}
+          className="settings-modal-control"
+        >
+          <option value="">-- Aucun theme --</option>
+          {themes.map((theme) => (
+            <option key={theme.id} value={theme.id}>
+              {theme.name}
+            </option>
+          ))}
+        </select>
+      </div>
+      <div className="settings-modal-field">
+        <label className="settings-modal-label" htmlFor="cabinet-logo">
+          Logo du cabinet
+        </label>
+        <div className="settings-modal-file-row">
+          <button type="button" onClick={() => inputRef.current?.click()} className="chip">
+            Choisir une image...
+          </button>
+          <span className="settings-modal-hint">
+            {logoFile ? logoFile.name : logoPreview ? 'Logo selectionne' : 'Aucun fichier'}
+          </span>
+          <input
+            id="cabinet-logo"
+            ref={inputRef}
+            type="file"
+            accept="image/png,image/jpeg"
+            onChange={handleLogoFileChange}
+            className="settings-modal-file-input--hidden"
+            aria-label="Logo du cabinet"
+          />
+        </div>
+        {logoPreview && (
+          <div className="settings-modal-preview">
+            <img src={logoPreview} alt="Apercu logo" className="settings-modal-preview-image" />
+            <button
+              type="button"
+              onClick={() => {
+                setLogoPreview(null);
+                setLogoFile(null);
+                setForm((prev) => ({ ...prev, logo_id: '' }));
+              }}
+              className="icon-btn danger"
+              title="Supprimer le logo"
+              aria-label="Supprimer le logo"
+            >
+              <svg
+                viewBox="0 0 24 24"
+                width="16"
+                height="16"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <polyline points="3 6 5 6 21 6" />
+                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+              </svg>
+            </button>
+          </div>
+        )}
+        {logoUploading && (
+          <p className="settings-modal-hint settings-modal-hint--compact">Upload en cours...</p>
+        )}
+      </div>
+      <div className="settings-modal-field">
+        <div className="settings-modal-label">Position du logo</div>
+        <div className="settings-modal-grid-3">
+          {LOGO_PLACEMENT_OPTIONS.map((position) => (
+            <button
+              key={position.key}
+              type="button"
+              onClick={() => {
+                setForm((prev) => ({ ...prev, logo_placement: position.key }));
+              }}
+              className={`settings-modal-placement-button${form.logo_placement === position.key ? ' is-active' : ''}`}
+            >
+              {position.label}
+            </button>
+          ))}
+        </div>
+        <p className="settings-modal-hint settings-modal-hint--compact">
+          Le logo ne sera jamais positionne sur la zone titre de la slide.
+        </p>
+      </div>
+    </SettingsModalShell>
   );
 }

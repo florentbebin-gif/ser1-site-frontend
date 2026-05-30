@@ -1,6 +1,7 @@
 import React from 'react';
 import { createIssueReportAttachmentSignedUrl } from '@/settings/admin/issueReportAttachments';
 import { normalizeIssueReportAttachments, type IssueAttachment } from '@/settings/issueReports';
+import SettingsModalShell from './SettingsModalShell';
 
 interface ReportUser {
   id?: string;
@@ -61,170 +62,150 @@ export default function SettingsReportsModal({
     }
   };
 
-  return (
-    <div className="report-modal-overlay">
-      <div className="report-modal">
-        {!selectedReport ? (
+  if (!selectedReport) {
+    return (
+      <SettingsModalShell
+        title="Signalements"
+        subtitle={selectedReportUser?.email}
+        onClose={onClose}
+        footer={
           <>
-            <div className="report-modal-header">
-              <div className="report-modal-title-section">
-                <h3>Signalements</h3>
-                {selectedReportUser?.email && (
-                  <span className="report-modal-subtitle">{selectedReportUser.email}</span>
-                )}
-              </div>
-              <button className="report-modal-close" onClick={onClose} type="button">
-                X
-              </button>
-            </div>
-
-            <div className="report-modal-content">
-              {reportLoading ? (
-                <div className="report-loading">Chargement des signalements...</div>
-              ) : userReports.length === 0 ? (
-                <div className="report-empty">Aucun signalement pour cet utilisateur.</div>
-              ) : (
-                <table className="reports-table">
-                  <thead>
-                    <tr>
-                      <th>Date</th>
-                      <th>Titre</th>
-                      <th>Statut</th>
-                      <th>Action</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {userReports.map((report) => (
-                      <tr key={report.id} className={report.admin_read_at ? 'read' : 'unread'}>
-                        <td>{new Date(report.created_at).toLocaleDateString('fr-FR')}</td>
-                        <td className="report-title-cell">{report.title || 'Sans titre'}</td>
-                        <td>
-                          <span
-                            className={`report-status ${report.admin_read_at ? 'read' : 'unread'}`}
-                          >
-                            {report.admin_read_at ? 'Lu' : 'Non lu'}
-                          </span>
-                        </td>
-                        <td>
-                          <button
-                            className="report-view-btn"
-                            onClick={() => onSelectReport(report)}
-                            type="button"
-                          >
-                            Voir
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              )}
-            </div>
-
-            <div className="report-modal-actions">
-              {userReports.length > 0 && (
-                <button
-                  className="danger"
-                  onClick={() => onDeleteAllReports(selectedReportUser?.id)}
-                  type="button"
-                >
-                  Supprimer tout l'historique
-                </button>
-              )}
-              <button onClick={onClose} type="button">
-                Fermer
-              </button>
-            </div>
-          </>
-        ) : (
-          <>
-            <div className="report-modal-header">
-              <div className="report-modal-title-section">
-                <button className="report-back-btn" onClick={onBackToList} type="button">
-                  {'<-'} Retour
-                </button>
-                <h3>Détail du signalement</h3>
-              </div>
-              <button className="report-modal-close" onClick={onClose} type="button">
-                X
-              </button>
-            </div>
-
-            <div className="report-modal-content">
-              <div className="report-detail-meta">
-                <div className="report-detail-field">
-                  <span className="report-detail-label">Date :</span>
-                  <span className="report-detail-value">
-                    {new Date(selectedReport.created_at).toLocaleString('fr-FR')}
-                  </span>
-                </div>
-                <div className="report-detail-field">
-                  <span className="report-detail-label">Statut :</span>
-                  <span
-                    className={`report-status ${selectedReport.admin_read_at ? 'read' : 'unread'}`}
-                  >
-                    {selectedReport.admin_read_at ? 'Lu' : 'Non lu'}
-                  </span>
-                </div>
-              </div>
-
-              <div className="report-detail-section">
-                {contextLabel ? <span className="report-context-chip">{contextLabel}</span> : null}
-                <h4>{selectedReport.title || 'Sans titre'}</h4>
-                <div className="report-description-box">
-                  {selectedReport.description || 'Aucune description fournie.'}
-                </div>
-              </div>
-
-              {selectedAttachments.length > 0 ? (
-                <div className="report-detail-section">
-                  <h4>Pièces jointes</h4>
-                  <div className="report-attachments-list">
-                    {selectedAttachments.map((attachment) => (
-                      <div key={attachment.storagePath} className="report-attachment-row">
-                        <span>{attachment.fileName}</span>
-                        <button
-                          type="button"
-                          className="report-view-btn"
-                          onClick={() => void handleDownloadAttachment(attachment)}
-                        >
-                          Télécharger {attachment.fileName}
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                  {downloadError ? <p className="report-download-error">{downloadError}</p> : null}
-                </div>
-              ) : null}
-
-              {selectedReport.meta && Object.keys(selectedReport.meta).length > 0 && (
-                <details className="report-detail-metadata">
-                  <summary>Informations techniques</summary>
-                  <pre>{JSON.stringify(selectedReport.meta, null, 2)}</pre>
-                </details>
-              )}
-            </div>
-
-            <div className="report-modal-actions">
-              {!selectedReport.admin_read_at && (
-                <button onClick={() => onMarkAsRead(selectedReport.id)} type="button">
-                  Marquer comme lu
-                </button>
-              )}
+            {userReports.length > 0 && (
               <button
                 className="danger"
-                onClick={() => onDeleteReport(selectedReport.id)}
+                onClick={() => onDeleteAllReports(selectedReportUser?.id)}
                 type="button"
               >
-                Supprimer
+                Supprimer tout l'historique
               </button>
-              <button onClick={onBackToList} type="button">
-                Retour à la liste
-              </button>
-            </div>
+            )}
+            <button onClick={onClose} type="button">
+              Fermer
+            </button>
           </>
+        }
+      >
+        {reportLoading ? (
+          <div className="report-loading">Chargement des signalements...</div>
+        ) : userReports.length === 0 ? (
+          <div className="report-empty">Aucun signalement pour cet utilisateur.</div>
+        ) : (
+          <table className="reports-table">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Titre</th>
+                <th>Statut</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {userReports.map((report) => (
+                <tr key={report.id} className={report.admin_read_at ? 'read' : 'unread'}>
+                  <td>{new Date(report.created_at).toLocaleDateString('fr-FR')}</td>
+                  <td className="report-title-cell">{report.title || 'Sans titre'}</td>
+                  <td>
+                    <span className={`report-status ${report.admin_read_at ? 'read' : 'unread'}`}>
+                      {report.admin_read_at ? 'Lu' : 'Non lu'}
+                    </span>
+                  </td>
+                  <td>
+                    <button
+                      className="report-view-btn"
+                      onClick={() => onSelectReport(report)}
+                      type="button"
+                    >
+                      Voir
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         )}
+      </SettingsModalShell>
+    );
+  }
+
+  return (
+    <SettingsModalShell
+      title="Détail du signalement"
+      onClose={onClose}
+      headerLeading={
+        <button className="report-back-btn" onClick={onBackToList} type="button">
+          {'<-'} Retour
+        </button>
+      }
+      footer={
+        <>
+          {!selectedReport.admin_read_at && (
+            <button onClick={() => onMarkAsRead(selectedReport.id)} type="button">
+              Marquer comme lu
+            </button>
+          )}
+          <button
+            className="danger"
+            onClick={() => onDeleteReport(selectedReport.id)}
+            type="button"
+          >
+            Supprimer
+          </button>
+          <button onClick={onBackToList} type="button">
+            Retour à la liste
+          </button>
+        </>
+      }
+    >
+      <div className="report-detail-meta">
+        <div className="report-detail-field">
+          <span className="report-detail-label">Date :</span>
+          <span className="report-detail-value">
+            {new Date(selectedReport.created_at).toLocaleString('fr-FR')}
+          </span>
+        </div>
+        <div className="report-detail-field">
+          <span className="report-detail-label">Statut :</span>
+          <span className={`report-status ${selectedReport.admin_read_at ? 'read' : 'unread'}`}>
+            {selectedReport.admin_read_at ? 'Lu' : 'Non lu'}
+          </span>
+        </div>
       </div>
-    </div>
+
+      <div className="report-detail-section">
+        {contextLabel ? <span className="report-context-chip">{contextLabel}</span> : null}
+        <h4>{selectedReport.title || 'Sans titre'}</h4>
+        <div className="report-description-box">
+          {selectedReport.description || 'Aucune description fournie.'}
+        </div>
+      </div>
+
+      {selectedAttachments.length > 0 ? (
+        <div className="report-detail-section">
+          <h4>Pièces jointes</h4>
+          <div className="report-attachments-list">
+            {selectedAttachments.map((attachment) => (
+              <div key={attachment.storagePath} className="report-attachment-row">
+                <span>{attachment.fileName}</span>
+                <button
+                  type="button"
+                  className="report-view-btn"
+                  onClick={() => void handleDownloadAttachment(attachment)}
+                >
+                  Télécharger {attachment.fileName}
+                </button>
+              </div>
+            ))}
+          </div>
+          {downloadError ? <p className="report-download-error">{downloadError}</p> : null}
+        </div>
+      ) : null}
+
+      {selectedReport.meta && Object.keys(selectedReport.meta).length > 0 && (
+        <details className="report-detail-metadata">
+          <summary>Informations techniques</summary>
+          <pre>{JSON.stringify(selectedReport.meta, null, 2)}</pre>
+        </details>
+      )}
+    </SettingsModalShell>
   );
 }
