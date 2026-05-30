@@ -9,6 +9,7 @@ import type {
   BaseContratOverrideInput,
   BaseContratReviewStatus,
 } from '@/domain/base-contrat/overrides';
+import SettingsModalShell from './components/SettingsModalShell';
 
 const REVIEW_STATUS_OPTIONS = (
   Object.keys(BASE_CONTRAT_REVIEW_STATUS_LABELS) as BaseContratReviewStatus[]
@@ -87,86 +88,92 @@ export function OverrideModal({
   const nextReviewAtId = `base-contrat-next-review-${product.id}`;
 
   return (
-    <div className="report-modal-overlay">
-      <div className="report-modal base-contrat-modal">
-        <div className="report-modal-header">
-          <h3>
-            {isClosed ? 'Rouvrir' : 'Clôturer'} - {product.label}
-          </h3>
-          <button className="report-modal-close" onClick={onClose}>
-            &#x2715;
+    <SettingsModalShell
+      title={
+        <>
+          {isClosed ? 'Rouvrir' : 'Clôturer'} - {product.label}
+        </>
+      }
+      onClose={onClose}
+      modalClassName="base-contrat-modal"
+      bodyClassName="base-contrat-modal__content"
+      footer={
+        <>
+          <button onClick={onClose} type="button">
+            Annuler
           </button>
-        </div>
-        <div className="report-modal-content base-contrat-modal__content">
-          <label className="base-contrat-modal__label" htmlFor={closedDateId}>
-            Date de clôture <span>(laisser vide = produit ouvert)</span>
-          </label>
-          <input
-            id={closedDateId}
-            className="base-contrat-modal__field"
-            type="date"
-            value={closedDate}
-            onChange={(event) => setClosedDate(event.target.value)}
-          />
-          <label className="base-contrat-modal__label" htmlFor={noteId}>
-            Note admin <span>(optionnel)</span>
-          </label>
-          <textarea
-            id={noteId}
-            className="base-contrat-modal__field base-contrat-modal__field--textarea"
-            value={note}
-            onChange={(event) => setNote(event.target.value)}
-            rows={2}
-            placeholder="Ex : dispositif supprimé par la loi de finances 2025"
-          />
-          <div className="base-contrat-modal__review-fields">
-            <label className="base-contrat-modal__label" htmlFor={reviewStatusId}>
-              Statut de revue
-            </label>
-            <select
-              id={reviewStatusId}
-              className="base-contrat-modal__field"
-              value={reviewStatus}
-              onChange={(event) =>
-                setReviewStatus(normalizeBaseContratReviewStatus(event.target.value))
-              }
-            >
-              {REVIEW_STATUS_OPTIONS.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
-            <label className="base-contrat-modal__label" htmlFor={reviewReasonId}>
-              Raison de revue <span>(optionnel)</span>
-            </label>
-            <textarea
-              id={reviewReasonId}
-              className="base-contrat-modal__field base-contrat-modal__field--textarea"
-              value={reviewReason}
-              onChange={(event) => setReviewReason(event.target.value)}
-              rows={2}
-              placeholder="Ex : obsolescence législative à confirmer"
-            />
-            <label className="base-contrat-modal__label" htmlFor={nextReviewAtId}>
-              Prochaine revue <span>(optionnel)</span>
-            </label>
-            <input
-              id={nextReviewAtId}
-              className="base-contrat-modal__field"
-              type="date"
-              value={nextReviewAt}
-              onChange={(event) => setNextReviewAt(event.target.value)}
-            />
-          </div>
-        </div>
-        <div className="report-modal-actions">
-          <button onClick={onClose}>Annuler</button>
-          <button className="chip" onClick={handleSave} disabled={saving}>
+          <button
+            className="chip"
+            onClick={() => void handleSave()}
+            disabled={saving}
+            type="button"
+          >
             {saving ? 'Enregistrement…' : 'Enregistrer'}
           </button>
-        </div>
+        </>
+      }
+    >
+      <label className="base-contrat-modal__label" htmlFor={closedDateId}>
+        Date de clôture <span>(laisser vide = produit ouvert)</span>
+      </label>
+      <input
+        id={closedDateId}
+        className="base-contrat-modal__field"
+        type="date"
+        value={closedDate}
+        onChange={(event) => setClosedDate(event.target.value)}
+      />
+      <label className="base-contrat-modal__label" htmlFor={noteId}>
+        Note admin <span>(optionnel)</span>
+      </label>
+      <textarea
+        id={noteId}
+        className="base-contrat-modal__field base-contrat-modal__field--textarea"
+        value={note}
+        onChange={(event) => setNote(event.target.value)}
+        rows={2}
+        placeholder="Ex : dispositif supprimé par la loi de finances 2025"
+      />
+      <div className="base-contrat-modal__review-fields">
+        <label className="base-contrat-modal__label" htmlFor={reviewStatusId}>
+          Statut de revue
+        </label>
+        <select
+          id={reviewStatusId}
+          className="base-contrat-modal__field"
+          value={reviewStatus}
+          onChange={(event) =>
+            setReviewStatus(normalizeBaseContratReviewStatus(event.target.value))
+          }
+        >
+          {REVIEW_STATUS_OPTIONS.map((option) => (
+            <option key={option.value} value={option.value}>
+              {option.label}
+            </option>
+          ))}
+        </select>
+        <label className="base-contrat-modal__label" htmlFor={reviewReasonId}>
+          Raison de revue <span>(optionnel)</span>
+        </label>
+        <textarea
+          id={reviewReasonId}
+          className="base-contrat-modal__field base-contrat-modal__field--textarea"
+          value={reviewReason}
+          onChange={(event) => setReviewReason(event.target.value)}
+          rows={2}
+          placeholder="Ex : obsolescence législative à confirmer"
+        />
+        <label className="base-contrat-modal__label" htmlFor={nextReviewAtId}>
+          Prochaine revue <span>(optionnel)</span>
+        </label>
+        <input
+          id={nextReviewAtId}
+          className="base-contrat-modal__field"
+          type="date"
+          value={nextReviewAt}
+          onChange={(event) => setNextReviewAt(event.target.value)}
+        />
       </div>
-    </div>
+    </SettingsModalShell>
   );
 }

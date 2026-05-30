@@ -1,4 +1,4 @@
-.report-modal-overlay {
+.settings-modal-shell-overlay {
   position: fixed;
   top: 0;
   left: 0;
@@ -11,12 +11,11 @@
   z-index: 1000;
 }
 
-.report-modal {
+.settings-modal-shell {
   background: var(--surface-card);
   border-radius: 12px;
   padding: 24px;
-  max-width: 800px;
-  width: 90%;
+  width: min(800px, 90vw);
   max-height: 85vh;
   overflow-y: auto;
   box-shadow:
@@ -24,15 +23,15 @@
     0 8px 25px color-mix(in srgb, var(--shadow-color) 10%, transparent);
 }
 
-.report-modal--sm {
-  max-width: 500px;
+.settings-modal-shell--sm {
+  width: min(500px, 90vw);
 }
 
-.report-modal--md {
-  max-width: 600px;
+.settings-modal-shell--md {
+  width: min(600px, 90vw);
 }
 
-.report-modal-header {
+.settings-modal-shell__header {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -42,24 +41,24 @@
   padding-bottom: 12px;
 }
 
-.report-modal-title-section {
+.settings-modal-shell__title-section {
   display: flex;
   flex-direction: column;
   gap: 4px;
 }
 
-.report-modal-header h3 {
+.settings-modal-shell__title {
   margin: 0;
   color: var(--color-c10);
   font-size: 18px;
 }
 
-.report-modal-subtitle {
+.settings-modal-shell__subtitle {
   font-size: 12px;
   color: var(--color-c9);
 }
 
-.report-modal-close {
+.settings-modal-shell__close {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -75,20 +74,20 @@
   transition: all 0.2s ease;
 }
 
-.report-modal-close:hover {
+.settings-modal-shell__close:hover {
   background: var(--data-secondary);
 }
 
-.report-modal-content {
+.settings-modal-shell__body {
   margin-bottom: 20px;
 }
 
-.report-modal-content p {
+.settings-modal-shell__body p {
   margin: 8px 0;
   line-height: 1.5;
 }
 
-.report-modal-content pre {
+.settings-modal-shell__body pre {
   background: var(--color-c7);
   padding: 12px;
   border-radius: 6px;
@@ -96,14 +95,14 @@
   font-size: 12px;
 }
 
-.report-modal-actions {
+.settings-modal-shell__footer {
   display: flex;
   gap: 12px;
   justify-content: flex-end;
   flex-wrap: wrap;
 }
 
-.report-modal-actions button {
+.settings-modal-shell__footer button {
   padding: 10px 16px;
   border-radius: 6px;
   font-weight: 600;
@@ -115,17 +114,22 @@
   color: var(--color-c10);
 }
 
-.report-modal-actions button:hover {
+.settings-modal-shell__footer button:hover:not(:disabled) {
   background: var(--accent-signature);
 }
 
-.report-modal-actions button.danger {
+.settings-modal-shell__footer button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.settings-modal-shell__footer button.danger {
   background: var(--color-error-bg);
   color: var(--color-error-text);
   border: 1px solid var(--color-error-border);
 }
 
-.report-modal-actions button.danger:hover {
+.settings-modal-shell__footer button.danger:hover:not(:disabled) {
   background: var(--color-error-border);
   color: var(--text-on-action);
 }

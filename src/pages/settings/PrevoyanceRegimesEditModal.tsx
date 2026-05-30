@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { SimModalShell } from '@/components/ui/sim';
 import {
   formatPrevoyanceSchemaError,
   prevoyanceMaintienEmployeurSettingsSchema,
@@ -20,6 +19,7 @@ import {
 import { MaintienDataEditor } from './PrevoyanceMaintienDataEditor';
 import { RegimeDataEditor } from './PrevoyanceRegimeDataEditor';
 import { Field, SourceReferencesEditor } from './PrevoyanceRegimesEditorFields';
+import SettingsModalShell from './components/SettingsModalShell';
 
 export type EditorTarget =
   | { type: 'regime'; value: PrevoyanceRegimeSettings }
@@ -123,7 +123,7 @@ export function EditModal({
   };
 
   return (
-    <SimModalShell
+    <SettingsModalShell
       title={target.type === 'regime' ? 'Modifier le régime' : 'Modifier le maintien employeur'}
       subtitle="Formulaire admin structuré avec références traçables par champ."
       onClose={onClose}
@@ -220,6 +220,6 @@ export function EditModal({
         sources={state.sources}
         onChange={(sources) => setField('sources', sources)}
       />
-    </SimModalShell>
+    </SettingsModalShell>
   );
 }

@@ -1,8 +1,8 @@
-import { SimModalShell } from '@/components/ui/sim';
+import SettingsModalShell from './components/SettingsModalShell';
 
 export function SettingsDesignSystemInfoModal({ onClose }: { onClose: () => void }) {
   return (
-    <SimModalShell
+    <SettingsModalShell
       title="À quoi sert cette page ?"
       subtitle="Aide admin"
       onClose={onClose}
@@ -18,6 +18,6 @@ export function SettingsDesignSystemInfoModal({ onClose }: { onClose: () => void
         boutons, modales, tableaux, états et affichages mobiles. Elle sert de référence pour garder
         les pages sim/* cohérentes après une évolution du design system.
       </p>
-    </SimModalShell>
+    </SettingsModalShell>
   );
 }

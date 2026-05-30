@@ -99,7 +99,8 @@ Principes : épuré, lisible, respirant.
 - Overlay : `var(--overlay-modal)`.
 - Panel : `var(--surface-card)`, centré, `shadow` subtil via `--shadow-color`.
 - Modales `/sim/*` : utiliser `SimModalShell` et ses slots (`title`, `subtitle`, `children`, `footer`), sauf exception documentée.
-- Accessibilité modale : `SimModalShell` doit porter `role="dialog"`, `aria-modal="true"` et `aria-labelledby` relié au titre visible.
+- Modales Settings : utiliser `SettingsModalShell` (`src/pages/settings/components/SettingsModalShell.tsx`) avec les classes locales passées par slots, pas une structure `div` ad hoc.
+- Accessibilité modale : `SimModalShell` et `SettingsModalShell` doivent porter `role="dialog"`, `aria-modal="true"` et `aria-labelledby` relié au titre visible.
 - Footer : les boutons d'action sont passés via la prop `footer`, alignés à droite, avec les classes partagées `sim-modal-btn--ghost` et `sim-modal-btn--primary`.
 - **Scroll obligatoire** : toute modale dont le contenu peut croître (liste dynamique, formulaire à n entrées) doit appliquer le patron suivant :
   - `max-height: calc(100vh - 40px)` + `display: flex; flex-direction: column` sur le container `.modal`
