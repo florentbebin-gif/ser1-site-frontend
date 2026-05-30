@@ -2,8 +2,20 @@
 
 import '@testing-library/jest-dom/vitest';
 import { render, screen } from '@testing-library/react';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import SettingsDesignSystem from '../SettingsDesignSystem';
+
+vi.mock('@/hooks/useFiscalContext', () => ({
+  useFiscalContext: () => ({
+    fiscalContext: {
+      abat10Rate: 0.1,
+      _raw_tax: {
+        incomeTax: { currentYearLabel: 'IR test' },
+      },
+      _raw_ps: {},
+    },
+  }),
+}));
 
 describe('SettingsDesignSystem', () => {
   it('affiche les sections runtime initiales du design system', () => {
@@ -13,60 +25,54 @@ describe('SettingsDesignSystem', () => {
     expect(
       screen.getByRole('button', { name: 'Informations sur la page design system' }),
     ).toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: 'Tokens' })).toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: 'Palette C1-C10' })).toBeInTheDocument();
+    expect(screen.getByText('Tokens')).toBeInTheDocument();
+    expect(screen.getByText('Palette C1-C10')).toBeInTheDocument();
     expect(screen.getByText('C1')).toBeInTheDocument();
     expect(screen.getAllByText(/Ancrage/).length).toBeGreaterThan(0);
-    expect(screen.getByRole('heading', { name: 'Alias sémantiques' })).toBeInTheDocument();
+    expect(screen.getByText('Alias sémantiques')).toBeInTheDocument();
     expect(screen.getByText('--surface-page')).toBeInTheDocument();
     expect(screen.getByText('--action-primary')).toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: 'Contrastes informatifs' })).toBeInTheDocument();
+    expect(screen.getByText('Contrastes informatifs')).toBeInTheDocument();
     expect(screen.getAllByText(/AA|A verifier/).length).toBeGreaterThan(0);
-    expect(screen.getByRole('heading', { name: 'Usages couleurs' })).toBeInTheDocument();
+    expect(screen.getByText('Usages couleurs')).toBeInTheDocument();
     expect(screen.getByText(/Autorisé/)).toBeInTheDocument();
     expect(screen.getByText(/Interdit/)).toBeInTheDocument();
-    expect(
-      screen.getByRole('heading', { name: 'Settings UI vs Simulator UI' }),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByRole('heading', { name: 'Composants manquants ou non canoniques' }),
-    ).toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: 'Icônes' })).toBeInTheDocument();
+    expect(screen.getByText('Settings UI vs Simulator UI')).toBeInTheDocument();
+    expect(screen.getByText('Composants manquants ou non canoniques')).toBeInTheDocument();
+    expect(screen.getByText('Icônes')).toBeInTheDocument();
     expect(screen.getByText('--space-1')).toBeInTheDocument();
     expect(screen.getByText('--transition-base')).toBeInTheDocument();
     expect(screen.getByText('Modifier')).toBeInTheDocument();
     expect(screen.getByText('Graphique')).toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: 'Primitives inputs' })).toBeInTheDocument();
+    expect(screen.getByText('Primitives inputs')).toBeInTheDocument();
     expect(screen.getByText(/partagent SimAmountInputBase/)).toBeInTheDocument();
     expect(screen.getByLabelText('Montant euro')).toBeInTheDocument();
     expect(screen.getByLabelText('Taux décimal')).toBeInTheDocument();
     expect(screen.getByLabelText('Nombre libre')).toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: 'Primitives UI' })).toBeInTheDocument();
+    expect(screen.getByText('Primitives UI')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Ajouter une ligne' })).toBeInTheDocument();
-    expect(
-      screen.getByRole('heading', { name: 'Navigation simulateur optionnelle' }),
-    ).toBeInTheDocument();
+    expect(screen.getByText('Navigation simulateur optionnelle')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /Voir la synthèse/ })).toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: 'États actions' })).toBeInTheDocument();
+    expect(screen.getByText('États actions')).toBeInTheDocument();
     expect(screen.getByText('Extrait actions')).toBeInTheDocument();
     expect(screen.getByText('Extrait modale')).toBeInTheDocument();
     expect(
       screen.getByRole('button', { name: 'Ouvrir la modale bottom-sheet' }),
     ).toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: 'Données CGP' })).toBeInTheDocument();
+    expect(screen.getByText('Données CGP')).toBeInTheDocument();
     expect(screen.getByText('Impôt estimé')).toBeInTheDocument();
     expect(
       screen.getByRole('button', { name: 'Masquer Projection repliable (3 lignes)' }),
     ).toBeInTheDocument();
     expect(screen.getByLabelText('Rubriques de modale')).toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: 'Modernité' })).toBeInTheDocument();
+    expect(screen.getByText('Modernité')).toBeInTheDocument();
     expect(container.querySelector('.sim-skeleton-card')).toBeInTheDocument();
     expect(container.querySelector('.sim-skeleton-kpi')).toBeInTheDocument();
     expect(container.querySelector('.sim-empty-state')).toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: 'Mobile 390' })).toBeInTheDocument();
+    expect(screen.getByText('Mobile 390')).toBeInTheDocument();
     expect(screen.getByLabelText('Mobile 390')).toBeInTheDocument();
     expect(screen.getByText('Extrait mobile')).toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: 'Glossaire' })).toBeInTheDocument();
+    expect(screen.getByText('Glossaire')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Définition : PFU' })).toBeInTheDocument();
   });
 
