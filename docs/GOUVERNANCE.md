@@ -38,20 +38,20 @@ Principes : épuré, lisible, respirant.
 
 ### Hiérarchie des surfaces
 
-- **Fond de page** : `var(--color-c7)`.
-- **Cards/panels/modales** : `#FFFFFF` (exception autorisée), border `var(--color-c8)`, radius 8–12px.
+- **Fond de page** : `var(--surface-page)`.
+- **Cards/panels/modales** : `var(--surface-card)`, border `var(--border-default)`, radius 8–12px.
 
 ### Typographie
 
 - Titres : _Sentence case_, poids 500–600.
-- Texte secondaire/labels : `var(--color-c9)`.
+- Texte secondaire/labels : `var(--text-secondary)`.
 - Messages utilisateur : **français**.
 - Les textes affichés à l’utilisateur doivent inclure les accents et les apostrophes typographiques.
 
 ### Inputs (règle critique)
 
-- Pattern standard (forms génériques) : fond `#FFFFFF`, border `1px solid var(--color-c8)`.
-- Pattern simulateur `/sim/*` (baseline `/sim/credit`) : fond léger teinté (off-white), border-bottom uniquement, focus `var(--color-c2)`.
+- Pattern standard (forms génériques) : fond `var(--surface-card)`, border `1px solid var(--border-default)`.
+- Pattern simulateur `/sim/*` (baseline `/sim/credit`) : fond léger teinté (off-white), border-bottom uniquement, focus `var(--action-primary)`.
 - Dans les 2 cas, couleurs non hardcodées (hors exceptions globales) et lisibilité prioritaire.
 
 ### Séparateur de milliers (règle critique)
@@ -73,7 +73,7 @@ Principes : épuré, lisible, respirant.
 ### Selects forcés / option unique (règle critique)
 
 - Un `<select>` avec une seule option atteignable (ex. : bénéficiaire quand la situation est "Célibataire") doit recevoir `disabled` + class `is-forced`.
-- Styles CSS requis : `background: var(--color-c7); color: var(--color-c9); cursor: not-allowed; pointer-events: none;`
+- Styles CSS requis : `background: var(--surface-page); color: var(--text-secondary); cursor: not-allowed; pointer-events: none;`
 - **Anti-pattern** : laisser un `<select>` actif et cliquable quand une seule option est visible → fausse sensation d'interactivité.
 - Référence implémentée : `pl-select.is-forced` dans `src/features/placement/styles/controls.css`, utilisé sur le select "Choix du bénéficiaire" en situation "Célibataire".
 
@@ -283,11 +283,11 @@ Pour une demande du type "trouve les écarts de normes sur `/sim/tresorerie-soci
 #### Obligatoire
 
 - Header premium : `premium-header` + variante simulateur.
-- Titre : `premium-title` (`22px`, `600`, `var(--color-c1)`).
-- Sous-titre : `premium-subtitle` (`12px`, `var(--color-c9)`).
+- Titre : `premium-title` (`22px`, `600`, `var(--text-primary)`).
+- Sous-titre : `premium-subtitle` (`12px`, `var(--text-secondary)`).
 - Barre sous header : `border-bottom`.
-  - Norme `/sim/*` : `3px solid var(--color-c6)` (validé sur `/sim/credit` et `/sim/ir`).
-  - Autres surfaces (hors `/sim/*`) : `2px solid var(--color-c8)`.
+  - Norme `/sim/*` : `3px solid var(--accent-signature)` (validé sur `/sim/credit` et `/sim/ir`).
+  - Autres surfaces (hors `/sim/*`) : `2px solid var(--border-default)`.
 - Espacements header `/sim/credit` :
   - `padding-bottom: 8px`
   - `margin-bottom: 16px`
@@ -469,7 +469,7 @@ Pour une demande du type "trouve les écarts de normes sur `/sim/tresorerie-soci
   .sim-card__header--bleed {
     background: linear-gradient(
       to bottom,
-      color-mix(in srgb, var(--color-c4) 18%, transparent) 0%,
+      color-mix(in srgb, var(--surface-active) 18%, transparent) 0%,
       transparent 65%
     );
     border-radius: 10px 10px 0 0;
@@ -763,7 +763,7 @@ flex-direction: column; /* scroll obligatoire (§Modales) */
 
 /* header */
 padding: 18px 20px;
-border-bottom: 1px solid var(--color-c8);
+border-bottom: 1px solid var(--border-default);
 
 /* body */
 padding: 20px;
@@ -773,7 +773,7 @@ min-height: 0; /* scroll obligatoire */
 
 /* footer */
 padding: 16px 20px;
-border-top: 1px solid var(--color-c8);
+border-top: 1px solid var(--border-default);
 /* boutons à droite, gap: 10px */
 ```
 
@@ -906,7 +906,13 @@ page le justifie, `SimPageStepper`, afin d’éviter les règles divergentes d�
 
 ### Regle
 
-- Utiliser uniquement les tokens `C1..C10` via variables CSS `--color-c1..--color-c10`.
+- `C1..C10` restent la source palette et sont exposes en CSS par `--color-c1..--color-c10`.
+- L'UI applicative consomme les alias semantiques de `src/styles/index.css` :
+  `--surface-*`, `--text-*`, `--border-*`, `--action-*`, `--accent-signature`,
+  `--data-secondary`, `--state-*`, `--overlay-modal`, `--focus-ring`.
+- Les `var(--color-c*)` directs sont reserves aux sources theme, declarations d'alias, showroom,
+  tests de contrat, presets et migrations. Pour du code UI nouveau ou modifie, choisir l'alias
+  semantique.
 - Hardcode interdit sauf exceptions listees ci-dessous.
 
 ### Norme d usage (UI)
@@ -934,9 +940,16 @@ page le justifie, `SimPageStepper`, afin d’éviter les règles divergentes d�
 
 ### Etats semantiques (rappel)
 
-- `danger` : utiliser C1 (pas de rouge hardcode).
+- `danger` : utiliser `--state-danger` / C1 (pas de rouge hardcode).
 - `warning` : utiliser `--state-warning` / C6, jamais de warning hardcode.
 - `success/info` : utiliser les alias `--state-success` et `--state-info`.
+
+### Dark-mode-ready
+
+Pas de moteur de contraste runtime ni de recalcul automatique de dark mode. La preparation consiste
+a garder les composants branches sur les alias semantiques ; un futur mode sombre remplacera le jeu
+d'alias sans imposer de retouche composant par composant. Ne pas documenter de comportement dark mode
+qui n'existe pas encore.
 
 ---
 
