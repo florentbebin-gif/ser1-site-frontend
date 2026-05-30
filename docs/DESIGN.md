@@ -50,7 +50,7 @@ Utiliser les alias pour le code applicatif nouveau :
 - actions : `--action-primary`, `--action-primary-hover`, `--action-secondary` ;
 - accents et donnees : `--accent-signature`, `--data-secondary` ;
 - etats : `--state-success`, `--state-warning`, `--state-danger`, `--state-info` ;
-- systeme : `--overlay-modal`, `--focus-ring-color`, `--focus-ring`.
+- systeme : `--overlay-modal`, `--shadow-color`, `--focus-ring-color`, `--focus-ring`.
 
 Les etats semantiques restent themables : `--state-warning` derive de C6. Ne pas ajouter de
 warning hex local, meme pour garantir un contraste ponctuel ; dans ce cas, corriger la palette ou
@@ -69,12 +69,13 @@ dark mode en deriveant dynamiquement la palette actuelle : `paletteGenerator.ts`
 ### Usages interdits
 
 - Pas de nouvelle couleur fiscale, UI, graphique, statut ou modale en hex local dans `src`.
-- Pas de `rgba(0, 0, 0, ...)` nouveau hors ombre/overlay documente.
+- Pas de `rgba(...)`, `rgb(...)`, `hsl(...)` ou hex runtime hors allowlist versionnee.
 - Pas de couleur de graphique non derivee du theme.
 - Pas de texte clair sur fill C4/C7 sans verification de contraste.
 
-Exceptions existantes tolerees : blanc pur pour cartes/modales/chips, ombres et overlays,
-presets theme, tests qui prouvent une valeur, exports PPTX qui ont leur contrat propre.
+Exceptions versionnees : sources theme/presets/bootstrap, showroom palette, tests et fixtures,
+migrations de palette, exports PPTX controles et logos de marque externes. L'allowlist executable
+est `tools/ser1-color-policy.mjs`.
 
 ## Layout simulateur
 

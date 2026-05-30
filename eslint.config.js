@@ -225,18 +225,6 @@ export default [
       'max-lines': 'off',
     },
   },
-  // Source of truth files - colors are defined here
-  {
-    files: [
-      'src/settings/theme.ts',
-      'src/pptx/theme/getPptxThemeFromUiSettings.ts',
-      'src/settings/theme/paletteGenerator.ts',
-      'src/components/ui/SessionExpiredBanner.tsx', // Fallback colors (session expired = no theme)
-    ],
-    rules: {
-      'ser1-colors/no-hardcoded-colors': 'off',
-    },
-  },
   {
     ignores: [
       'dist/**',

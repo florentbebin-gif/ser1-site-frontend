@@ -19,7 +19,7 @@
 
 .chip.audit-chip-danger:hover {
   background: var(--status-error-bg);
-  border-color: var(--color-c5);
+  border-color: var(--data-secondary);
 }
 
 .chip.audit-chip-small {

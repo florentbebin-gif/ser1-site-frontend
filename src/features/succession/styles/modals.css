@@ -1,7 +1,7 @@
 ﻿.sc-member-modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.45);
+  background: var(--overlay-modal);
   /* stylelint-disable-next-line property-no-vendor-prefix */
   -webkit-backdrop-filter: blur(3px);
   backdrop-filter: blur(3px);
@@ -13,15 +13,15 @@
 }
 
 .sc-member-modal {
-  background: #ffffff;
+  background: var(--surface-card);
   border-radius: 14px;
   width: 100%;
   max-width: 520px;
   min-height: 320px;
   max-height: calc(100vh - 40px);
   box-shadow:
-    0 20px 60px rgba(0, 0, 0, 0.2),
-    0 0 0 1px rgba(0, 0, 0, 0.05);
+    0 20px 60px color-mix(in srgb, var(--shadow-color) 20%, transparent),
+    0 0 0 1px color-mix(in srgb, var(--shadow-color) 5%, transparent);
   display: flex;
   flex-direction: column;
 }
@@ -38,7 +38,7 @@
   padding: 18px 20px;
   border-bottom: 1px solid var(--color-c8);
   border-radius: 14px 14px 0 0;
-  background: #ffffff;
+  background: var(--surface-card);
 }
 
 .sc-member-modal__title {
@@ -87,7 +87,7 @@
   padding: 16px 20px;
   border-top: 1px solid var(--color-c8);
   border-radius: 0 0 14px 14px;
-  background: #ffffff;
+  background: var(--surface-card);
 }
 
 /* Note auto-dérivée pour ascendantsSurvivants */
@@ -107,7 +107,10 @@
   border: none;
   border-bottom: 1px solid transparent;
   border-radius: 4px;
-  background-color: var(--sim-input-bg, color-mix(in srgb, var(--color-c8) 18%, #ffffff));
+  background-color: var(
+    --sim-input-bg,
+    color-mix(in srgb, var(--color-c8) 18%, var(--surface-card))
+  );
   color: var(--color-c10);
   font-size: 13px;
   text-align: right;

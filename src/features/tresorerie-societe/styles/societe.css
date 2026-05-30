@@ -5,7 +5,7 @@
   width: 100%;
   padding: 10px;
   overflow-x: auto;
-  background: color-mix(in srgb, var(--color-c7) 72%, #fff);
+  background: color-mix(in srgb, var(--color-c7) 72%, var(--surface-card));
   border: 1px solid var(--color-c8);
   border-radius: 8px;
 }
@@ -24,7 +24,7 @@
 }
 
 .ts-org-link-label rect {
-  fill: #fff;
+  fill: var(--surface-card);
   stroke: var(--color-c8);
   stroke-width: 1;
 }
@@ -41,7 +41,7 @@
 }
 
 .ts-org-svg-node__box {
-  fill: #fff;
+  fill: var(--surface-card);
   stroke: var(--color-c8);
   stroke-width: 1;
   transition:
@@ -53,11 +53,11 @@
 .ts-org-svg-node:hover .ts-org-svg-node__box,
 .ts-org-svg-node:focus-visible .ts-org-svg-node__box {
   stroke: var(--color-c3);
-  filter: drop-shadow(0 2px 5px rgba(0, 0, 0, 0.1));
+  filter: drop-shadow(0 2px 5px color-mix(in srgb, var(--shadow-color) 10%, transparent));
 }
 
 .ts-org-svg-node.is-active .ts-org-svg-node__box {
-  fill: color-mix(in srgb, var(--color-c4) 30%, #fff);
+  fill: color-mix(in srgb, var(--surface-active) 30%, var(--surface-card));
   stroke: var(--color-c3);
   stroke-width: 2;
 }
@@ -84,7 +84,7 @@
 }
 
 .ts-org-svg-node__active-badge text {
-  fill: #fff;
+  fill: var(--surface-card);
   font-size: 5.6px;
   font-weight: 700;
   letter-spacing: 0;
@@ -162,7 +162,7 @@
 .ts-modal-tab {
   border: 1px solid var(--color-c8);
   border-radius: 6px;
-  background: #fff;
+  background: var(--surface-card);
   color: var(--color-c9);
   cursor: pointer;
   font-size: 12px;
@@ -171,7 +171,7 @@
 }
 
 .ts-modal-tab.is-active {
-  background: color-mix(in srgb, var(--color-c4) 24%, #fff);
+  background: color-mix(in srgb, var(--surface-active) 24%, var(--surface-card));
   border-color: var(--color-c3);
   color: var(--color-c1);
   font-weight: 600;
@@ -223,7 +223,7 @@
 .ts-associate-modal-nav button {
   border: 1px solid var(--color-c8);
   border-radius: 6px;
-  background: #fff;
+  background: var(--surface-card);
   color: var(--color-c9);
   cursor: pointer;
   font-size: 12px;
@@ -233,7 +233,7 @@
 
 .ts-associate-modal-nav button.is-active,
 .ts-associate-modal-nav button[aria-selected='true'] {
-  background: color-mix(in srgb, var(--color-c4) 24%, #fff);
+  background: color-mix(in srgb, var(--surface-active) 24%, var(--surface-card));
   border-color: var(--color-c3);
   color: var(--color-c1);
   font-weight: 600;
@@ -323,7 +323,7 @@
   border: 1px solid var(--color-c8);
   border-radius: 8px;
   padding: 12px;
-  background: #fff;
+  background: var(--surface-card);
 }
 
 .ts-associate-card__header {
@@ -365,7 +365,7 @@
   justify-content: center;
   border: 1px solid var(--color-c8);
   border-radius: 999px;
-  background: #fff;
+  background: var(--surface-card);
   color: var(--color-c1);
   cursor: pointer;
   font-size: 13px;
@@ -375,14 +375,14 @@
 .ts-disposal-info-button:hover,
 .ts-disposal-info-button:focus-visible {
   border-color: var(--color-c3);
-  background: color-mix(in srgb, var(--color-c4) 20%, #fff);
+  background: color-mix(in srgb, var(--surface-active) 20%, var(--surface-card));
   outline: none;
 }
 
 .ts-disposal-info-button[aria-expanded='true'] {
   background: var(--color-c1);
   border-color: var(--color-c1);
-  color: #fff;
+  color: var(--text-on-action);
 }
 
 .ts-disposal-info {

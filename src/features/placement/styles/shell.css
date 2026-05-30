@@ -9,7 +9,7 @@
 
 .pl-page .sim-header__subtitle-row {
   padding-bottom: 8px;
-  border-bottom: 3px solid var(--color-c6);
+  border-bottom: 3px solid var(--accent-signature);
 }
 
 .pl-phase-nav {

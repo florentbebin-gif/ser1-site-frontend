@@ -38,7 +38,7 @@
 
 .sim-hypotheses__toggle:hover,
 .sim-hypotheses__toggle:focus-visible {
-  background: color-mix(in srgb, var(--color-c4) 20%, var(--color-c7));
+  background: color-mix(in srgb, var(--surface-active) 20%, var(--color-c7));
   color: var(--color-c1);
 }
 
@@ -87,7 +87,7 @@
 
 .sim-disclosure-btn:hover,
 .sim-disclosure-btn:focus-visible {
-  background: color-mix(in srgb, var(--color-c4) 20%, var(--color-c7));
+  background: color-mix(in srgb, var(--surface-active) 20%, var(--color-c7));
   color: var(--color-c1);
 }
 
@@ -125,7 +125,7 @@
   flex: 0 0 auto;
   border: 1px solid color-mix(in srgb, var(--color-c3) 30%, var(--color-c8));
   border-radius: var(--radius-lg);
-  background: color-mix(in srgb, var(--color-c4) 42%, #ffffff);
+  background: color-mix(in srgb, var(--surface-active) 42%, var(--surface-card));
   color: var(--color-c3);
 }
 

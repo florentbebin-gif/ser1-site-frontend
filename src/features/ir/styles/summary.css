@@ -34,7 +34,7 @@
 }
 
 .ir-tmi-segment.is-active {
-  background: var(--color-c4);
+  background: var(--surface-active);
   color: var(--color-c1);
   font-weight: 600;
 }

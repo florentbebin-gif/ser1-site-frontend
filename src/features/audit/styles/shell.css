@@ -73,7 +73,7 @@
   padding: 8px 14px;
   border: 1px solid var(--color-c8);
   border-radius: 8px;
-  background: #ffffff;
+  background: var(--surface-card);
   cursor: pointer;
   font-size: 14px;
   white-space: nowrap;
@@ -82,17 +82,17 @@
 }
 
 .audit-step-pill:hover {
-  border-color: var(--color-c5);
+  border-color: var(--data-secondary);
 }
 
 .audit-step-pill.active {
   background: var(--color-c1);
   border-color: var(--color-c1);
-  color: #ffffff;
+  color: var(--text-on-action);
 }
 
 .audit-step-pill.completed {
-  background: var(--color-c4);
+  background: var(--surface-active);
   border-color: var(--color-c3);
 }
 
@@ -109,12 +109,12 @@
 }
 
 .audit-step-pill.active .audit-step-num {
-  background: rgb(255 255 255 / 20%);
+  background: color-mix(in srgb, var(--text-on-action) 20%, transparent);
 }
 
 .audit-step-pill.completed .audit-step-num {
   background: var(--color-c2);
-  color: #ffffff;
+  color: var(--text-on-action);
 }
 
 .audit-step-label {

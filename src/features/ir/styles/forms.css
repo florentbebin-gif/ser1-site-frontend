@@ -85,7 +85,7 @@
 }
 
 .ir-table-input--readonly input[type='text'] {
-  background: #ffffff;
+  background: var(--surface-card);
 }
 
 /* SÃ©parateur estompÃ© dans les cartes de synthÃ¨se (GOUVERNANCE.md Â§4) */

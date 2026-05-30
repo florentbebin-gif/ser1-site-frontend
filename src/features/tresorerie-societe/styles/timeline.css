@@ -15,7 +15,7 @@
 .ts-timeline-empty {
   border: 1px dashed var(--color-c8);
   border-radius: 8px;
-  background: color-mix(in srgb, var(--color-c7) 76%, #fff);
+  background: color-mix(in srgb, var(--color-c7) 76%, var(--surface-card));
   padding: 18px;
   display: grid;
   gap: 8px;
@@ -60,10 +60,10 @@
 .ts-timeline-track {
   border: 1px solid var(--color-c8);
   border-radius: 8px;
-  background: #fff;
+  background: var(--surface-card);
   padding: 12px 16px;
   min-width: max-content;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+  box-shadow: 0 1px 2px color-mix(in srgb, var(--shadow-color) 4%, transparent);
 }
 
 .ts-timeline-track--compact {
@@ -100,7 +100,7 @@
 }
 
 .ts-timeline-track__pattern-line {
-  stroke: color-mix(in srgb, var(--color-c8) 72%, #fff);
+  stroke: color-mix(in srgb, var(--color-c8) 72%, var(--surface-card));
   stroke-width: 1;
 }
 
@@ -116,11 +116,11 @@
 
 .ts-timeline-track__palier:hover .ts-timeline-track__palier-bg {
   stroke: var(--color-c3);
-  filter: drop-shadow(0 2px 5px rgba(0, 0, 0, 0.1));
+  filter: drop-shadow(0 2px 5px color-mix(in srgb, var(--shadow-color) 10%, transparent));
 }
 
 .ts-timeline-track__palier-bg {
-  fill: #fff;
+  fill: var(--surface-card);
   stroke: var(--color-c8);
   stroke-width: 1;
   transition:
@@ -141,33 +141,33 @@
 }
 
 .ts-timeline-track__subphase--remuneration {
-  fill: color-mix(in srgb, var(--color-c3) 22%, #fff);
+  fill: color-mix(in srgb, var(--color-c3) 22%, var(--surface-card));
   stroke: var(--color-c3);
 }
 
 .ts-timeline-track__subphase--distribution {
-  fill: color-mix(in srgb, var(--color-c4) 22%, #fff);
-  stroke: var(--color-c4);
+  fill: color-mix(in srgb, var(--surface-active) 22%, var(--surface-card));
+  stroke: var(--surface-active);
 }
 
 .ts-timeline-track__subphase--cca_contribution {
-  fill: color-mix(in srgb, var(--color-c5) 22%, #fff);
-  stroke: var(--color-c5);
+  fill: color-mix(in srgb, var(--data-secondary) 22%, var(--surface-card));
+  stroke: var(--data-secondary);
 }
 
 .ts-timeline-track__subphase--cca_repayment {
-  fill: color-mix(in srgb, var(--color-c6) 22%, #fff);
-  stroke: var(--color-c6);
+  fill: color-mix(in srgb, var(--accent-signature) 22%, var(--surface-card));
+  stroke: var(--accent-signature);
 }
 
 .ts-timeline-track__subphase.is-disabled {
-  fill: #fff;
-  stroke: color-mix(in srgb, var(--color-c8) 82%, #fff);
+  fill: var(--surface-card);
+  stroke: color-mix(in srgb, var(--color-c8) 82%, var(--surface-card));
   stroke-dasharray: 4 3;
 }
 
 .ts-timeline-track__subphase.has-none-mode {
-  fill: color-mix(in srgb, var(--color-c8) 32%, #fff);
+  fill: color-mix(in srgb, var(--color-c8) 32%, var(--surface-card));
   stroke: var(--color-c8);
 }
 
@@ -211,7 +211,7 @@
 .ts-timeline-list__item {
   border: 1px solid var(--color-c8);
   border-radius: 8px;
-  background: #fff;
+  background: var(--surface-card);
   color: var(--color-c10);
   padding: 10px 12px;
   display: flex;
@@ -260,7 +260,7 @@
   gap: 8px;
   color: var(--color-c10);
   font-size: 12px;
-  background: #fff;
+  background: var(--surface-card);
 }
 
 .ts-phase-source__choice--button {
@@ -274,7 +274,7 @@
 .ts-phase-source__choice--button:hover,
 .ts-phase-source__choice--button:focus-visible {
   border-color: var(--color-c3);
-  background: color-mix(in srgb, var(--color-c4) 20%, #fff);
+  background: color-mix(in srgb, var(--surface-active) 20%, var(--surface-card));
 }
 
 .ts-phase-source__choice--button small {
@@ -300,7 +300,7 @@
 .ts-phase-modal-nav button {
   border: 1px solid var(--color-c8);
   border-radius: 8px;
-  background: #fff;
+  background: var(--surface-card);
   color: var(--color-c9);
   cursor: pointer;
   padding: 10px;
@@ -313,7 +313,7 @@
 
 .ts-phase-modal-nav button.is-active {
   border-color: var(--color-c3);
-  background: color-mix(in srgb, var(--color-c4) 20%, #fff);
+  background: color-mix(in srgb, var(--surface-active) 20%, var(--surface-card));
   color: var(--color-c1);
   font-weight: 600;
 }
@@ -327,7 +327,7 @@
 .ts-phase-net {
   border: 1px solid var(--color-c8);
   border-radius: 8px;
-  background: color-mix(in srgb, var(--color-c7) 70%, #fff);
+  background: color-mix(in srgb, var(--color-c7) 70%, var(--surface-card));
   padding: 10px;
   display: grid;
   gap: 4px;

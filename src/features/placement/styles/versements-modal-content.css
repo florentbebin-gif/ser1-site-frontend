@@ -4,7 +4,7 @@
   border: none;
   border-bottom: 1px solid transparent;
   border-radius: 4px;
-  background: var(--sim-input-bg, color-mix(in srgb, var(--color-c8) 18%, #ffffff));
+  background: var(--sim-input-bg, color-mix(in srgb, var(--color-c8) 18%, var(--surface-card)));
   color: var(--color-c10);
   font-family: inherit;
   font-size: 13px;
@@ -94,7 +94,7 @@
 
 .vcm__ponctuels {
   overflow: hidden;
-  --sim-input-bg: #ffffff;
+  --sim-input-bg: var(--surface-card);
 }
 
 .vcm__ponctuel-headers,
@@ -112,7 +112,7 @@
 
 .vcm__ponctuel-headers {
   padding: 10px 14px;
-  background: color-mix(in srgb, var(--color-c7) 78%, #ffffff);
+  background: color-mix(in srgb, var(--color-c7) 78%, var(--surface-card));
   color: var(--color-c9);
   font-size: 12px;
   font-weight: 500;

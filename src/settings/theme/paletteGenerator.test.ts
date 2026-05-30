@@ -1,5 +1,3 @@
-/* eslint-disable ser1-colors/no-hardcoded-colors */
-
 import { describe, expect, it, vi } from 'vitest';
 import { DEFAULT_COLORS } from '../theme';
 import { recalculatePaletteFromC1 } from './paletteGenerator';

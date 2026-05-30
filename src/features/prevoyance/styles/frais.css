@@ -28,7 +28,7 @@
   position: absolute;
   inset: 8px;
   border-radius: 50%;
-  background: var(--color-surface, #ffffff);
+  background: var(--color-surface, var(--surface-card));
 }
 
 .prevoyance-mini-donut span {
@@ -42,7 +42,7 @@
 
 .prevoyance-frais-modal {
   width: min(900px, calc(100vw - 32px));
-  --sim-input-bg: #ffffff;
+  --sim-input-bg: var(--surface-card);
 }
 
 .prevoyance-frais-modal__intro {
@@ -50,7 +50,7 @@
   gap: 4px;
   border: 1px solid var(--color-c8);
   border-radius: 8px;
-  background: color-mix(in srgb, var(--color-c7) 72%, var(--color-c4));
+  background: color-mix(in srgb, var(--color-c7) 72%, var(--surface-active));
   color: var(--color-c9);
   font-size: 12px;
   padding: 10px 12px;
@@ -82,7 +82,7 @@
   gap: 6px;
   border: 1px solid var(--color-c8);
   border-radius: 8px;
-  background: color-mix(in srgb, var(--color-c7) 48%, #ffffff);
+  background: color-mix(in srgb, var(--color-c7) 48%, var(--surface-card));
   padding: 10px;
 }
 

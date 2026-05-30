@@ -13,7 +13,7 @@
 .sim-card__header--bleed {
   background: linear-gradient(
     to bottom,
-    color-mix(in srgb, var(--color-c4) 18%, transparent) 0%,
+    color-mix(in srgb, var(--surface-active) 18%, transparent) 0%,
     transparent 65%
   );
   border-radius: 10px 10px 0 0;
@@ -35,7 +35,7 @@
   justify-content: center;
   flex-shrink: 0;
   border-radius: 7px;
-  background: var(--color-c4);
+  background: var(--surface-active);
   color: var(--color-c2);
 }
 
@@ -82,7 +82,7 @@
   border-left: 3px solid var(--color-c3);
   background-image: linear-gradient(
     to bottom,
-    color-mix(in srgb, var(--color-c4) 18%, transparent),
+    color-mix(in srgb, var(--surface-active) 18%, transparent),
     transparent 20%
   );
   background-repeat: no-repeat;

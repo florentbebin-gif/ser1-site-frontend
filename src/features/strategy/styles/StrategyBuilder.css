@@ -131,7 +131,7 @@
 }
 
 .tag {
-  background: var(--color-c4);
+  background: var(--surface-active);
   color: var(--color-c1);
   padding: 4px 10px;
   border-radius: 12px;
@@ -160,7 +160,7 @@
 }
 
 .produit-card {
-  background: color-mix(in srgb, var(--color-c7) 88%, #ffffff);
+  background: color-mix(in srgb, var(--color-c7) 88%, var(--surface-card));
   border: 1px solid var(--color-c8);
 }
 
@@ -193,7 +193,7 @@
 }
 
 .btn-remove:hover {
-  background: color-mix(in srgb, var(--color-c1) 8%, #ffffff);
+  background: color-mix(in srgb, var(--color-c1) 8%, var(--surface-card));
   color: var(--color-c1);
 }
 
@@ -233,7 +233,7 @@
 
 .scenario-card.scenario-strategy {
   border-color: var(--color-c3);
-  background: color-mix(in srgb, var(--color-c3) 16%, #ffffff);
+  background: color-mix(in srgb, var(--color-c3) 16%, var(--surface-card));
 }
 
 .scenario-card h3 {
@@ -266,7 +266,7 @@
 }
 
 .ecarts-summary {
-  background: color-mix(in srgb, var(--color-c4) 60%, #ffffff);
+  background: color-mix(in srgb, var(--surface-active) 60%, var(--surface-card));
   border: 1px solid var(--color-c8);
 }
 
@@ -293,7 +293,7 @@
 }
 
 .ecart-item .negative {
-  color: var(--color-c5);
+  color: var(--data-secondary);
 }
 
 /* Modal produits */
@@ -320,7 +320,7 @@
 
 .produit-option {
   padding: 16px;
-  background: color-mix(in srgb, var(--color-c7) 88%, #ffffff);
+  background: color-mix(in srgb, var(--color-c7) 88%, var(--surface-card));
   border: 1px solid var(--color-c8);
   border-radius: 10px;
   cursor: pointer;
@@ -330,7 +330,7 @@
 
 .produit-option:hover {
   border-color: var(--color-c2);
-  background: color-mix(in srgb, var(--color-c4) 55%, #ffffff);
+  background: color-mix(in srgb, var(--surface-active) 55%, var(--surface-card));
 }
 
 @media (max-width: 767px) {

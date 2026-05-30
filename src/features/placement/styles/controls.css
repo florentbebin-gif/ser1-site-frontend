@@ -60,11 +60,11 @@
 
 .pl-toggle__switch:focus-visible {
   outline: none;
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-c4) 65%, #ffffff);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--surface-active) 65%, var(--surface-card));
 }
 
 .pl-toggle__switch.is-active {
-  background: var(--color-c4);
+  background: var(--surface-active);
 }
 
 .pl-toggle__knob {
@@ -74,8 +74,8 @@
   width: 18px;
   height: 18px;
   border-radius: 50%;
-  background: #ffffff;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  background: var(--surface-card);
+  box-shadow: 0 1px 3px color-mix(in srgb, var(--shadow-color) 20%, transparent);
   transition: transform 0.2s ease;
   pointer-events: none;
 }

@@ -42,7 +42,7 @@
   padding: 12px 16px;
   border: 1px solid var(--color-c8);
   border-radius: 10px;
-  background: #ffffff;
+  background: var(--surface-card);
   cursor: pointer;
   text-align: left;
   transition:
@@ -77,7 +77,7 @@
 
 .per-mode-card--selected {
   border-color: var(--color-c2);
-  background: color-mix(in srgb, var(--color-c4) 48%, #ffffff);
+  background: color-mix(in srgb, var(--surface-active) 48%, var(--surface-card));
 }
 
 .per-mode-card-marker-row {
@@ -170,7 +170,7 @@
   padding: 12px 14px;
   border: 1px solid var(--color-c8);
   border-radius: 10px;
-  background: #ffffff;
+  background: var(--surface-card);
   text-align: left;
   transition:
     border-color 0.2s,
@@ -194,7 +194,7 @@
 
 .per-mode-doc-card--selectable:has(.per-mode-doc-select:hover) {
   border-color: var(--color-c3);
-  background: #ffffff;
+  background: var(--surface-card);
   transform: translateY(-1px);
 }
 
@@ -202,14 +202,14 @@
 .per-mode-doc-card--locked:hover {
   cursor: default;
   border-color: var(--color-c8);
-  background: #ffffff;
+  background: var(--surface-card);
   box-shadow: none;
   transform: none;
 }
 
 .per-mode-doc-card.is-selected {
   border-color: var(--color-c2);
-  background: color-mix(in srgb, var(--color-c4) 45%, #ffffff);
+  background: color-mix(in srgb, var(--surface-active) 45%, var(--surface-card));
 }
 
 .per-mode-doc-title-row {
@@ -353,7 +353,7 @@
   justify-content: center;
   font-size: 18px;
   font-weight: 600;
-  color: var(--color-c5);
+  color: var(--data-secondary);
 }
 
 .per-avis-matrix-operator--total {
@@ -413,7 +413,7 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  background: var(--color-c4);
+  background: var(--surface-active);
   border-radius: 6px;
   color: var(--color-c2);
   flex-shrink: 0;
@@ -493,7 +493,7 @@
   padding: 0.6rem 0.75rem;
   border: 1px solid var(--color-c8);
   border-radius: 6px;
-  background: #ffffff;
+  background: var(--surface-card);
   font-size: 0.9rem;
   color: var(--color-c10);
 }
@@ -596,7 +596,7 @@
 }
 
 .per-income-filter-btn.is-active {
-  background: color-mix(in srgb, var(--color-c3) 22%, #ffffff);
+  background: color-mix(in srgb, var(--color-c3) 22%, var(--surface-card));
   border-color: color-mix(in srgb, var(--color-c3) 55%, var(--color-c8));
   color: var(--color-c1);
 }
@@ -708,7 +708,7 @@
 
 .per-table-input__control--readonly,
 .per-income-table-input--readonly {
-  background: #ffffff;
+  background: var(--surface-card);
 }
 
 .per-income-real-cell {

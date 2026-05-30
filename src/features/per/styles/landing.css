@@ -46,11 +46,11 @@
   padding: 24px 28px;
   border: 1px solid var(--color-c8);
   border-radius: 12px;
-  background: #ffffff;
+  background: var(--surface-card);
   color: var(--color-c1);
   text-align: left;
   cursor: pointer;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 4px 20px color-mix(in srgb, var(--shadow-color) 6%, transparent);
   transition:
     box-shadow 0.2s,
     border-color 0.2s,
@@ -59,7 +59,7 @@
 
 .per-home-focus-card:hover {
   border-color: var(--color-c3);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 8px 32px color-mix(in srgb, var(--shadow-color) 10%, transparent);
   transform: translateY(-2px);
 }
 
@@ -89,7 +89,7 @@
   align-items: center;
   padding: 4px 10px;
   border-radius: 999px;
-  background: var(--color-c4);
+  background: var(--surface-active);
   color: var(--color-c1);
   font-size: 11px;
   font-weight: 600;
@@ -147,11 +147,11 @@
   width: fit-content;
   max-width: 100%;
   margin: 0 auto;
-  background: #ffffff;
+  background: var(--surface-card);
   border: 1px solid var(--color-c8);
   border-radius: 12px;
   padding: 16px;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
+  box-shadow: 0 2px 12px color-mix(in srgb, var(--shadow-color) 4%, transparent);
 }
 
 .per-home-secondary-grid {
@@ -171,7 +171,7 @@
   color: var(--color-c1);
   text-align: left;
   cursor: pointer;
-  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.03);
+  box-shadow: 0 1px 6px color-mix(in srgb, var(--shadow-color) 3%, transparent);
   transition:
     border-color 0.2s,
     box-shadow 0.2s,
@@ -180,7 +180,7 @@
 
 .per-home-tile:hover {
   border-color: var(--color-c3);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 4px 16px color-mix(in srgb, var(--shadow-color) 8%, transparent);
   transform: translateY(-1px);
 }
 
@@ -198,9 +198,9 @@
   align-items: center;
   justify-content: center;
   border-radius: 8px;
-  background: #ffffff;
+  background: var(--surface-card);
   color: var(--color-c2);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 1px 3px color-mix(in srgb, var(--shadow-color) 6%, transparent);
 }
 
 .per-home-tile-icon > svg {

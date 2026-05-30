@@ -1,8 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { formatContrastRatio, getContrastRating, getContrastRatio } from './designSystemContrast';
 
-/* eslint-disable ser1-colors/no-hardcoded-colors -- Test WCAG avec noir, blanc et gris de référence. */
-
 describe('designSystemContrast', () => {
   it('calcule le ratio WCAG entre deux couleurs hex', () => {
     expect(getContrastRatio('#000000', '#FFFFFF')).toBe(21);

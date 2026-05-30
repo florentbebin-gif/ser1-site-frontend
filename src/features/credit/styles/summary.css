@@ -65,7 +65,7 @@
 }
 
 .cv-donut__interest {
-  stroke: var(--color-c6);
+  stroke: var(--accent-signature);
 }
 
 /* KPI zone â€” montant Ã  gauche, donut Ã  droite */

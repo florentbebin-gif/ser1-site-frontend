@@ -40,10 +40,10 @@
   white-space: nowrap;
 }
 .dmtg-badge--communautaire {
-  background-color: var(--color-c4);
+  background-color: var(--surface-active);
 }
 .dmtg-badge--separatiste {
-  background-color: var(--color-c6);
+  background-color: var(--accent-signature);
 }
 
 /* Espacement des blocs income-tax-block */

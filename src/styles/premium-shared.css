@@ -47,26 +47,26 @@
    CARDS PREMIUM
    ---------------------------------------- */
 .premium-card {
-  background: #ffffff;
+  background: var(--surface-card);
   border: 1px solid var(--color-c8);
   border-radius: 12px;
   padding: 20px 24px;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
+  box-shadow: 0 2px 12px color-mix(in srgb, var(--shadow-color) 4%, transparent);
   transition:
     box-shadow 0.2s,
     border-color 0.2s;
 }
 
 .premium-card:hover {
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 4px 20px color-mix(in srgb, var(--shadow-color) 6%, transparent);
 }
 
 .premium-card-compact {
-  background: #ffffff;
+  background: var(--surface-card);
   border: 1px solid var(--color-c8);
   border-radius: 10px;
   padding: 16px 20px;
-  box-shadow: 0 1px 8px rgba(0, 0, 0, 0.03);
+  box-shadow: 0 1px 8px color-mix(in srgb, var(--shadow-color) 3%, transparent);
 }
 
 /* ----------------------------------------
@@ -78,7 +78,7 @@
   font-size: 13px;
   background: var(--color-c7);
   /* Interactive controls embedded in tinted tables must stay white. */
-  --sim-input-bg: #ffffff;
+  --sim-input-bg: var(--surface-card);
 }
 
 .premium-table thead {
@@ -150,12 +150,12 @@
   color: var(--color-c1);
   cursor: pointer;
   transition: all 0.2s;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+  box-shadow: 0 1px 4px color-mix(in srgb, var(--shadow-color) 4%, transparent);
 }
 
 .premium-btn:hover:not(:disabled) {
   border-color: var(--color-c2);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 2px 8px color-mix(in srgb, var(--shadow-color) 8%, transparent);
   transform: translateY(-1px);
 }
 
@@ -167,7 +167,7 @@
 .premium-btn-primary {
   background: var(--color-c2);
   border-color: var(--color-c2);
-  color: #ffffff;
+  color: var(--text-on-action);
 }
 
 .premium-btn-primary:hover:not(:disabled) {
@@ -184,7 +184,7 @@
   border-radius: 6px;
   font-size: 13px;
   color: var(--color-c10);
-  background: var(--color-surface, #ffffff);
+  background: var(--color-surface, var(--surface-card));
   transition:
     border-color 0.2s,
     box-shadow 0.2s;
@@ -193,7 +193,7 @@
 .premium-input:focus-visible {
   outline: none;
   border-color: var(--color-c2);
-  box-shadow: 0 0 0 3px var(--color-c4);
+  box-shadow: 0 0 0 3px var(--surface-active);
 }
 
 .premium-select {
@@ -202,7 +202,7 @@
   border-radius: 6px;
   font-size: 13px;
   color: var(--color-c10);
-  background: var(--color-surface, #ffffff);
+  background: var(--color-surface, var(--surface-card));
   cursor: pointer;
   transition: border-color 0.2s;
 }

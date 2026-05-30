@@ -4,16 +4,20 @@
   place-items: center;
   padding: 32px 16px;
   background:
-    radial-gradient(1200px 400px at 50% -10%, rgba(255, 255, 255, 0.85), rgba(255, 255, 255, 0)),
-    linear-gradient(160deg, var(--color-c7), #ffffff 55%, var(--color-c7));
+    radial-gradient(
+      1200px 400px at 50% -10%,
+      color-mix(in srgb, var(--surface-card) 85%, transparent),
+      color-mix(in srgb, var(--surface-card) 0%, transparent)
+    ),
+    linear-gradient(160deg, var(--color-c7), var(--surface-card) 55%, var(--color-c7));
 }
 
 .upcoming-card {
   width: min(640px, 100%);
-  background: #ffffff;
+  background: var(--surface-card);
   border: 1px solid var(--color-c8);
   border-radius: 14px;
-  box-shadow: 0 12px 34px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 12px 34px color-mix(in srgb, var(--shadow-color) 8%, transparent);
   padding: 34px 30px;
   text-align: center;
 }
@@ -59,10 +63,10 @@
 }
 
 .upcoming-btn--primary {
-  color: #ffffff;
+  color: var(--text-on-action);
   background: var(--color-c1);
   border: 1px solid var(--color-c1);
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
+  box-shadow: 0 6px 18px color-mix(in srgb, var(--shadow-color) 12%, transparent);
 }
 
 .upcoming-btn--primary:hover {

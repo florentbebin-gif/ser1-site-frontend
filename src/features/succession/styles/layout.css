@@ -191,7 +191,10 @@
   border: none;
   border-bottom: 1px solid transparent;
   border-radius: 4px;
-  background-color: var(--sim-input-bg, color-mix(in srgb, var(--color-c8) 18%, #ffffff));
+  background-color: var(
+    --sim-input-bg,
+    color-mix(in srgb, var(--color-c8) 18%, var(--surface-card))
+  );
   color: var(--color-c10);
   font-size: 13px;
   text-align: left;
@@ -316,7 +319,7 @@
 }
 
 .sc-member-add-icon-btn:hover {
-  background: var(--color-c4);
+  background: var(--surface-active);
   border-color: var(--color-c2);
   color: var(--color-c1);
 }
@@ -356,7 +359,10 @@
   border: none;
   border-bottom: 1px solid transparent;
   border-radius: 4px;
-  background-color: var(--sim-input-bg, color-mix(in srgb, var(--color-c8) 18%, #ffffff));
+  background-color: var(
+    --sim-input-bg,
+    color-mix(in srgb, var(--color-c8) 18%, var(--surface-card))
+  );
   font-size: 13px;
   color: var(--color-c10);
   overflow: hidden;

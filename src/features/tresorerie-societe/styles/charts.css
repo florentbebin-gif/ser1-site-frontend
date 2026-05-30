@@ -42,11 +42,11 @@
 }
 
 .ts-associate-donut__segment--cca {
-  stroke: var(--color-c5);
+  stroke: var(--data-secondary);
 }
 
 .ts-associate-donut__segment--dividendes {
-  stroke: var(--color-c6);
+  stroke: var(--accent-signature);
 }
 
 .ts-associate-hero__text {
@@ -82,11 +82,11 @@
 }
 
 .ts-associate-coverage.is-total {
-  background: color-mix(in srgb, var(--color-c5) 26%, #fff);
+  background: color-mix(in srgb, var(--data-secondary) 26%, var(--surface-card));
 }
 
 .ts-associate-coverage.is-partial {
-  background: color-mix(in srgb, var(--color-c6) 14%, #fff);
+  background: color-mix(in srgb, var(--accent-signature) 14%, var(--surface-card));
   color: var(--color-c1);
 }
 
@@ -122,11 +122,11 @@
 }
 
 .ts-associate-legend__dot--cca {
-  background: var(--color-c5);
+  background: var(--data-secondary);
 }
 
 .ts-associate-legend__dot--dividendes {
-  background: var(--color-c6);
+  background: var(--accent-signature);
 }
 
 .ts-associate-kpis {
