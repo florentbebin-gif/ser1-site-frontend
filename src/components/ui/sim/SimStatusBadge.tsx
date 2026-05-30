@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 
-export type SimStatusBadgeVariant = 'optimal' | 'attention' | 'info';
+export type SimStatusBadgeVariant = 'optimal' | 'attention' | 'critique' | 'info';
 
 export interface SimStatusBadgeProps {
   variant: SimStatusBadgeVariant;

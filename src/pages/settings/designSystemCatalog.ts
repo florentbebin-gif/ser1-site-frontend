@@ -113,6 +113,7 @@ export const snippets = {
 <SimDisclosureButton expanded={open} onToggle={toggleOpen} controls="detail" />`,
   data: `<SimMetric variant="hero" label="Impôt estimé" value="12 400" unit="€" />
 <SimStatusBadge variant="attention">À revoir</SimStatusBadge>
+<SimStatusBadge variant="critique">Critique</SimStatusBadge>
 <SimCollapsibleTable title="Projection" rows={rows} columns={columns} />`,
   modal: `<SimModalShell title="Versement" mobileVariant="bottom-sheet" footer={footer}>
   <SimModalSectionNav sections={sections} activeId={activeId} onChange={setActiveId} />

@@ -87,17 +87,17 @@
 }
 
 .sim-status-badge {
-  --sim-status-color: var(--color-c9);
+  --sim-status-color: var(--state-info);
 
   display: inline-flex;
   align-items: center;
   gap: var(--space-1);
   width: fit-content;
   min-width: 0;
-  border: 1px solid color-mix(in srgb, var(--sim-status-color) 48%, var(--color-c8));
+  border: 1px solid color-mix(in srgb, var(--sim-status-color) 48%, var(--border-default));
   border-radius: var(--radius-full);
   background: color-mix(in srgb, var(--sim-status-color) 14%, var(--surface-card));
-  color: var(--color-c1);
+  color: var(--text-primary);
   font-size: var(--font-size-xs);
   font-weight: var(--font-weight-semibold);
   letter-spacing: 0;
@@ -106,15 +106,19 @@
 }
 
 .sim-status-badge--optimal {
-  --sim-status-color: var(--color-c3);
+  --sim-status-color: var(--state-success);
 }
 
 .sim-status-badge--attention {
-  --sim-status-color: var(--accent-signature);
+  --sim-status-color: var(--state-warning);
+}
+
+.sim-status-badge--critique {
+  --sim-status-color: var(--state-danger);
 }
 
 .sim-status-badge--info {
-  --sim-status-color: var(--color-c9);
+  --sim-status-color: var(--state-info);
 }
 
 .sim-status-badge__dot {

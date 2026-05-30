@@ -41,6 +41,7 @@ export function DesignSystemDataPreview() {
           <div className="settings-design-system__action-row">
             <SimStatusBadge variant="optimal">Optimal</SimStatusBadge>
             <SimStatusBadge variant="attention">À revoir</SimStatusBadge>
+            <SimStatusBadge variant="critique">Critique</SimStatusBadge>
             <SimStatusBadge variant="info">Info</SimStatusBadge>
           </div>
           <div className="settings-design-system__action-row">

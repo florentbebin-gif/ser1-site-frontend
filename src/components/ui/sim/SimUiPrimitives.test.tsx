@@ -459,17 +459,20 @@ describe('SimStatusBadge', () => {
     expect(html).toContain('Optimal');
   });
 
-  it('rend les variantes attention et info', () => {
+  it('rend les variantes attention, critique et info', () => {
     const html = renderToStaticMarkup(
       <>
         <SimStatusBadge variant="attention">À revoir</SimStatusBadge>
+        <SimStatusBadge variant="critique">Critique</SimStatusBadge>
         <SimStatusBadge variant="info">Info</SimStatusBadge>
       </>,
     );
 
     expect(html).toContain('sim-status-badge--attention');
+    expect(html).toContain('sim-status-badge--critique');
     expect(html).toContain('sim-status-badge--info');
     expect(html).toContain('À revoir');
+    expect(html).toContain('Critique');
   });
 });
 
