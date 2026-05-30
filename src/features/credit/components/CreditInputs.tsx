@@ -193,7 +193,7 @@ export function Select<TValue extends string>({
         onChange={(nextValue) => onChange(nextValue as TValue)}
         options={options}
         disabled={disabled}
-        testId={testId}
+        testId={testId ? `${testId}-trigger` : undefined}
         className={error ? 'cv-select cv-select--error' : 'cv-select'}
         ariaLabel={label}
       />
