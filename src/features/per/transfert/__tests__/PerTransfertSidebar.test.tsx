@@ -208,7 +208,7 @@ function getControlledRegion(button: HTMLElement) {
 afterEach(() => {
   cleanup();
   vi.restoreAllMocks();
-  delete (window as Window & { matchMedia?: Window['matchMedia'] }).matchMedia;
+  Reflect.deleteProperty(window, 'matchMedia');
 });
 
 describe('PerTransfertSidebar', () => {
