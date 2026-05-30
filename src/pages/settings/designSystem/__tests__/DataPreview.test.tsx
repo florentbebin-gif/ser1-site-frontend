@@ -25,6 +25,7 @@ describe('DesignSystemDataPreview', () => {
     expect(screen.getByText('Statuts')).toBeInTheDocument();
     expect(screen.getByText('Optimal')).toBeInTheDocument();
     expect(screen.getByText('À revoir')).toBeInTheDocument();
+    expect(screen.getByText('Critique')).toBeInTheDocument();
     expect(screen.getByText('Info')).toBeInTheDocument();
     expect(
       screen.getByRole('button', { name: 'Masquer Projection repliable (3 lignes)' }),

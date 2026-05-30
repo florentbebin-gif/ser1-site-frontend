@@ -75,6 +75,7 @@ function SimUiPrimitivesPreview() {
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--space-2)' }}>
           <SimStatusBadge variant="optimal">Optimal</SimStatusBadge>
           <SimStatusBadge variant="attention">À revoir</SimStatusBadge>
+          <SimStatusBadge variant="critique">Critique</SimStatusBadge>
           <SimStatusBadge variant="info">Info</SimStatusBadge>
         </div>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--space-3)' }}>
