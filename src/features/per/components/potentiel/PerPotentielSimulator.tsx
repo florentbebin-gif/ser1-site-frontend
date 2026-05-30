@@ -4,8 +4,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { IconFileText } from '@/icons/ui';
-import { SimAuditTrail, SimEmptyState } from '@/components/ui/sim';
-import type { PerHistoricalBasis } from '@/engine/per';
+import { SimEmptyState, SimPageShell } from '@/components/ui/sim';
 import { ExportMenu } from '@/components/ExportMenu';
 import { ModeToggle } from '@/components/ModeToggle';
 import { useFiscalContext } from '@/hooks/useFiscalContext';
@@ -15,7 +14,7 @@ import { useTheme } from '@/settings/ThemeProvider';
 import '@/styles/sim/index.css';
 import { onResetEvent } from '@/utils/reset';
 import { derivePerPotentielFiscalSettings } from '../../fiscal/perPotentielFiscalAdapter';
-import { usePerPotentiel, type WizardStep } from '../../hooks/usePerPotentiel';
+import { usePerPotentiel } from '../../hooks/usePerPotentiel';
 import { usePerPotentielExportHandlers } from '../../hooks/usePerPotentielExportHandlers';
 import { hasAvisIrDeclarant, sumAvisIrPlafonds } from '../../utils/perAvisIrPlafonds';
 import { getPerWorkflowYears } from '../../utils/perWorkflowYears';
@@ -26,61 +25,15 @@ import SituationFiscaleStep from './steps/SituationFiscaleStep';
 import type { PerIncomeFilters } from './steps/PerIncomeTable';
 import { PerHypotheses } from './PerHypotheses';
 import { PerPotentielContextSidebar } from './PerPotentielContextSidebar';
+import { PerPotentielWorkflowTabs } from './PerPotentielWorkflowTabs';
 import { usePerPotentielPageUXContract } from './hooks/usePerPotentielPageUXContract';
+import { getPerPotentielStepMeta } from './perPotentielStepMeta';
 import '../../styles/index.css';
-
-type StepMeta = {
-  shortLabel: string;
-  title: string;
-};
 
 const DEFAULT_INCOME_FILTERS: PerIncomeFilters = {
   pension: false,
   foncier: false,
 };
-
-function getStepMeta(
-  stepId: WizardStep,
-  mode: 'versement-n' | 'declaration-n1' | null,
-  basis: PerHistoricalBasis | null,
-  years: ReturnType<typeof getPerWorkflowYears>,
-): StepMeta {
-  switch (stepId) {
-    case 1:
-      return { shortLabel: 'Mode', title: 'Choix du parcours' };
-    case 2:
-      return {
-        shortLabel: 'Avis IR',
-        title: `Lecture de l'avis IR ${
-          mode === 'declaration-n1' || basis === 'previous-avis-plus-n1'
-            ? years.previousTaxYear
-            : years.currentTaxYear
-        }`,
-      };
-    case 3:
-      if (mode === 'declaration-n1') {
-        return {
-          shortLabel: `Revenus ${years.currentIncomeYear}`,
-          title: `Revenus ${years.currentIncomeYear} et versements à déclarer`,
-        };
-      }
-      if (basis === 'current-avis') {
-        return {
-          shortLabel: 'Versement N',
-          title: `Versements ${years.currentTaxYear}`,
-        };
-      }
-      return {
-        shortLabel: `Revenus ${years.currentIncomeYear}`,
-        title: `Reconstitution des revenus ${years.currentIncomeYear}`,
-      };
-    case 4:
-      return {
-        shortLabel: 'Versement N',
-        title: `Versements ${years.currentTaxYear}`,
-      };
-  }
-}
 
 export default function PerPotentielSimulator(): React.ReactElement {
   const { fiscalContext, loading, error } = useFiscalContext({ strict: true });
@@ -135,27 +88,7 @@ export default function PerPotentielSimulator(): React.ReactElement {
   });
   const synthesisReady = hasPerPotentielSynthesisReady(state, result);
   const pageUX = usePerPotentielPageUXContract({ synthesisReady });
-
-  if (loading) {
-    return (
-      <div className="sim-page per-potentiel-page">
-        <p className="per-potentiel-loading">Chargement des paramètres fiscaux...</p>
-        <SimAuditTrail />
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="sim-page per-potentiel-page">
-        <p className="per-potentiel-error">Erreur : {error}</p>
-        <SimAuditTrail />
-      </div>
-    );
-  }
-
-  const activeStep = getStepMeta(state.step, state.mode, state.historicalBasis, years);
-  const stepIndex = visibleSteps.indexOf(state.step);
+  const activeStep = getPerPotentielStepMeta(state.step, state.mode, state.historicalBasis, years);
   const exportOptions = [
     { label: 'Excel', onClick: exportExcel, disabled: !result },
     { label: 'PowerPoint', onClick: exportPowerPoint, disabled: !result },
@@ -227,48 +160,33 @@ export default function PerPotentielSimulator(): React.ReactElement {
   };
 
   return (
-    <div className="sim-page per-potentiel-page">
-      <div className="premium-header sim-header sim-header--stacked">
-        <h1 className="premium-title">PER — Potentiel</h1>
-        <div className="sim-header__subtitle-row">
-          <p className="premium-subtitle">
-            Mode, document fiscal, situation du foyer et restitution déclarative.
-          </p>
-          <div className="sim-header__actions">
-            <ModeToggle value={isExpert} onChange={toggleMode} />
-            <ExportMenu options={exportOptions} loading={exportLoading} />
-          </div>
-        </div>
-      </div>
-
-      <div className="per-potentiel-tabs" aria-label="Étapes du parcours" role="tablist">
-        {visibleSteps.map((stepId) => {
-          const meta = getStepMeta(stepId, state.mode, state.historicalBasis, years);
-          const isCurrent = state.step === stepId;
-          const isDone = stepIndex > visibleSteps.indexOf(stepId);
-          return (
-            <button
-              key={stepId}
-              type="button"
-              role="tab"
-              aria-selected={isCurrent}
-              className={[
-                'per-potentiel-tab',
-                isCurrent ? 'is-active' : '',
-                isDone ? 'is-done' : '',
-              ]
-                .filter(Boolean)
-                .join(' ')}
-              onClick={() => goToStep(stepId)}
-            >
-              {meta.shortLabel}
-            </button>
-          );
-        })}
-      </div>
-
-      <div className="sim-grid">
-        <main className="sim-grid__col">
+    <SimPageShell
+      title="PER — Potentiel"
+      subtitle="Mode, document fiscal, situation du foyer et restitution déclarative."
+      pageClassName="per-potentiel-page"
+      pageTestId="per-potentiel-page"
+      statusTestId="per-potentiel-status"
+      loading={loading}
+      error={error}
+      actions={
+        <>
+          <ModeToggle value={isExpert} onChange={toggleMode} />
+          <ExportMenu options={exportOptions} loading={exportLoading} />
+        </>
+      }
+      controls={
+        <PerPotentielWorkflowTabs
+          visibleSteps={visibleSteps}
+          currentStep={state.step}
+          mode={state.mode}
+          historicalBasis={state.historicalBasis}
+          years={years}
+          onStepSelect={goToStep}
+        />
+      }
+    >
+      <SimPageShell.Main>
+        <div id="per-potentiel-parcours" data-sim-step-id="per-potentiel-parcours">
           {state.step === 1 ? (
             <ModeStep
               mode={state.mode}
@@ -427,38 +345,38 @@ export default function PerPotentielSimulator(): React.ReactElement {
               </div>
             </div>
           )}
-        </main>
+        </div>
+      </SimPageShell.Main>
 
+      <SimPageShell.Side className="per-potentiel-context">
         {pageUX.synthesisReady ? (
-          <aside className="per-potentiel-context sim-grid__col sim-grid__col--sticky">
-            <PerPotentielContextSidebar
-              step={state.step}
-              isCouple={activeIsCouple}
-              showRevenusPreview={isRevenusStep}
-              showAdjustedPotentiel={isRevenusStep || isVersementNStep}
-              fiscalPreviewTitle={fiscalPreviewTitle}
-              projectionPreviewTitle={projectionPreviewTitle}
-              showProjectedPlafondCalcule={showProjectedPlafondCalcule}
-              parcoursPills={parcoursPills}
-              totalAvisIrD1={totalAvisIrD1}
-              totalAvisIrD2={totalAvisIrD2}
-              result={result}
-            />
-          </aside>
+          <PerPotentielContextSidebar
+            anchorId={pageUX.synthesisTargetId ?? 'per-potentiel-synthese'}
+            step={state.step}
+            isCouple={activeIsCouple}
+            showRevenusPreview={isRevenusStep}
+            showAdjustedPotentiel={isRevenusStep || isVersementNStep}
+            fiscalPreviewTitle={fiscalPreviewTitle}
+            projectionPreviewTitle={projectionPreviewTitle}
+            showProjectedPlafondCalcule={showProjectedPlafondCalcule}
+            parcoursPills={parcoursPills}
+            totalAvisIrD1={totalAvisIrD1}
+            totalAvisIrD2={totalAvisIrD2}
+            result={result}
+          />
         ) : (
-          <aside className="per-potentiel-context sim-grid__col sim-grid__col--sticky">
-            <SimEmptyState
-              variant="sidebar"
-              illustration={pageUX.emptyState?.illustration ?? 'docs'}
-              title={pageUX.emptyState?.title ?? 'Synthèse en attente'}
-              description={pageUX.emptyState?.description}
-            />
-          </aside>
+          <SimEmptyState
+            variant="sidebar"
+            illustration={pageUX.emptyState?.illustration ?? 'docs'}
+            title={pageUX.emptyState?.title ?? 'Synthèse en attente'}
+            description={pageUX.emptyState?.description}
+          />
         )}
-      </div>
+      </SimPageShell.Side>
 
-      <PerHypotheses />
-      <SimAuditTrail />
-    </div>
+      <SimPageShell.Section>
+        <PerHypotheses />
+      </SimPageShell.Section>
+    </SimPageShell>
   );
 }

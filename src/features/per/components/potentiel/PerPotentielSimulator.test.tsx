@@ -5,6 +5,10 @@ const mockUsePerPotentiel = vi.hoisted(() => vi.fn());
 const mockUserModeState = vi.hoisted(() => ({
   mode: 'expert' as 'expert' | 'simplifie',
 }));
+const mockFiscalContextState = vi.hoisted(() => ({
+  loading: false,
+  error: null as string | null,
+}));
 
 vi.mock('@/hooks/useFiscalContext', () => ({
   useFiscalContext: () => ({
@@ -15,8 +19,8 @@ vi.mock('@/hooks/useFiscalContext', () => ({
       _raw_tax: {},
       _raw_ps: {},
     },
-    loading: false,
-    error: null,
+    loading: mockFiscalContextState.loading,
+    error: mockFiscalContextState.error,
   }),
 }));
 
@@ -100,15 +104,17 @@ vi.mock('./PerHypotheses', () => ({
 
 vi.mock('./PerPotentielContextSidebar', () => ({
   PerPotentielContextSidebar: ({
+    anchorId,
     totalAvisIrD1,
     totalAvisIrD2,
     showProjectedPlafondCalcule,
   }: {
+    anchorId?: string;
     totalAvisIrD1: number;
     totalAvisIrD2: number;
     showProjectedPlafondCalcule: boolean;
   }) => (
-    <div>
+    <div id={anchorId}>
       Sidebar contexte {totalAvisIrD1} / {totalAvisIrD2}{' '}
       {showProjectedPlafondCalcule ? 'plafond connu' : 'plafond à déterminer'}
     </div>
@@ -222,6 +228,50 @@ describe('PerPotentielSimulator', () => {
     mockUsePerPotentiel.mockReset();
     mockUsePerPotentiel.mockReturnValue(makeHookReturn(2));
     mockUserModeState.mode = 'expert';
+    mockFiscalContextState.loading = false;
+    mockFiscalContextState.error = null;
+  });
+
+  it('rend le chassis SimPageShell avec tabs en contrôles et sidebar sticky', () => {
+    const html = renderToStaticMarkup(<PerPotentielSimulator />);
+
+    expect(html).toContain('data-testid="per-potentiel-page"');
+    expect(html).toContain('class="sim-controls-row"');
+    expect(html).toContain('class="sim-grid"');
+    expect(html).toContain('class="sim-grid__col sim-grid__col--main"');
+    expect(html).toContain(
+      'class="sim-grid__col sim-grid__col--side sim-grid__col--sticky per-potentiel-context"',
+    );
+    expect(html).not.toContain('sim-header__nav');
+
+    const controlsIndex = html.indexOf('sim-controls-row');
+    const gridIndex = html.indexOf('class="sim-grid"');
+    const tabsIndex = html.indexOf('per-potentiel-tabs');
+    expect(tabsIndex).toBeGreaterThan(controlsIndex);
+    expect(tabsIndex).toBeLessThan(gridIndex);
+  });
+
+  it('route le chargement par SimPageShell sans conserver le chemin manuel', () => {
+    mockFiscalContextState.loading = true;
+
+    const html = renderToStaticMarkup(<PerPotentielSimulator />);
+
+    expect(html).toContain('data-testid="per-potentiel-status"');
+    expect(html).toContain('sim-state-card--loading');
+    expect(html).not.toContain('per-potentiel-loading');
+    expect(html).not.toContain('per-potentiel-tabs');
+  });
+
+  it('route les erreurs par SimPageShell sans conserver le chemin manuel', () => {
+    mockFiscalContextState.error = 'Paramètres fiscaux indisponibles';
+
+    const html = renderToStaticMarkup(<PerPotentielSimulator />);
+
+    expect(html).toContain('data-testid="per-potentiel-status"');
+    expect(html).toContain('sim-state-card--error');
+    expect(html).toContain('Paramètres fiscaux indisponibles');
+    expect(html).not.toContain('per-potentiel-error');
+    expect(html).not.toContain('per-potentiel-tabs');
   });
 
   it('passe les totaux déclarants à l’étape avis sans ouvrir la synthèse trop tôt', () => {
@@ -246,6 +296,7 @@ describe('PerPotentielSimulator', () => {
     const html = renderToStaticMarkup(<PerPotentielSimulator />);
 
     expect(html).toContain('Sidebar contexte 11000 / 7000');
+    expect(html).toContain('id="per-potentiel-synthese"');
   });
 
   it('hides the avis totals once the simulator reaches step 4', () => {

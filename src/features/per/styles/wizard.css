@@ -4,6 +4,10 @@
   padding-top: 24px;
 }
 
+.per-potentiel-page .sim-controls-row {
+  margin-bottom: 0;
+}
+
 .per-potentiel-header-copy {
   min-width: 0;
 }
@@ -476,20 +480,6 @@
   font-size: 12px;
   color: var(--color-c9);
   line-height: 1.55;
-}
-
-/* -- Hypothèses ------------------------------------------------------------ */
-
-.per-potentiel-loading {
-  color: var(--color-c9);
-  text-align: center;
-  padding: 3rem;
-}
-
-.per-potentiel-error {
-  color: var(--color-c1);
-  text-align: center;
-  padding: 3rem;
 }
 
 /* -- Inputs /sim/* pattern ------------------------------------------------- */

@@ -5,6 +5,7 @@ import type { PerPotentielResult } from '@/engine/per';
 import type { WizardStep } from '../../hooks/usePerPotentiel';
 
 interface PerPotentielContextSidebarProps {
+  anchorId?: string;
   step: WizardStep;
   isCouple: boolean;
   showRevenusPreview: boolean;
@@ -120,6 +121,7 @@ function PreviewSection({
 }
 
 export function PerPotentielContextSidebar({
+  anchorId,
   step,
   isCouple,
   showRevenusPreview,
@@ -243,7 +245,7 @@ export function PerPotentielContextSidebar({
 
   return (
     <>
-      <div className="premium-card per-potentiel-context-card sim-summary-card">
+      <div id={anchorId} className="premium-card per-potentiel-context-card sim-summary-card">
         <div className="sim-card__title-row">
           <div className="sim-card__icon">
             <IconPieChart />
