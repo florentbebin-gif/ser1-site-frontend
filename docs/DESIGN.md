@@ -29,19 +29,26 @@ Sources runtime :
 - C9 : texte secondaire et meta.
 - C10 : texte primaire a contraste maximal.
 
-C1-C10 sont configurables par l'utilisateur. Toute couleur ajoutee au runtime doit donc etre
-derivee de C1-C10 ou d'un alias semantique, jamais d'un hex local. Quand C1 change dans un theme
-personnalise, la palette est recalculee par les helpers theme existants ; les alias CSS suivent
-automatiquement car ils referencent `var(--color-c*)` ou `color-mix(...)`.
+C1-C10 sont configurables par l'utilisateur et restent la source palette, pas l'API de
+consommation UI. Toute couleur runtime consommee par l'interface applicative doit passer par un
+alias semantique, jamais par un hex local ni par un `var(--color-c*)` direct dans le code nouveau ou
+modifie. Les C1-C10 directs sont reserves aux sources theme, aux declarations d'alias, au showroom
+qui explique la palette, aux tests de contrat et aux migrations/presets.
+
+Quand C1 change dans un theme personnalise, la palette est recalculee par les helpers theme
+existants ; les alias CSS suivent automatiquement car ils referencent `var(--color-c*)` ou
+`color-mix(...)`.
 
 ### Alias semantiques
 
 Utiliser les alias pour le code applicatif nouveau :
 
-- surfaces : `--surface-page`, `--surface-card`, `--surface-muted`, `--surface-elevated` ;
+- surfaces : `--surface-page`, `--surface-card`, `--surface-muted`, `--surface-elevated`,
+  `--surface-active` ;
 - textes : `--text-primary`, `--text-secondary`, `--text-muted`, `--text-on-action` ;
 - bordures : `--border-default`, `--border-strong`, `--border-subtle` ;
 - actions : `--action-primary`, `--action-primary-hover`, `--action-secondary` ;
+- accents et donnees : `--accent-signature`, `--data-secondary` ;
 - etats : `--state-success`, `--state-warning`, `--state-danger`, `--state-info` ;
 - systeme : `--overlay-modal`, `--focus-ring-color`, `--focus-ring`.
 
@@ -51,6 +58,13 @@ afficher le contraste dans le showroom.
 
 `--focus-ring` reste un token compose de box-shadow. Ne pas le remplacer par une couleur simple.
 Si un composant a seulement besoin de la couleur, utiliser `--focus-ring-color`.
+
+### Dark-mode-ready
+
+SER1 ne contient pas de moteur de contraste runtime ni de recalcul automatique de dark mode. Le
+contrat "dark-mode-ready" est plus simple : l'UI consomme les alias semantiques, et un futur mode
+sombre pourra brancher un second jeu d'alias sans modifier chaque composant. Ne pas promettre un
+dark mode en deriveant dynamiquement la palette actuelle : `paletteGenerator.ts` reste mono-mode.
 
 ### Usages interdits
 
@@ -148,7 +162,8 @@ sur les styles `Sim*` plutot qu'une nouvelle famille CSS.
 1. Lire `docs/DESIGN.md` et `docs/GOUVERNANCE.md`.
 2. Prouver route, imports et styles existants par `rg`.
 3. Pour `/sim/*`, partir de `SimPageShell` et des primitives `Sim*`.
-4. Utiliser les alias semantiques ou C1-C10, aucune nouvelle couleur hardcodee.
+4. Utiliser les alias semantiques pour l'UI ; C1-C10 seulement dans les sources theme, alias,
+   showroom, tests de contrat ou migrations.
 5. Prevoir etats vide, loading, erreur, disabled.
 6. Formater euros, pourcentages, taux, dates et unites selon ce document.
 7. Verifier clavier, focus, labels, modales Escape.

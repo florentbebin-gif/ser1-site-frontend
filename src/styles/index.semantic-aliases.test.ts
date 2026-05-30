@@ -8,6 +8,7 @@ const semanticAliases = [
   '--surface-card',
   '--surface-muted',
   '--surface-elevated',
+  '--surface-active',
   '--text-primary',
   '--text-secondary',
   '--text-muted',
@@ -18,6 +19,8 @@ const semanticAliases = [
   '--action-primary',
   '--action-primary-hover',
   '--action-secondary',
+  '--accent-signature',
+  '--data-secondary',
   '--state-success',
   '--state-warning',
   '--state-danger',
@@ -44,5 +47,14 @@ describe('alias semantiques du theme', () => {
   it('conserve le focus ring compose tout en exposant sa couleur', () => {
     expect(css).toMatch(/--focus-ring-color:\s*var\(--color-c3\);/);
     expect(css).toMatch(/--focus-ring:\s*0 0 0 2px var\(--focus-ring-color\), 0 0 0 4px #fff;/);
+  });
+
+  it('garde danger comme alias canonique des erreurs', () => {
+    expect(css).toMatch(/--state-danger:\s*var\(--color-c1\);/);
+    expect(css).not.toMatch(/--state-error:/);
+  });
+
+  it('fait consommer le fond global par l alias de surface page', () => {
+    expect(css).toMatch(/body\s*{[^}]*background:\s*var\(--surface-page\);/s);
   });
 });
