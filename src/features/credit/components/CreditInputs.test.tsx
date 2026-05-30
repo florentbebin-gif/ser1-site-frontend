@@ -35,4 +35,22 @@ describe('champs crédit', () => {
     expect(html).toContain('sim-field__select-trigger');
     expect(html).toContain('sim-field__select-value');
   });
+
+  it('évite les doublons data-testid entre le champ et le trigger select', () => {
+    const html = renderToStaticMarkup(
+      <Select
+        label="Type"
+        value="amortissable"
+        onChange={vi.fn()}
+        testId="credit-type"
+        options={[
+          { value: 'amortissable', label: 'Amortissable' },
+          { value: 'infine', label: 'In fine' },
+        ]}
+      />,
+    );
+
+    expect(html.match(/data-testid="credit-type"/g)).toHaveLength(1);
+    expect(html).toContain('data-testid="credit-type-trigger"');
+  });
 });

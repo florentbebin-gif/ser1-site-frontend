@@ -7,14 +7,77 @@ import {
 import { loadThemeOrThrow } from '../lib/loaders.ts'
 import { recordAdminAction } from '../lib/audit.ts'
 
-const REQUIRED_THEME_COLORS = ['c1', 'c2', 'c3', 'c4', 'c5', 'c6', 'c7', 'c8', 'c9', 'c10']
+export const REQUIRED_THEME_COLORS = [
+  'c1',
+  'c2',
+  'c3',
+  'c4',
+  'c5',
+  'c6',
+  'c7',
+  'c8',
+  'c9',
+  'c10',
+] as const
+
+type ThemeColorKey = typeof REQUIRED_THEME_COLORS[number]
+type ThemePalette = Record<ThemeColorKey, string>
+type ThemePaletteValidation =
+  | { ok: true; palette: ThemePalette }
+  | {
+      ok: false
+      error: string
+      missing?: string[]
+      extra?: string[]
+      invalid?: string[]
+    }
+
+const REQUIRED_THEME_COLOR_SET = new Set<string>(REQUIRED_THEME_COLORS)
+const HEX_COLOR_RE = /^#[0-9A-Fa-f]{6}$/
 
 function isPaletteObject(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value)
 }
 
-function getMissingPaletteColors(palette: Record<string, unknown>): string[] {
-  return REQUIRED_THEME_COLORS.filter((color) => !(color in palette))
+export function validateThemePalette(value: unknown): ThemePaletteValidation {
+  if (!isPaletteObject(value)) {
+    return { ok: false, error: 'Objet palette requis' }
+  }
+
+  const keys = Object.keys(value)
+  const missing = REQUIRED_THEME_COLORS.filter((color) => !(color in value))
+  const extra = keys.filter((key) => !REQUIRED_THEME_COLOR_SET.has(key)).sort()
+  const invalid = REQUIRED_THEME_COLORS.filter((color) => {
+    if (!(color in value)) return false
+    const colorValue = value[color]
+    return typeof colorValue !== 'string' || !HEX_COLOR_RE.test(colorValue)
+  })
+
+  if (missing.length > 0 || extra.length > 0 || invalid.length > 0) {
+    return {
+      ok: false,
+      error: missing.length > 0
+        ? 'Palette incomplète : couleurs manquantes'
+        : extra.length > 0
+          ? 'Palette invalide : couleurs inconnues'
+          : 'Palette invalide : couleurs hex #RRGGBB requises',
+      ...(missing.length > 0 ? { missing } : {}),
+      ...(extra.length > 0 ? { extra } : {}),
+      ...(invalid.length > 0 ? { invalid } : {}),
+    }
+  }
+
+  return { ok: true, palette: value as ThemePalette }
+}
+
+function paletteValidationErrorExtra(
+  validation: Extract<ThemePaletteValidation, { ok: false }>,
+): Record<string, string[]> {
+  return {
+    ...(validation.missing ? { missing: validation.missing } : {}),
+    ...(validation.extra ? { extra: validation.extra } : {}),
+    ...(validation.invalid ? { invalid: validation.invalid } : {}),
+  }
 }
 
 const listThemes: AdminActionHandler = async (ctx) => {
@@ -36,23 +99,21 @@ const createTheme: AdminActionHandler = async (ctx) => {
     return errorResponse('Nom du thème requis', ctx.responseHeaders, 400)
   }
 
-  if (!isPaletteObject(palette)) {
-    return errorResponse('Objet palette requis', ctx.responseHeaders, 400)
-  }
-
-  const missingColors = getMissingPaletteColors(palette)
-  if (missingColors.length > 0) {
-    return jsonResponse({
-      error: 'Palette incomplète : couleurs manquantes',
-      missing: missingColors,
-    }, ctx.responseHeaders, 400)
+  const paletteValidation = validateThemePalette(palette)
+  if (!paletteValidation.ok) {
+    return errorResponse(
+      paletteValidation.error,
+      ctx.responseHeaders,
+      400,
+      paletteValidationErrorExtra(paletteValidation),
+    )
   }
 
   const { data, error } = await ctx.supabase
     .from('themes')
     .insert({
       name: name.trim(),
-      palette,
+      palette: paletteValidation.palette,
       is_system: false,
     })
     .select()
@@ -93,19 +154,17 @@ const updateTheme: AdminActionHandler = async (ctx) => {
   }
 
   if (palette !== undefined) {
-    if (!isPaletteObject(palette)) {
-      return errorResponse('Objet palette requis', ctx.responseHeaders, 400)
+    const paletteValidation = validateThemePalette(palette)
+    if (!paletteValidation.ok) {
+      return errorResponse(
+        paletteValidation.error,
+        ctx.responseHeaders,
+        400,
+        paletteValidationErrorExtra(paletteValidation),
+      )
     }
 
-    const missingColors = getMissingPaletteColors(palette)
-    if (missingColors.length > 0) {
-      return jsonResponse({
-        error: 'Palette incomplète : couleurs manquantes',
-        missing: missingColors,
-      }, ctx.responseHeaders, 400)
-    }
-
-    updateData.palette = palette
+    updateData.palette = paletteValidation.palette
   }
 
   const { data, error } = await ctx.supabase

@@ -31,7 +31,7 @@
   font-size: 13px;
   font-weight: 500;
   border: none;
-  background: #ffffff;
+  background: var(--surface-card);
   color: var(--color-c9);
   cursor: pointer;
   transition: all 0.2s;
@@ -48,7 +48,7 @@
 
 .cv-pill-toggle__btn.is-active {
   background: var(--color-c2);
-  color: #ffffff;
+  color: var(--text-on-action);
   font-weight: 600;
 }
 
@@ -141,7 +141,7 @@
 
 .cv-tabs__tab.is-addable:hover .cv-tabs__add-badge {
   background: var(--color-c2);
-  color: #ffffff;
+  color: var(--text-on-action);
 }
 
 /* point 9 â€” wrapper tab + bouton Ã— (sibling HTML valide) */

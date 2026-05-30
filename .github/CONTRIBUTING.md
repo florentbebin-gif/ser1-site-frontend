@@ -90,7 +90,7 @@ Filet de sécurité : cron mensuel le 1er du mois à 09:00 UTC qui met la PR à 
 - **UI / State** → `src/pages/` ou `src/features/`
 - **Pas de calcul fiscal dans les composants React**
 - **Docs de référence** :
-  - UI / `/sim/*` / thème → `docs/GOUVERNANCE.md`
+  - UI / `/sim/*` / thème → `docs/DESIGN.md` puis `docs/GOUVERNANCE.md`
   - PPTX / Excel → `docs/GOUVERNANCE_EXPORTS.md`
 - **Imports** :
   - **`@/`** pour les imports cross-module / cross-feature (ex: `@/utils/`, `@/components/`)

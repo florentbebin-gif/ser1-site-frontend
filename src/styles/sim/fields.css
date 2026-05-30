@@ -161,7 +161,8 @@
   transition: background-color var(--transition-base) var(--easing-standard);
 }
 
-.sim-field__option:hover {
+.sim-field__option:hover,
+.sim-field__option.is-active {
   background-color: color-mix(in srgb, var(--color-c3) 15%, #ffffff);
 }
 

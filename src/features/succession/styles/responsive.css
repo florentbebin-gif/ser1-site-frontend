@@ -94,20 +94,20 @@
   }
 
   .sc-child-row {
-    grid-template-columns: auto 1fr;
+    grid-template-columns: 28px minmax(0, 1fr) 28px 32px;
   }
 
   .sc-child-select {
-    grid-column: 1 / -1;
+    grid-column: auto;
   }
 
-  .sc-checkbox-label {
-    grid-column: 1 / -1;
+  .sc-child-row .sc-checkbox-label {
+    grid-column: auto;
   }
 
-  .sc-child-remove-btn {
-    grid-column: 1 / -1;
-    justify-content: flex-start;
+  .sc-child-row .sc-child-remove-btn {
+    grid-column: auto;
+    justify-content: center;
   }
 
   .sc-remove-btn {

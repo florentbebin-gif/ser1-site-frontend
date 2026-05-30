@@ -49,7 +49,12 @@
 .ir-children-zone {
   display: flex;
   flex-direction: column;
+  align-items: flex-start;
   gap: 6px;
+}
+
+.ir-children-zone > .sim-action-btn {
+  align-self: flex-start;
 }
 
 .ir-children-zone__label {
@@ -58,15 +63,17 @@
 }
 
 .ir-children-list {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 5px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  width: 100%;
 }
 
 .ir-child-row {
   display: flex;
   align-items: center;
   gap: 6px;
+  width: 100%;
   font-size: 13px;
 }
 

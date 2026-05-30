@@ -10,7 +10,8 @@ Sources de vérité :
 
 - `docs/ROADMAP.md`
 - `docs/METIER.md`
-- `docs/GOUVERNANCE.md` — contrat UI web, baseline `/sim/*`, theming
+- `docs/DESIGN.md` — contrat design system court pour UI, thème et `/sim/*`
+- `docs/GOUVERNANCE.md` — gouvernance UI web longue, baseline `/sim/*`, theming
 - `docs/GOUVERNANCE_EXPORTS.md` — contrat PPTX / Excel
 - `docs/ARCHITECTURE.md`
 - `docs/RUNBOOK.md`

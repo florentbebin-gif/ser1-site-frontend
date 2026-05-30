@@ -3,6 +3,8 @@
 ## But
 
 Définir **les règles non négociables** pour garder une UI premium et un theming web cohérent.
+Le contrat opérationnel court à appliquer en premier est `docs/DESIGN.md` ; ce document conserve
+les détails de gouvernance, preuves historiques, audits et exceptions.
 
 ## Audience
 
@@ -923,7 +925,6 @@ page le justifie, `SimPageStepper`, afin d’éviter les règles divergentes d�
 ### Exceptions autorisees (liste exhaustive)
 
 - `#FFFFFF` (WHITE) : fond raised (cards/panels) et texte sur fonds tres sombres.
-- `#996600` (WARNING) : warning hardcode (le theme user peut rendre tout autre token illisible).
 - `rgba(0,0,0,0.5)` : overlay modale (seul rgba autorise).
 
 ### Contraste
@@ -934,8 +935,8 @@ page le justifie, `SimPageStepper`, afin d’éviter les règles divergentes d�
 ### Etats semantiques (rappel)
 
 - `danger` : utiliser C1 (pas de rouge hardcode).
-- `warning` : WARNING (`#996600`) obligatoire.
-- `success/info` : derives de C2-C4 selon contexte.
+- `warning` : utiliser `--state-warning` / C6, jamais de warning hardcode.
+- `success/info` : utiliser les alias `--state-success` et `--state-info`.
 
 ---
 
@@ -985,7 +986,7 @@ et la justification de chaque règle, suivre le lien vers la section concernée.
   (voir [§Propriété des styles](#propriété-des-styles)).
 - ❌ Couleurs hex hardcodées hors exceptions
   (voir [§Gouvernance couleurs](#gouvernance-couleurs-c1c10) — seules
-  `#FFFFFF`, `#996600`, `rgba(0,0,0,0.5)` sont autorisées).
+  `#FFFFFF` et `rgba(0,0,0,0.5)` sont autorisées).
 - ❌ Styles inline pour des valeurs **statiques** → inline réservé au dynamique
   (dimensions, géométrie runtime, couleurs calculées).
 
