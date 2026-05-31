@@ -43,7 +43,7 @@ jobs:
           if [[ "$EVENT_NAME" == "pull_request" ]]; then
             should_run="false"
             git diff --name-only "$BASE_SHA" "$HEAD_SHA" > changed-files.txt
-            if grep -E '^(src/|public/|tests/e2e/|playwright\.config\.ts|package(-lock)?\.json|\.github/workflows/(e2e|e2e-visual)\.yml)$|\.css$' changed-files.txt; then
+            if grep -E '^(src/|public/|tests/e2e/)|^(playwright\.config\.ts|package(-lock)?\.json|\.github/workflows/(e2e|e2e-visual)\.yml)$|\.css$' changed-files.txt; then
               should_run="true"
             fi
           fi

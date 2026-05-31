@@ -173,7 +173,7 @@ jobs:
             should_run="true"
           else
             git diff --name-only "$BASE_SHA" "$HEAD_SHA" > changed-files.txt
-            if grep -E '^(supabase/functions/|supabase/migrations/|package(-lock)?\.json|\.github/workflows/(ci|deploy-supabase-functions)\.yml)$' changed-files.txt; then
+            if grep -E '^(supabase/functions/|supabase/migrations/)|^(package(-lock)?\.json|\.github/workflows/(ci|deploy-supabase-functions)\.yml)$' changed-files.txt; then
               should_run="true"
             fi
           fi
