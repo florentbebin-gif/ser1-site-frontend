@@ -16,8 +16,70 @@
     font-size: 13px;
   }
 
+  .pl-ir-table th,
+  .pl-ir-table td {
+    padding: 8px 6px;
+  }
+
+  .pl-table {
+    table-layout: fixed;
+  }
+
+  .pl-table th:first-child,
+  .pl-table td:first-child {
+    width: 34%;
+  }
+
+  .pl-table th:not(:first-child),
+  .pl-table td:not(:first-child) {
+    width: 33%;
+  }
+
   .pl-colhead {
-    min-width: 160px;
+    width: auto;
+    min-width: 0;
+  }
+
+  .pl-colhead--add,
+  .pl-table--single th:nth-child(3),
+  .pl-table--single td:nth-child(3) {
+    width: auto;
+    min-width: 0;
+  }
+
+  .pl-colhead--add .sim-action-btn {
+    width: 100%;
+    max-width: 78px;
+    padding-inline: 6px;
+    font-size: 12px;
+    white-space: normal;
+  }
+
+  .pl-colbadge-wrapper {
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+
+  .pl-colbadge-wrapper .sim-action-btn--icon {
+    width: 32px;
+    min-width: 32px;
+    margin-left: 0;
+  }
+
+  .pl-colbadge-wrapper .sim-info-btn {
+    width: 28px;
+    min-width: 28px;
+    height: 28px;
+  }
+
+  .pl-collabel {
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+    padding: 4px 6px;
+    line-height: 1.15;
+    white-space: normal;
+    overflow-wrap: normal;
   }
 
   .pl-roi-compare__grid {

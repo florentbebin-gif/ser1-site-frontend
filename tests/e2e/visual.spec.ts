@@ -101,6 +101,9 @@ test.describe('Snapshots visuels simulateurs', () => {
 
           await waitForFonts(page);
           await maskFloatingSynthesisCta(page);
+          if (pageDef.slug === 'placement' && viewport.name === 'mobile') {
+            await expectNoHorizontalOverflow(page);
+          }
 
           await expect(page).toHaveScreenshot(`${pageDef.slug}-${state}-${viewport.name}.png`, {
             fullPage: true,
@@ -111,6 +114,47 @@ test.describe('Snapshots visuels simulateurs', () => {
       }
     }
   }
+});
+
+test('placement comparaison mobile', async ({ page }) => {
+  await enableE2EMode(page);
+  await page.setViewportSize({ width: 390, height: 900 });
+  await page.goto(ROUTES.placement);
+  await page.waitForLoadState('networkidle');
+
+  await expect(page.locator('body')).not.toContainText('Application error');
+  await expect(page.getByTestId('placement-page')).toBeVisible({ timeout: 15_000 });
+
+  await fillPlacementAge(page, '45');
+  await page.getByRole('button', { name: /Comparer un autre placement/ }).click();
+  await expect(page.getByRole('button', { name: 'Retirer le 2e placement' })).toBeVisible();
+
+  await waitForFonts(page);
+  await maskFloatingSynthesisCta(page);
+  await expectNoHorizontalOverflow(page);
+
+  await expect(page).toHaveScreenshot('placement-compare-mobile.png', {
+    fullPage: true,
+    animations: 'disabled',
+    maxDiffPixelRatio: 0.02,
+  });
+});
+
+test('masque le CTA synthèse flottant avant capture', async ({ page }) => {
+  await enableE2EMode(page);
+  await page.setViewportSize({ width: 390, height: 900 });
+  await page.goto(ROUTES.credit);
+  await page.waitForLoadState('networkidle');
+
+  await fillIfVisible(page.getByTestId('credit-capital-input'), '200000');
+  await page.waitForTimeout(150);
+
+  const floatingCta = page.locator('.sim-view-synthesis-cta--floating');
+  await expect(floatingCta.first()).toBeVisible({ timeout: 15_000 });
+
+  await maskFloatingSynthesisCta(page);
+
+  await expect(floatingCta.first()).toHaveCSS('visibility', 'hidden');
 });
 
 async function fillIfVisible(locator: Locator, value: string) {
@@ -127,6 +171,15 @@ async function fillIfVisible(locator: Locator, value: string) {
   await first.blur();
 }
 
+async function fillPlacementAge(page: Page, value: string) {
+  const ageField = page
+    .locator('.pl-client-card .pl-field')
+    .filter({ hasText: 'Âge actuel' })
+    .locator('input');
+
+  await fillIfVisible(ageField, value);
+}
+
 async function waitForFonts(page: Page) {
   await page.evaluate(async () => {
     await document.fonts.ready;
@@ -134,11 +187,26 @@ async function waitForFonts(page: Page) {
 }
 
 async function maskFloatingSynthesisCta(page: Page) {
-  await page.locator('.sim-view-synthesis-cta--floating').evaluateAll((elements) => {
-    for (const element of elements) {
-      if (element instanceof HTMLElement) {
-        element.style.visibility = 'hidden';
+  const visibleAfterMask = await page
+    .locator('.sim-view-synthesis-cta--floating')
+    .evaluateAll((elements) => {
+      for (const element of elements) {
+        if (element instanceof HTMLElement) {
+          element.style.visibility = 'hidden';
+        }
       }
-    }
-  });
+      return elements.filter((element) => getComputedStyle(element).visibility !== 'hidden').length;
+    });
+
+  if (visibleAfterMask > 0) {
+    throw new Error('Le CTA synthèse flottant reste visible après application du masque visuel');
+  }
+}
+
+async function expectNoHorizontalOverflow(page: Page) {
+  const overflow = await page.evaluate(
+    () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
+  );
+
+  expect(overflow).toBeLessThanOrEqual(1);
 }

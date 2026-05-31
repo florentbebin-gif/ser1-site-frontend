@@ -93,6 +93,7 @@ export function AppLayout({
                 <button
                   className="chip icon-btn"
                   onClick={() => onNavigate('/')}
+                  aria-label="Retour à l'accueil"
                   title="Retour à l'accueil"
                 >
                   <IconHome className="icon" />
@@ -104,6 +105,7 @@ export function AppLayout({
                 <button
                   className="chip icon-btn"
                   onClick={onGlobalSave}
+                  aria-label="Sauvegarder le dossier"
                   title="Sauvegarder le dossier"
                 >
                   <IconSave className="icon icon--save" />
@@ -112,7 +114,12 @@ export function AppLayout({
 
               {/* CHARGER */}
               {showSaveLoad && (
-                <button className="chip icon-btn" onClick={onGlobalLoad} title="Charger un dossier">
+                <button
+                  className="chip icon-btn"
+                  onClick={onGlobalLoad}
+                  aria-label="Charger un dossier"
+                  title="Charger un dossier"
+                >
                   <IconFolder className="icon" />
                 </button>
               )}
@@ -122,6 +129,7 @@ export function AppLayout({
                 <button
                   className="chip icon-btn"
                   onClick={onGlobalReset}
+                  aria-label="Réinitialiser tous les simulateurs"
                   title="Réinitialiser tous les simulateurs"
                 >
                   <IconTrash className="icon" />
@@ -133,6 +141,7 @@ export function AppLayout({
                 <button
                   className="chip icon-btn"
                   onClick={() => onPageReset(resetKey)}
+                  aria-label="Réinitialiser la simulation"
                   title="Réinitialiser la simulation"
                 >
                   <IconTrash className="icon" />
@@ -143,13 +152,19 @@ export function AppLayout({
               <button
                 className="chip icon-btn"
                 onClick={() => onNavigate('/settings')}
+                aria-label="Paramètres"
                 title="Paramètres"
               >
                 <IconSettings className="icon" />
               </button>
 
               {/* DÉCONNEXION */}
-              <button className="chip icon-btn" onClick={onLogout} title="Se déconnecter">
+              <button
+                className="chip icon-btn"
+                onClick={onLogout}
+                aria-label="Se déconnecter"
+                title="Se déconnecter"
+              >
                 <IconLogout className="icon" />
               </button>
             </>
