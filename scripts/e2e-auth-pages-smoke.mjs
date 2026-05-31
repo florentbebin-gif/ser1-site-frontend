@@ -2,6 +2,10 @@ import { spawn } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { chromium } from '@playwright/test';
+import {
+  collectActiveSimRouteContracts,
+  collectAuthenticatedSmokeRoutes,
+} from './lib/route-sources.mjs';
 
 const ENV_PATH = resolve(process.cwd(), '.env.local');
 const PORT = Number(process.env.SER1_E2E_AUTH_PORT ?? 5173);
@@ -9,31 +13,10 @@ const BASE_URL = `http://127.0.0.1:${PORT}`;
 const PLACEHOLDER_RE = /placeholder|your-|YOUR-|<mot-de-passe/i;
 
 const PUBLIC_ROUTES = ['/login', '/forgot-password', '/set-password', '/reset-password'];
-
-const AUTH_ROUTES = [
-  '/',
-  '/audit',
-  '/strategy',
-  '/sim/placement',
-  '/sim/credit',
-  '/sim/succession',
-  '/sim/per',
-  '/sim/per/potentiel',
-  '/sim/per/transfert',
-  '/sim/epargne-salariale',
-  '/sim/tresorerie-societe',
-  '/sim/prevoyance',
-  '/sim/ir',
-  '/settings',
-  '/settings/impots',
-  '/settings/prelevements',
-  '/settings/base-contrat',
-  '/settings/base-contrat-retraite',
-  '/settings/dmtg-succession',
-  '/settings/prevoyance-regimes',
-  '/settings/design-system',
-  '/settings/comptes',
-];
+const AUTH_ROUTES = collectAuthenticatedSmokeRoutes();
+const ACTIVE_SIM_ROUTES_BY_PATH = new Map(
+  collectActiveSimRouteContracts().map((route) => [route.path, route]),
+);
 
 function loadLocalEnv() {
   const content = readFileSync(ENV_PATH, 'utf8');
@@ -137,6 +120,8 @@ async function assertPageHealthy(page, route) {
   const viteOverlayCount = await page.locator('vite-error-overlay').count();
   if (viteOverlayCount > 0) throw new Error(`${route} affiche une erreur Vite`);
 
+  await assertActiveSimShell(page, route);
+
   page.off('pageerror', onPageError);
   page.off('response', onResponse);
 
@@ -145,6 +130,19 @@ async function assertPageHealthy(page, route) {
   }
 
   console.log(`OK ${route}`);
+}
+
+async function assertActiveSimShell(page, route) {
+  const simRoute = ACTIVE_SIM_ROUTES_BY_PATH.get(route);
+  if (!simRoute) return;
+
+  const shell = page.locator(`.sim-page[data-testid="${simRoute.pageTestId}"]`);
+  await shell.waitFor({ state: 'visible', timeout: 15_000 });
+
+  const title = await shell.locator('h1').first().innerText({ timeout: 15_000 });
+  if (!title.trim()) {
+    throw new Error(`${route} rend SimPageShell sans titre visible`);
+  }
 }
 
 async function login(page, email, password) {
