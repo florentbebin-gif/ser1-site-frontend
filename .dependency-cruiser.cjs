@@ -12,9 +12,10 @@
  *   7. settings/admin : services only (adminClient, invokeAdmin, logoUpload)
  *      — pas d'import de composants UI depuis l'extérieur
  *   8. UI : pas d'import direct de exportStudyDeck (passer par hooks/wrappers)
- *   9. Placement : pas d'import runtime direct de useFiscalContext
- *   10. Reporting : pas d'import depuis features/ (migrations et snapshots restent purs)
- *   11. Trésorerie : features/ ne doit pas importer les types historiques V1-V5
+ *   9. PPTX : pas d'import depuis features/ (types/helpers partagés dans domain/reporting)
+ *   10. Placement : pas d'import runtime direct de useFiscalContext
+ *   11. Reporting : pas d'import depuis features/ (migrations et snapshots restent purs)
+ *   12. Trésorerie : features/ ne doit pas importer les types historiques V1-V5
  *
  * Résolution @/ : src/ (tsconfig paths + vite alias)
  *
@@ -141,7 +142,17 @@ module.exports = {
       to: { path: '^src/pptx/export/exportStudyDeck(\\.ts)?$' },
     },
 
-    // ── 9. Placement : useFiscalContext reste centralisé dans usePlacementSettings ─────
+    // ── 9. PPTX : pas de dépendance vers les features ────────────────────────────────
+    {
+      name: 'pptx-no-features',
+      severity: 'error',
+      comment:
+        'src/pptx/ doit consommer des types/helpers de domain/, engine/ ou reporting/, jamais src/features/ (cf. GOUVERNANCE_EXPORTS.md §Règle de périmètre)',
+      from: { path: '^src/pptx/' },
+      to: { path: '^src/features/' },
+    },
+
+    // ── 10. Placement : useFiscalContext reste centralisé dans usePlacementSettings ────
     {
       name: 'placement-no-direct-use-fiscal-context',
       severity: 'error',
@@ -151,7 +162,7 @@ module.exports = {
       to: { path: '^src/hooks/useFiscalContext(\\.ts)?$' },
     },
 
-    // ── 10. Reporting : snapshots et migrations ne dépendent pas des features ───────────
+    // ── 11. Reporting : snapshots et migrations ne dépendent pas des features ──────────
     {
       name: 'reporting-no-features',
       severity: 'error',
@@ -161,7 +172,7 @@ module.exports = {
       to: { path: '^src/features/' },
     },
 
-    // ── 11. Trésorerie : compatTypes V1-V5 reste confiné aux migrations moteur ───────
+    // ── 12. Trésorerie : compatTypes V1-V5 reste confiné aux migrations moteur ───────
     {
       name: 'tresorerie-legacy-restricted',
       severity: 'error',

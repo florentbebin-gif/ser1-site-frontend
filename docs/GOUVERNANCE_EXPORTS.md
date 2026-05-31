@@ -41,10 +41,13 @@ Toute personne qui touche :
 - Le composant UI d’une feature n’importe jamais directement `exportStudyDeck`.
 - Le point d’entrée runtime doit être un wrapper feature-owned ou un wrapper dédié export.
 - Cette règle est vérifiée par `npm run check:arch` via `no-export-study-deck-from-ui`.
-- Cas legacy encore actifs :
+- `src/pptx/**` n’importe jamais `src/features/**`. Les types, labels ou helpers partagés
+  doivent vivre dans `src/domain/**`, `src/engine/**`, `src/reporting/**` ou dans un module
+  PPTX dédié selon leur responsabilité réelle.
+- Cette frontière est vérifiée par `npm run check:arch` via `pptx-no-features`.
+- Les wrappers feature-owned restent le point d’entrée runtime autorisé :
   - `src/features/audit/export/exportAudit.ts` adapte `src/pptx/auditPptx.ts`
   - `src/features/strategy/export/exportStrategy.ts` adapte `src/pptx/strategyPptx.ts`
-- `src/pptx/auditPptx.ts` et `src/pptx/strategyPptx.ts` sont tolérés tant qu’ils restent isolés derrière la feature. Ils ne servent pas de baseline.
 
 ### Architecture cible Serenity
 
