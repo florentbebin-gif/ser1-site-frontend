@@ -1,19 +1,21 @@
 import { describe, expect, it } from 'vitest';
 
 import { APP_ROUTES, getRouteMetadata } from '../appRoutes';
+import {
+  ACTIVE_SIM_ROUTE_CONTRACTS,
+  HUB_OR_PLACEHOLDER_SIM_ROUTE_CONTRACTS,
+  SIM_ROUTE_CONTRACTS,
+} from '../simRouteContracts';
 
-const ACTIVE_SIMULATOR_PATHS = new Set([
-  '/sim/placement',
-  '/sim/credit',
-  '/sim/succession',
-  '/sim/per/potentiel',
-  '/sim/per/transfert',
-  '/sim/tresorerie-societe',
-  '/sim/prevoyance',
-  '/sim/ir',
-]);
+const ACTIVE_SIMULATOR_PATHS = new Set<string>(
+  ACTIVE_SIM_ROUTE_CONTRACTS.map((route) => route.path),
+);
 
-const HUBS_OR_PLACEHOLDERS = new Set(['/sim/per', '/sim/epargne-salariale']);
+const HUBS_OR_PLACEHOLDERS = new Set<string>(
+  HUB_OR_PLACEHOLDER_SIM_ROUTE_CONTRACTS.map((route) => route.path),
+);
+
+const SIMULATOR_REGISTRY_PATHS = new Set<string>(SIM_ROUTE_CONTRACTS.map((route) => route.path));
 
 const routePaths = new Set(APP_ROUTES.map((route) => route.path));
 
@@ -50,6 +52,38 @@ describe('Contrat APP_ROUTES', () => {
       missingActiveRoutes,
       `Routes /sim/* actives absentes de APP_ROUTES : ${missingActiveRoutes.join(', ')}`,
     ).toEqual([]);
+  });
+
+  it('garde APP_ROUTES synchronisé avec le registre simulateur', () => {
+    const appSimulatorPaths = simulatorRoutes.map((route) => route.path).sort();
+    const registryPaths = [...SIMULATOR_REGISTRY_PATHS].sort();
+
+    expect(
+      appSimulatorPaths,
+      [
+        'Routes /sim/* désynchronisées du registre.',
+        `APP_ROUTES : ${appSimulatorPaths.join(', ')}`,
+        `Registre : ${registryPaths.join(', ')}`,
+      ].join('\n'),
+    ).toEqual(registryPaths);
+  });
+
+  it('réutilise les libellés et resetKey du registre simulateur', () => {
+    const registryByPath = new Map<string, (typeof SIM_ROUTE_CONTRACTS)[number]>(
+      SIM_ROUTE_CONTRACTS.map((route) => [route.path, route]),
+    );
+    const violations = simulatorRoutes.flatMap((route) => {
+      const contract = registryByPath.get(route.path);
+      const errors: string[] = [];
+      if (!contract) return [`${route.path}: absent du registre`];
+      if (route.contextLabel !== contract.label) errors.push('contextLabel désynchronisé');
+      if (contract.status === 'active' && route.topbar?.resetKey !== contract.resetKey) {
+        errors.push('resetKey désynchronisé');
+      }
+      return errors.map((error) => `${route.path}: ${error}`);
+    });
+
+    expect(violations, `Métadonnées /sim/* désynchronisées : ${violations.join(', ')}`).toEqual([]);
   });
 
   it('classe chaque route simulateur comme active ou hub/placeholder', () => {

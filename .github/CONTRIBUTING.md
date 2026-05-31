@@ -39,6 +39,8 @@ npm run test:e2e        # Tests E2E Playwright complets (fonctionnels + visuels)
 npm run test:e2e:functional # Tests fonctionnels Chromium
 npm run test:e2e:visual     # Snapshots visuels uniquement
 npm run check:e2e-auth-pages-coverage # Couverture du smoke auth pour routes privées/settings
+npm run check:asset-budget  # Budget assets UI public/ui/**
+npm run scaffold:sim -- --id nouveau-sim --label "Nouveau simulateur" # Squelette /sim/* actif
 # Specs authentifiées : opt-in CI via E2E_AUTH_REQUIRED=true + E2E_EMAIL/E2E_PASSWORD valides.
 
 # Informatif, non bloquant
@@ -57,6 +59,11 @@ git push origin feature/nom-clair
 - Travailler localement d'abord : `npm run check` doit passer avant le push d'un bloc logique. Ne pas pousser chaque commit WIP pour utiliser la CI comme boucle de dev.
 - Garder une PR dédiée pour les changements à rollback isolé : exports, migrations, suppression de compatibilité, refactor risqué ou changement de branch protection.
 - Chaque PR doit remplir une section **Dettes restantes** : `fichier:ligne`, preuve, raison du report, PR cible. Si rien n'est reporté, écrire `Aucune dette restante identifiée`.
+- Toute nouvelle page `/sim/*` active doit passer par `src/routes/simRouteContracts.ts`.
+  Le smoke authentifié dérive les routes privées/settings/simulateurs depuis les sources de vérité ;
+  ne pas ajouter de quatrième liste `/sim/*`.
+- Les assets UI sous `public/ui/**` sont bloqués par `check:asset-budget`. Les assets PPTX restent
+  suivis séparément par `check:pptx-images`.
 - `audit:prod` est un contrôle sécurité planifié/manuel, pas un gate PR par défaut. Le gate PR reste centré sur les checks locaux et les E2E pertinents.
 - Checks requis attendus pour les PR : `CI / checks`, `CI / tests`, `CI / build`, `CI / deno-admin`, `E2E Tests / e2e-functional`, `E2E Visual / e2e-visual`.
 - Si les noms de jobs requis changent, séquence obligatoire : pousser la branche pour faire apparaître les nouveaux checks, mettre à jour la branch protection, relancer la PR, puis merger seulement après vert complet.

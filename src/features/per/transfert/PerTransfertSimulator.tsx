@@ -161,12 +161,12 @@ export function PerTransfertSimulator() {
     update('compagnie', value);
     update('contractId', '');
   };
-
   return (
     <>
       <SimPageShell
         title="PER — Transfert"
         subtitle="Auditer le contrat actuel, simuler le transfert immédiat vers un PER et comparer rente/capital."
+        pageTestId="per-transfert-page"
         loading={loading || catalogLoading}
         error={error}
         actions={

@@ -694,9 +694,12 @@ Cette section fixe comment ajouter une page, une route ou une feature sans creer
 
 #### Regle
 
-- Toute nouvelle route simulateur vit dans `APP_ROUTES` dans `src/routes/appRoutes.ts`.
+- Toute nouvelle route simulateur vit dans le registre `src/routes/simRouteContracts.ts`, puis
+  dans `APP_ROUTES` dans `src/routes/appRoutes.ts`.
 - Le chemin canonique est toujours `/sim/<slug>`.
 - Les routes courtes historiques (`/<slug>`) ne sont pas déclarées : le seul chemin public d'un simulateur est `/sim/<slug>`.
+- Pour créer le squelette d'un simulateur actif, utiliser :
+  `npm run scaffold:sim -- --id <slug> --label "<Libellé>"`.
 
 #### Structure cible
 
@@ -713,11 +716,13 @@ Cette section fixe comment ajouter une page, une route ou une feature sans creer
 #### Contrats obligatoires
 
 - Le calcul metier reste dans `src/engine/` si le simulateur introduit une vraie logique de calcul.
-- La route doit declarer un `contextLabel` et une `topbar` coherents avec `APP_ROUTES`.
-- Si le simulateur supporte le reset page, declarer un `resetKey`.
+- La route doit déclarer un `contextLabel` et une `topbar` cohérents avec le registre simulateur.
+- Si le simulateur est actif, déclarer un `resetKey` et un `pageTestId` dans le registre.
 - Le contrat statique des routes `/sim/*` est vérifié par `src/routes/__tests__/appRoutes.contract.test.ts` : route `private`, `lazy`, `contextLabel`, bouton Home, `resetKey` pour les simulateurs actifs, exception explicite pour les hubs/placeholders.
-- La route doit être ajoutée au smoke authentifié `scripts/e2e-auth-pages-smoke.mjs`.
-  `npm run check:e2e-auth-pages-coverage` bloque toute route privée ou settings absente de ce smoke.
+- Le smoke authentifié `scripts/e2e-auth-pages-smoke.mjs` dérive ses routes depuis les sources de vérité ; ne pas y recréer de liste `/sim/*`.
+  `npm run check:e2e-auth-pages-coverage` bloque toute désynchronisation entre `APP_ROUTES`, `SETTINGS_ROUTES`, le registre simulateur et le smoke.
+- Le smoke authentifié vérifie aussi que chaque simulateur actif rend un vrai `SimPageShell`
+  visible via le `pageTestId` du registre.
 - Un simulateur actif, hors `UpcomingSimulatorPage`, doit avoir un scénario Playwright authentifié
   dans `tests/e2e/` qui couvre au minimum le chargement connecté et une interaction métier utile.
   Le smoke authentifié vérifie la couverture de routes, pas la valeur fonctionnelle du simulateur.
@@ -783,7 +788,7 @@ Cette section fixe comment ajouter une page, une route ou une feature sans creer
 
 ### 4) Checklist minimale avant merge
 
-- Route ou page ajoutee a la bonne source de verite (`APP_ROUTES` ou `SETTINGS_ROUTES`)
+- Route ou page ajoutée à la bonne source de vérité (`simRouteContracts`, `APP_ROUTES` ou `SETTINGS_ROUTES`)
 - Pour une route `/sim/*`, `npm test -- src/routes` doit valider le contrat `APP_ROUTES`.
 - Pour une route privée, `/sim/*` ou `/settings/*`, `npm run check:e2e-auth-pages-coverage`
   doit valider la couverture du smoke authentifié.

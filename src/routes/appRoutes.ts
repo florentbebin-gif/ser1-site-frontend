@@ -5,6 +5,7 @@ import Login from '../pages/Login';
 import Home from '../pages/Home';
 import ForgotPassword from '../pages/ForgotPassword';
 import SetPassword from '../pages/SetPassword';
+import { getSimRouteContract } from './simRouteContracts';
 
 type RouteProps = Record<string, unknown>;
 
@@ -94,11 +95,26 @@ const TresorerieSocietePage = lazy(() =>
 );
 const PrevoyancePage = lazy(() => import('../features/prevoyance'));
 const StrategyPage = lazy(() => import('../pages/StrategyPage'));
+// scaffold:sim component
 const SettingsShell = lazy(() => import('../pages/SettingsShell'));
 
 // ── Topbar presets (DRY) ──────────────────────────────────────────────────────
 
 const SIM_TOPBAR: TopbarMeta = { showHome: true, showSaveLoad: true };
+
+const SIM_ROUTES = {
+  placement: getSimRouteContract('placement'),
+  credit: getSimRouteContract('credit'),
+  succession: getSimRouteContract('succession'),
+  per: getSimRouteContract('per'),
+  perPotentiel: getSimRouteContract('per-potentiel'),
+  perTransfert: getSimRouteContract('per-transfert'),
+  epargneSalariale: getSimRouteContract('epargne-salariale'),
+  tresorerieSociete: getSimRouteContract('tresorerie-societe'),
+  prevoyance: getSimRouteContract('prevoyance'),
+  ir: getSimRouteContract('ir'),
+  // scaffold:sim route-contract
+};
 
 // ── Routes ────────────────────────────────────────────────────────────────────
 
@@ -149,97 +165,98 @@ export const APP_ROUTES: AppRouteEntry[] = [
   {
     kind: 'route',
     access: 'private',
-    path: '/sim/placement',
+    path: SIM_ROUTES.placement.path,
     component: Placement,
     lazy: true,
-    contextLabel: 'Placement',
-    topbar: { ...SIM_TOPBAR, resetKey: 'placement' },
+    contextLabel: SIM_ROUTES.placement.label,
+    topbar: { ...SIM_TOPBAR, resetKey: SIM_ROUTES.placement.resetKey },
   },
   {
     kind: 'route',
     access: 'private',
-    path: '/sim/credit',
+    path: SIM_ROUTES.credit.path,
     component: Credit,
     lazy: true,
-    contextLabel: 'Crédit',
-    topbar: { ...SIM_TOPBAR, resetKey: 'credit' },
+    contextLabel: SIM_ROUTES.credit.label,
+    topbar: { ...SIM_TOPBAR, resetKey: SIM_ROUTES.credit.resetKey },
   },
   {
     kind: 'route',
     access: 'private',
-    path: '/sim/succession',
+    path: SIM_ROUTES.succession.path,
     component: SuccessionSimulator,
     lazy: true,
-    contextLabel: 'Succession',
-    topbar: { ...SIM_TOPBAR, resetKey: 'succession' },
+    contextLabel: SIM_ROUTES.succession.label,
+    topbar: { ...SIM_TOPBAR, resetKey: SIM_ROUTES.succession.resetKey },
   },
   {
     kind: 'route',
     access: 'private',
-    path: '/sim/per',
+    path: SIM_ROUTES.per.path,
     component: PerHome,
     lazy: true,
-    contextLabel: 'PER',
+    contextLabel: SIM_ROUTES.per.label,
     topbar: SIM_TOPBAR,
   },
   {
     kind: 'route',
     access: 'private',
-    path: '/sim/per/potentiel',
+    path: SIM_ROUTES.perPotentiel.path,
     component: PerPotentielSimulator,
     lazy: true,
-    contextLabel: 'PER — Potentiel',
-    topbar: { ...SIM_TOPBAR, resetKey: 'per-potentiel' },
+    contextLabel: SIM_ROUTES.perPotentiel.label,
+    topbar: { ...SIM_TOPBAR, resetKey: SIM_ROUTES.perPotentiel.resetKey },
   },
   {
     kind: 'route',
     access: 'private',
-    path: '/sim/per/transfert',
+    path: SIM_ROUTES.perTransfert.path,
     component: PerTransfertSimulator,
     lazy: true,
-    contextLabel: 'PER — Transfert',
-    topbar: { ...SIM_TOPBAR, resetKey: 'per-transfert' },
+    contextLabel: SIM_ROUTES.perTransfert.label,
+    topbar: { ...SIM_TOPBAR, resetKey: SIM_ROUTES.perTransfert.resetKey },
   },
   {
     kind: 'route',
     access: 'private',
-    path: '/sim/epargne-salariale',
+    path: SIM_ROUTES.epargneSalariale.path,
     component: UpcomingSimulatorPage,
     lazy: true,
-    contextLabel: 'Épargne salariale',
+    contextLabel: SIM_ROUTES.epargneSalariale.label,
     topbar: SIM_TOPBAR,
     props: {
-      title: 'Épargne salariale',
-      subtitle: 'Ce simulateur premium sera bientôt disponible.',
+      title: SIM_ROUTES.epargneSalariale.placeholderTitle,
+      subtitle: SIM_ROUTES.epargneSalariale.placeholderSubtitle,
     },
   },
   {
     kind: 'route',
     access: 'private',
-    path: '/sim/tresorerie-societe',
+    path: SIM_ROUTES.tresorerieSociete.path,
     component: TresorerieSocietePage as unknown as ComponentType<RouteProps>,
     lazy: true,
-    contextLabel: 'Trésorerie société',
-    topbar: { ...SIM_TOPBAR, resetKey: 'tresorerie-societe' },
+    contextLabel: SIM_ROUTES.tresorerieSociete.label,
+    topbar: { ...SIM_TOPBAR, resetKey: SIM_ROUTES.tresorerieSociete.resetKey },
   },
   {
     kind: 'route',
     access: 'private',
-    path: '/sim/prevoyance',
+    path: SIM_ROUTES.prevoyance.path,
     component: PrevoyancePage,
     lazy: true,
-    contextLabel: 'Prévoyance',
-    topbar: { ...SIM_TOPBAR, resetKey: 'prevoyance' },
+    contextLabel: SIM_ROUTES.prevoyance.label,
+    topbar: { ...SIM_TOPBAR, resetKey: SIM_ROUTES.prevoyance.resetKey },
   },
   {
     kind: 'route',
     access: 'private',
-    path: '/sim/ir',
+    path: SIM_ROUTES.ir.path,
     component: Ir,
     lazy: true,
-    contextLabel: 'Impôt sur le revenu',
-    topbar: { ...SIM_TOPBAR, resetKey: 'ir' },
+    contextLabel: SIM_ROUTES.ir.label,
+    topbar: { ...SIM_TOPBAR, resetKey: SIM_ROUTES.ir.resetKey },
   },
+  // scaffold:sim app-route
 
   // Settings
   {

@@ -26,6 +26,7 @@
 ## Notes
 
 <!-- Points importants, risques, limites, rollback si besoin -->
+<!-- Si la PR ajoute une route /sim/*, confirmer registre + smoke auth. Si elle ajoute un asset public/ui/**, confirmer le budget asset. -->
 
 ## Dettes restantes
 

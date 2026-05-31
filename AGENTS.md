@@ -72,11 +72,18 @@ Le LLM doit optimiser leur utilisation : déléguer uniquement des tâches indé
 - Pour une nouvelle verticale roadmap, vérifier systématiquement routes, docs,
   tests, exports, Supabase/RLS, fiscal settings et CI.
 - Toute nouvelle route privée, page `/settings/*` ou page `/sim/*` doit rester couverte
-  par le smoke authentifié `scripts/e2e-auth-pages-smoke.mjs`. Le garde-fou
-  `npm run check:e2e-auth-pages-coverage` échoue si une route privée déclarée est absente.
+  par le smoke authentifié `scripts/e2e-auth-pages-smoke.mjs`. Les routes `/sim/*`
+  passent par le registre `src/routes/simRouteContracts.ts` ; ne pas recréer de liste parallèle.
+  Le garde-fou `npm run check:e2e-auth-pages-coverage` échoue si une route privée déclarée,
+  une sous-page settings ou un simulateur actif est désynchronisé.
+- Pour ajouter un simulateur actif, utiliser le scaffold `npm run scaffold:sim -- --id <slug> --label "<Libellé>"`,
+  puis vérifier `npm run check` et `npm run test:e2e:auth-pages`. Le scaffold doit produire
+  une vraie page `SimPageShell`, pas un stub qui crashe au runtime.
 - Tout nouveau simulateur actif, hors placeholder `UpcomingSimulatorPage`, doit aussi ajouter
   ou mettre à jour une spec Playwright authentifiée dans `tests/e2e/`. Le smoke de chargement
   ne remplace pas un scénario métier minimal.
+- Les assets UI sous `public/ui/**` sont soumis à `npm run check:asset-budget`; toute exception
+  doit être justifiée dans l'allowlist du script et dans la section **Dettes restantes** de la PR.
 
 ## Interdictions fortes
 
