@@ -27,8 +27,17 @@
 
 <!-- Points importants, risques, limites, rollback si besoin -->
 
+## Dettes restantes
+
+<!--
+Obligatoire.
+- Si dette reportée : fichier:ligne + preuve + raison du report + PR cible.
+- Sinon : "Aucune dette restante identifiée."
+-->
+
 ## Checklist
 
 - [ ] Pas de push direct sur `main`
 - [ ] Pas de fichiers temporaires ajoutés à la racine
 - [ ] Documentation mise à jour si nécessaire
+- [ ] Les dettes restantes sont listées ou explicitement absentes

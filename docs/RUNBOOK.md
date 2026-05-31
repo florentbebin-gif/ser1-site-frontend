@@ -39,9 +39,24 @@ Note securite : `admin_accounts` et `admin_action_audit` doivent rester `service
   - Ancienne correspondance : format/lint/CSS/theme/couleurs/no-js/no-console/no-office/routes/naming/unused → `check:static`; dependency-cruiser/circular/orphans/imports profonds → `check:architecture`; hardcodes fiscaux/raw fiscal → `check:fiscal`; Base-CG/RLS settings/Storage/migrations → `check:supabase`; parité exports/images PPTX → `check:exports`; fichiers longs → `check:baselines`; TypeScript/tests/build → `check:types`/`check:tests`/`check:build`.
 
 En CI, c'est le gate principal.
-Le workflow GitHub Actions exécute les familles en jobs séparés, puis `npm run check:pre-merge`, `npm run test:deno`, `npm run lint:repo`, `npm run typecheck:tests` et `npm run typecheck:node`.
-Le workflow GitHub Actions exécute aussi `npm run audit:prod`, sans `continue-on-error` : ce contrôle est donc bloquant.
-`coverage`, `build:storybook` et `lhci` restent des contrôles locaux/optionnels informatifs.
+Le workflow `CI` expose quatre jobs requis :
+
+- `checks` : guard env, `check:pre-merge`, familles statiques/architecture/fiscal/Supabase/exports/baselines/types, `lint:repo`, `typecheck:tests`, `typecheck:node`.
+- `tests` : `npm run check:tests`.
+- `build` : `npm run check:build`.
+- `deno-admin` : sentinelle toujours visible ; exécute `npm run test:deno` seulement si le périmètre Supabase functions/migrations, package ou workflow admin change.
+
+Le workflow `E2E Tests` exécute `e2e-functional` sur les PR et la merge queue. Le workflow `E2E Visual` expose `e2e-visual`, toujours vert hors périmètre UI/visuel et exécuté dans le conteneur Playwright quand une PR touche `src/`, `public/`, `tests/e2e/`, `playwright.config.ts`, `package*.json` ou les workflows E2E.
+`audit:prod` est déplacé hors chemin chaud PR et tourne dans `Quality reports` (manuel/cron/main). `coverage`, `build:storybook` et `lhci` restent des contrôles de reporting, avec LHCI non bloquant.
+
+Checks requis GitHub attendus : `CI / checks`, `CI / tests`, `CI / build`, `CI / deno-admin`, `E2E Tests / e2e-functional`, `E2E Visual / e2e-visual`.
+
+Lors d'un renommage de checks requis, éviter le blocage `expected — never reported` :
+
+1. Pousser la branche pour faire apparaître les nouveaux checks.
+2. Retirer les anciens checks requis de la branch protection et ajouter les nouveaux.
+3. Relancer la PR avec un re-run ou un commit vide.
+4. Merger seulement après statuts verts sur les nouveaux noms.
 
 Scripts ponctuels documentés :
 
@@ -204,6 +219,8 @@ npm run test:deno
 npm run lint:repo
 npm run typecheck:tests
 npm run typecheck:node
+npm run test:e2e:functional
+npm run test:e2e:visual
 npm run coverage
 npm run build:storybook
 npm run lhci
@@ -212,12 +229,14 @@ npm run audit:prod
 
 Statut des gates :
 
-- Bloquants : `npm run check`, `npm run test:e2e` via GitHub Actions, `check:pre-merge`, `test:deno`, `lint:repo`, `typecheck:tests`, `typecheck:node`, `audit:prod`.
-- Informatifs au premier rollout : `coverage`, `build:storybook`, `lhci`.
+- Bloquants PR : `CI / checks`, `CI / tests`, `CI / build`, `CI / deno-admin`, `E2E Tests / e2e-functional`, `E2E Visual / e2e-visual`.
+- Bloquants locaux avant push : `npm run check` et les E2E ciblés si la surface touchée le justifie.
+- Planifiés/manuels : `audit:prod`, `coverage`, `build:storybook`, `lhci`, rapports bundle.
 
 E2E Playwright :
 
-- La CI exécute `npm run test:e2e` dans `mcr.microsoft.com/playwright:v1.60.0-jammy`, avec Node ré-épinglé à `22.22.1` par `actions/setup-node`.
+- La CI exécute `npm run test:e2e:functional` sur Ubuntu hors conteneur avec cache navigateurs Playwright.
+- La CI exécute `npm run test:e2e:visual` dans `mcr.microsoft.com/playwright:v1.60.0-jammy` seulement pour les changements UI/visuels, sur `push:main`, cron et manuel.
 - Les snapshots visuels versionnés sont valables pour ce conteneur CI ; c'est la source de vérité. Un run local Windows peut produire des diffs visuels non pertinents.
 - Pour régénérer les snapshots, utiliser le même conteneur que la CI :
 
@@ -230,7 +249,7 @@ E2E Playwright :
     -e VITE_E2E=true `
     -e HUSKY=0 `
     mcr.microsoft.com/playwright:v1.60.0-jammy `
-    bash -lc "npm install -g n >/dev/null && n 22.22.1 >/dev/null && hash -r && npm install -g npm@11.12.0 >/dev/null && npm ci && npx playwright test --project=visual --update-snapshots"
+    bash -lc "npm install -g n >/dev/null && n 22.22.1 >/dev/null && hash -r && npm install -g npm@11.12.0 >/dev/null && npm ci && npm run test:e2e:visual -- --update-snapshots"
   ```
 
 - Les specs authentifiées consomment `E2E_EMAIL` et `E2E_PASSWORD` uniquement si `E2E_AUTH_REQUIRED=true` est défini en variable GitHub. Sans cet opt-in explicite, les specs concernées sont skippées ; le gate couvre alors le socle non authentifié et visuel. Aucun nouveau `.skip` inconditionnel ne doit être ajouté.

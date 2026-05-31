@@ -100,6 +100,7 @@ test.describe('Snapshots visuels simulateurs', () => {
           }
 
           await waitForFonts(page);
+          await maskFloatingSynthesisCta(page);
 
           await expect(page).toHaveScreenshot(`${pageDef.slug}-${state}-${viewport.name}.png`, {
             fullPage: true,
@@ -129,5 +130,15 @@ async function fillIfVisible(locator: Locator, value: string) {
 async function waitForFonts(page: Page) {
   await page.evaluate(async () => {
     await document.fonts.ready;
+  });
+}
+
+async function maskFloatingSynthesisCta(page: Page) {
+  await page.locator('.sim-view-synthesis-cta--floating').evaluateAll((elements) => {
+    for (const element of elements) {
+      if (element instanceof HTMLElement) {
+        element.style.visibility = 'hidden';
+      }
+    }
   });
 }

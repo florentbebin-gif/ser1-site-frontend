@@ -84,6 +84,8 @@
     "release:please": "release-please release-pr",
     "icons:build": "node tools/scripts/normalize-business-icons.mjs",
     "test:e2e": "npx playwright test",
+    "test:e2e:functional": "npx playwright test --project=chromium",
+    "test:e2e:visual": "npx playwright test --project=visual",
     "test:e2e:smoke": "npx playwright test tests/e2e/smoke.spec.ts",
     "test:e2e:ui": "npx playwright test --ui",
     "test:e2e:report": "npx playwright show-report",
