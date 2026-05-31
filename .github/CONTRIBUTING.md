@@ -34,10 +34,13 @@ powershell -ExecutionPolicy Bypass -File .\scripts\pre-merge-check.ps1
 npm run check:circular  # Détection dépendances circulaires
 npm run check:unused    # Rapport dépendances inutilisées (avec ignore des faux positifs connus)
 
+# E2E : bloquant en CI, lançable localement
+npm run test:e2e        # Tests E2E Playwright complets (fonctionnels + visuels)
+# Specs authentifiées : opt-in CI via E2E_AUTH_REQUIRED=true + E2E_EMAIL/E2E_PASSWORD valides.
+
 # Informatif, non bloquant
 npm run lhci            # Lighthouse informatif, non bloquant
 npm run analyze         # Visualisation bundle
-npm run test:e2e        # Tests E2E Playwright
 
 # 4. Commit et push
 git add .
