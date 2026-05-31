@@ -36,6 +36,8 @@ npm run check:unused    # Rapport dépendances inutilisées (avec ignore des fau
 
 # E2E : bloquant en CI, lançable localement
 npm run test:e2e        # Tests E2E Playwright complets (fonctionnels + visuels)
+npm run test:e2e:functional # Tests fonctionnels Chromium
+npm run test:e2e:visual     # Snapshots visuels uniquement
 # Specs authentifiées : opt-in CI via E2E_AUTH_REQUIRED=true + E2E_EMAIL/E2E_PASSWORD valides.
 
 # Informatif, non bloquant
@@ -47,6 +49,16 @@ git add .
 git commit -m "feat: description claire"
 git push origin feature/nom-clair
 ```
+
+## Cadence PR & CI
+
+- Préférer des PR thématiques complètes à des micro-PR successives. Une PR peut contenir plusieurs commits si le périmètre reste cohérent.
+- Travailler localement d'abord : `npm run check` doit passer avant le push d'un bloc logique. Ne pas pousser chaque commit WIP pour utiliser la CI comme boucle de dev.
+- Garder une PR dédiée pour les changements à rollback isolé : exports, migrations, suppression de compatibilité, refactor risqué ou changement de branch protection.
+- Chaque PR doit remplir une section **Dettes restantes** : `fichier:ligne`, preuve, raison du report, PR cible. Si rien n'est reporté, écrire `Aucune dette restante identifiée`.
+- `audit:prod` est un contrôle sécurité planifié/manuel, pas un gate PR par défaut. Le gate PR reste centré sur les checks locaux et les E2E pertinents.
+- Checks requis attendus pour les PR : `CI / checks`, `CI / tests`, `CI / build`, `CI / deno-admin`, `E2E Tests / e2e-functional`, `E2E Visual / e2e-visual`.
+- Si les noms de jobs requis changent, séquence obligatoire : pousser la branche pour faire apparaître les nouveaux checks, mettre à jour la branch protection, relancer la PR, puis merger seulement après vert complet.
 
 ## Commits & Releases
 

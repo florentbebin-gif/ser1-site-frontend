@@ -9,6 +9,7 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
+  merge_group:
 
 permissions:
   contents: read
@@ -18,9 +19,9 @@ env:
   VITE_SUPABASE_ANON_KEY: placeholder-key-for-build
 
 jobs:
-  pre-merge-guard:
+  checks:
     runs-on: ubuntu-22.04
-    timeout-minutes: 5
+    timeout-minutes: 45
 
     steps:
       - name: Checkout
@@ -51,23 +52,53 @@ jobs:
         shell: pwsh
         run: ./scripts/pre-merge-check.ps1
 
-  quality-family:
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: '22.22.1'
+          cache: 'npm'
+
+      - name: Pin npm version
+        run: |
+          npm install -g npm@11.12.0
+          npm --version
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run static checks
+        run: npm run check:static
+
+      - name: Run architecture checks
+        run: npm run check:architecture
+
+      - name: Run fiscal checks
+        run: npm run check:fiscal
+
+      - name: Run Supabase checks
+        run: npm run check:supabase
+
+      - name: Run export checks
+        run: npm run check:exports
+
+      - name: Run baseline checks
+        run: npm run check:baselines
+
+      - name: Run app typecheck
+        run: npm run check:types
+
+      - name: Run repository lint
+        run: npm run lint:repo
+
+      - name: Run test typecheck
+        run: npm run typecheck:tests
+
+      - name: Run Node config typecheck
+        run: npm run typecheck:node
+
+  tests:
     runs-on: ubuntu-22.04
     timeout-minutes: 15
-
-    strategy:
-      fail-fast: true
-      matrix:
-        family:
-          - static
-          - architecture
-          - fiscal
-          - supabase
-          - exports
-          - baselines
-          - types
-          - tests
-          - build
 
     steps:
       - name: Checkout
@@ -87,21 +118,12 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Run check family
-        run: npm run check:${{ matrix.family }}
+      - name: Run tests
+        run: npm run check:tests
 
-  repo-tooling:
+  build:
     runs-on: ubuntu-22.04
     timeout-minutes: 15
-
-    strategy:
-      fail-fast: true
-      matrix:
-        command:
-          - lint:repo
-          - typecheck:tests
-          - typecheck:node
-          - audit:prod
 
     steps:
       - name: Checkout
@@ -121,8 +143,8 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Run tooling command
-        run: npm run ${{ matrix.command }}
+      - name: Build app
+        run: npm run check:build
 
   deno-admin:
     runs-on: ubuntu-22.04
@@ -131,25 +153,50 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v6
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v6
         with:
-          node-version: '22.22.1'
-          cache: 'npm'
+          fetch-depth: 0
+
+      - name: Detect admin function changes
+        id: changes
+        shell: bash
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          set -euo pipefail
+
+          should_run="false"
+          if [[ "$EVENT_NAME" == "merge_group" ]]; then
+            should_run="true"
+          elif [[ -z "$BASE_SHA" || "$BASE_SHA" =~ ^0+$ ]]; then
+            should_run="true"
+          else
+            git diff --name-only "$BASE_SHA" "$HEAD_SHA" > changed-files.txt
+            if grep -E '^(supabase/functions/|supabase/migrations/|package(-lock)?\.json|\.github/workflows/(ci|deploy-supabase-functions)\.yml)$' changed-files.txt; then
+              should_run="true"
+            fi
+          fi
+
+          echo "should_run=${should_run}" >> "$GITHUB_OUTPUT"
+          echo "Deno admin tests required: ${should_run}"
+
+      - name: No-op outside admin function scope
+        if: steps.changes.outputs.should_run != 'true'
+        run: echo "Aucun changement Deno/admin détecté; job sentinelle vert."
 
       - name: Setup Deno
+        if: steps.changes.outputs.should_run == 'true'
         uses: denoland/setup-deno@v2
         with:
           deno-version: v2.x
 
-      - name: Pin npm version
-        run: |
-          npm install -g npm@11.12.0
-          npm --version
-
-      - name: Install dependencies
-        run: npm ci
+      - name: Setup Node.js
+        if: steps.changes.outputs.should_run == 'true'
+        uses: actions/setup-node@v6
+        with:
+          node-version: '22.22.1'
 
       - name: Run admin function tests
+        if: steps.changes.outputs.should_run == 'true'
         run: npm run test:deno

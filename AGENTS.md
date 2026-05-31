@@ -31,6 +31,15 @@ L'utilisateur autorise automatiquement le LLM à utiliser autant de sous-agents 
 
 Le LLM doit optimiser leur utilisation : déléguer uniquement des tâches indépendantes et bien bornées, éviter les doublons, attribuer des périmètres de fichiers disjoints en cas d'édition, transmettre les règles pertinentes de ce fichier, puis relire et intégrer les résultats avant de conclure.
 
+## Cadence PR & CI
+
+- Favoriser des PR thématiques complètes plutôt qu'une cascade de micro-PR. Un palier cohérent peut contenir plusieurs commits si chaque commit reste relisible.
+- Développer et committer localement ; pousser seulement quand le bloc logique est vert localement. La boucle de développement est `npm run check` local, la CI confirme.
+- Isoler une PR seulement quand le rollback doit être atomique : exports, migrations, suppression de compatibilité, refactor à risque ou changement de branch protection.
+- Toute PR doit contenir une section **Dettes restantes** avec `fichier:ligne`, preuve, raison du report et PR cible, ou la mention explicite `Aucune dette restante identifiée`.
+- Interdiction d'introduire une dette muette : bug figé dans une baseline, exception de check, allowlist, gros fichier ou écart UI non listé dans la PR.
+- Pour un renommage de checks requis GitHub, faire apparaître les nouveaux jobs sur la PR, mettre à jour la branch protection, puis relancer la PR avant merge.
+
 ## Règles absolues (toujours actives)
 
 1. **Preuve obligatoire** — ne jamais affirmer « code mort », « non utilisé », « RLS OK »,
