@@ -62,13 +62,6 @@
     "justification": "Builder Excel Succession mono-livrable ; refactor séparé requis pour préserver les onglets.",
     "nextAction": "Extraire les sections de feuille au prochain chantier export Succession."
   },
-  "src/pptx/export/exportStudyDeck.ts": {
-    "maxLines": 598,
-    "category": "export-builder",
-    "decision": "a-reporter-explicitement",
-    "justification": "Pipeline PPTX central ; découpage risqué sans audit de tous les decks.",
-    "nextAction": "Extraire les étapes renderer/writer lors du prochain chantier PPTX transverse."
-  },
   "src/domain/base-contrat/__tests__/rules.test.ts": {
     "maxLines": 586,
     "category": "test-contract",
