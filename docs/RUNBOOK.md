@@ -119,7 +119,10 @@ Ces scripts sont conservés dans le repo car ils servent au gate CI, à l'outill
 - `scripts/check-no-hardcoded-css-theme-colors.mjs` : garde couleurs thème incluse dans `npm run check`.
 - `scripts/check-theme-sync.mjs` : vérifie l'alignement des tokens thème.
 - `scripts/check-css-structure.mjs` : vérifie les contrats d'import CSS.
+- `scripts/check-ui-asset-budget.mjs` : budget bloquant des assets `public/ui/**`, inclus dans `npm run check`.
 - `scripts/check-no-js.mjs` : bloque les fichiers `.js/.jsx` runtime sous `src/` et `api/`.
+- `scripts/scaffold-sim.mjs` : génère le squelette d'un simulateur actif avec route,
+  registre, contrat UX et page `SimPageShell`.
 - `scripts/pre-merge-check.ps1` : gate local PowerShell avant merge.
 - `scripts/scan-unicode.mjs` : contrôle ponctuel des caractères invisibles ou bidi dans `src`, `tests` et `supabase`.
 - `scripts/audit-css-usage.mjs` : audit ponctuel de l'usage CSS.
@@ -254,10 +257,26 @@ E2E Playwright :
 
 - Les specs authentifiées consomment `E2E_EMAIL` et `E2E_PASSWORD` uniquement si `E2E_AUTH_REQUIRED=true` est défini en variable GitHub. Sans cet opt-in explicite, les specs concernées sont skippées ; le gate couvre alors le socle non authentifié et visuel. Aucun nouveau `.skip` inconditionnel ne doit être ajouté.
 - Si `E2E_AUTH_REQUIRED=true`, les secrets doivent pointer vers un vrai compte Supabase valide. Des secrets présents mais invalides ne doivent pas être utilisés comme gate par défaut.
-- Toute nouvelle route privée, `/sim/*` ou `/settings/*`, doit être ajoutée à `scripts/e2e-auth-pages-smoke.mjs`.
-  `npm run check:e2e-auth-pages-coverage` compare ce smoke aux sources de vérité `APP_ROUTES` et `SETTINGS_ROUTES`.
+- Toute nouvelle route privée doit être couverte par `scripts/e2e-auth-pages-smoke.mjs`.
+  Les routes `/sim/*` viennent du registre `src/routes/simRouteContracts.ts` et les sous-pages
+  settings viennent de `SETTINGS_ROUTES` ; ne pas dupliquer ces listes dans le smoke.
+  `npm run check:e2e-auth-pages-coverage` compare `APP_ROUTES`, `SETTINGS_ROUTES`, le registre
+  simulateur et le smoke dérivé.
+- Chaque simulateur actif doit déclarer un `pageTestId` dans le registre ; le smoke vérifie
+  que la page rend un `SimPageShell` visible avec ce test id.
 - Ce smoke ne remplace pas les specs métier : un nouveau simulateur actif doit ajouter ou mettre
   à jour une spec Playwright authentifiée dans `tests/e2e/`, sauf placeholder explicitement assumé.
+
+Scaffold simulateur :
+
+```powershell
+npm run scaffold:sim -- --id nouveau-sim --label "Nouveau simulateur"
+npm run check
+npm run test:e2e:auth-pages
+```
+
+Le scaffold produit une page réelle `SimPageShell` avec état vide, ajoute la route au registre et
+met à jour le contrat UX. Il reste obligatoire d'ajouter le scénario métier Playwright du simulateur.
 
 Coverage :
 
