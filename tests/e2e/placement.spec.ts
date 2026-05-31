@@ -30,7 +30,10 @@ test.describe('Placement - smoke and key interactions', () => {
     await expect(page.getByTestId('placement-hypotheses-toggle')).toBeVisible();
 
     await saisirAgeActuel(page);
-    await expect(page.getByTestId('placement-results-card')).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Synthèse en attente' })).toBeVisible();
+    await expect(
+      page.getByText('au moins un versement pour calculer les indicateurs'),
+    ).toBeVisible();
   });
 
   test('affiche les options expertes quand le mode expert est activé', async ({ page }) => {
