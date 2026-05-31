@@ -17,6 +17,7 @@ const COLOR_LITERAL_PATTERN =
   /#[0-9A-Fa-f]{3,8}\b|rgba?\(\s*(?:\d+\s*,\s*){2}\d+(?:\s*,\s*(?:0|1|0?\.\d+))?\s*\)|rgba?\(\s*\d+\s+\d+\s+\d+(?:\s*\/\s*[\d.]+%)?\s*\)|hsla?\([^)]*\)/gi;
 
 const RAW_THEME_VAR_PATTERN = /var\(--color-c(?:4|5|6)\)/gi;
+const REPO_PATH_MARKERS = ['src', 'scripts', 'tests', 'supabase', 'public', 'tools'];
 
 const PATH_ALLOWLIST = [
   {
@@ -60,19 +61,39 @@ export function toRepoPath(filePath, root = process.cwd()) {
     return filePath;
   }
   const repoPath = relative(root, filePath).replace(/\\/g, '/');
-  if (!repoPath.startsWith('../')) {
+  const normalizedRepoPath = extractRepoPath(repoPath);
+  if (normalizedRepoPath === repoPath) {
+    return repoPath;
+  }
+  const hasWindowsDrivePrefix = /^[A-Za-z]:\//.test(repoPath);
+  if (!repoPath.startsWith('../') && !hasWindowsDrivePrefix) {
     return repoPath;
   }
 
+  if (normalizedRepoPath) {
+    return normalizedRepoPath;
+  }
+
   const normalized = filePath.replace(/\\/g, '/');
-  for (const scanRoot of ['src', 'scripts', 'tests', 'supabase', 'public', 'tools']) {
-    const marker = `/${scanRoot}/`;
-    const markerIndex = normalized.indexOf(marker);
-    if (markerIndex >= 0) {
-      return normalized.slice(markerIndex + 1);
-    }
+  const normalizedFilePath = extractRepoPath(normalized);
+  if (normalizedFilePath) {
+    return normalizedFilePath;
   }
   return repoPath;
+}
+
+function extractRepoPath(path) {
+  for (const scanRoot of REPO_PATH_MARKERS) {
+    if (path === scanRoot || path.startsWith(`${scanRoot}/`)) {
+      return path;
+    }
+    const marker = `/${scanRoot}/`;
+    const markerIndex = path.indexOf(marker);
+    if (markerIndex >= 0) {
+      return path.slice(markerIndex + 1);
+    }
+  }
+  return null;
 }
 
 export function getColorPolicyAllowance(repoPath) {

@@ -27,6 +27,8 @@ const ALLOWED_ORIGINS: Array<string | RegExp> = [
   /^https:\/\/ser1-.*\.vercel\.app$/,
 ];
 
+const DEBUG_ADMIN_PROXY = process.env.DEBUG_ADMIN_PROXY === 'true';
+
 function asHeaderString(value: HeaderValue): string {
   if (Array.isArray(value)) return value[0] ?? '';
   return value ?? '';
@@ -87,11 +89,13 @@ export default async function handler(req: AdminRequest, res: AdminResponse) {
   const requestId = asHeaderString(req.headers['x-request-id']);
   const action = isRecord(req.body) && typeof req.body.action === 'string' ? req.body.action : '';
 
-  console.log(
-    `[api/admin] action=${action || '(no action)'} hasAuth=${Boolean(
-      authorization,
-    )} requestId=${requestId || '(none)'}`,
-  );
+  if (DEBUG_ADMIN_PROXY) {
+    console.warn(
+      `[api/admin] action=${action || '(no action)'} hasAuth=${Boolean(
+        authorization,
+      )} requestId=${requestId || '(none)'}`,
+    );
+  }
 
   try {
     const response = await fetch(targetUrl, {
@@ -112,11 +116,13 @@ export default async function handler(req: AdminRequest, res: AdminResponse) {
 
     const contentType = response.headers.get('content-type') || '';
     const data = await response.text();
-    console.log(
-      `[api/admin] upstream status=${response.status} contentType=${contentType} bodyLen=${data.length} requestId=${
-        upstreamRequestId || requestId || '(none)'
-      }`,
-    );
+    if (DEBUG_ADMIN_PROXY) {
+      console.warn(
+        `[api/admin] upstream status=${response.status} contentType=${contentType} bodyLen=${data.length} requestId=${
+          upstreamRequestId || requestId || '(none)'
+        }`,
+      );
+    }
 
     res.status(response.status);
     if (!contentType.includes('application/json')) {

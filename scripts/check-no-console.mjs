@@ -2,7 +2,7 @@ import { readdirSync, readFileSync, statSync } from 'node:fs';
 import path from 'node:path';
 
 const ROOT = process.cwd();
-const SRC_DIR = path.join(ROOT, 'src');
+const SOURCE_DIRS = ['src', 'api'].map((dir) => path.join(ROOT, dir));
 const FORBIDDEN_CONSOLE = /console\.(log|debug|info|trace)\s*\(/;
 const SOURCE_EXTENSIONS = new Set(['.ts', '.tsx', '.js', '.jsx']);
 
@@ -40,21 +40,25 @@ function shouldSkipLine(line, previousLine) {
 
 const violations = [];
 
-for (const file of walk(SRC_DIR)) {
-  if (shouldSkipFile(file)) continue;
-  if (!statSync(file).isFile()) continue;
+for (const sourceDir of SOURCE_DIRS) {
+  if (!statSync(sourceDir).isDirectory()) continue;
 
-  const content = readFileSync(file, 'utf8');
-  const lines = content.split(/\r?\n/);
-  lines.forEach((line, index) => {
-    if (shouldSkipLine(line, lines[index - 1] ?? '')) return;
-    if (!FORBIDDEN_CONSOLE.test(line)) return;
-    violations.push({
-      file: path.relative(ROOT, file).replaceAll(path.sep, '/'),
-      line: index + 1,
-      content: line.trim(),
+  for (const file of walk(sourceDir)) {
+    if (shouldSkipFile(file)) continue;
+    if (!statSync(file).isFile()) continue;
+
+    const content = readFileSync(file, 'utf8');
+    const lines = content.split(/\r?\n/);
+    lines.forEach((line, index) => {
+      if (shouldSkipLine(line, lines[index - 1] ?? '')) return;
+      if (!FORBIDDEN_CONSOLE.test(line)) return;
+      violations.push({
+        file: path.relative(ROOT, file).replaceAll(path.sep, '/'),
+        line: index + 1,
+        content: line.trim(),
+      });
     });
-  });
+  }
 }
 
 if (violations.length > 0) {
