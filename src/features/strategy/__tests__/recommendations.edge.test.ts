@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { createEmptyDossier } from '../../audit/types';
+import { createEmptyDossier } from '@/domain/audit/types';
 import { generateRecommendations } from '../utils/recommendations';
 
 describe('recommendations edge cases', () => {

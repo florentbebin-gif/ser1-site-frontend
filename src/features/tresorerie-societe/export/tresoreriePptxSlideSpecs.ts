@@ -15,7 +15,7 @@ import {
   getCompanyKindLabel,
   getEconomicPct,
   getSelectedAssociate,
-} from '../utils/tresorerieSocieteModel';
+} from '@/domain/tresorerie/societeModel';
 import {
   fmtPct,
   formatEuro,

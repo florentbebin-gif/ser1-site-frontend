@@ -20,7 +20,7 @@ import { TresoAssociateModal } from './societe/TresoAssociateModal';
 import { TresoCompanyIdentityPanel } from './societe/TresoCompanyIdentityPanel';
 import { TresoOrgChart } from './societe/TresoOrgChart';
 import { TresoSubsidiaryModal } from './societe/TresoSubsidiaryModal';
-import { getAssociateProfile, getOwnershipTotals } from '../utils/tresorerieSocieteModel';
+import { getAssociateProfile, getOwnershipTotals } from '@/domain/tresorerie/societeModel';
 import { ASSOCIATE_KIND_OPTIONS } from '../utils/tresorerieSocieteOptions';
 import { useTresorerieAssociateHandlers } from '../utils/tresorerieAssociateHandlers';
 import { fmtEuroInput, parseEuroInput } from '../utils/tresorerieFormatters';

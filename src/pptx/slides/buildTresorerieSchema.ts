@@ -6,7 +6,7 @@
  */
 
 import type PptxGenJS from 'pptxgenjs';
-import { computeTresoOrgchartLayout } from '@/features/tresorerie-societe/tresoOrgchartLayout';
+import { computeTresoOrgchartLayout } from '@/domain/tresorerie/tresoOrgchartLayout';
 import type { ExportContext, TresorerieSchemaSlideSpec } from '../theme/types';
 import { MASTER_NAMES } from '../template/loadBaseTemplate';
 import {

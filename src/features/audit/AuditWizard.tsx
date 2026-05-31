@@ -5,8 +5,8 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { ExportMenu } from '../../components/ExportMenu';
 import type { ExportOption } from '../../components/export/exportTypes';
-import type { DossierAudit } from './types';
-import { createEmptyDossier } from './types';
+import type { DossierAudit } from '@/domain/audit/types';
+import { createEmptyDossier } from '@/domain/audit/types';
 import {
   exportDossierToFile,
   importDossierFromFile,

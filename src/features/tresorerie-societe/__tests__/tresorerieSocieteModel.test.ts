@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { AssociateInput } from '@/engine/tresorerie/types';
-import { updateAssociateOwnershipLot } from '../utils/tresorerieSocieteModel';
+import { updateAssociateOwnershipLot } from '@/domain/tresorerie/societeModel';
 
 function makeAssociate(
   id: string,

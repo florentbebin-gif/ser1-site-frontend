@@ -1,6 +1,6 @@
 import type { AllocationPocketHorizon, AllocationPocketInput } from '@/engine/tresorerie/types';
 import { SimActionButton } from '@/components/ui/sim';
-import { getAllocationHorizonLabel } from '../../utils/tresorerieSocieteModel';
+import { getAllocationHorizonLabel } from '@/domain/tresorerie/societeModel';
 import { getAllocationPocketLabel } from '@/engine/tresorerie/allocationLabels';
 import { fmtEuroInput, fmtRateInput } from '../../utils/tresorerieFormatters';
 

@@ -5,7 +5,7 @@ import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { triggerPageReset } from '@/utils/reset';
 import AuditWizard from '../AuditWizard';
-import { createEmptyDossier } from '../types';
+import { createEmptyDossier } from '@/domain/audit/types';
 
 vi.mock('@/settings/ThemeProvider', () => ({
   useTheme: () => ({

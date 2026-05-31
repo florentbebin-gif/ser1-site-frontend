@@ -344,7 +344,7 @@ Invariants (à ne pas casser) :
 - Design system : `src/pptx/designSystem/serenity.ts`.
 - Slides : `src/pptx/slides/`.
 - **Règles de conception et checklist de création** : `docs/GOUVERNANCE_EXPORTS.md`.
-- Adaptateurs historiques encore actifs : `src/features/audit/export/exportAudit.ts` adapte `src/pptx/auditPptx.ts` et `src/features/strategy/export/exportStrategy.ts` adapte `src/pptx/strategyPptx.ts` derrière les features ; les composants UI n'importent plus directement ces générateurs.
+- Frontière exports : `src/pptx/**` ne doit jamais importer `src/features/**` ; les types et helpers partagés vivent dans `src/domain/**`, `src/engine/**`, `src/reporting/**` ou dans un module PPTX dédié. Les wrappers runtime restent feature-owned : `src/features/audit/export/exportAudit.ts` adapte `src/pptx/auditPptx.ts` et `src/features/strategy/export/exportStrategy.ts` adapte `src/pptx/strategyPptx.ts`.
 
 Assets statiques (images) :
 

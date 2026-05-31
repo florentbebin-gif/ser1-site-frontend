@@ -119,20 +119,6 @@ export function paginateYearColumns(allYears: string[]): string[][] {
 }
 
 /**
- * Legacy pagination function for backward compatibility
- * Now paginates by COLUMNS (years), not rows
- */
-export function paginateAmortizationRows(rows: CreditAmortizationRow[]): CreditAmortizationRow[][] {
-  // Get unique years and paginate them
-  const allYears = getUniqueYears(rows);
-  const yearPages = paginateYearColumns(allYears);
-
-  // Return the same rows for each page - the page will filter by years
-  // This maintains compatibility but the builder will handle year filtering
-  return yearPages.map(() => rows);
-}
-
-/**
  * Get lighter shade of a color (for alternating rows)
  */
 function lightenColor(hex: string, factor: number = 0.85): string {
@@ -160,13 +146,6 @@ export interface CreditAmortizationSlideData {
   totalPages: number;
 }
 
-// Legacy interface for backward compatibility
-export interface LegacyCreditAmortizationSlideData {
-  rows: CreditAmortizationRow[];
-  pageIndex: number;
-  totalPages: number;
-}
-
 /**
  * Build Credit Amortization slide
  *
@@ -179,32 +158,13 @@ export interface LegacyCreditAmortizationSlideData {
  */
 export function buildCreditAmortization(
   pptx: PptxGenJS,
-  data: CreditAmortizationSlideData | LegacyCreditAmortizationSlideData,
+  data: CreditAmortizationSlideData,
   theme: PptxThemeRoles,
   ctx: ExportContext,
   slideIndex: number,
 ): void {
   const slide = pptx.addSlide({ masterName: MASTER_NAMES.CONTENT });
-
-  // Handle both new and legacy data formats
-  let allRows: CreditAmortizationRow[];
-  let yearsForPage: string[];
-  let pageIndex: number;
-  let totalPages: number;
-
-  if ('allRows' in data && 'yearsForPage' in data) {
-    // New format
-    allRows = data.allRows;
-    yearsForPage = data.yearsForPage;
-    pageIndex = data.pageIndex;
-    totalPages = data.totalPages;
-  } else {
-    // Legacy format - derive years from rows
-    allRows = data.rows;
-    yearsForPage = getUniqueYears(data.rows);
-    pageIndex = data.pageIndex;
-    totalPages = data.totalPages;
-  }
+  const { allRows, yearsForPage, pageIndex, totalPages } = data;
 
   // ========== HEADER ==========
   const pageIndicator = totalPages > 1 ? ` (${pageIndex + 1}/${totalPages})` : '';

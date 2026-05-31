@@ -8,9 +8,9 @@ import {
   calculateStrategyProjection,
   compareScenarios,
 } from '../utils/calculations';
-import type { DossierAudit } from '../../audit/types';
-import { createEmptyDossier } from '../../audit/types';
-import type { ProduitConfig } from '../types';
+import type { DossierAudit } from '@/domain/audit/types';
+import { createEmptyDossier } from '@/domain/audit/types';
+import type { ProduitConfig } from '@/domain/strategy/types';
 import { DEFAULT_TAX_SETTINGS } from '@/constants/settingsDefaults';
 
 function createTestDossier(): DossierAudit {

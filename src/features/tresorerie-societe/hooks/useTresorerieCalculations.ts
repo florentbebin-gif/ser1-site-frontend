@@ -19,7 +19,7 @@ import type {
   TresoProjectionRow,
 } from '@/engine/tresorerie/types';
 import { getAssociateAnnualIncomeNeedForYear } from '@/engine/tresorerie/revenuePhases';
-import { getAssociateProfile, getSelectedAssociate } from '../utils/tresorerieSocieteModel';
+import { getAssociateProfile, getSelectedAssociate } from '@/domain/tresorerie/societeModel';
 import { normalizeProjectionHorizonYears } from '../utils/projectionHorizon';
 import { buildTresoFiscalParamsFromContext } from './tresorerieFiscalParams';
 

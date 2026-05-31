@@ -13,9 +13,9 @@
 import PptxGenJS from 'pptxgenjs';
 import type { ThemeColors } from '../settings/theme';
 import { DEFAULT_COLORS } from '../settings/theme';
-import type { DossierAudit } from '../features/audit/types';
-import { OBJECTIFS_CLIENT_LABELS } from '../features/audit/types';
-import type { Strategie, ComparaisonScenarios } from '../features/strategy/types';
+import type { DossierAudit } from '@/domain/audit/types';
+import { OBJECTIFS_CLIENT_LABELS } from '@/domain/audit/types';
+import type { Strategie, ComparaisonScenarios } from '@/domain/strategy/types';
 
 // Type pour les lignes de tableau
 type TableData = Array<Array<{ text: string }>>;

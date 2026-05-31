@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { createEmptyDossier } from '../../audit/types';
+import { createEmptyDossier } from '@/domain/audit/types';
 import { calculateBaselineProjection, compareScenarios } from '../utils/calculations';
-import type { Scenario } from '../types';
+import type { Scenario } from '@/domain/strategy/types';
 
 describe('calculations edge cases', () => {
   it('retourne un IR nul si le nombre de parts est invalide', () => {

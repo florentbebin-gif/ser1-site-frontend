@@ -1,5 +1,4 @@
 import type {
-  AllocationPocketHorizon,
   AllocationPocketInput,
   AssociateKind,
   CompanyInput,
@@ -7,6 +6,13 @@ import type {
   LegalForm,
   OwnershipRight,
 } from '@/engine/tresorerie/types';
+import {
+  ALLOCATION_HORIZON_OPTIONS,
+  COMPANY_KIND_CODES,
+  COMPANY_KIND_LABELS,
+} from '@/domain/tresorerie/societeOptions';
+
+export { ALLOCATION_HORIZON_OPTIONS, COMPANY_KIND_CODES, COMPANY_KIND_LABELS };
 
 export const ASSOCIATE_KIND_OPTIONS = [
   { value: 'pp', label: 'Associé PP' },
@@ -35,20 +41,6 @@ export const LEGAL_FORM_OPTIONS = [
   { value: 'autre', label: 'Autre' },
 ] satisfies Array<{ value: LegalForm; label: string }>;
 
-export const COMPANY_KIND_LABELS: Record<CompanyKind, string> = {
-  holding_patrimoniale: 'Holding patrimoniale',
-  holding_remuneration: 'Holding de rémunération',
-  holding_animatrice: 'Holding animatrice',
-  societe_exploitation: 'Société d’exploitation',
-};
-
-export const COMPANY_KIND_CODES: Record<CompanyKind, string> = {
-  holding_patrimoniale: 'HP',
-  holding_remuneration: 'HR',
-  holding_animatrice: 'HA',
-  societe_exploitation: 'SE',
-};
-
 export const COMPANY_KIND_OPTIONS = (Object.keys(COMPANY_KIND_LABELS) as CompanyKind[]).map(
   (kind) => ({
     value: kind,
@@ -60,9 +52,3 @@ export const ALLOCATION_KIND_OPTIONS = [
   { value: 'distribution', label: 'Distribution' },
   { value: 'capitalisation', label: 'Capitalisation' },
 ] satisfies Array<{ value: AllocationPocketInput['kind']; label: string }>;
-
-export const ALLOCATION_HORIZON_OPTIONS = [
-  { value: 'court_terme', label: 'Court terme' },
-  { value: 'moyen_terme', label: 'Moyen terme' },
-  { value: 'long_terme', label: 'Long terme' },
-] satisfies Array<{ value: AllocationPocketHorizon; label: string }>;

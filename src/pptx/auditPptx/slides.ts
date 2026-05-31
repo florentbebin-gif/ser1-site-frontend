@@ -1,6 +1,6 @@
 import type PptxGenJS from 'pptxgenjs';
 
-import type { DossierAudit } from '@/features/audit/types';
+import type { DossierAudit } from '@/domain/audit/types';
 import { calculatePredecesSenarios } from '@/engine/succession';
 import { REGIMES_MATRIMONIAUX } from '@/engine/succession/civil';
 

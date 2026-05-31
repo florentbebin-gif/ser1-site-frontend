@@ -4,7 +4,7 @@ import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { DEFAULT_COLORS, type ThemeColors } from '@/settings/theme';
-import { createEmptyDossier, type DossierAudit } from '../../audit/types';
+import { createEmptyDossier, type DossierAudit } from '@/domain/audit/types';
 import StrategyBuilder from '../StrategyBuilder';
 import { exportStrategyPptx } from '../export/exportStrategy';
 

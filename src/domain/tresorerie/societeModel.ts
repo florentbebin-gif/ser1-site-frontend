@@ -17,7 +17,7 @@ import {
   ALLOCATION_HORIZON_OPTIONS,
   COMPANY_KIND_CODES,
   COMPANY_KIND_LABELS,
-} from './tresorerieSocieteOptions';
+} from './societeOptions';
 
 type OwnershipAssociate = {
   id: string;

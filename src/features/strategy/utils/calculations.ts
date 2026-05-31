@@ -6,8 +6,13 @@
  * - Stratégie : avec les produits sélectionnés
  */
 
-import type { DossierAudit } from '../../audit/types';
-import type { ProduitConfig, Projection, Scenario, ComparaisonScenarios } from '../types';
+import type { DossierAudit } from '@/domain/audit/types';
+import type {
+  ProduitConfig,
+  Projection,
+  Scenario,
+  ComparaisonScenarios,
+} from '@/domain/strategy/types';
 import { computeProgressiveTax } from '@/engine/ir/progressiveTax';
 import { DEFAULT_TAX_SETTINGS } from '@/constants/settingsDefaults';
 import type { FiscalContext } from '@/hooks/useFiscalContext';

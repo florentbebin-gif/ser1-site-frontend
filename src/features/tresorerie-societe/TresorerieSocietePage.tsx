@@ -26,7 +26,7 @@ import { TresoAssociateInsights } from './components/TresoAssociateInsights';
 import { TresoKPISidebar } from './components/TresoKPISidebar';
 import { TresoProjectionDrawer } from './components/TresoProjectionDrawer';
 import { TresoHypotheses } from './components/TresoHypotheses';
-import { getAssociateProfile, getSelectedAssociate } from './utils/tresorerieSocieteModel';
+import { getAssociateProfile, getSelectedAssociate } from '@/domain/tresorerie/societeModel';
 import { getTresoReadiness } from './utils/tresorerieReadiness';
 
 export default function TresorerieSocietePage() {

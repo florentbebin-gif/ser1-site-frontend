@@ -9,7 +9,7 @@ import {
   getCapitalPct,
   getCompanyKindCode,
   getCompanyKindLabel,
-} from './utils/tresorerieSocieteModel';
+} from '@/domain/tresorerie/societeModel';
 
 function ownershipRightCode(right: OwnershipRight): string {
   if (right === 'usufruit') return 'US';

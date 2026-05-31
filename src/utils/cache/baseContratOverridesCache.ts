@@ -17,7 +17,6 @@ const TABLE = 'base_contrat_overrides';
 const CACHE_TTL_MS = 24 * 60 * 60 * 1000;
 const SELECT_WITH_REVIEW =
   'product_id, closed_date, note_admin, review_status, review_reason, next_review_at, updated_at';
-const SELECT_LEGACY = 'product_id, closed_date, note_admin, updated_at';
 
 let _cache: OverrideMap | null = null;
 let _fetchedAt: number | null = null;
@@ -26,29 +25,12 @@ function isFresh(): boolean {
   return _cache !== null && _fetchedAt !== null && Date.now() - _fetchedAt < CACHE_TTL_MS;
 }
 
-function isMissingReviewColumnsError(error: { message?: string } | null): boolean {
-  return (
-    typeof error?.message === 'string' &&
-    error.message.includes('base_contrat_overrides.review_') &&
-    error.message.includes('does not exist')
-  );
-}
-
 export async function getBaseContratOverrides(): Promise<OverrideMap> {
   if (isFresh() && _cache !== null) return _cache;
 
-  let data: Array<Partial<BaseContratOverride>> | null = null;
-  let error: { message: string } | null = null;
-
   const reviewResult = await supabase.from(TABLE).select(SELECT_WITH_REVIEW);
-  data = reviewResult.data as Array<Partial<BaseContratOverride>> | null;
-  error = reviewResult.error;
-
-  if (isMissingReviewColumnsError(error)) {
-    const legacyResult = await supabase.from(TABLE).select(SELECT_LEGACY);
-    data = legacyResult.data as Array<Partial<BaseContratOverride>> | null;
-    error = legacyResult.error;
-  }
+  const data = reviewResult.data as Array<Partial<BaseContratOverride>> | null;
+  const error = reviewResult.error;
 
   if (error) {
     console.error('[baseContratOverridesCache] fetch error:', error.message);
@@ -76,20 +58,7 @@ export async function getBaseContratOverrides(): Promise<OverrideMap> {
 
 export async function upsertBaseContratOverride(override: BaseContratOverrideInput): Promise<void> {
   const payload = { ...override, updated_at: new Date().toISOString() };
-  let { error } = await supabase.from(TABLE).upsert(payload, { onConflict: 'product_id' });
-
-  if (isMissingReviewColumnsError(error)) {
-    const {
-      review_status: _reviewStatus,
-      review_reason: _reviewReason,
-      next_review_at: _nextReviewAt,
-      ...legacyPayload
-    } = payload;
-    const legacyResult = await supabase
-      .from(TABLE)
-      .upsert(legacyPayload, { onConflict: 'product_id' });
-    error = legacyResult.error;
-  }
+  const { error } = await supabase.from(TABLE).upsert(payload, { onConflict: 'product_id' });
 
   if (error) {
     throw new Error(`[baseContratOverridesCache] upsert error: ${error.message}`);

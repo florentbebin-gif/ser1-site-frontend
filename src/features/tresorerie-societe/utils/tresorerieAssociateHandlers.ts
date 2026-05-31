@@ -5,7 +5,7 @@ import {
   getSelectedAssociateId,
   updateAssociateOwnershipLot,
   updateAssociateOwnershipLots,
-} from './tresorerieSocieteModel';
+} from '@/domain/tresorerie/societeModel';
 
 export function buildDefaultAssociate(index: number, inputs: TresoInputsV6): AssociateInputV6 {
   const profile = getAssociateProfile(inputs);
