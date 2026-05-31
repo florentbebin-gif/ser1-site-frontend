@@ -26,7 +26,7 @@ test.describe('Settings', () => {
     await page.waitForLoadState('networkidle');
 
     // Verify main title
-    await expect(page.locator('.section-title')).toContainText('Paramètres');
+    await expect(page.locator('.settings-shell__title')).toContainText('Paramètres');
 
     // Verify presence of navigation tabs
     // Note: The specific tabs visible depend on user role, but "Généraux" (label="Généraux") should always be there.

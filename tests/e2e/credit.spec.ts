@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, type Page } from '@playwright/test';
 import { loginWithCredentials } from './helpers/auth';
 import { ROUTES } from './helpers/fixtures';
 
@@ -11,6 +11,12 @@ import { ROUTES } from './helpers/fixtures';
 const E2E_EMAIL = process.env.E2E_EMAIL;
 const E2E_PASSWORD = process.env.E2E_PASSWORD;
 const hasCredentials = !!(E2E_EMAIL && E2E_PASSWORD);
+
+async function fillMinimalLoan(page: Page): Promise<void> {
+  await page.getByTestId('credit-capital-input').fill('200000');
+  await page.getByTestId('credit-pret0-duree').fill('240');
+  await page.getByTestId('credit-pret0-taux').fill('3,50');
+}
 
 test.describe('Credit Simulator', () => {
   test.skip(!hasCredentials, 'E2E_EMAIL / E2E_PASSWORD not set — skipping authenticated tests');
@@ -34,8 +40,7 @@ test.describe('Credit Simulator', () => {
     await page.goto(ROUTES.credit);
     await page.waitForLoadState('networkidle');
 
-    // Fill capital input
-    await page.getByTestId('credit-capital-input').fill('200000');
+    await fillMinimalLoan(page);
 
     // The page should display computed results
     await expect(page.getByTestId('credit-summary-card')).toBeVisible({ timeout: 15_000 });
@@ -55,8 +60,7 @@ test.describe('Credit Simulator', () => {
     await page.goto(ROUTES.credit);
     await page.waitForLoadState('networkidle');
 
-    // Fill capital to have results
-    await page.getByTestId('credit-capital-input').fill('200000');
+    await fillMinimalLoan(page);
 
     // Trigger download
     await page.getByTestId('export-menu-button').click();
@@ -71,15 +75,16 @@ test.describe('Credit Simulator', () => {
     await page.goto(ROUTES.credit);
     await page.waitForLoadState('networkidle');
 
+    await page.getByTestId('credit-pret0-duree').fill('240');
+    await page.getByTestId('credit-pret0-taux').fill('3,50');
+
     // Try negative capital
     const input = page.getByTestId('credit-capital-input');
     await input.fill('-200000');
     await input.blur();
 
-    // Verify app stability (summary card still there or re-rendered)
-    await expect(page.getByTestId('credit-summary-card')).toBeVisible();
-
-    // Verify total cost is not NaN or crashing
-    await expect(page.getByTestId('credit-cout-total-value')).toBeVisible();
+    // Verify app stability without requiring a ready synthesis for an invalid capital.
+    await expect(page.getByTestId('credit-page')).toBeVisible();
+    await expect(page.locator('body')).not.toContainText('Application error');
   });
 });

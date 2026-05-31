@@ -38,6 +38,7 @@ npm run check:unused    # Rapport dépendances inutilisées (avec ignore des fau
 npm run test:e2e        # Tests E2E Playwright complets (fonctionnels + visuels)
 npm run test:e2e:functional # Tests fonctionnels Chromium
 npm run test:e2e:visual     # Snapshots visuels uniquement
+npm run check:e2e-auth-pages-coverage # Couverture du smoke auth pour routes privées/settings
 # Specs authentifiées : opt-in CI via E2E_AUTH_REQUIRED=true + E2E_EMAIL/E2E_PASSWORD valides.
 
 # Informatif, non bloquant
