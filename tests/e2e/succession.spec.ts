@@ -12,6 +12,13 @@ async function fillCoupleBirthDates(page: Page) {
   await page.getByRole('textbox', { name: 'Date Naiss. Ep2' }).fill('1962-01-01');
 }
 
+async function fillCommunityAsset(page: Page) {
+  const communityAssetField = page.getByRole('textbox', { name: 'Communaute' }).first();
+  await communityAssetField.fill('100000');
+  await communityAssetField.press('Tab');
+  await expect(page.getByRole('heading', { name: 'Chronologie des décès' })).toBeVisible();
+}
+
 test.describe('Succession - dispositions and chronology', () => {
   test.beforeEach(async ({ page }) => {
     await enableE2EMode(page);
@@ -28,6 +35,7 @@ test.describe('Succession - dispositions and chronology', () => {
 
     await expect(dispositionsButton).toBeEnabled();
     await fillCoupleBirthDates(page);
+    await fillCommunityAsset(page);
     await expect(page.locator('.sc-chrono-item__meta').first()).toContainText(/[ÉE]poux 1/);
 
     await page.getByRole('button', { name: 'Ordre inverse' }).click();
@@ -50,6 +58,7 @@ test.describe('Succession - dispositions and chronology', () => {
 
     await selectSituation(page, /Mari/);
     await fillCoupleBirthDates(page);
+    await fillCommunityAsset(page);
     await expect(orderToggle).toBeVisible();
     await expect(page.locator('.sc-chrono-item__meta').first()).toContainText(/[ÉE]poux 1/);
 
@@ -66,6 +75,7 @@ test.describe('Succession - dispositions and chronology', () => {
 
     await selectSituation(page, /Mari/);
     await fillCoupleBirthDates(page);
+    await fillCommunityAsset(page);
     await expect(orderToggle).toBeVisible();
     await expect(page.locator('.sc-chrono-item__meta').first()).toContainText(/[ÉE]poux 1/);
   });

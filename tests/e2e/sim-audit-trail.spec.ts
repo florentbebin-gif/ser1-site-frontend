@@ -24,7 +24,7 @@ test.describe('Piste d’audit des simulateurs', () => {
       const auditTrail = page.locator('.sim-audit-trail');
       await expect(auditTrail).toHaveCount(1);
       await expect(auditTrail).toContainText(
-        /Simulation calculée le \d{2}\/\d{2}\/\d{4} \d{2}:\d{2} · Barème IR .+ · Source Bercy/,
+        /Simulation calculée le \d{2}\/\d{2}\/\d{4} \d{2}:\d{2} · Barème IR .+ · Source : barème fiscal officiel/,
       );
     });
   }

@@ -7,7 +7,9 @@ test.describe('Modales mobiles simulateurs', () => {
     await page.setViewportSize({ width: 390, height: 900 });
     await page.goto('/sim/per/transfert');
 
+    await page.getByRole('button', { name: 'Saisie manuelle' }).click();
     const trigger = page.getByRole('button', { name: 'Personnaliser le calcul de rente' });
+    await expect(trigger).toBeVisible();
     await trigger.click();
     const modal = page.getByRole('dialog', { name: /Calcul de rente personnalisé/i });
 
