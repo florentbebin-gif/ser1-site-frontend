@@ -125,13 +125,6 @@
     "justification": "Layout filiation isolé, algorithmique et proche du seuil.",
     "nextAction": "Extraire mesures/placement si un nouveau rendu est ajouté."
   },
-  "src/features/succession/components/ScAssetsPassifsExpertSection.tsx": {
-    "maxLines": 506,
-    "category": "orchestrator",
-    "decision": "a-reporter-explicitement",
-    "justification": "Section expert patrimoniale dense ; split UI séparé nécessaire pour éviter une régression Succession.",
-    "nextAction": "Extraire actifs, groupements fonciers et capitaux décès au prochain chantier Succession UI."
-  },
   "src/features/credit/Credit.tsx": {
     "maxLines": 505,
     "category": "orchestrator",

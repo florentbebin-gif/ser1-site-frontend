@@ -27,6 +27,7 @@ import AssetLegalQualificationModal from './AssetLegalQualificationModal';
 import { ScAssetsSummary, ScForfaitMobilierSection } from './ScAssetsPassifsExtras';
 import { ScSelect } from './ScSelect';
 import { buildSubCategoryOptions } from './ScAssetsPassifs.shared';
+import { EditRowButton, getPartyLabel } from './ScAssetsPassifsExpertRows';
 
 interface ScAssetsPassifsExpertSectionProps {
   assetEntriesByCategory: {
@@ -65,27 +66,6 @@ interface ScAssetsPassifsExpertSectionProps {
   onRemovePrevoyanceDecesEntry: (id: string) => void;
   onUpdatePatrimonialField: <K extends string>(field: K, value: unknown) => void;
   getActifNetLabel: (owner: SuccessionLegacyAssetOwner) => string;
-}
-
-function EditRowButton({ label, onClick }: { label: string; onClick: () => void }) {
-  return (
-    <SimActionButton
-      variant="edit"
-      mode="icon"
-      label="Modifier"
-      className="sc-open-btn"
-      onClick={onClick}
-      title={label}
-      ariaLabel={label}
-    />
-  );
-}
-
-function getPartyLabel(
-  options: { value: SuccessionPersonParty; label: string }[],
-  party: SuccessionPersonParty,
-): string {
-  return options.find((option) => option.value === party)?.label ?? party;
 }
 
 export function ScAssetsPassifsExpertSection({
