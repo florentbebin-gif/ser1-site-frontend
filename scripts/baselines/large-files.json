@@ -34,13 +34,6 @@
     "justification": "Catalogue Base-Contrat structuré ; fichier de données métier central.",
     "nextAction": "Extraire par famille uniquement lors du prochain chantier catalogue."
   },
-  "src/features/tresorerie-societe/export/tresorerieExcelExport.ts": {
-    "maxLines": 681,
-    "category": "export-builder",
-    "decision": "a-reporter-explicitement",
-    "justification": "Builder Excel Trésorerie société encore mono-livrable ; split à faire sans changer les onglets.",
-    "nextAction": "Extraire helpers de feuilles au prochain chantier export Trésorerie."
-  },
   "src/domain/base-contrat/rules/library/valeurs-mobilieres.ts": {
     "maxLines": 680,
     "category": "source-of-truth",
@@ -55,33 +48,12 @@
     "justification": "Famille de règles Base-Contrat cohérente et isolée.",
     "nextAction": "Découper par sous-famille si une modification métier ajoute une nouvelle responsabilité."
   },
-  "src/features/succession/export/successionXlsx.ts": {
-    "maxLines": 608,
-    "category": "export-builder",
-    "decision": "a-reporter-explicitement",
-    "justification": "Builder Excel Succession mono-livrable ; refactor séparé requis pour préserver les onglets.",
-    "nextAction": "Extraire les sections de feuille au prochain chantier export Succession."
-  },
-  "src/pptx/export/exportStudyDeck.ts": {
-    "maxLines": 598,
-    "category": "export-builder",
-    "decision": "a-reporter-explicitement",
-    "justification": "Pipeline PPTX central ; découpage risqué sans audit de tous les decks.",
-    "nextAction": "Extraire les étapes renderer/writer lors du prochain chantier PPTX transverse."
-  },
   "src/domain/base-contrat/__tests__/rules.test.ts": {
     "maxLines": 586,
     "category": "test-contract",
     "decision": "acceptable-temporairement",
     "justification": "Suite contrat catalogue globale vérifiant toutes les familles Base-Contrat.",
     "nextAction": "Découper par politique de règles si elle dépasse la baseline ou si une famille est refactorée."
-  },
-  "src/pptx/slides/buildPlacementDetail.ts": {
-    "maxLines": 577,
-    "category": "export-builder",
-    "decision": "a-reporter-explicitement",
-    "justification": "Builder de slide dense mais limité au détail Placement.",
-    "nextAction": "Extraire les blocs métriques/flows au prochain chantier PPTX Placement."
   },
   "src/engine/tresorerie/__tests__/simulateTresorerieV2.test.ts": {
     "maxLines": 573,
@@ -97,26 +69,12 @@
     "justification": "Golden tests du format historique V3 conservé pour migrations/compatibilité.",
     "nextAction": "Découper seulement avec la migration des fixtures V3."
   },
-  "src/features/tresorerie-societe/components/timeline/TresoRevenuePhaseModal.tsx": {
-    "maxLines": 559,
-    "category": "orchestrator",
-    "decision": "a-reporter-explicitement",
-    "justification": "Modal métier revenus associés, volontairement conservée entière pour éviter un refactor UX risqué.",
-    "nextAction": "Extraire les sous-panneaux rémunération/distribution/CCA au prochain chantier revenus associés."
-  },
   "src/features/succession/__tests__/fixtures/notarialReferences.ts": {
     "maxLines": 555,
     "category": "fixture",
     "decision": "generated-fixture",
     "justification": "Fixture de références notariales vérifiées, non runtime.",
     "nextAction": "Découper par thème uniquement si de nouvelles références sont ajoutées."
-  },
-  "src/features/per/transfert/PerTransfertSimulator.tsx": {
-    "maxLines": 530,
-    "category": "orchestrator",
-    "decision": "acceptable-temporairement",
-    "justification": "Orchestrateur page PER transfert, mono-parcours et proche du seuil.",
-    "nextAction": "Extraire les panneaux de step lors du prochain chantier UX PER transfert."
   },
   "src/engine/tresorerie/simulateTresorerieV2.helpers.ts": {
     "maxLines": 529,
@@ -166,13 +124,6 @@
     "decision": "acceptable-temporairement",
     "justification": "Layout filiation isolé, algorithmique et proche du seuil.",
     "nextAction": "Extraire mesures/placement si un nouveau rendu est ajouté."
-  },
-  "src/features/succession/components/ScAssetsPassifsExpertSection.tsx": {
-    "maxLines": 506,
-    "category": "orchestrator",
-    "decision": "a-reporter-explicitement",
-    "justification": "Section expert patrimoniale dense ; split UI séparé nécessaire pour éviter une régression Succession.",
-    "nextAction": "Extraire actifs, groupements fonciers et capitaux décès au prochain chantier Succession UI."
   },
   "src/features/credit/Credit.tsx": {
     "maxLines": 505,

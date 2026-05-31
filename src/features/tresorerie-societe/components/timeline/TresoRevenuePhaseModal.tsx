@@ -1,30 +1,22 @@
 import { useEffect, useMemo, useState } from 'react';
-import { SimFieldShell } from '@/components/ui/sim/SimFieldShell';
 import { SimModalShell } from '@/components/ui/sim/SimModalShell';
-import { SimSelect } from '@/components/ui/sim/SimSelect';
-import type {
-  AssociateRevenuePhaseInputV6,
-  DividendsStrategy,
-  SubsidiaryInput,
-} from '@/engine/tresorerie/types';
+import type { AssociateRevenuePhaseInputV6, SubsidiaryInput } from '@/engine/tresorerie/types';
 import { computeNetRevenue, sortPhases } from '../../utils/revenuePhases';
-import {
-  fmtEuroInput,
-  fmtRateInput,
-  parseEuroInput,
-  parseNumberInput,
-  parseRateInput,
-} from '../../utils/tresorerieFormatters';
 import { TresoTimelineMiniPreview } from './TresoTimelineMiniPreview';
 import {
   findOverlappingPaliers,
   fmtEuro,
   isSubPhaseActive,
-  normalizeSourcePatch,
   SUB_PHASE_NAV,
   type SubPhaseKey,
 } from './revenuePhaseModalUtils';
 import { TresoCcaRepaymentPanel } from './TresoCcaRepaymentPanel';
+import {
+  TresoRevenuePhaseCcaContributionPanel,
+  TresoRevenuePhaseDistributionPanel,
+  TresoRevenuePhasePeriodPanel,
+  TresoRevenuePhaseRemunerationPanel,
+} from './TresoRevenuePhaseSubPanels';
 
 interface TresoRevenuePhaseModalProps {
   phase: AssociateRevenuePhaseInputV6;
@@ -276,273 +268,24 @@ export function TresoRevenuePhaseModal({
         </nav>
 
         <div className="ts-phase-modal-panel">
-          <section className="ts-associate-card">
-            <div className="ts-associate-card__header">
-              <strong>Période</strong>
-              <span>Bornes inclusives</span>
-            </div>
-            <div className="ts-modal-grid ts-modal-grid--three">
-              <SimFieldShell
-                label="Année de début"
-                className="ts-field"
-                rowClassName="ts-field__row"
-                controlId="ts-phase-start-year"
-              >
-                <input
-                  id="ts-phase-start-year"
-                  type="text"
-                  inputMode="numeric"
-                  className="sim-field__control"
-                  value={draft.startYear}
-                  onChange={(event) =>
-                    patchDraft({ startYear: parseNumberInput(event.target.value) })
-                  }
-                />
-              </SimFieldShell>
-
-              <SimFieldShell
-                label="Année de fin"
-                className="ts-field"
-                rowClassName="ts-field__row"
-                controlId="ts-phase-end-year"
-              >
-                <input
-                  id="ts-phase-end-year"
-                  type="text"
-                  inputMode="numeric"
-                  className="sim-field__control"
-                  value={draft.endYear}
-                  onChange={(event) =>
-                    patchDraft({ endYear: parseNumberInput(event.target.value) })
-                  }
-                />
-              </SimFieldShell>
-            </div>
-          </section>
+          <TresoRevenuePhasePeriodPanel draft={draft} onPatch={patchDraft} />
 
           {activeSubPhase === 'remuneration' ? (
-            <section className="ts-associate-card">
-              <div className="ts-associate-card__header">
-                <strong>Phase rémunération</strong>
-                <span>Revenu payé</span>
-              </div>
-              <div
-                className="ts-phase-source"
-                role="radiogroup"
-                aria-label="Source de rémunération"
-              >
-                {remunerationSourceOptions.map(([value, label]) => (
-                  <label key={value} className="ts-phase-source__choice">
-                    <input
-                      type="radio"
-                      name="ts-phase-source"
-                      checked={draft.remuneration.source === value}
-                      onChange={() => patchRemuneration(normalizeSourcePatch(value))}
-                    />
-                    {label}
-                  </label>
-                ))}
-              </div>
-
-              {draft.remuneration.source === 'subsidiary' ? (
-                <div className="ts-modal-grid ts-modal-grid--three">
-                  <SimFieldShell
-                    label="Filiale source"
-                    className="ts-field"
-                    rowClassName="ts-field__row"
-                  >
-                    <SimSelect
-                      value={draft.remuneration.subsidiaryId ?? subsidiaryOptions[0]?.value ?? ''}
-                      onChange={(value) => patchRemuneration({ subsidiaryId: value })}
-                      options={subsidiaryOptions}
-                      ariaLabel="Filiale source de rémunération"
-                      disabled={subsidiaryOptions.length === 0}
-                    />
-                  </SimFieldShell>
-                </div>
-              ) : null}
-
-              {draft.remuneration.source !== 'none' ? (
-                <div className="ts-modal-grid ts-modal-grid--three">
-                  <SimFieldShell
-                    label="Rémunération chargée annuelle"
-                    className="ts-field"
-                    rowClassName="ts-field__row"
-                  >
-                    <input
-                      type="text"
-                      inputMode="numeric"
-                      className="sim-field__control"
-                      value={fmtEuroInput(draft.remuneration.loadedAnnualCost)}
-                      onChange={(event) =>
-                        patchRemuneration({ loadedAnnualCost: parseEuroInput(event.target.value) })
-                      }
-                    />
-                    <span className="sim-field__unit ts-unit">€</span>
-                  </SimFieldShell>
-
-                  <SimFieldShell
-                    label="Taux de charges"
-                    className="ts-field"
-                    rowClassName="ts-field__row"
-                  >
-                    <input
-                      type="text"
-                      inputMode="decimal"
-                      className="sim-field__control"
-                      value={fmtRateInput(draft.remuneration.socialChargeRate)}
-                      onChange={(event) =>
-                        patchRemuneration({ socialChargeRate: parseRateInput(event.target.value) })
-                      }
-                    />
-                    <span className="sim-field__unit ts-unit">%</span>
-                  </SimFieldShell>
-
-                  <div className="ts-phase-net">
-                    <span>Net annuel estimé avant IR</span>
-                    <strong>{fmtEuro(netRevenue)}</strong>
-                  </div>
-                </div>
-              ) : null}
-            </section>
+            <TresoRevenuePhaseRemunerationPanel
+              draft={draft}
+              netRevenue={netRevenue}
+              subsidiaryOptions={subsidiaryOptions}
+              remunerationSourceOptions={remunerationSourceOptions}
+              onPatch={patchRemuneration}
+            />
           ) : null}
 
           {activeSubPhase === 'distribution' ? (
-            <section className="ts-associate-card">
-              <div className="ts-associate-card__header">
-                <strong>Phase distribution</strong>
-                <span>Objectif ou trésorerie disponible</span>
-              </div>
-              <p className="ts-phase-source-title">Dividendes souhaités</p>
-              <div className="ts-phase-source" role="radiogroup" aria-label="Dividendes souhaités">
-                {(
-                  [
-                    ['max_treso', 'Maximum selon trésorerie'],
-                    ['montant_cible', 'Montant net cible'],
-                  ] as Array<[DividendsStrategy, string]>
-                ).map(([value, label]) => (
-                  <label key={value} className="ts-phase-source__choice">
-                    <input
-                      type="radio"
-                      name="ts-dividends-strategy"
-                      checked={draft.distribution.dividendsStrategy === value}
-                      onChange={() =>
-                        patchDistribution({
-                          enabled: true,
-                          dividendsStrategy: value,
-                        })
-                      }
-                    />
-                    {label}
-                  </label>
-                ))}
-              </div>
-              {draft.distribution.dividendsStrategy === 'montant_cible' ? (
-                <div className="ts-modal-grid ts-modal-grid--three">
-                  <SimFieldShell
-                    label="Objectif net annuel de l’associé (net de PFU)"
-                    className="ts-field"
-                    rowClassName="ts-field__row"
-                  >
-                    <input
-                      type="text"
-                      inputMode="numeric"
-                      className="sim-field__control"
-                      value={fmtEuroInput(draft.distribution.dividendsTargetAmountNet ?? 0)}
-                      onChange={(event) =>
-                        patchDistribution({
-                          dividendsTargetAmountNet: parseEuroInput(event.target.value),
-                        })
-                      }
-                    />
-                    <span className="sim-field__unit ts-unit">€</span>
-                  </SimFieldShell>
-                </div>
-              ) : null}
-              <p className="ts-note--info">
-                En maximum selon trésorerie, le calculateur rembourse d’abord le CCA disponible puis
-                distribue les dividendes possibles.
-              </p>
-            </section>
+            <TresoRevenuePhaseDistributionPanel draft={draft} onPatch={patchDistribution} />
           ) : null}
 
           {activeSubPhase === 'ccaContribution' ? (
-            <section className="ts-associate-card">
-              <div className="ts-associate-card__header">
-                <strong>Phase constitution de CCA</strong>
-                <span>Apports ponctuels ou récurrents</span>
-              </div>
-              <div className="ts-modal-grid ts-modal-grid--three">
-                <SimFieldShell
-                  label="Apport annuel"
-                  className="ts-field"
-                  rowClassName="ts-field__row"
-                >
-                  <input
-                    type="text"
-                    inputMode="numeric"
-                    className="sim-field__control"
-                    value={fmtEuroInput(draft.ccaContribution.annual?.amount ?? 0)}
-                    onChange={(event) =>
-                      patchCcaContribution({
-                        enabled: true,
-                        annual: {
-                          amount: parseEuroInput(event.target.value),
-                          startYear: draft.startYear,
-                          endYear: draft.endYear,
-                        },
-                      })
-                    }
-                  />
-                  <span className="sim-field__unit ts-unit">€</span>
-                </SimFieldShell>
-              </div>
-              <div className="ts-modal-grid ts-modal-grid--three">
-                <SimFieldShell
-                  label="Apport exceptionnel"
-                  className="ts-field"
-                  rowClassName="ts-field__row"
-                >
-                  <input
-                    type="text"
-                    inputMode="numeric"
-                    className="sim-field__control"
-                    value={fmtEuroInput(draft.ccaContribution.exceptional?.amount ?? 0)}
-                    onChange={(event) =>
-                      patchCcaContribution({
-                        enabled: true,
-                        exceptional: {
-                          year: draft.ccaContribution.exceptional?.year ?? draft.startYear,
-                          amount: parseEuroInput(event.target.value),
-                        },
-                      })
-                    }
-                  />
-                  <span className="sim-field__unit ts-unit">€</span>
-                </SimFieldShell>
-                <SimFieldShell
-                  label="Année exceptionnelle"
-                  className="ts-field"
-                  rowClassName="ts-field__row"
-                >
-                  <input
-                    type="text"
-                    inputMode="numeric"
-                    className="sim-field__control"
-                    value={draft.ccaContribution.exceptional?.year ?? draft.startYear}
-                    onChange={(event) =>
-                      patchCcaContribution({
-                        enabled: true,
-                        exceptional: {
-                          amount: draft.ccaContribution.exceptional?.amount ?? 0,
-                          year: parseNumberInput(event.target.value),
-                        },
-                      })
-                    }
-                  />
-                </SimFieldShell>
-              </div>
-            </section>
+            <TresoRevenuePhaseCcaContributionPanel draft={draft} onPatch={patchCcaContribution} />
           ) : null}
 
           {activeSubPhase === 'ccaRepayment' ? (
