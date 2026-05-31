@@ -50,9 +50,9 @@ jobs:
       - name: Install Playwright browsers
         run: npx playwright install --with-deps chromium
 
-      - name: Run smoke E2E tests
+      - name: Lancer les E2E fonctionnels Chromium
         timeout-minutes: 10
-        run: npm run test:e2e:smoke
+        run: npm run test:e2e -- --project=chromium
         env:
           CI: true
           VITE_E2E: 'true'
