@@ -71,6 +71,12 @@ Le LLM doit optimiser leur utilisation : déléguer uniquement des tâches indé
   fiscal, export, Supabase/RLS/Storage, migrations, CI, baseline ou docs.
 - Pour une nouvelle verticale roadmap, vérifier systématiquement routes, docs,
   tests, exports, Supabase/RLS, fiscal settings et CI.
+- Toute nouvelle route privée, page `/settings/*` ou page `/sim/*` doit rester couverte
+  par le smoke authentifié `scripts/e2e-auth-pages-smoke.mjs`. Le garde-fou
+  `npm run check:e2e-auth-pages-coverage` échoue si une route privée déclarée est absente.
+- Tout nouveau simulateur actif, hors placeholder `UpcomingSimulatorPage`, doit aussi ajouter
+  ou mettre à jour une spec Playwright authentifiée dans `tests/e2e/`. Le smoke de chargement
+  ne remplace pas un scénario métier minimal.
 
 ## Interdictions fortes
 
@@ -112,6 +118,8 @@ Le LLM doit optimiser leur utilisation : déléguer uniquement des tâches indé
 - Les chemins ajoutés aux docs/scripts sont relatifs au repo, jamais locaux.
 - Les tests/checks ciblés du périmètre ont été lancés et les résultats notés.
 - `npm run check` est lancé avant commit ou l'impossibilité est expliquée.
+- Si une route privée, `/settings/*` ou `/sim/*` change, le smoke authentifié ou son
+  garde-fou de couverture a été mis à jour.
 - Aucun hardcode fiscal, contournement TypeScript, baseline facile ou legacy
   ambigu n'a été ajouté.
 - Toute modification export a un test de parité ou une justification explicite.

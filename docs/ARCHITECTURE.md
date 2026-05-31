@@ -716,6 +716,11 @@ Cette section fixe comment ajouter une page, une route ou une feature sans creer
 - La route doit declarer un `contextLabel` et une `topbar` coherents avec `APP_ROUTES`.
 - Si le simulateur supporte le reset page, declarer un `resetKey`.
 - Le contrat statique des routes `/sim/*` est vérifié par `src/routes/__tests__/appRoutes.contract.test.ts` : route `private`, `lazy`, `contextLabel`, bouton Home, `resetKey` pour les simulateurs actifs, exception explicite pour les hubs/placeholders.
+- La route doit être ajoutée au smoke authentifié `scripts/e2e-auth-pages-smoke.mjs`.
+  `npm run check:e2e-auth-pages-coverage` bloque toute route privée ou settings absente de ce smoke.
+- Un simulateur actif, hors `UpcomingSimulatorPage`, doit avoir un scénario Playwright authentifié
+  dans `tests/e2e/` qui couvre au minimum le chargement connecté et une interaction métier utile.
+  Le smoke authentifié vérifie la couverture de routes, pas la valeur fonctionnelle du simulateur.
 - Le mode global Home (`ui_settings.mode`) doit etre respecte par defaut ; un override local est permis seulement s'il reste non persistant.
 - Les paramètres fiscaux passent par `useFiscalContext` pour les nouveaux simulateurs. `usePlacementSettings` est l'adaptateur fiscal du simulateur Placement, au-dessus de `useFiscalContext` et de `extractFiscalParams()`.
 - Aucun `SimulatorAdapter` runtime commun n'est requis par defaut : le contrat est l'API publique de feature + les garde-fous d'architecture.
@@ -780,6 +785,10 @@ Cette section fixe comment ajouter une page, une route ou une feature sans creer
 
 - Route ou page ajoutee a la bonne source de verite (`APP_ROUTES` ou `SETTINGS_ROUTES`)
 - Pour une route `/sim/*`, `npm test -- src/routes` doit valider le contrat `APP_ROUTES`.
+- Pour une route privée, `/sim/*` ou `/settings/*`, `npm run check:e2e-auth-pages-coverage`
+  doit valider la couverture du smoke authentifié.
+- Pour un simulateur actif, une spec Playwright authentifiée existe ou l'exception placeholder
+  est documentée dans la PR.
 - Les imports publics de features restent vérifiés par `npm run check:arch` (`routes-no-feature-internals`).
 - Les imports profonds hors tests restent à zéro via `npm run check:deep-imports`.
 - Docs pivots mises a jour si le contrat change

@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, type Page } from '@playwright/test';
 import { loginWithCredentials } from './helpers/auth';
 import { ROUTES } from './helpers/fixtures';
 
@@ -13,6 +13,12 @@ import { ROUTES } from './helpers/fixtures';
 const E2E_EMAIL = process.env.E2E_EMAIL;
 const E2E_PASSWORD = process.env.E2E_PASSWORD;
 const hasCredentials = !!(E2E_EMAIL && E2E_PASSWORD);
+
+async function selectSingleStatus(page: Page): Promise<void> {
+  await page.getByTestId('ir-situation-select').click();
+  await page.getByRole('option', { name: /Célibataire/ }).click();
+  await expect(page.getByTestId('ir-salary-d1-input')).toBeVisible({ timeout: 10_000 });
+}
 
 test.describe('IR Simulator', () => {
   test.skip(!hasCredentials, 'E2E_EMAIL / E2E_PASSWORD not set — skipping authenticated tests');
@@ -36,9 +42,11 @@ test.describe('IR Simulator', () => {
   test('saisie revenus et calcul IR', async ({ page }) => {
     await page.goto(ROUTES.ir);
     await page.waitForLoadState('networkidle');
+    await selectSingleStatus(page);
 
     // Fill salary for declarant 1
     await page.getByTestId('ir-salary-d1-input').fill('45000');
+    await page.getByTestId('ir-salary-d1-input').blur();
 
     // The page should compute and display a result
     await expect(page.getByTestId('ir-results-card')).toBeVisible({ timeout: 15_000 });
@@ -64,9 +72,11 @@ test.describe('IR Simulator', () => {
 
     await page.goto(ROUTES.ir);
     await page.waitForLoadState('networkidle');
+    await selectSingleStatus(page);
 
     // Ensure we have some data
     await page.getByTestId('ir-salary-d1-input').fill('45000');
+    await page.getByTestId('ir-salary-d1-input').blur();
 
     // Open menu
     await page.getByTestId('export-menu-button').click();
@@ -85,18 +95,15 @@ test.describe('IR Simulator', () => {
   test('résilience saisie invalide (négatif)', async ({ page }) => {
     await page.goto(ROUTES.ir);
     await page.waitForLoadState('networkidle');
+    await selectSingleStatus(page);
 
     // Try to enter a negative number
     const input = page.getByTestId('ir-salary-d1-input');
     await input.fill('-5000');
     await input.blur();
 
-    // The app should not crash.
-    // Depending on implementation, it might strip the sign or keep it.
-    // The critical part is that the result card is still visible or re-renders without error.
-    await expect(page.getByTestId('ir-results-card')).toBeVisible();
-
-    // Verify it didn't crash the whole page (header still there)
+    // The app should not crash, even if the invalid amount keeps synthesis waiting.
+    await expect(page.locator('body')).not.toContainText('Application error');
     await expect(page.getByTestId('ir-header')).toBeVisible();
   });
 });

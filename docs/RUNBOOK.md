@@ -254,6 +254,10 @@ E2E Playwright :
 
 - Les specs authentifiées consomment `E2E_EMAIL` et `E2E_PASSWORD` uniquement si `E2E_AUTH_REQUIRED=true` est défini en variable GitHub. Sans cet opt-in explicite, les specs concernées sont skippées ; le gate couvre alors le socle non authentifié et visuel. Aucun nouveau `.skip` inconditionnel ne doit être ajouté.
 - Si `E2E_AUTH_REQUIRED=true`, les secrets doivent pointer vers un vrai compte Supabase valide. Des secrets présents mais invalides ne doivent pas être utilisés comme gate par défaut.
+- Toute nouvelle route privée, `/sim/*` ou `/settings/*`, doit être ajoutée à `scripts/e2e-auth-pages-smoke.mjs`.
+  `npm run check:e2e-auth-pages-coverage` compare ce smoke aux sources de vérité `APP_ROUTES` et `SETTINGS_ROUTES`.
+- Ce smoke ne remplace pas les specs métier : un nouveau simulateur actif doit ajouter ou mettre
+  à jour une spec Playwright authentifiée dans `tests/e2e/`, sauf placeholder explicitement assumé.
 
 Coverage :
 
@@ -390,11 +394,58 @@ VALUES ('<uuid>', 'dev_admin', 'Dev X', '<owner_user_id>');
 UPDATE public.admin_accounts SET status = 'disabled', updated_at = now() WHERE user_id = '<uuid>';
 ```
 
-### Ajouter un compte E2E temporaire
+### Ajouter ou réactiver un compte E2E admin temporaire
+
+Le compte E2E authentifié doit rester borné : rôle admin côté Auth pour couvrir les pages
+protégées, présence explicite dans `admin_accounts`, et expiration obligatoire. La convention
+SER1 est d'utiliser `e2e@test.local` quand le compte existe déjà dans Supabase Auth.
 
 ```sql
-INSERT INTO public.admin_accounts (user_id, account_kind, expires_at, notes)
-VALUES ('<uuid>', 'e2e', now() + interval '7 days', 'Compte E2E run CI — expire auto');
+begin;
+
+update auth.users
+set raw_app_meta_data = jsonb_set(
+  coalesce(raw_app_meta_data, '{}'::jsonb),
+  '{role}',
+  '"admin"',
+  true
+)
+where email = 'e2e@test.local';
+
+update public.profiles
+set role = 'admin'
+where email = 'e2e@test.local';
+
+insert into public.admin_accounts (user_id, account_kind, status, expires_at, notes)
+select id, 'e2e', 'active', now() + interval '180 days', 'Compte E2E authentifié local/CI'
+from auth.users
+where email = 'e2e@test.local'
+on conflict (user_id) do update
+set
+  account_kind = excluded.account_kind,
+  status = 'active',
+  expires_at = excluded.expires_at,
+  notes = excluded.notes,
+  updated_at = now();
+
+commit;
+```
+
+Vérifier :
+
+```sql
+select
+  u.id,
+  u.email,
+  coalesce(u.raw_app_meta_data->>'role', 'user') as app_role,
+  p.role as profile_role,
+  a.account_kind,
+  a.status,
+  a.expires_at
+from auth.users u
+left join public.profiles p on p.id = u.id
+left join public.admin_accounts a on a.user_id = u.id
+where u.email = 'e2e@test.local';
 ```
 
 ### Cycle de vie des comptes E2E
@@ -410,12 +461,13 @@ VALUES ('<uuid>', 'e2e', now() + interval '7 days', 'Compte E2E run CI — expir
   WHERE expires_at IS NOT NULL AND expires_at < now();
   ```
 
-### Compte de vérification LLM local
+### Compte E2E local et CI
 
-Pour les vérifications UI manuelles ou assistées par LLM, utiliser un compte Supabase **non-admin** dédié, par convention `e2e@test.local`.
+Pour les vérifications UI manuelles, assistées par LLM et Playwright authentifié, utiliser le
+compte Supabase dédié `e2e@test.local`.
 
-- Le compte doit rester `user` dans `app_metadata.role` et dans `public.profiles.role`.
-- Il ne doit pas être présent dans `public.admin_accounts`.
+- Le compte doit être `admin` dans `app_metadata.role` et dans `public.profiles.role`.
+- Il doit être présent dans `public.admin_accounts` avec `account_kind='e2e'`, `status='active'` et un `expires_at` non null.
 - Les accès opérationnels de ce compte (URL locale, email, mot de passe) sont stockés uniquement dans `.env.local`, fichier local ignoré par Git (`.gitignore`).
 - Variables locales recommandées :
   ```dotenv
@@ -423,6 +475,25 @@ Pour les vérifications UI manuelles ou assistées par LLM, utiliser un compte S
   SER1_LLM_TEST_EMAIL=e2e@test.local
   SER1_LLM_TEST_PASSWORD=<mot-de-passe-local>
   ```
+- Pour lancer les specs Playwright authentifiées en local, synchroniser les variables `E2E_*` depuis ce bloc :
+  ```powershell
+  $envPath = '.env.local'; $lines = Get-Content $envPath; $vars = @{}; $lines | ForEach-Object { if ($_ -match '^\s*([^#][^=]+?)=(.*)$') { $vars[$matches[1].Trim()] = $matches[2] } }; $pairs = @{ E2E_EMAIL = $vars['SER1_LLM_TEST_EMAIL']; E2E_PASSWORD = $vars['SER1_LLM_TEST_PASSWORD']; E2E_AUTH_REQUIRED = 'true' }; foreach ($key in $pairs.Keys) { if ([string]::IsNullOrWhiteSpace($pairs[$key])) { throw "$key source manquante dans $envPath" }; Set-Item -Path "Env:$key" -Value $pairs[$key]; $line = "$key=$($pairs[$key])"; if ($lines -match "^\s*$([regex]::Escape($key))=") { $lines = $lines -replace "^\s*$([regex]::Escape($key))=.*$", $line } else { $lines += $line } }; Set-Content -Path $envPath -Value $lines -Encoding utf8
+  ```
+- Pour vérifier toutes les pages publiques, privées et settings avec ce compte admin :
+  ```powershell
+  npm run test:e2e:auth-pages
+  ```
+  Ce script charge `.env.local`, refuse les mots de passe placeholder, démarre Vite en dev pour
+  conserver le proxy `/api/admin`, se connecte avec `E2E_EMAIL` / `E2E_PASSWORD`, puis visite les
+  routes applicatives et toutes les sous-pages `/settings/*`.
+- Pour changer le mot de passe d'un compte E2E sans email de récupération, utiliser l'API Admin
+  Supabase côté machine locale avec une clé `service_role` ou `sb_secret_*`, jamais depuis le
+  navigateur :
+  ```powershell
+  $env:SER1_SUPABASE_ADMIN_KEY = "<service-role-ou-sb-secret-key>"; $env:NEW_E2E_PASSWORD = "<nouveau-mot-de-passe>"; node -e "const { createClient } = require('@supabase/supabase-js'); const url = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL; const key = process.env.SER1_SUPABASE_ADMIN_KEY; const password = process.env.NEW_E2E_PASSWORD; if (!url || !key || !password) throw new Error('SUPABASE_URL/VITE_SUPABASE_URL, SER1_SUPABASE_ADMIN_KEY et NEW_E2E_PASSWORD requis'); const supabase = createClient(url, key, { auth: { persistSession: false, autoRefreshToken: false } }); supabase.auth.admin.updateUserById('b382d252-9de6-4721-9462-968ba48b7911', { password }).then(({ error }) => { if (error) throw error; console.log('Mot de passe E2E mis à jour'); }).catch((error) => { console.error(error.message); process.exit(1); });"
+  ```
+  Après rotation, mettre à jour `SER1_LLM_TEST_PASSWORD` dans `.env.local`, puis relancer
+  `npm run test:e2e:auth-pages`.
 - Procédure agent : ouvrir `/login`, se connecter avec `SER1_LLM_TEST_EMAIL` / `SER1_LLM_TEST_PASSWORD`, puis rouvrir `SER1_LLM_TEST_URL` après la redirection d'accueil.
 - Ne jamais copier le mot de passe dans une documentation versionnée, une PR, un ticket ou un log.
 
