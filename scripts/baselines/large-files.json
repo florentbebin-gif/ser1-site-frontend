@@ -34,13 +34,6 @@
     "justification": "Catalogue Base-Contrat structuré ; fichier de données métier central.",
     "nextAction": "Extraire par famille uniquement lors du prochain chantier catalogue."
   },
-  "src/features/tresorerie-societe/export/tresorerieExcelExport.ts": {
-    "maxLines": 681,
-    "category": "export-builder",
-    "decision": "a-reporter-explicitement",
-    "justification": "Builder Excel Trésorerie société encore mono-livrable ; split à faire sans changer les onglets.",
-    "nextAction": "Extraire helpers de feuilles au prochain chantier export Trésorerie."
-  },
   "src/domain/base-contrat/rules/library/valeurs-mobilieres.ts": {
     "maxLines": 680,
     "category": "source-of-truth",
@@ -55,26 +48,12 @@
     "justification": "Famille de règles Base-Contrat cohérente et isolée.",
     "nextAction": "Découper par sous-famille si une modification métier ajoute une nouvelle responsabilité."
   },
-  "src/features/succession/export/successionXlsx.ts": {
-    "maxLines": 608,
-    "category": "export-builder",
-    "decision": "a-reporter-explicitement",
-    "justification": "Builder Excel Succession mono-livrable ; refactor séparé requis pour préserver les onglets.",
-    "nextAction": "Extraire les sections de feuille au prochain chantier export Succession."
-  },
   "src/domain/base-contrat/__tests__/rules.test.ts": {
     "maxLines": 586,
     "category": "test-contract",
     "decision": "acceptable-temporairement",
     "justification": "Suite contrat catalogue globale vérifiant toutes les familles Base-Contrat.",
     "nextAction": "Découper par politique de règles si elle dépasse la baseline ou si une famille est refactorée."
-  },
-  "src/pptx/slides/buildPlacementDetail.ts": {
-    "maxLines": 577,
-    "category": "export-builder",
-    "decision": "a-reporter-explicitement",
-    "justification": "Builder de slide dense mais limité au détail Placement.",
-    "nextAction": "Extraire les blocs métriques/flows au prochain chantier PPTX Placement."
   },
   "src/engine/tresorerie/__tests__/simulateTresorerieV2.test.ts": {
     "maxLines": 573,
