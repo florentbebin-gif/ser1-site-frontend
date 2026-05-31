@@ -4,7 +4,7 @@ import { fireEvent, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import StepPassif from '../components/steps/StepPassif';
-import { createEmptyDossier } from '../types';
+import { createEmptyDossier } from '@/domain/audit/types';
 
 describe('StepPassif', () => {
   it('ajoute un emprunt immobilier par défaut', async () => {

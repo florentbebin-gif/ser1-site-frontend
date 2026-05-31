@@ -11,9 +11,14 @@ import {
   SimAmountInputPercent,
   SimModalShell,
 } from '../../components/ui/sim';
-import type { DossierAudit } from '../audit/types';
-import type { Strategie, ProduitConfig, ProduitType, Recommandation } from './types';
-import { createEmptyStrategie, PRODUIT_LABELS } from './types';
+import type { DossierAudit } from '@/domain/audit/types';
+import type {
+  Strategie,
+  ProduitConfig,
+  ProduitType,
+  Recommandation,
+} from '@/domain/strategy/types';
+import { createEmptyStrategie, PRODUIT_LABELS } from '@/domain/strategy/types';
 import { generateRecommendations } from './utils/recommendations';
 import {
   calculateBaselineProjection,
@@ -22,7 +27,7 @@ import {
 } from './utils/calculations';
 import { useFiscalContext } from '../../hooks/useFiscalContext';
 import { useTheme } from '../../settings/ThemeProvider';
-import type { ComparaisonScenarios } from './types';
+import type { ComparaisonScenarios } from '@/domain/strategy/types';
 import { exportStrategyPptx } from './export/exportStrategy';
 import { onResetEvent } from '../../utils/reset';
 import './styles/StrategyBuilder.css';

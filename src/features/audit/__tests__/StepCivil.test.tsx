@@ -4,7 +4,7 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import StepCivil from '../components/steps/StepCivil';
-import { createEmptyDossier } from '../types';
+import { createEmptyDossier } from '@/domain/audit/types';
 
 describe('StepCivil', () => {
   it('affiche et met à jour le régime matrimonial pour un couple marié', async () => {

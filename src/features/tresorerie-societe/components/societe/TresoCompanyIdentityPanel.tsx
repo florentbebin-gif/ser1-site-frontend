@@ -5,7 +5,7 @@ import { SimSelect } from '@/components/ui/sim/SimSelect';
 import { COMPANY_KIND_OPTIONS, LEGAL_FORM_OPTIONS } from '../../utils/tresorerieSocieteOptions';
 import type { CompanyInputV6, CompanyKind, LegalForm } from '@/engine/tresorerie/types';
 import { fmtEuroInput, parseEuroInput } from '../../utils/tresorerieFormatters';
-import { hasDemembrement } from '../../utils/tresorerieSocieteModel';
+import { hasDemembrement } from '@/domain/tresorerie/societeModel';
 import { TresoCompanyFinancialsModal } from './TresoCompanyFinancialsModal';
 
 interface TresoCompanyIdentityPanelProps {

@@ -1,6 +1,6 @@
 import PptxGenJS from 'pptxgenjs';
 
-import type { DossierAudit } from '@/features/audit/types';
+import type { DossierAudit } from '@/domain/audit/types';
 import { DEFAULT_COLORS } from '@/settings/ThemeProvider';
 import type { ThemeColors } from '@/settings/ThemeProvider';
 

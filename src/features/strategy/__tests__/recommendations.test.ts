@@ -4,8 +4,8 @@
 
 import { describe, it, expect } from 'vitest';
 import { generateRecommendations } from '../utils/recommendations';
-import type { DossierAudit } from '../../audit/types';
-import { createEmptyDossier } from '../../audit/types';
+import type { DossierAudit } from '@/domain/audit/types';
+import { createEmptyDossier } from '@/domain/audit/types';
 
 function createTestDossier(overrides: Partial<DossierAudit> = {}): DossierAudit {
   const base = createEmptyDossier();

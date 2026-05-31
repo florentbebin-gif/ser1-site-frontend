@@ -4,7 +4,7 @@ import {
   getAssociateProfile,
   getSelectedAssociate,
   getSelectedAssociateId,
-} from './tresorerieSocieteModel';
+} from '@/domain/tresorerie/societeModel';
 import { getTresoRevenueSourceLabel } from './tresorerieRevenueLabels';
 
 export interface TresoAssociateInsightSegment {

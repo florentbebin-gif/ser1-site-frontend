@@ -35,7 +35,7 @@ import {
   getCompanyKindLabel,
   getEconomicPct,
   getSelectedAssociate,
-} from '../utils/tresorerieSocieteModel';
+} from '@/domain/tresorerie/societeModel';
 import { getPhaseEndYear, type RevenuePhaseInput, sortPhases } from '../utils/revenuePhases';
 import { getTresoRevenueSourceLabel } from '../utils/tresorerieRevenueLabels';
 import {

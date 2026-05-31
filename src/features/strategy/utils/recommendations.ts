@@ -6,9 +6,9 @@
  * - Les métriques de l'audit (TMI, IFI, patrimoine, etc.)
  */
 
-import type { DossierAudit } from '../../audit/types';
+import type { DossierAudit } from '@/domain/audit/types';
 import { DEFAULT_TAX_SETTINGS } from '@/constants/settingsDefaults';
-import type { Recommandation } from '../types';
+import type { Recommandation } from '@/domain/strategy/types';
 
 const TMI_PER_RECOMMANDATION = DEFAULT_TAX_SETTINGS.incomeTax.defaultTmiEpargneRate;
 const ABATTEMENT_LIGNE_DIRECTE = DEFAULT_TAX_SETTINGS.dmtg.ligneDirecte.abattement;

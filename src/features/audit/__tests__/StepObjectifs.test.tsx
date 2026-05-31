@@ -4,7 +4,7 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import StepObjectifs from '../components/steps/StepObjectifs';
-import { createEmptyDossier } from '../types';
+import { createEmptyDossier } from '@/domain/audit/types';
 
 describe('StepObjectifs', () => {
   it('sélectionne et désélectionne un objectif client', async () => {

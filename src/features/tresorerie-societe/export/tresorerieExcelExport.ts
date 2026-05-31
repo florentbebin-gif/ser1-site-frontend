@@ -33,7 +33,7 @@ import {
   getEconomicPct,
   getSelectedAssociate,
   getAllocationHorizonLabel,
-} from '../utils/tresorerieSocieteModel';
+} from '@/domain/tresorerie/societeModel';
 import {
   computeComplement,
   computeNetRevenue,

@@ -4,7 +4,7 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import StepFamille from '../components/steps/StepFamille';
-import { createEmptyDossier } from '../types';
+import { createEmptyDossier } from '@/domain/audit/types';
 
 describe('StepFamille', () => {
   it('n’affiche les champs partenaire que pour une situation de couple', async () => {

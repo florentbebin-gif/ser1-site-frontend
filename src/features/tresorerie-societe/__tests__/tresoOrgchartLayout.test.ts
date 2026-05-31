@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { CompanyInput } from '@/engine/tresorerie/types';
-import { computeTresoOrgchartLayout } from '../tresoOrgchartLayout';
+import { computeTresoOrgchartLayout } from '@/domain/tresorerie/tresoOrgchartLayout';
 
 function makeCompany(overrides: Partial<CompanyInput> = {}): CompanyInput {
   return {

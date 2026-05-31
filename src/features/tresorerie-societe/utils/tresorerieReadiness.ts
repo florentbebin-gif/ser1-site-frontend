@@ -1,5 +1,5 @@
 import type { RuntimeAssociateInput, TresoInputsV6 } from '@/engine/tresorerie/types';
-import { getOwnershipTotals, getSelectedAssociate } from './tresorerieSocieteModel';
+import { getOwnershipTotals, getSelectedAssociate } from '@/domain/tresorerie/societeModel';
 
 export interface TresoReadiness {
   selectedAssociate?: RuntimeAssociateInput;

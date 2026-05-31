@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { createTrackedObjectURL } from '@/utils/export/createTrackedObjectURL';
-import { createEmptyDossier } from '../types';
+import { createEmptyDossier } from '@/domain/audit/types';
 import {
   clearDraftFromSession,
   exportDossierToFile,

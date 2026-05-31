@@ -4,7 +4,7 @@ import {
   getTresoOrgchartNodeLabel,
   computeTresoOrgchartLayout,
   type TresoOrgNode,
-} from '../../tresoOrgchartLayout';
+} from '@/domain/tresorerie/tresoOrgchartLayout';
 
 interface TresoOrgChartProps {
   company: RuntimeCompanyInput;

@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import type { DossierAudit } from '../../features/audit/types';
-import type { ComparaisonScenarios, Strategie } from '../../features/strategy/types';
+import type { DossierAudit } from '@/domain/audit/types';
+import type { ComparaisonScenarios, Strategie } from '@/domain/strategy/types';
 import { DEFAULT_COLORS } from '../../settings/theme';
 
 type RecordedSlide = {
