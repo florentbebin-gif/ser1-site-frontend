@@ -9,6 +9,7 @@ on:
 jobs:
   e2e:
     runs-on: ubuntu-latest
+    container: mcr.microsoft.com/playwright:v1.60.0-jammy
     timeout-minutes: 15
 
     steps:
@@ -46,18 +47,32 @@ jobs:
           if [ -z "${{ secrets.VITE_SUPABASE_ANON_KEY }}" ]; then
             echo "⚠️ Warning: VITE_SUPABASE_ANON_KEY secret not set"
           fi
+          if [ "${{ vars.E2E_AUTH_REQUIRED }}" = "true" ]; then
+            if [ -z "${{ secrets.E2E_EMAIL }}" ] || [ -z "${{ secrets.E2E_PASSWORD }}" ]; then
+              echo "❌ E2E_AUTH_REQUIRED=true mais E2E_EMAIL/E2E_PASSWORD ne sont pas configurés"
+              exit 1
+            fi
+            echo "🔐 Specs authentifiées activées"
+          else
+            echo "ℹ️ Specs authentifiées désactivées; définir E2E_AUTH_REQUIRED=true avec un compte Supabase valide pour les activer"
+          fi
 
-      - name: Install Playwright browsers
-        run: npx playwright install --with-deps chromium
+      - name: Vérifier Playwright
+        run: |
+          node --version
+          npm --version
+          npx playwright --version
 
-      - name: Lancer les E2E fonctionnels Chromium
+      - name: Lancer les E2E complets Chromium et visuels
         timeout-minutes: 10
-        run: npm run test:e2e -- --project=chromium
+        run: npm run test:e2e
         env:
           CI: true
           VITE_E2E: 'true'
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
           VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+          E2E_EMAIL: ${{ vars.E2E_AUTH_REQUIRED == 'true' && secrets.E2E_EMAIL || '' }}
+          E2E_PASSWORD: ${{ vars.E2E_AUTH_REQUIRED == 'true' && secrets.E2E_PASSWORD || '' }}
 
       - name: Upload test report
         uses: actions/upload-artifact@v6

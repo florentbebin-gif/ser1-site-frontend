@@ -135,6 +135,7 @@ VITE_SUPABASE_ANON_KEY=<anon_key>
 # Optionnel (Playwright E2E)
 E2E_EMAIL=<email>
 E2E_PASSWORD=<password>
+E2E_AUTH_REQUIRED=true
 
 # Optionnel (observabilité production)
 VITE_SENTRY_DSN=<dsn_sentry_frontend>
@@ -211,8 +212,29 @@ npm run audit:prod
 
 Statut des gates :
 
-- Bloquants : `npm run check`, `check:pre-merge`, `test:deno`, `lint:repo`, `typecheck:tests`, `typecheck:node`, `audit:prod`.
+- Bloquants : `npm run check`, `npm run test:e2e` via GitHub Actions, `check:pre-merge`, `test:deno`, `lint:repo`, `typecheck:tests`, `typecheck:node`, `audit:prod`.
 - Informatifs au premier rollout : `coverage`, `build:storybook`, `lhci`.
+
+E2E Playwright :
+
+- La CI exécute `npm run test:e2e` dans `mcr.microsoft.com/playwright:v1.60.0-jammy`, avec Node ré-épinglé à `22.22.1` par `actions/setup-node`.
+- Les snapshots visuels versionnés sont valables pour ce conteneur CI ; c'est la source de vérité. Un run local Windows peut produire des diffs visuels non pertinents.
+- Pour régénérer les snapshots, utiliser le même conteneur que la CI :
+
+  ```powershell
+  $repo = (Get-Location).Path
+  docker run --rm `
+    -v "${repo}:/work" `
+    -w /work `
+    -e CI=true `
+    -e VITE_E2E=true `
+    -e HUSKY=0 `
+    mcr.microsoft.com/playwright:v1.60.0-jammy `
+    bash -lc "npm install -g n >/dev/null && n 22.22.1 >/dev/null && hash -r && npm install -g npm@11.12.0 >/dev/null && npm ci && npx playwright test --project=visual --update-snapshots"
+  ```
+
+- Les specs authentifiées consomment `E2E_EMAIL` et `E2E_PASSWORD` uniquement si `E2E_AUTH_REQUIRED=true` est défini en variable GitHub. Sans cet opt-in explicite, les specs concernées sont skippées ; le gate couvre alors le socle non authentifié et visuel. Aucun nouveau `.skip` inconditionnel ne doit être ajouté.
+- Si `E2E_AUTH_REQUIRED=true`, les secrets doivent pointer vers un vrai compte Supabase valide. Des secrets présents mais invalides ne doivent pas être utilisés comme gate par défaut.
 
 Coverage :
 
