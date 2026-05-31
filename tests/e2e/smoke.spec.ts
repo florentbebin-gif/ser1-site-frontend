@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 import { enableE2EMode } from './helpers/auth';
 import { ROUTES } from './helpers/fixtures';
-import { createEmptyDossier } from '../../src/features/audit/types';
+import { createEmptyDossier } from '../../src/domain/audit/types';
 
 /**
  * Smoke tests minimaux pour les surfaces stables.
