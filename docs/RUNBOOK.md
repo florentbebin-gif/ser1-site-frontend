@@ -36,7 +36,7 @@ Note securite : `admin_accounts` et `admin_action_audit` doivent rester `service
 
 - Check complet :
   - `npm run check` lance les familles `check:static`, `check:architecture`, `check:fiscal`, `check:supabase`, `check:exports`, `check:baselines`, `check:types`, `check:tests` et `check:build`.
-  - Ancienne correspondance : lint/CSS/theme/no-js/no-console/no-office/routes/naming/unused → `check:static`; dependency-cruiser/circular/orphans/imports profonds → `check:architecture`; hardcodes fiscaux/raw fiscal → `check:fiscal`; Base-CG/RLS/Storage/migrations → `check:supabase`; parité exports/images PPTX → `check:exports`; fichiers longs → `check:baselines`; TypeScript/tests/build → `check:types`/`check:tests`/`check:build`.
+  - Ancienne correspondance : format/lint/CSS/theme/couleurs/no-js/no-console/no-office/routes/naming/unused → `check:static`; dependency-cruiser/circular/orphans/imports profonds → `check:architecture`; hardcodes fiscaux/raw fiscal → `check:fiscal`; Base-CG/RLS settings/Storage/migrations → `check:supabase`; parité exports/images PPTX → `check:exports`; fichiers longs → `check:baselines`; TypeScript/tests/build → `check:types`/`check:tests`/`check:build`.
 
 En CI, c'est le gate principal.
 Le workflow GitHub Actions exécute les familles en jobs séparés, puis `npm run check:pre-merge`, `npm run test:deno`, `npm run lint:repo`, `npm run typecheck:tests` et `npm run typecheck:node`.
@@ -148,8 +148,8 @@ VITE_WEB_VITALS=false
 
 ### Console
 
-- Autorisé en prod : `console.error`, `console.warn`.
-- Interdit en prod : `console.log/debug/info/trace` (bloqué ESLint).
+- Autorisé en prod : `console.error`, `console.warn` pour erreurs réelles et observabilité serveur sans contenu sensible.
+- Interdit en prod : `console.log/debug/info/trace` dans `src/` et `api/` (bloqué par `check:no-console`).
 
 ### Activer des logs
 

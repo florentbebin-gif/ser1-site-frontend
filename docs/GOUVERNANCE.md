@@ -1069,7 +1069,7 @@ et la justification de chaque règle, suivre le lien vers la section concernée.
 
 ### Sécurité & observabilité
 
-- ❌ `console.log/debug/info/trace` en prod (bloqué ESLint).
+- ❌ `console.log/debug/info/trace` en prod dans `src/` et `api/` (bloqué par `check:no-console`).
 - ❌ Autorisation basée sur `user_metadata` Supabase.
 
 ### Accessibilité

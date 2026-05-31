@@ -11,12 +11,15 @@ git checkout -b feature/nom-clair
 # 2. Quality Gates (obligatoires avant commit)
 npm run check      # Toutes les familles bloquantes locales
 # ou individuellement :
+npm run format:check # Format Prettier - 0 fichier à reformater
 npm run lint       # ESLint - 0 erreur
 npm run check:arch # Garde-fous d'architecture dependency-cruiser - 0 violation
 npm run check:deep-imports # 0 import profond ../../../ hors tests
 npm run check:supabase-rls # RLS public explicite
+npm run check:settings-rls # RLS settings ciblé
 npm run check:storage-policies # Policies Storage utilisées
 npm run check:export-parity # Parité métriques UI/export
+npm run check:ser1-colors-plugin # Tests du plugin ESLint couleurs SER1
 npm run typecheck  # TypeScript - 0 erreur
 npm test           # Tous les tests passent
 npm run build      # Build Vite OK
@@ -26,9 +29,12 @@ npm run build      # Build Vite OK
 # - Ne loggue pas de contenus sensibles (uniquement PASS/FAIL + fichiers)
 powershell -ExecutionPolicy Bypass -File .\scripts\pre-merge-check.ps1
 
-# 3. Analyses optionnelles
+# 3. Analyses complémentaires
+# Ces commandes restent lançables seules, mais elles sont déjà couvertes par npm run check.
 npm run check:circular  # Détection dépendances circulaires
 npm run check:unused    # Rapport dépendances inutilisées (avec ignore des faux positifs connus)
+
+# Informatif, non bloquant
 npm run lhci            # Lighthouse informatif, non bloquant
 npm run analyze         # Visualisation bundle
 npm run test:e2e        # Tests E2E Playwright
@@ -124,8 +130,8 @@ Filet de sécurité : cron mensuel le 1er du mois à 09:00 UTC qui met la PR à 
 
 ### Logging
 
-- `console.error/warn` : erreurs réelles uniquement
-- `console.log/info/debug` : **interdit** sauf derrière flag `DEBUG_*`
+- `console.error/warn` : erreurs réelles et observabilité serveur sans contenu sensible
+- `console.log/info/debug` : **interdit** dans `src/` et `api/`
 - En prod : aucun log sensible (pas de données utilisateur)
 
 ### Scripts

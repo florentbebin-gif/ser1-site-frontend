@@ -67,7 +67,7 @@ Conventions clés :
 - Garde fichiers orphelins : `npm run check:orphan-source-files` vérifie l'atteignabilité des sources applicatives depuis les entrypoints explicites.
 - Garde fichiers longs : `npm run check:large-files-baseline` bloque tout fichier `src/**/*.ts(x)` au-delà de 500 lignes sans entrée structurée dans `scripts/baselines/large-files.json`, toute entrée sans justification, toute entrée devenue inutile et toute croissance au-delà du `maxLines` figé.
 - Garde routes/docs : `npm run check:routes-doc-sync` vérifie que les routes déclarées dans `src/routes` apparaissent dans ce document.
-- Garde Supabase : `npm run check:supabase-rls`, `npm run check:storage-policies` et `npm run check:supabase-migrations` vérifient le périmètre RLS/Storage/migrations explicitement classé.
+- Garde Supabase : `npm run check:supabase-rls`, `npm run check:settings-rls`, `npm run check:storage-policies` et `npm run check:supabase-migrations` vérifient le périmètre RLS/Storage/migrations explicitement classé.
 - Garde exports : `npm run check:export-parity` vérifie les métriques partagées UI/export ; `npm run check:pptx-images` vérifie le budget des images de chapitres.
 - Familles CI : `npm run check` regroupe `check:static`, `check:architecture`, `check:fiscal`, `check:supabase`, `check:exports`, `check:baselines`, `check:types`, `check:tests` et `check:build`.
 - Coverage moteur : `npm run coverage` porte des seuils sur `src/engine/**` uniquement ; l'UI/features suit une trajectoire séparée.
@@ -272,7 +272,7 @@ Le flag `window.__SER1_E2E = true` permet aux tests Playwright de contourner l'a
 
 - Zéro PII (email, nom, montants, RFR, patrimoine, etc.).
 - Zéro métriques métier (compteurs de simulations, montants calculés, types produits utilisés).
-- En prod : `console.log/debug/info/trace` interdits (ESLint).
+- En prod : `console.log/debug/info/trace` interdits par le gate `check:no-console` dans `src/` et `api/`. Les surfaces serveur conservent `console.warn/error` pour l'observabilité sans contenu sensible.
 
 ---
 
@@ -576,7 +576,7 @@ Adaptateurs connus :
 - `src/features/ir/utils/irFiscalSettings.ts`
 - `src/features/per/fiscal/perPotentielFiscalAdapter.ts`
 - `src/features/tresorerie-societe/hooks/tresorerieFiscalParams.ts`
-- `src/features/placement/hooks/usePlacementSettings.ts`
+- `src/hooks/usePlacementSettings.ts`
 - `src/features/succession/successionFiscalContext.ts`
 - `src/domain/base-contrat/rules/fiscalLabels.ts`
 

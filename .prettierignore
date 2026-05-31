@@ -3,6 +3,12 @@ dist/
 node_modules/
 playwright-report/
 storybook-static/
+test-results/
+.lighthouseci/
+.playwright-mcp/
+.superpowers/
+.tmp/
+extraction/
 .git-blame-ignore-revs
 supabase/functions/
 supabase/.branches/
