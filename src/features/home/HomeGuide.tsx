@@ -1,88 +1,29 @@
 import React, { useMemo, useState } from 'react';
-import { Link } from 'react-router';
 
 import type { SimulatorSpace, SimulatorTab } from '@/domain/simulators/types';
-import {
-  IconActivity,
-  IconArrowLeftRight,
-  IconBarChart,
-  IconBriefcase,
-  IconBuilding,
-  IconChevronDown,
-  IconChevronRight,
-  IconClock,
-  IconFileText,
-  IconGauge,
-  IconGift,
-  IconHome,
-  IconLayers,
-  IconNetwork,
-  IconPieChart,
-  IconShield,
-  IconTable,
-  IconTransfer,
-  IconUsers,
-} from '@/icons/ui';
+import { IconChevronDown } from '@/icons/ui';
 
 import {
   buildHomeGuideState,
   type HomeGuideCard,
+  type HomeGuideFamily,
   type HomeGuideMode,
   type HomeGuideSpace,
   type HomeGuideTab,
 } from './homeGuideModel';
+import { HomeSimulatorPanel } from './HomeSimulatorPanel';
+import { ICONS_BY_SPACE, getSimulatorIcon } from './simulatorIcons';
 import './HomeGuide.css';
 
 interface HomeGuideProps {
   mode: HomeGuideMode;
 }
 
-type IconComponent = (_props: { className?: string }) => React.ReactElement;
-
-const ICONS_BY_SPACE: Record<SimulatorSpace, IconComponent> = {
-  foyer: IconHome,
-  societe: IconBuilding,
-};
-
-const ICONS_BY_SIMULATOR_ID: Partial<Record<string, IconComponent>> = {
-  filiation: IconUsers,
-  'regime-matrimonial': IconShield,
-  'donations-anterieures': IconFileText,
-  'actif-passif': IconTable,
-  budget: IconActivity,
-  ir: IconTable,
-  ifi: IconBuilding,
-  retraite: IconGauge,
-  per: IconClock,
-  'per-potentiel': IconClock,
-  'per-transfert': IconArrowLeftRight,
-  placement: IconPieChart,
-  credit: IconBarChart,
-  'investissement-locatif': IconBuilding,
-  'revenus-fonciers': IconFileText,
-  'lmnp-lmp': IconBuilding,
-  scpi: IconLayers,
-  sci: IconNetwork,
-  'plus-values-immobilieres': IconArrowLeftRight,
-  'arbitrage-reemploi': IconArrowLeftRight,
-  prevoyance: IconShield,
-  succession: IconTransfer,
-  'donation-demembrement': IconGift,
-  'organigramme-societe': IconNetwork,
-  'valorisation-titres': IconBriefcase,
-  'projection-comptable': IconBarChart,
-  'tresorerie-societe': IconBuilding,
-  remuneration: IconActivity,
-  'epargne-salariale': IconBriefcase,
-  'cession-titres': IconArrowLeftRight,
-  'sortie-capitaux': IconArrowLeftRight,
-  holding: IconLayers,
-  'pacte-dutreil': IconShield,
-};
-
 export function HomeGuide({ mode }: HomeGuideProps): React.ReactElement {
   const guide = useMemo(() => buildHomeGuideState(mode), [mode]);
+  const isExpert = mode === 'expert';
   const [activeSpace, setActiveSpace] = useState<SimulatorSpace | null>(null);
+  const [selectedCard, setSelectedCard] = useState<HomeGuideCard | null>(null);
   const [activeTabs, setActiveTabs] = useState<Record<SimulatorSpace, SimulatorTab>>({
     foyer: 'comprendre',
     societe: 'comprendre',
@@ -109,32 +50,40 @@ export function HomeGuide({ mode }: HomeGuideProps): React.ReactElement {
           <HomeGuideSpaceCard
             key={space.id}
             space={space}
+            isExpert={isExpert}
             isOpen={activeSpace === space.id}
             activeTab={activeTabs[space.id]}
             onToggle={() => setActiveSpace(activeSpace === space.id ? null : space.id)}
             onQuickAction={(tab) => openSpace(space.id, tab)}
             onTabChange={(tab) => openSpace(space.id, tab)}
+            onSelectCard={setSelectedCard}
           />
         ))}
       </div>
+
+      <HomeSimulatorPanel card={selectedCard} onClose={() => setSelectedCard(null)} />
     </section>
   );
 }
 
 function HomeGuideSpaceCard({
   space,
+  isExpert,
   isOpen,
   activeTab,
   onToggle,
   onQuickAction,
   onTabChange,
+  onSelectCard,
 }: {
   space: HomeGuideSpace;
+  isExpert: boolean;
   isOpen: boolean;
   activeTab: SimulatorTab;
   onToggle: () => void;
   onQuickAction: (_tab: SimulatorTab) => void;
   onTabChange: (_tab: SimulatorTab) => void;
+  onSelectCard: (_card: HomeGuideCard) => void;
 }): React.ReactElement {
   const Icon = ICONS_BY_SPACE[space.id];
 
@@ -162,24 +111,28 @@ function HomeGuideSpaceCard({
         <IconChevronDown className="home-guide-space__chevron" />
       </button>
 
-      <div className="home-guide-space__quick" aria-label={`Objectifs ${space.label}`}>
-        {space.quickActions.map((quick) => (
-          <button
-            key={quick.tab}
-            type="button"
-            className="home-guide-quick"
-            onClick={() => onQuickAction(quick.tab)}
-          >
-            {quick.label}
-          </button>
-        ))}
-      </div>
+      {!isOpen && (
+        <div className="home-guide-space__quick" aria-label={`Objectifs ${space.label}`}>
+          {space.quickActions.map((quick) => (
+            <button
+              key={quick.tab}
+              type="button"
+              className="home-guide-quick"
+              onClick={() => onQuickAction(quick.tab)}
+            >
+              {quick.label}
+            </button>
+          ))}
+        </div>
+      )}
 
       {isOpen && (
         <div className="home-guide-space__body">
           <HomeGuideTabs tabs={space.tabs} activeTab={activeTab} onChange={onTabChange} />
           <HomeGuideTabPanel
             tab={space.tabs.find((tab) => tab.id === activeTab) ?? space.tabs[0]}
+            isExpert={isExpert}
+            onSelectCard={onSelectCard}
           />
         </div>
       )}
@@ -217,7 +170,15 @@ function HomeGuideTabs({
   );
 }
 
-function HomeGuideTabPanel({ tab }: { tab: HomeGuideTab | undefined }): React.ReactElement {
+function HomeGuideTabPanel({
+  tab,
+  isExpert,
+  onSelectCard,
+}: {
+  tab: HomeGuideTab | undefined;
+  isExpert: boolean;
+  onSelectCard: (_card: HomeGuideCard) => void;
+}): React.ReactElement {
   if (!tab || !tab.hasCards) {
     return (
       <div className="home-guide-empty" data-testid="home-guide-empty">
@@ -226,57 +187,106 @@ function HomeGuideTabPanel({ tab }: { tab: HomeGuideTab | undefined }): React.Re
     );
   }
 
+  // Onglet « Piloter » : familles repliables. Comprendre / Protéger : grille plate
+  // (les familles ne portent pas d'entête, conforme aux visuels cibles).
+  if (tab.id === 'piloter') {
+    return (
+      <div className="home-guide-families" data-testid="home-guide-cards">
+        {tab.families.map((family) => (
+          <HomeGuideFamilyAccordion
+            key={family.name}
+            family={family}
+            isExpert={isExpert}
+            onSelectCard={onSelectCard}
+          />
+        ))}
+      </div>
+    );
+  }
+
   return (
-    <div className="home-guide-families" data-testid="home-guide-cards">
-      {tab.families.map((family) => (
-        <section key={family.name} className="home-guide-family">
-          <h3 className="home-guide-family__head">{family.name}</h3>
-          <div className="home-guide-family__cards">
-            {family.cards.map((card) => (
-              <HomeGuideSimulatorCard key={card.definition.id} card={card} />
-            ))}
-          </div>
-        </section>
-      ))}
+    <div className="home-guide-grid" data-testid="home-guide-cards">
+      {tab.families.flatMap((family) =>
+        family.cards.map((card) => (
+          <HomeGuideSimulatorCard
+            key={card.definition.id}
+            card={card}
+            isExpert={isExpert}
+            onSelect={onSelectCard}
+          />
+        )),
+      )}
     </div>
   );
 }
 
-function HomeGuideSimulatorCard({ card }: { card: HomeGuideCard }): React.ReactElement {
-  const Icon = ICONS_BY_SIMULATOR_ID[card.definition.id] ?? IconTable;
-  const content = (
-    <>
+function HomeGuideFamilyAccordion({
+  family,
+  isExpert,
+  onSelectCard,
+}: {
+  family: HomeGuideFamily;
+  isExpert: boolean;
+  onSelectCard: (_card: HomeGuideCard) => void;
+}): React.ReactElement {
+  const [isOpen, setIsOpen] = useState(false);
+
+  return (
+    <section
+      className={['home-guide-family', isOpen ? 'home-guide-family--open' : '']
+        .filter(Boolean)
+        .join(' ')}
+    >
+      <button
+        type="button"
+        className="home-guide-family__head"
+        aria-expanded={isOpen}
+        onClick={() => setIsOpen((open) => !open)}
+      >
+        <span className="home-guide-family__name">{family.name}</span>
+        <IconChevronDown className="home-guide-family__chevron" />
+      </button>
+      {isOpen && (
+        <div className="home-guide-grid">
+          {family.cards.map((card) => (
+            <HomeGuideSimulatorCard
+              key={card.definition.id}
+              card={card}
+              isExpert={isExpert}
+              onSelect={onSelectCard}
+            />
+          ))}
+        </div>
+      )}
+    </section>
+  );
+}
+
+function HomeGuideSimulatorCard({
+  card,
+  isExpert,
+  onSelect,
+}: {
+  card: HomeGuideCard;
+  isExpert: boolean;
+  onSelect: (_card: HomeGuideCard) => void;
+}): React.ReactElement {
+  const Icon = getSimulatorIcon(card.definition.id);
+
+  return (
+    <button
+      type="button"
+      className="home-guide-card"
+      data-testid={`home-simulator-card-${card.definition.id}`}
+      onClick={() => onSelect(card)}
+    >
       <span className="home-guide-card__icon" aria-hidden="true">
         <Icon className="home-guide-icon" />
       </span>
       <span className="home-guide-card__copy">
         <span className="home-guide-card__title">{card.definition.shortLabel}</span>
-        <span className="home-guide-card__meta">{card.statusLabel}</span>
+        {isExpert && <span className="home-guide-card__meta">{card.statusLabel}</span>}
       </span>
-      <IconChevronRight className="home-guide-card__chevron" />
-    </>
-  );
-
-  if (card.route) {
-    return (
-      <Link
-        to={card.route.path}
-        className="home-guide-card"
-        data-testid={`home-simulator-card-${card.definition.id}`}
-      >
-        {content}
-      </Link>
-    );
-  }
-
-  return (
-    <button
-      type="button"
-      className="home-guide-card home-guide-card--muted"
-      disabled
-      data-testid={`home-simulator-card-${card.definition.id}`}
-    >
-      {content}
     </button>
   );
 }

@@ -54,6 +54,10 @@ test.describe('DossierRail responsive', () => {
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto(ROUTES.audit);
 
+    const railColumn = page.getByTestId('app-shell-dossier-rail');
+    await expect(railColumn.getByTestId('dossier-loaded-card')).toBeVisible();
+    await expect(railColumn.getByTestId('home-mode-card')).toHaveCount(0);
+
     const rail = page.getByTestId('dossier-rail');
     await expect(
       rail.getByRole('button', {

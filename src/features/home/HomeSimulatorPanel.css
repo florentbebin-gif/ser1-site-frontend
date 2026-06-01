@@ -1,0 +1,221 @@
+/* Panneau latéral de détail simulateur, ouvert au clic sur une carte Home.
+   Backdrop flou sur le reste de la page, tiroir droit premium. */
+
+.home-panel-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.home-panel-backdrop {
+  position: absolute;
+  inset: 0;
+  padding: 0;
+  border: 0;
+  background: color-mix(in srgb, var(--overlay-modal) 55%, transparent);
+  backdrop-filter: blur(3px);
+  cursor: pointer;
+}
+
+.home-panel {
+  position: relative;
+  display: flex;
+  width: min(420px, 100%);
+  height: 100%;
+  flex-direction: column;
+  background: var(--surface-card);
+  border-left: 1px solid var(--border-default);
+  box-shadow: -12px 0 40px color-mix(in srgb, var(--shadow-color) 16%, transparent);
+  animation: home-panel-in 220ms var(--easing-standard);
+}
+
+@keyframes home-panel-in {
+  from {
+    transform: translateX(16px);
+    opacity: 0.5;
+  }
+
+  to {
+    transform: none;
+    opacity: 1;
+  }
+}
+
+.home-panel__header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 18px 20px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.home-panel__icon {
+  display: inline-flex;
+  width: 36px;
+  height: 36px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--surface-active) 38%, var(--surface-card));
+  color: var(--action-primary);
+}
+
+.home-panel__icon-svg {
+  width: 18px;
+  height: 18px;
+}
+
+.home-panel__title {
+  flex: 1;
+  margin: 0;
+  color: var(--text-primary);
+  font-size: var(--font-size-lg);
+  font-weight: 600;
+}
+
+.home-panel__close {
+  display: inline-flex;
+  width: 32px;
+  height: 32px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  background: var(--surface-card);
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+
+.home-panel__close:hover {
+  background: var(--surface-muted);
+}
+
+.home-panel__close:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+
+.home-panel__close-svg {
+  width: 16px;
+  height: 16px;
+}
+
+.home-panel__body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 20px;
+  padding: 20px;
+  overflow-y: auto;
+}
+
+.home-panel__section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.home-panel__eyebrow {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+}
+
+.home-panel__text {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: var(--font-size-md);
+  line-height: 1.5;
+}
+
+.home-panel__list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 0;
+  padding-left: 18px;
+  color: var(--text-primary);
+  font-size: var(--font-size-sm);
+  line-height: 1.4;
+}
+
+.home-panel__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.home-panel-chip {
+  display: inline-flex;
+  min-height: 26px;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-full);
+  background: color-mix(in srgb, var(--surface-muted) 60%, var(--surface-card));
+  color: var(--text-secondary);
+  font-size: var(--font-size-xs);
+  font-weight: 500;
+}
+
+.home-panel-chip__icon {
+  width: 13px;
+  height: 13px;
+  color: var(--text-muted);
+}
+
+.home-panel__footer {
+  padding: 16px 20px;
+  border-top: 1px solid var(--border-subtle);
+}
+
+.home-panel__cta {
+  display: flex;
+  width: 100%;
+  min-height: 44px;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 0;
+  border-radius: var(--radius-md);
+  background: var(--action-primary);
+  color: var(--text-on-action);
+  font-size: var(--font-size-md);
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background 160ms ease;
+}
+
+.home-panel__cta:hover {
+  background: var(--action-primary-hover);
+}
+
+.home-panel__cta:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+
+.home-panel__cta-icon {
+  width: 18px;
+  height: 18px;
+}
+
+.home-panel__cta--disabled {
+  background: var(--surface-muted);
+  color: var(--text-muted);
+  cursor: not-allowed;
+}
+
+@media (max-width: 520px) {
+  .home-panel {
+    width: 100%;
+  }
+}

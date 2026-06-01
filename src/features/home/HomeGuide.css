@@ -1,5 +1,5 @@
 .home-guide {
-  width: min(816px, 100%);
+  width: 100%;
   margin: 0 auto;
 }
 
@@ -87,6 +87,16 @@
   width: 40px;
   height: 40px;
   border-radius: var(--radius-lg);
+  transition:
+    background 180ms ease,
+    color 180ms ease,
+    border-color 180ms ease;
+}
+
+.home-guide-space--open .home-guide-space__icon {
+  border-color: var(--action-primary);
+  background: var(--action-primary);
+  color: var(--text-on-action);
 }
 
 .home-guide-space__copy {
@@ -125,11 +135,12 @@
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
-  padding: 0 24px 18px 74px;
+  padding: 0 24px 18px;
 }
 
-.home-guide-quick,
-.home-guide-tab {
+.home-guide-quick {
+  min-height: 26px;
+  padding: 4px 12px;
   border: 1px solid var(--border-default);
   border-radius: var(--radius-full);
   background: color-mix(in srgb, var(--surface-muted) 70%, var(--surface-card));
@@ -140,26 +151,22 @@
   font-weight: 500;
 }
 
-.home-guide-quick {
-  min-height: 26px;
-  padding: 4px 12px;
-}
-
-.home-guide-quick:hover,
-.home-guide-tab:hover:not(:disabled) {
+.home-guide-quick:hover {
   border-color: color-mix(in srgb, var(--action-primary) 30%, var(--border-default));
   background: color-mix(in srgb, var(--surface-active) 36%, var(--surface-card));
 }
 
 .home-guide-space__body {
-  padding: 0 24px 20px 74px;
+  padding: 18px 24px 20px;
 }
 
+/* Contrôle segmenté : piste claire, segment actif en pastille blanche arrondie. */
 .home-guide-tabs {
   display: grid;
-  overflow: hidden;
+  gap: 4px;
   margin-bottom: 14px;
-  border: 1px solid var(--border-default);
+  padding: 4px;
+  border: 1px solid var(--border-subtle);
   border-radius: var(--radius-md);
   background: color-mix(in srgb, var(--surface-muted) 78%, var(--surface-card));
   grid-template-columns: repeat(3, 1fr);
@@ -169,13 +176,22 @@
   min-height: 34px;
   padding: 6px 10px;
   border: 0;
-  border-radius: 0;
+  border-radius: var(--radius-sm);
   background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  font: inherit;
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+}
+
+.home-guide-tab:hover:not(:disabled, .home-guide-tab--active) {
+  color: var(--text-primary);
 }
 
 .home-guide-tab--active {
   background: var(--surface-card);
-  box-shadow: inset 0 0 0 1px var(--border-default);
+  box-shadow: 0 1px 3px color-mix(in srgb, var(--shadow-color) 10%, transparent);
   color: var(--text-primary);
   font-weight: 600;
 }
@@ -185,42 +201,86 @@
   opacity: 0.48;
 }
 
+/* Onglet Piloter : familles repliables. */
 .home-guide-families {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 8px;
 }
 
 .home-guide-family {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
+  overflow: hidden;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--surface-muted) 70%, var(--surface-card));
+}
+
+.home-guide-family--open {
+  background: var(--surface-card);
+  border-color: var(--border-default);
 }
 
 .home-guide-family__head {
-  margin: 0;
-  color: var(--text-secondary);
-  font-size: var(--font-size-xs);
-  font-weight: 700;
-  letter-spacing: 1px;
-  text-transform: uppercase;
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 11px 14px;
+  border: 0;
+  background: transparent;
+  color: var(--text-primary);
+  cursor: pointer;
+  font: inherit;
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  text-align: left;
 }
 
-.home-guide-family__cards {
+.home-guide-family__head:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+
+.home-guide-family__name {
+  min-width: 0;
+}
+
+.home-guide-family__chevron {
+  width: 16px;
+  height: 16px;
+  flex: 0 0 auto;
+  color: var(--text-secondary);
+  transition: transform 180ms ease;
+}
+
+.home-guide-family--open .home-guide-family__chevron {
+  transform: rotate(180deg);
+}
+
+/* Grille de cartes : plate (Comprendre / Protéger) ou dans un accordéon (Piloter).
+   auto-fill (et non auto-fit) garde des colonnes fixes : une carte isolée reste
+   compacte au lieu de s'étirer sur toute la largeur. */
+.home-guide-grid {
   display: grid;
   gap: 8px;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+}
+
+.home-guide-family .home-guide-grid {
+  padding: 0 12px 12px;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
 }
 
 .home-guide-card {
   display: flex;
-  min-height: 48px;
+  min-height: 38px;
   align-items: center;
-  gap: 10px;
-  padding: 10px 12px;
-  border: 1px solid var(--border-default);
+  gap: 8px;
+  padding: 7px 10px;
+  border: 1px solid var(--border-subtle);
   border-radius: var(--radius-md);
-  background: color-mix(in srgb, var(--surface-muted) 56%, var(--surface-card));
+  background: color-mix(in srgb, var(--surface-muted) 55%, var(--surface-card));
   color: var(--text-primary);
   font: inherit;
   text-align: left;
@@ -228,11 +288,13 @@
   transition:
     border-color 160ms ease,
     box-shadow 160ms ease,
+    background 160ms ease,
     transform 160ms ease;
 }
 
 .home-guide-card:hover {
   border-color: color-mix(in srgb, var(--action-primary) 30%, var(--border-default));
+  background: var(--surface-card);
   box-shadow: 0 8px 20px color-mix(in srgb, var(--shadow-color) 6%, transparent);
   transform: translateY(-1px);
 }
@@ -249,9 +311,14 @@
 }
 
 .home-guide-card__icon {
-  width: 30px;
-  height: 30px;
-  border-radius: var(--radius-md);
+  width: 26px;
+  height: 26px;
+  border-radius: var(--radius-sm);
+}
+
+.home-guide-card__icon .home-guide-icon {
+  width: 15px;
+  height: 15px;
 }
 
 .home-guide-card__copy {
@@ -274,12 +341,6 @@
   color: var(--text-secondary);
   font-size: var(--font-size-xs);
   font-weight: 500;
-}
-
-.home-guide-card__chevron {
-  width: 15px;
-  height: 15px;
-  color: var(--text-secondary);
 }
 
 .home-guide-empty {
@@ -309,7 +370,7 @@
   }
 
   .home-guide-tabs,
-  .home-guide-family__cards {
+  .home-guide-grid {
     grid-template-columns: 1fr;
   }
 }

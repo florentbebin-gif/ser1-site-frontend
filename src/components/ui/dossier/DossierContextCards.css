@@ -1,0 +1,50 @@
+/* Cartes de contexte dossier. Home compose Dossier chargé + Mode utilisateur ;
+   les parcours /audit, /strategy et /sim/* n'affichent que Dossier chargé. */
+
+.dossier-context-card {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  padding: 14px 14px 15px;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  background: var(--surface-card);
+  box-shadow: 0 8px 20px color-mix(in srgb, var(--shadow-color) 5%, transparent);
+}
+
+.dossier-context-card--mode {
+  gap: 10px;
+}
+
+.dossier-context-card__label {
+  color: var(--text-secondary);
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+  letter-spacing: 0.9px;
+  text-transform: uppercase;
+}
+
+.dossier-context-card__value {
+  overflow: hidden;
+  color: var(--text-primary);
+  font-size: var(--font-size-md);
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dossier-context-card__divider {
+  height: 1px;
+  background: var(--border-default);
+}
+
+.dossier-context-card__hint {
+  color: var(--text-secondary);
+  font-size: var(--font-size-xs);
+  font-style: italic;
+  line-height: 1.35;
+}
+
+.dossier-context-card .mode-toggle-row {
+  justify-content: space-between;
+}

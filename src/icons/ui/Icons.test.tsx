@@ -4,6 +4,7 @@ import { describe, expect, it } from 'vitest';
 import {
   IconActivity,
   IconArrowLeftRight,
+  IconArrowRight,
   IconBarChart,
   IconBriefcase,
   IconBuilding,
@@ -12,6 +13,7 @@ import {
   IconChevronDown,
   IconChevronRight,
   IconChevronUp,
+  IconClipboardCheck,
   IconClock,
   IconClose,
   IconDownload,
@@ -28,10 +30,12 @@ import {
   IconPencil,
   IconPieChart,
   IconPlus,
+  IconScanLine,
   IconShield,
   IconSliders,
   IconTable,
   IconTransfer,
+  IconUpload,
   IconUsers,
 } from './index';
 
@@ -66,6 +70,10 @@ const newIcons: Array<[string, IconComponent]> = [
   ['IconGauge', IconGauge],
   ['IconShield', IconShield],
   ['IconTransfer', IconTransfer],
+  ['IconArrowRight', IconArrowRight],
+  ['IconClipboardCheck', IconClipboardCheck],
+  ['IconScanLine', IconScanLine],
+  ['IconUpload', IconUpload],
 ];
 
 const emptyIcons: Array<[string, IconComponent]> = [

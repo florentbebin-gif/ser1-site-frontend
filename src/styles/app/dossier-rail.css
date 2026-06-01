@@ -1,34 +1,44 @@
-/* Rail dossier commun : position parcours, version de travail et branches. */
+/* Colonne gauche commune des pages /sim/*, /audit et /strategy :
+   contexte de travail (Dossier chargé) puis parcours dossier.
+   Flottante sur écran large pour garder le contenu centré ; repliée au-dessus
+   du contenu en dessous du seuil où elle chevaucherait la page centrée. */
 
-.app-shell {
-  width: 100%;
+.dossier-rail-column {
+  position: fixed;
+  top: 70px;
+  left: 16px;
+  z-index: 5;
+  display: flex;
+  width: 196px;
+  flex-direction: column;
+  gap: 10px;
+  max-height: calc(100vh - 86px);
+  padding-bottom: 8px;
+  overflow-x: hidden;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in srgb, var(--border-strong) 55%, transparent) transparent;
 }
 
-.app-shell--dossier-rail {
-  display: grid;
-  align-items: start;
-  gap: var(--space-5);
-  min-height: calc(100vh - 64px);
+.dossier-rail-column::-webkit-scrollbar {
+  width: 6px;
 }
 
-.app-shell--rail-full {
-  grid-template-columns: minmax(248px, 292px) minmax(0, 1fr);
+.dossier-rail-column::-webkit-scrollbar-track {
+  background: transparent;
 }
 
-.app-shell--rail-compact {
-  grid-template-columns: minmax(132px, 176px) minmax(0, 1fr);
+.dossier-rail-column::-webkit-scrollbar-thumb {
+  border-radius: var(--radius-full);
+  background: color-mix(in srgb, var(--border-strong) 45%, transparent);
 }
 
-.app-shell__main {
-  min-width: 0;
+.dossier-rail-column::-webkit-scrollbar-thumb:hover {
+  background: color-mix(in srgb, var(--border-strong) 70%, transparent);
 }
 
 .dossier-rail {
-  position: sticky;
-  top: 0;
-  z-index: 5;
-  align-self: start;
-  padding: var(--space-4) 0 var(--space-4) var(--space-4);
+  display: block;
 }
 
 .dossier-rail__mobile-pill {
@@ -38,87 +48,72 @@
 .dossier-rail__panel {
   display: flex;
   flex-direction: column;
-  gap: var(--space-4);
-  min-height: calc(100vh - 96px);
-  padding: var(--space-4);
-  background: var(--surface-card);
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-sm);
-}
-
-.dossier-rail--compact .dossier-rail__panel {
-  padding: var(--space-3);
   gap: var(--space-3);
+  padding: var(--space-3);
+  background: var(--surface-card);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  box-shadow: 0 6px 16px color-mix(in srgb, var(--shadow-color) 4%, transparent);
 }
 
 .dossier-rail__header {
   display: grid;
-  gap: 2px;
-  padding-bottom: var(--space-3);
+  gap: 1px;
+  padding-bottom: var(--space-2);
   border-bottom: 1px solid var(--border-subtle);
 }
 
 .dossier-rail__eyebrow {
   color: var(--text-muted);
-  font-size: var(--font-size-xs);
+  font-size: 9px;
   font-weight: var(--font-weight-semibold);
+  letter-spacing: 0.7px;
   text-transform: uppercase;
 }
 
 .dossier-rail__version {
   color: var(--text-primary);
-  font-size: var(--font-size-md);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
 }
 
 .dossier-rail__version-note,
 .dossier-rail__objective,
 .dossier-rail__branch small {
   color: var(--text-secondary);
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-xs);
   line-height: var(--line-height-base);
 }
 
 .dossier-rail__journey {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr);
-  gap: var(--space-3);
-  align-items: start;
-}
-
-.dossier-rail--compact .dossier-rail__journey {
-  grid-template-columns: 1fr;
+  gap: var(--space-2);
+  align-items: center;
 }
 
 .dossier-rail__journey-icon {
   display: grid;
   place-items: center;
-  width: 32px;
-  height: 32px;
+  width: 26px;
+  height: 26px;
   color: var(--action-primary);
-  background: var(--surface-muted);
+  background: color-mix(in srgb, var(--surface-active) 38%, var(--surface-card));
   border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-md);
-}
-
-.dossier-rail--compact .dossier-rail__journey-icon {
-  display: none;
+  border-radius: var(--radius-sm);
 }
 
 .dossier-rail__icon {
-  width: 18px;
-  height: 18px;
+  width: 15px;
+  height: 15px;
 }
 
 .dossier-rail__journey h2 {
-  margin: 2px 0 0;
+  margin: 0;
   color: var(--text-primary);
-  font-size: var(--font-size-lg);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
   line-height: var(--line-height-tight);
-}
-
-.dossier-rail--compact .dossier-rail__journey h2 {
-  font-size: var(--font-size-md);
 }
 
 .dossier-rail__objective {
@@ -127,20 +122,21 @@
 
 .dossier-rail__section {
   display: grid;
-  gap: var(--space-2);
+  gap: var(--space-1);
 }
 
 .dossier-rail__section h3 {
-  margin: 0;
+  margin: 0 0 1px;
   color: var(--text-muted);
-  font-size: var(--font-size-xs);
+  font-size: 9px;
   font-weight: var(--font-weight-semibold);
+  letter-spacing: 0.7px;
   text-transform: uppercase;
 }
 
 .dossier-rail__steps {
   display: grid;
-  gap: var(--space-2);
+  gap: var(--space-1);
   margin: 0;
   padding: 0;
   list-style: none;
@@ -152,55 +148,50 @@
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
   width: 100%;
-  min-height: 42px;
+  min-height: 28px;
   gap: var(--space-2);
-  padding: var(--space-2);
+  padding: 5px var(--space-2);
   color: var(--text-primary);
-  background: var(--surface-elevated);
+  background: var(--surface-muted);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-sm);
   font: inherit;
   text-align: left;
 }
 
-.dossier-rail--compact .dossier-rail__step-button,
-.dossier-rail--compact .dossier-rail__step-static {
-  grid-template-columns: minmax(0, 1fr);
-  min-height: 38px;
-}
-
 .dossier-rail__step-button {
   cursor: pointer;
+  transition:
+    border-color 160ms ease,
+    background 160ms ease;
 }
 
 .dossier-rail__step-button:hover {
-  background: var(--surface-muted);
-  border-color: var(--border-default);
+  background: var(--surface-card);
+  border-color: color-mix(in srgb, var(--action-primary) 30%, var(--border-default));
 }
 
 .dossier-rail__step-button:focus-visible {
-  outline: 2px solid var(--focus-ring-color);
-  outline-offset: 2px;
+  outline: none;
+  box-shadow: var(--focus-ring);
 }
 
 .dossier-rail__step.is-current .dossier-rail__step-static {
-  background: var(--surface-active);
-  border-color: var(--border-strong);
+  background: var(--surface-card);
+  border-color: var(--border-default);
+  border-left: 2px solid var(--action-primary);
 }
 
 .dossier-rail__step-label {
   min-width: 0;
-  overflow: hidden;
   color: var(--text-primary);
-  font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-semibold);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
   line-height: var(--line-height-tight);
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
-.dossier-rail--compact .dossier-rail__step-label {
-  white-space: normal;
+.dossier-rail__step.is-current .dossier-rail__step-label {
+  font-weight: var(--font-weight-semibold);
 }
 
 .dossier-rail__step-status {
@@ -211,7 +202,7 @@
 
 .dossier-rail__step--future .dossier-rail__step-static,
 .dossier-rail__step--internal .dossier-rail__step-static {
-  background: var(--surface-muted);
+  background: color-mix(in srgb, var(--surface-muted) 70%, var(--surface-card));
   color: var(--text-muted);
 }
 
@@ -221,11 +212,6 @@
   color: var(--text-muted);
 }
 
-.dossier-rail--compact .dossier-rail__step-icon,
-.dossier-rail--compact .dossier-rail__step-status {
-  display: none;
-}
-
 .dossier-rail__branches {
   display: grid;
   gap: var(--space-2);
@@ -233,8 +219,8 @@
 
 .dossier-rail__branch {
   display: grid;
-  gap: 2px;
-  padding: var(--space-2);
+  gap: 1px;
+  padding: 5px var(--space-2);
   background: var(--surface-muted);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-sm);
@@ -242,23 +228,61 @@
 
 .dossier-rail__branch span {
   color: var(--text-primary);
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-xs);
   font-weight: var(--font-weight-semibold);
 }
 
-@media (max-width: 900px) {
-  .app-shell--dossier-rail {
-    display: block;
-    min-height: 0;
+/* Densité compacte (simulateurs) : colonne resserrée, statut/icône masqués. */
+.dossier-rail--compact .dossier-rail__journey {
+  grid-template-columns: 1fr;
+}
+
+.dossier-rail--compact .dossier-rail__journey-icon {
+  display: none;
+}
+
+.dossier-rail--compact .dossier-rail__step-button,
+.dossier-rail--compact .dossier-rail__step-static {
+  grid-template-columns: minmax(0, 1fr);
+  min-height: 26px;
+}
+
+.dossier-rail--compact .dossier-rail__step-status,
+.dossier-rail--compact .dossier-rail__step-icon {
+  display: none;
+}
+
+/* Repli desktop : sous le seuil où la colonne flottante tiendrait dans la
+   gouttière gauche sans chevaucher le contenu centré (max 1200 px), la colonne
+   passe au-dessus du contenu, centrée. Le rail complet reste visible. */
+@media (max-width: 1639px) {
+  .dossier-rail-column {
+    position: static;
+    width: min(1200px, calc(100% - 48px));
+    max-height: none;
+    margin: 16px auto 0;
+    padding: 0 24px;
+    overflow: visible;
+    flex-flow: row wrap;
+    align-items: stretch;
   }
 
-  .app-shell__main {
-    width: 100%;
+  .dossier-rail-column > .dossier-context-card {
+    flex: 1 1 220px;
   }
 
   .dossier-rail {
-    position: static;
-    padding: var(--space-2) var(--space-3) 0;
+    flex: 1 1 100%;
+  }
+}
+
+@media (max-width: 600px) {
+  .dossier-rail-column {
+    padding: 0 16px;
+  }
+
+  .dossier-rail-column > .dossier-context-card {
+    flex-basis: 100%;
   }
 
   .dossier-rail__panel {
@@ -270,12 +294,12 @@
     align-items: center;
     justify-content: space-between;
     gap: var(--space-2);
-    min-height: 30px;
-    padding: var(--space-1) var(--space-2);
+    min-height: 34px;
+    padding: var(--space-2) var(--space-3);
     color: var(--text-secondary);
     background: var(--surface-card);
-    border: 1px solid var(--border-subtle);
-    border-radius: var(--radius-sm);
+    border: 1px solid var(--border-default);
+    border-radius: var(--radius-md);
     font-size: var(--font-size-xs);
   }
 
