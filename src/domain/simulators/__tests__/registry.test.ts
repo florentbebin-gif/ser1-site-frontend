@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { SIM_ROUTE_CONTRACTS } from '@/routes/simRouteContracts';
 import { SIMULATOR_DEFINITIONS } from '../registry';
 
-const ROUTE_IDS = new Set(SIM_ROUTE_CONTRACTS.map((route) => route.id));
+const ROUTE_IDS = new Set<string>(SIM_ROUTE_CONTRACTS.map((route) => route.id));
 
 describe('registry simulateurs', () => {
   it('déclare des ids uniques', () => {
