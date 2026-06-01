@@ -72,8 +72,8 @@ Décisions structurantes V2 :
   experte, pas une carte simplifiée autonome.
 - `Placement trésorerie` est intégré à `Trésorerie société`.
 - `Cession de titres` est une entrée société ; elle n'est pas exposée côté Foyer.
-- Les simulateurs `planned` peuvent apparaître dans un panneau ou un rail comme dépendances futures,
-  mais pas comme cartes cliquables de même niveau qu'un simulateur actif.
+- Les simulateurs `planned` peuvent apparaître dans un rail comme dépendances futures, mais pas comme
+  cartes cliquables de même niveau qu'un simulateur actif ni comme cartes actives sur le premier écran Home.
 
 ## 1) IR
 

@@ -97,6 +97,19 @@ Le pattern attendu est :
 Les cards ne doivent pas etre imbriquees dans d'autres cards. Les sections de page sont des bandes
 ou layouts non cadres ; les cards servent aux items repetes, outils cadres et modales.
 
+## Home
+
+La Home est une surface d'orientation, pas un catalogue. Le premier écran canonique affiche :
+
+- un rail gauche léger avec `Dossier chargé` et `Mode utilisateur` ;
+- `PAR OÙ COMMENCER` au-dessus de deux cartes : `Nouvelle stratégie` dominante et `Scan documentaire` secondaire ;
+- un séparateur discret, puis `SIMULATEURS` et le sous-texte `Sélectionnez votre objectif, SER1 vous guide pas à pas.` ;
+- deux espaces fermés par défaut : `Foyer & patrimoine privé` et `Société & dirigeant`, chacun avec trois chips d'objectif.
+
+Au chargement, ne pas afficher d'onglets, de carte simulateur individuelle, de grille complète ni de
+panneau détail. Les chips peuvent ouvrir un espace, mais le détail simulateur appartient à une
+interaction dédiée ultérieure.
+
 ## Formattage et alignements
 
 - Montants euros : affichage `fr-FR`, separateur de milliers, unite `€` visible hors du nombre.

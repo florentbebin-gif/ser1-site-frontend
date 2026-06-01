@@ -1,8 +1,4 @@
-import {
-  getOptionalSimulatorDefinition,
-  isHomeCardLifecycle,
-  SIMULATOR_DEFINITIONS,
-} from './registry';
+import { isHomeCardLifecycle, SIMULATOR_DEFINITIONS } from './registry';
 import type {
   SimulatorDefinition,
   SimulatorModeVisibility,
@@ -36,13 +32,6 @@ export interface HomeSpaceGroup {
   space: SimulatorSpace;
   label: string;
   tabs: HomeTabGroup[];
-}
-
-export interface SimulatorPanelDetails {
-  simulator: SimulatorDefinition;
-  upstream: SimulatorDefinition[];
-  next: SimulatorDefinition[];
-  futureDependencies: SimulatorDefinition[];
 }
 
 export function isVisibleInMode(
@@ -85,29 +74,4 @@ export function getHomeMatrix(mode: SimulatorModeVisibility = 'simplifie'): Home
       };
     }),
   }));
-}
-
-export function getSimulatorPanelDetails(id: string): SimulatorPanelDetails {
-  const simulator = getOptionalSimulatorDefinition(id);
-  if (!simulator) {
-    throw new Error(`Détail simulateur introuvable : ${id}`);
-  }
-
-  const relatedIds = [...simulator.upstream, ...simulator.next];
-  const relatedDefinitions = relatedIds
-    .map((relatedId) => getOptionalSimulatorDefinition(relatedId))
-    .filter((definition): definition is SimulatorDefinition => Boolean(definition));
-
-  return {
-    simulator,
-    upstream: simulator.upstream
-      .map((relatedId) => getOptionalSimulatorDefinition(relatedId))
-      .filter((definition): definition is SimulatorDefinition => Boolean(definition)),
-    next: simulator.next
-      .map((relatedId) => getOptionalSimulatorDefinition(relatedId))
-      .filter((definition): definition is SimulatorDefinition => Boolean(definition)),
-    futureDependencies: relatedDefinitions.filter(
-      (definition) => definition.lifecycle === 'planned',
-    ),
-  };
 }
