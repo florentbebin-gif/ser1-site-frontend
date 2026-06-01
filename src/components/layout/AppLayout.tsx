@@ -1,8 +1,14 @@
 import React from 'react';
 import type { Session } from '@supabase/supabase-js';
+import { buildDossierRailViewModel } from '@/domain/dossier';
+import {
+  getDossierRailRouteContext,
+  getSimulatorRoutePath,
+} from '@/routes/dossierRailRouteContext';
 import type { RouteMeta } from '../../routes/appRoutes';
 
 import { SessionExpiredBanner } from '../ui/SessionExpiredBanner';
+import { DossierRail } from '../ui/dossier/DossierRail';
 import {
   IconHome,
   IconSave,
@@ -59,6 +65,10 @@ export function AppLayout({
   } = layoutState;
 
   const { contextLabel, showHome, showSaveLoad, showGlobalReset, resetKey } = routeMeta;
+  const dossierRailContext = getDossierRailRouteContext(layoutState.path);
+  const dossierRailViewModel = dossierRailContext
+    ? buildDossierRailViewModel(dossierRailContext)
+    : null;
 
   const { onNavigate, onLogout, onGlobalSave, onGlobalLoad, onGlobalReset, onPageReset } = actions;
   return (
@@ -172,7 +182,23 @@ export function AppLayout({
         </div>
       </div>
 
-      {children}
+      {dossierRailViewModel ? (
+        <div
+          className={`app-shell app-shell--dossier-rail app-shell--rail-${dossierRailViewModel.density}`}
+          data-testid="app-shell-dossier-rail"
+        >
+          <DossierRail
+            viewModel={dossierRailViewModel}
+            onNavigate={onNavigate}
+            resolveRoutePath={getSimulatorRoutePath}
+          />
+          <div className="app-shell__main" data-testid="app-shell-main">
+            {children}
+          </div>
+        </div>
+      ) : (
+        children
+      )}
     </>
   );
 }

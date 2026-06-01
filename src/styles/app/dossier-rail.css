@@ -1,0 +1,290 @@
+/* Rail dossier commun : position parcours, version de travail et branches. */
+
+.app-shell {
+  width: 100%;
+}
+
+.app-shell--dossier-rail {
+  display: grid;
+  align-items: start;
+  gap: var(--space-5);
+  min-height: calc(100vh - 64px);
+}
+
+.app-shell--rail-full {
+  grid-template-columns: minmax(248px, 292px) minmax(0, 1fr);
+}
+
+.app-shell--rail-compact {
+  grid-template-columns: minmax(132px, 176px) minmax(0, 1fr);
+}
+
+.app-shell__main {
+  min-width: 0;
+}
+
+.dossier-rail {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  align-self: start;
+  padding: var(--space-4) 0 var(--space-4) var(--space-4);
+}
+
+.dossier-rail__mobile-pill {
+  display: none;
+}
+
+.dossier-rail__panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  min-height: calc(100vh - 96px);
+  padding: var(--space-4);
+  background: var(--surface-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+}
+
+.dossier-rail--compact .dossier-rail__panel {
+  padding: var(--space-3);
+  gap: var(--space-3);
+}
+
+.dossier-rail__header {
+  display: grid;
+  gap: 2px;
+  padding-bottom: var(--space-3);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.dossier-rail__eyebrow {
+  color: var(--text-muted);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  text-transform: uppercase;
+}
+
+.dossier-rail__version {
+  color: var(--text-primary);
+  font-size: var(--font-size-md);
+}
+
+.dossier-rail__version-note,
+.dossier-rail__objective,
+.dossier-rail__branch small {
+  color: var(--text-secondary);
+  font-size: var(--font-size-sm);
+  line-height: var(--line-height-base);
+}
+
+.dossier-rail__journey {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: var(--space-3);
+  align-items: start;
+}
+
+.dossier-rail--compact .dossier-rail__journey {
+  grid-template-columns: 1fr;
+}
+
+.dossier-rail__journey-icon {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  color: var(--action-primary);
+  background: var(--surface-muted);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+}
+
+.dossier-rail--compact .dossier-rail__journey-icon {
+  display: none;
+}
+
+.dossier-rail__icon {
+  width: 18px;
+  height: 18px;
+}
+
+.dossier-rail__journey h2 {
+  margin: 2px 0 0;
+  color: var(--text-primary);
+  font-size: var(--font-size-lg);
+  line-height: var(--line-height-tight);
+}
+
+.dossier-rail--compact .dossier-rail__journey h2 {
+  font-size: var(--font-size-md);
+}
+
+.dossier-rail__objective {
+  margin: var(--space-2) 0 0;
+}
+
+.dossier-rail__section {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.dossier-rail__section h3 {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  text-transform: uppercase;
+}
+
+.dossier-rail__steps {
+  display: grid;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.dossier-rail__step-button,
+.dossier-rail__step-static {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  width: 100%;
+  min-height: 42px;
+  gap: var(--space-2);
+  padding: var(--space-2);
+  color: var(--text-primary);
+  background: var(--surface-elevated);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  font: inherit;
+  text-align: left;
+}
+
+.dossier-rail--compact .dossier-rail__step-button,
+.dossier-rail--compact .dossier-rail__step-static {
+  grid-template-columns: minmax(0, 1fr);
+  min-height: 38px;
+}
+
+.dossier-rail__step-button {
+  cursor: pointer;
+}
+
+.dossier-rail__step-button:hover {
+  background: var(--surface-muted);
+  border-color: var(--border-default);
+}
+
+.dossier-rail__step-button:focus-visible {
+  outline: 2px solid var(--focus-ring-color);
+  outline-offset: 2px;
+}
+
+.dossier-rail__step.is-current .dossier-rail__step-static {
+  background: var(--surface-active);
+  border-color: var(--border-strong);
+}
+
+.dossier-rail__step-label {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--text-primary);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  line-height: var(--line-height-tight);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dossier-rail--compact .dossier-rail__step-label {
+  white-space: normal;
+}
+
+.dossier-rail__step-status {
+  color: var(--text-muted);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+}
+
+.dossier-rail__step--future .dossier-rail__step-static,
+.dossier-rail__step--internal .dossier-rail__step-static {
+  background: var(--surface-muted);
+  color: var(--text-muted);
+}
+
+.dossier-rail__step-icon {
+  width: 14px;
+  height: 14px;
+  color: var(--text-muted);
+}
+
+.dossier-rail--compact .dossier-rail__step-icon,
+.dossier-rail--compact .dossier-rail__step-status {
+  display: none;
+}
+
+.dossier-rail__branches {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.dossier-rail__branch {
+  display: grid;
+  gap: 2px;
+  padding: var(--space-2);
+  background: var(--surface-muted);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+}
+
+.dossier-rail__branch span {
+  color: var(--text-primary);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+}
+
+@media (max-width: 900px) {
+  .app-shell--dossier-rail {
+    display: block;
+    min-height: 0;
+  }
+
+  .app-shell__main {
+    width: 100%;
+  }
+
+  .dossier-rail {
+    position: static;
+    padding: var(--space-2) var(--space-3) 0;
+  }
+
+  .dossier-rail__panel {
+    display: none;
+  }
+
+  .dossier-rail__mobile-pill {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-2);
+    min-height: 30px;
+    padding: var(--space-1) var(--space-2);
+    color: var(--text-secondary);
+    background: var(--surface-card);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-sm);
+    font-size: var(--font-size-xs);
+  }
+
+  .dossier-rail__mobile-pill strong {
+    min-width: 0;
+    overflow: hidden;
+    color: var(--text-primary);
+    font-weight: var(--font-weight-semibold);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}

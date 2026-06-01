@@ -890,6 +890,13 @@ Un menu vertical gauche persistant est interdit par défaut sur `/sim/*` : il aj
 rail de lecture et alourdit les pages. Une exception doit être prouvée par un besoin métier
 documenté en PR.
 
+Exception V2-03 : `DossierRail` est le seul rail gauche autorisé. Il est injecté une seule fois par
+`AppLayout` sur `/audit`, `/strategy` et `/sim/*` pour afficher la position dans le parcours dossier
+et la version de travail. Sur `/sim/*`, il reste compact sur desktop ; sur mobile, le panneau complet
+est absent et seule une pastille `Version ...` est visible. Ce rail ne contient jamais les actions de
+sauvegarde, chargement, reset, export ou mode, qui restent portées par la topbar ou les surfaces
+existantes.
+
 #### 16l) Contrat UX simulateur
 
 Chaque page `/sim/*` qui consomme les primitives transverses expose un contrat `SimPageUXContract`
