@@ -96,6 +96,7 @@ test.describe('Snapshots visuels simulateurs', () => {
           }
 
           await waitForFonts(page);
+          await maskDossierRail(page);
           await maskFloatingSynthesisCta(page);
           if (pageDef.slug === 'placement' && viewport.name === 'mobile') {
             await expectNoHorizontalOverflow(page);
@@ -124,6 +125,7 @@ test('placement comparaison mobile', async ({ page }) => {
   await expect(page.getByRole('button', { name: 'Retirer le 2e placement' })).toBeVisible();
 
   await waitForFonts(page);
+  await maskDossierRail(page);
   await maskFloatingSynthesisCta(page);
   await expectNoHorizontalOverflow(page);
 
@@ -211,6 +213,25 @@ async function maskFloatingSynthesisCta(page: Page) {
   if (visibleAfterMask > 0) {
     throw new Error('Le CTA synthèse flottant reste visible après application du masque visuel');
   }
+}
+
+async function maskDossierRail(page: Page) {
+  await page.addStyleTag({
+    content: `
+      [data-testid="dossier-rail"] {
+        display: none !important;
+      }
+
+      .app-shell--dossier-rail {
+        display: block !important;
+        min-height: 0 !important;
+      }
+
+      .app-shell__main {
+        width: 100% !important;
+      }
+    `,
+  });
 }
 
 async function expectNoHorizontalOverflow(page: Page) {

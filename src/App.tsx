@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback, Suspense } from 'react';
 import type { Session } from '@supabase/supabase-js';
-import { Routes, Route, useNavigate } from 'react-router';
+import { Routes, Route, useLocation, useNavigate } from 'react-router';
 import { supabase, DEBUG_AUTH } from './supabaseClient';
 import { PrivateRoute } from './auth';
 import { useTheme } from './settings/ThemeProvider';
@@ -62,6 +62,7 @@ export default function App(): React.ReactElement {
   const [session, setSession] = useState<Session | null>(null);
   const [notification, setNotification] = useState<NotificationState | null>(null);
   const navigate = useNavigate();
+  const location = useLocation();
 
   // Dossier fiscal (mode stale) — pour construire l'identité fiscale lors des sauvegardes
   const { fiscalContext, meta: fiscalMeta } = useFiscalContext();
@@ -210,7 +211,7 @@ export default function App(): React.ReactElement {
   }, [showNotification]);
 
   const isRecoveryMode = window.location.hash.includes('type=recovery');
-  const path = window.location.pathname;
+  const path = location.pathname;
   const routeMeta = getRouteMetadata(path);
 
   const sessionGuardValue = React.useMemo<SessionGuardContextValue>(

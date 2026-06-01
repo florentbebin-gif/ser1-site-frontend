@@ -49,6 +49,8 @@ Repères (domain-first) :
 - `src/domain/simulators/` : registry métier des simulateurs, visibilité Home, chaînages et contrats
   d'alimentation dossier. Ce dossier ne remplace pas `src/routes/simRouteContracts.ts` : il référence
   les routes par `routeId` et ne recopie pas les chemins `/sim/*`.
+- `src/domain/dossier/` : modèle pur de version dossier, activation de stratégie, références source
+  et view model du rail dossier. Il ne persiste rien en V2-03.
 - `src/pages/` : shells légers (Home, Login, SettingsShell) + `pages/settings/*` (sous-pages settings).
 - `src/styles/app/` : chrome applicatif global (topbar, chips, états shell).
 - `src/styles/sim/` : baseline CSS partagée des simulateurs `/sim/*`.
@@ -159,9 +161,12 @@ Get-ChildItem src -Recurse -Directory |
 ### Routing
 
 - `src/routes/appRoutes.ts` (APP_ROUTES) : source de vérité des routes + metadata topbar (`contextLabel`, `topbar`).
+- `src/routes/dossierRailRouteContext.ts` : résout la route courante vers le contexte du rail dossier
+  en s'appuyant sur `SIM_ROUTE_CONTRACTS`, sans recopier les chemins dans le domaine dossier.
 - `src/App.tsx` : rendu JSX des routes via `APP_ROUTES.map()`. Résolution topbar via `getRouteMetadata(pathname)`.
 - React Router 7 reste utilisé en mode déclaratif (`BrowserRouter`, `<Routes>`, `<Route>`), avec imports depuis `react-router`.
-- `src/components/layout/AppLayout.tsx` : topbar data-driven (reçoit `routeMeta`, plus de flags hardcodés).
+- `src/components/layout/AppLayout.tsx` : topbar data-driven (reçoit `routeMeta`, plus de flags hardcodés)
+  et point d'injection unique du `DossierRail` sur `/audit`, `/strategy` et `/sim/*`.
 
 #### Routes Map (actuel)
 
@@ -192,6 +197,24 @@ Source (preuves) :
 | `/settings/*`             | privé + lazy | `SettingsShell`         | `src/pages/SettingsShell.tsx` (lazy)                                                                                                                                                                                              |
 
 Trajectoire P4 : le scan documentaire IA doit rester rattaché à l'audit, pas aux simulateurs. La route cible sera une surface privée hors `/sim/*`, par exemple `/audit/documents` ou une étape interne de `/audit`, avec accès depuis la Home dans le bloc `AUDIT & STRATÉGIE`. Ne pas créer `/sim/ia` ni ajouter le scan dans la grille des simulateurs.
+
+### Rail dossier et versions — V2-03
+
+`DossierRail` est l'unique rail gauche autorisé pour le parcours global :
+
+- il est branché dans `src/components/layout/AppLayout.tsx`, jamais dans chaque page ;
+- il consomme `src/domain/dossier/railViewModel.ts`, `src/domain/simulators/chainage.ts` et
+  la registry simulateurs ;
+- il utilise `src/routes/dossierRailRouteContext.ts` pour relier la route courante aux contrats
+  `SIM_ROUTE_CONTRACTS` sans créer de seconde source de routes ;
+- il affiche le rail complet sur desktop pour `/audit` et `/strategy`, le rail compact sur desktop
+  pour `/sim/*`, et seulement une pastille courte sur mobile ;
+- il ne duplique pas les actions globales de topbar : sauvegarde, chargement, reset, export et mode
+  restent dans leurs composants existants.
+
+`DossierVersion`, `StrategyActivation` et `SourceRef` existent en V2-03 comme contrats de domaine
+purs dans `src/domain/dossier/types.ts`. La version affichée est une version de travail non
+persistée ; aucune table Supabase, migration ou stockage durable n'est introduit à ce stade.
 
 Vérification (commandes) :
 
