@@ -9,7 +9,7 @@
   align-items: center;
   justify-content: center;
   z-index: 1000;
-  padding: 20px;
+  padding: 16px;
 }
 
 .sc-member-modal {
@@ -17,8 +17,8 @@
   border-radius: 14px;
   width: 100%;
   max-width: 520px;
-  min-height: 320px;
-  max-height: calc(100vh - 40px);
+  min-height: 280px;
+  max-height: calc(100vh - 32px);
   box-shadow:
     0 20px 60px color-mix(in srgb, var(--shadow-color) 20%, transparent),
     0 0 0 1px color-mix(in srgb, var(--shadow-color) 5%, transparent);
@@ -28,14 +28,14 @@
 
 .sc-member-modal--family {
   max-width: 620px;
-  min-height: 420px;
+  min-height: 360px;
 }
 
 .sc-member-modal__header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 18px 20px;
+  padding: 14px 16px;
   border-bottom: 1px solid var(--color-c8);
   border-radius: 14px 14px 0 0;
   background: var(--surface-card);
@@ -51,8 +51,8 @@
 .sc-member-modal__close {
   background: none;
   border: 1px solid var(--color-c8);
-  width: 32px;
-  height: 32px;
+  width: 30px;
+  height: 30px;
   border-radius: 50%;
   font-size: 14px;
   cursor: pointer;
@@ -71,10 +71,10 @@
 }
 
 .sc-member-modal__body {
-  padding: 20px;
+  padding: 16px;
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 10px;
   overflow-y: auto;
   flex: 1 1 auto;
   min-height: 0;
@@ -84,7 +84,7 @@
   display: flex;
   justify-content: flex-end;
   gap: 10px;
-  padding: 16px 20px;
+  padding: 12px 16px;
   border-top: 1px solid var(--color-c8);
   border-radius: 0 0 14px 14px;
   background: var(--surface-card);
@@ -101,9 +101,9 @@
 .sc-field input,
 .sc-field select {
   width: 100%;
-  height: 32px;
+  height: 28px;
   box-sizing: border-box;
-  padding: 4px 6px;
+  padding: 3px 6px;
   border: none;
   border-bottom: 1px solid transparent;
   border-radius: 4px;
@@ -135,11 +135,11 @@
 .sc-heirs-list {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 8px;
 }
 
 .sc-donations-list {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 8px;
 }

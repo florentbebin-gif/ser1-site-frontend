@@ -44,7 +44,7 @@
 .ir-guide-card__grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 16px;
+  gap: 12px;
   align-items: start;
 }
 

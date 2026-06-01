@@ -3,16 +3,16 @@
 .chip.with-label {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  padding: 8px 20px;
+  gap: 6px;
+  padding: 7px 16px;
   border-radius: 6px;
   white-space: nowrap;
-  min-width: 130px;
+  min-width: 118px;
   justify-content: center;
 }
 
 .btn-label {
-  font-size: 13px;
+  font-size: var(--font-size-md);
   font-weight: 500;
   line-height: 1;
 }
@@ -26,13 +26,13 @@
   background: var(--surface-card);
   color: var(--color-c10);
   border: 1px solid var(--color-c8);
-  padding: 6px 12px;
+  padding: 5px 10px;
   border-radius: 999px;
   text-decoration: none;
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  font-size: 14px;
+  gap: 5px;
+  font-size: var(--font-size-md);
   cursor: pointer;
   transition: all 0.15s ease;
 }
@@ -48,8 +48,8 @@
 }
 
 .icon-btn {
-  width: 38px;
-  height: 38px;
+  width: 32px;
+  height: 32px;
   padding: 0;
   display: flex;
   align-items: center;
@@ -58,6 +58,6 @@
 }
 
 .icon-btn .icon {
-  width: 20px;
-  height: 20px;
+  width: 16px;
+  height: 16px;
 }

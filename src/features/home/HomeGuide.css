@@ -4,16 +4,16 @@
 }
 
 .home-guide__head {
-  margin-bottom: 18px;
+  margin-bottom: 14px;
   text-align: center;
 }
 
 .home-guide__eyebrow {
-  margin: 0 0 7px;
+  margin: 0 0 5px;
   color: var(--text-secondary);
   font-size: var(--font-size-xs);
   font-weight: 700;
-  letter-spacing: 2px;
+  letter-spacing: 1.8px;
   text-transform: uppercase;
 }
 
@@ -21,13 +21,13 @@
   margin: 0;
   color: var(--text-secondary);
   font-size: var(--font-size-sm);
-  line-height: 1.45;
+  line-height: 1.35;
 }
 
 .home-guide__spaces {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 10px;
 }
 
 .home-guide-space {
@@ -53,8 +53,8 @@
   display: grid;
   width: 100%;
   align-items: center;
-  gap: 14px;
-  padding: 18px 24px 10px;
+  gap: 12px;
+  padding: 12px 18px 6px;
   border: 0;
   background: transparent;
   color: var(--text-primary);
@@ -84,8 +84,8 @@
 }
 
 .home-guide-space__icon {
-  width: 40px;
-  height: 40px;
+  width: 32px;
+  height: 32px;
   border-radius: var(--radius-lg);
   transition:
     background 180ms ease,
@@ -103,7 +103,7 @@
   display: flex;
   min-width: 0;
   flex-direction: column;
-  gap: 4px;
+  gap: 3px;
 }
 
 .home-guide-space__name {
@@ -117,7 +117,7 @@
   overflow-wrap: anywhere;
   color: var(--text-secondary);
   font-size: var(--font-size-sm);
-  line-height: 1.35;
+  line-height: 1.28;
 }
 
 .home-guide-space__chevron {
@@ -134,13 +134,13 @@
 .home-guide-space__quick {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
-  padding: 0 24px 18px;
+  gap: 7px;
+  padding: 0 18px 12px;
 }
 
 .home-guide-quick {
-  min-height: 26px;
-  padding: 4px 12px;
+  min-height: 22px;
+  padding: 3px 10px;
   border: 1px solid var(--border-default);
   border-radius: var(--radius-full);
   background: color-mix(in srgb, var(--surface-muted) 70%, var(--surface-card));
@@ -157,15 +157,15 @@
 }
 
 .home-guide-space__body {
-  padding: 18px 24px 20px;
+  padding: 14px 18px 16px;
 }
 
 /* Contrôle segmenté : piste claire, segment actif en pastille blanche arrondie. */
 .home-guide-tabs {
   display: grid;
   gap: 4px;
-  margin-bottom: 14px;
-  padding: 4px;
+  margin-bottom: 12px;
+  padding: 3px;
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-md);
   background: color-mix(in srgb, var(--surface-muted) 78%, var(--surface-card));
@@ -173,8 +173,8 @@
 }
 
 .home-guide-tab {
-  min-height: 34px;
-  padding: 6px 10px;
+  min-height: 30px;
+  padding: 5px 8px;
   border: 0;
   border-radius: var(--radius-sm);
   background: transparent;
@@ -225,8 +225,8 @@
   width: 100%;
   align-items: center;
   justify-content: space-between;
-  gap: 10px;
-  padding: 11px 14px;
+  gap: 8px;
+  padding: 9px 12px;
   border: 0;
   background: transparent;
   color: var(--text-primary);
@@ -263,21 +263,21 @@
    compacte au lieu de s'étirer sur toute la largeur. */
 .home-guide-grid {
   display: grid;
-  gap: 8px;
-  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 7px;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
 }
 
 .home-guide-family .home-guide-grid {
-  padding: 0 12px 12px;
-  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  padding: 0 10px 10px;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
 }
 
 .home-guide-card {
   display: flex;
-  min-height: 38px;
+  min-height: 34px;
   align-items: center;
-  gap: 8px;
-  padding: 7px 10px;
+  gap: 7px;
+  padding: 6px 9px;
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-md);
   background: color-mix(in srgb, var(--surface-muted) 55%, var(--surface-card));
@@ -311,14 +311,14 @@
 }
 
 .home-guide-card__icon {
-  width: 26px;
-  height: 26px;
+  width: 24px;
+  height: 24px;
   border-radius: var(--radius-sm);
 }
 
 .home-guide-card__icon .home-guide-icon {
-  width: 15px;
-  height: 15px;
+  width: 14px;
+  height: 14px;
 }
 
 .home-guide-card__copy {
@@ -326,7 +326,7 @@
   min-width: 0;
   flex: 1;
   flex-direction: column;
-  gap: 3px;
+  gap: 2px;
 }
 
 .home-guide-card__title {
@@ -344,7 +344,7 @@
 }
 
 .home-guide-empty {
-  padding: 14px;
+  padding: 12px;
   border: 1px dashed var(--border-default);
   border-radius: var(--radius-md);
   color: var(--text-secondary);
@@ -353,20 +353,20 @@
 }
 
 .home-guide-icon {
-  width: 18px;
-  height: 18px;
+  width: 16px;
+  height: 16px;
 }
 
 @media (max-width: 760px) {
   .home-guide-space__button {
     align-items: start;
-    padding: 16px 16px 10px;
+    padding: 14px 14px 8px;
   }
 
   .home-guide-space__quick,
   .home-guide-space__body {
-    padding-right: 16px;
-    padding-left: 16px;
+    padding-right: 14px;
+    padding-left: 14px;
   }
 
   .home-guide-tabs,

@@ -6,14 +6,14 @@
 .ir-right {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 12px;
   align-self: stretch;
 }
 
 .ir-left {
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 18px;
   margin-bottom: 0;
 }
 
@@ -28,10 +28,10 @@
 /* Cartes rÃ©sultats (TMI + rÃ©sumÃ©) â€” restÃ©es figÃ©es au scroll */
 .ir-results-sticky {
   position: sticky;
-  top: 80px;
+  top: 64px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 9px;
 }
 
 @media (max-width: 900px) {

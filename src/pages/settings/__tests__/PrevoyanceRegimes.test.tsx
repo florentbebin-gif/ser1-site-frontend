@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 
 import '@testing-library/jest-dom/vitest';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { PREVOYANCE_MAINTIEN_LEGAL_CODE } from '@/domain/prevoyance/constants';
@@ -73,6 +73,16 @@ const sources: PrevoyanceRegimeSettings['sources'] = {
 };
 
 const regimes: PrevoyanceRegimeSettings[] = [
+  {
+    code: 'cavamac',
+    label: 'Agent général — CAVAMAC',
+    caisse: 'CAVAMAC',
+    population: 'tns',
+    defaultContractKind: 'individuel',
+    year: 2026,
+    data: baseData,
+    sources,
+  },
   {
     code: 'salarie-cpam',
     label: 'Salarié secteur privé — CPAM',
@@ -164,15 +174,15 @@ describe('PrevoyanceRegimes', () => {
   }
 
   it('affiche la page aux users en lecture seule avec les références consultables', async () => {
+    const user = userEvent.setup();
     await renderPage();
 
     expect(screen.getByTestId('user-info-banner')).toBeInTheDocument();
-    await waitFor(() =>
-      expect(screen.getByRole('button', { name: /Salarié secteur privé — CPAM/i })).toHaveAttribute(
-        'aria-expanded',
-        'true',
-      ),
-    );
+    const cpam = screen.getByRole('button', { name: /Salarié secteur privé — CPAM/i });
+    expect(cpam).toHaveAttribute('aria-expanded', 'false');
+
+    await user.click(cpam);
+    expect(cpam).toHaveAttribute('aria-expanded', 'true');
     expect(screen.getByRole('link', { name: 'Ameli' })).toHaveAttribute(
       'href',
       'https://www.ameli.fr/',
@@ -189,25 +199,31 @@ describe('PrevoyanceRegimes', () => {
   });
 
   it('affiche les actions secondaires aux admins', async () => {
+    const user = userEvent.setup();
     isAdmin = true;
 
     await renderPage();
 
     expect(screen.getByRole('button', { name: 'Maintien employeur' })).toBeInTheDocument();
-    await waitFor(() =>
-      expect(screen.getByRole('button', { name: 'Modifier' })).toBeInTheDocument(),
-    );
+
+    await user.click(screen.getByRole('button', { name: /Agent général — CAVAMAC/i }));
+    expect(screen.getByRole('button', { name: 'Modifier' })).toBeInTheDocument();
   });
 
-  it('ouvre et ferme les régimes avec aria-expanded', async () => {
+  it('garde les régimes repliés au chargement puis les ouvre au clic', async () => {
     const user = userEvent.setup();
     await renderPage();
 
+    const cavamac = screen.getByRole('button', { name: /Agent général — CAVAMAC/i });
     const cpam = screen.getByRole('button', { name: /Salarié secteur privé — CPAM/i });
-    await waitFor(() => expect(cpam).toHaveAttribute('aria-expanded', 'true'));
-
-    await user.click(cpam);
+    expect(cavamac).toHaveAttribute('aria-expanded', 'false');
     expect(cpam).toHaveAttribute('aria-expanded', 'false');
+
+    await user.click(cavamac);
+    expect(cavamac).toHaveAttribute('aria-expanded', 'true');
+
+    await user.click(cavamac);
+    expect(cavamac).toHaveAttribute('aria-expanded', 'false');
 
     const ssi = screen.getByRole('button', { name: /Artisan \/ commerçant — SSI/i });
     await user.click(ssi);

@@ -222,6 +222,16 @@ async function waitForVisualStability(page: Page) {
 }
 
 async function maskFloatingSynthesisCta(page: Page) {
+  await page.addStyleTag({
+    content: `
+      .sim-view-synthesis-cta--floating {
+        opacity: 0 !important;
+        pointer-events: none !important;
+        visibility: hidden !important;
+      }
+    `,
+  });
+
   const visibleAfterMask = await page
     .locator('.sim-view-synthesis-cta--floating')
     .evaluateAll((elements) => {

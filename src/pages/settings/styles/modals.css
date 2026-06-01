@@ -13,10 +13,10 @@
 
 .settings-modal-shell {
   background: var(--surface-card);
-  border-radius: 12px;
-  padding: 24px;
+  border-radius: 10px;
+  padding: 18px;
   width: min(800px, 90vw);
-  max-height: 85vh;
+  max-height: 88vh;
   overflow-y: auto;
   box-shadow:
     0 20px 60px color-mix(in srgb, var(--shadow-color) 15%, transparent),
@@ -35,10 +35,10 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 12px;
-  margin-bottom: 20px;
+  gap: 9px;
+  margin-bottom: 14px;
   border-bottom: 1px solid var(--color-c8);
-  padding-bottom: 12px;
+  padding-bottom: 9px;
 }
 
 .settings-modal-shell__title-section {
@@ -50,7 +50,7 @@
 .settings-modal-shell__title {
   margin: 0;
   color: var(--color-c10);
-  font-size: 18px;
+  font-size: 16px;
 }
 
 .settings-modal-shell__subtitle {
@@ -62,9 +62,9 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 36px;
-  min-height: 36px;
-  padding: 8px 12px;
+  min-width: 32px;
+  min-height: 32px;
+  padding: 6px 10px;
   border-radius: 6px;
   background: var(--accent-signature);
   color: var(--color-c10);
@@ -79,17 +79,17 @@
 }
 
 .settings-modal-shell__body {
-  margin-bottom: 20px;
+  margin-bottom: 14px;
 }
 
 .settings-modal-shell__body p {
-  margin: 8px 0;
-  line-height: 1.5;
+  margin: 6px 0;
+  line-height: 1.4;
 }
 
 .settings-modal-shell__body pre {
   background: var(--color-c7);
-  padding: 12px;
+  padding: 9px;
   border-radius: 6px;
   overflow-x: auto;
   font-size: 12px;
@@ -97,16 +97,16 @@
 
 .settings-modal-shell__footer {
   display: flex;
-  gap: 12px;
+  gap: 9px;
   justify-content: flex-end;
   flex-wrap: wrap;
 }
 
 .settings-modal-shell__footer button {
-  padding: 10px 16px;
+  padding: 8px 12px;
   border-radius: 6px;
   font-weight: 600;
-  font-size: 14px;
+  font-size: 13px;
   cursor: pointer;
   transition: all 0.2s ease;
   border: 1px solid var(--color-c8);
@@ -137,13 +137,13 @@
 .reports-table {
   width: 100%;
   border-collapse: collapse;
-  margin-top: 12px;
-  font-size: 14px;
+  margin-top: 9px;
+  font-size: 13px;
 }
 
 .reports-table th,
 .reports-table td {
-  padding: 10px;
+  padding: 8px;
   text-align: left;
   border-bottom: 1px solid var(--color-c8);
 }
@@ -220,11 +220,11 @@
 .report-detail-meta {
   display: flex;
   flex-wrap: wrap;
-  gap: 16px;
+  gap: 12px;
   background: var(--accent-signature);
-  padding: 16px;
+  padding: 12px;
   border-radius: 8px;
-  margin-bottom: 16px;
+  margin-bottom: 12px;
 }
 
 .report-detail-field {
@@ -243,8 +243,8 @@
 }
 
 .report-detail-section h4 {
-  font-size: 16px;
-  margin: 0 0 12px;
+  font-size: 14px;
+  margin: 0 0 9px;
   color: var(--color-c10);
 }
 
@@ -271,8 +271,8 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
-  padding: 10px 12px;
+  gap: 9px;
+  padding: 8px 10px;
   border: 1px solid var(--color-c8);
   border-radius: 6px;
   background: var(--surface-card);
@@ -286,24 +286,24 @@
 }
 
 .report-description-box {
-  padding: 16px;
+  padding: 12px;
   border: 1px solid var(--color-c8);
   border-radius: 8px;
   background: var(--surface-card);
-  line-height: 1.6;
+  line-height: 1.45;
 }
 
 .report-detail-metadata h5,
 .report-detail-metadata summary {
-  font-size: 16px;
-  margin: 0 0 12px;
+  font-size: 14px;
+  margin: 0 0 9px;
   color: var(--color-c10);
   cursor: pointer;
 }
 
 .report-detail-metadata pre {
   background: var(--accent-signature);
-  padding: 16px;
+  padding: 12px;
   border-radius: 8px;
   overflow-x: auto;
   font-size: 13px;
@@ -313,7 +313,7 @@
 }
 
 .settings-modal-field {
-  margin-bottom: 16px;
+  margin-bottom: 12px;
 }
 
 .settings-modal-label {
@@ -326,7 +326,7 @@
 
 .settings-modal-control {
   width: 100%;
-  padding: 10px 12px;
+  padding: 8px 10px;
   border: 1px solid var(--color-c8);
   border-radius: 6px;
   font-size: 14px;
@@ -341,13 +341,13 @@
 }
 
 .settings-modal-message {
-  margin-bottom: 16px;
+  margin-bottom: 12px;
 }
 
 .settings-modal-file-row {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 9px;
   flex-wrap: wrap;
 }
 
@@ -362,14 +362,14 @@
 
 .settings-modal-hint--compact {
   font-size: 12px;
-  margin-top: 8px;
+  margin-top: 6px;
 }
 
 .settings-modal-preview {
-  margin-top: 12px;
+  margin-top: 9px;
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 9px;
 }
 
 .settings-modal-preview-image {
@@ -387,7 +387,7 @@
 }
 
 .settings-modal-placement-button {
-  padding: 8px 12px;
+  padding: 6px 10px;
   font-size: 12px;
   border: 2px solid var(--color-c8);
   border-radius: 6px;

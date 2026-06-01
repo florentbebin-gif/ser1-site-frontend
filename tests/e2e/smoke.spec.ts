@@ -44,6 +44,52 @@ test.describe('Smoke Tests - Surfaces stables', () => {
     await expect(page).toHaveURL(/\/audit$/);
   });
 
+  test('Home conserve la densité cible à zoom navigateur 100 %', async ({ page }) => {
+    await page.setViewportSize({ width: 1520, height: 720 });
+    await page.goto(ROUTES.home);
+    await expect(page.locator('body')).not.toContainText('Application error');
+
+    const metrics = await page.evaluate(() => {
+      const main = document.querySelector('.home-main');
+      const rail = document.querySelector('.home-side-rail');
+      const foyer = document.querySelector('[data-testid="home-space-foyer"]');
+      const modeLabel = document.querySelector('.mode-toggle-label');
+      const actionTitle = document.querySelector('.home-action__title');
+      const actionSubtitle = document.querySelector('.home-action__subtitle');
+      const spaceTitle = document.querySelector('.home-guide-space__name');
+      const mainBox = main?.getBoundingClientRect();
+      const railBox = rail?.getBoundingClientRect();
+      const foyerBox = foyer?.getBoundingClientRect();
+      const fontSize = (element: Element | null) =>
+        element ? Number.parseFloat(getComputedStyle(element).fontSize) : 0;
+
+      return {
+        mainWidth: mainBox?.width ?? 0,
+        railWidth: railBox?.width ?? 0,
+        foyerWidth: foyerBox?.width ?? 0,
+        modeLabelFontSize: fontSize(modeLabel),
+        actionTitleFontSize: fontSize(actionTitle),
+        actionSubtitleFontSize: fontSize(actionSubtitle),
+        spaceTitleFontSize: fontSize(spaceTitle),
+        hasHorizontalOverflow: document.body.scrollWidth > document.documentElement.clientWidth,
+      };
+    });
+
+    expect(metrics.mainWidth).toBeGreaterThanOrEqual(850);
+    expect(metrics.mainWidth).toBeLessThanOrEqual(875);
+    expect(metrics.foyerWidth).toBeGreaterThanOrEqual(850);
+    expect(metrics.foyerWidth).toBeLessThanOrEqual(875);
+    expect(metrics.railWidth).toBeGreaterThanOrEqual(140);
+    expect(metrics.railWidth).toBeLessThanOrEqual(155);
+    expect(metrics.modeLabelFontSize).toBeLessThanOrEqual(11);
+    expect(metrics.actionTitleFontSize).toBeGreaterThanOrEqual(14);
+    expect(metrics.actionTitleFontSize).toBeLessThanOrEqual(15);
+    expect(metrics.actionSubtitleFontSize).toBeLessThanOrEqual(10);
+    expect(metrics.spaceTitleFontSize).toBeGreaterThanOrEqual(14);
+    expect(metrics.spaceTitleFontSize).toBeLessThanOrEqual(15);
+    expect(metrics.hasHorizontalOverflow).toBe(false);
+  });
+
   test('Home ouvre le panneau simulateur uniquement après une action explicite', async ({
     page,
   }) => {

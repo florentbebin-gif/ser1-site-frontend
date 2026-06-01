@@ -73,31 +73,31 @@
   --focus-ring-color: var(--color-c3);
 
   /* Tokens de fondation SIM SER1 2026 */
-  --space-1: 4px;
-  --space-2: 8px;
-  --space-3: 12px;
-  --space-4: 16px;
-  --space-5: 20px;
-  --space-6: 24px;
-  --space-7: 32px;
-  --space-8: 48px;
+  --space-1: 3px;
+  --space-2: 6px;
+  --space-3: 9px;
+  --space-4: 12px;
+  --space-5: 16px;
+  --space-6: 20px;
+  --space-7: 28px;
+  --space-8: 40px;
   --radius-sm: 4px;
   --radius-md: 8px;
   --radius-lg: 12px;
   --radius-full: 9999px;
-  --font-size-xs: 10px;
-  --font-size-sm: 12px;
-  --font-size-md: 13px;
-  --font-size-lg: 15px;
-  --font-size-xl: 18px;
-  --font-size-2xl: 22px;
-  --font-size-3xl: 28px;
+  --font-size-xs: 8px;
+  --font-size-sm: 10px;
+  --font-size-md: 11px;
+  --font-size-lg: 13px;
+  --font-size-xl: 15px;
+  --font-size-2xl: 18px;
+  --font-size-3xl: 22px;
   --font-weight-regular: 400;
   --font-weight-medium: 500;
   --font-weight-semibold: 600;
   --font-weight-bold: 700;
   --line-height-tight: 1.1;
-  --line-height-base: 1.4;
+  --line-height-base: 1.35;
   --line-height-relaxed: 1.6;
   --transition-fast: 150ms;
   --transition-base: 220ms;
@@ -134,6 +134,8 @@
 body {
   margin: 0;
   font-family: var(--font-sans);
+  font-size: var(--font-size-md);
+  line-height: var(--line-height-base);
   background: var(--surface-page);
 }
 

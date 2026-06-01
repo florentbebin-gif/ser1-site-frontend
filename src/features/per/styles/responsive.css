@@ -257,7 +257,7 @@
   }
 
   .per-summary-primary-value {
-    font-size: 28px;
+    font-size: var(--font-size-3xl);
   }
 
   .per-potentiel-stage-badge {

@@ -3,16 +3,16 @@
 .topbar {
   background: var(--color-c1);
   color: var(--color-c7);
-  padding: 12px 20px;
+  padding: 8px 14px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
   box-shadow: 0 2px 8px color-mix(in srgb, var(--shadow-color) 18%, transparent);
 }
 
 .brandbar {
-  font-size: 18px;
+  font-size: 16px;
   display: flex;
   align-items: center;
   min-width: 0;
@@ -33,7 +33,7 @@
 .breadcrumb-context {
   font-weight: 400;
   color: var(--color-c7);
-  font-size: 17px;
+  font-size: 15px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -42,21 +42,21 @@
 .top-actions {
   display: flex;
   flex-wrap: wrap;
-  gap: 12px;
+  gap: 7px;
   justify-content: flex-end;
   min-width: 0;
 }
 
 .topbar .icon {
-  width: 20px;
-  height: 20px;
+  width: 16px;
+  height: 16px;
   flex-shrink: 0;
 }
 
 .topbar .icon--save {
-  width: 24px;
-  height: 24px;
-  flex-basis: 24px;
+  width: 18px;
+  height: 18px;
+  flex-basis: 18px;
 }
 
 /* Source de vérité des chips contextuelles de header. */
@@ -96,7 +96,7 @@
 @media (max-width: 640px) {
   .topbar {
     align-items: flex-start;
-    padding: 10px 16px;
+    padding: 8px 12px;
   }
 
   .brandbar {
@@ -105,6 +105,6 @@
 
   .top-actions {
     flex: 0 1 174px;
-    gap: 6px;
+    gap: 5px;
   }
 }

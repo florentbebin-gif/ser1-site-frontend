@@ -45,6 +45,16 @@ function getCssImports(relativeFilePath) {
   return matches.map((match) => match[1]);
 }
 
+function getActiveSimRouteIds() {
+  const content = read('src/routes/simRouteContracts.ts');
+  const routeBlocks = [...content.matchAll(/\{([\s\S]*?)\},/g)].map((match) => match[1]);
+  return routeBlocks
+    .filter((block) => /status:\s*'active'/.test(block))
+    .map((block) => block.match(/id:\s*'([^']+)'/)?.[1])
+    .filter(Boolean)
+    .sort();
+}
+
 function assert(condition, message) {
   if (!condition) {
     errors.push(message);
@@ -125,17 +135,43 @@ for (const absoluteFilePath of getCodeFiles()) {
   }
 }
 
-const simEntries = [
-  ['src/features/credit/Credit.tsx', './styles/index.css'],
-  ['src/features/ir/components/IrSimulatorContainer.tsx', '../styles/index.css'],
-  ['src/features/placement/components/PlacementSimulatorPage.tsx', '../styles/index.css'],
-  ['src/features/per/components/potentiel/PerPotentielSimulator.tsx', '../../styles/index.css'],
-  ['src/features/succession/SuccessionSimulator.tsx', './styles/index.css'],
-];
+const simCssEntriesByRouteId = {
+  credit: ['src/features/credit/Credit.tsx', './styles/index.css'],
+  ir: ['src/features/ir/components/IrSimulatorContainer.tsx', '../styles/index.css'],
+  'per-potentiel': [
+    'src/features/per/components/potentiel/PerPotentielSimulator.tsx',
+    '../../styles/index.css',
+  ],
+  'per-transfert': ['src/features/per/transfert/PerTransfertSimulator.tsx', './styles/index.css'],
+  placement: [
+    'src/features/placement/components/PlacementSimulatorPage.tsx',
+    '../styles/index.css',
+  ],
+  prevoyance: ['src/features/prevoyance/PrevoyancePage.tsx', './styles/index.css'],
+  succession: ['src/features/succession/SuccessionSimulator.tsx', './styles/index.css'],
+  'tresorerie-societe': [
+    'src/features/tresorerie-societe/TresorerieSocietePage.tsx',
+    './styles/index.css',
+  ],
+};
 
-for (const [entryFile, localImport] of simEntries) {
+const activeSimRouteIds = getActiveSimRouteIds();
+for (const routeId of activeSimRouteIds) {
+  const simCssEntry = simCssEntriesByRouteId[routeId];
+  assert(Boolean(simCssEntry), `Route simulateur active sans contrat CSS: ${routeId}`);
+  if (!simCssEntry) {
+    continue;
+  }
+  const [entryFile, localImport] = simCssEntry;
   assertIncludes(entryFile, '@/styles/sim/index.css');
   assertIncludes(entryFile, localImport);
+}
+
+for (const routeId of Object.keys(simCssEntriesByRouteId)) {
+  assert(
+    activeSimRouteIds.includes(routeId),
+    `Contrat CSS orphelin pour simulateur non actif: ${routeId}`,
+  );
 }
 
 assertIncludes('src/pages/SettingsShell.tsx', './settings/styles/index.css');

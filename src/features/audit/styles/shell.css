@@ -3,7 +3,7 @@
 }
 
 .audit-header {
-  margin-bottom: 24px;
+  margin-bottom: 18px;
 }
 
 .audit-header-copy {
@@ -19,13 +19,13 @@
   display: flex;
   align-items: flex-start;
   justify-content: flex-end;
-  gap: 12px;
+  gap: 9px;
 }
 
 .audit-shell {
   display: flex;
   flex-direction: column;
-  gap: 18px;
+  gap: 14px;
 }
 
 .audit-hidden-input {
@@ -35,7 +35,7 @@
 .audit-progress {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 9px;
 }
 
 .audit-progress__bar {
@@ -61,21 +61,21 @@
 
 .audit-steps-nav {
   display: flex;
-  gap: 8px;
+  gap: 6px;
   overflow-x: auto;
-  padding-bottom: 6px;
+  padding-bottom: 5px;
 }
 
 .audit-step-pill {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 8px 14px;
+  gap: 6px;
+  padding: 6px 10px;
   border: 1px solid var(--color-c8);
   border-radius: 8px;
   background: var(--surface-card);
   cursor: pointer;
-  font-size: 14px;
+  font-size: 13px;
   white-space: nowrap;
   transition: all 0.15s;
   box-shadow: var(--shadow-sm);
@@ -100,8 +100,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 22px;
-  height: 22px;
+  width: 20px;
+  height: 20px;
   border-radius: 50%;
   background: var(--color-c8);
   font-size: 12px;
@@ -122,7 +122,7 @@
 }
 
 .audit-step-content {
-  min-height: 400px;
+  min-height: 340px;
   margin-bottom: 0;
 }
 
@@ -130,11 +130,11 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 12px;
+  gap: 9px;
 }
 
 .audit-step-navigation .premium-btn {
-  min-width: 136px;
+  min-width: 124px;
   justify-content: center;
 }
 
@@ -151,7 +151,7 @@
   }
 
   .audit-step-content {
-    padding: 20px;
+    padding: 16px;
   }
 
   .audit-step-navigation {

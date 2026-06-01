@@ -14,8 +14,8 @@
   background: var(--surface-card);
   border: 1px solid var(--color-c8);
   border-left: 3px solid var(--color-c3);
-  border-radius: 12px;
-  padding: 20px 24px;
+  border-radius: 10px;
+  padding: 16px 20px;
   /* Lift premium : ombre plus douce mais plus large */
   box-shadow: 0 6px 28px color-mix(in srgb, var(--color-c10) 7%, transparent);
   /* Gradient header trÃ¨s subtil sur les 20% supÃ©rieurs */
@@ -30,7 +30,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  margin-bottom: 14px;
+  margin-bottom: 10px;
 }
 
 .cv-summary__header .cv-summary__title-row {
@@ -43,7 +43,7 @@
   letter-spacing: 1.5px;
   text-transform: uppercase;
   color: var(--color-c9);
-  margin-bottom: 14px;
+  margin-bottom: 10px;
 }
 
 /* Quand le titre est dans un title-row, sa marge est portÃ©e par le wrapper */
@@ -73,7 +73,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 4px 0 14px;
+  padding: 3px 0 10px;
 }
 
 .cv-summary__kpi-zone .sim-metric {
@@ -107,13 +107,13 @@
   display: flex;
   justify-content: space-between;
   align-items: baseline;
-  padding: 10px 0;
+  padding: 7px 0;
   border-bottom: none;
 }
 
 .cv-summary__row--total {
   border-bottom: none;
-  padding-top: 12px;
+  padding-top: 9px;
 }
 
 .cv-summary__row-label {
@@ -156,9 +156,9 @@
    BLOC MENSUALITÃ‰ TOTALE (multi-prÃªts, sous CreditSummaryCard)
    ---------------------------------------- */
 .cv-total-mensu {
-  margin-top: 12px;
-  padding: 20px 24px;
-  border-radius: 12px;
+  margin-top: 9px;
+  padding: 16px 20px;
+  border-radius: 10px;
   background: var(--surface-card);
   border: 1px solid var(--color-c8);
   border-left: 3px solid var(--color-c3);

@@ -20,7 +20,7 @@
 .vcm__layout {
   display: grid;
   grid-template-columns: minmax(160px, 0.28fr) minmax(0, 1fr);
-  gap: 18px;
+  gap: 14px;
   align-items: start;
 }
 
@@ -56,8 +56,8 @@
 .vcm__section-header {
   display: flex;
   align-items: center;
-  gap: 12px;
-  margin-bottom: 16px;
+  gap: 10px;
+  margin-bottom: 12px;
 }
 
 .vcm__section-icon {
@@ -93,7 +93,7 @@
 }
 
 .vcm__card {
-  padding: 18px;
+  padding: 14px;
   box-shadow: 0 2px 8px color-mix(in srgb, var(--shadow-color) 4%, transparent);
   --sim-input-bg: var(--surface-card);
 }
@@ -101,8 +101,8 @@
 .vcm__row {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-  gap: 14px;
-  margin-bottom: 14px;
+  gap: 10px;
+  margin-bottom: 10px;
 }
 
 .vcm__row--4cols {
@@ -118,7 +118,7 @@
 }
 
 .vcm__field {
-  margin-bottom: 14px;
+  margin-bottom: 10px;
 }
 
 .vcm__field:last-child {
@@ -131,7 +131,7 @@
 
 .vcm__label {
   display: block;
-  margin-bottom: 8px;
+  margin-bottom: 6px;
   color: var(--color-c9);
   font-size: 11px;
   font-weight: 600;
@@ -149,8 +149,8 @@
 .vcm__suboptions-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 12px;
-  margin-top: 12px;
+  gap: 10px;
+  margin-top: 10px;
 }
 
 .vcm__suboptions-row > .vcm__suboption {
@@ -158,8 +158,8 @@
 }
 
 .vcm__suboption {
-  margin-top: 12px;
-  padding: 12px;
+  margin-top: 10px;
+  padding: 10px;
   border-radius: 8px;
 }
 

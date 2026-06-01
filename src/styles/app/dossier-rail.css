@@ -5,15 +5,15 @@
 
 .dossier-rail-column {
   position: fixed;
-  top: 70px;
-  left: 16px;
+  top: 50px;
+  left: 10px;
   z-index: 5;
   display: flex;
-  width: 196px;
+  width: 148px;
   flex-direction: column;
-  gap: 10px;
-  max-height: calc(100vh - 86px);
-  padding-bottom: 8px;
+  gap: 7px;
+  max-height: calc(100vh - 58px);
+  padding-bottom: 6px;
   overflow-x: hidden;
   overflow-y: auto;
   scrollbar-width: thin;
@@ -48,8 +48,8 @@
 .dossier-rail__panel {
   display: flex;
   flex-direction: column;
-  gap: var(--space-3);
-  padding: var(--space-3);
+  gap: var(--space-2);
+  padding: var(--space-2);
   background: var(--surface-card);
   border: 1px solid var(--border-default);
   border-radius: var(--radius-md);
@@ -95,8 +95,8 @@
 .dossier-rail__journey-icon {
   display: grid;
   place-items: center;
-  width: 26px;
-  height: 26px;
+  width: 24px;
+  height: 24px;
   color: var(--action-primary);
   background: color-mix(in srgb, var(--surface-active) 38%, var(--surface-card));
   border: 1px solid var(--border-subtle);
@@ -104,8 +104,8 @@
 }
 
 .dossier-rail__icon {
-  width: 15px;
-  height: 15px;
+  width: 14px;
+  height: 14px;
 }
 
 .dossier-rail__journey h2 {
@@ -148,9 +148,9 @@
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
   width: 100%;
-  min-height: 28px;
-  gap: var(--space-2);
-  padding: 5px var(--space-2);
+  min-height: 26px;
+  gap: var(--space-1);
+  padding: 4px var(--space-2);
   color: var(--text-primary);
   background: var(--surface-muted);
   border: 1px solid var(--border-subtle);
@@ -244,7 +244,7 @@
 .dossier-rail--compact .dossier-rail__step-button,
 .dossier-rail--compact .dossier-rail__step-static {
   grid-template-columns: minmax(0, 1fr);
-  min-height: 26px;
+  min-height: 24px;
 }
 
 .dossier-rail--compact .dossier-rail__step-status,
@@ -255,20 +255,20 @@
 /* Repli desktop : sous le seuil où la colonne flottante tiendrait dans la
    gouttière gauche sans chevaucher le contenu centré (max 1200 px), la colonne
    passe au-dessus du contenu, centrée. Le rail complet reste visible. */
-@media (max-width: 1639px) {
+@media (max-width: 1279px) {
   .dossier-rail-column {
     position: static;
-    width: min(1200px, calc(100% - 48px));
+    width: min(1120px, calc(100% - 40px));
     max-height: none;
-    margin: 16px auto 0;
-    padding: 0 24px;
+    margin: 12px auto 0;
+    padding: 0 20px;
     overflow: visible;
     flex-flow: row wrap;
     align-items: stretch;
   }
 
   .dossier-rail-column > .dossier-context-card {
-    flex: 1 1 220px;
+    flex: 1 1 200px;
   }
 
   .dossier-rail {
@@ -278,7 +278,7 @@
 
 @media (max-width: 600px) {
   .dossier-rail-column {
-    padding: 0 16px;
+    padding: 0 14px;
   }
 
   .dossier-rail-column > .dossier-context-card {
@@ -294,8 +294,8 @@
     align-items: center;
     justify-content: space-between;
     gap: var(--space-2);
-    min-height: 34px;
-    padding: var(--space-2) var(--space-3);
+    min-height: 30px;
+    padding: var(--space-1) var(--space-2);
     color: var(--text-secondary);
     background: var(--surface-card);
     border: 1px solid var(--border-default);

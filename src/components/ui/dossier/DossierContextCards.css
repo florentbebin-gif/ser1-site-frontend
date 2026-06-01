@@ -4,8 +4,8 @@
 .dossier-context-card {
   display: flex;
   flex-direction: column;
-  gap: 9px;
-  padding: 14px 14px 15px;
+  gap: 7px;
+  padding: 11px 12px 12px;
   border: 1px solid var(--border-default);
   border-radius: var(--radius-md);
   background: var(--surface-card);
@@ -13,21 +13,21 @@
 }
 
 .dossier-context-card--mode {
-  gap: 10px;
+  gap: 8px;
 }
 
 .dossier-context-card__label {
   color: var(--text-secondary);
   font-size: var(--font-size-xs);
   font-weight: 700;
-  letter-spacing: 0.9px;
+  letter-spacing: 0.75px;
   text-transform: uppercase;
 }
 
 .dossier-context-card__value {
   overflow: hidden;
   color: var(--text-primary);
-  font-size: var(--font-size-md);
+  font-size: var(--font-size-sm);
   font-weight: 600;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -42,7 +42,7 @@
   color: var(--text-secondary);
   font-size: var(--font-size-xs);
   font-style: italic;
-  line-height: 1.35;
+  line-height: 1.3;
 }
 
 .dossier-context-card .mode-toggle-row {

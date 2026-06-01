@@ -16,26 +16,26 @@
 }
 
 .prevoyance-card + .prevoyance-card {
-  margin-top: 18px;
+  margin-top: 14px;
 }
 
 .prevoyance-card__header,
 .prevoyance-side-card__header {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 4px;
 }
 
 .prevoyance-card__divider {
-  margin-top: 8px;
-  margin-bottom: 12px;
+  margin-top: 6px;
+  margin-bottom: 9px;
 }
 
 .prevoyance-card__title-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
+  gap: 9px;
   min-width: 0;
   width: 100%;
 }
@@ -47,6 +47,6 @@
 .prevoyance-card__actions {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   margin-left: auto;
 }

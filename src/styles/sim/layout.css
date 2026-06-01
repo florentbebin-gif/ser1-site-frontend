@@ -1,19 +1,19 @@
 /* Layout partagé des simulateurs. */
 
 .sim-page {
-  max-width: 1200px;
+  max-width: 1120px;
   margin: 0 auto;
-  padding: 32px 24px 64px;
+  padding: 24px 20px 48px;
 }
 
 .sim-header {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: 24px;
-  margin-bottom: 16px;
-  padding-bottom: 8px;
-  border-bottom: 3px solid var(--accent-signature);
+  gap: 18px;
+  margin-bottom: 12px;
+  padding-bottom: 6px;
+  border-bottom: 2px solid var(--accent-signature);
 }
 
 .sim-header--stacked {
@@ -25,37 +25,37 @@
 .sim-header__actions {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 8px;
   flex-shrink: 0;
 }
 
 .sim-notice {
   width: 100%;
-  margin-bottom: 16px;
+  margin-bottom: 12px;
 }
 
 .sim-section {
   width: 100%;
-  margin-top: 32px;
+  margin-top: 24px;
 }
 
 .sim-section-title {
   font-size: 14px;
   font-weight: 600;
   color: var(--color-c1);
-  margin-bottom: 16px;
-  padding-bottom: 8px;
+  margin-bottom: 12px;
+  padding-bottom: 6px;
   border-bottom: 1px solid var(--color-c8);
 }
 
 @media (max-width: 900px) {
   .sim-page {
-    padding: 24px 16px 48px;
+    padding: 20px 14px 40px;
   }
 
   .sim-header {
     flex-direction: column;
-    gap: 16px;
+    gap: 12px;
   }
 }
 

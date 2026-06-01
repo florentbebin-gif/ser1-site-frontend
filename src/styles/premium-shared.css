@@ -49,8 +49,8 @@
 .premium-card {
   background: var(--surface-card);
   border: 1px solid var(--color-c8);
-  border-radius: 12px;
-  padding: 20px 24px;
+  border-radius: 10px;
+  padding: 16px 20px;
   box-shadow: 0 2px 12px color-mix(in srgb, var(--shadow-color) 4%, transparent);
   transition:
     box-shadow 0.2s,
@@ -64,8 +64,8 @@
 .premium-card-compact {
   background: var(--surface-card);
   border: 1px solid var(--color-c8);
-  border-radius: 10px;
-  padding: 16px 20px;
+  border-radius: 8px;
+  padding: 12px 16px;
   box-shadow: 0 1px 8px color-mix(in srgb, var(--shadow-color) 3%, transparent);
 }
 
@@ -87,7 +87,7 @@
 }
 
 .premium-table thead th {
-  padding: 12px 10px;
+  padding: 9px 8px;
   text-align: left;
   font-size: 11px;
   font-weight: 600;
@@ -110,7 +110,7 @@
 }
 
 .premium-table tbody td {
-  padding: 10px;
+  padding: 8px;
   color: var(--color-c10);
   vertical-align: middle;
 }
@@ -140,8 +140,8 @@
 .premium-btn {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  padding: 10px 18px;
+  gap: 6px;
+  padding: 8px 14px;
   border-radius: 8px;
   font-size: 13px;
   font-weight: 500;
@@ -179,7 +179,7 @@
    INPUTS PREMIUM
    ---------------------------------------- */
 .premium-input {
-  padding: 8px 12px;
+  padding: 6px 10px;
   border: 1px solid var(--color-c8);
   border-radius: 6px;
   font-size: 13px;
@@ -197,7 +197,7 @@
 }
 
 .premium-select {
-  padding: 8px 12px;
+  padding: 6px 10px;
   border: 1px solid var(--color-c8);
   border-radius: 6px;
   font-size: 13px;
@@ -216,41 +216,41 @@
    LAYOUT PREMIUM
    ---------------------------------------- */
 .premium-page {
-  max-width: 1200px;
+  max-width: 1120px;
   margin: 0 auto;
-  padding: 32px 24px 64px;
+  padding: 24px 20px 48px;
 }
 
 .premium-header {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: 24px;
-  margin-bottom: 32px;
-  padding-bottom: 16px;
-  border-bottom: 2px solid var(--color-c8);
+  gap: 18px;
+  margin-bottom: 24px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--color-c8);
 }
 
 .premium-section {
-  margin-bottom: 32px;
+  margin-bottom: 24px;
 }
 
 .premium-grid-2 {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 20px;
+  gap: 16px;
 }
 
 .premium-grid-3 {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 16px;
+  gap: 12px;
 }
 
 .premium-grid-4 {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 12px;
+  gap: 10px;
 }
 
 /* ----------------------------------------
@@ -258,12 +258,12 @@
    ---------------------------------------- */
 @media (max-width: 900px) {
   .premium-page {
-    padding: 24px 16px 48px;
+    padding: 20px 14px 40px;
   }
 
   .premium-header {
     flex-direction: column;
-    gap: 16px;
+    gap: 12px;
   }
 
   .premium-grid-2,
