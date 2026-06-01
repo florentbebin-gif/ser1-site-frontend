@@ -1,5 +1,9 @@
 export { IconActivity } from './IconActivity';
 export { IconArrowLeftRight } from './IconArrowLeftRight';
+export { IconArrowRight } from './IconArrowRight';
+export { IconClipboardCheck } from './IconClipboardCheck';
+export { IconScanLine } from './IconScanLine';
+export { IconUpload } from './IconUpload';
 export { IconHome } from './IconHome';
 export { IconSave } from './IconSave';
 export { IconFolder } from './IconFolder';

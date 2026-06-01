@@ -107,8 +107,8 @@ La Home est une surface d'orientation, pas un catalogue. Le premier écran canon
 - deux espaces fermés par défaut : `Foyer & patrimoine privé` et `Société & dirigeant`, chacun avec trois chips d'objectif.
 
 Au chargement, ne pas afficher d'onglets, de carte simulateur individuelle, de grille complète ni de
-panneau détail. Les chips peuvent ouvrir un espace, mais le détail simulateur appartient à une
-interaction dédiée ultérieure.
+panneau détail. Les chips ouvrent seulement l'espace et l'onglet correspondant ; le panneau détail
+simulateur apparait uniquement après clic explicite sur une carte simulateur visible.
 
 ## Formattage et alignements
 

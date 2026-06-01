@@ -90,7 +90,7 @@ Principes : épuré, lisible, respirant.
 - Le rail gauche Home reste léger : `Dossier chargé` et `Mode utilisateur` uniquement. Il ne remplace pas `DossierRail`, réservé à `/audit`, `/strategy` et `/sim/*`.
 - La section `SIMULATEURS` consomme la registry métier `src/domain/simulators/` : elle ne maintient pas de grille locale concurrente.
 - Au chargement, les deux espaces `Foyer & patrimoine privé` et `Société & dirigeant` sont fermés : aucun onglet, aucune carte simulateur individuelle et aucun panneau détail ne sont visibles.
-- Les chips d'objectif ouvrent seulement l'espace et l'onglet correspondant. Le détail simulateur ne revient que par une interaction dédiée future, pas au premier écran.
+- Les chips d'objectif ouvrent seulement l'espace et l'onglet correspondant. Le panneau détail simulateur apparait uniquement après clic explicite sur une carte simulateur visible, jamais au premier écran.
 - En Home simplifiée, les simulateurs `planned` ne sont jamais rendus comme cartes actives. Le mode expert élargit la visibilité issue de la registry sans créer de second catalogue Home.
 - `Nouvelle stratégie` reste l'action dominante ; `Scan documentaire` reste une action secondaire visible sans faux workflow tant que l'OCR n'est pas livré.
 - Le libellé public doit éviter "chat IA" ou "assistant". Préférer `Scan documentaire`, `Préparer un dossier par documents` ou `Traitement documentaire IA`.
@@ -891,10 +891,19 @@ documenté en PR.
 
 Exception V2-03 : `DossierRail` est le seul rail gauche autorisé. Il est injecté une seule fois par
 `AppLayout` sur `/audit`, `/strategy` et `/sim/*` pour afficher la position dans le parcours dossier
-et la version de travail. Sur `/sim/*`, il reste compact sur desktop ; sur mobile, le panneau complet
-est absent et seule une pastille `Version ...` est visible. Ce rail ne contient jamais les actions de
-sauvegarde, chargement, reset, export ou mode, qui restent portées par la topbar ou les surfaces
-existantes.
+et la version de travail. Ce rail ne contient jamais les actions de sauvegarde, chargement, reset,
+export ou mode, qui restent portées par la topbar ou les surfaces existantes.
+
+Précision V2-04 : la Home et les parcours ont des responsabilités séparées. La Home affiche
+`Dossier chargé` et `Mode utilisateur`, car elle pilote le mode global. `AppLayout` regroupe
+uniquement `Dossier chargé` et le `DossierRail` dans une seule colonne gauche `.dossier-rail-column`
+sur `/audit`, `/strategy` et `/sim/*`. Cette colonne est **flottante** (`position: fixed`) sur grand
+écran afin que le contenu du simulateur reste **centré** dans la fenêtre, et non décalé vers la
+droite. En dessous de `1640px`, là où la colonne flottante chevaucherait le contenu centré (largeur
+max `1200px`), elle se replie au-dessus du contenu, centrée, mais le rail complet reste visible sur
+desktop. Le parcours se réduit à la pastille `Version ...` uniquement sur mobile. Le sélecteur de
+mode n'est pas rendu dans cette colonne parcours : les simulateurs conservent leur toggle local
+lorsqu'il existe.
 
 #### 16l) Contrat UX simulateur
 

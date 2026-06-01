@@ -44,6 +44,32 @@ test.describe('Smoke Tests - Surfaces stables', () => {
     await expect(page).toHaveURL(/\/audit$/);
   });
 
+  test('Home ouvre le panneau simulateur uniquement après une action explicite', async ({
+    page,
+  }) => {
+    await page.goto(ROUTES.home);
+
+    await expect(page.getByTestId('home-detail-panel')).toHaveCount(0);
+    await page.getByRole('button', { name: 'Comprendre ma situation' }).click();
+    await expect(page.getByTestId('home-space-foyer')).toHaveAttribute('data-open', 'true');
+    await expect(page.getByTestId('home-simulator-card-ir')).toBeVisible();
+    await expect(page.getByTestId('home-simulator-card-filiation')).toHaveCount(0);
+    await expect(page.getByTestId('home-simulator-card-ifi')).toHaveCount(0);
+
+    await page.getByTestId('home-simulator-card-ir').click();
+    await expect(page.getByTestId('home-detail-panel')).toBeVisible();
+    await expect(page.getByRole('dialog', { name: 'Détail Fiscalité IR' })).toBeVisible();
+    await expect(page.getByTestId('home-panel-launch')).toHaveAttribute('href', '/sim/ir');
+
+    await page.keyboard.press('Escape');
+    await expect(page.getByTestId('home-detail-panel')).toHaveCount(0);
+
+    await page.getByTestId('home-simulator-card-ir').click();
+    await expect(page.getByTestId('home-detail-panel')).toBeVisible();
+    await page.getByRole('button', { name: 'Fermer le détail' }).click();
+    await expect(page.getByTestId('home-detail-panel')).toHaveCount(0);
+  });
+
   test('IR charge avec sa structure minimale', async ({ page }) => {
     await page.goto(ROUTES.ir);
     await expect(page.locator('body')).not.toContainText('Application error');

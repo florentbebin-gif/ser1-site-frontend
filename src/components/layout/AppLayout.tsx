@@ -8,6 +8,7 @@ import {
 import type { RouteMeta } from '../../routes/appRoutes';
 
 import { SessionExpiredBanner } from '../ui/SessionExpiredBanner';
+import { DossierLoadedCard } from '../ui/dossier/DossierLoadedCard';
 import { DossierRail } from '../ui/dossier/DossierRail';
 import {
   IconHome,
@@ -183,19 +184,25 @@ export function AppLayout({
       </div>
 
       {dossierRailViewModel ? (
-        <div
-          className={`app-shell app-shell--dossier-rail app-shell--rail-${dossierRailViewModel.density}`}
-          data-testid="app-shell-dossier-rail"
-        >
-          <DossierRail
-            viewModel={dossierRailViewModel}
-            onNavigate={onNavigate}
-            resolveRoutePath={getSimulatorRoutePath}
-          />
-          <div className="app-shell__main" data-testid="app-shell-main">
-            {children}
-          </div>
-        </div>
+        <>
+          <aside
+            className={`dossier-rail-column dossier-rail-column--${dossierRailViewModel.density}`}
+            data-testid="app-shell-dossier-rail"
+            aria-label="Contexte de travail"
+          >
+            <DossierLoadedCard
+              testId="dossier-loaded-card"
+              filenameTestId="dossier-loaded-filename"
+              disclaimerTestId="dossier-loaded-disclaimer"
+            />
+            <DossierRail
+              viewModel={dossierRailViewModel}
+              onNavigate={onNavigate}
+              resolveRoutePath={getSimulatorRoutePath}
+            />
+          </aside>
+          {children}
+        </>
       ) : (
         children
       )}

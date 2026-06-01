@@ -241,17 +241,8 @@ async function maskFloatingSynthesisCta(page: Page) {
 async function maskDossierRail(page: Page) {
   await page.addStyleTag({
     content: `
-      [data-testid="dossier-rail"] {
+      .dossier-rail-column {
         display: none !important;
-      }
-
-      .app-shell--dossier-rail {
-        display: block !important;
-        min-height: 0 !important;
-      }
-
-      .app-shell__main {
-        width: 100% !important;
       }
     `,
   });

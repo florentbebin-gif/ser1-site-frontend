@@ -211,6 +211,9 @@ Trajectoire P4 : le scan documentaire IA doit rester rattaché à l'audit, pas a
   pour `/sim/*`, et seulement une pastille courte sur mobile ;
 - il ne duplique pas les actions globales de topbar : sauvegarde, chargement, reset, export et mode
   restent dans leurs composants existants.
+- `AppLayout` ajoute la carte `Dossier chargé` au-dessus du rail sur `/audit`, `/strategy` et
+  `/sim/*`, sans rendre le sélecteur `Mode utilisateur`. Ce dernier reste réservé à la Home ; les
+  simulateurs gardent leurs toggles locaux lorsqu'ils existent.
 
 `DossierVersion`, `StrategyActivation` et `SourceRef` existent en V2-03 comme contrats de domaine
 purs dans `src/domain/dossier/types.ts`. La version affichée est une version de travail non
