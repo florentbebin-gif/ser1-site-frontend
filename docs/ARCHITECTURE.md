@@ -46,6 +46,9 @@ Repères (domain-first) :
 - `src/engine/` : calculs métier purs (zéro React).
   - `src/engine/succession/` : moteur succession et helpers civils. L'entrée publique reste `@/engine/succession`; les helpers civils se consomment via `@/engine/succession/civil`.
 - `src/features/` : features UI (state, composants, handlers export).
+- `src/domain/simulators/` : registry métier des simulateurs, visibilité Home, chaînages et contrats
+  d'alimentation dossier. Ce dossier ne remplace pas `src/routes/simRouteContracts.ts` : il référence
+  les routes par `routeId` et ne recopie pas les chemins `/sim/*`.
 - `src/pages/` : shells légers (Home, Login, SettingsShell) + `pages/settings/*` (sous-pages settings).
 - `src/styles/app/` : chrome applicatif global (topbar, chips, états shell).
 - `src/styles/sim/` : baseline CSS partagée des simulateurs `/sim/*`.
@@ -72,6 +75,29 @@ Conventions clés :
 - Familles CI : `npm run check` regroupe `check:static`, `check:architecture`, `check:fiscal`, `check:supabase`, `check:exports`, `check:baselines`, `check:types`, `check:tests` et `check:build`.
 - Coverage moteur : `npm run coverage` porte des seuils sur `src/engine/**` uniquement ; l'UI/features suit une trajectoire séparée.
 - Nomenclature métier : dans Succession, utiliser les noms explicites comme `AssuranceVie` pour les nouveaux modules métier ; éviter les abréviations ambiguës de type `Av`.
+
+### Registry simulateurs — `src/domain/simulators/`
+
+La registry métier des simulateurs vit dans `src/domain/simulators/`. Elle décrit les objectifs,
+entrées, calculs, sorties, champs dossier, références, statuts, visibilité simplifié/expert et
+chaînages métier.
+
+Le routage reste séparé :
+
+- `src/routes/simRouteContracts.ts` garde la source des routes `/sim/*`, labels de route et reset keys.
+- `src/domain/simulators/registry.ts` référence une route existante par `routeId` uniquement.
+- aucune Home, aucun rail et aucun composant React ne doit recréer une liste parallèle de routes,
+  statuts, familles ou chaînages.
+
+Les adapters contexte dossier vers inputs simulateur sont volontairement séparés :
+
+- `src/domain/simulators/contextAdapterTypes.ts` porte seulement le contrat commun ;
+- les adapters réels vivent ensuite par simulateur ou domaine, par exemple dans `src/features/ir/`,
+  afin d'éviter un fichier central qui accumule toute la logique métier.
+
+Les parcours métier exposés par `src/domain/simulators/chainage.ts` doivent référencer des
+`SimulatorDefinition.id`. Les seules étapes non simulateur autorisées sont les étapes conceptuelles
+typées `strategy` et `audit-objectives`.
 
 ### Règle "god file"
 
