@@ -37,10 +37,10 @@ const visualPages: VisualPage[] = [
     ready: (page) => page.getByTestId('succession-page'),
     fill: async (page) => {
       const situation = page.getByRole('button', { name: 'Situation familiale' });
-      if ((await situation.count()) > 0) {
-        await situation.click();
-        await page.getByRole('option', { name: /Mari/ }).click();
-      }
+      await expect(situation).toBeVisible({ timeout: 15_000 });
+      await situation.click();
+      await page.getByRole('option', { name: /Mari/ }).click();
+      await expect(situation).toContainText(/Mari/);
     },
   },
   {
@@ -88,15 +88,11 @@ test.describe('Snapshots visuels simulateurs', () => {
         test(`${pageDef.slug} ${state} ${viewport.name}`, async ({ page }) => {
           await enableE2EMode(page);
           await page.setViewportSize(viewport.size);
-          await page.goto(pageDef.path);
-          await page.waitForLoadState('networkidle');
-
-          await expect(page.locator('body')).not.toContainText('Application error');
-          await expect(pageDef.ready(page)).toBeVisible({ timeout: 15_000 });
+          await gotoVisualPage(page, pageDef.path, pageDef.ready);
 
           if (state === 'filled' && pageDef.fill) {
             await pageDef.fill(page);
-            await page.waitForTimeout(150);
+            await waitForVisualStability(page);
           }
 
           await waitForFonts(page);
@@ -119,11 +115,9 @@ test.describe('Snapshots visuels simulateurs', () => {
 test('placement comparaison mobile', async ({ page }) => {
   await enableE2EMode(page);
   await page.setViewportSize({ width: 390, height: 900 });
-  await page.goto(ROUTES.placement);
-  await page.waitForLoadState('networkidle');
-
-  await expect(page.locator('body')).not.toContainText('Application error');
-  await expect(page.getByTestId('placement-page')).toBeVisible({ timeout: 15_000 });
+  await gotoVisualPage(page, ROUTES.placement, (targetPage) =>
+    targetPage.getByTestId('placement-page'),
+  );
 
   await fillPlacementAge(page, '45');
   await page.getByRole('button', { name: /Comparer un autre placement/ }).click();
@@ -143,11 +137,10 @@ test('placement comparaison mobile', async ({ page }) => {
 test('masque le CTA synthèse flottant avant capture', async ({ page }) => {
   await enableE2EMode(page);
   await page.setViewportSize({ width: 390, height: 900 });
-  await page.goto(ROUTES.credit);
-  await page.waitForLoadState('networkidle');
+  await gotoVisualPage(page, ROUTES.credit, (targetPage) => targetPage.getByTestId('credit-page'));
 
   await fillIfVisible(page.getByTestId('credit-capital-input'), '200000');
-  await page.waitForTimeout(150);
+  await waitForVisualStability(page);
 
   const floatingCta = page.locator('.sim-view-synthesis-cta--floating');
   await expect(floatingCta.first()).toBeVisible({ timeout: 15_000 });
@@ -171,6 +164,12 @@ async function fillIfVisible(locator: Locator, value: string) {
   await first.blur();
 }
 
+async function gotoVisualPage(page: Page, path: string, ready: (_page: Page) => Locator) {
+  await page.goto(path, { waitUntil: 'domcontentloaded' });
+  await expect(page.locator('body')).not.toContainText('Application error');
+  await expect(ready(page)).toBeVisible({ timeout: 15_000 });
+}
+
 async function fillPlacementAge(page: Page, value: string) {
   const ageField = page
     .locator('.pl-client-card .pl-field')
@@ -184,6 +183,17 @@ async function waitForFonts(page: Page) {
   await page.evaluate(async () => {
     await document.fonts.ready;
   });
+}
+
+async function waitForVisualStability(page: Page) {
+  await waitForFonts(page);
+  await page.evaluate(
+    () =>
+      new Promise<void>((resolve) => {
+        requestAnimationFrame(() => requestAnimationFrame(() => resolve()));
+      }),
+  );
+  await page.waitForTimeout(250);
 }
 
 async function maskFloatingSynthesisCta(page: Page) {

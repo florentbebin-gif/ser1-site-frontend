@@ -47,6 +47,34 @@ Expliquer ce que SER1 couvre aujourd'hui, ce qui est deja exploitable, et les li
 - `/audit` porte la trajectoire P6 : dossier guide, export PPTX isolé dans la feature via `src/features/audit/export/exportAudit.ts`, et réutilisation attendue par la suite dans `strategy`.
 - `/strategy` porte la trajectoire P7 : situation actuelle vs scénarios de réorientation patrimoniale, recommandations calculées par SER1 à partir de données validées, validation CGP et export PPTX isolé dans `src/features/strategy/export/exportStrategy.ts`.
 
+### Registry métier des simulateurs
+
+La matrice métier des simulateurs est formalisée dans `src/domain/simulators/registry.ts`. Cette
+registry ne crée pas de routes : elle référence les routes existantes par `routeId` et laisse
+`src/routes/simRouteContracts.ts` piloter le routage `/sim/*`.
+
+Les statuts utilisés sont :
+
+| Statut         | Sens métier                                                                            |
+| -------------- | -------------------------------------------------------------------------------------- |
+| `active`       | Simulateur exploitable avec route et page runtime.                                     |
+| `hub`          | Page d'orientation vers des sous-parcours existants.                                   |
+| `placeholder`  | Route scaffoldée qui ne crashe pas mais dont le moteur n'est pas stabilisé.            |
+| `planned`      | Simulateur prévu pour le chaînage, sans carte cliquable Home ni route runtime promise. |
+| `expertOnly`   | Élément visible seulement dans une lecture experte quand le produit le prévoit.        |
+| `internalOnly` | Élément interne au dossier ou au chaînage, absent des cartes Home simplifiées.         |
+
+Décisions structurantes V2 :
+
+- `Actif / passif` est une étape interne en mode simplifié, pas une carte Home autonome.
+- PEA et CTO sont des sous-types de `Placement & allocation`, pas des simulateurs autonomes.
+- Assurance-vie / capitalisation reste un sous-type de `Placement & allocation` ou une lecture
+  experte, pas une carte simplifiée autonome.
+- `Placement trésorerie` est intégré à `Trésorerie société`.
+- `Cession de titres` est une entrée société ; elle n'est pas exposée côté Foyer.
+- Les simulateurs `planned` peuvent apparaître dans un panneau ou un rail comme dépendances futures,
+  mais pas comme cartes cliquables de même niveau qu'un simulateur actif.
+
 ## 1) IR
 
 ### Ce que SER1 calcule
