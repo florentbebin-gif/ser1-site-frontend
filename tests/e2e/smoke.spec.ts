@@ -18,7 +18,24 @@ test.describe('Smoke Tests - Surfaces stables', () => {
     await page.goto(ROUTES.home);
     await expect(page.locator('body')).not.toContainText('Application error');
     await expect(page.getByTestId('home-hero-title')).toBeVisible();
-    await expect(page.getByTestId('home-tools-grid')).toBeVisible();
+    await expect(page.getByTestId('home-guide-title')).toContainText(
+      'Sélectionnez votre objectif, SER1 vous guide pas à pas',
+    );
+    await expect(page.getByTestId('home-primary-action-strategy')).toBeVisible();
+    await expect(page.getByTestId('home-primary-action-scan')).toBeVisible();
+    await expect(page.getByTestId('home-space-foyer')).toBeVisible();
+    await expect(page.getByTestId('home-space-societe')).toBeVisible();
+    await page.getByRole('tab', { name: 'Piloter' }).click();
+    await expect(page.getByTestId('home-simulator-card-placement')).toBeVisible();
+    await expect(page.getByTestId('home-simulator-card-actif-passif')).toHaveCount(0);
+
+    await expect(page.getByTestId('home-primary-action-scan')).toHaveAttribute(
+      'aria-disabled',
+      'true',
+    );
+    await expect(page).toHaveURL(/\/$/);
+    await page.getByTestId('home-primary-action-strategy').click();
+    await expect(page).toHaveURL(/\/audit$/);
   });
 
   test('IR charge avec sa structure minimale', async ({ page }) => {

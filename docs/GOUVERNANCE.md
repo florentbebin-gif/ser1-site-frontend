@@ -87,9 +87,12 @@ Principes : épuré, lisible, respirant.
 
 - La Home garde la hiérarchie : `AUDIT & STRATÉGIE` en entrée métier principale, puis `SIMULATEURS` en bloc secondaire.
 - Le scan documentaire IA n'est pas un simulateur. Il prépare un dossier d'audit ; il doit donc être placé dans le bloc `AUDIT & STRATÉGIE`, avant le séparateur et avant la section `SIMULATEURS`.
+- La section `SIMULATEURS` consomme la registry métier `src/domain/simulators/` : elle ne maintient pas de grille locale concurrente.
 - Pattern cible desktop : deux actions dans le bloc central, de même famille visuelle que `hero-tile` :
   - `Nouvelle stratégie` / audit manuel ;
   - `Préparer un dossier par documents` / scan IA.
+- En Home simplifiée, seuls les simulateurs `active`, `hub` et `placeholder` sont rendus comme cartes. Les simulateurs `planned` peuvent apparaître dans le panneau latéral comme dépendance future, jamais comme carte cliquable de même niveau.
+- Le mode expert élargit la visibilité issue de la registry sans créer de second catalogue Home.
 - Si une seule action doit rester dominante, garder `Nouvelle stratégie` en premier et afficher le scan IA comme action secondaire alignée ou empilée sous la première, sans descendre dans la grille des simulateurs.
 - Le libellé public doit éviter "chat IA" ou "assistant". Préférer `Scan documentaire`, `Préparer un dossier par documents` ou `Traitement documentaire IA`.
 - Le flux ouvert par cette action doit afficher une revue guidée : documents, extraction, champs proposés, sources, score de confiance, actions `Valider`, `Corriger`, `Ignorer`, `Demander pièce complémentaire`. Pas de zone de chat libre CGP ↔ LLM.
