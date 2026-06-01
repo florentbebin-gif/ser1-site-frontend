@@ -122,6 +122,7 @@ Repères desktop :
 - topbar complète avec session : environ 48 px CSS, soit 60 px physiques à 125 % ;
 - Home : colonne centrale autour de 864 px CSS, rail gauche autour de 148 px CSS ;
 - contrôles courants : 30-34 px CSS maximum hors besoin tactile mobile ;
+- cible tactile mobile : `--touch-target-mobile`, soit 44 px CSS ;
 - texte courant : `--font-size-md`, soit 11 px CSS ;
 - titres de page compacts : `--font-size-2xl`, soit 18 px CSS ;
 - KPI très visibles : `--font-size-3xl`, soit 22 px CSS maximum par défaut.

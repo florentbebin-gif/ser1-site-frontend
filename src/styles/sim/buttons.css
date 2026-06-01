@@ -126,16 +126,16 @@
 @media (max-width: 600px) {
   .sim-action-btn,
   .sim-modal-btn {
-    min-height: calc(var(--space-5) + var(--space-6));
+    min-height: var(--touch-target-mobile);
   }
 
   .sim-action-btn--icon,
   .sim-info-btn {
-    min-width: calc(var(--space-5) + var(--space-6));
-    width: calc(var(--space-5) + var(--space-6));
+    min-width: var(--touch-target-mobile);
+    width: var(--touch-target-mobile);
   }
 
   .sim-info-btn {
-    height: calc(var(--space-5) + var(--space-6));
+    height: var(--touch-target-mobile);
   }
 }

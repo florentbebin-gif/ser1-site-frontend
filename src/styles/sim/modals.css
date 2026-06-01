@@ -268,9 +268,9 @@
   }
 
   .sim-modal__close {
-    min-width: calc(var(--space-5) + var(--space-6));
-    width: calc(var(--space-5) + var(--space-6));
-    height: calc(var(--space-5) + var(--space-6));
+    min-width: var(--touch-target-mobile);
+    width: var(--touch-target-mobile);
+    height: var(--touch-target-mobile);
   }
 
   .sim-mobile-sticky-actions {

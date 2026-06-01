@@ -215,19 +215,19 @@
 @media (max-width: 600px) {
   .sim-field__control,
   .sim-field__select-trigger {
-    min-height: calc(var(--space-5) + var(--space-6));
+    min-height: var(--touch-target-mobile);
     height: auto;
     padding-block: var(--space-2);
   }
 
   .sim-field__unit {
-    min-height: calc(var(--space-5) + var(--space-6));
+    min-height: var(--touch-target-mobile);
     display: inline-flex;
     align-items: center;
   }
 
   .sim-field__option {
-    min-height: calc(var(--space-5) + var(--space-6));
+    min-height: var(--touch-target-mobile);
     justify-content: center;
   }
 }
