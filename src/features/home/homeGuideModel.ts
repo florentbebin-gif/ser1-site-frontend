@@ -1,9 +1,4 @@
-import {
-  getHomeMatrix,
-  getSimulatorPanelDetails,
-  HOME_SPACES,
-  HOME_TABS,
-} from '@/domain/simulators/homeMatrix';
+import { getHomeMatrix, HOME_SPACES, HOME_TABS } from '@/domain/simulators/homeMatrix';
 import type {
   SimulatorDefinition,
   SimulatorModeVisibility,
@@ -19,6 +14,7 @@ export interface HomeGuideAction {
   id: 'strategy' | 'scan';
   title: string;
   subtitle: string;
+  cta: string;
   to: string | null;
   disabledReason?: string;
 }
@@ -41,9 +37,16 @@ export interface HomeGuideTab {
   hasCards: boolean;
 }
 
+export interface HomeGuideQuickAction {
+  tab: SimulatorTab;
+  label: string;
+}
+
 export interface HomeGuideSpace {
   id: SimulatorSpace;
   label: string;
+  description: string;
+  quickActions: HomeGuideQuickAction[];
   tabs: HomeGuideTab[];
 }
 
@@ -52,35 +55,49 @@ export interface HomeGuideState {
   allCards: HomeGuideCard[];
 }
 
-export interface HomeGuidePanelItem {
-  definition: SimulatorDefinition;
-  route: SimRouteContract | null;
-  statusLabel: string;
-  selectable: boolean;
-}
-
-export interface HomeGuidePanel {
-  simulator: HomeGuidePanelItem;
-  upstream: HomeGuidePanelItem[];
-  next: HomeGuidePanelItem[];
-  futureDependencies: HomeGuidePanelItem[];
-}
-
 export const HOME_PRIMARY_ACTIONS: readonly HomeGuideAction[] = [
   {
     id: 'strategy',
     title: 'Nouvelle stratégie',
-    subtitle: 'Créer un audit manuel puis comparer les scénarios.',
+    subtitle:
+      'Le parcours complet pour analyser le foyer, la société et le patrimoine, projeter et recommander une stratégie.',
+    cta: 'Démarrer',
     to: '/audit',
   },
   {
     id: 'scan',
     title: 'Scan documentaire',
-    subtitle: 'Préparer le dossier à partir des pièces client.',
+    subtitle: 'Importez les documents du client pour pré-remplir le dossier.',
+    cta: 'Importer',
     to: null,
     disabledReason: 'OCR et revue documentaire prévus dans une PR dédiée.',
   },
 ] as const;
+
+const SPACE_VIEW_COPY: Record<
+  SimulatorSpace,
+  {
+    description: string;
+    quickActions: readonly HomeGuideQuickAction[];
+  }
+> = {
+  foyer: {
+    description: 'Famille, fiscalité, immobilier, placements & transmission privée',
+    quickActions: [
+      { tab: 'comprendre', label: 'Comprendre ma situation' },
+      { tab: 'piloter', label: 'Piloter mon patrimoine' },
+      { tab: 'proteger', label: 'Protéger / transmettre' },
+    ],
+  },
+  societe: {
+    description: 'Structure, rémunération, trésorerie, titres & transmission d’entreprise',
+    quickActions: [
+      { tab: 'comprendre', label: 'Analyser ma société' },
+      { tab: 'piloter', label: 'Optimiser ma rémunération' },
+      { tab: 'proteger', label: 'Transmettre l’entreprise' },
+    ],
+  },
+};
 
 const ROUTES_BY_ID = new Map<string, SimRouteContract>(
   SIM_ROUTE_CONTRACTS.map((route) => [route.id, route]),
@@ -90,6 +107,8 @@ export function buildHomeGuideState(mode: HomeGuideMode): HomeGuideState {
   const spaces = getHomeMatrix(mode).map<HomeGuideSpace>((space) => ({
     id: space.space,
     label: HOME_SPACES.find((entry) => entry.id === space.space)?.label ?? space.label,
+    description: SPACE_VIEW_COPY[space.space].description,
+    quickActions: [...SPACE_VIEW_COPY[space.space].quickActions],
     tabs: HOME_TABS.map((tab) => {
       const sourceTab = space.tabs.find((entry) => entry.tab === tab.id);
       const families =
@@ -117,17 +136,6 @@ export function buildHomeGuideState(mode: HomeGuideMode): HomeGuideState {
   };
 }
 
-export function buildHomeGuidePanel(id: string): HomeGuidePanel {
-  const details = getSimulatorPanelDetails(id);
-
-  return {
-    simulator: toHomeGuidePanelItem(details.simulator),
-    upstream: details.upstream.map(toHomeGuidePanelItem),
-    next: details.next.map(toHomeGuidePanelItem),
-    futureDependencies: details.futureDependencies.map(toHomeGuidePanelItem),
-  };
-}
-
 export function getSimulatorRoute(definition: SimulatorDefinition): SimRouteContract | null {
   if (!definition.routeId) return null;
   return ROUTES_BY_ID.get(definition.routeId) ?? null;
@@ -138,15 +146,6 @@ function toHomeGuideCard(definition: SimulatorDefinition): HomeGuideCard {
     definition,
     route: getSimulatorRoute(definition),
     statusLabel: getStatusLabel(definition),
-  };
-}
-
-function toHomeGuidePanelItem(definition: SimulatorDefinition): HomeGuidePanelItem {
-  return {
-    definition,
-    route: getSimulatorRoute(definition),
-    statusLabel: getStatusLabel(definition),
-    selectable: definition.lifecycle === 'active' || definition.lifecycle === 'hub',
   };
 }
 

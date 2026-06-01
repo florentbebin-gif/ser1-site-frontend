@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { getHomeCardSimulators, getHomeMatrix, getSimulatorPanelDetails } from '../homeMatrix';
+import { getHomeCardSimulators, getHomeMatrix } from '../homeMatrix';
 
 describe('homeMatrix simulateurs', () => {
   it('affiche seulement active, hub et placeholder comme cartes Home simplifiées', () => {
@@ -37,12 +37,9 @@ describe('homeMatrix simulateurs', () => {
     ).toBe(true);
   });
 
-  it('garde les planned uniquement dans les détails latéraux', () => {
-    const details = getSimulatorPanelDetails('succession');
+  it('garde les planned hors des cartes Home dans tous les modes utilisateur', () => {
+    const cards = [...getHomeCardSimulators('simplifie'), ...getHomeCardSimulators('expert')];
 
-    expect(details.simulator.id).toBe('succession');
-    expect(details.futureDependencies.map((definition) => definition.id)).toEqual(
-      expect.arrayContaining(['donation-demembrement']),
-    );
+    expect(cards.some((definition) => definition.lifecycle === 'planned')).toBe(false);
   });
 });

@@ -17,17 +17,23 @@ test.describe('Smoke Tests - Surfaces stables', () => {
   test('Home charge en mode smoke', async ({ page }) => {
     await page.goto(ROUTES.home);
     await expect(page.locator('body')).not.toContainText('Application error');
-    await expect(page.getByTestId('home-hero-title')).toBeVisible();
-    await expect(page.getByTestId('home-guide-title')).toContainText(
-      'Sélectionnez votre objectif, SER1 vous guide pas à pas',
+    await expect(page.getByTestId('home-start-eyebrow')).toContainText('PAR OÙ COMMENCER');
+    await expect(page.getByTestId('home-guide-subtitle')).toContainText(
+      'Sélectionnez votre objectif, SER1 vous guide pas à pas.',
     );
     await expect(page.getByTestId('home-primary-action-strategy')).toBeVisible();
     await expect(page.getByTestId('home-primary-action-scan')).toBeVisible();
+    await expect(page.getByTestId('home-status-card')).toBeVisible();
+    await expect(page.getByTestId('home-mode-card')).toContainText('Mode utilisateur');
     await expect(page.getByTestId('home-space-foyer')).toBeVisible();
     await expect(page.getByTestId('home-space-societe')).toBeVisible();
-    await page.getByRole('tab', { name: 'Piloter' }).click();
-    await expect(page.getByTestId('home-simulator-card-placement')).toBeVisible();
+    await expect(page.getByTestId('home-detail-panel')).toHaveCount(0);
+    await expect(page.locator('[data-testid^="home-simulator-card-"]')).toHaveCount(0);
+    await expect(page.getByRole('tab')).toHaveCount(0);
+    await expect(page.getByTestId('home-space-foyer')).toHaveAttribute('data-open', 'false');
+    await expect(page.getByTestId('home-space-societe')).toHaveAttribute('data-open', 'false');
     await expect(page.getByTestId('home-simulator-card-actif-passif')).toHaveCount(0);
+    await expect(page.getByText('Épargne salariale')).toHaveCount(0);
 
     await expect(page.getByTestId('home-primary-action-scan')).toHaveAttribute(
       'aria-disabled',

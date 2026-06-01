@@ -1,7 +1,7 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Link } from 'react-router';
 
-import type { SimulatorDefinition, SimulatorSpace, SimulatorTab } from '@/domain/simulators/types';
+import type { SimulatorSpace, SimulatorTab } from '@/domain/simulators/types';
 import {
   IconActivity,
   IconArrowLeftRight,
@@ -14,6 +14,7 @@ import {
   IconFileText,
   IconGauge,
   IconGift,
+  IconHome,
   IconLayers,
   IconNetwork,
   IconPieChart,
@@ -24,11 +25,10 @@ import {
 } from '@/icons/ui';
 
 import {
-  buildHomeGuidePanel,
   buildHomeGuideState,
   type HomeGuideCard,
   type HomeGuideMode,
-  type HomeGuidePanelItem,
+  type HomeGuideSpace,
   type HomeGuideTab,
 } from './homeGuideModel';
 import './HomeGuide.css';
@@ -39,22 +39,9 @@ interface HomeGuideProps {
 
 type IconComponent = (_props: { className?: string }) => React.ReactElement;
 
-const SPACE_DESCRIPTIONS: Record<SimulatorSpace, string> = {
-  foyer: 'Famille, fiscalité, placements, immobilier et transmission privée.',
-  societe: 'Structure, rémunération, trésorerie, titres et transmission d’entreprise.',
-};
-
-const QUICK_TABS: Record<SimulatorSpace, { tab: SimulatorTab; label: string }[]> = {
-  foyer: [
-    { tab: 'comprendre', label: 'Comprendre ma situation' },
-    { tab: 'piloter', label: 'Piloter mon patrimoine' },
-    { tab: 'proteger', label: 'Protéger et transmettre' },
-  ],
-  societe: [
-    { tab: 'comprendre', label: 'Analyser la société' },
-    { tab: 'piloter', label: 'Piloter le dirigeant' },
-    { tab: 'proteger', label: 'Transmettre l’entreprise' },
-  ],
+const ICONS_BY_SPACE: Record<SimulatorSpace, IconComponent> = {
+  foyer: IconHome,
+  societe: IconBuilding,
 };
 
 const ICONS_BY_SIMULATOR_ID: Partial<Record<string, IconComponent>> = {
@@ -95,111 +82,107 @@ const ICONS_BY_SIMULATOR_ID: Partial<Record<string, IconComponent>> = {
 
 export function HomeGuide({ mode }: HomeGuideProps): React.ReactElement {
   const guide = useMemo(() => buildHomeGuideState(mode), [mode]);
-  const [activeSpace, setActiveSpace] = useState<SimulatorSpace>('foyer');
+  const [activeSpace, setActiveSpace] = useState<SimulatorSpace | null>(null);
   const [activeTabs, setActiveTabs] = useState<Record<SimulatorSpace, SimulatorTab>>({
     foyer: 'comprendre',
     societe: 'comprendre',
   });
-  const [selectedId, setSelectedId] = useState<string | null>(
-    guide.allCards[0]?.definition.id ?? null,
-  );
 
-  useEffect(() => {
-    const visibleIds = new Set(guide.allCards.map((card) => card.definition.id));
-    if (!selectedId || !visibleIds.has(selectedId)) {
-      setSelectedId(guide.allCards[0]?.definition.id ?? null);
+  const openSpace = (space: SimulatorSpace, tab?: SimulatorTab): void => {
+    setActiveSpace(space);
+    if (tab) {
+      setActiveTabs((current) => ({ ...current, [space]: tab }));
     }
-  }, [guide.allCards, selectedId]);
-
-  const panel = useMemo(() => {
-    if (!selectedId) return null;
-    return buildHomeGuidePanel(selectedId);
-  }, [selectedId]);
+  };
 
   return (
     <section className="home-guide" data-testid="home-guide">
       <header className="home-guide__head">
         <p className="home-guide__eyebrow">SIMULATEURS</p>
-        <h2 className="home-guide__title" data-testid="home-guide-title">
-          Sélectionnez votre objectif, SER1 vous guide pas à pas
-        </h2>
+        <p className="home-guide__subtitle" data-testid="home-guide-subtitle">
+          Sélectionnez votre objectif, SER1 vous guide pas à pas.
+        </p>
       </header>
 
-      <div className="home-guide__layout">
-        <div className="home-guide__spaces" data-testid="home-guide-spaces">
-          {guide.spaces.map((space) => (
-            <section
-              key={space.id}
-              className={[
-                'home-guide-space',
-                activeSpace === space.id ? 'home-guide-space--open' : '',
-              ]
-                .filter(Boolean)
-                .join(' ')}
-              data-testid={`home-space-${space.id}`}
-            >
-              <button
-                type="button"
-                className="home-guide-space__button"
-                aria-expanded={activeSpace === space.id}
-                onClick={() => setActiveSpace(space.id)}
-              >
-                <span className="home-guide-space__icon" aria-hidden="true">
-                  {space.id === 'foyer' ? (
-                    <IconUsers className="home-guide-icon" />
-                  ) : (
-                    <IconBuilding className="home-guide-icon" />
-                  )}
-                </span>
-                <span className="home-guide-space__copy">
-                  <span className="home-guide-space__name">{space.label}</span>
-                  <span className="home-guide-space__description">
-                    {SPACE_DESCRIPTIONS[space.id]}
-                  </span>
-                </span>
-                <IconChevronDown className="home-guide-space__chevron" />
-              </button>
-
-              {activeSpace !== space.id && (
-                <div className="home-guide-space__quick">
-                  {QUICK_TABS[space.id].map((quick) => (
-                    <button
-                      key={quick.tab}
-                      type="button"
-                      className="home-guide-quick"
-                      onClick={() => {
-                        setActiveSpace(space.id);
-                        setActiveTabs((current) => ({ ...current, [space.id]: quick.tab }));
-                      }}
-                    >
-                      {quick.label}
-                    </button>
-                  ))}
-                </div>
-              )}
-
-              {activeSpace === space.id && (
-                <div className="home-guide-space__body">
-                  <HomeGuideTabs
-                    tabs={space.tabs}
-                    activeTab={activeTabs[space.id]}
-                    onChange={(tab) =>
-                      setActiveTabs((current) => ({ ...current, [space.id]: tab }))
-                    }
-                  />
-                  <HomeGuideTabPanel
-                    tab={space.tabs.find((tab) => tab.id === activeTabs[space.id]) ?? space.tabs[0]}
-                    selectedId={selectedId}
-                    onSelect={setSelectedId}
-                  />
-                </div>
-              )}
-            </section>
-          ))}
-        </div>
-
-        {panel && <HomeGuideDetails panel={panel} onSelect={setSelectedId} />}
+      <div className="home-guide__spaces" data-testid="home-guide-spaces">
+        {guide.spaces.map((space) => (
+          <HomeGuideSpaceCard
+            key={space.id}
+            space={space}
+            isOpen={activeSpace === space.id}
+            activeTab={activeTabs[space.id]}
+            onToggle={() => setActiveSpace(activeSpace === space.id ? null : space.id)}
+            onQuickAction={(tab) => openSpace(space.id, tab)}
+            onTabChange={(tab) => openSpace(space.id, tab)}
+          />
+        ))}
       </div>
+    </section>
+  );
+}
+
+function HomeGuideSpaceCard({
+  space,
+  isOpen,
+  activeTab,
+  onToggle,
+  onQuickAction,
+  onTabChange,
+}: {
+  space: HomeGuideSpace;
+  isOpen: boolean;
+  activeTab: SimulatorTab;
+  onToggle: () => void;
+  onQuickAction: (_tab: SimulatorTab) => void;
+  onTabChange: (_tab: SimulatorTab) => void;
+}): React.ReactElement {
+  const Icon = ICONS_BY_SPACE[space.id];
+
+  return (
+    <section
+      className={['home-guide-space', isOpen ? 'home-guide-space--open' : '']
+        .filter(Boolean)
+        .join(' ')}
+      data-open={isOpen ? 'true' : 'false'}
+      data-testid={`home-space-${space.id}`}
+    >
+      <button
+        type="button"
+        className="home-guide-space__button"
+        aria-expanded={isOpen}
+        onClick={onToggle}
+      >
+        <span className="home-guide-space__icon" aria-hidden="true">
+          <Icon className="home-guide-icon" />
+        </span>
+        <span className="home-guide-space__copy">
+          <span className="home-guide-space__name">{space.label}</span>
+          <span className="home-guide-space__description">{space.description}</span>
+        </span>
+        <IconChevronDown className="home-guide-space__chevron" />
+      </button>
+
+      <div className="home-guide-space__quick" aria-label={`Objectifs ${space.label}`}>
+        {space.quickActions.map((quick) => (
+          <button
+            key={quick.tab}
+            type="button"
+            className="home-guide-quick"
+            onClick={() => onQuickAction(quick.tab)}
+          >
+            {quick.label}
+          </button>
+        ))}
+      </div>
+
+      {isOpen && (
+        <div className="home-guide-space__body">
+          <HomeGuideTabs tabs={space.tabs} activeTab={activeTab} onChange={onTabChange} />
+          <HomeGuideTabPanel
+            tab={space.tabs.find((tab) => tab.id === activeTab) ?? space.tabs[0]}
+          />
+        </div>
+      )}
     </section>
   );
 }
@@ -234,15 +217,7 @@ function HomeGuideTabs({
   );
 }
 
-function HomeGuideTabPanel({
-  tab,
-  selectedId,
-  onSelect,
-}: {
-  tab: HomeGuideTab | undefined;
-  selectedId: string | null;
-  onSelect: (_id: string) => void;
-}): React.ReactElement {
+function HomeGuideTabPanel({ tab }: { tab: HomeGuideTab | undefined }): React.ReactElement {
   if (!tab || !tab.hasCards) {
     return (
       <div className="home-guide-empty" data-testid="home-guide-empty">
@@ -258,12 +233,7 @@ function HomeGuideTabPanel({
           <h3 className="home-guide-family__head">{family.name}</h3>
           <div className="home-guide-family__cards">
             {family.cards.map((card) => (
-              <HomeGuideSimulatorCard
-                key={card.definition.id}
-                card={card}
-                isSelected={selectedId === card.definition.id}
-                onSelect={onSelect}
-              />
+              <HomeGuideSimulatorCard key={card.definition.id} card={card} />
             ))}
           </div>
         </section>
@@ -272,30 +242,10 @@ function HomeGuideTabPanel({
   );
 }
 
-function HomeGuideSimulatorCard({
-  card,
-  isSelected,
-  onSelect,
-}: {
-  card: HomeGuideCard;
-  isSelected: boolean;
-  onSelect: (_id: string) => void;
-}): React.ReactElement {
+function HomeGuideSimulatorCard({ card }: { card: HomeGuideCard }): React.ReactElement {
   const Icon = ICONS_BY_SIMULATOR_ID[card.definition.id] ?? IconTable;
-
-  return (
-    <button
-      type="button"
-      className={[
-        'home-guide-card',
-        isSelected ? 'home-guide-card--selected' : '',
-        card.route ? '' : 'home-guide-card--muted',
-      ]
-        .filter(Boolean)
-        .join(' ')}
-      onClick={() => onSelect(card.definition.id)}
-      data-testid={`home-simulator-card-${card.definition.id}`}
-    >
+  const content = (
+    <>
       <span className="home-guide-card__icon" aria-hidden="true">
         <Icon className="home-guide-icon" />
       </span>
@@ -304,175 +254,29 @@ function HomeGuideSimulatorCard({
         <span className="home-guide-card__meta">{card.statusLabel}</span>
       </span>
       <IconChevronRight className="home-guide-card__chevron" />
+    </>
+  );
+
+  if (card.route) {
+    return (
+      <Link
+        to={card.route.path}
+        className="home-guide-card"
+        data-testid={`home-simulator-card-${card.definition.id}`}
+      >
+        {content}
+      </Link>
+    );
+  }
+
+  return (
+    <button
+      type="button"
+      className="home-guide-card home-guide-card--muted"
+      disabled
+      data-testid={`home-simulator-card-${card.definition.id}`}
+    >
+      {content}
     </button>
   );
-}
-
-function HomeGuideDetails({
-  panel,
-  onSelect,
-}: {
-  panel: ReturnType<typeof buildHomeGuidePanel>;
-  onSelect: (_id: string) => void;
-}): React.ReactElement {
-  const simulator = panel.simulator.definition;
-  const route = panel.simulator.route;
-
-  return (
-    <aside className="home-guide-detail" data-testid="home-detail-panel">
-      <header className="home-guide-detail__head">
-        <span className="home-guide-detail__icon" aria-hidden="true">
-          <SimulatorIcon simulator={simulator} />
-        </span>
-        <div>
-          <p className="home-guide-detail__status">{panel.simulator.statusLabel}</p>
-          <h3 className="home-guide-detail__title" data-testid="home-detail-title">
-            {simulator.fullLabel}
-          </h3>
-        </div>
-      </header>
-
-      <div className="home-guide-detail__body">
-        <DetailSection title="Objectif">
-          <p>{simulator.objective}</p>
-        </DetailSection>
-
-        <DetailList title="Inputs" items={simulator.inputs} />
-        <DetailList title="Calculs" items={simulator.calculates} />
-        <DetailList title="Outputs" items={simulator.outputs} />
-
-        {simulator.subtypes && simulator.subtypes.length > 0 && (
-          <DetailSection title="Sous-types">
-            <div className="home-guide-chip-row">
-              {simulator.subtypes.map((subtype) => (
-                <span key={subtype} className="home-guide-chip">
-                  {subtype}
-                </span>
-              ))}
-            </div>
-          </DetailSection>
-        )}
-
-        <RelationSection title="Amont" items={panel.upstream} onSelect={onSelect} />
-        <RelationSection title="Aval" items={panel.next} onSelect={onSelect} />
-
-        {panel.futureDependencies.length > 0 && (
-          <RelationSection
-            title="Étapes futures"
-            items={panel.futureDependencies}
-            onSelect={onSelect}
-            forceStatic
-          />
-        )}
-
-        <DetailSection title="Références">
-          {simulator.legalRefsStatus === 'complete' ? (
-            <ul className="home-guide-detail__list">
-              {simulator.legalRefs.map((ref) => (
-                <li key={ref}>{ref}</li>
-              ))}
-            </ul>
-          ) : (
-            <p>Références à renseigner avant codage.</p>
-          )}
-        </DetailSection>
-      </div>
-
-      <footer className="home-guide-detail__footer">
-        {route ? (
-          <Link to={route.path} className="home-guide-detail__cta" data-testid="home-detail-cta">
-            {simulator.lifecycle === 'placeholder' ? 'Voir la fiche' : 'Ouvrir'}
-            <IconChevronRight className="home-guide-detail__cta-icon" />
-          </Link>
-        ) : (
-          <button type="button" className="home-guide-detail__cta" disabled>
-            Non disponible
-          </button>
-        )}
-      </footer>
-    </aside>
-  );
-}
-
-function DetailSection({
-  title,
-  children,
-}: {
-  title: string;
-  children: React.ReactNode;
-}): React.ReactElement {
-  return (
-    <section className="home-guide-detail__section">
-      <h4>{title}</h4>
-      {children}
-    </section>
-  );
-}
-
-function DetailList({ title, items }: { title: string; items: string[] }): React.ReactElement {
-  return (
-    <DetailSection title={title}>
-      <ul className="home-guide-detail__list">
-        {items.map((item) => (
-          <li key={item}>{item}</li>
-        ))}
-      </ul>
-    </DetailSection>
-  );
-}
-
-function RelationSection({
-  title,
-  items,
-  onSelect,
-  forceStatic = false,
-}: {
-  title: string;
-  items: HomeGuidePanelItem[];
-  onSelect: (_id: string) => void;
-  forceStatic?: boolean;
-}): React.ReactElement | null {
-  if (items.length === 0) return null;
-
-  return (
-    <DetailSection title={title}>
-      <div className="home-guide-chip-row">
-        {items.map((item) => {
-          const isStatic =
-            forceStatic ||
-            !item.selectable ||
-            item.definition.lifecycle === 'planned' ||
-            item.definition.lifecycle === 'internalOnly';
-
-          if (isStatic) {
-            return (
-              <span
-                key={item.definition.id}
-                className="home-guide-chip home-guide-chip--muted"
-                data-testid={`home-panel-dependency-${item.definition.id}`}
-              >
-                {item.definition.shortLabel}
-              </span>
-            );
-          }
-
-          return (
-            <button
-              key={item.definition.id}
-              type="button"
-              className="home-guide-chip home-guide-chip--button"
-              onClick={() => onSelect(item.definition.id)}
-            >
-              {item.definition.shortLabel}
-            </button>
-          );
-        })}
-      </div>
-    </DetailSection>
-  );
-}
-
-function SimulatorIcon({ simulator }: { simulator: SimulatorDefinition }): React.ReactElement {
-  const Icon = ICONS_BY_SIMULATOR_ID[simulator.id] ?? IconTable;
-  return <Icon className="home-guide-icon" />;
 }

@@ -89,6 +89,7 @@ test.describe('Snapshots visuels simulateurs', () => {
           await enableE2EMode(page);
           await page.setViewportSize(viewport.size);
           await gotoVisualPage(page, pageDef.path, pageDef.ready);
+          await waitForSimulatorContentReady(page);
 
           if (state === 'filled' && pageDef.fill) {
             await pageDef.fill(page);
@@ -98,6 +99,7 @@ test.describe('Snapshots visuels simulateurs', () => {
           await waitForFonts(page);
           await maskDossierRail(page);
           await maskFloatingSynthesisCta(page);
+          await waitForVisualStability(page);
           if (pageDef.slug === 'placement' && viewport.name === 'mobile') {
             await expectNoHorizontalOverflow(page);
           }
@@ -119,6 +121,7 @@ test('placement comparaison mobile', async ({ page }) => {
   await gotoVisualPage(page, ROUTES.placement, (targetPage) =>
     targetPage.getByTestId('placement-page'),
   );
+  await waitForSimulatorContentReady(page);
 
   await fillPlacementAge(page, '45');
   await page.getByRole('button', { name: /Comparer un autre placement/ }).click();
@@ -127,6 +130,7 @@ test('placement comparaison mobile', async ({ page }) => {
   await waitForFonts(page);
   await maskDossierRail(page);
   await maskFloatingSynthesisCta(page);
+  await waitForVisualStability(page);
   await expectNoHorizontalOverflow(page);
 
   await expect(page).toHaveScreenshot('placement-compare-mobile.png', {
@@ -140,6 +144,7 @@ test('masque le CTA synthèse flottant avant capture', async ({ page }) => {
   await enableE2EMode(page);
   await page.setViewportSize({ width: 390, height: 900 });
   await gotoVisualPage(page, ROUTES.credit, (targetPage) => targetPage.getByTestId('credit-page'));
+  await waitForSimulatorContentReady(page);
 
   await fillIfVisible(page.getByTestId('credit-capital-input'), '200000');
   await waitForVisualStability(page);
@@ -170,6 +175,24 @@ async function gotoVisualPage(page: Page, path: string, ready: (_page: Page) => 
   await page.goto(path, { waitUntil: 'domcontentloaded' });
   await expect(page.locator('body')).not.toContainText('Application error');
   await expect(ready(page)).toBeVisible({ timeout: 15_000 });
+}
+
+async function waitForSimulatorContentReady(page: Page) {
+  const loadingIndicators = page.locator(
+    [
+      '.sim-page-skeleton',
+      '.sim-skeleton',
+      '.cv-skeleton',
+      '.ir-settings-loading',
+      '.sc-settings-loading',
+      '.sim-state-card--loading',
+      '[data-testid$="-loading"]',
+    ].join(', '),
+  );
+
+  await expect(loadingIndicators).toHaveCount(0, { timeout: 15_000 });
+  await expect(page.getByText(/Chargement/)).toHaveCount(0, { timeout: 15_000 });
+  await waitForVisualStability(page);
 }
 
 async function fillPlacementAge(page: Page, value: string) {
