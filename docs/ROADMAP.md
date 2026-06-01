@@ -56,22 +56,24 @@ Ce document est la roadmap V2 canonique pour construire le parcours complet Audi
 | Strategy                   | Comparer les scénarios, activer une stratégie et créer une nouvelle version active du dossier.                                                |
 | `DossierRail`              | Afficher la version active, le statut, le chaînage amont/aval, les actions de sauvegarde/version/comparaison et la position dans le parcours. |
 
+Clarification : `Nouvelle stratégie` est le parcours global côté utilisateur. `/strategy` est la surface de comparaison, d'activation et de versioning des scénarios issus de ce parcours.
+
 ## Architecture cible
 
 ### Modules à créer ou stabiliser
 
-| Module                                      | Rôle                                                                        | Contraintes                                                                                           |
-| ------------------------------------------- | --------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
-| `src/domain/simulators/types.ts`            | Types `SimulatorDefinition`, statut, modes, familles, chainage, références. | TypeScript strict, pas de React, pas de Supabase.                                                     |
-| `src/domain/simulators/registry.ts`         | Registry métier canonique des simulateurs et sous-types.                    | Référence les routes existantes via `simRouteContracts`, sans dupliquer la source des chemins actifs. |
-| `src/domain/simulators/homeMatrix.ts`       | Projection Home : espaces, onglets, familles, ordre d'affichage.            | Aucune logique de rendu.                                                                              |
-| `src/domain/simulators/chainage.ts`         | Liens amont/aval, dépendances de dossier, recommandations.                  | Sert au panneau latéral et au rail, pas à un hover coloré.                                            |
-| `src/domain/simulators/contextAdapters.ts`  | Contrats des adapters contexte dossier vers inputs simulateur.              | Le moteur ne lit jamais le dossier brut.                                                              |
-| `src/domain/legal-references/`              | Référentiel de sources juridiques et règles liées.                          | Sources officielles, date de dernière vérification, périmètre moteur.                                 |
-| `src/domain/dossier/`                       | Modèle dossier, versions, activation stratégie, sourceRefs.                 | Indépendant de l'OCR et des pages UI.                                                                 |
-| `src/features/home/`                        | Composants Home guidée.                                                     | Consomme la registry, pas de listes statiques en dur.                                                 |
-| `src/components/ui/dossier/DossierRail.tsx` | Rail commun global et `/sim/*`.                                             | Desktop complet, mobile réduit à une pastille/version en haut.                                        |
-| `src/features/audit/documents/`             | Future zone Scan documentaire.                                              | Alimente `DossierPatrimonial`, pas les simulateurs directement.                                       |
+| Module                                         | Rôle                                                                          | Contraintes                                                                                                                       |
+| ---------------------------------------------- | ----------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| `src/domain/simulators/types.ts`               | Types `SimulatorDefinition`, statut, modes, familles, chainage, références.   | TypeScript strict, pas de React, pas de Supabase.                                                                                 |
+| `src/domain/simulators/registry.ts`            | Registry métier canonique des simulateurs et sous-types.                      | Référence les routes existantes via `simRouteContracts`, sans dupliquer la source des chemins actifs.                             |
+| `src/domain/simulators/homeMatrix.ts`          | Projection Home : espaces, onglets, familles, ordre d'affichage.              | Aucune logique de rendu.                                                                                                          |
+| `src/domain/simulators/chainage.ts`            | Liens amont/aval, dépendances de dossier, recommandations.                    | Sert au panneau latéral et au rail, pas à un hover coloré.                                                                        |
+| `src/domain/simulators/contextAdapterTypes.ts` | Types et contrat commun des adapters contexte dossier vers inputs simulateur. | Les adapters réels vivent par simulateur ou domaine, par exemple `src/features/ir/contextAdapter.ts`. Aucun gros adapter central. |
+| `src/domain/legal-references/`                 | Référentiel de sources juridiques et règles liées.                            | Sources officielles, date de dernière vérification, périmètre moteur.                                                             |
+| `src/domain/dossier/`                          | Modèle dossier, versions, activation stratégie, sourceRefs.                   | Indépendant de l'OCR et des pages UI.                                                                                             |
+| `src/features/home/`                           | Composants Home guidée.                                                       | Consomme la registry, pas de listes statiques en dur.                                                                             |
+| `src/components/ui/dossier/DossierRail.tsx`    | Rail commun global et `/sim/*`.                                               | Desktop complet, mobile réduit à une pastille/version en haut.                                                                    |
+| `src/features/audit/documents/`                | Future zone Scan documentaire.                                                | Alimente `DossierPatrimonial`, pas les simulateurs directement.                                                                   |
 
 ### Contrat `SimulatorDefinition`
 
@@ -125,6 +127,7 @@ export interface SimulatorDefinition {
   next: string[];
   dossierFields: string[];
   legalRefs: string[];
+  legalRefsStatus?: 'complete' | 'a-renseigner-avant-codage';
   testScenarios: string[];
   contextPolicy: SimulatorContextPolicy;
   subtypes?: string[];
@@ -145,6 +148,7 @@ Règles d'usage :
 - `calculates` décrit ce que le moteur calcule réellement, pas seulement ce que la page affiche.
 - `outputs` décrit les sorties propres et réutilisables par Strategy, le rail, le reporting ou de futurs exports.
 - `legalRefs`, `dossierFields` et `testScenarios` sont obligatoires avant de coder ou refondre un simulateur.
+- Les entrées `active`, `hub` et `placeholder` exigent des `legalRefs` complètes, même si la référence est une règle structurelle stable. Les entrées `planned` peuvent porter `legalRefsStatus: 'a-renseigner-avant-codage'`, mais ne peuvent pas partir en implémentation avec ce statut.
 - `contextPolicy` décrit comment le simulateur fonctionne en autonomie et comment il utilise un dossier patrimonial chargé.
 - Aucun composant React ne crée de liste parallèle de simulateurs, de routes, de statuts, de chainage ou de visibilité.
 
@@ -192,6 +196,7 @@ Exemple minimal attendu avant codage :
   next: ['Revenus fonciers', 'LMNP/LMP', 'IFI', 'Plus-values immobilières', 'Vendre / réemployer'],
   dossierFields: ['budget', 'fiscaliteIR', 'credits', 'immobilier'],
   legalRefs: ['à renseigner avant codage'],
+  legalRefsStatus: 'a-renseigner-avant-codage',
   testScenarios: ['projet avec crédit amortissable', 'projet sans crédit', 'cash-flow négatif'],
   contextPolicy: {
     canRunStandalone: true,
@@ -365,6 +370,8 @@ Parcours : Transmission privée.
 - `cession-reemploi`.
 
 Le panneau latéral peut afficher les liens directs. Le rail doit pouvoir afficher le parcours métier courant, l'étape actuelle et les étapes précédentes/suivantes.
+
+Les étapes des parcours doivent référencer des `SimulatorDefinition.id`, jamais des libellés libres, sauf pour les étapes conceptuelles explicitement typées comme `strategy` ou `audit-objectives`. Ce typage rend le chainage testable et évite les parcours en texte non vérifiable.
 
 ## Alimentation contextuelle des simulateurs
 
@@ -640,9 +647,9 @@ Remplacer la grille statique par une Home qui guide le CGP selon son objectif, t
 ### Règles de visibilité de la Home
 
 - La Home ne redevient jamais une grille statique.
-- En première PR Home, afficher en priorité `active`, `hub` et `placeholder`.
+- En première PR Home, afficher exclusivement `active`, `hub` et `placeholder` comme cartes.
 - Les éléments `planned` restent dans la registry pour préparer le chainage, mais ne doivent pas créer de faux lien ni de promesse cliquable.
-- Un `planned` peut apparaître uniquement si l'UI le marque clairement comme non disponible et si cette décision est validée dans la PR.
+- En Home simplifiée, un simulateur `planned` ne doit pas apparaître comme une carte de même niveau qu'un simulateur actif. Il peut seulement apparaître dans le panneau latéral comme étape future ou dépendance non disponible.
 - `internalOnly` est absent des cartes Home simplifiées.
 - `expertOnly` est absent du mode simplifié ; il peut être affiché en mode expert si le panneau explique son rôle.
 - Le panneau latéral peut mentionner les dépendances amont/aval même si elles ne sont pas encore visibles comme cartes.
@@ -1130,10 +1137,11 @@ Changements :
 - Ajouter `src/domain/simulators/homeMatrix.ts`.
 - Ajouter `src/domain/simulators/chainage.ts`.
 - Ajouter le contrat `contextPolicy` et la convention `simulateurContextAdapter`.
+- Ajouter seulement les types communs d'adapter de contexte ; les adapters réels seront créés par simulateur ou domaine dans les PR concernées.
 - Exposer dans `chainage.ts` les liens directs `upstream` / `next` et les parcours métier obligatoires.
 - Mapper les routes existantes depuis `simRouteContracts`.
 - Marquer chaque entrée : `active`, `hub`, `placeholder`, `planned`, `expertOnly`, `internalOnly`.
-- Renseigner pour chaque entrée : `objective`, `inputs`, `calculates`, `outputs`, `upstream`, `next`, `dossierFields`, `legalRefs`, `testScenarios`, `contextPolicy`.
+- Renseigner pour chaque entrée : `objective`, `inputs`, `calculates`, `outputs`, `upstream`, `next`, `dossierFields`, `legalRefs`, `legalRefsStatus`, `testScenarios`, `contextPolicy`.
 - Intégrer les décisions métier récentes :
   - `Actif/passif` internalOnly en simplifié.
   - PEA/CTO sous-type de Placement.
@@ -1144,9 +1152,9 @@ Changements :
 Tests :
 
 - Test unitaire registry : IDs uniques, routes valides, pas de chemin actif introuvable.
-- Test unitaire chainage : chaque parcours métier référence des IDs connus ou des étapes explicitement `planned`.
+- Test unitaire chainage : chaque parcours métier référence des `SimulatorDefinition.id` connus ou des étapes conceptuelles typées comme `strategy` ou `audit-objectives`.
 - Test mode simplifié : exclusions visibles.
-- Test de complétude : aucun simulateur codé ou refondu sans `outputs`, `legalRefs`, `dossierFields`, `testScenarios` et `contextPolicy`.
+- Test de complétude : aucun simulateur `active`, `hub` ou `placeholder` sans `legalRefs` complètes ; aucun simulateur `planned` sans `legalRefsStatus: 'a-renseigner-avant-codage'` si ses références restent à documenter ; aucun simulateur codé ou refondu sans `outputs`, `dossierFields`, `testScenarios` et `contextPolicy`.
 - `npm run check`.
 
 Critères de sortie :
@@ -1154,6 +1162,7 @@ Critères de sortie :
 - Aucune route parallèle créée.
 - Aucun moteur manquant créé.
 - Aucune double registry créée.
+- Aucun fichier central d'adapters ne concentre les implémentations par simulateur.
 - Les parcours métier obligatoires sont testés.
 - Les simulateurs actifs documentent leur autonomie, leurs champs dossier et leur comportement en cas de champ manquant.
 - Les décisions métier sont testées.
@@ -1169,6 +1178,8 @@ Changements :
 - Ajouter les composants Home nécessaires.
 - Ajouter `Nouvelle stratégie` et `Scan documentaire`.
 - Ajouter les deux espaces, onglets, accordéons et panneau latéral.
+- Limiter les cartes Home à `active`, `hub` et `placeholder`.
+- Ne pas créer `DossierRail`, `DossierVersion` ni mécanisme de versioning dans cette PR.
 - Supprimer le hover chain coloré.
 - Masquer ou atténuer les badges chiffrés.
 
@@ -1177,6 +1188,7 @@ Tests :
 - Tests React/Home sur wording exact.
 - Tests visibilité simplifié/expert.
 - Tests absence des cartes internalisées.
+- Tests absence des simulateurs `planned` comme cartes Home simplifiées.
 - Tests des CTAs actifs.
 - `npm run check`.
 - `npm run test:e2e:auth-pages` si la Home ou les routes privées sont touchées par le flux.
@@ -1185,6 +1197,8 @@ Critères de sortie :
 
 - La Home est pilotée par la registry.
 - Les simulateurs non prêts ne créent pas de faux liens.
+- Les `planned` restent dans le panneau/chainage comme étapes futures ou dépendances, pas comme cartes cliquables.
+- PR V2-02 ne simule pas le rail : le versioning et `DossierRail` restent le périmètre de PR V2-03.
 - Aucune ancienne Home concurrente ne reste dans le repo.
 - L'expérience reste premium, sobre et cohérente avec les tokens.
 
@@ -1196,6 +1210,7 @@ Changements :
 
 - Créer le modèle `DossierVersion`.
 - Créer `DossierRail` commun.
+- Reprendre les besoins de position parcours laissés volontairement hors PR V2-02.
 - Brancher le rail sur `/audit`, `/strategy` et `/sim/*` sans dupliquer les contrôles existants.
 - Garantir que `/sim/*` utilise la même implémentation et les mêmes données, même si l'affichage desktop est plus compact.
 - Afficher une position dans un parcours métier : étapes précédentes, étape actuelle, étapes suivantes recommandées et branches possibles.
