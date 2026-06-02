@@ -4,12 +4,12 @@
 .dossier-context-card {
   display: flex;
   flex-direction: column;
-  gap: 7px;
-  padding: 11px 12px 12px;
-  border: 1px solid var(--border-default);
+  gap: 6px;
+  padding: 10px 12px;
+  border: 1px solid var(--border-subtle);
   border-radius: var(--radius-md);
   background: var(--surface-card);
-  box-shadow: 0 8px 20px color-mix(in srgb, var(--shadow-color) 5%, transparent);
+  box-shadow: none;
 }
 
 .dossier-context-card--mode {

@@ -94,6 +94,11 @@ Le pattern attendu est :
 - etats vide, loading, erreur et disabled prevus ;
 - mobile 390 px sans chevauchement, sans texte tronque dans les boutons.
 
+La colonne gauche `DossierRail` est un **fil de parcours discret** (sans cadre, fil vertical a puces,
+etape courante seule mise en avant) : c'est un repere, pas un concurrent du contenu. Le toggle Mode
+expert est un switch compact dont l'etat actif utilise `--action-primary`. Details : `GOUVERNANCE.md`
+(Exception V2-03b et §6). Demo runtime : `/settings/design-system`.
+
 Les cards ne doivent pas etre imbriquees dans d'autres cards. Les sections de page sont des bandes
 ou layouts non cadres ; les cards servent aux items repetes, outils cadres et modales.
 

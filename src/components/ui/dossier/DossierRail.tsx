@@ -1,6 +1,5 @@
 import type { ReactElement } from 'react';
 import type { DossierRailStepView, DossierRailViewModel } from '@/domain/dossier';
-import { IconChevronRight, IconLayers } from '@/icons/ui';
 
 interface DossierRailProps {
   viewModel: DossierRailViewModel;
@@ -26,6 +25,8 @@ export function DossierRail({
   const branchViews =
     viewModel.density === 'compact' ? viewModel.branches.slice(0, 2) : viewModel.branches;
 
+  const versionNote = viewModel.version.isPersisted ? 'Enregistrée' : 'Non persistée';
+
   return (
     <aside
       className={`dossier-rail dossier-rail--${viewModel.density}`}
@@ -44,65 +45,45 @@ export function DossierRail({
         aria-label="Parcours dossier"
       >
         <header className="dossier-rail__header">
-          <span className="dossier-rail__eyebrow">Dossier</span>
-          <strong className="dossier-rail__version">{viewModel.version.versionCode}</strong>
-          <span className="dossier-rail__version-note">
-            {viewModel.version.isPersisted ? 'Enregistrée' : 'Non persistée'}
+          <span className="dossier-rail__eyebrow">Parcours</span>
+          <h2 className="dossier-rail__journey" data-testid="dossier-rail-journey-label">
+            {viewModel.journey.label}
+          </h2>
+          {viewModel.density === 'full' && (
+            <p className="dossier-rail__objective">{viewModel.journey.objective}</p>
+          )}
+          <span className="dossier-rail__version">
+            {viewModel.version.versionCode} · {versionNote}
           </span>
         </header>
 
-        <section className="dossier-rail__journey" aria-labelledby="dossier-rail-journey-title">
-          <div className="dossier-rail__journey-icon" aria-hidden="true">
-            <IconLayers className="dossier-rail__icon" />
-          </div>
-          <div>
-            <span className="dossier-rail__eyebrow">Parcours</span>
-            <h2 id="dossier-rail-journey-title" data-testid="dossier-rail-journey-label">
-              {viewModel.journey.label}
-            </h2>
-            {viewModel.density === 'full' && (
-              <p className="dossier-rail__objective">{viewModel.journey.objective}</p>
-            )}
-          </div>
-        </section>
-
-        <section className="dossier-rail__section" aria-labelledby="dossier-rail-current-title">
-          <h3 id="dossier-rail-current-title">Position</h3>
+        <div className="dossier-rail__timeline">
+          <StepList
+            steps={previousSteps}
+            ariaLabel="Étapes précédentes"
+            onNavigate={onNavigate}
+            resolveRoutePath={resolveRoutePath}
+            testId="dossier-rail-previous"
+          />
           <StepList
             steps={[viewModel.current]}
+            ariaLabel="Étape actuelle"
             onNavigate={onNavigate}
             resolveRoutePath={resolveRoutePath}
             testId="dossier-rail-current"
           />
-        </section>
-
-        {previousSteps.length > 0 && (
-          <section className="dossier-rail__section" aria-labelledby="dossier-rail-previous-title">
-            <h3 id="dossier-rail-previous-title">Avant</h3>
-            <StepList
-              steps={previousSteps}
-              onNavigate={onNavigate}
-              resolveRoutePath={resolveRoutePath}
-              testId="dossier-rail-previous"
-            />
-          </section>
-        )}
-
-        {nextSteps.length > 0 && (
-          <section className="dossier-rail__section" aria-labelledby="dossier-rail-next-title">
-            <h3 id="dossier-rail-next-title">Ensuite</h3>
-            <StepList
-              steps={nextSteps}
-              onNavigate={onNavigate}
-              resolveRoutePath={resolveRoutePath}
-              testId="dossier-rail-next"
-            />
-          </section>
-        )}
+          <StepList
+            steps={nextSteps}
+            ariaLabel="Étapes suivantes"
+            onNavigate={onNavigate}
+            resolveRoutePath={resolveRoutePath}
+            testId="dossier-rail-next"
+          />
+        </div>
 
         {branchViews.length > 0 && (
-          <section className="dossier-rail__section" aria-labelledby="dossier-rail-branches-title">
-            <h3 id="dossier-rail-branches-title">Branches possibles</h3>
+          <section className="dossier-rail__branches-section" aria-label="Branches possibles">
+            <span className="dossier-rail__eyebrow">Branches</span>
             <div className="dossier-rail__branches" data-testid="dossier-rail-branches">
               {branchViews.map((branch) => (
                 <div className="dossier-rail__branch" key={branch.condition}>
@@ -120,14 +101,23 @@ export function DossierRail({
 
 interface StepListProps {
   steps: DossierRailStepView[];
+  ariaLabel: string;
   onNavigate: (_path: string) => void;
   resolveRoutePath: (_routeId: string | undefined) => string | null;
   testId: string;
 }
 
-function StepList({ steps, onNavigate, resolveRoutePath, testId }: StepListProps): ReactElement {
+function StepList({
+  steps,
+  ariaLabel,
+  onNavigate,
+  resolveRoutePath,
+  testId,
+}: StepListProps): ReactElement | null {
+  if (steps.length === 0) return null;
+
   return (
-    <ol className="dossier-rail__steps" data-testid={testId}>
+    <ol className="dossier-rail__steps" aria-label={ariaLabel} data-testid={testId}>
       {steps.map((step) => (
         <StepItem
           key={`${step.kind}-${step.id}-${step.isCurrent ? 'current' : 'linked'}`}
@@ -149,10 +139,11 @@ interface StepItemProps {
 function StepItem({ step, onNavigate, resolveRoutePath }: StepItemProps): ReactElement {
   const routePath = resolveRoutePath(step.routeId);
   const canNavigate = Boolean(routePath && !step.isCurrent && step.availability === 'available');
+  const availabilityLabel = AVAILABILITY_LABELS[step.availability];
   const content = (
     <>
+      <span className="dossier-rail__step-dot" aria-hidden="true" />
       <span className="dossier-rail__step-label">{step.label}</span>
-      <span className="dossier-rail__step-status">{AVAILABILITY_LABELS[step.availability]}</span>
     </>
   );
 
@@ -166,14 +157,15 @@ function StepItem({ step, onNavigate, resolveRoutePath }: StepItemProps): ReactE
         <button
           className="dossier-rail__step-button"
           type="button"
+          title={availabilityLabel}
           onClick={() => onNavigate(routePath)}
         >
           {content}
-          <IconChevronRight className="dossier-rail__step-icon" aria-hidden="true" />
         </button>
       ) : (
         <span
           className="dossier-rail__step-static"
+          title={availabilityLabel}
           aria-current={step.isCurrent ? 'step' : undefined}
         >
           {content}
