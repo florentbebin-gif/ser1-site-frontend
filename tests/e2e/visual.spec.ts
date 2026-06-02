@@ -14,6 +14,8 @@ const viewports = [
   { name: 'mobile', size: { width: 390, height: 900 } },
 ] as const;
 
+const VISUAL_FIXED_TIME = '2026-06-02T01:50:00+02:00';
+
 const visualPages: VisualPage[] = [
   {
     slug: 'ir',
@@ -86,6 +88,7 @@ test.describe('Snapshots visuels simulateurs', () => {
     for (const viewport of viewports) {
       for (const state of ['empty', 'filled'] as const) {
         test(`${pageDef.slug} ${state} ${viewport.name}`, async ({ page }) => {
+          await page.clock.setFixedTime(VISUAL_FIXED_TIME);
           await enableE2EMode(page);
           await page.setViewportSize(viewport.size);
           await gotoVisualPage(page, pageDef.path, pageDef.ready);
@@ -116,6 +119,7 @@ test.describe('Snapshots visuels simulateurs', () => {
 });
 
 test('placement comparaison mobile', async ({ page }) => {
+  await page.clock.setFixedTime(VISUAL_FIXED_TIME);
   await enableE2EMode(page);
   await page.setViewportSize({ width: 390, height: 900 });
   await gotoVisualPage(page, ROUTES.placement, (targetPage) =>
@@ -141,6 +145,7 @@ test('placement comparaison mobile', async ({ page }) => {
 });
 
 test('masque le CTA synthèse flottant avant capture', async ({ page }) => {
+  await page.clock.setFixedTime(VISUAL_FIXED_TIME);
   await enableE2EMode(page);
   await page.setViewportSize({ width: 390, height: 900 });
   await gotoVisualPage(page, ROUTES.credit, (targetPage) => targetPage.getByTestId('credit-page'));
@@ -225,6 +230,7 @@ async function maskFloatingSynthesisCta(page: Page) {
   await page.addStyleTag({
     content: `
       .sim-view-synthesis-cta--floating {
+        display: none !important;
         opacity: 0 !important;
         pointer-events: none !important;
         visibility: hidden !important;
@@ -232,20 +238,9 @@ async function maskFloatingSynthesisCta(page: Page) {
     `,
   });
 
-  const visibleAfterMask = await page
-    .locator('.sim-view-synthesis-cta--floating')
-    .evaluateAll((elements) => {
-      for (const element of elements) {
-        if (element instanceof HTMLElement) {
-          element.style.visibility = 'hidden';
-        }
-      }
-      return elements.filter((element) => getComputedStyle(element).visibility !== 'hidden').length;
-    });
-
-  if (visibleAfterMask > 0) {
-    throw new Error('Le CTA synthèse flottant reste visible après application du masque visuel');
-  }
+  await expect(page.locator('.sim-view-synthesis-cta--floating:visible')).toHaveCount(0, {
+    timeout: 15_000,
+  });
 }
 
 async function maskDossierRail(page: Page) {
