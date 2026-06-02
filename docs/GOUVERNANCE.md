@@ -889,6 +889,29 @@ bouton global "Suivant" n’est ajouté. Il ne contient jamais `Synthèse`, `Hyp
 technique : ces zones ne sont pas des étapes métier. Le composant est sémantiquement un
 `<nav aria-label="Étapes du simulateur">` et l’étape courante porte `aria-current="step"`.
 
+#### 16l) Bascules, onglets et switch — une seule famille par sémantique
+
+Objectif : un seul visuel par intention, jamais de toggle CSS ad hoc par feature. Voir `DESIGN.md`
+(« Bascules, onglets et switch ») pour le contrat court.
+
+- Choix court mutuellement exclusif → `SimSegmentedControl` (`role="radiogroup"`, visuel
+  `.sim-segmented`). C'est le seul visuel segmenté autorisé.
+- Navigation entre étapes/panneaux → onglets soulignés (`role="tablist"`, `aria-selected`).
+- On/off binaire → switch `ModeToggle` (actif `--action-primary`, cf. §6).
+
+Inventaire de référence (état après PR bascules) :
+
+| Surface                                                  | Sémantique                   | Implémentation                                                                     |
+| -------------------------------------------------------- | ---------------------------- | ---------------------------------------------------------------------------------- |
+| Crédit Mensuel/Annuel                                    | choix                        | `SimSegmentedControl`                                                              |
+| Référentiel contrats — Audience (Particulier/Entreprise) | choix                        | `SimSegmentedControl`                                                              |
+| PER potentiel/transfert, Placement — phases              | navigation                   | onglets soulignés (`tablist`)                                                      |
+| Base CG retraite — fiche contrat                         | navigation                   | onglets (`tablist`), inchangé                                                      |
+| Trésorerie `ts-phase-source`                             | choix riche (cartes-options) | `radiogroup` de cartes, hors segmenté                                              |
+| Home — Comprendre/Piloter/Protéger                       | navigation                   | `tablist` ; convergence visuelle traitée avec la refonte Home (caret + alignement) |
+
+Règle a11y : ne jamais convertir un `tablist` (navigation) en `radiogroup` (choix), ni l'inverse.
+
 Un menu vertical gauche persistant est interdit par défaut sur `/sim/*` : il ajoute un troisième
 rail de lecture et alourdit les pages. Une exception doit être prouvée par un besoin métier
 documenté en PR.
@@ -917,7 +940,7 @@ desktop. Le parcours se réduit à la pastille `Version ...` uniquement sur mobi
 mode n'est pas rendu dans cette colonne parcours : les simulateurs conservent leur toggle local
 lorsqu'il existe.
 
-#### 16l) Contrat UX simulateur
+#### 16m) Contrat UX simulateur
 
 Chaque page `/sim/*` qui consomme les primitives transverses expose un contrat `SimPageUXContract`
 via un hook dédié à sa feature. Ce contrat centralise :

@@ -15,42 +15,7 @@
 /* .cv-header* supprimÃ©s â†’ remplacÃ©s par .premium-header / .premium-title /
    .premium-subtitle / .sim-header__actions (src/styles/sim + premium-shared.css) */
 
-/* ----------------------------------------
-   PILL TOGGLE (Mensuel/Annuel)
-   ---------------------------------------- */
-.cv-pill-toggle {
-  display: flex;
-  gap: 0;
-  border: 1px solid var(--color-c8);
-  border-radius: 8px;
-  overflow: hidden;
-}
-
-.cv-pill-toggle__btn {
-  padding: 8px 18px;
-  font-size: 13px;
-  font-weight: 500;
-  border: none;
-  background: var(--surface-card);
-  color: var(--color-c9);
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.cv-pill-toggle__btn:first-child {
-  border-right: 1px solid var(--color-c8);
-}
-
-.cv-pill-toggle__btn:hover:not(.is-active) {
-  background: var(--color-c7);
-  color: var(--color-c10);
-}
-
-.cv-pill-toggle__btn.is-active {
-  background: var(--color-c2);
-  color: var(--text-on-action);
-  font-weight: 600;
-}
+/* Bascule Mensuel/Annuel : voir SimSegmentedControl (visuel segmenté canonique). */
 
 /* ----------------------------------------
    TABS (PrÃªt 1 / PrÃªt 2 / PrÃªt 3)

@@ -11,36 +11,7 @@
   margin-bottom: 0;
 }
 
-.base-contrat-toggle {
-  display: inline-flex;
-  border: 1px solid var(--color-c8);
-  border-radius: 10px;
-  overflow: hidden;
-  background: var(--surface-card);
-}
-
-.base-contrat-toggle__button {
-  border: none;
-  background: transparent;
-  color: var(--color-c9);
-  cursor: pointer;
-  font: inherit;
-  font-size: 13px;
-  font-weight: 500;
-  padding: 9px 18px;
-  transition:
-    background-color 0.15s ease,
-    color 0.15s ease;
-}
-
-.base-contrat-toggle__button:hover {
-  background: var(--color-c7);
-}
-
-.base-contrat-toggle__button.is-active {
-  background: var(--color-c3);
-  color: var(--text-on-action);
-}
+/* Audience Particulier/Entreprise : voir SimSegmentedControl (visuel segmenté canonique). */
 
 .base-contrat-empty-state {
   margin-bottom: 0;
@@ -204,14 +175,6 @@
 }
 
 @media (max-width: 720px) {
-  .base-contrat-toggle {
-    width: 100%;
-  }
-
-  .base-contrat-toggle__button {
-    flex: 1 1 0;
-  }
-
   .base-contrat-product__header,
   .base-contrat-product__toggle {
     align-items: flex-start;

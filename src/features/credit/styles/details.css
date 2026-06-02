@@ -100,11 +100,6 @@
   outline-offset: 2px;
 }
 
-.cv-pill-toggle__btn:focus-visible {
-  outline: 2px solid var(--color-c2);
-  outline-offset: -2px;
-}
-
 .cv-btn:focus-visible {
   outline: 2px solid var(--color-c2);
   outline-offset: 2px;

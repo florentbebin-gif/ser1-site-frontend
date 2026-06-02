@@ -13,6 +13,8 @@ import { UserInfoBanner } from '@/components/UserInfoBanner';
 import SettingsTitleWithIcon, {
   type SettingsTitleIconName,
 } from '@/components/settings/SettingsTitleWithIcon';
+import { SimSegmentedControl } from '@/components/ui/sim';
+import '@/styles/sim/segmented.css';
 import './styles/base-contrat.css';
 import { CATALOG } from '@/domain/base-contrat/catalog';
 import type { CatalogProduct } from '@/domain/base-contrat/catalog';
@@ -302,18 +304,15 @@ export default function BaseContrat() {
               </p>
             </div>
 
-            <div className="base-contrat-toggle" role="tablist" aria-label="Audience">
-              {(['pp', 'pm'] as const).map((audience) => (
-                <button
-                  key={audience}
-                  type="button"
-                  className={`base-contrat-toggle__button${togglePPPM === audience ? ' is-active' : ''}`}
-                  onClick={() => setTogglePPPM(audience)}
-                >
-                  {audience === 'pp' ? 'Particulier' : 'Entreprise'}
-                </button>
-              ))}
-            </div>
+            <SimSegmentedControl<Audience>
+              value={togglePPPM}
+              onChange={setTogglePPPM}
+              ariaLabel="Audience"
+              options={[
+                { value: 'pp', label: 'Particulier' },
+                { value: 'pm', label: 'Entreprise' },
+              ]}
+            />
           </div>
         </section>
 

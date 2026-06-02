@@ -110,6 +110,26 @@ describe('BaseContrat', () => {
     expect(productHeader.tagName).toBe('BUTTON');
   });
 
+  it('rend le choix audience comme un radiogroup', async () => {
+    render(<BaseContrat />);
+
+    await screen.findByText('Référentiel contrats');
+
+    expect(screen.getByRole('radiogroup', { name: 'Audience' })).toBeInTheDocument();
+    expect(screen.queryByRole('tablist', { name: 'Audience' })).not.toBeInTheDocument();
+    expect(screen.getByRole('radio', { name: 'Particulier' })).toHaveAttribute(
+      'aria-checked',
+      'true',
+    );
+
+    await userEvent.click(screen.getByRole('radio', { name: 'Entreprise' }));
+
+    expect(screen.getByRole('radio', { name: 'Entreprise' })).toHaveAttribute(
+      'aria-checked',
+      'true',
+    );
+  });
+
   it('masque les sources, la confiance et les dépendances aux non-admins', async () => {
     await openFirstProduct();
 
