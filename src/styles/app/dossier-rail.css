@@ -1,7 +1,9 @@
 /* Colonne gauche commune des pages /sim/*, /audit et /strategy :
-   contexte de travail (Dossier chargé) puis parcours dossier.
+   contexte de travail (Dossier chargé) puis fil de parcours dossier.
    Flottante sur écran large pour garder le contenu centré ; repliée au-dessus
-   du contenu en dessous du seuil où elle chevaucherait la page centrée. */
+   du contenu en dessous du seuil où elle chevaucherait la page centrée.
+   Le parcours est un repère discret : pas de boîte par étape, fil vertical à
+   puces, étape courante seule mise en avant. */
 
 .dossier-rail-column {
   position: fixed;
@@ -11,7 +13,7 @@
   display: flex;
   width: 148px;
   flex-direction: column;
-  gap: 7px;
+  gap: 10px;
   max-height: calc(100vh - 58px);
   padding-bottom: 6px;
   overflow-x: hidden;
@@ -45,71 +47,32 @@
   display: none;
 }
 
+/* Panel discret : pas de carte, il s'efface derrière le contenu de la page. */
 .dossier-rail__panel {
   display: flex;
   flex-direction: column;
-  gap: var(--space-2);
-  padding: var(--space-2);
-  background: var(--surface-card);
-  border: 1px solid var(--border-default);
-  border-radius: var(--radius-md);
-  box-shadow: 0 6px 16px color-mix(in srgb, var(--shadow-color) 4%, transparent);
+  gap: var(--space-3);
+  padding: 2px 2px 4px;
+  background: transparent;
+  border: 0;
+  box-shadow: none;
 }
 
 .dossier-rail__header {
-  display: grid;
-  gap: 1px;
-  padding-bottom: var(--space-2);
-  border-bottom: 1px solid var(--border-subtle);
+  display: flex;
+  flex-direction: column;
 }
 
 .dossier-rail__eyebrow {
   color: var(--text-muted);
   font-size: 9px;
   font-weight: var(--font-weight-semibold);
-  letter-spacing: 0.7px;
+  letter-spacing: 0.8px;
   text-transform: uppercase;
 }
 
-.dossier-rail__version {
-  color: var(--text-primary);
-  font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-semibold);
-}
-
-.dossier-rail__version-note,
-.dossier-rail__objective,
-.dossier-rail__branch small {
-  color: var(--text-secondary);
-  font-size: var(--font-size-xs);
-  line-height: var(--line-height-base);
-}
-
 .dossier-rail__journey {
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
-  gap: var(--space-2);
-  align-items: center;
-}
-
-.dossier-rail__journey-icon {
-  display: grid;
-  place-items: center;
-  width: 24px;
-  height: 24px;
-  color: var(--action-primary);
-  background: color-mix(in srgb, var(--surface-active) 38%, var(--surface-card));
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-sm);
-}
-
-.dossier-rail__icon {
-  width: 14px;
-  height: 14px;
-}
-
-.dossier-rail__journey h2 {
-  margin: 0;
+  margin: 3px 0 0;
   color: var(--text-primary);
   font-size: var(--font-size-sm);
   font-weight: var(--font-weight-semibold);
@@ -117,99 +80,119 @@
 }
 
 .dossier-rail__objective {
-  margin: var(--space-2) 0 0;
+  margin: 4px 0 0;
+  color: var(--text-secondary);
+  font-size: var(--font-size-xs);
+  line-height: var(--line-height-base);
 }
 
-.dossier-rail__section {
-  display: grid;
-  gap: var(--space-1);
-}
-
-.dossier-rail__section h3 {
-  margin: 0 0 1px;
+.dossier-rail__version {
+  margin-top: 4px;
   color: var(--text-muted);
-  font-size: 9px;
-  font-weight: var(--font-weight-semibold);
-  letter-spacing: 0.7px;
-  text-transform: uppercase;
+  font-size: var(--font-size-xs);
+}
+
+/* Fil de parcours : un seul trait vertical, des puces, aucun cadre. */
+.dossier-rail__timeline {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+.dossier-rail__timeline::before {
+  content: '';
+  position: absolute;
+  top: 9px;
+  bottom: 9px;
+  left: 4px;
+  width: 1px;
+  background: var(--border-default);
 }
 
 .dossier-rail__steps {
-  display: grid;
-  gap: var(--space-1);
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
+.dossier-rail__step {
+  position: relative;
+}
+
 .dossier-rail__step-button,
 .dossier-rail__step-static {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-columns: 9px minmax(0, 1fr);
   align-items: center;
+  column-gap: 9px;
   width: 100%;
-  min-height: 26px;
-  gap: var(--space-1);
-  padding: 4px var(--space-2);
-  color: var(--text-primary);
-  background: var(--surface-muted);
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-sm);
+  min-height: 24px;
+  padding: 2px 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
   font: inherit;
   text-align: left;
 }
 
 .dossier-rail__step-button {
   cursor: pointer;
-  transition:
-    border-color 160ms ease,
-    background 160ms ease;
-}
-
-.dossier-rail__step-button:hover {
-  background: var(--surface-card);
-  border-color: color-mix(in srgb, var(--action-primary) 30%, var(--border-default));
+  transition: color 160ms ease;
 }
 
 .dossier-rail__step-button:focus-visible {
   outline: none;
+  border-radius: var(--radius-sm);
   box-shadow: var(--focus-ring);
 }
 
-.dossier-rail__step.is-current .dossier-rail__step-static {
-  background: var(--surface-card);
-  border-color: var(--border-default);
-  border-left: 2px solid var(--action-primary);
+.dossier-rail__step-dot {
+  width: 9px;
+  height: 9px;
+  box-sizing: border-box;
+  border: 1px solid var(--border-strong);
+  border-radius: 50%;
+  background: var(--surface-page);
+  transition:
+    background 160ms ease,
+    border-color 160ms ease;
 }
 
 .dossier-rail__step-label {
   min-width: 0;
-  color: var(--text-primary);
+  color: var(--text-secondary);
   font-size: var(--font-size-xs);
   font-weight: var(--font-weight-medium);
   line-height: var(--line-height-tight);
 }
 
+.dossier-rail__step--future .dossier-rail__step-label,
+.dossier-rail__step--internal .dossier-rail__step-label {
+  color: var(--text-muted);
+}
+
+.dossier-rail__step.is-current .dossier-rail__step-dot {
+  border-color: var(--action-primary);
+  background: var(--action-primary);
+}
+
 .dossier-rail__step.is-current .dossier-rail__step-label {
+  color: var(--text-primary);
   font-weight: var(--font-weight-semibold);
 }
 
-.dossier-rail__step-status {
-  color: var(--text-muted);
-  font-size: var(--font-size-xs);
-  font-weight: var(--font-weight-medium);
+.dossier-rail__step-button:hover .dossier-rail__step-label {
+  color: var(--action-primary);
 }
 
-.dossier-rail__step--future .dossier-rail__step-static,
-.dossier-rail__step--internal .dossier-rail__step-static {
-  background: color-mix(in srgb, var(--surface-muted) 70%, var(--surface-card));
-  color: var(--text-muted);
+.dossier-rail__step-button:hover .dossier-rail__step-dot {
+  border-color: var(--action-primary);
 }
 
-.dossier-rail__step-icon {
-  width: 14px;
-  height: 14px;
-  color: var(--text-muted);
+.dossier-rail__branches-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
 }
 
 .dossier-rail__branches {
@@ -220,36 +203,20 @@
 .dossier-rail__branch {
   display: grid;
   gap: 1px;
-  padding: 5px var(--space-2);
-  background: var(--surface-muted);
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-sm);
+  padding: 3px 0 3px 9px;
+  border-left: 1px solid var(--border-subtle);
 }
 
 .dossier-rail__branch span {
-  color: var(--text-primary);
+  color: var(--text-secondary);
   font-size: var(--font-size-xs);
   font-weight: var(--font-weight-semibold);
 }
 
-/* Densité compacte (simulateurs) : colonne resserrée, statut/icône masqués. */
-.dossier-rail--compact .dossier-rail__journey {
-  grid-template-columns: 1fr;
-}
-
-.dossier-rail--compact .dossier-rail__journey-icon {
-  display: none;
-}
-
-.dossier-rail--compact .dossier-rail__step-button,
-.dossier-rail--compact .dossier-rail__step-static {
-  grid-template-columns: minmax(0, 1fr);
-  min-height: 24px;
-}
-
-.dossier-rail--compact .dossier-rail__step-status,
-.dossier-rail--compact .dossier-rail__step-icon {
-  display: none;
+.dossier-rail__branch small {
+  color: var(--text-muted);
+  font-size: var(--font-size-xs);
+  line-height: var(--line-height-base);
 }
 
 /* Repli desktop : sous le seuil où la colonne flottante tiendrait dans la
@@ -265,6 +232,7 @@
     overflow: visible;
     flex-flow: row wrap;
     align-items: stretch;
+    gap: 12px;
   }
 
   .dossier-rail-column > .dossier-context-card {

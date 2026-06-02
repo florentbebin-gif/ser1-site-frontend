@@ -420,6 +420,9 @@ Pour une demande du type "trouve les écarts de normes sur `/sim/tresorerie-soci
   - mode : `padding 8px 16px`, `font-size 13px`, `radius 6px`
   - export trigger : `padding 8px 16px`, `radius 6px`.
 - Dropdown export : ancré à droite du bouton, `min-width: 140px`, `z-index: 1000`.
+- Le toggle Mode expert (`ModeToggle`) est un switch binaire compact : pastille `34x18`, état
+  **actif sur `--action-primary`** (contraste net on/off), état inactif sur `--border-strong`. Ne pas
+  utiliser C4/`--surface-active` pour l'état actif (l'écart on/off devient invisible).
 - Source de vérité du mode : `ui_settings.mode` via `useUserMode` (piloté depuis Home).
 - Le mode de Home doit être appliqué par défaut sur toute nouvelle page `/sim/*`.
 - Si un toggle local est nécessaire dans une page simulateur, il doit être un override non persistant (session de la page uniquement), sans écrire dans `ui_settings`.
@@ -586,7 +589,8 @@ Règles icônes :
   - C1 : titres, valeurs clés, emphase finale.
   - C2 : états interactifs actifs (pill active, focus visible).
   - C3 : marqueur actif/tab + liseré guide principal.
-  - C4 : fonds d'accent doux (icône section, switch actif).
+  - C4 : fonds d'accent doux (icône section, fills de sélection). Ne plus l'utiliser pour l'état
+    actif du switch Mode expert (cf. §6 : actif = `--action-primary`).
   - C5 : accent secondaire de données, jamais pour les liserés KPI.
   - C6 : signature douce (souligné header `/sim/*`, accents rares, fonds/bordures décoratifs).
   - C7 : fonds neutres/hovers légers.
@@ -893,6 +897,14 @@ Exception V2-03 : `DossierRail` est le seul rail gauche autorisé. Il est inject
 `AppLayout` sur `/audit`, `/strategy` et `/sim/*` pour afficher la position dans le parcours dossier
 et la version de travail. Ce rail ne contient jamais les actions de sauvegarde, chargement, reset,
 export ou mode, qui restent portées par la topbar ou les surfaces existantes.
+
+Style V2-03b — fil de parcours discret : `DossierRail` est un **repère**, jamais un concurrent du
+contenu. Rendu attendu : panneau **sans cadre ni ombre** (fond transparent), parcours en **fil
+vertical à puces** (un seul trait, `--border-default`), **étape courante seule mise en avant** (puce
+pleine `--action-primary` + label `--text-primary`/600), étapes précédentes/suivantes atténuées
+(`--text-secondary`/`--text-muted`), **aucune boîte par étape**. Sur-titres limités à 1-2 niveaux
+(`Parcours`, et `Branches` si présent). Démo runtime : `/settings/design-system` → « Rail & bascule
+de mode » (`src/pages/settings/designSystem/RailPreview.tsx`).
 
 Précision V2-04 : la Home et les parcours ont des responsabilités séparées. La Home affiche
 `Dossier chargé` et `Mode utilisateur`, car elle pilote le mode global. `AppLayout` regroupe
