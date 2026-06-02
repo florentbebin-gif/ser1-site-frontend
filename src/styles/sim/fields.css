@@ -3,12 +3,12 @@
 .sim-field {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 3px;
 }
 
 .sim-field__label {
   display: block;
-  margin-bottom: 4px;
+  margin-bottom: 3px;
   color: var(--color-c9);
   font-size: 12px;
   font-weight: 500;
@@ -21,10 +21,10 @@
 
 .sim-field__control,
 .sim-field__select-trigger {
-  height: 32px;
+  height: 28px;
   width: 100%;
   box-sizing: border-box;
-  padding: 4px 6px;
+  padding: 3px 6px;
   border: none;
   border-bottom: 1px solid transparent;
   border-radius: 4px;
@@ -74,8 +74,8 @@
 }
 
 .sim-field__unit {
-  min-width: 24px;
-  margin-left: 6px;
+  min-width: 22px;
+  margin-left: 5px;
   color: var(--color-c9);
   font-size: 13px;
 }
@@ -135,12 +135,12 @@
   z-index: 1200;
   box-sizing: border-box;
   margin: 0;
-  padding: 4px;
+  padding: 3px;
   list-style: none;
   display: flex;
   flex-direction: column;
   gap: 2px;
-  max-height: 240px;
+  max-height: 220px;
   overflow-y: auto;
   background: var(--surface-card);
   border: 1px solid var(--color-c8);
@@ -152,7 +152,7 @@
   display: flex;
   flex-direction: column;
   gap: 2px;
-  padding: 6px 8px;
+  padding: 5px 7px;
   border-radius: 4px;
   color: var(--color-c10);
   font-size: 13px;
@@ -215,19 +215,19 @@
 @media (max-width: 600px) {
   .sim-field__control,
   .sim-field__select-trigger {
-    min-height: calc(var(--space-5) + var(--space-6));
+    min-height: var(--touch-target-mobile);
     height: auto;
     padding-block: var(--space-2);
   }
 
   .sim-field__unit {
-    min-height: calc(var(--space-5) + var(--space-6));
+    min-height: var(--touch-target-mobile);
     display: inline-flex;
     align-items: center;
   }
 
   .sim-field__option {
-    min-height: calc(var(--space-5) + var(--space-6));
+    min-height: var(--touch-target-mobile);
     justify-content: center;
   }
 }

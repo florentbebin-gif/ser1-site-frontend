@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type ReactNode } from 'react';
+import { useMemo, useState, type ReactNode } from 'react';
 import { useUserRole } from '@/auth/useUserRole';
 import { UserInfoBanner } from '@/components/UserInfoBanner';
 import SettingsTitleWithIcon from '@/components/settings/SettingsTitleWithIcon';
@@ -310,10 +310,6 @@ export default function PrevoyanceRegimes() {
   const [editorTarget, setEditorTarget] = useState<EditorTarget | null>(null);
   const maintienLegal =
     maintien.find((item) => item.code === PREVOYANCE_MAINTIEN_LEGAL_CODE) ?? null;
-
-  useEffect(() => {
-    setOpenCode((current) => current ?? regimes[0]?.code ?? null);
-  }, [regimes]);
 
   const filteredRegimes = useMemo(() => {
     const needle = search.trim().toLowerCase();

@@ -2,20 +2,21 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
+  gap: 8px;
 }
 
 .mode-toggle-label {
-  font-size: 13px;
+  font-size: var(--font-size-md);
   font-weight: 500;
   color: var(--color-c1);
+  white-space: nowrap;
 }
 
 .mode-toggle-pill {
   position: relative;
-  width: 44px;
-  height: 24px;
-  border-radius: 12px;
+  width: 38px;
+  height: 21px;
+  border-radius: 11px;
   border: none;
   background: var(--color-c8);
   cursor: pointer;
@@ -39,8 +40,8 @@
   position: absolute;
   top: 3px;
   left: 3px;
-  width: 18px;
-  height: 18px;
+  width: 15px;
+  height: 15px;
   border-radius: 50%;
   background: var(--surface-card);
   box-shadow: 0 1px 3px color-mix(in srgb, var(--shadow-color) 20%, transparent);
@@ -48,7 +49,7 @@
 }
 
 .mode-toggle-pill--active .mode-toggle-pill__knob {
-  transform: translateX(20px);
+  transform: translateX(17px);
 }
 
 .mode-toggle-pill--loading {

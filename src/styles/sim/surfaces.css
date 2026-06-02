@@ -7,7 +7,7 @@
 .sim-card__header {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 4px;
 }
 
 .sim-card__header--bleed {
@@ -17,19 +17,19 @@
     transparent 65%
   );
   border-radius: 10px 10px 0 0;
-  margin: -20px -24px 0;
-  padding: 20px 24px 0;
+  margin: -16px -20px 0;
+  padding: 16px 20px 0;
 }
 
 .sim-card__title-row {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
 }
 
 .sim-card__icon {
-  width: 26px;
-  height: 26px;
+  width: 24px;
+  height: 24px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -40,8 +40,8 @@
 }
 
 .sim-card__icon > svg {
-  width: 16px;
-  height: 16px;
+  width: 14px;
+  height: 14px;
   flex-shrink: 0;
 }
 
@@ -73,7 +73,7 @@
 }
 
 .sim-card__subtitle {
-  margin: 4px 0 12px;
+  margin: 3px 0 9px;
   font-size: 12px;
   color: var(--color-c9);
 }
@@ -95,9 +95,9 @@
 .sim-controls-row {
   display: grid;
   grid-template-columns: minmax(0, 1.85fr) minmax(0, 1fr);
-  gap: 24px;
+  gap: 18px;
   align-items: end;
-  margin-bottom: 16px;
+  margin-bottom: 12px;
 }
 
 .sim-controls-row__main,
@@ -113,7 +113,7 @@
 .sim-grid {
   display: grid;
   grid-template-columns: minmax(0, 1.85fr) minmax(0, 1fr);
-  gap: 24px;
+  gap: 18px;
   align-items: start;
 }
 
@@ -125,7 +125,7 @@
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 18px;
 }
 
 .sim-grid__col--main,
@@ -134,12 +134,12 @@
 }
 
 .sim-grid__col--side {
-  gap: 16px;
+  gap: 12px;
 }
 
 .sim-grid__col--sticky {
   position: sticky;
-  top: 80px;
+  top: 64px;
 }
 
 @media (max-width: 900px) {

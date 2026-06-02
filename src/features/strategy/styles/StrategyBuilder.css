@@ -7,7 +7,7 @@
   max-width: 1200px;
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 18px;
 }
 
 .strategy-header {
@@ -27,38 +27,38 @@
   display: flex;
   align-items: flex-start;
   justify-content: flex-end;
-  gap: 12px;
+  gap: 9px;
 }
 
 .client-info {
   font-size: 14px;
   color: var(--color-c9);
-  margin-top: 12px;
+  margin-top: 9px;
 }
 
 .strategy-section {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 12px;
 }
 
 .strategy-section-heading {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  gap: 16px;
+  gap: 12px;
 }
 
 .strategy-section h2 {
   margin: 4px 0 0;
   color: var(--color-c1);
-  font-size: 20px;
+  font-size: 18px;
 }
 
 .empty-state {
   color: var(--color-c9);
   font-style: italic;
-  padding: 20px;
+  padding: 15px;
   text-align: center;
 }
 
@@ -66,7 +66,7 @@
 .recommandations-list {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 9px;
 }
 
 .reco-card {
@@ -95,17 +95,17 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 8px;
+  margin-bottom: 6px;
 }
 
 .reco-header h3 {
   margin: 0;
-  font-size: 16px;
+  font-size: 14px;
   color: var(--color-c1);
 }
 
 .badge {
-  padding: 4px 10px;
+  padding: 3px 8px;
   border-radius: 12px;
   font-size: 11px;
   font-weight: 600;
@@ -113,21 +113,21 @@
 }
 
 .reco-card p {
-  margin: 8px 0;
-  font-size: 14px;
+  margin: 6px 0;
+  font-size: 13px;
   color: var(--color-c10);
-  line-height: 1.5;
+  line-height: 1.4;
 }
 
 .reco-meta {
-  margin-top: 12px;
+  margin-top: 9px;
 }
 
 .reco-tags {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
-  margin-bottom: 8px;
+  margin-bottom: 6px;
 }
 
 .tag {
@@ -139,7 +139,7 @@
 }
 
 .reco-warnings {
-  margin-top: 8px;
+  margin-top: 6px;
 }
 
 .warning {
@@ -147,7 +147,7 @@
   color: var(--color-warning-text);
   background: var(--color-warning-bg);
   border: 1px solid var(--color-warning-border);
-  padding: 6px 10px;
+  padding: 5px 8px;
   border-radius: 6px;
   margin-top: 4px;
 }
@@ -156,7 +156,7 @@
 .produits-list {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-  gap: 16px;
+  gap: 12px;
 }
 
 .produit-card {
@@ -168,24 +168,24 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 12px;
+  margin-bottom: 9px;
 }
 
 .produit-header h3 {
   margin: 0;
-  font-size: 16px;
+  font-size: 14px;
   color: var(--color-c1);
 }
 
 .btn-remove {
   background: transparent;
   border: none;
-  font-size: 24px;
+  font-size: 20px;
   color: var(--color-c9);
   cursor: pointer;
   padding: 0;
-  width: 28px;
-  height: 28px;
+  width: 24px;
+  height: 24px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -200,7 +200,7 @@
 .produit-form {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 8px;
 }
 
 .strategy-field {
@@ -223,8 +223,8 @@
 .scenarios-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 16px;
-  margin-bottom: 20px;
+  gap: 12px;
+  margin-bottom: 15px;
 }
 
 .scenario-card {
@@ -237,8 +237,8 @@
 }
 
 .scenario-card h3 {
-  margin: 0 0 12px 0;
-  font-size: 16px;
+  margin: 0 0 9px 0;
+  font-size: 14px;
   color: var(--color-c1);
 }
 
@@ -246,7 +246,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 8px 0;
+  padding: 6px 0;
   border-bottom: 1px solid var(--color-c8);
 }
 
@@ -260,7 +260,7 @@
 }
 
 .metric-value {
-  font-size: 16px;
+  font-size: 14px;
   font-weight: 600;
   color: var(--color-c1);
 }
@@ -271,8 +271,8 @@
 }
 
 .ecarts-summary h3 {
-  margin: 0 0 12px 0;
-  font-size: 16px;
+  margin: 0 0 9px 0;
+  font-size: 14px;
   color: var(--color-c1);
 }
 
@@ -280,12 +280,12 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 8px 0;
-  font-size: 15px;
+  padding: 6px 0;
+  font-size: 14px;
 }
 
 .ecart-item strong {
-  font-size: 18px;
+  font-size: 16px;
 }
 
 .ecart-item .positive {
@@ -304,7 +304,7 @@
 .strategy-modal__body {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 12px;
 }
 
 .strategy-modal__footer {
@@ -314,17 +314,17 @@
 .produits-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 12px;
+  gap: 9px;
   margin: 0;
 }
 
 .produit-option {
-  padding: 16px;
+  padding: 12px;
   background: color-mix(in srgb, var(--color-c7) 88%, var(--surface-card));
   border: 1px solid var(--color-c8);
   border-radius: 10px;
   cursor: pointer;
-  font-size: 14px;
+  font-size: 13px;
   transition: all 0.2s;
 }
 

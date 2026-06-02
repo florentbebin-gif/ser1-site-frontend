@@ -9,45 +9,45 @@
   background-color: var(--color-c7);
   color: var(--color-c1);
   text-align: center;
-  padding: 20px;
+  padding: var(--space-5);
 }
 
 .app-error-card {
   background-color: var(--surface-card);
-  padding: 40px;
-  border-radius: 12px;
+  padding: var(--space-7);
+  border-radius: var(--radius-lg);
   box-shadow: 0 4px 6px color-mix(in srgb, var(--shadow-color) 5%, transparent);
   max-width: 500px;
   width: 100%;
 }
 
 .app-error-icon {
-  font-size: 48px;
-  margin-bottom: 24px;
+  font-size: var(--font-size-3xl);
+  margin-bottom: var(--space-5);
 }
 
 .app-error-title {
-  font-size: 24px;
+  font-size: var(--font-size-2xl);
   font-weight: 600;
-  margin-bottom: 16px;
+  margin-bottom: var(--space-4);
   color: var(--color-c1);
 }
 
 .app-error-message {
-  font-size: 16px;
+  font-size: var(--font-size-md);
   line-height: 1.5;
   color: var(--color-c9);
-  margin-bottom: 24px;
+  margin-bottom: var(--space-5);
 }
 
 .app-error-details {
   background-color: var(--color-c7);
-  padding: 12px;
-  border-radius: 6px;
-  font-size: 12px;
+  padding: var(--space-3);
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-sm);
   color: var(--color-c1);
   overflow-x: auto;
-  margin-bottom: 24px;
+  margin-bottom: var(--space-5);
   text-align: left;
 }
 
@@ -55,16 +55,16 @@
   background-color: var(--color-c2);
   color: var(--text-on-action);
   border: none;
-  padding: 10px 20px;
+  padding: 9px 16px;
   border-radius: 999px;
-  font-size: 14px;
+  font-size: var(--font-size-md);
   font-weight: 500;
   cursor: pointer;
   transition: opacity 0.2s;
 }
 
 .app-error-footer {
-  margin-top: 32px;
-  font-size: 12px;
+  margin-top: var(--space-7);
+  font-size: var(--font-size-sm);
   color: var(--color-c9);
 }

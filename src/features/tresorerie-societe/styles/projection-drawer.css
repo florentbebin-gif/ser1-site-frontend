@@ -1,13 +1,13 @@
 /* ─── Bouton projection ────────────────────────────────────────────────────── */
 
 .ts-projection-collapsible {
-  margin: 16px 0 2px;
+  margin: 12px 0 2px;
 }
 
 .ts-projection-disclosure {
   width: auto;
-  height: 32px;
-  min-height: 32px;
+  height: 28px;
+  min-height: 28px;
   margin-inline: auto;
   background: var(--surface-card);
   color: var(--color-c2);
@@ -21,12 +21,12 @@
   background: var(--surface-card);
   border: 1px solid var(--color-c8);
   border-radius: 8px;
-  margin-bottom: 16px;
+  margin-bottom: 12px;
   overflow: hidden;
 }
 
 .ts-drawer__empty {
-  padding: 16px;
+  padding: 12px;
   text-align: center;
   color: var(--color-c9);
   font-size: 13px;
@@ -36,8 +36,8 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
-  padding: 10px 14px;
+  gap: 8px;
+  padding: 8px 12px;
   border-bottom: 1px solid var(--color-c8);
   background: var(--color-c7);
 }
@@ -52,7 +52,7 @@
 }
 
 .ts-drawer__mode-btn {
-  padding: 4px 14px;
+  padding: 3px 10px;
   border: 1px solid var(--color-c8);
   border-radius: 4px;
   background: var(--surface-card);
@@ -106,19 +106,19 @@
 }
 
 .ts-proj-th {
-  padding: 6px 10px;
+  padding: 5px 8px;
   background: var(--color-c7);
   border-bottom: 1px solid var(--color-c8);
   text-align: right;
   font-weight: 600;
   color: var(--color-c1);
   font-size: 11px;
-  min-width: 80px;
+  min-width: 72px;
 }
 
 .ts-proj-th--label {
   text-align: left;
-  min-width: 200px;
+  min-width: 176px;
   position: sticky;
   left: 0;
   background: var(--color-c7);
@@ -140,7 +140,7 @@
 }
 
 .ts-proj-td {
-  padding: 5px 10px;
+  padding: 4px 8px;
   border-bottom: 1px solid var(--color-c8);
   text-align: right;
   color: var(--color-c10);
@@ -175,7 +175,7 @@
   position: sticky;
   left: 0;
   z-index: 2;
-  padding: 7px 10px;
+  padding: 6px 8px;
   background: color-mix(in srgb, var(--color-c1) 8%, var(--surface-card));
   border-top: 1px solid var(--color-c8);
   border-bottom: 1px solid var(--color-c8);
@@ -210,7 +210,7 @@
 }
 
 .ts-drawer__note {
-  padding: 8px 14px;
+  padding: 6px 12px;
   font-size: 11px;
   color: var(--color-c9);
   border-top: 1px solid var(--color-c8);

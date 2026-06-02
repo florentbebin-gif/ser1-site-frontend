@@ -110,6 +110,27 @@ Au chargement, ne pas afficher d'onglets, de carte simulateur individuelle, de g
 panneau détail. Les chips ouvrent seulement l'espace et l'onglet correspondant ; le panneau détail
 simulateur apparait uniquement après clic explicite sur une carte simulateur visible.
 
+## Densité 100 %
+
+Le rendu de référence SER1 est le navigateur à 100 %, avec une densité visuelle équivalente à
+l'ancien usage à 80 %. Sur un écran Windows affiché à 125 %, une capture physique `1900x900`
+correspond à un viewport CSS proche de `1520x720` : ce viewport doit donc rester un cas de
+vérification prioritaire.
+
+Repères desktop :
+
+- topbar complète avec session : environ 48 px CSS, soit 60 px physiques à 125 % ;
+- Home : colonne centrale autour de 864 px CSS, rail gauche autour de 148 px CSS ;
+- contrôles courants : 30-34 px CSS maximum hors besoin tactile mobile ;
+- cible tactile mobile : `--touch-target-mobile`, soit 44 px CSS ;
+- texte courant : `--font-size-md`, soit 11 px CSS ;
+- titres de page compacts : `--font-size-2xl`, soit 18 px CSS ;
+- KPI très visibles : `--font-size-3xl`, soit 22 px CSS maximum par défaut.
+
+Ne pas utiliser `zoom`, `transform: scale(...)` ni un wrapper global pour simuler cette densité.
+Densifier d'abord les tokens et primitives partagées, puis corriger localement uniquement les pages
+qui échappent encore au contrat.
+
 ## Formattage et alignements
 
 - Montants euros : affichage `fr-FR`, separateur de milliers, unite `€` visible hors du nombre.

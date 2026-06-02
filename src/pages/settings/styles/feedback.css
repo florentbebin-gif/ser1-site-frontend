@@ -48,9 +48,11 @@
 }
 
 .settings-save-btn {
-  padding: 10px 28px;
+  min-height: 30px;
+  padding: 0 20px;
   font-weight: 600;
-  font-size: 14px;
+  font-size: var(--font-size-md);
+  line-height: 1;
   align-self: flex-start;
 }
 

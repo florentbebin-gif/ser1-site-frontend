@@ -9,7 +9,7 @@
 
 .sim-segmented__option {
   min-width: 0;
-  padding: 6px 14px;
+  padding: 5px 12px;
   border: 0;
   border-radius: 999px;
   background: transparent;
@@ -43,12 +43,12 @@
 
 @media (max-width: 600px) {
   .sim-segmented__option {
-    min-height: calc(var(--space-5) + var(--space-6));
+    min-height: var(--touch-target-mobile);
     padding-block: 0;
   }
 
   .sim-segmented--sm .sim-segmented__option {
-    min-height: calc(var(--space-5) + var(--space-6));
+    min-height: var(--touch-target-mobile);
     padding-block: 0;
   }
 }
