@@ -194,6 +194,26 @@ Non canoniques ou a couvrir au besoin :
 Avant d'ajouter une primitive, prouver les usages existants par `rg`, puis preferer un wrapper mince
 sur les styles `Sim*` plutot qu'une nouvelle famille CSS.
 
+## Bascules, onglets et switch
+
+Trois familles seulement, choisies par la **semantique** (jamais par gout visuel). Ne pas creer de
+toggle CSS ad hoc par feature.
+
+- **Choix court mutuellement exclusif** (ex. Mensuel/Annuel, Particulier/Entreprise) : composant
+  `SimSegmentedControl` (`role="radiogroup"`, visuel `.sim-segmented` = pill blanc, actif = carte
+  blanche + ombre). C'est le seul visuel segmente autorise.
+- **Navigation entre etapes/panneaux** (workflow PER, phases Placement, fiche contrat) : onglets
+  **soulignes** (`role="tablist"`, `aria-selected`, etape courante `aria-current`). Motif partage :
+  `border-bottom` + indicateur souligne. Ne pas styliser une navigation en pill segmente.
+- **On/off binaire** (Mode expert) : switch `ModeToggle` (actif sur `--action-primary`).
+
+Cas distinct, hors de ces familles : les cartes-option riches (ex. `.ts-phase-source` Tresorerie,
+choix avec sous-libelles) restent un `role="radiogroup"` de cartes, pas un segmente.
+
+Regle d'accessibilite : ne jamais convertir une navigation (`tablist`) en `radiogroup`, ni l'inverse.
+Voir l'inventaire et les exceptions dans `GOUVERNANCE.md`. Demo runtime : `/settings/design-system`
+(« Primitives UI » → Controle segmente).
+
 ## Accessibilite
 
 - Focus visible sur tout controle interactif avec `--focus-ring`.

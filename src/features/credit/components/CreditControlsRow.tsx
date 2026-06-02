@@ -1,3 +1,4 @@
+import { SimSegmentedControl } from '@/components/ui/sim';
 import { CreditLoanTabs } from './CreditLoanTabs';
 import type { CreditLoanTabsProps, CreditViewMode } from '../types';
 
@@ -34,23 +35,16 @@ export function CreditControlsRow({
           isExpert={isExpert}
         />
       </div>
-      <div className="sim-controls-row__side">
-        <div className="cv-pill-toggle" data-testid="credit-view-toggle">
-          <button
-            className={`cv-pill-toggle__btn ${viewMode === 'mensuel' ? 'is-active' : ''}`}
-            onClick={() => onChangeViewMode('mensuel')}
-            data-testid="credit-view-mensuel"
-          >
-            Mensuel
-          </button>
-          <button
-            className={`cv-pill-toggle__btn ${viewMode === 'annuel' ? 'is-active' : ''}`}
-            onClick={() => onChangeViewMode('annuel')}
-            data-testid="credit-view-annuel"
-          >
-            Annuel
-          </button>
-        </div>
+      <div className="sim-controls-row__side" data-testid="credit-view-toggle">
+        <SimSegmentedControl<CreditViewMode>
+          value={viewMode}
+          onChange={onChangeViewMode}
+          ariaLabel="Période d’affichage"
+          options={[
+            { value: 'mensuel', label: 'Mensuel' },
+            { value: 'annuel', label: 'Annuel' },
+          ]}
+        />
       </div>
     </>
   );

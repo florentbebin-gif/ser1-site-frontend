@@ -1,5 +1,7 @@
 // @vitest-environment jsdom
 
+import '@testing-library/jest-dom/vitest';
+import { useState } from 'react';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
@@ -43,5 +45,43 @@ describe('SimSegmentedControl', () => {
     await userEvent.click(screen.getByRole('radio', { name: 'Capital' }));
 
     expect(onChange).toHaveBeenCalledWith('capital');
+  });
+
+  it('permet la navigation clavier entre options radio', async () => {
+    function Harness() {
+      const [value, setValue] = useState<'rente' | 'capital' | 'fractionne'>('rente');
+
+      return (
+        <SimSegmentedControl
+          ariaLabel="Type de sortie"
+          value={value}
+          options={[
+            { value: 'rente', label: 'Rente' },
+            { value: 'capital', label: 'Capital' },
+            { value: 'fractionne', label: 'Fractionné' },
+          ]}
+          onChange={setValue}
+        />
+      );
+    }
+
+    render(<Harness />);
+
+    screen.getByRole('radio', { name: 'Rente' }).focus();
+    await userEvent.keyboard('{ArrowRight}');
+
+    expect(screen.getByRole('radio', { name: 'Capital' })).toHaveAttribute('aria-checked', 'true');
+    expect(screen.getByRole('radio', { name: 'Capital' })).toHaveFocus();
+
+    await userEvent.keyboard('{End}');
+
+    expect(screen.getByRole('radio', { name: 'Fractionné' })).toHaveAttribute(
+      'aria-checked',
+      'true',
+    );
+
+    await userEvent.keyboard('{Home}');
+
+    expect(screen.getByRole('radio', { name: 'Rente' })).toHaveAttribute('aria-checked', 'true');
   });
 });
