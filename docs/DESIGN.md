@@ -223,8 +223,10 @@ Toute modale suit l'**anatomie canonique** (header, fermeture ronde, nav de sect
 largeurs) decrite dans `GOUVERNANCE.md` §16d. Points non negociables :
 
 - Shell : `SimModalShell` (/sim) ou `SettingsModalShell` (admin), meme anatomie visuelle.
-- Nav de sections (≥ 2 rubriques) : **uniquement `SimModalSectionNav`** (laterale gauche, actif gris).
-  Interdit : nav maison (`*-modal-nav`, `*-modal-tabs`) ou onglets en haut sur desktop.
+- Nav de sections (≥ 2 rubriques) : **laterale gauche, actif gris** — `SimModalSectionNav` pour une nav
+  simple, ou un `role="tablist"` accessible maison **reutilisant le visuel canon** quand la nav est
+  enrichie (navigation clavier, checkbox d'activation). Jamais d'onglets en haut sur desktop ni de nav
+  blanche bordee divergente. Detail et exceptions : `GOUVERNANCE.md` §16d.
 - Footer toujours present : `Annuler` (ghost) + `Valider`/`Enregistrer` (primary) ; destructif a gauche
   (`sim-modal-btn--danger`). Pas de footer a un seul bouton ambigu (`Terminer`).
 - Largeurs : classes canoniques (`--sm/md/lg/xl`), `--lg` par defaut, `--xl` contenu large.
