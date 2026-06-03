@@ -255,7 +255,7 @@ export function BaseCgRetraiteContractModal({
     >
       <div className="base-cg-modal__layout">
         <div
-          className="base-cg-modal__tabs"
+          className="base-cg-modal__tabs sim-modal-section-nav"
           role="tablist"
           aria-label="Fiche contrat retraite"
           aria-orientation="vertical"
@@ -274,7 +274,7 @@ export function BaseCgRetraiteContractModal({
                 aria-selected={selected}
                 aria-controls={panelId}
                 tabIndex={selected ? 0 : -1}
-                className={selected ? 'is-active' : ''}
+                className={`sim-modal-section-nav__item${selected ? ' is-active' : ''}`}
                 onClick={() => setActiveTab(tab.key)}
                 onKeyDown={(event) => handleTabKeyDown(event, tab.key)}
               >

@@ -293,36 +293,14 @@
 .ts-phase-modal-nav {
   position: sticky;
   top: 0;
-  display: grid;
-  gap: 8px;
 }
 
-/* Nav de section enrichie (checkbox d'activation) : visuel canon, markup conservé. */
-.ts-phase-modal-nav button {
-  border: 1px solid transparent;
-  border-radius: var(--radius-md);
-  background: transparent;
-  color: var(--color-c9);
-  cursor: pointer;
-  padding: 10px;
+/* Nav enrichie (checkbox d'activation) : visuel via .sim-modal-section-nav__item,
+   on n'ajoute que la disposition de la checkbox. */
+.ts-phase-modal-nav__item {
   display: flex;
   align-items: center;
   gap: 8px;
-  text-align: left;
-  font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-semibold);
-}
-
-.ts-phase-modal-nav button:hover {
-  border-color: var(--color-c8);
-  color: var(--color-c1);
-}
-
-.ts-phase-modal-nav button.is-active {
-  border-color: color-mix(in srgb, var(--color-c3) 44%, var(--color-c8));
-  background: color-mix(in srgb, var(--surface-active) 55%, var(--color-c7));
-  color: var(--color-c1);
-  font-weight: 600;
 }
 
 .ts-phase-modal-panel {

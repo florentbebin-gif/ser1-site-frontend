@@ -318,12 +318,15 @@ export function TresoSocieteSection({ inputs, onChange, onAssociateModalOpenerCh
           }
         >
           <div className="ts-modal-panels">
-            <nav className="ts-modal-tabs" aria-label="Rubriques de la société">
+            <nav
+              className="ts-modal-tabs sim-modal-section-nav"
+              aria-label="Rubriques de la société"
+            >
               {PANEL_OPTIONS.map((panel) => (
                 <button
                   key={panel.key}
                   type="button"
-                  className={`ts-modal-tab${activePanel === panel.key ? ' is-active' : ''}`}
+                  className={`sim-modal-section-nav__item${activePanel === panel.key ? ' is-active' : ''}`}
                   onClick={() => setActivePanel(panel.key)}
                 >
                   {panel.label}

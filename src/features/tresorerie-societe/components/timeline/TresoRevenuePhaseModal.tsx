@@ -247,12 +247,15 @@ export function TresoRevenuePhaseModal({
       />
 
       <div className="ts-phase-modal-layout">
-        <nav className="ts-phase-modal-nav" aria-label="Sous-phases du palier">
+        <nav
+          className="ts-phase-modal-nav sim-modal-section-nav"
+          aria-label="Sous-phases du palier"
+        >
           {SUB_PHASE_NAV.map((item) => (
             <button
               key={item.key}
               type="button"
-              className={activeSubPhase === item.key ? 'is-active' : ''}
+              className={`sim-modal-section-nav__item ts-phase-modal-nav__item${activeSubPhase === item.key ? ' is-active' : ''}`}
               onClick={() => setActiveSubPhase(item.key)}
             >
               <input

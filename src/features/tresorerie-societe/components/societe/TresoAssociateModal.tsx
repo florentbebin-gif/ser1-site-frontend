@@ -133,7 +133,7 @@ export function TresoAssociateModal({
     >
       <div className="ts-associate-modal-layout">
         <div
-          className="ts-associate-modal-nav"
+          className="ts-associate-modal-nav sim-modal-section-nav"
           role="tablist"
           aria-label="Rubriques de l’associé"
           aria-orientation="vertical"
@@ -144,7 +144,7 @@ export function TresoAssociateModal({
               id={`ts-associate-tab-${section.key}`}
               type="button"
               role="tab"
-              className={activeSection === section.key ? 'is-active' : ''}
+              className={`sim-modal-section-nav__item${activeSection === section.key ? ' is-active' : ''}`}
               aria-controls={`ts-associate-panel-${section.key}`}
               aria-selected={activeSection === section.key}
               tabIndex={activeSection === section.key ? 0 : -1}
