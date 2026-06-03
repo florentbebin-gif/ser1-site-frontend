@@ -1,4 +1,5 @@
 import type { ReactElement } from 'react';
+import { DOSSIER_CHAIN_LABELS } from '@/domain/dossier';
 import type { DossierRailStepView, DossierRailViewModel } from '@/domain/dossier';
 
 interface DossierRailProps {
@@ -60,21 +61,21 @@ export function DossierRail({
         <div className="dossier-rail__timeline">
           <StepList
             steps={previousSteps}
-            ariaLabel="Étapes précédentes"
+            ariaLabel={DOSSIER_CHAIN_LABELS.upstream}
             onNavigate={onNavigate}
             resolveRoutePath={resolveRoutePath}
             testId="dossier-rail-previous"
           />
           <StepList
             steps={[viewModel.current]}
-            ariaLabel="Étape actuelle"
+            ariaLabel={DOSSIER_CHAIN_LABELS.current}
             onNavigate={onNavigate}
             resolveRoutePath={resolveRoutePath}
             testId="dossier-rail-current"
           />
           <StepList
             steps={nextSteps}
-            ariaLabel="Étapes suivantes"
+            ariaLabel={DOSSIER_CHAIN_LABELS.downstream}
             onNavigate={onNavigate}
             resolveRoutePath={resolveRoutePath}
             testId="dossier-rail-next"

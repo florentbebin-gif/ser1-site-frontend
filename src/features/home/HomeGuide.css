@@ -54,7 +54,7 @@
   width: 100%;
   align-items: center;
   gap: 12px;
-  padding: 12px 18px 6px;
+  padding: 14px 18px;
   border: 0;
   background: transparent;
   color: var(--text-primary);
@@ -65,7 +65,6 @@
 }
 
 .home-guide-space__button:focus-visible,
-.home-guide-quick:focus-visible,
 .home-guide-tab:focus-visible,
 .home-guide-card:focus-visible {
   outline: none;
@@ -108,12 +107,13 @@
 
 .home-guide-space__name {
   color: var(--text-primary);
-  font-size: var(--font-size-xl);
+  /* Même taille que le titre d'action secondaire « Scan documentaire » (lg). */
+  font-size: var(--font-size-lg);
   font-weight: 600;
   line-height: 1.2;
 }
 
-.home-guide-space__description {
+.home-guide-space__accroche {
   overflow-wrap: anywhere;
   color: var(--text-secondary);
   font-size: var(--font-size-sm);
@@ -131,58 +131,32 @@
   transform: rotate(180deg);
 }
 
-.home-guide-space__quick {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 7px;
-  padding: 0 18px 12px;
-}
-
-.home-guide-quick {
-  min-height: 22px;
-  padding: 3px 10px;
-  border: 1px solid var(--border-default);
-  border-radius: var(--radius-full);
-  background: color-mix(in srgb, var(--surface-muted) 70%, var(--surface-card));
-  color: var(--text-primary);
-  cursor: pointer;
-  font: inherit;
-  font-size: var(--font-size-sm);
-  font-weight: 500;
-}
-
-.home-guide-quick:hover {
-  border-color: color-mix(in srgb, var(--action-primary) 30%, var(--border-default));
-  background: color-mix(in srgb, var(--surface-active) 36%, var(--surface-card));
-}
-
 .home-guide-space__body {
   padding: 14px 18px 16px;
 }
 
-/* Contrôle segmenté : piste claire, segment actif en pastille blanche arrondie. */
+/* Onglets : trois repères alignés gauche / centre / droite sur un rail bas,
+   l'onglet actif marqué par un caret pointant vers le panneau. */
 .home-guide-tabs {
-  display: grid;
-  gap: 4px;
-  margin-bottom: 12px;
-  padding: 3px;
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-md);
-  background: color-mix(in srgb, var(--surface-muted) 78%, var(--surface-card));
-  grid-template-columns: repeat(3, 1fr);
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 14px;
+  border-bottom: 1px solid var(--border-subtle);
 }
 
 .home-guide-tab {
+  position: relative;
   min-height: 30px;
-  padding: 5px 8px;
+  padding: 4px 2px 9px;
   border: 0;
-  border-radius: var(--radius-sm);
   background: transparent;
   color: var(--text-secondary);
   cursor: pointer;
   font: inherit;
   font-size: var(--font-size-sm);
   font-weight: 500;
+  white-space: nowrap;
 }
 
 .home-guide-tab:hover:not(:disabled, .home-guide-tab--active) {
@@ -190,10 +164,22 @@
 }
 
 .home-guide-tab--active {
-  background: var(--surface-card);
-  box-shadow: 0 1px 3px color-mix(in srgb, var(--shadow-color) 10%, transparent);
-  color: var(--text-primary);
+  color: var(--action-primary);
   font-weight: 600;
+}
+
+/* Caret : petit triangle posé sur le rail, pointe vers le bas (le panneau). */
+.home-guide-tab--active::after {
+  content: '';
+  position: absolute;
+  bottom: -5px;
+  left: 50%;
+  width: 9px;
+  height: 9px;
+  background: var(--surface-card);
+  border-right: 1px solid var(--border-subtle);
+  border-bottom: 1px solid var(--border-subtle);
+  transform: translateX(-50%) rotate(45deg);
 }
 
 .home-guide-tab:disabled {
@@ -258,22 +244,40 @@
   transform: rotate(180deg);
 }
 
-/* Grille de cartes : plate (Comprendre / Protéger) ou dans un accordéon (Piloter).
-   auto-fill (et non auto-fit) garde des colonnes fixes : une carte isolée reste
-   compacte au lieu de s'étirer sur toute la largeur. */
+/* Flex wrap (et non grid auto-fill) : l'alignement porte sur les cartes réelles,
+   sans pistes vides qui neutraliseraient justify-content. */
 .home-guide-grid {
-  display: grid;
+  display: flex;
+  flex-wrap: wrap;
   gap: 7px;
-  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  justify-content: flex-start;
+}
+
+/* Alignement des cartes en écho au repère d'onglet (gauche / centre / droite). */
+.home-guide-grid--start {
+  justify-content: flex-start;
+}
+
+.home-guide-grid--center {
+  justify-content: center;
+}
+
+.home-guide-grid--end {
+  justify-content: flex-end;
 }
 
 .home-guide-family .home-guide-grid {
   padding: 0 10px 10px;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  justify-content: center;
+}
+
+.home-guide-family .home-guide-card {
+  flex-basis: 220px;
 }
 
 .home-guide-card {
   display: flex;
+  flex: 0 1 190px;
   min-height: 34px;
   align-items: center;
   gap: 7px;
@@ -363,14 +367,21 @@
     padding: 14px 14px 8px;
   }
 
-  .home-guide-space__quick,
   .home-guide-space__body {
     padding-right: 14px;
     padding-left: 14px;
   }
 
-  .home-guide-tabs,
   .home-guide-grid {
-    grid-template-columns: 1fr;
+    justify-content: stretch;
+  }
+
+  .home-guide-card,
+  .home-guide-family .home-guide-card {
+    flex-basis: 100%;
+  }
+
+  .home-guide-tab {
+    font-size: var(--font-size-xs);
   }
 }

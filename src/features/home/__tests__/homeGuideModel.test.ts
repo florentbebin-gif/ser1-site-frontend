@@ -17,7 +17,7 @@ describe('homeGuideModel', () => {
     expect(state.allCards.some((card) => card.definition.lifecycle === 'planned')).toBe(false);
   });
 
-  it('expose uniquement les deux espaces et les actions rapides du premier écran', () => {
+  it('expose uniquement les deux espaces avec une accroche unique', () => {
     const state = buildHomeGuideState('simplifie');
 
     expect(state.spaces.map((space) => space.id)).toEqual(['foyer', 'societe']);
@@ -25,16 +25,10 @@ describe('homeGuideModel', () => {
       'Foyer & patrimoine privé',
       'Société & dirigeant',
     ]);
-    expect(state.spaces[0]?.quickActions.map((action) => action.label)).toEqual([
-      'Comprendre ma situation',
-      'Piloter mon patrimoine',
-      'Protéger / transmettre',
-    ]);
-    expect(state.spaces[1]?.quickActions.map((action) => action.label)).toEqual([
-      'Analyser ma société',
-      'Optimiser ma rémunération',
-      'Transmettre l’entreprise',
-    ]);
+    // Une seule accroche par espace (pas de puces d'objectifs divergentes des onglets).
+    expect(state.spaces[0]?.accroche).toBeTruthy();
+    expect(state.spaces[1]?.accroche).toBeTruthy();
+    expect(state.spaces).not.toHaveProperty('0.quickActions');
   });
 
   it('garde les sous-types PEA et CTO dans Placement sans cartes autonomes', () => {

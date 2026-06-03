@@ -90,7 +90,10 @@ Principes : épuré, lisible, respirant.
 - Le rail gauche Home reste léger : `Dossier chargé` et `Mode utilisateur` uniquement. Il ne remplace pas `DossierRail`, réservé à `/audit`, `/strategy` et `/sim/*`.
 - La section `SIMULATEURS` consomme la registry métier `src/domain/simulators/` : elle ne maintient pas de grille locale concurrente.
 - Au chargement, les deux espaces `Foyer & patrimoine privé` et `Société & dirigeant` sont fermés : aucun onglet, aucune carte simulateur individuelle et aucun panneau détail ne sont visibles.
-- Les chips d'objectif ouvrent seulement l'espace et l'onglet correspondant. Le panneau détail simulateur apparait uniquement après clic explicite sur une carte simulateur visible, jamais au premier écran.
+- Chaque espace fermé affiche **une accroche unique** (pas de puces d'objectifs surchargées) ; cliquer l'en-tête ouvre l'espace sur l'onglet `Comprendre` par défaut. Le panneau détail simulateur apparait uniquement après clic explicite sur une carte simulateur visible, jamais au premier écran.
+- **Source unique des libellés** : les onglets (`Comprendre`, `Piloter`, `Protéger & transmettre`) proviennent de `HOME_TABS` (`src/domain/simulators/homeMatrix.ts`) ; l'accroche par espace vient de `SPACE_ACCROCHE` (`src/features/home/homeGuideModel.ts`). Aucun libellé d'onglet recopié à la main ailleurs.
+- **Repère d'onglet** : les trois onglets sont alignés gauche / centre / droite sur un rail bas, l'onglet actif marqué par un caret pointant vers le panneau ; `role="tablist"` / `role="tab"` conservés.
+- **Libellés amont/aval** : le rail de parcours (`DossierRail`) et le panneau détail Home (`HomeSimulatorPanel`) partagent `DOSSIER_CHAIN_LABELS` (`src/domain/dossier/chainLabels.ts`) pour nommer les étapes amont / actuelle / aval. Pas de vocabulaire divergent entre les deux surfaces.
 - En Home simplifiée, les simulateurs `planned` ne sont jamais rendus comme cartes actives. Le mode expert élargit la visibilité issue de la registry sans créer de second catalogue Home.
 - `Nouvelle stratégie` reste l'action dominante ; `Scan documentaire` reste une action secondaire visible sans faux workflow tant que l'OCR n'est pas livré.
 - Le libellé public doit éviter "chat IA" ou "assistant". Préférer `Scan documentaire`, `Préparer un dossier par documents` ou `Traitement documentaire IA`.

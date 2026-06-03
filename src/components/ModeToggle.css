@@ -18,13 +18,13 @@
   padding: 0;
   border: none;
   border-radius: 999px;
-  background: color-mix(in srgb, var(--border-strong) 70%, transparent);
+  background: var(--color-c8);
   cursor: pointer;
   transition: background 0.18s ease;
 }
 
 .mode-toggle-pill:hover {
-  background: var(--border-strong);
+  background: color-mix(in srgb, var(--color-c8) 86%, var(--color-c10));
 }
 
 .mode-toggle-pill--active {
@@ -60,7 +60,7 @@
 .mode-toggle-pill--disabled:hover,
 .mode-toggle-pill--disabled.mode-toggle-pill--active,
 .mode-toggle-pill--disabled.mode-toggle-pill--active:hover {
-  background: color-mix(in srgb, var(--border-strong) 70%, transparent);
+  background: var(--color-c8);
   cursor: not-allowed;
   opacity: 0.72;
 }
