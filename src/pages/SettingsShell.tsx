@@ -6,6 +6,7 @@ import {
   getVisibleSettingsRoutes,
   type SettingsRouteEntry,
 } from '../routes/settingsRoutes';
+import '@/styles/sim/index.css';
 import './settings/styles/index.css';
 
 export default function SettingsShell(): React.ReactElement {

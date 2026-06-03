@@ -13,7 +13,8 @@
 
 .settings-modal-shell {
   background: var(--surface-card);
-  border-radius: 10px;
+  /* Rayon aligné sur le canon sim (SimModalShell = 14px). */
+  border-radius: 14px;
   padding: 18px;
   /* Largeurs alignées sur le canon §16d (sm 520 / md 620 / lg 720 / xl 1200) ;
      défaut = lg. Ne pas redéfinir de width de modale ad hoc par feature. */
@@ -399,7 +400,7 @@
 
 .settings-modal-grid-3 {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 8px;
 }
 

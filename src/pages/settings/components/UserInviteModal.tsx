@@ -56,11 +56,16 @@ export default function UserInviteModal({
       size="sm"
       footer={
         <>
-          <button onClick={onClose} disabled={submitting} type="button">
+          <button
+            className="sim-modal-btn sim-modal-btn--ghost"
+            onClick={onClose}
+            disabled={submitting}
+            type="button"
+          >
             Annuler
           </button>
           <button
-            className="chip"
+            className="sim-modal-btn sim-modal-btn--primary"
             onClick={() => {
               void handleInviteUser();
             }}

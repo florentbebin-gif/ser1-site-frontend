@@ -64,13 +64,18 @@ export default function BaseCgRetraiteAssistanceModal({
       withBodyContainer={false}
       footer={
         <>
-          <button type="button" onClick={onClose} disabled={submitting}>
+          <button
+            type="button"
+            className="sim-modal-btn sim-modal-btn--ghost"
+            onClick={onClose}
+            disabled={submitting}
+          >
             Annuler
           </button>
           <button
             type="submit"
             form={formId}
-            className="base-cg-button base-cg-button--primary"
+            className="sim-modal-btn sim-modal-btn--primary"
             disabled={submitting || !description.trim() || Boolean(attachmentError)}
           >
             {submitting ? 'Envoi…' : 'Envoyer'}
