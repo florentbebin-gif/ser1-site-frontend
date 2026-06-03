@@ -80,4 +80,67 @@ describe('check-modal-canon', () => {
     expect(result.status).toBe(0);
     expect(output).toContain('Aucune largeur de modale ad hoc');
   });
+
+  it('signale le style visuel local d’une nav de modale', () => {
+    const root = createRoot();
+    writeFixture(
+      root,
+      'src/features/demo/styles/demo.css',
+      '.demo-modal__nav {\n  padding: 8px;\n  border: 1px solid var(--color-c8);\n}\n',
+    );
+
+    const result = runCheck(root);
+    const output = `${result.stdout}\n${result.stderr}`;
+
+    expect(result.status).toBe(1);
+    expect(output).toContain('style visuel local de nav modale');
+    expect(output).toContain('.demo-modal__nav');
+  });
+
+  it('autorise le layout pur d’une nav de modale', () => {
+    const root = createRoot();
+    writeFixture(
+      root,
+      'src/features/demo/styles/demo.css',
+      '.demo-modal__nav {\n  min-width: 0;\n}\n.demo-modal-layout {\n  --sim-modal-nav-width: 190px;\n}\n',
+    );
+
+    const result = runCheck(root);
+    const output = `${result.stdout}\n${result.stderr}`;
+
+    expect(result.status).toBe(0);
+    expect(output).toContain('Aucune largeur de modale ad hoc');
+  });
+
+  it('signale les sélecteurs larges de champs Base CG', () => {
+    const root = createRoot();
+    writeFixture(
+      root,
+      'src/pages/settings/styles/base-cg-retraite.css',
+      '.base-cg-modal input,\n.base-cg-modal select {\n  min-height: 36px;\n}\n',
+    );
+
+    const result = runCheck(root);
+    const output = `${result.stdout}\n${result.stderr}`;
+
+    expect(result.status).toBe(1);
+    expect(output).toContain('sélecteur large de champs Base CG');
+    expect(output).toContain('.base-cg-modal input');
+  });
+
+  it('signale les fonds locaux sur les primitives input', () => {
+    const root = createRoot();
+    writeFixture(
+      root,
+      'src/features/demo/styles/demo.css',
+      '.demo-card .sim-field__control {\n  background: var(--surface-card);\n}\n',
+    );
+
+    const result = runCheck(root);
+    const output = `${result.stdout}\n${result.stderr}`;
+
+    expect(result.status).toBe(1);
+    expect(output).toContain('fond local de primitive input');
+    expect(output).toContain('.demo-card .sim-field__control');
+  });
 });

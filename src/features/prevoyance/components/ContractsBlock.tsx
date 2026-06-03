@@ -290,14 +290,15 @@ export function ContractsBlock({
             </button>
           }
         >
-          <div className="prevoyance-contract-modal__layout">
+          <div className="prevoyance-contract-modal__layout sim-modal-layout--with-nav">
             <SimModalSectionNav
               sections={editorSections.map((section) => ({ id: section.id, label: section.label }))}
               activeId={activeEditorSection}
               ariaLabel="Garanties du contrat"
+              className="sim-modal-layout__nav"
               onChange={(id) => setActiveEditorSection(id as ContractEditorSection)}
             />
-            <div className="prevoyance-contract-modal__panel">
+            <div className="prevoyance-contract-modal__panel sim-modal-layout__content">
               {editingContract.kind === 'collectif' ? (
                 <CollectiveContractCard
                   contract={editingContract}

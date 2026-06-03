@@ -231,6 +231,7 @@ export function BaseCgRetraiteContractModal({
   return (
     <SettingsModalShell
       title={contract.sourceId === 'Ajout local' ? 'Ajouter un contrat' : 'Modifier le contrat'}
+      subtitle="Identité, phase épargne, liquidation et documents"
       onClose={onClose}
       size="lg"
       overlayClassName="base-cg-modal-overlay"
@@ -253,9 +254,9 @@ export function BaseCgRetraiteContractModal({
         </>
       }
     >
-      <div className="base-cg-modal__layout">
+      <div className="base-cg-modal__layout sim-modal-layout--with-nav">
         <div
-          className="base-cg-modal__tabs sim-modal-section-nav"
+          className="base-cg-modal__tabs sim-modal-section-nav sim-modal-layout__nav"
           role="tablist"
           aria-label="Fiche contrat retraite"
           aria-orientation="vertical"
@@ -284,7 +285,7 @@ export function BaseCgRetraiteContractModal({
           })}
         </div>
         <div
-          className="base-cg-modal__body"
+          className="base-cg-modal__body sim-modal-layout__content"
           role="tabpanel"
           id={panelId}
           aria-labelledby={getTabId(activeTab)}

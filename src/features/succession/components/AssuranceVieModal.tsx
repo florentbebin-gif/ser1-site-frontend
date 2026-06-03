@@ -55,6 +55,7 @@ export default function AssuranceVieModal({
   return (
     <SimModalShell
       title="Assurance-vie"
+      subtitle="Clause bénéficiaire et capitaux hors succession"
       onClose={onClose}
       closeLabel="Fermer"
       overlayClassName="sc-member-modal-overlay"

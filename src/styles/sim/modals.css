@@ -194,6 +194,33 @@
   gap: var(--space-2);
 }
 
+.sim-modal-layout--with-nav {
+  display: grid;
+  grid-template-columns: minmax(0, var(--sim-modal-nav-width, 190px)) minmax(0, 1fr);
+  gap: var(--sim-modal-nav-gap, var(--space-4));
+  align-items: start;
+  min-height: 0;
+  overflow: hidden;
+  padding: var(--sim-modal-panel-padding);
+  border: var(--sim-modal-panel-border);
+  border-radius: var(--sim-modal-panel-radius);
+  background: var(--sim-modal-panel-bg);
+  --sim-input-bg: var(--surface-card);
+}
+
+.sim-modal-layout__nav {
+  position: sticky;
+  top: 0;
+  min-width: 0;
+  min-height: 0;
+  align-self: start;
+}
+
+.sim-modal-layout__content {
+  min-width: 0;
+  min-height: 0;
+}
+
 .sim-modal-section-nav {
   display: flex;
   flex-direction: column;
@@ -330,5 +357,15 @@
 
   .sim-mobile-sticky-actions > * {
     flex: 1 1 auto;
+  }
+
+  .sim-modal-layout--with-nav {
+    grid-template-columns: 1fr;
+  }
+
+  .sim-modal-layout__nav {
+    position: static;
+    display: grid;
+    grid-template-columns: 1fr;
   }
 }

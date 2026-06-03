@@ -131,9 +131,9 @@ export function TresoAssociateModal({
         </button>
       }
     >
-      <div className="ts-associate-modal-layout">
+      <div className="ts-associate-modal-layout sim-modal-layout--with-nav">
         <div
-          className="ts-associate-modal-nav sim-modal-section-nav"
+          className="ts-associate-modal-nav sim-modal-section-nav sim-modal-layout__nav"
           role="tablist"
           aria-label="Rubriques de l’associé"
           aria-orientation="vertical"
@@ -157,7 +157,7 @@ export function TresoAssociateModal({
         </div>
 
         <div
-          className="ts-associate-modal-panel"
+          className="ts-associate-modal-panel sim-modal-layout__content"
           id={`ts-associate-panel-${activeSection}`}
           role="tabpanel"
           aria-labelledby={`ts-associate-tab-${activeSection}`}

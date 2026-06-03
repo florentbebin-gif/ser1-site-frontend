@@ -82,8 +82,13 @@ Le LLM doit optimiser leur utilisation : déléguer uniquement des tâches indé
   script, à vider à terme).
 - Les largeurs de modale passent **uniquement** par les classes canoniques `sim-modal--sm/md/lg/xl`
   (`src/styles/sim/modals.css`) ou le `size` de `SettingsModalShell`. Aucune `max-width` / `width` de
-  modale en dur sur un sélecteur racine de feature. Garde-fou : `npm run check:modal-canon` (seule
-  source de largeurs de shell autorisée : `src/pages/settings/styles/modals.css`).
+  modale en dur sur un sélecteur racine de feature. Les menus gauches de modale passent par
+  `sim-modal-layout--with-nav` / `sim-modal-layout__nav`, sans fond/bordure/rayon local ; les inputs
+  restent gris sur fond blanc et blancs sur fond teinté via `--sim-input-bg` porté par le conteneur,
+  jamais via `background` local sur `.sim-field__control` / `.sim-field__select-trigger`. Les champs
+  Base CG passent par `SimFieldShell` / `SimSelect`, pas par `.base-cg-modal input/select`.
+  Garde-fou : `npm run check:modal-canon` (seule source de largeurs de shell autorisée :
+  `src/pages/settings/styles/modals.css`).
 - Pour ajouter un simulateur actif, utiliser le scaffold `npm run scaffold:sim -- --id <slug> --label "<Libellé>"`,
   puis vérifier `npm run check` et `npm run test:e2e:auth-pages`. Le scaffold doit produire
   une vraie page `SimPageShell`, pas un stub qui crashe au runtime.

@@ -209,7 +209,7 @@
   background: color-mix(in srgb, var(--color-c3) 8%, var(--surface-card));
 }
 
-/* Largeur déléguée à sim-modal--xl (cf. GOUVERNANCE §16d). */
+/* Largeur déléguée à sim-modal--lg : famille normale sans nav latérale. */
 .sc-donation-partage-modal__body {
   display: flex;
   flex-direction: column;

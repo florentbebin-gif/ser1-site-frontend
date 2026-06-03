@@ -19,16 +19,6 @@
 }
 
 @media (max-width: 980px) {
-  .sc-dispositions-modal__layout {
-    grid-template-columns: 1fr;
-  }
-
-  .sc-dispositions-modal__nav {
-    position: static;
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
   .sc-testament-grid {
     grid-template-columns: 1fr;
   }

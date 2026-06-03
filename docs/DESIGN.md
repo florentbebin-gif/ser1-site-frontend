@@ -223,14 +223,21 @@ Toute modale suit l'**anatomie canonique** (header, fermeture ronde, nav de sect
 largeurs) decrite dans `GOUVERNANCE.md` §16d. Points non negociables :
 
 - Shell : `SimModalShell` (/sim) ou `SettingsModalShell` (admin), meme anatomie visuelle.
-- Nav de sections (≥ 2 rubriques) : **laterale gauche, actif gris** — `SimModalSectionNav` pour une nav
-  simple, ou un `role="tablist"` accessible maison **reutilisant le visuel canon** quand la nav est
-  enrichie (navigation clavier, checkbox d'activation). Jamais d'onglets en haut sur desktop ni de nav
-  blanche bordee divergente. Detail et exceptions : `GOUVERNANCE.md` §16d.
+- Deux familles visuelles seulement : **normale sans menu gauche** et **avec menu gauche**. Les
+  modales avec menu gauche composent `sim-modal-layout--with-nav`, `sim-modal-layout__nav` et
+  `sim-modal-layout__content`; le visuel des items vient de `SimModalSectionNav` ou d'un `tablist`
+  accessible reutilisant `sim-modal-section-nav__item`.
+- Nav de sections (≥ 2 rubriques) : **laterale gauche, actif gris**. Jamais d'onglets en haut sur
+  desktop ni de nav blanche bordee divergente. Detail et exceptions : `GOUVERNANCE.md` §16d.
 - Footer toujours present : `Annuler` (ghost) + `Valider`/`Enregistrer` (primary) ; destructif a gauche
   (`sim-modal-btn--danger`). Pas de footer a un seul bouton ambigu (`Terminer`).
 - Largeurs : classes canoniques (`--sm/md/lg/xl`), `--lg` par defaut, `--xl` contenu large.
-- Champs : primitives `Sim*` (dont `SimTemporalField` pour dates/mois).
+- Champs : primitives `Sim*` (dont `SimTemporalField` pour dates/mois) ; les modales Settings qui
+  reprennent l'anatomie simulateur utilisent aussi `SimFieldShell`/`SimSelect` pour eviter les champs
+  natifs divergents. Sur fond blanc, les champs gardent le fond gris canonique ; sur fond teinte
+  (panneau de section, modale avec menu gauche, bloc secondaire), le conteneur pose
+  `--sim-input-bg: var(--surface-card)` pour rendre les inputs blancs. Interdit : redéfinir le
+  `background` directement sur `.sim-field__control` ou `.sim-field__select-trigger`.
 
 ## Accessibilite
 

@@ -317,9 +317,9 @@ export function TresoSocieteSection({ inputs, onChange, onAssociateModalOpenerCh
             </button>
           }
         >
-          <div className="ts-modal-panels">
+          <div className="ts-modal-panels sim-modal-layout--with-nav">
             <nav
-              className="ts-modal-tabs sim-modal-section-nav"
+              className="ts-modal-tabs sim-modal-section-nav sim-modal-layout__nav"
               aria-label="Rubriques de la société"
             >
               {PANEL_OPTIONS.map((panel) => (
@@ -334,7 +334,7 @@ export function TresoSocieteSection({ inputs, onChange, onAssociateModalOpenerCh
               ))}
             </nav>
 
-            <div className="ts-modal-panel">{renderActivePanel()}</div>
+            <div className="ts-modal-panel sim-modal-layout__content">{renderActivePanel()}</div>
           </div>
         </SimModalShell>
       )}

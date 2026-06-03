@@ -2,15 +2,27 @@
 /**
  * check-modal-canon.mjs
  *
- * Garde-fou CI : interdit de redéfinir une largeur de modale en dur dans une
- * feature. Les largeurs de modale passent uniquement par les classes canoniques
- * (`sim-modal--sm/md/lg/xl`) ou le `size` de SettingsModalShell.
+ * Garde-fou CI : interdit de redéfinir une largeur ou un style de structure
+ * modale canonique en dur dans une feature. Les largeurs de modale passent
+ * uniquement par les classes canoniques (`sim-modal--sm/md/lg/xl`) ou le `size`
+ * de SettingsModalShell. Les menus gauches de modales et les champs Base CG
+ * consomment les primitives partagées.
  *
- * Règle : aucune feuille de style sous src/features ou src/pages ne doit déclarer
+ * Règles :
+ * - aucune feuille de style sous src/features, src/pages ou src/components ne doit déclarer
  * `max-width` / `width: <px|min()>` sur un sélecteur de modale RACINE
  * (`.xxx-modal { … }` ou `.xxx-modal-shell { … }`). Les sous-éléments
  * (`.xxx-modal__body`, etc.) restent libres. Le fichier canonique du shell
  * Settings est la seule source autorisée de largeurs de shell.
+ * - les navs de modale locales (`__nav`, `__tabs`, `-modal-nav`) ne portent pas
+ * de fond/bordure/rayon/couleur/padding local : le visuel vient de
+ * `src/styles/sim/modals.css`.
+ * - Base CG retraite ne cible pas `.base-cg-modal input/select/textarea` en
+ * bloc large : les champs passent par `SimFieldShell`, `SimSelect` et classes
+ * explicites.
+ * - les primitives d'input (`.sim-field__control`, `.sim-field__select-trigger`)
+ * ne portent pas de fond local : fond gris par défaut, fond blanc par héritage
+ * `--sim-input-bg: var(--surface-card)` sur les surfaces colorées.
  *
  * Usage : node scripts/check-modal-canon.mjs [--root <chemin>]
  * Exit  : 0 si aucune violation, 1 sinon.
@@ -22,7 +34,7 @@ import { fileURLToPath } from 'url';
 
 const ROOT = resolve(join(fileURLToPath(import.meta.url), '..', '..'));
 
-const SCAN_DIRS = ['src/features', 'src/pages'];
+const SCAN_DIRS = ['src/features', 'src/pages', 'src/components'];
 
 // Source canonique des largeurs de shell Settings (sm/md/lg/xl + base).
 const ALLOWED_FILES = new Set(['src/pages/settings/styles/modals.css'].map((p) => p));
@@ -33,6 +45,13 @@ const ROOT_MODAL_SELECTOR = /\.[\w-]*-modal(-shell)?\s*$/;
 // Largeur « bucket » fixe : max-width en px, ou width: min(<px>…). On ignore
 // width:100%, width:auto, max-width:none et les largeurs viewport (calc(100vw…)).
 const WIDTH_DECL = /(max-width\s*:\s*\d+\s*px)|(width\s*:\s*min\(\s*\d+\s*px)/;
+const LOCAL_MODAL_NAV_SELECTOR =
+  /(?:__nav(?:[\s.{:#]|$)|__tabs(?:[\s.{:#]|$)|-modal-nav(?:__[\w-]+)?(?:[\s.{:#]|$))/;
+const NAV_VISUAL_DECL =
+  /\b(?:background(?:-color)?|border(?:-[\w-]+)?|box-shadow|color|padding)\s*:/;
+const BASE_CG_MODAL_FIELD_SELECTOR = /\.base-cg-modal\s+(?:input|select|textarea)(?:\b|[\[.:])/;
+const SIM_FIELD_SELECTOR = /\.sim-field__(?:control|select-trigger)(?:\b|[\s[.:#])/;
+const FIELD_BACKGROUND_DECL = /\bbackground(?:-color)?\s*:/;
 
 function normalizeRel(path) {
   return path.replace(/\\/g, '/');
@@ -57,18 +76,56 @@ function walkCss(dir, results = []) {
   return results;
 }
 
+function getRuleSelectors(rawSelector) {
+  return rawSelector
+    .split(',')
+    .map((selector) => selector.trim())
+    .filter(Boolean);
+}
+
 function collectViolations(content, relPath) {
   const violations = [];
   // Découpe naïve en blocs `sélecteur { déclarations }`.
   const ruleRegex = /([^{}]+)\{([^{}]*)\}/g;
   let match;
   while ((match = ruleRegex.exec(content)) !== null) {
-    const selector = match[1].trim().split(',').pop()?.trim() ?? '';
+    const selectors = getRuleSelectors(match[1]);
     const body = match[2];
-    if (!ROOT_MODAL_SELECTOR.test(selector)) continue;
-    if (!WIDTH_DECL.test(body)) continue;
     const line = content.slice(0, match.index).split(/\r?\n/).length;
-    violations.push({ file: relPath, line, selector });
+    for (const selector of selectors) {
+      if (ROOT_MODAL_SELECTOR.test(selector) && WIDTH_DECL.test(body)) {
+        violations.push({
+          file: relPath,
+          line,
+          selector,
+          reason: 'largeur racine de modale en dur',
+        });
+      }
+      if (LOCAL_MODAL_NAV_SELECTOR.test(selector) && NAV_VISUAL_DECL.test(body)) {
+        violations.push({
+          file: relPath,
+          line,
+          selector,
+          reason: 'style visuel local de nav modale',
+        });
+      }
+      if (BASE_CG_MODAL_FIELD_SELECTOR.test(selector)) {
+        violations.push({
+          file: relPath,
+          line,
+          selector,
+          reason: 'sélecteur large de champs Base CG',
+        });
+      }
+      if (SIM_FIELD_SELECTOR.test(selector) && FIELD_BACKGROUND_DECL.test(body)) {
+        violations.push({
+          file: relPath,
+          line,
+          selector,
+          reason: 'fond local de primitive input',
+        });
+      }
+    }
   }
   return violations;
 }
@@ -119,17 +176,19 @@ function main() {
 
   const violations = findModalCanonViolations(args);
   if (violations.length > 0) {
-    console.error('\n[check:modal-canon] largeur de modale en dur détectée :\n');
+    console.error('\n[check:modal-canon] écart de canon modale détecté :\n');
     for (const v of violations) {
-      console.error(`- ${v.file}:${v.line} -> ${v.selector}`);
+      console.error(`- ${v.file}:${v.line} -> ${v.selector} (${v.reason})`);
     }
     console.error(
-      '\nUtiliser une classe canonique (sim-modal--sm/md/lg/xl) ou le size de SettingsModalShell.',
+      '\nUtiliser les classes modales partagées (largeurs, nav latérale, champs Sim*) et poser --sim-input-bg sur le conteneur coloré.',
     );
     process.exitCode = 1;
     return;
   }
-  console.log('[check:modal-canon] Aucune largeur de modale ad hoc.');
+  console.log(
+    '[check:modal-canon] Aucune largeur de modale ad hoc ; aucun écart nav/champs/inputs.',
+  );
 }
 
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {

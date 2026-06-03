@@ -1,8 +1,17 @@
 import type { BaseCgRetraiteDocument } from '@/data/base-cg-retraite';
+import { SimFieldShell } from '@/components/ui/sim';
+import { BaseCgSelectField, BaseCgTextField } from './BaseCgRetraiteModalFields';
 
 function updateText(value: string): string | null {
   return value.trim() ? value : null;
 }
+
+const DOCUMENT_TYPE_OPTIONS = [
+  { value: 'conditions_generales', label: 'Conditions Générales' },
+  { value: 'notice_information', label: "Notice d'information" },
+  { value: 'avenant', label: 'Avenant' },
+  { value: 'autre', label: 'Autre' },
+];
 
 interface Props {
   documents: BaseCgRetraiteDocument[];
@@ -54,40 +63,34 @@ export function BaseCgRetraiteDocumentsTab({
 
       {documents.map((document) => (
         <div className="base-cg-document-row" key={document.id}>
-          <label>
-            Libellé du document
-            <input
-              value={document.label}
-              onChange={(event) => onChange(document.id, 'label', event.target.value)}
-            />
-          </label>
-          <label>
-            Nature
-            <select
-              value={document.type}
-              onChange={(event) =>
-                onChange(document.id, 'type', event.target.value as BaseCgRetraiteDocument['type'])
-              }
-            >
-              <option value="conditions_generales">Conditions Générales</option>
-              <option value="notice_information">Notice d'information</option>
-              <option value="avenant">Avenant</option>
-              <option value="autre">Autre</option>
-            </select>
-          </label>
-          <label className="base-cg-modal__wide">
-            Version CG
-            <input
-              value={document.versionLabel ?? ''}
-              onChange={(event) =>
-                onChange(document.id, 'versionLabel', updateText(event.target.value))
-              }
-            />
-          </label>
+          <BaseCgTextField
+            label="Libellé du document"
+            value={document.label}
+            onChange={(value) => onChange(document.id, 'label', value)}
+          />
+          <BaseCgSelectField
+            label="Nature"
+            value={document.type}
+            options={DOCUMENT_TYPE_OPTIONS}
+            onChange={(value) =>
+              onChange(document.id, 'type', value as BaseCgRetraiteDocument['type'])
+            }
+          />
+          <BaseCgTextField
+            label="Version CG"
+            className="base-cg-modal__wide"
+            value={document.versionLabel ?? ''}
+            onChange={(value) => onChange(document.id, 'versionLabel', updateText(value))}
+          />
           <div className="base-cg-modal__wide base-cg-document-row__upload">
-            <label>
-              Upload PDF (PDF uniquement, 50 Mo max)
+            <SimFieldShell
+              label="Upload PDF (PDF uniquement, 50 Mo max)"
+              controlId={`base-cg-doc-upload-${document.id}`}
+              className="base-cg-modal-field"
+            >
               <input
+                id={`base-cg-doc-upload-${document.id}`}
+                className="sim-field__control sim-field__control--left base-cg-file-input"
                 type="file"
                 accept="application/pdf"
                 disabled={uploadingDocId === document.id}
@@ -97,7 +100,7 @@ export function BaseCgRetraiteDocumentsTab({
                   event.target.value = '';
                 }}
               />
-            </label>
+            </SimFieldShell>
             {uploadingDocId === document.id ? (
               <span className="base-cg-document-row__status">Upload en cours...</span>
             ) : document.status === 'uploaded' && document.storagePath ? (
@@ -106,24 +109,18 @@ export function BaseCgRetraiteDocumentsTab({
               </span>
             ) : null}
           </div>
-          <label className="base-cg-modal__wide">
-            Chemin Supabase Storage
-            <input
-              value={document.storagePath ?? ''}
-              onChange={(event) =>
-                onChange(document.id, 'storagePath', updateText(event.target.value))
-              }
-            />
-          </label>
-          <label className="base-cg-modal__wide">
-            URL externe
-            <input
-              value={document.sourceUrl ?? ''}
-              onChange={(event) =>
-                onChange(document.id, 'sourceUrl', updateText(event.target.value))
-              }
-            />
-          </label>
+          <BaseCgTextField
+            label="Chemin Supabase Storage"
+            className="base-cg-modal__wide"
+            value={document.storagePath ?? ''}
+            onChange={(value) => onChange(document.id, 'storagePath', updateText(value))}
+          />
+          <BaseCgTextField
+            label="URL externe"
+            className="base-cg-modal__wide"
+            value={document.sourceUrl ?? ''}
+            onChange={(value) => onChange(document.id, 'sourceUrl', updateText(value))}
+          />
           <div className="base-cg-document-row__actions">
             <button type="button" onClick={() => onRemove(document.id)}>
               Supprimer

@@ -1,12 +1,17 @@
 import { useState } from 'react';
-import { SimModalSectionNav, SimModalShell } from '@/components/ui/sim';
+import { SimFieldShell, SimModalSectionNav, SimModalShell, SimSelect } from '@/components/ui/sim';
 import { modalSections } from '../designSystemCatalog';
 
 const WIDTH_BUCKETS = [
   { token: 'sim-modal--sm', size: '520 px', usage: 'Saisie simple (≤ 6 champs, sans nav)' },
   { token: 'sim-modal--md', size: '620 px', usage: 'Famille / formulaire élargi' },
   { token: 'sim-modal--lg', size: '720 px', usage: 'Nav latérale + formulaire (défaut)' },
-  { token: 'sim-modal--xl', size: '1200 px', usage: 'Contenu réellement large (table, graphe)' },
+  { token: 'sim-modal--xl', size: '1200 px', usage: 'Contenu réellement large justifié' },
+];
+
+const selectOptions = [
+  { value: 'option-a', label: 'Option A' },
+  { value: 'option-b', label: 'Option B' },
 ];
 
 export function DesignSystemModalPreview() {
@@ -16,8 +21,8 @@ export function DesignSystemModalPreview() {
   return (
     <div className="settings-design-system__stack">
       <p className="settings-design-system__note">
-        Toute modale, `/sim/*` ou administration Settings, suit la même anatomie (shell, header,
-        close rond, nav latérale, footer, largeur canonique). Voir GOUVERNANCE §16d.
+        Toute modale, `/sim/*` ou administration Settings, suit la même anatomie. Deux familles
+        visuelles seulement : normale sans menu gauche, ou avec menu gauche. Voir GOUVERNANCE §16d.
       </p>
 
       <div className="settings-design-system__ui-grid">
@@ -39,17 +44,44 @@ export function DesignSystemModalPreview() {
         </article>
 
         <article className="settings-design-system__ui-card">
-          <h3>Navigation de sections</h3>
+          <h3>Famille avec menu gauche</h3>
           <p className="settings-design-system__note">
-            Famille « nav latérale » : primitive unique `SimModalSectionNav` (actif gris via tokens
-            partagés), latérale sur desktop, segments en haut sur mobile.
+            Layout partagé `sim-modal-layout--with-nav` : la feature peut ajuster la largeur de
+            colonne, jamais le fond, la bordure ou le rayon du menu. Les champs y sont blancs via
+            `--sim-input-bg`.
           </p>
-          <SimModalSectionNav
-            sections={modalSections}
-            activeId={activeSection}
-            ariaLabel="Rubriques de modale"
-            onChange={setActiveSection}
-          />
+          <div className="settings-design-system__modal-layout-demo sim-modal-layout--with-nav">
+            <SimModalSectionNav
+              sections={modalSections}
+              activeId={activeSection}
+              ariaLabel="Rubriques de modale"
+              className="sim-modal-layout__nav"
+              onChange={setActiveSection}
+            />
+            <div className="settings-design-system__modal-panels sim-modal-layout__content">
+              <p>Contenu de section avec champs via primitives Sim*.</p>
+            </div>
+          </div>
+        </article>
+
+        <article className="settings-design-system__ui-card">
+          <h3>Famille normale</h3>
+          <p className="settings-design-system__note">
+            Pas de menu gauche : header, corps, footer. `sim-modal--lg` par défaut, `xl` uniquement
+            pour une vraie surface dense. Sur fond blanc, les champs restent gris.
+          </p>
+          <div className="settings-design-system__modal-panels">
+            <SimFieldShell label="Champ texte">
+              <input
+                className="sim-field__control sim-field__control--left"
+                value="Valeur"
+                readOnly
+              />
+            </SimFieldShell>
+            <SimFieldShell label="Menu déroulant">
+              <SimSelect value="option-a" options={selectOptions} onChange={() => undefined} />
+            </SimFieldShell>
+          </div>
         </article>
 
         <article className="settings-design-system__ui-card">
@@ -75,7 +107,7 @@ export function DesignSystemModalPreview() {
           <h3>Panneau de section</h3>
           <p className="settings-design-system__note">
             Source unique `--sim-modal-panel-*` / `.sim-modal-section-panel` : même fond, bordure,
-            rayon et padding pour toutes les modales.
+            rayon, padding et inputs blancs pour toutes les modales.
           </p>
           <div className="sim-modal-section-panel">
             <p className="settings-design-system__note">
@@ -87,8 +119,8 @@ export function DesignSystemModalPreview() {
         <article className="settings-design-system__ui-card">
           <h3>Modale complète (lg)</h3>
           <p className="settings-design-system__note">
-            Famille « nav latérale + formulaire » : shell partagé, nav gauche, footer avec
-            destructif à gauche.
+            Famille « menu gauche + formulaire » : shell partagé, nav gauche, footer avec destructif
+            à gauche, champs par primitives.
           </p>
           <button
             type="button"
@@ -128,14 +160,26 @@ export function DesignSystemModalPreview() {
             </>
           }
         >
-          <SimModalSectionNav
-            sections={modalSections}
-            activeId={activeSection}
-            ariaLabel="Rubriques de la modale ouverte"
-            onChange={setActiveSection}
-          />
-          <div className="settings-design-system__nav-panels">
-            <p>Contenu de section : champs via primitives Sim*, sans carte imbriquée.</p>
+          <div className="settings-design-system__modal-layout-demo sim-modal-layout--with-nav">
+            <SimModalSectionNav
+              sections={modalSections}
+              activeId={activeSection}
+              ariaLabel="Rubriques de la modale ouverte"
+              className="sim-modal-layout__nav"
+              onChange={setActiveSection}
+            />
+            <div className="settings-design-system__modal-panels sim-modal-layout__content">
+              <SimFieldShell label="Libellé">
+                <input
+                  className="sim-field__control sim-field__control--left"
+                  value="Contrat canonique"
+                  readOnly
+                />
+              </SimFieldShell>
+              <SimFieldShell label="Choix">
+                <SimSelect value="option-a" options={selectOptions} onChange={() => undefined} />
+              </SimFieldShell>
+            </div>
           </div>
         </SimModalShell>
       ) : null}

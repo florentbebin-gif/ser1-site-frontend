@@ -246,9 +246,9 @@ export function TresoRevenuePhaseModal({
         horizonYear={horizonYear}
       />
 
-      <div className="ts-phase-modal-layout">
+      <div className="ts-phase-modal-layout sim-modal-layout--with-nav">
         <nav
-          className="ts-phase-modal-nav sim-modal-section-nav"
+          className="ts-phase-modal-nav sim-modal-section-nav sim-modal-layout__nav"
           aria-label="Sous-phases du palier"
         >
           {SUB_PHASE_NAV.map((item) => (
@@ -270,7 +270,7 @@ export function TresoRevenuePhaseModal({
           ))}
         </nav>
 
-        <div className="ts-phase-modal-panel">
+        <div className="ts-phase-modal-panel sim-modal-layout__content">
           <TresoRevenuePhasePeriodPanel draft={draft} onPatch={patchDraft} />
 
           {activeSubPhase === 'remuneration' ? (

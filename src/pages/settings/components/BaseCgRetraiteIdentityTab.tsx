@@ -5,6 +5,7 @@ import {
   TYPE_LABELS,
   TYPE_OPTIONS,
 } from '../baseCgRetraiteOptions';
+import { BaseCgSelectField, BaseCgTextField } from './BaseCgRetraiteModalFields';
 
 type RootSetter = <K extends keyof BaseCgRetraiteContract>(
   _key: K,
@@ -16,57 +17,49 @@ interface Props {
   onRootChange: RootSetter;
 }
 
+const TYPE_SELECT_OPTIONS = TYPE_OPTIONS.map((type) => ({
+  value: type,
+  label: TYPE_LABELS[type],
+}));
+
+const COMPARTMENT_SELECT_OPTIONS = [
+  { value: '', label: 'Déduit du type' },
+  ...COMPARTMENT_OPTIONS.map((compartment) => ({
+    value: compartment,
+    label: COMPARTMENT_LABELS[compartment],
+  })),
+];
+
 export function BaseCgRetraiteIdentityTab({ draft, onRootChange }: Props) {
   return (
     <>
-      <label>
-        Compagnie
-        <input
-          value={draft.compagnie}
-          onChange={(event) => onRootChange('compagnie', event.target.value)}
-        />
-      </label>
-      <label>
-        Nom du contrat
-        <input
-          value={draft.nomContrat}
-          onChange={(event) => onRootChange('nomContrat', event.target.value)}
-        />
-      </label>
-      <label>
-        Type
-        <select
-          value={draft.typeContrat}
-          onChange={(event) =>
-            onRootChange('typeContrat', event.target.value as BaseCgRetraiteContractType)
-          }
-        >
-          {TYPE_OPTIONS.map((type) => (
-            <option key={type} value={type}>
-              {TYPE_LABELS[type]}
-            </option>
-          ))}
-        </select>
-      </label>
-      <label>
-        Compartiment PER cible
-        <select
-          value={draft.perCompartment ?? ''}
-          onChange={(event) =>
-            onRootChange(
-              'perCompartment',
-              (event.target.value || null) as BaseCgRetraiteContract['perCompartment'],
-            )
-          }
-        >
-          <option value="">Déduit du type</option>
-          {COMPARTMENT_OPTIONS.map((compartment) => (
-            <option key={compartment} value={compartment}>
-              {COMPARTMENT_LABELS[compartment]}
-            </option>
-          ))}
-        </select>
-      </label>
+      <BaseCgTextField
+        label="Compagnie"
+        value={draft.compagnie}
+        onChange={(value) => onRootChange('compagnie', value)}
+      />
+      <BaseCgTextField
+        label="Nom du contrat"
+        value={draft.nomContrat}
+        onChange={(value) => onRootChange('nomContrat', value)}
+      />
+      <BaseCgSelectField
+        label="Type"
+        value={draft.typeContrat}
+        options={TYPE_SELECT_OPTIONS}
+        onChange={(value) => onRootChange('typeContrat', value as BaseCgRetraiteContractType)}
+      />
+      <BaseCgSelectField
+        label="Compartiment PER cible"
+        value={draft.perCompartment ?? ''}
+        options={COMPARTMENT_SELECT_OPTIONS}
+        onChange={(value) =>
+          onRootChange(
+            'perCompartment',
+            (value || null) as BaseCgRetraiteContract['perCompartment'],
+          )
+        }
+      />
     </>
   );
 }

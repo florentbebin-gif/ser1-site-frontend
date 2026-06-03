@@ -24,8 +24,7 @@
 }
 
 .base-cg-button,
-.base-cg-row-actions button,
-.base-cg-modal__footer button {
+.base-cg-row-actions button {
   min-height: 34px;
   border: 1px solid var(--color-c8);
   border-radius: 6px;
@@ -70,10 +69,9 @@
 }
 
 .base-cg-filters input,
-.base-cg-filters select,
-.base-cg-modal input,
-.base-cg-modal select,
-.base-cg-modal textarea {
+.base-cg-filters select {
+  min-height: 38px;
+  padding: 0 12px;
   border: 1px solid var(--color-c8);
   border-radius: 6px;
   background: var(--surface-card);
@@ -85,12 +83,6 @@
 .base-cg-modal button:disabled {
   cursor: not-allowed;
   opacity: 0.55;
-}
-
-.base-cg-filters input,
-.base-cg-filters select {
-  min-height: 38px;
-  padding: 0 12px;
 }
 
 .base-cg-filters input {
@@ -461,51 +453,54 @@
   min-width: 0;
   min-height: 0;
   align-content: start;
-  overflow-y: auto;
+  max-height: 100%;
+  overflow: hidden auto;
   padding: 18px;
+  scrollbar-gutter: stable;
+}
+
+.base-cg-modal__layout .base-cg-modal__body {
+  padding: 0;
 }
 
 /* Largeur déléguée à SettingsModalShell size="md" (canon §16d). */
 .base-cg-assistance-modal__body {
   grid-template-columns: 1fr;
+  gap: 16px;
+  padding: 20px 24px 18px;
 }
 
 /* Layout 2 colonnes : nav latérale (canon) + panneau. */
 .base-cg-modal__layout {
-  display: flex;
   flex: 1 1 auto;
   min-height: 0;
+  margin: 20px 24px;
+  overflow: hidden;
+  padding: var(--sim-modal-panel-padding);
+  --sim-modal-nav-width: 190px;
+  --sim-modal-nav-gap: 18px;
 }
 
-/* Conteneur de nav latérale (largeur/séparateur) ; items via .sim-modal-section-nav__item. */
 .base-cg-modal__tabs {
-  flex: 0 0 auto;
-  width: 190px;
-  padding: 14px;
-  border-right: 1px solid var(--color-c8);
   overflow-y: auto;
 }
 
-.base-cg-modal label {
-  display: grid;
-  gap: 6px;
-  color: var(--color-c10);
-  font-size: 12px;
-  font-weight: 700;
+.base-cg-modal-field {
+  min-width: 0;
 }
 
-.base-cg-modal input,
-.base-cg-modal select {
+.base-cg-modal__control {
   min-height: 36px;
   padding: 0 10px;
 }
 
-.base-cg-modal input[type='file'] {
+.base-cg-file-input {
+  height: auto;
+  min-height: 38px;
   padding: 7px;
-  background: var(--color-c7);
 }
 
-.base-cg-modal input[type='file']::file-selector-button {
+.base-cg-file-input::file-selector-button {
   min-height: 30px;
   margin-right: 10px;
   border: 1px solid var(--color-c3);
@@ -522,14 +517,20 @@
     border-color 0.15s ease;
 }
 
-.base-cg-modal input[type='file']::file-selector-button:hover {
+.base-cg-file-input::file-selector-button:hover {
   border-color: var(--color-c2);
   background: var(--color-c2);
 }
 
-.base-cg-modal textarea {
+.base-cg-modal__textarea {
+  height: auto;
+  min-height: 78px;
   padding: 8px 10px;
   resize: vertical;
+}
+
+.base-cg-assistance-modal__description .base-cg-modal__textarea {
+  min-height: 150px;
 }
 
 .base-cg-modal__wide {
@@ -686,15 +687,7 @@
   }
 
   .base-cg-modal__layout {
-    flex-direction: column;
-  }
-
-  .base-cg-modal__tabs {
-    width: auto;
-    flex-direction: row;
-    overflow-x: auto;
-    border-right: 0;
-    border-bottom: 1px solid var(--color-c8);
+    margin: 14px;
   }
 
   .base-cg-documents__header,

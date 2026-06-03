@@ -284,15 +284,12 @@
 }
 
 .ts-phase-modal-layout {
-  display: grid;
-  grid-template-columns: 220px minmax(0, 1fr);
-  gap: 16px;
-  align-items: start;
+  --sim-modal-nav-width: 220px;
+  --sim-modal-nav-gap: 16px;
 }
 
 .ts-phase-modal-nav {
-  position: sticky;
-  top: 0;
+  min-width: 0;
 }
 
 /* Nav enrichie (checkbox d'activation) : visuel via .sim-modal-section-nav__item,
@@ -317,6 +314,7 @@
   padding: var(--sim-modal-panel-padding);
   display: grid;
   gap: 4px;
+  --sim-input-bg: var(--surface-card);
 }
 
 .ts-phase-net span {

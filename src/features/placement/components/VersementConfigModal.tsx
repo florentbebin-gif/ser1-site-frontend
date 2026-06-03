@@ -397,7 +397,7 @@ export function VersementConfigModal({
       onClose={onClose}
       closeLabel="Fermer la modale"
       overlayClassName="vcm-overlay"
-      modalClassName="vcm sim-modal--xl"
+      modalClassName="vcm sim-modal--lg"
       headerClassName="vcm__header"
       headerContentClassName="vcm__header-content"
       titleClassName="vcm__title"
@@ -415,15 +415,15 @@ export function VersementConfigModal({
         </div>
       ) : null}
 
-      <div className="vcm__layout">
+      <div className="vcm__layout sim-modal-layout--with-nav">
         <SimModalSectionNav
           sections={modalSections}
           activeId={activeSection}
           ariaLabel="Rubriques des versements"
-          className="vcm__nav"
+          className="vcm__nav sim-modal-layout__nav"
           onChange={(sectionId) => setActiveSection(sectionId as VersementModalSectionId)}
         />
-        <div className="vcm__panels">{renderActiveSection()}</div>
+        <div className="vcm__panels sim-modal-layout__content">{renderActiveSection()}</div>
       </div>
 
       <SimMobileStickyActions className="vcm__mobile-actions" ariaLabel="Actions de validation">

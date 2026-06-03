@@ -52,6 +52,7 @@ export default function PerModal({
   return (
     <SimModalShell
       title="PER assurance"
+      subtitle="Clause bénéficiaire et capitaux décès du PER"
       onClose={onClose}
       closeLabel="Fermer"
       overlayClassName="sc-member-modal-overlay"

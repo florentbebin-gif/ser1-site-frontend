@@ -12,6 +12,8 @@ describe('DesignSystemModalPreview', () => {
 
     expect(screen.getByText('Largeurs canoniques')).toBeInTheDocument();
     expect(screen.getByText('sim-modal--lg')).toBeInTheDocument();
+    expect(screen.getByText('Famille normale')).toBeInTheDocument();
+    expect(screen.getByText('Famille avec menu gauche')).toBeInTheDocument();
     expect(screen.getByLabelText('Rubriques de modale')).toBeInTheDocument();
     expect(screen.getByText('Footer canonique')).toBeInTheDocument();
   });

@@ -8,10 +8,8 @@
 }
 
 .prevoyance-contract-modal__layout {
-  display: grid;
-  grid-template-columns: 190px minmax(0, 1fr);
-  gap: 14px;
-  min-height: 0;
+  --sim-modal-nav-width: 190px;
+  --sim-modal-nav-gap: 14px;
 }
 
 /* Nav de section : SimModalSectionNav (canon). */
