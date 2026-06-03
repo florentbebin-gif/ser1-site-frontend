@@ -42,11 +42,11 @@ describe('PrevoyancePage - contrats', () => {
       );
 
       await user.click(screen.getByRole('button', { name: 'Ajouter un contrat' }));
-      await user.click(await screen.findByRole('button', { name: 'Terminer' }));
+      await user.click(await screen.findByRole('button', { name: 'Fermer' }));
       expect(screen.getByText('Comparer')).toBeInTheDocument();
       expect(screen.getByText('Cumuler')).toBeInTheDocument();
       await user.click(screen.getByRole('button', { name: 'Ajouter un contrat' }));
-      await user.click(await screen.findByRole('button', { name: 'Terminer' }));
+      await user.click(await screen.findByRole('button', { name: 'Fermer' }));
 
       await waitFor(() => {
         expect(screen.getAllByRole('heading', { name: /Contrat [123]/i })).toHaveLength(3);

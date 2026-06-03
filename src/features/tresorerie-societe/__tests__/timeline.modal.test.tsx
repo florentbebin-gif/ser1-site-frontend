@@ -25,7 +25,7 @@ describe('TresoTimelineSection - modale palier', () => {
     expect(screen.getByLabelText('Année de début')).toHaveDisplayValue('2026');
     expect(screen.getByLabelText('Année de fin')).toHaveDisplayValue('2030');
     expect(screen.getByRole('button', { name: /Supprimer ce palier/i })).toHaveClass(
-      'sim-modal-btn--ghost',
+      'sim-modal-btn--danger',
     );
     expect(screen.getByRole('button', { name: 'Annuler' })).toHaveClass('sim-modal-btn--ghost');
     expect(screen.getByRole('button', { name: 'Valider' })).toHaveClass('sim-modal-btn--primary');

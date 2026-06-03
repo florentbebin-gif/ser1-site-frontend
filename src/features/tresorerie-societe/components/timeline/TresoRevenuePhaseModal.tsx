@@ -197,7 +197,7 @@ export function TresoRevenuePhaseModal({
         <div className="ts-phase-modal__footer-inner" data-testid="ts-phase-modal-footer">
           <button
             type="button"
-            className="sim-modal-btn sim-modal-btn--ghost"
+            className="sim-modal-btn sim-modal-btn--danger"
             onClick={onDelete}
             disabled={phases.length <= 1}
           >

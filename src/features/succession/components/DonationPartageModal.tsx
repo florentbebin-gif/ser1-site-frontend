@@ -162,7 +162,11 @@ export default function DonationPartageModal({
       footer={
         <>
           {onDelete && (
-            <button type="button" className="sim-modal-btn sim-modal-btn--ghost" onClick={onDelete}>
+            <button
+              type="button"
+              className="sim-modal-btn sim-modal-btn--danger"
+              onClick={onDelete}
+            >
               Supprimer
             </button>
           )}

@@ -281,7 +281,7 @@ export function ContractsBlock({
               className="sim-modal-btn sim-modal-btn--primary"
               onClick={() => setEditingContractId(null)}
             >
-              Terminer
+              Fermer
             </button>
           }
         >

@@ -72,7 +72,7 @@ describe('PrevoyancePage - parcours', () => {
       ).toHaveClass('sim-action-btn--add');
       await user.click(screen.getByRole('button', { name: 'Acte juridique' }));
       expect(screen.getAllByText('Acte juridique').length).toBeGreaterThan(0);
-      await user.click(screen.getByRole('button', { name: 'Terminer' }));
+      await user.click(screen.getByRole('button', { name: 'Fermer' }));
       await user.click(screen.getByRole('button', { name: /Salarié secteur privé — CPAM/i }));
       expect(screen.getByText('Salarié agricole — MSA')).toBeInTheDocument();
       expect(screen.queryByText('MSA salariés')).not.toBeInTheDocument();
