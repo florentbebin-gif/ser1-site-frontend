@@ -208,7 +208,9 @@ toggle CSS ad hoc par feature.
 - **Navigation entre etapes/panneaux** (workflow PER, phases Placement, fiche contrat) : onglets
   **soulignes** (`role="tablist"`, `aria-selected`, etape courante `aria-current`). Motif partage :
   `border-bottom` + indicateur souligne. Ne pas styliser une navigation en pill segmente.
-- **On/off binaire** (Mode expert) : switch `ModeToggle` (actif sur `--action-primary`).
+- **On/off binaire** (Mode expert, options Placement/Crédit) : switch à genou (« bouton pilule »).
+  **Piste OFF = `--color-c8`** pour tous les switches du repo (`mode-toggle-pill`, `pl-toggle__switch`,
+  `ci-toggle__switch`) ; l'état actif reste propre au contexte (`--action-primary` pour `ModeToggle`).
 
 Cas distinct, hors de ces familles : les cartes-option riches (ex. `.ts-phase-source` Tresorerie,
 choix avec sous-libelles) restent un `role="radiogroup"` de cartes, pas un segmente.
