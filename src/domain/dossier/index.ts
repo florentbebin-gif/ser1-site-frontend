@@ -1,4 +1,6 @@
 export { buildDossierRailViewModel, getPreferredJourneyIdForSimulator } from './railViewModel';
+export { DOSSIER_CHAIN_LABELS } from './chainLabels';
+export type { DossierChainDirection } from './chainLabels';
 export type {
   DossierRailBranchView,
   DossierRailDensity,

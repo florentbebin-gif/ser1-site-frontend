@@ -1,6 +1,7 @@
 import { useEffect, type ReactElement } from 'react';
 import { Link } from 'react-router';
 
+import { DOSSIER_CHAIN_LABELS } from '@/domain/dossier';
 import { getOptionalSimulatorDefinition } from '@/domain/simulators/registry';
 import { IconArrowRight, IconClose } from '@/icons/ui';
 
@@ -88,7 +89,7 @@ export function HomeSimulatorPanel({
 
           {upstream.length > 0 && (
             <section className="home-panel__section">
-              <h3 className="home-panel__eyebrow">Données en amont</h3>
+              <h3 className="home-panel__eyebrow">{DOSSIER_CHAIN_LABELS.upstream}</h3>
               <div className="home-panel__chips">
                 {upstream.map((step) => (
                   <ChainChip key={step.id} step={step} />
@@ -99,7 +100,7 @@ export function HomeSimulatorPanel({
 
           {next.length > 0 && (
             <section className="home-panel__section">
-              <h3 className="home-panel__eyebrow">Étapes suivantes</h3>
+              <h3 className="home-panel__eyebrow">{DOSSIER_CHAIN_LABELS.downstream}</h3>
               <div className="home-panel__chips">
                 {next.map((step) => (
                   <ChainChip key={step.id} step={step} />
