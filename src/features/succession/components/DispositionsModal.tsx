@@ -335,7 +335,7 @@ export default function DispositionsModal({
       onClose={onClose}
       closeLabel="Fermer"
       overlayClassName="sc-member-modal-overlay"
-      modalClassName="sc-member-modal sc-dispositions-modal sim-modal--xl"
+      modalClassName="sc-member-modal sc-dispositions-modal sim-modal--lg"
       headerClassName="sc-member-modal__header"
       titleClassName="sc-member-modal__title"
       bodyClassName="sc-member-modal__body sc-dispositions-modal__body"
