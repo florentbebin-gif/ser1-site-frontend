@@ -86,6 +86,7 @@ export function SuccessionSimulatorView({
           <SuccessionFamilyOverview {...pageSectionsProps} />
         </div>
       }
+      auditTrailReady={pageUX.synthesisReady}
     >
       {derived.shouldRenderSuccessionComputationSections ? (
         <>
@@ -122,15 +123,17 @@ export function SuccessionSimulatorView({
         </>
       ) : null}
 
-      <SimPageShell.Section>
-        <div id="succession-hypotheses" data-sim-step-id="succession-hypotheses">
-          <SuccessionHypotheses
-            hypothesesOpen={hypothesesOpen}
-            assumptions={derived.assumptions}
-            onToggle={onToggleHypotheses}
-          />
-        </div>
-      </SimPageShell.Section>
+      {pageUX.synthesisReady && (
+        <SimPageShell.Section>
+          <div id="succession-hypotheses" data-sim-step-id="succession-hypotheses">
+            <SuccessionHypotheses
+              hypothesesOpen={hypothesesOpen}
+              assumptions={derived.assumptions}
+              onToggle={onToggleHypotheses}
+            />
+          </div>
+        </SimPageShell.Section>
+      )}
     </SimPageShell>
   );
 }

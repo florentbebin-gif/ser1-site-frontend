@@ -12,6 +12,8 @@ describe('DesignSystemUiPreview', () => {
     expect(screen.getByRole('button', { name: 'Ajouter une ligne' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Modifier' })).toBeInTheDocument();
     expect(screen.getByText('Navigation simulateur optionnelle')).toBeInTheDocument();
+    expect(screen.getByText('Onglets soulignés')).toBeInTheDocument();
+    expect(screen.getByLabelText('Étapes soulignées')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /Voir la synthèse/ })).toBeInTheDocument();
     expect(screen.getByLabelText('Rubriques de modale')).toBeInTheDocument();
     expect(screen.getByText('États actions')).toBeInTheDocument();

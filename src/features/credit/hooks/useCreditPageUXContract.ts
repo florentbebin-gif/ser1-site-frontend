@@ -19,7 +19,9 @@ export function useCreditPageUXContract({
       sections: [
         { id: 'credit-financement', label: 'Financement', targetId: 'credit-financement' },
         { id: 'credit-synthese', label: 'Synthèse', targetId: 'credit-synthese' },
-        { id: 'credit-hypotheses', label: 'Hypothèses', targetId: 'credit-hypotheses' },
+        ...(synthesisReady
+          ? [{ id: 'credit-hypotheses', label: 'Hypothèses', targetId: 'credit-hypotheses' }]
+          : []),
       ],
     }),
     [synthesisReady],

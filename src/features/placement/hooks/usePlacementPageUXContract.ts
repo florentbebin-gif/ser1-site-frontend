@@ -19,6 +19,15 @@ export function usePlacementPageUXContract({
       sections: [
         { id: 'placement-saisie', label: 'Saisie', targetId: 'placement-saisie' },
         { id: 'placement-synthese', label: 'Synthèse', targetId: 'placement-synthese' },
+        ...(synthesisReady
+          ? [
+              {
+                id: 'placement-hypotheses',
+                label: 'Hypothèses',
+                targetId: 'placement-hypotheses',
+              },
+            ]
+          : []),
       ],
     }),
     [synthesisReady],

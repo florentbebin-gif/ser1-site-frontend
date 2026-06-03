@@ -1,0 +1,94 @@
+.sim-underlined-tabs {
+  --sim-underlined-tabs-gap: 4px;
+  --sim-underlined-tabs-width: auto;
+  --sim-underlined-tabs-margin-bottom: 0;
+  --sim-underlined-tabs-border: none;
+  --sim-underlined-tabs-line-bottom: 0;
+  --sim-underlined-tab-padding: 8px 14px;
+  --sim-underlined-tab-font-size: 13px;
+  --sim-underlined-tab-font-weight: 500;
+  --sim-underlined-tab-hover-color: var(--color-c2);
+  --sim-underlined-tab-hover-bg: var(--color-c7);
+
+  position: relative;
+  display: flex;
+  gap: var(--sim-underlined-tabs-gap);
+  width: var(--sim-underlined-tabs-width);
+  min-width: 0;
+  margin-bottom: var(--sim-underlined-tabs-margin-bottom);
+  border-bottom: var(--sim-underlined-tabs-border);
+}
+
+.sim-underlined-tabs::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  bottom: var(--sim-underlined-tabs-line-bottom);
+  left: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--color-c8), transparent 85%);
+}
+
+.sim-underlined-tab {
+  position: relative;
+  z-index: 1;
+  padding: var(--sim-underlined-tab-padding);
+  border: none;
+  border-bottom: 2px solid transparent;
+  background: transparent;
+  color: var(--color-c9);
+  font: inherit;
+  font-size: var(--sim-underlined-tab-font-size);
+  font-weight: var(--sim-underlined-tab-font-weight);
+  letter-spacing: 0;
+  cursor: pointer;
+  transition:
+    color 0.2s,
+    background-color 0.2s,
+    border-color 0.2s;
+}
+
+.sim-underlined-tab:hover:not(:disabled) {
+  color: var(--sim-underlined-tab-hover-color);
+  background: var(--sim-underlined-tab-hover-bg);
+}
+
+.sim-underlined-tab:focus-visible {
+  outline: none;
+  border-bottom-color: var(--color-c2);
+}
+
+.sim-underlined-tab.is-active,
+.sim-underlined-tab[aria-selected='true'] {
+  color: var(--color-c1);
+  font-weight: 600;
+  border-bottom-color: var(--color-c3);
+}
+
+.sim-underlined-tab:disabled {
+  color: var(--color-c8);
+  cursor: not-allowed;
+}
+
+.sim-underlined-tab.is-done {
+  color: var(--data-secondary);
+}
+
+.sim-underlined-tab.is-done::before {
+  content: '';
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  margin-right: 4px;
+  vertical-align: -1px;
+  background: var(--data-secondary);
+  /* stylelint-disable-next-line property-no-vendor-prefix */
+  -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='20 6 9 17 4 12'/%3E%3C/svg%3E");
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='20 6 9 17 4 12'/%3E%3C/svg%3E");
+  /* stylelint-disable-next-line property-no-vendor-prefix */
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  /* stylelint-disable-next-line property-no-vendor-prefix */
+  -webkit-mask-size: contain;
+  mask-size: contain;
+}

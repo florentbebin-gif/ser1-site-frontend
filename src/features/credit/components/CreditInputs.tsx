@@ -2,12 +2,14 @@
  * CreditInputs.tsx - Composants de saisie réutilisables pour le simulateur de crédit
  */
 
+import { useId } from 'react';
 import {
   SimAmountInputEuro,
   SimAmountInputNumeric,
   SimAmountInputPercent,
   SimFieldShell,
   SimSelect,
+  SimTemporalField,
 } from '@/components/ui/sim';
 import { parseDecimalInput } from '@/utils/numbers';
 import type { InputMonthProps, SelectProps, ToggleProps } from '../types';
@@ -155,15 +157,25 @@ export function InputMonth({
   error,
   testId,
 }: InputMonthProps) {
+  const controlId = useId();
+
   return (
-    <SimFieldShell label={label} hint={hint} error={error} testId={testId} className="ci-field">
-      <input
-        type="month"
+    <SimFieldShell
+      label={label}
+      hint={hint}
+      error={error}
+      testId={testId}
+      controlId={controlId}
+      className="ci-field"
+    >
+      <SimTemporalField
+        id={controlId}
+        granularity="month"
         disabled={disabled}
         value={value}
-        onChange={(event) => onChange(event.target.value)}
-        aria-invalid={!!error}
-        className={`sim-field__control sim-field__control--left${error ? ' sim-field__control--error' : ''}`}
+        onChange={onChange}
+        ariaInvalid={!!error}
+        className={`sim-field__control--left${error ? ' sim-field__control--error' : ''}`}
       />
     </SimFieldShell>
   );

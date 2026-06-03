@@ -80,10 +80,12 @@
 }
 
 .sim-field__unit {
-  min-width: 22px;
-  margin-left: 5px;
+  min-width: max-content;
+  margin-left: 3px;
+  padding-inline-start: 1px;
   color: var(--color-c9);
   font-size: 13px;
+  line-height: 28px;
 }
 
 .sim-field__hint {

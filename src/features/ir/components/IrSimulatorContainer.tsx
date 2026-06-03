@@ -403,6 +403,7 @@ export default function IrSimulatorContainer() {
           />
         </>
       }
+      auditTrailReady={pageUX.synthesisReady}
     >
       <SimPageShell.Main>
         <div id="ir-foyer" data-sim-step-id="ir-foyer">
@@ -469,35 +470,33 @@ export default function IrSimulatorContainer() {
         </div>
       </SimPageShell.Side>
 
-      <SimPageShell.Section>
-        <div id="ir-hypotheses" data-sim-step-id="ir-hypotheses">
-          <>
-            {result && (
-              <SimCollapsibleTable
-                title="Détail du calcul"
-                open={showDetails}
-                onOpenChange={setShowDetails}
-                labelClosed="Détail du calcul — barème, décote et contributions"
-                labelOpen="Masquer le détail du calcul"
-                controlsId="ir-detail-panel"
-                className="ir-detail-card premium-card"
-                toggleClassName="ir-detail-toggle"
-                testId="ir-detail-accordion"
-                toggleTestId="ir-detail-toggle"
-              >
-                <IrDetailsSection
-                  result={result}
-                  euro0={euro0}
-                  fmtPct={fmtPct}
-                  pfuRateIR={pfuRateIR}
-                />
-              </SimCollapsibleTable>
-            )}
+      {pageUX.synthesisReady && result && (
+        <SimPageShell.Section>
+          <div id="ir-hypotheses" data-sim-step-id="ir-hypotheses">
+            <SimCollapsibleTable
+              title="Détail du calcul"
+              open={showDetails}
+              onOpenChange={setShowDetails}
+              labelClosed="Détail du calcul — barème, décote et contributions"
+              labelOpen="Masquer le détail du calcul"
+              controlsId="ir-detail-panel"
+              className="ir-detail-card premium-card"
+              toggleClassName="ir-detail-toggle"
+              testId="ir-detail-accordion"
+              toggleTestId="ir-detail-toggle"
+            >
+              <IrDetailsSection
+                result={result}
+                euro0={euro0}
+                fmtPct={fmtPct}
+                pfuRateIR={pfuRateIR}
+              />
+            </SimCollapsibleTable>
 
             <IrDisclaimer isIsolated={isIsolated} />
-          </>
-        </div>
-      </SimPageShell.Section>
+          </div>
+        </SimPageShell.Section>
+      )}
     </SimPageShell>
   );
 }

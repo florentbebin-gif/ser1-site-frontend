@@ -203,6 +203,7 @@ export default function PrevoyancePage() {
             <ExportMenu options={exportOptions} loading={exportLoading} />
           </>
         }
+        auditTrailReady={pageUX.synthesisReady}
       >
         <SimPageShell.Main>
           <div id="prevoyance-situation" data-sim-step-id="prevoyance-situation">
@@ -278,11 +279,13 @@ export default function PrevoyancePage() {
           )}
         </SimPageShell.Side>
 
-        <SimPageShell.Section>
-          <div id="prevoyance-hypotheses" data-sim-step-id="prevoyance-hypotheses">
-            <PrevoyanceHypotheses />
-          </div>
-        </SimPageShell.Section>
+        {pageUX.synthesisReady && (
+          <SimPageShell.Section>
+            <div id="prevoyance-hypotheses" data-sim-step-id="prevoyance-hypotheses">
+              <PrevoyanceHypotheses />
+            </div>
+          </SimPageShell.Section>
+        )}
       </SimPageShell>
 
       {fraisModalOpen ? (

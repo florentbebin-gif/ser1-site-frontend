@@ -14,7 +14,7 @@
   }
 
   .ir-summary-total-hero__value {
-    font-size: 24px;
+    font-size: var(--font-size-3xl);
   }
 }
 

@@ -1,4 +1,4 @@
-import { SimActionButton, SimAmountInputEuro } from '@/components/ui/sim';
+import { SimActionButton, SimAmountInputEuro, SimTemporalField } from '@/components/ui/sim';
 import { IconGift } from '@/icons/ui';
 import type { SuccessionDonationEntry, SuccessionDonationPartageAct } from '../successionDraft';
 import { summarizeDonationPartageActs } from '../successionDonationPartage';
@@ -137,12 +137,12 @@ export default function ScDonationsCard({
                   </div>
                   <div className="sc-field">
                     <label htmlFor={`sc-donation-date-${entry.id}`}>Date</label>
-                    <input
+                    <SimTemporalField
                       id={`sc-donation-date-${entry.id}`}
-                      type="month"
+                      granularity="month"
                       className="sc-input-month"
                       value={entry.date ?? ''}
-                      onChange={(e) => onUpdateDonationEntry(entry.id, 'date', e.target.value)}
+                      onChange={(value) => onUpdateDonationEntry(entry.id, 'date', value)}
                     />
                   </div>
                   <div className="sc-field">

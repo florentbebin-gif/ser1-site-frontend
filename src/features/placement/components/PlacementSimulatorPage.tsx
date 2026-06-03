@@ -118,6 +118,7 @@ export default function PlacementSimulatorPage() {
           </>
         }
         nav={<PlacementPhaseNav step={state.step} onStepChange={setStep} />}
+        auditTrailReady={pageUX.synthesisReady}
       >
         <SimPageShell.Main>
           <PlacementInputsPanel
@@ -176,9 +177,13 @@ export default function PlacementSimulatorPage() {
           )}
         </SimPageShell.Side>
 
-        <SimPageShell.Section>
-          <PlacementHypotheses />
-        </SimPageShell.Section>
+        {pageUX.synthesisReady && (
+          <SimPageShell.Section>
+            <div id="placement-hypotheses" data-sim-step-id="placement-hypotheses">
+              <PlacementHypotheses />
+            </div>
+          </SimPageShell.Section>
+        )}
       </SimPageShell>
 
       {modalOpen !== null && modalProduct && (

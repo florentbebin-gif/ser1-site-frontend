@@ -33,7 +33,7 @@ type MetricItem = {
   value: string;
 };
 
-function HeroDeclarantPair({
+function DeclarantMetricPair({
   items,
   compact = false,
 }: {
@@ -153,6 +153,7 @@ export function PerPotentielContextSidebar({
       ? [{ label: 'Déclarant 2', value: fmtCurrency(potentielD2) }]
       : []),
   ];
+  const potentielTotal = potentielD1 + (isCouple || potentielD2 > 0 ? potentielD2 : 0);
   const madelinItems = result?.plafondMadelin
     ? [
         {
@@ -281,10 +282,16 @@ export function PerPotentielContextSidebar({
 
           {showPotentielAvis && (
             <div className="per-potentiel-context-item per-potentiel-context-item--avis">
+              <SimMetric
+                variant="hero"
+                className="per-potentiel-hero-metric"
+                label={potentielLabel}
+                value={fmtCurrency(potentielTotal)}
+              />
               <span className="per-potentiel-context-label per-potentiel-context-label--small">
-                {potentielLabel}
+                Répartition par déclarant
               </span>
-              <HeroDeclarantPair items={potentielItems} />
+              <DeclarantMetricPair items={potentielItems} />
             </div>
           )}
 
@@ -293,7 +300,7 @@ export function PerPotentielContextSidebar({
               <span className="per-potentiel-context-label per-potentiel-context-label--small">
                 Enveloppes Madelin N
               </span>
-              <HeroDeclarantPair items={madelinItems} compact />
+              <DeclarantMetricPair items={madelinItems} compact />
             </div>
           )}
         </div>
@@ -313,7 +320,7 @@ export function PerPotentielContextSidebar({
 
               <div className="per-sidebar-hero">
                 <SimMetric
-                  variant="hero"
+                  variant="secondary"
                   className="per-sidebar-hero__metric"
                   label="IR estimé"
                   value={fmtCurrency(result.situationFiscale.irEstime)}
@@ -356,7 +363,7 @@ export function PerPotentielContextSidebar({
 
                 <div className="per-sidebar-hero">
                   <SimMetric
-                    variant="hero"
+                    variant="secondary"
                     className="per-sidebar-hero__metric"
                     label="IR estimé"
                     value={fmtCurrency(result.situationFiscale.irEstime)}

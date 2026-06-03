@@ -9,9 +9,7 @@
  * Périmètre : src/features, src/components, src/pages.
  * Exceptions : la primitive canonique SimTemporalField implémente le contrôle HTML
  * natif ; l'admin (src/pages/settings, src/components/settings) conserve des champs
- * natifs ; les fichiers de ALLOWED_FILES sont des pages restant à migrer vers
- * SimTemporalField (cf. PR « champs temporels pages »). Cette liste doit être vidée
- * à terme : c'est une dette tracée, pas silencieuse.
+ * natifs de gestion. Les surfaces applicatives n'ont plus d'allowlist.
  *
  * Usage : node scripts/check-no-raw-temporal-input.mjs [--root <chemin>]
  * Exit  : 0 si aucune violation, 1 sinon.
@@ -34,19 +32,7 @@ const ALLOWED_DIRS = [
 
 const PRIMITIVE_FILES = new Set(['src/components/ui/sim/SimTemporalField.tsx']);
 
-// Pages /sim restant à migrer vers SimTemporalField (dette suivie, à vider).
-const ALLOWED_FILES = new Set(
-  [
-    'src/features/audit/components/steps/StepFamille.tsx',
-    'src/features/audit/components/steps/StepPassif.tsx',
-    'src/features/credit/components/CreditInputs.tsx',
-    'src/features/per/transfert/components/PerTransfertLayoutPrimitives.tsx',
-    'src/features/prevoyance/components/SituationBlock.tsx',
-    'src/features/succession/components/ScDonationsCard.tsx',
-    'src/features/succession/components/ScFamilyContextCard.tsx',
-    'src/features/tresorerie-societe/components/TresoCompanyPanels.tsx',
-  ].map((path) => path.replace(/\\/g, '/')),
-);
+const ALLOWED_FILES = new Set();
 
 const ALLOWED_DIR_PATTERNS = [/__tests__[/\\]/];
 

@@ -20,7 +20,15 @@ export function usePrevoyancePageUXContract({
         { id: 'prevoyance-situation', label: 'Situation', targetId: 'prevoyance-situation' },
         { id: 'prevoyance-garanties', label: 'Garanties', targetId: 'prevoyance-garanties' },
         { id: 'prevoyance-synthese', label: 'Synthèse', targetId: 'prevoyance-synthese' },
-        { id: 'prevoyance-hypotheses', label: 'Hypothèses', targetId: 'prevoyance-hypotheses' },
+        ...(synthesisReady
+          ? [
+              {
+                id: 'prevoyance-hypotheses',
+                label: 'Hypothèses',
+                targetId: 'prevoyance-hypotheses',
+              },
+            ]
+          : []),
       ],
     }),
     [synthesisReady],

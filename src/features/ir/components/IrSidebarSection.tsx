@@ -177,7 +177,7 @@ export function IrSidebarSection({
                 unit={result ? '%' : undefined}
               />
               <SimMetric
-                variant="hero"
+                variant="secondary"
                 label="Impôt sur le revenu"
                 value={
                   <span data-testid="ir-irnet-value">

@@ -1,4 +1,5 @@
 import type { StepProps } from './types';
+import { SimTemporalField } from '@/components/ui/sim';
 import { AuditNumberField } from './AuditNumberFields';
 
 export default function StepFamille({ dossier, updateDossier }: StepProps) {
@@ -46,15 +47,14 @@ export default function StepFamille({ dossier, updateDossier }: StepProps) {
         </div>
         <div className="audit-form-row">
           <label htmlFor="mr-date-naissance">Date de naissance</label>
-          <input
+          <SimTemporalField
             id="mr-date-naissance"
-            type="date"
             value={situationFamiliale.mr.dateNaissance}
-            onChange={(e) =>
+            onChange={(value) =>
               updateDossier({
                 situationFamiliale: {
                   ...situationFamiliale,
-                  mr: { ...situationFamiliale.mr, dateNaissance: e.target.value },
+                  mr: { ...situationFamiliale.mr, dateNaissance: value },
                 },
               })
             }
@@ -133,17 +133,16 @@ export default function StepFamille({ dossier, updateDossier }: StepProps) {
             </div>
             <div className="audit-form-row">
               <label htmlFor="mme-date-naissance">Date de naissance</label>
-              <input
+              <SimTemporalField
                 id="mme-date-naissance"
-                type="date"
                 value={situationFamiliale.mme?.dateNaissance || ''}
-                onChange={(e) =>
+                onChange={(value) =>
                   updateDossier({
                     situationFamiliale: {
                       ...situationFamiliale,
                       mme: {
                         ...(situationFamiliale.mme || { prenom: '', nom: '' }),
-                        dateNaissance: e.target.value,
+                        dateNaissance: value,
                       },
                     },
                   })

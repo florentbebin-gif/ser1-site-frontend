@@ -78,8 +78,7 @@ Le LLM doit optimiser leur utilisation : déléguer uniquement des tâches indé
   une sous-page settings ou un simulateur actif est désynchronisé.
 - Les saisies en `/sim/*` passent par les primitives `Sim*` : montants via `SimAmountInput*`,
   dates/mois via `SimTemporalField`. Garde-fous : `npm run check:no-raw-number-input` et
-  `npm run check:no-raw-temporal-input` (allowlist des pages restant à migrer documentée dans le
-  script, à vider à terme).
+  `npm run check:no-raw-temporal-input` (aucune allowlist applicative restante).
 - Les largeurs de modale passent **uniquement** par les classes canoniques `sim-modal--sm/md/lg/xl`
   (`src/styles/sim/modals.css`) ou le `size` de `SettingsModalShell`. Aucune `max-width` / `width` de
   modale en dur sur un sélecteur racine de feature. Les menus gauches de modale passent par

@@ -110,6 +110,10 @@ function readContracts(state: keyof ContractReaders): SimPageUXContract[] {
   return ACTIVE_SIM_ROUTE_CONTRACTS.map((route) => CONTRACT_READERS[route.id][state]());
 }
 
+function hasHypothesesSection(contract: SimPageUXContract): boolean {
+  return (contract.sections ?? []).some((section) => section.label === 'Hypothèses');
+}
+
 describe('contrats UX simulateurs', () => {
   it('désactive les synthèses tant que les prérequis essentiels sont absents', () => {
     const contracts = readContracts('waiting');
@@ -122,5 +126,13 @@ describe('contrats UX simulateurs', () => {
     const contracts = readContracts('ready');
 
     expect(contracts.every((contract) => contract.stepperSteps === undefined)).toBe(true);
+  });
+
+  it('ne publie les hypothèses dans le rail qu’après une synthèse prête', () => {
+    const waitingContracts = readContracts('waiting');
+    const readyContracts = readContracts('ready');
+
+    expect(waitingContracts.every((contract) => !hasHypothesesSection(contract))).toBe(true);
+    expect(readyContracts.every((contract) => hasHypothesesSection(contract))).toBe(true);
   });
 });

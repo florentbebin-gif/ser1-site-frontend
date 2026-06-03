@@ -184,6 +184,7 @@ export default function PerPotentielSimulator(): React.ReactElement {
           onStepSelect={goToStep}
         />
       }
+      auditTrailReady={pageUX.synthesisReady}
     >
       <SimPageShell.Main>
         <div id="per-potentiel-parcours" data-sim-step-id="per-potentiel-parcours">
@@ -374,9 +375,13 @@ export default function PerPotentielSimulator(): React.ReactElement {
         )}
       </SimPageShell.Side>
 
-      <SimPageShell.Section>
-        <PerHypotheses />
-      </SimPageShell.Section>
+      {pageUX.synthesisReady && (
+        <SimPageShell.Section>
+          <div id="per-potentiel-hypotheses" data-sim-step-id="per-potentiel-hypotheses">
+            <PerHypotheses />
+          </div>
+        </SimPageShell.Section>
+      )}
     </SimPageShell>
   );
 }

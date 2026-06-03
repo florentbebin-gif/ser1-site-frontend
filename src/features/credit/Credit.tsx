@@ -121,7 +121,7 @@ export default function CreditV2() {
   const [exportLoading, setExportLoading] = useState(false);
   const [activeTab, setActiveTab] = useState(0);
   const [hypothesesOpen, setHypothesesOpen] = useState(false);
-
+  const toggleHypotheses = () => setHypothesesOpen((open) => !open);
   const STORE_KEY = storageKeyFor('credit');
 
   // -------------------------------------------------------------------------
@@ -430,6 +430,7 @@ export default function CreditV2() {
           onChangeViewMode={(viewMode) => setGlobal({ viewMode })}
         />
       }
+      auditTrailReady={pageUX.synthesisReady}
     >
       <SimPageShell.Main>
         <div id="credit-financement" data-sim-step-id="credit-financement">
@@ -492,14 +493,13 @@ export default function CreditV2() {
         </SimPageShell.Section>
       )}
 
-      <SimPageShell.Section>
-        <div id="credit-hypotheses" data-sim-step-id="credit-hypotheses">
-          <CreditHypotheses
-            hypothesesOpen={hypothesesOpen}
-            onToggle={() => setHypothesesOpen((open) => !open)}
-          />
-        </div>
-      </SimPageShell.Section>
+      {pageUX.synthesisReady && (
+        <SimPageShell.Section>
+          <div id="credit-hypotheses" data-sim-step-id="credit-hypotheses">
+            <CreditHypotheses hypothesesOpen={hypothesesOpen} onToggle={toggleHypotheses} />
+          </div>
+        </SimPageShell.Section>
+      )}
     </SimPageShell>
   );
 }

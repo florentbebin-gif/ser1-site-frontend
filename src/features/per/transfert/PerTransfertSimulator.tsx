@@ -183,6 +183,7 @@ export function PerTransfertSimulator() {
           <PerTransfertWizardSteps step={step} step1Done={step1Done} onStepChange={setStep} />
         }
         pageClassName="per-transfert-page"
+        auditTrailReady={pageUX.synthesisReady}
       >
         <SimPageShell.Main>
           {step === 'contrat' ? (
@@ -460,9 +461,13 @@ export function PerTransfertSimulator() {
           />
         </SimPageShell.Side>
 
-        <SimPageShell.Section>
-          <PerTransfertHypotheses />
-        </SimPageShell.Section>
+        {pageUX.synthesisReady && (
+          <SimPageShell.Section>
+            <div id="per-transfert-hypotheses" data-sim-step-id="per-transfert-hypotheses">
+              <PerTransfertHypotheses />
+            </div>
+          </SimPageShell.Section>
+        )}
       </SimPageShell>
 
       <PerTransfertSimulatorModals

@@ -1,6 +1,6 @@
 import { useId } from 'react';
 import type { ReactNode } from 'react';
-import { SimFieldShell } from '@/components/ui/sim';
+import { SimFieldShell, SimTemporalField } from '@/components/ui/sim';
 
 const formatPercent = new Intl.NumberFormat('fr-FR', {
   style: 'percent',
@@ -116,14 +116,11 @@ export function DateField({
   onChange: (_value: string) => void;
   hint?: string;
 }) {
+  const controlId = useId();
+
   return (
-    <SimFieldShell label={label} hint={hint}>
-      <input
-        className="sim-field__control"
-        type="date"
-        value={value}
-        onChange={(event) => onChange(event.target.value)}
-      />
+    <SimFieldShell label={label} hint={hint} controlId={controlId}>
+      <SimTemporalField id={controlId} value={value} onChange={onChange} />
     </SimFieldShell>
   );
 }

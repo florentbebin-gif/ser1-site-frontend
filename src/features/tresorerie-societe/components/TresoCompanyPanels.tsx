@@ -1,4 +1,4 @@
-import { SimActionButton } from '@/components/ui/sim';
+import { SimActionButton, SimTemporalField } from '@/components/ui/sim';
 import { SimFieldShell } from '@/components/ui/sim/SimFieldShell';
 import { SimSelect } from '@/components/ui/sim/SimSelect';
 import type { CompanyLoanInput, SubsidiaryInput } from '@/engine/tresorerie/types';
@@ -161,12 +161,18 @@ export function TresoCompanyLoansPanel({ loans, projectionStartYear, onChange }:
               <span className="sim-field__unit ts-unit">mois</span>
             </SimFieldShell>
 
-            <SimFieldShell label="Date de début" className="ts-field" rowClassName="ts-field__row">
-              <input
-                type="month"
-                className="sim-field__control ts-input-month"
+            <SimFieldShell
+              label="Date de début"
+              controlId={`ts-loan-start-date-${loan.id}`}
+              className="ts-field"
+              rowClassName="ts-field__row"
+            >
+              <SimTemporalField
+                id={`ts-loan-start-date-${loan.id}`}
+                granularity="month"
+                className="ts-input-month"
                 value={loan.startDate}
-                onChange={(event) => updateLoan(loan.id, { startDate: event.target.value })}
+                onChange={(startDate) => updateLoan(loan.id, { startDate })}
               />
             </SimFieldShell>
 

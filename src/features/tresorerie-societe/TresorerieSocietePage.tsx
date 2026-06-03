@@ -90,6 +90,7 @@ export default function TresorerieSocietePage() {
           <ExportMenu options={exportOptions} loading={exportLoading} />
         </>
       }
+      auditTrailReady={pageUX.synthesisReady}
     >
       <SimPageShell.Main>
         {/* Bloc 1 — Société */}
@@ -172,11 +173,13 @@ export default function TresorerieSocietePage() {
         )}
       </SimPageShell.Side>
 
-      <SimPageShell.Section>
-        <div id="treso-hypotheses" data-sim-step-id="treso-hypotheses">
-          <TresoHypotheses />
-        </div>
-      </SimPageShell.Section>
+      {pageUX.synthesisReady && (
+        <SimPageShell.Section>
+          <div id="treso-hypotheses" data-sim-step-id="treso-hypotheses">
+            <TresoHypotheses />
+          </div>
+        </SimPageShell.Section>
+      )}
     </SimPageShell>
   );
 }

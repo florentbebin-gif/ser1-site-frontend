@@ -9,58 +9,13 @@
 
 .pl-page .sim-header__subtitle-row {
   padding-bottom: 8px;
-  border-bottom: 3px solid var(--accent-signature);
+  border-bottom: 1px solid color-mix(in srgb, var(--accent-signature) 55%, transparent);
 }
 
 .pl-phase-nav {
-  position: relative;
-  display: flex;
-  gap: 4px;
-  min-width: 0;
-}
-
-.pl-phase-nav::after {
-  content: '';
-  position: absolute;
-  right: 0;
-  bottom: 0;
-  left: 0;
-  height: 2px;
-  background: linear-gradient(90deg, var(--color-c8), transparent 85%);
-}
-
-.pl-phase-tab {
-  position: relative;
-  z-index: 1;
-  padding: 12px 20px;
-  border: none;
-  border-bottom: 2px solid transparent;
-  background: transparent;
-  color: var(--color-c9);
-  font-size: 14px;
-  font-weight: 400;
-  letter-spacing: 0;
-  cursor: pointer;
-  transition:
-    color 0.2s,
-    background 0.2s,
-    border-color 0.2s;
-}
-
-.pl-phase-tab:hover {
-  color: var(--color-c2);
-  background: var(--color-c7);
-}
-
-.pl-phase-tab:focus-visible {
-  outline: none;
-  border-bottom-color: var(--color-c2);
-}
-
-.pl-phase-tab.is-active {
-  color: var(--color-c1);
-  font-weight: 600;
-  border-bottom-color: var(--color-c3);
+  --sim-underlined-tab-padding: 12px 20px;
+  --sim-underlined-tab-font-size: 14px;
+  --sim-underlined-tab-font-weight: 400;
 }
 
 .pl-topgrid {
