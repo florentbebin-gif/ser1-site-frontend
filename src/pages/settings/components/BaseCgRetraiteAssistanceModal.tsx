@@ -56,6 +56,7 @@ export default function BaseCgRetraiteAssistanceModal({
       title="Assistance & Suggestions — Base CG retraite"
       titleId={titleId}
       onClose={onClose}
+      size="md"
       overlayClassName="base-cg-modal-overlay"
       modalClassName="base-cg-modal base-cg-assistance-modal"
       headerClassName="base-cg-modal__header"

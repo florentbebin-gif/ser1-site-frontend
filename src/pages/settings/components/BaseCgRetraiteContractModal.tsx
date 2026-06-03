@@ -232,6 +232,7 @@ export function BaseCgRetraiteContractModal({
     <SettingsModalShell
       title={contract.sourceId === 'Ajout local' ? 'Ajouter un contrat' : 'Modifier le contrat'}
       onClose={onClose}
+      size="lg"
       overlayClassName="base-cg-modal-overlay"
       modalClassName="base-cg-modal"
       headerClassName="base-cg-modal__header"

@@ -15,7 +15,9 @@
   background: var(--surface-card);
   border-radius: 10px;
   padding: 18px;
-  width: min(800px, 90vw);
+  /* Largeurs alignées sur le canon §16d (sm 520 / md 620 / lg 720 / xl 1200) ;
+     défaut = lg. Ne pas redéfinir de width de modale ad hoc par feature. */
+  width: min(720px, 90vw);
   max-height: 88vh;
   overflow-y: auto;
   box-shadow:
@@ -24,11 +26,19 @@
 }
 
 .settings-modal-shell--sm {
-  width: min(500px, 90vw);
+  width: min(520px, 90vw);
 }
 
 .settings-modal-shell--md {
-  width: min(600px, 90vw);
+  width: min(620px, 90vw);
+}
+
+.settings-modal-shell--lg {
+  width: min(720px, 90vw);
+}
+
+.settings-modal-shell--xl {
+  width: min(1200px, 90vw);
 }
 
 .settings-modal-shell__header {

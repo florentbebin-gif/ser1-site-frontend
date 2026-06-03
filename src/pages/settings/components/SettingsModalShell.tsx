@@ -12,7 +12,7 @@ export interface SettingsModalShellProps {
   beforeBody?: ReactNode;
   onClose?: () => void;
   closeLabel?: string;
-  size?: 'sm' | 'md' | 'lg';
+  size?: 'sm' | 'md' | 'lg' | 'xl';
   overlayClassName?: string;
   modalClassName?: string;
   headerClassName?: string;

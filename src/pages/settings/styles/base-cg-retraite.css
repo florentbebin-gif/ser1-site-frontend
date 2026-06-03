@@ -414,9 +414,9 @@
 }
 
 .base-cg-modal {
+  /* Largeur déléguée à SettingsModalShell size="lg" (canon §16d). */
   display: flex;
   flex-direction: column;
-  width: min(760px, calc(100vw - 40px));
   max-height: calc(100vh - 40px);
   overflow: hidden;
   border-radius: 8px;
@@ -472,10 +472,7 @@
   padding: 18px;
 }
 
-.base-cg-assistance-modal {
-  width: min(640px, calc(100vw - 40px));
-}
-
+/* Largeur déléguée à SettingsModalShell size="md" (canon §16d). */
 .base-cg-assistance-modal__body {
   grid-template-columns: 1fr;
 }
