@@ -197,8 +197,14 @@
   font-weight: 600;
 }
 
+/* Overlay imbriqué : pas de second scrim (le parent assombrit déjà la scène),
+   on empile juste au-dessus pour ne pas créer un effet « mode nuit ». */
 .ts-nested-modal-overlay {
   z-index: 1010;
+  background: transparent;
+  /* stylelint-disable-next-line property-no-vendor-prefix */
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
 }
 
 .ts-associate-modal-layout {
