@@ -235,6 +235,27 @@
   opacity: 0.45;
 }
 
+/*
+ * Panneau de section interne canonique.
+ * Source unique des fonds/bordures/rayons/paddings des sections d'une modale
+ * (pas de carte imbriquée divergente par feature). Les features consomment ces
+ * variables (ou la classe utilitaire) pour rester identiques.
+ */
+:root {
+  --sim-modal-panel-bg: color-mix(in srgb, var(--color-c7) 50%, var(--surface-card));
+  --sim-modal-panel-border: 1px solid var(--color-c8);
+  --sim-modal-panel-radius: var(--radius-lg);
+  --sim-modal-panel-padding: var(--space-4);
+}
+
+.sim-modal-section-panel {
+  background: var(--sim-modal-panel-bg);
+  border: var(--sim-modal-panel-border);
+  border-radius: var(--sim-modal-panel-radius);
+  padding: var(--sim-modal-panel-padding);
+  --sim-input-bg: var(--surface-card);
+}
+
 @media (max-width: 900px) {
   .sim-modal-overlay {
     padding: 10px;

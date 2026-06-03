@@ -72,6 +72,19 @@ export function DesignSystemModalPreview() {
         </article>
 
         <article className="settings-design-system__ui-card">
+          <h3>Panneau de section</h3>
+          <p className="settings-design-system__note">
+            Source unique `--sim-modal-panel-*` / `.sim-modal-section-panel` : même fond, bordure,
+            rayon et padding pour toutes les modales.
+          </p>
+          <div className="sim-modal-section-panel">
+            <p className="settings-design-system__note">
+              Groupe de champs ou résumé, sans carte décorative divergente.
+            </p>
+          </div>
+        </article>
+
+        <article className="settings-design-system__ui-card">
           <h3>Modale complète (lg)</h3>
           <p className="settings-design-system__note">
             Famille « nav latérale + formulaire » : shell partagé, nav gauche, footer avec

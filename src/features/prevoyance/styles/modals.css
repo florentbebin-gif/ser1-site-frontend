@@ -21,8 +21,11 @@
 }
 
 .prevoyance-contract-editor {
-  border-radius: 12px;
-  background: color-mix(in srgb, var(--color-c7) 42%, var(--surface-card));
+  /* Panneau de section canonique (src/styles/sim/modals.css). */
+  background: var(--sim-modal-panel-bg);
+  border: var(--sim-modal-panel-border);
+  border-radius: var(--sim-modal-panel-radius);
+  padding: var(--sim-modal-panel-padding);
   --sim-input-bg: var(--surface-card);
 }
 
