@@ -307,6 +307,15 @@ export function TresoSocieteSection({ inputs, onChange, onAssociateModalOpenerCh
           onClose={() => setCompanyModalOpen(false)}
           modalClassName="ts-company-modal sim-modal--lg"
           bodyClassName="ts-company-modal__body"
+          footer={
+            <button
+              type="button"
+              className="sim-modal-btn sim-modal-btn--primary"
+              onClick={() => setCompanyModalOpen(false)}
+            >
+              Fermer
+            </button>
+          }
         >
           <div className="ts-modal-panels">
             <nav className="ts-modal-tabs" aria-label="Rubriques de la société">

@@ -22,6 +22,11 @@ export function TresoCompanyFinancialsModal({
       overlayClassName="ts-nested-modal-overlay"
       modalClassName="sim-modal--lg"
       bodyClassName="ts-company-modal__body"
+      footer={
+        <button type="button" className="sim-modal-btn sim-modal-btn--primary" onClick={onClose}>
+          Fermer
+        </button>
+      }
     >
       <div className="ts-modal-grid">
         <SimFieldShell label="Capital social" className="ts-field" rowClassName="ts-field__row">
