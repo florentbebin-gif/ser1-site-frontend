@@ -134,29 +134,28 @@
   padding: 14px 18px 16px;
 }
 
-/* Contrôle segmenté : piste claire, segment actif en pastille blanche arrondie. */
+/* Onglets : trois repères alignés gauche / centre / droite sur un rail bas,
+   l'onglet actif marqué par un caret pointant vers le panneau. */
 .home-guide-tabs {
-  display: grid;
-  gap: 4px;
-  margin-bottom: 12px;
-  padding: 3px;
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-md);
-  background: color-mix(in srgb, var(--surface-muted) 78%, var(--surface-card));
-  grid-template-columns: repeat(3, 1fr);
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 14px;
+  border-bottom: 1px solid var(--border-subtle);
 }
 
 .home-guide-tab {
+  position: relative;
   min-height: 30px;
-  padding: 5px 8px;
+  padding: 4px 2px 9px;
   border: 0;
-  border-radius: var(--radius-sm);
   background: transparent;
   color: var(--text-secondary);
   cursor: pointer;
   font: inherit;
   font-size: var(--font-size-sm);
   font-weight: 500;
+  white-space: nowrap;
 }
 
 .home-guide-tab:hover:not(:disabled, .home-guide-tab--active) {
@@ -164,10 +163,22 @@
 }
 
 .home-guide-tab--active {
-  background: var(--surface-card);
-  box-shadow: 0 1px 3px color-mix(in srgb, var(--shadow-color) 10%, transparent);
-  color: var(--text-primary);
+  color: var(--action-primary);
   font-weight: 600;
+}
+
+/* Caret : petit triangle posé sur le rail, pointe vers le bas (le panneau). */
+.home-guide-tab--active::after {
+  content: '';
+  position: absolute;
+  bottom: -5px;
+  left: 50%;
+  width: 9px;
+  height: 9px;
+  background: var(--surface-card);
+  border-right: 1px solid var(--border-subtle);
+  border-bottom: 1px solid var(--border-subtle);
+  transform: translateX(-50%) rotate(45deg);
 }
 
 .home-guide-tab:disabled {
@@ -342,8 +353,11 @@
     padding-left: 14px;
   }
 
-  .home-guide-tabs,
   .home-guide-grid {
     grid-template-columns: 1fr;
+  }
+
+  .home-guide-tab {
+    font-size: var(--font-size-xs);
   }
 }
