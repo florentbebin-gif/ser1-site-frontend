@@ -338,6 +338,7 @@ export default function SituationFiscaleStep({
           title="Versements retraite"
           subtitle={`Aide de saisie ${yearLabel}`}
           onClose={() => setVersementsInfoOpen(false)}
+          modalClassName="sim-modal--lg"
           bodyClassName="sim-info-modal-content"
         >
           <p>

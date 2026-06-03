@@ -30,6 +30,7 @@ export function PerTransfertCurrentRentModal({
       title="Calcul de rente personnalisé"
       subtitle="Mode expert pour remplacer la rente indiquée sur le relevé"
       onClose={onClose}
+      modalClassName="sim-modal--lg"
       footer={
         <>
           <button type="button" className="sim-modal-btn sim-modal-btn--ghost" onClick={onClose}>

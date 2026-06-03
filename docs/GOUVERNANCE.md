@@ -753,9 +753,8 @@ Largeurs standardisées — via les classes canoniques de `src/styles/sim/modals
 - Dispositions : `sim-modal--xl` (1200px)
 
 Les modales `/sim/*` sont au canon. Restent à migrer (lot dédié) : les modales d'administration
-Settings (shell `SettingsModalShell`, ex. base CG retraite, référentiel contrat, prévoyance régimes)
-et la modale financière imbriquée `ts-company-financials-modal`. Une feature ne doit plus introduire
-de nouvelle `max-width` de modale en dur.
+Settings (shell `SettingsModalShell`, ex. base CG retraite, référentiel contrat, prévoyance
+régimes). Une feature ne doit plus introduire de nouvelle `max-width` de modale en dur.
 
 Structure modale (pattern canonique) :
 

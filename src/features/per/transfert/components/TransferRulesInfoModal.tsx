@@ -24,6 +24,7 @@ export function TransferRulesInfoModal({ onClose }: TransferRulesInfoModalProps)
       title="Règles de transfert vers un PER individuel"
       subtitle="Synthèse issue des règles L224-40 et des notices contractuelles à vérifier."
       onClose={onClose}
+      modalClassName="sim-modal--lg"
       bodyClassName="sim-info-modal-content"
       footer={
         <button type="button" className="sim-modal-btn sim-modal-btn--primary" onClick={onClose}>

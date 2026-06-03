@@ -247,6 +247,7 @@ export default function ModeStep({
         <SimModalShell
           title={DOCUMENT_INFO_TITLES[documentInfo]}
           onClose={() => setDocumentInfo(null)}
+          modalClassName="sim-modal--lg"
           bodyClassName="sim-info-modal-content"
         >
           <p>{documentInfoContent[documentInfo]}</p>

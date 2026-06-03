@@ -201,10 +201,6 @@
   z-index: 1010;
 }
 
-.ts-company-financials-modal {
-  width: min(720px, calc(100vw - 40px));
-}
-
 .ts-associate-modal-layout {
   display: grid;
   grid-template-columns: 150px minmax(0, 1fr);

@@ -30,6 +30,7 @@ export function PerTransfertAnnuitySettingsModal({
       title="Paramètres de rente du nouveau PER"
       subtitle="Par défaut : TGF05/TGH05 selon le sexe, taux technique à 0 %."
       onClose={onClose}
+      modalClassName="sim-modal--lg"
       footer={
         <>
           <button type="button" className="sim-modal-btn sim-modal-btn--ghost" onClick={onClose}>

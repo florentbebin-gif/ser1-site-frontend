@@ -463,6 +463,7 @@ export function PerIncomeTable({
           title="Revenus imposables"
           subtitle="Aide de saisie PER"
           onClose={() => setRevenueInfoOpen(false)}
+          modalClassName="sim-modal--lg"
           bodyClassName="sim-info-modal-content"
         >
           <p>

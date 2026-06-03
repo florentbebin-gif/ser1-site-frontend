@@ -6,6 +6,7 @@ export function RentRevaluationInfoModal({ onClose }: { onClose: () => void }) {
       title="Revalorisation d'une rente"
       subtitle="Pourquoi le taux technique compte"
       onClose={onClose}
+      modalClassName="sim-modal--lg"
       bodyClassName="sim-info-modal-content"
     >
       <p>
