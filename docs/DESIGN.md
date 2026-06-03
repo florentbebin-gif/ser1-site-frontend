@@ -149,8 +149,10 @@ qui échappent encore au contrat.
 - Labels : au-dessus du champ dans les simulateurs, courts, en sentence case.
 - Unites : ne pas les saisir dans le champ ; elles sont affichees par le composant.
 
-Utiliser `SimAmountInputEuro`, `SimAmountInputPercent`, `SimAmountInputNumeric`, `SimSelect` et les
-wrappers locaux qui les deleguent. Ne pas ajouter de `<input type="number">` brut dans `/sim/*`.
+Utiliser `SimAmountInputEuro`, `SimAmountInputPercent`, `SimAmountInputNumeric`, `SimSelect`,
+`SimTemporalField` (dates/mois, valeur ISO interne) et les wrappers locaux qui les deleguent. Ne pas
+ajouter de `<input type="number">`, `type="date"` ou `type="month"` brut dans `/sim/*` (gardes-fous
+`check:no-raw-number-input` et `check:no-raw-temporal-input`).
 
 ## Settings UI vs Simulator UI
 
@@ -181,12 +183,13 @@ Solides pour `/sim/*` :
 - `SimPageShell`, `SimActionButton`, `SimAmountInputEuro`, `SimAmountInputPercent`,
   `SimAmountInputNumeric`, `SimSelect`, `SimMetric`, `SimDelta`, `SimStatusBadge`,
   `SimCollapsibleTable`, `SimModalShell`, `SimModalSectionNav`, `SimEmptyState`,
-  `SimSkeleton*`, `SimTooltip`, `SimInfoButton`, `SimSegmentedControl`, `SimPageStepper`.
+  `SimSkeleton*`, `SimTooltip`, `SimInfoButton`, `SimSegmentedControl`, `SimTemporalField`,
+  `SimPageStepper`.
 
 Non canoniques ou a couvrir au besoin :
 
 - checkbox, switch, radio ;
-- textarea, date ;
+- textarea ;
 - alert/toast ;
 - drawer ;
 - tabs/accordion generiques.

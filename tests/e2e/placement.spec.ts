@@ -79,7 +79,10 @@ test.describe('Placement - smoke and key interactions', () => {
 
     await saisirAgeActuel(page);
     await page.getByTestId('placement-config-product-1').click();
-    await expect(page.getByTestId('placement-versements-modal')).toBeVisible();
+    const modal = page.getByTestId('placement-versements-modal');
+    await expect(modal).toBeVisible();
+    await expect(modal.locator('.vcm__footer')).toBeVisible();
+    await expect(modal.locator('.vcm__mobile-actions')).toBeHidden();
     await page.getByTestId('placement-versements-close').click();
     await expect(page.getByTestId('placement-versements-modal')).toHaveCount(0);
   });

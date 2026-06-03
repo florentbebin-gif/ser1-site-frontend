@@ -786,6 +786,10 @@ border-top: 1px solid var(--border-default);
 
 Boutons modale : utiliser les classes partagées de `src/styles/sim/buttons.css` (`sim-modal-btn--ghost`, `sim-modal-btn--primary`) via le footer de `SimModalShell`. Une feature ne recrée ces boutons que si elle documente l'écart.
 
+Actions mobiles : une modale n'affiche jamais deux piles d'actions en même temps (double footer). `SimMobileStickyActions` est réservé au mobile (≤ 560 px) ; sur desktop le footer du `SimModalShell` porte seul les actions et la pile sticky est masquée. Si une feature duplique les actions pour le mobile, elle masque le footer du shell sous le même point de rupture.
+
+Saisie temporelle en modale : utiliser `SimTemporalField` (granularité `day`/`month`, valeur ISO interne), jamais `<input type="date">` ou `type="month"` brut. Garde-fou : `check:no-raw-temporal-input`.
+
 **Statut** : baseline partagée.
 **Preuves** : `src/components/ui/sim/SimModalShell.tsx` · `src/styles/sim/modals.css` · `src/styles/sim/buttons.css`.
 

@@ -64,6 +64,12 @@
   text-align: left;
 }
 
+/* Champ temporel (SimTemporalField) : aligné à gauche, picker natif teinté thème. */
+.sim-field__control--temporal {
+  text-align: left;
+  accent-color: var(--action-primary);
+}
+
 .sim-field__control--error,
 .sim-field__select-trigger--error {
   border-bottom-color: var(--color-c1);
