@@ -26,19 +26,6 @@
     grid-template-columns: 1fr;
   }
 
-  .prevoyance-contract-modal__nav {
-    flex-direction: row;
-    overflow-x: auto;
-    padding-right: 0;
-    padding-bottom: 10px;
-    border-right: 0;
-    border-bottom: 1px solid color-mix(in srgb, var(--color-c8) 72%, var(--color-c7));
-  }
-
-  .prevoyance-contract-modal__nav-item {
-    flex: 0 0 auto;
-  }
-
   .prevoyance-period-row {
     grid-template-columns: 1fr;
   }

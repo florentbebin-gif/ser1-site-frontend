@@ -14,40 +14,7 @@
   min-height: 0;
 }
 
-.prevoyance-contract-modal__nav {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  min-width: 0;
-  padding-right: 12px;
-  border-right: 1px solid color-mix(in srgb, var(--color-c8) 72%, var(--color-c7));
-}
-
-.prevoyance-contract-modal__nav-item {
-  min-height: 32px;
-  border: 1px solid transparent;
-  border-radius: 8px;
-  background: transparent;
-  color: var(--color-c9);
-  cursor: pointer;
-  font: inherit;
-  font-size: 13px;
-  font-weight: 600;
-  padding: 0 10px;
-  text-align: left;
-}
-
-.prevoyance-contract-modal__nav-item:hover,
-.prevoyance-contract-modal__nav-item:focus-visible {
-  border-color: var(--color-c8);
-  color: var(--color-c1);
-}
-
-.prevoyance-contract-modal__nav-item.is-active {
-  border-color: color-mix(in srgb, var(--color-c3) 44%, var(--color-c8));
-  background: color-mix(in srgb, var(--surface-active) 55%, var(--color-c7));
-  color: var(--color-c1);
-}
+/* Nav de section : SimModalSectionNav (canon). */
 
 .prevoyance-contract-modal__panel {
   min-width: 0;

@@ -1,5 +1,10 @@
 import { useState } from 'react';
-import { SimActionButton, SimModalShell, SimSegmentedControl } from '@/components/ui/sim';
+import {
+  SimActionButton,
+  SimModalSectionNav,
+  SimModalShell,
+  SimSegmentedControl,
+} from '@/components/ui/sim';
 import {
   computeCollectiveAssietteBase,
   computeInvaliditePalierAmount,
@@ -286,23 +291,12 @@ export function ContractsBlock({
           }
         >
           <div className="prevoyance-contract-modal__layout">
-            <nav className="prevoyance-contract-modal__nav" aria-label="Garanties du contrat">
-              {editorSections.map((section) => (
-                <button
-                  key={section.id}
-                  type="button"
-                  className={
-                    activeEditorSection === section.id
-                      ? 'prevoyance-contract-modal__nav-item is-active'
-                      : 'prevoyance-contract-modal__nav-item'
-                  }
-                  aria-current={activeEditorSection === section.id ? 'step' : undefined}
-                  onClick={() => setActiveEditorSection(section.id)}
-                >
-                  {section.label}
-                </button>
-              ))}
-            </nav>
+            <SimModalSectionNav
+              sections={editorSections.map((section) => ({ id: section.id, label: section.label }))}
+              activeId={activeEditorSection}
+              ariaLabel="Garanties du contrat"
+              onChange={(id) => setActiveEditorSection(id as ContractEditorSection)}
+            />
             <div className="prevoyance-contract-modal__panel">
               {editingContract.kind === 'collectif' ? (
                 <CollectiveContractCard
