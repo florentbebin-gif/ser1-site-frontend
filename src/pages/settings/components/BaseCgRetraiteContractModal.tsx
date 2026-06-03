@@ -238,8 +238,28 @@ export function BaseCgRetraiteContractModal({
       headerClassName="base-cg-modal__header"
       footerClassName="base-cg-modal__footer"
       withBodyContainer={false}
-      beforeBody={
-        <div className="base-cg-modal__tabs" role="tablist" aria-label="Fiche contrat retraite">
+      footer={
+        <>
+          <button type="button" className="sim-modal-btn sim-modal-btn--ghost" onClick={onClose}>
+            Annuler
+          </button>
+          <button
+            type="button"
+            className="sim-modal-btn sim-modal-btn--primary"
+            onClick={() => onSave(normalizeBaseCgRetraiteContractDraft(draft))}
+          >
+            Enregistrer
+          </button>
+        </>
+      }
+    >
+      <div className="base-cg-modal__layout">
+        <div
+          className="base-cg-modal__tabs"
+          role="tablist"
+          aria-label="Fiche contrat retraite"
+          aria-orientation="vertical"
+        >
           {CONTRACT_MODAL_TABS.map((tab) => {
             const selected = activeTab === tab.key;
             return (
@@ -263,55 +283,40 @@ export function BaseCgRetraiteContractModal({
             );
           })}
         </div>
-      }
-      footer={
-        <>
-          <button type="button" onClick={onClose}>
-            Annuler
-          </button>
-          <button
-            type="button"
-            className="chip"
-            onClick={() => onSave(normalizeBaseCgRetraiteContractDraft(draft))}
-          >
-            Enregistrer
-          </button>
-        </>
-      }
-    >
-      <div
-        className="base-cg-modal__body"
-        role="tabpanel"
-        id={panelId}
-        aria-labelledby={getTabId(activeTab)}
-      >
-        {activeTab === 'identity' ? (
-          <BaseCgRetraiteIdentityTab draft={draft} onRootChange={setRoot} />
-        ) : null}
+        <div
+          className="base-cg-modal__body"
+          role="tabpanel"
+          id={panelId}
+          aria-labelledby={getTabId(activeTab)}
+        >
+          {activeTab === 'identity' ? (
+            <BaseCgRetraiteIdentityTab draft={draft} onRootChange={setRoot} />
+          ) : null}
 
-        {activeTab === 'epargne' ? (
-          <BaseCgRetraiteEpargneTab
-            draft={draft}
-            gestionFees={gestionFees}
-            onEpargneChange={setEpargne}
-          />
-        ) : null}
+          {activeTab === 'epargne' ? (
+            <BaseCgRetraiteEpargneTab
+              draft={draft}
+              gestionFees={gestionFees}
+              onEpargneChange={setEpargne}
+            />
+          ) : null}
 
-        {activeTab === 'liquidation' ? (
-          <BaseCgRetraiteLiquidationTab draft={draft} onLiquidationChange={setLiquidation} />
-        ) : null}
+          {activeTab === 'liquidation' ? (
+            <BaseCgRetraiteLiquidationTab draft={draft} onLiquidationChange={setLiquidation} />
+          ) : null}
 
-        {activeTab === 'documents' ? (
-          <BaseCgRetraiteDocumentsTab
-            documents={draft.documents ?? []}
-            uploadError={uploadError}
-            uploadingDocId={uploadingDocId}
-            onAdd={addDocument}
-            onRemove={removeDocument}
-            onChange={setDocument}
-            onUpload={(id, file) => void handleDocumentUpload(id, file)}
-          />
-        ) : null}
+          {activeTab === 'documents' ? (
+            <BaseCgRetraiteDocumentsTab
+              documents={draft.documents ?? []}
+              uploadError={uploadError}
+              uploadingDocId={uploadingDocId}
+              onAdd={addDocument}
+              onRemove={removeDocument}
+              onChange={setDocument}
+              onUpload={(id, file) => void handleDocumentUpload(id, file)}
+            />
+          ) : null}
+        </div>
       </div>
     </SettingsModalShell>
   );
