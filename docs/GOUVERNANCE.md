@@ -215,7 +215,7 @@ Cette checklist est le contrat minimum pour créer, modifier ou auditer une page
 
 - La colonne droite contient la synthèse, pas de formulaire principal.
 - Si les prérequis de calcul ne sont pas renseignés, la colonne droite affiche un état vide utile via le pattern partagé `.sim-sidebar-empty-state`, plutôt que des KPI à zéro ou une colonne vide.
-- Un KPI principal : label 11px, valeur 26-30px, `font-variant-numeric: tabular-nums`, unité explicite (`/an`, `%`, `€`) et cohérente avec les tableaux/export.
+- Un KPI principal : label 11px, valeur `--font-size-3xl` (22px max), `font-variant-numeric: tabular-nums`, unité explicite (`/an`, `%`, `€`) et cohérente avec les tableaux/export.
 - Les KPI secondaires sont courts, en grille 2x2 ou stack dense.
 - Les alertes métier ou "points d'attention" doivent être non verbeuses : libellé fort + détail d'une ligne maximum, avec état neutre si rien n'est détecté.
 - Les donuts, barres segmentées et graphiques visuels restent dans la colonne droite. Taille donut cible : 56-64px desktop / 48px mobile, avec `aria-label` et légende compacte.
@@ -708,7 +708,7 @@ Cette section comble les trous des §1-§15. Elle ne les duplique pas. Chaque r�
 │ GAUCHE 1.85fr           │ DROITE 1fr (sticky top: 80px)        │
 │ .premium-card--guide    │ carte hero : border-left 3px C3      │
 │ border-left: 3px C3     │ gradient fond C4 18%→transparent     │
-│ Saisie / formulaires    │ KPI principal 26-30px/700/C1         │
+│ Saisie / formulaires    │ KPI principal --font-size-3xl/700/C1 │
 │ Inputs off-white (§5)   │ KPI secondaires 2×2, 15px/600        │
 │                         │ Graphiques (donut, barre)            │
 │                         │ carte secondaire border-left 3px C3  │
@@ -733,14 +733,14 @@ Cette section comble les trous des §1-§15. Elle ne les duplique pas. Chaque r�
 
 #### 16c) Placement des graphiques et KPI visuels
 
-| Règle                                             | Détail                                                                           | Statut            | Preuves                                                                                                                                                                                                             |
-| ------------------------------------------------- | -------------------------------------------------------------------------------- | ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Graphiques uniquement dans la colonne droite      | Donut, pie, barre segmentée → carte hero de synthèse                             | baseline partagée | `src/features/ir/styles/summary.css` `.ir-summary-donut`, `src/features/succession/styles/summary.css` `.sc-synth-donut`, `src/features/credit/styles/summary.css` `.cv2-summary__donut-wrap`                       |
-| Jamais de graphique dans la zone de saisie gauche | —                                                                                | baseline partagée | aucun contre-exemple sur les 4 simulateurs baseline                                                                                                                                                                 |
-| KPI principal                                     | label 11px/500/C9 · valeur 26-30px/700/C1 · `font-variant-numeric: tabular-nums` | baseline partagée | `src/features/ir/styles/summary.css` `.ir-summary-total-hero__value`, `src/features/credit/styles/summary.css` `.cv2-summary__kpi-main-value`, `src/features/succession/styles/summary.css` `.sc-synth-hero__value` |
-| KPI secondaires 2×2                               | label 10-11px/uppercase/C9 · valeur 15px/600/C1                                  | baseline partagée | `src/features/ir/styles/summary.css` `.ir-tmi-row`, `src/features/succession/styles/summary.css` `.sc-synth-kpi`                                                                                                    |
-| Taille donut                                      | 56-64px desktop / 48px mobile                                                    | baseline partagée | `src/features/ir/styles/summary.css` `.ir-summary-donut`, `src/features/credit/styles/summary.css` `.cv2-summary__donut-wrap`                                                                                       |
-| Barre segmentée TMI                               | `grid: repeat(5,1fr)`, radius 6px, inactif C8 / actif C4+C1                      | recette feature   | `src/features/ir/styles/summary.css` `.ir-tmi-bar` uniquement                                                                                                                                                       |
+| Règle                                             | Détail                                                                                                | Statut            | Preuves                                                                                                                                                                                                             |
+| ------------------------------------------------- | ----------------------------------------------------------------------------------------------------- | ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Graphiques uniquement dans la colonne droite      | Donut, pie, barre segmentée → carte hero de synthèse                                                  | baseline partagée | `src/features/ir/styles/summary.css` `.ir-summary-donut`, `src/features/succession/styles/summary.css` `.sc-synth-donut`, `src/features/credit/styles/summary.css` `.cv2-summary__donut-wrap`                       |
+| Jamais de graphique dans la zone de saisie gauche | —                                                                                                     | baseline partagée | aucun contre-exemple sur les 4 simulateurs baseline                                                                                                                                                                 |
+| KPI principal                                     | label 11px/500/C9 · valeur `--font-size-3xl` (22px max)/700/C1 · `font-variant-numeric: tabular-nums` | baseline partagée | `src/features/ir/styles/summary.css` `.ir-summary-total-hero__value`, `src/features/credit/styles/summary.css` `.cv2-summary__kpi-main-value`, `src/features/succession/styles/summary.css` `.sc-synth-hero__value` |
+| KPI secondaires 2×2                               | label 10-11px/uppercase/C9 · valeur 15px/600/C1                                                       | baseline partagée | `src/features/ir/styles/summary.css` `.ir-tmi-row`, `src/features/succession/styles/summary.css` `.sc-synth-kpi`                                                                                                    |
+| Taille donut                                      | 56-64px desktop / 48px mobile                                                                         | baseline partagée | `src/features/ir/styles/summary.css` `.ir-summary-donut`, `src/features/credit/styles/summary.css` `.cv2-summary__donut-wrap`                                                                                       |
+| Barre segmentée TMI                               | `grid: repeat(5,1fr)`, radius 6px, inactif C8 / actif C4+C1                                           | recette feature   | `src/features/ir/styles/summary.css` `.ir-tmi-bar` uniquement                                                                                                                                                       |
 
 #### 16d) Critères d'usage des modales
 

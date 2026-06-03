@@ -27,7 +27,7 @@ test.describe('Placement - smoke and key interactions', () => {
     await expect(page.getByTestId('placement-page')).toBeVisible();
     await expect(page.getByTestId('placement-mode-btn')).toBeVisible();
     await expect(page.getByRole('heading', { name: 'Placement' })).toBeVisible();
-    await expect(page.getByTestId('placement-hypotheses-toggle')).toBeVisible();
+    await expect(page.getByTestId('placement-hypotheses-toggle')).toHaveCount(0);
 
     await saisirAgeActuel(page);
     await expect(page.getByRole('heading', { name: 'Synthèse en attente' })).toBeVisible();
