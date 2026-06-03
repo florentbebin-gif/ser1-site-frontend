@@ -49,7 +49,7 @@ const LOCAL_MODAL_NAV_SELECTOR =
   /(?:__nav(?:[\s.{:#]|$)|__tabs(?:[\s.{:#]|$)|-modal-nav(?:__[\w-]+)?(?:[\s.{:#]|$))/;
 const NAV_VISUAL_DECL =
   /\b(?:background(?:-color)?|border(?:-[\w-]+)?|box-shadow|color|padding)\s*:/;
-const BASE_CG_MODAL_FIELD_SELECTOR = /\.base-cg-modal\s+(?:input|select|textarea)(?:\b|[\[.:])/;
+const BASE_CG_MODAL_FIELD_SELECTOR = /\.base-cg-modal\s+(?:input|select|textarea)(?:\b|\[|[.:])/;
 const SIM_FIELD_SELECTOR = /\.sim-field__(?:control|select-trigger)(?:\b|[\s[.:#])/;
 const FIELD_BACKGROUND_DECL = /\bbackground(?:-color)?\s*:/;
 
