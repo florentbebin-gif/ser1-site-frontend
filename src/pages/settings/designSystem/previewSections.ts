@@ -2,6 +2,7 @@ import type { ComponentType } from 'react';
 import { DesignSystemDataPreview } from './DataPreview';
 import { DesignSystemInputPreview } from './InputPreview';
 import { DesignSystemMobilePreview } from './MobilePreview';
+import { DesignSystemModalPreview } from './ModalPreview';
 import { DesignSystemModernityPreview } from './ModernityPreview';
 import { DesignSystemRailPreview } from './RailPreview';
 import { DesignSystemUiPreview } from './UiPreview';
@@ -17,6 +18,11 @@ export const previewSections: Array<{
     Preview: DesignSystemInputPreview,
   },
   { title: 'Primitives UI', Preview: DesignSystemUiPreview },
+  {
+    title: 'Modales',
+    note: 'Anatomie canonique unique (largeurs, nav latérale, footer danger, close rond) partagée par /sim/* et Settings. Référence vivante de GOUVERNANCE §16d.',
+    Preview: DesignSystemModalPreview,
+  },
   {
     title: 'Rail & bascule de mode',
     note: 'Repère de parcours discret et switch Mode expert : surfaces partagées à toutes les pages simulateur.',

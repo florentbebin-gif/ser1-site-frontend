@@ -80,6 +80,10 @@ Le LLM doit optimiser leur utilisation : déléguer uniquement des tâches indé
   dates/mois via `SimTemporalField`. Garde-fous : `npm run check:no-raw-number-input` et
   `npm run check:no-raw-temporal-input` (allowlist des pages restant à migrer documentée dans le
   script, à vider à terme).
+- Les largeurs de modale passent **uniquement** par les classes canoniques `sim-modal--sm/md/lg/xl`
+  (`src/styles/sim/modals.css`) ou le `size` de `SettingsModalShell`. Aucune `max-width` / `width` de
+  modale en dur sur un sélecteur racine de feature. Garde-fou : `npm run check:modal-canon` (seule
+  source de largeurs de shell autorisée : `src/pages/settings/styles/modals.css`).
 - Pour ajouter un simulateur actif, utiliser le scaffold `npm run scaffold:sim -- --id <slug> --label "<Libellé>"`,
   puis vérifier `npm run check` et `npm run test:e2e:auth-pages`. Le scaffold doit produire
   une vraie page `SimPageShell`, pas un stub qui crashe au runtime.

@@ -755,9 +755,20 @@ Largeurs standardisées — via les classes canoniques de `src/styles/sim/modals
   à droite n'est pas premium. En `/sim/*`, `xl` n'est utilisé que par Versements (table ponctuels),
   Palier de revenus (graphe) et Donation-partage (grille de lots).
 
-Les modales `/sim/*` sont au canon. Restent à migrer (lot dédié) : les modales d'administration
-Settings (shell `SettingsModalShell`, ex. base CG retraite, référentiel contrat, prévoyance
-régimes). Une feature ne doit plus introduire de nouvelle `max-width` de modale en dur.
+Les modales `/sim/*` **et** d'administration Settings sont au canon : le shell `SettingsModalShell`
+expose `size="sm|md|lg|xl"` mappé sur les mêmes paliers (520/620/720/1200, défaut `lg`). Une feature
+ne déclare **jamais** de `max-width` / `width` de modale en dur sur un sélecteur racine
+(`.xxx-modal`, `.xxx-modal-shell`) : seuls les sous-éléments (`__body`, etc.) sont libres. Garde-fou :
+`check:modal-canon` (la seule source autorisée de largeurs de shell est
+`src/pages/settings/styles/modals.css`).
+
+Règle de largeur **par typologie** :
+
+| Typologie de modale                                    | Bucket        | Exemples                                                              |
+| ------------------------------------------------------ | ------------- | --------------------------------------------------------------------- |
+| Saisie simple (≤ 6 champs, sans nav)                   | `sm`/`md`     | Frais généraux, qualification d'actif                                 |
+| Nav latérale + formulaire                              | `lg` (défaut) | Contrat prévoyance, associé/société Tréso, contrat Base CG, stratégie |
+| Contenu réellement large (table, graphe, grille dense) | `xl`          | Versements, Palier de revenus, Donation-partage                       |
 
 Structure modale (pattern canonique) :
 
