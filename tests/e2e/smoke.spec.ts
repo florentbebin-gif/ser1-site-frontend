@@ -55,6 +55,9 @@ test.describe('Smoke Tests - Surfaces stables', () => {
       const foyer = document.querySelector('[data-testid="home-space-foyer"]');
       const modeLabel = document.querySelector('.mode-toggle-label');
       const actionTitle = document.querySelector('.home-action__title');
+      const scanActionTitle = document.querySelector(
+        '[data-testid="home-primary-action-scan"] .home-action__title',
+      );
       const actionSubtitle = document.querySelector('.home-action__subtitle');
       const spaceTitle = document.querySelector('.home-guide-space__name');
       const mainBox = main?.getBoundingClientRect();
@@ -69,6 +72,7 @@ test.describe('Smoke Tests - Surfaces stables', () => {
         foyerWidth: foyerBox?.width ?? 0,
         modeLabelFontSize: fontSize(modeLabel),
         actionTitleFontSize: fontSize(actionTitle),
+        scanActionTitleFontSize: fontSize(scanActionTitle),
         actionSubtitleFontSize: fontSize(actionSubtitle),
         spaceTitleFontSize: fontSize(spaceTitle),
         hasHorizontalOverflow: document.body.scrollWidth > document.documentElement.clientWidth,
@@ -85,8 +89,9 @@ test.describe('Smoke Tests - Surfaces stables', () => {
     expect(metrics.actionTitleFontSize).toBeGreaterThanOrEqual(14);
     expect(metrics.actionTitleFontSize).toBeLessThanOrEqual(15);
     expect(metrics.actionSubtitleFontSize).toBeLessThanOrEqual(10);
-    expect(metrics.spaceTitleFontSize).toBeGreaterThanOrEqual(14);
-    expect(metrics.spaceTitleFontSize).toBeLessThanOrEqual(15);
+    // Les noms d'espaces partagent la taille du titre « Scan documentaire » (action secondaire).
+    expect(metrics.spaceTitleFontSize).toBeGreaterThan(0);
+    expect(metrics.spaceTitleFontSize).toBe(metrics.scanActionTitleFontSize);
     expect(metrics.hasHorizontalOverflow).toBe(false);
   });
 

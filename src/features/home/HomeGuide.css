@@ -107,7 +107,8 @@
 
 .home-guide-space__name {
   color: var(--text-primary);
-  font-size: var(--font-size-xl);
+  /* Même taille que le titre d'action secondaire « Scan documentaire » (lg). */
+  font-size: var(--font-size-lg);
   font-weight: 600;
   line-height: 1.2;
 }
