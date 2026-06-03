@@ -40,6 +40,8 @@ export { SimSparkline } from './SimSparkline';
 export type { SimSparklineProps } from './SimSparkline';
 export { SimStatusBadge } from './SimStatusBadge';
 export type { SimStatusBadgeProps, SimStatusBadgeVariant } from './SimStatusBadge';
+export { SimTemporalField } from './SimTemporalField';
+export type { SimTemporalFieldProps, SimTemporalGranularity } from './SimTemporalField';
 export { SimTooltip } from './SimTooltip';
 export type { SimTooltipProps } from './SimTooltip';
 export { SimViewSynthesisCTA } from './SimViewSynthesisCTA';

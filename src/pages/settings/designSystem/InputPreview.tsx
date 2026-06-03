@@ -4,6 +4,7 @@ import {
   SimAmountInputNumeric,
   SimAmountInputPercent,
   SimSelect,
+  SimTemporalField,
 } from '@/components/ui/sim';
 import {
   primitiveStates,
@@ -39,6 +40,8 @@ export function DesignSystemInputPreview() {
   const [taux, setTaux] = useState(4.5);
   const [parts, setParts] = useState(2.5);
   const [profil, setProfil] = useState('equilibre');
+  const [dateActe, setDateActe] = useState('');
+  const [moisEffet, setMoisEffet] = useState('');
 
   return (
     <div className="settings-design-system__stack">
@@ -65,6 +68,23 @@ export function DesignSystemInputPreview() {
             onChange={setProfil}
             options={selectOptions}
             ariaLabel="Profil investisseur"
+          />
+        </div>
+        <div className="settings-design-system__field-demo">
+          <span className="sim-field__label">Date (jour)</span>
+          <SimTemporalField
+            value={dateActe}
+            onChange={setDateActe}
+            ariaLabel="Date de démonstration"
+          />
+        </div>
+        <div className="settings-design-system__field-demo">
+          <span className="sim-field__label">Mois</span>
+          <SimTemporalField
+            granularity="month"
+            value={moisEffet}
+            onChange={setMoisEffet}
+            ariaLabel="Mois de démonstration"
           />
         </div>
       </div>

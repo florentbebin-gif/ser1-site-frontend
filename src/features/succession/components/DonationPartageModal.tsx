@@ -1,5 +1,10 @@
 import { useMemo } from 'react';
-import { SimActionButton, SimAmountInputEuro, SimModalShell } from '@/components/ui/sim';
+import {
+  SimActionButton,
+  SimAmountInputEuro,
+  SimModalShell,
+  SimTemporalField,
+} from '@/components/ui/sim';
 import type {
   SituationMatrimoniale,
   SuccessionDonationPartageAct,
@@ -178,12 +183,11 @@ export default function DonationPartageModal({
       <div className="sc-donation-partage-grid">
         <div className="sc-field">
           <label htmlFor="sc-donation-partage-date">Date de l’acte</label>
-          <input
+          <SimTemporalField
             id="sc-donation-partage-date"
-            type="month"
-            className="sc-input-month"
+            granularity="month"
             value={draft.date ?? ''}
-            onChange={(e) => updateAct('date', e.target.value || undefined)}
+            onChange={(next) => updateAct('date', next || undefined)}
           />
         </div>
         <div className="sc-field">

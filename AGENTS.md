@@ -76,6 +76,10 @@ Le LLM doit optimiser leur utilisation : déléguer uniquement des tâches indé
   passent par le registre `src/routes/simRouteContracts.ts` ; ne pas recréer de liste parallèle.
   Le garde-fou `npm run check:e2e-auth-pages-coverage` échoue si une route privée déclarée,
   une sous-page settings ou un simulateur actif est désynchronisé.
+- Les saisies en `/sim/*` passent par les primitives `Sim*` : montants via `SimAmountInput*`,
+  dates/mois via `SimTemporalField`. Garde-fous : `npm run check:no-raw-number-input` et
+  `npm run check:no-raw-temporal-input` (allowlist des pages restant à migrer documentée dans le
+  script, à vider à terme).
 - Pour ajouter un simulateur actif, utiliser le scaffold `npm run scaffold:sim -- --id <slug> --label "<Libellé>"`,
   puis vérifier `npm run check` et `npm run test:e2e:auth-pages`. Le scaffold doit produire
   une vraie page `SimPageShell`, pas un stub qui crashe au runtime.

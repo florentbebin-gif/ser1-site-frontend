@@ -1,4 +1,12 @@
-﻿@media (max-width: 560px) {
+﻿/* Desktop : les actions sticky « mobile » ne doivent pas s'afficher (le footer du
+   shell porte déjà Annuler/Valider). Évite le double footer signalé. */
+@media (min-width: 561px) {
+  .sim-modal .vcm__mobile-actions {
+    display: none;
+  }
+}
+
+@media (max-width: 560px) {
   .vcm-overlay {
     padding: 12px;
   }
@@ -22,7 +30,7 @@
     display: none;
   }
 
-  .vcm__mobile-actions {
+  .sim-modal .vcm__mobile-actions {
     display: flex;
   }
 

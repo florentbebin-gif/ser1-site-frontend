@@ -13,6 +13,8 @@ describe('DesignSystemInputPreview', () => {
     expect(screen.getByLabelText('Taux décimal')).toBeInTheDocument();
     expect(screen.getByLabelText('Nombre libre')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Profil investisseur' })).toBeInTheDocument();
+    expect(screen.getByLabelText('Date de démonstration')).toBeInTheDocument();
+    expect(screen.getByLabelText('Mois de démonstration')).toBeInTheDocument();
     expect(screen.getByText('États inputs')).toBeInTheDocument();
     expect(screen.getByLabelText('Montant état repos')).toBeInTheDocument();
     expect(screen.getByLabelText('Montant état désactivé')).toBeDisabled();
