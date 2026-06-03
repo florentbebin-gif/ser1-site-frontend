@@ -81,7 +81,7 @@ export function PerMadelinInfoModal({
       title="Détail du calcul Madelin 154 bis"
       subtitle="Assiettes de calcul et enveloppes disponibles"
       onClose={onClose}
-      modalClassName="per-madelin-modal"
+      modalClassName="per-madelin-modal sim-modal--lg"
       bodyClassName="sim-info-modal-content per-madelin-modal__body"
     >
       <p className="sim-info-modal-content__lead">

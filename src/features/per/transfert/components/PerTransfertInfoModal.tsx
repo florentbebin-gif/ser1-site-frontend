@@ -69,6 +69,7 @@ export function PerTransfertInfoModal({ kind, onClose }: PerTransfertInfoModalPr
       title={content.title}
       subtitle={content.subtitle}
       onClose={onClose}
+      modalClassName="sim-modal--lg"
       bodyClassName="sim-info-modal-content"
       footer={
         <button type="button" className="sim-modal-btn sim-modal-btn--primary" onClick={onClose}>

@@ -7,6 +7,7 @@ export function PerTransfertFraisInfoModal({ onClose }: { onClose: () => void })
       title="Frais de transfert sortant"
       subtitle="Règle à contrôler selon la famille du contrat"
       onClose={onClose}
+      modalClassName="sim-modal--lg"
       bodyClassName="sim-info-modal-content"
     >
       <ul className="sim-info-modal-content__list">

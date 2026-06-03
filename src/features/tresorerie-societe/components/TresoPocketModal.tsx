@@ -54,7 +54,7 @@ export function TresoPocketModal({
       title="Paramétrer la poche"
       subtitle={getAllocationPocketLabel(pocket)}
       onClose={onClose}
-      modalClassName="ts-company-modal"
+      modalClassName="ts-company-modal sim-modal--xl"
       bodyClassName="ts-company-modal__body"
       footer={
         <>

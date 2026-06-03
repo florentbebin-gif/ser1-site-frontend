@@ -41,7 +41,7 @@
 }
 
 .prevoyance-frais-modal {
-  width: min(900px, calc(100vw - 32px));
+  /* Largeur déléguée à sim-modal--lg (cf. GOUVERNANCE §16d). */
   --sim-input-bg: var(--surface-card);
 }
 

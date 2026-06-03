@@ -138,7 +138,7 @@
 }
 
 .ts-company-modal {
-  width: min(980px, calc(100vw - 40px));
+  /* Largeur déléguée à sim-modal--xl (cf. GOUVERNANCE §16d). */
   max-height: calc(100vh - 40px);
 }
 
@@ -199,10 +199,6 @@
 
 .ts-nested-modal-overlay {
   z-index: 1010;
-}
-
-.ts-company-financials-modal {
-  width: min(720px, calc(100vw - 40px));
 }
 
 .ts-associate-modal-layout {

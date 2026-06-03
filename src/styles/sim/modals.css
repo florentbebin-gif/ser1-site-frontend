@@ -27,6 +27,25 @@
     0 0 0 1px color-mix(in srgb, var(--shadow-color) 5%, transparent);
 }
 
+/* Largeurs canoniques (cf. GOUVERNANCE §16d). Une modale choisit un bucket via
+   modalClassName ; ne pas redéfinir de max-width ad hoc par feature. Spécificité
+   composée pour primer sur une éventuelle largeur de base d'une classe feature. */
+.sim-modal.sim-modal--sm {
+  max-width: 520px;
+}
+
+.sim-modal.sim-modal--md {
+  max-width: 620px;
+}
+
+.sim-modal.sim-modal--lg {
+  max-width: 720px;
+}
+
+.sim-modal.sim-modal--xl {
+  max-width: 1200px;
+}
+
 .sim-modal__header,
 .sim-modal__footer {
   background: var(--surface-card);
@@ -221,7 +240,12 @@
     padding: 10px;
   }
 
-  .sim-modal {
+  /* Les largeurs canoniques sont neutralisées ≤900px (les modales remplissent). */
+  .sim-modal,
+  .sim-modal.sim-modal--sm,
+  .sim-modal.sim-modal--md,
+  .sim-modal.sim-modal--lg,
+  .sim-modal.sim-modal--xl {
     max-width: none;
   }
 

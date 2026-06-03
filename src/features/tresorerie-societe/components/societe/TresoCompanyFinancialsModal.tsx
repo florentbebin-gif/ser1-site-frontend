@@ -20,7 +20,7 @@ export function TresoCompanyFinancialsModal({
       subtitle="Capital, primes, réserves et option IS"
       onClose={onClose}
       overlayClassName="ts-nested-modal-overlay"
-      modalClassName="ts-company-financials-modal"
+      modalClassName="sim-modal--lg"
       bodyClassName="ts-company-modal__body"
     >
       <div className="ts-modal-grid">

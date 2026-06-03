@@ -209,10 +209,7 @@
   background: color-mix(in srgb, var(--color-c3) 8%, var(--surface-card));
 }
 
-.sc-donation-partage-modal {
-  max-width: 980px;
-}
-
+/* Largeur déléguée à sim-modal--xl (cf. GOUVERNANCE §16d). */
 .sc-donation-partage-modal__body {
   display: flex;
   flex-direction: column;

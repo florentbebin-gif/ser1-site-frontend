@@ -24,6 +24,7 @@ export function PerTransfertPrefonPocketSettingsModal({
       title={`Paramètres de la poche ${index + 1}`}
       subtitle="Réversion, revalorisation de la valeur de service et options capital propres au compartiment Préfon."
       onClose={onClose}
+      modalClassName="sim-modal--lg"
       footer={
         <button type="button" className="sim-modal-btn sim-modal-btn--primary" onClick={onClose}>
           Appliquer

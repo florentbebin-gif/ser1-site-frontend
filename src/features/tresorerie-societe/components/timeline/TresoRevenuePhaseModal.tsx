@@ -190,7 +190,7 @@ export function TresoRevenuePhaseModal({
       title="Paramétrer le palier"
       subtitle={draft.label?.trim() || 'Parcours de revenus'}
       onClose={onClose}
-      modalClassName="ts-company-modal ts-phase-modal"
+      modalClassName="ts-company-modal ts-phase-modal sim-modal--xl"
       bodyClassName="ts-company-modal__body"
       footerClassName="ts-phase-modal__footer"
       footer={

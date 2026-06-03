@@ -128,7 +128,7 @@ export function ArretPeriodsModal({ paliers, onClose, onApply }: ArretPeriodsMod
       title="Découper l’arrêt de travail"
       subtitle="Les périodes doivent couvrir toute la durée de 0 à 1095 jours."
       onClose={onClose}
-      modalClassName="prevoyance-periods-modal"
+      modalClassName="prevoyance-periods-modal sim-modal--lg"
       footer={
         <>
           {error ? <span className="prevoyance-modal-error">{error}</span> : <span />}

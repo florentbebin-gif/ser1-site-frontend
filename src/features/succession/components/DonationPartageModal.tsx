@@ -156,7 +156,7 @@ export default function DonationPartageModal({
     <SimModalShell
       title="Donation-partage"
       subtitle="Lots par enfant et soultes entre copartagés"
-      modalClassName="sc-member-modal--wide sc-donation-partage-modal"
+      modalClassName="sc-donation-partage-modal sim-modal--xl"
       bodyClassName="sc-donation-partage-modal__body"
       onClose={onClose}
       footer={

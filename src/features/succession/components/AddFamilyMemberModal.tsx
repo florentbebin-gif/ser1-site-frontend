@@ -29,7 +29,7 @@ export default function AddFamilyMemberModal({
       onClose={onClose}
       closeLabel="Fermer"
       overlayClassName="sc-member-modal-overlay"
-      modalClassName="sc-member-modal sc-member-modal--family"
+      modalClassName="sc-member-modal sc-member-modal--family sim-modal--md"
       headerClassName="sc-member-modal__header"
       titleClassName="sc-member-modal__title"
       bodyClassName="sc-member-modal__body"
