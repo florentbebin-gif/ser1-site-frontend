@@ -244,9 +244,6 @@
   transform: rotate(180deg);
 }
 
-/* Grille de cartes : plate (Comprendre / Protéger) ou dans un accordéon (Piloter).
-   auto-fill (et non auto-fit) garde des colonnes fixes : une carte isolée reste
-   compacte au lieu de s'étirer sur toute la largeur. */
 /* Flex wrap (et non grid auto-fill) : l'alignement porte sur les cartes réelles,
    sans pistes vides qui neutraliseraient justify-content. */
 .home-guide-grid {
