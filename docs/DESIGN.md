@@ -217,6 +217,19 @@ Regle d'accessibilite : ne jamais convertir une navigation (`tablist`) en `radio
 Voir l'inventaire et les exceptions dans `GOUVERNANCE.md`. Demo runtime : `/settings/design-system`
 (« Primitives UI » → Controle segmente).
 
+## Modales
+
+Toute modale suit l'**anatomie canonique** (header, fermeture ronde, nav de section, corps, footer,
+largeurs) decrite dans `GOUVERNANCE.md` §16d. Points non negociables :
+
+- Shell : `SimModalShell` (/sim) ou `SettingsModalShell` (admin), meme anatomie visuelle.
+- Nav de sections (≥ 2 rubriques) : **uniquement `SimModalSectionNav`** (laterale gauche, actif gris).
+  Interdit : nav maison (`*-modal-nav`, `*-modal-tabs`) ou onglets en haut sur desktop.
+- Footer toujours present : `Annuler` (ghost) + `Valider`/`Enregistrer` (primary) ; destructif a gauche
+  (`sim-modal-btn--danger`). Pas de footer a un seul bouton ambigu (`Terminer`).
+- Largeurs : classes canoniques (`--sm/md/lg/xl`), `--lg` par defaut, `--xl` contenu large.
+- Champs : primitives `Sim*` (dont `SimTemporalField` pour dates/mois).
+
 ## Accessibilite
 
 - Focus visible sur tout controle interactif avec `--focus-ring`.

@@ -749,8 +749,11 @@ Largeurs standardisées — via les classes canoniques de `src/styles/sim/modals
 
 - Standard : `sim-modal--sm` (520px)
 - Famille/élargi : `sim-modal--md` (620px)
-- Large : `sim-modal--lg` (720px)
-- Dispositions : `sim-modal--xl` (1200px)
+- Large : `sim-modal--lg` (720px) — défaut des modales à nav latérale + formulaire
+- Contenu large : `sim-modal--xl` (1200px) — réservé aux modales à **contenu réellement large**
+  (table, graphe, grille multi-colonnes). Ne pas mettre un formulaire étroit en `xl` : la zone vide
+  à droite n'est pas premium. En `/sim/*`, `xl` n'est utilisé que par Versements (table ponctuels),
+  Palier de revenus (graphe) et Donation-partage (grille de lots).
 
 Les modales `/sim/*` sont au canon. Restent à migrer (lot dédié) : les modales d'administration
 Settings (shell `SettingsModalShell`, ex. base CG retraite, référentiel contrat, prévoyance
@@ -794,6 +797,17 @@ Boutons modale : utiliser les classes partagées de `src/styles/sim/buttons.css`
 Actions mobiles : une modale n'affiche jamais deux piles d'actions en même temps (double footer). `SimMobileStickyActions` est réservé au mobile (≤ 560 px) ; sur desktop le footer du `SimModalShell` porte seul les actions et la pile sticky est masquée. Si une feature duplique les actions pour le mobile, elle masque le footer du shell sous le même point de rupture.
 
 Saisie temporelle en modale : utiliser `SimTemporalField` (granularité `day`/`month`, valeur ISO interne), jamais `<input type="date">` ou `type="month"` brut. Garde-fou : `check:no-raw-temporal-input`.
+
+**Anatomie canonique de modale** — toute modale, nouvelle ou refondue, s'y conforme (vérifié en revue). C'est la référence pour que toutes les modales soient identiques :
+
+1. **Shell** : `/sim/*` → `SimModalShell` ; admin Settings → `SettingsModalShell`. Les deux doivent rendre la **même anatomie visuelle** : header, bouton de fermeture rond `×` en haut à droite, footer, et largeurs canoniques §16d.
+2. **Header** : titre obligatoire ; sous-titre court optionnel ; **icône** : pas d'icône par défaut (réservée à une modale « outil » explicitement assumée, ex. paramétrage). Fermeture = `sim-modal__close` (rond `×`), jamais une croix nue ad hoc.
+3. **Navigation de sections** : dès qu'une modale a ≥ 2 rubriques, utiliser **uniquement `SimModalSectionNav`** — nav **latérale gauche** sur desktop, segments en haut sur mobile, actif = fond `--surface-active` + bord. **Interdits** : nav de section maison (`*-modal-nav`, `*-modal-tabs`, `ts-*-modal-nav`, `base-cg-modal__tabs`) et onglets en haut sur desktop. Une rubrique unique = pas de nav.
+4. **Corps** : en-tête de section optionnel (titre + méta courte) ; **pas de carte imbriquée** (les sections sont des bandes, pas des cards dans la modale) ; champs via primitives `Sim*`.
+5. **Footer** : **toujours présent**, aligné à droite — `Annuler` (`sim-modal-btn--ghost`) + action principale (`sim-modal-btn--primary`). Libellé de l'action : `Valider` (édition) ou `Enregistrer` (création). Action destructive éventuelle à **gauche** (`sim-modal-btn--danger` + `margin-right:auto`). **Interdits** : footer à un seul bouton ambigu (`Terminer`), absence de footer sur une modale d'édition (l'« auto-save sans footer » n'est pas canonique : afficher au minimum `Fermer`).
+6. **Largeurs** : classes canoniques §16d — `--lg` par défaut, `--xl` réservé au contenu réellement large.
+
+Tout écart (icône header non standard, footer auto-save, etc.) doit être justifié et documenté dans la PR, sinon il est traité comme une dette.
 
 **Statut** : baseline partagée.
 **Preuves** : `src/components/ui/sim/SimModalShell.tsx` · `src/styles/sim/modals.css` · `src/styles/sim/buttons.css`.
