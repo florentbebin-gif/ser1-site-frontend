@@ -16,7 +16,6 @@
   background: var(--surface-card);
   border-radius: 14px;
   width: 100%;
-  max-width: 520px;
   min-height: 280px;
   max-height: calc(100vh - 32px);
   box-shadow:
@@ -26,8 +25,8 @@
   flex-direction: column;
 }
 
+/* Largeur déléguée à sim-modal--md ; ce modificateur ne porte plus que le min-height. */
 .sc-member-modal--family {
-  max-width: 620px;
   min-height: 360px;
 }
 

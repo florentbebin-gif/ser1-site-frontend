@@ -744,12 +744,18 @@ Cette section comble les trous des §1-§15. Elle ne les duplique pas. Chaque r�
 | Configuration ponctuelle > 3 champs                                           | Oui    | —                  |
 | Configuration ponctuelle ≤ 3 champs                                           | —      | Oui                |
 
-Largeurs standardisées :
+Largeurs standardisées — via les classes canoniques de `src/styles/sim/modals.css`, passées en
+`modalClassName`. Ne pas redéfinir de `max-width` de modale ad hoc par feature :
 
-- Standard : `max-width: 520px`
-- Famille/élargi : `max-width: 620px`
-- Large : `max-width: 720px`
-- Dispositions : `max-width: 1200px`
+- Standard : `sim-modal--sm` (520px)
+- Famille/élargi : `sim-modal--md` (620px)
+- Large : `sim-modal--lg` (720px)
+- Dispositions : `sim-modal--xl` (1200px)
+
+Les modales `/sim/*` sont au canon. Restent à migrer (lot dédié) : les modales d'administration
+Settings (shell `SettingsModalShell`, ex. base CG retraite, référentiel contrat, prévoyance régimes)
+et la modale financière imbriquée `ts-company-financials-modal`. Une feature ne doit plus introduire
+de nouvelle `max-width` de modale en dur.
 
 Structure modale (pattern canonique) :
 

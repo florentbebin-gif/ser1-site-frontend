@@ -399,7 +399,7 @@ export function VersementConfigModal({
       onClose={onClose}
       closeLabel="Fermer la modale"
       overlayClassName="vcm-overlay"
-      modalClassName="vcm"
+      modalClassName="vcm sim-modal--xl"
       headerClassName="vcm__header"
       headerContentClassName="vcm__header-content"
       iconClassName="vcm__icon"

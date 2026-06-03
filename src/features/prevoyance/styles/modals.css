@@ -1,9 +1,5 @@
-.prevoyance-periods-modal {
-  width: min(720px, calc(100vw - 32px));
-}
-
+/* Largeurs déléguées aux classes canoniques (sim-modal--lg / --xl, cf. GOUVERNANCE §16d). */
 .prevoyance-contract-modal {
-  width: min(980px, calc(100vw - 32px));
   min-height: 480px;
 }
 

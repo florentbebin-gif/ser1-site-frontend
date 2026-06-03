@@ -305,7 +305,7 @@ export function TresoSocieteSection({ inputs, onChange, onAssociateModalOpenerCh
           title="Paramétrer la société"
           subtitle="Identité, associés, compte de résultat, emprunts et filiales"
           onClose={() => setCompanyModalOpen(false)}
-          modalClassName="ts-company-modal"
+          modalClassName="ts-company-modal sim-modal--xl"
           bodyClassName="ts-company-modal__body"
         >
           <div className="ts-modal-panels">

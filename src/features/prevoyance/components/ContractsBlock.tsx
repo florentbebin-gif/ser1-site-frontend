@@ -273,7 +273,7 @@ export function ContractsBlock({
           title={`Modifier ${editingContract.name}`}
           subtitle="Sélectionnez une garantie, puis ajustez les paramètres utiles."
           onClose={() => setEditingContractId(null)}
-          modalClassName="prevoyance-contract-modal"
+          modalClassName="prevoyance-contract-modal sim-modal--xl"
           bodyClassName="prevoyance-contract-modal__body"
           footer={
             <button

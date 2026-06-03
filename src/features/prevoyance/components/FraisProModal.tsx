@@ -76,7 +76,7 @@ export function FraisProModal({
       title="Frais généraux"
       subtitle="Estimation de l’assiette de charges permanentes à maintenir pendant l’arrêt du dirigeant."
       onClose={onClose}
-      modalClassName="prevoyance-frais-modal"
+      modalClassName="prevoyance-frais-modal sim-modal--lg"
       footer={
         <>
           <span className="prevoyance-frais-modal__total">

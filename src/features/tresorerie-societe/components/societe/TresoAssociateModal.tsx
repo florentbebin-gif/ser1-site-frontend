@@ -123,7 +123,7 @@ export function TresoAssociateModal({
       title="Paramétrer l’associé"
       subtitle={associate.label}
       onClose={onClose}
-      modalClassName="ts-company-modal"
+      modalClassName="ts-company-modal sim-modal--lg"
       bodyClassName="ts-company-modal__body"
     >
       <div className="ts-associate-modal-layout">

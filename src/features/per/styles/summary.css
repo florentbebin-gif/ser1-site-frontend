@@ -168,10 +168,7 @@
   border-left: 3px solid var(--color-c3);
 }
 
-.per-madelin-modal {
-  width: min(960px, calc(100vw - 32px));
-}
-
+/* Largeur déléguée à sim-modal--lg (cf. GOUVERNANCE §16d). */
 .per-madelin-modal__body {
   display: grid;
   gap: 12px;

@@ -31,7 +31,7 @@ export default function PrevoyanceModal({
       onClose={onClose}
       closeLabel="Fermer"
       overlayClassName="sc-member-modal-overlay"
-      modalClassName="sc-member-modal sc-member-modal--wide"
+      modalClassName="sc-member-modal sim-modal--lg"
       headerClassName="sc-member-modal__header"
       titleClassName="sc-member-modal__title"
       bodyClassName="sc-member-modal__body sc-assurance-vie-modal__body"
