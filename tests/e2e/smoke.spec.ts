@@ -96,7 +96,8 @@ test.describe('Smoke Tests - Surfaces stables', () => {
     await page.goto(ROUTES.home);
 
     await expect(page.getByTestId('home-detail-panel')).toHaveCount(0);
-    await page.getByRole('button', { name: 'Comprendre ma situation' }).click();
+    // L'espace s'ouvre sur l'onglet « Comprendre » par défaut (plus de puces d'objectifs).
+    await page.getByRole('button', { name: /Foyer & patrimoine privé/ }).click();
     await expect(page.getByTestId('home-space-foyer')).toHaveAttribute('data-open', 'true');
     await expect(page.getByTestId('home-simulator-card-ir')).toBeVisible();
     await expect(page.getByTestId('home-simulator-card-filiation')).toHaveCount(0);

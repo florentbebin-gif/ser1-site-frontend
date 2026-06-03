@@ -37,16 +37,10 @@ export interface HomeGuideTab {
   hasCards: boolean;
 }
 
-export interface HomeGuideQuickAction {
-  tab: SimulatorTab;
-  label: string;
-}
-
 export interface HomeGuideSpace {
   id: SimulatorSpace;
   label: string;
-  description: string;
-  quickActions: HomeGuideQuickAction[];
+  accroche: string;
   tabs: HomeGuideTab[];
 }
 
@@ -74,29 +68,11 @@ export const HOME_PRIMARY_ACTIONS: readonly HomeGuideAction[] = [
   },
 ] as const;
 
-const SPACE_VIEW_COPY: Record<
-  SimulatorSpace,
-  {
-    description: string;
-    quickActions: readonly HomeGuideQuickAction[];
-  }
-> = {
-  foyer: {
-    description: 'Famille, fiscalité, immobilier, placements & transmission privée',
-    quickActions: [
-      { tab: 'comprendre', label: 'Comprendre ma situation' },
-      { tab: 'piloter', label: 'Piloter mon patrimoine' },
-      { tab: 'proteger', label: 'Protéger / transmettre' },
-    ],
-  },
-  societe: {
-    description: 'Structure, rémunération, trésorerie, titres & transmission d’entreprise',
-    quickActions: [
-      { tab: 'comprendre', label: 'Analyser ma société' },
-      { tab: 'piloter', label: 'Optimiser ma rémunération' },
-      { tab: 'proteger', label: 'Transmettre l’entreprise' },
-    ],
-  },
+// Une accroche unique par espace (pas de surcharge d'objectifs : la navigation
+// fine passe par les onglets Comprendre / Piloter / Protéger & transmettre).
+const SPACE_ACCROCHE: Record<SimulatorSpace, string> = {
+  foyer: 'Comprendre, piloter et transmettre le patrimoine privé du foyer.',
+  societe: 'Analyser la société, optimiser la rémunération et transmettre l’entreprise.',
 };
 
 const ROUTES_BY_ID = new Map<string, SimRouteContract>(
@@ -107,8 +83,7 @@ export function buildHomeGuideState(mode: HomeGuideMode): HomeGuideState {
   const spaces = getHomeMatrix(mode).map<HomeGuideSpace>((space) => ({
     id: space.space,
     label: HOME_SPACES.find((entry) => entry.id === space.space)?.label ?? space.label,
-    description: SPACE_VIEW_COPY[space.space].description,
-    quickActions: [...SPACE_VIEW_COPY[space.space].quickActions],
+    accroche: SPACE_ACCROCHE[space.space],
     tabs: HOME_TABS.map((tab) => {
       const sourceTab = space.tabs.find((entry) => entry.tab === tab.id);
       const families =

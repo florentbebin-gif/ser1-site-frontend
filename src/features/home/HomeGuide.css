@@ -54,7 +54,7 @@
   width: 100%;
   align-items: center;
   gap: 12px;
-  padding: 12px 18px 6px;
+  padding: 14px 18px;
   border: 0;
   background: transparent;
   color: var(--text-primary);
@@ -65,7 +65,6 @@
 }
 
 .home-guide-space__button:focus-visible,
-.home-guide-quick:focus-visible,
 .home-guide-tab:focus-visible,
 .home-guide-card:focus-visible {
   outline: none;
@@ -113,7 +112,7 @@
   line-height: 1.2;
 }
 
-.home-guide-space__description {
+.home-guide-space__accroche {
   overflow-wrap: anywhere;
   color: var(--text-secondary);
   font-size: var(--font-size-sm);
@@ -129,31 +128,6 @@
 
 .home-guide-space--open .home-guide-space__chevron {
   transform: rotate(180deg);
-}
-
-.home-guide-space__quick {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 7px;
-  padding: 0 18px 12px;
-}
-
-.home-guide-quick {
-  min-height: 22px;
-  padding: 3px 10px;
-  border: 1px solid var(--border-default);
-  border-radius: var(--radius-full);
-  background: color-mix(in srgb, var(--surface-muted) 70%, var(--surface-card));
-  color: var(--text-primary);
-  cursor: pointer;
-  font: inherit;
-  font-size: var(--font-size-sm);
-  font-weight: 500;
-}
-
-.home-guide-quick:hover {
-  border-color: color-mix(in srgb, var(--action-primary) 30%, var(--border-default));
-  background: color-mix(in srgb, var(--surface-active) 36%, var(--surface-card));
 }
 
 .home-guide-space__body {
@@ -363,7 +337,6 @@
     padding: 14px 14px 8px;
   }
 
-  .home-guide-space__quick,
   .home-guide-space__body {
     padding-right: 14px;
     padding-left: 14px;

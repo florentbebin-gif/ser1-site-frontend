@@ -54,7 +54,6 @@ export function HomeGuide({ mode }: HomeGuideProps): React.ReactElement {
             isOpen={activeSpace === space.id}
             activeTab={activeTabs[space.id]}
             onToggle={() => setActiveSpace(activeSpace === space.id ? null : space.id)}
-            onQuickAction={(tab) => openSpace(space.id, tab)}
             onTabChange={(tab) => openSpace(space.id, tab)}
             onSelectCard={setSelectedCard}
           />
@@ -72,7 +71,6 @@ function HomeGuideSpaceCard({
   isOpen,
   activeTab,
   onToggle,
-  onQuickAction,
   onTabChange,
   onSelectCard,
 }: {
@@ -81,7 +79,6 @@ function HomeGuideSpaceCard({
   isOpen: boolean;
   activeTab: SimulatorTab;
   onToggle: () => void;
-  onQuickAction: (_tab: SimulatorTab) => void;
   onTabChange: (_tab: SimulatorTab) => void;
   onSelectCard: (_card: HomeGuideCard) => void;
 }): React.ReactElement {
@@ -106,25 +103,10 @@ function HomeGuideSpaceCard({
         </span>
         <span className="home-guide-space__copy">
           <span className="home-guide-space__name">{space.label}</span>
-          <span className="home-guide-space__description">{space.description}</span>
+          <span className="home-guide-space__accroche">{space.accroche}</span>
         </span>
         <IconChevronDown className="home-guide-space__chevron" />
       </button>
-
-      {!isOpen && (
-        <div className="home-guide-space__quick" aria-label={`Objectifs ${space.label}`}>
-          {space.quickActions.map((quick) => (
-            <button
-              key={quick.tab}
-              type="button"
-              className="home-guide-quick"
-              onClick={() => onQuickAction(quick.tab)}
-            >
-              {quick.label}
-            </button>
-          ))}
-        </div>
-      )}
 
       {isOpen && (
         <div className="home-guide-space__body">
