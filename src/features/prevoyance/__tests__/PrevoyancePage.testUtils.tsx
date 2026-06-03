@@ -157,7 +157,7 @@ export async function choisirRegime(user: ReturnType<typeof userEvent.setup>, op
 
 export async function ajouterContrat(user: ReturnType<typeof userEvent.setup>) {
   await user.click(screen.getByRole('button', { name: 'Ajouter un contrat' }));
-  await user.click(await screen.findByRole('button', { name: 'Terminer' }));
+  await user.click(await screen.findByRole('button', { name: 'Fermer' }));
 }
 
 export async function creerTroisContrats(user: ReturnType<typeof userEvent.setup>) {

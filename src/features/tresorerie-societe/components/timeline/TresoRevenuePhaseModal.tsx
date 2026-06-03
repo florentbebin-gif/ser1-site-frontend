@@ -197,7 +197,7 @@ export function TresoRevenuePhaseModal({
         <div className="ts-phase-modal__footer-inner" data-testid="ts-phase-modal-footer">
           <button
             type="button"
-            className="sim-modal-btn sim-modal-btn--ghost"
+            className="sim-modal-btn sim-modal-btn--danger"
             onClick={onDelete}
             disabled={phases.length <= 1}
           >
@@ -246,13 +246,16 @@ export function TresoRevenuePhaseModal({
         horizonYear={horizonYear}
       />
 
-      <div className="ts-phase-modal-layout">
-        <nav className="ts-phase-modal-nav" aria-label="Sous-phases du palier">
+      <div className="ts-phase-modal-layout sim-modal-layout--with-nav">
+        <nav
+          className="ts-phase-modal-nav sim-modal-section-nav sim-modal-layout__nav"
+          aria-label="Sous-phases du palier"
+        >
           {SUB_PHASE_NAV.map((item) => (
             <button
               key={item.key}
               type="button"
-              className={activeSubPhase === item.key ? 'is-active' : ''}
+              className={`sim-modal-section-nav__item ts-phase-modal-nav__item${activeSubPhase === item.key ? ' is-active' : ''}`}
               onClick={() => setActiveSubPhase(item.key)}
             >
               <input
@@ -267,7 +270,7 @@ export function TresoRevenuePhaseModal({
           ))}
         </nav>
 
-        <div className="ts-phase-modal-panel">
+        <div className="ts-phase-modal-panel sim-modal-layout__content">
           <TresoRevenuePhasePeriodPanel draft={draft} onPatch={patchDraft} />
 
           {activeSubPhase === 'remuneration' ? (

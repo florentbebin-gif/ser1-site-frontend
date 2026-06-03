@@ -125,10 +125,15 @@ export function TresoAssociateModal({
       onClose={onClose}
       modalClassName="ts-company-modal sim-modal--lg"
       bodyClassName="ts-company-modal__body"
+      footer={
+        <button type="button" className="sim-modal-btn sim-modal-btn--primary" onClick={onClose}>
+          Fermer
+        </button>
+      }
     >
-      <div className="ts-associate-modal-layout">
+      <div className="ts-associate-modal-layout sim-modal-layout--with-nav">
         <div
-          className="ts-associate-modal-nav"
+          className="ts-associate-modal-nav sim-modal-section-nav sim-modal-layout__nav"
           role="tablist"
           aria-label="Rubriques de l’associé"
           aria-orientation="vertical"
@@ -139,7 +144,7 @@ export function TresoAssociateModal({
               id={`ts-associate-tab-${section.key}`}
               type="button"
               role="tab"
-              className={activeSection === section.key ? 'is-active' : ''}
+              className={`sim-modal-section-nav__item${activeSection === section.key ? ' is-active' : ''}`}
               aria-controls={`ts-associate-panel-${section.key}`}
               aria-selected={activeSection === section.key}
               tabIndex={activeSection === section.key ? 0 : -1}
@@ -152,7 +157,7 @@ export function TresoAssociateModal({
         </div>
 
         <div
-          className="ts-associate-modal-panel"
+          className="ts-associate-modal-panel sim-modal-layout__content"
           id={`ts-associate-panel-${activeSection}`}
           role="tabpanel"
           aria-labelledby={`ts-associate-tab-${activeSection}`}

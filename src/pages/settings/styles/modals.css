@@ -13,22 +13,34 @@
 
 .settings-modal-shell {
   background: var(--surface-card);
-  border-radius: 10px;
+  /* Rayon aligné sur le canon sim (SimModalShell = 14px). */
+  border-radius: 14px;
   padding: 18px;
-  width: min(800px, 90vw);
+  /* Largeurs alignées sur le canon §16d (sm 520 / md 620 / lg 720 / xl 1200) ;
+     défaut = lg. Ne pas redéfinir de width de modale ad hoc par feature. */
+  width: min(720px, 90vw);
   max-height: 88vh;
-  overflow-y: auto;
+  /* Pas de scroll horizontal en modale (canon) ; scroll vertical seulement. */
+  overflow: hidden auto;
   box-shadow:
     0 20px 60px color-mix(in srgb, var(--shadow-color) 15%, transparent),
     0 8px 25px color-mix(in srgb, var(--shadow-color) 10%, transparent);
 }
 
 .settings-modal-shell--sm {
-  width: min(500px, 90vw);
+  width: min(520px, 90vw);
 }
 
 .settings-modal-shell--md {
-  width: min(600px, 90vw);
+  width: min(620px, 90vw);
+}
+
+.settings-modal-shell--lg {
+  width: min(720px, 90vw);
+}
+
+.settings-modal-shell--xl {
+  width: min(1200px, 90vw);
 }
 
 .settings-modal-shell__header {
@@ -58,24 +70,30 @@
   color: var(--color-c9);
 }
 
+/* Close canonique : rond, transparent, gris — identique à sim-modal__close. */
 .settings-modal-shell__close {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 32px;
-  min-height: 32px;
-  padding: 6px 10px;
-  border-radius: 6px;
-  background: var(--accent-signature);
-  color: var(--color-c10);
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  border-radius: 999px;
+  background: none;
+  color: var(--color-c9);
   border: 1px solid var(--color-c8);
   cursor: pointer;
   font-size: 14px;
-  transition: all 0.2s ease;
+  transition:
+    background var(--transition-base) var(--easing-standard),
+    border-color var(--transition-base) var(--easing-standard),
+    color var(--transition-base) var(--easing-standard);
 }
 
 .settings-modal-shell__close:hover {
-  background: var(--data-secondary);
+  background: var(--color-c7);
+  border-color: var(--data-secondary);
+  color: var(--color-c1);
 }
 
 .settings-modal-shell__body {
@@ -382,7 +400,7 @@
 
 .settings-modal-grid-3 {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 8px;
 }
 

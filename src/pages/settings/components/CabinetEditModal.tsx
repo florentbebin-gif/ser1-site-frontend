@@ -160,11 +160,11 @@ export default function CabinetEditModal({
       size="sm"
       footer={
         <>
-          <button onClick={onClose} type="button">
+          <button className="sim-modal-btn sim-modal-btn--ghost" onClick={onClose} type="button">
             Annuler
           </button>
           <button
-            className="chip"
+            className="sim-modal-btn sim-modal-btn--primary"
             onClick={() => {
               void handleSaveCabinet();
             }}

@@ -123,6 +123,23 @@
   border-color: var(--color-c2);
 }
 
+.sim-modal-btn--danger {
+  background: var(--surface-card);
+  border-color: color-mix(in srgb, var(--state-danger) 40%, var(--color-c8));
+  color: var(--state-danger);
+}
+
+.sim-modal-btn--danger:hover,
+.sim-modal-btn--danger:focus-visible {
+  background: color-mix(in srgb, var(--state-danger) 10%, var(--surface-card));
+  border-color: var(--state-danger);
+}
+
+/* Action destructive : poussée à gauche dans le footer ; Annuler/Valider restent à droite. */
+.sim-modal__footer .sim-modal-btn--danger:first-child {
+  margin-right: auto;
+}
+
 @media (max-width: 600px) {
   .sim-action-btn,
   .sim-modal-btn {

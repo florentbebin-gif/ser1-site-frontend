@@ -1,4 +1,5 @@
 import type { BaseCgRetraiteContract } from '@/data/base-cg-retraite';
+import { BaseCgTextField, BaseCgTextareaField } from './BaseCgRetraiteModalFields';
 import { formatFieldValue, rateInputValue, updateText } from './baseCgRetraiteModalUtils';
 
 type EpargneSetter = <K extends keyof BaseCgRetraiteContract['phaseEpargne']>(
@@ -18,103 +19,68 @@ interface Props {
 export function BaseCgRetraiteEpargneTab({ draft, gestionFees, onEpargneChange }: Props) {
   return (
     <>
-      <label>
-        Date de commercialisation
-        <input
-          value={draft.phaseEpargne.dateCommercialisation ?? ''}
-          onChange={(event) =>
-            onEpargneChange('dateCommercialisation', updateText(event.target.value))
+      <BaseCgTextField
+        label="Date de commercialisation"
+        value={draft.phaseEpargne.dateCommercialisation ?? ''}
+        onChange={(value) => onEpargneChange('dateCommercialisation', updateText(value))}
+      />
+      <BaseCgTextField
+        label="Nombre de fonds"
+        value={formatFieldValue(draft.phaseEpargne.nombreFonds)}
+        onChange={(value) => onEpargneChange('nombreFonds', updateText(value))}
+      />
+      <BaseCgTextField
+        label="TMG du contrat (fonds €)"
+        value={rateInputValue(draft.phaseEpargne.rendementFondsEuro)}
+        placeholder="Ex : 3,5 % avant le 31/12/2016"
+        hint="Taux Minimum Garanti historique. Encadré par l'arrêté du 9 décembre 2016 (loi Sapin 2) et l'arrêté du 24 juillet 2018 (préparation loi PACTE). Les TMG anciens restent acquis aux versements antérieurs à la date de cessation."
+        onChange={(value) => onEpargneChange('rendementFondsEuro', updateText(value))}
+      />
+      <BaseCgTextField
+        label="Frais sur versements"
+        value={rateInputValue(draft.phaseEpargne.fraisVersements)}
+        onChange={(value) => onEpargneChange('fraisVersements', updateText(value))}
+      />
+      <BaseCgTextField
+        label="Frais gestion fonds €"
+        value={rateInputValue(gestionFees.fraisGestionFondsEuro)}
+        onChange={(value) => onEpargneChange('fraisGestionFondsEuro', updateText(value))}
+      />
+      <BaseCgTextField
+        label="Frais gestion UC"
+        value={rateInputValue(gestionFees.fraisGestionUc)}
+        onChange={(value) => onEpargneChange('fraisGestionUc', updateText(value))}
+      />
+      <BaseCgTextField
+        label="Frais d'arbitrage"
+        value={rateInputValue(draft.phaseEpargne.fraisArbitrage)}
+        onChange={(value) => onEpargneChange('fraisArbitrage', updateText(value))}
+      />
+      <BaseCgTextField
+        label="Taux frais transfert sortant"
+        inputMode="decimal"
+        value={rateInputValue(
+          draft.phaseEpargne.fraisTransfertSortant ?? draft.phaseEpargne.fraisTransfertSortantRate,
+        )}
+        onChange={(value) => {
+          onEpargneChange('fraisTransfertSortant', updateText(value));
+          if (!value.trim()) {
+            onEpargneChange('fraisTransfertSortantRate', null);
           }
-        />
-      </label>
-      <label>
-        Nombre de fonds
-        <input
-          value={formatFieldValue(draft.phaseEpargne.nombreFonds)}
-          onChange={(event) => onEpargneChange('nombreFonds', updateText(event.target.value))}
-        />
-      </label>
-      <label>
-        TMG du contrat (fonds €)
-        <input
-          value={rateInputValue(draft.phaseEpargne.rendementFondsEuro)}
-          onChange={(event) =>
-            onEpargneChange('rendementFondsEuro', updateText(event.target.value))
-          }
-          placeholder="Ex : 3,5 % avant le 31/12/2016"
-        />
-        <small className="base-cg-modal__hint">
-          Taux Minimum Garanti historique. Encadré par l'arrêté du 9 décembre 2016 (loi Sapin 2) et
-          l'arrêté du 24 juillet 2018 (préparation loi PACTE). Les TMG anciens restent acquis aux
-          versements antérieurs à la date de cessation.
-        </small>
-      </label>
-      <label>
-        Frais sur versements
-        <input
-          value={rateInputValue(draft.phaseEpargne.fraisVersements)}
-          onChange={(event) => onEpargneChange('fraisVersements', updateText(event.target.value))}
-        />
-      </label>
-      <label>
-        Frais gestion fonds €
-        <input
-          value={rateInputValue(gestionFees.fraisGestionFondsEuro)}
-          onChange={(event) =>
-            onEpargneChange('fraisGestionFondsEuro', updateText(event.target.value))
-          }
-        />
-      </label>
-      <label>
-        Frais gestion UC
-        <input
-          value={rateInputValue(gestionFees.fraisGestionUc)}
-          onChange={(event) => onEpargneChange('fraisGestionUc', updateText(event.target.value))}
-        />
-      </label>
-      <label>
-        Frais d'arbitrage
-        <input
-          value={rateInputValue(draft.phaseEpargne.fraisArbitrage)}
-          onChange={(event) => onEpargneChange('fraisArbitrage', updateText(event.target.value))}
-        />
-      </label>
-      <label>
-        Taux frais transfert sortant
-        <input
-          inputMode="decimal"
-          value={rateInputValue(
-            draft.phaseEpargne.fraisTransfertSortant ??
-              draft.phaseEpargne.fraisTransfertSortantRate,
-          )}
-          onChange={(event) => {
-            onEpargneChange('fraisTransfertSortant', updateText(event.target.value));
-            if (!event.target.value.trim()) {
-              onEpargneChange('fraisTransfertSortantRate', null);
-            }
-          }}
-        />
-      </label>
-      <label className="base-cg-modal__wide">
-        Modalités en cas de décès
-        <textarea
-          value={draft.phaseEpargne.clauseBeneficiaire ?? ''}
-          onChange={(event) =>
-            onEpargneChange('clauseBeneficiaire', updateText(event.target.value))
-          }
-          rows={3}
-        />
-      </label>
-      <label className="base-cg-modal__wide">
-        Garanties complémentaires
-        <textarea
-          value={draft.phaseEpargne.garantiesComplementaires ?? ''}
-          onChange={(event) =>
-            onEpargneChange('garantiesComplementaires', updateText(event.target.value))
-          }
-          rows={3}
-        />
-      </label>
+        }}
+      />
+      <BaseCgTextareaField
+        label="Modalités en cas de décès"
+        className="base-cg-modal__wide"
+        value={draft.phaseEpargne.clauseBeneficiaire ?? ''}
+        onChange={(value) => onEpargneChange('clauseBeneficiaire', updateText(value))}
+      />
+      <BaseCgTextareaField
+        label="Garanties complémentaires"
+        className="base-cg-modal__wide"
+        value={draft.phaseEpargne.garantiesComplementaires ?? ''}
+        onChange={(value) => onEpargneChange('garantiesComplementaires', updateText(value))}
+      />
     </>
   );
 }

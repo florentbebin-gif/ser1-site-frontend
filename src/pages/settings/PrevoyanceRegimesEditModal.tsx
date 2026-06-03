@@ -127,6 +127,7 @@ export function EditModal({
       title={target.type === 'regime' ? 'Modifier le régime' : 'Modifier le maintien employeur'}
       subtitle="Formulaire admin structuré avec références traçables par champ."
       onClose={onClose}
+      size="xl"
       modalClassName="prevoyance-settings-modal"
       footer={
         <>

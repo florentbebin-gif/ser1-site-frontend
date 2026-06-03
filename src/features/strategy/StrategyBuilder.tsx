@@ -402,7 +402,7 @@ export default function StrategyBuilder({ dossier }: StrategyBuilderProps): Reac
         <SimModalShell
           title="Ajouter un produit"
           subtitle="Complétez d’abord le dossier d’audit, puis sélectionnez les produits à projeter."
-          modalClassName="strategy-modal"
+          modalClassName="strategy-modal sim-modal--lg"
           bodyClassName="strategy-modal__body"
           footerClassName="strategy-modal__footer"
           onClose={() => setShowAddProduit(false)}

@@ -79,6 +79,11 @@ export function TresoSubsidiaryModal({
       onClose={onClose}
       modalClassName="ts-company-modal sim-modal--lg"
       bodyClassName="ts-company-modal__body"
+      footer={
+        <button type="button" className="sim-modal-btn sim-modal-btn--primary" onClick={onClose}>
+          Fermer
+        </button>
+      }
     >
       <div className="ts-modal-stack">
         <div className="ts-associate-card">

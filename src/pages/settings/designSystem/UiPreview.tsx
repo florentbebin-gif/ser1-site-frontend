@@ -84,7 +84,7 @@ export function DesignSystemUiPreview() {
             ariaLabel="Rubriques de modale"
             onChange={setActiveSection}
           />
-          <div className="settings-design-system__nav-panels">
+          <div className="settings-design-system__modal-panels">
             <p id="settings-ui-identite">Identité du foyer de démonstration.</p>
             <p id="settings-ui-revenus">Revenus et enveloppes de démonstration.</p>
             <p id="settings-ui-sortie">Sortie client et restitution de démonstration.</p>

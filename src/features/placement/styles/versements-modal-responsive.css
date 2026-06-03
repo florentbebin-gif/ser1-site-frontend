@@ -15,17 +15,6 @@
     padding: 16px;
   }
 
-  .vcm__layout {
-    grid-template-columns: 1fr;
-    gap: 14px;
-  }
-
-  .vcm__nav {
-    position: static;
-    display: grid;
-    grid-template-columns: 1fr;
-  }
-
   .vcm__footer {
     display: none;
   }

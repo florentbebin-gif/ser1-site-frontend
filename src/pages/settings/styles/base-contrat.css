@@ -135,10 +135,7 @@
   color: var(--color-c9);
 }
 
-.base-contrat-modal {
-  max-width: 440px;
-}
-
+/* Largeur déléguée à SettingsModalShell size="sm" (canon §16d). */
 .base-contrat-modal__content {
   display: flex;
   flex-direction: column;

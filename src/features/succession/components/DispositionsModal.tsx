@@ -332,10 +332,11 @@ export default function DispositionsModal({
   return (
     <SimModalShell
       title="Dispositions particulières"
+      subtitle="Transmission, préciput, testament et récompenses"
       onClose={onClose}
       closeLabel="Fermer"
       overlayClassName="sc-member-modal-overlay"
-      modalClassName="sc-member-modal sc-dispositions-modal sim-modal--xl"
+      modalClassName="sc-member-modal sc-dispositions-modal sim-modal--lg"
       headerClassName="sc-member-modal__header"
       titleClassName="sc-member-modal__title"
       bodyClassName="sc-member-modal__body sc-dispositions-modal__body"
@@ -356,7 +357,7 @@ export default function DispositionsModal({
         </>
       }
     >
-      <div className="sc-dispositions-modal__layout">
+      <div className="sc-dispositions-modal__layout sim-modal-layout--with-nav">
         <SimModalSectionNav
           sections={DISPOSITIONS_PANELS.map((panel) => ({
             id: panel.id,
@@ -366,10 +367,13 @@ export default function DispositionsModal({
           activeId={activePanel}
           ariaLabel="Sections des dispositions"
           onChange={(id) => setActivePanel(id as DispositionsPanel)}
-          className="sc-dispositions-modal__nav"
+          className="sc-dispositions-modal__nav sim-modal-layout__nav"
         />
 
-        <div id={`sc-dispositions-panel-${activePanel}`} className="sc-dispositions-modal__panel">
+        <div
+          id={`sc-dispositions-panel-${activePanel}`}
+          className="sc-dispositions-modal__panel sim-modal-layout__content"
+        >
           {activePanel === 'transmission' ? (
             <DispositionsCommonSection panel="transmission" {...commonSectionProps} />
           ) : null}

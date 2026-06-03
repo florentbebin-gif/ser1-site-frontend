@@ -156,13 +156,17 @@ export default function DonationPartageModal({
     <SimModalShell
       title="Donation-partage"
       subtitle="Lots par enfant et soultes entre copartagés"
-      modalClassName="sc-donation-partage-modal sim-modal--xl"
+      modalClassName="sc-donation-partage-modal sim-modal--lg"
       bodyClassName="sc-donation-partage-modal__body"
       onClose={onClose}
       footer={
         <>
           {onDelete && (
-            <button type="button" className="sim-modal-btn sim-modal-btn--ghost" onClick={onDelete}>
+            <button
+              type="button"
+              className="sim-modal-btn sim-modal-btn--danger"
+              onClick={onDelete}
+            >
               Supprimer
             </button>
           )}

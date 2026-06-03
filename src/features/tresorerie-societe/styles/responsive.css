@@ -23,31 +23,12 @@
 
 @media (max-width: 900px) {
   .ts-company-snapshot,
-  .ts-pocket-board,
-  .ts-associate-modal-layout,
-  .ts-phase-modal-layout,
-  .ts-modal-panels {
+  .ts-pocket-board {
     grid-template-columns: 1fr;
   }
 
   .ts-company-modal {
     width: calc(100vw - 24px);
-  }
-
-  .ts-modal-tabs {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .ts-associate-modal-nav {
-    position: static;
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .ts-phase-modal-nav {
-    position: static;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .ts-schedule-row {

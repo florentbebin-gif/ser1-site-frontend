@@ -28,6 +28,7 @@ export default function PrevoyanceModal({
   return (
     <SimModalShell
       title="Prévoyance décès"
+      subtitle="Capital décès, prime et clause bénéficiaire"
       onClose={onClose}
       closeLabel="Fermer"
       overlayClassName="sc-member-modal-overlay"

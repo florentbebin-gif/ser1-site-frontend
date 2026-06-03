@@ -202,9 +202,9 @@ describe('TresoPlacementSection', () => {
 
     fireEvent.click(screen.getByRole('button', { name: /Paramétrer Long terme/i }));
     expect(screen.getByRole('button', { name: /Supprimer la poche/i })).toHaveClass(
-      'sim-modal-btn--ghost',
+      'sim-modal-btn--danger',
     );
-    expect(screen.getByRole('button', { name: 'Fermer' })).toHaveClass('sim-modal-btn--ghost');
+    expect(screen.getByRole('button', { name: 'Fermer' })).toHaveClass('sim-modal-btn--primary');
     fireEvent.click(screen.getByRole('button', { name: /Supprimer la poche/i }));
 
     expect(onChange).toHaveBeenCalledWith(

@@ -159,10 +159,7 @@
   box-shadow: 0 0 0 3px var(--surface-active);
 }
 
-.prevoyance-settings-modal {
-  width: min(1040px, calc(100vw - 32px));
-}
-
+/* Largeur déléguée à SettingsModalShell size="xl" (canon §16d). */
 .prevoyance-settings-modal__grid,
 .prevoyance-settings-form-grid {
   display: grid;

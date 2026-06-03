@@ -95,6 +95,7 @@ export function OverrideModal({
         </>
       }
       onClose={onClose}
+      size="sm"
       modalClassName="base-contrat-modal"
       bodyClassName="base-contrat-modal__content"
       footer={

@@ -305,16 +305,28 @@ export function TresoSocieteSection({ inputs, onChange, onAssociateModalOpenerCh
           title="Paramétrer la société"
           subtitle="Identité, associés, compte de résultat, emprunts et filiales"
           onClose={() => setCompanyModalOpen(false)}
-          modalClassName="ts-company-modal sim-modal--xl"
+          modalClassName="ts-company-modal sim-modal--lg"
           bodyClassName="ts-company-modal__body"
+          footer={
+            <button
+              type="button"
+              className="sim-modal-btn sim-modal-btn--primary"
+              onClick={() => setCompanyModalOpen(false)}
+            >
+              Fermer
+            </button>
+          }
         >
-          <div className="ts-modal-panels">
-            <nav className="ts-modal-tabs" aria-label="Rubriques de la société">
+          <div className="ts-modal-panels sim-modal-layout--with-nav">
+            <nav
+              className="ts-modal-tabs sim-modal-section-nav sim-modal-layout__nav"
+              aria-label="Rubriques de la société"
+            >
               {PANEL_OPTIONS.map((panel) => (
                 <button
                   key={panel.key}
                   type="button"
-                  className={`ts-modal-tab${activePanel === panel.key ? ' is-active' : ''}`}
+                  className={`sim-modal-section-nav__item${activePanel === panel.key ? ' is-active' : ''}`}
                   onClick={() => setActivePanel(panel.key)}
                 >
                   {panel.label}
@@ -322,7 +334,7 @@ export function TresoSocieteSection({ inputs, onChange, onAssociateModalOpenerCh
               ))}
             </nav>
 
-            <div className="ts-modal-panel">{renderActivePanel()}</div>
+            <div className="ts-modal-panel sim-modal-layout__content">{renderActivePanel()}</div>
           </div>
         </SimModalShell>
       )}

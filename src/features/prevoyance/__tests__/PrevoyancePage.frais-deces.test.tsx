@@ -52,7 +52,7 @@ describe('PrevoyancePage - frais et décès', () => {
       await user.click(screen.getByRole('button', { name: 'Valider' }));
       expect(screen.getByLabelText('Montant mensuel frais généraux')).toHaveValue('12\u202f000');
 
-      await user.click(screen.getByRole('button', { name: 'Terminer' }));
+      await user.click(screen.getByRole('button', { name: 'Fermer' }));
       await user.click(screen.getByRole('button', { name: 'Ajouter un contrat' }));
       await user.click(await screen.findByRole('button', { name: 'Frais généraux' }));
       await user.click(
@@ -101,7 +101,7 @@ describe('PrevoyancePage - frais et décès', () => {
       fireEvent.change(decesInputs[0] as HTMLInputElement, { target: { value: '250000' } });
       fireEvent.change(decesInputs[1] as HTMLInputElement, { target: { value: '12000' } });
       fireEvent.change(decesInputs[2] as HTMLInputElement, { target: { value: '8000' } });
-      await user.click(screen.getByRole('button', { name: 'Terminer' }));
+      await user.click(screen.getByRole('button', { name: 'Fermer' }));
 
       const decesCard = screen.getByRole('heading', { name: 'Décès' }).closest('section');
       expect(decesCard).not.toBeNull();

@@ -368,7 +368,8 @@ Pour une demande du type "trouve les écarts de normes sur `/sim/tresorerie-soci
 - Inputs en lecture seule passifs (valeur calculée non modifiable) : fond `C7` (override inline acceptable).
 - Inputs inactifs conditionnels (ex. : champ désactivé par un select de mode) : fond `var(--surface-card)` pour signaler visuellement l'inactivité.
 - Contraste sur surface colorée : si un input / select / champ date-month / trigger de select custom est placé sur une surface déjà teintée (premium-table, sous-card C7/C8, modal interne teintée, bloc secondaire coloré), l'intérieur du contrôle doit utiliser `var(--surface-card)`.
-- Implémentation recommandée : utiliser une variable CSS d’héritage de type `--sim-input-bg`, avec fond par défaut off-white et override à `var(--surface-card)` porté par le conteneur coloré, pas par chaque champ individuellement.
+- Règle stricte de surface : sur fond blanc (`var(--surface-card)`), les inputs restent gris/off-white (`--sim-input-bg-default`) ; sur fond teinté, les inputs sont blancs (`var(--surface-card)`).
+- Implémentation obligatoire : utiliser la variable CSS d’héritage `--sim-input-bg`, avec fond par défaut off-white et override à `var(--surface-card)` porté par le conteneur coloré, pas par chaque champ individuellement. Le garde-fou `check:modal-canon` bloque les `background` locaux sur `.sim-field__control` et `.sim-field__select-trigger`.
 - Exception unités : ne pas dupliquer une unité déjà portée par un menu déroulant ou par ses options/libellés.
 - États :
   - Erreur : `border-bottom: C1` + message `11px`.
@@ -749,12 +750,27 @@ Largeurs standardisées — via les classes canoniques de `src/styles/sim/modals
 
 - Standard : `sim-modal--sm` (520px)
 - Famille/élargi : `sim-modal--md` (620px)
-- Large : `sim-modal--lg` (720px)
-- Dispositions : `sim-modal--xl` (1200px)
+- Large : `sim-modal--lg` (720px) — défaut des modales à nav latérale + formulaire
+- Contenu large : `sim-modal--xl` (1200px) — réservé aux modales à **contenu réellement large**
+  (table, graphe, grille multi-colonnes). Ne pas mettre un formulaire étroit en `xl` : la zone vide
+  à droite n'est pas premium. En `/sim/*`, `xl` n'est utilisé que pour un contenu réellement dense
+  qui ne peut pas être replié proprement (ex. timeline/graphe de palier).
 
-Les modales `/sim/*` sont au canon. Restent à migrer (lot dédié) : les modales d'administration
-Settings (shell `SettingsModalShell`, ex. base CG retraite, référentiel contrat, prévoyance
-régimes). Une feature ne doit plus introduire de nouvelle `max-width` de modale en dur.
+Les modales `/sim/*` **et** d'administration Settings sont au canon : le shell `SettingsModalShell`
+expose `size="sm|md|lg|xl"` mappé sur les mêmes paliers (520/620/720/1200, défaut `lg`). Une feature
+ne déclare **jamais** de `max-width` / `width` de modale en dur sur un sélecteur racine
+(`.xxx-modal`, `.xxx-modal-shell`) : seuls les sous-éléments (`__body`, etc.) sont libres. Garde-fou :
+`check:modal-canon` (la seule source autorisée de largeurs de shell est
+`src/pages/settings/styles/modals.css`). Le même garde-fou bloque les styles visuels locaux sur les
+menus gauches de modale et les sélecteurs larges de champs Base CG (`.base-cg-modal input/select`).
+
+Règle de largeur **par typologie** :
+
+| Typologie de modale                                    | Bucket        | Exemples                                                               |
+| ------------------------------------------------------ | ------------- | ---------------------------------------------------------------------- |
+| Saisie simple (≤ 6 champs, sans nav)                   | `sm`/`md`     | Frais généraux, qualification d'actif                                  |
+| Nav latérale + formulaire                              | `lg` (défaut) | Versements, Contrat prévoyance, associé/société Tréso, contrat Base CG |
+| Contenu réellement large (table, graphe, grille dense) | `xl`          | Palier de revenus, graphe/table dense justifié en PR                   |
 
 Structure modale (pattern canonique) :
 
@@ -794,6 +810,18 @@ Boutons modale : utiliser les classes partagées de `src/styles/sim/buttons.css`
 Actions mobiles : une modale n'affiche jamais deux piles d'actions en même temps (double footer). `SimMobileStickyActions` est réservé au mobile (≤ 560 px) ; sur desktop le footer du `SimModalShell` porte seul les actions et la pile sticky est masquée. Si une feature duplique les actions pour le mobile, elle masque le footer du shell sous le même point de rupture.
 
 Saisie temporelle en modale : utiliser `SimTemporalField` (granularité `day`/`month`, valeur ISO interne), jamais `<input type="date">` ou `type="month"` brut. Garde-fou : `check:no-raw-temporal-input`.
+
+**Anatomie canonique de modale** — toute modale, nouvelle ou refondue, s'y conforme (vérifié en revue). C'est la référence pour que toutes les modales soient identiques :
+
+1. **Shell** : `/sim/*` → `SimModalShell` ; admin Settings → `SettingsModalShell`. Les deux doivent rendre la **même anatomie visuelle** : header, bouton de fermeture rond `×` en haut à droite, footer, fonds/bordures, et largeurs canoniques §16d. **Pas de chrome divergent** : close rond `sim-modal__close` (jamais le carré cuivre), mêmes tokens de fond/bordure.
+2. **Header** : titre obligatoire ; sous-titre court optionnel ; **icône** : pas d'icône par défaut (réservée à une modale « outil » explicitement assumée, ex. paramétrage). Fermeture = `sim-modal__close` (rond `×`), jamais une croix nue ad hoc.
+3. **Navigation de sections** (≥ 2 rubriques) : nav **latérale gauche** sur desktop (segments en haut sur mobile), **actif gris** = fond `--surface-active` + bord (jamais une « boîte » blanche bordée). Deux familles visuelles seulement : modale normale **sans menu gauche** et modale **avec menu gauche**. Les modales avec menu gauche composent `sim-modal-layout--with-nav`, `sim-modal-layout__nav` et `sim-modal-layout__content`; ce layout porte le fond teinté, la bordure, le rayon, le padding et `--sim-input-bg: var(--surface-card)`. Les CSS feature peuvent seulement ajuster les variables de layout (`--sim-modal-nav-width`, `--sim-modal-nav-gap`). Deux implémentations admises, **mêmes tokens visuels** : (a) `SimModalSectionNav` pour une nav simple ; (b) un `role="tablist"` accessible **maison** quand la nav porte une fonction enrichie (ex. checkbox d'activation du palier, navigation clavier), à condition de **réutiliser le visuel canon**. Interdit : nav blanche bordée divergente ou styles visuels locaux de nav.
+4. **Corps** : en-tête de section optionnel (titre + méta courte) ; **pas de carte imbriquée décorative**. Lorsqu'un panneau de section teinté est nécessaire (groupe de champs, résumé), il consomme **la source unique** `--sim-modal-panel-*` (ou la classe utilitaire `.sim-modal-section-panel`) de `src/styles/sim/modals.css` : même fond, même bordure, même rayon, même padding pour toutes les modales (pas de fond/rayon/padding ad hoc par feature). Champs via primitives `Sim*`; fond gris sur surface blanche, fond blanc via `--sim-input-bg` sur surface teintée. Les modales Settings alignées sur ce canon utilisent `SimFieldShell`/`SimSelect` plutôt que des styles natifs larges. **Aucun scroll horizontal** (desktop ni mobile).
+5. **Footer** : **toujours présent**, aligné à droite. Deux cas : modale **à brouillon** = `Annuler` (`sim-modal-btn--ghost`) + action principale (`sim-modal-btn--primary`, libellé `Valider` en édition ou `Enregistrer` en création) ; modale **en édition live** (changements appliqués immédiatement, sans brouillon) = un seul `Fermer` (`sim-modal-btn--primary`). Action destructive éventuelle à **gauche** (`sim-modal-btn--danger` + `margin-right:auto`). **Interdits** : footer à un seul bouton ambigu (`Terminer`), absence totale de footer.
+6. **Largeurs** : classes canoniques §16d — `--lg` par défaut, `--xl` réservé au contenu réellement large.
+7. **Overlay** : une modale imbriquée ne recrée pas un scrim sombre. Elle peut poser un voile clair et flouté pour rendre le parent illisible sans effet « double nuit ».
+
+Tout écart (icône header non standard, footer auto-save, etc.) doit être justifié et documenté dans la PR, sinon il est traité comme une dette.
 
 **Statut** : baseline partagée.
 **Preuves** : `src/components/ui/sim/SimModalShell.tsx` · `src/styles/sim/modals.css` · `src/styles/sim/buttons.css`.
@@ -915,7 +943,7 @@ Inventaire de référence (état après PR bascules) :
 | Crédit Mensuel/Annuel                                    | choix                        | `SimSegmentedControl`                                                              |
 | Référentiel contrats — Audience (Particulier/Entreprise) | choix                        | `SimSegmentedControl`                                                              |
 | PER potentiel/transfert, Placement — phases              | navigation                   | onglets soulignés (`tablist`)                                                      |
-| Base CG retraite — fiche contrat                         | navigation                   | onglets (`tablist`), inchangé                                                      |
+| Base CG retraite — fiche contrat                         | navigation                   | tablist accessible, visuel nav latérale de modale                                  |
 | Trésorerie `ts-phase-source`                             | choix riche (cartes-options) | `radiogroup` de cartes, hors segmenté                                              |
 | Home — Comprendre/Piloter/Protéger                       | navigation                   | `tablist` ; convergence visuelle traitée avec la refonte Home (caret + alignement) |
 

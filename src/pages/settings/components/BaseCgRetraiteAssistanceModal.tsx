@@ -1,7 +1,9 @@
 import { useId, useState } from 'react';
 import type { ChangeEvent, FormEvent } from 'react';
+import { SimFieldShell } from '@/components/ui/sim';
 import { useSignalements } from '@/hooks/settings/useSignalements';
 import { validateIssueAttachmentFile } from '@/settings/issueReports';
+import { BaseCgTextareaField } from './BaseCgRetraiteModalFields';
 import SettingsModalShell from './SettingsModalShell';
 
 interface BaseCgRetraiteAssistanceModalProps {
@@ -13,6 +15,7 @@ export default function BaseCgRetraiteAssistanceModal({
 }: BaseCgRetraiteAssistanceModalProps) {
   const titleId = useId();
   const formId = useId();
+  const fileInputId = useId();
   const [description, setDescription] = useState('');
   const [pdfAttachment, setPdfAttachment] = useState<File | null>(null);
   const [attachmentError, setAttachmentError] = useState('');
@@ -54,8 +57,10 @@ export default function BaseCgRetraiteAssistanceModal({
   return (
     <SettingsModalShell
       title="Assistance & Suggestions — Base CG retraite"
+      subtitle="Décrire une mise à jour catalogue ou joindre une CG"
       titleId={titleId}
       onClose={onClose}
+      size="md"
       overlayClassName="base-cg-modal-overlay"
       modalClassName="base-cg-modal base-cg-assistance-modal"
       headerClassName="base-cg-modal__header"
@@ -63,13 +68,18 @@ export default function BaseCgRetraiteAssistanceModal({
       withBodyContainer={false}
       footer={
         <>
-          <button type="button" onClick={onClose} disabled={submitting}>
+          <button
+            type="button"
+            className="sim-modal-btn sim-modal-btn--ghost"
+            onClick={onClose}
+            disabled={submitting}
+          >
             Annuler
           </button>
           <button
             type="submit"
             form={formId}
-            className="base-cg-button base-cg-button--primary"
+            className="sim-modal-btn sim-modal-btn--primary"
             disabled={submitting || !description.trim() || Boolean(attachmentError)}
           >
             {submitting ? 'Envoi…' : 'Envoyer'}
@@ -77,38 +87,36 @@ export default function BaseCgRetraiteAssistanceModal({
         </>
       }
     >
-      <form id={formId} onSubmit={handleSubmit}>
+      <form id={formId} className="base-cg-assistance-modal__form" onSubmit={handleSubmit}>
         <div className="base-cg-modal__body base-cg-assistance-modal__body">
-          <label className="base-cg-modal__wide">
-            Description *
-            <textarea
-              value={description}
-              onChange={(event) => setDescription(event.target.value)}
-              rows={6}
-              disabled={submitting}
-              required
-              placeholder="Décrivez la mise à jour à vérifier : contrat, compagnie, version, point d’attention..."
-            />
-          </label>
+          <BaseCgTextareaField
+            label="Description *"
+            value={description}
+            onChange={setDescription}
+            rows={6}
+            disabled={submitting}
+            required
+            placeholder="Décrivez la mise à jour à vérifier : contrat, compagnie, version, point d’attention..."
+            className="base-cg-modal__wide base-cg-assistance-modal__description"
+          />
 
-          <label className="base-cg-modal__wide">
-            Conditions générales PDF (facultatif)
+          <SimFieldShell
+            label="Conditions générales PDF (facultatif)"
+            controlId={fileInputId}
+            hint={pdfAttachment ? pdfAttachment.name : 'PDF privé, limité à 25 Mo.'}
+            error={attachmentError}
+            className="base-cg-modal-field base-cg-modal__wide base-cg-assistance-modal__file"
+          >
             <input
+              id={fileInputId}
+              className="sim-field__control sim-field__control--left base-cg-file-input"
               type="file"
               accept="application/pdf"
               disabled={submitting}
               onChange={handleFileChange}
             />
-            {pdfAttachment ? (
-              <span className="base-cg-modal__hint">{pdfAttachment.name}</span>
-            ) : (
-              <span className="base-cg-modal__hint">PDF privé, limité à 25 Mo.</span>
-            )}
-          </label>
+          </SimFieldShell>
 
-          {attachmentError ? (
-            <p className="base-cg-documents__error base-cg-modal__wide">{attachmentError}</p>
-          ) : null}
           {submitError ? (
             <p className="base-cg-documents__error base-cg-modal__wide">{submitError}</p>
           ) : null}

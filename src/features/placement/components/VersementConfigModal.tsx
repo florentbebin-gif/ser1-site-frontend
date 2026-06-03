@@ -4,7 +4,6 @@
 
 import { useEffect, useState } from 'react';
 import { SimMobileStickyActions, SimModalSectionNav, SimModalShell } from '@/components/ui/sim';
-import { IconLayers } from '@/icons/ui';
 import { ENVELOPE_LABELS } from '@/engine/placement';
 import { DEFAULT_ANNUEL, normalizeVersementConfig } from '@/engine/placement/versementConfig';
 import type {
@@ -395,14 +394,12 @@ export function VersementConfigModal({
     <SimModalShell
       title="Paramétrage des versements"
       subtitle={envelopeLabels[envelope]}
-      icon={<IconLayers />}
       onClose={onClose}
       closeLabel="Fermer la modale"
       overlayClassName="vcm-overlay"
-      modalClassName="vcm sim-modal--xl"
+      modalClassName="vcm sim-modal--lg"
       headerClassName="vcm__header"
       headerContentClassName="vcm__header-content"
-      iconClassName="vcm__icon"
       titleClassName="vcm__title"
       subtitleClassName="vcm__subtitle"
       bodyClassName="vcm__body"
@@ -418,15 +415,15 @@ export function VersementConfigModal({
         </div>
       ) : null}
 
-      <div className="vcm__layout">
+      <div className="vcm__layout sim-modal-layout--with-nav">
         <SimModalSectionNav
           sections={modalSections}
           activeId={activeSection}
           ariaLabel="Rubriques des versements"
-          className="vcm__nav"
+          className="vcm__nav sim-modal-layout__nav"
           onChange={(sectionId) => setActiveSection(sectionId as VersementModalSectionId)}
         />
-        <div className="vcm__panels">{renderActiveSection()}</div>
+        <div className="vcm__panels sim-modal-layout__content">{renderActiveSection()}</div>
       </div>
 
       <SimMobileStickyActions className="vcm__mobile-actions" ariaLabel="Actions de validation">

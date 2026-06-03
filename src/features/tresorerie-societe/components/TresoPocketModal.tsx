@@ -54,14 +54,14 @@ export function TresoPocketModal({
       title="Paramétrer la poche"
       subtitle={getAllocationPocketLabel(pocket)}
       onClose={onClose}
-      modalClassName="ts-company-modal sim-modal--xl"
+      modalClassName="ts-company-modal sim-modal--lg"
       bodyClassName="ts-company-modal__body"
       footer={
         <>
-          <button type="button" className="sim-modal-btn sim-modal-btn--ghost" onClick={onDelete}>
+          <button type="button" className="sim-modal-btn sim-modal-btn--danger" onClick={onDelete}>
             Supprimer la poche
           </button>
-          <button type="button" className="sim-modal-btn sim-modal-btn--ghost" onClick={onClose}>
+          <button type="button" className="sim-modal-btn sim-modal-btn--primary" onClick={onClose}>
             Fermer
           </button>
         </>
