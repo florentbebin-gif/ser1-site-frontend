@@ -296,11 +296,7 @@
   color: var(--data-secondary);
 }
 
-/* Modal produits */
-.strategy-modal {
-  max-width: 720px;
-}
-
+/* Modal produits — largeur déléguée à sim-modal--lg (cf. GOUVERNANCE §16d). */
 .strategy-modal__body {
   display: flex;
   flex-direction: column;
