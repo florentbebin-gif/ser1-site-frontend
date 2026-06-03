@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 
 import type { SimulatorSpace, SimulatorTab } from '@/domain/simulators/types';
 import { IconChevronDown } from '@/icons/ui';
@@ -18,6 +18,14 @@ import './HomeGuide.css';
 interface HomeGuideProps {
   mode: HomeGuideMode;
 }
+
+// Alignement des cartes simulateur par onglet, en écho au repère d'onglet :
+// Comprendre à gauche, Piloter au centre, Protéger & transmettre à droite.
+const TAB_CARD_ALIGN: Record<SimulatorTab, 'start' | 'center' | 'end'> = {
+  comprendre: 'start',
+  piloter: 'center',
+  proteger: 'end',
+};
 
 export function HomeGuide({ mode }: HomeGuideProps): React.ReactElement {
   const guide = useMemo(() => buildHomeGuideState(mode), [mode]);
@@ -161,6 +169,13 @@ function HomeGuideTabPanel({
   isExpert: boolean;
   onSelectCard: (_card: HomeGuideCard) => void;
 }): React.ReactElement {
+  // Une seule famille ouverte à la fois (Piloter) : ouvrir une famille rétracte
+  // la précédente. Réinitialisé à chaque changement d'onglet.
+  const [openFamily, setOpenFamily] = useState<string | null>(null);
+  useEffect(() => {
+    setOpenFamily(null);
+  }, [tab?.id]);
+
   if (!tab || !tab.hasCards) {
     return (
       <div className="home-guide-empty" data-testid="home-guide-empty">
@@ -168,6 +183,8 @@ function HomeGuideTabPanel({
       </div>
     );
   }
+
+  const align = TAB_CARD_ALIGN[tab.id];
 
   // Onglet « Piloter » : familles repliables. Comprendre / Protéger : grille plate
   // (les familles ne portent pas d'entête, conforme aux visuels cibles).
@@ -179,6 +196,10 @@ function HomeGuideTabPanel({
             key={family.name}
             family={family}
             isExpert={isExpert}
+            isOpen={openFamily === family.name}
+            onToggle={() =>
+              setOpenFamily((current) => (current === family.name ? null : family.name))
+            }
             onSelectCard={onSelectCard}
           />
         ))}
@@ -187,7 +208,7 @@ function HomeGuideTabPanel({
   }
 
   return (
-    <div className="home-guide-grid" data-testid="home-guide-cards">
+    <div className={`home-guide-grid home-guide-grid--${align}`} data-testid="home-guide-cards">
       {tab.families.flatMap((family) =>
         family.cards.map((card) => (
           <HomeGuideSimulatorCard
@@ -205,14 +226,16 @@ function HomeGuideTabPanel({
 function HomeGuideFamilyAccordion({
   family,
   isExpert,
+  isOpen,
+  onToggle,
   onSelectCard,
 }: {
   family: HomeGuideFamily;
   isExpert: boolean;
+  isOpen: boolean;
+  onToggle: () => void;
   onSelectCard: (_card: HomeGuideCard) => void;
 }): React.ReactElement {
-  const [isOpen, setIsOpen] = useState(false);
-
   return (
     <section
       className={['home-guide-family', isOpen ? 'home-guide-family--open' : '']
@@ -223,7 +246,7 @@ function HomeGuideFamilyAccordion({
         type="button"
         className="home-guide-family__head"
         aria-expanded={isOpen}
-        onClick={() => setIsOpen((open) => !open)}
+        onClick={onToggle}
       >
         <span className="home-guide-family__name">{family.name}</span>
         <IconChevronDown className="home-guide-family__chevron" />
