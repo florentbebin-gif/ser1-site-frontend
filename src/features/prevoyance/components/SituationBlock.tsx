@@ -1,4 +1,4 @@
-import { SimSelect, type SimSelectOption } from '@/components/ui/sim';
+import { SimSelect, SimTemporalField, type SimSelectOption } from '@/components/ui/sim';
 import { estimateSalaireNetFromBrut } from '@/domain/prevoyance/helpers';
 import type {
   PrevoyanceContractKind,
@@ -44,6 +44,7 @@ export function SituationBlock({
       ? regime.caisse
       : undefined,
   }));
+  const birthDateId = 'prevoyance-birth-date';
 
   return (
     <SectionCard
@@ -52,13 +53,12 @@ export function SituationBlock({
       icon="situation"
     >
       <div className="prevoyance-form-grid prevoyance-form-grid--three">
-        <SimFieldShell label="Date de naissance">
-          <input
-            type="date"
+        <SimFieldShell label="Date de naissance" controlId={birthDateId}>
+          <SimTemporalField
+            id={birthDateId}
             aria-label="Date de naissance"
             value={situation.birthDate}
-            onChange={(event) => onChange({ birthDate: event.target.value })}
-            className="sim-field__control"
+            onChange={(birthDate) => onChange({ birthDate })}
           />
         </SimFieldShell>
         <SimFieldShell label="Situation familiale">

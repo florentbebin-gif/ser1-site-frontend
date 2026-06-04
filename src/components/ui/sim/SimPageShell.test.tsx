@@ -102,6 +102,27 @@ describe('SimPageShell', () => {
     expect(html).toContain('sim-grid__col--side');
   });
 
+  it('n’affiche la trace d’audit que lorsque la synthèse est prête', () => {
+    const waiting = renderToStaticMarkup(
+      <SimPageShell title="Attente">
+        <SimPageShell.Main>
+          <div>Corps</div>
+        </SimPageShell.Main>
+      </SimPageShell>,
+    );
+    const ready = renderToStaticMarkup(
+      <SimPageShell title="Prêt" auditTrailReady>
+        <SimPageShell.Main>
+          <div>Corps</div>
+        </SimPageShell.Main>
+      </SimPageShell>,
+    );
+
+    expect(waiting).not.toContain('sim-audit-trail');
+    expect(ready).toContain('sim-audit-trail');
+    expect(ready).toContain('Simulation calculée');
+  });
+
   it('renders the default loading state and hides page content', () => {
     const html = renderToStaticMarkup(
       <SimPageShell title="Chargement" loading statusTestId="status">

@@ -1,5 +1,5 @@
 import type { Dispatch, SetStateAction } from 'react';
-import { SimActionButton } from '@/components/ui/sim';
+import { SimActionButton, SimTemporalField } from '@/components/ui/sim';
 import { IconUsers } from '@/icons/ui';
 import { REGIMES_MATRIMONIAUX } from '@/engine/succession/civil';
 import type { DEFAULT_SUCCESSION_CIVIL_CONTEXT } from '../successionDraft';
@@ -78,15 +78,14 @@ export default function ScFamilyContextCard({
             </div>
             <div className="sc-field">
               <label htmlFor="sc-family-date-naissance-epoux1">{birthDateLabels.primary}</label>
-              <input
+              <SimTemporalField
                 id="sc-family-date-naissance-epoux1"
-                type="date"
                 className="sc-input--left"
                 value={civilContext.dateNaissanceEpoux1 ?? ''}
-                onChange={(e) =>
+                onChange={(value) =>
                   setCivilContext((prev) => ({
                     ...prev,
-                    dateNaissanceEpoux1: e.target.value || undefined,
+                    dateNaissanceEpoux1: value || undefined,
                   }))
                 }
               />
@@ -94,15 +93,14 @@ export default function ScFamilyContextCard({
             {showSecondBirthDate && (
               <div className="sc-field">
                 <label htmlFor="sc-family-date-naissance-epoux2">{birthDateLabels.secondary}</label>
-                <input
+                <SimTemporalField
                   id="sc-family-date-naissance-epoux2"
-                  type="date"
                   className="sc-input--left"
                   value={civilContext.dateNaissanceEpoux2 ?? ''}
-                  onChange={(e) =>
+                  onChange={(value) =>
                     setCivilContext((prev) => ({
                       ...prev,
-                      dateNaissanceEpoux2: e.target.value || undefined,
+                      dateNaissanceEpoux2: value || undefined,
                     }))
                   }
                 />

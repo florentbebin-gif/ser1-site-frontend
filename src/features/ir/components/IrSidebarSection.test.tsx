@@ -59,11 +59,12 @@ describe('IrSidebarSection', () => {
     expect(html).toContain('Nombre de parts');
   });
 
-  it('rend les indicateurs clefs avec la primitive métrique partagée', () => {
+  it('rend un seul hero de synthèse et des métriques secondaires', () => {
     const html = renderSidebar();
 
     expect(html).toContain('sim-metric--secondary');
-    expect(html).toContain('sim-metric--hero');
+    expect(html).toContain('ir-summary-total-hero');
+    expect(html).toContain('Imposition totale');
     expect(html).toContain('data-testid="ir-tmi-value"');
     expect(html).toContain('data-testid="ir-irnet-value"');
   });

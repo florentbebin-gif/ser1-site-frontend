@@ -96,7 +96,7 @@
 }
 
 .ir-summary-total-hero__value {
-  font-size: 24px;
+  font-size: var(--font-size-3xl);
   font-weight: 700;
   color: var(--color-c1);
   font-variant-numeric: tabular-nums;

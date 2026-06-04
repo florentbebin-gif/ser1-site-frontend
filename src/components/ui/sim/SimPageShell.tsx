@@ -30,6 +30,7 @@ interface SimPageShellProps {
   titleTestId?: string;
   statusTestId?: string;
   mobileSideFirst?: boolean;
+  auditTrailReady?: boolean;
   children?: ReactNode;
 }
 
@@ -162,6 +163,7 @@ function SimPageShellRoot({
   titleTestId,
   statusTestId,
   mobileSideFirst = false,
+  auditTrailReady = false,
   children,
 }: SimPageShellProps) {
   const { main, side, sections } = collectSlots(children);
@@ -253,7 +255,7 @@ function SimPageShellRoot({
           ))}
         </>
       )}
-      <SimAuditTrail />
+      {auditTrailReady && !shouldRenderStatus ? <SimAuditTrail /> : null}
     </div>
   );
 }

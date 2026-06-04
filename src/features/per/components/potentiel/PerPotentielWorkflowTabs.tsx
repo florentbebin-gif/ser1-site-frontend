@@ -23,7 +23,11 @@ export function PerPotentielWorkflowTabs({
   const currentIndex = visibleSteps.indexOf(currentStep);
 
   return (
-    <div className="per-potentiel-tabs" aria-label="Étapes du parcours" role="tablist">
+    <div
+      className="per-potentiel-tabs sim-underlined-tabs"
+      aria-label="Étapes du parcours"
+      role="tablist"
+    >
       {visibleSteps.map((stepId) => {
         const meta = getPerPotentielStepMeta(stepId, mode, historicalBasis, years);
         const isCurrent = currentStep === stepId;
@@ -35,7 +39,12 @@ export function PerPotentielWorkflowTabs({
             type="button"
             role="tab"
             aria-selected={isCurrent}
-            className={['per-potentiel-tab', isCurrent ? 'is-active' : '', isDone ? 'is-done' : '']
+            className={[
+              'per-potentiel-tab',
+              'sim-underlined-tab',
+              isCurrent ? 'is-active' : '',
+              isDone ? 'is-done' : '',
+            ]
               .filter(Boolean)
               .join(' ')}
             onClick={() => onStepSelect(stepId)}

@@ -29,6 +29,15 @@ export function usePerPotentielPageUXContract({
           label: 'Synthèse',
           targetId: 'per-potentiel-synthese',
         },
+        ...(synthesisReady
+          ? [
+              {
+                id: 'per-potentiel-hypotheses',
+                label: 'Hypothèses',
+                targetId: 'per-potentiel-hypotheses',
+              },
+            ]
+          : []),
       ],
     }),
     [synthesisReady],

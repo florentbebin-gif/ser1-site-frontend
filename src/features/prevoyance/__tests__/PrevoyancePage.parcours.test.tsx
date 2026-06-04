@@ -101,7 +101,8 @@ describe('PrevoyancePage - parcours', () => {
     PREVOYANCE_PAGE_TEST_TIMEOUT_MS,
   );
 
-  it('affiche les repères header, un état vide utile et les hypothèses avant saisie complète', async () => {
+  it('affiche les repères header, un état vide utile et les hypothèses après saisie complète', async () => {
+    const user = userEvent.setup();
     renderPrevoyancePage();
 
     expect(await screen.findByText('Mode expert')).toBeInTheDocument();
@@ -112,7 +113,12 @@ describe('PrevoyancePage - parcours', () => {
       ),
     ).toBeInTheDocument();
     expect(screen.queryByRole('heading', { name: 'Arrêt de travail' })).toBeNull();
-    expect(screen.getByRole('button', { name: /HYPOTHÈSES ET LIMITES/i })).toHaveAttribute(
+    expect(screen.queryByRole('button', { name: /Hypothèses et limites/i })).toBeNull();
+
+    await choisirRegime(user, /Salarié secteur privé — CPAM/i);
+    await saisirDateNaissance(user);
+
+    expect(screen.getByRole('button', { name: /Hypothèses et limites/i })).toHaveAttribute(
       'aria-expanded',
       'false',
     );

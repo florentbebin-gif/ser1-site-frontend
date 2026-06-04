@@ -21,7 +21,15 @@ export function useSuccessionPageUXContract({
         { id: 'succession-famille', label: 'Famille', targetId: 'succession-famille' },
         { id: 'succession-patrimoine', label: 'Patrimoine', targetId: 'succession-patrimoine' },
         { id: 'succession-synthese', label: 'Synthèse', targetId: 'succession-synthese' },
-        { id: 'succession-hypotheses', label: 'Hypothèses', targetId: 'succession-hypotheses' },
+        ...(synthesisReady
+          ? [
+              {
+                id: 'succession-hypotheses',
+                label: 'Hypothèses',
+                targetId: 'succession-hypotheses',
+              },
+            ]
+          : []),
       ],
     }),
     [synthesisReady],

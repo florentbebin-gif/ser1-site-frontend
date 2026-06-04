@@ -19,14 +19,18 @@ const PLACEMENT_PHASE_LABELS: Record<Exclude<PlacementStep, 'synthese'>, string>
 
 export function PlacementPhaseNav({ step, onStepChange }: PlacementPhaseNavProps) {
   return (
-    <div className="pl-phase-nav" role="tablist" aria-label="Phases de la simulation placement">
+    <div
+      className="pl-phase-nav sim-underlined-tabs"
+      role="tablist"
+      aria-label="Phases de la simulation placement"
+    >
       {PLACEMENT_PHASES.map((phase) => (
         <button
           key={phase}
           type="button"
           role="tab"
           aria-selected={step === phase}
-          className={`pl-phase-tab ${step === phase ? 'is-active' : ''}`}
+          className={`pl-phase-tab sim-underlined-tab ${step === phase ? 'is-active' : ''}`}
           onClick={() => onStepChange(phase)}
         >
           {PLACEMENT_PHASE_LABELS[phase]}

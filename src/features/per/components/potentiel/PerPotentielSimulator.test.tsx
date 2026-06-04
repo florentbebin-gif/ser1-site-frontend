@@ -279,6 +279,7 @@ describe('PerPotentielSimulator', () => {
 
     expect(html).toContain('Avis step 11000 / 7000');
     expect(html).toContain('Synthèse en attente');
+    expect(html).not.toContain('Hypothèses');
     expect(html).not.toContain('Sidebar contexte 11000 / 7000');
   });
 
@@ -297,6 +298,8 @@ describe('PerPotentielSimulator', () => {
 
     expect(html).toContain('Sidebar contexte 11000 / 7000');
     expect(html).toContain('id="per-potentiel-synthese"');
+    expect(html).toContain('id="per-potentiel-hypotheses"');
+    expect(html).toContain('Hypothèses');
   });
 
   it('hides the avis totals once the simulator reaches step 4', () => {

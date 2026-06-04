@@ -22,7 +22,9 @@ export function useTresoreriePageUXContract({
         { id: 'treso-parcours', label: 'Parcours', targetId: 'treso-parcours' },
         { id: 'treso-allocation', label: 'Allocation', targetId: 'treso-allocation' },
         { id: 'treso-synthese', label: 'Synthèse', targetId: 'treso-synthese' },
-        { id: 'treso-hypotheses', label: 'Hypothèses', targetId: 'treso-hypotheses' },
+        ...(readiness.synthesisReady
+          ? [{ id: 'treso-hypotheses', label: 'Hypothèses', targetId: 'treso-hypotheses' }]
+          : []),
       ],
     }),
     [readiness.synthesisReady],

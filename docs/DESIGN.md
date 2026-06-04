@@ -207,7 +207,8 @@ toggle CSS ad hoc par feature.
   blanche + ombre). C'est le seul visuel segmente autorise.
 - **Navigation entre etapes/panneaux** (workflow PER, phases Placement, fiche contrat) : onglets
   **soulignes** (`role="tablist"`, `aria-selected`, etape courante `aria-current`). Motif partage :
-  `border-bottom` + indicateur souligne. Ne pas styliser une navigation en pill segmente.
+  `.sim-underlined-tabs` + `.sim-underlined-tab` (baseline degradee C8, actif C3). Ne pas styliser
+  une navigation en pill segmente.
 - **On/off binaire** (Mode expert, options Placement/Crédit) : switch à genou (« bouton pilule »).
   **Piste OFF = `--color-c8`** pour tous les switches du repo (`mode-toggle-pill`, `pl-toggle__switch`,
   `ci-toggle__switch`) ; l'état actif reste propre au contexte (`--action-primary` pour `ModeToggle`).
@@ -217,7 +218,7 @@ choix avec sous-libelles) restent un `role="radiogroup"` de cartes, pas un segme
 
 Regle d'accessibilite : ne jamais convertir une navigation (`tablist`) en `radiogroup`, ni l'inverse.
 Voir l'inventaire et les exceptions dans `GOUVERNANCE.md`. Demo runtime : `/settings/design-system`
-(« Primitives UI » → Controle segmente).
+(« Primitives UI » → Controle segmente et onglets soulignes).
 
 ## Modales
 

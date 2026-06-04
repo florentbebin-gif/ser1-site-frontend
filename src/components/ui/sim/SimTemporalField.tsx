@@ -12,6 +12,7 @@ export interface SimTemporalFieldProps {
   min?: string;
   max?: string;
   disabled?: boolean;
+  ariaInvalid?: boolean;
   className?: string;
   testId?: string;
 }
@@ -37,6 +38,7 @@ export function SimTemporalField({
   min,
   max,
   disabled = false,
+  ariaInvalid = false,
   className,
   testId,
 }: SimTemporalFieldProps) {
@@ -53,6 +55,7 @@ export function SimTemporalField({
       max={max}
       disabled={disabled}
       aria-label={ariaLabel}
+      aria-invalid={ariaInvalid || undefined}
       data-testid={testId}
       onChange={(event) => onChange(event.target.value)}
     />

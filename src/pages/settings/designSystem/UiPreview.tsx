@@ -77,6 +77,31 @@ export function DesignSystemUiPreview() {
         </article>
 
         <article className="settings-design-system__ui-card">
+          <h3>Onglets soulignés</h3>
+          <div className="sim-underlined-tabs" role="tablist" aria-label="Étapes soulignées">
+            <button
+              type="button"
+              role="tab"
+              aria-selected="true"
+              className="sim-underlined-tab is-active"
+            >
+              Situation
+            </button>
+            <button
+              type="button"
+              role="tab"
+              aria-selected="false"
+              className="sim-underlined-tab is-done"
+            >
+              Revenus
+            </button>
+            <button type="button" role="tab" disabled className="sim-underlined-tab">
+              Synthèse
+            </button>
+          </div>
+        </article>
+
+        <article className="settings-design-system__ui-card">
           <h3>Navigation modale</h3>
           <SimModalSectionNav
             sections={modalSections}

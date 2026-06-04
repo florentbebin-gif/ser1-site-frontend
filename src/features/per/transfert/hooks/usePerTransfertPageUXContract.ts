@@ -36,6 +36,15 @@ export function usePerTransfertPageUXContract({
           label: 'Synthèse',
           targetId: 'per-transfert-synthese',
         },
+        ...(synthesisReady
+          ? [
+              {
+                id: 'per-transfert-hypotheses',
+                label: 'Hypothèses',
+                targetId: 'per-transfert-hypotheses',
+              },
+            ]
+          : []),
       ],
     }),
     [synthesisReady],

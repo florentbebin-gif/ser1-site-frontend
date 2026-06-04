@@ -1,4 +1,5 @@
 import type { StepProps } from './types';
+import { SimTemporalField } from '@/components/ui/sim';
 import { AuditEuroField } from './AuditNumberFields';
 
 export default function StepPassif({ dossier, updateDossier }: StepProps) {
@@ -78,13 +79,12 @@ export default function StepPassif({ dossier, updateDossier }: StepProps) {
           />
           <div className="audit-form-row">
             <label htmlFor={`audit-emprunt-date-fin-${emprunt.id}`}>Date de fin</label>
-            <input
+            <SimTemporalField
               id={`audit-emprunt-date-fin-${emprunt.id}`}
-              type="date"
               value={emprunt.dateFin}
-              onChange={(e) => {
+              onChange={(value) => {
                 const newEmprunts = [...passif.emprunts];
-                newEmprunts[idx] = { ...emprunt, dateFin: e.target.value };
+                newEmprunts[idx] = { ...emprunt, dateFin: value };
                 updateDossier({ passif: { ...passif, emprunts: newEmprunts } });
               }}
             />

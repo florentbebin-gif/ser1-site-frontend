@@ -18,7 +18,9 @@ export function useIrPageUXContract({ synthesisReady }: IrPageUXContractInput): 
         { id: 'ir-foyer', label: 'Foyer', targetId: 'ir-foyer' },
         { id: 'ir-revenus', label: 'Revenus', targetId: 'ir-revenus' },
         { id: 'ir-synthese', label: 'Synthèse', targetId: 'ir-synthese' },
-        { id: 'ir-hypotheses', label: 'Hypothèses', targetId: 'ir-hypotheses' },
+        ...(synthesisReady
+          ? [{ id: 'ir-hypotheses', label: 'Hypothèses', targetId: 'ir-hypotheses' }]
+          : []),
       ],
     }),
     [synthesisReady],
