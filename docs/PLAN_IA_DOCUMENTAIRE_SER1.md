@@ -4,7 +4,7 @@
 >
 > Objectif : construire dans SER1 un parcours d'analyse patrimoniale assistée par IA, avec lecture documentaire, complétion contrôlée de l'UX, validation ciblée par le CGP, calculs SER1 déterministes, génération PPTX existante et dossier de conformité RGPD exploitable commercialement.
 >
-> Ce plan est l'explosion détaillée du **P4 — Scan documentaire** de `docs/ROADMAP.md`.
+> Ce plan est l'explosion détaillée de **PR V2-14 — Scan documentaire** dans `docs/ROADMAP.md`.
 >
 > Mode opératoire Mistral jour J : [`docs/RUNBOOK_MISTRAL_SER1.md`](./RUNBOOK_MISTRAL_SER1.md).
 
@@ -18,7 +18,7 @@ La trajectoire recommandée est une **souveraineté contractuelle et applicative
 - Mistral AI Studio sert de fournisseur technique OCR + extraction structurée, sous DPA et avec demande Zero Data Retention (ZDR).
 - Au sens AI Act, SER1 assume le statut de fournisseur du système d'IA applicatif SER1 à risque limité ; Mistral est fournisseur du modèle GPAI / service OCR sous-jacent et le cabinet CGP est déployeur.
 - Les moteurs SER1 restent déterministes : l'IA prépare les entrées et les points de validation, mais ne remplace jamais les calculs.
-- La stratégie comparative P7 reste calculée par SER1 : situation actuelle vs scénario réorienté, hypothèses explicites, écarts chiffrés et validation CGP.
+- La stratégie comparative `/strategy` reste calculée par SER1 : situation actuelle vs scénario réorienté, hypothèses explicites, écarts chiffrés et validation CGP.
 - Les LLM ne rédigent pas l'étude client, ne produisent pas la recommandation finale et ne dialoguent pas librement avec le CGP. L'étude est générée par les calculateurs, règles, templates PPTX / Excel et textes contrôlés SER1.
 - Le CGP ne valide pas une grande table exhaustive : il valide seulement les points critiques, incertains ou contradictoires.
 - Les données envoyées aux appels LLM post-OCR sont pseudonymisées autant que possible.
@@ -604,15 +604,15 @@ Check-list opérationnelle pour démarrer dès lundi.
 
 ## Lien avec la roadmap globale (`docs/ROADMAP.md`)
 
-Ce plan IA documentaire est l'**explosion détaillée du P4 — Scan documentaire** de la roadmap globale.
+Ce plan IA documentaire est l'**explosion détaillée de PR V2-14 — Scan documentaire** de la roadmap globale.
 
-| PR roadmap globale                          | Lots de ce plan | Phases couvertes             |
-| ------------------------------------------- | --------------- | ---------------------------- |
-| PR-P4-01 — Décision infra + confidentialité | Lot 1           | Conformité A à D             |
-| PR-P4-02 — Prototype extraction minimale    | Lots 2, 3, 4    | Dev 1 à 6                    |
-| PR-P4-03 — Intégration analyse patrimoniale | Lots 5, 6       | Dev 7 à 10, Conformité E à G |
+| PR roadmap globale                                            | Lots de ce plan | Phases couvertes             |
+| ------------------------------------------------------------- | --------------- | ---------------------------- |
+| PR V2-14 / lot infra — Décision infra + confidentialité       | Lot 1           | Conformité A à D             |
+| PR V2-14 / lot extraction — Prototype extraction minimale     | Lots 2, 3, 4    | Dev 1 à 6                    |
+| PR V2-14 / lot intégration — Intégration analyse patrimoniale | Lots 5, 6       | Dev 7 à 10, Conformité E à G |
 
-Toute évolution structurante de ce plan doit être reflétée dans `docs/ROADMAP.md` § P4.
+Toute évolution structurante de ce plan doit être reflétée dans `docs/ROADMAP.md` § PR V2-14.
 
 ---
 
@@ -865,7 +865,7 @@ Leviers de maîtrise :
 
 SER1 retient un forfait fixe en 3 paliers fonctionnels, sans facturation au token :
 
-- Basic : IA Mistral seule quand P4 V1 est livré.
+- Basic : IA Mistral seule quand PR V2-14 V1 est livré.
 - Pro : Mistral + GPT-5.2 quand la V2 multi-modèles est validée.
 - Premium : Mistral + GPT-5.2 quand la V2 multi-modèles est validée, avec quota IA élargi et fonctionnalités avancées par rapport à Pro. Aucun troisième fournisseur LLM n'est ajouté en V2 : tout ajout (Anthropic, Google, autre) exige un nouveau cadrage AI Act + RGPD complet.
 

@@ -15,7 +15,7 @@ const PINEL_PINEL_PLUS: ProductRules = {
       bullets: [
         "Pinel classique : réduction d'IR selon la durée d'engagement de location (6, 9 ou 12 ans).",
         'Pinel+ : taux de réduction majorés si critères de qualité et de localisation renforcés.',
-        "Plafond d'investissement : 300 000 €/an et 5 500 €/m².",
+        "Plafond d'investissement : 300 000 €/an et 5 500 €/m² (art. 199 novovicies CGI — À confirmer selon plafond en vigueur).",
         "Dispositif clôturé : plus d'acquisition éligible depuis le 1er janvier 2025.",
       ],
       tags: ['reduction_ir', 'plafond_300k', 'ferme_2025'],
@@ -73,7 +73,7 @@ const DENORMANDIE: ProductRules = {
       bullets: [
         "Réduction d'IR de 12 %, 18 % ou 21 % selon la durée d'engagement (6, 9 ou 12 ans).",
         "Conditions : bien situé dans une commune éligible, travaux de rénovation ≥ 25 % du coût total d'opération.",
-        'Plafond identique au Pinel : 300 000 €/an et 5 500 €/m².',
+        'Plafond identique au Pinel : 300 000 €/an et 5 500 €/m² (art. 199 novovicies CGI — À confirmer selon plafond en vigueur).',
         'À confirmer selon la nature exacte des travaux (amélioration de la performance énergétique ou modernisation).',
       ],
       tags: ['reduction_ir', 'renovation', 'plafond_300k'],
@@ -127,7 +127,7 @@ const MALRAUX: ProductRules = {
       title: "Réduction d'IR — Restauration de patrimoine",
       bullets: [
         "Réduction d'IR de {malrauxReductionRates} des dépenses de travaux.",
-        'Plafond des travaux retenus : 400 000 € sur 4 années consécutives. Hors plafonnement global des niches fiscales.',
+        'Plafond des travaux retenus : 400 000 € sur 4 années consécutives (art. 199 tervicies CGI — À confirmer selon plafond en vigueur). Hors plafonnement global des niches fiscales.',
         "Engagement de location de 9 ans à compter de l'achèvement.",
         "À confirmer selon l'obtention de l'AST validée par l'ABF et la localisation en SPR.",
       ],

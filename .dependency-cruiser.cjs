@@ -25,19 +25,16 @@
 
 'use strict';
 
+const fs = require('fs');
 const path = require('path');
 
-const FEATURES = [
-  'audit',
-  'credit',
-  'ir',
-  'per',
-  'placement',
-  'prevoyance',
-  'strategy',
-  'succession',
-  'tresorerie-societe',
-];
+const FEATURE_ROOT = path.join(__dirname, 'src', 'features');
+const FEATURES = fs
+  .readdirSync(FEATURE_ROOT, { withFileTypes: true })
+  .filter((entry) => entry.isDirectory())
+  .map((entry) => entry.name)
+  .filter((feature) => fs.existsSync(path.join(FEATURE_ROOT, feature, 'index.ts')))
+  .sort();
 
 /**
  * Génère les règles cross-feature pour une feature donnée.

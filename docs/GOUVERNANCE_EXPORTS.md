@@ -82,17 +82,17 @@ Un deck Serenity suit toujours cette chaîne :
 | Wrapper          | Obligatoire entre la feature et la génération réelle                         |
 | Tests            | Smoke export + parité pour toute métrique partagée UI/export                 |
 
-### Marquage IA des exports — conditionnel à la livraison P4
+### Marquage IA des exports — conditionnel à la livraison PR V2-14
 
-Cette règle est **inactive tant que P4 n'est pas livré**. Aucun export actuel ne consomme de donnée issue d'un pipeline IA ; aucune contrainte n'est exigée pour les exports existants ni les développements en cours qui ne s'appuient pas sur l'IA.
+Cette règle est **inactive tant que PR V2-14 n'est pas livré**. Aucun export actuel ne consomme de donnée issue d'un pipeline IA ; aucune contrainte n'est exigée pour les exports existants ni les développements en cours qui ne s'appuient pas sur l'IA.
 
-À partir de la livraison de **P4 — Scan documentaire** (`docs/ROADMAP.md`), tout export qui contient au moins une donnée issue du pipeline IA (champ préremplis par scan documentaire, point validé après extraction LLM, valeur dérivée d'une extraction) devra :
+À partir de la livraison de **PR V2-14 — Scan documentaire** (`docs/ROADMAP.md`), tout export qui contient au moins une donnée issue du pipeline IA (champ préremplis par scan documentaire, point validé après extraction LLM, valeur dérivée d'une extraction) devra :
 
 - Porter une **métadonnée document** `ai_assisted: true` (PPTX : propriété custom dédiée ; Excel : cellule de header ou note documentaire).
 - Afficher un **badge visuel** « assisté par IA » ou « extrait par IA » sur la slide cover et sur les sections où la donnée IA-extraite est utilisée.
 - Conserver la traçabilité au niveau du champ source (`sourceRef` documentaire) côté SER1, sans nécessairement la pousser dans l'export.
 
-Cohérence : la règle matérialise la bonne pratique art. 50 § 2 et l'engagement volontaire art. 95 documentés dans `docs/AI_ACT_CADRAGE.md` (sections « Déclinaison UI / UX art. 50 » et « Obligations techniques et engagement volontaire art. 95 »). Elle est posée ici en amont pour que les développements d'exports en cours (P6 audit PPTX, P3 PER, P7 stratégie) puissent l'anticiper sans rework, mais elle ne crée aucune dette tant que P4 n'a pas livré la première donnée IA-extraite.
+Cohérence : la règle matérialise la bonne pratique art. 50 § 2 et l'engagement volontaire art. 95 documentés dans `docs/AI_ACT_CADRAGE.md` (sections « Déclinaison UI / UX art. 50 » et « Obligations techniques et engagement volontaire art. 95 »). Elle est posée ici en amont pour que les développements d'exports en cours (`/audit`, `PR V2-08` PER, `/strategy`) puissent l'anticiper sans rework, mais elle ne crée aucune dette tant que PR V2-14 n'a pas livré la première donnée IA-extraite.
 
 ### Alignement avec l'UI simulateur
 

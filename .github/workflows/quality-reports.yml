@@ -49,9 +49,11 @@ jobs:
             echo "- Échecs/timeouts/cancelled : ${failure}"
           } >> "${GITHUB_STEP_SUMMARY}"
 
-  quality-reports:
+  coverage-report:
     runs-on: ubuntu-22.04
-    timeout-minutes: 20
+    timeout-minutes: 10
+    env:
+      CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
     steps:
       - name: Checkout
@@ -74,6 +76,36 @@ jobs:
       - name: Run engine coverage
         run: npm run coverage
 
+      - name: Upload coverage
+        if: ${{ env.CODECOV_TOKEN != '' }}
+        uses: codecov/codecov-action@v6
+        with:
+          files: ./coverage/coverage-final.json
+          fail_ci_if_error: false
+          token: ${{ env.CODECOV_TOKEN }}
+
+  storybook-bundle-report:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: '22.22.1'
+          cache: 'npm'
+
+      - name: Pin npm version
+        run: |
+          npm install -g npm@11.12.0
+          npm --version
+
+      - name: Install dependencies
+        run: npm ci
+
       - name: Build Storybook
         run: npm run build:storybook
 
@@ -94,21 +126,42 @@ jobs:
         with:
           name: bundle-stats
           path: dist/bundle-stats.html
-          if-no-files-found: error
+          if-no-files-found: warn
 
-      - name: Upload coverage
-        uses: codecov/codecov-action@v6
+  lighthouse-report:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
         with:
-          files: ./coverage/coverage-final.json
-          fail_ci_if_error: false
-          token: ${{ secrets.CODECOV_TOKEN }}
+          node-version: '22.22.1'
+          cache: 'npm'
+
+      - name: Pin npm version
+        run: |
+          npm install -g npm@11.12.0
+          npm --version
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build app for Lighthouse
+        run: npm run build
+        env:
+          VITE_SUPABASE_URL: https://placeholder.supabase.co
+          VITE_SUPABASE_ANON_KEY: placeholder-key-for-build
 
       - name: Run Lighthouse CI
         continue-on-error: true
         run: npm run lhci
         env:
           LHCI_PROFILE: full
-          LHCI_RUNS: 1
+          LHCI_RUNS: 3
 
   security:
     runs-on: ubuntu-22.04

@@ -11,7 +11,11 @@ import type {
   TresoInputsV6,
   TresoProjectionRow,
 } from '@/engine/tresorerie/types';
-import { normalizeAllocationPockets } from '@/engine/tresorerie/allocationPockets';
+import {
+  computeAllocatableBase,
+  computePocketInitialAmounts,
+  normalizeAllocationPockets,
+} from '@/engine/tresorerie/allocationPockets';
 import { TresoPocketModal } from './TresoPocketModal';
 import { ALLOCATION_HORIZON_OPTIONS } from '../utils/tresorerieSocieteOptions';
 import { buildDefaultPocket } from '@/domain/tresorerie/societeModel';
@@ -77,16 +81,18 @@ export function TresoPlacementSection({ inputs, projectionRows = [], onChange }:
   const totalInitialPct = pockets.reduce((sum, pocket) => sum + pocket.initialAllocationPct, 0);
   const totalAnnualPct = pockets.reduce((sum, pocket) => sum + pocket.annualAllocationPct, 0);
   const protectedCash = minimumBankBalance + workingCapitalRequirement;
-  const initialAllocationBase = Math.max(0, v2.company.treasuryInitial - protectedCash);
-  const initialInvestedAmount =
-    (initialAllocationBase * Math.min(Math.max(totalInitialPct, 0), 100)) / 100;
+  const initialAllocationBase = computeAllocatableBase(v2.company.treasuryInitial, protectedCash);
+  const pocketInitialAmounts = computePocketInitialAmounts(pockets, initialAllocationBase);
+  const initialInvestedAmount = [...pocketInitialAmounts.values()].reduce(
+    (sum, amount) => sum + amount,
+    0,
+  );
   const bankAmount = Math.max(0, v2.company.treasuryInitial - initialInvestedAmount);
   const availableCash = Math.max(0, bankAmount - protectedCash);
   const treasuryStackSegments = buildTreasuryStackSegments(
     v2.company.treasuryInitial,
     initialAllocationBase,
     pockets,
-    totalInitialPct,
     protectedCash,
   );
   const firstBankWarning = projectionRows.find((row) => row.alerteTresorerieBancaireInsuffisante);
@@ -134,7 +140,7 @@ export function TresoPlacementSection({ inputs, projectionRows = [], onChange }:
       <TresoPocketBoard
         bankAmount={bankAmount}
         pocketCount={pockets.length}
-        treasuryInitial={initialAllocationBase}
+        pocketInitialAmounts={pocketInitialAmounts}
         pocketsByHorizon={pocketsByHorizon}
         onAddPocket={addPocket}
         onEditPocket={setEditingPocketId}
@@ -163,7 +169,7 @@ export function TresoPlacementSection({ inputs, projectionRows = [], onChange }:
         <TresoPocketModal
           pocket={editingPocket}
           index={editingPocketIndex}
-          initialAllocationBase={initialAllocationBase}
+          initialAmount={pocketInitialAmounts.get(editingPocket.id) ?? 0}
           remainingInitialPct={Math.max(
             0,
             100 - (totalInitialPct - editingPocket.initialAllocationPct),

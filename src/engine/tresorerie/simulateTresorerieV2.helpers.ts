@@ -1,5 +1,5 @@
 import { scheduleAmortissable } from '../credit/loanSchedule';
-import { normalizeAllocationPockets } from './allocationPockets';
+import { distributeAmountByAllocation, normalizeAllocationPockets } from './allocationPockets';
 import { computeProductiveMonthsByCivilYear } from './calculPlacements';
 import type {
   AllocationPocketInput,
@@ -398,17 +398,11 @@ export function createLotsFromAllocation(params: {
   startYear: number;
 }): InvestmentLot[] {
   if (params.amount <= 0) return [];
-  const pockets = normalizeAllocationPockets(params.pockets);
-  const totalPct = pockets.reduce(
-    (sum, pocket) => sum + Math.max(0, pocket[params.allocationKey]),
-    0,
-  );
-  if (totalPct <= 0) return [];
-  const scale = totalPct > 100 ? 100 / totalPct : 1;
+  const amounts = distributeAmountByAllocation(params.pockets, params.amount, params.allocationKey);
 
-  return pockets
+  return normalizeAllocationPockets(params.pockets)
     .map((pocket) => {
-      const allocated = (params.amount * Math.max(0, pocket[params.allocationKey]) * scale) / 100;
+      const allocated = amounts.get(pocket.id) ?? 0;
       if (allocated <= 0) return null;
       return {
         pocket,

@@ -16,7 +16,7 @@ Le mode expert sert l'analyse : accès aux paramètres fins, aux détails de cal
 - Le mode masque, replie ou réordonne l'interface ; il ne change jamais seul les hypothèses envoyées au moteur.
 - Le mode simplifié ne pré-sélectionne pas un parcours métier à la place de l'utilisateur ; il réduit la densité visible après un choix explicite.
 - Les exports et snapshots doivent rester cohérents avec les données réellement calculées, pas avec la densité d'affichage.
-- Périmètre du toggle : il pilote l'UX des simulateurs `/sim/*`. Les flux `/audit`, `/strategy` et le scan documentaire IA (à partir de P4) suivent leur propre progression guidée et ne sont pas pilotés par ce toggle ; voir `docs/AI_ACT_CADRAGE.md` pour la déclinaison UI / UX du scan IA.
+- Périmètre du toggle : il pilote l'UX des simulateurs `/sim/*`. Les flux `/audit`, `/strategy` et le scan documentaire IA (à partir de PR V2-14) suivent leur propre progression guidée et ne sont pas pilotés par ce toggle ; voir `docs/AI_ACT_CADRAGE.md` pour la déclinaison UI / UX du scan IA.
 
 ## Visible en simplifié
 
@@ -45,7 +45,7 @@ Un simulateur peut rester `expertOnly` lorsqu'une décision produit dédiée est
 
 Exception active :
 
-- `/sim/tresorerie-societe` est `expertOnly` temporaire et volontaire dans cette PR. Le mode simplifié n'est pas livré ici, car le parcours société / associé / allocation pilote des hypothèses structurantes de détention, revenus, CCA et trésorerie. Le chantier roadmap `PR-P2-06 - Parcours simplifié trésorerie société` porte la définition et la livraison de cette exception.
+- `/sim/tresorerie-societe` est `expertOnly` temporaire et volontaire dans cette PR. Le mode simplifié n'est pas livré ici, car le parcours société / associé / allocation pilote des hypothèses structurantes de détention, revenus, CCA et trésorerie. Le chantier roadmap `PR V2-06 - Trésorerie société` porte la définition et la livraison de cette exception.
 
 Une exception doit être documentée dans `docs/ARCHITECTURE.md` ou dans la doc métier du simulateur concerné.
 

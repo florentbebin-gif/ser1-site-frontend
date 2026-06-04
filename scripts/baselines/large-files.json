@@ -76,6 +76,13 @@
     "justification": "Fixture de références notariales vérifiées, non runtime.",
     "nextAction": "Découper par thème uniquement si de nouvelles références sont ajoutées."
   },
+  "src/features/tresorerie-societe/__tests__/tresorerieExport.pptx.test.ts": {
+    "maxLines": 522,
+    "category": "test-contract",
+    "decision": "acceptable-temporairement",
+    "justification": "Suite de parité export PPTX Trésorerie (fingerprint, mapping, clamp d'allocation) sur un chemin client sensible.",
+    "nextAction": "Découper par type de slide (schéma/timeline/cartes/projection) si de nouveaux scénarios sont ajoutés."
+  },
   "src/engine/tresorerie/simulateTresorerieV2.helpers.ts": {
     "maxLines": 529,
     "category": "domain-helper",

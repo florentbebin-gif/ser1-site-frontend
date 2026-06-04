@@ -4,9 +4,9 @@
 >
 > Mise à jour : 2026-05-24
 >
-> Objectif : produire la base juridique de la trajectoire AI Act pour SER1, identifier les articles du règlement (UE) 2024/1689 applicables au profil SER1 et leurs échéances, et préparer l'engagement volontaire AI Act SER1 ciblé par `PR-P5-06`.
+> Objectif : produire la base juridique de la trajectoire AI Act pour SER1, identifier les articles du règlement (UE) 2024/1689 applicables au profil SER1 et leurs échéances, et préparer l'engagement volontaire AI Act SER1 rattaché à `PR V2-14 — Scan documentaire`.
 >
-> Ce document est le livrable de la Phase 1 du plan défini dans `docs/ROADMAP.md` → `PR-P5-06`.
+> Ce document est le livrable de la Phase 1 du plan défini dans `docs/ROADMAP.md` → `PR V2-14`.
 
 ---
 
@@ -19,9 +19,9 @@
   - **Mistral** : fournisseur du modèle GPAI / service OCR sous-jacent ; son statut exact, les obligations GPAI et l'adhésion aux codes de pratique doivent être confirmés et archivés côté dossier conformité fournisseur.
   - **Cabinet CGP** : déployeur du système SER1 dans le cadre de sa mission client.
 - Périmètre IA au sens AI Act :
-  - **Inclus** : LLM Mistral utilisé pour le scan documentaire et les extractions post-OCR (`P4`).
+  - **Inclus** : LLM Mistral utilisé pour le scan documentaire et les extractions post-OCR (`PR V2-14`).
   - **Inclus avec garde-fou** : complétion structurée de l'UX après OCR, production de JSON patrimonial sourcé, signalement des incertitudes et génération de questions de validation fermées ou semi-fermées.
-  - **Exclu** : moteurs fiscaux déterministes (`src/engine/**`), heuristiques et recommandations algorithmiques hors LLM. Décision produit explicite, tracée dans `docs/ROADMAP.md` -> `PR-P5-06`.
+  - **Exclu** : moteurs fiscaux déterministes (`src/engine/**`), heuristiques et recommandations algorithmiques hors LLM. Décision produit explicite, tracée dans `docs/ROADMAP.md` -> `PR V2-14`.
 - **Classification de risque proposée** : **risque limité** (article 50). Pas haut risque (annexe III). Aucune pratique interdite (article 5).
 - Cible : **engagement volontaire AI Act SER1, auto-déclaratif**, via l'article 95, en appliquant volontairement un sous-ensemble des exigences haut risque du chapitre III section 2. Ce n'est pas un label officiel ni une certification.
 
@@ -78,7 +78,7 @@
   - Mention « assisté par IA » au moment de l'upload de document client.
   - Marquage visuel des champs préremplis par IA dans l'analyse patrimoniale (icône + tooltip).
   - Badge « extrait par IA » ou « assisté par IA » sur les sections concernées des exports PPTX / Excel quand l'information provient du pipeline IA, au titre de l'engagement volontaire.
-  - Détail complet dans la page conformité PR-P5-05.
+  - Détail complet dans le lot conformité de `PR V2-14`.
 
 ### Annexe III — Systèmes haut risque
 
@@ -87,7 +87,7 @@
   - Point 5(b) — évaluation de la solvabilité ou scoring crédit des personnes physiques : SER1 ne fait pas de scoring crédit.
   - Point 5(c) — tarification du risque en assurance vie / santé : SER1 ne tarifie pas de produit d'assurance.
   - Aucun des huit domaines (biométrie, infrastructures critiques, éducation et formation, emploi et RH, services essentiels, autorités répressives, migration et asile, administration de la justice) ne couvre le conseil patrimonial CGP.
-- **Action SER1** : déclaration motivée dans le cadrage et la page conformité ; revue à chaque évolution majeure. La stratégie comparative P7 reste autorisée si elle compare des scénarios calculés par SER1, à partir de données validées, et si le CGP conserve l'arbitrage final. Toute évolution vers scoring solvabilité, tarification assurance vie / santé, décision automatisée de souscription, chat libre de conseil ou recommandation financière générée par IA déclenche une revue haut risque avant développement.
+- **Action SER1** : déclaration motivée dans le cadrage et la page conformité ; revue à chaque évolution majeure. La stratégie comparative `/strategy` reste autorisée si elle compare des scénarios calculés par SER1, à partir de données validées, et si le CGP conserve l'arbitrage final. Toute évolution vers scoring solvabilité, tarification assurance vie / santé, décision automatisée de souscription, chat libre de conseil ou recommandation financière générée par IA déclenche une revue haut risque avant développement.
 
 ### Article 95 — Codes de conduite volontaires (engagement SER1)
 
@@ -99,7 +99,7 @@
   - L'engagement reste auto-déclaratif : aucun organisme certificateur officiel n'est retenu à ce stade. Sa crédibilité repose sur les preuves documentaires (registre IA, journalisation, AIPD, surveillance qualité).
   - Mention « SME » : SER1 entre dans le périmètre PME du règlement, qui prévoit explicitement un accompagnement et des adaptations.
 
-### Garde-fou produit — stratégie comparative P7
+### Garde-fou produit — stratégie comparative `/strategy`
 
 - **Position SER1** : l'IA sert à lire, structurer et préremplir le dossier patrimonial. Elle peut repérer les incohérences documentaires et générer des points de validation pour le CGP.
 - **Limite non négociable** : pas de chat libre CGP ↔ LLM, pas de rédaction de l'étude par LLM, pas de recommandation client par LLM. Les scénarios comparatifs sont construits sur les moteurs SER1, les hypothèses validées et les données sourcées.
@@ -119,7 +119,7 @@
 ## Articulation avec le RGPD et la CNIL
 
 - SER1 reste **responsable du traitement** des données personnelles envoyées à Mistral. Position constante de la CNIL : l'utilisateur d'un LLM tiers est responsable du traitement, pas le fournisseur du modèle.
-- AIPD (article 35 RGPD) à conduire avant déploiement de P4 — couvert par la Phase D du plan IA documentaire.
+- AIPD (article 35 RGPD) à conduire avant déploiement de PR V2-14 — couvert par la Phase D du plan IA documentaire.
 - Mesures déjà prévues dans [docs/PLAN_IA_DOCUMENTAIRE_SER1.md](./PLAN_IA_DOCUMENTAIRE_SER1.md) :
   - DPA Mistral et demande ZDR (Zero Data Retention).
   - Pseudonymisation post-OCR pour les appels de structuration, complétion UX et détection d'incertitudes.
@@ -131,7 +131,7 @@
 
 ## Transferts internationaux et escalade multi-fournisseurs
 
-- **V1 (livraison P4)** : Mistral seul, traitement intégralement UE. Aucun transfert hors UE, aucun fournisseur US activé.
+- **V1 (livraison PR V2-14)** : Mistral seul, traitement intégralement UE. Aucun transfert hors UE, aucun fournisseur US activé.
 - **V2 (escalade qualité)** : ajout de **GPT-5.2 uniquement**, déclenché par règles SER1 déterministes pour les dossiers complexes ou faible confiance d'extraction. **Pas de troisième fournisseur LLM** en V2 pour contenir la complexité réglementaire (DPA, SCC, AIPD, registre, conformité commerciale).
 - **Mode souverain** : option cabinet activable pour les clients sensibles, qui force le pipeline à rester Mistral UE only et désactive toute escalade GPT-5.2. Choix explicite et journalisé au niveau cabinet.
 - **Conditions d'activation de GPT-5.2** :
@@ -177,16 +177,16 @@ Adaptations PME / start-up explicitement prévues par le règlement.
 
 Liste exhaustive des systèmes effectivement « IA » au sens AI Act, et liste des composants explicitement hors périmètre. Tout ajout d'inférence LLM dans un composant aujourd'hui hors périmètre déclenche une revue AI Act avant développement.
 
-| Système / composant                               | Description                                                     | Statut           | Rôle SER1                         | Classification AI Act   | Justification                                                                                                  |
-| ------------------------------------------------- | --------------------------------------------------------------- | ---------------- | --------------------------------- | ----------------------- | -------------------------------------------------------------------------------------------------------------- |
-| Scan documentaire — OCR Mistral                   | OCR de PDF / scans / images via `mistral-ocr-latest`            | Planifié V1 (P4) | Fournisseur du système applicatif | Risque limité (art. 50) | Système d'IA au sens art. 3(1) ; pas haut risque, pas pratique interdite                                       |
-| Scan documentaire — extraction structurée Mistral | Transformation OCR → JSON patrimonial pseudonymisé              | Planifié V1 (P4) | Fournisseur du système applicatif | Risque limité (art. 50) | Préremplissage UX ; validation CGP obligatoire en aval                                                         |
-| Scan documentaire — escalade qualité GPT-5.2      | Routage déterministe SER1 vers GPT-5.2 sur dossiers complexes   | Planifié V2 (P4) | Fournisseur du système applicatif | Risque limité (art. 50) | Améliore l'extraction, ne change pas la classe ; opt-in cabinet ; conditions d'activation détaillées plus haut |
-| Détection d'incohérences documentaires            | Règles SER1 déterministes (matchings, contradictions de champs) | Planifié         | n/a                               | Hors périmètre AI Act   | Pas d'inférence, pas un système d'IA au sens art. 3(1)                                                         |
-| Recommandations PER (`PR-P3-04`)                  | Heuristique déterministe sur enveloppes PER et report IR        | Planifié         | n/a                               | Hors périmètre AI Act   | Règles humaines, pas d'inférence — considérant excluant les systèmes à base de règles                          |
-| Stratégie comparative (P7)                        | Calcul SER1 de scénarios `situation actuelle vs réorienté`      | Planifié         | n/a                               | Hors périmètre AI Act   | Le LLM ne décide pas ; calculs et comparaisons sont SER1                                                       |
-| Moteurs fiscaux (`src/engine/**`)                 | Calculs IR, PER, succession, crédit, prévoyance, placement      | Existant         | n/a                               | Hors périmètre AI Act   | Règles déterministes paramétrées                                                                               |
-| Exports PPTX / Excel                              | Templates `src/pptx/**` et `src/utils/export/xlsxBuilder.ts`    | Existant         | n/a                               | Hors périmètre AI Act   | Génération par template, pas d'inférence                                                                       |
+| Système / composant                               | Description                                                     | Statut                 | Rôle SER1                         | Classification AI Act   | Justification                                                                                                  |
+| ------------------------------------------------- | --------------------------------------------------------------- | ---------------------- | --------------------------------- | ----------------------- | -------------------------------------------------------------------------------------------------------------- |
+| Scan documentaire — OCR Mistral                   | OCR de PDF / scans / images via `mistral-ocr-latest`            | Planifié V1 (PR V2-14) | Fournisseur du système applicatif | Risque limité (art. 50) | Système d'IA au sens art. 3(1) ; pas haut risque, pas pratique interdite                                       |
+| Scan documentaire — extraction structurée Mistral | Transformation OCR → JSON patrimonial pseudonymisé              | Planifié V1 (PR V2-14) | Fournisseur du système applicatif | Risque limité (art. 50) | Préremplissage UX ; validation CGP obligatoire en aval                                                         |
+| Scan documentaire — escalade qualité GPT-5.2      | Routage déterministe SER1 vers GPT-5.2 sur dossiers complexes   | Planifié V2 (PR V2-14) | Fournisseur du système applicatif | Risque limité (art. 50) | Améliore l'extraction, ne change pas la classe ; opt-in cabinet ; conditions d'activation détaillées plus haut |
+| Détection d'incohérences documentaires            | Règles SER1 déterministes (matchings, contradictions de champs) | Planifié               | n/a                               | Hors périmètre AI Act   | Pas d'inférence, pas un système d'IA au sens art. 3(1)                                                         |
+| Recommandations PER (`PR V2-08`)                  | Heuristique déterministe sur enveloppes PER et report IR        | Planifié               | n/a                               | Hors périmètre AI Act   | Règles humaines, pas d'inférence — considérant excluant les systèmes à base de règles                          |
+| Stratégie comparative (`/strategy`)               | Calcul SER1 de scénarios `situation actuelle vs réorienté`      | Planifié               | n/a                               | Hors périmètre AI Act   | Le LLM ne décide pas ; calculs et comparaisons sont SER1                                                       |
+| Moteurs fiscaux (`src/engine/**`)                 | Calculs IR, PER, succession, crédit, prévoyance, placement      | Existant               | n/a                               | Hors périmètre AI Act   | Règles déterministes paramétrées                                                                               |
+| Exports PPTX / Excel                              | Templates `src/pptx/**` et `src/utils/export/xlsxBuilder.ts`    | Existant               | n/a                               | Hors périmètre AI Act   | Génération par template, pas d'inférence                                                                       |
 
 Rôles fournisseurs / déployeurs récapitulés :
 
@@ -204,14 +204,14 @@ Tableau écran par écran des mentions et marquages à intégrer, qui matériali
 | Surface                                             | Élément à intégrer                                                                                                                                                                                 | Format                                                            | Référence                                                          |
 | --------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------- | ------------------------------------------------------------------ |
 | Onboarding cabinet                                  | Capsule explicative : « SER1 utilise un système IA pour préremplir vos dossiers. Vous validez chaque champ. Les calculs et l'étude restent produits par SER1. »                                    | Modale ou page onboarding, lien permanent vers la page conformité | Art. 4 + art. 50 § 1                                               |
-| Home — bouton « Préparer un dossier par documents » | Tuile `hero-tile` dans le bloc `AUDIT & STRATÉGIE`, avant `SIMULATEURS`. Sous-titre court rappelant que c'est un scan IA, pas un chat                                                              | Tuile primaire ou secondaire selon hiérarchie                     | Art. 50 § 1 + gouvernance UI                                       |
+| Home — bouton « Préparer un dossier par documents » | Action dédiée dans le bloc `PAR OÙ COMMENCER`, avant la section guidée des simulateurs. Sous-titre court rappelant que c'est un scan IA, pas un chat                                               | Action primaire ou secondaire selon hiérarchie                    | Art. 50 § 1 + gouvernance UI                                       |
 | Upload de document                                  | Bandeau persistant : « Vos documents sont traités par un système d'IA hébergé en UE (Mistral). Détails sur la page conformité. »                                                                   | Bandeau haut de page                                              | Art. 50 § 1 + RGPD                                                 |
 | Pipeline scan en cours                              | Stepper indiquant les étapes et le modèle effectivement utilisé (Mistral V1 ; Mistral + GPT-5.2 si escalade V2 et cabinet opt-in)                                                                  | Stepper visible                                                   | Art. 50 § 1 + transparence engagement                              |
 | Indicateur qualité fin de scan                      | Tuile résumé : nombre de champs préremplis, score moyen de confiance, nombre de points à valider, nombre d'incohérences détectées                                                                  | Bloc résumé visible                                               | Engagement art. 95 + art. 4                                        |
 | Champs préremplis dans l'analyse patrimoniale       | Icône `ai_assisted` + tooltip indiquant source documentaire, page, score de confiance                                                                                                              | Inline sur chaque champ                                           | Art. 50 § 1 + engagement                                           |
 | Points à valider                                    | Carte structurée par point : valeur extraite, source, confiance, raison de l'incertitude, actions `Valider`, `Corriger`, `Ignorer`, `Demander pièce complémentaire`. **Aucune zone de chat libre** | Liste de cartes                                                   | Art. 14 surveillance humaine (engagement art. 95) + gouvernance UI |
 | Exports PPTX / Excel                                | Badge « assisté par IA » ou « extrait par IA » sur les sections issues du pipeline IA + métadonnée document `ai_assisted: true`                                                                    | Badge visuel + métadonnée fichier                                 | Engagement art. 95 + bonne pratique art. 50 § 2                    |
-| Page conformité (`PR-P5-05`)                        | Texte de l'engagement volontaire AI Act SER1, mini-registre IA, déclaration de non-applicabilité art. 5 et annexe III, contact responsable IA                                                      | Page dédiée publique                                              | Art. 13 transparence + engagement                                  |
+| Page conformité (`PR V2-14`)                        | Texte de l'engagement volontaire AI Act SER1, mini-registre IA, déclaration de non-applicabilité art. 5 et annexe III, contact responsable IA                                                      | Page dédiée publique                                              | Art. 13 transparence + engagement                                  |
 | CGU                                                 | Section système IA : modèles activés (Mistral V1 ; GPT-5.2 V2 conditionnel), finalités, localisation, droits des personnes, base légale, durée de rétention                                        | Section CGU dédiée                                                | RGPD + transparence                                                |
 | Footer global                                       | Lien permanent vers la page conformité                                                                                                                                                             | Lien texte                                                        | Bonne pratique                                                     |
 
@@ -272,7 +272,7 @@ Bloc texte à publier sur la page conformité, sans vocabulaire de certification
 2. Décliner la transparence art. 50 dans l'UI scan documentaire, analyse patrimoniale et exports PPTX / Excel.
 3. Produire le texte de la page conformité incluant la déclaration de non-applicabilité de l'art. 5 et de l'annexe III, et le contenu de l'engagement volontaire AI Act SER1.
 4. Choisir et documenter les exigences haut risque appliquées volontairement (art. 95) : a minima journalisation, transparence, surveillance humaine, exactitude.
-5. Documenter la frontière P7 : étude générée par les calculateurs SER1, LLM limité à la complétion documentaire, validation CGP journalisée.
+5. Documenter la frontière `/strategy` : étude générée par les calculateurs SER1, LLM limité à la complétion documentaire, validation CGP journalisée.
 6. Maintenir la chaîne RGPD (DPA, ZDR, AIPD, registre article 30) déjà prévue dans `docs/PLAN_IA_DOCUMENTAIRE_SER1.md`.
 
 Le détail technique (inventaire des systèmes IA, déclinaison UI / UX art. 50, obligations techniques et engagement art. 95) est consolidé dans les sections plus haut de ce même document, pour limiter la prolifération documentaire.

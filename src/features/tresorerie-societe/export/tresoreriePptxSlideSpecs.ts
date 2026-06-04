@@ -7,6 +7,10 @@ import type {
   TresorerieSynthesisSlideSpec,
 } from '@/pptx/theme/types';
 import type { TresoInputsV6, TresoProjectionRow } from '@/engine/tresorerie/types';
+import {
+  computeAllocatableBase,
+  computePocketInitialAmounts,
+} from '@/engine/tresorerie/allocationPockets';
 import type { TresoKPIs } from '../hooks/useTresorerieCalculations';
 import {
   getAllocationHorizonLabel,
@@ -95,11 +99,12 @@ function buildPocketTimeline(
   projectionStartYear: number,
   rangeEndYear: number,
 ): TresorerieSynthesisSlideSpec['pocketTimeline'] {
-  const allocatableBase = Math.max(
-    0,
-    positiveAmount(inputs.company.treasuryInitial) - getProtectedCash(inputs),
+  const allocatableBase = computeAllocatableBase(
+    positiveAmount(inputs.company.treasuryInitial),
+    getProtectedCash(inputs),
   );
   const pockets = inputs.allocationMatrix.pockets;
+  const pocketInitialAmounts = computePocketInitialAmounts(pockets, allocatableBase);
   if (pockets.length === 0) {
     return [
       {
@@ -123,9 +128,7 @@ function buildPocketTimeline(
       horizonLabel: getAllocationHorizonLabel(pocket.horizon),
       startYear,
       endYear: Math.min(rangeEndYear, startYear + duration - 1),
-      amountLabel: formatEuro(
-        (allocatableBase * positiveAmount(pocket.initialAllocationPct)) / 100,
-      ),
+      amountLabel: formatEuro(pocketInitialAmounts.get(pocket.id) ?? 0),
       iconKey: getPocketIcon(pocket.horizon),
       tone: getPocketTone(index),
     };
@@ -232,9 +235,9 @@ export function buildFlowMechanismSlide(
     positiveAmount(inputs.company.sharePremium) +
     ccaInitialTotal;
   const protectedCash = getProtectedCash(inputs);
-  const allocatableBase = Math.max(
-    0,
-    positiveAmount(inputs.company.treasuryInitial) - protectedCash,
+  const allocatableBase = computeAllocatableBase(
+    positiveAmount(inputs.company.treasuryInitial),
+    protectedCash,
   );
 
   return {

@@ -12,11 +12,11 @@ const LIVRETS_REGLEMENTES: ProductRules = {
     {
       title: 'Versements et plafonds',
       bullets: [
-        'Livret A : plafond de 22 950 € (hors capitalisation des intérêts).',
-        'LDDS : plafond de 12 000 €. Réservé aux résidents fiscaux français.',
-        'LEP : plafond de 10 000 €. Accessible sous conditions de revenus.',
-        'Livret Jeune : plafond de 1 600 €. Réservé aux 12-25 ans.',
-        'PEAC : plafond de 22 950 €. Réservé aux moins de 21 ans.',
+        'Livret A : plafond de 22 950 € (hors capitalisation des intérêts — art. R221-2 CMF, À confirmer selon plafond en vigueur).',
+        'LDDS : plafond de 12 000 € (art. D221-103 CMF, À confirmer selon plafond en vigueur). Réservé aux résidents fiscaux français.',
+        'LEP : plafond de 10 000 € (À confirmer selon plafond en vigueur). Accessible sous conditions de revenus.',
+        'Livret Jeune : plafond de 1 600 € (À confirmer selon plafond en vigueur). Réservé aux 12-25 ans.',
+        'PEAC : plafond de 22 950 € (À confirmer selon plafond en vigueur). Réservé aux moins de 21 ans.',
       ],
       tags: ['plafond_reglemente', 'resident_fiscal'],
       confidence: 'elevee',
@@ -288,7 +288,7 @@ const PEL: ProductRules = {
       title: 'Versements',
       bullets: [
         "Versement minimal à l'ouverture : 225 €. Versements annuels minimaux : 540 €.",
-        'Plafond des versements : 61 200 €.',
+        'Plafond des versements : 61 200 € (À confirmer selon plafond en vigueur).',
         "Taux d'intérêt garanti fixé à l'ouverture (taux réglementé).",
       ],
       tags: ['plafond_61200', 'taux_garanti'],
@@ -338,7 +338,7 @@ const CEL: ProductRules = {
     {
       title: 'Versements',
       bullets: [
-        'Plafond des versements : 15 300 €.',
+        'Plafond des versements : 15 300 € (À confirmer selon plafond en vigueur).',
         "Doit être détenu conjointement avec un PEL pour l'accès au prêt épargne logement.",
         "À confirmer : taux d'intérêt réglementé variable, fixé par arrêté ministériel.",
       ],

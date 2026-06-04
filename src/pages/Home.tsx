@@ -2,8 +2,7 @@ import React from 'react';
 import { Link } from 'react-router';
 
 import { DossierContextCards } from '../components/ui/dossier/DossierContextCards';
-import { HomeGuide } from '../features/home/HomeGuide';
-import { HOME_PRIMARY_ACTIONS } from '../features/home/homeGuideModel';
+import { HomeGuide, HOME_PRIMARY_ACTIONS } from '../features/home';
 import { useUserMode } from '../settings/userMode';
 import { IconArrowRight, IconClipboardCheck, IconScanLine, IconUpload } from '../icons/ui';
 import './Home.css';

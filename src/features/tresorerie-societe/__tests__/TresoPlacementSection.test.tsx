@@ -125,8 +125,10 @@ describe('TresoPlacementSection', () => {
     expect(screen.getByRole('button', { name: 'Ajouter une poche' })).toHaveClass(
       'sim-action-btn--add',
     );
+    // Surallocation (total initial = 130 %) : montant écrêté proportionnellement comme le moteur.
+    // base investissable = 100 000 − (10 000 + 25 000) = 65 000 ; 65 000 × 80/130 = 40 000 €.
     expect(screen.getByRole('button', { name: /Paramétrer Court terme/i })).toHaveTextContent(
-      '52 000 €',
+      '40 000 €',
     );
   });
 
@@ -189,6 +191,7 @@ describe('TresoPlacementSection', () => {
     expect(screen.getByDisplayValue('Court terme')).toBeInTheDocument();
     expect(screen.getByDisplayValue('5')).toBeInTheDocument();
     expect(screen.getByDisplayValue('4')).toBeInTheDocument();
+    expect(screen.getByText(/40[\s\u202f]000 € · maximum disponible : 100 %/)).toBeInTheDocument();
     expect(screen.queryByLabelText(/Ordre de consommation/i)).not.toBeInTheDocument();
     expect(screen.queryByLabelText(/Destination au terme/i)).not.toBeInTheDocument();
     expect(

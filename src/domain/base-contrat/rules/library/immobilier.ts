@@ -118,7 +118,7 @@ const RESIDENCE_SECONDAIRE: ProductRules = {
       bullets: [
         'Régime des plus-values immobilières des particuliers : {capitalGainIr} + {psGeneral}.',
         "Abattements progressifs selon la durée de détention : exonération totale d'IR après 22 ans, de PS après 30 ans.",
-        'Surtaxe de 2 % à 6 % si la plus-value nette imposable dépasse 50 000 €.',
+        'Surtaxe de 2 % à 6 % si la plus-value nette imposable dépasse 50 000 € (art. 1609 nonies G CGI — À confirmer selon seuil en vigueur).',
       ],
       tags: ['pv_immo', 'abattement_detention', 'surtaxe'],
       confidence: 'elevee',
@@ -157,7 +157,7 @@ const LOCATIF_NU: ProductRules = {
         'Loyers imposés dans la catégorie des revenus fonciers.',
         '{microFoncierAbattement}',
         "Régime réel : déductibilité des charges (travaux, intérêts d'emprunt, assurances, taxe foncière…).",
-        "Déficit foncier déductible du revenu global dans la limite de 10 700 €/an (20 200 € pour les travaux de rénovation énergétique d'ampleur).",
+        "Déficit foncier déductible du revenu global dans la limite de 10 700 €/an (20 200 € pour les travaux de rénovation énergétique d'ampleur — art. 156 CGI, À confirmer selon plafonds en vigueur).",
       ],
       tags: ['revenus_fonciers', 'micro_foncier', 'regime_reel', 'deficit_foncier'],
       confidence: 'elevee',
@@ -175,7 +175,7 @@ const LOCATIF_NU: ProductRules = {
       bullets: [
         'Régime des plus-values immobilières des particuliers : {capitalGainIr} + {psGeneral}.',
         "Abattements progressifs : exonération totale d'IR après 22 ans, de PS après 30 ans de détention.",
-        'Surtaxe de 2 % à 6 % si la plus-value nette dépasse 50 000 €.',
+        'Surtaxe de 2 % à 6 % si la plus-value nette dépasse 50 000 € (art. 1609 nonies G CGI — À confirmer selon seuil en vigueur).',
       ],
       tags: ['pv_immo', 'abattement_detention', 'surtaxe'],
       confidence: 'elevee',
@@ -281,7 +281,7 @@ const LOCATIF_MEUBLE_LMP: ProductRules = {
     {
       title: 'Régime BIC professionnel',
       bullets: [
-        'Statut LMP : recettes locatives ≥ 23 000 €/an ET supérieures aux autres revenus professionnels du foyer.',
+        'Statut LMP : recettes locatives ≥ 23 000 €/an ET supérieures aux autres revenus professionnels du foyer (À confirmer selon seuil en vigueur).',
         'Régime réel obligatoire : amortissements et charges déductibles (déficits imputables sur le revenu global).',
         'Cotisations sociales obligatoires — affiliation SSI ou régime général selon la situation — À confirmer.',
       ],
@@ -487,7 +487,7 @@ const GROUPEMENT_FONCIER_AGRI_VITI: ProductRules = {
       title: 'Transmission — régime art. 793 bis CGI',
       bullets: [
         'Exonération de 75 % des DMTG (art. 793 bis CGI) si les biens sont donnés à bail long terme (≥ 18 ans) et les parts détenues depuis plus de 2 ans.',
-        'Au-delà de 600 000 € par bénéficiaire (seuil relevé par LF 2025 art. 70) : exonération réduite à 50 %. Plafond de valeur exonérable : 20 M€.',
+        'Au-delà de 600 000 € par bénéficiaire (seuil relevé par LF 2025 art. 70 — À confirmer selon seuil en vigueur) : exonération réduite à 50 %. Plafond de valeur exonérable : 20 M€ (À confirmer selon plafond en vigueur).',
         'DMTG classiques si aucun bail long terme ou engagement de conservation non respecté.',
         "À confirmer selon l'existence du bail long terme et le respect des conditions de conservation (5 ans).",
       ],
@@ -502,7 +502,7 @@ const GROUPEMENT_FONCIER_AGRI_VITI: ProductRules = {
       dependencies: [
         'bail long terme ≥ 18 ans',
         'engagement de conservation 5 ans',
-        'seuil 600 000 € (LF 2025 art. 70)',
+        'seuil 600 000 € (LF 2025 art. 70 — À confirmer selon seuil en vigueur)',
       ],
     },
   ],
