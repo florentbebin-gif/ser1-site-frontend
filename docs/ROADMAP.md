@@ -16,7 +16,7 @@ Ce document est la roadmap V2 canonique pour construire le parcours complet Audi
 
 | Preuve                                                                                                                                                                                      | Ce que l'on observe                                                                                                                                                              | Impact V2                                                                                                                   | Recommandation minimale                                                                                                        |
 | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
-| `src/pages/Home.tsx:49`, `src/pages/Home.tsx:61`, `src/pages/Home.tsx:74`, `src/pages/Home.tsx:77`                                                                                          | La Home affiche un bloc Audit & stratégie puis une grille statique de simulateurs.                                                                                               | La Home ne porte pas encore le chainage métier ni la distinction Foyer/Société.                                             | Remplacer la grille par une Home guidée pilotée par la registry.                                                               |
+| `src/pages/Home.tsx`, `src/features/home/HomeGuide.tsx`, `src/features/home/homeGuideModel.ts`, `src/domain/simulators/homeMatrix.ts`                                                       | La Home guidée est en place via la feature Home et la projection métier des simulateurs.                                                                                         | La Home doit rester pilotée par la registry et ne pas redevenir une liste statique locale.                                  | Maintenir le shell `src/pages/Home.tsx` comme consommateur de l'API publique `src/features/home`.                              |
 | `src/routes/simRouteContracts.ts:3`, `src/routes/simRouteContracts.ts:16`, `src/routes/simRouteContracts.ts:62`, `src/routes/simRouteContracts.ts:70`, `src/routes/simRouteContracts.ts:94` | Le registre de routes existe mais décrit seulement le contrat de chargement des routes `/sim/*`.                                                                                 | Ce registre est nécessaire mais insuffisant pour piloter la Home, les panneaux, les modes et les moteurs.                   | Créer `SimulatorDefinition` au-dessus du registre de routes, sans dupliquer les chemins.                                       |
 | `docs/METIER.md:21`, `docs/METIER.md:29`, `docs/METIER.md:31`, `docs/METIER.md:489`                                                                                                         | Les simulateurs actuels incluent PER, Trésorerie société, etc. La Trésorerie société est explicitement `expertOnly` temporaire.                                                  | La V2 doit fermer cette décision produit, pas la transformer en exception durable.                                          | Définir la cible simplifiée/expert dans la registry, puis refondre le simulateur concerné avant ouverture simplifiée complète. |
 | `docs/ARCHITECTURE.md:321`, `docs/ARCHITECTURE.md:322`, `docs/GOUVERNANCE.md:662`                                                                                                           | Le mode simplifié masque/replie l'UI mais ne doit pas modifier seul les hypothèses ; les champs masqués doivent être exclus du moteur quand ils ne sont pas supposés participer. | La distinction simplifié/expert est structurante, pas décorative.                                                           | Ajouter des règles de visibilité et des tests de non-régression moteur par mode.                                               |
@@ -616,11 +616,11 @@ Cette matrice est la cible métier. Elle ne signifie pas que tous les éléments
 | `placement-tresorerie` | Placement trésorerie | Sous-module de `tresorerie-societe`   | Fusionné avec Trésorerie société, pas de carte simplifiée autonome. |
 | `fiscalite-societe`    | Fiscalité société    | `internalOnly` ou expert selon moteur | Sert aux moteurs Société, pas comme carte simplifiée initiale.      |
 
-## Home guidée à implémenter maintenant
+## Home guidée à maintenir
 
 ### Objectif
 
-Remplacer la grille statique par une Home qui guide le CGP selon son objectif, tout en évitant d'ouvrir trop de simulateurs sans moteur.
+Maintenir une Home qui guide le CGP selon son objectif, tout en évitant d'ouvrir trop de simulateurs sans moteur.
 
 ### Structure d'écran
 
@@ -666,16 +666,15 @@ Remplacer la grille statique par une Home qui guide le CGP selon son objectif, t
 - Titres courts dans les cartes ; explication longue dans le panneau.
 - Les cartes ne doivent pas devenir une landing page marketing.
 
-### Composants attendus
+### Composants et modules attendus
 
-| Composant               | Rôle                                                       |
-| ----------------------- | ---------------------------------------------------------- |
-| `HomeStartActions`      | Affiche Nouvelle stratégie et Scan documentaire.           |
-| `HomeSimulatorSpaces`   | Gère les deux espaces et leur état ouvert.                 |
-| `HomeSimulatorTabs`     | Gère Comprendre / Piloter / Protéger.                      |
-| `HomeSimulatorFamilies` | Gère les accordéons de familles.                           |
-| `HomeSimulatorCard`     | Affiche une entrée courte.                                 |
-| `HomeSimulatorPanel`    | Affiche le détail, les entrées, calculs, amont, aval, CTA. |
+| Composant / module           | Rôle                                                        |
+| ---------------------------- | ----------------------------------------------------------- |
+| `src/features/home/index.ts` | API publique consommée par `src/pages/Home.tsx`.            |
+| `HomeGuide`                  | Orchestre les actions, espaces, familles et panneau détail. |
+| `homeGuideModel`             | Porte les actions de démarrage et la projection UI.         |
+| `HomeSimulatorPanel`         | Affiche le détail, les entrées, calculs, amont, aval, CTA.  |
+| `homeMatrix.ts`              | Source métier des espaces Home, sans logique de rendu.      |
 
 ### Critères de sortie PR Home
 
@@ -1169,15 +1168,14 @@ Critères de sortie :
 
 ### PR V2-02 - Home guidée
 
-But : remplacer la grille Home par l'expérience guidée.
+But : maintenir l'expérience guidée et empêcher le retour d'une grille Home statique.
 
 Changements :
 
-- Refondre `src/pages/Home.tsx`.
-- Adapter `src/pages/Home.css` ou déplacer les styles vers une feature Home si le repo le justifie.
-- Ajouter les composants Home nécessaires.
-- Ajouter `Nouvelle stratégie` et `Scan documentaire`.
-- Ajouter les deux espaces, onglets, accordéons et panneau latéral.
+- Garder `src/pages/Home.tsx` comme shell léger consommant `src/features/home`.
+- Faire évoluer les composants et styles dans `src/features/home`.
+- Maintenir `Nouvelle stratégie` et `Scan documentaire`.
+- Maintenir les deux espaces, onglets, accordéons et panneau latéral.
 - Limiter les cartes Home à `active`, `hub` et `placeholder`.
 - Ne pas créer `DossierRail`, `DossierVersion` ni mécanisme de versioning dans cette PR.
 - Supprimer le hover chain coloré.

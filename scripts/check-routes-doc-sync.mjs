@@ -8,6 +8,7 @@ import process from 'node:process';
 const ROOT = process.cwd();
 const APP_ROUTES_FILE = path.join(ROOT, 'src', 'routes', 'appRoutes.ts');
 const SETTINGS_ROUTES_FILE = path.join(ROOT, 'src', 'routes', 'settingsRoutes.ts');
+const SIM_ROUTE_CONTRACTS_FILE = path.join(ROOT, 'src', 'routes', 'simRouteContracts.ts');
 const ARCHITECTURE_FILE = path.join(ROOT, 'docs', 'ARCHITECTURE.md');
 
 function collectPaths(file) {
@@ -20,8 +21,11 @@ const appRoutes = collectPaths(APP_ROUTES_FILE).filter((route) => route !== '*')
 const settingsRoutes = collectPaths(SETTINGS_ROUTES_FILE).map((route) =>
   route ? `/settings/${route}` : '/settings',
 );
+const simRoutes = collectPaths(SIM_ROUTE_CONTRACTS_FILE);
 
-const missing = [...appRoutes, ...settingsRoutes].filter((route) => !architecture.includes(route));
+const missing = [...new Set([...appRoutes, ...settingsRoutes, ...simRoutes])].filter(
+  (route) => !architecture.includes(route),
+);
 
 if (missing.length > 0) {
   console.error('check:routes-doc-sync ❌');

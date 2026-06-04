@@ -13,12 +13,27 @@ const SIM_FEATURES = [
   'placement',
 ];
 
-const ALLOWED_CLASS_FRAGMENTS = [
-  'sim-summary-card',
-  'sim-state-card',
-  'premium-card-compact',
-  'ir-detail-card',
-  'per-madelin-modal-card',
+const SIM_CARD_CLASS_EXCEPTIONS = [
+  {
+    fragment: 'sim-summary-card',
+    reason: 'carte de synthèse canonique, pas une carte de saisie simulateur',
+  },
+  {
+    fragment: 'sim-state-card',
+    reason: 'état vide/chargement canonique partagé par les simulateurs',
+  },
+  {
+    fragment: 'premium-card-compact',
+    reason: 'format compact de ligne KPI, sans contrat visuel sim-card--guide',
+  },
+  {
+    fragment: 'ir-detail-card',
+    reason: 'carte de détail IR interne à la restitution, sans shell premium-card racine',
+  },
+  {
+    fragment: 'per-madelin-modal-card',
+    reason: 'carte interne de modale PER Madelin, hors carte de page /sim',
+  },
 ];
 
 const IGNORED_DIRS = new Set(['__tests__']);
@@ -42,7 +57,7 @@ async function listTsxFiles(dir) {
 }
 
 function isAllowed(line) {
-  return ALLOWED_CLASS_FRAGMENTS.some((fragment) => line.includes(fragment));
+  return SIM_CARD_CLASS_EXCEPTIONS.some(({ fragment }) => line.includes(fragment));
 }
 
 function checkLine(filePath, line, index) {
@@ -85,7 +100,7 @@ if (failures.length > 0) {
     console.error(`- ${relativePath}:${lineNumber} ${line}`);
   });
   console.error(
-    'Ajoute premium-card--guide + sim-card--guide ou documente une exception dans scripts/check-sim-cards.mjs.',
+    'Ajoute premium-card--guide + sim-card--guide ou documente une exception nommée dans scripts/check-sim-cards.mjs.',
   );
   process.exit(1);
 }

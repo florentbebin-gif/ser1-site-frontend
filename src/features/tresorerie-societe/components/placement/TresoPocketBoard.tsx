@@ -13,20 +13,17 @@ interface PocketColumn {
 interface Props {
   bankAmount: number;
   pocketCount: number;
-  treasuryInitial: number;
+  /** Montants initiaux investis par poche (indexés par `pocket.id`), source unique engine. */
+  pocketInitialAmounts: ReadonlyMap<string, number>;
   pocketsByHorizon: PocketColumn[];
   onAddPocket: (horizon: AllocationPocketHorizon) => void;
   onEditPocket: (pocketId: string) => void;
 }
 
-function getPocketInitialAmount(treasuryInitial: number, pocket: AllocationPocketInput): number {
-  return (Math.max(0, treasuryInitial) * Math.max(0, pocket.initialAllocationPct)) / 100;
-}
-
 export function TresoPocketBoard({
   bankAmount,
   pocketCount,
-  treasuryInitial,
+  pocketInitialAmounts,
   pocketsByHorizon,
   onAddPocket,
   onEditPocket,
@@ -78,9 +75,7 @@ export function TresoPocketBoard({
                     <strong>{getAllocationPocketLabel(pocket)}</strong>
                     <em>{fmtRateInput(pocket.annualReturnRate)} %</em>
                   </span>
-                  <small>
-                    {fmtEuroInput(getPocketInitialAmount(treasuryInitial, pocket))} € estimés
-                  </small>
+                  <small>{fmtEuroInput(pocketInitialAmounts.get(pocket.id) ?? 0)} € estimés</small>
                   <span>
                     {pocket.durationYears} ans · {getAllocationHorizonLabel(pocket.horizon)}
                   </span>

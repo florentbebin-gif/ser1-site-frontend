@@ -25,6 +25,10 @@ import type {
   TresoInputsV6,
   TresoProjectionRow,
 } from '@/engine/tresorerie/types';
+import {
+  computeAllocatableBase,
+  computePocketInitialAmounts,
+} from '@/engine/tresorerie/allocationPockets';
 import { pickChapterImage } from '@/pptx/designSystem/serenity';
 import { paginateTresoYears } from '@/pptx/slides/buildTresorerieProjection';
 import type { TresoKPIs } from '../hooks/useTresorerieCalculations';
@@ -261,13 +265,14 @@ function buildAllocationCards(inputs: TresoInputsV6): TresorerieAllocationCardsS
 
   const protectedCash = getProtectedCash(inputs);
   const treasuryInitial = positiveAmount(inputs.company.treasuryInitial);
-  const allocatableBase = Math.max(0, treasuryInitial - protectedCash);
+  const allocatableBase = computeAllocatableBase(treasuryInitial, protectedCash);
+  const pocketInitialAmounts = computePocketInitialAmounts(pockets, allocatableBase);
   const cardForPocket = (pocket: AllocationPocketInput, index: number) => ({
     pocketId: pocket.id,
     label: pocket.label?.trim() || `Poche ${index + 1}`,
     iconKey: horizonIcon(pocket.horizon),
     horizonLabel: getAllocationHorizonLabel(pocket.horizon),
-    initialAmount: (allocatableBase * positiveAmount(pocket.initialAllocationPct)) / 100,
+    initialAmount: pocketInitialAmounts.get(pocket.id) ?? 0,
     initialAllocationPct: positiveAmount(pocket.initialAllocationPct),
     annualAllocationPct: positiveAmount(pocket.annualAllocationPct),
     durationYears: positiveAmount(pocket.durationYears),

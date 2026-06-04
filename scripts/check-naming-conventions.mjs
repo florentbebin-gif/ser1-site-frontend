@@ -8,7 +8,8 @@ import process from 'node:process';
 const ROOT = process.cwd();
 const SCANNED_DIRS = ['src'];
 const EXTENSIONS = new Set(['.ts', '.tsx']);
-const LEGACY_DIRECTORY_ALLOWLIST = new Map();
+// Exceptions explicites uniquement si un dossier legacy reste nécessaire avec preuve d'usage.
+const LEGACY_DIRECTORY_EXCEPTIONS = new Map();
 const FORBIDDEN_DIRECTORY_NAMES = new Set(['__spike__', '_raw']);
 const FORBIDDEN_PATTERNS = [
   {
@@ -57,7 +58,7 @@ while (directoriesToVisit.length > 0) {
     const relativePath = normalizeRelativePath(fullPath);
     directoriesToVisit.push(fullPath);
 
-    if (entry.name === 'legacy' && !LEGACY_DIRECTORY_ALLOWLIST.has(relativePath)) {
+    if (entry.name === 'legacy' && !LEGACY_DIRECTORY_EXCEPTIONS.has(relativePath)) {
       violations.push(
         `${relativePath}: dossier legacy interdit ; isoler la compatibilite dans migrations/compat avec preuve d'usage`,
       );

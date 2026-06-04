@@ -1,4 +1,5 @@
 import type { AllocationPocketInput } from '@/engine/tresorerie/types';
+import { computePocketInitialAmounts } from '@/engine/tresorerie/allocationPockets';
 import { getAllocationPocketLabel } from '@/engine/tresorerie/allocationLabels';
 import { fmtEuroInput, parseEuroInput } from '../../utils/tresorerieFormatters';
 import { TresoTreasuryStackBar, type TresoTreasuryStackSegment } from './TresoTreasuryStackBar';
@@ -18,7 +19,6 @@ export function buildTreasuryStackSegments(
   treasuryInitial: number,
   initialAllocationBase: number,
   pockets: AllocationPocketInput[],
-  totalInitialPct: number,
   protectedCash: number,
 ): TresoTreasuryStackSegment[] {
   const treasuryBase = Math.max(0, treasuryInitial);
@@ -46,12 +46,10 @@ export function buildTreasuryStackSegments(
     ];
   }
 
-  const allocationScale = totalInitialPct > 100 ? 100 / totalInitialPct : 1;
-  const allocatableBase = Math.max(0, initialAllocationBase);
+  const pocketInitialAmounts = computePocketInitialAmounts(pockets, initialAllocationBase);
   const pocketSegments = pockets
     .map((pocket) => {
-      const amount =
-        (allocatableBase * Math.max(0, pocket.initialAllocationPct) * allocationScale) / 100;
+      const amount = pocketInitialAmounts.get(pocket.id) ?? 0;
       return {
         key: pocket.id,
         label: getAllocationPocketLabel(pocket),

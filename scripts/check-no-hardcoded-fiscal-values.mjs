@@ -158,6 +158,19 @@ const ALLOWED_FILE_SUFFIXES = [
 // ─── Extensions de fichiers à scanner ────────────────────────────────────────
 const SCAN_EXTS = new Set(['.ts', '.tsx', '.js', '.jsx']);
 
+const BASE_CONTRAT_LIBRARY_PREFIX = 'src/domain/base-contrat/rules/library/';
+const BASE_CONTRAT_FISCAL_KEYWORDS =
+  /\b(plafond|plafonds|seuil|seuils|limite|abattement|déficit|deficit|surtaxe|cotisation|cotisations|exonération|exoneration)\b/i;
+const BASE_CONTRAT_AMOUNT_LITERAL =
+  /\b\d{1,3}(?:[\s_]\d{3})+(?:[,.]\d+)?\s*(?:€|EUR|euros?|M€)|\b\d+\s*M€/i;
+const CONFIRMATION_MARKER = /(?:À|A) confirmer/i;
+const BASE_CONTRAT_GENERIC_ALLOWLIST = [
+  {
+    pattern: /Droits de mutation à titre onéreux \(DMTO\) : environ 5 à 6 %/i,
+    reason: 'ordre de grandeur de frais d’acquisition, hors plafond révisable en euros',
+  },
+];
+
 // ─────────────────────────────────────────────────────────────────────────────
 
 function getExt(filename) {
@@ -185,6 +198,19 @@ function isAllowedPath(absPath) {
 function stripInlineComment(line) {
   const index = line.indexOf('//');
   return index >= 0 ? line.slice(0, index) : line;
+}
+
+function relativePath(absPath) {
+  return relative(ROOT, absPath).replace(/\\/g, '/');
+}
+
+function isBaseContratLibraryPath(absPath) {
+  return relativePath(absPath).startsWith(BASE_CONTRAT_LIBRARY_PREFIX);
+}
+
+function isAllowedBaseContratGenericLine(line) {
+  if (CONFIRMATION_MARKER.test(line)) return true;
+  return BASE_CONTRAT_GENERIC_ALLOWLIST.some(({ pattern }) => pattern.test(line));
 }
 
 function walkDir(dir, results = []) {
@@ -230,6 +256,7 @@ for (const dir of SCAN_DIRS) {
     }
 
     const lines = content.split('\n');
+    const scansBaseContratLibrary = isBaseContratLibraryPath(file);
 
     for (const { label, pattern } of FORBIDDEN_VALUES) {
       lines.forEach((line, idx) => {
@@ -241,11 +268,34 @@ for (const dir of SCAN_DIRS) {
 
         const code = stripInlineComment(line);
         if (pattern.test(code)) {
-          const rel = relative(ROOT, file).replace(/\\/g, '/');
+          const rel = relativePath(file);
           violations.push({
             file: rel,
             line: idx + 1,
             label,
+            lineContent: line.trim().slice(0, 120),
+          });
+        }
+      });
+    }
+
+    if (scansBaseContratLibrary) {
+      lines.forEach((line, idx) => {
+        const trimmed = line.trimStart();
+        if (trimmed.startsWith('//') || trimmed.startsWith('*') || trimmed.startsWith('/*')) {
+          return;
+        }
+
+        const code = stripInlineComment(line);
+        if (
+          BASE_CONTRAT_FISCAL_KEYWORDS.test(code) &&
+          BASE_CONTRAT_AMOUNT_LITERAL.test(code) &&
+          !isAllowedBaseContratGenericLine(code)
+        ) {
+          violations.push({
+            file: relativePath(file),
+            line: idx + 1,
+            label: 'valeur révisable Base-Contrat sans mention À confirmer',
             lineContent: line.trim().slice(0, 120),
           });
         }

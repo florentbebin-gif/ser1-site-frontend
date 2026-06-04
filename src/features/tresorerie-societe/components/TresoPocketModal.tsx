@@ -18,7 +18,7 @@ import {
 interface TresoPocketModalProps {
   pocket: AllocationPocketInput;
   index: number;
-  initialAllocationBase: number;
+  initialAmount: number;
   remainingInitialPct: number;
   remainingAnnualPct: number;
   onChange: (patch: Partial<AllocationPocketInput>) => void;
@@ -29,7 +29,7 @@ interface TresoPocketModalProps {
 export function TresoPocketModal({
   pocket,
   index,
-  initialAllocationBase,
+  initialAmount,
   remainingInitialPct,
   remainingAnnualPct,
   onChange,
@@ -46,8 +46,6 @@ export function TresoPocketModal({
     Math.min(100, remainingInitialPct + pocket.initialAllocationPct),
   );
   const maxAnnualPct = Math.max(0, Math.min(100, remainingAnnualPct + pocket.annualAllocationPct));
-  const initialAmount =
-    (Math.max(0, initialAllocationBase) * Math.max(0, pocket.initialAllocationPct)) / 100;
 
   return (
     <SimModalShell

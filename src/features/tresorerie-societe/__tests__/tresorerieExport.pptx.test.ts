@@ -250,6 +250,33 @@ describe('Exports Trésorerie société — PPTX', () => {
     ]);
   });
 
+  it('écrête les montants de poche en surallocation (cartes PPTX, source engine partagée)', () => {
+    // Deux poches à 80 % + 80 % sur une base investissable de 50 000 (150 000 − 100 000 protégés)
+    // → clamp proportionnel : 50 000 × 0,8 × (100/160) = 25 000 chacune (somme = base).
+    const deck = buildTresorerieStudyDeck({
+      rows: ROWS,
+      kpis: KPIS,
+      inputs: {
+        ...INPUTS,
+        allocationMatrix: {
+          ...INPUTS.allocationMatrix,
+          pockets: INPUTS.allocationMatrix.pockets.map((pocket) => ({
+            ...pocket,
+            initialAllocationPct: 80,
+          })),
+        },
+      },
+    });
+    const allocationCards = deck.slides.find(
+      (slide): slide is Extract<DeckSlide, { type: 'treso-allocation-cards' }> =>
+        slide.type === 'treso-allocation-cards',
+    );
+    expect(allocationCards?.allocatableBase).toBe(50000);
+    const initialAmounts = allocationCards?.cards.map((card) => card.initialAmount) ?? [];
+    expect(initialAmounts).toEqual([25000, 25000]);
+    expect(initialAmounts.reduce((sum, value) => sum + value, 0)).toBe(50000);
+  });
+
   it('prépare le schéma PPTX avec filiales imbriquées et matrice vide', () => {
     const deck = buildTresorerieStudyDeck({
       rows: ROWS,

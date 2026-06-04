@@ -137,6 +137,8 @@ Ces noms de dossiers sont des marqueurs historiques de refactor ou de prototypag
 
 - ne pas réintroduire ces dossiers dans `src/`
 - `npm run check:naming-conventions` bloque les nouveaux dossiers `legacy`, `__spike__` ou `_raw` sous `src/`
+- toute exception au dossier `legacy` doit être nommée dans `LEGACY_DIRECTORY_EXCEPTIONS`
+  (`scripts/check-naming-conventions.mjs`) avec une preuve d'usage associée en PR
 - si un spike temporaire est nécessaire, le garder hors runtime prod puis le supprimer ou l'intégrer avant merge
 - avant toute suppression ou promotion de code historique, fournir une preuve d'usage (`rg`, chaîne d'import, route ou script)
 
@@ -181,7 +183,7 @@ Source (preuves) :
 | `/forgot-password`        | public       | `ForgotPassword`        | `src/pages/ForgotPassword.tsx` (import direct)                                                                                                                                                                                    |
 | `/set-password`           | public       | `SetPassword`           | `src/pages/SetPassword.tsx` (import direct)                                                                                                                                                                                       |
 | `/reset-password`         | public       | `SetPassword`           | `src/pages/SetPassword.tsx` (import direct)                                                                                                                                                                                       |
-| `/`                       | privé        | `Home`                  | `src/pages/Home.tsx` (import direct)                                                                                                                                                                                              |
+| `/`                       | privé        | `Home`                  | `src/pages/Home.tsx` via l'API publique `src/features/home`                                                                                                                                                                       |
 | `/audit`                  | privé + lazy | `AuditWizard`           | `src/features/audit/AuditWizard.tsx` (exporté via `src/features/audit/index.ts`) — workflow actif hors `/sim/*`, avec draft de session, `ExportMenu` partagé et export PPTX isolé dans `src/features/audit/export/exportAudit.ts` |
 | `/strategy`               | privé + lazy | `StrategyPage`          | `src/pages/StrategyPage.tsx` (lazy) — workflow actif dépendant d'un draft d'audit, avec `SimFieldShell` pour la saisie produit et export PPTX isolé dans `src/features/strategy/export/exportStrategy.ts`                         |
 | `/sim/placement`          | privé + lazy | `Placement`             | `src/features/placement/PlacementPage.tsx` (exporté via `src/features/placement/index.ts`)                                                                                                                                        |
@@ -196,7 +198,7 @@ Source (preuves) :
 | `/sim/ir`                 | privé + lazy | `Ir`                    | `src/features/ir/IrPage.tsx` (exporté via `src/features/ir/index.ts`)                                                                                                                                                             |
 | `/settings/*`             | privé + lazy | `SettingsShell`         | `src/pages/SettingsShell.tsx` (lazy)                                                                                                                                                                                              |
 
-Trajectoire P4 : le scan documentaire IA doit rester rattaché à l'audit, pas aux simulateurs. La route cible sera une surface privée hors `/sim/*`, par exemple `/audit/documents` ou une étape interne de `/audit`, avec accès depuis la Home dans le bloc `AUDIT & STRATÉGIE`. Ne pas créer `/sim/ia` ni ajouter le scan dans la grille des simulateurs.
+Trajectoire PR V2-14 : le scan documentaire IA doit rester rattaché à l'audit, pas aux simulateurs. La route cible sera une surface privée hors `/sim/*`, par exemple `/audit/documents` ou une étape interne de `/audit`, avec accès depuis la Home dans le bloc `PAR OÙ COMMENCER`. Ne pas créer `/sim/ia` ni ajouter le scan dans la grille des simulateurs.
 
 ### Rail dossier et versions — V2-03
 
@@ -371,7 +373,7 @@ Décision produit : `docs/mode-simplifie-expert.md`.
 - Les boutons locaux additionnels de page (filtres, catégories masquables) ne doivent pas être initialisés comme actifs par défaut sans règle produit documentée.
 - Helpers d'affichage : `src/settings/userModeDisplay.tsx` expose `resolveEffectiveUserMode`, `DetailLevel`, `ExpertOnly` et `SimpleOnly`.
 - Le mode simplifié masque ou replie de l'UI ; il ne doit jamais changer seul les hypothèses calculatoires envoyées au moteur.
-- Un simulateur sans décision produit simplifiée reste explicitement `expertOnly`. `/sim/tresorerie-societe` est `expertOnly` temporaire et volontaire dans cette PR : le mode simplifié n'est pas livré ici, car le parcours société / associé / allocation exige une décision produit dédiée suivie par `PR-P2-06`.
+- Un simulateur sans décision produit simplifiée reste explicitement `expertOnly`. `/sim/tresorerie-societe` est `expertOnly` temporaire et volontaire dans cette PR : le mode simplifié n'est pas livré ici, car le parcours société / associé / allocation exige une décision produit dédiée suivie par `PR V2-06`.
 
 ### Thème V5 (3 modes)
 

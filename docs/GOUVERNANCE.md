@@ -875,8 +875,9 @@ Les blocs de saisie ou de décision métier dans `/sim/*` utilisent le contrat c
 - `sim-card--guide` active les règles simulateurs, notamment les headers avec `sim-card__header--bleed`.
 
 Exceptions autorisées : cartes de synthèse (`sim-summary-card`), états (`sim-state-card`),
-cartes compactes (`premium-card-compact`) et cartes explicitement listées dans
-`scripts/check-sim-cards.mjs` quand elles ne sont pas des blocs de saisie.
+cartes compactes (`premium-card-compact`) et cartes explicitement listées avec une raison dans
+`SIM_CARD_CLASS_EXCEPTIONS` (`scripts/check-sim-cards.mjs`) quand elles ne sont pas des blocs de
+saisie.
 
 La règle est contrôlée par `npm run check:sim-cards`.
 
