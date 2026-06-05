@@ -11,7 +11,7 @@ export const PERIN_ASSURANCE: ProductRules = {
         "Abondement employeur et transferts depuis d'anciens produits (PERP, Madelin, PERCO…) possibles.",
       ],
       tags: ['deductible_ir', 'plafond_per', 'pass', 'art_154_bis'],
-      confidence: 'elevee',
+      confidence: 'moyenne',
       sources: [
         {
           label: 'Art. 163 quatervicies CGI',
@@ -22,6 +22,7 @@ export const PERIN_ASSURANCE: ProductRules = {
           url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000041471860',
         },
       ],
+      dependencies: ['source officielle ou contractuelle applicable'],
     },
     {
       title: 'Compartiments de versements',
@@ -205,13 +206,14 @@ export const PERP_MADELIN_ANCIEN: ProductRules = {
         "Madelin retraite (TNS) : déductibilité selon l'Article 154 bis CGI et l'Article 154 bis-0 A — À confirmer selon les articles exacts applicables.",
       ],
       tags: ['ferme_souscription', 'transfert_per', 'deductible_ir', 'art_154_bis'],
-      confidence: 'elevee',
+      confidence: 'moyenne',
       sources: [
         {
           label: 'Art. 154 bis CGI (TNS Madelin retraite)',
           url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000041471860',
         },
       ],
+      dependencies: ['source officielle ou contractuelle applicable'],
     },
   ],
   sortie: [

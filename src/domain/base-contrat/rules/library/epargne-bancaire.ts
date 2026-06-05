@@ -19,13 +19,14 @@ const LIVRETS_REGLEMENTES: ProductRules = {
         'PEAC : plafond de 22 950 € (À confirmer selon plafond en vigueur). Réservé aux moins de 21 ans.',
       ],
       tags: ['plafond_reglemente', 'resident_fiscal'],
-      confidence: 'elevee',
+      confidence: 'moyenne',
       sources: [
         {
           label: 'Service-public.fr — Livrets réglementés',
           url: 'https://www.service-public.fr/particuliers/vosdroits/N91',
         },
       ],
+      dependencies: ['source officielle ou contractuelle applicable'],
     },
   ],
   sortie: [
@@ -74,9 +75,11 @@ const CTO: ProductRules = {
         'Pas de plafond de versements, ni de restriction sur les titres (actions, obligations, ETF, OPCVM, produits dérivés…).',
         'Accessible aux personnes physiques et morales.',
         'Plusieurs CTO possibles par personne.',
+        'À confirmer selon la source officielle ou contractuelle applicable.',
       ],
       tags: ['no_plafond', 'pp_pm_eligible'],
-      confidence: 'elevee',
+      confidence: 'moyenne',
+      dependencies: ['source officielle ou contractuelle applicable'],
     },
   ],
   sortie: [
@@ -119,9 +122,11 @@ const CTO: ProductRules = {
         'Les titres entrent dans la succession à leur valeur au jour du décès.',
         'Avantage fiscal : la plus-value latente est "purgée" (les héritiers repartent du prix d\'acquisition à la date du décès).',
         'Droits de mutation selon le barème et le lien de parenté, après abattements légaux.',
+        'À confirmer selon la source officielle ou contractuelle applicable.',
       ],
       tags: ['purge_pv', 'dmtg_classique'],
-      confidence: 'elevee',
+      confidence: 'moyenne',
+      dependencies: ['source officielle ou contractuelle applicable'],
     },
   ],
 };
@@ -135,9 +140,11 @@ const CTO_PM: ProductRules = {
       bullets: [
         'En cas de dissolution, liquidation ou cession d’activité, les titres sont intégrés aux opérations de clôture de la personne morale.',
         'Le résultat fiscal des cessions est déterminé selon le régime d’imposition (IS/IR) et les écritures de clôture applicables.',
+        'À confirmer selon la source officielle ou contractuelle applicable.',
       ],
       tags: ['fin_vie_pm', 'cloture_pm', 'resultat_fiscal_titres'],
-      confidence: 'elevee',
+      confidence: 'moyenne',
+      dependencies: ['source officielle ou contractuelle applicable'],
     },
   ],
 };
@@ -292,13 +299,14 @@ const PEL: ProductRules = {
         "Taux d'intérêt garanti fixé à l'ouverture (taux réglementé).",
       ],
       tags: ['plafond_61200', 'taux_garanti'],
-      confidence: 'elevee',
+      confidence: 'moyenne',
       sources: [
         {
           label: 'Service-public.fr — Plan épargne logement (PEL)',
           url: 'https://www.service-public.fr/particuliers/vosdroits/F16140',
         },
       ],
+      dependencies: ['source officielle ou contractuelle applicable'],
     },
   ],
   sortie: [
@@ -326,9 +334,11 @@ const PEL: ProductRules = {
       bullets: [
         'Le PEL entre dans la succession à sa valeur au jour du décès.',
         'Droits de mutation applicables selon le barème légal.',
+        'À confirmer selon la source officielle ou contractuelle applicable.',
       ],
       tags: ['dmtg_classique'],
-      confidence: 'elevee',
+      confidence: 'moyenne',
+      dependencies: ['source officielle ou contractuelle applicable'],
     },
   ],
 };
@@ -373,9 +383,11 @@ const CEL: ProductRules = {
       bullets: [
         'Entre dans la succession à sa valeur au jour du décès.',
         'Droits de mutation applicables selon le barème légal.',
+        'À confirmer selon la source officielle ou contractuelle applicable.',
       ],
       tags: ['dmtg_classique'],
-      confidence: 'elevee',
+      confidence: 'moyenne',
+      dependencies: ['source officielle ou contractuelle applicable'],
     },
   ],
 };
@@ -388,9 +400,11 @@ const CAT_CSL: ProductRules = {
         'Pas de plafond légal de versements.',
         'Accessible aux personnes physiques et morales.',
         'Rémunération librement négociée (taux du marché).',
+        'À confirmer selon la source officielle ou contractuelle applicable.',
       ],
       tags: ['no_plafond', 'pp_pm_eligible'],
-      confidence: 'elevee',
+      confidence: 'moyenne',
+      dependencies: ['source officielle ou contractuelle applicable'],
     },
   ],
   sortie: [
@@ -413,9 +427,11 @@ const CAT_CSL: ProductRules = {
       bullets: [
         'Solde entre dans la succession à sa valeur au jour du décès.',
         'Droits de mutation applicables selon le barème légal.',
+        'À confirmer selon la source officielle ou contractuelle applicable.',
       ],
       tags: ['dmtg_classique'],
-      confidence: 'elevee',
+      confidence: 'moyenne',
+      dependencies: ['source officielle ou contractuelle applicable'],
     },
   ],
 };
@@ -429,9 +445,11 @@ const CAT_CSL_PM: ProductRules = {
       bullets: [
         'En cas de dissolution, liquidation ou cession d’activité, les soldes sont intégrés aux opérations de clôture de la personne morale.',
         'Le traitement fiscal de clôture dépend du régime d’imposition (IS/IR) et de la qualification comptable des flux.',
+        'À confirmer selon la source officielle ou contractuelle applicable.',
       ],
       tags: ['fin_vie_pm', 'cloture_pm', 'traitement_fiscal_cloture'],
-      confidence: 'elevee',
+      confidence: 'moyenne',
+      dependencies: ['source officielle ou contractuelle applicable'],
     },
   ],
 };

@@ -82,13 +82,14 @@ const PREVOYANCE_ITT: ProductRules = {
         'Pas de valeur de rachat : contrat de risque pur.',
       ],
       tags: ['primes_non_deductibles', 'risque_pur'],
-      confidence: 'elevee',
+      confidence: 'moyenne',
       sources: [
         {
           label: 'BOSS — Prévoyance TNS',
           url: 'https://boss.gouv.fr/portail/accueil/prevoyance-tns.html',
         },
       ],
+      dependencies: ['source officielle ou contractuelle applicable'],
     },
   ],
   sortie: [

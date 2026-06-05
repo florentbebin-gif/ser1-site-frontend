@@ -26,6 +26,7 @@ import type { BaseContratOverrideInput, OverrideMap } from '@/domain/base-contra
 import { buildBaseContratFiscalLabels, getRules } from '@/domain/base-contrat/rules/index';
 import type {
   Audience,
+  Confidence,
   ProductRules,
   RuleBlock,
   RuleRenderContext,
@@ -77,6 +78,12 @@ function useOverrides() {
   return { overrides, loading, reload };
 }
 
+const CONFIDENCE_LABELS: Record<Confidence, string> = {
+  elevee: 'Vérifié',
+  moyenne: 'À vérifier',
+  faible: 'Non vérifié',
+};
+
 function RuleBlockCard({ block, showAdminMeta }: { block: RuleBlock; showAdminMeta: boolean }) {
   return (
     <div className="settings-reference-rule-card">
@@ -91,7 +98,7 @@ function RuleBlockCard({ block, showAdminMeta }: { block: RuleBlock; showAdminMe
           <span
             className={`settings-reference-confidence settings-reference-confidence--${block.confidence}`}
           >
-            Confiance {block.confidence}
+            {CONFIDENCE_LABELS[block.confidence]}
           </span>
           {block.dependencies && block.dependencies.length > 0 && (
             <div className="settings-reference-rule-meta__group">

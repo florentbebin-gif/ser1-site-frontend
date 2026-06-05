@@ -7,6 +7,12 @@
  */
 
 import type { ProductRules, Audience } from '../types';
+import {
+  GROUPEMENT_FONCIER_AGRI_VITI,
+  GROUPEMENT_FONCIER_AGRI_VITI_PM,
+  GROUPEMENT_FONCIER_FORESTIER,
+  GROUPEMENT_FONCIER_FORESTIER_PM,
+} from './immobilier-groupements-fonciers';
 
 const RESIDENCE_PRINCIPALE: ProductRules = {
   constitution: [
@@ -34,9 +40,11 @@ const RESIDENCE_PRINCIPALE: ProductRules = {
         "La plus-value réalisée à la cession est totalement exonérée d'IR et de prélèvements sociaux.",
         'Condition : le bien doit être la résidence principale du cédant au jour de la vente.',
         "L'exonération s'applique quelle que soit la durée de détention.",
+        'À confirmer selon la source officielle ou contractuelle applicable.',
       ],
       tags: ['exoneration_totale', 'residence_principale_vente'],
-      confidence: 'elevee',
+      confidence: 'moyenne',
+      dependencies: ['source officielle ou contractuelle applicable'],
     },
   ],
   deces: [
@@ -65,9 +73,11 @@ const PARTS_SCPI_PM: ProductRules = {
       bullets: [
         'Souscription de parts de SCPI par la personne morale, en direct ou via financement.',
         'Les revenus distribués sont intégrés au résultat fiscal de la personne morale (IS/IR selon régime).',
+        'À confirmer selon la source officielle ou contractuelle applicable.',
       ],
       tags: ['scpi_pm', 'resultat_fiscal'],
-      confidence: 'elevee',
+      confidence: 'moyenne',
+      dependencies: ['source officielle ou contractuelle applicable'],
     },
   ],
   sortie: [
@@ -76,9 +86,11 @@ const PARTS_SCPI_PM: ProductRules = {
       bullets: [
         "La plus-value de cession est intégrée au résultat fiscal de la personne morale selon son régime d'imposition.",
         'Le traitement comptable et fiscal dépend des modalités de détention et de clôture des comptes.',
+        'À confirmer selon la source officielle ou contractuelle applicable.',
       ],
       tags: ['cession_parts', 'resultat_fiscal', 'traitement_comptable'],
-      confidence: 'elevee',
+      confidence: 'moyenne',
+      dependencies: ['source officielle ou contractuelle applicable'],
     },
   ],
   deces: [
@@ -87,9 +99,11 @@ const PARTS_SCPI_PM: ProductRules = {
       bullets: [
         "En cas de dissolution, liquidation ou cession d'activité, les parts de SCPI sont intégrées aux opérations de clôture de la personne morale.",
         'Le résultat de cession ou de liquidation est traité selon le régime fiscal de la personne morale.',
+        'À confirmer selon la source officielle ou contractuelle applicable.',
       ],
       tags: ['fin_vie_pm', 'liquidation', 'cession_activite'],
-      confidence: 'elevee',
+      confidence: 'moyenne',
+      dependencies: ['source officielle ou contractuelle applicable'],
     },
   ],
 };
@@ -121,13 +135,14 @@ const RESIDENCE_SECONDAIRE: ProductRules = {
         'Surtaxe de 2 % à 6 % si la plus-value nette imposable dépasse 50 000 € (art. 1609 nonies G CGI — À confirmer selon seuil en vigueur).',
       ],
       tags: ['pv_immo', 'abattement_detention', 'surtaxe'],
-      confidence: 'elevee',
+      confidence: 'moyenne',
       sources: [
         {
           label: 'Art. 150 U CGI — plus-values immobilières',
           url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000043655826',
         },
       ],
+      dependencies: ['source officielle ou contractuelle applicable'],
     },
   ],
   deces: [
@@ -160,13 +175,14 @@ const LOCATIF_NU: ProductRules = {
         "Déficit foncier déductible du revenu global dans la limite de 10 700 €/an (20 200 € pour les travaux de rénovation énergétique d'ampleur — art. 156 CGI, À confirmer selon plafonds en vigueur).",
       ],
       tags: ['revenus_fonciers', 'micro_foncier', 'regime_reel', 'deficit_foncier'],
-      confidence: 'elevee',
+      confidence: 'moyenne',
       sources: [
         {
           label: 'Art. 28 CGI — revenus fonciers',
           url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000006302449',
         },
       ],
+      dependencies: ['source officielle ou contractuelle applicable'],
     },
   ],
   sortie: [
@@ -178,13 +194,14 @@ const LOCATIF_NU: ProductRules = {
         'Surtaxe de 2 % à 6 % si la plus-value nette dépasse 50 000 € (art. 1609 nonies G CGI — À confirmer selon seuil en vigueur).',
       ],
       tags: ['pv_immo', 'abattement_detention', 'surtaxe'],
-      confidence: 'elevee',
+      confidence: 'moyenne',
       sources: [
         {
           label: 'Art. 150 U CGI — plus-values immobilières',
           url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000043655826',
         },
       ],
+      dependencies: ['source officielle ou contractuelle applicable'],
     },
   ],
   deces: [
@@ -215,9 +232,11 @@ const LOCATIF_NU_PM: ProductRules = {
       bullets: [
         'En cas de dissolution, liquidation ou cession d’activité, le bien est intégré aux opérations de clôture de la personne morale.',
         'Le traitement fiscal de sortie dépend du régime d’imposition (IS/IR) et des écritures de clôture applicables.',
+        'À confirmer selon la source officielle ou contractuelle applicable.',
       ],
       tags: ['fin_vie_pm', 'cloture_pm', 'sortie_immobiliere_pm'],
-      confidence: 'elevee',
+      confidence: 'moyenne',
+      dependencies: ['source officielle ou contractuelle applicable'],
     },
   ],
 };
@@ -343,9 +362,11 @@ const IMMO_AUTRE: ProductRules = {
       bullets: [
         'Droits de mutation à titre onéreux selon la nature du bien.',
         "Intégration à l'assiette IFI selon la nature et l'utilisation.",
+        'À confirmer selon la source officielle ou contractuelle applicable.',
       ],
       tags: ['dmto', 'ifi'],
-      confidence: 'elevee',
+      confidence: 'moyenne',
+      dependencies: ['source officielle ou contractuelle applicable'],
     },
   ],
   sortie: [
@@ -394,9 +415,11 @@ const IMMO_AUTRE_PM: ProductRules = {
       bullets: [
         'En cas de dissolution, liquidation ou cession d’activité, le bien est intégré aux opérations de clôture de la personne morale.',
         'Le traitement fiscal de sortie dépend du régime d’imposition (IS/IR) et de la nature comptable du bien.',
+        'À confirmer selon la source officielle ou contractuelle applicable.',
       ],
       tags: ['fin_vie_pm', 'cloture_pm', 'sortie_immobiliere_pm'],
-      confidence: 'elevee',
+      confidence: 'moyenne',
+      dependencies: ['source officielle ou contractuelle applicable'],
     },
   ],
 };
@@ -408,9 +431,11 @@ const PARTS_SCPI_PP: ProductRules = {
       bullets: [
         'Souscription directe ou via emprunt (les intérêts sont déductibles des revenus fonciers).',
         'Revenus distribués (loyers) imposés en revenus fonciers : micro-foncier ou régime réel.',
+        'À confirmer selon la source officielle ou contractuelle applicable.',
       ],
       tags: ['revenus_fonciers', 'micro_foncier', 'regime_reel'],
-      confidence: 'elevee',
+      confidence: 'moyenne',
+      dependencies: ['source officielle ou contractuelle applicable'],
     },
   ],
   sortie: [
@@ -445,151 +470,6 @@ const PARTS_SCPI_PP: ProductRules = {
           url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000047678018',
         },
       ],
-    },
-  ],
-};
-
-const GROUPEMENT_FONCIER_AGRI_VITI: ProductRules = {
-  constitution: [
-    {
-      title: 'Souscription de parts (GFA / GFV)',
-      bullets: [
-        'Revenus agricoles (GFA) ou viticoles (GFV) imposés dans la catégorie des bénéfices agricoles (BA).',
-        "Exonération partielle d'IFI sur les parts sous conditions de gestion (statuts + engagement de location).",
-        'À confirmer selon le visa préfectoral et les statuts du groupement.',
-      ],
-      tags: ['benefices_agricoles', 'ifi_exoneration_partielle'],
-      confidence: 'moyenne',
-      sources: [
-        {
-          label: 'Art. 793 bis CGI',
-          url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000006310364',
-        },
-      ],
-      dependencies: ['visa préfectoral', 'statuts du GFA/GFV', 'mise en valeur active'],
-    },
-  ],
-  sortie: [
-    {
-      title: 'Cession de parts',
-      bullets: [
-        'Régime des plus-values des particuliers : {capitalGainIr} + {psGeneral}.',
-        'Abattements pour durée de détention applicables.',
-        'À confirmer selon le statut du cédant et la durée de détention.',
-      ],
-      tags: ['pv_parts', 'abattement_detention'],
-      confidence: 'moyenne',
-      dependencies: ['statut du cédant (particulier vs professionnel)'],
-    },
-  ],
-  deces: [
-    {
-      title: 'Transmission — régime art. 793 bis CGI',
-      bullets: [
-        'Exonération de 75 % des DMTG (art. 793 bis CGI) si les biens sont donnés à bail long terme (≥ 18 ans) et les parts détenues depuis plus de 2 ans.',
-        'Au-delà de 600 000 € par bénéficiaire (seuil relevé par LF 2025 art. 70 — À confirmer selon seuil en vigueur) : exonération réduite à 50 %. Plafond de valeur exonérable : 20 M€ (À confirmer selon plafond en vigueur).',
-        'DMTG classiques si aucun bail long terme ou engagement de conservation non respecté.',
-        "À confirmer selon l'existence du bail long terme et le respect des conditions de conservation (5 ans).",
-      ],
-      tags: ['dmtg_classique', 'art_793_bis', 'exoneration_75'],
-      confidence: 'moyenne',
-      sources: [
-        {
-          label: 'Art. 793 bis CGI',
-          url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000006310364',
-        },
-      ],
-      dependencies: [
-        'bail long terme ≥ 18 ans',
-        'engagement de conservation 5 ans',
-        'seuil 600 000 € (LF 2025 art. 70 — À confirmer selon seuil en vigueur)',
-      ],
-    },
-  ],
-};
-
-const GROUPEMENT_FONCIER_AGRI_VITI_PM: ProductRules = {
-  constitution: GROUPEMENT_FONCIER_AGRI_VITI.constitution,
-  sortie: GROUPEMENT_FONCIER_AGRI_VITI.sortie,
-  deces: [
-    {
-      title: 'Fin de vie / sortie de la PM',
-      bullets: [
-        'En cas de dissolution, liquidation ou cession d’activité, les parts sont intégrées aux opérations de clôture de la personne morale.',
-        'Le traitement fiscal de sortie est déterminé selon le régime d’imposition et la valorisation retenue à la clôture.',
-      ],
-      tags: ['fin_vie_pm', 'cloture_pm', 'parts_groupement_pm'],
-      confidence: 'elevee',
-    },
-  ],
-};
-
-const GROUPEMENT_FONCIER_FORESTIER: ProductRules = {
-  constitution: [
-    {
-      title: 'Souscription de parts (GFF)',
-      bullets: [
-        'Revenus forestiers imposés dans la catégorie des bénéfices agricoles (BA) ou forfait forestier selon le cas.',
-        "Exonération partielle d'IFI possible si les forêts font l'objet d'un Plan Simple de Gestion (PSG) agréé.",
-        'À confirmer selon le PSG et les statuts du groupement.',
-      ],
-      tags: ['benefices_agricoles', 'ifi_exoneration_partielle', 'psg'],
-      confidence: 'moyenne',
-      sources: [
-        {
-          label: 'Art. 793 CGI',
-          url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000006310362',
-        },
-      ],
-      dependencies: ['PSG agréé', 'statuts du GFF'],
-    },
-  ],
-  sortie: [
-    {
-      title: 'Cession de parts',
-      bullets: [
-        'Régime des plus-values des particuliers : {capitalGainIr} + {psGeneral}.',
-        'Abattements pour durée de détention applicables.',
-        'À confirmer selon le statut du cédant et la durée de détention.',
-      ],
-      tags: ['pv_parts', 'abattement_detention'],
-      confidence: 'moyenne',
-      dependencies: ['statut du cédant (particulier vs professionnel)'],
-    },
-  ],
-  deces: [
-    {
-      title: 'Transmission — régime art. 793 CGI (forêts)',
-      bullets: [
-        'Exonération de 75 % des DMTG (art. 793 CGI — Loi Sérot) si les forêts sont couvertes par un Plan Simple de Gestion agréé (PSG) et engagement de conservation.',
-        "Contrairement au régime GFA, pas de plafond monétaire sur l'exonération si les conditions PSG sont remplies.",
-        "À confirmer selon l'existence du PSG agréé, la durée et les conditions de conservation appliquées.",
-      ],
-      tags: ['dmtg_classique', 'art_793_cgi', 'exoneration_75', 'psg'],
-      confidence: 'moyenne',
-      sources: [
-        {
-          label: 'Art. 793 CGI',
-          url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000006310362',
-        },
-      ],
-      dependencies: ['PSG agréé', 'engagement de conservation', 'durée de détention des parts'],
-    },
-  ],
-};
-
-const GROUPEMENT_FONCIER_FORESTIER_PM: ProductRules = {
-  constitution: GROUPEMENT_FONCIER_FORESTIER.constitution,
-  sortie: GROUPEMENT_FONCIER_FORESTIER.sortie,
-  deces: [
-    {
-      title: 'Fin de vie / sortie de la PM',
-      bullets: [
-        'En cas de dissolution, liquidation ou cession d’activité, les parts sont intégrées aux opérations de clôture de la personne morale.',
-        'Le traitement fiscal de sortie est déterminé selon le régime d’imposition et la valorisation retenue à la clôture.',
-      ],
-      tags: ['fin_vie_pm', 'cloture_pm', 'parts_groupement_pm'],
-      confidence: 'elevee',
     },
   ],
 };

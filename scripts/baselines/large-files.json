@@ -35,14 +35,14 @@
     "nextAction": "Extraire par famille uniquement lors du prochain chantier catalogue."
   },
   "src/domain/base-contrat/rules/library/valeurs-mobilieres.ts": {
-    "maxLines": 680,
+    "maxLines": 545,
     "category": "source-of-truth",
     "decision": "cas-particulier",
     "justification": "Famille de règles Base-Contrat cohérente et isolée.",
     "nextAction": "Découper par sous-famille si une modification métier ajoute une nouvelle responsabilité."
   },
   "src/domain/base-contrat/rules/library/immobilier.ts": {
-    "maxLines": 646,
+    "maxLines": 526,
     "category": "source-of-truth",
     "decision": "cas-particulier",
     "justification": "Famille de règles Base-Contrat cohérente et isolée.",

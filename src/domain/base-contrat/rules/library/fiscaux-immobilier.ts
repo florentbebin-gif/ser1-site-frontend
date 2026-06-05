@@ -19,13 +19,14 @@ const PINEL_PINEL_PLUS: ProductRules = {
         "Dispositif clôturé : plus d'acquisition éligible depuis le 1er janvier 2025.",
       ],
       tags: ['reduction_ir', 'plafond_300k', 'ferme_2025'],
-      confidence: 'elevee',
+      confidence: 'moyenne',
       sources: [
         {
           label: 'Art. 199 novovicies CGI — Pinel',
           url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000049481248',
         },
       ],
+      dependencies: ['source officielle ou contractuelle applicable'],
     },
   ],
   sortie: [
@@ -148,9 +149,11 @@ const MALRAUX: ProductRules = {
       bullets: [
         'Plus-value soumise au régime des plus-values immobilières des particuliers.',
         'Abattements pour durée de détention applicables.',
+        'À confirmer selon la source officielle ou contractuelle applicable.',
       ],
       tags: ['pv_immo', 'abattement_detention'],
-      confidence: 'elevee',
+      confidence: 'moyenne',
+      dependencies: ['source officielle ou contractuelle applicable'],
     },
   ],
   deces: [
@@ -194,9 +197,11 @@ const MONUMENTS_HISTORIQUES: ProductRules = {
       bullets: [
         'Plus-value soumise au régime des plus-values immobilières des particuliers.',
         'Abattements pour durée de détention applicables.',
+        'À confirmer selon la source officielle ou contractuelle applicable.',
       ],
       tags: ['pv_immo', 'abattement_detention'],
-      confidence: 'elevee',
+      confidence: 'moyenne',
+      dependencies: ['source officielle ou contractuelle applicable'],
     },
   ],
   deces: [
@@ -226,9 +231,11 @@ const DISPOSITIF_GENERIQUE: ProductRules = {
         "Dispositif fiscal d'investissement immobilier ouvrant droit à une réduction ou déduction fiscale.",
         "Conditions spécifiques : zone géographique, durée d'engagement, plafonds de loyers et de ressources locataires.",
         'Consulter les textes en vigueur pour les règles détaillées de chaque dispositif.',
+        'À confirmer selon la source officielle ou contractuelle applicable.',
       ],
       tags: ['dispositif_fiscal_immo'],
-      confidence: 'elevee',
+      confidence: 'moyenne',
+      dependencies: ['source officielle ou contractuelle applicable'],
     },
   ],
   sortie: [
