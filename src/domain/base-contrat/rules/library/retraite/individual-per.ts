@@ -105,7 +105,7 @@ export const PERIN_ASSURANCE: ProductRules = {
       sources: [
         {
           label: 'Art. 990 I CGI',
-          url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000038612905',
+          refId: 'cgi-990-i',
         },
       ],
     },
@@ -121,7 +121,7 @@ export const PERIN_ASSURANCE: ProductRules = {
       sources: [
         {
           label: 'Art. 757 B CGI',
-          url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000006310172',
+          refId: 'cgi-757-b',
         },
       ],
     },

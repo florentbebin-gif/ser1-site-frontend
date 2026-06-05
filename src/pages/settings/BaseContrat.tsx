@@ -38,6 +38,7 @@ import {
 import { useFiscalContext } from '@/hooks/useFiscalContext';
 import { GRANDE_FAMILLE_OPTIONS, PHASE_LABELS } from './baseContratLabels';
 import { OverrideModal, ReviewStatusDetails } from './BaseContratOverrideControls';
+import { RuleSourcesList } from './BaseContratRuleSources';
 
 function useOverrides() {
   const [overrides, setOverrides] = useState<OverrideMap>({});
@@ -113,15 +114,7 @@ function RuleBlockCard({ block, showAdminMeta }: { block: RuleBlock; showAdminMe
           {block.sources && block.sources.length > 0 && (
             <div className="settings-reference-rule-meta__group">
               <span className="settings-reference-rule-meta__label">Sources</span>
-              <ul className="settings-reference-rule-meta__list">
-                {block.sources.map((source) => (
-                  <li key={`${source.label}-${source.url}`}>
-                    <a href={source.url} target="_blank" rel="noreferrer">
-                      {source.label}
-                    </a>
-                  </li>
-                ))}
-              </ul>
+              <RuleSourcesList sources={block.sources} />
             </div>
           )}
         </div>

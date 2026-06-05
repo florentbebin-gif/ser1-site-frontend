@@ -57,11 +57,11 @@ const PREVOYANCE_DECES: ProductRules = {
       sources: [
         {
           label: 'Art. 990 I CGI',
-          url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000038612905',
+          refId: 'cgi-990-i',
         },
         {
           label: 'Art. 757 B CGI',
-          url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000006307539',
+          refId: 'cgi-757-b',
         },
       ],
       dependencies: [

@@ -105,7 +105,7 @@ const ASSURANCE_VIE_PP: ProductRules = {
       sources: [
         {
           label: 'Art. 990 I CGI',
-          url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000038612905',
+          refId: 'cgi-990-i',
         },
       ],
     },
@@ -121,7 +121,7 @@ const ASSURANCE_VIE_PP: ProductRules = {
       sources: [
         {
           label: 'Art. 757 B CGI',
-          url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000006310172',
+          refId: 'cgi-757-b',
         },
       ],
     },
@@ -179,7 +179,7 @@ const CONTRAT_CAPITALISATION: ProductRules = {
       sources: [
         {
           label: 'Art. 990 I CGI (inapplicable au contrat de capitalisation)',
-          url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000038612905',
+          refId: 'cgi-990-i',
         },
       ],
     },

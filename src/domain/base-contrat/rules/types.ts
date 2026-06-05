@@ -13,11 +13,14 @@
  *   - confidence 'faible'  → idem + source obligatoire
  */
 
+import type { LegalReferenceId } from '@/domain/legal-references';
+
 export type Confidence = 'elevee' | 'moyenne' | 'faible';
 
 export interface RuleSource {
   label: string;
-  url: string;
+  url?: string;
+  refId?: LegalReferenceId;
 }
 
 export interface RuleBlock {

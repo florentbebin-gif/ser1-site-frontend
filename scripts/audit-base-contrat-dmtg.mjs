@@ -20,6 +20,13 @@ import ts from 'typescript';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '..');
 const DOMAIN_DIR = path.join(ROOT, 'src', 'domain', 'base-contrat');
+const LEGAL_REFERENCES_PATH = path.join(
+  ROOT,
+  'src',
+  'domain',
+  'legal-references',
+  'references.json',
+);
 const RUNTIME_DIR = path.join(ROOT, '.tmp', 'audit-base-contrat-runtime');
 const RUNTIME_CONSTANTS_DIR = path.join(RUNTIME_DIR, 'constants');
 
@@ -455,15 +462,28 @@ function escapeMarkdownCell(value) {
   return String(value).replace(/\|/g, '\\|').replace(/\r?\n/g, '<br>');
 }
 
-function formatSources(sources) {
+function loadLegalReferenceUrlById() {
+  const references = JSON.parse(fs.readFileSync(LEGAL_REFERENCES_PATH, 'utf8'));
+  return new Map(references.map((reference) => [reference.id, reference.officialUrl]));
+}
+
+function formatSources(sources, legalReferenceUrlById) {
   if (!Array.isArray(sources) || sources.length === 0) return 'À sourcer';
   return sources
-    .map((source) => `[${escapeMarkdownCell(source.label)}](${source.url})`)
+    .map((source) => {
+      const sourceUrl = source.refId
+        ? (legalReferenceUrlById.get(source.refId) ?? source.url)
+        : source.url;
+
+      if (!sourceUrl) return escapeMarkdownCell(source.label);
+      return `[${escapeMarkdownCell(source.label)}](${sourceUrl})`;
+    })
     .join('<br>');
 }
 
 function toVeilleMarkdown(CATALOG, getRules) {
   const rows = [];
+  const legalReferenceUrlById = loadLegalReferenceUrlById();
   for (const product of CATALOG) {
     for (const audience of getEligibleAudiences(product)) {
       const rules = getRules(product.id, audience);
@@ -499,7 +519,7 @@ function toVeilleMarkdown(CATALOG, getRules) {
         formatAudience(row.audience),
         formatPhase(row.phase),
         escapeMarkdownCell(row.title),
-        formatSources(row.sources),
+        formatSources(row.sources, legalReferenceUrlById),
         'Non chargé',
         '—',
       ].join(' | '),
