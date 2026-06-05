@@ -38,7 +38,7 @@ function regime(
         {
           organisme: 'Test',
           titre: 'Référence de test',
-          url: 'https://example.com/prevoyance-test',
+          url: 'https://www.ameli.fr/',
           dateConsultation: '2026-05-24',
           valeursCouvertes: ['test'],
           confiance: 'haute',

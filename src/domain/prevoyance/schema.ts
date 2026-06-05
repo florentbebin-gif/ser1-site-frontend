@@ -1,8 +1,16 @@
 import { z } from 'zod';
+import { isOfficialUrl } from '@/domain/legal-references';
 
 const amountSchema = z.number().finite().nonnegative();
 const percentSchema = z.number().finite().min(0).max(100);
 const assietteSchema = z.enum(['TA', 'TA-TB', 'TA-TB-TC']);
+const PREVOYANCE_INSTITUTIONAL_DOMAINS = ['carmf.fr', 'cnbf.fr'] as const;
+const officialUrlSchema = z
+  .string()
+  .min(1)
+  .refine((url) => isOfficialUrl(url, PREVOYANCE_INSTITUTIONAL_DOMAINS), {
+    message: 'URL officielle obligatoire.',
+  });
 
 const amountRuleSchema = z
   .object({
@@ -107,7 +115,7 @@ export const prevoyanceSourcesSchema = z
           .object({
             organisme: z.string().min(1),
             titre: z.string().min(1),
-            url: z.url(),
+            url: officialUrlSchema,
             datePublication: z.string().min(1).optional(),
             dateConsultation: z.string().min(1),
             rubrique: z.string().min(1).optional(),

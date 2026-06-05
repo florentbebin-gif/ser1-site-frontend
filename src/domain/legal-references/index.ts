@@ -7,6 +7,7 @@ export {
   listLegalReferencesForSetting,
   listLegalReferencesForSimulator,
 } from './references';
+export { OFFICIAL_LEGAL_REFERENCE_DOMAINS, isOfficialUrl } from './officialUrls';
 export type {
   LegalReference,
   LegalReferenceId,

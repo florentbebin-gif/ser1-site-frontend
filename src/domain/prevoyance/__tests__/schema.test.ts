@@ -4,6 +4,7 @@ import {
   maintienEmployeurDataSchema,
   prevoyanceRegimeDataSchema,
   prevoyanceRegimeSettingsSchema,
+  prevoyanceSourcesSchema,
 } from '../schema';
 
 const baseData = {
@@ -55,6 +56,13 @@ const sources = {
   ],
   noteAdmin: 'Valeur à double valider avant livraison métier.',
 };
+
+function sourcesWithUrl(url: string) {
+  return {
+    ...sources,
+    references: sources.references.map((reference) => ({ ...reference, url })),
+  };
+}
 
 describe('schémas prévoyance JSONB', () => {
   it.each([
@@ -117,6 +125,24 @@ describe('schémas prévoyance JSONB', () => {
 
     expect(parsed.success).toBe(false);
   });
+
+  it.each([
+    'https://www.service-public.gouv.fr/particuliers/vosdroits/F3053',
+    'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000006901160',
+  ])('accepte une URL officielle %s', (url) => {
+    const parsed = prevoyanceSourcesSchema.safeParse(sourcesWithUrl(url));
+
+    expect(parsed.success).toBe(true);
+  });
+
+  it.each(['https://example.com/source-prevoyance', ''])(
+    'refuse une URL non officielle %s',
+    (url) => {
+      const parsed = prevoyanceSourcesSchema.safeParse(sourcesWithUrl(url));
+
+      expect(parsed.success).toBe(false);
+    },
+  );
 
   it('valide le bloc maintien employeur légal', () => {
     const parsed = maintienEmployeurDataSchema.safeParse({
