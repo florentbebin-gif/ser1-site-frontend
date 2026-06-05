@@ -6,6 +6,57 @@
 
 import type { ProductRules } from '../types';
 
+export const COMPTE_COURANT_ASSOCIE: ProductRules = {
+  constitution: [
+    {
+      title: 'Nature juridique',
+      bullets: [
+        "Prêt consenti par un associé à l'entité dans laquelle il détient des droits (créance de compte courant d'associé).",
+        "Intérêts déductibles pour l'entité débitrice dans la limite du taux plafond légal.",
+        'À confirmer selon la source officielle ou contractuelle applicable.',
+      ],
+      tags: ['pret_associe', 'interet_deductible_societe'],
+      confidence: 'moyenne',
+      dependencies: ['source officielle ou contractuelle applicable'],
+    },
+  ],
+  sortie: [
+    {
+      title: 'Remboursement',
+      bullets: [
+        'Remboursement du capital : non imposable (restitution de la créance).',
+        "Intérêts perçus : imposables à l'IR selon le {pfu} (ou option barème).",
+      ],
+      tags: ['pfu', 'interet_imposable'],
+      confidence: 'elevee',
+      sources: [
+        {
+          label: 'Art. 200 A CGI — PFU',
+          url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000036428122',
+        },
+      ],
+    },
+  ],
+  deces: [
+    {
+      title: 'Succession',
+      bullets: [
+        'La créance (solde du CCA) intègre la succession à sa valeur nominale.',
+        'DMTG selon le barème légal.',
+        "Risque de dépréciation si l'entité débitrice est en difficulté : valeur à estimer avec prudence.",
+      ],
+      tags: ['dmtg_classique', 'valeur_nominale'],
+      confidence: 'elevee',
+      sources: [
+        {
+          label: 'Art. 779 CGI — abattements DMTG',
+          url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000047678018',
+        },
+      ],
+    },
+  ],
+};
+
 export const PRET_PARTICULIERS: ProductRules = {
   constitution: [
     {
@@ -13,17 +64,15 @@ export const PRET_PARTICULIERS: ProductRules = {
       bullets: [
         'Prêt formalisé par une reconnaissance de dette (acte sous seing privé ou notarié).',
         "Déclaration obligatoire à l'administration fiscale si montant > 5 000 €.",
-        'À confirmer selon la source officielle ou contractuelle applicable.',
       ],
       tags: ['reconnaissance_dette', 'declaration_fiscale'],
-      confidence: 'moyenne',
+      confidence: 'elevee',
       sources: [
         {
           label: 'Art. 242 ter CGI — déclaration prêt > 5 000 €',
           url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000006312267',
         },
       ],
-      dependencies: ['source officielle ou contractuelle applicable'],
     },
   ],
   sortie: [
@@ -32,17 +81,15 @@ export const PRET_PARTICULIERS: ProductRules = {
       bullets: [
         'Remboursement du capital : non imposable.',
         "Intérêts éventuels : imposables à l'IR selon le {pfu}.",
-        'À confirmer selon la source officielle ou contractuelle applicable.',
       ],
       tags: ['pfu', 'interet_imposable'],
-      confidence: 'moyenne',
+      confidence: 'elevee',
       sources: [
         {
           label: 'Art. 200 A CGI — PFU',
           url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000036428122',
         },
       ],
-      dependencies: ['source officielle ou contractuelle applicable'],
     },
   ],
   deces: [
@@ -51,17 +98,15 @@ export const PRET_PARTICULIERS: ProductRules = {
       bullets: [
         'La créance intègre la succession à sa valeur (solde restant dû).',
         'DMTG selon le barème légal et le lien de parenté.',
-        'À confirmer selon la source officielle ou contractuelle applicable.',
       ],
       tags: ['dmtg_classique'],
-      confidence: 'moyenne',
+      confidence: 'elevee',
       sources: [
         {
           label: 'Art. 779 CGI — abattements DMTG',
           url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000047678018',
         },
       ],
-      dependencies: ['source officielle ou contractuelle applicable'],
     },
   ],
 };

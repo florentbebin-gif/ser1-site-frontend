@@ -30,18 +30,15 @@ export const PERIN_ASSURANCE: ProductRules = {
         'Compartiment 1 : versements volontaires déductibles.',
         'Compartiment 2 : versements volontaires non déductibles (sur option).',
         'Compartiment 3 : versements obligatoires / abondement employeur.',
-
-        'À confirmer selon la source officielle ou contractuelle applicable.',
       ],
       tags: ['compartiment_1', 'compartiment_2', 'compartiment_3'],
-      confidence: 'moyenne',
+      confidence: 'elevee',
       sources: [
         {
           label: 'Service-Public — PER individuel',
           url: 'https://www.service-public.fr/particuliers/vosdroits/F36526/0',
         },
       ],
-      dependencies: ['source officielle ou contractuelle applicable'],
     },
   ],
   sortie: [
@@ -51,36 +48,30 @@ export const PERIN_ASSURANCE: ProductRules = {
         'Sortie en capital ou en rente viagère (au choix depuis la loi PACTE 2019).',
         "Capital : totalité soumise au barème progressif de l'IR + {psException} sur les seuls gains.",
         'Rente : soumise au barème IR avec abattement de 10 % (régime rentes viagères à titre gratuit).',
-
-        'À confirmer selon la source officielle ou contractuelle applicable.',
       ],
       tags: ['sortie_capital', 'sortie_rente', 'bareme_ir', 'ps'],
-      confidence: 'moyenne',
+      confidence: 'elevee',
       sources: [
         {
           label: 'Loi PACTE 2019 — PER',
           url: 'https://www.legifrance.gouv.fr/jorf/id/JORFTEXT000038496102',
         },
       ],
-      dependencies: ['source officielle ou contractuelle applicable'],
     },
     {
       title: 'Sortie à la retraite — Compartiment non déductible',
       bullets: [
         "Capital : exonéré d'IR ; seuls les gains sont soumis aux prélèvements sociaux ({psException}).",
         "Rente : régime des rentes viagères à titre onéreux (fraction imposable selon l'âge au premier versement).",
-
-        'À confirmer selon la source officielle ou contractuelle applicable.',
       ],
       tags: ['exoneration_capital', 'rente_titre_onereux'],
-      confidence: 'moyenne',
+      confidence: 'elevee',
       sources: [
         {
           label: 'Art. 158-6 CGI — rentes viagères à titre onéreux',
           url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000033810417',
         },
       ],
-      dependencies: ['source officielle ou contractuelle applicable'],
     },
     {
       title: 'Déblocage anticipé autorisé',
@@ -90,18 +81,15 @@ export const PERIN_ASSURANCE: ProductRules = {
         "Expiration des droits à l'assurance chômage.",
         'Situation de surendettement ou liquidation judiciaire.',
         'Acquisition de la résidence principale.',
-
-        'À confirmer selon la source officielle ou contractuelle applicable.',
       ],
       tags: ['deblocage_anticipe', 'residence_principale'],
-      confidence: 'moyenne',
+      confidence: 'elevee',
       sources: [
         {
           label: 'Service-Public — PER individuel',
           url: 'https://www.service-public.fr/particuliers/vosdroits/F36526/0',
         },
       ],
-      dependencies: ['source officielle ou contractuelle applicable'],
     },
   ],
   deces: [
@@ -111,18 +99,15 @@ export const PERIN_ASSURANCE: ProductRules = {
         'Abattement de {assuranceVie990IAllowance} désigné.',
         'Au-delà : {assuranceVie990IRates}.',
         'Capital hors succession pour les bénéficiaires désignés.',
-
-        'À confirmer selon la source officielle ou contractuelle applicable.',
       ],
       tags: ['art_990_i_cgi', 'abattement_990_i', 'hors_succession'],
-      confidence: 'moyenne',
+      confidence: 'elevee',
       sources: [
         {
           label: 'Art. 990 I CGI',
           url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000038612905',
         },
       ],
-      dependencies: ['source officielle ou contractuelle applicable'],
     },
     {
       title: 'Après 70 ans',
@@ -130,18 +115,15 @@ export const PERIN_ASSURANCE: ProductRules = {
         'Abattement global de {assuranceVie757BAllowance} (art. 757 B CGI).',
         'Au-delà : intégration aux droits de succession selon le lien de parenté.',
         'Gains capitalisés exonérés de droits.',
-
-        'À confirmer selon la source officielle ou contractuelle applicable.',
       ],
       tags: ['art_757_b_cgi', 'abattement_757_b'],
-      confidence: 'moyenne',
+      confidence: 'elevee',
       sources: [
         {
           label: 'Art. 757 B CGI',
           url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000006310172',
         },
       ],
-      dependencies: ['source officielle ou contractuelle applicable'],
     },
   ],
 };
@@ -153,18 +135,15 @@ export const PERIN_BANCAIRE: ProductRules = {
       bullets: [
         'Mêmes règles que le PERIN assurantiel : déductibilité dans la limite du disponible épargne retraite.',
         'Supports : fonds diversifiés (pas de fonds euros garanti, contrairement à la version assurantielle).',
-
-        'À confirmer selon la source officielle ou contractuelle applicable.',
       ],
       tags: ['deductible_ir', 'plafond_per'],
-      confidence: 'moyenne',
+      confidence: 'elevee',
       sources: [
         {
           label: 'Service-Public — PER individuel',
           url: 'https://www.service-public.fr/particuliers/vosdroits/F36526/0',
         },
       ],
-      dependencies: ['source officielle ou contractuelle applicable'],
     },
   ],
   sortie: [
@@ -173,34 +152,27 @@ export const PERIN_BANCAIRE: ProductRules = {
       bullets: [
         'Sortie en capital ou en rente (même liberté que le PERIN assurantiel depuis PACTE).',
         'Fiscalité identique au PERIN assurantiel selon le compartiment de versement.',
-
-        'À confirmer selon la source officielle ou contractuelle applicable.',
       ],
       tags: ['sortie_capital', 'sortie_rente'],
-      confidence: 'moyenne',
+      confidence: 'elevee',
       sources: [
         {
           label: 'Service-Public — PER individuel',
           url: 'https://www.service-public.fr/particuliers/vosdroits/F36526/0',
         },
       ],
-      dependencies: ['source officielle ou contractuelle applicable'],
     },
     {
       title: 'Déblocage anticipé autorisé',
-      bullets: [
-        'Mêmes cas de déblocage que le PERIN assurantiel.',
-        'À confirmer selon la source officielle ou contractuelle applicable.',
-      ],
+      bullets: ['Mêmes cas de déblocage que le PERIN assurantiel.'],
       tags: ['deblocage_anticipe'],
-      confidence: 'moyenne',
+      confidence: 'elevee',
       sources: [
         {
           label: 'Service-Public — PER individuel',
           url: 'https://www.service-public.fr/particuliers/vosdroits/F36526/0',
         },
       ],
-      dependencies: ['source officielle ou contractuelle applicable'],
     },
   ],
   deces: [
@@ -210,18 +182,15 @@ export const PERIN_BANCAIRE: ProductRules = {
         'Contrairement au PERIN assurantiel, le PERIN bancaire intègre la succession classique.',
         "Pas d'avantage hors-succession : droits de mutation selon le barème et le lien de parenté.",
         'Abattements légaux classiques selon le lien de parenté (art. 779 CGI).',
-
-        'À confirmer selon la source officielle ou contractuelle applicable.',
       ],
       tags: ['dmtg_classique', 'succession_active'],
-      confidence: 'moyenne',
+      confidence: 'elevee',
       sources: [
         {
           label: 'Art. 779 CGI — abattements DMTG',
           url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000047678018',
         },
       ],
-      dependencies: ['source officielle ou contractuelle applicable'],
     },
   ],
 };
@@ -254,18 +223,15 @@ export const PERP_MADELIN_ANCIEN: ProductRules = {
         'Sortie principalement en rente viagère pour le PERP (option capital partielle possible, limitée par les conditions contractuelles).',
         "Rente imposable à l'IR (régime rentes viagères à titre gratuit, abattement 10 %).",
         'Transfert vers un PER possible pour bénéficier de la sortie en capital totale.',
-
-        'À confirmer selon la source officielle ou contractuelle applicable.',
       ],
       tags: ['rente_viagere', 'transfert_per', 'abattement_10'],
-      confidence: 'moyenne',
+      confidence: 'elevee',
       sources: [
         {
           label: 'Art. 163 quatervicies CGI — PERP/Madelin sortie rente',
           url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000006302851',
         },
       ],
-      dependencies: ['source officielle ou contractuelle applicable'],
     },
   ],
   deces: [
@@ -274,18 +240,15 @@ export const PERP_MADELIN_ANCIEN: ProductRules = {
       bullets: [
         'Rente de réversion au conjoint si prévue au contrat.',
         'Capital résiduel intègre la succession classique.',
-
-        'À confirmer selon la source officielle ou contractuelle applicable.',
       ],
       tags: ['reversion', 'dmtg_classique'],
-      confidence: 'moyenne',
+      confidence: 'elevee',
       sources: [
         {
           label: 'Service-Public — PERP',
           url: 'https://www.service-public.fr/particuliers/vosdroits/F10259',
         },
       ],
-      dependencies: ['source officielle ou contractuelle applicable'],
     },
   ],
 };

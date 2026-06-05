@@ -34,6 +34,14 @@ function allBlockContexts(productId: string): RuleBlockContext[] {
 }
 
 describe('confidence policy — elevee est vérifiée et sourcée', () => {
+  it('conserve des blocs elevee quand ils respectent déjà le contrat', () => {
+    const verifiedBlocks = CATALOG.flatMap((product) =>
+      allBlockContexts(product.id).filter(({ block }) => block.confidence === 'elevee'),
+    );
+
+    expect(verifiedBlocks.length).toBeGreaterThan(0);
+  });
+
   it('bloque les blocs elevee avec "À confirmer" ou sans source', () => {
     const violations = CATALOG.flatMap((product) =>
       allBlockContexts(product.id)

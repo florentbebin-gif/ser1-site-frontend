@@ -22,18 +22,15 @@ const RESIDENCE_PRINCIPALE: ProductRules = {
         "Pas de déductibilité des intérêts d'emprunt (dispositif supprimé depuis 2011).",
         'Droits de mutation à titre onéreux (DMTO) : environ 5 à 6 % du prix pour un logement ancien.',
         "Exonération partielle d'IFI : abattement de {ifiResidencePrincipaleAbattement}.",
-
-        'À confirmer selon la source officielle ou contractuelle applicable.',
       ],
       tags: ['dmto', 'ifi_abattement_30'],
-      confidence: 'moyenne',
+      confidence: 'elevee',
       sources: [
         {
           label: 'Art. 885 S CGI — IFI abattement résidence principale',
           url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000036454733',
         },
       ],
-      dependencies: ['source officielle ou contractuelle applicable'],
     },
   ],
   sortie: [
@@ -43,7 +40,6 @@ const RESIDENCE_PRINCIPALE: ProductRules = {
         "La plus-value réalisée à la cession est totalement exonérée d'IR et de prélèvements sociaux.",
         'Condition : le bien doit être la résidence principale du cédant au jour de la vente.',
         "L'exonération s'applique quelle que soit la durée de détention.",
-
         'À confirmer selon la source officielle ou contractuelle applicable.',
       ],
       tags: ['exoneration_totale', 'residence_principale_vente'],
@@ -57,18 +53,15 @@ const RESIDENCE_PRINCIPALE: ProductRules = {
       bullets: [
         'Le bien intègre la succession à sa valeur vénale au jour du décès.',
         'Droits de mutation à titre gratuit (DMTG) selon le barème et le lien de parenté.',
-
-        'À confirmer selon la source officielle ou contractuelle applicable.',
       ],
       tags: ['dmtg_classique'],
-      confidence: 'moyenne',
+      confidence: 'elevee',
       sources: [
         {
           label: 'Art. 779 CGI — abattements DMTG',
           url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000047678018',
         },
       ],
-      dependencies: ['source officielle ou contractuelle applicable'],
     },
   ],
 };
@@ -80,7 +73,6 @@ const PARTS_SCPI_PM: ProductRules = {
       bullets: [
         'Souscription de parts de SCPI par la personne morale, en direct ou via financement.',
         'Les revenus distribués sont intégrés au résultat fiscal de la personne morale (IS/IR selon régime).',
-
         'À confirmer selon la source officielle ou contractuelle applicable.',
       ],
       tags: ['scpi_pm', 'resultat_fiscal'],
@@ -94,7 +86,6 @@ const PARTS_SCPI_PM: ProductRules = {
       bullets: [
         "La plus-value de cession est intégrée au résultat fiscal de la personne morale selon son régime d'imposition.",
         'Le traitement comptable et fiscal dépend des modalités de détention et de clôture des comptes.',
-
         'À confirmer selon la source officielle ou contractuelle applicable.',
       ],
       tags: ['cession_parts', 'resultat_fiscal', 'traitement_comptable'],
@@ -108,7 +99,6 @@ const PARTS_SCPI_PM: ProductRules = {
       bullets: [
         "En cas de dissolution, liquidation ou cession d'activité, les parts de SCPI sont intégrées aux opérations de clôture de la personne morale.",
         'Le résultat de cession ou de liquidation est traité selon le régime fiscal de la personne morale.',
-
         'À confirmer selon la source officielle ou contractuelle applicable.',
       ],
       tags: ['fin_vie_pm', 'liquidation', 'cession_activite'],
@@ -125,18 +115,15 @@ const RESIDENCE_SECONDAIRE: ProductRules = {
       bullets: [
         'Droits de mutation à titre onéreux (DMTO) : environ 5 à 6 % pour un bien ancien.',
         "Intégration à l'assiette IFI à sa valeur vénale.",
-
-        'À confirmer selon la source officielle ou contractuelle applicable.',
       ],
       tags: ['dmto', 'ifi'],
-      confidence: 'moyenne',
+      confidence: 'elevee',
       sources: [
         {
           label: 'Service-public.fr — Droits de mutation immobilier',
           url: 'https://www.service-public.fr/particuliers/vosdroits/F35830',
         },
       ],
-      dependencies: ['source officielle ou contractuelle applicable'],
     },
   ],
   sortie: [
@@ -164,18 +151,15 @@ const RESIDENCE_SECONDAIRE: ProductRules = {
       bullets: [
         'Le bien intègre la succession à sa valeur vénale.',
         'DMTG selon le barème et le lien de parenté.',
-
-        'À confirmer selon la source officielle ou contractuelle applicable.',
       ],
       tags: ['dmtg_classique'],
-      confidence: 'moyenne',
+      confidence: 'elevee',
       sources: [
         {
           label: 'Art. 779 CGI — abattements DMTG',
           url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000047678018',
         },
       ],
-      dependencies: ['source officielle ou contractuelle applicable'],
     },
   ],
 };
@@ -226,18 +210,15 @@ const LOCATIF_NU: ProductRules = {
       bullets: [
         'Le bien intègre la succession à sa valeur vénale.',
         'DMTG selon le barème et le lien de parenté.',
-
-        'À confirmer selon la source officielle ou contractuelle applicable.',
       ],
       tags: ['dmtg_classique'],
-      confidence: 'moyenne',
+      confidence: 'elevee',
       sources: [
         {
           label: 'Art. 779 CGI — abattements DMTG',
           url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000047678018',
         },
       ],
-      dependencies: ['source officielle ou contractuelle applicable'],
     },
   ],
 };
@@ -251,7 +232,6 @@ const LOCATIF_NU_PM: ProductRules = {
       bullets: [
         'En cas de dissolution, liquidation ou cession d’activité, le bien est intégré aux opérations de clôture de la personne morale.',
         'Le traitement fiscal de sortie dépend du régime d’imposition (IS/IR) et des écritures de clôture applicables.',
-
         'À confirmer selon la source officielle ou contractuelle applicable.',
       ],
       tags: ['fin_vie_pm', 'cloture_pm', 'sortie_immobiliere_pm'],
@@ -302,18 +282,15 @@ const LOCATIF_MEUBLE_LMNP: ProductRules = {
       bullets: [
         'Le bien intègre la succession à sa valeur vénale.',
         'DMTG selon le barème et le lien de parenté.',
-
-        'À confirmer selon la source officielle ou contractuelle applicable.',
       ],
       tags: ['dmtg_classique'],
-      confidence: 'moyenne',
+      confidence: 'elevee',
       sources: [
         {
           label: 'Art. 779 CGI — abattements DMTG',
           url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000047678018',
         },
       ],
-      dependencies: ['source officielle ou contractuelle applicable'],
     },
   ],
 };
@@ -364,21 +341,16 @@ const LOCATIF_MEUBLE_LMP: ProductRules = {
       bullets: [
         'Le bien intègre la succession à sa valeur vénale.',
         'DMTG selon le barème et le lien de parenté.',
-
-        'À confirmer selon la source officielle ou contractuelle applicable.',
       ],
       tags: ['dmtg_classique'],
-      confidence: 'moyenne',
+      confidence: 'elevee',
       sources: [
         {
           label: 'Art. 779 CGI — abattements DMTG',
           url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000047678018',
         },
       ],
-      dependencies: [
-        'source officielle ou contractuelle applicable',
-        'statut du défunt (LMP ou non)',
-      ],
+      dependencies: ['statut du défunt (LMP ou non)'],
     },
   ],
 };
@@ -390,7 +362,6 @@ const IMMO_AUTRE: ProductRules = {
       bullets: [
         'Droits de mutation à titre onéreux selon la nature du bien.',
         "Intégration à l'assiette IFI selon la nature et l'utilisation.",
-
         'À confirmer selon la source officielle ou contractuelle applicable.',
       ],
       tags: ['dmto', 'ifi'],
@@ -405,18 +376,15 @@ const IMMO_AUTRE: ProductRules = {
         'Régime des plus-values immobilières des particuliers : {capitalGainIr} + {psGeneral}.',
         'Abattements progressifs selon la durée de détention.',
         "Exonération totale d'IR après 22 ans, de PS après 30 ans.",
-
-        'À confirmer selon la source officielle ou contractuelle applicable.',
       ],
       tags: ['pv_immo', 'abattement_detention'],
-      confidence: 'moyenne',
+      confidence: 'elevee',
       sources: [
         {
           label: 'Art. 150 U CGI — plus-values immobilières',
           url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000043655826',
         },
       ],
-      dependencies: ['source officielle ou contractuelle applicable'],
     },
   ],
   deces: [
@@ -425,18 +393,15 @@ const IMMO_AUTRE: ProductRules = {
       bullets: [
         'Le bien intègre la succession à sa valeur vénale.',
         'DMTG selon le barème et le lien de parenté.',
-
-        'À confirmer selon la source officielle ou contractuelle applicable.',
       ],
       tags: ['dmtg_classique'],
-      confidence: 'moyenne',
+      confidence: 'elevee',
       sources: [
         {
           label: 'Art. 779 CGI — abattements DMTG',
           url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000047678018',
         },
       ],
-      dependencies: ['source officielle ou contractuelle applicable'],
     },
   ],
 };
@@ -450,7 +415,6 @@ const IMMO_AUTRE_PM: ProductRules = {
       bullets: [
         'En cas de dissolution, liquidation ou cession d’activité, le bien est intégré aux opérations de clôture de la personne morale.',
         'Le traitement fiscal de sortie dépend du régime d’imposition (IS/IR) et de la nature comptable du bien.',
-
         'À confirmer selon la source officielle ou contractuelle applicable.',
       ],
       tags: ['fin_vie_pm', 'cloture_pm', 'sortie_immobiliere_pm'],
@@ -467,7 +431,6 @@ const PARTS_SCPI_PP: ProductRules = {
       bullets: [
         'Souscription directe ou via emprunt (les intérêts sont déductibles des revenus fonciers).',
         'Revenus distribués (loyers) imposés en revenus fonciers : micro-foncier ou régime réel.',
-
         'À confirmer selon la source officielle ou contractuelle applicable.',
       ],
       tags: ['revenus_fonciers', 'micro_foncier', 'regime_reel'],
@@ -481,18 +444,15 @@ const PARTS_SCPI_PP: ProductRules = {
       bullets: [
         'Régime des plus-values immobilières des particuliers : {capitalGainIr} + {psGeneral}.',
         'Abattements progressifs selon la durée de détention (exonération IR après 22 ans, PS après 30 ans).',
-
-        'À confirmer selon la source officielle ou contractuelle applicable.',
       ],
       tags: ['pv_immo', 'abattement_detention'],
-      confidence: 'moyenne',
+      confidence: 'elevee',
       sources: [
         {
           label: 'Art. 150 U CGI — plus-values immobilières',
           url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000043655826',
         },
       ],
-      dependencies: ['source officielle ou contractuelle applicable'],
     },
   ],
   deces: [
@@ -501,18 +461,15 @@ const PARTS_SCPI_PP: ProductRules = {
       bullets: [
         'Les parts entrent dans la succession à leur valeur de réalisation au jour du décès.',
         'DMTG selon le barème et le lien de parenté.',
-
-        'À confirmer selon la source officielle ou contractuelle applicable.',
       ],
       tags: ['dmtg_classique'],
-      confidence: 'moyenne',
+      confidence: 'elevee',
       sources: [
         {
           label: 'Art. 779 CGI — abattements DMTG',
           url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000047678018',
         },
       ],
-      dependencies: ['source officielle ou contractuelle applicable'],
     },
   ],
 };

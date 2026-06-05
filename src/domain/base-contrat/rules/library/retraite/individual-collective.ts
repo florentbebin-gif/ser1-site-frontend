@@ -8,18 +8,15 @@ export const EPARGNE_SALARIALE_PEE_PP: ProductRules = {
         "Alimenté par la participation, l'intéressement, les versements volontaires du salarié et l'abondement employeur.",
         'Versements volontaires du salarié : plafond de 25 % de la rémunération annuelle brute.',
         "Intéressement et participation affectés au PEE : exonérés d'IR dans la limite des plafonds légaux.",
-
-        'À confirmer selon la source officielle ou contractuelle applicable.',
       ],
       tags: ['participation', 'interessement', 'abondement', 'plafond_25pct'],
-      confidence: 'moyenne',
+      confidence: 'elevee',
       sources: [
         {
           label: 'Art. L3332-10 Code du travail — PEE versements',
           url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000006902719',
         },
       ],
-      dependencies: ['source officielle ou contractuelle applicable'],
     },
   ],
   sortie: [
@@ -28,36 +25,30 @@ export const EPARGNE_SALARIALE_PEE_PP: ProductRules = {
       bullets: [
         'Les sommes sont bloquées pendant 5 ans (sauf cas de déblocage anticipé légaux).',
         "Déblocage anticipé : achat résidence principale, mariage/PACS, naissance, divorce, invalidité, décès, départ de l'entreprise, liquidation judiciaire.",
-
-        'À confirmer selon la source officielle ou contractuelle applicable.',
       ],
       tags: ['blocage_5_ans', 'deblocage_anticipe'],
-      confidence: 'moyenne',
+      confidence: 'elevee',
       sources: [
         {
           label: 'Service-Public — épargne salariale PEE',
           url: 'https://www.service-public.fr/particuliers/vosdroits/F2142',
         },
       ],
-      dependencies: ['source officielle ou contractuelle applicable'],
     },
     {
       title: 'Après 5 ans',
       bullets: [
         "Plus-values exonérées d'IR.",
         'Prélèvements sociaux ({psException}) dus sur les gains.',
-
-        'À confirmer selon la source officielle ou contractuelle applicable.',
       ],
       tags: ['exoneration_ir', 'ps'],
-      confidence: 'moyenne',
+      confidence: 'elevee',
       sources: [
         {
           label: 'Art. L3332-25 Code du travail — PEE sortie',
           url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000006902745',
         },
       ],
-      dependencies: ['source officielle ou contractuelle applicable'],
     },
   ],
   deces: [
@@ -66,18 +57,15 @@ export const EPARGNE_SALARIALE_PEE_PP: ProductRules = {
       bullets: [
         'Le décès du titulaire est un cas de déblocage anticipé.',
         'Les sommes intègrent la succession ; droits de mutation applicables.',
-
-        'À confirmer selon la source officielle ou contractuelle applicable.',
       ],
       tags: ['deblocage_deces', 'dmtg_classique'],
-      confidence: 'moyenne',
+      confidence: 'elevee',
       sources: [
         {
           label: 'Service-Public — épargne salariale PEE',
           url: 'https://www.service-public.fr/particuliers/vosdroits/F2142',
         },
       ],
-      dependencies: ['source officielle ou contractuelle applicable'],
     },
   ],
 };

@@ -6,7 +6,6 @@
  */
 
 import type { ProductRules, Audience } from '../types';
-import { CAT_CSL, CAT_CSL_PM } from './epargne-bancaire-cat-csl';
 
 const LIVRETS_REGLEMENTES: ProductRules = {
   constitution: [
@@ -37,17 +36,15 @@ const LIVRETS_REGLEMENTES: ProductRules = {
         "Intérêts totalement exonérés d'impôt sur le revenu.",
         'Intérêts exonérés de prélèvements sociaux ({psException}).',
         'Retraits à tout moment sans contrainte fiscale.',
-        'À confirmer selon la source officielle ou contractuelle applicable.',
       ],
       tags: ['exoneration_ir', 'exoneration_ps'],
-      confidence: 'moyenne',
+      confidence: 'elevee',
       sources: [
         {
           label: 'Art. 157-7° CGI',
           url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000006307751',
         },
       ],
-      dependencies: ['source officielle ou contractuelle applicable'],
     },
   ],
   deces: [
@@ -57,17 +54,15 @@ const LIVRETS_REGLEMENTES: ProductRules = {
         'Le solde des livrets entre dans la succession à leur valeur au jour du décès.',
         'Droits de mutation applicables selon le barème et le lien de parenté.',
         'Abattements légaux classiques ({dmtgLigneDirecteAbattement}, renouvelables tous 15 ans).',
-        'À confirmer selon la source officielle ou contractuelle applicable.',
       ],
       tags: ['dmtg_classique', 'succession_active'],
-      confidence: 'moyenne',
+      confidence: 'elevee',
       sources: [
         {
           label: 'Art. 779 CGI — abattements DMTG',
           url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000047678018',
         },
       ],
-      dependencies: ['source officielle ou contractuelle applicable'],
     },
   ],
 };
@@ -94,34 +89,30 @@ const CTO: ProductRules = {
         'Plus-values soumises au {pfu} par défaut.',
         "Option possible pour le barème progressif de l'IR (abattement pour durée de détention uniquement sur titres acquis avant 2018).",
         "Compensation des moins-values sur les plus-values de l'année et des 10 années suivantes.",
-        'À confirmer selon la source officielle ou contractuelle applicable.',
       ],
       tags: ['pfu', 'compensation_mv', 'option_bareme'],
-      confidence: 'moyenne',
+      confidence: 'elevee',
       sources: [
         {
           label: 'Art. 200 A CGI — PFU',
           url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000036428122',
         },
       ],
-      dependencies: ['source officielle ou contractuelle applicable'],
     },
     {
       title: 'Dividendes et revenus',
       bullets: [
         "Dividendes d'actions françaises et étrangères : {pfu} ou option barème avec abattement 40 % sur les dividendes français.",
         'Intérêts obligataires : {pfu}.',
-        'À confirmer selon la source officielle ou contractuelle applicable.',
       ],
       tags: ['dividendes', 'abattement_40', 'pfu'],
-      confidence: 'moyenne',
+      confidence: 'elevee',
       sources: [
         {
           label: 'Art. 200 A CGI — PFU + Art. 158-3 CGI — abattement 40%',
           url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000036428122',
         },
       ],
-      dependencies: ['source officielle ou contractuelle applicable'],
     },
   ],
   deces: [
@@ -166,36 +157,29 @@ const PEA: ProductRules = {
         '{peaVersementCeilings}.',
         "Titres éligibles : actions de sociétés ayant leur siège dans l'UE ou l'EEE, parts d'OPCVM investis à plus de 75 % en actions européennes.",
         'Un seul PEA par personne physique.',
-        'À confirmer selon la source officielle ou contractuelle applicable.',
       ],
       tags: ['plafond_150k', 'actions_europeennes', 'pp_uniquement'],
-      confidence: 'moyenne',
+      confidence: 'elevee',
       sources: [
         {
           label: 'Art. L221-30 Code monétaire et financier — PEA',
           url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000038612481',
         },
       ],
-      dependencies: ['source officielle ou contractuelle applicable'],
     },
   ],
   sortie: [
     {
       title: 'Avant 5 ans',
-      bullets: [
-        'Retrait entraîne la clôture du plan.',
-        'Plus-value soumise au {pfu}.',
-        'À confirmer selon la source officielle ou contractuelle applicable.',
-      ],
+      bullets: ['Retrait entraîne la clôture du plan.', 'Plus-value soumise au {pfu}.'],
       tags: ['cloture_avant_5_ans', 'pfu'],
-      confidence: 'moyenne',
+      confidence: 'elevee',
       sources: [
         {
           label: 'Art. 150-0 A II-2 CGI — PEA',
           url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000042908358',
         },
       ],
-      dependencies: ['source officielle ou contractuelle applicable'],
     },
     {
       title: 'Après 5 ans',
@@ -204,17 +188,15 @@ const PEA: ProductRules = {
         'Prélèvements sociaux ({psException}) restent dus sur les gains.',
         'Retraits partiels possibles sans clôture du plan.',
         "Conversion en rente viagère exonérée d'IR après 5 ans.",
-        'À confirmer selon la source officielle ou contractuelle applicable.',
       ],
       tags: ['exoneration_ir', 'ps', 'rente_viagere'],
-      confidence: 'moyenne',
+      confidence: 'elevee',
       sources: [
         {
           label: 'Art. 150-0 A II-2 CGI — PEA',
           url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000042908358',
         },
       ],
-      dependencies: ['source officielle ou contractuelle applicable'],
     },
   ],
   deces: [
@@ -225,17 +207,15 @@ const PEA: ProductRules = {
         "Exonération d'IR sur les gains si le plan avait plus de 5 ans.",
         'Prélèvements sociaux ({psException}) dus sur la plus-value constatée à la clôture.',
         'Titres entrent dans la succession ; droits de mutation selon le barème légal.',
-        'À confirmer selon la source officielle ou contractuelle applicable.',
       ],
       tags: ['cloture_deces', 'exoneration_ir_5_ans', 'dmtg_classique'],
-      confidence: 'moyenne',
+      confidence: 'elevee',
       sources: [
         {
           label: 'Art. 150-0 A II-2 CGI — PEA clôture décès',
           url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000042908358',
         },
       ],
-      dependencies: ['source officielle ou contractuelle applicable'],
     },
   ],
 };
@@ -248,36 +228,29 @@ const PEA_PME: ProductRules = {
         '{peaPmeVersementCeilings}.',
         'Titres éligibles : PME et ETI européennes, titres participatifs, obligations remboursables en actions.',
         'Un seul PEA-PME par personne physique.',
-        'À confirmer selon la source officielle ou contractuelle applicable.',
       ],
       tags: ['plafond_75k', 'pme_eti_europeennes', 'pp_uniquement'],
-      confidence: 'moyenne',
+      confidence: 'elevee',
       sources: [
         {
           label: 'Art. L221-32-1 Code monétaire et financier — PEA-PME',
           url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000038612477',
         },
       ],
-      dependencies: ['source officielle ou contractuelle applicable'],
     },
   ],
   sortie: [
     {
       title: 'Avant 5 ans',
-      bullets: [
-        'Retrait entraîne la clôture du plan.',
-        'Plus-value soumise au {pfu}.',
-        'À confirmer selon la source officielle ou contractuelle applicable.',
-      ],
+      bullets: ['Retrait entraîne la clôture du plan.', 'Plus-value soumise au {pfu}.'],
       tags: ['cloture_avant_5_ans', 'pfu'],
-      confidence: 'moyenne',
+      confidence: 'elevee',
       sources: [
         {
           label: 'Art. 150-0 A II-2 CGI — PEA-PME',
           url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000042908358',
         },
       ],
-      dependencies: ['source officielle ou contractuelle applicable'],
     },
     {
       title: 'Après 5 ans',
@@ -285,17 +258,15 @@ const PEA_PME: ProductRules = {
         "Exonération d'IR sur les gains (identique au PEA).",
         'Prélèvements sociaux ({psException}) restent dus.',
         'Retraits partiels sans clôture possibles.',
-        'À confirmer selon la source officielle ou contractuelle applicable.',
       ],
       tags: ['exoneration_ir', 'ps'],
-      confidence: 'moyenne',
+      confidence: 'elevee',
       sources: [
         {
           label: 'Art. 150-0 A II-2 CGI — PEA-PME',
           url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000042908358',
         },
       ],
-      dependencies: ['source officielle ou contractuelle applicable'],
     },
   ],
   deces: [
@@ -305,17 +276,15 @@ const PEA_PME: ProductRules = {
         'Clôture automatique au décès, mêmes règles que le PEA.',
         "Exonération d'IR sur les gains (si plan > 5 ans) ; prélèvements sociaux ({psException}) dus.",
         'Droits de mutation sur les titres selon le barème légal.',
-        'À confirmer selon la source officielle ou contractuelle applicable.',
       ],
       tags: ['cloture_deces', 'exoneration_ir_5_ans', 'dmtg_classique'],
-      confidence: 'moyenne',
+      confidence: 'elevee',
       sources: [
         {
           label: 'Art. 150-0 A II-2 CGI — PEA-PME clôture décès',
           url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000042908358',
         },
       ],
-      dependencies: ['source officielle ou contractuelle applicable'],
     },
   ],
 };
@@ -348,17 +317,15 @@ const PEL: ProductRules = {
         "PEL ouvert avant 2018 : intérêts exonérés d'IR les 12 premières années, puis soumis au PFU.",
         'Prélèvements sociaux prélevés annuellement.',
         "Prime d'État supprimée pour les PEL ouverts depuis 2018.",
-        'À confirmer selon la source officielle ou contractuelle applicable.',
       ],
       tags: ['pfu', 'ps_annuels', 'regime_transitoire'],
-      confidence: 'moyenne',
+      confidence: 'elevee',
       sources: [
         {
           label: 'Art. 200 A CGI — PFU',
           url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000036428122',
         },
       ],
-      dependencies: ['source officielle ou contractuelle applicable'],
     },
   ],
   deces: [
@@ -399,20 +366,15 @@ const CEL: ProductRules = {
   sortie: [
     {
       title: 'Fiscalité des intérêts',
-      bullets: [
-        'Intérêts soumis au {pfu}.',
-        "Option possible pour le barème progressif de l'IR.",
-        'À confirmer selon la source officielle ou contractuelle applicable.',
-      ],
+      bullets: ['Intérêts soumis au {pfu}.', "Option possible pour le barème progressif de l'IR."],
       tags: ['pfu'],
-      confidence: 'moyenne',
+      confidence: 'elevee',
       sources: [
         {
           label: 'Art. 200 A CGI — PFU',
           url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000036428122',
         },
       ],
-      dependencies: ['source officielle ou contractuelle applicable'],
     },
   ],
   deces: [
@@ -424,6 +386,68 @@ const CEL: ProductRules = {
         'À confirmer selon la source officielle ou contractuelle applicable.',
       ],
       tags: ['dmtg_classique'],
+      confidence: 'moyenne',
+      dependencies: ['source officielle ou contractuelle applicable'],
+    },
+  ],
+};
+
+const CAT_CSL: ProductRules = {
+  constitution: [
+    {
+      title: 'Versements',
+      bullets: [
+        'Pas de plafond légal de versements.',
+        'Accessible aux personnes physiques et morales.',
+        'Rémunération librement négociée (taux du marché).',
+        'À confirmer selon la source officielle ou contractuelle applicable.',
+      ],
+      tags: ['no_plafond', 'pp_pm_eligible'],
+      confidence: 'moyenne',
+      dependencies: ['source officielle ou contractuelle applicable'],
+    },
+  ],
+  sortie: [
+    {
+      title: 'Fiscalité des intérêts',
+      bullets: ['Intérêts soumis au {pfu}.', "Option possible pour le barème progressif de l'IR."],
+      tags: ['pfu', 'option_bareme'],
+      confidence: 'elevee',
+      sources: [
+        {
+          label: 'Art. 200 A CGI — PFU',
+          url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000036428122',
+        },
+      ],
+    },
+  ],
+  deces: [
+    {
+      title: 'Succession',
+      bullets: [
+        'Solde entre dans la succession à sa valeur au jour du décès.',
+        'Droits de mutation applicables selon le barème légal.',
+        'À confirmer selon la source officielle ou contractuelle applicable.',
+      ],
+      tags: ['dmtg_classique'],
+      confidence: 'moyenne',
+      dependencies: ['source officielle ou contractuelle applicable'],
+    },
+  ],
+};
+
+const CAT_CSL_PM: ProductRules = {
+  constitution: CAT_CSL.constitution,
+  sortie: CAT_CSL.sortie,
+  deces: [
+    {
+      title: 'Fin de vie / sortie de la PM',
+      bullets: [
+        'En cas de dissolution, liquidation ou cession d’activité, les soldes sont intégrés aux opérations de clôture de la personne morale.',
+        'Le traitement fiscal de clôture dépend du régime d’imposition (IS/IR) et de la qualification comptable des flux.',
+        'À confirmer selon la source officielle ou contractuelle applicable.',
+      ],
+      tags: ['fin_vie_pm', 'cloture_pm', 'traitement_fiscal_cloture'],
       confidence: 'moyenne',
       dependencies: ['source officielle ou contractuelle applicable'],
     },

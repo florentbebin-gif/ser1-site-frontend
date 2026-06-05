@@ -15,18 +15,15 @@ function buildPmLifecycleRules(subject: string, tags: string[] = []): ProductRul
         bullets: [
           'Le produit est détenu par la personne morale selon sa nature juridique et comptable.',
           'Le traitement fiscal courant suit le régime d’imposition (IS/IR) et les règles comptables applicables.',
-
-          'À confirmer selon la source officielle ou contractuelle applicable.',
         ],
         tags: ['pm', 'detention', ...tags],
-        confidence: 'moyenne',
+        confidence: 'elevee',
         sources: [
           {
             label: 'Art. 38 CGI — résultat imposable',
             url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000006302193',
           },
         ],
-        dependencies: ['source officielle ou contractuelle applicable'],
       },
     ],
     sortie: [
@@ -35,18 +32,15 @@ function buildPmLifecycleRules(subject: string, tags: string[] = []): ProductRul
         bullets: [
           'Le résultat de cession ou de réalisation est intégré au résultat fiscal de la personne morale.',
           'Les modalités de calcul dépendent des écritures de clôture et de la documentation comptable.',
-
-          'À confirmer selon la source officielle ou contractuelle applicable.',
         ],
         tags: ['resultat_fiscal', 'cession_pm', ...tags],
-        confidence: 'moyenne',
+        confidence: 'elevee',
         sources: [
           {
             label: 'Art. 38 CGI — résultat imposable',
             url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000006302193',
           },
         ],
-        dependencies: ['source officielle ou contractuelle applicable'],
       },
     ],
     deces: [
@@ -55,18 +49,15 @@ function buildPmLifecycleRules(subject: string, tags: string[] = []): ProductRul
         bullets: [
           'En cas de dissolution, liquidation ou cession d’activité, le traitement est effectué dans les opérations de clôture de la personne morale.',
           'La valorisation retenue à la clôture détermine l’assiette fiscale finale selon le régime applicable.',
-
-          'À confirmer selon la source officielle ou contractuelle applicable.',
         ],
         tags: ['fin_vie_pm', 'cloture_pm', ...tags],
-        confidence: 'moyenne',
+        confidence: 'elevee',
         sources: [
           {
             label: 'Art. 38 CGI — résultat imposable',
             url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000006302193',
           },
         ],
-        dependencies: ['source officielle ou contractuelle applicable'],
       },
     ],
   };
@@ -146,18 +137,15 @@ const CRYPTO_ACTIFS: ProductRules = {
         "Achat sur plateforme d'échange ou réception par minage / staking / airdrop.",
         'Prix de revient à conserver précisément pour le calcul des plus-values futures.',
         "Pas de plafond légal d'investissement.",
-
-        'À confirmer selon la source officielle ou contractuelle applicable.',
       ],
       tags: ['crypto', 'prix_de_revient'],
-      confidence: 'moyenne',
+      confidence: 'elevee',
       sources: [
         {
           label: 'Art. 150 VH bis CGI — actifs numériques',
           url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000038612225',
         },
       ],
-      dependencies: ['source officielle ou contractuelle applicable'],
     },
   ],
   sortie: [
@@ -168,36 +156,30 @@ const CRYPTO_ACTIFS: ProductRules = {
         '{pfu} sur la plus-value nette imposable.',
         "Moins-values imputables sur les plus-values de l'année (méthode de calcul globale sur le portefeuille).",
         "Option pour le barème progressif de l'IR possible.",
-
-        'À confirmer selon la source officielle ou contractuelle applicable.',
       ],
       tags: ['pfu', 'fait_generateur_cession', 'option_bareme'],
-      confidence: 'moyenne',
+      confidence: 'elevee',
       sources: [
         {
           label: 'Art. 150 VH bis CGI',
           url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000038612225',
         },
       ],
-      dependencies: ['source officielle ou contractuelle applicable'],
     },
     {
       title: 'Activité habituelle',
       bullets: [
         "Si le volume d'activité est qualifié de professionnel (minage, trading régulier) : imposition en BNC.",
         "Staking et revenus passifs : imposés à l'IR à la valeur de marché au moment de la réception.",
-
-        'À confirmer selon la source officielle ou contractuelle applicable.',
       ],
       tags: ['bnc_professionnel', 'staking'],
-      confidence: 'moyenne',
+      confidence: 'elevee',
       sources: [
         {
           label: 'Art. 150 VH bis CGI — actifs numériques',
           url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000038612225',
         },
       ],
-      dependencies: ['source officielle ou contractuelle applicable'],
     },
   ],
   deces: [
@@ -207,18 +189,15 @@ const CRYPTO_ACTIFS: ProductRules = {
         'Les crypto-actifs entrent dans la succession à leur valeur de marché au jour du décès.',
         'DMTG selon le barème légal et le lien de parenté.',
         "Attention : l'accès aux wallets et aux clés privées doit être anticipé (clause testamentaire ou mandat).",
-
-        'À confirmer selon la source officielle ou contractuelle applicable.',
       ],
       tags: ['dmtg_classique', 'acces_wallet'],
-      confidence: 'moyenne',
+      confidence: 'elevee',
       sources: [
         {
           label: 'Art. 779 CGI — abattements DMTG',
           url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000047678018',
         },
       ],
-      dependencies: ['source officielle ou contractuelle applicable'],
     },
   ],
 };
@@ -231,18 +210,15 @@ const METAUX_PRECIEUX: ProductRules = {
         "Achat de lingots, pièces d'or ou d'argent reconnus par la Banque de France.",
         "TVA applicable sur l'argent et le platine (sauf dispense). L'or de placement est exonéré de TVA.",
         'Conservation physique ou via un dépositaire (coffre bancaire).',
-
-        'À confirmer selon la source officielle ou contractuelle applicable.',
       ],
       tags: ['tva_argent', 'exoneration_tva_or', 'or_placement'],
-      confidence: 'moyenne',
+      confidence: 'elevee',
       sources: [
         {
           label: 'Art. 298 sexdecies A CGI — or d’investissement',
           url: 'https://www.legifrance.gouv.fr/loda/article_lc/LEGIARTI000006304536/2021-02-24',
         },
       ],
-      dependencies: ['source officielle ou contractuelle applicable'],
     },
   ],
   sortie: [
@@ -252,18 +228,15 @@ const METAUX_PRECIEUX: ProductRules = {
         "Régime forfaitaire : {preciousMetalsFlatTax}. Aucune justification de prix d'achat requise.",
         'Régime des plus-values : {capitalGainIr} + {psGeneral} sur la PV réelle avec abattement de 5 % par année de détention au-delà de 2 ans (exonération totale après 22 ans).',
         'Le choix du régime le plus favorable est effectué lors de la déclaration de cession.',
-
-        'À confirmer selon la source officielle ou contractuelle applicable.',
       ],
       tags: ['taxe_forfaitaire_11', 'pv_reelle', 'abattement_detention_22_ans'],
-      confidence: 'moyenne',
+      confidence: 'elevee',
       sources: [
         {
           label: 'Art. 150 VI CGI — métaux précieux',
           url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000006302728',
         },
       ],
-      dependencies: ['source officielle ou contractuelle applicable'],
     },
   ],
   deces: [
@@ -273,18 +246,15 @@ const METAUX_PRECIEUX: ProductRules = {
         'Les métaux précieux entrent dans la succession à leur valeur vénale au jour du décès.',
         'DMTG selon le barème légal et le lien de parenté.',
         "La valorisation doit être attestée (cours de l'or/argent à la date du décès).",
-
-        'À confirmer selon la source officielle ou contractuelle applicable.',
       ],
       tags: ['dmtg_classique', 'valeur_marche'],
-      confidence: 'moyenne',
+      confidence: 'elevee',
       sources: [
         {
           label: 'Art. 779 CGI — abattements DMTG',
           url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000047678018',
         },
       ],
-      dependencies: ['source officielle ou contractuelle applicable'],
     },
   ],
 };

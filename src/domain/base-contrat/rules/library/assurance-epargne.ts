@@ -16,18 +16,15 @@ const ASSURANCE_VIE_PP: ProductRules = {
         "Aucune déductibilité des primes de l'impôt sur le revenu à l'entrée.",
         "Neutralité fiscale pendant la phase d'épargne : intérêts et plus-values non imposés annuellement.",
         'Supports : fonds euros (capital garanti) et unités de compte.',
-
-        'À confirmer selon la source officielle ou contractuelle applicable.',
       ],
       tags: ['neutralite_fiscale', 'supports_fe_uc'],
-      confidence: 'moyenne',
+      confidence: 'elevee',
       sources: [
         {
           label: 'Service-Public — fonctionnement assurance-vie',
           url: 'https://www.service-public.fr/particuliers/vosdroits/F15274',
         },
       ],
-      dependencies: ['source officielle ou contractuelle applicable'],
     },
   ],
   sortie: [
@@ -37,35 +34,27 @@ const ASSURANCE_VIE_PP: ProductRules = {
         'Seuls les gains (intérêts et plus-values) sont imposés — pas le capital versé.',
         '{pfu}.',
         "Option possible pour l'imposition au barème progressif de l'IR.",
-
-        'À confirmer selon la source officielle ou contractuelle applicable.',
       ],
       tags: ['pfu', 'ps'],
-      confidence: 'moyenne',
+      confidence: 'elevee',
       sources: [
         {
           label: 'Art. 125-0 A CGI',
           url: 'https://bofip.impots.gouv.fr/bofip/2279-PGP.html/identifiant=BOI-RPPM-RCM-10-10-80-20220630',
         },
       ],
-      dependencies: ['source officielle ou contractuelle applicable'],
     },
     {
       title: 'Contrat de 8 ans et plus',
-      bullets: [
-        '{assuranceVieRachatPlus8Ans}',
-        '{assuranceVieRetraitsPs}',
-        'À confirmer selon la source officielle ou contractuelle applicable.',
-      ],
+      bullets: ['{assuranceVieRachatPlus8Ans}', '{assuranceVieRetraitsPs}'],
       tags: ['abattement_4600_9200', 'seuil_150k', 'taux_7_5', 'art_125_0_a_cgi'],
-      confidence: 'moyenne',
+      confidence: 'elevee',
       sources: [
         {
           label: 'Art. 125-0 A CGI — BOFiP RPPM-RCM-10-10-80',
           url: 'https://bofip.impots.gouv.fr/bofip/2279-PGP.html/identifiant=BOI-RPPM-RCM-10-10-80-20220630',
         },
       ],
-      dependencies: ['source officielle ou contractuelle applicable'],
     },
     {
       title: 'Anciens contrats — régimes antérieurs à 1997',
@@ -94,18 +83,15 @@ const ASSURANCE_VIE_PP: ProductRules = {
       bullets: [
         'Le capital décès est versé directement aux bénéficiaires désignés, hors actif successoral.',
         'La rédaction de la clause bénéficiaire est déterminante pour optimiser la transmission.',
-
-        'À confirmer selon la source officielle ou contractuelle applicable.',
       ],
       tags: ['hors_succession', 'clause_beneficiaire'],
-      confidence: 'moyenne',
+      confidence: 'elevee',
       sources: [
         {
           label: 'Art. L132-12 Code des assurances',
           url: 'https://www.legifrance.gouv.fr/loda/article_lc/LEGIARTI000006793003',
         },
       ],
-      dependencies: ['source officielle ou contractuelle applicable'],
     },
     {
       title: 'Primes versées avant 70 ans (art. 990 I CGI)',
@@ -113,18 +99,15 @@ const ASSURANCE_VIE_PP: ProductRules = {
         "Abattement de {assuranceVie990IAllowance} (tous contrats d'AV du défunt confondus).",
         'Au-delà : taxation à {assuranceVie990IRates}.',
         'Pas de droits de succession classiques sur ces sommes.',
-
-        'À confirmer selon la source officielle ou contractuelle applicable.',
       ],
       tags: ['art_990_i_cgi', 'abattement_990_i'],
-      confidence: 'moyenne',
+      confidence: 'elevee',
       sources: [
         {
           label: 'Art. 990 I CGI',
           url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000038612905',
         },
       ],
-      dependencies: ['source officielle ou contractuelle applicable'],
     },
     {
       title: 'Primes versées après 70 ans (art. 757 B CGI)',
@@ -132,18 +115,15 @@ const ASSURANCE_VIE_PP: ProductRules = {
         'Abattement global de {assuranceVie757BAllowance}.',
         'Au-delà : intégration aux droits de mutation selon le lien de parenté.',
         'Exception : les intérêts capitalisés restent toujours exonérés de droits, même après 70 ans.',
-
-        'À confirmer selon la source officielle ou contractuelle applicable.',
       ],
       tags: ['art_757_b_cgi', 'abattement_757_b'],
-      confidence: 'moyenne',
+      confidence: 'elevee',
       sources: [
         {
           label: 'Art. 757 B CGI',
           url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000006310172',
         },
       ],
-      dependencies: ['source officielle ou contractuelle applicable'],
     },
   ],
 };
@@ -156,18 +136,15 @@ const CONTRAT_CAPITALISATION: ProductRules = {
         'Versements libres ou programmés, sans plafond légal.',
         'Accessible aux personnes physiques.',
         "Mêmes supports qu'un contrat d'assurance-vie : fonds euros et unités de compte.",
-
-        'À confirmer selon la source officielle ou contractuelle applicable.',
       ],
       tags: ['pp_eligible', 'supports_fe_uc'],
-      confidence: 'moyenne',
+      confidence: 'elevee',
       sources: [
         {
           label: 'Art. 125-0 A CGI — BOFiP RPPM-RCM-10-10-80',
           url: 'https://bofip.impots.gouv.fr/bofip/2279-PGP.html/identifiant=BOI-RPPM-RCM-10-10-80-20220630',
         },
       ],
-      dependencies: ['source officielle ou contractuelle applicable'],
     },
   ],
   sortie: [
@@ -178,18 +155,15 @@ const CONTRAT_CAPITALISATION: ProductRules = {
         '{assuranceVieRachatMoins8Ans}',
         '{assuranceVieRachatPlus8Ans}',
         '{assuranceVieRetraitsPs}',
-
-        'À confirmer selon la source officielle ou contractuelle applicable.',
       ],
       tags: ['pfu', 'abattement_assurance_vie', 'seuil_primes_assurance_vie'],
-      confidence: 'moyenne',
+      confidence: 'elevee',
       sources: [
         {
           label: 'Art. 125-0 A CGI',
           url: 'https://bofip.impots.gouv.fr/bofip/2279-PGP.html/identifiant=BOI-RPPM-RCM-10-10-80-20220630',
         },
       ],
-      dependencies: ['source officielle ou contractuelle applicable'],
     },
   ],
   deces: [
@@ -199,18 +173,15 @@ const CONTRAT_CAPITALISATION: ProductRules = {
         "Contrairement à l'assurance-vie, le contrat entre dans la succession à sa valeur de rachat.",
         'Droits de mutation applicables selon le barème et le lien de parenté.',
         "L'abattement spécifique AV (art. 990 I) ne s'applique pas.",
-
-        'À confirmer selon la source officielle ou contractuelle applicable.',
       ],
       tags: ['dmtg_classique', 'succession_active'],
-      confidence: 'moyenne',
+      confidence: 'elevee',
       sources: [
         {
           label: 'Art. 990 I CGI (inapplicable au contrat de capitalisation)',
           url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000038612905',
         },
       ],
-      dependencies: ['source officielle ou contractuelle applicable'],
     },
     {
       title: 'Avantages de transmissibilité',
@@ -218,18 +189,15 @@ const CONTRAT_CAPITALISATION: ProductRules = {
         'Le contrat peut être transmis par donation (avec abattements classiques).',
         'Il peut continuer à vivre après le décès du souscripteur, au profit des héritiers.',
         'Permet une optimisation via démembrement de propriété (usufruit / nue-propriété).',
-
-        'À confirmer selon la source officielle ou contractuelle applicable.',
       ],
       tags: ['donation', 'demembrement', 'continuation'],
-      confidence: 'moyenne',
+      confidence: 'elevee',
       sources: [
         {
           label: 'Art. 779 CGI — abattements DMTG',
           url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000047678018',
         },
       ],
-      dependencies: ['source officielle ou contractuelle applicable'],
     },
   ],
 };
@@ -284,18 +252,15 @@ const CONTRAT_CAPITALISATION_PM: ProductRules = {
       bullets: [
         "Le contrat suit la continuité de la personne morale tant qu'elle est en activité.",
         "En cas de dissolution, liquidation ou cession d'activité, le contrat entre dans les opérations de clôture (boni/mali de liquidation selon la situation).",
-
-        'À confirmer selon la source officielle ou contractuelle applicable.',
       ],
       tags: ['fin_vie_pm', 'liquidation', 'cession_activite'],
-      confidence: 'moyenne',
+      confidence: 'elevee',
       sources: [
         {
           label: 'Art. 38 CGI — résultat imposable',
           url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000006302193',
         },
       ],
-      dependencies: ['source officielle ou contractuelle applicable'],
     },
   ],
 };
