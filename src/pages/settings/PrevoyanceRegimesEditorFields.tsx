@@ -36,7 +36,7 @@ function emptyReference(): PrevoyanceSourceReference {
   return {
     organisme: '',
     titre: '',
-    url: 'https://example.com',
+    url: '',
     dateConsultation: new Date().toISOString().slice(0, 10),
     valeursCouvertes: [''],
     confiance: 'moyenne',
