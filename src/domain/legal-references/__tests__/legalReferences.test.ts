@@ -94,6 +94,24 @@ describe('références juridiques', () => {
     }
   });
 
+  it('couvre les références assurance-vie décès du catalogue', () => {
+    const catalogProducts = ['assurance_vie', 'prevoyance_individuelle_deces', 'perin_assurance'];
+
+    expect(getLegalReference('cgi-990-i')).toEqual(
+      expect.objectContaining({
+        officialUrl: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000047288653',
+        relatedCatalogProducts: catalogProducts,
+      }),
+    );
+    expect(getLegalReference('cgi-757-b')).toEqual(
+      expect.objectContaining({
+        officialUrl: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000047288569',
+        relatedCatalogProducts: catalogProducts,
+      }),
+    );
+    expect(getLegalReference('cgi-757-b').relatedSimulatorIds).toBeUndefined();
+  });
+
   it('liste les références par produit catalogue', () => {
     const references = listLegalReferencesForProduct('assurance_vie', [
       {
