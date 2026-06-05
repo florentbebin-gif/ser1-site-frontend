@@ -9,6 +9,10 @@
  */
 
 import type { ProductRules, Audience } from '../types';
+import {
+  PRET_PARTICULIERS,
+  USUFRUIT_NUE_PROPRIETE,
+} from './valeurs-mobilieres-creances-demembrement';
 
 function buildPmLifecycleRules(subject: string, tags: string[] = []): ProductRules {
   return {
@@ -18,9 +22,12 @@ function buildPmLifecycleRules(subject: string, tags: string[] = []): ProductRul
         bullets: [
           'Le produit est détenu par la personne morale et comptabilisé selon sa nature (titres, parts, créances ou droits).',
           'Le traitement fiscal courant suit le régime d’imposition de la personne morale (IS/IR) et les règles comptables applicables.',
+
+          'À confirmer selon la source officielle ou contractuelle applicable.',
         ],
         tags: ['pm', 'comptabilisation', ...tags],
-        confidence: 'elevee',
+        confidence: 'moyenne',
+        dependencies: ['source officielle ou contractuelle applicable'],
       },
     ],
     sortie: [
@@ -29,9 +36,12 @@ function buildPmLifecycleRules(subject: string, tags: string[] = []): ProductRul
         bullets: [
           'Le résultat de cession, remboursement ou encaissement est intégré au résultat fiscal de la personne morale.',
           'Les modalités de calcul dépendent du mode de détention, des écritures de clôture et de la documentation comptable.',
+
+          'À confirmer selon la source officielle ou contractuelle applicable.',
         ],
         tags: ['resultat_fiscal', 'cession_pm', ...tags],
-        confidence: 'elevee',
+        confidence: 'moyenne',
+        dependencies: ['source officielle ou contractuelle applicable'],
       },
     ],
     deces: [
@@ -40,9 +50,12 @@ function buildPmLifecycleRules(subject: string, tags: string[] = []): ProductRul
         bullets: [
           'En cas de dissolution, liquidation ou cession d’activité, le traitement est effectué dans les opérations de clôture de la personne morale.',
           'La valorisation retenue à la clôture détermine l’assiette fiscale finale selon le régime applicable.',
+
+          'À confirmer selon la source officielle ou contractuelle applicable.',
         ],
         tags: ['fin_vie_pm', 'cloture_pm', ...tags],
-        confidence: 'elevee',
+        confidence: 'moyenne',
+        dependencies: ['source officielle ou contractuelle applicable'],
       },
     ],
   };
@@ -55,9 +68,12 @@ const ACTIONS_COTEES: ProductRules = {
       bullets: [
         'Pas de plafond ni de restriction. Détenus sur CTO, PEA (si actions européennes) ou PEA-PME.',
         "Frais d'acquisition (courtage) non déductibles fiscalement (régime PFU).",
+
+        'À confirmer selon la source officielle ou contractuelle applicable.',
       ],
       tags: ['cto', 'pea_eligible'],
-      confidence: 'elevee',
+      confidence: 'moyenne',
+      dependencies: ['source officielle ou contractuelle applicable'],
     },
   ],
   sortie: [
@@ -68,15 +84,18 @@ const ACTIONS_COTEES: ProductRules = {
         'Option globale pour le barème progressif (abattement pour durée de détention uniquement sur titres acquis avant 2018).',
         "Dividendes d'actions françaises : {pfu} ou option barème avec abattement de 40 %.",
         "Compensation des moins-values sur les plus-values de l'année et des 10 années suivantes.",
+
+        'À confirmer selon la source officielle ou contractuelle applicable.',
       ],
       tags: ['pfu', 'dividendes', 'abattement_40', 'compensation_mv'],
-      confidence: 'elevee',
+      confidence: 'moyenne',
       sources: [
         {
           label: 'Art. 200 A CGI — PFU + Art. 158-3 CGI — abattement 40%',
           url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000036428122',
         },
       ],
+      dependencies: ['source officielle ou contractuelle applicable'],
     },
   ],
   deces: [
@@ -86,15 +105,18 @@ const ACTIONS_COTEES: ProductRules = {
         'Les titres intègrent la succession à leur valeur au jour du décès (valeur de marché).',
         "Purge fiscale : les héritiers repartent du cours de bourse au jour du décès (pas d'impôt sur les PV latentes).",
         'DMTG selon le barème et le lien de parenté, après abattements légaux.',
+
+        'À confirmer selon la source officielle ou contractuelle applicable.',
       ],
       tags: ['purge_pv', 'dmtg_classique'],
-      confidence: 'elevee',
+      confidence: 'moyenne',
       sources: [
         {
           label: 'Art. 779 CGI — abattements DMTG',
           url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000047678018',
         },
       ],
+      dependencies: ['source officielle ou contractuelle applicable'],
     },
   ],
 };
@@ -130,15 +152,18 @@ const FONDS_OPC: ProductRules = {
         'Plus-values soumises au {pfu}.',
         "FCPR exonérés d'IR sur les plus-values sous conditions (délai de détention, investissement PME non cotées).",
         'Compensation des moins-values sur les 10 années suivantes.',
+
+        'À confirmer selon la source officielle ou contractuelle applicable.',
       ],
       tags: ['pfu', 'exoneration_fcpr', 'compensation_mv'],
-      confidence: 'elevee',
+      confidence: 'moyenne',
       sources: [
         {
           label: 'Art. 200 A CGI — PFU',
           url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000036428122',
         },
       ],
+      dependencies: ['source officielle ou contractuelle applicable'],
     },
   ],
   deces: [
@@ -147,15 +172,18 @@ const FONDS_OPC: ProductRules = {
       bullets: [
         'Les parts entrent dans la succession à leur valeur liquidative au jour du décès.',
         'DMTG selon le barème et le lien de parenté.',
+
+        'À confirmer selon la source officielle ou contractuelle applicable.',
       ],
       tags: ['dmtg_classique'],
-      confidence: 'elevee',
+      confidence: 'moyenne',
       sources: [
         {
           label: 'Art. 779 CGI — abattements DMTG',
           url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000047678018',
         },
       ],
+      dependencies: ['source officielle ou contractuelle applicable'],
     },
   ],
 };
@@ -167,15 +195,18 @@ const ACTIONS_NON_COTEES: ProductRules = {
       bullets: [
         'Pas de plafond légal. Titres non admis sur un marché réglementé.',
         "Souscription au capital : éventuellement éligible à la réduction IR-PME (18 % ou 25 % selon l'entreprise).",
+
+        'À confirmer selon la source officielle ou contractuelle applicable.',
       ],
       tags: ['ir_pme', 'non_cote'],
-      confidence: 'elevee',
+      confidence: 'moyenne',
       sources: [
         {
           label: 'Art. 199 terdecies-0 A CGI — IR-PME',
           url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000044975826',
         },
       ],
+      dependencies: ['source officielle ou contractuelle applicable'],
     },
   ],
   sortie: [
@@ -185,15 +216,18 @@ const ACTIONS_NON_COTEES: ProductRules = {
         'Plus-values : {pfu} par défaut.',
         'Option barème avec abattements pour durée de détention (titres acquis avant 2018 uniquement).',
         'Abattement renforcé possible pour dirigeants partant en retraite (sous conditions).',
+
+        'À confirmer selon la source officielle ou contractuelle applicable.',
       ],
       tags: ['pfu', 'abattement_dirigeant_retraite'],
-      confidence: 'elevee',
+      confidence: 'moyenne',
       sources: [
         {
           label: 'Art. 200 A CGI — PFU',
           url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000036428122',
         },
       ],
+      dependencies: ['source officielle ou contractuelle applicable'],
     },
   ],
   deces: [
@@ -203,15 +237,18 @@ const ACTIONS_NON_COTEES: ProductRules = {
         'Les titres intègrent la succession à leur valeur vénale.',
         'Pacte Dutreil (art. 787 B CGI) : exonération de 75 % des DMTG sous engagement collectif et individuel de conservation.',
         "Abattements légaux classiques en l'absence de Pacte Dutreil.",
+
+        'À confirmer selon la source officielle ou contractuelle applicable.',
       ],
       tags: ['pacte_dutreil', 'art_787_b_cgi', 'dmtg_classique'],
-      confidence: 'elevee',
+      confidence: 'moyenne',
       sources: [
         {
           label: 'Art. 787 B CGI — Pacte Dutreil',
           url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000043663071',
         },
       ],
+      dependencies: ['source officielle ou contractuelle applicable'],
     },
   ],
 };
@@ -226,13 +263,14 @@ const SOFICA: ProductRules = {
         'Engagement de conservation des parts pendant au moins 5 ans.',
       ],
       tags: ['reduction_ir', 'plafond_18k', 'sofica'],
-      confidence: 'elevee',
+      confidence: 'moyenne',
       sources: [
         {
           label: 'Art. 163 bis G CGI — SOFICA',
           url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000038614158',
         },
       ],
+      dependencies: ['source officielle ou contractuelle applicable'],
     },
   ],
   sortie: [
@@ -241,15 +279,18 @@ const SOFICA: ProductRules = {
       bullets: [
         'Plus-values soumises au {pfu}.',
         "Moins-values non imputables sur d'autres plus-values de cession de valeurs mobilières.",
+
+        'À confirmer selon la source officielle ou contractuelle applicable.',
       ],
       tags: ['pfu', 'mv_non_imputables'],
-      confidence: 'elevee',
+      confidence: 'moyenne',
       sources: [
         {
           label: 'Art. 200 A CGI — PFU',
           url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000036428122',
         },
       ],
+      dependencies: ['source officielle ou contractuelle applicable'],
     },
   ],
   deces: [
@@ -258,15 +299,18 @@ const SOFICA: ProductRules = {
       bullets: [
         'Parts entrent dans la succession à leur valeur liquidative.',
         'DMTG selon le barème et le lien de parenté.',
+
+        'À confirmer selon la source officielle ou contractuelle applicable.',
       ],
       tags: ['dmtg_classique'],
-      confidence: 'elevee',
+      confidence: 'moyenne',
       sources: [
         {
           label: 'Art. 779 CGI — abattements DMTG',
           url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000047678018',
         },
       ],
+      dependencies: ['source officielle ou contractuelle applicable'],
     },
   ],
 };
@@ -281,13 +325,14 @@ const IR_PME_MADELIN: ProductRules = {
         'Conditions : PME de moins de 7 ans, secteurs éligibles, engagement de conservation 5 ans minimum.',
       ],
       tags: ['reduction_ir_18_25', 'plafond_50k', 'engagement_5_ans'],
-      confidence: 'elevee',
+      confidence: 'moyenne',
       sources: [
         {
           label: 'Art. 199 terdecies-0 A CGI — IR-PME',
           url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000044975826',
         },
       ],
+      dependencies: ['source officielle ou contractuelle applicable'],
     },
   ],
   sortie: [
@@ -297,15 +342,18 @@ const IR_PME_MADELIN: ProductRules = {
         'Plus-values : {pfu} ou option barème.',
         'Moins-values déductibles des plus-values de même nature.',
         "Reprise de la réduction d'IR si cession avant 5 ans (hors cas de force majeure).",
+
+        'À confirmer selon la source officielle ou contractuelle applicable.',
       ],
       tags: ['pfu', 'reprise_reduction'],
-      confidence: 'elevee',
+      confidence: 'moyenne',
       sources: [
         {
           label: 'Art. 200 A CGI — PFU',
           url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000036428122',
         },
       ],
+      dependencies: ['source officielle ou contractuelle applicable'],
     },
   ],
   deces: [
@@ -315,15 +363,18 @@ const IR_PME_MADELIN: ProductRules = {
         'Titres entrent dans la succession à leur valeur vénale.',
         'DMTG selon le barème et le lien de parenté.',
         "Pacte Dutreil possible si les conditions d'engagement sont remplies.",
+
+        'À confirmer selon la source officielle ou contractuelle applicable.',
       ],
       tags: ['dmtg_classique', 'pacte_dutreil'],
-      confidence: 'elevee',
+      confidence: 'moyenne',
       sources: [
         {
           label: 'Art. 787 B CGI — Pacte Dutreil + Art. 779 CGI — abattements DMTG',
           url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000043663071',
         },
       ],
+      dependencies: ['source officielle ou contractuelle applicable'],
     },
   ],
 };
@@ -335,9 +386,12 @@ const CROWDFUNDING: ProductRules = {
       bullets: [
         'Actions ou obligations souscrites via une plateforme de financement participatif (agrément CIP/PSI).',
         'Risque de perte en capital important (PME non cotées).',
+
+        'À confirmer selon la source officielle ou contractuelle applicable.',
       ],
       tags: ['financement_participatif', 'risque_capital'],
-      confidence: 'elevee',
+      confidence: 'moyenne',
+      dependencies: ['source officielle ou contractuelle applicable'],
     },
   ],
   sortie: [
@@ -347,15 +401,18 @@ const CROWDFUNDING: ProductRules = {
         'Plus-values sur actions : {pfu}.',
         'Intérêts sur obligations : {pfu}.',
         'Pertes déductibles des gains de même nature (dans la limite des règles du PFU).',
+
+        'À confirmer selon la source officielle ou contractuelle applicable.',
       ],
       tags: ['pfu'],
-      confidence: 'elevee',
+      confidence: 'moyenne',
       sources: [
         {
           label: 'Art. 200 A CGI — PFU',
           url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000036428122',
         },
       ],
+      dependencies: ['source officielle ou contractuelle applicable'],
     },
   ],
   deces: [
@@ -364,15 +421,18 @@ const CROWDFUNDING: ProductRules = {
       bullets: [
         'Titres / créances entrent dans la succession à leur valeur vénale.',
         'DMTG selon le barème et le lien de parenté.',
+
+        'À confirmer selon la source officielle ou contractuelle applicable.',
       ],
       tags: ['dmtg_classique'],
-      confidence: 'elevee',
+      confidence: 'moyenne',
       sources: [
         {
           label: 'Art. 779 CGI — abattements DMTG',
           url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000047678018',
         },
       ],
+      dependencies: ['source officielle ou contractuelle applicable'],
     },
   ],
 };
@@ -384,23 +444,31 @@ const OBLIGATIONS_NON_COTEES: ProductRules = {
       bullets: [
         'Obligations souscrites de gré à gré (PME, club deals, obligations convertibles…).',
         'Pas de plafond légal. Risque de crédit élevé.',
+
+        'À confirmer selon la source officielle ou contractuelle applicable.',
       ],
       tags: ['gre_a_gre', 'risque_credit'],
-      confidence: 'elevee',
+      confidence: 'moyenne',
+      dependencies: ['source officielle ou contractuelle applicable'],
     },
   ],
   sortie: [
     {
       title: 'Intérêts et cession',
-      bullets: ['Intérêts courus : {pfu}.', 'Plus-values de cession : {pfu}.'],
+      bullets: [
+        'Intérêts courus : {pfu}.',
+        'Plus-values de cession : {pfu}.',
+        'À confirmer selon la source officielle ou contractuelle applicable.',
+      ],
       tags: ['pfu'],
-      confidence: 'elevee',
+      confidence: 'moyenne',
       sources: [
         {
           label: 'Art. 200 A CGI — PFU',
           url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000036428122',
         },
       ],
+      dependencies: ['source officielle ou contractuelle applicable'],
     },
   ],
   deces: [
@@ -409,15 +477,18 @@ const OBLIGATIONS_NON_COTEES: ProductRules = {
       bullets: [
         'La créance intègre la succession à sa valeur nominale (ou de marché).',
         'DMTG selon le barème légal.',
+
+        'À confirmer selon la source officielle ou contractuelle applicable.',
       ],
       tags: ['dmtg_classique'],
-      confidence: 'elevee',
+      confidence: 'moyenne',
       sources: [
         {
           label: 'Art. 779 CGI — abattements DMTG',
           url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000047678018',
         },
       ],
+      dependencies: ['source officielle ou contractuelle applicable'],
     },
   ],
 };
@@ -429,9 +500,12 @@ const COMPTE_COURANT_ASSOCIE: ProductRules = {
       bullets: [
         "Prêt consenti par un associé à l'entité dans laquelle il détient des droits (créance de compte courant d'associé).",
         "Intérêts déductibles pour l'entité débitrice dans la limite du taux plafond légal.",
+
+        'À confirmer selon la source officielle ou contractuelle applicable.',
       ],
       tags: ['pret_associe', 'interet_deductible_societe'],
-      confidence: 'elevee',
+      confidence: 'moyenne',
+      dependencies: ['source officielle ou contractuelle applicable'],
     },
   ],
   sortie: [
@@ -440,15 +514,18 @@ const COMPTE_COURANT_ASSOCIE: ProductRules = {
       bullets: [
         'Remboursement du capital : non imposable (restitution de la créance).',
         "Intérêts perçus : imposables à l'IR selon le {pfu} (ou option barème).",
+
+        'À confirmer selon la source officielle ou contractuelle applicable.',
       ],
       tags: ['pfu', 'interet_imposable'],
-      confidence: 'elevee',
+      confidence: 'moyenne',
       sources: [
         {
           label: 'Art. 200 A CGI — PFU',
           url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000036428122',
         },
       ],
+      dependencies: ['source officielle ou contractuelle applicable'],
     },
   ],
   deces: [
@@ -458,120 +535,18 @@ const COMPTE_COURANT_ASSOCIE: ProductRules = {
         'La créance (solde du CCA) intègre la succession à sa valeur nominale.',
         'DMTG selon le barème légal.',
         "Risque de dépréciation si l'entité débitrice est en difficulté : valeur à estimer avec prudence.",
+
+        'À confirmer selon la source officielle ou contractuelle applicable.',
       ],
       tags: ['dmtg_classique', 'valeur_nominale'],
-      confidence: 'elevee',
+      confidence: 'moyenne',
       sources: [
         {
           label: 'Art. 779 CGI — abattements DMTG',
           url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000047678018',
         },
       ],
-    },
-  ],
-};
-
-const PRET_PARTICULIERS: ProductRules = {
-  constitution: [
-    {
-      title: 'Nature',
-      bullets: [
-        'Prêt formalisé par une reconnaissance de dette (acte sous seing privé ou notarié).',
-        "Déclaration obligatoire à l'administration fiscale si montant > 5 000 €.",
-      ],
-      tags: ['reconnaissance_dette', 'declaration_fiscale'],
-      confidence: 'elevee',
-      sources: [
-        {
-          label: 'Art. 242 ter CGI — déclaration prêt > 5 000 €',
-          url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000006312267',
-        },
-      ],
-    },
-  ],
-  sortie: [
-    {
-      title: 'Remboursement',
-      bullets: [
-        'Remboursement du capital : non imposable.',
-        "Intérêts éventuels : imposables à l'IR selon le {pfu}.",
-      ],
-      tags: ['pfu', 'interet_imposable'],
-      confidence: 'elevee',
-      sources: [
-        {
-          label: 'Art. 200 A CGI — PFU',
-          url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000036428122',
-        },
-      ],
-    },
-  ],
-  deces: [
-    {
-      title: 'Succession',
-      bullets: [
-        'La créance intègre la succession à sa valeur (solde restant dû).',
-        'DMTG selon le barème légal et le lien de parenté.',
-      ],
-      tags: ['dmtg_classique'],
-      confidence: 'elevee',
-      sources: [
-        {
-          label: 'Art. 779 CGI — abattements DMTG',
-          url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000047678018',
-        },
-      ],
-    },
-  ],
-};
-
-const USUFRUIT_NUE_PROPRIETE: ProductRules = {
-  constitution: [
-    {
-      title: 'Démembrement de propriété',
-      bullets: [
-        "L'usufruit et la nue-propriété représentent deux droits distincts sur un même bien.",
-        "Valorisation selon le barème fiscal de l'usufruit (art. 669 CGI) : dépend de l'âge de l'usufruitier.",
-        'Donation de la nue-propriété : DMTG calculés sur la seule valeur de la nue-propriété.',
-        "À confirmer selon l'origine du démembrement (légal type succession, ou conventionnel type donation/cession).",
-      ],
-      tags: ['demembrement', 'art_669_cgi', 'bareme_fiscal_usufruit'],
-      confidence: 'moyenne',
-      sources: [
-        {
-          label: 'Art. 669 CGI',
-          url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000006310228',
-        },
-      ],
-      dependencies: ['origine du démembrement (légal vs conventionnel)', "âge de l'usufruitier"],
-    },
-  ],
-  sortie: [
-    {
-      title: 'Cession et revenus',
-      bullets: [
-        "Les loyers ou revenus reviennent à l'usufruitier (imposition en revenus fonciers ou BIC).",
-        'Cession de la pleine propriété : PV partagée entre usufruitier et nu-propriétaire selon les droits respectifs.',
-        "Réunion de l'usufruit et de la nue-propriété (extinction de l'usufruit) : sans taxation pour le nu-propriétaire.",
-        'À confirmer selon la répartition conventionnelle des droits entre usufruitier et nu-propriétaire.',
-      ],
-      tags: ['revenus_usufruitier', 'pv_demembrement', 'reunion'],
-      confidence: 'moyenne',
-      dependencies: ['répartition des droits usufruitier/nu-propriétaire'],
-    },
-  ],
-  deces: [
-    {
-      title: "Extinction de l'usufruit et transmission",
-      bullets: [
-        "Au décès de l'usufruitier, la pleine propriété se reconstitue sans droits de succession supplémentaires.",
-        'La nue-propriété transmise de son vivant évite une double taxation.',
-        'Intégration dans la succession des droits détenus à la valeur fiscale.',
-        "À confirmer selon la présence éventuelle d'une clause de réversion d'usufruit.",
-      ],
-      tags: ['reunion_usufruit', 'no_dmtg_reunion', 'optimisation_transmission'],
-      confidence: 'moyenne',
-      dependencies: ["clause de réversion d'usufruit éventuelle"],
+      dependencies: ['source officielle ou contractuelle applicable'],
     },
   ],
 };

@@ -8,7 +8,7 @@
  * `confidence`, `sources` et `dependencies` sont affichés en UI admin pour la veille juridique.
  *
  * Règle d'écriture :
- *   - confidence 'elevee'  → règle fiable et sourcée
+ *   - confidence 'elevee'  → règle vérifiée, sourcée, sans bullet "À confirmer"
  *   - confidence 'moyenne' → au moins 1 bullet "À confirmer selon …" + dependencies non vide
  *   - confidence 'faible'  → idem + source obligatoire
  */

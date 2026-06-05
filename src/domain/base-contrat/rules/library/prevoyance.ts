@@ -7,6 +7,7 @@
  */
 
 import type { ProductRules, Audience } from '../types';
+import { ASSURANCE_HOMME_CLE } from './prevoyance-homme-cle';
 
 const PREVOYANCE_DECES: ProductRules = {
   constitution: [
@@ -15,15 +16,18 @@ const PREVOYANCE_DECES: ProductRules = {
       bullets: [
         "Primes non déductibles de l'IR pour un contrat individuel souscrit à titre personnel.",
         'Contrat de risque pur : aucune valeur de rachat, aucune épargne constituée.',
+
+        'À confirmer selon la source officielle ou contractuelle applicable.',
       ],
       tags: ['primes_non_deductibles', 'risque_pur'],
-      confidence: 'elevee',
+      confidence: 'moyenne',
       sources: [
         {
           label: 'Service-Public — assurance décès',
           url: 'https://www.service-public.fr/particuliers/vosdroits/F35395',
         },
       ],
+      dependencies: ['source officielle ou contractuelle applicable'],
     },
   ],
   sortie: [
@@ -32,15 +36,18 @@ const PREVOYANCE_DECES: ProductRules = {
       bullets: [
         'Pas de valeur de rachat, pas de capital disponible hors sinistre.',
         "À l'échéance du contrat : arrêt sans restitution des primes.",
+
+        'À confirmer selon la source officielle ou contractuelle applicable.',
       ],
       tags: ['no_rachat'],
-      confidence: 'elevee',
+      confidence: 'moyenne',
       sources: [
         {
           label: 'Service-Public — assurance décès',
           url: 'https://www.service-public.fr/particuliers/vosdroits/F35395',
         },
       ],
+      dependencies: ['source officielle ou contractuelle applicable'],
     },
   ],
   deces: [
@@ -82,13 +89,14 @@ const PREVOYANCE_ITT: ProductRules = {
         'Pas de valeur de rachat : contrat de risque pur.',
       ],
       tags: ['primes_non_deductibles', 'risque_pur'],
-      confidence: 'elevee',
+      confidence: 'moyenne',
       sources: [
         {
           label: 'BOSS — Prévoyance TNS',
           url: 'https://boss.gouv.fr/portail/accueil/prevoyance-tns.html',
         },
       ],
+      dependencies: ['source officielle ou contractuelle applicable'],
     },
   ],
   sortie: [
@@ -114,15 +122,18 @@ const PREVOYANCE_ITT: ProductRules = {
       bullets: [
         "Régime des rentes viagères à titre onéreux : fraction imposable à l'IR selon l'âge au premier versement.",
         '{rvtoTaxableFractions}',
+
+        'À confirmer selon la source officielle ou contractuelle applicable.',
       ],
       tags: ['rente_titre_onereux', 'fraction_imposable_age'],
-      confidence: 'elevee',
+      confidence: 'moyenne',
       sources: [
         {
           label: 'Art. 158-6 CGI — rentes viagères à titre onéreux',
           url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000033810417',
         },
       ],
+      dependencies: ['source officielle ou contractuelle applicable'],
     },
   ],
   deces: [
@@ -130,15 +141,18 @@ const PREVOYANCE_ITT: ProductRules = {
       title: 'Sans objet — couverture décès distincte',
       bullets: [
         "Ce produit couvre l'incapacité de travail (ITT) et l'invalidité. La couverture décès relève d'un produit dédié (prévoyance décès).",
+
+        'À confirmer selon la source officielle ou contractuelle applicable.',
       ],
       tags: ['no_capital_deces'],
-      confidence: 'elevee',
+      confidence: 'moyenne',
       sources: [
         {
           label: 'Service-Public — pension d’invalidité',
           url: 'https://www.service-public.fr/particuliers/vosdroits/F672',
         },
       ],
+      dependencies: ['source officielle ou contractuelle applicable'],
     },
   ],
 };
@@ -151,15 +165,18 @@ const ASSURANCE_DEPENDANCE: ProductRules = {
         "Cotisations non déductibles de l'IR (contrat individuel).",
         'Contrat de risque : aucune valeur de rachat.',
         "Possibilité de déduction via le crédit d'impôt pour l'emploi à domicile si la dépendance est déjà avérée.",
+
+        'À confirmer selon la source officielle ou contractuelle applicable.',
       ],
       tags: ['primes_non_deductibles', 'risque_pur'],
-      confidence: 'elevee',
+      confidence: 'moyenne',
       sources: [
         {
           label: 'Service-Public — allocation personnalisée d’autonomie',
           url: 'https://www.service-public.fr/particuliers/vosdroits/F10009',
         },
       ],
+      dependencies: ['source officielle ou contractuelle applicable'],
     },
   ],
   sortie: [
@@ -168,15 +185,18 @@ const ASSURANCE_DEPENDANCE: ProductRules = {
       bullets: [
         "Rente versée en cas de perte d'autonomie : exonérée d'IR si les primes n'ont pas été déduites.",
         'Régime similaire aux rentes viagères à titre onéreux si primes déduites.',
+
+        'À confirmer selon la source officielle ou contractuelle applicable.',
       ],
       tags: ['rente_dependance', 'exoneration_conditionnelle'],
-      confidence: 'elevee',
+      confidence: 'moyenne',
       sources: [
         {
           label: 'Service-Public — rentes viagères',
           url: 'https://www.service-public.fr/particuliers/vosdroits/F3173',
         },
       ],
+      dependencies: ['source officielle ou contractuelle applicable'],
     },
   ],
   deces: [
@@ -185,15 +205,18 @@ const ASSURANCE_DEPENDANCE: ProductRules = {
       bullets: [
         "Contrat d'assistance vie : pas de capital décès en dehors des contrats mixtes.",
         'Les primes ne sont pas récupérées en cas de décès sans sinistre.',
+
+        'À confirmer selon la source officielle ou contractuelle applicable.',
       ],
       tags: ['no_capital_deces'],
-      confidence: 'elevee',
+      confidence: 'moyenne',
       sources: [
         {
           label: 'Service-Public — allocation personnalisée d’autonomie',
           url: 'https://www.service-public.fr/particuliers/vosdroits/F10009',
         },
       ],
+      dependencies: ['source officielle ou contractuelle applicable'],
     },
   ],
 };
@@ -205,29 +228,36 @@ const ASSURANCE_OBSEQUES: ProductRules = {
       bullets: [
         'Contrat en capital ou en prestations : aucune valeur de rachat utilisable du vivant.',
         "Primes versées non déductibles de l'IR.",
+
+        'À confirmer selon la source officielle ou contractuelle applicable.',
       ],
       tags: ['primes_non_deductibles'],
-      confidence: 'elevee',
+      confidence: 'moyenne',
       sources: [
         {
           label: 'Service-Public — frais d’obsèques',
           url: 'https://www.service-public.fr/particuliers/vosdroits/F17059',
         },
       ],
+      dependencies: ['source officielle ou contractuelle applicable'],
     },
   ],
   sortie: [
     {
       title: 'Sans objet',
-      bullets: ['Contrat activé uniquement au décès, pas de sortie anticipée.'],
+      bullets: [
+        'Contrat activé uniquement au décès, pas de sortie anticipée.',
+        'À confirmer selon la source officielle ou contractuelle applicable.',
+      ],
       tags: ['no_rachat'],
-      confidence: 'elevee',
+      confidence: 'moyenne',
       sources: [
         {
           label: 'Service-Public — inhumation et contrat obsèques',
           url: 'https://www.service-public.fr/particuliers/vosdroits/F14935',
         },
       ],
+      dependencies: ['source officielle ou contractuelle applicable'],
     },
   ],
   deces: [
@@ -237,15 +267,18 @@ const ASSURANCE_OBSEQUES: ProductRules = {
         "Capital versé à l'opérateur funéraire désigné ou aux proches pour couvrir les frais d'obsèques.",
         'Exonération de droits de succession pour le capital affecté aux frais funéraires.',
         "Au-delà des frais réels, l'excédent peut être soumis aux DMTG.",
+
+        'À confirmer selon la source officielle ou contractuelle applicable.',
       ],
       tags: ['exoneration_frais_obseques', 'dmtg_excedent'],
-      confidence: 'elevee',
+      confidence: 'moyenne',
       sources: [
         {
           label: 'Art. 796-0 bis CGI — exonération frais funéraires',
           url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000006310479',
         },
       ],
+      dependencies: ['source officielle ou contractuelle applicable'],
     },
   ],
 };
@@ -258,15 +291,18 @@ const ASSURANCE_EMPRUNTEUR_PP: ProductRules = {
         "Primes non déductibles pour l'emprunteur particulier.",
         'Exception : primes déductibles des revenus fonciers si le bien est loué (régime réel).',
         'Contrat de risque pur adossé à un prêt immobilier ou professionnel.',
+
+        'À confirmer selon la source officielle ou contractuelle applicable.',
       ],
       tags: ['primes_non_deductibles', 'deductible_revenus_fonciers'],
-      confidence: 'elevee',
+      confidence: 'moyenne',
       sources: [
         {
           label: 'BOFiP RFPI — primes d’assurance déductibles',
           url: 'https://bofip.impots.gouv.fr/doctrine/pgp/5807-PGP',
         },
       ],
+      dependencies: ['source officielle ou contractuelle applicable'],
     },
   ],
   sortie: [
@@ -275,15 +311,18 @@ const ASSURANCE_EMPRUNTEUR_PP: ProductRules = {
       bullets: [
         "Capital versé directement à la banque (remboursement du prêt) — pas d'imposition pour l'emprunteur.",
         'IJ invalidité éventuelles : mêmes règles que la prévoyance ITT.',
+
+        'À confirmer selon la source officielle ou contractuelle applicable.',
       ],
       tags: ['capital_banque', 'ij_iti'],
-      confidence: 'elevee',
+      confidence: 'moyenne',
       sources: [
         {
           label: 'BOFiP RFPI — intérêts et frais d’emprunt',
           url: 'https://bofip.impots.gouv.fr/bofip/5808-PGP.html/identifiant=BOI-RFPI-BASE-20-80-20170901',
         },
       ],
+      dependencies: ['source officielle ou contractuelle applicable'],
     },
   ],
   deces: [
@@ -293,15 +332,18 @@ const ASSURANCE_EMPRUNTEUR_PP: ProductRules = {
         "Le capital est versé à l'établissement prêteur pour solde du prêt.",
         'Les héritiers récupèrent le bien net de dette.',
         'Pas de droits de succession sur le capital versé directement à la banque.',
+
+        'À confirmer selon la source officielle ou contractuelle applicable.',
       ],
       tags: ['remboursement_pret', 'no_dmtg_capital'],
-      confidence: 'elevee',
+      confidence: 'moyenne',
       sources: [
         {
           label: 'BOFiP RFPI — intérêts et frais d’emprunt',
           url: 'https://bofip.impots.gouv.fr/bofip/5808-PGP.html/identifiant=BOI-RFPI-BASE-20-80-20170901',
         },
       ],
+      dependencies: ['source officielle ou contractuelle applicable'],
     },
   ],
 };
@@ -313,15 +355,18 @@ const ASSURANCE_EMPRUNTEUR_PM: ProductRules = {
       bullets: [
         'Primes payées par la société : déductibles du résultat imposable (IS ou IR) si adossées à un prêt professionnel.',
         "Contrat de risque pur adossé à un prêt professionnel (immobilier ou d'exploitation).",
+
+        'À confirmer selon la source officielle ou contractuelle applicable.',
       ],
       tags: ['primes_deductibles_entreprise'],
-      confidence: 'elevee',
+      confidence: 'moyenne',
       sources: [
         {
           label: 'Art. 38 CGI — résultat imposable',
           url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000006302193',
         },
       ],
+      dependencies: ['source officielle ou contractuelle applicable'],
     },
   ],
   sortie: [
@@ -330,15 +375,18 @@ const ASSURANCE_EMPRUNTEUR_PM: ProductRules = {
       bullets: [
         'Capital versé à la banque : extinction partielle ou totale de la dette du prêt — enregistrement comptable en produit exceptionnel et charge (remboursement emprunt).',
         'IJ invalidité éventuelles : intégrées au résultat imposable de la société (IS ou IR).',
+
+        'À confirmer selon la source officielle ou contractuelle applicable.',
       ],
       tags: ['capital_banque', 'produit_exceptionnel'],
-      confidence: 'elevee',
+      confidence: 'moyenne',
       sources: [
         {
           label: 'Art. 38 CGI — résultat imposable',
           url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000006302193',
         },
       ],
+      dependencies: ['source officielle ou contractuelle applicable'],
     },
   ],
   deces: [
@@ -361,69 +409,6 @@ const ASSURANCE_EMPRUNTEUR_PM: ProductRules = {
         'régime fiscal de la société (IS ou IR)',
         'traitement comptable du sinistre',
         'modalités de clôture de la société',
-      ],
-    },
-  ],
-};
-
-const ASSURANCE_HOMME_CLE: ProductRules = {
-  constitution: [
-    {
-      title: 'Cotisations (entreprise)',
-      bullets: [
-        "Cotisations payées par l'entreprise : déductibles du résultat imposable (IS ou IR).",
-        "Contrat souscrit par l'entreprise sur la tête d'une personne clé (dirigeant, associé…).",
-        "À confirmer selon les statuts de l'entreprise et l'importance réelle de l'homme-clé pour son activité.",
-      ],
-      tags: ['primes_deductibles_entreprise', 'pm_uniquement'],
-      confidence: 'moyenne',
-      sources: [
-        {
-          label: 'BOI-BIC-CHG-40-20-20 §100',
-          url: 'https://bofip.impots.gouv.fr/bofip/803-PGP.html/identifiant=BOI-BIC-CHG-40-20-20-20130408',
-        },
-      ],
-      dependencies: ['qualification effective homme-clé', 'caractère indemnitaire du contrat'],
-    },
-  ],
-  sortie: [
-    {
-      title: 'Sans objet — risque pur',
-      bullets: ['Contrat de risque pur : pas de valeur de rachat hors sinistre.'],
-      tags: ['no_rachat'],
-      confidence: 'elevee',
-      sources: [
-        {
-          label: 'BOI-BIC-CHG-40-20-20 §100',
-          url: 'https://bofip.impots.gouv.fr/bofip/803-PGP.html/identifiant=BOI-BIC-CHG-40-20-20-20130408',
-        },
-      ],
-    },
-  ],
-  deces: [
-    {
-      title: 'Fin de vie / sortie de la PM',
-      bullets: [
-        "Le capital est versé à l'entreprise et intégré dans le résultat imposable (produit exceptionnel, art. 38 CGI).",
-        "IS ou IR selon le régime de l'entreprise.",
-        'À confirmer selon le type de contrat (indemnitaire ou forfaitaire) et les modalités de clôture.',
-      ],
-      tags: ['capital_entreprise', 'produit_exceptionnel', 'is_ir', 'fin_vie_pm'],
-      confidence: 'moyenne',
-      sources: [
-        {
-          label: 'BOI-BIC-CHG-40-20-20 §100',
-          url: 'https://bofip.impots.gouv.fr/bofip/803-PGP.html/identifiant=BOI-BIC-CHG-40-20-20-20130408',
-        },
-        {
-          label: 'Art. 38 CGI — résultat imposable',
-          url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000006302193',
-        },
-      ],
-      dependencies: [
-        'type de contrat (indemnitaire vs forfaitaire)',
-        'exercice de réalisation du sinistre',
-        'modalités de sortie de la personne morale',
       ],
     },
   ],

@@ -19,13 +19,14 @@ const PINEL_PINEL_PLUS: ProductRules = {
         "Dispositif clôturé : plus d'acquisition éligible depuis le 1er janvier 2025.",
       ],
       tags: ['reduction_ir', 'plafond_300k', 'ferme_2025'],
-      confidence: 'elevee',
+      confidence: 'moyenne',
       sources: [
         {
           label: 'Art. 199 novovicies CGI — Pinel',
           url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000049481248',
         },
       ],
+      dependencies: ['source officielle ou contractuelle applicable'],
     },
   ],
   sortie: [
@@ -35,15 +36,18 @@ const PINEL_PINEL_PLUS: ProductRules = {
         'Plus-value soumise au régime des plus-values immobilières des particuliers.',
         '{capitalGainIr} + {psGeneral} avec abattement progressif (exonération IR après 22 ans, PS après 30 ans).',
         "Reprise de la réduction d'IR si le bien est vendu avant la fin de l'engagement.",
+
+        'À confirmer selon la source officielle ou contractuelle applicable.',
       ],
       tags: ['pv_immo', 'abattement_detention', 'reprise_reduction'],
-      confidence: 'elevee',
+      confidence: 'moyenne',
       sources: [
         {
           label: 'Art. 150 U CGI — plus-values immobilières',
           url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000043655826',
         },
       ],
+      dependencies: ['source officielle ou contractuelle applicable'],
     },
   ],
   deces: [
@@ -53,15 +57,18 @@ const PINEL_PINEL_PLUS: ProductRules = {
         'Le bien intègre la succession à sa valeur vénale.',
         "L'engagement de location est transmis aux héritiers (ou clôturé sans reprise si décès).",
         'DMTG selon le barème légal.',
+
+        'À confirmer selon la source officielle ou contractuelle applicable.',
       ],
       tags: ['dmtg_classique', 'transmission_engagement'],
-      confidence: 'elevee',
+      confidence: 'moyenne',
       sources: [
         {
           label: 'Service-public.fr — Droits de succession',
           url: 'https://www.service-public.fr/particuliers/vosdroits/F35794',
         },
       ],
+      dependencies: ['source officielle ou contractuelle applicable'],
     },
   ],
 };
@@ -94,29 +101,36 @@ const DENORMANDIE: ProductRules = {
         'Plus-value soumise au régime des plus-values immobilières des particuliers ({capitalGainIr} + {psGeneral}).',
         'Abattements pour durée de détention applicables.',
         "Reprise de la réduction d'IR si cession avant la fin de l'engagement.",
+
+        'À confirmer selon la source officielle ou contractuelle applicable.',
       ],
       tags: ['pv_immo', 'abattement_detention', 'reprise_reduction'],
-      confidence: 'elevee',
+      confidence: 'moyenne',
       sources: [
         {
           label: 'Art. 150 U CGI — plus-values immobilières',
           url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000043655826',
         },
       ],
+      dependencies: ['source officielle ou contractuelle applicable'],
     },
   ],
   deces: [
     {
       title: 'Succession',
-      bullets: ['Bien intègre la succession à sa valeur vénale. DMTG selon le barème légal.'],
+      bullets: [
+        'Bien intègre la succession à sa valeur vénale. DMTG selon le barème légal.',
+        'À confirmer selon la source officielle ou contractuelle applicable.',
+      ],
       tags: ['dmtg_classique'],
-      confidence: 'elevee',
+      confidence: 'moyenne',
       sources: [
         {
           label: 'Service-public.fr — Droits de succession',
           url: 'https://www.service-public.fr/particuliers/vosdroits/F35794',
         },
       ],
+      dependencies: ['source officielle ou contractuelle applicable'],
     },
   ],
 };
@@ -148,23 +162,30 @@ const MALRAUX: ProductRules = {
       bullets: [
         'Plus-value soumise au régime des plus-values immobilières des particuliers.',
         'Abattements pour durée de détention applicables.',
+
+        'À confirmer selon la source officielle ou contractuelle applicable.',
       ],
       tags: ['pv_immo', 'abattement_detention'],
-      confidence: 'elevee',
+      confidence: 'moyenne',
+      dependencies: ['source officielle ou contractuelle applicable'],
     },
   ],
   deces: [
     {
       title: 'Succession',
-      bullets: ['Bien intègre la succession à sa valeur vénale. DMTG selon le barème légal.'],
+      bullets: [
+        'Bien intègre la succession à sa valeur vénale. DMTG selon le barème légal.',
+        'À confirmer selon la source officielle ou contractuelle applicable.',
+      ],
       tags: ['dmtg_classique'],
-      confidence: 'elevee',
+      confidence: 'moyenne',
       sources: [
         {
           label: 'Service-public.fr — Droits de succession',
           url: 'https://www.service-public.fr/particuliers/vosdroits/F35794',
         },
       ],
+      dependencies: ['source officielle ou contractuelle applicable'],
     },
   ],
 };
@@ -177,15 +198,18 @@ const MONUMENTS_HISTORIQUES: ProductRules = {
         'Les charges foncières (travaux, entretien) sont déductibles du revenu global, hors plafonnement des niches fiscales.',
         "Applicable aux immeubles classés ou inscrits à l'inventaire des monuments historiques.",
         "Dérogation pour les propriétaires occupants (pas d'obligation de location).",
+
+        'À confirmer selon la source officielle ou contractuelle applicable.',
       ],
       tags: ['deduction_revenu_global', 'hors_plafond_niches', 'monument_classe'],
-      confidence: 'elevee',
+      confidence: 'moyenne',
       sources: [
         {
           label: 'Art. 156 bis CGI — Monuments historiques',
           url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000006302398',
         },
       ],
+      dependencies: ['source officielle ou contractuelle applicable'],
     },
   ],
   sortie: [
@@ -194,9 +218,12 @@ const MONUMENTS_HISTORIQUES: ProductRules = {
       bullets: [
         'Plus-value soumise au régime des plus-values immobilières des particuliers.',
         'Abattements pour durée de détention applicables.',
+
+        'À confirmer selon la source officielle ou contractuelle applicable.',
       ],
       tags: ['pv_immo', 'abattement_detention'],
-      confidence: 'elevee',
+      confidence: 'moyenne',
+      dependencies: ['source officielle ou contractuelle applicable'],
     },
   ],
   deces: [
@@ -205,15 +232,18 @@ const MONUMENTS_HISTORIQUES: ProductRules = {
       bullets: [
         "Exonération de DMTG possible si le bien fait l'objet d'une convention avec l'État (ouverture au public).",
         'Sans convention : intégration dans la succession à la valeur vénale, DMTG classiques.',
+
+        'À confirmer selon la source officielle ou contractuelle applicable.',
       ],
       tags: ['exoneration_dmtg_convention', 'dmtg_classique'],
-      confidence: 'elevee',
+      confidence: 'moyenne',
       sources: [
         {
           label: 'Art. 795 A CGI — exonération DMTG monuments historiques',
           url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000006309968',
         },
       ],
+      dependencies: ['source officielle ou contractuelle applicable'],
     },
   ],
 };
@@ -226,9 +256,12 @@ const DISPOSITIF_GENERIQUE: ProductRules = {
         "Dispositif fiscal d'investissement immobilier ouvrant droit à une réduction ou déduction fiscale.",
         "Conditions spécifiques : zone géographique, durée d'engagement, plafonds de loyers et de ressources locataires.",
         'Consulter les textes en vigueur pour les règles détaillées de chaque dispositif.',
+
+        'À confirmer selon la source officielle ou contractuelle applicable.',
       ],
       tags: ['dispositif_fiscal_immo'],
-      confidence: 'elevee',
+      confidence: 'moyenne',
+      dependencies: ['source officielle ou contractuelle applicable'],
     },
   ],
   sortie: [
@@ -238,15 +271,18 @@ const DISPOSITIF_GENERIQUE: ProductRules = {
         'Plus-value soumise au régime des plus-values immobilières des particuliers.',
         'Abattements pour durée de détention applicables (exonération IR après 22 ans, PS après 30 ans).',
         "Reprise de l'avantage fiscal si cession avant la fin de l'engagement.",
+
+        'À confirmer selon la source officielle ou contractuelle applicable.',
       ],
       tags: ['pv_immo', 'abattement_detention', 'reprise_avantage'],
-      confidence: 'elevee',
+      confidence: 'moyenne',
       sources: [
         {
           label: 'Art. 150 U CGI — plus-values immobilières',
           url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000043655826',
         },
       ],
+      dependencies: ['source officielle ou contractuelle applicable'],
     },
   ],
   deces: [
@@ -255,15 +291,18 @@ const DISPOSITIF_GENERIQUE: ProductRules = {
       bullets: [
         'Bien intègre la succession à sa valeur vénale.',
         'DMTG selon le barème légal et le lien de parenté.',
+
+        'À confirmer selon la source officielle ou contractuelle applicable.',
       ],
       tags: ['dmtg_classique'],
-      confidence: 'elevee',
+      confidence: 'moyenne',
       sources: [
         {
           label: 'Service-public.fr — Droits de succession',
           url: 'https://www.service-public.fr/particuliers/vosdroits/F35794',
         },
       ],
+      dependencies: ['source officielle ou contractuelle applicable'],
     },
   ],
 };
