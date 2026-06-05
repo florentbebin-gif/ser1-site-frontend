@@ -43,4 +43,32 @@ describe('buildBaseContratFiscalLabels', () => {
     expect(labels.ifiResidencePrincipaleAbattement).toContain('%');
     expect(labels.assuranceVie990IRates).not.toContain('à confirmer');
   });
+
+  it("reprend l'abattement 990 I depuis les paramètres AV décès DMTG", () => {
+    const labels = buildBaseContratFiscalLabels({
+      _raw_fiscality: {
+        ...DEFAULT_FISCALITY_SETTINGS,
+        rulesetsByKey: {
+          ...DEFAULT_FISCALITY_SETTINGS.rulesetsByKey,
+          assuranceVie: {
+            ...DEFAULT_FISCALITY_SETTINGS.rulesetsByKey.assuranceVie,
+            rules: {
+              ...DEFAULT_ASSURANCE_VIE_RULES,
+              deces: {
+                ...DEFAULT_ASSURANCE_VIE_RULES.deces,
+                primesApres1998: {
+                  ...DEFAULT_ASSURANCE_VIE_RULES.deces.primesApres1998,
+                  allowancePerBeneficiary: 123456,
+                },
+              },
+            },
+          },
+        },
+      } as typeof DEFAULT_FISCALITY_SETTINGS,
+    });
+
+    expect(labels.assuranceVie990IAllowance.replace(/\u202f/g, ' ')).toBe(
+      '123 456 € par bénéficiaire',
+    );
+  });
 });
