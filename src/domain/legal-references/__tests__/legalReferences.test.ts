@@ -74,7 +74,7 @@ describe('références juridiques', () => {
   it('référence uniquement des SimulatorDefinition.id connus', () => {
     const simulatorIds = new Set(SIMULATOR_DEFINITIONS.map((definition) => definition.id));
     const invalidSimulatorLinks = LEGAL_REFERENCES.flatMap((reference) =>
-      reference.relatedSimulatorIds
+      (reference.relatedSimulatorIds ?? [])
         .filter((simulatorId) => !simulatorIds.has(simulatorId))
         .map((simulatorId) => `${reference.id}:${simulatorId}`),
     );

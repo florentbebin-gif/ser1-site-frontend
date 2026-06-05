@@ -12,6 +12,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import process from 'node:process';
 import ts from 'typescript';
+import officialDomains from '../src/domain/legal-references/officialDomains.json' with { type: 'json' };
 
 const SOURCE_TYPES = new Set([
   'CGI',
@@ -29,12 +30,8 @@ const SOURCE_TYPES = new Set([
 ]);
 
 const VOLATILITIES = new Set(['annual', 'lawChange', 'stable']);
-const OFFICIAL_DOMAINS = [
-  'legifrance.gouv.fr',
-  'bofip.impots.gouv.fr',
-  'boss.gouv.fr',
-  'service-public.fr',
-];
+const OFFICIAL_DOMAINS = officialDomains;
+const KNOWN_SETTING_KEYS = new Set(['dmtg']);
 
 function parseArgs(argv) {
   const options = {
@@ -202,7 +199,50 @@ function collectSimulatorDefinitions(root) {
   return definitions;
 }
 
-function validateReferences(references, simulatorIds) {
+function collectCatalogProductIds(root) {
+  const catalogPath = path.join(root, 'src', 'domain', 'base-contrat', 'catalog.ts');
+  const ids = new Set();
+  if (!fs.existsSync(catalogPath)) return ids;
+
+  const source = fs.readFileSync(catalogPath, 'utf8');
+  const sourceFile = ts.createSourceFile(catalogPath, source, ts.ScriptTarget.Latest, true);
+
+  function visit(node) {
+    if (ts.isObjectLiteralExpression(node)) {
+      const id = getStringProperty(node, 'id');
+      if (id) ids.add(id);
+    }
+    ts.forEachChild(node, visit);
+  }
+
+  visit(sourceFile);
+  return ids;
+}
+
+function validateUsageArray(reference, field, allowedValues, errors, id) {
+  const value = reference[field];
+  if (value === undefined) return 0;
+  if (!Array.isArray(value)) {
+    errors.push(`${id}: ${field} doit être un tableau`);
+    return 0;
+  }
+
+  let validEntries = 0;
+  for (const entry of value) {
+    if (!isNonEmptyString(entry)) {
+      errors.push(`${id}: ${field} contient une valeur vide`);
+      continue;
+    }
+    validEntries += 1;
+    if (allowedValues && !allowedValues.has(entry)) {
+      errors.push(`${id}: ${field} inconnu (${entry})`);
+    }
+  }
+
+  return validEntries;
+}
+
+function validateReferences(references, simulatorIds, catalogProductIds) {
   const errors = [];
   const referencesById = new Map();
 
@@ -254,21 +294,13 @@ function validateReferences(references, simulatorIds) {
       }
     }
 
-    if (
-      !Array.isArray(reference.relatedSimulatorIds) ||
-      reference.relatedSimulatorIds.length === 0
-    ) {
-      errors.push(`${id}: relatedSimulatorIds obligatoire et non vide`);
-    } else {
-      for (const simulatorId of reference.relatedSimulatorIds) {
-        if (!isNonEmptyString(simulatorId)) {
-          errors.push(`${id}: relatedSimulatorIds contient une valeur vide`);
-          continue;
-        }
-        if (!simulatorIds.has(simulatorId)) {
-          errors.push(`${id}: relatedSimulatorIds inconnu (${simulatorId})`);
-        }
-      }
+    const usageCount =
+      validateUsageArray(reference, 'relatedSimulatorIds', simulatorIds, errors, id) +
+      validateUsageArray(reference, 'relatedSettings', KNOWN_SETTING_KEYS, errors, id) +
+      validateUsageArray(reference, 'relatedCatalogProducts', catalogProductIds, errors, id);
+
+    if (usageCount === 0) {
+      errors.push(`${id}: aucun usage déclaré`);
     }
   }
 
@@ -312,12 +344,7 @@ function validateSimulatorLegalRefs(definitions, referencesById) {
 
   for (const [referenceId, reference] of referencesById.entries()) {
     const actualUsers = usageByReferenceId.get(referenceId) ?? new Set();
-    if (actualUsers.size === 0) {
-      errors.push(`${referenceId}: référence canonique orpheline`);
-      continue;
-    }
-
-    const declaredUsers = new Set(reference.relatedSimulatorIds);
+    const declaredUsers = new Set(reference.relatedSimulatorIds ?? []);
     for (const simulatorId of actualUsers) {
       if (!declaredUsers.has(simulatorId)) {
         errors.push(
@@ -348,7 +375,12 @@ function run() {
   const references = readJsonFile(referencesPath);
   const definitions = collectSimulatorDefinitions(options.root);
   const simulatorIds = new Set(definitions.map((definition) => definition.id));
-  const { errors: referenceErrors, referencesById } = validateReferences(references, simulatorIds);
+  const catalogProductIds = collectCatalogProductIds(options.root);
+  const { errors: referenceErrors, referencesById } = validateReferences(
+    references,
+    simulatorIds,
+    catalogProductIds,
+  );
   const simulatorErrors = validateSimulatorLegalRefs(definitions, referencesById);
   const errors = [...referenceErrors, ...simulatorErrors];
   const ids = Array.from(referencesById.keys()).sort();
