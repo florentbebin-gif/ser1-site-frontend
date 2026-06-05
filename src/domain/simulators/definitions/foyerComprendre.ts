@@ -136,7 +136,7 @@ export const FOYER_COMPRENDRE_SIMULATORS = [
     upstream: ['filiation', 'budget'],
     next: ['placement', 'per', 'credit', 'retraite'],
     dossierFields: ['foyer', 'revenus', 'fiscaliteIR'],
-    legalRefs: ['CGI art. 193 à 197', 'CGI art. 200 A', 'CGI art. 223 sexies'],
+    legalRefs: ['cgi-193-197', 'cgi-200-a', 'cgi-223-sexies'],
     legalRefsStatus: 'complete',
     testScenarios: ['foyer salarié', 'revenus du capital avec PFU', 'CEHR applicable'],
     contextPolicy: standalone(['foyer', 'revenus'], ['foyer', 'revenus'], ['charges', 'capital']),

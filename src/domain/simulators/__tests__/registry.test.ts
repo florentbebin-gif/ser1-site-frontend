@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
+import { LEGAL_REFERENCES } from '@/domain/legal-references';
 import { SIM_ROUTE_CONTRACTS } from '@/routes/simRouteContracts';
 import { SIMULATOR_DEFINITIONS } from '../registry';
 
@@ -96,6 +97,46 @@ describe('registry simulateurs', () => {
     expect(
       refsToFillThatInventRefs,
       `Références à renseigner mais déjà remplies : ${refsToFillThatInventRefs.join(', ')}`,
+    ).toEqual([]);
+  });
+
+  it('référence uniquement des références juridiques canoniques', () => {
+    const legalReferenceIds = new Set(LEGAL_REFERENCES.map((reference) => reference.id));
+    const registryReferences = new Map(
+      SIMULATOR_DEFINITIONS.map((definition) => [definition.id, new Set(definition.legalRefs)]),
+    );
+
+    const unknownReferences = SIMULATOR_DEFINITIONS.filter(
+      (definition) => definition.legalRefsStatus === 'complete',
+    ).flatMap((definition) =>
+      definition.legalRefs
+        .filter((referenceId) => !legalReferenceIds.has(referenceId))
+        .map((referenceId) => `${definition.id}:${referenceId}`),
+    );
+
+    const orphanLegalReferences = LEGAL_REFERENCES.filter((reference) => {
+      return !SIMULATOR_DEFINITIONS.some((definition) =>
+        definition.legalRefs.includes(reference.id),
+      );
+    }).map((reference) => reference.id);
+
+    const mismatchedSimulatorLinks = LEGAL_REFERENCES.flatMap((reference) =>
+      reference.relatedSimulatorIds
+        .filter((simulatorId) => !registryReferences.get(simulatorId)?.has(reference.id))
+        .map((simulatorId) => `${reference.id}:${simulatorId}`),
+    );
+
+    expect(
+      unknownReferences,
+      `Références inconnues dans la registry : ${unknownReferences.join(', ')}`,
+    ).toEqual([]);
+    expect(
+      orphanLegalReferences,
+      `Références juridiques orphelines : ${orphanLegalReferences.join(', ')}`,
+    ).toEqual([]);
+    expect(
+      mismatchedSimulatorLinks,
+      `relatedSimulatorIds désynchronisés : ${mismatchedSimulatorLinks.join(', ')}`,
     ).toEqual([]);
   });
 

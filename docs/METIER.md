@@ -43,6 +43,7 @@ Expliquer ce que SER1 couvre aujourd'hui, ce qui est deja exploitable, et les li
 - Ce doc decrit uniquement le perimetre implemente.
 - Si un sujet est encore en page "upcoming", il n'est pas traite comme une feature metier stable.
 - Les taux, baremes et abattements modifiables vivent dans les settings et sont consommes par les simulateurs via le dossier fiscal unifie.
+- Les références juridiques vivent dans `src/domain/legal-references/` et servent à rattacher les simulateurs à leurs sources officielles ; elles ne remplacent pas les settings fiscaux.
 - Les workflows `/audit` et `/strategy` sont actifs en runtime, mais ils restent des surfaces de travail guidees distinctes des simulateurs metier stabilises.
 - `/audit` porte la trajectoire P6 : dossier guide, export PPTX isolé dans la feature via `src/features/audit/export/exportAudit.ts`, et réutilisation attendue par la suite dans `strategy`.
 - `/strategy` porte la trajectoire Strategy : situation actuelle vs scénarios de réorientation patrimoniale, recommandations calculées par SER1 à partir de données validées, validation CGP et export PPTX isolé dans `src/features/strategy/export/exportStrategy.ts`.
