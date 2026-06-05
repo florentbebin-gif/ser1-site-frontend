@@ -1,11 +1,14 @@
 import React from 'react';
-import { usePassHistory } from '@/hooks/settings/usePassHistory';
+import type { PassHistoryRow } from '@/hooks/settings/usePassHistory';
 import SettingsTitleWithIcon from './SettingsTitleWithIcon';
 import { numberOrEmpty } from './settingsHelpers';
 
 interface PassHistoryAccordionProps {
+  rows: PassHistoryRow[];
+  loading: boolean;
   isOpen: boolean;
   onToggle: () => void;
+  onChange: (index: number, value: string) => void;
   isAdmin: boolean;
 }
 
@@ -13,12 +16,13 @@ interface PassHistoryAccordionProps {
  * Historique du PASS chargé depuis public.pass_history.
  */
 export default function PassHistoryAccordion({
+  rows,
+  loading,
   isOpen,
   onToggle,
+  onChange,
   isAdmin,
 }: PassHistoryAccordionProps): React.ReactElement {
-  const { rows, loading, saving, message, handleChange, handleSave } = usePassHistory(isAdmin);
-
   return (
     <div className="fisc-acc-item">
       <button
@@ -66,7 +70,7 @@ export default function PassHistoryAccordion({
                           value={numberOrEmpty(row.pass_amount)}
                           placeholder="À renseigner"
                           onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                            handleChange(idx, e.target.value)
+                            onChange(idx, e.target.value)
                           }
                           disabled={!isAdmin}
                         />
@@ -75,27 +79,6 @@ export default function PassHistoryAccordion({
                   ))}
                 </tbody>
               </table>
-
-              {isAdmin && (
-                <button
-                  type="button"
-                  className="chip"
-                  onClick={() => {
-                    void handleSave();
-                  }}
-                  disabled={saving}
-                >
-                  {saving ? 'Enregistrement...' : 'Enregistrer le PASS'}
-                </button>
-              )}
-
-              {message && (
-                <div
-                  className={`settings-feedback-message settings-feedback-message--compact ${message.includes('Erreur') ? 'settings-feedback-message--error' : 'settings-feedback-message--success'}`}
-                >
-                  {message}
-                </div>
-              )}
             </>
           )}
         </div>

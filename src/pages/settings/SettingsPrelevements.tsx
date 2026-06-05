@@ -5,6 +5,7 @@ import { invalidate, broadcastInvalidation } from '@/utils/cache/fiscalSettingsC
 import { UserInfoBanner } from '@/components/UserInfoBanner';
 import { createFieldUpdater } from '@/components/settings/settingsHelpers';
 import PassHistoryAccordion from '@/components/settings/PassHistoryAccordion';
+import { usePassHistory } from '@/hooks/settings/usePassHistory';
 
 import { DEFAULT_PS_SETTINGS, DEFAULT_TAX_SETTINGS } from '@/constants/settingsDefaults';
 import { validatePrelevementsSettings, isValid } from './validators/dmtgValidators';
@@ -58,6 +59,7 @@ export default function SettingsPrelevements() {
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
   const [openSection, setOpenSection] = useState<string | null>(null);
+  const passHistory = usePassHistory(isAdmin);
 
   useEffect(() => {
     let mounted = true;
@@ -227,9 +229,16 @@ export default function SettingsPrelevements() {
       }
 
       setSettings(payload);
-      setMessage('Paramètres de prélèvements sociaux enregistrés.');
       invalidate('ps');
       broadcastInvalidation('ps');
+
+      const passResult = await passHistory.save();
+      if (!passResult.ok) {
+        setError(passResult.error ?? "Erreur lors de l'enregistrement du PASS.");
+        return;
+      }
+
+      setMessage('Paramètres de prélèvements sociaux enregistrés.');
     } catch (saveError) {
       console.error(saveError);
       setError("Erreur lors de l'enregistrement des paramètres.");
@@ -254,8 +263,11 @@ export default function SettingsPrelevements() {
         <div className="settings-stack">
           <div className="fisc-accordion">
             <PassHistoryAccordion
+              rows={passHistory.rows}
+              loading={passHistory.loading}
               isOpen={openSection === 'pass'}
               onToggle={() => setOpenSection(openSection === 'pass' ? null : 'pass')}
+              onChange={passHistory.handleChange}
               isAdmin={isAdmin}
             />
 
@@ -308,10 +320,10 @@ export default function SettingsPrelevements() {
               type="button"
               className="chip settings-save-btn"
               onClick={handleSave}
-              disabled={saving || hasErrors}
+              disabled={saving || passHistory.saving || hasErrors}
               title={hasErrors ? 'Corrigez les erreurs avant de sauvegarder' : ''}
             >
-              {saving
+              {saving || passHistory.saving
                 ? 'Enregistrement…'
                 : hasErrors
                   ? 'Erreurs de validation'
