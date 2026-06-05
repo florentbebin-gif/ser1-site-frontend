@@ -938,7 +938,7 @@ Le modèle documentaire doit rester compatible avec :
 Chaque règle métier ou fiscale importante doit être rattachée à une référence listable. Le jour où un LLM vérifie les mises à jour officielles, il doit pouvoir :
 
 1. Lister toutes les références du repo.
-2. Identifier leur périmètre moteur.
+2. Identifier leur périmètre simulateur.
 3. Ouvrir les sources officielles.
 4. Détecter les actualités ou modifications pertinentes.
 5. Proposer une PR ciblée.
@@ -952,6 +952,9 @@ export interface LegalReference {
   sourceType:
     | 'CGI'
     | 'Code civil'
+    | 'Code monétaire et financier'
+    | 'Code de la consommation'
+    | 'Code du travail'
     | 'Code des assurances'
     | 'Code de la sécurité sociale'
     | 'BOFiP'
@@ -963,19 +966,26 @@ export interface LegalReference {
   articleOrSection?: string;
   scope: string;
   volatility: 'annual' | 'lawChange' | 'stable';
-  relatedEngines: string[];
+  relatedSimulatorIds: string[];
   lastCheckedAt?: string;
   notes?: string;
 }
 ```
 
+`relatedSimulatorIds` référence des `SimulatorDefinition.id`, jamais des chemins moteur. Les IDs de
+référence utilisent une convention lisible : article simple (`cgi-777`), article composé
+(`cgi-125-0-a`), intervalle (`cgi-193-197`) ou article d'entrée pour les libellés "et suivants"
+(`cmf-l224-1` avec `articleOrSection: "Art. L224-1 et suivants"`).
+
 ### Garde-fous à ajouter
 
 - Script `npm run check:legal-references` :
   - liste toutes les références ;
-  - bloque les `officialUrl` vides ;
+  - bloque les `officialUrl` vides, non HTTP(S) ou hors domaines officiels autorisés ;
+  - bloque les URLs Légifrance datées ou non canoniques hors `/codes/article_lc/<LEGIARTI...>` et `/codes/section_lc/...` ;
   - bloque les doublons d'ID ;
-  - signale les références sans moteur rattaché ;
+  - signale les références sans simulateur rattaché ;
+  - bloque tout libellé libre restant dans les `legalRefs` complets ;
   - ne navigue pas sur le web.
 - Futur script assisté `npm run audit:legal-news` :
   - non bloquant ;
@@ -1233,25 +1243,33 @@ Critères de sortie :
 
 ### PR V2-04 - Références juridiques listables
 
+Statut : done.
+
 But : rendre les règles vérifiables dans le temps.
 
 Changements :
 
 - Créer `src/domain/legal-references/`.
-- Ajouter un premier jeu de références pour IR, PER, succession, placement, trésorerie.
+- Ajouter un premier jeu de références pour les 10 simulateurs avec `legalRefsStatus: 'complete'` :
+  `ir`, `per`, `per-potentiel`, `per-transfert`, `placement`, `credit`, `prevoyance`,
+  `succession`, `tresorerie-societe`, `epargne-salariale`.
+- Migrer leurs `legalRefs` vers des IDs canoniques.
 - Ajouter `npm run check:legal-references`.
-- Documenter le format dans `docs/ARCHITECTURE.md` ou `docs/METIER.md`.
+- Documenter le format dans `docs/ARCHITECTURE.md`, `docs/METIER.md` et ce contrat roadmap.
+- Ne pas créer de page Settings, table Supabase, moteur, export, OCR ou web-check bloquant.
 
 Tests :
 
 - Script de vérification des références.
+- Tests domaine `legal-references`.
+- Test registry croisé simulateurs ↔ références.
 - `npm run check`.
 
 Critères de sortie :
 
 - Les références sont listables par script.
 - Aucune vérification web automatique bloquante n'est ajoutée.
-- Les moteurs existants commencent à référencer les sources sans dupliquer les taux.
+- Les simulateurs complets référencent les sources sans dupliquer les taux.
 
 ### PR V2-05 - Découpage Succession, comportement neutre
 

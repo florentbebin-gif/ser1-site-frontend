@@ -101,6 +101,25 @@ Les parcours métier exposés par `src/domain/simulators/chainage.ts` doivent r�
 `SimulatorDefinition.id`. Les seules étapes non simulateur autorisées sont les étapes conceptuelles
 typées `strategy` et `audit-objectives`.
 
+### Références juridiques — `src/domain/legal-references/`
+
+Le référentiel juridique vit dans `src/domain/legal-references/`. Il liste les sources officielles
+attachées aux simulateurs par `SimulatorDefinition.id` via `relatedSimulatorIds`.
+
+- `references.json` est la source canonique listable par Node.
+- `LegalReferenceId` est un alias métier de `string` ; la validation forte vient de
+  `npm run check:legal-references` et des tests registry.
+- `legalRefs` dans `SimulatorDefinition` contient uniquement des IDs canoniques pour les entrées
+  `legalRefsStatus: 'complete'`.
+- Le check local valide les IDs, URLs officielles, domaines autorisés, simulateurs rattachés et
+  références orphelines. Pour Légifrance, il impose une forme canonique
+  `/codes/article_lc/<LEGIARTI…>` ou `/codes/section_lc/...`, sans segment de version daté
+  `/AAAA-MM-JJ` (afin de toujours pointer la version en vigueur). Il ne navigue jamais sur le web :
+  la fraîcheur réelle des sources relève du futur `audit:legal-news`.
+
+Ce référentiel documente les sources. Il ne porte pas les taux, seuils et abattements révisables :
+ces valeurs restent dans Settings/Supabase et sont consommées par la chaîne fiscale existante.
+
 ### Règle "god file"
 
 Un fichier long n'est pas automatiquement prioritaire. Un vrai "god file" devient prioritaire s'il mélange au moins 2 responsabilités parmi :
@@ -727,6 +746,7 @@ Les fichiers `src/domain/base-contrat/**` ne doivent pas importer React, Supabas
 | ------------------------------------------- | ------------------------------------------------------------------------------------------- |
 | Source des routes settings                  | `src/routes/settingsRoutes.ts`                                                              |
 | Valeurs par défaut des 3 singletons fiscaux | `src/constants/settingsDefaults.ts`                                                         |
+| Référentiel juridique canonique             | `src/domain/legal-references/`                                                              |
 | Shell settings (nav + rendu)                | `src/pages/SettingsShell.tsx`                                                               |
 | Pages settings                              | `src/pages/settings/`                                                                       |
 | Cache + fetch Supabase                      | `src/utils/cache/fiscalSettingsCache.ts`                                                    |

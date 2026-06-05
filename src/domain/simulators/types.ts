@@ -1,3 +1,5 @@
+import type { LegalReferenceId } from '../legal-references';
+
 export type SimulatorLifecycle =
   | 'active'
   | 'hub'
@@ -44,7 +46,7 @@ export interface SimulatorDefinition {
   upstream: string[];
   next: string[];
   dossierFields: string[];
-  legalRefs: string[];
+  legalRefs: LegalReferenceId[];
   legalRefsStatus?: 'complete' | 'a-renseigner-avant-codage';
   testScenarios: string[];
   contextPolicy: SimulatorContextPolicy;
