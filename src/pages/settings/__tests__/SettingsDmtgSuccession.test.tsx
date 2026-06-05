@@ -264,5 +264,17 @@ describe('SettingsDmtgSuccession', () => {
       'href',
       getLegalReference('code-civil-757').officialUrl,
     );
+
+    await userEvent.click(screen.getByRole('button', { name: /Assurance-vie décès/i }));
+    expect(
+      screen
+        .getAllByRole('link', { name: 'Art. 990 I' })
+        .some((link) => link.getAttribute('href') === getLegalReference('cgi-990-i').officialUrl),
+    ).toBe(true);
+    expect(
+      screen
+        .getAllByRole('link', { name: 'Art. 757 B' })
+        .some((link) => link.getAttribute('href') === getLegalReference('cgi-757-b').officialUrl),
+    ).toBe(true);
   });
 });
