@@ -136,7 +136,7 @@ describe('BaseContrat', () => {
     await waitFor(() => {
       expect(screen.getByText('Fiscalité de test')).toBeInTheDocument();
     });
-    expect(screen.queryByText('Confiance moyenne')).not.toBeInTheDocument();
+    expect(screen.queryByText('À vérifier')).not.toBeInTheDocument();
     expect(screen.queryByText('CGI art. 779')).not.toBeInTheDocument();
     expect(screen.queryByText('Validation notaire')).not.toBeInTheDocument();
   });
@@ -146,7 +146,7 @@ describe('BaseContrat', () => {
 
     await openFirstProduct();
 
-    expect(await screen.findByText('Confiance moyenne')).toBeInTheDocument();
+    expect(await screen.findByText('À vérifier')).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'CGI art. 779' })).toHaveAttribute(
       'href',
       'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000026292566',
