@@ -5,6 +5,9 @@ import {
   LEGAL_REFERENCE_BY_ID,
   LEGAL_REFERENCES,
   getLegalReference,
+  getOptionalLegalReference,
+  listLegalReferencesForProduct,
+  listLegalReferencesForSetting,
   listLegalReferencesForSimulator,
 } from '../index';
 
@@ -22,6 +25,8 @@ describe('références juridiques', () => {
     expect(() => getLegalReference('reference-inconnue')).toThrow(
       'Référence juridique introuvable',
     );
+    expect(getOptionalLegalReference('cgi-200-a')?.label).toContain('200 A');
+    expect(getOptionalLegalReference('reference-inconnue')).toBeNull();
   });
 
   it('liste les références par simulateur', () => {
@@ -32,6 +37,38 @@ describe('références juridiques', () => {
     expect(successionRefs).toEqual(
       expect.arrayContaining(['code-civil-720', 'cgi-669', 'cgi-777', 'cgi-779', 'cgi-990-i']),
     );
+  });
+
+  it('liste les références par setting', () => {
+    const references = listLegalReferencesForSetting('dmtg', [
+      {
+        id: 'ref-dmtg-demo',
+        label: 'Référence DMTG de test',
+        sourceType: 'Code civil',
+        officialUrl: 'https://www.legifrance.gouv.fr/codes/article_lc/DEMO',
+        scope: 'DMTG',
+        volatility: 'stable',
+        relatedSettings: ['dmtg'],
+      },
+    ]);
+
+    expect(references.map((reference) => reference.id)).toEqual(['ref-dmtg-demo']);
+  });
+
+  it('liste les références par produit catalogue', () => {
+    const references = listLegalReferencesForProduct('assurance_vie', [
+      {
+        id: 'ref-catalogue-demo',
+        label: 'Référence catalogue de test',
+        sourceType: 'CGI',
+        officialUrl: 'https://www.legifrance.gouv.fr/codes/article_lc/DEMO',
+        scope: 'Assurance-vie',
+        volatility: 'lawChange',
+        relatedCatalogProducts: ['assurance_vie'],
+      },
+    ]);
+
+    expect(references.map((reference) => reference.id)).toEqual(['ref-catalogue-demo']);
   });
 
   it('référence uniquement des SimulatorDefinition.id connus', () => {
