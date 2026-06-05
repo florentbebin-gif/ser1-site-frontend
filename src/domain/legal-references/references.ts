@@ -17,6 +17,6 @@ export function getLegalReference(id: LegalReferenceId): LegalReference {
 
 export function listLegalReferencesForSimulator(simulatorId: string): LegalReference[] {
   return LEGAL_REFERENCES.filter((reference) =>
-    reference.relatedSimulatorIds.includes(simulatorId),
+    reference.relatedSimulatorIds?.includes(simulatorId),
   );
 }

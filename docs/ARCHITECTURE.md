@@ -104,15 +104,16 @@ typées `strategy` et `audit-objectives`.
 ### Références juridiques — `src/domain/legal-references/`
 
 Le référentiel juridique vit dans `src/domain/legal-references/`. Il liste les sources officielles
-attachées aux simulateurs par `SimulatorDefinition.id` via `relatedSimulatorIds`.
+attachées aux simulateurs, aux pages settings et aux produits du catalogue Base-Contrat via les
+champs d'usage `relatedSimulatorIds`, `relatedSettings` et `relatedCatalogProducts`.
 
 - `references.json` est la source canonique listable par Node.
 - `LegalReferenceId` est un alias métier de `string` ; la validation forte vient de
   `npm run check:legal-references` et des tests registry.
 - `legalRefs` dans `SimulatorDefinition` contient uniquement des IDs canoniques pour les entrées
   `legalRefsStatus: 'complete'`.
-- Le check local valide les IDs, URLs officielles, domaines autorisés, simulateurs rattachés et
-  références orphelines. Pour Légifrance, il impose une forme canonique
+- Le check local valide les IDs, URLs officielles, domaines autorisés, usages déclarés, cohérence
+  des simulateurs rattachés et références sans usage. Pour Légifrance, il impose une forme canonique
   `/codes/article_lc/<LEGIARTI…>` ou `/codes/section_lc/...`, sans segment de version daté
   `/AAAA-MM-JJ` (afin de toujours pointer la version en vigueur). Il ne navigue jamais sur le web :
   la fraîcheur réelle des sources relève du futur `audit:legal-news`.

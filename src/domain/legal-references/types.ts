@@ -16,6 +16,8 @@ export type LegalSourceType =
 
 export type LegalReferenceVolatility = 'annual' | 'lawChange' | 'stable';
 
+export type LegalReferenceSettingKey = 'dmtg';
+
 export interface LegalReference {
   id: LegalReferenceId;
   label: string;
@@ -24,7 +26,9 @@ export interface LegalReference {
   articleOrSection?: string;
   scope: string;
   volatility: LegalReferenceVolatility;
-  relatedSimulatorIds: string[];
+  relatedSimulatorIds?: string[];
+  relatedSettings?: LegalReferenceSettingKey[];
+  relatedCatalogProducts?: string[];
   lastCheckedAt?: string;
   notes?: string;
 }

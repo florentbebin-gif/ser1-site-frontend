@@ -938,7 +938,7 @@ Le modèle documentaire doit rester compatible avec :
 Chaque règle métier ou fiscale importante doit être rattachée à une référence listable. Le jour où un LLM vérifie les mises à jour officielles, il doit pouvoir :
 
 1. Lister toutes les références du repo.
-2. Identifier leur périmètre simulateur.
+2. Identifier leur périmètre simulateur, settings ou catalogue.
 3. Ouvrir les sources officielles.
 4. Détecter les actualités ou modifications pertinentes.
 5. Proposer une PR ciblée.
@@ -966,13 +966,18 @@ export interface LegalReference {
   articleOrSection?: string;
   scope: string;
   volatility: 'annual' | 'lawChange' | 'stable';
-  relatedSimulatorIds: string[];
+  relatedSimulatorIds?: string[];
+  relatedSettings?: 'dmtg'[];
+  relatedCatalogProducts?: string[];
   lastCheckedAt?: string;
   notes?: string;
 }
 ```
 
-`relatedSimulatorIds` référence des `SimulatorDefinition.id`, jamais des chemins moteur. Les IDs de
+`relatedSimulatorIds` référence des `SimulatorDefinition.id`, jamais des chemins moteur.
+`relatedSettings` rattache une source à une page ou famille settings connue, et
+`relatedCatalogProducts` référence des IDs de produits Base-Contrat. Au moins un usage doit être
+déclaré. Les IDs de
 référence utilisent une convention lisible : article simple (`cgi-777`), article composé
 (`cgi-125-0-a`), intervalle (`cgi-193-197`) ou article d'entrée pour les libellés "et suivants"
 (`cmf-l224-1` avec `articleOrSection: "Art. L224-1 et suivants"`).
@@ -984,7 +989,7 @@ référence utilisent une convention lisible : article simple (`cgi-777`), artic
   - bloque les `officialUrl` vides, non HTTP(S) ou hors domaines officiels autorisés ;
   - bloque les URLs Légifrance datées ou non canoniques hors `/codes/article_lc/<LEGIARTI...>` et `/codes/section_lc/...` ;
   - bloque les doublons d'ID ;
-  - signale les références sans simulateur rattaché ;
+  - signale les références sans usage rattaché ;
   - bloque tout libellé libre restant dans les `legalRefs` complets ;
   - ne navigue pas sur le web.
 - Futur script assisté `npm run audit:legal-news` :
