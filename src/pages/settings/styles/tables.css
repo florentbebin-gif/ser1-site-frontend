@@ -239,7 +239,8 @@
 }
 
 .income-tax-year-input {
-  width: min(100%, calc(var(--space-8) * 4 + var(--space-6) + var(--space-1)));
+  width: 100%;
+  min-width: calc(var(--space-8) * 6);
   text-align: left;
 }
 
