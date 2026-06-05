@@ -1,4 +1,5 @@
 import React from 'react';
+import { LegalRefLink } from '@/components/legal/LegalRefLink';
 import SettingsTitleWithIcon from '@/components/settings/SettingsTitleWithIcon';
 import { numberOrEmpty } from '@/components/settings/settingsHelpers';
 
@@ -47,7 +48,8 @@ export default function DonationSection({
       {isOpen && (
         <div className="fisc-acc-body">
           <p className="dmtg-intro">
-            Paramètres de donation entre vifs et rappel fiscal (CGI art. 784).
+            Paramètres de donation entre vifs et rappel fiscal (<LegalRefLink id="cgi-784" />
+            ).
           </p>
 
           <div className="income-tax-block dmtg-block--mb16">

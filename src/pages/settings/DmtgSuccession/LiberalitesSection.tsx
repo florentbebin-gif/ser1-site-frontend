@@ -1,16 +1,7 @@
 import React from 'react';
+import { LegalRefList } from '@/components/legal/LegalRefLink';
 import SettingsTitleWithIcon from '@/components/settings/SettingsTitleWithIcon';
 import { LIBERALITES_REFERENCE } from './dmtgReferenceData';
-
-interface LiberaliteReference {
-  id: string;
-  family: string;
-  label: string;
-  definition: string;
-  impact: string;
-  minimumFields: string[];
-  legalRefs: string;
-}
 
 interface LiberalitesSectionProps {
   openSection: string | null;
@@ -22,7 +13,6 @@ export default function LiberalitesSection({
   setOpenSection,
 }: LiberalitesSectionProps): React.ReactElement {
   const isOpen = openSection === 'liberalites';
-  const liberalites = LIBERALITES_REFERENCE as LiberaliteReference[];
 
   return (
     <div className="fisc-acc-item">
@@ -48,7 +38,7 @@ export default function LiberalitesSection({
             éléments ci-dessous sont informatifs et n’ajoutent pas de calcul automatique à ce stade.
           </p>
 
-          {liberalites.map((item) => (
+          {LIBERALITES_REFERENCE.map((item) => (
             <div key={item.id} className="income-tax-block dmtg-block--mb12">
               <div className="dmtg-block-title">{item.label}</div>
               <div className="dmtg-family-label">{item.family}</div>
@@ -66,7 +56,10 @@ export default function LiberalitesSection({
                   ))}
                 </ul>
               </div>
-              <p className="dmtg-note--flush">Références : {item.legalRefs}</p>
+              <div className="dmtg-note--flush dmtg-reference-row">
+                <span>Références :</span>
+                <LegalRefList ids={item.legalRefIds} />
+              </div>
             </div>
           ))}
         </div>

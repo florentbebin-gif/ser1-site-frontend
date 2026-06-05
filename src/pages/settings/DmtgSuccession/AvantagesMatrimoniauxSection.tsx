@@ -1,15 +1,7 @@
 import React from 'react';
+import { LegalRefList } from '@/components/legal/LegalRefLink';
 import SettingsTitleWithIcon from '@/components/settings/SettingsTitleWithIcon';
 import { AVANTAGES_MATRIMONIAUX_REFERENCE } from './dmtgReferenceData';
-
-interface AvantageMatrimonialReference {
-  id: string;
-  label: string;
-  definition: string;
-  impact: string;
-  minimumFields: string[];
-  legalRefs: string;
-}
 
 interface AvantagesMatrimoniauxSectionProps {
   openSection: string | null;
@@ -21,7 +13,6 @@ export default function AvantagesMatrimoniauxSection({
   setOpenSection,
 }: AvantagesMatrimoniauxSectionProps): React.ReactElement {
   const isOpen = openSection === 'avantagesMatrimoniaux';
-  const avantages = AVANTAGES_MATRIMONIAUX_REFERENCE as AvantageMatrimonialReference[];
 
   return (
     <div className="fisc-acc-item">
@@ -47,7 +38,7 @@ export default function AvantagesMatrimoniauxSection({
             de succession. Ces éléments doivent être qualifiés avant tout calcul DMTG.
           </p>
 
-          {avantages.map((item) => (
+          {AVANTAGES_MATRIMONIAUX_REFERENCE.map((item) => (
             <div key={item.id} className="income-tax-block dmtg-block--mb12">
               <div className="dmtg-block-title">{item.label}</div>
               <p className="dmtg-desc--mb6">
@@ -64,7 +55,10 @@ export default function AvantagesMatrimoniauxSection({
                   ))}
                 </ul>
               </div>
-              <p className="dmtg-note--flush">Références : {item.legalRefs}</p>
+              <div className="dmtg-note--flush dmtg-reference-row">
+                <span>Références :</span>
+                <LegalRefList ids={item.legalRefIds} />
+              </div>
             </div>
           ))}
 
@@ -72,17 +66,31 @@ export default function AvantagesMatrimoniauxSection({
             <div className="dmtg-block-title">Vigilances juridiques</div>
             <ul className="dmtg-list--vigilances">
               <li className="dmtg-list-item--mb4">
-                Les avantages matrimoniaux ne sont en principe pas qualifiés de donations.
-                Références : C. civ. art. 1516, 1525, 1527.
+                <span>
+                  Les avantages matrimoniaux ne sont en principe pas qualifiés de donations.
+                </span>
+                <div className="dmtg-reference-row dmtg-reference-row--mt4">
+                  <span>Références :</span>
+                  <LegalRefList ids={['code-civil-1516', 'code-civil-1525', 'code-civil-1527']} />
+                </div>
               </li>
               <li className="dmtg-list-item--mb4">
-                En présence d’enfants non communs, l’excédent au-delà de la quotité entre époux peut
-                être réduit. Références : C. civ. art. 1527 et 1094-1.
+                <span>
+                  En présence d’enfants non communs, l’excédent au-delà de la quotité entre époux
+                  peut être réduit.
+                </span>
+                <div className="dmtg-reference-row dmtg-reference-row--mt4">
+                  <span>Références :</span>
+                  <LegalRefList ids={['code-civil-1527', 'code-civil-1094-1']} />
+                </div>
               </li>
               <li>
                 En cas de divorce, les avantages à effet différé sont révoqués de plein droit sauf
-                volonté contraire. Référence : C. civ. art. 265 (version en vigueur depuis le 2 juin
-                2024).
+                volonté contraire.
+                <div className="dmtg-reference-row dmtg-reference-row--mt4">
+                  <span>Référence :</span>
+                  <LegalRefList ids={['code-civil-265']} />
+                </div>
               </li>
             </ul>
           </div>

@@ -1,6 +1,26 @@
 import { DEFAULT_TAX_SETTINGS } from '@/constants/settingsDefaults';
+import type { LegalReferenceId } from '@/domain/legal-references';
 
 export const DEFAULT_DONATION = DEFAULT_TAX_SETTINGS.donation;
+
+export interface LiberaliteReference {
+  id: string;
+  family: string;
+  label: string;
+  definition: string;
+  impact: string;
+  minimumFields: string[];
+  legalRefIds: LegalReferenceId[];
+}
+
+export interface AvantageMatrimonialReference {
+  id: string;
+  label: string;
+  definition: string;
+  impact: string;
+  minimumFields: string[];
+  legalRefIds: LegalReferenceId[];
+}
 
 export const RESERVE_HEREDITAIRE = [
   { enfants: 1, reserve: '1/2', quotiteDisponible: '1/2' },
@@ -69,7 +89,7 @@ export const LIBERALITES_REFERENCE = [
       'Bien transmis',
       'Hors part successorale (oui/non)',
     ],
-    legalRefs: 'C. civ. art. 894, 843, 920',
+    legalRefIds: ['code-civil-894', 'code-civil-843', 'code-civil-920'],
   },
   {
     id: 'donation_reserve_usufruit',
@@ -84,7 +104,7 @@ export const LIBERALITES_REFERENCE = [
       "Âge de l'usufruitier",
       'Bien donné',
     ],
-    legalRefs: 'C. civ. art. 894, 578, 843, 922',
+    legalRefIds: ['code-civil-894', 'code-civil-578', 'code-civil-843', 'code-civil-922'],
   },
   {
     id: 'donation_partage',
@@ -100,7 +120,7 @@ export const LIBERALITES_REFERENCE = [
       'Valeur par lot',
       'Soulte éventuelle',
     ],
-    legalRefs: 'C. civ. art. 1075, 1078',
+    legalRefIds: ['code-civil-1075', 'code-civil-1078'],
   },
   {
     id: 'donation_graduelle_residuelle',
@@ -117,7 +137,7 @@ export const LIBERALITES_REFERENCE = [
       'Biens concernés',
       'Nature de la charge',
     ],
-    legalRefs: 'C. civ. art. 1048, 1057',
+    legalRefIds: ['code-civil-1048', 'code-civil-1057'],
   },
   {
     id: 'legs_universel',
@@ -127,7 +147,13 @@ export const LIBERALITES_REFERENCE = [
     impact:
       "S'exécute dans la limite de la réserve héréditaire et peut être réduit si la quotité disponible est dépassée.",
     minimumFields: ['Type de testament', 'Date', 'Légataire', 'Clause de quotité / cantonnement'],
-    legalRefs: 'C. civ. art. 1002, 1003, 912, 913, 920',
+    legalRefIds: [
+      'code-civil-1002',
+      'code-civil-1003',
+      'code-civil-912',
+      'code-civil-913',
+      'code-civil-920',
+    ],
   },
   {
     id: 'legs_titre_universel',
@@ -137,7 +163,7 @@ export const LIBERALITES_REFERENCE = [
     impact:
       "S'impute sur la quotité disponible ; contrôle de réduction nécessaire en présence d'héritiers réservataires.",
     minimumFields: ['Type de testament', 'Quote-part / catégorie léguée', 'Légataire', 'Date'],
-    legalRefs: 'C. civ. art. 1002, 1010, 912, 920',
+    legalRefIds: ['code-civil-1002', 'code-civil-1010', 'code-civil-912', 'code-civil-920'],
   },
   {
     id: 'legs_particulier',
@@ -147,7 +173,7 @@ export const LIBERALITES_REFERENCE = [
     impact:
       "Priorité d'analyse sur valorisation du bien légué et respect de la réserve des héritiers.",
     minimumFields: ['Type de testament', 'Bien légué', 'Valeur estimée', 'Légataire', 'Date'],
-    legalRefs: 'C. civ. art. 1002, 1010, 912, 920',
+    legalRefIds: ['code-civil-1002', 'code-civil-1010', 'code-civil-912', 'code-civil-920'],
   },
   {
     id: 'donation_entre_epoux',
@@ -162,9 +188,9 @@ export const LIBERALITES_REFERENCE = [
       'Étendue des options (usufruit/pleine propriété)',
       "Présence d'enfants non communs",
     ],
-    legalRefs: 'C. civ. art. 1094-1',
+    legalRefIds: ['code-civil-1094-1'],
   },
-];
+] satisfies LiberaliteReference[];
 
 export const AVANTAGES_MATRIMONIAUX_REFERENCE = [
   {
@@ -179,7 +205,7 @@ export const AVANTAGES_MATRIMONIAUX_REFERENCE = [
       'Valeur estimée',
       "Condition d'application au décès",
     ],
-    legalRefs: 'C. civ. art. 1515 à 1519',
+    legalRefIds: ['code-civil-1515', 'code-civil-1516', 'code-civil-1518', 'code-civil-1519'],
   },
   {
     id: 'parts_inegales',
@@ -192,7 +218,7 @@ export const AVANTAGES_MATRIMONIAUX_REFERENCE = [
       'Base de calcul (actif et dettes)',
       'Eventuelles limites prévues',
     ],
-    legalRefs: 'C. civ. art. 1520 à 1525',
+    legalRefIds: ['code-civil-1520', 'code-civil-1521', 'code-civil-1524', 'code-civil-1525'],
   },
   {
     id: 'attribution_integrale',
@@ -206,7 +232,7 @@ export const AVANTAGES_MATRIMONIAUX_REFERENCE = [
       'Perimètre des biens communs',
       "Présence d'enfants non communs",
     ],
-    legalRefs: 'C. civ. art. 1524 et 1525',
+    legalRefIds: ['code-civil-1524', 'code-civil-1525'],
   },
   {
     id: 'usufruit_part_prededece',
@@ -220,6 +246,6 @@ export const AVANTAGES_MATRIMONIAUX_REFERENCE = [
       'Valeur usufruit / nue-propriété',
       'Regles de contribution aux dettes',
     ],
-    legalRefs: 'C. civ. art. 1524, al. 2',
+    legalRefIds: ['code-civil-1524'],
   },
-];
+] satisfies AvantageMatrimonialReference[];

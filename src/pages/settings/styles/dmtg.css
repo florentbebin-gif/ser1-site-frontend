@@ -149,6 +149,17 @@
   margin: 0;
 }
 
+.dmtg-reference-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-2);
+}
+
+.dmtg-reference-row--mt4 {
+  margin-top: 4px;
+}
+
 .dmtg-family-label {
   font-size: var(--font-size-sm);
   color: var(--color-c9);
