@@ -7,13 +7,17 @@ export interface PassHistoryRow {
   pass_amount: number | null;
 }
 
-interface UsePassHistoryReturn {
+export interface PassHistorySaveResult {
+  ok: boolean;
+  error?: string;
+}
+
+export interface UsePassHistoryReturn {
   rows: PassHistoryRow[];
   loading: boolean;
   saving: boolean;
-  message: string;
   handleChange: (index: number, value: string) => void;
-  handleSave: () => Promise<void>;
+  save: () => Promise<PassHistorySaveResult>;
 }
 
 /**
@@ -24,7 +28,6 @@ export function usePassHistory(isAdmin: boolean): UsePassHistoryReturn {
   const [rows, setRows] = useState<PassHistoryRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [message, setMessage] = useState('');
 
   useEffect(() => {
     let mounted = true;
@@ -78,15 +81,13 @@ export function usePassHistory(isAdmin: boolean): UsePassHistoryReturn {
       copy[index] = { ...row, pass_amount: value === '' ? null : Number(value) };
       return copy;
     });
-    setMessage('');
   };
 
-  const handleSave = async (): Promise<void> => {
-    if (!isAdmin) return;
+  const save = async (): Promise<PassHistorySaveResult> => {
+    if (!isAdmin) return { ok: true };
 
     try {
       setSaving(true);
-      setMessage('');
 
       const payload: PassHistoryRow[] = rows.map((row) => ({
         year: row.year,
@@ -97,19 +98,19 @@ export function usePassHistory(isAdmin: boolean): UsePassHistoryReturn {
 
       if (error) {
         console.error(error);
-        setMessage("Erreur lors de l'enregistrement du PASS.");
-      } else {
-        await invalidate('pass');
-        broadcastInvalidation('pass');
-        setMessage('Historique du PASS enregistré.');
+        return { ok: false, error: "Erreur lors de l'enregistrement du PASS." };
       }
+
+      await invalidate('pass');
+      broadcastInvalidation('pass');
+      return { ok: true };
     } catch (error) {
       console.error(error);
-      setMessage("Erreur lors de l'enregistrement du PASS.");
+      return { ok: false, error: "Erreur lors de l'enregistrement du PASS." };
     } finally {
       setSaving(false);
     }
   };
 
-  return { rows, loading, saving, message, handleChange, handleSave };
+  return { rows, loading, saving, handleChange, save };
 }
