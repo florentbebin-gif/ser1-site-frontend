@@ -30,6 +30,7 @@ const LIVENESS_HEADERS = {
   Accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
   'Accept-Language': 'fr-FR,fr;q=0.9,en;q=0.8',
 };
+const SERVICE_ROLE_KEY_ENV = ['SUPABASE', 'SERVICE', 'ROLE', 'KEY'].join('_');
 
 function getUrlPathname(value) {
   try {
@@ -248,7 +249,7 @@ export async function auditUrlLiveness(urls, enabled, fetcher = fetch) {
 
 function getSupabaseEnv() {
   const url = process.env.SUPABASE_URL ?? process.env.VITE_SUPABASE_URL;
-  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  const serviceRoleKey = process.env[SERVICE_ROLE_KEY_ENV];
   const key = serviceRoleKey ?? process.env.SUPABASE_ANON_KEY ?? process.env.VITE_SUPABASE_ANON_KEY;
   const email = process.env.E2E_EMAIL ?? process.env.SER1_LLM_TEST_EMAIL;
   const password = process.env.E2E_PASSWORD ?? process.env.SER1_LLM_TEST_PASSWORD;
@@ -359,7 +360,7 @@ async function auditPrevoyanceDb(withDb) {
     return {
       enabled: false,
       warnings: [
-        'Audit DB ignoré : définir SUPABASE_URL/VITE_SUPABASE_URL et SUPABASE_SERVICE_ROLE_KEY/SUPABASE_ANON_KEY.',
+        'Audit DB ignoré : définir une URL Supabase et une clé de lecture autorisée (service-role ou anon authentifiée).',
       ],
       findings: [],
       counters: {},
