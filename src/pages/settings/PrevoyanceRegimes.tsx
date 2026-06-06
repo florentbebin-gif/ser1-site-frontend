@@ -49,9 +49,9 @@ function formatRange(from: number, to: number | null): string {
 }
 
 function formatConfidence(confidence: string): string {
-  if (confidence === 'haute') return 'Confiance élevée';
-  if (confidence === 'moyenne') return 'Confiance moyenne';
-  return 'Confiance faible';
+  if (confidence === 'haute') return 'Vérifié';
+  if (confidence === 'moyenne') return 'À vérifier';
+  return 'Non vérifié';
 }
 
 function RuleCard({ title, children }: { title: string; children: ReactNode }) {

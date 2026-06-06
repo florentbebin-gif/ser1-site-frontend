@@ -308,8 +308,8 @@ const LOCATIF_MEUBLE_LMP: ProductRules = {
       confidence: 'moyenne',
       sources: [
         {
-          label: 'URSSAF — LMP cotisations sociales',
-          url: 'https://www.urssaf.fr/accueil/employeur/beneficiaires-de-revenus/loueurs-meubés-professionnels.html',
+          label: 'Mon-entreprise / URSSAF — LMP cotisations sociales',
+          url: 'https://mon-entreprise.urssaf.fr/simulateurs/location-de-logement-meuble/documentation',
         },
       ],
       dependencies: ['affiliation sociale (SSI ou régime général)', 'seuil de recettes annuelles'],

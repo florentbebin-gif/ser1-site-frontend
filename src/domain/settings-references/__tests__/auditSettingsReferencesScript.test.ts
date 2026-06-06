@@ -26,6 +26,16 @@ type AuditReport = {
 };
 
 type AuditModule = {
+  getStaleAssessment: (
+    isoDate: string,
+    volatility: string,
+    now?: Date,
+  ) => {
+    stale: boolean;
+    ageDays: number;
+    deadline?: string;
+    thresholdDays?: number;
+  };
   auditPrevoyanceSourceRows: (
     table: string,
     rows: Array<Record<string, unknown>>,
@@ -165,6 +175,23 @@ afterEach(() => {
 });
 
 describe('audit-settings-references', () => {
+  it("bloque une attestation annuelle à partir du 1er février de l'année suivante", async () => {
+    const { getStaleAssessment } = await loadAuditModule();
+
+    expect(getStaleAssessment('2026-06-06', 'annual', new Date('2027-01-31T12:00:00Z'))).toEqual(
+      expect.objectContaining({
+        stale: false,
+        deadline: '2027-02-01',
+      }),
+    );
+    expect(getStaleAssessment('2026-06-06', 'annual', new Date('2027-02-01T00:00:00Z'))).toEqual(
+      expect.objectContaining({
+        stale: true,
+        deadline: '2027-02-01',
+      }),
+    );
+  });
+
   it('classe un HTTP 403 en URL bloquée sans échec CLI', async () => {
     await withHttpStatus(403, async (origin) => {
       const root = createRoot();

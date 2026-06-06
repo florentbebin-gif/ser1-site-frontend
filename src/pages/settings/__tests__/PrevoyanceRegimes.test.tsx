@@ -190,7 +190,7 @@ describe('PrevoyanceRegimes', () => {
       'href',
       'https://www.ameli.fr/',
     );
-    expect(screen.queryByText('Confiance élevée')).not.toBeInTheDocument();
+    expect(screen.queryByText('Vérifié')).not.toBeInTheDocument();
     expect(screen.queryByText(/consulté le 2026-05-24/i)).not.toBeInTheDocument();
     expect(screen.queryByText(/Valeurs couvertes/i)).not.toBeInTheDocument();
     expect(screen.getByText('Cotisations')).toBeInTheDocument();
@@ -209,7 +209,7 @@ describe('PrevoyanceRegimes', () => {
 
     await user.click(screen.getByRole('button', { name: /Agent général — CAVAMAC/i }));
     expect(screen.getByRole('button', { name: 'Modifier' })).toBeInTheDocument();
-    expect(screen.getByText('Confiance élevée')).toBeInTheDocument();
+    expect(screen.getByText('Vérifié')).toBeInTheDocument();
     expect(screen.getByText(/consulté le 2026-05-24/i)).toBeInTheDocument();
     expect(
       screen.getByText(

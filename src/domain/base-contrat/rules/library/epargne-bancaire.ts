@@ -163,7 +163,7 @@ const PEA: ProductRules = {
       sources: [
         {
           label: 'Art. L221-30 Code monétaire et financier — PEA',
-          url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000038612481',
+          url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000038591630',
         },
       ],
     },

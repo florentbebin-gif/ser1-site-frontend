@@ -44,6 +44,7 @@ Ce document est la roadmap V2 canonique pour construire le parcours complet Audi
 13. Les exports existants restent non régressifs si un refactor les impacte.
 14. Aucun legacy durable n'est autorisé : pas d'ancienne Home concurrente, pas d'ancienne roadmap concurrente après validation de la V2, pas de double registry, pas de fallback métier non testé.
 15. Toute dette découverte est traitée dans la PR ou inscrite dans le bilan avec `fichier:ligne`, preuve, raison du report et PR cible. Une dette découverte ne peut pas rester muette.
+16. Les paramètres fiscaux et sociaux d'un simulateur passent toujours par la chaîne settings (`settingsDefaults → Supabase → fiscalSettingsCache → useFiscalContext`). On **enrichit une page Settings existante** plutôt que d'en créer une nouvelle : l'IFI, par exemple, s'ajoute à `settings/impots`, jamais sur une page dédiée. Une nouvelle page Settings doit être justifiée par un domaine réellement distinct.
 
 ## Objectif des surfaces
 
@@ -92,6 +93,26 @@ export type SimulatorSpace = 'foyer' | 'societe';
 export type SimulatorTab = 'comprendre' | 'piloter' | 'proteger';
 export type SimulatorModeVisibility = 'simplifie' | 'expert' | 'internal';
 
+// Dimensions transverses internes : interface simple (2 lignes × 3 colonnes),
+// moteur riche. Les tags ne s'affichent pas comme colonnes ; ils servent au
+// chaînage intelligent, au filtrage et aux recommandations.
+export type SimulatorDomainTag = 'foyer' | 'societe' | 'immobilier' | 'placements' | 'transmission';
+
+export type SimulatorIntentTag =
+  | 'audit'
+  | 'fiscalite'
+  | 'retraite'
+  | 'investissement'
+  | 'immobilier'
+  | 'placements'
+  | 'societe'
+  | 'cession'
+  | 'transmission'
+  | 'prevoyance'
+  | 'credit';
+
+export type SimulatorTag = SimulatorDomainTag | SimulatorIntentTag;
+
 export type FieldProvenance =
   | 'manual'
   | 'dossier'
@@ -131,6 +152,7 @@ export interface SimulatorDefinition {
   testScenarios: string[];
   contextPolicy: SimulatorContextPolicy;
   subtypes?: string[];
+  tags: SimulatorTag[];
   lifecycle: SimulatorLifecycle;
   visibility: SimulatorModeVisibility;
   engine?: string;
@@ -151,6 +173,8 @@ Règles d'usage :
 - Les entrées `active`, `hub` et `placeholder` exigent des `legalRefs` complètes, même si la référence est une règle structurelle stable. Les entrées `planned` peuvent porter `legalRefsStatus: 'a-renseigner-avant-codage'`, mais ne peuvent pas partir en implémentation avec ce statut.
 - `contextPolicy` décrit comment le simulateur fonctionne en autonomie et comment il utilise un dossier patrimonial chargé.
 - Aucun composant React ne crée de liste parallèle de simulateurs, de routes, de statuts, de chainage ou de visibilité.
+- `tags` (domaine + intention) est obligatoire. Il porte la granularité métier que la matrice 2×3 n'affiche plus (ancien découpage Immobilier / Placements / Transmission / Investir / Sortir & arbitrer). Interface simple, moteur riche : les tags servent au chaînage, au filtrage et aux recommandations, jamais à l'affichage des colonnes.
+- Libellés : `shortLabel` est le titre affiché (court), `fullLabel` le titre métier complet (tooltip/description). Libellés canoniques validés : « Régime matrimonial & protection conjoint », « Allocation patrimoniale & choix d'enveloppes », « Assurance-vie / capitalisation » (sous-type de Placement), « SCI & mode de détention », « Crédit & garanties », « Vendre / conserver / réemployer », « Sortie de capitaux / CCA », « Donation / donation-partage & démembrement », « Droits de succession & liquidité successorale », « Cession de titres & plus-values mobilières ». La registry `src/domain/simulators` est la source de vérité ; tout écart doc↔code se corrige côté registry.
 
 ### Registry et chainage
 
@@ -891,23 +915,55 @@ export interface SourceRef {
 
 ### Champs documentaires à couvrir
 
-| Domaine            | Champs attendus                                                                                          |
-| ------------------ | -------------------------------------------------------------------------------------------------------- |
-| Identité           | Nom, prénom, date de naissance, adresse, résidence fiscale, identifiants utiles non exposés inutilement. |
-| Famille            | Conjoint, enfants, personnes à charge, liens de parenté, situations particulières.                       |
-| Régime matrimonial | Régime, contrat, clauses, date, pièces justificatives.                                                   |
-| Donations          | Donations antérieures, bénéficiaires, dates, valeurs, abattements utilisés, démembrement.                |
-| Retraite           | Statuts, droits, contrats retraite, PER, relevés, plafonds et versements.                                |
-| IR                 | Avis d'impôt, revenus, charges, parts, TMI si calculée, crédits/réductions.                              |
-| Sociétés           | Sociétés détenues, dirigeants, associés, organigramme, titres, comptes courants.                         |
-| Bilans             | Bilan, compte de résultat, trésorerie, dettes, immobilisations, capitaux propres.                        |
-| Actifs/passifs     | Immobilier, financier, liquidités, dettes, garanties, valeurs, propriétaires.                            |
-| IFI                | Actifs taxables, dettes déductibles, exonérations, justificatifs.                                        |
-| Budget             | Revenus, dépenses, capacité d'épargne, charges récurrentes.                                              |
-| Prévoyance         | Contrats, capitaux, garanties, bénéficiaires, exclusions utiles.                                         |
-| Placements         | Assurance-vie, PER, PEA, CTO, SCPI, contrats de capitalisation, relevés.                                 |
-| Immobilier         | Titres, valeurs, loyers, charges, régime fiscal, crédits associés.                                       |
-| Crédits            | Capital restant dû, taux, durée, garanties, assurance emprunteur.                                        |
+| Domaine                    | Champs attendus                                                                                                                                                                                                                                                                                                                                                   |
+| -------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Identité                   | Nom, prénom, date de naissance, adresse, résidence fiscale, identifiants utiles non exposés inutilement.                                                                                                                                                                                                                                                          |
+| Famille                    | Conjoint, enfants, personnes à charge, liens de parenté, situations particulières.                                                                                                                                                                                                                                                                                |
+| Régime matrimonial         | Régime, contrat, clauses, date, pièces justificatives.                                                                                                                                                                                                                                                                                                            |
+| Donations                  | Donations antérieures, bénéficiaires, dates, valeurs, abattements utilisés, démembrement.                                                                                                                                                                                                                                                                         |
+| Retraite                   | Statuts, droits, contrats retraite, PER, relevés, plafonds et versements.                                                                                                                                                                                                                                                                                         |
+| IR                         | Avis d'impôt, revenus, charges, parts, TMI si calculée, crédits/réductions.                                                                                                                                                                                                                                                                                       |
+| Sociétés                   | Sociétés détenues, dirigeants, associés, organigramme, titres, comptes courants.                                                                                                                                                                                                                                                                                  |
+| Bilans                     | Bilan, compte de résultat, trésorerie, dettes, immobilisations, capitaux propres.                                                                                                                                                                                                                                                                                 |
+| Actifs/passifs             | Immobilier, financier, liquidités, dettes, garanties, valeurs, propriétaires.                                                                                                                                                                                                                                                                                     |
+| IFI                        | Actifs taxables, dettes déductibles, exonérations, justificatifs.                                                                                                                                                                                                                                                                                                 |
+| Budget                     | Revenus, dépenses, capacité d'épargne, charges récurrentes.                                                                                                                                                                                                                                                                                                       |
+| Prévoyance                 | Contrats, capitaux, garanties, bénéficiaires, exclusions utiles.                                                                                                                                                                                                                                                                                                  |
+| Placements                 | Assurance-vie, PER, PEA, CTO, SCPI, contrats de capitalisation, relevés.                                                                                                                                                                                                                                                                                          |
+| Immobilier                 | Titres, valeurs, loyers, charges, régime fiscal, crédits associés.                                                                                                                                                                                                                                                                                                |
+| Crédits                    | Capital restant dû, taux, durée, garanties, **quotité assurée**, assurance emprunteur.                                                                                                                                                                                                                                                                            |
+| Bilans (détail liasse)     | Capital social, primes d'émission, réserves / report à nouveau, résultat (capacité à distribuer), capitaux propres, immobilisations (base PV de cession), CA, produits financiers, résultat d'exploitation, RCAI, bénéfice/perte, salaires & charges sociales, effectifs, emprunts restants, **rémunération du/des TNS gérant(s) + Madelin prévoyance/retraite**. |
+| Organigramme               | Détention par membre en **% et en NP/US** (nue-propriété / usufruit), autres personnes morales, liens capitalistiques.                                                                                                                                                                                                                                            |
+| Détail produits financiers | **% UC / fonds €**, **codes ISIN**, dates d'effet, clauses bénéficiaires, plus-values latentes ; distinction **contrat TNS vs salarié** en prévoyance (TA/TB/TC).                                                                                                                                                                                                 |
+| Origine des fonds          | Origine des fonds ayant financé les acquisitions et souscriptions de parts.                                                                                                                                                                                                                                                                                       |
+
+> Granularité attendue : le tableau des actifs se tient **en 5 colonnes** (type, commun, M., Mme, détention PP/USF/NP). Ces champs proviennent de l'annexe normative « Pièces à fournir » (voir § Annexe normative).
+
+### Objectifs & contraintes (déclencheurs de stratégie)
+
+Le dossier patrimonial porte aussi les objectifs et contraintes du client : ils pilotent l'étape Stratégie et les recommandations du rail.
+
+```ts
+export interface DossierObjectif {
+  id: string; // ex. 'optimiser-fiscalite', 'preparer-retraite', 'transmettre-patrimoine'
+  label: string;
+  rang: number; // hiérarchisation 1..N (1 = prioritaire)
+}
+
+export interface DossierContrainte {
+  id: string; // ex. 'conserver-pouvoir-gestion', 'equilibre-heritiers'
+  label: string;
+  valeur?: string; // ex. revenus nécessaires au train de vie
+}
+
+export interface DossierObjectifsEtContraintes {
+  objectifs: DossierObjectif[]; // priorisés
+  contraintes: DossierContrainte[];
+  operationsEnCours?: string; // opérations prévues + horizon
+}
+```
+
+Objectifs de référence : optimiser la fiscalité, réduire l'IFI, optimiser la rentabilité des placements, constituer une épargne de précaution, constituer un patrimoine, financer un achat immobilier, placer des liquidités à court terme, aider les enfants, préparer la retraite, se prémunir contre les accidents de la vie, protéger les proches, obtenir des revenus complémentaires, transmettre l'entreprise, transmettre le patrimoine. Contraintes de référence : conserver le pouvoir d'administration / de gestion, conserver le pouvoir de disposition, revenus nécessaires au train de vie, respecter l'équilibre entre héritiers, rechercher une stratégie cohérente à long terme.
 
 ### Règles de sécurité fonctionnelle
 
@@ -930,6 +986,18 @@ Le modèle documentaire doit rester compatible avec :
 - Source documentaire.
 - Score de confiance.
 - Validation CGP obligatoire avant usage moteur.
+
+### Annexe normative — « Pièces à fournir »
+
+La checklist CGP « Réalisation d'une étude patrimoniale — Pièces et informations à fournir » est la **source normative** des champs du `DossierPatrimonial` (PR V2-07) et des **cibles d'extraction** du Scan (PR V2-14). Elle fournit aussi la **méthode de lecture** (« Identifier… ») qui spécifie ce que l'extraction doit reconnaître dans chaque document, et les **règles de cohérence** à appliquer :
+
+- croiser l'avis IR avec les bilans pour vérifier la cohérence des rémunérations (BIC, BNC, salaire, pensions, dividendes) ;
+- déduire la capacité d'épargne par variation de l'épargne placée entre deux exercices, ou via un tableau revenus/charges ;
+- repérer les pistes sur l'avis IR (versements PER, crédits/réductions d'impôt, revenus fonciers, plafonds épargne retraite) ;
+- distinguer un contrat **TNS** d'un contrat **salarié** (prévoyance exprimée en % TA/TB/TC) et Madelin vs non Madelin ;
+- dresser l'organigramme de détention en % et NP/US, puis ressortir les éléments clés de la liasse.
+
+Le document de référence est conservé hors dépôt (fourni par le propriétaire).
 
 ## Références juridiques et vérification future
 
@@ -1018,6 +1086,59 @@ Critère de PR moteur :
 - Un export existant touché par la PR reste vert.
 - Un export non existant n'est pas créé pour satisfaire la PR.
 
+## Couverture des settings (fondation fiscale)
+
+Les fondations ne sont **pas terminées** tant que chaque moteur prévu ne dispose pas de ses paramètres révisables dans la chaîne settings. Deux écarts coexistent aujourd'hui :
+
+1. **Câblage incomplet** : des valeurs existent dans `settingsDefaults.ts` mais ne sont ni exposées sur une page Settings, ni publiées par `useFiscalContext` (cas de l'IFI).
+2. **Paramètres manquants** : des familles entières de paramètres n'existent pas encore (règles comptables & sociétés, épargne salariale, charges sociales dirigeant, cotisations retraite, PV immobilières, fonciers, LMNP, PV mobilières, Dutreil…).
+
+Règle (principe 16) : **enrichir une page existante** avant d'en créer une nouvelle.
+
+### Pages settings cibles (décision 2026-06-06)
+
+- **Pages existantes enrichies** :
+  - `settings/impots` ← IFI, CDHR, PV immobilières, revenus fonciers (micro-foncier), LMNP/LMP.
+  - `settings/prelevements` ← charges sociales du dirigeant (TNS/salarié, TA/TB/TC, Madelin), cotisations retraite (barèmes de constitution des droits).
+  - `settings/dmtg-succession` ← pacte Dutreil (exonération 75 %, durées d'engagement).
+- **Nouvelles pages (2)** :
+  1. **Comptables & sociétés** : régime mère-fille, affectation des réserves, fonctionnement des dividendes, formes de société (principales), règles de cession / apport-cession, règles de valorisation, PV mobilières / cession de titres, **IS** (déplacé depuis Impôts).
+  2. **Épargne salariale** : règles société, participation, intéressement, PPV, abondement.
+- **Migration** : la section **IS** (`corporateTax`) quitte `settings/impots` pour la page **Comptables & sociétés** (déplacement, pas duplication ; chaîne `settingsDefaults` + `useFiscalContext` + `settings-references` à reporter).
+
+**Total : 2 nouvelles pages**, tout le reste en enrichissement de pages existantes (principe 16).
+
+### État de couverture (constaté le 2026-06-06)
+
+| Paramètre                                                                                            | Défaut | Page Settings                        | useFiscalContext | Moteur consommateur                                                            | Action                                                                            |
+| ---------------------------------------------------------------------------------------------------- | ------ | ------------------------------------ | ---------------- | ------------------------------------------------------------------------------ | --------------------------------------------------------------------------------- |
+| Barème IR, décote, quotient, abat. 10 %, DOM                                                         | ✅     | ✅ Impôts                            | ✅               | `ir`                                                                           | —                                                                                 |
+| PFU                                                                                                  | ✅     | ✅ Impôts                            | ✅               | `ir`, `placement`                                                              | —                                                                                 |
+| CEHR                                                                                                 | ✅     | ✅ Impôts                            | ✅               | `ir`                                                                           | —                                                                                 |
+| CDHR                                                                                                 | ✅     | ❌                                   | ⚠️ à vérifier    | `ir`                                                                           | Exposer une section sur `settings/impots`                                         |
+| IS                                                                                                   | ✅     | ✅ Impôts → ⏭️ Comptables & sociétés | ✅               | `tresorerie-societe`, `cession-titres`                                         | **Déplacer `corporateTax` vers la nouvelle page Comptables & sociétés**           |
+| DMTG / donation                                                                                      | ✅     | ✅ Impôts + DMTG                     | ✅               | `succession`                                                                   | —                                                                                 |
+| PS patrimoine / retraite / seuils RFR                                                                | ✅     | ✅ Prélèvements                      | ✅               | `ir`, `placement`                                                              | —                                                                                 |
+| PASS                                                                                                 | ✅     | ✅ Prélèvements                      | ✅               | `per`, `retraite`                                                              | —                                                                                 |
+| **IFI** (seuil, abatt. RP, barème)                                                                   | ✅     | ❌                                   | ❌               | `ifi`                                                                          | **Ajouter une section IFI à `settings/impots`** + exposer dans `useFiscalContext` |
+| **PV immobilières** (abattements durée IR 22 ans / PS 30 ans)                                        | ❌     | ❌                                   | ❌               | `plus-values-immobilieres`                                                     | Ajouter à `settings/impots`                                                       |
+| **Revenus fonciers** (micro-foncier, abattement 30 %)                                                | ❌     | ❌                                   | ❌               | `revenus-fonciers`                                                             | Ajouter à `settings/impots`                                                       |
+| **LMNP/LMP** (seuils micro-BIC, abattements)                                                         | ❌     | ❌                                   | ❌               | `lmnp-lmp`                                                                     | Ajouter à `settings/impots`                                                       |
+| **Pacte Dutreil** (exonération 75 %, durées d'engagement)                                            | ❌     | ❌                                   | ❌               | `pacte-dutreil`                                                                | Ajouter à `settings/dmtg-succession`                                              |
+| **Charges sociales dirigeant** (TNS/salarié, TA/TB/TC, Madelin)                                      | ❌     | ❌                                   | ❌               | `remuneration`, `retraite`                                                     | **Ajouter un bloc à `settings/prelevements`**                                     |
+| **Cotisations retraite** (barèmes de constitution des droits)                                        | ❌     | ❌                                   | ❌               | `retraite-globale`                                                             | **Ajouter un bloc à `settings/prelevements`**                                     |
+| **Règles comptables & sociétés** (mère-fille, réserves, dividendes, formes de société, valorisation) | ❌     | ❌                                   | ❌               | `valorisation-titres`, `projection-comptable`, `tresorerie-societe`, `holding` | **Nouvelle page Comptables & sociétés**                                           |
+| **Apport-cession / PV mobilières** (régime report, réemploi, abatt. durée, abatt. 500 k dirigeant)   | ❌     | ❌                                   | ❌               | `cession-titres`, `holding`                                                    | **Nouvelle page Comptables & sociétés**                                           |
+| **Épargne salariale** (participation, intéressement, PPV, abondement, règles société)                | ❌     | ❌                                   | ❌               | `epargne-salariale`                                                            | **Nouvelle page Épargne salariale**                                               |
+
+### Critère de sortie
+
+- Aucun moteur `active` ou en ouverture ne lit un taux/seuil/abattement en dur : il vient de `useFiscalContext`.
+- Tout nouveau paramètre est rattaché à une **référence juridique** (`legal-references` + chaînage `settings-references`).
+- Le garde-fou `check:fiscal-hardcode` reste vert.
+- Seules **deux nouvelles pages** sont justifiées par un domaine distinct (Comptables & sociétés ; Épargne salariale) ; tout le reste enrichit une page existante (principe 16).
+- Le déplacement de l'IS vers Comptables & sociétés ne laisse **aucune** référence orpheline dans `settings-references`.
+
 ## Ordre ferme de construction des moteurs
 
 ### Règle générale
@@ -1032,6 +1153,7 @@ Objectif : poser les fondations communes sans ajouter de calcul.
 2. Home guidée.
 3. Rail commun dossier/version.
 4. Référentiel juridique listable.
+5. Couverture des settings : câbler l'existant (IFI, CDHR) et planifier les paramètres manquants — voir § Couverture des settings (fondation fiscale).
 
 ### Priorité 1 - Stabiliser les moteurs déjà actifs
 
@@ -1121,7 +1243,32 @@ Objectif : accélérer la création du dossier sans réduire le contrôle humain
 
 Chaque PR doit être thématique, suffisamment complète pour fermer son sujet, mais pas si large qu'elle mélange fondations, moteurs et UI.
 
-### PR V2-00 - Roadmap V2
+### État d'avancement (constaté le 2026-06-06)
+
+Légende : ✅ Fait · ⚠️ Partiel · ❌ À faire.
+
+| PR           | Sujet                              | Statut     | Preuve / réserve                                                                                                                                       |
+| ------------ | ---------------------------------- | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| V2-00        | Roadmap V2                         | ✅ Fait    | `docs/ROADMAP.md` unique, pas de roadmap concurrente.                                                                                                  |
+| V2-01        | Registry minimale prouvée          | ✅ Fait    | `src/domain/simulators/` : `registry.ts`, `types.ts`, `homeMatrix.ts`, `chainage.ts`, `definitions/`.                                                  |
+| V2-02        | Home guidée                        | ✅ Fait    | `src/features/home/` : `HomeGuide`, `HomeSimulatorPanel`, `homeGuideModel`.                                                                            |
+| V2-03        | Rail commun et versions dossier    | ✅ Fait    | `DossierRail.tsx` + type `DossierVersion`. Stockage Supabase volontairement reporté.                                                                   |
+| V2-04        | Références juridiques listables    | ✅ Fait    | `legal-references` + chantier `settings-references` (443 bindings, gate `check:settings-references`).                                                  |
+| V2-05        | Découpage Succession               | ✅ Fait    | Refactor comportement neutre (commits de découpage god-files).                                                                                         |
+| V2-06        | Découpage Trésorerie société       | ✅ Fait    | Refactor comportement neutre (découpage PER/trésorerie).                                                                                               |
+| **V2-06bis** | **Compléter les fondations**       | ❌ À faire | **PR intercalée** : registry `tags`, câblage IFI/CDHR, libellés canoniques, page Comptables & sociétés (migration IS). Voir § Couverture des settings. |
+| V2-07        | Socle dossier Audit                | ⚠️ Partiel | `AuditWizard` existe mais isolé (sessionStorage). `DossierPatrimonial` central + adapters de contexte absents.                                         |
+| V2-08        | PER et retraite globale            | ⚠️ Partiel | PER actif (hub) ; `retraite-globale` reste `planned` ; rattachement au dossier non fait.                                                               |
+| V2-09        | Placement & allocation unifiée     | ⚠️ Partiel | Placement actif avec sous-types ; rattachement au dossier non fait.                                                                                    |
+| V2-10        | Prévoyance et Succession/Liquidité | ⚠️ Partiel | Prévoyance et Succession actifs ; liaison via dossier non faite.                                                                                       |
+| V2-11        | Immobilier                         | ❌ À faire | Aucune route créée (locatif, fonciers, LMNP, SCPI, SCI, plus-values, vendre/réemployer).                                                               |
+| V2-12        | Société & dirigeant                | ❌ À faire | Seul `tresorerie-societe` existe ; organigramme, valorisation, holding, etc. en `planned`.                                                             |
+| V2-13        | Donation, démembrement, Dutreil    | ❌ À faire | Tous en `planned`.                                                                                                                                     |
+| V2-14        | Scan documentaire                  | ❌ À faire | `src/features/audit/documents/` absent ; OCR/extraction non implémentés.                                                                               |
+
+Prochain jalon logique : **V2-06bis (compléter les fondations : registry `tags`, câblage settings IFI/CDHR, libellés, page Comptables & sociétés avec migration IS)**, puis **V2-07 (dossier patrimonial central + adapters de contexte)**. Ces deux PR débloquent le rattachement réel des PR V2-08/09/10, puis les moteurs V2-11/12/13, puis le scan V2-14. Les settings propres à chaque moteur (PV immo, fonciers, LMNP, Dutreil, charges sociales, cotisations retraite, dispositifs d'épargne salariale) restent **attachés à la PR du moteur concerné**.
+
+### PR V2-00 - Roadmap V2 — ✅ Fait
 
 But : remplacer l'ancienne roadmap par la V2 canonique.
 
@@ -1140,7 +1287,7 @@ Critères de sortie :
 - La roadmap V2 est validée.
 - La bascule documentaire ne conserve pas une ancienne roadmap concurrente.
 
-### PR V2-01 - Registry minimale prouvée
+### PR V2-01 - Registry minimale prouvée — ✅ Fait
 
 But : créer la source de vérité métier sans modifier les moteurs.
 
@@ -1181,7 +1328,7 @@ Critères de sortie :
 - Les simulateurs actifs documentent leur autonomie, leurs champs dossier et leur comportement en cas de champ manquant.
 - Les décisions métier sont testées.
 
-### PR V2-02 - Home guidée
+### PR V2-02 - Home guidée — ✅ Fait
 
 But : maintenir l'expérience guidée et empêcher le retour d'une grille Home statique.
 
@@ -1215,7 +1362,7 @@ Critères de sortie :
 - Aucune ancienne Home concurrente ne reste dans le repo.
 - L'expérience reste premium, sobre et cohérente avec les tokens.
 
-### PR V2-03 - Rail commun et versions dossier
+### PR V2-03 - Rail commun et versions dossier — ✅ Fait
 
 But : mettre en place le rail commun sans brancher encore tout le stockage durable.
 
@@ -1246,7 +1393,7 @@ Critères de sortie :
 - Le rail affiche un parcours, pas seulement une liste de liens directs.
 - Les versions dossier sont modélisées même si le stockage Supabase vient plus tard.
 
-### PR V2-04 - Références juridiques listables
+### PR V2-04 - Références juridiques listables — ✅ Fait
 
 Statut : done.
 
@@ -1276,7 +1423,7 @@ Critères de sortie :
 - Aucune vérification web automatique bloquante n'est ajoutée.
 - Les simulateurs complets référencent les sources sans dupliquer les taux.
 
-### PR V2-05 - Découpage Succession, comportement neutre
+### PR V2-05 - Découpage Succession, comportement neutre — ✅ Fait
 
 But : préparer Donation/Démembrement et Succession/Liquidité sans changer les résultats.
 
@@ -1307,7 +1454,7 @@ Critères de sortie :
 - Diff comportemental nul ou explicitement justifié.
 - Les futures briques donation/démembrement ont un point d'extension propre.
 
-### PR V2-06 - Découpage Trésorerie société, comportement neutre
+### PR V2-06 - Découpage Trésorerie société, comportement neutre — ✅ Fait
 
 But : séparer projection, foyer associé, allocation trésorerie et sorties.
 
@@ -1340,7 +1487,32 @@ Critères de sortie :
 - Le simulateur reste fonctionnel.
 - La future ouverture simplifiée a une matrice claire.
 
-### PR V2-07 - Socle dossier Audit
+### PR V2-06bis - Compléter les fondations — ❌ À faire
+
+But : solder les **réserves de fondation** avant de construire le dossier central et les nouveaux moteurs. PR intercalée car des PR marquées ✅ (V2-01) ont vu leur périmètre étendu (tags) et la couverture settings n'a pas de PR dédiée.
+
+Changements :
+
+- **Registry** : ajouter le champ `tags` (`SimulatorDomainTag` + `SimulatorIntentTag`) à toutes les `SimulatorDefinition`, avec un check de complétude (aucune entrée sans tags). Aligner les libellés canoniques (`shortLabel`/`fullLabel`) listés au § Registry et chainage.
+- **Settings — câblage de l'existant** : créer la section **IFI** sur `settings/impots` (le barème existe déjà dans `settingsDefaults.ts`), l'exposer dans `useFiscalContext` et la chaîner dans `settings-references`. Idem **CDHR** (exposer la section, vérifier `useFiscalContext`).
+- **Settings — nouvelle page « Comptables & sociétés » + migration IS** : créer la page, y **déplacer** l'IS (`corporateTax`) depuis `settings/impots` (déplacement, pas duplication), sans laisser de référence orpheline dans `settings-references`. Cette page est justifiée dès maintenant car l'IS est réel et `tresorerie-societe` est actif.
+- **Hors périmètre (reporté aux PR moteurs)** : les paramètres propres à un moteur non encore ouvert (PV immo, fonciers, LMNP, Dutreil, charges sociales dirigeant, cotisations retraite, règles société détaillées, dispositifs d'épargne salariale et la page **Épargne salariale**) restent attachés à la PR du moteur concerné. Ils sont seulement **documentés** dans la table de couverture.
+
+Tests :
+
+- Test registry : chaque `SimulatorDefinition` a des `tags` ; libellés canoniques présents.
+- Tests settings IFI/CDHR : valeurs lues via `useFiscalContext`, pas en dur.
+- Tests migration IS : `corporateTax` accessible depuis la nouvelle page, ancien chemin Impôts retiré, `check:settings-references` vert (aucune référence orpheline).
+- `npm run check` (dont `check:fiscal-hardcode`, `check:legal-references`, `check:settings-references`).
+
+Critères de sortie :
+
+- `SimulatorDefinition.tags` obligatoire et testé ; libellés alignés doc↔code.
+- IFI et CDHR éditables en Settings et consommés via la chaîne fiscale.
+- Page Comptables & sociétés en place avec l'IS migré, sans régression ni référence orpheline.
+- Aucune autre page Settings créée à ce stade (principe 16).
+
+### PR V2-07 - Socle dossier Audit — ⚠️ Partiel
 
 But : rendre les champs de dossier consommables par les simulateurs.
 
@@ -1368,7 +1540,7 @@ Critères de sortie :
 - Aucun moteur ne lit le dossier brut sans adapter.
 - Le CGP peut modifier une valeur pour le calcul ou demander la mise à jour du dossier source.
 
-### PR V2-08 - PER et retraite globale
+### PR V2-08 - PER et retraite globale — ⚠️ Partiel
 
 But : faire du PER un parcours retraite intégré.
 
@@ -1392,7 +1564,7 @@ Critères de sortie :
 - PER lit le dossier et le contexte fiscal.
 - Le hub reste clair en simplifié.
 
-### PR V2-09 - Placement & allocation unifiée
+### PR V2-09 - Placement & allocation unifiée — ⚠️ Partiel
 
 But : confirmer Placement comme parent de PEA/CTO, assurance-vie et allocation.
 
@@ -1415,7 +1587,7 @@ Critères de sortie :
 
 - Placement devient la porte d'entrée unique des enveloppes financières.
 
-### PR V2-10 - Prévoyance et Succession/Liquidité
+### PR V2-10 - Prévoyance et Succession/Liquidité — ⚠️ Partiel
 
 But : relier protection et transmission.
 
@@ -1437,7 +1609,7 @@ Critères de sortie :
 
 - Le besoin de liquidité successoral devient exploitable pour la stratégie.
 
-### PR V2-11 - Immobilier
+### PR V2-11 - Immobilier — ❌ À faire
 
 But : ouvrir les moteurs immobiliers dans un ordre calculatoire cohérent.
 
@@ -1461,7 +1633,7 @@ Chaque moteur doit avoir :
 - Scénario e2e minimal.
 - Outputs moteur structurés, avec export futur possible.
 
-### PR V2-12 - Société & dirigeant
+### PR V2-12 - Société & dirigeant — ❌ À faire
 
 But : ouvrir le parcours Société après découpage Trésorerie.
 
@@ -1484,7 +1656,7 @@ Critères :
 - `Placement trésorerie` reste intégré à Trésorerie société.
 - Aucun raccourci fiscal en dur.
 
-### PR V2-13 - Donation, démembrement, Dutreil
+### PR V2-13 - Donation, démembrement, Dutreil — ❌ À faire
 
 But : compléter la transmission avancée.
 
@@ -1503,7 +1675,7 @@ Critères :
 - Outputs structurés pour export futur possible.
 - Exports existants non régressifs uniquement si la PR les impacte.
 
-### PR V2-14 - Scan documentaire
+### PR V2-14 - Scan documentaire — ❌ À faire
 
 But : brancher l'OCR et l'extraction structurée au dossier.
 

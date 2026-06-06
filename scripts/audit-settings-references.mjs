@@ -15,7 +15,6 @@ import process from 'node:process';
 import { fileURLToPath } from 'node:url';
 
 const STALE_DAYS_BY_VOLATILITY = {
-  annual: 400,
   lawChange: 730,
   stable: 1825,
 };
@@ -123,29 +122,66 @@ function normalizeSearchText(value) {
     : '';
 }
 
-function daysSince(isoDate) {
+function parseIsoDateUtc(isoDate) {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(isoDate)) return Number.POSITIVE_INFINITY;
   const [year, month, day] = isoDate.split('-').map(Number);
-  const checked = Date.UTC(year, month - 1, day);
-  const now = new Date();
-  const today = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate());
-  return Math.floor((today - checked) / 86_400_000);
+  return Date.UTC(year, month - 1, day);
+}
+
+function todayUtc(date = new Date()) {
+  return Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate());
+}
+
+function daysBetween(fromUtc, toUtc) {
+  if (!Number.isFinite(fromUtc) || !Number.isFinite(toUtc)) return Number.POSITIVE_INFINITY;
+  return Math.floor((toUtc - fromUtc) / 86_400_000);
+}
+
+function formatIsoDateFromUtc(value) {
+  return new Date(value).toISOString().slice(0, 10);
+}
+
+export function getStaleAssessment(isoDate, volatility, now = new Date()) {
+  const checked = parseIsoDateUtc(isoDate);
+  const today = todayUtc(now);
+  const ageDays = daysBetween(checked, today);
+
+  if (volatility === 'annual') {
+    if (!Number.isFinite(checked)) {
+      return { stale: true, ageDays, deadline: 'date invalide' };
+    }
+    const checkedDate = new Date(checked);
+    const deadlineUtc = Date.UTC(checkedDate.getUTCFullYear() + 1, 1, 1);
+    return {
+      stale: today >= deadlineUtc,
+      ageDays,
+      deadline: formatIsoDateFromUtc(deadlineUtc),
+    };
+  }
+
+  const thresholdDays = STALE_DAYS_BY_VOLATILITY[volatility] ?? 365;
+  return {
+    stale: ageDays > thresholdDays,
+    ageDays,
+    thresholdDays,
+  };
 }
 
 function findStaleChainBindings(chain) {
   return chain.flatMap((binding) => {
     if (!isPlainObject(binding)) return [];
-    const threshold = STALE_DAYS_BY_VOLATILITY[binding.volatility] ?? 365;
-    const ageDays = daysSince(binding.verifiedAt);
-    if (ageDays <= threshold) return [];
+    const assessment = getStaleAssessment(binding.verifiedAt, binding.volatility);
+    if (!assessment.stale) return [];
     return [
       {
         pagePath: binding.pagePath,
         claimKey: binding.claimKey,
         verifiedAt: binding.verifiedAt,
         volatility: binding.volatility,
-        ageDays,
-        threshold,
+        ageDays: assessment.ageDays,
+        ...(assessment.deadline
+          ? { deadline: assessment.deadline }
+          : { thresholdDays: assessment.thresholdDays }),
       },
     ];
   });
@@ -154,19 +190,27 @@ function findStaleChainBindings(chain) {
 function findStaleReferences(references) {
   return references.flatMap((reference) => {
     if (!isPlainObject(reference) || !isNonEmptyString(reference.lastCheckedAt)) return [];
-    const threshold = STALE_DAYS_BY_VOLATILITY[reference.volatility] ?? 365;
-    const ageDays = daysSince(reference.lastCheckedAt);
-    if (ageDays <= threshold) return [];
+    const assessment = getStaleAssessment(reference.lastCheckedAt, reference.volatility);
+    if (!assessment.stale) return [];
     return [
       {
         id: reference.id,
         lastCheckedAt: reference.lastCheckedAt,
         volatility: reference.volatility,
-        ageDays,
-        threshold,
+        ageDays: assessment.ageDays,
+        ...(assessment.deadline
+          ? { deadline: assessment.deadline }
+          : { thresholdDays: assessment.thresholdDays }),
       },
     ];
   });
+}
+
+function formatStaleDetail(item) {
+  if (item.deadline) {
+    return `échéance ${item.deadline}, âge ${item.ageDays} jours`;
+  }
+  return `${item.ageDays} jours > ${item.thresholdDays}`;
 }
 
 function collectReferencedOfficialUrls(chain, references) {
@@ -539,12 +583,11 @@ async function run() {
   const db = await auditPrevoyanceDb(options.withDb);
   const errors = [
     ...stale.bindings.map(
-      (item) =>
-        `${item.pagePath}:${item.claimKey}: attestation stale (${item.ageDays} jours > ${item.threshold})`,
+      (item) => `${item.pagePath}:${item.claimKey}: attestation stale (${formatStaleDetail(item)})`,
     ),
     ...stale.references.map(
       (item) =>
-        `${item.id}: référence stale (${item.ageDays} jours > ${item.threshold}, lastCheckedAt ${item.lastCheckedAt})`,
+        `${item.id}: référence stale (${formatStaleDetail(item)}, lastCheckedAt ${item.lastCheckedAt})`,
     ),
     ...liveness.failures.map((item) => `${item.id}: URL non vivante (${item.status}) ${item.url}`),
     ...db.findings,
