@@ -27,10 +27,7 @@ function buildPmLifecycleRules(subject: string, tags: string[] = []): ProductRul
         ],
         tags: ['pm', 'comptabilisation', ...tags],
         confidence: 'moyenne',
-        dependencies: [
-          'régime fiscal de la personne morale',
-          `règles comptables applicables aux ${subject}`,
-        ],
+        dependencies: ['régime fiscal PM', `comptabilité ${subject}`],
       },
     ],
     sortie: [
@@ -56,10 +53,7 @@ function buildPmLifecycleRules(subject: string, tags: string[] = []): ProductRul
         ],
         tags: ['fin_vie_pm', 'cloture_pm', ...tags],
         confidence: 'moyenne',
-        dependencies: [
-          'modalités de dissolution ou liquidation',
-          `valorisation des ${subject} à la clôture`,
-        ],
+        dependencies: ['dissolution ou liquidation', `valorisation ${subject}`],
       },
     ],
   };
@@ -76,10 +70,7 @@ const ACTIONS_COTEES: ProductRules = {
       ],
       tags: ['cto', 'pea_eligible'],
       confidence: 'moyenne',
-      dependencies: [
-        'enveloppe de détention (CTO, PEA ou PEA-PME)',
-        'place de cotation et éligibilité européenne',
-      ],
+      dependencies: ['enveloppe CTO/PEA/PEA-PME', 'éligibilité européenne'],
     },
   ],
   sortie: [
@@ -311,11 +302,7 @@ const IR_PME_MADELIN: ProductRules = {
           url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000044975826',
         },
       ],
-      dependencies: [
-        'âge et secteur de la PME',
-        'engagement de conservation 5 ans',
-        'taux IR-PME du millésime',
-      ],
+      dependencies: ['âge et secteur PME', 'conservation 5 ans', 'taux IR-PME millésime'],
     },
   ],
   sortie: [

@@ -79,10 +79,7 @@ const CTO: ProductRules = {
       ],
       tags: ['no_plafond', 'pp_pm_eligible'],
       confidence: 'moyenne',
-      dependencies: [
-        'qualité du titulaire (personne physique ou morale)',
-        'nature des titres logés',
-      ],
+      dependencies: ['qualité du titulaire', 'nature des titres logés'],
     },
   ],
   sortie: [
@@ -407,10 +404,7 @@ const CAT_CSL: ProductRules = {
       ],
       tags: ['no_plafond', 'pp_pm_eligible'],
       confidence: 'moyenne',
-      dependencies: [
-        'conditions contractuelles de rémunération',
-        'qualité du titulaire (personne physique ou morale)',
-      ],
+      dependencies: ['conditions de rémunération', 'qualité du titulaire'],
     },
   ],
   sortie: [
@@ -455,11 +449,7 @@ const CAT_CSL_PM: ProductRules = {
       ],
       tags: ['fin_vie_pm', 'cloture_pm', 'traitement_fiscal_cloture'],
       confidence: 'moyenne',
-      dependencies: [
-        'modalités de dissolution ou liquidation',
-        'régime fiscal de la personne morale',
-        'qualification comptable des flux',
-      ],
+      dependencies: ['dissolution ou liquidation', 'régime fiscal PM', 'qualification des flux'],
     },
   ],
 };

@@ -77,10 +77,7 @@ const PARTS_SCPI_PM: ProductRules = {
       ],
       tags: ['scpi_pm', 'resultat_fiscal'],
       confidence: 'moyenne',
-      dependencies: [
-        'régime fiscal de la personne morale (IS ou IR)',
-        'modalités de détention des parts',
-      ],
+      dependencies: ['régime fiscal PM', 'détention des parts'],
     },
   ],
   sortie: [
@@ -93,10 +90,7 @@ const PARTS_SCPI_PM: ProductRules = {
       ],
       tags: ['cession_parts', 'resultat_fiscal', 'traitement_comptable'],
       confidence: 'moyenne',
-      dependencies: [
-        'régime fiscal de la personne morale (IS ou IR)',
-        'écritures comptables de cession',
-      ],
+      dependencies: ['régime fiscal PM', 'écritures de cession'],
     },
   ],
   deces: [
@@ -109,10 +103,7 @@ const PARTS_SCPI_PM: ProductRules = {
       ],
       tags: ['fin_vie_pm', 'liquidation', 'cession_activite'],
       confidence: 'moyenne',
-      dependencies: [
-        'modalités de dissolution ou liquidation',
-        'régime fiscal de la personne morale',
-      ],
+      dependencies: ['dissolution ou liquidation', 'régime fiscal PM'],
     },
   ],
 };
@@ -245,10 +236,7 @@ const LOCATIF_NU_PM: ProductRules = {
       ],
       tags: ['fin_vie_pm', 'cloture_pm', 'sortie_immobiliere_pm'],
       confidence: 'moyenne',
-      dependencies: [
-        'modalités de dissolution ou liquidation',
-        'régime fiscal de la personne morale (IS ou IR)',
-      ],
+      dependencies: ['dissolution ou liquidation', 'régime fiscal PM'],
     },
   ],
 };
@@ -431,11 +419,7 @@ const IMMO_AUTRE_PM: ProductRules = {
       ],
       tags: ['fin_vie_pm', 'cloture_pm', 'sortie_immobiliere_pm'],
       confidence: 'moyenne',
-      dependencies: [
-        'modalités de dissolution ou liquidation',
-        'nature comptable du bien',
-        'régime fiscal de la personne morale (IS ou IR)',
-      ],
+      dependencies: ['dissolution ou liquidation', 'nature comptable', 'régime fiscal PM'],
     },
   ],
 };
