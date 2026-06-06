@@ -12,6 +12,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import process from 'node:process';
+import { fileURLToPath } from 'node:url';
 
 const STALE_DAYS_BY_VOLATILITY = {
   annual: 400,
@@ -22,6 +23,13 @@ const STALE_DAYS_BY_VOLATILITY = {
 const UNSTABLE_URL_SEGMENTS = /\/(actus|actualites|news|blog)(\/|$)/i;
 const GENERIC_PREVOYANCE_TITLE = /référentiel prévoyance 2026 publié par organisme officiel/i;
 const FOUR_CATEGORIES = new Set(['arret', 'invalidite', 'deces', 'cotisations']);
+const DEAD_HTTP_STATUSES = new Set([404, 410]);
+const BLOCKED_HTTP_STATUSES = new Set([401, 403, 429]);
+const LIVENESS_HEADERS = {
+  'User-Agent': 'SER1-settings-references-audit/1.0',
+  Accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+  'Accept-Language': 'fr-FR,fr;q=0.9,en;q=0.8',
+};
 
 function getUrlPathname(value) {
   try {
@@ -150,40 +158,72 @@ function collectReferencedOfficialUrls(chain, references) {
     }));
 }
 
-async function fetchWithMethod(url, method) {
-  const response = await fetch(url, {
+export function classifyHttpStatus(status) {
+  if (status >= 200 && status < 400) {
+    return 'alive';
+  }
+  if (DEAD_HTTP_STATUSES.has(status)) {
+    return 'dead';
+  }
+  if (BLOCKED_HTTP_STATUSES.has(status)) {
+    return 'blocked';
+  }
+  return 'inconclusive';
+}
+
+async function fetchWithMethod(url, method, fetcher = fetch) {
+  const response = await fetcher(url, {
     method,
     redirect: 'follow',
+    headers: LIVENESS_HEADERS,
     signal: AbortSignal.timeout(5000),
   });
   return {
     status: response.status,
-    ok: response.status >= 200 && response.status < 400,
+    classification: classifyHttpStatus(response.status),
   };
 }
 
-async function auditUrlLiveness(urls, enabled) {
+export async function auditUrlLiveness(urls, enabled, fetcher = fetch) {
   if (!enabled) {
     return {
       checked: 0,
       failures: [],
+      blocked: [],
+      inconclusive: [],
       warnings: ['Liveness URL ignoré (CI ou --no-fetch).'],
     };
   }
 
   const failures = [];
+  const blocked = [];
+  const inconclusive = [];
   const warnings = [];
 
   for (const item of urls) {
     try {
-      const head = await fetchWithMethod(item.url, 'HEAD');
-      if (head.ok) continue;
+      const head = await fetchWithMethod(item.url, 'HEAD', fetcher);
+      if (head.classification === 'alive') continue;
 
-      const get = await fetchWithMethod(item.url, 'GET');
-      if (!get.ok) {
-        failures.push({ ...item, status: get.status });
+      const get = await fetchWithMethod(item.url, 'GET', fetcher);
+      if (get.classification === 'alive') {
+        continue;
       }
+      if (get.classification === 'dead') {
+        failures.push({ ...item, status: get.status });
+        continue;
+      }
+      if (get.classification === 'blocked') {
+        blocked.push({ ...item, status: get.status });
+        warnings.push(
+          `${item.id}: liveness bloquée ou non vérifiable automatiquement (${get.status})`,
+        );
+        continue;
+      }
+      inconclusive.push({ ...item, status: get.status });
+      warnings.push(`${item.id}: liveness non concluante (${get.status})`);
     } catch (error) {
+      inconclusive.push({ ...item, error: error.message });
       warnings.push(`${item.id}: liveness non concluante (${error.message})`);
     }
   }
@@ -191,6 +231,8 @@ async function auditUrlLiveness(urls, enabled) {
   return {
     checked: urls.length,
     failures,
+    blocked,
+    inconclusive,
     warnings,
   };
 }
@@ -433,4 +475,6 @@ async function run() {
   }
 }
 
-run();
+if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+  run();
+}
