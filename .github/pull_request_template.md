@@ -21,7 +21,7 @@
 - [ ] `npm run typecheck` passe
 - [ ] `npm test` passe
 - [ ] `npm run build` passe
-- [ ] `npm run check` passe (si utilisé comme agrégat)
+- [ ] `npm run check` passe, ou impossibilité explicitement justifiée dans les notes
 
 ## Notes
 

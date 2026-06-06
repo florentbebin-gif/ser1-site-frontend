@@ -165,7 +165,7 @@ function parseReport(stdout: string) {
 }
 
 async function loadAuditModule() {
-  return (await import(pathToFileURL(scriptPath).href)) as AuditModule;
+  return (await import(/* @vite-ignore */ pathToFileURL(scriptPath).href)) as AuditModule;
 }
 
 afterEach(() => {
