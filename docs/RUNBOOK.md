@@ -61,6 +61,9 @@ Lors d'un renommage de checks requis, éviter le blocage `expected — never rep
 Scripts ponctuels documentés :
 
 - `npm run audit:base-contrat-dmtg` : audit manuel ciblé Base-Contrat/DMTG, hors CI.
+- `npm run check:settings-references` : garde local du chaînage Settings ↔ références juridiques, disponible hors `check:static` tant que la couverture complète n'est pas terminée.
+- `npm run audit:settings-references -- --stale` : audit manuel de fraîcheur du chaînage Settings.
+- `npm run audit:settings-references -- --stale --with-db` : même audit avec lecture Supabase des sources prévoyance si les variables `SUPABASE_URL`/`VITE_SUPABASE_URL` et `SUPABASE_SERVICE_ROLE_KEY` sont disponibles, ou avec `SUPABASE_ANON_KEY` + `E2E_EMAIL`/`E2E_PASSWORD` pour une lecture authentifiée.
 - `npm run audit:css-usage` et `npm run audit:unicode` : diagnostics manuels de nettoyage, hors CI.
 - `npm run snapshot:sim` : capture visuelle locale, hors CI tant que le résultat n'est pas exploité comme gate.
 - `npm run report:large-files` : rapport manuel des fichiers `src` à 400+ lignes avec décision, catégorie et plafond de baseline.
@@ -714,6 +717,31 @@ Procédure à suivre chaque année (PLF, BOFiP, BOSS…). Aucune compétence tec
 1. Aller sur `/settings/base-contrat`.
 2. (Admin) Rechercher un produit et ajuster son état **Clôturé / Ouvert** si nécessaire.
    - Une clôture s'accompagne d'une **date** (et d'une note optionnelle).
+
+### Étape 5 — Attester les références Settings
+
+1. Comparer chaque valeur officielle 2027 avec la valeur administrée dans la page Settings cible.
+2. Mettre à jour le binding correspondant dans `src/domain/settings-references/chain.json` :
+   `refIds` si la source canonique existe, `relevanceNote`, `verifiedAt`, `volatility` et `target`.
+3. Si aucune source stable ne fonde le claim, laisser `refIds: []` et renseigner `noRefReason`.
+4. Lancer :
+
+```powershell
+npm run check:settings-references
+npm run audit:settings-references -- --stale
+```
+
+5. Si la revue touche `/settings/prevoyance-regimes`, exporter d'abord l'état live en `.cache/`,
+   ajouter une migration idempotente, puis relancer avec les variables Supabase disponibles :
+
+```powershell
+npm run audit:settings-references -- --stale --with-db
+```
+
+Ne pas brancher `check:settings-references` dans `check:static` tant que les 5 surfaces
+`/settings/impots`, `/settings/prelevements`, `/settings/base-contrat`,
+`/settings/dmtg-succession` et `/settings/prevoyance-regimes` ne sont pas couvertes sans binding
+générique.
 
 ---
 

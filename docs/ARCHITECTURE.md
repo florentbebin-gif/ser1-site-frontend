@@ -121,6 +121,29 @@ champs d'usage `relatedSimulatorIds`, `relatedSettings` et `relatedCatalogProduc
 Ce référentiel documente les sources. Il ne porte pas les taux, seuils et abattements révisables :
 ces valeurs restent dans Settings/Supabase et sont consommées par la chaîne fiscale existante.
 
+### Chaînage Settings ↔ références juridiques — `src/domain/settings-references/`
+
+Le chaînage Settings vit dans `src/domain/settings-references/`. `chain.json` est la source
+canonique lisible par Node ; il relie chaque claim Settings à une cible contrôlée :
+
+- `settings-default` : chemin de fallback dans `DEFAULT_TAX_SETTINGS`, `DEFAULT_PS_SETTINGS` ou
+  `DEFAULT_FISCALITY_SETTINGS` ;
+- `pass-history` : millésime `public.pass_history` (`year` ou `latest`) ;
+- `base-contrat-rule` : produit, audience, phase et bloc exposé par `/settings/base-contrat` ;
+- `prevoyance-db` : table/code/jsonPath des sources JSONB prévoyance.
+
+Chaque binding porte `pagePath`, `sectionKey`, `claimKey`, `target`, `refIds`, `verifiedAt` et
+`volatility`. Une référence canonique impose une `relevanceNote`; un binding sans référence impose
+un `noRefReason`. Le garde-fou `npm run check:settings-references` valide les IDs, les dates, les
+notes non génériques, les pages couvertes et les chemins Settings/PASS. Il existe dès maintenant,
+mais n'est branché dans `check:static` que lorsque les 5 surfaces cibles sont complètement couvertes :
+`/settings/impots`, `/settings/prelevements`, `/settings/base-contrat`,
+`/settings/dmtg-succession`, `/settings/prevoyance-regimes`.
+
+L'audit manuel `npm run audit:settings-references -- --stale --with-db` ajoute la fraîcheur, la
+liveness URL hors CI et la lecture des sources prévoyance en base. Sans variables Supabase, il produit
+un rapport code-only avec avertissement.
+
 ### Règle "god file"
 
 Un fichier long n'est pas automatiquement prioritaire. Un vrai "god file" devient prioritaire s'il mélange au moins 2 responsabilités parmi :
@@ -748,6 +771,7 @@ Les fichiers `src/domain/base-contrat/**` ne doivent pas importer React, Supabas
 | Source des routes settings                  | `src/routes/settingsRoutes.ts`                                                              |
 | Valeurs par défaut des 3 singletons fiscaux | `src/constants/settingsDefaults.ts`                                                         |
 | Référentiel juridique canonique             | `src/domain/legal-references/`                                                              |
+| Chaînage références Settings                | `src/domain/settings-references/chain.json`                                                 |
 | Shell settings (nav + rendu)                | `src/pages/SettingsShell.tsx`                                                               |
 | Pages settings                              | `src/pages/settings/`                                                                       |
 | Cache + fetch Supabase                      | `src/utils/cache/fiscalSettingsCache.ts`                                                    |
