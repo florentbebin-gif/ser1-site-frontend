@@ -254,8 +254,8 @@
       "phase": "deces",
       "blockKey": "integration-dans-la-succession"
     },
-    "refIds": [],
-    "noRefReason": "Aucune référence canonique positive n'est encore qualifiée dans references.json pour fonder directement l'intégration successorale du contrat de capitalisation ; la citation négative 990 I est refusée.",
+    "refIds": ["boi-enr-dmtg-10-50-30", "cgi-777", "cgi-779"],
+    "relevanceNote": "Le contrat de capitalisation n'est pas dénoué par le décès : il intègre l'actif successoral et est taxé au barème de droit commun des droits de mutation à titre gratuit (BOFiP DMTG tarifs et abattements, articles 777 et 779 du CGI), sans abattement spécifique 990 I.",
     "verifiedAt": "2026-06-06",
     "volatility": "lawChange"
   },
