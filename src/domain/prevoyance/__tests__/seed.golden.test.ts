@@ -11,6 +11,9 @@ function sources(organisme: string, titre: string, url: string, valeursCouvertes
         dateConsultation: '2026-05-24',
         valeursCouvertes,
         confiance: 'haute' as const,
+        relevanceNote:
+          'La source golden rattache explicitement les valeurs métier du régime représentatif au périmètre couvert.',
+        verifiedAt: '2026-05-24',
       },
     ],
   };

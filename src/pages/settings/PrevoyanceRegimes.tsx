@@ -126,7 +126,9 @@ function RegimeMetaCard({
     return (
       <RuleCard title="Références">
         <div className="prevoyance-settings-meta-card">
-          <div className="settings-reference-empty-card__body">Références à compléter.</div>
+          <div className="settings-reference-empty-card__body">
+            {sources.noRefReason ?? 'Références à compléter.'}
+          </div>
           <div className="prevoyance-settings-meta-card__section">
             <span className="settings-reference-rule-meta__label">Cotisations</span>
             <RuleList items={cotisationItems} />
@@ -152,10 +154,14 @@ function RegimeMetaCard({
           <span className="settings-reference-rule-meta__label">Sources</span>
           <ul className="settings-reference-rule-meta__list prevoyance-settings-source-list">
             {sources.references.slice(0, 3).map((reference) => (
-              <li key={`${reference.organisme}-${reference.titre}-${reference.url}`}>
-                <a href={reference.url} target="_blank" rel="noreferrer">
-                  {reference.organisme}
-                </a>{' '}
+              <li key={`${reference.organisme}-${reference.titre}-${reference.url ?? ''}`}>
+                {reference.url ? (
+                  <a href={reference.url} target="_blank" rel="noreferrer">
+                    {reference.organisme}
+                  </a>
+                ) : (
+                  <span>{reference.organisme}</span>
+                )}{' '}
                 - {reference.titre}
                 {reference.rubrique ? ` (${reference.rubrique})` : ''}
                 {` consulté le ${reference.dateConsultation}`}

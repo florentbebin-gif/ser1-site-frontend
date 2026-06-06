@@ -24,6 +24,7 @@ docs/api/
 
 # SER1 Artifacts
 .tmp/
+.cache/
 
 # Local tools / refs (do not commit)
 .windsurf/

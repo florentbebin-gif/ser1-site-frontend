@@ -33,13 +33,16 @@ export function formatNullable(value: number | null | undefined): string {
 }
 
 function emptyReference(): PrevoyanceSourceReference {
+  const today = new Date().toISOString().slice(0, 10);
   return {
     organisme: '',
     titre: '',
     url: '',
-    dateConsultation: new Date().toISOString().slice(0, 10),
+    dateConsultation: today,
     valeursCouvertes: [''],
     confiance: 'moyenne',
+    relevanceNote: '',
+    verifiedAt: today,
   };
 }
 export function Field({
@@ -129,10 +132,16 @@ export function SourceReferencesEditor({
   sources: PrevoyanceSources;
   onChange: (sources: PrevoyanceSources) => void;
 }) {
-  const references = sources.references.length ? sources.references : [emptyReference()];
+  const noReferenceMode = sources.references.length === 0 && Boolean(sources.noRefReason);
+  const references = noReferenceMode
+    ? []
+    : sources.references.length
+      ? sources.references
+      : [emptyReference()];
   const updateReference = (index: number, patch: Partial<PrevoyanceSourceReference>) => {
     onChange({
       ...sources,
+      noRefReason: undefined,
       references: references.map((reference, referenceIndex) =>
         referenceIndex === index ? { ...reference, ...patch } : reference,
       ),
@@ -142,6 +151,38 @@ export function SourceReferencesEditor({
   return (
     <section className="prevoyance-settings-form-section">
       <h3>Références</h3>
+      <div className="prevoyance-settings-source-card__actions">
+        {references.length === 0 ? (
+          <button
+            type="button"
+            className="settings-action-btn"
+            onClick={() =>
+              onChange({
+                ...sources,
+                noRefReason: undefined,
+                references: [emptyReference()],
+              })
+            }
+          >
+            Ajouter une référence
+          </button>
+        ) : null}
+        <button
+          type="button"
+          className="settings-action-btn"
+          onClick={() =>
+            onChange({
+              ...sources,
+              references: [],
+              noRefReason:
+                sources.noRefReason ??
+                "Aucune source institutionnelle stable et pertinente n'a été validée pour ce régime.",
+            })
+          }
+        >
+          Aucune source
+        </button>
+      </div>
       <div className="prevoyance-settings-palier-list">
         {references.map((reference, index) => (
           <div key={`${reference.organisme}-${index}`} className="prevoyance-settings-source-card">
@@ -162,7 +203,7 @@ export function SourceReferencesEditor({
               </Field>
               <Field label="URL">
                 <input
-                  value={reference.url}
+                  value={reference.url ?? ''}
                   onChange={(event) => updateReference(index, { url: event.target.value })}
                   className="prevoyance-settings-input"
                 />
@@ -182,6 +223,16 @@ export function SourceReferencesEditor({
                   value={reference.dateConsultation}
                   onChange={(event) =>
                     updateReference(index, { dateConsultation: event.target.value })
+                  }
+                  className="prevoyance-settings-input"
+                  type="date"
+                />
+              </Field>
+              <Field label="Vérifié le">
+                <input
+                  value={reference.verifiedAt ?? ''}
+                  onChange={(event) =>
+                    updateReference(index, { verifiedAt: event.target.value || undefined })
                   }
                   className="prevoyance-settings-input"
                   type="date"
@@ -250,6 +301,15 @@ export function SourceReferencesEditor({
                 placeholder="arret, invalidite, deces, cotisations"
               />
             </Field>
+            <Field label="Pertinence">
+              <textarea
+                value={reference.relevanceNote ?? ''}
+                onChange={(event) =>
+                  updateReference(index, { relevanceNote: event.target.value || undefined })
+                }
+                className="prevoyance-settings-textarea prevoyance-settings-textarea--compact"
+              />
+            </Field>
             <Field label="Note admin">
               <textarea
                 value={reference.noteAdmin ?? ''}
@@ -266,6 +326,7 @@ export function SourceReferencesEditor({
                 onClick={() =>
                   onChange({
                     ...sources,
+                    noRefReason: undefined,
                     references: [...references, emptyReference()],
                   })
                 }
@@ -292,6 +353,17 @@ export function SourceReferencesEditor({
           </div>
         ))}
       </div>
+      {references.length === 0 ? (
+        <Field label="Raison si aucune source">
+          <textarea
+            value={sources.noRefReason ?? ''}
+            onChange={(event) =>
+              onChange({ ...sources, noRefReason: event.target.value || undefined })
+            }
+            className="prevoyance-settings-textarea prevoyance-settings-textarea--compact"
+          />
+        </Field>
+      ) : null}
       <Field label="Note admin globale">
         <textarea
           value={sources.noteAdmin ?? ''}

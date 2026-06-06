@@ -67,6 +67,9 @@ const sources: PrevoyanceRegimeSettings['sources'] = {
       dateConsultation: '2026-05-24',
       valeursCouvertes: ['invalidité', 'décès'],
       confiance: 'haute',
+      relevanceNote:
+        'La page Ameli de test atteste les champs invalidité et décès affichés par la carte.',
+      verifiedAt: '2026-05-24',
     },
   ],
   noteAdmin: 'Note interne invisible aux users.',

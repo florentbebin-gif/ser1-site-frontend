@@ -78,7 +78,7 @@ export type PrevoyanceSourceConfidence = 'haute' | 'moyenne' | 'faible';
 export interface PrevoyanceSourceReference {
   organisme: string;
   titre: string;
-  url: string;
+  url?: string;
   datePublication?: string;
   dateConsultation: string;
   rubrique?: string;
@@ -86,11 +86,14 @@ export interface PrevoyanceSourceReference {
   pagePdf?: number;
   valeursCouvertes: string[];
   confiance: PrevoyanceSourceConfidence;
+  relevanceNote?: string;
+  verifiedAt?: string;
   noteAdmin?: string;
 }
 
 export interface PrevoyanceSources {
   references: PrevoyanceSourceReference[];
+  noRefReason?: string;
   noteAdmin?: string;
 }
 
