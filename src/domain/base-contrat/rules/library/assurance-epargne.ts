@@ -104,6 +104,10 @@ const ASSURANCE_VIE_PP: ProductRules = {
       confidence: 'elevee',
       sources: [
         {
+          label: 'BOFiP TCAS-AUT-60 — prélèvement art. 990 I',
+          refId: 'boi-tcas-aut-60',
+        },
+        {
           label: 'Art. 990 I CGI',
           refId: 'cgi-990-i',
         },
@@ -119,6 +123,10 @@ const ASSURANCE_VIE_PP: ProductRules = {
       tags: ['art_757_b_cgi', 'abattement_757_b'],
       confidence: 'elevee',
       sources: [
+        {
+          label: 'BOFiP ENR-DMTG-10-10-20-20 — assurance-vie art. 757 B',
+          refId: 'boi-enr-dmtg-10-10-20-20',
+        },
         {
           label: 'Art. 757 B CGI',
           refId: 'cgi-757-b',
@@ -168,10 +176,11 @@ const CONTRAT_CAPITALISATION: ProductRules = {
   ],
   deces: [
     {
-      title: 'Traitement successoral à confirmer',
+      title: 'Intégration dans la succession',
       bullets: [
-        "À confirmer selon la documentation contractuelle et la source civile/fiscale applicable : le contrat de capitalisation n'est pas un contrat d'assurance-vie avec clause bénéficiaire.",
+        "Le contrat de capitalisation n'est pas un contrat d'assurance-vie avec clause bénéficiaire ; sa valeur suit la propriété du contrat au décès.",
         'Le traitement au décès dépend de la propriété du contrat et de la liquidation successorale.',
+        "À confirmer avec l'acte de succession, la propriété du contrat et les clauses contractuelles disponibles.",
       ],
       tags: ['dmtg_classique', 'succession_active'],
       confidence: 'moyenne',

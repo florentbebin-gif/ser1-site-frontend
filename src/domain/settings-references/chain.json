@@ -11,8 +11,8 @@
       "table": "tax_settings",
       "path": "incomeTax.scaleCurrent"
     },
-    "refIds": ["cgi-193-197"],
-    "relevanceNote": "Le barème progressif et le quotient familial du fallback tax_settings sont rattachés aux articles CGI qui encadrent le calcul de l'impôt sur le revenu.",
+    "refIds": ["boi-ir-liq-20-10", "cgi-197", "cgi-193-197"],
+    "relevanceNote": "Le BOFiP fonde les tranches chiffrées du barème IR courant, les articles CGI complétant le texte légal du calcul.",
     "verifiedAt": "2026-06-06",
     "volatility": "annual"
   },
@@ -28,8 +28,8 @@
       "table": "tax_settings",
       "path": "pfu.current.rateIR"
     },
-    "refIds": ["cgi-200-a"],
-    "relevanceNote": "La part d'impôt sur le revenu du PFU affichée dans les settings impôts dépend du régime de l'article 200 A du CGI.",
+    "refIds": ["boi-rppm-rcm-30-20", "cgi-200-a"],
+    "relevanceNote": "Le BOFiP rattache le taux de 12,8 % du PFU part IR aux revenus de capitaux mobiliers, l'article 200 A complétant la base légale.",
     "verifiedAt": "2026-06-06",
     "volatility": "lawChange"
   },
@@ -45,8 +45,25 @@
       "table": "tax_settings",
       "path": "cehr.current"
     },
-    "refIds": ["cgi-223-sexies"],
-    "relevanceNote": "Les seuils et taux CEHR paramétrés dans tax_settings sont rattachés à l'article 223 sexies du CGI.",
+    "refIds": ["boi-ir-chr", "cgi-223-sexies"],
+    "relevanceNote": "Le BOFiP détaille les seuils et taux CEHR repris dans tax_settings, avec l'article 223 sexies comme complément légal.",
+    "verifiedAt": "2026-06-06",
+    "volatility": "lawChange"
+  },
+  {
+    "pagePath": "/settings/impots",
+    "sectionKey": "cdhr",
+    "sectionLabel": "Contribution différentielle hauts revenus",
+    "category": "valeur-fiscale",
+    "claimKey": "cdhr-current",
+    "claimLabel": "Contribution différentielle hauts revenus courante",
+    "target": {
+      "kind": "settings-default",
+      "table": "tax_settings",
+      "path": "cdhr.current"
+    },
+    "refIds": ["cgi-224"],
+    "relevanceNote": "L'article 224 du CGI fonde la contribution différentielle hauts revenus exposée dans les paramètres impôts.",
     "verifiedAt": "2026-06-06",
     "volatility": "lawChange"
   },
@@ -68,6 +85,23 @@
     "volatility": "lawChange"
   },
   {
+    "pagePath": "/settings/impots",
+    "sectionKey": "ifi",
+    "sectionLabel": "Impôt sur la fortune immobilière",
+    "category": "valeur-fiscale",
+    "claimKey": "ifi-current",
+    "claimLabel": "Seuils, décote et tarif IFI courants",
+    "target": {
+      "kind": "settings-default",
+      "table": "tax_settings",
+      "path": "ifi.current"
+    },
+    "refIds": ["boi-pat-ifi-40-10", "cgi-964", "cgi-977"],
+    "relevanceNote": "Le BOFiP porte le tarif IFI chiffré, les articles 964 et 977 du CGI complétant le champ et le barème légal.",
+    "verifiedAt": "2026-06-06",
+    "volatility": "lawChange"
+  },
+  {
     "pagePath": "/settings/prelevements",
     "sectionKey": "patrimony",
     "sectionLabel": "Prélèvements sociaux patrimoine",
@@ -79,8 +113,8 @@
       "table": "ps_settings",
       "path": "patrimony.current"
     },
-    "refIds": ["css-l136-6", "css-l136-8"],
-    "relevanceNote": "La page prélèvements rattache l'assiette patrimoine à l'article L136-6 CSS et les taux CSG au L136-8 CSS.",
+    "refIds": ["service-public-ps-revenus-capital-2026", "css-l136-6", "css-l136-8"],
+    "relevanceNote": "Service-Public expose les taux 2026 des prélèvements sociaux, les articles CSS conservant l'assiette et la base légale CSG.",
     "verifiedAt": "2026-06-06",
     "volatility": "lawChange"
   },
@@ -112,8 +146,8 @@
       "kind": "pass-history",
       "year": "latest"
     },
-    "refIds": ["ameli-pass-2026"],
-    "relevanceNote": "Le PASS administré depuis les settings prélèvements sociaux est contrôlé contre la publication institutionnelle Ameli des plafonds 2026.",
+    "refIds": ["urssaf-pass-2026", "ameli-pass-2026"],
+    "relevanceNote": "Le PASS administré depuis les settings prélèvements sociaux est recoupé entre l'URSSAF mon-entreprise et la publication institutionnelle Ameli.",
     "verifiedAt": "2026-06-06",
     "volatility": "annual"
   },
@@ -136,6 +170,23 @@
   },
   {
     "pagePath": "/settings/dmtg-succession",
+    "sectionKey": "droits-mutation",
+    "sectionLabel": "Droits de mutation à titre gratuit",
+    "category": "valeur-fiscale",
+    "claimKey": "dmtg-fiscal-values-current",
+    "claimLabel": "Tarifs et abattements DMTG courants",
+    "target": {
+      "kind": "settings-default",
+      "table": "tax_settings",
+      "path": "dmtg"
+    },
+    "refIds": ["boi-enr-dmtg-10-50-30", "boi-enr-dmtg-10-50-20", "cgi-777", "cgi-779"],
+    "relevanceNote": "Les BOFiP fondent les tarifs et abattements DMTG chiffrés, les articles 777 et 779 complétant le texte légal.",
+    "verifiedAt": "2026-06-06",
+    "volatility": "lawChange"
+  },
+  {
+    "pagePath": "/settings/dmtg-succession",
     "sectionKey": "assurance-vie-deces",
     "sectionLabel": "Assurance-vie décès",
     "category": "deces-transmission",
@@ -143,11 +194,11 @@
     "claimLabel": "Régime décès assurance-vie",
     "target": {
       "kind": "settings-default",
-      "table": "tax_settings",
-      "path": "dmtg"
+      "table": "fiscality_settings",
+      "path": "rulesetsByKey.assuranceVie.rules.deces"
     },
-    "refIds": ["cgi-990-i", "cgi-757-b"],
-    "relevanceNote": "Les blocs assurance-vie décès des settings DMTG renvoient aux régimes 990 I et 757 B déjà référencés par PR3.",
+    "refIds": ["boi-tcas-aut-60", "cgi-990-i", "boi-enr-dmtg-10-10-20-20", "cgi-757-b"],
+    "relevanceNote": "Les règles assurance-vie décès du référentiel fiscalité pointent vers les doctrines BOFiP 990 I et 757 B et leurs articles CGI.",
     "verifiedAt": "2026-06-06",
     "volatility": "lawChange"
   },
@@ -156,17 +207,36 @@
     "sectionKey": "assurance-epargne",
     "sectionLabel": "Épargne assurance",
     "category": "deces-transmission",
-    "claimKey": "assurance-vie-deces-990i-757b",
-    "claimLabel": "Capital décès assurance-vie",
+    "claimKey": "assurance-vie-deces-990i",
+    "claimLabel": "Primes assurance-vie versées avant 70 ans",
     "target": {
       "kind": "base-contrat-rule",
       "productId": "assurance_vie",
       "audience": "pp",
       "phase": "deces",
-      "blockKey": "primes-versees-avant-apres-70-ans"
+      "blockKey": "primes-versees-avant-70-ans-art-990-i-cgi"
     },
-    "refIds": ["cgi-990-i", "cgi-757-b"],
-    "relevanceNote": "Le catalogue Base-Contrat expose deux blocs décès assurance-vie distincts pour les primes avant et après 70 ans, rattachés aux articles CGI déjà canoniques.",
+    "refIds": ["boi-tcas-aut-60", "cgi-990-i"],
+    "relevanceNote": "Le bloc Base-Contrat avant 70 ans expose l'abattement et le prélèvement 990 I, fondés par BOFiP et l'article CGI.",
+    "verifiedAt": "2026-06-06",
+    "volatility": "lawChange"
+  },
+  {
+    "pagePath": "/settings/base-contrat",
+    "sectionKey": "assurance-epargne",
+    "sectionLabel": "Épargne assurance",
+    "category": "deces-transmission",
+    "claimKey": "assurance-vie-deces-757b",
+    "claimLabel": "Primes assurance-vie versées après 70 ans",
+    "target": {
+      "kind": "base-contrat-rule",
+      "productId": "assurance_vie",
+      "audience": "pp",
+      "phase": "deces",
+      "blockKey": "primes-versees-apres-70-ans-art-757-b-cgi"
+    },
+    "refIds": ["boi-enr-dmtg-10-10-20-20", "cgi-757-b"],
+    "relevanceNote": "Le bloc Base-Contrat après 70 ans expose l'abattement global 757 B, fondé par BOFiP et l'article CGI.",
     "verifiedAt": "2026-06-06",
     "volatility": "lawChange"
   },
