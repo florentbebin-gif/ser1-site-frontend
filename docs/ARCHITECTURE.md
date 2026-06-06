@@ -856,6 +856,11 @@ Cette section fixe comment ajouter une page, une route ou une feature sans creer
   - `urlPath`
   - `component`
   - `adminOnly` si necessaire
+- Tout claim affiche par la page (valeur fiscale, regle exposee, donnee sensible) doit etre declare
+  dans `src/domain/settings-references/chain.json` : soit avec `refIds` + `relevanceNote` +
+  `verifiedAt` + `target`, soit avec un `noRefReason` explicite si aucune source officielle ne
+  s'applique. Source primaire BOFiP pour les valeurs chiffrees. Voir la procedure annuelle dans
+  `docs/RUNBOOK.md`. Garde-fou local : `npm run check:settings-references`.
 
 #### Emplacement
 
