@@ -61,8 +61,8 @@ Lors d'un renommage de checks requis, éviter le blocage `expected — never rep
 Scripts ponctuels documentés :
 
 - `npm run audit:base-contrat-dmtg` : audit manuel ciblé Base-Contrat/DMTG, hors CI.
-- `npm run check:settings-references` : garde local du chaînage Settings ↔ références juridiques, disponible hors `check:static` tant que la couverture complète n'est pas terminée.
-- `npm run audit:settings-references -- --stale` : audit manuel de fraîcheur du chaînage Settings.
+- `npm run check:settings-references` : garde local du chaînage Settings ↔ références juridiques, disponible hors `check:static` tant que la couverture complète n'est pas terminée. Le registre est partiel et non exhaustif ; le rapport liste seulement les pages représentées et le nombre de bindings déclarés par page.
+- `npm run audit:settings-references -- --stale` : audit manuel de fraîcheur du chaînage Settings. Pour la liveness URL, `404`/`410` signifie URL morte et bloque l'audit ; `401`/`403`/`429` signifie URL non vérifiable automatiquement et reste un avertissement. Les timeouts, erreurs DNS et `5xx` sont inconclusifs, pas des preuves d'URL morte.
 - `npm run audit:settings-references -- --stale --with-db` : même audit avec lecture Supabase des sources prévoyance si les variables `SUPABASE_URL`/`VITE_SUPABASE_URL` et `SUPABASE_SERVICE_ROLE_KEY` sont disponibles, ou avec `SUPABASE_ANON_KEY` + `E2E_EMAIL`/`E2E_PASSWORD` pour une lecture authentifiée.
 - `npm run audit:css-usage` et `npm run audit:unicode` : diagnostics manuels de nettoyage, hors CI.
 - `npm run snapshot:sim` : capture visuelle locale, hors CI tant que le résultat n'est pas exploité comme gate.
@@ -724,6 +724,7 @@ Procédure à suivre chaque année (PLF, BOFiP, BOSS…). Aucune compétence tec
 2. Mettre à jour le binding correspondant dans `src/domain/settings-references/chain.json` :
    `refIds` si la source canonique existe, `relevanceNote`, `verifiedAt`, `volatility` et `target`.
 3. Si aucune source stable ne fonde le claim, laisser `refIds: []` et renseigner `noRefReason`.
+   En prévoyance, une absence de source doit nommer le régime concerné (`code`, `label` ou `caisse`) et signifie que le sourcing par catégorie reste à faire.
 4. Lancer :
 
 ```powershell
@@ -742,6 +743,11 @@ Ne pas brancher `check:settings-references` dans `check:static` tant que les 5 s
 `/settings/impots`, `/settings/prelevements`, `/settings/base-contrat`,
 `/settings/dmtg-succession` et `/settings/prevoyance-regimes` ne sont pas couvertes sans binding
 générique.
+
+La migration `20260606000100_prevoyance_sources_settings_chain.sql` supprime les anciennes sources
+prévoyance placeholders et conserve `references: []` avec une raison explicite par régime. Elle ne
+constitue pas un sourcing réel des 16 régimes ; ce sourcing doit être repris par catégorie dans un
+chantier dédié avant de qualifier ces sources.
 
 ---
 

@@ -135,14 +135,20 @@ canonique lisible par Node ; il relie chaque claim Settings à une cible contrô
 Chaque binding porte `pagePath`, `sectionKey`, `claimKey`, `target`, `refIds`, `verifiedAt` et
 `volatility`. Une référence canonique impose une `relevanceNote`; un binding sans référence impose
 un `noRefReason`. Le garde-fou `npm run check:settings-references` valide les IDs, les dates, les
-notes non génériques, les pages couvertes et les chemins Settings/PASS. Il existe dès maintenant,
-mais n'est branché dans `check:static` que lorsque les 5 surfaces cibles sont complètement couvertes :
+notes non génériques, les `pagePath` déclarés et les chemins Settings/PASS. Son rapport annonce
+`coverage.mode = "partial"` et `coverage.isExhaustive = false` : le registre est un socle partiel,
+pas une preuve de couverture complète. Il existe dès maintenant, mais n'est branché dans
+`check:static` que lorsque les 5 surfaces cibles sont complètement couvertes :
 `/settings/impots`, `/settings/prelevements`, `/settings/base-contrat`,
 `/settings/dmtg-succession`, `/settings/prevoyance-regimes`.
 
 L'audit manuel `npm run audit:settings-references -- --stale --with-db` ajoute la fraîcheur, la
-liveness URL hors CI et la lecture des sources prévoyance en base. Sans variables Supabase, il produit
-un rapport code-only avec avertissement.
+liveness URL hors CI et la lecture des sources prévoyance en base. Les statuts HTTP `401`, `403` et
+`429` sont classés non vérifiables automatiquement, pas morts ; seuls `404` et `410` rendent l'URL
+bloquante. Sans variables Supabase, l'audit produit un rapport code-only avec avertissement.
+La prévoyance peut porter `references: []` quand aucune source institutionnelle stable n'est attestée ;
+le `noRefReason` doit alors nommer le régime concerné. Les sources prévoyance par catégorie restent
+à qualifier dans un chantier dédié.
 
 ### Règle "god file"
 
