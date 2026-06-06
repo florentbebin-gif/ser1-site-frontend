@@ -89,7 +89,10 @@ const PREVOYANCE_ITT: ProductRules = {
           url: 'https://boss.gouv.fr/portail/accueil/prevoyance-tns.html',
         },
       ],
-      dependencies: ['source officielle ou contractuelle applicable'],
+      dependencies: [
+        'statut du souscripteur (salarié, TNS ou particulier)',
+        'plafond prévoyance applicable',
+      ],
     },
   ],
   sortie: [
@@ -108,7 +111,10 @@ const PREVOYANCE_ITT: ProductRules = {
           url: 'https://boss.gouv.fr/portail/accueil/prevoyance-tns.html',
         },
       ],
-      dependencies: ["régime d'affiliation TNS (SSI ou régime général)", 'BOSS/URSSAF à confirmer'],
+      dependencies: [
+        "régime d'affiliation TNS (SSI ou régime général)",
+        'traitement social BOSS/URSSAF applicable',
+      ],
     },
     {
       title: "Rente d'invalidité",

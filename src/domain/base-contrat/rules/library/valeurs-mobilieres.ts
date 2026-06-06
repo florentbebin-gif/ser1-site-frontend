@@ -23,11 +23,14 @@ function buildPmLifecycleRules(subject: string, tags: string[] = []): ProductRul
         bullets: [
           'Le produit est détenu par la personne morale et comptabilisé selon sa nature (titres, parts, créances ou droits).',
           'Le traitement fiscal courant suit le régime d’imposition de la personne morale (IS/IR) et les règles comptables applicables.',
-          'À confirmer selon la source officielle ou contractuelle applicable.',
+          `À confirmer selon le régime fiscal de la personne morale et les règles comptables applicables aux ${subject}.`,
         ],
         tags: ['pm', 'comptabilisation', ...tags],
         confidence: 'moyenne',
-        dependencies: ['source officielle ou contractuelle applicable'],
+        dependencies: [
+          'régime fiscal de la personne morale',
+          `règles comptables applicables aux ${subject}`,
+        ],
       },
     ],
     sortie: [
@@ -36,11 +39,11 @@ function buildPmLifecycleRules(subject: string, tags: string[] = []): ProductRul
         bullets: [
           'Le résultat de cession, remboursement ou encaissement est intégré au résultat fiscal de la personne morale.',
           'Les modalités de calcul dépendent du mode de détention, des écritures de clôture et de la documentation comptable.',
-          'À confirmer selon la source officielle ou contractuelle applicable.',
+          'À confirmer selon le mode de détention et les écritures de clôture.',
         ],
         tags: ['resultat_fiscal', 'cession_pm', ...tags],
         confidence: 'moyenne',
-        dependencies: ['source officielle ou contractuelle applicable'],
+        dependencies: ['mode de détention', 'écritures de clôture', 'documentation comptable'],
       },
     ],
     deces: [
@@ -49,11 +52,14 @@ function buildPmLifecycleRules(subject: string, tags: string[] = []): ProductRul
         bullets: [
           'En cas de dissolution, liquidation ou cession d’activité, le traitement est effectué dans les opérations de clôture de la personne morale.',
           'La valorisation retenue à la clôture détermine l’assiette fiscale finale selon le régime applicable.',
-          'À confirmer selon la source officielle ou contractuelle applicable.',
+          `À confirmer selon les modalités de dissolution et la valorisation des ${subject} à la clôture.`,
         ],
         tags: ['fin_vie_pm', 'cloture_pm', ...tags],
         confidence: 'moyenne',
-        dependencies: ['source officielle ou contractuelle applicable'],
+        dependencies: [
+          'modalités de dissolution ou liquidation',
+          `valorisation des ${subject} à la clôture`,
+        ],
       },
     ],
   };
@@ -66,11 +72,14 @@ const ACTIONS_COTEES: ProductRules = {
       bullets: [
         'Pas de plafond ni de restriction. Détenus sur CTO, PEA (si actions européennes) ou PEA-PME.',
         "Frais d'acquisition (courtage) non déductibles fiscalement (régime PFU).",
-        'À confirmer selon la source officielle ou contractuelle applicable.',
+        "À confirmer selon l'enveloppe de détention et l'éligibilité européenne des titres.",
       ],
       tags: ['cto', 'pea_eligible'],
       confidence: 'moyenne',
-      dependencies: ['source officielle ou contractuelle applicable'],
+      dependencies: [
+        'enveloppe de détention (CTO, PEA ou PEA-PME)',
+        'place de cotation et éligibilité européenne',
+      ],
     },
   ],
   sortie: [
@@ -246,7 +255,7 @@ const SOFICA: ProductRules = {
           url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000038614158',
         },
       ],
-      dependencies: ['source officielle ou contractuelle applicable'],
+      dependencies: ["taux d'affectation de la SOFICA", 'plafond annuel de souscription'],
     },
   ],
   sortie: [
@@ -302,7 +311,11 @@ const IR_PME_MADELIN: ProductRules = {
           url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000044975826',
         },
       ],
-      dependencies: ['source officielle ou contractuelle applicable'],
+      dependencies: [
+        'âge et secteur de la PME',
+        'engagement de conservation 5 ans',
+        'taux IR-PME du millésime',
+      ],
     },
   ],
   sortie: [
@@ -350,11 +363,11 @@ const CROWDFUNDING: ProductRules = {
       bullets: [
         'Actions ou obligations souscrites via une plateforme de financement participatif (agrément CIP/PSI).',
         'Risque de perte en capital important (PME non cotées).',
-        'À confirmer selon la source officielle ou contractuelle applicable.',
+        'À confirmer selon le statut de la plateforme et la nature des titres souscrits.',
       ],
       tags: ['financement_participatif', 'risque_capital'],
       confidence: 'moyenne',
-      dependencies: ['source officielle ou contractuelle applicable'],
+      dependencies: ['statut de la plateforme', 'nature des titres souscrits'],
     },
   ],
   sortie: [
@@ -401,11 +414,11 @@ const OBLIGATIONS_NON_COTEES: ProductRules = {
       bullets: [
         'Obligations souscrites de gré à gré (PME, club deals, obligations convertibles…).',
         'Pas de plafond légal. Risque de crédit élevé.',
-        'À confirmer selon la source officielle ou contractuelle applicable.',
+        "À confirmer selon la documentation obligataire et le risque de crédit de l'émetteur.",
       ],
       tags: ['gre_a_gre', 'risque_credit'],
       confidence: 'moyenne',
-      dependencies: ['source officielle ou contractuelle applicable'],
+      dependencies: ['documentation obligataire', "risque de crédit de l'émetteur"],
     },
   ],
   sortie: [

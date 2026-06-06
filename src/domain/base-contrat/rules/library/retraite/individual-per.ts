@@ -22,7 +22,11 @@ export const PERIN_ASSURANCE: ProductRules = {
           url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000041471860',
         },
       ],
-      dependencies: ['source officielle ou contractuelle applicable'],
+      dependencies: [
+        'revenus professionnels N-1',
+        "disponible d'épargne retraite",
+        'PASS du millésime',
+      ],
     },
     {
       title: 'Compartiments de versements',
@@ -213,7 +217,11 @@ export const PERP_MADELIN_ANCIEN: ProductRules = {
           url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000041471860',
         },
       ],
-      dependencies: ['source officielle ou contractuelle applicable'],
+      dependencies: [
+        'type de contrat historique (PERP ou Madelin)',
+        'articles applicables au contrat',
+        'disponible de déduction',
+      ],
     },
   ],
   sortie: [

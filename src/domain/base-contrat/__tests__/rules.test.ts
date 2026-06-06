@@ -321,6 +321,50 @@ describe('confidence policy — sources ont des URLs https valides', () => {
 // ─────────────────────────────────────────────────────────────
 
 describe('strings interdites — fiabilisation', () => {
+  it('dependencies — aucune formule générique de source', () => {
+    const GENERIC_DEPENDENCY_PATTERNS: RegExp[] = [
+      /source officielle/i,
+      /contractuelle applicable/i,
+      /\b[àa]\s+confirmer\b/i,
+      /\b[àa]\s+v[eé]rifier\b/i,
+      /\bsource\b.*\b(confirmer|v[eé]rifier|applicable)\b/i,
+    ];
+
+    for (const product of CATALOG) {
+      const blocks = allBlocks(product.id);
+      for (const block of blocks) {
+        for (const dependency of block.dependencies ?? []) {
+          for (const pattern of GENERIC_DEPENDENCY_PATTERNS) {
+            expect(
+              pattern.test(dependency),
+              `Dependency générique ${pattern} dans ${product.id} / "${block.title}": "${dependency}"`,
+            ).toBe(false);
+          }
+        }
+      }
+    }
+  });
+
+  it('données — pas de placeholder générique de source', () => {
+    const SOURCE_PLACEHOLDER = new RegExp(
+      ['source officielle', 'contractuelle applicable'].join(' ou '),
+      'i',
+    );
+
+    for (const product of CATALOG) {
+      const blocks = allBlocks(product.id);
+      for (const block of blocks) {
+        const texts = [block.title, ...block.bullets, ...(block.dependencies ?? [])];
+        for (const text of texts) {
+          expect(
+            SOURCE_PLACEHOLDER.test(text),
+            `Placeholder source dans ${product.id} / "${block.title}": "${text}"`,
+          ).toBe(false);
+        }
+      }
+    }
+  });
+
   it('audience PM — couverture pmEligible (3 phases non vides + contenu PM safe)', () => {
     const PM_FORBIDDEN_PATTERNS: RegExp[] = [
       /décès/i,

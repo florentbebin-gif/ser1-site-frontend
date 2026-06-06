@@ -26,7 +26,7 @@ const LIVRETS_REGLEMENTES: ProductRules = {
           url: 'https://www.service-public.fr/particuliers/vosdroits/N91',
         },
       ],
-      dependencies: ['source officielle ou contractuelle applicable'],
+      dependencies: ['type de livret', 'résidence fiscale et âge du titulaire'],
     },
   ],
   sortie: [
@@ -75,11 +75,14 @@ const CTO: ProductRules = {
         'Pas de plafond de versements, ni de restriction sur les titres (actions, obligations, ETF, OPCVM, produits dérivés…).',
         'Accessible aux personnes physiques et morales.',
         'Plusieurs CTO possibles par personne.',
-        'À confirmer selon la source officielle ou contractuelle applicable.',
+        'À confirmer selon la qualité du titulaire et la nature des titres logés.',
       ],
       tags: ['no_plafond', 'pp_pm_eligible'],
       confidence: 'moyenne',
-      dependencies: ['source officielle ou contractuelle applicable'],
+      dependencies: [
+        'qualité du titulaire (personne physique ou morale)',
+        'nature des titres logés',
+      ],
     },
   ],
   sortie: [
@@ -122,11 +125,11 @@ const CTO: ProductRules = {
         'Les titres entrent dans la succession à leur valeur au jour du décès.',
         'Avantage fiscal : la plus-value latente est "purgée" (les héritiers repartent du prix d\'acquisition à la date du décès).',
         'Droits de mutation selon le barème et le lien de parenté, après abattements légaux.',
-        'À confirmer selon la source officielle ou contractuelle applicable.',
+        'À confirmer selon la valorisation des titres et le lien de parenté des héritiers.',
       ],
       tags: ['purge_pv', 'dmtg_classique'],
       confidence: 'moyenne',
-      dependencies: ['source officielle ou contractuelle applicable'],
+      dependencies: ['valorisation des titres au décès', 'lien de parenté des héritiers'],
     },
   ],
 };
@@ -140,11 +143,11 @@ const CTO_PM: ProductRules = {
       bullets: [
         'En cas de dissolution, liquidation ou cession d’activité, les titres sont intégrés aux opérations de clôture de la personne morale.',
         'Le résultat fiscal des cessions est déterminé selon le régime d’imposition (IS/IR) et les écritures de clôture applicables.',
-        'À confirmer selon la source officielle ou contractuelle applicable.',
+        'À confirmer selon le régime fiscal de la personne morale et les écritures de clôture.',
       ],
       tags: ['fin_vie_pm', 'cloture_pm', 'resultat_fiscal_titres'],
       confidence: 'moyenne',
-      dependencies: ['source officielle ou contractuelle applicable'],
+      dependencies: ['régime fiscal de la personne morale', 'écritures de clôture des titres'],
     },
   ],
 };
@@ -306,7 +309,7 @@ const PEL: ProductRules = {
           url: 'https://www.service-public.fr/particuliers/vosdroits/F16140',
         },
       ],
-      dependencies: ['source officielle ou contractuelle applicable'],
+      dependencies: ["date d'ouverture du PEL", 'plafond de versements du plan'],
     },
   ],
   sortie: [
@@ -334,11 +337,11 @@ const PEL: ProductRules = {
       bullets: [
         'Le PEL entre dans la succession à sa valeur au jour du décès.',
         'Droits de mutation applicables selon le barème légal.',
-        'À confirmer selon la source officielle ou contractuelle applicable.',
+        'À confirmer selon la valorisation du PEL et le lien de parenté des héritiers.',
       ],
       tags: ['dmtg_classique'],
       confidence: 'moyenne',
-      dependencies: ['source officielle ou contractuelle applicable'],
+      dependencies: ['valorisation du PEL au décès', 'lien de parenté des héritiers'],
     },
   ],
 };
@@ -383,11 +386,11 @@ const CEL: ProductRules = {
       bullets: [
         'Entre dans la succession à sa valeur au jour du décès.',
         'Droits de mutation applicables selon le barème légal.',
-        'À confirmer selon la source officielle ou contractuelle applicable.',
+        'À confirmer selon la valorisation du CEL et le lien de parenté des héritiers.',
       ],
       tags: ['dmtg_classique'],
       confidence: 'moyenne',
-      dependencies: ['source officielle ou contractuelle applicable'],
+      dependencies: ['valorisation du CEL au décès', 'lien de parenté des héritiers'],
     },
   ],
 };
@@ -400,11 +403,14 @@ const CAT_CSL: ProductRules = {
         'Pas de plafond légal de versements.',
         'Accessible aux personnes physiques et morales.',
         'Rémunération librement négociée (taux du marché).',
-        'À confirmer selon la source officielle ou contractuelle applicable.',
+        'À confirmer selon les conditions contractuelles de rémunération.',
       ],
       tags: ['no_plafond', 'pp_pm_eligible'],
       confidence: 'moyenne',
-      dependencies: ['source officielle ou contractuelle applicable'],
+      dependencies: [
+        'conditions contractuelles de rémunération',
+        'qualité du titulaire (personne physique ou morale)',
+      ],
     },
   ],
   sortie: [
@@ -427,11 +433,11 @@ const CAT_CSL: ProductRules = {
       bullets: [
         'Solde entre dans la succession à sa valeur au jour du décès.',
         'Droits de mutation applicables selon le barème légal.',
-        'À confirmer selon la source officielle ou contractuelle applicable.',
+        'À confirmer selon la valorisation du solde et le lien de parenté des héritiers.',
       ],
       tags: ['dmtg_classique'],
       confidence: 'moyenne',
-      dependencies: ['source officielle ou contractuelle applicable'],
+      dependencies: ['valorisation du solde au décès', 'lien de parenté des héritiers'],
     },
   ],
 };
@@ -445,11 +451,15 @@ const CAT_CSL_PM: ProductRules = {
       bullets: [
         'En cas de dissolution, liquidation ou cession d’activité, les soldes sont intégrés aux opérations de clôture de la personne morale.',
         'Le traitement fiscal de clôture dépend du régime d’imposition (IS/IR) et de la qualification comptable des flux.',
-        'À confirmer selon la source officielle ou contractuelle applicable.',
+        'À confirmer selon les modalités de dissolution ou liquidation.',
       ],
       tags: ['fin_vie_pm', 'cloture_pm', 'traitement_fiscal_cloture'],
       confidence: 'moyenne',
-      dependencies: ['source officielle ou contractuelle applicable'],
+      dependencies: [
+        'modalités de dissolution ou liquidation',
+        'régime fiscal de la personne morale',
+        'qualification comptable des flux',
+      ],
     },
   ],
 };
