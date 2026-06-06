@@ -23,8 +23,16 @@ export function LegalRefLink({ id, className = '' }: LegalRefLinkProps): ReactEl
     );
   }
 
+  const title = `${reference.articleOrSection ?? reference.label} — ouvre la référence officielle dans un nouvel onglet`;
+
   return (
-    <a className={classNames} href={reference.officialUrl} target="_blank" rel="noreferrer">
+    <a
+      className={classNames}
+      href={reference.officialUrl}
+      target="_blank"
+      rel="noreferrer"
+      title={title}
+    >
       {reference.articleOrSection ?? reference.label}
     </a>
   );

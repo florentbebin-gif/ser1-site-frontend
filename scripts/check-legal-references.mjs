@@ -13,6 +13,7 @@ import path from 'node:path';
 import process from 'node:process';
 import ts from 'typescript';
 import officialDomains from '../src/domain/legal-references/officialDomains.json' with { type: 'json' };
+import settingKeys from '../src/domain/legal-references/settingKeys.json' with { type: 'json' };
 
 const SOURCE_TYPES = new Set([
   'CGI',
@@ -31,7 +32,7 @@ const SOURCE_TYPES = new Set([
 
 const VOLATILITIES = new Set(['annual', 'lawChange', 'stable']);
 const OFFICIAL_DOMAINS = officialDomains;
-const KNOWN_SETTING_KEYS = new Set(['dmtg']);
+const KNOWN_SETTING_KEYS = new Set(Object.keys(settingKeys));
 
 function parseArgs(argv) {
   const options = {
@@ -80,7 +81,7 @@ function hasAllowedDomain(url) {
     return false;
   }
 
-  if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
+  if (parsed.protocol !== 'https:') {
     return false;
   }
 
@@ -286,7 +287,7 @@ function validateReferences(references, simulatorIds, catalogProductIds) {
     }
 
     if (isNonEmptyString(reference.officialUrl) && !hasAllowedDomain(reference.officialUrl)) {
-      errors.push(`${id}: officialUrl non officielle ou non HTTP(S) (${reference.officialUrl})`);
+      errors.push(`${id}: officialUrl non officielle ou non HTTPS (${reference.officialUrl})`);
     } else if (isNonEmptyString(reference.officialUrl)) {
       const formError = legifranceFormError(reference.officialUrl);
       if (formError) {

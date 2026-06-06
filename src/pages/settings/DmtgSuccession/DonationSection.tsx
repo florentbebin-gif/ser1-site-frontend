@@ -2,6 +2,7 @@ import React from 'react';
 import { LegalRefLink } from '@/components/legal/LegalRefLink';
 import SettingsTitleWithIcon from '@/components/settings/SettingsTitleWithIcon';
 import { numberOrEmpty } from '@/components/settings/settingsHelpers';
+import { DONATION_SECTION_LEGAL_REFERENCE_IDS } from './dmtgLegalReferenceIds';
 
 interface DonationSettings {
   rappelFiscalAnnees: number | null;
@@ -48,7 +49,8 @@ export default function DonationSection({
       {isOpen && (
         <div className="fisc-acc-body">
           <p className="dmtg-intro">
-            Paramètres de donation entre vifs et rappel fiscal (<LegalRefLink id="cgi-784" />
+            Paramètres de donation entre vifs et rappel fiscal (
+            <LegalRefLink id={DONATION_SECTION_LEGAL_REFERENCE_IDS[0]} />
             ).
           </p>
 

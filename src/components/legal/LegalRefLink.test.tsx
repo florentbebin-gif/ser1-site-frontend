@@ -16,6 +16,10 @@ describe('LegalRefLink', () => {
     );
     expect(link).toHaveAttribute('target', '_blank');
     expect(link).toHaveAttribute('rel', 'noreferrer');
+    expect(link).toHaveAttribute(
+      'title',
+      'Art. 200 A — ouvre la référence officielle dans un nouvel onglet',
+    );
   });
 
   it('rend un libellé non cliquable pour une référence inconnue', () => {

@@ -107,6 +107,7 @@
     "scope": "Prélèvement sur certains capitaux décès d'assurance-vie.",
     "volatility": "lawChange",
     "relatedSimulatorIds": ["placement", "succession"],
+    "relatedSettings": ["dmtg"],
     "relatedCatalogProducts": ["assurance_vie", "prevoyance_individuelle_deces", "perin_assurance"],
     "lastCheckedAt": "2026-06-05"
   },
@@ -118,6 +119,7 @@
     "articleOrSection": "Art. 757 B",
     "scope": "Droits de mutation sur les primes d'assurance-vie versées après soixante-dix ans.",
     "volatility": "lawChange",
+    "relatedSettings": ["dmtg"],
     "relatedCatalogProducts": ["assurance_vie", "prevoyance_individuelle_deces", "perin_assurance"],
     "lastCheckedAt": "2026-06-05"
   },

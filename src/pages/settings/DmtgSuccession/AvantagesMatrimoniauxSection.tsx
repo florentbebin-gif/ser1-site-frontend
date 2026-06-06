@@ -2,6 +2,7 @@ import React from 'react';
 import { LegalRefList } from '@/components/legal/LegalRefLink';
 import SettingsTitleWithIcon from '@/components/settings/SettingsTitleWithIcon';
 import { AVANTAGES_MATRIMONIAUX_REFERENCE } from './dmtgReferenceData';
+import { AVANTAGES_MATRIMONIAUX_VIGILANCE_LEGAL_REFERENCE_IDS } from './dmtgLegalReferenceIds';
 
 interface AvantagesMatrimoniauxSectionProps {
   openSection: string | null;
@@ -71,7 +72,9 @@ export default function AvantagesMatrimoniauxSection({
                 </span>
                 <div className="dmtg-reference-row dmtg-reference-row--mt4">
                   <span>Références :</span>
-                  <LegalRefList ids={['code-civil-1516', 'code-civil-1525', 'code-civil-1527']} />
+                  <LegalRefList
+                    ids={AVANTAGES_MATRIMONIAUX_VIGILANCE_LEGAL_REFERENCE_IDS.qualification}
+                  />
                 </div>
               </li>
               <li className="dmtg-list-item--mb4">
@@ -81,7 +84,9 @@ export default function AvantagesMatrimoniauxSection({
                 </span>
                 <div className="dmtg-reference-row dmtg-reference-row--mt4">
                   <span>Références :</span>
-                  <LegalRefList ids={['code-civil-1527', 'code-civil-1094-1']} />
+                  <LegalRefList
+                    ids={AVANTAGES_MATRIMONIAUX_VIGILANCE_LEGAL_REFERENCE_IDS.enfantsNonCommuns}
+                  />
                 </div>
               </li>
               <li>
@@ -89,7 +94,9 @@ export default function AvantagesMatrimoniauxSection({
                 volonté contraire.
                 <div className="dmtg-reference-row dmtg-reference-row--mt4">
                   <span>Référence :</span>
-                  <LegalRefList ids={['code-civil-265']} />
+                  <LegalRefList
+                    ids={AVANTAGES_MATRIMONIAUX_VIGILANCE_LEGAL_REFERENCE_IDS.divorce}
+                  />
                 </div>
               </li>
             </ul>

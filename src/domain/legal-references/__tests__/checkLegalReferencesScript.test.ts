@@ -244,7 +244,7 @@ describe('check-legal-references', () => {
     expect(output).toContain('champ officialUrl obligatoire');
   });
 
-  it('bloque un protocole non HTTP(S)', () => {
+  it('bloque un protocole non HTTPS', () => {
     const root = createRoot();
     writeReferences(root, [validReference({ officialUrl: 'ftp://legifrance.gouv.fr/demo' })]);
     writeDefinitions(root, ['demo-ref']);
@@ -253,7 +253,23 @@ describe('check-legal-references', () => {
     const output = `${result.stdout}\n${result.stderr}`;
 
     expect(result.status).toBe(1);
-    expect(output).toContain('officialUrl non officielle ou non HTTP(S)');
+    expect(output).toContain('officialUrl non officielle ou non HTTPS');
+  });
+
+  it('bloque une URL officielle servie en HTTP', () => {
+    const root = createRoot();
+    writeReferences(root, [
+      validReference({
+        officialUrl: 'http://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000000000001',
+      }),
+    ]);
+    writeDefinitions(root, ['demo-ref']);
+
+    const result = runCheck(root);
+    const output = `${result.stdout}\n${result.stderr}`;
+
+    expect(result.status).toBe(1);
+    expect(output).toContain('officialUrl non officielle ou non HTTPS');
   });
 
   it('bloque les champs obligatoires vides', () => {

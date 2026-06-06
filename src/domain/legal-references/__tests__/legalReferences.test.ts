@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { SIMULATOR_DEFINITIONS } from '@/domain/simulators/registry';
 import {
   LEGAL_REFERENCE_BY_ID,
+  LEGAL_REFERENCE_SETTING_KEYS,
   LEGAL_REFERENCES,
   getLegalReference,
   getOptionalLegalReference,
@@ -84,6 +85,8 @@ describe('références juridiques', () => {
       'code-civil-1527',
       'code-civil-265',
       'cgi-784',
+      'cgi-990-i',
+      'cgi-757-b',
     ];
     const dmtgReferenceIds = listLegalReferencesForSetting('dmtg').map((reference) => reference.id);
 
@@ -92,6 +95,10 @@ describe('références juridiques', () => {
     for (const referenceId of expectedReferenceIds) {
       expect(getLegalReference(referenceId).relatedSettings).toEqual(['dmtg']);
     }
+  });
+
+  it('charge les clés settings depuis la liste partagée', () => {
+    expect(LEGAL_REFERENCE_SETTING_KEYS).toEqual(['dmtg']);
   });
 
   it('couvre les références assurance-vie décès du catalogue', () => {
