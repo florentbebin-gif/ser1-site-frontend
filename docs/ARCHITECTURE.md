@@ -145,14 +145,17 @@ chaque surface le nombre de bindings déclarés (`declared`) et le nombre de cla
 son attendu est recalculé depuis `CATALOG` + `getRules()`.
 
 L'audit manuel `npm run audit:settings-references -- --stale --with-db` ajoute la fraîcheur, la
-liveness URL hors CI et la lecture des sources prévoyance en base. Les statuts HTTP `401`, `403` et
-`429` sont classés non vérifiables automatiquement, pas morts ; seuls `404` et `410` rendent l'URL
-bloquante. Sans variables Supabase, l'audit produit un rapport code-only avec avertissement.
+liveness URL hors CI et la lecture des sources prévoyance en base. Les références `annual` deviennent
+bloquantes au 1er février de l'année suivant leur vérification (`verifiedAt`). Les statuts HTTP
+`401`, `403` et `429` sont classés non vérifiables automatiquement, pas morts ; seuls `404` et `410`
+rendent l'URL bloquante. Sans variables Supabase, l'audit produit un rapport code-only avec
+avertissement.
 La prévoyance garde les bindings `prevoyance-db` dans `chain.json`, mais les sources réelles vivent
 dans `sources.references` en base, par régime et par catégorie (`arret`, `invalidite`, `deces`,
-`cotisations`). L'audit DB refuse une catégorie attendue sans source ou justification spécifique,
-ainsi que les URLs racines/génériques de caisse qui ne pointent pas vers une page de garantie ou de
-cotisation.
+`cotisations`). Les pages officielles de caisses et organismes institutionnels validées par l'audit
+DB sont marquées `confiance: "haute"` faute de source normative plus précise disponible. L'audit DB
+refuse une catégorie attendue sans source ou justification spécifique, ainsi que les URLs
+racines/génériques de caisse qui ne pointent pas vers une page de garantie ou de cotisation.
 
 ### Règle "god file"
 

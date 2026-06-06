@@ -745,15 +745,19 @@ npm run audit:settings-references -- --stale --with-db
 `/settings/dmtg-succession` et `/settings/prevoyance-regimes` doivent rester à
 `coverage.byPage[*].expectedDefined = true`, `complete = true`, `coverage.isExhaustive = true` et
 zéro dette muette. Dans le scénario 2027, `npm run audit:settings-references -- --stale --with-db`
-sert à lister les claims périmés ou à vérifier ; une liveness `blocked` impose une vérification
-manuelle Légifrance/BOFiP, mais ne prouve pas que l'URL est morte.
+sert à lister les claims périmés ou à vérifier. Pour les références `annual`, le blocage démarre au
+1er février de l'année suivant `verifiedAt` : une attestation 2026 devient donc bloquante le
+2027-02-01. Une liveness `blocked` impose une vérification manuelle Légifrance/BOFiP, mais ne prouve
+pas que l'URL est morte.
 
 Les migrations prévoyance `20260606000200_prevoyance_sources_lot5.sql`,
 `20260606000300_prevoyance_sources_lot5_url_correction.sql` puis
 `20260606000400_prevoyance_sources_lot5_dead_url_correction.sql` qualifient les sources par régime
-et par catégorie dans `sources.references`. Les migrations correctives remplacent les URLs racines,
-trop génériques ou mortes par des pages de garanties/cotisations ; l'audit DB doit refuser toute
-régression.
+et par catégorie dans `sources.references`. La migration
+`20260606000500_prevoyance_sources_verified_confidence.sql` marque ces pages officielles comme
+vérifiées (`confiance: "haute"`), car elles sont la meilleure référence disponible. Les migrations
+correctives remplacent les URLs racines, trop génériques ou mortes par des pages de
+garanties/cotisations ; l'audit DB doit refuser toute régression.
 
 ---
 

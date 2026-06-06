@@ -85,8 +85,8 @@ const PREVOYANCE_ITT: ProductRules = {
       confidence: 'moyenne',
       sources: [
         {
-          label: 'BOSS — Prévoyance TNS',
-          url: 'https://boss.gouv.fr/portail/accueil/prevoyance-tns.html',
+          label: 'BOSS — protection sociale complémentaire',
+          url: 'https://boss.gouv.fr/portail/accueil/autres-elements-de-remuneration/protection-sociale-complementair.html',
         },
       ],
       dependencies: [
@@ -107,8 +107,8 @@ const PREVOYANCE_ITT: ProductRules = {
       confidence: 'moyenne',
       sources: [
         {
-          label: 'BOSS — Prévoyance TNS',
-          url: 'https://boss.gouv.fr/portail/accueil/prevoyance-tns.html',
+          label: 'BOSS — protection sociale complémentaire',
+          url: 'https://boss.gouv.fr/portail/accueil/autres-elements-de-remuneration/protection-sociale-complementair.html',
         },
       ],
       dependencies: [
