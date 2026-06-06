@@ -21,6 +21,10 @@ const SETTINGS_PAGES = new Set([
   '/settings/prevoyance-regimes',
 ]);
 
+const COVERAGE_EXPECTED_CLAIMS_BY_PAGE = Object.fromEntries(
+  Array.from(SETTINGS_PAGES).map((pagePath) => [pagePath, null]),
+);
+
 const CATEGORIES = new Set([
   'constitution',
   'sortie-rachat',
@@ -465,6 +469,39 @@ function countBindingsByPage(chain) {
   );
 }
 
+function buildCoverage(chain) {
+  const bindingsByPage = countBindingsByPage(chain);
+  const byPage = Object.fromEntries(
+    Array.from(SETTINGS_PAGES).map((pagePath) => {
+      const expected = COVERAGE_EXPECTED_CLAIMS_BY_PAGE[pagePath];
+      const expectedDefined = Number.isInteger(expected) && expected >= 0;
+      const declared = bindingsByPage[pagePath] ?? 0;
+      return [
+        pagePath,
+        {
+          expected,
+          declared,
+          expectedDefined,
+          complete: expectedDefined && declared >= expected,
+        },
+      ];
+    }),
+  );
+  const pageCoverage = Object.values(byPage);
+  const expectedClaimsDefined = pageCoverage.every((entry) => entry.expectedDefined);
+  const isExhaustive =
+    expectedClaimsDefined && pageCoverage.every((entry) => entry.complete && entry.expected > 0);
+
+  return {
+    mode: 'partial',
+    isExhaustive,
+    expectedClaimsDefined,
+    bindingsByPage,
+    byPage,
+    note: 'Registre partiel non exhaustif : le check valide les bindings déclarés sans garantir encore la couverture complète des 5 surfaces Settings. Une surface ne peut être complète que si son nombre de claims attendus est défini explicitement.',
+  };
+}
+
 function run() {
   const options = parseArgs(process.argv.slice(2));
   const root = options.root;
@@ -490,13 +527,7 @@ function run() {
     ? Array.from(new Set(chain.map((binding) => binding.pagePath).filter(isNonEmptyString))).sort()
     : [];
   const missingPages = Array.from(SETTINGS_PAGES).filter((pagePath) => !pages.includes(pagePath));
-  const bindingsByPage = countBindingsByPage(chain);
-  const coverage = {
-    mode: 'partial',
-    isExhaustive: false,
-    bindingsByPage,
-    note: 'Registre partiel non exhaustif : le check valide les bindings déclarés sans garantir encore la couverture complète des 5 surfaces Settings.',
-  };
+  const coverage = buildCoverage(chain);
 
   if (options.json) {
     console.log(
@@ -521,12 +552,21 @@ function run() {
     }
   } else {
     const representedPages = pages
-      .map((pagePath) => `${pagePath} (${bindingsByPage[pagePath]} bindings)`)
+      .map((pagePath) => `${pagePath} (${coverage.bindingsByPage[pagePath]} bindings)`)
+      .join(', ');
+    const completeness = Object.entries(coverage.byPage)
+      .map(([pagePath, pageCoverage]) => {
+        const expected = pageCoverage.expectedDefined
+          ? pageCoverage.expected
+          : 'attendu non défini';
+        return `${pagePath} (${pageCoverage.declared}/${expected})`;
+      })
       .join(', ');
     console.log(
       `check:settings-references ✅ ${chain.length} bindings, registre partiel non exhaustif`,
     );
     console.log(`Pages représentées : ${representedPages || 'aucune'}`);
+    console.log(`Complétude déclarée : ${completeness}`);
     if (missingPages.length > 0) {
       console.log(`Pages sans binding dans ce registre partiel : ${missingPages.join(', ')}`);
     }

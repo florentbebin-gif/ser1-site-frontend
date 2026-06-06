@@ -13,7 +13,17 @@ type CheckReport = {
   coverage: {
     mode: 'partial';
     isExhaustive: boolean;
+    expectedClaimsDefined: boolean;
     bindingsByPage: Record<string, number>;
+    byPage: Record<
+      string,
+      {
+        expected: number | null;
+        declared: number;
+        expectedDefined: boolean;
+        complete: boolean;
+      }
+    >;
   };
 };
 
@@ -161,6 +171,7 @@ describe('check-settings-references', () => {
     expect(result.status).toBe(0);
     expect(output).toContain('check:settings-references ✅');
     expect(output).toContain('registre partiel non exhaustif');
+    expect(output).toContain('Complétude déclarée');
     expect(output).not.toContain('surfaces couvertes');
   });
 
@@ -174,8 +185,21 @@ describe('check-settings-references', () => {
     expect(result.status).toBe(0);
     expect(report.coverage.mode).toBe('partial');
     expect(report.coverage.isExhaustive).toBe(false);
+    expect(report.coverage.expectedClaimsDefined).toBe(false);
     expect(report.coverage.bindingsByPage).toEqual({
       '/settings/impots': 1,
+    });
+    expect(report.coverage.byPage['/settings/impots']).toEqual({
+      expected: null,
+      declared: 1,
+      expectedDefined: false,
+      complete: false,
+    });
+    expect(report.coverage.byPage['/settings/base-contrat']).toEqual({
+      expected: null,
+      declared: 0,
+      expectedDefined: false,
+      complete: false,
     });
   });
 

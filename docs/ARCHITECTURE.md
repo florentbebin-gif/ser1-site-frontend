@@ -137,8 +137,12 @@ Chaque binding porte `pagePath`, `sectionKey`, `claimKey`, `target`, `refIds`, `
 un `noRefReason`. Le garde-fou `npm run check:settings-references` valide les IDs, les dates, les
 notes non génériques, les `pagePath` déclarés et les chemins Settings/PASS. Son rapport annonce
 `coverage.mode = "partial"` et `coverage.isExhaustive = false` : le registre est un socle partiel,
-pas une preuve de couverture complète. Il existe dès maintenant, mais n'est branché dans
-`check:static` que lorsque les 5 surfaces cibles sont complètement couvertes :
+pas une preuve de couverture complète. `coverage.byPage` expose pour chaque surface le nombre de
+bindings déclarés (`declared`) et le nombre de claims attendus (`expected`). Tant que ce nombre
+attendu n'est pas défini explicitement (`expectedDefined = false`), la surface reste incomplète et
+`coverage.isExhaustive` ne peut pas passer à `true`. Il existe dès maintenant, mais n'est branché
+dans `check:static` que lorsque les 5 surfaces cibles ont un attendu défini, `complete = true` et
+aucune dette muette :
 `/settings/impots`, `/settings/prelevements`, `/settings/base-contrat`,
 `/settings/dmtg-succession`, `/settings/prevoyance-regimes`.
 
