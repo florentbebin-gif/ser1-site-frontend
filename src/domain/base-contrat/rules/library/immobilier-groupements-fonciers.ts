@@ -59,7 +59,7 @@ export const GROUPEMENT_FONCIER_AGRI_VITI: ProductRules = {
       dependencies: [
         'bail long terme ≥ 18 ans',
         'engagement de conservation 5 ans',
-        'seuil 600 000 € (LF 2025 art. 70 — À confirmer selon seuil en vigueur)',
+        'seuil d’exonération partielle GFA/GFV en vigueur',
       ],
     },
   ],

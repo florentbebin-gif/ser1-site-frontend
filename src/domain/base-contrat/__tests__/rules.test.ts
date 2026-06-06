@@ -325,8 +325,8 @@ describe('strings interdites — fiabilisation', () => {
     const GENERIC_DEPENDENCY_PATTERNS: RegExp[] = [
       /source officielle/i,
       /contractuelle applicable/i,
-      /\b[àa]\s+confirmer\b/i,
-      /\b[àa]\s+v[eé]rifier\b/i,
+      /(^|[^\p{L}])[àa]\s+confirmer\b/iu,
+      /(^|[^\p{L}])[àa]\s+v[eé]rifier\b/iu,
       /\bsource\b.*\b(confirmer|v[eé]rifier|applicable)\b/i,
     ];
 
