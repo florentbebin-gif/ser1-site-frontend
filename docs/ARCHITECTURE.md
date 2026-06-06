@@ -135,24 +135,24 @@ canonique lisible par Node ; il relie chaque claim Settings à une cible contrô
 Chaque binding porte `pagePath`, `sectionKey`, `claimKey`, `target`, `refIds`, `verifiedAt` et
 `volatility`. Une référence canonique impose une `relevanceNote`; un binding sans référence impose
 un `noRefReason`. Le garde-fou `npm run check:settings-references` valide les IDs, les dates, les
-notes non génériques, les `pagePath` déclarés et les chemins Settings/PASS. Son rapport annonce
-`coverage.mode = "partial"` et `coverage.isExhaustive = false` : le registre est un socle partiel,
-pas une preuve de couverture complète. `coverage.byPage` expose pour chaque surface le nombre de
-bindings déclarés (`declared`) et le nombre de claims attendus (`expected`). Tant que ce nombre
-attendu n'est pas défini explicitement (`expectedDefined = false`), la surface reste incomplète et
-`coverage.isExhaustive` ne peut pas passer à `true`. Il existe dès maintenant, mais n'est branché
-dans `check:static` que lorsque les 5 surfaces cibles ont un attendu défini, `complete = true` et
-aucune dette muette :
+notes non génériques, les `pagePath` déclarés, les chemins Settings/PASS et la complétude attendue
+par page. Il est branché dans `check:static` et son rapport doit rester en
+`coverage.mode = "exhaustive"` avec `coverage.isExhaustive = true`. `coverage.byPage` expose pour
+chaque surface le nombre de bindings déclarés (`declared`) et le nombre de claims attendus
+(`expected`). Les 5 surfaces cibles doivent rester complètes sans claim manquant ou surnuméraire :
 `/settings/impots`, `/settings/prelevements`, `/settings/base-contrat`,
-`/settings/dmtg-succession`, `/settings/prevoyance-regimes`.
+`/settings/dmtg-succession`, `/settings/prevoyance-regimes`. La cible Base-Contrat est dynamique :
+son attendu est recalculé depuis `CATALOG` + `getRules()`.
 
 L'audit manuel `npm run audit:settings-references -- --stale --with-db` ajoute la fraîcheur, la
 liveness URL hors CI et la lecture des sources prévoyance en base. Les statuts HTTP `401`, `403` et
 `429` sont classés non vérifiables automatiquement, pas morts ; seuls `404` et `410` rendent l'URL
 bloquante. Sans variables Supabase, l'audit produit un rapport code-only avec avertissement.
-La prévoyance peut porter `references: []` quand aucune source institutionnelle stable n'est attestée ;
-le `noRefReason` doit alors nommer le régime concerné. Les sources prévoyance par catégorie restent
-à qualifier dans un chantier dédié.
+La prévoyance garde les bindings `prevoyance-db` dans `chain.json`, mais les sources réelles vivent
+dans `sources.references` en base, par régime et par catégorie (`arret`, `invalidite`, `deces`,
+`cotisations`). L'audit DB refuse une catégorie attendue sans source ou justification spécifique,
+ainsi que les URLs racines/génériques de caisse qui ne pointent pas vers une page de garantie ou de
+cotisation.
 
 ### Règle "god file"
 
@@ -856,7 +856,7 @@ Cette section fixe comment ajouter une page, une route ou une feature sans creer
   - `urlPath`
   - `component`
   - `adminOnly` si necessaire
-- Tout claim affiche par la page (valeur fiscale, regle exposee, donnee sensible) doit etre declare
+- Tout claim affiche par une page ou section settings (valeur fiscale, regle exposee, donnee sensible) doit etre declare
   dans `src/domain/settings-references/chain.json` : soit avec `refIds` + `relevanceNote` +
   `verifiedAt` + `target`, soit avec un `noRefReason` explicite si aucune source officielle ne
   s'applique. Source primaire BOFiP pour les valeurs chiffrees. Voir la procedure annuelle dans

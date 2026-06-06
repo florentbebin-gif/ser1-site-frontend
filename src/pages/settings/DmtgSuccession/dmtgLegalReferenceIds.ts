@@ -7,6 +7,8 @@ export const AV_DECES_LEGAL_REFERENCE_IDS = {
 
 export const DONATION_SECTION_LEGAL_REFERENCE_IDS = [
   'cgi-784',
+  'cgi-790-g',
+  'boi-enr-dmtg-10-50-50',
 ] as const satisfies readonly LegalReferenceId[];
 
 export const RESERVE_CIVIL_LEGAL_REFERENCE_IDS = {

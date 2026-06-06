@@ -1,4 +1,5 @@
 import fs from 'node:fs';
+import { createRequire } from 'node:module';
 import path from 'node:path';
 import ts from 'typescript';
 
@@ -303,7 +304,112 @@ function addProductRuleBlocks(productRuleBlocks, productId, audience, blocks) {
   productRuleBlocks.set(key, target);
 }
 
-export function collectBaseContratRuleBlocks(root) {
+function cleanupRuntime(runtimeDir, root) {
+  const resolvedRuntime = path.resolve(runtimeDir);
+  const resolvedTmp = path.resolve(root, '.tmp');
+  if (resolvedRuntime.startsWith(resolvedTmp + path.sep)) {
+    fs.rmSync(resolvedRuntime, { recursive: true, force: true });
+  }
+}
+
+function compileBaseContratRuntime(root) {
+  const domainDir = path.join(root, 'src', 'domain', 'base-contrat');
+  const runtimeDir = path.join(root, '.tmp', 'settings-references-base-contrat-runtime');
+  const constantsDir = path.join(runtimeDir, 'constants');
+  const resolvedRuntime = path.resolve(runtimeDir);
+  const resolvedTmp = path.resolve(root, '.tmp');
+  if (!resolvedRuntime.startsWith(resolvedTmp + path.sep)) {
+    throw new Error(`Chemin runtime inattendu: ${resolvedRuntime}`);
+  }
+
+  fs.rmSync(runtimeDir, { recursive: true, force: true });
+  fs.mkdirSync(runtimeDir, { recursive: true });
+  fs.mkdirSync(constantsDir, { recursive: true });
+  fs.writeFileSync(
+    path.join(runtimeDir, 'package.json'),
+    JSON.stringify({ type: 'commonjs' }, null, 2),
+  );
+
+  for (const filePath of listTypeScriptFiles(domainDir)) {
+    if (filePath.includes(`${path.sep}__tests__${path.sep}`)) continue;
+    const relativePath = path.relative(domainDir, filePath);
+    const outFile = path.join(runtimeDir, relativePath).replace(/\.ts$/, '.js');
+    fs.mkdirSync(path.dirname(outFile), { recursive: true });
+    const compiled = ts.transpileModule(fs.readFileSync(filePath, 'utf8'), {
+      fileName: filePath,
+      compilerOptions: {
+        module: ts.ModuleKind.CommonJS,
+        target: ts.ScriptTarget.ES2020,
+        esModuleInterop: true,
+        importsNotUsedAsValues: ts.ImportsNotUsedAsValues.Remove,
+      },
+    });
+    const outputText = compiled.outputText
+      .replace(
+        /require\(["']\.\.\/\.\.\/\.\.\/constants\/settingsDefaults["']\)/g,
+        "require('../constants/settingsDefaults')",
+      )
+      .replace(
+        /require\(["']@\/constants\/settingsDefaults["']\)/g,
+        "require('../constants/settingsDefaults')",
+      );
+    fs.writeFileSync(outFile, outputText);
+  }
+
+  const settingsDefaultsPath = path.join(root, 'src', 'constants', 'settingsDefaults.ts');
+  const settingsDefaultsCompiled = ts.transpileModule(
+    fs.readFileSync(settingsDefaultsPath, 'utf8'),
+    {
+      fileName: settingsDefaultsPath,
+      compilerOptions: {
+        module: ts.ModuleKind.CommonJS,
+        target: ts.ScriptTarget.ES2020,
+        esModuleInterop: true,
+        importsNotUsedAsValues: ts.ImportsNotUsedAsValues.Remove,
+      },
+    },
+  );
+  fs.writeFileSync(
+    path.join(constantsDir, 'settingsDefaults.js'),
+    settingsDefaultsCompiled.outputText,
+  );
+
+  return runtimeDir;
+}
+
+function collectRuntimeBaseContratRuleBlocks(root) {
+  const runtimeDir = compileBaseContratRuntime(root);
+  try {
+    const requireRuntime = createRequire(path.join(runtimeDir, 'index.js'));
+    const { CATALOG } = requireRuntime(path.join(runtimeDir, 'catalog.js'));
+    const { getRules } = requireRuntime(path.join(runtimeDir, 'rules', 'index.js'));
+    const productRuleBlocks = new Map();
+
+    for (const product of CATALOG) {
+      const audiences = [];
+      if (product.ppEligible) audiences.push('pp');
+      if (product.pmEligible) audiences.push('pm');
+      for (const audience of audiences) {
+        const rules = getRules(product.id, audience);
+        const blocks = emptyRuleBlockIndex();
+        for (const phase of BASE_CONTRAT_PHASES) {
+          for (const block of rules[phase] ?? []) {
+            if (typeof block.title === 'string') {
+              blocks[phase].add(slugifyBlockKey(block.title));
+            }
+          }
+        }
+        productRuleBlocks.set(`${product.id}|${audience}`, blocks);
+      }
+    }
+
+    return productRuleBlocks;
+  } finally {
+    cleanupRuntime(runtimeDir, root);
+  }
+}
+
+function collectStaticBaseContratRuleBlocks(root) {
   const libraryPath = path.join(root, 'src', 'domain', 'base-contrat', 'rules', 'library');
   const ruleBlocksByName = collectRuleBlocksByName(root);
   const productRuleBlocks = new Map();
@@ -347,4 +453,13 @@ export function collectBaseContratRuleBlocks(root) {
   }
 
   return productRuleBlocks;
+}
+
+export function collectBaseContratRuleBlocks(root) {
+  const runtimeEntry = path.join(root, 'src', 'domain', 'base-contrat', 'rules', 'index.ts');
+  if (fs.existsSync(runtimeEntry)) {
+    return collectRuntimeBaseContratRuleBlocks(root);
+  }
+
+  return collectStaticBaseContratRuleBlocks(root);
 }

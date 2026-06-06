@@ -93,13 +93,11 @@ function printHumanResult(result) {
     })
     .join(', ');
 
-  console.log(
-    `check:settings-references ✅ ${result.bindingCount} bindings, registre partiel non exhaustif`,
-  );
+  console.log(`check:settings-references ✅ ${result.bindingCount} bindings, registre exhaustif`);
   console.log(`Pages représentées : ${representedPages || 'aucune'}`);
-  console.log(`Complétude déclarée : ${completeness}`);
+  console.log(`Complétude contrôlée : ${completeness}`);
   if (result.missingPages.length > 0) {
-    console.log(`Pages sans binding dans ce registre partiel : ${result.missingPages.join(', ')}`);
+    console.log(`Pages attendues sans binding : ${result.missingPages.join(', ')}`);
   }
 }
 
@@ -114,7 +112,9 @@ function buildResult(root) {
     catalogProductIds: collectCatalogProductIds(root),
     baseContratRuleBlocks: collectBaseContratRuleBlocks(root),
   };
-  const errors = validateChain(chain, context);
+  const validationErrors = validateChain(chain, context);
+  const coverage = buildCoverage(chain, context);
+  const errors = [...validationErrors, ...coverage.errors];
   const pages = Array.isArray(chain)
     ? Array.from(new Set(chain.map((binding) => binding.pagePath).filter(isNonEmptyString))).sort()
     : [];
@@ -125,7 +125,7 @@ function buildResult(root) {
     bindingCount: Array.isArray(chain) ? chain.length : 0,
     pages,
     missingPages,
-    coverage: buildCoverage(chain),
+    coverage,
     chainPath: normalize(path.relative(root, chainPath)),
     errors,
   };

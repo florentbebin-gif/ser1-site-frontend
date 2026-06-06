@@ -143,7 +143,7 @@ const CRYPTO_ACTIFS: ProductRules = {
       sources: [
         {
           label: 'Art. 150 VH bis CGI — actifs numériques',
-          url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000038612225',
+          url: 'https://www.legifrance.gouv.fr/loda/article_lc/LEGIARTI000038612228',
         },
       ],
     },
@@ -162,7 +162,7 @@ const CRYPTO_ACTIFS: ProductRules = {
       sources: [
         {
           label: 'Art. 150 VH bis CGI',
-          url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000038612225',
+          url: 'https://www.legifrance.gouv.fr/loda/article_lc/LEGIARTI000038612228',
         },
       ],
     },
@@ -177,7 +177,7 @@ const CRYPTO_ACTIFS: ProductRules = {
       sources: [
         {
           label: 'Art. 150 VH bis CGI — actifs numériques',
-          url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000038612225',
+          url: 'https://www.legifrance.gouv.fr/loda/article_lc/LEGIARTI000038612228',
         },
       ],
     },

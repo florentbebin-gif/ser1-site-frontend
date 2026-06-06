@@ -104,7 +104,14 @@ export const LIBERALITES_REFERENCE = [
       "Âge de l'usufruitier",
       'Bien donné',
     ],
-    legalRefIds: ['code-civil-894', 'code-civil-578', 'code-civil-843', 'code-civil-922'],
+    legalRefIds: [
+      'code-civil-894',
+      'code-civil-578',
+      'code-civil-843',
+      'code-civil-922',
+      'cgi-669',
+      'boi-enr-dmtg-10-40-10-50',
+    ],
   },
   {
     id: 'donation_partage',
@@ -246,6 +253,6 @@ export const AVANTAGES_MATRIMONIAUX_REFERENCE = [
       'Valeur usufruit / nue-propriété',
       'Regles de contribution aux dettes',
     ],
-    legalRefIds: ['code-civil-1524'],
+    legalRefIds: ['code-civil-1524', 'cgi-669', 'boi-enr-dmtg-10-40-10-50'],
   },
 ] satisfies AvantageMatrimonialReference[];

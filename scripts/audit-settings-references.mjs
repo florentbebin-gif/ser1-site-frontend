@@ -22,7 +22,16 @@ const STALE_DAYS_BY_VOLATILITY = {
 
 const UNSTABLE_URL_SEGMENTS = /\/(actus|actualites|news|blog)(\/|$)/i;
 const GENERIC_PREVOYANCE_TITLE = /référentiel prévoyance 2026 publié par organisme officiel/i;
+const PREVOYANCE_ROOT_URL = /^https:\/\/(?:www\.)?[^/]+\/?$/i;
+const GENERIC_PREVOYANCE_URL_PATHS = new Set([
+  '/',
+  '/accueil',
+  '/assure',
+  '/entreprise',
+  '/particuliers',
+]);
 const FOUR_CATEGORIES = new Set(['arret', 'invalidite', 'deces', 'cotisations']);
+const MAINTIEN_EMPLOYEUR_CATEGORIES = new Set(['maintien_employeur']);
 const DEAD_HTTP_STATUSES = new Set([404, 410]);
 const BLOCKED_HTTP_STATUSES = new Set([401, 403, 429]);
 const LIVENESS_HEADERS = {
@@ -37,6 +46,17 @@ function getUrlPathname(value) {
     return new URL(value).pathname;
   } catch {
     return '';
+  }
+}
+
+function isGenericPrevoyanceUrl(value) {
+  if (!isNonEmptyString(value)) return false;
+  try {
+    const parsed = new URL(value);
+    const pathname = parsed.pathname.replace(/\/+$/, '') || '/';
+    return PREVOYANCE_ROOT_URL.test(value) || GENERIC_PREVOYANCE_URL_PATHS.has(pathname);
+  } catch {
+    return false;
   }
 }
 
@@ -257,6 +277,35 @@ function getSupabaseEnv() {
   return { url, key, email, password, usesServiceRole: Boolean(serviceRoleKey) };
 }
 
+function normalizeEnvValue(value) {
+  const trimmed = value.trim();
+  if (
+    (trimmed.startsWith('"') && trimmed.endsWith('"')) ||
+    (trimmed.startsWith("'") && trimmed.endsWith("'"))
+  ) {
+    return trimmed.slice(1, -1);
+  }
+  return trimmed;
+}
+
+function loadLocalEnv(root) {
+  for (const filename of ['.env.local', '.env']) {
+    const envPath = path.join(root, filename);
+    if (!fs.existsSync(envPath)) continue;
+
+    const lines = fs.readFileSync(envPath, 'utf8').split(/\r?\n/);
+    for (const line of lines) {
+      const trimmed = line.trim();
+      if (!trimmed || trimmed.startsWith('#')) continue;
+      const separatorIndex = trimmed.indexOf('=');
+      if (separatorIndex <= 0) continue;
+      const key = trimmed.slice(0, separatorIndex).trim();
+      if (!/^[A-Za-z_][A-Za-z0-9_]*$/.test(key) || process.env[key] !== undefined) continue;
+      process.env[key] = normalizeEnvValue(trimmed.slice(separatorIndex + 1));
+    }
+  }
+}
+
 function sourceReferences(sources) {
   if (!isPlainObject(sources) || !Array.isArray(sources.references)) return [];
   return sources.references.filter(isPlainObject);
@@ -284,6 +333,28 @@ function coveredValues(reference) {
   );
 }
 
+function expectedCategoriesForPrevoyanceTable(table) {
+  if (table === 'prevoyance_regime_settings') {
+    return FOUR_CATEGORIES;
+  }
+  if (table === 'prevoyance_maintien_employeur_settings') {
+    return MAINTIEN_EMPLOYEUR_CATEGORIES;
+  }
+  return new Set();
+}
+
+function categorySearchTokens(category) {
+  return [category, category.replace(/_/g, ' '), category.replace(/_/g, '-')]
+    .map(normalizeSearchText)
+    .filter(Boolean);
+}
+
+function noRefReasonMentionsCategory(row, noRefReason, category) {
+  const reason = normalizeSearchText(noRefReason);
+  if (!reason || !noRefReasonMentionsRow(row, noRefReason)) return false;
+  return categorySearchTokens(category).some((token) => reason.includes(token));
+}
+
 export function auditPrevoyanceSourceRows(table, rows) {
   const findings = [];
   const counters = {
@@ -295,12 +366,16 @@ export function auditPrevoyanceSourceRows(table, rows) {
     fourCategoryClaims: 0,
     referencesWithoutAttestation: 0,
     nonSpecificNoRefReasons: 0,
+    missingCategoryClaims: 0,
+    rootOrGenericUrls: 0,
   };
+  const expectedCategories = expectedCategoriesForPrevoyanceTable(table);
 
   for (const row of rows) {
     const rowLabel = `${table}:${row.code ?? '(code absent)'}`;
     const references = sourceReferences(row.sources);
     const noRefReason = sourceNoRefReason(row.sources);
+    const coveredCategories = new Set();
 
     if (references.length === 0 && !noRefReason) {
       counters.rowsWithoutReferenceOrReason += 1;
@@ -323,6 +398,10 @@ export function auditPrevoyanceSourceRows(table, rows) {
         counters.unstableUrls += 1;
         findings.push(`${rowLabel}: URL institutionnelle instable (${url})`);
       }
+      if (isGenericPrevoyanceUrl(url)) {
+        counters.rootOrGenericUrls += 1;
+        findings.push(`${rowLabel}: URL prévoyance racine ou générique (${url})`);
+      }
       if (isNonEmptyString(url) && url.includes('F3053')) {
         counters.f3053References += 1;
       }
@@ -332,6 +411,9 @@ export function auditPrevoyanceSourceRows(table, rows) {
       }
 
       const values = new Set(coveredValues(reference));
+      for (const value of values) {
+        coveredCategories.add(value);
+      }
       const hasFourCategoryClaim = Array.from(FOUR_CATEGORIES).every((category) =>
         values.has(category),
       );
@@ -339,6 +421,13 @@ export function auditPrevoyanceSourceRows(table, rows) {
         counters.fourCategoryClaims += 1;
         findings.push(`${rowLabel}: couverture simultanée arrêt/invalidité/décès/cotisations`);
       }
+    }
+
+    for (const category of expectedCategories) {
+      if (coveredCategories.has(category)) continue;
+      if (noRefReasonMentionsCategory(row, noRefReason, category)) continue;
+      counters.missingCategoryClaims += 1;
+      findings.push(`${rowLabel}: catégorie prévoyance non couverte (${category})`);
     }
   }
 
@@ -428,6 +517,7 @@ async function auditPrevoyanceDb(withDb) {
 
 async function run() {
   const options = parseArgs(process.argv.slice(2));
+  loadLocalEnv(options.root);
   const chainPath = path.join(options.root, 'src', 'domain', 'settings-references', 'chain.json');
   const referencesPath = path.join(
     options.root,

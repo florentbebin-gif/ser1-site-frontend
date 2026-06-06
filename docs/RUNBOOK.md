@@ -61,7 +61,7 @@ Lors d'un renommage de checks requis, éviter le blocage `expected — never rep
 Scripts ponctuels documentés :
 
 - `npm run audit:base-contrat-dmtg` : audit manuel ciblé Base-Contrat/DMTG, hors CI.
-- `npm run check:settings-references` : garde local du chaînage Settings ↔ références juridiques, disponible hors `check:static` tant que la couverture complète n'est pas terminée. Le registre est partiel et non exhaustif ; le rapport liste les pages représentées, le nombre de bindings déclarés par page et `coverage.byPage[*].declared/expected`. Un attendu non défini garde `coverage.isExhaustive = false`.
+- `npm run check:settings-references` : garde local du chaînage Settings ↔ références juridiques, branché dans `check:static`. Le registre est exhaustif ; le rapport liste les pages représentées, le nombre de bindings déclarés par page et `coverage.byPage[*].declared/expected`. `coverage.mode` doit rester `exhaustive` et `coverage.isExhaustive = true`.
 - `npm run audit:settings-references -- --stale` : audit manuel de fraîcheur du chaînage Settings. Pour la liveness URL, `404`/`410` signifie URL morte et bloque l'audit ; `401`/`403`/`429` signifie URL non vérifiable automatiquement et reste un avertissement. Les timeouts, erreurs DNS et `5xx` sont inconclusifs, pas des preuves d'URL morte.
 - `npm run audit:settings-references -- --stale --with-db` : même audit avec lecture Supabase des sources prévoyance si une URL Supabase et une clé de lecture autorisée sont disponibles, ou avec `SUPABASE_ANON_KEY` + `E2E_EMAIL`/`E2E_PASSWORD` pour une lecture authentifiée.
 - `npm run audit:css-usage` et `npm run audit:unicode` : diagnostics manuels de nettoyage, hors CI.
@@ -724,7 +724,8 @@ Procédure à suivre chaque année (PLF, BOFiP, BOSS…). Aucune compétence tec
 2. Mettre à jour le binding correspondant dans `src/domain/settings-references/chain.json` :
    `refIds` si la source canonique existe, `relevanceNote`, `verifiedAt`, `volatility` et `target`.
 3. Si aucune source stable ne fonde le claim, laisser `refIds: []` et renseigner `noRefReason`.
-   En prévoyance, une absence de source doit nommer le régime concerné (`code`, `label` ou `caisse`) et signifie que le sourcing par catégorie reste à faire.
+   En prévoyance, une absence de source doit nommer le régime concerné (`code`, `label` ou `caisse`)
+   et la catégorie concernée ; une URL racine de caisse ne suffit pas.
 4. Lancer :
 
 ```powershell
@@ -739,18 +740,20 @@ npm run audit:settings-references -- --stale
 npm run audit:settings-references -- --stale --with-db
 ```
 
-Ne pas brancher `check:settings-references` dans `check:static` tant que les 5 surfaces
+`check:settings-references` est branché dans `check:static`. Les 5 surfaces
 `/settings/impots`, `/settings/prelevements`, `/settings/base-contrat`,
-`/settings/dmtg-succession` et `/settings/prevoyance-regimes` n'ont pas toutes
+`/settings/dmtg-succession` et `/settings/prevoyance-regimes` doivent rester à
 `coverage.byPage[*].expectedDefined = true`, `complete = true`, `coverage.isExhaustive = true` et
 zéro dette muette. Dans le scénario 2027, `npm run audit:settings-references -- --stale --with-db`
 sert à lister les claims périmés ou à vérifier ; une liveness `blocked` impose une vérification
 manuelle Légifrance/BOFiP, mais ne prouve pas que l'URL est morte.
 
-La migration `20260606000100_prevoyance_sources_settings_chain.sql` supprime les anciennes sources
-prévoyance placeholders et conserve `references: []` avec une raison explicite par régime. Elle ne
-constitue pas un sourcing réel des 16 régimes ; ce sourcing doit être repris par catégorie dans un
-chantier dédié avant de qualifier ces sources.
+Les migrations prévoyance `20260606000200_prevoyance_sources_lot5.sql`,
+`20260606000300_prevoyance_sources_lot5_url_correction.sql` puis
+`20260606000400_prevoyance_sources_lot5_dead_url_correction.sql` qualifient les sources par régime
+et par catégorie dans `sources.references`. Les migrations correctives remplacent les URLs racines,
+trop génériques ou mortes par des pages de garanties/cotisations ; l'audit DB doit refuser toute
+régression.
 
 ---
 

@@ -190,11 +190,9 @@ describe('PrevoyanceRegimes', () => {
       'href',
       'https://www.ameli.fr/',
     );
-    expect(
-      screen.getByText(
-        (_, element) => element?.textContent === 'Valeurs couvertes : invalidité, décès',
-      ),
-    ).toBeInTheDocument();
+    expect(screen.queryByText('Confiance élevée')).not.toBeInTheDocument();
+    expect(screen.queryByText(/consulté le 2026-05-24/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Valeurs couvertes/i)).not.toBeInTheDocument();
     expect(screen.getByText('Cotisations')).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Modifier' })).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Maintien employeur' })).not.toBeInTheDocument();
@@ -211,6 +209,14 @@ describe('PrevoyanceRegimes', () => {
 
     await user.click(screen.getByRole('button', { name: /Agent général — CAVAMAC/i }));
     expect(screen.getByRole('button', { name: 'Modifier' })).toBeInTheDocument();
+    expect(screen.getByText('Confiance élevée')).toBeInTheDocument();
+    expect(screen.getByText(/consulté le 2026-05-24/i)).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        (_, element) => element?.textContent === 'Valeurs couvertes : invalidité, décès',
+      ),
+    ).toBeInTheDocument();
+    expect(screen.getByText('Note interne invisible aux users.')).toBeInTheDocument();
   });
 
   it('initialise une nouvelle source admin sans URL factice', async () => {

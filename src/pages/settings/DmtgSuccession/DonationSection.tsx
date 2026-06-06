@@ -50,7 +50,12 @@ export default function DonationSection({
         <div className="fisc-acc-body">
           <p className="dmtg-intro">
             Paramètres de donation entre vifs et rappel fiscal (
-            <LegalRefLink id={DONATION_SECTION_LEGAL_REFERENCE_IDS[0]} />
+            {DONATION_SECTION_LEGAL_REFERENCE_IDS.map((referenceId, index) => (
+              <React.Fragment key={referenceId}>
+                {index > 0 ? ', ' : null}
+                <LegalRefLink id={referenceId} />
+              </React.Fragment>
+            ))}
             ).
           </p>
 
