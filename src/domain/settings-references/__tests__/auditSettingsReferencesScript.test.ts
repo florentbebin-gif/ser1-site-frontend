@@ -30,7 +30,11 @@ type AuditModule = {
     table: string,
     rows: Array<Record<string, unknown>>,
   ) => {
-    counters: { nonSpecificNoRefReasons: number };
+    counters: {
+      nonSpecificNoRefReasons: number;
+      missingCategoryClaims: number;
+      rootOrGenericUrls: number;
+    };
     findings: string[];
   };
 };
@@ -217,7 +221,7 @@ describe('audit-settings-references', () => {
     );
   });
 
-  it('accepte une absence de source prévoyance qui nomme le code du régime', async () => {
+  it('accepte une absence de source prévoyance justifiée par régime et par catégorie', async () => {
     const { auditPrevoyanceSourceRows } = await loadAuditModule();
 
     const audit = auditPrevoyanceSourceRows('prevoyance_regime_settings', [
@@ -228,12 +232,73 @@ describe('audit-settings-references', () => {
         sources: {
           references: [],
           noRefReason:
-            "Aucune source institutionnelle stable et pertinente n'a été validée pour Agent général - CAVAMAC (cavamac).",
+            "Aucune source institutionnelle stable et pertinente n'a été validée pour Agent général - CAVAMAC (cavamac) sur les catégories arret, invalidite, deces et cotisations.",
         },
       },
     ]);
 
     expect(audit.counters.nonSpecificNoRefReasons).toBe(0);
+    expect(audit.counters.missingCategoryClaims).toBe(0);
     expect(audit.findings).toHaveLength(0);
+  });
+
+  it('signale une catégorie prévoyance non couverte par valeursCouvertes', async () => {
+    const { auditPrevoyanceSourceRows } = await loadAuditModule();
+
+    const audit = auditPrevoyanceSourceRows('prevoyance_regime_settings', [
+      {
+        code: 'cavamac',
+        label: 'Agent général - CAVAMAC',
+        caisse: 'CAVAMAC',
+        sources: {
+          references: [
+            {
+              titre: 'Garanties CAVAMAC',
+              url: 'https://www.cavamac.fr',
+              valeursCouvertes: ['arret', 'invalidite', 'deces'],
+              relevanceNote:
+                'La référence institutionnelle CAVAMAC est rattachée au régime cavamac de la fixture.',
+              verifiedAt: '2026-06-06',
+            },
+          ],
+        },
+      },
+    ]);
+
+    expect(audit.counters.missingCategoryClaims).toBe(1);
+    expect(audit.findings).toContain(
+      'prevoyance_regime_settings:cavamac: catégorie prévoyance non couverte (cotisations)',
+    );
+  });
+
+  it('refuse une URL prévoyance racine même si les catégories sont couvertes', async () => {
+    const { auditPrevoyanceSourceRows } = await loadAuditModule();
+
+    const audit = auditPrevoyanceSourceRows('prevoyance_regime_settings', [
+      {
+        code: 'cavamac',
+        label: 'Agent général - CAVAMAC',
+        caisse: 'CAVAMAC',
+        sources: {
+          references: [
+            {
+              titre: 'Garanties CAVAMAC',
+              url: 'https://www.cavamac.fr',
+              valeursCouvertes: ['arret'],
+              relevanceNote:
+                'La référence institutionnelle CAVAMAC est rattachée au régime cavamac de la fixture.',
+              verifiedAt: '2026-06-06',
+            },
+          ],
+          noRefReason:
+            'Les catégories invalidite, deces et cotisations du régime Agent général - CAVAMAC (cavamac) restent justifiées par cette fixture.',
+        },
+      },
+    ]);
+
+    expect(audit.counters.rootOrGenericUrls).toBe(1);
+    expect(audit.findings).toContain(
+      'prevoyance_regime_settings:cavamac: URL prévoyance racine ou générique (https://www.cavamac.fr)',
+    );
   });
 });

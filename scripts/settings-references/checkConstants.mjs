@@ -6,9 +6,13 @@ export const SETTINGS_PAGES = new Set([
   '/settings/prevoyance-regimes',
 ]);
 
-export const COVERAGE_EXPECTED_CLAIMS_BY_PAGE = Object.fromEntries(
-  Array.from(SETTINGS_PAGES).map((pagePath) => [pagePath, null]),
-);
+export const COVERAGE_EXPECTED_CLAIMS_BY_PAGE = {
+  '/settings/impots': 11,
+  '/settings/prelevements': 4,
+  '/settings/base-contrat': null,
+  '/settings/dmtg-succession': 7,
+  '/settings/prevoyance-regimes': 69,
+};
 
 export const CATEGORIES = new Set([
   'constitution',
@@ -50,4 +54,12 @@ export const GENERIC_TEXT_PATTERNS = [
   /non renseign/i,
   /^aucune$/i,
   /^n\/a$/i,
+];
+
+export const BASE_CONTRAT_INCOMPLETE_SOURCE_PATTERNS = [
+  /ne résolvent pas encore vers une référence officielle/i,
+  /ne resolvent pas encore vers une reference officielle/i,
+  /sources actuelles.*pas encore/i,
+  /sourcing.*à faire/i,
+  /sourcing.*a faire/i,
 ];

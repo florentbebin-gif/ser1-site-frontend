@@ -27,8 +27,8 @@ const RESIDENCE_PRINCIPALE: ProductRules = {
       confidence: 'elevee',
       sources: [
         {
-          label: 'Art. 885 S CGI — IFI abattement résidence principale',
-          url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000036454733',
+          label: 'Art. 973 CGI — IFI abattement résidence principale',
+          url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000037988627',
         },
       ],
     },
@@ -120,8 +120,8 @@ const RESIDENCE_SECONDAIRE: ProductRules = {
       confidence: 'elevee',
       sources: [
         {
-          label: 'Service-public.fr — Droits de mutation immobilier',
-          url: 'https://www.service-public.fr/particuliers/vosdroits/F35830',
+          label: 'BOFiP — Mutations de propriété à titre onéreux d’immeubles',
+          url: 'https://bofip.impots.gouv.fr/bofip/3382-PGP.html/identifiant%3DBOI-ENR-DMTOI-20160406',
         },
       ],
     },
@@ -329,7 +329,7 @@ const LOCATIF_MEUBLE_LMP: ProductRules = {
       sources: [
         {
           label: 'Art. 151 septies CGI',
-          url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000042908282',
+          url: 'https://www.legifrance.gouv.fr/loda/article_lc/LEGIARTI000051216302',
         },
       ],
       dependencies: ["chiffre d'affaires N-1 et N-2", "durée d'activité LMP"],

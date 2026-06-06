@@ -127,7 +127,9 @@ function RegimeMetaCard({
       <RuleCard title="Références">
         <div className="prevoyance-settings-meta-card">
           <div className="settings-reference-empty-card__body">
-            {sources.noRefReason ?? 'Références à compléter.'}
+            {showAdminNotes && sources.noRefReason
+              ? sources.noRefReason
+              : 'Références à compléter.'}
           </div>
           <div className="prevoyance-settings-meta-card__section">
             <span className="settings-reference-rule-meta__label">Cotisations</span>
@@ -143,13 +145,15 @@ function RegimeMetaCard({
   return (
     <RuleCard title="Références">
       <div className="prevoyance-settings-meta-card">
-        <div className="prevoyance-settings-meta-card__section">
-          <span
-            className={`settings-reference-confidence settings-reference-confidence--${firstReference.confiance}`}
-          >
-            {formatConfidence(firstReference.confiance)}
-          </span>
-        </div>
+        {showAdminNotes ? (
+          <div className="prevoyance-settings-meta-card__section">
+            <span
+              className={`settings-reference-confidence settings-reference-confidence--${firstReference.confiance}`}
+            >
+              {formatConfidence(firstReference.confiance)}
+            </span>
+          </div>
+        ) : null}
         <div className="prevoyance-settings-meta-card__section">
           <span className="settings-reference-rule-meta__label">Sources</span>
           <ul className="settings-reference-rule-meta__list prevoyance-settings-source-list">
@@ -164,13 +168,15 @@ function RegimeMetaCard({
                 )}{' '}
                 - {reference.titre}
                 {reference.rubrique ? ` (${reference.rubrique})` : ''}
-                {` consulté le ${reference.dateConsultation}`}
+                {showAdminNotes ? ` consulté le ${reference.dateConsultation}` : ''}
               </li>
             ))}
           </ul>
-          <span className="prevoyance-settings-covered-values">
-            <strong>Valeurs couvertes :</strong> {getCoveredValuesLabel(sources)}
-          </span>
+          {showAdminNotes ? (
+            <span className="prevoyance-settings-covered-values">
+              <strong>Valeurs couvertes :</strong> {getCoveredValuesLabel(sources)}
+            </span>
+          ) : null}
         </div>
         <div className="prevoyance-settings-meta-card__section">
           <span className="settings-reference-rule-meta__label">Cotisations</span>

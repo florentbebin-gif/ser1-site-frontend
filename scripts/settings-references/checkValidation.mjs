@@ -1,6 +1,7 @@
 import {
   BASE_CONTRAT_AUDIENCES,
   BASE_CONTRAT_PHASES,
+  BASE_CONTRAT_INCOMPLETE_SOURCE_PATTERNS,
   CATEGORIES,
   COVERAGE_EXPECTED_CLAIMS_BY_PAGE,
   DEFAULT_EXPORT_BY_TABLE,
@@ -226,6 +227,13 @@ function validateBinding(binding, index, context) {
       }
     } else if (!isSpecificText(binding.noRefReason)) {
       errors.push(`${label}: noRefReason spécifique obligatoire quand refIds est vide`);
+    } else if (
+      binding.pagePath === '/settings/base-contrat' &&
+      BASE_CONTRAT_INCOMPLETE_SOURCE_PATTERNS.some((pattern) => pattern.test(binding.noRefReason))
+    ) {
+      errors.push(
+        `${label}: noRefReason Base-Contrat interdit car il signale seulement un sourcing incomplet`,
+      );
     }
   }
 
@@ -275,20 +283,51 @@ function countBindingsByPage(chain) {
   );
 }
 
-export function buildCoverage(chain) {
+function countBaseContratRuntimeClaims(context) {
+  if (!(context?.baseContratRuleBlocks instanceof Map)) return null;
+  let count = 0;
+  for (const blocks of context.baseContratRuleBlocks.values()) {
+    for (const phase of BASE_CONTRAT_PHASES) {
+      count += blocks[phase]?.size ?? 0;
+    }
+  }
+  return count;
+}
+
+function expectedClaimsForPage(pagePath, context) {
+  const expected = COVERAGE_EXPECTED_CLAIMS_BY_PAGE[pagePath];
+  if (pagePath === '/settings/base-contrat') {
+    return countBaseContratRuntimeClaims(context);
+  }
+  return expected;
+}
+
+export function buildCoverage(chain, context = {}) {
   const bindingsByPage = countBindingsByPage(chain);
+  const missingClaims = [];
+  const extraClaims = [];
   const byPage = Object.fromEntries(
     Array.from(SETTINGS_PAGES).map((pagePath) => {
-      const expected = COVERAGE_EXPECTED_CLAIMS_BY_PAGE[pagePath];
+      const expected = expectedClaimsForPage(pagePath, context);
       const expectedDefined = Number.isInteger(expected) && expected >= 0;
       const declared = bindingsByPage[pagePath] ?? 0;
+      const missingCount = expectedDefined ? Math.max(0, expected - declared) : 0;
+      const extraCount = expectedDefined ? Math.max(0, declared - expected) : 0;
+      if (missingCount > 0) {
+        missingClaims.push(`${pagePath}: ${missingCount} claim(s) attendu(s) non déclarés`);
+      }
+      if (extraCount > 0) {
+        extraClaims.push(`${pagePath}: ${extraCount} claim(s) surnuméraire(s)`);
+      }
       return [
         pagePath,
         {
           expected,
           declared,
           expectedDefined,
-          complete: expectedDefined && declared >= expected,
+          complete: expectedDefined && declared === expected,
+          missing: missingCount,
+          extra: extraCount,
         },
       ];
     }),
@@ -297,13 +336,26 @@ export function buildCoverage(chain) {
   const expectedClaimsDefined = pageCoverage.every((entry) => entry.expectedDefined);
   const isExhaustive =
     expectedClaimsDefined && pageCoverage.every((entry) => entry.complete && entry.expected > 0);
+  const errors = [
+    ...Object.entries(byPage)
+      .filter(([, entry]) => !entry.expectedDefined)
+      .map(
+        ([pagePath, entry]) =>
+          `Couverture Settings: attendu non défini pour ${pagePath} (${String(entry.expected)})`,
+      ),
+    ...missingClaims,
+    ...extraClaims,
+  ];
 
   return {
-    mode: 'partial',
+    mode: 'exhaustive',
     isExhaustive,
     expectedClaimsDefined,
     bindingsByPage,
     byPage,
-    note: 'Registre partiel non exhaustif : le check valide les bindings déclarés sans garantir encore la couverture complète des 5 surfaces Settings. Une surface ne peut être complète que si son nombre de claims attendus est défini explicitement.',
+    missingClaims,
+    extraClaims,
+    errors,
+    note: 'Registre exhaustif : chaque surface Settings doit déclarer exactement le nombre de claims attendus, Base-Contrat étant mesuré depuis CATALOG + getRules().',
   };
 }

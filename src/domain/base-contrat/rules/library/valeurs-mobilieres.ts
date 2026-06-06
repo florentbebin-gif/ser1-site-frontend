@@ -127,7 +127,7 @@ const FONDS_OPC: ProductRules = {
       sources: [
         {
           label: 'Art. 199 terdecies-0 A CGI — FCPI/FIP',
-          url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000044975826',
+          url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000048844140',
         },
       ],
       dependencies: [
@@ -186,7 +186,7 @@ const ACTIONS_NON_COTEES: ProductRules = {
       sources: [
         {
           label: 'Art. 199 terdecies-0 A CGI — IR-PME',
-          url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000044975826',
+          url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000048844140',
         },
       ],
     },
@@ -222,7 +222,7 @@ const ACTIONS_NON_COTEES: ProductRules = {
       sources: [
         {
           label: 'Art. 787 B CGI — Pacte Dutreil',
-          url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000043663071',
+          url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000053542700',
         },
       ],
     },
@@ -299,7 +299,7 @@ const IR_PME_MADELIN: ProductRules = {
       sources: [
         {
           label: 'Art. 199 terdecies-0 A CGI — IR-PME',
-          url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000044975826',
+          url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000048844140',
         },
       ],
       dependencies: ['âge et secteur PME', 'conservation 5 ans', 'taux IR-PME millésime'],
@@ -336,7 +336,7 @@ const IR_PME_MADELIN: ProductRules = {
       sources: [
         {
           label: 'Art. 787 B CGI — Pacte Dutreil + Art. 779 CGI — abattements DMTG',
-          url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000043663071',
+          url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000053542700',
         },
       ],
     },

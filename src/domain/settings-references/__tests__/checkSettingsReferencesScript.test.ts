@@ -11,7 +11,7 @@ const tempRoots: string[] = [];
 
 type CheckReport = {
   coverage: {
-    mode: 'partial';
+    mode: 'exhaustive';
     isExhaustive: boolean;
     expectedClaimsDefined: boolean;
     bindingsByPage: Record<string, number>;
@@ -22,10 +22,33 @@ type CheckReport = {
         declared: number;
         expectedDefined: boolean;
         complete: boolean;
+        missing: number;
+        extra: number;
       }
     >;
   };
 };
+
+const PREVOYANCE_CODES = [
+  'salarie-cpam',
+  'salarie-msa',
+  'ssi-artisan-commercant',
+  'cnavpl',
+  'cipav',
+  'carpimko',
+  'carmf',
+  'carcdsf-dentiste',
+  'carcdsf-sagefemme',
+  'cavp',
+  'carpv',
+  'cavec',
+  'cprn',
+  'cavom',
+  'cavamac',
+  'cnbf',
+  'msa-exploitant',
+];
+const PREVOYANCE_CATEGORIES = ['arret', 'invalidite', 'deces', 'cotisations'];
 
 function createRoot() {
   const root = mkdtempSync(join(tmpdir(), 'ser1-settings-references-'));
@@ -72,6 +95,115 @@ function validBinding(overrides: Record<string, unknown> = {}) {
     volatility: 'lawChange',
     ...overrides,
   };
+}
+
+function validBaseContratBinding(audience: 'pp' | 'pm', overrides: Record<string, unknown> = {}) {
+  return validBinding({
+    pagePath: '/settings/base-contrat',
+    sectionKey: 'assurance-epargne',
+    category: 'deces-transmission',
+    claimKey: `capitalisation-succession-active-${audience}`,
+    target: {
+      kind: 'base-contrat-rule',
+      productId: 'contrat_capitalisation_pp',
+      audience,
+      phase: 'deces',
+      blockKey: 'integration-dans-la-succession',
+    },
+    refIds: [],
+    relevanceNote: undefined,
+    noRefReason:
+      'La fixture représente explicitement un claim Base-Contrat sans référence canonique positive qualifiée.',
+    ...overrides,
+  });
+}
+
+function completeBindings(baseBindingOverrides: Record<string, unknown> = {}) {
+  const bindings: Array<Record<string, unknown>> = [];
+
+  for (let index = 0; index < 11; index += 1) {
+    bindings.push(
+      validBinding({
+        sectionKey: 'impots-fixture',
+        claimKey: `impots-fixture-${index}`,
+        claimLabel: `Claim impôts ${index}`,
+      }),
+    );
+  }
+
+  for (let index = 0; index < 4; index += 1) {
+    bindings.push(
+      validBinding({
+        pagePath: '/settings/prelevements',
+        sectionKey: 'prelevements-fixture',
+        claimKey: `prelevements-fixture-${index}`,
+        claimLabel: `Claim prélèvements ${index}`,
+        target: {
+          kind: 'settings-default',
+          table: 'ps_settings',
+          path: index === 3 ? 'retirementThresholds.current' : 'patrimony.current',
+        },
+      }),
+    );
+  }
+
+  for (let index = 0; index < 7; index += 1) {
+    bindings.push(
+      validBinding({
+        pagePath: '/settings/dmtg-succession',
+        sectionKey: 'dmtg-fixture',
+        category: index % 2 === 0 ? 'valeur-fiscale' : 'regle-civile',
+        claimKey: `dmtg-fixture-${index}`,
+        claimLabel: `Claim DMTG ${index}`,
+        target: {
+          kind: 'settings-default',
+          table: 'tax_settings',
+          path: 'dmtg',
+        },
+      }),
+    );
+  }
+
+  bindings.push(validBaseContratBinding('pp', baseBindingOverrides));
+  bindings.push(validBaseContratBinding('pm'));
+
+  for (const code of PREVOYANCE_CODES) {
+    for (const category of PREVOYANCE_CATEGORIES) {
+      bindings.push(
+        validBinding({
+          pagePath: '/settings/prevoyance-regimes',
+          sectionKey: `prevoyance-${code}`,
+          category: category === 'deces' ? 'deces-transmission' : category,
+          claimKey: `${code}-${category}`,
+          claimLabel: `Claim prévoyance ${code} ${category}`,
+          target: {
+            kind: 'prevoyance-db',
+            table: 'prevoyance_regime_settings',
+            code,
+            jsonPath: `sources.references.${category}`,
+          },
+        }),
+      );
+    }
+  }
+
+  bindings.push(
+    validBinding({
+      pagePath: '/settings/prevoyance-regimes',
+      sectionKey: 'prevoyance-maintien-employeur',
+      category: 'maintien-employeur',
+      claimKey: 'maintien-employeur',
+      claimLabel: 'Maintien employeur',
+      target: {
+        kind: 'prevoyance-db',
+        table: 'prevoyance_maintien_employeur_settings',
+        code: 'maintien-employeur',
+        jsonPath: 'sources.references.maintien_employeur',
+      },
+    }),
+  );
+
+  return bindings;
 }
 
 function writeReferences(root: string, references: Array<Record<string, unknown>>) {
@@ -157,7 +289,7 @@ export function getAssuranceEpargneRules(productId: string) {
   );
 }
 
-function writeValidRoot(root: string, bindings = [validBinding()]) {
+function writeValidRoot(root: string, bindings = completeBindings()) {
   writeReferences(root, [validReference()]);
   writeChain(root, bindings);
   writeDefaults(root);
@@ -199,12 +331,12 @@ describe('check-settings-references', () => {
 
     expect(result.status).toBe(0);
     expect(output).toContain('check:settings-references ✅');
-    expect(output).toContain('registre partiel non exhaustif');
-    expect(output).toContain('Complétude déclarée');
+    expect(output).toContain('registre exhaustif');
+    expect(output).toContain('Complétude contrôlée');
     expect(output).not.toContain('surfaces couvertes');
   });
 
-  it('expose la couverture partielle dans le rapport JSON', () => {
+  it('expose la couverture exhaustive dans le rapport JSON', () => {
     const root = createRoot();
     writeValidRoot(root);
 
@@ -212,23 +344,31 @@ describe('check-settings-references', () => {
     const report = parseCheckReport(result.stdout);
 
     expect(result.status).toBe(0);
-    expect(report.coverage.mode).toBe('partial');
-    expect(report.coverage.isExhaustive).toBe(false);
-    expect(report.coverage.expectedClaimsDefined).toBe(false);
+    expect(report.coverage.mode).toBe('exhaustive');
+    expect(report.coverage.isExhaustive).toBe(true);
+    expect(report.coverage.expectedClaimsDefined).toBe(true);
     expect(report.coverage.bindingsByPage).toEqual({
-      '/settings/impots': 1,
+      '/settings/base-contrat': 2,
+      '/settings/dmtg-succession': 7,
+      '/settings/impots': 11,
+      '/settings/prelevements': 4,
+      '/settings/prevoyance-regimes': 69,
     });
     expect(report.coverage.byPage['/settings/impots']).toEqual({
-      expected: null,
-      declared: 1,
-      expectedDefined: false,
-      complete: false,
+      expected: 11,
+      declared: 11,
+      expectedDefined: true,
+      complete: true,
+      missing: 0,
+      extra: 0,
     });
     expect(report.coverage.byPage['/settings/base-contrat']).toEqual({
-      expected: null,
-      declared: 0,
-      expectedDefined: false,
-      complete: false,
+      expected: 2,
+      declared: 2,
+      expectedDefined: true,
+      complete: true,
+      missing: 0,
+      extra: 0,
     });
   });
 
@@ -286,25 +426,7 @@ describe('check-settings-references', () => {
 
   it('accepte un target Base-Contrat généré par split PP/PM', () => {
     const root = createRoot();
-    writeValidRoot(root, [
-      validBinding({
-        pagePath: '/settings/base-contrat',
-        sectionKey: 'assurance-epargne',
-        category: 'deces-transmission',
-        claimKey: 'capitalisation-succession-active',
-        target: {
-          kind: 'base-contrat-rule',
-          productId: 'contrat_capitalisation_pp',
-          audience: 'pp',
-          phase: 'deces',
-          blockKey: 'integration-dans-la-succession',
-        },
-        refIds: [],
-        relevanceNote: undefined,
-        noRefReason:
-          'La fixture représente explicitement un claim sans référence canonique positive qualifiée.',
-      }),
-    ]);
+    writeValidRoot(root, completeBindings());
 
     const result = runCheck(root);
     const output = `${result.stdout}\n${result.stderr}`;
@@ -316,11 +438,7 @@ describe('check-settings-references', () => {
   it('bloque un target Base-Contrat dont le blockKey ne résout aucun bloc', () => {
     const root = createRoot();
     writeValidRoot(root, [
-      validBinding({
-        pagePath: '/settings/base-contrat',
-        sectionKey: 'assurance-epargne',
-        category: 'deces-transmission',
-        claimKey: 'capitalisation-succession-active',
+      ...completeBindings({
         target: {
           kind: 'base-contrat-rule',
           productId: 'contrat_capitalisation_pp',
@@ -328,10 +446,6 @@ describe('check-settings-references', () => {
           phase: 'deces',
           blockKey: 'bloc-inexistant',
         },
-        refIds: [],
-        relevanceNote: undefined,
-        noRefReason:
-          'La fixture représente explicitement un claim sans référence canonique positive qualifiée.',
       }),
     ]);
 

@@ -211,8 +211,10 @@ function collectCatalogProductIds(root) {
 
   function visit(node) {
     if (ts.isObjectLiteralExpression(node)) {
-      const id = getStringProperty(node, 'id');
-      if (id) ids.add(id);
+      for (const propertyName of ['id', 'ppId', 'pmId']) {
+        const id = getStringProperty(node, propertyName);
+        if (id) ids.add(id);
+      }
     }
     ts.forEachChild(node, visit);
   }
