@@ -7,6 +7,15 @@ Stack : React 19 + React Router 7 + Vite 8 + TypeScript 6 strict + Supabase.
 Terminal : Windows/PowerShell — pas de commandes macOS/Linux.
 CI gate : `npm run check` — doit passer avant tout commit.
 
+## Routage critique Codex
+
+Pour toute tâche mentionnant `PR_CIBLE`, `docs/ROADMAP.md`, une PR roadmap,
+un jalon `V*`, une livraison autonome de PR ou un `/goal` explicitement lié
+à une PR roadmap, Codex doit utiliser `ser1-roadmap-pr-runner`.
+
+Si le skill n'apparaît pas dans la liste des skills disponibles, lire directement
+`.agents/skills/ser1-roadmap-pr-runner/SKILL.md` comme protocole d'exécution.
+
 ## Phase projet
 
 L'app n'est pas encore commercialisée — elle est en phase de construction, sans utilisateurs en production.
@@ -152,14 +161,15 @@ d'exécution restent propres à chaque outil : Claude Code charge automatiquemen
 dans `.claude/skills/<nom>/SKILL.md`, Codex charge automatiquement ses propres skills installés.
 Ne pas demander de commande manuelle à l'utilisateur pour activer un skill.
 
-| Si la tâche touche…                            | Lire                                        |
-| ---------------------------------------------- | ------------------------------------------- |
-| CSS, UI, thème, couleurs, pages `/sim/*`       | `docs/DESIGN.md` puis `docs/GOUVERNANCE.md` |
-| Architecture, structure, flux, Supabase        | `docs/ARCHITECTURE.md`                      |
-| Règles métier fiscales, périmètre simulateurs  | `docs/METIER.md`                            |
-| Exports PPTX / Excel                           | `docs/GOUVERNANCE_EXPORTS.md`               |
-| `src/domain/base-contrat/` (catalogue, règles) | `docs/ARCHITECTURE.md` § Base-Contrat       |
-| Git workflow, PR, conventions humains          | `.github/CONTRIBUTING.md`                   |
+| Si la tâche touche…                            | Lire                                                                                          |
+| ---------------------------------------------- | --------------------------------------------------------------------------------------------- |
+| CSS, UI, thème, couleurs, pages `/sim/*`       | `docs/DESIGN.md` puis `docs/GOUVERNANCE.md`                                                   |
+| Architecture, structure, flux, Supabase        | `docs/ARCHITECTURE.md`                                                                        |
+| Règles métier fiscales, périmètre simulateurs  | `docs/METIER.md`                                                                              |
+| Exports PPTX / Excel                           | `docs/GOUVERNANCE_EXPORTS.md`                                                                 |
+| IA documentaire, Mistral, OCR, document-ai     | `docs/RUNBOOK_MISTRAL_SER1.md`, `docs/PLAN_IA_DOCUMENTAIRE_SER1.md`, `docs/AI_ACT_CADRAGE.md` |
+| `src/domain/base-contrat/` (catalogue, règles) | `docs/ARCHITECTURE.md` § Base-Contrat                                                         |
+| Git workflow, PR, conventions humains          | `.github/CONTRIBUTING.md`                                                                     |
 
 ### Skills automatiques par assistant
 
@@ -189,10 +199,13 @@ sont plus le flux de référence.
 
 Codex :
 
-- Utiliser les skills Codex SER1 installés quand disponibles : `ser1-repo-navigation`,
-  `ser1-proof-first`, `ser1-ui-v5-polish`, `ser1-fiscal-chain`,
+- Utiliser les skills Codex SER1 disponibles quand ils existent : `ser1-repo-navigation`,
+  `ser1-proof-first`, `ser1-brainstorming`, `ser1-roadmap-pr-runner`, `ser1-ui-v5-polish`, `ser1-fiscal-chain`,
   `ser1-supabase-rls`, `ser1-reporting-exports`, `ser1-per-base-contrat`,
   `ser1-check-fix`.
+- Déclencher `ser1-roadmap-pr-runner` pour `PR_CIBLE`, `docs/ROADMAP.md`,
+  une PR roadmap, un jalon `V*`, une demande de livraison autonome de PR,
+  ou un `/goal` explicitement lié à une PR roadmap.
 - Utiliser les skills Codex système/plugin pertinents (`xlsx`, Documents, Presentations,
   Browser, Superpowers, etc.) selon la tâche.
 - Ne pas traiter `.claude/skills/*` comme des skills Codex natifs ; ce sont des skills Claude Code.
