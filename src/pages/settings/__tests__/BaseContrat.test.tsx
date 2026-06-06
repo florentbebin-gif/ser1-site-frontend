@@ -53,7 +53,7 @@ const mockedRules: ProductRules = {
           refId: 'cgi-990-i',
         },
       ],
-      dependencies: ['Validation notaire'],
+      dependencies: ['Validation notaire', 'source officielle ou contractuelle applicable'],
     },
   ],
   sortie: [],
@@ -153,6 +153,17 @@ describe('BaseContrat', () => {
       getLegalReference('cgi-990-i').officialUrl,
     );
     expect(screen.getByText('Validation notaire')).toBeInTheDocument();
+  });
+
+  it('masque les dépendances génériques aux admins sans masquer les vraies dépendances', async () => {
+    isAdmin = true;
+
+    await openFirstProduct();
+
+    expect(await screen.findByText('Validation notaire')).toBeInTheDocument();
+    expect(
+      screen.queryByText('source officielle ou contractuelle applicable'),
+    ).not.toBeInTheDocument();
   });
 
   it('masque le statut de revue des overrides aux non-admins', async () => {
