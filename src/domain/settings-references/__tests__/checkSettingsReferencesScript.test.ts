@@ -9,6 +9,14 @@ import { afterEach, describe, expect, it } from 'vitest';
 const scriptPath = join(process.cwd(), 'scripts/check-settings-references.mjs');
 const tempRoots: string[] = [];
 
+type CheckReport = {
+  coverage: {
+    mode: 'partial';
+    isExhaustive: boolean;
+    bindingsByPage: Record<string, number>;
+  };
+};
+
 function createRoot() {
   const root = mkdtempSync(join(tmpdir(), 'ser1-settings-references-'));
   tempRoots.push(root);
@@ -125,6 +133,17 @@ function runCheck(root: string) {
   });
 }
 
+function runCheckJson(root: string) {
+  return spawnSync(process.execPath, [scriptPath, '--root', root, '--json'], {
+    cwd: process.cwd(),
+    encoding: 'utf8',
+  });
+}
+
+function parseCheckReport(stdout: string) {
+  return JSON.parse(stdout) as CheckReport;
+}
+
 afterEach(() => {
   for (const root of tempRoots.splice(0)) {
     rmSync(root, { recursive: true, force: true });
@@ -141,6 +160,23 @@ describe('check-settings-references', () => {
 
     expect(result.status).toBe(0);
     expect(output).toContain('check:settings-references ✅');
+    expect(output).toContain('registre partiel non exhaustif');
+    expect(output).not.toContain('surfaces couvertes');
+  });
+
+  it('expose la couverture partielle dans le rapport JSON', () => {
+    const root = createRoot();
+    writeValidRoot(root);
+
+    const result = runCheckJson(root);
+    const report = parseCheckReport(result.stdout);
+
+    expect(result.status).toBe(0);
+    expect(report.coverage.mode).toBe('partial');
+    expect(report.coverage.isExhaustive).toBe(false);
+    expect(report.coverage.bindingsByPage).toEqual({
+      '/settings/impots': 1,
+    });
   });
 
   it('bloque une référence inconnue', () => {

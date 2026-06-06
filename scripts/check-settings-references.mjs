@@ -451,6 +451,20 @@ function validateChain(chain, context) {
   return errors;
 }
 
+function countBindingsByPage(chain) {
+  const counts = new Map();
+  if (!Array.isArray(chain)) return {};
+
+  for (const binding of chain) {
+    if (!isPlainObject(binding) || !isNonEmptyString(binding.pagePath)) continue;
+    counts.set(binding.pagePath, (counts.get(binding.pagePath) ?? 0) + 1);
+  }
+
+  return Object.fromEntries(
+    Array.from(counts.entries()).sort(([left], [right]) => left.localeCompare(right)),
+  );
+}
+
 function run() {
   const options = parseArgs(process.argv.slice(2));
   const root = options.root;
@@ -476,6 +490,13 @@ function run() {
     ? Array.from(new Set(chain.map((binding) => binding.pagePath).filter(isNonEmptyString))).sort()
     : [];
   const missingPages = Array.from(SETTINGS_PAGES).filter((pagePath) => !pages.includes(pagePath));
+  const bindingsByPage = countBindingsByPage(chain);
+  const coverage = {
+    mode: 'partial',
+    isExhaustive: false,
+    bindingsByPage,
+    note: 'Registre partiel non exhaustif : le check valide les bindings déclarés sans garantir encore la couverture complète des 5 surfaces Settings.',
+  };
 
   if (options.json) {
     console.log(
@@ -485,6 +506,7 @@ function run() {
           bindingCount: Array.isArray(chain) ? chain.length : 0,
           pages,
           missingPages,
+          coverage,
           chainPath: normalize(path.relative(root, chainPath)),
           errors,
         },
@@ -498,11 +520,15 @@ function run() {
       console.error(`- ${error}`);
     }
   } else {
+    const representedPages = pages
+      .map((pagePath) => `${pagePath} (${bindingsByPage[pagePath]} bindings)`)
+      .join(', ');
     console.log(
-      `check:settings-references ✅ ${chain.length} bindings, surfaces couvertes : ${pages.join(', ')}`,
+      `check:settings-references ✅ ${chain.length} bindings, registre partiel non exhaustif`,
     );
+    console.log(`Pages représentées : ${representedPages || 'aucune'}`);
     if (missingPages.length > 0) {
-      console.log(`Surfaces non couvertes : ${missingPages.join(', ')}`);
+      console.log(`Pages sans binding dans ce registre partiel : ${missingPages.join(', ')}`);
     }
   }
 
