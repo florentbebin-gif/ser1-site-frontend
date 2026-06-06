@@ -59,6 +59,18 @@ export const DEMO_SIMULATORS = [
   );
 }
 
+function writeCatalog(root: string, productIds: string[]) {
+  writeFixture(
+    root,
+    'src/domain/base-contrat/catalog.ts',
+    `
+export const CATALOG = [
+${productIds.map((id) => `  { id: '${id}' },`).join('\n')}
+];
+`,
+  );
+}
+
 function runCheck(root: string) {
   return spawnSync(process.execPath, [scriptPath, '--root', root], {
     cwd: process.cwd(),
@@ -133,16 +145,79 @@ describe('check-legal-references', () => {
     expect(output).toContain('relatedSimulatorIds inconnu');
   });
 
-  it('bloque les références orphelines', () => {
+  it('accepte une référence rattachée uniquement à un setting connu', () => {
     const root = createRoot();
-    writeReferences(root, [validReference({ id: 'ref-orpheline' })]);
-    writeDefinitions(root, ['demo-ref']);
+    writeReferences(root, [
+      validReference({ id: 'ref-dmtg', relatedSimulatorIds: undefined, relatedSettings: ['dmtg'] }),
+    ]);
+
+    const result = runCheck(root);
+    const output = `${result.stdout}\n${result.stderr}`;
+
+    expect(result.status).toBe(0);
+    expect(output).toContain('check:legal-references ✅');
+  });
+
+  it('accepte une référence rattachée uniquement à un produit catalogue connu', () => {
+    const root = createRoot();
+    writeReferences(root, [
+      validReference({
+        id: 'ref-catalogue',
+        relatedSimulatorIds: undefined,
+        relatedCatalogProducts: ['assurance_vie'],
+      }),
+    ]);
+    writeCatalog(root, ['assurance_vie']);
+
+    const result = runCheck(root);
+    const output = `${result.stdout}\n${result.stderr}`;
+
+    expect(result.status).toBe(0);
+    expect(output).toContain('check:legal-references ✅');
+  });
+
+  it('bloque les références sans usage déclaré', () => {
+    const root = createRoot();
+    writeReferences(root, [validReference({ relatedSimulatorIds: undefined })]);
 
     const result = runCheck(root);
     const output = `${result.stdout}\n${result.stderr}`;
 
     expect(result.status).toBe(1);
-    expect(output).toContain('référence canonique orpheline');
+    expect(output).toContain('aucun usage déclaré');
+  });
+
+  it('bloque un relatedSettings inconnu', () => {
+    const root = createRoot();
+    writeReferences(root, [
+      validReference({
+        relatedSimulatorIds: undefined,
+        relatedSettings: ['settings-inconnu'],
+      }),
+    ]);
+
+    const result = runCheck(root);
+    const output = `${result.stdout}\n${result.stderr}`;
+
+    expect(result.status).toBe(1);
+    expect(output).toContain('relatedSettings inconnu');
+  });
+
+  it('bloque un relatedCatalogProducts inconnu', () => {
+    const root = createRoot();
+    writeReferences(root, [
+      validReference({
+        relatedSimulatorIds: undefined,
+        relatedCatalogProducts: ['produit-inconnu'],
+      }),
+    ]);
+    writeCatalog(root, ['assurance_vie']);
+
+    const result = runCheck(root);
+    const output = `${result.stdout}\n${result.stderr}`;
+
+    expect(result.status).toBe(1);
+    expect(output).toContain('relatedCatalogProducts inconnu');
   });
 
   it('bloque les planned qui portent des références inventées', () => {
@@ -169,7 +244,7 @@ describe('check-legal-references', () => {
     expect(output).toContain('champ officialUrl obligatoire');
   });
 
-  it('bloque un protocole non HTTP(S)', () => {
+  it('bloque un protocole non HTTPS', () => {
     const root = createRoot();
     writeReferences(root, [validReference({ officialUrl: 'ftp://legifrance.gouv.fr/demo' })]);
     writeDefinitions(root, ['demo-ref']);
@@ -178,7 +253,23 @@ describe('check-legal-references', () => {
     const output = `${result.stdout}\n${result.stderr}`;
 
     expect(result.status).toBe(1);
-    expect(output).toContain('officialUrl non officielle ou non HTTP(S)');
+    expect(output).toContain('officialUrl non officielle ou non HTTPS');
+  });
+
+  it('bloque une URL officielle servie en HTTP', () => {
+    const root = createRoot();
+    writeReferences(root, [
+      validReference({
+        officialUrl: 'http://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000000000001',
+      }),
+    ]);
+    writeDefinitions(root, ['demo-ref']);
+
+    const result = runCheck(root);
+    const output = `${result.stdout}\n${result.stderr}`;
+
+    expect(result.status).toBe(1);
+    expect(output).toContain('officialUrl non officielle ou non HTTPS');
   });
 
   it('bloque les champs obligatoires vides', () => {

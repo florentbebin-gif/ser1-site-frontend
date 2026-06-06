@@ -1,6 +1,8 @@
 import React from 'react';
+import { LegalRefLink } from '@/components/legal/LegalRefLink';
 import SettingsTitleWithIcon from '@/components/settings/SettingsTitleWithIcon';
 import { RESERVE_HEREDITAIRE, DROITS_CONJOINT } from './dmtgReferenceData';
+import { RESERVE_CIVIL_LEGAL_REFERENCE_IDS } from './dmtgLegalReferenceIds';
 
 interface ReserveHereditaireRow {
   enfants: number | string;
@@ -48,7 +50,10 @@ export default function ReserveCivilSection({
           <p className="dmtg-intro">Règles du Code civil - lecture seule (non paramétrable).</p>
 
           <div className="income-tax-block dmtg-block--mb16">
-            <div className="dmtg-block-title">Réserve héréditaire (art. 913 C. civ.)</div>
+            <div className="dmtg-block-title">
+              Réserve héréditaire (
+              <LegalRefLink id={RESERVE_CIVIL_LEGAL_REFERENCE_IDS.reserve} />)
+            </div>
             <table className="settings-table dmtg-table--mt8">
               <thead>
                 <tr>
@@ -71,7 +76,8 @@ export default function ReserveCivilSection({
 
           <div className="income-tax-block">
             <div className="dmtg-block-title">
-              Droits du conjoint survivant (art. 757 et s. C. civ.)
+              Droits du conjoint survivant (
+              <LegalRefLink id={RESERVE_CIVIL_LEGAL_REFERENCE_IDS.conjoint} />)
             </div>
             <table className="settings-table dmtg-table--mt8">
               <thead>

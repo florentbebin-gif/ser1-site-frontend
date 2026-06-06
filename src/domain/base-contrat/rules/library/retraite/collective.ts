@@ -215,7 +215,7 @@ export const PERO_PM: ProductRules = {
           url: 'https://www.legifrance.gouv.fr/jorf/id/JORFTEXT000038496102',
         },
       ],
-      dependencies: ["effectif de l'entreprise", 'seuils forfait social (source CSS à vérifier)'],
+      dependencies: ["effectif de l'entreprise", 'seuils de forfait social applicables'],
     },
   ],
   sortie: [

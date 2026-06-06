@@ -26,7 +26,11 @@ const PINEL_PINEL_PLUS: ProductRules = {
           url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000049481248',
         },
       ],
-      dependencies: ['source officielle ou contractuelle applicable'],
+      dependencies: [
+        "date d'acquisition",
+        "durée d'engagement de location",
+        'plafonds applicables au millésime',
+      ],
     },
   ],
   sortie: [
@@ -149,11 +153,11 @@ const MALRAUX: ProductRules = {
       bullets: [
         'Plus-value soumise au régime des plus-values immobilières des particuliers.',
         'Abattements pour durée de détention applicables.',
-        'À confirmer selon la source officielle ou contractuelle applicable.',
+        'À confirmer selon la durée de détention et le montant net de plus-value.',
       ],
       tags: ['pv_immo', 'abattement_detention'],
       confidence: 'moyenne',
-      dependencies: ['source officielle ou contractuelle applicable'],
+      dependencies: ['durée de détention', 'montant net de plus-value'],
     },
   ],
   deces: [
@@ -197,11 +201,11 @@ const MONUMENTS_HISTORIQUES: ProductRules = {
       bullets: [
         'Plus-value soumise au régime des plus-values immobilières des particuliers.',
         'Abattements pour durée de détention applicables.',
-        'À confirmer selon la source officielle ou contractuelle applicable.',
+        'À confirmer selon la durée de détention et le montant net de plus-value.',
       ],
       tags: ['pv_immo', 'abattement_detention'],
       confidence: 'moyenne',
-      dependencies: ['source officielle ou contractuelle applicable'],
+      dependencies: ['durée de détention', 'montant net de plus-value'],
     },
   ],
   deces: [
@@ -230,12 +234,16 @@ const DISPOSITIF_GENERIQUE: ProductRules = {
       bullets: [
         "Dispositif fiscal d'investissement immobilier ouvrant droit à une réduction ou déduction fiscale.",
         "Conditions spécifiques : zone géographique, durée d'engagement, plafonds de loyers et de ressources locataires.",
-        'Consulter les textes en vigueur pour les règles détaillées de chaque dispositif.',
-        'À confirmer selon la source officielle ou contractuelle applicable.',
+        "Vérifier la période d'investissement et les plafonds propres au dispositif avant usage.",
+        'À confirmer selon la zone, la durée d’engagement et le millésime du dispositif.',
       ],
       tags: ['dispositif_fiscal_immo'],
       confidence: 'moyenne',
-      dependencies: ['source officielle ou contractuelle applicable'],
+      dependencies: [
+        'zone géographique du dispositif',
+        "durée d'engagement",
+        'plafonds de loyers et de ressources',
+      ],
     },
   ],
   sortie: [

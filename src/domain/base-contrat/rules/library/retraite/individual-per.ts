@@ -22,7 +22,11 @@ export const PERIN_ASSURANCE: ProductRules = {
           url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000041471860',
         },
       ],
-      dependencies: ['source officielle ou contractuelle applicable'],
+      dependencies: [
+        'revenus professionnels N-1',
+        "disponible d'épargne retraite",
+        'PASS du millésime',
+      ],
     },
     {
       title: 'Compartiments de versements',
@@ -105,7 +109,7 @@ export const PERIN_ASSURANCE: ProductRules = {
       sources: [
         {
           label: 'Art. 990 I CGI',
-          url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000038612905',
+          refId: 'cgi-990-i',
         },
       ],
     },
@@ -121,7 +125,7 @@ export const PERIN_ASSURANCE: ProductRules = {
       sources: [
         {
           label: 'Art. 757 B CGI',
-          url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000006310172',
+          refId: 'cgi-757-b',
         },
       ],
     },
@@ -213,7 +217,11 @@ export const PERP_MADELIN_ANCIEN: ProductRules = {
           url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000041471860',
         },
       ],
-      dependencies: ['source officielle ou contractuelle applicable'],
+      dependencies: [
+        'type de contrat historique (PERP ou Madelin)',
+        'articles applicables au contrat',
+        'disponible de déduction',
+      ],
     },
   ],
   sortie: [

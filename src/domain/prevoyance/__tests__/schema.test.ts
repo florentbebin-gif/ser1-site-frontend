@@ -4,6 +4,7 @@ import {
   maintienEmployeurDataSchema,
   prevoyanceRegimeDataSchema,
   prevoyanceRegimeSettingsSchema,
+  prevoyanceSourcesSchema,
 } from '../schema';
 
 const baseData = {
@@ -51,10 +52,20 @@ const sources = {
       dateConsultation: '2026-05-24',
       valeursCouvertes: ['arret.carences.maladie', 'maintien_employeur'],
       confiance: 'haute',
+      relevanceNote:
+        'La fiche Service-Public documente les indemnités journalières salarié utilisées par le cas de test.',
+      verifiedAt: '2026-05-24',
     },
   ],
   noteAdmin: 'Valeur à double valider avant livraison métier.',
 };
+
+function sourcesWithUrl(url: string) {
+  return {
+    ...sources,
+    references: sources.references.map((reference) => ({ ...reference, url })),
+  };
+}
 
 describe('schémas prévoyance JSONB', () => {
   it.each([
@@ -114,6 +125,68 @@ describe('schémas prévoyance JSONB', () => {
         noteValidation: 'Ancien format.',
       },
     });
+
+    expect(parsed.success).toBe(false);
+  });
+
+  it.each([
+    'https://www.service-public.gouv.fr/particuliers/vosdroits/F3053',
+    'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000006901160',
+    'https://www.carmf.fr/page.php?page=allocataires/invalidite-deces/invalidite.htm',
+  ])('accepte une URL officielle %s', (url) => {
+    const parsed = prevoyanceSourcesSchema.safeParse(sourcesWithUrl(url));
+
+    expect(parsed.success).toBe(true);
+  });
+
+  it('accepte un état explicite sans source', () => {
+    const parsed = prevoyanceSourcesSchema.safeParse({
+      references: [],
+      noRefReason:
+        'Aucune source institutionnelle stable et pertinente n’a été validée pour cette ligne de régime.',
+    });
+
+    expect(parsed.success).toBe(true);
+  });
+
+  it('accepte une référence sans URL factice', () => {
+    const parsed = prevoyanceSourcesSchema.safeParse(sourcesWithUrl(''));
+
+    expect(parsed.success).toBe(true);
+  });
+
+  it('refuse une URL non officielle', () => {
+    const parsed = prevoyanceSourcesSchema.safeParse(
+      sourcesWithUrl('https://example.com/source-prevoyance'),
+    );
+
+    expect(parsed.success).toBe(false);
+  });
+
+  it('refuse une source URL sans attestation', () => {
+    const parsed = prevoyanceSourcesSchema.safeParse(
+      sourcesWithUrl('https://www.service-public.gouv.fr/particuliers/vosdroits/F3053'),
+    );
+    const withoutAttestation = {
+      ...sources,
+      references: sources.references.map((reference) => ({
+        organisme: reference.organisme,
+        titre: reference.titre,
+        url: reference.url,
+        dateConsultation: reference.dateConsultation,
+        valeursCouvertes: reference.valeursCouvertes,
+        confiance: reference.confiance,
+      })),
+    };
+
+    expect(parsed.success).toBe(true);
+    expect(prevoyanceSourcesSchema.safeParse(withoutAttestation).success).toBe(false);
+  });
+
+  it('refuse les pages institutionnelles de type actualité', () => {
+    const parsed = prevoyanceSourcesSchema.safeParse(
+      sourcesWithUrl('https://www.cavamac.fr/actus/regime-invalidite-deces'),
+    );
 
     expect(parsed.success).toBe(false);
   });

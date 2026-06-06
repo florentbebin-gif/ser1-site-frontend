@@ -1,8 +1,32 @@
 import { z } from 'zod';
+import { isOfficialUrl } from '@/domain/legal-references';
 
 const amountSchema = z.number().finite().nonnegative();
 const percentSchema = z.number().finite().min(0).max(100);
 const assietteSchema = z.enum(['TA', 'TA-TB', 'TA-TB-TC']);
+const isoDateSchema = z.string().regex(/^\d{4}-\d{2}-\d{2}$/);
+const officialUrlSchema = z
+  .string()
+  .min(1)
+  .refine((url) => isOfficialUrl(url), {
+    message: 'URL officielle obligatoire.',
+  })
+  .refine(
+    (url) => {
+      try {
+        return !/\/(actus|actualites|news|blog)(\/|$)/i.test(new URL(url).pathname);
+      } catch {
+        return false;
+      }
+    },
+    {
+      message: 'URL prévoyance stable obligatoire.',
+    },
+  );
+const optionalOfficialUrlSchema = z.preprocess(
+  (value) => (typeof value === 'string' && value.trim() === '' ? undefined : value),
+  officialUrlSchema.optional(),
+);
 
 const amountRuleSchema = z
   .object({
@@ -99,30 +123,59 @@ const compositionSchema = z
   })
   .strict();
 
-export const prevoyanceSourcesSchema = z
+const prevoyanceSourceReferenceSchema = z
   .object({
-    references: z
-      .array(
-        z
-          .object({
-            organisme: z.string().min(1),
-            titre: z.string().min(1),
-            url: z.url(),
-            datePublication: z.string().min(1).optional(),
-            dateConsultation: z.string().min(1),
-            rubrique: z.string().min(1).optional(),
-            articleCode: z.string().min(1).optional(),
-            pagePdf: z.number().int().positive().optional(),
-            valeursCouvertes: z.array(z.string().min(1)).min(1),
-            confiance: z.enum(['haute', 'moyenne', 'faible']),
-            noteAdmin: z.string().min(1).optional(),
-          })
-          .strict(),
-      )
-      .min(1),
+    organisme: z.string().min(1),
+    titre: z.string().min(1),
+    url: optionalOfficialUrlSchema,
+    datePublication: z.string().min(1).optional(),
+    dateConsultation: z.string().min(1),
+    rubrique: z.string().min(1).optional(),
+    articleCode: z.string().min(1).optional(),
+    pagePdf: z.number().int().positive().optional(),
+    valeursCouvertes: z.array(z.string().min(1)).min(1),
+    confiance: z.enum(['haute', 'moyenne', 'faible']),
+    relevanceNote: z.string().min(40).optional(),
+    verifiedAt: isoDateSchema.optional(),
     noteAdmin: z.string().min(1).optional(),
   })
-  .strict();
+  .strict()
+  .superRefine((reference, context) => {
+    if (!reference.url) return;
+
+    if (!reference.relevanceNote) {
+      context.addIssue({
+        code: 'custom',
+        path: ['relevanceNote'],
+        message: 'Note de pertinence obligatoire avec une URL.',
+      });
+    }
+    if (!reference.verifiedAt) {
+      context.addIssue({
+        code: 'custom',
+        path: ['verifiedAt'],
+        message: 'Date de vérification obligatoire avec une URL.',
+      });
+    }
+  });
+
+export const prevoyanceSourcesSchema = z
+  .object({
+    references: z.array(prevoyanceSourceReferenceSchema),
+    noRefReason: z.string().min(40).optional(),
+    noteAdmin: z.string().min(1).optional(),
+  })
+  .strict()
+  .superRefine((sources, context) => {
+    if (sources.references.length > 0) return;
+    if (sources.noRefReason) return;
+
+    context.addIssue({
+      code: 'custom',
+      path: ['noRefReason'],
+      message: 'Raison obligatoire quand aucune référence prévoyance n’est disponible.',
+    });
+  });
 
 export const prevoyanceRegimeDataSchema = z
   .object({

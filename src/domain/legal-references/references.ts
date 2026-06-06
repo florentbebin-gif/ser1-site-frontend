@@ -1,5 +1,5 @@
 import referencesData from './references.json';
-import type { LegalReference, LegalReferenceId } from './types';
+import type { LegalReference, LegalReferenceId, LegalReferenceSettingKey } from './types';
 
 export const LEGAL_REFERENCES = referencesData as readonly LegalReference[];
 
@@ -15,8 +15,27 @@ export function getLegalReference(id: LegalReferenceId): LegalReference {
   return reference;
 }
 
-export function listLegalReferencesForSimulator(simulatorId: string): LegalReference[] {
-  return LEGAL_REFERENCES.filter((reference) =>
-    reference.relatedSimulatorIds.includes(simulatorId),
-  );
+export function getOptionalLegalReference(id: LegalReferenceId): LegalReference | null {
+  return LEGAL_REFERENCE_BY_ID.get(id) ?? null;
+}
+
+export function listLegalReferencesForSimulator(
+  simulatorId: string,
+  references: readonly LegalReference[] = LEGAL_REFERENCES,
+): LegalReference[] {
+  return references.filter((reference) => reference.relatedSimulatorIds?.includes(simulatorId));
+}
+
+export function listLegalReferencesForSetting(
+  settingKey: LegalReferenceSettingKey,
+  references: readonly LegalReference[] = LEGAL_REFERENCES,
+): LegalReference[] {
+  return references.filter((reference) => reference.relatedSettings?.includes(settingKey));
+}
+
+export function listLegalReferencesForProduct(
+  productId: string,
+  references: readonly LegalReference[] = LEGAL_REFERENCES,
+): LegalReference[] {
+  return references.filter((reference) => reference.relatedCatalogProducts?.includes(productId));
 }

@@ -40,11 +40,11 @@ const RESIDENCE_PRINCIPALE: ProductRules = {
         "La plus-value réalisée à la cession est totalement exonérée d'IR et de prélèvements sociaux.",
         'Condition : le bien doit être la résidence principale du cédant au jour de la vente.',
         "L'exonération s'applique quelle que soit la durée de détention.",
-        'À confirmer selon la source officielle ou contractuelle applicable.',
+        'À confirmer selon la qualification de résidence principale au jour de la vente.',
       ],
       tags: ['exoneration_totale', 'residence_principale_vente'],
       confidence: 'moyenne',
-      dependencies: ['source officielle ou contractuelle applicable'],
+      dependencies: ['qualité de résidence principale au jour de la vente'],
     },
   ],
   deces: [
@@ -73,11 +73,11 @@ const PARTS_SCPI_PM: ProductRules = {
       bullets: [
         'Souscription de parts de SCPI par la personne morale, en direct ou via financement.',
         'Les revenus distribués sont intégrés au résultat fiscal de la personne morale (IS/IR selon régime).',
-        'À confirmer selon la source officielle ou contractuelle applicable.',
+        'À confirmer selon le régime fiscal de la personne morale et les modalités de détention.',
       ],
       tags: ['scpi_pm', 'resultat_fiscal'],
       confidence: 'moyenne',
-      dependencies: ['source officielle ou contractuelle applicable'],
+      dependencies: ['régime fiscal PM', 'détention des parts'],
     },
   ],
   sortie: [
@@ -86,11 +86,11 @@ const PARTS_SCPI_PM: ProductRules = {
       bullets: [
         "La plus-value de cession est intégrée au résultat fiscal de la personne morale selon son régime d'imposition.",
         'Le traitement comptable et fiscal dépend des modalités de détention et de clôture des comptes.',
-        'À confirmer selon la source officielle ou contractuelle applicable.',
+        'À confirmer selon les écritures comptables de cession et le régime fiscal de la personne morale.',
       ],
       tags: ['cession_parts', 'resultat_fiscal', 'traitement_comptable'],
       confidence: 'moyenne',
-      dependencies: ['source officielle ou contractuelle applicable'],
+      dependencies: ['régime fiscal PM', 'écritures de cession'],
     },
   ],
   deces: [
@@ -99,11 +99,11 @@ const PARTS_SCPI_PM: ProductRules = {
       bullets: [
         "En cas de dissolution, liquidation ou cession d'activité, les parts de SCPI sont intégrées aux opérations de clôture de la personne morale.",
         'Le résultat de cession ou de liquidation est traité selon le régime fiscal de la personne morale.',
-        'À confirmer selon la source officielle ou contractuelle applicable.',
+        'À confirmer selon les modalités de dissolution ou liquidation.',
       ],
       tags: ['fin_vie_pm', 'liquidation', 'cession_activite'],
       confidence: 'moyenne',
-      dependencies: ['source officielle ou contractuelle applicable'],
+      dependencies: ['dissolution ou liquidation', 'régime fiscal PM'],
     },
   ],
 };
@@ -142,7 +142,7 @@ const RESIDENCE_SECONDAIRE: ProductRules = {
           url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000043655826',
         },
       ],
-      dependencies: ['source officielle ou contractuelle applicable'],
+      dependencies: ['durée de détention', 'montant net de plus-value'],
     },
   ],
   deces: [
@@ -182,7 +182,7 @@ const LOCATIF_NU: ProductRules = {
           url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000006302449',
         },
       ],
-      dependencies: ['source officielle ou contractuelle applicable'],
+      dependencies: ['choix micro-foncier ou régime réel', 'nature des charges et travaux'],
     },
   ],
   sortie: [
@@ -201,7 +201,7 @@ const LOCATIF_NU: ProductRules = {
           url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000043655826',
         },
       ],
-      dependencies: ['source officielle ou contractuelle applicable'],
+      dependencies: ['durée de détention', 'montant net de plus-value'],
     },
   ],
   deces: [
@@ -232,11 +232,11 @@ const LOCATIF_NU_PM: ProductRules = {
       bullets: [
         'En cas de dissolution, liquidation ou cession d’activité, le bien est intégré aux opérations de clôture de la personne morale.',
         'Le traitement fiscal de sortie dépend du régime d’imposition (IS/IR) et des écritures de clôture applicables.',
-        'À confirmer selon la source officielle ou contractuelle applicable.',
+        'À confirmer selon les modalités de dissolution ou liquidation.',
       ],
       tags: ['fin_vie_pm', 'cloture_pm', 'sortie_immobiliere_pm'],
       confidence: 'moyenne',
-      dependencies: ['source officielle ou contractuelle applicable'],
+      dependencies: ['dissolution ou liquidation', 'régime fiscal PM'],
     },
   ],
 };
@@ -362,11 +362,11 @@ const IMMO_AUTRE: ProductRules = {
       bullets: [
         'Droits de mutation à titre onéreux selon la nature du bien.',
         "Intégration à l'assiette IFI selon la nature et l'utilisation.",
-        'À confirmer selon la source officielle ou contractuelle applicable.',
+        'À confirmer selon la nature juridique du bien et son usage.',
       ],
       tags: ['dmto', 'ifi'],
       confidence: 'moyenne',
-      dependencies: ['source officielle ou contractuelle applicable'],
+      dependencies: ['nature juridique du bien', "usage du bien pour l'IFI"],
     },
   ],
   sortie: [
@@ -415,11 +415,11 @@ const IMMO_AUTRE_PM: ProductRules = {
       bullets: [
         'En cas de dissolution, liquidation ou cession d’activité, le bien est intégré aux opérations de clôture de la personne morale.',
         'Le traitement fiscal de sortie dépend du régime d’imposition (IS/IR) et de la nature comptable du bien.',
-        'À confirmer selon la source officielle ou contractuelle applicable.',
+        'À confirmer selon les modalités de dissolution ou liquidation.',
       ],
       tags: ['fin_vie_pm', 'cloture_pm', 'sortie_immobiliere_pm'],
       confidence: 'moyenne',
-      dependencies: ['source officielle ou contractuelle applicable'],
+      dependencies: ['dissolution ou liquidation', 'nature comptable', 'régime fiscal PM'],
     },
   ],
 };
@@ -431,11 +431,11 @@ const PARTS_SCPI_PP: ProductRules = {
       bullets: [
         'Souscription directe ou via emprunt (les intérêts sont déductibles des revenus fonciers).',
         'Revenus distribués (loyers) imposés en revenus fonciers : micro-foncier ou régime réel.',
-        'À confirmer selon la source officielle ou contractuelle applicable.',
+        'À confirmer selon les modalités de financement et le régime foncier retenu.',
       ],
       tags: ['revenus_fonciers', 'micro_foncier', 'regime_reel'],
       confidence: 'moyenne',
-      dependencies: ['source officielle ou contractuelle applicable'],
+      dependencies: ['modalités de financement', 'régime micro-foncier ou réel'],
     },
   ],
   sortie: [

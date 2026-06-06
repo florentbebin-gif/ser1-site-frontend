@@ -38,6 +38,7 @@ import {
 import { useFiscalContext } from '@/hooks/useFiscalContext';
 import { GRANDE_FAMILLE_OPTIONS, PHASE_LABELS } from './baseContratLabels';
 import { OverrideModal, ReviewStatusDetails } from './BaseContratOverrideControls';
+import { RuleSourcesList } from './BaseContratRuleSources';
 
 function useOverrides() {
   const [overrides, setOverrides] = useState<OverrideMap>({});
@@ -84,7 +85,15 @@ const CONFIDENCE_LABELS: Record<Confidence, string> = {
   faible: 'Non vérifié',
 };
 
+const GENERIC_DEPENDENCIES = new Set(['source officielle ou contractuelle applicable']);
+
+function visibleDependencies(block: RuleBlock): string[] {
+  return (block.dependencies ?? []).filter((dependency) => !GENERIC_DEPENDENCIES.has(dependency));
+}
+
 function RuleBlockCard({ block, showAdminMeta }: { block: RuleBlock; showAdminMeta: boolean }) {
+  const dependencies = visibleDependencies(block);
+
   return (
     <div className="settings-reference-rule-card">
       <div className="settings-reference-rule-card__title">{block.title}</div>
@@ -100,11 +109,11 @@ function RuleBlockCard({ block, showAdminMeta }: { block: RuleBlock; showAdminMe
           >
             {CONFIDENCE_LABELS[block.confidence]}
           </span>
-          {block.dependencies && block.dependencies.length > 0 && (
+          {dependencies.length > 0 && (
             <div className="settings-reference-rule-meta__group">
               <span className="settings-reference-rule-meta__label">Dépendances</span>
               <ul className="settings-reference-rule-meta__list">
-                {block.dependencies.map((dependency) => (
+                {dependencies.map((dependency) => (
                   <li key={dependency}>{dependency}</li>
                 ))}
               </ul>
@@ -113,15 +122,7 @@ function RuleBlockCard({ block, showAdminMeta }: { block: RuleBlock; showAdminMe
           {block.sources && block.sources.length > 0 && (
             <div className="settings-reference-rule-meta__group">
               <span className="settings-reference-rule-meta__label">Sources</span>
-              <ul className="settings-reference-rule-meta__list">
-                {block.sources.map((source) => (
-                  <li key={`${source.label}-${source.url}`}>
-                    <a href={source.url} target="_blank" rel="noreferrer">
-                      {source.label}
-                    </a>
-                  </li>
-                ))}
-              </ul>
+              <RuleSourcesList sources={block.sources} />
             </div>
           )}
         </div>

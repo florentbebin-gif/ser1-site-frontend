@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 
 import '@testing-library/jest-dom/vitest';
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { PREVOYANCE_MAINTIEN_LEGAL_CODE } from '@/domain/prevoyance/constants';
@@ -67,6 +67,9 @@ const sources: PrevoyanceRegimeSettings['sources'] = {
       dateConsultation: '2026-05-24',
       valeursCouvertes: ['invalidité', 'décès'],
       confiance: 'haute',
+      relevanceNote:
+        'La page Ameli de test atteste les champs invalidité et décès affichés par la carte.',
+      verifiedAt: '2026-05-24',
     },
   ],
   noteAdmin: 'Note interne invisible aux users.',
@@ -208,6 +211,22 @@ describe('PrevoyanceRegimes', () => {
 
     await user.click(screen.getByRole('button', { name: /Agent général — CAVAMAC/i }));
     expect(screen.getByRole('button', { name: 'Modifier' })).toBeInTheDocument();
+  });
+
+  it('initialise une nouvelle source admin sans URL factice', async () => {
+    const user = userEvent.setup();
+    isAdmin = true;
+
+    await renderPage();
+
+    await user.click(screen.getByRole('button', { name: /Agent général — CAVAMAC/i }));
+    await user.click(screen.getByRole('button', { name: 'Modifier' }));
+    const dialog = await screen.findByRole('dialog', { name: 'Modifier le régime' });
+
+    await user.click(within(dialog).getByRole('button', { name: 'Ajouter une référence' }));
+
+    const urlFields = within(dialog).getAllByLabelText('URL');
+    expect(urlFields[1]).toHaveValue('');
   });
 
   it('garde les régimes repliés au chargement puis les ouvre au clic', async () => {

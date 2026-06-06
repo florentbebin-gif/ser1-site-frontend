@@ -1,3 +1,5 @@
+import settingKeys from './settingKeys.json';
+
 export type LegalReferenceId = string;
 
 export type LegalSourceType =
@@ -16,6 +18,10 @@ export type LegalSourceType =
 
 export type LegalReferenceVolatility = 'annual' | 'lawChange' | 'stable';
 
+export type LegalReferenceSettingKey = keyof typeof settingKeys;
+
+export const LEGAL_REFERENCE_SETTING_KEYS = Object.keys(settingKeys) as LegalReferenceSettingKey[];
+
 export interface LegalReference {
   id: LegalReferenceId;
   label: string;
@@ -24,7 +30,9 @@ export interface LegalReference {
   articleOrSection?: string;
   scope: string;
   volatility: LegalReferenceVolatility;
-  relatedSimulatorIds: string[];
+  relatedSimulatorIds?: string[];
+  relatedSettings?: LegalReferenceSettingKey[];
+  relatedCatalogProducts?: string[];
   lastCheckedAt?: string;
   notes?: string;
 }

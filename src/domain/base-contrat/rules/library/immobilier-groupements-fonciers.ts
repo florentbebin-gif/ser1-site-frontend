@@ -59,7 +59,7 @@ export const GROUPEMENT_FONCIER_AGRI_VITI: ProductRules = {
       dependencies: [
         'bail long terme ≥ 18 ans',
         'engagement de conservation 5 ans',
-        'seuil 600 000 € (LF 2025 art. 70 — À confirmer selon seuil en vigueur)',
+        'seuil d’exonération partielle GFA/GFV en vigueur',
       ],
     },
   ],
@@ -74,11 +74,15 @@ export const GROUPEMENT_FONCIER_AGRI_VITI_PM: ProductRules = {
       bullets: [
         'En cas de dissolution, liquidation ou cession d’activité, les parts sont intégrées aux opérations de clôture de la personne morale.',
         'Le traitement fiscal de sortie est déterminé selon le régime d’imposition et la valorisation retenue à la clôture.',
-        'À confirmer selon la source officielle ou contractuelle applicable.',
+        'À confirmer selon les modalités de dissolution et la valorisation des parts à la clôture.',
       ],
       tags: ['fin_vie_pm', 'cloture_pm', 'parts_groupement_pm'],
       confidence: 'moyenne',
-      dependencies: ['source officielle ou contractuelle applicable'],
+      dependencies: [
+        'modalités de dissolution ou liquidation',
+        'régime fiscal de la personne morale',
+        'valorisation des parts à la clôture',
+      ],
     },
   ],
 };
@@ -146,11 +150,15 @@ export const GROUPEMENT_FONCIER_FORESTIER_PM: ProductRules = {
       bullets: [
         'En cas de dissolution, liquidation ou cession d’activité, les parts sont intégrées aux opérations de clôture de la personne morale.',
         'Le traitement fiscal de sortie est déterminé selon le régime d’imposition et la valorisation retenue à la clôture.',
-        'À confirmer selon la source officielle ou contractuelle applicable.',
+        'À confirmer selon les modalités de dissolution et la valorisation des parts à la clôture.',
       ],
       tags: ['fin_vie_pm', 'cloture_pm', 'parts_groupement_pm'],
       confidence: 'moyenne',
-      dependencies: ['source officielle ou contractuelle applicable'],
+      dependencies: [
+        'modalités de dissolution ou liquidation',
+        'régime fiscal de la personne morale',
+        'valorisation des parts à la clôture',
+      ],
     },
   ],
 };

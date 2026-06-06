@@ -114,14 +114,16 @@ describe('registry simulateurs', () => {
         .map((referenceId) => `${definition.id}:${referenceId}`),
     );
 
-    const orphanLegalReferences = LEGAL_REFERENCES.filter((reference) => {
-      return !SIMULATOR_DEFINITIONS.some((definition) =>
-        definition.legalRefs.includes(reference.id),
+    const referencesWithoutUsage = LEGAL_REFERENCES.filter((reference) => {
+      return (
+        (reference.relatedSimulatorIds?.length ?? 0) === 0 &&
+        (reference.relatedSettings?.length ?? 0) === 0 &&
+        (reference.relatedCatalogProducts?.length ?? 0) === 0
       );
     }).map((reference) => reference.id);
 
     const mismatchedSimulatorLinks = LEGAL_REFERENCES.flatMap((reference) =>
-      reference.relatedSimulatorIds
+      (reference.relatedSimulatorIds ?? [])
         .filter((simulatorId) => !registryReferences.get(simulatorId)?.has(reference.id))
         .map((simulatorId) => `${reference.id}:${simulatorId}`),
     );
@@ -131,8 +133,8 @@ describe('registry simulateurs', () => {
       `Références inconnues dans la registry : ${unknownReferences.join(', ')}`,
     ).toEqual([]);
     expect(
-      orphanLegalReferences,
-      `Références juridiques orphelines : ${orphanLegalReferences.join(', ')}`,
+      referencesWithoutUsage,
+      `Références juridiques sans usage déclaré : ${referencesWithoutUsage.join(', ')}`,
     ).toEqual([]);
     expect(
       mismatchedSimulatorLinks,

@@ -7,6 +7,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import BaseContrat from '../BaseContrat';
 import type { UserRoleState } from '@/auth/useUserRole';
 import type { ProductRules } from '@/domain/base-contrat/rules';
+import { getLegalReference } from '@/domain/legal-references';
 
 let isAdmin = false;
 
@@ -48,11 +49,11 @@ const mockedRules: ProductRules = {
       confidence: 'moyenne',
       sources: [
         {
-          label: 'CGI art. 779',
-          url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000026292566',
+          label: 'Art. 990 I CGI',
+          refId: 'cgi-990-i',
         },
       ],
-      dependencies: ['Validation notaire'],
+      dependencies: ['Validation notaire', 'source officielle ou contractuelle applicable'],
     },
   ],
   sortie: [],
@@ -147,11 +148,22 @@ describe('BaseContrat', () => {
     await openFirstProduct();
 
     expect(await screen.findByText('À vérifier')).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: 'CGI art. 779' })).toHaveAttribute(
+    expect(screen.getByRole('link', { name: 'Art. 990 I CGI' })).toHaveAttribute(
       'href',
-      'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000026292566',
+      getLegalReference('cgi-990-i').officialUrl,
     );
     expect(screen.getByText('Validation notaire')).toBeInTheDocument();
+  });
+
+  it('masque les dépendances génériques aux admins sans masquer les vraies dépendances', async () => {
+    isAdmin = true;
+
+    await openFirstProduct();
+
+    expect(await screen.findByText('Validation notaire')).toBeInTheDocument();
+    expect(
+      screen.queryByText('source officielle ou contractuelle applicable'),
+    ).not.toBeInTheDocument();
   });
 
   it('masque le statut de revue des overrides aux non-admins', async () => {

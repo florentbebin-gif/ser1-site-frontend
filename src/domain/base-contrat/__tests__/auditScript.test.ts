@@ -85,7 +85,7 @@ describe('script audit Base-Contrat / DMTG Succession', () => {
       '| Famille | Produit | Audience | Phase | Bloc | Sources | Statut revue | Prochaine revue |',
     );
     expect(markdown).toContain(
-      'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000038612905',
+      'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000047288653',
     );
     expect(existsSync(join(process.cwd(), '.tmp', 'audit-base-contrat-runtime'))).toBe(false);
 

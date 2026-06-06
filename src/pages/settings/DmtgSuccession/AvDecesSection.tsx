@@ -1,7 +1,9 @@
 import React from 'react';
+import { LegalRefLink } from '@/components/legal/LegalRefLink';
 import SettingsTitleWithIcon from '@/components/settings/SettingsTitleWithIcon';
 import { numberOrEmpty } from '@/components/settings/settingsHelpers';
 import SettingsTable from '@/components/settings/SettingsTable';
+import { AV_DECES_LEGAL_REFERENCE_IDS } from './dmtgLegalReferenceIds';
 
 type CellValue = string | number | null;
 type BracketFieldKey = 'upTo' | 'ratePercent';
@@ -59,14 +61,19 @@ export default function AvDecesSection({
           icon="shield"
           className="settings-premium-title settings-premium-title--flush"
         >
-          Assurance-vie décès (990 I / 757 B)
+          Assurance-vie décès
         </SettingsTitleWithIcon>
         <span className="fisc-acc-chevron">{isOpen ? 'v' : '>'}</span>
       </button>
 
       {isOpen && (
         <div className="fisc-acc-body">
-          <p className="dmtg-intro">Fiscalité des capitaux décès transmis via l’assurance-vie.</p>
+          <p className="dmtg-intro">
+            Fiscalité des capitaux décès transmis via l’assurance-vie (
+            <LegalRefLink id={AV_DECES_LEGAL_REFERENCE_IDS.cgi990I} /> /{' '}
+            <LegalRefLink id={AV_DECES_LEGAL_REFERENCE_IDS.cgi757B} />
+            ).
+          </p>
 
           <div className="income-tax-block dmtg-block--mb16">
             <div className="dmtg-block-title">Paramètres généraux</div>
@@ -95,8 +102,8 @@ export default function AvDecesSection({
 
           <div className="income-tax-block dmtg-block--mb16">
             <div className="dmtg-block-title">
-              Primes versées après le 13/10/1998 - avant {avDeces.agePivotPrimes || 70} ans (art.
-              990 I)
+              Primes versées après le 13/10/1998 - avant {avDeces.agePivotPrimes || 70} ans (
+              <LegalRefLink id={AV_DECES_LEGAL_REFERENCE_IDS.cgi990I} />)
             </div>
             <div className="dmtg-indent">
               <div className="settings-field-row dmtg-field-row--mb8">
@@ -171,7 +178,8 @@ export default function AvDecesSection({
 
           <div className="income-tax-block">
             <div className="dmtg-block-title">
-              Primes versées après {avDeces.agePivotPrimes || 70} ans (art. 757 B)
+              Primes versées après {avDeces.agePivotPrimes || 70} ans (
+              <LegalRefLink id={AV_DECES_LEGAL_REFERENCE_IDS.cgi757B} />)
             </div>
             <div className="dmtg-indent">
               <div className="settings-field-row dmtg-field-row--mb8">

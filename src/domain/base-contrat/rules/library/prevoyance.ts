@@ -57,11 +57,11 @@ const PREVOYANCE_DECES: ProductRules = {
       sources: [
         {
           label: 'Art. 990 I CGI',
-          url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000038612905',
+          refId: 'cgi-990-i',
         },
         {
           label: 'Art. 757 B CGI',
-          url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000006307539',
+          refId: 'cgi-757-b',
         },
       ],
       dependencies: [
@@ -89,7 +89,10 @@ const PREVOYANCE_ITT: ProductRules = {
           url: 'https://boss.gouv.fr/portail/accueil/prevoyance-tns.html',
         },
       ],
-      dependencies: ['source officielle ou contractuelle applicable'],
+      dependencies: [
+        'statut du souscripteur (salarié, TNS ou particulier)',
+        'plafond prévoyance applicable',
+      ],
     },
   ],
   sortie: [
@@ -108,7 +111,10 @@ const PREVOYANCE_ITT: ProductRules = {
           url: 'https://boss.gouv.fr/portail/accueil/prevoyance-tns.html',
         },
       ],
-      dependencies: ["régime d'affiliation TNS (SSI ou régime général)", 'BOSS/URSSAF à confirmer'],
+      dependencies: [
+        "régime d'affiliation TNS (SSI ou régime général)",
+        'traitement social BOSS/URSSAF applicable',
+      ],
     },
     {
       title: "Rente d'invalidité",

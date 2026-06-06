@@ -104,21 +104,55 @@ typées `strategy` et `audit-objectives`.
 ### Références juridiques — `src/domain/legal-references/`
 
 Le référentiel juridique vit dans `src/domain/legal-references/`. Il liste les sources officielles
-attachées aux simulateurs par `SimulatorDefinition.id` via `relatedSimulatorIds`.
+attachées aux simulateurs, aux pages settings et aux produits du catalogue Base-Contrat via les
+champs d'usage `relatedSimulatorIds`, `relatedSettings` et `relatedCatalogProducts`.
 
 - `references.json` est la source canonique listable par Node.
 - `LegalReferenceId` est un alias métier de `string` ; la validation forte vient de
   `npm run check:legal-references` et des tests registry.
 - `legalRefs` dans `SimulatorDefinition` contient uniquement des IDs canoniques pour les entrées
   `legalRefsStatus: 'complete'`.
-- Le check local valide les IDs, URLs officielles, domaines autorisés, simulateurs rattachés et
-  références orphelines. Pour Légifrance, il impose une forme canonique
+- Le check local valide les IDs, URLs officielles, domaines autorisés, usages déclarés, cohérence
+  des simulateurs rattachés et références sans usage. Pour Légifrance, il impose une forme canonique
   `/codes/article_lc/<LEGIARTI…>` ou `/codes/section_lc/...`, sans segment de version daté
   `/AAAA-MM-JJ` (afin de toujours pointer la version en vigueur). Il ne navigue jamais sur le web :
   la fraîcheur réelle des sources relève du futur `audit:legal-news`.
 
 Ce référentiel documente les sources. Il ne porte pas les taux, seuils et abattements révisables :
 ces valeurs restent dans Settings/Supabase et sont consommées par la chaîne fiscale existante.
+
+### Chaînage Settings ↔ références juridiques — `src/domain/settings-references/`
+
+Le chaînage Settings vit dans `src/domain/settings-references/`. `chain.json` est la source
+canonique lisible par Node ; il relie chaque claim Settings à une cible contrôlée :
+
+- `settings-default` : chemin de fallback dans `DEFAULT_TAX_SETTINGS`, `DEFAULT_PS_SETTINGS` ou
+  `DEFAULT_FISCALITY_SETTINGS` ;
+- `pass-history` : millésime `public.pass_history` (`year` ou `latest`) ;
+- `base-contrat-rule` : produit, audience, phase et bloc exposé par `/settings/base-contrat` ;
+- `prevoyance-db` : table/code/jsonPath des sources JSONB prévoyance.
+
+Chaque binding porte `pagePath`, `sectionKey`, `claimKey`, `target`, `refIds`, `verifiedAt` et
+`volatility`. Une référence canonique impose une `relevanceNote`; un binding sans référence impose
+un `noRefReason`. Le garde-fou `npm run check:settings-references` valide les IDs, les dates, les
+notes non génériques, les `pagePath` déclarés et les chemins Settings/PASS. Son rapport annonce
+`coverage.mode = "partial"` et `coverage.isExhaustive = false` : le registre est un socle partiel,
+pas une preuve de couverture complète. `coverage.byPage` expose pour chaque surface le nombre de
+bindings déclarés (`declared`) et le nombre de claims attendus (`expected`). Tant que ce nombre
+attendu n'est pas défini explicitement (`expectedDefined = false`), la surface reste incomplète et
+`coverage.isExhaustive` ne peut pas passer à `true`. Il existe dès maintenant, mais n'est branché
+dans `check:static` que lorsque les 5 surfaces cibles ont un attendu défini, `complete = true` et
+aucune dette muette :
+`/settings/impots`, `/settings/prelevements`, `/settings/base-contrat`,
+`/settings/dmtg-succession`, `/settings/prevoyance-regimes`.
+
+L'audit manuel `npm run audit:settings-references -- --stale --with-db` ajoute la fraîcheur, la
+liveness URL hors CI et la lecture des sources prévoyance en base. Les statuts HTTP `401`, `403` et
+`429` sont classés non vérifiables automatiquement, pas morts ; seuls `404` et `410` rendent l'URL
+bloquante. Sans variables Supabase, l'audit produit un rapport code-only avec avertissement.
+La prévoyance peut porter `references: []` quand aucune source institutionnelle stable n'est attestée ;
+le `noRefReason` doit alors nommer le régime concerné. Les sources prévoyance par catégorie restent
+à qualifier dans un chantier dédié.
 
 ### Règle "god file"
 
@@ -747,6 +781,7 @@ Les fichiers `src/domain/base-contrat/**` ne doivent pas importer React, Supabas
 | Source des routes settings                  | `src/routes/settingsRoutes.ts`                                                              |
 | Valeurs par défaut des 3 singletons fiscaux | `src/constants/settingsDefaults.ts`                                                         |
 | Référentiel juridique canonique             | `src/domain/legal-references/`                                                              |
+| Chaînage références Settings                | `src/domain/settings-references/chain.json`                                                 |
 | Shell settings (nav + rendu)                | `src/pages/SettingsShell.tsx`                                                               |
 | Pages settings                              | `src/pages/settings/`                                                                       |
 | Cache + fetch Supabase                      | `src/utils/cache/fiscalSettingsCache.ts`                                                    |

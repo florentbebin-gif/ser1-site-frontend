@@ -13,11 +13,11 @@ export const COMPTE_COURANT_ASSOCIE: ProductRules = {
       bullets: [
         "Prêt consenti par un associé à l'entité dans laquelle il détient des droits (créance de compte courant d'associé).",
         "Intérêts déductibles pour l'entité débitrice dans la limite du taux plafond légal.",
-        'À confirmer selon la source officielle ou contractuelle applicable.',
+        "À confirmer selon la qualité d'associé prêteur et le taux plafond des intérêts.",
       ],
       tags: ['pret_associe', 'interet_deductible_societe'],
       confidence: 'moyenne',
-      dependencies: ['source officielle ou contractuelle applicable'],
+      dependencies: ["qualité d'associé prêteur", 'taux plafond des intérêts déductibles'],
     },
   ],
   sortie: [

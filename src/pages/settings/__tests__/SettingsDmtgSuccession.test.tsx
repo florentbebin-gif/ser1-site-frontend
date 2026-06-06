@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 
 import '@testing-library/jest-dom/vitest';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { UserRoleState } from '@/auth/useUserRole';
@@ -10,6 +10,7 @@ import {
   DEFAULT_FISCALITY_SETTINGS,
   DEFAULT_TAX_SETTINGS,
 } from '@/constants/settingsDefaults';
+import { getLegalReference } from '@/domain/legal-references';
 import SettingsDmtgSuccession from '../SettingsDmtgSuccession';
 
 let isAdmin = true;
@@ -223,5 +224,57 @@ describe('SettingsDmtgSuccession', () => {
       expect(screen.getByText(/Erreur de validation du schéma DMTG/i)).toBeInTheDocument();
     });
     expect(upsertCalls).toHaveLength(0);
+  });
+
+  it('rend les références juridiques DMTG cliquables', async () => {
+    render(<SettingsDmtgSuccession />);
+
+    await waitFor(() => {
+      expect(screen.queryByText('Chargement…')).not.toBeInTheDocument();
+    });
+
+    await userEvent.click(screen.getByRole('button', { name: /Libéralités/i }));
+    const donationSimpleBlock = screen
+      .getByText('Donation simple (pleine propriété)')
+      .closest('.income-tax-block');
+
+    expect(donationSimpleBlock).not.toBeNull();
+    expect(
+      within(donationSimpleBlock as HTMLElement).getByRole('link', { name: 'Art. 894' }),
+    ).toHaveAttribute('href', getLegalReference('code-civil-894').officialUrl);
+    expect(screen.queryByText(/C\. civ\. art\. 894/)).not.toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole('button', { name: /Avantages matrimoniaux/i }));
+    expect(
+      screen
+        .getAllByRole('link', { name: 'Art. 1527' })
+        .some(
+          (link) => link.getAttribute('href') === getLegalReference('code-civil-1527').officialUrl,
+        ),
+    ).toBe(true);
+
+    await userEvent.click(
+      screen.getByRole('button', { name: /Réserve héréditaire & droits du conjoint/i }),
+    );
+    expect(screen.getByRole('link', { name: 'Art. 913' })).toHaveAttribute(
+      'href',
+      getLegalReference('code-civil-913').officialUrl,
+    );
+    expect(screen.getByRole('link', { name: 'Art. 757' })).toHaveAttribute(
+      'href',
+      getLegalReference('code-civil-757').officialUrl,
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: /Assurance-vie décès/i }));
+    expect(
+      screen
+        .getAllByRole('link', { name: 'Art. 990 I' })
+        .some((link) => link.getAttribute('href') === getLegalReference('cgi-990-i').officialUrl),
+    ).toBe(true);
+    expect(
+      screen
+        .getAllByRole('link', { name: 'Art. 757 B' })
+        .some((link) => link.getAttribute('href') === getLegalReference('cgi-757-b').officialUrl),
+    ).toBe(true);
   });
 });

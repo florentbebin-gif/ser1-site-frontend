@@ -10,6 +10,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { CATALOG, CATALOG_PP_PM_SPLIT_MAP } from '../catalog';
 import { buildBaseContratFiscalLabels, getRules, hasSocleRules } from '../rules/index';
+import { resolveRuleSourceUrl } from '../rules/sourceUrls';
 import type { RuleBlock } from '../rules/types';
 
 const AUDIENCES = ['pp', 'pm'] as const;
@@ -296,21 +297,19 @@ describe('confidence policy — moyenne/faible → dependencies non vides', () =
 // ─────────────────────────────────────────────────────────────
 // 10. Sources — URLs valides https://
 // ─────────────────────────────────────────────────────────────
-// (Section 12 below enforces official domains for sensitive claims)
 
 describe('confidence policy — sources ont des URLs https valides', () => {
   for (const product of CATALOG) {
     it(`${product.id} — sources URLs`, () => {
       const blocks = allBlocks(product.id);
       for (const block of blocks) {
-        if (block.sources) {
-          for (const src of block.sources) {
-            expect(src.label.length, `Source sans label dans ${product.id}`).toBeGreaterThan(0);
-            expect(
-              src.url.startsWith('https://'),
-              `URL invalide "${src.url}" dans ${product.id} / "${block.title}"`,
-            ).toBe(true);
-          }
+        for (const src of block.sources ?? []) {
+          expect(src.label.length, `Source sans label dans ${product.id}`).toBeGreaterThan(0);
+          const sourceUrl = resolveRuleSourceUrl(src);
+          expect(
+            sourceUrl?.startsWith('https://'),
+            `URL invalide "${sourceUrl ?? src.refId ?? ''}" dans ${product.id} / "${block.title}"`,
+          ).toBe(true);
         }
       }
     });
@@ -318,10 +317,10 @@ describe('confidence policy — sources ont des URLs https valides', () => {
 });
 
 // ─────────────────────────────────────────────────────────────
-// 11. Strings interdites — qualité rédactionnelle
+// 11. Audience PM — contenu spécifique
 // ─────────────────────────────────────────────────────────────
 
-describe('strings interdites — fiabilisation', () => {
+describe('audience PM — contenu spécifique', () => {
   it('audience PM — couverture pmEligible (3 phases non vides + contenu PM safe)', () => {
     const PM_FORBIDDEN_PATTERNS: RegExp[] = [
       /décès/i,
@@ -536,9 +535,8 @@ describe('strings interdites — fiabilisation', () => {
     }
 
     function hasOfficialSource(block: RuleBlock): boolean {
-      if (!block.sources || block.sources.length === 0) return false;
-      return block.sources.some((src) =>
-        OFFICIAL_DOMAINS.some((domain) => src.url.includes(domain)),
+      return (block.sources ?? []).some((src) =>
+        OFFICIAL_DOMAINS.some((domain) => resolveRuleSourceUrl(src)?.includes(domain)),
       );
     }
 

@@ -104,8 +104,12 @@ const ASSURANCE_VIE_PP: ProductRules = {
       confidence: 'elevee',
       sources: [
         {
+          label: 'BOFiP TCAS-AUT-60 — prélèvement art. 990 I',
+          refId: 'boi-tcas-aut-60',
+        },
+        {
           label: 'Art. 990 I CGI',
-          url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000038612905',
+          refId: 'cgi-990-i',
         },
       ],
     },
@@ -120,8 +124,12 @@ const ASSURANCE_VIE_PP: ProductRules = {
       confidence: 'elevee',
       sources: [
         {
+          label: 'BOFiP ENR-DMTG-10-10-20-20 — assurance-vie art. 757 B',
+          refId: 'boi-enr-dmtg-10-10-20-20',
+        },
+        {
           label: 'Art. 757 B CGI',
-          url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000006310172',
+          refId: 'cgi-757-b',
         },
       ],
     },
@@ -170,17 +178,16 @@ const CONTRAT_CAPITALISATION: ProductRules = {
     {
       title: 'Intégration dans la succession',
       bullets: [
-        "Contrairement à l'assurance-vie, le contrat entre dans la succession à sa valeur de rachat.",
-        'Droits de mutation applicables selon le barème et le lien de parenté.',
-        "L'abattement spécifique AV (art. 990 I) ne s'applique pas.",
+        "Le contrat de capitalisation n'est pas un contrat d'assurance-vie avec clause bénéficiaire ; sa valeur suit la propriété du contrat au décès.",
+        'Le traitement au décès dépend de la propriété du contrat et de la liquidation successorale.',
+        "À confirmer avec l'acte de succession, la propriété du contrat et les clauses contractuelles disponibles.",
       ],
       tags: ['dmtg_classique', 'succession_active'],
-      confidence: 'elevee',
-      sources: [
-        {
-          label: 'Art. 990 I CGI (inapplicable au contrat de capitalisation)',
-          url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000038612905',
-        },
+      confidence: 'moyenne',
+      dependencies: [
+        'propriété du contrat au décès',
+        'documentation contractuelle',
+        'liquidation successorale',
       ],
     },
     {
