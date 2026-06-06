@@ -23,7 +23,12 @@ UPDATE public.prevoyance_regime_settings regime
 SET sources = jsonb_build_object(
   'references', jsonb_build_array(),
   'noRefReason',
-  'Ancienne source placeholder retirée : aucune source institutionnelle stable et pertinente n''a été validée pour couvrir ce régime par catégorie.',
+  format(
+    'Ancienne source placeholder retirée : aucune source institutionnelle stable et pertinente n''a été validée pour %s (%s, caisse %s) par catégorie ; sourcing prévoyance à relire avant attestation.',
+    regime.label,
+    regime.code,
+    regime.caisse
+  ),
   'noteAdmin',
   'Migration 20260606000100 : faux titres génériques, F3053 de repli, URLs d''actualité et couvertures quatre catégories retirés. Restaurer depuis .cache/prevoyance-sources-before-settings-chain.json si rollback relu.'
 )

@@ -4,6 +4,7 @@ import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import process from 'node:process';
+import { pathToFileURL } from 'node:url';
 
 import { afterEach, describe, expect, it } from 'vitest';
 
@@ -21,6 +22,16 @@ type AuditReport = {
   liveness: {
     failures: Array<Record<string, unknown>>;
     blocked: Array<Record<string, unknown>>;
+  };
+};
+
+type AuditModule = {
+  auditPrevoyanceSourceRows: (
+    table: string,
+    rows: Array<Record<string, unknown>>,
+  ) => {
+    counters: { nonSpecificNoRefReasons: number };
+    findings: string[];
   };
 };
 
@@ -139,6 +150,10 @@ function parseReport(stdout: string) {
   return JSON.parse(stdout) as AuditReport;
 }
 
+async function loadAuditModule() {
+  return (await import(pathToFileURL(scriptPath).href)) as AuditModule;
+}
+
 afterEach(() => {
   for (const root of tempRoots.splice(0)) {
     rmSync(root, { recursive: true, force: true });
@@ -178,5 +193,47 @@ describe('audit-settings-references', () => {
       ]);
       expect(report.liveness.blocked).toHaveLength(0);
     });
+  });
+
+  it('signale une absence de source prévoyance dont la raison ne nomme pas le régime', async () => {
+    const { auditPrevoyanceSourceRows } = await loadAuditModule();
+
+    const audit = auditPrevoyanceSourceRows('prevoyance_regime_settings', [
+      {
+        code: 'cavamac',
+        label: 'Agent général - CAVAMAC',
+        caisse: 'CAVAMAC',
+        sources: {
+          references: [],
+          noRefReason:
+            "Aucune source institutionnelle stable et pertinente n'a encore été validée.",
+        },
+      },
+    ]);
+
+    expect(audit.counters.nonSpecificNoRefReasons).toBe(1);
+    expect(audit.findings).toContain(
+      'prevoyance_regime_settings:cavamac: noRefReason sans code, label ou caisse du régime',
+    );
+  });
+
+  it('accepte une absence de source prévoyance qui nomme le code du régime', async () => {
+    const { auditPrevoyanceSourceRows } = await loadAuditModule();
+
+    const audit = auditPrevoyanceSourceRows('prevoyance_regime_settings', [
+      {
+        code: 'cavamac',
+        label: 'Agent général - CAVAMAC',
+        caisse: 'CAVAMAC',
+        sources: {
+          references: [],
+          noRefReason:
+            "Aucune source institutionnelle stable et pertinente n'a été validée pour Agent général - CAVAMAC (cavamac).",
+        },
+      },
+    ]);
+
+    expect(audit.counters.nonSpecificNoRefReasons).toBe(0);
+    expect(audit.findings).toHaveLength(0);
   });
 });

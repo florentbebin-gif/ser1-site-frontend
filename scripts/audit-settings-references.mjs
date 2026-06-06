@@ -93,6 +93,15 @@ function isNonEmptyString(value) {
   return typeof value === 'string' && value.trim().length > 0;
 }
 
+function normalizeSearchText(value) {
+  return isNonEmptyString(value)
+    ? value
+        .normalize('NFD')
+        .replace(/\p{Diacritic}/gu, '')
+        .toLowerCase()
+    : '';
+}
+
 function daysSince(isoDate) {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(isoDate)) return Number.POSITIVE_INFINITY;
   const [year, month, day] = isoDate.split('-').map(Number);
@@ -258,6 +267,12 @@ function sourceNoRefReason(sources) {
     : '';
 }
 
+function noRefReasonMentionsRow(row, noRefReason) {
+  const reason = normalizeSearchText(noRefReason);
+  const tokens = [row.code, row.label, row.caisse].map(normalizeSearchText).filter(Boolean);
+  return tokens.some((token) => reason.includes(token));
+}
+
 function coveredValues(reference) {
   if (!Array.isArray(reference.valeursCouvertes)) return [];
   return reference.valeursCouvertes.filter(isNonEmptyString).map((value) =>
@@ -268,7 +283,7 @@ function coveredValues(reference) {
   );
 }
 
-function auditPrevoyanceSourceRows(table, rows) {
+export function auditPrevoyanceSourceRows(table, rows) {
   const findings = [];
   const counters = {
     rowCount: rows.length,
@@ -278,6 +293,7 @@ function auditPrevoyanceSourceRows(table, rows) {
     f3053References: 0,
     fourCategoryClaims: 0,
     referencesWithoutAttestation: 0,
+    nonSpecificNoRefReasons: 0,
   };
 
   for (const row of rows) {
@@ -288,6 +304,10 @@ function auditPrevoyanceSourceRows(table, rows) {
     if (references.length === 0 && !noRefReason) {
       counters.rowsWithoutReferenceOrReason += 1;
       findings.push(`${rowLabel}: aucune reference et aucun noRefReason`);
+    }
+    if (references.length === 0 && noRefReason && !noRefReasonMentionsRow(row, noRefReason)) {
+      counters.nonSpecificNoRefReasons += 1;
+      findings.push(`${rowLabel}: noRefReason sans code, label ou caisse du régime`);
     }
 
     for (const reference of references) {
@@ -366,8 +386,11 @@ async function auditPrevoyanceDb(withDb) {
   }
 
   const [regimesResult, maintienResult] = await Promise.all([
-    client.from('prevoyance_regime_settings').select('code, sources').order('code'),
-    client.from('prevoyance_maintien_employeur_settings').select('code, sources').order('code'),
+    client.from('prevoyance_regime_settings').select('code, label, caisse, sources').order('code'),
+    client
+      .from('prevoyance_maintien_employeur_settings')
+      .select('code, label, sources')
+      .order('code'),
   ]);
 
   const findings = [];
