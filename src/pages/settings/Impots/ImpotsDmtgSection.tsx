@@ -1,6 +1,8 @@
 import React from 'react';
+import { LegalRefInlineList } from '@/components/legal/LegalRefLink';
 import SettingsTitleWithIcon from '@/components/settings/SettingsTitleWithIcon';
 import SettingsTable from '@/components/settings/SettingsTable';
+import { DMTG_BAREMES_BLOCK_REF_IDS } from '@/domain/settings-references/uiReferenceGroups';
 import { numberOrEmpty } from '@/components/settings/settingsHelpers';
 
 type CellValue = string | number | null;
@@ -108,6 +110,7 @@ export default function ImpotsDmtgSection({
           <p className="fisc-intro fisc-intro--loose">
             Barèmes applicables aux successions et donations selon le lien de parenté. Utilisés par
             le simulateur de placement pour la phase de transmission.
+            <LegalRefInlineList ids={DMTG_BAREMES_BLOCK_REF_IDS} />
           </p>
 
           {categories.map(({ key, title, labelAbattement }) => {

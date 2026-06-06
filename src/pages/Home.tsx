@@ -18,9 +18,6 @@ export default function Home(): React.ReactElement {
 
       <main className="home-main" data-testid="home-main">
         <section className="home-start" data-testid="home-start-section">
-          <p className="home-start__eyebrow" data-testid="home-start-eyebrow">
-            PAR OÙ COMMENCER
-          </p>
           <div className="home-actions" aria-label="Entrées principales">
             {HOME_PRIMARY_ACTIONS.map((action) =>
               action.to ? (

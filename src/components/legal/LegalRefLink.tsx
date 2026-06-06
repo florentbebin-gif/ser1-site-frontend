@@ -13,6 +13,12 @@ interface LegalRefListProps {
   className?: string;
 }
 
+interface LegalRefInlineListProps {
+  ids: readonly LegalReferenceId[];
+  label?: string;
+  className?: string;
+}
+
 export function LegalRefLink({ id, className = '' }: LegalRefLinkProps): ReactElement {
   const reference = getOptionalLegalReference(id);
   const classNames = ['legal-ref-link', className].filter(Boolean).join(' ');
@@ -49,5 +55,24 @@ export function LegalRefList({ ids, className = '' }: LegalRefListProps): ReactE
         </li>
       ))}
     </ul>
+  );
+}
+
+export function LegalRefInlineList({
+  ids,
+  label = 'Références :',
+  className = '',
+}: LegalRefInlineListProps): ReactElement {
+  const classNames = ['legal-ref-inline-list', className].filter(Boolean).join(' ');
+
+  return (
+    <span className={classNames}>
+      <span className="legal-ref-inline-list__label">{label}</span>
+      <span className="legal-ref-inline-list__items">
+        {ids.map((id) => (
+          <LegalRefLink key={id} id={id} />
+        ))}
+      </span>
+    </span>
   );
 }

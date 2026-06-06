@@ -1,7 +1,9 @@
 import React from 'react';
+import { LegalRefInlineList } from '@/components/legal/LegalRefLink';
 import SettingsTitleWithIcon from '@/components/settings/SettingsTitleWithIcon';
 import SettingsYearColumn from '@/components/settings/SettingsYearColumn';
 import SettingsFieldRow from '@/components/settings/SettingsFieldRow';
+import { INCOME_TAX_PFU_BLOCK_REF_IDS } from '@/domain/settings-references/uiReferenceGroups';
 
 interface IncomeTaxLabels {
   currentYearLabel?: string;
@@ -81,6 +83,7 @@ export default function ImpotsPfuSection({
           <p className="fisc-intro">
             La part prélèvements sociaux du PFU est calculée automatiquement depuis
             /settings/prelevements. Seule la part IR reste éditable ici.
+            <LegalRefInlineList ids={INCOME_TAX_PFU_BLOCK_REF_IDS} />
           </p>
 
           <div className="tax-two-cols">

@@ -1,7 +1,9 @@
 import React from 'react';
+import { LegalRefInlineList } from '@/components/legal/LegalRefLink';
 import SettingsTitleWithIcon from '@/components/settings/SettingsTitleWithIcon';
 import SettingsYearColumn from '@/components/settings/SettingsYearColumn';
 import SettingsFieldRow from '@/components/settings/SettingsFieldRow';
+import { PRELEVEMENTS_PATRIMOINE_REF_IDS } from '@/domain/settings-references/uiReferenceGroups';
 
 interface LabelsProps {
   currentYearLabel: string;
@@ -68,6 +70,7 @@ export default function PrelevementsPatrimoineSection({
             Cas général pour les revenus du capital au taux en vigueur ; taux d'exception pour les
             revenus fonciers, plus-values immobilières, assurance-vie, PEP et épargne logement selon
             les cas.
+            <LegalRefInlineList ids={PRELEVEMENTS_PATRIMOINE_REF_IDS} />
           </p>
 
           <div className="tax-two-cols">

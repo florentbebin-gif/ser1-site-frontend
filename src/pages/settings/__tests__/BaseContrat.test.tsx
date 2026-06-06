@@ -131,18 +131,21 @@ describe('BaseContrat', () => {
     );
   });
 
-  it('masque les sources, la confiance et les dépendances aux non-admins', async () => {
+  it('affiche les sources aux non-admins sans afficher la confiance ni les dépendances', async () => {
     await openFirstProduct();
 
     await waitFor(() => {
       expect(screen.getByText('Fiscalité de test')).toBeInTheDocument();
     });
     expect(screen.queryByText('À vérifier')).not.toBeInTheDocument();
-    expect(screen.queryByText('CGI art. 779')).not.toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Art. 990 I CGI' })).toHaveAttribute(
+      'href',
+      getLegalReference('cgi-990-i').officialUrl,
+    );
     expect(screen.queryByText('Validation notaire')).not.toBeInTheDocument();
   });
 
-  it('affiche les sources, la confiance et les dépendances aux admins', async () => {
+  it('affiche les sources et la confiance aux admins sans afficher les dépendances', async () => {
     isAdmin = true;
 
     await openFirstProduct();
@@ -152,15 +155,7 @@ describe('BaseContrat', () => {
       'href',
       getLegalReference('cgi-990-i').officialUrl,
     );
-    expect(screen.getByText('Validation notaire')).toBeInTheDocument();
-  });
-
-  it('masque les dépendances génériques aux admins sans masquer les vraies dépendances', async () => {
-    isAdmin = true;
-
-    await openFirstProduct();
-
-    expect(await screen.findByText('Validation notaire')).toBeInTheDocument();
+    expect(screen.queryByText('Validation notaire')).not.toBeInTheDocument();
     expect(
       screen.queryByText('source officielle ou contractuelle applicable'),
     ).not.toBeInTheDocument();

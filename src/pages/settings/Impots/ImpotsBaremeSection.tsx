@@ -1,5 +1,7 @@
 import type { Dispatch, ReactElement, SetStateAction } from 'react';
+import { LegalRefInlineList } from '@/components/legal/LegalRefLink';
 import SettingsTitleWithIcon from '@/components/settings/SettingsTitleWithIcon';
+import { INCOME_TAX_BAREME_BLOCK_REF_IDS } from '@/domain/settings-references/uiReferenceGroups';
 import {
   ImpotsBaremeYearColumn,
   type IncomeScaleKey,
@@ -61,6 +63,7 @@ export default function ImpotsBaremeSection({
             {
               'Bar\u00e8me progressif par tranches (taux et retraitement) pour le bar\u00e8me actuel et celui de l\u2019ann\u00e9e pr\u00e9c\u00e9dente.'
             }
+            <LegalRefInlineList ids={INCOME_TAX_BAREME_BLOCK_REF_IDS} />
           </p>
 
           <div className="income-tax-columns">

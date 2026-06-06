@@ -1,7 +1,9 @@
 import React from 'react';
+import { LegalRefInlineList } from '@/components/legal/LegalRefLink';
 import SettingsTitleWithIcon from '@/components/settings/SettingsTitleWithIcon';
 import SettingsYearColumn from '@/components/settings/SettingsYearColumn';
 import SettingsFieldRow from '@/components/settings/SettingsFieldRow';
+import { INCOME_TAX_CORPORATE_BLOCK_REF_IDS } from '@/domain/settings-references/uiReferenceGroups';
 import { validateQpfcRate } from '../validators/isValidators';
 
 interface IncomeTaxLabels {
@@ -82,6 +84,12 @@ export default function ImpotsISSection({
           role="region"
           aria-labelledby="impots-header-is"
         >
+          <p className="fisc-intro">
+            Paramètres d’impôt sur les sociétés, régime mère-fille et déductibilité suivis pour le
+            millésime courant et l’année précédente.
+            <LegalRefInlineList ids={INCOME_TAX_CORPORATE_BLOCK_REF_IDS} />
+          </p>
+
           <div className="tax-two-cols">
             <SettingsYearColumn yearLabel={incomeTax.currentYearLabel || 'Année N'}>
               <div className="income-tax-block income-tax-block--mb12">

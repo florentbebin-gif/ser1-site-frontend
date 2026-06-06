@@ -182,12 +182,6 @@ function RegimeMetaCard({
           <span className="settings-reference-rule-meta__label">Cotisations</span>
           <RuleList items={cotisationItems} />
         </div>
-        {showAdminNotes && sources.noteAdmin ? (
-          <div className="prevoyance-settings-meta-card__section">
-            <span className="settings-reference-rule-meta__label">Note admin</span>
-            <span>{sources.noteAdmin}</span>
-          </div>
-        ) : null}
       </div>
     </RuleCard>
   );
