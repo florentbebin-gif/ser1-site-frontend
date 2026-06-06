@@ -168,19 +168,17 @@ const CONTRAT_CAPITALISATION: ProductRules = {
   ],
   deces: [
     {
-      title: 'Intégration dans la succession',
+      title: 'Traitement successoral à confirmer',
       bullets: [
-        "Contrairement à l'assurance-vie, le contrat entre dans la succession à sa valeur de rachat.",
-        'Droits de mutation applicables selon le barème et le lien de parenté.',
-        "L'abattement spécifique AV (art. 990 I) ne s'applique pas.",
+        "À confirmer selon la documentation contractuelle et la source civile/fiscale applicable : le contrat de capitalisation n'est pas un contrat d'assurance-vie avec clause bénéficiaire.",
+        'Le traitement au décès dépend de la propriété du contrat et de la liquidation successorale.',
       ],
       tags: ['dmtg_classique', 'succession_active'],
-      confidence: 'elevee',
-      sources: [
-        {
-          label: 'Art. 990 I CGI (inapplicable au contrat de capitalisation)',
-          refId: 'cgi-990-i',
-        },
+      confidence: 'moyenne',
+      dependencies: [
+        'propriété du contrat au décès',
+        'documentation contractuelle',
+        'liquidation successorale',
       ],
     },
     {

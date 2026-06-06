@@ -85,7 +85,15 @@ const CONFIDENCE_LABELS: Record<Confidence, string> = {
   faible: 'Non vérifié',
 };
 
+const GENERIC_DEPENDENCIES = new Set(['source officielle ou contractuelle applicable']);
+
+function visibleDependencies(block: RuleBlock): string[] {
+  return (block.dependencies ?? []).filter((dependency) => !GENERIC_DEPENDENCIES.has(dependency));
+}
+
 function RuleBlockCard({ block, showAdminMeta }: { block: RuleBlock; showAdminMeta: boolean }) {
+  const dependencies = visibleDependencies(block);
+
   return (
     <div className="settings-reference-rule-card">
       <div className="settings-reference-rule-card__title">{block.title}</div>
@@ -101,11 +109,11 @@ function RuleBlockCard({ block, showAdminMeta }: { block: RuleBlock; showAdminMe
           >
             {CONFIDENCE_LABELS[block.confidence]}
           </span>
-          {block.dependencies && block.dependencies.length > 0 && (
+          {dependencies.length > 0 && (
             <div className="settings-reference-rule-meta__group">
               <span className="settings-reference-rule-meta__label">Dépendances</span>
               <ul className="settings-reference-rule-meta__list">
-                {block.dependencies.map((dependency) => (
+                {dependencies.map((dependency) => (
                   <li key={dependency}>{dependency}</li>
                 ))}
               </ul>
