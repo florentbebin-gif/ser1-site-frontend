@@ -26,3 +26,23 @@
   padding: 0;
   list-style: none;
 }
+
+.legal-ref-inline-list {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-2);
+  margin-left: var(--space-1);
+  color: var(--color-c9);
+}
+
+.legal-ref-inline-list__label {
+  color: var(--color-c10);
+  font-weight: 600;
+}
+
+.legal-ref-inline-list__items {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}

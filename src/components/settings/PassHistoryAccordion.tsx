@@ -1,4 +1,6 @@
 import React from 'react';
+import { LegalRefInlineList } from '@/components/legal/LegalRefLink';
+import { PRELEVEMENTS_PASS_REF_IDS } from '@/domain/settings-references/uiReferenceGroups';
 import type { PassHistoryRow } from '@/hooks/settings/usePassHistory';
 import SettingsTitleWithIcon from './SettingsTitleWithIcon';
 import { numberOrEmpty } from './settingsHelpers';
@@ -53,6 +55,11 @@ export default function PassHistoryAccordion({
             <p className="settings-inline-note">Chargement...</p>
           ) : (
             <>
+              <p className="fisc-intro">
+                Historique du plafond annuel de la sécurité sociale utilisé par les paramètres de
+                prélèvements sociaux.
+                <LegalRefInlineList ids={PRELEVEMENTS_PASS_REF_IDS} />
+              </p>
               <table className="settings-table">
                 <thead>
                   <tr>

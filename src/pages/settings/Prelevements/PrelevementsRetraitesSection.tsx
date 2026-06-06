@@ -1,6 +1,8 @@
 import React from 'react';
+import { LegalRefInlineList } from '@/components/legal/LegalRefLink';
 import SettingsTitleWithIcon from '@/components/settings/SettingsTitleWithIcon';
 import SettingsTable from '@/components/settings/SettingsTable';
+import { PRELEVEMENTS_RETRAITE_REF_IDS } from '@/domain/settings-references/uiReferenceGroups';
 
 type YearKey = 'current' | 'previous';
 type CellValue = string | number | null;
@@ -95,6 +97,7 @@ export default function PrelevementsRetraitesSection({
           <p className="fisc-intro">
             Barème des prélèvements sociaux sur les pensions de retraite (RFR pour 1 part). Les
             montants sont ajustés en fonction des parts, mais on stocke ici la base "1 part".
+            <LegalRefInlineList ids={PRELEVEMENTS_RETRAITE_REF_IDS} />
           </p>
 
           <div>

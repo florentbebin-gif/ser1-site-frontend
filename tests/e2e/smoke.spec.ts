@@ -17,7 +17,7 @@ test.describe('Smoke Tests - Surfaces stables', () => {
   test('Home charge en mode smoke', async ({ page }) => {
     await page.goto(ROUTES.home);
     await expect(page.locator('body')).not.toContainText('Application error');
-    await expect(page.getByTestId('home-start-eyebrow')).toContainText('PAR OÙ COMMENCER');
+    await expect(page.getByTestId('home-start-eyebrow')).toHaveCount(0);
     await expect(page.getByTestId('home-guide-subtitle')).toContainText(
       'Sélectionnez votre objectif, SER1 vous guide pas à pas.',
     );

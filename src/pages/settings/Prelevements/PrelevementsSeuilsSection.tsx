@@ -1,5 +1,7 @@
 import React from 'react';
+import { LegalRefInlineList } from '@/components/legal/LegalRefLink';
 import SettingsTitleWithIcon from '@/components/settings/SettingsTitleWithIcon';
+import { PRELEVEMENTS_SEUILS_REF_IDS } from '@/domain/settings-references/uiReferenceGroups';
 import SeuilsYearPeriod from './SeuilsYearPeriod';
 
 interface LabelsProps {
@@ -67,6 +69,7 @@ export default function PrelevementsSeuilsSection({
             retraite. Ces seuils s'appliquent aussi pour la CRDS et la CASA. Les montants sont
             indiqués pour <strong>1 part</strong>, avec une majoration par{' '}
             <strong>quart de part supplémentaire</strong>.
+            <LegalRefInlineList ids={PRELEVEMENTS_SEUILS_REF_IDS} />
           </p>
 
           <div className="tax-two-cols">

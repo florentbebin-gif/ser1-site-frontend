@@ -1,7 +1,9 @@
 import React from 'react';
+import { LegalRefInlineList } from '@/components/legal/LegalRefLink';
 import SettingsTitleWithIcon from '@/components/settings/SettingsTitleWithIcon';
 import SettingsTable from '@/components/settings/SettingsTable';
 import SettingsYearColumn from '@/components/settings/SettingsYearColumn';
+import { INCOME_TAX_DOM_ABATEMENT_REF_IDS } from '@/domain/settings-references/uiReferenceGroups';
 
 type DomPeriodKey = 'current' | 'previous';
 type CellValue = string | number | null;
@@ -88,6 +90,7 @@ export default function ImpotsAbattementDomSection({
             Appliqué sur l’impôt issu du barème{' '}
             <strong>après plafonnement du quotient familial</strong> et
             <strong> avant</strong> décote + réductions/crédits.
+            <LegalRefInlineList ids={INCOME_TAX_DOM_ABATEMENT_REF_IDS} />
           </p>
 
           <div className="tax-two-cols">

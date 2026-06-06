@@ -85,14 +85,8 @@ const CONFIDENCE_LABELS: Record<Confidence, string> = {
   faible: 'Non vérifié',
 };
 
-const GENERIC_DEPENDENCIES = new Set(['source officielle ou contractuelle applicable']);
-
-function visibleDependencies(block: RuleBlock): string[] {
-  return (block.dependencies ?? []).filter((dependency) => !GENERIC_DEPENDENCIES.has(dependency));
-}
-
 function RuleBlockCard({ block, showAdminMeta }: { block: RuleBlock; showAdminMeta: boolean }) {
-  const dependencies = visibleDependencies(block);
+  const hasSources = Boolean(block.sources && block.sources.length > 0);
 
   return (
     <div className="settings-reference-rule-card">
@@ -102,24 +96,19 @@ function RuleBlockCard({ block, showAdminMeta }: { block: RuleBlock; showAdminMe
           <li key={index}>{bullet}</li>
         ))}
       </ul>
-      {showAdminMeta && (
-        <div className="settings-reference-rule-meta" aria-label="Métadonnées admin">
-          <span
-            className={`settings-reference-confidence settings-reference-confidence--${block.confidence}`}
-          >
-            {CONFIDENCE_LABELS[block.confidence]}
-          </span>
-          {dependencies.length > 0 && (
-            <div className="settings-reference-rule-meta__group">
-              <span className="settings-reference-rule-meta__label">Dépendances</span>
-              <ul className="settings-reference-rule-meta__list">
-                {dependencies.map((dependency) => (
-                  <li key={dependency}>{dependency}</li>
-                ))}
-              </ul>
-            </div>
+      {(showAdminMeta || hasSources) && (
+        <div
+          className="settings-reference-rule-meta"
+          aria-label={showAdminMeta ? 'Métadonnées admin' : 'Sources'}
+        >
+          {showAdminMeta && (
+            <span
+              className={`settings-reference-confidence settings-reference-confidence--${block.confidence}`}
+            >
+              {CONFIDENCE_LABELS[block.confidence]}
+            </span>
           )}
-          {block.sources && block.sources.length > 0 && (
+          {hasSources && block.sources && (
             <div className="settings-reference-rule-meta__group">
               <span className="settings-reference-rule-meta__label">Sources</span>
               <RuleSourcesList sources={block.sources} />

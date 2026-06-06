@@ -216,7 +216,8 @@ describe('PrevoyanceRegimes', () => {
         (_, element) => element?.textContent === 'Valeurs couvertes : invalidité, décès',
       ),
     ).toBeInTheDocument();
-    expect(screen.getByText('Note interne invisible aux users.')).toBeInTheDocument();
+    expect(screen.queryByText('Note admin')).not.toBeInTheDocument();
+    expect(screen.queryByText('Note interne invisible aux users.')).not.toBeInTheDocument();
   });
 
   it('initialise une nouvelle source admin sans URL factice', async () => {

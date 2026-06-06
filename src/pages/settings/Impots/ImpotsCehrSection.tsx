@@ -1,7 +1,9 @@
 import React from 'react';
+import { LegalRefInlineList } from '@/components/legal/LegalRefLink';
 import SettingsTitleWithIcon from '@/components/settings/SettingsTitleWithIcon';
 import SettingsYearColumn from '@/components/settings/SettingsYearColumn';
 import SettingsFieldRow from '@/components/settings/SettingsFieldRow';
+import { INCOME_TAX_CEHR_BLOCK_REF_IDS } from '@/domain/settings-references/uiReferenceGroups';
 import { numberOrEmpty } from '@/components/settings/settingsHelpers';
 
 type PeriodKey = 'current' | 'previous';
@@ -89,6 +91,7 @@ export default function ImpotsCehrSection({
           <p className="fisc-intro">
             Contribution exceptionnelle sur les hauts revenus (CEHR) et contribution différentielle
             (CDHR).
+            <LegalRefInlineList ids={INCOME_TAX_CEHR_BLOCK_REF_IDS} />
           </p>
 
           <div className="tax-two-cols">
