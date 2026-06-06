@@ -778,5 +778,38 @@
     "volatility": "lawChange",
     "relatedSimulatorIds": ["epargne-salariale"],
     "lastCheckedAt": "2026-06-05"
+  },
+  {
+    "id": "boi-ir-liq-20-20-30",
+    "label": "BOFiP BOI-IR-LIQ-20-20-30 — décote de l'impôt sur le revenu",
+    "sourceType": "BOFiP",
+    "officialUrl": "https://bofip.impots.gouv.fr/bofip/2495-PGP.html/identifiant=BOI-IR-LIQ-20-20-30-20250414",
+    "articleOrSection": "BOI-IR-LIQ-20-20-30",
+    "scope": "Décote applicable au montant de l'impôt brut (4 du I de l'article 197 du CGI).",
+    "volatility": "annual",
+    "relatedSettings": ["impots"],
+    "lastCheckedAt": "2026-06-06"
+  },
+  {
+    "id": "boi-ir-liq-20-20-20",
+    "label": "BOFiP BOI-IR-LIQ-20-20-20 — plafonnement du quotient familial",
+    "sourceType": "BOFiP",
+    "officialUrl": "https://bofip.impots.gouv.fr/bofip/2494-PGP.html/identifiant=BOI-IR-LIQ-20-20-20-20210330",
+    "articleOrSection": "BOI-IR-LIQ-20-20-20",
+    "scope": "Plafonnement des effets du quotient familial sur le montant de l'impôt brut.",
+    "volatility": "annual",
+    "relatedSettings": ["impots"],
+    "lastCheckedAt": "2026-06-06"
+  },
+  {
+    "id": "boi-rsa-pens-30-10-10",
+    "label": "BOFiP BOI-RSA-PENS-30-10-10 — abattement 10 % pensions et retraites",
+    "sourceType": "BOFiP",
+    "officialUrl": "https://bofip.impots.gouv.fr/bofip/7458-PGP.html/identifiant=BOI-RSA-PENS-30-10-10-20170531",
+    "articleOrSection": "BOI-RSA-PENS-30-10-10",
+    "scope": "Abattement de 10 % sur les pensions et retraites prévu à l'article 158 du CGI.",
+    "volatility": "annual",
+    "relatedSettings": ["impots"],
+    "lastCheckedAt": "2026-06-06"
   }
 ]

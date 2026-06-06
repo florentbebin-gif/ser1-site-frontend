@@ -294,5 +294,56 @@
     "noRefReason": "La couverture statique ne peut pas attester les sources par caisse ; l'audit live doit confirmer chaque sources.references ou noRefReason directement en base.",
     "verifiedAt": "2026-06-06",
     "volatility": "annual"
+  },
+  {
+    "pagePath": "/settings/impots",
+    "sectionKey": "income-tax",
+    "sectionLabel": "Impôt sur le revenu",
+    "category": "valeur-fiscale",
+    "claimKey": "income-tax-decote-current",
+    "claimLabel": "Décote IR courante",
+    "target": {
+      "kind": "settings-default",
+      "table": "tax_settings",
+      "path": "incomeTax.decote.current"
+    },
+    "refIds": ["boi-ir-liq-20-20-30", "cgi-193-197"],
+    "relevanceNote": "Les seuils et taux de décote administrés dans tax_settings sont fondés par le BOFiP BOI-IR-LIQ-20-20-30 et le 4 du I de l'article 197 du CGI.",
+    "verifiedAt": "2026-06-06",
+    "volatility": "annual"
+  },
+  {
+    "pagePath": "/settings/impots",
+    "sectionKey": "income-tax",
+    "sectionLabel": "Impôt sur le revenu",
+    "category": "valeur-fiscale",
+    "claimKey": "quotient-familial-plafond-current",
+    "claimLabel": "Plafond du quotient familial courant",
+    "target": {
+      "kind": "settings-default",
+      "table": "tax_settings",
+      "path": "incomeTax.quotientFamily.current"
+    },
+    "refIds": ["boi-ir-liq-20-20-20", "cgi-193-197"],
+    "relevanceNote": "Les plafonds de demi-part du quotient familial paramétrés dans tax_settings sont fondés par le BOFiP BOI-IR-LIQ-20-20-20 et l'article 197 du CGI.",
+    "verifiedAt": "2026-06-06",
+    "volatility": "annual"
+  },
+  {
+    "pagePath": "/settings/impots",
+    "sectionKey": "income-tax",
+    "sectionLabel": "Impôt sur le revenu",
+    "category": "valeur-fiscale",
+    "claimKey": "abat10-pensions-current",
+    "claimLabel": "Abattement 10 % pensions courant",
+    "target": {
+      "kind": "settings-default",
+      "table": "tax_settings",
+      "path": "incomeTax.abat10.retireesCurrent"
+    },
+    "refIds": ["boi-rsa-pens-30-10-10", "cgi-158"],
+    "relevanceNote": "Le plafond et le plancher de l'abattement de 10 % sur les pensions administrés dans tax_settings sont fondés par le BOFiP BOI-RSA-PENS-30-10-10 et l'article 158 du CGI.",
+    "verifiedAt": "2026-06-06",
+    "volatility": "annual"
   }
 ]
