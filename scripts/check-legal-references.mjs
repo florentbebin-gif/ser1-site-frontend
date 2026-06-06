@@ -12,6 +12,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import process from 'node:process';
 import ts from 'typescript';
+import institutionalDomains from '../src/domain/legal-references/institutionalDomains.json' with { type: 'json' };
 import officialDomains from '../src/domain/legal-references/officialDomains.json' with { type: 'json' };
 import settingKeys from '../src/domain/legal-references/settingKeys.json' with { type: 'json' };
 
@@ -31,7 +32,7 @@ const SOURCE_TYPES = new Set([
 ]);
 
 const VOLATILITIES = new Set(['annual', 'lawChange', 'stable']);
-const OFFICIAL_DOMAINS = officialDomains;
+const OFFICIAL_DOMAINS = [...officialDomains, ...institutionalDomains];
 const KNOWN_SETTING_KEYS = new Set(Object.keys(settingKeys));
 
 function parseArgs(argv) {

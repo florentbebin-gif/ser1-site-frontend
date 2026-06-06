@@ -1,6 +1,12 @@
 import officialDomains from './officialDomains.json';
+import institutionalDomains from './institutionalDomains.json';
 
-export const OFFICIAL_LEGAL_REFERENCE_DOMAINS = officialDomains as readonly string[];
+export const INSTITUTIONAL_LEGAL_REFERENCE_DOMAINS = institutionalDomains as readonly string[];
+
+export const OFFICIAL_LEGAL_REFERENCE_DOMAINS = [
+  ...officialDomains,
+  ...INSTITUTIONAL_LEGAL_REFERENCE_DOMAINS,
+] as readonly string[];
 
 export function isOfficialUrl(value: string, additionalDomains: readonly string[] = []): boolean {
   const trimmed = value.trim();

@@ -5,8 +5,10 @@ import {
   LEGAL_REFERENCE_BY_ID,
   LEGAL_REFERENCE_SETTING_KEYS,
   LEGAL_REFERENCES,
+  OFFICIAL_LEGAL_REFERENCE_DOMAINS,
   getLegalReference,
   getOptionalLegalReference,
+  isOfficialUrl,
   listLegalReferencesForProduct,
   listLegalReferencesForSetting,
   listLegalReferencesForSimulator,
@@ -98,7 +100,20 @@ describe('références juridiques', () => {
   });
 
   it('charge les clés settings depuis la liste partagée', () => {
-    expect(LEGAL_REFERENCE_SETTING_KEYS).toEqual(['dmtg']);
+    expect(LEGAL_REFERENCE_SETTING_KEYS).toEqual([
+      'dmtg',
+      'impots',
+      'prelevements',
+      'base-contrat',
+      'prevoyance',
+    ]);
+  });
+
+  it('centralise les domaines institutionnels prévoyance', () => {
+    expect(OFFICIAL_LEGAL_REFERENCE_DOMAINS).toEqual(
+      expect.arrayContaining(['carmf.fr', 'cnbf.fr', 'carpimko.com', 'cavamac.fr']),
+    );
+    expect(isOfficialUrl('https://www.carmf.fr/page.php?page=allocataires')).toBe(true);
   });
 
   it('couvre les références assurance-vie décès du catalogue', () => {

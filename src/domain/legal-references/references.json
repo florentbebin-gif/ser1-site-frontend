@@ -8,6 +8,7 @@
     "scope": "Calcul de l'impôt sur le revenu, quotient familial et barème progressif.",
     "volatility": "annual",
     "relatedSimulatorIds": ["ir"],
+    "relatedSettings": ["impots"],
     "lastCheckedAt": "2026-06-05"
   },
   {
@@ -19,6 +20,7 @@
     "scope": "Imposition forfaitaire des revenus du capital et gains mobiliers.",
     "volatility": "lawChange",
     "relatedSimulatorIds": ["ir", "placement"],
+    "relatedSettings": ["impots"],
     "lastCheckedAt": "2026-06-05"
   },
   {
@@ -30,6 +32,7 @@
     "scope": "CEHR sur les hauts revenus du foyer fiscal.",
     "volatility": "lawChange",
     "relatedSimulatorIds": ["ir"],
+    "relatedSettings": ["impots"],
     "lastCheckedAt": "2026-06-05"
   },
   {
@@ -473,6 +476,7 @@
     "scope": "Détermination du bénéfice imposable de l'entreprise.",
     "volatility": "lawChange",
     "relatedSimulatorIds": ["tresorerie-societe"],
+    "relatedSettings": ["impots"],
     "lastCheckedAt": "2026-06-05"
   },
   {
@@ -484,6 +488,7 @@
     "scope": "Détermination des bénéfices soumis à l'impôt sur les sociétés.",
     "volatility": "lawChange",
     "relatedSimulatorIds": ["tresorerie-societe"],
+    "relatedSettings": ["impots"],
     "lastCheckedAt": "2026-06-05"
   },
   {
@@ -495,7 +500,41 @@
     "scope": "Taux et modalités de calcul de l'impôt sur les sociétés.",
     "volatility": "lawChange",
     "relatedSimulatorIds": ["tresorerie-societe"],
+    "relatedSettings": ["impots"],
     "lastCheckedAt": "2026-06-05"
+  },
+  {
+    "id": "css-l136-6",
+    "label": "Code de la sécurité sociale art. L136-6 — revenus du patrimoine",
+    "sourceType": "Code de la sécurité sociale",
+    "officialUrl": "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000051218166",
+    "articleOrSection": "Art. L136-6",
+    "scope": "Assiette de la CSG sur les revenus du patrimoine.",
+    "volatility": "lawChange",
+    "relatedSettings": ["prelevements"],
+    "lastCheckedAt": "2026-06-06"
+  },
+  {
+    "id": "css-l136-8",
+    "label": "Code de la sécurité sociale art. L136-8 — taux CSG",
+    "sourceType": "Code de la sécurité sociale",
+    "officialUrl": "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000053278668",
+    "articleOrSection": "Art. L136-8",
+    "scope": "Taux de CSG, notamment sur revenus du patrimoine et revenus de remplacement.",
+    "volatility": "lawChange",
+    "relatedSettings": ["prelevements"],
+    "lastCheckedAt": "2026-06-06"
+  },
+  {
+    "id": "ameli-pass-2026",
+    "label": "Ameli — plafond de la sécurité sociale 2026",
+    "sourceType": "Autre source officielle",
+    "officialUrl": "https://www.ameli.fr/entreprise/vos-salaries/montants-reference/plafond-securite-sociale",
+    "articleOrSection": "Plafonds 2026",
+    "scope": "Montants 2026 du plafond annuel, mensuel et périodique de la sécurité sociale.",
+    "volatility": "annual",
+    "relatedSettings": ["prelevements"],
+    "lastCheckedAt": "2026-06-06"
   },
   {
     "id": "code-consommation-l313-1",
