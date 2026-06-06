@@ -129,11 +129,40 @@ export const CATALOG = [
   );
 }
 
+function writeBaseContratRules(root: string) {
+  writeFixture(
+    root,
+    'src/domain/base-contrat/rules/library/assurance-epargne.ts',
+    `
+const CONTRAT_CAPITALISATION = {
+  constitution: [],
+  sortie: [],
+  deces: [
+    {
+      title: 'Intégration dans la succession',
+      bullets: ['Fixture de bloc décès capitalisation.'],
+    },
+  ],
+};
+
+export function getAssuranceEpargneRules(productId: string) {
+  switch (productId) {
+    case 'contrat_capitalisation_pp':
+      return CONTRAT_CAPITALISATION;
+    default:
+      return undefined;
+  }
+}
+`,
+  );
+}
+
 function writeValidRoot(root: string, bindings = [validBinding()]) {
   writeReferences(root, [validReference()]);
   writeChain(root, bindings);
   writeDefaults(root);
   writeCatalog(root);
+  writeBaseContratRules(root);
 }
 
 function runCheck(root: string) {
@@ -282,5 +311,35 @@ describe('check-settings-references', () => {
 
     expect(result.status).toBe(0);
     expect(output).toContain('check:settings-references ✅');
+  });
+
+  it('bloque un target Base-Contrat dont le blockKey ne résout aucun bloc', () => {
+    const root = createRoot();
+    writeValidRoot(root, [
+      validBinding({
+        pagePath: '/settings/base-contrat',
+        sectionKey: 'assurance-epargne',
+        category: 'deces-transmission',
+        claimKey: 'capitalisation-succession-active',
+        target: {
+          kind: 'base-contrat-rule',
+          productId: 'contrat_capitalisation_pp',
+          audience: 'pp',
+          phase: 'deces',
+          blockKey: 'bloc-inexistant',
+        },
+        refIds: [],
+        relevanceNote: undefined,
+        noRefReason:
+          'La fixture représente explicitement un claim sans référence canonique positive qualifiée.',
+      }),
+    ]);
+
+    const result = runCheck(root);
+    const output = `${result.stdout}\n${result.stderr}`;
+
+    expect(result.status).toBe(1);
+    expect(output).toContain('blockKey Base-Contrat introuvable');
+    expect(output).toContain('integration-dans-la-succession');
   });
 });
