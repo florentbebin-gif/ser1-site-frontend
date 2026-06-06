@@ -46,6 +46,14 @@ export const INCOME_TAX_CEHR_BLOCK_REF_IDS = [
   'cgi-224',
 ] as const satisfies readonly LegalReferenceId[];
 
+export const INCOME_TAX_IFI_BLOCK_CLAIM_KEYS = ['ifi-current'] as const;
+
+export const INCOME_TAX_IFI_BLOCK_REF_IDS = [
+  'boi-pat-ifi-40-10',
+  'cgi-964',
+  'cgi-977',
+] as const satisfies readonly LegalReferenceId[];
+
 export const INCOME_TAX_CORPORATE_BLOCK_CLAIM_KEYS = ['corporate-tax-current'] as const;
 
 export const INCOME_TAX_CORPORATE_BLOCK_REF_IDS = [
@@ -109,6 +117,10 @@ export const SETTINGS_UI_REFERENCE_GROUPS = [
   {
     claimKeys: INCOME_TAX_CEHR_BLOCK_CLAIM_KEYS,
     refIds: INCOME_TAX_CEHR_BLOCK_REF_IDS,
+  },
+  {
+    claimKeys: INCOME_TAX_IFI_BLOCK_CLAIM_KEYS,
+    refIds: INCOME_TAX_IFI_BLOCK_REF_IDS,
   },
   {
     claimKeys: INCOME_TAX_CORPORATE_BLOCK_CLAIM_KEYS,

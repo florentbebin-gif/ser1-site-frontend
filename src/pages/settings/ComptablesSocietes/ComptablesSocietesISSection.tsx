@@ -30,7 +30,7 @@ interface CorporateTaxSettings {
   previous: CorporateTaxPeriodSettings;
 }
 
-interface ImpotsISSectionProps {
+interface ComptablesSocietesISSectionProps {
   corporateTax: CorporateTaxSettings;
   incomeTax: IncomeTaxLabels;
   updateField: (path: string[], value: string | number | null) => void;
@@ -39,14 +39,14 @@ interface ImpotsISSectionProps {
   setOpenSection: React.Dispatch<React.SetStateAction<string | null>>;
 }
 
-export default function ImpotsISSection({
+export default function ComptablesSocietesISSection({
   corporateTax,
   incomeTax,
   updateField,
   isAdmin,
   openSection,
   setOpenSection,
-}: ImpotsISSectionProps): React.ReactElement {
+}: ComptablesSocietesISSectionProps): React.ReactElement {
   const isOpen = openSection === 'is';
 
   const qpfcCurrentError = validateQpfcRate({
@@ -63,9 +63,9 @@ export default function ImpotsISSection({
       <button
         type="button"
         className="fisc-acc-header fisc-acc-header--with-icon"
-        id="impots-header-is"
+        id="comptables-societes-header-is"
         aria-expanded={isOpen}
-        aria-controls="impots-panel-is"
+        aria-controls="comptables-societes-panel-is"
         onClick={() => setOpenSection(isOpen ? null : 'is')}
       >
         <SettingsTitleWithIcon
@@ -80,9 +80,9 @@ export default function ImpotsISSection({
       {isOpen && (
         <div
           className="fisc-acc-body"
-          id="impots-panel-is"
+          id="comptables-societes-panel-is"
           role="region"
-          aria-labelledby="impots-header-is"
+          aria-labelledby="comptables-societes-header-is"
         >
           <p className="fisc-intro">
             Paramètres d’impôt sur les sociétés, régime mère-fille et déductibilité suivis pour le

@@ -11,9 +11,12 @@ import {
   INCOME_TAX_BAREME_BLOCK_REF_IDS,
   INCOME_TAX_DOM_ABATEMENT_CLAIM_KEYS,
   INCOME_TAX_DOM_ABATEMENT_REF_IDS,
+  INCOME_TAX_IFI_BLOCK_CLAIM_KEYS,
+  INCOME_TAX_IFI_BLOCK_REF_IDS,
 } from '@/domain/settings-references/uiReferenceGroups';
 import ImpotsAbattementDomSection from '../Impots/ImpotsAbattementDomSection';
 import ImpotsBaremeSection from '../Impots/ImpotsBaremeSection';
+import ImpotsIfiSection from '../Impots/ImpotsIfiSection';
 import type { IncomeTaxSettings } from '../Impots/ImpotsBaremeYearColumn';
 
 interface SettingsReferenceBindingFixture {
@@ -81,6 +84,17 @@ const domIncomeTax: ComponentProps<typeof ImpotsAbattementDomSection>['incomeTax
   },
 };
 
+const ifiSettings: ComponentProps<typeof ImpotsIfiSection>['ifi'] = {
+  current: {
+    threshold: 1_300_000,
+    residencePrincipaleAbattementRate: 30,
+    scale: [
+      { from: 0, to: 800_000, rate: 0 },
+      { from: 800_000, to: null, rate: 0.5 },
+    ],
+  },
+};
+
 function getExpectedRefIds(claimKeys: readonly string[]): string[] {
   return Array.from(
     new Set(
@@ -143,6 +157,32 @@ describe('ImpotsAbattementDomSection', () => {
     );
     expect(hrefs).toEqual(
       INCOME_TAX_DOM_ABATEMENT_REF_IDS.map((id) => getLegalReference(id).officialUrl),
+    );
+  });
+});
+
+describe('ImpotsIfiSection', () => {
+  it('affiche les références cliquables du bloc IFI', () => {
+    const expectedRefIds = getExpectedRefIds(INCOME_TAX_IFI_BLOCK_CLAIM_KEYS);
+    expect([...INCOME_TAX_IFI_BLOCK_REF_IDS]).toEqual(expectedRefIds);
+
+    const { container } = render(
+      <ImpotsIfiSection
+        ifi={ifiSettings}
+        updateField={vi.fn()}
+        isAdmin={false}
+        openSection="ifi"
+        setOpenSection={vi.fn()}
+      />,
+    );
+
+    expect(screen.getByText('Références :')).toBeInTheDocument();
+
+    const hrefs = Array.from(container.querySelectorAll('.legal-ref-link')).map((link) =>
+      link.getAttribute('href'),
+    );
+    expect(hrefs).toEqual(
+      INCOME_TAX_IFI_BLOCK_REF_IDS.map((id) => getLegalReference(id).officialUrl),
     );
   });
 });

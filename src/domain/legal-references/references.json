@@ -503,7 +503,7 @@
     "scope": "Détermination du bénéfice imposable de l'entreprise.",
     "volatility": "lawChange",
     "relatedSimulatorIds": ["tresorerie-societe"],
-    "relatedSettings": ["impots"],
+    "relatedSettings": ["comptables-societes"],
     "lastCheckedAt": "2026-06-05"
   },
   {
@@ -515,7 +515,7 @@
     "scope": "Détermination des bénéfices soumis à l'impôt sur les sociétés.",
     "volatility": "lawChange",
     "relatedSimulatorIds": ["tresorerie-societe"],
-    "relatedSettings": ["impots"],
+    "relatedSettings": ["comptables-societes"],
     "lastCheckedAt": "2026-06-05"
   },
   {
@@ -527,7 +527,7 @@
     "scope": "Taux et modalités de calcul de l'impôt sur les sociétés.",
     "volatility": "lawChange",
     "relatedSimulatorIds": ["tresorerie-societe"],
-    "relatedSettings": ["impots"],
+    "relatedSettings": ["comptables-societes"],
     "lastCheckedAt": "2026-06-05"
   },
   {
@@ -893,7 +893,7 @@
     "articleOrSection": "BOI-IS-LIQ-10",
     "scope": "Modalités générales de liquidation de l'impôt sur les sociétés.",
     "volatility": "lawChange",
-    "relatedSettings": ["impots"],
+    "relatedSettings": ["comptables-societes"],
     "lastCheckedAt": "2026-06-06"
   },
   {
@@ -904,7 +904,7 @@
     "articleOrSection": "BOI-IS-LIQ-20",
     "scope": "Taux réduit d'impôt sur les sociétés et conditions associées.",
     "volatility": "lawChange",
-    "relatedSettings": ["impots"],
+    "relatedSettings": ["comptables-societes"],
     "lastCheckedAt": "2026-06-06"
   },
   {

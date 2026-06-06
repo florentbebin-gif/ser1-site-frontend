@@ -139,8 +139,8 @@ notes non génériques, les `pagePath` déclarés, les chemins Settings/PASS et 
 par page. Il est branché dans `check:static` et son rapport doit rester en
 `coverage.mode = "exhaustive"` avec `coverage.isExhaustive = true`. `coverage.byPage` expose pour
 chaque surface le nombre de bindings déclarés (`declared`) et le nombre de claims attendus
-(`expected`). Les 5 surfaces cibles doivent rester complètes sans claim manquant ou surnuméraire :
-`/settings/impots`, `/settings/prelevements`, `/settings/base-contrat`,
+(`expected`). Les 6 surfaces cibles doivent rester complètes sans claim manquant ou surnuméraire :
+`/settings/impots`, `/settings/comptables-societes`, `/settings/prelevements`, `/settings/base-contrat`,
 `/settings/dmtg-succession`, `/settings/prevoyance-regimes`. La cible Base-Contrat est dynamique :
 son attendu est recalculé depuis `CATALOG` + `getRules()`.
 
@@ -566,17 +566,18 @@ rg "export const CATALOG" src/domain/base-contrat/catalog.ts
 
 ### Pages settings existantes
 
-| Route                             | Composant                | Table Supabase                                                                                   | Périmètre                                                                                          |
-| --------------------------------- | ------------------------ | ------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------- |
-| `/settings`                       | `Settings`               | —                                                                                                | Généraux (placeholder)                                                                             |
-| `/settings/impots`                | `SettingsImpots`         | `tax_settings`                                                                                   | Barème IR (2 ans), PFU part IR, CEHR/CDHR, IS                                                      |
-| `/settings/prelevements`          | `SettingsPrelevements`   | `ps_settings`                                                                                    | PS patrimoine (cas général + régime d'exception), cotisations retraite, seuils RFR (CSG/CRDS/CASA) |
-| `/settings/base-contrat`          | `BaseContrat`            | `base_contrat_overrides`                                                                         | Référentiel produits (read-only 3 colonnes + toggles admin)                                        |
-| `/settings/base-contrat-retraite` | `BaseCgRetraite`         | `base_cg_retraite_contracts`, `base_cg_retraite_documents` (`base_cg_retraite_catalog_meta` ops) | Base CG retraite canonique Supabase + documents admin                                              |
-| `/settings/prevoyance-regimes`    | `PrevoyanceRegimes`      | `prevoyance_regime_settings`, `prevoyance_maintien_employeur_settings`                           | Réglages Prévoyance V1                                                                             |
-| `/settings/design-system`         | `SettingsDesignSystem`   | —                                                                                                | Audit visuel interne admin                                                                         |
-| `/settings/comptes`               | `SettingsComptes`        | `profiles`                                                                                       | Comptes utilisateurs par cabinet (admin only)                                                      |
-| `/settings/dmtg-succession`       | `SettingsDmtgSuccession` | `tax_settings`, `fiscality_settings`                                                             | Éditeur unique DMTG successions + donations + AV décès                                             |
+| Route                             | Composant                    | Table Supabase                                                                                   | Périmètre                                                                                          |
+| --------------------------------- | ---------------------------- | ------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------- |
+| `/settings`                       | `Settings`                   | —                                                                                                | Généraux (placeholder)                                                                             |
+| `/settings/impots`                | `SettingsImpots`             | `tax_settings`                                                                                   | Barème IR (2 ans), PFU part IR, CEHR/CDHR, IFI                                                     |
+| `/settings/comptables-societes`   | `SettingsComptablesSocietes` | `tax_settings`                                                                                   | IS, régime mère-fille, déductibilité CCA/dividendes                                                |
+| `/settings/prelevements`          | `SettingsPrelevements`       | `ps_settings`                                                                                    | PS patrimoine (cas général + régime d'exception), cotisations retraite, seuils RFR (CSG/CRDS/CASA) |
+| `/settings/base-contrat`          | `BaseContrat`                | `base_contrat_overrides`                                                                         | Référentiel produits (read-only 3 colonnes + toggles admin)                                        |
+| `/settings/base-contrat-retraite` | `BaseCgRetraite`             | `base_cg_retraite_contracts`, `base_cg_retraite_documents` (`base_cg_retraite_catalog_meta` ops) | Base CG retraite canonique Supabase + documents admin                                              |
+| `/settings/prevoyance-regimes`    | `PrevoyanceRegimes`          | `prevoyance_regime_settings`, `prevoyance_maintien_employeur_settings`                           | Réglages Prévoyance V1                                                                             |
+| `/settings/design-system`         | `SettingsDesignSystem`       | —                                                                                                | Audit visuel interne admin                                                                         |
+| `/settings/comptes`               | `SettingsComptes`            | `profiles`                                                                                       | Comptes utilisateurs par cabinet (admin only)                                                      |
+| `/settings/dmtg-succession`       | `SettingsDmtgSuccession`     | `tax_settings`, `fiscality_settings`                                                             | Éditeur unique DMTG successions + donations + AV décès                                             |
 
 Source unique des routes : `src/routes/settingsRoutes.ts`.
 Shell de navigation : `src/pages/SettingsShell.tsx` (rendu dynamique des onglets, filtre `adminOnly`).
@@ -587,7 +588,7 @@ Shell de navigation : `src/pages/SettingsShell.tsx` (rendu dynamique des onglets
 
 | Table                           | Périmètre                                                                                                    | RLS lecture | RLS écriture |
 | ------------------------------- | ------------------------------------------------------------------------------------------------------------ | ----------- | ------------ |
-| `tax_settings`                  | IR barème (N et N-1), PFU part IR, CEHR/CDHR, IS, DMTG barèmes+abattements                                   | Auth        | Admin        |
+| `tax_settings`                  | IR barème (N et N-1), PFU part IR, CEHR/CDHR, IFI, IS, DMTG barèmes+abattements                              | Auth        | Admin        |
 | `ps_settings`                   | PS patrimoine (cas général + régime d'exception), cotisations retraite par tranche, seuils RFR (1/2/3 parts) | Auth        | Admin        |
 | `fiscality_settings`            | Règles par enveloppe (AV, PER, PEA, CTO, dividendes…) — taux, abattements, seuils                            | Auth        | Admin        |
 | `pass_history`                  | Historique PASS annuel administré dans Settings > Prelevements (multi-lignes, clé `year`)                    | Auth        | Admin        |
@@ -673,6 +674,8 @@ fiscalContext.psRateException; // taux PS patrimoine régime d'exception
 fiscalContext.dmtgScaleLigneDirecte; // barème DMTG ligne directe
 fiscalContext.dmtgAbattementEnfant; // abattement ligne directe
 fiscalContext.dmtgSettings; // objet DMTG complet { ligneDirecte, frereSoeur, neveuNiece, autre }
+fiscalContext.ifi; // paramètres IFI normalisés
+fiscalContext.cdhr; // paramètres CDHR normalisés
 fiscalContext.passHistoryByYear; // historique PASS runtime (source: public.pass_history)
 fiscalContext._raw_tax; // brut tax_settings, réservé aux adaptateurs nommés
 fiscalContext._raw_ps; // brut ps_settings, réservé aux adaptateurs nommés
@@ -744,8 +747,9 @@ Les fichiers `src/domain/base-contrat/**` ne doivent pas importer React, Supabas
 | -------------------- | ----------------------------------------------------------------------------------- | ------------------------------ | ----------------------- |
 | **IR**               | Barème 5 tranches (seuils + taux), abattement DOM                                   | `tax_settings`                 | Art. 197 CGI            |
 | **PFU**              | Taux IR du PFU. La part PS est dérivée depuis `ps_settings`                         | `tax_settings`                 | Art. 200 A CGI          |
-| **CEHR/CDHR**        | Seuils (500 k€, 1 M€) + taux (3 %, 4 %)                                             | `tax_settings`                 | Art. 223 sexies CGI     |
-| **IS**               | Taux réduit 15 % (seuil 42 500 €), taux normal 25 %                                 | `tax_settings`                 | Art. 219 CGI            |
+| **CEHR/CDHR**        | Seuils et taux effectif minimal                                                     | `tax_settings`                 | Art. 223 sexies CGI     |
+| **IFI**              | Seuil d'entrée, abattement résidence principale et barème                           | `tax_settings`                 | Art. 964 & 977 CGI      |
+| **IS**               | Taux réduit, seuil réduit, taux normal, régime mère-fille et déductibilité CCA      | `tax_settings`                 | Art. 209 & 219 CGI      |
 | **DMTG successions** | Barèmes par lien de parenté + abattements                                           | `tax_settings`                 | Art. 777 & 779 CGI      |
 | **DMTG donations**   | Abattements spécifiques donation (31 865 €, 80 724 €…)                              | _(non implémenté — futur PLF)_ | Art. 779, 790 E/F/G CGI |
 | **Assurance-vie**    | Abattements 990 I / 757 B et barème forfaitaire décès                               | `fiscality_settings`           | Art. 990 I & 757 B CGI  |

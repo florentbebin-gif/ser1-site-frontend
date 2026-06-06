@@ -112,6 +112,12 @@ export interface FiscalContext {
    */
   corporateTax: typeof DEFAULT_TAX_SETTINGS.corporateTax;
 
+  // ── IFI (Impôt sur la fortune immobilière) ────────────────────────────────
+  /** Paramètres IFI normalisés — seuil, abattement RP et barème courant. */
+  ifi: typeof DEFAULT_TAX_SETTINGS.ifi;
+  /** Paramètres CDHR normalisés — seuils foyer et taux effectif minimal. */
+  cdhr: typeof DEFAULT_TAX_SETTINGS.cdhr;
+
   // ── PASS (historique plafond sécurité sociale) ──────────────────────────────
   /** Historique PASS par année (ex: { 2024: 46368, 2025: 47100 }) */
   passHistoryByYear: Record<number, number>;
@@ -157,7 +163,7 @@ function resolveRetirementPsDefault(ps: PsSettings): number {
 
 // ─── Normalisation ────────────────────────────────────────────────────────────
 
-function buildFiscalContext(
+export function buildFiscalContext(
   tax: TaxSettings,
   ps: PsSettings,
   fiscality: FiscalitySettings,
@@ -252,6 +258,25 @@ function buildFiscalContext(
           ...DEFAULT_TAX_SETTINGS.corporateTax.previous.motherDaughterQpfc,
           ...tax?.corporateTax?.previous?.motherDaughterQpfc,
         },
+      },
+    },
+
+    // IFI normalisé
+    ifi: {
+      current: {
+        ...DEFAULT_TAX_SETTINGS.ifi.current,
+        ...tax?.ifi?.current,
+        scale: tax?.ifi?.current?.scale ?? DEFAULT_TAX_SETTINGS.ifi.current.scale,
+      },
+    },
+    cdhr: {
+      current: {
+        ...DEFAULT_TAX_SETTINGS.cdhr.current,
+        ...tax?.cdhr?.current,
+      },
+      previous: {
+        ...DEFAULT_TAX_SETTINGS.cdhr.previous,
+        ...tax?.cdhr?.previous,
       },
     },
 

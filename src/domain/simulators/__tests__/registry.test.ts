@@ -5,6 +5,20 @@ import { SIM_ROUTE_CONTRACTS } from '@/routes/simRouteContracts';
 import { SIMULATOR_DEFINITIONS } from '../registry';
 
 const ROUTE_IDS = new Set<string>(SIM_ROUTE_CONTRACTS.map((route) => route.id));
+const DOMAIN_TAGS = new Set(['foyer', 'societe', 'immobilier', 'placements', 'transmission']);
+const INTENT_TAGS = new Set([
+  'audit',
+  'fiscalite',
+  'retraite',
+  'investissement',
+  'immobilier',
+  'placements',
+  'societe',
+  'cession',
+  'transmission',
+  'prevoyance',
+  'credit',
+]);
 
 describe('registry simulateurs', () => {
   it('déclare des ids uniques', () => {
@@ -55,6 +69,19 @@ describe('registry simulateurs', () => {
     }).map((definition) => definition.id);
 
     expect(incomplete, `Définitions incomplètes : ${incomplete.join(', ')}`).toEqual([]);
+  });
+
+  it('exige des tags métier domaine et intention sur chaque SimulatorDefinition', () => {
+    const definitionsWithoutTags = SIMULATOR_DEFINITIONS.filter((definition) => {
+      const hasDomainTag = definition.tags.some((tag) => DOMAIN_TAGS.has(tag));
+      const hasIntentTag = definition.tags.some((tag) => INTENT_TAGS.has(tag));
+      return definition.tags.length < 2 || !hasDomainTag || !hasIntentTag;
+    }).map((definition) => definition.id);
+
+    expect(
+      definitionsWithoutTags,
+      `Définitions sans tags domaine/intention : ${definitionsWithoutTags.join(', ')}`,
+    ).toEqual([]);
   });
 
   it('verrouille les legalRefs selon le statut de cycle', () => {
@@ -166,5 +193,26 @@ describe('registry simulateurs', () => {
     expect(ids.has('placement-tresorerie')).toBe(false);
     expect(tresorerie?.subtypes).toEqual(expect.arrayContaining(['Placement trésorerie intégré']));
     expect(cessionTitres?.space).toBe('societe');
+  });
+
+  it('verrouille les libellés canoniques V2-06bis', () => {
+    const byId = new Map(SIMULATOR_DEFINITIONS.map((definition) => [definition.id, definition]));
+
+    expect(byId.get('regime-matrimonial')?.fullLabel).toBe(
+      'Régime matrimonial & protection conjoint',
+    );
+    expect(byId.get('placement')?.fullLabel).toBe("Allocation patrimoniale & choix d'enveloppes");
+    expect(byId.get('placement')?.subtypes).toContain('Assurance-vie / capitalisation');
+    expect(byId.get('sci')?.fullLabel).toBe('SCI & mode de détention');
+    expect(byId.get('credit')?.fullLabel).toBe('Crédit & garanties');
+    expect(byId.get('arbitrage-reemploi')?.fullLabel).toBe('Vendre / conserver / réemployer');
+    expect(byId.get('sortie-capitaux')?.fullLabel).toBe('Sortie de capitaux / CCA');
+    expect(byId.get('donation-demembrement')?.fullLabel).toBe(
+      'Donation / donation-partage & démembrement',
+    );
+    expect(byId.get('succession')?.fullLabel).toBe('Droits de succession & liquidité successorale');
+    expect(byId.get('cession-titres')?.fullLabel).toBe(
+      'Cession de titres & plus-values mobilières',
+    );
   });
 });

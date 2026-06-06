@@ -121,7 +121,7 @@ function validBaseContratBinding(audience: 'pp' | 'pm', overrides: Record<string
 function completeBindings(baseBindingOverrides: Record<string, unknown> = {}) {
   const bindings: Array<Record<string, unknown>> = [];
 
-  for (let index = 0; index < 11; index += 1) {
+  for (let index = 0; index < 10; index += 1) {
     bindings.push(
       validBinding({
         sectionKey: 'impots-fixture',
@@ -130,6 +130,20 @@ function completeBindings(baseBindingOverrides: Record<string, unknown> = {}) {
       }),
     );
   }
+
+  bindings.push(
+    validBinding({
+      pagePath: '/settings/comptables-societes',
+      sectionKey: 'comptables-societes-fixture',
+      claimKey: 'comptables-societes-fixture-0',
+      claimLabel: 'Claim Comptables & sociétés 0',
+      target: {
+        kind: 'settings-default',
+        table: 'tax_settings',
+        path: 'corporateTax.current',
+      },
+    }),
+  );
 
   for (let index = 0; index < 4; index += 1) {
     bindings.push(
@@ -229,6 +243,7 @@ function writeDefaults(root: string) {
     `
 export const DEFAULT_TAX_SETTINGS = {
   incomeTax: { scaleCurrent: [] },
+  corporateTax: { current: {} },
   dmtg: {},
 };
 export const DEFAULT_PS_SETTINGS = {
@@ -349,14 +364,23 @@ describe('check-settings-references', () => {
     expect(report.coverage.expectedClaimsDefined).toBe(true);
     expect(report.coverage.bindingsByPage).toEqual({
       '/settings/base-contrat': 2,
+      '/settings/comptables-societes': 1,
       '/settings/dmtg-succession': 7,
-      '/settings/impots': 11,
+      '/settings/impots': 10,
       '/settings/prelevements': 4,
       '/settings/prevoyance-regimes': 69,
     });
     expect(report.coverage.byPage['/settings/impots']).toEqual({
-      expected: 11,
-      declared: 11,
+      expected: 10,
+      declared: 10,
+      expectedDefined: true,
+      complete: true,
+      missing: 0,
+      extra: 0,
+    });
+    expect(report.coverage.byPage['/settings/comptables-societes']).toEqual({
+      expected: 1,
+      declared: 1,
       expectedDefined: true,
       complete: true,
       missing: 0,

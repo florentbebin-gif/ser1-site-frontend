@@ -13,6 +13,9 @@ import { lazy, type ComponentType } from 'react';
 
 const SettingsGeneral = lazy(() => import('../pages/settings/SettingsGeneral'));
 const SettingsImpots = lazy(() => import('../pages/settings/SettingsImpots'));
+const SettingsComptablesSocietes = lazy(
+  () => import('../pages/settings/SettingsComptablesSocietes'),
+);
 const SettingsPrelevements = lazy(() => import('../pages/settings/SettingsPrelevements'));
 const SettingsBaseContrats = lazy(() => import('../pages/settings/BaseContrat'));
 const SettingsBaseCgRetraite = lazy(() => import('../pages/settings/BaseCgRetraite'));
@@ -44,6 +47,13 @@ export const SETTINGS_ROUTES: SettingsRouteEntry[] = [
     path: 'impots',
     urlPath: '/settings/impots',
     component: SettingsImpots,
+  },
+  {
+    key: 'comptablesSocietes',
+    label: 'Comptables & soci\u00e9t\u00e9s',
+    path: 'comptables-societes',
+    urlPath: '/settings/comptables-societes',
+    component: SettingsComptablesSocietes,
   },
   {
     key: 'prelevements',
@@ -100,6 +110,7 @@ export const SETTINGS_ROUTES: SettingsRouteEntry[] = [
 
 export function getActiveSettingsKey(pathname: string): string {
   if (pathname.startsWith('/settings/impots')) return 'impots';
+  if (pathname.startsWith('/settings/comptables-societes')) return 'comptablesSocietes';
   if (pathname.startsWith('/settings/prelevements')) return 'prelevements';
   if (pathname.startsWith('/settings/fiscalites')) return 'baseContrats';
   if (pathname.startsWith('/settings/base-contrat-retraite')) return 'baseCgRetraite';

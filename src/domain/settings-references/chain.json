@@ -68,7 +68,7 @@
     "volatility": "lawChange"
   },
   {
-    "pagePath": "/settings/impots",
+    "pagePath": "/settings/comptables-societes",
     "sectionKey": "corporate-tax",
     "sectionLabel": "Impôt sur les sociétés",
     "category": "valeur-fiscale",
