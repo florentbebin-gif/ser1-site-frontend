@@ -138,9 +138,18 @@ describe('SettingsDmtgSuccession', () => {
   });
 
   it('expose le registre settings transmission et placements en lecture seule', async () => {
+    const user = userEvent.setup();
+
     render(<SettingsDmtgSuccession />);
 
-    await screen.findByText('Registre settings');
+    await screen.findByText('Registre settings DMTG & Succession');
+    expect(screen.queryByText('Partiel')).not.toBeInTheDocument();
+
+    await user.click(
+      screen.getByRole('button', {
+        name: /Afficher la section Registre settings DMTG & Succession/i,
+      }),
+    );
 
     expect(screen.getByText('Partiel')).toBeInTheDocument();
     expect(screen.getByText('Planifié')).toBeInTheDocument();

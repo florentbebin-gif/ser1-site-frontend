@@ -62,7 +62,7 @@ export default function SettingsComptablesSocietes() {
   const [settings, setSettings] = useState<TaxSettings>(DEFAULT_TAX_SETTINGS);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState('');
-  const [openSection, setOpenSection] = useState<string | null>('is');
+  const [openSection, setOpenSection] = useState<string | null>(null);
 
   useEffect(() => {
     let mounted = true;

@@ -6,6 +6,8 @@ export type SourceRefKind = 'manual' | 'scan' | 'simulator-output' | 'strategy' 
 
 export type SourceRefScope = 'dossier' | 'audit' | 'simulator' | 'strategy';
 
+export type SourceRefReviewStatus = 'proposed' | 'validated' | 'rejected';
+
 export interface SourceRef {
   id: string;
   kind: SourceRefKind;
@@ -13,6 +15,7 @@ export interface SourceRef {
   label: string;
   fieldPaths: string[];
   createdAt: string | null;
+  reviewStatus?: SourceRefReviewStatus;
   documentId?: string;
   simulatorId?: string;
   strategyId?: string;

@@ -6,9 +6,28 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import AuditWizard from '../AuditWizard';
 import { exportDossierToFile, importDossierFromFile } from '../utils/storage';
 
+const saveDossierCentralMock = vi.hoisted(() => vi.fn());
+const loadLatestDossierMock = vi.hoisted(() => vi.fn());
+
 vi.mock('@/settings/ThemeProvider', () => ({
   useTheme: () => ({
     colors: {},
+  }),
+}));
+
+vi.mock('@/hooks/useDossierPatrimonialPersistence', () => ({
+  useDossierPatrimonialPersistence: () => ({
+    ownerUserId: 'user-1',
+    loading: false,
+    saving: false,
+    currentDossier: null,
+    lastSavedAt: null,
+    lastLoadedAt: null,
+    error: null,
+    saveDossier: saveDossierCentralMock,
+    loadDossier: vi.fn(),
+    loadLatestDossier: loadLatestDossierMock,
+    listDossiers: vi.fn(),
   }),
 }));
 
@@ -28,10 +47,12 @@ describe('AuditWizard import/export JSON', () => {
   beforeEach(() => {
     sessionStorage.clear();
     vi.clearAllMocks();
+    saveDossierCentralMock.mockResolvedValue({ ok: true, reason: 'saved' });
+    loadLatestDossierMock.mockResolvedValue({ ok: false, reason: 'not-found' });
     window.history.pushState({}, '', '/audit');
   });
 
-  it('exporte le dossier courant via l’événement global ser1:save', async () => {
+  it('exporte le dossier courant et sauvegarde le dossier central via ser1:save', async () => {
     render(<AuditWizard />);
 
     await userEvent.type(screen.getByLabelText('Prénom'), 'Alice');
@@ -45,6 +66,21 @@ describe('AuditWizard import/export JSON', () => {
             prenom: 'Alice',
           }),
         }),
+      }),
+    );
+    await waitFor(() => expect(saveDossierCentralMock).toHaveBeenCalledTimes(1));
+    expect(saveDossierCentralMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        ownerUserId: 'user-1',
+        foyer: expect.objectContaining({
+          membrePrincipalId: expect.any(String),
+        }),
+        membres: expect.arrayContaining([
+          expect.objectContaining({
+            role: 'client',
+            prenom: 'Alice',
+          }),
+        ]),
       }),
     );
     await waitFor(() => expect(screen.queryByRole('status')).not.toBeInTheDocument());

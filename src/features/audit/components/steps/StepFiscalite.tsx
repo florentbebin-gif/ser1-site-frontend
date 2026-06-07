@@ -1,13 +1,18 @@
-import { DEFAULT_TAX_SETTINGS } from '@/constants/settingsDefaults';
+import { useMemo } from 'react';
+import { useFiscalContext } from '@/hooks/useFiscalContext';
 import { AuditEuroField, AuditNumberField } from './AuditNumberFields';
 import type { StepProps } from './types';
 
-const TMI_OPTIONS = Array.from(
-  new Set(DEFAULT_TAX_SETTINGS.incomeTax.scaleCurrent.map((row) => row.rate)),
-).sort((a, b) => a - b);
-
 export default function StepFiscalite({ dossier, updateDossier }: StepProps) {
   const { situationFiscale } = dossier;
+  const { fiscalContext } = useFiscalContext({ strict: false });
+  const tmiOptions = useMemo(
+    () =>
+      Array.from(new Set(fiscalContext.irScaleCurrent.map((row) => row.rate))).sort(
+        (a, b) => a - b,
+      ),
+    [fiscalContext.irScaleCurrent],
+  );
 
   return (
     <div className="audit-step-form">
@@ -83,7 +88,7 @@ export default function StepFiscalite({ dossier, updateDossier }: StepProps) {
               })
             }
           >
-            {TMI_OPTIONS.map((rate) => (
+            {tmiOptions.map((rate) => (
               <option key={rate} value={rate}>
                 {rate}%
               </option>

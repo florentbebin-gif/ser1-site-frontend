@@ -11,6 +11,20 @@
   font-size: 14px;
 }
 
+.audit-central-status {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  margin-top: 8px;
+  padding: 4px 10px;
+  border: 1px solid var(--color-c8);
+  border-radius: 8px;
+  background: var(--surface-card);
+  color: var(--color-c9);
+  font-size: 12px;
+  font-weight: 600;
+}
+
 .chip.audit-chip-danger {
   background: var(--status-error-bg);
   border-color: var(--status-error-border);

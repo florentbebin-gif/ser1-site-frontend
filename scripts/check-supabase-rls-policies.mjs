@@ -69,6 +69,12 @@ const COVERED_TABLES = {
     read: 'tenant_or_admin',
     writes: { insert: 'admin', update: 'admin', delete: 'admin' },
   },
+  dossiers_patrimoniaux: {
+    sensitivity: 'sensitive',
+    reason: 'Dossier patrimonial client, lecture/ecriture reservees au proprietaire ou admin.',
+    read: 'own_or_admin',
+    writes: { insert: 'own_or_admin', update: 'own_or_admin', delete: 'own_or_admin' },
+  },
   fiscality_settings: {
     sensitivity: 'sensitive',
     reason: 'Settings fiscaux globaux, lecture auth et ecriture admin.',
