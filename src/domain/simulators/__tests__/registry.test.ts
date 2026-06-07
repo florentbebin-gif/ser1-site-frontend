@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { LEGAL_REFERENCES } from '@/domain/legal-references';
+import { getSettingsRegistryEntry, SETTINGS_REGISTRY_KEYS } from '@/domain/settings-registry';
 import { SIM_ROUTE_CONTRACTS } from '@/routes/simRouteContracts';
 import { SIMULATOR_DEFINITIONS } from '../registry';
 
@@ -166,6 +167,28 @@ describe('registry simulateurs', () => {
     expect(
       mismatchedSimulatorLinks,
       `relatedSimulatorIds désynchronisés : ${mismatchedSimulatorLinks.join(', ')}`,
+    ).toEqual([]);
+  });
+
+  it('déclare seulement des settings fiscaux/métier présents dans le registry', () => {
+    const unknownSettings = SIMULATOR_DEFINITIONS.flatMap((definition) =>
+      definition.settingsKeys
+        .filter((settingKey) => !SETTINGS_REGISTRY_KEYS.has(settingKey))
+        .map((settingKey) => `${definition.id}:${settingKey}`),
+    );
+
+    const liveSimulatorsWithPlannedSettings = SIMULATOR_DEFINITIONS.filter((definition) =>
+      ['active', 'hub', 'placeholder'].includes(definition.lifecycle),
+    ).flatMap((definition) =>
+      definition.settingsKeys
+        .filter((settingKey) => getSettingsRegistryEntry(settingKey).status === 'planned')
+        .map((settingKey) => `${definition.id}:${settingKey}`),
+    );
+
+    expect(unknownSettings, 'Settings non déclarés dans le registry').toEqual([]);
+    expect(
+      liveSimulatorsWithPlannedSettings,
+      'Actifs/hubs/placeholders liés à un setting planned',
     ).toEqual([]);
   });
 
