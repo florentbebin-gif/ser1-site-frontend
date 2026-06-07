@@ -114,6 +114,18 @@ Principes : épuré, lisible, respirant.
   - Anti-pattern : `overflow: visible` sur le container sans `max-height` → la modale dépasse la viewport et devient inutilisable.
   - Référence : `sc-dispositions-modal` / `sc-member-modal` (`src/features/succession/styles/modals.css`), `.vcm` / `.vcm__body` (`src/features/placement/styles/versements-modal.css`).
 
+### Cockpit `/audit` — règles annoncées (UX-00b)
+
+Contrat complet : `docs/AUDIT_COCKPIT.md`. Règles annoncées, à verrouiller en **UX-00b** :
+
+- `/audit` aura un **drawer XL canonique** (`sim-drawer`, variante de l'anatomie modale), verrouillé
+  par `check:modal-canon` ; aucune largeur ni CSS de drawer locale.
+- Les graphes du cockpit devront utiliser **uniquement** `--viz-*` / `--state-*` une fois les tokens
+  créés ; aucune couleur de graphe locale.
+- `--state-warning` sera **découplé** de `--accent-signature` (cuivre) ; le cuivre reste un accent de
+  marque / version active / KPI héros, pas un statut d'alerte.
+- **Aucune exception locale** n'est autorisée pour contourner ces règles.
+
 ---
 
 ## Propriété des styles
