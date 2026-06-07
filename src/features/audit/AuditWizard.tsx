@@ -2,11 +2,16 @@
  * AuditWizard - Wizard multi-étapes pour l'audit patrimonial
  */
 
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { ExportMenu } from '../../components/ExportMenu';
 import type { ExportOption } from '../../components/export/exportTypes';
 import type { DossierAudit } from '@/domain/audit/types';
 import { createEmptyDossier } from '@/domain/audit/types';
+import {
+  buildDossierPatrimonialFromAudit,
+  DOSSIER_PATRIMONIAL_COMPLETION_LABELS,
+} from '@/domain/dossier';
+import { useDossierPatrimonialPersistence } from '@/hooks/useDossierPatrimonialPersistence';
 import {
   exportDossierToFile,
   importDossierFromFile,
@@ -53,6 +58,23 @@ export default function AuditWizard(): React.ReactElement {
   const [hasChanges, setHasChanges] = useState(false);
   const [isExportingPptx, setIsExportingPptx] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const { ownerUserId, saving, lastSavedAt, error, saveDossier } =
+    useDossierPatrimonialPersistence();
+  const dossierPatrimonial = useMemo(
+    () => buildDossierPatrimonialFromAudit(dossier, { ownerUserId }),
+    [dossier, ownerUserId],
+  );
+  const dossierCentralStatus =
+    DOSSIER_PATRIMONIAL_COMPLETION_LABELS[dossierPatrimonial.completion.status];
+  const dossierCentralSyncStatus = saving
+    ? 'sauvegarde en cours'
+    : error
+      ? 'à resynchroniser'
+      : lastSavedAt
+        ? 'sauvegardé'
+        : ownerUserId
+          ? 'prêt'
+          : 'local';
 
   // Sauvegarde automatique en session
   useEffect(() => {
@@ -81,16 +103,17 @@ export default function AuditWizard(): React.ReactElement {
     return off || (() => {});
   }, []);
 
-  const handleExport = useCallback(() => {
+  const handleExport = useCallback(async () => {
     exportDossierToFile(dossier);
+    await saveDossier(dossierPatrimonial);
     setHasChanges(false);
-  }, [dossier]);
+  }, [dossier, dossierPatrimonial, saveDossier]);
 
   // Écoute de l'événement Save depuis la Topbar
   useEffect(() => {
     const handler = () => {
       if (window.location.pathname === '/audit') {
-        handleExport();
+        void handleExport();
       }
     };
     window.addEventListener(SAVE_EVENT, handler);
@@ -174,8 +197,10 @@ export default function AuditWizard(): React.ReactElement {
           <p className="premium-section-title">Workflow privé P6</p>
           <h1 className="premium-title">Audit patrimonial</h1>
           <p className="premium-subtitle audit-subtitle">
-            Dossier guidé, persistant en session, exportable et utilisé comme point d’entrée de la
-            stratégie.
+            Dossier guidé, exportable et projeté dans le dossier patrimonial central.
+          </p>
+          <p className="audit-central-status" data-testid="audit-dossier-central-status">
+            Dossier central : {dossierCentralStatus} · {dossierCentralSyncStatus}
           </p>
         </div>
         <div className="audit-header-actions">

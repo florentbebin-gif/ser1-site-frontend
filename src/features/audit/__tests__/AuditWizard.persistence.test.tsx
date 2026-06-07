@@ -27,6 +27,9 @@ describe('AuditWizard persistance session', () => {
 
     render(<AuditWizard />);
 
+    expect(screen.getByTestId('audit-dossier-central-status')).toHaveTextContent(
+      'Dossier central : partiel',
+    );
     expect(screen.getByLabelText('Prénom')).toHaveValue('Jeanne');
 
     await userEvent.clear(screen.getByLabelText('Prénom'));

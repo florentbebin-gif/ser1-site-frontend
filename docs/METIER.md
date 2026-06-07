@@ -35,7 +35,7 @@ Expliquer ce que SER1 couvre aujourd'hui, ce qui est deja exploitable, et les li
 
 | Surface     | Statut                         | Role metier principal                                                                                                                                                  |
 | ----------- | ------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `/audit`    | actif, workflow prive P6       | Constituer un dossier patrimonial guide, persiste en session, exportable, et servant d'entree a `strategy`                                                             |
+| `/audit`    | actif, workflow prive P6       | Constituer un dossier patrimonial guide, persiste en session, exportable, projete dans le dossier central F1 et servant encore d'entree a `strategy`                   |
 | `/strategy` | actif, workflow privé Strategy | Produire des scénarios comparatifs et projections à partir du draft audit courant, avec validation CGP, sans être encore traité comme un simulateur `/sim/*` stabilisé |
 
 ### Regle de lecture
@@ -47,8 +47,10 @@ Expliquer ce que SER1 couvre aujourd'hui, ce qui est deja exploitable, et les li
 - Le chaînage entre une valeur Settings affichée et sa source vérifiée vit dans `src/domain/settings-references/chain.json` ; il indique soit des `refIds`, soit une raison explicite d'absence de source qualifiée.
 - Le registry `src/domain/settings-registry/` distingue les paramètres `ready`, `partial` et `planned`. Un simulateur disponible ne consomme que des clés déclarées et non `planned`.
 - Les workflows `/audit` et `/strategy` sont actifs en runtime, mais ils restent des surfaces de travail guidees distinctes des simulateurs metier stabilises.
-- `/audit` porte la trajectoire P6 : dossier guide, export PPTX isolé dans la feature via `src/features/audit/export/exportAudit.ts`, et réutilisation attendue par la suite dans `strategy`.
+- `/audit` porte la trajectoire P6 : dossier guide, export PPTX isolé dans la feature via `src/features/audit/export/exportAudit.ts`, projection vers `DossierPatrimonial` via adapter, et réutilisation attendue par la suite dans `strategy`.
 - `/strategy` porte la trajectoire Strategy : situation actuelle vs scénarios de réorientation patrimoniale, recommandations calculées par SER1 à partir de données validées, validation CGP et export PPTX isolé dans `src/features/strategy/export/exportStrategy.ts`.
+- Le `DossierPatrimonial` central F1 couvre le foyer, les membres, la situation familiale, le régime matrimonial, les donations synthétiques, les objectifs, contraintes, opérations prévues et `sourceRefs` minimales. Il ne porte pas encore le graphe actif/passif complet F3, l'evidence enrichie F2, le modèle société/bilan F5 ni de nouveaux settings fiscaux.
+- Les simulateurs actifs restent autonomes tant que leurs adapters de contexte ne sont pas livrés. La complétude `f1_core` du dossier central n'est pas une readiness simulateur.
 
 ### Registry métier des simulateurs
 

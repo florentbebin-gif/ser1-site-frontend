@@ -51,8 +51,9 @@ Repères (domain-first) :
   les routes par `routeId` et ne recopie pas les chemins `/sim/*`.
 - `src/domain/settings-registry/` : registry transverse des familles et paramètres fiscaux/métier,
   sans valeurs révisables inventées, avec contrat de consommation par simulateur.
-- `src/domain/dossier/` : modèle pur de version dossier, activation de stratégie, références source
-  et view model du rail dossier. Il ne persiste rien en V2-03.
+- `src/domain/dossier/` : modèle pur de dossier patrimonial central, version dossier,
+  activation de stratégie, références source et view model du rail dossier. Le socle
+  `DossierPatrimonial` F1 se persiste dans `public.dossiers_patrimoniaux` via RLS owner/admin.
 - `src/pages/` : shells légers (Home, Login, SettingsShell) + `pages/settings/*` (sous-pages settings).
 - `src/styles/app/` : chrome applicatif global (topbar, chips, états shell).
 - `src/styles/sim/` : baseline CSS partagée des simulateurs `/sim/*`.
@@ -300,7 +301,7 @@ Source (preuves) :
 
 Trajectoire PR V2-14 : le scan documentaire IA doit rester rattaché à l'audit, pas aux simulateurs. La route cible sera une surface privée hors `/sim/*`, par exemple `/audit/documents` ou une étape interne de `/audit`, avec accès depuis la Home dans le bloc `PAR OÙ COMMENCER`. Ne pas créer `/sim/ia` ni ajouter le scan dans la grille des simulateurs.
 
-### Rail dossier et versions — V2-03
+### Rail dossier, versions et dossier patrimonial
 
 `DossierRail` est l'unique rail gauche autorisé pour le parcours global :
 
@@ -317,9 +318,21 @@ Trajectoire PR V2-14 : le scan documentaire IA doit rester rattaché à l'audit,
   `/sim/*`, sans rendre le sélecteur `Mode utilisateur`. Ce dernier reste réservé à la Home ; les
   simulateurs gardent leurs toggles locaux lorsqu'ils existent.
 
-`DossierVersion`, `StrategyActivation` et `SourceRef` existent en V2-03 comme contrats de domaine
-purs dans `src/domain/dossier/types.ts`. La version affichée est une version de travail non
-persistée ; aucune table Supabase, migration ou stockage durable n'est introduit à ce stade.
+`DossierVersion`, `StrategyActivation` et `SourceRef` existent comme contrats de domaine purs dans
+`src/domain/dossier/types.ts`. La version affichée par le rail reste une version de travail.
+
+F1 ajoute le socle `DossierPatrimonial` dans `src/domain/dossier/` : foyer, membres, situation
+familiale, régime matrimonial, donations synthétiques, objectifs, contraintes, opérations prévues,
+`sourceRefs` minimales et complétude `f1_core`. Cette complétude vérifie seulement le socle central
+minimal ; elle ne signifie pas qu'un simulateur Succession, PER, IR, Placement ou Strategy peut
+lire le dossier sans adapter dédié.
+
+La persistance durable passe par la table Supabase `public.dossiers_patrimoniaux` avec `user_id`,
+`data jsonb`, `source_refs jsonb`, statut, complétude, `created_at` et `updated_at`. Les policies RLS
+autorisent le propriétaire ou `public.is_admin()` pour lire et écrire. `/audit` consomme ce modèle
+via un adapter Audit -> dossier central et sauvegarde ce dossier lors du save global. Les modèles
+F2 evidence enrichie, F3 actif/passif complet, F5 société/bilan et les nouveaux settings fiscaux
+restent hors périmètre F1.
 
 Vérification (commandes) :
 

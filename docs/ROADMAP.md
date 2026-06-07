@@ -1519,17 +1519,21 @@ But : rendre les champs de dossier consommables par les simulateurs.
 Changements :
 
 - Créer le modèle `DossierPatrimonial`.
-- Ajouter identité, foyer, famille, régime matrimonial, donations, budget, actif/passif interne.
+- Ajouter identité, foyer, famille, régime matrimonial, donations synthétiques, objectifs,
+  contraintes, opérations prévues et complétude F1.
+- Reporter budget détaillé et actif/passif complet vers F3 si un graphe patrimonial complet est
+  nécessaire.
 - Ajouter sourceRefs manuels.
 - Ajouter les premiers adapters de contexte ou les décisions explicites d'absence d'adapter pour les simulateurs actifs.
-- Ajouter la provenance visible des champs préremplis.
+- Ajouter la provenance visible des champs préremplis quand un adapter simulateur est livré.
 - Brancher Audit sans OCR.
+- Persister le dossier central avec RLS owner/admin si stockage durable ajouté.
 
 Tests :
 
 - Tests modèle dossier.
 - Tests sauvegarde/version.
-- Tests consommation par au moins un simulateur actif.
+- Tests consommation par au moins un écran, rail ou simulateur existant.
 - Tests adapter : dossier partiel, dossier complet, overrides locaux et absence de fallback métier silencieux.
 - `npm run check`.
 
