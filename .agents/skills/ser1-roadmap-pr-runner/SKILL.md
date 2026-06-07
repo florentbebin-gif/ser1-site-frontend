@@ -84,6 +84,8 @@ Contraintes non négociables :
 - ne jamais bypasser la chaîne fiscale :
   `Supabase → fiscalSettingsCache.ts → useFiscalContext.ts → settingsDefaults.ts` ;
 - ne jamais dupliquer une règle fiscale dans l’UI ou les exports ;
+- ne jamais démarrer, activer ou modifier un simulateur sans fiche contrat simulateur
+  produite ou référencée et sans preuve de rattachement au dossier patrimonial central ;
 - ne jamais ajouter `any`, `@ts-ignore`, `@ts-expect-error`, `@ts-nocheck` pour contourner ;
 - ne jamais modifier `CHANGELOG.md` dans une PR fonctionnelle ;
 - ne jamais créer de doc éphémère versionnée ;
@@ -124,6 +126,8 @@ Avant toute modification :
    - risques ;
    - checks ciblés prévus ;
    - sous-agents prévus ;
+   - si périmètre simulateur : fiche contrat simulateur produite ou référencée,
+     preuve du rattachement au dossier patrimonial central, sinon arrêt ;
    - conditions d’arrêt.
 
 Après ce contrat, continuer sans attendre validation, sauf blocage réel.
@@ -141,9 +145,11 @@ Pour chaque milestone :
 5. ajouter ou adapter les tests/checks nécessaires ;
 6. lancer les checks ciblés ;
 7. corriger jusqu’à vert ;
-8. ne committer que si `npm run check` a été lancé et est vert sur l’état courant.
+8. ne committer que si `npm run check` a été lancé et est vert sur l’état courant
+   quand `AGENTS.md` l’impose.
 
 Pour éviter de relancer `npm run check` trop souvent, il est autorisé de ne pas committer entre milestones et de créer les commits propres en fin de PR, après gate global vert. En revanche, aucun commit ne doit être créé sur un état qui n’a pas passé `npm run check`, sauf impossibilité externe ou préexistante prouvée.
+Les checks ciblés ne remplacent jamais `npm run check` avant commit quand `AGENTS.md` l’impose.
 
 Ne pas mélanger des sujets indépendants dans un même commit.
 
@@ -162,6 +168,15 @@ Vérifie que toute la section roadmap ciblée est couverte, sans hors-scope.
 ### architecture
 
 Vérifie frontières d’import, registres, routes, orphelins, duplication et cohérence architecture.
+
+### simulator-design
+
+Obligatoire si un simulateur est créé, activé ou modifié.
+Vérifie la fiche contrat simulateur, le rattachement au dossier patrimonial central,
+les adapters de contexte, l’absence de copie locale des données de foyer, patrimoine,
+fiscalité ou objectifs, les inputs manuels/dossier/evidence/settings fiscaux,
+les outputs, règles métier/fiscales, références, exports, tests, fixtures golden,
+risques LLM et conditions d’arrêt.
 
 ### fiscal-chain
 

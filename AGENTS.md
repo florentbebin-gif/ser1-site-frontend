@@ -80,6 +80,15 @@ Le LLM doit optimiser leur utilisation : déléguer uniquement des tâches indé
   fiscal, export, Supabase/RLS/Storage, migrations, CI, baseline ou docs.
 - Pour une nouvelle verticale roadmap, vérifier systématiquement routes, docs,
   tests, exports, Supabase/RLS, fiscal settings et CI.
+- Avant tout code de nouveau simulateur actif, produire ou référencer une fiche contrat
+  simulateur durable (template : `docs/templates/simulateur-contract.md`). Elle doit définir :
+  objectif métier, question client, inputs manuels, inputs dossier central, inputs evidence,
+  inputs settings fiscaux, outputs/KPI/tableaux/graphiques/alertes/recommandations,
+  règles métier/fiscales, références, dépendances fondations, impact exports, tests unitaires,
+  tests d'intégration, E2E métier, fixtures golden, risques LLM et conditions d'arrêt.
+- Tout simulateur doit être rattaché au modèle de dossier patrimonial central via un adapter
+  explicite ou s'arrêter si ce modèle n'existe pas encore. Aucun simulateur ne doit recréer
+  localement les données de foyer, patrimoine, fiscalité ou objectifs qui relèvent du dossier central.
 - Toute nouvelle route privée, page `/settings/*` ou page `/sim/*` doit rester couverte
   par le smoke authentifié `scripts/e2e-auth-pages-smoke.mjs`. Les routes `/sim/*`
   passent par le registre `src/routes/simRouteContracts.ts` ; ne pas recréer de liste parallèle.
@@ -124,6 +133,9 @@ Le LLM doit optimiser leur utilisation : déléguer uniquement des tâches indé
   `deprecated` ou `generated` sans règle claire, génération reproductible ou
   allowlist documentée.
 - Ne jamais dupliquer une règle fiscale dans l'UI ou les exports.
+- Ne jamais dupliquer dans un simulateur les données de foyer, patrimoine, fiscalité
+  ou objectifs hors dossier patrimonial central ; seuls les overrides locaux explicitement
+  sourcés et les outputs structurés du simulateur sont acceptables.
 
 ## Exceptions autorisées uniquement avec preuve
 
