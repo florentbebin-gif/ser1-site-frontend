@@ -352,6 +352,20 @@ rg -n "kind: 'redirect'" src/routes/appRoutes.ts
 rg -n "APP_ROUTES\\.map" src/App.tsx
 ```
 
+### Cockpit `/audit` — consommateur des fondations
+
+Contrat produit/design : `docs/AUDIT_COCKPIT.md`. Règles d'architecture :
+
+- `/audit` **consomme** `DossierPatrimonial`, `SourceRef`, `DossierVersion` et les futures fondations
+  `F1.1` (budgetSynthese), `F2` (evidence), `F3` (graphe actifs/passifs PP/US/NP), `F5`
+  (société/organigramme/bilans) et `F6` (scénarios/recommandations/activation).
+- `/audit` **ne possède aucune source de vérité propre** : il lit le dossier central via adapters et
+  ne duplique pas localement foyer, patrimoine, fiscalité, objectifs ou budget.
+- L'**organigramme société** est un **rendu** du modèle F5, jamais une source de données parallèle.
+- Le **radar** est un **view model calculé** depuis les moteurs et les fondations, jamais un calcul
+  métier caché dans l'UI ; un axe sans données reste `insuffisant`, sans valeur fabriquée.
+- Les **documents** passent par `SourceRef` / Evidence (F2), pas par une GED.
+
 ### Bootstrap auth → thème
 
 - `src/main.tsx` → `AuthProvider` → `ThemeProvider` → `App`.

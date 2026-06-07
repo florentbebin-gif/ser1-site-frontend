@@ -82,6 +82,24 @@ Décisions structurantes V2 :
 - `settingsKeys` décrit les paramètres fiscaux/métier réellement consommés. Les besoins futurs restent
   inventoriés dans `src/domain/settings-registry/` en statut `planned`, sans valeur et sans exposition éditable.
 
+## Audit cockpit (CGP-facing)
+
+Contrat produit/design complet : `docs/AUDIT_COCKPIT.md`.
+
+- `/audit` est **CGP-facing** : il s'adresse au conseiller, pas au client final.
+- Une future **vue client** sera un **mode de présentation**, pas un modèle de données à introduire
+  maintenant : aucun champ `clientVisible` n'est ajouté au dossier tant qu'aucun écran client n'est
+  cadré.
+- Les **objectifs, contraintes, budget (synthèse), preuves (`SourceRef`) et versions de dossier** sont
+  des **objets métier** du `DossierPatrimonial`, pas des artefacts UI locaux.
+- Les **« Pistes à vérifier »** sont **déterministes** (règles `if` citant une donnée fondatrice) :
+  ce n'est ni du conseil automatique, ni une recommandation produite par une IA. Wording prescriptif
+  interdit (« SER1 recommande / conseille », « la meilleure stratégie est »).
+- Le cockpit fait remonter les **alertes métier signature** déjà connues du cabinet : validation des
+  4 trimestres (revenus ≥ 600 SMIC horaires bruts si non retraité), seuil CSM/PUMA avant cession,
+  arbitrage TNS / assimilé salarié, épargne salariale en société familiale. Ces signaux ne
+  remplacent pas le jugement du CGP.
+
 ## 1) IR
 
 ### Ce que SER1 calcule

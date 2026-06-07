@@ -173,15 +173,16 @@ d'exécution restent propres à chaque outil : Claude Code charge automatiquemen
 dans `.claude/skills/<nom>/SKILL.md`, Codex charge automatiquement ses propres skills installés.
 Ne pas demander de commande manuelle à l'utilisateur pour activer un skill.
 
-| Si la tâche touche…                            | Lire                                                                                          |
-| ---------------------------------------------- | --------------------------------------------------------------------------------------------- |
-| CSS, UI, thème, couleurs, pages `/sim/*`       | `docs/DESIGN.md` puis `docs/GOUVERNANCE.md`                                                   |
-| Architecture, structure, flux, Supabase        | `docs/ARCHITECTURE.md`                                                                        |
-| Règles métier fiscales, périmètre simulateurs  | `docs/METIER.md`                                                                              |
-| Exports PPTX / Excel                           | `docs/GOUVERNANCE_EXPORTS.md`                                                                 |
-| IA documentaire, Mistral, OCR, document-ai     | `docs/RUNBOOK_MISTRAL_SER1.md`, `docs/PLAN_IA_DOCUMENTAIRE_SER1.md`, `docs/AI_ACT_CADRAGE.md` |
-| `src/domain/base-contrat/` (catalogue, règles) | `docs/ARCHITECTURE.md` § Base-Contrat                                                         |
-| Git workflow, PR, conventions humains          | `.github/CONTRIBUTING.md`                                                                     |
+| Si la tâche touche…                                          | Lire                                                                                          |
+| ------------------------------------------------------------ | --------------------------------------------------------------------------------------------- |
+| CSS, UI, thème, couleurs, pages `/sim/*`                     | `docs/DESIGN.md` puis `docs/GOUVERNANCE.md`                                                   |
+| UI `/audit`, cockpit, radar, drawer audit, org-chart société | `docs/AUDIT_COCKPIT.md` puis `docs/DESIGN.md`                                                 |
+| Architecture, structure, flux, Supabase                      | `docs/ARCHITECTURE.md`                                                                        |
+| Règles métier fiscales, périmètre simulateurs                | `docs/METIER.md`                                                                              |
+| Exports PPTX / Excel                                         | `docs/GOUVERNANCE_EXPORTS.md`                                                                 |
+| IA documentaire, Mistral, OCR, document-ai                   | `docs/RUNBOOK_MISTRAL_SER1.md`, `docs/PLAN_IA_DOCUMENTAIRE_SER1.md`, `docs/AI_ACT_CADRAGE.md` |
+| `src/domain/base-contrat/` (catalogue, règles)               | `docs/ARCHITECTURE.md` § Base-Contrat                                                         |
+| Git workflow, PR, conventions humains                        | `.github/CONTRIBUTING.md`                                                                     |
 
 ### Skills automatiques par assistant
 

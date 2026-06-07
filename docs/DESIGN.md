@@ -266,3 +266,46 @@ largeurs) decrite dans `GOUVERNANCE.md` §16d. Points non negociables :
 7. Verifier clavier, focus, labels, modales Escape.
 8. Tester desktop, tablette et mobile 390 px.
 9. Lancer les checks UI pertinents puis `npm run check` avant commit final.
+
+## Cockpit `/audit` — règles annoncées (UX-00a)
+
+Le contrat complet du cockpit `/audit` vit dans `docs/AUDIT_COCKPIT.md`. Les règles ci-dessous sont
+**annoncées** : cette PR UX-00a fige le contrat, mais **n'ajoute encore aucun token CSS, showroom ou
+check**. L'implémentation (tokens, showroom, checks) est faite en **UX-00b**.
+
+### Data-viz & statuts (décision de principe)
+
+- C1-C10 restent la palette configurable utilisateur. On n'ajoute pas de slot configurable.
+- Les graphes, radars, jauges et statuts du cockpit consomment des tokens sémantiques dérivés du
+  thème : `--viz-1`…`--viz-8` (séries catégorielles), `--viz-current`/`--viz-scenario` (radar),
+  `--viz-sequential-*` (anneaux/jauges).
+- `--state-warning` doit être distinct de `--accent-signature` (cuivre) : le cuivre est un accent de
+  marque / version active / KPI héros, jamais un statut d'alerte.
+- Aucune couleur locale, aucun hex/rgb/hsl runtime ; toute couleur de graphe passe par `--viz-*` ou
+  `--state-*`.
+- Une extension C11-C14 n'est envisagée que si la dérivation accessible depuis C1-C10 est prouvée
+  insuffisante, par PR dédiée verrouillée par docs + showroom + checks.
+
+### Surfaces — taxonomie à 4 niveaux
+
+- **Carte** : surface élevée (bordure + rayon + ombre), outil cadré ; pas d'autre carte élevée à
+  l'intérieur.
+- **Bande** : section interne sans élévation, séparée par espacement ou filet `--border-subtle`.
+- **Ligne KPI** : label + valeur, typographique, sans cadre.
+- **Micro-tuile plate** : fond `--surface-muted`, rayon léger, sans ombre ni bordure forte ;
+  autorisée dans une carte car non élevée.
+- Règle : aucune surface avec ombre dans une surface avec ombre.
+
+### Drawer XL
+
+- Pattern `/audit` à canoniser en UX-00b : drawer XL ancré à droite, variante de l'anatomie modale
+  (header, menu interne gauche optionnel, corps, panneau sources optionnel, footer stable
+  Annuler/Enregistrer), focus trap, `Escape`, retour focus.
+- Aucune largeur locale ; les classes canoniques (`sim-drawer`) et l'extension de `check:modal-canon`
+  arrivent en UX-00b.
+
+### Motion courte
+
+- Durées 120–260 ms ; pas de `scale`/`zoom` ; pas de glow permanent.
+- `prefers-reduced-motion` respecté.
+- Un seul point focal animé par écran (le radar dans le cockpit).
