@@ -332,6 +332,10 @@ La persistance durable passe par la table Supabase `public.dossiers_patrimoniaux
 autorisent le propriétaire ou `public.is_admin()` pour lire et écrire. `/audit` hydrate le brouillon
 depuis le dernier dossier central relu via Supabase quand aucun brouillon de session n'est ouvert,
 puis sauvegarde le modèle central lors du save global via les adapters Audit <-> dossier central.
+La précédence F1 est volontairement local-first : un brouillon local/session en cours garde la
+priorité, et le dossier central sert de source amont seulement quand aucun brouillon local actif
+n'existe. La résolution avancée de conflits entre brouillon local et dossier central est hors
+périmètre F1.
 Les modèles F2 evidence enrichie, F3 actif/passif complet, F5 société/bilan et les nouveaux settings
 fiscaux restent hors périmètre F1.
 

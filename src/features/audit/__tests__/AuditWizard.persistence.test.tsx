@@ -68,6 +68,42 @@ describe('AuditWizard persistance session', () => {
     });
   });
 
+  it('garde le brouillon de session prioritaire sur le dossier central relu', async () => {
+    const draft = createEmptyDossier();
+    draft.situationFamiliale.mr.prenom = 'Jeanne';
+    sessionStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(draft));
+    const dossierCentral = createEmptyDossierPatrimonial({
+      id: '00000000-0000-4000-8000-000000000006',
+      ownerUserId: 'user-1',
+      now: '2026-06-07T10:00:00.000Z',
+    });
+    dossierCentral.membres.push({
+      id: 'membre-central',
+      role: 'client',
+      prenom: 'Clara',
+      nom: 'Durand',
+      dateNaissance: '1975-04-12',
+      sourceRefIds: [],
+    });
+    dossierCentral.foyer.membrePrincipalId = 'membre-central';
+    dossierCentral.objectifs.push({
+      id: 'objectif-central',
+      code: 'preparer_transmission',
+      label: 'Préparer la transmission',
+      priority: 1,
+      sourceRefIds: [],
+    });
+    loadLatestDossierMock.mockResolvedValue({
+      ok: true,
+      dossier: dossierCentral,
+    });
+
+    render(<AuditWizard />);
+
+    expect(screen.getByLabelText('Prénom')).toHaveValue('Jeanne');
+    await waitFor(() => expect(loadLatestDossierMock).not.toHaveBeenCalled());
+  });
+
   it('réinitialise le brouillon audit via l’événement global ciblé', async () => {
     const draft = createEmptyDossier();
     draft.situationFamiliale.mr.prenom = 'Jeanne';
