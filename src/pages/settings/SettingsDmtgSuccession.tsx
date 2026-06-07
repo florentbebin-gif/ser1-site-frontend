@@ -5,6 +5,7 @@ import './styles/impots.css';
 import './styles/dmtg.css';
 import { invalidate, broadcastInvalidation } from '@/utils/cache/fiscalSettingsCache';
 import { UserInfoBanner } from '@/components/UserInfoBanner';
+import { SettingsRegistryStatusPanel } from '@/components/settings/SettingsRegistryStatusPanel';
 
 import {
   DEFAULT_ASSURANCE_VIE_RULES,
@@ -341,6 +342,7 @@ export default function SettingsDmtgSuccession() {
   return (
     <div className="settings-stack settings-stack--offset">
       <UserInfoBanner />
+      <SettingsRegistryStatusPanel ownerPage="/settings/dmtg-succession" />
 
       <div className="fisc-accordion">
         <ImpotsDmtgSection
