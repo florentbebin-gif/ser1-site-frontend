@@ -10,8 +10,10 @@ import {
   assertDeclaredSettingKeys,
   getSettingsRegistryEntry,
   listSettingsByStatus,
+  validateSettingsRegistryEntries,
   validateSettingsRegistry,
 } from '../index';
+import type { SettingsRegistryEntry } from '../types';
 
 const CORE_SETTINGS_PAGE_PATHS = new Set([
   '/settings/impots',
@@ -114,6 +116,51 @@ describe('settings-registry', () => {
 
     expect(unknownConsumers, 'Consommateurs inconnus').toEqual([]);
     expect(unknownClaims, 'Claims settings-references inconnus').toEqual([]);
+  });
+
+  it('refuse un pointeur de valeur qui ne résout pas les defaults settings', () => {
+    const invalidSetting: SettingsRegistryEntry = {
+      ...getSettingsRegistryEntry('impots.ir.bareme'),
+      defaultValue: {
+        kind: 'settings-default',
+        table: 'tax_settings',
+        path: 'incomeTax.scaleInconnue',
+      },
+    };
+    const invalidRegistry: readonly SettingsRegistryEntry[] = SETTINGS_REGISTRY.map((setting) =>
+      setting.key === invalidSetting.key ? invalidSetting : setting,
+    );
+
+    const result = validateSettingsRegistryEntries(invalidRegistry);
+
+    expect(result.errors).toContain(
+      'impots.ir.bareme: defaultValue introuvable dans tax_settings.incomeTax.scaleInconnue.',
+    );
+  });
+
+  it('synchronise les consommateurs registry et les settingsKeys simulateurs', () => {
+    const settingsBySimulator = new Map(
+      SIMULATOR_DEFINITIONS.map((definition) => [definition.id, new Set(definition.settingsKeys)]),
+    );
+
+    const registryToSimulatorDrift = SETTINGS_REGISTRY.flatMap((setting) =>
+      setting.consumerSimulatorIds
+        .filter((simulatorId) => !settingsBySimulator.get(simulatorId)?.has(setting.key))
+        .map((simulatorId) => `${setting.key}:${simulatorId}`),
+    );
+    const simulatorToRegistryDrift = SIMULATOR_DEFINITIONS.flatMap((definition) =>
+      definition.settingsKeys
+        .filter((settingKey) => {
+          const setting = getSettingsRegistryEntry(settingKey);
+          return !setting.consumerSimulatorIds.includes(definition.id);
+        })
+        .map((settingKey) => `${definition.id}:${settingKey}`),
+    );
+
+    expect(registryToSimulatorDrift, 'consumerSimulatorIds non déclarés côté simulateur').toEqual(
+      [],
+    );
+    expect(simulatorToRegistryDrift, 'settingsKeys non déclarés côté registry').toEqual([]);
   });
 
   it('expose un contrat de déclaration obligatoire des clés', () => {

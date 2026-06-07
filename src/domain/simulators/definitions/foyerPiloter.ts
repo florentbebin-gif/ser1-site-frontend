@@ -24,6 +24,7 @@ export const FOYER_PILOTER_SIMULATORS = [
       'retraite-prevoyance.pass',
       'retraite-prevoyance.cotisations-retraite',
       'retraite-prevoyance.validation-retraite-600-smic',
+      'retraite-prevoyance.prevoyance-garanties',
       'social-dirigeant.puma-csm',
     ],
     testScenarios: ['salarié proche retraite', 'TNS', 'couple avec écart de droits'],

@@ -8,7 +8,7 @@ export {
   listSettingsForOwnerPage,
   listSettingsForSimulator,
 } from './registry';
-export { validateSettingsRegistry } from './validators';
+export { validateSettingsRegistry, validateSettingsRegistryEntries } from './validators';
 export type { SettingRegistryKey } from './registry';
 export type {
   SettingsCurrentValue,
