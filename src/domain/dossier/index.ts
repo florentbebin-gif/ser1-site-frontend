@@ -5,11 +5,14 @@ export {
   DOSSIER_PATRIMONIAL_COMPLETION_LABELS,
   evaluateDossierPatrimonialCompletion,
 } from './patrimonial';
-export { buildDossierPatrimonialFromAudit } from './auditAdapter';
+export {
+  buildDossierPatrimonialFromAudit,
+  mergeDossierPatrimonialIntoAuditDraft,
+} from './auditAdapter';
 export {
   DOSSIERS_PATRIMONIAUX_TABLE,
   fromDossierPatrimonialRow,
-  toDossierPatrimonialRow,
+  toDossierPatrimonialUpsertRow,
 } from './persistence';
 export type { DossierChainDirection } from './chainLabels';
 export type {
@@ -33,7 +36,12 @@ export type {
   DossierSituationFamiliale,
   DossierSituationFamilialeStatut,
 } from './patrimonial';
-export type { DossierPatrimonialPayload, DossierPatrimonialRow } from './persistence';
+export type {
+  DossierPatrimonialListRow,
+  DossierPatrimonialPayload,
+  DossierPatrimonialRow,
+  DossierPatrimonialUpsertRow,
+} from './persistence';
 export type {
   DossierRailBranchView,
   DossierRailDensity,

@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { createEmptyDossier } from '@/domain/audit/types';
-import { buildDossierPatrimonialFromAudit } from '../auditAdapter';
+import {
+  buildDossierPatrimonialFromAudit,
+  mergeDossierPatrimonialIntoAuditDraft,
+} from '../auditAdapter';
 
 describe('buildDossierPatrimonialFromAudit', () => {
   it('projette le brouillon Audit dans le socle dossier central', () => {
@@ -104,5 +107,53 @@ describe('buildDossierPatrimonialFromAudit', () => {
       fieldPaths: expect.arrayContaining(['foyer', 'membres', 'objectifs']),
     });
     expect(dossier.completion.status).toBe('complete');
+  });
+
+  it('réhydrate un brouillon Audit depuis le dossier central sans écraser les données audit locales', () => {
+    const audit = createEmptyDossier();
+    audit.id = 'audit-2';
+    audit.dateCreation = '2026-06-07T09:00:00.000Z';
+    audit.dateModification = '2026-06-07T10:00:00.000Z';
+    audit.situationFamiliale.mr = {
+      prenom: 'Alice',
+      nom: 'Martin',
+      dateNaissance: '1980-01-01',
+    };
+    audit.situationCivile.donations = [
+      {
+        id: 'donation-1',
+        type: 'donation_simple',
+        date: '2020-01-01',
+        montant: 15000,
+        beneficiaire: 'Lou',
+      },
+    ];
+    audit.objectifs = ['developper_patrimoine'];
+    audit.situationFiscale.revenuFiscalReference = 75000;
+
+    const dossier = buildDossierPatrimonialFromAudit(audit, {
+      ownerUserId: 'user-1',
+      now: '2026-06-07T10:30:00.000Z',
+    });
+    const draft = createEmptyDossier();
+    draft.id = 'draft-local';
+    draft.situationFiscale.revenuFiscalReference = 42000;
+
+    const restored = mergeDossierPatrimonialIntoAuditDraft(dossier, draft);
+
+    expect(restored.id).toBe('audit-2');
+    expect(restored.situationFamiliale.mr).toMatchObject({
+      prenom: 'Alice',
+      nom: 'Martin',
+      dateNaissance: '1980-01-01',
+    });
+    expect(restored.situationCivile.donations).toEqual([
+      expect.objectContaining({
+        id: 'donation-1',
+        beneficiaire: 'Lou',
+      }),
+    ]);
+    expect(restored.objectifs).toEqual(['developper_patrimoine']);
+    expect(restored.situationFiscale.revenuFiscalReference).toBe(42000);
   });
 });

@@ -1,4 +1,5 @@
 import type { SourceRef } from './types';
+import { evaluateDossierPatrimonialCompletion } from './patrimonial';
 import type {
   DossierCompletionStatus,
   DossierFoyer,
@@ -24,7 +25,6 @@ export interface DossierPatrimonialPayload {
   objectifs: DossierObjectif[];
   contraintes: DossierContrainte[];
   operationsPrevues: DossierOperationPrevue[];
-  completion: DossierPatrimonial['completion'];
 }
 
 export interface DossierPatrimonialRow {
@@ -39,11 +39,21 @@ export interface DossierPatrimonialRow {
   updated_at: string;
 }
 
-export function toDossierPatrimonialRow(
+export type DossierPatrimonialUpsertRow = Omit<DossierPatrimonialRow, 'created_at' | 'updated_at'>;
+
+export interface DossierPatrimonialListRow {
+  id: string;
+  title: string;
+  status: DossierPatrimonialStatus;
+  completion_status: DossierCompletionStatus;
+  created_at: string;
+  updated_at: string;
+}
+
+export function toDossierPatrimonialUpsertRow(
   dossier: DossierPatrimonial,
   userId: string,
-): DossierPatrimonialRow {
-  const now = new Date().toISOString();
+): DossierPatrimonialUpsertRow {
   return {
     id: dossier.id,
     user_id: userId,
@@ -59,15 +69,27 @@ export function toDossierPatrimonialRow(
       objectifs: dossier.objectifs,
       contraintes: dossier.contraintes,
       operationsPrevues: dossier.operationsPrevues,
-      completion: dossier.completion,
     },
     source_refs: dossier.sourceRefs,
-    created_at: dossier.createdAt ?? dossier.updatedAt ?? now,
-    updated_at: dossier.updatedAt ?? now,
   };
 }
 
 export function fromDossierPatrimonialRow(row: DossierPatrimonialRow): DossierPatrimonial {
+  const completion = evaluateDossierPatrimonialCompletion(
+    {
+      foyer: row.data.foyer,
+      membres: row.data.membres,
+      objectifs: row.data.objectifs,
+    },
+    { now: row.updated_at },
+  );
+
+  if (completion.status !== row.completion_status) {
+    throw new Error(
+      `Complétude dossier incohérente pour ${row.id}: colonne=${row.completion_status}, modèle=${completion.status}`,
+    );
+  }
+
   return {
     id: row.id,
     ownerUserId: row.user_id,
@@ -81,10 +103,7 @@ export function fromDossierPatrimonialRow(row: DossierPatrimonialRow): DossierPa
     contraintes: row.data.contraintes,
     operationsPrevues: row.data.operationsPrevues,
     sourceRefs: row.source_refs,
-    completion: {
-      ...row.data.completion,
-      status: row.completion_status,
-    },
+    completion,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };

@@ -1,4 +1,5 @@
 import type { ReactElement } from 'react';
+import { useUserRole } from '@/auth/useUserRole';
 import {
   listSettingsForOwnerPage,
   type SettingsOwnerPagePath,
@@ -23,6 +24,16 @@ const STATUS_COUNT_LABELS: Record<SettingsRegistryStatus, { singular: string; pl
   ready: { singular: 'prêt', plural: 'prêts' },
   partial: { singular: 'partiel', plural: 'partiels' },
   planned: { singular: 'planifié', plural: 'planifiés' },
+};
+
+const OWNER_PAGE_TITLES: Record<SettingsOwnerPagePath, string> = {
+  '/settings/impots': 'Registre settings impôts',
+  '/settings/comptables-societes': 'Registre settings comptables & sociétés',
+  '/settings/prelevements': 'Registre settings paramètres sociaux',
+  '/settings/base-contrat': 'Registre settings référentiel contrats',
+  '/settings/base-contrat-retraite': 'Registre settings Base CG retraite',
+  '/settings/dmtg-succession': 'Registre settings DMTG & Succession',
+  '/settings/prevoyance-regimes': 'Registre settings Prévoyance — régimes',
 };
 
 interface SettingsRegistryStatusPanelProps {
@@ -88,6 +99,9 @@ function SettingsRegistryItem({ entry }: { entry: SettingsRegistryEntry }): Reac
 export function SettingsRegistryStatusPanel({
   ownerPage,
 }: SettingsRegistryStatusPanelProps): ReactElement | null {
+  const { isAdmin } = useUserRole();
+  if (!isAdmin) return null;
+
   const entries = listSettingsForOwnerPage(ownerPage);
   if (entries.length === 0) return null;
 
@@ -95,9 +109,11 @@ export function SettingsRegistryStatusPanel({
 
   return (
     <SettingsSectionCard
-      title="Registre settings"
+      title={OWNER_PAGE_TITLES[ownerPage]}
       subtitle="Lecture propriétaire des paramètres déclarés, avec séparation des statuts prêts, partiels et planifiés."
       icon={<RegistryIcon />}
+      collapsible
+      defaultOpen={false}
     >
       <div className="settings-registry-status-panel">
         <div

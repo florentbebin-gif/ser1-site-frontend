@@ -157,14 +157,30 @@ describe('SettingsImpots', () => {
   });
 
   it('expose le registre settings prêt, partiel et planifié en lecture seule', async () => {
+    const user = userEvent.setup();
+
     render(<SettingsImpots />);
 
-    await screen.findByText('Registre settings');
+    await screen.findByText('Registre settings impôts');
+    expect(screen.queryByText('Prêt')).not.toBeInTheDocument();
+
+    await user.click(
+      screen.getByRole('button', { name: /Afficher la section Registre settings impôts/i }),
+    );
 
     expect(screen.getByText('Prêt')).toBeInTheDocument();
     expect(screen.getByText('Planifié')).toBeInTheDocument();
     expect(screen.getByText('IFI - millésimes historiques')).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /IFI - millésimes historiques/i })).toBeNull();
+  });
+
+  it('masque le registre settings aux utilisateurs non-admin', async () => {
+    isAdmin = false;
+
+    render(<SettingsImpots />);
+
+    await screen.findByRole('button', { name: /Barème de l’impôt sur le revenu/i });
+    expect(screen.queryByText(/Registre settings/i)).not.toBeInTheDocument();
   });
 });
 
@@ -185,11 +201,15 @@ describe('SettingsComptablesSocietes', () => {
 
     render(<SettingsComptablesSocietes />);
 
-    await screen.findByRole('button', { name: /Impôt sur les sociétés/i });
+    const isButton = await screen.findByRole('button', { name: /Impôt sur les sociétés/i });
+    expect(
+      screen.queryByRole('region', { name: /Impôt sur les sociétés/i }),
+    ).not.toBeInTheDocument();
     expect(
       screen.queryByRole('button', { name: /Impôt sur la fortune immobilière/i }),
     ).not.toBeInTheDocument();
 
+    await user.click(isButton);
     const normalRateInput = getFieldInput('Taux normal IS');
     expect(normalRateInput).toHaveValue(DEFAULT_TAX_SETTINGS.corporateTax.current.normalRate);
     await user.clear(normalRateInput);
@@ -209,9 +229,18 @@ describe('SettingsComptablesSocietes', () => {
   });
 
   it('expose les settings partiels et planifiés côté société en lecture seule', async () => {
+    const user = userEvent.setup();
+
     render(<SettingsComptablesSocietes />);
 
-    await screen.findByText('Registre settings');
+    await screen.findByText('Registre settings comptables & sociétés');
+    expect(screen.queryByText('Partiel')).not.toBeInTheDocument();
+
+    await user.click(
+      screen.getByRole('button', {
+        name: /Afficher la section Registre settings comptables & sociétés/i,
+      }),
+    );
 
     expect(screen.getByText('Partiel')).toBeInTheDocument();
     expect(screen.getByText('Planifié')).toBeInTheDocument();

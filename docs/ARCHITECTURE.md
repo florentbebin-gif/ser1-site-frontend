@@ -329,10 +329,11 @@ lire le dossier sans adapter dédié.
 
 La persistance durable passe par la table Supabase `public.dossiers_patrimoniaux` avec `user_id`,
 `data jsonb`, `source_refs jsonb`, statut, complétude, `created_at` et `updated_at`. Les policies RLS
-autorisent le propriétaire ou `public.is_admin()` pour lire et écrire. `/audit` consomme ce modèle
-via un adapter Audit -> dossier central et sauvegarde ce dossier lors du save global. Les modèles
-F2 evidence enrichie, F3 actif/passif complet, F5 société/bilan et les nouveaux settings fiscaux
-restent hors périmètre F1.
+autorisent le propriétaire ou `public.is_admin()` pour lire et écrire. `/audit` hydrate le brouillon
+depuis le dernier dossier central relu via Supabase quand aucun brouillon de session n'est ouvert,
+puis sauvegarde le modèle central lors du save global via les adapters Audit <-> dossier central.
+Les modèles F2 evidence enrichie, F3 actif/passif complet, F5 société/bilan et les nouveaux settings
+fiscaux restent hors périmètre F1.
 
 Vérification (commandes) :
 

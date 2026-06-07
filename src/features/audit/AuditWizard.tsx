@@ -6,10 +6,11 @@ import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import { ExportMenu } from '../../components/ExportMenu';
 import type { ExportOption } from '../../components/export/exportTypes';
 import type { DossierAudit } from '@/domain/audit/types';
-import { createEmptyDossier } from '@/domain/audit/types';
+import { createEmptyDossier, ensureDossierAuditUuid } from '@/domain/audit/types';
 import {
   buildDossierPatrimonialFromAudit,
   DOSSIER_PATRIMONIAL_COMPLETION_LABELS,
+  mergeDossierPatrimonialIntoAuditDraft,
 } from '@/domain/dossier';
 import { useDossierPatrimonialPersistence } from '@/hooks/useDossierPatrimonialPersistence';
 import {
@@ -52,29 +53,69 @@ export default function AuditWizard(): React.ReactElement {
   const { colors } = useTheme();
   const [dossier, setDossier] = useState<DossierAudit>(() => {
     const draft = loadDraftFromSession();
-    return draft || createEmptyDossier();
+    return ensureDossierAuditUuid(draft || createEmptyDossier());
   });
+  const [hasInitialSessionDraft] = useState(() => Boolean(loadDraftFromSession()));
   const [currentStep, setCurrentStep] = useState<StepId>('famille');
   const [hasChanges, setHasChanges] = useState(false);
+  const hasLoadedCentralDossierRef = useRef(false);
   const [isExportingPptx, setIsExportingPptx] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const { ownerUserId, saving, lastSavedAt, error, saveDossier } =
-    useDossierPatrimonialPersistence();
+  const {
+    ownerUserId,
+    loading,
+    saving,
+    lastSavedAt,
+    lastLoadedAt,
+    error,
+    saveDossier,
+    loadLatestDossier,
+  } = useDossierPatrimonialPersistence();
   const dossierPatrimonial = useMemo(
     () => buildDossierPatrimonialFromAudit(dossier, { ownerUserId }),
     [dossier, ownerUserId],
   );
   const dossierCentralStatus =
     DOSSIER_PATRIMONIAL_COMPLETION_LABELS[dossierPatrimonial.completion.status];
-  const dossierCentralSyncStatus = saving
-    ? 'sauvegarde en cours'
-    : error
-      ? 'à resynchroniser'
-      : lastSavedAt
-        ? 'sauvegardé'
-        : ownerUserId
-          ? 'prêt'
-          : 'local';
+  const dossierCentralSyncStatus = loading
+    ? 'lecture en cours'
+    : saving
+      ? 'sauvegarde en cours'
+      : error
+        ? 'à resynchroniser'
+        : lastSavedAt
+          ? 'sauvegardé'
+          : lastLoadedAt
+            ? 'chargé'
+            : ownerUserId
+              ? 'prêt'
+              : 'local';
+
+  useEffect(() => {
+    if (
+      !ownerUserId ||
+      hasChanges ||
+      hasInitialSessionDraft ||
+      hasLoadedCentralDossierRef.current
+    ) {
+      return;
+    }
+
+    let cancelled = false;
+    hasLoadedCentralDossierRef.current = true;
+
+    async function hydrateFromCentralDossier(): Promise<void> {
+      const result = await loadLatestDossier();
+      if (cancelled || !result.ok) return;
+      setDossier((previous) => mergeDossierPatrimonialIntoAuditDraft(result.dossier, previous));
+    }
+
+    void hydrateFromCentralDossier();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [hasChanges, hasInitialSessionDraft, loadLatestDossier, ownerUserId]);
 
   // Sauvegarde automatique en session
   useEffect(() => {
@@ -158,7 +199,7 @@ export default function AuditWizard(): React.ReactElement {
 
     try {
       const imported = await importDossierFromFile(file);
-      setDossier(imported);
+      setDossier(ensureDossierAuditUuid(imported));
       setHasChanges(false);
       alert('Dossier importé avec succès');
     } catch (error) {

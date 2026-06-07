@@ -7,6 +7,7 @@ import AuditWizard from '../AuditWizard';
 import { exportDossierToFile, importDossierFromFile } from '../utils/storage';
 
 const saveDossierCentralMock = vi.hoisted(() => vi.fn());
+const loadLatestDossierMock = vi.hoisted(() => vi.fn());
 
 vi.mock('@/settings/ThemeProvider', () => ({
   useTheme: () => ({
@@ -17,10 +18,16 @@ vi.mock('@/settings/ThemeProvider', () => ({
 vi.mock('@/hooks/useDossierPatrimonialPersistence', () => ({
   useDossierPatrimonialPersistence: () => ({
     ownerUserId: 'user-1',
+    loading: false,
     saving: false,
+    currentDossier: null,
     lastSavedAt: null,
+    lastLoadedAt: null,
     error: null,
     saveDossier: saveDossierCentralMock,
+    loadDossier: vi.fn(),
+    loadLatestDossier: loadLatestDossierMock,
+    listDossiers: vi.fn(),
   }),
 }));
 
@@ -41,6 +48,7 @@ describe('AuditWizard import/export JSON', () => {
     sessionStorage.clear();
     vi.clearAllMocks();
     saveDossierCentralMock.mockResolvedValue({ ok: true, reason: 'saved' });
+    loadLatestDossierMock.mockResolvedValue({ ok: false, reason: 'not-found' });
     window.history.pushState({}, '', '/audit');
   });
 

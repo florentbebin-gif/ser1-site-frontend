@@ -148,9 +148,18 @@ describe('SettingsPrelevements', () => {
   });
 
   it('expose les settings sociaux planifiés sans contrôle éditable', async () => {
+    const user = userEvent.setup();
+
     render(<SettingsPrelevements />);
 
-    await screen.findByText('Registre settings');
+    await screen.findByText('Registre settings paramètres sociaux');
+    expect(screen.queryByText('Planifié')).not.toBeInTheDocument();
+
+    await user.click(
+      screen.getByRole('button', {
+        name: /Afficher la section Registre settings paramètres sociaux/i,
+      }),
+    );
 
     expect(screen.getByText('Planifié')).toBeInTheDocument();
     expect(screen.getByText('Charges sociales dirigeant')).toBeInTheDocument();
