@@ -1,4 +1,5 @@
 import type { LegalReferenceId } from '../legal-references';
+import type { SettingRegistryKey } from '../settings-registry';
 
 export type SimulatorLifecycle =
   | 'active'
@@ -62,6 +63,7 @@ export interface SimulatorDefinition {
   dossierFields: string[];
   legalRefs: LegalReferenceId[];
   legalRefsStatus?: 'complete' | 'a-renseigner-avant-codage';
+  settingsKeys: readonly SettingRegistryKey[];
   testScenarios: string[];
   contextPolicy: SimulatorContextPolicy;
   subtypes?: string[];

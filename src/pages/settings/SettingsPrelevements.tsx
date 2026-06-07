@@ -5,6 +5,7 @@ import { invalidate, broadcastInvalidation } from '@/utils/cache/fiscalSettingsC
 import { UserInfoBanner } from '@/components/UserInfoBanner';
 import { createFieldUpdater } from '@/components/settings/settingsHelpers';
 import PassHistoryAccordion from '@/components/settings/PassHistoryAccordion';
+import { SettingsRegistryStatusPanel } from '@/components/settings/SettingsRegistryStatusPanel';
 import { usePassHistory } from '@/hooks/settings/usePassHistory';
 
 import { DEFAULT_PS_SETTINGS, DEFAULT_TAX_SETTINGS } from '@/constants/settingsDefaults';
@@ -252,6 +253,7 @@ export default function SettingsPrelevements() {
   return (
     <div className="settings-stack settings-stack--offset">
       <UserInfoBanner />
+      <SettingsRegistryStatusPanel ownerPage="/settings/prelevements" />
 
       {error && (
         <div className="settings-feedback-message settings-feedback-message--error">{error}</div>

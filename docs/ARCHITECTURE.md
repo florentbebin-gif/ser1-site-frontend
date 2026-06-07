@@ -49,6 +49,8 @@ Repères (domain-first) :
 - `src/domain/simulators/` : registry métier des simulateurs, visibilité Home, chaînages et contrats
   d'alimentation dossier. Ce dossier ne remplace pas `src/routes/simRouteContracts.ts` : il référence
   les routes par `routeId` et ne recopie pas les chemins `/sim/*`.
+- `src/domain/settings-registry/` : registry transverse des familles et paramètres fiscaux/métier,
+  sans valeurs révisables inventées, avec contrat de consommation par simulateur.
 - `src/domain/dossier/` : modèle pur de version dossier, activation de stratégie, références source
   et view model du rail dossier. Il ne persiste rien en V2-03.
 - `src/pages/` : shells légers (Home, Login, SettingsShell) + `pages/settings/*` (sous-pages settings).
@@ -156,6 +158,48 @@ dans `sources.references` en base, par régime et par catégorie (`arret`, `inva
 DB sont marquées `confiance: "haute"` faute de source normative plus précise disponible. L'audit DB
 refuse une catégorie attendue sans source ou justification spécifique, ainsi que les URLs
 racines/génériques de caisse qui ne pointent pas vers une page de garantie ou de cotisation.
+
+### Registry Settings fiscaux/métier — `src/domain/settings-registry/`
+
+Le registry Settings vit dans `src/domain/settings-registry/`. Il documente et valide le contrat
+transverse des paramètres fiscaux/métier avant consommation par les simulateurs. Il ne stocke pas de
+valeurs fiscales révisables : les valeurs prêtes restent dans la chaîne standard
+`Supabase` -> `fiscalSettingsCache.ts` -> `useFiscalContext.ts` -> `settingsDefaults.ts`.
+
+Les familles canoniques sont :
+
+- `impots`
+- `comptables-societes`
+- `immobilier`
+- `transmission`
+- `retraite-prevoyance`
+- `placements`
+- `social-dirigeant`
+
+Chaque entrée déclare au minimum : `family`, `key`, `label`, `description`, `valueType`, `unit`,
+`millesime`, source/référence, cible `defaultValue`, cible `currentValue`, validation, page settings
+propriétaire, simulateurs consommateurs attendus et statut.
+
+Les statuts ont un sens bloquant :
+
+| Statut    | Sens architecture                                                                                                |
+| --------- | ---------------------------------------------------------------------------------------------------------------- |
+| `ready`   | Paramètre déjà éditable/consommable, avec source complète et claims `settings-references` connus.                |
+| `partial` | Paramètre centralisé partiellement consommable, avec certains sous-claims ou références encore à compléter.      |
+| `planned` | Besoin inventorié sans valeur. `defaultValue` et `currentValue` doivent rester `null`, et la source à compléter. |
+
+`SimulatorDefinition.settingsKeys` déclare les paramètres réellement consommés par un simulateur.
+Toute clé doit exister dans `SETTINGS_REGISTRY`. Les simulateurs `active`, `hub` et `placeholder` ne
+peuvent pas déclarer de consommation d'un setting `planned`; les consommateurs futurs restent listés
+dans `SETTINGS_REGISTRY.consumerSimulatorIds`.
+
+Garde-fous :
+
+- `npm run check:settings-registry` valide familles, propriétaires, claims settings, consommateurs
+  et absence de valeur sur les entrées `planned`.
+- `npm run check:fiscal-hardcode` scanne aussi `src/domain/settings-registry/`.
+- Un nouveau paramètre fiscal/métier doit mettre à jour ensemble : defaults/cache/hook si une valeur
+  existe, `settings-references`, `settings-registry`, tests et page settings propriétaire.
 
 ### Règle "god file"
 
@@ -796,6 +840,7 @@ Les fichiers `src/domain/base-contrat/**` ne doivent pas importer React, Supabas
 | Hook simulateur placement                   | `src/hooks/usePlacementSettings.ts`                                                         |
 | Extraction params normalisés                | `src/engine/placement/fiscalParams.ts`                                                      |
 | Params Placement par défaut                 | `src/engine/placement/shared.ts` (`DEFAULT_FISCAL_PARAMS`, dérivé de `settingsDefaults.ts`) |
+| Registry Settings fiscaux/métier            | `src/domain/settings-registry/`                                                             |
 | Libellés fiscaux Base-Contrat               | `src/domain/base-contrat/rules/fiscalLabels.ts`                                             |
 | Profil fiscal par enveloppe                 | `src/domain/base-contrat/rules/fiscalProfile.ts`                                            |
 | Migration snapshot (v4 + identity)          | `src/reporting/snapshot/snapshotMigrations.ts`                                              |
@@ -844,6 +889,7 @@ Cette section fixe comment ajouter une page, une route ou une feature sans creer
   Le smoke authentifié vérifie la couverture de routes, pas la valeur fonctionnelle du simulateur.
 - Le mode global Home (`ui_settings.mode`) doit etre respecte par defaut ; un override local est permis seulement s'il reste non persistant.
 - Les paramètres fiscaux passent par `useFiscalContext` pour les nouveaux simulateurs. `usePlacementSettings` est l'adaptateur fiscal du simulateur Placement, au-dessus de `useFiscalContext` et de `extractFiscalParams()`.
+- Toute consommation fiscale/métier d'un simulateur doit déclarer sa clé dans `SimulatorDefinition.settingsKeys`; la clé doit exister dans `src/domain/settings-registry/` et ne pas être `planned` pour un simulateur actif, hub ou placeholder.
 - Aucun `SimulatorAdapter` runtime commun n'est requis par defaut : le contrat est l'API publique de feature + les garde-fous d'architecture.
 
 #### Si le simulateur n'est pas pret
@@ -868,6 +914,8 @@ Cette section fixe comment ajouter une page, une route ou une feature sans creer
   `verifiedAt` + `target`, soit avec un `noRefReason` explicite si aucune source officielle ne
   s'applique. Source primaire BOFiP pour les valeurs chiffrees. Voir la procedure annuelle dans
   `docs/RUNBOOK.md`. Garde-fou local : `npm run check:settings-references`.
+- Tout paramètre fiscal/métier nouveau doit aussi être déclaré dans `src/domain/settings-registry/`
+  avec famille, millésime, propriétaire settings, référence et statut `ready`, `partial` ou `planned`.
 
 #### Emplacement
 

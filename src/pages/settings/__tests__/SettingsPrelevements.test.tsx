@@ -147,6 +147,16 @@ describe('SettingsPrelevements', () => {
     expect(screen.getByText('Paramètres de prélèvements sociaux enregistrés.')).toBeInTheDocument();
   });
 
+  it('expose les settings sociaux planifiés sans contrôle éditable', async () => {
+    render(<SettingsPrelevements />);
+
+    await screen.findByText('Registre settings');
+
+    expect(screen.getByText('Planifié')).toBeInTheDocument();
+    expect(screen.getByText('Charges sociales dirigeant')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /Charges sociales dirigeant/i })).toBeNull();
+  });
+
   it("n'affiche pas le succès global si la sauvegarde PASS échoue", async () => {
     const user = userEvent.setup();
     passUpsertMock.mockResolvedValueOnce({ error: { message: 'PASS refusé' } });

@@ -5,6 +5,7 @@ import './styles/impots.css';
 import { invalidate, broadcastInvalidation } from '@/utils/cache/fiscalSettingsCache';
 import { UserInfoBanner } from '@/components/UserInfoBanner';
 import { createFieldUpdater } from '@/components/settings/settingsHelpers';
+import { SettingsRegistryStatusPanel } from '@/components/settings/SettingsRegistryStatusPanel';
 
 import { DEFAULT_PS_SETTINGS, DEFAULT_TAX_SETTINGS } from '@/constants/settingsDefaults';
 import { validateImpotsSettings, isValid } from './validators/dmtgValidators';
@@ -253,6 +254,7 @@ export default function SettingsImpots() {
   return (
     <div className="settings-stack settings-stack--offset">
       <UserInfoBanner />
+      <SettingsRegistryStatusPanel ownerPage="/settings/impots" />
 
       <div className="fisc-accordion">
         <ImpotsBaremeSection

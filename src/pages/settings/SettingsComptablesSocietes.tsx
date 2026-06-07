@@ -3,6 +3,7 @@ import { supabase } from '@/supabaseClient';
 import { useUserRole } from '@/auth/useUserRole';
 import { UserInfoBanner } from '@/components/UserInfoBanner';
 import { createFieldUpdater } from '@/components/settings/settingsHelpers';
+import { SettingsRegistryStatusPanel } from '@/components/settings/SettingsRegistryStatusPanel';
 import { DEFAULT_TAX_SETTINGS } from '@/constants/settingsDefaults';
 import { broadcastInvalidation, invalidate } from '@/utils/cache/fiscalSettingsCache';
 import ComptablesSocietesISSection from './ComptablesSocietes/ComptablesSocietesISSection';
@@ -160,6 +161,7 @@ export default function SettingsComptablesSocietes() {
   return (
     <div className="settings-stack settings-stack--offset">
       <UserInfoBanner />
+      <SettingsRegistryStatusPanel ownerPage="/settings/comptables-societes" />
 
       <div className="fisc-accordion">
         <ComptablesSocietesISSection

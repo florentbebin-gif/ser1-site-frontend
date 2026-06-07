@@ -45,6 +45,7 @@ Expliquer ce que SER1 couvre aujourd'hui, ce qui est deja exploitable, et les li
 - Les taux, baremes et abattements modifiables vivent dans les settings et sont consommes par les simulateurs via le dossier fiscal unifie.
 - Les références juridiques vivent dans `src/domain/legal-references/` et servent à rattacher simulateurs, settings et catalogue à leurs sources officielles ; elles ne remplacent pas les settings fiscaux.
 - Le chaînage entre une valeur Settings affichée et sa source vérifiée vit dans `src/domain/settings-references/chain.json` ; il indique soit des `refIds`, soit une raison explicite d'absence de source qualifiée.
+- Le registry `src/domain/settings-registry/` distingue les paramètres `ready`, `partial` et `planned`. Un simulateur disponible ne consomme que des clés déclarées et non `planned`.
 - Les workflows `/audit` et `/strategy` sont actifs en runtime, mais ils restent des surfaces de travail guidees distinctes des simulateurs metier stabilises.
 - `/audit` porte la trajectoire P6 : dossier guide, export PPTX isolé dans la feature via `src/features/audit/export/exportAudit.ts`, et réutilisation attendue par la suite dans `strategy`.
 - `/strategy` porte la trajectoire Strategy : situation actuelle vs scénarios de réorientation patrimoniale, recommandations calculées par SER1 à partir de données validées, validation CGP et export PPTX isolé dans `src/features/strategy/export/exportStrategy.ts`.
@@ -76,6 +77,8 @@ Décisions structurantes V2 :
 - `Cession de titres` est une entrée société ; elle n'est pas exposée côté Foyer.
 - Les simulateurs `planned` peuvent apparaître dans un rail comme dépendances futures, mais pas comme
   cartes cliquables de même niveau qu'un simulateur actif ni comme cartes actives sur le premier écran Home.
+- `settingsKeys` décrit les paramètres fiscaux/métier réellement consommés. Les besoins futurs restent
+  inventoriés dans `src/domain/settings-registry/` en statut `planned`, sans valeur et sans exposition éditable.
 
 ## 1) IR
 

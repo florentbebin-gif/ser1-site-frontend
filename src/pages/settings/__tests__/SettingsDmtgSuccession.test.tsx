@@ -137,6 +137,17 @@ describe('SettingsDmtgSuccession', () => {
     ).not.toBeInTheDocument();
   });
 
+  it('expose le registre settings transmission et placements en lecture seule', async () => {
+    render(<SettingsDmtgSuccession />);
+
+    await screen.findByText('Registre settings');
+
+    expect(screen.getByText('Partiel')).toBeInTheDocument();
+    expect(screen.getByText('Planifié')).toBeInTheDocument();
+    expect(screen.getByText('Pacte Dutreil')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /Pacte Dutreil/i })).toBeNull();
+  });
+
   it("trace l'utilisateur authentifié dans les deux écritures DMTG", async () => {
     render(<SettingsDmtgSuccession />);
 

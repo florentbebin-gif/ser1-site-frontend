@@ -126,6 +126,7 @@ const FORBIDDEN_VALUES = [
 const SCAN_DIRS = [
   'src/engine',
   'src/domain/base-contrat/rules',
+  'src/domain/settings-registry',
   'src/features',
   'src/hooks',
   'src/pages/settings',

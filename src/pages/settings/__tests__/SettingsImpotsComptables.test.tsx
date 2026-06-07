@@ -155,6 +155,17 @@ describe('SettingsImpots', () => {
     expect(saved.data.cdhr.current.thresholdSingle).toBe(310_000);
     expect(screen.getByText('Paramètres impôts enregistrés.')).toBeInTheDocument();
   });
+
+  it('expose le registre settings prêt, partiel et planifié en lecture seule', async () => {
+    render(<SettingsImpots />);
+
+    await screen.findByText('Registre settings');
+
+    expect(screen.getByText('Prêt')).toBeInTheDocument();
+    expect(screen.getByText('Planifié')).toBeInTheDocument();
+    expect(screen.getByText('IFI - millésimes historiques')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /IFI - millésimes historiques/i })).toBeNull();
+  });
 });
 
 describe('SettingsComptablesSocietes', () => {
@@ -195,5 +206,16 @@ describe('SettingsComptablesSocietes', () => {
     expect(saved.data.corporateTax.current.normalRate).toBe(26);
     expect(saved.data.ifi).toEqual(DEFAULT_TAX_SETTINGS.ifi);
     expect(screen.getByText('Paramètres comptables et sociétés enregistrés.')).toBeInTheDocument();
+  });
+
+  it('expose les settings partiels et planifiés côté société en lecture seule', async () => {
+    render(<SettingsComptablesSocietes />);
+
+    await screen.findByText('Registre settings');
+
+    expect(screen.getByText('Partiel')).toBeInTheDocument();
+    expect(screen.getByText('Planifié')).toBeInTheDocument();
+    expect(screen.getByText('Dividendes')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /Dividendes/i })).toBeNull();
   });
 });
