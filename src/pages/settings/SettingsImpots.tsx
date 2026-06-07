@@ -13,7 +13,7 @@ import ImpotsBaremeSection from './Impots/ImpotsBaremeSection';
 import ImpotsAbattementDomSection from './Impots/ImpotsAbattementDomSection';
 import ImpotsPfuSection from './Impots/ImpotsPfuSection';
 import ImpotsCehrSection from './Impots/ImpotsCehrSection';
-import ImpotsISSection from './Impots/ImpotsISSection';
+import ImpotsIfiSection from './Impots/ImpotsIfiSection';
 
 type DeepFormValue<T> = T extends number
   ? number | null
@@ -78,16 +78,14 @@ function mergeTaxSettings(base: TaxSettings, nextData: Partial<TaxSettings>): Ta
         ...nextData.cdhr?.previous,
       },
     },
-    corporateTax: {
+    ifi: {
       current: {
-        ...base.corporateTax.current,
-        ...nextData.corporateTax?.current,
-      },
-      previous: {
-        ...base.corporateTax.previous,
-        ...nextData.corporateTax?.previous,
+        ...base.ifi.current,
+        ...nextData.ifi?.current,
+        scale: nextData.ifi?.current?.scale ?? base.ifi.current.scale,
       },
     },
+    corporateTax: nextData.corporateTax ?? base.corporateTax,
     dmtg: nextData.dmtg ?? base.dmtg,
   };
 }
@@ -199,7 +197,7 @@ export default function SettingsImpots() {
         },
         cehr: settings.cehr,
         cdhr: settings.cdhr,
-        corporateTax: settings.corporateTax,
+        ifi: settings.ifi,
       };
 
       const { error } = await supabase.from('tax_settings').upsert({ id: 1, data: payload });
@@ -250,7 +248,7 @@ export default function SettingsImpots() {
     return <p>Chargement...</p>;
   }
 
-  const { incomeTax, pfu, cehr, cdhr, corporateTax } = settings;
+  const { incomeTax, pfu, cehr, cdhr, ifi } = settings;
 
   return (
     <div className="settings-stack settings-stack--offset">
@@ -294,9 +292,8 @@ export default function SettingsImpots() {
           setOpenSection={setOpenSection}
         />
 
-        <ImpotsISSection
-          corporateTax={corporateTax}
-          incomeTax={incomeTax}
+        <ImpotsIfiSection
+          ifi={ifi}
           updateField={updateField}
           isAdmin={isAdmin}
           openSection={openSection}

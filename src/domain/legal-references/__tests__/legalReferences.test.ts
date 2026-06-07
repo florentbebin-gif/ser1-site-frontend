@@ -103,10 +103,24 @@ describe('références juridiques', () => {
     expect(LEGAL_REFERENCE_SETTING_KEYS).toEqual([
       'dmtg',
       'impots',
+      'comptables-societes',
       'prelevements',
       'base-contrat',
       'prevoyance',
     ]);
+  });
+
+  it('rattache les références IS à Comptables & sociétés', () => {
+    const isReferenceIds = ['cgi-38', 'cgi-209', 'cgi-219', 'boi-is-liq-10', 'boi-is-liq-20'];
+    const comptablesSocietesReferenceIds = listLegalReferencesForSetting('comptables-societes').map(
+      (reference) => reference.id,
+    );
+
+    expect(comptablesSocietesReferenceIds).toEqual(expect.arrayContaining(isReferenceIds));
+
+    for (const referenceId of isReferenceIds) {
+      expect(getLegalReference(referenceId).relatedSettings).toEqual(['comptables-societes']);
+    }
   });
 
   it('centralise les domaines institutionnels prévoyance', () => {

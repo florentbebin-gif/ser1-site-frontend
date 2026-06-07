@@ -130,7 +130,8 @@ Il n'existe pas aujourd'hui de simulateur "prelevements sociaux" autonome. Les p
 
 ### Ou cela se pilote
 
-- `settings/impots` pour les baremes fiscaux et DMTG
+- `settings/impots` pour les barèmes IR, PFU part IR, CEHR/CDHR et IFI
+- `settings/comptables-societes` pour l'IS et les paramètres société
 - `settings/prelevements` pour les PS patrimoine, retraites et seuils
 
 ### Attestation des valeurs

@@ -100,7 +100,7 @@ Commande : `npm run check:fiscal-hardcode` (ou inclus dans `npm run check`).
 
 **Si une valeur légale change au PLF** (ex: abattement 100 000 € → 120 000 €) :
 
-1. Mettre à jour la valeur dans `settingsDefaults.ts` (défaut code) ET dans Supabase via la page settings concernée (`/settings/impots`, `/settings/prelevements` ou `/settings/dmtg-succession`).
+1. Mettre à jour la valeur dans `settingsDefaults.ts` (défaut code) ET dans Supabase via la page settings concernée (`/settings/impots`, `/settings/comptables-societes`, `/settings/prelevements` ou `/settings/dmtg-succession`).
 2. Si le pattern `FORBIDDEN_VALUES` dans `check-no-hardcoded-fiscal-values.mjs` référence l'ancienne valeur, mettre à jour le pattern pour correspondre à la nouvelle valeur légale.
 
 ### Sous-step : `check:raw-fiscal-usage`
@@ -620,7 +620,7 @@ Au chargement d'un fichier `.ser1` sauvegardé avec le schéma v4, l'app compare
 ### Que faire
 
 1. **Warning seul (notification)** → les résultats affichés sont calculés avec les paramètres fiscaux courants (post-update). Recalculer et re-sauvegarder le dossier pour remettre en cohérence l'identité fiscale stockée.
-2. **Vérifier les paramètres courants** : `/settings/impots`, `/settings/prelevements` et `/settings/dmtg-succession`.
+2. **Vérifier les paramètres courants** : `/settings/impots`, `/settings/comptables-societes`, `/settings/prelevements` et `/settings/dmtg-succession`.
 3. **Si recalcul impossible** (dossier archivé) : noter la date de sauvegarde et les paramètres fiscaux en vigueur à cette date pour toute comparaison.
 
 ### Debug
@@ -697,7 +697,13 @@ Procédure à suivre chaque année (PLF, BOFiP, BOSS…). Aucune compétence tec
 ### Étape 1 — Mettre à jour les paramètres Impôts
 
 1. Aller sur `/settings/impots`.
-2. Vérifier et corriger : barème IR, PFU part IR, CEHR, IS.
+2. Vérifier et corriger : barème IR, PFU part IR, CEHR/CDHR, IFI.
+3. Enregistrer.
+
+### Étape 1 bis — Mettre à jour les paramètres Comptables & sociétés
+
+1. Aller sur `/settings/comptables-societes`.
+2. Vérifier et corriger : taux IS, seuil du taux réduit, régime mère-fille, déductibilité CCA/dividendes.
 3. Enregistrer.
 
 ### Étape 2 — Mettre à jour les Prélèvements sociaux
@@ -740,8 +746,8 @@ npm run audit:settings-references -- --stale
 npm run audit:settings-references -- --stale --with-db
 ```
 
-`check:settings-references` est branché dans `check:static`. Les 5 surfaces
-`/settings/impots`, `/settings/prelevements`, `/settings/base-contrat`,
+`check:settings-references` est branché dans `check:static`. Les 6 surfaces
+`/settings/impots`, `/settings/comptables-societes`, `/settings/prelevements`, `/settings/base-contrat`,
 `/settings/dmtg-succession` et `/settings/prevoyance-regimes` doivent rester à
 `coverage.byPage[*].expectedDefined = true`, `complete = true`, `coverage.isExhaustive = true` et
 zéro dette muette. Dans le scénario 2027, `npm run audit:settings-references -- --stale --with-db`

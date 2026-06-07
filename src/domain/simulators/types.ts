@@ -11,6 +11,20 @@ export type SimulatorLifecycle =
 export type SimulatorSpace = 'foyer' | 'societe';
 export type SimulatorTab = 'comprendre' | 'piloter' | 'proteger';
 export type SimulatorModeVisibility = 'simplifie' | 'expert' | 'internal';
+export type SimulatorDomainTag = 'foyer' | 'societe' | 'immobilier' | 'placements' | 'transmission';
+export type SimulatorIntentTag =
+  | 'audit'
+  | 'fiscalite'
+  | 'retraite'
+  | 'investissement'
+  | 'immobilier'
+  | 'placements'
+  | 'societe'
+  | 'cession'
+  | 'transmission'
+  | 'prevoyance'
+  | 'credit';
+export type SimulatorTag = SimulatorDomainTag | SimulatorIntentTag;
 
 export type FieldProvenance =
   | 'manual'
@@ -51,6 +65,7 @@ export interface SimulatorDefinition {
   testScenarios: string[];
   contextPolicy: SimulatorContextPolicy;
   subtypes?: string[];
+  tags: SimulatorTag[];
   lifecycle: SimulatorLifecycle;
   visibility: SimulatorModeVisibility;
   engine?: string;

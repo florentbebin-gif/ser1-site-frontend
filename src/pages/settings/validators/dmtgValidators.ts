@@ -251,7 +251,7 @@ export function isValid(...errorObjects: Record<string, string>[]): boolean {
 }
 
 /**
- * Valide les paramètres impôts (incomeTax + pfu + cehr + cdhr + corporateTax).
+ * Valide les paramètres impôts (incomeTax + pfu + cehr + cdhr + ifi).
  * @param {Object} settings - contenu de tax_settings (sans dmtg)
  * @returns {Object} errors par chemin
  */
@@ -259,7 +259,7 @@ export function validateImpotsSettings(
   settings: DeepPartial<typeof DEFAULT_TAX_SETTINGS> | null | undefined,
 ): Record<string, string> {
   const errors: Record<string, string> = {};
-  const { incomeTax, pfu, cehr, cdhr, corporateTax } = settings || {};
+  const { incomeTax, pfu, cehr, cdhr, ifi } = settings || {};
   const incomeTaxPeriods: Array<'scaleCurrent' | 'scalePrevious'> = [
     'scaleCurrent',
     'scalePrevious',
@@ -268,9 +268,6 @@ export function validateImpotsSettings(
   const domZones: Array<'gmr' | 'guyane'> = ['gmr', 'guyane'];
   const pfuKeys: Array<'rateIR'> = ['rateIR'];
   const cehrGroups: Array<'single' | 'couple'> = ['single', 'couple'];
-  const corporateKeys: Array<
-    'normalRate' | 'reducedRate' | 'maxDeductibleCcaInterestRate' | 'dividendsAbatementPct'
-  > = ['normalRate', 'reducedRate', 'maxDeductibleCcaInterestRate', 'dividendsAbatementPct'];
 
   // Barèmes IR (scaleCurrent, scalePrevious) — tranches ordonnées + taux 0-100
   for (const period of incomeTaxPeriods) {
@@ -315,11 +312,45 @@ export function validateImpotsSettings(
     }
   }
 
-  // CDHR taux minimal
+  // CDHR taux minimal et seuils
   for (const period of yearPeriods) {
     const rateErr = validatePercent(cdhr?.[period]?.minEffectiveRate);
     if (rateErr) errors[`cdhr.${period}.minEffectiveRate`] = rateErr;
+    const singleThresholdErr = validatePositive(cdhr?.[period]?.thresholdSingle);
+    if (singleThresholdErr) errors[`cdhr.${period}.thresholdSingle`] = singleThresholdErr;
+    const coupleThresholdErr = validatePositive(cdhr?.[period]?.thresholdCouple);
+    if (coupleThresholdErr) errors[`cdhr.${period}.thresholdCouple`] = coupleThresholdErr;
   }
+
+  // IFI : seuil, abattement résidence principale et barème courant
+  const ifiCurrent = ifi?.current;
+  const ifiThresholdErr = validatePositive(ifiCurrent?.threshold);
+  if (ifiThresholdErr) errors['ifi.current.threshold'] = ifiThresholdErr;
+  const ifiResidenceErr = validatePercent(ifiCurrent?.residencePrincipaleAbattementRate);
+  if (ifiResidenceErr) {
+    errors['ifi.current.residencePrincipaleAbattementRate'] = ifiResidenceErr;
+  }
+  const ifiScaleErrors = validateScaleOrdered(ifiCurrent?.scale ?? []);
+  for (const se of ifiScaleErrors) {
+    errors[`ifi.current.scale[${se.index}].${se.field}`] = se.message;
+  }
+
+  return errors;
+}
+
+/**
+ * Valide les paramètres Comptables & sociétés (corporateTax).
+ * @param {Object} corporateTax - section corporateTax de tax_settings
+ * @returns {Object} errors par chemin
+ */
+export function validateCorporateTaxSettings(
+  corporateTax: DeepPartial<typeof DEFAULT_TAX_SETTINGS.corporateTax> | null | undefined,
+): Record<string, string> {
+  const errors: Record<string, string> = {};
+  const yearPeriods: Array<'current' | 'previous'> = ['current', 'previous'];
+  const corporateKeys: Array<
+    'normalRate' | 'reducedRate' | 'maxDeductibleCcaInterestRate' | 'dividendsAbatementPct'
+  > = ['normalRate', 'reducedRate', 'maxDeductibleCcaInterestRate', 'dividendsAbatementPct'];
 
   // Impôt sur les sociétés taux
   for (const period of yearPeriods) {
@@ -327,6 +358,8 @@ export function validateImpotsSettings(
       const rateErr = validatePercent(corporateTax?.[period]?.[key]);
       if (rateErr) errors[`corporateTax.${period}.${key}`] = rateErr;
     }
+    const thresholdErr = validatePositive(corporateTax?.[period]?.reducedThreshold);
+    if (thresholdErr) errors[`corporateTax.${period}.reducedThreshold`] = thresholdErr;
   }
 
   // Quote-part frais et charges régime mère-fille (standard ≥ groupe, [0–100])
