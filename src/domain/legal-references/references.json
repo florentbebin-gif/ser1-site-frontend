@@ -732,6 +732,18 @@
     "lastCheckedAt": "2026-06-06"
   },
   {
+    "id": "urssaf-dividendes-tns-cotisations-sociales",
+    "label": "URSSAF mon-entreprise — dividendes TNS soumis aux cotisations sociales",
+    "sourceType": "Autre source officielle",
+    "officialUrl": "https://mon-entreprise.urssaf.fr/documentation/modele-ti/ind%C3%A9pendant/dividendes/soumis-%C3%A0-cotisations-sociales",
+    "articleOrSection": "Indépendant — dividendes soumis à cotisations sociales",
+    "scope": "Assujettissement social de la part des dividendes TNS excédant le seuil de capital social retenu par le modèle URSSAF.",
+    "volatility": "lawChange",
+    "relatedSimulatorIds": ["tresorerie-societe"],
+    "relatedSettings": ["prelevements"],
+    "lastCheckedAt": "2026-06-08"
+  },
+  {
     "id": "css-l136-6",
     "label": "Code de la sécurité sociale art. L136-6 — revenus du patrimoine",
     "sourceType": "Code de la sécurité sociale",

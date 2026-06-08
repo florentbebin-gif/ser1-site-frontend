@@ -1,6 +1,4 @@
 /**
- * settingsDefaults.ts
- *
  * Source unique de vérité pour les valeurs par défaut des trois tables de paramètres :
  *   - tax_settings   → DEFAULT_TAX_SETTINGS
  *   - ps_settings    → DEFAULT_PS_SETTINGS
@@ -13,6 +11,7 @@
  */
 
 import type { FiscalitySettingsV2 } from '../utils/cache/fiscalitySettings';
+import { DEFAULT_SOCIAL_DIRIGEANT_SETTINGS } from './socialDirigeantDefaults';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // DEFAULT_TAX_SETTINGS
@@ -132,7 +131,6 @@ export const DEFAULT_TAX_SETTINGS = {
       reducedThreshold: 42500,
       motherDaughterQpfc: { standard: 5, group: 1 },
       participationDisposalQpfcPct: 12,
-      tnsDividendBasePct: 10,
       maxDeductibleCcaInterestRate: 4.55,
       dividendsAbatementPct: 40,
     },
@@ -142,7 +140,6 @@ export const DEFAULT_TAX_SETTINGS = {
       reducedThreshold: 42500,
       motherDaughterQpfc: { standard: 5, group: 1 },
       participationDisposalQpfcPct: 12,
-      tnsDividendBasePct: 10,
       maxDeductibleCcaInterestRate: 5.75,
       dividendsAbatementPct: 40,
     },
@@ -365,6 +362,8 @@ export const DEFAULT_PS_SETTINGS = {
       },
     },
   },
+
+  socialDirigeant: DEFAULT_SOCIAL_DIRIGEANT_SETTINGS,
 };
 
 // ─────────────────────────────────────────────────────────────────────────────

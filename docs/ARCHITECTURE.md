@@ -194,6 +194,11 @@ Toute clé doit exister dans `SETTINGS_REGISTRY`. Les simulateurs `active`, `hub
 peuvent pas déclarer de consommation d'un setting `planned`; les consommateurs futurs restent listés
 dans `SETTINGS_REGISTRY.consumerSimulatorIds`.
 
+Cas F4d : `social-dirigeant.charges-sociales` est `partial`. Seul le seuil social des dividendes
+TNS est sourcé, éditable sur `/settings/prelevements` et consommé par `tresorerie-societe`.
+Rémunération TNS, rémunération assimilé salarié, tranches TA/TB/TC et Madelin restent à compléter
+avant tout passage `ready`.
+
 Garde-fous :
 
 - `npm run check:settings-registry` valide familles, propriétaires, claims settings, consommateurs

@@ -51,9 +51,11 @@ describe('settings-registry', () => {
   it('conserve les paramètres planned comme inventaire non éditable', () => {
     const planned = listSettingsByStatus('planned');
 
+    expect(planned.map((setting) => setting.key)).not.toContain(
+      'social-dirigeant.charges-sociales',
+    );
     expect(planned.map((setting) => setting.key)).toEqual(
       expect.arrayContaining([
-        'social-dirigeant.charges-sociales',
         'social-dirigeant.puma-csm',
         'retraite-prevoyance.validation-retraite-600-smic',
         'immobilier.pv-immobilieres.abattements-duree',
@@ -79,6 +81,27 @@ describe('settings-registry', () => {
     expect(plannedWithValues, 'planned avec valeur exposée').toEqual([]);
     expect(plannedWithReadyMillesime, 'planned avec millésime prêt').toEqual([]);
     expect(plannedWithoutReference, 'planned sans référence à compléter').toEqual([]);
+  });
+
+  it('déclare les charges sociales dirigeant comme pack partiel sourcé et consommé', () => {
+    const setting = getSettingsRegistryEntry('social-dirigeant.charges-sociales');
+
+    expect(setting.status).toBe('partial');
+    expect(setting.defaultValue).toEqual({
+      kind: 'settings-default',
+      table: 'ps_settings',
+      path: 'socialDirigeant.current',
+    });
+    expect(setting.currentValue).toEqual({
+      kind: 'supabase-jsonb',
+      table: 'ps_settings',
+      path: 'socialDirigeant.current',
+    });
+    expect(setting.source.settingsReferenceClaimKeys).toEqual(['social-dirigeant-dividendes-tns']);
+    expect(setting.consumerSimulatorIds).toEqual(
+      expect.arrayContaining(['tresorerie-societe', 'remuneration', 'sortie-capitaux']),
+    );
+    expect(setting.statusReason).toContain('TA/TB/TC');
   });
 
   it('chaîne les paramètres prêts aux settings-references des pages propriétaires', () => {

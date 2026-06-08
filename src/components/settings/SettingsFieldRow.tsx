@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useId } from 'react';
 import { numberOrEmpty } from './settingsHelpers';
 
 type SettingsFieldValue = string | number | null | undefined;
@@ -25,6 +25,7 @@ export default function SettingsFieldRow({
   disabled = false,
 }: SettingsFieldRowProps): React.ReactElement {
   const pathArray = Array.isArray(path) ? path : [path];
+  const inputId = useId();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
     const raw = e.target.value;
@@ -37,8 +38,9 @@ export default function SettingsFieldRow({
 
   return (
     <div className={`settings-field-row${type === 'text' ? ' settings-field-row--text' : ''}`}>
-      <label>{label}</label>
+      <label htmlFor={inputId}>{label}</label>
       <input
+        id={inputId}
         type={type}
         step={step}
         value={displayValue}

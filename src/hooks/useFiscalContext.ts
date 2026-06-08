@@ -118,6 +118,10 @@ export interface FiscalContext {
   /** Paramètres CDHR normalisés — seuils foyer et taux effectif minimal. */
   cdhr: typeof DEFAULT_TAX_SETTINGS.cdhr;
 
+  // ── Charges sociales dirigeant ───────────────────────────────────────────
+  /** Paramètres sociaux dirigeant normalisés depuis ps_settings. */
+  socialDirigeant: typeof DEFAULT_PS_SETTINGS.socialDirigeant;
+
   // ── PASS (historique plafond sécurité sociale) ──────────────────────────────
   /** Historique PASS par année (ex: { 2024: 46368, 2025: 47100 }) */
   passHistoryByYear: Record<number, number>;
@@ -159,6 +163,40 @@ function resolveRetirementPsDefault(ps: PsSettings): number {
   return (
     ps?.retirement?.current?.brackets ?? DEFAULT_PS_SETTINGS.retirement.current.brackets
   ).reduce((maxRate, bracket) => Math.max(maxRate, bracket.totalRate ?? 0), 0);
+}
+
+function resolveSocialDirigeant(ps: PsSettings): typeof DEFAULT_PS_SETTINGS.socialDirigeant {
+  const defaults = DEFAULT_PS_SETTINGS.socialDirigeant;
+  const current = ps?.socialDirigeant?.current;
+
+  return {
+    current: {
+      ...defaults.current,
+      ...current,
+      remuneration: {
+        tns: {
+          ...defaults.current.remuneration.tns,
+          ...current?.remuneration?.tns,
+        },
+        assimileSalarie: {
+          ...defaults.current.remuneration.assimileSalarie,
+          ...current?.remuneration?.assimileSalarie,
+        },
+      },
+      dividends: {
+        ...defaults.current.dividends,
+        ...current?.dividends,
+      },
+      passTranches: {
+        ...defaults.current.passTranches,
+        ...current?.passTranches,
+      },
+      madelin: {
+        ...defaults.current.madelin,
+        ...current?.madelin,
+      },
+    },
+  };
 }
 
 // ─── Normalisation ────────────────────────────────────────────────────────────
@@ -279,6 +317,9 @@ export function buildFiscalContext(
         ...tax?.cdhr?.previous,
       },
     },
+
+    // Charges sociales dirigeant
+    socialDirigeant: resolveSocialDirigeant(ps),
 
     // PASS
     passHistoryByYear: passHistory ?? DEFAULT_PASS_HISTORY,

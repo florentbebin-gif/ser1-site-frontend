@@ -102,10 +102,19 @@ export function collectObjectLiteralKeys(expression, constants) {
 }
 
 export function loadSettingsDefaults(root) {
-  const defaultsPath = path.join(root, 'src', 'constants', 'settingsDefaults.ts');
-  const source = fs.readFileSync(defaultsPath, 'utf8');
-  const sourceFile = ts.createSourceFile(defaultsPath, source, ts.ScriptTarget.Latest, true);
-  return collectTopLevelConstants(sourceFile);
+  const constants = new Map();
+
+  for (const constantsFileName of ['socialDirigeantDefaults.ts', 'settingsDefaults.ts']) {
+    const constantsPath = path.join(root, 'src', 'constants', constantsFileName);
+    if (!fs.existsSync(constantsPath)) continue;
+    const source = fs.readFileSync(constantsPath, 'utf8');
+    const sourceFile = ts.createSourceFile(constantsPath, source, ts.ScriptTarget.Latest, true);
+    for (const [name, initializer] of collectTopLevelConstants(sourceFile)) {
+      constants.set(name, initializer);
+    }
+  }
+
+  return constants;
 }
 
 export function collectCatalogProductIds(root) {
@@ -356,23 +365,23 @@ function compileBaseContratRuntime(root) {
     fs.writeFileSync(outFile, outputText);
   }
 
-  const settingsDefaultsPath = path.join(root, 'src', 'constants', 'settingsDefaults.ts');
-  const settingsDefaultsCompiled = ts.transpileModule(
-    fs.readFileSync(settingsDefaultsPath, 'utf8'),
-    {
-      fileName: settingsDefaultsPath,
+  for (const constantsFileName of ['settingsDefaults.ts', 'socialDirigeantDefaults.ts']) {
+    const constantsPath = path.join(root, 'src', 'constants', constantsFileName);
+    if (!fs.existsSync(constantsPath)) continue;
+    const constantsCompiled = ts.transpileModule(fs.readFileSync(constantsPath, 'utf8'), {
+      fileName: constantsPath,
       compilerOptions: {
         module: ts.ModuleKind.CommonJS,
         target: ts.ScriptTarget.ES2020,
         esModuleInterop: true,
         importsNotUsedAsValues: ts.ImportsNotUsedAsValues.Remove,
       },
-    },
-  );
-  fs.writeFileSync(
-    path.join(constantsDir, 'settingsDefaults.js'),
-    settingsDefaultsCompiled.outputText,
-  );
+    });
+    fs.writeFileSync(
+      path.join(constantsDir, constantsFileName).replace(/\.ts$/, '.js'),
+      constantsCompiled.outputText,
+    );
+  }
 
   return runtimeDir;
 }

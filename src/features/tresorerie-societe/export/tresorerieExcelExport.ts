@@ -382,8 +382,8 @@ function buildHypothesesSheet(): XlsxSheet {
     ],
     [sec('TNS'), sec('')],
     [
-      txt('Seuil social V1 : capital social + primes + CCA TNS de début d’exercice'),
-      txt('CSS L136-3 / R131-7'),
+      txt('Seuil social dividendes TNS issu des Settings prélèvements'),
+      txt('URSSAF mon-entreprise'),
     ],
     [
       txt('Le taux de charges sociales TNS reste une saisie manuelle'),

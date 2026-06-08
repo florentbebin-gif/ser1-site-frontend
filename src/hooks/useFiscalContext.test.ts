@@ -84,4 +84,31 @@ describe('buildFiscalContext', () => {
     );
     expect(context.cdhr.previous).toEqual(DEFAULT_TAX_SETTINGS.cdhr.previous);
   });
+
+  it('normalise les charges sociales dirigeant avec fallback profond ps_settings', () => {
+    const psSettings = {
+      ...DEFAULT_PS_SETTINGS,
+      socialDirigeant: {
+        current: {
+          dividends: {
+            tnsSocialBasePct: 12,
+          },
+        },
+      },
+    } as unknown as typeof DEFAULT_PS_SETTINGS;
+
+    const context = buildFiscalContext(
+      DEFAULT_TAX_SETTINGS,
+      psSettings,
+      DEFAULT_FISCALITY_SETTINGS,
+    );
+
+    expect(context.socialDirigeant.current.dividends.tnsSocialBasePct).toBe(12);
+    expect(context.socialDirigeant.current.passTranches).toEqual(
+      DEFAULT_PS_SETTINGS.socialDirigeant.current.passTranches,
+    );
+    expect(context.socialDirigeant.current.remuneration).toEqual(
+      DEFAULT_PS_SETTINGS.socialDirigeant.current.remuneration,
+    );
+  });
 });

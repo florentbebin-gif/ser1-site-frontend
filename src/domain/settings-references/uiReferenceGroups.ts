@@ -92,6 +92,14 @@ export const PRELEVEMENTS_SEUILS_REF_IDS = [
   'css-l136-8',
 ] as const satisfies readonly LegalReferenceId[];
 
+export const PRELEVEMENTS_SOCIAL_DIRIGEANT_CLAIM_KEYS = [
+  'social-dirigeant-dividendes-tns',
+] as const;
+
+export const PRELEVEMENTS_SOCIAL_DIRIGEANT_REF_IDS = [
+  'urssaf-dividendes-tns-cotisations-sociales',
+] as const satisfies readonly LegalReferenceId[];
+
 export const DMTG_BAREMES_BLOCK_CLAIM_KEYS = ['dmtg-fiscal-values-current'] as const;
 
 export const DMTG_BAREMES_BLOCK_REF_IDS = [
@@ -141,6 +149,10 @@ export const SETTINGS_UI_REFERENCE_GROUPS = [
   {
     claimKeys: PRELEVEMENTS_SEUILS_CLAIM_KEYS,
     refIds: PRELEVEMENTS_SEUILS_REF_IDS,
+  },
+  {
+    claimKeys: PRELEVEMENTS_SOCIAL_DIRIGEANT_CLAIM_KEYS,
+    refIds: PRELEVEMENTS_SOCIAL_DIRIGEANT_REF_IDS,
   },
   {
     claimKeys: DMTG_BAREMES_BLOCK_CLAIM_KEYS,

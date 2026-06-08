@@ -49,8 +49,9 @@ function makeFiscalContext(overrides: Partial<FiscalContext>): FiscalContext {
     passHistoryByYear: { 2024: 46368, 2025: 47100 },
     _raw_tax: DEFAULT_TAX_SETTINGS,
     _raw_ps: {} as FiscalContext['_raw_ps'],
-    _raw_fiscality: DEFAULT_FISCALITY_SETTINGS,
     ...overrides,
+    socialDirigeant: overrides.socialDirigeant ?? DEFAULT_PS_SETTINGS.socialDirigeant,
+    _raw_fiscality: overrides._raw_fiscality ?? DEFAULT_FISCALITY_SETTINGS,
   };
 }
 
