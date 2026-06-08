@@ -92,6 +92,67 @@
   border-left-color: var(--color-c3);
 }
 
+/* ─── Taxonomie des surfaces cockpit (docs/AUDIT_COCKPIT.md §10) ──────────────
+ * Quatre niveaux. « Carte » = surface élevée (premium-card / sim-card : bordure,
+ * rayon, ombre). Les trois niveaux ci-dessous sont NON élevés : utilisables DANS
+ * une carte sans empiler les ombres (aucune surface élevée dans une surface
+ * élevée). Garde-fou : check:sim-cards (interdit box-shadow sur ces classes). */
+
+/* Bande : section interne sans élévation, séparée par un filet discret. */
+.sim-band {
+  display: grid;
+  gap: var(--space-2);
+  padding: var(--space-4) 0;
+  border-top: 1px solid var(--border-subtle);
+}
+
+.sim-band--first {
+  padding-top: 0;
+  border-top: 0;
+}
+
+/* Ligne KPI : label + valeur typographiques, sans cadre. */
+.sim-kpi-line {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.sim-kpi-line__label {
+  color: var(--text-secondary);
+  font-size: var(--font-size-sm);
+}
+
+.sim-kpi-line__value {
+  color: var(--text-primary);
+  font-weight: var(--font-weight-semibold);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Micro-tuile plate : fond muted, rayon léger, sans ombre ni bordure forte. */
+.sim-tile-flat {
+  display: grid;
+  gap: var(--space-1);
+  padding: var(--space-3);
+  border-radius: var(--radius-md);
+  background: var(--surface-muted);
+}
+
+.sim-tile-flat__label {
+  color: var(--text-secondary);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  text-transform: uppercase;
+}
+
+.sim-tile-flat__value {
+  color: var(--text-primary);
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+  font-variant-numeric: tabular-nums;
+}
+
 .sim-controls-row {
   display: grid;
   grid-template-columns: minmax(0, 1.85fr) minmax(0, 1fr);
