@@ -133,7 +133,7 @@ export function DesignSystemModalPreview() {
         </article>
       </div>
 
-      <article className="settings-design-system__ui-card settings-design-system__drawer-card">
+      <article className="settings-design-system__ui-card">
         <h3>Drawer XL (/audit)</h3>
         <p className="settings-design-system__note">
           Variante de l’anatomie modale ancrée à droite : header, nav gauche optionnelle, corps,
