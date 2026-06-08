@@ -13,7 +13,10 @@ Statut : **UX-00a fige le contrat documentaire.** UX-00a-bis ajoute les contrats
 page par page. **UX-00b a verrouillé** les fondations design system de ce contrat — tokens `--viz-*`,
 découplage `--state-warning` / `--accent-signature`, taxonomie des surfaces, drawer XL canonique —
 avec leur preuve runtime dans `/settings/design-system` et les checks `css-colors` / `modal-canon` /
-`sim-cards` étendus, sans coder les pages métier `/audit`.
+`sim-cards` étendus, sans coder les pages métier `/audit`. **UX-01 a livré** l'entrée `/audit` en
+trois cartes — Synthèse dossier (complétude F1, données connues et manques), Pilotage stratégique
+(placeholder honnête `à venir`, dépendant de F6) et Objectifs — branchée en lecture sur le dossier
+F1, sans radar réel, score, patrimoine net ni scénario activable.
 
 Date de cadrage : 2026-06-07.
 
