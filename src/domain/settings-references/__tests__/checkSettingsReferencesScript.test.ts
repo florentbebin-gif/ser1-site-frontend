@@ -145,7 +145,7 @@ function completeBindings(baseBindingOverrides: Record<string, unknown> = {}) {
     }),
   );
 
-  for (let index = 0; index < 4; index += 1) {
+  for (let index = 0; index < 5; index += 1) {
     bindings.push(
       validBinding({
         pagePath: '/settings/prelevements',
@@ -155,7 +155,12 @@ function completeBindings(baseBindingOverrides: Record<string, unknown> = {}) {
         target: {
           kind: 'settings-default',
           table: 'ps_settings',
-          path: index === 3 ? 'retirementThresholds.current' : 'patrimony.current',
+          path:
+            index === 4
+              ? 'socialDirigeant.current.dividends.tnsSocialBasePct'
+              : index === 3
+                ? 'retirementThresholds.current'
+                : 'patrimony.current',
         },
       }),
     );
@@ -249,6 +254,7 @@ export const DEFAULT_TAX_SETTINGS = {
 export const DEFAULT_PS_SETTINGS = {
   patrimony: { current: {} },
   retirementThresholds: { current: {} },
+  socialDirigeant: { current: { dividends: { tnsSocialBasePct: 10 } } },
 };
 export const DEFAULT_FISCALITY_SETTINGS = {
   products: [],
@@ -367,7 +373,7 @@ describe('check-settings-references', () => {
       '/settings/comptables-societes': 1,
       '/settings/dmtg-succession': 7,
       '/settings/impots': 10,
-      '/settings/prelevements': 4,
+      '/settings/prelevements': 5,
       '/settings/prevoyance-regimes': 69,
     });
     expect(report.coverage.byPage['/settings/impots']).toEqual({

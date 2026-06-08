@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { DEFAULT_TAX_SETTINGS } from '@/constants/settingsDefaults';
-import { validateCorporateTaxSettings, validateImpotsSettings } from '../validators/dmtgValidators';
+import { DEFAULT_PS_SETTINGS, DEFAULT_TAX_SETTINGS } from '@/constants/settingsDefaults';
+import {
+  validateCorporateTaxSettings,
+  validateImpotsSettings,
+  validatePrelevementsSettings,
+} from '../validators/dmtgValidators';
 
 describe('validateImpotsSettings', () => {
   it('bloque les seuils CDHR et IFI invalides', () => {
@@ -52,5 +56,18 @@ describe('validateCorporateTaxSettings', () => {
 
     expect(errors['corporateTax.current.reducedThreshold']).toBe('La valeur doit être positive.');
     expect(errors['corporateTax.previous.reducedThreshold']).toBe('La valeur doit être positive.');
+  });
+});
+
+describe('validatePrelevementsSettings', () => {
+  it('bloque les charges sociales dirigeant incohérentes', () => {
+    const settings = structuredClone(DEFAULT_PS_SETTINGS);
+    settings.socialDirigeant.current.dividends.tnsSocialBasePct = 101;
+
+    const errors = validatePrelevementsSettings(settings);
+
+    expect(errors['socialDirigeant.current.dividends.tnsSocialBasePct']).toBe(
+      'Le taux doit être entre 0 et 100.',
+    );
   });
 });

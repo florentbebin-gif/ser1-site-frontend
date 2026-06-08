@@ -42,6 +42,14 @@ interface AvDecesConfig {
   };
 }
 
+interface SocialDirigeantConfig {
+  current?: {
+    dividends?: {
+      tnsSocialBasePct?: number | string | null;
+    };
+  };
+}
+
 type DeepPartial<T> = {
   [K in keyof T]?: T[K] extends Array<infer U>
     ? Array<DeepPartial<U>>
@@ -383,7 +391,7 @@ export function validatePrelevementsSettings(
   settings: DeepPartial<typeof DEFAULT_PS_SETTINGS> | null | undefined,
 ): Record<string, string> {
   const errors: Record<string, string> = {};
-  const { patrimony, retirement } = settings || {};
+  const { patrimony, retirement, socialDirigeant } = settings || {};
   const yearPeriods: Array<'current' | 'previous'> = ['current', 'previous'];
   const patrimonyKeys: Array<'generalRate' | 'exceptionRate' | 'csgDeductibleRate'> = [
     'generalRate',
@@ -413,6 +421,12 @@ export function validatePrelevementsSettings(
         if (rateErr) errors[`retirement.${period}.brackets[${i}].${key}`] = rateErr;
       }
     }
+  }
+
+  const socialConfig = socialDirigeant as SocialDirigeantConfig | undefined;
+  const tnsDividendBaseErr = validatePercent(socialConfig?.current?.dividends?.tnsSocialBasePct);
+  if (tnsDividendBaseErr) {
+    errors['socialDirigeant.current.dividends.tnsSocialBasePct'] = tnsDividendBaseErr;
   }
 
   return errors;

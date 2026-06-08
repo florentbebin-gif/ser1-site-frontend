@@ -14,6 +14,7 @@ import { validatePrelevementsSettings, isValid } from './validators/dmtgValidato
 import PrelevementsPatrimoineSection from './Prelevements/PrelevementsPatrimoineSection';
 import PrelevementsRetraitesSection from './Prelevements/PrelevementsRetraitesSection';
 import PrelevementsSeuilsSection from './Prelevements/PrelevementsSeuilsSection';
+import PrelevementsSocialDirigeantSection from './Prelevements/PrelevementsSocialDirigeantSection';
 
 type DeepFormValue<T> = T extends number
   ? number | null
@@ -120,6 +121,34 @@ export default function SettingsPrelevements() {
             retirementThresholds: {
               ...prev.retirementThresholds,
               ...nextData.retirementThresholds,
+            },
+            socialDirigeant: {
+              current: {
+                ...prev.socialDirigeant.current,
+                ...nextData.socialDirigeant?.current,
+                remuneration: {
+                  tns: {
+                    ...prev.socialDirigeant.current.remuneration.tns,
+                    ...nextData.socialDirigeant?.current?.remuneration?.tns,
+                  },
+                  assimileSalarie: {
+                    ...prev.socialDirigeant.current.remuneration.assimileSalarie,
+                    ...nextData.socialDirigeant?.current?.remuneration?.assimileSalarie,
+                  },
+                },
+                dividends: {
+                  ...prev.socialDirigeant.current.dividends,
+                  ...nextData.socialDirigeant?.current?.dividends,
+                },
+                passTranches: {
+                  ...prev.socialDirigeant.current.passTranches,
+                  ...nextData.socialDirigeant?.current?.passTranches,
+                },
+                madelin: {
+                  ...prev.socialDirigeant.current.madelin,
+                  ...nextData.socialDirigeant?.current?.madelin,
+                },
+              },
             },
           }));
         } else if (psErr && psErr.code !== 'PGRST116') {
@@ -248,7 +277,7 @@ export default function SettingsPrelevements() {
     }
   };
 
-  const { patrimony, retirement, retirementThresholds } = settings;
+  const { patrimony, retirement, retirementThresholds, socialDirigeant } = settings;
 
   return (
     <div className="settings-stack settings-stack--offset">
@@ -271,6 +300,14 @@ export default function SettingsPrelevements() {
               onToggle={() => setOpenSection(openSection === 'pass' ? null : 'pass')}
               onChange={passHistory.handleChange}
               isAdmin={isAdmin}
+            />
+
+            <PrelevementsSocialDirigeantSection
+              socialDirigeant={socialDirigeant}
+              updateField={updateField}
+              isAdmin={isAdmin}
+              openSection={openSection}
+              setOpenSection={setOpenSection}
             />
 
             <PrelevementsPatrimoineSection

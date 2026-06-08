@@ -1,9 +1,11 @@
 import { SETTINGS_CORE_REGISTRY } from './entriesCore';
 import { SETTINGS_PLANNED_REGISTRY } from './entriesPlanned';
+import { SETTINGS_SOCIAL_DIRIGEANT_REGISTRY } from './entriesSocialDirigeant';
 import type { SettingsOwnerPagePath, SettingsRegistryEntry, SettingsRegistryStatus } from './types';
 
 export const SETTINGS_REGISTRY = [
   ...SETTINGS_CORE_REGISTRY,
+  ...SETTINGS_SOCIAL_DIRIGEANT_REGISTRY,
   ...SETTINGS_PLANNED_REGISTRY,
 ] as const satisfies readonly SettingsRegistryEntry[];
 

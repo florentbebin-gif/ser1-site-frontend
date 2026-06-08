@@ -568,7 +568,7 @@ Source de vérité runtime : `TresoInputsV6`. Les formats V1→V5 restent confin
 
 - L’intégration fiscale est une estimation déclarative agrégée, non une validation juridique.
 - Le taux réduit d’IS est appliqué seulement si l’option société l’autorise ; sinon toute la base IS passe au taux normal.
-- Les charges sociales TNS sur dividendes utilisent un taux manuel et sont payées par la société en N+1.
+- Les charges sociales TNS sur dividendes utilisent le seuil d'assujettissement centralisé dans `ps_settings.socialDirigeant` via `useFiscalContext`. Le taux de charges sociales reste une saisie de scénario tant que le moteur rémunération dirigeant n'est pas livré.
 - La matrice investit la trésorerie disponible en fin d’exercice ; aucun revenu n’est produit sur l’exercice écoulé.
 - Les exports consomment les lignes de projection sans recalcul métier.
 

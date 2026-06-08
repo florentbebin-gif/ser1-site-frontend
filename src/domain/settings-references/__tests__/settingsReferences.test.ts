@@ -17,4 +17,20 @@ describe('settings-references', () => {
       'corporate-tax-current',
     ]);
   });
+
+  it('chaîne les claims charges sociales dirigeant de la page prélèvements', () => {
+    const prelevementsBindings = listSettingsReferenceBindings('/settings/prelevements');
+
+    expect(prelevementsBindings.map((binding) => binding.claimKey)).toEqual(
+      expect.arrayContaining(['social-dirigeant-dividendes-tns']),
+    );
+    expect(
+      prelevementsBindings.find((binding) => binding.claimKey === 'social-dirigeant-dividendes-tns')
+        ?.target,
+    ).toEqual({
+      kind: 'settings-default',
+      table: 'ps_settings',
+      path: 'socialDirigeant.current.dividends.tnsSocialBasePct',
+    });
+  });
 });

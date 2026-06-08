@@ -4,16 +4,19 @@ import type { TresoFiscalParams } from '@/engine/tresorerie/types';
 
 export function buildTresoFiscalParamsFromContext(fiscalContext: FiscalContext): TresoFiscalParams {
   const rawTax = fiscalContext._raw_tax ?? DEFAULT_TAX_SETTINGS;
-  const rawPs = fiscalContext._raw_ps ?? DEFAULT_PS_SETTINGS;
 
   const corpCurrent = rawTax?.corporateTax?.current ?? DEFAULT_TAX_SETTINGS.corporateTax.current;
   const defaultsCorp = DEFAULT_TAX_SETTINGS.corporateTax.current;
+  const socialDirigeant = fiscalContext.socialDirigeant ?? DEFAULT_PS_SETTINGS.socialDirigeant;
+  const socialDirigeantCurrent =
+    socialDirigeant.current ?? DEFAULT_PS_SETTINGS.socialDirigeant.current;
 
   const normalRate = (corpCurrent.normalRate ?? defaultsCorp.normalRate) / 100;
   const reducedRate = (corpCurrent.reducedRate ?? defaultsCorp.reducedRate) / 100;
   const reducedThreshold = corpCurrent.reducedThreshold ?? defaultsCorp.reducedThreshold;
   const tnsDividendBasePct =
-    (corpCurrent.tnsDividendBasePct ?? defaultsCorp.tnsDividendBasePct) / 100;
+    (socialDirigeantCurrent.dividends?.tnsSocialBasePct ??
+      DEFAULT_PS_SETTINGS.socialDirigeant.current.dividends.tnsSocialBasePct) / 100;
   const maxDeductibleCcaInterestRate =
     (corpCurrent.maxDeductibleCcaInterestRate ?? defaultsCorp.maxDeductibleCcaInterestRate) / 100;
   const dividendesAbattement =
@@ -27,8 +30,7 @@ export function buildTresoFiscalParamsFromContext(fiscalContext: FiscalContext):
 
   const pfuRateIR = (fiscalContext.pfuRateIR ?? DEFAULT_TAX_SETTINGS.pfu.current.rateIR) / 100;
   const psRate =
-    (rawPs?.patrimony?.current?.generalRate ?? DEFAULT_PS_SETTINGS.patrimony.current.generalRate) /
-    100;
+    (fiscalContext.psRateGeneral ?? DEFAULT_PS_SETTINGS.patrimony.current.generalRate) / 100;
 
   return {
     isNormalRate: normalRate,

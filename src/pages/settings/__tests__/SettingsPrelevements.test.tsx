@@ -147,23 +147,76 @@ describe('SettingsPrelevements', () => {
     expect(screen.getByText('Paramètres de prélèvements sociaux enregistrés.')).toBeInTheDocument();
   });
 
-  it('expose les settings sociaux planifiés sans contrôle éditable', async () => {
+  it('édite les charges sociales dirigeant sourcées dans ps_settings', async () => {
     const user = userEvent.setup();
 
     render(<SettingsPrelevements />);
 
-    await screen.findByText('Registre settings paramètres sociaux');
-    expect(screen.queryByText('Planifié')).not.toBeInTheDocument();
+    await screen.findByRole('button', { name: /Charges sociales dirigeant/i });
+    await user.click(screen.getByRole('button', { name: /Charges sociales dirigeant/i }));
 
-    await user.click(
-      screen.getByRole('button', {
-        name: /Afficher la section Registre settings paramètres sociaux/i,
-      }),
+    const section = screen.getByRole('region', { name: /Charges sociales dirigeant/i });
+    expect(within(section).getByText('Partiel')).toBeInTheDocument();
+    expect(within(section).getByText(/Rémunération TNS.*à compléter/i)).toBeInTheDocument();
+    expect(
+      within(section).getByText(/Rémunération assimilé salarié.*à compléter/i),
+    ).toBeInTheDocument();
+    expect(within(section).getByText(/Tranches TA\/TB\/TC.*à compléter/i)).toBeInTheDocument();
+
+    const dividendThresholdInput = within(section).getByLabelText(
+      'Seuil dividendes TNS soumis aux charges sociales',
     );
+    await user.clear(dividendThresholdInput);
+    await user.type(dividendThresholdInput, '12');
 
-    expect(screen.getByText('Planifié')).toBeInTheDocument();
-    expect(screen.getByText('Charges sociales dirigeant')).toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: /Charges sociales dirigeant/i })).toBeNull();
+    await user.click(screen.getByRole('button', { name: 'Enregistrer les paramètres' }));
+
+    await waitFor(() => {
+      expect(psUpsertMock).toHaveBeenCalledTimes(1);
+    });
+
+    const savedPayload = psUpsertMock.mock.calls[0]?.[0] as {
+      data: {
+        socialDirigeant: {
+          current: {
+            dividends: { tnsSocialBasePct: number };
+            remuneration: {
+              tns: { status: string };
+              assimileSalarie: { status: string };
+            };
+            passTranches: { status: string };
+          };
+        };
+      };
+    };
+    expect(savedPayload.data.socialDirigeant.current.dividends.tnsSocialBasePct).toBe(12);
+    expect(savedPayload.data.socialDirigeant.current.remuneration.tns.status).toBe('a-completer');
+    expect(savedPayload.data.socialDirigeant.current.remuneration.assimileSalarie.status).toBe(
+      'a-completer',
+    );
+    expect(savedPayload.data.socialDirigeant.current.passTranches.status).toBe('a-completer');
+  });
+
+  it('empêche la sauvegarde des charges sociales dirigeant incohérentes', async () => {
+    const user = userEvent.setup();
+
+    render(<SettingsPrelevements />);
+
+    await screen.findByRole('button', { name: /Charges sociales dirigeant/i });
+    await user.click(screen.getByRole('button', { name: /Charges sociales dirigeant/i }));
+
+    const section = screen.getByRole('region', { name: /Charges sociales dirigeant/i });
+    const dividendThresholdInput = within(section).getByLabelText(
+      'Seuil dividendes TNS soumis aux charges sociales',
+    );
+    await user.clear(dividendThresholdInput);
+    await user.type(dividendThresholdInput, '101');
+
+    expect(screen.getByRole('button', { name: 'Erreurs de validation' })).toBeDisabled();
+    expect(
+      screen.getByText(/socialDirigeant\.current\.dividends\.tnsSocialBasePct/i),
+    ).toBeInTheDocument();
+    expect(psUpsertMock).not.toHaveBeenCalled();
   });
 
   it("n'affiche pas le succès global si la sauvegarde PASS échoue", async () => {

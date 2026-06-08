@@ -152,6 +152,23 @@
     "volatility": "annual"
   },
   {
+    "pagePath": "/settings/prelevements",
+    "sectionKey": "social-dirigeant",
+    "sectionLabel": "Charges sociales dirigeant",
+    "category": "cotisations",
+    "claimKey": "social-dirigeant-dividendes-tns",
+    "claimLabel": "Seuil d'assujettissement social des dividendes TNS",
+    "target": {
+      "kind": "settings-default",
+      "table": "ps_settings",
+      "path": "socialDirigeant.current.dividends.tnsSocialBasePct"
+    },
+    "refIds": ["urssaf-dividendes-tns-cotisations-sociales"],
+    "relevanceNote": "La documentation URSSAF mon-entreprise qualifie l'assujettissement social des dividendes TNS au-delà du seuil de capital social ; le bloc ne code aucun taux caisse.",
+    "verifiedAt": "2026-06-08",
+    "volatility": "lawChange"
+  },
+  {
     "pagePath": "/settings/dmtg-succession",
     "sectionKey": "donations",
     "sectionLabel": "Donations et rapport civil",

@@ -18,7 +18,6 @@ vi.mock('@/hooks/useFiscalContext', () => ({
             normalRate: 25,
             reducedRate: 15,
             reducedThreshold: 42_500,
-            tnsDividendBasePct: 10,
             maxDeductibleCcaInterestRate: 4.55,
             dividendsAbatementPct: 40,
             motherDaughterQpfc: { standard: 5, group: 1 },
@@ -30,6 +29,17 @@ vi.mock('@/hooks/useFiscalContext', () => ({
       _raw_ps: {
         patrimony: {
           current: { generalRate: 17.2 },
+        },
+      },
+      socialDirigeant: {
+        current: {
+          remuneration: {
+            tns: { status: 'a-completer' },
+            assimileSalarie: { status: 'a-completer' },
+          },
+          dividends: { tnsSocialBasePct: 10 },
+          passTranches: { status: 'a-completer' },
+          madelin: { status: 'bloque-consommateur' },
         },
       },
     },

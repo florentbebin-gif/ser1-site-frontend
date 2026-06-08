@@ -129,23 +129,23 @@ function compileDomainRuntime() {
     fs.writeFileSync(outFile, outputText);
   }
 
-  const settingsDefaultsSource = path.join(ROOT, 'src', 'constants', 'settingsDefaults.ts');
-  const settingsDefaultsCompiled = ts.transpileModule(
-    fs.readFileSync(settingsDefaultsSource, 'utf8'),
-    {
-      fileName: settingsDefaultsSource,
+  for (const constantsFileName of ['settingsDefaults.ts', 'socialDirigeantDefaults.ts']) {
+    const constantsSource = path.join(ROOT, 'src', 'constants', constantsFileName);
+    if (!fs.existsSync(constantsSource)) continue;
+    const constantsCompiled = ts.transpileModule(fs.readFileSync(constantsSource, 'utf8'), {
+      fileName: constantsSource,
       compilerOptions: {
         module: ts.ModuleKind.CommonJS,
         target: ts.ScriptTarget.ES2020,
         esModuleInterop: true,
         importsNotUsedAsValues: ts.ImportsNotUsedAsValues.Remove,
       },
-    },
-  );
-  fs.writeFileSync(
-    path.join(RUNTIME_CONSTANTS_DIR, 'settingsDefaults.js'),
-    settingsDefaultsCompiled.outputText,
-  );
+    });
+    fs.writeFileSync(
+      path.join(RUNTIME_CONSTANTS_DIR, constantsFileName).replace(/\.ts$/, '.js'),
+      constantsCompiled.outputText,
+    );
+  }
 
   return resolvedRuntime;
 }
