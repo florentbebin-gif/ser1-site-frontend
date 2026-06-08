@@ -84,7 +84,8 @@ Décisions structurantes V2 :
 
 ## Audit cockpit (CGP-facing)
 
-Contrat produit/design complet : `docs/AUDIT_COCKPIT.md`.
+Contrat produit/design complet : `docs/AUDIT_COCKPIT.md`, section
+`Contrats d'implémentation par page /audit` pour les contrats page par page.
 
 - `/audit` est **CGP-facing** : il s'adresse au conseiller, pas au client final.
 - Une future **vue client** sera un **mode de présentation**, pas un modèle de données à introduire
@@ -92,6 +93,9 @@ Contrat produit/design complet : `docs/AUDIT_COCKPIT.md`.
   cadré.
 - Les **objectifs, contraintes, budget (synthèse), preuves (`SourceRef`) et versions de dossier** sont
   des **objets métier** du `DossierPatrimonial`, pas des artefacts UI locaux.
+- Les simulateurs disponibles restent autonomes tant que leurs adapters de contexte ne sont pas
+  livrés ; les contrats `/audit` peuvent les citer comme patterns à auditer, jamais comme sources de
+  vérité du cockpit.
 - Les **« Pistes à vérifier »** sont **déterministes** (règles `if` citant une donnée fondatrice) :
   ce n'est ni du conseil automatique, ni une recommandation produite par une IA. Wording prescriptif
   interdit (« SER1 recommande / conseille », « la meilleure stratégie est »).

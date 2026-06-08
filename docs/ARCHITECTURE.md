@@ -354,13 +354,17 @@ rg -n "APP_ROUTES\\.map" src/App.tsx
 
 ### Cockpit `/audit` — consommateur des fondations
 
-Contrat produit/design : `docs/AUDIT_COCKPIT.md`. Règles d'architecture :
+Contrat produit/design : `docs/AUDIT_COCKPIT.md`. Les contrats d'implémentation page par page y
+précisent, pour chaque page `/audit`, la fondation consommée, l'adapter attendu et les états
+`à venir` quand une fondation manque. Règles d'architecture :
 
 - `/audit` **consomme** `DossierPatrimonial`, `SourceRef`, `DossierVersion` et les futures fondations
   `F1.1` (budgetSynthese), `F2` (evidence), `F3` (graphe actifs/passifs PP/US/NP), `F5`
   (société/organigramme/bilans) et `F6` (scénarios/recommandations/activation).
 - `/audit` **ne possède aucune source de vérité propre** : il lit le dossier central via adapters et
   ne duplique pas localement foyer, patrimoine, fiscalité, objectifs ou budget.
+- Un brouillon local/session peut porter un état temporaire d'édition, mais il ne devient jamais une
+  source métier durable ni un modèle concurrent du dossier central.
 - L'**organigramme société** est un **rendu** du modèle F5, jamais une source de données parallèle.
 - Le **radar** est un **view model calculé** depuis les moteurs et les fondations, jamais un calcul
   métier caché dans l'UI ; un axe sans données reste `insuffisant`, sans valeur fabriquée.
