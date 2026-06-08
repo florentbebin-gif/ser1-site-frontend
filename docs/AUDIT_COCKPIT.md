@@ -179,6 +179,11 @@ Règles initiales (chaque piste cite sa donnée fondatrice) :
 | Foncier           | Revenus fonciers identifiés                                         | Optimiser le foncier / LMNP      |
 | Épargne salariale | Société familiale **et** membre actif                               | Étudier l'épargne salariale      |
 
+La piste Épargne salariale reste un signal déterministe “à vérifier” : elle ne devient ni calcul,
+ni recommandation, ni carte active tant que le moteur et les settings société correspondants ne sont
+pas `ready`. La page Sociétés / organigramme consomme F5 et ne possède pas ses propres règles
+société.
+
 Interdictions : aucune piste sans donnée fondatrice ; aucun verbe prescriptif ; aucune piste tirée
 d'un calcul non disponible (ex. pas de piste IFI chiffrée tant que l'IFI n'est pas calculé — seulement
 « vérifier l'assujettissement »).

@@ -199,6 +199,14 @@ TNS est sourcé, éditable sur `/settings/prelevements` et consommé par `tresor
 Rémunération TNS, rémunération assimilé salarié, tranches TA/TB/TC et Madelin restent à compléter
 avant tout passage `ready`.
 
+Le cadrage des futurs packs société est dans `docs/ROADMAP.md` § “Fiches de cadrage des packs
+settings société”. `/settings/comptables-societes` est la page propriétaire des paramètres société,
+projection comptable, règles société, valorisation et épargne salariale. `/settings/prelevements`
+reste la page propriétaire des charges sociales dirigeant et cotisations retraite. Ces pages
+consomment la chaîne standard `Supabase` -> `fiscalSettingsCache.ts` -> `useFiscalContext.ts` ->
+`settingsDefaults.ts` dès qu'une valeur devient prête ; le registry ne stocke pas de valeurs
+révisables inventées et un setting `planned` ne peut pas être consommé par un simulateur actif.
+
 Garde-fous :
 
 - `npm run check:settings-registry` valide familles, propriétaires, claims settings, consommateurs

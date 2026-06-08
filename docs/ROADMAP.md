@@ -1105,56 +1105,365 @@ pas de l'inventaire `planned` à un contrat prêt, sourcé et consommé par la c
 
 Règle (principe 16) : **enrichir une page existante** avant d'en créer une nouvelle.
 
-### Pages settings cibles (décision actualisée 2026-06-07)
+### Pages settings cibles (décision actualisée 2026-06-08)
 
 - **Pages existantes enrichies** :
   - `settings/impots` ← IFI, CDHR, PV immobilières, revenus fonciers (micro-foncier), LMNP/LMP.
   - `settings/prelevements` ← charges sociales du dirigeant (TNS/salarié, TA/TB/TC, Madelin), cotisations retraite (barèmes de constitution des droits).
-  - `settings/dmtg-succession` ← pacte Dutreil (exonération 75 %, durées d'engagement).
-- **Nouvelles pages (2)** :
-  1. **Comptables & sociétés** : page créée avec l'IS migré. Les règles société détaillées
-     restent à enrichir avec F5.
-  2. **Épargne salariale** : future page dédiée aux règles société, participation,
-     intéressement, PPV et abondement.
+  - `settings/dmtg-succession` ← pacte Dutreil (exonération, durées d'engagement).
+  - `settings/comptables-societes` ← projection comptable, règles société, valorisation,
+    apport-cession/PV mobilières et épargne salariale.
+- **Nouvelle page déjà créée (1)** :
+  - **Comptables & sociétés** : page créée avec l'IS migré. Les règles société détaillées,
+    la projection comptable, les valorisations et l'épargne salariale restent à enrichir
+    avec F5 et les PR moteurs concernées.
+- **Décision Épargne salariale** : ne pas créer de page `/settings/epargne-salariale`.
+  L'épargne salariale est un futur accordéon / une future section de
+  `/settings/comptables-societes`, car elle dépend de la structure employeur, des effectifs,
+  de la masse salariale, du statut du dirigeant et des dispositifs collectifs.
 - **Migration réalisée** : la section **IS** (`corporateTax`) a quitté `settings/impots`
   pour **Comptables & sociétés** (déplacement, pas duplication ; chaîne
   `settingsDefaults` + `useFiscalContext` + `settings-references` reportée).
 
-**Total : 2 nouvelles pages**, tout le reste en enrichissement de pages existantes (principe 16).
+**Total : 1 nouvelle page durable déjà créée** (`/settings/comptables-societes`) ; tout le reste
+enrichit une page existante (principe 16).
 
-### État de couverture (constaté le 2026-06-07)
+### État de couverture (constaté le 2026-06-08)
 
-| Paramètre                                                                                            | Défaut        | Page Settings                  | useFiscalContext | Moteur consommateur                                                            | Action                                                                                                      |
-| ---------------------------------------------------------------------------------------------------- | ------------- | ------------------------------ | ---------------- | ------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------- |
-| Barème IR, décote, quotient, abat. 10 %, DOM                                                         | ✅            | ✅ Impôts                      | ✅               | `ir`                                                                           | —                                                                                                           |
-| PFU                                                                                                  | ✅            | ✅ Impôts                      | ✅               | `ir`, `placement`                                                              | —                                                                                                           |
-| CEHR                                                                                                 | ✅            | ✅ Impôts                      | ✅               | `ir`                                                                           | —                                                                                                           |
-| CDHR                                                                                                 | ✅            | ✅ Impôts                      | ✅               | `ir`                                                                           | Livré V2-06bis                                                                                              |
-| IS                                                                                                   | ✅            | ✅ Comptables & sociétés       | ✅               | `tresorerie-societe`, `cession-titres`                                         | Livré V2-06bis ; page à enrichir avec F5                                                                    |
-| DMTG / donation                                                                                      | ✅            | ✅ Impôts + DMTG               | ✅               | `succession`                                                                   | —                                                                                                           |
-| PS patrimoine / retraite / seuils RFR                                                                | ✅            | ✅ Prélèvements                | ✅               | `ir`, `placement`                                                              | —                                                                                                           |
-| PASS                                                                                                 | ✅            | ✅ Prélèvements                | ✅               | `per`, `retraite`                                                              | —                                                                                                           |
-| **IFI** (seuil, abatt. RP, barème)                                                                   | ✅            | ✅ Impôts                      | ✅               | `ifi`                                                                          | Livré V2-06bis ; millésimes et pilote IFI restent à traiter                                                 |
-| **PV immobilières** (abattements durée IR 22 ans / PS 30 ans)                                        | ❌            | ❌                             | ❌               | `plus-values-immobilieres`                                                     | Ajouter à `settings/impots`                                                                                 |
-| **Revenus fonciers** (micro-foncier, abattement 30 %)                                                | ❌            | ❌                             | ❌               | `revenus-fonciers`                                                             | Ajouter à `settings/impots`                                                                                 |
-| **LMNP/LMP** (seuils micro-BIC, abattements)                                                         | ❌            | ❌                             | ❌               | `lmnp-lmp`                                                                     | Ajouter à `settings/impots`                                                                                 |
-| **Pacte Dutreil** (exonération 75 %, durées d'engagement)                                            | ❌            | ❌                             | ❌               | `pacte-dutreil`                                                                | Ajouter à `settings/dmtg-succession`                                                                        |
-| **Charges sociales dirigeant** (TNS/salarié, TA/TB/TC, Madelin)                                      | ⚠️ partiel    | ✅ Prélèvements                | ✅ partiel       | `tresorerie-societe`, `remuneration`, `retraite`, `sortie-capitaux`            | F4d : seuil dividendes TNS centralisé ; rémunération, TA/TB/TC et Madelin restent à compléter avant `ready` |
-| **Cotisations retraite** (barèmes de constitution des droits)                                        | ❌            | ❌                             | ❌               | `retraite-globale`                                                             | **Ajouter un bloc à `settings/prelevements`**                                                               |
-| **Règles comptables & sociétés** (mère-fille, réserves, dividendes, formes de société, valorisation) | ⚠️ inventorié | ⚠️ Comptables & sociétés créée | ❌               | `valorisation-titres`, `projection-comptable`, `tresorerie-societe`, `holding` | Enrichir avec F5                                                                                            |
-| **Apport-cession / PV mobilières** (régime report, réemploi, abatt. durée, abatt. 500 k dirigeant)   | ⚠️ inventorié | ⚠️ Comptables & sociétés créée | ❌               | `cession-titres`, `holding`                                                    | Enrichir avec F5                                                                                            |
-| **Épargne salariale** (participation, intéressement, PPV, abondement, règles société)                | ❌            | ❌                             | ❌               | `epargne-salariale`                                                            | **Nouvelle page Épargne salariale**                                                                         |
+| Paramètre                                                                                            | Défaut        | Page Settings                                                              | useFiscalContext | Moteur consommateur                                                                                                           | Action                                                                                        |
+| ---------------------------------------------------------------------------------------------------- | ------------- | -------------------------------------------------------------------------- | ---------------- | ----------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
+| Barème IR, décote, quotient, abat. 10 %, DOM                                                         | ✅            | ✅ Impôts                                                                  | ✅               | `ir`                                                                                                                          | —                                                                                             |
+| PFU                                                                                                  | ✅            | ✅ Impôts                                                                  | ✅               | `ir`, `placement`                                                                                                             | —                                                                                             |
+| CEHR                                                                                                 | ✅            | ✅ Impôts                                                                  | ✅               | `ir`                                                                                                                          | —                                                                                             |
+| CDHR                                                                                                 | ✅            | ✅ Impôts                                                                  | ✅               | `ir`                                                                                                                          | Livré V2-06bis                                                                                |
+| IS                                                                                                   | ✅            | ✅ Comptables & sociétés                                                   | ✅               | `tresorerie-societe`, `cession-titres`                                                                                        | Livré V2-06bis ; page à enrichir avec F5                                                      |
+| DMTG / donation                                                                                      | ✅            | ✅ Impôts + DMTG                                                           | ✅               | `succession`                                                                                                                  | —                                                                                             |
+| PS patrimoine / retraite / seuils RFR                                                                | ✅            | ✅ Prélèvements                                                            | ✅               | `ir`, `placement`                                                                                                             | —                                                                                             |
+| PASS                                                                                                 | ✅            | ✅ Prélèvements                                                            | ✅               | `per`, `retraite`                                                                                                             | —                                                                                             |
+| **IFI** (seuil, abatt. RP, barème)                                                                   | ✅            | ✅ Impôts                                                                  | ✅               | `ifi`                                                                                                                         | Livré V2-06bis ; millésimes et pilote IFI restent à traiter                                   |
+| **PV immobilières** (abattements durée IR 22 ans / PS 30 ans)                                        | ❌            | ❌                                                                         | ❌               | `plus-values-immobilieres`                                                                                                    | Ajouter à `settings/impots`                                                                   |
+| **Revenus fonciers** (micro-foncier, abattement 30 %)                                                | ❌            | ❌                                                                         | ❌               | `revenus-fonciers`                                                                                                            | Ajouter à `settings/impots`                                                                   |
+| **LMNP/LMP** (seuils micro-BIC, abattements)                                                         | ❌            | ❌                                                                         | ❌               | `lmnp-lmp`                                                                                                                    | Ajouter à `settings/impots`                                                                   |
+| **Pacte Dutreil** (exonération 75 %, durées d'engagement)                                            | ❌            | ❌                                                                         | ❌               | `pacte-dutreil`                                                                                                               | Ajouter à `settings/dmtg-succession`                                                          |
+| **Charges sociales dirigeant** (TNS/salarié, TA/TB/TC, Madelin)                                      | ⚠️ partiel    | ✅ `/settings/prelevements`                                                | ✅ partiel       | `tresorerie-societe`, `remuneration-dirigeant`, `retraite-globale`, `projection-comptable` si impact documenté                | F4d : bloc partiel ; rémunération, TA/TB/TC et Madelin à compléter avant passage `ready`      |
+| **Cotisations retraite** (barèmes de constitution des droits)                                        | ❌            | ❌                                                                         | ❌               | `retraite-globale`                                                                                                            | **Ajouter un bloc à `settings/prelevements`**                                                 |
+| **Règles comptables & sociétés** (mère-fille, réserves, dividendes, formes de société, valorisation) | ⚠️ inventorié | ⚠️ `/settings/comptables-societes`                                         | ❌               | `projection-comptable`, `valorisation-titres`, `tresorerie-societe`, `holding`, `cession-titres`                              | Enrichir `/settings/comptables-societes` avec F5                                              |
+| **Apport-cession / PV mobilières** (régime report, réemploi, abattement dirigeant)                   | ⚠️ inventorié | ⚠️ `/settings/comptables-societes` ou page existante imposée par le moteur | ❌               | `cession-titres`, `holding`                                                                                                   | Décision finale avec les moteurs `cession-titres` / `holding` ; ne pas créer de nouvelle page |
+| **Épargne salariale** (participation, intéressement, PPV, abondement, règles société)                | ❌            | ❌ `/settings/comptables-societes` à enrichir                              | ❌               | `epargne-salariale`, `remuneration-dirigeant`, `projection-comptable`, `tresorerie-societe`, `retraite-globale` si lien cadré | Ajouter un accordéon Épargne salariale à Comptables & sociétés ; pas de page dédiée           |
 
 ### Critère de sortie
 
 - Aucun moteur `active` ou en ouverture ne lit un taux/seuil/abattement en dur : il vient de `useFiscalContext`.
 - Tout nouveau paramètre est rattaché à une **référence juridique** (`legal-references` + chaînage `settings-references`).
 - Le garde-fou `check:fiscal-hardcode` reste vert.
-- Seules **deux nouvelles pages** sont justifiées par un domaine distinct (Comptables & sociétés ; Épargne salariale) ; tout le reste enrichit une page existante (principe 16).
+- Aucune page dédiée Épargne salariale n'est créée : le domaine société est porté par
+  `/settings/comptables-societes`, et tout le reste enrichit une page existante (principe 16).
 - Le déplacement de l'IS vers Comptables & sociétés ne laisse **aucune** référence orpheline dans `settings-references`.
 - Les paramètres `planned` du registry settings ne sont pas affichés comme prêts ni consommables
   par un simulateur actif tant que la PR moteur n'a pas livré les valeurs, références, tests et
   adapters correspondants.
+
+### Fiches de cadrage des packs settings société
+
+Ces fiches cadrent les futures PR settings/moteurs. Elles ne rendent pas les packs immédiatement
+codables : un pack reste `planned` ou `partial` tant que ses valeurs, références, validators, tests
+et consommateurs réels ne sont pas livrés. Elles ne doivent pas servir à inventer des taux, des
+assiettes, des règles comptables ou des résultats pour embellir une UI.
+
+### F4d — Charges sociales dirigeant
+
+But :
+Centraliser les paramètres sociaux nécessaires aux moteurs rémunération, société et retraite, sans
+hardcode social dans les moteurs, l'UI ou les exports.
+
+Page Settings propriétaire :
+`/settings/prelevements`, bloc “Charges sociales dirigeant”.
+
+Famille registry :
+`social-dirigeant`.
+
+Consommateurs futurs :
+
+- `remuneration-dirigeant` ;
+- `retraite-globale` ;
+- `projection-comptable` si la rémunération dirigeant impacte la projection ;
+- `tresorerie-societe` si la société supporte les flux.
+
+Lien fondations et simulateurs :
+Le pack peut alimenter `tresorerie-societe` seulement via la chaîne settings standard. Les lectures
+de rémunération, statut dirigeant et impact société restent liées à F5 ; les pistes stratégiques
+restent liées à F6.
+
+Périmètre V1 :
+
+- rémunération TNS ;
+- rémunération assimilé salarié ;
+- charges sociales patronales / salariales agrégées si le moteur les distingue ;
+- tranches utiles TA/TB/TC uniquement si consommées ;
+- Madelin / retraite-prévoyance uniquement si un consommateur réel est déclaré ;
+- dividendes soumis à cotisations TNS uniquement si le moteur ciblé en a besoin.
+
+Hors-scope V1 :
+
+- bulletin de paie complet ;
+- DSN ;
+- exhaustivité caisse par caisse ;
+- professions réglementées spécifiques ;
+- exonérations sectorielles non consommées par un moteur SER1 ;
+- régularisations complexes ;
+- calcul déclaratif URSSAF exhaustif.
+
+Statuts :
+
+- `planned` : besoin inventorié, aucune valeur consommable.
+- `partial` : certaines valeurs centralisées mais références, validators ou moteur incomplets.
+- `ready` : valeurs sourcées, éditables, validées et consommées par au moins un moteur réel.
+
+Contrat ready :
+
+- chaque valeur est sourcée ;
+- chaque claim est dans `settings-references` ;
+- chaque clé est dans `settings-registry` ;
+- la page propriétaire édite les valeurs ;
+- les validators empêchent les incohérences évidentes ;
+- au moins un consommateur réel est déclaré ;
+- tests golden minimaux livrés ;
+- `check:fiscal-hardcode` reste vert.
+
+Valeurs à sourcer :
+Assiettes et taux agrégés strictement nécessaires au moteur ciblé, seuils de tranches uniquement si
+consommés, règles Madelin uniquement si un consommateur réel existe, et seuil dividendes TNS si le
+moteur l'utilise. Les pages génériques de caisse ne suffisent pas comme preuve.
+
+Références juridiques attendues :
+Sources officielles ou institutionnelles précises par claim : URSSAF/BOSS/Code de la sécurité
+sociale ou source équivalente selon le statut, avec relevanceNote expliquant le lien avec le champ.
+
+Tests futurs attendus :
+
+- dirigeant TNS avec rémunération ;
+- dirigeant assimilé salarié avec rémunération ;
+- dirigeant TNS avec dividendes ;
+- cas sans données suffisantes → état “à compléter”, pas de calcul inventé ;
+- validation des incohérences et non-consommation d'un setting `planned`.
+
+Interdits :
+
+- taux social en dur dans moteur/UI/export ;
+- consommation d'un setting `planned` ;
+- URL générique de caisse comme source qualifiée ;
+- valeur par défaut inventée pour rendre un simulateur actif ;
+- calcul complet de bulletin de paie.
+
+### F4d-societe — Épargne salariale
+
+But :
+Cadrer les paramètres nécessaires au futur moteur ou parcours Épargne salariale, sans créer de page
+Settings dédiée et sans coder le moteur maintenant.
+
+Décision Settings :
+L'épargne salariale est un accordéon / une section de `/settings/comptables-societes`. Elle ne crée
+pas de page `/settings/epargne-salariale`.
+
+Justification :
+L'épargne salariale est un dispositif déployé au sein de la société. Ses règles dépendent de la
+structure employeur, des effectifs, de la masse salariale, de l'éligibilité du dirigeant, des
+accords, des plafonds et des dispositifs collectifs. Elle se rattache donc au domaine “Comptables &
+sociétés”.
+
+Famille registry :
+`comptables-societes`, sauf si le registry actuel impose une sous-famille dédiée. Ne pas créer de
+famille nouvelle sans justification dans `docs/ARCHITECTURE.md`.
+
+État transitoire :
+Si une entrée registry antérieure rattache l'épargne salariale à une autre famille ou à une autre
+page propriétaire, la future PR settings/moteur devra l'aligner avec cette décision. F4-doc ne
+modifie pas le code registry.
+
+Consommateurs futurs :
+
+- `epargne-salariale` ;
+- `remuneration-dirigeant` ;
+- `projection-comptable` ;
+- `tresorerie-societe` ;
+- `retraite-globale` si le lien PER collectif / retraite est explicitement cadré ;
+- `/audit` uniquement comme piste déterministe “à vérifier”, jamais comme calcul actif avant moteur.
+
+Lien fondations et simulateurs :
+Le simulateur `/sim/epargne-salariale` reste upcoming tant qu'un moteur et un contrat ne sont pas
+livrés. F5 porte la société, les effectifs, le statut employeur et les données sources. F6 peut
+seulement reprendre des pistes déterministes une fois les données fondatrices disponibles.
+
+Périmètre V1 :
+
+- intéressement ;
+- participation ;
+- abondement ;
+- PPV si maintenue dans le périmètre roadmap ;
+- enveloppes collectives concernées uniquement au niveau nécessaire au moteur ;
+- règles d'éligibilité dirigeant / conjoint collaborateur / salarié selon périmètre retenu ;
+- plafonds et assiettes nécessaires aux calculs SER1 ;
+- forfait social / régime social et fiscal uniquement au niveau consommé par le moteur.
+
+Hors-scope V1 :
+
+- rédaction d'accords ;
+- gestion RH ;
+- conformité complète droit du travail ;
+- cas multi-établissements complexes ;
+- paie complète ;
+- calcul DSN ;
+- exhaustivité de tous les cas d'entreprise ;
+- promesse d'optimisation automatique ;
+- conseil prescriptif sans validation CGP.
+
+États :
+
+- `planned` : règles inventoriées, non éditables, non consommables.
+- `partial` : certains paramètres sourcés, mais moteur ou cas golden incomplets.
+- `ready` : paramètres sourcés, éditables, testés, rattachés à un moteur réel.
+
+Contrat ready :
+
+- clés registry déclarées ;
+- page propriétaire `/settings/comptables-societes` ;
+- accordéon “Épargne salariale” documenté ;
+- références juridiques officielles par claim ;
+- `settings-references` complet ;
+- validators sur plafonds, taux et cohérence d'assiette ;
+- moteur consommateur réel ou fiche contrat simulateur prête ;
+- cas golden minimaux :
+  - société sans salarié éligible → état non calculable ;
+  - société avec salarié / dirigeant éligible → dispositifs à tester ;
+  - abondement avec plafond atteint ;
+  - participation non applicable ou à vérifier selon effectif ;
+  - intéressement disponible selon hypothèses sourcées ;
+- aucun paramètre `planned` consommé par un simulateur actif.
+
+Valeurs à sourcer :
+Éligibilités, plafonds, assiettes et régimes uniquement au niveau nécessaire au moteur ciblé. Les
+valeurs restent “à venir” tant qu'elles ne sont pas rattachées à un claim et à un consommateur réel.
+
+Références juridiques attendues :
+Sources officielles par dispositif : Code du travail, URSSAF/BOSS, service-public ou source
+institutionnelle pertinente, avec une référence précise par claim exposé.
+
+Tests futurs attendus :
+Cas golden du contrat ready, états non calculables, validation des plafonds/assiettes, absence de
+consommation d'un setting `planned`, et non-transformation d'une piste `/audit` en recommandation.
+
+Interdits :
+
+- créer `/settings/epargne-salariale` ;
+- afficher l'accordéon comme prêt tant que les valeurs ne sont pas sourcées ;
+- coder le moteur ou la route dans cette PR documentaire ;
+- hardcoder un plafond ou taux ;
+- faire croire que SER1 rédige ou valide juridiquement l'accord ;
+- transformer une piste `/audit` en recommandation automatique.
+
+### F5-settings — Projection comptable, règles société et valorisation
+
+But :
+Cadrer les paramètres nécessaires à la projection comptable, aux règles société, aux réserves, aux
+dividendes, aux valorisations et aux futures lectures de bilans, sans coder F5 ni les moteurs
+associés dans cette PR.
+
+Page Settings propriétaire :
+`/settings/comptables-societes`.
+
+Famille registry :
+`comptables-societes`.
+
+Consommateurs futurs :
+
+- `projection-comptable` ;
+- `tresorerie-societe` ;
+- `valorisation-titres` ;
+- `holding` ;
+- `cession-titres` ;
+- `remuneration-dirigeant` ;
+- `epargne-salariale` ;
+- `/audit` sociétés / organigramme seulement après F5.
+
+Lien fondations et simulateurs :
+F5 est la fondation propriétaire du modèle société, des liens, des bilans et des sources. F3 reste
+propriétaire du patrimoine PP/US/NP. F6 peut exploiter les résultats validés pour pistes et
+versioning. `/sim/tresorerie-societe` fournit des patterns et des sorties dans son périmètre actuel,
+mais ne remplace pas F5.
+
+Périmètre V1 :
+
+- règles d'IS déjà migrées ;
+- réserves ;
+- résultat distribuable ;
+- dividendes ;
+- capitaux propres ;
+- primes ;
+- emprunts société ;
+- CCA ;
+- immobilisations ;
+- immobilier détenu ;
+- règles de valorisation simples ou paramètres de méthode si un moteur les consomme ;
+- règles mère-fille uniquement si un moteur holding / titres les consomme ;
+- formes de société nécessaires au modèle F5 ;
+- bilans / liasses comme données source du dossier, pas comme page Settings exhaustive.
+
+Hors-scope V1 :
+
+- comptabilité générale complète ;
+- liasse fiscale déclarative exhaustive ;
+- production de bilan ;
+- consolidation avancée ;
+- normes IFRS ;
+- évaluation expert-comptable exhaustive ;
+- valorisation opposable ;
+- calcul juridique complet de distribution ;
+- tous les régimes de groupes ;
+- moteur holding / cession codé dans cette PR.
+
+Statuts :
+
+- `planned` : besoin inventorié, aucune valeur consommable.
+- `partial` : paramètres ou sources partiels, moteur/adapters/cas golden incomplets.
+- `ready` : valeurs nécessaires sourcées, éditables, validées, testées et consommées par au moins un moteur réel.
+
+Contrat ready :
+
+- paramètres réellement nécessaires identifiés ;
+- valeurs sourcées ;
+- références juridiques / comptables attachées ;
+- settings registry et settings references alignés ;
+- validators minimaux ;
+- adapter vers les moteurs concernés ;
+- cas golden :
+  - société IS simple avec réserves et résultat distribuable ;
+  - société avec CCA ;
+  - société avec emprunt ;
+  - société avec dividendes ;
+  - société avec immobilisations ou immobilier détenu ;
+  - cas incomplet → état “à compléter”, pas de calcul inventé.
+
+Valeurs à sourcer :
+Paramètres de méthode, règles de distribution, règles de détention société et données de bilan
+uniquement si un moteur les consomme. Les bilans et liasses restent des sources de dossier, pas une
+liste de champs Settings exhaustive.
+
+Références juridiques attendues :
+Sources fiscales, comptables ou institutionnelles précises selon le claim : Code de commerce, CGI,
+BOFiP, doctrine officielle ou documentation comptable pertinente. Une source générique ne suffit pas.
+
+Tests futurs attendus :
+Cas golden du contrat ready, états incomplets, cohérence des adapters, non-recalcul local dans
+`/audit` ou les exports, et absence de duplication de données société dans chaque simulateur.
+
+Interdits :
+
+- créer une projection comptable depuis des valeurs fictives ;
+- recalculer localement hors moteur ;
+- dupliquer les données société dans chaque simulateur ;
+- faire de l'organigramme une source de vérité ;
+- coder F5 dans cette PR documentaire ;
+- promettre une valorisation fiable sans moteur, méthode et sources.
 
 ## Ordre ferme de construction des moteurs
 
@@ -1538,7 +1847,7 @@ Changements :
 - **Registry** : ajouter le champ `tags` (`SimulatorDomainTag` + `SimulatorIntentTag`) à toutes les `SimulatorDefinition`, avec un check de complétude (aucune entrée sans tags). Aligner les libellés canoniques (`shortLabel`/`fullLabel`) listés au § Registry et chainage.
 - **Settings — câblage de l'existant** : créer la section **IFI** sur `settings/impots` (le barème existe déjà dans `settingsDefaults.ts`), l'exposer dans `useFiscalContext` et la chaîner dans `settings-references`. Idem **CDHR** (exposer la section, vérifier `useFiscalContext`).
 - **Settings — nouvelle page « Comptables & sociétés » + migration IS** : créer la page, y **déplacer** l'IS (`corporateTax`) depuis `settings/impots` (déplacement, pas duplication), sans laisser de référence orpheline dans `settings-references`. Cette page est justifiée dès maintenant car l'IS est réel et `tresorerie-societe` est actif.
-- **Hors périmètre (reporté aux PR moteurs)** : les paramètres propres à un moteur non encore ouvert (PV immo, fonciers, LMNP, Dutreil, charges sociales dirigeant, cotisations retraite, règles société détaillées, dispositifs d'épargne salariale et la page **Épargne salariale**) restent attachés à la PR du moteur concerné. Ils sont seulement **documentés** dans la table de couverture.
+- **Hors périmètre (reporté aux PR moteurs)** : les paramètres propres à un moteur non encore ouvert (PV immo, fonciers, LMNP, Dutreil, charges sociales dirigeant, cotisations retraite, règles société détaillées et dispositifs d'épargne salariale comme section de `/settings/comptables-societes`) restent attachés à la PR du moteur concerné. Ils sont seulement **documentés** dans la table de couverture.
 
 Tests :
 
