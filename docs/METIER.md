@@ -52,6 +52,22 @@ Expliquer ce que SER1 couvre aujourd'hui, ce qui est deja exploitable, et les li
 - Le `DossierPatrimonial` central F1 couvre le foyer, les membres, la situation familiale, le régime matrimonial, les donations synthétiques, les objectifs, contraintes, opérations prévues et `sourceRefs` minimales. Il ne porte pas encore le graphe actif/passif complet F3, l'evidence enrichie F2, le modèle société/bilan F5 ni de nouveaux settings fiscaux.
 - Les simulateurs actifs restent autonomes tant que leurs adapters de contexte ne sont pas livrés. La complétude `f1_core` du dossier central n'est pas une readiness simulateur.
 
+### Cadrage métier société, dirigeant et épargne salariale
+
+- `/sim/epargne-salariale` reste upcoming / non stabilisé tant qu'un moteur, un contrat simulateur,
+  des settings sourcés et des cas golden ne sont pas livrés.
+- L'épargne salariale est cadrée comme un sujet société : elle dépend de l'employeur, des effectifs,
+  de la masse salariale, du statut du dirigeant, des accords et des dispositifs collectifs. Elle
+  n'est pas calculée aujourd'hui.
+- `/sim/tresorerie-societe` calcule une projection société dans son périmètre actuel, mais ne
+  remplace pas F5 société/bilans complet, ni un moteur de projection comptable générale, ni une
+  valorisation opposable.
+- Les charges sociales dirigeant, la projection comptable, les règles société, la valorisation et
+  l'épargne salariale restent des packs settings/moteurs futurs tant que leurs contrats `ready` ne
+  sont pas livrés.
+- Ne pas présenter ces sujets comme prêts, exhaustifs ou prescriptifs : les états attendus sont
+  “à venir”, “planned”, “partial” ou “à compléter” selon les fondations disponibles.
+
 ### Registry métier des simulateurs
 
 La matrice métier des simulateurs est formalisée dans `src/domain/simulators/registry.ts`. Cette
