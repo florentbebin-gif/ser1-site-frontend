@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { SimFieldShell, SimModalSectionNav, SimModalShell, SimSelect } from '@/components/ui/sim';
+import { IconClose } from '@/icons/ui';
 import { modalSections } from '../designSystemCatalog';
 
 const WIDTH_BUCKETS = [
@@ -131,6 +132,72 @@ export function DesignSystemModalPreview() {
           </button>
         </article>
       </div>
+
+      <article className="settings-design-system__ui-card settings-design-system__drawer-card">
+        <h3>Drawer XL (/audit)</h3>
+        <p className="settings-design-system__note">
+          Variante de l’anatomie modale ancrée à droite : header, nav gauche optionnelle, corps,
+          panneau sources optionnel, footer stable (`Annuler` + `Enregistrer`, destructif à gauche).
+          Largeur canonique `sim-drawer` / `sim-drawer--xl`, aucune largeur locale
+          (`check:modal-canon`).
+        </p>
+        <div className="settings-design-system__drawer-frame">
+          <aside
+            className="sim-drawer sim-drawer--xl"
+            role="group"
+            aria-label="Anatomie du drawer XL"
+          >
+            <header className="sim-modal__header">
+              <div className="sim-modal__header-content">
+                <div>
+                  <h4 className="sim-modal__title">Détail d’axe</h4>
+                  <p className="sim-modal__subtitle">Drawer XL ancré à droite</p>
+                </div>
+              </div>
+              <button type="button" className="sim-modal__close" aria-label="Fermer le drawer">
+                <IconClose aria-hidden="true" />
+              </button>
+            </header>
+
+            <div className="sim-drawer__layout">
+              <div className="sim-drawer__main sim-modal-layout--with-nav">
+                <SimModalSectionNav
+                  sections={modalSections}
+                  activeId={activeSection}
+                  ariaLabel="Rubriques du drawer"
+                  className="sim-modal-layout__nav"
+                  onChange={setActiveSection}
+                />
+                <div className="settings-design-system__modal-panels sim-modal-layout__content">
+                  <p>
+                    Tableau de bord d’axe : lignes KPI, micro-tuiles plates, champs via primitives
+                    Sim*.
+                  </p>
+                </div>
+              </div>
+              <aside className="sim-drawer__sources" aria-label="Panneau sources">
+                <span className="settings-design-system__surface-tag">Sources</span>
+                <p className="settings-design-system__note">
+                  Preuve discrète (`SourceRef`). Aucune confiance numérique sur une donnée saisie
+                  manuellement.
+                </p>
+              </aside>
+            </div>
+
+            <div className="sim-modal__footer">
+              <button type="button" className="sim-modal-btn sim-modal-btn--danger">
+                Supprimer
+              </button>
+              <button type="button" className="sim-modal-btn sim-modal-btn--ghost">
+                Annuler
+              </button>
+              <button type="button" className="sim-modal-btn sim-modal-btn--primary">
+                Enregistrer
+              </button>
+            </div>
+          </aside>
+        </div>
+      </article>
 
       {modalOpen ? (
         <SimModalShell

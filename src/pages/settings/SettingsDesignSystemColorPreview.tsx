@@ -31,7 +31,11 @@ const semanticAliases = [
   { token: '--accent-signature', source: 'var(--color-c6)', usage: 'Signature premium' },
   { token: '--data-secondary', source: 'var(--color-c5)', usage: 'Données secondaires' },
   { token: '--state-success', source: 'var(--color-c2)', usage: 'Succès' },
-  { token: '--state-warning', source: 'var(--color-c6)', usage: 'Attention' },
+  {
+    token: '--state-warning',
+    source: 'color-mix(C6, C10)',
+    usage: 'Attention — distinct du cuivre',
+  },
   { token: '--state-danger', source: 'var(--color-c1)', usage: 'Danger' },
   { token: '--state-info', source: 'var(--color-c3)', usage: 'Information' },
   { token: '--overlay-modal', source: 'color-mix(C10, transparent)', usage: 'Overlay' },
