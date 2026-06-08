@@ -93,15 +93,68 @@ for (const feature of SIM_FEATURES) {
   }
 }
 
-if (failures.length > 0) {
-  console.error('Contrat cards /sim/* non respecté :');
-  failures.forEach(({ filePath, lineNumber, line }) => {
-    const relativePath = path.relative(ROOT, filePath).replaceAll(path.sep, '/');
-    console.error(`- ${relativePath}:${lineNumber} ${line}`);
-  });
-  console.error(
-    'Ajoute premium-card--guide + sim-card--guide ou documente une exception nommée dans scripts/check-sim-cards.mjs.',
-  );
+// Extension UX-00b : la taxonomie des surfaces plates (bande, ligne KPI,
+// micro-tuile) ne doit jamais être élevée — aucune ombre dans une surface non
+// élevée (docs/AUDIT_COCKPIT.md §10). On contrôle la définition canonique.
+const SURFACES_CSS = path.join(ROOT, 'src', 'styles', 'sim', 'surfaces.css');
+const FLAT_SURFACE_BASES = ['.sim-band', '.sim-kpi-line', '.sim-tile-flat'];
+
+function collectFlatSurfaceFailures(content) {
+  const found = [];
+  const ruleRegex = /([^{}]+)\{([^{}]*)\}/g;
+  let ruleMatch;
+  while ((ruleMatch = ruleRegex.exec(content)) !== null) {
+    const selectors = ruleMatch[1]
+      .split(',')
+      .map((selector) => selector.trim())
+      .filter(Boolean);
+    const body = ruleMatch[2];
+    const lineNumber = content.slice(0, ruleMatch.index).split(/\r?\n/).length;
+    for (const selector of selectors) {
+      const isFlat = FLAT_SURFACE_BASES.some(
+        (base) =>
+          selector === base || selector.startsWith(`${base}--`) || selector.startsWith(`${base}__`),
+      );
+      if (!isFlat) continue;
+      if (/\bbox-shadow\s*:/.test(body) && !/\bbox-shadow\s*:\s*none\b/.test(body)) {
+        found.push({ selector, lineNumber });
+      }
+    }
+  }
+  return found;
+}
+
+let surfaceFailures = [];
+try {
+  const surfacesContent = await readFile(SURFACES_CSS, 'utf8');
+  surfaceFailures = collectFlatSurfaceFailures(surfacesContent);
+} catch {
+  // surfaces.css absent : rien à vérifier côté taxonomie.
+}
+
+if (failures.length > 0 || surfaceFailures.length > 0) {
+  if (failures.length > 0) {
+    console.error('Contrat cards /sim/* non respecté :');
+    failures.forEach(({ filePath, lineNumber, line }) => {
+      const relativePath = path.relative(ROOT, filePath).replaceAll(path.sep, '/');
+      console.error(`- ${relativePath}:${lineNumber} ${line}`);
+    });
+    console.error(
+      'Ajoute premium-card--guide + sim-card--guide ou documente une exception nommée dans scripts/check-sim-cards.mjs.',
+    );
+  }
+
+  if (surfaceFailures.length > 0) {
+    const relativeSurfaces = path.relative(ROOT, SURFACES_CSS).replaceAll(path.sep, '/');
+    console.error('Taxonomie des surfaces plates non respectée (aucune ombre autorisée) :');
+    surfaceFailures.forEach(({ selector, lineNumber }) => {
+      console.error(`- ${relativeSurfaces}:${lineNumber} ${selector} porte box-shadow`);
+    });
+    console.error(
+      'Une bande / ligne KPI / micro-tuile reste non élevée : retire box-shadow ou utilise une carte.',
+    );
+  }
+
   process.exit(1);
 }
 

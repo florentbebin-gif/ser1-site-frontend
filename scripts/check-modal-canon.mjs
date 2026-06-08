@@ -42,6 +42,10 @@ const ALLOWED_FILES = new Set(['src/pages/settings/styles/modals.css'].map((p) =
 // Sélecteur de modale racine : se termine par `-modal` ou `-modal-shell`
 // (pas de sous-élément `__`, pas de descendant, pas de modificateur `--`).
 const ROOT_MODAL_SELECTOR = /\.[\w-]*-modal(-shell)?\s*$/;
+// Idem pour le drawer XL canonique (UX-00b) : la seule source de largeurs de
+// drawer est la famille `sim-drawer` de `src/styles/sim/modals.css` (hors scan).
+// Toute largeur de drawer racine dans une feature/page/composant est interdite.
+const ROOT_DRAWER_SELECTOR = /\.[\w-]*-drawer(-shell)?\s*$/;
 // Largeur « bucket » fixe : max-width en px, ou width: min(<px>…). On ignore
 // width:100%, width:auto, max-width:none et les largeurs viewport (calc(100vw…)).
 const WIDTH_DECL = /(max-width\s*:\s*\d+\s*px)|(width\s*:\s*min\(\s*\d+\s*px)/;
@@ -99,6 +103,14 @@ function collectViolations(content, relPath) {
           line,
           selector,
           reason: 'largeur racine de modale en dur',
+        });
+      }
+      if (ROOT_DRAWER_SELECTOR.test(selector) && WIDTH_DECL.test(body)) {
+        violations.push({
+          file: relPath,
+          line,
+          selector,
+          reason: 'largeur racine de drawer en dur',
         });
       }
       if (LOCAL_MODAL_NAV_SELECTOR.test(selector) && NAV_VISUAL_DECL.test(body)) {
