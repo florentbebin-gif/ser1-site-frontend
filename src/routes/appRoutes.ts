@@ -66,8 +66,8 @@ const Credit = lazy(() =>
   import('../features/credit').then(({ CreditPage }) => ({ default: CreditPage })),
 );
 const Ir = lazy(() => import('../features/ir').then(({ IrPage }) => ({ default: IrPage })));
-const AuditWizard = lazy(() =>
-  import('../features/audit').then(({ AuditWizard }) => ({ default: AuditWizard })),
+const AuditPage = lazy(() =>
+  import('../features/audit').then(({ AuditPage }) => ({ default: AuditPage })),
 );
 const SuccessionSimulator = lazy(() =>
   import('../features/succession').then(({ SuccessionSimulator }) => ({
@@ -146,7 +146,7 @@ export const APP_ROUTES: AppRouteEntry[] = [
     kind: 'route',
     access: 'private',
     path: '/audit',
-    component: AuditWizard,
+    component: AuditPage,
     lazy: true,
     contextLabel: 'Audit',
     topbar: { ...SIM_TOPBAR, resetKey: 'audit' },

@@ -1,0 +1,181 @@
+/* Landing /audit — 3 cartes (UX-01).
+ * Surfaces UX-00b uniquement : carte élevée (premium-card) au niveau carte,
+ * bandes / lignes KPI / micro-tuiles plates pour les sous-infos. Aucune carte
+ * imbriquée, aucune ombre sur surface plate, aucune couleur locale. */
+
+.audit-landing__header {
+  margin-bottom: var(--space-6);
+}
+
+.audit-landing__grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-5);
+  align-items: start;
+}
+
+.audit-landing__card {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.audit-landing__card-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.audit-landing__card-title {
+  margin: 0;
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-primary);
+}
+
+.audit-landing__card-subtitle {
+  margin: var(--space-1) 0 0;
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+}
+
+/* ── Badge de statut : glyphe + label, jamais la couleur seule ─────────────── */
+
+.audit-landing__badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  flex-shrink: 0;
+  padding: 2px var(--space-2);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-subtle);
+  background: var(--surface-muted);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  text-transform: uppercase;
+  color: var(--text-secondary);
+}
+
+.audit-landing__badge-glyph {
+  font-weight: var(--font-weight-bold);
+}
+
+.audit-landing__badge--complet {
+  color: var(--state-success);
+  border-color: color-mix(in srgb, var(--state-success) 40%, var(--border-subtle));
+}
+
+.audit-landing__badge--partiel {
+  color: var(--state-warning);
+  border-color: color-mix(in srgb, var(--state-warning) 40%, var(--border-subtle));
+}
+
+.audit-landing__badge--a-venir {
+  color: var(--state-info);
+  border-color: color-mix(in srgb, var(--state-info) 40%, var(--border-subtle));
+}
+
+/* ── Bandes internes ───────────────────────────────────────────────────────── */
+
+.audit-landing__band-title {
+  margin: 0;
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-secondary);
+}
+
+.audit-landing__facts,
+.audit-landing__objectifs,
+.audit-landing__list,
+.audit-landing__missing,
+.audit-landing__upcoming {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: var(--space-2);
+}
+
+.audit-landing__objectifs {
+  counter-reset: none;
+}
+
+.audit-landing__fact--missing .sim-kpi-line__value {
+  color: var(--text-secondary);
+  font-weight: var(--font-weight-medium);
+  font-style: italic;
+}
+
+.audit-landing__fact-glyph,
+.audit-landing__missing-glyph,
+.audit-landing__upcoming-glyph {
+  font-weight: var(--font-weight-bold);
+}
+
+.audit-landing__missing-item,
+.audit-landing__upcoming-item {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+  font-size: var(--font-size-sm);
+  color: var(--text-primary);
+}
+
+.audit-landing__missing-glyph {
+  color: var(--state-warning);
+}
+
+.audit-landing__upcoming-glyph {
+  color: var(--state-info);
+}
+
+.audit-landing__note {
+  margin: 0;
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+}
+
+/* ── Micro-tuiles plates (vue d'ensemble objectifs) ────────────────────────── */
+
+.audit-landing__tiles {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-2);
+  margin-top: var(--space-4);
+}
+
+/* ── Actions ───────────────────────────────────────────────────────────────── */
+
+.audit-landing__actions {
+  margin-top: auto;
+  padding-top: var(--space-4);
+  display: flex;
+  gap: var(--space-2);
+}
+
+/* ── Retour vers la synthèse depuis le wizard ──────────────────────────────── */
+
+.audit-back-link {
+  align-self: flex-start;
+  margin-bottom: var(--space-2);
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--state-info);
+}
+
+.audit-back-link:hover {
+  text-decoration: underline;
+}
+
+@media (max-width: 900px) {
+  .audit-landing__grid {
+    grid-template-columns: 1fr;
+  }
+}
