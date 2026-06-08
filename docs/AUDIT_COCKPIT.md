@@ -282,8 +282,8 @@ Règles :
 - Footer stable : `Annuler` (ghost) + `Enregistrer` (primary), destructif à gauche.
 - Accessibilité : focus trap, `Escape`, retour focus, `role="dialog"`, `aria-modal`, titre accessible.
 - **Aucune largeur locale.**
-- UX-00b créera les classes canoniques (famille `sim-drawer` dans `src/styles/sim/modals.css`) et
-  étendra `check:modal-canon` pour en faire la seule source de largeurs de drawer.
+- UX-00b a créé les classes canoniques (famille `sim-drawer` dans `src/styles/sim/modals.css`) et
+  étendu `check:modal-canon` pour en faire la seule source de largeurs de drawer.
 
 ## 10. Contrat surfaces
 
