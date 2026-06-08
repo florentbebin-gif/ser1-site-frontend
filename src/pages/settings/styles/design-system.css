@@ -516,3 +516,57 @@
   font-size: var(--font-size-sm);
   font-weight: var(--font-weight-medium);
 }
+
+/* ─── Data-viz cockpit ──────────────────────────────────────────────────────── */
+
+.settings-design-system__viz-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
+.settings-design-system__viz-row--ramp {
+  gap: var(--space-1);
+}
+
+.settings-design-system__viz-swatch {
+  display: grid;
+  justify-items: start;
+  gap: var(--space-1);
+  max-width: 168px;
+}
+
+.settings-design-system__viz-swatch code {
+  color: var(--text-primary);
+  font-family: var(--font-mono);
+  font-size: var(--font-size-xs);
+}
+
+/* ─── Surfaces cockpit ──────────────────────────────────────────────────────── */
+
+.settings-design-system__surface-demo {
+  display: grid;
+  gap: 0;
+}
+
+.settings-design-system__surface-tag {
+  color: var(--text-secondary);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  text-transform: uppercase;
+}
+
+.settings-design-system__tile-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: var(--space-2);
+}
+
+/* ─── Drawer XL cockpit ─────────────────────────────────────────────────────── */
+
+.settings-design-system__drawer-frame {
+  height: 340px;
+  overflow: hidden;
+  border-radius: var(--radius-lg);
+  background: var(--surface-page);
+}

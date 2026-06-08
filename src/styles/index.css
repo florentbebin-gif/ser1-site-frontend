@@ -65,12 +65,47 @@
   --accent-signature: var(--color-c6);
   --data-secondary: var(--color-c5);
   --state-success: var(--color-c2);
-  --state-warning: var(--color-c6);
+  /*
+   * --state-warning est DÉCOUPLÉ de --accent-signature (UX-00b).
+   * Les deux dérivaient de C6 (cuivre), ce qui tuait la saillance des alertes :
+   * le cuivre reste un accent de marque / version active / KPI héros, jamais un statut.
+   * Warning = cuivre approfondi vers C10, donc plus contrasté sur les surfaces claires
+   * et visiblement distinct de l'accent signature. Toujours dérivé du thème, sans hex.
+   */
+  --state-warning: color-mix(in srgb, var(--color-c6) 84%, var(--color-c10));
   --state-danger: var(--color-c1);
   --state-info: var(--color-c3);
   --overlay-modal: color-mix(in srgb, var(--color-c10) 58%, transparent);
   --shadow-color: var(--color-c10);
   --focus-ring-color: var(--color-c3);
+
+  /*
+   * TOKENS DATA-VIZ COCKPIT /audit (UX-00b)
+   * Sémantique dérivée du thème, jamais une palette configurable parallèle :
+   * tous les --viz-* sont des dérivés de C1-C10 / des alias, sans hex runtime.
+   * Garde-fou : check:css-colors (interdit tout littéral de couleur dans un --viz-*
+   * et interdit le cuivre dans les séries du radar).
+   *
+   * --viz-1..8 : séries catégorielles (graphes multi-séries).
+   * --viz-current / --viz-scenario : deux séries du radar (situation actuelle vs
+   *   scénario testé). Le cuivre (--accent-signature) N'ENTRE PAS dans le radar.
+   * --viz-sequential-1..5 : rampe mono-teinte pour anneaux de complétude et jauges.
+   */
+  --viz-1: var(--color-c2);
+  --viz-2: var(--color-c6);
+  --viz-3: var(--color-c3);
+  --viz-4: var(--color-c5);
+  --viz-5: color-mix(in srgb, var(--color-c2) 55%, var(--color-c6));
+  --viz-6: color-mix(in srgb, var(--color-c3) 62%, var(--surface-card));
+  --viz-7: color-mix(in srgb, var(--color-c6) 58%, var(--surface-card));
+  --viz-8: color-mix(in srgb, var(--color-c5) 60%, var(--color-c1));
+  --viz-current: var(--color-c2);
+  --viz-scenario: var(--color-c3);
+  --viz-sequential-1: color-mix(in srgb, var(--color-c3) 14%, var(--surface-card));
+  --viz-sequential-2: color-mix(in srgb, var(--color-c3) 34%, var(--surface-card));
+  --viz-sequential-3: color-mix(in srgb, var(--color-c3) 56%, var(--surface-card));
+  --viz-sequential-4: color-mix(in srgb, var(--color-c3) 78%, var(--surface-card));
+  --viz-sequential-5: var(--color-c2);
 
   /* Tokens de fondation SIM SER1 2026 */
   --space-1: 3px;

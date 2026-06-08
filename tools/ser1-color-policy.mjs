@@ -19,6 +19,13 @@ const COLOR_LITERAL_PATTERN =
 const RAW_THEME_VAR_PATTERN = /var\(--color-c(?:4|5|6)\)/gi;
 const REPO_PATH_MARKERS = ['src', 'scripts', 'tests', 'supabase', 'public', 'tools'];
 
+// Fichier tokens : seule source des fallbacks hex C1-C10, mais les tokens
+// data-viz --viz-* doivent rester dérivés du thème (UX-00b).
+export const COLOR_POLICY_TOKENS_FILE = 'src/styles/index.css';
+const VIZ_DECL_PATTERN = /(--viz-[\w-]+)\s*:\s*([^;]+);/;
+const VIZ_RADAR_TOKENS = new Set(['--viz-current', '--viz-scenario']);
+const VIZ_COPPER_REF_PATTERN = /var\(\s*--color-c6\s*\)|var\(\s*--accent-signature\s*\)/i;
+
 const PATH_ALLOWLIST = [
   {
     label: 'source theme',
@@ -132,6 +139,45 @@ export function findColorPolicyViolationsInText(text, repoPath) {
         value: match[0],
         message:
           'Usage direct C4/C5/C6 interdit : utiliser --surface-active, --data-secondary, --accent-signature ou --state-warning.',
+      });
+    }
+  });
+
+  return violations;
+}
+
+// Garde-fou data-viz (UX-00b) : appliqué au fichier tokens même s'il est
+// allowlisté pour les fallbacks C1-C10. Deux règles :
+// 1. aucun --viz-* ne porte un littéral hex/rgb/hsl (doit être dérivé du thème) ;
+// 2. les séries du radar (--viz-current / --viz-scenario) n'utilisent pas le cuivre.
+export function findVizTokenViolations(text) {
+  const violations = [];
+  const lines = text.split(/\r?\n/);
+
+  lines.forEach((line, index) => {
+    const match = VIZ_DECL_PATTERN.exec(line);
+    if (!match) return;
+    const [, token, rawValue] = match;
+    const value = rawValue.trim();
+
+    COLOR_LITERAL_PATTERN.lastIndex = 0;
+    if (COLOR_LITERAL_PATTERN.test(value)) {
+      violations.push({
+        kind: 'viz-hardcoded-color',
+        line: index + 1,
+        value: token,
+        message:
+          'Token --viz-* doit être dérivé du thème (var/color-mix), sans littéral hex/rgb/hsl.',
+      });
+    }
+
+    if (VIZ_RADAR_TOKENS.has(token) && VIZ_COPPER_REF_PATTERN.test(value)) {
+      violations.push({
+        kind: 'viz-radar-copper',
+        line: index + 1,
+        value: token,
+        message:
+          'Le cuivre (--color-c6 / --accent-signature) n’entre pas dans le radar : choisir une autre dérivation.',
       });
     }
   });

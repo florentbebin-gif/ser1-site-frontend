@@ -10,8 +10,10 @@ Ce document n'est **pas** une roadmap concurrente. Le **séquencement des PR** v
 (principe 14 de la roadmap : pas de roadmap concurrente).
 
 Statut : **UX-00a fige le contrat documentaire.** UX-00a-bis ajoute les contrats d'implémentation
-page par page. UX-00b implémentera les tokens CSS, le showroom et les checks en suivant ce contrat.
-Ces PR documentaires ne modifient aucun token CSS, aucun composant, aucune route, aucun check.
+page par page. **UX-00b a verrouillé** les fondations design system de ce contrat — tokens `--viz-*`,
+découplage `--state-warning` / `--accent-signature`, taxonomie des surfaces, drawer XL canonique —
+avec leur preuve runtime dans `/settings/design-system` et les checks `css-colors` / `modal-canon` /
+`sim-cards` étendus, sans coder les pages métier `/audit`.
 
 Date de cadrage : 2026-06-07.
 
@@ -90,8 +92,9 @@ Précisions de périmètre :
   accessible et lisible, alors seulement la question d'une extension C11-C14 pourra être rouverte,
   par **PR dédiée**, verrouillée par docs + showroom + checks.
 
-> Cette PR **UX-00a ne modifie pas encore les tokens CSS** ni `tools/ser1-color-policy.mjs`. Elle
-> fixe le contrat ; UX-00b mettra à jour tokens, showroom et checks.
+> UX-00a a fixé le contrat sans toucher aux tokens. **UX-00b a livré** les tokens `--viz-*` et le
+> découplage `--state-warning` dans `src/styles/index.css`, le showroom `/settings/design-system` et
+> l'extension de `tools/ser1-color-policy.mjs` (garde-fou `check:css-colors` sur les `--viz-*`).
 
 ## 5. Contrat radar V1
 
@@ -279,8 +282,8 @@ Règles :
 - Footer stable : `Annuler` (ghost) + `Enregistrer` (primary), destructif à gauche.
 - Accessibilité : focus trap, `Escape`, retour focus, `role="dialog"`, `aria-modal`, titre accessible.
 - **Aucune largeur locale.**
-- UX-00b créera les classes canoniques (famille `sim-drawer` dans `src/styles/sim/modals.css`) et
-  étendra `check:modal-canon` pour en faire la seule source de largeurs de drawer.
+- UX-00b a créé les classes canoniques (famille `sim-drawer` dans `src/styles/sim/modals.css`) et
+  étendu `check:modal-canon` pour en faire la seule source de largeurs de drawer.
 
 ## 10. Contrat surfaces
 
@@ -761,10 +764,11 @@ section « Track UX Cockpit /audit ». Ici, seul l'ordre logique est rappelé :
 
 ## 17. Questions restantes
 
-- Vérifier techniquement, en UX-00b, la dérivation **accessible** de `--viz-*` depuis C1-C10
-  (contraste, distinction des séries).
-- Décider en UX-00b si une extension **C11-C14** est réellement nécessaire — uniquement si l'échec de
-  la dérivation est prouvé, et par PR dédiée verrouillée par docs + showroom + checks.
+- UX-00b a livré une dérivation `--viz-*` depuis C1-C10 (séries, radar, rampe), prouvée dans le
+  showroom. Reste ouvert : un **audit de contraste / distinction** formel des 8 séries catégorielles
+  sur la palette par défaut et les thèmes personnalisés (non bloquant pour UX-00b).
+- Extension **C11-C14** : **non nécessaire** à ce stade (la dérivation suffit). À ne rouvrir que si
+  l'audit ci-dessus prouve l'insuffisance, par PR dédiée verrouillée par docs + showroom + checks.
 - Définir le **niveau exact de tests visuels** pour UX-08.
 - Cadrer le **moment** où un futur mode de présentation client devra être traité (vue, pas modèle de
   données).

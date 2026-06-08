@@ -369,3 +369,90 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* ─── Drawer XL canonique /audit (docs/AUDIT_COCKPIT.md §9) ───────────────────
+ * VARIANTE de l'anatomie modale, pas une famille parallèle : le drawer réutilise
+ * .sim-modal__header / __footer / __close, la nav latérale
+ * .sim-modal-layout--with-nav et les boutons .sim-modal-btn--*. Il n'ajoute que
+ * l'ancrage à droite, la largeur canonique et le panneau sources optionnel.
+ * Source unique des largeurs de drawer ; aucune largeur locale (check:modal-canon). */
+.sim-drawer-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  justify-content: flex-end;
+  background: var(--overlay-modal);
+  /* stylelint-disable-next-line property-no-vendor-prefix */
+  -webkit-backdrop-filter: blur(3px);
+  backdrop-filter: blur(3px);
+}
+
+.sim-drawer {
+  width: 100%;
+  max-width: 880px;
+  height: 100%;
+  max-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--surface-card);
+  border-left: 1px solid var(--color-c8);
+  box-shadow: -24px 0 60px color-mix(in srgb, var(--shadow-color) 22%, transparent);
+}
+
+/* XL : seul palier élargi, pour un détail dense (table, breakdown, sources). */
+.sim-drawer.sim-drawer--xl {
+  max-width: 1120px;
+}
+
+/* Corps : contenu + panneau sources optionnel à droite. La nav gauche éventuelle
+   réutilise .sim-modal-layout--with-nav à l'intérieur de .sim-drawer__main. */
+.sim-drawer__layout {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, var(--sim-drawer-sources-width, 248px));
+  gap: var(--space-4);
+  padding: var(--space-5);
+  overflow: hidden;
+}
+
+.sim-drawer__layout--no-sources {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.sim-drawer__main {
+  min-width: 0;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+/* Panneau sources optionnel : preuve discrète (SourceRef), jamais une confiance
+   numérique sur une donnée saisie manuellement. */
+.sim-drawer__sources {
+  min-width: 0;
+  min-height: 0;
+  overflow-y: auto;
+  padding: var(--space-4);
+  border-left: 1px solid var(--border-subtle);
+  border-radius: var(--sim-modal-panel-radius);
+  background: var(--sim-modal-panel-bg);
+}
+
+@media (max-width: 900px) {
+  /* Le drawer occupe toute la largeur ≤900px : la largeur canonique est neutralisée. */
+  .sim-drawer,
+  .sim-drawer.sim-drawer--xl {
+    max-width: none;
+  }
+
+  .sim-drawer__layout {
+    grid-template-columns: 1fr;
+    padding: var(--space-4);
+  }
+
+  .sim-drawer__sources {
+    border-top: 1px solid var(--border-subtle);
+    border-left: 0;
+  }
+}

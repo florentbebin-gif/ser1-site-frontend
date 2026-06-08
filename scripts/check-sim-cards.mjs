@@ -37,9 +37,21 @@ const SIM_CARD_CLASS_EXCEPTIONS = [
 ];
 
 const IGNORED_DIRS = new Set(['__tests__']);
+const CSS_SCAN_DIRS = [
+  path.join(ROOT, 'src', 'features'),
+  path.join(ROOT, 'src', 'pages'),
+  path.join(ROOT, 'src', 'components'),
+  path.join(ROOT, 'src', 'styles'),
+];
 
 async function listTsxFiles(dir) {
-  const entries = await readdir(dir, { withFileTypes: true });
+  let entries;
+  try {
+    entries = await readdir(dir, { withFileTypes: true });
+  } catch {
+    return [];
+  }
+
   const files = await Promise.all(
     entries.map(async (entry) => {
       const absolutePath = path.join(dir, entry.name);
@@ -50,6 +62,30 @@ async function listTsxFiles(dir) {
       }
 
       return entry.isFile() && entry.name.endsWith('.tsx') ? [absolutePath] : [];
+    }),
+  );
+
+  return files.flat();
+}
+
+async function listCssFiles(dir) {
+  let entries;
+  try {
+    entries = await readdir(dir, { withFileTypes: true });
+  } catch {
+    return [];
+  }
+
+  const files = await Promise.all(
+    entries.map(async (entry) => {
+      const absolutePath = path.join(dir, entry.name);
+
+      if (entry.isDirectory()) {
+        if (IGNORED_DIRS.has(entry.name)) return [];
+        return listCssFiles(absolutePath);
+      }
+
+      return entry.isFile() && entry.name.endsWith('.css') ? [absolutePath] : [];
     }),
   );
 
@@ -93,15 +129,90 @@ for (const feature of SIM_FEATURES) {
   }
 }
 
-if (failures.length > 0) {
-  console.error('Contrat cards /sim/* non respecté :');
-  failures.forEach(({ filePath, lineNumber, line }) => {
-    const relativePath = path.relative(ROOT, filePath).replaceAll(path.sep, '/');
-    console.error(`- ${relativePath}:${lineNumber} ${line}`);
-  });
-  console.error(
-    'Ajoute premium-card--guide + sim-card--guide ou documente une exception nommée dans scripts/check-sim-cards.mjs.',
+// Extension UX-00b : la taxonomie des surfaces plates (bande, ligne KPI,
+// micro-tuile) ne doit jamais être élevée — aucune ombre dans une surface non
+// élevée (docs/AUDIT_COCKPIT.md §10). On contrôle la définition canonique et
+// les overrides applicatifs : aucune exception locale.
+const FLAT_SURFACE_BASES = ['.sim-band', '.sim-kpi-line', '.sim-tile-flat'];
+const BOX_SHADOW_DECL = /\bbox-shadow\s*:\s*([^;]+);?/g;
+
+function selectorTargetsFlatSurface(selector) {
+  return FLAT_SURFACE_BASES.some((base) =>
+    new RegExp(`${base.replace('.', '\\.')}(?:$|[\\s.:#\\[]|--|__)`).test(selector),
   );
+}
+
+function hasNonNeutralBoxShadow(body) {
+  BOX_SHADOW_DECL.lastIndex = 0;
+  for (const match of body.matchAll(BOX_SHADOW_DECL)) {
+    const value = match[1].trim().toLowerCase();
+    if (value !== 'none' && value !== 'none !important') return true;
+  }
+  return false;
+}
+
+function collectFlatSurfaceFailures(content, filePath) {
+  const found = [];
+  const ruleRegex = /([^{}]+)\{([^{}]*)\}/g;
+  let ruleMatch;
+  while ((ruleMatch = ruleRegex.exec(content)) !== null) {
+    const selectors = ruleMatch[1]
+      .split(',')
+      .map((selector) => selector.trim())
+      .filter(Boolean);
+    const body = ruleMatch[2];
+    const lineNumber = content.slice(0, ruleMatch.index).split(/\r?\n/).length;
+    for (const selector of selectors) {
+      if (!selectorTargetsFlatSurface(selector)) continue;
+      if (hasNonNeutralBoxShadow(body)) {
+        found.push({ filePath, selector, lineNumber });
+      }
+    }
+  }
+  return found;
+}
+
+async function collectFlatSurfaceCssFailures() {
+  const cssFilesByPath = new Map();
+  for (const dir of CSS_SCAN_DIRS) {
+    for (const filePath of await listCssFiles(dir)) {
+      cssFilesByPath.set(filePath, filePath);
+    }
+  }
+
+  const found = [];
+  for (const filePath of cssFilesByPath.keys()) {
+    const content = await readFile(filePath, 'utf8');
+    found.push(...collectFlatSurfaceFailures(content, filePath));
+  }
+  return found;
+}
+
+const surfaceFailures = await collectFlatSurfaceCssFailures();
+
+if (failures.length > 0 || surfaceFailures.length > 0) {
+  if (failures.length > 0) {
+    console.error('Contrat cards /sim/* non respecté :');
+    failures.forEach(({ filePath, lineNumber, line }) => {
+      const relativePath = path.relative(ROOT, filePath).replaceAll(path.sep, '/');
+      console.error(`- ${relativePath}:${lineNumber} ${line}`);
+    });
+    console.error(
+      'Ajoute premium-card--guide + sim-card--guide ou documente une exception nommée dans scripts/check-sim-cards.mjs.',
+    );
+  }
+
+  if (surfaceFailures.length > 0) {
+    console.error('Taxonomie des surfaces plates non respectée (aucune ombre autorisée) :');
+    surfaceFailures.forEach(({ filePath, selector, lineNumber }) => {
+      const relativePath = path.relative(ROOT, filePath).replaceAll(path.sep, '/');
+      console.error(`- ${relativePath}:${lineNumber} ${selector} porte box-shadow`);
+    });
+    console.error(
+      'Une bande / ligne KPI / micro-tuile reste non élevée : retire box-shadow ou utilise une carte.',
+    );
+  }
+
   process.exit(1);
 }
 

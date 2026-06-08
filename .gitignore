@@ -52,6 +52,7 @@ supabase/storage/base-cg-retraite-cg/**
 # Claude Code local session config (permissions machine-specific)
 .claude/settings.local.json
 .claude/launch.json
+.claude/*.lock
 
 # Audit temporaires
 _audit/

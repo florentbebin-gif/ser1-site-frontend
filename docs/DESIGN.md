@@ -58,9 +58,11 @@ Utiliser les alias pour le code applicatif nouveau :
 - etats : `--state-success`, `--state-warning`, `--state-danger`, `--state-info` ;
 - systeme : `--overlay-modal`, `--shadow-color`, `--focus-ring-color`, `--focus-ring`.
 
-Les etats semantiques restent themables : `--state-warning` derive de C6. Ne pas ajouter de
-warning hex local, meme pour garantir un contraste ponctuel ; dans ce cas, corriger la palette ou
-afficher le contraste dans le showroom.
+Les etats semantiques restent themables. `--state-warning` derive de C6 mais est **decouple** de
+`--accent-signature` (cuivre) : il est approfondi vers C10 pour rester saillant comme alerte, tandis
+que le cuivre reste un accent de marque. Ne pas ajouter de warning hex local, meme pour garantir un
+contraste ponctuel ; dans ce cas, corriger la palette ou afficher le contraste dans le showroom.
+Les tokens data-viz du cockpit (`--viz-*`) sont decrits dans la section « Cockpit `/audit` ».
 
 `--focus-ring` reste un token compose de box-shadow. Ne pas le remplacer par une couleur simple.
 Si un composant a seulement besoin de la couleur, utiliser `--focus-ring-color`.
@@ -267,42 +269,51 @@ largeurs) decrite dans `GOUVERNANCE.md` §16d. Points non negociables :
 8. Tester desktop, tablette et mobile 390 px.
 9. Lancer les checks UI pertinents puis `npm run check` avant commit final.
 
-## Cockpit `/audit` — règles annoncées (UX-00a)
+## Cockpit `/audit` — règles verrouillées (UX-00b)
 
-Le contrat complet du cockpit `/audit` vit dans `docs/AUDIT_COCKPIT.md`. Les règles ci-dessous sont
-**annoncées** : cette PR UX-00a fige le contrat, mais **n'ajoute encore aucun token CSS, showroom ou
-check**. L'implémentation (tokens, showroom, checks) est faite en **UX-00b**.
+Le contrat complet du cockpit `/audit` vit dans `docs/AUDIT_COCKPIT.md`. UX-00a a figé le contrat ;
+**UX-00b a verrouillé** les fondations design system ci-dessous (tokens, showroom, checks), sans coder
+les pages métier. Démo runtime : `/settings/design-system` (sections « Surfaces cockpit »,
+« Data-viz cockpit », « Modales » → drawer XL).
 
-### Data-viz & statuts (décision de principe)
+### Data-viz & statuts
 
 - C1-C10 restent la palette configurable utilisateur. On n'ajoute pas de slot configurable.
 - Les graphes, radars, jauges et statuts du cockpit consomment des tokens sémantiques dérivés du
-  thème : `--viz-1`…`--viz-8` (séries catégorielles), `--viz-current`/`--viz-scenario` (radar),
-  `--viz-sequential-*` (anneaux/jauges).
-- `--state-warning` doit être distinct de `--accent-signature` (cuivre) : le cuivre est un accent de
+  thème, définis dans `src/styles/index.css` : `--viz-1`…`--viz-8` (séries catégorielles),
+  `--viz-current`/`--viz-scenario` (radar), `--viz-sequential-1`…`-5` (anneaux/jauges).
+- `--state-warning` est **découplé** de `--accent-signature` (cuivre) : le cuivre est un accent de
   marque / version active / KPI héros, jamais un statut d'alerte.
 - Aucune couleur locale, aucun hex/rgb/hsl runtime ; toute couleur de graphe passe par `--viz-*` ou
-  `--state-*`.
+  `--state-*`. Garde-fou : `check:css-colors` interdit tout littéral de couleur dans un `--viz-*` et
+  interdit le cuivre dans les séries du radar.
 - Une extension C11-C14 n'est envisagée que si la dérivation accessible depuis C1-C10 est prouvée
   insuffisante, par PR dédiée verrouillée par docs + showroom + checks.
 
 ### Surfaces — taxonomie à 4 niveaux
 
-- **Carte** : surface élevée (bordure + rayon + ombre), outil cadré ; pas d'autre carte élevée à
-  l'intérieur.
-- **Bande** : section interne sans élévation, séparée par espacement ou filet `--border-subtle`.
-- **Ligne KPI** : label + valeur, typographique, sans cadre.
-- **Micro-tuile plate** : fond `--surface-muted`, rayon léger, sans ombre ni bordure forte ;
-  autorisée dans une carte car non élevée.
-- Règle : aucune surface avec ombre dans une surface avec ombre.
+Classes canoniques dans `src/styles/sim/surfaces.css` :
+
+- **Carte** : surface élevée (bordure + rayon + ombre), outil cadré (`premium-card` / `sim-card`) ;
+  pas d'autre carte élevée à l'intérieur.
+- **Bande** (`sim-band`) : section interne sans élévation, séparée par espacement ou filet
+  `--border-subtle`.
+- **Ligne KPI** (`sim-kpi-line`) : label + valeur, typographique, sans cadre.
+- **Micro-tuile plate** (`sim-tile-flat`) : fond `--surface-muted`, rayon léger, sans ombre ni
+  bordure forte ; autorisée dans une carte car non élevée.
+- Règle : aucune surface avec ombre dans une surface avec ombre. Garde-fou : `check:sim-cards`
+  interdit `box-shadow` sur les classes plates.
 
 ### Drawer XL
 
-- Pattern `/audit` à canoniser en UX-00b : drawer XL ancré à droite, variante de l'anatomie modale
-  (header, menu interne gauche optionnel, corps, panneau sources optionnel, footer stable
-  Annuler/Enregistrer), focus trap, `Escape`, retour focus.
-- Aucune largeur locale ; les classes canoniques (`sim-drawer`) et l'extension de `check:modal-canon`
-  arrivent en UX-00b.
+- Famille canonique `sim-drawer` dans `src/styles/sim/modals.css` : drawer XL ancré à droite,
+  **variante de l'anatomie modale** (réutilise `sim-modal__header` / `__footer` / `__close` et la nav
+  latérale `sim-modal-layout--with-nav`). Anatomie : header, menu interne gauche optionnel, corps,
+  panneau sources optionnel (`sim-drawer__sources`), footer stable Annuler/Enregistrer. Largeurs
+  `sim-drawer` / `sim-drawer--xl` uniquement.
+- Aucune largeur locale ; `check:modal-canon` bloque toute largeur de drawer racine hors fichier
+  canonique. Le focus trap, `Escape` et le retour focus restent portés par le futur composant shell
+  (UX-03).
 
 ### Motion courte
 

@@ -18,6 +18,15 @@ describe('DesignSystemModalPreview', () => {
     expect(screen.getByText('Footer canonique')).toBeInTheDocument();
   });
 
+  it('expose le drawer XL canonique /audit (variante de l’anatomie modale)', () => {
+    render(<DesignSystemModalPreview />);
+
+    expect(screen.getByText('Drawer XL (/audit)')).toBeInTheDocument();
+    expect(screen.getByLabelText('Anatomie du drawer XL')).toBeInTheDocument();
+    expect(screen.getByLabelText('Rubriques du drawer')).toBeInTheDocument();
+    expect(screen.getByLabelText('Panneau sources')).toBeInTheDocument();
+  });
+
   it('ouvre la modale canonique complète à la demande', async () => {
     const user = userEvent.setup();
     render(<DesignSystemModalPreview />);

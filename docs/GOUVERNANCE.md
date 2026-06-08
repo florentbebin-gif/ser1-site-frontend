@@ -114,16 +114,24 @@ Principes : épuré, lisible, respirant.
   - Anti-pattern : `overflow: visible` sur le container sans `max-height` → la modale dépasse la viewport et devient inutilisable.
   - Référence : `sc-dispositions-modal` / `sc-member-modal` (`src/features/succession/styles/modals.css`), `.vcm` / `.vcm__body` (`src/features/placement/styles/versements-modal.css`).
 
-### Cockpit `/audit` — règles annoncées (UX-00b)
+### Cockpit `/audit` — règles verrouillées (UX-00b)
 
-Contrat complet : `docs/AUDIT_COCKPIT.md`. Règles annoncées, à verrouiller en **UX-00b** :
+Contrat complet : `docs/AUDIT_COCKPIT.md`. UX-00b a **verrouillé** les fondations suivantes (tokens,
+showroom `/settings/design-system`, checks), sans coder les pages métier `/audit` :
 
-- `/audit` aura un **drawer XL canonique** (`sim-drawer`, variante de l'anatomie modale), verrouillé
-  par `check:modal-canon` ; aucune largeur ni CSS de drawer locale.
-- Les graphes du cockpit devront utiliser **uniquement** `--viz-*` / `--state-*` une fois les tokens
-  créés ; aucune couleur de graphe locale.
-- `--state-warning` sera **découplé** de `--accent-signature` (cuivre) ; le cuivre reste un accent de
-  marque / version active / KPI héros, pas un statut d'alerte.
+- **Drawer XL canonique** : famille `sim-drawer` (`src/styles/sim/modals.css`), variante de
+  l'anatomie modale (réutilise `sim-modal__header`/`__footer`/`__close` et la nav latérale). Largeurs
+  `sim-drawer` / `sim-drawer--xl` uniquement ; aucune largeur ni CSS de drawer locale. Garde-fou :
+  `check:modal-canon` (interdit toute largeur de drawer racine hors fichier canonique).
+- **Tokens data-viz** : `--viz-1`…`--viz-8`, `--viz-current`/`--viz-scenario`,
+  `--viz-sequential-1`…`-5` dans `src/styles/index.css`, tous dérivés de C1-C10 sans hex runtime.
+  Les graphes du cockpit utilisent **uniquement** `--viz-*` / `--state-*`. Garde-fou :
+  `check:css-colors` (pas de littéral de couleur dans un `--viz-*`, pas de cuivre dans le radar).
+- **`--state-warning` découplé** de `--accent-signature` (cuivre) : warning approfondi vers C10 pour
+  rester saillant ; le cuivre reste un accent de marque / version active / KPI héros, pas un statut
+  d'alerte.
+- **Taxonomie des surfaces** : `sim-band`, `sim-kpi-line`, `sim-tile-flat` (`src/styles/sim/surfaces.css`),
+  non élevées ; aucune surface avec ombre dans une surface avec ombre. Garde-fou : `check:sim-cards`.
 - **Aucune exception locale** n'est autorisée pour contourner ces règles.
 
 ---
@@ -1070,8 +1078,11 @@ Les cartes consomment `--surface-card`, les overlays `--overlay-modal`, les ombr
 ### Etats semantiques (rappel)
 
 - `danger` : utiliser `--state-danger` / C1 (pas de rouge hardcode).
-- `warning` : utiliser `--state-warning` / C6, jamais de warning hardcode.
+- `warning` : utiliser `--state-warning` (derive de C6 mais decouple de `--accent-signature`, voir
+  la section Cockpit `/audit`), jamais de warning hardcode.
 - `success/info` : utiliser les alias `--state-success` et `--state-info`.
+- data-viz cockpit : utiliser `--viz-*` (series, radar, rampe sequentielle), jamais une couleur de
+  graphe locale.
 
 ### Dark-mode-ready
 
