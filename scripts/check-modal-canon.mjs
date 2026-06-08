@@ -44,11 +44,14 @@ const ALLOWED_FILES = new Set(['src/pages/settings/styles/modals.css'].map((p) =
 const ROOT_MODAL_SELECTOR = /\.[\w-]*-modal(-shell)?\s*$/;
 // Idem pour le drawer XL canonique (UX-00b) : la seule source de largeurs de
 // drawer est la famille `sim-drawer` de `src/styles/sim/modals.css` (hors scan).
-// Toute largeur de drawer racine dans une feature/page/composant est interdite.
-const ROOT_DRAWER_SELECTOR = /\.[\w-]*-drawer(-shell)?\s*$/;
+// Toute largeur de drawer racine dans une feature/page/composant est interdite,
+// y compris via modificateur (`.audit-drawer.audit-drawer--xl`,
+// `.audit-drawer--xl`, `.foo-drawer-shell`).
+const ROOT_DRAWER_CLASS = /(?:^|-)drawer(?:-shell)?(?:--[\w-]+)?$/;
 // Largeur « bucket » fixe : max-width en px, ou width: min(<px>…). On ignore
 // width:100%, width:auto, max-width:none et les largeurs viewport (calc(100vw…)).
 const WIDTH_DECL = /(max-width\s*:\s*\d+\s*px)|(width\s*:\s*min\(\s*\d+\s*px)/;
+const DRAWER_WIDTH_DECL = /\b(?:width|max-width|inline-size|max-inline-size)\s*:/;
 const LOCAL_MODAL_NAV_SELECTOR =
   /(?:__nav(?:[\s.{:#]|$)|__tabs(?:[\s.{:#]|$)|-modal-nav(?:__[\w-]+)?(?:[\s.{:#]|$))/;
 const NAV_VISUAL_DECL =
@@ -87,6 +90,27 @@ function getRuleSelectors(rawSelector) {
     .filter(Boolean);
 }
 
+function getTargetCompound(selector) {
+  return selector
+    .trim()
+    .split(/\s+|[>+~]/)
+    .filter(Boolean)
+    .at(-1);
+}
+
+function targetsRootDrawer(selector) {
+  const target = getTargetCompound(selector);
+  if (!target) return false;
+
+  const classMatches = target.matchAll(/\.([A-Za-z_][\w-]*)/g);
+  for (const match of classMatches) {
+    const className = match[1];
+    if (className.includes('__')) continue;
+    if (ROOT_DRAWER_CLASS.test(className)) return true;
+  }
+  return false;
+}
+
 function collectViolations(content, relPath) {
   const violations = [];
   // Découpe naïve en blocs `sélecteur { déclarations }`.
@@ -105,7 +129,7 @@ function collectViolations(content, relPath) {
           reason: 'largeur racine de modale en dur',
         });
       }
-      if (ROOT_DRAWER_SELECTOR.test(selector) && WIDTH_DECL.test(body)) {
+      if (targetsRootDrawer(selector) && DRAWER_WIDTH_DECL.test(body)) {
         violations.push({
           file: relPath,
           line,

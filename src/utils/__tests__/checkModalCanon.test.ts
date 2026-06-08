@@ -66,6 +66,37 @@ describe('check-modal-canon', () => {
     expect(output).toContain('Aucune largeur de modale ad hoc');
   });
 
+  it('signale une largeur de drawer racine avec modificateur', () => {
+    const root = createRoot();
+    writeFixture(
+      root,
+      'src/features/demo/styles/demo.css',
+      '.audit-drawer.audit-drawer--xl {\n  max-width: 960px;\n}\n',
+    );
+
+    const result = runCheck(root);
+    const output = `${result.stdout}\n${result.stderr}`;
+
+    expect(result.status).toBe(1);
+    expect(output).toContain('largeur racine de drawer en dur');
+    expect(output).toContain('.audit-drawer.audit-drawer--xl');
+  });
+
+  it('autorise les sous-éléments de drawer', () => {
+    const root = createRoot();
+    writeFixture(
+      root,
+      'src/features/demo/styles/demo.css',
+      '.sim-drawer__body {\n  max-width: 320px;\n}\n',
+    );
+
+    const result = runCheck(root);
+    const output = `${result.stdout}\n${result.stderr}`;
+
+    expect(result.status).toBe(0);
+    expect(output).toContain('Aucune largeur de modale ad hoc');
+  });
+
   it('autorise la source canonique du shell Settings', () => {
     const root = createRoot();
     writeFixture(
