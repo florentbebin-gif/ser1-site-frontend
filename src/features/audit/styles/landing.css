@@ -11,8 +11,8 @@
 
 .audit-landing__layout {
   display: grid;
-  grid-template-columns: 232px minmax(0, 1fr);
-  gap: var(--space-6);
+  grid-template-columns: 152px minmax(0, 1fr);
+  gap: var(--space-5);
   align-items: start;
 }
 
@@ -105,7 +105,7 @@
 }
 
 .audit-card--hero {
-  border-top: 3px solid var(--accent-signature);
+  border-top: 3px solid var(--action-primary);
 }
 
 .audit-card--locked {
@@ -119,12 +119,12 @@
 
 .audit-card--action:hover {
   transform: translateY(-2px);
-  border-color: color-mix(in srgb, var(--accent-signature) 50%, var(--border-default));
+  border-color: color-mix(in srgb, var(--action-primary) 50%, var(--border-default));
   box-shadow: 0 10px 30px color-mix(in srgb, var(--shadow-color) 10%, transparent);
 }
 
 .audit-card--action:focus-within {
-  border-color: var(--accent-signature);
+  border-color: var(--action-primary);
   box-shadow: var(--focus-ring);
 }
 
@@ -145,8 +145,8 @@
   height: 38px;
   flex-shrink: 0;
   border-radius: var(--radius-md);
-  background: color-mix(in srgb, var(--accent-signature) 12%, var(--surface-card));
-  color: var(--accent-signature);
+  background: color-mix(in srgb, var(--action-primary) 12%, var(--surface-card));
+  color: var(--action-primary);
 }
 
 .audit-card__icon--locked {
@@ -195,7 +195,7 @@
 
 .audit-tile__icon {
   display: inline-flex;
-  color: var(--accent-signature);
+  color: var(--action-primary);
 }
 
 .audit-tile__icon-svg {
@@ -321,13 +321,13 @@
 }
 
 .audit-filiation__node--principal {
-  border-color: color-mix(in srgb, var(--accent-signature) 45%, var(--border-default));
-  background: color-mix(in srgb, var(--accent-signature) 16%, var(--surface-card));
-  color: var(--accent-signature);
+  border-color: color-mix(in srgb, var(--action-primary) 45%, var(--border-default));
+  background: color-mix(in srgb, var(--action-primary) 16%, var(--surface-card));
+  color: var(--action-primary);
 }
 
 .audit-filiation__node--conjoint {
-  background: color-mix(in srgb, var(--accent-signature) 8%, var(--surface-card));
+  background: color-mix(in srgb, var(--action-primary) 8%, var(--surface-card));
   color: var(--text-primary);
 }
 
@@ -367,8 +367,8 @@
   height: 20px;
   flex-shrink: 0;
   border-radius: var(--radius-full);
-  background: color-mix(in srgb, var(--accent-signature) 14%, var(--surface-card));
-  color: var(--accent-signature);
+  background: color-mix(in srgb, var(--action-primary) 14%, var(--surface-card));
+  color: var(--action-primary);
   font-size: var(--font-size-xs);
   font-weight: var(--font-weight-bold);
   font-variant-numeric: tabular-nums;
@@ -434,9 +434,9 @@
 }
 
 .audit-card--action:hover .audit-card__go {
-  background: var(--accent-signature);
+  background: var(--action-primary);
   color: var(--surface-card);
-  border-color: var(--accent-signature);
+  border-color: var(--action-primary);
 }
 
 .audit-card--action:hover .audit-card__go-arrow {
