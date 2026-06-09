@@ -1,14 +1,13 @@
 /**
  * AuditLanding — cockpit /audit (UX-01).
  *
- * Cockpit pleine largeur : colonne gauche (encart « Dossier de travail » + gestion
- * des versions « à venir ») et zone principale en 3 cartes. Les cartes Synthèse
- * dossier et Objectifs SONT les actions (toute la surface est cliquable via un vrai
- * <button>, focus visible, aria-label). La Synthèse restitue l'état civil réel et la
- * filiation issus de F1 ; les blocs masses successorales (F3) et organigramme société
- * (F5) restent des placeholders honnêtes « à venir ». La carte Stratégie est un
- * placeholder verrouillé non interactif. Aucune donnée inventée, aucun radar, aucun
- * score, aucune valeur par défaut présentée comme certitude.
+ * Cockpit pleine largeur : panneau contextuel gauche (encart dossier + gestion des
+ * versions « à venir ») et zone principale en 3 cartes. Les cartes Synthèse et
+ * Objectifs SONT les actions (vrai <button> plein-carte, flèche premium, focus
+ * visible). La Synthèse restitue l'état civil réel et la filiation F1 ; les masses
+ * successorales (F3) restent un placeholder honnête réduit. L'organigramme société
+ * n'apparaît pas tant qu'aucune société n'est saisie (F5). Stratégie verrouillée.
+ * Aucune donnée inventée, aucune valeur par défaut comme certitude.
  */
 
 import type { ReactElement, ReactNode } from 'react';
@@ -16,9 +15,9 @@ import type { ReactElement, ReactNode } from 'react';
 import { DossierLoadedCard } from '@/components/ui/dossier/DossierLoadedCard';
 import {
   IconArrowRight,
-  IconBuilding,
   IconClipboardCheck,
   IconFolder,
+  IconInfo,
   IconLock,
   IconNetwork,
   IconPieChart,
@@ -107,7 +106,6 @@ interface SyntheseCardProps {
 }
 
 function SyntheseCard({ card, onOpenAudit }: SyntheseCardProps): ReactElement {
-  const { etatCivil, filiation } = card;
   return (
     <section
       className="audit-card audit-card--hero audit-card--action"
@@ -121,47 +119,100 @@ function SyntheseCard({ card, onOpenAudit }: SyntheseCardProps): ReactElement {
 
       <div className="audit-card__tiles">
         <Tile icon={<IconUsers className="audit-tile__icon-svg" />} label="État civil">
-          {etatCivil.principalName ? (
-            <div className="audit-etatcivil">
-              <p className="audit-etatcivil__name">
-                {etatCivil.principalName}
-                {etatCivil.principalAge != null && (
-                  <span className="audit-etatcivil__age"> · {etatCivil.principalAge} ans</span>
-                )}
-              </p>
-              {etatCivil.situationLabel && (
-                <p className="audit-etatcivil__line">{etatCivil.situationLabel}</p>
-              )}
-              {etatCivil.conjointName && (
-                <p className="audit-etatcivil__line">Conjoint&nbsp;: {etatCivil.conjointName}</p>
-              )}
-              {etatCivil.enfantsPrenoms.length > 0 && (
-                <p className="audit-etatcivil__line">
-                  Enfants&nbsp;: {etatCivil.enfantsPrenoms.join(', ')}
-                </p>
-              )}
-            </div>
-          ) : (
-            <p className="audit-tile__empty">Foyer à renseigner</p>
-          )}
+          <EtatCivil card={card} />
         </Tile>
 
         <Tile icon={<IconNetwork className="audit-tile__icon-svg" />} label="Filiation">
-          <FoyerFiliation filiation={filiation} />
+          <FoyerFiliation
+            principal={card.principal}
+            conjoint={card.conjoint}
+            enfants={card.enfants}
+            hasData={card.filiationHasData}
+          />
         </Tile>
 
-        <SoonTile
-          icon={<IconPieChart className="audit-tile__icon-svg" />}
-          label="Masses successorales"
-        />
-        <SoonTile
-          icon={<IconBuilding className="audit-tile__icon-svg" />}
-          label="Organigramme société"
-        />
+        <MassesPlaceholder />
       </div>
 
       <CardGo ariaLabel={card.ariaLabel} onClick={() => onOpenAudit(card.action.destination)} />
     </section>
+  );
+}
+
+function EtatCivil({ card }: { card: AuditLandingSyntheseCard }): ReactElement {
+  if (!card.principal) {
+    return <p className="audit-tile__empty">Foyer à renseigner</p>;
+  }
+  const { principal, conjoint, enfants, situationLabel, partsFiscales, tmiLabel } = card;
+  return (
+    <div className="audit-ec">
+      <p className="audit-ec__principal">
+        {principal.fullName}
+        {principal.age != null && <span className="audit-ec__age"> · {principal.age} ans</span>}
+      </p>
+      {principal.profession && <p className="audit-ec__prof">{principal.profession}</p>}
+      {situationLabel && <p className="audit-ec__line">{situationLabel}</p>}
+      {conjoint && (
+        <p className="audit-ec__line">
+          Conjoint&nbsp;: {conjoint.fullName}
+          {conjoint.age != null && ` · ${conjoint.age} ans`}
+          {conjoint.profession && ` · ${conjoint.profession}`}
+        </p>
+      )}
+      {enfants.length > 0 && (
+        <p className="audit-ec__line">
+          Enfants&nbsp;:{' '}
+          {enfants
+            .map((enfant) =>
+              enfant.age != null ? `${enfant.prenom} (${enfant.age})` : enfant.prenom,
+            )
+            .join(', ')}
+        </p>
+      )}
+      {partsFiscales != null && (
+        <p className="audit-ec__fiscal">
+          <strong>{formatParts(partsFiscales)} parts</strong>
+          <span className="audit-ec__sep"> · </span>
+          TMI <span className="audit-ec__soon">{tmiLabel}</span>
+        </p>
+      )}
+    </div>
+  );
+}
+
+/** Masses successorales : bloc présent mais non calculable (F3) — réduit, sans
+ *  remplissage, avec un mini-anneau atténué pour suggérer le futur contenu. */
+function MassesPlaceholder(): ReactElement {
+  return (
+    <div className="audit-soon">
+      <div className="audit-soon__main">
+        <span className="audit-soon__icon">
+          <IconPieChart className="audit-soon__icon-svg" />
+        </span>
+        <span className="audit-soon__label">Masses successorales</span>
+        <span className="audit-soon__badge">
+          <IconLock className="audit-soon__badge-icon" />à venir
+        </span>
+      </div>
+      <svg className="audit-soon__ring" viewBox="0 0 36 36" aria-hidden="true">
+        <circle className="audit-soon__ring-track" cx="18" cy="18" r="14" />
+        <circle
+          className="audit-soon__ring-seg audit-soon__ring-seg--a"
+          cx="18"
+          cy="18"
+          r="14"
+          strokeDasharray="40 88"
+        />
+        <circle
+          className="audit-soon__ring-seg audit-soon__ring-seg--b"
+          cx="18"
+          cy="18"
+          r="14"
+          strokeDasharray="26 88"
+          strokeDashoffset="-40"
+        />
+      </svg>
+    </div>
   );
 }
 
@@ -189,7 +240,12 @@ function ObjectifsCard({ card, onOpenAudit }: ObjectifsCardProps): ReactElement 
               </li>
             ))}
           </ol>
-          {card.note && <p className="audit-objectifs__note">{card.note}</p>}
+          {card.note && (
+            <p className="audit-objectifs__note">
+              <IconInfo className="audit-objectifs__note-icon" />
+              {card.note}
+            </p>
+          )}
         </>
       ) : (
         <p className="audit-tile__empty">{card.emptyLabel}</p>
@@ -237,27 +293,6 @@ function Tile({ icon, label, children }: TileProps): ReactElement {
   );
 }
 
-interface SoonTileProps {
-  icon: ReactNode;
-  label: string;
-}
-
-/** Tuile « à venir » honnête : la donnée dépend d'une fondation non livrée (F3/F5). */
-function SoonTile({ icon, label }: SoonTileProps): ReactElement {
-  return (
-    <div className="audit-tile audit-tile--soon">
-      <div className="audit-tile__head">
-        <span className="audit-tile__icon">{icon}</span>
-        <span className="audit-tile__label">{label}</span>
-      </div>
-      <div className="audit-tile__soon">
-        <IconLock className="audit-tile__soon-icon" />
-        <span>à venir</span>
-      </div>
-    </div>
-  );
-}
-
 interface CardGoProps {
   ariaLabel: string;
   onClick: () => void;
@@ -287,4 +322,13 @@ function DossierVersionsPlaceholder(): ReactElement {
       </p>
     </section>
   );
+}
+
+function formatParts(parts: number): string {
+  return Number.isInteger(parts)
+    ? String(parts)
+    : parts
+        .toFixed(2)
+        .replace(/\.?0+$/, '')
+        .replace('.', ',');
 }

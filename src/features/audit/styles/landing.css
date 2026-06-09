@@ -1,8 +1,9 @@
 /* Cockpit /audit — UX-01.
- * Cartes élevées = points d'entrée cliquables (vrai <button>, motif « stretched
- * button »). Sous-tuiles plates UX-00b (aucune ombre). Tokens uniquement. */
+ * Cartes élevées = points d'entrée cliquables (vrai <button>). Sous-tuiles plates
+ * UX-00b (aucune ombre). Accent C2 (--action-primary). Tokens uniquement, aucune
+ * bordure en pointillé. */
 
-/* ── Layout pleine largeur : colonne gauche + zone principale ──────────────── */
+/* ── Layout pleine largeur : panneau gauche + zone principale ──────────────── */
 
 .audit-landing.premium-page {
   max-width: 1460px;
@@ -11,16 +12,21 @@
 
 .audit-landing__layout {
   display: grid;
-  grid-template-columns: 152px minmax(0, 1fr);
+  grid-template-columns: 168px minmax(0, 1fr);
   gap: var(--space-5);
   align-items: start;
 }
 
+/* Panneau contextuel du dossier : fond teinté distinct pour ancrer l'interface. */
 .audit-landing__rail {
   display: flex;
   flex-direction: column;
   gap: var(--space-3);
   min-width: 0;
+  padding: var(--space-3);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  background: color-mix(in srgb, var(--action-primary) 7%, var(--surface-card));
 }
 
 .audit-landing__main {
@@ -39,11 +45,11 @@
   color: var(--text-primary);
 }
 
-/* ── Colonne gauche : bloc gestion des versions (à venir) ──────────────────── */
+/* ── Bloc gestion des versions (à venir) — bordure pleine fine ─────────────── */
 
 .audit-aside-card {
-  padding: var(--space-4);
-  border: 1px dashed var(--border-default);
+  padding: var(--space-3);
+  border: 1px solid var(--border-subtle);
   border-radius: var(--radius-md);
   background: var(--surface-card);
 }
@@ -58,8 +64,9 @@
 }
 
 .audit-aside-card__icon {
-  width: 15px;
-  height: 15px;
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
   color: var(--text-muted);
 }
 
@@ -70,13 +77,13 @@
   color: var(--text-muted);
 }
 
-/* ── Grille des cartes : Synthèse dominante + colonne secondaire ───────────── */
+/* ── Grille des cartes ─────────────────────────────────────────────────────── */
 
 .audit-landing__grid {
   display: grid;
   grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
   gap: var(--space-5);
-  align-items: stretch;
+  align-items: start;
 }
 
 .audit-landing__side {
@@ -86,7 +93,7 @@
   min-width: 0;
 }
 
-/* ── Carte (surface élevée, contraste franc) ───────────────────────────────── */
+/* ── Carte (surface élevée) ────────────────────────────────────────────────── */
 
 .audit-card {
   position: relative;
@@ -128,7 +135,7 @@
   box-shadow: var(--focus-ring);
 }
 
-/* ── En-tête de carte : icône + titre sur la même ligne ────────────────────── */
+/* ── En-tête de carte : icône + titre alignés ──────────────────────────────── */
 
 .audit-card__head {
   display: flex;
@@ -166,14 +173,12 @@
   color: var(--text-primary);
 }
 
-/* ── Tuiles de la carte Synthèse (micro-fiches) ────────────────────────────── */
+/* ── Tuiles de la carte Synthèse ───────────────────────────────────────────── */
 
 .audit-card__tiles {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  grid-auto-rows: minmax(0, 1fr);
   gap: var(--space-3);
-  flex: 1 1 auto;
 }
 
 .audit-tile {
@@ -184,7 +189,7 @@
   padding: var(--space-4);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-md);
-  background: color-mix(in srgb, var(--surface-page) 55%, var(--surface-card));
+  background: color-mix(in srgb, var(--surface-page) 50%, var(--surface-card));
 }
 
 .audit-tile__head {
@@ -218,129 +223,205 @@
 }
 
 .audit-tile__empty {
-  margin: 0;
+  margin: auto 0;
   font-size: var(--font-size-sm);
   font-style: italic;
   color: var(--text-muted);
-}
-
-.audit-tile--soon {
-  border-style: dashed;
-}
-
-.audit-tile__soon {
-  display: flex;
-  align-items: center;
-  gap: var(--space-1);
-  margin-top: auto;
-  font-size: var(--font-size-xs);
-  font-weight: var(--font-weight-semibold);
-  letter-spacing: 0.03em;
-  text-transform: uppercase;
-  color: var(--text-muted);
-}
-
-.audit-tile__soon-icon {
-  width: 13px;
-  height: 13px;
 }
 
 /* ── État civil ────────────────────────────────────────────────────────────── */
 
-.audit-etatcivil {
+.audit-ec {
   display: grid;
   gap: 3px;
   align-content: start;
-}
-
-.audit-etatcivil__name {
-  margin: 0;
-  font-size: var(--font-size-md);
-  font-weight: var(--font-weight-semibold);
-  color: var(--text-primary);
-}
-
-.audit-etatcivil__age {
-  color: var(--text-secondary);
-  font-weight: var(--font-weight-regular);
-}
-
-.audit-etatcivil__line {
-  margin: 0;
-  font-size: var(--font-size-sm);
-  color: var(--text-secondary);
-}
-
-/* ── Schéma de filiation ───────────────────────────────────────────────────── */
-
-.audit-filiation {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: var(--space-1);
   width: 100%;
-  margin: auto 0;
 }
 
-.audit-filiation__couple {
-  display: flex;
-  align-items: center;
-  gap: var(--space-1);
+.audit-ec__principal {
+  margin: 0;
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
+  color: var(--text-primary);
+  letter-spacing: 0.01em;
 }
 
-.audit-filiation__bond {
-  width: 14px;
-  height: 1.5px;
-  border-radius: var(--radius-full);
-  background: var(--border-strong);
-}
-
-.audit-filiation__trunk {
-  width: 1.5px;
-  height: 12px;
-  background: var(--border-strong);
-}
-
-.audit-filiation__enfants {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-1);
-  justify-content: center;
-}
-
-.audit-filiation__node {
-  padding: 2px var(--space-2);
-  border-radius: var(--radius-full);
-  border: 1px solid var(--border-default);
-  background: var(--surface-card);
-  font-size: var(--font-size-xs);
-  font-weight: var(--font-weight-semibold);
+.audit-ec__age {
+  font-weight: var(--font-weight-medium);
   color: var(--text-secondary);
-  white-space: nowrap;
 }
 
-.audit-filiation__node--principal {
-  border-color: color-mix(in srgb, var(--action-primary) 45%, var(--border-default));
-  background: color-mix(in srgb, var(--action-primary) 16%, var(--surface-card));
+.audit-ec__prof {
+  margin: 0 0 var(--space-1);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
   color: var(--action-primary);
 }
 
-.audit-filiation__node--conjoint {
-  background: color-mix(in srgb, var(--action-primary) 8%, var(--surface-card));
-  color: var(--text-primary);
-}
-
-.audit-filiation__node--enfant {
-  background: color-mix(in srgb, var(--surface-page) 60%, var(--surface-card));
+.audit-ec__line {
+  margin: 0;
+  font-size: var(--font-size-sm);
   color: var(--text-secondary);
 }
 
-.audit-filiation__empty {
-  margin: auto 0;
+.audit-ec__fiscal {
+  margin: var(--space-2) 0 0;
   font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+}
+
+.audit-ec__fiscal strong {
+  color: var(--action-primary);
+  font-weight: var(--font-weight-semibold);
+}
+
+.audit-ec__soon {
   font-style: italic;
   color: var(--text-muted);
+}
+
+/* ── Filiation (SVG) ───────────────────────────────────────────────────────── */
+
+.audit-fil {
+  width: 100%;
+  height: auto;
+  max-height: 150px;
+  margin: auto 0;
+}
+
+.audit-fil__edge {
+  fill: none;
+  stroke: var(--border-strong);
+  stroke-width: 1.5;
+  stroke-linecap: round;
+}
+
+.audit-fil__node rect {
+  stroke-width: 1;
+}
+
+.audit-fil__node--parent rect {
+  fill: color-mix(in srgb, var(--action-primary) 10%, var(--surface-card));
+  stroke: color-mix(in srgb, var(--action-primary) 32%, var(--border-default));
+}
+
+.audit-fil__node--enfant rect {
+  fill: color-mix(in srgb, var(--state-info) 10%, var(--surface-card));
+  stroke: color-mix(in srgb, var(--state-info) 30%, var(--border-default));
+}
+
+.audit-fil__node--parent .audit-fil__avatar {
+  fill: color-mix(in srgb, var(--action-primary) 24%, var(--surface-card));
+}
+
+.audit-fil__node--enfant .audit-fil__avatar {
+  fill: color-mix(in srgb, var(--state-info) 24%, var(--surface-card));
+}
+
+.audit-fil__initial {
+  font-size: 10px;
+  font-weight: var(--font-weight-bold);
+}
+
+.audit-fil__node--parent .audit-fil__initial {
+  fill: var(--action-primary);
+}
+
+.audit-fil__node--enfant .audit-fil__initial {
+  fill: var(--state-info);
+}
+
+.audit-fil__name {
+  fill: var(--text-primary);
+  font-size: 11px;
+  font-weight: var(--font-weight-semibold);
+}
+
+/* ── Masses successorales : bloc présent, non calculable (réduit, atténué) ──── */
+
+.audit-soon {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  background: transparent;
+}
+
+.audit-soon__main {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.audit-soon__icon {
+  display: inline-flex;
+  color: var(--text-muted);
+}
+
+.audit-soon__icon-svg {
+  width: 15px;
+  height: 15px;
+}
+
+.audit-soon__label {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+}
+
+.audit-soon__badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 1px var(--space-2);
+  border-radius: var(--radius-full);
+  background: var(--surface-muted);
+  color: var(--text-muted);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  text-transform: uppercase;
+}
+
+.audit-soon__badge-icon {
+  width: 11px;
+  height: 11px;
+}
+
+.audit-soon__ring {
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+  opacity: 0.4;
+  filter: blur(0.4px);
+}
+
+.audit-soon__ring-track {
+  fill: none;
+  stroke: var(--border-subtle);
+  stroke-width: 4;
+}
+
+.audit-soon__ring-seg {
+  fill: none;
+  stroke-width: 4;
+  stroke-linecap: round;
+  transform: rotate(-90deg);
+  transform-origin: center;
+}
+
+.audit-soon__ring-seg--a {
+  stroke: var(--viz-sequential-4);
+}
+
+.audit-soon__ring-seg--b {
+  stroke: var(--viz-sequential-2);
 }
 
 /* ── Objectifs ─────────────────────────────────────────────────────────────── */
@@ -363,14 +444,14 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 20px;
-  height: 20px;
+  width: 18px;
+  height: 18px;
   flex-shrink: 0;
   border-radius: var(--radius-full);
-  background: color-mix(in srgb, var(--action-primary) 14%, var(--surface-card));
+  border: 1px solid color-mix(in srgb, var(--action-primary) 35%, var(--border-default));
   color: var(--action-primary);
-  font-size: var(--font-size-xs);
-  font-weight: var(--font-weight-bold);
+  font-size: 10px;
+  font-weight: var(--font-weight-semibold);
   font-variant-numeric: tabular-nums;
 }
 
@@ -384,8 +465,21 @@
 }
 
 .audit-objectifs__note {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
   margin: var(--space-3) 0 0;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-md);
+  background: var(--surface-muted);
   font-size: var(--font-size-xs);
+  color: var(--text-secondary);
+}
+
+.audit-objectifs__note-icon {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
   color: var(--text-muted);
 }
 
@@ -395,7 +489,7 @@
   display: flex;
   justify-content: flex-end;
   margin-top: auto;
-  padding-top: var(--space-4);
+  padding-top: var(--space-5);
 }
 
 .audit-card__go {
@@ -415,7 +509,6 @@
     transform 160ms ease;
 }
 
-/* La zone de clic du bouton couvre toute la carte. */
 .audit-card__go::after {
   content: '';
   position: absolute;
@@ -443,7 +536,7 @@
   transform: translateX(2px);
 }
 
-/* ── Stratégie verrouillée : skeleton abstrait + cadenas ───────────────────── */
+/* ── Stratégie verrouillée ─────────────────────────────────────────────────── */
 
 .audit-card__skeleton {
   position: relative;
@@ -551,6 +644,10 @@
 
 @media (max-width: 960px) {
   .audit-landing__grid {
+    grid-template-columns: 1fr;
+  }
+
+  .audit-card__tiles {
     grid-template-columns: 1fr;
   }
 }

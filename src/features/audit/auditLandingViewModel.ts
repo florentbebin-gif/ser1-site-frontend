@@ -1,51 +1,46 @@
 /**
  * View model de la landing /audit (UX-01).
  *
- * Lecture pure du dossier patrimonial F1 : aucun React, aucun calcul métier,
- * aucune donnée inventée. On restitue la donnée réelle quand elle existe (état
- * civil, filiation) sans jamais présenter une valeur par défaut comme certitude.
- * Les blocs qui dépendent de fondations non livrées (masses successorales = F3,
- * organigramme société = F5, gestion des versions = F6) restent des placeholders
- * honnêtes « à venir », sans jargon interne, sans radar ni score.
+ * Lecture pure du dossier patrimonial F1 : aucune donnée inventée, aucune valeur
+ * par défaut présentée comme certitude. Les parts fiscales sont dérivées de la
+ * composition du foyer F1 via le moteur IR (pas de duplication de règle). La TMI
+ * dépend des revenus (hors F1) et reste « à venir ». Les blocs masses
+ * successorales (F3) et organigramme société (F5) restent des placeholders
+ * honnêtes. Aucun jargon interne, aucun radar ni score.
  */
 
-import type {
-  DossierMembre,
-  DossierPatrimonial,
-  DossierSituationFamilialeStatut,
-} from '@/domain/dossier';
+import { computeAutoPartsWithChildren } from '@/engine/ir/parts';
+import type { DossierMembre, DossierPatrimonial } from '@/domain/dossier';
 
-/** Destination de navigation proposée (mappée vers une étape wizard). */
 export type AuditLandingDestination = 'dossier' | 'objectifs';
 
 export interface AuditLandingAction {
   destination: AuditLandingDestination;
 }
 
-export interface AuditLandingEtatCivil {
-  principalName: string | null;
-  principalAge: number | null;
-  situationLabel: string | null;
-  conjointName: string | null;
-  enfantsPrenoms: string[];
-}
+export type AuditLandingMemberRole = 'principal' | 'conjoint' | 'enfant';
 
-export interface AuditLandingFiliationNode {
+export interface AuditLandingMember {
   id: string;
-  label: string;
-}
-
-export interface AuditLandingFiliation {
-  principal: AuditLandingFiliationNode | null;
-  conjoint: AuditLandingFiliationNode | null;
-  enfants: AuditLandingFiliationNode[];
-  hasData: boolean;
+  fullName: string;
+  prenom: string;
+  age: number | null;
+  profession: string | null;
+  role: AuditLandingMemberRole;
+  estCommun: boolean;
 }
 
 export interface AuditLandingSyntheseCard {
   hasData: boolean;
-  etatCivil: AuditLandingEtatCivil;
-  filiation: AuditLandingFiliation;
+  principal: AuditLandingMember | null;
+  conjoint: AuditLandingMember | null;
+  enfants: AuditLandingMember[];
+  situationLabel: string | null;
+  /** Parts de quotient familial dérivées de F1 (hypothèse enfants à charge). */
+  partsFiscales: number | null;
+  /** La TMI dépend des revenus, absents de F1. */
+  tmiLabel: string;
+  filiationHasData: boolean;
   action: AuditLandingAction;
   ariaLabel: string;
 }
@@ -81,7 +76,10 @@ interface BuildOptions {
   now?: Date;
 }
 
-const SITUATION_FAMILIALE_LABELS: Record<DossierSituationFamilialeStatut, string> = {
+const SITUATION_FAMILIALE_LABELS: Record<
+  DossierPatrimonial['situationFamiliale']['statut'],
+  string
+> = {
   marie: 'Marié(e)',
   pacse: 'Pacsé(e)',
   concubinage: 'Concubinage',
@@ -90,11 +88,10 @@ const SITUATION_FAMILIALE_LABELS: Record<DossierSituationFamilialeStatut, string
   veuf: 'Veuf/Veuve',
 };
 
-const COUPLE_STATUTS: ReadonlySet<DossierSituationFamilialeStatut> = new Set([
-  'marie',
-  'pacse',
-  'concubinage',
-]);
+/** Couple au sens du quotient familial (les concubins forment deux foyers). */
+const TAX_COUPLE_STATUTS = new Set(['marie', 'pacse']);
+/** Couple au sens civil (présence d'un conjoint/partenaire dans le foyer). */
+const COUPLE_STATUTS = new Set(['marie', 'pacse', 'concubinage']);
 
 export function buildAuditLandingViewModel(
   dossier: DossierPatrimonial,
@@ -116,32 +113,27 @@ function buildSyntheseCard(
   now: Date,
   engaged: boolean,
 ): AuditLandingSyntheseCard {
-  const principal = findMembre(dossier, dossier.foyer.membrePrincipalId);
-  const conjoint = findMembre(dossier, dossier.foyer.conjointId);
-  const enfants = dossier.membres.filter((membre) => membre.role === 'enfant');
-  const isCouple = COUPLE_STATUTS.has(dossier.situationFamiliale.statut);
+  const statut = dossier.situationFamiliale.statut;
+  const isCouple = COUPLE_STATUTS.has(statut);
+  const principalRaw = findMembre(dossier, dossier.foyer.membrePrincipalId);
+  const conjointRaw = isCouple ? findMembre(dossier, dossier.foyer.conjointId) : undefined;
+  const enfantsRaw = dossier.membres.filter((membre) => membre.role === 'enfant');
 
-  const etatCivil: AuditLandingEtatCivil = {
-    principalName: fullName(principal),
-    principalAge: computeAge(principal?.dateNaissance, now),
-    situationLabel: engaged ? SITUATION_FAMILIALE_LABELS[dossier.situationFamiliale.statut] : null,
-    conjointName: isCouple ? fullName(conjoint) : null,
-    enfantsPrenoms: enfants.map((enfant) => enfant.prenom.trim()).filter(Boolean),
-  };
+  const principal = principalRaw ? toMember(principalRaw, 'principal', now) : null;
+  const conjoint = conjointRaw ? toMember(conjointRaw, 'conjoint', now) : null;
+  const enfants = enfantsRaw.map((enfant) => toMember(enfant, 'enfant', now));
 
-  const filiation: AuditLandingFiliation = {
-    principal: principal ? toNode(principal, 'Membre principal') : null,
-    conjoint: isCouple && conjoint ? toNode(conjoint, 'Conjoint') : null,
-    enfants: enfants
-      .map((enfant, index) => toNode(enfant, `Enfant ${index + 1}`))
-      .filter((node): node is AuditLandingFiliationNode => node !== null),
-    hasData: Boolean(principal) || enfants.length > 0,
-  };
+  const partsFiscales = engaged ? computeParts(statut, enfants.length) : null;
 
   return {
     hasData: engaged,
-    etatCivil,
-    filiation,
+    principal,
+    conjoint,
+    enfants,
+    situationLabel: engaged ? SITUATION_FAMILIALE_LABELS[statut] : null,
+    partsFiscales,
+    tmiLabel: 'à venir',
+    filiationHasData: Boolean(principal) || enfants.length > 0,
     action: { destination: 'dossier' },
     ariaLabel: engaged
       ? 'Synthèse dossier — ouvrir et compléter le foyer'
@@ -183,6 +175,14 @@ function buildPilotageCard(): AuditLandingPilotageCard {
   };
 }
 
+/** Parts de quotient familial dérivées du foyer F1 (réutilise le moteur IR). */
+function computeParts(statut: string, enfantsCount: number): number {
+  return computeAutoPartsWithChildren({
+    status: TAX_COUPLE_STATUTS.has(statut) ? 'couple' : 'single',
+    children: Array.from({ length: enfantsCount }, () => ({ mode: 'charge' as const })),
+  });
+}
+
 function isFamilyEngaged(dossier: DossierPatrimonial): boolean {
   const principal = findMembre(dossier, dossier.foyer.membrePrincipalId);
   const principalHasData = Boolean(
@@ -205,15 +205,22 @@ function findMembre(dossier: DossierPatrimonial, id: string | null): DossierMemb
   return dossier.membres.find((membre) => membre.id === id);
 }
 
-function fullName(membre: DossierMembre | undefined): string | null {
-  if (!membre) return null;
-  const name = [membre.prenom.trim(), membre.nom?.trim()].filter(Boolean).join(' ');
-  return name || null;
-}
-
-function toNode(membre: DossierMembre, fallback: string): AuditLandingFiliationNode {
-  const label = membre.prenom.trim() || membre.nom?.trim() || fallback;
-  return { id: membre.id, label };
+function toMember(
+  membre: DossierMembre,
+  role: AuditLandingMemberRole,
+  now: Date,
+): AuditLandingMember {
+  const prenom = membre.prenom.trim();
+  const nom = membre.nom?.trim() ?? '';
+  return {
+    id: membre.id,
+    fullName: [prenom, nom].filter(Boolean).join(' ') || prenom || nom,
+    prenom: prenom || nom || '—',
+    age: computeAge(membre.dateNaissance, now),
+    profession: membre.profession?.trim() || null,
+    role,
+    estCommun: membre.estCommun ?? true,
+  };
 }
 
 function computeAge(dateNaissance: string | undefined, now: Date): number | null {
