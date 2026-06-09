@@ -7,14 +7,17 @@ test.describe('DossierRail responsive', () => {
     await enableE2EMode(page);
   });
 
-  test('desktop /audit affiche le rail complet', async ({ page }) => {
+  test('desktop /audit conserve l’encart dossier mais retire le rail de chaînage', async ({
+    page,
+  }) => {
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto(ROUTES.audit);
 
-    await expect(page.getByTestId('dossier-rail-panel')).toBeVisible();
-    await expect(page.getByTestId('dossier-rail')).toHaveAttribute('data-density', 'full');
-    await expect(page.getByTestId('dossier-rail-journey-label')).toContainText('Audit global');
-    await expect(page.getByTestId('dossier-rail-current')).toContainText('Objectifs client');
+    // /audit est un cockpit pleine largeur : l'encart « Dossier de travail » est
+    // rendu par la page elle-même, le rail partagé n'est plus monté.
+    await expect(page.getByTestId('dossier-loaded-card')).toBeVisible();
+    await expect(page.getByTestId('app-shell-dossier-rail')).toHaveCount(0);
+    await expect(page.getByTestId('dossier-rail-panel')).toHaveCount(0);
   });
 
   test('desktop /strategy affiche le rail complet', async ({ page }) => {
@@ -52,7 +55,7 @@ test.describe('DossierRail responsive', () => {
 
   test('le rail ne duplique pas les actions globales de topbar', async ({ page }) => {
     await page.setViewportSize({ width: 1440, height: 900 });
-    await page.goto(ROUTES.audit);
+    await page.goto(ROUTES.succession);
 
     const railColumn = page.getByTestId('app-shell-dossier-rail');
     await expect(railColumn.getByTestId('dossier-loaded-card')).toBeVisible();
