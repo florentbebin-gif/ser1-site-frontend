@@ -21,33 +21,36 @@ test.describe('Audit Patrimonial', () => {
     }
   });
 
-  test('charge la page Audit et affiche le wizard', async ({ page }) => {
+  test('charge la landing cockpit /audit', async ({ page }) => {
     await page.goto(ROUTES.audit);
     await page.waitForLoadState('networkidle');
 
-    // AuditWizard should render — look for step indicators or form
-    await expect(page.locator('main, [class*="audit"], [class*="wizard"]').first()).toBeVisible({
-      timeout: 15_000,
-    });
+    await expect(page.getByTestId('dossier-loaded-card')).toBeVisible({ timeout: 15_000 });
+    await expect(page.getByRole('heading', { level: 2, name: 'Synthèse dossier' })).toBeVisible();
+    await expect(page.getByRole('heading', { level: 2, name: 'Objectifs' })).toBeVisible();
+    await expect(page.getByRole('heading', { level: 2, name: 'Stratégie' })).toBeVisible();
+    await expect(page.getByText('À venir').first()).toBeVisible();
+    await expect(page.getByText(/Audit global/i)).toHaveCount(0);
   });
 
-  test('le wizard affiche des étapes de navigation', async ({ page }) => {
+  test('ouvre le wizard depuis les cartes actives et garde la stratégie verrouillée', async ({
+    page,
+  }) => {
     await page.goto(ROUTES.audit);
     await page.waitForLoadState('networkidle');
 
-    // Look for step/navigation buttons (Suivant, Précédent, etc.)
-    const nextBtn = page.locator('text=Suivant').or(page.locator('text=Continuer'));
-    // At least one navigation element should be present
-    const hasNav = await nextBtn
-      .first()
-      .isVisible()
-      .catch(() => false);
-    // If no explicit nav, the page itself loaded successfully
-    const hasWizardShell = await page
-      .locator('main, [class*="audit"], [class*="wizard"]')
-      .first()
-      .isVisible()
-      .catch(() => false);
-    expect(hasNav || hasWizardShell).toBe(true);
+    const strategie = page.locator('section').filter({
+      has: page.getByRole('heading', { level: 2, name: 'Stratégie' }),
+    });
+    await expect(strategie.getByText('Verrouillé')).toBeVisible();
+    await expect(strategie.getByRole('button')).toHaveCount(0);
+    await expect(strategie.getByText(/radar|\/\s*100|score|scénario activable/i)).toHaveCount(0);
+
+    await page.getByRole('button', { name: /^Voir l'audit complet/ }).click();
+    await expect(page.getByRole('heading', { name: 'Situation familiale' })).toBeVisible();
+
+    await page.getByRole('button', { name: '← Synthèse du dossier' }).click();
+    await page.getByRole('button', { name: /^Définir les objectifs client/ }).click();
+    await expect(page.getByRole('heading', { name: 'Objectifs client' })).toBeVisible();
   });
 });

@@ -10,10 +10,16 @@
   border-radius: var(--radius-md);
   background: var(--surface-card);
   box-shadow: none;
+  text-align: left;
 }
 
 .dossier-context-card--mode {
   gap: 8px;
+}
+
+.dossier-context-card--rail {
+  border-color: color-mix(in srgb, var(--color-c9) 58%, transparent);
+  background: color-mix(in srgb, var(--action-primary) 8%, var(--surface-card));
 }
 
 .dossier-context-card__label {

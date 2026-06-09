@@ -6,12 +6,14 @@ interface DossierLoadedCardProps {
   testId?: string;
   filenameTestId?: string;
   disclaimerTestId?: string;
+  variant?: 'default' | 'rail';
 }
 
 export function DossierLoadedCard({
   testId = 'home-status-card',
   filenameTestId = 'home-loaded-filename',
   disclaimerTestId = 'home-status-disclaimer',
+  variant = 'default',
 }: DossierLoadedCardProps): ReactElement {
   const [loadedFilename, setLoadedFilename] = useState<string | null>(null);
 
@@ -28,14 +30,17 @@ export function DossierLoadedCard({
   }, []);
 
   return (
-    <section className="dossier-context-card" data-testid={testId}>
-      <span className="dossier-context-card__label">Dossier chargé</span>
+    <section
+      className={`dossier-context-card${variant === 'rail' ? ' dossier-context-card--rail' : ''}`}
+      data-testid={testId}
+    >
+      <span className="dossier-context-card__label">Dossier de travail</span>
       <span className="dossier-context-card__value" data-testid={filenameTestId}>
-        {loadedFilename || '-'}
+        {loadedFilename || 'Session locale'}
       </span>
       <span className="dossier-context-card__divider" />
       <span className="dossier-context-card__hint" data-testid={disclaimerTestId}>
-        Les données seront effacées à la fermeture du navigateur ou de l’onglet.
+        Sauvegardez le dossier pour le conserver.
       </span>
     </section>
   );

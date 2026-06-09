@@ -49,14 +49,27 @@ const STEPS = [
 
 type StepId = (typeof STEPS)[number]['id'];
 
-export default function AuditWizard(): React.ReactElement {
+/** Identifiant d'étape du wizard, exposé pour la navigation depuis la landing. */
+export type AuditWizardStepId = StepId;
+
+interface AuditWizardProps {
+  /** Étape initiale ouverte (par défaut la première). */
+  initialStep?: AuditWizardStepId;
+  /** Si fourni, affiche un retour vers la synthèse /audit. */
+  onBackToSynthese?: () => void;
+}
+
+export default function AuditWizard({
+  initialStep = 'famille',
+  onBackToSynthese,
+}: AuditWizardProps = {}): React.ReactElement {
   const { colors } = useTheme();
   const [dossier, setDossier] = useState<DossierAudit>(() => {
     const draft = loadDraftFromSession();
     return ensureDossierAuditUuid(draft || createEmptyDossier());
   });
   const [hasInitialSessionDraft] = useState(() => Boolean(loadDraftFromSession()));
-  const [currentStep, setCurrentStep] = useState<StepId>('famille');
+  const [currentStep, setCurrentStep] = useState<StepId>(initialStep);
   const [hasChanges, setHasChanges] = useState(false);
   const hasLoadedCentralDossierRef = useRef(false);
   const [isExportingPptx, setIsExportingPptx] = useState(false);
@@ -235,6 +248,11 @@ export default function AuditWizard(): React.ReactElement {
     <div className="audit-wizard premium-page">
       <header className="audit-header premium-header">
         <div className="audit-header-copy">
+          {onBackToSynthese && (
+            <button type="button" className="audit-back-link" onClick={onBackToSynthese}>
+              ← Synthèse du dossier
+            </button>
+          )}
           <p className="premium-section-title">Workflow privé P6</p>
           <h1 className="premium-title">Audit patrimonial</h1>
           <p className="premium-subtitle audit-subtitle">

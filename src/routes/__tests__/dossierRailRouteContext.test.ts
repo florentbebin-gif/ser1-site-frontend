@@ -3,9 +3,12 @@ import { describe, expect, it } from 'vitest';
 import { getDossierRailRouteContext, getSimulatorRoutePath } from '../dossierRailRouteContext';
 
 describe('getDossierRailRouteContext', () => {
-  it('déclare audit et stratégie comme surfaces rail complètes', () => {
-    expect(getDossierRailRouteContext('/audit')).toMatchObject({ kind: 'audit' });
+  it('déclare stratégie comme surface rail complète', () => {
     expect(getDossierRailRouteContext('/strategy')).toMatchObject({ kind: 'strategy' });
+  });
+
+  it('ne monte plus le rail partagé sur /audit (cockpit pleine largeur, UX-01)', () => {
+    expect(getDossierRailRouteContext('/audit')).toBeNull();
   });
 
   it('résout une route /sim/* depuis les contrats de route existants', () => {

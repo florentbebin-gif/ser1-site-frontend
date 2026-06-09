@@ -2354,7 +2354,7 @@ Légende dépendances : F1 ✅ (socle dossier livré), F1.1 (budgetSynthese, min
 | UX-00a     | Documents cockpit audit (vision, contrats, décisions)                                     | —              | ✅ oui              | `docs/AUDIT_COCKPIT.md` créé ; track ajoutée ; docs alignées ; aucun code/token modifié                                                                                                                             |
 | UX-00a-bis | Contrats d'implémentation page par page `/audit`                                          | UX-00a         | ✅ oui              | Section contrats page par page ajoutée dans `docs/AUDIT_COCKPIT.md` ; règles de réutilisation simulateurs clarifiées ; dépendances F1/F1.1/F2/F3/F5/F6 explicites ; hors-scope codage confirmé ; aucun code modifié |
 | UX-00b     | Tokens `--viz-*`, découplage cuivre/warning, surfaces, drawer, motion ; showroom ; checks | UX-00a         | ✅ oui              | Tokens dérivés (pas de hex) ; showroom ; `check:css-colors`/`check:modal-canon`/`check:sim-cards` étendus et verts                                                                                                  |
-| UX-01      | Landing 3 cartes (Synthèse + Objectifs réels, Pilotage placeholder)                       | F1 ✅, UX-00b  | ✅ oui              | Landing branchée F1 ; états vide/partiel/complet ; radar placeholder honnête ; smoke auth `/audit`                                                                                                                  |
+| UX-01 ✅   | Landing `/audit` : Dossier patrimonial, Objectifs, Stratégie verrouillée                  | F1 ✅, UX-00b  | ✅ livré            | Landing branchée F1 ; encart Dossier de travail ; surfaces Dossier patrimonial/Objectifs/Stratégie verrouillée ; aperçus prospectifs non actifs ; lecture réelle limitée à F1 ; smoke auth `/audit`                 |
 | UX-02      | Rail dynamique (statuts complétude + apparition conditionnelle)                           | F1 ✅          | ✅ oui              | `railViewModel` étendu + testé ; statut jamais couleur seule                                                                                                                                                        |
 | F1.1       | Extension `budgetSynthese` au DossierPatrimonial                                          | F1 ✅          | ✅ oui              | Champs revenus/charges/capacité + sourceRefs + complétude ; tests                                                                                                                                                   |
 | UX-03      | Pages famille / filiation / régime / objectifs + drawers                                  | F1 ✅, UX-00b  | ✅ oui              | Pages en cartes + `AuditDrawerXL` ; a11y drawers                                                                                                                                                                    |
@@ -2369,6 +2369,16 @@ Légende dépendances : F1 ✅ (socle dossier livré), F1.1 (budgetSynthese, min
 
 Ordre recommandé : UX-00a → UX-00a-bis → UX-00b → UX-01 → UX-02 → F1.1 → UX-03 → UX-03b → F2 → F3 → UX-05 →
 UX-06a → pilote IFI → UX-06b → F5 → UX-04 → F6 → UX-07 → UX-08.
+
+Jalons futurs volontairement visibles en UX-01, mais non actifs :
+
+| Élément UX-01                                         | Fichier / preuve visible                                                                  | Raison du report                                             | PR cible / jalon |
+| ----------------------------------------------------- | ----------------------------------------------------------------------------------------- | ------------------------------------------------------------ | ---------------- |
+| TMI à venir                                           | `src/features/audit/auditLandingViewModel.ts` expose `tmiLabel: 'à venir'`                | F1 ne porte pas une fiscalité IR/TMI exploitable sur landing | UX-06a           |
+| Masses successorales / patrimoine                     | `src/features/audit/AuditLanding.tsx` affiche `Masses successorales` avec badge `À venir` | Dépend du graphe patrimoine actifs/passifs et du jalon F3    | F3 puis UX-05    |
+| Organigramme société                                  | `src/features/audit/AuditLanding.tsx` affiche `Organigramme société` avec badge `À venir` | Dépend du modèle société, liens et bilans                    | F5 puis UX-04    |
+| Versions & sauvegardes avancées                       | `src/features/audit/AuditLanding.tsx` affiche `Versions & sauvegardes` en statut à venir  | Dépend de versioning, scénarios, activation et rollback      | F6 puis UX-07    |
+| Stratégie réelle, recommandations, radar et scénarios | `src/features/audit/AuditLanding.tsx` affiche `Stratégie` verrouillée                     | Dépend des scénarios, recommandations et calculabilité du F6 | F6 puis UX-07    |
 
 Checks attendus par PR : `npm run check` complet ; pour les PR UI, `check:modal-canon`,
 `check:sim-cards`, `check:css-colors`, `check:ser1-colors-plugin`, `check:theme-sync` et

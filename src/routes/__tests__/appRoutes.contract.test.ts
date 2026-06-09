@@ -22,6 +22,10 @@ const routePaths = new Set(APP_ROUTES.map((route) => route.path));
 const simulatorRoutes = APP_ROUTES.filter((route) => route.path.startsWith('/sim/'));
 
 describe('Contrat APP_ROUTES', () => {
+  it('nomme /audit comme dossier patrimonial dans la topbar', () => {
+    expect(getRouteMetadata('/audit').contextLabel).toBe('Dossier patrimonial');
+  });
+
   it('déclare des chemins uniques', () => {
     const paths = APP_ROUTES.map((route) => route.path);
     const duplicates = paths.filter((path, index) => paths.indexOf(path) !== index);

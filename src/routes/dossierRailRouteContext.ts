@@ -11,12 +11,9 @@ function normalizePathname(pathname: string): string {
 export function getDossierRailRouteContext(pathname: string): DossierRailRouteContext | null {
   const normalizedPathname = normalizePathname(pathname);
 
-  if (normalizedPathname === '/audit') {
-    return {
-      kind: 'audit',
-      pathname: normalizedPathname,
-    };
-  }
+  // UX-01 : /audit est un cockpit pleine largeur qui possède sa propre colonne
+  // gauche (encart dossier + gestion à venir) ; il ne monte plus le rail partagé.
+  // Le rail cockpit dédié reste prévu pour UX-02.
 
   if (normalizedPathname === '/strategy') {
     return {

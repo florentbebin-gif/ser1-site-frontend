@@ -1,0 +1,832 @@
+/* Cockpit /audit — UX-01.
+ * Cartes élevées = points d'entrée cliquables (vrai <button>). Sous-tuiles plates
+ * UX-00b (aucune ombre). Accent C2 (--action-primary). Tokens uniquement, aucune
+ * bordure en pointillé. */
+
+/* ── Layout pleine largeur : panneau gauche ancré + zone principale ────────── */
+
+.audit-landing.premium-page {
+  width: min(1460px, calc(100% - 236px));
+  max-width: none;
+  margin-right: auto;
+  margin-left: max(188px, calc((100% - 1460px) / 2));
+  padding-top: 32px;
+}
+
+.audit-landing__layout {
+  display: block;
+}
+
+.audit-landing__main {
+  min-width: 0;
+}
+
+.audit-landing__title-divider {
+  width: calc((100% - var(--space-5)) * 0.6);
+  height: 1px;
+  margin-bottom: var(--space-7);
+  background: linear-gradient(
+    90deg,
+    var(--accent-signature),
+    color-mix(in srgb, var(--accent-signature) 72%, transparent),
+    transparent
+  );
+}
+
+/* ── Grille des cartes ─────────────────────────────────────────────────────── */
+
+.audit-landing__grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
+  gap: var(--space-5);
+  align-items: stretch;
+}
+
+.audit-landing__primary {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  height: 100%;
+  min-width: 0;
+}
+
+.audit-landing__preview-row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-5);
+  flex: 1 1 auto;
+  align-items: stretch;
+}
+
+.audit-landing__preview-row > .audit-card {
+  height: 100%;
+}
+
+.audit-landing__side {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  height: 100%;
+  min-width: 0;
+}
+
+.audit-card--strategy {
+  flex: 1 1 auto;
+}
+
+.audit-card--strategy .audit-strategy-preview {
+  flex: 1 1 auto;
+  align-content: center;
+  min-height: 0;
+}
+
+/* ── Carte (surface élevée) ────────────────────────────────────────────────── */
+
+.audit-card {
+  position: relative;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  padding: var(--space-6);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-lg);
+  background: var(--surface-card);
+  box-shadow: 0 1px 2px color-mix(in srgb, var(--shadow-color) 6%, transparent);
+  transition:
+    transform 160ms ease,
+    box-shadow 160ms ease,
+    border-color 160ms ease;
+}
+
+.audit-card--hero {
+  border-top: 3px solid var(--action-primary);
+}
+
+.audit-card--locked {
+  background: color-mix(in srgb, var(--surface-muted) 55%, var(--surface-card));
+  box-shadow: none;
+}
+
+.audit-card--preview {
+  background: color-mix(in srgb, var(--surface-page) 42%, var(--surface-card));
+}
+
+.audit-card--compact {
+  padding: var(--space-5);
+}
+
+.audit-card--action {
+  cursor: pointer;
+}
+
+.audit-card--action:hover {
+  transform: translateY(-2px);
+  border-color: color-mix(in srgb, var(--action-primary) 50%, var(--border-default));
+  box-shadow: 0 10px 30px color-mix(in srgb, var(--shadow-color) 10%, transparent);
+}
+
+.audit-card--action:focus-within {
+  border-color: var(--action-primary);
+  box-shadow: var(--focus-ring);
+}
+
+/* ── En-tête de carte : icône + titre alignés ──────────────────────────────── */
+
+.audit-card__head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-width: 0;
+  margin-bottom: 0;
+}
+
+.audit-card__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  flex-shrink: 0;
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--action-primary) 12%, var(--surface-card));
+  color: var(--action-primary);
+}
+
+.audit-card__icon--locked {
+  background: color-mix(in srgb, var(--text-muted) 12%, var(--surface-card));
+  color: var(--text-muted);
+}
+
+.audit-card__icon-svg {
+  width: 20px;
+  height: 20px;
+}
+
+.audit-card__title {
+  margin: 0;
+  min-width: 0;
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-primary);
+}
+
+.audit-card__head-action {
+  display: inline-flex;
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+.audit-card__action-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: var(--space-1) 0;
+  border: 0;
+  background: transparent;
+  color: var(--action-primary);
+  cursor: pointer;
+  font: inherit;
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  text-align: right;
+  transition: color 160ms ease;
+}
+
+.audit-card__action-link::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+}
+
+.audit-card__action-link span,
+.audit-card__action-chevron {
+  position: relative;
+  z-index: 1;
+}
+
+.audit-card__action-chevron {
+  width: 12px;
+  height: 12px;
+  transition: transform 160ms ease;
+}
+
+.audit-card__action-link:focus-visible {
+  outline: none;
+}
+
+.audit-card__action-link:focus-visible span {
+  border-radius: var(--radius-sm);
+  box-shadow: var(--focus-ring);
+}
+
+.audit-card--action:hover .audit-card__action-link:not(.audit-card__action-link--static) {
+  color: var(--data-secondary);
+}
+
+.audit-card--action:hover
+  .audit-card__action-link:not(.audit-card__action-link--static)
+  .audit-card__action-chevron {
+  transform: translateX(2px);
+}
+
+.audit-card__action-link--static {
+  color: var(--text-secondary);
+  cursor: default;
+}
+
+.audit-card__action-link--static::after {
+  content: none;
+}
+
+.audit-preview-badge {
+  display: inline-flex;
+  align-items: center;
+  min-height: 18px;
+  padding: 1px var(--space-2);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-full);
+  background: var(--surface-muted);
+  color: var(--text-muted);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  white-space: nowrap;
+}
+
+.audit-card__divider {
+  height: 1px;
+  max-width: 210px;
+  margin: var(--space-3) 0 var(--space-4);
+}
+
+/* ── Tuiles de la carte Synthèse ───────────────────────────────────────────── */
+
+.audit-card__tiles {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-3);
+}
+
+.audit-tile {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  min-width: 0;
+  padding: var(--space-4);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--surface-page) 50%, var(--surface-card));
+}
+
+.audit-tile__head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.audit-tile__icon {
+  display: inline-flex;
+  color: var(--action-primary);
+}
+
+.audit-tile__icon-svg {
+  width: 15px;
+  height: 15px;
+}
+
+.audit-tile__label {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+}
+
+.audit-tile__body {
+  display: flex;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.audit-tile__empty {
+  margin: auto 0;
+  font-size: var(--font-size-sm);
+  font-style: italic;
+  color: var(--text-muted);
+}
+
+/* ── État civil ────────────────────────────────────────────────────────────── */
+
+.audit-ec {
+  display: grid;
+  gap: 3px;
+  align-content: start;
+  width: 100%;
+}
+
+.audit-ec__top {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.audit-ec__principal {
+  margin: 0;
+  min-width: 0;
+  flex: 1 1 auto;
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
+  color: var(--text-primary);
+  letter-spacing: 0.01em;
+}
+
+.audit-ec__progress {
+  display: inline-flex;
+  width: 38px;
+  height: 3px;
+  flex: 0 0 auto;
+  margin-top: 7px;
+  overflow: hidden;
+  border-radius: var(--radius-full);
+  background: color-mix(in srgb, var(--border-subtle) 65%, transparent);
+}
+
+.audit-ec__progress-fill {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: color-mix(in srgb, var(--accent-signature) 70%, transparent);
+}
+
+.audit-ec__age {
+  font-weight: var(--font-weight-medium);
+  color: var(--text-secondary);
+}
+
+.audit-ec__prof {
+  margin: 0 0 var(--space-1);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--action-primary);
+}
+
+.audit-ec__line {
+  margin: 0;
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+}
+
+.audit-ec__fiscal {
+  margin: var(--space-2) 0 0;
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+}
+
+.audit-ec__fiscal strong {
+  color: var(--action-primary);
+  font-weight: var(--font-weight-semibold);
+}
+
+.audit-ec__soon {
+  font-style: italic;
+  color: var(--text-muted);
+}
+
+/* ── Filiation (SVG) ───────────────────────────────────────────────────────── */
+
+.audit-fil {
+  width: 100%;
+  height: auto;
+  max-height: 166px;
+  margin: auto 0;
+}
+
+.audit-fil__edge {
+  fill: none;
+  stroke: var(--border-strong);
+  stroke-width: 1.5;
+  stroke-linecap: round;
+}
+
+.audit-fil__node {
+  --audit-fil-avatar-color: var(--action-primary);
+}
+
+.audit-fil__node rect {
+  stroke-width: 1;
+}
+
+.audit-fil__node--parent rect {
+  fill: color-mix(in srgb, var(--action-primary) 10%, var(--surface-card));
+  stroke: color-mix(in srgb, var(--action-primary) 32%, var(--border-default));
+}
+
+.audit-fil__node--enfant rect {
+  fill: color-mix(in srgb, var(--state-info) 10%, var(--surface-card));
+  stroke: color-mix(in srgb, var(--state-info) 30%, var(--border-default));
+}
+
+.audit-fil__node--homme {
+  --audit-fil-avatar-color: var(--action-primary);
+}
+
+.audit-fil__node--femme {
+  --audit-fil-avatar-color: var(--accent-signature);
+}
+
+.audit-fil__node--garcon {
+  --audit-fil-avatar-color: var(--state-info);
+}
+
+.audit-fil__node--fille {
+  --audit-fil-avatar-color: var(--data-secondary);
+}
+
+.audit-fil__avatar-frame {
+  fill: color-mix(in srgb, var(--audit-fil-avatar-color) 12%, var(--surface-card));
+  stroke: color-mix(in srgb, var(--audit-fil-avatar-color) 45%, var(--border-default));
+  stroke-width: 0.8;
+}
+
+.audit-fil__avatar-image {
+  pointer-events: none;
+}
+
+.audit-fil__name {
+  fill: var(--text-primary);
+  font-size: 9px;
+  font-weight: var(--font-weight-semibold);
+}
+
+/* ── Aperçus visuels temporaires ───────────────────────────────────────────── */
+
+.audit-masses-preview {
+  display: grid;
+  grid-template-columns: 86px minmax(0, 1fr);
+  gap: var(--space-4);
+  align-items: center;
+  min-height: 102px;
+}
+
+.audit-masses-preview__ring {
+  position: relative;
+  width: 86px;
+  height: 86px;
+  border-radius: 50%;
+  background: conic-gradient(
+    var(--action-primary) 0 46%,
+    var(--data-secondary) 46% 72%,
+    var(--border-subtle) 72% 100%
+  );
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--border-subtle) 70%, transparent);
+}
+
+.audit-masses-preview__center {
+  position: absolute;
+  inset: 17px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--surface-card);
+  color: var(--text-muted);
+}
+
+.audit-masses-preview__lock {
+  width: 18px;
+  height: 18px;
+}
+
+.audit-masses-preview__bars {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--space-2);
+  height: 82px;
+  padding: var(--space-2);
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--surface-card) 72%, transparent);
+}
+
+.audit-masses-preview__bars span {
+  flex: 1;
+  border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+  background: color-mix(in srgb, var(--action-primary) 18%, var(--surface-muted));
+}
+
+.audit-masses-preview__bars span:nth-child(1) {
+  height: 28%;
+}
+
+.audit-masses-preview__bars span:nth-child(2) {
+  height: 48%;
+}
+
+.audit-masses-preview__bars span:nth-child(3) {
+  height: 72%;
+}
+
+.audit-masses-preview__bars span:nth-child(4) {
+  height: 55%;
+}
+
+.audit-masses-preview__bars span:nth-child(5) {
+  height: 84%;
+}
+
+.audit-org-preview {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px var(--space-3);
+  min-height: 112px;
+  padding: var(--space-2) var(--space-3) var(--space-3);
+}
+
+.audit-org-preview__node {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 26px;
+  padding: 0 var(--space-2);
+  border: 1px solid color-mix(in srgb, var(--action-primary) 20%, var(--border-default));
+  border-radius: var(--radius-full);
+  background: var(--surface-card);
+  color: var(--text-secondary);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+}
+
+.audit-org-preview__node--root,
+.audit-org-preview__node--main {
+  grid-column: 1 / -1;
+  justify-self: center;
+  min-width: 112px;
+  color: var(--text-primary);
+}
+
+.audit-org-preview__node--root {
+  background: color-mix(in srgb, var(--action-primary) 9%, var(--surface-card));
+}
+
+.audit-org-preview__node--main {
+  background: color-mix(in srgb, var(--accent-signature) 10%, var(--surface-card));
+}
+
+.audit-org-preview__line {
+  position: absolute;
+  left: 50%;
+  width: 1px;
+  background: var(--border-default);
+  transform: translateX(-50%);
+}
+
+.audit-org-preview__line--vertical {
+  top: 36px;
+  height: 18px;
+}
+
+.audit-org-preview__line--split {
+  top: 82px;
+  width: calc(50% - var(--space-5));
+  height: 1px;
+}
+
+/* ── Objectifs ─────────────────────────────────────────────────────────────── */
+
+.audit-objectifs {
+  display: grid;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.audit-objectifs__item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.audit-objectifs__rank {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  border-radius: var(--radius-full);
+  border: 1px solid color-mix(in srgb, var(--action-primary) 35%, var(--border-default));
+  color: var(--action-primary);
+  font-size: 10px;
+  font-weight: var(--font-weight-semibold);
+  font-variant-numeric: tabular-nums;
+}
+
+.audit-objectifs__label {
+  min-width: 0;
+  overflow: hidden;
+  font-size: var(--font-size-sm);
+  color: var(--text-primary);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.audit-objectifs__note {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin: var(--space-3) 0 0;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-md);
+  background: var(--surface-muted);
+  font-size: var(--font-size-xs);
+  color: var(--text-secondary);
+}
+
+.audit-objectifs__note-icon {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+  color: var(--text-muted);
+}
+
+/* ── Sauvegardes dossier : statut discret dans le rail ─────────────────────── */
+
+.audit-save-list {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.audit-save-item {
+  display: grid;
+  grid-template-columns: 16px minmax(0, 1fr);
+  column-gap: var(--space-2);
+  align-items: center;
+  color: var(--text-secondary);
+}
+
+.audit-save-item__icon {
+  grid-row: 1 / 3;
+  width: 14px;
+  height: 14px;
+  color: var(--text-secondary);
+}
+
+.audit-save-item span {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--text-primary);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.audit-save-item small {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--text-muted);
+  font-size: 9px;
+  line-height: var(--line-height-tight);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ── Stratégie verrouillée ─────────────────────────────────────────────────── */
+
+.audit-strategy-preview {
+  display: grid;
+  gap: var(--space-4);
+  margin: var(--space-1) 0 var(--space-4);
+  padding: var(--space-4);
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--surface-card) 78%, transparent);
+}
+
+.audit-strategy-preview__timeline {
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+  padding: 0 var(--space-2);
+}
+
+.audit-strategy-preview__timeline::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  right: var(--space-2);
+  left: var(--space-2);
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    var(--action-primary),
+    var(--data-secondary),
+    var(--border-subtle)
+  );
+}
+
+.audit-strategy-preview__timeline span {
+  position: relative;
+  width: 12px;
+  height: 12px;
+  border: 2px solid var(--surface-card);
+  border-radius: 50%;
+  background: var(--action-primary);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--action-primary) 28%, var(--border-default));
+}
+
+.audit-strategy-preview__timeline span:nth-child(2) {
+  background: var(--data-secondary);
+}
+
+.audit-strategy-preview__timeline span:nth-child(3) {
+  background: var(--border-subtle);
+}
+
+.audit-strategy-preview__matrix {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-2);
+}
+
+.audit-strategy-preview__matrix span {
+  min-height: 48px;
+  padding: var(--space-2);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  background: var(--surface-card);
+  color: var(--text-secondary);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  text-align: center;
+}
+
+.audit-card__sub {
+  margin: 0;
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+}
+
+.audit-card__caption {
+  margin: var(--space-2) 0 0;
+  font-size: var(--font-size-xs);
+  letter-spacing: 0.02em;
+  color: var(--text-muted);
+}
+
+/* ── Retour vers la synthèse depuis le wizard ──────────────────────────────── */
+
+.audit-back-link {
+  align-self: flex-start;
+  margin-bottom: var(--space-2);
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--state-info);
+}
+
+.audit-back-link:hover {
+  text-decoration: underline;
+}
+
+/* ── Responsive ────────────────────────────────────────────────────────────── */
+
+@media (max-width: 1180px) {
+  .audit-landing.premium-page {
+    width: min(1120px, calc(100% - 40px));
+    margin: 0 auto;
+  }
+}
+
+@media (max-width: 960px) {
+  .audit-landing__grid {
+    grid-template-columns: 1fr;
+  }
+
+  .audit-landing__primary,
+  .audit-landing__side {
+    height: auto;
+  }
+
+  .audit-landing__preview-row {
+    flex: initial;
+    grid-template-columns: 1fr;
+  }
+
+  .audit-card--strategy {
+    flex: initial;
+  }
+
+  .audit-card--strategy .audit-strategy-preview {
+    flex: initial;
+  }
+
+  .audit-card__tiles {
+    grid-template-columns: 1fr;
+  }
+}

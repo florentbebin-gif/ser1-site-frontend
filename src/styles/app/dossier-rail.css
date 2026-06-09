@@ -6,20 +6,40 @@
    puces, étape courante seule mise en avant. */
 
 .dossier-rail-column {
+  --dossier-rail-top: 72px;
+  --dossier-rail-separator-left: 168px;
+  --dossier-rail-separator-top: 48px;
+
   position: fixed;
-  top: 50px;
+  top: var(--dossier-rail-top);
   left: 10px;
   z-index: 5;
   display: flex;
   width: 148px;
   flex-direction: column;
   gap: 10px;
-  max-height: calc(100vh - 58px);
+  max-height: calc(100vh - var(--dossier-rail-top) - 8px);
   padding-bottom: 6px;
   overflow-x: hidden;
   overflow-y: auto;
   scrollbar-width: thin;
   scrollbar-color: color-mix(in srgb, var(--border-strong) 55%, transparent) transparent;
+}
+
+.dossier-rail-column::before {
+  content: '';
+  position: fixed;
+  top: var(--dossier-rail-separator-top);
+  bottom: 0;
+  left: var(--dossier-rail-separator-left);
+  width: 1px;
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--border-subtle) 65%, transparent),
+    var(--border-subtle),
+    color-mix(in srgb, var(--border-subtle) 55%, transparent)
+  );
+  pointer-events: none;
 }
 
 .dossier-rail-column::-webkit-scrollbar {
@@ -233,6 +253,10 @@
     flex-flow: row wrap;
     align-items: stretch;
     gap: 12px;
+  }
+
+  .dossier-rail-column::before {
+    display: none;
   }
 
   .dossier-rail-column > .dossier-context-card {
