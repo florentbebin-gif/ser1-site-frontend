@@ -7,73 +7,122 @@ import {
   type DossierPatrimonial,
 } from '@/domain/dossier';
 
-import { buildAuditLandingViewModel } from '../auditLandingViewModel';
+import { buildAuditLandingViewModel, type AuditLandingViewModel } from '../auditLandingViewModel';
 
 const NOW = '2026-06-08T10:00:00.000Z';
 
-function auditWithPrincipal() {
+function vmFromAudit(mutate: (audit: ReturnType<typeof createEmptyDossier>) => void = () => {}) {
   const audit = createEmptyDossier();
-  audit.situationFamiliale.mr = {
-    prenom: 'Jean',
-    nom: 'Martin',
-    dateNaissance: '1980-01-01',
-  };
-  return audit;
+  mutate(audit);
+  return buildAuditLandingViewModel(buildDossierPatrimonialFromAudit(audit, { now: NOW }));
+}
+
+function checkItem(vm: AuditLandingViewModel, id: string) {
+  return vm.synthese.checklist.find((item) => item.id === id);
+}
+
+/** Tout le texte exposé au CGP, pour les gardes anti-jargon. */
+function userText(vm: AuditLandingViewModel): string {
+  const parts: string[] = [
+    vm.summary.collecte.label,
+    vm.summary.strategy.label,
+    vm.summary.nextAction.label,
+    vm.synthese.badge.label,
+    vm.objectifs.badge.label,
+    vm.objectifs.emptyLabel,
+    vm.objectifs.action.label,
+    ...vm.objectifs.notes,
+    vm.pilotage.badge.label,
+    vm.pilotage.headline,
+    vm.pilotage.description,
+    vm.pilotage.caption,
+  ];
+  for (const item of vm.synthese.checklist) {
+    parts.push(item.label, item.requirementLabel, item.value ?? '', item.action?.label ?? '');
+  }
+  return parts.join(' ');
 }
 
 describe('buildAuditLandingViewModel', () => {
-  it('restitue un dossier vide en « à compléter » avec ses manques', () => {
-    const dossier = buildDossierPatrimonialFromAudit(createEmptyDossier(), { now: NOW });
-    const vm = buildAuditLandingViewModel(dossier);
+  it('ne présente jamais une valeur par défaut comme une certitude (dossier vierge)', () => {
+    const vm = vmFromAudit();
 
-    expect(vm.synthese.state).toBe('a-completer');
-    expect(vm.synthese.stateLabel).toBe('à compléter');
-    expect(vm.synthese.missing.map((item) => item.id)).toEqual([
-      'membre_principal',
-      'objectifs_prioritaires',
-    ]);
-    expect(vm.objectifs.state).toBe('vide');
-    expect(vm.objectifs.objectifs).toHaveLength(0);
+    const situation = checkItem(vm, 'situation-familiale');
+    expect(situation?.done).toBe(false);
+    expect(situation?.value).toBeUndefined();
+    const enfants = checkItem(vm, 'enfants');
+    expect(enfants?.done).toBe(false);
+    expect(enfants?.value).toBeUndefined();
+    // Aucune valeur affichée ne doit affirmer une situation par défaut ou une absence.
+    const values = vm.synthese.checklist.map((item) => item.value ?? '').join(' ');
+    expect(/célibataire/i.test(values)).toBe(false);
+    expect(/aucun/i.test(values)).toBe(false);
   });
 
-  it('restitue un dossier partiel quand le membre principal est connu mais sans objectifs', () => {
-    const dossier = buildDossierPatrimonialFromAudit(auditWithPrincipal(), { now: NOW });
-    const vm = buildAuditLandingViewModel(dossier);
+  it('résume la collecte et propose une seule prochaine action (dossier vide)', () => {
+    const vm = vmFromAudit();
 
-    expect(vm.synthese.state).toBe('partiel');
-    const principalFact = vm.synthese.facts.find((fact) => fact.id === 'membre-principal');
-    expect(principalFact).toMatchObject({ value: 'Jean Martin', known: true });
-    expect(vm.synthese.missing.map((item) => item.id)).toEqual(['objectifs_prioritaires']);
-    expect(vm.objectifs.state).toBe('vide');
+    expect(vm.summary.collecte.label).toBe('Collecte en cours');
+    expect(vm.summary.keyDataDone).toBe(0);
+    expect(vm.summary.keyDataTotal).toBeGreaterThan(0);
+    expect(vm.summary.ratio).toBe(0);
+    // Membre principal + objectifs = 2 requis manquants.
+    expect(vm.summary.requisRemaining).toBe(2);
+    expect(vm.summary.recommandeRemaining).toBeGreaterThan(0);
+    expect(vm.summary.nextAction.label).toBe('Saisir le membre principal');
+    expect(vm.synthese.primaryAction).toEqual(vm.summary.nextAction);
   });
 
-  it('restitue un socle F1 complet quand membre principal et objectifs sont présents', () => {
-    const audit = auditWithPrincipal();
-    audit.objectifs = ['proteger_conjoint', 'reduire_fiscalite'];
-    const dossier = buildDossierPatrimonialFromAudit(audit, { now: NOW });
-    const vm = buildAuditLandingViewModel(dossier);
+  it('affiche la situation familiale réelle une fois le foyer engagé', () => {
+    const vm = vmFromAudit((audit) => {
+      audit.situationFamiliale.mr = { prenom: 'Jean', nom: 'Martin', dateNaissance: '1980-01-01' };
+    });
 
-    expect(vm.synthese.state).toBe('complet');
-    expect(vm.synthese.missing).toHaveLength(0);
-    // Objectifs connus mais contraintes/opérations absentes → carte « partiel », pas « complet ».
-    expect(vm.objectifs.state).toBe('partiel');
+    expect(checkItem(vm, 'membre-principal')).toMatchObject({ done: true, value: 'Jean Martin' });
+    expect(checkItem(vm, 'situation-familiale')).toMatchObject({
+      done: true,
+      value: 'Célibataire',
+    });
+    expect(vm.summary.nextAction.label).toBe('Ajouter des objectifs');
+  });
+
+  it('ajoute conjoint et régime à la checklist pour un couple', () => {
+    const vm = vmFromAudit((audit) => {
+      audit.situationFamiliale.mr = { prenom: 'Jean', nom: 'Martin', dateNaissance: '1980-01-01' };
+      audit.situationFamiliale.situationMatrimoniale = 'marie';
+    });
+
+    expect(checkItem(vm, 'conjoint')).toMatchObject({ done: false, requirement: 'recommande' });
+    expect(checkItem(vm, 'regime-matrimonial')).toMatchObject({ done: false });
+    expect(checkItem(vm, 'conjoint')?.action?.label).toBe('Saisir');
+  });
+
+  it('réunit les données clés requises sans manque bloquant', () => {
+    const vm = vmFromAudit((audit) => {
+      audit.situationFamiliale.mr = { prenom: 'Jean', nom: 'Martin', dateNaissance: '1980-01-01' };
+      audit.objectifs = ['proteger_conjoint', 'reduire_fiscalite'];
+    });
+
+    expect(vm.summary.requisRemaining).toBe(0);
+    expect(vm.summary.nextAction.label).toBe('Reprendre l’audit');
     expect(vm.objectifs.objectifs.map((objectif) => objectif.label)).toEqual([
       'Protéger mon conjoint',
       'Réduire la fiscalité',
     ]);
+    expect(vm.objectifs.notes).toContain('Contraintes à préciser');
   });
 
-  it('affiche le régime matrimonial à compléter pour un couple sans régime', () => {
-    const audit = auditWithPrincipal();
-    audit.situationFamiliale.situationMatrimoniale = 'marie';
-    const dossier = buildDossierPatrimonialFromAudit(audit, { now: NOW });
-    const vm = buildAuditLandingViewModel(dossier);
+  it('présente la carte objectifs vide de façon qualitative, sans compteur zéro', () => {
+    const vm = vmFromAudit();
 
-    const regimeFact = vm.synthese.facts.find((fact) => fact.id === 'regime-matrimonial');
-    expect(regimeFact).toMatchObject({ value: 'à compléter', known: false });
+    expect(vm.objectifs.state).toBe('vide');
+    expect(vm.objectifs.badge.label).toBe('À renseigner');
+    expect(vm.objectifs.emptyLabel).toBe('Aucun objectif consigné');
+    expect(vm.objectifs.objectifs).toHaveLength(0);
+    expect(vm.objectifs.action.label).toBe('Ajouter des objectifs');
   });
 
-  it('passe la carte objectifs en « complet » quand contraintes ou opérations existent', () => {
+  it('passe la carte objectifs en « complet » avec contraintes ou opérations', () => {
     const base = createEmptyDossierPatrimonial({ now: NOW });
     const dossier: DossierPatrimonial = {
       ...base,
@@ -101,17 +150,38 @@ describe('buildAuditLandingViewModel', () => {
     const vm = buildAuditLandingViewModel(dossier);
 
     expect(vm.objectifs.state).toBe('complet');
-    expect(vm.objectifs.contraintes[0]?.priorityLabel).toBe('priorité haute');
-    expect(vm.objectifs.operationsPrevues[0]?.statusLabel).toBe('planifiée');
+    expect(vm.objectifs.badge.tone).toBe('done');
   });
 
-  it('garde le pilotage stratégique « à venir », dépendant de F6, sans donnée calculée', () => {
-    const dossier = buildDossierPatrimonialFromAudit(createEmptyDossier(), { now: NOW });
-    const vm = buildAuditLandingViewModel(dossier);
+  it('garde le pilotage verrouillé, premium et sans jargon interne', () => {
+    const vm = vmFromAudit();
 
-    expect(vm.pilotage.state).toBe('a-venir');
-    expect(vm.pilotage.stateLabel).toBe('à venir');
-    expect(vm.pilotage.dependsOn).toBe('F6');
-    expect(vm.pilotage.upcoming.length).toBeGreaterThan(0);
+    expect(vm.pilotage.badge.tone).toBe('locked');
+    expect(vm.pilotage.headline).toBe('Stratégie verrouillée');
+    // Pas de score chiffré dans le placeholder.
+    expect(/\d/.test(vm.pilotage.headline + vm.pilotage.description + vm.pilotage.caption)).toBe(
+      false,
+    );
+  });
+
+  it('n’expose aucun jargon interne dans le texte CGP', () => {
+    const text = userText(
+      vmFromAudit((audit) => {
+        audit.situationFamiliale.mr = {
+          prenom: 'Jean',
+          nom: 'Martin',
+          dateNaissance: '1980-01-01',
+        };
+        audit.situationFamiliale.situationMatrimoniale = 'marie';
+      }),
+    );
+
+    expect(text).not.toMatch(/\bF6\b/);
+    expect(text).not.toMatch(/fondation/i);
+    expect(text).not.toMatch(/module débloqué/i);
+    expect(text).not.toMatch(/non persisté/i);
+    expect(text).not.toMatch(/version active du dossier/i);
+    expect(text).not.toMatch(/non calculable/i);
+    expect(text).not.toMatch(/bloquant/i);
   });
 });

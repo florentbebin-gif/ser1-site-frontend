@@ -34,7 +34,9 @@ describe('AuditPage', () => {
   it('affiche d’abord la landing 3 cartes, pas le formulaire', () => {
     render(<AuditPage />);
 
-    expect(screen.getByRole('heading', { level: 1, name: 'Audit' })).toBeInTheDocument();
+    expect(
+      screen.getByRole('heading', { level: 1, name: 'Audit patrimonial' }),
+    ).toBeInTheDocument();
     expect(screen.getByRole('heading', { level: 2, name: 'Synthèse dossier' })).toBeInTheDocument();
     expect(screen.queryByRole('heading', { name: 'Situation familiale' })).not.toBeInTheDocument();
   });
@@ -42,7 +44,7 @@ describe('AuditPage', () => {
   it('bascule vers le wizard puis revient à la synthèse', async () => {
     render(<AuditPage />);
 
-    await userEvent.click(screen.getByRole('button', { name: 'Compléter le dossier' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Saisir le membre principal' }));
 
     expect(screen.getByRole('heading', { name: 'Situation familiale' })).toBeInTheDocument();
 
@@ -54,7 +56,7 @@ describe('AuditPage', () => {
   it('ouvre directement l’étape Objectifs depuis la carte Objectifs', async () => {
     render(<AuditPage />);
 
-    await userEvent.click(screen.getByRole('button', { name: 'Voir / compléter les objectifs' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Ajouter des objectifs' }));
 
     expect(screen.getByRole('heading', { name: 'Objectifs client' })).toBeInTheDocument();
   });
