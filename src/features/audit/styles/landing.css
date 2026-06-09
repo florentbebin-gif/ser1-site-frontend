@@ -1,17 +1,167 @@
 /* Landing /audit — 3 cartes (UX-01).
- * Surfaces UX-00b uniquement : carte élevée (premium-card) au niveau carte,
- * bandes / lignes KPI / micro-tuiles plates pour les sous-infos. Aucune carte
- * imbriquée, aucune ombre sur surface plate, aucune couleur locale. */
+ * Surfaces UX-00b : cartes élevées (premium-card) au niveau carte, sous-blocs
+ * plats pour les sous-infos. Aucune carte imbriquée, aucune ombre sur surface
+ * plate, aucune couleur locale (tokens uniquement). */
+
+/* ── Haut de page (court) ──────────────────────────────────────────────────── */
 
 .audit-landing__header {
-  margin-bottom: var(--space-6);
+  margin-bottom: var(--space-4);
 }
+
+.audit-landing__eyebrow {
+  margin: 0;
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--accent-signature);
+}
+
+.audit-landing__title {
+  margin: var(--space-1) 0 0;
+  font-size: var(--font-size-3xl);
+  font-weight: var(--font-weight-bold);
+  letter-spacing: 0.01em;
+  color: var(--text-primary);
+}
+
+.audit-landing__lead {
+  margin: var(--space-1) 0 0;
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+}
+
+/* ── Bande de statut (non interactive, jamais des inputs) ──────────────────── */
+
+.audit-landing__statusband {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-4) 0;
+  margin-bottom: var(--space-5);
+  padding: var(--space-3) 0;
+  border-top: 1px solid var(--border-subtle);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.audit-landing__status-item {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 5px;
+  flex: 1 1 auto;
+  padding: 0 var(--space-5);
+}
+
+.audit-landing__status-item + .audit-landing__status-item {
+  border-left: 1px solid var(--border-subtle);
+}
+
+.audit-landing__status-item--next {
+  flex: 1.4 1 auto;
+}
+
+.audit-landing__status-label {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.audit-landing__status-value {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-primary);
+  font-variant-numeric: tabular-nums;
+}
+
+.audit-landing__status-next {
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-semibold);
+  color: var(--accent-signature);
+}
+
+/* Jauge de complétude (dérivée du view model). */
+.audit-landing__gauge {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.audit-landing__gauge-track {
+  width: 84px;
+  height: 5px;
+  border-radius: var(--radius-full);
+  background: var(--surface-muted);
+  overflow: hidden;
+}
+
+.audit-landing__gauge-fill {
+  display: block;
+  height: 100%;
+  min-width: 2px;
+  border-radius: var(--radius-full);
+  background: var(--accent-signature);
+}
+
+.audit-landing__gauge-value {
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-primary);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Badges de statut : glyphe + label, fond teinté, jamais bordure d'input ── */
+
+.audit-landing__badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  flex-shrink: 0;
+  padding: 3px var(--space-2);
+  border-radius: var(--radius-full);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.audit-landing__badge--progress {
+  color: var(--state-info);
+  background: color-mix(in srgb, var(--state-info) 12%, var(--surface-card));
+}
+
+.audit-landing__badge--done {
+  color: var(--state-success);
+  background: color-mix(in srgb, var(--state-success) 14%, var(--surface-card));
+}
+
+.audit-landing__badge--todo {
+  color: var(--text-secondary);
+  background: var(--surface-muted);
+}
+
+.audit-landing__badge--locked {
+  color: var(--text-secondary);
+  background: var(--surface-muted);
+}
+
+/* ── Grille : Synthèse dominante + colonne latérale ────────────────────────── */
 
 .audit-landing__grid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
   gap: var(--space-5);
   align-items: start;
+}
+
+.audit-landing__side {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  min-width: 0;
 }
 
 .audit-landing__card {
@@ -20,11 +170,34 @@
   min-width: 0;
 }
 
+.audit-landing__card--hero {
+  border-left: 3px solid var(--accent-signature);
+  background-image: linear-gradient(
+    to bottom,
+    color-mix(in srgb, var(--accent-signature) 6%, transparent),
+    transparent 24%
+  );
+}
+
+.audit-landing__card--locked {
+  background: var(--surface-muted);
+}
+
 .audit-landing__card-head {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
   gap: var(--space-3);
+  margin-bottom: var(--space-3);
+}
+
+.audit-landing__card-eyebrow {
+  margin: 0 0 2px;
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
 }
 
 .audit-landing__card-title {
@@ -34,64 +207,77 @@
   color: var(--text-primary);
 }
 
-.audit-landing__card-subtitle {
-  margin: var(--space-1) 0 0;
-  font-size: var(--font-size-sm);
-  color: var(--text-secondary);
+/* ── Checklist de collecte (carte Synthèse) ────────────────────────────────── */
+
+.audit-landing__checklist {
+  margin: 0;
+  padding: 0;
+  list-style: none;
 }
 
-/* ── Badge de statut : glyphe + label, jamais la couleur seule ─────────────── */
-
-.audit-landing__badge {
-  display: inline-flex;
+.audit-landing__check {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto auto;
   align-items: center;
-  gap: var(--space-1);
-  flex-shrink: 0;
-  padding: 2px var(--space-2);
-  border-radius: var(--radius-sm);
-  border: 1px solid var(--border-subtle);
-  background: var(--surface-muted);
-  font-size: var(--font-size-xs);
-  font-weight: var(--font-weight-semibold);
-  text-transform: uppercase;
-  color: var(--text-secondary);
+  column-gap: var(--space-3);
+  padding: var(--space-3) 0;
+  border-top: 1px solid var(--border-subtle);
 }
 
-.audit-landing__badge-glyph {
+.audit-landing__check:first-child {
+  border-top: 0;
+}
+
+.audit-landing__check-glyph {
+  color: var(--text-muted);
   font-weight: var(--font-weight-bold);
 }
 
-.audit-landing__badge--complet {
+.audit-landing__check.is-done .audit-landing__check-glyph {
   color: var(--state-success);
-  border-color: color-mix(in srgb, var(--state-success) 40%, var(--border-subtle));
 }
 
-.audit-landing__badge--partiel {
-  color: var(--state-warning);
-  border-color: color-mix(in srgb, var(--state-warning) 40%, var(--border-subtle));
+.audit-landing__check-label {
+  min-width: 0;
+  color: var(--text-primary);
+  font-weight: var(--font-weight-medium);
 }
 
-.audit-landing__badge--a-venir {
-  color: var(--state-info);
-  border-color: color-mix(in srgb, var(--state-info) 40%, var(--border-subtle));
-}
-
-/* ── Bandes internes ───────────────────────────────────────────────────────── */
-
-.audit-landing__band-title {
-  margin: 0;
+.audit-landing__check-req {
   font-size: var(--font-size-xs);
   font-weight: var(--font-weight-semibold);
-  text-transform: uppercase;
   letter-spacing: 0.04em;
-  color: var(--text-secondary);
+  text-transform: uppercase;
+  color: var(--text-muted);
 }
 
-.audit-landing__facts,
-.audit-landing__objectifs,
-.audit-landing__list,
-.audit-landing__missing,
-.audit-landing__upcoming {
+.audit-landing__check-req--requis {
+  color: var(--state-warning);
+}
+
+.audit-landing__check-value {
+  color: var(--text-primary);
+  font-weight: var(--font-weight-semibold);
+  text-align: right;
+}
+
+.audit-landing__check-action {
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  font: inherit;
+  font-weight: var(--font-weight-semibold);
+  color: var(--accent-signature);
+}
+
+.audit-landing__check-action:hover {
+  text-decoration: underline;
+}
+
+/* ── Objectifs ─────────────────────────────────────────────────────────────── */
+
+.audit-landing__objectifs {
   margin: 0;
   padding: 0;
   list-style: none;
@@ -99,52 +285,126 @@
   gap: var(--space-2);
 }
 
-.audit-landing__objectifs {
-  counter-reset: none;
+.audit-landing__objectif {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
 }
 
-.audit-landing__fact--missing .sim-kpi-line__value {
+.audit-landing__objectif-rank {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  border-radius: var(--radius-full);
+  background: color-mix(in srgb, var(--accent-signature) 14%, var(--surface-card));
+  color: var(--accent-signature);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
+  font-variant-numeric: tabular-nums;
+}
+
+.audit-landing__objectif-label {
+  min-width: 0;
+  color: var(--text-primary);
+  font-size: var(--font-size-sm);
+}
+
+.audit-landing__objectif-notes {
+  margin: var(--space-3) 0 0;
+  font-size: var(--font-size-xs);
+  color: var(--text-muted);
+}
+
+.audit-landing__empty {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-3) 0;
   color: var(--text-secondary);
-  font-weight: var(--font-weight-medium);
-  font-style: italic;
+  font-size: var(--font-size-sm);
 }
 
-.audit-landing__fact-glyph,
-.audit-landing__missing-glyph,
-.audit-landing__upcoming-glyph {
+.audit-landing__empty-glyph {
+  color: var(--text-muted);
   font-weight: var(--font-weight-bold);
 }
 
-.audit-landing__missing-item,
-.audit-landing__upcoming-item {
+/* ── Pilotage stratégique : placeholder verrouillé, visuel sobre ───────────── */
+
+.audit-landing__skeleton {
+  position: relative;
+  height: 88px;
+  margin: var(--space-1) 0 var(--space-3);
+  border-radius: var(--radius-md);
+  background: var(--surface-card);
+  overflow: hidden;
+}
+
+.audit-landing__skeleton-bars {
   display: flex;
-  align-items: baseline;
+  align-items: flex-end;
   gap: var(--space-2);
-  font-size: var(--font-size-sm);
+  width: 100%;
+  height: 100%;
+  padding: var(--space-3) var(--space-4);
+  filter: blur(2px);
+  opacity: 0.55;
+}
+
+.audit-landing__skeleton-bars span {
+  flex: 1;
+  border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+  background: var(--viz-sequential-3);
+}
+
+.audit-landing__skeleton-bars span:nth-child(1) {
+  height: 38%;
+}
+.audit-landing__skeleton-bars span:nth-child(2) {
+  height: 72%;
+}
+.audit-landing__skeleton-bars span:nth-child(3) {
+  height: 52%;
+}
+.audit-landing__skeleton-bars span:nth-child(4) {
+  height: 88%;
+}
+.audit-landing__skeleton-bars span:nth-child(5) {
+  height: 62%;
+}
+
+.audit-landing__skeleton-lock {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  opacity: 0.65;
+}
+
+.audit-landing__headline {
+  margin: 0;
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
   color: var(--text-primary);
 }
 
-.audit-landing__missing-glyph {
-  color: var(--state-warning);
-}
-
-.audit-landing__upcoming-glyph {
-  color: var(--state-info);
-}
-
 .audit-landing__note {
-  margin: 0;
+  margin: var(--space-1) 0 0;
   font-size: var(--font-size-sm);
+  line-height: var(--line-height-base);
   color: var(--text-secondary);
 }
 
-/* ── Micro-tuiles plates (vue d'ensemble objectifs) ────────────────────────── */
-
-.audit-landing__tiles {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: var(--space-2);
-  margin-top: var(--space-4);
+.audit-landing__caption {
+  margin: var(--space-2) 0 0;
+  font-size: var(--font-size-xs);
+  letter-spacing: 0.02em;
+  color: var(--text-muted);
 }
 
 /* ── Actions ───────────────────────────────────────────────────────────────── */
@@ -174,8 +434,19 @@
   text-decoration: underline;
 }
 
+/* ── Responsive ────────────────────────────────────────────────────────────── */
+
 @media (max-width: 900px) {
   .audit-landing__grid {
     grid-template-columns: 1fr;
+  }
+
+  .audit-landing__status-item {
+    flex-basis: 45%;
+    padding: 0 var(--space-3);
+  }
+
+  .audit-landing__status-item + .audit-landing__status-item {
+    border-left: 0;
   }
 }

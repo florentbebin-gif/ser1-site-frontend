@@ -1,35 +1,70 @@
 /**
  * View model de la landing /audit (UX-01).
  *
- * Logique de lecture pure du dossier patrimonial F1 : aucun React, aucun calcul
- * métier, aucune donnée inventée. Le pilotage stratégique réel dépend de F6 et
- * reste « à venir » (pas de radar, pas de score, pas de scénario activable).
+ * Lecture pure du dossier patrimonial F1 : aucun React, aucun calcul métier,
+ * aucune donnée inventée. Ton « collecte premium » plutôt que défensif : on
+ * valorise ce qui est réuni et l'action suivante, sans présenter une valeur par
+ * défaut comme une certitude (un dossier vierge n'affirme pas « célibataire »,
+ * « aucun enfant »). Le pilotage stratégique reste verrouillé, sans jargon
+ * interne (pas de « F6 », « fondation », « module »), sans radar ni score.
  */
 
 import type {
-  DossierContraintePriority,
-  DossierOperationStatus,
   DossierPatrimonial,
   DossierRegimeMatrimonialCode,
-  DossierRequiredField,
   DossierSituationFamilialeStatut,
 } from '@/domain/dossier';
-import { DOSSIER_PATRIMONIAL_COMPLETION_LABELS } from '@/domain/dossier';
 
-export type AuditLandingState = 'vide' | 'partiel' | 'complet' | 'a-completer' | 'a-venir';
+/** Destination de navigation proposée (mappée vers une étape wizard). */
+export type AuditLandingDestination = 'dossier' | 'objectifs';
 
-export interface AuditLandingFact {
-  id: string;
+/** Avancement de collecte d'une carte. */
+export type AuditLandingState = 'vide' | 'partiel' | 'complet';
+
+/** Niveau d'exigence d'une donnée clé. */
+export type AuditLandingRequirement = 'requis' | 'recommande';
+
+/** Tonalité d'un badge de statut (glyphe + label, jamais la couleur seule). */
+export type AuditLandingTone = 'progress' | 'done' | 'todo' | 'locked';
+
+export interface AuditLandingBadge {
   label: string;
-  /** Valeur réelle du dossier, ou libellé d'absence (`à compléter`, `inconnu`, `sans objet`). */
-  value: string;
-  /** `false` quand la donnée n'est pas renseignée : à présenter comme un manque, jamais un défaut. */
-  known: boolean;
+  tone: AuditLandingTone;
 }
 
-export interface AuditLandingMissing {
+export interface AuditLandingAction {
+  label: string;
+  destination: AuditLandingDestination;
+}
+
+export interface AuditLandingChecklistItem {
   id: string;
   label: string;
+  requirement: AuditLandingRequirement;
+  requirementLabel: string;
+  done: boolean;
+  /** Valeur réelle quand `done`, jamais une valeur par défaut non confirmée. */
+  value?: string;
+  /** Action courte quand la donnée manque (`Saisir`, `Ajouter`, `Préciser`). */
+  action?: AuditLandingAction;
+}
+
+export interface AuditLandingSummary {
+  collecte: AuditLandingBadge;
+  keyDataDone: number;
+  keyDataTotal: number;
+  /** 0–1, pour la jauge (dérivé du view model F1, jamais codé en dur). */
+  ratio: number;
+  requisRemaining: number;
+  recommandeRemaining: number;
+  strategy: AuditLandingBadge;
+  nextAction: AuditLandingAction;
+}
+
+export interface AuditLandingSyntheseCard {
+  badge: AuditLandingBadge;
+  checklist: AuditLandingChecklistItem[];
+  primaryAction: AuditLandingAction;
 }
 
 export interface AuditLandingObjectifItem {
@@ -38,47 +73,28 @@ export interface AuditLandingObjectifItem {
   priority: number;
 }
 
-export interface AuditLandingContrainteItem {
-  id: string;
-  label: string;
-  priorityLabel: string;
-}
-
-export interface AuditLandingOperationItem {
-  id: string;
-  label: string;
-  statusLabel: string;
-}
-
-export interface AuditLandingSyntheseCard {
-  state: Exclude<AuditLandingState, 'a-venir'>;
-  stateLabel: string;
-  title: string;
-  facts: AuditLandingFact[];
-  missing: AuditLandingMissing[];
+export interface AuditLandingObjectifsCard {
+  badge: AuditLandingBadge;
+  state: AuditLandingState;
+  emptyLabel: string;
+  objectifs: AuditLandingObjectifItem[];
+  /** Notes qualitatives courtes (contraintes / opérations), jamais des « 0 ». */
+  notes: string[];
+  action: AuditLandingAction;
 }
 
 export interface AuditLandingPilotageCard {
-  state: Extract<AuditLandingState, 'a-venir'>;
-  stateLabel: string;
-  dependsOn: string;
+  badge: AuditLandingBadge;
+  headline: string;
   description: string;
-  /** Capacités à venir, listées honnêtement comme non disponibles. */
-  upcoming: string[];
-}
-
-export interface AuditLandingObjectifsCard {
-  state: Exclude<AuditLandingState, 'a-venir'>;
-  stateLabel: string;
-  objectifs: AuditLandingObjectifItem[];
-  contraintes: AuditLandingContrainteItem[];
-  operationsPrevues: AuditLandingOperationItem[];
+  caption: string;
 }
 
 export interface AuditLandingViewModel {
+  summary: AuditLandingSummary;
   synthese: AuditLandingSyntheseCard;
-  pilotage: AuditLandingPilotageCard;
   objectifs: AuditLandingObjectifsCard;
+  pilotage: AuditLandingPilotageCard;
 }
 
 const SITUATION_FAMILIALE_LABELS: Record<DossierSituationFamilialeStatut, string> = {
@@ -99,185 +115,246 @@ const REGIME_MATRIMONIAL_LABELS: Record<DossierRegimeMatrimonialCode, string> = 
   separation_biens_societe_acquets: 'Séparation de biens avec société d’acquêts',
 };
 
-const CONTRAINTE_PRIORITY_LABELS: Record<DossierContraintePriority, string> = {
-  haute: 'priorité haute',
-  moyenne: 'priorité moyenne',
-  basse: 'priorité basse',
+const REQUIREMENT_LABELS: Record<AuditLandingRequirement, string> = {
+  requis: 'Requis',
+  recommande: 'Recommandé',
 };
 
-const OPERATION_STATUS_LABELS: Record<DossierOperationStatus, string> = {
-  planned: 'planifiée',
-  in_progress: 'en cours',
-  done: 'réalisée',
-  cancelled: 'annulée',
-};
-
-const MISSING_FIELD_LABELS: Record<DossierRequiredField, string> = {
-  membre_principal: 'Membre principal incomplet (prénom, nom, date de naissance)',
-  objectifs_prioritaires: 'Objectifs prioritaires non renseignés',
-};
-
-/** Les situations impliquant un conjoint/partenaire dans le dossier. */
 const COUPLE_STATUTS: ReadonlySet<DossierSituationFamilialeStatut> = new Set([
   'marie',
   'pacse',
   'concubinage',
 ]);
 
-export const AUDIT_LANDING_STATE_LABELS: Record<AuditLandingState, string> = {
-  vide: 'vide',
-  partiel: 'partiel',
-  complet: 'complet',
-  'a-completer': 'à compléter',
-  'a-venir': 'à venir',
-};
-
 export function buildAuditLandingViewModel(dossier: DossierPatrimonial): AuditLandingViewModel {
+  const checklist = buildFoyerChecklist(dossier);
+  const objectifsCard = buildObjectifsCard(dossier);
+  const objectifsDone = objectifsCard.objectifs.length > 0;
+
+  // Données clés = checklist foyer + objectifs (compté dans la bande, affiché en carte).
+  const keyDataTotal = checklist.length + 1;
+  const keyDataDone = checklist.filter((item) => item.done).length + (objectifsDone ? 1 : 0);
+  const requisRemaining = countRemaining(checklist, 'requis') + (objectifsDone ? 0 : 1); // objectifs = requis
+  const recommandeRemaining = countRemaining(checklist, 'recommande');
+
+  const syntheseComplete = requisRemaining === 0 && recommandeRemaining === 0;
+  const collecte: AuditLandingBadge = syntheseComplete
+    ? { label: 'Données clés réunies', tone: 'done' }
+    : { label: 'Collecte en cours', tone: 'progress' };
+  const nextAction = buildNextAction(dossier, objectifsDone);
+
   return {
-    synthese: buildSyntheseCard(dossier),
+    summary: {
+      collecte,
+      keyDataDone,
+      keyDataTotal,
+      ratio: keyDataTotal > 0 ? keyDataDone / keyDataTotal : 0,
+      requisRemaining,
+      recommandeRemaining,
+      strategy: { label: 'Stratégie verrouillée', tone: 'locked' },
+      nextAction,
+    },
+    synthese: {
+      badge: collecte,
+      checklist,
+      primaryAction: nextAction,
+    },
+    objectifs: objectifsCard,
     pilotage: buildPilotageCard(),
-    objectifs: buildObjectifsCard(dossier),
   };
 }
 
-function buildSyntheseCard(dossier: DossierPatrimonial): AuditLandingSyntheseCard {
-  const state = mapCompletionStatusToState(dossier.completion.status);
-
-  return {
-    state,
-    stateLabel: DOSSIER_PATRIMONIAL_COMPLETION_LABELS[dossier.completion.status],
-    title: dossier.foyer.label,
-    facts: buildSyntheseFacts(dossier),
-    missing: dossier.completion.missingRequiredFields.map((field) => ({
-      id: field,
-      label: MISSING_FIELD_LABELS[field],
-    })),
-  };
+function isFamilyEngaged(dossier: DossierPatrimonial): boolean {
+  const principal = findPrincipal(dossier);
+  const principalHasData = Boolean(
+    principal?.prenom.trim() || principal?.nom?.trim() || principal?.dateNaissance?.trim(),
+  );
+  return (
+    principalHasData ||
+    Boolean(dossier.foyer.conjointId) ||
+    dossier.membres.some((membre) => membre.role === 'enfant') ||
+    dossier.situationFamiliale.statut !== 'celibataire' ||
+    dossier.situationFamiliale.nombreEnfants > 0 ||
+    dossier.regimeMatrimonial !== null ||
+    dossier.donationsSynthetiques.length > 0 ||
+    dossier.objectifs.length > 0
+  );
 }
 
-function buildSyntheseFacts(dossier: DossierPatrimonial): AuditLandingFact[] {
-  const facts: AuditLandingFact[] = [];
-
-  facts.push({
-    id: 'situation-familiale',
-    label: 'Situation familiale',
-    value: SITUATION_FAMILIALE_LABELS[dossier.situationFamiliale.statut],
-    known: true,
-  });
-
-  const principal = dossier.membres.find((membre) => membre.id === dossier.foyer.membrePrincipalId);
-  const principalKnown = Boolean(
+function buildFoyerChecklist(dossier: DossierPatrimonial): AuditLandingChecklistItem[] {
+  const items: AuditLandingChecklistItem[] = [];
+  const principal = findPrincipal(dossier);
+  const principalDone = Boolean(
     principal?.prenom.trim() && principal.nom?.trim() && principal.dateNaissance?.trim(),
   );
-  facts.push({
-    id: 'membre-principal',
-    label: 'Membre principal',
-    value: principalKnown && principal ? formatMembreName(principal) : 'à compléter',
-    known: principalKnown,
-  });
+  items.push(
+    item('membre-principal', 'Membre principal', 'requis', principalDone, {
+      value: principalDone && principal ? formatMembreName(principal) : undefined,
+      actionLabel: 'Saisir',
+      destination: 'dossier',
+    }),
+  );
+
+  const familyEngaged = isFamilyEngaged(dossier);
+  items.push(
+    item('situation-familiale', 'Situation familiale', 'recommande', familyEngaged, {
+      value: familyEngaged
+        ? SITUATION_FAMILIALE_LABELS[dossier.situationFamiliale.statut]
+        : undefined,
+      actionLabel: 'Préciser',
+      destination: 'dossier',
+    }),
+  );
 
   if (COUPLE_STATUTS.has(dossier.situationFamiliale.statut)) {
     const conjoint = dossier.membres.find((membre) => membre.id === dossier.foyer.conjointId);
-    const conjointKnown = Boolean(conjoint?.prenom.trim());
-    facts.push({
-      id: 'conjoint',
-      label: 'Conjoint / partenaire',
-      value: conjointKnown && conjoint ? formatMembreName(conjoint) : 'à compléter',
-      known: conjointKnown,
-    });
-
+    const conjointDone = Boolean(conjoint?.prenom.trim());
+    items.push(
+      item('conjoint', 'Conjoint / partenaire', 'recommande', conjointDone, {
+        value: conjointDone && conjoint ? formatMembreName(conjoint) : undefined,
+        actionLabel: 'Saisir',
+        destination: 'dossier',
+      }),
+    );
     const regime = dossier.regimeMatrimonial;
-    facts.push({
-      id: 'regime-matrimonial',
-      label: 'Régime matrimonial',
-      value: regime ? REGIME_MATRIMONIAL_LABELS[regime.regime] : 'à compléter',
-      known: Boolean(regime),
-    });
+    items.push(
+      item('regime-matrimonial', 'Régime matrimonial', 'recommande', Boolean(regime), {
+        value: regime ? REGIME_MATRIMONIAL_LABELS[regime.regime] : undefined,
+        actionLabel: 'Préciser',
+        destination: 'dossier',
+      }),
+    );
   }
 
-  const nombreEnfants = dossier.situationFamiliale.nombreEnfants;
-  facts.push({
-    id: 'enfants',
-    label: 'Enfants',
-    value: formatCount(nombreEnfants, 'enfant', 'enfants', 'aucun enfant'),
-    known: true,
-  });
+  const enfantsDone = dossier.situationFamiliale.nombreEnfants > 0;
+  items.push(
+    item('enfants', 'Enfants', 'recommande', enfantsDone, {
+      value: enfantsDone
+        ? formatCount(dossier.situationFamiliale.nombreEnfants, 'enfant', 'enfants')
+        : undefined,
+      actionLabel: 'Ajouter',
+      destination: 'dossier',
+    }),
+  );
 
-  const donations = dossier.donationsSynthetiques.length;
-  facts.push({
-    id: 'donations',
-    label: 'Donations antérieures',
-    value: formatCount(donations, 'donation', 'donations', 'aucune donation'),
-    known: true,
-  });
+  const donationsDone = dossier.donationsSynthetiques.length > 0;
+  items.push(
+    item('donations', 'Donations antérieures', 'recommande', donationsDone, {
+      value: donationsDone
+        ? formatCount(dossier.donationsSynthetiques.length, 'donation', 'donations')
+        : undefined,
+      actionLabel: 'Ajouter',
+      destination: 'dossier',
+    }),
+  );
 
-  return facts;
-}
-
-function buildPilotageCard(): AuditLandingPilotageCard {
-  return {
-    state: 'a-venir',
-    stateLabel: AUDIT_LANDING_STATE_LABELS['a-venir'],
-    dependsOn: 'F6',
-    description:
-      'Le pilotage stratégique réel (radar d’arbitrages, pistes à vérifier, versioning de stratégie) dépend de la fondation F6. Aucun score ni scénario n’est calculé tant qu’elle n’est pas livrée.',
-    upcoming: [
-      'Radar d’arbitrages (situation actuelle vs scénario)',
-      'Pistes à vérifier déterministes',
-      'Versioning et activation de stratégie',
-    ],
-  };
+  return items;
 }
 
 function buildObjectifsCard(dossier: DossierPatrimonial): AuditLandingObjectifsCard {
   const objectifs = [...dossier.objectifs]
     .sort((a, b) => a.priority - b.priority)
     .map((objectif) => ({ id: objectif.id, label: objectif.label, priority: objectif.priority }));
-  const contraintes = dossier.contraintes.map((contrainte) => ({
-    id: contrainte.id,
-    label: contrainte.label,
-    priorityLabel: CONTRAINTE_PRIORITY_LABELS[contrainte.priority],
-  }));
-  const operationsPrevues = dossier.operationsPrevues.map((operation) => ({
-    id: operation.id,
-    label: operation.label,
-    statusLabel: OPERATION_STATUS_LABELS[operation.status],
-  }));
+  const hasContraintes = dossier.contraintes.length > 0;
+  const hasOperations = dossier.operationsPrevues.length > 0;
 
-  const state = mapObjectifsToState(objectifs.length, contraintes.length, operationsPrevues.length);
+  const state: AuditLandingState =
+    objectifs.length === 0 ? 'vide' : hasContraintes || hasOperations ? 'complet' : 'partiel';
+
+  const notes: string[] = [];
+  if (objectifs.length > 0) {
+    notes.push(
+      hasContraintes
+        ? formatCount(dossier.contraintes.length, 'contrainte', 'contraintes')
+        : 'Contraintes à préciser',
+    );
+    notes.push(
+      hasOperations
+        ? formatCount(dossier.operationsPrevues.length, 'opération prévue', 'opérations prévues')
+        : 'Aucune opération prévue',
+    );
+  }
 
   return {
+    badge:
+      state === 'vide'
+        ? { label: 'À renseigner', tone: 'todo' }
+        : state === 'complet'
+          ? { label: 'Complet', tone: 'done' }
+          : { label: 'En cours', tone: 'progress' },
     state,
-    stateLabel: AUDIT_LANDING_STATE_LABELS[state],
+    emptyLabel: 'Aucun objectif consigné',
     objectifs,
-    contraintes,
-    operationsPrevues,
-  } satisfies AuditLandingObjectifsCard;
+    notes,
+    action:
+      objectifs.length > 0
+        ? { label: 'Compléter les objectifs', destination: 'objectifs' }
+        : { label: 'Ajouter des objectifs', destination: 'objectifs' },
+  };
 }
 
-function mapCompletionStatusToState(
-  status: DossierPatrimonial['completion']['status'],
-): Exclude<AuditLandingState, 'a-venir'> {
-  if (status === 'complete') return 'complet';
-  if (status === 'partial') return 'partiel';
-  return 'a-completer';
+function buildPilotageCard(): AuditLandingPilotageCard {
+  return {
+    badge: { label: 'Verrouillé', tone: 'locked' },
+    headline: 'Stratégie verrouillée',
+    description:
+      'Les projections stratégiques seront disponibles après finalisation des données de base du dossier.',
+    caption: 'Comparaison de scénarios · pistes à vérifier · activation future',
+  };
 }
 
-function mapObjectifsToState(
-  objectifsCount: number,
-  contraintesCount: number,
-  operationsCount: number,
-): Exclude<AuditLandingState, 'a-venir'> {
-  if (objectifsCount === 0) return 'vide';
-  if (contraintesCount > 0 || operationsCount > 0) return 'complet';
-  return 'partiel';
+function buildNextAction(dossier: DossierPatrimonial, objectifsDone: boolean): AuditLandingAction {
+  const principal = findPrincipal(dossier);
+  const principalDone = Boolean(
+    principal?.prenom.trim() && principal.nom?.trim() && principal.dateNaissance?.trim(),
+  );
+  if (!principalDone) return { label: 'Saisir le membre principal', destination: 'dossier' };
+  if (!objectifsDone) return { label: 'Ajouter des objectifs', destination: 'objectifs' };
+  if (!isFamilyEngaged(dossier)) {
+    return { label: 'Préciser la situation familiale', destination: 'dossier' };
+  }
+  return { label: 'Reprendre l’audit', destination: 'dossier' };
+}
+
+function countRemaining(
+  items: AuditLandingChecklistItem[],
+  requirement: AuditLandingRequirement,
+): number {
+  return items.filter((item) => item.requirement === requirement && !item.done).length;
+}
+
+function findPrincipal(dossier: DossierPatrimonial) {
+  return dossier.membres.find((membre) => membre.id === dossier.foyer.membrePrincipalId);
+}
+
+interface ItemOptions {
+  value?: string;
+  actionLabel: string;
+  destination: AuditLandingDestination;
+}
+
+function item(
+  id: string,
+  label: string,
+  requirement: AuditLandingRequirement,
+  done: boolean,
+  options: ItemOptions,
+): AuditLandingChecklistItem {
+  return {
+    id,
+    label,
+    requirement,
+    requirementLabel: REQUIREMENT_LABELS[requirement],
+    done,
+    value: done ? options.value : undefined,
+    action: done ? undefined : { label: options.actionLabel, destination: options.destination },
+  };
 }
 
 function formatMembreName(membre: { prenom: string; nom?: string }): string {
   return [membre.prenom.trim(), membre.nom?.trim()].filter(Boolean).join(' ');
 }
 
-function formatCount(count: number, singular: string, plural: string, emptyLabel: string): string {
-  if (count <= 0) return emptyLabel;
+function formatCount(count: number, singular: string, plural: string): string {
   return `${count} ${count === 1 ? singular : plural}`;
 }
