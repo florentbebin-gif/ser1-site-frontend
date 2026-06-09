@@ -35,7 +35,7 @@ describe('AuditPage', () => {
     render(<AuditPage />);
 
     expect(
-      screen.getByRole('heading', { level: 1, name: 'Audit patrimonial' }),
+      screen.getByRole('heading', { level: 1, name: 'Dossier patrimonial' }),
     ).toBeInTheDocument();
     expect(screen.getByRole('heading', { level: 2, name: 'Synthèse dossier' })).toBeInTheDocument();
     expect(screen.queryByRole('heading', { name: 'Situation familiale' })).not.toBeInTheDocument();
@@ -44,7 +44,7 @@ describe('AuditPage', () => {
   it('bascule vers le wizard puis revient à la synthèse', async () => {
     render(<AuditPage />);
 
-    await userEvent.click(screen.getByRole('button', { name: 'Saisir le membre principal' }));
+    await userEvent.click(screen.getByRole('button', { name: /^Synthèse dossier/ }));
 
     expect(screen.getByRole('heading', { name: 'Situation familiale' })).toBeInTheDocument();
 
@@ -56,7 +56,7 @@ describe('AuditPage', () => {
   it('ouvre directement l’étape Objectifs depuis la carte Objectifs', async () => {
     render(<AuditPage />);
 
-    await userEvent.click(screen.getByRole('button', { name: 'Ajouter des objectifs' }));
+    await userEvent.click(screen.getByRole('button', { name: /^Objectifs/ }));
 
     expect(screen.getByRole('heading', { name: 'Objectifs client' })).toBeInTheDocument();
   });
